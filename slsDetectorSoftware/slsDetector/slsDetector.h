@@ -1154,7 +1154,7 @@ typedef  struct sharedSlsDetector {
 
   void acquire();
 
- private:
+ protected:
  
   /**
     address of the detector structure in shared memory

@@ -1,0 +1,123 @@
+\section{sls\_\-detector\_\-module Struct Reference}
+\label{structsls__detector__module}\index{sls_detector_module@{sls\_\-detector\_\-module}}
+{\tt \#include $<$sls\_\-detector\_\-defs.h$>$}
+
+\subsection*{Public Attributes}
+\begin{CompactItemize}
+\item 
+int \bf{module}
+\item 
+int \bf{serialnumber}
+\item 
+int \bf{nchan}
+\item 
+int \bf{nchip}
+\item 
+int \bf{ndac}
+\item 
+int \bf{nadc}
+\item 
+int \bf{reg}
+\item 
+float $\ast$ \bf{dacs}
+\item 
+float $\ast$ \bf{adcs}
+\item 
+int $\ast$ \bf{chipregs}
+\item 
+int $\ast$ \bf{chanregs}
+\item 
+float \bf{gain}
+\item 
+float \bf{offset}
+\end{CompactItemize}
+
+
+\subsection{Detailed Description}
+structure for a detector module should not be used by unexperienced users
+
+\begin{Desc}
+\item[See also:]:: \doxyref{module\-Register\-Bit}{p.}{sls__detector__defs_8h_922e64c27751c0f09a7cb2cda699a23e} \doxyref{chip\-Register\-Bit}{p.}{sls__detector__defs_8h_4330afff337dd4db0fe7dcca1c75a642} :\doxyref{channel\-Register\-Bit}{p.}{sls__detector__defs_8h_40dcd9999cf30431eee4b9b6bc9c1035}\end{Desc}
+\begin{itemize}
+\item reg is the module register (e.g. dynamic range? see module\-Register\-Bit) \item dacs is the pointer to the array of dac values (in V) \item adcs is the pointer to the array of adc values (in V) \item chipregs is the pointer to the array of chip registers \item chanregs is the pointer to the array of channel registers \item gain is the module gain \item offset is the module offset \end{itemize}
+
+
+
+
+\subsection{Member Data Documentation}
+\index{sls_detector_module@{sls\_\-detector\_\-module}!adcs@{adcs}}
+\index{adcs@{adcs}!sls_detector_module@{sls\_\-detector\_\-module}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}float$\ast$ \bf{sls\_\-detector\_\-module::adcs}}\label{structsls__detector__module_23e78882688995ac5a0b3beae9fbc47e}
+
+
+is the pointer to the array of the adc values (in V) \index{sls_detector_module@{sls\_\-detector\_\-module}!chanregs@{chanregs}}
+\index{chanregs@{chanregs}!sls_detector_module@{sls\_\-detector\_\-module}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}int$\ast$ \bf{sls\_\-detector\_\-module::chanregs}}\label{structsls__detector__module_2d7e1d62439dca06b09c07ad2f8317c7}
+
+
+is the pointer to the array of the channel registers \begin{Desc}
+\item[See also:]\doxyref{channel\-Register\-Bit}{p.}{sls__detector__defs_8h_40dcd9999cf30431eee4b9b6bc9c1035} \end{Desc}
+\index{sls_detector_module@{sls\_\-detector\_\-module}!chipregs@{chipregs}}
+\index{chipregs@{chipregs}!sls_detector_module@{sls\_\-detector\_\-module}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}int$\ast$ \bf{sls\_\-detector\_\-module::chipregs}}\label{structsls__detector__module_f4ce649ef6fe43b092485a427ef2639b}
+
+
+is the pointer to the array of the chip registers \begin{Desc}
+\item[See also:]\doxyref{chip\-Register\-Bit}{p.}{sls__detector__defs_8h_4330afff337dd4db0fe7dcca1c75a642} \end{Desc}
+\index{sls_detector_module@{sls\_\-detector\_\-module}!dacs@{dacs}}
+\index{dacs@{dacs}!sls_detector_module@{sls\_\-detector\_\-module}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}float$\ast$ \bf{sls\_\-detector\_\-module::dacs}}\label{structsls__detector__module_2cb9e387ddc4ac7d2e451eddb3076a05}
+
+
+is the pointer to the array of the dac values (in V) \index{sls_detector_module@{sls\_\-detector\_\-module}!gain@{gain}}
+\index{gain@{gain}!sls_detector_module@{sls\_\-detector\_\-module}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}float \bf{sls\_\-detector\_\-module::gain}}\label{structsls__detector__module_b978ffc0a15bc1f4189cbc5205260470}
+
+
+is the module gain (V/ke\-V) \index{sls_detector_module@{sls\_\-detector\_\-module}!module@{module}}
+\index{module@{module}!sls_detector_module@{sls\_\-detector\_\-module}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}int \bf{sls\_\-detector\_\-module::module}}\label{structsls__detector__module_3727a5a7bde541242df86dc3c49687e5}
+
+
+is the module number \index{sls_detector_module@{sls\_\-detector\_\-module}!nadc@{nadc}}
+\index{nadc@{nadc}!sls_detector_module@{sls\_\-detector\_\-module}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}int \bf{sls\_\-detector\_\-module::nadc}}\label{structsls__detector__module_98aaddadb685496c872d8527d941a552}
+
+
+is the number of adcs on the module \index{sls_detector_module@{sls\_\-detector\_\-module}!nchan@{nchan}}
+\index{nchan@{nchan}!sls_detector_module@{sls\_\-detector\_\-module}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}int \bf{sls\_\-detector\_\-module::nchan}}\label{structsls__detector__module_accf68d0cbc3093880452bbaba38e85c}
+
+
+is the number of channels per chip \index{sls_detector_module@{sls\_\-detector\_\-module}!nchip@{nchip}}
+\index{nchip@{nchip}!sls_detector_module@{sls\_\-detector\_\-module}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}int \bf{sls\_\-detector\_\-module::nchip}}\label{structsls__detector__module_52c12c0687c7ce05809c51222ee09b08}
+
+
+is the number of chips on the module \index{sls_detector_module@{sls\_\-detector\_\-module}!ndac@{ndac}}
+\index{ndac@{ndac}!sls_detector_module@{sls\_\-detector\_\-module}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}int \bf{sls\_\-detector\_\-module::ndac}}\label{structsls__detector__module_745d4ba4209ee3eb28f829d3fb76fda4}
+
+
+is the number of dacs on the module \index{sls_detector_module@{sls\_\-detector\_\-module}!offset@{offset}}
+\index{offset@{offset}!sls_detector_module@{sls\_\-detector\_\-module}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}float \bf{sls\_\-detector\_\-module::offset}}\label{structsls__detector__module_2e4ed1d60daf3d142971659feecefc63}
+
+
+is the module offset (V) \index{sls_detector_module@{sls\_\-detector\_\-module}!reg@{reg}}
+\index{reg@{reg}!sls_detector_module@{sls\_\-detector\_\-module}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}int \bf{sls\_\-detector\_\-module::reg}}\label{structsls__detector__module_5fc4f0b2d53f479810b69ce4ae998a84}
+
+
+is the module register (e.g. dynamic range?) \begin{Desc}
+\item[See also:]\doxyref{module\-Register\-Bit}{p.}{sls__detector__defs_8h_922e64c27751c0f09a7cb2cda699a23e} \end{Desc}
+\index{sls_detector_module@{sls\_\-detector\_\-module}!serialnumber@{serialnumber}}
+\index{serialnumber@{serialnumber}!sls_detector_module@{sls\_\-detector\_\-module}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}int \bf{sls\_\-detector\_\-module::serialnumber}}\label{structsls__detector__module_7dfda9e378903db858fd7727d0a88afd}
+
+
+is the module serial number 
+
+The documentation for this struct was generated from the following file:\begin{CompactItemize}
+\item 
+common\-Files/\bf{sls\_\-detector\_\-defs.h}\end{CompactItemize}

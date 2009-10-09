@@ -1,0 +1,381 @@
+\section{sls\-Detector::shared\-Sls\-Detector Struct Reference}
+\label{structslsDetector_1_1sharedSlsDetector}\index{slsDetector::sharedSlsDetector@{slsDetector::sharedSlsDetector}}
+Structure allocated in shared memory to store detector settings and be accessed in parallel by several applications (take care of possible conflicts!).  
+
+
+{\tt \#include $<$sls\-Detector.h$>$}
+
+\subsection*{Public Attributes}
+\begin{CompactItemize}
+\item 
+int \bf{already\-Existing}
+\item 
+char \bf{hostname} [MAX\_\-STR\_\-LENGTH]
+\item 
+int \bf{control\-Port}
+\item 
+int \bf{stop\-Port}
+\item 
+int \bf{data\-Port}
+\item 
+\bf{detector\-Type} \bf{my\-Detector\-Type}
+\item 
+char \bf{trim\-Dir} [MAX\_\-STR\_\-LENGTH]
+\item 
+char \bf{cal\-Dir} [MAX\_\-STR\_\-LENGTH]
+\item 
+int \bf{n\-Trim\-En}
+\item 
+int \bf{trim\-Energies} [100]
+\item 
+int \bf{file\-Index}
+\item 
+char \bf{file\-Path} [MAX\_\-STR\_\-LENGTH]
+\item 
+char \bf{file\-Name} [MAX\_\-STR\_\-LENGTH]
+\item 
+int \bf{n\-Mod} [2]
+\item 
+int \bf{n\-Mods}
+\item 
+int \bf{n\-Mod\-Max} [2]
+\item 
+int \bf{n\-Mods\-Max}
+\item 
+int \bf{n\-Chans}
+\item 
+int \bf{n\-Chips}
+\item 
+int \bf{n\-Dacs}
+\item 
+int \bf{n\-Adcs}
+\item 
+int \bf{dynamic\-Range}
+\item 
+int \bf{data\-Bytes}
+\item 
+int \bf{correction\-Mask}
+\item 
+float \bf{t\-Dead}
+\item 
+int \bf{n\-Bad\-Chans}
+\item 
+int \bf{bad\-Chans\-List} [MAX\_\-BADCHANS]
+\item 
+int \bf{n\-Bad\-FF}
+\item 
+int \bf{bad\-FFList} [MAX\_\-BADCHANS]
+\item 
+\bf{angle\-Conversion\-Constant} \bf{ang\-Off} [MAXMODS]
+\item 
+int \bf{ang\-Direction}
+\item 
+float \bf{fine\-Offset}
+\item 
+float \bf{global\-Offset}
+\item 
+int \bf{number\-Of\-Positions}
+\item 
+float \bf{det\-Positions} [MAXPOS]
+\item 
+float \bf{bin\-Size}
+\item 
+int \bf{n\-ROI}
+\item 
+\bf{ROI} \bf{roi\-Limits} [MAX\_\-ROIS]
+\item 
+\bf{read\-Out\-Flags} \bf{ro\-Flags}
+\item 
+\bf{detector\-Settings} \bf{current\-Settings}
+\item 
+int \bf{current\-Threshold\-EV}
+\item 
+int64\_\-t \bf{timer\-Value} [MAX\_\-TIMERS]
+\item 
+int \bf{clk\-Div}
+\item 
+int \bf{ffoff}
+\item 
+int \bf{fferroff}
+\item 
+int \bf{modoff}
+\item 
+int \bf{dacoff}
+\item 
+int \bf{adcoff}
+\item 
+int \bf{chipoff}
+\item 
+int \bf{chanoff}
+\end{CompactItemize}
+
+
+\subsection{Detailed Description}
+Structure allocated in shared memory to store detector settings and be accessed in parallel by several applications (take care of possible conflicts!). 
+
+
+
+\subsection{Member Data Documentation}
+\index{slsDetector::sharedSlsDetector@{sls\-Detector::shared\-Sls\-Detector}!adcoff@{adcoff}}
+\index{adcoff@{adcoff}!slsDetector::sharedSlsDetector@{sls\-Detector::shared\-Sls\-Detector}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}int \bf{sls\-Detector::shared\-Sls\-Detector::adcoff}}\label{structslsDetector_1_1sharedSlsDetector_5fea82d598a0252852d3b5aa3dcba778}
+
+
+memory offsets for the adc arrays \index{slsDetector::sharedSlsDetector@{sls\-Detector::shared\-Sls\-Detector}!alreadyExisting@{alreadyExisting}}
+\index{alreadyExisting@{alreadyExisting}!slsDetector::sharedSlsDetector@{sls\-Detector::shared\-Sls\-Detector}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}int \bf{sls\-Detector::shared\-Sls\-Detector::already\-Existing}}\label{structslsDetector_1_1sharedSlsDetector_ee2e81699a79e6b9ddc698d120a13ef9}
+
+
+already existing flag. If the detector does not yet exist (already\-Existing=0) the shared\-Memory will be created, otherwise it will simly be linked \index{slsDetector::sharedSlsDetector@{sls\-Detector::shared\-Sls\-Detector}!angDirection@{angDirection}}
+\index{angDirection@{angDirection}!slsDetector::sharedSlsDetector@{sls\-Detector::shared\-Sls\-Detector}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}int \bf{sls\-Detector::shared\-Sls\-Detector::ang\-Direction}}\label{structslsDetector_1_1sharedSlsDetector_289a2fe819a4e02a93dfc54f9ba7ae16}
+
+
+angular direction (1 if it corresponds to the encoder direction i.e. channel 0 is 0, maxchan is positive high angle, 0 otherwise \index{slsDetector::sharedSlsDetector@{sls\-Detector::shared\-Sls\-Detector}!angOff@{angOff}}
+\index{angOff@{angOff}!slsDetector::sharedSlsDetector@{sls\-Detector::shared\-Sls\-Detector}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}\bf{angle\-Conversion\-Constant} \bf{sls\-Detector::shared\-Sls\-Detector::ang\-Off}[MAXMODS]}\label{structslsDetector_1_1sharedSlsDetector_31cebbb4add050ac00b3fbe9b4494d8b}
+
+
+array of angular conversion constants for each module\begin{Desc}
+\item[See also:]\doxyref{angle\-Conversion\-Constant}{p.}{structangleConversionConstant} \end{Desc}
+\index{slsDetector::sharedSlsDetector@{sls\-Detector::shared\-Sls\-Detector}!badChansList@{badChansList}}
+\index{badChansList@{badChansList}!slsDetector::sharedSlsDetector@{sls\-Detector::shared\-Sls\-Detector}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}int \bf{sls\-Detector::shared\-Sls\-Detector::bad\-Chans\-List}[MAX\_\-BADCHANS]}\label{structslsDetector_1_1sharedSlsDetector_4e03ad7a759acf38d4543e0df9ab9710}
+
+
+list of bad channels \index{slsDetector::sharedSlsDetector@{sls\-Detector::shared\-Sls\-Detector}!badFFList@{badFFList}}
+\index{badFFList@{badFFList}!slsDetector::sharedSlsDetector@{sls\-Detector::shared\-Sls\-Detector}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}int \bf{sls\-Detector::shared\-Sls\-Detector::bad\-FFList}[MAX\_\-BADCHANS]}\label{structslsDetector_1_1sharedSlsDetector_ebf29d7d9b406d65f381c9446953bc14}
+
+
+list of bad channels from flat field i.e. channels which read 0 in the flat field file \index{slsDetector::sharedSlsDetector@{sls\-Detector::shared\-Sls\-Detector}!binSize@{binSize}}
+\index{binSize@{binSize}!slsDetector::sharedSlsDetector@{sls\-Detector::shared\-Sls\-Detector}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}float \bf{sls\-Detector::shared\-Sls\-Detector::bin\-Size}}\label{structslsDetector_1_1sharedSlsDetector_8a64597cae31d83524ea4e554e3798ab}
+
+
+bin size for data merging \index{slsDetector::sharedSlsDetector@{sls\-Detector::shared\-Sls\-Detector}!calDir@{calDir}}
+\index{calDir@{calDir}!slsDetector::sharedSlsDetector@{sls\-Detector::shared\-Sls\-Detector}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}char \bf{sls\-Detector::shared\-Sls\-Detector::cal\-Dir}[MAX\_\-STR\_\-LENGTH]}\label{structslsDetector_1_1sharedSlsDetector_8db7c92973c8af22116cf3bc38b6efb9}
+
+
+path of the calibration files \index{slsDetector::sharedSlsDetector@{sls\-Detector::shared\-Sls\-Detector}!chanoff@{chanoff}}
+\index{chanoff@{chanoff}!slsDetector::sharedSlsDetector@{sls\-Detector::shared\-Sls\-Detector}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}int \bf{sls\-Detector::shared\-Sls\-Detector::chanoff}}\label{structslsDetector_1_1sharedSlsDetector_02e198988d9b1d5ca6d0391e6a9d0817}
+
+
+memory offsets for the channel register arrays \index{slsDetector::sharedSlsDetector@{sls\-Detector::shared\-Sls\-Detector}!chipoff@{chipoff}}
+\index{chipoff@{chipoff}!slsDetector::sharedSlsDetector@{sls\-Detector::shared\-Sls\-Detector}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}int \bf{sls\-Detector::shared\-Sls\-Detector::chipoff}}\label{structslsDetector_1_1sharedSlsDetector_299382d528788680646246405934fb4c}
+
+
+memory offsets for the chip register arrays \index{slsDetector::sharedSlsDetector@{sls\-Detector::shared\-Sls\-Detector}!clkDiv@{clkDiv}}
+\index{clkDiv@{clkDiv}!slsDetector::sharedSlsDetector@{sls\-Detector::shared\-Sls\-Detector}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}int \bf{sls\-Detector::shared\-Sls\-Detector::clk\-Div}}\label{structslsDetector_1_1sharedSlsDetector_904618e46e191d740569ba998623cba8}
+
+
+clock divider \index{slsDetector::sharedSlsDetector@{sls\-Detector::shared\-Sls\-Detector}!controlPort@{controlPort}}
+\index{controlPort@{controlPort}!slsDetector::sharedSlsDetector@{sls\-Detector::shared\-Sls\-Detector}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}int \bf{sls\-Detector::shared\-Sls\-Detector::control\-Port}}\label{structslsDetector_1_1sharedSlsDetector_11da9fd02e0833533a8b2de6ad3307d8}
+
+
+is the port used for control functions normally it should not be changed \index{slsDetector::sharedSlsDetector@{sls\-Detector::shared\-Sls\-Detector}!correctionMask@{correctionMask}}
+\index{correctionMask@{correctionMask}!slsDetector::sharedSlsDetector@{sls\-Detector::shared\-Sls\-Detector}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}int \bf{sls\-Detector::shared\-Sls\-Detector::correction\-Mask}}\label{structslsDetector_1_1sharedSlsDetector_fa0612dcfba406d532a36f433363bdad}
+
+
+corrections to be applied to the data\begin{Desc}
+\item[See also:]\doxyref{correction\-Flags}{p.}{sls__detector__defs_8h_82ffddab533d21b3ef6733d38dfcd5c6} \end{Desc}
+\index{slsDetector::sharedSlsDetector@{sls\-Detector::shared\-Sls\-Detector}!currentSettings@{currentSettings}}
+\index{currentSettings@{currentSettings}!slsDetector::sharedSlsDetector@{sls\-Detector::shared\-Sls\-Detector}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}\bf{detector\-Settings} \bf{sls\-Detector::shared\-Sls\-Detector::current\-Settings}}\label{structslsDetector_1_1sharedSlsDetector_87e1f522b14c62f2bf43327e3584bbf2}
+
+
+detector settings (standard, fast, etc.) \index{slsDetector::sharedSlsDetector@{sls\-Detector::shared\-Sls\-Detector}!currentThresholdEV@{currentThresholdEV}}
+\index{currentThresholdEV@{currentThresholdEV}!slsDetector::sharedSlsDetector@{sls\-Detector::shared\-Sls\-Detector}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}int \bf{sls\-Detector::shared\-Sls\-Detector::current\-Threshold\-EV}}\label{structslsDetector_1_1sharedSlsDetector_4b80cdf3517e1484ad9223f44d3979b6}
+
+
+detector threshold (e\-V) \index{slsDetector::sharedSlsDetector@{sls\-Detector::shared\-Sls\-Detector}!dacoff@{dacoff}}
+\index{dacoff@{dacoff}!slsDetector::sharedSlsDetector@{sls\-Detector::shared\-Sls\-Detector}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}int \bf{sls\-Detector::shared\-Sls\-Detector::dacoff}}\label{structslsDetector_1_1sharedSlsDetector_f79b4d2240f81814f668358c18272607}
+
+
+memory offsets for the dac arrays \index{slsDetector::sharedSlsDetector@{sls\-Detector::shared\-Sls\-Detector}!dataBytes@{dataBytes}}
+\index{dataBytes@{dataBytes}!slsDetector::sharedSlsDetector@{sls\-Detector::shared\-Sls\-Detector}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}int \bf{sls\-Detector::shared\-Sls\-Detector::data\-Bytes}}\label{structslsDetector_1_1sharedSlsDetector_fbade261d7b298b6b605b6feff742f8b}
+
+
+size of the data that are transfered from the detector \index{slsDetector::sharedSlsDetector@{sls\-Detector::shared\-Sls\-Detector}!dataPort@{dataPort}}
+\index{dataPort@{dataPort}!slsDetector::sharedSlsDetector@{sls\-Detector::shared\-Sls\-Detector}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}int \bf{sls\-Detector::shared\-Sls\-Detector::data\-Port}}\label{structslsDetector_1_1sharedSlsDetector_108090dc9c97fe4d9f91357c27d56953}
+
+
+is the port used to acquire the data normally it should not be changed \index{slsDetector::sharedSlsDetector@{sls\-Detector::shared\-Sls\-Detector}!detPositions@{detPositions}}
+\index{detPositions@{detPositions}!slsDetector::sharedSlsDetector@{sls\-Detector::shared\-Sls\-Detector}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}float \bf{sls\-Detector::shared\-Sls\-Detector::det\-Positions}[MAXPOS]}\label{structslsDetector_1_1sharedSlsDetector_bf1d315c4544329f53beb7c88eb47124}
+
+
+list of encoder positions at which the detector should acquire \index{slsDetector::sharedSlsDetector@{sls\-Detector::shared\-Sls\-Detector}!dynamicRange@{dynamicRange}}
+\index{dynamicRange@{dynamicRange}!slsDetector::sharedSlsDetector@{sls\-Detector::shared\-Sls\-Detector}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}int \bf{sls\-Detector::shared\-Sls\-Detector::dynamic\-Range}}\label{structslsDetector_1_1sharedSlsDetector_e8db406083e91d5f7bcbad93cea1c380}
+
+
+dynamic range of the detector data \index{slsDetector::sharedSlsDetector@{sls\-Detector::shared\-Sls\-Detector}!fferroff@{fferroff}}
+\index{fferroff@{fferroff}!slsDetector::sharedSlsDetector@{sls\-Detector::shared\-Sls\-Detector}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}int \bf{sls\-Detector::shared\-Sls\-Detector::fferroff}}\label{structslsDetector_1_1sharedSlsDetector_ce126fabef8ea393b69d44eff536e4c6}
+
+
+memory offsets for the flat filed coefficient errors \index{slsDetector::sharedSlsDetector@{sls\-Detector::shared\-Sls\-Detector}!ffoff@{ffoff}}
+\index{ffoff@{ffoff}!slsDetector::sharedSlsDetector@{sls\-Detector::shared\-Sls\-Detector}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}int \bf{sls\-Detector::shared\-Sls\-Detector::ffoff}}\label{structslsDetector_1_1sharedSlsDetector_4de66737ee8be8242ba8ad0a1a69a125}
+
+
+memory offsets for the flat filed coefficients \index{slsDetector::sharedSlsDetector@{sls\-Detector::shared\-Sls\-Detector}!fileIndex@{fileIndex}}
+\index{fileIndex@{fileIndex}!slsDetector::sharedSlsDetector@{sls\-Detector::shared\-Sls\-Detector}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}int \bf{sls\-Detector::shared\-Sls\-Detector::file\-Index}}\label{structslsDetector_1_1sharedSlsDetector_48bc3bbfc4292f81c490e73bb52d62e9}
+
+
+current index of the output file \index{slsDetector::sharedSlsDetector@{sls\-Detector::shared\-Sls\-Detector}!fileName@{fileName}}
+\index{fileName@{fileName}!slsDetector::sharedSlsDetector@{sls\-Detector::shared\-Sls\-Detector}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}char \bf{sls\-Detector::shared\-Sls\-Detector::file\-Name}[MAX\_\-STR\_\-LENGTH]}\label{structslsDetector_1_1sharedSlsDetector_5903fa90b0a18c4896082882a906aba0}
+
+
+name root of the output files \index{slsDetector::sharedSlsDetector@{sls\-Detector::shared\-Sls\-Detector}!filePath@{filePath}}
+\index{filePath@{filePath}!slsDetector::sharedSlsDetector@{sls\-Detector::shared\-Sls\-Detector}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}char \bf{sls\-Detector::shared\-Sls\-Detector::file\-Path}[MAX\_\-STR\_\-LENGTH]}\label{structslsDetector_1_1sharedSlsDetector_91b926344339e977f57954dcf0aef2fb}
+
+
+path of the output files \index{slsDetector::sharedSlsDetector@{sls\-Detector::shared\-Sls\-Detector}!fineOffset@{fineOffset}}
+\index{fineOffset@{fineOffset}!slsDetector::sharedSlsDetector@{sls\-Detector::shared\-Sls\-Detector}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}float \bf{sls\-Detector::shared\-Sls\-Detector::fine\-Offset}}\label{structslsDetector_1_1sharedSlsDetector_5ca5b4ba561ff03260d4734f17273287}
+
+
+beamline fine offset (of the order of mdeg, might be adjusted for each measurements) \index{slsDetector::sharedSlsDetector@{sls\-Detector::shared\-Sls\-Detector}!globalOffset@{globalOffset}}
+\index{globalOffset@{globalOffset}!slsDetector::sharedSlsDetector@{sls\-Detector::shared\-Sls\-Detector}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}float \bf{sls\-Detector::shared\-Sls\-Detector::global\-Offset}}\label{structslsDetector_1_1sharedSlsDetector_f4f3616855e8d7fa5a9a49774365497a}
+
+
+beamline offset (might be a few degrees beacuse of encoder offset - normally it is kept fixed for a long period of time) \index{slsDetector::sharedSlsDetector@{sls\-Detector::shared\-Sls\-Detector}!hostname@{hostname}}
+\index{hostname@{hostname}!slsDetector::sharedSlsDetector@{sls\-Detector::shared\-Sls\-Detector}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}char \bf{sls\-Detector::shared\-Sls\-Detector::hostname}[MAX\_\-STR\_\-LENGTH]}\label{structslsDetector_1_1sharedSlsDetector_bf7e3c0dca0810fbd1522e5885d9fe7a}
+
+
+is the hostname (or IP address) of the detector. needs to be set before startin the communication \index{slsDetector::sharedSlsDetector@{sls\-Detector::shared\-Sls\-Detector}!modoff@{modoff}}
+\index{modoff@{modoff}!slsDetector::sharedSlsDetector@{sls\-Detector::shared\-Sls\-Detector}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}int \bf{sls\-Detector::shared\-Sls\-Detector::modoff}}\label{structslsDetector_1_1sharedSlsDetector_6a69b2de8d6cde5155517ca71e47b693}
+
+
+memory offsets for the module structures \index{slsDetector::sharedSlsDetector@{sls\-Detector::shared\-Sls\-Detector}!myDetectorType@{myDetectorType}}
+\index{myDetectorType@{myDetectorType}!slsDetector::sharedSlsDetector@{sls\-Detector::shared\-Sls\-Detector}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}\bf{detector\-Type} \bf{sls\-Detector::shared\-Sls\-Detector::my\-Detector\-Type}}\label{structslsDetector_1_1sharedSlsDetector_5fcd4804cb224f455da374b25fe5f08a}
+
+
+detector type $\backslash$ see :: detector\-Type \index{slsDetector::sharedSlsDetector@{sls\-Detector::shared\-Sls\-Detector}!nAdcs@{nAdcs}}
+\index{nAdcs@{nAdcs}!slsDetector::sharedSlsDetector@{sls\-Detector::shared\-Sls\-Detector}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}int \bf{sls\-Detector::shared\-Sls\-Detector::n\-Adcs}}\label{structslsDetector_1_1sharedSlsDetector_f9e8b66bbe436f33191e876312ba0d2c}
+
+
+number of adcs per module \index{slsDetector::sharedSlsDetector@{sls\-Detector::shared\-Sls\-Detector}!nBadChans@{nBadChans}}
+\index{nBadChans@{nBadChans}!slsDetector::sharedSlsDetector@{sls\-Detector::shared\-Sls\-Detector}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}int \bf{sls\-Detector::shared\-Sls\-Detector::n\-Bad\-Chans}}\label{structslsDetector_1_1sharedSlsDetector_237f834b800df65a32fc4bc5cd714283}
+
+
+number of bad channels from bad channel list \index{slsDetector::sharedSlsDetector@{sls\-Detector::shared\-Sls\-Detector}!nBadFF@{nBadFF}}
+\index{nBadFF@{nBadFF}!slsDetector::sharedSlsDetector@{sls\-Detector::shared\-Sls\-Detector}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}int \bf{sls\-Detector::shared\-Sls\-Detector::n\-Bad\-FF}}\label{structslsDetector_1_1sharedSlsDetector_d117d6131cef782896adb054e6b00861}
+
+
+number of bad channels from flat field i.e. channels which read 0 in the flat field file \index{slsDetector::sharedSlsDetector@{sls\-Detector::shared\-Sls\-Detector}!nChans@{nChans}}
+\index{nChans@{nChans}!slsDetector::sharedSlsDetector@{sls\-Detector::shared\-Sls\-Detector}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}int \bf{sls\-Detector::shared\-Sls\-Detector::n\-Chans}}\label{structslsDetector_1_1sharedSlsDetector_7a47b57931d2ac0f31a9f334dd94d015}
+
+
+number of channels per chip \index{slsDetector::sharedSlsDetector@{sls\-Detector::shared\-Sls\-Detector}!nChips@{nChips}}
+\index{nChips@{nChips}!slsDetector::sharedSlsDetector@{sls\-Detector::shared\-Sls\-Detector}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}int \bf{sls\-Detector::shared\-Sls\-Detector::n\-Chips}}\label{structslsDetector_1_1sharedSlsDetector_e7a48224edcce55cb28ad9b1f1a4d4f7}
+
+
+number of chips per module \index{slsDetector::sharedSlsDetector@{sls\-Detector::shared\-Sls\-Detector}!nDacs@{nDacs}}
+\index{nDacs@{nDacs}!slsDetector::sharedSlsDetector@{sls\-Detector::shared\-Sls\-Detector}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}int \bf{sls\-Detector::shared\-Sls\-Detector::n\-Dacs}}\label{structslsDetector_1_1sharedSlsDetector_7ffc3b1b55e34c1705717e4c5aaac564}
+
+
+number of dacs per module \index{slsDetector::sharedSlsDetector@{sls\-Detector::shared\-Sls\-Detector}!nMod@{nMod}}
+\index{nMod@{nMod}!slsDetector::sharedSlsDetector@{sls\-Detector::shared\-Sls\-Detector}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}int \bf{sls\-Detector::shared\-Sls\-Detector::n\-Mod}[2]}\label{structslsDetector_1_1sharedSlsDetector_aadb7a55fa5aca830df32e41f7fff06d}
+
+
+number of installed modules of the detector (x and y directions) \index{slsDetector::sharedSlsDetector@{sls\-Detector::shared\-Sls\-Detector}!nModMax@{nModMax}}
+\index{nModMax@{nModMax}!slsDetector::sharedSlsDetector@{sls\-Detector::shared\-Sls\-Detector}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}int \bf{sls\-Detector::shared\-Sls\-Detector::n\-Mod\-Max}[2]}\label{structslsDetector_1_1sharedSlsDetector_001f1ce26646f9367038aca388ca8910}
+
+
+maximum number of modules of the detector (x and y directions) \index{slsDetector::sharedSlsDetector@{sls\-Detector::shared\-Sls\-Detector}!nMods@{nMods}}
+\index{nMods@{nMods}!slsDetector::sharedSlsDetector@{sls\-Detector::shared\-Sls\-Detector}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}int \bf{sls\-Detector::shared\-Sls\-Detector::n\-Mods}}\label{structslsDetector_1_1sharedSlsDetector_8380248ff063419cae1a4454a49f359f}
+
+
+number of modules ( n\-Mod[X]$\ast$n\-Mod[Y])\begin{Desc}
+\item[See also:]\doxyref{n\-Mod}{p.}{structslsDetector_1_1sharedSlsDetector_aadb7a55fa5aca830df32e41f7fff06d} \end{Desc}
+\index{slsDetector::sharedSlsDetector@{sls\-Detector::shared\-Sls\-Detector}!nModsMax@{nModsMax}}
+\index{nModsMax@{nModsMax}!slsDetector::sharedSlsDetector@{sls\-Detector::shared\-Sls\-Detector}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}int \bf{sls\-Detector::shared\-Sls\-Detector::n\-Mods\-Max}}\label{structslsDetector_1_1sharedSlsDetector_af9036fae1edd1a18ba311a903bc4fc6}
+
+
+maximum number of modules (n\-Mod\-Max[X]$\ast$n\-Mod\-Max[Y])\begin{Desc}
+\item[See also:]\doxyref{n\-Mod\-Max}{p.}{structslsDetector_1_1sharedSlsDetector_001f1ce26646f9367038aca388ca8910} \end{Desc}
+\index{slsDetector::sharedSlsDetector@{sls\-Detector::shared\-Sls\-Detector}!nROI@{nROI}}
+\index{nROI@{nROI}!slsDetector::sharedSlsDetector@{sls\-Detector::shared\-Sls\-Detector}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}int \bf{sls\-Detector::shared\-Sls\-Detector::n\-ROI}}\label{structslsDetector_1_1sharedSlsDetector_46728c000c681867e5b15f6eb6833e09}
+
+
+number of rois defined \index{slsDetector::sharedSlsDetector@{sls\-Detector::shared\-Sls\-Detector}!nTrimEn@{nTrimEn}}
+\index{nTrimEn@{nTrimEn}!slsDetector::sharedSlsDetector@{sls\-Detector::shared\-Sls\-Detector}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}int \bf{sls\-Detector::shared\-Sls\-Detector::n\-Trim\-En}}\label{structslsDetector_1_1sharedSlsDetector_5d7058d713cc890d7d469c44eab500e2}
+
+
+number of energies at which the detector has been trimmed (unused) \index{slsDetector::sharedSlsDetector@{sls\-Detector::shared\-Sls\-Detector}!numberOfPositions@{numberOfPositions}}
+\index{numberOfPositions@{numberOfPositions}!slsDetector::sharedSlsDetector@{sls\-Detector::shared\-Sls\-Detector}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}int \bf{sls\-Detector::shared\-Sls\-Detector::number\-Of\-Positions}}\label{structslsDetector_1_1sharedSlsDetector_0ffc59bdf1f5d82da8c35ba48fd5f36d}
+
+
+number of positions at which the detector should acquire \index{slsDetector::sharedSlsDetector@{sls\-Detector::shared\-Sls\-Detector}!roFlags@{roFlags}}
+\index{roFlags@{roFlags}!slsDetector::sharedSlsDetector@{sls\-Detector::shared\-Sls\-Detector}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}\bf{read\-Out\-Flags} \bf{sls\-Detector::shared\-Sls\-Detector::ro\-Flags}}\label{structslsDetector_1_1sharedSlsDetector_e1c715ce4ba56b71fc868078acd44243}
+
+
+readout flags \index{slsDetector::sharedSlsDetector@{sls\-Detector::shared\-Sls\-Detector}!roiLimits@{roiLimits}}
+\index{roiLimits@{roiLimits}!slsDetector::sharedSlsDetector@{sls\-Detector::shared\-Sls\-Detector}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}\bf{ROI} \bf{sls\-Detector::shared\-Sls\-Detector::roi\-Limits}[MAX\_\-ROIS]}\label{structslsDetector_1_1sharedSlsDetector_bfd660b175826b4bb6255baf356eb364}
+
+
+list of rois \index{slsDetector::sharedSlsDetector@{sls\-Detector::shared\-Sls\-Detector}!stopPort@{stopPort}}
+\index{stopPort@{stopPort}!slsDetector::sharedSlsDetector@{sls\-Detector::shared\-Sls\-Detector}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}int \bf{sls\-Detector::shared\-Sls\-Detector::stop\-Port}}\label{structslsDetector_1_1sharedSlsDetector_fc7fef330e7b7ce0cd7470572a5f27b0}
+
+
+is the port used to stop the acquisition normally it should not be changed \index{slsDetector::sharedSlsDetector@{sls\-Detector::shared\-Sls\-Detector}!tDead@{tDead}}
+\index{tDead@{tDead}!slsDetector::sharedSlsDetector@{sls\-Detector::shared\-Sls\-Detector}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}float \bf{sls\-Detector::shared\-Sls\-Detector::t\-Dead}}\label{structslsDetector_1_1sharedSlsDetector_8cb9a14f3eb2f280d0e57ee70a5e2f60}
+
+
+dead time (in ns) for rate corrections \index{slsDetector::sharedSlsDetector@{sls\-Detector::shared\-Sls\-Detector}!timerValue@{timerValue}}
+\index{timerValue@{timerValue}!slsDetector::sharedSlsDetector@{sls\-Detector::shared\-Sls\-Detector}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}int64\_\-t \bf{sls\-Detector::shared\-Sls\-Detector::timer\-Value}[MAX\_\-TIMERS]}\label{structslsDetector_1_1sharedSlsDetector_d731d48df5668aa86ce690e216e0c816}
+
+
+timer values \index{slsDetector::sharedSlsDetector@{sls\-Detector::shared\-Sls\-Detector}!trimDir@{trimDir}}
+\index{trimDir@{trimDir}!slsDetector::sharedSlsDetector@{sls\-Detector::shared\-Sls\-Detector}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}char \bf{sls\-Detector::shared\-Sls\-Detector::trim\-Dir}[MAX\_\-STR\_\-LENGTH]}\label{structslsDetector_1_1sharedSlsDetector_4a4421330a2c207e5da36e3739305915}
+
+
+path of the trimbits files \index{slsDetector::sharedSlsDetector@{sls\-Detector::shared\-Sls\-Detector}!trimEnergies@{trimEnergies}}
+\index{trimEnergies@{trimEnergies}!slsDetector::sharedSlsDetector@{sls\-Detector::shared\-Sls\-Detector}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}int \bf{sls\-Detector::shared\-Sls\-Detector::trim\-Energies}[100]}\label{structslsDetector_1_1sharedSlsDetector_fba642bc1dcd491913723a1a4f88e6f0}
+
+
+list of the energies at which the detector has been trimmed (unused) 
+
+The documentation for this struct was generated from the following file:\begin{CompactItemize}
+\item 
+sls\-Detector/\bf{sls\-Detector.h}\end{CompactItemize}

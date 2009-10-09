@@ -1,0 +1,126 @@
+\section{sls\-Detector/sls\-Detector.h File Reference}
+\label{slsDetector_8h}\index{slsDetector/slsDetector.h@{slsDetector/slsDetector.h}}
+{\tt \#include \char`\"{}My\-Socket\-TCP.h\char`\"{}}\par
+{\tt \#include $<$iostream$>$}\par
+{\tt \#include $<$fstream$>$}\par
+{\tt \#include $<$iomanip$>$}\par
+{\tt \#include $<$cstring$>$}\par
+{\tt \#include $<$string$>$}\par
+{\tt \#include $<$sstream$>$}\par
+{\tt \#include $<$queue$>$}\par
+{\tt \#include $<$pthread.h$>$}\par
+{\tt \#include $<$fcntl.h$>$}\par
+{\tt \#include $<$unistd.h$>$}\par
+{\tt \#include $<$sys/stat.h$>$}\par
+{\tt \#include $<$sys/types.h$>$}\par
+{\tt \#include $<$sys/uio.h$>$}\par
+{\tt \#include \char`\"{}sls\_\-detector\_\-defs.h\char`\"{}}\par
+\subsection*{Namespaces}
+\begin{CompactItemize}
+\item 
+namespace \bf{std}
+\end{CompactItemize}
+\subsection*{Classes}
+\begin{CompactItemize}
+\item 
+class \bf{sls\-Detector}
+\begin{CompactList}\small\item\em This is the base class for all SLS detector functionalities. \item\end{CompactList}\item 
+struct \bf{sls\-Detector::shared\-Sls\-Detector}
+\begin{CompactList}\small\item\em Structure allocated in shared memory to store detector settings and be accessed in parallel by several applications (take care of possible conflicts!). \item\end{CompactList}\end{CompactItemize}
+\subsection*{Defines}
+\begin{CompactItemize}
+\item 
+\#define \bf{MAX\_\-TIMERS}~10
+\item 
+\#define \bf{MAX\_\-ROIS}~100
+\item 
+\#define \bf{MAX\_\-BADCHANS}~2000
+\item 
+\#define \bf{MAXPOS}~50
+\item 
+\#define \bf{NMODMAXX}~24
+\item 
+\#define \bf{NMODMAXY}~24
+\item 
+\#define \bf{MAXMODS}~36
+\item 
+\#define \bf{NCHIPSMAX}~10
+\item 
+\#define \bf{NCHANSMAX}~65536
+\item 
+\#define \bf{NDACSMAX}~16
+\item 
+\#define \bf{DEFAULT\_\-HOSTNAME}~\char`\"{}localhost\char`\"{}
+\item 
+\#define \bf{DEFAULT\_\-SHM\_\-KEY}~5678
+\item 
+\#define \bf{default\-TDead}~\{170,90,750\}
+\end{CompactItemize}
+
+
+\subsection{Define Documentation}
+\index{slsDetector.h@{sls\-Detector.h}!DEFAULT_HOSTNAME@{DEFAULT\_\-HOSTNAME}}
+\index{DEFAULT_HOSTNAME@{DEFAULT\_\-HOSTNAME}!slsDetector.h@{sls\-Detector.h}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}\#define DEFAULT\_\-HOSTNAME~\char`\"{}localhost\char`\"{}}\label{slsDetector_8h_cbd0b3def6b58577376d5c5edbc1f8d1}
+
+
+\index{slsDetector.h@{sls\-Detector.h}!DEFAULT_SHM_KEY@{DEFAULT\_\-SHM\_\-KEY}}
+\index{DEFAULT_SHM_KEY@{DEFAULT\_\-SHM\_\-KEY}!slsDetector.h@{sls\-Detector.h}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}\#define DEFAULT\_\-SHM\_\-KEY~5678}\label{slsDetector_8h_c5cee1b5d2ab5671b3ec6e9ca2bf9fad}
+
+
+\index{slsDetector.h@{sls\-Detector.h}!defaultTDead@{defaultTDead}}
+\index{defaultTDead@{defaultTDead}!slsDetector.h@{sls\-Detector.h}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}\#define default\-TDead~\{170,90,750\}}\label{slsDetector_8h_082faba3de8ce8379e160e3067333d14}
+
+
+\index{slsDetector.h@{sls\-Detector.h}!MAX_BADCHANS@{MAX\_\-BADCHANS}}
+\index{MAX_BADCHANS@{MAX\_\-BADCHANS}!slsDetector.h@{sls\-Detector.h}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}\#define MAX\_\-BADCHANS~2000}\label{slsDetector_8h_458ac030ac964822b06ae7659da870df}
+
+
+\index{slsDetector.h@{sls\-Detector.h}!MAX_ROIS@{MAX\_\-ROIS}}
+\index{MAX_ROIS@{MAX\_\-ROIS}!slsDetector.h@{sls\-Detector.h}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}\#define MAX\_\-ROIS~100}\label{slsDetector_8h_4c84515c2af98fbe570b5201a1022103}
+
+
+\index{slsDetector.h@{sls\-Detector.h}!MAX_TIMERS@{MAX\_\-TIMERS}}
+\index{MAX_TIMERS@{MAX\_\-TIMERS}!slsDetector.h@{sls\-Detector.h}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}\#define MAX\_\-TIMERS~10}\label{slsDetector_8h_79fd3eac646964332ed33ec7dd40f208}
+
+
+\index{slsDetector.h@{sls\-Detector.h}!MAXMODS@{MAXMODS}}
+\index{MAXMODS@{MAXMODS}!slsDetector.h@{sls\-Detector.h}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}\#define MAXMODS~36}\label{slsDetector_8h_86d84e5a6918e1cb1e2ecb75752e604a}
+
+
+\index{slsDetector.h@{sls\-Detector.h}!MAXPOS@{MAXPOS}}
+\index{MAXPOS@{MAXPOS}!slsDetector.h@{sls\-Detector.h}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}\#define MAXPOS~50}\label{slsDetector_8h_361088f7869d8e7c123b003e817915a5}
+
+
+\index{slsDetector.h@{sls\-Detector.h}!NCHANSMAX@{NCHANSMAX}}
+\index{NCHANSMAX@{NCHANSMAX}!slsDetector.h@{sls\-Detector.h}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}\#define NCHANSMAX~65536}\label{slsDetector_8h_1796142de2f82d4c3e10632bddde99f7}
+
+
+\index{slsDetector.h@{sls\-Detector.h}!NCHIPSMAX@{NCHIPSMAX}}
+\index{NCHIPSMAX@{NCHIPSMAX}!slsDetector.h@{sls\-Detector.h}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}\#define NCHIPSMAX~10}\label{slsDetector_8h_13d24767ba1933e7367908de888f831a}
+
+
+\index{slsDetector.h@{sls\-Detector.h}!NDACSMAX@{NDACSMAX}}
+\index{NDACSMAX@{NDACSMAX}!slsDetector.h@{sls\-Detector.h}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}\#define NDACSMAX~16}\label{slsDetector_8h_4460877d434c3a8731bb4beb20a2e256}
+
+
+\index{slsDetector.h@{sls\-Detector.h}!NMODMAXX@{NMODMAXX}}
+\index{NMODMAXX@{NMODMAXX}!slsDetector.h@{sls\-Detector.h}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}\#define NMODMAXX~24}\label{slsDetector_8h_21b1e82005e7fb5d8c0539e47ae25b01}
+
+
+\index{slsDetector.h@{sls\-Detector.h}!NMODMAXY@{NMODMAXY}}
+\index{NMODMAXY@{NMODMAXY}!slsDetector.h@{sls\-Detector.h}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}\#define NMODMAXY~24}\label{slsDetector_8h_4454335271010cc7a932117cbf3f1be1}
+
+

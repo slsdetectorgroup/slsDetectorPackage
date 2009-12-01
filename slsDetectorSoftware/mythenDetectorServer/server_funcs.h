@@ -61,6 +61,7 @@ int get_time_left(int);
 int set_dynamic_range(int);
 int set_roi(int);
 int get_roi(int);
+int set_speed(int);
 int set_readout_flags(int);
 int execute_trimming(int);
 

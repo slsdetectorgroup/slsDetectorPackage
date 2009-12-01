@@ -249,9 +249,14 @@ int mythenDetector::writeConfigurationFile(string const fname){
      It should be possible to dump all the settings of the detector (including trimbits, threshold energy, gating/triggering, acquisition time etc.
      in a file and retrieve it for repeating the measurement with identicals ettings, if necessary
   */
-/*  int mythenDetector::dumpDetectorSetup(string fname){};
-  int mythenDetector::retrieveDetectorSetup(string fname){};
-*/
+int mythenDetector::dumpDetectorSetup(string fname){
+  cout << "Function not yet implemented " << endl;
+};
+  int mythenDetector::retrieveDetectorSetup(string fname){
+  cout << "Function not yet implemented " << endl;
+
+};
+
 
 
 
@@ -688,9 +693,12 @@ int mythenDetector::readCalibrationFile(string fname, float &gain, float &offset
   }
   return 0;
 };
-/*
-int mythenDetector::writeCalibrationFile(string fname, float gain, float offset){};
-*/
+
+int mythenDetector::writeCalibrationFile(string fname, float gain, float offset){
+  cout << "Function not yet implemented " << endl;
+};
+
+
   /* Communication to server */
 
 
@@ -953,25 +961,25 @@ void  mythenDetector::acquire(){
       go_to_position (thisDetector->detPositions[ip]);
       currentPositionIndex=ip+1;
     }
-    //write header before?
-    startAndReadAll();
     if (thisDetector->correctionMask&(1<< I0_NORMALIZATION))
       currentI0=get_i0();
+    //write header before?
+    startAndReadAll();
     //write header after?
+    if (thisDetector->correctionMask&(1<< I0_NORMALIZATION))
+      currentI0=get_i0();
     if (thisDetector->correctionMask&(1<< ANGULAR_CONVERSION))
       currentPosition=get_position();
-    
     processData(); 
   }
 }
 
 
-void* mythenDetector::processData() {
+void* mythenDetector::processData(int delflag) {
 
 
   int *myData;
   float *fdata;
-  //  float *dataout=new float[thisDetector->nChans*thisDetector->nChips*thisDetector->nMods];
   float *rcdata=NULL, *rcerr=NULL;
   float *ffcdata=NULL, *ffcerr=NULL;
   float *ang=NULL;
@@ -980,7 +988,9 @@ void* mythenDetector::processData() {
   int imod;
   int nb;
   int np;
-  while(1) {
+  detectorData *thisData;
+
+  //  while(1) { // ???????????????????????? this was needed in case of a thread....but one should take care of the position and run indexes!!!!!!
     
     
     if( !dataQueue.empty() ) {
@@ -1058,38 +1068,54 @@ void* mythenDetector::processData() {
 	      ang[ip]=angle(ip,currentPosition,thisDetector->fineOffset+thisDetector->globalOffset,thisDetector->angOff[imod].r_conversion,thisDetector->angOff[imod].center, thisDetector->angOff[imod].offset,thisDetector->angOff[imod].tilt,thisDetector->angDirection);
 	    }
 	    writeDataFile (createFileName().append(".dat"), ffcdata, ffcerr,ang);
-	    if (currentPositionIndex==thisDetector->numberOfPositions || (currentPositionIndex==0) {
+	    if ((currentPositionIndex==thisDetector->numberOfPositions) || (currentPositionIndex==0)) {
 	      
 	      np=finalizeMerging(mergingBins, mergingCounts,mergingErrors, mergingMultiplicity);
 	      
 	      /** file writing */
 	      currentPositionIndex++;
 	      writeDataFile (createFileName().append(".dat"),mergingCounts, mergingErrors, mergingBins,'f',np);
-	      
-	      delete [] mergingBins;
-	      delete [] mergingCounts;
-	      delete [] mergingErrors;
-	      delete [] mergingMultiplicity;
-	      thisDetector->fileIndex++;
+	      if (delflag) {
+		delete [] mergingBins;
+		delete [] mergingCounts;
+		delete [] mergingErrors;
+		delete [] mergingMultiplicity;
+	      } else {
+		thisData=new detectorData(mergingCounts,mergingErrors,mergingBins,thisDetector->fileIndex,createFileName().append(".dat"),np);
+		finalDataQueue.push(thisData);
+	      }
 
+	      thisDetector->fileIndex++;
 	    }
+	    
+	    if (ffcdata)
+	      delete [] ffcdata;
+	    if (ffcerr)
+	      delete [] ffcerr;
+	    if (ang)
+	      delete [] ang;
 	    //}
-	  
+	    
 	} else {
 	  writeDataFile (createFileName().append(".dat"), ffcdata, ffcerr);
+	  if (delflag) {
+	    if (ffcdata)
+	      delete [] ffcdata;
+	    if (ffcerr)
+	      delete [] ffcerr;
+	    if (ang)
+	      delete [] ang;
+	  } else {
+	    thisData=new detectorData(ffcdata,ffcerr,NULL,thisDetector->fileIndex,createFileName().append(".dat"));
+	    finalDataQueue.push(thisData);   
+	  }  
 	  thisDetector->fileIndex++;
 	}
-
-	if (ffcdata)
-	  delete [] ffcdata;
-	if (ffcerr)
-	  delete [] ffcerr;
-	if (ang)
-	  delete [] ang;
 	
+
       }
     }
-  }
+    //  } // ????????????????????????
 }
 
 

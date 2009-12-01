@@ -114,6 +114,7 @@ int function_table() {
   flist[F_GET_TIME_LEFT]=&get_time_left;
   flist[F_SET_DYNAMIC_RANGE]=&set_dynamic_range;
   flist[F_SET_ROI]=&set_roi;
+  flist[F_SET_SPEED]=&set_speed;
   flist[F_SET_READOUT_FLAGS]=&set_readout_flags;
   flist[F_EXECUTE_TRIMMING]=&execute_trimming;
 #ifdef VERBOSE
@@ -1998,6 +1999,65 @@ int get_roi(int fnum) {
 
   return FAIL;
 }
+
+int set_speed(int fnum) {
+
+  enum speedVariable arg;
+  int val, n;
+  int ret=OK;
+  int retval;
+  
+  sprintf(mess,"can't set speed variable\n");
+  
+
+  n = receiveDataOnly(&arg,sizeof(arg));
+  if (n < 0) {
+    sprintf(mess,"Error reading from socket\n");
+    ret=FAIL;
+  }
+   n = receiveDataOnly(&val,sizeof(val));
+   if (n < 0) {
+     sprintf(mess,"Error reading from socket\n");
+     ret=FAIL;
+   }
+  
+#ifdef VERBOSE
+   printf("setting speed variable %d  to %d\n",arg,val);
+#endif 
+  if (ret==OK) {
+    switch (arg) {
+    case CLOCK_DIVIDER:
+      if (val>0)
+	retval=setClockDivider(val);
+      else
+	retval=getClockDivider();
+      break;
+    case WAIT_STATES:
+      if (val>0)
+	retval=setWaitStates(val);
+      else
+	retval=getWaitStates();
+      break;
+    case SET_SIGNAL_LENGTH:
+      if (val>0)
+	retval=setSetLength(val);
+      else
+	retval=getSetLength();
+      break;
+    default:
+      ret=FAIL;
+    }
+  }
+  n = sendDataOnly(&ret,sizeof(ret));
+  if (ret!=OK) {
+    n = sendDataOnly(mess,strlen(mess)+1);
+  } else {
+    n = sendDataOnly(&retval,sizeof(retval));
+  }
+  return ret; 
+}
+
+
 
 int set_readout_flags(int fnum) {
 

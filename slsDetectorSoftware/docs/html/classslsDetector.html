@@ -202,6 +202,8 @@
 
 <tr><td class="memItemLeft" nowrap align="right" valign="top">int *&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classslsDetector.html#ee85bddb6aa7b37c99f1397112e6c8b6">popDataQueue</a> ()</td></tr>
 
+<tr><td class="memItemLeft" nowrap align="right" valign="top"><a class="el" href="classdetectorData.html">detectorData</a> *&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classslsDetector.html#1f8b5d695dbf8865665261a02ced3238">popFinalDataQueue</a> ()</td></tr>
+
 <tr><td class="memItemLeft" nowrap align="right" valign="top">int64_t&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classslsDetector.html#b78e1d801e92a9f5a06008d9e9731549">setTimer</a> (<a class="el" href="sls__detector__defs_8h.html#07c87ebf35dffccd06fe39859a3ca603">timerIndex</a> index, int64_t t=-1)</td></tr>
 
 <tr><td class="memItemLeft" nowrap align="right" valign="top">int64_t&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classslsDetector.html#61f072fcaf0a359148f52ea34769c846">getTimeLeft</a> (<a class="el" href="sls__detector__defs_8h.html#07c87ebf35dffccd06fe39859a3ca603">timerIndex</a> index)</td></tr>
@@ -218,17 +220,17 @@
 
 <tr><td class="memItemLeft" nowrap align="right" valign="top">int&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classslsDetector.html#b4e2c11303714d5e62b4fcc22f829d8f">setFlatFieldCorrection</a> (string fname=&quot;&quot;)</td></tr>
 
-<tr><td class="memItemLeft" nowrap align="right" valign="top">int&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classslsDetector.html#af22c79193907e364c6db97f5e55b9fd">getFlatFieldCorrections</a> (float *corr=NULL, float *ecorr=NULL)</td></tr>
+<tr><td class="memItemLeft" nowrap align="right" valign="top">int&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classslsDetector.html#062700a0470f96b20ba842bcd6aa9b63">getFlatFieldCorrection</a> (float *corr=NULL, float *ecorr=NULL)</td></tr>
 
 <tr><td class="memItemLeft" nowrap align="right" valign="top">int&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classslsDetector.html#c89f7fc9f9255e573e34f8d3dadf38af">setRateCorrection</a> (float t=0)</td></tr>
 
-<tr><td class="memItemLeft" nowrap align="right" valign="top">int&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classslsDetector.html#6e6212f4bbe0c5df253ec9c535c3f9b1">getRateCorrections</a> (float &amp;t)</td></tr>
+<tr><td class="memItemLeft" nowrap align="right" valign="top">int&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classslsDetector.html#b997c9997d91725bec43254e6d05191a">getRateCorrection</a> (float &amp;t)</td></tr>
 
-<tr><td class="memItemLeft" nowrap align="right" valign="top">int&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classslsDetector.html#7606366a3cbe280c90dc659036814697">getRateCorrections</a> ()</td></tr>
+<tr><td class="memItemLeft" nowrap align="right" valign="top">int&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classslsDetector.html#c7a659ab136c9e5ece059fc9356c6a91">getRateCorrection</a> ()</td></tr>
 
 <tr><td class="memItemLeft" nowrap align="right" valign="top">int&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classslsDetector.html#45833eb571b8cb20225f4046e2a17e5a">setBadChannelCorrection</a> (string fname=&quot;&quot;)</td></tr>
 
-<tr><td class="memItemLeft" nowrap align="right" valign="top">int&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classslsDetector.html#f80db913b55026bb69d35585b08729cc">getBadChannelCorrections</a> (int *bad=NULL)</td></tr>
+<tr><td class="memItemLeft" nowrap align="right" valign="top">int&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classslsDetector.html#62f84759c85d7f4323bb34bf2a4dc5c5">getBadChannelCorrection</a> (int *bad=NULL)</td></tr>
 
 <tr><td class="memItemLeft" nowrap align="right" valign="top">char *&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classslsDetector.html#0b562f90b64c80e3eb64e9e2153bb234">getBadChannelCorrectionFile</a> ()</td></tr>
 
@@ -272,13 +274,13 @@
 
 <tr><td class="memItemLeft" nowrap align="right" valign="top">int&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classslsDetector.html#466e9a65aa0b404c771d70c9f01af8b9">exitServer</a> ()</td></tr>
 
-<tr><td class="memItemLeft" nowrap align="right" valign="top">virtual void *&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classslsDetector.html#971d316af920fcb3ade98c486fe42c99">processData</a> ()=0</td></tr>
+<tr><td class="memItemLeft" nowrap align="right" valign="top">virtual void *&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classslsDetector.html#3e93c7da79e5f72e3a3c881aefdea5d3">processData</a> (int delflag=1)=0</td></tr>
 
 <tr><td class="memItemLeft" nowrap align="right" valign="top"><a class="el" href="structsls__detector__module.html">sls_detector_module</a> *&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classslsDetector.html#b1d4c6c01d1e10fe06bc83329410d4f4">createModule</a> ()</td></tr>
 
 <tr><td class="memItemLeft" nowrap align="right" valign="top">void&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classslsDetector.html#48984c8d058355c5249233165bf0c410">deleteModule</a> (<a class="el" href="structsls__detector__module.html">sls_detector_module</a> *myMod)</td></tr>
 
-<tr><td class="memItemLeft" nowrap align="right" valign="top">virtual void&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classslsDetector.html#d2ee30dfd50f06431dca4e4b9619f301">acquire</a> ()=0</td></tr>
+<tr><td class="memItemLeft" nowrap align="right" valign="top">virtual void&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classslsDetector.html#1af6548fd0d81d45909a5c805d4be7a8">acquire</a> (int delflag=1)=0</td></tr>
 
 <tr><td colspan="2"><br><h2>Protected Member Functions</h2></td></tr>
 <tr><td class="memItemLeft" nowrap align="right" valign="top">int *&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classslsDetector.html#b1982e89f8e8de63c807a707ccba594c">getDataFromDetector</a> ()</td></tr>
@@ -324,7 +326,7 @@
 
 <tr><td class="memItemLeft" nowrap align="right" valign="top">queue&lt; int * &gt;&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classslsDetector.html#52e9fe9baf37db001cdf58f982ab5dd6">dataQueue</a></td></tr>
 
-<tr><td class="memItemLeft" nowrap align="right" valign="top">pthread_t&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classslsDetector.html#8257cca09e23b601764e57f5a8bdaacd">dataProcessingThread</a></td></tr>
+<tr><td class="memItemLeft" nowrap align="right" valign="top">queue&lt; <a class="el" href="classdetectorData.html">detectorData</a> * &gt;&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classslsDetector.html#4ac6f49427b58349fe54fbaa4e16fa9c">finalDataQueue</a></td></tr>
 
 <tr><td class="memItemLeft" nowrap align="right" valign="top">float&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classslsDetector.html#9f64e866250e916299048c9816c9ef28">currentPosition</a></td></tr>
 
@@ -476,14 +478,15 @@ destructor
 </div>
 </div><p>
 <hr><h2>Member Function Documentation</h2>
-<a class="anchor" name="d2ee30dfd50f06431dca4e4b9619f301"></a><!-- doxytag: member="slsDetector::acquire" ref="d2ee30dfd50f06431dca4e4b9619f301" args="()=0" -->
+<a class="anchor" name="1af6548fd0d81d45909a5c805d4be7a8"></a><!-- doxytag: member="slsDetector::acquire" ref="1af6548fd0d81d45909a5c805d4be7a8" args="(int delflag=1)=0" -->
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
           <td class="memname">virtual void slsDetector::acquire           </td>
           <td>(</td>
-          <td class="paramname">          </td>
+          <td class="paramtype">int&nbsp;</td>
+          <td class="paramname"> <em>delflag</em> = <code>1</code>          </td>
           <td>&nbsp;)&nbsp;</td>
           <td width="100%"><code> [pure virtual]</code></td>
         </tr>
@@ -496,10 +499,10 @@ pure virtual function performs the complete acquisition and data processing move
  starts and reads the detector <br>
  reads the IC (if required) <br>
  reads the encoder (iof required for angualr conversion) <br>
- processes the data (flat field, rate, angular conversion and merging processData()) <dl compact><dt><b>See also:</b></dt><dd><a class="el" href="classmythenDetector.html#bb3d2f51a414cf9dace29a4b5676828f">mythenDetector::acquire()</a> </dd></dl>
+ processes the data (flat field, rate, angular conversion and merging processData()) /param delflag if 1 the data are processed, written to file and then deleted. If 0 they are added to the finalDataQueue <dl compact><dt><b>See also:</b></dt><dd><a class="el" href="classmythenDetector.html#f393765b5a3d5f8f05251116f38d52dd">mythenDetector::acquire()</a> </dd></dl>
 
 <p>
-Implemented in <a class="el" href="classmythenDetector.html#bb3d2f51a414cf9dace29a4b5676828f">mythenDetector</a>.
+Implemented in <a class="el" href="classmythenDetector.html#f393765b5a3d5f8f05251116f38d52dd">mythenDetector</a>.
 </div>
 </div><p>
 <a class="anchor" name="feb8730f24292620e5d451cd2d4bb9cd"></a><!-- doxytag: member="slsDetector::addToMerging" ref="feb8730f24292620e5d451cd2d4bb9cd" args="(float *p1, float *v1, float *e1, float *mp, float *mv, float *me, int *mm)=0" -->
@@ -1238,31 +1241,12 @@ pure virtual function get angular conversion <dl compact><dt><b>Parameters:</b><
 Implemented in <a class="el" href="classmythenDetector.html#b2b2f17c36883323ad0abf762c63494f">mythenDetector</a>.
 </div>
 </div><p>
-<a class="anchor" name="0b562f90b64c80e3eb64e9e2153bb234"></a><!-- doxytag: member="slsDetector::getBadChannelCorrectionFile" ref="0b562f90b64c80e3eb64e9e2153bb234" args="()" -->
+<a class="anchor" name="62f84759c85d7f4323bb34bf2a4dc5c5"></a><!-- doxytag: member="slsDetector::getBadChannelCorrection" ref="62f84759c85d7f4323bb34bf2a4dc5c5" args="(int *bad=NULL)" -->
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">char* slsDetector::getBadChannelCorrectionFile           </td>
-          <td>(</td>
-          <td class="paramname">          </td>
-          <td>&nbsp;)&nbsp;</td>
-          <td width="100%"><code> [inline]</code></td>
-        </tr>
-      </table>
-</div>
-<div class="memdoc">
-
-<p>
-returns the bad channel list file 
-</div>
-</div><p>
-<a class="anchor" name="f80db913b55026bb69d35585b08729cc"></a><!-- doxytag: member="slsDetector::getBadChannelCorrections" ref="f80db913b55026bb69d35585b08729cc" args="(int *bad=NULL)" -->
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">int slsDetector::getBadChannelCorrections           </td>
+          <td class="memname">int slsDetector::getBadChannelCorrection           </td>
           <td>(</td>
           <td class="paramtype">int *&nbsp;</td>
           <td class="paramname"> <em>bad</em> = <code>NULL</code>          </td>
@@ -1281,6 +1265,25 @@ get bad channels correction <dl compact><dt><b>Parameters:</b></dt><dd>
 </dl>
 <dl compact><dt><b>Returns:</b></dt><dd>0 if bad channel disabled or no bad channels, &gt;0 otherwise </dd></dl>
 
+</div>
+</div><p>
+<a class="anchor" name="0b562f90b64c80e3eb64e9e2153bb234"></a><!-- doxytag: member="slsDetector::getBadChannelCorrectionFile" ref="0b562f90b64c80e3eb64e9e2153bb234" args="()" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">char* slsDetector::getBadChannelCorrectionFile           </td>
+          <td>(</td>
+          <td class="paramname">          </td>
+          <td>&nbsp;)&nbsp;</td>
+          <td width="100%"><code> [inline]</code></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>
+returns the bad channel list file 
 </div>
 </div><p>
 <a class="anchor" name="7d83754e3f41042caa9297da9a33b714"></a><!-- doxytag: member="slsDetector::getBinSize" ref="7d83754e3f41042caa9297da9a33b714" args="()=0" -->
@@ -1593,12 +1596,12 @@ pure virtual function get detector fine offset <dl compact><dt><b>See also:</b><
 Implemented in <a class="el" href="classmythenDetector.html#00720f1445f3f301fa3316828d978de6">mythenDetector</a>.
 </div>
 </div><p>
-<a class="anchor" name="af22c79193907e364c6db97f5e55b9fd"></a><!-- doxytag: member="slsDetector::getFlatFieldCorrections" ref="af22c79193907e364c6db97f5e55b9fd" args="(float *corr=NULL, float *ecorr=NULL)" -->
+<a class="anchor" name="062700a0470f96b20ba842bcd6aa9b63"></a><!-- doxytag: member="slsDetector::getFlatFieldCorrection" ref="062700a0470f96b20ba842bcd6aa9b63" args="(float *corr=NULL, float *ecorr=NULL)" -->
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">int slsDetector::getFlatFieldCorrections           </td>
+          <td class="memname">int slsDetector::getFlatFieldCorrection           </td>
           <td>(</td>
           <td class="paramtype">float *&nbsp;</td>
           <td class="paramname"> <em>corr</em> = <code>NULL</code>, </td>
@@ -1788,12 +1791,12 @@ pure virtual function get positions for the acquisition <dl compact><dt><b>Param
 Implemented in <a class="el" href="classmythenDetector.html#0d306720dced0d3576474978b06b4be4">mythenDetector</a>.
 </div>
 </div><p>
-<a class="anchor" name="7606366a3cbe280c90dc659036814697"></a><!-- doxytag: member="slsDetector::getRateCorrections" ref="7606366a3cbe280c90dc659036814697" args="()" -->
+<a class="anchor" name="c7a659ab136c9e5ece059fc9356c6a91"></a><!-- doxytag: member="slsDetector::getRateCorrection" ref="c7a659ab136c9e5ece059fc9356c6a91" args="()" -->
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">int slsDetector::getRateCorrections           </td>
+          <td class="memname">int slsDetector::getRateCorrection           </td>
           <td>(</td>
           <td class="paramname">          </td>
           <td>&nbsp;)&nbsp;</td>
@@ -1808,12 +1811,12 @@ get rate correction <dl compact><dt><b>Returns:</b></dt><dd>0 if rate correction
 
 </div>
 </div><p>
-<a class="anchor" name="6e6212f4bbe0c5df253ec9c535c3f9b1"></a><!-- doxytag: member="slsDetector::getRateCorrections" ref="6e6212f4bbe0c5df253ec9c535c3f9b1" args="(float &amp;t)" -->
+<a class="anchor" name="b997c9997d91725bec43254e6d05191a"></a><!-- doxytag: member="slsDetector::getRateCorrection" ref="b997c9997d91725bec43254e6d05191a" args="(float &amp;t)" -->
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">int slsDetector::getRateCorrections           </td>
+          <td class="memname">int slsDetector::getRateCorrection           </td>
           <td>(</td>
           <td class="paramtype">float &amp;&nbsp;</td>
           <td class="paramname"> <em>t</em>          </td>
@@ -2184,14 +2187,36 @@ pops the data from the data queue <dl compact><dt><b>Returns:</b></dt><dd>pointe
 
 </div>
 </div><p>
-<a class="anchor" name="971d316af920fcb3ade98c486fe42c99"></a><!-- doxytag: member="slsDetector::processData" ref="971d316af920fcb3ade98c486fe42c99" args="()=0" -->
+<a class="anchor" name="1f8b5d695dbf8865665261a02ced3238"></a><!-- doxytag: member="slsDetector::popFinalDataQueue" ref="1f8b5d695dbf8865665261a02ced3238" args="()" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="classdetectorData.html">detectorData</a> * slsDetector::popFinalDataQueue           </td>
+          <td>(</td>
+          <td class="paramname">          </td>
+          <td>&nbsp;)&nbsp;</td>
+          <td width="100%"></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>
+pops the data from thepostprocessed data queue <dl compact><dt><b>Returns:</b></dt><dd>pointer to the popped data or NULL if the queue is empty. </dd></dl>
+<dl compact><dt><b>See also:</b></dt><dd><a class="el" href="classslsDetector.html#4ac6f49427b58349fe54fbaa4e16fa9c">finalDataQueue</a> </dd></dl>
+
+</div>
+</div><p>
+<a class="anchor" name="3e93c7da79e5f72e3a3c881aefdea5d3"></a><!-- doxytag: member="slsDetector::processData" ref="3e93c7da79e5f72e3a3c881aefdea5d3" args="(int delflag=1)=0" -->
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
           <td class="memname">virtual void* slsDetector::processData           </td>
           <td>(</td>
-          <td class="paramname">          </td>
+          <td class="paramtype">int&nbsp;</td>
+          <td class="paramname"> <em>delflag</em> = <code>1</code>          </td>
           <td>&nbsp;)&nbsp;</td>
           <td width="100%"><code> [pure virtual]</code></td>
         </tr>
@@ -2200,10 +2225,10 @@ pops the data from the data queue <dl compact><dt><b>Returns:</b></dt><dd>pointe
 <div class="memdoc">
 
 <p>
-pure virtual function function for processing data <dl compact><dt><b>See also:</b></dt><dd><a class="el" href="classmythenDetector.html#b5416cb00251f95fc3661936c3cbb1c4">mythenDetector::processData</a> </dd></dl>
+pure virtual function function for processing data /param delflag if 1 the data are processed, written to file and then deleted. If 0 they are added to the finalDataQueue <dl compact><dt><b>See also:</b></dt><dd><a class="el" href="classmythenDetector.html#2555fc046cd8d5ba7116003ad4027112">mythenDetector::processData</a> </dd></dl>
 
 <p>
-Implemented in <a class="el" href="classmythenDetector.html#b5416cb00251f95fc3661936c3cbb1c4">mythenDetector</a>.
+Implemented in <a class="el" href="classmythenDetector.html#2555fc046cd8d5ba7116003ad4027112">mythenDetector</a>.
 </div>
 </div><p>
 <a class="anchor" name="518feacfa3a1d6156779f8eaacdf86d3"></a><!-- doxytag: member="slsDetector::rateCorrect" ref="518feacfa3a1d6156779f8eaacdf86d3" args="(float *datain, float *errin, float *dataout, float *errout)" -->
@@ -4464,21 +4489,6 @@ current position index of the detector
 pointer to dac valuse 
 </div>
 </div><p>
-<a class="anchor" name="8257cca09e23b601764e57f5a8bdaacd"></a><!-- doxytag: member="slsDetector::dataProcessingThread" ref="8257cca09e23b601764e57f5a8bdaacd" args="" -->
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">pthread_t <a class="el" href="classslsDetector.html#8257cca09e23b601764e57f5a8bdaacd">slsDetector::dataProcessingThread</a><code> [protected]</code>          </td>
-        </tr>
-      </table>
-</div>
-<div class="memdoc">
-
-<p>
-data processing thread??? 
-</div>
-</div><p>
 <a class="anchor" name="52e9fe9baf37db001cdf58f982ab5dd6"></a><!-- doxytag: member="slsDetector::dataQueue" ref="52e9fe9baf37db001cdf58f982ab5dd6" args="" -->
 <div class="memitem">
 <div class="memproto">
@@ -4567,6 +4577,21 @@ pointer to flat field coefficients
 
 <p>
 pointer to flat field coefficient errors 
+</div>
+</div><p>
+<a class="anchor" name="4ac6f49427b58349fe54fbaa4e16fa9c"></a><!-- doxytag: member="slsDetector::finalDataQueue" ref="4ac6f49427b58349fe54fbaa4e16fa9c" args="" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">queue&lt;<a class="el" href="classdetectorData.html">detectorData</a>*&gt; <a class="el" href="classslsDetector.html#4ac6f49427b58349fe54fbaa4e16fa9c">slsDetector::finalDataQueue</a><code> [protected]</code>          </td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>
+queue containing the postprocessed data 
 </div>
 </div><p>
 <a class="anchor" name="81751fd6e87f9659a8b6afe13efec2cf"></a><!-- doxytag: member="slsDetector::mergingBins" ref="81751fd6e87f9659a8b6afe13efec2cf" args="" -->
@@ -4692,7 +4717,7 @@ address of the detector structure in shared memory
 </div><p>
 <hr>The documentation for this class was generated from the following files:<ul>
 <li>slsDetector/<a class="el" href="slsDetector_8h-source.html">slsDetector.h</a><li>slsDetector/<a class="el" href="slsDetector_8cpp.html">slsDetector.cpp</a></ul>
-<hr size="1"><address style="align: right;"><small>Generated on Tue Dec 1 10:56:45 2009 by&nbsp;
+<hr size="1"><address style="align: right;"><small>Generated on Tue Dec 1 15:31:44 2009 by&nbsp;
 <a href="http://www.doxygen.org/index.html">
 <img src="doxygen.png" alt="doxygen" align="middle" border="0"></a> 1.4.7 </small></address>
 </body>

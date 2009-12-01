@@ -184,6 +184,8 @@ int $\ast$ \bf{read\-All} ()
 \item 
 int $\ast$ \bf{pop\-Data\-Queue} ()
 \item 
+\bf{detector\-Data} $\ast$ \bf{pop\-Final\-Data\-Queue} ()
+\item 
 int64\_\-t \bf{set\-Timer} (\bf{timer\-Index} index, int64\_\-t t=-1)
 \item 
 int64\_\-t \bf{get\-Time\-Left} (\bf{timer\-Index} index)
@@ -200,17 +202,17 @@ int \bf{execute\-Trimming} (\bf{trim\-Mode} mode, int par1, int par2, int imod=-
 \item 
 int \bf{set\-Flat\-Field\-Correction} (string fname=\char`\"{}\char`\"{})
 \item 
-int \bf{get\-Flat\-Field\-Corrections} (float $\ast$corr=NULL, float $\ast$ecorr=NULL)
+int \bf{get\-Flat\-Field\-Correction} (float $\ast$corr=NULL, float $\ast$ecorr=NULL)
 \item 
 int \bf{set\-Rate\-Correction} (float t=0)
 \item 
-int \bf{get\-Rate\-Corrections} (float \&t)
+int \bf{get\-Rate\-Correction} (float \&t)
 \item 
-int \bf{get\-Rate\-Corrections} ()
+int \bf{get\-Rate\-Correction} ()
 \item 
 int \bf{set\-Bad\-Channel\-Correction} (string fname=\char`\"{}\char`\"{})
 \item 
-int \bf{get\-Bad\-Channel\-Corrections} (int $\ast$bad=NULL)
+int \bf{get\-Bad\-Channel\-Correction} (int $\ast$bad=NULL)
 \item 
 char $\ast$ \bf{get\-Bad\-Channel\-Correction\-File} ()
 \item 
@@ -254,13 +256,13 @@ int \bf{finalize\-Merging} (float $\ast$mp, float $\ast$mv, float $\ast$me, int 
 \item 
 int \bf{exit\-Server} ()
 \item 
-virtual void $\ast$ \bf{process\-Data} ()=0
+virtual void $\ast$ \bf{process\-Data} (int delflag=1)=0
 \item 
 \bf{sls\_\-detector\_\-module} $\ast$ \bf{create\-Module} ()
 \item 
 void \bf{delete\-Module} (\bf{sls\_\-detector\_\-module} $\ast$my\-Mod)
 \item 
-virtual void \bf{acquire} ()=0
+virtual void \bf{acquire} (int delflag=1)=0
 \end{CompactItemize}
 \subsection*{Protected Member Functions}
 \begin{CompactItemize}
@@ -310,7 +312,7 @@ int \bf{shm\-Id}
 \item 
 queue$<$ int $\ast$ $>$ \bf{data\-Queue}
 \item 
-pthread\_\-t \bf{data\-Processing\-Thread}
+queue$<$ \bf{detector\-Data} $\ast$ $>$ \bf{final\-Data\-Queue}
 \item 
 float \bf{current\-Position}
 \item 
@@ -423,18 +425,18 @@ destructor
 \subsection{Member Function Documentation}
 \index{slsDetector@{sls\-Detector}!acquire@{acquire}}
 \index{acquire@{acquire}!slsDetector@{sls\-Detector}}
-\subsubsection{\setlength{\rightskip}{0pt plus 5cm}virtual void sls\-Detector::acquire ()\hspace{0.3cm}{\tt  [pure virtual]}}\label{classslsDetector_d2ee30dfd50f06431dca4e4b9619f301}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}virtual void sls\-Detector::acquire (int {\em delflag} = {\tt 1})\hspace{0.3cm}{\tt  [pure virtual]}}\label{classslsDetector_1af6548fd0d81d45909a5c805d4be7a8}
 
 
 pure virtual function performs the complete acquisition and data processing moves the detector to next position \par
  starts and reads the detector \par
  reads the IC (if required) \par
  reads the encoder (iof required for angualr conversion) \par
- processes the data (flat field, rate, angular conversion and merging process\-Data()) \begin{Desc}
-\item[See also:]\doxyref{mythen\-Detector::acquire()}{p.}{classmythenDetector_bb3d2f51a414cf9dace29a4b5676828f} \end{Desc}
+ processes the data (flat field, rate, angular conversion and merging process\-Data()) /param delflag if 1 the data are processed, written to file and then deleted. If 0 they are added to the final\-Data\-Queue \begin{Desc}
+\item[See also:]\doxyref{mythen\-Detector::acquire()}{p.}{classmythenDetector_f393765b5a3d5f8f05251116f38d52dd} \end{Desc}
 
 
-Implemented in \bf{mythen\-Detector} \doxyref{p.}{classmythenDetector_bb3d2f51a414cf9dace29a4b5676828f}.\index{slsDetector@{sls\-Detector}!addToMerging@{addToMerging}}
+Implemented in \bf{mythen\-Detector} \doxyref{p.}{classmythenDetector_f393765b5a3d5f8f05251116f38d52dd}.\index{slsDetector@{sls\-Detector}!addToMerging@{addToMerging}}
 \index{addToMerging@{addToMerging}!slsDetector@{sls\-Detector}}
 \subsubsection{\setlength{\rightskip}{0pt plus 5cm}virtual int sls\-Detector::add\-To\-Merging (float $\ast$ {\em p1}, float $\ast$ {\em v1}, float $\ast$ {\em e1}, float $\ast$ {\em mp}, float $\ast$ {\em mv}, float $\ast$ {\em me}, int $\ast$ {\em mm})\hspace{0.3cm}{\tt  [pure virtual]}}\label{classslsDetector_feb8730f24292620e5d451cd2d4bb9cd}
 
@@ -658,14 +660,9 @@ pure virtual function get angular conversion \begin{Desc}
 \item[See also:]\doxyref{mythen\-Detector::get\-Angular\-Conversion}{p.}{classmythenDetector_b2b2f17c36883323ad0abf762c63494f} \end{Desc}
 
 
-Implemented in \bf{mythen\-Detector} \doxyref{p.}{classmythenDetector_b2b2f17c36883323ad0abf762c63494f}.\index{slsDetector@{sls\-Detector}!getBadChannelCorrectionFile@{getBadChannelCorrectionFile}}
-\index{getBadChannelCorrectionFile@{getBadChannelCorrectionFile}!slsDetector@{sls\-Detector}}
-\subsubsection{\setlength{\rightskip}{0pt plus 5cm}char$\ast$ sls\-Detector::get\-Bad\-Channel\-Correction\-File ()\hspace{0.3cm}{\tt  [inline]}}\label{classslsDetector_0b562f90b64c80e3eb64e9e2153bb234}
-
-
-returns the bad channel list file \index{slsDetector@{sls\-Detector}!getBadChannelCorrections@{getBadChannelCorrections}}
-\index{getBadChannelCorrections@{getBadChannelCorrections}!slsDetector@{sls\-Detector}}
-\subsubsection{\setlength{\rightskip}{0pt plus 5cm}int sls\-Detector::get\-Bad\-Channel\-Corrections (int $\ast$ {\em bad} = {\tt NULL})}\label{classslsDetector_f80db913b55026bb69d35585b08729cc}
+Implemented in \bf{mythen\-Detector} \doxyref{p.}{classmythenDetector_b2b2f17c36883323ad0abf762c63494f}.\index{slsDetector@{sls\-Detector}!getBadChannelCorrection@{getBadChannelCorrection}}
+\index{getBadChannelCorrection@{getBadChannelCorrection}!slsDetector@{sls\-Detector}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}int sls\-Detector::get\-Bad\-Channel\-Correction (int $\ast$ {\em bad} = {\tt NULL})}\label{classslsDetector_62f84759c85d7f4323bb34bf2a4dc5c5}
 
 
 get bad channels correction \begin{Desc}
@@ -675,7 +672,12 @@ get bad channels correction \begin{Desc}
 \end{Desc}
 \begin{Desc}
 \item[Returns:]0 if bad channel disabled or no bad channels, $>$0 otherwise \end{Desc}
-\index{slsDetector@{sls\-Detector}!getBinSize@{getBinSize}}
+\index{slsDetector@{sls\-Detector}!getBadChannelCorrectionFile@{getBadChannelCorrectionFile}}
+\index{getBadChannelCorrectionFile@{getBadChannelCorrectionFile}!slsDetector@{sls\-Detector}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}char$\ast$ sls\-Detector::get\-Bad\-Channel\-Correction\-File ()\hspace{0.3cm}{\tt  [inline]}}\label{classslsDetector_0b562f90b64c80e3eb64e9e2153bb234}
+
+
+returns the bad channel list file \index{slsDetector@{sls\-Detector}!getBinSize@{getBinSize}}
 \index{getBinSize@{getBinSize}!slsDetector@{sls\-Detector}}
 \subsubsection{\setlength{\rightskip}{0pt plus 5cm}virtual float sls\-Detector::get\-Bin\-Size ()\hspace{0.3cm}{\tt  [pure virtual]}}\label{classslsDetector_7d83754e3f41042caa9297da9a33b714}
 
@@ -787,9 +789,9 @@ pure virtual function get detector fine offset \begin{Desc}
 \item[See also:]\doxyref{mythen\-Detector::get\-Fine\-Offset}{p.}{classmythenDetector_00720f1445f3f301fa3316828d978de6} \end{Desc}
 
 
-Implemented in \bf{mythen\-Detector} \doxyref{p.}{classmythenDetector_00720f1445f3f301fa3316828d978de6}.\index{slsDetector@{sls\-Detector}!getFlatFieldCorrections@{getFlatFieldCorrections}}
-\index{getFlatFieldCorrections@{getFlatFieldCorrections}!slsDetector@{sls\-Detector}}
-\subsubsection{\setlength{\rightskip}{0pt plus 5cm}int sls\-Detector::get\-Flat\-Field\-Corrections (float $\ast$ {\em corr} = {\tt NULL}, float $\ast$ {\em ecorr} = {\tt NULL})}\label{classslsDetector_af22c79193907e364c6db97f5e55b9fd}
+Implemented in \bf{mythen\-Detector} \doxyref{p.}{classmythenDetector_00720f1445f3f301fa3316828d978de6}.\index{slsDetector@{sls\-Detector}!getFlatFieldCorrection@{getFlatFieldCorrection}}
+\index{getFlatFieldCorrection@{getFlatFieldCorrection}!slsDetector@{sls\-Detector}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}int sls\-Detector::get\-Flat\-Field\-Correction (float $\ast$ {\em corr} = {\tt NULL}, float $\ast$ {\em ecorr} = {\tt NULL})}\label{classslsDetector_062700a0470f96b20ba842bcd6aa9b63}
 
 
 get flat field corrections \begin{Desc}
@@ -867,16 +869,16 @@ pure virtual function get positions for the acquisition \begin{Desc}
 \item[See also:]\doxyref{mythen\-Detector::get\-Positions}{p.}{classmythenDetector_0d306720dced0d3576474978b06b4be4} \end{Desc}
 
 
-Implemented in \bf{mythen\-Detector} \doxyref{p.}{classmythenDetector_0d306720dced0d3576474978b06b4be4}.\index{slsDetector@{sls\-Detector}!getRateCorrections@{getRateCorrections}}
-\index{getRateCorrections@{getRateCorrections}!slsDetector@{sls\-Detector}}
-\subsubsection{\setlength{\rightskip}{0pt plus 5cm}int sls\-Detector::get\-Rate\-Corrections ()}\label{classslsDetector_7606366a3cbe280c90dc659036814697}
+Implemented in \bf{mythen\-Detector} \doxyref{p.}{classmythenDetector_0d306720dced0d3576474978b06b4be4}.\index{slsDetector@{sls\-Detector}!getRateCorrection@{getRateCorrection}}
+\index{getRateCorrection@{getRateCorrection}!slsDetector@{sls\-Detector}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}int sls\-Detector::get\-Rate\-Correction ()}\label{classslsDetector_c7a659ab136c9e5ece059fc9356c6a91}
 
 
 get rate correction \begin{Desc}
 \item[Returns:]0 if rate correction disabled, $>$0 otherwise \end{Desc}
-\index{slsDetector@{sls\-Detector}!getRateCorrections@{getRateCorrections}}
-\index{getRateCorrections@{getRateCorrections}!slsDetector@{sls\-Detector}}
-\subsubsection{\setlength{\rightskip}{0pt plus 5cm}int sls\-Detector::get\-Rate\-Corrections (float \& {\em t})}\label{classslsDetector_6e6212f4bbe0c5df253ec9c535c3f9b1}
+\index{slsDetector@{sls\-Detector}!getRateCorrection@{getRateCorrection}}
+\index{getRateCorrection@{getRateCorrection}!slsDetector@{sls\-Detector}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}int sls\-Detector::get\-Rate\-Correction (float \& {\em t})}\label{classslsDetector_b997c9997d91725bec43254e6d05191a}
 
 
 get rate correction \begin{Desc}
@@ -1095,16 +1097,25 @@ pops the data from the data queue \begin{Desc}
 \item[Returns:]pointer to the popped data or NULL if the queue is empty. \end{Desc}
 \begin{Desc}
 \item[See also:]\doxyref{data\-Queue}{p.}{classslsDetector_52e9fe9baf37db001cdf58f982ab5dd6} \end{Desc}
+\index{slsDetector@{sls\-Detector}!popFinalDataQueue@{popFinalDataQueue}}
+\index{popFinalDataQueue@{popFinalDataQueue}!slsDetector@{sls\-Detector}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}\bf{detector\-Data} $\ast$ sls\-Detector::pop\-Final\-Data\-Queue ()}\label{classslsDetector_1f8b5d695dbf8865665261a02ced3238}
+
+
+pops the data from thepostprocessed data queue \begin{Desc}
+\item[Returns:]pointer to the popped data or NULL if the queue is empty. \end{Desc}
+\begin{Desc}
+\item[See also:]\doxyref{final\-Data\-Queue}{p.}{classslsDetector_4ac6f49427b58349fe54fbaa4e16fa9c} \end{Desc}
 \index{slsDetector@{sls\-Detector}!processData@{processData}}
 \index{processData@{processData}!slsDetector@{sls\-Detector}}
-\subsubsection{\setlength{\rightskip}{0pt plus 5cm}virtual void$\ast$ sls\-Detector::process\-Data ()\hspace{0.3cm}{\tt  [pure virtual]}}\label{classslsDetector_971d316af920fcb3ade98c486fe42c99}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}virtual void$\ast$ sls\-Detector::process\-Data (int {\em delflag} = {\tt 1})\hspace{0.3cm}{\tt  [pure virtual]}}\label{classslsDetector_3e93c7da79e5f72e3a3c881aefdea5d3}
 
 
-pure virtual function function for processing data \begin{Desc}
-\item[See also:]\doxyref{mythen\-Detector::process\-Data}{p.}{classmythenDetector_b5416cb00251f95fc3661936c3cbb1c4} \end{Desc}
+pure virtual function function for processing data /param delflag if 1 the data are processed, written to file and then deleted. If 0 they are added to the final\-Data\-Queue \begin{Desc}
+\item[See also:]\doxyref{mythen\-Detector::process\-Data}{p.}{classmythenDetector_2555fc046cd8d5ba7116003ad4027112} \end{Desc}
 
 
-Implemented in \bf{mythen\-Detector} \doxyref{p.}{classmythenDetector_b5416cb00251f95fc3661936c3cbb1c4}.\index{slsDetector@{sls\-Detector}!rateCorrect@{rateCorrect}}
+Implemented in \bf{mythen\-Detector} \doxyref{p.}{classmythenDetector_2555fc046cd8d5ba7116003ad4027112}.\index{slsDetector@{sls\-Detector}!rateCorrect@{rateCorrect}}
 \index{rateCorrect@{rateCorrect}!slsDetector@{sls\-Detector}}
 \subsubsection{\setlength{\rightskip}{0pt plus 5cm}int sls\-Detector::rate\-Correct (float $\ast$ {\em datain}, float $\ast$ {\em errin}, float $\ast$ {\em dataout}, float $\ast$ {\em errout})}\label{classslsDetector_518feacfa3a1d6156779f8eaacdf86d3}
 
@@ -1912,12 +1923,7 @@ current position index of the detector \index{slsDetector@{sls\-Detector}!dacs@{
 \subsubsection{\setlength{\rightskip}{0pt plus 5cm}float$\ast$ \bf{sls\-Detector::dacs}\hspace{0.3cm}{\tt  [protected]}}\label{classslsDetector_dc1b3f867b97136fca83f86c83b7ae14}
 
 
-pointer to dac valuse \index{slsDetector@{sls\-Detector}!dataProcessingThread@{dataProcessingThread}}
-\index{dataProcessingThread@{dataProcessingThread}!slsDetector@{sls\-Detector}}
-\subsubsection{\setlength{\rightskip}{0pt plus 5cm}pthread\_\-t \bf{sls\-Detector::data\-Processing\-Thread}\hspace{0.3cm}{\tt  [protected]}}\label{classslsDetector_8257cca09e23b601764e57f5a8bdaacd}
-
-
-data processing thread??? \index{slsDetector@{sls\-Detector}!dataQueue@{dataQueue}}
+pointer to dac valuse \index{slsDetector@{sls\-Detector}!dataQueue@{dataQueue}}
 \index{dataQueue@{dataQueue}!slsDetector@{sls\-Detector}}
 \subsubsection{\setlength{\rightskip}{0pt plus 5cm}queue$<$int$\ast$$>$ \bf{sls\-Detector::data\-Queue}\hspace{0.3cm}{\tt  [protected]}}\label{classslsDetector_52e9fe9baf37db001cdf58f982ab5dd6}
 
@@ -1947,7 +1953,12 @@ pointer to flat field coefficients \index{slsDetector@{sls\-Detector}!fferrors@{
 \subsubsection{\setlength{\rightskip}{0pt plus 5cm}float$\ast$ \bf{sls\-Detector::fferrors}\hspace{0.3cm}{\tt  [protected]}}\label{classslsDetector_636168b92509e96418c9134d6d82ad4c}
 
 
-pointer to flat field coefficient errors \index{slsDetector@{sls\-Detector}!mergingBins@{mergingBins}}
+pointer to flat field coefficient errors \index{slsDetector@{sls\-Detector}!finalDataQueue@{finalDataQueue}}
+\index{finalDataQueue@{finalDataQueue}!slsDetector@{sls\-Detector}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}queue$<$\bf{detector\-Data}$\ast$$>$ \bf{sls\-Detector::final\-Data\-Queue}\hspace{0.3cm}{\tt  [protected]}}\label{classslsDetector_4ac6f49427b58349fe54fbaa4e16fa9c}
+
+
+queue containing the postprocessed data \index{slsDetector@{sls\-Detector}!mergingBins@{mergingBins}}
 \index{mergingBins@{mergingBins}!slsDetector@{sls\-Detector}}
 \subsubsection{\setlength{\rightskip}{0pt plus 5cm}float$\ast$ \bf{sls\-Detector::merging\-Bins}\hspace{0.3cm}{\tt  [protected]}}\label{classslsDetector_81751fd6e87f9659a8b6afe13efec2cf}
 

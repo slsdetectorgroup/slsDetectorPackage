@@ -20,7 +20,7 @@
     <li><a href="functions.html"><span>Class&nbsp;Members</span></a></li>
   </ul></div>
 <h1>eigerDetector Member List</h1>This is the complete list of members for <a class="el" href="classeigerDetector.html">eigerDetector</a>, including all inherited members.<p><table>
-  <tr class="memlist"><td><a class="el" href="classslsDetector.html#d2ee30dfd50f06431dca4e4b9619f301">acquire</a>()=0</td><td><a class="el" href="classslsDetector.html">slsDetector</a></td><td><code> [pure virtual]</code></td></tr>
+  <tr class="memlist"><td><a class="el" href="classslsDetector.html#1af6548fd0d81d45909a5c805d4be7a8">acquire</a>(int delflag=1)=0</td><td><a class="el" href="classslsDetector.html">slsDetector</a></td><td><code> [pure virtual]</code></td></tr>
   <tr class="memlist"><td><a class="el" href="classslsDetector.html#f370b8466441491d8496bb8130b8c5e7">adcs</a></td><td><a class="el" href="classslsDetector.html">slsDetector</a></td><td><code> [protected]</code></td></tr>
   <tr class="memlist"><td><a class="el" href="classslsDetector.html#feb8730f24292620e5d451cd2d4bb9cd">addToMerging</a>(float *p1, float *v1, float *e1, float *mp, float *mv, float *me, int *mm)=0</td><td><a class="el" href="classslsDetector.html">slsDetector</a></td><td><code> [pure virtual]</code></td></tr>
   <tr class="memlist"><td><a class="el" href="classslsDetector.html#18f91f8cf70d2d4eef9b3488b90bac51">analogTest</a>(analogTestMode mode)</td><td><a class="el" href="classslsDetector.html">slsDetector</a></td><td></td></tr>
@@ -34,7 +34,6 @@
   <tr class="memlist"><td><a class="el" href="classslsDetector.html#9f64e866250e916299048c9816c9ef28">currentPosition</a></td><td><a class="el" href="classslsDetector.html">slsDetector</a></td><td><code> [protected]</code></td></tr>
   <tr class="memlist"><td><a class="el" href="classslsDetector.html#9a6cd8787f618c147faacc1f3602bcf5">currentPositionIndex</a></td><td><a class="el" href="classslsDetector.html">slsDetector</a></td><td><code> [protected]</code></td></tr>
   <tr class="memlist"><td><a class="el" href="classslsDetector.html#dc1b3f867b97136fca83f86c83b7ae14">dacs</a></td><td><a class="el" href="classslsDetector.html">slsDetector</a></td><td><code> [protected]</code></td></tr>
-  <tr class="memlist"><td><a class="el" href="classslsDetector.html#8257cca09e23b601764e57f5a8bdaacd">dataProcessingThread</a></td><td><a class="el" href="classslsDetector.html">slsDetector</a></td><td><code> [protected]</code></td></tr>
   <tr class="memlist"><td><a class="el" href="classslsDetector.html#52e9fe9baf37db001cdf58f982ab5dd6">dataQueue</a></td><td><a class="el" href="classslsDetector.html">slsDetector</a></td><td><code> [protected]</code></td></tr>
   <tr class="memlist"><td><a class="el" href="classslsDetector.html#1629e3c46678ae201f6797e4d827cb32">dataSocket</a></td><td><a class="el" href="classslsDetector.html">slsDetector</a></td><td><code> [protected]</code></td></tr>
   <tr class="memlist"><td><a class="el" href="classeigerDetector.html#3e0573baf38c37818c7769fb351010b3">decodeData</a>(int *datain)</td><td><a class="el" href="classeigerDetector.html">eigerDetector</a></td><td></td></tr>
@@ -53,6 +52,7 @@
   <tr class="memlist"><td><a class="el" href="classslsDetector.html#a3c6e93198a2f8b072b7b84ba9af7c4b">ffcoefficients</a></td><td><a class="el" href="classslsDetector.html">slsDetector</a></td><td><code> [protected]</code></td></tr>
   <tr class="memlist"><td><a class="el" href="classslsDetector.html#636168b92509e96418c9134d6d82ad4c">fferrors</a></td><td><a class="el" href="classslsDetector.html">slsDetector</a></td><td><code> [protected]</code></td></tr>
   <tr class="memlist"><td><a class="el" href="classslsDetector.html#6a0ebe013e27c065b2f67158a27f64ac">fillBadChannelMask</a>()</td><td><a class="el" href="classslsDetector.html">slsDetector</a></td><td><code> [protected]</code></td></tr>
+  <tr class="memlist"><td><a class="el" href="classslsDetector.html#4ac6f49427b58349fe54fbaa4e16fa9c">finalDataQueue</a></td><td><a class="el" href="classslsDetector.html">slsDetector</a></td><td><code> [protected]</code></td></tr>
   <tr class="memlist"><td><a class="el" href="classslsDetector.html#8f73479f68ca2171fd2108c2f157299e">finalizeMerging</a>(float *mp, float *mv, float *me, int *mm)</td><td><a class="el" href="classslsDetector.html">slsDetector</a></td><td></td></tr>
   <tr class="memlist"><td><a class="el" href="classslsDetector.html#24c7dd58e00df0bf62221b7572430740">flatFieldCorrect</a>(float datain, float errin, float &amp;dataout, float &amp;errout, float ffcoefficient, float fferr)</td><td><a class="el" href="classslsDetector.html">slsDetector</a></td><td></td></tr>
   <tr class="memlist"><td><a class="el" href="classslsDetector.html#1e6633db752222079b39a187e4d0e658">flatFieldCorrect</a>(float *datain, float *errin, float *dataout, float *errout)</td><td><a class="el" href="classslsDetector.html">slsDetector</a></td><td></td></tr>
@@ -61,8 +61,8 @@
   <tr class="memlist"><td><a class="el" href="classslsDetector.html#fa99bd04043c23b7ab583159dabebf93">getADC</a>(dacIndex index, int imod=0)</td><td><a class="el" href="classslsDetector.html">slsDetector</a></td><td></td></tr>
   <tr class="memlist"><td><a class="el" href="classslsDetector.html#a110e9eb82123756cf89fda0a4cb464d">getAngularConversion</a>(int &amp;direction, angleConversionConstant *angconv=NULL)=0</td><td><a class="el" href="classslsDetector.html">slsDetector</a></td><td><code> [pure virtual]</code></td></tr>
   <tr class="memlist"><td><a class="el" href="classslsDetector.html#0c2e502441fd74ec7fc20604c5c08c27">getAngularConversion</a>()=0</td><td><a class="el" href="classslsDetector.html">slsDetector</a></td><td><code> [pure virtual]</code></td></tr>
+  <tr class="memlist"><td><a class="el" href="classslsDetector.html#62f84759c85d7f4323bb34bf2a4dc5c5">getBadChannelCorrection</a>(int *bad=NULL)</td><td><a class="el" href="classslsDetector.html">slsDetector</a></td><td></td></tr>
   <tr class="memlist"><td><a class="el" href="classslsDetector.html#0b562f90b64c80e3eb64e9e2153bb234">getBadChannelCorrectionFile</a>()</td><td><a class="el" href="classslsDetector.html">slsDetector</a></td><td><code> [inline]</code></td></tr>
-  <tr class="memlist"><td><a class="el" href="classslsDetector.html#f80db913b55026bb69d35585b08729cc">getBadChannelCorrections</a>(int *bad=NULL)</td><td><a class="el" href="classslsDetector.html">slsDetector</a></td><td></td></tr>
   <tr class="memlist"><td><a class="el" href="classslsDetector.html#7d83754e3f41042caa9297da9a33b714">getBinSize</a>()=0</td><td><a class="el" href="classslsDetector.html">slsDetector</a></td><td><code> [pure virtual]</code></td></tr>
   <tr class="memlist"><td><a class="el" href="classslsDetector.html#102679594e60ed261daff24b4aeac21a">getCalDir</a>()</td><td><a class="el" href="classslsDetector.html">slsDetector</a></td><td><code> [inline]</code></td></tr>
   <tr class="memlist"><td><a class="el" href="classslsDetector.html#05f1a170b7416db77bf7cff762e9b58a">getChannel</a>(int ichan, int ichip, int imod)</td><td><a class="el" href="classslsDetector.html">slsDetector</a></td><td></td></tr>
@@ -76,15 +76,15 @@
   <tr class="memlist"><td><a class="el" href="classslsDetector.html#717a3c59681f81ceaf5245a073eeacdb">getFileName</a>()</td><td><a class="el" href="classslsDetector.html">slsDetector</a></td><td><code> [inline]</code></td></tr>
   <tr class="memlist"><td><a class="el" href="classslsDetector.html#b4158bdacd10fccedeab9eacbd1f4304">getFilePath</a>()</td><td><a class="el" href="classslsDetector.html">slsDetector</a></td><td><code> [inline]</code></td></tr>
   <tr class="memlist"><td><a class="el" href="classslsDetector.html#8e39680a1a096ca13ed672504b5b08e6">getFineOffset</a>()=0</td><td><a class="el" href="classslsDetector.html">slsDetector</a></td><td><code> [pure virtual]</code></td></tr>
-  <tr class="memlist"><td><a class="el" href="classslsDetector.html#af22c79193907e364c6db97f5e55b9fd">getFlatFieldCorrections</a>(float *corr=NULL, float *ecorr=NULL)</td><td><a class="el" href="classslsDetector.html">slsDetector</a></td><td></td></tr>
+  <tr class="memlist"><td><a class="el" href="classslsDetector.html#062700a0470f96b20ba842bcd6aa9b63">getFlatFieldCorrection</a>(float *corr=NULL, float *ecorr=NULL)</td><td><a class="el" href="classslsDetector.html">slsDetector</a></td><td></td></tr>
   <tr class="memlist"><td><a class="el" href="classslsDetector.html#8964e3efa73f29b04bd9479578bd1c59">getGlobalOffset</a>()=0</td><td><a class="el" href="classslsDetector.html">slsDetector</a></td><td><code> [pure virtual]</code></td></tr>
   <tr class="memlist"><td><a class="el" href="classslsDetector.html#fad06908ad59bfd8a8577899d6aa1843">getHostname</a>()</td><td><a class="el" href="classslsDetector.html">slsDetector</a></td><td><code> [inline]</code></td></tr>
   <tr class="memlist"><td><a class="el" href="classslsDetector.html#92f9261c62652e3643eebfdfa9942099">getId</a>(idMode mode, int imod=0)</td><td><a class="el" href="classslsDetector.html">slsDetector</a></td><td></td></tr>
   <tr class="memlist"><td><a class="el" href="classslsDetector.html#d608a77a1c64989ad82175991be0a9b5">getMaxNumberOfModules</a>(dimension d=X)</td><td><a class="el" href="classslsDetector.html">slsDetector</a></td><td></td></tr>
   <tr class="memlist"><td><a class="el" href="classslsDetector.html#32557eee02e541840246b4b4a3e76c83">getModule</a>(int imod)</td><td><a class="el" href="classslsDetector.html">slsDetector</a></td><td></td></tr>
   <tr class="memlist"><td><a class="el" href="classslsDetector.html#248794801b9794d20e7d58bceab564ab">getPositions</a>(float *pos=NULL)=0</td><td><a class="el" href="classslsDetector.html">slsDetector</a></td><td><code> [pure virtual]</code></td></tr>
-  <tr class="memlist"><td><a class="el" href="classslsDetector.html#6e6212f4bbe0c5df253ec9c535c3f9b1">getRateCorrections</a>(float &amp;t)</td><td><a class="el" href="classslsDetector.html">slsDetector</a></td><td></td></tr>
-  <tr class="memlist"><td><a class="el" href="classslsDetector.html#7606366a3cbe280c90dc659036814697">getRateCorrections</a>()</td><td><a class="el" href="classslsDetector.html">slsDetector</a></td><td></td></tr>
+  <tr class="memlist"><td><a class="el" href="classslsDetector.html#b997c9997d91725bec43254e6d05191a">getRateCorrection</a>(float &amp;t)</td><td><a class="el" href="classslsDetector.html">slsDetector</a></td><td></td></tr>
+  <tr class="memlist"><td><a class="el" href="classslsDetector.html#c7a659ab136c9e5ece059fc9356c6a91">getRateCorrection</a>()</td><td><a class="el" href="classslsDetector.html">slsDetector</a></td><td></td></tr>
   <tr class="memlist"><td><a class="el" href="classslsDetector.html#567629b942b153a03cfc66d4d26c5daa">getRunStatus</a>()</td><td><a class="el" href="classslsDetector.html">slsDetector</a></td><td></td></tr>
   <tr class="memlist"><td><a class="el" href="classslsDetector.html#cfccfada625943feb410c6a14607a366">getSettings</a>(int imod=-1)</td><td><a class="el" href="classslsDetector.html">slsDetector</a></td><td></td></tr>
   <tr class="memlist"><td><a class="el" href="classslsDetector.html#80ab8f7f4cc6b2e92017a0c77f961b70">getStopPort</a>()</td><td><a class="el" href="classslsDetector.html">slsDetector</a></td><td><code> [inline]</code></td></tr>
@@ -104,7 +104,8 @@
   <tr class="memlist"><td><a class="el" href="classslsDetector.html#ac085f1939dcfed328dc6ff4b11fdb44d3b612a2eb0d1029bd260b502afcf632">ONLINE_FLAG</a> enum value</td><td><a class="el" href="classslsDetector.html">slsDetector</a></td><td></td></tr>
   <tr class="memlist"><td><a class="el" href="classslsDetector.html#7572bba8e53f900d4126657827bec3cf">onlineFlag</a></td><td><a class="el" href="classslsDetector.html">slsDetector</a></td><td><code> [protected]</code></td></tr>
   <tr class="memlist"><td><a class="el" href="classslsDetector.html#ee85bddb6aa7b37c99f1397112e6c8b6">popDataQueue</a>()</td><td><a class="el" href="classslsDetector.html">slsDetector</a></td><td></td></tr>
-  <tr class="memlist"><td><a class="el" href="classslsDetector.html#971d316af920fcb3ade98c486fe42c99">processData</a>()=0</td><td><a class="el" href="classslsDetector.html">slsDetector</a></td><td><code> [pure virtual]</code></td></tr>
+  <tr class="memlist"><td><a class="el" href="classslsDetector.html#1f8b5d695dbf8865665261a02ced3238">popFinalDataQueue</a>()</td><td><a class="el" href="classslsDetector.html">slsDetector</a></td><td></td></tr>
+  <tr class="memlist"><td><a class="el" href="classslsDetector.html#3e93c7da79e5f72e3a3c881aefdea5d3">processData</a>(int delflag=1)=0</td><td><a class="el" href="classslsDetector.html">slsDetector</a></td><td><code> [pure virtual]</code></td></tr>
   <tr class="memlist"><td><a class="el" href="classslsDetector.html#e8c2d03ab2c870d2f1ff7a861cfeb6d1">rateCorrect</a>(float datain, float errin, float &amp;dataout, float &amp;errout, float tau, float t)</td><td><a class="el" href="classslsDetector.html">slsDetector</a></td><td></td></tr>
   <tr class="memlist"><td><a class="el" href="classslsDetector.html#518feacfa3a1d6156779f8eaacdf86d3">rateCorrect</a>(float *datain, float *errin, float *dataout, float *errout)</td><td><a class="el" href="classslsDetector.html">slsDetector</a></td><td></td></tr>
   <tr class="memlist"><td><a class="el" href="classslsDetector.html#87acdd8cd43d30dc3dd88763b6e23d08">readAll</a>()</td><td><a class="el" href="classslsDetector.html">slsDetector</a></td><td></td></tr>
@@ -179,7 +180,7 @@
   <tr class="memlist"><td><a class="el" href="classeigerDetector.html#df3a0dff0fc3111e10af0363bdd15a6a">writeTrimFile</a>(string fname, int imod)</td><td><a class="el" href="classeigerDetector.html">eigerDetector</a></td><td><code> [virtual]</code></td></tr>
   <tr class="memlist"><td><a class="el" href="classeigerDetector.html#aa968c7588fb7200a8764a08196ac549">~eigerDetector</a>()</td><td><a class="el" href="classeigerDetector.html">eigerDetector</a></td><td><code> [inline]</code></td></tr>
   <tr class="memlist"><td><a class="el" href="classslsDetector.html#7653e532ff88dbf403e270769bccc509">~slsDetector</a>()</td><td><a class="el" href="classslsDetector.html">slsDetector</a></td><td><code> [inline]</code></td></tr>
-</table><hr size="1"><address style="align: right;"><small>Generated on Tue Dec 1 10:56:45 2009 by&nbsp;
+</table><hr size="1"><address style="align: right;"><small>Generated on Tue Dec 1 15:31:44 2009 by&nbsp;
 <a href="http://www.doxygen.org/index.html">
 <img src="doxygen.png" alt="doxygen" align="middle" border="0"></a> 1.4.7 </small></address>
 </body>

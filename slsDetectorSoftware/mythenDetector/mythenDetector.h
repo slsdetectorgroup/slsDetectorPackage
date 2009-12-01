@@ -28,7 +28,7 @@ class mythenDetector : public slsDetector{
 /** 
     (default) constructor 
 */
-  mythenDetector(int id=0) : slsDetector(MYTHEN, id);
+  mythenDetector(int id=0) : slsDetector(MYTHEN, id){};
   //slsDetector(string  const fname);
   //  ~slsDetector(){while(dataQueue.size()>0){}};
   /** destructor */ 
@@ -274,8 +274,9 @@ class mythenDetector : public slsDetector{
 
   /**
      function for processing data
+     \param delflag if 1 the data are deleted, else left there for further processing (or plotting?)
   */
-  void* processData(); // thread function
+  void* processData(int delflag=1); // thread function
 
   /** performs the complete acquisition and data processing 
      moves the detector to next position <br>
@@ -283,9 +284,10 @@ class mythenDetector : public slsDetector{
      reads the IC (if required) <br>
      reads the encoder (iof required for angualr conversion) <br>
      processes the data (flat field, rate, angular conversion and merging ::processData())
+     \param delflag if 1 the data are deleted, else left there for further processing (or plotting?)
   */
   
-  void acquire();
+  void acquire(int delflag=1);
 
 
 };

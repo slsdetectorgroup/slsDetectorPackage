@@ -11,6 +11,10 @@ Inheritance diagram for mythen\-Detector::\begin{figure}[H]
 \subsection*{Public Member Functions}
 \begin{CompactItemize}
 \item 
+\bf{mythen\-Detector} (int id=0)
+\item 
+\bf{$\sim$mythen\-Detector} ()
+\item 
 int \bf{read\-Configuration\-File} (string const fname)
 \item 
 int \bf{write\-Configuration\-File} (string const fname)
@@ -69,25 +73,43 @@ int \bf{add\-To\-Merging} (float $\ast$p1, float $\ast$v1, float $\ast$e1, float
 \item 
 int \bf{finalize\-Merging} (float $\ast$mp, float $\ast$mv, float $\ast$me, int $\ast$mm)
 \item 
-void $\ast$ \bf{process\-Data} ()
+void $\ast$ \bf{process\-Data} (int delflag=1)
 \item 
-void \bf{acquire} ()
+void \bf{acquire} (int delflag=1)
 \end{CompactItemize}
 
+
+\subsection{Constructor \& Destructor Documentation}
+\index{mythenDetector@{mythen\-Detector}!mythenDetector@{mythenDetector}}
+\index{mythenDetector@{mythenDetector}!mythenDetector@{mythen\-Detector}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}mythen\-Detector::mythen\-Detector (int {\em id} = {\tt 0})\hspace{0.3cm}{\tt  [inline]}}\label{classmythenDetector_5efa6a91622e5e173d7491801f60bda0}
+
+
+(default) constructor \index{mythenDetector@{mythen\-Detector}!~mythenDetector@{$\sim$mythenDetector}}
+\index{~mythenDetector@{$\sim$mythenDetector}!mythenDetector@{mythen\-Detector}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}mythen\-Detector::$\sim$mythen\-Detector ()\hspace{0.3cm}{\tt  [inline]}}\label{classmythenDetector_8118166c2e7c3d3968b9ae5016614693}
+
+
+destructor 
 
 \subsection{Member Function Documentation}
 \index{mythenDetector@{mythen\-Detector}!acquire@{acquire}}
 \index{acquire@{acquire}!mythenDetector@{mythen\-Detector}}
-\subsubsection{\setlength{\rightskip}{0pt plus 5cm}void mythen\-Detector::acquire ()\hspace{0.3cm}{\tt  [virtual]}}\label{classmythenDetector_bb3d2f51a414cf9dace29a4b5676828f}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}void mythen\-Detector::acquire (int {\em delflag} = {\tt 1})\hspace{0.3cm}{\tt  [virtual]}}\label{classmythenDetector_f393765b5a3d5f8f05251116f38d52dd}
 
 
 performs the complete acquisition and data processing moves the detector to next position \par
  starts and reads the detector \par
  reads the IC (if required) \par
  reads the encoder (iof required for angualr conversion) \par
- processes the data (flat field, rate, angular conversion and merging process\-Data()) 
+ processes the data (flat field, rate, angular conversion and merging process\-Data()) \begin{Desc}
+\item[Parameters:]
+\begin{description}
+\item[{\em delflag}]if 1 the data are deleted, else left there for further processing (or plotting?) \end{description}
+\end{Desc}
 
-Implements \bf{sls\-Detector} \doxyref{p.}{classslsDetector_d2ee30dfd50f06431dca4e4b9619f301}.\index{mythenDetector@{mythen\-Detector}!addToMerging@{addToMerging}}
+
+Implements \bf{sls\-Detector} \doxyref{p.}{classslsDetector_1af6548fd0d81d45909a5c805d4be7a8}.\index{mythenDetector@{mythen\-Detector}!addToMerging@{addToMerging}}
 \index{addToMerging@{addToMerging}!mythenDetector@{mythen\-Detector}}
 \subsubsection{\setlength{\rightskip}{0pt plus 5cm}int mythen\-Detector::add\-To\-Merging (float $\ast$ {\em p1}, float $\ast$ {\em v1}, float $\ast$ {\em e1}, float $\ast$ {\em mp}, float $\ast$ {\em mv}, float $\ast$ {\em me}, int $\ast$ {\em mm})\hspace{0.3cm}{\tt  [virtual]}}\label{classmythenDetector_eaaf7d7e3150f473e3bbcf59d91692c2}
 
@@ -180,12 +202,17 @@ get positions for the acquisition \begin{Desc}
 
 Implements \bf{sls\-Detector} \doxyref{p.}{classslsDetector_248794801b9794d20e7d58bceab564ab}.\index{mythenDetector@{mythen\-Detector}!processData@{processData}}
 \index{processData@{processData}!mythenDetector@{mythen\-Detector}}
-\subsubsection{\setlength{\rightskip}{0pt plus 5cm}void$\ast$ mythen\-Detector::process\-Data ()\hspace{0.3cm}{\tt  [virtual]}}\label{classmythenDetector_b5416cb00251f95fc3661936c3cbb1c4}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}void$\ast$ mythen\-Detector::process\-Data (int {\em delflag} = {\tt 1})\hspace{0.3cm}{\tt  [virtual]}}\label{classmythenDetector_2555fc046cd8d5ba7116003ad4027112}
 
 
-function for processing data 
+function for processing data \begin{Desc}
+\item[Parameters:]
+\begin{description}
+\item[{\em delflag}]if 1 the data are deleted, else left there for further processing (or plotting?) \end{description}
+\end{Desc}
 
-Implements \bf{sls\-Detector} \doxyref{p.}{classslsDetector_971d316af920fcb3ade98c486fe42c99}.\index{mythenDetector@{mythen\-Detector}!readAngularConversion@{readAngularConversion}}
+
+Implements \bf{sls\-Detector} \doxyref{p.}{classslsDetector_3e93c7da79e5f72e3a3c881aefdea5d3}.\index{mythenDetector@{mythen\-Detector}!readAngularConversion@{readAngularConversion}}
 \index{readAngularConversion@{readAngularConversion}!mythenDetector@{mythen\-Detector}}
 \subsubsection{\setlength{\rightskip}{0pt plus 5cm}int mythen\-Detector::read\-Angular\-Conversion (string {\em fname} = {\tt \char`\"{}\char`\"{}})\hspace{0.3cm}{\tt  [virtual]}}\label{classmythenDetector_33bf1b939eb877bbd4aa42f400d7ca36}
 

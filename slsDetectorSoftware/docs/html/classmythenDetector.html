@@ -29,6 +29,10 @@
 <a href="classmythenDetector-members.html">List of all members.</a><table border="0" cellpadding="0" cellspacing="0">
 <tr><td></td></tr>
 <tr><td colspan="2"><br><h2>Public Member Functions</h2></td></tr>
+<tr><td class="memItemLeft" nowrap align="right" valign="top">&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classmythenDetector.html#5efa6a91622e5e173d7491801f60bda0">mythenDetector</a> (int id=0)</td></tr>
+
+<tr><td class="memItemLeft" nowrap align="right" valign="top">&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classmythenDetector.html#8118166c2e7c3d3968b9ae5016614693">~mythenDetector</a> ()</td></tr>
+
 <tr><td class="memItemLeft" nowrap align="right" valign="top">int&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classmythenDetector.html#92a32bcc57919fcf9eea844905640e90">readConfigurationFile</a> (string const fname)</td></tr>
 
 <tr><td class="memItemLeft" nowrap align="right" valign="top">int&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classmythenDetector.html#6ad688e0c1a59001ecc61117c67e5434">writeConfigurationFile</a> (string const fname)</td></tr>
@@ -87,20 +91,61 @@
 
 <tr><td class="memItemLeft" nowrap align="right" valign="top">int&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classmythenDetector.html#a919a42bd89fe21c4086bae5f1fb2f32">finalizeMerging</a> (float *mp, float *mv, float *me, int *mm)</td></tr>
 
-<tr><td class="memItemLeft" nowrap align="right" valign="top">void *&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classmythenDetector.html#b5416cb00251f95fc3661936c3cbb1c4">processData</a> ()</td></tr>
+<tr><td class="memItemLeft" nowrap align="right" valign="top">void *&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classmythenDetector.html#2555fc046cd8d5ba7116003ad4027112">processData</a> (int delflag=1)</td></tr>
 
-<tr><td class="memItemLeft" nowrap align="right" valign="top">void&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classmythenDetector.html#bb3d2f51a414cf9dace29a4b5676828f">acquire</a> ()</td></tr>
+<tr><td class="memItemLeft" nowrap align="right" valign="top">void&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classmythenDetector.html#f393765b5a3d5f8f05251116f38d52dd">acquire</a> (int delflag=1)</td></tr>
 
 </table>
+<hr><h2>Constructor &amp; Destructor Documentation</h2>
+<a class="anchor" name="5efa6a91622e5e173d7491801f60bda0"></a><!-- doxytag: member="mythenDetector::mythenDetector" ref="5efa6a91622e5e173d7491801f60bda0" args="(int id=0)" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">mythenDetector::mythenDetector           </td>
+          <td>(</td>
+          <td class="paramtype">int&nbsp;</td>
+          <td class="paramname"> <em>id</em> = <code>0</code>          </td>
+          <td>&nbsp;)&nbsp;</td>
+          <td width="100%"><code> [inline]</code></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>
+(default) constructor 
+</div>
+</div><p>
+<a class="anchor" name="8118166c2e7c3d3968b9ae5016614693"></a><!-- doxytag: member="mythenDetector::~mythenDetector" ref="8118166c2e7c3d3968b9ae5016614693" args="()" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">mythenDetector::~mythenDetector           </td>
+          <td>(</td>
+          <td class="paramname">          </td>
+          <td>&nbsp;)&nbsp;</td>
+          <td width="100%"><code> [inline]</code></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>
+destructor 
+</div>
+</div><p>
 <hr><h2>Member Function Documentation</h2>
-<a class="anchor" name="bb3d2f51a414cf9dace29a4b5676828f"></a><!-- doxytag: member="mythenDetector::acquire" ref="bb3d2f51a414cf9dace29a4b5676828f" args="()" -->
+<a class="anchor" name="f393765b5a3d5f8f05251116f38d52dd"></a><!-- doxytag: member="mythenDetector::acquire" ref="f393765b5a3d5f8f05251116f38d52dd" args="(int delflag=1)" -->
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
           <td class="memname">void mythenDetector::acquire           </td>
           <td>(</td>
-          <td class="paramname">          </td>
+          <td class="paramtype">int&nbsp;</td>
+          <td class="paramname"> <em>delflag</em> = <code>1</code>          </td>
           <td>&nbsp;)&nbsp;</td>
           <td width="100%"><code> [virtual]</code></td>
         </tr>
@@ -113,9 +158,14 @@ performs the complete acquisition and data processing moves the detector to next
  starts and reads the detector <br>
  reads the IC (if required) <br>
  reads the encoder (iof required for angualr conversion) <br>
- processes the data (flat field, rate, angular conversion and merging processData()) 
+ processes the data (flat field, rate, angular conversion and merging processData()) <dl compact><dt><b>Parameters:</b></dt><dd>
+  <table border="0" cellspacing="2" cellpadding="0">
+    <tr><td valign="top"></td><td valign="top"><em>delflag</em>&nbsp;</td><td>if 1 the data are deleted, else left there for further processing (or plotting?) </td></tr>
+  </table>
+</dl>
+
 <p>
-Implements <a class="el" href="classslsDetector.html#d2ee30dfd50f06431dca4e4b9619f301">slsDetector</a>.
+Implements <a class="el" href="classslsDetector.html#1af6548fd0d81d45909a5c805d4be7a8">slsDetector</a>.
 </div>
 </div><p>
 <a class="anchor" name="eaaf7d7e3150f473e3bbcf59d91692c2"></a><!-- doxytag: member="mythenDetector::addToMerging" ref="eaaf7d7e3150f473e3bbcf59d91692c2" args="(float *p1, float *v1, float *e1, float *mp, float *mv, float *me, int *mm)" -->
@@ -415,14 +465,15 @@ get positions for the acquisition <dl compact><dt><b>Parameters:</b></dt><dd>
 Implements <a class="el" href="classslsDetector.html#248794801b9794d20e7d58bceab564ab">slsDetector</a>.
 </div>
 </div><p>
-<a class="anchor" name="b5416cb00251f95fc3661936c3cbb1c4"></a><!-- doxytag: member="mythenDetector::processData" ref="b5416cb00251f95fc3661936c3cbb1c4" args="()" -->
+<a class="anchor" name="2555fc046cd8d5ba7116003ad4027112"></a><!-- doxytag: member="mythenDetector::processData" ref="2555fc046cd8d5ba7116003ad4027112" args="(int delflag=1)" -->
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
           <td class="memname">void* mythenDetector::processData           </td>
           <td>(</td>
-          <td class="paramname">          </td>
+          <td class="paramtype">int&nbsp;</td>
+          <td class="paramname"> <em>delflag</em> = <code>1</code>          </td>
           <td>&nbsp;)&nbsp;</td>
           <td width="100%"><code> [virtual]</code></td>
         </tr>
@@ -431,9 +482,14 @@ Implements <a class="el" href="classslsDetector.html#248794801b9794d20e7d58bceab
 <div class="memdoc">
 
 <p>
-function for processing data 
+function for processing data <dl compact><dt><b>Parameters:</b></dt><dd>
+  <table border="0" cellspacing="2" cellpadding="0">
+    <tr><td valign="top"></td><td valign="top"><em>delflag</em>&nbsp;</td><td>if 1 the data are deleted, else left there for further processing (or plotting?) </td></tr>
+  </table>
+</dl>
+
 <p>
-Implements <a class="el" href="classslsDetector.html#971d316af920fcb3ade98c486fe42c99">slsDetector</a>.
+Implements <a class="el" href="classslsDetector.html#3e93c7da79e5f72e3a3c881aefdea5d3">slsDetector</a>.
 </div>
 </div><p>
 <a class="anchor" name="33bf1b939eb877bbd4aa42f400d7ca36"></a><!-- doxytag: member="mythenDetector::readAngularConversion" ref="33bf1b939eb877bbd4aa42f400d7ca36" args="(string fname=&quot;&quot;)" -->
@@ -1160,7 +1216,7 @@ Implements <a class="el" href="classslsDetector.html#5b97351cfaffe067016dbcebbd0
 </div><p>
 <hr>The documentation for this class was generated from the following file:<ul>
 <li>mythenDetector/<a class="el" href="mythenDetector_8h-source.html">mythenDetector.h</a></ul>
-<hr size="1"><address style="align: right;"><small>Generated on Tue Dec 1 10:56:45 2009 by&nbsp;
+<hr size="1"><address style="align: right;"><small>Generated on Tue Dec 1 15:31:44 2009 by&nbsp;
 <a href="http://www.doxygen.org/index.html">
 <img src="doxygen.png" alt="doxygen" align="middle" border="0"></a> 1.4.7 </small></address>
 </body>

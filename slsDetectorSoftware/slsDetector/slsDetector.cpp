@@ -2372,6 +2372,16 @@ int* slsDetector::popDataQueue() {
   }
   return retval;
 }
+
+detectorData* slsDetector::popFinalDataQueue() {
+  detectorData *retval=NULL;
+  if( !finalDataQueue.empty() ) {
+    retval=finalDataQueue.front();
+    finalDataQueue.pop();
+  }
+  return retval;
+}
+
   /* 
      set or read the acquisition timers 
      enum timerIndex {
@@ -2587,7 +2597,7 @@ enum readOutFlags {
   setReadOutFlags(STORE_IN_RAM,
   READ_HITS,
   ZERO_COMPRESSION,
-  BACKGROUND_CORRECTIONS
+  BACKGROUND_CORRECTION
 }{};
  
   */
@@ -2773,7 +2783,7 @@ float* slsDetector::decodeData(int *datain) {
   return dataout;
 }
  
-//Corrections
+//Correction
   /*
     enum correctionFlags {
     DISCARD_BAD_CHANNELS,
@@ -2796,7 +2806,7 @@ int slsDetector::setFlatFieldCorrection(string fname){
 
   if (fname=="") {
 #ifdef VERBOSE
-   cout << "disabling flat field corrections" << endl;
+   cout << "disabling flat field correction" << endl;
 #endif
     thisDetector->correctionMask&=~(1<<FLAT_FIELD_CORRECTION);
   } else { 
@@ -2860,7 +2870,7 @@ int slsDetector::setFlatFieldCorrection(string fname){
   return thisDetector->correctionMask&(1<<FLAT_FIELD_CORRECTION);
 }
  
-int slsDetector::getFlatFieldCorrections(float *corr, float *ecorr) {
+int slsDetector::getFlatFieldCorrection(float *corr, float *ecorr) {
   if (thisDetector->correctionMask&(1<<FLAT_FIELD_CORRECTION)) {
 #ifdef VERBOSE
     cout << "Flat field correction is enabled" << endl;
@@ -2933,7 +2943,7 @@ int slsDetector::setRateCorrection(float t){
 
   if (t==0) {
 #ifdef VERBOSE
-    cout << "unsetting rate corrections" << endl;
+    cout << "unsetting rate correction" << endl;
 #endif
     thisDetector->correctionMask&=~(1<<RATE_CORRECTION);
   } else {
@@ -2945,14 +2955,14 @@ int slsDetector::setRateCorrection(float t){
 	thisDetector->tDead=tdead[thisDetector->currentSettings];
     }
 #ifdef VERBOSE
-    cout << "Setting rate corrections with dead time "<< thisDetector->tDead << endl;
+    cout << "Setting rate correction with dead time "<< thisDetector->tDead << endl;
 #endif
   }
   return thisDetector->correctionMask&(1<<RATE_CORRECTION);
 }
 
 
-int slsDetector::getRateCorrections(float &t){
+int slsDetector::getRateCorrection(float &t){
 
   if (thisDetector->correctionMask&(1<<RATE_CORRECTION)) {
 #ifdef VERBOSE
@@ -2967,7 +2977,7 @@ int slsDetector::getRateCorrections(float &t){
     return 0;
 };
 
-int slsDetector::getRateCorrections(){
+int slsDetector::getRateCorrection(){
 
   if (thisDetector->correctionMask&(1<<RATE_CORRECTION)) {
     return 1;
@@ -3073,7 +3083,7 @@ int slsDetector::setBadChannelCorrection(string fname){
   return thisDetector->nBadChans;
 }
 
-int slsDetector::getBadChannelCorrections(int *bad) {
+int slsDetector::getBadChannelCorrection(int *bad) {
   int ichan;
   if (thisDetector->correctionMask&(1<< DISCARD_BAD_CHANNELS)) {
     if (bad) {

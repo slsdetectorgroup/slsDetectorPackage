@@ -41,6 +41,45 @@ extern "C" {
 
 #define defaultTDead {170,90,750} /**< should be changed in order to have it separate for the different detector types */
 
+
+
+/**
+   data structure to hold the detector data after postprocessing (e.g. to plot, store in a root tree etc.)
+ */
+class detectorData {
+ public:
+  /** The constructor
+      \param val pointer to the data
+      \param err pointer to errors
+      \param ang pointer to the angles
+      \param f_ind file index
+      \param fname file name to which the data are saved
+      \param np number of points defaults to the number of detector channels
+  */
+  detectorData(float *val=NULL, float *err=NULL, float *ang=NULL,  int f_ind=-1, char *fname="", int np=-1) : values(val), errors(err), angles(ang),  fileIndex(f_ind), npoints(np){strcpy(fileName,fname);};
+    /** 
+	the destructor
+	deletes also the arrays pointing to data/errors/angles if not NULL
+    */
+    ~detectorData() {if (values) delete [] values; if (errors) delete [] errors; if (angles) delete [] angles;};
+    //private:
+    float *values; /**< pointer to the data */
+  float *errors; /**< pointer to the errors */
+  float *angles;/**< pointer to the angles */
+  int fileIndex;/**< file index */
+  char fileName[1000];/**< file name */
+  int npoints;/**< number of points */
+};
+
+
+
+
+
+
+
+
+
+
 using namespace std;
 /**
  \mainpage Common C++ library for SLS detectors data acquisition
@@ -868,6 +907,12 @@ typedef  struct sharedSlsDetector {
   */ 
   int* popDataQueue();
 
+  /**
+   pops the data from thepostprocessed data queue
+    \returns pointer to the popped data  or NULL if the queue is empty. 
+    \sa  finalDataQueue
+  */ 
+  detectorData* popFinalDataQueue();
   /** 
       set/get timer value
       \param index timer index
@@ -945,7 +990,7 @@ typedef  struct sharedSlsDetector {
       \param ecorr if !=NULL will be filled with the correction coefficients errors
       \returns 0 if ff correction disabled, >0 otherwise
   */
-  int getFlatFieldCorrections(float *corr=NULL, float *ecorr=NULL);
+  int getFlatFieldCorrection(float *corr=NULL, float *ecorr=NULL);
 
   /** 
       set rate correction
@@ -960,13 +1005,13 @@ typedef  struct sharedSlsDetector {
       \param t reference for dead time
       \returns 0 if rate correction disabled, >0 otherwise
   */
-  int getRateCorrections(float &t);  
+  int getRateCorrection(float &t);  
 
   /** 
       get rate correction
       \returns 0 if rate correction disabled, >0 otherwise
   */
-  int getRateCorrections();
+  int getRateCorrection();
   
   /** 
       set bad channels correction
@@ -980,7 +1025,7 @@ typedef  struct sharedSlsDetector {
       \param bad pointer to array that if bad!=NULL will be filled with the bad channel list
       \returns 0 if bad channel disabled or no bad channels, >0 otherwise
   */
-  int getBadChannelCorrections(int *bad=NULL);
+  int getBadChannelCorrection(int *bad=NULL);
 
   /** returns the bad channel list file */
   char *getBadChannelCorrectionFile() {return thisDetector->badChanFile;};
@@ -1177,9 +1222,10 @@ typedef  struct sharedSlsDetector {
 
   /** pure virtual function
      function for processing data
+     /param delflag if 1 the data are processed, written to file and then deleted. If 0 they are added to the finalDataQueue
      \sa mythenDetector::processData
   */
-  virtual void* processData()=0; // thread function
+  virtual void* processData(int delflag=1)=0; // thread function
   /** Allocates the memory for a sls_detector_module structure and initializes it
       \returns myMod the pointer to the allocate dmemory location
 
@@ -1200,10 +1246,11 @@ typedef  struct sharedSlsDetector {
      reads the IC (if required) <br>
      reads the encoder (iof required for angualr conversion) <br>
      processes the data (flat field, rate, angular conversion and merging ::processData())
+     /param delflag if 1 the data are processed, written to file and then deleted. If 0 they are added to the finalDataQueue
      \sa mythenDetector::acquire()
   */
   
-  virtual void acquire()=0;
+  virtual void acquire(int delflag=1)=0;
 
  protected:
  
@@ -1246,12 +1293,14 @@ typedef  struct sharedSlsDetector {
      data queue
   */
   queue<int*> dataQueue;
-  
   /**
-     data processing thread???
+     queue containing the postprocessed data
   */
-  pthread_t dataProcessingThread;
+  queue<detectorData*> finalDataQueue;
   
+  
+
+
   /**
      current position of the detector
   */

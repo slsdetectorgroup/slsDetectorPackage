@@ -35,6 +35,7 @@ int main(int argc, char *argv[])
     printf("opening stop server on port %d\n",portno);
   }
    
+  system("bus -a 0xb0000000 -w 0xd0008");
   init_detector(b); 
 
 

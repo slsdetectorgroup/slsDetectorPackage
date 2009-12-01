@@ -164,7 +164,7 @@ int choose_vthresh_and_vtrim(int countlim,  int nsigma, int im) {
   int *trim;
   int ich, imod, ichan;
   int nvalid=0;
-  int *scan;
+  u_int32_t *scan;
   int ithr;
 
 
@@ -307,7 +307,8 @@ int choose_vthresh_and_vtrim(int countlim,  int nsigma, int im) {
 
 int trim_with_level(int countlim, int im) {
   int ich, itrim, ichan, ichip, imod;
-  int *scan, *inttrim;
+  u_int32_t *scan;
+  int *inttrim;
   int modma, modmi, nm;
   int retval=OK;
 
@@ -349,12 +350,15 @@ int trim_with_level(int countlim, int im) {
     for (imod=modmi; imod<modma; imod++) {
       for (ichan=0; ichan<nChans*nChips; ichan++) {
 	ich=ichan+imod*nChans*nChips;
-	if (scan[ich]>countlim){
-	  if (inttrim[ich]==-1) {
+	if (inttrim[ich]==-1) {
+	  if (scan[ich]>countlim){
 	    inttrim[ich]=itrim;
+	    if (scan[ich]>2*countlim || itrim==0) {
 #ifdef VERBOSE
 	    printf("Channel %d trimbit %d counted %d countlim %d\n",ich,itrim,scan[ich],countlim);
 #endif
+	    inttrim[ich]=itrim-1;
+	    }
 	  } 
 	}
 #ifdef VERBOSE
@@ -375,10 +379,14 @@ int trim_with_level(int countlim, int im) {
 	nextStrip(imod);
 	ich=ichan+imod*nChans*nChips+ichip*nChans;
 	if (*(inttrim+ich)==-1) {
-	  *(inttrim+ich)=itrim-1;
+	  *(inttrim+ich)=TRIM_DR;
 	  printf("could not trim channel %d chip %d module %d - set to %d\n", ichan, ichip, imod, *(inttrim+ich) );
 	  retval=FAIL;
 	}
+#ifdef VERBOSE 
+	else
+	  printf("channel %d trimbit %d\n",ich,*(inttrim+ich) );
+#endif
 	initChannel(inttrim[ich],0,0,1,0,0,imod);
       }
       nextChip(imod); 
@@ -435,7 +443,8 @@ int choose_vthresh() {
   int retval=OK;
 #ifdef MCB_FUNCS
   int imod,  ichan;
-  int  *scan, olddiff[nModX], direction[nModX];
+  u_int32_t  *scan;
+  int olddiff[nModX], direction[nModX];
   int med[nModX], diff, media;
   int change_flag=1;
   int iteration=0;
@@ -554,7 +563,8 @@ int trim_with_median(int stop, int im) {
 
 #ifdef MCB_FUNCS
   int  ichan, imod, ichip, ich;
-  int  *scan, *olddiff, *direction;
+  u_int32_t  *scan;
+  int *olddiff, *direction;
   int med, diff;
   int change_flag=1;
   int iteration=0;
@@ -576,7 +586,16 @@ int trim_with_median(int stop, int im) {
 
   olddiff=malloc(4*nModX*nChips*nChans);
   direction=malloc(4*nModX*nChips*nChans);
-
+  for (imod=modmi; imod<modma; imod++) {  
+    for (ichip=0; ichip<nChips; ichip++) {
+      for (ich=0; ich<nChans; ich++) {
+	ichan=imod*nChips*nChans+ichip*nChans+ich;
+	direction[ichan]=0;
+	olddiff[ichan]=0xffffffff;
+      }
+    }
+  }
+  /********
   fifoReset(); 
   setCSregister(ALLMOD);
   setSSregister(ALLMOD);
@@ -595,7 +614,7 @@ int trim_with_median(int stop, int im) {
   med=median(me,nm);
   printf("median is %d\n",med);
   free(scan);
-
+  **************/
   while(change_flag && iteration<stop) {
 
     fifoReset(); 
@@ -609,9 +628,19 @@ int trim_with_median(int stop, int im) {
     }
     usleep(500);
     scan=decode_data(fifo_read_event());
-  
+
+
+    /********* calculates median every time ***********/
+
+    for (imod=modmi; imod<modma; imod++) {
+      me[imod]=median(scan+imod*nChans*nChips,nChans*nChips);
+      printf("Median of module %d=%d\n",imod,me[imod]);
+    }
+    med=median(me,nm);
+    printf("median is %d\n",med);
+
     change_flag=0;
-    printf("Trimbits iteration %3d 0f %3d\n",iteration, stop);
+    printf("Trimbits iteration %d of %d\n",iteration, stop);
     for (imod=modmi; imod<modma; imod++) {
       for (ichip=0; ichip<nChips; ichip++) {
 	selChip(ichip,imod);
@@ -621,15 +650,16 @@ int trim_with_median(int stop, int im) {
 	  nextStrip(imod);
 	  diff=scan[ichan]-med;
 	  if (direction[ichan]==0) {
-	    if (diff>0) 
+	    if (diff>0) {
 	      direction[ichan]=1;
-	    else
+	    } else {
 	      direction[ichan]=-1;
-	  }
+	    }
+	  } 
 	  if ( direction[ichan]!=-3) { 
 	    if (abs(diff)>abs(olddiff[ichan])) {
-	      printf("%d old diff %d < new diff %d   %d\n",ichan, olddiff[ichan], diff, direction[ichan]);
 	      trim=getTrimbit(imod,ichip,ich)+direction[ichan];
+	      printf("%d old diff %d < new diff %d   %d - trimbit %d\n",ichan, olddiff[ichan], diff, direction[ichan], trim);
 	      direction[ichan]=-3;
 	    } else {
 	      trim=getTrimbit(imod,ichip,ich)-direction[ichan];
@@ -638,12 +668,12 @@ int trim_with_median(int stop, int im) {
 	    }
 	    if (trim>TRIM_DR) {
 	      trim=63;
-	      printf("can't trim channel %d chip %d module %d\n",ich, ichip, imod);
+	      printf("can't trim channel %d chip %d module %d to trim %d\n",ich, ichip, imod, trim);
 	      retval=FAIL;
 	    }
 	    if (trim<0) {
+	      printf("can't trim channel %d chip %d module %d to trim %d\n",ich, ichip, imod, trim);
 	      trim=0;
-	      printf("can't trim channel %d chip %d module %d\n",ich, ichip, imod);
 	      retval=FAIL;
 	    }
 	    initChannel(trim,0,0,1,0,0,imod);

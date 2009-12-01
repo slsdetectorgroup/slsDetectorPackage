@@ -7,7 +7,9 @@
 #define CSP0 0x90000000 // Base Addresse CSP0
 #define CSP4 0xa0000000 // Base Addresse CSP4
 
-#define MEM_SIZE 0xFFFFFF // map so much memory
+//#define MEM_SIZE 0xFFFFFF // map so much memory
+#define MEM_SIZE 0xFFFFFFF // map so much memory
+
 
 
 /* registers defined in FPGA */

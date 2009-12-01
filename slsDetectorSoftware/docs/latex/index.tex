@@ -5,7 +5,12 @@ The architecture of the acquisitions system is intended as follows: \begin{itemi
 \item A socket server running on the detector (or more than one in some special cases) \item C++ classes common to all detectors for client-server communication. These can be supplied to users as libraries and embedded also in acquisition systems which are not developed by the SLS\begin{Desc}
 \item[See also:]\doxyref{My\-Socket\-TCP}{p.}{classMySocketTCP} \doxyref{sls\-Detector}{p.}{classslsDetector} \end{Desc}
 \item the possibility of using a Qt-based graphical user interface (with eventually root analisys capabilities) \item the possibility of runnin alla commands from command line. In order to ensure a fast operation of this so called \char`\"{}text client\char`\"{} the detector parameters should not be re-initialized everytime. For this reason a shared memory block is allocated where the main detector flags and parameters are stored\begin{Desc}
-\item[See also:]\doxyref{sls\-Detector::shared\-Sls\-Detector}{p.}{structslsDetector_1_1sharedSlsDetector}\end{Desc}
+\item[See also:]\doxyref{sls\-Detector::shared\-Sls\-Detector}{p.}{structslsDetector_1_1sharedSlsDetector} \end{Desc}
+\end{itemize}
+\section{How to use it}\label{index_howto_sec}
+The best way to operate the sls\-Detectors is to use the software (text client or GUI) developed by the sls detectors group. In case you need to embed the detector control in a previously existing software, compile these classes using \par
+ make package \par
+ and link the shared library created to your software bin/lib\-Sls\-Detector.so.1.0.1 Then in your software you should use the class related to the detector you want to control (\doxyref{mythen\-Detector}{p.}{classmythenDetector} or \doxyref{eiger\-Detector}{p.}{classeigerDetector}).
+
 \begin{Desc}
 \item[Author:]Anna Bergamaschi \end{Desc}
-\end{itemize}

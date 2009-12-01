@@ -44,6 +44,7 @@ u_int64_t getMcsNumber();
 u_int32_t getMcsVersion();
 u_int32_t testFifos(void);
 u_int32_t testFpga(void);
+u_int32_t testRAM(void);
 int testBus(void);
 int64_t set64BitReg(int64_t value, int aLSB, int aMSB);
 int64_t get64BitReg(int aLSB, int aMSB);

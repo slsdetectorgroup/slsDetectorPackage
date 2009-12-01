@@ -81,11 +81,15 @@
 
 <tr><td class="memItemLeft" nowrap align="right" valign="top">int&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="structslsDetector_1_1sharedSlsDetector.html#237f834b800df65a32fc4bc5cd714283">nBadChans</a></td></tr>
 
+<tr><td class="memItemLeft" nowrap align="right" valign="top">char&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="structslsDetector_1_1sharedSlsDetector.html#9ab536c77675cd30b26ab647efe5c3ca">badChanFile</a> [MAX_STR_LENGTH]</td></tr>
+
 <tr><td class="memItemLeft" nowrap align="right" valign="top">int&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="structslsDetector_1_1sharedSlsDetector.html#4e03ad7a759acf38d4543e0df9ab9710">badChansList</a> [MAX_BADCHANS]</td></tr>
 
 <tr><td class="memItemLeft" nowrap align="right" valign="top">int&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="structslsDetector_1_1sharedSlsDetector.html#d117d6131cef782896adb054e6b00861">nBadFF</a></td></tr>
 
 <tr><td class="memItemLeft" nowrap align="right" valign="top">int&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="structslsDetector_1_1sharedSlsDetector.html#ebf29d7d9b406d65f381c9446953bc14">badFFList</a> [MAX_BADCHANS]</td></tr>
+
+<tr><td class="memItemLeft" nowrap align="right" valign="top">char&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="structslsDetector_1_1sharedSlsDetector.html#42502564011f831f43733ffed7c2eafd">angConvFile</a> [MAX_STR_LENGTH]</td></tr>
 
 <tr><td class="memItemLeft" nowrap align="right" valign="top"><a class="el" href="structangleConversionConstant.html">angleConversionConstant</a>&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="structslsDetector_1_1sharedSlsDetector.html#31cebbb4add050ac00b3fbe9b4494d8b">angOff</a> [MAXMODS]</td></tr>
 
@@ -164,6 +168,21 @@ memory offsets for the adc arrays
 already existing flag. If the detector does not yet exist (alreadyExisting=0) the sharedMemory will be created, otherwise it will simly be linked 
 </div>
 </div><p>
+<a class="anchor" name="42502564011f831f43733ffed7c2eafd"></a><!-- doxytag: member="slsDetector::sharedSlsDetector::angConvFile" ref="42502564011f831f43733ffed7c2eafd" args="[MAX_STR_LENGTH]" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">char <a class="el" href="structslsDetector_1_1sharedSlsDetector.html#42502564011f831f43733ffed7c2eafd">slsDetector::sharedSlsDetector::angConvFile</a>[MAX_STR_LENGTH]          </td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>
+file with the angular conversion factors 
+</div>
+</div><p>
 <a class="anchor" name="289a2fe819a4e02a93dfc54f9ba7ae16"></a><!-- doxytag: member="slsDetector::sharedSlsDetector::angDirection" ref="289a2fe819a4e02a93dfc54f9ba7ae16" args="" -->
 <div class="memitem">
 <div class="memproto">
@@ -193,6 +212,21 @@ angular direction (1 if it corresponds to the encoder direction i.e. channel 0 i
 <p>
 array of angular conversion constants for each module<dl compact><dt><b>See also:</b></dt><dd><a class="el" href="structangleConversionConstant.html">angleConversionConstant</a> </dd></dl>
 
+</div>
+</div><p>
+<a class="anchor" name="9ab536c77675cd30b26ab647efe5c3ca"></a><!-- doxytag: member="slsDetector::sharedSlsDetector::badChanFile" ref="9ab536c77675cd30b26ab647efe5c3ca" args="[MAX_STR_LENGTH]" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">char <a class="el" href="structslsDetector_1_1sharedSlsDetector.html#9ab536c77675cd30b26ab647efe5c3ca">slsDetector::sharedSlsDetector::badChanFile</a>[MAX_STR_LENGTH]          </td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>
+file with the bad channels 
 </div>
 </div><p>
 <a class="anchor" name="4e03ad7a759acf38d4543e0df9ab9710"></a><!-- doxytag: member="slsDetector::sharedSlsDetector::badChansList" ref="4e03ad7a759acf38d4543e0df9ab9710" args="[MAX_BADCHANS]" -->
@@ -890,7 +924,7 @@ list of the energies at which the detector has been trimmed (unused)
 </div><p>
 <hr>The documentation for this struct was generated from the following file:<ul>
 <li>slsDetector/<a class="el" href="slsDetector_8h-source.html">slsDetector.h</a></ul>
-<hr size="1"><address style="align: right;"><small>Generated on Fri Oct 9 16:01:05 2009 by&nbsp;
+<hr size="1"><address style="align: right;"><small>Generated on Tue Dec 1 10:56:45 2009 by&nbsp;
 <a href="http://www.doxygen.org/index.html">
 <img src="doxygen.png" alt="doxygen" align="middle" border="0"></a> 1.4.7 </small></address>
 </body>

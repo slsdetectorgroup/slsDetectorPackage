@@ -179,7 +179,7 @@ u_int32_t setWaitStates(int d1) {
   u_int32_t c;
   int d=d1-2;
   char cmd[100];
-  sprintf(cmd,"bus -a 0xb0000000 -w 0xd000%1x",d1);
+  sprintf(cmd,"bus -a 0xb0000000 -w 0x%x0008",d1);
   c=bus_r(SPEED_REG);
   bus_w(SPEED_REG,(d<<WAIT_STATES_OFFSET)|(c&~(WAIT_STATES_MASK))); 
   system(cmd);
@@ -280,7 +280,7 @@ u_int32_t  getMcsVersion() {
 u_int32_t testFpga(void) {
   u_int32_t val;
   int result=OK;
-
+  //while (1) {
   //fixed pattern
   val=bus_r(FIX_PATT_REG);
   if (val==FIXED_PATT_VAL) {
@@ -320,6 +320,20 @@ u_int32_t testFpga(void) {
     result=FAIL;
     //    return FAIL;
   }
+  //  }
+  return result;
+}
+
+
+// for fpga test 
+u_int32_t testRAM(void) {
+  int result=OK;
+  int i=0;
+  allocateRAM();
+  //  while(i<100000) {
+    memcpy(ram_values, values, dataBytes);
+    printf ("%d: copied fifo %x to memory %x size %d\n",i++, values, ram_values, dataBytes);
+    // }
   return result;
 }
 
@@ -350,14 +364,16 @@ int setNMod(int n) {
   /* should enable all fifos*/
   bus_w(FIFO_CNTRL_REG_OFF+(ALLFIFO<<SHIFTMOD), FIFO_RESET_BIT | FIFO_DISABLE_TOGGLE_BIT); 
 
-  /*disable the fifos relative to the unused modules */
+  /*d isable the fifos relative to the unused modules */
   
   ifste=NCHAN*dynamicRange/32; 
   ifsta=nModX*NCHIP*ifste;
   ifsto=nModBoard*NCHIP*ifste;
  
   for (ififo=ifsta; ififo<ifsto; ififo+=ifste) {
-    fifocntrl[ififo]=FIFO_DISABLE_TOGGLE_BIT;
+    //fifocntrl[ififo]=FIFO_DISABLE_TOGGLE_BIT;
+    bus_w(FIFO_CNTRL_REG_OFF+(ififo<<SHIFTMOD), FIFO_DISABLE_TOGGLE_BIT); 
+    printf("Disabling fifo %d\n",ififo);
   } 
 
 
@@ -665,6 +681,9 @@ u_int32_t* fifo_read_event()
   }
 #endif
   memcpy(now_ptr, values, dataBytes);
+#ifdef VERBOSE
+  printf("Copying to ptr %x %d\n",now_ptr, dataBytes);
+#endif
 #ifdef VERYVERBOSE
   printf("after readout\n");
   for (ichip=0; ichip<nModBoard*NCHIP; ichip++) {
@@ -682,7 +701,7 @@ u_int32_t* fifo_read_event()
 
 u_int32_t* decode_data(int *datain)
 {
-  int *dataout;
+  u_int32_t *dataout;
   const char one=1;
   const int bytesize=8;
   char *ptr=(char*)datain;
@@ -699,7 +718,6 @@ u_int32_t* decode_data(int *datain)
     for (ibyte=0; ibyte<dataBytes; ibyte++) {
       iptr=ptr[ibyte];
       for (ipos=0; ipos<bytesize; ipos++) {
-	//	dataout[ibyte*2+ichan]=((iptr&((0xf)<<ichan))>>ichan)&0xf;
 	dataout[ichan]=(iptr>>(ipos))&0x1;
 	ichan++;
       }
@@ -709,7 +727,6 @@ u_int32_t* decode_data(int *datain)
     for (ibyte=0; ibyte<dataBytes; ibyte++) {
       iptr=ptr[ibyte]&0xff;
       for (ipos=0; ipos<2; ipos++) {
-	//	dataout[ibyte*2+ichan]=((iptr&((0xf)<<ichan))>>ichan)&0xf;
 	dataout[ichan]=(iptr>>(ipos*4))&0xf;
 	ichan++;
       }
@@ -731,7 +748,7 @@ u_int32_t* decode_data(int *datain)
     break;
   default:    
     for (ichan=0; ichan<nChans*nChips*nModX; ichan++)
-      dataout[ichan]=datain[ichan];//&0xffffff;
+      dataout[ichan]=datain[ichan]&0xffffff;
   }
   
 #ifdef VERBOSE
@@ -743,17 +760,11 @@ u_int32_t* decode_data(int *datain)
 
 
 int setDynamicRange(int dr) {
-
-
-
-
   int ow;
   u_int32_t np=getProbes();
 #ifdef VERYVERBOSE
   printf("probes==%02x\n",np);
 #endif
-  
-  
   if (dr>0) {
     if (dr<=1) {
       dynamicRange=1;
@@ -850,20 +861,31 @@ int setStoreInRAM(int b) {
 
 int allocateRAM() {
   size_t size;
-
+  u_int32_t nt, nf;
+  nt=setTrains(-1);
+  nf=setFrames(-1);
+  if (nt==0) nt=1;
+  if (nf==0) nf=1;
   // ret=clearRAM();
   if (storeInRAM) {
-    size=dataBytes*setFrames(-1);
-#ifdef VERBOSE
-    //   printf("nmodx=%d nmody=%d dynamicRange=%d dataBytes=%d nFrames=%d size=%d\n",nModX,nModY,dynamicRange,dataBytes,setFrameNumber(-1),size );
-#endif
+    size=dataBytes*nf*nt;
     if (size<dataBytes)
       size=dataBytes;
   }  else 
     size=dataBytes;
 
-  if (size==ram_size)
-    return OK;
+#ifdef VERBOSE
+  printf("nmodx=%d nmody=%d dynamicRange=%d dataBytes=%d nFrames=%d nTrains, size=%d\n",nModX,nModY,dynamicRange,dataBytes,nf,nt,size );
+#endif
+
+    if (size==ram_size) {
+     
+#ifdef VERBOSE
+      printf("RAM of size %d already allocated: nothing to be done\n", size);
+#endif
+ 
+      return OK;
+    }
     
   
 
@@ -892,6 +914,7 @@ int allocateRAM() {
 	printf("Fatal error: there must be a memory leak somewhere! You can't allocate even one frame!\n");
       else {
 	now_ptr=(char*)ram_values;
+	ram_size=size;
 #ifdef VERBOSE
 	printf("ram allocated 0x%x of size %d to %x\n",now_ptr, size, now_ptr+size);
 #endif

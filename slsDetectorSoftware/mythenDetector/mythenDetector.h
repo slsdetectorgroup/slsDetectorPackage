@@ -4,41 +4,68 @@
 #ifndef MYTHEN_DETECTOR_H
 #define MYTHEN_DETECTOR_H
 
-using namespace std;
-
-
-
-/**
- * 
- *
-@libdoc The mythenDetector class contains the functions specific to the mythen detector
- *
- * @short This calss contains all mythen specific functions
- * @author Anna Bergamaschi
- * @version 0.1alpha (any string)
-
-
- */
 #include "slsDetector.h"
+
+#define defaultTDead {170,90,750}
+
+using namespace std;
+/**
+ \mainpage C++ class with MYTHEN specific functions
+ *
+ 
+
+ @author Anna Bergamaschi
+
+*/
+
+
 
 class mythenDetector : public slsDetector{
 
 
 
  public:
-  
-
-
-/** (default) constructor 
-
- \param  id is the detector index which is needed to define the shared memory id. Different physical detectors should have different IDs in order to work independently
-
-
+/** 
+    (default) constructor 
 */
-  mythenDetector(int id=0);
+  mythenDetector(int id=0) : slsDetector(MYTHEN, id);
   //slsDetector(string  const fname);
+  //  ~slsDetector(){while(dataQueue.size()>0){}};
   /** destructor */ 
   ~mythenDetector(){};
+
+
+  int readConfigurationFile(string const fname);  
+  /**
+     Every detector should have a basic configuration file containing:
+     type (mythen, pilatus etc.)
+     hostname
+     portnumber
+     communication type (default TCP/IP)
+     eventually secondary portnumber (e.g. mythen stop function)
+     number of modules installed if different from the detector size (x,y)
+
+     to be changed
+  */
+  int writeConfigurationFile(string const fname);
+
+
+  /* 
+     It should be possible to dump all the settings of the detector (including trimbits, threshold energy, gating/triggering, acquisition time etc.
+     in a file and retrieve it for repeating the measurement with identicals ettings, if necessary
+  */
+  /** 
+      not yet implemented
+
+      should dump to a file all the current detector parameters
+  */
+  int dumpDetectorSetup(string const fname);  
+  /** 
+      not yet implemented
+
+      should retrieve from a file all the current detector parameters
+  */
+  int retrieveDetectorSetup(string const fname);
 
 
 
@@ -70,7 +97,6 @@ class mythenDetector : public slsDetector{
   */
   int writeTrimFile(string fname, int imod);
 
- 
     /**
        writes a data file
        \param name of the file to be written
@@ -117,20 +143,15 @@ class mythenDetector : public slsDetector{
   */
   int readDataFile(string fname, int *data);
 
- /**
-     returns the location of the calibration files
-  \sa  sharedSlsDetector
-  */
 
   /**
-  int readCalibrationFile(string fname, float &gain, float &offset);
+      reads a calibration file
       \param fname file to be read
       \param gain reference to the gain variable
       \offset reference to the offset variable
   \sa  sharedSlsDetector
   */
   int readCalibrationFile(string fname, float &gain, float &offset);
-
   /**
       writes a clibration file
       \param fname file to be written
@@ -153,12 +174,12 @@ class mythenDetector : public slsDetector{
   \sa  angleConversionConstant
   */
   int writeAngularConversion(string fname="");
- 
 
 
-  /* Communication to server */
 
-  // Tests and identification
+
+  //Corrections
+
 
   /** 
       set angular conversion
@@ -174,6 +195,10 @@ class mythenDetector : public slsDetector{
       \returns 0 if angular conversion disabled, >0 otherwise
   */
   int getAngularConversion(int &direction,  angleConversionConstant *angconv=NULL);
+  
+  
+  /** returns the angular conversion file */
+  char *getAngularConversion() {return thisDetector->angConvFile;};
   
   /** 
       set detector global offset
@@ -216,21 +241,16 @@ class mythenDetector : public slsDetector{
 
 
 
-
-
-
-  /** 
-     decode data from the detector converting them to an array of floats, one for each channle
-     \param datain data from the detector
-     \returns pointer to a float array with a data per channel
+  
+  /** sets the arrays of the merged data to 0. NB The array should be created with size >= 360./getBinSize(); 
+      \param mp already merged postions
+      \param mv already merged data
+      \param me already merged errors (squared sum)
+      \param mm multiplicity of merged arrays
+      \returns OK or FAIL
   */
-  float* decodeData(int *datain);
-
-  
-  
   int resetMerging(float *mp, float *mv,float *me, int *mm);
-  /** not yet implemented 
-      merge dataset
+  /** merge dataset
       \param p1 angular positions of dataset
       \param v1 data
       \param e1 errors
@@ -251,10 +271,22 @@ class mythenDetector : public slsDetector{
   */
   int finalizeMerging(float *mp, float *mv,float *me, int *mm);
 
- 
 
- private:
- 
+  /**
+     function for processing data
+  */
+  void* processData(); // thread function
+
+  /** performs the complete acquisition and data processing 
+     moves the detector to next position <br>
+     starts and reads the detector <br>
+     reads the IC (if required) <br>
+     reads the encoder (iof required for angualr conversion) <br>
+     processes the data (flat field, rate, angular conversion and merging ::processData())
+  */
+  
+  void acquire();
+
 
 };
 

@@ -1,8 +1,5 @@
 \section{mythen\-Detector Class Reference}
 \label{classmythenDetector}\index{mythenDetector@{mythenDetector}}
-This calss contains all mythen specific functions.  
-
-
 {\tt \#include $<$mythen\-Detector.h$>$}
 
 Inheritance diagram for mythen\-Detector::\begin{figure}[H]
@@ -14,9 +11,13 @@ Inheritance diagram for mythen\-Detector::\begin{figure}[H]
 \subsection*{Public Member Functions}
 \begin{CompactItemize}
 \item 
-\bf{mythen\-Detector} (int id=0)
+int \bf{read\-Configuration\-File} (string const fname)
 \item 
-\bf{$\sim$mythen\-Detector} ()
+int \bf{write\-Configuration\-File} (string const fname)
+\item 
+int \bf{dump\-Detector\-Setup} (string const fname)
+\item 
+int \bf{retrieve\-Detector\-Setup} (string const fname)
 \item 
 \bf{sls\_\-detector\_\-module} $\ast$ \bf{read\-Trim\-File} (string fname, \bf{sls\_\-detector\_\-module} $\ast$my\-Mod=NULL)
 \item 
@@ -44,6 +45,8 @@ int \bf{set\-Angular\-Conversion} (string fname=\char`\"{}\char`\"{})
 \item 
 int \bf{get\-Angular\-Conversion} (int \&direction, \bf{angle\-Conversion\-Constant} $\ast$angconv=NULL)
 \item 
+char $\ast$ \bf{get\-Angular\-Conversion} ()
+\item 
 float \bf{set\-Global\-Offset} (float f)
 \item 
 float \bf{set\-Fine\-Offset} (float f)
@@ -60,77 +63,52 @@ float \bf{set\-Bin\-Size} (float bs)
 \item 
 float \bf{get\-Bin\-Size} ()
 \item 
-float $\ast$ \bf{decode\-Data} (int $\ast$datain)
-\item 
 int \bf{reset\-Merging} (float $\ast$mp, float $\ast$mv, float $\ast$me, int $\ast$mm)
 \item 
 int \bf{add\-To\-Merging} (float $\ast$p1, float $\ast$v1, float $\ast$e1, float $\ast$mp, float $\ast$mv, float $\ast$me, int $\ast$mm)
 \item 
 int \bf{finalize\-Merging} (float $\ast$mp, float $\ast$mv, float $\ast$me, int $\ast$mm)
+\item 
+void $\ast$ \bf{process\-Data} ()
+\item 
+void \bf{acquire} ()
 \end{CompactItemize}
 
 
-\subsection{Detailed Description}
-This calss contains all mythen specific functions. 
-
-The \doxyref{mythen\-Detector}{p.}{classmythenDetector} class contains the functions specific to the mythen detector
-
-\begin{Desc}
-\item[Author:]Anna Bergamaschi \end{Desc}
-\begin{Desc}
-\item[Version:]0.1alpha (any string) \end{Desc}
-
-
-
-
-\subsection{Constructor \& Destructor Documentation}
-\index{mythenDetector@{mythen\-Detector}!mythenDetector@{mythenDetector}}
-\index{mythenDetector@{mythenDetector}!mythenDetector@{mythen\-Detector}}
-\subsubsection{\setlength{\rightskip}{0pt plus 5cm}mythen\-Detector::mythen\-Detector (int {\em id} = {\tt 0})}\label{classmythenDetector_5efa6a91622e5e173d7491801f60bda0}
-
-
-(default) constructor
-
-\begin{Desc}
-\item[Parameters:]
-\begin{description}
-\item[{\em id}]is the detector index which is needed to define the shared memory id. Different physical detectors should have different IDs in order to work independently \end{description}
-\end{Desc}
-\index{mythenDetector@{mythen\-Detector}!~mythenDetector@{$\sim$mythenDetector}}
-\index{~mythenDetector@{$\sim$mythenDetector}!mythenDetector@{mythen\-Detector}}
-\subsubsection{\setlength{\rightskip}{0pt plus 5cm}mythen\-Detector::$\sim$mythen\-Detector ()\hspace{0.3cm}{\tt  [inline]}}\label{classmythenDetector_8118166c2e7c3d3968b9ae5016614693}
-
-
-destructor 
-
 \subsection{Member Function Documentation}
-\index{mythenDetector@{mythen\-Detector}!addToMerging@{addToMerging}}
+\index{mythenDetector@{mythen\-Detector}!acquire@{acquire}}
+\index{acquire@{acquire}!mythenDetector@{mythen\-Detector}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}void mythen\-Detector::acquire ()\hspace{0.3cm}{\tt  [virtual]}}\label{classmythenDetector_bb3d2f51a414cf9dace29a4b5676828f}
+
+
+performs the complete acquisition and data processing moves the detector to next position \par
+ starts and reads the detector \par
+ reads the IC (if required) \par
+ reads the encoder (iof required for angualr conversion) \par
+ processes the data (flat field, rate, angular conversion and merging process\-Data()) 
+
+Implements \bf{sls\-Detector} \doxyref{p.}{classslsDetector_d2ee30dfd50f06431dca4e4b9619f301}.\index{mythenDetector@{mythen\-Detector}!addToMerging@{addToMerging}}
 \index{addToMerging@{addToMerging}!mythenDetector@{mythen\-Detector}}
-\subsubsection{\setlength{\rightskip}{0pt plus 5cm}int mythen\-Detector::add\-To\-Merging (float $\ast$ {\em p1}, float $\ast$ {\em v1}, float $\ast$ {\em e1}, float $\ast$ {\em mp}, float $\ast$ {\em mv}, float $\ast$ {\em me}, int $\ast$ {\em mm})}\label{classmythenDetector_eaaf7d7e3150f473e3bbcf59d91692c2}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}int mythen\-Detector::add\-To\-Merging (float $\ast$ {\em p1}, float $\ast$ {\em v1}, float $\ast$ {\em e1}, float $\ast$ {\em mp}, float $\ast$ {\em mv}, float $\ast$ {\em me}, int $\ast$ {\em mm})\hspace{0.3cm}{\tt  [virtual]}}\label{classmythenDetector_eaaf7d7e3150f473e3bbcf59d91692c2}
 
 
-not yet implemented merge dataset \begin{Desc}
+merge dataset \begin{Desc}
 \item[Parameters:]
 \begin{description}
 \item[{\em p1}]angular positions of dataset \item[{\em v1}]data \item[{\em e1}]errors \item[{\em mp}]already merged postions \item[{\em mv}]already merged data \item[{\em me}]already merged errors (squared sum) \item[{\em mm}]multiplicity of merged arrays \end{description}
 \end{Desc}
 
 
-Reimplemented from \bf{sls\-Detector} \doxyref{p.}{classslsDetector_ed3ddadb246080ef644b6d1455fa2e32}.\index{mythenDetector@{mythen\-Detector}!decodeData@{decodeData}}
-\index{decodeData@{decodeData}!mythenDetector@{mythen\-Detector}}
-\subsubsection{\setlength{\rightskip}{0pt plus 5cm}float$\ast$ mythen\-Detector::decode\-Data (int $\ast$ {\em datain})}\label{classmythenDetector_77e8c92003fab14da768af660509241d}
+Implements \bf{sls\-Detector} \doxyref{p.}{classslsDetector_feb8730f24292620e5d451cd2d4bb9cd}.\index{mythenDetector@{mythen\-Detector}!dumpDetectorSetup@{dumpDetectorSetup}}
+\index{dumpDetectorSetup@{dumpDetectorSetup}!mythenDetector@{mythen\-Detector}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}int mythen\-Detector::dump\-Detector\-Setup (string const  {\em fname})\hspace{0.3cm}{\tt  [virtual]}}\label{classmythenDetector_a0fe9987e8fa240a312ad353ae539188}
 
 
-decode data from the detector converting them to an array of floats, one for each channle \begin{Desc}
-\item[Parameters:]
-\begin{description}
-\item[{\em datain}]data from the detector \end{description}
-\end{Desc}
-\begin{Desc}
-\item[Returns:]pointer to a float array with a data per channel \end{Desc}
+not yet implemented
 
+should dump to a file all the current detector parameters 
 
-Reimplemented from \bf{sls\-Detector} \doxyref{p.}{classslsDetector_937d257464bade6dc6d3ab42c86843ba}.\index{mythenDetector@{mythen\-Detector}!finalizeMerging@{finalizeMerging}}
+Implements \bf{sls\-Detector} \doxyref{p.}{classslsDetector_96428855d6e286408a52e675e045cf45}.\index{mythenDetector@{mythen\-Detector}!finalizeMerging@{finalizeMerging}}
 \index{finalizeMerging@{finalizeMerging}!mythenDetector@{mythen\-Detector}}
 \subsubsection{\setlength{\rightskip}{0pt plus 5cm}int mythen\-Detector::finalize\-Merging (float $\ast$ {\em mp}, float $\ast$ {\em mv}, float $\ast$ {\em me}, int $\ast$ {\em mm})}\label{classmythenDetector_a919a42bd89fe21c4086bae5f1fb2f32}
 
@@ -146,7 +124,14 @@ calculates the \char`\"{}final\char`\"{} positions, data value and errors for th
 
 Reimplemented from \bf{sls\-Detector} \doxyref{p.}{classslsDetector_8f73479f68ca2171fd2108c2f157299e}.\index{mythenDetector@{mythen\-Detector}!getAngularConversion@{getAngularConversion}}
 \index{getAngularConversion@{getAngularConversion}!mythenDetector@{mythen\-Detector}}
-\subsubsection{\setlength{\rightskip}{0pt plus 5cm}int mythen\-Detector::get\-Angular\-Conversion (int \& {\em direction}, \bf{angle\-Conversion\-Constant} $\ast$ {\em angconv} = {\tt NULL})}\label{classmythenDetector_b2b2f17c36883323ad0abf762c63494f}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}char$\ast$ mythen\-Detector::get\-Angular\-Conversion ()\hspace{0.3cm}{\tt  [inline, virtual]}}\label{classmythenDetector_fab45faa264e44178fc52300eaf92cad}
+
+
+returns the angular conversion file 
+
+Implements \bf{sls\-Detector} \doxyref{p.}{classslsDetector_0c2e502441fd74ec7fc20604c5c08c27}.\index{mythenDetector@{mythen\-Detector}!getAngularConversion@{getAngularConversion}}
+\index{getAngularConversion@{getAngularConversion}!mythenDetector@{mythen\-Detector}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}int mythen\-Detector::get\-Angular\-Conversion (int \& {\em direction}, \bf{angle\-Conversion\-Constant} $\ast$ {\em angconv} = {\tt NULL})\hspace{0.3cm}{\tt  [virtual]}}\label{classmythenDetector_b2b2f17c36883323ad0abf762c63494f}
 
 
 get angular conversion \begin{Desc}
@@ -158,30 +143,30 @@ get angular conversion \begin{Desc}
 \item[Returns:]0 if angular conversion disabled, $>$0 otherwise \end{Desc}
 
 
-Reimplemented from \bf{sls\-Detector} \doxyref{p.}{classslsDetector_a146baee5af54b53db0997de02f4779c}.\index{mythenDetector@{mythen\-Detector}!getBinSize@{getBinSize}}
+Implements \bf{sls\-Detector} \doxyref{p.}{classslsDetector_a110e9eb82123756cf89fda0a4cb464d}.\index{mythenDetector@{mythen\-Detector}!getBinSize@{getBinSize}}
 \index{getBinSize@{getBinSize}!mythenDetector@{mythen\-Detector}}
-\subsubsection{\setlength{\rightskip}{0pt plus 5cm}float mythen\-Detector::get\-Bin\-Size ()\hspace{0.3cm}{\tt  [inline]}}\label{classmythenDetector_9fd4e479d7eb3f9c53d5d56a43bbccaf}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}float mythen\-Detector::get\-Bin\-Size ()\hspace{0.3cm}{\tt  [inline, virtual]}}\label{classmythenDetector_9fd4e479d7eb3f9c53d5d56a43bbccaf}
 
 
 return detector bin size used for merging (approx angular resolution) 
 
-Reimplemented from \bf{sls\-Detector} \doxyref{p.}{classslsDetector_8a78eda56f5a0c487bbc4e2f962d04db}.\index{mythenDetector@{mythen\-Detector}!getFineOffset@{getFineOffset}}
+Implements \bf{sls\-Detector} \doxyref{p.}{classslsDetector_7d83754e3f41042caa9297da9a33b714}.\index{mythenDetector@{mythen\-Detector}!getFineOffset@{getFineOffset}}
 \index{getFineOffset@{getFineOffset}!mythenDetector@{mythen\-Detector}}
-\subsubsection{\setlength{\rightskip}{0pt plus 5cm}float mythen\-Detector::get\-Fine\-Offset ()\hspace{0.3cm}{\tt  [inline]}}\label{classmythenDetector_00720f1445f3f301fa3316828d978de6}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}float mythen\-Detector::get\-Fine\-Offset ()\hspace{0.3cm}{\tt  [inline, virtual]}}\label{classmythenDetector_00720f1445f3f301fa3316828d978de6}
 
 
 get detector fine offset 
 
-Reimplemented from \bf{sls\-Detector} \doxyref{p.}{classslsDetector_1a402a849d04190024e9dc87d4dae6dc}.\index{mythenDetector@{mythen\-Detector}!getGlobalOffset@{getGlobalOffset}}
+Implements \bf{sls\-Detector} \doxyref{p.}{classslsDetector_8e39680a1a096ca13ed672504b5b08e6}.\index{mythenDetector@{mythen\-Detector}!getGlobalOffset@{getGlobalOffset}}
 \index{getGlobalOffset@{getGlobalOffset}!mythenDetector@{mythen\-Detector}}
-\subsubsection{\setlength{\rightskip}{0pt plus 5cm}float mythen\-Detector::get\-Global\-Offset ()\hspace{0.3cm}{\tt  [inline]}}\label{classmythenDetector_b2086f336d7198381453556b520dd556}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}float mythen\-Detector::get\-Global\-Offset ()\hspace{0.3cm}{\tt  [inline, virtual]}}\label{classmythenDetector_b2086f336d7198381453556b520dd556}
 
 
 get detector global offset 
 
-Reimplemented from \bf{sls\-Detector} \doxyref{p.}{classslsDetector_42f854256e2900f18b2a17201813b48c}.\index{mythenDetector@{mythen\-Detector}!getPositions@{getPositions}}
+Implements \bf{sls\-Detector} \doxyref{p.}{classslsDetector_8964e3efa73f29b04bd9479578bd1c59}.\index{mythenDetector@{mythen\-Detector}!getPositions@{getPositions}}
 \index{getPositions@{getPositions}!mythenDetector@{mythen\-Detector}}
-\subsubsection{\setlength{\rightskip}{0pt plus 5cm}int mythen\-Detector::get\-Positions (float $\ast$ {\em pos} = {\tt NULL})\hspace{0.3cm}{\tt  [inline]}}\label{classmythenDetector_0d306720dced0d3576474978b06b4be4}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}int mythen\-Detector::get\-Positions (float $\ast$ {\em pos} = {\tt NULL})\hspace{0.3cm}{\tt  [inline, virtual]}}\label{classmythenDetector_0d306720dced0d3576474978b06b4be4}
 
 
 get positions for the acquisition \begin{Desc}
@@ -193,9 +178,16 @@ get positions for the acquisition \begin{Desc}
 \item[Returns:]number of positions \end{Desc}
 
 
-Reimplemented from \bf{sls\-Detector} \doxyref{p.}{classslsDetector_732f6d36456d6e87d70324a4bdc1bbb8}.\index{mythenDetector@{mythen\-Detector}!readAngularConversion@{readAngularConversion}}
+Implements \bf{sls\-Detector} \doxyref{p.}{classslsDetector_248794801b9794d20e7d58bceab564ab}.\index{mythenDetector@{mythen\-Detector}!processData@{processData}}
+\index{processData@{processData}!mythenDetector@{mythen\-Detector}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}void$\ast$ mythen\-Detector::process\-Data ()\hspace{0.3cm}{\tt  [virtual]}}\label{classmythenDetector_b5416cb00251f95fc3661936c3cbb1c4}
+
+
+function for processing data 
+
+Implements \bf{sls\-Detector} \doxyref{p.}{classslsDetector_971d316af920fcb3ade98c486fe42c99}.\index{mythenDetector@{mythen\-Detector}!readAngularConversion@{readAngularConversion}}
 \index{readAngularConversion@{readAngularConversion}!mythenDetector@{mythen\-Detector}}
-\subsubsection{\setlength{\rightskip}{0pt plus 5cm}int mythen\-Detector::read\-Angular\-Conversion (string {\em fname} = {\tt \char`\"{}\char`\"{}})}\label{classmythenDetector_33bf1b939eb877bbd4aa42f400d7ca36}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}int mythen\-Detector::read\-Angular\-Conversion (string {\em fname} = {\tt \char`\"{}\char`\"{}})\hspace{0.3cm}{\tt  [virtual]}}\label{classmythenDetector_33bf1b939eb877bbd4aa42f400d7ca36}
 
 
 reads an angular conversion file \begin{Desc}
@@ -207,12 +199,12 @@ reads an angular conversion file \begin{Desc}
 \item[See also:]\doxyref{angle\-Conversion\-Constant}{p.}{structangleConversionConstant} \end{Desc}
 
 
-Reimplemented from \bf{sls\-Detector} \doxyref{p.}{classslsDetector_23398787e01e519bf8ac5f313ca5af01}.\index{mythenDetector@{mythen\-Detector}!readCalibrationFile@{readCalibrationFile}}
+Implements \bf{sls\-Detector} \doxyref{p.}{classslsDetector_cd9d6358db471600f2e1a143a53c61c1}.\index{mythenDetector@{mythen\-Detector}!readCalibrationFile@{readCalibrationFile}}
 \index{readCalibrationFile@{readCalibrationFile}!mythenDetector@{mythen\-Detector}}
-\subsubsection{\setlength{\rightskip}{0pt plus 5cm}int mythen\-Detector::read\-Calibration\-File (string {\em fname}, float \& {\em gain}, float \& {\em offset})}\label{classmythenDetector_f8f1b7b42012420fc557aacd714140f8}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}int mythen\-Detector::read\-Calibration\-File (string {\em fname}, float \& {\em gain}, float \& {\em offset})\hspace{0.3cm}{\tt  [virtual]}}\label{classmythenDetector_f8f1b7b42012420fc557aacd714140f8}
 
 
-int \doxyref{read\-Calibration\-File(string fname, float \&gain, float \&offset)}{p.}{classmythenDetector_f8f1b7b42012420fc557aacd714140f8}; \begin{Desc}
+reads a calibration file \begin{Desc}
 \item[Parameters:]
 \begin{description}
 \item[{\em fname}]file to be read \item[{\em gain}]reference to the gain variable  reference to the offset variable \end{description}
@@ -221,9 +213,16 @@ int \doxyref{read\-Calibration\-File(string fname, float \&gain, float \&offset)
 \item[See also:]\doxyref{shared\-Sls\-Detector}{p.}{classslsDetector_2dd6bff7d94ab8005c2797152b19264e} \end{Desc}
 
 
-Reimplemented from \bf{sls\-Detector} \doxyref{p.}{classslsDetector_9305060e7499cfcabac23b99c884b92b}.\index{mythenDetector@{mythen\-Detector}!readDataFile@{readDataFile}}
+Implements \bf{sls\-Detector} \doxyref{p.}{classslsDetector_6c7f837f0820b08f41649c30151cb7ac}.\index{mythenDetector@{mythen\-Detector}!readConfigurationFile@{readConfigurationFile}}
+\index{readConfigurationFile@{readConfigurationFile}!mythenDetector@{mythen\-Detector}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}int mythen\-Detector::read\-Configuration\-File (string const  {\em fname})\hspace{0.3cm}{\tt  [virtual]}}\label{classmythenDetector_92a32bcc57919fcf9eea844905640e90}
+
+
+Purely virtual function Should be implemented in the specific detector class /sa \doxyref{mythen\-Detector::read\-Configuration\-File}{p.}{classmythenDetector_92a32bcc57919fcf9eea844905640e90} 
+
+Implements \bf{sls\-Detector} \doxyref{p.}{classslsDetector_80266f80cfe49c2ccec7118de341d983}.\index{mythenDetector@{mythen\-Detector}!readDataFile@{readDataFile}}
 \index{readDataFile@{readDataFile}!mythenDetector@{mythen\-Detector}}
-\subsubsection{\setlength{\rightskip}{0pt plus 5cm}int mythen\-Detector::read\-Data\-File (string {\em fname}, int $\ast$ {\em data})}\label{classmythenDetector_d83819d61ea01148cf18cd3c46f2a9f7}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}int mythen\-Detector::read\-Data\-File (string {\em fname}, int $\ast$ {\em data})\hspace{0.3cm}{\tt  [virtual]}}\label{classmythenDetector_d83819d61ea01148cf18cd3c46f2a9f7}
 
 
 reads a data file \begin{Desc}
@@ -235,9 +234,9 @@ reads a data file \begin{Desc}
 \item[Returns:]OK or FAIL if it could not read the file or data=NULL \end{Desc}
 
 
-Reimplemented from \bf{sls\-Detector} \doxyref{p.}{classslsDetector_0d27017bc1140cc9da3e797f03848f2e}.\index{mythenDetector@{mythen\-Detector}!readDataFile@{readDataFile}}
+Implements \bf{sls\-Detector} \doxyref{p.}{classslsDetector_4239e7a357df82640464c0f2d0a18d69}.\index{mythenDetector@{mythen\-Detector}!readDataFile@{readDataFile}}
 \index{readDataFile@{readDataFile}!mythenDetector@{mythen\-Detector}}
-\subsubsection{\setlength{\rightskip}{0pt plus 5cm}int mythen\-Detector::read\-Data\-File (string {\em fname}, float $\ast$ {\em data}, float $\ast$ {\em err} = {\tt NULL}, float $\ast$ {\em ang} = {\tt NULL}, char {\em dataformat} = {\tt 'f'}, int {\em nch} = {\tt 0})}\label{classmythenDetector_1937a5355eed0dc553cb05d2098f7c47}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}int mythen\-Detector::read\-Data\-File (string {\em fname}, float $\ast$ {\em data}, float $\ast$ {\em err} = {\tt NULL}, float $\ast$ {\em ang} = {\tt NULL}, char {\em dataformat} = {\tt 'f'}, int {\em nch} = {\tt 0})\hspace{0.3cm}{\tt  [virtual]}}\label{classmythenDetector_1937a5355eed0dc553cb05d2098f7c47}
 
 
 reads a data file \begin{Desc}
@@ -249,9 +248,9 @@ reads a data file \begin{Desc}
 \item[Returns:]OK or FAIL if it could not read the file or data=NULL \end{Desc}
 
 
-Reimplemented from \bf{sls\-Detector} \doxyref{p.}{classslsDetector_ffd62fa6a3487693316209ea71502b4b}.\index{mythenDetector@{mythen\-Detector}!readTrimFile@{readTrimFile}}
+Implements \bf{sls\-Detector} \doxyref{p.}{classslsDetector_86df95809e0e7979eafc04b2b868843d}.\index{mythenDetector@{mythen\-Detector}!readTrimFile@{readTrimFile}}
 \index{readTrimFile@{readTrimFile}!mythenDetector@{mythen\-Detector}}
-\subsubsection{\setlength{\rightskip}{0pt plus 5cm}\bf{sls\_\-detector\_\-module}$\ast$ mythen\-Detector::read\-Trim\-File (string {\em fname}, \bf{sls\_\-detector\_\-module} $\ast$ {\em my\-Mod} = {\tt NULL})}\label{classmythenDetector_2120f9105997fd8f8bf9165dbffc55e7}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}\bf{sls\_\-detector\_\-module}$\ast$ mythen\-Detector::read\-Trim\-File (string {\em fname}, \bf{sls\_\-detector\_\-module} $\ast$ {\em my\-Mod} = {\tt NULL})\hspace{0.3cm}{\tt  [virtual]}}\label{classmythenDetector_2120f9105997fd8f8bf9165dbffc55e7}
 
 
 reads a trim file \begin{Desc}
@@ -264,9 +263,9 @@ reads a trim file \begin{Desc}
 \item[Returns:]the pointer to my\-Mod or NULL if reading the file failed \end{Desc}
 
 
-Reimplemented from \bf{sls\-Detector} \doxyref{p.}{classslsDetector_e84b8a7a2b27db3f89a98f9f8a81efca}.\index{mythenDetector@{mythen\-Detector}!resetMerging@{resetMerging}}
+Implements \bf{sls\-Detector} \doxyref{p.}{classslsDetector_612b52469e27c6675969499d3680abe6}.\index{mythenDetector@{mythen\-Detector}!resetMerging@{resetMerging}}
 \index{resetMerging@{resetMerging}!mythenDetector@{mythen\-Detector}}
-\subsubsection{\setlength{\rightskip}{0pt plus 5cm}int mythen\-Detector::reset\-Merging (float $\ast$ {\em mp}, float $\ast$ {\em mv}, float $\ast$ {\em me}, int $\ast$ {\em mm})}\label{classmythenDetector_7d38c9af0d94bc15571c3c15b38f39a8}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}int mythen\-Detector::reset\-Merging (float $\ast$ {\em mp}, float $\ast$ {\em mv}, float $\ast$ {\em me}, int $\ast$ {\em mm})\hspace{0.3cm}{\tt  [virtual]}}\label{classmythenDetector_7d38c9af0d94bc15571c3c15b38f39a8}
 
 
 sets the arrays of the merged data to 0. NB The array should be created with size $>$= 360./get\-Bin\-Size(); \begin{Desc}
@@ -278,9 +277,18 @@ sets the arrays of the merged data to 0. NB The array should be created with siz
 \item[Returns:]OK or FAIL \end{Desc}
 
 
-Reimplemented from \bf{sls\-Detector} \doxyref{p.}{classslsDetector_208c3a5a80ba931056f1f2ff3cb5d0e5}.\index{mythenDetector@{mythen\-Detector}!setAngularConversion@{setAngularConversion}}
+Implements \bf{sls\-Detector} \doxyref{p.}{classslsDetector_20156c620f868445e454bc4115871822}.\index{mythenDetector@{mythen\-Detector}!retrieveDetectorSetup@{retrieveDetectorSetup}}
+\index{retrieveDetectorSetup@{retrieveDetectorSetup}!mythenDetector@{mythen\-Detector}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}int mythen\-Detector::retrieve\-Detector\-Setup (string const  {\em fname})\hspace{0.3cm}{\tt  [virtual]}}\label{classmythenDetector_8eedcd0b6739dd878559de5b675fae83}
+
+
+not yet implemented
+
+should retrieve from a file all the current detector parameters 
+
+Implements \bf{sls\-Detector} \doxyref{p.}{classslsDetector_0ec6aa8998db1bee1b00aeecbe870d5f}.\index{mythenDetector@{mythen\-Detector}!setAngularConversion@{setAngularConversion}}
 \index{setAngularConversion@{setAngularConversion}!mythenDetector@{mythen\-Detector}}
-\subsubsection{\setlength{\rightskip}{0pt plus 5cm}int mythen\-Detector::set\-Angular\-Conversion (string {\em fname} = {\tt \char`\"{}\char`\"{}})}\label{classmythenDetector_78efe554a277de7fb8759307992fc61b}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}int mythen\-Detector::set\-Angular\-Conversion (string {\em fname} = {\tt \char`\"{}\char`\"{}})\hspace{0.3cm}{\tt  [virtual]}}\label{classmythenDetector_78efe554a277de7fb8759307992fc61b}
 
 
 set angular conversion \begin{Desc}
@@ -292,30 +300,30 @@ set angular conversion \begin{Desc}
 \item[Returns:]0 if angular conversion disabled, $>$0 otherwise \end{Desc}
 
 
-Reimplemented from \bf{sls\-Detector} \doxyref{p.}{classslsDetector_30fe39ddd78fa880b6b7815d1d5462ec}.\index{mythenDetector@{mythen\-Detector}!setBinSize@{setBinSize}}
+Implements \bf{sls\-Detector} \doxyref{p.}{classslsDetector_0a17abc301de750f7dafd43b7ad8b0c9}.\index{mythenDetector@{mythen\-Detector}!setBinSize@{setBinSize}}
 \index{setBinSize@{setBinSize}!mythenDetector@{mythen\-Detector}}
-\subsubsection{\setlength{\rightskip}{0pt plus 5cm}float mythen\-Detector::set\-Bin\-Size (float {\em bs})\hspace{0.3cm}{\tt  [inline]}}\label{classmythenDetector_8f466447f886379204a59eb6785f1ed0}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}float mythen\-Detector::set\-Bin\-Size (float {\em bs})\hspace{0.3cm}{\tt  [inline, virtual]}}\label{classmythenDetector_8f466447f886379204a59eb6785f1ed0}
 
 
 set detector bin size used for merging (approx angular resolution) 
 
-Reimplemented from \bf{sls\-Detector} \doxyref{p.}{classslsDetector_96e2fb6fb0aa34bdbe59facf367c4ae1}.\index{mythenDetector@{mythen\-Detector}!setFineOffset@{setFineOffset}}
+Implements \bf{sls\-Detector} \doxyref{p.}{classslsDetector_1a2ebbe67dae42059723071f437eb721}.\index{mythenDetector@{mythen\-Detector}!setFineOffset@{setFineOffset}}
 \index{setFineOffset@{setFineOffset}!mythenDetector@{mythen\-Detector}}
-\subsubsection{\setlength{\rightskip}{0pt plus 5cm}float mythen\-Detector::set\-Fine\-Offset (float {\em f})\hspace{0.3cm}{\tt  [inline]}}\label{classmythenDetector_fe142e36f1a5fa8b2ab5fc45e9f8c781}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}float mythen\-Detector::set\-Fine\-Offset (float {\em f})\hspace{0.3cm}{\tt  [inline, virtual]}}\label{classmythenDetector_fe142e36f1a5fa8b2ab5fc45e9f8c781}
 
 
 set detector fine offset 
 
-Reimplemented from \bf{sls\-Detector} \doxyref{p.}{classslsDetector_fd3b79c59688a7a0f4f72ba5676a2f9b}.\index{mythenDetector@{mythen\-Detector}!setGlobalOffset@{setGlobalOffset}}
+Implements \bf{sls\-Detector} \doxyref{p.}{classslsDetector_7b3b6b3ac5b3b1ee0677f7deeec5c9e3}.\index{mythenDetector@{mythen\-Detector}!setGlobalOffset@{setGlobalOffset}}
 \index{setGlobalOffset@{setGlobalOffset}!mythenDetector@{mythen\-Detector}}
-\subsubsection{\setlength{\rightskip}{0pt plus 5cm}float mythen\-Detector::set\-Global\-Offset (float {\em f})\hspace{0.3cm}{\tt  [inline]}}\label{classmythenDetector_e24dd88c4eb965687bd656a12bae8ad7}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}float mythen\-Detector::set\-Global\-Offset (float {\em f})\hspace{0.3cm}{\tt  [inline, virtual]}}\label{classmythenDetector_e24dd88c4eb965687bd656a12bae8ad7}
 
 
 set detector global offset 
 
-Reimplemented from \bf{sls\-Detector} \doxyref{p.}{classslsDetector_84c8dc8017e692d93246cd546e6366c1}.\index{mythenDetector@{mythen\-Detector}!setPositions@{setPositions}}
+Implements \bf{sls\-Detector} \doxyref{p.}{classslsDetector_2a03a8aec6dbf74a606e6960e178fceb}.\index{mythenDetector@{mythen\-Detector}!setPositions@{setPositions}}
 \index{setPositions@{setPositions}!mythenDetector@{mythen\-Detector}}
-\subsubsection{\setlength{\rightskip}{0pt plus 5cm}int mythen\-Detector::set\-Positions (int {\em n\-Pos}, float $\ast$ {\em pos})\hspace{0.3cm}{\tt  [inline]}}\label{classmythenDetector_1ffb0963f724e6d6d497685e6de62fd6}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}int mythen\-Detector::set\-Positions (int {\em n\-Pos}, float $\ast$ {\em pos})\hspace{0.3cm}{\tt  [inline, virtual]}}\label{classmythenDetector_1ffb0963f724e6d6d497685e6de62fd6}
 
 
 set positions for the acquisition \begin{Desc}
@@ -327,9 +335,9 @@ set positions for the acquisition \begin{Desc}
 \item[Returns:]number of positions \end{Desc}
 
 
-Reimplemented from \bf{sls\-Detector} \doxyref{p.}{classslsDetector_ed6493ad015660281b14814f9a7f6cb5}.\index{mythenDetector@{mythen\-Detector}!writeAngularConversion@{writeAngularConversion}}
+Implements \bf{sls\-Detector} \doxyref{p.}{classslsDetector_961e3976e3077803e2fc245873f81d81}.\index{mythenDetector@{mythen\-Detector}!writeAngularConversion@{writeAngularConversion}}
 \index{writeAngularConversion@{writeAngularConversion}!mythenDetector@{mythen\-Detector}}
-\subsubsection{\setlength{\rightskip}{0pt plus 5cm}int mythen\-Detector::write\-Angular\-Conversion (string {\em fname} = {\tt \char`\"{}\char`\"{}})}\label{classmythenDetector_3c5f27709351c49dd715212adc5ba7d2}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}int mythen\-Detector::write\-Angular\-Conversion (string {\em fname} = {\tt \char`\"{}\char`\"{}})\hspace{0.3cm}{\tt  [virtual]}}\label{classmythenDetector_3c5f27709351c49dd715212adc5ba7d2}
 
 
 writes an angular conversion file \begin{Desc}
@@ -341,9 +349,9 @@ writes an angular conversion file \begin{Desc}
 \item[See also:]\doxyref{angle\-Conversion\-Constant}{p.}{structangleConversionConstant} \end{Desc}
 
 
-Reimplemented from \bf{sls\-Detector} \doxyref{p.}{classslsDetector_921f212286be085d7e1b8d0d11110d9c}.\index{mythenDetector@{mythen\-Detector}!writeCalibrationFile@{writeCalibrationFile}}
+Implements \bf{sls\-Detector} \doxyref{p.}{classslsDetector_cace8f0d8706a175915289d86c1fd8d6}.\index{mythenDetector@{mythen\-Detector}!writeCalibrationFile@{writeCalibrationFile}}
 \index{writeCalibrationFile@{writeCalibrationFile}!mythenDetector@{mythen\-Detector}}
-\subsubsection{\setlength{\rightskip}{0pt plus 5cm}int mythen\-Detector::write\-Calibration\-File (string {\em fname}, float {\em gain}, float {\em offset})}\label{classmythenDetector_10e7213bb0e7138c07231687e9a6899a}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}int mythen\-Detector::write\-Calibration\-File (string {\em fname}, float {\em gain}, float {\em offset})\hspace{0.3cm}{\tt  [virtual]}}\label{classmythenDetector_10e7213bb0e7138c07231687e9a6899a}
 
 
 writes a clibration file \begin{Desc}
@@ -355,9 +363,18 @@ writes a clibration file \begin{Desc}
 \item[See also:]\doxyref{shared\-Sls\-Detector}{p.}{classslsDetector_2dd6bff7d94ab8005c2797152b19264e} \end{Desc}
 
 
-Reimplemented from \bf{sls\-Detector} \doxyref{p.}{classslsDetector_8eb676a1ab6ef35601ba5cae942ba380}.\index{mythenDetector@{mythen\-Detector}!writeDataFile@{writeDataFile}}
+Implements \bf{sls\-Detector} \doxyref{p.}{classslsDetector_d12edef440bf2b2f930e83f0ccceb01e}.\index{mythenDetector@{mythen\-Detector}!writeConfigurationFile@{writeConfigurationFile}}
+\index{writeConfigurationFile@{writeConfigurationFile}!mythenDetector@{mythen\-Detector}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}int mythen\-Detector::write\-Configuration\-File (string const  {\em fname})\hspace{0.3cm}{\tt  [virtual]}}\label{classmythenDetector_6ad688e0c1a59001ecc61117c67e5434}
+
+
+Every detector should have a basic configuration file containing: type (mythen, pilatus etc.) hostname portnumber communication type (default TCP/IP) eventually secondary portnumber (e.g. mythen stop function) number of modules installed if different from the detector size (x,y)
+
+to be changed 
+
+Implements \bf{sls\-Detector} \doxyref{p.}{classslsDetector_7801c6d43c72ce5ccaa72743a6f307d2}.\index{mythenDetector@{mythen\-Detector}!writeDataFile@{writeDataFile}}
 \index{writeDataFile@{writeDataFile}!mythenDetector@{mythen\-Detector}}
-\subsubsection{\setlength{\rightskip}{0pt plus 5cm}int mythen\-Detector::write\-Data\-File (string {\em fname}, int $\ast$ {\em data})}\label{classmythenDetector_9a49c84d7ad664f7891b00fba0ce829a}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}int mythen\-Detector::write\-Data\-File (string {\em fname}, int $\ast$ {\em data})\hspace{0.3cm}{\tt  [virtual]}}\label{classmythenDetector_9a49c84d7ad664f7891b00fba0ce829a}
 
 
 writes a data file \begin{Desc}
@@ -369,9 +386,9 @@ writes a data file \begin{Desc}
 \item[Returns:]OK or FAIL if it could not write the file or data=NULL \end{Desc}
 
 
-Reimplemented from \bf{sls\-Detector} \doxyref{p.}{classslsDetector_3e1a8e49fbfb34a54381452abc8b5258}.\index{mythenDetector@{mythen\-Detector}!writeDataFile@{writeDataFile}}
+Implements \bf{sls\-Detector} \doxyref{p.}{classslsDetector_efa98ca652306e2a026c9a5b2fbfe2dc}.\index{mythenDetector@{mythen\-Detector}!writeDataFile@{writeDataFile}}
 \index{writeDataFile@{writeDataFile}!mythenDetector@{mythen\-Detector}}
-\subsubsection{\setlength{\rightskip}{0pt plus 5cm}int mythen\-Detector::write\-Data\-File (string {\em fname}, float $\ast$ {\em data}, float $\ast$ {\em err} = {\tt NULL}, float $\ast$ {\em ang} = {\tt NULL}, char {\em dataformat} = {\tt 'f'}, int {\em nch} = {\tt -1})}\label{classmythenDetector_42c1d320f594ebd87e2465cc986ee848}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}int mythen\-Detector::write\-Data\-File (string {\em fname}, float $\ast$ {\em data}, float $\ast$ {\em err} = {\tt NULL}, float $\ast$ {\em ang} = {\tt NULL}, char {\em dataformat} = {\tt 'f'}, int {\em nch} = {\tt -1})\hspace{0.3cm}{\tt  [virtual]}}\label{classmythenDetector_42c1d320f594ebd87e2465cc986ee848}
 
 
 writes a data file \begin{Desc}
@@ -383,9 +400,9 @@ writes a data file \begin{Desc}
 \item[Returns:]OK or FAIL if it could not write the file or data=NULL \end{Desc}
 
 
-Reimplemented from \bf{sls\-Detector} \doxyref{p.}{classslsDetector_889c060afb5693830ca2be4fc6a5442c}.\index{mythenDetector@{mythen\-Detector}!writeTrimFile@{writeTrimFile}}
+Implements \bf{sls\-Detector} \doxyref{p.}{classslsDetector_08823d7078b5e6dd1a4cb7d8b3cfe0af}.\index{mythenDetector@{mythen\-Detector}!writeTrimFile@{writeTrimFile}}
 \index{writeTrimFile@{writeTrimFile}!mythenDetector@{mythen\-Detector}}
-\subsubsection{\setlength{\rightskip}{0pt plus 5cm}int mythen\-Detector::write\-Trim\-File (string {\em fname}, int {\em imod})}\label{classmythenDetector_94179431a737bbceb20f27ca1fd30349}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}int mythen\-Detector::write\-Trim\-File (string {\em fname}, int {\em imod})\hspace{0.3cm}{\tt  [virtual]}}\label{classmythenDetector_94179431a737bbceb20f27ca1fd30349}
 
 
 writes a trim file for module number imod - the values will be read from the current detector structure \begin{Desc}
@@ -399,9 +416,9 @@ writes a trim file for module number imod - the values will be read from the cur
 \item[See also:]\doxyref{sls\_\-detector\_\-module}{p.}{structsls__detector__module} \doxyref{shared\-Sls\-Detector}{p.}{classslsDetector_2dd6bff7d94ab8005c2797152b19264e} \end{Desc}
 
 
-Reimplemented from \bf{sls\-Detector} \doxyref{p.}{classslsDetector_afe675432bf8e5dcb47774da3cc81106}.\index{mythenDetector@{mythen\-Detector}!writeTrimFile@{writeTrimFile}}
+Implements \bf{sls\-Detector} \doxyref{p.}{classslsDetector_cb27a987551e66093eb201523ac8d8b0}.\index{mythenDetector@{mythen\-Detector}!writeTrimFile@{writeTrimFile}}
 \index{writeTrimFile@{writeTrimFile}!mythenDetector@{mythen\-Detector}}
-\subsubsection{\setlength{\rightskip}{0pt plus 5cm}int mythen\-Detector::write\-Trim\-File (string {\em fname}, \bf{sls\_\-detector\_\-module} {\em mod})}\label{classmythenDetector_0b137abd78bd3d03653cd21436eb6c4d}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}int mythen\-Detector::write\-Trim\-File (string {\em fname}, \bf{sls\_\-detector\_\-module} {\em mod})\hspace{0.3cm}{\tt  [virtual]}}\label{classmythenDetector_0b137abd78bd3d03653cd21436eb6c4d}
 
 
 writes a trim file \begin{Desc}
@@ -415,7 +432,7 @@ writes a trim file \begin{Desc}
 \item[See also:]\doxyref{sls\_\-detector\_\-module}{p.}{structsls__detector__module} \end{Desc}
 
 
-Reimplemented from \bf{sls\-Detector} \doxyref{p.}{classslsDetector_9cbb1f97b8e48bd4b108a2dfa992c6af}.
+Implements \bf{sls\-Detector} \doxyref{p.}{classslsDetector_5b97351cfaffe067016dbcebbd0778a7}.
 
 The documentation for this class was generated from the following file:\begin{CompactItemize}
 \item 

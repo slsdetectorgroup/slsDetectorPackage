@@ -152,7 +152,8 @@ enum dimension {
 */
 enum  {
   OK, /**< function succeeded */
-  FAIL /**< function failed */
+  FAIL, /**< function failed */
+  FINISHED /**< function failed */
 };
 
 /** 
@@ -295,6 +296,15 @@ enum timerIndex {
 };
 
 /** 
+  important speed parameters
+*/
+enum speedVariable {
+  CLOCK_DIVIDER, /**< readout clock divider */
+  WAIT_STATES, /**< wait states for bus read */
+  SET_SIGNAL_LENGTH /**< set/clear signal length */
+};
+
+/** 
    readout flags
 */
 enum readOutFlags {
@@ -350,7 +360,6 @@ enum {
   F_SET_EXTERNAL_COMMUNICATION_MODE, /**< set/get  external communication mode (obsolete) */
 
 
-
   // Tests and identification
 
   F_GET_ID, /**< get detector id of version */
@@ -404,6 +413,8 @@ enum {
   F_SET_DYNAMIC_RANGE,  /**< set/get detector dynamic range */
   F_SET_READOUT_FLAGS,  /**< set/get readout flags */
   F_SET_ROI,  /**< set/get region of interest */
+
+  F_SET_SPEED,  /**< set/get readout speed parameters */
 
   //Trimming
   F_EXECUTE_TRIMMING,   /**< execute trimming */

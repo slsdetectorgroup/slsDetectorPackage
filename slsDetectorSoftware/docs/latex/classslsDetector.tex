@@ -38,13 +38,13 @@ int \bf{set\-Online} (int const online)
 \item 
 int \bf{exists} ()
 \item 
-int \bf{read\-Configuration\-File} (string const fname)
+virtual int \bf{read\-Configuration\-File} (string const fname)=0
 \item 
-int \bf{write\-Configuration\-File} (string const fname)
+virtual int \bf{write\-Configuration\-File} (string const fname)=0
 \item 
-int \bf{dump\-Detector\-Setup} (string const fname)
+virtual int \bf{dump\-Detector\-Setup} (string const fname)=0
 \item 
-int \bf{retrieve\-Detector\-Setup} (string const fname)
+virtual int \bf{retrieve\-Detector\-Setup} (string const fname)=0
 \item 
 int \bf{set\-TCPSocket} (string const name=\char`\"{}\char`\"{}, int const control\_\-port=-1, int const stop\_\-port=-1, int const data\_\-port=-1)
 \item 
@@ -60,13 +60,13 @@ char $\ast$ \bf{get\-Trim\-Dir} ()
 \item 
 char $\ast$ \bf{set\-Trim\-Dir} (string s)
 \item 
-int \bf{get\-Trim\-En} (int $\ast$en)
+int \bf{get\-Trim\-En} (int $\ast$en=NULL)
 \item 
-\bf{sls\_\-detector\_\-module} $\ast$ \bf{read\-Trim\-File} (string fname, \bf{sls\_\-detector\_\-module} $\ast$my\-Mod=NULL)
+virtual \bf{sls\_\-detector\_\-module} $\ast$ \bf{read\-Trim\-File} (string fname, \bf{sls\_\-detector\_\-module} $\ast$my\-Mod=NULL)=0
 \item 
-int \bf{write\-Trim\-File} (string fname, \bf{sls\_\-detector\_\-module} mod)
+virtual int \bf{write\-Trim\-File} (string fname, \bf{sls\_\-detector\_\-module} mod)=0
 \item 
-int \bf{write\-Trim\-File} (string fname, int imod)
+virtual int \bf{write\-Trim\-File} (string fname, int imod)=0
 \item 
 char $\ast$ \bf{set\-File\-Path} (string s)
 \item 
@@ -82,25 +82,25 @@ int \bf{get\-File\-Index} ()
 \item 
 string \bf{create\-File\-Name} ()
 \item 
-int \bf{write\-Data\-File} (string fname, float $\ast$data, float $\ast$err=NULL, float $\ast$ang=NULL, char dataformat='f', int nch=-1)
+virtual int \bf{write\-Data\-File} (string fname, float $\ast$data, float $\ast$err=NULL, float $\ast$ang=NULL, char dataformat='f', int nch=-1)=0
 \item 
-int \bf{write\-Data\-File} (string fname, int $\ast$data)
+virtual int \bf{write\-Data\-File} (string fname, int $\ast$data)=0
 \item 
-int \bf{read\-Data\-File} (string fname, float $\ast$data, float $\ast$err=NULL, float $\ast$ang=NULL, char dataformat='f', int nch=0)
+virtual int \bf{read\-Data\-File} (string fname, float $\ast$data, float $\ast$err=NULL, float $\ast$ang=NULL, char dataformat='f', int nch=0)=0
 \item 
-int \bf{read\-Data\-File} (string fname, int $\ast$data)
+virtual int \bf{read\-Data\-File} (string fname, int $\ast$data)=0
 \item 
 char $\ast$ \bf{get\-Cal\-Dir} ()
 \item 
 char $\ast$ \bf{set\-Cal\-Dir} (string s)
 \item 
-int \bf{read\-Calibration\-File} (string fname, float \&gain, float \&offset)
+virtual int \bf{read\-Calibration\-File} (string fname, float \&gain, float \&offset)=0
 \item 
-int \bf{write\-Calibration\-File} (string fname, float gain, float offset)
+virtual int \bf{write\-Calibration\-File} (string fname, float gain, float offset)=0
 \item 
-int \bf{read\-Angular\-Conversion} (string fname=\char`\"{}\char`\"{})
+virtual int \bf{read\-Angular\-Conversion} (string fname=\char`\"{}\char`\"{})=0
 \item 
-int \bf{write\-Angular\-Conversion} (string fname=\char`\"{}\char`\"{})
+virtual int \bf{write\-Angular\-Conversion} (string fname=\char`\"{}\char`\"{})=0
 \item 
 int \bf{exec\-Command} (string cmd, string answer)
 \item 
@@ -188,13 +188,7 @@ int64\_\-t \bf{set\-Timer} (\bf{timer\-Index} index, int64\_\-t t=-1)
 \item 
 int64\_\-t \bf{get\-Time\-Left} (\bf{timer\-Index} index)
 \item 
-int \bf{set\-Clock\-Divider} (int i)
-\item 
-int \bf{get\-Clock\-Divider} ()
-\item 
-int \bf{set\-Set\-Length} (int i)
-\item 
-int \bf{get\-Set\-Length} ()
+int \bf{set\-Speed} (\bf{speed\-Variable} sp, int value=-1)
 \item 
 int \bf{set\-Dynamic\-Range} (int n=-1)
 \item 
@@ -218,25 +212,29 @@ int \bf{set\-Bad\-Channel\-Correction} (string fname=\char`\"{}\char`\"{})
 \item 
 int \bf{get\-Bad\-Channel\-Corrections} (int $\ast$bad=NULL)
 \item 
-int \bf{set\-Angular\-Conversion} (string fname=\char`\"{}\char`\"{})
+char $\ast$ \bf{get\-Bad\-Channel\-Correction\-File} ()
 \item 
-int \bf{get\-Angular\-Conversion} (int \&direction, \bf{angle\-Conversion\-Constant} $\ast$angconv=NULL)
+virtual int \bf{set\-Angular\-Conversion} (string fname=\char`\"{}\char`\"{})=0
 \item 
-float \bf{set\-Global\-Offset} (float f)
+virtual int \bf{get\-Angular\-Conversion} (int \&direction, \bf{angle\-Conversion\-Constant} $\ast$angconv=NULL)=0
 \item 
-float \bf{set\-Fine\-Offset} (float f)
+virtual char $\ast$ \bf{get\-Angular\-Conversion} ()=0
 \item 
-float \bf{get\-Fine\-Offset} ()
+virtual float \bf{set\-Global\-Offset} (float f)=0
 \item 
-float \bf{get\-Global\-Offset} ()
+virtual float \bf{set\-Fine\-Offset} (float f)=0
 \item 
-int \bf{set\-Positions} (int n\-Pos, float $\ast$\bf{pos})
+virtual float \bf{get\-Fine\-Offset} ()=0
 \item 
-int \bf{get\-Positions} (float $\ast$\bf{pos}=NULL)
+virtual float \bf{get\-Global\-Offset} ()=0
 \item 
-float \bf{set\-Bin\-Size} (float bs)
+virtual int \bf{set\-Positions} (int n\-Pos, float $\ast$\bf{pos})=0
 \item 
-float \bf{get\-Bin\-Size} ()
+virtual int \bf{get\-Positions} (float $\ast$\bf{pos}=NULL)=0
+\item 
+virtual float \bf{set\-Bin\-Size} (float bs)=0
+\item 
+virtual float \bf{get\-Bin\-Size} ()=0
 \item 
 float $\ast$ \bf{decode\-Data} (int $\ast$datain)
 \item 
@@ -248,23 +246,23 @@ int \bf{rate\-Correct} (float datain, float errin, float \&dataout, float \&erro
 \item 
 int \bf{rate\-Correct} (float $\ast$datain, float $\ast$errin, float $\ast$dataout, float $\ast$errout)
 \item 
-int \bf{reset\-Merging} (float $\ast$mp, float $\ast$mv, float $\ast$me, int $\ast$mm)
+virtual int \bf{reset\-Merging} (float $\ast$mp, float $\ast$mv, float $\ast$me, int $\ast$mm)=0
 \item 
-int \bf{add\-To\-Merging} (float $\ast$p1, float $\ast$v1, float $\ast$e1, float $\ast$mp, float $\ast$mv, float $\ast$me, int $\ast$mm)
+virtual int \bf{add\-To\-Merging} (float $\ast$p1, float $\ast$v1, float $\ast$e1, float $\ast$mp, float $\ast$mv, float $\ast$me, int $\ast$mm)=0
 \item 
 int \bf{finalize\-Merging} (float $\ast$mp, float $\ast$mv, float $\ast$me, int $\ast$mm)
 \item 
 int \bf{exit\-Server} ()
 \item 
-void $\ast$ \bf{process\-Data} ()
+virtual void $\ast$ \bf{process\-Data} ()=0
 \item 
 \bf{sls\_\-detector\_\-module} $\ast$ \bf{create\-Module} ()
 \item 
 void \bf{delete\-Module} (\bf{sls\_\-detector\_\-module} $\ast$my\-Mod)
 \item 
-void \bf{acquire} ()
+virtual void \bf{acquire} ()=0
 \end{CompactItemize}
-\subsection*{Private Member Functions}
+\subsection*{Protected Member Functions}
 \begin{CompactItemize}
 \item 
 int $\ast$ \bf{get\-Data\-From\-Detector} ()
@@ -293,7 +291,7 @@ void \bf{start\-Thread} ()
 \item 
 int \bf{fill\-Bad\-Channel\-Mask} ()
 \end{CompactItemize}
-\subsection*{Private Attributes}
+\subsection*{Protected Attributes}
 \begin{CompactItemize}
 \item 
 \bf{shared\-Sls\-Detector} $\ast$ \bf{this\-Detector}
@@ -359,7 +357,7 @@ The \doxyref{sls\-Detector}{p.}{classslsDetector} class is expected to become th
 \begin{Desc}
 \item[Author:]Anna Bergamaschi \end{Desc}
 \begin{Desc}
-\item[Version:]0.1alpha (any string) \end{Desc}
+\item[Version:]0.1alpha \end{Desc}
 
 
 
@@ -425,22 +423,32 @@ destructor
 \subsection{Member Function Documentation}
 \index{slsDetector@{sls\-Detector}!acquire@{acquire}}
 \index{acquire@{acquire}!slsDetector@{sls\-Detector}}
-\subsubsection{\setlength{\rightskip}{0pt plus 5cm}void sls\-Detector::acquire ()}\label{classslsDetector_b09a80264ca69e51b2c8379124398410}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}virtual void sls\-Detector::acquire ()\hspace{0.3cm}{\tt  [pure virtual]}}\label{classslsDetector_d2ee30dfd50f06431dca4e4b9619f301}
 
 
-\index{slsDetector@{sls\-Detector}!addToMerging@{addToMerging}}
+pure virtual function performs the complete acquisition and data processing moves the detector to next position \par
+ starts and reads the detector \par
+ reads the IC (if required) \par
+ reads the encoder (iof required for angualr conversion) \par
+ processes the data (flat field, rate, angular conversion and merging process\-Data()) \begin{Desc}
+\item[See also:]\doxyref{mythen\-Detector::acquire()}{p.}{classmythenDetector_bb3d2f51a414cf9dace29a4b5676828f} \end{Desc}
+
+
+Implemented in \bf{mythen\-Detector} \doxyref{p.}{classmythenDetector_bb3d2f51a414cf9dace29a4b5676828f}.\index{slsDetector@{sls\-Detector}!addToMerging@{addToMerging}}
 \index{addToMerging@{addToMerging}!slsDetector@{sls\-Detector}}
-\subsubsection{\setlength{\rightskip}{0pt plus 5cm}int sls\-Detector::add\-To\-Merging (float $\ast$ {\em p1}, float $\ast$ {\em v1}, float $\ast$ {\em e1}, float $\ast$ {\em mp}, float $\ast$ {\em mv}, float $\ast$ {\em me}, int $\ast$ {\em mm})}\label{classslsDetector_ed3ddadb246080ef644b6d1455fa2e32}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}virtual int sls\-Detector::add\-To\-Merging (float $\ast$ {\em p1}, float $\ast$ {\em v1}, float $\ast$ {\em e1}, float $\ast$ {\em mp}, float $\ast$ {\em mv}, float $\ast$ {\em me}, int $\ast$ {\em mm})\hspace{0.3cm}{\tt  [pure virtual]}}\label{classslsDetector_feb8730f24292620e5d451cd2d4bb9cd}
 
 
-not yet implemented merge dataset \begin{Desc}
+pure virtual function merge dataset \begin{Desc}
 \item[Parameters:]
 \begin{description}
 \item[{\em p1}]angular positions of dataset \item[{\em v1}]data \item[{\em e1}]errors \item[{\em mp}]already merged postions \item[{\em mv}]already merged data \item[{\em me}]already merged errors (squared sum) \item[{\em mm}]multiplicity of merged arrays \end{description}
 \end{Desc}
+\begin{Desc}
+\item[See also:]\doxyref{mythen\-Detector::add\-To\-Merging}{p.}{classmythenDetector_eaaf7d7e3150f473e3bbcf59d91692c2} \end{Desc}
 
 
-Reimplemented in \bf{mythen\-Detector} \doxyref{p.}{classmythenDetector_eaaf7d7e3150f473e3bbcf59d91692c2}.\index{slsDetector@{sls\-Detector}!analogTest@{analogTest}}
+Implemented in \bf{mythen\-Detector} \doxyref{p.}{classmythenDetector_eaaf7d7e3150f473e3bbcf59d91692c2}.\index{slsDetector@{sls\-Detector}!analogTest@{analogTest}}
 \index{analogTest@{analogTest}!slsDetector@{sls\-Detector}}
 \subsubsection{\setlength{\rightskip}{0pt plus 5cm}int$\ast$ sls\-Detector::analog\-Test (\bf{analog\-Test\-Mode} {\em mode})}\label{classslsDetector_18f91f8cf70d2d4eef9b3488b90bac51}
 
@@ -465,7 +473,7 @@ in case also appends the position index
 
 Filenames will be of the form: filepath/filename(\_\-px)\_\-i where x is the position index and i is the run index \index{slsDetector@{sls\-Detector}!createModule@{createModule}}
 \index{createModule@{createModule}!slsDetector@{sls\-Detector}}
-\subsubsection{\setlength{\rightskip}{0pt plus 5cm}sls\-Detector::sls\_\-detector\_\-module $\ast$ sls\-Detector::create\-Module ()}\label{classslsDetector_15e6fa87a3c57ff1c8e1943ec72ec6ad}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}\bf{sls\_\-detector\_\-module} $\ast$ sls\-Detector::create\-Module ()}\label{classslsDetector_b1d4c6c01d1e10fe06bc83329410d4f4}
 
 
 Allocates the memory for a \doxyref{sls\_\-detector\_\-module}{p.}{structsls__detector__module} structure and initializes it \begin{Desc}
@@ -484,7 +492,7 @@ decode data from the detector converting them to an array of floats, one for eac
 \item[Returns:]pointer to a float array with a data per channel \end{Desc}
 
 
-Reimplemented in \bf{mythen\-Detector} \doxyref{p.}{classmythenDetector_77e8c92003fab14da768af660509241d}, and \bf{eiger\-Detector} \doxyref{p.}{classeigerDetector_3e0573baf38c37818c7769fb351010b3}.\index{slsDetector@{sls\-Detector}!deleteModule@{deleteModule}}
+Reimplemented in \bf{eiger\-Detector} \doxyref{p.}{classeigerDetector_3e0573baf38c37818c7769fb351010b3}.\index{slsDetector@{sls\-Detector}!deleteModule@{deleteModule}}
 \index{deleteModule@{deleteModule}!slsDetector@{sls\-Detector}}
 \subsubsection{\setlength{\rightskip}{0pt plus 5cm}void sls\-Detector::delete\-Module (\bf{sls\_\-detector\_\-module} $\ast$ {\em my\-Mod})}\label{classslsDetector_48984c8d058355c5249233165bf0c410}
 
@@ -508,12 +516,12 @@ Digital test of the modules \begin{Desc}
 \item[Returns:]OK or error mask \end{Desc}
 \index{slsDetector@{sls\-Detector}!dumpDetectorSetup@{dumpDetectorSetup}}
 \index{dumpDetectorSetup@{dumpDetectorSetup}!slsDetector@{sls\-Detector}}
-\subsubsection{\setlength{\rightskip}{0pt plus 5cm}int sls\-Detector::dump\-Detector\-Setup (string const  {\em fname})}\label{classslsDetector_dc4f62e536b4ef6d0d2d178e3bfbec5e}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}virtual int sls\-Detector::dump\-Detector\-Setup (string const  {\em fname})\hspace{0.3cm}{\tt  [pure virtual]}}\label{classslsDetector_96428855d6e286408a52e675e045cf45}
 
 
-not yet implemented
+Purely virtual function Should be implemented in the specific detector class /sa \doxyref{mythen\-Detector::dump\-Detector\-Setup}{p.}{classmythenDetector_a0fe9987e8fa240a312ad353ae539188} 
 
-should dump to a file all the current detector parameters \index{slsDetector@{sls\-Detector}!enableAnalogOutput@{enableAnalogOutput}}
+Implemented in \bf{mythen\-Detector} \doxyref{p.}{classmythenDetector_a0fe9987e8fa240a312ad353ae539188}.\index{slsDetector@{sls\-Detector}!enableAnalogOutput@{enableAnalogOutput}}
 \index{enableAnalogOutput@{enableAnalogOutput}!slsDetector@{sls\-Detector}}
 \subsubsection{\setlength{\rightskip}{0pt plus 5cm}int sls\-Detector::enable\-Analog\-Output (int {\em imod}, int {\em ichip}, int {\em ichan})}\label{classslsDetector_b20fef344ee47114fccb4d1bc8c6e5bd}
 
@@ -563,9 +571,9 @@ sets the online\-Flag \begin{Desc}
 \subsubsection{\setlength{\rightskip}{0pt plus 5cm}int sls\-Detector::exit\-Server ()}\label{classslsDetector_466e9a65aa0b404c771d70c9f01af8b9}
 
 
-turns of server \index{slsDetector@{sls\-Detector}!fillBadChannelMask@{fillBadChannelMask}}
+turns off server \index{slsDetector@{sls\-Detector}!fillBadChannelMask@{fillBadChannelMask}}
 \index{fillBadChannelMask@{fillBadChannelMask}!slsDetector@{sls\-Detector}}
-\subsubsection{\setlength{\rightskip}{0pt plus 5cm}int sls\-Detector::fill\-Bad\-Channel\-Mask ()\hspace{0.3cm}{\tt  [private]}}\label{classslsDetector_6a0ebe013e27c065b2f67158a27f64ac}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}int sls\-Detector::fill\-Bad\-Channel\-Mask ()\hspace{0.3cm}{\tt  [protected]}}\label{classslsDetector_6a0ebe013e27c065b2f67158a27f64ac}
 
 
 fill bad channel mask (0 if channel is good, 1 if bad) \index{slsDetector@{sls\-Detector}!finalizeMerging@{finalizeMerging}}
@@ -573,13 +581,15 @@ fill bad channel mask (0 if channel is good, 1 if bad) \index{slsDetector@{sls\-
 \subsubsection{\setlength{\rightskip}{0pt plus 5cm}int sls\-Detector::finalize\-Merging (float $\ast$ {\em mp}, float $\ast$ {\em mv}, float $\ast$ {\em me}, int $\ast$ {\em mm})}\label{classslsDetector_8f73479f68ca2171fd2108c2f157299e}
 
 
-calculates the \char`\"{}final\char`\"{} positions, data value and errors for the emrged data \begin{Desc}
+pure virtual function calculates the \char`\"{}final\char`\"{} positions, data value and errors for the emrged data \begin{Desc}
 \item[Parameters:]
 \begin{description}
 \item[{\em mp}]already merged postions \item[{\em mv}]already merged data \item[{\em me}]already merged errors (squared sum) \item[{\em mm}]multiplicity of merged arrays \end{description}
 \end{Desc}
 \begin{Desc}
-\item[Returns:]FAIL or the \end{Desc}
+\item[Returns:]FAIL or the number of non empty bins (i.e. points belonging to the pattern) \end{Desc}
+\begin{Desc}
+\item[See also:]\doxyref{mythen\-Detector::finalize\-Merging}{p.}{classmythenDetector_a919a42bd89fe21c4086bae5f1fb2f32} \end{Desc}
 
 
 Reimplemented in \bf{mythen\-Detector} \doxyref{p.}{classmythenDetector_a919a42bd89fe21c4086bae5f1fb2f32}.\index{slsDetector@{sls\-Detector}!flatFieldCorrect@{flatFieldCorrect}}
@@ -608,7 +618,7 @@ flat field correct data \begin{Desc}
 \item[Returns:]0 \end{Desc}
 \index{slsDetector@{sls\-Detector}!freeSharedMemory@{freeSharedMemory}}
 \index{freeSharedMemory@{freeSharedMemory}!slsDetector@{sls\-Detector}}
-\subsubsection{\setlength{\rightskip}{0pt plus 5cm}int sls\-Detector::free\-Shared\-Memory ()\hspace{0.3cm}{\tt  [private]}}\label{classslsDetector_5de7fb0d82ae2bcc406385373e665c6f}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}int sls\-Detector::free\-Shared\-Memory ()\hspace{0.3cm}{\tt  [protected]}}\label{classslsDetector_5de7fb0d82ae2bcc406385373e665c6f}
 
 
 Frees the shared memory - should not be used \index{slsDetector@{sls\-Detector}!getADC@{getADC}}
@@ -625,19 +635,35 @@ set dacs value \begin{Desc}
 \item[Returns:]current ADC value \end{Desc}
 \index{slsDetector@{sls\-Detector}!getAngularConversion@{getAngularConversion}}
 \index{getAngularConversion@{getAngularConversion}!slsDetector@{sls\-Detector}}
-\subsubsection{\setlength{\rightskip}{0pt plus 5cm}int sls\-Detector::get\-Angular\-Conversion (int \& {\em direction}, \bf{angle\-Conversion\-Constant} $\ast$ {\em angconv} = {\tt NULL})}\label{classslsDetector_a146baee5af54b53db0997de02f4779c}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}virtual char$\ast$ sls\-Detector::get\-Angular\-Conversion ()\hspace{0.3cm}{\tt  [pure virtual]}}\label{classslsDetector_0c2e502441fd74ec7fc20604c5c08c27}
 
 
-get angular conversion \begin{Desc}
+pure virtual function returns the angular conversion file \begin{Desc}
+\item[See also:]\doxyref{mythen\-Detector::get\-Angular\-Conversion}{p.}{classmythenDetector_b2b2f17c36883323ad0abf762c63494f} \end{Desc}
+
+
+Implemented in \bf{mythen\-Detector} \doxyref{p.}{classmythenDetector_fab45faa264e44178fc52300eaf92cad}.\index{slsDetector@{sls\-Detector}!getAngularConversion@{getAngularConversion}}
+\index{getAngularConversion@{getAngularConversion}!slsDetector@{sls\-Detector}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}virtual int sls\-Detector::get\-Angular\-Conversion (int \& {\em direction}, \bf{angle\-Conversion\-Constant} $\ast$ {\em angconv} = {\tt NULL})\hspace{0.3cm}{\tt  [pure virtual]}}\label{classslsDetector_a110e9eb82123756cf89fda0a4cb464d}
+
+
+pure virtual function get angular conversion \begin{Desc}
 \item[Parameters:]
 \begin{description}
 \item[{\em reference}]to diffractometer direction \item[{\em angconv}]array that will be filled with the angular conversion constants \end{description}
 \end{Desc}
 \begin{Desc}
 \item[Returns:]0 if angular conversion disabled, $>$0 otherwise \end{Desc}
+\begin{Desc}
+\item[See also:]\doxyref{mythen\-Detector::get\-Angular\-Conversion}{p.}{classmythenDetector_b2b2f17c36883323ad0abf762c63494f} \end{Desc}
 
 
-Reimplemented in \bf{mythen\-Detector} \doxyref{p.}{classmythenDetector_b2b2f17c36883323ad0abf762c63494f}.\index{slsDetector@{sls\-Detector}!getBadChannelCorrections@{getBadChannelCorrections}}
+Implemented in \bf{mythen\-Detector} \doxyref{p.}{classmythenDetector_b2b2f17c36883323ad0abf762c63494f}.\index{slsDetector@{sls\-Detector}!getBadChannelCorrectionFile@{getBadChannelCorrectionFile}}
+\index{getBadChannelCorrectionFile@{getBadChannelCorrectionFile}!slsDetector@{sls\-Detector}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}char$\ast$ sls\-Detector::get\-Bad\-Channel\-Correction\-File ()\hspace{0.3cm}{\tt  [inline]}}\label{classslsDetector_0b562f90b64c80e3eb64e9e2153bb234}
+
+
+returns the bad channel list file \index{slsDetector@{sls\-Detector}!getBadChannelCorrections@{getBadChannelCorrections}}
 \index{getBadChannelCorrections@{getBadChannelCorrections}!slsDetector@{sls\-Detector}}
 \subsubsection{\setlength{\rightskip}{0pt plus 5cm}int sls\-Detector::get\-Bad\-Channel\-Corrections (int $\ast$ {\em bad} = {\tt NULL})}\label{classslsDetector_f80db913b55026bb69d35585b08729cc}
 
@@ -651,12 +677,14 @@ get bad channels correction \begin{Desc}
 \item[Returns:]0 if bad channel disabled or no bad channels, $>$0 otherwise \end{Desc}
 \index{slsDetector@{sls\-Detector}!getBinSize@{getBinSize}}
 \index{getBinSize@{getBinSize}!slsDetector@{sls\-Detector}}
-\subsubsection{\setlength{\rightskip}{0pt plus 5cm}float sls\-Detector::get\-Bin\-Size ()\hspace{0.3cm}{\tt  [inline]}}\label{classslsDetector_8a78eda56f5a0c487bbc4e2f962d04db}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}virtual float sls\-Detector::get\-Bin\-Size ()\hspace{0.3cm}{\tt  [pure virtual]}}\label{classslsDetector_7d83754e3f41042caa9297da9a33b714}
 
 
-return detector bin size used for merging (approx angular resolution) 
+pure virtual function return detector bin size used for merging (approx angular resolution) \begin{Desc}
+\item[See also:]\doxyref{mythen\-Detector::get\-Bin\-Size}{p.}{classmythenDetector_9fd4e479d7eb3f9c53d5d56a43bbccaf} \end{Desc}
 
-Reimplemented in \bf{mythen\-Detector} \doxyref{p.}{classmythenDetector_9fd4e479d7eb3f9c53d5d56a43bbccaf}.\index{slsDetector@{sls\-Detector}!getCalDir@{getCalDir}}
+
+Implemented in \bf{mythen\-Detector} \doxyref{p.}{classmythenDetector_9fd4e479d7eb3f9c53d5d56a43bbccaf}.\index{slsDetector@{sls\-Detector}!getCalDir@{getCalDir}}
 \index{getCalDir@{getCalDir}!slsDetector@{sls\-Detector}}
 \subsubsection{\setlength{\rightskip}{0pt plus 5cm}char$\ast$ sls\-Detector::get\-Cal\-Dir ()\hspace{0.3cm}{\tt  [inline]}}\label{classslsDetector_102679594e60ed261daff24b4aeac21a}
 
@@ -665,7 +693,7 @@ returns the location of the calibration files \begin{Desc}
 \item[See also:]\doxyref{shared\-Sls\-Detector}{p.}{structslsDetector_1_1sharedSlsDetector} \end{Desc}
 \index{slsDetector@{sls\-Detector}!getChannel@{getChannel}}
 \index{getChannel@{getChannel}!slsDetector@{sls\-Detector}}
-\subsubsection{\setlength{\rightskip}{0pt plus 5cm}sls\-Detector::sls\_\-detector\_\-channel sls\-Detector::get\-Channel (int {\em ichan}, int {\em ichip}, int {\em imod})}\label{classslsDetector_bbf8573e249da1f0a436f581d0dc62e4}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}\bf{sls\_\-detector\_\-channel} sls\-Detector::get\-Channel (int {\em ichan}, int {\em ichip}, int {\em imod})}\label{classslsDetector_05f1a170b7416db77bf7cff762e9b58a}
 
 
 get channel \begin{Desc}
@@ -677,7 +705,7 @@ get channel \begin{Desc}
 \item[Returns:]current channel structure for channel \end{Desc}
 \index{slsDetector@{sls\-Detector}!getChip@{getChip}}
 \index{getChip@{getChip}!slsDetector@{sls\-Detector}}
-\subsubsection{\setlength{\rightskip}{0pt plus 5cm}sls\-Detector::sls\_\-detector\_\-chip sls\-Detector::get\-Chip (int {\em ichip}, int {\em imod})}\label{classslsDetector_6dd6b42b668610dbd03a7700de84b845}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}\bf{sls\_\-detector\_\-chip} sls\-Detector::get\-Chip (int {\em ichip}, int {\em imod})}\label{classslsDetector_2eb7f887a72cc80d6b00cadd4731e672}
 
 
 get chip \begin{Desc}
@@ -689,14 +717,7 @@ get chip \begin{Desc}
 \item[Returns:]current chip structure for channel\end{Desc}
 \begin{Desc}
 \item[\bf{Bug}]probably does not return corretly! \end{Desc}
-\index{slsDetector@{sls\-Detector}!getClockDivider@{getClockDivider}}
-\index{getClockDivider@{getClockDivider}!slsDetector@{sls\-Detector}}
-\subsubsection{\setlength{\rightskip}{0pt plus 5cm}int sls\-Detector::get\-Clock\-Divider ()\hspace{0.3cm}{\tt  [inline]}}\label{classslsDetector_12b884821edc41fe9821f2ab084a0baf}
-
-
-get clock divider
-
-not implemented (should be something more general like \char`\"{}set speed including also waitstates, set cycles etc.) \index{slsDetector@{sls\-Detector}!getControlPort@{getControlPort}}
+\index{slsDetector@{sls\-Detector}!getControlPort@{getControlPort}}
 \index{getControlPort@{getControlPort}!slsDetector@{sls\-Detector}}
 \subsubsection{\setlength{\rightskip}{0pt plus 5cm}int sls\-Detector::get\-Control\-Port ()\hspace{0.3cm}{\tt  [inline]}}\label{classslsDetector_40ffd69f1c40b26575954e826cdf606a}
 
@@ -705,7 +726,7 @@ returns the detector control port\begin{Desc}
 \item[See also:]\doxyref{shared\-Sls\-Detector}{p.}{structslsDetector_1_1sharedSlsDetector} \end{Desc}
 \index{slsDetector@{sls\-Detector}!getDataFromDetector@{getDataFromDetector}}
 \index{getDataFromDetector@{getDataFromDetector}!slsDetector@{sls\-Detector}}
-\subsubsection{\setlength{\rightskip}{0pt plus 5cm}int $\ast$ sls\-Detector::get\-Data\-From\-Detector ()\hspace{0.3cm}{\tt  [private]}}\label{classslsDetector_b1982e89f8e8de63c807a707ccba594c}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}int $\ast$ sls\-Detector::get\-Data\-From\-Detector ()\hspace{0.3cm}{\tt  [protected]}}\label{classslsDetector_b1982e89f8e8de63c807a707ccba594c}
 
 
 Receives a data frame from the detector socket \begin{Desc}
@@ -759,12 +780,14 @@ returns the default output files path \begin{Desc}
 \item[See also:]\doxyref{shared\-Sls\-Detector}{p.}{structslsDetector_1_1sharedSlsDetector} \end{Desc}
 \index{slsDetector@{sls\-Detector}!getFineOffset@{getFineOffset}}
 \index{getFineOffset@{getFineOffset}!slsDetector@{sls\-Detector}}
-\subsubsection{\setlength{\rightskip}{0pt plus 5cm}float sls\-Detector::get\-Fine\-Offset ()\hspace{0.3cm}{\tt  [inline]}}\label{classslsDetector_1a402a849d04190024e9dc87d4dae6dc}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}virtual float sls\-Detector::get\-Fine\-Offset ()\hspace{0.3cm}{\tt  [pure virtual]}}\label{classslsDetector_8e39680a1a096ca13ed672504b5b08e6}
 
 
-get detector fine offset 
+pure virtual function get detector fine offset \begin{Desc}
+\item[See also:]\doxyref{mythen\-Detector::get\-Fine\-Offset}{p.}{classmythenDetector_00720f1445f3f301fa3316828d978de6} \end{Desc}
 
-Reimplemented in \bf{mythen\-Detector} \doxyref{p.}{classmythenDetector_00720f1445f3f301fa3316828d978de6}.\index{slsDetector@{sls\-Detector}!getFlatFieldCorrections@{getFlatFieldCorrections}}
+
+Implemented in \bf{mythen\-Detector} \doxyref{p.}{classmythenDetector_00720f1445f3f301fa3316828d978de6}.\index{slsDetector@{sls\-Detector}!getFlatFieldCorrections@{getFlatFieldCorrections}}
 \index{getFlatFieldCorrections@{getFlatFieldCorrections}!slsDetector@{sls\-Detector}}
 \subsubsection{\setlength{\rightskip}{0pt plus 5cm}int sls\-Detector::get\-Flat\-Field\-Corrections (float $\ast$ {\em corr} = {\tt NULL}, float $\ast$ {\em ecorr} = {\tt NULL})}\label{classslsDetector_af22c79193907e364c6db97f5e55b9fd}
 
@@ -778,12 +801,14 @@ get flat field corrections \begin{Desc}
 \item[Returns:]0 if ff correction disabled, $>$0 otherwise \end{Desc}
 \index{slsDetector@{sls\-Detector}!getGlobalOffset@{getGlobalOffset}}
 \index{getGlobalOffset@{getGlobalOffset}!slsDetector@{sls\-Detector}}
-\subsubsection{\setlength{\rightskip}{0pt plus 5cm}float sls\-Detector::get\-Global\-Offset ()\hspace{0.3cm}{\tt  [inline]}}\label{classslsDetector_42f854256e2900f18b2a17201813b48c}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}virtual float sls\-Detector::get\-Global\-Offset ()\hspace{0.3cm}{\tt  [pure virtual]}}\label{classslsDetector_8964e3efa73f29b04bd9479578bd1c59}
 
 
-get detector global offset 
+pure virtual function get detector global offset \begin{Desc}
+\item[See also:]\doxyref{mythen\-Detector::get\-Global\-Offset}{p.}{classmythenDetector_b2086f336d7198381453556b520dd556} \end{Desc}
 
-Reimplemented in \bf{mythen\-Detector} \doxyref{p.}{classmythenDetector_b2086f336d7198381453556b520dd556}.\index{slsDetector@{sls\-Detector}!getHostname@{getHostname}}
+
+Implemented in \bf{mythen\-Detector} \doxyref{p.}{classmythenDetector_b2086f336d7198381453556b520dd556}.\index{slsDetector@{sls\-Detector}!getHostname@{getHostname}}
 \index{getHostname@{getHostname}!slsDetector@{sls\-Detector}}
 \subsubsection{\setlength{\rightskip}{0pt plus 5cm}char$\ast$ sls\-Detector::get\-Hostname ()\hspace{0.3cm}{\tt  [inline]}}\label{classslsDetector_fad06908ad59bfd8a8577899d6aa1843}
 
@@ -816,7 +841,7 @@ get the maximum size of the detector \begin{Desc}
 \item[Returns:]maximum number of modules that can be installed in direction d \end{Desc}
 \index{slsDetector@{sls\-Detector}!getModule@{getModule}}
 \index{getModule@{getModule}!slsDetector@{sls\-Detector}}
-\subsubsection{\setlength{\rightskip}{0pt plus 5cm}sls\-Detector::sls\_\-detector\_\-module $\ast$ sls\-Detector::get\-Module (int {\em imod})}\label{classslsDetector_d1b14626e602ceaebfcf4321f6f40997}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}\bf{sls\_\-detector\_\-module} $\ast$ sls\-Detector::get\-Module (int {\em imod})}\label{classslsDetector_32557eee02e541840246b4b4a3e76c83}
 
 
 get module \begin{Desc}
@@ -828,19 +853,21 @@ get module \begin{Desc}
 \item[Returns:]pointer to module structure (which has bee created and must then be deleted) \end{Desc}
 \index{slsDetector@{sls\-Detector}!getPositions@{getPositions}}
 \index{getPositions@{getPositions}!slsDetector@{sls\-Detector}}
-\subsubsection{\setlength{\rightskip}{0pt plus 5cm}int sls\-Detector::get\-Positions (float $\ast$ {\em pos} = {\tt NULL})\hspace{0.3cm}{\tt  [inline]}}\label{classslsDetector_732f6d36456d6e87d70324a4bdc1bbb8}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}virtual int sls\-Detector::get\-Positions (float $\ast$ {\em pos} = {\tt NULL})\hspace{0.3cm}{\tt  [pure virtual]}}\label{classslsDetector_248794801b9794d20e7d58bceab564ab}
 
 
-get positions for the acquisition \begin{Desc}
+pure virtual function get positions for the acquisition \begin{Desc}
 \item[Parameters:]
 \begin{description}
 \item[{\em pos}]array which will contain the encoder positions \end{description}
 \end{Desc}
 \begin{Desc}
 \item[Returns:]number of positions \end{Desc}
+\begin{Desc}
+\item[See also:]\doxyref{mythen\-Detector::get\-Positions}{p.}{classmythenDetector_0d306720dced0d3576474978b06b4be4} \end{Desc}
 
 
-Reimplemented in \bf{mythen\-Detector} \doxyref{p.}{classmythenDetector_0d306720dced0d3576474978b06b4be4}.\index{slsDetector@{sls\-Detector}!getRateCorrections@{getRateCorrections}}
+Implemented in \bf{mythen\-Detector} \doxyref{p.}{classmythenDetector_0d306720dced0d3576474978b06b4be4}.\index{slsDetector@{sls\-Detector}!getRateCorrections@{getRateCorrections}}
 \index{getRateCorrections@{getRateCorrections}!slsDetector@{sls\-Detector}}
 \subsubsection{\setlength{\rightskip}{0pt plus 5cm}int sls\-Detector::get\-Rate\-Corrections ()}\label{classslsDetector_7606366a3cbe280c90dc659036814697}
 
@@ -866,16 +893,9 @@ get rate correction \begin{Desc}
 
 get run status \begin{Desc}
 \item[Returns:]status mask \end{Desc}
-\index{slsDetector@{sls\-Detector}!getSetLength@{getSetLength}}
-\index{getSetLength@{getSetLength}!slsDetector@{sls\-Detector}}
-\subsubsection{\setlength{\rightskip}{0pt plus 5cm}int sls\-Detector::get\-Set\-Length ()\hspace{0.3cm}{\tt  [inline]}}\label{classslsDetector_51a88168bf9e4cd2ef7730b973963055}
-
-
-get length cycles
-
-not implemented (should be something more general like \char`\"{}set speed including also waitstates, set cycles etc.) \index{slsDetector@{sls\-Detector}!getSettings@{getSettings}}
+\index{slsDetector@{sls\-Detector}!getSettings@{getSettings}}
 \index{getSettings@{getSettings}!slsDetector@{sls\-Detector}}
-\subsubsection{\setlength{\rightskip}{0pt plus 5cm}\bf{sls\-Detector::detector\-Settings} sls\-Detector::get\-Settings (int {\em imod} = {\tt -1})}\label{classslsDetector_d112702360f31a967bfad9fe2aabf6f6}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}\bf{detector\-Settings} sls\-Detector::get\-Settings (int {\em imod} = {\tt -1})}\label{classslsDetector_cfccfada625943feb410c6a14607a366}
 
 
 get detector settings \begin{Desc}
@@ -925,7 +945,7 @@ returns the detector trimbit directory\begin{Desc}
 \item[See also:]\doxyref{shared\-Sls\-Detector}{p.}{structslsDetector_1_1sharedSlsDetector} \end{Desc}
 \index{slsDetector@{sls\-Detector}!getTrimEn@{getTrimEn}}
 \index{getTrimEn@{getTrimEn}!slsDetector@{sls\-Detector}}
-\subsubsection{\setlength{\rightskip}{0pt plus 5cm}int sls\-Detector::get\-Trim\-En (int $\ast$ {\em en})\hspace{0.3cm}{\tt  [inline]}}\label{classslsDetector_fa24d8a0ec1393c7e27e4e558e72cf87}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}int sls\-Detector::get\-Trim\-En (int $\ast$ {\em en} = {\tt NULL})\hspace{0.3cm}{\tt  [inline]}}\label{classslsDetector_8862569a4a2530558914daa2e2251138}
 
 
 returns the number of trim energies and their value\begin{Desc}
@@ -951,7 +971,7 @@ give a train of calibration pulses \begin{Desc}
 \end{Desc}
 not yet implemented \index{slsDetector@{sls\-Detector}!initializeDetectorSize@{initializeDetectorSize}}
 \index{initializeDetectorSize@{initializeDetectorSize}!slsDetector@{sls\-Detector}}
-\subsubsection{\setlength{\rightskip}{0pt plus 5cm}int sls\-Detector::initialize\-Detector\-Size (\bf{detector\-Type} {\em type})\hspace{0.3cm}{\tt  [private]}}\label{classslsDetector_19f1c6d120293c98a0d2dc992e5616f8}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}int sls\-Detector::initialize\-Detector\-Size (\bf{detector\-Type} {\em type})\hspace{0.3cm}{\tt  [protected]}}\label{classslsDetector_19f1c6d120293c98a0d2dc992e5616f8}
 
 
 Initializes the this\-Detector structure \begin{Desc}
@@ -987,6 +1007,8 @@ set correction mask to 0
 
 set deat time
 
+sets bad channel list file to none
+
 set number of bad chans to 0
 
 set number of bad flat field chans to 0
@@ -1009,6 +1031,8 @@ set clockdivider to 1
 
 set number of positions to 0
 
+sets angular conversion file to none
+
 set binsize
 
 calculates the memory offsets for flat field coefficients and errors, module structures, dacs, adcs, chips and channels
@@ -1023,7 +1047,7 @@ fill the Bad\-Channel\-Mask \begin{Desc}
 \item[See also:]\doxyref{fill\-Bad\-Channel\-Mask}{p.}{classslsDetector_6a0ebe013e27c065b2f67158a27f64ac} \end{Desc}
 \index{slsDetector@{sls\-Detector}!initializeDetectorStructure@{initializeDetectorStructure}}
 \index{initializeDetectorStructure@{initializeDetectorStructure}!slsDetector@{sls\-Detector}}
-\subsubsection{\setlength{\rightskip}{0pt plus 5cm}int sls\-Detector::initialize\-Detector\-Structure ()\hspace{0.3cm}{\tt  [private]}}\label{classslsDetector_1c39e47efe5d8794b68cb32295cddf3c}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}int sls\-Detector::initialize\-Detector\-Structure ()\hspace{0.3cm}{\tt  [protected]}}\label{classslsDetector_1c39e47efe5d8794b68cb32295cddf3c}
 
 
 Initializes the module structures in this\-Detector if the detector did not exists before 
@@ -1044,7 +1068,7 @@ initializes the channel registers to 0
 
 initialize gain and offset to -1 \index{slsDetector@{sls\-Detector}!initSharedMemory@{initSharedMemory}}
 \index{initSharedMemory@{initSharedMemory}!slsDetector@{sls\-Detector}}
-\subsubsection{\setlength{\rightskip}{0pt plus 5cm}int sls\-Detector::init\-Shared\-Memory (\bf{detector\-Type} {\em type} = {\tt GENERIC}, int {\em id} = {\tt 0})\hspace{0.3cm}{\tt  [private]}}\label{classslsDetector_cb94b9bfa7bbea2d9e1b0289a272bca8}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}int sls\-Detector::init\-Shared\-Memory (\bf{detector\-Type} {\em type} = {\tt GENERIC}, int {\em id} = {\tt 0})\hspace{0.3cm}{\tt  [protected]}}\label{classslsDetector_cb94b9bfa7bbea2d9e1b0289a272bca8}
 
 
 Initializes the shared memory \begin{Desc}
@@ -1073,26 +1097,14 @@ pops the data from the data queue \begin{Desc}
 \item[See also:]\doxyref{data\-Queue}{p.}{classslsDetector_52e9fe9baf37db001cdf58f982ab5dd6} \end{Desc}
 \index{slsDetector@{sls\-Detector}!processData@{processData}}
 \index{processData@{processData}!slsDetector@{sls\-Detector}}
-\subsubsection{\setlength{\rightskip}{0pt plus 5cm}void $\ast$ sls\-Detector::process\-Data ()}\label{classslsDetector_717eb12630b1d1f5138f98e5f7ba021f}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}virtual void$\ast$ sls\-Detector::process\-Data ()\hspace{0.3cm}{\tt  [pure virtual]}}\label{classslsDetector_971d316af920fcb3ade98c486fe42c99}
 
 
-function for processing data 
+pure virtual function function for processing data \begin{Desc}
+\item[See also:]\doxyref{mythen\-Detector::process\-Data}{p.}{classmythenDetector_b5416cb00251f95fc3661936c3cbb1c4} \end{Desc}
 
-Pop data queue
 
-decode data
-
-write raw data file
-
-rate correction
-
-flat field correction
-
-angular conversion
-
-data merging
-
-file writing \index{slsDetector@{sls\-Detector}!rateCorrect@{rateCorrect}}
+Implemented in \bf{mythen\-Detector} \doxyref{p.}{classmythenDetector_b5416cb00251f95fc3661936c3cbb1c4}.\index{slsDetector@{sls\-Detector}!rateCorrect@{rateCorrect}}
 \index{rateCorrect@{rateCorrect}!slsDetector@{sls\-Detector}}
 \subsubsection{\setlength{\rightskip}{0pt plus 5cm}int sls\-Detector::rate\-Correct (float $\ast$ {\em datain}, float $\ast$ {\em errin}, float $\ast$ {\em dataout}, float $\ast$ {\em errout})}\label{classslsDetector_518feacfa3a1d6156779f8eaacdf86d3}
 
@@ -1127,68 +1139,72 @@ asks and receives all data from the detector and puts them in a data queue \begi
 \item[See also:]\doxyref{get\-Data\-From\-Detector}{p.}{classslsDetector_b1982e89f8e8de63c807a707ccba594c} \doxyref{data\-Queue}{p.}{classslsDetector_52e9fe9baf37db001cdf58f982ab5dd6} \end{Desc}
 \index{slsDetector@{sls\-Detector}!readAngularConversion@{readAngularConversion}}
 \index{readAngularConversion@{readAngularConversion}!slsDetector@{sls\-Detector}}
-\subsubsection{\setlength{\rightskip}{0pt plus 5cm}int sls\-Detector::read\-Angular\-Conversion (string {\em fname} = {\tt \char`\"{}\char`\"{}})}\label{classslsDetector_23398787e01e519bf8ac5f313ca5af01}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}virtual int sls\-Detector::read\-Angular\-Conversion (string {\em fname} = {\tt \char`\"{}\char`\"{}})\hspace{0.3cm}{\tt  [pure virtual]}}\label{classslsDetector_cd9d6358db471600f2e1a143a53c61c1}
 
 
-reads an angular conversion file \begin{Desc}
+Pure virtual function reads an angular conversion file \begin{Desc}
 \item[Parameters:]
 \begin{description}
 \item[{\em fname}]file to be read \end{description}
 \end{Desc}
 \begin{Desc}
-\item[See also:]\doxyref{angle\-Conversion\-Constant}{p.}{structangleConversionConstant} \end{Desc}
+\item[See also:]\doxyref{angle\-Conversion\-Constant}{p.}{structangleConversionConstant} \doxyref{mythen\-Detector::read\-Angular\-Conversion}{p.}{classmythenDetector_33bf1b939eb877bbd4aa42f400d7ca36} \end{Desc}
 
 
-Reimplemented in \bf{mythen\-Detector} \doxyref{p.}{classmythenDetector_33bf1b939eb877bbd4aa42f400d7ca36}.\index{slsDetector@{sls\-Detector}!readCalibrationFile@{readCalibrationFile}}
+Implemented in \bf{mythen\-Detector} \doxyref{p.}{classmythenDetector_33bf1b939eb877bbd4aa42f400d7ca36}.\index{slsDetector@{sls\-Detector}!readCalibrationFile@{readCalibrationFile}}
 \index{readCalibrationFile@{readCalibrationFile}!slsDetector@{sls\-Detector}}
-\subsubsection{\setlength{\rightskip}{0pt plus 5cm}int sls\-Detector::read\-Calibration\-File (string {\em fname}, float \& {\em gain}, float \& {\em offset})}\label{classslsDetector_9305060e7499cfcabac23b99c884b92b}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}virtual int sls\-Detector::read\-Calibration\-File (string {\em fname}, float \& {\em gain}, float \& {\em offset})\hspace{0.3cm}{\tt  [pure virtual]}}\label{classslsDetector_6c7f837f0820b08f41649c30151cb7ac}
 
 
-reads a calibration file \begin{Desc}
+Pure virtual function reads a calibration file \begin{Desc}
 \item[Parameters:]
 \begin{description}
 \item[{\em fname}]file to be read \item[{\em gain}]reference to the gain variable  reference to the offset variable \end{description}
 \end{Desc}
 \begin{Desc}
-\item[See also:]\doxyref{shared\-Sls\-Detector}{p.}{structslsDetector_1_1sharedSlsDetector} \end{Desc}
+\item[See also:]\doxyref{shared\-Sls\-Detector}{p.}{structslsDetector_1_1sharedSlsDetector} \doxyref{mythen\-Detector::read\-Calibration\-File}{p.}{classmythenDetector_f8f1b7b42012420fc557aacd714140f8} \end{Desc}
 
 
-Reimplemented in \bf{mythen\-Detector} \doxyref{p.}{classmythenDetector_f8f1b7b42012420fc557aacd714140f8}, and \bf{eiger\-Detector} \doxyref{p.}{classeigerDetector_6b1b4b5328a5d8c423e9a7a8a950028f}.\index{slsDetector@{sls\-Detector}!readConfigurationFile@{readConfigurationFile}}
+Implemented in \bf{mythen\-Detector} \doxyref{p.}{classmythenDetector_f8f1b7b42012420fc557aacd714140f8}, and \bf{eiger\-Detector} \doxyref{p.}{classeigerDetector_6b1b4b5328a5d8c423e9a7a8a950028f}.\index{slsDetector@{sls\-Detector}!readConfigurationFile@{readConfigurationFile}}
 \index{readConfigurationFile@{readConfigurationFile}!slsDetector@{sls\-Detector}}
-\subsubsection{\setlength{\rightskip}{0pt plus 5cm}int sls\-Detector::read\-Configuration\-File (string const  {\em fname})}\label{classslsDetector_49c88825b21dc040269f6980e9725a3a}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}virtual int sls\-Detector::read\-Configuration\-File (string const  {\em fname})\hspace{0.3cm}{\tt  [pure virtual]}}\label{classslsDetector_80266f80cfe49c2ccec7118de341d983}
 
 
-Every detector should have a basic configuration file containing: type (mythen, pilatus etc.) hostname portnumber communication type (default TCP/IP) eventually secondary portnumber (e.g. mythen stop function) number of modules installed if different from the detector size (x,y)
+Purely virtual function Should be implemented in the specific detector class /sa \doxyref{mythen\-Detector::read\-Configuration\-File}{p.}{classmythenDetector_92a32bcc57919fcf9eea844905640e90} 
 
-to be changed \index{slsDetector@{sls\-Detector}!readDataFile@{readDataFile}}
+Implemented in \bf{mythen\-Detector} \doxyref{p.}{classmythenDetector_92a32bcc57919fcf9eea844905640e90}.\index{slsDetector@{sls\-Detector}!readDataFile@{readDataFile}}
 \index{readDataFile@{readDataFile}!slsDetector@{sls\-Detector}}
-\subsubsection{\setlength{\rightskip}{0pt plus 5cm}int sls\-Detector::read\-Data\-File (string {\em fname}, int $\ast$ {\em data})}\label{classslsDetector_0d27017bc1140cc9da3e797f03848f2e}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}virtual int sls\-Detector::read\-Data\-File (string {\em fname}, int $\ast$ {\em data})\hspace{0.3cm}{\tt  [pure virtual]}}\label{classslsDetector_4239e7a357df82640464c0f2d0a18d69}
 
 
-reads a data file \begin{Desc}
+Pure virtual function reads a data file \begin{Desc}
 \item[Parameters:]
 \begin{description}
 \item[{\em name}]of the file to be read \item[{\em data}]array of data values \end{description}
 \end{Desc}
 \begin{Desc}
 \item[Returns:]OK or FAIL if it could not read the file or data=NULL \end{Desc}
+\begin{Desc}
+\item[See also:]\doxyref{mythen\-Detector::read\-Data\-File}{p.}{classmythenDetector_1937a5355eed0dc553cb05d2098f7c47} \end{Desc}
 
 
-Reimplemented in \bf{mythen\-Detector} \doxyref{p.}{classmythenDetector_d83819d61ea01148cf18cd3c46f2a9f7}, and \bf{eiger\-Detector} \doxyref{p.}{classeigerDetector_a6afa206101506d7f95d1ec835fbf843}.\index{slsDetector@{sls\-Detector}!readDataFile@{readDataFile}}
+Implemented in \bf{mythen\-Detector} \doxyref{p.}{classmythenDetector_d83819d61ea01148cf18cd3c46f2a9f7}, and \bf{eiger\-Detector} \doxyref{p.}{classeigerDetector_a6afa206101506d7f95d1ec835fbf843}.\index{slsDetector@{sls\-Detector}!readDataFile@{readDataFile}}
 \index{readDataFile@{readDataFile}!slsDetector@{sls\-Detector}}
-\subsubsection{\setlength{\rightskip}{0pt plus 5cm}int sls\-Detector::read\-Data\-File (string {\em fname}, float $\ast$ {\em data}, float $\ast$ {\em err} = {\tt NULL}, float $\ast$ {\em ang} = {\tt NULL}, char {\em dataformat} = {\tt 'f'}, int {\em nch} = {\tt 0})}\label{classslsDetector_ffd62fa6a3487693316209ea71502b4b}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}virtual int sls\-Detector::read\-Data\-File (string {\em fname}, float $\ast$ {\em data}, float $\ast$ {\em err} = {\tt NULL}, float $\ast$ {\em ang} = {\tt NULL}, char {\em dataformat} = {\tt 'f'}, int {\em nch} = {\tt 0})\hspace{0.3cm}{\tt  [pure virtual]}}\label{classslsDetector_86df95809e0e7979eafc04b2b868843d}
 
 
-reads a data file \begin{Desc}
+Pure virtual function reads a data file \begin{Desc}
 \item[Parameters:]
 \begin{description}
 \item[{\em name}]of the file to be read \item[{\em data}]array of data values to be filled \item[{\em err}]array of arrors on the data. If NULL no errors are expected on the file\item[{\em ang}]array of angular values. If NULL data are expected in the form chan-val(-err) otherwise ang-val(-err) \item[{\em dataformat}]format of the data: can be 'i' integer or 'f' float (default) \item[{\em nch}]number of channels to be written to file. if $<$=0 defaults to the number of installed channels of the detector \end{description}
 \end{Desc}
 \begin{Desc}
-\item[Returns:]OK or FAIL if it could not read the file or data=NULL \end{Desc}
+\item[Returns:]OK or FAIL if it could not read the file or data=NULL\end{Desc}
+\begin{Desc}
+\item[See also:]\doxyref{mythen\-Detector::read\-Data\-File}{p.}{classmythenDetector_1937a5355eed0dc553cb05d2098f7c47} \end{Desc}
 
 
-Reimplemented in \bf{mythen\-Detector} \doxyref{p.}{classmythenDetector_1937a5355eed0dc553cb05d2098f7c47}, and \bf{eiger\-Detector} \doxyref{p.}{classeigerDetector_4d0b7da609b9a0457656bfc8cf0a7997}.\index{slsDetector@{sls\-Detector}!readFrame@{readFrame}}
+Implemented in \bf{mythen\-Detector} \doxyref{p.}{classmythenDetector_1937a5355eed0dc553cb05d2098f7c47}, and \bf{eiger\-Detector} \doxyref{p.}{classeigerDetector_4d0b7da609b9a0457656bfc8cf0a7997}.\index{slsDetector@{sls\-Detector}!readFrame@{readFrame}}
 \index{readFrame@{readFrame}!slsDetector@{sls\-Detector}}
 \subsubsection{\setlength{\rightskip}{0pt plus 5cm}int $\ast$ sls\-Detector::read\-Frame ()}\label{classslsDetector_b352d85c5a4f415d1ec930d17bae87fa}
 
@@ -1211,10 +1227,10 @@ read register \begin{Desc}
 \item[Returns:]current register value \end{Desc}
 \index{slsDetector@{sls\-Detector}!readTrimFile@{readTrimFile}}
 \index{readTrimFile@{readTrimFile}!slsDetector@{sls\-Detector}}
-\subsubsection{\setlength{\rightskip}{0pt plus 5cm}\bf{sls\_\-detector\_\-module}$\ast$ sls\-Detector::read\-Trim\-File (string {\em fname}, \bf{sls\_\-detector\_\-module} $\ast$ {\em my\-Mod} = {\tt NULL})}\label{classslsDetector_e84b8a7a2b27db3f89a98f9f8a81efca}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}virtual \bf{sls\_\-detector\_\-module}$\ast$ sls\-Detector::read\-Trim\-File (string {\em fname}, \bf{sls\_\-detector\_\-module} $\ast$ {\em my\-Mod} = {\tt NULL})\hspace{0.3cm}{\tt  [pure virtual]}}\label{classslsDetector_612b52469e27c6675969499d3680abe6}
 
 
-reads a trim file \begin{Desc}
+Pure virtual function reads a trim file \begin{Desc}
 \item[Parameters:]
 \begin{description}
 \item[{\em fname}]name of the file to be read \item[{\em my\-Mod}]pointer to the module structure which has to be set. \par
@@ -1222,74 +1238,80 @@ reads a trim file \begin{Desc}
 \end{Desc}
 \begin{Desc}
 \item[Returns:]the pointer to my\-Mod or NULL if reading the file failed \end{Desc}
+\begin{Desc}
+\item[See also:]\doxyref{mythen\-Detector::read\-Trim\-File}{p.}{classmythenDetector_2120f9105997fd8f8bf9165dbffc55e7} \end{Desc}
 
 
-Reimplemented in \bf{mythen\-Detector} \doxyref{p.}{classmythenDetector_2120f9105997fd8f8bf9165dbffc55e7}, and \bf{eiger\-Detector} \doxyref{p.}{classeigerDetector_f24af0459e8eb45c1bc9c68a870e5094}.\index{slsDetector@{sls\-Detector}!receiveChannel@{receiveChannel}}
+Implemented in \bf{mythen\-Detector} \doxyref{p.}{classmythenDetector_2120f9105997fd8f8bf9165dbffc55e7}, and \bf{eiger\-Detector} \doxyref{p.}{classeigerDetector_f24af0459e8eb45c1bc9c68a870e5094}.\index{slsDetector@{sls\-Detector}!receiveChannel@{receiveChannel}}
 \index{receiveChannel@{receiveChannel}!slsDetector@{sls\-Detector}}
-\subsubsection{\setlength{\rightskip}{0pt plus 5cm}int sls\-Detector::receive\-Channel (\bf{sls\_\-detector\_\-channel} $\ast$)\hspace{0.3cm}{\tt  [private]}}\label{classslsDetector_39f8959a55e92c7b0817529270be7667}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}int sls\-Detector::receive\-Channel (\bf{sls\_\-detector\_\-channel} $\ast$)\hspace{0.3cm}{\tt  [protected]}}\label{classslsDetector_39f8959a55e92c7b0817529270be7667}
 
 
 receive a \doxyref{sls\_\-detector\_\-channel}{p.}{structsls__detector__channel} structure over socket \index{slsDetector@{sls\-Detector}!receiveChip@{receiveChip}}
 \index{receiveChip@{receiveChip}!slsDetector@{sls\-Detector}}
-\subsubsection{\setlength{\rightskip}{0pt plus 5cm}int sls\-Detector::receive\-Chip (\bf{sls\_\-detector\_\-chip} $\ast$)\hspace{0.3cm}{\tt  [private]}}\label{classslsDetector_21d070352bfbf4745543c572bd6ae8f7}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}int sls\-Detector::receive\-Chip (\bf{sls\_\-detector\_\-chip} $\ast$)\hspace{0.3cm}{\tt  [protected]}}\label{classslsDetector_21d070352bfbf4745543c572bd6ae8f7}
 
 
 receive a \doxyref{sls\_\-detector\_\-chip}{p.}{structsls__detector__chip} structure over socket \index{slsDetector@{sls\-Detector}!receiveModule@{receiveModule}}
 \index{receiveModule@{receiveModule}!slsDetector@{sls\-Detector}}
-\subsubsection{\setlength{\rightskip}{0pt plus 5cm}int sls\-Detector::receive\-Module (\bf{sls\_\-detector\_\-module} $\ast$)\hspace{0.3cm}{\tt  [private]}}\label{classslsDetector_1356b4fabe6b1aaa9c67939ff9331f98}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}int sls\-Detector::receive\-Module (\bf{sls\_\-detector\_\-module} $\ast$)\hspace{0.3cm}{\tt  [protected]}}\label{classslsDetector_1356b4fabe6b1aaa9c67939ff9331f98}
 
 
 receive a \doxyref{sls\_\-detector\_\-module}{p.}{structsls__detector__module} structure over socket \index{slsDetector@{sls\-Detector}!resetMerging@{resetMerging}}
 \index{resetMerging@{resetMerging}!slsDetector@{sls\-Detector}}
-\subsubsection{\setlength{\rightskip}{0pt plus 5cm}int sls\-Detector::reset\-Merging (float $\ast$ {\em mp}, float $\ast$ {\em mv}, float $\ast$ {\em me}, int $\ast$ {\em mm})}\label{classslsDetector_208c3a5a80ba931056f1f2ff3cb5d0e5}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}virtual int sls\-Detector::reset\-Merging (float $\ast$ {\em mp}, float $\ast$ {\em mv}, float $\ast$ {\em me}, int $\ast$ {\em mm})\hspace{0.3cm}{\tt  [pure virtual]}}\label{classslsDetector_20156c620f868445e454bc4115871822}
 
 
-sets the arrays of the merged data to 0. NB The array should be created with size $>$= 360./get\-Bin\-Size(); \begin{Desc}
+pure virtual function sets the arrays of the merged data to 0. NB The array should be created with size $>$= 360./get\-Bin\-Size(); \begin{Desc}
 \item[Parameters:]
 \begin{description}
 \item[{\em mp}]already merged postions \item[{\em mv}]already merged data \item[{\em me}]already merged errors (squared sum) \item[{\em mm}]multiplicity of merged arrays \end{description}
 \end{Desc}
 \begin{Desc}
 \item[Returns:]OK or FAIL \end{Desc}
+\begin{Desc}
+\item[See also:]\doxyref{mythen\-Detector::reset\-Merging}{p.}{classmythenDetector_7d38c9af0d94bc15571c3c15b38f39a8} \end{Desc}
 
 
-Reimplemented in \bf{mythen\-Detector} \doxyref{p.}{classmythenDetector_7d38c9af0d94bc15571c3c15b38f39a8}.\index{slsDetector@{sls\-Detector}!retrieveDetectorSetup@{retrieveDetectorSetup}}
+Implemented in \bf{mythen\-Detector} \doxyref{p.}{classmythenDetector_7d38c9af0d94bc15571c3c15b38f39a8}.\index{slsDetector@{sls\-Detector}!retrieveDetectorSetup@{retrieveDetectorSetup}}
 \index{retrieveDetectorSetup@{retrieveDetectorSetup}!slsDetector@{sls\-Detector}}
-\subsubsection{\setlength{\rightskip}{0pt plus 5cm}int sls\-Detector::retrieve\-Detector\-Setup (string const  {\em fname})}\label{classslsDetector_233c3d27e9a946fb42b0aa49717d9251}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}virtual int sls\-Detector::retrieve\-Detector\-Setup (string const  {\em fname})\hspace{0.3cm}{\tt  [pure virtual]}}\label{classslsDetector_0ec6aa8998db1bee1b00aeecbe870d5f}
 
 
-not yet implemented
+Purely virtual function Should be implemented in the specific detector class /sa \doxyref{mythen\-Detector::retrieve\-Detector\-Setup}{p.}{classmythenDetector_8eedcd0b6739dd878559de5b675fae83} 
 
-should retrieve from a file all the current detector parameters \index{slsDetector@{sls\-Detector}!sendChannel@{sendChannel}}
+Implemented in \bf{mythen\-Detector} \doxyref{p.}{classmythenDetector_8eedcd0b6739dd878559de5b675fae83}.\index{slsDetector@{sls\-Detector}!sendChannel@{sendChannel}}
 \index{sendChannel@{sendChannel}!slsDetector@{sls\-Detector}}
-\subsubsection{\setlength{\rightskip}{0pt plus 5cm}int sls\-Detector::send\-Channel (\bf{sls\_\-detector\_\-channel} $\ast$)\hspace{0.3cm}{\tt  [private]}}\label{classslsDetector_5cd249f9a287b25af9a3a7e7e675c559}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}int sls\-Detector::send\-Channel (\bf{sls\_\-detector\_\-channel} $\ast$)\hspace{0.3cm}{\tt  [protected]}}\label{classslsDetector_5cd249f9a287b25af9a3a7e7e675c559}
 
 
 send a \doxyref{sls\_\-detector\_\-channel}{p.}{structsls__detector__channel} structure over socket \index{slsDetector@{sls\-Detector}!sendChip@{sendChip}}
 \index{sendChip@{sendChip}!slsDetector@{sls\-Detector}}
-\subsubsection{\setlength{\rightskip}{0pt plus 5cm}int sls\-Detector::send\-Chip (\bf{sls\_\-detector\_\-chip} $\ast$)\hspace{0.3cm}{\tt  [private]}}\label{classslsDetector_1e92a814b83501cdef5771c1e5c477aa}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}int sls\-Detector::send\-Chip (\bf{sls\_\-detector\_\-chip} $\ast$)\hspace{0.3cm}{\tt  [protected]}}\label{classslsDetector_1e92a814b83501cdef5771c1e5c477aa}
 
 
 send a \doxyref{sls\_\-detector\_\-chip}{p.}{structsls__detector__chip} structure over socket \index{slsDetector@{sls\-Detector}!sendModule@{sendModule}}
 \index{sendModule@{sendModule}!slsDetector@{sls\-Detector}}
-\subsubsection{\setlength{\rightskip}{0pt plus 5cm}int sls\-Detector::send\-Module (\bf{sls\_\-detector\_\-module} $\ast$)\hspace{0.3cm}{\tt  [private]}}\label{classslsDetector_cc29561aa2b22ee49038c7bdf2be5ad7}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}int sls\-Detector::send\-Module (\bf{sls\_\-detector\_\-module} $\ast$)\hspace{0.3cm}{\tt  [protected]}}\label{classslsDetector_cc29561aa2b22ee49038c7bdf2be5ad7}
 
 
 send a \doxyref{sls\_\-detector\_\-module}{p.}{structsls__detector__module} structure over socket \index{slsDetector@{sls\-Detector}!setAngularConversion@{setAngularConversion}}
 \index{setAngularConversion@{setAngularConversion}!slsDetector@{sls\-Detector}}
-\subsubsection{\setlength{\rightskip}{0pt plus 5cm}int sls\-Detector::set\-Angular\-Conversion (string {\em fname} = {\tt \char`\"{}\char`\"{}})}\label{classslsDetector_30fe39ddd78fa880b6b7815d1d5462ec}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}virtual int sls\-Detector::set\-Angular\-Conversion (string {\em fname} = {\tt \char`\"{}\char`\"{}})\hspace{0.3cm}{\tt  [pure virtual]}}\label{classslsDetector_0a17abc301de750f7dafd43b7ad8b0c9}
 
 
-set angular conversion \begin{Desc}
+pure virtual function set angular conversion \begin{Desc}
 \item[Parameters:]
 \begin{description}
 \item[{\em fname}]file with angular conversion constants (\char`\"{}\char`\"{} disable) \end{description}
 \end{Desc}
 \begin{Desc}
 \item[Returns:]0 if angular conversion disabled, $>$0 otherwise \end{Desc}
+\begin{Desc}
+\item[See also:]\doxyref{mythen\-Detector::set\-Angular\-Conversion}{p.}{classmythenDetector_78efe554a277de7fb8759307992fc61b} \end{Desc}
 
 
-Reimplemented in \bf{mythen\-Detector} \doxyref{p.}{classmythenDetector_78efe554a277de7fb8759307992fc61b}.\index{slsDetector@{sls\-Detector}!setBadChannelCorrection@{setBadChannelCorrection}}
+Implemented in \bf{mythen\-Detector} \doxyref{p.}{classmythenDetector_78efe554a277de7fb8759307992fc61b}.\index{slsDetector@{sls\-Detector}!setBadChannelCorrection@{setBadChannelCorrection}}
 \index{setBadChannelCorrection@{setBadChannelCorrection}!slsDetector@{sls\-Detector}}
 \subsubsection{\setlength{\rightskip}{0pt plus 5cm}int sls\-Detector::set\-Bad\-Channel\-Correction (string {\em fname} = {\tt \char`\"{}\char`\"{}})}\label{classslsDetector_45833eb571b8cb20225f4046e2a17e5a}
 
@@ -1303,12 +1325,21 @@ set bad channels correction \begin{Desc}
 \item[Returns:]0 if bad channel disabled, $>$0 otherwise \end{Desc}
 \index{slsDetector@{sls\-Detector}!setBinSize@{setBinSize}}
 \index{setBinSize@{setBinSize}!slsDetector@{sls\-Detector}}
-\subsubsection{\setlength{\rightskip}{0pt plus 5cm}float sls\-Detector::set\-Bin\-Size (float {\em bs})\hspace{0.3cm}{\tt  [inline]}}\label{classslsDetector_96e2fb6fb0aa34bdbe59facf367c4ae1}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}virtual float sls\-Detector::set\-Bin\-Size (float {\em bs})\hspace{0.3cm}{\tt  [pure virtual]}}\label{classslsDetector_1a2ebbe67dae42059723071f437eb721}
 
 
-set detector bin size used for merging (approx angular resolution) 
+pure virtual function set detector bin size used for merging (approx angular resolution) \begin{Desc}
+\item[Parameters:]
+\begin{description}
+\item[{\em bs}]bin size in degrees \end{description}
+\end{Desc}
+\begin{Desc}
+\item[Returns:]current bin size \end{Desc}
+\begin{Desc}
+\item[See also:]\doxyref{mythen\-Detector::set\-Bin\-Size}{p.}{classmythenDetector_8f466447f886379204a59eb6785f1ed0} \end{Desc}
 
-Reimplemented in \bf{mythen\-Detector} \doxyref{p.}{classmythenDetector_8f466447f886379204a59eb6785f1ed0}.\index{slsDetector@{sls\-Detector}!setCalDir@{setCalDir}}
+
+Implemented in \bf{mythen\-Detector} \doxyref{p.}{classmythenDetector_8f466447f886379204a59eb6785f1ed0}.\index{slsDetector@{sls\-Detector}!setCalDir@{setCalDir}}
 \index{setCalDir@{setCalDir}!slsDetector@{sls\-Detector}}
 \subsubsection{\setlength{\rightskip}{0pt plus 5cm}char$\ast$ sls\-Detector::set\-Cal\-Dir (string {\em s})\hspace{0.3cm}{\tt  [inline]}}\label{classslsDetector_9c4d2c796c176852537ff3cff4f5974b}
 
@@ -1369,14 +1400,7 @@ configure chip \begin{Desc}
 \item[Returns:]current register value \end{Desc}
 \begin{Desc}
 \item[See also:]\doxyref{sls\_\-detector\_\-chip}{p.}{structsls__detector__chip} \end{Desc}
-\index{slsDetector@{sls\-Detector}!setClockDivider@{setClockDivider}}
-\index{setClockDivider@{setClockDivider}!slsDetector@{sls\-Detector}}
-\subsubsection{\setlength{\rightskip}{0pt plus 5cm}int sls\-Detector::set\-Clock\-Divider (int {\em i})\hspace{0.3cm}{\tt  [inline]}}\label{classslsDetector_49af64998d4a4d44e965eb0adb1facb2}
-
-
-set clock divider
-
-not implemented (should be something more general like \char`\"{}set speed including also waitstates, set cycles etc.) \index{slsDetector@{sls\-Detector}!setDAC@{setDAC}}
+\index{slsDetector@{sls\-Detector}!setDAC@{setDAC}}
 \index{setDAC@{setDAC}!slsDetector@{sls\-Detector}}
 \subsubsection{\setlength{\rightskip}{0pt plus 5cm}float sls\-Detector::set\-DAC (float {\em val}, \bf{dac\-Index} {\em index}, int {\em imod} = {\tt -1})}\label{classslsDetector_cfcce08c547e24dc09968a74e35daf40}
 
@@ -1486,12 +1510,14 @@ sets the default output files path \begin{Desc}
 \item[See also:]\doxyref{shared\-Sls\-Detector}{p.}{structslsDetector_1_1sharedSlsDetector} \end{Desc}
 \index{slsDetector@{sls\-Detector}!setFineOffset@{setFineOffset}}
 \index{setFineOffset@{setFineOffset}!slsDetector@{sls\-Detector}}
-\subsubsection{\setlength{\rightskip}{0pt plus 5cm}float sls\-Detector::set\-Fine\-Offset (float {\em f})\hspace{0.3cm}{\tt  [inline]}}\label{classslsDetector_fd3b79c59688a7a0f4f72ba5676a2f9b}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}virtual float sls\-Detector::set\-Fine\-Offset (float {\em f})\hspace{0.3cm}{\tt  [pure virtual]}}\label{classslsDetector_7b3b6b3ac5b3b1ee0677f7deeec5c9e3}
 
 
-set detector fine offset 
+pure virtual function set detector fine offset \begin{Desc}
+\item[See also:]\doxyref{mythen\-Detector::set\-Fine\-Offset}{p.}{classmythenDetector_fe142e36f1a5fa8b2ab5fc45e9f8c781} \end{Desc}
 
-Reimplemented in \bf{mythen\-Detector} \doxyref{p.}{classmythenDetector_fe142e36f1a5fa8b2ab5fc45e9f8c781}.\index{slsDetector@{sls\-Detector}!setFlatFieldCorrection@{setFlatFieldCorrection}}
+
+Implemented in \bf{mythen\-Detector} \doxyref{p.}{classmythenDetector_fe142e36f1a5fa8b2ab5fc45e9f8c781}.\index{slsDetector@{sls\-Detector}!setFlatFieldCorrection@{setFlatFieldCorrection}}
 \index{setFlatFieldCorrection@{setFlatFieldCorrection}!slsDetector@{sls\-Detector}}
 \subsubsection{\setlength{\rightskip}{0pt plus 5cm}int sls\-Detector::set\-Flat\-Field\-Correction (string {\em fname} = {\tt \char`\"{}\char`\"{}})}\label{classslsDetector_b4e2c11303714d5e62b4fcc22f829d8f}
 
@@ -1505,12 +1531,14 @@ set flat field corrections \begin{Desc}
 \item[Returns:]0 if disable (or file could not be read), $>$0 otherwise \end{Desc}
 \index{slsDetector@{sls\-Detector}!setGlobalOffset@{setGlobalOffset}}
 \index{setGlobalOffset@{setGlobalOffset}!slsDetector@{sls\-Detector}}
-\subsubsection{\setlength{\rightskip}{0pt plus 5cm}float sls\-Detector::set\-Global\-Offset (float {\em f})\hspace{0.3cm}{\tt  [inline]}}\label{classslsDetector_84c8dc8017e692d93246cd546e6366c1}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}virtual float sls\-Detector::set\-Global\-Offset (float {\em f})\hspace{0.3cm}{\tt  [pure virtual]}}\label{classslsDetector_2a03a8aec6dbf74a606e6960e178fceb}
 
 
-set detector global offset 
+pure virtual function set detector global offset \begin{Desc}
+\item[See also:]\doxyref{mythen\-Detector::set\-Global\-Offset}{p.}{classmythenDetector_e24dd88c4eb965687bd656a12bae8ad7} \end{Desc}
 
-Reimplemented in \bf{mythen\-Detector} \doxyref{p.}{classmythenDetector_e24dd88c4eb965687bd656a12bae8ad7}.\index{slsDetector@{sls\-Detector}!setModule@{setModule}}
+
+Implemented in \bf{mythen\-Detector} \doxyref{p.}{classmythenDetector_e24dd88c4eb965687bd656a12bae8ad7}.\index{slsDetector@{sls\-Detector}!setModule@{setModule}}
 \index{setModule@{setModule}!slsDetector@{sls\-Detector}}
 \subsubsection{\setlength{\rightskip}{0pt plus 5cm}int sls\-Detector::set\-Module (\bf{sls\_\-detector\_\-module} {\em module})}\label{classslsDetector_d659b9a8ae9a29cea616e6333e2e7be4}
 
@@ -1565,19 +1593,21 @@ sets the online\-Flag \begin{Desc}
 \end{Desc}
 \index{slsDetector@{sls\-Detector}!setPositions@{setPositions}}
 \index{setPositions@{setPositions}!slsDetector@{sls\-Detector}}
-\subsubsection{\setlength{\rightskip}{0pt plus 5cm}int sls\-Detector::set\-Positions (int {\em n\-Pos}, float $\ast$ {\em pos})\hspace{0.3cm}{\tt  [inline]}}\label{classslsDetector_ed6493ad015660281b14814f9a7f6cb5}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}virtual int sls\-Detector::set\-Positions (int {\em n\-Pos}, float $\ast$ {\em pos})\hspace{0.3cm}{\tt  [pure virtual]}}\label{classslsDetector_961e3976e3077803e2fc245873f81d81}
 
 
-set positions for the acquisition \begin{Desc}
+pure virtual function set positions for the acquisition \begin{Desc}
 \item[Parameters:]
 \begin{description}
 \item[{\em n\-Pos}]number of positions \item[{\em pos}]array with the encoder positions \end{description}
 \end{Desc}
 \begin{Desc}
 \item[Returns:]number of positions \end{Desc}
+\begin{Desc}
+\item[See also:]\doxyref{mythen\-Detector::set\-Positions}{p.}{classmythenDetector_1ffb0963f724e6d6d497685e6de62fd6} \end{Desc}
 
 
-Reimplemented in \bf{mythen\-Detector} \doxyref{p.}{classmythenDetector_1ffb0963f724e6d6d497685e6de62fd6}.\index{slsDetector@{sls\-Detector}!setRateCorrection@{setRateCorrection}}
+Implemented in \bf{mythen\-Detector} \doxyref{p.}{classmythenDetector_1ffb0963f724e6d6d497685e6de62fd6}.\index{slsDetector@{sls\-Detector}!setRateCorrection@{setRateCorrection}}
 \index{setRateCorrection@{setRateCorrection}!slsDetector@{sls\-Detector}}
 \subsubsection{\setlength{\rightskip}{0pt plus 5cm}int sls\-Detector::set\-Rate\-Correction (float {\em t} = {\tt 0})}\label{classslsDetector_c89f7fc9f9255e573e34f8d3dadf38af}
 
@@ -1608,14 +1638,7 @@ set/get readout flags \begin{Desc}
 
 set roi
 
-not yet implemented \index{slsDetector@{sls\-Detector}!setSetLength@{setSetLength}}
-\index{setSetLength@{setSetLength}!slsDetector@{sls\-Detector}}
-\subsubsection{\setlength{\rightskip}{0pt plus 5cm}int sls\-Detector::set\-Set\-Length (int {\em i})\hspace{0.3cm}{\tt  [inline]}}\label{classslsDetector_f936cf5840bded81acb3f93b6b5fdd1c}
-
-
-set length cycles
-
-not implemented (should be something more general like \char`\"{}set speed including also waitstates, set cycles etc.) \index{slsDetector@{sls\-Detector}!setSettings@{setSettings}}
+not yet implemented \index{slsDetector@{sls\-Detector}!setSettings@{setSettings}}
 \index{setSettings@{setSettings}!slsDetector@{sls\-Detector}}
 \subsubsection{\setlength{\rightskip}{0pt plus 5cm}\bf{detector\-Settings} sls\-Detector::set\-Settings (\bf{detector\-Settings} {\em isettings}, int {\em imod} = {\tt -1})}\label{classslsDetector_765072d5c8aaff56ca79734072607188}
 
@@ -1627,7 +1650,21 @@ set detector settings \begin{Desc}
 \end{Desc}
 \begin{Desc}
 \item[Returns:]current settings\end{Desc}
-in this function trimbits and calibration files are searched in the trim\-Dir and cal\-Dir directories and the detector is initialized \index{slsDetector@{sls\-Detector}!setTCPSocket@{setTCPSocket}}
+in this function trimbits and calibration files are searched in the trim\-Dir and cal\-Dir directories and the detector is initialized \index{slsDetector@{sls\-Detector}!setSpeed@{setSpeed}}
+\index{setSpeed@{setSpeed}!slsDetector@{sls\-Detector}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}int sls\-Detector::set\-Speed (\bf{speed\-Variable} {\em sp}, int {\em value} = {\tt -1})}\label{classslsDetector_8e35d9440a03e127ef5fe7a909702675}
+
+
+sets/gets the value of important readout speed parameters \begin{Desc}
+\item[Parameters:]
+\begin{description}
+\item[{\em sp}]is the parameter to be set/get \item[{\em value}]is the value to be set, if -1 get value \end{description}
+\end{Desc}
+\begin{Desc}
+\item[Returns:]current value for the specified parameter \end{Desc}
+\begin{Desc}
+\item[See also:]\doxyref{speed\-Variable}{p.}{sls__detector__defs_8h_8c326f6a87754392b72098d3d0dec49d} \end{Desc}
+\index{slsDetector@{sls\-Detector}!setTCPSocket@{setTCPSocket}}
 \index{setTCPSocket@{setTCPSocket}!slsDetector@{sls\-Detector}}
 \subsubsection{\setlength{\rightskip}{0pt plus 5cm}int sls\-Detector::set\-TCPSocket (string const  {\em name} = {\tt \char`\"{}\char`\"{}}, int const  {\em control\_\-port} = {\tt -1}, int const  {\em stop\_\-port} = {\tt -1}, int const  {\em data\_\-port} = {\tt -1})}\label{classslsDetector_019a01c4465c5ee572293cb6c00d9904}
 
@@ -1704,7 +1741,7 @@ start readout (without exposure or interrupting exposure) \begin{Desc}
 \item[Returns:]OK/FAIL \end{Desc}
 \index{slsDetector@{sls\-Detector}!startThread@{startThread}}
 \index{startThread@{startThread}!slsDetector@{sls\-Detector}}
-\subsubsection{\setlength{\rightskip}{0pt plus 5cm}void sls\-Detector::start\-Thread ()\hspace{0.3cm}{\tt  [private]}}\label{classslsDetector_58199d3393aa7eaa606cbb7cbf83469d}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}void sls\-Detector::start\-Thread ()\hspace{0.3cm}{\tt  [protected]}}\label{classslsDetector_58199d3393aa7eaa606cbb7cbf83469d}
 
 
 start data processing threas \index{slsDetector@{sls\-Detector}!stopAcquisition@{stopAcquisition}}
@@ -1716,68 +1753,72 @@ stop detector acquisition \begin{Desc}
 \item[Returns:]OK/FAIL \end{Desc}
 \index{slsDetector@{sls\-Detector}!writeAngularConversion@{writeAngularConversion}}
 \index{writeAngularConversion@{writeAngularConversion}!slsDetector@{sls\-Detector}}
-\subsubsection{\setlength{\rightskip}{0pt plus 5cm}int sls\-Detector::write\-Angular\-Conversion (string {\em fname} = {\tt \char`\"{}\char`\"{}})}\label{classslsDetector_921f212286be085d7e1b8d0d11110d9c}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}virtual int sls\-Detector::write\-Angular\-Conversion (string {\em fname} = {\tt \char`\"{}\char`\"{}})\hspace{0.3cm}{\tt  [pure virtual]}}\label{classslsDetector_cace8f0d8706a175915289d86c1fd8d6}
 
 
-writes an angular conversion file \begin{Desc}
+Pure virtual function writes an angular conversion file \begin{Desc}
 \item[Parameters:]
 \begin{description}
 \item[{\em fname}]file to be written \end{description}
 \end{Desc}
 \begin{Desc}
-\item[See also:]\doxyref{angle\-Conversion\-Constant}{p.}{structangleConversionConstant} \end{Desc}
+\item[See also:]\doxyref{angle\-Conversion\-Constant}{p.}{structangleConversionConstant} \doxyref{mythen\-Detector::write\-Angular\-Conversion}{p.}{classmythenDetector_3c5f27709351c49dd715212adc5ba7d2} \end{Desc}
 
 
-Reimplemented in \bf{mythen\-Detector} \doxyref{p.}{classmythenDetector_3c5f27709351c49dd715212adc5ba7d2}.\index{slsDetector@{sls\-Detector}!writeCalibrationFile@{writeCalibrationFile}}
+Implemented in \bf{mythen\-Detector} \doxyref{p.}{classmythenDetector_3c5f27709351c49dd715212adc5ba7d2}.\index{slsDetector@{sls\-Detector}!writeCalibrationFile@{writeCalibrationFile}}
 \index{writeCalibrationFile@{writeCalibrationFile}!slsDetector@{sls\-Detector}}
-\subsubsection{\setlength{\rightskip}{0pt plus 5cm}int sls\-Detector::write\-Calibration\-File (string {\em fname}, float {\em gain}, float {\em offset})}\label{classslsDetector_8eb676a1ab6ef35601ba5cae942ba380}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}virtual int sls\-Detector::write\-Calibration\-File (string {\em fname}, float {\em gain}, float {\em offset})\hspace{0.3cm}{\tt  [pure virtual]}}\label{classslsDetector_d12edef440bf2b2f930e83f0ccceb01e}
 
 
-writes a clibration file \begin{Desc}
+Pure virtual function writes a calibration file \begin{Desc}
 \item[Parameters:]
 \begin{description}
 \item[{\em fname}]file to be written \item[{\em gain}]\item[{\em offset}]\end{description}
 \end{Desc}
 \begin{Desc}
-\item[See also:]\doxyref{shared\-Sls\-Detector}{p.}{structslsDetector_1_1sharedSlsDetector} \end{Desc}
+\item[See also:]\doxyref{shared\-Sls\-Detector}{p.}{structslsDetector_1_1sharedSlsDetector} \doxyref{mythen\-Detector::write\-Calibration\-File}{p.}{classmythenDetector_10e7213bb0e7138c07231687e9a6899a} \end{Desc}
 
 
-Reimplemented in \bf{mythen\-Detector} \doxyref{p.}{classmythenDetector_10e7213bb0e7138c07231687e9a6899a}, and \bf{eiger\-Detector} \doxyref{p.}{classeigerDetector_d5fbecfcc46cb151160c6011aa8e33b2}.\index{slsDetector@{sls\-Detector}!writeConfigurationFile@{writeConfigurationFile}}
+Implemented in \bf{mythen\-Detector} \doxyref{p.}{classmythenDetector_10e7213bb0e7138c07231687e9a6899a}, and \bf{eiger\-Detector} \doxyref{p.}{classeigerDetector_d5fbecfcc46cb151160c6011aa8e33b2}.\index{slsDetector@{sls\-Detector}!writeConfigurationFile@{writeConfigurationFile}}
 \index{writeConfigurationFile@{writeConfigurationFile}!slsDetector@{sls\-Detector}}
-\subsubsection{\setlength{\rightskip}{0pt plus 5cm}int sls\-Detector::write\-Configuration\-File (string const  {\em fname})}\label{classslsDetector_82628148e11f4890c9d935ec921c1121}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}virtual int sls\-Detector::write\-Configuration\-File (string const  {\em fname})\hspace{0.3cm}{\tt  [pure virtual]}}\label{classslsDetector_7801c6d43c72ce5ccaa72743a6f307d2}
 
 
-Every detector should have a basic configuration file containing: type (mythen, pilatus etc.) hostname portnumber communication type (default TCP/IP) eventually secondary portnumber (e.g. mythen stop function) number of modules installed if different from the detector size (x,y)
+Purely virtual function Should be implemented in the specific detector class /sa \doxyref{mythen\-Detector::write\-Configuration\-File}{p.}{classmythenDetector_6ad688e0c1a59001ecc61117c67e5434} 
 
-to be changed \index{slsDetector@{sls\-Detector}!writeDataFile@{writeDataFile}}
+Implemented in \bf{mythen\-Detector} \doxyref{p.}{classmythenDetector_6ad688e0c1a59001ecc61117c67e5434}.\index{slsDetector@{sls\-Detector}!writeDataFile@{writeDataFile}}
 \index{writeDataFile@{writeDataFile}!slsDetector@{sls\-Detector}}
-\subsubsection{\setlength{\rightskip}{0pt plus 5cm}int sls\-Detector::write\-Data\-File (string {\em fname}, int $\ast$ {\em data})}\label{classslsDetector_3e1a8e49fbfb34a54381452abc8b5258}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}virtual int sls\-Detector::write\-Data\-File (string {\em fname}, int $\ast$ {\em data})\hspace{0.3cm}{\tt  [pure virtual]}}\label{classslsDetector_efa98ca652306e2a026c9a5b2fbfe2dc}
 
 
-writes a data file \begin{Desc}
+Pure virtual function writes a data file \begin{Desc}
 \item[Parameters:]
 \begin{description}
 \item[{\em name}]of the file to be written \item[{\em data}]array of data values \end{description}
 \end{Desc}
 \begin{Desc}
 \item[Returns:]OK or FAIL if it could not write the file or data=NULL \end{Desc}
+\begin{Desc}
+\item[See also:]\doxyref{mythen\-Detector::write\-Data\-File}{p.}{classmythenDetector_42c1d320f594ebd87e2465cc986ee848} \end{Desc}
 
 
-Reimplemented in \bf{mythen\-Detector} \doxyref{p.}{classmythenDetector_9a49c84d7ad664f7891b00fba0ce829a}, and \bf{eiger\-Detector} \doxyref{p.}{classeigerDetector_68a740d5e43fcdb00c57f401666c0856}.\index{slsDetector@{sls\-Detector}!writeDataFile@{writeDataFile}}
+Implemented in \bf{mythen\-Detector} \doxyref{p.}{classmythenDetector_9a49c84d7ad664f7891b00fba0ce829a}, and \bf{eiger\-Detector} \doxyref{p.}{classeigerDetector_68a740d5e43fcdb00c57f401666c0856}.\index{slsDetector@{sls\-Detector}!writeDataFile@{writeDataFile}}
 \index{writeDataFile@{writeDataFile}!slsDetector@{sls\-Detector}}
-\subsubsection{\setlength{\rightskip}{0pt plus 5cm}int sls\-Detector::write\-Data\-File (string {\em fname}, float $\ast$ {\em data}, float $\ast$ {\em err} = {\tt NULL}, float $\ast$ {\em ang} = {\tt NULL}, char {\em dataformat} = {\tt 'f'}, int {\em nch} = {\tt -1})}\label{classslsDetector_889c060afb5693830ca2be4fc6a5442c}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}virtual int sls\-Detector::write\-Data\-File (string {\em fname}, float $\ast$ {\em data}, float $\ast$ {\em err} = {\tt NULL}, float $\ast$ {\em ang} = {\tt NULL}, char {\em dataformat} = {\tt 'f'}, int {\em nch} = {\tt -1})\hspace{0.3cm}{\tt  [pure virtual]}}\label{classslsDetector_08823d7078b5e6dd1a4cb7d8b3cfe0af}
 
 
-writes a data file \begin{Desc}
+Pure virtual function writes a data file \begin{Desc}
 \item[Parameters:]
 \begin{description}
 \item[{\em name}]of the file to be written \item[{\em data}]array of data values \item[{\em err}]array of arrors on the data. If NULL no errors will be written\item[{\em ang}]array of angular values. If NULL data will be in the form chan-val(-err) otherwise ang-val(-err) \item[{\em dataformat}]format of the data: can be 'i' integer or 'f' float (default) \item[{\em nch}]number of channels to be written to file. if -1 defaults to the number of installed channels of the detector \end{description}
 \end{Desc}
 \begin{Desc}
 \item[Returns:]OK or FAIL if it could not write the file or data=NULL \end{Desc}
+\begin{Desc}
+\item[See also:]\doxyref{mythen\-Detector::write\-Data\-File}{p.}{classmythenDetector_42c1d320f594ebd87e2465cc986ee848} \end{Desc}
 
 
-Reimplemented in \bf{mythen\-Detector} \doxyref{p.}{classmythenDetector_42c1d320f594ebd87e2465cc986ee848}, and \bf{eiger\-Detector} \doxyref{p.}{classeigerDetector_5ad2bf5b10d17e8c4ad7ae6e81e647e0}.\index{slsDetector@{sls\-Detector}!writeRegister@{writeRegister}}
+Implemented in \bf{mythen\-Detector} \doxyref{p.}{classmythenDetector_42c1d320f594ebd87e2465cc986ee848}, and \bf{eiger\-Detector} \doxyref{p.}{classeigerDetector_5ad2bf5b10d17e8c4ad7ae6e81e647e0}.\index{slsDetector@{sls\-Detector}!writeRegister@{writeRegister}}
 \index{writeRegister@{writeRegister}!slsDetector@{sls\-Detector}}
 \subsubsection{\setlength{\rightskip}{0pt plus 5cm}int sls\-Detector::write\-Register (int {\em addr}, int {\em val})}\label{classslsDetector_742c8c6b4e7f3cad4f7e60c8c7c0c18b}
 
@@ -1791,10 +1832,10 @@ write register \begin{Desc}
 \item[Returns:]current register value \end{Desc}
 \index{slsDetector@{sls\-Detector}!writeTrimFile@{writeTrimFile}}
 \index{writeTrimFile@{writeTrimFile}!slsDetector@{sls\-Detector}}
-\subsubsection{\setlength{\rightskip}{0pt plus 5cm}int sls\-Detector::write\-Trim\-File (string {\em fname}, int {\em imod})}\label{classslsDetector_afe675432bf8e5dcb47774da3cc81106}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}virtual int sls\-Detector::write\-Trim\-File (string {\em fname}, int {\em imod})\hspace{0.3cm}{\tt  [pure virtual]}}\label{classslsDetector_cb27a987551e66093eb201523ac8d8b0}
 
 
-writes a trim file for module number imod - the values will be read from the current detector structure \begin{Desc}
+Pure virtual function writes a trim file for module number imod - the values will be read from the current detector structure \begin{Desc}
 \item[Parameters:]
 \begin{description}
 \item[{\em fname}]name of the file to be written \item[{\em imod}]module number \end{description}
@@ -1802,15 +1843,15 @@ writes a trim file for module number imod - the values will be read from the cur
 \begin{Desc}
 \item[Returns:]OK or FAIL if the file could not be written \end{Desc}
 \begin{Desc}
-\item[See also:]\doxyref{sls\_\-detector\_\-module}{p.}{structsls__detector__module} \doxyref{shared\-Sls\-Detector}{p.}{structslsDetector_1_1sharedSlsDetector} \end{Desc}
+\item[See also:]\doxyref{sls\_\-detector\_\-module}{p.}{structsls__detector__module} \doxyref{shared\-Sls\-Detector}{p.}{structslsDetector_1_1sharedSlsDetector} \doxyref{mythen\-Detector::write\-Trim\-File(string, int)}{p.}{classmythenDetector_94179431a737bbceb20f27ca1fd30349} \end{Desc}
 
 
-Reimplemented in \bf{mythen\-Detector} \doxyref{p.}{classmythenDetector_94179431a737bbceb20f27ca1fd30349}, and \bf{eiger\-Detector} \doxyref{p.}{classeigerDetector_df3a0dff0fc3111e10af0363bdd15a6a}.\index{slsDetector@{sls\-Detector}!writeTrimFile@{writeTrimFile}}
+Implemented in \bf{mythen\-Detector} \doxyref{p.}{classmythenDetector_94179431a737bbceb20f27ca1fd30349}, and \bf{eiger\-Detector} \doxyref{p.}{classeigerDetector_df3a0dff0fc3111e10af0363bdd15a6a}.\index{slsDetector@{sls\-Detector}!writeTrimFile@{writeTrimFile}}
 \index{writeTrimFile@{writeTrimFile}!slsDetector@{sls\-Detector}}
-\subsubsection{\setlength{\rightskip}{0pt plus 5cm}int sls\-Detector::write\-Trim\-File (string {\em fname}, \bf{sls\_\-detector\_\-module} {\em mod})}\label{classslsDetector_9cbb1f97b8e48bd4b108a2dfa992c6af}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}virtual int sls\-Detector::write\-Trim\-File (string {\em fname}, \bf{sls\_\-detector\_\-module} {\em mod})\hspace{0.3cm}{\tt  [pure virtual]}}\label{classslsDetector_5b97351cfaffe067016dbcebbd0778a7}
 
 
-writes a trim file \begin{Desc}
+Pure virtual function writes a trim file \begin{Desc}
 \item[Parameters:]
 \begin{description}
 \item[{\em fname}]name of the file to be written \item[{\em mod}]module structure which has to be written to file \end{description}
@@ -1818,134 +1859,134 @@ writes a trim file \begin{Desc}
 \begin{Desc}
 \item[Returns:]OK or FAIL if the file could not be written\end{Desc}
 \begin{Desc}
-\item[See also:]\doxyref{sls\_\-detector\_\-module}{p.}{structsls__detector__module} \end{Desc}
+\item[See also:]\doxyref{sls\_\-detector\_\-module}{p.}{structsls__detector__module} \doxyref{mythen\-Detector::write\-Trim\-File(string, sls\_\-detector\_\-module)}{p.}{classmythenDetector_0b137abd78bd3d03653cd21436eb6c4d} \end{Desc}
 
 
-Reimplemented in \bf{mythen\-Detector} \doxyref{p.}{classmythenDetector_0b137abd78bd3d03653cd21436eb6c4d}, and \bf{eiger\-Detector} \doxyref{p.}{classeigerDetector_8380366bf7112021c49be8e6f29f18d8}.
+Implemented in \bf{mythen\-Detector} \doxyref{p.}{classmythenDetector_0b137abd78bd3d03653cd21436eb6c4d}, and \bf{eiger\-Detector} \doxyref{p.}{classeigerDetector_8380366bf7112021c49be8e6f29f18d8}.
 
 \subsection{Member Data Documentation}
 \index{slsDetector@{sls\-Detector}!adcs@{adcs}}
 \index{adcs@{adcs}!slsDetector@{sls\-Detector}}
-\subsubsection{\setlength{\rightskip}{0pt plus 5cm}float$\ast$ \bf{sls\-Detector::adcs}\hspace{0.3cm}{\tt  [private]}}\label{classslsDetector_f370b8466441491d8496bb8130b8c5e7}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}float$\ast$ \bf{sls\-Detector::adcs}\hspace{0.3cm}{\tt  [protected]}}\label{classslsDetector_f370b8466441491d8496bb8130b8c5e7}
 
 
 pointer to adc valuse \index{slsDetector@{sls\-Detector}!badChannelMask@{badChannelMask}}
 \index{badChannelMask@{badChannelMask}!slsDetector@{sls\-Detector}}
-\subsubsection{\setlength{\rightskip}{0pt plus 5cm}int$\ast$ \bf{sls\-Detector::bad\-Channel\-Mask}\hspace{0.3cm}{\tt  [private]}}\label{classslsDetector_614c98f77a8a3ec6cff57aa59e671123}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}int$\ast$ \bf{sls\-Detector::bad\-Channel\-Mask}\hspace{0.3cm}{\tt  [protected]}}\label{classslsDetector_614c98f77a8a3ec6cff57aa59e671123}
 
 
 pointer to bad channel mask 0 is channel is good 1 if it is bad\begin{Desc}
 \item[See also:]\doxyref{fill\-Bad\-Channel\-Mask()}{p.}{classslsDetector_6a0ebe013e27c065b2f67158a27f64ac} \end{Desc}
 \index{slsDetector@{sls\-Detector}!chanregs@{chanregs}}
 \index{chanregs@{chanregs}!slsDetector@{sls\-Detector}}
-\subsubsection{\setlength{\rightskip}{0pt plus 5cm}int$\ast$ \bf{sls\-Detector::chanregs}\hspace{0.3cm}{\tt  [private]}}\label{classslsDetector_44335474559f7321f0309fbda304caf8}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}int$\ast$ \bf{sls\-Detector::chanregs}\hspace{0.3cm}{\tt  [protected]}}\label{classslsDetector_44335474559f7321f0309fbda304caf8}
 
 
 pointer to channal registers \index{slsDetector@{sls\-Detector}!chipregs@{chipregs}}
 \index{chipregs@{chipregs}!slsDetector@{sls\-Detector}}
-\subsubsection{\setlength{\rightskip}{0pt plus 5cm}int$\ast$ \bf{sls\-Detector::chipregs}\hspace{0.3cm}{\tt  [private]}}\label{classslsDetector_0eb24981d044632eccba507bd15871a6}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}int$\ast$ \bf{sls\-Detector::chipregs}\hspace{0.3cm}{\tt  [protected]}}\label{classslsDetector_0eb24981d044632eccba507bd15871a6}
 
 
 pointer to chip registers \index{slsDetector@{sls\-Detector}!controlSocket@{controlSocket}}
 \index{controlSocket@{controlSocket}!slsDetector@{sls\-Detector}}
-\subsubsection{\setlength{\rightskip}{0pt plus 5cm}\bf{My\-Socket\-TCP}$\ast$ \bf{sls\-Detector::control\-Socket}\hspace{0.3cm}{\tt  [private]}}\label{classslsDetector_07f3943ab8a65f061bbe1c1e1d22b700}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}\bf{My\-Socket\-TCP}$\ast$ \bf{sls\-Detector::control\-Socket}\hspace{0.3cm}{\tt  [protected]}}\label{classslsDetector_07f3943ab8a65f061bbe1c1e1d22b700}
 
 
 socket for control commands \index{slsDetector@{sls\-Detector}!currentI0@{currentI0}}
 \index{currentI0@{currentI0}!slsDetector@{sls\-Detector}}
-\subsubsection{\setlength{\rightskip}{0pt plus 5cm}float \bf{sls\-Detector::current\-I0}\hspace{0.3cm}{\tt  [private]}}\label{classslsDetector_4bba77b0de9f911c87d48d12c15a632b}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}float \bf{sls\-Detector::current\-I0}\hspace{0.3cm}{\tt  [protected]}}\label{classslsDetector_4bba77b0de9f911c87d48d12c15a632b}
 
 
 I0 measured \index{slsDetector@{sls\-Detector}!currentPosition@{currentPosition}}
 \index{currentPosition@{currentPosition}!slsDetector@{sls\-Detector}}
-\subsubsection{\setlength{\rightskip}{0pt plus 5cm}float \bf{sls\-Detector::current\-Position}\hspace{0.3cm}{\tt  [private]}}\label{classslsDetector_9f64e866250e916299048c9816c9ef28}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}float \bf{sls\-Detector::current\-Position}\hspace{0.3cm}{\tt  [protected]}}\label{classslsDetector_9f64e866250e916299048c9816c9ef28}
 
 
 current position of the detector \index{slsDetector@{sls\-Detector}!currentPositionIndex@{currentPositionIndex}}
 \index{currentPositionIndex@{currentPositionIndex}!slsDetector@{sls\-Detector}}
-\subsubsection{\setlength{\rightskip}{0pt plus 5cm}float \bf{sls\-Detector::current\-Position\-Index}\hspace{0.3cm}{\tt  [private]}}\label{classslsDetector_9a6cd8787f618c147faacc1f3602bcf5}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}float \bf{sls\-Detector::current\-Position\-Index}\hspace{0.3cm}{\tt  [protected]}}\label{classslsDetector_9a6cd8787f618c147faacc1f3602bcf5}
 
 
 current position index of the detector \index{slsDetector@{sls\-Detector}!dacs@{dacs}}
 \index{dacs@{dacs}!slsDetector@{sls\-Detector}}
-\subsubsection{\setlength{\rightskip}{0pt plus 5cm}float$\ast$ \bf{sls\-Detector::dacs}\hspace{0.3cm}{\tt  [private]}}\label{classslsDetector_dc1b3f867b97136fca83f86c83b7ae14}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}float$\ast$ \bf{sls\-Detector::dacs}\hspace{0.3cm}{\tt  [protected]}}\label{classslsDetector_dc1b3f867b97136fca83f86c83b7ae14}
 
 
 pointer to dac valuse \index{slsDetector@{sls\-Detector}!dataProcessingThread@{dataProcessingThread}}
 \index{dataProcessingThread@{dataProcessingThread}!slsDetector@{sls\-Detector}}
-\subsubsection{\setlength{\rightskip}{0pt plus 5cm}pthread\_\-t \bf{sls\-Detector::data\-Processing\-Thread}\hspace{0.3cm}{\tt  [private]}}\label{classslsDetector_8257cca09e23b601764e57f5a8bdaacd}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}pthread\_\-t \bf{sls\-Detector::data\-Processing\-Thread}\hspace{0.3cm}{\tt  [protected]}}\label{classslsDetector_8257cca09e23b601764e57f5a8bdaacd}
 
 
 data processing thread??? \index{slsDetector@{sls\-Detector}!dataQueue@{dataQueue}}
 \index{dataQueue@{dataQueue}!slsDetector@{sls\-Detector}}
-\subsubsection{\setlength{\rightskip}{0pt plus 5cm}queue$<$int$\ast$$>$ \bf{sls\-Detector::data\-Queue}\hspace{0.3cm}{\tt  [private]}}\label{classslsDetector_52e9fe9baf37db001cdf58f982ab5dd6}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}queue$<$int$\ast$$>$ \bf{sls\-Detector::data\-Queue}\hspace{0.3cm}{\tt  [protected]}}\label{classslsDetector_52e9fe9baf37db001cdf58f982ab5dd6}
 
 
 data queue \index{slsDetector@{sls\-Detector}!dataSocket@{dataSocket}}
 \index{dataSocket@{dataSocket}!slsDetector@{sls\-Detector}}
-\subsubsection{\setlength{\rightskip}{0pt plus 5cm}\bf{My\-Socket\-TCP}$\ast$ \bf{sls\-Detector::data\-Socket}\hspace{0.3cm}{\tt  [private]}}\label{classslsDetector_1629e3c46678ae201f6797e4d827cb32}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}\bf{My\-Socket\-TCP}$\ast$ \bf{sls\-Detector::data\-Socket}\hspace{0.3cm}{\tt  [protected]}}\label{classslsDetector_1629e3c46678ae201f6797e4d827cb32}
 
 
 socket for data acquisition \index{slsDetector@{sls\-Detector}!detectorModules@{detectorModules}}
 \index{detectorModules@{detectorModules}!slsDetector@{sls\-Detector}}
-\subsubsection{\setlength{\rightskip}{0pt plus 5cm}\bf{sls\_\-detector\_\-module}$\ast$ \bf{sls\-Detector::detector\-Modules}\hspace{0.3cm}{\tt  [private]}}\label{classslsDetector_b78d6f2abc185b2bde2c550b31e0ff72}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}\bf{sls\_\-detector\_\-module}$\ast$ \bf{sls\-Detector::detector\-Modules}\hspace{0.3cm}{\tt  [protected]}}\label{classslsDetector_b78d6f2abc185b2bde2c550b31e0ff72}
 
 
 pointer to detector module structures \index{slsDetector@{sls\-Detector}!detId@{detId}}
 \index{detId@{detId}!slsDetector@{sls\-Detector}}
-\subsubsection{\setlength{\rightskip}{0pt plus 5cm}int \bf{sls\-Detector::det\-Id}\hspace{0.3cm}{\tt  [private]}}\label{classslsDetector_37f4af284283e7a18a28cec3f4e4532f}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}int \bf{sls\-Detector::det\-Id}\hspace{0.3cm}{\tt  [protected]}}\label{classslsDetector_37f4af284283e7a18a28cec3f4e4532f}
 
 
 detector ID \index{slsDetector@{sls\-Detector}!ffcoefficients@{ffcoefficients}}
 \index{ffcoefficients@{ffcoefficients}!slsDetector@{sls\-Detector}}
-\subsubsection{\setlength{\rightskip}{0pt plus 5cm}float$\ast$ \bf{sls\-Detector::ffcoefficients}\hspace{0.3cm}{\tt  [private]}}\label{classslsDetector_a3c6e93198a2f8b072b7b84ba9af7c4b}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}float$\ast$ \bf{sls\-Detector::ffcoefficients}\hspace{0.3cm}{\tt  [protected]}}\label{classslsDetector_a3c6e93198a2f8b072b7b84ba9af7c4b}
 
 
 pointer to flat field coefficients \index{slsDetector@{sls\-Detector}!fferrors@{fferrors}}
 \index{fferrors@{fferrors}!slsDetector@{sls\-Detector}}
-\subsubsection{\setlength{\rightskip}{0pt plus 5cm}float$\ast$ \bf{sls\-Detector::fferrors}\hspace{0.3cm}{\tt  [private]}}\label{classslsDetector_636168b92509e96418c9134d6d82ad4c}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}float$\ast$ \bf{sls\-Detector::fferrors}\hspace{0.3cm}{\tt  [protected]}}\label{classslsDetector_636168b92509e96418c9134d6d82ad4c}
 
 
 pointer to flat field coefficient errors \index{slsDetector@{sls\-Detector}!mergingBins@{mergingBins}}
 \index{mergingBins@{mergingBins}!slsDetector@{sls\-Detector}}
-\subsubsection{\setlength{\rightskip}{0pt plus 5cm}float$\ast$ \bf{sls\-Detector::merging\-Bins}\hspace{0.3cm}{\tt  [private]}}\label{classslsDetector_81751fd6e87f9659a8b6afe13efec2cf}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}float$\ast$ \bf{sls\-Detector::merging\-Bins}\hspace{0.3cm}{\tt  [protected]}}\label{classslsDetector_81751fd6e87f9659a8b6afe13efec2cf}
 
 
 merging bins \index{slsDetector@{sls\-Detector}!mergingCounts@{mergingCounts}}
 \index{mergingCounts@{mergingCounts}!slsDetector@{sls\-Detector}}
-\subsubsection{\setlength{\rightskip}{0pt plus 5cm}float$\ast$ \bf{sls\-Detector::merging\-Counts}\hspace{0.3cm}{\tt  [private]}}\label{classslsDetector_fc173dcaeda2bbd7bbd6a874b5b5726c}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}float$\ast$ \bf{sls\-Detector::merging\-Counts}\hspace{0.3cm}{\tt  [protected]}}\label{classslsDetector_fc173dcaeda2bbd7bbd6a874b5b5726c}
 
 
 merging counts \index{slsDetector@{sls\-Detector}!mergingErrors@{mergingErrors}}
 \index{mergingErrors@{mergingErrors}!slsDetector@{sls\-Detector}}
-\subsubsection{\setlength{\rightskip}{0pt plus 5cm}float$\ast$ \bf{sls\-Detector::merging\-Errors}\hspace{0.3cm}{\tt  [private]}}\label{classslsDetector_f357d3b5961ead7ec263a47aa51c4c11}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}float$\ast$ \bf{sls\-Detector::merging\-Errors}\hspace{0.3cm}{\tt  [protected]}}\label{classslsDetector_f357d3b5961ead7ec263a47aa51c4c11}
 
 
 merging errors \index{slsDetector@{sls\-Detector}!mergingMultiplicity@{mergingMultiplicity}}
 \index{mergingMultiplicity@{mergingMultiplicity}!slsDetector@{sls\-Detector}}
-\subsubsection{\setlength{\rightskip}{0pt plus 5cm}int$\ast$ \bf{sls\-Detector::merging\-Multiplicity}\hspace{0.3cm}{\tt  [private]}}\label{classslsDetector_91c5e22042997d86c2c4d16ef1be9150}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}int$\ast$ \bf{sls\-Detector::merging\-Multiplicity}\hspace{0.3cm}{\tt  [protected]}}\label{classslsDetector_91c5e22042997d86c2c4d16ef1be9150}
 
 
 merging multiplicity \index{slsDetector@{sls\-Detector}!onlineFlag@{onlineFlag}}
 \index{onlineFlag@{onlineFlag}!slsDetector@{sls\-Detector}}
-\subsubsection{\setlength{\rightskip}{0pt plus 5cm}int \bf{sls\-Detector::online\-Flag}\hspace{0.3cm}{\tt  [private]}}\label{classslsDetector_7572bba8e53f900d4126657827bec3cf}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}int \bf{sls\-Detector::online\-Flag}\hspace{0.3cm}{\tt  [protected]}}\label{classslsDetector_7572bba8e53f900d4126657827bec3cf}
 
 
 \begin{Desc}
 \item[See also:]\doxyref{set\-Online}{p.}{classslsDetector_f041f723f702c17de292061d6d609698} \end{Desc}
 \index{slsDetector@{sls\-Detector}!shmId@{shmId}}
 \index{shmId@{shmId}!slsDetector@{sls\-Detector}}
-\subsubsection{\setlength{\rightskip}{0pt plus 5cm}int \bf{sls\-Detector::shm\-Id}\hspace{0.3cm}{\tt  [private]}}\label{classslsDetector_53a78c7fe99f93b9bba8d0c2cb32a181}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}int \bf{sls\-Detector::shm\-Id}\hspace{0.3cm}{\tt  [protected]}}\label{classslsDetector_53a78c7fe99f93b9bba8d0c2cb32a181}
 
 
 shared memeory ID \index{slsDetector@{sls\-Detector}!stopSocket@{stopSocket}}
 \index{stopSocket@{stopSocket}!slsDetector@{sls\-Detector}}
-\subsubsection{\setlength{\rightskip}{0pt plus 5cm}\bf{My\-Socket\-TCP}$\ast$ \bf{sls\-Detector::stop\-Socket}\hspace{0.3cm}{\tt  [private]}}\label{classslsDetector_efee578cdd732339788a38707e5ce531}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}\bf{My\-Socket\-TCP}$\ast$ \bf{sls\-Detector::stop\-Socket}\hspace{0.3cm}{\tt  [protected]}}\label{classslsDetector_efee578cdd732339788a38707e5ce531}
 
 
 socket for emergency stop \index{slsDetector@{sls\-Detector}!thisDetector@{thisDetector}}
 \index{thisDetector@{thisDetector}!slsDetector@{sls\-Detector}}
-\subsubsection{\setlength{\rightskip}{0pt plus 5cm}\bf{shared\-Sls\-Detector}$\ast$ \bf{sls\-Detector::this\-Detector}\hspace{0.3cm}{\tt  [private]}}\label{classslsDetector_fe0da5c1491ebf18f187f0a26c5ded11}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}\bf{shared\-Sls\-Detector}$\ast$ \bf{sls\-Detector::this\-Detector}\hspace{0.3cm}{\tt  [protected]}}\label{classslsDetector_fe0da5c1491ebf18f187f0a26c5ded11}
 
 
 address of the detector structure in shared memory 

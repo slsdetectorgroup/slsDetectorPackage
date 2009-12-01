@@ -59,7 +59,8 @@ enum \bf{dimension} \{ \bf{X} = 0,
  \}
 \item 
 enum \{ \bf{OK}, 
-\bf{FAIL}
+\bf{FAIL}, 
+\bf{FINISHED}
  \}
 \item 
 enum \{ \bf{DISABLED}, 
@@ -173,6 +174,11 @@ enum \bf{timer\-Index} \{ \par
 \bf{CYCLES\_\-NUMBER}
  \}
 \item 
+enum \bf{speed\-Variable} \{ \bf{CLOCK\_\-DIVIDER}, 
+\bf{WAIT\_\-STATES}, 
+\bf{SET\_\-SIGNAL\_\-LENGTH}
+ \}
+\item 
 enum \bf{read\-Out\-Flags} \{ \par
 \bf{GET\_\-READOUT\_\-FLAGS} = -1, 
 \bf{NORMAL\_\-READOUT} = 0, 
@@ -256,7 +262,9 @@ enum \{ \par
 \par
 \bf{F\_\-SET\_\-READOUT\_\-FLAGS}, 
 \bf{F\_\-SET\_\-ROI}, 
+\bf{F\_\-SET\_\-SPEED}, 
 \bf{F\_\-EXECUTE\_\-TRIMMING}, 
+\par
 \bf{F\_\-EXIT\_\-SERVER}
  \}
 \end{CompactItemize}
@@ -297,6 +305,8 @@ return values \begin{Desc}
 OK\label{sls__detector__defs_8h_df764cbdea00d65edcd07bb9953ad2b72bc49ec37d6a5715dd23e85f1ff5bb59}
 }]function succeeded \index{FAIL@{FAIL}!sls_detector_defs.h@{sls\_\-detector\_\-defs.h}}\index{sls_detector_defs.h@{sls\_\-detector\_\-defs.h}!FAIL@{FAIL}}\item[{\em 
 FAIL\label{sls__detector__defs_8h_df764cbdea00d65edcd07bb9953ad2b7936c4a5547a9360243178f726f6b2715}
+}]function failed \index{FINISHED@{FINISHED}!sls_detector_defs.h@{sls\_\-detector\_\-defs.h}}\index{sls_detector_defs.h@{sls\_\-detector\_\-defs.h}!FINISHED@{FINISHED}}\item[{\em 
+FINISHED\label{sls__detector__defs_8h_df764cbdea00d65edcd07bb9953ad2b7dbd1812bee789fbf3548cf79d3f2b400}
 }]function failed \end{description}
 \end{Desc}
 
@@ -405,7 +415,9 @@ F\_\-SET\_\-DYNAMIC\_\-RANGE\label{sls__detector__defs_8h_bc6126af1d45847bc59afa
 F\_\-SET\_\-READOUT\_\-FLAGS\label{sls__detector__defs_8h_bc6126af1d45847bc59afa0aa3216b045cdaebc62f9748ce0f9822f381959307}
 }]set/get readout flags \index{F_SET_ROI@{F\_\-SET\_\-ROI}!sls_detector_defs.h@{sls\_\-detector\_\-defs.h}}\index{sls_detector_defs.h@{sls\_\-detector\_\-defs.h}!F_SET_ROI@{F\_\-SET\_\-ROI}}\item[{\em 
 F\_\-SET\_\-ROI\label{sls__detector__defs_8h_bc6126af1d45847bc59afa0aa3216b04132603d9b086fb1178fbbd143d6aa126}
-}]set/get region of interest \index{F_EXECUTE_TRIMMING@{F\_\-EXECUTE\_\-TRIMMING}!sls_detector_defs.h@{sls\_\-detector\_\-defs.h}}\index{sls_detector_defs.h@{sls\_\-detector\_\-defs.h}!F_EXECUTE_TRIMMING@{F\_\-EXECUTE\_\-TRIMMING}}\item[{\em 
+}]set/get region of interest \index{F_SET_SPEED@{F\_\-SET\_\-SPEED}!sls_detector_defs.h@{sls\_\-detector\_\-defs.h}}\index{sls_detector_defs.h@{sls\_\-detector\_\-defs.h}!F_SET_SPEED@{F\_\-SET\_\-SPEED}}\item[{\em 
+F\_\-SET\_\-SPEED\label{sls__detector__defs_8h_bc6126af1d45847bc59afa0aa3216b0457a41d958ac69f2c3d4ccf1b12cbd75f}
+}]set/get readout speed parameters \index{F_EXECUTE_TRIMMING@{F\_\-EXECUTE\_\-TRIMMING}!sls_detector_defs.h@{sls\_\-detector\_\-defs.h}}\index{sls_detector_defs.h@{sls\_\-detector\_\-defs.h}!F_EXECUTE_TRIMMING@{F\_\-EXECUTE\_\-TRIMMING}}\item[{\em 
 F\_\-EXECUTE\_\-TRIMMING\label{sls__detector__defs_8h_bc6126af1d45847bc59afa0aa3216b045be80176327f8e6afd6954cc8fd0ceaa}
 }]execute trimming \index{F_EXIT_SERVER@{F\_\-EXIT\_\-SERVER}!sls_detector_defs.h@{sls\_\-detector\_\-defs.h}}\index{sls_detector_defs.h@{sls\_\-detector\_\-defs.h}!F_EXIT_SERVER@{F\_\-EXIT\_\-SERVER}}\item[{\em 
 F\_\-EXIT\_\-SERVER\label{sls__detector__defs_8h_bc6126af1d45847bc59afa0aa3216b04acb4344788e1f1e3716216aeffc50beb}
@@ -780,6 +792,23 @@ PUMP\_\-PROBE\_\-MODE\label{sls__detector__defs_8h_6165e3e90182cc47b0003f3288a2e
 }]pump-probe mode \index{BACKGROUND_CORRECTIONS@{BACKGROUND\_\-CORRECTIONS}!sls_detector_defs.h@{sls\_\-detector\_\-defs.h}}\index{sls_detector_defs.h@{sls\_\-detector\_\-defs.h}!BACKGROUND_CORRECTIONS@{BACKGROUND\_\-CORRECTIONS}}\item[{\em 
 BACKGROUND\_\-CORRECTIONS\label{sls__detector__defs_8h_6165e3e90182cc47b0003f3288a2e5793d1f7aae38dd931d1fcd35137ee92f80}
 }]background corrections \end{description}
+\end{Desc}
+
+\index{sls_detector_defs.h@{sls\_\-detector\_\-defs.h}!speedVariable@{speedVariable}}
+\index{speedVariable@{speedVariable}!sls_detector_defs.h@{sls\_\-detector\_\-defs.h}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}enum \bf{speed\-Variable}}\label{sls__detector__defs_8h_8c326f6a87754392b72098d3d0dec49d}
+
+
+important speed parameters \begin{Desc}
+\item[Enumerator: ]\par
+\begin{description}
+\index{CLOCK_DIVIDER@{CLOCK\_\-DIVIDER}!sls_detector_defs.h@{sls\_\-detector\_\-defs.h}}\index{sls_detector_defs.h@{sls\_\-detector\_\-defs.h}!CLOCK_DIVIDER@{CLOCK\_\-DIVIDER}}\item[{\em 
+CLOCK\_\-DIVIDER\label{sls__detector__defs_8h_8c326f6a87754392b72098d3d0dec49d3465852fc71156c546c9e211fb0babe8}
+}]readout clock divider \index{WAIT_STATES@{WAIT\_\-STATES}!sls_detector_defs.h@{sls\_\-detector\_\-defs.h}}\index{sls_detector_defs.h@{sls\_\-detector\_\-defs.h}!WAIT_STATES@{WAIT\_\-STATES}}\item[{\em 
+WAIT\_\-STATES\label{sls__detector__defs_8h_8c326f6a87754392b72098d3d0dec49dce6f5250b9197568ebc442fcf3fa4ad6}
+}]wait states for bus read \index{SET_SIGNAL_LENGTH@{SET\_\-SIGNAL\_\-LENGTH}!sls_detector_defs.h@{sls\_\-detector\_\-defs.h}}\index{sls_detector_defs.h@{sls\_\-detector\_\-defs.h}!SET_SIGNAL_LENGTH@{SET\_\-SIGNAL\_\-LENGTH}}\item[{\em 
+SET\_\-SIGNAL\_\-LENGTH\label{sls__detector__defs_8h_8c326f6a87754392b72098d3d0dec49d93f0483a6f279a444314846e3c4c2699}
+}]set/clear signal length \end{description}
 \end{Desc}
 
 \index{sls_detector_defs.h@{sls\_\-detector\_\-defs.h}!timerIndex@{timerIndex}}

@@ -90,7 +90,7 @@ decode data from the detector converting them to an array of floats, one for eac
 
 Reimplemented from \bf{sls\-Detector} \doxyref{p.}{classslsDetector_937d257464bade6dc6d3ab42c86843ba}.\index{eigerDetector@{eiger\-Detector}!readCalibrationFile@{readCalibrationFile}}
 \index{readCalibrationFile@{readCalibrationFile}!eigerDetector@{eiger\-Detector}}
-\subsubsection{\setlength{\rightskip}{0pt plus 5cm}int eiger\-Detector::read\-Calibration\-File (string {\em fname}, float \& {\em gain}, float \& {\em offset})}\label{classeigerDetector_6b1b4b5328a5d8c423e9a7a8a950028f}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}int eiger\-Detector::read\-Calibration\-File (string {\em fname}, float \& {\em gain}, float \& {\em offset})\hspace{0.3cm}{\tt  [virtual]}}\label{classeigerDetector_6b1b4b5328a5d8c423e9a7a8a950028f}
 
 
 int \doxyref{read\-Calibration\-File(string fname, float \&gain, float \&offset)}{p.}{classeigerDetector_6b1b4b5328a5d8c423e9a7a8a950028f};
@@ -104,9 +104,9 @@ int \doxyref{read\-Calibration\-File(string fname, float \&gain, float \&offset)
 \item[See also:]\doxyref{shared\-Sls\-Detector}{p.}{classslsDetector_2dd6bff7d94ab8005c2797152b19264e} \end{Desc}
 
 
-Reimplemented from \bf{sls\-Detector} \doxyref{p.}{classslsDetector_9305060e7499cfcabac23b99c884b92b}.\index{eigerDetector@{eiger\-Detector}!readDataFile@{readDataFile}}
+Implements \bf{sls\-Detector} \doxyref{p.}{classslsDetector_6c7f837f0820b08f41649c30151cb7ac}.\index{eigerDetector@{eiger\-Detector}!readDataFile@{readDataFile}}
 \index{readDataFile@{readDataFile}!eigerDetector@{eiger\-Detector}}
-\subsubsection{\setlength{\rightskip}{0pt plus 5cm}int eiger\-Detector::read\-Data\-File (string {\em fname}, int $\ast$ {\em data})}\label{classeigerDetector_a6afa206101506d7f95d1ec835fbf843}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}int eiger\-Detector::read\-Data\-File (string {\em fname}, int $\ast$ {\em data})\hspace{0.3cm}{\tt  [virtual]}}\label{classeigerDetector_a6afa206101506d7f95d1ec835fbf843}
 
 
 reads a data file \begin{Desc}
@@ -118,9 +118,9 @@ reads a data file \begin{Desc}
 \item[Returns:]OK or FAIL if it could not read the file or data=NULL \end{Desc}
 
 
-Reimplemented from \bf{sls\-Detector} \doxyref{p.}{classslsDetector_0d27017bc1140cc9da3e797f03848f2e}.\index{eigerDetector@{eiger\-Detector}!readDataFile@{readDataFile}}
+Implements \bf{sls\-Detector} \doxyref{p.}{classslsDetector_4239e7a357df82640464c0f2d0a18d69}.\index{eigerDetector@{eiger\-Detector}!readDataFile@{readDataFile}}
 \index{readDataFile@{readDataFile}!eigerDetector@{eiger\-Detector}}
-\subsubsection{\setlength{\rightskip}{0pt plus 5cm}int eiger\-Detector::read\-Data\-File (string {\em fname}, float $\ast$ {\em data}, float $\ast$ {\em err} = {\tt NULL}, float $\ast$ {\em ang} = {\tt NULL}, char {\em dataformat} = {\tt 'f'}, int {\em nch} = {\tt 0})}\label{classeigerDetector_4d0b7da609b9a0457656bfc8cf0a7997}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}int eiger\-Detector::read\-Data\-File (string {\em fname}, float $\ast$ {\em data}, float $\ast$ {\em err} = {\tt NULL}, float $\ast$ {\em ang} = {\tt NULL}, char {\em dataformat} = {\tt 'f'}, int {\em nch} = {\tt 0})\hspace{0.3cm}{\tt  [virtual]}}\label{classeigerDetector_4d0b7da609b9a0457656bfc8cf0a7997}
 
 
 reads a data file \begin{Desc}
@@ -132,9 +132,9 @@ reads a data file \begin{Desc}
 \item[Returns:]OK or FAIL if it could not read the file or data=NULL \end{Desc}
 
 
-Reimplemented from \bf{sls\-Detector} \doxyref{p.}{classslsDetector_ffd62fa6a3487693316209ea71502b4b}.\index{eigerDetector@{eiger\-Detector}!readTrimFile@{readTrimFile}}
+Implements \bf{sls\-Detector} \doxyref{p.}{classslsDetector_86df95809e0e7979eafc04b2b868843d}.\index{eigerDetector@{eiger\-Detector}!readTrimFile@{readTrimFile}}
 \index{readTrimFile@{readTrimFile}!eigerDetector@{eiger\-Detector}}
-\subsubsection{\setlength{\rightskip}{0pt plus 5cm}\bf{sls\_\-detector\_\-module}$\ast$ eiger\-Detector::read\-Trim\-File (string {\em fname}, \bf{sls\_\-detector\_\-module} $\ast$ {\em my\-Mod} = {\tt NULL})}\label{classeigerDetector_f24af0459e8eb45c1bc9c68a870e5094}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}\bf{sls\_\-detector\_\-module}$\ast$ eiger\-Detector::read\-Trim\-File (string {\em fname}, \bf{sls\_\-detector\_\-module} $\ast$ {\em my\-Mod} = {\tt NULL})\hspace{0.3cm}{\tt  [virtual]}}\label{classeigerDetector_f24af0459e8eb45c1bc9c68a870e5094}
 
 
 reads a trim file \begin{Desc}
@@ -147,9 +147,9 @@ reads a trim file \begin{Desc}
 \item[Returns:]the pointer to my\-Mod or NULL if reading the file failed \end{Desc}
 
 
-Reimplemented from \bf{sls\-Detector} \doxyref{p.}{classslsDetector_e84b8a7a2b27db3f89a98f9f8a81efca}.\index{eigerDetector@{eiger\-Detector}!writeCalibrationFile@{writeCalibrationFile}}
+Implements \bf{sls\-Detector} \doxyref{p.}{classslsDetector_612b52469e27c6675969499d3680abe6}.\index{eigerDetector@{eiger\-Detector}!writeCalibrationFile@{writeCalibrationFile}}
 \index{writeCalibrationFile@{writeCalibrationFile}!eigerDetector@{eiger\-Detector}}
-\subsubsection{\setlength{\rightskip}{0pt plus 5cm}int eiger\-Detector::write\-Calibration\-File (string {\em fname}, float {\em gain}, float {\em offset})}\label{classeigerDetector_d5fbecfcc46cb151160c6011aa8e33b2}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}int eiger\-Detector::write\-Calibration\-File (string {\em fname}, float {\em gain}, float {\em offset})\hspace{0.3cm}{\tt  [virtual]}}\label{classeigerDetector_d5fbecfcc46cb151160c6011aa8e33b2}
 
 
 writes a clibration file \begin{Desc}
@@ -161,9 +161,9 @@ writes a clibration file \begin{Desc}
 \item[See also:]\doxyref{shared\-Sls\-Detector}{p.}{classslsDetector_2dd6bff7d94ab8005c2797152b19264e} \end{Desc}
 
 
-Reimplemented from \bf{sls\-Detector} \doxyref{p.}{classslsDetector_8eb676a1ab6ef35601ba5cae942ba380}.\index{eigerDetector@{eiger\-Detector}!writeDataFile@{writeDataFile}}
+Implements \bf{sls\-Detector} \doxyref{p.}{classslsDetector_d12edef440bf2b2f930e83f0ccceb01e}.\index{eigerDetector@{eiger\-Detector}!writeDataFile@{writeDataFile}}
 \index{writeDataFile@{writeDataFile}!eigerDetector@{eiger\-Detector}}
-\subsubsection{\setlength{\rightskip}{0pt plus 5cm}int eiger\-Detector::write\-Data\-File (string {\em fname}, int $\ast$ {\em data})}\label{classeigerDetector_68a740d5e43fcdb00c57f401666c0856}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}int eiger\-Detector::write\-Data\-File (string {\em fname}, int $\ast$ {\em data})\hspace{0.3cm}{\tt  [virtual]}}\label{classeigerDetector_68a740d5e43fcdb00c57f401666c0856}
 
 
 writes a data file \begin{Desc}
@@ -175,9 +175,9 @@ writes a data file \begin{Desc}
 \item[Returns:]OK or FAIL if it could not write the file or data=NULL \end{Desc}
 
 
-Reimplemented from \bf{sls\-Detector} \doxyref{p.}{classslsDetector_3e1a8e49fbfb34a54381452abc8b5258}.\index{eigerDetector@{eiger\-Detector}!writeDataFile@{writeDataFile}}
+Implements \bf{sls\-Detector} \doxyref{p.}{classslsDetector_efa98ca652306e2a026c9a5b2fbfe2dc}.\index{eigerDetector@{eiger\-Detector}!writeDataFile@{writeDataFile}}
 \index{writeDataFile@{writeDataFile}!eigerDetector@{eiger\-Detector}}
-\subsubsection{\setlength{\rightskip}{0pt plus 5cm}int eiger\-Detector::write\-Data\-File (string {\em fname}, float $\ast$ {\em data}, float $\ast$ {\em err} = {\tt NULL}, float $\ast$ {\em ang} = {\tt NULL}, char {\em dataformat} = {\tt 'f'}, int {\em nch} = {\tt -1})}\label{classeigerDetector_5ad2bf5b10d17e8c4ad7ae6e81e647e0}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}int eiger\-Detector::write\-Data\-File (string {\em fname}, float $\ast$ {\em data}, float $\ast$ {\em err} = {\tt NULL}, float $\ast$ {\em ang} = {\tt NULL}, char {\em dataformat} = {\tt 'f'}, int {\em nch} = {\tt -1})\hspace{0.3cm}{\tt  [virtual]}}\label{classeigerDetector_5ad2bf5b10d17e8c4ad7ae6e81e647e0}
 
 
 writes a data file \begin{Desc}
@@ -189,9 +189,9 @@ writes a data file \begin{Desc}
 \item[Returns:]OK or FAIL if it could not write the file or data=NULL \end{Desc}
 
 
-Reimplemented from \bf{sls\-Detector} \doxyref{p.}{classslsDetector_889c060afb5693830ca2be4fc6a5442c}.\index{eigerDetector@{eiger\-Detector}!writeTrimFile@{writeTrimFile}}
+Implements \bf{sls\-Detector} \doxyref{p.}{classslsDetector_08823d7078b5e6dd1a4cb7d8b3cfe0af}.\index{eigerDetector@{eiger\-Detector}!writeTrimFile@{writeTrimFile}}
 \index{writeTrimFile@{writeTrimFile}!eigerDetector@{eiger\-Detector}}
-\subsubsection{\setlength{\rightskip}{0pt plus 5cm}int eiger\-Detector::write\-Trim\-File (string {\em fname}, int {\em imod})}\label{classeigerDetector_df3a0dff0fc3111e10af0363bdd15a6a}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}int eiger\-Detector::write\-Trim\-File (string {\em fname}, int {\em imod})\hspace{0.3cm}{\tt  [virtual]}}\label{classeigerDetector_df3a0dff0fc3111e10af0363bdd15a6a}
 
 
 writes a trim file for module number imod - the values will be read from the current detector structure \begin{Desc}
@@ -205,9 +205,9 @@ writes a trim file for module number imod - the values will be read from the cur
 \item[See also:]\doxyref{sls\_\-detector\_\-module}{p.}{structsls__detector__module} \doxyref{shared\-Sls\-Detector}{p.}{classslsDetector_2dd6bff7d94ab8005c2797152b19264e} \end{Desc}
 
 
-Reimplemented from \bf{sls\-Detector} \doxyref{p.}{classslsDetector_afe675432bf8e5dcb47774da3cc81106}.\index{eigerDetector@{eiger\-Detector}!writeTrimFile@{writeTrimFile}}
+Implements \bf{sls\-Detector} \doxyref{p.}{classslsDetector_cb27a987551e66093eb201523ac8d8b0}.\index{eigerDetector@{eiger\-Detector}!writeTrimFile@{writeTrimFile}}
 \index{writeTrimFile@{writeTrimFile}!eigerDetector@{eiger\-Detector}}
-\subsubsection{\setlength{\rightskip}{0pt plus 5cm}int eiger\-Detector::write\-Trim\-File (string {\em fname}, \bf{sls\_\-detector\_\-module} {\em mod})}\label{classeigerDetector_8380366bf7112021c49be8e6f29f18d8}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}int eiger\-Detector::write\-Trim\-File (string {\em fname}, \bf{sls\_\-detector\_\-module} {\em mod})\hspace{0.3cm}{\tt  [virtual]}}\label{classeigerDetector_8380366bf7112021c49be8e6f29f18d8}
 
 
 writes a trim file \begin{Desc}
@@ -221,7 +221,7 @@ writes a trim file \begin{Desc}
 \item[See also:]\doxyref{sls\_\-detector\_\-module}{p.}{structsls__detector__module} \end{Desc}
 
 
-Reimplemented from \bf{sls\-Detector} \doxyref{p.}{classslsDetector_9cbb1f97b8e48bd4b108a2dfa992c6af}.
+Implements \bf{sls\-Detector} \doxyref{p.}{classslsDetector_5b97351cfaffe067016dbcebbd0778a7}.
 
 The documentation for this class was generated from the following file:\begin{CompactItemize}
 \item 

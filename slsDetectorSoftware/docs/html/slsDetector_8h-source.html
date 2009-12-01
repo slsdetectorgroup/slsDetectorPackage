@@ -42,475 +42,481 @@
 <a name="l00022"></a>00022 <span class="preprocessor"> #include &lt;sys/uio.h&gt;</span>
 <a name="l00023"></a>00023 
 <a name="l00024"></a>00024 
-<a name="l00025"></a><a class="code" href="slsDetector_8h.html#79fd3eac646964332ed33ec7dd40f208">00025</a> <span class="preprocessor">#define MAX_TIMERS 10</span>
-<a name="l00026"></a><a class="code" href="slsDetector_8h.html#4c84515c2af98fbe570b5201a1022103">00026</a> <span class="preprocessor"></span><span class="preprocessor">#define MAX_ROIS 100</span>
-<a name="l00027"></a><a class="code" href="slsDetector_8h.html#458ac030ac964822b06ae7659da870df">00027</a> <span class="preprocessor"></span><span class="preprocessor">#define MAX_BADCHANS 2000</span>
-<a name="l00028"></a><a class="code" href="slsDetector_8h.html#361088f7869d8e7c123b003e817915a5">00028</a> <span class="preprocessor"></span><span class="preprocessor">#define MAXPOS 50</span>
-<a name="l00029"></a>00029 <span class="preprocessor"></span>
-<a name="l00030"></a><a class="code" href="slsDetector_8h.html#21b1e82005e7fb5d8c0539e47ae25b01">00030</a> <span class="preprocessor">#define NMODMAXX 24</span>
-<a name="l00031"></a><a class="code" href="slsDetector_8h.html#4454335271010cc7a932117cbf3f1be1">00031</a> <span class="preprocessor"></span><span class="preprocessor">#define NMODMAXY 24</span>
-<a name="l00032"></a><a class="code" href="slsDetector_8h.html#86d84e5a6918e1cb1e2ecb75752e604a">00032</a> <span class="preprocessor"></span><span class="preprocessor">#define MAXMODS 36</span>
-<a name="l00033"></a><a class="code" href="slsDetector_8h.html#13d24767ba1933e7367908de888f831a">00033</a> <span class="preprocessor"></span><span class="preprocessor">#define NCHIPSMAX 10</span>
-<a name="l00034"></a><a class="code" href="slsDetector_8h.html#1796142de2f82d4c3e10632bddde99f7">00034</a> <span class="preprocessor"></span><span class="preprocessor">#define NCHANSMAX 65536</span>
-<a name="l00035"></a><a class="code" href="slsDetector_8h.html#4460877d434c3a8731bb4beb20a2e256">00035</a> <span class="preprocessor"></span><span class="preprocessor">#define NDACSMAX 16</span>
-<a name="l00036"></a>00036 <span class="preprocessor"></span>
-<a name="l00037"></a><a class="code" href="slsDetector_8h.html#cbd0b3def6b58577376d5c5edbc1f8d1">00037</a> <span class="preprocessor">#define DEFAULT_HOSTNAME  "localhost"</span>
-<a name="l00038"></a><a class="code" href="slsDetector_8h.html#c5cee1b5d2ab5671b3ec6e9ca2bf9fad">00038</a> <span class="preprocessor"></span><span class="preprocessor">#define DEFAULT_SHM_KEY  5678</span>
-<a name="l00039"></a>00039 <span class="preprocessor"></span>
-<a name="l00040"></a><a class="code" href="slsDetector_8h.html#082faba3de8ce8379e160e3067333d14">00040</a> <span class="preprocessor">#define defaultTDead {170,90,750}</span>
+<a name="l00025"></a>00025 <span class="preprocessor">#include "<a class="code" href="sls__detector__defs_8h.html">sls_detector_defs.h</a>"</span>
+<a name="l00026"></a>00026 
+<a name="l00027"></a><a class="code" href="slsDetector_8h.html#79fd3eac646964332ed33ec7dd40f208">00027</a> <span class="preprocessor">#define MAX_TIMERS 10</span>
+<a name="l00028"></a><a class="code" href="slsDetector_8h.html#4c84515c2af98fbe570b5201a1022103">00028</a> <span class="preprocessor"></span><span class="preprocessor">#define MAX_ROIS 100</span>
+<a name="l00029"></a><a class="code" href="slsDetector_8h.html#458ac030ac964822b06ae7659da870df">00029</a> <span class="preprocessor"></span><span class="preprocessor">#define MAX_BADCHANS 2000</span>
+<a name="l00030"></a><a class="code" href="slsDetector_8h.html#361088f7869d8e7c123b003e817915a5">00030</a> <span class="preprocessor"></span><span class="preprocessor">#define MAXPOS 50</span>
+<a name="l00031"></a>00031 <span class="preprocessor"></span>
+<a name="l00032"></a><a class="code" href="slsDetector_8h.html#21b1e82005e7fb5d8c0539e47ae25b01">00032</a> <span class="preprocessor">#define NMODMAXX 24</span>
+<a name="l00033"></a><a class="code" href="slsDetector_8h.html#4454335271010cc7a932117cbf3f1be1">00033</a> <span class="preprocessor"></span><span class="preprocessor">#define NMODMAXY 24</span>
+<a name="l00034"></a><a class="code" href="slsDetector_8h.html#86d84e5a6918e1cb1e2ecb75752e604a">00034</a> <span class="preprocessor"></span><span class="preprocessor">#define MAXMODS 36</span>
+<a name="l00035"></a><a class="code" href="slsDetector_8h.html#13d24767ba1933e7367908de888f831a">00035</a> <span class="preprocessor"></span><span class="preprocessor">#define NCHIPSMAX 10</span>
+<a name="l00036"></a><a class="code" href="slsDetector_8h.html#1796142de2f82d4c3e10632bddde99f7">00036</a> <span class="preprocessor"></span><span class="preprocessor">#define NCHANSMAX 65536</span>
+<a name="l00037"></a><a class="code" href="slsDetector_8h.html#4460877d434c3a8731bb4beb20a2e256">00037</a> <span class="preprocessor"></span><span class="preprocessor">#define NDACSMAX 16</span>
+<a name="l00038"></a>00038 <span class="preprocessor"></span>
+<a name="l00039"></a><a class="code" href="slsDetector_8h.html#cbd0b3def6b58577376d5c5edbc1f8d1">00039</a> <span class="preprocessor">#define DEFAULT_HOSTNAME  "localhost"</span>
+<a name="l00040"></a><a class="code" href="slsDetector_8h.html#c5cee1b5d2ab5671b3ec6e9ca2bf9fad">00040</a> <span class="preprocessor"></span><span class="preprocessor">#define DEFAULT_SHM_KEY  5678</span>
 <a name="l00041"></a>00041 <span class="preprocessor"></span>
-<a name="l00042"></a>00042 <span class="keyword">using namespace </span>std;
-<a name="l00078"></a><a class="code" href="classslsDetector.html">00078</a> <span class="keyword">class </span><a class="code" href="classslsDetector.html">slsDetector</a> {
-<a name="l00079"></a>00079 
-<a name="l00080"></a>00080 
-<a name="l00081"></a>00081 
-<a name="l00082"></a>00082  <span class="keyword">public</span>:
-<a name="l00083"></a>00083   
-<a name="l00084"></a>00084 
-<a name="l00086"></a>00086   <span class="keyword">enum</span> {<a class="code" href="classslsDetector.html#ac085f1939dcfed328dc6ff4b11fdb44617c55ac8cf00235b76c1c1481238abb">GET_ONLINE_FLAG</a>, 
-<a name="l00087"></a>00087         <a class="code" href="classslsDetector.html#ac085f1939dcfed328dc6ff4b11fdb44da0a4f5b33e634292bc99256a9552f2f">OFFLINE_FLAG</a>, 
-<a name="l00088"></a><a class="code" href="classslsDetector.html#ac085f1939dcfed328dc6ff4b11fdb44d3b612a2eb0d1029bd260b502afcf632">00088</a>         <a class="code" href="classslsDetector.html#ac085f1939dcfed328dc6ff4b11fdb44d3b612a2eb0d1029bd260b502afcf632">ONLINE_FLAG</a> 
-<a name="l00089"></a>00089   };
+<a name="l00042"></a><a class="code" href="slsDetector_8h.html#082faba3de8ce8379e160e3067333d14">00042</a> <span class="preprocessor">#define defaultTDead {170,90,750} </span>
+<a name="l00044"></a>00044 <span class="preprocessor">using namespace std;</span>
+<a name="l00045"></a>00045 <span class="preprocessor"></span>
+<a name="l00084"></a><a class="code" href="classslsDetector.html">00084</a> <span class="keyword">class </span><a class="code" href="classslsDetector.html">slsDetector</a> {
+<a name="l00085"></a>00085 
+<a name="l00086"></a>00086 
+<a name="l00087"></a>00087 
+<a name="l00088"></a>00088  <span class="keyword">public</span>:
+<a name="l00089"></a>00089   
 <a name="l00090"></a>00090 
-<a name="l00091"></a>00091 
-<a name="l00092"></a>00092 <span class="preprocessor">#include "<a class="code" href="sls__detector__defs_8h.html">sls_detector_defs.h</a>"</span>
-<a name="l00093"></a>00093 
-<a name="l00094"></a>00094 
-<a name="l00099"></a><a class="code" href="structslsDetector_1_1sharedSlsDetector.html">00099</a> <span class="keyword">typedef</span>  <span class="keyword">struct </span><a class="code" href="structslsDetector_1_1sharedSlsDetector.html">sharedSlsDetector</a> {
-<a name="l00101"></a><a class="code" href="structslsDetector_1_1sharedSlsDetector.html#ee2e81699a79e6b9ddc698d120a13ef9">00101</a>     <span class="keywordtype">int</span> <a class="code" href="structslsDetector_1_1sharedSlsDetector.html#ee2e81699a79e6b9ddc698d120a13ef9">alreadyExisting</a>;
-<a name="l00102"></a>00102     
-<a name="l00104"></a><a class="code" href="structslsDetector_1_1sharedSlsDetector.html#bf7e3c0dca0810fbd1522e5885d9fe7a">00104</a>     <span class="keywordtype">char</span> <a class="code" href="structslsDetector_1_1sharedSlsDetector.html#bf7e3c0dca0810fbd1522e5885d9fe7a">hostname</a>[<a class="code" href="sls__detector__defs_8h.html#aa695591372841e2c5580e4ed0f3620f">MAX_STR_LENGTH</a>];
-<a name="l00106"></a><a class="code" href="structslsDetector_1_1sharedSlsDetector.html#11da9fd02e0833533a8b2de6ad3307d8">00106</a>     <span class="keywordtype">int</span> <a class="code" href="structslsDetector_1_1sharedSlsDetector.html#11da9fd02e0833533a8b2de6ad3307d8">controlPort</a>;
-<a name="l00108"></a><a class="code" href="structslsDetector_1_1sharedSlsDetector.html#fc7fef330e7b7ce0cd7470572a5f27b0">00108</a>     <span class="keywordtype">int</span> <a class="code" href="structslsDetector_1_1sharedSlsDetector.html#fc7fef330e7b7ce0cd7470572a5f27b0">stopPort</a>;
-<a name="l00110"></a><a class="code" href="structslsDetector_1_1sharedSlsDetector.html#108090dc9c97fe4d9f91357c27d56953">00110</a>     <span class="keywordtype">int</span> <a class="code" href="structslsDetector_1_1sharedSlsDetector.html#108090dc9c97fe4d9f91357c27d56953">dataPort</a>;
-<a name="l00111"></a>00111 
-<a name="l00113"></a><a class="code" href="structslsDetector_1_1sharedSlsDetector.html#5fcd4804cb224f455da374b25fe5f08a">00113</a>     <a class="code" href="sls__detector__defs_8h.html#ab9f984f7b6798e684c8f3e6b63c6301">detectorType</a> <a class="code" href="structslsDetector_1_1sharedSlsDetector.html#5fcd4804cb224f455da374b25fe5f08a">myDetectorType</a>;
-<a name="l00114"></a>00114 
+<a name="l00092"></a>00092   <span class="keyword">enum</span> {<a class="code" href="classslsDetector.html#ac085f1939dcfed328dc6ff4b11fdb44617c55ac8cf00235b76c1c1481238abb">GET_ONLINE_FLAG</a>, 
+<a name="l00093"></a>00093         <a class="code" href="classslsDetector.html#ac085f1939dcfed328dc6ff4b11fdb44da0a4f5b33e634292bc99256a9552f2f">OFFLINE_FLAG</a>, 
+<a name="l00094"></a><a class="code" href="classslsDetector.html#ac085f1939dcfed328dc6ff4b11fdb44d3b612a2eb0d1029bd260b502afcf632">00094</a>         <a class="code" href="classslsDetector.html#ac085f1939dcfed328dc6ff4b11fdb44d3b612a2eb0d1029bd260b502afcf632">ONLINE_FLAG</a> 
+<a name="l00095"></a>00095   };
+<a name="l00096"></a>00096 
+<a name="l00097"></a>00097 
+<a name="l00098"></a>00098 
+<a name="l00103"></a><a class="code" href="structslsDetector_1_1sharedSlsDetector.html">00103</a> <span class="keyword">typedef</span>  <span class="keyword">struct </span><a class="code" href="structslsDetector_1_1sharedSlsDetector.html">sharedSlsDetector</a> {
+<a name="l00105"></a><a class="code" href="structslsDetector_1_1sharedSlsDetector.html#ee2e81699a79e6b9ddc698d120a13ef9">00105</a>     <span class="keywordtype">int</span> <a class="code" href="structslsDetector_1_1sharedSlsDetector.html#ee2e81699a79e6b9ddc698d120a13ef9">alreadyExisting</a>;
+<a name="l00106"></a>00106     
+<a name="l00108"></a><a class="code" href="structslsDetector_1_1sharedSlsDetector.html#bf7e3c0dca0810fbd1522e5885d9fe7a">00108</a>     <span class="keywordtype">char</span> <a class="code" href="structslsDetector_1_1sharedSlsDetector.html#bf7e3c0dca0810fbd1522e5885d9fe7a">hostname</a>[<a class="code" href="sls__detector__defs_8h.html#aa695591372841e2c5580e4ed0f3620f">MAX_STR_LENGTH</a>];
+<a name="l00110"></a><a class="code" href="structslsDetector_1_1sharedSlsDetector.html#11da9fd02e0833533a8b2de6ad3307d8">00110</a>     <span class="keywordtype">int</span> <a class="code" href="structslsDetector_1_1sharedSlsDetector.html#11da9fd02e0833533a8b2de6ad3307d8">controlPort</a>;
+<a name="l00112"></a><a class="code" href="structslsDetector_1_1sharedSlsDetector.html#fc7fef330e7b7ce0cd7470572a5f27b0">00112</a>     <span class="keywordtype">int</span> <a class="code" href="structslsDetector_1_1sharedSlsDetector.html#fc7fef330e7b7ce0cd7470572a5f27b0">stopPort</a>;
+<a name="l00114"></a><a class="code" href="structslsDetector_1_1sharedSlsDetector.html#108090dc9c97fe4d9f91357c27d56953">00114</a>     <span class="keywordtype">int</span> <a class="code" href="structslsDetector_1_1sharedSlsDetector.html#108090dc9c97fe4d9f91357c27d56953">dataPort</a>;
 <a name="l00115"></a>00115 
-<a name="l00117"></a><a class="code" href="structslsDetector_1_1sharedSlsDetector.html#4a4421330a2c207e5da36e3739305915">00117</a>     <span class="keywordtype">char</span> <a class="code" href="structslsDetector_1_1sharedSlsDetector.html#4a4421330a2c207e5da36e3739305915">trimDir</a>[<a class="code" href="sls__detector__defs_8h.html#aa695591372841e2c5580e4ed0f3620f">MAX_STR_LENGTH</a>];
-<a name="l00119"></a><a class="code" href="structslsDetector_1_1sharedSlsDetector.html#8db7c92973c8af22116cf3bc38b6efb9">00119</a>     <span class="keywordtype">char</span> <a class="code" href="structslsDetector_1_1sharedSlsDetector.html#8db7c92973c8af22116cf3bc38b6efb9">calDir</a>[<a class="code" href="sls__detector__defs_8h.html#aa695591372841e2c5580e4ed0f3620f">MAX_STR_LENGTH</a>];
-<a name="l00121"></a><a class="code" href="structslsDetector_1_1sharedSlsDetector.html#5d7058d713cc890d7d469c44eab500e2">00121</a>     <span class="keywordtype">int</span> <a class="code" href="structslsDetector_1_1sharedSlsDetector.html#5d7058d713cc890d7d469c44eab500e2">nTrimEn</a>;
-<a name="l00123"></a><a class="code" href="structslsDetector_1_1sharedSlsDetector.html#fba642bc1dcd491913723a1a4f88e6f0">00123</a>     <span class="keywordtype">int</span> <a class="code" href="structslsDetector_1_1sharedSlsDetector.html#fba642bc1dcd491913723a1a4f88e6f0">trimEnergies</a>[100];
-<a name="l00124"></a>00124 
-<a name="l00125"></a>00125            
-<a name="l00127"></a><a class="code" href="structslsDetector_1_1sharedSlsDetector.html#48bc3bbfc4292f81c490e73bb52d62e9">00127</a>     <span class="keywordtype">int</span> <a class="code" href="structslsDetector_1_1sharedSlsDetector.html#48bc3bbfc4292f81c490e73bb52d62e9">fileIndex</a>;
-<a name="l00129"></a><a class="code" href="structslsDetector_1_1sharedSlsDetector.html#91b926344339e977f57954dcf0aef2fb">00129</a>     <span class="keywordtype">char</span> <a class="code" href="structslsDetector_1_1sharedSlsDetector.html#91b926344339e977f57954dcf0aef2fb">filePath</a>[<a class="code" href="sls__detector__defs_8h.html#aa695591372841e2c5580e4ed0f3620f">MAX_STR_LENGTH</a>];
-<a name="l00131"></a><a class="code" href="structslsDetector_1_1sharedSlsDetector.html#5903fa90b0a18c4896082882a906aba0">00131</a>     <span class="keywordtype">char</span> <a class="code" href="structslsDetector_1_1sharedSlsDetector.html#5903fa90b0a18c4896082882a906aba0">fileName</a>[<a class="code" href="sls__detector__defs_8h.html#aa695591372841e2c5580e4ed0f3620f">MAX_STR_LENGTH</a>];
-<a name="l00132"></a>00132 
-<a name="l00133"></a>00133   <span class="comment">/* size of the detector */</span>
-<a name="l00134"></a>00134     
-<a name="l00136"></a><a class="code" href="structslsDetector_1_1sharedSlsDetector.html#aadb7a55fa5aca830df32e41f7fff06d">00136</a>     <span class="keywordtype">int</span> <a class="code" href="structslsDetector_1_1sharedSlsDetector.html#aadb7a55fa5aca830df32e41f7fff06d">nMod</a>[2];
-<a name="l00138"></a><a class="code" href="structslsDetector_1_1sharedSlsDetector.html#8380248ff063419cae1a4454a49f359f">00138</a>     <span class="keywordtype">int</span> <a class="code" href="structslsDetector_1_1sharedSlsDetector.html#8380248ff063419cae1a4454a49f359f">nMods</a>;
-<a name="l00140"></a><a class="code" href="structslsDetector_1_1sharedSlsDetector.html#001f1ce26646f9367038aca388ca8910">00140</a>     <span class="keywordtype">int</span> <a class="code" href="structslsDetector_1_1sharedSlsDetector.html#001f1ce26646f9367038aca388ca8910">nModMax</a>[2];
-<a name="l00142"></a><a class="code" href="structslsDetector_1_1sharedSlsDetector.html#af9036fae1edd1a18ba311a903bc4fc6">00142</a>     <span class="keywordtype">int</span> <a class="code" href="structslsDetector_1_1sharedSlsDetector.html#af9036fae1edd1a18ba311a903bc4fc6">nModsMax</a>;
-<a name="l00144"></a><a class="code" href="structslsDetector_1_1sharedSlsDetector.html#7a47b57931d2ac0f31a9f334dd94d015">00144</a>     <span class="keywordtype">int</span> <a class="code" href="structslsDetector_1_1sharedSlsDetector.html#7a47b57931d2ac0f31a9f334dd94d015">nChans</a>;
-<a name="l00146"></a><a class="code" href="structslsDetector_1_1sharedSlsDetector.html#e7a48224edcce55cb28ad9b1f1a4d4f7">00146</a>     <span class="keywordtype">int</span> <a class="code" href="structslsDetector_1_1sharedSlsDetector.html#e7a48224edcce55cb28ad9b1f1a4d4f7">nChips</a>;
-<a name="l00148"></a><a class="code" href="structslsDetector_1_1sharedSlsDetector.html#7ffc3b1b55e34c1705717e4c5aaac564">00148</a>     <span class="keywordtype">int</span> <a class="code" href="structslsDetector_1_1sharedSlsDetector.html#7ffc3b1b55e34c1705717e4c5aaac564">nDacs</a>;
-<a name="l00150"></a><a class="code" href="structslsDetector_1_1sharedSlsDetector.html#f9e8b66bbe436f33191e876312ba0d2c">00150</a>     <span class="keywordtype">int</span> <a class="code" href="structslsDetector_1_1sharedSlsDetector.html#f9e8b66bbe436f33191e876312ba0d2c">nAdcs</a>;
-<a name="l00152"></a><a class="code" href="structslsDetector_1_1sharedSlsDetector.html#e8db406083e91d5f7bcbad93cea1c380">00152</a>     <span class="keywordtype">int</span> <a class="code" href="structslsDetector_1_1sharedSlsDetector.html#e8db406083e91d5f7bcbad93cea1c380">dynamicRange</a>;
-<a name="l00154"></a><a class="code" href="structslsDetector_1_1sharedSlsDetector.html#fbade261d7b298b6b605b6feff742f8b">00154</a>     <span class="keywordtype">int</span> <a class="code" href="structslsDetector_1_1sharedSlsDetector.html#fbade261d7b298b6b605b6feff742f8b">dataBytes</a>;
-<a name="l00155"></a>00155     
-<a name="l00157"></a><a class="code" href="structslsDetector_1_1sharedSlsDetector.html#fa0612dcfba406d532a36f433363bdad">00157</a>     <span class="keywordtype">int</span> <a class="code" href="structslsDetector_1_1sharedSlsDetector.html#fa0612dcfba406d532a36f433363bdad">correctionMask</a>;
-<a name="l00159"></a><a class="code" href="structslsDetector_1_1sharedSlsDetector.html#8cb9a14f3eb2f280d0e57ee70a5e2f60">00159</a>     <span class="keywordtype">float</span> <a class="code" href="structslsDetector_1_1sharedSlsDetector.html#8cb9a14f3eb2f280d0e57ee70a5e2f60">tDead</a>;
-<a name="l00161"></a><a class="code" href="structslsDetector_1_1sharedSlsDetector.html#237f834b800df65a32fc4bc5cd714283">00161</a>     <span class="keywordtype">int</span> <a class="code" href="structslsDetector_1_1sharedSlsDetector.html#237f834b800df65a32fc4bc5cd714283">nBadChans</a>;
-<a name="l00163"></a><a class="code" href="structslsDetector_1_1sharedSlsDetector.html#4e03ad7a759acf38d4543e0df9ab9710">00163</a>     <span class="keywordtype">int</span> <a class="code" href="structslsDetector_1_1sharedSlsDetector.html#4e03ad7a759acf38d4543e0df9ab9710">badChansList</a>[<a class="code" href="slsDetector_8h.html#458ac030ac964822b06ae7659da870df">MAX_BADCHANS</a>];
-<a name="l00165"></a><a class="code" href="structslsDetector_1_1sharedSlsDetector.html#d117d6131cef782896adb054e6b00861">00165</a>     <span class="keywordtype">int</span> <a class="code" href="structslsDetector_1_1sharedSlsDetector.html#d117d6131cef782896adb054e6b00861">nBadFF</a>;
-<a name="l00167"></a><a class="code" href="structslsDetector_1_1sharedSlsDetector.html#ebf29d7d9b406d65f381c9446953bc14">00167</a>     <span class="keywordtype">int</span> <a class="code" href="structslsDetector_1_1sharedSlsDetector.html#ebf29d7d9b406d65f381c9446953bc14">badFFList</a>[<a class="code" href="slsDetector_8h.html#458ac030ac964822b06ae7659da870df">MAX_BADCHANS</a>];
-<a name="l00168"></a>00168     
-<a name="l00170"></a><a class="code" href="structslsDetector_1_1sharedSlsDetector.html#31cebbb4add050ac00b3fbe9b4494d8b">00170</a>     <a class="code" href="structangleConversionConstant.html">angleConversionConstant</a> <a class="code" href="structslsDetector_1_1sharedSlsDetector.html#31cebbb4add050ac00b3fbe9b4494d8b">angOff</a>[<a class="code" href="slsDetector_8h.html#86d84e5a6918e1cb1e2ecb75752e604a">MAXMODS</a>];
-<a name="l00172"></a><a class="code" href="structslsDetector_1_1sharedSlsDetector.html#289a2fe819a4e02a93dfc54f9ba7ae16">00172</a>     <span class="keywordtype">int</span> <a class="code" href="structslsDetector_1_1sharedSlsDetector.html#289a2fe819a4e02a93dfc54f9ba7ae16">angDirection</a>;
-<a name="l00174"></a><a class="code" href="structslsDetector_1_1sharedSlsDetector.html#5ca5b4ba561ff03260d4734f17273287">00174</a>     <span class="keywordtype">float</span> <a class="code" href="structslsDetector_1_1sharedSlsDetector.html#5ca5b4ba561ff03260d4734f17273287">fineOffset</a>;
-<a name="l00176"></a><a class="code" href="structslsDetector_1_1sharedSlsDetector.html#f4f3616855e8d7fa5a9a49774365497a">00176</a>     <span class="keywordtype">float</span> <a class="code" href="structslsDetector_1_1sharedSlsDetector.html#f4f3616855e8d7fa5a9a49774365497a">globalOffset</a>;
-<a name="l00178"></a><a class="code" href="structslsDetector_1_1sharedSlsDetector.html#0ffc59bdf1f5d82da8c35ba48fd5f36d">00178</a>     <span class="keywordtype">int</span> <a class="code" href="structslsDetector_1_1sharedSlsDetector.html#0ffc59bdf1f5d82da8c35ba48fd5f36d">numberOfPositions</a>;
-<a name="l00180"></a><a class="code" href="structslsDetector_1_1sharedSlsDetector.html#bf1d315c4544329f53beb7c88eb47124">00180</a>     <span class="keywordtype">float</span> <a class="code" href="structslsDetector_1_1sharedSlsDetector.html#bf1d315c4544329f53beb7c88eb47124">detPositions</a>[<a class="code" href="slsDetector_8h.html#361088f7869d8e7c123b003e817915a5">MAXPOS</a>];
-<a name="l00182"></a><a class="code" href="structslsDetector_1_1sharedSlsDetector.html#8a64597cae31d83524ea4e554e3798ab">00182</a>   <span class="keywordtype">float</span> <a class="code" href="structslsDetector_1_1sharedSlsDetector.html#8a64597cae31d83524ea4e554e3798ab">binSize</a>;
-<a name="l00183"></a>00183 
-<a name="l00184"></a>00184   <span class="comment">/* infos necessary for the readout to determine the size of the data */</span>
-<a name="l00186"></a><a class="code" href="structslsDetector_1_1sharedSlsDetector.html#46728c000c681867e5b15f6eb6833e09">00186</a>     <span class="keywordtype">int</span> <a class="code" href="structslsDetector_1_1sharedSlsDetector.html#46728c000c681867e5b15f6eb6833e09">nROI</a>;
-<a name="l00188"></a><a class="code" href="structslsDetector_1_1sharedSlsDetector.html#bfd660b175826b4bb6255baf356eb364">00188</a>     <a class="code" href="structROI.html">ROI</a> <a class="code" href="structslsDetector_1_1sharedSlsDetector.html#bfd660b175826b4bb6255baf356eb364">roiLimits</a>[<a class="code" href="slsDetector_8h.html#4c84515c2af98fbe570b5201a1022103">MAX_ROIS</a>];
-<a name="l00190"></a><a class="code" href="structslsDetector_1_1sharedSlsDetector.html#e1c715ce4ba56b71fc868078acd44243">00190</a>     <a class="code" href="sls__detector__defs_8h.html#6165e3e90182cc47b0003f3288a2e579">readOutFlags</a> <a class="code" href="structslsDetector_1_1sharedSlsDetector.html#e1c715ce4ba56b71fc868078acd44243">roFlags</a>;
+<a name="l00117"></a><a class="code" href="structslsDetector_1_1sharedSlsDetector.html#5fcd4804cb224f455da374b25fe5f08a">00117</a>     <a class="code" href="sls__detector__defs_8h.html#ab9f984f7b6798e684c8f3e6b63c6301">detectorType</a> <a class="code" href="structslsDetector_1_1sharedSlsDetector.html#5fcd4804cb224f455da374b25fe5f08a">myDetectorType</a>;
+<a name="l00118"></a>00118 
+<a name="l00119"></a>00119 
+<a name="l00121"></a><a class="code" href="structslsDetector_1_1sharedSlsDetector.html#4a4421330a2c207e5da36e3739305915">00121</a>     <span class="keywordtype">char</span> <a class="code" href="structslsDetector_1_1sharedSlsDetector.html#4a4421330a2c207e5da36e3739305915">trimDir</a>[<a class="code" href="sls__detector__defs_8h.html#aa695591372841e2c5580e4ed0f3620f">MAX_STR_LENGTH</a>];
+<a name="l00123"></a><a class="code" href="structslsDetector_1_1sharedSlsDetector.html#8db7c92973c8af22116cf3bc38b6efb9">00123</a>     <span class="keywordtype">char</span> <a class="code" href="structslsDetector_1_1sharedSlsDetector.html#8db7c92973c8af22116cf3bc38b6efb9">calDir</a>[<a class="code" href="sls__detector__defs_8h.html#aa695591372841e2c5580e4ed0f3620f">MAX_STR_LENGTH</a>];
+<a name="l00125"></a><a class="code" href="structslsDetector_1_1sharedSlsDetector.html#5d7058d713cc890d7d469c44eab500e2">00125</a>     <span class="keywordtype">int</span> <a class="code" href="structslsDetector_1_1sharedSlsDetector.html#5d7058d713cc890d7d469c44eab500e2">nTrimEn</a>;
+<a name="l00127"></a><a class="code" href="structslsDetector_1_1sharedSlsDetector.html#fba642bc1dcd491913723a1a4f88e6f0">00127</a>     <span class="keywordtype">int</span> <a class="code" href="structslsDetector_1_1sharedSlsDetector.html#fba642bc1dcd491913723a1a4f88e6f0">trimEnergies</a>[100];
+<a name="l00128"></a>00128 
+<a name="l00129"></a>00129            
+<a name="l00131"></a><a class="code" href="structslsDetector_1_1sharedSlsDetector.html#48bc3bbfc4292f81c490e73bb52d62e9">00131</a>     <span class="keywordtype">int</span> <a class="code" href="structslsDetector_1_1sharedSlsDetector.html#48bc3bbfc4292f81c490e73bb52d62e9">fileIndex</a>;
+<a name="l00133"></a><a class="code" href="structslsDetector_1_1sharedSlsDetector.html#91b926344339e977f57954dcf0aef2fb">00133</a>     <span class="keywordtype">char</span> <a class="code" href="structslsDetector_1_1sharedSlsDetector.html#91b926344339e977f57954dcf0aef2fb">filePath</a>[<a class="code" href="sls__detector__defs_8h.html#aa695591372841e2c5580e4ed0f3620f">MAX_STR_LENGTH</a>];
+<a name="l00135"></a><a class="code" href="structslsDetector_1_1sharedSlsDetector.html#5903fa90b0a18c4896082882a906aba0">00135</a>     <span class="keywordtype">char</span> <a class="code" href="structslsDetector_1_1sharedSlsDetector.html#5903fa90b0a18c4896082882a906aba0">fileName</a>[<a class="code" href="sls__detector__defs_8h.html#aa695591372841e2c5580e4ed0f3620f">MAX_STR_LENGTH</a>];
+<a name="l00136"></a>00136 
+<a name="l00137"></a>00137   <span class="comment">/* size of the detector */</span>
+<a name="l00138"></a>00138     
+<a name="l00140"></a><a class="code" href="structslsDetector_1_1sharedSlsDetector.html#aadb7a55fa5aca830df32e41f7fff06d">00140</a>     <span class="keywordtype">int</span> <a class="code" href="structslsDetector_1_1sharedSlsDetector.html#aadb7a55fa5aca830df32e41f7fff06d">nMod</a>[2];
+<a name="l00142"></a><a class="code" href="structslsDetector_1_1sharedSlsDetector.html#8380248ff063419cae1a4454a49f359f">00142</a>     <span class="keywordtype">int</span> <a class="code" href="structslsDetector_1_1sharedSlsDetector.html#8380248ff063419cae1a4454a49f359f">nMods</a>;
+<a name="l00144"></a><a class="code" href="structslsDetector_1_1sharedSlsDetector.html#001f1ce26646f9367038aca388ca8910">00144</a>     <span class="keywordtype">int</span> <a class="code" href="structslsDetector_1_1sharedSlsDetector.html#001f1ce26646f9367038aca388ca8910">nModMax</a>[2];
+<a name="l00146"></a><a class="code" href="structslsDetector_1_1sharedSlsDetector.html#af9036fae1edd1a18ba311a903bc4fc6">00146</a>     <span class="keywordtype">int</span> <a class="code" href="structslsDetector_1_1sharedSlsDetector.html#af9036fae1edd1a18ba311a903bc4fc6">nModsMax</a>;
+<a name="l00148"></a><a class="code" href="structslsDetector_1_1sharedSlsDetector.html#7a47b57931d2ac0f31a9f334dd94d015">00148</a>     <span class="keywordtype">int</span> <a class="code" href="structslsDetector_1_1sharedSlsDetector.html#7a47b57931d2ac0f31a9f334dd94d015">nChans</a>;
+<a name="l00150"></a><a class="code" href="structslsDetector_1_1sharedSlsDetector.html#e7a48224edcce55cb28ad9b1f1a4d4f7">00150</a>     <span class="keywordtype">int</span> <a class="code" href="structslsDetector_1_1sharedSlsDetector.html#e7a48224edcce55cb28ad9b1f1a4d4f7">nChips</a>;
+<a name="l00152"></a><a class="code" href="structslsDetector_1_1sharedSlsDetector.html#7ffc3b1b55e34c1705717e4c5aaac564">00152</a>     <span class="keywordtype">int</span> <a class="code" href="structslsDetector_1_1sharedSlsDetector.html#7ffc3b1b55e34c1705717e4c5aaac564">nDacs</a>;
+<a name="l00154"></a><a class="code" href="structslsDetector_1_1sharedSlsDetector.html#f9e8b66bbe436f33191e876312ba0d2c">00154</a>     <span class="keywordtype">int</span> <a class="code" href="structslsDetector_1_1sharedSlsDetector.html#f9e8b66bbe436f33191e876312ba0d2c">nAdcs</a>;
+<a name="l00156"></a><a class="code" href="structslsDetector_1_1sharedSlsDetector.html#e8db406083e91d5f7bcbad93cea1c380">00156</a>     <span class="keywordtype">int</span> <a class="code" href="structslsDetector_1_1sharedSlsDetector.html#e8db406083e91d5f7bcbad93cea1c380">dynamicRange</a>;
+<a name="l00158"></a><a class="code" href="structslsDetector_1_1sharedSlsDetector.html#fbade261d7b298b6b605b6feff742f8b">00158</a>     <span class="keywordtype">int</span> <a class="code" href="structslsDetector_1_1sharedSlsDetector.html#fbade261d7b298b6b605b6feff742f8b">dataBytes</a>;
+<a name="l00159"></a>00159     
+<a name="l00161"></a><a class="code" href="structslsDetector_1_1sharedSlsDetector.html#fa0612dcfba406d532a36f433363bdad">00161</a>     <span class="keywordtype">int</span> <a class="code" href="structslsDetector_1_1sharedSlsDetector.html#fa0612dcfba406d532a36f433363bdad">correctionMask</a>;
+<a name="l00163"></a><a class="code" href="structslsDetector_1_1sharedSlsDetector.html#8cb9a14f3eb2f280d0e57ee70a5e2f60">00163</a>     <span class="keywordtype">float</span> <a class="code" href="structslsDetector_1_1sharedSlsDetector.html#8cb9a14f3eb2f280d0e57ee70a5e2f60">tDead</a>;
+<a name="l00165"></a><a class="code" href="structslsDetector_1_1sharedSlsDetector.html#237f834b800df65a32fc4bc5cd714283">00165</a>     <span class="keywordtype">int</span> <a class="code" href="structslsDetector_1_1sharedSlsDetector.html#237f834b800df65a32fc4bc5cd714283">nBadChans</a>;
+<a name="l00167"></a><a class="code" href="structslsDetector_1_1sharedSlsDetector.html#9ab536c77675cd30b26ab647efe5c3ca">00167</a>   <span class="keywordtype">char</span> <a class="code" href="structslsDetector_1_1sharedSlsDetector.html#9ab536c77675cd30b26ab647efe5c3ca">badChanFile</a>[<a class="code" href="sls__detector__defs_8h.html#aa695591372841e2c5580e4ed0f3620f">MAX_STR_LENGTH</a>];
+<a name="l00169"></a><a class="code" href="structslsDetector_1_1sharedSlsDetector.html#4e03ad7a759acf38d4543e0df9ab9710">00169</a>     <span class="keywordtype">int</span> <a class="code" href="structslsDetector_1_1sharedSlsDetector.html#4e03ad7a759acf38d4543e0df9ab9710">badChansList</a>[<a class="code" href="slsDetector_8h.html#458ac030ac964822b06ae7659da870df">MAX_BADCHANS</a>];
+<a name="l00171"></a><a class="code" href="structslsDetector_1_1sharedSlsDetector.html#d117d6131cef782896adb054e6b00861">00171</a>     <span class="keywordtype">int</span> <a class="code" href="structslsDetector_1_1sharedSlsDetector.html#d117d6131cef782896adb054e6b00861">nBadFF</a>;
+<a name="l00173"></a><a class="code" href="structslsDetector_1_1sharedSlsDetector.html#ebf29d7d9b406d65f381c9446953bc14">00173</a>     <span class="keywordtype">int</span> <a class="code" href="structslsDetector_1_1sharedSlsDetector.html#ebf29d7d9b406d65f381c9446953bc14">badFFList</a>[<a class="code" href="slsDetector_8h.html#458ac030ac964822b06ae7659da870df">MAX_BADCHANS</a>];
+<a name="l00174"></a>00174     
+<a name="l00176"></a><a class="code" href="structslsDetector_1_1sharedSlsDetector.html#42502564011f831f43733ffed7c2eafd">00176</a>   <span class="keywordtype">char</span> <a class="code" href="structslsDetector_1_1sharedSlsDetector.html#42502564011f831f43733ffed7c2eafd">angConvFile</a>[<a class="code" href="sls__detector__defs_8h.html#aa695591372841e2c5580e4ed0f3620f">MAX_STR_LENGTH</a>];
+<a name="l00178"></a><a class="code" href="structslsDetector_1_1sharedSlsDetector.html#31cebbb4add050ac00b3fbe9b4494d8b">00178</a>     <a class="code" href="structangleConversionConstant.html">angleConversionConstant</a> <a class="code" href="structslsDetector_1_1sharedSlsDetector.html#31cebbb4add050ac00b3fbe9b4494d8b">angOff</a>[<a class="code" href="slsDetector_8h.html#86d84e5a6918e1cb1e2ecb75752e604a">MAXMODS</a>];
+<a name="l00180"></a><a class="code" href="structslsDetector_1_1sharedSlsDetector.html#289a2fe819a4e02a93dfc54f9ba7ae16">00180</a>     <span class="keywordtype">int</span> <a class="code" href="structslsDetector_1_1sharedSlsDetector.html#289a2fe819a4e02a93dfc54f9ba7ae16">angDirection</a>;
+<a name="l00182"></a><a class="code" href="structslsDetector_1_1sharedSlsDetector.html#5ca5b4ba561ff03260d4734f17273287">00182</a>     <span class="keywordtype">float</span> <a class="code" href="structslsDetector_1_1sharedSlsDetector.html#5ca5b4ba561ff03260d4734f17273287">fineOffset</a>;
+<a name="l00184"></a><a class="code" href="structslsDetector_1_1sharedSlsDetector.html#f4f3616855e8d7fa5a9a49774365497a">00184</a>     <span class="keywordtype">float</span> <a class="code" href="structslsDetector_1_1sharedSlsDetector.html#f4f3616855e8d7fa5a9a49774365497a">globalOffset</a>;
+<a name="l00186"></a><a class="code" href="structslsDetector_1_1sharedSlsDetector.html#0ffc59bdf1f5d82da8c35ba48fd5f36d">00186</a>     <span class="keywordtype">int</span> <a class="code" href="structslsDetector_1_1sharedSlsDetector.html#0ffc59bdf1f5d82da8c35ba48fd5f36d">numberOfPositions</a>;
+<a name="l00188"></a><a class="code" href="structslsDetector_1_1sharedSlsDetector.html#bf1d315c4544329f53beb7c88eb47124">00188</a>     <span class="keywordtype">float</span> <a class="code" href="structslsDetector_1_1sharedSlsDetector.html#bf1d315c4544329f53beb7c88eb47124">detPositions</a>[<a class="code" href="slsDetector_8h.html#361088f7869d8e7c123b003e817915a5">MAXPOS</a>];
+<a name="l00190"></a><a class="code" href="structslsDetector_1_1sharedSlsDetector.html#8a64597cae31d83524ea4e554e3798ab">00190</a>   <span class="keywordtype">float</span> <a class="code" href="structslsDetector_1_1sharedSlsDetector.html#8a64597cae31d83524ea4e554e3798ab">binSize</a>;
 <a name="l00191"></a>00191 
-<a name="l00192"></a>00192  <span class="comment">/* detector setup - not needed */</span>
-<a name="l00194"></a><a class="code" href="structslsDetector_1_1sharedSlsDetector.html#87e1f522b14c62f2bf43327e3584bbf2">00194</a>     <a class="code" href="sls__detector__defs_8h.html#754e2e1fdf9e993405c39b6050528d56">detectorSettings</a> <a class="code" href="structslsDetector_1_1sharedSlsDetector.html#87e1f522b14c62f2bf43327e3584bbf2">currentSettings</a>;
-<a name="l00196"></a><a class="code" href="structslsDetector_1_1sharedSlsDetector.html#4b80cdf3517e1484ad9223f44d3979b6">00196</a>     <span class="keywordtype">int</span> <a class="code" href="structslsDetector_1_1sharedSlsDetector.html#4b80cdf3517e1484ad9223f44d3979b6">currentThresholdEV</a>;
-<a name="l00198"></a><a class="code" href="structslsDetector_1_1sharedSlsDetector.html#d731d48df5668aa86ce690e216e0c816">00198</a>     int64_t <a class="code" href="structslsDetector_1_1sharedSlsDetector.html#d731d48df5668aa86ce690e216e0c816">timerValue</a>[<a class="code" href="slsDetector_8h.html#79fd3eac646964332ed33ec7dd40f208">MAX_TIMERS</a>];
-<a name="l00200"></a><a class="code" href="structslsDetector_1_1sharedSlsDetector.html#904618e46e191d740569ba998623cba8">00200</a>     <span class="keywordtype">int</span> <a class="code" href="structslsDetector_1_1sharedSlsDetector.html#904618e46e191d740569ba998623cba8">clkDiv</a>;
-<a name="l00201"></a>00201     
-<a name="l00202"></a>00202   <span class="comment">/*offsets*/</span>
-<a name="l00204"></a><a class="code" href="structslsDetector_1_1sharedSlsDetector.html#4de66737ee8be8242ba8ad0a1a69a125">00204</a>     <span class="keywordtype">int</span> <a class="code" href="structslsDetector_1_1sharedSlsDetector.html#4de66737ee8be8242ba8ad0a1a69a125">ffoff</a>;
-<a name="l00206"></a><a class="code" href="structslsDetector_1_1sharedSlsDetector.html#ce126fabef8ea393b69d44eff536e4c6">00206</a>     <span class="keywordtype">int</span> <a class="code" href="structslsDetector_1_1sharedSlsDetector.html#ce126fabef8ea393b69d44eff536e4c6">fferroff</a>;
-<a name="l00208"></a><a class="code" href="structslsDetector_1_1sharedSlsDetector.html#6a69b2de8d6cde5155517ca71e47b693">00208</a>     <span class="keywordtype">int</span> <a class="code" href="structslsDetector_1_1sharedSlsDetector.html#6a69b2de8d6cde5155517ca71e47b693">modoff</a>;
-<a name="l00210"></a><a class="code" href="structslsDetector_1_1sharedSlsDetector.html#f79b4d2240f81814f668358c18272607">00210</a>     <span class="keywordtype">int</span> <a class="code" href="structslsDetector_1_1sharedSlsDetector.html#f79b4d2240f81814f668358c18272607">dacoff</a>;
-<a name="l00212"></a><a class="code" href="structslsDetector_1_1sharedSlsDetector.html#5fea82d598a0252852d3b5aa3dcba778">00212</a>     <span class="keywordtype">int</span> <a class="code" href="structslsDetector_1_1sharedSlsDetector.html#5fea82d598a0252852d3b5aa3dcba778">adcoff</a>;
-<a name="l00214"></a><a class="code" href="structslsDetector_1_1sharedSlsDetector.html#299382d528788680646246405934fb4c">00214</a>     <span class="keywordtype">int</span> <a class="code" href="structslsDetector_1_1sharedSlsDetector.html#299382d528788680646246405934fb4c">chipoff</a>;
-<a name="l00216"></a><a class="code" href="structslsDetector_1_1sharedSlsDetector.html#02e198988d9b1d5ca6d0391e6a9d0817">00216</a>     <span class="keywordtype">int</span> <a class="code" href="structslsDetector_1_1sharedSlsDetector.html#02e198988d9b1d5ca6d0391e6a9d0817">chanoff</a>;
-<a name="l00217"></a>00217 
-<a name="l00218"></a>00218 } <a class="code" href="structslsDetector_1_1sharedSlsDetector.html">sharedSlsDetector</a>;
-<a name="l00219"></a>00219 
-<a name="l00220"></a>00220 
-<a name="l00221"></a>00221 
-<a name="l00228"></a>00228   <a class="code" href="classslsDetector.html#eea9fc044ff9d496e4338efaaf176498">slsDetector</a>(<a class="code" href="sls__detector__defs_8h.html#ab9f984f7b6798e684c8f3e6b63c6301">detectorType</a> type=<a class="code" href="sls__detector__defs_8h.html#ab9f984f7b6798e684c8f3e6b63c63019e022e6380da28dd73210ed34b137c36">GENERIC</a>, <span class="keywordtype">int</span> <span class="keywordtype">id</span>=0);
-<a name="l00229"></a>00229   <span class="comment">//slsDetector(string  const fname);</span>
-<a name="l00230"></a>00230   <span class="comment">//  ~slsDetector(){while(dataQueue.size()&gt;0){}};</span>
-<a name="l00232"></a><a class="code" href="classslsDetector.html#7653e532ff88dbf403e270769bccc509">00232</a> <span class="comment"></span>  <a class="code" href="classslsDetector.html#7653e532ff88dbf403e270769bccc509">~slsDetector</a>(){};
-<a name="l00233"></a>00233 
-<a name="l00234"></a>00234 
-<a name="l00237"></a>00237   <span class="keywordtype">int</span> <a class="code" href="classslsDetector.html#f041f723f702c17de292061d6d609698">setOnline</a>(<span class="keywordtype">int</span> <span class="keyword">const</span> online);  
-<a name="l00240"></a><a class="code" href="classslsDetector.html#bf592960cebe5b3f1e2fdc77f770f17a">00240</a>   <span class="keywordtype">int</span> <a class="code" href="classslsDetector.html#bf592960cebe5b3f1e2fdc77f770f17a">exists</a>() {<span class="keywordflow">return</span> <a class="code" href="classslsDetector.html#fe0da5c1491ebf18f187f0a26c5ded11">thisDetector</a>-&gt;<a class="code" href="structslsDetector_1_1sharedSlsDetector.html#ee2e81699a79e6b9ddc698d120a13ef9">alreadyExisting</a>;};
+<a name="l00192"></a>00192   <span class="comment">/* infos necessary for the readout to determine the size of the data */</span>
+<a name="l00194"></a><a class="code" href="structslsDetector_1_1sharedSlsDetector.html#46728c000c681867e5b15f6eb6833e09">00194</a>     <span class="keywordtype">int</span> <a class="code" href="structslsDetector_1_1sharedSlsDetector.html#46728c000c681867e5b15f6eb6833e09">nROI</a>;
+<a name="l00196"></a><a class="code" href="structslsDetector_1_1sharedSlsDetector.html#bfd660b175826b4bb6255baf356eb364">00196</a>     <a class="code" href="structROI.html">ROI</a> <a class="code" href="structslsDetector_1_1sharedSlsDetector.html#bfd660b175826b4bb6255baf356eb364">roiLimits</a>[<a class="code" href="slsDetector_8h.html#4c84515c2af98fbe570b5201a1022103">MAX_ROIS</a>];
+<a name="l00198"></a><a class="code" href="structslsDetector_1_1sharedSlsDetector.html#e1c715ce4ba56b71fc868078acd44243">00198</a>     <a class="code" href="sls__detector__defs_8h.html#6165e3e90182cc47b0003f3288a2e579">readOutFlags</a> <a class="code" href="structslsDetector_1_1sharedSlsDetector.html#e1c715ce4ba56b71fc868078acd44243">roFlags</a>;
+<a name="l00199"></a>00199 
+<a name="l00200"></a>00200  <span class="comment">/* detector setup - not needed */</span>
+<a name="l00202"></a><a class="code" href="structslsDetector_1_1sharedSlsDetector.html#87e1f522b14c62f2bf43327e3584bbf2">00202</a>     <a class="code" href="sls__detector__defs_8h.html#754e2e1fdf9e993405c39b6050528d56">detectorSettings</a> <a class="code" href="structslsDetector_1_1sharedSlsDetector.html#87e1f522b14c62f2bf43327e3584bbf2">currentSettings</a>;
+<a name="l00204"></a><a class="code" href="structslsDetector_1_1sharedSlsDetector.html#4b80cdf3517e1484ad9223f44d3979b6">00204</a>     <span class="keywordtype">int</span> <a class="code" href="structslsDetector_1_1sharedSlsDetector.html#4b80cdf3517e1484ad9223f44d3979b6">currentThresholdEV</a>;
+<a name="l00206"></a><a class="code" href="structslsDetector_1_1sharedSlsDetector.html#d731d48df5668aa86ce690e216e0c816">00206</a>     int64_t <a class="code" href="structslsDetector_1_1sharedSlsDetector.html#d731d48df5668aa86ce690e216e0c816">timerValue</a>[<a class="code" href="slsDetector_8h.html#79fd3eac646964332ed33ec7dd40f208">MAX_TIMERS</a>];
+<a name="l00208"></a><a class="code" href="structslsDetector_1_1sharedSlsDetector.html#904618e46e191d740569ba998623cba8">00208</a>     <span class="keywordtype">int</span> <a class="code" href="structslsDetector_1_1sharedSlsDetector.html#904618e46e191d740569ba998623cba8">clkDiv</a>;
+<a name="l00209"></a>00209     
+<a name="l00210"></a>00210   <span class="comment">/*offsets*/</span>
+<a name="l00212"></a><a class="code" href="structslsDetector_1_1sharedSlsDetector.html#4de66737ee8be8242ba8ad0a1a69a125">00212</a>     <span class="keywordtype">int</span> <a class="code" href="structslsDetector_1_1sharedSlsDetector.html#4de66737ee8be8242ba8ad0a1a69a125">ffoff</a>;
+<a name="l00214"></a><a class="code" href="structslsDetector_1_1sharedSlsDetector.html#ce126fabef8ea393b69d44eff536e4c6">00214</a>     <span class="keywordtype">int</span> <a class="code" href="structslsDetector_1_1sharedSlsDetector.html#ce126fabef8ea393b69d44eff536e4c6">fferroff</a>;
+<a name="l00216"></a><a class="code" href="structslsDetector_1_1sharedSlsDetector.html#6a69b2de8d6cde5155517ca71e47b693">00216</a>     <span class="keywordtype">int</span> <a class="code" href="structslsDetector_1_1sharedSlsDetector.html#6a69b2de8d6cde5155517ca71e47b693">modoff</a>;
+<a name="l00218"></a><a class="code" href="structslsDetector_1_1sharedSlsDetector.html#f79b4d2240f81814f668358c18272607">00218</a>     <span class="keywordtype">int</span> <a class="code" href="structslsDetector_1_1sharedSlsDetector.html#f79b4d2240f81814f668358c18272607">dacoff</a>;
+<a name="l00220"></a><a class="code" href="structslsDetector_1_1sharedSlsDetector.html#5fea82d598a0252852d3b5aa3dcba778">00220</a>     <span class="keywordtype">int</span> <a class="code" href="structslsDetector_1_1sharedSlsDetector.html#5fea82d598a0252852d3b5aa3dcba778">adcoff</a>;
+<a name="l00222"></a><a class="code" href="structslsDetector_1_1sharedSlsDetector.html#299382d528788680646246405934fb4c">00222</a>     <span class="keywordtype">int</span> <a class="code" href="structslsDetector_1_1sharedSlsDetector.html#299382d528788680646246405934fb4c">chipoff</a>;
+<a name="l00224"></a><a class="code" href="structslsDetector_1_1sharedSlsDetector.html#02e198988d9b1d5ca6d0391e6a9d0817">00224</a>     <span class="keywordtype">int</span> <a class="code" href="structslsDetector_1_1sharedSlsDetector.html#02e198988d9b1d5ca6d0391e6a9d0817">chanoff</a>;
+<a name="l00225"></a>00225 
+<a name="l00226"></a>00226 } <a class="code" href="structslsDetector_1_1sharedSlsDetector.html">sharedSlsDetector</a>;
+<a name="l00227"></a>00227 
+<a name="l00228"></a>00228 
+<a name="l00229"></a>00229 
+<a name="l00236"></a>00236   <a class="code" href="classslsDetector.html#eea9fc044ff9d496e4338efaaf176498">slsDetector</a>(<a class="code" href="sls__detector__defs_8h.html#ab9f984f7b6798e684c8f3e6b63c6301">detectorType</a> type=<a class="code" href="sls__detector__defs_8h.html#ab9f984f7b6798e684c8f3e6b63c63019e022e6380da28dd73210ed34b137c36">GENERIC</a>, <span class="keywordtype">int</span> <span class="keywordtype">id</span>=0);
+<a name="l00237"></a>00237   <span class="comment">//slsDetector(string  const fname);</span>
+<a name="l00238"></a>00238   <span class="comment">//  ~slsDetector(){while(dataQueue.size()&gt;0){}};</span>
+<a name="l00240"></a><a class="code" href="classslsDetector.html#7653e532ff88dbf403e270769bccc509">00240</a> <span class="comment"></span>  <a class="code" href="classslsDetector.html#7653e532ff88dbf403e270769bccc509">~slsDetector</a>(){};
 <a name="l00241"></a>00241 
-<a name="l00254"></a>00254   <span class="keywordtype">int</span> <a class="code" href="classslsDetector.html#49c88825b21dc040269f6980e9725a3a">readConfigurationFile</a>(string <span class="keyword">const</span> fname);  
-<a name="l00266"></a>00266   <span class="keywordtype">int</span> <a class="code" href="classslsDetector.html#82628148e11f4890c9d935ec921c1121">writeConfigurationFile</a>(string <span class="keyword">const</span> fname);
-<a name="l00267"></a>00267 
-<a name="l00268"></a>00268 
-<a name="l00269"></a>00269   <span class="comment">/* </span>
-<a name="l00270"></a>00270 <span class="comment">     It should be possible to dump all the settings of the detector (including trimbits, threshold energy, gating/triggering, acquisition time etc.</span>
-<a name="l00271"></a>00271 <span class="comment">     in a file and retrieve it for repeating the measurement with identicals ettings, if necessary</span>
-<a name="l00272"></a>00272 <span class="comment">  */</span>
-<a name="l00278"></a>00278   <span class="keywordtype">int</span> <a class="code" href="classslsDetector.html#dc4f62e536b4ef6d0d2d178e3bfbec5e">dumpDetectorSetup</a>(string <span class="keyword">const</span> fname);  
-<a name="l00284"></a>00284   <span class="keywordtype">int</span> <a class="code" href="classslsDetector.html#233c3d27e9a946fb42b0aa49717d9251">retrieveDetectorSetup</a>(string <span class="keyword">const</span> fname);
-<a name="l00285"></a>00285 
-<a name="l00297"></a>00297   <span class="keywordtype">int</span> <a class="code" href="classslsDetector.html#019a01c4465c5ee572293cb6c00d9904">setTCPSocket</a>(string <span class="keyword">const</span> name=<span class="stringliteral">""</span>, <span class="keywordtype">int</span> <span class="keyword">const</span> control_port=-1, <span class="keywordtype">int</span> <span class="keyword">const</span> stop_port=-1, <span class="keywordtype">int</span> <span class="keyword">const</span> data_port=-1);
-<a name="l00299"></a><a class="code" href="classslsDetector.html#fad06908ad59bfd8a8577899d6aa1843">00299</a>   <span class="keywordtype">char</span>* <a class="code" href="classslsDetector.html#fad06908ad59bfd8a8577899d6aa1843">getHostname</a>() {<span class="keywordflow">return</span> <a class="code" href="classslsDetector.html#fe0da5c1491ebf18f187f0a26c5ded11">thisDetector</a>-&gt;<a class="code" href="structslsDetector_1_1sharedSlsDetector.html#bf7e3c0dca0810fbd1522e5885d9fe7a">hostname</a>;};
-<a name="l00301"></a><a class="code" href="classslsDetector.html#40ffd69f1c40b26575954e826cdf606a">00301</a>   <span class="keywordtype">int</span> <a class="code" href="classslsDetector.html#40ffd69f1c40b26575954e826cdf606a">getControlPort</a>() {<span class="keywordflow">return</span>  <a class="code" href="classslsDetector.html#fe0da5c1491ebf18f187f0a26c5ded11">thisDetector</a>-&gt;<a class="code" href="structslsDetector_1_1sharedSlsDetector.html#11da9fd02e0833533a8b2de6ad3307d8">controlPort</a>;};
-<a name="l00303"></a><a class="code" href="classslsDetector.html#80ab8f7f4cc6b2e92017a0c77f961b70">00303</a>   <span class="keywordtype">int</span> <a class="code" href="classslsDetector.html#80ab8f7f4cc6b2e92017a0c77f961b70">getStopPort</a>() {<span class="keywordflow">return</span> <a class="code" href="classslsDetector.html#fe0da5c1491ebf18f187f0a26c5ded11">thisDetector</a>-&gt;<a class="code" href="structslsDetector_1_1sharedSlsDetector.html#fc7fef330e7b7ce0cd7470572a5f27b0">stopPort</a>;};
-<a name="l00305"></a><a class="code" href="classslsDetector.html#35043766eecb3d760fd95d891bed8b16">00305</a>   <span class="keywordtype">int</span> <a class="code" href="classslsDetector.html#35043766eecb3d760fd95d891bed8b16">getDataPort</a>() {<span class="keywordflow">return</span> <a class="code" href="classslsDetector.html#fe0da5c1491ebf18f187f0a26c5ded11">thisDetector</a>-&gt;<a class="code" href="structslsDetector_1_1sharedSlsDetector.html#108090dc9c97fe4d9f91357c27d56953">dataPort</a>;};
-<a name="l00306"></a>00306  
-<a name="l00307"></a>00307 
-<a name="l00308"></a>00308   <span class="comment">/* I/O */</span>
-<a name="l00310"></a><a class="code" href="classslsDetector.html#d4a858d9b3a1b31c5d5decdc9d757267">00310</a>   <span class="keywordtype">char</span>* <a class="code" href="classslsDetector.html#d4a858d9b3a1b31c5d5decdc9d757267">getTrimDir</a>() {<span class="keywordflow">return</span> <a class="code" href="classslsDetector.html#fe0da5c1491ebf18f187f0a26c5ded11">thisDetector</a>-&gt;<a class="code" href="structslsDetector_1_1sharedSlsDetector.html#4a4421330a2c207e5da36e3739305915">trimDir</a>;};
-<a name="l00312"></a><a class="code" href="classslsDetector.html#646f389e75c23c2c8627c62fb1df2890">00312</a>   <span class="keywordtype">char</span>* <a class="code" href="classslsDetector.html#646f389e75c23c2c8627c62fb1df2890">setTrimDir</a>(string s) {sprintf(<a class="code" href="classslsDetector.html#fe0da5c1491ebf18f187f0a26c5ded11">thisDetector</a>-&gt;<a class="code" href="structslsDetector_1_1sharedSlsDetector.html#4a4421330a2c207e5da36e3739305915">trimDir</a>, s.c_str()); <span class="keywordflow">return</span> <a class="code" href="classslsDetector.html#fe0da5c1491ebf18f187f0a26c5ded11">thisDetector</a>-&gt;<a class="code" href="structslsDetector_1_1sharedSlsDetector.html#4a4421330a2c207e5da36e3739305915">trimDir</a>;};
-<a name="l00319"></a><a class="code" href="classslsDetector.html#fa24d8a0ec1393c7e27e4e558e72cf87">00319</a>   <span class="keywordtype">int</span> <a class="code" href="classslsDetector.html#fa24d8a0ec1393c7e27e4e558e72cf87">getTrimEn</a>(<span class="keywordtype">int</span> *en) {<span class="keywordflow">for</span> (<span class="keywordtype">int</span> ien=0; ien&lt;<a class="code" href="classslsDetector.html#fe0da5c1491ebf18f187f0a26c5ded11">thisDetector</a>-&gt;<a class="code" href="structslsDetector_1_1sharedSlsDetector.html#5d7058d713cc890d7d469c44eab500e2">nTrimEn</a>; ien++) en[ien]=<a class="code" href="classslsDetector.html#fe0da5c1491ebf18f187f0a26c5ded11">thisDetector</a>-&gt;<a class="code" href="structslsDetector_1_1sharedSlsDetector.html#fba642bc1dcd491913723a1a4f88e6f0">trimEnergies</a>[ien]; return (<a class="code" href="classslsDetector.html#fe0da5c1491ebf18f187f0a26c5ded11">thisDetector</a>-&gt;<a class="code" href="structslsDetector_1_1sharedSlsDetector.html#5d7058d713cc890d7d469c44eab500e2">nTrimEn</a>);};
-<a name="l00320"></a>00320 
-<a name="l00328"></a>00328   <a class="code" href="structsls__detector__module.html">sls_detector_module</a>* <a class="code" href="classslsDetector.html#e84b8a7a2b27db3f89a98f9f8a81efca">readTrimFile</a>(string fname,  <a class="code" href="structsls__detector__module.html">sls_detector_module</a>* myMod=NULL);
-<a name="l00329"></a>00329 
-<a name="l00338"></a>00338   <span class="keywordtype">int</span> <a class="code" href="classslsDetector.html#9cbb1f97b8e48bd4b108a2dfa992c6af">writeTrimFile</a>(string fname, <a class="code" href="structsls__detector__module.html">sls_detector_module</a> mod); 
+<a name="l00242"></a>00242 
+<a name="l00245"></a>00245   <span class="keywordtype">int</span> <a class="code" href="classslsDetector.html#f041f723f702c17de292061d6d609698">setOnline</a>(<span class="keywordtype">int</span> <span class="keyword">const</span> online);  
+<a name="l00248"></a><a class="code" href="classslsDetector.html#bf592960cebe5b3f1e2fdc77f770f17a">00248</a>   <span class="keywordtype">int</span> <a class="code" href="classslsDetector.html#bf592960cebe5b3f1e2fdc77f770f17a">exists</a>() {<span class="keywordflow">return</span> <a class="code" href="classslsDetector.html#fe0da5c1491ebf18f187f0a26c5ded11">thisDetector</a>-&gt;<a class="code" href="structslsDetector_1_1sharedSlsDetector.html#ee2e81699a79e6b9ddc698d120a13ef9">alreadyExisting</a>;};
+<a name="l00249"></a>00249 
+<a name="l00256"></a>00256   <span class="keyword">virtual</span> <span class="keywordtype">int</span> <a class="code" href="classslsDetector.html#80266f80cfe49c2ccec7118de341d983">readConfigurationFile</a>(string <span class="keyword">const</span> fname)=0;  
+<a name="l00262"></a>00262   <span class="keyword">virtual</span> <span class="keywordtype">int</span> <a class="code" href="classslsDetector.html#7801c6d43c72ce5ccaa72743a6f307d2">writeConfigurationFile</a>(string <span class="keyword">const</span> fname)=0;
+<a name="l00263"></a>00263 
+<a name="l00264"></a>00264 
+<a name="l00265"></a>00265   <span class="comment">/* </span>
+<a name="l00266"></a>00266 <span class="comment">     It should be possible to dump all the settings of the detector (including trimbits, threshold energy, gating/triggering, acquisition time etc.</span>
+<a name="l00267"></a>00267 <span class="comment">     in a file and retrieve it for repeating the measurement with identicals ettings, if necessary</span>
+<a name="l00268"></a>00268 <span class="comment">  */</span>
+<a name="l00275"></a>00275   <span class="keyword">virtual</span> <span class="keywordtype">int</span> <a class="code" href="classslsDetector.html#96428855d6e286408a52e675e045cf45">dumpDetectorSetup</a>(string <span class="keyword">const</span> fname)=0;  
+<a name="l00281"></a>00281   <span class="keyword">virtual</span> <span class="keywordtype">int</span> <a class="code" href="classslsDetector.html#0ec6aa8998db1bee1b00aeecbe870d5f">retrieveDetectorSetup</a>(string <span class="keyword">const</span> fname)=0;
+<a name="l00282"></a>00282 
+<a name="l00294"></a>00294   <span class="keywordtype">int</span> <a class="code" href="classslsDetector.html#019a01c4465c5ee572293cb6c00d9904">setTCPSocket</a>(string <span class="keyword">const</span> name=<span class="stringliteral">""</span>, <span class="keywordtype">int</span> <span class="keyword">const</span> control_port=-1, <span class="keywordtype">int</span> <span class="keyword">const</span> stop_port=-1, <span class="keywordtype">int</span> <span class="keyword">const</span> data_port=-1);
+<a name="l00296"></a><a class="code" href="classslsDetector.html#fad06908ad59bfd8a8577899d6aa1843">00296</a>   <span class="keywordtype">char</span>* <a class="code" href="classslsDetector.html#fad06908ad59bfd8a8577899d6aa1843">getHostname</a>() {<span class="keywordflow">return</span> <a class="code" href="classslsDetector.html#fe0da5c1491ebf18f187f0a26c5ded11">thisDetector</a>-&gt;<a class="code" href="structslsDetector_1_1sharedSlsDetector.html#bf7e3c0dca0810fbd1522e5885d9fe7a">hostname</a>;};
+<a name="l00298"></a><a class="code" href="classslsDetector.html#40ffd69f1c40b26575954e826cdf606a">00298</a>   <span class="keywordtype">int</span> <a class="code" href="classslsDetector.html#40ffd69f1c40b26575954e826cdf606a">getControlPort</a>() {<span class="keywordflow">return</span>  <a class="code" href="classslsDetector.html#fe0da5c1491ebf18f187f0a26c5ded11">thisDetector</a>-&gt;<a class="code" href="structslsDetector_1_1sharedSlsDetector.html#11da9fd02e0833533a8b2de6ad3307d8">controlPort</a>;};
+<a name="l00300"></a><a class="code" href="classslsDetector.html#80ab8f7f4cc6b2e92017a0c77f961b70">00300</a>   <span class="keywordtype">int</span> <a class="code" href="classslsDetector.html#80ab8f7f4cc6b2e92017a0c77f961b70">getStopPort</a>() {<span class="keywordflow">return</span> <a class="code" href="classslsDetector.html#fe0da5c1491ebf18f187f0a26c5ded11">thisDetector</a>-&gt;<a class="code" href="structslsDetector_1_1sharedSlsDetector.html#fc7fef330e7b7ce0cd7470572a5f27b0">stopPort</a>;};
+<a name="l00302"></a><a class="code" href="classslsDetector.html#35043766eecb3d760fd95d891bed8b16">00302</a>   <span class="keywordtype">int</span> <a class="code" href="classslsDetector.html#35043766eecb3d760fd95d891bed8b16">getDataPort</a>() {<span class="keywordflow">return</span> <a class="code" href="classslsDetector.html#fe0da5c1491ebf18f187f0a26c5ded11">thisDetector</a>-&gt;<a class="code" href="structslsDetector_1_1sharedSlsDetector.html#108090dc9c97fe4d9f91357c27d56953">dataPort</a>;};
+<a name="l00303"></a>00303  
+<a name="l00304"></a>00304 
+<a name="l00305"></a>00305   <span class="comment">/* I/O */</span>
+<a name="l00307"></a><a class="code" href="classslsDetector.html#d4a858d9b3a1b31c5d5decdc9d757267">00307</a>   <span class="keywordtype">char</span>* <a class="code" href="classslsDetector.html#d4a858d9b3a1b31c5d5decdc9d757267">getTrimDir</a>() {<span class="keywordflow">return</span> <a class="code" href="classslsDetector.html#fe0da5c1491ebf18f187f0a26c5ded11">thisDetector</a>-&gt;<a class="code" href="structslsDetector_1_1sharedSlsDetector.html#4a4421330a2c207e5da36e3739305915">trimDir</a>;};
+<a name="l00309"></a><a class="code" href="classslsDetector.html#646f389e75c23c2c8627c62fb1df2890">00309</a>   <span class="keywordtype">char</span>* <a class="code" href="classslsDetector.html#646f389e75c23c2c8627c62fb1df2890">setTrimDir</a>(string s) {sprintf(<a class="code" href="classslsDetector.html#fe0da5c1491ebf18f187f0a26c5ded11">thisDetector</a>-&gt;<a class="code" href="structslsDetector_1_1sharedSlsDetector.html#4a4421330a2c207e5da36e3739305915">trimDir</a>, s.c_str()); <span class="keywordflow">return</span> <a class="code" href="classslsDetector.html#fe0da5c1491ebf18f187f0a26c5ded11">thisDetector</a>-&gt;<a class="code" href="structslsDetector_1_1sharedSlsDetector.html#4a4421330a2c207e5da36e3739305915">trimDir</a>;};
+<a name="l00316"></a><a class="code" href="classslsDetector.html#8862569a4a2530558914daa2e2251138">00316</a>   <span class="keywordtype">int</span> <a class="code" href="classslsDetector.html#8862569a4a2530558914daa2e2251138">getTrimEn</a>(<span class="keywordtype">int</span> *en=NULL) {<span class="keywordflow">if</span> (en) {<span class="keywordflow">for</span> (<span class="keywordtype">int</span> ien=0; ien&lt;<a class="code" href="classslsDetector.html#fe0da5c1491ebf18f187f0a26c5ded11">thisDetector</a>-&gt;<a class="code" href="structslsDetector_1_1sharedSlsDetector.html#5d7058d713cc890d7d469c44eab500e2">nTrimEn</a>; ien++) en[ien]=<a class="code" href="classslsDetector.html#fe0da5c1491ebf18f187f0a26c5ded11">thisDetector</a>-&gt;<a class="code" href="structslsDetector_1_1sharedSlsDetector.html#fba642bc1dcd491913723a1a4f88e6f0">trimEnergies</a>[ien];} <span class="keywordflow">return</span> (<a class="code" href="classslsDetector.html#fe0da5c1491ebf18f187f0a26c5ded11">thisDetector</a>-&gt;<a class="code" href="structslsDetector_1_1sharedSlsDetector.html#5d7058d713cc890d7d469c44eab500e2">nTrimEn</a>);};
+<a name="l00317"></a>00317 
+<a name="l00327"></a>00327   <span class="keyword">virtual</span> <a class="code" href="structsls__detector__module.html">sls_detector_module</a>* <a class="code" href="classslsDetector.html#612b52469e27c6675969499d3680abe6">readTrimFile</a>(string fname,  <a class="code" href="structsls__detector__module.html">sls_detector_module</a>* myMod=NULL)=0;
+<a name="l00328"></a>00328 
+<a name="l00338"></a>00338   <span class="keyword">virtual</span> <span class="keywordtype">int</span> <a class="code" href="classslsDetector.html#5b97351cfaffe067016dbcebbd0778a7">writeTrimFile</a>(string fname, <a class="code" href="structsls__detector__module.html">sls_detector_module</a> mod)=0; 
 <a name="l00339"></a>00339   
-<a name="l00347"></a>00347   <span class="keywordtype">int</span> <a class="code" href="classslsDetector.html#9cbb1f97b8e48bd4b108a2dfa992c6af">writeTrimFile</a>(string fname, <span class="keywordtype">int</span> imod);
-<a name="l00348"></a>00348 
-<a name="l00353"></a><a class="code" href="classslsDetector.html#57c4587267e50a21ba13ead83294bdb4">00353</a>   <span class="keywordtype">char</span>* <a class="code" href="classslsDetector.html#57c4587267e50a21ba13ead83294bdb4">setFilePath</a>(string s) {sprintf(<a class="code" href="classslsDetector.html#fe0da5c1491ebf18f187f0a26c5ded11">thisDetector</a>-&gt;<a class="code" href="structslsDetector_1_1sharedSlsDetector.html#91b926344339e977f57954dcf0aef2fb">filePath</a>, s.c_str()); <span class="keywordflow">return</span> <a class="code" href="classslsDetector.html#fe0da5c1491ebf18f187f0a26c5ded11">thisDetector</a>-&gt;<a class="code" href="structslsDetector_1_1sharedSlsDetector.html#91b926344339e977f57954dcf0aef2fb">filePath</a>;};
-<a name="l00354"></a>00354 
-<a name="l00359"></a><a class="code" href="classslsDetector.html#ec565bab03357d783cccae55232b03ba">00359</a>   <span class="keywordtype">char</span>* <a class="code" href="classslsDetector.html#ec565bab03357d783cccae55232b03ba">setFileName</a>(string s) {sprintf(<a class="code" href="classslsDetector.html#fe0da5c1491ebf18f187f0a26c5ded11">thisDetector</a>-&gt;<a class="code" href="structslsDetector_1_1sharedSlsDetector.html#5903fa90b0a18c4896082882a906aba0">fileName</a>, s.c_str()); <span class="keywordflow">return</span> <a class="code" href="classslsDetector.html#fe0da5c1491ebf18f187f0a26c5ded11">thisDetector</a>-&gt;<a class="code" href="structslsDetector_1_1sharedSlsDetector.html#5903fa90b0a18c4896082882a906aba0">fileName</a>;}; 
-<a name="l00360"></a>00360 
-<a name="l00365"></a><a class="code" href="classslsDetector.html#22326d5e85503bfd16e4bdb279babb43">00365</a>   <span class="keywordtype">int</span> <a class="code" href="classslsDetector.html#22326d5e85503bfd16e4bdb279babb43">setFileIndex</a>(<span class="keywordtype">int</span> i) {<a class="code" href="classslsDetector.html#fe0da5c1491ebf18f187f0a26c5ded11">thisDetector</a>-&gt;<a class="code" href="structslsDetector_1_1sharedSlsDetector.html#48bc3bbfc4292f81c490e73bb52d62e9">fileIndex</a>=i; <span class="keywordflow">return</span> <a class="code" href="classslsDetector.html#fe0da5c1491ebf18f187f0a26c5ded11">thisDetector</a>-&gt;<a class="code" href="structslsDetector_1_1sharedSlsDetector.html#48bc3bbfc4292f81c490e73bb52d62e9">fileIndex</a>;}; 
-<a name="l00366"></a>00366   
-<a name="l00371"></a><a class="code" href="classslsDetector.html#b4158bdacd10fccedeab9eacbd1f4304">00371</a>   <span class="keywordtype">char</span>* <a class="code" href="classslsDetector.html#b4158bdacd10fccedeab9eacbd1f4304">getFilePath</a>() {<span class="keywordflow">return</span> <a class="code" href="classslsDetector.html#fe0da5c1491ebf18f187f0a26c5ded11">thisDetector</a>-&gt;<a class="code" href="structslsDetector_1_1sharedSlsDetector.html#91b926344339e977f57954dcf0aef2fb">filePath</a>;};
-<a name="l00372"></a>00372   
-<a name="l00377"></a><a class="code" href="classslsDetector.html#717a3c59681f81ceaf5245a073eeacdb">00377</a>   <span class="keywordtype">char</span>* <a class="code" href="classslsDetector.html#717a3c59681f81ceaf5245a073eeacdb">getFileName</a>() {<span class="keywordflow">return</span> <a class="code" href="classslsDetector.html#fe0da5c1491ebf18f187f0a26c5ded11">thisDetector</a>-&gt;<a class="code" href="structslsDetector_1_1sharedSlsDetector.html#5903fa90b0a18c4896082882a906aba0">fileName</a>;};
-<a name="l00378"></a>00378 
-<a name="l00383"></a><a class="code" href="classslsDetector.html#68b41fa20ddd8c6c67ac00dfea3c9796">00383</a>   <span class="keywordtype">int</span> <a class="code" href="classslsDetector.html#68b41fa20ddd8c6c67ac00dfea3c9796">getFileIndex</a>() {<span class="keywordflow">return</span> <a class="code" href="classslsDetector.html#fe0da5c1491ebf18f187f0a26c5ded11">thisDetector</a>-&gt;<a class="code" href="structslsDetector_1_1sharedSlsDetector.html#48bc3bbfc4292f81c490e73bb52d62e9">fileIndex</a>;};
-<a name="l00384"></a>00384   
-<a name="l00396"></a>00396   string <a class="code" href="classslsDetector.html#d055c470ae6faa973980f4dbf021132d">createFileName</a>();
-<a name="l00397"></a>00397   
-<a name="l00411"></a>00411   <span class="keywordtype">int</span> <a class="code" href="classslsDetector.html#889c060afb5693830ca2be4fc6a5442c">writeDataFile</a>(string fname, <span class="keywordtype">float</span> *data, <span class="keywordtype">float</span> *err=NULL, <span class="keywordtype">float</span> *ang=NULL, <span class="keywordtype">char</span> dataformat=<span class="charliteral">'f'</span>, <span class="keywordtype">int</span> nch=-1); 
-<a name="l00412"></a>00412   
-<a name="l00419"></a>00419   <span class="keywordtype">int</span> <a class="code" href="classslsDetector.html#889c060afb5693830ca2be4fc6a5442c">writeDataFile</a>(string fname, <span class="keywordtype">int</span> *data);
-<a name="l00420"></a>00420   
-<a name="l00434"></a>00434   <span class="keywordtype">int</span> <a class="code" href="classslsDetector.html#ffd62fa6a3487693316209ea71502b4b">readDataFile</a>(string fname, <span class="keywordtype">float</span> *data, <span class="keywordtype">float</span> *err=NULL, <span class="keywordtype">float</span> *ang=NULL, <span class="keywordtype">char</span> dataformat=<span class="charliteral">'f'</span>, <span class="keywordtype">int</span> nch=0);  
-<a name="l00435"></a>00435 
-<a name="l00442"></a>00442   <span class="keywordtype">int</span> <a class="code" href="classslsDetector.html#ffd62fa6a3487693316209ea71502b4b">readDataFile</a>(string fname, <span class="keywordtype">int</span> *data);
-<a name="l00443"></a>00443 
-<a name="l00448"></a><a class="code" href="classslsDetector.html#102679594e60ed261daff24b4aeac21a">00448</a>   <span class="keywordtype">char</span>* <a class="code" href="classslsDetector.html#102679594e60ed261daff24b4aeac21a">getCalDir</a>() {<span class="keywordflow">return</span> <a class="code" href="classslsDetector.html#fe0da5c1491ebf18f187f0a26c5ded11">thisDetector</a>-&gt;<a class="code" href="structslsDetector_1_1sharedSlsDetector.html#8db7c92973c8af22116cf3bc38b6efb9">calDir</a>;};
-<a name="l00453"></a><a class="code" href="classslsDetector.html#9c4d2c796c176852537ff3cff4f5974b">00453</a>   <span class="keywordtype">char</span>* <a class="code" href="classslsDetector.html#9c4d2c796c176852537ff3cff4f5974b">setCalDir</a>(string s) {sprintf(<a class="code" href="classslsDetector.html#fe0da5c1491ebf18f187f0a26c5ded11">thisDetector</a>-&gt;<a class="code" href="structslsDetector_1_1sharedSlsDetector.html#8db7c92973c8af22116cf3bc38b6efb9">calDir</a>, s.c_str()); <span class="keywordflow">return</span> <a class="code" href="classslsDetector.html#fe0da5c1491ebf18f187f0a26c5ded11">thisDetector</a>-&gt;<a class="code" href="structslsDetector_1_1sharedSlsDetector.html#8db7c92973c8af22116cf3bc38b6efb9">calDir</a>;}; 
-<a name="l00461"></a>00461   <span class="keywordtype">int</span> <a class="code" href="classslsDetector.html#9305060e7499cfcabac23b99c884b92b">readCalibrationFile</a>(string fname, <span class="keywordtype">float</span> &amp;gain, <span class="keywordtype">float</span> &amp;offset);
-<a name="l00469"></a>00469   <span class="keywordtype">int</span> <a class="code" href="classslsDetector.html#8eb676a1ab6ef35601ba5cae942ba380">writeCalibrationFile</a>(string fname, <span class="keywordtype">float</span> gain, <span class="keywordtype">float</span> offset);
-<a name="l00470"></a>00470 
-<a name="l00471"></a>00471 
-<a name="l00477"></a>00477   <span class="keywordtype">int</span> <a class="code" href="classslsDetector.html#23398787e01e519bf8ac5f313ca5af01">readAngularConversion</a>(string fname=<span class="stringliteral">""</span>);
-<a name="l00483"></a>00483   <span class="keywordtype">int</span> <a class="code" href="classslsDetector.html#921f212286be085d7e1b8d0d11110d9c">writeAngularConversion</a>(string fname=<span class="stringliteral">""</span>);
-<a name="l00484"></a>00484  
-<a name="l00485"></a>00485 
-<a name="l00486"></a>00486 
-<a name="l00487"></a>00487   <span class="comment">/* Communication to server */</span>
-<a name="l00488"></a>00488 
-<a name="l00489"></a>00489   <span class="comment">// General purpose functions</span>
-<a name="l00490"></a>00490 
-<a name="l00498"></a>00498   <span class="keywordtype">int</span> <a class="code" href="classslsDetector.html#9fc0c9161e967094a535cc40bc33cc6b">execCommand</a>(string cmd, string answer);
-<a name="l00499"></a>00499   
-<a name="l00506"></a>00506   <span class="keywordtype">int</span> <a class="code" href="classslsDetector.html#e76a665a8d7a6b37d85aff129d3afdef">setDetectorType</a>(<a class="code" href="sls__detector__defs_8h.html#ab9f984f7b6798e684c8f3e6b63c6301">detectorType</a> type=<a class="code" href="sls__detector__defs_8h.html#ab9f984f7b6798e684c8f3e6b63c63013f15e91cc11ac10e7751457ebb3a675a">GET_DETECTOR_TYPE</a>);  
-<a name="l00507"></a>00507 
-<a name="l00514"></a>00514   <span class="keywordtype">int</span> <a class="code" href="classslsDetector.html#e76a665a8d7a6b37d85aff129d3afdef">setDetectorType</a>(string type);  
-<a name="l00515"></a>00515 
-<a name="l00521"></a>00521   <span class="keywordtype">void</span> <a class="code" href="classslsDetector.html#d63d6420e411ff4b962930d9c4fd615d">getDetectorType</a>(<span class="keywordtype">char</span> *type);
-<a name="l00522"></a>00522 
-<a name="l00523"></a>00523 
-<a name="l00524"></a>00524   <span class="comment">// Detector configuration functions</span>
-<a name="l00531"></a>00531 <span class="comment"></span>  <span class="keywordtype">int</span> <a class="code" href="classslsDetector.html#9e4117c0234d51b22922a2d638e118ab">setNumberOfModules</a>(<span class="keywordtype">int</span> n, <a class="code" href="sls__detector__defs_8h.html#83314ec5aea2e25bc6255af2e5d36dc9">dimension</a> d=<a class="code" href="sls__detector__defs_8h.html#83314ec5aea2e25bc6255af2e5d36dc958833a3110c570fb05130d40c365d1e4">X</a>); <span class="comment">// if n=GET_FLAG returns the number of installed modules</span>
-<a name="l00532"></a>00532 
-<a name="l00533"></a>00533   <span class="comment">/*</span>
-<a name="l00534"></a>00534 <span class="comment">    returns the instrinsic size of the detector (maxmodx, maxmody, nchans, nchips, ndacs</span>
-<a name="l00535"></a>00535 <span class="comment">    enum numberOf {</span>
-<a name="l00536"></a>00536 <span class="comment">    MAXMODX,</span>
-<a name="l00537"></a>00537 <span class="comment">    MAXMODY,</span>
-<a name="l00538"></a>00538 <span class="comment">    CHANNELS,</span>
-<a name="l00539"></a>00539 <span class="comment">    CHIPS,</span>
-<a name="l00540"></a>00540 <span class="comment">    DACS</span>
-<a name="l00541"></a>00541 <span class="comment">    }</span>
-<a name="l00542"></a>00542 <span class="comment">  */</span>
-<a name="l00543"></a>00543 
-<a name="l00544"></a>00544 
-<a name="l00550"></a>00550   <span class="keywordtype">int</span> <a class="code" href="classslsDetector.html#d608a77a1c64989ad82175991be0a9b5">getMaxNumberOfModules</a>(<a class="code" href="sls__detector__defs_8h.html#83314ec5aea2e25bc6255af2e5d36dc9">dimension</a> d=<a class="code" href="sls__detector__defs_8h.html#83314ec5aea2e25bc6255af2e5d36dc958833a3110c570fb05130d40c365d1e4">X</a>); <span class="comment">//</span>
-<a name="l00551"></a>00551  
-<a name="l00552"></a>00552  
-<a name="l00559"></a>00559   <a class="code" href="sls__detector__defs_8h.html#a436b9d7264c77b77021fe6adc33f6ed">externalSignalFlag</a> <a class="code" href="classslsDetector.html#5878c33a1353f1d32c383be4169531e7">setExternalSignalFlags</a>(<a class="code" href="sls__detector__defs_8h.html#a436b9d7264c77b77021fe6adc33f6ed">externalSignalFlag</a> pol=<a class="code" href="sls__detector__defs_8h.html#a436b9d7264c77b77021fe6adc33f6ed1ac6595a82aacbd6611252fd86a2cf77">GET_EXTERNAL_SIGNAL_FLAG</a> , <span class="keywordtype">int</span> signalindex=0);
-<a name="l00560"></a>00560 
-<a name="l00561"></a>00561  
-<a name="l00569"></a>00569   <a class="code" href="sls__detector__defs_8h.html#51d6eb28d9d010319da9ce5da86ed32f">externalCommunicationMode</a> <a class="code" href="classslsDetector.html#2f7bac599bf5bb103debcd9342b65edd">setExternalCommunicationMode</a>(<a class="code" href="sls__detector__defs_8h.html#51d6eb28d9d010319da9ce5da86ed32f">externalCommunicationMode</a> pol=<a class="code" href="sls__detector__defs_8h.html#51d6eb28d9d010319da9ce5da86ed32fecc1279a26625814e7d763b02bd8c953">GET_EXTERNAL_COMMUNICATION_MODE</a>);
-<a name="l00570"></a>00570 
-<a name="l00571"></a>00571 
-<a name="l00572"></a>00572   <span class="comment">// Tests and identification</span>
-<a name="l00573"></a>00573  
-<a name="l00580"></a>00580   int64_t <a class="code" href="classslsDetector.html#92f9261c62652e3643eebfdfa9942099">getId</a>(<a class="code" href="sls__detector__defs_8h.html#fc5d5f295e6405046702fc95e6d6d0ea">idMode</a> mode, <span class="keywordtype">int</span> imod=0);
-<a name="l00587"></a>00587   <span class="keywordtype">int</span> <a class="code" href="classslsDetector.html#40906e79010db5b8082d4855a3824aa7">digitalTest</a>(<a class="code" href="sls__detector__defs_8h.html#e4663256797974408ea7fbe5b86635c8">digitalTestMode</a> mode, <span class="keywordtype">int</span> imod=0);
-<a name="l00596"></a>00596   <span class="keywordtype">int</span>* <a class="code" href="classslsDetector.html#18f91f8cf70d2d4eef9b3488b90bac51">analogTest</a>(<a class="code" href="sls__detector__defs_8h.html#44f69dfb7317afdfb166d178f4b1a6fe">analogTestMode</a> mode);
-<a name="l00597"></a>00597   
-<a name="l00603"></a>00603   <span class="keywordtype">int</span> <a class="code" href="classslsDetector.html#a83074759c48f194af2e45d1281cc818">enableAnalogOutput</a>(<span class="keywordtype">int</span> ichan);
-<a name="l00604"></a>00604   
-<a name="l00610"></a>00610   <span class="keywordtype">int</span> <a class="code" href="classslsDetector.html#a83074759c48f194af2e45d1281cc818">enableAnalogOutput</a>(<span class="keywordtype">int</span> imod, <span class="keywordtype">int</span> ichip, <span class="keywordtype">int</span> ichan);
-<a name="l00611"></a>00611 
-<a name="l00620"></a>00620   <span class="keywordtype">int</span> <a class="code" href="classslsDetector.html#a8fafd5690120579f484e326dc6fd9be">giveCalibrationPulse</a>(<span class="keywordtype">float</span> vcal, <span class="keywordtype">int</span> npulses);
-<a name="l00621"></a>00621 
-<a name="l00622"></a>00622   <span class="comment">// Expert Initialization functions</span>
-<a name="l00623"></a>00623  
-<a name="l00624"></a>00624 
-<a name="l00632"></a>00632   <span class="keywordtype">int</span> <a class="code" href="classslsDetector.html#742c8c6b4e7f3cad4f7e60c8c7c0c18b">writeRegister</a>(<span class="keywordtype">int</span> addr, <span class="keywordtype">int</span> val);
-<a name="l00633"></a>00633   
-<a name="l00640"></a>00640   <span class="keywordtype">int</span> <a class="code" href="classslsDetector.html#89ba6d2d8e79a60270e7e1c217df2d79">readRegister</a>(<span class="keywordtype">int</span> addr);
+<a name="l00348"></a>00348   <span class="keyword">virtual</span> <span class="keywordtype">int</span> <a class="code" href="classslsDetector.html#5b97351cfaffe067016dbcebbd0778a7">writeTrimFile</a>(string fname, <span class="keywordtype">int</span> imod)=0;
+<a name="l00349"></a>00349 
+<a name="l00354"></a><a class="code" href="classslsDetector.html#57c4587267e50a21ba13ead83294bdb4">00354</a>   <span class="keywordtype">char</span>* <a class="code" href="classslsDetector.html#57c4587267e50a21ba13ead83294bdb4">setFilePath</a>(string s) {sprintf(<a class="code" href="classslsDetector.html#fe0da5c1491ebf18f187f0a26c5ded11">thisDetector</a>-&gt;<a class="code" href="structslsDetector_1_1sharedSlsDetector.html#91b926344339e977f57954dcf0aef2fb">filePath</a>, s.c_str()); <span class="keywordflow">return</span> <a class="code" href="classslsDetector.html#fe0da5c1491ebf18f187f0a26c5ded11">thisDetector</a>-&gt;<a class="code" href="structslsDetector_1_1sharedSlsDetector.html#91b926344339e977f57954dcf0aef2fb">filePath</a>;};
+<a name="l00355"></a>00355 
+<a name="l00360"></a><a class="code" href="classslsDetector.html#ec565bab03357d783cccae55232b03ba">00360</a>   <span class="keywordtype">char</span>* <a class="code" href="classslsDetector.html#ec565bab03357d783cccae55232b03ba">setFileName</a>(string s) {sprintf(<a class="code" href="classslsDetector.html#fe0da5c1491ebf18f187f0a26c5ded11">thisDetector</a>-&gt;<a class="code" href="structslsDetector_1_1sharedSlsDetector.html#5903fa90b0a18c4896082882a906aba0">fileName</a>, s.c_str()); <span class="keywordflow">return</span> <a class="code" href="classslsDetector.html#fe0da5c1491ebf18f187f0a26c5ded11">thisDetector</a>-&gt;<a class="code" href="structslsDetector_1_1sharedSlsDetector.html#5903fa90b0a18c4896082882a906aba0">fileName</a>;}; 
+<a name="l00361"></a>00361 
+<a name="l00366"></a><a class="code" href="classslsDetector.html#22326d5e85503bfd16e4bdb279babb43">00366</a>   <span class="keywordtype">int</span> <a class="code" href="classslsDetector.html#22326d5e85503bfd16e4bdb279babb43">setFileIndex</a>(<span class="keywordtype">int</span> i) {<a class="code" href="classslsDetector.html#fe0da5c1491ebf18f187f0a26c5ded11">thisDetector</a>-&gt;<a class="code" href="structslsDetector_1_1sharedSlsDetector.html#48bc3bbfc4292f81c490e73bb52d62e9">fileIndex</a>=i; <span class="keywordflow">return</span> <a class="code" href="classslsDetector.html#fe0da5c1491ebf18f187f0a26c5ded11">thisDetector</a>-&gt;<a class="code" href="structslsDetector_1_1sharedSlsDetector.html#48bc3bbfc4292f81c490e73bb52d62e9">fileIndex</a>;}; 
+<a name="l00367"></a>00367   
+<a name="l00372"></a><a class="code" href="classslsDetector.html#b4158bdacd10fccedeab9eacbd1f4304">00372</a>   <span class="keywordtype">char</span>* <a class="code" href="classslsDetector.html#b4158bdacd10fccedeab9eacbd1f4304">getFilePath</a>() {<span class="keywordflow">return</span> <a class="code" href="classslsDetector.html#fe0da5c1491ebf18f187f0a26c5ded11">thisDetector</a>-&gt;<a class="code" href="structslsDetector_1_1sharedSlsDetector.html#91b926344339e977f57954dcf0aef2fb">filePath</a>;};
+<a name="l00373"></a>00373   
+<a name="l00378"></a><a class="code" href="classslsDetector.html#717a3c59681f81ceaf5245a073eeacdb">00378</a>   <span class="keywordtype">char</span>* <a class="code" href="classslsDetector.html#717a3c59681f81ceaf5245a073eeacdb">getFileName</a>() {<span class="keywordflow">return</span> <a class="code" href="classslsDetector.html#fe0da5c1491ebf18f187f0a26c5ded11">thisDetector</a>-&gt;<a class="code" href="structslsDetector_1_1sharedSlsDetector.html#5903fa90b0a18c4896082882a906aba0">fileName</a>;};
+<a name="l00379"></a>00379 
+<a name="l00384"></a><a class="code" href="classslsDetector.html#68b41fa20ddd8c6c67ac00dfea3c9796">00384</a>   <span class="keywordtype">int</span> <a class="code" href="classslsDetector.html#68b41fa20ddd8c6c67ac00dfea3c9796">getFileIndex</a>() {<span class="keywordflow">return</span> <a class="code" href="classslsDetector.html#fe0da5c1491ebf18f187f0a26c5ded11">thisDetector</a>-&gt;<a class="code" href="structslsDetector_1_1sharedSlsDetector.html#48bc3bbfc4292f81c490e73bb52d62e9">fileIndex</a>;};
+<a name="l00385"></a>00385   
+<a name="l00397"></a>00397   string <a class="code" href="classslsDetector.html#d055c470ae6faa973980f4dbf021132d">createFileName</a>();
+<a name="l00398"></a>00398   
+<a name="l00413"></a>00413   <span class="keyword">virtual</span> <span class="keywordtype">int</span> <a class="code" href="classslsDetector.html#08823d7078b5e6dd1a4cb7d8b3cfe0af">writeDataFile</a>(string fname, <span class="keywordtype">float</span> *data, <span class="keywordtype">float</span> *err=NULL, <span class="keywordtype">float</span> *ang=NULL, <span class="keywordtype">char</span> dataformat=<span class="charliteral">'f'</span>, <span class="keywordtype">int</span> nch=-1)=0; 
+<a name="l00414"></a>00414   
+<a name="l00423"></a>00423   <span class="keyword">virtual</span> <span class="keywordtype">int</span> <a class="code" href="classslsDetector.html#08823d7078b5e6dd1a4cb7d8b3cfe0af">writeDataFile</a>(string fname, <span class="keywordtype">int</span> *data)=0;
+<a name="l00424"></a>00424   
+<a name="l00439"></a>00439   <span class="keyword">virtual</span> <span class="keywordtype">int</span> <a class="code" href="classslsDetector.html#86df95809e0e7979eafc04b2b868843d">readDataFile</a>(string fname, <span class="keywordtype">float</span> *data, <span class="keywordtype">float</span> *err=NULL, <span class="keywordtype">float</span> *ang=NULL, <span class="keywordtype">char</span> dataformat=<span class="charliteral">'f'</span>, <span class="keywordtype">int</span> nch=0)=0;  
+<a name="l00440"></a>00440 
+<a name="l00449"></a>00449   <span class="keyword">virtual</span> <span class="keywordtype">int</span> <a class="code" href="classslsDetector.html#86df95809e0e7979eafc04b2b868843d">readDataFile</a>(string fname, <span class="keywordtype">int</span> *data)=0;
+<a name="l00450"></a>00450 
+<a name="l00455"></a><a class="code" href="classslsDetector.html#102679594e60ed261daff24b4aeac21a">00455</a>   <span class="keywordtype">char</span>* <a class="code" href="classslsDetector.html#102679594e60ed261daff24b4aeac21a">getCalDir</a>() {cout &lt;&lt; <span class="stringliteral">"cal dir is "</span> &lt;&lt; <a class="code" href="classslsDetector.html#fe0da5c1491ebf18f187f0a26c5ded11">thisDetector</a>-&gt;<a class="code" href="structslsDetector_1_1sharedSlsDetector.html#8db7c92973c8af22116cf3bc38b6efb9">calDir</a>; <span class="keywordflow">return</span> <a class="code" href="classslsDetector.html#fe0da5c1491ebf18f187f0a26c5ded11">thisDetector</a>-&gt;<a class="code" href="structslsDetector_1_1sharedSlsDetector.html#8db7c92973c8af22116cf3bc38b6efb9">calDir</a>;};
+<a name="l00456"></a>00456 
+<a name="l00457"></a>00457 
+<a name="l00462"></a><a class="code" href="classslsDetector.html#9c4d2c796c176852537ff3cff4f5974b">00462</a>   <span class="keywordtype">char</span>* <a class="code" href="classslsDetector.html#9c4d2c796c176852537ff3cff4f5974b">setCalDir</a>(string s) {sprintf(<a class="code" href="classslsDetector.html#fe0da5c1491ebf18f187f0a26c5ded11">thisDetector</a>-&gt;<a class="code" href="structslsDetector_1_1sharedSlsDetector.html#8db7c92973c8af22116cf3bc38b6efb9">calDir</a>, s.c_str()); <span class="keywordflow">return</span> <a class="code" href="classslsDetector.html#fe0da5c1491ebf18f187f0a26c5ded11">thisDetector</a>-&gt;<a class="code" href="structslsDetector_1_1sharedSlsDetector.html#8db7c92973c8af22116cf3bc38b6efb9">calDir</a>;}; 
+<a name="l00471"></a>00471   <span class="keyword">virtual</span> <span class="keywordtype">int</span> <a class="code" href="classslsDetector.html#6c7f837f0820b08f41649c30151cb7ac">readCalibrationFile</a>(string fname, <span class="keywordtype">float</span> &amp;gain, <span class="keywordtype">float</span> &amp;offset)=0;
+<a name="l00480"></a>00480   <span class="keyword">virtual</span> <span class="keywordtype">int</span> <a class="code" href="classslsDetector.html#d12edef440bf2b2f930e83f0ccceb01e">writeCalibrationFile</a>(string fname, <span class="keywordtype">float</span> gain, <span class="keywordtype">float</span> offset)=0;
+<a name="l00481"></a>00481 
+<a name="l00482"></a>00482 
+<a name="l00489"></a>00489   <span class="keyword">virtual</span> <span class="keywordtype">int</span> <a class="code" href="classslsDetector.html#cd9d6358db471600f2e1a143a53c61c1">readAngularConversion</a>(string fname=<span class="stringliteral">""</span>)=0;
+<a name="l00496"></a>00496   <span class="keyword">virtual</span> <span class="keywordtype">int</span> <a class="code" href="classslsDetector.html#cace8f0d8706a175915289d86c1fd8d6">writeAngularConversion</a>(string fname=<span class="stringliteral">""</span>)=0;
+<a name="l00497"></a>00497  
+<a name="l00498"></a>00498 
+<a name="l00499"></a>00499 
+<a name="l00500"></a>00500   <span class="comment">/* Communication to server */</span>
+<a name="l00501"></a>00501 
+<a name="l00502"></a>00502 
+<a name="l00510"></a>00510   <span class="keywordtype">int</span> <a class="code" href="classslsDetector.html#9fc0c9161e967094a535cc40bc33cc6b">execCommand</a>(string cmd, string answer);
+<a name="l00511"></a>00511   
+<a name="l00518"></a>00518   <span class="keywordtype">int</span> <a class="code" href="classslsDetector.html#e76a665a8d7a6b37d85aff129d3afdef">setDetectorType</a>(<a class="code" href="sls__detector__defs_8h.html#ab9f984f7b6798e684c8f3e6b63c6301">detectorType</a> type=<a class="code" href="sls__detector__defs_8h.html#ab9f984f7b6798e684c8f3e6b63c63013f15e91cc11ac10e7751457ebb3a675a">GET_DETECTOR_TYPE</a>);  
+<a name="l00519"></a>00519 
+<a name="l00526"></a>00526   <span class="keywordtype">int</span> <a class="code" href="classslsDetector.html#e76a665a8d7a6b37d85aff129d3afdef">setDetectorType</a>(string type);  
+<a name="l00527"></a>00527 
+<a name="l00533"></a>00533   <span class="keywordtype">void</span> <a class="code" href="classslsDetector.html#d63d6420e411ff4b962930d9c4fd615d">getDetectorType</a>(<span class="keywordtype">char</span> *type);
+<a name="l00534"></a>00534 
+<a name="l00535"></a>00535 
+<a name="l00536"></a>00536   <span class="comment">// Detector configuration functions</span>
+<a name="l00544"></a>00544 <span class="comment"></span>  <span class="comment">// Detector configuration functions</span>
+<a name="l00551"></a>00551 <span class="comment"></span>  <span class="keywordtype">int</span> <a class="code" href="classslsDetector.html#9e4117c0234d51b22922a2d638e118ab">setNumberOfModules</a>(<span class="keywordtype">int</span> n, <a class="code" href="sls__detector__defs_8h.html#83314ec5aea2e25bc6255af2e5d36dc9">dimension</a> d=<a class="code" href="sls__detector__defs_8h.html#83314ec5aea2e25bc6255af2e5d36dc958833a3110c570fb05130d40c365d1e4">X</a>); <span class="comment">// if n=GET_FLAG returns the number of installed modules</span>
+<a name="l00552"></a>00552 
+<a name="l00553"></a>00553   <span class="comment">/*</span>
+<a name="l00554"></a>00554 <span class="comment">    returns the instrinsic size of the detector (maxmodx, maxmody, nchans, nchips, ndacs</span>
+<a name="l00555"></a>00555 <span class="comment">    enum numberOf {</span>
+<a name="l00556"></a>00556 <span class="comment">    MAXMODX,</span>
+<a name="l00557"></a>00557 <span class="comment">    MAXMODY,</span>
+<a name="l00558"></a>00558 <span class="comment">    CHANNELS,</span>
+<a name="l00559"></a>00559 <span class="comment">    CHIPS,</span>
+<a name="l00560"></a>00560 <span class="comment">    DACS</span>
+<a name="l00561"></a>00561 <span class="comment">    }</span>
+<a name="l00562"></a>00562 <span class="comment">  */</span>
+<a name="l00563"></a>00563 
+<a name="l00564"></a>00564 
+<a name="l00570"></a>00570   <span class="keywordtype">int</span> <a class="code" href="classslsDetector.html#d608a77a1c64989ad82175991be0a9b5">getMaxNumberOfModules</a>(<a class="code" href="sls__detector__defs_8h.html#83314ec5aea2e25bc6255af2e5d36dc9">dimension</a> d=<a class="code" href="sls__detector__defs_8h.html#83314ec5aea2e25bc6255af2e5d36dc958833a3110c570fb05130d40c365d1e4">X</a>); <span class="comment">//</span>
+<a name="l00571"></a>00571  
+<a name="l00572"></a>00572  
+<a name="l00579"></a>00579   <a class="code" href="sls__detector__defs_8h.html#a436b9d7264c77b77021fe6adc33f6ed">externalSignalFlag</a> <a class="code" href="classslsDetector.html#5878c33a1353f1d32c383be4169531e7">setExternalSignalFlags</a>(<a class="code" href="sls__detector__defs_8h.html#a436b9d7264c77b77021fe6adc33f6ed">externalSignalFlag</a> pol=<a class="code" href="sls__detector__defs_8h.html#a436b9d7264c77b77021fe6adc33f6ed1ac6595a82aacbd6611252fd86a2cf77">GET_EXTERNAL_SIGNAL_FLAG</a> , <span class="keywordtype">int</span> signalindex=0);
+<a name="l00580"></a>00580 
+<a name="l00581"></a>00581  
+<a name="l00589"></a>00589   <a class="code" href="sls__detector__defs_8h.html#51d6eb28d9d010319da9ce5da86ed32f">externalCommunicationMode</a> <a class="code" href="classslsDetector.html#2f7bac599bf5bb103debcd9342b65edd">setExternalCommunicationMode</a>(<a class="code" href="sls__detector__defs_8h.html#51d6eb28d9d010319da9ce5da86ed32f">externalCommunicationMode</a> pol=<a class="code" href="sls__detector__defs_8h.html#51d6eb28d9d010319da9ce5da86ed32fecc1279a26625814e7d763b02bd8c953">GET_EXTERNAL_COMMUNICATION_MODE</a>);
+<a name="l00590"></a>00590 
+<a name="l00591"></a>00591 
+<a name="l00592"></a>00592   <span class="comment">// Tests and identification</span>
+<a name="l00593"></a>00593  
+<a name="l00600"></a>00600   int64_t <a class="code" href="classslsDetector.html#92f9261c62652e3643eebfdfa9942099">getId</a>(<a class="code" href="sls__detector__defs_8h.html#fc5d5f295e6405046702fc95e6d6d0ea">idMode</a> mode, <span class="keywordtype">int</span> imod=0);
+<a name="l00607"></a>00607   <span class="keywordtype">int</span> <a class="code" href="classslsDetector.html#40906e79010db5b8082d4855a3824aa7">digitalTest</a>(<a class="code" href="sls__detector__defs_8h.html#e4663256797974408ea7fbe5b86635c8">digitalTestMode</a> mode, <span class="keywordtype">int</span> imod=0);
+<a name="l00616"></a>00616   <span class="keywordtype">int</span>* <a class="code" href="classslsDetector.html#18f91f8cf70d2d4eef9b3488b90bac51">analogTest</a>(<a class="code" href="sls__detector__defs_8h.html#44f69dfb7317afdfb166d178f4b1a6fe">analogTestMode</a> mode);
+<a name="l00617"></a>00617   
+<a name="l00623"></a>00623   <span class="keywordtype">int</span> <a class="code" href="classslsDetector.html#a83074759c48f194af2e45d1281cc818">enableAnalogOutput</a>(<span class="keywordtype">int</span> ichan);
+<a name="l00624"></a>00624   
+<a name="l00630"></a>00630   <span class="keywordtype">int</span> <a class="code" href="classslsDetector.html#a83074759c48f194af2e45d1281cc818">enableAnalogOutput</a>(<span class="keywordtype">int</span> imod, <span class="keywordtype">int</span> ichip, <span class="keywordtype">int</span> ichan);
+<a name="l00631"></a>00631 
+<a name="l00640"></a>00640   <span class="keywordtype">int</span> <a class="code" href="classslsDetector.html#a8fafd5690120579f484e326dc6fd9be">giveCalibrationPulse</a>(<span class="keywordtype">float</span> vcal, <span class="keywordtype">int</span> npulses);
 <a name="l00641"></a>00641 
-<a name="l00649"></a>00649   <span class="keywordtype">float</span> <a class="code" href="classslsDetector.html#cfcce08c547e24dc09968a74e35daf40">setDAC</a>(<span class="keywordtype">float</span> val, <a class="code" href="sls__detector__defs_8h.html#049814e50aa3d3237f51a4d7185ad4fe">dacIndex</a> index, <span class="keywordtype">int</span> imod=-1);
-<a name="l00650"></a>00650   
-<a name="l00657"></a>00657   <span class="keywordtype">float</span> <a class="code" href="classslsDetector.html#fa99bd04043c23b7ab583159dabebf93">getADC</a>(<a class="code" href="sls__detector__defs_8h.html#049814e50aa3d3237f51a4d7185ad4fe">dacIndex</a> index, <span class="keywordtype">int</span> imod=0); 
-<a name="l00658"></a>00658  
-<a name="l00668"></a>00668   <span class="keywordtype">int</span> <a class="code" href="classslsDetector.html#bed71bb89a69cbf24de31de9f5f478bc">setChannel</a>(int64_t reg, <span class="keywordtype">int</span> ichan=-1, <span class="keywordtype">int</span> ichip=-1, <span class="keywordtype">int</span> imod=-1);  
-<a name="l00669"></a>00669 
-<a name="l00675"></a>00675   <span class="keywordtype">int</span> <a class="code" href="classslsDetector.html#bed71bb89a69cbf24de31de9f5f478bc">setChannel</a>(<a class="code" href="structsls__detector__channel.html">sls_detector_channel</a> chan);
-<a name="l00676"></a>00676 
-<a name="l00684"></a>00684   <a class="code" href="structsls__detector__channel.html">sls_detector_channel</a> <a class="code" href="classslsDetector.html#bbf8573e249da1f0a436f581d0dc62e4">getChannel</a>(<span class="keywordtype">int</span> ichan, <span class="keywordtype">int</span> ichip, <span class="keywordtype">int</span> imod);
-<a name="l00685"></a>00685   
-<a name="l00686"></a>00686 
-<a name="l00687"></a>00687 
-<a name="l00696"></a>00696   <span class="keywordtype">int</span> <a class="code" href="classslsDetector.html#18cf730c59f5981fb5e22ebf460b9abc">setChip</a>(<span class="keywordtype">int</span> reg, <span class="keywordtype">int</span> ichip=-1, <span class="keywordtype">int</span> imod=-1);
-<a name="l00697"></a>00697   
-<a name="l00704"></a>00704   <span class="keywordtype">int</span> <a class="code" href="classslsDetector.html#18cf730c59f5981fb5e22ebf460b9abc">setChip</a>(<a class="code" href="structsls__detector__chip.html">sls_detector_chip</a> chip); 
-<a name="l00705"></a>00705 
-<a name="l00714"></a>00714   <a class="code" href="structsls__detector__chip.html">sls_detector_chip</a> <a class="code" href="classslsDetector.html#6dd6b42b668610dbd03a7700de84b845">getChip</a>(<span class="keywordtype">int</span> ichip, <span class="keywordtype">int</span> imod);
-<a name="l00715"></a>00715 
-<a name="l00716"></a>00716 
-<a name="l00723"></a>00723   <span class="keywordtype">int</span> <a class="code" href="classslsDetector.html#1be9e16689befa0d654345bc30ccd68e">setModule</a>(<span class="keywordtype">int</span> reg, <span class="keywordtype">int</span> imod=-1); 
-<a name="l00724"></a>00724 
-<a name="l00731"></a>00731   <span class="keywordtype">int</span> <a class="code" href="classslsDetector.html#1be9e16689befa0d654345bc30ccd68e">setModule</a>(<a class="code" href="structsls__detector__module.html">sls_detector_module</a> module);
-<a name="l00732"></a>00732 
-<a name="l00738"></a>00738   <a class="code" href="structsls__detector__module.html">sls_detector_module</a> *<a class="code" href="classslsDetector.html#d1b14626e602ceaebfcf4321f6f40997">getModule</a>(<span class="keywordtype">int</span> imod);
-<a name="l00739"></a>00739  
-<a name="l00740"></a>00740   <span class="comment">// calibration functions</span>
-<a name="l00741"></a>00741   <span class="comment">//  int setCalibration(int imod, detectorSettings isettings, float gain, float offset);</span>
-<a name="l00742"></a>00742   <span class="comment">//int getCalibration(int imod, detectorSettings isettings, float &amp;gain, float &amp;offset);</span>
-<a name="l00743"></a>00743   
+<a name="l00642"></a>00642   <span class="comment">// Expert Initialization functions</span>
+<a name="l00643"></a>00643  
+<a name="l00644"></a>00644 
+<a name="l00652"></a>00652   <span class="keywordtype">int</span> <a class="code" href="classslsDetector.html#742c8c6b4e7f3cad4f7e60c8c7c0c18b">writeRegister</a>(<span class="keywordtype">int</span> addr, <span class="keywordtype">int</span> val);
+<a name="l00653"></a>00653   
+<a name="l00660"></a>00660   <span class="keywordtype">int</span> <a class="code" href="classslsDetector.html#89ba6d2d8e79a60270e7e1c217df2d79">readRegister</a>(<span class="keywordtype">int</span> addr);
+<a name="l00661"></a>00661 
+<a name="l00669"></a>00669   <span class="keywordtype">float</span> <a class="code" href="classslsDetector.html#cfcce08c547e24dc09968a74e35daf40">setDAC</a>(<span class="keywordtype">float</span> val, <a class="code" href="sls__detector__defs_8h.html#049814e50aa3d3237f51a4d7185ad4fe">dacIndex</a> index, <span class="keywordtype">int</span> imod=-1);
+<a name="l00670"></a>00670   
+<a name="l00677"></a>00677   <span class="keywordtype">float</span> <a class="code" href="classslsDetector.html#fa99bd04043c23b7ab583159dabebf93">getADC</a>(<a class="code" href="sls__detector__defs_8h.html#049814e50aa3d3237f51a4d7185ad4fe">dacIndex</a> index, <span class="keywordtype">int</span> imod=0); 
+<a name="l00678"></a>00678  
+<a name="l00688"></a>00688   <span class="keywordtype">int</span> <a class="code" href="classslsDetector.html#bed71bb89a69cbf24de31de9f5f478bc">setChannel</a>(int64_t reg, <span class="keywordtype">int</span> ichan=-1, <span class="keywordtype">int</span> ichip=-1, <span class="keywordtype">int</span> imod=-1);  
+<a name="l00689"></a>00689 
+<a name="l00695"></a>00695   <span class="keywordtype">int</span> <a class="code" href="classslsDetector.html#bed71bb89a69cbf24de31de9f5f478bc">setChannel</a>(<a class="code" href="structsls__detector__channel.html">sls_detector_channel</a> chan);
+<a name="l00696"></a>00696 
+<a name="l00704"></a>00704   <a class="code" href="structsls__detector__channel.html">sls_detector_channel</a> <a class="code" href="classslsDetector.html#05f1a170b7416db77bf7cff762e9b58a">getChannel</a>(<span class="keywordtype">int</span> ichan, <span class="keywordtype">int</span> ichip, <span class="keywordtype">int</span> imod);
+<a name="l00705"></a>00705   
+<a name="l00706"></a>00706 
+<a name="l00707"></a>00707 
+<a name="l00716"></a>00716   <span class="keywordtype">int</span> <a class="code" href="classslsDetector.html#18cf730c59f5981fb5e22ebf460b9abc">setChip</a>(<span class="keywordtype">int</span> reg, <span class="keywordtype">int</span> ichip=-1, <span class="keywordtype">int</span> imod=-1);
+<a name="l00717"></a>00717   
+<a name="l00724"></a>00724   <span class="keywordtype">int</span> <a class="code" href="classslsDetector.html#18cf730c59f5981fb5e22ebf460b9abc">setChip</a>(<a class="code" href="structsls__detector__chip.html">sls_detector_chip</a> chip); 
+<a name="l00725"></a>00725 
+<a name="l00734"></a>00734   <a class="code" href="structsls__detector__chip.html">sls_detector_chip</a> <a class="code" href="classslsDetector.html#2eb7f887a72cc80d6b00cadd4731e672">getChip</a>(<span class="keywordtype">int</span> ichip, <span class="keywordtype">int</span> imod);
+<a name="l00735"></a>00735 
+<a name="l00736"></a>00736 
+<a name="l00743"></a>00743   <span class="keywordtype">int</span> <a class="code" href="classslsDetector.html#1be9e16689befa0d654345bc30ccd68e">setModule</a>(<span class="keywordtype">int</span> reg, <span class="keywordtype">int</span> imod=-1); 
 <a name="l00744"></a>00744 
-<a name="l00745"></a>00745   <span class="comment">/*</span>
-<a name="l00746"></a>00746 <span class="comment">    calibrated setup of the threshold</span>
-<a name="l00747"></a>00747 <span class="comment">  */</span>  
-<a name="l00753"></a>00753   <span class="keywordtype">int</span> <a class="code" href="classslsDetector.html#f2da634bb9551730c12e07e2b772bf06">getThresholdEnergy</a>(<span class="keywordtype">int</span> imod=-1);  
-<a name="l00754"></a>00754 
-<a name="l00762"></a>00762   <span class="keywordtype">int</span> <a class="code" href="classslsDetector.html#ab00a8eeca28831751121054e35d4c6b">setThresholdEnergy</a>(<span class="keywordtype">int</span> e_eV, <span class="keywordtype">int</span> imod=-1, <a class="code" href="sls__detector__defs_8h.html#754e2e1fdf9e993405c39b6050528d56">detectorSettings</a> isettings=<a class="code" href="sls__detector__defs_8h.html#754e2e1fdf9e993405c39b6050528d56ebe806e2682b05129c75bfdc7a72932b">GET_SETTINGS</a>); 
-<a name="l00763"></a>00763  
-<a name="l00769"></a>00769   <a class="code" href="sls__detector__defs_8h.html#754e2e1fdf9e993405c39b6050528d56">detectorSettings</a> <a class="code" href="classslsDetector.html#d112702360f31a967bfad9fe2aabf6f6">getSettings</a>(<span class="keywordtype">int</span> imod=-1);  
-<a name="l00770"></a>00770 
-<a name="l00779"></a>00779   <a class="code" href="sls__detector__defs_8h.html#754e2e1fdf9e993405c39b6050528d56">detectorSettings</a> <a class="code" href="classslsDetector.html#765072d5c8aaff56ca79734072607188">setSettings</a>(<a class="code" href="sls__detector__defs_8h.html#754e2e1fdf9e993405c39b6050528d56">detectorSettings</a> isettings, <span class="keywordtype">int</span> imod=-1);
-<a name="l00780"></a>00780 
-<a name="l00781"></a>00781 
-<a name="l00782"></a>00782 <span class="comment">// Acquisition functions</span>
-<a name="l00783"></a>00783 
-<a name="l00784"></a>00784 
-<a name="l00789"></a>00789   <span class="keywordtype">int</span> <a class="code" href="classslsDetector.html#49f44b9f27ce82d384ddfa0d229a0dee">startAcquisition</a>();
+<a name="l00751"></a>00751   <span class="keywordtype">int</span> <a class="code" href="classslsDetector.html#1be9e16689befa0d654345bc30ccd68e">setModule</a>(<a class="code" href="structsls__detector__module.html">sls_detector_module</a> module);
+<a name="l00752"></a>00752 
+<a name="l00758"></a>00758   <a class="code" href="structsls__detector__module.html">sls_detector_module</a> *<a class="code" href="classslsDetector.html#32557eee02e541840246b4b4a3e76c83">getModule</a>(<span class="keywordtype">int</span> imod);
+<a name="l00759"></a>00759  
+<a name="l00760"></a>00760   <span class="comment">// calibration functions</span>
+<a name="l00761"></a>00761   <span class="comment">//  int setCalibration(int imod, detectorSettings isettings, float gain, float offset);</span>
+<a name="l00762"></a>00762   <span class="comment">//int getCalibration(int imod, detectorSettings isettings, float &amp;gain, float &amp;offset);</span>
+<a name="l00763"></a>00763   
+<a name="l00764"></a>00764 
+<a name="l00765"></a>00765   <span class="comment">/*</span>
+<a name="l00766"></a>00766 <span class="comment">    calibrated setup of the threshold</span>
+<a name="l00767"></a>00767 <span class="comment">  */</span>  
+<a name="l00773"></a>00773   <span class="keywordtype">int</span> <a class="code" href="classslsDetector.html#f2da634bb9551730c12e07e2b772bf06">getThresholdEnergy</a>(<span class="keywordtype">int</span> imod=-1);  
+<a name="l00774"></a>00774 
+<a name="l00782"></a>00782   <span class="keywordtype">int</span> <a class="code" href="classslsDetector.html#ab00a8eeca28831751121054e35d4c6b">setThresholdEnergy</a>(<span class="keywordtype">int</span> e_eV, <span class="keywordtype">int</span> imod=-1, <a class="code" href="sls__detector__defs_8h.html#754e2e1fdf9e993405c39b6050528d56">detectorSettings</a> isettings=<a class="code" href="sls__detector__defs_8h.html#754e2e1fdf9e993405c39b6050528d56ebe806e2682b05129c75bfdc7a72932b">GET_SETTINGS</a>); 
+<a name="l00783"></a>00783  
+<a name="l00789"></a>00789   <a class="code" href="sls__detector__defs_8h.html#754e2e1fdf9e993405c39b6050528d56">detectorSettings</a> <a class="code" href="classslsDetector.html#cfccfada625943feb410c6a14607a366">getSettings</a>(<span class="keywordtype">int</span> imod=-1);  
 <a name="l00790"></a>00790 
-<a name="l00795"></a>00795   <span class="keywordtype">int</span> <a class="code" href="classslsDetector.html#07a3d8c3c0e03ec8f286a87673911c28">stopAcquisition</a>();
-<a name="l00796"></a>00796   
-<a name="l00801"></a>00801   <span class="keywordtype">int</span> <a class="code" href="classslsDetector.html#8314acd65ffb54f355967a5c6827448e">startReadOut</a>();
-<a name="l00802"></a>00802 
-<a name="l00807"></a>00807   <span class="keywordtype">int</span> <a class="code" href="classslsDetector.html#567629b942b153a03cfc66d4d26c5daa">getRunStatus</a>();
-<a name="l00808"></a>00808 
-<a name="l00814"></a>00814   <span class="keywordtype">int</span>* <a class="code" href="classslsDetector.html#fb4bb3d4e734c98684b60d283f34f128">startAndReadAll</a>();
-<a name="l00815"></a>00815   
-<a name="l00820"></a>00820   <span class="keywordtype">int</span> <a class="code" href="classslsDetector.html#2e0a975f982971744ada81d346d84489">startAndReadAllNoWait</a>(); 
-<a name="l00821"></a>00821 
-<a name="l00827"></a>00827   <span class="keywordtype">int</span>* <a class="code" href="classslsDetector.html#5b678231f1a0fafc518a95b6e58f00a8">getDataFromDetectorNoWait</a>(); 
+<a name="l00799"></a>00799   <a class="code" href="sls__detector__defs_8h.html#754e2e1fdf9e993405c39b6050528d56">detectorSettings</a> <a class="code" href="classslsDetector.html#765072d5c8aaff56ca79734072607188">setSettings</a>(<a class="code" href="sls__detector__defs_8h.html#754e2e1fdf9e993405c39b6050528d56">detectorSettings</a> isettings, <span class="keywordtype">int</span> imod=-1);
+<a name="l00800"></a>00800 
+<a name="l00801"></a>00801 
+<a name="l00802"></a>00802 <span class="comment">// Acquisition functions</span>
+<a name="l00803"></a>00803 
+<a name="l00804"></a>00804 
+<a name="l00809"></a>00809   <span class="keywordtype">int</span> <a class="code" href="classslsDetector.html#49f44b9f27ce82d384ddfa0d229a0dee">startAcquisition</a>();
+<a name="l00810"></a>00810 
+<a name="l00815"></a>00815   <span class="keywordtype">int</span> <a class="code" href="classslsDetector.html#07a3d8c3c0e03ec8f286a87673911c28">stopAcquisition</a>();
+<a name="l00816"></a>00816   
+<a name="l00821"></a>00821   <span class="keywordtype">int</span> <a class="code" href="classslsDetector.html#8314acd65ffb54f355967a5c6827448e">startReadOut</a>();
+<a name="l00822"></a>00822 
+<a name="l00827"></a>00827   <span class="keywordtype">int</span> <a class="code" href="classslsDetector.html#567629b942b153a03cfc66d4d26c5daa">getRunStatus</a>();
 <a name="l00828"></a>00828 
-<a name="l00834"></a>00834   <span class="keywordtype">int</span>* <a class="code" href="classslsDetector.html#b352d85c5a4f415d1ec930d17bae87fa">readFrame</a>(); 
-<a name="l00835"></a>00835 
-<a name="l00841"></a>00841   <span class="keywordtype">int</span>* <a class="code" href="classslsDetector.html#87acdd8cd43d30dc3dd88763b6e23d08">readAll</a>();
-<a name="l00842"></a>00842 
-<a name="l00843"></a>00843   
-<a name="l00849"></a>00849   <span class="keywordtype">int</span>* <a class="code" href="classslsDetector.html#ee85bddb6aa7b37c99f1397112e6c8b6">popDataQueue</a>();
-<a name="l00850"></a>00850 
-<a name="l00857"></a>00857   int64_t <a class="code" href="classslsDetector.html#b78e1d801e92a9f5a06008d9e9731549">setTimer</a>(<a class="code" href="sls__detector__defs_8h.html#07c87ebf35dffccd06fe39859a3ca603">timerIndex</a> index, int64_t t=-1);
-<a name="l00858"></a>00858 
-<a name="l00864"></a>00864   int64_t <a class="code" href="classslsDetector.html#61f072fcaf0a359148f52ea34769c846">getTimeLeft</a>(<a class="code" href="sls__detector__defs_8h.html#07c87ebf35dffccd06fe39859a3ca603">timerIndex</a> index);
-<a name="l00865"></a>00865 
-<a name="l00872"></a><a class="code" href="classslsDetector.html#49af64998d4a4d44e965eb0adb1facb2">00872</a>   <span class="keywordtype">int</span> <a class="code" href="classslsDetector.html#49af64998d4a4d44e965eb0adb1facb2">setClockDivider</a>(<span class="keywordtype">int</span> i) {cout &lt;&lt; <span class="stringliteral">"not implemented any longer!"</span>&lt;&lt; endl; <a class="code" href="classslsDetector.html#fe0da5c1491ebf18f187f0a26c5ded11">thisDetector</a>-&gt;<a class="code" href="structslsDetector_1_1sharedSlsDetector.html#904618e46e191d740569ba998623cba8">clkDiv</a>=i;<span class="keywordflow">return</span> <a class="code" href="classslsDetector.html#fe0da5c1491ebf18f187f0a26c5ded11">thisDetector</a>-&gt;<a class="code" href="structslsDetector_1_1sharedSlsDetector.html#904618e46e191d740569ba998623cba8">clkDiv</a>;};  
-<a name="l00873"></a>00873 
-<a name="l00880"></a><a class="code" href="classslsDetector.html#12b884821edc41fe9821f2ab084a0baf">00880</a>   <span class="keywordtype">int</span> <a class="code" href="classslsDetector.html#12b884821edc41fe9821f2ab084a0baf">getClockDivider</a>() {<span class="keywordflow">return</span> <a class="code" href="classslsDetector.html#fe0da5c1491ebf18f187f0a26c5ded11">thisDetector</a>-&gt;<a class="code" href="structslsDetector_1_1sharedSlsDetector.html#904618e46e191d740569ba998623cba8">clkDiv</a>;};  
-<a name="l00881"></a>00881 
-<a name="l00888"></a><a class="code" href="classslsDetector.html#f936cf5840bded81acb3f93b6b5fdd1c">00888</a>   <span class="keywordtype">int</span> <a class="code" href="classslsDetector.html#f936cf5840bded81acb3f93b6b5fdd1c">setSetLength</a>(<span class="keywordtype">int</span> i) {cout &lt;&lt; <span class="stringliteral">"not implemented any longer!"</span>&lt;&lt; endl; <a class="code" href="classslsDetector.html#fe0da5c1491ebf18f187f0a26c5ded11">thisDetector</a>-&gt;<a class="code" href="structslsDetector_1_1sharedSlsDetector.html#904618e46e191d740569ba998623cba8">clkDiv</a>=i;<span class="keywordflow">return</span> 3;}; 
-<a name="l00889"></a>00889 
-<a name="l00895"></a><a class="code" href="classslsDetector.html#51a88168bf9e4cd2ef7730b973963055">00895</a>   <span class="keywordtype">int</span> <a class="code" href="classslsDetector.html#51a88168bf9e4cd2ef7730b973963055">getSetLength</a>() {<span class="keywordflow">return</span> 3;};
-<a name="l00896"></a>00896   
-<a name="l00897"></a>00897 
-<a name="l00898"></a>00898   <span class="comment">// Flags</span>
-<a name="l00906"></a>00906 <span class="comment"></span>  <span class="keywordtype">int</span> <a class="code" href="classslsDetector.html#57d00f77b9c12d9a01407d5a74bacddb">setDynamicRange</a>(<span class="keywordtype">int</span> n=-1);
-<a name="l00907"></a>00907  
-<a name="l00913"></a>00913   <span class="keywordtype">int</span> <a class="code" href="classslsDetector.html#e2a0716ddc050b79a45c552236ff2284">setROI</a>(<span class="keywordtype">int</span> nroi=-1, <span class="keywordtype">int</span> *xmin=NULL, <span class="keywordtype">int</span> *xmax=NULL, <span class="keywordtype">int</span> *ymin=NULL, <span class="keywordtype">int</span> *ymax=NULL);
-<a name="l00914"></a>00914   
-<a name="l00915"></a>00915 
-<a name="l00921"></a>00921   <span class="keywordtype">int</span> <a class="code" href="classslsDetector.html#e86bd9ff0d87efe9327118b5349321c4">setReadOutFlags</a>(<a class="code" href="sls__detector__defs_8h.html#6165e3e90182cc47b0003f3288a2e579">readOutFlags</a> flag);
-<a name="l00922"></a>00922 
-<a name="l00931"></a>00931   <span class="keywordtype">int</span> <a class="code" href="classslsDetector.html#a257317d18965a353679c66b15b0987d">executeTrimming</a>(<a class="code" href="sls__detector__defs_8h.html#032d987fb5fbd375236b7f58f0168f33">trimMode</a> mode, <span class="keywordtype">int</span> par1, <span class="keywordtype">int</span> par2, <span class="keywordtype">int</span> imod=-1);
-<a name="l00932"></a>00932 
-<a name="l00933"></a>00933  
-<a name="l00934"></a>00934   <span class="comment">//Corrections</span>
-<a name="l00935"></a>00935 
-<a name="l00941"></a>00941   <span class="keywordtype">int</span> <a class="code" href="classslsDetector.html#b4e2c11303714d5e62b4fcc22f829d8f">setFlatFieldCorrection</a>(string fname=<span class="stringliteral">""</span>); 
-<a name="l00942"></a>00942 
-<a name="l00949"></a>00949   <span class="keywordtype">int</span> <a class="code" href="classslsDetector.html#af22c79193907e364c6db97f5e55b9fd">getFlatFieldCorrections</a>(<span class="keywordtype">float</span> *corr=NULL, <span class="keywordtype">float</span> *ecorr=NULL);
-<a name="l00950"></a>00950 
-<a name="l00956"></a>00956   <span class="keywordtype">int</span> <a class="code" href="classslsDetector.html#c89f7fc9f9255e573e34f8d3dadf38af">setRateCorrection</a>(<span class="keywordtype">float</span> t=0);
-<a name="l00957"></a>00957 
-<a name="l00958"></a>00958   
-<a name="l00964"></a>00964   <span class="keywordtype">int</span> <a class="code" href="classslsDetector.html#7606366a3cbe280c90dc659036814697">getRateCorrections</a>(<span class="keywordtype">float</span> &amp;t);  
-<a name="l00965"></a>00965 
-<a name="l00970"></a>00970   <span class="keywordtype">int</span> <a class="code" href="classslsDetector.html#7606366a3cbe280c90dc659036814697">getRateCorrections</a>();
-<a name="l00971"></a>00971   
-<a name="l00977"></a>00977   <span class="keywordtype">int</span> <a class="code" href="classslsDetector.html#45833eb571b8cb20225f4046e2a17e5a">setBadChannelCorrection</a>(string fname=<span class="stringliteral">""</span>);
-<a name="l00978"></a>00978   
-<a name="l00984"></a>00984   <span class="keywordtype">int</span> <a class="code" href="classslsDetector.html#f80db913b55026bb69d35585b08729cc">getBadChannelCorrections</a>(<span class="keywordtype">int</span> *bad=NULL);
-<a name="l00985"></a>00985 
-<a name="l00986"></a>00986   
-<a name="l00992"></a>00992   <span class="keywordtype">int</span> <a class="code" href="classslsDetector.html#30fe39ddd78fa880b6b7815d1d5462ec">setAngularConversion</a>(string fname=<span class="stringliteral">""</span>);
-<a name="l00993"></a>00993 
-<a name="l01000"></a>01000   <span class="keywordtype">int</span> <a class="code" href="classslsDetector.html#a146baee5af54b53db0997de02f4779c">getAngularConversion</a>(<span class="keywordtype">int</span> &amp;direction,  <a class="code" href="structangleConversionConstant.html">angleConversionConstant</a> *angconv=NULL);
-<a name="l01001"></a>01001   
-<a name="l01005"></a><a class="code" href="classslsDetector.html#84c8dc8017e692d93246cd546e6366c1">01005</a>   <span class="keywordtype">float</span> <a class="code" href="classslsDetector.html#84c8dc8017e692d93246cd546e6366c1">setGlobalOffset</a>(<span class="keywordtype">float</span> f){<a class="code" href="classslsDetector.html#fe0da5c1491ebf18f187f0a26c5ded11">thisDetector</a>-&gt;<a class="code" href="structslsDetector_1_1sharedSlsDetector.html#f4f3616855e8d7fa5a9a49774365497a">globalOffset</a>=f; <span class="keywordflow">return</span> <a class="code" href="classslsDetector.html#fe0da5c1491ebf18f187f0a26c5ded11">thisDetector</a>-&gt;<a class="code" href="structslsDetector_1_1sharedSlsDetector.html#f4f3616855e8d7fa5a9a49774365497a">globalOffset</a>;}; 
-<a name="l01006"></a>01006 
-<a name="l01010"></a><a class="code" href="classslsDetector.html#fd3b79c59688a7a0f4f72ba5676a2f9b">01010</a>   <span class="keywordtype">float</span> <a class="code" href="classslsDetector.html#fd3b79c59688a7a0f4f72ba5676a2f9b">setFineOffset</a>(<span class="keywordtype">float</span> f){<a class="code" href="classslsDetector.html#fe0da5c1491ebf18f187f0a26c5ded11">thisDetector</a>-&gt;<a class="code" href="structslsDetector_1_1sharedSlsDetector.html#5ca5b4ba561ff03260d4734f17273287">fineOffset</a>=f; <span class="keywordflow">return</span> <a class="code" href="classslsDetector.html#fe0da5c1491ebf18f187f0a26c5ded11">thisDetector</a>-&gt;<a class="code" href="structslsDetector_1_1sharedSlsDetector.html#5ca5b4ba561ff03260d4734f17273287">fineOffset</a>;};
-<a name="l01014"></a><a class="code" href="classslsDetector.html#1a402a849d04190024e9dc87d4dae6dc">01014</a>   <span class="keywordtype">float</span> <a class="code" href="classslsDetector.html#1a402a849d04190024e9dc87d4dae6dc">getFineOffset</a>(){<span class="keywordflow">return</span> <a class="code" href="classslsDetector.html#fe0da5c1491ebf18f187f0a26c5ded11">thisDetector</a>-&gt;<a class="code" href="structslsDetector_1_1sharedSlsDetector.html#5ca5b4ba561ff03260d4734f17273287">fineOffset</a>;};
-<a name="l01015"></a>01015   
-<a name="l01019"></a><a class="code" href="classslsDetector.html#42f854256e2900f18b2a17201813b48c">01019</a>   <span class="keywordtype">float</span> <a class="code" href="classslsDetector.html#42f854256e2900f18b2a17201813b48c">getGlobalOffset</a>(){<span class="keywordflow">return</span> <a class="code" href="classslsDetector.html#fe0da5c1491ebf18f187f0a26c5ded11">thisDetector</a>-&gt;<a class="code" href="structslsDetector_1_1sharedSlsDetector.html#f4f3616855e8d7fa5a9a49774365497a">globalOffset</a>;};
-<a name="l01020"></a>01020 
-<a name="l01027"></a><a class="code" href="classslsDetector.html#ed6493ad015660281b14814f9a7f6cb5">01027</a>   <span class="keywordtype">int</span> <a class="code" href="classslsDetector.html#ed6493ad015660281b14814f9a7f6cb5">setPositions</a>(<span class="keywordtype">int</span> nPos, <span class="keywordtype">float</span> *<a class="code" href="usersFunctions_8c.html#f14c6d623ff1aec896b4d087ab74caa0">pos</a>){<a class="code" href="classslsDetector.html#fe0da5c1491ebf18f187f0a26c5ded11">thisDetector</a>-&gt;<a class="code" href="structslsDetector_1_1sharedSlsDetector.html#0ffc59bdf1f5d82da8c35ba48fd5f36d">numberOfPositions</a>=nPos; <span class="keywordflow">for</span> (<span class="keywordtype">int</span> ip=0; ip&lt;nPos; ip++) <a class="code" href="classslsDetector.html#fe0da5c1491ebf18f187f0a26c5ded11">thisDetector</a>-&gt;<a class="code" href="structslsDetector_1_1sharedSlsDetector.html#bf1d315c4544329f53beb7c88eb47124">detPositions</a>[ip]=pos[ip]; <span class="keywordflow">return</span> <a class="code" href="classslsDetector.html#fe0da5c1491ebf18f187f0a26c5ded11">thisDetector</a>-&gt;<a class="code" href="structslsDetector_1_1sharedSlsDetector.html#0ffc59bdf1f5d82da8c35ba48fd5f36d">numberOfPositions</a>;};
-<a name="l01033"></a><a class="code" href="classslsDetector.html#732f6d36456d6e87d70324a4bdc1bbb8">01033</a>   <span class="keywordtype">int</span> <a class="code" href="classslsDetector.html#732f6d36456d6e87d70324a4bdc1bbb8">getPositions</a>(<span class="keywordtype">float</span> *<a class="code" href="usersFunctions_8c.html#f14c6d623ff1aec896b4d087ab74caa0">pos</a>=NULL){ <span class="keywordflow">if</span> (<a class="code" href="usersFunctions_8c.html#f14c6d623ff1aec896b4d087ab74caa0">pos</a> ) {<span class="keywordflow">for</span> (<span class="keywordtype">int</span> ip=0; ip&lt;<a class="code" href="classslsDetector.html#fe0da5c1491ebf18f187f0a26c5ded11">thisDetector</a>-&gt;<a class="code" href="structslsDetector_1_1sharedSlsDetector.html#0ffc59bdf1f5d82da8c35ba48fd5f36d">numberOfPositions</a>; ip++) <a class="code" href="usersFunctions_8c.html#f14c6d623ff1aec896b4d087ab74caa0">pos</a>[ip]=<a class="code" href="classslsDetector.html#fe0da5c1491ebf18f187f0a26c5ded11">thisDetector</a>-&gt;<a class="code" href="structslsDetector_1_1sharedSlsDetector.html#bf1d315c4544329f53beb7c88eb47124">detPositions</a>[ip];} <span class="keywordflow">return</span> <a class="code" href="classslsDetector.html#fe0da5c1491ebf18f187f0a26c5ded11">thisDetector</a>-&gt;<a class="code" href="structslsDetector_1_1sharedSlsDetector.html#0ffc59bdf1f5d82da8c35ba48fd5f36d">numberOfPositions</a>;};
+<a name="l00834"></a>00834   <span class="keywordtype">int</span>* <a class="code" href="classslsDetector.html#fb4bb3d4e734c98684b60d283f34f128">startAndReadAll</a>();
+<a name="l00835"></a>00835   
+<a name="l00840"></a>00840   <span class="keywordtype">int</span> <a class="code" href="classslsDetector.html#2e0a975f982971744ada81d346d84489">startAndReadAllNoWait</a>(); 
+<a name="l00841"></a>00841 
+<a name="l00847"></a>00847   <span class="keywordtype">int</span>* <a class="code" href="classslsDetector.html#5b678231f1a0fafc518a95b6e58f00a8">getDataFromDetectorNoWait</a>(); 
+<a name="l00848"></a>00848 
+<a name="l00854"></a>00854   <span class="keywordtype">int</span>* <a class="code" href="classslsDetector.html#b352d85c5a4f415d1ec930d17bae87fa">readFrame</a>(); 
+<a name="l00855"></a>00855 
+<a name="l00861"></a>00861   <span class="keywordtype">int</span>* <a class="code" href="classslsDetector.html#87acdd8cd43d30dc3dd88763b6e23d08">readAll</a>();
+<a name="l00862"></a>00862 
+<a name="l00863"></a>00863   
+<a name="l00869"></a>00869   <span class="keywordtype">int</span>* <a class="code" href="classslsDetector.html#ee85bddb6aa7b37c99f1397112e6c8b6">popDataQueue</a>();
+<a name="l00870"></a>00870 
+<a name="l00877"></a>00877   int64_t <a class="code" href="classslsDetector.html#b78e1d801e92a9f5a06008d9e9731549">setTimer</a>(<a class="code" href="sls__detector__defs_8h.html#07c87ebf35dffccd06fe39859a3ca603">timerIndex</a> index, int64_t t=-1);
+<a name="l00878"></a>00878 
+<a name="l00884"></a>00884   int64_t <a class="code" href="classslsDetector.html#61f072fcaf0a359148f52ea34769c846">getTimeLeft</a>(<a class="code" href="sls__detector__defs_8h.html#07c87ebf35dffccd06fe39859a3ca603">timerIndex</a> index);
+<a name="l00885"></a>00885 
+<a name="l00886"></a>00886 
+<a name="l00887"></a>00887 
+<a name="l00888"></a>00888 
+<a name="l00895"></a>00895   <span class="keywordtype">int</span> <a class="code" href="classslsDetector.html#8e35d9440a03e127ef5fe7a909702675">setSpeed</a>(<a class="code" href="sls__detector__defs_8h.html#8c326f6a87754392b72098d3d0dec49d">speedVariable</a> sp, <span class="keywordtype">int</span> value=-1);
+<a name="l00896"></a>00896 
+<a name="l00897"></a>00897   <span class="comment">// Flags</span>
+<a name="l00905"></a>00905 <span class="comment"></span>  <span class="keywordtype">int</span> <a class="code" href="classslsDetector.html#57d00f77b9c12d9a01407d5a74bacddb">setDynamicRange</a>(<span class="keywordtype">int</span> n=-1);
+<a name="l00906"></a>00906  
+<a name="l00912"></a>00912   <span class="keywordtype">int</span> <a class="code" href="classslsDetector.html#e2a0716ddc050b79a45c552236ff2284">setROI</a>(<span class="keywordtype">int</span> nroi=-1, <span class="keywordtype">int</span> *xmin=NULL, <span class="keywordtype">int</span> *xmax=NULL, <span class="keywordtype">int</span> *ymin=NULL, <span class="keywordtype">int</span> *ymax=NULL);
+<a name="l00913"></a>00913   
+<a name="l00914"></a>00914 
+<a name="l00920"></a>00920   <span class="keywordtype">int</span> <a class="code" href="classslsDetector.html#e86bd9ff0d87efe9327118b5349321c4">setReadOutFlags</a>(<a class="code" href="sls__detector__defs_8h.html#6165e3e90182cc47b0003f3288a2e579">readOutFlags</a> flag);
+<a name="l00921"></a>00921 
+<a name="l00930"></a>00930   <span class="keywordtype">int</span> <a class="code" href="classslsDetector.html#a257317d18965a353679c66b15b0987d">executeTrimming</a>(<a class="code" href="sls__detector__defs_8h.html#032d987fb5fbd375236b7f58f0168f33">trimMode</a> mode, <span class="keywordtype">int</span> par1, <span class="keywordtype">int</span> par2, <span class="keywordtype">int</span> imod=-1);
+<a name="l00931"></a>00931 
+<a name="l00932"></a>00932  
+<a name="l00933"></a>00933   <span class="comment">//Corrections</span>
+<a name="l00934"></a>00934 
+<a name="l00940"></a>00940   <span class="keywordtype">int</span> <a class="code" href="classslsDetector.html#b4e2c11303714d5e62b4fcc22f829d8f">setFlatFieldCorrection</a>(string fname=<span class="stringliteral">""</span>); 
+<a name="l00941"></a>00941 
+<a name="l00948"></a>00948   <span class="keywordtype">int</span> <a class="code" href="classslsDetector.html#af22c79193907e364c6db97f5e55b9fd">getFlatFieldCorrections</a>(<span class="keywordtype">float</span> *corr=NULL, <span class="keywordtype">float</span> *ecorr=NULL);
+<a name="l00949"></a>00949 
+<a name="l00955"></a>00955   <span class="keywordtype">int</span> <a class="code" href="classslsDetector.html#c89f7fc9f9255e573e34f8d3dadf38af">setRateCorrection</a>(<span class="keywordtype">float</span> t=0);
+<a name="l00956"></a>00956 
+<a name="l00957"></a>00957   
+<a name="l00963"></a>00963   <span class="keywordtype">int</span> <a class="code" href="classslsDetector.html#7606366a3cbe280c90dc659036814697">getRateCorrections</a>(<span class="keywordtype">float</span> &amp;t);  
+<a name="l00964"></a>00964 
+<a name="l00969"></a>00969   <span class="keywordtype">int</span> <a class="code" href="classslsDetector.html#7606366a3cbe280c90dc659036814697">getRateCorrections</a>();
+<a name="l00970"></a>00970   
+<a name="l00976"></a>00976   <span class="keywordtype">int</span> <a class="code" href="classslsDetector.html#45833eb571b8cb20225f4046e2a17e5a">setBadChannelCorrection</a>(string fname=<span class="stringliteral">""</span>);
+<a name="l00977"></a>00977   
+<a name="l00983"></a>00983   <span class="keywordtype">int</span> <a class="code" href="classslsDetector.html#f80db913b55026bb69d35585b08729cc">getBadChannelCorrections</a>(<span class="keywordtype">int</span> *bad=NULL);
+<a name="l00984"></a>00984 
+<a name="l00986"></a><a class="code" href="classslsDetector.html#0b562f90b64c80e3eb64e9e2153bb234">00986</a>   <span class="keywordtype">char</span> *<a class="code" href="classslsDetector.html#0b562f90b64c80e3eb64e9e2153bb234">getBadChannelCorrectionFile</a>() {<span class="keywordflow">return</span> <a class="code" href="classslsDetector.html#fe0da5c1491ebf18f187f0a26c5ded11">thisDetector</a>-&gt;<a class="code" href="structslsDetector_1_1sharedSlsDetector.html#9ab536c77675cd30b26ab647efe5c3ca">badChanFile</a>;};
+<a name="l00987"></a>00987 
+<a name="l00988"></a>00988   
+<a name="l00996"></a>00996   <span class="keyword">virtual</span> <span class="keywordtype">int</span> <a class="code" href="classslsDetector.html#0a17abc301de750f7dafd43b7ad8b0c9">setAngularConversion</a>(string fname=<span class="stringliteral">""</span>)=0;
+<a name="l00997"></a>00997 
+<a name="l01006"></a>01006   <span class="keyword">virtual</span> <span class="keywordtype">int</span> <a class="code" href="classslsDetector.html#0c2e502441fd74ec7fc20604c5c08c27">getAngularConversion</a>(<span class="keywordtype">int</span> &amp;direction,  <a class="code" href="structangleConversionConstant.html">angleConversionConstant</a> *angconv=NULL)=0;
+<a name="l01007"></a>01007   
+<a name="l01008"></a>01008   
+<a name="l01013"></a>01013   <span class="keyword">virtual</span> <span class="keywordtype">char</span> *<a class="code" href="classslsDetector.html#0c2e502441fd74ec7fc20604c5c08c27">getAngularConversion</a>()=0;
+<a name="l01014"></a>01014   
+<a name="l01020"></a>01020   <span class="keyword">virtual</span> <span class="keywordtype">float</span> <a class="code" href="classslsDetector.html#2a03a8aec6dbf74a606e6960e178fceb">setGlobalOffset</a>(<span class="keywordtype">float</span> f)=0; 
+<a name="l01021"></a>01021 
+<a name="l01027"></a>01027   <span class="keyword">virtual</span> <span class="keywordtype">float</span> <a class="code" href="classslsDetector.html#7b3b6b3ac5b3b1ee0677f7deeec5c9e3">setFineOffset</a>(<span class="keywordtype">float</span> f)=0;
+<a name="l01033"></a>01033   <span class="keyword">virtual</span> <span class="keywordtype">float</span> <a class="code" href="classslsDetector.html#8e39680a1a096ca13ed672504b5b08e6">getFineOffset</a>()=0;
 <a name="l01034"></a>01034   
-<a name="l01035"></a>01035   
-<a name="l01037"></a><a class="code" href="classslsDetector.html#96e2fb6fb0aa34bdbe59facf367c4ae1">01037</a>   <span class="keywordtype">float</span> <a class="code" href="classslsDetector.html#96e2fb6fb0aa34bdbe59facf367c4ae1">setBinSize</a>(<span class="keywordtype">float</span> bs) {<a class="code" href="classslsDetector.html#fe0da5c1491ebf18f187f0a26c5ded11">thisDetector</a>-&gt;<a class="code" href="structslsDetector_1_1sharedSlsDetector.html#8a64597cae31d83524ea4e554e3798ab">binSize</a>=bs; <span class="keywordflow">return</span> <a class="code" href="classslsDetector.html#fe0da5c1491ebf18f187f0a26c5ded11">thisDetector</a>-&gt;<a class="code" href="structslsDetector_1_1sharedSlsDetector.html#8a64597cae31d83524ea4e554e3798ab">binSize</a>;}
-<a name="l01039"></a><a class="code" href="classslsDetector.html#8a78eda56f5a0c487bbc4e2f962d04db">01039</a>   <span class="keywordtype">float</span> <a class="code" href="classslsDetector.html#8a78eda56f5a0c487bbc4e2f962d04db">getBinSize</a>() {<span class="keywordflow">return</span> <a class="code" href="classslsDetector.html#fe0da5c1491ebf18f187f0a26c5ded11">thisDetector</a>-&gt;<a class="code" href="structslsDetector_1_1sharedSlsDetector.html#8a64597cae31d83524ea4e554e3798ab">binSize</a>;}
-<a name="l01040"></a>01040 
+<a name="l01040"></a>01040   <span class="keyword">virtual</span> <span class="keywordtype">float</span> <a class="code" href="classslsDetector.html#8964e3efa73f29b04bd9479578bd1c59">getGlobalOffset</a>()=0;
 <a name="l01041"></a>01041 
-<a name="l01042"></a>01042 
-<a name="l01043"></a>01043 
-<a name="l01044"></a>01044 
-<a name="l01045"></a>01045 
-<a name="l01051"></a>01051   <span class="keywordtype">float</span>* <a class="code" href="classslsDetector.html#937d257464bade6dc6d3ab42c86843ba">decodeData</a>(<span class="keywordtype">int</span> *datain);
-<a name="l01052"></a>01052 
-<a name="l01053"></a>01053   
-<a name="l01054"></a>01054   
-<a name="l01055"></a>01055   
-<a name="l01066"></a>01066   <span class="keywordtype">int</span> <a class="code" href="classslsDetector.html#24c7dd58e00df0bf62221b7572430740">flatFieldCorrect</a>(<span class="keywordtype">float</span> datain, <span class="keywordtype">float</span> errin, <span class="keywordtype">float</span> &amp;dataout, <span class="keywordtype">float</span> &amp;errout, <span class="keywordtype">float</span> ffcoefficient, <span class="keywordtype">float</span> fferr);
-<a name="l01067"></a>01067   
-<a name="l01076"></a>01076   <span class="keywordtype">int</span> <a class="code" href="classslsDetector.html#24c7dd58e00df0bf62221b7572430740">flatFieldCorrect</a>(<span class="keywordtype">float</span>* datain, <span class="keywordtype">float</span> *errin, <span class="keywordtype">float</span>* dataout, <span class="keywordtype">float</span> *errout);
-<a name="l01077"></a>01077  
+<a name="l01050"></a>01050   <span class="keyword">virtual</span> <span class="keywordtype">int</span> <a class="code" href="classslsDetector.html#961e3976e3077803e2fc245873f81d81">setPositions</a>(<span class="keywordtype">int</span> nPos, <span class="keywordtype">float</span> *<a class="code" href="usersFunctions_8c.html#f14c6d623ff1aec896b4d087ab74caa0">pos</a>)=0;
+<a name="l01058"></a>01058   <span class="keyword">virtual</span> <span class="keywordtype">int</span> <a class="code" href="classslsDetector.html#248794801b9794d20e7d58bceab564ab">getPositions</a>(<span class="keywordtype">float</span> *<a class="code" href="usersFunctions_8c.html#f14c6d623ff1aec896b4d087ab74caa0">pos</a>=NULL)=0;
+<a name="l01059"></a>01059   
+<a name="l01060"></a>01060   
+<a name="l01067"></a>01067   <span class="keyword">virtual</span> <span class="keywordtype">float</span> <a class="code" href="classslsDetector.html#1a2ebbe67dae42059723071f437eb721">setBinSize</a>(<span class="keywordtype">float</span> bs)=0;
+<a name="l01068"></a>01068 
+<a name="l01073"></a>01073   <span class="keyword">virtual</span> <span class="keywordtype">float</span> <a class="code" href="classslsDetector.html#7d83754e3f41042caa9297da9a33b714">getBinSize</a>()=0;
+<a name="l01074"></a>01074 
+<a name="l01075"></a>01075 
+<a name="l01076"></a>01076 
+<a name="l01077"></a>01077 
 <a name="l01078"></a>01078 
-<a name="l01079"></a>01079   
-<a name="l01090"></a>01090   <span class="keywordtype">int</span> <a class="code" href="classslsDetector.html#e8c2d03ab2c870d2f1ff7a861cfeb6d1">rateCorrect</a>(<span class="keywordtype">float</span> datain, <span class="keywordtype">float</span> errin, <span class="keywordtype">float</span> &amp;dataout, <span class="keywordtype">float</span> &amp;errout, <span class="keywordtype">float</span> tau, <span class="keywordtype">float</span> t);
-<a name="l01091"></a>01091   
-<a name="l01100"></a>01100   <span class="keywordtype">int</span> <a class="code" href="classslsDetector.html#e8c2d03ab2c870d2f1ff7a861cfeb6d1">rateCorrect</a>(<span class="keywordtype">float</span>* datain, <span class="keywordtype">float</span> *errin, <span class="keywordtype">float</span>* dataout, <span class="keywordtype">float</span> *errout);
-<a name="l01101"></a>01101 
-<a name="l01102"></a>01102   
-<a name="l01110"></a>01110   <span class="keywordtype">int</span> <a class="code" href="classslsDetector.html#208c3a5a80ba931056f1f2ff3cb5d0e5">resetMerging</a>(<span class="keywordtype">float</span> *mp, <span class="keywordtype">float</span> *mv,<span class="keywordtype">float</span> *me, <span class="keywordtype">int</span> *mm);
-<a name="l01121"></a>01121   <span class="keywordtype">int</span> <a class="code" href="classslsDetector.html#ed3ddadb246080ef644b6d1455fa2e32">addToMerging</a>(<span class="keywordtype">float</span> *p1, <span class="keywordtype">float</span> *v1, <span class="keywordtype">float</span> *e1, <span class="keywordtype">float</span> *mp, <span class="keywordtype">float</span> *mv,<span class="keywordtype">float</span> *me, <span class="keywordtype">int</span> *mm);
-<a name="l01122"></a>01122 
-<a name="l01131"></a>01131   <span class="keywordtype">int</span> <a class="code" href="classslsDetector.html#8f73479f68ca2171fd2108c2f157299e">finalizeMerging</a>(<span class="keywordtype">float</span> *mp, <span class="keywordtype">float</span> *mv,<span class="keywordtype">float</span> *me, <span class="keywordtype">int</span> *mm);
-<a name="l01132"></a>01132 
-<a name="l01136"></a>01136   <span class="keywordtype">int</span> <a class="code" href="classslsDetector.html#466e9a65aa0b404c771d70c9f01af8b9">exitServer</a>();
-<a name="l01137"></a>01137 
-<a name="l01141"></a>01141   <span class="keywordtype">void</span>* <a class="code" href="classslsDetector.html#717eb12630b1d1f5138f98e5f7ba021f">processData</a>(); <span class="comment">// thread function</span>
-<a name="l01146"></a>01146 <span class="comment"></span>  <a class="code" href="structsls__detector__module.html">sls_detector_module</a>*  <a class="code" href="classslsDetector.html#15e6fa87a3c57ff1c8e1943ec72ec6ad">createModule</a>();
-<a name="l01152"></a>01152   <span class="keywordtype">void</span> <a class="code" href="classslsDetector.html#48984c8d058355c5249233165bf0c410">deleteModule</a>(<a class="code" href="structsls__detector__module.html">sls_detector_module</a> *myMod);
-<a name="l01153"></a>01153 
-<a name="l01154"></a>01154 
-<a name="l01155"></a>01155   <span class="keywordtype">void</span> <a class="code" href="classslsDetector.html#b09a80264ca69e51b2c8379124398410">acquire</a>();
-<a name="l01156"></a>01156 
-<a name="l01157"></a>01157  <span class="keyword">private</span>:
-<a name="l01158"></a>01158  
-<a name="l01162"></a><a class="code" href="classslsDetector.html#fe0da5c1491ebf18f187f0a26c5ded11">01162</a>   <a class="code" href="structslsDetector_1_1sharedSlsDetector.html">sharedSlsDetector</a> *<a class="code" href="classslsDetector.html#fe0da5c1491ebf18f187f0a26c5ded11">thisDetector</a>;
-<a name="l01163"></a>01163 
-<a name="l01167"></a><a class="code" href="classslsDetector.html#7572bba8e53f900d4126657827bec3cf">01167</a>   <span class="keywordtype">int</span> <a class="code" href="classslsDetector.html#7572bba8e53f900d4126657827bec3cf">onlineFlag</a>;
-<a name="l01168"></a>01168   
-<a name="l01172"></a><a class="code" href="classslsDetector.html#37f4af284283e7a18a28cec3f4e4532f">01172</a>   <span class="keywordtype">int</span> <a class="code" href="classslsDetector.html#37f4af284283e7a18a28cec3f4e4532f">detId</a>;
-<a name="l01173"></a>01173   
-<a name="l01177"></a><a class="code" href="classslsDetector.html#53a78c7fe99f93b9bba8d0c2cb32a181">01177</a>   <span class="keywordtype">int</span> <a class="code" href="classslsDetector.html#53a78c7fe99f93b9bba8d0c2cb32a181">shmId</a>;
-<a name="l01178"></a>01178 
-<a name="l01182"></a><a class="code" href="classslsDetector.html#07f3943ab8a65f061bbe1c1e1d22b700">01182</a>   <a class="code" href="classMySocketTCP.html">MySocketTCP</a> *<a class="code" href="classslsDetector.html#07f3943ab8a65f061bbe1c1e1d22b700">controlSocket</a>;
-<a name="l01183"></a>01183 
-<a name="l01187"></a><a class="code" href="classslsDetector.html#efee578cdd732339788a38707e5ce531">01187</a>   <a class="code" href="classMySocketTCP.html">MySocketTCP</a> *<a class="code" href="classslsDetector.html#efee578cdd732339788a38707e5ce531">stopSocket</a>;
-<a name="l01188"></a>01188   
-<a name="l01192"></a><a class="code" href="classslsDetector.html#1629e3c46678ae201f6797e4d827cb32">01192</a>   <a class="code" href="classMySocketTCP.html">MySocketTCP</a> *<a class="code" href="classslsDetector.html#1629e3c46678ae201f6797e4d827cb32">dataSocket</a>; 
-<a name="l01193"></a>01193   
-<a name="l01197"></a><a class="code" href="classslsDetector.html#52e9fe9baf37db001cdf58f982ab5dd6">01197</a>   queue&lt;int*&gt; <a class="code" href="classslsDetector.html#52e9fe9baf37db001cdf58f982ab5dd6">dataQueue</a>;
-<a name="l01198"></a>01198   
-<a name="l01202"></a><a class="code" href="classslsDetector.html#8257cca09e23b601764e57f5a8bdaacd">01202</a>   pthread_t <a class="code" href="classslsDetector.html#8257cca09e23b601764e57f5a8bdaacd">dataProcessingThread</a>;
-<a name="l01203"></a>01203   
-<a name="l01207"></a><a class="code" href="classslsDetector.html#9f64e866250e916299048c9816c9ef28">01207</a>   <span class="keywordtype">float</span> <a class="code" href="classslsDetector.html#9f64e866250e916299048c9816c9ef28">currentPosition</a>;
-<a name="l01208"></a>01208   
-<a name="l01212"></a><a class="code" href="classslsDetector.html#9a6cd8787f618c147faacc1f3602bcf5">01212</a>   <span class="keywordtype">float</span> <a class="code" href="classslsDetector.html#9a6cd8787f618c147faacc1f3602bcf5">currentPositionIndex</a>;
-<a name="l01213"></a>01213   
-<a name="l01217"></a><a class="code" href="classslsDetector.html#4bba77b0de9f911c87d48d12c15a632b">01217</a>   <span class="keywordtype">float</span> <a class="code" href="classslsDetector.html#4bba77b0de9f911c87d48d12c15a632b">currentI0</a>;
-<a name="l01218"></a>01218   
-<a name="l01219"></a>01219 
-<a name="l01220"></a>01220 
-<a name="l01222"></a><a class="code" href="classslsDetector.html#81751fd6e87f9659a8b6afe13efec2cf">01222</a>   <span class="keywordtype">float</span> *<a class="code" href="classslsDetector.html#81751fd6e87f9659a8b6afe13efec2cf">mergingBins</a>;
-<a name="l01223"></a>01223 
-<a name="l01225"></a><a class="code" href="classslsDetector.html#fc173dcaeda2bbd7bbd6a874b5b5726c">01225</a>   <span class="keywordtype">float</span> *<a class="code" href="classslsDetector.html#fc173dcaeda2bbd7bbd6a874b5b5726c">mergingCounts</a>;
-<a name="l01226"></a>01226 
-<a name="l01228"></a><a class="code" href="classslsDetector.html#f357d3b5961ead7ec263a47aa51c4c11">01228</a>   <span class="keywordtype">float</span> *<a class="code" href="classslsDetector.html#f357d3b5961ead7ec263a47aa51c4c11">mergingErrors</a>;
+<a name="l01079"></a>01079 
+<a name="l01085"></a>01085   <span class="keywordtype">float</span>* <a class="code" href="classslsDetector.html#937d257464bade6dc6d3ab42c86843ba">decodeData</a>(<span class="keywordtype">int</span> *datain);
+<a name="l01086"></a>01086 
+<a name="l01087"></a>01087   
+<a name="l01088"></a>01088   
+<a name="l01089"></a>01089   
+<a name="l01100"></a>01100   <span class="keywordtype">int</span> <a class="code" href="classslsDetector.html#24c7dd58e00df0bf62221b7572430740">flatFieldCorrect</a>(<span class="keywordtype">float</span> datain, <span class="keywordtype">float</span> errin, <span class="keywordtype">float</span> &amp;dataout, <span class="keywordtype">float</span> &amp;errout, <span class="keywordtype">float</span> ffcoefficient, <span class="keywordtype">float</span> fferr);
+<a name="l01101"></a>01101   
+<a name="l01110"></a>01110   <span class="keywordtype">int</span> <a class="code" href="classslsDetector.html#24c7dd58e00df0bf62221b7572430740">flatFieldCorrect</a>(<span class="keywordtype">float</span>* datain, <span class="keywordtype">float</span> *errin, <span class="keywordtype">float</span>* dataout, <span class="keywordtype">float</span> *errout);
+<a name="l01111"></a>01111  
+<a name="l01112"></a>01112 
+<a name="l01113"></a>01113   
+<a name="l01124"></a>01124   <span class="keywordtype">int</span> <a class="code" href="classslsDetector.html#e8c2d03ab2c870d2f1ff7a861cfeb6d1">rateCorrect</a>(<span class="keywordtype">float</span> datain, <span class="keywordtype">float</span> errin, <span class="keywordtype">float</span> &amp;dataout, <span class="keywordtype">float</span> &amp;errout, <span class="keywordtype">float</span> tau, <span class="keywordtype">float</span> t);
+<a name="l01125"></a>01125   
+<a name="l01134"></a>01134   <span class="keywordtype">int</span> <a class="code" href="classslsDetector.html#e8c2d03ab2c870d2f1ff7a861cfeb6d1">rateCorrect</a>(<span class="keywordtype">float</span>* datain, <span class="keywordtype">float</span> *errin, <span class="keywordtype">float</span>* dataout, <span class="keywordtype">float</span> *errout);
+<a name="l01135"></a>01135 
+<a name="l01136"></a>01136   
+<a name="l01147"></a>01147   <span class="keyword">virtual</span> <span class="keywordtype">int</span> <a class="code" href="classslsDetector.html#20156c620f868445e454bc4115871822">resetMerging</a>(<span class="keywordtype">float</span> *mp, <span class="keywordtype">float</span> *mv,<span class="keywordtype">float</span> *me, <span class="keywordtype">int</span> *mm)=0;
+<a name="l01160"></a>01160   <span class="keyword">virtual</span> <span class="keywordtype">int</span> <a class="code" href="classslsDetector.html#feb8730f24292620e5d451cd2d4bb9cd">addToMerging</a>(<span class="keywordtype">float</span> *p1, <span class="keywordtype">float</span> *v1, <span class="keywordtype">float</span> *e1, <span class="keywordtype">float</span> *mp, <span class="keywordtype">float</span> *mv,<span class="keywordtype">float</span> *me, <span class="keywordtype">int</span> *mm)=0;
+<a name="l01161"></a>01161 
+<a name="l01171"></a>01171   <span class="keywordtype">int</span> <a class="code" href="classslsDetector.html#8f73479f68ca2171fd2108c2f157299e">finalizeMerging</a>(<span class="keywordtype">float</span> *mp, <span class="keywordtype">float</span> *mv,<span class="keywordtype">float</span> *me, <span class="keywordtype">int</span> *mm);
+<a name="l01172"></a>01172 
+<a name="l01176"></a>01176   <span class="keywordtype">int</span> <a class="code" href="classslsDetector.html#466e9a65aa0b404c771d70c9f01af8b9">exitServer</a>();
+<a name="l01177"></a>01177 
+<a name="l01182"></a>01182   <span class="keyword">virtual</span> <span class="keywordtype">void</span>* <a class="code" href="classslsDetector.html#971d316af920fcb3ade98c486fe42c99">processData</a>()=0; <span class="comment">// thread function</span>
+<a name="l01187"></a>01187 <span class="comment"></span>  <a class="code" href="structsls__detector__module.html">sls_detector_module</a>*  <a class="code" href="classslsDetector.html#b1d4c6c01d1e10fe06bc83329410d4f4">createModule</a>();
+<a name="l01193"></a>01193   <span class="keywordtype">void</span> <a class="code" href="classslsDetector.html#48984c8d058355c5249233165bf0c410">deleteModule</a>(<a class="code" href="structsls__detector__module.html">sls_detector_module</a> *myMod);
+<a name="l01194"></a>01194 
+<a name="l01195"></a>01195 
+<a name="l01206"></a>01206   <span class="keyword">virtual</span> <span class="keywordtype">void</span> <a class="code" href="classslsDetector.html#d2ee30dfd50f06431dca4e4b9619f301">acquire</a>()=0;
+<a name="l01207"></a>01207 
+<a name="l01208"></a>01208  <span class="keyword">protected</span>:
+<a name="l01209"></a>01209  
+<a name="l01213"></a><a class="code" href="classslsDetector.html#fe0da5c1491ebf18f187f0a26c5ded11">01213</a>   <a class="code" href="structslsDetector_1_1sharedSlsDetector.html">sharedSlsDetector</a> *<a class="code" href="classslsDetector.html#fe0da5c1491ebf18f187f0a26c5ded11">thisDetector</a>;
+<a name="l01214"></a>01214 
+<a name="l01218"></a><a class="code" href="classslsDetector.html#7572bba8e53f900d4126657827bec3cf">01218</a>   <span class="keywordtype">int</span> <a class="code" href="classslsDetector.html#7572bba8e53f900d4126657827bec3cf">onlineFlag</a>;
+<a name="l01219"></a>01219   
+<a name="l01223"></a><a class="code" href="classslsDetector.html#37f4af284283e7a18a28cec3f4e4532f">01223</a>   <span class="keywordtype">int</span> <a class="code" href="classslsDetector.html#37f4af284283e7a18a28cec3f4e4532f">detId</a>;
+<a name="l01224"></a>01224   
+<a name="l01228"></a><a class="code" href="classslsDetector.html#53a78c7fe99f93b9bba8d0c2cb32a181">01228</a>   <span class="keywordtype">int</span> <a class="code" href="classslsDetector.html#53a78c7fe99f93b9bba8d0c2cb32a181">shmId</a>;
 <a name="l01229"></a>01229 
-<a name="l01231"></a><a class="code" href="classslsDetector.html#91c5e22042997d86c2c4d16ef1be9150">01231</a>   <span class="keywordtype">int</span> *<a class="code" href="classslsDetector.html#91c5e22042997d86c2c4d16ef1be9150">mergingMultiplicity</a>;
-<a name="l01232"></a>01232   
-<a name="l01233"></a>01233 
+<a name="l01233"></a><a class="code" href="classslsDetector.html#07f3943ab8a65f061bbe1c1e1d22b700">01233</a>   <a class="code" href="classMySocketTCP.html">MySocketTCP</a> *<a class="code" href="classslsDetector.html#07f3943ab8a65f061bbe1c1e1d22b700">controlSocket</a>;
 <a name="l01234"></a>01234 
-<a name="l01235"></a>01235 
-<a name="l01236"></a>01236 
-<a name="l01237"></a>01237 
-<a name="l01238"></a>01238  
-<a name="l01240"></a><a class="code" href="classslsDetector.html#a3c6e93198a2f8b072b7b84ba9af7c4b">01240</a>   <span class="keywordtype">float</span> *<a class="code" href="classslsDetector.html#a3c6e93198a2f8b072b7b84ba9af7c4b">ffcoefficients</a>;
-<a name="l01242"></a><a class="code" href="classslsDetector.html#636168b92509e96418c9134d6d82ad4c">01242</a>   <span class="keywordtype">float</span> *<a class="code" href="classslsDetector.html#636168b92509e96418c9134d6d82ad4c">fferrors</a>;
-<a name="l01244"></a><a class="code" href="classslsDetector.html#b78d6f2abc185b2bde2c550b31e0ff72">01244</a>   <a class="code" href="structsls__detector__module.html">sls_detector_module</a> *<a class="code" href="classslsDetector.html#b78d6f2abc185b2bde2c550b31e0ff72">detectorModules</a>;
-<a name="l01246"></a><a class="code" href="classslsDetector.html#dc1b3f867b97136fca83f86c83b7ae14">01246</a>   <span class="keywordtype">float</span> *<a class="code" href="classslsDetector.html#dc1b3f867b97136fca83f86c83b7ae14">dacs</a>;
-<a name="l01248"></a><a class="code" href="classslsDetector.html#f370b8466441491d8496bb8130b8c5e7">01248</a>   <span class="keywordtype">float</span> *<a class="code" href="classslsDetector.html#f370b8466441491d8496bb8130b8c5e7">adcs</a>;
-<a name="l01250"></a><a class="code" href="classslsDetector.html#0eb24981d044632eccba507bd15871a6">01250</a>   <span class="keywordtype">int</span> *<a class="code" href="classslsDetector.html#0eb24981d044632eccba507bd15871a6">chipregs</a>;
-<a name="l01252"></a><a class="code" href="classslsDetector.html#44335474559f7321f0309fbda304caf8">01252</a>   <span class="keywordtype">int</span> *<a class="code" href="classslsDetector.html#44335474559f7321f0309fbda304caf8">chanregs</a>;
-<a name="l01254"></a><a class="code" href="classslsDetector.html#614c98f77a8a3ec6cff57aa59e671123">01254</a>   <span class="keywordtype">int</span> *<a class="code" href="classslsDetector.html#614c98f77a8a3ec6cff57aa59e671123">badChannelMask</a>;
-<a name="l01255"></a>01255 
-<a name="l01261"></a>01261   <span class="keywordtype">int</span>* <a class="code" href="classslsDetector.html#b1982e89f8e8de63c807a707ccba594c">getDataFromDetector</a>();
-<a name="l01262"></a>01262 
-<a name="l01268"></a>01268   <span class="keywordtype">int</span> <a class="code" href="classslsDetector.html#cb94b9bfa7bbea2d9e1b0289a272bca8">initSharedMemory</a>(<a class="code" href="sls__detector__defs_8h.html#ab9f984f7b6798e684c8f3e6b63c6301">detectorType</a> type=<a class="code" href="sls__detector__defs_8h.html#ab9f984f7b6798e684c8f3e6b63c63019e022e6380da28dd73210ed34b137c36">GENERIC</a>, <span class="keywordtype">int</span> <span class="keywordtype">id</span>=0);
-<a name="l01269"></a>01269 
-<a name="l01271"></a>01271   <span class="keywordtype">int</span> <a class="code" href="classslsDetector.html#5de7fb0d82ae2bcc406385373e665c6f">freeSharedMemory</a>();
-<a name="l01277"></a>01277   <span class="keywordtype">int</span> <a class="code" href="classslsDetector.html#19f1c6d120293c98a0d2dc992e5616f8">initializeDetectorSize</a>(<a class="code" href="sls__detector__defs_8h.html#ab9f984f7b6798e684c8f3e6b63c6301">detectorType</a> type);
-<a name="l01281"></a>01281   <span class="keywordtype">int</span> <a class="code" href="classslsDetector.html#1c39e47efe5d8794b68cb32295cddf3c">initializeDetectorStructure</a>(); 
-<a name="l01285"></a>01285   <span class="keywordtype">int</span> <a class="code" href="classslsDetector.html#5cd249f9a287b25af9a3a7e7e675c559">sendChannel</a>(<a class="code" href="structsls__detector__channel.html">sls_detector_channel</a>*); 
-<a name="l01289"></a>01289   <span class="keywordtype">int</span> <a class="code" href="classslsDetector.html#1e92a814b83501cdef5771c1e5c477aa">sendChip</a>(<a class="code" href="structsls__detector__chip.html">sls_detector_chip</a>*);
-<a name="l01293"></a>01293   <span class="keywordtype">int</span> <a class="code" href="classslsDetector.html#cc29561aa2b22ee49038c7bdf2be5ad7">sendModule</a>(<a class="code" href="structsls__detector__module.html">sls_detector_module</a>*);
-<a name="l01297"></a>01297   <span class="keywordtype">int</span> <a class="code" href="classslsDetector.html#39f8959a55e92c7b0817529270be7667">receiveChannel</a>(<a class="code" href="structsls__detector__channel.html">sls_detector_channel</a>*);
-<a name="l01301"></a>01301   <span class="keywordtype">int</span> <a class="code" href="classslsDetector.html#21d070352bfbf4745543c572bd6ae8f7">receiveChip</a>(<a class="code" href="structsls__detector__chip.html">sls_detector_chip</a>*);
-<a name="l01305"></a>01305   <span class="keywordtype">int</span> <a class="code" href="classslsDetector.html#1356b4fabe6b1aaa9c67939ff9331f98">receiveModule</a>(<a class="code" href="structsls__detector__module.html">sls_detector_module</a>*);
-<a name="l01306"></a>01306   
-<a name="l01310"></a>01310   <span class="keywordtype">void</span> <a class="code" href="classslsDetector.html#58199d3393aa7eaa606cbb7cbf83469d">startThread</a>();
-<a name="l01311"></a>01311   
-<a name="l01315"></a>01315   <span class="keywordtype">int</span> <a class="code" href="classslsDetector.html#6a0ebe013e27c065b2f67158a27f64ac">fillBadChannelMask</a>();
-<a name="l01316"></a>01316 };
-<a name="l01317"></a>01317 
-<a name="l01318"></a>01318 
-<a name="l01319"></a>01319 <span class="comment">//static void* startProcessData(void *n);</span>
-<a name="l01320"></a>01320 <span class="preprocessor">#endif</span>
-</pre></div><hr size="1"><address style="align: right;"><small>Generated on Fri Oct 9 16:01:04 2009 by&nbsp;
+<a name="l01238"></a><a class="code" href="classslsDetector.html#efee578cdd732339788a38707e5ce531">01238</a>   <a class="code" href="classMySocketTCP.html">MySocketTCP</a> *<a class="code" href="classslsDetector.html#efee578cdd732339788a38707e5ce531">stopSocket</a>;
+<a name="l01239"></a>01239   
+<a name="l01243"></a><a class="code" href="classslsDetector.html#1629e3c46678ae201f6797e4d827cb32">01243</a>   <a class="code" href="classMySocketTCP.html">MySocketTCP</a> *<a class="code" href="classslsDetector.html#1629e3c46678ae201f6797e4d827cb32">dataSocket</a>; 
+<a name="l01244"></a>01244   
+<a name="l01248"></a><a class="code" href="classslsDetector.html#52e9fe9baf37db001cdf58f982ab5dd6">01248</a>   queue&lt;int*&gt; <a class="code" href="classslsDetector.html#52e9fe9baf37db001cdf58f982ab5dd6">dataQueue</a>;
+<a name="l01249"></a>01249   
+<a name="l01253"></a><a class="code" href="classslsDetector.html#8257cca09e23b601764e57f5a8bdaacd">01253</a>   pthread_t <a class="code" href="classslsDetector.html#8257cca09e23b601764e57f5a8bdaacd">dataProcessingThread</a>;
+<a name="l01254"></a>01254   
+<a name="l01258"></a><a class="code" href="classslsDetector.html#9f64e866250e916299048c9816c9ef28">01258</a>   <span class="keywordtype">float</span> <a class="code" href="classslsDetector.html#9f64e866250e916299048c9816c9ef28">currentPosition</a>;
+<a name="l01259"></a>01259   
+<a name="l01263"></a><a class="code" href="classslsDetector.html#9a6cd8787f618c147faacc1f3602bcf5">01263</a>   <span class="keywordtype">float</span> <a class="code" href="classslsDetector.html#9a6cd8787f618c147faacc1f3602bcf5">currentPositionIndex</a>;
+<a name="l01264"></a>01264   
+<a name="l01268"></a><a class="code" href="classslsDetector.html#4bba77b0de9f911c87d48d12c15a632b">01268</a>   <span class="keywordtype">float</span> <a class="code" href="classslsDetector.html#4bba77b0de9f911c87d48d12c15a632b">currentI0</a>;
+<a name="l01269"></a>01269   
+<a name="l01270"></a>01270 
+<a name="l01271"></a>01271 
+<a name="l01273"></a><a class="code" href="classslsDetector.html#81751fd6e87f9659a8b6afe13efec2cf">01273</a>   <span class="keywordtype">float</span> *<a class="code" href="classslsDetector.html#81751fd6e87f9659a8b6afe13efec2cf">mergingBins</a>;
+<a name="l01274"></a>01274 
+<a name="l01276"></a><a class="code" href="classslsDetector.html#fc173dcaeda2bbd7bbd6a874b5b5726c">01276</a>   <span class="keywordtype">float</span> *<a class="code" href="classslsDetector.html#fc173dcaeda2bbd7bbd6a874b5b5726c">mergingCounts</a>;
+<a name="l01277"></a>01277 
+<a name="l01279"></a><a class="code" href="classslsDetector.html#f357d3b5961ead7ec263a47aa51c4c11">01279</a>   <span class="keywordtype">float</span> *<a class="code" href="classslsDetector.html#f357d3b5961ead7ec263a47aa51c4c11">mergingErrors</a>;
+<a name="l01280"></a>01280 
+<a name="l01282"></a><a class="code" href="classslsDetector.html#91c5e22042997d86c2c4d16ef1be9150">01282</a>   <span class="keywordtype">int</span> *<a class="code" href="classslsDetector.html#91c5e22042997d86c2c4d16ef1be9150">mergingMultiplicity</a>;
+<a name="l01283"></a>01283   
+<a name="l01284"></a>01284 
+<a name="l01285"></a>01285 
+<a name="l01286"></a>01286 
+<a name="l01287"></a>01287 
+<a name="l01288"></a>01288 
+<a name="l01289"></a>01289  
+<a name="l01291"></a><a class="code" href="classslsDetector.html#a3c6e93198a2f8b072b7b84ba9af7c4b">01291</a>   <span class="keywordtype">float</span> *<a class="code" href="classslsDetector.html#a3c6e93198a2f8b072b7b84ba9af7c4b">ffcoefficients</a>;
+<a name="l01293"></a><a class="code" href="classslsDetector.html#636168b92509e96418c9134d6d82ad4c">01293</a>   <span class="keywordtype">float</span> *<a class="code" href="classslsDetector.html#636168b92509e96418c9134d6d82ad4c">fferrors</a>;
+<a name="l01295"></a><a class="code" href="classslsDetector.html#b78d6f2abc185b2bde2c550b31e0ff72">01295</a>   <a class="code" href="structsls__detector__module.html">sls_detector_module</a> *<a class="code" href="classslsDetector.html#b78d6f2abc185b2bde2c550b31e0ff72">detectorModules</a>;
+<a name="l01297"></a><a class="code" href="classslsDetector.html#dc1b3f867b97136fca83f86c83b7ae14">01297</a>   <span class="keywordtype">float</span> *<a class="code" href="classslsDetector.html#dc1b3f867b97136fca83f86c83b7ae14">dacs</a>;
+<a name="l01299"></a><a class="code" href="classslsDetector.html#f370b8466441491d8496bb8130b8c5e7">01299</a>   <span class="keywordtype">float</span> *<a class="code" href="classslsDetector.html#f370b8466441491d8496bb8130b8c5e7">adcs</a>;
+<a name="l01301"></a><a class="code" href="classslsDetector.html#0eb24981d044632eccba507bd15871a6">01301</a>   <span class="keywordtype">int</span> *<a class="code" href="classslsDetector.html#0eb24981d044632eccba507bd15871a6">chipregs</a>;
+<a name="l01303"></a><a class="code" href="classslsDetector.html#44335474559f7321f0309fbda304caf8">01303</a>   <span class="keywordtype">int</span> *<a class="code" href="classslsDetector.html#44335474559f7321f0309fbda304caf8">chanregs</a>;
+<a name="l01305"></a><a class="code" href="classslsDetector.html#614c98f77a8a3ec6cff57aa59e671123">01305</a>   <span class="keywordtype">int</span> *<a class="code" href="classslsDetector.html#614c98f77a8a3ec6cff57aa59e671123">badChannelMask</a>;
+<a name="l01306"></a>01306 
+<a name="l01312"></a>01312   <span class="keywordtype">int</span>* <a class="code" href="classslsDetector.html#b1982e89f8e8de63c807a707ccba594c">getDataFromDetector</a>();
+<a name="l01313"></a>01313 
+<a name="l01319"></a>01319   <span class="keywordtype">int</span> <a class="code" href="classslsDetector.html#cb94b9bfa7bbea2d9e1b0289a272bca8">initSharedMemory</a>(<a class="code" href="sls__detector__defs_8h.html#ab9f984f7b6798e684c8f3e6b63c6301">detectorType</a> type=<a class="code" href="sls__detector__defs_8h.html#ab9f984f7b6798e684c8f3e6b63c63019e022e6380da28dd73210ed34b137c36">GENERIC</a>, <span class="keywordtype">int</span> <span class="keywordtype">id</span>=0);
+<a name="l01320"></a>01320 
+<a name="l01322"></a>01322   <span class="keywordtype">int</span> <a class="code" href="classslsDetector.html#5de7fb0d82ae2bcc406385373e665c6f">freeSharedMemory</a>();
+<a name="l01328"></a>01328   <span class="keywordtype">int</span> <a class="code" href="classslsDetector.html#19f1c6d120293c98a0d2dc992e5616f8">initializeDetectorSize</a>(<a class="code" href="sls__detector__defs_8h.html#ab9f984f7b6798e684c8f3e6b63c6301">detectorType</a> type);
+<a name="l01332"></a>01332   <span class="keywordtype">int</span> <a class="code" href="classslsDetector.html#1c39e47efe5d8794b68cb32295cddf3c">initializeDetectorStructure</a>(); 
+<a name="l01336"></a>01336   <span class="keywordtype">int</span> <a class="code" href="classslsDetector.html#5cd249f9a287b25af9a3a7e7e675c559">sendChannel</a>(<a class="code" href="structsls__detector__channel.html">sls_detector_channel</a>*); 
+<a name="l01340"></a>01340   <span class="keywordtype">int</span> <a class="code" href="classslsDetector.html#1e92a814b83501cdef5771c1e5c477aa">sendChip</a>(<a class="code" href="structsls__detector__chip.html">sls_detector_chip</a>*);
+<a name="l01344"></a>01344   <span class="keywordtype">int</span> <a class="code" href="classslsDetector.html#cc29561aa2b22ee49038c7bdf2be5ad7">sendModule</a>(<a class="code" href="structsls__detector__module.html">sls_detector_module</a>*);
+<a name="l01348"></a>01348   <span class="keywordtype">int</span> <a class="code" href="classslsDetector.html#39f8959a55e92c7b0817529270be7667">receiveChannel</a>(<a class="code" href="structsls__detector__channel.html">sls_detector_channel</a>*);
+<a name="l01352"></a>01352   <span class="keywordtype">int</span> <a class="code" href="classslsDetector.html#21d070352bfbf4745543c572bd6ae8f7">receiveChip</a>(<a class="code" href="structsls__detector__chip.html">sls_detector_chip</a>*);
+<a name="l01356"></a>01356   <span class="keywordtype">int</span> <a class="code" href="classslsDetector.html#1356b4fabe6b1aaa9c67939ff9331f98">receiveModule</a>(<a class="code" href="structsls__detector__module.html">sls_detector_module</a>*);
+<a name="l01357"></a>01357   
+<a name="l01361"></a>01361   <span class="keywordtype">void</span> <a class="code" href="classslsDetector.html#58199d3393aa7eaa606cbb7cbf83469d">startThread</a>();
+<a name="l01362"></a>01362   
+<a name="l01366"></a>01366   <span class="keywordtype">int</span> <a class="code" href="classslsDetector.html#6a0ebe013e27c065b2f67158a27f64ac">fillBadChannelMask</a>();
+<a name="l01367"></a>01367 };
+<a name="l01368"></a>01368 
+<a name="l01369"></a>01369 
+<a name="l01370"></a>01370 <span class="comment">//static void* startProcessData(void *n);</span>
+<a name="l01371"></a>01371 <span class="preprocessor">#endif</span>
+</pre></div><hr size="1"><address style="align: right;"><small>Generated on Tue Dec 1 10:56:45 2009 by&nbsp;
 <a href="http://www.doxygen.org/index.html">
 <img src="doxygen.png" alt="doxygen" align="middle" border="0"></a> 1.4.7 </small></address>
 </body>

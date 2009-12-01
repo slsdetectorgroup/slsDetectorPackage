@@ -26,11 +26,16 @@ The architecture of the acquisitions system is intended as follows: <ul>
 <li>C++ classes common to all detectors for client-server communication. These can be supplied to users as libraries and embedded also in acquisition systems which are not developed by the SLS<dl compact><dt><b>See also:</b></dt><dd><a class="el" href="classMySocketTCP.html">MySocketTCP</a> <a class="el" href="classslsDetector.html">slsDetector</a> </dd></dl>
 </li>
 <li>the possibility of using a Qt-based graphical user interface (with eventually root analisys capabilities) </li>
-<li>the possibility of runnin alla commands from command line. In order to ensure a fast operation of this so called "text client" the detector parameters should not be re-initialized everytime. For this reason a shared memory block is allocated where the main detector flags and parameters are stored<dl compact><dt><b>See also:</b></dt><dd><a class="el" href="structslsDetector_1_1sharedSlsDetector.html">slsDetector::sharedSlsDetector</a></dd></dl>
-<dl compact><dt><b>Author:</b></dt><dd>Anna Bergamaschi </dd></dl>
+<li>the possibility of runnin alla commands from command line. In order to ensure a fast operation of this so called "text client" the detector parameters should not be re-initialized everytime. For this reason a shared memory block is allocated where the main detector flags and parameters are stored<dl compact><dt><b>See also:</b></dt><dd><a class="el" href="structslsDetector_1_1sharedSlsDetector.html">slsDetector::sharedSlsDetector</a> </dd></dl>
 </li>
 </ul>
-<hr size="1"><address style="align: right;"><small>Generated on Fri Oct 9 16:01:04 2009 by&nbsp;
+<h2><a class="anchor" name="howto_sec">
+How to use it</a></h2>
+The best way to operate the slsDetectors is to use the software (text client or GUI) developed by the sls detectors group. In case you need to embed the detector control in a previously existing software, compile these classes using <br>
+ make package <br>
+ and link the shared library created to your software bin/libSlsDetector.so.1.0.1 Then in your software you should use the class related to the detector you want to control (<a class="el" href="classmythenDetector.html">mythenDetector</a> or <a class="el" href="classeigerDetector.html">eigerDetector</a>).<p>
+<dl compact><dt><b>Author:</b></dt><dd>Anna Bergamaschi </dd></dl>
+<hr size="1"><address style="align: right;"><small>Generated on Tue Dec 1 10:56:45 2009 by&nbsp;
 <a href="http://www.doxygen.org/index.html">
 <img src="doxygen.png" alt="doxygen" align="middle" border="0"></a> 1.4.7 </small></address>
 </body>

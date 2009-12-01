@@ -56,13 +56,13 @@
 
 <tr><td class="memItemLeft" nowrap align="right" valign="top">int&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classslsDetector.html#bf592960cebe5b3f1e2fdc77f770f17a">exists</a> ()</td></tr>
 
-<tr><td class="memItemLeft" nowrap align="right" valign="top">int&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classslsDetector.html#49c88825b21dc040269f6980e9725a3a">readConfigurationFile</a> (string const fname)</td></tr>
+<tr><td class="memItemLeft" nowrap align="right" valign="top">virtual int&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classslsDetector.html#80266f80cfe49c2ccec7118de341d983">readConfigurationFile</a> (string const fname)=0</td></tr>
 
-<tr><td class="memItemLeft" nowrap align="right" valign="top">int&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classslsDetector.html#82628148e11f4890c9d935ec921c1121">writeConfigurationFile</a> (string const fname)</td></tr>
+<tr><td class="memItemLeft" nowrap align="right" valign="top">virtual int&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classslsDetector.html#7801c6d43c72ce5ccaa72743a6f307d2">writeConfigurationFile</a> (string const fname)=0</td></tr>
 
-<tr><td class="memItemLeft" nowrap align="right" valign="top">int&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classslsDetector.html#dc4f62e536b4ef6d0d2d178e3bfbec5e">dumpDetectorSetup</a> (string const fname)</td></tr>
+<tr><td class="memItemLeft" nowrap align="right" valign="top">virtual int&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classslsDetector.html#96428855d6e286408a52e675e045cf45">dumpDetectorSetup</a> (string const fname)=0</td></tr>
 
-<tr><td class="memItemLeft" nowrap align="right" valign="top">int&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classslsDetector.html#233c3d27e9a946fb42b0aa49717d9251">retrieveDetectorSetup</a> (string const fname)</td></tr>
+<tr><td class="memItemLeft" nowrap align="right" valign="top">virtual int&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classslsDetector.html#0ec6aa8998db1bee1b00aeecbe870d5f">retrieveDetectorSetup</a> (string const fname)=0</td></tr>
 
 <tr><td class="memItemLeft" nowrap align="right" valign="top">int&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classslsDetector.html#019a01c4465c5ee572293cb6c00d9904">setTCPSocket</a> (string const name=&quot;&quot;, int const control_port=-1, int const stop_port=-1, int const data_port=-1)</td></tr>
 
@@ -78,13 +78,13 @@
 
 <tr><td class="memItemLeft" nowrap align="right" valign="top">char *&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classslsDetector.html#646f389e75c23c2c8627c62fb1df2890">setTrimDir</a> (string s)</td></tr>
 
-<tr><td class="memItemLeft" nowrap align="right" valign="top">int&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classslsDetector.html#fa24d8a0ec1393c7e27e4e558e72cf87">getTrimEn</a> (int *en)</td></tr>
+<tr><td class="memItemLeft" nowrap align="right" valign="top">int&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classslsDetector.html#8862569a4a2530558914daa2e2251138">getTrimEn</a> (int *en=NULL)</td></tr>
 
-<tr><td class="memItemLeft" nowrap align="right" valign="top"><a class="el" href="structsls__detector__module.html">sls_detector_module</a> *&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classslsDetector.html#e84b8a7a2b27db3f89a98f9f8a81efca">readTrimFile</a> (string fname, <a class="el" href="structsls__detector__module.html">sls_detector_module</a> *myMod=NULL)</td></tr>
+<tr><td class="memItemLeft" nowrap align="right" valign="top">virtual <a class="el" href="structsls__detector__module.html">sls_detector_module</a> *&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classslsDetector.html#612b52469e27c6675969499d3680abe6">readTrimFile</a> (string fname, <a class="el" href="structsls__detector__module.html">sls_detector_module</a> *myMod=NULL)=0</td></tr>
 
-<tr><td class="memItemLeft" nowrap align="right" valign="top">int&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classslsDetector.html#9cbb1f97b8e48bd4b108a2dfa992c6af">writeTrimFile</a> (string fname, <a class="el" href="structsls__detector__module.html">sls_detector_module</a> mod)</td></tr>
+<tr><td class="memItemLeft" nowrap align="right" valign="top">virtual int&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classslsDetector.html#5b97351cfaffe067016dbcebbd0778a7">writeTrimFile</a> (string fname, <a class="el" href="structsls__detector__module.html">sls_detector_module</a> mod)=0</td></tr>
 
-<tr><td class="memItemLeft" nowrap align="right" valign="top">int&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classslsDetector.html#afe675432bf8e5dcb47774da3cc81106">writeTrimFile</a> (string fname, int imod)</td></tr>
+<tr><td class="memItemLeft" nowrap align="right" valign="top">virtual int&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classslsDetector.html#cb27a987551e66093eb201523ac8d8b0">writeTrimFile</a> (string fname, int imod)=0</td></tr>
 
 <tr><td class="memItemLeft" nowrap align="right" valign="top">char *&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classslsDetector.html#57c4587267e50a21ba13ead83294bdb4">setFilePath</a> (string s)</td></tr>
 
@@ -100,25 +100,25 @@
 
 <tr><td class="memItemLeft" nowrap align="right" valign="top">string&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classslsDetector.html#d055c470ae6faa973980f4dbf021132d">createFileName</a> ()</td></tr>
 
-<tr><td class="memItemLeft" nowrap align="right" valign="top">int&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classslsDetector.html#889c060afb5693830ca2be4fc6a5442c">writeDataFile</a> (string fname, float *data, float *err=NULL, float *ang=NULL, char dataformat='f', int nch=-1)</td></tr>
+<tr><td class="memItemLeft" nowrap align="right" valign="top">virtual int&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classslsDetector.html#08823d7078b5e6dd1a4cb7d8b3cfe0af">writeDataFile</a> (string fname, float *data, float *err=NULL, float *ang=NULL, char dataformat='f', int nch=-1)=0</td></tr>
 
-<tr><td class="memItemLeft" nowrap align="right" valign="top">int&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classslsDetector.html#3e1a8e49fbfb34a54381452abc8b5258">writeDataFile</a> (string fname, int *data)</td></tr>
+<tr><td class="memItemLeft" nowrap align="right" valign="top">virtual int&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classslsDetector.html#efa98ca652306e2a026c9a5b2fbfe2dc">writeDataFile</a> (string fname, int *data)=0</td></tr>
 
-<tr><td class="memItemLeft" nowrap align="right" valign="top">int&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classslsDetector.html#ffd62fa6a3487693316209ea71502b4b">readDataFile</a> (string fname, float *data, float *err=NULL, float *ang=NULL, char dataformat='f', int nch=0)</td></tr>
+<tr><td class="memItemLeft" nowrap align="right" valign="top">virtual int&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classslsDetector.html#86df95809e0e7979eafc04b2b868843d">readDataFile</a> (string fname, float *data, float *err=NULL, float *ang=NULL, char dataformat='f', int nch=0)=0</td></tr>
 
-<tr><td class="memItemLeft" nowrap align="right" valign="top">int&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classslsDetector.html#0d27017bc1140cc9da3e797f03848f2e">readDataFile</a> (string fname, int *data)</td></tr>
+<tr><td class="memItemLeft" nowrap align="right" valign="top">virtual int&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classslsDetector.html#4239e7a357df82640464c0f2d0a18d69">readDataFile</a> (string fname, int *data)=0</td></tr>
 
 <tr><td class="memItemLeft" nowrap align="right" valign="top">char *&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classslsDetector.html#102679594e60ed261daff24b4aeac21a">getCalDir</a> ()</td></tr>
 
 <tr><td class="memItemLeft" nowrap align="right" valign="top">char *&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classslsDetector.html#9c4d2c796c176852537ff3cff4f5974b">setCalDir</a> (string s)</td></tr>
 
-<tr><td class="memItemLeft" nowrap align="right" valign="top">int&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classslsDetector.html#9305060e7499cfcabac23b99c884b92b">readCalibrationFile</a> (string fname, float &amp;gain, float &amp;offset)</td></tr>
+<tr><td class="memItemLeft" nowrap align="right" valign="top">virtual int&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classslsDetector.html#6c7f837f0820b08f41649c30151cb7ac">readCalibrationFile</a> (string fname, float &amp;gain, float &amp;offset)=0</td></tr>
 
-<tr><td class="memItemLeft" nowrap align="right" valign="top">int&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classslsDetector.html#8eb676a1ab6ef35601ba5cae942ba380">writeCalibrationFile</a> (string fname, float gain, float offset)</td></tr>
+<tr><td class="memItemLeft" nowrap align="right" valign="top">virtual int&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classslsDetector.html#d12edef440bf2b2f930e83f0ccceb01e">writeCalibrationFile</a> (string fname, float gain, float offset)=0</td></tr>
 
-<tr><td class="memItemLeft" nowrap align="right" valign="top">int&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classslsDetector.html#23398787e01e519bf8ac5f313ca5af01">readAngularConversion</a> (string fname=&quot;&quot;)</td></tr>
+<tr><td class="memItemLeft" nowrap align="right" valign="top">virtual int&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classslsDetector.html#cd9d6358db471600f2e1a143a53c61c1">readAngularConversion</a> (string fname=&quot;&quot;)=0</td></tr>
 
-<tr><td class="memItemLeft" nowrap align="right" valign="top">int&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classslsDetector.html#921f212286be085d7e1b8d0d11110d9c">writeAngularConversion</a> (string fname=&quot;&quot;)</td></tr>
+<tr><td class="memItemLeft" nowrap align="right" valign="top">virtual int&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classslsDetector.html#cace8f0d8706a175915289d86c1fd8d6">writeAngularConversion</a> (string fname=&quot;&quot;)=0</td></tr>
 
 <tr><td class="memItemLeft" nowrap align="right" valign="top">int&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classslsDetector.html#9fc0c9161e967094a535cc40bc33cc6b">execCommand</a> (string cmd, string answer)</td></tr>
 
@@ -160,25 +160,25 @@
 
 <tr><td class="memItemLeft" nowrap align="right" valign="top">int&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classslsDetector.html#71bf1ef7be9f51c44cf6bc4a0dfea1e2">setChannel</a> (<a class="el" href="structsls__detector__channel.html">sls_detector_channel</a> chan)</td></tr>
 
-<tr><td class="memItemLeft" nowrap align="right" valign="top"><a class="el" href="structsls__detector__channel.html">sls_detector_channel</a>&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classslsDetector.html#bbf8573e249da1f0a436f581d0dc62e4">getChannel</a> (int ichan, int ichip, int imod)</td></tr>
+<tr><td class="memItemLeft" nowrap align="right" valign="top"><a class="el" href="structsls__detector__channel.html">sls_detector_channel</a>&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classslsDetector.html#05f1a170b7416db77bf7cff762e9b58a">getChannel</a> (int ichan, int ichip, int imod)</td></tr>
 
 <tr><td class="memItemLeft" nowrap align="right" valign="top">int&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classslsDetector.html#18cf730c59f5981fb5e22ebf460b9abc">setChip</a> (int reg, int ichip=-1, int imod=-1)</td></tr>
 
 <tr><td class="memItemLeft" nowrap align="right" valign="top">int&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classslsDetector.html#3a327b952866525e1b5c8fe541834c68">setChip</a> (<a class="el" href="structsls__detector__chip.html">sls_detector_chip</a> chip)</td></tr>
 
-<tr><td class="memItemLeft" nowrap align="right" valign="top"><a class="el" href="structsls__detector__chip.html">sls_detector_chip</a>&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classslsDetector.html#6dd6b42b668610dbd03a7700de84b845">getChip</a> (int ichip, int imod)</td></tr>
+<tr><td class="memItemLeft" nowrap align="right" valign="top"><a class="el" href="structsls__detector__chip.html">sls_detector_chip</a>&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classslsDetector.html#2eb7f887a72cc80d6b00cadd4731e672">getChip</a> (int ichip, int imod)</td></tr>
 
 <tr><td class="memItemLeft" nowrap align="right" valign="top">int&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classslsDetector.html#1be9e16689befa0d654345bc30ccd68e">setModule</a> (int reg, int imod=-1)</td></tr>
 
 <tr><td class="memItemLeft" nowrap align="right" valign="top">int&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classslsDetector.html#d659b9a8ae9a29cea616e6333e2e7be4">setModule</a> (<a class="el" href="structsls__detector__module.html">sls_detector_module</a> module)</td></tr>
 
-<tr><td class="memItemLeft" nowrap align="right" valign="top"><a class="el" href="structsls__detector__module.html">sls_detector_module</a> *&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classslsDetector.html#d1b14626e602ceaebfcf4321f6f40997">getModule</a> (int imod)</td></tr>
+<tr><td class="memItemLeft" nowrap align="right" valign="top"><a class="el" href="structsls__detector__module.html">sls_detector_module</a> *&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classslsDetector.html#32557eee02e541840246b4b4a3e76c83">getModule</a> (int imod)</td></tr>
 
 <tr><td class="memItemLeft" nowrap align="right" valign="top">int&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classslsDetector.html#f2da634bb9551730c12e07e2b772bf06">getThresholdEnergy</a> (int imod=-1)</td></tr>
 
 <tr><td class="memItemLeft" nowrap align="right" valign="top">int&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classslsDetector.html#ab00a8eeca28831751121054e35d4c6b">setThresholdEnergy</a> (int e_eV, int imod=-1, <a class="el" href="sls__detector__defs_8h.html#754e2e1fdf9e993405c39b6050528d56">detectorSettings</a> isettings=GET_SETTINGS)</td></tr>
 
-<tr><td class="memItemLeft" nowrap align="right" valign="top"><a class="el" href="sls__detector__defs_8h.html#754e2e1fdf9e993405c39b6050528d56">detectorSettings</a>&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classslsDetector.html#d112702360f31a967bfad9fe2aabf6f6">getSettings</a> (int imod=-1)</td></tr>
+<tr><td class="memItemLeft" nowrap align="right" valign="top"><a class="el" href="sls__detector__defs_8h.html#754e2e1fdf9e993405c39b6050528d56">detectorSettings</a>&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classslsDetector.html#cfccfada625943feb410c6a14607a366">getSettings</a> (int imod=-1)</td></tr>
 
 <tr><td class="memItemLeft" nowrap align="right" valign="top"><a class="el" href="sls__detector__defs_8h.html#754e2e1fdf9e993405c39b6050528d56">detectorSettings</a>&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classslsDetector.html#765072d5c8aaff56ca79734072607188">setSettings</a> (<a class="el" href="sls__detector__defs_8h.html#754e2e1fdf9e993405c39b6050528d56">detectorSettings</a> isettings, int imod=-1)</td></tr>
 
@@ -206,13 +206,7 @@
 
 <tr><td class="memItemLeft" nowrap align="right" valign="top">int64_t&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classslsDetector.html#61f072fcaf0a359148f52ea34769c846">getTimeLeft</a> (<a class="el" href="sls__detector__defs_8h.html#07c87ebf35dffccd06fe39859a3ca603">timerIndex</a> index)</td></tr>
 
-<tr><td class="memItemLeft" nowrap align="right" valign="top">int&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classslsDetector.html#49af64998d4a4d44e965eb0adb1facb2">setClockDivider</a> (int i)</td></tr>
-
-<tr><td class="memItemLeft" nowrap align="right" valign="top">int&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classslsDetector.html#12b884821edc41fe9821f2ab084a0baf">getClockDivider</a> ()</td></tr>
-
-<tr><td class="memItemLeft" nowrap align="right" valign="top">int&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classslsDetector.html#f936cf5840bded81acb3f93b6b5fdd1c">setSetLength</a> (int i)</td></tr>
-
-<tr><td class="memItemLeft" nowrap align="right" valign="top">int&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classslsDetector.html#51a88168bf9e4cd2ef7730b973963055">getSetLength</a> ()</td></tr>
+<tr><td class="memItemLeft" nowrap align="right" valign="top">int&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classslsDetector.html#8e35d9440a03e127ef5fe7a909702675">setSpeed</a> (<a class="el" href="sls__detector__defs_8h.html#8c326f6a87754392b72098d3d0dec49d">speedVariable</a> sp, int value=-1)</td></tr>
 
 <tr><td class="memItemLeft" nowrap align="right" valign="top">int&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classslsDetector.html#57d00f77b9c12d9a01407d5a74bacddb">setDynamicRange</a> (int n=-1)</td></tr>
 
@@ -236,25 +230,29 @@
 
 <tr><td class="memItemLeft" nowrap align="right" valign="top">int&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classslsDetector.html#f80db913b55026bb69d35585b08729cc">getBadChannelCorrections</a> (int *bad=NULL)</td></tr>
 
-<tr><td class="memItemLeft" nowrap align="right" valign="top">int&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classslsDetector.html#30fe39ddd78fa880b6b7815d1d5462ec">setAngularConversion</a> (string fname=&quot;&quot;)</td></tr>
+<tr><td class="memItemLeft" nowrap align="right" valign="top">char *&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classslsDetector.html#0b562f90b64c80e3eb64e9e2153bb234">getBadChannelCorrectionFile</a> ()</td></tr>
 
-<tr><td class="memItemLeft" nowrap align="right" valign="top">int&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classslsDetector.html#a146baee5af54b53db0997de02f4779c">getAngularConversion</a> (int &amp;direction, <a class="el" href="structangleConversionConstant.html">angleConversionConstant</a> *angconv=NULL)</td></tr>
+<tr><td class="memItemLeft" nowrap align="right" valign="top">virtual int&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classslsDetector.html#0a17abc301de750f7dafd43b7ad8b0c9">setAngularConversion</a> (string fname=&quot;&quot;)=0</td></tr>
 
-<tr><td class="memItemLeft" nowrap align="right" valign="top">float&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classslsDetector.html#84c8dc8017e692d93246cd546e6366c1">setGlobalOffset</a> (float f)</td></tr>
+<tr><td class="memItemLeft" nowrap align="right" valign="top">virtual int&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classslsDetector.html#a110e9eb82123756cf89fda0a4cb464d">getAngularConversion</a> (int &amp;direction, <a class="el" href="structangleConversionConstant.html">angleConversionConstant</a> *angconv=NULL)=0</td></tr>
 
-<tr><td class="memItemLeft" nowrap align="right" valign="top">float&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classslsDetector.html#fd3b79c59688a7a0f4f72ba5676a2f9b">setFineOffset</a> (float f)</td></tr>
+<tr><td class="memItemLeft" nowrap align="right" valign="top">virtual char *&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classslsDetector.html#0c2e502441fd74ec7fc20604c5c08c27">getAngularConversion</a> ()=0</td></tr>
 
-<tr><td class="memItemLeft" nowrap align="right" valign="top">float&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classslsDetector.html#1a402a849d04190024e9dc87d4dae6dc">getFineOffset</a> ()</td></tr>
+<tr><td class="memItemLeft" nowrap align="right" valign="top">virtual float&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classslsDetector.html#2a03a8aec6dbf74a606e6960e178fceb">setGlobalOffset</a> (float f)=0</td></tr>
 
-<tr><td class="memItemLeft" nowrap align="right" valign="top">float&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classslsDetector.html#42f854256e2900f18b2a17201813b48c">getGlobalOffset</a> ()</td></tr>
+<tr><td class="memItemLeft" nowrap align="right" valign="top">virtual float&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classslsDetector.html#7b3b6b3ac5b3b1ee0677f7deeec5c9e3">setFineOffset</a> (float f)=0</td></tr>
 
-<tr><td class="memItemLeft" nowrap align="right" valign="top">int&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classslsDetector.html#ed6493ad015660281b14814f9a7f6cb5">setPositions</a> (int nPos, float *<a class="el" href="usersFunctions_8c.html#f14c6d623ff1aec896b4d087ab74caa0">pos</a>)</td></tr>
+<tr><td class="memItemLeft" nowrap align="right" valign="top">virtual float&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classslsDetector.html#8e39680a1a096ca13ed672504b5b08e6">getFineOffset</a> ()=0</td></tr>
 
-<tr><td class="memItemLeft" nowrap align="right" valign="top">int&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classslsDetector.html#732f6d36456d6e87d70324a4bdc1bbb8">getPositions</a> (float *<a class="el" href="usersFunctions_8c.html#f14c6d623ff1aec896b4d087ab74caa0">pos</a>=NULL)</td></tr>
+<tr><td class="memItemLeft" nowrap align="right" valign="top">virtual float&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classslsDetector.html#8964e3efa73f29b04bd9479578bd1c59">getGlobalOffset</a> ()=0</td></tr>
 
-<tr><td class="memItemLeft" nowrap align="right" valign="top">float&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classslsDetector.html#96e2fb6fb0aa34bdbe59facf367c4ae1">setBinSize</a> (float bs)</td></tr>
+<tr><td class="memItemLeft" nowrap align="right" valign="top">virtual int&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classslsDetector.html#961e3976e3077803e2fc245873f81d81">setPositions</a> (int nPos, float *<a class="el" href="usersFunctions_8c.html#f14c6d623ff1aec896b4d087ab74caa0">pos</a>)=0</td></tr>
 
-<tr><td class="memItemLeft" nowrap align="right" valign="top">float&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classslsDetector.html#8a78eda56f5a0c487bbc4e2f962d04db">getBinSize</a> ()</td></tr>
+<tr><td class="memItemLeft" nowrap align="right" valign="top">virtual int&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classslsDetector.html#248794801b9794d20e7d58bceab564ab">getPositions</a> (float *<a class="el" href="usersFunctions_8c.html#f14c6d623ff1aec896b4d087ab74caa0">pos</a>=NULL)=0</td></tr>
+
+<tr><td class="memItemLeft" nowrap align="right" valign="top">virtual float&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classslsDetector.html#1a2ebbe67dae42059723071f437eb721">setBinSize</a> (float bs)=0</td></tr>
+
+<tr><td class="memItemLeft" nowrap align="right" valign="top">virtual float&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classslsDetector.html#7d83754e3f41042caa9297da9a33b714">getBinSize</a> ()=0</td></tr>
 
 <tr><td class="memItemLeft" nowrap align="right" valign="top">float *&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classslsDetector.html#937d257464bade6dc6d3ab42c86843ba">decodeData</a> (int *datain)</td></tr>
 
@@ -266,23 +264,23 @@
 
 <tr><td class="memItemLeft" nowrap align="right" valign="top">int&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classslsDetector.html#518feacfa3a1d6156779f8eaacdf86d3">rateCorrect</a> (float *datain, float *errin, float *dataout, float *errout)</td></tr>
 
-<tr><td class="memItemLeft" nowrap align="right" valign="top">int&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classslsDetector.html#208c3a5a80ba931056f1f2ff3cb5d0e5">resetMerging</a> (float *mp, float *mv, float *me, int *mm)</td></tr>
+<tr><td class="memItemLeft" nowrap align="right" valign="top">virtual int&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classslsDetector.html#20156c620f868445e454bc4115871822">resetMerging</a> (float *mp, float *mv, float *me, int *mm)=0</td></tr>
 
-<tr><td class="memItemLeft" nowrap align="right" valign="top">int&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classslsDetector.html#ed3ddadb246080ef644b6d1455fa2e32">addToMerging</a> (float *p1, float *v1, float *e1, float *mp, float *mv, float *me, int *mm)</td></tr>
+<tr><td class="memItemLeft" nowrap align="right" valign="top">virtual int&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classslsDetector.html#feb8730f24292620e5d451cd2d4bb9cd">addToMerging</a> (float *p1, float *v1, float *e1, float *mp, float *mv, float *me, int *mm)=0</td></tr>
 
 <tr><td class="memItemLeft" nowrap align="right" valign="top">int&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classslsDetector.html#8f73479f68ca2171fd2108c2f157299e">finalizeMerging</a> (float *mp, float *mv, float *me, int *mm)</td></tr>
 
 <tr><td class="memItemLeft" nowrap align="right" valign="top">int&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classslsDetector.html#466e9a65aa0b404c771d70c9f01af8b9">exitServer</a> ()</td></tr>
 
-<tr><td class="memItemLeft" nowrap align="right" valign="top">void *&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classslsDetector.html#717eb12630b1d1f5138f98e5f7ba021f">processData</a> ()</td></tr>
+<tr><td class="memItemLeft" nowrap align="right" valign="top">virtual void *&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classslsDetector.html#971d316af920fcb3ade98c486fe42c99">processData</a> ()=0</td></tr>
 
-<tr><td class="memItemLeft" nowrap align="right" valign="top"><a class="el" href="structsls__detector__module.html">sls_detector_module</a> *&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classslsDetector.html#15e6fa87a3c57ff1c8e1943ec72ec6ad">createModule</a> ()</td></tr>
+<tr><td class="memItemLeft" nowrap align="right" valign="top"><a class="el" href="structsls__detector__module.html">sls_detector_module</a> *&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classslsDetector.html#b1d4c6c01d1e10fe06bc83329410d4f4">createModule</a> ()</td></tr>
 
 <tr><td class="memItemLeft" nowrap align="right" valign="top">void&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classslsDetector.html#48984c8d058355c5249233165bf0c410">deleteModule</a> (<a class="el" href="structsls__detector__module.html">sls_detector_module</a> *myMod)</td></tr>
 
-<tr><td class="memItemLeft" nowrap align="right" valign="top">void&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classslsDetector.html#b09a80264ca69e51b2c8379124398410">acquire</a> ()</td></tr>
+<tr><td class="memItemLeft" nowrap align="right" valign="top">virtual void&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classslsDetector.html#d2ee30dfd50f06431dca4e4b9619f301">acquire</a> ()=0</td></tr>
 
-<tr><td colspan="2"><br><h2>Private Member Functions</h2></td></tr>
+<tr><td colspan="2"><br><h2>Protected Member Functions</h2></td></tr>
 <tr><td class="memItemLeft" nowrap align="right" valign="top">int *&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classslsDetector.html#b1982e89f8e8de63c807a707ccba594c">getDataFromDetector</a> ()</td></tr>
 
 <tr><td class="memItemLeft" nowrap align="right" valign="top">int&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classslsDetector.html#cb94b9bfa7bbea2d9e1b0289a272bca8">initSharedMemory</a> (<a class="el" href="sls__detector__defs_8h.html#ab9f984f7b6798e684c8f3e6b63c6301">detectorType</a> type=GENERIC, int id=0)</td></tr>
@@ -309,7 +307,7 @@
 
 <tr><td class="memItemLeft" nowrap align="right" valign="top">int&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classslsDetector.html#6a0ebe013e27c065b2f67158a27f64ac">fillBadChannelMask</a> ()</td></tr>
 
-<tr><td colspan="2"><br><h2>Private Attributes</h2></td></tr>
+<tr><td colspan="2"><br><h2>Protected Attributes</h2></td></tr>
 <tr><td class="memItemLeft" nowrap align="right" valign="top"><a class="el" href="structslsDetector_1_1sharedSlsDetector.html">sharedSlsDetector</a> *&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classslsDetector.html#fe0da5c1491ebf18f187f0a26c5ded11">thisDetector</a></td></tr>
 
 <tr><td class="memItemLeft" nowrap align="right" valign="top">int&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="classslsDetector.html#7572bba8e53f900d4126657827bec3cf">onlineFlag</a></td></tr>
@@ -368,7 +366,7 @@ This is the base class for all SLS detector functionalities.
 <p>
 The <a class="el" href="classslsDetector.html">slsDetector</a> class is expected to become the interface class for all SLS Detectors acquisition (and analysis) software.<p>
 <dl compact><dt><b>Author:</b></dt><dd>Anna Bergamaschi </dd></dl>
-<dl compact><dt><b>Version:</b></dt><dd>0.1alpha (any string) </dd></dl>
+<dl compact><dt><b>Version:</b></dt><dd>0.1alpha </dd></dl>
 
 <p>
 <hr><h2>Member Typedef Documentation</h2>
@@ -478,31 +476,38 @@ destructor
 </div>
 </div><p>
 <hr><h2>Member Function Documentation</h2>
-<a class="anchor" name="b09a80264ca69e51b2c8379124398410"></a><!-- doxytag: member="slsDetector::acquire" ref="b09a80264ca69e51b2c8379124398410" args="()" -->
+<a class="anchor" name="d2ee30dfd50f06431dca4e4b9619f301"></a><!-- doxytag: member="slsDetector::acquire" ref="d2ee30dfd50f06431dca4e4b9619f301" args="()=0" -->
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">void slsDetector::acquire           </td>
+          <td class="memname">virtual void slsDetector::acquire           </td>
           <td>(</td>
           <td class="paramname">          </td>
           <td>&nbsp;)&nbsp;</td>
-          <td width="100%"></td>
+          <td width="100%"><code> [pure virtual]</code></td>
         </tr>
       </table>
 </div>
 <div class="memdoc">
 
 <p>
+pure virtual function performs the complete acquisition and data processing moves the detector to next position <br>
+ starts and reads the detector <br>
+ reads the IC (if required) <br>
+ reads the encoder (iof required for angualr conversion) <br>
+ processes the data (flat field, rate, angular conversion and merging processData()) <dl compact><dt><b>See also:</b></dt><dd><a class="el" href="classmythenDetector.html#bb3d2f51a414cf9dace29a4b5676828f">mythenDetector::acquire()</a> </dd></dl>
 
+<p>
+Implemented in <a class="el" href="classmythenDetector.html#bb3d2f51a414cf9dace29a4b5676828f">mythenDetector</a>.
 </div>
 </div><p>
-<a class="anchor" name="ed3ddadb246080ef644b6d1455fa2e32"></a><!-- doxytag: member="slsDetector::addToMerging" ref="ed3ddadb246080ef644b6d1455fa2e32" args="(float *p1, float *v1, float *e1, float *mp, float *mv, float *me, int *mm)" -->
+<a class="anchor" name="feb8730f24292620e5d451cd2d4bb9cd"></a><!-- doxytag: member="slsDetector::addToMerging" ref="feb8730f24292620e5d451cd2d4bb9cd" args="(float *p1, float *v1, float *e1, float *mp, float *mv, float *me, int *mm)=0" -->
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">int slsDetector::addToMerging           </td>
+          <td class="memname">virtual int slsDetector::addToMerging           </td>
           <td>(</td>
           <td class="paramtype">float *&nbsp;</td>
           <td class="paramname"> <em>p1</em>, </td>
@@ -546,14 +551,14 @@ destructor
         <tr>
           <td></td>
           <td>)</td>
-          <td></td><td></td><td width="100%"></td>
+          <td></td><td></td><td width="100%"><code> [pure virtual]</code></td>
         </tr>
       </table>
 </div>
 <div class="memdoc">
 
 <p>
-not yet implemented merge dataset <dl compact><dt><b>Parameters:</b></dt><dd>
+pure virtual function merge dataset <dl compact><dt><b>Parameters:</b></dt><dd>
   <table border="0" cellspacing="2" cellpadding="0">
     <tr><td valign="top"></td><td valign="top"><em>p1</em>&nbsp;</td><td>angular positions of dataset </td></tr>
     <tr><td valign="top"></td><td valign="top"><em>v1</em>&nbsp;</td><td>data </td></tr>
@@ -564,9 +569,10 @@ not yet implemented merge dataset <dl compact><dt><b>Parameters:</b></dt><dd>
     <tr><td valign="top"></td><td valign="top"><em>mm</em>&nbsp;</td><td>multiplicity of merged arrays </td></tr>
   </table>
 </dl>
+<dl compact><dt><b>See also:</b></dt><dd><a class="el" href="classmythenDetector.html#eaaf7d7e3150f473e3bbcf59d91692c2">mythenDetector::addToMerging</a> </dd></dl>
 
 <p>
-Reimplemented in <a class="el" href="classmythenDetector.html#eaaf7d7e3150f473e3bbcf59d91692c2">mythenDetector</a>.
+Implemented in <a class="el" href="classmythenDetector.html#eaaf7d7e3150f473e3bbcf59d91692c2">mythenDetector</a>.
 </div>
 </div><p>
 <a class="anchor" name="18f91f8cf70d2d4eef9b3488b90bac51"></a><!-- doxytag: member="slsDetector::analogTest" ref="18f91f8cf70d2d4eef9b3488b90bac51" args="(analogTestMode mode)" -->
@@ -617,12 +623,12 @@ in case also appends the position index<p>
 Filenames will be of the form: filepath/filename(_px)_i where x is the position index and i is the run index 
 </div>
 </div><p>
-<a class="anchor" name="15e6fa87a3c57ff1c8e1943ec72ec6ad"></a><!-- doxytag: member="slsDetector::createModule" ref="15e6fa87a3c57ff1c8e1943ec72ec6ad" args="()" -->
+<a class="anchor" name="b1d4c6c01d1e10fe06bc83329410d4f4"></a><!-- doxytag: member="slsDetector::createModule" ref="b1d4c6c01d1e10fe06bc83329410d4f4" args="()" -->
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">slsDetector::sls_detector_module * slsDetector::createModule           </td>
+          <td class="memname"><a class="el" href="structsls__detector__module.html">sls_detector_module</a> * slsDetector::createModule           </td>
           <td>(</td>
           <td class="paramname">          </td>
           <td>&nbsp;)&nbsp;</td>
@@ -662,7 +668,7 @@ decode data from the detector converting them to an array of floats, one for eac
 <dl compact><dt><b>Returns:</b></dt><dd>pointer to a float array with a data per channel </dd></dl>
 
 <p>
-Reimplemented in <a class="el" href="classmythenDetector.html#77e8c92003fab14da768af660509241d">mythenDetector</a>, and <a class="el" href="classeigerDetector.html#3e0573baf38c37818c7769fb351010b3">eigerDetector</a>.
+Reimplemented in <a class="el" href="classeigerDetector.html#3e0573baf38c37818c7769fb351010b3">eigerDetector</a>.
 </div>
 </div><p>
 <a class="anchor" name="48984c8d058355c5249233165bf0c410"></a><!-- doxytag: member="slsDetector::deleteModule" ref="48984c8d058355c5249233165bf0c410" args="(sls_detector_module *myMod)" -->
@@ -726,25 +732,26 @@ Digital test of the modules <dl compact><dt><b>Parameters:</b></dt><dd>
 
 </div>
 </div><p>
-<a class="anchor" name="dc4f62e536b4ef6d0d2d178e3bfbec5e"></a><!-- doxytag: member="slsDetector::dumpDetectorSetup" ref="dc4f62e536b4ef6d0d2d178e3bfbec5e" args="(string const fname)" -->
+<a class="anchor" name="96428855d6e286408a52e675e045cf45"></a><!-- doxytag: member="slsDetector::dumpDetectorSetup" ref="96428855d6e286408a52e675e045cf45" args="(string const fname)=0" -->
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">int slsDetector::dumpDetectorSetup           </td>
+          <td class="memname">virtual int slsDetector::dumpDetectorSetup           </td>
           <td>(</td>
           <td class="paramtype">string const &nbsp;</td>
           <td class="paramname"> <em>fname</em>          </td>
           <td>&nbsp;)&nbsp;</td>
-          <td width="100%"></td>
+          <td width="100%"><code> [pure virtual]</code></td>
         </tr>
       </table>
 </div>
 <div class="memdoc">
 
 <p>
-not yet implemented<p>
-should dump to a file all the current detector parameters 
+Purely virtual function Should be implemented in the specific detector class /sa <a class="el" href="classmythenDetector.html#a0fe9987e8fa240a312ad353ae539188">mythenDetector::dumpDetectorSetup</a> 
+<p>
+Implemented in <a class="el" href="classmythenDetector.html#a0fe9987e8fa240a312ad353ae539188">mythenDetector</a>.
 </div>
 </div><p>
 <a class="anchor" name="b20fef344ee47114fccb4d1bc8c6e5bd"></a><!-- doxytag: member="slsDetector::enableAnalogOutput" ref="b20fef344ee47114fccb4d1bc8c6e5bd" args="(int imod, int ichip, int ichan)" -->
@@ -926,7 +933,7 @@ sets the onlineFlag <dl compact><dt><b>Returns:</b></dt><dd>1 if the detector st
 <div class="memdoc">
 
 <p>
-turns of server 
+turns off server 
 </div>
 </div><p>
 <a class="anchor" name="6a0ebe013e27c065b2f67158a27f64ac"></a><!-- doxytag: member="slsDetector::fillBadChannelMask" ref="6a0ebe013e27c065b2f67158a27f64ac" args="()" -->
@@ -938,7 +945,7 @@ turns of server
           <td>(</td>
           <td class="paramname">          </td>
           <td>&nbsp;)&nbsp;</td>
-          <td width="100%"><code> [private]</code></td>
+          <td width="100%"><code> [protected]</code></td>
         </tr>
       </table>
 </div>
@@ -986,7 +993,7 @@ fill bad channel mask (0 if channel is good, 1 if bad)
 <div class="memdoc">
 
 <p>
-calculates the "final" positions, data value and errors for the emrged data <dl compact><dt><b>Parameters:</b></dt><dd>
+pure virtual function calculates the "final" positions, data value and errors for the emrged data <dl compact><dt><b>Parameters:</b></dt><dd>
   <table border="0" cellspacing="2" cellpadding="0">
     <tr><td valign="top"></td><td valign="top"><em>mp</em>&nbsp;</td><td>already merged postions </td></tr>
     <tr><td valign="top"></td><td valign="top"><em>mv</em>&nbsp;</td><td>already merged data </td></tr>
@@ -994,7 +1001,8 @@ calculates the "final" positions, data value and errors for the emrged data <dl 
     <tr><td valign="top"></td><td valign="top"><em>mm</em>&nbsp;</td><td>multiplicity of merged arrays </td></tr>
   </table>
 </dl>
-<dl compact><dt><b>Returns:</b></dt><dd>FAIL or the </dd></dl>
+<dl compact><dt><b>Returns:</b></dt><dd>FAIL or the number of non empty bins (i.e. points belonging to the pattern) </dd></dl>
+<dl compact><dt><b>See also:</b></dt><dd><a class="el" href="classmythenDetector.html#a919a42bd89fe21c4086bae5f1fb2f32">mythenDetector::finalizeMerging</a> </dd></dl>
 
 <p>
 Reimplemented in <a class="el" href="classmythenDetector.html#a919a42bd89fe21c4086bae5f1fb2f32">mythenDetector</a>.
@@ -1123,7 +1131,7 @@ flat field correct data <dl compact><dt><b>Parameters:</b></dt><dd>
           <td>(</td>
           <td class="paramname">          </td>
           <td>&nbsp;)&nbsp;</td>
-          <td width="100%"><code> [private]</code></td>
+          <td width="100%"><code> [protected]</code></td>
         </tr>
       </table>
 </div>
@@ -1169,12 +1177,34 @@ set dacs value <dl compact><dt><b>Parameters:</b></dt><dd>
 
 </div>
 </div><p>
-<a class="anchor" name="a146baee5af54b53db0997de02f4779c"></a><!-- doxytag: member="slsDetector::getAngularConversion" ref="a146baee5af54b53db0997de02f4779c" args="(int &amp;direction, angleConversionConstant *angconv=NULL)" -->
+<a class="anchor" name="0c2e502441fd74ec7fc20604c5c08c27"></a><!-- doxytag: member="slsDetector::getAngularConversion" ref="0c2e502441fd74ec7fc20604c5c08c27" args="()=0" -->
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">int slsDetector::getAngularConversion           </td>
+          <td class="memname">virtual char* slsDetector::getAngularConversion           </td>
+          <td>(</td>
+          <td class="paramname">          </td>
+          <td>&nbsp;)&nbsp;</td>
+          <td width="100%"><code> [pure virtual]</code></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>
+pure virtual function returns the angular conversion file <dl compact><dt><b>See also:</b></dt><dd><a class="el" href="classmythenDetector.html#b2b2f17c36883323ad0abf762c63494f">mythenDetector::getAngularConversion</a> </dd></dl>
+
+<p>
+Implemented in <a class="el" href="classmythenDetector.html#fab45faa264e44178fc52300eaf92cad">mythenDetector</a>.
+</div>
+</div><p>
+<a class="anchor" name="a110e9eb82123756cf89fda0a4cb464d"></a><!-- doxytag: member="slsDetector::getAngularConversion" ref="a110e9eb82123756cf89fda0a4cb464d" args="(int &amp;direction, angleConversionConstant *angconv=NULL)=0" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">virtual int slsDetector::getAngularConversion           </td>
           <td>(</td>
           <td class="paramtype">int &amp;&nbsp;</td>
           <td class="paramname"> <em>direction</em>, </td>
@@ -1188,23 +1218,43 @@ set dacs value <dl compact><dt><b>Parameters:</b></dt><dd>
         <tr>
           <td></td>
           <td>)</td>
-          <td></td><td></td><td width="100%"></td>
+          <td></td><td></td><td width="100%"><code> [pure virtual]</code></td>
         </tr>
       </table>
 </div>
 <div class="memdoc">
 
 <p>
-get angular conversion <dl compact><dt><b>Parameters:</b></dt><dd>
+pure virtual function get angular conversion <dl compact><dt><b>Parameters:</b></dt><dd>
   <table border="0" cellspacing="2" cellpadding="0">
     <tr><td valign="top"></td><td valign="top"><em>reference</em>&nbsp;</td><td>to diffractometer direction </td></tr>
     <tr><td valign="top"></td><td valign="top"><em>angconv</em>&nbsp;</td><td>array that will be filled with the angular conversion constants </td></tr>
   </table>
 </dl>
 <dl compact><dt><b>Returns:</b></dt><dd>0 if angular conversion disabled, &gt;0 otherwise </dd></dl>
+<dl compact><dt><b>See also:</b></dt><dd><a class="el" href="classmythenDetector.html#b2b2f17c36883323ad0abf762c63494f">mythenDetector::getAngularConversion</a> </dd></dl>
 
 <p>
-Reimplemented in <a class="el" href="classmythenDetector.html#b2b2f17c36883323ad0abf762c63494f">mythenDetector</a>.
+Implemented in <a class="el" href="classmythenDetector.html#b2b2f17c36883323ad0abf762c63494f">mythenDetector</a>.
+</div>
+</div><p>
+<a class="anchor" name="0b562f90b64c80e3eb64e9e2153bb234"></a><!-- doxytag: member="slsDetector::getBadChannelCorrectionFile" ref="0b562f90b64c80e3eb64e9e2153bb234" args="()" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">char* slsDetector::getBadChannelCorrectionFile           </td>
+          <td>(</td>
+          <td class="paramname">          </td>
+          <td>&nbsp;)&nbsp;</td>
+          <td width="100%"><code> [inline]</code></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>
+returns the bad channel list file 
 </div>
 </div><p>
 <a class="anchor" name="f80db913b55026bb69d35585b08729cc"></a><!-- doxytag: member="slsDetector::getBadChannelCorrections" ref="f80db913b55026bb69d35585b08729cc" args="(int *bad=NULL)" -->
@@ -1233,25 +1283,26 @@ get bad channels correction <dl compact><dt><b>Parameters:</b></dt><dd>
 
 </div>
 </div><p>
-<a class="anchor" name="8a78eda56f5a0c487bbc4e2f962d04db"></a><!-- doxytag: member="slsDetector::getBinSize" ref="8a78eda56f5a0c487bbc4e2f962d04db" args="()" -->
+<a class="anchor" name="7d83754e3f41042caa9297da9a33b714"></a><!-- doxytag: member="slsDetector::getBinSize" ref="7d83754e3f41042caa9297da9a33b714" args="()=0" -->
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">float slsDetector::getBinSize           </td>
+          <td class="memname">virtual float slsDetector::getBinSize           </td>
           <td>(</td>
           <td class="paramname">          </td>
           <td>&nbsp;)&nbsp;</td>
-          <td width="100%"><code> [inline]</code></td>
+          <td width="100%"><code> [pure virtual]</code></td>
         </tr>
       </table>
 </div>
 <div class="memdoc">
 
 <p>
-return detector bin size used for merging (approx angular resolution) 
+pure virtual function return detector bin size used for merging (approx angular resolution) <dl compact><dt><b>See also:</b></dt><dd><a class="el" href="classmythenDetector.html#9fd4e479d7eb3f9c53d5d56a43bbccaf">mythenDetector::getBinSize</a> </dd></dl>
+
 <p>
-Reimplemented in <a class="el" href="classmythenDetector.html#9fd4e479d7eb3f9c53d5d56a43bbccaf">mythenDetector</a>.
+Implemented in <a class="el" href="classmythenDetector.html#9fd4e479d7eb3f9c53d5d56a43bbccaf">mythenDetector</a>.
 </div>
 </div><p>
 <a class="anchor" name="102679594e60ed261daff24b4aeac21a"></a><!-- doxytag: member="slsDetector::getCalDir" ref="102679594e60ed261daff24b4aeac21a" args="()" -->
@@ -1274,12 +1325,12 @@ returns the location of the calibration files <dl compact><dt><b>See also:</b></
 
 </div>
 </div><p>
-<a class="anchor" name="bbf8573e249da1f0a436f581d0dc62e4"></a><!-- doxytag: member="slsDetector::getChannel" ref="bbf8573e249da1f0a436f581d0dc62e4" args="(int ichan, int ichip, int imod)" -->
+<a class="anchor" name="05f1a170b7416db77bf7cff762e9b58a"></a><!-- doxytag: member="slsDetector::getChannel" ref="05f1a170b7416db77bf7cff762e9b58a" args="(int ichan, int ichip, int imod)" -->
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">slsDetector::sls_detector_channel slsDetector::getChannel           </td>
+          <td class="memname"><a class="el" href="structsls__detector__channel.html">sls_detector_channel</a> slsDetector::getChannel           </td>
           <td>(</td>
           <td class="paramtype">int&nbsp;</td>
           <td class="paramname"> <em>ichan</em>, </td>
@@ -1317,12 +1368,12 @@ get channel <dl compact><dt><b>Parameters:</b></dt><dd>
 
 </div>
 </div><p>
-<a class="anchor" name="6dd6b42b668610dbd03a7700de84b845"></a><!-- doxytag: member="slsDetector::getChip" ref="6dd6b42b668610dbd03a7700de84b845" args="(int ichip, int imod)" -->
+<a class="anchor" name="2eb7f887a72cc80d6b00cadd4731e672"></a><!-- doxytag: member="slsDetector::getChip" ref="2eb7f887a72cc80d6b00cadd4731e672" args="(int ichip, int imod)" -->
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">slsDetector::sls_detector_chip slsDetector::getChip           </td>
+          <td class="memname"><a class="el" href="structsls__detector__chip.html">sls_detector_chip</a> slsDetector::getChip           </td>
           <td>(</td>
           <td class="paramtype">int&nbsp;</td>
           <td class="paramname"> <em>ichip</em>, </td>
@@ -1354,26 +1405,6 @@ get chip <dl compact><dt><b>Parameters:</b></dt><dd>
 
 </div>
 </div><p>
-<a class="anchor" name="12b884821edc41fe9821f2ab084a0baf"></a><!-- doxytag: member="slsDetector::getClockDivider" ref="12b884821edc41fe9821f2ab084a0baf" args="()" -->
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">int slsDetector::getClockDivider           </td>
-          <td>(</td>
-          <td class="paramname">          </td>
-          <td>&nbsp;)&nbsp;</td>
-          <td width="100%"><code> [inline]</code></td>
-        </tr>
-      </table>
-</div>
-<div class="memdoc">
-
-<p>
-get clock divider<p>
-not implemented (should be something more general like "set speed including also waitstates, set cycles etc.) 
-</div>
-</div><p>
 <a class="anchor" name="40ffd69f1c40b26575954e826cdf606a"></a><!-- doxytag: member="slsDetector::getControlPort" ref="40ffd69f1c40b26575954e826cdf606a" args="()" -->
 <div class="memitem">
 <div class="memproto">
@@ -1403,7 +1434,7 @@ returns the detector control port<dl compact><dt><b>See also:</b></dt><dd><a cla
           <td>(</td>
           <td class="paramname">          </td>
           <td>&nbsp;)&nbsp;</td>
-          <td width="100%"><code> [private]</code></td>
+          <td width="100%"><code> [protected]</code></td>
         </tr>
       </table>
 </div>
@@ -1540,25 +1571,26 @@ returns the default output files path <dl compact><dt><b>See also:</b></dt><dd><
 
 </div>
 </div><p>
-<a class="anchor" name="1a402a849d04190024e9dc87d4dae6dc"></a><!-- doxytag: member="slsDetector::getFineOffset" ref="1a402a849d04190024e9dc87d4dae6dc" args="()" -->
+<a class="anchor" name="8e39680a1a096ca13ed672504b5b08e6"></a><!-- doxytag: member="slsDetector::getFineOffset" ref="8e39680a1a096ca13ed672504b5b08e6" args="()=0" -->
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">float slsDetector::getFineOffset           </td>
+          <td class="memname">virtual float slsDetector::getFineOffset           </td>
           <td>(</td>
           <td class="paramname">          </td>
           <td>&nbsp;)&nbsp;</td>
-          <td width="100%"><code> [inline]</code></td>
+          <td width="100%"><code> [pure virtual]</code></td>
         </tr>
       </table>
 </div>
 <div class="memdoc">
 
 <p>
-get detector fine offset 
+pure virtual function get detector fine offset <dl compact><dt><b>See also:</b></dt><dd><a class="el" href="classmythenDetector.html#00720f1445f3f301fa3316828d978de6">mythenDetector::getFineOffset</a> </dd></dl>
+
 <p>
-Reimplemented in <a class="el" href="classmythenDetector.html#00720f1445f3f301fa3316828d978de6">mythenDetector</a>.
+Implemented in <a class="el" href="classmythenDetector.html#00720f1445f3f301fa3316828d978de6">mythenDetector</a>.
 </div>
 </div><p>
 <a class="anchor" name="af22c79193907e364c6db97f5e55b9fd"></a><!-- doxytag: member="slsDetector::getFlatFieldCorrections" ref="af22c79193907e364c6db97f5e55b9fd" args="(float *corr=NULL, float *ecorr=NULL)" -->
@@ -1597,25 +1629,26 @@ get flat field corrections <dl compact><dt><b>Parameters:</b></dt><dd>
 
 </div>
 </div><p>
-<a class="anchor" name="42f854256e2900f18b2a17201813b48c"></a><!-- doxytag: member="slsDetector::getGlobalOffset" ref="42f854256e2900f18b2a17201813b48c" args="()" -->
+<a class="anchor" name="8964e3efa73f29b04bd9479578bd1c59"></a><!-- doxytag: member="slsDetector::getGlobalOffset" ref="8964e3efa73f29b04bd9479578bd1c59" args="()=0" -->
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">float slsDetector::getGlobalOffset           </td>
+          <td class="memname">virtual float slsDetector::getGlobalOffset           </td>
           <td>(</td>
           <td class="paramname">          </td>
           <td>&nbsp;)&nbsp;</td>
-          <td width="100%"><code> [inline]</code></td>
+          <td width="100%"><code> [pure virtual]</code></td>
         </tr>
       </table>
 </div>
 <div class="memdoc">
 
 <p>
-get detector global offset 
+pure virtual function get detector global offset <dl compact><dt><b>See also:</b></dt><dd><a class="el" href="classmythenDetector.html#b2086f336d7198381453556b520dd556">mythenDetector::getGlobalOffset</a> </dd></dl>
+
 <p>
-Reimplemented in <a class="el" href="classmythenDetector.html#b2086f336d7198381453556b520dd556">mythenDetector</a>.
+Implemented in <a class="el" href="classmythenDetector.html#b2086f336d7198381453556b520dd556">mythenDetector</a>.
 </div>
 </div><p>
 <a class="anchor" name="fad06908ad59bfd8a8577899d6aa1843"></a><!-- doxytag: member="slsDetector::getHostname" ref="fad06908ad59bfd8a8577899d6aa1843" args="()" -->
@@ -1700,12 +1733,12 @@ get the maximum size of the detector <dl compact><dt><b>Parameters:</b></dt><dd>
 
 </div>
 </div><p>
-<a class="anchor" name="d1b14626e602ceaebfcf4321f6f40997"></a><!-- doxytag: member="slsDetector::getModule" ref="d1b14626e602ceaebfcf4321f6f40997" args="(int imod)" -->
+<a class="anchor" name="32557eee02e541840246b4b4a3e76c83"></a><!-- doxytag: member="slsDetector::getModule" ref="32557eee02e541840246b4b4a3e76c83" args="(int imod)" -->
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">slsDetector::sls_detector_module * slsDetector::getModule           </td>
+          <td class="memname"><a class="el" href="structsls__detector__module.html">sls_detector_module</a> * slsDetector::getModule           </td>
           <td>(</td>
           <td class="paramtype">int&nbsp;</td>
           <td class="paramname"> <em>imod</em>          </td>
@@ -1726,32 +1759,33 @@ get module <dl compact><dt><b>Parameters:</b></dt><dd>
 
 </div>
 </div><p>
-<a class="anchor" name="732f6d36456d6e87d70324a4bdc1bbb8"></a><!-- doxytag: member="slsDetector::getPositions" ref="732f6d36456d6e87d70324a4bdc1bbb8" args="(float *pos=NULL)" -->
+<a class="anchor" name="248794801b9794d20e7d58bceab564ab"></a><!-- doxytag: member="slsDetector::getPositions" ref="248794801b9794d20e7d58bceab564ab" args="(float *pos=NULL)=0" -->
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">int slsDetector::getPositions           </td>
+          <td class="memname">virtual int slsDetector::getPositions           </td>
           <td>(</td>
           <td class="paramtype">float *&nbsp;</td>
           <td class="paramname"> <em>pos</em> = <code>NULL</code>          </td>
           <td>&nbsp;)&nbsp;</td>
-          <td width="100%"><code> [inline]</code></td>
+          <td width="100%"><code> [pure virtual]</code></td>
         </tr>
       </table>
 </div>
 <div class="memdoc">
 
 <p>
-get positions for the acquisition <dl compact><dt><b>Parameters:</b></dt><dd>
+pure virtual function get positions for the acquisition <dl compact><dt><b>Parameters:</b></dt><dd>
   <table border="0" cellspacing="2" cellpadding="0">
     <tr><td valign="top"></td><td valign="top"><em>pos</em>&nbsp;</td><td>array which will contain the encoder positions </td></tr>
   </table>
 </dl>
 <dl compact><dt><b>Returns:</b></dt><dd>number of positions </dd></dl>
+<dl compact><dt><b>See also:</b></dt><dd><a class="el" href="classmythenDetector.html#0d306720dced0d3576474978b06b4be4">mythenDetector::getPositions</a> </dd></dl>
 
 <p>
-Reimplemented in <a class="el" href="classmythenDetector.html#0d306720dced0d3576474978b06b4be4">mythenDetector</a>.
+Implemented in <a class="el" href="classmythenDetector.html#0d306720dced0d3576474978b06b4be4">mythenDetector</a>.
 </div>
 </div><p>
 <a class="anchor" name="7606366a3cbe280c90dc659036814697"></a><!-- doxytag: member="slsDetector::getRateCorrections" ref="7606366a3cbe280c90dc659036814697" args="()" -->
@@ -1820,32 +1854,12 @@ get run status <dl compact><dt><b>Returns:</b></dt><dd>status mask </dd></dl>
 
 </div>
 </div><p>
-<a class="anchor" name="51a88168bf9e4cd2ef7730b973963055"></a><!-- doxytag: member="slsDetector::getSetLength" ref="51a88168bf9e4cd2ef7730b973963055" args="()" -->
+<a class="anchor" name="cfccfada625943feb410c6a14607a366"></a><!-- doxytag: member="slsDetector::getSettings" ref="cfccfada625943feb410c6a14607a366" args="(int imod=-1)" -->
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">int slsDetector::getSetLength           </td>
-          <td>(</td>
-          <td class="paramname">          </td>
-          <td>&nbsp;)&nbsp;</td>
-          <td width="100%"><code> [inline]</code></td>
-        </tr>
-      </table>
-</div>
-<div class="memdoc">
-
-<p>
-get length cycles<p>
-not implemented (should be something more general like "set speed including also waitstates, set cycles etc.) 
-</div>
-</div><p>
-<a class="anchor" name="d112702360f31a967bfad9fe2aabf6f6"></a><!-- doxytag: member="slsDetector::getSettings" ref="d112702360f31a967bfad9fe2aabf6f6" args="(int imod=-1)" -->
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname"><a class="el" href="sls__detector__defs_8h.html#754e2e1fdf9e993405c39b6050528d56">slsDetector::detectorSettings</a> slsDetector::getSettings           </td>
+          <td class="memname"><a class="el" href="sls__detector__defs_8h.html#754e2e1fdf9e993405c39b6050528d56">detectorSettings</a> slsDetector::getSettings           </td>
           <td>(</td>
           <td class="paramtype">int&nbsp;</td>
           <td class="paramname"> <em>imod</em> = <code>-1</code>          </td>
@@ -1958,7 +1972,7 @@ returns the detector trimbit directory<dl compact><dt><b>See also:</b></dt><dd><
 
 </div>
 </div><p>
-<a class="anchor" name="fa24d8a0ec1393c7e27e4e558e72cf87"></a><!-- doxytag: member="slsDetector::getTrimEn" ref="fa24d8a0ec1393c7e27e4e558e72cf87" args="(int *en)" -->
+<a class="anchor" name="8862569a4a2530558914daa2e2251138"></a><!-- doxytag: member="slsDetector::getTrimEn" ref="8862569a4a2530558914daa2e2251138" args="(int *en=NULL)" -->
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
@@ -1966,7 +1980,7 @@ returns the detector trimbit directory<dl compact><dt><b>See also:</b></dt><dd><
           <td class="memname">int slsDetector::getTrimEn           </td>
           <td>(</td>
           <td class="paramtype">int *&nbsp;</td>
-          <td class="paramname"> <em>en</em>          </td>
+          <td class="paramname"> <em>en</em> = <code>NULL</code>          </td>
           <td>&nbsp;)&nbsp;</td>
           <td width="100%"><code> [inline]</code></td>
         </tr>
@@ -2031,7 +2045,7 @@ not yet implemented
           <td class="paramtype"><a class="el" href="sls__detector__defs_8h.html#ab9f984f7b6798e684c8f3e6b63c6301">detectorType</a>&nbsp;</td>
           <td class="paramname"> <em>type</em>          </td>
           <td>&nbsp;)&nbsp;</td>
-          <td width="100%"><code> [private]</code></td>
+          <td width="100%"><code> [protected]</code></td>
         </tr>
       </table>
 </div>
@@ -2058,6 +2072,7 @@ set fileIndex to default to 0<p>
 set number of trim energies to 0<p>
 set correction mask to 0<p>
 set deat time<p>
+sets bad channel list file to none<p>
 set number of bad chans to 0<p>
 set number of bad flat field chans to 0<p>
 set angular direction to 1<p>
@@ -2069,6 +2084,7 @@ set current settings to uninitialized<p>
 set threshold to -1<p>
 set clockdivider to 1<p>
 set number of positions to 0<p>
+sets angular conversion file to none<p>
 set binsize<p>
 calculates the memory offsets for flat field coefficients and errors, module structures, dacs, adcs, chips and channels<p>
 also in case thisDetector alread existed initialize the pointer for flat field coefficients and errors, module structures, dacs, adcs, chips and channels<p>
@@ -2087,7 +2103,7 @@ fill the BadChannelMask <dl compact><dt><b>See also:</b></dt><dd><a class="el" h
           <td>(</td>
           <td class="paramname">          </td>
           <td>&nbsp;)&nbsp;</td>
-          <td width="100%"><code> [private]</code></td>
+          <td width="100%"><code> [protected]</code></td>
         </tr>
       </table>
 </div>
@@ -2125,7 +2141,7 @@ initialize gain and offset to -1
         <tr>
           <td></td>
           <td>)</td>
-          <td></td><td></td><td width="100%"><code> [private]</code></td>
+          <td></td><td></td><td width="100%"><code> [protected]</code></td>
         </tr>
       </table>
 </div>
@@ -2168,32 +2184,26 @@ pops the data from the data queue <dl compact><dt><b>Returns:</b></dt><dd>pointe
 
 </div>
 </div><p>
-<a class="anchor" name="717eb12630b1d1f5138f98e5f7ba021f"></a><!-- doxytag: member="slsDetector::processData" ref="717eb12630b1d1f5138f98e5f7ba021f" args="()" -->
+<a class="anchor" name="971d316af920fcb3ade98c486fe42c99"></a><!-- doxytag: member="slsDetector::processData" ref="971d316af920fcb3ade98c486fe42c99" args="()=0" -->
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">void * slsDetector::processData           </td>
+          <td class="memname">virtual void* slsDetector::processData           </td>
           <td>(</td>
           <td class="paramname">          </td>
           <td>&nbsp;)&nbsp;</td>
-          <td width="100%"></td>
+          <td width="100%"><code> [pure virtual]</code></td>
         </tr>
       </table>
 </div>
 <div class="memdoc">
 
 <p>
-function for processing data 
+pure virtual function function for processing data <dl compact><dt><b>See also:</b></dt><dd><a class="el" href="classmythenDetector.html#b5416cb00251f95fc3661936c3cbb1c4">mythenDetector::processData</a> </dd></dl>
+
 <p>
-Pop data queue<p>
-decode data<p>
-write raw data file<p>
-rate correction<p>
-flat field correction<p>
-angular conversion<p>
-data merging<p>
-file writing 
+Implemented in <a class="el" href="classmythenDetector.html#b5416cb00251f95fc3661936c3cbb1c4">mythenDetector</a>.
 </div>
 </div><p>
 <a class="anchor" name="518feacfa3a1d6156779f8eaacdf86d3"></a><!-- doxytag: member="slsDetector::rateCorrect" ref="518feacfa3a1d6156779f8eaacdf86d3" args="(float *datain, float *errin, float *dataout, float *errout)" -->
@@ -2331,40 +2341,40 @@ asks and receives all data from the detector and puts them in a data queue <dl c
 
 </div>
 </div><p>
-<a class="anchor" name="23398787e01e519bf8ac5f313ca5af01"></a><!-- doxytag: member="slsDetector::readAngularConversion" ref="23398787e01e519bf8ac5f313ca5af01" args="(string fname=&quot;&quot;)" -->
+<a class="anchor" name="cd9d6358db471600f2e1a143a53c61c1"></a><!-- doxytag: member="slsDetector::readAngularConversion" ref="cd9d6358db471600f2e1a143a53c61c1" args="(string fname=&quot;&quot;)=0" -->
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">int slsDetector::readAngularConversion           </td>
+          <td class="memname">virtual int slsDetector::readAngularConversion           </td>
           <td>(</td>
           <td class="paramtype">string&nbsp;</td>
           <td class="paramname"> <em>fname</em> = <code>&quot;&quot;</code>          </td>
           <td>&nbsp;)&nbsp;</td>
-          <td width="100%"></td>
+          <td width="100%"><code> [pure virtual]</code></td>
         </tr>
       </table>
 </div>
 <div class="memdoc">
 
 <p>
-reads an angular conversion file <dl compact><dt><b>Parameters:</b></dt><dd>
+Pure virtual function reads an angular conversion file <dl compact><dt><b>Parameters:</b></dt><dd>
   <table border="0" cellspacing="2" cellpadding="0">
     <tr><td valign="top"></td><td valign="top"><em>fname</em>&nbsp;</td><td>file to be read </td></tr>
   </table>
 </dl>
-<dl compact><dt><b>See also:</b></dt><dd><a class="el" href="structangleConversionConstant.html">angleConversionConstant</a> </dd></dl>
+<dl compact><dt><b>See also:</b></dt><dd><a class="el" href="structangleConversionConstant.html">angleConversionConstant</a> <a class="el" href="classmythenDetector.html#33bf1b939eb877bbd4aa42f400d7ca36">mythenDetector::readAngularConversion</a> </dd></dl>
 
 <p>
-Reimplemented in <a class="el" href="classmythenDetector.html#33bf1b939eb877bbd4aa42f400d7ca36">mythenDetector</a>.
+Implemented in <a class="el" href="classmythenDetector.html#33bf1b939eb877bbd4aa42f400d7ca36">mythenDetector</a>.
 </div>
 </div><p>
-<a class="anchor" name="9305060e7499cfcabac23b99c884b92b"></a><!-- doxytag: member="slsDetector::readCalibrationFile" ref="9305060e7499cfcabac23b99c884b92b" args="(string fname, float &amp;gain, float &amp;offset)" -->
+<a class="anchor" name="6c7f837f0820b08f41649c30151cb7ac"></a><!-- doxytag: member="slsDetector::readCalibrationFile" ref="6c7f837f0820b08f41649c30151cb7ac" args="(string fname, float &amp;gain, float &amp;offset)=0" -->
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">int slsDetector::readCalibrationFile           </td>
+          <td class="memname">virtual int slsDetector::readCalibrationFile           </td>
           <td>(</td>
           <td class="paramtype">string&nbsp;</td>
           <td class="paramname"> <em>fname</em>, </td>
@@ -2384,52 +2394,53 @@ Reimplemented in <a class="el" href="classmythenDetector.html#33bf1b939eb877bbd4
         <tr>
           <td></td>
           <td>)</td>
-          <td></td><td></td><td width="100%"></td>
+          <td></td><td></td><td width="100%"><code> [pure virtual]</code></td>
         </tr>
       </table>
 </div>
 <div class="memdoc">
 
 <p>
-reads a calibration file <dl compact><dt><b>Parameters:</b></dt><dd>
+Pure virtual function reads a calibration file <dl compact><dt><b>Parameters:</b></dt><dd>
   <table border="0" cellspacing="2" cellpadding="0">
     <tr><td valign="top"></td><td valign="top"><em>fname</em>&nbsp;</td><td>file to be read </td></tr>
     <tr><td valign="top"></td><td valign="top"><em>gain</em>&nbsp;</td><td>reference to the gain variable  reference to the offset variable </td></tr>
   </table>
 </dl>
-<dl compact><dt><b>See also:</b></dt><dd><a class="el" href="structslsDetector_1_1sharedSlsDetector.html">sharedSlsDetector</a> </dd></dl>
+<dl compact><dt><b>See also:</b></dt><dd><a class="el" href="structslsDetector_1_1sharedSlsDetector.html">sharedSlsDetector</a> <a class="el" href="classmythenDetector.html#f8f1b7b42012420fc557aacd714140f8">mythenDetector::readCalibrationFile</a> </dd></dl>
 
 <p>
-Reimplemented in <a class="el" href="classmythenDetector.html#f8f1b7b42012420fc557aacd714140f8">mythenDetector</a>, and <a class="el" href="classeigerDetector.html#6b1b4b5328a5d8c423e9a7a8a950028f">eigerDetector</a>.
+Implemented in <a class="el" href="classmythenDetector.html#f8f1b7b42012420fc557aacd714140f8">mythenDetector</a>, and <a class="el" href="classeigerDetector.html#6b1b4b5328a5d8c423e9a7a8a950028f">eigerDetector</a>.
 </div>
 </div><p>
-<a class="anchor" name="49c88825b21dc040269f6980e9725a3a"></a><!-- doxytag: member="slsDetector::readConfigurationFile" ref="49c88825b21dc040269f6980e9725a3a" args="(string const fname)" -->
+<a class="anchor" name="80266f80cfe49c2ccec7118de341d983"></a><!-- doxytag: member="slsDetector::readConfigurationFile" ref="80266f80cfe49c2ccec7118de341d983" args="(string const fname)=0" -->
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">int slsDetector::readConfigurationFile           </td>
+          <td class="memname">virtual int slsDetector::readConfigurationFile           </td>
           <td>(</td>
           <td class="paramtype">string const &nbsp;</td>
           <td class="paramname"> <em>fname</em>          </td>
           <td>&nbsp;)&nbsp;</td>
-          <td width="100%"></td>
+          <td width="100%"><code> [pure virtual]</code></td>
         </tr>
       </table>
 </div>
 <div class="memdoc">
 
 <p>
-Every detector should have a basic configuration file containing: type (mythen, pilatus etc.) hostname portnumber communication type (default TCP/IP) eventually secondary portnumber (e.g. mythen stop function) number of modules installed if different from the detector size (x,y)<p>
-to be changed 
+Purely virtual function Should be implemented in the specific detector class /sa <a class="el" href="classmythenDetector.html#92a32bcc57919fcf9eea844905640e90">mythenDetector::readConfigurationFile</a> 
+<p>
+Implemented in <a class="el" href="classmythenDetector.html#92a32bcc57919fcf9eea844905640e90">mythenDetector</a>.
 </div>
 </div><p>
-<a class="anchor" name="0d27017bc1140cc9da3e797f03848f2e"></a><!-- doxytag: member="slsDetector::readDataFile" ref="0d27017bc1140cc9da3e797f03848f2e" args="(string fname, int *data)" -->
+<a class="anchor" name="4239e7a357df82640464c0f2d0a18d69"></a><!-- doxytag: member="slsDetector::readDataFile" ref="4239e7a357df82640464c0f2d0a18d69" args="(string fname, int *data)=0" -->
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">int slsDetector::readDataFile           </td>
+          <td class="memname">virtual int slsDetector::readDataFile           </td>
           <td>(</td>
           <td class="paramtype">string&nbsp;</td>
           <td class="paramname"> <em>fname</em>, </td>
@@ -2443,31 +2454,32 @@ to be changed
         <tr>
           <td></td>
           <td>)</td>
-          <td></td><td></td><td width="100%"></td>
+          <td></td><td></td><td width="100%"><code> [pure virtual]</code></td>
         </tr>
       </table>
 </div>
 <div class="memdoc">
 
 <p>
-reads a data file <dl compact><dt><b>Parameters:</b></dt><dd>
+Pure virtual function reads a data file <dl compact><dt><b>Parameters:</b></dt><dd>
   <table border="0" cellspacing="2" cellpadding="0">
     <tr><td valign="top"></td><td valign="top"><em>name</em>&nbsp;</td><td>of the file to be read </td></tr>
     <tr><td valign="top"></td><td valign="top"><em>data</em>&nbsp;</td><td>array of data values </td></tr>
   </table>
 </dl>
 <dl compact><dt><b>Returns:</b></dt><dd>OK or FAIL if it could not read the file or data=NULL </dd></dl>
+<dl compact><dt><b>See also:</b></dt><dd><a class="el" href="classmythenDetector.html#1937a5355eed0dc553cb05d2098f7c47">mythenDetector::readDataFile</a> </dd></dl>
 
 <p>
-Reimplemented in <a class="el" href="classmythenDetector.html#d83819d61ea01148cf18cd3c46f2a9f7">mythenDetector</a>, and <a class="el" href="classeigerDetector.html#a6afa206101506d7f95d1ec835fbf843">eigerDetector</a>.
+Implemented in <a class="el" href="classmythenDetector.html#d83819d61ea01148cf18cd3c46f2a9f7">mythenDetector</a>, and <a class="el" href="classeigerDetector.html#a6afa206101506d7f95d1ec835fbf843">eigerDetector</a>.
 </div>
 </div><p>
-<a class="anchor" name="ffd62fa6a3487693316209ea71502b4b"></a><!-- doxytag: member="slsDetector::readDataFile" ref="ffd62fa6a3487693316209ea71502b4b" args="(string fname, float *data, float *err=NULL, float *ang=NULL, char dataformat='f', int nch=0)" -->
+<a class="anchor" name="86df95809e0e7979eafc04b2b868843d"></a><!-- doxytag: member="slsDetector::readDataFile" ref="86df95809e0e7979eafc04b2b868843d" args="(string fname, float *data, float *err=NULL, float *ang=NULL, char dataformat='f', int nch=0)=0" -->
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">int slsDetector::readDataFile           </td>
+          <td class="memname">virtual int slsDetector::readDataFile           </td>
           <td>(</td>
           <td class="paramtype">string&nbsp;</td>
           <td class="paramname"> <em>fname</em>, </td>
@@ -2505,14 +2517,14 @@ Reimplemented in <a class="el" href="classmythenDetector.html#d83819d61ea01148cf
         <tr>
           <td></td>
           <td>)</td>
-          <td></td><td></td><td width="100%"></td>
+          <td></td><td></td><td width="100%"><code> [pure virtual]</code></td>
         </tr>
       </table>
 </div>
 <div class="memdoc">
 
 <p>
-reads a data file <dl compact><dt><b>Parameters:</b></dt><dd>
+Pure virtual function reads a data file <dl compact><dt><b>Parameters:</b></dt><dd>
   <table border="0" cellspacing="2" cellpadding="0">
     <tr><td valign="top"></td><td valign="top"><em>name</em>&nbsp;</td><td>of the file to be read </td></tr>
     <tr><td valign="top"></td><td valign="top"><em>data</em>&nbsp;</td><td>array of data values to be filled </td></tr>
@@ -2522,10 +2534,11 @@ reads a data file <dl compact><dt><b>Parameters:</b></dt><dd>
     <tr><td valign="top"></td><td valign="top"><em>nch</em>&nbsp;</td><td>number of channels to be written to file. if &lt;=0 defaults to the number of installed channels of the detector </td></tr>
   </table>
 </dl>
-<dl compact><dt><b>Returns:</b></dt><dd>OK or FAIL if it could not read the file or data=NULL </dd></dl>
+<dl compact><dt><b>Returns:</b></dt><dd>OK or FAIL if it could not read the file or data=NULL</dd></dl>
+<dl compact><dt><b>See also:</b></dt><dd><a class="el" href="classmythenDetector.html#1937a5355eed0dc553cb05d2098f7c47">mythenDetector::readDataFile</a> </dd></dl>
 
 <p>
-Reimplemented in <a class="el" href="classmythenDetector.html#1937a5355eed0dc553cb05d2098f7c47">mythenDetector</a>, and <a class="el" href="classeigerDetector.html#4d0b7da609b9a0457656bfc8cf0a7997">eigerDetector</a>.
+Implemented in <a class="el" href="classmythenDetector.html#1937a5355eed0dc553cb05d2098f7c47">mythenDetector</a>, and <a class="el" href="classeigerDetector.html#4d0b7da609b9a0457656bfc8cf0a7997">eigerDetector</a>.
 </div>
 </div><p>
 <a class="anchor" name="b352d85c5a4f415d1ec930d17bae87fa"></a><!-- doxytag: member="slsDetector::readFrame" ref="b352d85c5a4f415d1ec930d17bae87fa" args="()" -->
@@ -2575,12 +2588,12 @@ read register <dl compact><dt><b>Parameters:</b></dt><dd>
 
 </div>
 </div><p>
-<a class="anchor" name="e84b8a7a2b27db3f89a98f9f8a81efca"></a><!-- doxytag: member="slsDetector::readTrimFile" ref="e84b8a7a2b27db3f89a98f9f8a81efca" args="(string fname, sls_detector_module *myMod=NULL)" -->
+<a class="anchor" name="612b52469e27c6675969499d3680abe6"></a><!-- doxytag: member="slsDetector::readTrimFile" ref="612b52469e27c6675969499d3680abe6" args="(string fname, sls_detector_module *myMod=NULL)=0" -->
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="structsls__detector__module.html">sls_detector_module</a>* slsDetector::readTrimFile           </td>
+          <td class="memname">virtual <a class="el" href="structsls__detector__module.html">sls_detector_module</a>* slsDetector::readTrimFile           </td>
           <td>(</td>
           <td class="paramtype">string&nbsp;</td>
           <td class="paramname"> <em>fname</em>, </td>
@@ -2594,14 +2607,14 @@ read register <dl compact><dt><b>Parameters:</b></dt><dd>
         <tr>
           <td></td>
           <td>)</td>
-          <td></td><td></td><td width="100%"></td>
+          <td></td><td></td><td width="100%"><code> [pure virtual]</code></td>
         </tr>
       </table>
 </div>
 <div class="memdoc">
 
 <p>
-reads a trim file <dl compact><dt><b>Parameters:</b></dt><dd>
+Pure virtual function reads a trim file <dl compact><dt><b>Parameters:</b></dt><dd>
   <table border="0" cellspacing="2" cellpadding="0">
     <tr><td valign="top"></td><td valign="top"><em>fname</em>&nbsp;</td><td>name of the file to be read </td></tr>
     <tr><td valign="top"></td><td valign="top"><em>myMod</em>&nbsp;</td><td>pointer to the module structure which has to be set. <br>
@@ -2609,9 +2622,10 @@ reads a trim file <dl compact><dt><b>Parameters:</b></dt><dd>
   </table>
 </dl>
 <dl compact><dt><b>Returns:</b></dt><dd>the pointer to myMod or NULL if reading the file failed </dd></dl>
+<dl compact><dt><b>See also:</b></dt><dd><a class="el" href="classmythenDetector.html#2120f9105997fd8f8bf9165dbffc55e7">mythenDetector::readTrimFile</a> </dd></dl>
 
 <p>
-Reimplemented in <a class="el" href="classmythenDetector.html#2120f9105997fd8f8bf9165dbffc55e7">mythenDetector</a>, and <a class="el" href="classeigerDetector.html#f24af0459e8eb45c1bc9c68a870e5094">eigerDetector</a>.
+Implemented in <a class="el" href="classmythenDetector.html#2120f9105997fd8f8bf9165dbffc55e7">mythenDetector</a>, and <a class="el" href="classeigerDetector.html#f24af0459e8eb45c1bc9c68a870e5094">eigerDetector</a>.
 </div>
 </div><p>
 <a class="anchor" name="39f8959a55e92c7b0817529270be7667"></a><!-- doxytag: member="slsDetector::receiveChannel" ref="39f8959a55e92c7b0817529270be7667" args="(sls_detector_channel *)" -->
@@ -2624,7 +2638,7 @@ Reimplemented in <a class="el" href="classmythenDetector.html#2120f9105997fd8f8b
           <td class="paramtype"><a class="el" href="structsls__detector__channel.html">sls_detector_channel</a> *&nbsp;</td>
           <td class="paramname">          </td>
           <td>&nbsp;)&nbsp;</td>
-          <td width="100%"><code> [private]</code></td>
+          <td width="100%"><code> [protected]</code></td>
         </tr>
       </table>
 </div>
@@ -2644,7 +2658,7 @@ receive a <a class="el" href="structsls__detector__channel.html">sls_detector_ch
           <td class="paramtype"><a class="el" href="structsls__detector__chip.html">sls_detector_chip</a> *&nbsp;</td>
           <td class="paramname">          </td>
           <td>&nbsp;)&nbsp;</td>
-          <td width="100%"><code> [private]</code></td>
+          <td width="100%"><code> [protected]</code></td>
         </tr>
       </table>
 </div>
@@ -2664,7 +2678,7 @@ receive a <a class="el" href="structsls__detector__chip.html">sls_detector_chip<
           <td class="paramtype"><a class="el" href="structsls__detector__module.html">sls_detector_module</a> *&nbsp;</td>
           <td class="paramname">          </td>
           <td>&nbsp;)&nbsp;</td>
-          <td width="100%"><code> [private]</code></td>
+          <td width="100%"><code> [protected]</code></td>
         </tr>
       </table>
 </div>
@@ -2674,12 +2688,12 @@ receive a <a class="el" href="structsls__detector__chip.html">sls_detector_chip<
 receive a <a class="el" href="structsls__detector__module.html">sls_detector_module</a> structure over socket 
 </div>
 </div><p>
-<a class="anchor" name="208c3a5a80ba931056f1f2ff3cb5d0e5"></a><!-- doxytag: member="slsDetector::resetMerging" ref="208c3a5a80ba931056f1f2ff3cb5d0e5" args="(float *mp, float *mv, float *me, int *mm)" -->
+<a class="anchor" name="20156c620f868445e454bc4115871822"></a><!-- doxytag: member="slsDetector::resetMerging" ref="20156c620f868445e454bc4115871822" args="(float *mp, float *mv, float *me, int *mm)=0" -->
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">int slsDetector::resetMerging           </td>
+          <td class="memname">virtual int slsDetector::resetMerging           </td>
           <td>(</td>
           <td class="paramtype">float *&nbsp;</td>
           <td class="paramname"> <em>mp</em>, </td>
@@ -2705,14 +2719,14 @@ receive a <a class="el" href="structsls__detector__module.html">sls_detector_mod
         <tr>
           <td></td>
           <td>)</td>
-          <td></td><td></td><td width="100%"></td>
+          <td></td><td></td><td width="100%"><code> [pure virtual]</code></td>
         </tr>
       </table>
 </div>
 <div class="memdoc">
 
 <p>
-sets the arrays of the merged data to 0. NB The array should be created with size &gt;= 360./getBinSize(); <dl compact><dt><b>Parameters:</b></dt><dd>
+pure virtual function sets the arrays of the merged data to 0. NB The array should be created with size &gt;= 360./getBinSize(); <dl compact><dt><b>Parameters:</b></dt><dd>
   <table border="0" cellspacing="2" cellpadding="0">
     <tr><td valign="top"></td><td valign="top"><em>mp</em>&nbsp;</td><td>already merged postions </td></tr>
     <tr><td valign="top"></td><td valign="top"><em>mv</em>&nbsp;</td><td>already merged data </td></tr>
@@ -2721,30 +2735,32 @@ sets the arrays of the merged data to 0. NB The array should be created with siz
   </table>
 </dl>
 <dl compact><dt><b>Returns:</b></dt><dd>OK or FAIL </dd></dl>
+<dl compact><dt><b>See also:</b></dt><dd><a class="el" href="classmythenDetector.html#7d38c9af0d94bc15571c3c15b38f39a8">mythenDetector::resetMerging</a> </dd></dl>
 
 <p>
-Reimplemented in <a class="el" href="classmythenDetector.html#7d38c9af0d94bc15571c3c15b38f39a8">mythenDetector</a>.
+Implemented in <a class="el" href="classmythenDetector.html#7d38c9af0d94bc15571c3c15b38f39a8">mythenDetector</a>.
 </div>
 </div><p>
-<a class="anchor" name="233c3d27e9a946fb42b0aa49717d9251"></a><!-- doxytag: member="slsDetector::retrieveDetectorSetup" ref="233c3d27e9a946fb42b0aa49717d9251" args="(string const fname)" -->
+<a class="anchor" name="0ec6aa8998db1bee1b00aeecbe870d5f"></a><!-- doxytag: member="slsDetector::retrieveDetectorSetup" ref="0ec6aa8998db1bee1b00aeecbe870d5f" args="(string const fname)=0" -->
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">int slsDetector::retrieveDetectorSetup           </td>
+          <td class="memname">virtual int slsDetector::retrieveDetectorSetup           </td>
           <td>(</td>
           <td class="paramtype">string const &nbsp;</td>
           <td class="paramname"> <em>fname</em>          </td>
           <td>&nbsp;)&nbsp;</td>
-          <td width="100%"></td>
+          <td width="100%"><code> [pure virtual]</code></td>
         </tr>
       </table>
 </div>
 <div class="memdoc">
 
 <p>
-not yet implemented<p>
-should retrieve from a file all the current detector parameters 
+Purely virtual function Should be implemented in the specific detector class /sa <a class="el" href="classmythenDetector.html#8eedcd0b6739dd878559de5b675fae83">mythenDetector::retrieveDetectorSetup</a> 
+<p>
+Implemented in <a class="el" href="classmythenDetector.html#8eedcd0b6739dd878559de5b675fae83">mythenDetector</a>.
 </div>
 </div><p>
 <a class="anchor" name="5cd249f9a287b25af9a3a7e7e675c559"></a><!-- doxytag: member="slsDetector::sendChannel" ref="5cd249f9a287b25af9a3a7e7e675c559" args="(sls_detector_channel *)" -->
@@ -2757,7 +2773,7 @@ should retrieve from a file all the current detector parameters
           <td class="paramtype"><a class="el" href="structsls__detector__channel.html">sls_detector_channel</a> *&nbsp;</td>
           <td class="paramname">          </td>
           <td>&nbsp;)&nbsp;</td>
-          <td width="100%"><code> [private]</code></td>
+          <td width="100%"><code> [protected]</code></td>
         </tr>
       </table>
 </div>
@@ -2777,7 +2793,7 @@ send a <a class="el" href="structsls__detector__channel.html">sls_detector_chann
           <td class="paramtype"><a class="el" href="structsls__detector__chip.html">sls_detector_chip</a> *&nbsp;</td>
           <td class="paramname">          </td>
           <td>&nbsp;)&nbsp;</td>
-          <td width="100%"><code> [private]</code></td>
+          <td width="100%"><code> [protected]</code></td>
         </tr>
       </table>
 </div>
@@ -2797,7 +2813,7 @@ send a <a class="el" href="structsls__detector__chip.html">sls_detector_chip</a>
           <td class="paramtype"><a class="el" href="structsls__detector__module.html">sls_detector_module</a> *&nbsp;</td>
           <td class="paramname">          </td>
           <td>&nbsp;)&nbsp;</td>
-          <td width="100%"><code> [private]</code></td>
+          <td width="100%"><code> [protected]</code></td>
         </tr>
       </table>
 </div>
@@ -2807,32 +2823,33 @@ send a <a class="el" href="structsls__detector__chip.html">sls_detector_chip</a>
 send a <a class="el" href="structsls__detector__module.html">sls_detector_module</a> structure over socket 
 </div>
 </div><p>
-<a class="anchor" name="30fe39ddd78fa880b6b7815d1d5462ec"></a><!-- doxytag: member="slsDetector::setAngularConversion" ref="30fe39ddd78fa880b6b7815d1d5462ec" args="(string fname=&quot;&quot;)" -->
+<a class="anchor" name="0a17abc301de750f7dafd43b7ad8b0c9"></a><!-- doxytag: member="slsDetector::setAngularConversion" ref="0a17abc301de750f7dafd43b7ad8b0c9" args="(string fname=&quot;&quot;)=0" -->
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">int slsDetector::setAngularConversion           </td>
+          <td class="memname">virtual int slsDetector::setAngularConversion           </td>
           <td>(</td>
           <td class="paramtype">string&nbsp;</td>
           <td class="paramname"> <em>fname</em> = <code>&quot;&quot;</code>          </td>
           <td>&nbsp;)&nbsp;</td>
-          <td width="100%"></td>
+          <td width="100%"><code> [pure virtual]</code></td>
         </tr>
       </table>
 </div>
 <div class="memdoc">
 
 <p>
-set angular conversion <dl compact><dt><b>Parameters:</b></dt><dd>
+pure virtual function set angular conversion <dl compact><dt><b>Parameters:</b></dt><dd>
   <table border="0" cellspacing="2" cellpadding="0">
     <tr><td valign="top"></td><td valign="top"><em>fname</em>&nbsp;</td><td>file with angular conversion constants ("" disable) </td></tr>
   </table>
 </dl>
 <dl compact><dt><b>Returns:</b></dt><dd>0 if angular conversion disabled, &gt;0 otherwise </dd></dl>
+<dl compact><dt><b>See also:</b></dt><dd><a class="el" href="classmythenDetector.html#78efe554a277de7fb8759307992fc61b">mythenDetector::setAngularConversion</a> </dd></dl>
 
 <p>
-Reimplemented in <a class="el" href="classmythenDetector.html#78efe554a277de7fb8759307992fc61b">mythenDetector</a>.
+Implemented in <a class="el" href="classmythenDetector.html#78efe554a277de7fb8759307992fc61b">mythenDetector</a>.
 </div>
 </div><p>
 <a class="anchor" name="45833eb571b8cb20225f4046e2a17e5a"></a><!-- doxytag: member="slsDetector::setBadChannelCorrection" ref="45833eb571b8cb20225f4046e2a17e5a" args="(string fname=&quot;&quot;)" -->
@@ -2861,26 +2878,33 @@ set bad channels correction <dl compact><dt><b>Parameters:</b></dt><dd>
 
 </div>
 </div><p>
-<a class="anchor" name="96e2fb6fb0aa34bdbe59facf367c4ae1"></a><!-- doxytag: member="slsDetector::setBinSize" ref="96e2fb6fb0aa34bdbe59facf367c4ae1" args="(float bs)" -->
+<a class="anchor" name="1a2ebbe67dae42059723071f437eb721"></a><!-- doxytag: member="slsDetector::setBinSize" ref="1a2ebbe67dae42059723071f437eb721" args="(float bs)=0" -->
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">float slsDetector::setBinSize           </td>
+          <td class="memname">virtual float slsDetector::setBinSize           </td>
           <td>(</td>
           <td class="paramtype">float&nbsp;</td>
           <td class="paramname"> <em>bs</em>          </td>
           <td>&nbsp;)&nbsp;</td>
-          <td width="100%"><code> [inline]</code></td>
+          <td width="100%"><code> [pure virtual]</code></td>
         </tr>
       </table>
 </div>
 <div class="memdoc">
 
 <p>
-set detector bin size used for merging (approx angular resolution) 
+pure virtual function set detector bin size used for merging (approx angular resolution) <dl compact><dt><b>Parameters:</b></dt><dd>
+  <table border="0" cellspacing="2" cellpadding="0">
+    <tr><td valign="top"></td><td valign="top"><em>bs</em>&nbsp;</td><td>bin size in degrees </td></tr>
+  </table>
+</dl>
+<dl compact><dt><b>Returns:</b></dt><dd>current bin size </dd></dl>
+<dl compact><dt><b>See also:</b></dt><dd><a class="el" href="classmythenDetector.html#8f466447f886379204a59eb6785f1ed0">mythenDetector::setBinSize</a> </dd></dl>
+
 <p>
-Reimplemented in <a class="el" href="classmythenDetector.html#8f466447f886379204a59eb6785f1ed0">mythenDetector</a>.
+Implemented in <a class="el" href="classmythenDetector.html#8f466447f886379204a59eb6785f1ed0">mythenDetector</a>.
 </div>
 </div><p>
 <a class="anchor" name="9c4d2c796c176852537ff3cff4f5974b"></a><!-- doxytag: member="slsDetector::setCalDir" ref="9c4d2c796c176852537ff3cff4f5974b" args="(string s)" -->
@@ -3050,27 +3074,6 @@ configure chip <dl compact><dt><b>Parameters:</b></dt><dd>
 <dl compact><dt><b>Returns:</b></dt><dd>current register value </dd></dl>
 <dl compact><dt><b>See also:</b></dt><dd><a class="el" href="structsls__detector__chip.html">sls_detector_chip</a> </dd></dl>
 
-</div>
-</div><p>
-<a class="anchor" name="49af64998d4a4d44e965eb0adb1facb2"></a><!-- doxytag: member="slsDetector::setClockDivider" ref="49af64998d4a4d44e965eb0adb1facb2" args="(int i)" -->
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">int slsDetector::setClockDivider           </td>
-          <td>(</td>
-          <td class="paramtype">int&nbsp;</td>
-          <td class="paramname"> <em>i</em>          </td>
-          <td>&nbsp;)&nbsp;</td>
-          <td width="100%"><code> [inline]</code></td>
-        </tr>
-      </table>
-</div>
-<div class="memdoc">
-
-<p>
-set clock divider<p>
-not implemented (should be something more general like "set speed including also waitstates, set cycles etc.) 
 </div>
 </div><p>
 <a class="anchor" name="cfcce08c547e24dc09968a74e35daf40"></a><!-- doxytag: member="slsDetector::setDAC" ref="cfcce08c547e24dc09968a74e35daf40" args="(float val, dacIndex index, int imod=-1)" -->
@@ -3328,26 +3331,27 @@ sets the default output files path <dl compact><dt><b>See also:</b></dt><dd><a c
 
 </div>
 </div><p>
-<a class="anchor" name="fd3b79c59688a7a0f4f72ba5676a2f9b"></a><!-- doxytag: member="slsDetector::setFineOffset" ref="fd3b79c59688a7a0f4f72ba5676a2f9b" args="(float f)" -->
+<a class="anchor" name="7b3b6b3ac5b3b1ee0677f7deeec5c9e3"></a><!-- doxytag: member="slsDetector::setFineOffset" ref="7b3b6b3ac5b3b1ee0677f7deeec5c9e3" args="(float f)=0" -->
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">float slsDetector::setFineOffset           </td>
+          <td class="memname">virtual float slsDetector::setFineOffset           </td>
           <td>(</td>
           <td class="paramtype">float&nbsp;</td>
           <td class="paramname"> <em>f</em>          </td>
           <td>&nbsp;)&nbsp;</td>
-          <td width="100%"><code> [inline]</code></td>
+          <td width="100%"><code> [pure virtual]</code></td>
         </tr>
       </table>
 </div>
 <div class="memdoc">
 
 <p>
-set detector fine offset 
+pure virtual function set detector fine offset <dl compact><dt><b>See also:</b></dt><dd><a class="el" href="classmythenDetector.html#fe142e36f1a5fa8b2ab5fc45e9f8c781">mythenDetector::setFineOffset</a> </dd></dl>
+
 <p>
-Reimplemented in <a class="el" href="classmythenDetector.html#fe142e36f1a5fa8b2ab5fc45e9f8c781">mythenDetector</a>.
+Implemented in <a class="el" href="classmythenDetector.html#fe142e36f1a5fa8b2ab5fc45e9f8c781">mythenDetector</a>.
 </div>
 </div><p>
 <a class="anchor" name="b4e2c11303714d5e62b4fcc22f829d8f"></a><!-- doxytag: member="slsDetector::setFlatFieldCorrection" ref="b4e2c11303714d5e62b4fcc22f829d8f" args="(string fname=&quot;&quot;)" -->
@@ -3376,26 +3380,27 @@ set flat field corrections <dl compact><dt><b>Parameters:</b></dt><dd>
 
 </div>
 </div><p>
-<a class="anchor" name="84c8dc8017e692d93246cd546e6366c1"></a><!-- doxytag: member="slsDetector::setGlobalOffset" ref="84c8dc8017e692d93246cd546e6366c1" args="(float f)" -->
+<a class="anchor" name="2a03a8aec6dbf74a606e6960e178fceb"></a><!-- doxytag: member="slsDetector::setGlobalOffset" ref="2a03a8aec6dbf74a606e6960e178fceb" args="(float f)=0" -->
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">float slsDetector::setGlobalOffset           </td>
+          <td class="memname">virtual float slsDetector::setGlobalOffset           </td>
           <td>(</td>
           <td class="paramtype">float&nbsp;</td>
           <td class="paramname"> <em>f</em>          </td>
           <td>&nbsp;)&nbsp;</td>
-          <td width="100%"><code> [inline]</code></td>
+          <td width="100%"><code> [pure virtual]</code></td>
         </tr>
       </table>
 </div>
 <div class="memdoc">
 
 <p>
-set detector global offset 
+pure virtual function set detector global offset <dl compact><dt><b>See also:</b></dt><dd><a class="el" href="classmythenDetector.html#e24dd88c4eb965687bd656a12bae8ad7">mythenDetector::setGlobalOffset</a> </dd></dl>
+
 <p>
-Reimplemented in <a class="el" href="classmythenDetector.html#e24dd88c4eb965687bd656a12bae8ad7">mythenDetector</a>.
+Implemented in <a class="el" href="classmythenDetector.html#e24dd88c4eb965687bd656a12bae8ad7">mythenDetector</a>.
 </div>
 </div><p>
 <a class="anchor" name="d659b9a8ae9a29cea616e6333e2e7be4"></a><!-- doxytag: member="slsDetector::setModule" ref="d659b9a8ae9a29cea616e6333e2e7be4" args="(sls_detector_module module)" -->
@@ -3525,12 +3530,12 @@ sets the onlineFlag <dl compact><dt><b>Parameters:</b></dt><dd>
 
 </div>
 </div><p>
-<a class="anchor" name="ed6493ad015660281b14814f9a7f6cb5"></a><!-- doxytag: member="slsDetector::setPositions" ref="ed6493ad015660281b14814f9a7f6cb5" args="(int nPos, float *pos)" -->
+<a class="anchor" name="961e3976e3077803e2fc245873f81d81"></a><!-- doxytag: member="slsDetector::setPositions" ref="961e3976e3077803e2fc245873f81d81" args="(int nPos, float *pos)=0" -->
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">int slsDetector::setPositions           </td>
+          <td class="memname">virtual int slsDetector::setPositions           </td>
           <td>(</td>
           <td class="paramtype">int&nbsp;</td>
           <td class="paramname"> <em>nPos</em>, </td>
@@ -3544,23 +3549,24 @@ sets the onlineFlag <dl compact><dt><b>Parameters:</b></dt><dd>
         <tr>
           <td></td>
           <td>)</td>
-          <td></td><td></td><td width="100%"><code> [inline]</code></td>
+          <td></td><td></td><td width="100%"><code> [pure virtual]</code></td>
         </tr>
       </table>
 </div>
 <div class="memdoc">
 
 <p>
-set positions for the acquisition <dl compact><dt><b>Parameters:</b></dt><dd>
+pure virtual function set positions for the acquisition <dl compact><dt><b>Parameters:</b></dt><dd>
   <table border="0" cellspacing="2" cellpadding="0">
     <tr><td valign="top"></td><td valign="top"><em>nPos</em>&nbsp;</td><td>number of positions </td></tr>
     <tr><td valign="top"></td><td valign="top"><em>pos</em>&nbsp;</td><td>array with the encoder positions </td></tr>
   </table>
 </dl>
 <dl compact><dt><b>Returns:</b></dt><dd>number of positions </dd></dl>
+<dl compact><dt><b>See also:</b></dt><dd><a class="el" href="classmythenDetector.html#1ffb0963f724e6d6d497685e6de62fd6">mythenDetector::setPositions</a> </dd></dl>
 
 <p>
-Reimplemented in <a class="el" href="classmythenDetector.html#1ffb0963f724e6d6d497685e6de62fd6">mythenDetector</a>.
+Implemented in <a class="el" href="classmythenDetector.html#1ffb0963f724e6d6d497685e6de62fd6">mythenDetector</a>.
 </div>
 </div><p>
 <a class="anchor" name="c89f7fc9f9255e573e34f8d3dadf38af"></a><!-- doxytag: member="slsDetector::setRateCorrection" ref="c89f7fc9f9255e573e34f8d3dadf38af" args="(float t=0)" -->
@@ -3663,27 +3669,6 @@ set roi<p>
 not yet implemented 
 </div>
 </div><p>
-<a class="anchor" name="f936cf5840bded81acb3f93b6b5fdd1c"></a><!-- doxytag: member="slsDetector::setSetLength" ref="f936cf5840bded81acb3f93b6b5fdd1c" args="(int i)" -->
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">int slsDetector::setSetLength           </td>
-          <td>(</td>
-          <td class="paramtype">int&nbsp;</td>
-          <td class="paramname"> <em>i</em>          </td>
-          <td>&nbsp;)&nbsp;</td>
-          <td width="100%"><code> [inline]</code></td>
-        </tr>
-      </table>
-</div>
-<div class="memdoc">
-
-<p>
-set length cycles<p>
-not implemented (should be something more general like "set speed including also waitstates, set cycles etc.) 
-</div>
-</div><p>
 <a class="anchor" name="765072d5c8aaff56ca79734072607188"></a><!-- doxytag: member="slsDetector::setSettings" ref="765072d5c8aaff56ca79734072607188" args="(detectorSettings isettings, int imod=-1)" -->
 <div class="memitem">
 <div class="memproto">
@@ -3718,6 +3703,43 @@ set detector settings <dl compact><dt><b>Parameters:</b></dt><dd>
 </dl>
 <dl compact><dt><b>Returns:</b></dt><dd>current settings</dd></dl>
 in this function trimbits and calibration files are searched in the trimDir and calDir directories and the detector is initialized 
+</div>
+</div><p>
+<a class="anchor" name="8e35d9440a03e127ef5fe7a909702675"></a><!-- doxytag: member="slsDetector::setSpeed" ref="8e35d9440a03e127ef5fe7a909702675" args="(speedVariable sp, int value=-1)" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">int slsDetector::setSpeed           </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="sls__detector__defs_8h.html#8c326f6a87754392b72098d3d0dec49d">speedVariable</a>&nbsp;</td>
+          <td class="paramname"> <em>sp</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&nbsp;</td>
+          <td class="paramname"> <em>value</em> = <code>-1</code></td><td>&nbsp;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td><td width="100%"></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>
+sets/gets the value of important readout speed parameters <dl compact><dt><b>Parameters:</b></dt><dd>
+  <table border="0" cellspacing="2" cellpadding="0">
+    <tr><td valign="top"></td><td valign="top"><em>sp</em>&nbsp;</td><td>is the parameter to be set/get </td></tr>
+    <tr><td valign="top"></td><td valign="top"><em>value</em>&nbsp;</td><td>is the value to be set, if -1 get value </td></tr>
+  </table>
+</dl>
+<dl compact><dt><b>Returns:</b></dt><dd>current value for the specified parameter </dd></dl>
+<dl compact><dt><b>See also:</b></dt><dd><a class="el" href="sls__detector__defs_8h.html#8c326f6a87754392b72098d3d0dec49d">speedVariable</a> </dd></dl>
+
 </div>
 </div><p>
 <a class="anchor" name="019a01c4465c5ee572293cb6c00d9904"></a><!-- doxytag: member="slsDetector::setTCPSocket" ref="019a01c4465c5ee572293cb6c00d9904" args="(string const name=&quot;&quot;, int const control_port=-1, int const stop_port=-1, int const data_port=-1)" -->
@@ -3961,7 +3983,7 @@ start readout (without exposure or interrupting exposure) <dl compact><dt><b>Ret
           <td>(</td>
           <td class="paramname">          </td>
           <td>&nbsp;)&nbsp;</td>
-          <td width="100%"><code> [private]</code></td>
+          <td width="100%"><code> [protected]</code></td>
         </tr>
       </table>
 </div>
@@ -3991,40 +4013,40 @@ stop detector acquisition <dl compact><dt><b>Returns:</b></dt><dd>OK/FAIL </dd><
 
 </div>
 </div><p>
-<a class="anchor" name="921f212286be085d7e1b8d0d11110d9c"></a><!-- doxytag: member="slsDetector::writeAngularConversion" ref="921f212286be085d7e1b8d0d11110d9c" args="(string fname=&quot;&quot;)" -->
+<a class="anchor" name="cace8f0d8706a175915289d86c1fd8d6"></a><!-- doxytag: member="slsDetector::writeAngularConversion" ref="cace8f0d8706a175915289d86c1fd8d6" args="(string fname=&quot;&quot;)=0" -->
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">int slsDetector::writeAngularConversion           </td>
+          <td class="memname">virtual int slsDetector::writeAngularConversion           </td>
           <td>(</td>
           <td class="paramtype">string&nbsp;</td>
           <td class="paramname"> <em>fname</em> = <code>&quot;&quot;</code>          </td>
           <td>&nbsp;)&nbsp;</td>
-          <td width="100%"></td>
+          <td width="100%"><code> [pure virtual]</code></td>
         </tr>
       </table>
 </div>
 <div class="memdoc">
 
 <p>
-writes an angular conversion file <dl compact><dt><b>Parameters:</b></dt><dd>
+Pure virtual function writes an angular conversion file <dl compact><dt><b>Parameters:</b></dt><dd>
   <table border="0" cellspacing="2" cellpadding="0">
     <tr><td valign="top"></td><td valign="top"><em>fname</em>&nbsp;</td><td>file to be written </td></tr>
   </table>
 </dl>
-<dl compact><dt><b>See also:</b></dt><dd><a class="el" href="structangleConversionConstant.html">angleConversionConstant</a> </dd></dl>
+<dl compact><dt><b>See also:</b></dt><dd><a class="el" href="structangleConversionConstant.html">angleConversionConstant</a> <a class="el" href="classmythenDetector.html#3c5f27709351c49dd715212adc5ba7d2">mythenDetector::writeAngularConversion</a> </dd></dl>
 
 <p>
-Reimplemented in <a class="el" href="classmythenDetector.html#3c5f27709351c49dd715212adc5ba7d2">mythenDetector</a>.
+Implemented in <a class="el" href="classmythenDetector.html#3c5f27709351c49dd715212adc5ba7d2">mythenDetector</a>.
 </div>
 </div><p>
-<a class="anchor" name="8eb676a1ab6ef35601ba5cae942ba380"></a><!-- doxytag: member="slsDetector::writeCalibrationFile" ref="8eb676a1ab6ef35601ba5cae942ba380" args="(string fname, float gain, float offset)" -->
+<a class="anchor" name="d12edef440bf2b2f930e83f0ccceb01e"></a><!-- doxytag: member="slsDetector::writeCalibrationFile" ref="d12edef440bf2b2f930e83f0ccceb01e" args="(string fname, float gain, float offset)=0" -->
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">int slsDetector::writeCalibrationFile           </td>
+          <td class="memname">virtual int slsDetector::writeCalibrationFile           </td>
           <td>(</td>
           <td class="paramtype">string&nbsp;</td>
           <td class="paramname"> <em>fname</em>, </td>
@@ -4044,53 +4066,54 @@ Reimplemented in <a class="el" href="classmythenDetector.html#3c5f27709351c49dd7
         <tr>
           <td></td>
           <td>)</td>
-          <td></td><td></td><td width="100%"></td>
+          <td></td><td></td><td width="100%"><code> [pure virtual]</code></td>
         </tr>
       </table>
 </div>
 <div class="memdoc">
 
 <p>
-writes a clibration file <dl compact><dt><b>Parameters:</b></dt><dd>
+Pure virtual function writes a calibration file <dl compact><dt><b>Parameters:</b></dt><dd>
   <table border="0" cellspacing="2" cellpadding="0">
     <tr><td valign="top"></td><td valign="top"><em>fname</em>&nbsp;</td><td>file to be written </td></tr>
     <tr><td valign="top"></td><td valign="top"><em>gain</em>&nbsp;</td><td></td></tr>
     <tr><td valign="top"></td><td valign="top"><em>offset</em>&nbsp;</td><td></td></tr>
   </table>
 </dl>
-<dl compact><dt><b>See also:</b></dt><dd><a class="el" href="structslsDetector_1_1sharedSlsDetector.html">sharedSlsDetector</a> </dd></dl>
+<dl compact><dt><b>See also:</b></dt><dd><a class="el" href="structslsDetector_1_1sharedSlsDetector.html">sharedSlsDetector</a> <a class="el" href="classmythenDetector.html#10e7213bb0e7138c07231687e9a6899a">mythenDetector::writeCalibrationFile</a> </dd></dl>
 
 <p>
-Reimplemented in <a class="el" href="classmythenDetector.html#10e7213bb0e7138c07231687e9a6899a">mythenDetector</a>, and <a class="el" href="classeigerDetector.html#d5fbecfcc46cb151160c6011aa8e33b2">eigerDetector</a>.
+Implemented in <a class="el" href="classmythenDetector.html#10e7213bb0e7138c07231687e9a6899a">mythenDetector</a>, and <a class="el" href="classeigerDetector.html#d5fbecfcc46cb151160c6011aa8e33b2">eigerDetector</a>.
 </div>
 </div><p>
-<a class="anchor" name="82628148e11f4890c9d935ec921c1121"></a><!-- doxytag: member="slsDetector::writeConfigurationFile" ref="82628148e11f4890c9d935ec921c1121" args="(string const fname)" -->
+<a class="anchor" name="7801c6d43c72ce5ccaa72743a6f307d2"></a><!-- doxytag: member="slsDetector::writeConfigurationFile" ref="7801c6d43c72ce5ccaa72743a6f307d2" args="(string const fname)=0" -->
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">int slsDetector::writeConfigurationFile           </td>
+          <td class="memname">virtual int slsDetector::writeConfigurationFile           </td>
           <td>(</td>
           <td class="paramtype">string const &nbsp;</td>
           <td class="paramname"> <em>fname</em>          </td>
           <td>&nbsp;)&nbsp;</td>
-          <td width="100%"></td>
+          <td width="100%"><code> [pure virtual]</code></td>
         </tr>
       </table>
 </div>
 <div class="memdoc">
 
 <p>
-Every detector should have a basic configuration file containing: type (mythen, pilatus etc.) hostname portnumber communication type (default TCP/IP) eventually secondary portnumber (e.g. mythen stop function) number of modules installed if different from the detector size (x,y)<p>
-to be changed 
+Purely virtual function Should be implemented in the specific detector class /sa <a class="el" href="classmythenDetector.html#6ad688e0c1a59001ecc61117c67e5434">mythenDetector::writeConfigurationFile</a> 
+<p>
+Implemented in <a class="el" href="classmythenDetector.html#6ad688e0c1a59001ecc61117c67e5434">mythenDetector</a>.
 </div>
 </div><p>
-<a class="anchor" name="3e1a8e49fbfb34a54381452abc8b5258"></a><!-- doxytag: member="slsDetector::writeDataFile" ref="3e1a8e49fbfb34a54381452abc8b5258" args="(string fname, int *data)" -->
+<a class="anchor" name="efa98ca652306e2a026c9a5b2fbfe2dc"></a><!-- doxytag: member="slsDetector::writeDataFile" ref="efa98ca652306e2a026c9a5b2fbfe2dc" args="(string fname, int *data)=0" -->
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">int slsDetector::writeDataFile           </td>
+          <td class="memname">virtual int slsDetector::writeDataFile           </td>
           <td>(</td>
           <td class="paramtype">string&nbsp;</td>
           <td class="paramname"> <em>fname</em>, </td>
@@ -4104,31 +4127,32 @@ to be changed
         <tr>
           <td></td>
           <td>)</td>
-          <td></td><td></td><td width="100%"></td>
+          <td></td><td></td><td width="100%"><code> [pure virtual]</code></td>
         </tr>
       </table>
 </div>
 <div class="memdoc">
 
 <p>
-writes a data file <dl compact><dt><b>Parameters:</b></dt><dd>
+Pure virtual function writes a data file <dl compact><dt><b>Parameters:</b></dt><dd>
   <table border="0" cellspacing="2" cellpadding="0">
     <tr><td valign="top"></td><td valign="top"><em>name</em>&nbsp;</td><td>of the file to be written </td></tr>
     <tr><td valign="top"></td><td valign="top"><em>data</em>&nbsp;</td><td>array of data values </td></tr>
   </table>
 </dl>
 <dl compact><dt><b>Returns:</b></dt><dd>OK or FAIL if it could not write the file or data=NULL </dd></dl>
+<dl compact><dt><b>See also:</b></dt><dd><a class="el" href="classmythenDetector.html#42c1d320f594ebd87e2465cc986ee848">mythenDetector::writeDataFile</a> </dd></dl>
 
 <p>
-Reimplemented in <a class="el" href="classmythenDetector.html#9a49c84d7ad664f7891b00fba0ce829a">mythenDetector</a>, and <a class="el" href="classeigerDetector.html#68a740d5e43fcdb00c57f401666c0856">eigerDetector</a>.
+Implemented in <a class="el" href="classmythenDetector.html#9a49c84d7ad664f7891b00fba0ce829a">mythenDetector</a>, and <a class="el" href="classeigerDetector.html#68a740d5e43fcdb00c57f401666c0856">eigerDetector</a>.
 </div>
 </div><p>
-<a class="anchor" name="889c060afb5693830ca2be4fc6a5442c"></a><!-- doxytag: member="slsDetector::writeDataFile" ref="889c060afb5693830ca2be4fc6a5442c" args="(string fname, float *data, float *err=NULL, float *ang=NULL, char dataformat='f', int nch=-1)" -->
+<a class="anchor" name="08823d7078b5e6dd1a4cb7d8b3cfe0af"></a><!-- doxytag: member="slsDetector::writeDataFile" ref="08823d7078b5e6dd1a4cb7d8b3cfe0af" args="(string fname, float *data, float *err=NULL, float *ang=NULL, char dataformat='f', int nch=-1)=0" -->
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">int slsDetector::writeDataFile           </td>
+          <td class="memname">virtual int slsDetector::writeDataFile           </td>
           <td>(</td>
           <td class="paramtype">string&nbsp;</td>
           <td class="paramname"> <em>fname</em>, </td>
@@ -4166,14 +4190,14 @@ Reimplemented in <a class="el" href="classmythenDetector.html#9a49c84d7ad664f789
         <tr>
           <td></td>
           <td>)</td>
-          <td></td><td></td><td width="100%"></td>
+          <td></td><td></td><td width="100%"><code> [pure virtual]</code></td>
         </tr>
       </table>
 </div>
 <div class="memdoc">
 
 <p>
-writes a data file <dl compact><dt><b>Parameters:</b></dt><dd>
+Pure virtual function writes a data file <dl compact><dt><b>Parameters:</b></dt><dd>
   <table border="0" cellspacing="2" cellpadding="0">
     <tr><td valign="top"></td><td valign="top"><em>name</em>&nbsp;</td><td>of the file to be written </td></tr>
     <tr><td valign="top"></td><td valign="top"><em>data</em>&nbsp;</td><td>array of data values </td></tr>
@@ -4184,9 +4208,10 @@ writes a data file <dl compact><dt><b>Parameters:</b></dt><dd>
   </table>
 </dl>
 <dl compact><dt><b>Returns:</b></dt><dd>OK or FAIL if it could not write the file or data=NULL </dd></dl>
+<dl compact><dt><b>See also:</b></dt><dd><a class="el" href="classmythenDetector.html#42c1d320f594ebd87e2465cc986ee848">mythenDetector::writeDataFile</a> </dd></dl>
 
 <p>
-Reimplemented in <a class="el" href="classmythenDetector.html#42c1d320f594ebd87e2465cc986ee848">mythenDetector</a>, and <a class="el" href="classeigerDetector.html#5ad2bf5b10d17e8c4ad7ae6e81e647e0">eigerDetector</a>.
+Implemented in <a class="el" href="classmythenDetector.html#42c1d320f594ebd87e2465cc986ee848">mythenDetector</a>, and <a class="el" href="classeigerDetector.html#5ad2bf5b10d17e8c4ad7ae6e81e647e0">eigerDetector</a>.
 </div>
 </div><p>
 <a class="anchor" name="742c8c6b4e7f3cad4f7e60c8c7c0c18b"></a><!-- doxytag: member="slsDetector::writeRegister" ref="742c8c6b4e7f3cad4f7e60c8c7c0c18b" args="(int addr, int val)" -->
@@ -4224,12 +4249,12 @@ write register <dl compact><dt><b>Parameters:</b></dt><dd>
 
 </div>
 </div><p>
-<a class="anchor" name="afe675432bf8e5dcb47774da3cc81106"></a><!-- doxytag: member="slsDetector::writeTrimFile" ref="afe675432bf8e5dcb47774da3cc81106" args="(string fname, int imod)" -->
+<a class="anchor" name="cb27a987551e66093eb201523ac8d8b0"></a><!-- doxytag: member="slsDetector::writeTrimFile" ref="cb27a987551e66093eb201523ac8d8b0" args="(string fname, int imod)=0" -->
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">int slsDetector::writeTrimFile           </td>
+          <td class="memname">virtual int slsDetector::writeTrimFile           </td>
           <td>(</td>
           <td class="paramtype">string&nbsp;</td>
           <td class="paramname"> <em>fname</em>, </td>
@@ -4243,32 +4268,32 @@ write register <dl compact><dt><b>Parameters:</b></dt><dd>
         <tr>
           <td></td>
           <td>)</td>
-          <td></td><td></td><td width="100%"></td>
+          <td></td><td></td><td width="100%"><code> [pure virtual]</code></td>
         </tr>
       </table>
 </div>
 <div class="memdoc">
 
 <p>
-writes a trim file for module number imod - the values will be read from the current detector structure <dl compact><dt><b>Parameters:</b></dt><dd>
+Pure virtual function writes a trim file for module number imod - the values will be read from the current detector structure <dl compact><dt><b>Parameters:</b></dt><dd>
   <table border="0" cellspacing="2" cellpadding="0">
     <tr><td valign="top"></td><td valign="top"><em>fname</em>&nbsp;</td><td>name of the file to be written </td></tr>
     <tr><td valign="top"></td><td valign="top"><em>imod</em>&nbsp;</td><td>module number </td></tr>
   </table>
 </dl>
 <dl compact><dt><b>Returns:</b></dt><dd>OK or FAIL if the file could not be written </dd></dl>
-<dl compact><dt><b>See also:</b></dt><dd><a class="el" href="structsls__detector__module.html">sls_detector_module</a> <a class="el" href="structslsDetector_1_1sharedSlsDetector.html">sharedSlsDetector</a> </dd></dl>
+<dl compact><dt><b>See also:</b></dt><dd><a class="el" href="structsls__detector__module.html">sls_detector_module</a> <a class="el" href="structslsDetector_1_1sharedSlsDetector.html">sharedSlsDetector</a> <a class="el" href="classmythenDetector.html#94179431a737bbceb20f27ca1fd30349">mythenDetector::writeTrimFile(string, int)</a> </dd></dl>
 
 <p>
-Reimplemented in <a class="el" href="classmythenDetector.html#94179431a737bbceb20f27ca1fd30349">mythenDetector</a>, and <a class="el" href="classeigerDetector.html#df3a0dff0fc3111e10af0363bdd15a6a">eigerDetector</a>.
+Implemented in <a class="el" href="classmythenDetector.html#94179431a737bbceb20f27ca1fd30349">mythenDetector</a>, and <a class="el" href="classeigerDetector.html#df3a0dff0fc3111e10af0363bdd15a6a">eigerDetector</a>.
 </div>
 </div><p>
-<a class="anchor" name="9cbb1f97b8e48bd4b108a2dfa992c6af"></a><!-- doxytag: member="slsDetector::writeTrimFile" ref="9cbb1f97b8e48bd4b108a2dfa992c6af" args="(string fname, sls_detector_module mod)" -->
+<a class="anchor" name="5b97351cfaffe067016dbcebbd0778a7"></a><!-- doxytag: member="slsDetector::writeTrimFile" ref="5b97351cfaffe067016dbcebbd0778a7" args="(string fname, sls_detector_module mod)=0" -->
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">int slsDetector::writeTrimFile           </td>
+          <td class="memname">virtual int slsDetector::writeTrimFile           </td>
           <td>(</td>
           <td class="paramtype">string&nbsp;</td>
           <td class="paramname"> <em>fname</em>, </td>
@@ -4282,24 +4307,24 @@ Reimplemented in <a class="el" href="classmythenDetector.html#94179431a737bbceb2
         <tr>
           <td></td>
           <td>)</td>
-          <td></td><td></td><td width="100%"></td>
+          <td></td><td></td><td width="100%"><code> [pure virtual]</code></td>
         </tr>
       </table>
 </div>
 <div class="memdoc">
 
 <p>
-writes a trim file <dl compact><dt><b>Parameters:</b></dt><dd>
+Pure virtual function writes a trim file <dl compact><dt><b>Parameters:</b></dt><dd>
   <table border="0" cellspacing="2" cellpadding="0">
     <tr><td valign="top"></td><td valign="top"><em>fname</em>&nbsp;</td><td>name of the file to be written </td></tr>
     <tr><td valign="top"></td><td valign="top"><em>mod</em>&nbsp;</td><td>module structure which has to be written to file </td></tr>
   </table>
 </dl>
 <dl compact><dt><b>Returns:</b></dt><dd>OK or FAIL if the file could not be written</dd></dl>
-<dl compact><dt><b>See also:</b></dt><dd><a class="el" href="structsls__detector__module.html">sls_detector_module</a> </dd></dl>
+<dl compact><dt><b>See also:</b></dt><dd><a class="el" href="structsls__detector__module.html">sls_detector_module</a> <a class="el" href="classmythenDetector.html#0b137abd78bd3d03653cd21436eb6c4d">mythenDetector::writeTrimFile(string, sls_detector_module)</a> </dd></dl>
 
 <p>
-Reimplemented in <a class="el" href="classmythenDetector.html#0b137abd78bd3d03653cd21436eb6c4d">mythenDetector</a>, and <a class="el" href="classeigerDetector.html#8380366bf7112021c49be8e6f29f18d8">eigerDetector</a>.
+Implemented in <a class="el" href="classmythenDetector.html#0b137abd78bd3d03653cd21436eb6c4d">mythenDetector</a>, and <a class="el" href="classeigerDetector.html#8380366bf7112021c49be8e6f29f18d8">eigerDetector</a>.
 </div>
 </div><p>
 <hr><h2>Member Data Documentation</h2>
@@ -4308,7 +4333,7 @@ Reimplemented in <a class="el" href="classmythenDetector.html#0b137abd78bd3d0365
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">float* <a class="el" href="classslsDetector.html#f370b8466441491d8496bb8130b8c5e7">slsDetector::adcs</a><code> [private]</code>          </td>
+          <td class="memname">float* <a class="el" href="classslsDetector.html#f370b8466441491d8496bb8130b8c5e7">slsDetector::adcs</a><code> [protected]</code>          </td>
         </tr>
       </table>
 </div>
@@ -4323,7 +4348,7 @@ pointer to adc valuse
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">int* <a class="el" href="classslsDetector.html#614c98f77a8a3ec6cff57aa59e671123">slsDetector::badChannelMask</a><code> [private]</code>          </td>
+          <td class="memname">int* <a class="el" href="classslsDetector.html#614c98f77a8a3ec6cff57aa59e671123">slsDetector::badChannelMask</a><code> [protected]</code>          </td>
         </tr>
       </table>
 </div>
@@ -4339,7 +4364,7 @@ pointer to bad channel mask 0 is channel is good 1 if it is bad<dl compact><dt><
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">int* <a class="el" href="classslsDetector.html#44335474559f7321f0309fbda304caf8">slsDetector::chanregs</a><code> [private]</code>          </td>
+          <td class="memname">int* <a class="el" href="classslsDetector.html#44335474559f7321f0309fbda304caf8">slsDetector::chanregs</a><code> [protected]</code>          </td>
         </tr>
       </table>
 </div>
@@ -4354,7 +4379,7 @@ pointer to channal registers
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">int* <a class="el" href="classslsDetector.html#0eb24981d044632eccba507bd15871a6">slsDetector::chipregs</a><code> [private]</code>          </td>
+          <td class="memname">int* <a class="el" href="classslsDetector.html#0eb24981d044632eccba507bd15871a6">slsDetector::chipregs</a><code> [protected]</code>          </td>
         </tr>
       </table>
 </div>
@@ -4369,7 +4394,7 @@ pointer to chip registers
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="classMySocketTCP.html">MySocketTCP</a>* <a class="el" href="classslsDetector.html#07f3943ab8a65f061bbe1c1e1d22b700">slsDetector::controlSocket</a><code> [private]</code>          </td>
+          <td class="memname"><a class="el" href="classMySocketTCP.html">MySocketTCP</a>* <a class="el" href="classslsDetector.html#07f3943ab8a65f061bbe1c1e1d22b700">slsDetector::controlSocket</a><code> [protected]</code>          </td>
         </tr>
       </table>
 </div>
@@ -4384,7 +4409,7 @@ socket for control commands
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">float <a class="el" href="classslsDetector.html#4bba77b0de9f911c87d48d12c15a632b">slsDetector::currentI0</a><code> [private]</code>          </td>
+          <td class="memname">float <a class="el" href="classslsDetector.html#4bba77b0de9f911c87d48d12c15a632b">slsDetector::currentI0</a><code> [protected]</code>          </td>
         </tr>
       </table>
 </div>
@@ -4399,7 +4424,7 @@ I0 measured
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">float <a class="el" href="classslsDetector.html#9f64e866250e916299048c9816c9ef28">slsDetector::currentPosition</a><code> [private]</code>          </td>
+          <td class="memname">float <a class="el" href="classslsDetector.html#9f64e866250e916299048c9816c9ef28">slsDetector::currentPosition</a><code> [protected]</code>          </td>
         </tr>
       </table>
 </div>
@@ -4414,7 +4439,7 @@ current position of the detector
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">float <a class="el" href="classslsDetector.html#9a6cd8787f618c147faacc1f3602bcf5">slsDetector::currentPositionIndex</a><code> [private]</code>          </td>
+          <td class="memname">float <a class="el" href="classslsDetector.html#9a6cd8787f618c147faacc1f3602bcf5">slsDetector::currentPositionIndex</a><code> [protected]</code>          </td>
         </tr>
       </table>
 </div>
@@ -4429,7 +4454,7 @@ current position index of the detector
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">float* <a class="el" href="classslsDetector.html#dc1b3f867b97136fca83f86c83b7ae14">slsDetector::dacs</a><code> [private]</code>          </td>
+          <td class="memname">float* <a class="el" href="classslsDetector.html#dc1b3f867b97136fca83f86c83b7ae14">slsDetector::dacs</a><code> [protected]</code>          </td>
         </tr>
       </table>
 </div>
@@ -4444,7 +4469,7 @@ pointer to dac valuse
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">pthread_t <a class="el" href="classslsDetector.html#8257cca09e23b601764e57f5a8bdaacd">slsDetector::dataProcessingThread</a><code> [private]</code>          </td>
+          <td class="memname">pthread_t <a class="el" href="classslsDetector.html#8257cca09e23b601764e57f5a8bdaacd">slsDetector::dataProcessingThread</a><code> [protected]</code>          </td>
         </tr>
       </table>
 </div>
@@ -4459,7 +4484,7 @@ data processing thread???
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">queue&lt;int*&gt; <a class="el" href="classslsDetector.html#52e9fe9baf37db001cdf58f982ab5dd6">slsDetector::dataQueue</a><code> [private]</code>          </td>
+          <td class="memname">queue&lt;int*&gt; <a class="el" href="classslsDetector.html#52e9fe9baf37db001cdf58f982ab5dd6">slsDetector::dataQueue</a><code> [protected]</code>          </td>
         </tr>
       </table>
 </div>
@@ -4474,7 +4499,7 @@ data queue
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="classMySocketTCP.html">MySocketTCP</a>* <a class="el" href="classslsDetector.html#1629e3c46678ae201f6797e4d827cb32">slsDetector::dataSocket</a><code> [private]</code>          </td>
+          <td class="memname"><a class="el" href="classMySocketTCP.html">MySocketTCP</a>* <a class="el" href="classslsDetector.html#1629e3c46678ae201f6797e4d827cb32">slsDetector::dataSocket</a><code> [protected]</code>          </td>
         </tr>
       </table>
 </div>
@@ -4489,7 +4514,7 @@ socket for data acquisition
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="structsls__detector__module.html">sls_detector_module</a>* <a class="el" href="classslsDetector.html#b78d6f2abc185b2bde2c550b31e0ff72">slsDetector::detectorModules</a><code> [private]</code>          </td>
+          <td class="memname"><a class="el" href="structsls__detector__module.html">sls_detector_module</a>* <a class="el" href="classslsDetector.html#b78d6f2abc185b2bde2c550b31e0ff72">slsDetector::detectorModules</a><code> [protected]</code>          </td>
         </tr>
       </table>
 </div>
@@ -4504,7 +4529,7 @@ pointer to detector module structures
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">int <a class="el" href="classslsDetector.html#37f4af284283e7a18a28cec3f4e4532f">slsDetector::detId</a><code> [private]</code>          </td>
+          <td class="memname">int <a class="el" href="classslsDetector.html#37f4af284283e7a18a28cec3f4e4532f">slsDetector::detId</a><code> [protected]</code>          </td>
         </tr>
       </table>
 </div>
@@ -4519,7 +4544,7 @@ detector ID
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">float* <a class="el" href="classslsDetector.html#a3c6e93198a2f8b072b7b84ba9af7c4b">slsDetector::ffcoefficients</a><code> [private]</code>          </td>
+          <td class="memname">float* <a class="el" href="classslsDetector.html#a3c6e93198a2f8b072b7b84ba9af7c4b">slsDetector::ffcoefficients</a><code> [protected]</code>          </td>
         </tr>
       </table>
 </div>
@@ -4534,7 +4559,7 @@ pointer to flat field coefficients
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">float* <a class="el" href="classslsDetector.html#636168b92509e96418c9134d6d82ad4c">slsDetector::fferrors</a><code> [private]</code>          </td>
+          <td class="memname">float* <a class="el" href="classslsDetector.html#636168b92509e96418c9134d6d82ad4c">slsDetector::fferrors</a><code> [protected]</code>          </td>
         </tr>
       </table>
 </div>
@@ -4549,7 +4574,7 @@ pointer to flat field coefficient errors
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">float* <a class="el" href="classslsDetector.html#81751fd6e87f9659a8b6afe13efec2cf">slsDetector::mergingBins</a><code> [private]</code>          </td>
+          <td class="memname">float* <a class="el" href="classslsDetector.html#81751fd6e87f9659a8b6afe13efec2cf">slsDetector::mergingBins</a><code> [protected]</code>          </td>
         </tr>
       </table>
 </div>
@@ -4564,7 +4589,7 @@ merging bins
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">float* <a class="el" href="classslsDetector.html#fc173dcaeda2bbd7bbd6a874b5b5726c">slsDetector::mergingCounts</a><code> [private]</code>          </td>
+          <td class="memname">float* <a class="el" href="classslsDetector.html#fc173dcaeda2bbd7bbd6a874b5b5726c">slsDetector::mergingCounts</a><code> [protected]</code>          </td>
         </tr>
       </table>
 </div>
@@ -4579,7 +4604,7 @@ merging counts
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">float* <a class="el" href="classslsDetector.html#f357d3b5961ead7ec263a47aa51c4c11">slsDetector::mergingErrors</a><code> [private]</code>          </td>
+          <td class="memname">float* <a class="el" href="classslsDetector.html#f357d3b5961ead7ec263a47aa51c4c11">slsDetector::mergingErrors</a><code> [protected]</code>          </td>
         </tr>
       </table>
 </div>
@@ -4594,7 +4619,7 @@ merging errors
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">int* <a class="el" href="classslsDetector.html#91c5e22042997d86c2c4d16ef1be9150">slsDetector::mergingMultiplicity</a><code> [private]</code>          </td>
+          <td class="memname">int* <a class="el" href="classslsDetector.html#91c5e22042997d86c2c4d16ef1be9150">slsDetector::mergingMultiplicity</a><code> [protected]</code>          </td>
         </tr>
       </table>
 </div>
@@ -4609,7 +4634,7 @@ merging multiplicity
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">int <a class="el" href="classslsDetector.html#7572bba8e53f900d4126657827bec3cf">slsDetector::onlineFlag</a><code> [private]</code>          </td>
+          <td class="memname">int <a class="el" href="classslsDetector.html#7572bba8e53f900d4126657827bec3cf">slsDetector::onlineFlag</a><code> [protected]</code>          </td>
         </tr>
       </table>
 </div>
@@ -4625,7 +4650,7 @@ merging multiplicity
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">int <a class="el" href="classslsDetector.html#53a78c7fe99f93b9bba8d0c2cb32a181">slsDetector::shmId</a><code> [private]</code>          </td>
+          <td class="memname">int <a class="el" href="classslsDetector.html#53a78c7fe99f93b9bba8d0c2cb32a181">slsDetector::shmId</a><code> [protected]</code>          </td>
         </tr>
       </table>
 </div>
@@ -4640,7 +4665,7 @@ shared memeory ID
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="classMySocketTCP.html">MySocketTCP</a>* <a class="el" href="classslsDetector.html#efee578cdd732339788a38707e5ce531">slsDetector::stopSocket</a><code> [private]</code>          </td>
+          <td class="memname"><a class="el" href="classMySocketTCP.html">MySocketTCP</a>* <a class="el" href="classslsDetector.html#efee578cdd732339788a38707e5ce531">slsDetector::stopSocket</a><code> [protected]</code>          </td>
         </tr>
       </table>
 </div>
@@ -4655,7 +4680,7 @@ socket for emergency stop
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="structslsDetector_1_1sharedSlsDetector.html">sharedSlsDetector</a>* <a class="el" href="classslsDetector.html#fe0da5c1491ebf18f187f0a26c5ded11">slsDetector::thisDetector</a><code> [private]</code>          </td>
+          <td class="memname"><a class="el" href="structslsDetector_1_1sharedSlsDetector.html">sharedSlsDetector</a>* <a class="el" href="classslsDetector.html#fe0da5c1491ebf18f187f0a26c5ded11">slsDetector::thisDetector</a><code> [protected]</code>          </td>
         </tr>
       </table>
 </div>
@@ -4667,7 +4692,7 @@ address of the detector structure in shared memory
 </div><p>
 <hr>The documentation for this class was generated from the following files:<ul>
 <li>slsDetector/<a class="el" href="slsDetector_8h-source.html">slsDetector.h</a><li>slsDetector/<a class="el" href="slsDetector_8cpp.html">slsDetector.cpp</a></ul>
-<hr size="1"><address style="align: right;"><small>Generated on Fri Oct 9 16:01:05 2009 by&nbsp;
+<hr size="1"><address style="align: right;"><small>Generated on Tue Dec 1 10:56:45 2009 by&nbsp;
 <a href="http://www.doxygen.org/index.html">
 <img src="doxygen.png" alt="doxygen" align="middle" border="0"></a> 1.4.7 </small></address>
 </body>

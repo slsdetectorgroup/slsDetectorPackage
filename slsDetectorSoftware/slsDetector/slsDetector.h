@@ -22,6 +22,8 @@ extern "C" {
  #include <sys/uio.h>
 
 
+#include "sls_detector_defs.h"
+
 #define MAX_TIMERS 10
 #define MAX_ROIS 100
 #define MAX_BADCHANS 2000
@@ -37,15 +39,13 @@ extern "C" {
 #define DEFAULT_HOSTNAME  "localhost"
 #define DEFAULT_SHM_KEY  5678
 
-#define defaultTDead {170,90,750}
+#define defaultTDead {170,90,750} /**< should be changed in order to have it separate for the different detector types */
 
 using namespace std;
 /**
  \mainpage Common C++ library for SLS detectors data acquisition
  *
  * \section intro_sec Introduction
- 
-
 
  * \subsection mot_sec Motivation
  Although the SLS detectors group delvelops several types of detectors (1/2D, counting/integrating etc.) it is common interest of the group to use a common platfor for data acquisition
@@ -55,7 +55,13 @@ using namespace std;
   \li C++ classes common to all detectors for client-server communication. These can be supplied to users as libraries and embedded also in acquisition systems which are not developed by the SLS \sa MySocketTCP slsDetector
   \li the possibility of using a Qt-based graphical user interface (with eventually root analisys capabilities)
   \li the possibility of runnin alla commands from command line. In order to ensure a fast operation of this so called "text client" the detector parameters should not be re-initialized everytime. For this reason a shared memory block is allocated where the main detector flags and parameters are stored \sa slsDetector::sharedSlsDetector
-
+ \section howto_sec How to use it
+ The best way to operate the slsDetectors is to use the software (text client or GUI) developed by the sls detectors group.
+In case you need to embed the detector control in a previously existing software, compile these classes using <BR>
+make package
+<br>
+and link the shared library created to your software bin/libSlsDetector.so.1.0.1
+Then in your software you should use the class related to the detector you want to control (mythenDetector or eigerDetector).
 
  @author Anna Bergamaschi
 
@@ -70,7 +76,7 @@ using namespace std;
  *
  * @short This is the base class for all SLS detector functionalities
  * @author Anna Bergamaschi
- * @version 0.1alpha (any string)
+ * @version 0.1alpha
 
 
  */
@@ -88,8 +94,6 @@ class slsDetector {
 	ONLINE_FLAG /**< detector in online state (i.e. communication to the detector updating the local structure) */
   };
 
-
-#include "sls_detector_defs.h"
 
 
   /** 
@@ -159,6 +163,8 @@ typedef  struct sharedSlsDetector {
     float tDead;
     /** number of bad channels from bad channel list */
     int nBadChans;
+  /** file with the bad channels */
+  char badChanFile[MAX_STR_LENGTH];
     /** list of bad channels */
     int badChansList[MAX_BADCHANS];
     /** number of bad channels from flat field i.e. channels which read 0 in the flat field file */
@@ -166,6 +172,8 @@ typedef  struct sharedSlsDetector {
     /** list of bad channels from flat field i.e. channels which read 0 in the flat field file */
     int badFFList[MAX_BADCHANS];
     
+  /** file with the angular conversion factors */
+  char angConvFile[MAX_STR_LENGTH];
     /** array of angular conversion constants for each module \see ::angleConversionConstant */
     angleConversionConstant angOff[MAXMODS];
     /** angular direction (1 if it corresponds to the encoder direction i.e. channel 0 is 0, maxchan is positive high angle, 0 otherwise  */
@@ -240,30 +248,18 @@ typedef  struct sharedSlsDetector {
   int exists() {return thisDetector->alreadyExisting;};
 
   /**
-     Every detector should have a basic configuration file containing:
-     type (mythen, pilatus etc.)
-     hostname
-     portnumber
-     communication type (default TCP/IP)
-     eventually secondary portnumber (e.g. mythen stop function)
-     number of modules installed if different from the detector size (x,y)
-  
-     to be changed
+    Purely virtual function
+    Should be implemented in the specific detector class
+    /sa mythenDetector::readConfigurationFile
   */
 
-  int readConfigurationFile(string const fname);  
-  /**
-     Every detector should have a basic configuration file containing:
-     type (mythen, pilatus etc.)
-     hostname
-     portnumber
-     communication type (default TCP/IP)
-     eventually secondary portnumber (e.g. mythen stop function)
-     number of modules installed if different from the detector size (x,y)
-
-     to be changed
+  virtual int readConfigurationFile(string const fname)=0;  
+  /**  
+    Purely virtual function
+    Should be implemented in the specific detector class
+    /sa mythenDetector::writeConfigurationFile
   */
-  int writeConfigurationFile(string const fname);
+  virtual int writeConfigurationFile(string const fname)=0;
 
 
   /* 
@@ -271,17 +267,18 @@ typedef  struct sharedSlsDetector {
      in a file and retrieve it for repeating the measurement with identicals ettings, if necessary
   */
   /** 
-      not yet implemented
-
-      should dump to a file all the current detector parameters
+    
+    Purely virtual function
+    Should be implemented in the specific detector class
+    /sa mythenDetector::dumpDetectorSetup
   */
-  int dumpDetectorSetup(string const fname);  
+  virtual int dumpDetectorSetup(string const fname)=0;  
   /** 
-      not yet implemented
-
-      should retrieve from a file all the current detector parameters
+    Purely virtual function
+    Should be implemented in the specific detector class
+    /sa mythenDetector::retrieveDetectorSetup
   */
-  int retrieveDetectorSetup(string const fname);
+  virtual int retrieveDetectorSetup(string const fname)=0;
 
   /** 
      configure the socket communication and initializes the socket instances
@@ -316,35 +313,39 @@ typedef  struct sharedSlsDetector {
 
   \sa  sharedSlsDetector
   */
-  int getTrimEn(int *en) {for (int ien=0; ien<thisDetector->nTrimEn; ien++) en[ien]=thisDetector->trimEnergies[ien]; return (thisDetector->nTrimEn);};
+  int getTrimEn(int *en=NULL) {if (en) {for (int ien=0; ien<thisDetector->nTrimEn; ien++) en[ien]=thisDetector->trimEnergies[ien];} return (thisDetector->nTrimEn);};
 
   /**
+     Pure virtual function
      reads a trim file
      \param fname name of the file to be read
      \param myMod pointer to the module structure which has to be set. <BR> If it is NULL a new module structure will be created
      \returns the pointer to myMod or NULL if reading the file failed
+     \sa mythenDetector::readTrimFile
   */
 
-  sls_detector_module* readTrimFile(string fname,  sls_detector_module* myMod=NULL);
+  virtual sls_detector_module* readTrimFile(string fname,  sls_detector_module* myMod=NULL)=0;
 
   /**
+     Pure virtual function
      writes a trim file
      \param fname name of the file to be written
      \param mod module structure which has to be written to file
      \returns OK or FAIL if the file could not be written
 
-     \sa ::sls_detector_module
+     \sa ::sls_detector_module mythenDetector::writeTrimFile(string, sls_detector_module)
   */
-  int writeTrimFile(string fname, sls_detector_module mod); 
+  virtual int writeTrimFile(string fname, sls_detector_module mod)=0; 
   
   /**
+     Pure virtual function
      writes a trim file for module number imod - the values will be read from the current detector structure
      \param fname name of the file to be written
      \param imod module number
      \returns OK or FAIL if the file could not be written   
-     \sa ::sls_detector_module sharedSlsDetector
+     \sa ::sls_detector_module sharedSlsDetector mythenDetector::writeTrimFile(string, int)
   */
-  int writeTrimFile(string fname, int imod);
+  virtual int writeTrimFile(string fname, int imod)=0;
 
   /**
      sets the default output files path
@@ -396,6 +397,7 @@ typedef  struct sharedSlsDetector {
   string createFileName();
   
     /**
+       Pure virtual function
        writes a data file
        \param name of the file to be written
        \param data array of data values
@@ -405,20 +407,23 @@ typedef  struct sharedSlsDetector {
        \param dataformat format of the data: can be 'i' integer or 'f' float (default)
        \param nch number of channels to be written to file. if -1 defaults to the number of installed channels of the detector
        \returns OK or FAIL if it could not write the file or data=NULL
-       
+       \sa mythenDetector::writeDataFile
  
   */
-  int writeDataFile(string fname, float *data, float *err=NULL, float *ang=NULL, char dataformat='f', int nch=-1); 
+  virtual int writeDataFile(string fname, float *data, float *err=NULL, float *ang=NULL, char dataformat='f', int nch=-1)=0; 
   
   /**
+     Pure virtual function
        writes a data file
        \param name of the file to be written
        \param data array of data values
-       \returns OK or FAIL if it could not write the file or data=NULL
+       \returns OK or FAIL if it could not write the file or data=NULL  
+       \sa mythenDetector::writeDataFile
   */
-  int writeDataFile(string fname, int *data);
+  virtual int writeDataFile(string fname, int *data)=0;
   
   /**
+     Pure virtual function
        reads a data file
        \param name of the file to be read
        \param data array of data values to be filled
@@ -429,64 +434,71 @@ typedef  struct sharedSlsDetector {
        \param nch number of channels to be written to file. if <=0 defaults to the number of installed channels of the detector
        \returns OK or FAIL if it could not read the file or data=NULL
        
- 
+       \sa mythenDetector::readDataFile
   */
-  int readDataFile(string fname, float *data, float *err=NULL, float *ang=NULL, char dataformat='f', int nch=0);  
+  virtual int readDataFile(string fname, float *data, float *err=NULL, float *ang=NULL, char dataformat='f', int nch=0)=0;  
 
   /**
+     Pure virtual function
        reads a data file
        \param name of the file to be read
        \param data array of data values
        \returns OK or FAIL if it could not read the file or data=NULL
+       \sa mythenDetector::readDataFile
   */
-  int readDataFile(string fname, int *data);
+  virtual int readDataFile(string fname, int *data)=0;
 
  /**
      returns the location of the calibration files
   \sa  sharedSlsDetector
   */
-  char* getCalDir() {return thisDetector->calDir;};
+  char* getCalDir() {cout << "cal dir is " << thisDetector->calDir; return thisDetector->calDir;};
+
+
    /**
       sets the location of the calibration files
   \sa  sharedSlsDetector
   */
   char* setCalDir(string s) {sprintf(thisDetector->calDir, s.c_str()); return thisDetector->calDir;}; 
   /**
+     Pure virtual function
       reads a calibration file
       \param fname file to be read
       \param gain reference to the gain variable
       \offset reference to the offset variable
-  \sa  sharedSlsDetector
+  \sa  sharedSlsDetector mythenDetector::readCalibrationFile
   */
-  int readCalibrationFile(string fname, float &gain, float &offset);
+  virtual int readCalibrationFile(string fname, float &gain, float &offset)=0;
   /**
-      writes a clibration file
+     Pure virtual function
+      writes a calibration file
       \param fname file to be written
       \param gain 
       \param offset
-  \sa  sharedSlsDetector
+  \sa  sharedSlsDetector mythenDetector::writeCalibrationFile
   */
-  int writeCalibrationFile(string fname, float gain, float offset);
+  virtual int writeCalibrationFile(string fname, float gain, float offset)=0;
 
 
   /**
+     Pure virtual function
       reads an angular conversion file
       \param fname file to be read
-  \sa  angleConversionConstant
+  \sa  angleConversionConstant mythenDetector::readAngularConversion
   */
-  int readAngularConversion(string fname="");
+  virtual int readAngularConversion(string fname="")=0;
   /**
+     Pure virtual function
      writes an angular conversion file
       \param fname file to be written
-  \sa  angleConversionConstant
+  \sa  angleConversionConstant mythenDetector::writeAngularConversion
   */
-  int writeAngularConversion(string fname="");
+  virtual int writeAngularConversion(string fname="")=0;
  
 
 
   /* Communication to server */
 
-  // General purpose functions
 
   /**
      executes a system command on the server 
@@ -520,6 +532,14 @@ typedef  struct sharedSlsDetector {
   */
   void getDetectorType(char *type);
 
+
+  // Detector configuration functions
+  /** 
+      set/get the size of the detector 
+      \param n number of modules
+      \param d dimension
+      \returns current number of modules in direction d
+  */
 
   // Detector configuration functions
   /** 
@@ -863,37 +883,16 @@ typedef  struct sharedSlsDetector {
   */
   int64_t getTimeLeft(timerIndex index);
 
-  /** 
-      set clock divider
-      
-      not implemented (should be something more general like "set speed including also waitstates, set cycles etc.)
-      
-  */
-  int setClockDivider(int i) {cout << "not implemented any longer!"<< endl; thisDetector->clkDiv=i;return thisDetector->clkDiv;};  
 
-  /** 
-      get clock divider
-      
-      not implemented (should be something more general like "set speed including also waitstates, set cycles etc.)
-      
-  */
-  int getClockDivider() {return thisDetector->clkDiv;};  
 
-  /** 
-      set length cycles
-      
-      not implemented (should be something more general like "set speed including also waitstates, set cycles etc.)
-      
-  */
-  int setSetLength(int i) {cout << "not implemented any longer!"<< endl; thisDetector->clkDiv=i;return 3;}; 
 
-  /** 
-      get length cycles
-      
-      not implemented (should be something more general like "set speed including also waitstates, set cycles etc.)
-  */
-  int getSetLength() {return 3;};
-  
+  /** sets/gets the value of important readout speed parameters
+      \param sp is the parameter to be set/get
+      \param value is the value to be set, if -1 get value
+      \returns current value for the specified parameter
+      \sa speedVariable
+   */
+  int setSpeed(speedVariable sp, int value=-1);
 
   // Flags
   /** 
@@ -983,60 +982,95 @@ typedef  struct sharedSlsDetector {
   */
   int getBadChannelCorrections(int *bad=NULL);
 
+  /** returns the bad channel list file */
+  char *getBadChannelCorrectionFile() {return thisDetector->badChanFile;};
+
   
   /** 
+      pure virtual function
       set angular conversion
       \param fname file with angular conversion constants ("" disable)
       \returns 0 if angular conversion disabled, >0 otherwise
+      \sa mythenDetector::setAngularConversion
   */
-  int setAngularConversion(string fname="");
+  virtual int setAngularConversion(string fname="")=0;
 
   /** 
+      pure virtual function
       get angular conversion
       \param reference to diffractometer direction
       \param angconv array that will be filled with the angular conversion constants
       \returns 0 if angular conversion disabled, >0 otherwise
+      \sa mythenDetector::getAngularConversion
   */
-  int getAngularConversion(int &direction,  angleConversionConstant *angconv=NULL);
+  virtual int getAngularConversion(int &direction,  angleConversionConstant *angconv=NULL)=0;
+  
+  
+  /**
+      pure virtual function
+      returns the angular conversion file
+      \sa mythenDetector::getAngularConversion */
+  virtual char *getAngularConversion()=0;
   
   /** 
+      pure virtual function
       set detector global offset
+      \sa mythenDetector::setGlobalOffset
   */
-  float setGlobalOffset(float f){thisDetector->globalOffset=f; return thisDetector->globalOffset;}; 
+  virtual float setGlobalOffset(float f)=0; 
 
   /** 
+      pure virtual function
       set detector fine offset
+      \sa mythenDetector::setFineOffset
   */
-  float setFineOffset(float f){thisDetector->fineOffset=f; return thisDetector->fineOffset;};
+  virtual float setFineOffset(float f)=0;
   /** 
+      pure virtual function
       get detector fine offset
+      \sa mythenDetector::getFineOffset
   */
-  float getFineOffset(){return thisDetector->fineOffset;};
+  virtual float getFineOffset()=0;
   
   /** 
+      pure virtual function
       get detector global offset
+      \sa mythenDetector::getGlobalOffset
   */
-  float getGlobalOffset(){return thisDetector->globalOffset;};
+  virtual float getGlobalOffset()=0;
 
   /** 
+      pure virtual function
       set  positions for the acquisition
       \param nPos number of positions
       \param pos array with the encoder positions
       \returns number of positions
+      \sa mythenDetector::setPositions
   */
-  int setPositions(int nPos, float *pos){thisDetector->numberOfPositions=nPos; for (int ip=0; ip<nPos; ip++) thisDetector->detPositions[ip]=pos[ip]; return thisDetector->numberOfPositions;};
+  virtual int setPositions(int nPos, float *pos)=0;
    /** 
+      pure virtual function
       get  positions for the acquisition
       \param pos array which will contain the encoder positions
       \returns number of positions
+      \sa mythenDetector::getPositions
   */
-  int getPositions(float *pos=NULL){ if (pos ) {for (int ip=0; ip<thisDetector->numberOfPositions; ip++) pos[ip]=thisDetector->detPositions[ip];} return thisDetector->numberOfPositions;};
+  virtual int getPositions(float *pos=NULL)=0;
   
   
-  /** set detector bin size used for merging (approx angular resolution)*/
-  float setBinSize(float bs) {thisDetector->binSize=bs; return thisDetector->binSize;}
-  /** return detector bin size used for merging (approx angular resolution)*/
-  float getBinSize() {return thisDetector->binSize;}
+  /** pure virtual function
+      set detector bin size used for merging (approx angular resolution)
+      \param bs bin size in degrees
+      \returns current bin size
+      \sa mythenDetector::setBinSize
+*/
+  virtual float setBinSize(float bs)=0;
+
+  /** pure virtual function
+      return detector bin size used for merging (approx angular resolution)
+      \sa mythenDetector::getBinSize
+  */
+  virtual float getBinSize()=0;
 
 
 
@@ -1100,16 +1134,20 @@ typedef  struct sharedSlsDetector {
   int rateCorrect(float* datain, float *errin, float* dataout, float *errout);
 
   
-  /** sets the arrays of the merged data to 0. NB The array should be created with size >= 360./getBinSize(); 
+  /** 
+      pure virtual function
+  sets the arrays of the merged data to 0. NB The array should be created with size >= 360./getBinSize(); 
       \param mp already merged postions
       \param mv already merged data
       \param me already merged errors (squared sum)
       \param mm multiplicity of merged arrays
       \returns OK or FAIL
+      \sa mythenDetector::resetMerging
   */
-  int resetMerging(float *mp, float *mv,float *me, int *mm);
-  /** not yet implemented 
-      merge dataset
+  virtual int resetMerging(float *mp, float *mv,float *me, int *mm)=0;
+  /** 
+      pure virtual function
+  merge dataset
       \param p1 angular positions of dataset
       \param v1 data
       \param e1 errors
@@ -1117,28 +1155,31 @@ typedef  struct sharedSlsDetector {
       \param mv already merged data
       \param me already merged errors (squared sum)
       \param mm multiplicity of merged arrays
+      \sa mythenDetector::addToMerging
   */
-  int addToMerging(float *p1, float *v1, float *e1, float *mp, float *mv,float *me, int *mm);
+  virtual int addToMerging(float *p1, float *v1, float *e1, float *mp, float *mv,float *me, int *mm)=0;
 
-  /** 
+  /** pure virtual function
       calculates the "final" positions, data value and errors for the emrged data
       \param mp already merged postions
       \param mv already merged data
       \param me already merged errors (squared sum)
       \param mm multiplicity of merged arrays
-      \returns FAIL or the 
+      \returns FAIL or the number of non empty bins (i.e. points belonging to the pattern)
+      \sa mythenDetector::finalizeMerging
   */
   int finalizeMerging(float *mp, float *mv,float *me, int *mm);
 
   /** 
-      turns of server
+      turns off server
   */
   int exitServer();
 
-  /**
+  /** pure virtual function
      function for processing data
+     \sa mythenDetector::processData
   */
-  void* processData(); // thread function
+  virtual void* processData()=0; // thread function
   /** Allocates the memory for a sls_detector_module structure and initializes it
       \returns myMod the pointer to the allocate dmemory location
 
@@ -1152,7 +1193,17 @@ typedef  struct sharedSlsDetector {
   void deleteModule(sls_detector_module *myMod);
 
 
-  void acquire();
+  /** pure virtual function
+      performs the complete acquisition and data processing 
+     moves the detector to next position <br>
+     starts and reads the detector <br>
+     reads the IC (if required) <br>
+     reads the encoder (iof required for angualr conversion) <br>
+     processes the data (flat field, rate, angular conversion and merging ::processData())
+     \sa mythenDetector::acquire()
+  */
+  
+  virtual void acquire()=0;
 
  protected:
  

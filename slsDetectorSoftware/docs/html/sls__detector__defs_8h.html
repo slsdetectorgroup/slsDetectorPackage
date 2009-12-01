@@ -77,7 +77,8 @@
  }</td></tr>
 
 <tr><td class="memItemLeft" nowrap align="right" valign="top">enum &nbsp;</td><td class="memItemRight" valign="bottom">{ <a class="el" href="sls__detector__defs_8h.html#df764cbdea00d65edcd07bb9953ad2b72bc49ec37d6a5715dd23e85f1ff5bb59">OK</a>, 
-<a class="el" href="sls__detector__defs_8h.html#df764cbdea00d65edcd07bb9953ad2b7936c4a5547a9360243178f726f6b2715">FAIL</a>
+<a class="el" href="sls__detector__defs_8h.html#df764cbdea00d65edcd07bb9953ad2b7936c4a5547a9360243178f726f6b2715">FAIL</a>, 
+<a class="el" href="sls__detector__defs_8h.html#df764cbdea00d65edcd07bb9953ad2b7dbd1812bee789fbf3548cf79d3f2b400">FINISHED</a>
  }</td></tr>
 
 <tr><td class="memItemLeft" nowrap align="right" valign="top">enum &nbsp;</td><td class="memItemRight" valign="bottom">{ <a class="el" href="sls__detector__defs_8h.html#99fb83031ce9923c84392b4e92f956b540f39385238042f6ec0cbac821a19fc4">DISABLED</a>, 
@@ -198,6 +199,11 @@
 <br>
  }</td></tr>
 
+<tr><td class="memItemLeft" nowrap align="right" valign="top">enum &nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="sls__detector__defs_8h.html#8c326f6a87754392b72098d3d0dec49d">speedVariable</a> { <a class="el" href="sls__detector__defs_8h.html#8c326f6a87754392b72098d3d0dec49d3465852fc71156c546c9e211fb0babe8">CLOCK_DIVIDER</a>, 
+<a class="el" href="sls__detector__defs_8h.html#8c326f6a87754392b72098d3d0dec49dce6f5250b9197568ebc442fcf3fa4ad6">WAIT_STATES</a>, 
+<a class="el" href="sls__detector__defs_8h.html#8c326f6a87754392b72098d3d0dec49d93f0483a6f279a444314846e3c4c2699">SET_SIGNAL_LENGTH</a>
+ }</td></tr>
+
 <tr><td class="memItemLeft" nowrap align="right" valign="top">enum &nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="sls__detector__defs_8h.html#6165e3e90182cc47b0003f3288a2e579">readOutFlags</a> { <br>
 &nbsp;&nbsp;<a class="el" href="sls__detector__defs_8h.html#6165e3e90182cc47b0003f3288a2e57982dd383146f95dad5856c3077c26791e">GET_READOUT_FLAGS</a> = -1, 
 <a class="el" href="sls__detector__defs_8h.html#6165e3e90182cc47b0003f3288a2e57986a905d2c80d41ed0a1c22e1e925f3c1">NORMAL_READOUT</a> = 0, 
@@ -284,8 +290,10 @@
 <br>
 &nbsp;&nbsp;<a class="el" href="sls__detector__defs_8h.html#bc6126af1d45847bc59afa0aa3216b045cdaebc62f9748ce0f9822f381959307">F_SET_READOUT_FLAGS</a>, 
 <a class="el" href="sls__detector__defs_8h.html#bc6126af1d45847bc59afa0aa3216b04132603d9b086fb1178fbbd143d6aa126">F_SET_ROI</a>, 
+<a class="el" href="sls__detector__defs_8h.html#bc6126af1d45847bc59afa0aa3216b0457a41d958ac69f2c3d4ccf1b12cbd75f">F_SET_SPEED</a>, 
 <a class="el" href="sls__detector__defs_8h.html#bc6126af1d45847bc59afa0aa3216b045be80176327f8e6afd6954cc8fd0ceaa">F_EXECUTE_TRIMMING</a>, 
-<a class="el" href="sls__detector__defs_8h.html#bc6126af1d45847bc59afa0aa3216b04acb4344788e1f1e3716216aeffc50beb">F_EXIT_SERVER</a>
+<br>
+&nbsp;&nbsp;<a class="el" href="sls__detector__defs_8h.html#bc6126af1d45847bc59afa0aa3216b04acb4344788e1f1e3716216aeffc50beb">F_EXIT_SERVER</a>
 <br>
  }</td></tr>
 
@@ -344,6 +352,8 @@ return values <dl compact><dt><b>Enumerator: </b></dt><dd>
 <tr><td valign="top"><em><a class="anchor" name="df764cbdea00d65edcd07bb9953ad2b72bc49ec37d6a5715dd23e85f1ff5bb59"></a><!-- doxytag: member="OK" ref="df764cbdea00d65edcd07bb9953ad2b72bc49ec37d6a5715dd23e85f1ff5bb59" args="" -->OK</em>&nbsp;</td><td>
 function succeeded </td></tr>
 <tr><td valign="top"><em><a class="anchor" name="df764cbdea00d65edcd07bb9953ad2b7936c4a5547a9360243178f726f6b2715"></a><!-- doxytag: member="FAIL" ref="df764cbdea00d65edcd07bb9953ad2b7936c4a5547a9360243178f726f6b2715" args="" -->FAIL</em>&nbsp;</td><td>
+function failed </td></tr>
+<tr><td valign="top"><em><a class="anchor" name="df764cbdea00d65edcd07bb9953ad2b7dbd1812bee789fbf3548cf79d3f2b400"></a><!-- doxytag: member="FINISHED" ref="df764cbdea00d65edcd07bb9953ad2b7dbd1812bee789fbf3548cf79d3f2b400" args="" -->FINISHED</em>&nbsp;</td><td>
 function failed </td></tr>
 </table>
 </dl>
@@ -472,6 +482,8 @@ set/get detector dynamic range </td></tr>
 set/get readout flags </td></tr>
 <tr><td valign="top"><em><a class="anchor" name="bc6126af1d45847bc59afa0aa3216b04132603d9b086fb1178fbbd143d6aa126"></a><!-- doxytag: member="F_SET_ROI" ref="bc6126af1d45847bc59afa0aa3216b04132603d9b086fb1178fbbd143d6aa126" args="" -->F_SET_ROI</em>&nbsp;</td><td>
 set/get region of interest </td></tr>
+<tr><td valign="top"><em><a class="anchor" name="bc6126af1d45847bc59afa0aa3216b0457a41d958ac69f2c3d4ccf1b12cbd75f"></a><!-- doxytag: member="F_SET_SPEED" ref="bc6126af1d45847bc59afa0aa3216b0457a41d958ac69f2c3d4ccf1b12cbd75f" args="" -->F_SET_SPEED</em>&nbsp;</td><td>
+set/get readout speed parameters </td></tr>
 <tr><td valign="top"><em><a class="anchor" name="bc6126af1d45847bc59afa0aa3216b045be80176327f8e6afd6954cc8fd0ceaa"></a><!-- doxytag: member="F_EXECUTE_TRIMMING" ref="bc6126af1d45847bc59afa0aa3216b045be80176327f8e6afd6954cc8fd0ceaa" args="" -->F_EXECUTE_TRIMMING</em>&nbsp;</td><td>
 execute trimming </td></tr>
 <tr><td valign="top"><em><a class="anchor" name="bc6126af1d45847bc59afa0aa3216b04acb4344788e1f1e3716216aeffc50beb"></a><!-- doxytag: member="F_EXIT_SERVER" ref="bc6126af1d45847bc59afa0aa3216b04acb4344788e1f1e3716216aeffc50beb" args="" -->F_EXIT_SERVER</em>&nbsp;</td><td>
@@ -975,6 +987,31 @@ background corrections </td></tr>
 
 </div>
 </div><p>
+<a class="anchor" name="8c326f6a87754392b72098d3d0dec49d"></a><!-- doxytag: member="sls_detector_defs.h::speedVariable" ref="8c326f6a87754392b72098d3d0dec49d" args="" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">enum <a class="el" href="sls__detector__defs_8h.html#8c326f6a87754392b72098d3d0dec49d">speedVariable</a>          </td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>
+important speed parameters <dl compact><dt><b>Enumerator: </b></dt><dd>
+<table border="0" cellspacing="2" cellpadding="0">
+<tr><td valign="top"><em><a class="anchor" name="8c326f6a87754392b72098d3d0dec49d3465852fc71156c546c9e211fb0babe8"></a><!-- doxytag: member="CLOCK_DIVIDER" ref="8c326f6a87754392b72098d3d0dec49d3465852fc71156c546c9e211fb0babe8" args="" -->CLOCK_DIVIDER</em>&nbsp;</td><td>
+readout clock divider </td></tr>
+<tr><td valign="top"><em><a class="anchor" name="8c326f6a87754392b72098d3d0dec49dce6f5250b9197568ebc442fcf3fa4ad6"></a><!-- doxytag: member="WAIT_STATES" ref="8c326f6a87754392b72098d3d0dec49dce6f5250b9197568ebc442fcf3fa4ad6" args="" -->WAIT_STATES</em>&nbsp;</td><td>
+wait states for bus read </td></tr>
+<tr><td valign="top"><em><a class="anchor" name="8c326f6a87754392b72098d3d0dec49d93f0483a6f279a444314846e3c4c2699"></a><!-- doxytag: member="SET_SIGNAL_LENGTH" ref="8c326f6a87754392b72098d3d0dec49d93f0483a6f279a444314846e3c4c2699" args="" -->SET_SIGNAL_LENGTH</em>&nbsp;</td><td>
+set/clear signal length </td></tr>
+</table>
+</dl>
+
+</div>
+</div><p>
 <a class="anchor" name="07c87ebf35dffccd06fe39859a3ca603"></a><!-- doxytag: member="sls_detector_defs.h::timerIndex" ref="07c87ebf35dffccd06fe39859a3ca603" args="" -->
 <div class="memitem">
 <div class="memproto">
@@ -1037,7 +1074,7 @@ trimming is performed offline </td></tr>
 
 </div>
 </div><p>
-<hr size="1"><address style="align: right;"><small>Generated on Fri Oct 9 16:01:04 2009 by&nbsp;
+<hr size="1"><address style="align: right;"><small>Generated on Tue Dec 1 10:56:45 2009 by&nbsp;
 <a href="http://www.doxygen.org/index.html">
 <img src="doxygen.png" alt="doxygen" align="middle" border="0"></a> 1.4.7 </small></address>
 </body>

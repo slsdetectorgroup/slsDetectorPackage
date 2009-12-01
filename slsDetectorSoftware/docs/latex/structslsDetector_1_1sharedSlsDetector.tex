@@ -60,11 +60,15 @@ float \bf{t\-Dead}
 \item 
 int \bf{n\-Bad\-Chans}
 \item 
+char \bf{bad\-Chan\-File} [MAX\_\-STR\_\-LENGTH]
+\item 
 int \bf{bad\-Chans\-List} [MAX\_\-BADCHANS]
 \item 
 int \bf{n\-Bad\-FF}
 \item 
 int \bf{bad\-FFList} [MAX\_\-BADCHANS]
+\item 
+char \bf{ang\-Conv\-File} [MAX\_\-STR\_\-LENGTH]
 \item 
 \bf{angle\-Conversion\-Constant} \bf{ang\-Off} [MAXMODS]
 \item 
@@ -126,7 +130,12 @@ memory offsets for the adc arrays \index{slsDetector::sharedSlsDetector@{sls\-De
 \subsubsection{\setlength{\rightskip}{0pt plus 5cm}int \bf{sls\-Detector::shared\-Sls\-Detector::already\-Existing}}\label{structslsDetector_1_1sharedSlsDetector_ee2e81699a79e6b9ddc698d120a13ef9}
 
 
-already existing flag. If the detector does not yet exist (already\-Existing=0) the shared\-Memory will be created, otherwise it will simly be linked \index{slsDetector::sharedSlsDetector@{sls\-Detector::shared\-Sls\-Detector}!angDirection@{angDirection}}
+already existing flag. If the detector does not yet exist (already\-Existing=0) the shared\-Memory will be created, otherwise it will simly be linked \index{slsDetector::sharedSlsDetector@{sls\-Detector::shared\-Sls\-Detector}!angConvFile@{angConvFile}}
+\index{angConvFile@{angConvFile}!slsDetector::sharedSlsDetector@{sls\-Detector::shared\-Sls\-Detector}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}char \bf{sls\-Detector::shared\-Sls\-Detector::ang\-Conv\-File}[MAX\_\-STR\_\-LENGTH]}\label{structslsDetector_1_1sharedSlsDetector_42502564011f831f43733ffed7c2eafd}
+
+
+file with the angular conversion factors \index{slsDetector::sharedSlsDetector@{sls\-Detector::shared\-Sls\-Detector}!angDirection@{angDirection}}
 \index{angDirection@{angDirection}!slsDetector::sharedSlsDetector@{sls\-Detector::shared\-Sls\-Detector}}
 \subsubsection{\setlength{\rightskip}{0pt plus 5cm}int \bf{sls\-Detector::shared\-Sls\-Detector::ang\-Direction}}\label{structslsDetector_1_1sharedSlsDetector_289a2fe819a4e02a93dfc54f9ba7ae16}
 
@@ -138,7 +147,12 @@ angular direction (1 if it corresponds to the encoder direction i.e. channel 0 i
 
 array of angular conversion constants for each module\begin{Desc}
 \item[See also:]\doxyref{angle\-Conversion\-Constant}{p.}{structangleConversionConstant} \end{Desc}
-\index{slsDetector::sharedSlsDetector@{sls\-Detector::shared\-Sls\-Detector}!badChansList@{badChansList}}
+\index{slsDetector::sharedSlsDetector@{sls\-Detector::shared\-Sls\-Detector}!badChanFile@{badChanFile}}
+\index{badChanFile@{badChanFile}!slsDetector::sharedSlsDetector@{sls\-Detector::shared\-Sls\-Detector}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}char \bf{sls\-Detector::shared\-Sls\-Detector::bad\-Chan\-File}[MAX\_\-STR\_\-LENGTH]}\label{structslsDetector_1_1sharedSlsDetector_9ab536c77675cd30b26ab647efe5c3ca}
+
+
+file with the bad channels \index{slsDetector::sharedSlsDetector@{sls\-Detector::shared\-Sls\-Detector}!badChansList@{badChansList}}
 \index{badChansList@{badChansList}!slsDetector::sharedSlsDetector@{sls\-Detector::shared\-Sls\-Detector}}
 \subsubsection{\setlength{\rightskip}{0pt plus 5cm}int \bf{sls\-Detector::shared\-Sls\-Detector::bad\-Chans\-List}[MAX\_\-BADCHANS]}\label{structslsDetector_1_1sharedSlsDetector_4e03ad7a759acf38d4543e0df9ab9710}
 

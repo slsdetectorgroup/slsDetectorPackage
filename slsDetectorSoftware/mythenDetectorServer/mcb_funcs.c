@@ -16,6 +16,8 @@
 #undef DEBUGOUT
 
 extern int nModX;
+extern int dataBytes;
+extern int dynamicRange;
 const int nChans=NCHAN;
 const int nChips=NCHIP;
 const int nDacs=NDAC;
@@ -74,6 +76,7 @@ int initDetector() {
     (detectorModules+imod)->module=imod;
     (detectorModules+imod)->gain=0;
     (detectorModules+imod)->offset=0;
+    (detectorModules+imod)->reg=0;
     /* initialize registers, dacs, retrieve sn, adc values etc */
   }
   thisSettings=UNINITIALIZED;
@@ -89,7 +92,9 @@ int initDetector() {
   putout("0000000000000000",ALLMOD);
 
   /* initialize dynamic range etc. */
-  nModX=n;
+  nModX=n; 
+  dataBytes=nModX*NCHIP*NCHAN*4;
+  dynamicRange=32;
   initChip(0, 1,ALLMOD);
   // allocateRAM();
 
@@ -135,13 +140,24 @@ int copyModule(sls_detector_module *destMod, sls_detector_module *srcMod) {
 
   int ichip, idac,  ichan, iadc;
 
-  int ret=FAIL;
-  if (srcMod->module>=0)
-    destMod->module=srcMod->module;
+  int ret=OK;
 
-  if (srcMod->serialnumber>=0)
+#ifdef VERBOSE
+    printf("Copying module %x to module %x\n",srcMod,destMod);
+#endif
+
+  if (srcMod->module>=0) {
+#ifdef VERBOSE
+    printf("Copying module number %d to module number %d\n",srcMod->module,destMod->module);
+#endif
+    destMod->module=srcMod->module;
+  }
+  if (srcMod->serialnumber>=0){
+/* #ifdef VERBOSE */
+/*     printf("Copying module serial number %x to module serial number %x\n",srcMod->serialnumber,destMod->serialnumber); */
+/* #endif */
     destMod->serialnumber=srcMod->serialnumber;
-  
+  }
   if ((srcMod->nchip)>(destMod->nchip)) {
     printf("Number of chip of source is larger than number of chips of destination\n");
     return FAIL;
@@ -158,13 +174,26 @@ int copyModule(sls_detector_module *destMod, sls_detector_module *srcMod) {
     printf("Number of dacs of source is larger than number of dacs of destination\n");
     return FAIL;
   }
+
+#ifdef VERBOSE
+   printf("DACs: src %d, dest %d\n",srcMod->ndac,destMod->ndac);
+  printf("ADCs: src %d, dest %d\n",srcMod->nadc,destMod->nadc);
+  printf("Chips: src %d, dest %d\n",srcMod->nchip,destMod->nchip);
+  printf("Chans: src %d, dest %d\n",srcMod->nchan,destMod->nchan);
+
+#endif
+
+
+
   destMod->ndac=srcMod->ndac;
   destMod->nadc=srcMod->nadc;
   destMod->nchip=srcMod->nchip;
   destMod->nchan=srcMod->nchan;
   if (srcMod->reg>=0)
     destMod->reg=srcMod->reg;
-  
+#ifdef VERBOSE
+  printf("Copying register %x (%x)\n",destMod->reg,srcMod->reg );
+#endif
   if (srcMod->gain>=0)
   destMod->gain=srcMod->gain;
   if (srcMod->offset>=0)
@@ -188,7 +217,6 @@ int copyModule(sls_detector_module *destMod, sls_detector_module *srcMod) {
     if (*((srcMod->adcs)+iadc)>=0)
 	*((destMod->adcs)+iadc)=*((srcMod->adcs)+iadc);
   }
-
   return ret;
 }
 
@@ -440,13 +468,13 @@ int program_one_dac(int addr, int value, int imod) {
       //  myMod=detectorModules+imod;
       //(detectorModules+imod)->dacs[idac]=v;
 #ifdef VERBOSE  
-      printf("module=%d index=%d, val=%d\n",imod, idac, v);
+      printf("module=%d index=%d, val=%d addr=%x\n",imod, idac, v, detectorDacs+idac+NDAC*imod);
 #endif
       detectorDacs[idac+NDAC*imod]=v;
     } else if (imod==ALLMOD) {
       for (im=0; im<getNModBoard(); im++) {
 #ifdef VERBOSE
-	printf("all: module=%d index=%d, val=%d\n",im, idac, v);
+	printf("all: module=%d index=%d, val=%d addr=%x\n",im, idac, v,detectorDacs+idac+NDAC*im);
 #endif
 	detectorDacs[idac+NDAC*im]=v;
 	//	(detectorModules+im)->dacs[idac]=v;
@@ -642,10 +670,12 @@ int setThresholdEnergy(int ethr) {
 
 float getDACbyIndexDACU(int ind,  int imod) {
  
-  if (detectorDacs)
-    return (detectorDacs[ind+imod*NDAC]);
-  else
-    return FAIL;
+  if (detectorDacs) {
+    if (imod<getNModBoard())
+      if (ind<(detectorModules+imod)->ndac)
+	return (detectorDacs[ind+imod*NDAC]);
+  }  
+  return FAIL;
 }
 
 
@@ -725,9 +755,9 @@ int setSettings(int i) {
      v[RGPR]=rgpr[i];
      v[RGSH1]=rgsh1[i];
      v[RGSH2]=rgsh2[i];
-     break;
      initDACs(v,ALLMOD);
      thisSettings=i;
+   break;
    default:
      break;
    }
@@ -743,13 +773,19 @@ int setSettings(int i) {
       isett=is;
     }
   }
-  for (imod=1; imod<getNModBoard(); imod++) {
+#ifdef VERBOSE
+  printf("Settings of module 0 are %d\n",isett);
+#endif
+  for (imod=1; imod<nModX; imod++) {
     if (isett!=UNDEFINED) {
       irgpr=detectorDacs[4+imod*NDAC];
       irgsh1=detectorDacs[imod*NDAC+RGSH1];
       irgsh2=detectorDacs[imod*NDAC+RGSH2];
       if (irgpr!=rgpr[isett] || irgsh1!=rgsh1[isett] ||  irgsh2!=rgsh2[isett]) {
 	isett=UNDEFINED; 
+#ifdef VERBOSE
+	printf("Settings of module %d are undefined\n",imod);
+#endif
       }
     }
   }
@@ -801,17 +837,23 @@ int getChannelbyNumber(sls_detector_channel* myChan) {
   ichip=myChan->chip;
   ichan=myChan->chan;
    
-  if (detectorChans)
-    myChan->reg=detectorChans[imod*NCHAN*NCHIP+ichip*NCHAN+ichan];
-  else
-     return FAIL;
-  return OK;
+  if (detectorChans) {
+    if (imod<getNModBoard()) {
+      if (ichip<(detectorModules+imod)->nchip && ichan<(detectorModules+imod)->nchan/(detectorModules+imod)->nchip)
+	myChan->reg=detectorChans[imod*NCHAN*NCHIP+ichip*NCHAN+ichan];
+      return OK;
+    }
+  } 
+  return FAIL;
 
 }
+
 int getTrimbit(int imod, int ichip, int ichan) {
-  if (detectorChans)
-    return (detectorChans[imod*NCHAN*NCHIP+ichip*NCHAN+ichan] & TRIM_DR);
-  else
+  if (detectorChans) {
+    if (imod<getNModBoard())
+      if (ichip<(detectorModules+imod)->nchip && ichan<(detectorModules+imod)->nchan/(detectorModules+imod)->nchip)
+	return (detectorChans[imod*NCHAN*NCHIP+ichip*NCHAN+ichan] & TRIM_DR);
+  } else
     return -1;
 }
 
@@ -875,10 +917,12 @@ int initChannel(int ft,int cae, int ae, int coe, int ocoe, int counts, int imod)
     for (im=modmi; im<modma; im++) {
       for (ichip=chipmi; ichip<chipma; ichip++) {
 	for (ichan=chanmi; ichan<chanma; ichan++) {
-	  
+#ifdef VERBOSE
+	  //  printf("im=%d ichi=%d icha=%d tot=%d reg=%x\n",im,ichip, ichan, im*NCHAN*NCHIP+ichip*NCHAN+ichan,detectorChans[im*NCHAN*NCHIP+ichip*NCHAN+ichan]);
+#endif
 	  detectorChans[im*NCHAN*NCHIP+ichip*NCHAN+ichan]= ft | (cae<<(NTRIMBITS+1)) | (ae<<(NTRIMBITS+2)) | (coe<<(NTRIMBITS+3)) | (ocoe<<(NTRIMBITS+4)) | (counts<<(NTRIMBITS+5));
 #ifdef VERBOSE
-	  //	  printf("imod=%d ichip=%d ichan=%d reg=%x\n",im,ichip,ichan,detectorChans[im*NCHAN*NCHIP+ichip*NCHAN+ichan]);
+	  //	  printf("imod=%d ichip=%d ichan=%d addr=%x reg=%x\n",im,ichip,ichan,detectorChans+im*NCHAN*NCHIP+ichip*NCHAN+ichan, detectorChans[im*NCHAN*NCHIP+ichip*NCHAN+ichan]);
 #endif
 	}
       }
@@ -1076,11 +1120,15 @@ int getChipbyNumber(sls_detector_chip* myChip){
   ichip=myChip->chip;
   
   if (detectorChips) {
-    myChip->reg=detectorChips[ichip+imod*NCHIP];
-    myChip->nchan=NCHAN;
-    myChip->chanregs=detectorChans+imod*NCHAN*NCHIP+ichip*NCHIP;
+    if (imod<getNModBoard())
+      if (ichip<(detectorModules+imod)->nchip) {
+	myChip->reg=detectorChips[ichip+imod*NCHIP];
+	myChip->nchan=NCHAN;
+	myChip->chanregs=detectorChans+imod*NCHAN*NCHIP+ichip*NCHIP;
+	return OK;
+      }
   }
-  return OK;
+  return FAIL;
 
 }
 
@@ -1208,9 +1256,9 @@ int initChip(int obe, int ow,int imod){
       for (ichip=chipmi; ichip<chipma; ichip++) {
 	//	printf("imod %d ichip %d\n",im,ichip);
 	detectorChips[im*NCHIP+ichip]=obe | (ow<<1);
-	/*#ifdef VERBOSE
-	printf("imod=%d ichip=%d reg=%d (%x)\n",im,ichip,detectorChips[im*NCHIP+ichip],detectorChips+im*NCHIP+ichip);
-	#endif*/
+#ifdef VERBOSE
+	//printf("imod=%d ichip=%d reg=%d (%x)\n",im,ichip,detectorChips[im*NCHIP+ichip],detectorChips+im*NCHIP+ichip);
+#endif
       }
     }
   }
@@ -1303,9 +1351,9 @@ int initChipWithProbes(int obe, int ow,int nprobes, int imod){
       for (ichip=chipmi; ichip<chipma; ichip++) {
 	//	printf("imod %d ichip %d\n",im,ichip);
 	detectorChips[im*NCHIP+ichip]=obe | (ow<<1);
-	/*#ifdef VERBOSE
-	printf("imod=%d ichip=%d reg=%d (%x)\n",im,ichip,detectorChips[im*NCHIP+ichip],detectorChips+im*NCHIP+ichip);
-	#endif*/
+#ifdef VERBOSE
+	//printf("imod=%d ichip=%d reg=%d (%x)\n",im,ichip,detectorChips[im*NCHIP+ichip],detectorChips+im*NCHIP+ichip);
+#endif
       }
     }
   }
@@ -1323,6 +1371,9 @@ int getNProbes() {
 int initMCBregisters(int cm, int imod){
 
   int im, modmi, modma;
+  if (cm<0)
+    return 0;
+    
 
   putout("0000000001000000",imod);    
   putout("0000000001100000",imod);   
@@ -1418,7 +1469,7 @@ int initModulebyNumber(sls_detector_module myMod) {
   v[VCAL]=(myMod.dacs)[5];
   v[RGPR]=(myMod.dacs)[4];
  
-#ifdef VERBOSE
+  /*#ifdef VERBOSE
   printf("imod=%d\n",imod);
   printf("Vtrim=%d\n",v[VTRIM]);
   printf("Vthresh=%d\n",v[VTHRESH]);
@@ -1427,7 +1478,7 @@ int initModulebyNumber(sls_detector_module myMod) {
   printf("Vcal=%d\n",v[VCAL]);
   printf("Rgpr=%d\n",v[RGPR]);
 #endif
-
+  */
 
   initDACs(v,imod);
   clearCSregister(imod);
@@ -1459,7 +1510,9 @@ int initModulebyNumber(sls_detector_module myMod) {
   
   if (detectorModules) {
     for (im=modmi; im<modma; im++) {  
+#ifdef VERBOSE
       printf("im=%d\n",im);
+#endif
       copyModule(detectorModules+im,&myMod);
     }
   } 
@@ -1637,6 +1690,7 @@ int getModuleNumber(int modnum) {
 int testShiftIn(int imod) {
   int val,i,j, k, result=OK;
   setCSregister(ALLMOD); 
+  printf("testing shift in for module %d\n", imod);
   //for (j=0; j<10; j++) {
   //selChip(j);
   for (i=0; i<34; i++) {
@@ -1692,6 +1746,7 @@ int testShiftOut(int imod) {
   int dum;
   dum=0xaaaaaa;
 
+  printf("testing shift out for module %d\n", imod);
 
   setCSregister(254);
   for (i=0; i<24; i++) {
@@ -1742,6 +1797,7 @@ int testShiftOut(int imod) {
 int testShiftStSel(int imod) {
   int result=OK;
   int val,i,j,k;
+  printf("testing shift stsel for module %d\n", imod);
   setCSregister(ALLMOD);  
   for (i=0; i<NCHAN; i++) {
     if (i%2) {
@@ -1794,7 +1850,7 @@ int testDataInOut(int num, int imod) {
   int val[NCHIP*nModX], result=OK;
   int ich, ichip;
   setCSregister(ALLMOD);
-  printf("Testing data in out\n");
+  printf("Testing data in out for module %d pattern 0x%x\n", imod, num);
   setSSregister(ALLMOD);
   initChannel(0,0,0,0,0,num,ALLMOD);
   putout("0000000000000000",ALLMOD);
@@ -1827,6 +1883,7 @@ int testExtPulse(int imod) {
   int i, ichan, ichip, result=OK;
   int *val1;
 
+  printf("Testing counter for module %d\n", imod);
 
   setCSregister(ALLMOD);
   setSSregister(ALLMOD);
@@ -1873,11 +1930,11 @@ int testExtPulse(int imod) {
 int testExtPulseMux(int imod, int ow) {
 
   int i, ichan, ichip, result=0,   ind;
-  int  *values;  
+  int  *values, *v1;  
   int vright,v;
   int nbit_mask=0xffffff;
 
-  printf("Testing counter\n");
+  printf("Testing counter for module %d, mux %d\n", imod, ow);
   setExposureTime(0);
   setFrames(1);
   setTrains(1);
@@ -1894,7 +1951,6 @@ int testExtPulseMux(int imod, int ow) {
   
 
 
-  printf("mux %d\n",ow);
   setCSregister(ALLMOD);
   setSSregister(ALLMOD);
   counterClear(ALLMOD); 
@@ -1919,9 +1975,9 @@ int testExtPulseMux(int imod, int ow) {
 
   startReadOut();
   usleep(100);
-  values=fifo_read_event();
-  if (values)
-    values=decode_data(values);
+  v1=fifo_read_event();
+  if (v1)
+    values=decode_data(v1);
   else {
     printf("no data found in fifos\n");
     return 1;
@@ -1953,9 +2009,9 @@ int testDataInOutMux(int imod, int ow, int num) {
   int  ichan, ichip, result=0,  ind;
   int vright,v;
   int nbit_mask=0xffffff;
-  int *values;
+  int *values, *v1;
 
-  printf("Testing data in-out\n");
+  printf("Testing data inout for module %d, mux %d, pattern 0x%x\n", imod, ow, num);
   setExposureTime(0);
   setFrames(1);
   setTrains(1);
@@ -1988,9 +2044,9 @@ int testDataInOutMux(int imod, int ow, int num) {
   printf("mux %d\n",ow);
   startReadOut();
   usleep(100);  
-  values=fifo_read_event();
-  if (values)
-    values=decode_data(values);
+  v1=fifo_read_event();
+  if (v1)
+    values=decode_data(v1);
   else {
     printf("no data found in fifos\n");
     return 1;
@@ -2021,7 +2077,7 @@ int testOutMux(int imod) {
   int ibit, i, val, v, j, dist, k;
   int result=OK;
   long pat=0xf0f0f0;
-  printf("testing outmux\n");
+  printf("testing outmux for module %d\n", imod);
   setCSregister(ALLMOD);
   // Clear outshift reg 
   putout("0000010000000000",ALLMOD);
@@ -2211,6 +2267,7 @@ int testFpgaMux(int imod)  {
   int ibit, i, val, v, j, dist,k;
   int result=OK;
   long pat=0xf0f0af;
+  printf("testing fpga mux of module %d\n",imod);
 
   // Clear outshift reg 
   putout("0000010000000000",ALLMOD);

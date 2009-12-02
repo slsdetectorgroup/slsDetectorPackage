@@ -1,24 +1,20 @@
 
-
-
 #ifndef EIGER_DETECTOR_H
 #define EIGER_DETECTOR_H
 
 using namespace std;
 
-
-
 /**
  * 
+ * @libdoc The eigerDetector class contains Eiger specific functions.
  *
-@libdoc The mythenDetector class contains the functions specific to the eiger detector
- *
- * @short This is class contains all eiger specific functionalities
- * @author Anna Bergamaschi
- * @version 0.1alpha (any string)
-
-
+ * @short This is class contains all Eiger specific functions
+ * @author Ian Johnson
+ * @version 0.1
  */
+
+
+
 #include "slsDetector.h"
 
 class eigerDetector : public slsDetector{

@@ -13,7 +13,7 @@ using namespace std;
  *
  * @short This class provides a simple interface for creating and sending/receiving data over a TCP socket.
  * @author Ian Johnson
- * @version 0.1
+ * @version 1.0
  */
 
 

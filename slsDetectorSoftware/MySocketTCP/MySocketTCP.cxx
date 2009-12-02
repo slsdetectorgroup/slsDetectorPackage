@@ -1,17 +1,14 @@
 
-//version 1.0, ba
+//version 1.0, base development, Ian 19/01/09
+
+
 #include "MySocketTCP.h"
-
-
-
-
-
-using namespace std;
-//se development ij 19/01/09
-
 #include <string.h>
 #include <iostream>
 #include <math.h>
+
+using namespace std;
+
 MySocketTCP::~MySocketTCP(){
   Disconnect();
   if (socketDescriptor >= 0){

@@ -1,6 +1,26 @@
-//version 1.0, base development ij 19/01/09
 
-/* Modified by anna on 19.01.2008 */
+#ifndef MY_SOCKET_TCP_H
+#define MY_SOCKET_TCP_H 
+
+#define SEND_REC_MAX_SIZE 4096
+#define DEFAULT_PORTNO    1952
+
+using namespace std;
+
+/**
+ * 
+ * @libdoc The MySocketTCP class provides a simple interface for creating and sending/receiving data over a TCP socket.
+ *
+ * @short This class provides a simple interface for creating and sending/receiving data over a TCP socket.
+ * @author Ian Johnson
+ * @version 0.1
+ */
+
+
+
+//version 1.0, base development, Ian 19/01/09
+
+/* Modified by anna on 19.01.2009 */
 /*
   canceled SetupParameters() and varaibles intialized in the constructors' headers;
   defined SEND_REC_MAX_SIZE (for compatibilty with mythen (and possibly other)  pure C servers (i would move it to the common header file)
@@ -18,13 +38,7 @@
   replaced the argument of send/receive data with void (to avoid too much casting or compiler errors/warnings)
 
   added a function which really does not close the socket between send/receive (senddataonly, receivedataonly)
-
 */
-#ifndef MY_SOCKET_TCP_H
-#define MY_SOCKET_TCP_H 
-
-#define SEND_REC_MAX_SIZE 4096
-#define DEFAULT_PORTNO    1952
 
 
 #include <arpa/inet.h>

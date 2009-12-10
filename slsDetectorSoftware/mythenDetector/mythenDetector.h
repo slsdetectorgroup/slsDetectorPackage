@@ -4,6 +4,7 @@
 #ifndef MYTHEN_DETECTOR_H
 #define MYTHEN_DETECTOR_H
 
+#include <ostream>
 #include "slsDetector.h"
 
 #define defaultTDead {170,90,750}
@@ -22,50 +23,62 @@ using namespace std;
 
 class mythenDetector : public slsDetector{
 
-
-
+  
+  
  public:
-/** 
-    (default) constructor 
-*/
-  mythenDetector(int id=0) : slsDetector(MYTHEN, id){};
+  /** 
+      (default) constructor 
+  */
+  mythenDetector(int id=0, detectorType t=MYTHEN) : slsDetector(t, id){};
   //slsDetector(string  const fname);
   //  ~slsDetector(){while(dataQueue.size()>0){}};
   /** destructor */ 
-  ~mythenDetector(){};
+    ~mythenDetector(){};
+    
+  /**
+     executes a set of string arguments according to a given format. It is used to read/write configuration file, dump and retrieve detector settings and for the command line interface command parsing
+     \param narg number of arguments
+     \param args array of string arguments
+     \param action can be PUT_ACTION or GET_ACTION (from text client even READOUT_ACTION for acquisition)
+     \returns answer string 
+  */
+    string executeLine(int narg, char *args[], int action=GET_ACTION);
+  
+  /**
+     returns the help for the executeLine command 
+     \param os output stream to return the help to
+     \param action can be PUT_ACTION or GET_ACTION (from text client even READOUT_ACTION for acquisition) 
+  */
+    static ostream helpLine(int action=GET_ACTION);
 
 
+ /**
+    type of action performed 
+ */
+enum {GET_ACTION, PUT_ACTION, READOUT_ACTION};
+
+
+  /**
+    reads configuration file fname calling executeLine
+    \param fname file to be read
+  */
   int readConfigurationFile(string const fname);  
   /**
-     Every detector should have a basic configuration file containing:
-     type (mythen, pilatus etc.)
-     hostname
-     portnumber
-     communication type (default TCP/IP)
-     eventually secondary portnumber (e.g. mythen stop function)
-     number of modules installed if different from the detector size (x,y)
-
-     to be changed
+     writes configuration file calling executeLine
+    \param fname file to write to
   */
   int writeConfigurationFile(string const fname);
-
-
-  /* 
-     It should be possible to dump all the settings of the detector (including trimbits, threshold energy, gating/triggering, acquisition time etc.
-     in a file and retrieve it for repeating the measurement with identicals ettings, if necessary
-  */
   /** 
-      not yet implemented
-
-      should dump to a file all the current detector parameters
+    dumps all the possible detector parameters calling executeLine
+    \param fname file to write to
+    \param level 0 dumps only main parameters and filenames for flat field correction etc.; 2 dumps really the complete configuration including flat field files, badchannels files, trimbits, angular conversion etc.
   */
-  int dumpDetectorSetup(string const fname);  
+  int dumpDetectorSetup(string const fname, int level=0);  
   /** 
-      not yet implemented
-
-      should retrieve from a file all the current detector parameters
+      retrieves alld possible detector parameters from file calling executeLine
+    \param fname file to be read
   */
-  int retrieveDetectorSetup(string const fname);
+  int retrieveDetectorSetup(string const fname, int level=0);
 
 
 
@@ -198,7 +211,7 @@ class mythenDetector : public slsDetector{
   
   
   /** returns the angular conversion file */
-  char *getAngularConversion() {return thisDetector->angConvFile;};
+  string getAngularConversion() {if (thisDetector->correctionMask&(1<< ANGULAR_CONVERSION)) return string(thisDetector->angConvFile); else return string("none");};
   
   /** 
       set detector global offset
@@ -289,8 +302,16 @@ class mythenDetector : public slsDetector{
   
   void acquire(int delflag=1);
 
+ private:
+  /**
+    start data processing thread
+  */
+  void startThread(); //
+  /** the data processing thread */
 
+  pthread_t dataProcessingThread;
 };
 
+static void* startProcessData(void *n);
 
 #endif

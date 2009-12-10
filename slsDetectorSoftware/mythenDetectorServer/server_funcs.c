@@ -1600,7 +1600,7 @@ int get_run_status(int fnum) {
   printf("Getting status\n");
 #endif 
 
-  retval= runState();;
+  retval= runState();
 
   if (ret!=OK) {
     printf("get status failed\n");

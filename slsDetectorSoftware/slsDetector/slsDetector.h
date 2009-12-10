@@ -56,7 +56,7 @@ class detectorData {
       \param fname file name to which the data are saved
       \param np number of points defaults to the number of detector channels
   */
-  detectorData(float *val=NULL, float *err=NULL, float *ang=NULL,  int f_ind=-1, char *fname="", int np=-1) : values(val), errors(err), angles(ang),  fileIndex(f_ind), npoints(np){strcpy(fileName,fname);};
+  detectorData(float *val=NULL, float *err=NULL, float *ang=NULL,  int f_ind=-1, const char *fname="", int np=-1) : values(val), errors(err), angles(ang),  fileIndex(f_ind), npoints(np){strcpy(fileName,fname);};
     /** 
 	the destructor
 	deletes also the arrays pointing to data/errors/angles if not NULL
@@ -70,13 +70,6 @@ class detectorData {
   char fileName[1000];/**< file name */
   int npoints;/**< number of points */
 };
-
-
-
-
-
-
-
 
 
 
@@ -128,9 +121,9 @@ class slsDetector {
   
 
   /** online flags enum \sa setOnline*/
-  enum {GET_ONLINE_FLAG, /**< returns wether the detector is in online or offline state */
-	OFFLINE_FLAG, /**< detector in offline state (i.e. no communication to the detector - using only local structure - no data acquisition possible!) */
-	ONLINE_FLAG /**< detector in online state (i.e. communication to the detector updating the local structure) */
+  enum {GET_ONLINE_FLAG=-1, /**< returns wether the detector is in online or offline state */
+	OFFLINE_FLAG=0, /**< detector in offline state (i.e. no communication to the detector - using only local structure - no data acquisition possible!) */
+	ONLINE_FLAG =1/**< detector in online state (i.e. communication to the detector updating the local structure) */
   };
 
 
@@ -142,7 +135,14 @@ class slsDetector {
 typedef  struct sharedSlsDetector {
   /** already existing flag. If the detector does not yet exist (alreadyExisting=0) the sharedMemory will be created, otherwise it will simly be linked */
     int alreadyExisting;
-    
+  /*
+  /** online flag - is set if the detector is connected, unset if socket connection is not possible  */
+  int onlineFlag;
+ 
+
+  /** stopped flag - is set if an acquisition error occurs or the detector is stopped manually. Is reset to 0 at the start of the acquisition */
+  int stoppedFlag;
+
     /** is the hostname (or IP address) of the detector. needs to be set before startin the communication */
     char hostname[MAX_STR_LENGTH];
     /** is the port used for control functions normally it should not be changed*/
@@ -198,8 +198,12 @@ typedef  struct sharedSlsDetector {
     
     /** corrections  to be applied to the data \see ::correctionFlags */
     int correctionMask;
+  /** threaded processing flag (i.e. if data are processed and written to file in a separate thread)  */
+  int threadedProcessing;
     /** dead time (in ns) for rate corrections */
     float tDead;
+  /** file used for flat field corrections */
+  char flatFieldFile[MAX_STR_LENGTH];
     /** number of bad channels from bad channel list */
     int nBadChans;
   /** file with the bad channels */
@@ -237,14 +241,16 @@ typedef  struct sharedSlsDetector {
     readOutFlags roFlags;
 
  /* detector setup - not needed */
-    /** detector settings (standard, fast, etc.) */
-    detectorSettings currentSettings;
-    /** detector threshold (eV) */
-    int currentThresholdEV;
-    /** timer values */
-    int64_t timerValue[MAX_TIMERS];
-    /** clock divider */
-    int clkDiv;
+  /** name root of the output files */  
+  char trimFile[MAX_STR_LENGTH];
+  /** detector settings (standard, fast, etc.) */
+  detectorSettings currentSettings;
+  /** detector threshold (eV) */
+  int currentThresholdEV;
+  /** timer values */
+  int64_t timerValue[MAX_TIMERS];
+  /** clock divider */
+  //int clkDiv;
     
   /*offsets*/
     /** memory offsets for the flat filed coefficients */
@@ -281,7 +287,7 @@ typedef  struct sharedSlsDetector {
 
   /** sets the onlineFlag
       \param off can be: <BR> GET_ONLINE_FLAG, returns wether the detector is in online or offline state;<BR> OFFLINE_FLAG, detector in offline state (i.e. no communication to the detector - using only local structure - no data acquisition possible!);<BR> ONLINE_FLAG  detector in online state (i.e. communication to the detector updating the local structure) */
-  int setOnline(int const online);  
+  int setOnline(int const online=GET_ONLINE_FLAG);  
   /** sets the onlineFlag
       \returns 1 if the detector structure has already be initlialized, 0 otherwise */
   int exists() {return thisDetector->alreadyExisting;};
@@ -311,13 +317,13 @@ typedef  struct sharedSlsDetector {
     Should be implemented in the specific detector class
     /sa mythenDetector::dumpDetectorSetup
   */
-  virtual int dumpDetectorSetup(string const fname)=0;  
+  virtual int dumpDetectorSetup(string const fname, int level)=0;  
   /** 
     Purely virtual function
     Should be implemented in the specific detector class
     /sa mythenDetector::retrieveDetectorSetup
   */
-  virtual int retrieveDetectorSetup(string const fname)=0;
+  virtual int retrieveDetectorSetup(string const fname, int level)=0;
 
   /** 
      configure the socket communication and initializes the socket instances
@@ -350,9 +356,21 @@ typedef  struct sharedSlsDetector {
    \param point to the array that will contain the trim energies (in ev)
   \returns number of trim energies
 
+  unused!
+
   \sa  sharedSlsDetector
   */
   int getTrimEn(int *en=NULL) {if (en) {for (int ien=0; ien<thisDetector->nTrimEn; ien++) en[ien]=thisDetector->trimEnergies[ien];} return (thisDetector->nTrimEn);};
+  /** sets the number of trim energies and their value  \sa sharedSlsDetector 
+   \param nen number of energies
+   \param en array of energies
+   \returns number of trim energies
+
+   unused!
+
+  \sa  sharedSlsDetector
+  */
+  int setTrimEn(int nen, int *en=NULL) {if (en) {for (int ien=0; ien<nen; ien++) thisDetector->trimEnergies[ien]=en[ien]; thisDetector->nTrimEn=nen;} return (thisDetector->nTrimEn);};
 
   /**
      Pure virtual function
@@ -376,6 +394,19 @@ typedef  struct sharedSlsDetector {
   */
   virtual int writeTrimFile(string fname, sls_detector_module mod)=0; 
   
+  /**
+     returns currently the loaded trimfile name
+  */
+
+  const char *getTrimFile(){\
+    string s(thisDetector->trimFile); \
+    if (s.length()>6) {\
+      if (s.substr(s.length()-6,3)==string(".sn") && s.substr(s.length()-3)!=string("xxx") ) \
+	return s.substr(0,s.length()-6).c_str();			\
+    }									\
+    return thisDetector->trimFile;\
+  };
+
   /**
      Pure virtual function
      writes a trim file for module number imod - the values will be read from the current detector structure
@@ -491,7 +522,7 @@ typedef  struct sharedSlsDetector {
      returns the location of the calibration files
   \sa  sharedSlsDetector
   */
-  char* getCalDir() {cout << "cal dir is " << thisDetector->calDir; return thisDetector->calDir;};
+  char* getCalDir() {return thisDetector->calDir;};
 
 
    /**
@@ -867,7 +898,7 @@ typedef  struct sharedSlsDetector {
 
   /**
     start detector acquisition and read all data putting them a data queue
-    \returns pointer to the fron tof the data queue
+    \returns pointer to the front of the data queue
     \sa startAndReadAllNoWait getDataFromDetector dataQueue
   */ 
   int* startAndReadAll();
@@ -886,8 +917,8 @@ typedef  struct sharedSlsDetector {
   int* getDataFromDetectorNoWait(); 
 
   /**
-   asks and  receives a data frame from the detector
-    \returns pointer to the data or NULL. If NULL disconnects the socket
+   asks and  receives a data frame from the detector and puts it in the data queue
+    \returns pointer to the data or NULL. 
     \sa getDataFromDetector
   */ 
   int* readFrame(); 
@@ -975,7 +1006,16 @@ typedef  struct sharedSlsDetector {
   int executeTrimming(trimMode mode, int par1, int par2, int imod=-1);
 
  
-  //Corrections
+  //Corrections  
+
+  /** 
+      set/get if the data processing and file writing should be done by a separate thread
+s
+      \param b 0 sequencial data acquisition and file writing, 1 separate thread, -1 get
+      \returns thread flag
+  */
+
+  int setThreadedProcessing(int b=-1) {if (b>=0) thisDetector->threadedProcessing=b; return  thisDetector->threadedProcessing;}
 
   /** 
       set flat field corrections
@@ -991,6 +1031,12 @@ typedef  struct sharedSlsDetector {
       \returns 0 if ff correction disabled, >0 otherwise
   */
   int getFlatFieldCorrection(float *corr=NULL, float *ecorr=NULL);
+
+ /** 
+      get flat field corrections file name
+      \returns flat field correction file name
+  */
+  char *getFlatFieldCorrectionFile(){return thisDetector->flatFieldFile;};
 
   /** 
       set rate correction
@@ -1028,7 +1074,7 @@ typedef  struct sharedSlsDetector {
   int getBadChannelCorrection(int *bad=NULL);
 
   /** returns the bad channel list file */
-  char *getBadChannelCorrectionFile() {return thisDetector->badChanFile;};
+  string getBadChannelCorrectionFile() {if (thisDetector->correctionMask&(1<< DISCARD_BAD_CHANNELS)) return string(thisDetector->badChanFile); else return string("none");};
 
   
   /** 
@@ -1055,7 +1101,7 @@ typedef  struct sharedSlsDetector {
       pure virtual function
       returns the angular conversion file
       \sa mythenDetector::getAngularConversion */
-  virtual char *getAngularConversion()=0;
+  virtual string getAngularConversion()=0;
   
   /** 
       pure virtual function
@@ -1259,10 +1305,10 @@ typedef  struct sharedSlsDetector {
   */
   sharedSlsDetector *thisDetector;
 
-  /**
-     \sa setOnline
-  */
-  int onlineFlag;
+  //  /**
+  //   \sa setOnline
+  // */
+  //int onlineFlag;
   
   /**
      detector ID
@@ -1405,9 +1451,9 @@ typedef  struct sharedSlsDetector {
   int receiveModule(sls_detector_module*);
   
   /**
-    start data processing threas
+    start data processing thread
   */
-  void startThread();
+  //void startThread();
   
   /**
      fill bad channel mask (0 if channel is good, 1 if bad)

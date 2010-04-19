@@ -1594,7 +1594,7 @@ int get_run_status(int fnum) {
   int n;
   
   int retval;
-
+  enum runStatus s;
   sprintf(mess,"getting run status\n");
 
 #ifdef VERBOSE
@@ -1602,6 +1602,22 @@ int get_run_status(int fnum) {
 #endif 
 
   retval= runState();
+
+  if (retval&0x8000)
+    s=ERROR;
+  else if (retval&0x00000001)
+    if (retval&0x00010000)
+      s=TRANSMITTING;
+    else
+      s=RUNNING;
+  else if (retval&0x00010000)
+    s=RUN_FINISHED;
+  else if (retval&0x00000008)
+    s=WAITING;
+  else
+    s=IDLE;
+
+
 
   if (ret!=OK) {
     printf("get status failed\n");
@@ -1611,7 +1627,7 @@ int get_run_status(int fnum) {
   if (ret!=OK) {
     n += sendDataOnly(mess,strlen(mess)+1);
   } else {
-    n += sendDataOnly(&retval,sizeof(retval));
+    n += sendDataOnly(&s,sizeof(s));
   }
   return ret; 
 

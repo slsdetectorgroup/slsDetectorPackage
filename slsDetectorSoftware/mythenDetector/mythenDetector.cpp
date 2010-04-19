@@ -67,20 +67,21 @@ string mythenDetector::executeLine(int narg, char *args[], int action) {
       else
 	return string("unknown action");
     } 
-    int s=getRunStatus();  
-    if (s&0x8000)
-      return string("error");
-    else if (s&0x00000001)
-      if (s&0x00010000)
-	return string("data");
-      else
-	return string("running");
-    else if (s&0x00010000)
+    runStatus s=getRunStatus();  
+    switch (s) {
+    case ERROR:
+       return string("error");
+    case  WAITING:
+      return  string("waiting");
+    case RUNNING:
+      return string("running");
+    case TRANSMITTING:
+      return string("data");
+    case  RUN_FINISHED:
       return string("finished");
-    else if (s&0x00000008)
-      return string("waiting");
-    else
-      return string("idle");
+   default:
+       return string("idle");
+    }
   } 
 
   
@@ -2346,12 +2347,12 @@ void* startProcessDataNoDelete(void *n) {
   pthread_exit(NULL);
 
 }
-
-int mythenDetector::getRunStatus(){
+ 
+runStatus mythenDetector::getRunStatus(){
   int fnum=F_GET_RUN_STATUS;
-  int retval;
   int ret=FAIL;
   char mess[100];
+  runStatus retval=ERROR;
 #ifdef VERBOSE
   std::cout<< "MYTHEN Getting status "<< std::endl;
 #endif
@@ -2363,15 +2364,16 @@ int mythenDetector::getRunStatus(){
     if (ret!=OK) {
       stopSocket->ReceiveDataOnly(mess,sizeof(mess));
       std::cout<< "Detector returned error: " << mess << std::endl;
-    } else
-      stopSocket->ReceiveDataOnly(&retval,sizeof(retval));    
+    } else {
+      stopSocket->ReceiveDataOnly(&retval,sizeof(retval));   
+    } 
     stopSocket->Disconnect();
   }
     }
   }
   return retval;
 
-
+  
 };
 
 int64_t mythenDetector::getTimeLeft(timerIndex index){
@@ -2406,5 +2408,4 @@ int64_t mythenDetector::getTimeLeft(timerIndex index){
   std::cout<< "Time left is  "<< retval << std::endl;
 #endif
   return retval;
-  
 };

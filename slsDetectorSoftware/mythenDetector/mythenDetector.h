@@ -303,6 +303,21 @@ enum {GET_ACTION, PUT_ACTION, READOUT_ACTION};
   
   void acquire(int delflag);
 
+  /**
+   get current timer value on the stop socket
+      \param index timer index
+      \returns elapsed time value in ns or number of...(e.g. frames, gates, probes)
+  */
+
+  int64_t getTimeLeft(timerIndex index);
+
+  /**
+  /**
+     get run status on the stop socket
+    \returns status mask
+  */
+  runStatus getRunStatus();
+
  private:
   /**
     start data processing thread

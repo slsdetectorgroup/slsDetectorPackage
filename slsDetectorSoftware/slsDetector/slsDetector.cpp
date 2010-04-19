@@ -2231,7 +2231,7 @@ int slsDetector::startReadOut(){
 
 
 
-int slsDetector::getRunStatus(){
+/*int slsDetector::getRunStatus(){
   int fnum=F_GET_RUN_STATUS;
   int retval;
   int ret=FAIL;
@@ -2257,6 +2257,7 @@ int slsDetector::getRunStatus(){
 
 
 };
+*/
 
 int* slsDetector::readFrame(){
 
@@ -2598,7 +2599,7 @@ int64_t slsDetector::getTimeLeft(timerIndex index){
       std::cout<< "Detector returned error: " << mess << std::endl;
     } else {
       controlSocket->ReceiveDataOnly(&retval,sizeof(retval)); 
-      thisDetector->timerValue[index]=retval;
+      // thisDetector->timerValue[index]=retval;
     }   
     controlSocket->Disconnect();
   }

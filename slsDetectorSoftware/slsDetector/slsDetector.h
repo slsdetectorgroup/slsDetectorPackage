@@ -896,7 +896,7 @@ typedef  struct sharedSlsDetector {
      get run status
     \returns status mask
   */
-  int getRunStatus();
+  virtual runStatus  getRunStatus()=0;
 
   /**
     start detector acquisition and read all data putting them a data queue

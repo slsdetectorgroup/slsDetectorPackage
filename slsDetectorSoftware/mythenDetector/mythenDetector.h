@@ -4,12 +4,13 @@
 #ifndef MYTHEN_DETECTOR_H
 #define MYTHEN_DETECTOR_H
 
-#include <ostream>
+//#include <ostream>
 #include "slsDetector.h"
+#include "usersFunctions.h"
 
 #define defaultTDead {170,90,750}
 
-using namespace std;
+//using namespace std;
 /**
  \mainpage C++ class with MYTHEN specific functions
  *
@@ -49,7 +50,7 @@ class mythenDetector : public slsDetector{
      \param os output stream to return the help to
      \param action can be PUT_ACTION or GET_ACTION (from text client even READOUT_ACTION for acquisition) 
   */
-    static ostream helpLine(int action=GET_ACTION);
+   static string helpLine(int action=GET_ACTION);
 
 
  /**
@@ -300,18 +301,25 @@ enum {GET_ACTION, PUT_ACTION, READOUT_ACTION};
      \param delflag if 1 the data are deleted, else left there for further processing (or plotting?)
   */
   
-  void acquire(int delflag=1);
+  void acquire(int delflag);
 
  private:
   /**
     start data processing thread
   */
-  void startThread(); //
+  void startThread(int delflag=1); //
   /** the data processing thread */
 
   pthread_t dataProcessingThread;
+
+ /** sets when the acquisition is finished */
+  int jointhread;
+
+ /** data queue size */
+  int queuesize;
 };
 
 static void* startProcessData(void *n);
+static void* startProcessDataNoDelete(void *n);
 
 #endif

@@ -1,9 +1,9 @@
 #include "mythenDetector.h"
-#include "usersFunctions.h"
+#include <unistd.h>
 
+#include <sstream>
 
-
-using namespace std;
+//using namespace std;
 
 
 
@@ -15,8 +15,9 @@ string mythenDetector::executeLine(int narg, char *args[], int action) {
 
 #ifdef VERBOSE
   for (int ia=0; ia<narg; ia++)
-    cout << args[ia] << " ";
-  cout <<endl;
+    std::cout<< args[ia] << " ";
+  std::cout<<std::endl;
+  std::cout<<narg << std::endl;
 #endif
   
 
@@ -24,7 +25,7 @@ string mythenDetector::executeLine(int narg, char *args[], int action) {
     setThreadedProcessing(1);
     //setThreadedProcessing(0);
     setTCPSocket();
-    acquire();
+    acquire(1);
     return string("ok");
   }
 
@@ -37,7 +38,7 @@ string mythenDetector::executeLine(int narg, char *args[], int action) {
       setTCPSocket();
       //acquire();
       readAll();
-       processData(1);
+      processData(1);
       return string("ok");
     } 
   }
@@ -94,7 +95,7 @@ string mythenDetector::executeLine(int narg, char *args[], int action) {
     freeSharedMemory();
     return("freed");
   }  if (var=="help") {
-    cout << helpLine(action);
+    std::cout<< helpLine(action);
     return string("more questions? Refere to software documentation!");
   }
 
@@ -155,7 +156,7 @@ string mythenDetector::executeLine(int narg, char *args[], int action) {
     if (getRateCorrection(t)) {
       sprintf(answer,"%f",t);
     } else {
-	sprintf(answer,"%f",0);
+	sprintf(answer,"%f",0.);
     }
     return string(answer);
   } else if (var=="badchannels") {
@@ -176,12 +177,12 @@ string mythenDetector::executeLine(int narg, char *args[], int action) {
 	  outfile.open (sval.c_str(),ios_base::out);
 	  if (outfile.is_open()) {
 	    for (int ich=0; ich<nbch; ich++) {
-	      outfile << bch[ich] << endl;
+	      outfile << bch[ich] << std::endl;
 	    }
 	    outfile.close();	
 	    return sval;
 	  } else 
-	    cout << "Could not open file " << sval << " for writing " << endl;
+	    std::cout<< "Could not open file " << sval << " for writing " << std::endl;
 	}
       } 
     }
@@ -241,7 +242,7 @@ string mythenDetector::executeLine(int narg, char *args[], int action) {
 	if ((2+ip)<narg) {
 	sscanf(args[2+ip],"%f",pos+ip);
 #ifdef VERBOSE
-	cout << "Setting position " << ip <<" to " << pos[ip] <<  endl; 
+	std::cout<< "Setting position " << ip <<" to " << pos[ip] <<  std::endl; 
 #endif
 	}
       }
@@ -320,13 +321,17 @@ string mythenDetector::executeLine(int narg, char *args[], int action) {
   }  else if (var=="trimen") {
     if (action==PUT_ACTION) {
       sscanf(args[1],"%d",&ival);
+      std::cout<< ival << std::endl ;
       int ene[ival];
-      for (int ie=0; ie<ival; ie++)
-	sscanf(args[2+ie],"%d",ene+ie);
+      for (int ie=0; ie<ival; ie++) {
+	std::cout<< ie << " " << args[2+ie] ;
+	std::cout<< sscanf(args[2+ie],"%d",ene+ie)<< std::endl;;
+      }
       setTrimEn(ival,ene);
     }
-    
+    std::cout<< " trim energies set" << std::endl;
     int nen=getTrimEn();
+    std::cout<< "returned " << nen << " trim energies" << std::endl;
     sprintf(answer,"%d",nen);
     int oen[nen];
     getTrimEn(oen);
@@ -368,7 +373,7 @@ string mythenDetector::executeLine(int narg, char *args[], int action) {
     if (action==PUT_ACTION) {
      sval=string(args[1]);
 #ifdef VERBOSE
-      cout << "sig " << ival << " flag " << sval;
+      std::cout<< "sig " << ival << " flag " << sval;
 #endif
       if (sval=="off")      flag=SIGNAL_OFF;
       else if (sval=="gate_in_active_high")      flag=GATE_IN_ACTIVE_HIGH;
@@ -416,43 +421,46 @@ string mythenDetector::executeLine(int narg, char *args[], int action) {
     default:
       return string( "unknown");
     }
-  } else if (var=="modulenumber") {
-    
+  }  else if (var.find("modulenumber")==0) {//else if (var=="modulenumber") {
+    cout << "modulenumber" << endl;
     if (action==PUT_ACTION) {
       return string("cannot set");
     }
-    istringstream vvstr(var.substr(7));
-    vvstr >> ival;
-    sprintf(answer,"%x",getId(MODULE_SERIAL_NUMBER,ival));
+    istringstream vvstr(var.substr(13));
+    vvstr >> ival; 
+    cout << var.substr(13) << endl;
+    sprintf(answer,"%llx",getId(MODULE_SERIAL_NUMBER,ival));
     return string(answer);
   } else if (var=="moduleversion") {
     if (action==PUT_ACTION) {
       return string("cannot set" );
     }   
-    sprintf(answer,"%x",getId(MODULE_FIRMWARE_VERSION));
+    sprintf(answer,"%llx",getId(MODULE_FIRMWARE_VERSION));
     return string(answer);
   } else if (var=="detectornumber") {
     if (action==PUT_ACTION) {
       return string("cannot set ");
     }    
-    sprintf(answer,"%x",getId(DETECTOR_SERIAL_NUMBER));
+    sprintf(answer,"%llx",getId(DETECTOR_SERIAL_NUMBER));
     return string(answer);
   } else if (var=="detectorversion") {
     if (action==PUT_ACTION) {
       return string("cannot set ");
     } 
-    sprintf(answer,"%x",getId(DETECTOR_FIRMWARE_VERSION));
+    sprintf(answer,"%llx",getId(DETECTOR_FIRMWARE_VERSION));
     return string(answer);
   } else if (var=="softwareversion") {
     if (action==PUT_ACTION) {
       return string("cannot set ");
     }
-    sprintf(answer,"%x",getId(DETECTOR_SOFTWARE_VERSION));
+    sprintf(answer,"%llx",getId(DETECTOR_SOFTWARE_VERSION));
     return string(answer);
-  } else if (var=="digitest") {
+  } else if (var.find("digitest")==0) {//else if (var=="digitest") {
+    cout << "digitest" << endl;
     if (action==PUT_ACTION) {
 	return string("cannot set ");
     } 
+    cout << var.substr(9) << endl;
     istringstream vvstr(var.substr(9));
     vvstr >> ival;
     sprintf(answer,"%x",digitalTest(CHIP_TEST, ival));
@@ -525,21 +533,21 @@ string mythenDetector::executeLine(int narg, char *args[], int action) {
 	  setTimer( GATES_NUMBER,ival);
 	} 
 	
-	sprintf(answer,"%d",setTimer(GATES_NUMBER));
+	sprintf(answer,"%lld",setTimer(GATES_NUMBER));
 	return string(answer);
       } else if (var=="frames") {
 	if (action==PUT_ACTION) {
 	 sscanf(args[1],"%d",&ival);
-    setTimer(FRAME_NUMBER,ival);
+	 setTimer(FRAME_NUMBER,ival);
 	} 
-	sprintf(answer,"%d",setTimer(FRAME_NUMBER));
+	sprintf(answer,"%lld",setTimer(FRAME_NUMBER));
 	return string(answer);
       } else if (var=="cycles") {
 	if (action==PUT_ACTION) {
 	 sscanf(args[1],"%d",&ival); 
 	  setTimer(CYCLES_NUMBER,ival);
 	} 
-	sprintf(answer,"%d",setTimer(CYCLES_NUMBER));
+	sprintf(answer,"%lld",setTimer(CYCLES_NUMBER));
 	return string(answer);
 	
       } else if (var=="probes") {
@@ -547,7 +555,7 @@ string mythenDetector::executeLine(int narg, char *args[], int action) {
 	 sscanf(args[1],"%d",&ival); 
 	  setTimer(PROBES_NUMBER,ival);
 	} 
-	sprintf(answer,"%d",setTimer(PROBES_NUMBER));
+	sprintf(answer,"%lld",setTimer(PROBES_NUMBER));
 	return string(answer);
       }
       else if (var=="dr") {
@@ -582,7 +590,7 @@ string mythenDetector::executeLine(int narg, char *args[], int action) {
 	}  
       } else if (var=="trimbits") {
 	if (narg>=2) {
-	  cout << " writing trimfile " << endl;
+	  std::cout<< " writing trimfile " << std::endl;
 	  int nm=setNumberOfModules(GET_FLAG,X)*setNumberOfModules(GET_FLAG,Y);
 	  sls_detector_module  *myMod=NULL;
 	  sval=string(args[1]);
@@ -598,7 +606,7 @@ string mythenDetector::executeLine(int narg, char *args[], int action) {
 	      }
 	    } else if (action==PUT_ACTION) {
 	      ostfn << sval ;
-	      if (sval.find('.',sval.length()-7))
+	      if (sval.find('.',sval.length()-7)<string::npos)
 		ostfn << ".sn"  << setfill('0') << setw(3) << hex << getId(MODULE_SERIAL_NUMBER, im); 
 	      myMod=readTrimFile(ostfn.str());
 	      myMod->module=im;
@@ -607,7 +615,7 @@ string mythenDetector::executeLine(int narg, char *args[], int action) {
 	    } 
 	  }
 	} 
-	cout << " rturning trimfile " << endl;
+	std::cout<< "Returning trimfile " << std::endl;
 	return string(getTrimFile());
       }  else if (var.find("trim")==0) {
 	if (action==GET_ACTION) {
@@ -686,231 +694,231 @@ string mythenDetector::executeLine(int narg, char *args[], int action) {
 }
 
 
-ostream mythenDetector::helpLine( int action) {
+string mythenDetector::helpLine( int action) {
   
-  /*
-  static ostream os;
+
+  ostringstream os;
   
   if (action==READOUT_ACTION) {
-    os << "Usage is "<< endl << "mythen_acquire  id " << endl;
-    os << "where id is the id of the detector " << endl;
-    os << "the detector will be started, the data acquired, processed and written to file according to the preferences configured " << endl;
+    os << "Usage is "<< std::endl << "mythen_acquire  id " << std::endl;
+    os << "where id is the id of the detector " << std::endl;
+    os << "the detector will be started, the data acquired, processed and written to file according to the preferences configured " << std::endl;
   } else  if (action==PUT_ACTION) {
-    os << "help \t This help " << endl;
-    os << endl;
-    os << "config  fname\t reads the configuration file specified and sets the values " << endl;
-    os << endl;
-    os << "parameters  fname\t sets the detector parameters specified in the file " << endl;
-    os << endl;
-    os << "setup rootname\t reads the files specfied (and that could be created by get setup) and resets the complete detector configuration including flatfield corrections, badchannels, trimbits etc. " << endl;
-    os << endl;
-    os << "status s \t either start or stop " << endl;
-    os << endl;
-    os << "hostname name \t Sets the detector hostname (or IP address) " << endl;
-    os << endl;
-    os << "caldir path \t Sets path of the calibration files " << endl;
-    os << endl;
-    os << "trimdir path \t Sets path of the trim files " << endl;
-    os << endl;
-    os << "trimen nen [e0 e1...en] \t sets the number of energies for which trimbit files exist and their value"<< endl;
-    os << endl;
-    os << "outdir \t directory to which the files will be written by default" << endl;
-    os << endl;
-    os <<  "fname \t filename to which the files will be written by default (to which file and position indexes will eventually be attached)" << endl;
-    os << endl;
-    os << "index \t start index of the files (automatically incremented by the acquisition functions)" << endl;
-    os << endl;
-    os << "nmod n \t Sets number of detector modules " << endl;
-    os << endl;
-    os << "extsig:i mode \t Sets usage of the external digital signal i. mode can be: " << endl;
+    os << "help \t This help " << std::endl;
+    os << std::endl;
+    os << "config  fname\t reads the configuration file specified and sets the values " << std::endl;
+    os << std::endl;
+    os << "parameters  fname\t sets the detector parameters specified in the file " << std::endl;
+    os << std::endl;
+    os << "setup rootname\t reads the files specfied (and that could be created by get setup) and resets the complete detector configuration including flatfield corrections, badchannels, trimbits etc. " << std::endl;
+    os << std::endl;
+    os << "status s \t either start or stop " << std::endl;
+    os << std::endl;
+    os << "hostname name \t Sets the detector hostname (or IP address) " << std::endl;
+    os << std::endl;
+    os << "caldir path \t Sets path of the calibration files " << std::endl;
+    os << std::endl;
+    os << "trimdir path \t Sets path of the trim files " << std::endl;
+    os << std::endl;
+    os << "trimen nen [e0 e1...en] \t sets the number of energies for which trimbit files exist and their value"<< std::endl;
+    os << std::endl;
+    os << "outdir \t directory to which the files will be written by default" << std::endl;
+    os << std::endl;
+    os <<  "fname \t filename to which the files will be written by default (to which file and position indexes will eventually be attached)" << std::endl;
+    os << std::endl;
+    os << "index \t start index of the files (automatically incremented by the acquisition functions)" << std::endl;
+    os << std::endl;
+    os << "nmod n \t Sets number of detector modules " << std::endl;
+    os << std::endl;
+    os << "extsig:i mode \t Sets usage of the external digital signal i. mode can be: " << std::endl;
     os << "\t off";
-    os << endl;
+    os << std::endl;
     os << "\t gate_in_active_high";
-    os << endl;
+    os << std::endl;
     os << "\t gate_in_active_low";
-    os << endl;
+    os << std::endl;
     os << "\t trigger_in_rising_edge";
-    os << endl;
+    os << std::endl;
     os << "\t trigger_in_falling_edge";
-    os << endl;
+    os << std::endl;
     os << "\t ro_trigger_in_rising_edge";
-    os << endl;
+    os << std::endl;
     os << "\t ro_trigger_in_falling_edge";
-    os << endl;
+    os << std::endl;
     os << "\t gate_out_active_high";
-    os << endl;
+    os << std::endl;
     os << "\t gate_out_active_low";
-    os << endl;
+    os << std::endl;
     os << "\t trigger_out_rising_edge";
-    os << endl;
+    os << std::endl;
     os << "\t trigger_out_falling_edge";
-    os << endl;
+    os << std::endl;
     os << "\t ro_trigger_out_rising_edge";
-    os << endl;
-    os << "\t ro_trigger_out_falling_edge"    << endl;
-    os << endl;
-    os << "settings sett \t Sets detector settings. Can be: " << endl;
-    os << "\t standard \t fast \t highgain" << endl;
-    os << "\t depending on trheshold energy and maximum count rate: please refere to manual for limit values!"<< endl;
-    os << endl;
-    os << "threshold ev \t Sets detector threshold in eV. Should be half of the beam energy. It is precise only if the detector is calibrated"<< endl;
-    os << endl;
-    os << "exptime t \t Sets the exposure time per frame (in s)"<< endl;
-    os << endl;
-    os << "period t \t Sets the frames period (in s)"<< endl;
-    os << endl;
-    os << "delay t \t Sets the delay after trigger (in s)"<< endl;
-    os << endl;
-    os << "gates n \t Sets the number of gates per frame"<< endl;
-    os << endl;
-    os << "frames n \t Sets the number of frames per cycle (e.g. after each trigger)"<< endl;
-    os << endl;
-    os << "cycles n \t Sets the number of cycles (e.g. number of triggers)"<< endl;
-    os << endl;
-    os << "probes n \t Sets the number of probes to accumulate (max 3)"<< endl;
-    os << endl;
-    os << "dr n \t Sets the dynamic range - can be 1, 4, 8,16 or 24 bits"<< endl;
-    os << endl;
-    os << "flags mode \t Sets the readout flags - can be none or storeinram"<< endl;
-    os << endl;
-    os << "flatfield fname \t Sets the flatfield file name - none disable flat field corrections"<< endl;
-    os << endl;
-    os << "ratecorr t \t Sets the rate corrections with dead time t ns (0 unsets, -1 uses default dead time for chosen settings"<< endl;
-    os << endl;
-    os << "badchannels fname \t Sets the badchannels file name - none disable bad channels corrections"<< endl;
-    os << endl;
-    os << "angconv fname \t Sets the angular conversion file name"<< endl;
-    os << endl;
-    os << "globaloff o \t sets the fixed angular offset of your encoder - should be almost constant!"<< endl;
-    os << endl;
-    os << "fineoff o \t sets a possible angular offset of your setup - should be small but can be senseful to modify"<< endl;
-    os << endl;
-    os << "binsize s\t sets the binning size of the angular conversion (otherwise defaults from the angualr conversion constants)"<< endl;
-    os << endl;
-    os << "positions np [pos0 pos1...posnp] \t sets the number of positions at which the detector is moved during the acquisition and their values"<< endl;
-    os << endl;
-    os << "threaded b \t sets whether the postprocessing and file writing of the data is done in a separate thread (0 sequencial, 1 threaded). Please remeber to set the threaded mode if you acquire long real time measurements and/or use the storeinram option  otherwise you risk to lose your data"<< endl;
-    os << endl;
+    os << std::endl;
+    os << "\t ro_trigger_out_falling_edge"    << std::endl;
+    os << std::endl;
+    os << "settings sett \t Sets detector settings. Can be: " << std::endl;
+    os << "\t standard \t fast \t highgain" << std::endl;
+    os << "\t depending on trheshold energy and maximum count rate: please refere to manual for limit values!"<< std::endl;
+    os << std::endl;
+    os << "threshold ev \t Sets detector threshold in eV. Should be half of the beam energy. It is precise only if the detector is calibrated"<< std::endl;
+    os << std::endl;
+    os << "exptime t \t Sets the exposure time per frame (in s)"<< std::endl;
+    os << std::endl;
+    os << "period t \t Sets the frames period (in s)"<< std::endl;
+    os << std::endl;
+    os << "delay t \t Sets the delay after trigger (in s)"<< std::endl;
+    os << std::endl;
+    os << "gates n \t Sets the number of gates per frame"<< std::endl;
+    os << std::endl;
+    os << "frames n \t Sets the number of frames per cycle (e.g. after each trigger)"<< std::endl;
+    os << std::endl;
+    os << "cycles n \t Sets the number of cycles (e.g. number of triggers)"<< std::endl;
+    os << std::endl;
+    os << "probes n \t Sets the number of probes to accumulate (max 3)"<< std::endl;
+    os << std::endl;
+    os << "dr n \t Sets the dynamic range - can be 1, 4, 8,16 or 24 bits"<< std::endl;
+    os << std::endl;
+    os << "flags mode \t Sets the readout flags - can be none or storeinram"<< std::endl;
+    os << std::endl;
+    os << "flatfield fname \t Sets the flatfield file name - none disable flat field corrections"<< std::endl;
+    os << std::endl;
+    os << "ratecorr t \t Sets the rate corrections with dead time t ns (0 unsets, -1 uses default dead time for chosen settings"<< std::endl;
+    os << std::endl;
+    os << "badchannels fname \t Sets the badchannels file name - none disable bad channels corrections"<< std::endl;
+    os << std::endl;
+    os << "angconv fname \t Sets the angular conversion file name"<< std::endl;
+    os << std::endl;
+    os << "globaloff o \t sets the fixed angular offset of your encoder - should be almost constant!"<< std::endl;
+    os << std::endl;
+    os << "fineoff o \t sets a possible angular offset of your setup - should be small but can be senseful to modify"<< std::endl;
+    os << std::endl;
+    os << "binsize s\t sets the binning size of the angular conversion (otherwise defaults from the angualr conversion constants)"<< std::endl;
+    os << std::endl;
+    os << "positions np [pos0 pos1...posnp] \t sets the number of positions at which the detector is moved during the acquisition and their values"<< std::endl;
+    os << std::endl;
+    os << "threaded b \t sets whether the postprocessing and file writing of the data is done in a separate thread (0 sequencial, 1 threaded). Please remeber to set the threaded mode if you acquire long real time measurements and/or use the storeinram option  otherwise you risk to lose your data"<< std::endl;
+    os << std::endl;
   } else if (action==GET_ACTION) {
-    os << "help \t This help " << endl;
+    os << "help \t This help " << std::endl;
     
 
-  os << "status \t gets the detector status - can be: running, error, transmitting, finished, waiting or idle" << endl;
-  os << "data \t gets all data from the detector (if any) processes them and writes them to file according to the preferences already setup" << endl;
-  os << "frame \t gets a single frame from the detector (if any) processes it and writes it to file according to the preferences already setup" << endl;
-    os << "config  fname\t writes the configuration file" << endl;
-    os << endl;
-    os << "parameters  fname\t writes the main detector parameters for the measuremen tin the file " << endl;
-    os << endl;
-    os << "setup rootname\t writes the complete detector setup (including configuration, trimbits, flat field coefficients, badchannels etc.) is a set of files for which the extension is automatically generated " << endl;
-    os << endl;
-    os << "hostname \t Gets the detector hostname (or IP address) " << endl;
-    os << endl;
-    os << "caldir \t Gets path of the calibration files " << endl;
-    os << endl;
-    os << "trimdir \t Gets path of the trim files " << endl;
-    os << endl;
-    os << "trimen \t returns the number of energies for which trimbit files exist and their values"<< endl;
-    os << "outdir \t directory to which the files will be written by default" << endl;
-    os << endl;
-      os <<  "fname \t filename to which the files will be written by default (to which file and position indexes will eventually be attached)" << endl;
-    os << endl;
-    os << "index \t start index of the files (automatically incremented by the acquisition functions)" << endl;
-    os << endl;
-    os << "nmod \t Gets number of detector modules " << endl;
-    os << endl;
-    os << "maxmod \t Gets maximum number of detector modules " << endl;
-    os << endl;
-    os << "extsig:i\t Gets usage of the external digital signal i. The return value can be: " << endl;
+  os << "status \t gets the detector status - can be: running, error, transmitting, finished, waiting or idle" << std::endl;
+  os << "data \t gets all data from the detector (if any) processes them and writes them to file according to the preferences already setup" << std::endl;
+  os << "frame \t gets a single frame from the detector (if any) processes it and writes it to file according to the preferences already setup" << std::endl;
+    os << "config  fname\t writes the configuration file" << std::endl;
+    os << std::endl;
+    os << "parameters  fname\t writes the main detector parameters for the measuremen tin the file " << std::endl;
+    os << std::endl;
+    os << "setup rootname\t writes the complete detector setup (including configuration, trimbits, flat field coefficients, badchannels etc.) is a set of files for which the extension is automatically generated " << std::endl;
+    os << std::endl;
+    os << "hostname \t Gets the detector hostname (or IP address) " << std::endl;
+    os << std::endl;
+    os << "caldir \t Gets path of the calibration files " << std::endl;
+    os << std::endl;
+    os << "trimdir \t Gets path of the trim files " << std::endl;
+    os << std::endl;
+    os << "trimen \t returns the number of energies for which trimbit files exist and their values"<< std::endl;
+    os << "outdir \t directory to which the files will be written by default" << std::endl;
+    os << std::endl;
+      os <<  "fname \t filename to which the files will be written by default (to which file and position indexes will eventually be attached)" << std::endl;
+    os << std::endl;
+    os << "index \t start index of the files (automatically incremented by the acquisition functions)" << std::endl;
+    os << std::endl;
+    os << "nmod \t Gets number of detector modules " << std::endl;
+    os << std::endl;
+    os << "maxmod \t Gets maximum number of detector modules " << std::endl;
+    os << std::endl;
+    os << "extsig:i\t Gets usage of the external digital signal i. The return value can be: " << std::endl;
     os << "\t 0 off";
-    os << endl;
+    os << std::endl;
     os << "\t 1 gate_in_active_high";
-    os << endl;
+    os << std::endl;
     os << "\t 2 gate_in_active_low";
-    os << endl;
+    os << std::endl;
     os << "\t 3 trigger_in_rising_edge";
-    os << endl;
+    os << std::endl;
     os << "\t 4 trigger_in_falling_edge";
-    os << endl;
+    os << std::endl;
     os << "\t 5 ro_trigger_in_rising_edge";
-    os << endl;
+    os << std::endl;
     os << "\t 6 ro_trigger_in_falling_edge";
-    os << endl;
+    os << std::endl;
     os << "\t 7 gate_out_active_high";
-    os << endl;
+    os << std::endl;
     os << "\t 8 gate_out_active_low";
-    os << endl;
+    os << std::endl;
     os << "\t 9 trigger_out_rising_edge";
-    os << endl;
+    os << std::endl;
     os << "\t 10 trigger_out_falling_edge";
-    os << endl;
+    os << std::endl;
     os << "\t 11 ro_trigger_out_rising_edge";
-    os << endl;
-    os << "\t 12 ro_trigger_out_falling_edge" << endl;
-    os << endl;
-    os << "modulenumber\t Gets the module serial number " << endl;
-    os << endl;
-    os << "moduleversion\t Gets the module version " << endl;
-    os << endl;
-    os << "detectornumber\t Gets the detector number (MAC address) " << endl;
-    os << endl;
-    os << "detectorversion\t Gets the detector firmware version " << endl;
-    os << endl;
-    os << "softwareversion\t Gets the detector software version " << endl;
-    os << endl;
-    os << "digitest\t Makes a digital test of the detector. Returns 0 if it succeeds " << endl;
-    os << endl;
-    os << "bustest\t Makes a test of the detector bus. Returns 0 if it succeeds " << endl; 
-    os << endl;
-    os << "settings\t Gets detector settings. Can be: " << endl;
-    os << "\t 0 standard \t 1 fast \t 2 highgain \t else undefined" << endl;
-    os << endl;
-    os << "threshold\t Gets detector threshold in eV. It is precise only if the detector is calibrated"<< endl;
-    os << endl;
-    os << "exptime\t Gets the exposure time per frame (in ns)"<< endl;
-    os << endl;
-    os << "period \t Gets the frames period (in ns)"<< endl;
-    os << endl;
-    os << "delay \t Gets the delay after trigger (in ns)"<< endl;
-    os << endl;    
-    os << "gates \t Gets the number of gates per frame"<< endl;
-    os << endl;
-    os << "frames \t Gets the number of frames per cycle (e.g. after each trigger)"<< endl;
-    os << endl;
-    os << "cycles \t Gets the number of cycles (e.g. number of triggers)"<< endl;
-    os << endl;
-    os << "probes \t Gets the number of probes to accumulate (max 3)"<< endl;
-    os << endl;
-    os << "dr \t Gets the dynamic range"<< endl;
-    os << endl;
-    os << "trim:mode fname \t trims the detector and writes the trimfile fname.snxx "<< endl;
-    os << "\t mode can be:\t noise\t beam\t improve\t fix\t offline "<< endl;
-    os << "Check that the start conditions are OK!!!"<< endl;
-    os << endl;
-    os << "flatfield fname \t returns wether the flat field corrections are enabled and if so writes the coefficients to the specified filename. If fname is none it is not written"<< endl;
-    os << endl;
-    os << "ratecorr \t returns wether teh rate corrections are enabled and what is the dead time used in ns"<< endl;
-    os << endl;
-    os << "badchannels fname \t returns wether the bad channels corrections are enabled and if so writes the bad channels to the specified filename. If fname is none it is not written"<< endl;
-    os << endl;
-    os << "angconv fname \t returns wether the angular conversion is enabled and if so writes the angular conversion coefficients to the specified filename. If fname is none, it is not written"<< endl;
-    os << endl;
-    os << "globaloff \t returns the fixed angular offset of your encoder - should be almost constant!"<< endl;
-    os << endl;
-    os << "fineoff \t returns a possible angualr offset of your setup - should be small but can be senseful to modify"<< endl;
-    os << endl;
-    os << "binsize \t returns the binning size of the anular conversion"<< endl;
-    os << endl;
-    os << "positions \t returns the number of positions at which the detector is moved during the acquisition and their values"<< endl;
-    os << endl;
-    os << "threaded \t gets whether the postprocessing and file writing of the data is done in a separate thread (0 sequencial, 1 threaded). Check that it is set to 1 if you acquire long real time measurements and/or use the storeinram option otherwise you risk to lose your data"<< endl;
-    os << endl;
+    os << std::endl;
+    os << "\t 12 ro_trigger_out_falling_edge" << std::endl;
+    os << std::endl;
+    os << "modulenumber\t Gets the module serial number " << std::endl;
+    os << std::endl;
+    os << "moduleversion\t Gets the module version " << std::endl;
+    os << std::endl;
+    os << "detectornumber\t Gets the detector number (MAC address) " << std::endl;
+    os << std::endl;
+    os << "detectorversion\t Gets the detector firmware version " << std::endl;
+    os << std::endl;
+    os << "softwareversion\t Gets the detector software version " << std::endl;
+    os << std::endl;
+    os << "digitest\t Makes a digital test of the detector. Returns 0 if it succeeds " << std::endl;
+    os << std::endl;
+    os << "bustest\t Makes a test of the detector bus. Returns 0 if it succeeds " << std::endl; 
+    os << std::endl;
+    os << "settings\t Gets detector settings. Can be: " << std::endl;
+    os << "\t 0 standard \t 1 fast \t 2 highgain \t else undefined" << std::endl;
+    os << std::endl;
+    os << "threshold\t Gets detector threshold in eV. It is precise only if the detector is calibrated"<< std::endl;
+    os << std::endl;
+    os << "exptime\t Gets the exposure time per frame (in ns)"<< std::endl;
+    os << std::endl;
+    os << "period \t Gets the frames period (in ns)"<< std::endl;
+    os << std::endl;
+    os << "delay \t Gets the delay after trigger (in ns)"<< std::endl;
+    os << std::endl;    
+    os << "gates \t Gets the number of gates per frame"<< std::endl;
+    os << std::endl;
+    os << "frames \t Gets the number of frames per cycle (e.g. after each trigger)"<< std::endl;
+    os << std::endl;
+    os << "cycles \t Gets the number of cycles (e.g. number of triggers)"<< std::endl;
+    os << std::endl;
+    os << "probes \t Gets the number of probes to accumulate (max 3)"<< std::endl;
+    os << std::endl;
+    os << "dr \t Gets the dynamic range"<< std::endl;
+    os << std::endl;
+    os << "trim:mode fname \t trims the detector and writes the trimfile fname.snxx "<< std::endl;
+    os << "\t mode can be:\t noise\t beam\t improve\t fix\t offline "<< std::endl;
+    os << "Check that the start conditions are OK!!!"<< std::endl;
+    os << std::endl;
+    os << "flatfield fname \t returns wether the flat field corrections are enabled and if so writes the coefficients to the specified filename. If fname is none it is not written"<< std::endl;
+    os << std::endl;
+    os << "ratecorr \t returns wether teh rate corrections are enabled and what is the dead time used in ns"<< std::endl;
+    os << std::endl;
+    os << "badchannels fname \t returns wether the bad channels corrections are enabled and if so writes the bad channels to the specified filename. If fname is none it is not written"<< std::endl;
+    os << std::endl;
+    os << "angconv fname \t returns wether the angular conversion is enabled and if so writes the angular conversion coefficients to the specified filename. If fname is none, it is not written"<< std::endl;
+    os << std::endl;
+    os << "globaloff \t returns the fixed angular offset of your encoder - should be almost constant!"<< std::endl;
+    os << std::endl;
+    os << "fineoff \t returns a possible angualr offset of your setup - should be small but can be senseful to modify"<< std::endl;
+    os << std::endl;
+    os << "binsize \t returns the binning size of the anular conversion"<< std::endl;
+    os << std::endl;
+    os << "positions \t returns the number of positions at which the detector is moved during the acquisition and their values"<< std::endl;
+    os << std::endl;
+    os << "threaded \t gets whether the postprocessing and file writing of the data is done in a separate thread (0 sequencial, 1 threaded). Check that it is set to 1 if you acquire long real time measurements and/or use the storeinram option otherwise you risk to lose your data"<< std::endl;
+    os << std::endl;
 
 
   }
 
-  return os;
-  */
+   
+  return os.str();
 }
 
 
@@ -967,7 +975,7 @@ int mythenDetector::readConfigurationFile(string const fname){
 
   string sargname, sargval;
   int iline=0;
-  cout << "config file name "<< fname << endl;
+  std::cout<< "config file name "<< fname << std::endl;
   infile.open(fname.c_str(), ios_base::in);
   if (infile.is_open()) {
     while (infile.good() and interrupt==0) {
@@ -976,12 +984,17 @@ int mythenDetector::readConfigurationFile(string const fname){
       getline(infile,str);
       iline++;
 #ifdef VERBOSE
-      cout <<  str << endl;
+      std::cout<<  str << std::endl;
 #endif
       if (str.find('#')!=string::npos) {
 #ifdef VERBOSE
-	cout << "Line is a comment " << endl;
-	cout << str << endl;
+	std::cout<< "Line is a comment " << std::endl;
+	std::cout<< str << std::endl;
+#endif
+	continue;
+      } else if (str.length()<2) {
+#ifdef VERBOSE
+	std::cout<< "Empty line " << std::endl;
 #endif
 	continue;
       } else {
@@ -989,25 +1002,28 @@ int mythenDetector::readConfigurationFile(string const fname){
 	iargval=0;
 	while (ssstr.good()) {
 	  ssstr >> sargname;
-	  if (ssstr.good()) {
+	  //if (ssstr.good()) {
+#ifdef VERBOSE 
+	    std::cout<< iargval << " " << sargname  << std::endl;
+#endif
 	    strcpy(args[iargval],sargname.c_str());
 	    iargval++;
-	  }
+	    //}
 	}
 	ans=executeLine(iargval,args,PUT_ACTION);
 #ifdef VERBOSE 
-	cout << ans << endl;
+	std::cout<< ans << std::endl;
 #endif
       }
       iline++;
     }
     infile.close();
   } else {
-    cout << "Error opening configuration file " << fname << " for reading" << endl;
+    std::cout<< "Error opening configuration file " << fname << " for reading" << std::endl;
     return FAIL;
   }
 #ifdef VERBOSE
-  cout << "Read configuration file of " << iline << " lines" << endl;
+  std::cout<< "Read configuration file of " << iline << " lines" << std::endl;
 #endif
   return iline;
 };
@@ -1044,16 +1060,16 @@ int mythenDetector::writeConfigurationFile(string const fname){
   if (outfile.is_open()) {
     for (iv=0; iv<nvar; iv++) {
       strcpy(args[0],names[iv].c_str());
-      outfile << names[iv] << " " << executeLine(1,args,GET_ACTION) << endl;
+      outfile << names[iv] << " " << executeLine(1,args,GET_ACTION) << std::endl;
     }
     outfile.close();
   }
   else {
-    cout << "Error opening configuration file " << fname << " for writing" << endl;
+    std::cout<< "Error opening configuration file " << fname << " for writing" << std::endl;
     return FAIL;
   }
 #ifdef VERBOSE
-  cout << "wrote " <<iv << " lines to configuration file " << endl;
+  std::cout<< "wrote " <<iv << " lines to configuration file " << std::endl;
 #endif
   return iv;
 };
@@ -1111,7 +1127,7 @@ int mythenDetector::dumpDetectorSetup(string fname, int level){
   if (outfile.is_open()) {
     for (iv=0; iv<nvar-5; iv++) {
       strcpy(args[0],names[iv].c_str());
-      outfile << names[iv] << " " << executeLine(1,args,GET_ACTION) << endl;
+      outfile << names[iv] << " " << executeLine(1,args,GET_ACTION) << std::endl;
     }
 
 
@@ -1120,7 +1136,7 @@ int mythenDetector::dumpDetectorSetup(string fname, int level){
       fname1=fname+string(".ff");
       strcpy(args[1],fname1.c_str());
     }
-    outfile << names[iv] << " " << executeLine(nargs,args,GET_ACTION) << endl;
+    outfile << names[iv] << " " << executeLine(nargs,args,GET_ACTION) << std::endl;
     iv++;
 
     strcpy(args[0],names[iv].c_str());
@@ -1128,7 +1144,7 @@ int mythenDetector::dumpDetectorSetup(string fname, int level){
       fname1=fname+string(".bad");
       strcpy(args[1],fname1.c_str());
     }
-    outfile << names[iv] << " " << executeLine(nargs,args,GET_ACTION) << endl;
+    outfile << names[iv] << " " << executeLine(nargs,args,GET_ACTION) << std::endl;
     iv++;
 
       
@@ -1137,7 +1153,7 @@ int mythenDetector::dumpDetectorSetup(string fname, int level){
       fname1=fname+string(".angoff");
       strcpy(args[1],fname1.c_str());
     }
-    outfile << names[iv] << " " << executeLine(nargs,args,GET_ACTION) << endl;
+    outfile << names[iv] << " " << executeLine(nargs,args,GET_ACTION) << std::endl;
     iv++;
     
     strcpy(args[0],names[iv].c_str());
@@ -1150,26 +1166,26 @@ int mythenDetector::dumpDetectorSetup(string fname, int level){
       }
       strcpy(args[1],fname1.c_str());
 #ifdef VERBOSE
-      cout << "writing to file " << fname1 << endl;
+      std::cout<< "writing to file " << fname1 << std::endl;
 #endif
     }
-    outfile << names[iv] << " " << executeLine(nargs,args,GET_ACTION) << endl;
+    outfile << names[iv] << " " << executeLine(nargs,args,GET_ACTION) << std::endl;
     iv++;
     
     for (int is=0; is<4; is++) {
       sprintf(args[0],"%s:%d",names[iv].c_str(),is);
-      outfile << args[0] << " " << executeLine(1,args,GET_ACTION) << endl;	
+      outfile << args[0] << " " << executeLine(1,args,GET_ACTION) << std::endl;	
     }
     iv++;
     outfile.close();
   }
   else {
-    cout << "Error opening parameters file " << fname1 << " for writing" << endl;
+    std::cout<< "Error opening parameters file " << fname1 << " for writing" << std::endl;
     return FAIL;
   }
   
 #ifdef VERBOSE
-  cout << "wrote " <<iv << " lines to  "<< fname1 << endl;
+  std::cout<< "wrote " <<iv << " lines to  "<< fname1 << std::endl;
 #endif
 
 }
@@ -1206,12 +1222,12 @@ int mythenDetector::retrieveDetectorSetup(string fname1, int level){
       getline(infile,str);
       iline++;
 #ifdef VERBOSE
-      cout <<  str << endl;
+      std::cout<<  str << std::endl;
 #endif
       if (str.find('#')!=string::npos) {
 #ifdef VERBOSE
-	cout << "Line is a comment " << endl;
-	cout << str << endl;
+	std::cout<< "Line is a comment " << std::endl;
+	std::cout<< str << std::endl;
 #endif
 	continue;
       } else {
@@ -1243,11 +1259,11 @@ int mythenDetector::retrieveDetectorSetup(string fname1, int level){
     }
     infile.close();
   } else {
-    cout << "Error opening  " << fname << " for reading" << endl;
+    std::cout<< "Error opening  " << fname << " for reading" << std::endl;
     return FAIL;
   }
 #ifdef VERBOSE
-  cout << "Read  " << iline << " lines" << endl;
+  std::cout<< "Read  " << iline << " lines" << std::endl;
 #endif
   return iline;
 
@@ -1281,7 +1297,7 @@ int mythenDetector::retrieveDetectorSetup(string fname1, int level){
  
 
 #ifdef VERBOSE
-  cout <<   "reading trimfile for module number "<< myMod->module << endl;
+  std::cout<<   "reading trimfile for module number "<< myMod->module << std::endl;
 #endif
     //im=myMod->module;
     //myMod->module=im;
@@ -1295,7 +1311,7 @@ int mythenDetector::retrieveDetectorSetup(string fname1, int level){
       
       }*/
 #ifdef VERBOSE
-    cout << "trim file name is "<< myfname <<   endl;
+    std::cout<< "trim file name is "<< myfname <<   std::endl;
 #endif
     infile.open(myfname.c_str(), ios_base::in);
     if (infile.is_open()) {
@@ -1304,12 +1320,12 @@ int mythenDetector::retrieveDetectorSetup(string fname1, int level){
 	  getline(infile,str);
 	  iline++;
 #ifdef VERBOSE
-	  //  cout << str << endl;
+	  //  std::cout<< str << std::endl;
 #endif
 	  istringstream ssstr(str);
 	  ssstr >> sargname >> ival;
 #ifdef VERBOSE
-	  cout << sargname << " dac nr. " << idac << " is " << ival << endl;
+	  std::cout<< sargname << " dac nr. " << idac << " is " << ival << std::endl;
 #endif
 	  myMod->dacs[idac]=ival;
 	  idac++;
@@ -1318,24 +1334,24 @@ int mythenDetector::retrieveDetectorSetup(string fname1, int level){
 	  getline(infile,str); 
 	  iline++;
 #ifdef VERBOSE
-	  //	  cout << str << endl;
+	  //	  std::cout<< str << std::endl;
 #endif
 	  istringstream ssstr(str);
 	  ssstr >> sargname >> ival;
 #ifdef VERBOSE
-	  //	  cout << "chip " << ichip << " " << sargname << " is " << ival << endl;
+	  //	  std::cout<< "chip " << ichip << " " << sargname << " is " << ival << std::endl;
 #endif
 	 
 	  myMod->chipregs[ichip]=ival;
 	  for (ichan=0; ichan<thisDetector->nChans; ichan++) {
 	    getline(infile,str); 
 #ifdef VERBOSE
-	    // cout << str << endl;
+	    // std::cout<< str << std::endl;
 #endif
 	    istringstream ssstr(str);
 
 #ifdef VERBOSE
-	    //   cout << "channel " << ichan+ichip*thisDetector->nChans <<" iline " << iline<< endl;
+	    //   std::cout<< "channel " << ichan+ichip*thisDetector->nChans <<" iline " << iline<< std::endl;
 #endif
 	    iline++;
 	    myMod->chanregs[ichip*thisDetector->nChans+ichan]=0;
@@ -1345,42 +1361,42 @@ int mythenDetector::retrieveDetectorSetup(string fname1, int level){
 	      switch (iarg) {
 	      case 0:
 #ifdef VERBOSE
-		//		 cout << "trimbits " << ival ;
+		//		 std::cout<< "trimbits " << ival ;
 #endif
 		 myMod->chanregs[ichip*thisDetector->nChans+ichan]|=ival&0x3f;
 		 break;
 	      case 1:
 #ifdef VERBOSE
-		//cout << " compen " << ival ;
+		//std::cout<< " compen " << ival ;
 #endif
 		myMod->chanregs[ichip*thisDetector->nChans+ichan]|=ival<<9;
 		break;
 	      case 2:
 #ifdef VERBOSE
-		//cout << " anen " << ival ;
+		//std::cout<< " anen " << ival ;
 #endif
 		myMod->chanregs[ichip*thisDetector->nChans+ichan]|=ival<<8;
 		break;
 	      case 3:
 #ifdef VERBOSE
-		//cout << " calen " << ival  ;
+		//std::cout<< " calen " << ival  ;
 #endif
 		myMod->chanregs[ichip*thisDetector->nChans+ichan]|=ival<<7;
 		break;
 	      case 4:
 #ifdef VERBOSE
-		//cout << " outcomp " << ival  ;
+		//std::cout<< " outcomp " << ival  ;
 #endif
 		myMod->chanregs[ichip*thisDetector->nChans+ichan]|=ival<<10;
 		break;
 	      case 5:
 #ifdef VERBOSE
-		//cout << " counts " << ival  << endl;
+		//std::cout<< " counts " << ival  << std::endl;
 #endif
 		 myMod->chanregs[ichip*thisDetector->nChans+ichan]|=ival<<11;
 		 break;
 	      default:
-		cout << " too many columns" << endl; 
+		std::cout<< " too many columns" << std::endl; 
 		break;
 	      }
 	    }
@@ -1388,13 +1404,13 @@ int mythenDetector::retrieveDetectorSetup(string fname1, int level){
 	  //	}
       }
 #ifdef VERBOSE
-      cout << "read " << ichan*ichip << " channels" <<endl; 
+      std::cout<< "read " << ichan*ichip << " channels" <<std::endl; 
 #endif
       infile.close();
       strcpy(thisDetector->trimFile,fname.c_str());
       return myMod;
     } else {
-      cout << "could not open file " << endl;
+      std::cout<< "could not open file " << std::endl;
       if (nflag)
 	deleteModule(myMod);
       return NULL;
@@ -1415,12 +1431,12 @@ int mythenDetector::writeTrimFile(string fname, sls_detector_module mod){
     if (outfile.is_open()) {
       for (idac=0; idac<mod.ndac; idac++) {
 	iv=mod.dacs[idac];
-	outfile << names[idac] << " " << iv << endl;
+	outfile << names[idac] << " " << iv << std::endl;
       }
       
 	for (ichip=0; ichip<mod.nchip; ichip++) {
 	  iv1=mod.chipregs[ichip]&1;
-	  outfile << names[idac] << " " << iv1 << endl;
+	  outfile << names[idac] << " " << iv1 << std::endl;
 	  for (ichan=0; ichan<thisDetector->nChans; ichan++) {
 	    iv=mod.chanregs[ichip*thisDetector->nChans+ichan];
 	    iv1= (iv&0x3f);
@@ -1439,13 +1455,13 @@ int mythenDetector::writeTrimFile(string fname, sls_detector_module mod){
 	    outfile << iv1 << " ";
 	    nb=11;
 	    iv1= ((iv&0xfffff800)>>nb);
-	    outfile << iv1  << endl;
+	    outfile << iv1  << std::endl;
 	  }
 	}
       outfile.close();
       return OK;
     } else {
-      cout << "could not open file " << fname << endl;
+      std::cout<< "could not open file " << fname << std::endl;
       return FAIL;
     }
 
@@ -1471,7 +1487,7 @@ int mythenDetector::writeDataFile(string fname, float *data, float *err, float *
   if (data==NULL)
     return FAIL;
 #ifdef VERBOSE
-  cout << "writing data to file " << fname << endl;
+  std::cout<< "writing data to file " << fname << std::endl;
 #endif
   //  args|=0x10; // one line per channel!
 
@@ -1479,7 +1495,7 @@ int mythenDetector::writeDataFile(string fname, float *data, float *err, float *
   if (outfile.is_open())
   {
 #ifdef VERBOSE
-    cout << "Writing to file " << fname << endl;
+    std::cout<< "Writing to file " << fname << std::endl;
 #endif
     for (int ichan=0; ichan<nch; ichan++) {
       if (ang==NULL) {
@@ -1501,14 +1517,14 @@ int mythenDetector::writeDataFile(string fname, float *data, float *err, float *
        outfile << *(err+ichan)<< " ";
      }
      //   if (args&0x10) {
-       outfile << endl;
+       outfile << std::endl;
        // }
     }
 
     outfile.close();
     return OK;
   } else {
-    cout << "Could not open file " << fname << "for writing"<< endl;
+    std::cout<< "Could not open file " << fname << "for writing"<< std::endl;
     return FAIL;
   }
 };
@@ -1529,14 +1545,14 @@ int mythenDetector::writeDataFile(string fname, int *data){
   if (outfile.is_open())
   {
 #ifdef VERBOSE
-    cout << "Writing to file " << fname << endl;
+    std::cout<< "Writing to file " << fname << std::endl;
 #endif
     for (int ichan=0; ichan<thisDetector->nChans*thisDetector->nChips*thisDetector->nMods; ichan++)
-      outfile << ichan << " " << *(data+ichan) << endl;
+      outfile << ichan << " " << *(data+ichan) << std::endl;
     outfile.close();
     return OK;
   } else {
-    cout << "Could not open file " << fname << "for writing"<< endl;
+    std::cout<< "Could not open file " << fname << "for writing"<< std::endl;
     return FAIL;
   }
 };
@@ -1564,21 +1580,21 @@ int mythenDetector::readDataFile(string fname, float *data, float *err, float *a
     maxchans=nch;
 
 #ifdef VERBOSE
-  cout << "Opening file "<< fname << endl;
+  std::cout<< "Opening file "<< fname << std::endl;
 #endif
   infile.open(fname.c_str(), ios_base::in);
   if (infile.is_open()) {
     while (infile.good() and interrupt==0) {
       getline(infile,str);
 #ifdef VERBOSE
-      cout << str << endl;
+      std::cout<< str << std::endl;
 #endif
       istringstream ssstr(str);
       if (ang==NULL) {
 	ssstr >> ichan >> fdata;
 	ich=ichan;
 	if (ich!=iline) 
-	  cout << "Channel number " << ichan << " does not match with line number " << iline << endl;
+	  std::cout<< "Channel number " << ichan << " does not match with line number " << iline << std::endl;
       } else {
 	ssstr >> fang >> fdata;
 	ich=iline;
@@ -1602,13 +1618,13 @@ int mythenDetector::readDataFile(string fname, float *data, float *err, float *a
 	 err[ich]=ferr;
        iline++;
      } else {
-       cout << " too many lines in file: "<< iline << " instead of " << maxchans << endl;
+       std::cout<< " too many lines in file: "<< iline << " instead of " << maxchans << std::endl;
        interrupt=1;
        break;
      }
     }
   } else {
-    cout << "Could not read file " << fname << endl;
+    std::cout<< "Could not read file " << fname << std::endl;
     return -1;
   }
   return iline;
@@ -1627,14 +1643,14 @@ int mythenDetector::readDataFile(string fname, int *data){
   string str;
 
 #ifdef VERBOSE
-  cout << "Opening file "<< fname << endl;
+  std::cout<< "Opening file "<< fname << std::endl;
 #endif
   infile.open(fname.c_str(), ios_base::in);
   if (infile.is_open()) {
     while (infile.good() and interrupt==0) {
       getline(infile,str);
 #ifdef VERBOSE
-      cout << str << endl;
+      std::cout<< str << std::endl;
 #endif
       istringstream ssstr(str);
       ssstr >> ichan >> idata;
@@ -1643,7 +1659,7 @@ int mythenDetector::readDataFile(string fname, int *data){
 	break;
       }
       if (ichan!=iline) {
-	cout << " Expected channel "<< iline <<" but read channel "<< ichan << endl;
+	std::cout<< " Expected channel "<< iline <<" but read channel "<< ichan << std::endl;
 	interrupt=1;
 	break;
       } else {
@@ -1657,7 +1673,7 @@ int mythenDetector::readDataFile(string fname, int *data){
       }
     }
   } else {
-    cout << "Could not read file " << fname << endl;
+    std::cout<< "Could not read file " << fname << std::endl;
     return -1;
   }
   return iline;
@@ -1672,18 +1688,18 @@ int mythenDetector::readCalibrationFile(string fname, float &gain, float &offset
   string str;
   ifstream infile;
 #ifdef VERBOSE
-  cout << "Opening file "<< fname << endl;
+  std::cout<< "Opening file "<< fname << std::endl;
 #endif
   infile.open(fname.c_str(), ios_base::in);
   if (infile.is_open()) {
     getline(infile,str);
 #ifdef VERBOSE
-    cout << str << endl;
+    std::cout<< str << std::endl;
 #endif
     istringstream ssstr(str);
     ssstr >> offset >> gain;
   } else {
-    cout << "Could not open calibration file "<< fname << endl;
+    std::cout<< "Could not open calibration file "<< fname << std::endl;
     gain=0.;
     offset=0.;
     return -1;
@@ -1692,7 +1708,7 @@ int mythenDetector::readCalibrationFile(string fname, float &gain, float &offset
 };
 
 int mythenDetector::writeCalibrationFile(string fname, float gain, float offset){
-  cout << "Function not yet implemented " << endl;
+  std::cout<< "Function not yet implemented " << std::endl;
 };
 
 
@@ -1705,7 +1721,7 @@ int mythenDetector::writeCalibrationFile(string fname, float gain, float offset)
   really needed?
 
 int mythenDetector::setCalibration(int imod,  detectorSettings isettings, float gain, float offset){
-  cout << "function not yet implemented " << endl; 
+  std::cout<< "function not yet implemented " << std::endl; 
   
   
 
@@ -1714,7 +1730,7 @@ int mythenDetector::setCalibration(int imod,  detectorSettings isettings, float 
 }
 int mythenDetector::getCalibration(int imod,  detectorSettings isettings, float &gain, float &offset){
 
-  cout << "function not yet implemented " << endl; 
+  std::cout<< "function not yet implemented " << std::endl; 
 
 
 
@@ -1781,14 +1797,14 @@ int mythenDetector::readAngularConversion(string fname) {
 
   //" module %i center %E +- %E conversion %E +- %E offset %f +- %f \n"
 #ifdef VERBOSE
-  cout << "Opening file "<< fname << endl;
+  std::cout<< "Opening file "<< fname << std::endl;
 #endif
   infile.open(fname.c_str(), ios_base::in);
   if (infile.is_open()) {
     while (infile.good() and interrupt==0) {
       getline(infile,str);
 #ifdef VERBOSE
-      cout << str << endl;
+      std::cout<< str << std::endl;
 #endif
       istringstream ssstr(str);
       ssstr >> ss >> mod;
@@ -1808,7 +1824,7 @@ int mythenDetector::readAngularConversion(string fname) {
       }
     }
   } else {
-    cout << "Could not open calibration file "<< fname << endl;
+    std::cout<< "Could not open calibration file "<< fname << std::endl;
     return -1;
   }
   return 0;
@@ -1821,11 +1837,11 @@ int mythenDetector:: writeAngularConversion(string fname) {
   if (outfile.is_open())
   {  
     for (int imod=0; imod<thisDetector->nMods; imod++) {
-      outfile << " module " << imod << " center "<< thisDetector->angOff[imod].center<<"  +- "<< thisDetector->angOff[imod].ecenter<<" conversion "<< thisDetector->angOff[imod].r_conversion << " +- "<< thisDetector->angOff[imod].er_conversion <<  " offset "<< thisDetector->angOff[imod].offset << " +- "<< thisDetector->angOff[imod].eoffset << endl;
+      outfile << " module " << imod << " center "<< thisDetector->angOff[imod].center<<"  +- "<< thisDetector->angOff[imod].ecenter<<" conversion "<< thisDetector->angOff[imod].r_conversion << " +- "<< thisDetector->angOff[imod].er_conversion <<  " offset "<< thisDetector->angOff[imod].offset << " +- "<< thisDetector->angOff[imod].eoffset << std::endl;
     }
     outfile.close();
   } else {
-    cout << "Could not open file " << fname << "for writing"<< endl;
+    std::cout<< "Could not open file " << fname << "for writing"<< std::endl;
     return -1;
   }
   //" module %i center %E +- %E conversion %E +- %E offset %f +- %f \n"
@@ -1947,7 +1963,17 @@ int  mythenDetector::addToMerging(float *p1, float *v1, float *e1, float *mp, fl
 }
 
 void  mythenDetector::acquire(int delflag){
+  void *status;
+#ifdef VERBOSE
+  int iloop=0;
+#endif
+  thisDetector->progressIndex=0;
 
+  jointhread=0;
+  queuesize=0;
+  if (thisDetector->threadedProcessing) {
+    startThread(delflag);
+  }
 
   int np=1;
   if (thisDetector->numberOfPositions>0) 
@@ -1960,49 +1986,70 @@ void  mythenDetector::acquire(int delflag){
       go_to_position (thisDetector->detPositions[ip]);
       currentPositionIndex=ip+1;
 #ifdef VERBOSE
-      cout << "moving to position" << endl;
+      std::cout<< "moving to position" << std::endl;
 #endif
     }
     if (thisDetector->correctionMask&(1<< I0_NORMALIZATION))
       currentI0=get_i0();
     //write header before?
 
-    if (thisDetector->threadedProcessing)
-      startThread();
-
     startAndReadAll();
+
     //write header after?
     if (thisDetector->correctionMask&(1<< I0_NORMALIZATION))
       currentI0=get_i0();
     if (thisDetector->correctionMask&(1<< ANGULAR_CONVERSION))
       currentPosition=get_position();  
-    if (thisDetector->threadedProcessing==0)
-      processData(); 
    
-    while (!dataQueue.empty()){
-      ;
-      //#ifdef VERBOSE
-      //cout << "waiting for the data to be postprocessed before moving" << endl;
-      //#endif
-    }
-#ifdef VERBOSE
-      cout << "queue empty" << endl;
+
+    if (thisDetector->threadedProcessing==0)
+      processData(delflag); 
+   
+#ifdef ACQVERBOSE
+    std::cout<< "--------------------------------------------------waiting to empty raw data queue " << queuesize << std::endl ;
 #endif
-    if (thisDetector->threadedProcessing) {
-      while (pthread_cancel(dataProcessingThread)) {
-	;  
-      }
-#ifdef VERBOSE
-      cout << "process canceled" << endl;
-#endif
+    //while (!dataQueue.empty()){
+    while (queuesize){
+      usleep(100);
+// #ifdef VERBOSE
+//        if (iloop%10000==0)
+//  	std::cout<< "--------------------------------------------------looping raw data queue " << queuesize << std::endl ;
+//        // 	//std::cout<< "--------------------------------------------------looping raw data queue " << dataQueue.size() << std::endl ;
+//       iloop++;
+//       //usleep(100000);
+// #endif
     }
+    
+#ifdef ACQVERBOSE
+    std::cout<< "----------------------------------------------------raw data queue is empty!" << std::endl ;
+#endif
     if (thisDetector->stoppedFlag) {
 #ifdef VERBOSE
-      cout << "exiting since the detector has been stopped" << endl;
+      std::cout<< "exiting since the detector has been stopped" << std::endl;
 #endif
       break;
-    }
+    } else if (ip<(np-1))
+      thisDetector->fileIndex=thisDetector->fileIndex-thisDetector->timerValue[FRAME_NUMBER]; 
+#ifdef VERBOSE
+    cout << "Setting file index to " << thisDetector->fileIndex << endl;
+#endif
   }
+
+#ifdef ACQVERBOSE
+  std::cout<< "------------------------------------------------------cancelling data processing thread " << std::endl ;
+#endif
+   if (thisDetector->threadedProcessing) { 
+     jointhread=1;
+     pthread_join(dataProcessingThread, &status);
+
+     /*  while (pthread_cancel(dataProcessingThread)) {
+      ;  
+}*/
+#ifdef ACQVERBOSE
+      std::cout<< "----------------------------------------------------process canceled" << std::endl;
+#endif
+   }
+
 }
 
 
@@ -2022,14 +2069,19 @@ void* mythenDetector::processData(int delflag) {
   detectorData *thisData;
   int outer_c_s;
   int dum=1;
+  //  thisDetector->progressIndex=0;
 
 #ifdef VERBOSE
-  cout << " processing data - threaded mode " << thisDetector->threadedProcessing;
+  int iloop=0;
+#endif
+
+#ifdef ACQVERBOSE
+  std::cout<< " processing data - threaded mode " << thisDetector->threadedProcessing;
 #endif
 
   //pthread_setcanceltype(PTHREAD_CANCEL_DEFERRED,&outer_c_s );
   //#ifdef VERBOSE
-  //	cout << "impossible to cancel process " << endl;
+  //	std::cout<< "impossible to cancel process " << std::endl;
   //#endif
   //    pthread_setcancelstate (PTHREAD_CANCEL_DISABLE, &outer_c_s);
 
@@ -2037,7 +2089,7 @@ void* mythenDetector::processData(int delflag) {
     
     
     while( !dataQueue.empty() ) {
-
+      queuesize=dataQueue.size();
 
       /** Pop data queue */
       myData=dataQueue.front(); // get the data from the queue 
@@ -2050,39 +2102,38 @@ void* mythenDetector::processData(int delflag) {
       //delete [] myData;
       //	myData=NULL;
 	/** write raw data file */	   
-	writeDataFile (createFileName().append(".raw"), fdata, NULL, NULL, 'i');
-#ifdef VERBOSE
 
-#endif
-
-	/** rate correction */
-	if (thisDetector->correctionMask&(1<<RATE_CORRECTION)) {
-	  rcdata=new float[thisDetector->nChans*thisDetector->nChips*thisDetector->nMods]; 
-	  rcerr=new float[thisDetector->nChans*thisDetector->nChips*thisDetector->nMods];
-	  rateCorrect(fdata,NULL,rcdata,rcerr);
-	  delete [] fdata;
-	} else {
-	  rcdata=fdata;
-	  fdata=NULL;
-	}
-	
-	/** flat field correction */
-	if (thisDetector->correctionMask&(1<<FLAT_FIELD_CORRECTION)) {
+	if (thisDetector->correctionMask!=0 || delflag==0) {
+	  writeDataFile (createFileName().append(".raw"), fdata, NULL, NULL, 'i');
 	  
-	  ffcdata=new float[thisDetector->nChans*thisDetector->nChips*thisDetector->nMods]; 
-	  ffcerr=new float[thisDetector->nChans*thisDetector->nChips*thisDetector->nMods];
-	  flatFieldCorrect(rcdata,rcerr,ffcdata,ffcerr);
-	  delete [] rcdata;
-	  delete [] rcerr;
-	} else {
-	  ffcdata=rcdata;
-	  ffcerr=rcerr;
-	  rcdata=NULL;
-	  rcerr=NULL;
-	}
-
-	if (thisDetector->correctionMask&(1<< ANGULAR_CONVERSION)) {
+	  /** rate correction */
+	  if (thisDetector->correctionMask&(1<<RATE_CORRECTION)) {
+	    rcdata=new float[thisDetector->nChans*thisDetector->nChips*thisDetector->nMods]; 
+	    rcerr=new float[thisDetector->nChans*thisDetector->nChips*thisDetector->nMods];
+	    rateCorrect(fdata,NULL,rcdata,rcerr);
+	    delete [] fdata;
+	  } else {
+	    rcdata=fdata;
+	    fdata=NULL;
+	  }
 	  
+	  /** flat field correction */
+	  if (thisDetector->correctionMask&(1<<FLAT_FIELD_CORRECTION)) {
+	    
+	    ffcdata=new float[thisDetector->nChans*thisDetector->nChips*thisDetector->nMods]; 
+	    ffcerr=new float[thisDetector->nChans*thisDetector->nChips*thisDetector->nMods];
+	    flatFieldCorrect(rcdata,rcerr,ffcdata,ffcerr);
+	    delete [] rcdata;
+	    delete [] rcerr;
+	  } else {
+	    ffcdata=rcdata;
+	    ffcerr=rcerr;
+	    rcdata=NULL;
+	    rcerr=NULL;
+	  }
+	  
+	  if (thisDetector->correctionMask&(1<< ANGULAR_CONVERSION)) {
+	    
 	  /** angular conversion */
 	  /** data merging */
 	  // if (thisDetector->numberOfPositions) {
@@ -2106,32 +2157,47 @@ void* mythenDetector::processData(int delflag) {
 	      
 	      resetMerging(mergingBins, mergingCounts,mergingErrors, mergingMultiplicity);
 	    }
-	    addToMerging(ang, ffcdata, ffcerr, mergingBins, mergingCounts,mergingErrors, mergingMultiplicity);
-	 
+	    /* it would be better to create an ang0 with 0 encoder position and add to merging/write to file simply specifying that offset so that when it cycles writing the data or adding to merging it also calculates the angular position */
+	    
 	    ang=new float[thisDetector->nChans*thisDetector->nChips*thisDetector->nMods]; 
 	    for (int ip=0; ip<thisDetector->nChans*thisDetector->nChips*thisDetector->nMods; ip++) {
 	      imod=ip/(thisDetector->nChans*thisDetector->nChips);
-	      ang[ip]=angle(ip,currentPosition,thisDetector->fineOffset+thisDetector->globalOffset,thisDetector->angOff[imod].r_conversion,thisDetector->angOff[imod].center, thisDetector->angOff[imod].offset,thisDetector->angOff[imod].tilt,thisDetector->angDirection);
+	      ang[ip]=angle(ip%(thisDetector->nChans*thisDetector->nChips),currentPosition,thisDetector->fineOffset+thisDetector->globalOffset,thisDetector->angOff[imod].r_conversion,thisDetector->angOff[imod].center, thisDetector->angOff[imod].offset,thisDetector->angOff[imod].tilt,thisDetector->angDirection);
 	    }
-	    writeDataFile (createFileName().append(".dat"), ffcdata, ffcerr,ang);
+	    
+	    if (thisDetector->correctionMask!=0)
+	      writeDataFile (createFileName().append(".dat"), ffcdata, ffcerr,ang);
+	    
+	    
+	    addToMerging(ang, ffcdata, ffcerr, mergingBins, mergingCounts,mergingErrors, mergingMultiplicity);
+	    
+	    
+
+	    
 	    if ((currentPositionIndex==thisDetector->numberOfPositions) || (currentPositionIndex==0)) {
 	      
 	      np=finalizeMerging(mergingBins, mergingCounts,mergingErrors, mergingMultiplicity);
 	      
 	      /** file writing */
 	      currentPositionIndex++;
-	      writeDataFile (createFileName().append(".dat"),mergingCounts, mergingErrors, mergingBins,'f',np);
+	      if (thisDetector->correctionMask!=0)
+		writeDataFile (createFileName().append(".dat"),mergingCounts, mergingErrors, mergingBins,'f',np);
 	      if (delflag) {
 		delete [] mergingBins;
 		delete [] mergingCounts;
 		delete [] mergingErrors;
 		delete [] mergingMultiplicity;
 	      } else {
-		thisData=new detectorData(mergingCounts,mergingErrors,mergingBins,thisDetector->fileIndex,(createFileName().append(".dat")).c_str(),np);
+		if (thisDetector->correctionMask!=0)
+		  thisData=new detectorData(mergingCounts,mergingErrors,mergingBins,thisDetector->progressIndex+1,(createFileName().append(".dat")).c_str(),np);
+		else
+		  thisData=new detectorData(mergingCounts,mergingErrors,mergingBins,thisDetector->progressIndex+1,(createFileName().append(".raw")).c_str(),np);
+		  
 		finalDataQueue.push(thisData);
+#ifdef ACQVERBOSE
+      std::cout<< "------------------------------------pushing final data queue " << finalDataQueue.size() << std::endl;
+#endif
 	      }
-
-	      thisDetector->fileIndex++;
 	    }
 	    
 	    if (ffcdata)
@@ -2141,44 +2207,85 @@ void* mythenDetector::processData(int delflag) {
 	    if (ang)
 	      delete [] ang;
 	    //}
-	    
-	} else {
-	  writeDataFile (createFileName().append(".dat"), ffcdata, ffcerr);
-	  if (delflag) {
-	    if (ffcdata)
-	      delete [] ffcdata;
-	    if (ffcerr)
-	      delete [] ffcerr;
-	    if (ang)
-	      delete [] ang;
 	  } else {
-	    thisData=new detectorData(ffcdata,ffcerr,NULL,thisDetector->fileIndex,(createFileName().append(".dat")).c_str());
-	    finalDataQueue.push(thisData);   
-	  }  
-	  thisDetector->fileIndex++;
+	    if (thisDetector->correctionMask!=0)
+	      writeDataFile (createFileName().append(".dat"), ffcdata, ffcerr);
+	    if (delflag) {
+	      if (ffcdata)
+		delete [] ffcdata;
+	      if (ffcerr)
+		delete [] ffcerr;
+	      if (ang)
+		delete [] ang;
+	    } else {
+	      if (thisDetector->correctionMask!=0)
+		thisData=new detectorData(ffcdata,ffcerr,NULL,thisDetector->progressIndex+1,(createFileName().append(".dat")).c_str());
+	      else
+		thisData=new detectorData(ffcdata,ffcerr,NULL,thisDetector->progressIndex+1,(createFileName().append(".raw")).c_str());
+	      finalDataQueue.push(thisData);  
+#ifdef ACQVERBOSE
+	      std::cout<< "------------------------------------pushing final data queue " << finalDataQueue.size() << std::endl;
+#endif 
+	    }  
+	  }
+	} else {
+#ifdef ACQVERBOSE
+	  std::cout<< "------------------------------------no processing "<< delflag <<std::endl;
+#endif 
+#ifdef VERBOSE
+	  cout << "writing file " << createFileName().append(".raw") << endl;
+#endif 
+	  writeDataFile (createFileName().append(".raw"), fdata, NULL, NULL, 'i'); 
+	  delete [] fdata;
 	}
-	
-	dataQueue.pop(); //remove the data from the queue
+	thisDetector->fileIndex++;
+#ifdef VERBOSE
+	cout << "setting file index to "<< thisDetector->fileIndex << endl;
+#endif
+	thisDetector->progressIndex++;
+#ifdef ACQVERBOSE
+	std::cout<< "------------------------------------raw data queueto be popped " << dataQueue.size() << " empty " << !dataQueue.empty() << std::endl;
+#endif
 	delete [] myData;
 	myData=NULL;
+	dataQueue.pop(); //remove the data from the queue
+	queuesize=dataQueue.size();
+#ifdef ACQVERBOSE
+	std::cout<< "------------------------------------raw data queue popped " << dataQueue.size() << " var " << queuesize << std::endl;
+#endif
       }
-#ifdef VERBOSE
+#ifdef ACQVERBOSE
       else
-	cout << "could not pop data queue " << endl;
+	std::cout<< "could not pop data queue " << std::endl;
 #endif
       //#ifdef VERBOSE
-      //	cout << "possible to cancel process " << endl;
+      //	std::cout<< "possible to cancel process " << std::endl;
       //#endif
       //	pthread_setcancelstate (PTHREAD_CANCEL_ENABLE, &outer_c_s);
       //	pthread_testcancel();
     }
-    dum=0;
+    
+// #ifdef VERBOSE
+//       if (iloop%10000==0) 
+// 	std::cout<< "------------------------------------process idle " << dataQueue.size() << " empty " << !dataQueue.empty()  << std::endl;
+//       iloop++;
+// #endif
+
+
+      if (jointhread) {
+#ifdef ACQVERBOSE
+	std::cout<< "acquisition finished " << dataQueue.size() << " empty " << !dataQueue.empty()  << std::endl;
+#endif
+	
+	break;
+      }
+      dum=0;
   } // ????????????????????????
 }
 
 
 
-void mythenDetector::startThread() {
+void mythenDetector::startThread(int delflag) {
   pthread_attr_t tattr, mattr;
   int ret;
   int newprio;
@@ -2186,26 +2293,51 @@ void mythenDetector::startThread() {
   void *arg;
   int policy= SCHED_OTHER;
 
-  ret = pthread_attr_init(&tattr);
 
   // set the priority; others are unchanged
   //newprio = 30;
-  mparam.sched_priority = 30;
-  param.sched_priority = 1;
+  mparam.sched_priority =1;
+  param.sched_priority =1;   
+
+
+   /* Initialize and set thread detached attribute */
+   pthread_attr_init(&tattr);
+   pthread_attr_setdetachstate(&tattr, PTHREAD_CREATE_JOINABLE);
+
+
+
+  // param.sched_priority = 5;
   // scheduling parameters of main thread 
   ret = pthread_setschedparam(pthread_self(), policy, &mparam);
+#ifdef VERBOSE
   printf("current priority is %d\n",param.sched_priority);
-  ret = pthread_create(&dataProcessingThread, NULL,startProcessData, (void*)this);
+#endif
+  if (delflag)
+    ret = pthread_create(&dataProcessingThread, &tattr,startProcessData, (void*)this);
+  else
+    ret = pthread_create(&dataProcessingThread, &tattr,startProcessDataNoDelete, (void*)this);
+    
+  pthread_attr_destroy(&tattr);
    // scheduling parameters of target thread
-   ret = pthread_setschedparam(dataProcessingThread, policy, &param);
-
+  ret = pthread_setschedparam(dataProcessingThread, policy, &param);
+  
 }
 
 
- void* startProcessData(void *n) {
-   //void* processData(void *n) {
+void* startProcessData(void *n) {
+  //void* processData(void *n) {
    void *w;
    mythenDetector *myDet=(mythenDetector*)n;
-  myDet->processData(1);
+   myDet->processData(1);
+   pthread_exit(NULL);
+   
+}
 
- }
+void* startProcessDataNoDelete(void *n) {
+   //void* processData(void *n) {
+  void *w;
+  mythenDetector *myDet=(mythenDetector*)n;
+  myDet->processData(0);
+  pthread_exit(NULL);
+
+}

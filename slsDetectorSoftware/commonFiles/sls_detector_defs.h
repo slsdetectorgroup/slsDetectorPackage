@@ -2,6 +2,11 @@
 #define SLS_DETECTOR_DEFS_H
 
 #include <stdint.h> 
+
+
+typedef float float32_t;
+typedef int int32_t;
+
 /** 
     \file sls_detector_defs.h
 This file contains all the basic definitions common to the slsDetector class 
@@ -106,12 +111,13 @@ typedef struct {
      Type of the detector
 */
 enum detectorType {
-  GET_DETECTOR_TYPE,   /**< the detector will return its type */
+  GET_DETECTOR_TYPE=-1,   /**< the detector will return its type */
   GENERIC,  /**< generic sls detector */
   MYTHEN, /**< mythen */
   PILATUS, /**< pilatus */
   EIGER, /**< eiger */
   GOTTHARD, /**< gotthard */
+  PICASSO, /**< mythen */
   AGIPD /**< agipd */
 };
 
@@ -153,7 +159,7 @@ enum dimension {
 enum  {
   OK, /**< function succeeded */
   FAIL, /**< function failed */
-  FINISHED /**< function failed */
+  FINISHED /**< acquisition finished */
 };
 
 /** 
@@ -168,7 +174,7 @@ enum {
   use of the external signals
 */
 enum externalSignalFlag {
-  GET_EXTERNAL_SIGNAL_FLAG,  /**<return flag for signal */
+  GET_EXTERNAL_SIGNAL_FLAG=-1,  /**<return flag for signal */
   SIGNAL_OFF, /**<signal unused*/
   GATE_IN_ACTIVE_HIGH,  /**<input gate active high*/
   GATE_IN_ACTIVE_LOW,  /**<input gate active low */
@@ -190,7 +196,7 @@ enum externalSignalFlag {
 \see ::externalSignalFlag
 */
 enum externalCommunicationMode{
-  GET_EXTERNAL_COMMUNICATION_MODE,
+  GET_EXTERNAL_COMMUNICATION_MODE=-1,
   AUTO,
   TRIGGER_EXPOSURE,
   TRIGGER_READOUT,
@@ -302,6 +308,18 @@ enum speedVariable {
   CLOCK_DIVIDER, /**< readout clock divider */
   WAIT_STATES, /**< wait states for bus read */
   SET_SIGNAL_LENGTH /**< set/clear signal length */
+};
+
+/** 
+  staus mask
+*/
+enum runStatus {
+  IDLE, /**< detector ready to start acquisition - no data in memory */
+  ERROR, /**< error i.e. normally fifo full */
+  WAITING, /**< waiting for trigger or gate signal */
+  RUN_FINISHED, /**< acquisition not running but data in memory */
+  TRANSMITTING, /**< acquisition running and data in memory */
+  RUNNING /**< acquisition  running, no data in memory */
 };
 
 /** 

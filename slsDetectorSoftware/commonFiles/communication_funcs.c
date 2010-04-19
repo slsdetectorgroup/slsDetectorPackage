@@ -341,10 +341,25 @@ int sendModule(sls_detector_module *myMod) {
   int nAdcs=myMod->nadc;
   int nDacs=myMod->ndac;
   ts+= sendDataOnly(myMod,sizeof(sls_detector_module));
+#ifdef VERBOSE
+  printf("module %d of size %d sent\n",myMod->module, ts);
+#endif
   ts+= sendDataOnly(myMod->dacs,sizeof(float)*nDacs);
+#ifdef VERBOSE
+  printf("dacs %d of size %d sent\n",myMod->module, ts);
+#endif
   ts+= sendDataOnly(myMod->adcs,sizeof(float)*nAdcs);
+#ifdef VERBOSE
+  printf("adcs %d of size %d sent\n",myMod->module, ts);
+#endif
   ts+=sendDataOnly(myMod->chipregs,sizeof(int)*nChips);
+#ifdef VERBOSE
+  printf("chips %d of size %d sent\n",myMod->module, ts);
+#endif
   ts+=sendDataOnly(myMod->chanregs,sizeof(int)*nChans);
+#ifdef VERBOSE
+  printf("chans %d of size %d sent - %d\n",myMod->module, ts, myMod->nchan);
+#endif
 #ifdef VERBOSE
   printf("module %d of size %d sent register %x\n",myMod->module, ts, myMod->reg);
 #endif

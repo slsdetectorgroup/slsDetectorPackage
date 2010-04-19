@@ -1,4 +1,3 @@
-
 #include "sls_detector_defs.h"
 #include "server_funcs.h"
 #include "server_defs.h"
@@ -38,7 +37,9 @@ char mess[1000];
 
 int init_detector( int b) {
   mapCSP0();
+#ifndef VIRTUAL  
   system("bus -a 0xb0000000 -w 0xd0008");
+#endif
   testFpga();
 #ifdef MCB_FUNCS
   if (b) {
@@ -594,7 +595,7 @@ int digital_test(int fnum) {
     retval=testFpga();
     break;
   case DETECTOR_MEMORY_TEST:
-    ret=FAIL;
+    ret=testRAM();
     break;
   case DETECTOR_BUS_TEST:
     retval=testBus();
@@ -801,7 +802,7 @@ int set_dac(int fnum) {
 #ifdef VERBOSE
   printf("DAC set to %f V\n",  retval);
 #endif  
-  if (retval==val)
+  if (retval==val || val==-1)
     ret=OK;
   else {
     ret=FAIL;
@@ -1643,12 +1644,11 @@ int read_frame(int fnum) {
       if(getFrames()>-2) {
 	dataret=FAIL;
 	sprintf(mess,"no data and run stopped: %d frames left\n",getFrames()+2); 
-#ifdef VERBOSE
       printf("%s\n",mess);
-#endif 
       } else {
 	dataret=FINISHED;
 	sprintf(mess,"acquisition successfully finished\n");
+	printf("%s\n",mess);
       }
 #ifdef VERYVERBOSE
       printf("%d %d %x %s\n",strlen(mess)+1,strlen(mess), mess,mess);
@@ -1681,9 +1681,11 @@ int read_frame(int fnum) {
     if (getFrames()>-2) {
       dataret=FAIL;
       sprintf(mess,"no data and run stopped: %d frames left\n",getFrames()+2);
+      printf("%s\n",mess);
     } else {
       dataret=FINISHED;
       sprintf(mess,"acquisition successfully finished\n");
+      printf("%s\n",mess);
     }
 #ifdef VERBOSE
       printf("Frames left %d\n",getFrames());
@@ -2084,6 +2086,8 @@ int set_readout_flags(int fnum) {
   //ret=setStoreInRAM(0);
   // initChipWithProbes(0,0,0, ALLMOD);
   switch(arg) {
+  case  GET_READOUT_FLAGS:
+    break;
   case STORE_IN_RAM:
     ret=setStoreInRAM(1);
     break;

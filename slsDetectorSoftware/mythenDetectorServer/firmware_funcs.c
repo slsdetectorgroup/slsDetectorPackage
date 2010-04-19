@@ -834,24 +834,33 @@ int getDynamicRange() {
 }
 
 int testBus() {
-  int j;
+  u_int32_t j, i;
   char cmd[100];
-  u_int32_t val;
-  printf("%s\n",cmd);
-  system(cmd);
-  for (j=0; j<1000000; j++) {
-    val=bus_r(FIX_PATT_REG);
-    if (val!=0xacdc1980){
-      printf("%d %x\n",j, val);
+  u_int32_t val=0x0;
+  // printf("%s\n",cmd);
+  // system(cmd);
+  i=0;
+  printf("testing bus\n");
+  while (i<10000000) {
+    // val=bus_r(FIX_PATT_REG);
+    bus_w(DUMMY_REG,val);
+    bus_w(FIX_PATT_REG,0x0);
+    j=bus_r(DUMMY_REG);
+    if (i%10000==1)
+      printf("value 0x%x\n",j);
+    if (j!=val){
+      printf("read wrong value %x instead of %x\n",j, val);
       return FAIL;
     }
+    val+=0xbbbbb;
+    i++;
   }
   return OK;
 }
 
 
 int setStoreInRAM(int b) {
-  if (b)
+  if (b>0)
     storeInRAM=1;
   else
     storeInRAM=0;

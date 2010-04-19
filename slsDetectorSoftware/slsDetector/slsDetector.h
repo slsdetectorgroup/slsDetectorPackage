@@ -56,7 +56,7 @@ class detectorData {
       \param fname file name to which the data are saved
       \param np number of points defaults to the number of detector channels
   */
-  detectorData(float *val=NULL, float *err=NULL, float *ang=NULL,  int f_ind=-1, const char *fname="", int np=-1) : values(val), errors(err), angles(ang),  fileIndex(f_ind), npoints(np){strcpy(fileName,fname);};
+  detectorData(float *val=NULL, float *err=NULL, float *ang=NULL,  int p_ind=-1, const char *fname="", int np=-1) : values(val), errors(err), angles(ang),  progressIndex(p_ind), npoints(np){strcpy(fileName,fname);};
     /** 
 	the destructor
 	deletes also the arrays pointing to data/errors/angles if not NULL
@@ -64,16 +64,16 @@ class detectorData {
     ~detectorData() {if (values) delete [] values; if (errors) delete [] errors; if (angles) delete [] angles;};
     //private:
     float *values; /**< pointer to the data */
-  float *errors; /**< pointer to the errors */
-  float *angles;/**< pointer to the angles */
-  int fileIndex;/**< file index */
-  char fileName[1000];/**< file name */
-  int npoints;/**< number of points */
+    float *errors; /**< pointer to the errors */
+    float *angles;/**< pointer to the angles */
+    int progressIndex;/**< file index */
+    char fileName[1000];/**< file name */
+    int npoints;/**< number of points */
 };
 
 
 
-using namespace std;
+//using namespace std;
 /**
  \mainpage Common C++ library for SLS detectors data acquisition
  *
@@ -165,7 +165,9 @@ typedef  struct sharedSlsDetector {
   /** list of the energies at which the detector has been trimmed (unused) */
     int trimEnergies[100];
 
-	   
+
+  /** indicator for the acquisition progress - set to 0 at the beginning of the acquisition and incremented every time that the data are written to file */   
+    int progressIndex;	   
   /** current index of the output file */   
     int fileIndex;
   /** path of the output files */  
@@ -810,7 +812,7 @@ typedef  struct sharedSlsDetector {
        \returns current register value
        \sa ::sls_detector_module
   */
-  int setModule(int reg, int imod=-1); 
+  virtual int setModule(int reg, int imod=-1); 
 
   /** 
        configure chip
@@ -818,14 +820,14 @@ typedef  struct sharedSlsDetector {
        \returns current register value
        \sa ::sls_detector_module
   */
-  int setModule(sls_detector_module module);
+  virtual int setModule(sls_detector_module module);
 
   /**
     get module
     \param imod module number
     \returns pointer to module structure (which has bee created and must then be deleted)
   */
-  sls_detector_module *getModule(int imod);
+  virtual sls_detector_module *getModule(int imod);
  
   // calibration functions
   //  int setCalibration(int imod, detectorSettings isettings, float gain, float offset);
@@ -866,7 +868,7 @@ typedef  struct sharedSlsDetector {
 
     in this function trimbits and calibration files are searched in the trimDir and calDir directories and the detector is initialized
   */
-  detectorSettings setSettings(detectorSettings isettings, int imod=-1);
+  virtual detectorSettings setSettings(detectorSettings isettings, int imod=-1);
 
 
 // Acquisition functions
@@ -1031,7 +1033,7 @@ s
       \returns 0 if ff correction disabled, >0 otherwise
   */
   int getFlatFieldCorrection(float *corr=NULL, float *ecorr=NULL);
-
+  
  /** 
       get flat field corrections file name
       \returns flat field correction file name
@@ -1355,7 +1357,7 @@ s
   /**
      current position index of the detector
   */
-  float currentPositionIndex;
+  int currentPositionIndex;
   
   /**
      I0 measured

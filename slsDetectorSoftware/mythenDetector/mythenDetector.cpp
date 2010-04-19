@@ -497,9 +497,15 @@ string mythenDetector::executeLine(int narg, char *args[], int action) {
       if (action==PUT_ACTION) {
 	sscanf(args[1],"%d",&ival);
 	setThresholdEnergy(ival);
-	
       } 
       sprintf(answer,"%d",getThresholdEnergy());
+      return string(answer);
+    } else if (var=="vthreshold") {
+      if (action==PUT_ACTION) {
+	sscanf(args[1],"%f",&fval);
+	setDAC(fval, THRESHOLD);
+      } 
+      sprintf(answer,"%f",setDAC(-1,THRESHOLD));
       return string(answer);
     }
   //timers
@@ -508,7 +514,6 @@ string mythenDetector::executeLine(int narg, char *args[], int action) {
       if (action==PUT_ACTION) {
 	sscanf(args[1],"%f",&fval);// in seconds!
 	setTimer(ACQUISITION_TIME,fval*1E+9);
-	
       } 
       
       sprintf(answer,"%f",(float)setTimer(ACQUISITION_TIME)*1E-9);
@@ -2219,9 +2224,9 @@ void* mythenDetector::processData(int delflag) {
 		delete [] ang;
 	    } else {
 	      if (thisDetector->correctionMask!=0)
-		thisData=new detectorData(ffcdata,ffcerr,NULL,thisDetector->progressIndex+1,(createFileName().append(".dat")).c_str());
+		thisData=new detectorData(ffcdata,ffcerr,NULL,thisDetector->progressIndex+1,(createFileName().append(".dat")).c_str(),thisDetector->nChans*thisDetector->nChips*thisDetector->nMods);
 	      else
-		thisData=new detectorData(ffcdata,ffcerr,NULL,thisDetector->progressIndex+1,(createFileName().append(".raw")).c_str());
+		thisData=new detectorData(ffcdata,ffcerr,NULL,thisDetector->progressIndex+1,(createFileName().append(".raw")).c_str(),thisDetector->nChans*thisDetector->nChips*thisDetector->nMods);
 	      finalDataQueue.push(thisData);  
 #ifdef ACQVERBOSE
 	      std::cout<< "------------------------------------pushing final data queue " << finalDataQueue.size() << std::endl;
@@ -2341,3 +2346,65 @@ void* startProcessDataNoDelete(void *n) {
   pthread_exit(NULL);
 
 }
+
+int mythenDetector::getRunStatus(){
+  int fnum=F_GET_RUN_STATUS;
+  int retval;
+  int ret=FAIL;
+  char mess[100];
+#ifdef VERBOSE
+  std::cout<< "MYTHEN Getting status "<< std::endl;
+#endif
+  if (thisDetector->onlineFlag==ONLINE_FLAG) {
+    if (stopSocket) {
+  if  (stopSocket->Connect()>=0) {
+    stopSocket->SendDataOnly(&fnum,sizeof(fnum));
+    stopSocket->ReceiveDataOnly(&ret,sizeof(ret));
+    if (ret!=OK) {
+      stopSocket->ReceiveDataOnly(mess,sizeof(mess));
+      std::cout<< "Detector returned error: " << mess << std::endl;
+    } else
+      stopSocket->ReceiveDataOnly(&retval,sizeof(retval));    
+    stopSocket->Disconnect();
+  }
+    }
+  }
+  return retval;
+
+
+};
+
+int64_t mythenDetector::getTimeLeft(timerIndex index){
+  
+
+  int fnum=F_GET_TIME_LEFT;
+  int64_t retval;
+  char mess[100];
+  int ret=OK;
+
+#ifdef VERBOSE
+  std::cout<< "MYTHEN Getting  timer  "<< index <<  std::endl;
+#endif
+  if (thisDetector->onlineFlag==ONLINE_FLAG) {
+    if (stopSocket) {
+  if  (stopSocket->Connect()>=0) {
+    stopSocket->SendDataOnly(&fnum,sizeof(fnum));
+    stopSocket->SendDataOnly(&index,sizeof(index));
+    stopSocket->ReceiveDataOnly(&ret,sizeof(ret));
+    if (ret!=OK) {
+      stopSocket->ReceiveDataOnly(mess,sizeof(mess));
+      std::cout<< "Detector returned error: " << mess << std::endl;
+    } else {
+      stopSocket->ReceiveDataOnly(&retval,sizeof(retval)); 
+      //thisDetector->timerValue[index]=retval;
+    }   
+    stopSocket->Disconnect();
+  }
+    }
+  }
+#ifdef VERBOSE
+  std::cout<< "Time left is  "<< retval << std::endl;
+#endif
+  return retval;
+  
+};

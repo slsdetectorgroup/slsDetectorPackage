@@ -6,6 +6,7 @@
 #include <string.h>
 #include <iostream>
 #include <math.h>
+#include <errno.h>
 
 using namespace std;
 
@@ -20,7 +21,6 @@ MySocketTCP::~MySocketTCP(){
 
 MySocketTCP::MySocketTCP(unsigned short int const port_number): last_keep_connection_open_action_was_a_send(0), file_des(-1), send_rec_max_size(SEND_REC_MAX_SIZE), is_a_server(1), portno(DEFAULT_PORTNO), socketDescriptor(-1)
 { // receiver (server) local no need for ip 
-  //is_a_server = 1;
 
   portno=port_number;
   strcpy(hostname,"localhost");
@@ -51,7 +51,6 @@ MySocketTCP::MySocketTCP(unsigned short int const port_number): last_keep_connec
 MySocketTCP::MySocketTCP(const char* const host_ip_or_name, unsigned short int const port_number):
   last_keep_connection_open_action_was_a_send(0), file_des(-1), send_rec_max_size(SEND_REC_MAX_SIZE), is_a_server(0), portno(DEFAULT_PORTNO), socketDescriptor(-1)
 { // sender (client): where to? ip 
-  //is_a_server = 0;
   // SetupParameters();
   strcpy(hostname,host_ip_or_name);
   portno=port_number;
@@ -93,10 +92,67 @@ int MySocketTCP::Connect(){
 
 	cerr << "Error: with server accept, connection refused"<<endl;
 
+	switch(errno) {
+	case EWOULDBLOCK:
+	  printf("ewouldblock eagain\n");
+	  break;
+	case EBADF:
+	  printf("ebadf\n");
+	  break;
+	case ECONNABORTED:
+	  printf("econnaborted\n");
+	  break;
+	case EFAULT:
+	  printf("efault\n");
+	  break;
+	case EINTR:
+	  printf("eintr\n");
+	  break;
+	case EINVAL:
+	  printf("einval\n");
+	  break;
+	case EMFILE: 
+	  printf("emfile\n");
+	  break;
+	case ENFILE:
+	  printf("enfile\n");
+	  break;
+	case ENOTSOCK:
+	  printf("enotsock\n");
+	  break;
+	case EOPNOTSUPP:
+	  printf("eOPNOTSUPP\n");
+	  break;
+	case ENOBUFS:
+	  printf("ENOBUFS\n");
+	  break;
+	case ENOMEM:
+	  printf("ENOMEM\n");
+	  break;
+	case ENOSR:
+	  printf("ENOSR\n");
+	  break;
+        case EPROTO:
+	  printf("EPROTO\n");
+	  break;
+	default:
+	  printf("unknown error\n");
+	}
+
+
 	socketDescriptor=-1;
-      }
+      } 
+#ifdef VERY_VERBOSE
+      else 
+	cout << "client connected "<< file_des << endl;
+#endif
+     
     }
-    file_des = socketDescriptor;
+    // file_des = socketDescriptor;
+    
+#ifdef VERY_VERBOSE
+    cout << "fd " << file_des  << endl; 
+#endif
   } else {  
     socketDescriptor = socket(AF_INET, SOCK_STREAM,0);  //tcp
     
@@ -192,10 +248,22 @@ int MySocketTCP::ReceiveDataOnly(void* buf,int length){//length in characters
 
   while(length>0){
     int nreceiving = (length>send_rec_max_size) ? send_rec_max_size:length;
-    int nreceived = read(file_des,(char*)buf+total_received,nreceiving); 
-    if(!nreceived) break;
+#ifdef VERY_VERBOSE
+  cout << "start to receive "<< nreceiving << " Bytes" << endl; 
+#endif
+    int nreceived = read(file_des,(char*)buf+total_received,nreceiving);
+#ifdef VERY_VERBOSE
+    cout << "received "<< nreceived << " Bytes on fd " << file_des  << endl; 
+#endif 
+    if(nreceived<0) break;
     length-=nreceived;
+#ifdef VERY_VERBOSE
+  cout << "length left "<< length << " Bytes" << endl; 
+#endif
     total_received+=nreceived;
+#ifdef VERY_VERBOSE
+  cout << "total "<< total_received << " Bytes" << endl; 
+#endif
     //    cout<<"nrec: "<<nreceived<<" waiting for ("<<length<<")"<<endl;
   }
  

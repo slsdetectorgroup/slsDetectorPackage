@@ -31,7 +31,7 @@ int slsDetector::initSharedMemory(detectorType type, int id) {
    case PICASSO:
      nch=128; // complete mythen system
      nm=24;
-     nc=10;
+     nc=12;
      nd=6; // dacs+adcs
      break;
    default:
@@ -140,6 +140,15 @@ int slsDetector::initializeDetectorSize(detectorType type) {
      case MYTHEN:
        thisDetector->nChans=128;
        thisDetector->nChips=10;
+       thisDetector->nDacs=6;
+       thisDetector->nAdcs=0;
+       thisDetector->nModMax[X]=24;
+       thisDetector->nModMax[Y]=1;
+       thisDetector->dynamicRange=24;
+       break;
+     case PICASSO:
+       thisDetector->nChans=128;
+       thisDetector->nChips=12;
        thisDetector->nDacs=6;
        thisDetector->nAdcs=0;
        thisDetector->nModMax[X]=24;

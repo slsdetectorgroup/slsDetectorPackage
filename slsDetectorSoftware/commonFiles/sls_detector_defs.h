@@ -117,7 +117,7 @@ enum detectorType {
   PILATUS, /**< pilatus */
   EIGER, /**< eiger */
   GOTTHARD, /**< gotthard */
-  PICASSO, /**< mythen */
+  PICASSO, /**< picasso */
   AGIPD /**< agipd */
 };
 
@@ -267,7 +267,7 @@ enum detectorSettings{
    \see ::sls_detector_channel
 */
 enum channelRegisterBit {
-  TRIMBIT_OFF,  /**< offset of trimbit value in the channel register  */
+  TRIMBIT_OFF=0,  /**< offset of trimbit value in the channel register  */
   COMPARATOR_ENABLE=0x100,  /**< mask of the comparator enable bit  */
   ANALOG_SIGNAL_ENABLE=0x200, /**< mask of the analogue output enable bit  */
   CALIBRATION_ENABLE=0x300, /**< mask of the calibration input enable bit  */
@@ -307,6 +307,8 @@ enum timerIndex {
 enum speedVariable {
   CLOCK_DIVIDER, /**< readout clock divider */
   WAIT_STATES, /**< wait states for bus read */
+  TOT_CLOCK_DIVIDER, /**< wait states for bus read */
+  TOT_DUTY_CYCLE, /**< wait states for bus read */
   SET_SIGNAL_LENGTH /**< set/clear signal length */
 };
 
@@ -332,7 +334,9 @@ enum readOutFlags {
   READ_HITS=0x2, /**< return only the number of the channel which counted ate least one */
   ZERO_COMPRESSION=0x4,/**< returned data are 0-compressed */
   PUMP_PROBE_MODE=0x8,/**<pump-probe mode */
-  BACKGROUND_CORRECTIONS=0x1000 /**<background corrections */
+  BACKGROUND_CORRECTIONS=0x1000, /**<background corrections */
+  TOT_MODE=0x2000,/**<pump-probe mode */
+  CONTINOUS_RO=0x4000/**<pump-probe mode */
 };
 /** 
    trimming modes

@@ -56,14 +56,18 @@
 
 #define GET_SHIFT_IN_REG      0x022000   
 
-#define MCB_CNTRL_REG_OFF       0x100000
-#define MCB_DOUT_REG_OFF        0x200000
-#define FIFO_CNTRL_REG_OFF      0x300000
-#define FIFO_COUNTR_REG_OFF     0x400000
-#define FIFO_DATA_REG_OFF       0x800000
+#define MOD_DACS1_REG         0x030000  
+#define MOD_DACS2_REG         0x040000   
+
+#define MCB_CNTRL_REG_OFF     0x100000
+#define MCB_DOUT_REG_OFF      0x200000
+#define FIFO_CNTRL_REG_OFF    0x300000
+#define FIFO_COUNTR_REG_OFF   0x400000
+#define FIFO_DATA_REG_OFF     0x800000
 
 #define SHIFTMOD 2
 #define SHIFTFIFO 9
+
 
 
 /* values defined for FPGA */
@@ -99,12 +103,16 @@
 #define SOME_FIFO_FULL_BIT       0x00008000 // error!
 #define ALL_FIFO_EMPTY_BIT       0x00010000 // data ready
 
-
+/* for fifo status register */
+#define FIFO_DISABLED_BIT        0x81000000
+#define FIFO_ERROR_BIT           0x08000000
+#define FIFO_EMPTY_BIT           0x04000000
+#define FIFO_DATA_READY_BIT      0x02000000
+#define FIFO_COUNTER_MASK        0x00ffffff
 
 /* for config register */
 
 #define TOT_ENABLE_BIT           0x00000002
-#define TIMED_GATE_BIT           0x00000004
 #define TIMED_GATE_BIT           0x00000004
 #define CONT_RO_ENABLE_BIT       0x00080000  
 
@@ -120,7 +128,8 @@
 #define WAIT_STATES_OFFSET            12  
 #define TOTCLK_DIVIDER_MASK           0xff000000 
 #define TOTCLK_DIVIDER_OFFSET         24  
-
+#define TOTCLK_DUTYCYCLE_MASK         0x00ff0000 
+#define TOTCLK_DUTYCYCLE_OFFSET       16
 
 /* for external signal register */
 

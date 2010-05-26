@@ -34,19 +34,20 @@ int main(int argc, char *argv[])
     b=0;
     printf("opening stop server on port %d\n",portno);
   }
-#ifndef VIRTUAL   
-  system("bus -a 0xb0000000 -w 0xd0008");
-#endif
   init_detector(b); 
 
 
   bindSocket(portno);
-  if (getServerError())
+  if (getServerError()) {
+    printf("server error!\n");
     return -1;
+  }
 
   /* assign function table */
   function_table();
-
+#ifdef VERBOSE
+  printf("function table assigned \n");
+#endif
 
 
   /* waits for connection */

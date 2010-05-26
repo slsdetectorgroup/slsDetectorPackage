@@ -357,9 +357,10 @@ string mythenDetector::executeLine(int narg, char *args[], int action) {
   if (var=="nmod") {
     if (action==PUT_ACTION) {
      sscanf(args[1],"%d",&ival);
-      setNumberOfModules(ival);
-    } 
-    sprintf(answer,"%d",setNumberOfModules(GET_FLAG));
+     //setNumberOfModules(ival);
+    } else
+      ival=GET_FLAG;
+    sprintf(answer,"%d",setNumberOfModules(ival));
     return string(answer);
   } else if (var=="maxmod") {
     if (action==PUT_ACTION) {
@@ -370,9 +371,9 @@ string mythenDetector::executeLine(int narg, char *args[], int action) {
   } else if (var.find("extsig")==0) {
     istringstream vvstr(var.substr(7));
     vvstr >> ival;
-    externalSignalFlag flag=GET_EXTERNAL_SIGNAL_FLAG;
+    externalSignalFlag flag=GET_EXTERNAL_SIGNAL_FLAG, ret;
     if (action==PUT_ACTION) {
-     sval=string(args[1]);
+      sval=string(args[1]);
 #ifdef VERBOSE
       std::cout<< "sig " << ival << " flag " << sval;
 #endif
@@ -389,10 +390,11 @@ string mythenDetector::executeLine(int narg, char *args[], int action) {
       else if  (sval=="trigger_out_falling_edge") flag=TRIGGER_OUT_FALLING_EDGE;
       else if  (sval=="ro_trigger_out_rising_edge") flag=RO_TRIGGER_OUT_RISING_EDGE;
       else if  (sval=="ro_trigger_out_falling_edge") flag=RO_TRIGGER_OUT_FALLING_EDGE;
-      setExternalSignalFlags(flag,ival);
+     
       
-    } 
-    switch (setExternalSignalFlags( GET_EXTERNAL_SIGNAL_FLAG,ival)) {
+    }
+    ret= setExternalSignalFlags(flag,ival);
+    switch (ret) {
     case SIGNAL_OFF:
       return string( "off");
     case GATE_IN_ACTIVE_HIGH:
@@ -473,18 +475,19 @@ string mythenDetector::executeLine(int narg, char *args[], int action) {
     sprintf(answer,"%x",digitalTest(DETECTOR_BUS_TEST));
     return string(answer);
   } else if (var=="settings") {
+    detectorSettings sett=GET_SETTINGS;
     if (action==PUT_ACTION) {
      sval=string(args[1]);
-	detectorSettings sett=GET_SETTINGS;
 	if (sval=="standard")
 	  sett=STANDARD;
 	else if (sval=="fast")
 	  sett=FAST;
 	else if (sval=="highgain")
 	  sett=HIGHGAIN;
-	setSettings(sett);
+	//setSettings(sett);
       } 
-      switch (setSettings( GET_SETTINGS)) {
+    //switch (setSettings( GET_SETTINGS)) {
+    switch (setSettings(sett)) {
       case STANDARD:
 	return string("standard");
       case FAST:
@@ -516,7 +519,6 @@ string mythenDetector::executeLine(int narg, char *args[], int action) {
 	sscanf(args[1],"%f",&fval);// in seconds!
 	setTimer(ACQUISITION_TIME,fval*1E+9);
       } 
-      
       sprintf(answer,"%f",(float)setTimer(ACQUISITION_TIME)*1E-9);
       return string(answer);
     } else if (var=="period") {
@@ -578,10 +580,14 @@ string mythenDetector::executeLine(int narg, char *args[], int action) {
 	  readOutFlags flag=GET_READOUT_FLAGS;
 	  if (sval=="none")
 	    flag=NORMAL_READOUT;
-	  else if (sval=="pumpprobe")
-	    flag=PUMP_PROBE_MODE;
+	  //else if (sval=="pumpprobe")
+	  // flag=PUMP_PROBE_MODE;
 	  else if (sval=="storeinram")
 	    flag=STORE_IN_RAM;
+	  else if (sval=="tot")
+	    flag=TOT_MODE;
+	  else if (sval=="continous")
+	    flag=CONTINOUS_RO;
 	  setReadOutFlags(flag);
 
 	}
@@ -591,6 +597,10 @@ string mythenDetector::executeLine(int narg, char *args[], int action) {
 	  return string("none");
 	case STORE_IN_RAM:
 	  return string("storeinram");
+	case TOT_MODE:
+	  return string("tot");
+	case CONTINOUS_RO:
+	  return string("continous");
 	default:
 	  return string("unknown");
 	}  
@@ -694,7 +704,21 @@ string mythenDetector::executeLine(int narg, char *args[], int action) {
 	sprintf(answer,"%d", setSpeed(WAIT_STATES));
 	return string(answer);
 	
-      } 
+      } else if (var=="totdivider") {
+	if (action==PUT_ACTION) {
+	  sscanf(args[1],"%d",&ival);
+	  setSpeed(TOT_CLOCK_DIVIDER,ival);
+	} 
+	sprintf(answer,"%d", setSpeed(TOT_CLOCK_DIVIDER));
+	return string(answer);
+      } else if (var=="totdutycycle") {
+	if (action==PUT_ACTION) {
+	  sscanf(args[1],"%d",&ival);
+	  setSpeed(TOT_DUTY_CYCLE,ival);
+	} 
+	sprintf(answer,"%d", setSpeed(TOT_DUTY_CYCLE));
+	return string(answer);
+      }
   return ("Unknown command");
 
 }
@@ -973,8 +997,8 @@ int mythenDetector::readConfigurationFile(string const fname){
   string::size_type pos;
   int iargval;
   int interrupt=0;
-  char *args[2];
-  for (int ia=0; ia<2; ia++) {
+  char *args[100];
+  for (int ia=0; ia<100; ia++) {
     args[ia]=new char[1000];
   }
 
@@ -1055,8 +1079,8 @@ int mythenDetector::writeConfigurationFile(string const fname){
   int nvar=14;
   ofstream outfile;
   int iv=0;
-  char *args[2];
-  for (int ia=0; ia<2; ia++) {
+  char *args[100];
+  for (int ia=0; ia<100; ia++) {
     args[ia]=new char[1000];
   }
 
@@ -1218,8 +1242,9 @@ int mythenDetector::retrieveDetectorSetup(string fname1, int level){
   if (level==2) {
     fname=fname1+string(".config");
     readConfigurationFile(fname);
-    fname=fname+string(".det");
-  }  
+    fname=fname1+string(".det");
+  }  else
+    fname=fname1;
   infile.open(fname.c_str(), ios_base::in);
   if (infile.is_open()) {
     while (infile.good() and interrupt==0) {
@@ -1241,10 +1266,13 @@ int mythenDetector::retrieveDetectorSetup(string fname1, int level){
 	iargval=0;
 	while (ssstr.good()) {
 	  ssstr >> sargname;
-	  if (ssstr.good()) {
+	  //  if (ssstr.good()) {
 	    strcpy(args[iargval],sargname.c_str());
+#ifdef VERBOSE
+      std::cout<< args[iargval]  << std::endl;
+#endif
 	    iargval++;
-	  }
+	    // }
 	}
 	if (level==2) {
 	  executeLine(iargval,args,PUT_ACTION);
@@ -1467,7 +1495,7 @@ int mythenDetector::writeTrimFile(string fname, sls_detector_module mod){
       outfile.close();
       return OK;
     } else {
-      std::cout<< "could not open file " << fname << std::endl;
+      std::cout<< "could not open trim file " << fname << std::endl;
       return FAIL;
     }
 
@@ -1492,16 +1520,14 @@ int mythenDetector::writeDataFile(string fname, float *data, float *err, float *
   int idata;
   if (data==NULL)
     return FAIL;
-#ifdef VERBOSE
-  std::cout<< "writing data to file " << fname << std::endl;
-#endif
+
   //  args|=0x10; // one line per channel!
 
   outfile.open (fname.c_str(),ios_base::out);
   if (outfile.is_open())
   {
 #ifdef VERBOSE
-    std::cout<< "Writing to file " << fname << std::endl;
+    std::cout<< "writeDataFile Writing to file " << fname << std::endl;
 #endif
     for (int ichan=0; ichan<nch; ichan++) {
       if (ang==NULL) {
@@ -1975,6 +2001,10 @@ void  mythenDetector::acquire(int delflag){
 #endif
   thisDetector->progressIndex=0;
 
+  resetFinalDataQueue();
+  resetDataQueue();
+
+
   jointhread=0;
   queuesize=0;
   if (thisDetector->threadedProcessing) {
@@ -2037,7 +2067,7 @@ void  mythenDetector::acquire(int delflag){
     } else if (ip<(np-1))
       thisDetector->fileIndex=thisDetector->fileIndex-thisDetector->timerValue[FRAME_NUMBER]; 
 #ifdef VERBOSE
-    cout << "Setting file index to " << thisDetector->fileIndex << endl;
+    cout << "------------------------------------------------------Setting file index to " << thisDetector->fileIndex << endl;
 #endif
   }
 
@@ -2108,10 +2138,20 @@ void* mythenDetector::processData(int delflag) {
       //delete [] myData;
       //	myData=NULL;
 	/** write raw data file */	   
-
-	if (thisDetector->correctionMask!=0 || delflag==0) {
+	if (thisDetector->correctionMask==0 && delflag==1) {
+#ifdef ACQVERBOSE
+	  std::cout<< "------------------------------------no processing "<< delflag <<std::endl;
+#endif 
+#ifdef VERBOSE
+	  cout << "********************** no processing: writing file " << createFileName().append(".raw") << endl;
+#endif 
+	  writeDataFile (createFileName().append(".raw"), fdata, NULL, NULL, 'i'); 
+	  delete [] fdata;
+	} else {
 	  writeDataFile (createFileName().append(".raw"), fdata, NULL, NULL, 'i');
-	  
+#ifdef VERBOSE
+	  std::cout << "********************** if (thisDetector->correctionMask!=0 || delflag==0) { writing raw data file " << createFileName() <<" " << thisDetector->correctionMask<< " " << delflag << endl;
+#endif
 	  /** rate correction */
 	  if (thisDetector->correctionMask&(1<<RATE_CORRECTION)) {
 	    rcdata=new float[thisDetector->nChans*thisDetector->nChips*thisDetector->nMods]; 
@@ -2172,13 +2212,16 @@ void* mythenDetector::processData(int delflag) {
 	    }
 	    
 	    if (thisDetector->correctionMask!=0)
-	      writeDataFile (createFileName().append(".dat"), ffcdata, ffcerr,ang);
+#ifdef VERBOSE
+	      std::cout << "********************** writing dat data file  if (thisDetector->correctionMask!=0) { " << createFileName() <<" " << thisDetector->correctionMask << endl;
+#endif
+	    writeDataFile (createFileName().append(".dat"), ffcdata, ffcerr,ang);
 	    
 	    
 	    addToMerging(ang, ffcdata, ffcerr, mergingBins, mergingCounts,mergingErrors, mergingMultiplicity);
 	    
 	    
-
+	    
 	    
 	    if ((currentPositionIndex==thisDetector->numberOfPositions) || (currentPositionIndex==0)) {
 	      
@@ -2187,6 +2230,9 @@ void* mythenDetector::processData(int delflag) {
 	      /** file writing */
 	      currentPositionIndex++;
 	      if (thisDetector->correctionMask!=0)
+#ifdef VERBOSE
+		std::cout << "********************** writing dat data file if ((currentPositionIndex==thisDetector->numberOfPositions) || (currentPositionIndex==0))" << createFileName() << endl;
+#endif
 		writeDataFile (createFileName().append(".dat"),mergingCounts, mergingErrors, mergingBins,'f',np);
 	      if (delflag) {
 		delete [] mergingBins;
@@ -2198,10 +2244,10 @@ void* mythenDetector::processData(int delflag) {
 		  thisData=new detectorData(mergingCounts,mergingErrors,mergingBins,thisDetector->progressIndex+1,(createFileName().append(".dat")).c_str(),np);
 		else
 		  thisData=new detectorData(mergingCounts,mergingErrors,mergingBins,thisDetector->progressIndex+1,(createFileName().append(".raw")).c_str(),np);
-		  
+		
 		finalDataQueue.push(thisData);
 #ifdef ACQVERBOSE
-      std::cout<< "------------------------------------pushing final data queue " << finalDataQueue.size() << std::endl;
+		std::cout<< "------------------------------------pushing final data queue " << finalDataQueue.size() << " " << createFileName() << std::endl;
 #endif
 	      }
 	    }
@@ -2214,8 +2260,12 @@ void* mythenDetector::processData(int delflag) {
 	      delete [] ang;
 	    //}
 	  } else {
-	    if (thisDetector->correctionMask!=0)
+	    if (thisDetector->correctionMask!=0) {
 	      writeDataFile (createFileName().append(".dat"), ffcdata, ffcerr);
+#ifdef VERBOSE
+	      std::cout << "********************** if (thisDetector->correctionMask!=0) writing dat data file " << createFileName() << endl;
+#endif
+	    }
 	    if (delflag) {
 	      if (ffcdata)
 		delete [] ffcdata;
@@ -2224,25 +2274,17 @@ void* mythenDetector::processData(int delflag) {
 	      if (ang)
 		delete [] ang;
 	    } else {
-	      if (thisDetector->correctionMask!=0)
+	      if (thisDetector->correctionMask!=0) {
 		thisData=new detectorData(ffcdata,ffcerr,NULL,thisDetector->progressIndex+1,(createFileName().append(".dat")).c_str(),thisDetector->nChans*thisDetector->nChips*thisDetector->nMods);
-	      else
+	      }	      else {
 		thisData=new detectorData(ffcdata,ffcerr,NULL,thisDetector->progressIndex+1,(createFileName().append(".raw")).c_str(),thisDetector->nChans*thisDetector->nChips*thisDetector->nMods);
+	      }
 	      finalDataQueue.push(thisData);  
-#ifdef ACQVERBOSE
-	      std::cout<< "------------------------------------pushing final data queue " << finalDataQueue.size() << std::endl;
+#ifdef VERBOSE
+	      std::cout<< "------------------------------------pushing final data queue with " << createFileName() << " " <<finalDataQueue.size() << std::endl;
 #endif 
 	    }  
 	  }
-	} else {
-#ifdef ACQVERBOSE
-	  std::cout<< "------------------------------------no processing "<< delflag <<std::endl;
-#endif 
-#ifdef VERBOSE
-	  cout << "writing file " << createFileName().append(".raw") << endl;
-#endif 
-	  writeDataFile (createFileName().append(".raw"), fdata, NULL, NULL, 'i'); 
-	  delete [] fdata;
 	}
 	thisDetector->fileIndex++;
 #ifdef VERBOSE
@@ -2279,11 +2321,11 @@ void* mythenDetector::processData(int delflag) {
 
 
       if (jointhread) {
-#ifdef ACQVERBOSE
-	std::cout<< "acquisition finished " << dataQueue.size() << " empty " << !dataQueue.empty()  << std::endl;
+#ifdef VERBOSE
+	std::cout<< "acquisition finished " << dataQueue.size() << " empty " << !dataQueue.empty()  << "final data queue size: " << finalDataQueue.size() <<std::endl;
 #endif
-	
-	break;
+	if (dataQueue.size()==0)
+	  break;
       }
       dum=0;
   } // ????????????????????????
@@ -2315,9 +2357,9 @@ void mythenDetector::startThread(int delflag) {
   // param.sched_priority = 5;
   // scheduling parameters of main thread 
   ret = pthread_setschedparam(pthread_self(), policy, &mparam);
-#ifdef VERBOSE
-  printf("current priority is %d\n",param.sched_priority);
-#endif
+  //#ifdef VERBOSE
+    // printf("current priority is %d\n",param.sched_priority);
+  //#endif
   if (delflag)
     ret = pthread_create(&dataProcessingThread, &tattr,startProcessData, (void*)this);
   else

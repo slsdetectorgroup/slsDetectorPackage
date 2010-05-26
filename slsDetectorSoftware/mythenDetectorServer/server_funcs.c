@@ -1,6 +1,10 @@
 #include "sls_detector_defs.h"
 #include "server_funcs.h"
+#ifndef PICASSOD
 #include "server_defs.h"
+#else
+#include "picasso_defs.h"
+#endif
 #include "firmware_funcs.h"
 #include "mcb_funcs.h"
 #include "trimming_funcs.h"
@@ -36,9 +40,18 @@ char mess[1000];
 
 
 int init_detector( int b) {
+#ifndef PICASSOD
+  printf("This is a MYTHEN detector with %d chips per module\n", NCHIP);
+#else
+  printf("This is a PICASSO detector with %d chips per module\n", NCHIP);
+#endif
   mapCSP0();
 #ifndef VIRTUAL  
   system("bus -a 0xb0000000 -w 0xd0008");
+#ifdef VERBOSE
+  printf("setting wait states \n");
+  system("bus -a 0xb0000000");
+#endif
 #endif
   testFpga();
 #ifdef MCB_FUNCS
@@ -133,7 +146,7 @@ int  M_nofunc(int fnum){
   sprintf(mess,"Unrecognized Function %d\n",fnum);
   printf(mess);
   sendDataOnly(&retval,sizeof(retval));
-  sendDataOnly(mess,strlen(mess)+1);
+  sendDataOnly(mess,sizeof(mess));
   return -1; 
 }
 
@@ -143,7 +156,7 @@ int exit_server(int fnum) {
   sendDataOnly(&retval,sizeof(retval));
   printf("closing server.");
   sprintf(mess,"closing server");
-  sendDataOnly(mess,strlen(mess)+1);
+  sendDataOnly(mess,sizeof(mess));
   return GOODBYE;
 }
 
@@ -216,7 +229,7 @@ int get_detector_type(int fnum) {
     /* send return argument */
     n += sendDataOnly(&ret,sizeof(ret));
   } else {
-    n += sendDataOnly(mess,strlen(mess)+1);
+    n += sendDataOnly(mess,sizeof(mess));
   }
   /*return ok/fail*/
   return retval; 
@@ -247,23 +260,27 @@ int set_number_of_modules(int fnum) {
 #ifdef VERBOSE
     printf("Setting the number of modules in dimension %d to %d\n",dim,nm );
 #endif
-    if (nm!=GET_FLAG) {
+    
+    //if (nm!=GET_FLAG) {
       if (dim!=X) {
 	retval=FAIL;
 	sprintf(mess,"Can't change module number in dimension %d\n",dim);
       } else  {
-	setNMod(nm);
-	if (nModX==nm)
+	ret=setNMod(nm);
+	if (nModX==nm || nm==GET_FLAG)
 	  retval=OK;
 	else
 	  retval=FAIL;
       }
-    } 
   }
-  if (dim==X)
-    ret=nModX;
-  else if (dim==Y)
-    ret=nModY;
+  /*} else {
+    if (dim==Y) {
+      ret=nModY;
+    } else if (dim==X) {
+      ret=setNMod(-1);
+    }
+  }
+  */
   
   /* send answer */
   /* send OK/failed */
@@ -272,7 +289,7 @@ int set_number_of_modules(int fnum) {
     /* send return argument */
     n += sendDataOnly(&ret,sizeof(ret));
   } else {
-    n += sendDataOnly(mess,strlen(mess)+1);
+    n += sendDataOnly(mess,sizeof(mess));
   }
   /*return ok/fail*/
   return retval; 
@@ -324,7 +341,7 @@ int get_max_number_of_modules(int fnum) {
     /* send return argument */
     n += sendDataOnly(&ret,sizeof(ret));
   } else {
-    n += sendDataOnly(mess,strlen(mess)+1);
+    n += sendDataOnly(mess,sizeof(mess));
   }
 
 
@@ -386,7 +403,7 @@ int set_external_signal_flag(int fnum) {
     /* send return argument */
     n += sendDataOnly(&retval,sizeof(retval));
   } else {
-    n += sendDataOnly(mess,strlen(mess)+1);
+    n += sendDataOnly(mess,sizeof(mess));
   }
 
 
@@ -447,7 +464,7 @@ enum externalCommunicationMode{
     /* send return argument */
     n += sendDataOnly(&ret,sizeof(ret));
   } else {
-    n += sendDataOnly(mess,strlen(mess)+1);
+    n += sendDataOnly(mess,sizeof(mess));
   }
 
   /*return ok/fail*/
@@ -530,7 +547,7 @@ int get_id(int fnum) {
     /* send return argument */
     n += sendDataOnly(&retval,sizeof(retval));
   } else {
-    n += sendDataOnly(mess,strlen(mess)+1);
+    n += sendDataOnly(mess,sizeof(mess));
   }
 
   /*return ok/fail*/
@@ -620,7 +637,7 @@ int digital_test(int fnum) {
     /* send return argument */
     n += sendDataOnly(&retval,sizeof(retval));
   } else {
-    n += sendDataOnly(mess,strlen(mess)+1);
+    n += sendDataOnly(mess,sizeof(mess));
   }
 
   /*return ok/fail*/
@@ -672,7 +689,7 @@ int write_register(int fnum) {
     /* send return argument */
     n += sendDataOnly(&retval,sizeof(retval));
   } else {
-    n += sendDataOnly(mess,strlen(mess)+1);
+    n += sendDataOnly(mess,sizeof(mess));
   }
 
   /*return ok/fail*/
@@ -723,7 +740,7 @@ int read_register(int fnum) {
     /* send return argument */
     n += sendDataOnly(&retval,sizeof(retval));
   } else {
-    n += sendDataOnly(mess,strlen(mess)+1);
+    n += sendDataOnly(mess,sizeof(mess));
   }
 
   /*return ok/fail*/
@@ -817,7 +834,7 @@ int set_dac(int fnum) {
     /* send return argument */
     n += sendDataOnly(&retval,sizeof(retval));
   } else {
-    n += sendDataOnly(mess,strlen(mess)+1);
+    n += sendDataOnly(mess,sizeof(mess));
   }
 
   /* Maybe this is done inside the initialization funcs */
@@ -903,7 +920,7 @@ int get_adc(int fnum) {
     /* send return argument */
     n += sendDataOnly(&retval,sizeof(retval));
   } else {
-    n += sendDataOnly(mess,strlen(mess)+1);
+    n += sendDataOnly(mess,sizeof(mess));
   }
 
   /*return ok/fail*/
@@ -961,7 +978,7 @@ int set_channel(int fnum) {
     /* send return argument */
     n += sendDataOnly(&retval,sizeof(retval));
   } else {
-    n += sendDataOnly(mess,strlen(mess)+1);
+    n += sendDataOnly(mess,sizeof(mess));
   }
 
 
@@ -1032,7 +1049,7 @@ int get_channel(int fnum) {
     /* send return argument */
     ret=sendChannel(&retval);
   } else {
-    n += sendDataOnly(mess,strlen(mess)+1);
+    n += sendDataOnly(mess,sizeof(mess));
   }
 
 
@@ -1095,7 +1112,7 @@ int set_chip(int fnum) {
     /* send return argument */
     n += sendDataOnly(&retval,sizeof(retval));
   } else {
-    n += sendDataOnly(mess,strlen(mess)+1);
+    n += sendDataOnly(mess,sizeof(mess));
   }
 
 
@@ -1153,7 +1170,7 @@ int get_chip(int fnum) {
     /* send return argument */  
     ret=sendChip(&retval);
   } else {
-    n += sendDataOnly(mess,strlen(mess)+1);
+    n += sendDataOnly(mess,sizeof(mess));
   }
 
 
@@ -1247,7 +1264,7 @@ int set_module(int fnum) {
     /* send return argument */
     n += sendDataOnly(&retval,sizeof(retval));
   } else {
-    n += sendDataOnly(mess,strlen(mess)+1);
+    n += sendDataOnly(mess,sizeof(mess));
   }
   free(myChip);
   free(myChan);
@@ -1344,7 +1361,7 @@ int get_module(int fnum) {
     /* send return argument */  
     ret=sendModule(&myModule);
   } else {
-    n += sendDataOnly(mess,strlen(mess)+1);
+    n += sendDataOnly(mess,sizeof(mess));
   }
 
   
@@ -1396,7 +1413,7 @@ int get_threshold_energy(int fnum) {
   /* send answer */
   n = sendDataOnly(&ret,sizeof(ret));
   if (ret!=OK) {
-    n += sendDataOnly(mess,strlen(mess)+1);
+    n += sendDataOnly(mess,sizeof(mess));
   } else
     n += sendDataOnly(&retval,sizeof(retval));
   
@@ -1450,7 +1467,7 @@ int set_threshold_energy(int fnum) {
   /* send answer */
   n = sendDataOnly(&ret,sizeof(ret));
   if (ret!=OK) {
-    n += sendDataOnly(mess,strlen(mess)+1);
+    n += sendDataOnly(mess,sizeof(mess));
   } else
     n += sendDataOnly(&retval,sizeof(retval));
   
@@ -1502,7 +1519,7 @@ int set_settings(int fnum) {
   /* send answer */
   n = sendDataOnly(&ret,sizeof(ret));
   if (ret!=OK) {
-    n += sendDataOnly(mess,strlen(mess)+1);
+    n += sendDataOnly(mess,sizeof(mess));
   } else
     n += sendDataOnly(&retval,sizeof(retval));
     
@@ -1531,7 +1548,7 @@ int start_acquisition(int fnum) {
 
   n = sendDataOnly(&ret,sizeof(ret));
   if (ret!=OK) {
-    n += sendDataOnly(mess,strlen(mess)+1);
+    n += sendDataOnly(mess,sizeof(mess));
   }
   return ret; 
 
@@ -1555,7 +1572,7 @@ int stop_acquisition(int fnum) {
 
   n = sendDataOnly(&ret,sizeof(ret));
   if (ret!=OK) {
-    n += sendDataOnly(mess,strlen(mess)+1);
+    n += sendDataOnly(mess,sizeof(mess));
   }
   return ret; 
 
@@ -1580,7 +1597,7 @@ int start_readout(int fnum) {
 
   n = sendDataOnly(&ret,sizeof(ret));
   if (ret!=OK) {
-    n += sendDataOnly(mess,strlen(mess)+1);
+    n += sendDataOnly(mess,sizeof(mess));
   }
   return ret; 
 
@@ -1625,7 +1642,7 @@ int get_run_status(int fnum) {
 
   n = sendDataOnly(&ret,sizeof(ret));
   if (ret!=OK) {
-    n += sendDataOnly(mess,strlen(mess)+1);
+    n += sendDataOnly(mess,sizeof(mess));
   } else {
     n += sendDataOnly(&s,sizeof(s));
   }
@@ -1660,17 +1677,17 @@ int read_frame(int fnum) {
       if(getFrames()>-2) {
 	dataret=FAIL;
 	sprintf(mess,"no data and run stopped: %d frames left\n",getFrames()+2); 
-      printf("%s\n",mess);
+	printf("%s\n",mess);
       } else {
 	dataret=FINISHED;
 	sprintf(mess,"acquisition successfully finished\n");
 	printf("%s\n",mess);
       }
 #ifdef VERYVERBOSE
-      printf("%d %d %x %s\n",strlen(mess)+1,strlen(mess), mess,mess);
+      printf("%d %d %x %s\n",sizeof(mess),strlen(mess), mess,mess);
 #endif
       sendDataOnly(&dataret,sizeof(dataret));
-      sendDataOnly(mess,strlen(mess)+1);//sizeof(mess));
+      sendDataOnly(mess,sizeof(mess));//sizeof(mess));//sizeof(mess));
 #ifdef VERYVERBOSE
       printf("message sent\n",mess);
 #endif 
@@ -1707,7 +1724,7 @@ int read_frame(int fnum) {
       printf("Frames left %d\n",getFrames());
 #endif 
     sendDataOnly(&dataret,sizeof(dataret));
-    sendDataOnly(mess,strlen(mess)+1);
+    sendDataOnly(mess,sizeof(mess));
     return dataret;
   }
   
@@ -1750,7 +1767,7 @@ int start_and_read_all(int fnum) {
       if (ret!=OK) {
       sprintf(mess,"could not start state machine\n");
     sendDataOnly(&ret,sizeof(ret));
-    sendDataOnly(mess,strlen(mess)+1);
+    sendDataOnly(mess,sizeof(mess));
     
     #ifdef VERBOSE
     printf("could not start state machine\n");
@@ -1848,7 +1865,7 @@ int set_timer(int fnum) {
   printf("returning error\n");
 #endif 
 
-    n = sendDataOnly(mess,strlen(mess)+1);
+    n = sendDataOnly(mess,sizeof(mess));
   } else {
 #ifdef VERBOSE
   printf("returning ok %d\n",sizeof(retval));
@@ -1924,7 +1941,7 @@ int get_time_left(int fnum) {
 
   n = sendDataOnly(&ret,sizeof(ret));
   if (ret!=OK) {
-    n += sendDataOnly(mess,strlen(mess)+1);
+    n += sendDataOnly(mess,sizeof(mess));
   } else {
     n = sendDataOnly(&retval,sizeof(retval));
   }
@@ -1999,7 +2016,7 @@ int set_dynamic_range(int fnum) {
 
   n = sendDataOnly(&ret,sizeof(ret));
   if (ret!=OK) {
-    n = sendDataOnly(mess,strlen(mess)+1);
+    n = sendDataOnly(mess,sizeof(mess));
   } else {
     n = sendDataOnly(&retval,sizeof(retval));
   }
@@ -2045,22 +2062,34 @@ int set_speed(int fnum) {
   if (ret==OK) {
     switch (arg) {
     case CLOCK_DIVIDER:
-      if (val>0)
+      if (val>=0)
 	retval=setClockDivider(val);
       else
 	retval=getClockDivider();
       break;
     case WAIT_STATES:
-      if (val>0)
+      if (val>=0)
 	retval=setWaitStates(val);
       else
 	retval=getWaitStates();
       break;
     case SET_SIGNAL_LENGTH:
-      if (val>0)
+      if (val>=0)
 	retval=setSetLength(val);
       else
 	retval=getSetLength();
+      break;
+    case TOT_CLOCK_DIVIDER:
+      if (val>=0)
+	retval=setTotClockDivider(val);
+      else
+	retval=getTotClockDivider();
+      break;
+    case TOT_DUTY_CYCLE:
+      if (val>=0)
+	retval=setTotDutyCycle(val);
+      else
+	retval=getTotDutyCycle();
       break;
     default:
       ret=FAIL;
@@ -2068,7 +2097,7 @@ int set_speed(int fnum) {
   }
   n = sendDataOnly(&ret,sizeof(ret));
   if (ret!=OK) {
-    n = sendDataOnly(mess,strlen(mess)+1);
+    n = sendDataOnly(mess,sizeof(mess));
   } else {
     n = sendDataOnly(&retval,sizeof(retval));
   }
@@ -2083,6 +2112,7 @@ int set_readout_flags(int fnum) {
   enum readOutFlags arg;
   int n;
   int ret=OK;
+  int regret=OK;
   
 
   sprintf(mess,"can't set readout flags\n");
@@ -2105,30 +2135,50 @@ int set_readout_flags(int fnum) {
   case  GET_READOUT_FLAGS:
     break;
   case STORE_IN_RAM:
-    ret=setStoreInRAM(1);
+    if (setStoreInRAM(1)==OK)
+      ret=OK;
+    else 
+      ret=FAIL;
     break;
-  case PUMP_PROBE_MODE:
+  case TOT_MODE:
+    if(setToT(1))
+      ret=OK;
+    else 
+      ret=FAIL;
+    break;
+  case CONTINOUS_RO:
+    if (setContinousReadOut(1))
+      ret=OK;
+    else 
+      ret=FAIL;
+    break;
+    // case PUMP_PROBE_MODE:
     //set number of probes
-    initChipWithProbes(0,0,2, ALLMOD);
-    break;
+    //initChipWithProbes(0,0,2, ALLMOD);
+    //break;
   default:
     ret=setStoreInRAM(0);
+    regret=setConfigurationRegister(0);
     ret=OK;       
-  }
+  } 
+  retval=NORMAL_READOUT;
+  
   if (storeInRAM)
     retval=STORE_IN_RAM;
-  else if (getProbes())
-    retval=PUMP_PROBE_MODE;
-  else
-    retval=NORMAL_READOUT;
-
+  //else if (getProbes())
+  //  retval=PUMP_PROBE_MODE;
+  //else
+  if (setToT(-1))
+    retval|=TOT_MODE;
+  if (setContinousReadOut(-1))
+    retval|=CONTINOUS_RO;
   if (ret!=OK) {
     printf("set readout flags failed\n");
     sprintf(mess,"Could not allocate RAM\n");
   } 
   n = sendDataOnly(&ret,sizeof(ret));
   if (ret!=OK) {
-    n = sendDataOnly(mess,strlen(mess)+1);
+    n = sendDataOnly(mess,sizeof(mess));
   } else {
     n = sendDataOnly(&retval,sizeof(retval));
   }
@@ -2211,7 +2261,7 @@ int execute_trimming(int fnum) {
   } 
   n = sendDataOnly(&ret,sizeof(ret));
   if (ret!=OK) {
-    n = sendDataOnly(mess,strlen(mess)+1);
+    n = sendDataOnly(mess,sizeof(mess));
   } 
     
   return ret; 

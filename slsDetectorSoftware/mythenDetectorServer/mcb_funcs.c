@@ -5,9 +5,13 @@
 #include <string.h>
 #include <unistd.h>
 #include <math.h>
+#include "registers.h"
 
-
+#ifndef PICASSOD
 #include "server_defs.h"
+#else
+#include "picasso_defs.h"
+#endif
 #include "firmware_funcs.h"
 #include "mcb_funcs.h"
 
@@ -48,7 +52,9 @@ int initDetector() {
   int imod;
   //  sls_detector_module *myModule;
   int n=getNModBoard();
-
+#ifdef VERBOSE
+  printf("Board is for %d modules\n",n);
+#endif
   detectorModules=malloc(n*sizeof(sls_detector_module));
   detectorChips=malloc(n*NCHIP*sizeof(int));
 
@@ -92,10 +98,14 @@ int initDetector() {
   putout("0000000000000000",ALLMOD);
 
   /* initialize dynamic range etc. */
-  nModX=n; 
-  dataBytes=nModX*NCHIP*NCHAN*4;
-  dynamicRange=32;
-  initChip(0, 1,ALLMOD);
+  dynamicRange=getDynamicRange();
+  nModX=setNMod(-1);
+
+  //dataBytes=nModX*NCHIP*NCHAN*4;
+  // dynamicRange=32;
+  // initChip(0, 0,ALLMOD);
+  //nModX=n; 
+  //
   // allocateRAM();
 
 
@@ -419,6 +429,8 @@ int program_one_dac(int addr, int value, int imod) {
   int im;
   int idac;
   int v=value;
+  int reg, mask;
+  
   //  sls_detector_module *myMod;
   control=9+addr; 
 
@@ -472,15 +484,109 @@ int program_one_dac(int addr, int value, int imod) {
       //(detectorModules+imod)->dacs[idac]=v;
       detectorDacs[idac+NDAC*imod]=v;
       //#ifdef VERBOSE  
+#ifdef VERBOSE
       printf("module=%d index=%d, val=%d addr=%x\n",imod, idac, v, detectorDacs+idac+NDAC*imod);
+#endif
+
+      setDACRegister(idac,v,imod);
+
+      /*
+
+      reg=bus_r(MOD_DACS1_REG+(imod<<SHIFTMOD));
+#ifdef VERBOSE
+      printf("DACS register 1 is %x\n",reg);
+#endif
+      if ((idac%2)==0) {
+	
+#ifdef VERYVERBOSE
+	printf("DACS %d div2 should be 0 is %d\n",idac, idac%2);
+#endif
+	mask=~((0x3ff)<<((idac%3)*10));
+	reg&=mask;
+	reg|=(v<<((idac%3)*10));
+#ifdef VERYVERBOSE
+	printf("DACS %d div3  is %d\n",idac, idac%3);
+#endif
+	bus_w(MOD_DACS1_REG+(imod<<SHIFTMOD), reg);
+      }
+#ifdef VERBOSE
+      printf("after setting dac %d module %d -- %x -- %x\n",idac, imod, reg, bus_r(MOD_DACS1_REG+(imod<<SHIFTMOD)));
+#endif
+      reg=bus_r(MOD_DACS2_REG+(imod<<SHIFTMOD));
+#ifdef VERBOSE
+      printf("DACS register 2 is %x\n",reg);
+#endif
+      if ((idac%2)==1) {
+#ifdef VERYVERBOSE
+	printf("DACS %d div2 should be 1 is %d\n",idac, idac%2);
+#endif
+	mask=~((0x3ff)<<((idac%3)*10));
+	reg&=mask;
+	reg|=(v<<((idac%3)*10));
+#ifdef VERYVERBOSE
+	printf("DACS %d div3  is %d\n",idac, idac%3);
+#endif
+	bus_w(MOD_DACS2_REG+(imod<<SHIFTMOD), reg);
+      }
+
+#ifdef VERBOSE
+      printf("after setting dac %d module %d -- %x -- %x\n",idac, imod, reg, bus_r(MOD_DACS2_REG+(imod<<SHIFTMOD)));
+#endif
+      */
       //#endif
     } else if (imod==ALLMOD) {
       for (im=0; im<getNModBoard(); im++) {
 	detectorDacs[idac+NDAC*im]=v;
-	//#ifdef VERBOSE
+
+	/*
+#ifdef VERBOSE
 	printf("all: module=%d index=%d, val=%d addr=%x\n",im, idac, v,detectorDacs+idac+NDAC*im);
-	//#endif
+#endif
 	//	(detectorModules+im)->dacs[idac]=v;
+
+
+
+      reg=bus_r(MOD_DACS1_REG+(imod<<SHIFTMOD));
+#ifdef VERBOSE
+      printf("DACS register 1 is %x\n",reg);
+#endif
+      if ((idac%2)==0) {
+#ifdef VERYVERBOSE
+	printf("DACS %d div2 should be 0 is %d\n",idac, idac%2);
+#endif
+	mask=~((0x3ff)<<((idac%3)*10));
+	reg&=mask;
+	reg|=(v<<((idac%3)*10));
+#ifdef VERYVERBOSE
+	printf("DACS %d div3  is %d\n",idac, idac%3);
+#endif
+	bus_w(MOD_DACS1_REG+(imod<<SHIFTMOD), reg);
+      }
+#ifdef VERBOSE
+      printf("after setting dac %d module %d -- %x -- %x\n",idac, im, reg, bus_r(MOD_DACS1_REG+(im<<SHIFTMOD)));
+#endif
+      reg=bus_r(MOD_DACS2_REG+(im<<SHIFTMOD));
+#ifdef VERBOSE
+      printf("DACS register 2 is %x\n",reg);
+#endif
+      if ((idac%2)==1) {
+#ifdef VERYVERBOSE
+	printf("DACS %d div2 should be 1 is %d\n",idac, idac%2);
+#endif
+	mask=~((0x3ff)<<((idac%3)*10));
+	reg&=mask;
+	reg|=(v<<((idac%3)*10));
+#ifdef VERYVERBOSE
+	printf("DACS %d div3  is %d\n",idac, idac%3);
+#endif
+	bus_w(MOD_DACS2_REG+(im<<SHIFTMOD), reg);
+      }
+
+#ifdef VERBOSE
+      printf("after setting dac %d module %d -- %x -- %x addr %d\n",idac, im, reg, bus_r(MOD_DACS2_REG+(im<<SHIFTMOD)));
+#endif
+	*/
+	setDACRegister(idac,v,im);
       }
     }
   }
@@ -564,15 +670,32 @@ float initDACbyIndexDACU(int ind, int val, int imod) {
   */
     //return val;
   }
-  if (imod>=0 && imod<nModX)
-    return detectorDacs[ind+imod*NDAC];
+  if (imod>=0 && imod<nModX) {
+    // return detectorDacs[ind+imod*NDAC];
+    return setDACRegister(ind,  -1, imod);
+  }
   else {
     //iv=detectorDacs[ind];
+#ifdef VERBOSE
+    printf("mod 0 of %d dac %d val %d\n",nModX,ind,setDACRegister(ind,  -1, 0));
+#endif
     for (im=1; im<nModX; im++) {
-      if (detectorDacs[ind+im*NDAC]!=detectorDacs[ind])
+#ifdef VERBOSE
+      printf("mod %d dac %d val %d\n",im,ind,setDACRegister(ind,  -1, im));
+#endif
+      //if (detectorDacs[ind+im*NDAC]!=detectorDacs[ind]) {
+	
+      if (setDACRegister(ind,  -1, im)!=setDACRegister(ind,  -1, 0)) {
+#ifdef VERBOSE
+      printf("mod %d returning -1\n",im);
+#endif
 	return -1;
+      }
     }
-    return detectorDacs[ind];
+#ifdef VERBOSE
+      printf("returning %d\n",setDACRegister(ind,  -1, 0));
+#endif
+    return setDACRegister(ind,  -1, 0);
   }
 }
 
@@ -609,13 +732,17 @@ int getThresholdEnergy() {
 	//myo=-1;
       }
 
-      if (myg>0 && myo>0)
-	ethr=(myo-detectorDacs[VTHRESH+imod*NDAC])*1000/myg;
-      // else
+      if (myg>0 && myo>0) {
+	//ethr=(myo-detectorDacs[VTHRESH+imod*NDAC])*1000/myg;
+      
+	ethr=(myo-setDACRegister(VTHRESH,-1,imod))*1000/myg;
+	// else
       //	ethr=-1;
       
+      }
 #ifdef VERBOSE
-      printf("module=%d gain=%f, offset=%f, dacu=%f\n",imod, myg, myo, detectorDacs[VTHRESH+imod*NDAC]);
+      //printf("module=%d gain=%f, offset=%f, dacu=%f\n",imod, myg, myo, detectorDacs[VTHRESH+imod*NDAC]);
+      printf("module=%d gain=%f, offset=%f, dacu=%f\n",imod, myg, myo,setDACRegister(VTHRESH,-1,imod));
       printf("Threshold energy of module %d is %d eV\n", imod, ethr);
 #endif 
       
@@ -688,13 +815,15 @@ int setThresholdEnergy(int ethr) {
 
 
 float getDACbyIndexDACU(int ind,  int imod) {
- 
+  /*
   if (detectorDacs) {
     if (imod<getNModBoard())
       if (ind<(detectorModules+imod)->ndac)
 	return (detectorDacs[ind+imod*NDAC]);
   }  
   return FAIL;
+  */
+  return setDACRegister(ind, -1, imod);
 }
 
 
@@ -782,10 +911,15 @@ int setSettings(int i) {
   } //else {
   imod=0;
   /* check settings for module 0 */
-  isett=UNDEFINED;
+  isett=UNDEFINED;/*
   irgpr=detectorDacs[4+imod*NDAC];
   irgsh1=detectorDacs[imod*NDAC+RGSH1];
   irgsh2=detectorDacs[imod*NDAC+RGSH2];
+		  */
+  
+  irgpr=setDACRegister(4,-1,imod);
+  irgsh1=setDACRegister(RGSH1,-1,imod);
+  irgsh2=setDACRegister(RGSH2,-1,imod);
   for (is=STANDARD; is<UNDEFINED; is++) {
     if (irgpr==rgpr[is] && irgsh1==rgsh1[is] &&  irgsh2==rgsh2[is]) {
       isett=is;
@@ -796,14 +930,25 @@ int setSettings(int i) {
 #endif
   for (imod=1; imod<nModX; imod++) {
     if (isett!=UNDEFINED) {
+      irgpr=setDACRegister(4,-1,imod);
+      irgsh1=setDACRegister(RGSH1,-1,imod);
+      irgsh2=setDACRegister(RGSH2,-1,imod);
+      /*
       irgpr=detectorDacs[4+imod*NDAC];
       irgsh1=detectorDacs[imod*NDAC+RGSH1];
       irgsh2=detectorDacs[imod*NDAC+RGSH2];
+      */
       if (irgpr!=rgpr[isett] || irgsh1!=rgsh1[isett] ||  irgsh2!=rgsh2[isett]) {
 	isett=UNDEFINED; 
 #ifdef VERBOSE
 	printf("Settings of module %d are undefined\n",imod);
+	printf("%d %d %d \n", irgpr, irgsh1, irgsh2);
+	printf("dacs 1: %08x dacs2: %08x\n",bus_r(MOD_DACS1_REG+(imod<<SHIFTMOD)), bus_r(MOD_DACS2_REG+(imod<<SHIFTMOD)));
+
 #endif
+
+
+
       }
     }
   }
@@ -827,12 +972,15 @@ int setSettings(int i) {
 int initChannelbyNumber(sls_detector_channel myChan) {
   int reg=myChan.reg;
   int ft=reg & TRIM_DR;
-  int cae=(reg>>(NTRIMBITS+1))&1;
-  int ae=(reg>>(NTRIMBITS+2))&1;
-  int coe=(reg>>(NTRIMBITS+3))&1;
-  int ocoe=(reg>>(NTRIMBITS+4))&1;
-  int counts=(reg>>(NTRIMBITS+5));
- 
+  int cae=(reg>>(NTRIMBITS))&1;
+  int ae=(reg>>(NTRIMBITS+1))&1;
+  int coe=(reg>>(NTRIMBITS+2))&1;
+  int ocoe=(reg>>(NTRIMBITS+3))&1;
+  int counts=(reg>>(NTRIMBITS+4));
+#ifdef VERBOSE
+  printf("Initializing channel %d chip %d module %d reg %x\n",myChan.chan,myChan.chip,myChan.module, reg);
+  printf("trim %d, cae %d, ae %d, coe %d, ocoe %d, counts %d\n",ft, cae, ae, coe, ocoe, counts);
+#endif
   
   if (myChan.chip<0)
     setCSregister(myChan.module);
@@ -845,6 +993,13 @@ int initChannelbyNumber(sls_detector_channel myChan) {
     selChannel(myChan.chan,myChan.module);
   
    initChannel(ft,cae,ae, coe, ocoe, counts,myChan.module);
+
+   setDynamicRange(dynamicRange);
+
+   setCSregister(ALLMOD);
+   clearSSregister(ALLMOD); 
+   putout("0000000000000000",ALLMOD);
+
    return myChan.reg;
 
 }
@@ -938,9 +1093,10 @@ int initChannel(int ft,int cae, int ae, int coe, int ocoe, int counts, int imod)
 #ifdef VERBOSE
 	  //  printf("im=%d ichi=%d icha=%d tot=%d reg=%x\n",im,ichip, ichan, im*NCHAN*NCHIP+ichip*NCHAN+ichan,detectorChans[im*NCHAN*NCHIP+ichip*NCHAN+ichan]);
 #endif
-	  detectorChans[im*NCHAN*NCHIP+ichip*NCHAN+ichan]= ft | (cae<<(NTRIMBITS+1)) | (ae<<(NTRIMBITS+2)) | (coe<<(NTRIMBITS+3)) | (ocoe<<(NTRIMBITS+4)) | (counts<<(NTRIMBITS+5));
+	 detectorChans[im*NCHAN*NCHIP+ichip*NCHAN+ichan]= ft | (cae<<(NTRIMBITS+1)) | (ae<<(NTRIMBITS+2)) | (coe<<(NTRIMBITS+3)) | (ocoe<<(NTRIMBITS+4)) | (counts<<(NTRIMBITS+5));
 #ifdef VERBOSE
-	  //	  printf("imod=%d ichip=%d ichan=%d addr=%x reg=%x\n",im,ichip,ichan,detectorChans+im*NCHAN*NCHIP+ichip*NCHAN+ichan, detectorChans[im*NCHAN*NCHIP+ichip*NCHAN+ichan]);
+	 //printf("imod=%d ichip=%d ichan=%d addr=%x reg=%x\n",im,ichip,ichan,detectorChans+im*NCHAN*NCHIP+ichip*NCHAN+ichan, detectorChans[im*NCHAN*NCHIP+ichip*NCHAN+ichan]);
+	  // printf("imod=%d ichip=%d ichan=%d addr=%x reg=%x\n",im,ichip,ichan,detectorChans+im*NCHAN*NCHIP+ichip*NCHAN+ichan, detectorChans[im*NCHAN*NCHIP+ichip*NCHAN+ichan]);
 #endif
 	}
       }
@@ -1307,13 +1463,13 @@ int initChipWithProbes(int obe, int ow,int nprobes, int imod){
     omask=16;
     break;
   default:
-    omask=1;
+    omask=0;//1;
     break;
   }
  
   regval=(omask<<OUTMUX_OFFSET)|(nprobes<<PROBES_OFFSET)|(obe<<OUTBUF_OFFSET);
-#ifdef VERYVERBOSE
-  printf("shift in will be %08x\n",regval);
+#ifdef VERBOSE
+  printf("initChip: shift in will be %08x\n",regval);
 #endif
   /* clearing shift in register */
 

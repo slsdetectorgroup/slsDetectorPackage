@@ -1409,11 +1409,11 @@ int slsDetector::setChannel(int64_t reg, int ichan, int ichip, int imod){
 #ifdef VERBOSE
   std::cout<< "Setting channel "<< ichan << " " << ichip << " " << imod << " to " << reg << std::endl;
 #endif
-  int mmin=imod, mmax=imod+1, chimin=ichip, chimax=ichip+1, chamin=ichan, chamax=ichan+1;
+  //int mmin=imod, mmax=imod+1, chimin=ichip, chimax=ichip+1, chamin=ichan, chamax=ichan+1;
 
   int ret;
 
-  if (imod==-1) {
+  /*  if (imod==-1) {
     mmin=0;
     mmax=thisDetector->nModsMax;
   }
@@ -1426,19 +1426,19 @@ int slsDetector::setChannel(int64_t reg, int ichan, int ichip, int imod){
   if (ichan==-1) {
     chamin=0;
     chamax=thisDetector->nChans;
-  }
+    }*/
 
-  for (int im=mmin; im<mmax; im++) {
-    for (int ichi=chimin; ichi<chimax; ichi++) {
-      for (int icha=chamin; icha<chamax; icha++) {
-	myChan.chan=icha;
-	myChan.chip=ichi;
-	myChan.module=im;
-	myChan.reg=reg;
-	ret=setChannel(myChan);	 
-      }
-    }
-  }
+  // for (int im=mmin; im<mmax; im++) {
+  //  for (int ichi=chimin; ichi<chimax; ichi++) {
+  //    for (int icha=chamin; icha<chamax; icha++) {
+  myChan.chan=ichan;//icha;
+  myChan.chip=ichip;//ichi;
+  myChan.module=imod;//im;
+  myChan.reg=reg;
+  ret=setChannel(myChan);	 
+	//     }
+	// }
+	// }
   return ret;
 }
 
@@ -1450,9 +1450,9 @@ int slsDetector::setChannel(sls_detector_channel chan){
   int ret=FAIL;
   char mess[100];
 
-  int icha=chan.chan;
-  int ichi=chan.chip;
-  int im=chan.module;
+  int ichan=chan.chan;
+  int ichip=chan.chip;
+  int imod=chan.module;
 
   if (thisDetector->onlineFlag==ONLINE_FLAG) {
     if (controlSocket) {
@@ -1475,7 +1475,39 @@ int slsDetector::setChannel(sls_detector_channel chan){
 
   if (ret==OK) {
     if (chanregs) {
-      *(chanregs+im*thisDetector->nChans*thisDetector->nChips+ichi*thisDetector->nChips+icha)=retval;      
+
+int mmin=imod, mmax=imod+1, chimin=ichip, chimax=ichip+1, chamin=ichan, chamax=ichan+1;
+
+ if (imod==-1) {
+    mmin=0;
+    mmax=thisDetector->nModsMax;
+  }
+
+  if (ichip==-1) {
+    chimin=0;
+    chimax=thisDetector->nChips;
+  }
+
+  if (ichan==-1) {
+    chamin=0;
+    chamax=thisDetector->nChans;
+  }
+
+
+
+
+
+
+  for (int im=mmin; im<mmax; im++) {
+   for (int ichi=chimin; ichi<chimax; ichi++) {
+     for (int icha=chamin; icha<chamax; icha++) {
+
+      *(chanregs+im*thisDetector->nChans*thisDetector->nChips+ichi*thisDetector->nChips+icha)=retval;     
+
+    }
+  }
+}
+ 
     }
   }
 #ifdef VERBOSE
@@ -2122,15 +2154,26 @@ int slsDetector::setThresholdEnergy(int e_eV,  int imod, detectorSettings isetti
       oscfn << thisDetector->calDir << ssettings << "/calibration.sn"  << setfill('0') << setw(3) << hex << getId(MODULE_SERIAL_NUMBER, im) << setbase(10); 
       //
       trimfname=ostfn.str();
+#ifdef VERBOSE
+      cout << trimfname << endl;
+#endif
       if (readTrimFile(trimfname,myMod)) {
 	calfname=oscfn.str();
+#ifdef VERBOSE
+      cout << calfname << endl;
+#endif
 	readCalibrationFile(calfname,myMod->gain, myMod->offset);
 	setModule(*myMod);
       } else {
 	ostringstream ostfn,oscfn;
 	ostfn << thisDetector->trimDir << ssettings << ssettings << ".trim"; 
 	oscfn << thisDetector->calDir << ssettings << ssettings << ".cal";
+	calfname=oscfn.str();
 	trimfname=ostfn.str();
+#ifdef VERBOSE
+      cout << trimfname << endl;
+      cout << calfname << endl;
+#endif
 	if (readTrimFile(trimfname,myMod)) {
 	  calfname=oscfn.str();
 	  readCalibrationFile(calfname,myMod->gain, myMod->offset);
@@ -2468,6 +2511,26 @@ detectorData* slsDetector::popFinalDataQueue() {
   return retval;
 }
 
+void slsDetector::resetDataQueue() {
+  int *retval=NULL;
+  while( !dataQueue.empty() ) {
+    retval=dataQueue.front();
+    dataQueue.pop();
+    delete [] retval;
+  }
+ 
+}
+
+void slsDetector::resetFinalDataQueue() {
+  detectorData *retval=NULL;
+  while( !finalDataQueue.empty() ) {
+    retval=finalDataQueue.front();
+    finalDataQueue.pop();
+    delete retval;
+  }
+
+}
+
   /* 
      set or read the acquisition timers 
      enum timerIndex {
@@ -2707,19 +2770,19 @@ int slsDetector::setReadOutFlags(readOutFlags flag){
 
   if (thisDetector->onlineFlag==ONLINE_FLAG) {
     if (controlSocket) {
-  if  (controlSocket->Connect()>=0) {
-    controlSocket->SendDataOnly(&fnum,sizeof(fnum));
-   controlSocket->SendDataOnly(&flag,sizeof(flag));
-    controlSocket->ReceiveDataOnly(&ret,sizeof(ret));
-    if (ret!=OK) {
-      controlSocket->ReceiveDataOnly(mess,sizeof(mess));
-      std::cout<< "Detector returned error: " << mess << std::endl;
-    } else {
-      controlSocket->ReceiveDataOnly(&retval,sizeof(retval)); 
-      thisDetector->roFlags=retval;
-    }
-    controlSocket->Disconnect();
-  }
+      if  (controlSocket->Connect()>=0) {
+	controlSocket->SendDataOnly(&fnum,sizeof(fnum));
+	controlSocket->SendDataOnly(&flag,sizeof(flag));
+	controlSocket->ReceiveDataOnly(&ret,sizeof(ret));
+	if (ret!=OK) {
+	  controlSocket->ReceiveDataOnly(mess,sizeof(mess));
+	  std::cout<< "Detector returned error: " << mess << std::endl;
+	} else {
+	  controlSocket->ReceiveDataOnly(&retval,sizeof(retval)); 
+	  thisDetector->roFlags=retval;
+	}
+	controlSocket->Disconnect();
+      }
     }
   } else {
     if (flag!=GET_READOUT_FLAGS)

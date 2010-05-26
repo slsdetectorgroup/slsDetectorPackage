@@ -1,5 +1,8 @@
-
+#ifndef PICASSOD
 #include "server_defs.h"
+#else
+#include "picasso_defs.h"
+#endif
 #include "trimming_funcs.h"
 #include "mcb_funcs.h"
 #include "firmware_funcs.h"
@@ -155,7 +158,9 @@ int choose_vthresh_and_vtrim(int countlim,  int nsigma, int im) {
 #ifdef MCB_FUNCS
   int modma, modmi, nm;
   int thr, thrstep=5, nthr=31;
- 
+
+  int *fifodata;
+
   float vthreshmean, vthreshSTDev;
   int *thrmi, *thrma;
   float c;
@@ -166,6 +171,8 @@ int choose_vthresh_and_vtrim(int countlim,  int nsigma, int im) {
   int nvalid=0;
   u_int32_t *scan;
   int ithr;
+  sls_detector_channel myChan;
+
 
 
   setFrames(1);
@@ -195,7 +202,11 @@ int choose_vthresh_and_vtrim(int countlim,  int nsigma, int im) {
   clearSSregister(im); 
   usleep(500); 
   */
-
+  myChan.chan=-1;
+  myChan.chip=-1;
+  myChan.module=ALLMOD;
+  myChan.reg=COMPARATOR_ENABLE;
+  initChannelbyNumber(myChan);
 
 
   for (ithr=0; ithr<nthr; ithr++) {
@@ -209,9 +220,15 @@ int choose_vthresh_and_vtrim(int countlim,  int nsigma, int im) {
       } else
 	initDACbyIndexDACU(VTHRESH,thr+thrstep,imod);
     } 
-    setCSregister(ALLMOD);
+
+    /*    setCSregister(ALLMOD);
     setSSregister(ALLMOD);
     initChannel(0,0,0,1,0,0,im);
+    setDynamicRange(32);
+    */
+
+
+
     counterClear(ALLMOD);
     clearSSregister(ALLMOD); 
     usleep(500); 
@@ -219,7 +236,8 @@ int choose_vthresh_and_vtrim(int countlim,  int nsigma, int im) {
     while (runBusy()) {
     }
     usleep(500);
-    scan=decode_data(fifo_read_event());
+    fifodata=fifo_read_event();
+    scan=decode_data(fifodata);
     for (imod=modmi; imod<modma; imod++) {
       for (ichan=0; ichan<nChans*nChips; ichan++){
 	ich=imod*nChips*nChans+ichan;
@@ -311,6 +329,10 @@ int trim_with_level(int countlim, int im) {
   int *inttrim;
   int modma, modmi, nm;
   int retval=OK;
+  int *fifodata;
+  sls_detector_channel myChan;
+  printf("trimming module number %d", im);
+
 
 #ifdef MCB_FUNCS
   setFrames(1);
@@ -332,10 +354,19 @@ int trim_with_level(int countlim, int im) {
 
   for (itrim=0; itrim<TRIM_DR+1; itrim++) { 
     fifoReset(); 
-    setCSregister(im); 
-    setSSregister(im);
-    printf("Trimbit %d\n",itrim);
-    initChannel(itrim,0,0,1,0,0,im);
+    printf("Trimbit %d\n",itrim);  
+    myChan.chan=-1;
+    myChan.chip=-1;
+    myChan.module=ALLMOD;
+    myChan.reg=COMPARATOR_ENABLE|(itrim<<TRIMBIT_OFF);
+    initChannelbyNumber(myChan);
+
+    /*
+      setCSregister(im); 
+      setSSregister(im);
+      initChannel(itrim,0,0,1,0,0,ALLMOD);
+      setDynamicRange(32);
+    */
     setCSregister(ALLMOD); 
     setSSregister(ALLMOD);
     counterClear(ALLMOD);
@@ -346,19 +377,21 @@ int trim_with_level(int countlim, int im) {
     }
     usleep(500);
 
-    scan=decode_data(fifo_read_event());
+    fifodata=fifo_read_event();
+    scan=decode_data(fifodata);
     for (imod=modmi; imod<modma; imod++) {
       for (ichan=0; ichan<nChans*nChips; ichan++) {
 	ich=ichan+imod*nChans*nChips;
 	if (inttrim[ich]==-1) {
 	  if (scan[ich]>countlim){
 	    inttrim[ich]=itrim;
-	    if (scan[ich]>2*countlim || itrim==0) {
-#ifdef VERBOSE
-	    printf("Channel %d trimbit %d counted %d countlim %d\n",ich,itrim,scan[ich],countlim);
-#endif
-	    inttrim[ich]=itrim-1;
+	    if (scan[ich]>2*countlim && itrim>0) {
+	    //if (scan[ich]>2*countlim || itrim==0) {
+	      inttrim[ich]=itrim-1;
 	    }
+#ifdef VERBOSE
+	      printf("Channel %d trimbit %d counted %d (%08x) countlim %d\n",ich,itrim,scan[ich],fifodata[ich],countlim);
+#endif
 	  } 
 	}
 #ifdef VERBOSE
@@ -380,12 +413,12 @@ int trim_with_level(int countlim, int im) {
 	ich=ichan+imod*nChans*nChips+ichip*nChans;
 	if (*(inttrim+ich)==-1) {
 	  *(inttrim+ich)=TRIM_DR;
-	  printf("could not trim channel %d chip %d module %d - set to %d\n", ichan, ichip, imod, *(inttrim+ich) );
+	  //	  printf("could not trim channel %d chip %d module %d - set to %d\n", ichan, ichip, imod, *(inttrim+ich) );
 	  retval=FAIL;
 	}
 #ifdef VERBOSE 
-	else
-	  printf("channel %d trimbit %d\n",ich,*(inttrim+ich) );
+	//	else
+	//  printf("channel %d trimbit %d\n",ich,*(inttrim+ich) );
 #endif
 	initChannel(inttrim[ich],0,0,1,0,0,imod);
       }
@@ -453,7 +486,7 @@ int choose_vthresh() {
   int vthresh;
   int im=ALLMOD;
   int modma, modmi, nm;
-
+  int *fifodata;
 
   setFrames(1);
   // setNMod(getNModBoard());
@@ -469,6 +502,8 @@ int choose_vthresh() {
   
 
 
+    setDynamicRange(32);
+
   setCSregister(ALLMOD);
   setSSregister(ALLMOD);
   counterClear(ALLMOD);
@@ -480,7 +515,8 @@ int choose_vthresh() {
   }
   usleep(500);
   
-  scan=decode_data(fifo_read_event());
+    fifodata=fifo_read_event();
+    scan=decode_data(fifodata);
 
 
   for (imod=modmi; imod<modma; imod++) {
@@ -498,6 +534,7 @@ int choose_vthresh() {
   free(scan);
   while(change_flag && iteration<maxiterations) {
 
+    setDynamicRange(32);
     fifoReset(); 
     setCSregister(ALLMOD);
     setSSregister(ALLMOD);
@@ -508,7 +545,9 @@ int choose_vthresh() {
     while (runBusy()) {
     }
     usleep(500);
-    scan=decode_data(fifo_read_event());
+
+    fifodata=fifo_read_event();
+    scan=decode_data(fifodata);
 
     change_flag=0;
     printf("Vthresh iteration %3d 0f %3d\n",iteration, maxiterations);
@@ -571,6 +610,7 @@ int trim_with_median(int stop, int im) {
   int me[nModX];
   int modma, modmi, nm;
   int trim;
+  int *fifodata;
 
   setFrames(1);
   // setNMod(getNModBoard());
@@ -617,6 +657,7 @@ int trim_with_median(int stop, int im) {
   **************/
   while(change_flag && iteration<stop) {
 
+    setDynamicRange(32);
     fifoReset(); 
     setCSregister(ALLMOD);
     setSSregister(ALLMOD);
@@ -627,7 +668,9 @@ int trim_with_median(int stop, int im) {
     while (runBusy()) {
     }
     usleep(500);
-    scan=decode_data(fifo_read_event());
+    fifodata=fifo_read_event();
+    scan=decode_data(fifodata);
+
 
 
     /********* calculates median every time ***********/

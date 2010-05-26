@@ -946,6 +946,30 @@ typedef  struct sharedSlsDetector {
     \sa  finalDataQueue
   */ 
   detectorData* popFinalDataQueue();
+
+
+
+
+  /**
+  resets the raw data queue
+    \sa  dataQueue
+  */ 
+  void resetDataQueue();
+
+  /**
+  resets the postprocessed  data queue
+    \sa  finalDataQueue
+  */ 
+  void resetFinalDataQueue();
+
+
+
+
+
+
+
+
+
   /** 
       set/get timer value
       \param index timer index

@@ -76,7 +76,7 @@ enum {GET_ACTION, PUT_ACTION, READOUT_ACTION};
   */
   int dumpDetectorSetup(string const fname, int level=0);  
   /** 
-      retrieves alld possible detector parameters from file calling executeLine
+      retrieves all possible detector parameters from file calling executeLine
     \param fname file to be read
   */
   int retrieveDetectorSetup(string const fname, int level=0);
@@ -301,7 +301,7 @@ enum {GET_ACTION, PUT_ACTION, READOUT_ACTION};
      \param delflag if 1 the data are deleted, else left there for further processing (or plotting?)
   */
   
-  void acquire(int delflag);
+  void acquire(int delflag=1);
 
   /**
    get current timer value on the stop socket

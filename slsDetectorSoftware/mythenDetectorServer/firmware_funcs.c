@@ -1,5 +1,9 @@
-
+#ifndef PICASSOD
 #include "server_defs.h"
+#else
+#include "picasso_defs.h"
+#endif
+
 #include "firmware_funcs.h"
 #include "mcb_funcs.h"
 #include "registers.h"
@@ -207,14 +211,28 @@ u_int32_t getTotClockDivider() {
 }
 
 
+u_int32_t setTotDutyCycle(int d) {
+  u_int32_t c;
+  c=bus_r(SPEED_REG);
+  bus_w(SPEED_REG,(d<<TOTCLK_DUTYCYCLE_OFFSET)|(c&~(TOTCLK_DUTYCYCLE_MASK))); 
+  return ((bus_r(SPEED_REG)& TOTCLK_DUTYCYCLE_MASK)>>TOTCLK_DUTYCYCLE_OFFSET);    
+}
+
+u_int32_t getTotDutyCycle() {
+  u_int32_t clk_div;
+  clk_div=((bus_r(SPEED_REG)&TOTCLK_DUTYCYCLE_MASK)>>TOTCLK_DUTYCYCLE_OFFSET);
+  return clk_div;    
+}
+
+
 u_int32_t setExtSignal(int d, enum externalSignalFlag  mode) {
   
-  int modes[]={-1,EXT_SIG_OFF, EXT_GATE_IN_ACTIVEHIGH, EXT_GATE_IN_ACTIVELOW,EXT_TRIG_IN_RISING,EXT_TRIG_IN_FALLING,EXT_RO_TRIG_IN_RISING, EXT_RO_TRIG_IN_FALLING,EXT_GATE_OUT_ACTIVEHIGH, EXT_GATE_OUT_ACTIVELOW, EXT_TRIG_OUT_RISING, EXT_TRIG_OUT_FALLING, EXT_RO_TRIG_OUT_RISING, EXT_RO_TRIG_OUT_FALLING};
+  int modes[]={EXT_SIG_OFF, EXT_GATE_IN_ACTIVEHIGH, EXT_GATE_IN_ACTIVELOW,EXT_TRIG_IN_RISING,EXT_TRIG_IN_FALLING,EXT_RO_TRIG_IN_RISING, EXT_RO_TRIG_IN_FALLING,EXT_GATE_OUT_ACTIVEHIGH, EXT_GATE_OUT_ACTIVELOW, EXT_TRIG_OUT_RISING, EXT_TRIG_OUT_FALLING, EXT_RO_TRIG_OUT_RISING, EXT_RO_TRIG_OUT_FALLING};
 
   u_int32_t c;
   int off=d*SIGNAL_OFFSET;
   c=bus_r(EXT_SIGNAL_REG);
-  if (mode<=RO_TRIGGER_OUT_FALLING_EDGE)
+  if (mode<=RO_TRIGGER_OUT_FALLING_EDGE && mode>=0)
     bus_w(EXT_SIGNAL_REG,((modes[mode])<<off)|(c&~(SIGNAL_MASK<<off))); 
 
 
@@ -236,6 +254,70 @@ int getExtSignal(int d) {
     else 
       return -1;
     
+}
+
+
+int setConfigurationRegister(int d) {
+#ifdef VERBOSE
+  printf("Setting configuration register to %x",d);
+#endif
+  if (d>=0) {
+    bus_w(CONFIG_REG,d);
+  }
+#ifdef VERBOSE
+  printf("configuration register is %x", bus_r(CONFIG_REG));
+#endif
+  return bus_r(CONFIG_REG);
+}
+
+int setToT(int d) {
+ int ret=0;
+ int reg;
+#ifdef VERBOSE
+  printf("Setting ToT to %d\n",d);
+#endif
+  reg=bus_r(CONFIG_REG);
+#ifdef VERBOSE
+  printf("Before: ToT is %x\n", reg);
+#endif
+  if (d>0) {
+    bus_w(CONFIG_REG,reg|TOT_ENABLE_BIT);
+  } else if (d==0) {
+    bus_w(CONFIG_REG,reg&(~TOT_ENABLE_BIT));
+  } 
+  reg=bus_r(CONFIG_REG);
+#ifdef VERBOSE
+  printf("ToT is %x\n", reg);
+#endif
+  if (reg&TOT_ENABLE_BIT)
+    return 1;
+  else
+    return 0;
+}
+
+int setContinousReadOut(int d) {
+ int ret=0;
+ int reg;
+#ifdef VERBOSE
+  printf("Setting Continous readout to %d\n",d);
+#endif
+  reg=bus_r(CONFIG_REG);
+#ifdef VERBOSE
+  printf("Before: Continous readout is %x\n", reg);
+#endif
+  if (d>0) {
+    bus_w(CONFIG_REG,reg|CONT_RO_ENABLE_BIT);
+  } else if (d==0) {
+    bus_w(CONFIG_REG,reg&(~CONT_RO_ENABLE_BIT));
+  } 
+  reg=bus_r(CONFIG_REG);
+#ifdef VERBOSE
+  printf("Continous readout is %x\n", reg);
+#endif
+  if (reg&CONT_RO_ENABLE_BIT)
+    return 1;
+  else
+    return 0;
 }
 
 
@@ -353,29 +435,112 @@ int getNModBoard() {
 int setNMod(int n) {
   
   int fifo;
-  int ifsta, ifsto, ifste;
-  if (n>0 && n<=getNModBoard()) {
-    nModX=n;
-    dataBytes=nModX*nModY*NCHIP*NCHAN*dynamicRange/8;
-    allocateRAM();
+  // int ifsta, ifsto, ifste;
+  int imod;
+  int rval;
+  int reg;
+
+  int shiftfifo=SHIFTFIFO;
+  int ntot=getNModBoard();
+
+  switch (dynamicRange) {
+  case 16:
+    shiftfifo=SHIFTFIFO-1;
+    break;
+  case 8:
+    shiftfifo=SHIFTFIFO-2;
+    break;
+  case 4:
+    shiftfifo=SHIFTFIFO-3;
+    break;
+  case 1:
+    shiftfifo=SHIFTFIFO-5;
+    break;
+  default:
+    shiftfifo=SHIFTFIFO;
   }
 
 
-  /* should enable all fifos*/
-  bus_w(FIFO_CNTRL_REG_OFF+(ALLFIFO<<SHIFTMOD), FIFO_RESET_BIT | FIFO_DISABLE_TOGGLE_BIT); 
+#ifdef VERBOSE
+  printf("SetNMod called arg %d -- dr %d shiftfifo %d\n",n,dynamicRange,shiftfifo);
+#endif
+  if (n>0 && n<=ntot) {
+    nModX=n;
+    // dataBytes=nModX*nModY*NCHIP*NCHAN*dynamicRange/8;
+    //allocateRAM();
 
+
+  /* should enable all fifos*/
+    /*  //  bus_w(FIFO_CNTRL_REG_OFF+(ALLFIFO<<SHIFTFIFO), FIFO_RESET_BIT | FIFO_DISABLE_TOGGLE_BIT); 
+    bus_w(FIFO_CNTRL_REG_OFF+(ALLFIFO<<shiftfifo), FIFO_RESET_BIT | FIFO_DISABLE_TOGGLE_BIT); 
+#ifdef VERBOSE
+    printf("a %08x r %08x\n",FIFO_CNTRL_REG_OFF+(ALLFIFO<<shiftfifo),FIFO_RESET_BIT | FIFO_DISABLE_TOGGLE_BIT);  
+    for (ififo=0; ififo<ntot*NCHIP; ififo++) {
+      printf("%d %08x\n",ififo,bus_r(FIFO_COUNTR_REG_OFF+(ififo<<shiftfifo)));
+    }
+#endif
+
+    ifste=dynamicRange/32; 
+    ifsta=nModX*NCHIP*ifste;
+    ifsto=ntot*NCHIP*ifste;
+    */
   /*d isable the fifos relative to the unused modules */
   
-  ifste=NCHAN*dynamicRange/32; 
-  ifsta=nModX*NCHIP*ifste;
-  ifsto=nModBoard*NCHIP*ifste;
- 
-  for (ififo=ifsta; ififo<ifsto; ififo+=ifste) {
-    //fifocntrl[ififo]=FIFO_DISABLE_TOGGLE_BIT;
-    bus_w(FIFO_CNTRL_REG_OFF+(ififo<<SHIFTMOD), FIFO_DISABLE_TOGGLE_BIT); 
-    printf("Disabling fifo %d\n",ififo);
-  } 
+      for (ififo=0; ififo<ntot*NCHIP; ififo++) {
+	//for (ififo=ifsta; ififo<ifsto; ififo+=ifste) {
+      //fifocntrl[ififo]=FIFO_DISABLE_TOGGLE_BIT;
 
+	reg=bus_r(FIFO_COUNTR_REG_OFF+(ififo<<shiftfifo));
+
+#ifdef VERBOSE
+      printf("Fifo %d is %x",ififo,reg);
+#endif
+      if (ififo<n*NCHIP) {
+	if (reg&FIFO_DISABLED_BIT)
+	  bus_w(FIFO_CNTRL_REG_OFF+(ififo<<shiftfifo), FIFO_DISABLE_TOGGLE_BIT); 
+      } else {
+	if ((reg&FIFO_DISABLED_BIT)==0)
+	  bus_w(FIFO_CNTRL_REG_OFF+(ififo<<shiftfifo), FIFO_DISABLE_TOGGLE_BIT); 
+      }    
+#ifdef VERBOSE
+      printf(" done %x\n",bus_r(FIFO_COUNTR_REG_OFF+(ififo<<shiftfifo)));
+#endif
+    } 
+  }
+  // ifste=dynamicRange/32; 
+  nModX=0;
+  for (imod=0; imod<ntot; imod++) {
+    rval=0;
+    for (ififo=imod*NCHIP; ififo<(imod+1)*NCHIP; ififo++) {//
+      //for (ififo=imod*NCHIP*ifste; ififo<(imod+1)*NCHIP*ifste; ififo+=ifste) {
+      if ((bus_r(FIFO_COUNTR_REG_OFF+(ififo<<shiftfifo))&FIFO_DISABLED_BIT)==0){
+	rval=1; // checks if at least one fifo of the module is enabled
+#ifdef VERBOSE
+	printf("%x  Fifo %d is enabled\n",(bus_r(FIFO_COUNTR_REG_OFF+(ififo<<shiftfifo))), ififo);
+#endif
+
+
+      }
+#ifdef VERBOSE
+       else printf("%x  Fifo %d is disabled\n",(bus_r(FIFO_COUNTR_REG_OFF+(ififo<<shiftfifo))),ififo);
+#endif
+    } 
+    if (rval) {
+      nModX++;
+#ifdef VERBOSE
+      printf("Module %d is enabled --total %d\n",imod,nModX );
+#endif
+    }
+#ifdef VERBOSE 
+      else printf("Module %d is disabled --total %d\n",imod,nModX );
+#endif
+  }
+#ifdef VERBOSE
+  printf("There are %d modules enabled\n",nModX);
+#endif
+  //  dataBytes=nModX*nModY*NCHIP*NCHAN*dynamicRange/8;
+  // allocateRAM();
+  getDynamicRange();
 
   return nModX;
 }
@@ -519,6 +684,32 @@ int64_t getProbes(){
 }
 
 
+int setDACRegister(int idac, int val, int imod) {
+  u_int32_t addr, reg, mask;
+  int off;
+#ifdef VERBOSE
+  printf("Settings dac %d module %d register to %d\n",idac,imod,val);
+#endif
+   if ((idac%2)==0) {
+     addr=MOD_DACS1_REG;
+   } else {
+     addr=MOD_DACS2_REG;
+   }
+   off=(idac%3)*10;
+   mask=~((0x3ff)<<off);
+
+   if (val>=0 && val<DAC_DR) {
+     reg=bus_r(addr+(imod<<SHIFTMOD));
+     reg&=mask;
+     reg|=(val<<off);
+     bus_w(addr+(imod<<SHIFTMOD),reg);
+   }
+   val=(bus_r(addr+(imod<<SHIFTMOD))>>off)&0x3ff;
+#ifdef VERBOSE
+  printf("Dac %d module %d register is %d\n",idac,imod,val);
+#endif
+   return val;
+}
 
 
 
@@ -624,10 +815,28 @@ u_int32_t getNBits()
 
 u_int32_t fifoReadCounter(int fifonum)
 {
-  int rval=0;
-  rval=bus_r(FIFO_COUNTR_REG_OFF+(fifonum<<SHIFTFIFO));
+  int rval=0;  
+  int shiftfifo;
+  switch (dynamicRange) {
+  case 16:
+    shiftfifo=SHIFTFIFO-1;
+    break;
+  case 8:
+    shiftfifo=SHIFTFIFO-2;
+    break;
+  case 4:
+    shiftfifo=SHIFTFIFO-3;
+    break;
+  case 1:
+    shiftfifo=SHIFTFIFO-5;
+    break;
+  default:
+    shiftfifo=SHIFTFIFO;
+  }
+
+  rval=bus_r(FIFO_COUNTR_REG_OFF+(fifonum<<shiftfifo));
 #ifdef VERBOSE
-  printf("FIFO %d countains %x words\n",fifonum, rval);
+  printf("FIFO %d contains %x words\n",fifonum, rval);
 #endif
   return rval;
 }
@@ -656,17 +865,25 @@ u_int32_t* fifo_read_event()
 #ifdef VIRTUAL
   return NULL;
 #endif
-  while (bus_r(LOOK_AT_ME_REG)==0) {
 #ifdef VERYVERBOSE
-    printf("Waiting for data\n");
-#endif
+  printf("before looping\n");
+  for (ichip=0; ichip<nModBoard*NCHIP; ichip++) {
+    fifoReadCounter(ichip); 
+  }
+#endif 
+  while(bus_r(LOOK_AT_ME_REG)==0) {
+    //#ifdef VERYVERBOSE
+    printf("Waiting for data status %x\n",runState());
+    //#endif
     if (runBusy()==0) {
        if (bus_r(LOOK_AT_ME_REG)==0) {
+#ifdef VERBOSE
+	 printf("no frame found %x status %x\n", bus_r(LOOK_AT_ME_REG),runState());
 #ifdef VERYVERBOSE
-	 printf("no frame found\n");
 	 for (ichip=0; ichip<nModBoard*NCHIP; ichip++) {
 	   fifoReadCounter(ichip); 
 	 }
+#endif
 #endif
 	 return NULL;
        } else {
@@ -674,7 +891,7 @@ u_int32_t* fifo_read_event()
        }
     }
    }
-#ifdef VERYVERBOSE
+#ifdef VERBOSE
   printf("before readout\n");
   for (ichip=0; ichip<nModBoard*NCHIP; ichip++) {
     fifoReadCounter(ichip); 
@@ -694,7 +911,6 @@ u_int32_t* fifo_read_event()
     now_ptr+=dataBytes;
   }
   return ram_values;
-  
 }
 
 
@@ -711,6 +927,9 @@ u_int32_t* decode_data(int *datain)
   int ibyte, ibit;
   char iptr;
 
+#ifdef VERBOSE
+  printf("Decoding data for DR %d\n",dynamicRange);
+#endif
   dataout=malloc(nChans*nChips*nModX*4);
   ichan=0;
   switch (dynamicRange) {
@@ -761,15 +980,18 @@ u_int32_t* decode_data(int *datain)
 
 int setDynamicRange(int dr) {
   int ow;
+  int nm;
+
   u_int32_t np=getProbes();
 #ifdef VERYVERBOSE
   printf("probes==%02x\n",np);
 #endif
   if (dr>0) {
-    if (dr<=1) {
+    nm=setNMod(-1);
+    if (dr==1) {
       dynamicRange=1;
       ow=5;
-    }    else if (dr<=4) {
+    } else if (dr<=4) {
       dynamicRange=4;
       ow=4;
     }    else if (dr<=8) {
@@ -785,7 +1007,7 @@ int setDynamicRange(int dr) {
     setCSregister(ALLMOD);
     initChipWithProbes(0, ow,np, ALLMOD);
     putout("0000000000000000",ALLMOD);
-    
+    setNMod(nm);
   }
   
 

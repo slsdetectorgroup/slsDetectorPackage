@@ -347,6 +347,13 @@ string mythenDetector::executeLine(int narg, char *args[], int action) {
     }
     sprintf(answer,"%d",setThreadedProcessing());
     return string(answer);
+  } else if (var=="online") {
+    if (action==PUT_ACTION) {
+      sscanf(args[1],"%d",&ival);
+      setOnline(ival);
+    }
+    sprintf(answer,"%d",setOnline());
+    return string(answer);
   }
 
 
@@ -517,21 +524,21 @@ string mythenDetector::executeLine(int narg, char *args[], int action) {
     else if (var=="exptime") {
       if (action==PUT_ACTION) {
 	sscanf(args[1],"%f",&fval);// in seconds!
-	setTimer(ACQUISITION_TIME,fval*1E+9);
+	setTimer(ACQUISITION_TIME,(int64_t)(fval*1E+9));
       } 
       sprintf(answer,"%f",(float)setTimer(ACQUISITION_TIME)*1E-9);
       return string(answer);
     } else if (var=="period") {
       if (action==PUT_ACTION) {
 	sscanf(args[1],"%f",&fval);// in seconds!
-	setTimer(FRAME_PERIOD,fval*1E+9);
+	setTimer(FRAME_PERIOD,(int64_t)(fval*1E+9));
       }
       sprintf(answer,"%f",(float)setTimer(FRAME_PERIOD)*1E-9);
       return string(answer);
     } else if (var=="delay") {
       if (action==PUT_ACTION) {
 	sscanf(args[1],"%f",&fval);// in seconds!
-	setTimer(DELAY_AFTER_TRIGGER,fval*1E+9);
+	setTimer(DELAY_AFTER_TRIGGER,(int64_t)(fval*1E+9));
       } 
       sprintf(answer,"%f",(float)setTimer(DELAY_AFTER_TRIGGER)*1E-9);
       return string(answer);
@@ -991,10 +998,8 @@ string mythenDetector::helpLine( int action) {
 int mythenDetector::readConfigurationFile(string const fname){
   
   string ans;
-  char line[500];
   string str;
   ifstream infile;
-  string::size_type pos;
   int iargval;
   int interrupt=0;
   char *args[100];
@@ -1084,7 +1089,6 @@ int mythenDetector::writeConfigurationFile(string const fname){
     args[ia]=new char[1000];
   }
 
-  int nargs;
 
   outfile.open(fname.c_str(),ios_base::out);
   if (outfile.is_open()) {
@@ -1134,7 +1138,6 @@ int mythenDetector::dumpDetectorSetup(string fname, int level){
   int iv=0;
   string fname1;
   ofstream outfile;
-  char dum[100];
   char *args[2];
   for (int ia=0; ia<2; ia++) {
     args[ia]=new char[1000];
@@ -1217,7 +1220,7 @@ int mythenDetector::dumpDetectorSetup(string fname, int level){
 #ifdef VERBOSE
   std::cout<< "wrote " <<iv << " lines to  "<< fname1 << std::endl;
 #endif
-
+  return 0;
 }
 
 
@@ -1226,10 +1229,8 @@ int mythenDetector::retrieveDetectorSetup(string fname1, int level){
 
    
    string fname;
-   char line[500];
    string str;
    ifstream infile;
-   string::size_type pos;
    int iargval;
    int interrupt=0;
   char *args[2];
@@ -1321,9 +1322,8 @@ int mythenDetector::retrieveDetectorSetup(string fname1, int level){
   string str;
   ifstream infile;
   ostringstream oss;
-  int isgood=1;
   int iline=0;
-  string names[]={"Vtrim", "Vthresh", "Rgsh1", "Rgsh2", "Rgpr", "Vcal", "outBuffEnable"};
+  // string names[]={"Vtrim", "Vthresh", "Rgsh1", "Rgsh2", "Rgpr", "Vcal", "outBuffEnable"};
   string sargname;
   int ival;
   int ichan=0, ichip=0, idac=0;
@@ -1464,7 +1464,7 @@ int mythenDetector::writeTrimFile(string fname, sls_detector_module mod){
 
     if (outfile.is_open()) {
       for (idac=0; idac<mod.ndac; idac++) {
-	iv=mod.dacs[idac];
+	iv=(int)mod.dacs[idac];
 	outfile << names[idac] << " " << iv << std::endl;
       }
       
@@ -1542,7 +1542,7 @@ int mythenDetector::writeDataFile(string fname, float *data, float *err, float *
 	break;
       case 'i':
       default:
-	idata=*(data+ichan);
+	idata=(int)(*(data+ichan));
 	outfile << idata << " ";
       }
      if (err) {
@@ -1626,7 +1626,7 @@ int mythenDetector::readDataFile(string fname, float *data, float *err, float *a
 	ssstr >> ichan >> fdata;
 	ich=ichan;
 	if (ich!=iline) 
-	  std::cout<< "Channel number " << ichan << " does not match with line number " << iline << std::endl;
+	  std::cout<< "Channel number " << ichan << " does not match with line number " << iline << " " << dataformat << std::endl;
       } else {
 	ssstr >> fang >> fdata;
 	ich=iline;
@@ -1716,7 +1716,6 @@ int mythenDetector::readDataFile(string fname, int *data){
 
 int mythenDetector::readCalibrationFile(string fname, float &gain, float &offset){
 
-  char line[500];
   string str;
   ifstream infile;
 #ifdef VERBOSE
@@ -1740,7 +1739,22 @@ int mythenDetector::readCalibrationFile(string fname, float &gain, float &offset
 };
 
 int mythenDetector::writeCalibrationFile(string fname, float gain, float offset){
-  std::cout<< "Function not yet implemented " << std::endl;
+  //std::cout<< "Function not yet implemented " << std::endl;
+  ofstream outfile;
+
+  outfile.open (fname.c_str());
+
+  // >> i/o operations here <<
+  if (outfile.is_open()) {
+    outfile << offset << " " << gain << std::endl;
+  } else {
+    std::cout<< "Could not open calibration file "<< fname << " for writing" << std::endl;
+    return -1;
+  }
+
+  outfile.close();
+
+  return 0;
 };
 
 
@@ -1817,7 +1831,6 @@ int mythenDetector::getAngularConversion(int &direction,  angleConversionConstan
 
 
 int mythenDetector::readAngularConversion(string fname) {
-  char line[500];
   string str;
   ifstream infile;
   int mod;
@@ -1926,7 +1939,7 @@ int  mythenDetector::addToMerging(float *p1, float *v1, float *e1, float *mp, fl
   float binmi=-180., binma;
   int ibin=0;
   int imod;
-  float ang;
+  float ang=0;
 
   if (thisDetector->binSize>0)
     binsize=thisDetector->binSize;
@@ -2098,12 +2111,10 @@ void* mythenDetector::processData(int delflag) {
   float *ffcdata=NULL, *ffcerr=NULL;
   float *ang=NULL;
   float bs=0.004;
-  int i=0;
   int imod;
   int nb;
   int np;
   detectorData *thisData;
-  int outer_c_s;
   int dum=1;
   //  thisDetector->progressIndex=0;
 
@@ -2194,7 +2205,7 @@ void* mythenDetector::processData(int delflag) {
 		thisDetector->binSize=bs;
 	      
 	      
-	      nb=(360./bs);
+	      nb=(int)(360./bs);
 	      
 	      mergingBins=new float[nb];
 	      mergingCounts=new float[nb];
@@ -2329,16 +2340,15 @@ void* mythenDetector::processData(int delflag) {
       }
       dum=0;
   } // ????????????????????????
+  return 0;
 }
 
 
 
 void mythenDetector::startThread(int delflag) {
-  pthread_attr_t tattr, mattr;
+  pthread_attr_t tattr;
   int ret;
-  int newprio;
   sched_param param, mparam;
-  void *arg;
   int policy= SCHED_OTHER;
 
 
@@ -2374,7 +2384,6 @@ void mythenDetector::startThread(int delflag) {
 
 void* startProcessData(void *n) {
   //void* processData(void *n) {
-   void *w;
    mythenDetector *myDet=(mythenDetector*)n;
    myDet->processData(1);
    pthread_exit(NULL);
@@ -2383,7 +2392,6 @@ void* startProcessData(void *n) {
 
 void* startProcessDataNoDelete(void *n) {
    //void* processData(void *n) {
-  void *w;
   mythenDetector *myDet=(mythenDetector*)n;
   myDet->processData(0);
   pthread_exit(NULL);

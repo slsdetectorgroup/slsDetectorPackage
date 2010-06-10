@@ -34,7 +34,7 @@ class mythenDetector : public slsDetector{
   //slsDetector(string  const fname);
   //  ~slsDetector(){while(dataQueue.size()>0){}};
   /** destructor */ 
-    ~mythenDetector(){};
+  virtual ~mythenDetector(){};
     
   /**
      executes a set of string arguments according to a given format. It is used to read/write configuration file, dump and retrieve detector settings and for the command line interface command parsing
@@ -311,7 +311,6 @@ enum {GET_ACTION, PUT_ACTION, READOUT_ACTION};
 
   int64_t getTimeLeft(timerIndex index);
 
-  /**
   /**
      get run status on the stop socket
     \returns status mask

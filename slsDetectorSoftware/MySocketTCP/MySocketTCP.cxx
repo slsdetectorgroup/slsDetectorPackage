@@ -19,7 +19,7 @@ MySocketTCP::~MySocketTCP(){
 }
 
 
-MySocketTCP::MySocketTCP(unsigned short int const port_number): last_keep_connection_open_action_was_a_send(0), file_des(-1), send_rec_max_size(SEND_REC_MAX_SIZE), is_a_server(1), portno(DEFAULT_PORTNO), socketDescriptor(-1)
+MySocketTCP::MySocketTCP(unsigned short int const port_number):portno(DEFAULT_PORTNO), is_a_server(1),  socketDescriptor(-1), file_des(-1), send_rec_max_size(SEND_REC_MAX_SIZE), last_keep_connection_open_action_was_a_send(0)
 { // receiver (server) local no need for ip 
 
   portno=port_number;
@@ -48,8 +48,7 @@ MySocketTCP::MySocketTCP(unsigned short int const port_number): last_keep_connec
 
 
 
-MySocketTCP::MySocketTCP(const char* const host_ip_or_name, unsigned short int const port_number):
-  last_keep_connection_open_action_was_a_send(0), file_des(-1), send_rec_max_size(SEND_REC_MAX_SIZE), is_a_server(0), portno(DEFAULT_PORTNO), socketDescriptor(-1)
+MySocketTCP::MySocketTCP(const char* const host_ip_or_name, unsigned short int const port_number):portno(DEFAULT_PORTNO), is_a_server(0), socketDescriptor(-1),file_des(-1), send_rec_max_size(SEND_REC_MAX_SIZE), last_keep_connection_open_action_was_a_send(0)
 { // sender (client): where to? ip 
   // SetupParameters();
   strcpy(hostname,host_ip_or_name);
@@ -160,7 +159,17 @@ int MySocketTCP::Connect(){
       cerr << "Can not create socket "<<endl;
        file_des = socketDescriptor;
     } else {
-    
+      struct timeval tout;
+      tout.tv_sec  = 10;
+      tout.tv_usec = 0;
+      if(::setsockopt(socketDescriptor, SOL_SOCKET, SO_RCVTIMEO, &tout, sizeof(struct timeval)) <0)
+	{
+	  cerr << "Error in setsockopt SO_RCVTIMEO" << endl;
+	}
+      if(::setsockopt(socketDescriptor, SOL_SOCKET, SO_SNDTIMEO, &tout, sizeof(struct timeval)) < 0)
+	{
+	  cerr << "Error in setsockopt SO_RCVTIMEO" << endl;
+	}
       if(connect(socketDescriptor,(struct sockaddr *) &serverAddress,sizeof(serverAddress))<0){
 	cerr << "Can not connect to socket "<<endl;
 	file_des = -1;

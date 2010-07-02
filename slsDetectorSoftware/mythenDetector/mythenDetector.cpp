@@ -465,7 +465,15 @@ string mythenDetector::executeLine(int narg, char *args[], int action) {
     }
     sprintf(answer,"%llx",getId(DETECTOR_SOFTWARE_VERSION));
     return string(answer);
-  } else if (var.find("digitest")==0) {//else if (var=="digitest") {
+  } else if (var=="thisversion") {
+    if (action==PUT_ACTION) {
+      return string("cannot set ");
+    }
+    sprintf(answer,"%llx",getId(THIS_SOFTWARE_VERSION));
+    return string(answer);
+  } 
+
+  else if (var.find("digitest")==0) {//else if (var=="digitest") {
     cout << "digitest" << endl;
     if (action==PUT_ACTION) {
 	return string("cannot set ");
@@ -902,6 +910,8 @@ string mythenDetector::helpLine( int action) {
     os << "detectorversion\t Gets the detector firmware version " << std::endl;
     os << std::endl;
     os << "softwareversion\t Gets the detector software version " << std::endl;
+    os << std::endl;
+    os << "thisversion\t Gets the version of this software" << std::endl;
     os << std::endl;
     os << "digitest\t Makes a digital test of the detector. Returns 0 if it succeeds " << std::endl;
     os << std::endl;

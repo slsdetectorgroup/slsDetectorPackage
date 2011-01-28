@@ -1,0 +1,82 @@
+##!/bin/bash
+
+: ${QTDIR="/usr/lib/qt-3.3"}
+read -p "Qt3.3 installation directory [default:\"$QTDIR\"]:" -e t1
+if [ -z "$t1" ]
+then
+echo
+else
+	
+	QTDIR=$t1
+fi
+echo "QTDIR will be  \"$QTDIR\""
+export QTDIR
+
+: ${ROOTSYS="/usr/local/root"}
+read -p "Root installation directory [default:\"$ROOTSYS\"]:" -e t1
+if [ -z "$t2" ]
+then
+echo
+else
+
+	ROOTSYS=$t2
+fi
+echo "ROOTSYS will be  \"$ROOTSYS\""	
+export ROOTSYS
+
+: ${INSTALLROOT="/usr/local/"}
+read -p "Installation directory [default:\"$INSTALLROOT\"]:" -e t3
+if [ -z "$t3" ]
+then
+echo
+else
+	INSTALLROOT=$t3
+fi
+echo "INSTALLROOT will be  \"$INSTALLROOT\""	
+export INSTALLROOT
+
+: ${BINDIR="bin"}
+read -p "Binaries directory [default:\"$BINDIR\"]:" -e t4
+if [ -z "$t4" ]
+then
+echo
+else
+	BINDIR=$t4
+fi
+echo "BINDIR will be  \"$BINDIR\""	
+export BINDIR
+
+: ${LIBDIR="lib"}
+read -p "Libraries directory [default:\"$LIBDIR\"]:" -e t5
+if [ -z "$t5" ]
+then
+echo
+else
+	LIBDIR=$t5
+fi	
+echo "LIBDIR will be  \"$LIBDIR\""	
+export LIBDIR
+
+:  ${INCDIR="include/slsdetector"}
+read -p "Includes directory [default:\"$INCDIR\"]:" -e t6
+if [ -z "$t6" ]
+then
+echo
+else
+	INCDIR=$t6
+fi	
+echo "INCDIR will be  \"$INCDIR\""	
+export INCDIR
+
+:  ${DOCDIR="share/doc"}
+read -p "Documentation directory [default:\"$DOCDIR\"]:" -e t7
+if [ -z "$t7" ]
+then
+echo
+else	
+	DOCDIR=$t7
+fi
+echo "DOCDIR will be  \"$DOCDIR\""
+export DOCDIR
+
+

@@ -52,9 +52,10 @@ int initDetector() {
   int imod;
   //  sls_detector_module *myModule;
   int n=getNModBoard();
-#ifdef VERBOSE
+  nModX=n;
+  //#ifdef VERBOSE
   printf("Board is for %d modules\n",n);
-#endif
+  //#endif
   detectorModules=malloc(n*sizeof(sls_detector_module));
   detectorChips=malloc(n*NCHIP*sizeof(int));
 
@@ -1446,9 +1447,8 @@ int initChipWithProbes(int obe, int ow,int nprobes, int imod){
   int im, ichip;
   int chipmi, chipma, modmi, modma;
 
-  int64_t regval, dum;
+  int64_t regval=0, dum;
   int omask;
- 
   switch (ow) {
   case 2:
     omask=2;
@@ -1466,10 +1466,16 @@ int initChipWithProbes(int obe, int ow,int nprobes, int imod){
     omask=0;//1;
     break;
   }
- 
-  regval=(omask<<OUTMUX_OFFSET)|(nprobes<<PROBES_OFFSET)|(obe<<OUTBUF_OFFSET);
+
+#ifdef VERBOSE 
+  printf("\n \n \n",regval);
+  printf("initChip ow=%d omask=%d probes=%d\n",ow, omask,nprobes);
+#endif
+  regval|=(omask<<OUTMUX_OFFSET);
+  regval|=(nprobes<<PROBES_OFFSET);
+  regval|=(obe<<OUTBUF_OFFSET);
 #ifdef VERBOSE
-  printf("initChip: shift in will be %08x\n",regval);
+  printf("initChip : shift in will be %08x\n",regval);
 #endif
   /* clearing shift in register */
 
@@ -1909,6 +1915,7 @@ int testShiftIn(int imod) {
       
     }
     putout("0000000000000000", ALLMOD); 
+    printf("Shift in module %d : %d errors\n", imod,result);
     if (result)
       return 1;
     else
@@ -1922,7 +1929,7 @@ int testShiftOut(int imod) {
 
   printf("testing shift out for module %d\n", imod);
 
-  setCSregister(254);
+  setCSregister(ALLMOD);
   for (i=0; i<24; i++) {
     if (dum & 1<<i) {
       putout("0100010000000000",ALLMOD);  
@@ -1962,6 +1969,7 @@ int testShiftOut(int imod) {
     putout("0010010000000000",ALLMOD);  
   }
   putout("0000000000000000", ALLMOD);  
+  printf("Shift out module %d : %d errors\n", imod,result);
     if (result)
       return 1;
     else
@@ -2010,7 +2018,8 @@ int testShiftStSel(int imod) {
 
     putout("0010011000000000",ALLMOD);  
   }  
-  putout("0000011000000000",ALLMOD);  
+  putout("0000011000000000",ALLMOD); 
+  printf("Shift stsel module %d : %d errors\n", imod,result); 
     if (result)
       return 1;
     else
@@ -2103,7 +2112,7 @@ int testExtPulse(int imod) {
 
 int testExtPulseMux(int imod, int ow) {
 
-  int i, ichan, ichip, result=0,   ind;
+  int i, ichan, ichip, result=0,   ind, chipr=0;
   int  *values, *v1;  
   int vright,v;
   int nbit_mask=0xffffff;
@@ -2157,19 +2166,25 @@ int testExtPulseMux(int imod, int ow) {
     return 1;
   }
   for (ichip=0; ichip<NCHIP; ichip++) {
+    chipr=0;
       for (ichan=0; ichan<NCHAN; ichan++) { 
 	ind=ichan+(ichip+imod*NCHIP)*NCHAN;
 	v=values[ind];
 	vright=(ichan*(ichip+1))&nbit_mask;
 	if (v!=vright) {
 	  result++;
-	  printf("Counter test mux %d mode: channel %d (%x) read %d instead of %d\n",ow, ichan+(ichip+imod*NCHIP)*NCHAN, ind, v, vright);
+	  chipr++;
+	  printf("Counter test mux %d mode: channel %d chip %d read %d instead of %d\n",ow, ichan+(ichip+imod*NCHIP)*NCHAN, ichip, v, vright);
 	  //break;
 	}
 	//printf("\n");
       }
+      if (chipr)
+	printf("Test Counter  module %d chip%d mux %d: %d errors\n", imod,ichip, ow,chipr);
   }
   free(values);
+  if (result)
+    printf("Test Counter  module %d mux %d: %d errors\n", imod,ow,result);
 
   if (result)
     return 1;
@@ -2180,7 +2195,7 @@ int testExtPulseMux(int imod, int ow) {
 
 int testDataInOutMux(int imod, int ow, int num) {
 
-  int  ichan, ichip, result=0,  ind;
+  int  ichan, ichip, result=0, chipr=0,  ind;
   int vright,v;
   int nbit_mask=0xffffff;
   int *values, *v1;
@@ -2226,18 +2241,23 @@ int testDataInOutMux(int imod, int ow, int num) {
     return 1;
   }
   for (ichip=0; ichip<NCHIP; ichip++) {
+    chipr=0;
       for (ichan=0; ichan<NCHAN; ichan++) { 
 	ind=ichan+(ichip+imod*NCHIP)*NCHAN;
 	v=values[ind];
 	if (v!=vright) {
 	  result++;
-	  printf("Counter test mux %d mode: channel %d (%x) read %d instead of %d\n",ow, ichan+(ichip+imod*NCHIP)*NCHAN, ind, v, vright);
+	  chipr++;
+	  printf("DataInOut test mux %d mode: channel %d chip %d  read %d instead of %d\n",ow, ichan+(ichip+imod*NCHIP)*NCHAN, ichip, v, vright);
 	  //break;
 	}
 	//printf("\n");
       }
+      if (chipr)
+	printf("Test DatInOut module %d chip %d mux %d: %d errors\n", imod,ichip, ow,chipr);
   }
-
+  if (result)
+    printf("Test DatInOut module %d mux %d: %d errors\n", imod,ow,result);
   free(values);
   if (result)
     return 1;
@@ -2426,6 +2446,7 @@ int testOutMux(int imod) {
       putout("0000000000000000",ALLMOD);
     }  
     
+    printf("Test OutMux module %d : %d errors\n", imod,result);
   if (result)
     return 1;
   else
@@ -2544,6 +2565,7 @@ int testFpgaMux(int imod)  {
       putout("0000000000000000",ALLMOD);
     }  
     
+    printf("Test FpgaMux module %d : %d errors\n", imod,result);
   if (result)
     return 1;
   else

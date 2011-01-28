@@ -135,7 +135,6 @@ class slsDetector {
 typedef  struct sharedSlsDetector {
   /** already existing flag. If the detector does not yet exist (alreadyExisting=0) the sharedMemory will be created, otherwise it will simly be linked */
     int alreadyExisting;
-  /*
   /** online flag - is set if the detector is connected, unset if socket connection is not possible  */
   int onlineFlag;
  
@@ -204,6 +203,8 @@ typedef  struct sharedSlsDetector {
   int threadedProcessing;
     /** dead time (in ns) for rate corrections */
     float tDead;
+  /** directory where the flat field files are stored */
+  char flatFieldDir[MAX_STR_LENGTH];
   /** file used for flat field corrections */
   char flatFieldFile[MAX_STR_LENGTH];
     /** number of bad channels from bad channel list */
@@ -284,7 +285,7 @@ typedef  struct sharedSlsDetector {
   //slsDetector(string  const fname);
   //  ~slsDetector(){while(dataQueue.size()>0){}};
   /** destructor */ 
-  ~slsDetector(){};
+  virtual ~slsDetector(){};
 
 
   /** sets the onlineFlag
@@ -566,7 +567,12 @@ typedef  struct sharedSlsDetector {
   \sa  angleConversionConstant mythenDetector::writeAngularConversion
   */
   virtual int writeAngularConversion(string fname="")=0;
- 
+
+  /** Returns the number of channels per chip */
+  int getNChans(){return thisDetector->nChans;}; //
+
+  /** Returns the number of chips per module */
+  int getNChips(){return thisDetector->nChips;}; //
 
 
   /* Communication to server */
@@ -620,7 +626,7 @@ typedef  struct sharedSlsDetector {
       \param d dimension
       \returns current number of modules in direction d
   */
-  int setNumberOfModules(int n, dimension d=X); // if n=GET_FLAG returns the number of installed modules
+  int setNumberOfModules(int n=GET_FLAG, dimension d=X); // if n=GET_FLAG returns the number of installed modules
 
   /*
     returns the instrinsic size of the detector (maxmodx, maxmody, nchans, nchips, ndacs
@@ -1057,6 +1063,17 @@ s
       \returns 0 if ff correction disabled, >0 otherwise
   */
   int getFlatFieldCorrection(float *corr=NULL, float *ecorr=NULL);
+
+ /** 
+      get flat field corrections file directory
+      \returns flat field correction file directory
+  */
+  char *getFlatFieldCorrectionDir(){return thisDetector->flatFieldDir;};
+ /** 
+      set flat field corrections file directory
+      \param flat field correction file directory
+  */
+  void setFlatFieldCorrectionDir(string dir){strcpy(thisDetector->flatFieldDir,dir.c_str());};
   
  /** 
       get flat field corrections file name
@@ -1326,6 +1343,8 @@ s
 
  protected:
  
+  static const int64_t thisSoftwareVersion=0x20110113;
+
   /**
     address of the detector structure in shared memory
   */

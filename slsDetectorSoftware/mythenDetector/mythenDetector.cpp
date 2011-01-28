@@ -148,6 +148,14 @@ string mythenDetector::executeLine(int narg, char *args[], int action) {
 	return string("none");
       }
     }
+  } else if (var=="ffdir") {
+    if (action==PUT_ACTION) {
+      sval=string(args[1]);
+      if (sval=="none")
+	sval="";
+      setFlatFieldCorrectionDir(sval); 
+    }
+    return string(getFlatFieldCorrectionDir());
   } else if (var=="ratecorr") {
     if (action==PUT_ACTION) {
       sscanf(args[1],"%f",&fval);
@@ -367,7 +375,8 @@ string mythenDetector::executeLine(int narg, char *args[], int action) {
      //setNumberOfModules(ival);
     } else
       ival=GET_FLAG;
-    sprintf(answer,"%d",setNumberOfModules(ival));
+    setNumberOfModules(ival);
+    sprintf(answer,"%d",setNumberOfModules(GET_FLAG));
     return string(answer);
   } else if (var=="maxmod") {
     if (action==PUT_ACTION) {
@@ -376,8 +385,12 @@ string mythenDetector::executeLine(int narg, char *args[], int action) {
     sprintf(answer,"%d",getMaxNumberOfModules());
     return string(answer);
   } else if (var.find("extsig")==0) {
+    if (var.size()<=7)
+      return string("syntax is extsig:i where signal is signal number");
     istringstream vvstr(var.substr(7));
     vvstr >> ival;
+    if (vvstr.fail())
+      return string("syntax is extsig:i where signal is signal number");
     externalSignalFlag flag=GET_EXTERNAL_SIGNAL_FLAG, ret;
     if (action==PUT_ACTION) {
       sval=string(args[1]);
@@ -436,9 +449,13 @@ string mythenDetector::executeLine(int narg, char *args[], int action) {
     if (action==PUT_ACTION) {
       return string("cannot set");
     }
+    if (var.size()<=13)
+      return string("syntax is modulenumber:i where is is module number");
     istringstream vvstr(var.substr(13));
     vvstr >> ival; 
-    cout << var.substr(13) << endl;
+    if (vvstr.fail())
+      return string("syntax is modulenumber:i where is is module number");
+    //cout << var.substr(13) << endl;
     sprintf(answer,"%llx",getId(MODULE_SERIAL_NUMBER,ival));
     return string(answer);
   } else if (var=="moduleversion") {
@@ -478,11 +495,16 @@ string mythenDetector::executeLine(int narg, char *args[], int action) {
     if (action==PUT_ACTION) {
 	return string("cannot set ");
     } 
-    cout << var.substr(9) << endl;
+    if (var.size()<=9)
+      return string("syntax is digitest:i where i is the module number");
+   
+  
     istringstream vvstr(var.substr(9));
     vvstr >> ival;
+    if (vvstr.fail()) 
+      return string("syntax is digitest:i where i is the module number");
     sprintf(answer,"%x",digitalTest(CHIP_TEST, ival));
-      return string(answer);
+    return string(answer);
   } else if (var=="bustest") {
     if (action==PUT_ACTION) {
       return string("cannot set ");
@@ -529,7 +551,7 @@ string mythenDetector::executeLine(int narg, char *args[], int action) {
     }
   //timers
 
-    else if (var=="exptime") {
+  else if (var=="exptime") {
       if (action==PUT_ACTION) {
 	sscanf(args[1],"%f",&fval);// in seconds!
 	setTimer(ACQUISITION_TIME,(int64_t)(fval*1E+9));
@@ -558,34 +580,77 @@ string mythenDetector::executeLine(int narg, char *args[], int action) {
 	
 	sprintf(answer,"%lld",setTimer(GATES_NUMBER));
 	return string(answer);
-      } else if (var=="frames") {
+    } else if (var=="frames") {
 	if (action==PUT_ACTION) {
 	 sscanf(args[1],"%d",&ival);
 	 setTimer(FRAME_NUMBER,ival);
 	} 
 	sprintf(answer,"%lld",setTimer(FRAME_NUMBER));
 	return string(answer);
-      } else if (var=="cycles") {
+    } else if (var=="cycles") {
 	if (action==PUT_ACTION) {
 	 sscanf(args[1],"%d",&ival); 
 	  setTimer(CYCLES_NUMBER,ival);
 	} 
 	sprintf(answer,"%lld",setTimer(CYCLES_NUMBER));
 	return string(answer);
-	
-      } else if (var=="probes") {
+    } else if (var=="probes") {
 	if (action==PUT_ACTION) {
 	 sscanf(args[1],"%d",&ival); 
 	  setTimer(PROBES_NUMBER,ival);
 	} 
 	sprintf(answer,"%lld",setTimer(PROBES_NUMBER));
 	return string(answer);
-      }
-      else if (var=="dr") {
+    } 
+
+  else if (var=="exptimel") {
+      if (action==PUT_ACTION) {
+	sprintf(answer,"Cannot set\n");
+      } else
+	sprintf(answer,"%f",(float)getTimeLeft(ACQUISITION_TIME)*1E-9);
+      return string(answer);
+    } else if (var=="periodl") {
+      if (action==PUT_ACTION) {
+	sprintf(answer,"Cannot set\n");
+      } else
+	sprintf(answer,"%f",(float)getTimeLeft(FRAME_PERIOD)*1E-9);
+      return string(answer);
+    } else if (var=="delayl") {
+      if (action==PUT_ACTION) {
+	sprintf(answer,"Cannot set\n");
+      } else
+	sprintf(answer,"%f",(float)getTimeLeft(DELAY_AFTER_TRIGGER)*1E-9);
+      return string(answer);
+    } else if (var=="gatesl") {
+      if (action==PUT_ACTION) {
+	sprintf(answer,"Cannot set\n");
+      } else
+	sprintf(answer,"%f",(float)getTimeLeft(GATES_NUMBER));
+      return string(answer);
+    } else if (var=="framesl") {
+      if (action==PUT_ACTION) {
+	sprintf(answer,"Cannot set\n");
+      } else
+	sprintf(answer,"%f",(float)getTimeLeft(FRAME_NUMBER)+2);
+      return string(answer);
+    } else if (var=="cyclesl") {
+      if (action==PUT_ACTION) {
+	sprintf(answer,"Cannot set\n");
+      } else
+	sprintf(answer,"%f",(float)getTimeLeft(CYCLES_NUMBER)+2);
+      return string(answer);
+    } else if (var=="progress") {
+      if (action==PUT_ACTION) {
+	sprintf(answer,"Cannot set\n");
+      } else
+	sprintf(answer,"%f",(float)getTimeLeft(PROGRESS));
+      return string(answer);
+    } 
+
+  else if (var=="dr") {
 	if (action==PUT_ACTION) {
 	 sscanf(args[1],"%d",&ival);
 	  setDynamicRange(ival);
-	  
 	}
 	  sprintf(answer,"%d",setDynamicRange());
 	  return string(answer);
@@ -621,10 +686,10 @@ string mythenDetector::executeLine(int narg, char *args[], int action) {
 	}  
       } else if (var=="trimbits") {
 	if (narg>=2) {
-	  std::cout<< " writing trimfile " << std::endl;
 	  int nm=setNumberOfModules(GET_FLAG,X)*setNumberOfModules(GET_FLAG,Y);
 	  sls_detector_module  *myMod=NULL;
 	  sval=string(args[1]);
+	  std::cout<< " trimfile " << sval << std::endl;
 	  
 	  for (int im=0; im<nm; im++) {
 	    ostringstream ostfn, oscfn;
@@ -640,9 +705,11 @@ string mythenDetector::executeLine(int narg, char *args[], int action) {
 	      if (sval.find('.',sval.length()-7)<string::npos)
 		ostfn << ".sn"  << setfill('0') << setw(3) << hex << getId(MODULE_SERIAL_NUMBER, im); 
 	      myMod=readTrimFile(ostfn.str());
-	      myMod->module=im;
-	      setModule(*myMod);
-	      deleteModule(myMod);
+	      if (myMod) {
+		myMod->module=im;
+		setModule(*myMod);
+		deleteModule(myMod);
+	      } //else		cout << "myMod NULL" << endl; 
 	    } 
 	  }
 	} 
@@ -652,6 +719,9 @@ string mythenDetector::executeLine(int narg, char *args[], int action) {
 	if (action==GET_ACTION) {
 	  trimMode mode=NOISE_TRIMMING;
 	  int par1=0, par2=0;
+	  if (var.size()<=5)
+	    return string("trim:mode fname");
+
 	  if (var.substr(5)=="noise") {
 	  // par1 is countlim; par2 is nsigma
 	    mode=NOISE_TRIMMING;
@@ -808,6 +878,8 @@ string mythenDetector::helpLine( int action) {
     os << std::endl;
     os << "threshold ev \t Sets detector threshold in eV. Should be half of the beam energy. It is precise only if the detector is calibrated"<< std::endl;
     os << std::endl;
+    os << "vthreshold dacu\t sets the detector threshold in dac units (0-1024). The energy is approx 800-15*keV" << std::endl;
+    os << std::endl;
     os << "exptime t \t Sets the exposure time per frame (in s)"<< std::endl;
     os << std::endl;
     os << "period t \t Sets the frames period (in s)"<< std::endl;
@@ -825,6 +897,8 @@ string mythenDetector::helpLine( int action) {
     os << "dr n \t Sets the dynamic range - can be 1, 4, 8,16 or 24 bits"<< std::endl;
     os << std::endl;
     os << "flags mode \t Sets the readout flags - can be none or storeinram"<< std::endl;
+    os << std::endl;
+    os << "ffdir dir \t Sets the default directory where the flat field are located"<< std::endl;
     os << std::endl;
     os << "flatfield fname \t Sets the flatfield file name - none disable flat field corrections"<< std::endl;
     os << std::endl;
@@ -844,6 +918,8 @@ string mythenDetector::helpLine( int action) {
     os << std::endl;
     os << "threaded b \t sets whether the postprocessing and file writing of the data is done in a separate thread (0 sequencial, 1 threaded). Please remeber to set the threaded mode if you acquire long real time measurements and/or use the storeinram option  otherwise you risk to lose your data"<< std::endl;
     os << std::endl;
+    os << "online  b\t sets the detector in online (1) or offline (0) state " << std::endl;
+    os << std::endl;
   } else if (action==GET_ACTION) {
     os << "help \t This help " << std::endl;
     
@@ -855,7 +931,7 @@ string mythenDetector::helpLine( int action) {
     os << std::endl;
     os << "parameters  fname\t writes the main detector parameters for the measuremen tin the file " << std::endl;
     os << std::endl;
-    os << "setup rootname\t writes the complete detector setup (including configuration, trimbits, flat field coefficients, badchannels etc.) is a set of files for which the extension is automatically generated " << std::endl;
+    os << "setup rootname\t writes the complete detector setup (including configuration, trimbits, flat field coefficients, badchannels etc.) in a set of files for which the extension is automatically generated " << std::endl;
     os << std::endl;
     os << "hostname \t Gets the detector hostname (or IP address) " << std::endl;
     os << std::endl;
@@ -901,7 +977,7 @@ string mythenDetector::helpLine( int action) {
     os << std::endl;
     os << "\t 12 ro_trigger_out_falling_edge" << std::endl;
     os << std::endl;
-    os << "modulenumber\t Gets the module serial number " << std::endl;
+    os << "modulenumber:i \t Gets the serial number of module i" << std::endl;
     os << std::endl;
     os << "moduleversion\t Gets the module version " << std::endl;
     os << std::endl;
@@ -913,7 +989,7 @@ string mythenDetector::helpLine( int action) {
     os << std::endl;
     os << "thisversion\t Gets the version of this software" << std::endl;
     os << std::endl;
-    os << "digitest\t Makes a digital test of the detector. Returns 0 if it succeeds " << std::endl;
+    os << "digitest:i\t Makes a digital test of the detector module i. Returns 0 if it succeeds " << std::endl;
     os << std::endl;
     os << "bustest\t Makes a test of the detector bus. Returns 0 if it succeeds " << std::endl; 
     os << std::endl;
@@ -922,11 +998,15 @@ string mythenDetector::helpLine( int action) {
     os << std::endl;
     os << "threshold\t Gets detector threshold in eV. It is precise only if the detector is calibrated"<< std::endl;
     os << std::endl;
-    os << "exptime\t Gets the exposure time per frame (in ns)"<< std::endl;
+    os << "vthreshold \t Gets the detector threshold in dac units (0-1024). The energy is approx 800-15*keV" << std::endl;
     os << std::endl;
-    os << "period \t Gets the frames period (in ns)"<< std::endl;
+
+
+    os << "exptime\t Gets the exposure time per frame (in s)"<< std::endl;
     os << std::endl;
-    os << "delay \t Gets the delay after trigger (in ns)"<< std::endl;
+    os << "period \t Gets the frames period (in s)"<< std::endl;
+    os << std::endl;
+    os << "delay \t Gets the delay after trigger (in s)"<< std::endl;
     os << std::endl;    
     os << "gates \t Gets the number of gates per frame"<< std::endl;
     os << std::endl;
@@ -935,12 +1015,38 @@ string mythenDetector::helpLine( int action) {
     os << "cycles \t Gets the number of cycles (e.g. number of triggers)"<< std::endl;
     os << std::endl;
     os << "probes \t Gets the number of probes to accumulate (max 3)"<< std::endl;
+
+
+
+
+    os << "exptimel\t Gets the exposure time left in the current frame (in s)"<< std::endl;
+    os << std::endl;
+    os << "periodl \t Gets the period left in the current frame (in s)"<< std::endl;
+    os << std::endl;
+    os << "delayl \t Gets the delay after current trigger left (in s)"<< std::endl;
+    os << std::endl;    
+    os << "gatesl \t Gets the number of gates left in the current frame"<< std::endl;
+    os << std::endl;
+    os << "framesl \t Gets the number of frames left (after the current trigger)"<< std::endl;
+    os << std::endl;
+    os << "cyclesl \t Gets the number of cycles left (e.g. number of triggers)"<< std::endl;
+    //os << std::endl;
+    //os << "progress \t Gets acquisition progress - to be implemented"<< std::endl;
+
+
+
+
+
+
+
     os << std::endl;
     os << "dr \t Gets the dynamic range"<< std::endl;
     os << std::endl;
     os << "trim:mode fname \t trims the detector and writes the trimfile fname.snxx "<< std::endl;
     os << "\t mode can be:\t noise\t beam\t improve\t fix\t offline "<< std::endl;
     os << "Check that the start conditions are OK!!!"<< std::endl;
+    os << std::endl;
+    os << "ffdir \t Returns the default directory where the flat field are located"<< std::endl;
     os << std::endl;
     os << "flatfield fname \t returns wether the flat field corrections are enabled and if so writes the coefficients to the specified filename. If fname is none it is not written"<< std::endl;
     os << std::endl;
@@ -959,7 +1065,9 @@ string mythenDetector::helpLine( int action) {
     os << "positions \t returns the number of positions at which the detector is moved during the acquisition and their values"<< std::endl;
     os << std::endl;
     os << "threaded \t gets whether the postprocessing and file writing of the data is done in a separate thread (0 sequencial, 1 threaded). Check that it is set to 1 if you acquire long real time measurements and/or use the storeinram option otherwise you risk to lose your data"<< std::endl;
-    os << std::endl;
+    os << std::endl; 
+    os << "online  \t gets the detector online (1) or offline (0) state " << std::endl;
+    os << std::endl; 
 
 
   }
@@ -1082,6 +1190,7 @@ int mythenDetector::writeConfigurationFile(string const fname){
     "trimdir",\
     "trimen",\
     "outdir",\
+    "ffdir",\
     "nmod",\
     "badchannels",\
     "angconv",\
@@ -1091,7 +1200,7 @@ int mythenDetector::writeConfigurationFile(string const fname){
     "waitstates",\
     "setlength",\
     "clkdivider"};
-  int nvar=14;
+  int nvar=15;
   ofstream outfile;
   int iv=0;
   char *args[100];
@@ -1253,6 +1362,7 @@ int mythenDetector::retrieveDetectorSetup(string fname1, int level){
   if (level==2) {
     fname=fname1+string(".config");
     readConfigurationFile(fname);
+    //cout << "config file read" << endl;
     fname=fname1+string(".det");
   }  else
     fname=fname1;
@@ -1454,7 +1564,7 @@ int mythenDetector::retrieveDetectorSetup(string fname1, int level){
       strcpy(thisDetector->trimFile,fname.c_str());
       return myMod;
     } else {
-      std::cout<< "could not open file " << std::endl;
+      std::cout<< "could not open file " <<  myfname<< std::endl;
       if (nflag)
 	deleteModule(myMod);
       return NULL;
@@ -1635,6 +1745,10 @@ int mythenDetector::readDataFile(string fname, float *data, float *err, float *a
       if (ang==NULL) {
 	ssstr >> ichan >> fdata;
 	ich=ichan;
+	if (!ssstr.good()) {
+	  interrupt=1;
+	  break;
+	}
 	if (ich!=iline) 
 	  std::cout<< "Channel number " << ichan << " does not match with line number " << iline << " " << dataformat << std::endl;
       } else {

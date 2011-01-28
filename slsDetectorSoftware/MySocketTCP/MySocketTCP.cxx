@@ -153,23 +153,14 @@ int MySocketTCP::Connect(){
     cout << "fd " << file_des  << endl; 
 #endif
   } else {  
-    socketDescriptor = socket(AF_INET, SOCK_STREAM,0);  //tcp
-    
+    if (socketDescriptor<=0)
+      socketDescriptor = socket(AF_INET, SOCK_STREAM,0);  //tcp
+    //    SetTimeOut(10);
     if (socketDescriptor < 0){
       cerr << "Can not create socket "<<endl;
        file_des = socketDescriptor;
     } else {
-      struct timeval tout;
-      tout.tv_sec  = 10;
-      tout.tv_usec = 0;
-      if(::setsockopt(socketDescriptor, SOL_SOCKET, SO_RCVTIMEO, &tout, sizeof(struct timeval)) <0)
-	{
-	  cerr << "Error in setsockopt SO_RCVTIMEO" << endl;
-	}
-      if(::setsockopt(socketDescriptor, SOL_SOCKET, SO_SNDTIMEO, &tout, sizeof(struct timeval)) < 0)
-	{
-	  cerr << "Error in setsockopt SO_RCVTIMEO" << endl;
-	}
+     
       if(connect(socketDescriptor,(struct sockaddr *) &serverAddress,sizeof(serverAddress))<0){
 	cerr << "Can not connect to socket "<<endl;
 	file_des = -1;
@@ -183,7 +174,30 @@ int MySocketTCP::Connect(){
 }
 
 
+int MySocketTCP::SetTimeOut(int ts){
 
+
+  if (ts<=0)
+    return -1;
+  
+  //cout << "socketdescriptor "<< socketDescriptor << endl; 
+  struct timeval tout;
+  tout.tv_sec  = 0;
+  tout.tv_usec = 0;
+  if(::setsockopt(socketDescriptor, SOL_SOCKET, SO_RCVTIMEO, &tout, sizeof(struct timeval)) <0)
+    {
+      cerr << "Error in setsockopt SO_RCVTIMEO "<< 0 << endl;
+    }
+  tout.tv_sec  = ts;
+  tout.tv_usec = 0;
+  if(::setsockopt(socketDescriptor, SOL_SOCKET, SO_SNDTIMEO, &tout, sizeof(struct timeval)) < 0)
+    {
+      cerr << "Error in setsockopt SO_SNDTIMEO " << ts <<  endl;
+    }
+  return 0;
+
+
+}
 
 
 

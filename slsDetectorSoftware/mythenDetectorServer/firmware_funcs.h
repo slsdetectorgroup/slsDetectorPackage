@@ -75,6 +75,11 @@ int64_t getTrains();
 int64_t setProbes(int64_t value);
 int64_t getProbes();
 
+int64_t getProgress();
+int64_t setProgress();
+
+
+
 u_int32_t runBusy(void); 
 u_int32_t runState(void); 
 u_int32_t dataPresent(void); 

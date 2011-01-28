@@ -16,7 +16,7 @@ const int send_rec_max_size=SEND_REC_MAX_SIZE;
 extern int errno;
 
 //struct sockaddr_in address;
-//#define VERY_VERBOSE
+//#define VERBOSE
 
 
 int bindSocket(unsigned short int port_number) {
@@ -276,9 +276,6 @@ int sendDataOnly(void* buf,int length) {
 
 
   return   write(file_des, buf, length);  
-#ifdef VERBOSE
-  // printf("sent %d Bytes\n", total_sent);
-#endif
 }
 
 
@@ -336,6 +333,7 @@ int sendChip(sls_detector_chip *myChip) {
 
 int sendModule(sls_detector_module *myMod) {
   int ts=0;
+  int idac;
   int nChips=myMod->nchip;
   int nChans=myMod->nchan;
   int nAdcs=myMod->nadc;
@@ -347,6 +345,8 @@ int sendModule(sls_detector_module *myMod) {
   ts+= sendDataOnly(myMod->dacs,sizeof(float)*nDacs);
 #ifdef VERBOSE
   printf("dacs %d of size %d sent\n",myMod->module, ts);
+  for (idac=0; idac< nDacs; idac++) 
+    printf("dac %d is %d\n",idac,myMod->dacs[idac]);
 #endif
   ts+= sendDataOnly(myMod->adcs,sizeof(float)*nAdcs);
 #ifdef VERBOSE

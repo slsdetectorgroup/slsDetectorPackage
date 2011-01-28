@@ -5,7 +5,7 @@
 
 
 typedef float float32_t;
-typedef int int32_t;
+typedef int int32_t;    
 
 /** 
     \file sls_detector_defs.h
@@ -298,7 +298,8 @@ enum timerIndex {
   DELAY_AFTER_TRIGGER, /**< delay between trigger and start of exposure or readout (in triggered mode) */
   GATES_NUMBER, /**< number of gates per frame (in gated mode) */
   PROBES_NUMBER, /**< number of probe types in pump-probe mode */
-  CYCLES_NUMBER /**< number of cycles: total number of acquisitions is number or frames*number of cycles */
+  CYCLES_NUMBER, /**< number of cycles: total number of acquisitions is number or frames*number of cycles */
+  PROGRESS /**< fraction of measurement elapsed - only get! */
 };
 
 /** 

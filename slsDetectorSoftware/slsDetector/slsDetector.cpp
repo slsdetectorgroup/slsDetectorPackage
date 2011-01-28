@@ -47,10 +47,13 @@ int slsDetector::initSharedMemory(detectorType type, int id) {
 
 
    sz=sizeof(sharedSlsDetector)+nm*(2*nch*nc*sizeof(float)+sizeof(sls_detector_module)+sizeof(int)*nc+sizeof(float)*nd+sizeof(int)*nch*nc);
+#ifdef VERBOSE
+   std::cout<<"Size of shared memory is "<< sz << std::endl;
+#endif
    shm_id = shmget(mem_key,sz,IPC_CREAT  | 0666); // allocate shared memory
 
   if (shm_id < 0) {
-    std::cout<<"*** shmget error (server) ***"<< std::endl;
+    std::cout<<"*** shmget error (server) ***"<< shm_id << std::endl;
     return shm_id;
   }
   
@@ -89,15 +92,28 @@ int slsDetector::freeSharedMemory() {
 }
 
 
-slsDetector::slsDetector(detectorType type, int id):  
+slsDetector::slsDetector(detectorType type, int id):
+  thisDetector(NULL),  
+  detId(0),
+  shmId(-1), 
   controlSocket(NULL),
   stopSocket(NULL),
   dataSocket(NULL),
-  shmId(-1), 
-  detId(0),
-  thisDetector(NULL),
-  badChannelMask(NULL),
-  detectorModules(NULL)
+  currentPosition(0),
+  currentPositionIndex(0),
+  currentI0(0),
+  mergingBins(NULL),
+  mergingCounts(NULL),
+  mergingErrors(NULL),
+  mergingMultiplicity(NULL),
+  ffcoefficients(NULL),
+  fferrors(NULL),
+  detectorModules(NULL),
+  dacs(NULL),
+  adcs(NULL),
+  chipregs(NULL),
+  chanregs(NULL),
+  badChannelMask(NULL)
  {
    while (shmId<0) {
    /**Initlializes shared memory \sa initSharedMemory
@@ -170,7 +186,7 @@ int slsDetector::initializeDetectorSize(detectorType type) {
      thisDetector->nMod[Y]=thisDetector->nModMax[Y];  
      thisDetector->nMods=thisDetector->nModsMax;
      /** calculates the expected data size */
-     if (thisDetector->dynamicRange==24)
+     if (thisDetector->dynamicRange==24 || thisDetector->timerValue[PROBES_NUMBER]>0)
        thisDetector->dataBytes=thisDetector->nMod[X]*thisDetector->nMod[Y]*thisDetector->nChips*thisDetector->nChans*4;
      else
        thisDetector->dataBytes=thisDetector->nMod[X]*thisDetector->nMod[Y]*thisDetector->nChips*thisDetector->nChans*thisDetector->dynamicRange/8;
@@ -193,6 +209,8 @@ int slsDetector::initializeDetectorSize(detectorType type) {
      thisDetector->tDead=0;
      /** sets bad channel list file to none */
      strcpy(thisDetector->badChanFile,"none");
+     /** sets flat field correction directory */
+     strcpy(thisDetector->flatFieldDir,getenv("HOME"));
      /** sets flat field correction file */
      strcpy(thisDetector->flatFieldFile,"none");
      /** set number of bad chans to 0*/
@@ -263,7 +281,7 @@ int slsDetector::initializeDetectorSize(detectorType type) {
 
 int slsDetector::initializeDetectorStructure() {
   sls_detector_module *thisMod;
-  char *ptr, *p1, *p2;
+  char *p2;
   p2=(char*)thisDetector;
  
   /** for each of the detector modules up to the maximum number which can be installed initlialize the sls_detector_module structure \sa ::sls_detector_module*/
@@ -312,6 +330,7 @@ int slsDetector::initializeDetectorStructure() {
     thisMod->gain=-1.;
     thisMod->offset=-1.;
   }
+  return 0;
 }
 
 sls_detector_module*  slsDetector::createModule() {
@@ -371,6 +390,7 @@ int slsDetector::sendModule(sls_detector_module *myMod) {
   ts+=controlSocket->SendDataOnly(myMod->adcs,sizeof(float)*(myMod->nadc));
   ts+=controlSocket->SendDataOnly(myMod->chipregs,sizeof(int)*(myMod->nchip));
   ts+=controlSocket->SendDataOnly(myMod->chanregs,sizeof(int)*(myMod->nchan));
+  return ts;
 }
 
 int slsDetector::receiveChannel(sls_detector_channel *myChan) {
@@ -565,12 +585,23 @@ int slsDetector::setTCPSocket(string const name, int const control_port, int con
 #endif
   }
   if (retval!=FAIL) {
+    if (controlSocket->Connect()<0) {
+      controlSocket->SetTimeOut(5);
+      thisDetector->onlineFlag=OFFLINE_FLAG;
+      retval=FAIL;
 #ifdef VERBOSE
-    std::cout<< "online!" << std::endl;
+    std::cout<< "offline!" << std::endl;
 #endif
-    thisDetector->onlineFlag=ONLINE_FLAG;
+    }   else {
+      thisDetector->onlineFlag=ONLINE_FLAG;
+      controlSocket->SetTimeOut(100);
+      controlSocket->Disconnect();
+#ifdef VERBOSE
+      std::cout<< "online!" << std::endl;
+#endif
+    }
   } else {
-    thisDetector->onlineFlag=OFFLINE_FLAG;
+      thisDetector->onlineFlag=OFFLINE_FLAG;
 #ifdef VERBOSE
     std::cout<< "offline!" << std::endl;
 #endif
@@ -673,7 +704,6 @@ int slsDetector::setDetectorType(detectorType const type){
   char mess[100];
   strcpy(mess,"dummy");
 
-  int ret=FAIL;
 
 #ifdef VERBOSE
   std::cout<< std::endl;
@@ -800,14 +830,15 @@ int slsDetector::setNumberOfModules(int n, dimension d){
   } else {
     ret=OK;
     if (n==GET_FLAG)
-      retval=thisDetector->nMod[d];
+      ;
     else {
       if (n<=0 || n>thisDetector->nModMax[d]) {
-	retval=thisDetector->nMod[d];
 	ret=FAIL;
-      } else
-	retval=thisDetector->nMod[d];
+      } else {
+	thisDetector->nMod[d]=n;
+      }
     }
+    retval=thisDetector->nMod[d];
   }
 #ifdef VERBOSE
     std::cout<< "Number of modules in dimension "<< d <<" is " << retval << std::endl;
@@ -821,7 +852,12 @@ int slsDetector::setNumberOfModules(int n, dimension d){
       if (dr==24)
 	dr=32;
       
-      thisDetector->dataBytes=thisDetector->nMod[X]*thisDetector->nMod[Y]*thisDetector->nChips*thisDetector->nChans*dr/8;
+      if (thisDetector->timerValue[PROBES_NUMBER]==0) {
+	thisDetector->dataBytes=thisDetector->nMod[X]*thisDetector->nMod[Y]*thisDetector->nChips*thisDetector->nChans*dr/8;
+      } else {
+	thisDetector->dataBytes=thisDetector->nMod[X]*thisDetector->nMod[Y]*thisDetector->nChips*thisDetector->nChans*4;
+      }
+      
 #ifdef VERBOSE
       std::cout<< "Data size is " << thisDetector->dataBytes << std::endl;
       std::cout<< "nModX " << thisDetector->nMod[X] << " nModY " << thisDetector->nMod[Y] << " nChips " << thisDetector->nChips << " nChans " << thisDetector->nChans<< " dr " << dr << std::endl;
@@ -941,6 +977,12 @@ enum externalSignalFlag {
   }
 #endif
   return retval;
+
+
+
+
+
+
 };
 
   /* 
@@ -1042,35 +1084,41 @@ int64_t slsDetector::getId( idMode mode, int imod){
   else
      std::cout<< "Getting id type "<< mode << std::endl; 
 #endif
-  if (thisDetector->onlineFlag==ONLINE_FLAG) {
-    if (controlSocket) {
-      if  (controlSocket->Connect()>=0) {
-	controlSocket->SendDataOnly(&fnum,sizeof(fnum));
-	controlSocket->SendDataOnly(&mode,sizeof(mode));
-	if (mode==MODULE_SERIAL_NUMBER)
-	  controlSocket->SendDataOnly(&imod,sizeof(imod));
-	controlSocket->ReceiveDataOnly(&ret,sizeof(ret));
-	if (ret==OK)
-	  controlSocket->ReceiveDataOnly(&retval,sizeof(retval));
-	else {
-	  controlSocket->ReceiveDataOnly(mess,sizeof(mess));
-	  std::cout<< "Detector returned error: " << mess << std::endl;
-	}
-	controlSocket->Disconnect();
+  if (mode==THIS_SOFTWARE_VERSION) {
+    ret=OK;
+    retval=thisSoftwareVersion;
+  } else {
+    if (thisDetector->onlineFlag==ONLINE_FLAG) {
+      if (controlSocket) {
+	if  (controlSocket->Connect()>=0) {
+	  controlSocket->SendDataOnly(&fnum,sizeof(fnum));
+	  controlSocket->SendDataOnly(&mode,sizeof(mode));
+	  if (mode==MODULE_SERIAL_NUMBER)
+	    controlSocket->SendDataOnly(&imod,sizeof(imod));
+	  controlSocket->ReceiveDataOnly(&ret,sizeof(ret));
+	  if (ret==OK)
+	    controlSocket->ReceiveDataOnly(&retval,sizeof(retval));
+	  else {
+	    controlSocket->ReceiveDataOnly(mess,sizeof(mess));
+	    std::cout<< "Detector returned error: " << mess << std::endl;
+	  }
+	  controlSocket->Disconnect();
+	} else 
+	  ret=FAIL;
+      } else {
+	ret=FAIL;
       }
     }
-  } else {
-    ret=FAIL;
   }
   if (ret==FAIL) {
     std::cout<< "Get id failed " << std::endl;
     return ret;
   } else {
 #ifdef VERBOSE
-  if  (mode==MODULE_SERIAL_NUMBER)
-  std::cout<< "Id of "<< imod <<" is " << hex <<retval << setbase(10) << std::endl;
-  else
-  std::cout<< "Id "<< mode <<" is " << hex <<retval << setbase(10) << std::endl;
+    if  (mode==MODULE_SERIAL_NUMBER)
+      std::cout<< "Id of "<< imod <<" is " << hex <<retval << setbase(10) << std::endl;
+    else
+      std::cout<< "Id "<< mode <<" is " << hex <<retval << setbase(10) << std::endl;
 #endif
     return retval;
   }
@@ -1576,7 +1624,7 @@ int slsDetector::setChip(int reg, int ichip, int imod){
 
   int chregs[thisDetector->nChans];
   int mmin=imod, mmax=imod+1, chimin=ichip, chimax=ichip+1;
-  int ret;
+  int ret=FAIL;
   if (imod==-1) {
     mmin=0;
     mmax=thisDetector->nModsMax;
@@ -1715,7 +1763,7 @@ int slsDetector::setChip(sls_detector_chip chip){
   */
 
 int slsDetector::setModule(int reg, int imod){
-  sls_detector_module myModule, *mptr;
+  sls_detector_module myModule;
   
 #ifdef VERBOSE
     std::cout << "slsDetector set module " << std::endl;
@@ -1724,7 +1772,7 @@ int slsDetector::setModule(int reg, int imod){
   int chiregs[thisDetector->nChips];
   float das[thisDetector->nDacs], ads[thisDetector->nAdcs];
   int mmin=imod, mmax=imod+1;
-  int ret;
+  int ret=FAIL;
   
   if (imod==-1) {
     mmin=0;
@@ -1884,7 +1932,7 @@ sls_detector_module  *slsDetector::getModule(int imod){
   sls_detector_module *myMod=createModule();
 
 
-  char *ptr,  *goff=(char*)thisDetector;
+  //char *ptr,  *goff=(char*)thisDetector;
 
   // int chanreg[thisDetector->nChans*thisDetector->nChips];
   //int chipreg[thisDetector->nChips];
@@ -1892,7 +1940,7 @@ sls_detector_module  *slsDetector::getModule(int imod){
 
   int ret=FAIL;
   char mess[100];
-  int n;
+  // int n;
 
 #ifdef VERBOSE
   std::cout<< "getting module " << imod << std::endl;
@@ -2313,7 +2361,7 @@ int slsDetector::startReadOut(){
 
 int* slsDetector::readFrame(){
 
-  int fnum=F_READ_FRAME, n;
+  int fnum=F_READ_FRAME;
   int* retval=NULL;
 
 #ifdef VERBOSE
@@ -2365,9 +2413,9 @@ int* slsDetector::getDataFromDetector(){
     } else {
       n=controlSocket->ReceiveDataOnly(retval,thisDetector->dataBytes);
 	
-#ifdef VERBOSE
+      //#ifdef VERBOSE
       std::cout<< "Received "<< n << " data bytes" << std::endl;
-#endif 
+      //#endif 
       if (n!=thisDetector->dataBytes) {
 	std::cout<< "wrong data size received: received " << n << " but expected " << thisDetector->dataBytes << std::endl;
 	thisDetector->stoppedFlag=1;
@@ -2384,10 +2432,8 @@ int* slsDetector::getDataFromDetector(){
 
 int* slsDetector::readAll(){
   
-  int fnum=F_READ_ALL, n;
+  int fnum=F_READ_ALL;
   int* retval; // check what we return!
-  int ret=OK;
-  char mess[100];
 
   int i=0;
 #ifdef VERBOSE
@@ -2397,7 +2443,7 @@ int* slsDetector::readAll(){
     if (controlSocket) {
   if  (controlSocket->Connect()>=0) {
     controlSocket->SendDataOnly(&fnum,sizeof(fnum));
-    while (retval=getDataFromDetector()){
+    while ((retval=getDataFromDetector())){
       i++;
 #ifdef VERBOSE
       // std::cout<< i << std::endl;
@@ -2421,18 +2467,18 @@ int* slsDetector::startAndReadAll(){
   int* retval;
   int i=0;
   startAndReadAllNoWait();  
-  while (retval=getDataFromDetector()){
+  while ((retval=getDataFromDetector())){
       i++;
-#ifdef VERBOSE
-      //   std::cout<< i << std::endl;
-#endif
+      //#ifdef VERBOSE
+      std::cout<< i << std::endl;
+      //#endif
       dataQueue.push(retval);
   }
   controlSocket->Disconnect();
 
-#ifdef VERBOSE
+  //#ifdef VERBOSE
   std::cout<< "recieved "<< i<< " frames" << std::endl;
-#endif
+  //#endif
   return dataQueue.front(); // check what we return!
 /* while ((retval=getDataFromDetectorNoWait()))
    i++;
@@ -2449,10 +2495,6 @@ int* slsDetector::startAndReadAll(){
 int slsDetector::startAndReadAllNoWait(){
 
   int fnum= F_START_AND_READ_ALL;
-  int* retval;
-  int ret=OK;
-  char mess[100];
-  int i=0;
   
 #ifdef VERBOSE
   std::cout<< "Starting and reading all frames "<< std::endl;
@@ -2582,6 +2624,11 @@ int64_t slsDetector::setTimer(timerIndex index, int64_t t){
 #ifdef VERBOSE
   std::cout<< "Timer set to  "<< thisDetector->timerValue[index] << "ns"  << std::endl;
 #endif
+  if (index==PROBES_NUMBER) {
+    setDynamicRange();
+    //cout << "Changing probes: data size = " << thisDetector->dataBytes <<endl;
+  }
+  
   return thisDetector->timerValue[index];
   
 };
@@ -2661,19 +2708,34 @@ int64_t slsDetector::getTimeLeft(timerIndex index){
   std::cout<< "Getting  timer  "<< index <<  std::endl;
 #endif
   if (thisDetector->onlineFlag==ONLINE_FLAG) {
-    if (controlSocket) {
-  if  (controlSocket->Connect()>=0) {
-    controlSocket->SendDataOnly(&fnum,sizeof(fnum));
-    controlSocket->SendDataOnly(&index,sizeof(index));
-    controlSocket->ReceiveDataOnly(&ret,sizeof(ret));
+//     if (controlSocket) {
+//   if  (controlSocket->Connect()>=0) {
+//     controlSocket->SendDataOnly(&fnum,sizeof(fnum));
+//     controlSocket->SendDataOnly(&index,sizeof(index));
+//     controlSocket->ReceiveDataOnly(&ret,sizeof(ret));
+//     if (ret!=OK) {
+//       controlSocket->ReceiveDataOnly(mess,sizeof(mess));
+//       std::cout<< "Detector returned error: " << mess << std::endl;
+//     } else {
+//       controlSocket->ReceiveDataOnly(&retval,sizeof(retval)); 
+//       // thisDetector->timerValue[index]=retval;
+//     }   
+//     controlSocket->Disconnect();
+//   }
+//     }
+    if (stopSocket) {
+  if  (stopSocket->Connect()>=0) {
+    stopSocket->SendDataOnly(&fnum,sizeof(fnum));
+    stopSocket->SendDataOnly(&index,sizeof(index));
+    stopSocket->ReceiveDataOnly(&ret,sizeof(ret));
     if (ret!=OK) {
-      controlSocket->ReceiveDataOnly(mess,sizeof(mess));
+      stopSocket->ReceiveDataOnly(mess,sizeof(mess));
       std::cout<< "Detector returned error: " << mess << std::endl;
     } else {
-      controlSocket->ReceiveDataOnly(&retval,sizeof(retval)); 
+      stopSocket->ReceiveDataOnly(&retval,sizeof(retval)); 
       // thisDetector->timerValue[index]=retval;
     }   
-    controlSocket->Disconnect();
+    stopSocket->Disconnect();
   }
     }
   }
@@ -2720,7 +2782,13 @@ int slsDetector::setDynamicRange(int n){
   }
     
   if (ret==OK && retval>0) {
-    thisDetector->dataBytes=thisDetector->nMod[X]*thisDetector->nMod[Y]*thisDetector->nChips*thisDetector->nChans*retval/8;
+    /* checking the number of probes to chose the data size */
+    if (thisDetector->timerValue[PROBES_NUMBER]==0) {
+      thisDetector->dataBytes=thisDetector->nMod[X]*thisDetector->nMod[Y]*thisDetector->nChips*thisDetector->nChans*retval/8;
+    } else {
+      thisDetector->dataBytes=thisDetector->nMod[X]*thisDetector->nMod[Y]*thisDetector->nChips*thisDetector->nChans*4;
+    }
+      
     if (retval==32)
       thisDetector->dynamicRange=24;
     else 
@@ -2808,7 +2876,7 @@ enum trimMode {
 int slsDetector::executeTrimming(trimMode mode, int par1, int par2, int imod){
   
   int fnum= F_EXECUTE_TRIMMING;
-  int retval;
+  int retval=FAIL;
   char mess[100];
   int ret=OK;
   int arg[3];
@@ -2851,7 +2919,6 @@ int slsDetector::executeTrimming(trimMode mode, int par1, int par2, int imod){
 
 float* slsDetector::decodeData(int *datain) {
   float *dataout=new float[thisDetector->nChans*thisDetector->nChips*thisDetector->nMods];
-  const char one=1;
   const int bytesize=8;
 
   int ival=0;
@@ -2860,55 +2927,58 @@ float* slsDetector::decodeData(int *datain) {
 
   int nbits=thisDetector->dynamicRange;
   int  ipos=0, ichan=0, ibyte;
-  int nch, boff=0;
-
-  switch (nbits) {
-  case 1:
-    for (ibyte=0; ibyte<thisDetector->dataBytes; ibyte++) {
-      iptr=ptr[ibyte]&0x1;
-      for (ipos=0; ipos<8; ipos++) {
-	//	dataout[ibyte*2+ichan]=((iptr&((0xf)<<ichan))>>ichan)&0xf;
+  if (thisDetector->timerValue[PROBES_NUMBER]==0) {
+    switch (nbits) {
+    case 1:
+      for (ibyte=0; ibyte<thisDetector->dataBytes; ibyte++) {
+	iptr=ptr[ibyte]&0x1;
+	for (ipos=0; ipos<8; ipos++) {
+	  //	dataout[ibyte*2+ichan]=((iptr&((0xf)<<ichan))>>ichan)&0xf;
 	ival=(iptr>>(ipos))&0x1;
 	dataout[ichan]=ival;
 	ichan++;
-      }
+	}
     }
-    break;
-  case 4:
-    for (ibyte=0; ibyte<thisDetector->dataBytes; ibyte++) {
-      iptr=ptr[ibyte]&0xff;
-      for (ipos=0; ipos<2; ipos++) {
-	//	dataout[ibyte*2+ichan]=((iptr&((0xf)<<ichan))>>ichan)&0xf;
-	ival=(iptr>>(ipos*4))&0xf;
+      break;
+    case 4:
+      for (ibyte=0; ibyte<thisDetector->dataBytes; ibyte++) {
+	iptr=ptr[ibyte]&0xff;
+	for (ipos=0; ipos<2; ipos++) {
+	  //	dataout[ibyte*2+ichan]=((iptr&((0xf)<<ichan))>>ichan)&0xf;
+	  ival=(iptr>>(ipos*4))&0xf;
+	  dataout[ichan]=ival;
+	  ichan++;
+	}
+      }
+      break;
+    case 8:
+      for (ichan=0; ichan<thisDetector->dataBytes; ichan++) {
+	ival=ptr[ichan]&0xff;
 	dataout[ichan]=ival;
-	ichan++;
+      }
+      break;
+    case 16:
+      for (ichan=0; ichan<thisDetector->nChans*thisDetector->nChips*thisDetector->nMods; ichan++) {
+	// dataout[ichan]=0;
+	ival=0;
+	for (ibyte=0; ibyte<2; ibyte++) {
+	  iptr=ptr[ichan*2+ibyte];
+	  ival|=((iptr<<(ibyte*bytesize))&(0xff<<(ibyte*bytesize)));
+	}
+	dataout[ichan]=ival;
+      }
+      break;
+    default:    
+      for (ichan=0; ichan<thisDetector->nChans*thisDetector->nChips*thisDetector->nMods; ichan++) {
+	ival=datain[ichan]&0xffffff;
+	dataout[ichan]=ival;
       }
     }
-    break;
-  case 8:
-    for (ichan=0; ichan<thisDetector->dataBytes; ichan++) {
-      ival=ptr[ichan]&0xff;
-      dataout[ichan]=ival;
-    }
-    break;
-  case 16:
+  } else { 
     for (ichan=0; ichan<thisDetector->nChans*thisDetector->nChips*thisDetector->nMods; ichan++) {
-      // dataout[ichan]=0;
-      ival=0;
-      for (ibyte=0; ibyte<2; ibyte++) {
-	iptr=ptr[ichan*2+ibyte];
-	ival|=((iptr<<(ibyte*bytesize))&(0xff<<(ibyte*bytesize)));
-      }
-      dataout[ichan]=ival;
-    }
-    break;
-  default:    
-    for (ichan=0; ichan<thisDetector->nChans*thisDetector->nChips*thisDetector->nMods; ichan++) {
-      ival=datain[ichan]&0xffffff;
-      dataout[ichan]=ival;
+      dataout[ichan]=datain[ichan];
     }
   }
-  
 
   /*
 
@@ -2953,14 +3023,15 @@ float* slsDetector::decodeData(int *datain) {
   */
 
 int slsDetector::setFlatFieldCorrection(string fname){
-  int interrupt=0;
   float data[thisDetector->nModMax[X]*thisDetector->nModMax[Y]*thisDetector->nChans*thisDetector->nChips];
-  float err[thisDetector->nModMax[X]*thisDetector->nModMax[Y]*thisDetector->nChans*thisDetector->nChips];
+  //float err[thisDetector->nModMax[X]*thisDetector->nModMax[Y]*thisDetector->nChans*thisDetector->nChips];
    float xmed[thisDetector->nModMax[X]*thisDetector->nModMax[Y]*thisDetector->nChans*thisDetector->nChips];
    int nmed=0;
    int im=0;
    int nch;
    thisDetector->nBadFF=0;
+
+   char ffffname[MAX_STR_LENGTH*2];
 
   if (fname=="") {
 #ifdef VERBOSE
@@ -2972,7 +3043,8 @@ int slsDetector::setFlatFieldCorrection(string fname){
 #ifdef VERBOSE
    std::cout<< "Setting flat field correction from file " << fname << std::endl;
 #endif
-    nch=readDataFile(fname,data);
+   sprintf(ffffname,"%s/%s",thisDetector->flatFieldDir,fname.c_str());
+   nch=readDataFile(string(ffffname),data);
     if (nch>0) {
       strcpy(thisDetector->flatFieldFile,fname.c_str());
       for (int ichan=0; ichan<nch; ichan++) {
@@ -3157,7 +3229,7 @@ int slsDetector::getRateCorrection(){
 
  int slsDetector::rateCorrect(float datain, float errin, float &dataout, float &errout, float tau, float t){
 
-   float data;
+   // float data;
    float e;
  
    dataout=(datain*exp(tau*datain/t));
@@ -3171,6 +3243,7 @@ int slsDetector::getRateCorrection(){
      errout=e*dataout*sqrt((1/(datain*datain)+tau*tau/(t*t)));
    else 
      errout=1.;
+   return 0;
 
 };
 
@@ -3178,7 +3251,7 @@ int slsDetector::getRateCorrection(){
 int slsDetector::rateCorrect(float* datain, float *errin, float* dataout, float *errout){
   float tau=thisDetector->tDead;
   float t=thisDetector->timerValue[ACQUISITION_TIME];
-  float data;
+  // float data;
   float e;
   if (thisDetector->correctionMask&(1<<RATE_CORRECTION)) {
 #ifdef VERBOSE
@@ -3195,7 +3268,7 @@ int slsDetector::rateCorrect(float* datain, float *errin, float* dataout, float 
     }
   }
   
-  
+  return 0;
 };
 
 
@@ -3328,7 +3401,7 @@ int slsDetector::fillBadChannelMask() {
       badChannelMask=NULL;
     }
   }
-    
+  return  thisDetector->nBadFF;
 
 }
 

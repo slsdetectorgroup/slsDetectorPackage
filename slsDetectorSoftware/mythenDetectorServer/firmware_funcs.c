@@ -37,6 +37,10 @@ int *ram_values=NULL;
 char *now_ptr=NULL;
 int ram_size=0;
 
+int64_t totalTime=1;
+u_int32_t progressMask=0;
+
+
 
 int ififostart, ififostop, ififostep, ififo;
 
@@ -182,18 +186,21 @@ u_int32_t getSetLength() {
 u_int32_t setWaitStates(int d1) {
   u_int32_t c;
   int d=d1-2;
+  //int d=d1-3;
   char cmd[100];
-  sprintf(cmd,"bus -a 0xb0000000 -w 0x%x0008",d1);
-  c=bus_r(SPEED_REG);
-  bus_w(SPEED_REG,(d<<WAIT_STATES_OFFSET)|(c&~(WAIT_STATES_MASK))); 
-  system(cmd);
-  return ((bus_r(SPEED_REG)& WAIT_STATES_MASK)>>WAIT_STATES_OFFSET);    
+  if (d1<=0xf) {
+    sprintf(cmd,"bus -a 0xb0000000 -w 0x%x0008",d1);
+    c=bus_r(SPEED_REG);
+    bus_w(SPEED_REG,(d<<WAIT_STATES_OFFSET)|(c&~(WAIT_STATES_MASK))); 
+    system(cmd);
+  }
+  return ((bus_r(SPEED_REG)& WAIT_STATES_MASK)>>WAIT_STATES_OFFSET)+2;    
 }
 
 u_int32_t getWaitStates() {
   u_int32_t clk_div;
   clk_div=((bus_r(SPEED_REG)& WAIT_STATES_MASK)>>WAIT_STATES_OFFSET);
-  return clk_div;    
+  return clk_div+2;    
 }
 
 
@@ -246,8 +253,6 @@ int getExtSignal(int d) {
     
     int off=d*SIGNAL_OFFSET;
     int mode=((bus_r(EXT_SIGNAL_REG)&(SIGNAL_MASK<<off))>>off);
-
-
 
     if (mode<RO_TRIGGER_OUT_FALLING_EDGE)
       return modes[mode];
@@ -366,18 +371,18 @@ u_int32_t testFpga(void) {
   //fixed pattern
   val=bus_r(FIX_PATT_REG);
   if (val==FIXED_PATT_VAL) {
-    printf("fixed pattern ok!! %x\n",val);
+    printf("fixed pattern ok!! %08x\n",val);
   } else {
-    printf("fixed pattern wrong!! %x\n",val);
+    printf("fixed pattern wrong!! %08x\n",val);
     result=FAIL;
     //    return FAIL;
   }
   //FPGA code version
   val=bus_r(FPGA_VERSION_REG)&0x00ffffff;
   if (val>=(FPGA_VERSION_VAL&0x00ffffff)) {
-    printf("FPGA version ok!! %x\n",val);
+    printf("FPGA version ok!! %06x\n",val);
   } else {
-    printf("FPGA version too old! %x\n",val);
+    printf("FPGA version too old! %06x\n",val);
     return FAIL;
   }
   //dummy register
@@ -387,7 +392,7 @@ u_int32_t testFpga(void) {
   if (val==0xF0F0F0F0) {
     printf("FPGA dummy register ok!! %x\n",val);
   } else {
-    printf("FPGA dummy register wrong!! %x\n",val);
+    printf("FPGA dummy register wrong!! %x instead of 0xF0F0F0F0 \n",val);
     result=FAIL;
     //    return FAIL;
   }
@@ -398,7 +403,7 @@ u_int32_t testFpga(void) {
   if (val==0x0F0F0F0F) {
     printf("FPGA dummy register ok!! %x\n",val);
   } else {
-    printf("FPGA dummy register wrong!! %x\n",val);
+    printf("FPGA dummy register wrong!! %x instead of 0x0F0F0F0F \n",val);
     result=FAIL;
     //    return FAIL;
   }
@@ -423,10 +428,12 @@ int getNModBoard() {
   int nmodboard;
   u_int32_t val;
   val=bus_r(FPGA_VERSION_REG)&0xff000000;
+  
+  printf("version register %08x\n",val);
   nmodboard=val >> 24;
-#ifdef VERY_VERBOSE
+  //#ifdef VERY_VERBOSE
   printf("The board hosts %d modules\n",nmodboard); 
-#endif
+  //#endif
   nModBoard=nmodboard;
   //getNModBoard()=nmodboard;
   return nmodboard;
@@ -439,26 +446,28 @@ int setNMod(int n) {
   int imod;
   int rval;
   int reg;
-
+  int nf=0;
   int shiftfifo=SHIFTFIFO;
   int ntot=getNModBoard();
-
-  switch (dynamicRange) {
-  case 16:
-    shiftfifo=SHIFTFIFO-1;
-    break;
-  case 8:
-    shiftfifo=SHIFTFIFO-2;
-    break;
-  case 4:
-    shiftfifo=SHIFTFIFO-3;
-    break;
-  case 1:
-    shiftfifo=SHIFTFIFO-5;
-    break;
-  default:
+  if (getProbes()==0) {
+    switch (dynamicRange) {
+    case 16:
+      shiftfifo=SHIFTFIFO-1;
+      break;
+    case 8:
+      shiftfifo=SHIFTFIFO-2;
+      break;
+    case 4:
+      shiftfifo=SHIFTFIFO-3;
+      break;
+    case 1:
+      shiftfifo=SHIFTFIFO-5;
+      break;
+    default:
+      shiftfifo=SHIFTFIFO;
+    }
+  } else
     shiftfifo=SHIFTFIFO;
-  }
 
 
 #ifdef VERBOSE
@@ -466,80 +475,77 @@ int setNMod(int n) {
 #endif
   if (n>0 && n<=ntot) {
     nModX=n;
-    // dataBytes=nModX*nModY*NCHIP*NCHAN*dynamicRange/8;
-    //allocateRAM();
-
-
-  /* should enable all fifos*/
-    /*  //  bus_w(FIFO_CNTRL_REG_OFF+(ALLFIFO<<SHIFTFIFO), FIFO_RESET_BIT | FIFO_DISABLE_TOGGLE_BIT); 
-    bus_w(FIFO_CNTRL_REG_OFF+(ALLFIFO<<shiftfifo), FIFO_RESET_BIT | FIFO_DISABLE_TOGGLE_BIT); 
-#ifdef VERBOSE
-    printf("a %08x r %08x\n",FIFO_CNTRL_REG_OFF+(ALLFIFO<<shiftfifo),FIFO_RESET_BIT | FIFO_DISABLE_TOGGLE_BIT);  
-    for (ififo=0; ififo<ntot*NCHIP; ififo++) {
-      printf("%d %08x\n",ififo,bus_r(FIFO_COUNTR_REG_OFF+(ififo<<shiftfifo)));
-    }
-#endif
-
-    ifste=dynamicRange/32; 
-    ifsta=nModX*NCHIP*ifste;
-    ifsto=ntot*NCHIP*ifste;
-    */
+ 
   /*d isable the fifos relative to the unused modules */
-  
       for (ififo=0; ififo<ntot*NCHIP; ififo++) {
-	//for (ififo=ifsta; ififo<ifsto; ififo+=ifste) {
-      //fifocntrl[ififo]=FIFO_DISABLE_TOGGLE_BIT;
-
 	reg=bus_r(FIFO_COUNTR_REG_OFF+(ififo<<shiftfifo));
-
-#ifdef VERBOSE
-      printf("Fifo %d is %x",ififo,reg);
-#endif
       if (ififo<n*NCHIP) {
-	if (reg&FIFO_DISABLED_BIT)
+	if (reg&FIFO_DISABLED_BIT) {
 	  bus_w(FIFO_CNTRL_REG_OFF+(ififo<<shiftfifo), FIFO_DISABLE_TOGGLE_BIT); 
-      } else {
-	if ((reg&FIFO_DISABLED_BIT)==0)
-	  bus_w(FIFO_CNTRL_REG_OFF+(ififo<<shiftfifo), FIFO_DISABLE_TOGGLE_BIT); 
-      }    
 #ifdef VERBOSE
-      printf(" done %x\n",bus_r(FIFO_COUNTR_REG_OFF+(ififo<<shiftfifo)));
+	  if (bus_r(FIFO_COUNTR_REG_OFF+(ififo<<shiftfifo))&FIFO_DISABLED_BIT) {
+	    printf("Fifo %d is %x (nm %d nc %d addr %08x)",ififo,reg, (reg&FIFO_NM_MASK)>>FIFO_NM_OFF, (reg&FIFO_NC_MASK)>>FIFO_NC_OFF, FIFO_COUNTR_REG_OFF+(ififo<<shiftfifo));
+	    printf(" enabling  %08x\n",bus_r(FIFO_COUNTR_REG_OFF+(ififo<<shiftfifo)));
+	  }
 #endif
+	}
+	//#ifdef VERBOSE
+	//else printf(" unmodified ",ififo,reg);
+	//#endif
+
+      } else {
+	if ((reg&FIFO_ENABLED_BIT)) {
+	  bus_w(FIFO_CNTRL_REG_OFF+(ififo<<shiftfifo), FIFO_DISABLE_TOGGLE_BIT); 
+#ifdef VERBOSE
+	  if ((bus_r(FIFO_COUNTR_REG_OFF+(ififo<<shiftfifo))&FIFO_ENABLED_BIT))  { 
+	    printf("Fifo %d is %x (nm %d nc %d addr %08x)",ififo,reg, (reg&FIFO_NM_MASK)>>FIFO_NM_OFF, (reg&FIFO_NC_MASK)>>FIFO_NC_OFF, FIFO_COUNTR_REG_OFF+(ififo<<shiftfifo));
+	    printf(" disabling %08x\n",bus_r(FIFO_COUNTR_REG_OFF+(ififo<<shiftfifo)));
+	  }
+#endif
+	}
+	//#ifdef VERBOSE
+	//else printf(" unmodified ",ififo,reg);
+	//#endif   
+      } 
+      //#ifdef VERBOSE
+      //printf(" done %x\n",bus_r(FIFO_COUNTR_REG_OFF+(ififo<<shiftfifo)));
+      //#endif
     } 
   }
   // ifste=dynamicRange/32; 
   nModX=0;
+  nf=0;
   for (imod=0; imod<ntot; imod++) {
     rval=0;
-    for (ififo=imod*NCHIP; ififo<(imod+1)*NCHIP; ififo++) {//
-      //for (ififo=imod*NCHIP*ifste; ififo<(imod+1)*NCHIP*ifste; ififo+=ifste) {
-      if ((bus_r(FIFO_COUNTR_REG_OFF+(ififo<<shiftfifo))&FIFO_DISABLED_BIT)==0){
+    for (ififo=imod*NCHIP; ififo<(imod+1)*NCHIP; ififo++) {
+      bus_w(FIFO_CNTRL_REG_OFF+(ififo<<shiftfifo), FIFO_RESET_BIT); 
+#ifdef VERBOSE
+      printf("%08x ",(bus_r(FIFO_COUNTR_REG_OFF+(ififo<<shiftfifo))));
+#endif
+      if ((bus_r(FIFO_COUNTR_REG_OFF+(ififo<<shiftfifo))&FIFO_ENABLED_BIT)){
 	rval=1; // checks if at least one fifo of the module is enabled
 #ifdef VERBOSE
-	printf("%x  Fifo %d is enabled\n",(bus_r(FIFO_COUNTR_REG_OFF+(ififo<<shiftfifo))), ififo);
+	printf("Fifo %d is enabled\n",ififo);
 #endif
-
-
+	nf++;
       }
 #ifdef VERBOSE
-       else printf("%x  Fifo %d is disabled\n",(bus_r(FIFO_COUNTR_REG_OFF+(ififo<<shiftfifo))),ififo);
+	else printf("Fifo %d is disabled\n",ififo);
 #endif
     } 
     if (rval) {
       nModX++;
 #ifdef VERBOSE
-      printf("Module %d is enabled --total %d\n",imod,nModX );
+      printf("Module %d is enabled --total %d (%d fifos)\n",imod,nModX,nf );
 #endif
     }
 #ifdef VERBOSE 
-      else printf("Module %d is disabled --total %d\n",imod,nModX );
+    else printf("Module %d is disabled --total %d (%d fifos)\n",imod,nModX,nf );
 #endif
   }
 #ifdef VERBOSE
-  printf("There are %d modules enabled\n",nModX);
+  printf("There are %d modules enabled (%d fifos)\n",nModX, nf);
 #endif
-  //  dataBytes=nModX*nModY*NCHIP*NCHAN*dynamicRange/8;
-  // allocateRAM();
   getDynamicRange();
 
   return nModX;
@@ -591,10 +597,9 @@ int64_t getFrames(){
 
 int64_t setExposureTime(int64_t value){
   /* time is in ns */
-  if (value!=-1) {
+  if (value!=-1) 
     value*=(1E-9*CLK_FREQ);
-  }
-  return set64BitReg(value,SET_EXPTIME_LSB_REG, SET_EXPTIME_MSB_REG)/(1E-9*CLK_FREQ);
+    return set64BitReg(value,SET_EXPTIME_LSB_REG, SET_EXPTIME_MSB_REG)/(1E-9*CLK_FREQ);
 }
 
 int64_t getExposureTime(){
@@ -614,6 +619,9 @@ int64_t setPeriod(int64_t value){
   if (value!=-1) {
     value*=(1E-9*CLK_FREQ);
   }
+
+
+
   return set64BitReg(value,SET_PERIOD_LSB_REG, SET_PERIOD_MSB_REG)/(1E-9*CLK_FREQ);
 }
 
@@ -644,6 +652,7 @@ int64_t getTrains(){
 
 int64_t setProbes(int64_t value){
   int ow;
+  int nm=setNMod(-1);
   switch (getDynamicRange()) {
   case 32:
     ow=1;
@@ -652,24 +661,44 @@ int64_t setProbes(int64_t value){
     ow=2;
     break;
   case 8:
-    ow=4;
+    ow=3;
     break;
   case 4:
-    ow=8;
+    ow=4;
     break;
   case 1:
     ow=5;
+    break;
   default:
     ow=1;
   }
-  
   if (value>=0) {
     setCSregister(ALLMOD);
     initChipWithProbes(0, ow,value, ALLMOD);
     putout("0000000000000000",ALLMOD);
+    setNMod(nm);
+    getDynamicRange(); // needed to change dataBytes 
   }
   return getProbes();
 }
+
+
+int64_t setProgress() {
+
+  //????? eventually call after setting the registers
+
+}
+
+
+int64_t getProgress() {
+
+
+  //should be done in firmware!!!!
+  
+
+}
+
+
 
 int64_t getProbes(){
   u_int32_t shiftin=bus_r(GET_SHIFT_IN_REG);
@@ -729,6 +758,9 @@ u_int32_t runState(void) {
     write_status_sm("Running");
   else
     write_status_sm("Stopped");  
+#endif
+#ifdef VERBOSE
+  printf("status %08x\n",s);
 #endif
   return s;
 }
@@ -836,7 +868,7 @@ u_int32_t fifoReadCounter(int fifonum)
 
   rval=bus_r(FIFO_COUNTR_REG_OFF+(fifonum<<shiftfifo));
 #ifdef VERBOSE
-  printf("FIFO %d contains %x words\n",fifonum, rval);
+  //printf("FIFO %d contains %x words\n",fifonum, rval);
 #endif
   return rval;
 }
@@ -861,6 +893,7 @@ u_int32_t* fifo_read_event()
 
 #ifdef VERBOSE
   int ichip;
+  int ichan;
 #endif
 #ifdef VIRTUAL
   return NULL;
@@ -868,43 +901,65 @@ u_int32_t* fifo_read_event()
 #ifdef VERYVERBOSE
   printf("before looping\n");
   for (ichip=0; ichip<nModBoard*NCHIP; ichip++) {
-    fifoReadCounter(ichip); 
+    if ((fifoReadCounter(ichip)&FIFO_COUNTER_MASK)%128)
+      printf("FIFO %d contains %d words\n",ichip,(fifoReadCounter(ichip)&FIFO_COUNTER_MASK)); 
   }
 #endif 
   while(bus_r(LOOK_AT_ME_REG)==0) {
-    //#ifdef VERYVERBOSE
+#ifdef VERYVERBOSE
     printf("Waiting for data status %x\n",runState());
-    //#endif
+#endif
     if (runBusy()==0) {
        if (bus_r(LOOK_AT_ME_REG)==0) {
 #ifdef VERBOSE
-	 printf("no frame found %x status %x\n", bus_r(LOOK_AT_ME_REG),runState());
-#ifdef VERYVERBOSE
-	 for (ichip=0; ichip<nModBoard*NCHIP; ichip++) {
-	   fifoReadCounter(ichip); 
-	 }
-#endif
+	 printf("no frame found - exiting ");
+
+	 printf("%08x %08x\n", runState(), bus_r(LOOK_AT_ME_REG)); 
+  /* for (ichip=0; ichip<nModBoard*NCHIP; ichip++) {
+    if ((fifoReadCounter(ichip)&FIFO_COUNTER_MASK)%128)
+      printf("FIFO %d contains %d words\n",ichip,(fifoReadCounter(ichip)&FIFO_COUNTER_MASK)); 
+  }
+  */
 #endif
 	 return NULL;
        } else {
+#ifdef VERYVERBOSE
+	 printf("no frame found %x status %x\n", bus_r(LOOK_AT_ME_REG),runState());
+#endif
 	 break;
        }
     }
    }
-#ifdef VERBOSE
-  printf("before readout\n");
+#ifdef VERYVERBOSE
+  printf("before readout %08x %08x\n", runState(), bus_r(LOOK_AT_ME_REG));
   for (ichip=0; ichip<nModBoard*NCHIP; ichip++) {
-    fifoReadCounter(ichip); 
+    if ((fifoReadCounter(ichip)&FIFO_COUNTER_MASK)%128)
+      printf("FIFO %d contains %d words\n",ichip,(fifoReadCounter(ichip)&FIFO_COUNTER_MASK)); 
   }
 #endif
   memcpy(now_ptr, values, dataBytes);
-#ifdef VERBOSE
+  /*
+    #ifdef VERBOSE
+  for (ichip=0;ichip<dataBytes/4; ichip++) {
+    now_ptr[ichip*4]=values[ichip];
+#ifdef VERBOSE 
+    if (((fifoReadCounter(ichip/128)&FIFO_COUNTER_MASK)+(ichip%128))>128)
+      printf("chip %d ch %d %d\n",ichip/128, ichip%128, (fifoReadCounter(ichip/128)&FIFO_COUNTER_MASK));
+#endif   
+  }
+  //#endif
+  */
+
+
+
+#ifdef VERYVERBOSE
   printf("Copying to ptr %x %d\n",now_ptr, dataBytes);
 #endif
 #ifdef VERYVERBOSE
-  printf("after readout\n");
+  printf("after readout %08x %08x\n", runState(), bus_r(LOOK_AT_ME_REG)); 
   for (ichip=0; ichip<nModBoard*NCHIP; ichip++) {
-    fifoReadCounter(ichip); 
+     if ((fifoReadCounter(ichip)&FIFO_COUNTER_MASK)%128)
+      printf("FIFO %d contains %d words\n",ichip,(fifoReadCounter(ichip)&FIFO_COUNTER_MASK)); 
   }
 #endif
   if (storeInRAM>0) {
@@ -1023,9 +1078,10 @@ int getDynamicRange() {
   int dr;
   u_int32_t shiftin=bus_r(GET_SHIFT_IN_REG);
   u_int32_t outmux=(shiftin >> OUTMUX_OFF) & OUTMUX_MASK;
+  u_int32_t probes=(shiftin >> PROBES_OFF) & PROBES_MASK;
 #ifdef VERYVERBOSE
   printf("%08x ",shiftin);
-  printf("outmux==%02x\n",outmux);
+  printf("outmux=%02x probes=%d\n",outmux,probes);
 #endif
   
   switch (outmux) {
@@ -1045,7 +1101,14 @@ int getDynamicRange() {
     dr=32;
   }
   dynamicRange=dr;
-  dataBytes=nModX*nModY*NCHIP*NCHAN*dynamicRange/8;
+  if (probes==0) {
+    dataBytes=nModX*nModY*NCHIP*NCHAN*dynamicRange/8;
+  }  else {
+    dataBytes=nModX*nModY*NCHIP*NCHAN*4;///
+  }
+#ifdef VERBOSE
+  printf("Number of data bytes %d - probes %d dr %d\n", dataBytes, probes, dr);
+#endif
   if (allocateRAM()==OK) {
       ;
   } else
@@ -1059,6 +1122,7 @@ int testBus() {
   u_int32_t j, i;
   char cmd[100];
   u_int32_t val=0x0;
+  int ifail=OK;
   // printf("%s\n",cmd);
   // system(cmd);
   i=0;
@@ -1066,18 +1130,20 @@ int testBus() {
   while (i<10000000) {
     // val=bus_r(FIX_PATT_REG);
     bus_w(DUMMY_REG,val);
-    bus_w(FIX_PATT_REG,0x0);
+    bus_w(FIX_PATT_REG,0);
     j=bus_r(DUMMY_REG);
-    if (i%10000==1)
-      printf("value 0x%x\n",j);
+    //if (i%10000==1)
     if (j!=val){
-      printf("read wrong value %x instead of %x\n",j, val);
-      return FAIL;
-    }
+      printf("%d :  read wrong value %08x instead of %08x\n",i,j, val);
+      ifail++;
+      //return FAIL;
+    }// else
+     // printf("%d : value OK 0x%08x\n",i,j);
+      
     val+=0xbbbbb;
     i++;
   }
-  return OK;
+  return ifail;
 }
 
 

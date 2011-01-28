@@ -64,6 +64,8 @@ class MySocketTCP{
 
   int  Connect(); //establish connection a Disconnect should always follow
   void Disconnect(); //free connection
+  /** Set the socket timeout ts is in seconds */
+  int SetTimeOut(int ts);
 
   //The following two functions will connectioned->send/receive->disconnect
   int  SendData(void* buf,int length);//length in characters

@@ -104,11 +104,16 @@
 #define ALL_FIFO_EMPTY_BIT       0x00010000 // data ready
 
 /* for fifo status register */
-#define FIFO_DISABLED_BIT        0x81000000
+#define FIFO_ENABLED_BIT         0x80000000
+#define FIFO_DISABLED_BIT        0x01000000
 #define FIFO_ERROR_BIT           0x08000000
 #define FIFO_EMPTY_BIT           0x04000000
 #define FIFO_DATA_READY_BIT      0x02000000
-#define FIFO_COUNTER_MASK        0x00ffffff
+#define FIFO_COUNTER_MASK        0x000001ff
+#define FIFO_NM_MASK             0x00e00000
+#define FIFO_NM_OFF              21
+#define FIFO_NC_MASK             0x001ffe00
+#define FIFO_NC_OFF              9
 
 /* for config register */
 

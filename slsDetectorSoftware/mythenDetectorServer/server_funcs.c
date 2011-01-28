@@ -589,19 +589,36 @@ int digital_test(int fnum) {
 #endif  
       retval=0;
 #ifdef MCB_FUNCS
-      if (testShiftIn(imod)) retval|=(1<<(ibit++));
-      if (testShiftOut(imod)) retval|=(1<<(ibit++));
-      if (testShiftStSel(imod)) retval|=(1<<(ibit++));
+      if (testShiftIn(imod)) retval|=(1<<(ibit));
+      ibit++;
+      if (testShiftOut(imod)) retval|=(1<<(ibit));
+      ibit++;
+      if (testShiftStSel(imod)) retval|=(1<<(ibit));
+      ibit++;
       //if ( testDataInOut(0x123456, imod)) retval|=(1<<(ibit++));
       //if ( testExtPulse(imod)) retval|=(1<<(ibit++));
       //  for (ow=0; ow<6; ow++)
-      for (ow=0; ow<5; ow++)
-	if (testDataInOutMux(imod, ow, 0x789abc)) retval|=(1<<ibit++);
+      // ow=1;
+      //#ifndef PICASSOD
+      for (ow=0; ow<5; ow++) {
+	//#endif
+	if (testDataInOutMux(imod, ow, 0x789abc)) retval|=(1<<ibit);
+	ibit++;
+      }
       //for (ow=0; ow<6; ow++)
-      for (ow=0; ow<5; ow++)
-	if (testExtPulseMux(imod, ow)) retval|=(1<<ibit++);
-      if ( testOutMux(imod)) retval|=(1<<(ibit++));
-      if (testFpgaMux(imod)) retval|=(1<<(ibit++));
+	// ow=1;
+      //#ifndef PICASSOD
+      for (ow=0; ow<5; ow++) {
+	//#endif
+	if (testExtPulseMux(imod, ow)) retval|=(1<<ibit);
+	ibit++;
+      }
+      //#ifndef PICASSOD
+      if ( testOutMux(imod)) retval|=(1<<(ibit));
+      ibit++;
+      if (testFpgaMux(imod)) retval|=(1<<(ibit));
+      ibit++;
+      //#endif
      
 #endif 
     break;
@@ -1670,7 +1687,13 @@ int read_frame(int fnum) {
       printf("Sending ptr %x %d\n",dataretval, dataBytes);
 #endif 
       sendDataOnly(&dataret,sizeof(dataret));
+#ifdef VERBOSE
+      n=sendDataOnly(dataretval,dataBytes);
+      printf("sent %d bytes\n",n);
+#else
+      
       sendDataOnly(dataretval,dataBytes);
+#endif
       return OK;
     }  else {
       //might add delay????
@@ -1892,7 +1915,7 @@ int get_time_left(int fnum) {
   int64_t retval;
   int ret=OK;
   
-  sprintf(mess,"can't set timer\n");
+  sprintf(mess,"can't get timer\n");
   n = receiveDataOnly(&ind,sizeof(ind));
   if (n < 0) {
     sprintf(mess,"Error reading from socket\n");
@@ -1927,6 +1950,9 @@ int get_time_left(int fnum) {
       break;
     case CYCLES_NUMBER: 
       retval=getTrains();
+      break;
+    case PROGRESS: 
+      retval=getProgress();
       break;
     default:
       ret=FAIL;

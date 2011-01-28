@@ -37,9 +37,9 @@ package: $(SRC_CLNT)
 	$(CXX) -fPIC -g -o objs/mythenDetector.o -c -Wall mythenDetector/mythenDetector.cpp $(INCLUDES) $(FLAGS) 
 	$(CXX) -fPIC -g -o objs/usersFunctions.o -c -Wall usersFunctions/usersFunctions.c $(INCLUDES) $(FLAGS) 
 	$(CXX) -fPIC -g -o objs/MySocketTCP.o -c -Wall MySocketTCP/MySocketTCP.cxx $(INCLUDES) $(FLAGS) 
-	$(CXX) -shared -Wl,-soname,libSlsDetector.so.1 -o bin/libSlsDetector.so.1.0.1 objs/slsDetector.o   objs/mythenDetector.o  objs/usersFunctions.o  objs/MySocketTCP.o  -lc $(INCLUDES) $(FLAGS) 
-	cd bin && ln -sf libSlsDetector.so.1.0.1  libSlsDetector.so
-	ar  rcs bin/libSlsDetector.a      objs/slsDetector.o   objs/mythenDetector.o  objs/usersFunctions.o  objs/MySocketTCP.o
+	$(CXX) -shared -Wl,-soname,libSlsDetector.so.1 -o libSlsDetector.so.1.0.1 objs/slsDetector.o   objs/mythenDetector.o  objs/usersFunctions.o  objs/MySocketTCP.o  -lc $(INCLUDES) $(FLAGS) 
+	ln -sf libSlsDetector.so.1.0.1  libSlsDetector.so
+	ar  rcs libSlsDetector.a      objs/slsDetector.o   objs/mythenDetector.o  objs/usersFunctions.o  objs/MySocketTCP.o
 
 clean:
 	rm -rf bin/* core objs/*  docs/*
@@ -51,7 +51,7 @@ lib:    package
 # added install target, HBl
 install_lib: lib
 	$(shell test -d $(DESTDIR) || mkdir -p $(DESTDIR))
-	cp -P bin/* $(DESTDIR)
+	cp -P libSlsDetector.so.1.0.1  libSlsDetector.so $(DESTDIR)
 
 install_inc:
 	$(shell test -d $(DESTDIR) || mkdir -p $(DESTDIR))

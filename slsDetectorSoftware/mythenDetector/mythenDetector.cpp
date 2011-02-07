@@ -330,11 +330,12 @@ string mythenDetector::executeLine(int narg, char *args[], int action) {
   }  else if (var=="trimen") {
     if (action==PUT_ACTION) {
       sscanf(args[1],"%d",&ival);
-      std::cout<< ival << std::endl ;
+      //std::cout<< ival << std::endl ;
+      if (ival>narg-2)
+	ival=narg-2;
       int ene[ival];
       for (int ie=0; ie<ival; ie++) {
-	std::cout<< ie << " " << args[2+ie] ;
-	std::cout<< sscanf(args[2+ie],"%d",ene+ie)<< std::endl;;
+	sscanf(args[2+ie],"%d",ene+ie);
       }
       setTrimEn(ival,ene);
     }
@@ -363,6 +364,196 @@ string mythenDetector::executeLine(int narg, char *args[], int action) {
     sprintf(answer,"%d",setOnline());
     return string(answer);
   }
+  else if (var=="startscript") {
+    ival=startScript;
+    if (action==PUT_ACTION) {
+      setAction(ival,args[1]);
+    }
+    sprintf(answer,"%d %s",getActionMode(ival), getActionScript(ival).c_str());
+    return string(answer);
+  } else if (var=="startscriptpar") {
+    ival=startScript;
+    if (action==PUT_ACTION) {
+      setActionParameter(ival,args[1]);
+    }
+    
+    return getActionParameter(ival);
+
+
+  } else if (var=="stopscript") {
+    ival=stopScript;
+    if (action==PUT_ACTION) {
+      setAction(ival,args[1]);
+    }
+    sprintf(answer,"%d %s",getActionMode(ival), getActionScript(ival).c_str());
+    return string(answer);
+  } else if (var=="stopscriptpar") {
+    ival=stopScript;
+    if (action==PUT_ACTION) {
+      setActionParameter(ival,args[1]);
+    }
+    return getActionParameter(ival);
+
+  } else if (var=="scriptbefore") {
+    ival=scriptBefore;
+    if (action==PUT_ACTION) {
+      setAction(ival,args[1]);
+    }
+    sprintf(answer,"%d %s",getActionMode(ival), getActionScript(ival).c_str());
+    return string(answer);
+  } else if (var=="scriptbeforepar") {
+    ival=scriptBefore;
+    if (action==PUT_ACTION) {
+      setActionParameter(ival,args[1]);
+    }
+
+    return getActionParameter(ival);
+
+  } else if (var=="scriptafter") {
+    ival=scriptAfter;
+    if (action==PUT_ACTION) {
+      setAction(ival,args[1]);
+    }
+    sprintf(answer,"%d %s",getActionMode(ival), getActionScript(ival).c_str());
+    return string(answer);
+  } else if (var=="scriptafterpar") {
+    ival=scriptAfter;
+    if (action==PUT_ACTION) {
+      setActionParameter(ival,args[1]);
+    }
+    return getActionParameter(ival);
+    
+
+
+  } else if (var=="headerafter") {
+    ival=headerAfter;
+    if (action==PUT_ACTION) {
+      setAction(ival,args[1]);
+    }
+    sprintf(answer,"%d %s",getActionMode(ival), getActionScript(ival).c_str());
+    return string(answer);
+  } else if (var=="headerafterpar") {
+    ival=headerAfter;
+    if (action==PUT_ACTION) {
+      setActionParameter(ival,args[1]);
+    }
+    return getActionParameter(ival);
+    
+
+
+  } else if (var=="headerbefore") {
+    ival=headerBefore;
+    if (action==PUT_ACTION) {
+      setAction(ival,args[1]);
+    }
+    sprintf(answer,"%d %s",getActionMode(ival), getActionScript(ival).c_str());
+    return string(answer);
+  } else if (var=="headerbeforepar") {
+    ival=headerBefore;
+    if (action==PUT_ACTION) {
+      setActionParameter(ival,args[1]);
+    }
+    return getActionParameter(ival);
+  } 
+
+  else if (var=="scan0script") {
+    int ind=0;
+    if (action==PUT_ACTION) {
+      setScanScript(ind,args[1]);
+    }
+    return getScanScript(ind);
+  } else if (var=="scan0par") {
+    int ind=0;
+    if (action==PUT_ACTION) {
+      setScanParameter(ind,args[1]);
+    }
+    return getScanParameter(ind);
+  } else if (var=="scan0prec") {
+    int ind=0;
+    if (action==PUT_ACTION) {
+      sscanf(args[1],"%d",&ival);
+      setScanPrecision(ind,ival);
+    }
+    sprintf(answer,"%d",getScanPrecision(ind));
+    return string(answer);
+  } else if (var=="scan0steps") {
+    int ind=0;
+    if (action==PUT_ACTION) {
+      sscanf(args[1],"%d",&ival);
+      //cout << ival << " " << narg << endl;
+      if (ival>narg-2)
+	ival=narg-2;
+      float ene[ival];
+      for (int ie=0; ie<ival; ie++) {
+	sscanf(args[2+ie],"%f",ene+ie);
+      }
+      setScanSteps(ind,ival,ene);
+    }  
+    int nen=getScanSteps(ind);
+    sprintf(answer,"%d",nen);
+    float oen[nen];
+    getScanSteps(ind,oen);
+    char form[20];
+    sprintf(form,"%%s %%0.%df",getScanPrecision(ind));
+    for (int ie=0; ie<nen;ie++) {
+      sprintf(answer,form,answer,oen[ie]);
+    }
+    return string(answer);
+  } 
+
+
+  else if (var=="scan1script") {
+    int ind=1;
+    if (action==PUT_ACTION) {
+      setScanScript(ind,args[1]);
+    }
+    return getScanScript(ind);
+  } else if (var=="scan1par") {
+    int ind=1;
+    if (action==PUT_ACTION) {
+      setScanParameter(ind,args[1]);
+    }
+    return getScanParameter(ind);
+  } else if (var=="scan1prec") {
+    int ind=1;
+    if (action==PUT_ACTION) {
+      sscanf(args[1],"%d",&ival);
+      setScanPrecision(ind,ival);
+    }
+    sprintf(answer,"%d",getScanPrecision(ind));
+    return string(answer);
+  } else if (var=="scan1steps") {
+    int ind=1;
+    if (action==PUT_ACTION) {
+      sscanf(args[1],"%d",&ival);
+      if (ival>narg-2)
+	ival=narg-2;
+      float ene[ival];
+      for (int ie=0; ie<ival; ie++) {
+	sscanf(args[2+ie],"%f",ene+ie);
+      }
+      setScanSteps(ind,ival,ene);
+    }  
+    int nen=getScanSteps(ind);
+    sprintf(answer,"%d",nen);
+    float oen[nen];
+    getScanSteps(ind,oen);
+    char form[20];
+    sprintf(form,"%%s %%0.%df",getScanPrecision(ind));
+    for (int ie=0; ie<nen;ie++) {
+      sprintf(answer,form,answer,oen[ie]);
+    }
+    return string(answer);
+  } 
+
+
+
+
+
+
+
+
+
 
 
 
@@ -837,6 +1028,71 @@ string mythenDetector::helpLine( int action) {
     os << std::endl;
     os << "trimen nen [e0 e1...en] \t sets the number of energies for which trimbit files exist and their value"<< std::endl;
     os << std::endl;
+
+
+
+
+
+
+
+
+    os << "startscript script \t sets script to execute at the beginning of the measurements - \"none\" to unset - will be launched as a system call with arguments nrun=fileindex par=startscriptpar"<< std::endl;
+    os << std::endl;
+    os << "startscriptpar par \t sets start script parameter (see startscript)"<< std::endl;
+    os << std::endl;
+
+    os << "scan0script script \t sets script to launch at level 0 scan. If \"energy\" energy scan, if \"threshold\" threshold scan, if \"trimbits\" trimbits scan, \"none\" unsets otherwise will be launched as a system call with arguments nrun=fileindex fn=filename var=scan0var par=scan0par"<< std::endl;
+    os << std::endl;
+    os << "scan0par par\t sets the level 0 scan parameter. See scan0script"<< std::endl;
+    os << std::endl;
+    os << "scan0prec n \t sets the level 0 scan precision for the output file name. See scan0script"<< std::endl;
+    os << std::endl;
+    os << "scan0steps nsteps [s0 s1...] \t sets the level 0 scan steps. See scan0script - nsteps=0 unsets the scan level"<< std::endl;
+    os << std::endl;
+
+
+    os << "scan1script script \t sets script to launch at level 1 scan. If \"energy\" energy scan, if \"threshold\" threshold scan, if \"trimbits\" trimbits scan, \"none\" unsets otherwise will be launched as a system call with arguments nrun=fileindex fn=filename var=scan1var par=scan1par"<< std::endl;
+    os << std::endl;
+
+    os << "scan1par par\t sets the level 1 scan parameter. See scan1script"<< std::endl;
+    os << std::endl;
+    os << "scan1prec n \t sets the level 1 scan precision for the output file name. See scan1script"<< std::endl;
+    os << std::endl;
+    os << "scan1steps nsteps [s0 s1...] \t sets the level 1 scan steps. See scan1script - nsteps=0 unsets the scan level"<< std::endl;
+    os << std::endl;
+
+
+    os << "scriptbefore script \t sets script to execute at the beginning of the realtime acquisition - \"none\" to unset - will be launched as a system call with arguments nrun=fileindex fn=filename par=scriptbeforepar sv0=scan0var sv1=scan1var p0=scan0par p1=scan1par"<< std::endl;
+    os << std::endl;
+    os << "scriptbeforepar \t sets  script before parameter (see scriptbefore)"<< std::endl;
+    os << std::endl;
+
+    os << "headerbefore script \n script to launch to acquire the headerfile just before  the acquisition -  \"none\" to unset - will be launched as a system call with arguments nrun=fileindex fn=filename acqtime=t gainmode=sett threshold=thr badfile=badf angfile=angf bloffset=bloffset fineoffset=fineoffset fffile=ffile tau=taucorr par=headerbeforepar"<< std::endl;
+    os << std::endl;
+    os << "headerbeforepar \t sets header before parameter (see headerbefore)"<< std::endl;
+    os << std::endl;
+
+
+    os << "headerafter script \n script to launch to acquire the headerfile just after the acquisition -  \"none\" to unset - will be launched as a system call with arguments nrun=fileindex fn=filename acqtime=t gainmode=sett threshold=thr badfile=badf angfile=angf bloffset=bloffset fineoffset=fineoffset fffile=ffile tau=taucorr par=headerafterpar"<< std::endl;
+    os << std::endl;
+    os << "headerafterpar par \t sets header after parameter (see headerafter)"<< std::endl;
+    os << std::endl;
+
+    os << "scriptafter script \t sets script to execute at the end of the realtime acquisition - \"none\" to unset - will be launched as a system call with arguments nrun=fileindex fn=filename par=scriptafterpar sv0=scan0var sv1=scan1var p0=scan0par p1=scan1par"<< std::endl;
+    os << std::endl;
+    os << "scriptafterpar par \t sets  script after parameter (see scriptafter)"<< std::endl;
+    os << std::endl;
+
+
+    os << "stopscript script \t sets script to execute at the end of the measurements - \"none\" to unset - will be launched as a system call with arguments nrun=fileindex par=stopscriptpar"<< std::endl;
+    os << std::endl;
+    os << "stopscriptpar par\t sets stop script parameter (see stopscript)"<< std::endl;
+    os << std::endl;
+
+
+
+
+
     os << "outdir \t directory to which the files will be written by default" << std::endl;
     os << std::endl;
     os <<  "fname \t filename to which the files will be written by default (to which file and position indexes will eventually be attached)" << std::endl;
@@ -940,6 +1196,85 @@ string mythenDetector::helpLine( int action) {
     os << "trimdir \t Gets path of the trim files " << std::endl;
     os << std::endl;
     os << "trimen \t returns the number of energies for which trimbit files exist and their values"<< std::endl;
+
+
+
+
+
+
+    os << "startscript \t gets script to execute at the beginning of the measurements - \"none\" to unset - will be launched as a system call with arguments nrun=fileindex par=startscriptpar"<< std::endl;
+    os << std::endl;
+    os << "startscriptpar \t gets start script parameter (see startscript)"<< std::endl;
+    os << std::endl;
+
+    os << "scan0script \t gets script to launch at level 0 scan. If \"energy\" energy scan, if \"threshold\" threshold scan, if \"trimbits\" trimbits scan, \"none\" unsets otherwise will be launched as a system call with arguments nrun=fileindex fn=filename var=scan0var par=scan0par"<< std::endl;
+    os << std::endl;
+    os << "scan0par \t gets the level 0 scan parameter. See scan0script"<< std::endl;
+    os << std::endl;
+    os << "scan0prec \t gets the level 0 scan precision for the output file name. See scan0script"<< std::endl;
+    os << std::endl;
+    os << "scan0steps \t gets the level 0 scan steps. See scan0script - nsteps=0 unsets the scan level"<< std::endl;
+    os << std::endl;
+
+
+    os << "scan1script \t gets script to launch at level 1 scan. If \"energy\" energy scan, if \"threshold\" threshold scan, if \"trimbits\" trimbits scan, \"none\" unsets otherwise will be launched as a system call with arguments nrun=fileindex fn=filename var=scan1var par=scan1par"<< std::endl;
+    os << std::endl;
+
+    os << "scan1par \t gets the level 1 scan parameter. See scan1script"<< std::endl;
+    os << std::endl;
+    os << "scan1prec \t gets the level 1 scan precision for the output file name. See scan1script"<< std::endl;
+    os << std::endl;
+    os << "scan1steps \t gets the level 1 scan steps. See scan1script - nsteps=0 unsets the scan level"<< std::endl;
+    os << std::endl;
+
+
+    os << "scriptbefore \t gets script to execute at the beginning of the realtime acquisition - \"none\" to unset - will be launched as a system call with arguments nrun=fileindex fn=filename par=scriptbeforepar sv0=scan0var sv1=scan1var p0=scan0par p1=scan1par"<< std::endl;
+    os << std::endl;
+    os << "scriptbeforepar \t gets  script before parameter (see scriptbefore)"<< std::endl;
+    os << std::endl;
+
+    os << "headerbefore \n gets the script to launch to acquire the headerfile just before  the acquisition -  \"none\" to unset - will be launched as a system call with arguments nrun=fileindex fn=filename acqtime=t gainmode=sett threshold=thr badfile=badf angfile=angf bloffset=bloffset fineoffset=fineoffset fffile=ffile tau=taucorr par=headerbeforepar"<< std::endl;
+    os << std::endl;
+    os << "headerbeforepar \t gets header before parameter (see headerbefore)"<< std::endl;
+    os << std::endl;
+
+
+    os << "headerafter \n gets the script to launch to acquire the headerfile just after the acquisition -  \"none\" to unset - will be launched as a system call with arguments nrun=fileindex fn=filename acqtime=t gainmode=sett threshold=thr badfile=badf angfile=angf bloffset=bloffset fineoffset=fineoffset fffile=ffile tau=taucorr par=headerafterpar"<< std::endl;
+    os << std::endl;
+    os << "headerafterpar \t gets header after parameter (see headerafter)"<< std::endl;
+    os << std::endl;
+
+    os << "scriptafter \t gets script to execute at the end of the realtime acquisition - \"none\" to unset - will be launched as a system call with arguments nrun=fileindex fn=filename par=scriptafterpar sv0=scan0var sv1=scan1var p0=scan0par p1=scan1par"<< std::endl;
+    os << std::endl;
+    os << "scriptafterpar \t gets  script after parameter (see scriptafter)"<< std::endl;
+    os << std::endl;
+
+
+    os << "stopscript \t gets script to execute at the end of the measurements - \"none\" to unset - will be launched as a system call with arguments nrun=fileindex par=stopscriptpar"<< std::endl;
+    os << std::endl;
+    os << "stopscriptpar\t gets stop script parameter (see stopscript)"<< std::endl;
+    os << std::endl;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
     os << "outdir \t directory to which the files will be written by default" << std::endl;
     os << std::endl;
       os <<  "fname \t filename to which the files will be written by default (to which file and position indexes will eventually be attached)" << std::endl;
@@ -1564,7 +1899,7 @@ int mythenDetector::retrieveDetectorSetup(string fname1, int level){
       strcpy(thisDetector->trimFile,fname.c_str());
       return myMod;
     } else {
-      std::cout<< "could not open file " <<  myfname<< std::endl;
+      std::cout<< "could not open trim file " <<  myfname << std::endl;
       if (nflag)
 	deleteModule(myMod);
       return NULL;
@@ -1921,9 +2256,17 @@ int mythenDetector::setAngularConversion(string fname) {
   if (fname=="") {
     thisDetector->correctionMask&=~(1<< ANGULAR_CONVERSION);
     //strcpy(thisDetector->angConvFile,"none");
+    //#ifdef VERBOSE
+     std::cout << "Unsetting angular conversion" <<  std::endl;
+    //#endif
   } else {
-    if (fname=="default")
+    if (fname=="default") {
       fname=string(thisDetector->angConvFile);
+    }
+    
+    //#ifdef VERBOSE
+     std::cout << "Setting angular conversion to" << fname << std:: endl;
+    //#endif
     if (readAngularConversion(fname)>=0) {
       thisDetector->correctionMask|=(1<< ANGULAR_CONVERSION);
       strcpy(thisDetector->angConvFile,fname.c_str());
@@ -1931,6 +2274,12 @@ int mythenDetector::setAngularConversion(string fname) {
   }
   return thisDetector->correctionMask&(1<< ANGULAR_CONVERSION);
 }
+
+
+
+
+
+
 
 int mythenDetector::getAngularConversion(int &direction,  angleConversionConstant *angconv) {
   direction=thisDetector->angDirection;
@@ -2064,7 +2413,6 @@ int  mythenDetector::addToMerging(float *p1, float *v1, float *e1, float *mp, fl
   int ibin=0;
   int imod;
   float ang=0;
-
   if (thisDetector->binSize>0)
     binsize=thisDetector->binSize;
   else 
@@ -2133,10 +2481,19 @@ int  mythenDetector::addToMerging(float *p1, float *v1, float *e1, float *mp, fl
 
 void  mythenDetector::acquire(int delflag){
   void *status;
-#ifdef VERBOSE
-  int iloop=0;
-#endif
+  //#ifdef VERBOSE
+  //int iloop=0;
+  //#endif
+  int trimbit;
+  int startindex=thisDetector->fileIndex;
+  int lastindex=startindex;
+  char cmd[MAX_STR_LENGTH];
+  //string sett;
+
   thisDetector->progressIndex=0;
+  thisDetector->stoppedFlag=0;
+
+
 
   resetFinalDataQueue();
   resetDataQueue();
@@ -2144,6 +2501,11 @@ void  mythenDetector::acquire(int delflag){
 
   jointhread=0;
   queuesize=0;
+
+
+
+
+
   if (thisDetector->threadedProcessing) {
     startThread(delflag);
   }
@@ -2152,75 +2514,269 @@ void  mythenDetector::acquire(int delflag){
   if (thisDetector->numberOfPositions>0) 
     np=thisDetector->numberOfPositions;
 
-  currentPositionIndex=0;
+  int ns0=1;
+  if (thisDetector->actionMask & (1 << MAX_ACTIONS)) {
+    ns0=thisDetector->nScanSteps[0];
+  }
+  if (ns0<1)
+    ns0=1;
 
-  for (int ip=0; ip<np; ip++) {
-    if  (thisDetector->numberOfPositions>0) {
-      go_to_position (thisDetector->detPositions[ip]);
-      currentPositionIndex=ip+1;
+
+  int ns1=1;
+  if (thisDetector->actionMask & (1 << (MAX_ACTIONS+1))) {
+    ns1=thisDetector->nScanSteps[1];
+  }
+  if (ns1<1)
+    ns1=1;
+
+
+
+
+
+  //action at start
+  if (thisDetector->stoppedFlag==0) {
+      if (thisDetector->actionMask & (1 << startScript)) {
+	//"Custom start script. The arguments are passed as nrun=n par=p.");
+	sprintf(cmd,"%s nrun=%d par=%s",thisDetector->actionScript[startScript],thisDetector->fileIndex,thisDetector->actionParameter[startScript]);
 #ifdef VERBOSE
-      std::cout<< "moving to position" << std::endl;
+	cout << "Executing start script " << cmd << endl;
 #endif
-    }
-    if (thisDetector->correctionMask&(1<< I0_NORMALIZATION))
-      currentI0=get_i0();
-    //write header before?
+	system(cmd);
+      }
+  }
 
-    startAndReadAll();
+  for (int is0=0; is0<ns0; is0++) {//scan0 loop
 
-    //write header after?
-    if (thisDetector->correctionMask&(1<< I0_NORMALIZATION))
-      currentI0=get_i0();
-    if (thisDetector->correctionMask&(1<< ANGULAR_CONVERSION))
-      currentPosition=get_position();  
-   
+  if (thisDetector->stoppedFlag==0) {
 
-    if (thisDetector->threadedProcessing==0)
-      processData(delflag); 
-   
-#ifdef ACQVERBOSE
-    std::cout<< "--------------------------------------------------waiting to empty raw data queue " << queuesize << std::endl ;
+    currentScanVariable[0]=thisDetector->scanSteps[0][is0];
+
+    switch(thisDetector->scanMode[0]) {
+    case 1:
+      setThresholdEnergy((int)currentScanVariable[0]); //energy scan
+      break;
+    case 2:
+      setDAC(currentScanVariable[0],THRESHOLD); // threshold scan
+      break;
+    case 3:
+      trimbit=(int)currentScanVariable[0];
+      setChannel((trimbit<<((int)TRIMBIT_OFF))|((int)COMPARATOR_ENABLE)); // trimbit scan
+      break;
+    case 0:
+       currentScanVariable[0]=0;
+       break;
+    default:
+    //Custom scan script level 0. The arguments are passed as nrun=n fn=filename var=v par=p"
+      sprintf(cmd,"%s nrun=%d fn=%s var=%f par=%s",thisDetector->scanScript[0],thisDetector->fileIndex,createFileName().c_str(),currentScanVariable[0],thisDetector->scanParameter[0]);
+#ifdef VERBOSE
+      cout << "Executing scan script 0 " << cmd << endl;
 #endif
-    //while (!dataQueue.empty()){
-    while (queuesize){
-      usleep(100);
-// #ifdef VERBOSE
-//        if (iloop%10000==0)
-//  	std::cout<< "--------------------------------------------------looping raw data queue " << queuesize << std::endl ;
-//        // 	//std::cout<< "--------------------------------------------------looping raw data queue " << dataQueue.size() << std::endl ;
-//       iloop++;
-//       //usleep(100000);
-// #endif
+      system(cmd);
+     
+
     }
+  } else
+    break;
+  
+
+  for (int is1=0; is1<ns0; is1++) {//scan0 loop
+
+     if (thisDetector->stoppedFlag==0) {
+
+    currentScanVariable[1]=thisDetector->scanSteps[1][is1];
+
+    switch(thisDetector->scanMode[1]) {
+    case 1:
+      setThresholdEnergy((int)currentScanVariable[1]); //energy scan
+      break;
+    case 2:
+      setDAC(currentScanVariable[1],THRESHOLD); // threshold scan
+      break;
+    case 3:
+      trimbit=(int)currentScanVariable[1];
+      setChannel((trimbit<<((int)TRIMBIT_OFF))|((int)COMPARATOR_ENABLE)); // trimbit scan
+      break;
+    case 0:
+       currentScanVariable[1]=0;
+       break;
+    default:
+    //Custom scan script level 1. The arguments are passed as nrun=n fn=filename var=v par=p"
+      sprintf(cmd,"%s nrun=%d fn=%s var=%f par=%s",thisDetector->scanScript[1],thisDetector->fileIndex,createFileName().c_str(),currentScanVariable[1],thisDetector->scanParameter[1]);
+#ifdef VERBOSE
+      cout << "Executing scan script 1 " << cmd << endl;
+#endif
+      system(cmd);
+    }
+  
+     } else
+       break;
+
+     if (thisDetector->stoppedFlag==0) {
+       if (thisDetector->actionMask & (1 << scriptBefore)) {
+	 //Custom script before each frame. The arguments are passed as nrun=n fn=filename par=p sv0=scanvar0 sv1=scanvar1 p0=par0 p1=par1"
+	 sprintf(cmd,"%s nrun=%d fn=%s par=%s sv0=%f sv1=%f p0=%s p1=%s",thisDetector->actionScript[scriptBefore],thisDetector->fileIndex,createFileName().c_str(),thisDetector->actionParameter[scriptBefore],currentScanVariable[0],currentScanVariable[1],thisDetector->scanParameter[0],thisDetector->scanParameter[1]);
+#ifdef VERBOSE
+	 cout << "Executing script before " << cmd << endl;
+#endif
+	 system(cmd);
+       }
+     } else
+       break;
+
+     currentPositionIndex=0;
+     
+     for (int ip=0; ip<np; ip++) {
+       if (thisDetector->stoppedFlag==0) {
+	 if  (thisDetector->numberOfPositions>0) {
+	   go_to_position (thisDetector->detPositions[ip]);
+	   currentPositionIndex=ip+1;
+#ifdef VERBOSE
+	   std::cout<< "moving to position" << std::endl;
+#endif
+	 } 
+       } else
+	 break;
+       
+	 //write header before?
+	 //cmd=headerBeforeScript;
+	 //Custom script to write the header. \n The arguments will be passed as nrun=n fn=filenam acqtime=t gainmode=g threshold=thr badfile=badf angfile=angf bloffset=blo fineoffset=fo fffile=fffn tau=deadtau par=p")
+       
+       if (thisDetector->stoppedFlag==0) {
+	 if (thisDetector->correctionMask&(1<< I0_NORMALIZATION))
+	   currentI0=get_i0();
+	 if (thisDetector->actionMask & (1 << headerBefore)) {
+	   //Custom script after each frame. The arguments are passed as nrun=n fn=filename par=p sv0=scanvar0 sv1=scanvar1 p0=par0 p1=par1"
+	   sprintf(cmd,"%s nrun=%d fn=%s acqtime=%f gainmode=%d threshold=%d badfile=%s angfile=%s bloffset=%f fineoffset=%f fffile=%s/%s tau=%f par=%s",thisDetector->actionScript[headerBefore],thisDetector->fileIndex,createFileName().c_str(),((float)thisDetector->timerValue[ACQUISITION_TIME])*1E-9, thisDetector->currentSettings, thisDetector->currentThresholdEV, getBadChannelCorrectionFile().c_str(), getAngularConversion().c_str(), thisDetector->globalOffset, thisDetector->fineOffset,getFlatFieldCorrectionDir(),getFlatFieldCorrectionFile(), getRateCorrectionTau(), thisDetector->actionParameter[headerBefore]);
+#ifdef VERBOSE
+	   cout << "Executing header after " << cmd << endl;
+#endif
+	   system(cmd);
+	 }
+       } else
+	 break;
+       
+       
+       
+       if (thisDetector->stoppedFlag==0) {
+	 startAndReadAll();
+	 
+	 if (thisDetector->correctionMask&(1<< ANGULAR_CONVERSION))
+	   currentPosition=get_position();  
+	 
+	 if (thisDetector->correctionMask&(1<< I0_NORMALIZATION))
+	   currentI0=get_i0()-currentI0;
+	 
+	 
+	 if (thisDetector->threadedProcessing==0)
+	   processData(delflag); 
+	 
+	 
+       } else
+	 break;
+       
+       //while (!dataQueue.empty()){
+       while (queuesize){
+	 usleep(100);
+       }
     
-#ifdef ACQVERBOSE
-    std::cout<< "----------------------------------------------------raw data queue is empty!" << std::endl ;
+
+    if (thisDetector->fileIndex>lastindex)
+      lastindex=thisDetector->fileIndex;
+
+    if (thisDetector->stoppedFlag==0) {
+      if (thisDetector->actionMask & (1 << headerAfter)) {
+	//Custom script after each frame. The arguments are passed as nrun=n fn=filename par=p sv0=scanvar0 sv1=scanvar1 p0=par0 p1=par1"
+	sprintf(cmd,"%s nrun=%d fn=%s acqtime=%f gainmode=%d threshold=%d badfile=%s angfile=%s bloffset=%f fineoffset=%f fffile=%s/%s tau=%f par=%s", \
+		thisDetector->actionScript[headerAfter],		\
+	      thisDetector->fileIndex,\
+		createFileName().c_str(),				\
+		((float)thisDetector->timerValue[ACQUISITION_TIME])*1E-9, \
+		thisDetector->currentSettings,				\
+		thisDetector->currentThresholdEV,			\
+		getBadChannelCorrectionFile().c_str(),			\
+		getAngularConversion().c_str(),				\
+		thisDetector->globalOffset,				\
+		thisDetector->fineOffset,				\
+		getFlatFieldCorrectionDir(),				\
+		getFlatFieldCorrectionFile(),				\
+		getRateCorrectionTau(),					\
+		thisDetector->actionParameter[headerAfter]);
+#ifdef VERBOSE
+	cout << "Executing header after " << cmd << endl;
 #endif
+	system(cmd);
+      }
+    } else
+      break;
+     
+
+    
     if (thisDetector->stoppedFlag) {
 #ifdef VERBOSE
       std::cout<< "exiting since the detector has been stopped" << std::endl;
 #endif
       break;
-    } else if (ip<(np-1))
-      thisDetector->fileIndex=thisDetector->fileIndex-thisDetector->timerValue[FRAME_NUMBER]; 
-#ifdef VERBOSE
-    cout << "------------------------------------------------------Setting file index to " << thisDetector->fileIndex << endl;
-#endif
-  }
+    } else if (ip<(np-1)) {
+      thisDetector->fileIndex=startindex; 
+    }
+     } // loop on position finished
 
-#ifdef ACQVERBOSE
-  std::cout<< "------------------------------------------------------cancelling data processing thread " << std::endl ;
+  //script after
+        if (thisDetector->stoppedFlag==0) {
+	  if (thisDetector->actionMask & (1 << scriptAfter)) {
+	    //Custom script after each frame. The arguments are passed as nrun=n fn=filename par=p sv0=scanvar0 sv1=scanvar1 p0=par0 p1=par1"
+	    sprintf(cmd,"%s nrun=%d fn=%s par=%s sv0=%f sv1=%f p0=%s p1=%s",thisDetector->actionScript[scriptAfter],thisDetector->fileIndex,createFileName().c_str(),thisDetector->actionParameter[scriptAfter],currentScanVariable[0],currentScanVariable[1],thisDetector->scanParameter[0],thisDetector->scanParameter[1]);
+#ifdef VERBOSE
+	    cout << "Executing script after " << cmd << endl;
 #endif
+	    system(cmd);
+	  } 
+	} else
+	    break;
+  
+
+    if (thisDetector->stoppedFlag) {
+#ifdef VERBOSE
+      std::cout<< "exiting since the detector has been stopped" << std::endl;
+#endif
+      break;
+    } else if (is1<(ns1-1)) {
+      thisDetector->fileIndex=startindex; 
+    }
+
+
+  } 
+
+  //end scan1 loop is1
+  //currentScanVariable[MAX_SCAN_LEVELS];
+  
+
+    if (thisDetector->stoppedFlag) {
+#ifdef VERBOSE
+      std::cout<< "exiting since the detector has been stopped" << std::endl;
+#endif
+      break;
+    } else if (is0<(ns0-1)) {
+      thisDetector->fileIndex=startindex; 
+    }
+  } //end scan0 loop is0
+
+  thisDetector->fileIndex=lastindex;
+  if (thisDetector->stoppedFlag==0) {
+    if (thisDetector->actionMask & (1 << stopScript)) {
+      //Custom stop script. The arguments are passed as nrun=n par=p.
+      sprintf(cmd,"%s nrun=%d par=%s",thisDetector->actionScript[stopScript],thisDetector->fileIndex,thisDetector->actionParameter[stopScript]);
+#ifdef VERBOSE
+      cout << "Executing stop script " << cmd << endl;
+#endif
+      system(cmd);
+    }
+  } 
+
+
    if (thisDetector->threadedProcessing) { 
      jointhread=1;
      pthread_join(dataProcessingThread, &status);
-
-     /*  while (pthread_cancel(dataProcessingThread)) {
-      ;  
-}*/
-#ifdef ACQVERBOSE
-      std::cout<< "----------------------------------------------------process canceled" << std::endl;
-#endif
    }
 
 }
@@ -2240,21 +2796,11 @@ void* mythenDetector::processData(int delflag) {
   int np;
   detectorData *thisData;
   int dum=1;
-  //  thisDetector->progressIndex=0;
-
-#ifdef VERBOSE
-  int iloop=0;
-#endif
 
 #ifdef ACQVERBOSE
   std::cout<< " processing data - threaded mode " << thisDetector->threadedProcessing;
 #endif
 
-  //pthread_setcanceltype(PTHREAD_CANCEL_DEFERRED,&outer_c_s );
-  //#ifdef VERBOSE
-  //	std::cout<< "impossible to cancel process " << std::endl;
-  //#endif
-  //    pthread_setcancelstate (PTHREAD_CANCEL_DISABLE, &outer_c_s);
 
   while(dum | thisDetector->threadedProcessing) { // ????????????????????????
     
@@ -2264,29 +2810,20 @@ void* mythenDetector::processData(int delflag) {
 
       /** Pop data queue */
       myData=dataQueue.front(); // get the data from the queue 
-      //dataQueue.pop(); //remove the data from the queue
       if (myData) {
 	//process data
 	/** decode data */
 	fdata=decodeData(myData);
 
-      //delete [] myData;
-      //	myData=NULL;
 	/** write raw data file */	   
 	if (thisDetector->correctionMask==0 && delflag==1) {
-#ifdef ACQVERBOSE
-	  std::cout<< "------------------------------------no processing "<< delflag <<std::endl;
-#endif 
-#ifdef VERBOSE
-	  cout << "********************** no processing: writing file " << createFileName().append(".raw") << endl;
-#endif 
+
+
 	  writeDataFile (createFileName().append(".raw"), fdata, NULL, NULL, 'i'); 
 	  delete [] fdata;
 	} else {
 	  writeDataFile (createFileName().append(".raw"), fdata, NULL, NULL, 'i');
-#ifdef VERBOSE
-	  std::cout << "********************** if (thisDetector->correctionMask!=0 || delflag==0) { writing raw data file " << createFileName() <<" " << thisDetector->correctionMask<< " " << delflag << endl;
-#endif
+
 	  /** rate correction */
 	  if (thisDetector->correctionMask&(1<<RATE_CORRECTION)) {
 	    rcdata=new float[thisDetector->nChans*thisDetector->nChips*thisDetector->nMods]; 
@@ -2314,11 +2851,7 @@ void* mythenDetector::processData(int delflag) {
 	  }
 	  
 	  if (thisDetector->correctionMask&(1<< ANGULAR_CONVERSION)) {
-	    
-	  /** angular conversion */
-	  /** data merging */
-	  // if (thisDetector->numberOfPositions) {
-	    
+
 	    if (currentPositionIndex<=1) {     
 	      if (thisDetector->binSize>0)
 		bs=thisDetector->binSize;
@@ -2347,27 +2880,13 @@ void* mythenDetector::processData(int delflag) {
 	    }
 	    
 	    if (thisDetector->correctionMask!=0)
-#ifdef VERBOSE
-	      std::cout << "********************** writing dat data file  if (thisDetector->correctionMask!=0) { " << createFileName() <<" " << thisDetector->correctionMask << endl;
-#endif
 	    writeDataFile (createFileName().append(".dat"), ffcdata, ffcerr,ang);
-	    
-	    
 	    addToMerging(ang, ffcdata, ffcerr, mergingBins, mergingCounts,mergingErrors, mergingMultiplicity);
-	    
-	    
-	    
-	    
 	    if ((currentPositionIndex==thisDetector->numberOfPositions) || (currentPositionIndex==0)) {
-	      
 	      np=finalizeMerging(mergingBins, mergingCounts,mergingErrors, mergingMultiplicity);
-	      
 	      /** file writing */
 	      currentPositionIndex++;
 	      if (thisDetector->correctionMask!=0)
-#ifdef VERBOSE
-		std::cout << "********************** writing dat data file if ((currentPositionIndex==thisDetector->numberOfPositions) || (currentPositionIndex==0))" << createFileName() << endl;
-#endif
 		writeDataFile (createFileName().append(".dat"),mergingCounts, mergingErrors, mergingBins,'f',np);
 	      if (delflag) {
 		delete [] mergingBins;
@@ -2381,9 +2900,6 @@ void* mythenDetector::processData(int delflag) {
 		  thisData=new detectorData(mergingCounts,mergingErrors,mergingBins,thisDetector->progressIndex+1,(createFileName().append(".raw")).c_str(),np);
 		
 		finalDataQueue.push(thisData);
-#ifdef ACQVERBOSE
-		std::cout<< "------------------------------------pushing final data queue " << finalDataQueue.size() << " " << createFileName() << std::endl;
-#endif
 	      }
 	    }
 	    
@@ -2393,13 +2909,9 @@ void* mythenDetector::processData(int delflag) {
 	      delete [] ffcerr;
 	    if (ang)
 	      delete [] ang;
-	    //}
 	  } else {
 	    if (thisDetector->correctionMask!=0) {
 	      writeDataFile (createFileName().append(".dat"), ffcdata, ffcerr);
-#ifdef VERBOSE
-	      std::cout << "********************** if (thisDetector->correctionMask!=0) writing dat data file " << createFileName() << endl;
-#endif
 	    }
 	    if (delflag) {
 	      if (ffcdata)
@@ -2411,58 +2923,26 @@ void* mythenDetector::processData(int delflag) {
 	    } else {
 	      if (thisDetector->correctionMask!=0) {
 		thisData=new detectorData(ffcdata,ffcerr,NULL,thisDetector->progressIndex+1,(createFileName().append(".dat")).c_str(),thisDetector->nChans*thisDetector->nChips*thisDetector->nMods);
-	      }	      else {
+	      }	else {
 		thisData=new detectorData(ffcdata,ffcerr,NULL,thisDetector->progressIndex+1,(createFileName().append(".raw")).c_str(),thisDetector->nChans*thisDetector->nChips*thisDetector->nMods);
 	      }
 	      finalDataQueue.push(thisData);  
-#ifdef VERBOSE
-	      std::cout<< "------------------------------------pushing final data queue with " << createFileName() << " " <<finalDataQueue.size() << std::endl;
-#endif 
 	    }  
 	  }
 	}
 	thisDetector->fileIndex++;
-#ifdef VERBOSE
-	cout << "setting file index to "<< thisDetector->fileIndex << endl;
-#endif
 	thisDetector->progressIndex++;
-#ifdef ACQVERBOSE
-	std::cout<< "------------------------------------raw data queueto be popped " << dataQueue.size() << " empty " << !dataQueue.empty() << std::endl;
-#endif
 	delete [] myData;
 	myData=NULL;
 	dataQueue.pop(); //remove the data from the queue
 	queuesize=dataQueue.size();
-#ifdef ACQVERBOSE
-	std::cout<< "------------------------------------raw data queue popped " << dataQueue.size() << " var " << queuesize << std::endl;
-#endif
       }
-#ifdef ACQVERBOSE
-      else
-	std::cout<< "could not pop data queue " << std::endl;
-#endif
-      //#ifdef VERBOSE
-      //	std::cout<< "possible to cancel process " << std::endl;
-      //#endif
-      //	pthread_setcancelstate (PTHREAD_CANCEL_ENABLE, &outer_c_s);
-      //	pthread_testcancel();
     }
-    
-// #ifdef VERBOSE
-//       if (iloop%10000==0) 
-// 	std::cout<< "------------------------------------process idle " << dataQueue.size() << " empty " << !dataQueue.empty()  << std::endl;
-//       iloop++;
-// #endif
-
-
-      if (jointhread) {
-#ifdef VERBOSE
-	std::cout<< "acquisition finished " << dataQueue.size() << " empty " << !dataQueue.empty()  << "final data queue size: " << finalDataQueue.size() <<std::endl;
-#endif
-	if (dataQueue.size()==0)
-	  break;
-      }
-      dum=0;
+    if (jointhread) {
+      if (dataQueue.size()==0)
+	break;
+    }
+    dum=0;
   } // ????????????????????????
   return 0;
 }

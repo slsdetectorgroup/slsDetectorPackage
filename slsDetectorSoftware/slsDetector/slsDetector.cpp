@@ -241,6 +241,30 @@ int slsDetector::initializeDetectorSize(detectorType type) {
      thisDetector->binSize=0;
      thisDetector->stoppedFlag=0;
      
+     thisDetector->actionMask=0;
+
+
+     for (int ia=0; ia<MAX_ACTIONS; ia++) {
+       thisDetector->actionMode[ia]=0;
+       strcpy(thisDetector->actionScript[ia],"none");
+       strcpy(thisDetector->actionParameter[ia],"none");
+     }
+
+
+     for (int iscan=0; iscan<MAX_SCAN_LEVELS; iscan++) {
+       
+       thisDetector->scanMode[iscan]=0;
+       strcpy(thisDetector->scanScript[iscan],"none");
+       strcpy(thisDetector->scanParameter[iscan],"none");
+       thisDetector->nScanSteps[iscan]=0;
+       thisDetector->scanPrecision[iscan]=0;
+     }
+
+
+     
+
+
+
 
      
      /** calculates the memory offsets for flat field coefficients and errors, module structures, dacs, adcs, chips and channels */ 
@@ -627,10 +651,26 @@ string slsDetector::createFileName() {
   /*directory name +root file name */
   osfn << thisDetector->filePath << "/" << thisDetector->fileName;
   
+  // scan level 0
+  if (thisDetector->actionMask & (1 << (MAX_ACTIONS)))
+    osfn << "_S" << fixed << setprecision(thisDetector->scanPrecision[0]) << currentScanVariable[0];
+
+  //scan level 1
+  if (thisDetector->actionMask & (1 << (MAX_ACTIONS+1)))
+    osfn << "_s" << fixed << setprecision(thisDetector->scanPrecision[1]) << currentScanVariable[1];
+  
+
+  //position
   if (currentPositionIndex>0 && currentPositionIndex<=thisDetector->numberOfPositions)
     osfn << "_p" << currentPositionIndex;
 
+  // file index
   osfn << "_" << thisDetector->fileIndex;
+
+
+#ifdef VERBOSE
+  cout << "created file name " << osfn.str() << endl;
+#endif
 
   return osfn.str();
 
@@ -3094,11 +3134,11 @@ int slsDetector::setFlatFieldCorrection(string fname){
 	fillBadChannelMask();
 
       } else {
-	std::cout<< "Flat field data from file " << fname << " are not valid " << std::endl;
+	std::cout<< "Flat field data from file " << fname << " are not valid (" << nmed << "///" << xmed[nmed/2] << std::endl;
 	return -1;
       }
     } else {
-	std::cout<< "Flat field from file " << fname << " is not valid " << std::endl;
+      std::cout<< "Flat field from file " << fname << " is not valid " << nch << std::endl;
 	return -1;
     } 
   }
@@ -3215,6 +3255,27 @@ int slsDetector::getRateCorrection(float &t){
 #endif
     return 0;
 };
+
+float slsDetector::getRateCorrectionTau(){
+
+  if (thisDetector->correctionMask&(1<<RATE_CORRECTION)) {
+#ifdef VERBOSE
+    std::cout<< "Rate correction is enabled with dead time "<< thisDetector->tDead << std::endl;
+#endif
+    return thisDetector->tDead;
+    //return 1;
+  } else
+#ifdef VERBOSE
+    std::cout<< "Rate correction is disabled " << std::endl;
+#endif
+    return 0;
+};
+
+
+
+
+
+
 
 int slsDetector::getRateCorrection(){
 
@@ -3426,6 +3487,392 @@ int slsDetector::exitServer(){
   }
   return retval;
 };
+
+
+
+
+
+
+
+
+
+
+  /** 
+      set action 
+      \param iaction can be enum {startScript, scriptBefore, headerBefore, headerAfter,scriptAfter, stopScript, MAX_ACTIONS}
+      \param fname for script ("" disable but leaves script unchanged, "none" disables and overwrites)
+      \returns 0 if action disabled, >0 otherwise
+  */
+int slsDetector::setAction(int iaction, string fname, string par) {
+
+  if (iaction>=0 && iaction<MAX_ACTIONS) {
+
+    if (fname=="") {
+      thisDetector->actionMode[iaction]=0;
+    } else if (fname=="none") {
+      thisDetector->actionMode[iaction]=0;
+      strcpy(thisDetector->actionScript[iaction],fname.c_str());
+    } else {
+      strcpy(thisDetector->actionScript[iaction],fname.c_str());
+      thisDetector->actionMode[iaction]=1;
+    }
+    
+    if (par!="") {
+      strcpy(thisDetector->actionParameter[iaction],par.c_str());
+    }
+    
+    if (thisDetector->actionMode[iaction]) {
+
+#ifdef VERBOSE
+      cout << iaction << "  " << hex << (1 << iaction) << " " << thisDetector->actionMask << dec;
+#endif
+    
+      thisDetector->actionMask |= (1 << iaction);
+
+#ifdef VERBOSE
+    cout << " set " << hex << thisDetector->actionMask << dec << endl;
+#endif
+    
+    } else {
+#ifdef VERBOSE
+    cout << iaction << "  " << hex << thisDetector->actionMask << dec;
+#endif
+    
+    thisDetector->actionMask &= ~(1 << iaction);
+
+#ifdef VERBOSE
+    cout << "  unset " << hex << thisDetector->actionMask << dec << endl;
+#endif
+    }
+#ifdef VERBOSE
+    cout << iaction << " Action mask set to " << hex << thisDetector->actionMask << dec << endl;
+#endif
+    
+    return thisDetector->actionMode[iaction]; 
+  } else
+    return -1;
+}
+
+
+int slsDetector::setActionScript(int iaction, string fname) {
+#ifdef VERBOSE
+  
+#endif
+  return setAction(iaction,fname,"");
+}
+
+
+
+int slsDetector::setActionParameter(int iaction, string par) {
+  if (iaction>=0 && iaction<MAX_ACTIONS) {
+
+    if (par!="") {
+      strcpy(thisDetector->actionParameter[iaction],par.c_str());
+    }
+    
+    if (thisDetector->actionMode[iaction]) {
+      thisDetector->actionMask |= (1 << iaction);
+    } else {
+      thisDetector->actionMask &= ~(1 << iaction);
+    }
+    
+    return thisDetector->actionMode[iaction]; 
+  } else
+    return -1; 
+}
+
+  /** 
+      returns action script
+      \param iaction can be enum {startScript, scriptBefore, headerBefore, headerAfter,scriptAfter, stopScript}
+      \returns action script
+  */
+string slsDetector::getActionScript(int iaction){
+  if (iaction>=0 && iaction<MAX_ACTIONS) 
+    return string(thisDetector->actionScript[iaction]);
+  else
+    return string("wrong index");
+};
+
+    /** 
+	returns action parameter
+	\param iaction can be enum {startScript, scriptBefore, headerBefore, headerAfter,scriptAfter, stopScript}
+	\returns action parameter
+    */
+string slsDetector::getActionParameter(int iaction){
+  if (iaction>=0 && iaction<MAX_ACTIONS) 
+    return string(thisDetector->actionParameter[iaction]);
+  else
+    return string("wrong index");
+}
+
+   /** 
+	returns action mode
+	\param iaction can be enum {startScript, scriptBefore, headerBefore, headerAfter,scriptAfter, stopScript}
+	\returns action mode
+    */
+int slsDetector::getActionMode(int iaction){
+  if (iaction>=0 && iaction<MAX_ACTIONS) {
+#ifdef VERBOSE
+    cout << "slsDetetctor : action " << iaction << " mode is " <<  thisDetector->actionMode[iaction] << endl;
+#endif
+    return thisDetector->actionMode[iaction];
+  } else {
+#ifdef VERBOSE
+    cout << "slsDetetctor : wrong action index " << iaction <<  endl;
+#endif
+    return -1;
+  }
+}
+
+
+  /** 
+      set scan 
+      \param index of the scan (0,1)
+      \param fname for script ("" disable)
+      \returns 0 if scan disabled, >0 otherwise
+  */
+int slsDetector::setScan(int iscan, string script, int nvalues, float *values, string par, int precision) {
+  if (iscan>=0 && iscan<MAX_SCAN_LEVELS) {
+
+    if (script=="") {
+      thisDetector->scanMode[iscan]=0;
+    } else {
+      strcpy(thisDetector->scanScript[iscan],script.c_str());
+      if (script=="none") {
+	thisDetector->scanMode[iscan]=0;
+      } else if (script=="energy") {
+	thisDetector->scanMode[iscan]=1;
+      }  else if (script=="threshold") {
+	thisDetector->scanMode[iscan]=2;
+      } else if (script=="trimbits") {
+	thisDetector->scanMode[iscan]=3;
+      } else {
+	thisDetector->scanMode[iscan]=4;
+      }  
+    }
+    
+    
+
+    
+
+    
+    if (par!="")
+      strcpy(thisDetector->scanParameter[iscan],par.c_str());
+      
+      if (nvalues>=0) {    
+	if (nvalues==0)
+	  thisDetector->scanMode[iscan]=0;
+	else {
+	  thisDetector->nScanSteps[iscan]=nvalues;
+	  if (nvalues>MAX_SCAN_STEPS)
+	    thisDetector->nScanSteps[iscan]=MAX_SCAN_STEPS;
+	}
+      }
+      
+      if (values) {
+	for (int iv=0; iv<thisDetector->nScanSteps[iscan]; iv++) {
+	  thisDetector->scanSteps[iscan][iv]=values[iv];
+	}
+      }
+      if (precision>=0)
+	thisDetector->scanPrecision[iscan]=precision;
+      
+      if (thisDetector->scanMode[iscan]>0){
+	thisDetector->actionMask |= 1 >> (iscan+MAX_ACTIONS);
+      } else {
+	thisDetector->actionMask &= ~(1 >>  (iscan+MAX_ACTIONS));
+      }
+
+
+      return thisDetector->scanMode[iscan];
+  }  else 
+    return -1;
+  
+}
+
+int slsDetector::setScanScript(int iscan, string script) {
+ if (iscan>=0 && iscan<MAX_SCAN_LEVELS) {
+    if (script=="") {
+      thisDetector->scanMode[iscan]=0;
+    } else {
+      strcpy(thisDetector->scanScript[iscan],script.c_str());
+      if (script=="none") {
+	thisDetector->scanMode[iscan]=0;
+      } else if (script=="energy") {
+	thisDetector->scanMode[iscan]=1;
+      }  else if (script=="threshold") {
+	thisDetector->scanMode[iscan]=2;
+      } else if (script=="trimbits") {
+	thisDetector->scanMode[iscan]=3;
+      } else {
+	thisDetector->scanMode[iscan]=4;
+      }  
+    }
+    
+    if (thisDetector->scanMode[iscan]>0){
+      thisDetector->actionMask |= (1 << (iscan+MAX_ACTIONS));
+    } else {
+      thisDetector->actionMask &= ~(1 <<  (iscan+MAX_ACTIONS));
+    }
+
+    
+    return thisDetector->scanMode[iscan];
+    
+    
+ } else 
+   return -1;
+ 
+}
+
+
+
+int slsDetector::setScanParameter(int iscan, string par) {
+
+
+  if (iscan>=0 && iscan<MAX_SCAN_LEVELS) {
+      if (par!="")
+	strcpy(thisDetector->scanParameter[iscan],par.c_str());
+      return thisDetector->scanMode[iscan];
+  } else
+    return -1;
+
+}
+
+
+int slsDetector::setScanPrecision(int iscan, int precision) {
+  if (iscan>=0 && iscan<MAX_SCAN_LEVELS) {
+    if (precision>=0)
+      thisDetector->scanPrecision[iscan]=precision;
+    return thisDetector->scanMode[iscan];
+  } else
+    return -1;
+
+}
+
+int slsDetector::setScanSteps(int iscan, int nvalues, float *values) {
+
+  if (iscan>=0 && iscan<MAX_SCAN_LEVELS) {
+  
+      if (nvalues>=0) {    
+	if (nvalues==0)
+	  thisDetector->scanMode[iscan]=0;
+	else {
+	  thisDetector->nScanSteps[iscan]=nvalues;
+	  if (nvalues>MAX_SCAN_STEPS)
+	    thisDetector->nScanSteps[iscan]=MAX_SCAN_STEPS;
+	}
+      }
+      
+      if (values) {
+	for (int iv=0; iv<thisDetector->nScanSteps[iscan]; iv++) {
+	  thisDetector->scanSteps[iscan][iv]=values[iv];
+	}
+      }
+     
+      if (thisDetector->scanMode[iscan]>0){
+	thisDetector->actionMask |= (1 << (iscan+MAX_ACTIONS));
+      } else {
+	thisDetector->actionMask &= ~(1 <<  (iscan+MAX_ACTIONS));
+      }
+
+
+      return thisDetector->scanMode[iscan];
+  
+
+  } else 
+      return -1;
+  
+  
+  
+  
+}
+
+
+
+  /** 
+      returns scan script
+      \param iscan can be (0,1) 
+      \returns scan script
+  */
+string slsDetector::getScanScript(int iscan){
+    if (iscan>=0 && iscan<MAX_SCAN_LEVELS)
+      return string(thisDetector->scanScript[iscan]);
+    else
+      return string("wrong index");
+      
+};
+
+    /** 
+	returns scan parameter
+	\param iscan can be (0,1)
+	\returns scan parameter
+    */
+string slsDetector::getScanParameter(int iscan){
+    if (iscan>=0 && iscan<MAX_SCAN_LEVELS)
+      return string(thisDetector->scanParameter[iscan]);
+    else
+      return string("wrong index");
+}
+
+
+   /** 
+	returns scan mode
+	\param iscan can be (0,1)
+	\returns scan mode
+    */
+int slsDetector::getScanMode(int iscan){
+  if (iscan>=0 && iscan<MAX_SCAN_LEVELS)
+    return thisDetector->scanMode[iscan];
+  else
+    return -1;
+}
+
+
+   /** 
+	returns scan steps
+	\param iscan can be (0,1)
+	\param v is the pointer to the scan steps
+	\returns scan steps
+    */
+int slsDetector::getScanSteps(int iscan, float *v) {
+
+  if (iscan>=0 && iscan<MAX_SCAN_LEVELS) {
+    if (v) {
+      for (int iv=0; iv<thisDetector->nScanSteps[iscan]; iv++) {
+	v[iv]=thisDetector->scanSteps[iscan][iv];
+      }
+    }
+
+    return thisDetector->nScanSteps[iscan];
+  } else
+    return -1;
+}
+
+
+int slsDetector::getScanPrecision(int iscan){
+  if (iscan>=0 && iscan<MAX_SCAN_LEVELS) {
+    return thisDetector->scanPrecision[iscan];
+  } else
+    return -1;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

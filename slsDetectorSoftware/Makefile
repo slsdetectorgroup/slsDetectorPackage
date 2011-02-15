@@ -10,7 +10,7 @@ INCLUDES= -I commonFiles -I slsDetector -I MySocketTCP -I eigerDetector -Imythen
 
 SRC_CLNT= slsDetector/slsDetector.cpp MySocketTCP/MySocketTCP.cxx usersFunctions/usersFunctions.c mythenDetector/mythenDetector.cpp eigerDetector/eigerDetector.cpp
 
-SRC_MYTHEN_SVC = mythenDetectorServer/server.c mythenDetectorServer/server_funcs.c commonFiles/communication_funcs.c mythenDetectorServer/firmware_funcs.c mythenDetectorServer/mcb_funcs.c mythenDetectorServer/trimming_funcs.c 
+SRC_MYTHEN_SVC = mythenDetectorServer/server.c mythenDetectorServer/server_funcs.c mythenDetectorServer/communication_funcs.c mythenDetectorServer/firmware_funcs.c mythenDetectorServer/mcb_funcs.c mythenDetectorServer/trimming_funcs.c 
 #mythenDetectorServer/sharedmemory.c
 
 all: package mythenServer doc picassoServer
@@ -22,13 +22,13 @@ doc: $(SRC_H) $(SRC_CLNT)
 
 
 mythenServer:  $(SRC_MYTHEN_SVC) 
-	$(CC)  $(SRC_MYTHEN_SVC)  $(CFLAGS) $(FLAGS) $(INCLUDES) -ImythenDetectorServer -D VIRTUAL -lm -D MCB_FUNCS
-	mv a.out ../bin/mythenDetectorServer
+	$(CC)  $(SRC_MYTHEN_SVC)  $(CFLAGS) $(FLAGS) $(INCLUDES) -ImythenDetectorServer -D VIRTUAL -lm -D MCB_FUNCS -D C_ONLY
+	mv a.out mythenServer
 
 
 picassoServer:  $(SRC_MYTHEN_SVC) 
 	$(CXX)  $(SRC_MYTHEN_SVC)  $(CFLAGS) $(FLAGS) $(INCLUDES) -ImythenDetectorServer -D VIRTUAL -lm -D MCB_FUNCS -DPICASSOD
-	mv a.out bin/picassoDetectorServer
+	mv a.out  picassoServer
 
 
 

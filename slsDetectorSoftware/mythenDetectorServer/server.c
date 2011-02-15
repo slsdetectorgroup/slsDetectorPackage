@@ -59,8 +59,17 @@ int main(int argc, char *argv[])
     printf("Waiting for client call\n");
 #endif
     acceptConnection();
+#ifdef VERY_VERBOSE
+    printf("Conenction accepted\n");
+#endif
     retval=decode_function();
+#ifdef VERY_VERBOSE
+    printf("function executed\n");
+#endif
     closeConnection();
+#ifdef VERY_VERBOSE
+    printf("connection closed\n");
+#endif
   }
 
   exitServer();

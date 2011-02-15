@@ -480,7 +480,7 @@ int program_one_dac(int addr, int value, int imod) {
     if (imod==ALLMOD)
       sMod=allSelected;
     
-    if (imod>=0 && imod<getNModBoard()) {
+    if (imod>=0 && imod<nModX) {
       //  myMod=detectorModules+imod;
       //(detectorModules+imod)->dacs[idac]=v;
       detectorDacs[idac+NDAC*imod]=v;
@@ -536,7 +536,7 @@ int program_one_dac(int addr, int value, int imod) {
       */
       //#endif
     } else if (imod==ALLMOD) {
-      for (im=0; im<getNModBoard(); im++) {
+      for (im=0; im<nModX; im++) {
 	detectorDacs[idac+NDAC*im]=v;
 
 	/*
@@ -771,7 +771,7 @@ int setThresholdEnergy(int ethr) {
     myg=g[thisSettings];
     myo=o[thisSettings];
   }
-  for (imod=0; imod<getNModBoard(); imod++) {
+  for (imod=0; imod<nModX; imod++) {
     if (detectorModules) {
       if ((detectorModules+imod)->gain>0)
 	myg=(detectorModules+imod)->gain;
@@ -1012,7 +1012,7 @@ int getChannelbyNumber(sls_detector_channel* myChan) {
   ichan=myChan->chan;
    
   if (detectorChans) {
-    if (imod<getNModBoard()) {
+    if (imod<nModX && imod>=0) {
       if (ichip<(detectorModules+imod)->nchip && ichan<(detectorModules+imod)->nchan/(detectorModules+imod)->nchip)
 	myChan->reg=detectorChans[imod*NCHAN*NCHIP+ichip*NCHAN+ichan];
       return OK;
@@ -1024,7 +1024,7 @@ int getChannelbyNumber(sls_detector_channel* myChan) {
 
 int getTrimbit(int imod, int ichip, int ichan) {
   if (detectorChans) {
-    if (imod<getNModBoard())
+    if (imod<getNModBoard() && imod>=0)
       if (ichip<(detectorModules+imod)->nchip && ichan<(detectorModules+imod)->nchan/(detectorModules+imod)->nchip)
 	return (detectorChans[imod*NCHAN*NCHIP+ichip*NCHAN+ichan] & TRIM_DR);
   } else
@@ -1077,8 +1077,8 @@ int initChannel(int ft,int cae, int ae, int coe, int ocoe, int counts, int imod)
   
   if (sMod==allSelected) {
     modmi=0;
-    modma=getNModBoard();
-  } else if (sMod==noneSelected || sMod>getNModBoard() || sMod<0) {
+    modma=nModX;//getNModBoard();
+  } else if (sMod==noneSelected || sMod>nModX || sMod<0) {//(sMod==noneSelected || sMod>getNModBoard() || sMod<0) {
     modmi=0;
     modma=-1;
     return 1;
@@ -1295,7 +1295,7 @@ int getChipbyNumber(sls_detector_chip* myChip){
   ichip=myChip->chip;
   
   if (detectorChips) {
-    if (imod<getNModBoard())
+    if (imod<nModX)
       if (ichip<(detectorModules+imod)->nchip) {
 	myChip->reg=detectorChips[ichip+imod*NCHIP];
 	myChip->nchan=NCHAN;
@@ -1417,8 +1417,8 @@ int initChip(int obe, int ow,int imod){
   
   if (sMod==allSelected) {
     modmi=0;
-    modma=getNModBoard();
-  } else if (sMod==noneSelected || sMod>getNModBoard() || sMod<0) {
+    modma=nModX;//getNModBoard();
+  } else if (sMod==noneSelected || sMod>nModX || sMod<0) {//(sMod==noneSelected || sMod>getNModBoard() || sMod<0) {
     modmi=0;
     modma=-1;
   } else {
@@ -1517,8 +1517,8 @@ int initChipWithProbes(int obe, int ow,int nprobes, int imod){
   
   if (sMod==allSelected) {
     modmi=0;
-    modma=getNModBoard();
-  } else if (sMod==noneSelected || sMod>getNModBoard() || sMod<0) {
+    modma=nModX;//getNModBoard();
+  } else if (sMod==noneSelected || sMod>nModX || sMod<0) {//(sMod==noneSelected || sMod>getNModBoard() || sMod<0) {
     modmi=0;
     modma=-1;
   } else {
@@ -1583,8 +1583,8 @@ int initMCBregisters(int cm, int imod){
   
   if (sMod==allSelected) {
     modmi=0;
-    modma=getNModBoard();
-  } else if (sMod==noneSelected || sMod>getNModBoard() || sMod<0) {
+    modma=nModX;
+  } else if (sMod==noneSelected || sMod>nModX || sMod<0) {//(sMod==noneSelected || sMod>getNModBoard() || sMod<0) {
     modmi=0;
     modma=-1;
   } else {
@@ -1626,8 +1626,8 @@ int initModulebyNumber(sls_detector_module myMod) {
     
   if (sMod==allSelected) {
     modmi=0;
-    modma=getNModBoard();
-  } else if (sMod==noneSelected || sMod>getNModBoard() || sMod<0) {
+    modma=nModX;//getNModBoard();
+  } else if (sMod==noneSelected || sMod>nModX || sMod<0) {// (sMod==noneSelected || sMod>getNModBoard() || sMod<0) {
     modmi=0;
     modma=-1;
   } else {

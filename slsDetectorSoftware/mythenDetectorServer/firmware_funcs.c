@@ -1119,15 +1119,19 @@ int getDynamicRange() {
 }
 
 int testBus() {
-  u_int32_t j, i;
+  u_int32_t j;
+  u_int64_t i, n, nt;
   char cmd[100];
   u_int32_t val=0x0;
   int ifail=OK;
   // printf("%s\n",cmd);
   // system(cmd);
   i=0;
-  printf("testing bus\n");
-  while (i<10000000) {
+
+  n=1000000;
+  nt=n/100;
+  printf("testing bus %d times\n",n);
+  while (i<n) {
     // val=bus_r(FIX_PATT_REG);
     bus_w(DUMMY_REG,val);
     bus_w(FIX_PATT_REG,0);
@@ -1139,7 +1143,8 @@ int testBus() {
       //return FAIL;
     }// else
      // printf("%d : value OK 0x%08x\n",i,j);
-      
+    if ((i%nt)==0)
+      printf("%lld cycles OK\n",i);
     val+=0xbbbbb;
     i++;
   }

@@ -68,13 +68,16 @@ int init_detector( int b) {
 
 int decode_function() {
   int fnum,n;
-  int retval;
+  int retval=FAIL;
+#ifdef VERBOSE
+  printf( "receive data\n");
+#endif 
   n = receiveDataOnly(&fnum,sizeof(fnum));
-  if (n < 0) {
+  if (n <= 0) {
     printf("ERROR reading from socket %d", n);
-    return GOODBYE;
+    return FAIL;
   }
-#ifdef VERY_VERBOSE
+#ifdef VERBOSE
   else
     printf("size of data received %d\n",n);
 #endif

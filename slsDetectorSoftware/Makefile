@@ -1,5 +1,5 @@
 CFLAGS= -DC_ONLY 
-#FLAGS=-DVERBOSE 
+FLAGS=-DVERBOSE 
 INCLUDES= -I commonFiles -I slsDetector -I MySocketTCP -I eigerDetector -ImythenDetector  -I usersFunctions
 
 
@@ -10,7 +10,8 @@ INCLUDES= -I commonFiles -I slsDetector -I MySocketTCP -I eigerDetector -Imythen
 
 SRC_CLNT= slsDetector/slsDetector.cpp MySocketTCP/MySocketTCP.cxx usersFunctions/usersFunctions.c mythenDetector/mythenDetector.cpp eigerDetector/eigerDetector.cpp
 
-SRC_MYTHEN_SVC = mythenDetectorServer/server.c mythenDetectorServer/server_funcs.c commonFiles/communication_funcs.c mythenDetectorServer/firmware_funcs.c mythenDetectorServer/mcb_funcs.c mythenDetectorServer/trimming_funcs.c mythenDetectorServer/sharedmemory.c
+SRC_MYTHEN_SVC = mythenDetectorServer/server.c mythenDetectorServer/server_funcs.c commonFiles/communication_funcs.c mythenDetectorServer/firmware_funcs.c mythenDetectorServer/mcb_funcs.c mythenDetectorServer/trimming_funcs.c 
+#mythenDetectorServer/sharedmemory.c
 
 all: package mythenServer doc picassoServer
 
@@ -21,8 +22,8 @@ doc: $(SRC_H) $(SRC_CLNT)
 
 
 mythenServer:  $(SRC_MYTHEN_SVC) 
-	$(CXX)  $(SRC_MYTHEN_SVC)  $(CFLAGS) $(FLAGS) $(INCLUDES) -ImythenDetectorServer -D VIRTUAL -lm -D MCB_FUNCS
-	mv a.out bin/mythenDetectorServer
+	$(CC)  $(SRC_MYTHEN_SVC)  $(CFLAGS) $(FLAGS) $(INCLUDES) -ImythenDetectorServer -D VIRTUAL -lm -D MCB_FUNCS
+	mv a.out ../bin/mythenDetectorServer
 
 
 picassoServer:  $(SRC_MYTHEN_SVC) 
@@ -42,7 +43,7 @@ package: $(SRC_CLNT)
 	ar  rcs libSlsDetector.a      objs/slsDetector.o   objs/mythenDetector.o  objs/usersFunctions.o  objs/MySocketTCP.o
 
 clean:
-	rm -rf bin/* core objs/*  docs/*
+	rm -rf libSlsDetector.so.1.0.1  libSlsDetector.so core objs/*  docs/*
 
 #-------------------------------------------------------------------------------
 lib:    package

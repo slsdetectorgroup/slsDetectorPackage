@@ -21,6 +21,9 @@ doc: $(SRC_H) $(SRC_CLNT)
 
 
 
+
+
+
 mythenServer:  $(SRC_MYTHEN_SVC) 
 	$(CC)  $(SRC_MYTHEN_SVC)  $(CFLAGS) $(FLAGS) $(INCLUDES) -ImythenDetectorServer -D VIRTUAL -lm -D MCB_FUNCS -D C_ONLY
 	mv a.out mythenServer

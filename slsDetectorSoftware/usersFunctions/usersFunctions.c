@@ -13,8 +13,8 @@ float i0=0;
 
 float angle(int ichan, float encoder, float totalOffset, float conv_r, float center, float offset, float tilt, int direction) {
  
-  (void) offset; // to avoid warning: unused parameter
-  (void) tilt; // to avoid warning: unused parameter
+  (void) offset; /* to avoid warning: unused parameter */
+  (void) tilt; /* to avoid warning: unused parameter */
   float ang;
 
   ang=180./PI*(center*conv_r+atan((float)(ichan-center)*conv_r))+encoder+totalOffset; 

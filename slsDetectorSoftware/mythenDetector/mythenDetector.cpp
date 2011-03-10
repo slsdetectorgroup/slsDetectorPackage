@@ -832,28 +832,30 @@ string mythenDetector::executeLine(int narg, char *args[], int action) {
       return string(answer);
     } else if (var=="progress") {
       if (action==PUT_ACTION) {
+	setTotalProgress();
 	sprintf(answer,"Cannot set\n");
       } else
-	sprintf(answer,"%f",(float)getTimeLeft(PROGRESS));
+	sprintf(answer,"%f",getCurrentProgress());
       return string(answer);
     } 
 
+  
   else if (var=="dr") {
-	if (action==PUT_ACTION) {
-	 sscanf(args[1],"%d",&ival);
-	  setDynamicRange(ival);
-	}
-	  sprintf(answer,"%d",setDynamicRange());
-	  return string(answer);
-      } else if (var=="flags") {
-	if (action==PUT_ACTION) {
-	 sval=string(args[1]);
-	  readOutFlags flag=GET_READOUT_FLAGS;
-	  if (sval=="none")
-	    flag=NORMAL_READOUT;
-	  //else if (sval=="pumpprobe")
-	  // flag=PUMP_PROBE_MODE;
-	  else if (sval=="storeinram")
+    if (action==PUT_ACTION) {
+      sscanf(args[1],"%d",&ival);
+      setDynamicRange(ival);
+    }
+    sprintf(answer,"%d",setDynamicRange());
+    return string(answer);
+  } else if (var=="flags") {
+    if (action==PUT_ACTION) {
+      sval=string(args[1]);
+      readOutFlags flag=GET_READOUT_FLAGS;
+      if (sval=="none")
+	flag=NORMAL_READOUT;
+      //else if (sval=="pumpprobe")
+      // flag=PUMP_PROBE_MODE;
+      else if (sval=="storeinram")
 	    flag=STORE_IN_RAM;
 	  else if (sval=="tot")
 	    flag=TOT_MODE;
@@ -1526,6 +1528,10 @@ int mythenDetector::writeConfigurationFile(string const fname){
     "trimen",\
     "outdir",\
     "ffdir",\
+    "headerbefore",\
+    "headerafter",\
+    "headerbeforepar",\
+    "headerafterpar",\
     "nmod",\
     "badchannels",\
     "angconv",\
@@ -1535,7 +1541,7 @@ int mythenDetector::writeConfigurationFile(string const fname){
     "waitstates",\
     "setlength",\
     "clkdivider"};
-  int nvar=15;
+  int nvar=19;
   ofstream outfile;
   int iv=0;
   char *args[100];
@@ -1582,13 +1588,33 @@ int mythenDetector::dumpDetectorSetup(string fname, int level){
     "probes",\
     "fineoff",\
     "ratecorr",\
+    "startscript",\
+    "startscriptpar",\
+    "stopscript",\
+    "stopscriptpar",\
+    "scriptbefore",\
+    "scriptbeforepar",\
+    "scriptafter",\
+    "scriptafterpar",\
+    "headerbefore",\
+    "headerbeforepar",\
+    "headerafter",\
+    "headerafterpar",\
+    "scan0script",\
+    "scan0par",\
+    "scan0prec",\
+    "scan0steps",\
+    "scan1script",\
+    "scan1par",\
+    "scan1prec",\
+    "scan1steps",\
     "flatfield",\
     "badchannels",\
     "angconv",\
     "trimbits",\
     "extsig"
   };
-  int nvar=20;
+  int nvar=40;
   int iv=0;
   string fname1;
   ofstream outfile;
@@ -2532,7 +2558,6 @@ void  mythenDetector::acquire(int delflag){
 
 
 
-
   //action at start
   if (thisDetector->stoppedFlag==0) {
       if (thisDetector->actionMask & (1 << startScript)) {
@@ -2550,6 +2575,7 @@ void  mythenDetector::acquire(int delflag){
   if (thisDetector->stoppedFlag==0) {
 
     currentScanVariable[0]=thisDetector->scanSteps[0][is0];
+    currentScanIndex[0]=is0;
 
     switch(thisDetector->scanMode[0]) {
     case 1:
@@ -2579,11 +2605,12 @@ void  mythenDetector::acquire(int delflag){
     break;
   
 
-  for (int is1=0; is1<ns0; is1++) {//scan0 loop
+  for (int is1=0; is1<ns1; is1++) {//scan0 loop
 
      if (thisDetector->stoppedFlag==0) {
 
     currentScanVariable[1]=thisDetector->scanSteps[1][is1];
+    currentScanIndex[1]=is1;
 
     switch(thisDetector->scanMode[1]) {
     case 1:
@@ -2676,7 +2703,7 @@ void  mythenDetector::acquire(int delflag){
        
        //while (!dataQueue.empty()){
        while (queuesize){
-	 usleep(100);
+	 usleep(1000);
        }
     
 
@@ -2775,6 +2802,9 @@ void  mythenDetector::acquire(int delflag){
 
 
    if (thisDetector->threadedProcessing) { 
+#ifdef VERBOSE
+    std::cout<< " ***********************waiting for data processing thread to finish " << queuesize << std::endl ;
+#endif
      jointhread=1;
      pthread_join(dataProcessingThread, &status);
    }
@@ -2796,12 +2826,18 @@ void* mythenDetector::processData(int delflag) {
   int np;
   detectorData *thisData;
   int dum=1;
+  string ext;
+
 
 #ifdef ACQVERBOSE
   std::cout<< " processing data - threaded mode " << thisDetector->threadedProcessing;
 #endif
 
-
+  if (thisDetector->correctionMask!=0) {
+    ext=".dat";
+  } else {
+    ext=".raw";
+  }
   while(dum | thisDetector->threadedProcessing) { // ????????????????????????
     
     
@@ -2811,6 +2847,14 @@ void* mythenDetector::processData(int delflag) {
       /** Pop data queue */
       myData=dataQueue.front(); // get the data from the queue 
       if (myData) {
+
+
+
+	thisDetector->progressIndex++;
+#ifdef VERBOSE
+	cout << "Progress is " << getCurrentProgress() << " \%" << endl;
+#endif
+
 	//process data
 	/** decode data */
 	fdata=decodeData(myData);
@@ -2880,7 +2924,7 @@ void* mythenDetector::processData(int delflag) {
 	    }
 	    
 	    if (thisDetector->correctionMask!=0)
-	    writeDataFile (createFileName().append(".dat"), ffcdata, ffcerr,ang);
+	      writeDataFile (createFileName().append(".dat"), ffcdata, ffcerr,ang);
 	    addToMerging(ang, ffcdata, ffcerr, mergingBins, mergingCounts,mergingErrors, mergingMultiplicity);
 	    if ((currentPositionIndex==thisDetector->numberOfPositions) || (currentPositionIndex==0)) {
 	      np=finalizeMerging(mergingBins, mergingCounts,mergingErrors, mergingMultiplicity);
@@ -2894,11 +2938,14 @@ void* mythenDetector::processData(int delflag) {
 		delete [] mergingErrors;
 		delete [] mergingMultiplicity;
 	      } else {
-		if (thisDetector->correctionMask!=0)
-		  thisData=new detectorData(mergingCounts,mergingErrors,mergingBins,thisDetector->progressIndex+1,(createFileName().append(".dat")).c_str(),np);
-		else
-		  thisData=new detectorData(mergingCounts,mergingErrors,mergingBins,thisDetector->progressIndex+1,(createFileName().append(".raw")).c_str(),np);
-		
+		thisData=new detectorData(mergingCounts,mergingErrors,mergingBins,getCurrentProgress(),(createFileName().append(ext)).c_str(),np);/*
+		if (thisDetector->correctionMask!=0) {
+		  //thisData=new detectorData(mergingCounts,mergingErrors,mergingBins,thisDetector->progressIndex+1,(createFileName().append(".dat")).c_str(),np);
+		  thisData=new detectorData(mergingCounts,mergingErrors,mergingBins,getCurrentProgress(),(createFileName().append(".dat")).c_str(),np);
+		} else {
+		  thisData=new detectorData(mergingCounts,mergingErrors,mergingBins,getCurrentProgress(),(createFileName().append(".raw")).c_str(),np);
+		  //thisData=new detectorData(mergingCounts,mergingErrors,mergingBins,thisDetector->progressIndex+1,(createFileName().append(".raw")).c_str(),np);
+		  }*/
 		finalDataQueue.push(thisData);
 	      }
 	    }
@@ -2921,17 +2968,27 @@ void* mythenDetector::processData(int delflag) {
 	      if (ang)
 		delete [] ang;
 	    } else {
+	      thisData=new detectorData(ffcdata,ffcerr,NULL,getCurrentProgress(),(createFileName().append(ext)).c_str(),thisDetector->nChans*thisDetector->nChips*thisDetector->nMods);/*
 	      if (thisDetector->correctionMask!=0) {
-		thisData=new detectorData(ffcdata,ffcerr,NULL,thisDetector->progressIndex+1,(createFileName().append(".dat")).c_str(),thisDetector->nChans*thisDetector->nChips*thisDetector->nMods);
+		thisData=new detectorData(ffcdata,ffcerr,NULL,getCurrentProgress(),(createFileName().append(".dat")).c_str(),thisDetector->nChans*thisDetector->nChips*thisDetector->nMods);
+		//thisData=new detectorData(ffcdata,ffcerr,NULL,thisDetector->progressIndex+1,(createFileName().append(".dat")).c_str(),thisDetector->nChans*thisDetector->nChips*thisDetector->nMods);
 	      }	else {
-		thisData=new detectorData(ffcdata,ffcerr,NULL,thisDetector->progressIndex+1,(createFileName().append(".raw")).c_str(),thisDetector->nChans*thisDetector->nChips*thisDetector->nMods);
-	      }
+		thisData=new detectorData(ffcdata,ffcerr,NULL,getCurrentProgress(),(createFileName().append(".raw")).c_str(),thisDetector->nChans*thisDetector->nChips*thisDetector->nMods);
+		//thisData=new detectorData(ffcdata,ffcerr,NULL,thisDetector->progressIndex+1,(createFileName().append(".raw")).c_str(),thisDetector->nChans*thisDetector->nChips*thisDetector->nMods);
+		}*/
 	      finalDataQueue.push(thisData);  
 	    }  
 	  }
 	}
 	thisDetector->fileIndex++;
+
+	/*
 	thisDetector->progressIndex++;
+#ifdef VERBOSE
+	cout << "Progress is " << getCurrentProgress() << " \%" << endl;
+#endif
+	*/
+
 	delete [] myData;
 	myData=NULL;
 	dataQueue.pop(); //remove the data from the queue
@@ -3063,3 +3120,46 @@ int64_t mythenDetector::getTimeLeft(timerIndex index){
 #endif
   return retval;
 };
+
+
+
+
+
+
+
+  /*
+      set  positions for the acquisition
+      \param nPos number of positions
+      \param pos array with the encoder positions
+      \returns number of positions
+  */
+int mythenDetector::setPositions(int nPos, float *pos){
+  if (nPos>=0)
+    thisDetector->numberOfPositions=nPos; 
+  for (int ip=0; ip<nPos; ip++) 
+    thisDetector->detPositions[ip]=pos[ip]; 
+
+
+  setTotalProgress();
+  
+  return thisDetector->numberOfPositions;
+}
+/* 
+   get  positions for the acquisition
+   \param pos array which will contain the encoder positions
+   \returns number of positions
+*/
+int mythenDetector::getPositions(float *pos){ 
+  if (pos ) {
+    for (int ip=0; ip<thisDetector->numberOfPositions; ip++) 
+      pos[ip]=thisDetector->detPositions[ip];
+  } 
+  setTotalProgress();
+
+  
+  return     thisDetector->numberOfPositions;
+};
+  
+
+
+

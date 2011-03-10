@@ -186,6 +186,11 @@ int slsDetector::initializeDetectorSize(detectorType type) {
      thisDetector->nMod[Y]=thisDetector->nModMax[Y];  
      thisDetector->nMods=thisDetector->nModsMax;
      /** calculates the expected data size */
+     thisDetector->timerValue[PROBES_NUMBER]=0;
+     thisDetector->timerValue[FRAME_NUMBER]=1;
+     thisDetector->timerValue[CYCLES_NUMBER]=1;
+     
+
      if (thisDetector->dynamicRange==24 || thisDetector->timerValue[PROBES_NUMBER]>0)
        thisDetector->dataBytes=thisDetector->nMod[X]*thisDetector->nMod[Y]*thisDetector->nChips*thisDetector->nChans*4;
      else
@@ -200,6 +205,10 @@ int slsDetector::initializeDetectorSize(detectorType type) {
      strcpy(thisDetector->fileName,"run");
      /** set fileIndex to default to 0*/
      thisDetector->fileIndex=0;
+     /** set progress Index to default to 0*/
+     thisDetector->progressIndex=0;
+     /** set total number of frames to be acquired to default to 1*/
+     thisDetector->totalProgress=1;
 
      /** set number of trim energies to 0*/
      thisDetector->nTrimEn=0;
@@ -259,11 +268,6 @@ int slsDetector::initializeDetectorSize(detectorType type) {
        thisDetector->nScanSteps[iscan]=0;
        thisDetector->scanPrecision[iscan]=0;
      }
-
-
-     
-
-
 
 
      
@@ -675,6 +679,157 @@ string slsDetector::createFileName() {
   return osfn.str();
 
 }
+
+
+int slsDetector::getFileIndexFromFileName(string fname) {
+  int i;
+  size_t dot=fname.rfind(".");
+  if (dot==string::npos)
+    return -1;
+  size_t uscore=fname.rfind("_");
+  if (uscore==string::npos)
+    return -1;
+
+  if (sscanf( fname.substr(uscore+1,dot-uscore-1).c_str(),"%d",&i)) {
+
+  return i;
+  } 
+  //#ifdef VERBOSE
+  cout << "******************************** cannot parse file index" << endl;
+  //#endif
+  return 0;
+}
+
+int slsDetector::getVariablesFromFileName(string fname, int &index, int &p_index, float &sv0, float &sv1) {
+  
+  int i;
+  float f;
+  string s;
+
+
+  index=-1;
+  p_index=-1;
+  sv0=-1;
+  sv1=-1;
+
+
+  //  size_t dot=fname.rfind(".");
+  //if (dot==string::npos)
+  //  return -1;
+  size_t uscore=fname.rfind("_");
+  if (uscore==string::npos)
+    return -1;
+  s=fname;
+
+  //if (sscanf(s.substr(uscore+1,dot-uscore-1).c_str(),"%d",&i)) {
+  if (sscanf(s.substr(uscore+1,s.size()-uscore-1).c_str(),"%d",&i)) {
+    index=i;
+#ifdef VERBOSE
+    cout << "******************************** file index is " << index << endl;
+#endif
+    //return i;
+    s=fname.substr(0,uscore);
+  }
+#ifdef VERBOSE 
+  else
+    cout << "******************************** cannot parse file index" << endl;
+  
+  cout << s << endl;
+#endif
+
+  
+  uscore=s.rfind("_");
+
+
+
+
+  if (sscanf( s.substr(uscore+1,s.size()-uscore-1).c_str(),"p%d",&i)) {
+    p_index=i;
+#ifdef VERBOSE
+    cout << "******************************** position index is " << p_index << endl;
+#endif
+    s=fname.substr(0,uscore);
+  }
+#ifdef VERBOSE 
+  else 
+    cout << "******************************** cannot parse position index" << endl;
+
+  cout << s << endl;
+
+
+#endif
+
+
+  
+  
+  uscore=s.rfind("_");
+
+
+
+
+  if (sscanf( s.substr(uscore+1,s.size()-uscore-1).c_str(),"s%f",&f)) {
+    sv1=f;
+#ifdef VERBOSE
+    cout << "******************************** scan variable 1 is " << sv1 << endl;
+#endif
+    s=fname.substr(0,uscore);
+  }
+#ifdef VERBOSE
+  else 
+    cout << "******************************** cannot parse scan varable 1" << endl;
+
+  cout << s << endl;
+
+
+#endif
+  
+  uscore=s.rfind("_");
+
+
+
+
+  if (sscanf( s.substr(uscore+1,s.size()-uscore-1).c_str(),"S%f",&f)) {
+    sv0=f;
+#ifdef VERBOSE
+    cout << "******************************** scan variable 0 is " << sv0 << endl;
+#endif
+  } 
+#ifdef VERBOSE
+  else 
+    cout << "******************************** cannot parse scan varable 0" << endl;
+
+#endif
+
+
+
+  return index;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
   /* Communication to server */
@@ -2635,6 +2790,9 @@ int64_t slsDetector::setTimer(timerIndex index, int64_t t){
   char mess[100];
   int ret=OK;
   int n=0;
+  
+  
+
 #ifdef VERBOSE
   std::cout<< "Setting timer  "<< index << " to " <<  t << "ns" << std::endl;
 #endif
@@ -2660,18 +2818,85 @@ int64_t slsDetector::setTimer(timerIndex index, int64_t t){
     //std::cout<< "offline " << std::endl;
     if (t>=0)
       thisDetector->timerValue[index]=t;
-  }
+
+}
 #ifdef VERBOSE
-  std::cout<< "Timer set to  "<< thisDetector->timerValue[index] << "ns"  << std::endl;
+  std::cout<< "Timer " << index << " set to  "<< thisDetector->timerValue[index] << "ns"  << std::endl;
 #endif
   if (index==PROBES_NUMBER) {
     setDynamicRange();
     //cout << "Changing probes: data size = " << thisDetector->dataBytes <<endl;
   }
   
+  /* set progress */
+  if ((index==FRAME_NUMBER) || (index==CYCLES_NUMBER)) {
+
+    setTotalProgress();
+
+
+  }
+
   return thisDetector->timerValue[index];
   
 };
+
+
+
+
+
+
+int slsDetector::setTotalProgress() {
+
+       int nf=1, npos=1, nscan[MAX_SCAN_LEVELS]={1,1}, nc=1;
+      
+      if (thisDetector->timerValue[FRAME_NUMBER])
+	nf=thisDetector->timerValue[FRAME_NUMBER];
+
+      if (thisDetector->timerValue[CYCLES_NUMBER]>0)
+	nc=thisDetector->timerValue[CYCLES_NUMBER];
+
+      if (thisDetector->numberOfPositions>0)
+	npos=thisDetector->numberOfPositions;
+
+      if ((thisDetector->nScanSteps[0]>0) && (thisDetector->actionMask & (1 << MAX_ACTIONS)))
+	nscan[0]=thisDetector->nScanSteps[0];
+
+      if ((thisDetector->nScanSteps[1]>0) && (thisDetector->actionMask & (1 << (MAX_ACTIONS+1))))
+	nscan[1]=thisDetector->nScanSteps[1];
+      
+      thisDetector->totalProgress=nf*nc*npos*nscan[0]*nscan[1];
+
+#ifdef VERBOSE
+      cout << "nc " << nc << endl;
+      cout << "nf " << nf << endl;
+      cout << "npos " << npos << endl;
+      cout << "nscan[0] " << nscan[0] << endl;
+      cout << "nscan[1] " << nscan[1] << endl;
+
+      cout << "Set total progress " << thisDetector->totalProgress << endl;
+#endif
+      return thisDetector->totalProgress;
+}
+
+
+float slsDetector::getCurrentProgress() {
+
+  return 100.*((float)thisDetector->progressIndex)/((float)thisDetector->totalProgress);
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 /*
   important speed parameters
@@ -3651,7 +3876,7 @@ int slsDetector::setScan(int iscan, string script, int nvalues, float *values, s
       }  
     }
     
-    
+  
 
     
 
@@ -3669,19 +3894,32 @@ int slsDetector::setScan(int iscan, string script, int nvalues, float *values, s
 	}
       }
       
-      if (values) {
+      if (values && 	thisDetector->scanMode[iscan]>0 ) {
 	for (int iv=0; iv<thisDetector->nScanSteps[iscan]; iv++) {
 	  thisDetector->scanSteps[iscan][iv]=values[iv];
 	}
       }
+
       if (precision>=0)
 	thisDetector->scanPrecision[iscan]=precision;
       
       if (thisDetector->scanMode[iscan]>0){
-	thisDetector->actionMask |= 1 >> (iscan+MAX_ACTIONS);
+	thisDetector->actionMask |= 1<< (iscan+MAX_ACTIONS);
       } else {
-	thisDetector->actionMask &= ~(1 >>  (iscan+MAX_ACTIONS));
+	thisDetector->actionMask &= ~(1 <<  (iscan+MAX_ACTIONS));
       }
+
+
+
+      setTotalProgress();
+
+
+
+
+
+
+
+
 
 
       return thisDetector->scanMode[iscan];
@@ -3715,7 +3953,28 @@ int slsDetector::setScanScript(int iscan, string script) {
       thisDetector->actionMask &= ~(1 <<  (iscan+MAX_ACTIONS));
     }
 
+    setTotalProgress();
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
     
+#ifdef VERBOSE
+      cout << "Action mask is " << hex << thisDetector->actionMask << dec << endl;
+#endif
     return thisDetector->scanMode[iscan];
     
     
@@ -3775,6 +4034,13 @@ int slsDetector::setScanSteps(int iscan, int nvalues, float *values) {
 	thisDetector->actionMask &= ~(1 <<  (iscan+MAX_ACTIONS));
       }
 
+#ifdef VERBOSE
+      cout << "Action mask is " << hex << thisDetector->actionMask << dec << endl;
+#endif
+      setTotalProgress();
+
+
+
 
       return thisDetector->scanMode[iscan];
   
@@ -3795,9 +4061,12 @@ int slsDetector::setScanSteps(int iscan, int nvalues, float *values) {
       \returns scan script
   */
 string slsDetector::getScanScript(int iscan){
-    if (iscan>=0 && iscan<MAX_SCAN_LEVELS)
-      return string(thisDetector->scanScript[iscan]);
-    else
+  if (iscan>=0 && iscan<MAX_SCAN_LEVELS) {
+      if (thisDetector->scanMode[iscan])
+	return string(thisDetector->scanScript[iscan]);
+      else
+	return string("none");
+  } else
       return string("wrong index");
       
 };
@@ -3808,9 +4077,12 @@ string slsDetector::getScanScript(int iscan){
 	\returns scan parameter
     */
 string slsDetector::getScanParameter(int iscan){
-    if (iscan>=0 && iscan<MAX_SCAN_LEVELS)
+  if (iscan>=0 && iscan<MAX_SCAN_LEVELS) {
+    if (thisDetector->scanMode[iscan])
       return string(thisDetector->scanParameter[iscan]);
     else
+      return string("none");
+  }   else
       return string("wrong index");
 }
 
@@ -3843,7 +4115,27 @@ int slsDetector::getScanSteps(int iscan, float *v) {
       }
     }
 
-    return thisDetector->nScanSteps[iscan];
+
+    setTotalProgress();
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    if (thisDetector->scanMode[iscan])
+      return thisDetector->nScanSteps[iscan];
+    else
+      return 0;
   } else
     return -1;
 }

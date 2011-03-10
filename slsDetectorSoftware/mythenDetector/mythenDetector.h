@@ -239,13 +239,13 @@ enum {GET_ACTION, PUT_ACTION, READOUT_ACTION};
       \param pos array with the encoder positions
       \returns number of positions
   */
-  int setPositions(int nPos, float *pos){thisDetector->numberOfPositions=nPos; for (int ip=0; ip<nPos; ip++) thisDetector->detPositions[ip]=pos[ip]; return thisDetector->numberOfPositions;};
+  int setPositions(int nPos, float *pos);
    /** 
       get  positions for the acquisition
       \param pos array which will contain the encoder positions
       \returns number of positions
   */
-  int getPositions(float *pos=NULL){ if (pos ) {for (int ip=0; ip<thisDetector->numberOfPositions; ip++) pos[ip]=thisDetector->detPositions[ip];} return thisDetector->numberOfPositions;};
+  int getPositions(float *pos=NULL);
   
   
   /** set detector bin size used for merging (approx angular resolution)*/

@@ -171,7 +171,9 @@ typedef  struct sharedSlsDetector {
 
 
   /** indicator for the acquisition progress - set to 0 at the beginning of the acquisition and incremented every time that the data are written to file */   
-    int progressIndex;	   
+    int progressIndex;	
+  /** total number of frames to be acquired */   
+    int totalProgress;	   
   /** current index of the output file */   
     int fileIndex;
   /** path of the output files */  
@@ -1472,8 +1474,21 @@ s
   
   virtual void acquire(int delflag=1)=0;
 
+  /** calcualtes the total number of steps of the acquisition.
+      called when number of frames, number of cycles, number of positions and scan steps change
+  */
+  int setTotalProgress();
+
+  /** returns the current progress in % */
+  float getCurrentProgress();
+  
+
  protected:
  
+  int getFileIndexFromFileName(string fname);
+  int getVariablesFromFileName(string fname, int &index, int &p_index, float &sv0, float &sv1);
+
+
   static const int64_t thisSoftwareVersion=0x20110113;
 
   /**

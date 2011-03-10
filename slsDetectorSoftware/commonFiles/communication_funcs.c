@@ -193,7 +193,7 @@ int acceptConnection() {
 
 	socketDescriptor=-1;
       }
-#ifdef VERY_VERBOSE
+#ifdef VERBOSE
       printf("client connected %d\n", file_des);
 #endif
     }
@@ -291,8 +291,16 @@ int sendDataOnly(void* buf,int length) {
 
   while(length>0){
     nreceiving = (length>send_rec_max_size) ? send_rec_max_size:length;
+
+#ifdef VERY_VERBOSE
+  printf("want to receive %d Bytes\n", nreceiving); 
+#endif
     nreceived = read(file_des,(char*)buf+total_received,nreceiving); 
-    if(!nreceived) break;
+#ifdef VERY_VERBOSE
+  printf("read %d \n", nreceived); 
+#endif
+  if(!nreceived) break;
+  //  if(nreceived<0) break;
     length-=nreceived;
     total_received+=nreceived;
     //    cout<<"nrec: "<<nreceived<<" waiting for ("<<length<<")"<<endl;

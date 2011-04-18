@@ -248,7 +248,13 @@ enum dacIndex {
   SHAPER2,  /**< shaper2 feedback */
   TEMPERATURE,  /**< temperature sensor (adc) */
   HUMIDITY,  /**< humidity sensor (adc) */
-  DETECTOR_BIAS   /**< detector bias */
+  DETECTOR_BIAS,   /**< detector bias */
+  VA_POT, /**< power supply va */
+  VDD_POT, /**< chiptest board power supply vdd */
+  VSH_POT, /**< chiptest board power supply vsh */
+  VIO_POT, /**< chiptest board power supply va */
+  HV_POT /**< chiptest board high voltage */
+
 };
 
 /** 
@@ -372,7 +378,7 @@ enum correctionFlags {
 enum {
 
   // General purpose functions
-  F_EXEC_COMMAND, /**< command is executed */
+  F_EXEC_COMMAND=0, /**< command is executed */
   F_GET_ERROR,  /**< return detector error status */
 
   // configuration  functions

@@ -369,7 +369,10 @@ string mythenDetector::executeLine(int narg, char *args[], int action) {
     if (action==PUT_ACTION) {
       setAction(ival,args[1]);
     }
-    sprintf(answer,"%d %s",getActionMode(ival), getActionScript(ival).c_str());
+    if (getActionMode(ival)==0)
+      sprintf(answer,"none");
+    else
+      sprintf(answer,"%s",getActionScript(ival).c_str());
     return string(answer);
   } else if (var=="startscriptpar") {
     ival=startScript;
@@ -385,7 +388,10 @@ string mythenDetector::executeLine(int narg, char *args[], int action) {
     if (action==PUT_ACTION) {
       setAction(ival,args[1]);
     }
-    sprintf(answer,"%d %s",getActionMode(ival), getActionScript(ival).c_str());
+    if (getActionMode(ival)==0)
+      sprintf(answer,"none");
+    else
+      sprintf(answer,"%s",getActionScript(ival).c_str());
     return string(answer);
   } else if (var=="stopscriptpar") {
     ival=stopScript;
@@ -399,7 +405,10 @@ string mythenDetector::executeLine(int narg, char *args[], int action) {
     if (action==PUT_ACTION) {
       setAction(ival,args[1]);
     }
-    sprintf(answer,"%d %s",getActionMode(ival), getActionScript(ival).c_str());
+    if (getActionMode(ival)==0)
+      sprintf(answer,"none");
+    else
+      sprintf(answer,"%s",getActionScript(ival).c_str());
     return string(answer);
   } else if (var=="scriptbeforepar") {
     ival=scriptBefore;
@@ -414,7 +423,10 @@ string mythenDetector::executeLine(int narg, char *args[], int action) {
     if (action==PUT_ACTION) {
       setAction(ival,args[1]);
     }
-    sprintf(answer,"%d %s",getActionMode(ival), getActionScript(ival).c_str());
+    if (getActionMode(ival)==0)
+      sprintf(answer,"none");
+    else
+      sprintf(answer,"%s",getActionScript(ival).c_str());
     return string(answer);
   } else if (var=="scriptafterpar") {
     ival=scriptAfter;
@@ -430,7 +442,10 @@ string mythenDetector::executeLine(int narg, char *args[], int action) {
     if (action==PUT_ACTION) {
       setAction(ival,args[1]);
     }
-    sprintf(answer,"%d %s",getActionMode(ival), getActionScript(ival).c_str());
+    if (getActionMode(ival)==0)
+      sprintf(answer,"none");
+    else
+      sprintf(answer,"%s", getActionScript(ival).c_str());
     return string(answer);
   } else if (var=="headerafterpar") {
     ival=headerAfter;
@@ -446,7 +461,10 @@ string mythenDetector::executeLine(int narg, char *args[], int action) {
     if (action==PUT_ACTION) {
       setAction(ival,args[1]);
     }
-    sprintf(answer,"%d %s",getActionMode(ival), getActionScript(ival).c_str());
+    if (getActionMode(ival)==0)
+      sprintf(answer,"none");
+    else
+      sprintf(answer,"%s", getActionScript(ival).c_str());
     return string(answer);
   } else if (var=="headerbeforepar") {
     ival=headerBefore;
@@ -739,7 +757,80 @@ string mythenDetector::executeLine(int narg, char *args[], int action) {
       } 
       sprintf(answer,"%f",setDAC(-1,THRESHOLD));
       return string(answer);
-    }
+    } else if (var=="vcalibration") {
+       if (action==PUT_ACTION) {
+         sscanf(args[1],"%f",&fval);
+         setDAC(fval, CALIBRATION_PULSE);
+       }
+       sprintf(answer,"%f",setDAC(-1,CALIBRATION_PULSE));
+       return string(answer);
+      } else if (var=="vtrimbit") {
+       if (action==PUT_ACTION) {
+         sscanf(args[1],"%f",&fval);
+         setDAC(fval, TRIMBIT_SIZE);
+       }
+       sprintf(answer,"%f",setDAC(-1,TRIMBIT_SIZE));
+      return string(answer);
+      } else if (var=="vpreamp") {
+       if (action==PUT_ACTION) {
+         sscanf(args[1],"%f",&fval);
+         setDAC(fval, PREAMP);
+       }
+       sprintf(answer,"%f",setDAC(-1,PREAMP));
+       return string(answer);
+      } else if (var=="vshaper1") {
+       if (action==PUT_ACTION) {
+         sscanf(args[1],"%f",&fval);
+         setDAC(fval, SHAPER1);
+       }
+       sprintf(answer,"%f",setDAC(-1,SHAPER1));
+       return string(answer);
+      } else if (var=="vshaper2") {
+       if (action==PUT_ACTION) {
+         sscanf(args[1],"%f",&fval);
+         setDAC(fval, SHAPER2);
+       }
+       sprintf(answer,"%f",setDAC(-1,SHAPER2));
+       return string(answer);
+      } else if (var=="vhighvoltage") {
+       if (action==PUT_ACTION) {
+         sscanf(args[1],"%f",&fval);
+         setDAC(fval, HV_POT);
+      }
+      sprintf(answer,"%f",setDAC(-1,HV_POT));
+       return string(answer);
+      } else if (var=="vapower") {
+       if (action==PUT_ACTION) {
+         sscanf(args[1],"%f",&fval);
+         setDAC(fval, VA_POT);
+       }
+       sprintf(answer,"%f",setDAC(-1,VA_POT));
+       return string(answer);
+      } else if (var=="vddpower") {
+       if (action==PUT_ACTION) {
+         sscanf(args[1],"%f",&fval);
+         setDAC(fval, VDD_POT);
+       }
+       sprintf(answer,"%f",setDAC(-1,VDD_POT));
+       return string(answer);
+      } else if (var=="vshpower") {
+       if (action==PUT_ACTION) {
+         sscanf(args[1],"%f",&fval);
+         setDAC(fval, VSH_POT);
+       }
+       sprintf(answer,"%f",setDAC(-1,VSH_POT));
+       return string(answer);
+      } else if (var=="viopower") {
+       if (action==PUT_ACTION) {
+         sscanf(args[1],"%f",&fval);
+         setDAC(fval, VIO_POT);
+       }
+       sprintf(answer,"%f",setDAC(-1,VIO_POT));
+       return string(answer);
+      }
+
+
+
   //timers
 
   else if (var=="exptime") {
@@ -1138,6 +1229,28 @@ string mythenDetector::helpLine( int action) {
     os << std::endl;
     os << "vthreshold dacu\t sets the detector threshold in dac units (0-1024). The energy is approx 800-15*keV" << std::endl;
     os << std::endl;
+
+    os << "vcalibration " << "dacu\t sets the calibration pulse amplitude in dac units (0-1024)." << std::endl;
+    os << std::endl;
+      os << "vtrimbit " << "dacu\t sets the trimbit amplitude in dac units (0-1024)." << std::endl;
+    os << std::endl;
+  os << "vpreamp " << "dacu\t sets the preamp feedback voltage in dac units (0-1024)." << std::endl;
+    os << std::endl;
+  os << "vshaper1 " << "dacu\t sets the shaper1 feedback voltage in dac units (0-1024)." << std::endl;
+    os << std::endl;
+  os << "vshaper2 " << "dacu\t sets the  shaper2 feedback voltage in dac units (0-1024)." << std::endl;
+    os << std::endl;
+  os << "vhighvoltage " << "dacu\t CHIPTEST BOARD ONLY - sets the detector HV in dac units (0-1024)." << std::endl;
+    os << std::endl;
+  os << "vapower " << "dacu\t CHIPTEST BOARD ONLY - sets the analog power supply in dac units (0-1024)." << std::endl;
+    os << std::endl;
+  os << "vddpower " << "dacu\t CHIPTEST BOARD ONLY - sets the digital power supply in dac units (0-1024)." << std::endl;
+    os << std::endl;
+  os << "vshpower " << "dacu\t CHIPTEST BOARD ONLY - sets the comparator power supply in dac units (0-1024)." << std::endl;
+    os << std::endl;
+  os << "viopower " << "dacu\t CHIPTEST BOARD ONLY - sets the FPGA I/O power supply in dac units (0-1024)." << std::endl;
+
+    os << std::endl;
     os << "exptime t \t Sets the exposure time per frame (in s)"<< std::endl;
     os << std::endl;
     os << "period t \t Sets the frames period (in s)"<< std::endl;
@@ -1336,6 +1449,27 @@ string mythenDetector::helpLine( int action) {
     os << "threshold\t Gets detector threshold in eV. It is precise only if the detector is calibrated"<< std::endl;
     os << std::endl;
     os << "vthreshold \t Gets the detector threshold in dac units (0-1024). The energy is approx 800-15*keV" << std::endl;
+    os << std::endl;
+
+    os << "vcalibration " << "dacu\t gets the calibration pulse amplitude in dac units (0-1024)." << std::endl;
+    os << std::endl;
+      os << "vtrimbit " << "dacu\t gets the trimbit amplitude in dac units (0-1024)." << std::endl;
+    os << std::endl;
+  os << "vpreamp " << "dacu\t gets the preamp feedback voltage in dac units (0-1024)." << std::endl;
+    os << std::endl;
+  os << "vshaper1 " << "dacu\t gets the shaper1 feedback voltage in dac units (0-1024)." << std::endl;
+    os << std::endl;
+  os << "vshaper2 " << "dacu\t gets the  shaper2 feedback voltage in dac units (0-1024)." << std::endl;
+    os << std::endl;
+  os << "vhighvoltage " << "dacu\t CHIPTEST BOARD ONLY - gets the detector HV in dac units (0-1024)." << std::endl;
+    os << std::endl;
+  os << "vapower " << "dacu\t CHIPTEST BOARD ONLY - gets the analog power supply in dac units (0-1024)." << std::endl;
+    os << std::endl;
+  os << "vddpower " << "dacu\t CHIPTEST BOARD ONLY - gets the digital power supply in dac units (0-1024)." << std::endl;
+    os << std::endl;
+  os << "vshpower " << "dacu\t CHIPTEST BOARD ONLY - gets the comparator power supply in dac units (0-1024)." << std::endl;
+    os << std::endl;
+  os << "viopower " << "dacu\t CHIPTEST BOARD ONLY - gets the FPGA I/O power supply in dac units (0-1024)." << std::endl;
     os << std::endl;
 
 

@@ -1546,7 +1546,7 @@ float slsDetector::setDAC(float val, dacIndex index, int imod){
 
 #ifdef VERBOSE
   std::cout<< std::endl;
-  std::cout<< "Setting DAC "<< index << "of module " << imod  <<  " to " << val << std::endl; 
+  std::cout<< "Setting DAC/POT "<< index << "of module " << imod  <<  " to " << val << std::endl; 
 #endif
   if (thisDetector->onlineFlag==ONLINE_FLAG) {
     if (controlSocket) {
@@ -1557,15 +1557,18 @@ float slsDetector::setDAC(float val, dacIndex index, int imod){
 	controlSocket->ReceiveDataOnly(&ret,sizeof(ret));
 	if (ret==OK) {
 	  controlSocket->ReceiveDataOnly(&retval,sizeof(retval));
-	  if (dacs) {
-	    if (imod>=0) {
-	      *(dacs+index+imod*thisDetector->nDacs)=retval;
-	    }
-	    else {
-	      for (imod=0; imod<thisDetector->nModsMax; imod++)
+	  if (index <  thisDetector->nDacs){
+
+	    if (dacs) {
+	      if (imod>=0) {
 		*(dacs+index+imod*thisDetector->nDacs)=retval;
+	      }
+	      else {
+		for (imod=0; imod<thisDetector->nModsMax; imod++)
+		  *(dacs+index+imod*thisDetector->nDacs)=retval;
+	      }
 	    }
-	  } 
+	  }
 	} else {
 	  controlSocket->ReceiveDataOnly(mess,sizeof(mess));
 	  std::cout<< "Detector returned error: " << mess << std::endl;
@@ -1576,10 +1579,10 @@ float slsDetector::setDAC(float val, dacIndex index, int imod){
     }
   }
 #ifdef VERBOSE
-  std::cout<< "Dac set to "<< retval << std::endl;
+  std::cout<< "Dac/Pot set to "<< retval << std::endl;
 #endif
   if (ret==FAIL) {
-    std::cout<< "Set dac failed " << std::endl;
+    std::cout<< "Set dac/pot failed " << std::endl;
   }
   return retval;
 

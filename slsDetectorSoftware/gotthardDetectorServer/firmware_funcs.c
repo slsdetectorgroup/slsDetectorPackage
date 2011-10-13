@@ -6,7 +6,7 @@
 
 #include "firmware_funcs.h"
 #include "mcb_funcs.h"
-#include "registers.h"
+#include "registers_g.h"
 
 #ifdef SHAREDMEMORY
 #include "sharedmemory.h"
@@ -62,6 +62,9 @@ const int nAdcs=NADC;
 //int mybyte;
 //int mysize=dataBytes/8;
 
+int dacVals[NDAC];
+
+
 int mapCSP0(void) {
   printf("Mapping memory\n");
 #ifndef VIRTUAL
@@ -72,6 +75,7 @@ int mapCSP0(void) {
        return FAIL;
   }
   printf("/dev/mem opened\n");
+
   CSP0BASE = (u_int32_t)mmap(0, MEM_SIZE, PROT_READ|PROT_WRITE, MAP_FILE|MAP_SHARED, fd, CSP0);
   if (CSP0BASE == (u_int32_t)MAP_FAILED) {
     printf("\nCan't map memmory area!!\n");
@@ -90,15 +94,96 @@ int mapCSP0(void) {
     return FAIL;
   }
 #endif
+  printf("CSPObase is 0x%x \n",CSP0BASE);
   printf("CSPOBASE=from %08x to %x\n",CSP0BASE,CSP0BASE+MEM_SIZE);
   
+  /* must b uncommented later////////////////////////////////////////////////////////
   values=(u_int32_t*)(CSP0BASE+FIFO_DATA_REG_OFF);
   printf("values=%08x\n",values);
   fifocntrl=(u_int32_t*)(CSP0BASE+FIFO_CNTRL_REG_OFF);
   printf("fifcntrl=%08x\n",fifocntrl);
   statusreg=(u_int32_t*)(CSP0BASE+STATUS_REG);
   printf("statusreg=%08x\n",statusreg);
+  */
+  return OK;
+}
 
+
+int setDummyRegister() {
+  int result = OK;
+  /*
+  //to check if the dac really works with aldos code
+  int dacnum,dacvalue=700;
+  u_int32_t offw,codata;
+  u_int16_t valw; 
+  int iru,i,ddx,csdx,cdx;
+  offw=0x37;
+  for(dacnum=0;dacnum<8;dacnum++)
+    {
+      ddx=2; csdx=0; cdx=1;
+      codata=((((0x2)<<4)+((dacnum)&0xf))<<16)+((dacvalue<<4)&0xfff0);  
+  
+      valw=0xffff; bus_w(offw,(valw)); // start point
+      valw=((valw&(~(0x1<<csdx))));bus_w(offw,valw); //chip sel bar down
+      for (i=1;i<25;i++) {
+
+	valw=(valw&(~(0x1<<cdx)));bus_w(offw,valw); //cldwn	
+	valw=((valw&(~(0x1<<ddx)))+(((codata>>(24-i))&0x1)<<ddx));bus_w(offw,valw);//write data (i)
+	//	printf("%d ", ((codata>>(24-i))&0x1));
+	valw=((valw&(~(0x1<<cdx)))+(0x1<<cdx));bus_w(offw,valw);//clkup
+      }
+      valw=((valw&(~(0x1<<csdx)))+(0x1<<csdx));bus_w(offw,valw); //csup
+      valw=(valw&(~(0x1<<cdx)));bus_w(offw,valw); //cldwn
+      valw=0xffff; bus_w(offw,(valw)); // stop point =start point of course 
+      printf("Writing %d in DAC(0-7) %d \n",dacvalue,dacnum);
+    }
+*/
+  u_int32_t val,addr;
+
+  addr = DUMMY_REG;
+  // (else use bs_w16)
+
+
+ //dummy register
+  val=45;
+  bus_w(addr, val);
+  val=bus_r(addr);
+  if (val==45) {
+    printf("FPGA dummy register ok!! %x\n",val);
+  } else {
+    printf("FPGA dummy register wrong!! %x instead of 0xF0F0F0F0 \n",val);
+    result=FAIL;
+    //    return FAIL;
+  }
+  //dummy register
+  val=0x0F0F0F0F;
+  bus_w(addr, val);
+  val=bus_r(addr);
+  if (val==0x0F0F0F0F) {
+    printf("FPGA dummy register ok!! %x\n",val);
+  } else {
+    printf("FPGA dummy register wrong!! %x instead of 0x0F0F0F0F \n",val);
+    result=FAIL;
+    //    return FAIL;
+  }
+    
+  return result;
+}
+
+
+
+
+
+
+
+
+//aldos function volatile (not needed) 
+u_int16_t bus_w16(u_int32_t offset, u_int16_t data) {
+  u_int16_t *ptr1;
+  ptr1=(u_int16_t*)(CSP0BASE+offset*2);
+  // printf("writing at 0x%x data 0x%x %d%d%d\n",CSP0BASE+offset*2,data, (data>>2)&0x1,(data>>1)&0x1 ,(data>>0)&0x1);
+
+  *ptr1=data;
   return OK;
 }
 
@@ -106,8 +191,7 @@ int mapCSP0(void) {
 u_int32_t bus_w(u_int32_t offset, u_int32_t data) {
   u_int32_t *ptr1;
 
-
-  ptr1=(u_int32_t*)(CSP0BASE+offset);
+  ptr1=(u_int32_t*)(CSP0BASE+offset*2);
   *ptr1=data;
 
   return OK;
@@ -117,7 +201,7 @@ u_int32_t bus_w(u_int32_t offset, u_int32_t data) {
 u_int32_t bus_r(u_int32_t offset) {
   u_int32_t *ptr1;
   
-  ptr1=(u_int32_t*)(CSP0BASE+offset);
+  ptr1=(u_int32_t*)(CSP0BASE+offset*2);
   return *ptr1;
 }
 
@@ -135,12 +219,13 @@ u_int32_t putout(char *s, int modnum) {
 
   pat=0;
   for (i=0;i<16;i++) {
-    if (s[i]=='1') pat=pat+(1<<i);
+    if (s[i]=='1') pat=pat+(1<<(15-i));
   }
-
   //addr=MCB_CNTRL_REG_OFF+(modnum<<4);
-  addr=MCB_CNTRL_REG_OFF+(modnum<<SHIFTMOD);
+  addr=MCB_CNTRL_REG_OFF;//+(modnum<<SHIFTMOD); commented by dhanya
+  //printf("\n\tpat=");showbits(pat);
   bus_w(addr, pat);
+
   return OK;
 }
 
@@ -408,6 +493,7 @@ u_int32_t testFpga(void) {
     //    return FAIL;
   }
   //  }
+  
   return result;
 }
 
@@ -430,9 +516,10 @@ int getNModBoard() {
   val=bus_r(FPGA_VERSION_REG)&0xff000000;
   
   printf("version register %08x\n",val);
-  nmodboard=val >> 24;
+  nmodboard = 1;//val >> 24;
   //#ifdef VERY_VERBOSE
   printf("The board hosts %d modules\n",nmodboard); 
+  nmodboard=1;//edited by dhanya 
   //#endif
   nModBoard=nmodboard;
   //getNModBoard()=nmodboard;
@@ -717,25 +804,50 @@ int setDACRegister(int idac, int val, int imod) {
   u_int32_t addr, reg, mask;
   int off;
 #ifdef VERBOSE
+   printf("\ninside setdacref.....\n");
+  printf("val=%d\n",val);
   printf("Settings dac %d module %d register to %d\n",idac,imod,val);
 #endif
-   if ((idac%2)==0) {
-     addr=MOD_DACS1_REG;
-   } else {
-     addr=MOD_DACS2_REG;
-   }
-   off=(idac%3)*10;
-   mask=~((0x3ff)<<off);
 
-   if (val>=0 && val<DAC_DR) {
-     reg=bus_r(addr+(imod<<SHIFTMOD));
-     reg&=mask;
-     reg|=(val<<off);
-     bus_w(addr+(imod<<SHIFTMOD),reg);
-   }
-   val=(bus_r(addr+(imod<<SHIFTMOD))>>off)&0x3ff;
+  //  addr=DUMMY_REG;
+  //off=0;
+  switch(idac){
+  case 0:
+  case 1:
+  case 2:
+    addr=MOD_DACS1_REG;
+    break;
+  case 3:
+  case 4:
+  case 5:
+    addr=MOD_DACS2_REG;
+    break;
+  case 6:
+  case 7:
+    addr=MOD_DACS3_REG; 
+    break;
+  default:
+    printf("weird idac value %d\n",idac);
+    return -1;
+    break;
+  }
+
+  off=(idac%3)*10;
+  mask=~((0x3ff)<<off);
+
+  if (val>=0 && val<DAC_DR) {
+    dacVals[idac];
+    reg=bus_r(addr+(imod<<SHIFTMOD));
+      reg&=mask;
+      reg|=(val<<off);
+      bus_w(addr+(imod<<SHIFTMOD),reg);
+  }
+  val=(bus_r(addr+(imod<<SHIFTMOD))>>off)&0x3ff;
+  //val=(bus_r(addr)>>off)&0x3ff;
+  
+  
 #ifdef VERBOSE
-  printf("Dac %d module %d register is %d\n",idac,imod,val);
+  printf("Dac %d module %d register is %d\n\n",idac,imod,val);
 #endif
    return val;
 }
@@ -772,14 +884,14 @@ u_int32_t  startStateMachine(){
 #ifdef VERBOSE
   printf("Starting State Machine\n");
 #endif
-  fifoReset(); 
+  // fifoReset();   printf("Starting State Machine\n");
   now_ptr=(char*)ram_values;
 #ifdef SHAREDMEMORY
   write_stop_sm(0);
   write_status_sm("Started");
 #endif
 #ifdef MCB_FUNCS
-  setCSregister(ALLMOD);
+  //  setCSregister(ALLMOD);
   clearSSregister(ALLMOD);
 #endif
   putout("0000000000000000",ALLMOD);
@@ -803,8 +915,8 @@ u_int32_t  stopStateMachine(){
   usleep(500);
   if (!runBusy())
     return OK;
-  else
-    return FAIL;    
+  else 
+    return FAIL; 
 }
 
 

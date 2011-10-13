@@ -20,8 +20,10 @@ int (*flist[256])(int);
 extern const enum detectorType myDetectorType;
 #endif
 #ifndef MCB_FUNCS
-const enum detectorType myDetectorType=MYTHEN;
+const enum detectorType myDetectorType=GOTTHARD;
 #endif
+
+
 extern int nModX;
 extern int nModY;
 extern int dataBytes;
@@ -34,18 +36,20 @@ extern int *ram_values;
 char *dataretval=NULL;
 int nframes, iframes, dataret;
 char mess[1000]; 
-
+char stringname[100]="whatever i want it to be"; 
+float default_temperature = 999.99;
 
 
 
 
 int init_detector( int b) {
 #ifndef PICASSOD
-  printf("This is a MYTHEN detector with %d chips per module\n", NCHIP);
+  printf("This is a GOTTHARD detector with %d chips per module\n", NCHIP);
 #else
   printf("This is a PICASSO detector with %d chips per module\n", NCHIP);
 #endif
-  mapCSP0();
+  int res =mapCSP0();
+  /*
 #ifndef VIRTUAL  
   system("bus -a 0xb0000000 -w 0xd0008");
 #ifdef VERBOSE
@@ -53,14 +57,26 @@ int init_detector( int b) {
   system("bus -a 0xb0000000");
 #endif
 #endif
-  testFpga();
+  testFpga(); shouldnt this be inside virtual as well?!
+  
+  */  
+  if (res<0) { printf("Could not map memory\n");
+    exit(1);  
+  }
+
+  //testFpga();
 #ifdef MCB_FUNCS
   if (b) {
     initDetector();
+    printf("\ninitdetector done! \n");
+    setDummyRegister(); 
     setSettings(GET_SETTINGS);
-    testRAM();
+
+    //testRAM();
   }
-#endif
+  #endif
+ 
+
   strcpy(mess,"dummy message");
   return OK;
 }
@@ -134,6 +150,9 @@ int function_table() {
   flist[F_SET_SPEED]=&set_speed;
   flist[F_SET_READOUT_FLAGS]=&set_readout_flags;
   flist[F_EXECUTE_TRIMMING]=&execute_trimming;
+  flist[F_GET_TEMPERATURE]=&get_temperature;
+  flist[F_GET_GOTTHARD]=&getGotthard;
+  flist[F_SET_GOTTHARD]=&setGotthard;
 #ifdef VERBOSE
   /*  for (i=0;i<256;i++){
     printf("function %d located at %x\n",i,flist[i]);
@@ -807,33 +826,31 @@ int set_dac(int fnum) {
 
 #ifdef MCB_FUNCS
   switch (ind) {
-  case  TRIMBIT_SIZE:
-    idac=VTRIM;
+  case G_VREF_DS :
+    idac=VREF_DS;
     break;
-  case THRESHOLD:
-    idac=VTHRESH;
+  case G_VCASCN_PB:
+    idac=VCASCN_PB;
     break;
-  case SHAPER1:
-    idac=RGSH1;
+  case G_VCASCP_PB:
+    idac=VCASCP_PB;
     break;
-  case SHAPER2:
-    idac=RGSH2;
+  case G_VOUT_CM:
+    idac=VOUT_CM;
     break;
-  case CALIBRATION_PULSE:
-    idac=VCAL;
+  case G_VCASC_OUT:
+    idac=VCASC_OUT;
     break;
-  case PREAMP:
-    idac=RGPR;
+  case G_VIN_CM:
+    idac=VIN_CM;
     break;
-    /***************************************************************
-add possible potentiometers like in chiptest board!!!!!!!!!!!!!!!
-
-    ****************************************************************/
-
-
-
-
-  default:
+  case G_VREF_COMP:
+    idac=VREF_COMP;
+    break;
+  case G_IB_TESTC:
+    idac=IB_TESTC;
+    break;
+ default:
     printf("Unknown DAC index %d\n",ind);
     sprintf(mess,"Unknown DAC index %d\n",ind);
     ret=FAIL;
@@ -901,23 +918,29 @@ int get_adc(int fnum) {
 
 #ifdef MCB_FUNCS
   switch (ind) {
-  case  TRIMBIT_SIZE:
-    idac=VTRIM;
+ case G_VREF_DS :
+    idac=VREF_DS;
     break;
-  case THRESHOLD:
-    idac=VTHRESH;
+  case G_VCASCN_PB:
+    idac=VCASCN_PB;
     break;
-  case SHAPER1:
-    idac=RGSH1;
+  case G_VCASCP_PB:
+    idac=VCASCP_PB;
     break;
-  case SHAPER2:
-    idac=RGSH2;
+  case G_VOUT_CM:
+    idac=VOUT_CM;
     break;
-  case CALIBRATION_PULSE:
-    idac=VCAL;
+  case G_VCASC_OUT:
+    idac=VCASC_OUT;
     break;
-  case PREAMP:
-    idac=RGPR;
+  case G_VIN_CM:
+    idac=VIN_CM;
+    break;
+  case G_VREF_COMP:
+    idac=VREF_COMP;
+    break;
+  case G_IB_TESTC:
+    idac=IB_TESTC;
     break;
   default:
     printf("Unknown DAC index %d\n",ind);
@@ -1218,7 +1241,7 @@ int set_module(int fnum) {
   int ret=OK;
   int dr, ow;
 
-  dr=setDynamicRange(-1); 
+  //  dr=setDynamicRange(-1);  commented out by dhanya
 
   if (myDac)
     myModule.dacs=myDac;
@@ -1268,7 +1291,8 @@ int set_module(int fnum) {
 #endif
   
   if (ret==OK) {
-    if (myModule.module>=getNModBoard()) {
+    // if (myModule.module>=getNModBoard()) {//commented out by dhanya
+       if (myModule.module>=1) {
       ret=FAIL;
       printf("Module number is too large %d\n",myModule.module);
     }
@@ -1299,7 +1323,7 @@ int set_module(int fnum) {
   free(myDac);
   free(myAdc);
 
-  setDynamicRange(dr);
+  //  setDynamicRange(dr);commentedout by dhanya
 
   
   return ret;
@@ -1648,10 +1672,13 @@ int get_run_status(int fnum) {
 
   retval= runState();
 
+  printf("\n\nSTATUS=%x\n",retval);
+
   if (retval&0x8000)
     s=ERROR;
   else if (retval&0x00000001)
-    if (retval&0x00010000)
+    //    if (retval&0x00010000)
+    if (retval&0x00000002)
       s=TRANSMITTING;
     else
       s=RUNNING;
@@ -2305,6 +2332,156 @@ int execute_trimming(int fnum) {
 }
 
 
+
+
+
+
+float get_temperature(int fnum) {
+
+  float retval;
+  int ret=OK;
+  int imod,n;
+
+  n = receiveDataOnly(&imod,sizeof(imod));
+  if (n < 0) {
+    sprintf(mess,"Error reading from socket\n");
+    ret=FAIL;
+  }
+
+#ifdef VERBOSE
+  printf("Getting Temperature of module %d \n", imod);
+#endif 
+
+  /*
+  if (imod>=getNModBoard())
+    ret=FAIL;
+  if (imod<0)
+    imod=ALLMOD;
+  */
+
+  /* execute action if the arguments correctly arrived*/
+  if (ret==OK) {
+    retval = default_temperature;  //getTemperature(imod);
+  }
+
+#ifdef VERBOSE
+  printf("Temperature of module %d is %f \n",imod,retval);
+#endif  
+
+  //validate somehow if the temperature read makes sense, else ret=FAIL
+  ret=OK;
+  strcpy(mess,"Getting temperature ERROR\n");
+
+  /* send ret */
+  n = sendDataOnly(&ret,sizeof(ret));
+  if (n < 0) {
+    sprintf(mess,"Error writing to socket");
+    retval=FAIL;
+  }
+  if (ret==OK) {
+    /* send return argument */
+    n = sendDataOnly(&retval,sizeof(retval));
+    if (n < 0) {
+      sprintf(mess,"Error writing to socket");
+      ret=FAIL;
+    }
+  } else {
+    n = sendDataOnly(mess,sizeof(mess));
+  }
+
+  /*return ok/fail*/
+  return ret; 
+
+}
+
+int getGotthard(int fnum) {
+
+  int retval=OK;
+  int ret=0;
+  //  char val[100];
+  int n=0;
+  printf("in getgotthard fn\n");
+ /* receive arguments
+  n = receiveDataOnly(val,sizeof(val));
+  if (n < 0) {
+    sprintf(mess,"Error reading from socket\n");
+    retval=FAIL;
+  }
+ */
+  /* execute action if the arguments correctly arrived*/
+  if (retval==OK) {
+
+    printf("getting stringname %s\n", stringname);
+
+  }
+
+   /* send ret */
+  n = sendDataOnly(&ret,sizeof(ret));
+  if (n < 0) {
+    sprintf(mess,"Error writing to socket");
+    retval=FAIL;
+  }
+ 
+  /* send answer */
+  n = sendDataOnly(stringname,sizeof(stringname));
+  if (n < 0) {
+    sprintf(mess,"Error writing to socket");
+    retval=FAIL;
+  }
+
+  if(retval==FAIL)
+    sendDataOnly(mess,sizeof(mess));
+ 
+
+
+  /*return ok/fail*/
+  return retval; 
+ 
+}
+
+int setGotthard(int fnum) {
+ int retval=OK;
+  int ret=0;
+  char val[100];
+  int n=0;
+  printf("in setgotthard fn\n");
+ /* receive arguments */
+  n = receiveDataOnly(val,sizeof(val));
+  if (n < 0) {
+    sprintf(mess,"Error reading from socket\n");
+    retval=FAIL;
+  }
+
+  /* execute action if the arguments correctly arrived*/
+  if (retval==OK) {
+
+    printf("setting stringname %s\n", val);
+
+  }
+
+  strcpy(stringname, val);
+
+   /* send ret */
+  n = sendDataOnly(&ret,sizeof(ret));
+  if (n < 0) {
+    sprintf(mess,"Error writing to socket");
+    retval=FAIL;
+  }
+ 
+  /* send answer */
+  n = sendDataOnly(stringname,sizeof(stringname));
+  if (n < 0) {
+    sprintf(mess,"Error writing to socket");
+    retval=FAIL;
+  }
+
+  if(retval==FAIL)
+    sendDataOnly(mess,sizeof(mess));
+
+  /*return ok/fail*/
+  return retval; 
+  
+}
 
 
 

@@ -1,4 +1,4 @@
-#include "mythenDetector.h"
+#include "gotthardDetector.h"
 #include <unistd.h>
 
 #include <sstream>
@@ -6,7 +6,73 @@
 //using namespace std;
 
 
-string mythenDetector::executeLine(int narg, char *args[], int action) {
+char* gotthardDetector::gotthardStringname(string name) {
+
+  char retval[100];
+  int fnum, set=0;
+  char val[100];
+
+
+  if (name.length()==0){
+      fnum=F_GET_GOTTHARD;
+   }
+  else
+    {
+      fnum=F_SET_GOTTHARD;
+      set=1;
+      strcpy(val,name.c_str());
+    }
+  int ret=FAIL;
+
+
+  char mess[100];
+   // int arg[1];
+  // arg[0]=name;
+ 
+
+  //#ifdef VERBOSE
+  std::cout<< std::endl;
+  if(set)
+    std::cout<< "Setting Stringname" << std::endl; 
+  else
+    std::cout<< "Retreiving stringname" << std::endl; 
+  //#endif
+
+ 
+    if (controlSocket) {
+      std::cout<< "controlsocket worked\n";
+      if  (controlSocket->Connect()>=0) {
+	 std::cout<< "connectsocket worked\n";
+	 std::cout<<"fnum:"<<fnum<<endl;
+	controlSocket->SendDataOnly(&fnum,sizeof(fnum));
+	//controlSocket->SendDataOnly(arg,sizeof(arg));
+	if(set)
+	  controlSocket->SendDataOnly(val,sizeof(val));
+	controlSocket->ReceiveDataOnly(&ret,sizeof(ret));
+	if (ret==OK) {
+	  controlSocket->ReceiveDataOnly(&retval,sizeof(retval));
+	} else {
+	  controlSocket->ReceiveDataOnly(mess,sizeof(mess));
+	  std::cout<< "Detector returned error: " << mess << std::endl;
+	}
+	controlSocket->Disconnect();
+      }
+	
+    }
+  
+    //#ifdef VERBOSE
+  std::cout<< "Stringname set to "<< retval << std::endl;
+  //#endif
+  if (ret==FAIL) {
+    std::cout<< "Setting/Getting  stringname failed " << std::endl;
+  }
+  return retval;
+
+}
+
+
+
+string gotthardDetector::executeLine(int narg, char *args[], int action) {
 
 
 #ifdef VERBOSE
@@ -45,6 +111,7 @@ string mythenDetector::executeLine(int narg, char *args[], int action) {
     } else {
       setTCPSocket();
       readFrame();
+      printf("gonna start processing\n");
       processData(1);
       return string("ok");
     } 
@@ -95,13 +162,31 @@ string mythenDetector::executeLine(int narg, char *args[], int action) {
     std::cout<< helpLine(action);
     return string("more questions? Refere to software documentation!");
   }
- 
-  if (var=="hostname") { 
-    if (action==PUT_ACTION) {
-      setTCPSocket(args[1]);
-    } 
-    strcpy(answer, getHostname());
-    return string(answer);
+
+  if (var=="gotthardString") 
+    {	setTCPSocket();
+	if (action==PUT_ACTION) 
+	  {
+	    	sval=string(args[1]);
+	    std::cout<<"in setting\n";
+	    sval=string(args[1]);
+	    gotthardStringname(sval);
+	  }
+	std::cout<<"in getting\n";
+	strcpy(answer, gotthardStringname(""));
+	return string(answer);
+    } else if (var=="exitserver") {
+   setTCPSocket();
+    ival=exitServer();
+    if(ival!=OK)
+      return string("Closing Server..");
+    else return string("Error closing server\n");
+  } else if (var=="hostname") { 
+      if (action==PUT_ACTION) {
+	setTCPSocket(args[1]);
+      } 
+      strcpy(answer, getHostname());
+      return string(answer);
   } else if (var=="port") {
     if (action==PUT_ACTION) {
       if (sscanf(args[1],"%d",&ival)) {
@@ -263,7 +348,7 @@ string mythenDetector::executeLine(int narg, char *args[], int action) {
     return string(answer);
   } 
   
-  if (var=="trimdir") {
+  if (var=="settingsdir") {
     if (action==PUT_ACTION) {
       sval=string(args[1]);
       setSettingsDir(sval);
@@ -720,12 +805,16 @@ string mythenDetector::executeLine(int narg, char *args[], int action) {
     detectorSettings sett=GET_SETTINGS;
     if (action==PUT_ACTION) {
      sval=string(args[1]);
-	if (sval=="standard")
-	  sett=STANDARD;
-	else if (sval=="fast")
-	  sett=FAST;
-	else if (sval=="highgain")
+	if (sval=="highgain")
 	  sett=HIGHGAIN;
+	else if (sval=="dynamicgain")
+	  sett=DYNAMICGAIN;
+	else if (sval=="gain1")
+	  sett=GAIN1;
+	else if (sval=="gain2")
+	  sett=GAIN2;
+	else if (sval=="gain3")
+	  sett=GAIN3;
 	else {
 	  sprintf(answer,"%s not defined for this detector",sval.c_str());
 	  return string(answer);
@@ -756,86 +845,71 @@ string mythenDetector::executeLine(int narg, char *args[], int action) {
       } 
       sprintf(answer,"%d",getThresholdEnergy());
       return string(answer);
-    } else if (var=="vthreshold") {
+    } else if (var=="vref_ds") {
       if (action==PUT_ACTION) {
 	sscanf(args[1],"%f",&fval);
-	setDAC(fval, THRESHOLD);
+	setDAC(fval,G_VREF_DS );
       } 
-      sprintf(answer,"%f",setDAC(-1,THRESHOLD));
+      sprintf(answer,"%f",setDAC(-1,G_VREF_DS));
       return string(answer);
-    } else if (var=="vcalibration") {
+    } else if (var=="vcascn_pb") {
        if (action==PUT_ACTION) {
          sscanf(args[1],"%f",&fval);
-         setDAC(fval, CALIBRATION_PULSE);
+         setDAC(fval,G_VCASCN_PB );
        }
-       sprintf(answer,"%f",setDAC(-1,CALIBRATION_PULSE));
+       sprintf(answer,"%f",setDAC(-1,G_VCASCN_PB));
        return string(answer);
-      } else if (var=="vtrimbit") {
+      } else if (var=="vcascp_pb") {
        if (action==PUT_ACTION) {
          sscanf(args[1],"%f",&fval);
-         setDAC(fval, TRIMBIT_SIZE);
+         setDAC(fval, G_VCASCP_PB);
        }
-       sprintf(answer,"%f",setDAC(-1,TRIMBIT_SIZE));
+       sprintf(answer,"%f",setDAC(-1,G_VCASCP_PB));
       return string(answer);
-      } else if (var=="vpreamp") {
+      } else if (var=="vout_cm") {
        if (action==PUT_ACTION) {
          sscanf(args[1],"%f",&fval);
-         setDAC(fval, PREAMP);
+         setDAC(fval,G_VOUT_CM );
        }
-       sprintf(answer,"%f",setDAC(-1,PREAMP));
+       sprintf(answer,"%f",setDAC(-1,G_VOUT_CM));
        return string(answer);
-      } else if (var=="vshaper1") {
+      } else if (var=="vcasc_out") {
        if (action==PUT_ACTION) {
          sscanf(args[1],"%f",&fval);
-         setDAC(fval, SHAPER1);
+         setDAC(fval,G_VCASC_OUT );
        }
-       sprintf(answer,"%f",setDAC(-1,SHAPER1));
+       sprintf(answer,"%f",setDAC(-1,G_VCASC_OUT));
        return string(answer);
-      } else if (var=="vshaper2") {
+      } else if (var=="vin_cm") {
        if (action==PUT_ACTION) {
          sscanf(args[1],"%f",&fval);
-         setDAC(fval, SHAPER2);
+         setDAC(fval,G_VIN_CM );
        }
-       sprintf(answer,"%f",setDAC(-1,SHAPER2));
+       sprintf(answer,"%f",setDAC(-1,G_VIN_CM));
        return string(answer);
-      } else if (var=="vhighvoltage") {
+      } else if (var=="vref_comp") {
        if (action==PUT_ACTION) {
          sscanf(args[1],"%f",&fval);
-         setDAC(fval, HV_POT);
+         setDAC(fval,G_VREF_COMP);
       }
-      sprintf(answer,"%f",setDAC(-1,HV_POT));
+      sprintf(answer,"%f",setDAC(-1,G_VREF_COMP));
        return string(answer);
-      } else if (var=="vapower") {
+      } else if (var=="ib_test_c") {
        if (action==PUT_ACTION) {
          sscanf(args[1],"%f",&fval);
-         setDAC(fval, VA_POT);
+         setDAC(fval,G_IB_TESTC );
        }
-       sprintf(answer,"%f",setDAC(-1,VA_POT));
-       return string(answer);
-      } else if (var=="vddpower") {
-       if (action==PUT_ACTION) {
-         sscanf(args[1],"%f",&fval);
-         setDAC(fval, VDD_POT);
-       }
-       sprintf(answer,"%f",setDAC(-1,VDD_POT));
-       return string(answer);
-      } else if (var=="vshpower") {
-       if (action==PUT_ACTION) {
-         sscanf(args[1],"%f",&fval);
-         setDAC(fval, VSH_POT);
-       }
-       sprintf(answer,"%f",setDAC(-1,VSH_POT));
-       return string(answer);
-      } else if (var=="viopower") {
-       if (action==PUT_ACTION) {
-         sscanf(args[1],"%f",&fval);
-         setDAC(fval, VIO_POT);
-       }
-       sprintf(answer,"%f",setDAC(-1,VIO_POT));
+       sprintf(answer,"%f",setDAC(-1,G_IB_TESTC));
        return string(answer);
       }
 
-
+ else if (var=="temp") { 
+       if (action==PUT_ACTION) {
+	return string("cannot set");
+      }
+      sprintf(answer,"%f",getTemperature());
+      return string(answer);
+  }
 
   //timers
 
@@ -974,12 +1048,13 @@ string mythenDetector::executeLine(int narg, char *args[], int action) {
 	default:
 	  return string("unknown");
 	}  
-      } else if (var=="trimbits") {
+      } 
+  /*else if (var=="settingsbits") {
 	if (narg>=2) {
 	  int nm=setNumberOfModules(GET_FLAG,X)*setNumberOfModules(GET_FLAG,Y);
 	  sls_detector_module  *myMod=NULL;
 	  sval=string(args[1]);
-	  std::cout<< " trimfile " << sval << std::endl;
+	  std::cout<< " settingsfile " << sval << std::endl;
 	  
 	  for (int im=0; im<nm; im++) {
 	    ostringstream ostfn, oscfn;
@@ -1003,7 +1078,7 @@ string mythenDetector::executeLine(int narg, char *args[], int action) {
 	    } 
 	  }
 	} 
-	std::cout<< "Returning trimfile " << std::endl;
+	std::cout<< "Returning settingsfile " << std::endl;
 	return string(getSettingsFile());
       }  else if (var.find("trim")==0) {
 	if (action==GET_ACTION) {
@@ -1053,7 +1128,8 @@ string mythenDetector::executeLine(int narg, char *args[], int action) {
       }	else if (action==PUT_ACTION) {
 	  return string("cannot set ");
 	}
-      } else if (var=="clkdivider") {
+      }
+*/ else if (var=="clkdivider") {
 	if (action==PUT_ACTION) {
 	  sscanf(args[1],"%d",&ival);
 	  setSpeed(CLOCK_DIVIDER,ival);
@@ -1099,13 +1175,13 @@ string mythenDetector::executeLine(int narg, char *args[], int action) {
 }
 
 
-string mythenDetector::helpLine( int action) {
+string gotthardDetector::helpLine( int action) {
   
 
   ostringstream os;
   
   if (action==READOUT_ACTION) {
-    os << "Usage is "<< std::endl << "mythen_acquire  id " << std::endl;
+    os << "Usage is "<< std::endl << "gotthard_acquire  id " << std::endl;
     os << "where id is the id of the detector " << std::endl;
     os << "the detector will be started, the data acquired, processed and written to file according to the preferences configured " << std::endl;
   } else  if (action==PUT_ACTION) {
@@ -1123,7 +1199,7 @@ string mythenDetector::helpLine( int action) {
     os << std::endl;
     os << "caldir path \t Sets path of the calibration files " << std::endl;
     os << std::endl;
-    os << "trimdir path \t Sets path of the trim files " << std::endl;
+    os << "settingsdir path \t Sets path of the settings files " << std::endl;
     os << std::endl;
     os << "trimen nen [e0 e1...en] \t sets the number of energies for which trimbit files exist and their value"<< std::endl;
     os << std::endl;
@@ -1228,7 +1304,7 @@ string mythenDetector::helpLine( int action) {
     os << "\t ro_trigger_out_falling_edge"    << std::endl;
     os << std::endl;
     os << "settings sett \t Sets detector settings. Can be: " << std::endl;
-    os << "\t standard \t fast \t highgain" << std::endl;
+    os << "\t standard \t fast \t highgain \t dynamicgain \t gain1 \t gain2 \t gain3" << std::endl;
     os << "\t depending on trheshold energy and maximum count rate: please refere to manual for limit values!"<< std::endl;
     os << std::endl;
     os << "threshold ev \t Sets detector threshold in eV. Should be half of the beam energy. It is precise only if the detector is calibrated"<< std::endl;
@@ -1314,7 +1390,7 @@ string mythenDetector::helpLine( int action) {
     os << std::endl;
     os << "caldir \t Gets path of the calibration files " << std::endl;
     os << std::endl;
-    os << "trimdir \t Gets path of the trim files " << std::endl;
+    os << "settingsdir \t Gets path of the settings files " << std::endl;
     os << std::endl;
     os << "trimen \t returns the number of energies for which trimbit files exist and their values"<< std::endl;
 
@@ -1450,7 +1526,7 @@ string mythenDetector::helpLine( int action) {
     os << "bustest\t Makes a test of the detector bus. Returns 0 if it succeeds " << std::endl; 
     os << std::endl;
     os << "settings\t Gets detector settings. Can be: " << std::endl;
-    os << "\t 0 standard \t 1 fast \t 2 highgain \t else undefined" << std::endl;
+    os << "\t 0 standard \t 1 fast \t 2 highgain \t dynamicgain \t gain1 \t gain2 \t gain3 \t else undefined" << std::endl;
     os << std::endl;
     os << "threshold\t Gets detector threshold in eV. It is precise only if the detector is calibrated"<< std::endl;
     os << std::endl;
@@ -1554,7 +1630,6 @@ string mythenDetector::helpLine( int action) {
 }
 
 
-
   /* detector configuration (no communication to server) */
 
   /* 
@@ -1567,7 +1642,7 @@ string mythenDetector::helpLine( int action) {
      number of modules installed if different from the detector size (x,y)
   */
 
-int mythenDetector::readConfigurationFile(string const fname){
+int gotthardDetector::readConfigurationFile(string const fname){
   
   string ans;
   string str;
@@ -1636,12 +1711,12 @@ int mythenDetector::readConfigurationFile(string const fname){
 };
 
 
-int mythenDetector::writeConfigurationFile(string const fname){
+int gotthardDetector::writeConfigurationFile(string const fname){
   
   string names[]={\
     "hostname",\
     "caldir",\
-    "trimdir",\
+    "settingsdir",\
     "trimen",\
     "outdir",\
     "ffdir",\
@@ -1688,7 +1763,7 @@ int mythenDetector::writeConfigurationFile(string const fname){
      It should be possible to dump all the settings of the detector (including trimbits, threshold energy, gating/triggering, acquisition time etc.
      in a file and retrieve it for repeating the measurement with identicals ettings, if necessary
   */
-int mythenDetector::dumpDetectorSetup(string fname, int level){  
+int gotthardDetector::dumpDetectorSetup(string fname, int level){  
   string names[]={
     "fname",\
     "index",\
@@ -1822,7 +1897,7 @@ int mythenDetector::dumpDetectorSetup(string fname, int level){
 
 
 
-int mythenDetector::retrieveDetectorSetup(string fname1, int level){ 
+int gotthardDetector::retrieveDetectorSetup(string fname1, int level){ 
 
    
    string fname;
@@ -1907,20 +1982,20 @@ int mythenDetector::retrieveDetectorSetup(string fname1, int level){
   /* I/O */
 
 
- sls_detector_module* mythenDetector::readSettingsFile(string fname,  sls_detector_module *myMod){
-  
+ sls_detector_module* gotthardDetector::readSettingsFile(string fname,  sls_detector_module *myMod){
+ 
    int nflag=0;
 
    if (myMod==NULL) {
      myMod=createModule();
      nflag=1;
    }
-   string myfname;
+  string myfname;
   string str;
   ifstream infile;
   ostringstream oss;
   int iline=0;
-  // string names[]={"Vtrim", "Vthresh", "Rgsh1", "Rgsh2", "Rgpr", "Vcal", "outBuffEnable"};
+  //   string names[]={"Vref", "VcascN","VcascP", "Vout", "Vcasc", "Vin", "Vref_comp", "Vib_test", "config", "HV"};
   string sargname;
   int ival;
   int ichan=0, ichip=0, idac=0;
@@ -1928,30 +2003,19 @@ int mythenDetector::retrieveDetectorSetup(string fname1, int level){
  
 
 #ifdef VERBOSE
-  std::cout<<   "reading trimfile for module number "<< myMod->module << std::endl;
+  std::cout<<   "reading settings file for module number "<< myMod->module << std::endl;
 #endif
-    //im=myMod->module;
-    //myMod->module=im;
-    // myMod->serialnumber=getId(MODULE_SERIAL_NUMBER, im);
-    //  if (im<0)
       myfname=fname;
-      /* else {
-      // oss << fname << ".sn" << setfill('0') <<setw(3) << hex << myMod->serialnumber
-      oss << fname << ".sn" << setfill('0') <<setw(3) << hex <<  myMod->module;
-      myfname=oss.str();
-      
-      }*/
 #ifdef VERBOSE
-    std::cout<< "trim file name is "<< myfname <<   std::endl;
+    std::cout<< "settings file name is "<< myfname <<   std::endl;
 #endif
     infile.open(myfname.c_str(), ios_base::in);
     if (infile.is_open()) {
-      // while (infile.good() && isgood==1) {
 	for (int iarg=0; iarg<thisDetector->nDacs; iarg++) {
 	  getline(infile,str);
 	  iline++;
 #ifdef VERBOSE
-	  //  std::cout<< str << std::endl;
+	  std::cout<< str << std::endl;
 #endif
 	  istringstream ssstr(str);
 	  ssstr >> sargname >> ival;
@@ -1961,87 +2025,38 @@ int mythenDetector::retrieveDetectorSetup(string fname1, int level){
 	  myMod->dacs[idac]=ival;
 	  idac++;
 	}
-	for (ichip=0; ichip<thisDetector->nChips; ichip++) { 
-	  getline(infile,str); 
+
+	  getline(infile,str);
 	  iline++;
 #ifdef VERBOSE
-	  //	  std::cout<< str << std::endl;
+	  std::cout<< str << std::endl;
 #endif
 	  istringstream ssstr(str);
 	  ssstr >> sargname >> ival;
 #ifdef VERBOSE
-	  //	  std::cout<< "chip " << ichip << " " << sargname << " is " << ival << std::endl;
+	  std::cout<< sargname << " (config) is " << ival << std::endl;
 #endif
-	 
-	  myMod->chipregs[ichip]=ival;
-	  for (ichan=0; ichan<thisDetector->nChans; ichan++) {
-	    getline(infile,str); 
-#ifdef VERBOSE
-	    // std::cout<< str << std::endl;
-#endif
-	    istringstream ssstr(str);
+	   int configval = ival;//myMod->dacs[idac]=ival;
 
+
+	  getline(infile,str);
+	  iline++;
 #ifdef VERBOSE
-	    //   std::cout<< "channel " << ichan+ichip*thisDetector->nChans <<" iline " << iline<< std::endl;
+	  std::cout<< str << std::endl;
 #endif
-	    iline++;
-	    myMod->chanregs[ichip*thisDetector->nChans+ichan]=0;
-	    for (int iarg=0; iarg<6 ; iarg++) {
-	      ssstr >>  ival; 
-	      //if (ssstr.good()) {
-	      switch (iarg) {
-	      case 0:
+	  istringstream sstr(str);
+	  sstr >> sargname >> ival;
 #ifdef VERBOSE
-		//		 std::cout<< "trimbits " << ival ;
+	  std::cout<< sargname << " (HV) is " << ival << std::endl;
 #endif
-		 myMod->chanregs[ichip*thisDetector->nChans+ichan]|=ival&0x3f;
-		 break;
-	      case 1:
-#ifdef VERBOSE
-		//std::cout<< " compen " << ival ;
-#endif
-		myMod->chanregs[ichip*thisDetector->nChans+ichan]|=ival<<9;
-		break;
-	      case 2:
-#ifdef VERBOSE
-		//std::cout<< " anen " << ival ;
-#endif
-		myMod->chanregs[ichip*thisDetector->nChans+ichan]|=ival<<8;
-		break;
-	      case 3:
-#ifdef VERBOSE
-		//std::cout<< " calen " << ival  ;
-#endif
-		myMod->chanregs[ichip*thisDetector->nChans+ichan]|=ival<<7;
-		break;
-	      case 4:
-#ifdef VERBOSE
-		//std::cout<< " outcomp " << ival  ;
-#endif
-		myMod->chanregs[ichip*thisDetector->nChans+ichan]|=ival<<10;
-		break;
-	      case 5:
-#ifdef VERBOSE
-		//std::cout<< " counts " << ival  << std::endl;
-#endif
-		 myMod->chanregs[ichip*thisDetector->nChans+ichan]|=ival<<11;
-		 break;
-	      default:
-		std::cout<< " too many columns" << std::endl; 
-		break;
-	      }
-	    }
-	  }
-	  //	}
-      }
-#ifdef VERBOSE
-      std::cout<< "read " << ichan*ichip << " channels" <<std::endl; 
-#endif
+	   int HVval = ival;//myMod->dacs[idac]=ival;
+
+
       infile.close();
       strcpy(thisDetector->settingsFile,fname.c_str());
       return myMod;
     } else {
-      std::cout<< "could not open trim file " <<  myfname << std::endl;
+      std::cout<< "could not open settings file " <<  myfname << std::endl;
       if (nflag)
 	deleteModule(myMod);
       return NULL;
@@ -2050,10 +2065,10 @@ int mythenDetector::retrieveDetectorSetup(string fname1, int level){
 };
 
 
-int mythenDetector::writeSettingsFile(string fname, sls_detector_module mod){
-
+int gotthardDetector::writeSettingsFile(string fname, sls_detector_module mod){
+  
   ofstream outfile;
-  string names[]={"Vtrim", "Vthresh", "Rgsh1", "Rgsh2", "Rgpr", "Vcal", "outBuffEnable"};
+  string names[]={"Vref", "VcascN","VcascP", "Vout", "Vcasc", "Vin", "Vref_comp", "Vib_test", "config", "HV"};
   int iv, ichan, ichip;
   int iv1, idac;
   int nb;
@@ -2095,20 +2110,20 @@ int mythenDetector::writeSettingsFile(string fname, sls_detector_module mod){
       std::cout<< "could not open trim file " << fname << std::endl;
       return FAIL;
     }
-
 };
 
 
 
 
-int mythenDetector::writeSettingsFile(string fname, int imod){
+int gotthardDetector::writeSettingsFile(string fname, int imod){
 
   return writeSettingsFile(fname,detectorModules[imod]);
 
 };
 
 
-int mythenDetector::writeDataFile(string fname, float *data, float *err, float *ang, char dataformat, int nch){
+int gotthardDetector::writeDataFile(string fname, float *data, float *err, float *ang, char dataformat, int nch){
+
   if (nch==-1)
     nch=thisDetector->nChans*thisDetector->nChips*thisDetector->nMods;
 
@@ -2165,7 +2180,8 @@ int mythenDetector::writeDataFile(string fname, float *data, float *err, float *
 
 
 /*writes raw data file */
-int mythenDetector::writeDataFile(string fname, int *data){
+int gotthardDetector::writeDataFile(string fname, int *data){
+
   ofstream outfile;
   if (data==NULL)
     return FAIL;
@@ -2190,7 +2206,7 @@ int mythenDetector::writeDataFile(string fname, int *data){
 
 
 
-int mythenDetector::readDataFile(string fname, float *data, float *err, float *ang, char dataformat, int nch){
+int gotthardDetector::readDataFile(string fname, float *data, float *err, float *ang, char dataformat, int nch){
 
 
   ifstream infile;
@@ -2265,11 +2281,9 @@ int mythenDetector::readDataFile(string fname, float *data, float *err, float *a
 
 
 
-
 };
 
-int mythenDetector::readDataFile(string fname, int *data){
-
+int gotthardDetector::readDataFile(string fname, int *data){
   ifstream infile;
   int ichan, idata, iline=0;
   int interrupt=0;
@@ -2315,7 +2329,7 @@ int mythenDetector::readDataFile(string fname, int *data){
 
 
 
-int mythenDetector::readCalibrationFile(string fname, float &gain, float &offset){
+int gotthardDetector::readCalibrationFile(string fname, float &gain, float &offset){
 
   string str;
   ifstream infile;
@@ -2337,9 +2351,11 @@ int mythenDetector::readCalibrationFile(string fname, float &gain, float &offset
     return -1;
   }
   return 0;
+
 };
 
-int mythenDetector::writeCalibrationFile(string fname, float gain, float offset){
+int gotthardDetector::writeCalibrationFile(string fname, float gain, float offset){
+
   //std::cout<< "Function not yet implemented " << std::endl;
   ofstream outfile;
 
@@ -2356,6 +2372,7 @@ int mythenDetector::writeCalibrationFile(string fname, float gain, float offset)
   outfile.close();
 
   return 0;
+
 };
 
 
@@ -2367,7 +2384,7 @@ int mythenDetector::writeCalibrationFile(string fname, float gain, float offset)
 /*
   really needed?
 
-int mythenDetector::setCalibration(int imod,  detectorSettings isettings, float gain, float offset){
+int gotthardDetector::setCalibration(int imod,  detectorSettings isettings, float gain, float offset){
   std::cout<< "function not yet implemented " << std::endl; 
   
   
@@ -2375,7 +2392,7 @@ int mythenDetector::setCalibration(int imod,  detectorSettings isettings, float 
   return OK;
 
 }
-int mythenDetector::getCalibration(int imod,  detectorSettings isettings, float &gain, float &offset){
+int gotthardDetector::getCalibration(int imod,  detectorSettings isettings, float &gain, float &offset){
 
   std::cout<< "function not yet implemented " << std::endl; 
 
@@ -2386,7 +2403,7 @@ int mythenDetector::getCalibration(int imod,  detectorSettings isettings, float 
 
 /*
 
-int mythenDetector::setROI(int nroi, int *xmin, int *xmax, int *ymin, int *ymax){
+int gotthardDetector::setROI(int nroi, int *xmin, int *xmax, int *ymin, int *ymax){
 
 
 };
@@ -2394,7 +2411,8 @@ int mythenDetector::setROI(int nroi, int *xmin, int *xmax, int *ymin, int *ymax)
 
 //Corrections
 
-int mythenDetector::setAngularConversion(string fname) {
+int gotthardDetector::setAngularConversion(string fname) {
+
   if (fname=="") {
     thisDetector->correctionMask&=~(1<< ANGULAR_CONVERSION);
     //strcpy(thisDetector->angConvFile,"none");
@@ -2415,6 +2433,7 @@ int mythenDetector::setAngularConversion(string fname) {
     }
   }
   return thisDetector->correctionMask&(1<< ANGULAR_CONVERSION);
+
 }
 
 
@@ -2423,7 +2442,8 @@ int mythenDetector::setAngularConversion(string fname) {
 
 
 
-int mythenDetector::getAngularConversion(int &direction,  angleConversionConstant *angconv) {
+int gotthardDetector::getAngularConversion(int &direction,  angleConversionConstant *angconv) {
+
   direction=thisDetector->angDirection;
     if (angconv) {
       for (int imod=0; imod<thisDetector->nMods; imod++) {
@@ -2440,12 +2460,11 @@ int mythenDetector::getAngularConversion(int &direction,  angleConversionConstan
   } else {
     return 0;
   }
- 
 }
 
 
 
-int mythenDetector::readAngularConversion(string fname) {
+int gotthardDetector::readAngularConversion(string fname) {
   string str;
   ifstream infile;
   int mod;
@@ -2491,7 +2510,8 @@ int mythenDetector::readAngularConversion(string fname) {
 }
 
 
-int mythenDetector:: writeAngularConversion(string fname) {
+int gotthardDetector:: writeAngularConversion(string fname) {
+
   ofstream outfile;
   outfile.open (fname.c_str(),ios_base::out);
   if (outfile.is_open())
@@ -2505,11 +2525,9 @@ int mythenDetector:: writeAngularConversion(string fname) {
     return -1;
   }
   //" module %i center %E +- %E conversion %E +- %E offset %f +- %f \n"
-  return 0;
 }
 
-int mythenDetector::resetMerging(float *mp, float *mv, float *me, int *mm) {
-  
+int gotthardDetector::resetMerging(float *mp, float *mv, float *me, int *mm) {
   float binsize;
   if (thisDetector->binSize>0)
     binsize=thisDetector->binSize;
@@ -2526,7 +2544,7 @@ int mythenDetector::resetMerging(float *mp, float *mv, float *me, int *mm) {
 }
 
 
-int mythenDetector::finalizeMerging(float *mp, float *mv, float *me, int *mm) {
+int gotthardDetector::finalizeMerging(float *mp, float *mv, float *me, int *mm) {
   float binsize;
   int np=0;
 
@@ -2548,8 +2566,7 @@ int mythenDetector::finalizeMerging(float *mp, float *mv, float *me, int *mm) {
   return OK;
 }
 
-int  mythenDetector::addToMerging(float *p1, float *v1, float *e1, float *mp, float *mv,float *me, int *mm) {
-
+int  gotthardDetector::addToMerging(float *p1, float *v1, float *e1, float *mp, float *mv,float *me, int *mm) {
   float binsize;
   float binmi=-180., binma;
   int ibin=0;
@@ -2621,7 +2638,8 @@ int  mythenDetector::addToMerging(float *p1, float *v1, float *e1, float *mp, fl
   return OK;
 }
 
-void  mythenDetector::acquire(int delflag){
+void  gotthardDetector::acquire(int delflag){
+
   void *status;
   //#ifdef VERBOSE
   //int iloop=0;
@@ -2924,11 +2942,10 @@ void  mythenDetector::acquire(int delflag){
      jointhread=1;
      pthread_join(dataProcessingThread, &status);
    }
-
 }
 
 
-void* mythenDetector::processData(int delflag) {
+void* gotthardDetector::processData(int delflag) {
 
 
   int *myData;
@@ -3118,11 +3135,12 @@ void* mythenDetector::processData(int delflag) {
     dum=0;
   } // ????????????????????????
   return 0;
+
 }
 
 
 
-void mythenDetector::startThread(int delflag) {
+void gotthardDetector::startThread(int delflag) {
   pthread_attr_t tattr;
   int ret;
   sched_param param, mparam;
@@ -3160,28 +3178,32 @@ void mythenDetector::startThread(int delflag) {
 
 
 void* startProcessData(void *n) {
+
   //void* processData(void *n) {
-   mythenDetector *myDet=(mythenDetector*)n;
+   gotthardDetector *myDet=(gotthardDetector*)n;
    myDet->processData(1);
    pthread_exit(NULL);
-   
+
 }
 
 void* startProcessDataNoDelete(void *n) {
+
    //void* processData(void *n) {
-  mythenDetector *myDet=(mythenDetector*)n;
+  gotthardDetector *myDet=(gotthardDetector*)n;
   myDet->processData(0);
   pthread_exit(NULL);
 
 }
  
-runStatus mythenDetector::getRunStatus(){
+runStatus gotthardDetector::getRunStatus(){
+
+
   int fnum=F_GET_RUN_STATUS;
   int ret=FAIL;
   char mess[100];
   runStatus retval=ERROR;
 #ifdef VERBOSE
-  std::cout<< "MYTHEN Getting status "<< std::endl;
+  std::cout<< "GOTTHARD Getting status "<< std::endl;
 #endif
   if (thisDetector->onlineFlag==ONLINE_FLAG) {
     if (stopSocket) {
@@ -3203,8 +3225,8 @@ runStatus mythenDetector::getRunStatus(){
   
 };
 
-int64_t mythenDetector::getTimeLeft(timerIndex index){
-  
+int64_t gotthardDetector::getTimeLeft(timerIndex index){
+
 
   int fnum=F_GET_TIME_LEFT;
   int64_t retval;
@@ -3212,7 +3234,7 @@ int64_t mythenDetector::getTimeLeft(timerIndex index){
   int ret=OK;
 
 #ifdef VERBOSE
-  std::cout<< "MYTHEN Getting  timer  "<< index <<  std::endl;
+  std::cout<< "GOTTHARD Getting  timer  "<< index <<  std::endl;
 #endif
   if (thisDetector->onlineFlag==ONLINE_FLAG) {
     if (stopSocket) {
@@ -3235,6 +3257,7 @@ int64_t mythenDetector::getTimeLeft(timerIndex index){
   std::cout<< "Time left is  "<< retval << std::endl;
 #endif
   return retval;
+
 };
 
 
@@ -3249,7 +3272,8 @@ int64_t mythenDetector::getTimeLeft(timerIndex index){
       \param pos array with the encoder positions
       \returns number of positions
   */
-int mythenDetector::setPositions(int nPos, float *pos){
+int gotthardDetector::setPositions(int nPos, float *pos){
+
   if (nPos>=0)
     thisDetector->numberOfPositions=nPos; 
   for (int ip=0; ip<nPos; ip++) 
@@ -3259,13 +3283,15 @@ int mythenDetector::setPositions(int nPos, float *pos){
   setTotalProgress();
   
   return thisDetector->numberOfPositions;
+
 }
 /* 
    get  positions for the acquisition
    \param pos array which will contain the encoder positions
    \returns number of positions
 */
-int mythenDetector::getPositions(float *pos){ 
+int gotthardDetector::getPositions(float *pos){ 
+
   if (pos ) {
     for (int ip=0; ip<thisDetector->numberOfPositions; ip++) 
       pos[ip]=thisDetector->detPositions[ip];
@@ -3278,4 +3304,42 @@ int mythenDetector::getPositions(float *pos){
   
 
 
+float gotthardDetector::getTemperature(int imod){
 
+  float retval;
+  int fnum=F_GET_TEMPERATURE;
+  int ret=FAIL;
+  char mess[100];
+  //int arg = imod;
+
+  //#ifdef VERBOSE
+  std::cout<< "GOTTHARD Getting  Temperature of module "<< imod <<  std::endl;
+  //#endif
+  if (thisDetector->onlineFlag==ONLINE_FLAG) {
+
+      std::cout<< "onlineflag worked\n";
+    if (controlSocket) {
+      std::cout<< "controlsocket worked\n";
+      if  (controlSocket->Connect()>=0) {
+	controlSocket->SendDataOnly(&fnum,sizeof(fnum));
+	controlSocket->SendDataOnly(&imod,sizeof(imod));
+	controlSocket->ReceiveDataOnly(&ret,sizeof(ret));
+	if (ret==OK) {
+	  controlSocket->ReceiveDataOnly(&retval,sizeof(retval));
+	} else {
+	  controlSocket->ReceiveDataOnly(mess,sizeof(mess));
+	  std::cout<< "Detector returned error: " << mess << std::endl;
+	}
+	controlSocket->Disconnect();
+      }
+    }
+  }
+  //#ifdef VERBOSE
+  std::cout<< "Temperature is "<< retval << std::endl;
+  //#endif
+  if (ret==FAIL) {
+    std::cout<< "Getting temperature failed " << std::endl;
+  }
+  return retval;
+
+}

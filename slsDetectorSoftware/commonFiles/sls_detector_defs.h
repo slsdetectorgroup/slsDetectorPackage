@@ -253,8 +253,15 @@ enum dacIndex {
   VDD_POT, /**< chiptest board power supply vdd */
   VSH_POT, /**< chiptest board power supply vsh */
   VIO_POT, /**< chiptest board power supply va */
-  HV_POT /**< chiptest board high voltage */
-
+  HV_POT, /**< chiptest board high voltage */
+  G_VREF_DS,  /**< gotthard */
+  G_VCASCN_PB,  /**< gotthard  */ 
+  G_VCASCP_PB,  /**< gotthard   */ 
+  G_VOUT_CM,  /**< gotthard   */ 
+  G_VCASC_OUT,  /**<  gotthard  */ 
+  G_VIN_CM,   /**< gotthard   */
+  G_VREF_COMP,  /**<  gotthard  */ 
+  G_IB_TESTC  /**< gotthard   */
 };
 
 /** 
@@ -265,6 +272,10 @@ enum detectorSettings{
   STANDARD,   /**< standard settings */
   FAST,   /**< fast settings */
   HIGHGAIN,  /**< highgain  settings */
+  DYNAMICGAIN,  /**< dynamic gain  settings */
+  GAIN1, /**< gain 1  settings */
+  GAIN2, /**< gain 2  settings */
+  GAIN3, /**< gain 3  settings */
   UNDEFINED,  /**< undefined or custom  settings */
   UNINITIALIZED  /**< uninitialiazed (status at startup) */
 };
@@ -448,10 +459,18 @@ enum {
   //Trimming
   F_EXECUTE_TRIMMING,   /**< execute trimming */
 
- 
+  F_EXIT_SERVER,  /**< turnoff detector server */
+
+  F_GET_TEMPERATURE,
+  F_SET_GOTTHARD,
+  F_GET_GOTTHARD,
+
+  F_GET_ACTUAL_TIME, /**< Gets the actual time of the detector's internal timer */
+  F_GET_MEASUREMENT_TIME  /**< Gets the time of the measurement from the detector (fifo) */
 
 
-  F_EXIT_SERVER  /**< turnoff detector server */
+  /* Always append functions hereafter!!! */
+
 
 };
 

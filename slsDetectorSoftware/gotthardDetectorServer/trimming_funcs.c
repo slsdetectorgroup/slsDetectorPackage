@@ -212,6 +212,7 @@ int choose_vthresh_and_vtrim(int countlim,  int nsigma, int im) {
   for (ithr=0; ithr<nthr; ithr++) {
     fifoReset();
     /* scanning threshold */
+    /* commented out by dhanya
     for (imod=modmi; imod<modma; imod++) {
       thr=getDACbyIndexDACU(VTHRESH,imod);
       if (ithr==0) {
@@ -220,6 +221,7 @@ int choose_vthresh_and_vtrim(int countlim,  int nsigma, int im) {
       } else
 	initDACbyIndexDACU(VTHRESH,thr+thrstep,imod);
     } 
+    */
 
     /*    setCSregister(ALLMOD);
     setSSregister(ALLMOD);
@@ -241,12 +243,14 @@ int choose_vthresh_and_vtrim(int countlim,  int nsigma, int im) {
     for (imod=modmi; imod<modma; imod++) {
       for (ichan=0; ichan<nChans*nChips; ichan++){
 	ich=imod*nChips*nChans+ichan;
+	/*commented out by dhanya
 	if (scan[ich]>countlim && trim[ich]==-1) {
 	  trim[ich]=getDACbyIndexDACU(VTHRESH,imod);
 #ifdef VERBOSE
 	  //	  printf("yes: %d %d %d\n",ich,ithr,scan[ich]);
 #endif
 	} 
+	*/
 #ifdef VERBOSE
 	/*	else {
 	  printf("no: %d %d %d\n",ich,ithr,scan[ich]);
@@ -261,7 +265,7 @@ int choose_vthresh_and_vtrim(int countlim,  int nsigma, int im) {
     vthreshmean=0;
     vthreshSTDev=0;
     nvalid=0;
-    thrma[imod]=getDACbyIndexDACU(VTHRESH,imod);
+    // commented out by dhanya  thrma[imod]=getDACbyIndexDACU(VTHRESH,imod);
     
     for (ichan=0; ichan<nChans*nChips; ichan++){
       ich=imod*nChans*nChips+ichan;
@@ -274,7 +278,7 @@ int choose_vthresh_and_vtrim(int countlim,  int nsigma, int im) {
       
     if (nvalid>0) {
       vthreshmean=vthreshmean/nvalid;
-      vthreshSTDev=sqrt((vthreshSTDev/nvalid)-vthreshmean*vthreshmean);
+      //vthreshSTDev=sqrt((vthreshSTDev/nvalid)-vthreshmean*vthreshmean); cuz <asm/page.h> is commented in firmware_funcs.c and in shared_memory.c
     } else {
       vthreshmean=thrmi[imod];
       vthreshSTDev=nthr*thrstep;
@@ -292,19 +296,19 @@ int choose_vthresh_and_vtrim(int countlim,  int nsigma, int im) {
       printf("Can't find correct threshold for module %d\n",imod);
       retval=FAIL;
     }
-    initDACbyIndexDACU(VTHRESH,thr,imod);
+    //commented out by dhanya   initDACbyIndexDACU(VTHRESH,thr,imod);
 #ifdef VERBOSE
     printf("vthresh=%d  \n",thr);
 #endif 
     c=CVTRIM-2.*nsigma*vthreshSTDev/63.;
-    thr=(int)((-b-sqrt(b*b-4*a*c))/(2*a));
+    // thr=(int)((-b-sqrt(b*b-4*a*c))/(2*a)); cuz <asm/page.h> is commented in firmware_funcs.c and in shared_memory.c
     if (thr<500 || thr>(DAC_DR-1)) {
       thr=750;
       printf("Can't find correct trimbit size for module %d\n",imod);
       retval=FAIL;
     }
       
-    initDACbyIndexDACU(VTRIM,thr,imod);
+    //commented out by dhanya   initDACbyIndexDACU(VTRIM,thr,imod);
     
 #ifdef VERBOSE
     printf("vtrim=%d  \n",thr);
@@ -474,6 +478,7 @@ int ave(int *a, int n)
 int choose_vthresh() {
 
   int retval=OK;
+  /* commented out by dhanya
 #ifdef MCB_FUNCS
   int imod,  ichan;
   u_int32_t  *scan, *scan1;
@@ -525,7 +530,7 @@ int choose_vthresh() {
     //
     med[imod]=median(scan1+imod*nChans*nChips,nChans*nChips);
     med1[imod]=med[imod];
-    vthreshmean=vthreshmean+getDACbyIndexDACU(VTHRESH,imod);
+    // commented out by dhanya vthreshmean=vthreshmean+getDACbyIndexDACU(VTHRESH,imod);
     olddiff[imod]=0xffffff;
     direction[imod]=0;
     printf("Median of module %d=%d\n",imod,med[imod]);
@@ -600,6 +605,7 @@ int choose_vthresh() {
     free(scan1);
   }
 #endif
+*/
   return retval;
 }
 
@@ -705,7 +711,7 @@ int trim_with_median(int stop, int im) {
 	for (ich=0; ich<nChans; ich++) {
 	  ichan=imod*nChips*nChans+ichip*nChans+ich;
 	  nextStrip(imod);
-	  diff=scan[ichan]-me[imod];
+	  diff=scan[ichan]-med;
 	  if (direction[ichan]==0) {
 	    if (diff>0) {
 	      direction[ichan]=1;

@@ -1,81 +1,12 @@
 
 
 
-#ifndef SLS_DETECTOR_H
-#define SLS_DETECTOR_H
+#ifndef MULTI_SLS_DETECTOR_H
+#define MULTI_SLS_DETECTOR_H
 
-#include "MySocketTCP.h"
-#include <iostream>
-#include <fstream>
-#include <iomanip>
-#include <cstring>
-#include <string>
-#include <sstream>
- #include <queue>
-extern "C" {
- #include <pthread.h>
-}
- #include <fcntl.h>
- #include <unistd.h>
- #include <sys/stat.h>
- #include <sys/types.h>
- #include <sys/uio.h>
+#include "slsDetector.h"
 
-
-#include "sls_detector_defs.h"
-
-#define MAX_TIMERS 10
-#define MAX_ROIS 100
-#define MAX_BADCHANS 2000
-#define MAXPOS 50
-#define MAX_SCAN_LEVELS 2
-#define MAX_SCAN_STEPS 2000
-
-#define NMODMAXX 24
-#define NMODMAXY 24
-#define MAXMODS 36
-#define NCHIPSMAX 10
-#define NCHANSMAX 65536
-#define NDACSMAX 16
-
-#define DEFAULT_HOSTNAME  "localhost"
-#define DEFAULT_SHM_KEY  5678
-
-#define defaultTDead {170,90,750} /**< should be changed in order to have it separate for the different detector types */
-
-
-
-enum {startScript, scriptBefore, headerBefore, headerAfter,scriptAfter, stopScript, MAX_ACTIONS};
-
-
-/**
-   data structure to hold the detector data after postprocessing (e.g. to plot, store in a root tree etc.)
- */
-class detectorData {
- public:
-  /** The constructor
-      \param val pointer to the data
-      \param err pointer to errors
-      \param ang pointer to the angles
-      \param f_ind file index
-      \param fname file name to which the data are saved
-      \param np number of points defaults to the number of detector channels
-  */
-  detectorData(float *val=NULL, float *err=NULL, float *ang=NULL,  int p_ind=-1, const char *fname="", int np=-1) : values(val), errors(err), angles(ang),  progressIndex(p_ind), npoints(np){strcpy(fileName,fname);};
-    /** 
-	the destructor
-	deletes also the arrays pointing to data/errors/angles if not NULL
-    */
-    ~detectorData() {if (values) delete [] values; if (errors) delete [] errors; if (angles) delete [] angles;};
-    //private:
-    float *values; /**< pointer to the data */
-    float *errors; /**< pointer to the errors */
-    float *angles;/**< pointer to the angles */
-    int progressIndex;/**< file index */
-    char fileName[1000];/**< file name */
-    int npoints;/**< number of points */
-};
-
+#define MAXDET 100
 
 
 //using namespace std;
@@ -118,188 +49,17 @@ Then in your software you should use the class related to the detector you want 
 
  */
 
-class slsDetector {
+class multiSlsDetector : public slsDetector {
 
 
 
  public:
   
 
-  /** online flags enum \sa setOnline*/
-  enum {GET_ONLINE_FLAG=-1, /**< returns wether the detector is in online or offline state */
-	OFFLINE_FLAG=0, /**< detector in offline state (i.e. no communication to the detector - using only local structure - no data acquisition possible!) */
-	ONLINE_FLAG =1/**< detector in online state (i.e. communication to the detector updating the local structure) */
-  };
-
-
-
   /** 
       @short Structure allocated in shared memory to store detector settings and be accessed in parallel by several applications (take care of possible conflicts!)
       
   */
-typedef  struct sharedSlsDetector {
-  /** already existing flag. If the detector does not yet exist (alreadyExisting=0) the sharedMemory will be created, otherwise it will simly be linked */
-    int alreadyExisting;
-  /** online flag - is set if the detector is connected, unset if socket connection is not possible  */
-  int onlineFlag;
- 
-
-  /** stopped flag - is set if an acquisition error occurs or the detector is stopped manually. Is reset to 0 at the start of the acquisition */
-  int stoppedFlag;
-
-    /** is the hostname (or IP address) of the detector. needs to be set before startin the communication */
-    char hostname[MAX_STR_LENGTH];
-    /** is the port used for control functions normally it should not be changed*/
-    int controlPort;
-  /** is the port used to stop the acquisition normally it should not be changed*/
-    int stopPort;
-  /** is the port used to acquire the data normally it should not be changed*/
-    int dataPort;
-
-  /** detector type  \ see :: detectorType*/
-    detectorType myDetectorType;
-
-
-  /** path of the trimbits/settings files */
-    char settingsDir[MAX_STR_LENGTH];
-  /** path of the calibration files */
-    char calDir[MAX_STR_LENGTH];
-  /** number of energies at which the detector has been trimmed (unused) */
-    int nTrimEn;
-  /** list of the energies at which the detector has been trimmed (unused) */
-    int trimEnergies[100];
-
-
-  /** indicator for the acquisition progress - set to 0 at the beginning of the acquisition and incremented every time that the data are written to file */   
-    int progressIndex;	
-  /** total number of frames to be acquired */   
-    int totalProgress;	   
-  /** current index of the output file */   
-    int fileIndex;
-  /** path of the output files */  
-    char filePath[MAX_STR_LENGTH];
-  /** name root of the output files */  
-    char fileName[MAX_STR_LENGTH];
-
-  /* size of the detector */
-    
-    /** number of installed modules of the detector (x and y directions) */  
-    int nMod[2];
-    /**  number of modules ( nMod[X]*nMod[Y]) \see nMod */
-    int nMods;
-    /** maximum number of modules of the detector (x and y directions) */ 
-    int nModMax[2];
-    /**  maximum number of modules (nModMax[X]*nModMax[Y]) \see nModMax */
-    int nModsMax;
-    /**  number of channels per chip */
-    int nChans;
-    /**  number of chips per module*/
-    int nChips;
-    /**  number of dacs per module*/
-    int nDacs;
-    /** number of adcs per module */
-    int nAdcs;
-    /** dynamic range of the detector data */
-    int dynamicRange;
-    /**  size of the data that are transfered from the detector */
-    int dataBytes;
-    
-    /** corrections  to be applied to the data \see ::correctionFlags */
-    int correctionMask;
-  /** threaded processing flag (i.e. if data are processed and written to file in a separate thread)  */
-  int threadedProcessing;
-    /** dead time (in ns) for rate corrections */
-    float tDead;
-  /** directory where the flat field files are stored */
-  char flatFieldDir[MAX_STR_LENGTH];
-  /** file used for flat field corrections */
-  char flatFieldFile[MAX_STR_LENGTH];
-    /** number of bad channels from bad channel list */
-    int nBadChans;
-  /** file with the bad channels */
-  char badChanFile[MAX_STR_LENGTH];
-    /** list of bad channels */
-    int badChansList[MAX_BADCHANS];
-    /** number of bad channels from flat field i.e. channels which read 0 in the flat field file */
-    int nBadFF;
-    /** list of bad channels from flat field i.e. channels which read 0 in the flat field file */
-    int badFFList[MAX_BADCHANS];
-    
-  /** file with the angular conversion factors */
-  char angConvFile[MAX_STR_LENGTH];
-    /** array of angular conversion constants for each module \see ::angleConversionConstant */
-    angleConversionConstant angOff[MAXMODS];
-    /** angular direction (1 if it corresponds to the encoder direction i.e. channel 0 is 0, maxchan is positive high angle, 0 otherwise  */
-    int angDirection;
-     /** beamline fine offset (of the order of mdeg, might be adjusted for each measurements)  */
-    float fineOffset;
-     /** beamline offset (might be a few degrees beacuse of encoder offset - normally it is kept fixed for a long period of time)  */
-    float globalOffset;
-     /** number of positions at which the detector should acquire  */
-    int numberOfPositions;
-     /** list of encoder positions at which the detector should acquire */
-    float detPositions[MAXPOS];
-  /** bin size for data merging */
-  float binSize;
-
-  /* infos necessary for the readout to determine the size of the data */
-    /** number of rois defined */
-    int nROI;
-    /** list of rois */
-    ROI roiLimits[MAX_ROIS];
-    /** readout flags */
-    readOutFlags roFlags;
-
-
- /* detector setup - not needed */
-  /** name root of the output files */  
-  char settingsFile[MAX_STR_LENGTH];
-  /** detector settings (standard, fast, etc.) */
-  detectorSettings currentSettings;
-  /** detector threshold (eV) */
-  int currentThresholdEV;
-  /** timer values */
-  int64_t timerValue[MAX_TIMERS];
-  /** clock divider */
-  //int clkDiv;
-
-
-  /** Scans and scripts */
-
-  int actionMask;
-  
-  int actionMode[MAX_ACTIONS];
-  char actionScript[MAX_ACTIONS][MAX_STR_LENGTH];
-  char actionParameter[MAX_ACTIONS][MAX_STR_LENGTH];
-
-
-  int scanMode[MAX_SCAN_LEVELS];
-  char scanScript[MAX_SCAN_LEVELS][MAX_STR_LENGTH];
-  char scanParameter[MAX_SCAN_LEVELS][MAX_STR_LENGTH];
-  int nScanSteps[MAX_SCAN_LEVELS];
-  float scanSteps[MAX_SCAN_LEVELS][MAX_SCAN_STEPS];
-  int scanPrecision[MAX_SCAN_LEVELS];
-  
-
-    
-  /*offsets*/
-    /** memory offsets for the flat field coefficients */
-    int ffoff;
-    /** memory offsets for the flat filed coefficient errors */
-    int fferroff;
-    /** memory offsets for the module structures */
-    int modoff;
-    /** memory offsets for the dac arrays */
-    int dacoff;
-    /** memory offsets for the adc arrays */
-    int adcoff;
-    /** memory offsets for the chip register arrays */
-    int chipoff;
-    /** memory offsets for the channel register arrays */
-    int chanoff;
-
-} sharedSlsDetector;
-
 
 
 /** (default) constructor 
@@ -308,20 +68,27 @@ typedef  struct sharedSlsDetector {
 
 
 */
-  slsDetector(detectorType type=GENERIC, int id=0);
+  multiSlsDetector(detectorType type=GENERIC, int ndet=1, int id=0);
   //slsDetector(string  const fname);
-  //  ~slsDetector(){while(dataQueue.size()>0){}};
   /** destructor */ 
-  virtual ~slsDetector(){};
+  virtual ~multiSlsDetector();
+  
+  
+
+
+  int addSlsDetector(detectorType type=GENERIC, int id=0);
+  int removeSlsDetector(int i=-1);
+
+
+  int getDetectorId(int i) {if (detectors[i]) return detectors[i]->getDetectorId();};
 
 
   /** sets the onlineFlag
       \param off can be: <BR> GET_ONLINE_FLAG, returns wether the detector is in online or offline state;<BR> OFFLINE_FLAG, detector in offline state (i.e. no communication to the detector - using only local structure - no data acquisition possible!);<BR> ONLINE_FLAG  detector in online state (i.e. communication to the detector updating the local structure) */
-  int setOnline(int const online=GET_ONLINE_FLAG);  
+  int setOnline(int const online=GET_ONLINE_FLAG, int i=-1);  
   /** sets the onlineFlag
-      \returns 1 if the detector structure has already be initlialized, 0 otherwise */
-  int exists() {return thisDetector->alreadyExisting;};
-
+      \returns 1 if the detector structure has already be initlialized with the given idand belongs to this multiDetector instance, 0 otherwise */
+  int exists(int id) ;
 
   /**
     Purely virtual function
@@ -367,123 +134,17 @@ typedef  struct sharedSlsDetector {
      \returns OK is connection succeded, FAIL otherwise
      \sa sharedSlsDetector
   */
-  int setTCPSocket(string const name="", int const control_port=-1, int const stop_port=-1, int const data_port=-1);
+  int setTCPSocket(int i, string const name="", int const control_port=-1, int const stop_port=-1, int const data_port=-1);
+
   /** returns the detector hostname \sa sharedSlsDetector  */
-  char* getHostname() {return thisDetector->hostname;};
+  char* getHostname(int i) ;
   /** returns the detector control port  \sa sharedSlsDetector */
-  int getControlPort() {return  thisDetector->controlPort;};
+  int getControlPort(int i=-1);
   /** returns the detector stop  port  \sa sharedSlsDetector */
-  int getStopPort() {return thisDetector->stopPort;};
+  int getStopPort(int i=-1);
   /** returns the detector data port  \sa sharedSlsDetector */
-  int getDataPort() {return thisDetector->dataPort;};
+  int getDataPort(int i=-1);
  
-
-  /* I/O */
-  /** returns the detector trimbit/settings directory  \sa sharedSlsDetector */
-  char* getSettingsDir() {return thisDetector->settingsDir;};
-  /** sets the detector trimbit/settings directory  \sa sharedSlsDetector */
-  char* setSettingsDir(string s) {sprintf(thisDetector->settingsDir, s.c_str()); return thisDetector->settingsDir;};
-  /** returns the number of trim energies and their value  \sa sharedSlsDetector 
-   \param point to the array that will contain the trim energies (in ev)
-  \returns number of trim energies
-
-  unused!
-
-  \sa  sharedSlsDetector
-  */
-  int getTrimEn(int *en=NULL) {if (en) {for (int ien=0; ien<thisDetector->nTrimEn; ien++) en[ien]=thisDetector->trimEnergies[ien];} return (thisDetector->nTrimEn);};
-  /** sets the number of trim energies and their value  \sa sharedSlsDetector 
-   \param nen number of energies
-   \param en array of energies
-   \returns number of trim energies
-
-   unused!
-
-  \sa  sharedSlsDetector
-  */
-  int setTrimEn(int nen, int *en=NULL) {if (en) {for (int ien=0; ien<nen; ien++) thisDetector->trimEnergies[ien]=en[ien]; thisDetector->nTrimEn=nen;} return (thisDetector->nTrimEn);};
-
-  /**
-     Pure virtual function
-     reads a trim/settings file
-     \param fname name of the file to be read
-     \param myMod pointer to the module structure which has to be set. <BR> If it is NULL a new module structure will be created
-     \returns the pointer to myMod or NULL if reading the file failed
-     \sa mythenDetector::readSettingsFile
-  */
-
-  virtual sls_detector_module* readSettingsFile(string fname,  sls_detector_module* myMod=NULL)=0;
-
-  /**
-     Pure virtual function
-     writes a trim/settings file
-     \param fname name of the file to be written
-     \param mod module structure which has to be written to file
-     \returns OK or FAIL if the file could not be written
-
-     \sa ::sls_detector_module mythenDetector::writeSettingsFile(string, sls_detector_module)
-  */
-  virtual int writeSettingsFile(string fname, sls_detector_module mod)=0; 
-  
-  /**
-     Pure virtual function
-     writes a trim/settings file for module number imod - the values will be read from the current detector structure
-     \param fname name of the file to be written
-     \param imod module number
-     \returns OK or FAIL if the file could not be written   
-     \sa ::sls_detector_module sharedSlsDetector mythenDetector::writeSettingsFile(string, int)
-  */
-  virtual int writeSettingsFile(string fname, int imod)=0;
-
-
-  /**
-     returns currently the loaded trimfile/settingsfile name
-  */
-  const char *getSettingsFile(){\
-    string s(thisDetector->settingsFile); \
-    if (s.length()>6) {\
-      if (s.substr(s.length()-6,3)==string(".sn") && s.substr(s.length()-3)!=string("xxx") ) \
-	return s.substr(0,s.length()-6).c_str();			\
-    }									\
-    return thisDetector->settingsFile;\
-  };
-
-  /**
-     sets the default output files path
-  \sa  sharedSlsDetector
-  */
-  char* setFilePath(string s) {sprintf(thisDetector->filePath, s.c_str()); return thisDetector->filePath;};
-
-  /**
-     sets the default output files root name
-  \sa  sharedSlsDetector
-  */
-  char* setFileName(string s) {sprintf(thisDetector->fileName, s.c_str()); return thisDetector->fileName;}; 
-
-  /**
-     sets the default output file index
-  \sa  sharedSlsDetector
-  */
-  int setFileIndex(int i) {thisDetector->fileIndex=i; return thisDetector->fileIndex;}; 
-  
-  /**
-     returns the default output files path
-  \sa  sharedSlsDetector
-  */
-  char* getFilePath() {return thisDetector->filePath;};
-  
-  /**
-     returns the default output files root name
-  \sa  sharedSlsDetector
-  */
-  char* getFileName() {return thisDetector->fileName;};
-
-  /**
-     returns the default output file index
-  \sa  sharedSlsDetector
-  */
-  int getFileIndex() {return thisDetector->fileIndex;};
-  
   /** generates file name without extension
 
       always appends to file path and file name the run index.
@@ -494,8 +155,121 @@ typedef  struct sharedSlsDetector {
       where x is the position index and i is the run index
 
   */
-
   string createFileName();
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  /* I/O */
+  /** returns the detector trimbit directory  \sa sharedSlsDetector */
+  char* getTrimDir(int i=-1);
+  /** sets the detector trimbit directory  \sa sharedSlsDetector */
+  char* setTrimDir(string s, int i=-1);
+  /** returns the number of trim energies and their value  \sa sharedSlsDetector 
+   \param point to the array that will contain the trim energies (in ev)
+  \returns number of trim energies
+
+  unused!
+
+  \sa  sharedSlsDetector
+  */
+  int getTrimEn(int *en=NULL, int i=-1);
+  /** sets the number of trim energies and their value  \sa sharedSlsDetector 
+   \param nen number of energies
+   \param en array of energies
+   \returns number of trim energies
+
+   unused!
+
+  \sa  sharedSlsDetector
+  */
+  int setTrimEn(int nen, int *en=NULL, int i=-1);
+
+  /**
+     Pure virtual function
+     reads a trim file
+     \param fname name of the file to be read
+     \param myMod pointer to the module structure which has to be set. <BR> If it is NULL a new module structure will be created
+     \returns the pointer to myMod or NULL if reading the file failed
+     \sa mythenDetector::readTrimFile
+  */
+
+  virtual sls_detector_module* readTrimFile(string fname,  sls_detector_module* myMod=NULL)=0;
+
+  /**
+     Pure virtual function
+     writes a trim file
+     \param fname name of the file to be written
+     \param mod module structure which has to be written to file
+     \returns OK or FAIL if the file could not be written
+
+     \sa ::sls_detector_module mythenDetector::writeTrimFile(string, sls_detector_module)
+  */
+  virtual int writeTrimFile(string fname, sls_detector_module mod)=0; 
+  
+  /**
+     returns currently the loaded trimfile name
+  */
+
+  const char *getTrimFile(int i=-1);
+
+  /**
+     Pure virtual function
+     writes a trim file for module number imod - the values will be read from the current detector structure
+     \param fname name of the file to be written
+     \param imod module number
+     \returns OK or FAIL if the file could not be written   
+     \sa ::sls_detector_module sharedSlsDetector mythenDetector::writeTrimFile(string, int)
+  */
+  virtual int writeTrimFile(string fname, int imod, int i)=0;
+
+  /**
+     sets the default output files path
+  \sa  sharedSlsDetector
+  */
+  char* setFilePath(string s, int i=-1);
+
+  /**
+     sets the default output files root name
+  \sa  sharedSlsDetector
+  */
+  char* setFileName(string s, int i=-1); 
+
+  /**
+     sets the default output file index
+  \sa  sharedSlsDetector
+  */
+  int setFileIndex(int i, int id=-1); 
+  
+  /**
+     returns the default output files path
+  \sa  sharedSlsDetector
+  */
+  char* getFilePath(int id=-1);
+  
+  /**
+     returns the default output files root name
+  \sa  sharedSlsDetector
+  */
+  char* getFileName(int id=-1) ;
+
+  /**
+     returns the default output file index
+  \sa  sharedSlsDetector
+  */
+  int getFileIndex(int id=-1) ;
+  
+
   
     /**
        Pure virtual function
@@ -553,14 +327,14 @@ typedef  struct sharedSlsDetector {
      returns the location of the calibration files
   \sa  sharedSlsDetector
   */
-  char* getCalDir() {return thisDetector->calDir;};
+  char* getCalDir(int id=-1);
 
 
    /**
       sets the location of the calibration files
   \sa  sharedSlsDetector
   */
-  char* setCalDir(string s) {sprintf(thisDetector->calDir, s.c_str()); return thisDetector->calDir;}; 
+  char* setCalDir(string s, int id=-1)
   /**
      Pure virtual function
       reads a calibration file
@@ -587,20 +361,20 @@ typedef  struct sharedSlsDetector {
       \param fname file to be read
   \sa  angleConversionConstant mythenDetector::readAngularConversion
   */
-  virtual int readAngularConversion(string fname="")=0;
+  virtual int readAngularConversion(string fname="", int id=-1)=0;
   /**
      Pure virtual function
      writes an angular conversion file
       \param fname file to be written
   \sa  angleConversionConstant mythenDetector::writeAngularConversion
   */
-  virtual int writeAngularConversion(string fname="")=0;
+  virtual int writeAngularConversion(string fname="", int id=-1)=0;
 
   /** Returns the number of channels per chip */
-  int getNChans(){return thisDetector->nChans;}; //
+  int getNChans(int id=-1); //
 
   /** Returns the number of chips per module */
-  int getNChips(){return thisDetector->nChips;}; //
+  int getNChips(int id=-1); //
 
 
   /* Communication to server */
@@ -613,7 +387,7 @@ typedef  struct sharedSlsDetector {
      \param answer is the answer from the detector
      \returns OK or FAIL depending on the command outcome
   */
-  int execCommand(string cmd, string answer);
+  int execCommand(string cmd, string answer, int id=-1);
   
   /**
      sets/gets detector type
@@ -621,7 +395,7 @@ typedef  struct sharedSlsDetector {
      \param type is the detector type (defaults to GET_DETECTOR_TYPE)
      \returns returns detector type index (1 GENERIC, 2 MYTHEN, 3 PILATUS, 4 XFS, 5 GOTTHARD, 6 AGIPD, -1 command failed)
   */
-  int setDetectorType(detectorType type=GET_DETECTOR_TYPE);  
+  int setDetectorType(detectorType type=GET_DETECTOR_TYPE, int id=-1);  
 
   /** 
      sets/gets detector type
@@ -629,14 +403,14 @@ typedef  struct sharedSlsDetector {
      \param type is the detector type ("Mythen", "Pilatus", "XFS", "Gotthard", Agipd")
      \returns returns detector type index (1 GENERIC, 2 MYTHEN, 3 PILATUS, 4 XFS, 5 GOTTHARD, 6 AGIPD, -1 command failed)
   */
-  int setDetectorType(string type);  
+  int setDetectorType(string type, int id=-1);  
 
   /** 
      gets detector type
      normally  the detector knows what type of detector it is
      \param type is the string where the detector type will be written ("Mythen", "Pilatus", "XFS", "Gotthard", Agipd")
   */
-  void getDetectorType(char *type);
+  void getDetectorType(char *type, int id=-1);
 
 
   // Detector configuration functions
@@ -654,7 +428,7 @@ typedef  struct sharedSlsDetector {
       \param d dimension
       \returns current number of modules in direction d
   */
-  int setNumberOfModules(int n=GET_FLAG, dimension d=X); // if n=GET_FLAG returns the number of installed modules
+  int setNumberOfModules(int n=GET_FLAG, dimension d=X, int id=-1); // if n=GET_FLAG returns the number of installed modules
 
   /*
     returns the instrinsic size of the detector (maxmodx, maxmody, nchans, nchips, ndacs
@@ -673,7 +447,7 @@ typedef  struct sharedSlsDetector {
       \param d dimension
       \returns maximum number of modules that can be installed in direction d
   */
-  int getMaxNumberOfModules(dimension d=X); //
+  int getMaxNumberOfModules(dimension d=X, int id=-1); //
  
  
   /** 
@@ -682,7 +456,7 @@ typedef  struct sharedSlsDetector {
       \param signalIndex index of the signal
       \returns current meaning of signal signalIndex
   */
-  externalSignalFlag setExternalSignalFlags(externalSignalFlag pol=GET_EXTERNAL_SIGNAL_FLAG , int signalindex=0);
+  externalSignalFlag setExternalSignalFlags(externalSignalFlag pol=GET_EXTERNAL_SIGNAL_FLAG , int signalindex=0, int id=-1);
 
  
   /** 
@@ -692,7 +466,7 @@ typedef  struct sharedSlsDetector {
       \param pol value to be set \sa externalCommunicationMode
       \returns current external communication mode
   */
-  externalCommunicationMode setExternalCommunicationMode(externalCommunicationMode pol=GET_EXTERNAL_COMMUNICATION_MODE);
+  externalCommunicationMode setExternalCommunicationMode(externalCommunicationMode pol=GET_EXTERNAL_COMMUNICATION_MODE, int id=-1);
 
 
   // Tests and identification
@@ -703,6 +477,7 @@ typedef  struct sharedSlsDetector {
      \param imod module number for module serial number
      \returns id
   */
+  int64_t getId(idMode mode, int imod=0, int id=0);
   int64_t getId(idMode mode, int imod=0);
   /**
     Digital test of the modules
@@ -711,6 +486,7 @@ typedef  struct sharedSlsDetector {
     \returns OK or error mask
   */
   int digitalTest(digitalTestMode mode, int imod=0);
+  int digitalTest(digitalTestMode mode, int imod=0, int id=0);
   /**
      analog test
      \param modte test mode
@@ -900,7 +676,7 @@ typedef  struct sharedSlsDetector {
     \param imod module number (-1 all)
     \returns current settings
 
-    in this function trimbits/settings and calibration files are searched in the settingsDir and calDir directories and the detector is initialized
+    in this function trimbits and calibration files are searched in the trimDir and calDir directories and the detector is initialized
   */
   virtual detectorSettings setSettings(detectorSettings isettings, int imod=-1);
 
@@ -1486,182 +1262,16 @@ s
 
  protected:
  
-  int getFileIndexFromFileName(string fname);
-  int getVariablesFromFileName(string fname, int &index, int &p_index, float &sv0, float &sv1);
 
 
-  static const int64_t thisSoftwareVersion=0x20110113;
 
-  /**
-    address of the detector structure in shared memory
-  */
-  sharedSlsDetector *thisDetector;
-
-  //  /**
-  //   \sa setOnline
-  // */
-  //int onlineFlag;
-  
-  /**
-     detector ID
-  */
-  int detId;
-  
-  /**
-     shared memeory ID
-  */
-  int shmId;
-
-  /**
-     socket for control commands
-  */
-  MySocketTCP *controlSocket;
-
-  /**
-     socket for emergency stop
-  */
-  MySocketTCP *stopSocket;
-  
-  /**
-     socket for data acquisition
-  */
-  MySocketTCP *dataSocket; 
-  
-  /**
-     data queue
-  */
-  queue<int*> dataQueue;
-  /**
-     queue containing the postprocessed data
-  */
-  queue<detectorData*> finalDataQueue;
-  
-  
+  int nDetectors;
 
 
-  /**
-     current position of the detector
-  */
-  float currentPosition;
-  
-  /**
-     current position index of the detector
-  */
-  int currentPositionIndex;
-  
-  /**
-     I0 measured
-  */
-  float currentI0;
-  
-  
+  slsDetector *detectors[MAXDET];
 
 
-  /**
-     current scan variable of the detector
-  */
-  float currentScanVariable[MAX_SCAN_LEVELS];
-  
-  /**
-     current scan variable index of the detector
-  */
-  int currentScanIndex[MAX_SCAN_LEVELS];
-  
-  
-
-
-  /** merging bins */
-  float *mergingBins;
-
-  /** merging counts */
-  float *mergingCounts;
-
-  /** merging errors */
-  float *mergingErrors;
-
-  /** merging multiplicity */
-  int *mergingMultiplicity;
-  
- 
-  /** pointer to flat field coefficients */
-  float *ffcoefficients;
-  /** pointer to flat field coefficient errors */
-  float *fferrors;
-  /** pointer to detector module structures */
-  sls_detector_module *detectorModules;
-  /** pointer to dac valuse */
-  float *dacs;
-  /** pointer to adc valuse */
-  float *adcs;
-  /** pointer to chip registers */
-  int *chipregs;
-  /** pointer to channal registers */
-  int *chanregs;
-  /** pointer to bad channel mask  0 is channel is good 1 if it is bad \sa fillBadChannelMask() */
-  int *badChannelMask;
-
-  /** 
-      Receives a data frame from the detector socket
-      \return pointer to the data (or NULL if failed)
-
-  */
-  int* getDataFromDetector();
-
-  /** Initializes the shared memory 
-      \param type is needed to define the size of the shared memory
-      \param id is the detector id needed to define the shared memory id
-      \return shm_id shared memory id
-  */
-  int initSharedMemory(detectorType type=GENERIC, int id=0);
-
-  /** Frees the shared memory  -  should not be used*/
-  int freeSharedMemory();
-  /** 
-      Initializes the thisDetector structure
-      \param type is needed to define the number of channels, chips, modules etc.
-      \sa sharedSlsDetector
-  */
-  int initializeDetectorSize(detectorType type);
-  /**
-     Initializes the module structures in thisDetector if the detector did not exists before
-  */
-  int initializeDetectorStructure(); 
-  /**
-     send a sls_detector_channel structure over socket
-  */
-  int sendChannel(sls_detector_channel*); 
-  /**
-     send a sls_detector_chip structure over socket
-  */
-  int sendChip(sls_detector_chip*);
-  /**
-     send a sls_detector_module structure over socket
-  */
-  int sendModule(sls_detector_module*);
-  /**
-     receive a sls_detector_channel structure over socket
-  */
-  int receiveChannel(sls_detector_channel*);
-  /**
-     receive a sls_detector_chip structure over socket
-  */
-  int receiveChip(sls_detector_chip*);
-  /**
-     receive a sls_detector_module structure over socket
-  */
-  int receiveModule(sls_detector_module*);
-  
-  /**
-    start data processing thread
-  */
-  //void startThread();
-  
-  /**
-     fill bad channel mask (0 if channel is good, 1 if bad)
-  */
-  int fillBadChannelMask();
 };
 
 
-//static void* startProcessData(void *n);
 #endif

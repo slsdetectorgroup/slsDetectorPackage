@@ -1,14 +1,12 @@
 CFLAGS= -DC_ONLY 
-FLAGS=-DVERBOSE 
-INCLUDES= -I commonFiles -I slsDetector -I MySocketTCP -I eigerDetector -ImythenDetector  -I usersFunctions
+FLAGS=
+#-DVERBOSE 
+INCLUDES= -I commonFiles -I slsDetector -I MySocketTCP -I eigerDetector -ImythenDetector -IgotthardDetector  -I usersFunctions
+
+#EPICSFLAGS=-D EPICS -I/usr/local/epics/base/include/ -I /usr/local/epics/base/include/os/Linux/ -L /usr/local/epics/base/lib/SL5-x86/ -Wl,-R/usr/local/epics/base/lib/SL5-x86  -lca -lCom 
 
 
-#SRC_H=  slsDetector/slsDetector.h mythenDetector/mythenDetector.h eigerDetector/eigerDetector.h MySocketTCP/MySocketTCP.h usersFunctions/usersFunctions.h commonFiles/sls_detector_defs.h 
-
-#mythenDetectorServer/communication_funcs.h mythenDetectorServer/firmware_funcs.h mythenDetectorServer/mcb_funcs.h mythenDetectorServer/registers.h mythenDetectorServer/server_defs.h mythenDetectorServer/server_funcs.h mythenDetectorServer/trimming_funcs.h
-
-
-SRC_CLNT= slsDetector/slsDetector.cpp MySocketTCP/MySocketTCP.cxx usersFunctions/usersFunctions.c mythenDetector/mythenDetector.cpp eigerDetector/eigerDetector.cpp
+SRC_CLNT= slsDetector/slsDetector.cpp MySocketTCP/MySocketTCP.cxx usersFunctions/usersFunctions.c mythenDetector/mythenDetector.cpp eigerDetector/eigerDetector.cpp gotthardDetector/gotthardDetector.cpp
 
 SRC_MYTHEN_SVC = mythenDetectorServer/server.c mythenDetectorServer/server_funcs.c mythenDetectorServer/communication_funcs.c mythenDetectorServer/firmware_funcs.c mythenDetectorServer/mcb_funcs.c mythenDetectorServer/trimming_funcs.c 
 #mythenDetectorServer/sharedmemory.c
@@ -20,17 +18,13 @@ doc: $(SRC_H) $(SRC_CLNT)
 
 
 
-
-
-
-
 mythenServer:  $(SRC_MYTHEN_SVC) 
-	$(CC)  $(SRC_MYTHEN_SVC)  $(CFLAGS) $(FLAGS) $(INCLUDES) -ImythenDetectorServer -D VIRTUAL -lm -D MCB_FUNCS -D C_ONLY
+	$(CC)  $(SRC_MYTHEN_SVC)  $(CFLAGS) $(FLAGS) $(INCLUDES) -ImythenDetectorServer -DVIRTUAL -lm -D MCB_FUNCS -DC_ONLY
 	mv a.out mythenServer
 
 
 picassoServer:  $(SRC_MYTHEN_SVC) 
-	$(CXX)  $(SRC_MYTHEN_SVC)  $(CFLAGS) $(FLAGS) $(INCLUDES) -ImythenDetectorServer -D VIRTUAL -lm -D MCB_FUNCS -DPICASSOD
+	$(CC)  $(SRC_MYTHEN_SVC)  $(CFLAGS) $(FLAGS) $(INCLUDES) -ImythenDetectorServer -D VIRTUAL -lm -DMCB_FUNCS -DPICASSOD -DC_ONLY
 	mv a.out  picassoServer
 
 
@@ -39,11 +33,12 @@ package: $(SRC_CLNT)
 	$(CXX) -fPIC -g -o objs/slsDetector.o -c -Wall slsDetector/slsDetector.cpp $(INCLUDES) $(FLAGS) 
 #	$(CXX) -fPIC -g -o objs/eigerDetector.o -c -Wall eigerDetector/eigerDetector.cpp $(INCLUDES) $(FLAGS) 
 	$(CXX) -fPIC -g -o objs/mythenDetector.o -c -Wall mythenDetector/mythenDetector.cpp $(INCLUDES) $(FLAGS) 
-	$(CXX) -fPIC -g -o objs/usersFunctions.o -c -Wall usersFunctions/usersFunctions.c $(INCLUDES) $(FLAGS) 
+	$(CXX) -fPIC -g -o objs/gotthardDetector.o -c -Wall gotthardDetector/gotthardDetector.cpp $(INCLUDES) $(FLAGS) 
+	$(CXX) -fPIC -g -o objs/usersFunctions.o -c -Wall usersFunctions/usersFunctions.c $(INCLUDES) $(FLAGS) $(EPICSFLAGS)
 	$(CXX) -fPIC -g -o objs/MySocketTCP.o -c -Wall MySocketTCP/MySocketTCP.cxx $(INCLUDES) $(FLAGS) 
-	$(CXX) -shared -Wl,-soname,libSlsDetector.so.1 -o libSlsDetector.so.1.0.1 objs/slsDetector.o   objs/mythenDetector.o  objs/usersFunctions.o  objs/MySocketTCP.o  -lc $(INCLUDES) $(FLAGS) 
+	$(CXX) -shared -Wl,-soname,libSlsDetector.so.1 -o libSlsDetector.so.1.0.1 objs/slsDetector.o   objs/mythenDetector.o  objs/gotthardDetector.o objs/usersFunctions.o  objs/MySocketTCP.o  -lc $(INCLUDES) $(FLAGS) $(EPICSFLAGS)
 	ln -sf libSlsDetector.so.1.0.1  libSlsDetector.so
-	ar  rcs libSlsDetector.a      objs/slsDetector.o   objs/mythenDetector.o  objs/usersFunctions.o  objs/MySocketTCP.o
+	ar  rcs libSlsDetector.a      objs/slsDetector.o   objs/mythenDetector.o  objs/gotthardDetector.o  objs/usersFunctions.o  objs/MySocketTCP.o
 
 clean:
 	rm -rf libSlsDetector.so.1.0.1  libSlsDetector.so core objs/*  docs/*
@@ -62,6 +57,7 @@ install_inc:
 	cp -P ../slsDetectorSoftware/MySocketTCP/MySocketTCP.h $(DESTDIR)
 	cp -P ../slsDetectorSoftware/eigerDetector/eigerDetector.h $(DESTDIR)
 	cp -P ../slsDetectorSoftware/mythenDetector/mythenDetector.h $(DESTDIR)
+	cp -P ../slsDetectorSoftware/gotthardDetector/gotthardDetector.h $(DESTDIR)
 	cp -P ../slsDetectorSoftware/slsDetector/slsDetector.h $(DESTDIR)
 	cp -P ../slsDetectorSoftware/commonFiles/sls_detector_defs.h  $(DESTDIR)
 	cp -P ../slsDetectorSoftware/usersFunctions/usersFunctions.h $(DESTDIR)

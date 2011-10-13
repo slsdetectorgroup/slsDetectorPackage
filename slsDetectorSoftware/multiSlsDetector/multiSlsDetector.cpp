@@ -1,517 +1,118 @@
-#include "slsDetector.h"
+#include "multiSlsDetector.h"
 #include "usersFunctions.h"
 #include  <sys/types.h>
 #include  <sys/ipc.h>
 #include  <sys/shm.h>
 
 
-int slsDetector::initSharedMemory(detectorType type, int id) {
 
 
-    /**
-      the shared memory key is set to DEFAULT_SHM_KEY+id
-   */
-   key_t     mem_key=DEFAULT_SHM_KEY+id;
-   int       shm_id;
-   int nch, nm, nc, nd;
-   int sz;
-
-
-   switch(type) {
-   case MYTHEN:
-     nch=128; // complete mythen system
-     nm=24;
-     nc=10;
-     nd=6; // dacs+adcs
-     break;
-   case PICASSO:
-     nch=128; // complete mythen system
-     nm=24;
-     nc=12;
-     nd=6; // dacs+adcs
-     break;
-   case GOTTHARD:
-     nch=128; 
-     nm=1;
-     nc=10;
-     nd=13; // dacs+adcs
-     break;
-   default:
-     nch=65535; // one EIGER module
-     nm=1; //modules/detector
-     nc=8; //chips
-     nd=16; //dacs+adcs
-   }
-   /**
-      The size of the shared memory is:
-       size of shared structure + ffcoefficents +fferrors + modules+ dacs+adcs+chips+chans 
-   */
-
-
-   sz=sizeof(sharedSlsDetector)+nm*(2*nch*nc*sizeof(float)+sizeof(sls_detector_module)+sizeof(int)*nc+sizeof(float)*nd+sizeof(int)*nch*nc);
-#ifdef VERBOSE
-   std::cout<<"Size of shared memory is "<< sz << std::endl;
-#endif
-   shm_id = shmget(mem_key,sz,IPC_CREAT  | 0666); // allocate shared memory
-
-  if (shm_id < 0) {
-    std::cout<<"*** shmget error (server) ***"<< shm_id << std::endl;
-    return shm_id;
+int multiSlsDetector::freeSharedMemory(int i) {
+  int nd=nDetectors;
+  for (int id=0; id<nd; id++) {
+    detectors[id]->freeSharedMemory();
+    delete detectors[id];
+    detectors[id]=NULL;
+    nDetectors--;
   }
-  
-   /**
-      thisDetector pointer is set to the memory address of the shared memory
-   */
+  return OK;
+}
 
-  thisDetector = (sharedSlsDetector*) shmat(shm_id, NULL, 0);  /* attach */
-  
-  if (thisDetector == (void*)-1) {
-    std::cout<<"*** shmat error (server) ***" << std::endl;
-    return shm_id;
+
+multiSlsDetector::multiSlsDetector(detectorType type, int ndet, int id): nDetectors(0)
+{
+  for (int i=0; i<ndet; i++) {
+    addSlsDetector(type,id+i);
   }
-    /**
-      shm_id returns -1 is shared memory initialization fails
-   */
-  return shm_id;
-
+  for (int i=ndet; i<MAXDET; i++)
+    detectors[i]=NULL;
 }
 
-
-int slsDetector::freeSharedMemory() {
-  // Detach Memory address
-    if (shmdt(thisDetector) == -1) {
-      perror("shmdt failed\n");
-      return FAIL;
-    }
-    printf("Shared memory %d detached\n", shmId);
-    // remove shared memory
-    if (shmctl(shmId, IPC_RMID, 0) == -1) {
-      perror("shmctl(IPC_RMID) failed\n");
-      return FAIL;
-    }
-    printf("Shared memory %d deleted\n", shmId);
-    return OK;
+multiSlsDetector::~multiSlsDetector() {
+  removeSlsDetector();
 }
 
+int multiSlsDetector::addSlsDetector(detectorType type, int id) {
 
-slsDetector::slsDetector(detectorType type, int id):
-  thisDetector(NULL),  
-  detId(0),
-  shmId(-1), 
-  controlSocket(NULL),
-  stopSocket(NULL),
-  dataSocket(NULL),
-  currentPosition(0),
-  currentPositionIndex(0),
-  currentI0(0),
-  mergingBins(NULL),
-  mergingCounts(NULL),
-  mergingErrors(NULL),
-  mergingMultiplicity(NULL),
-  ffcoefficients(NULL),
-  fferrors(NULL),
-  detectorModules(NULL),
-  dacs(NULL),
-  adcs(NULL),
-  chipregs(NULL),
-  chanregs(NULL),
-  badChannelMask(NULL)
- {
-     while (shmId<0) {
-       /**Initlializes shared memory \sa initSharedMemory
-
-       if it fails the detector id is incremented until it succeeds
-       */
-       shmId=initSharedMemory(type,id);
-       id++;
-     }
-     id--;
-#ifdef VERBOSE
-     std::cout<< "Detector id is " << id << std::endl;
-#endif
-     detId=id;
-
-
-     /**Initializes the detector stucture \sa initializeDetectorSize
-      */
-     initializeDetectorSize(type);
- 
+    detectors[nDetectors]=new slsDetector(type,id);
+    if (detectors[nDetectors])
+      nDetectors++;
+    return nDetectors;
 }
 
 
 
-int slsDetector::initializeDetectorSize(detectorType type) {
-  char  *goff;
-  goff=(char*)thisDetector;
-
-  /** if the shared memory has newly be created, initialize the detector variables */
-   if (thisDetector->alreadyExisting==0) {
-     /** set hostname to default */
-     strcpy(thisDetector->hostname,DEFAULT_HOSTNAME);
-     /** sets onlineFlag to OFFLINE_FLAG */
-     thisDetector->onlineFlag=OFFLINE_FLAG;
-     /** set ports to defaults */
-     switch(type){
-     case GOTTHARD:
-     thisDetector->controlPort=DEFAULT_PORTNO_GOTTHARD;
-     thisDetector->stopPort=DEFAULT_PORTNO_GOTTHARD+1;
-     thisDetector->dataPort=DEFAULT_PORTNO_GOTTHARD+2;
-     break;
-     default:
-     thisDetector->controlPort=DEFAULT_PORTNO;
-     thisDetector->stopPort=DEFAULT_PORTNO+1;
-     thisDetector->dataPort=DEFAULT_PORTNO+2;
-     }
-     /** set thisDetector->myDetectorType to type and according to this set nChans, nChips, nDacs, nAdcs, nModMax, dynamicRange, nMod*/
-     thisDetector->myDetectorType=type;
-     switch(thisDetector->myDetectorType) {
-     case MYTHEN:
-       thisDetector->nChans=128;
-       thisDetector->nChips=10;
-       thisDetector->nDacs=6;
-       thisDetector->nAdcs=0;
-       thisDetector->nModMax[X]=24;
-       thisDetector->nModMax[Y]=1;
-       thisDetector->dynamicRange=24;
-       break;
-     case PICASSO:
-       thisDetector->nChans=128;
-       thisDetector->nChips=12;
-       thisDetector->nDacs=6;
-       thisDetector->nAdcs=0;
-       thisDetector->nModMax[X]=24;
-       thisDetector->nModMax[Y]=1;
-       thisDetector->dynamicRange=24;
-       break;
-     case GOTTHARD:
-       thisDetector->nChans=128;
-       thisDetector->nChips=10;
-       thisDetector->nDacs=8;
-       thisDetector->nAdcs=5;
-       thisDetector->nModMax[X]=1;
-       thisDetector->nModMax[Y]=1;
-       thisDetector->dynamicRange=1;
-       break;
-     default:
-       thisDetector->nChans=65536;
-       thisDetector->nChips=8;
-       thisDetector->nDacs=16;
-       thisDetector->nAdcs=16;
-       thisDetector->nModMax[X]=6;
-       thisDetector->nModMax[Y]=6;  
-       thisDetector->dynamicRange=32;
-     }
-     thisDetector->nModsMax=thisDetector->nModMax[0]*thisDetector->nModMax[1];
-     /** number of modules is initally the maximum number of modules */
-     thisDetector->nMod[X]=thisDetector->nModMax[X];
-     thisDetector->nMod[Y]=thisDetector->nModMax[Y];  
-     thisDetector->nMods=thisDetector->nModsMax;
-     /** calculates the expected data size */
-     thisDetector->timerValue[PROBES_NUMBER]=0;
-     thisDetector->timerValue[FRAME_NUMBER]=1;
-     thisDetector->timerValue[CYCLES_NUMBER]=1;
-     
-
-     if (thisDetector->dynamicRange==24 || thisDetector->timerValue[PROBES_NUMBER]>0)
-       thisDetector->dataBytes=thisDetector->nMod[X]*thisDetector->nMod[Y]*thisDetector->nChips*thisDetector->nChans*4;
-     else
-       thisDetector->dataBytes=thisDetector->nMod[X]*thisDetector->nMod[Y]*thisDetector->nChips*thisDetector->nChans*thisDetector->dynamicRange/8;
-     /** set trimDsdir, calDir and filePath to default to home directory*/
-     strcpy(thisDetector->settingsDir,getenv("HOME"));
-     strcpy(thisDetector->calDir,getenv("HOME"));
-     strcpy(thisDetector->filePath,getenv("HOME"));
-     /** sets trimbit file */
-     strcpy(thisDetector->settingsFile,"none");
-     /** set fileName to default to run*/
-     strcpy(thisDetector->fileName,"run");
-     /** set fileIndex to default to 0*/
-     thisDetector->fileIndex=0;
-     /** set progress Index to default to 0*/
-     thisDetector->progressIndex=0;
-     /** set total number of frames to be acquired to default to 1*/
-     thisDetector->totalProgress=1;
-
-     /** set number of trim energies to 0*/
-     thisDetector->nTrimEn=0;
-     /** set correction mask to 0*/
-     thisDetector->correctionMask=0;
-     /** set deat time*/
-     thisDetector->tDead=0;
-     /** sets bad channel list file to none */
-     strcpy(thisDetector->badChanFile,"none");
-     /** sets flat field correction directory */
-     strcpy(thisDetector->flatFieldDir,getenv("HOME"));
-     /** sets flat field correction file */
-     strcpy(thisDetector->flatFieldFile,"none");
-     /** set number of bad chans to 0*/
-     thisDetector->nBadChans=0;
-     /** set number of bad flat field chans to 0*/
-     thisDetector->nBadFF=0;
-     /** set angular direction to 1*/
-     thisDetector->angDirection=1;
-     /** set fine offset to 0*/
-     thisDetector->fineOffset=0;
-     /** set global offset to 0*/
-     thisDetector->globalOffset=0;
-     /** set number of rois to 0*/
-     thisDetector->nROI=0;
-     /** set readoutflags to none*/
-     thisDetector->roFlags=NORMAL_READOUT;
-     /** set current settings to uninitialized*/
-     thisDetector->currentSettings=UNINITIALIZED;
-     /** set threshold to -1*/
-     thisDetector->currentThresholdEV=-1;
-     // /** set clockdivider to 1*/
-     // thisDetector->clkDiv=1;
-     /** set number of positions to 0*/
-     thisDetector->numberOfPositions=0;
-     /** sets angular conversion file to none */
-     strcpy(thisDetector->angConvFile,"none");
-     /** set binsize*/
-     thisDetector->binSize=0;
-     thisDetector->stoppedFlag=0;
-     
-     thisDetector->actionMask=0;
-
-
-     for (int ia=0; ia<MAX_ACTIONS; ia++) {
-       thisDetector->actionMode[ia]=0;
-       strcpy(thisDetector->actionScript[ia],"none");
-       strcpy(thisDetector->actionParameter[ia],"none");
-     }
-
-
-     for (int iscan=0; iscan<MAX_SCAN_LEVELS; iscan++) {
-       
-       thisDetector->scanMode[iscan]=0;
-       strcpy(thisDetector->scanScript[iscan],"none");
-       strcpy(thisDetector->scanParameter[iscan],"none");
-       thisDetector->nScanSteps[iscan]=0;
-       thisDetector->scanPrecision[iscan]=0;
-     }
-
-
-     
-     /** calculates the memory offsets for flat field coefficients and errors, module structures, dacs, adcs, chips and channels */ 
-     thisDetector->ffoff=sizeof(sharedSlsDetector);
-     thisDetector->fferroff=thisDetector->ffoff+sizeof(float)*thisDetector->nChans*thisDetector->nChips*thisDetector->nModsMax;
-     thisDetector->modoff= thisDetector->fferroff+sizeof(float)*thisDetector->nChans*thisDetector->nChips*thisDetector->nModsMax;
-     thisDetector->dacoff=thisDetector->modoff+sizeof(sls_detector_module)*thisDetector->nModsMax;
-     thisDetector->adcoff=thisDetector->dacoff+sizeof(float)*thisDetector->nDacs*thisDetector->nModsMax;
-     thisDetector->chipoff=thisDetector->adcoff+sizeof(float)*thisDetector->nAdcs*thisDetector->nModsMax;
-     thisDetector->chanoff=thisDetector->chipoff+sizeof(int)*thisDetector->nChips*thisDetector->nModsMax;
-     
-     
-   } 
-
-
-     /** also in case thisDetector alread existed initialize the pointer for flat field coefficients and errors, module structures, dacs, adcs, chips and channels */ 
-   ffcoefficients=(float*)(goff+thisDetector->ffoff);
-   fferrors=(float*)(goff+thisDetector->fferroff);
-   detectorModules=(sls_detector_module*)(goff+ thisDetector->modoff);
-#ifdef VERBOSE
-   for (int imod=0; imod< thisDetector->nModsMax; imod++)
-     std::cout<< hex << detectorModules+imod << dec <<std::endl;
-#endif
-   dacs=(float*)(goff+thisDetector->dacoff);
-   adcs=(float*)(goff+thisDetector->adcoff);
-   chipregs=(int*)(goff+thisDetector->chipoff);
-   chanregs=(int*)(goff+thisDetector->chanoff);
-   if (thisDetector->alreadyExisting==0) {  
-     /** if thisDetector is new, initialize its structures \sa initializeDetectorStructure();   */ 
-     initializeDetectorStructure();   
-     /** set  thisDetector->alreadyExisting=1  */   
-     thisDetector->alreadyExisting=1;
-   } 
-   /** fill the BadChannelMask \sa  fillBadChannelMask */
-   fillBadChannelMask();
-   return OK;
+int multiSlsDetector::removeSlsDetector(int i) {
+  int imin=0, imax=nDetectors;
+  if (i>=0) {
+    imin=i;
+    imax=i;
+  }
+  for (int j=imin; j<imax; j++) {
+    if (detectors[j]) {
+      delete detectors[j];
+      detectors[j]=NULL;
+      nDetectors--;
+    }
+  }
+  return nDetectors;
 }
 
-int slsDetector::initializeDetectorStructure() {
-  sls_detector_module *thisMod;
-  char *p2;
-  p2=(char*)thisDetector;
- 
-  /** for each of the detector modules up to the maximum number which can be installed initlialize the sls_detector_module structure \sa ::sls_detector_module*/
-  for (int imod=0; imod<thisDetector->nModsMax; imod++) {
 
-   
 
-    thisMod=detectorModules+imod;
-    thisMod->module=imod;
-   
-    /** sets the size of the module to nChans, nChips etc. */
-    thisMod->nchan=thisDetector->nChans*thisDetector->nChips;
-    thisMod->nchip=thisDetector->nChips;
-    thisMod->ndac=thisDetector->nDacs;
-    thisMod->nadc=thisDetector->nAdcs;
-    
-    
-    /** initializes the serial number and register to 0 */
-    thisMod->serialnumber=0;
-    thisMod->reg=0;
+int multiSlsDetector::setOnline(int off, int i) {
+  int imin=0, imax=nDetectors;
+  int ret=GET_ONLINE_FLAG;
+  int err=0, ans;
+  
+  if (nDetectors<1)
+    return GET_ONLINE_FLAG;
+  if (i>=0) {
+    imin=i;
+    imax=i;
+  }
 
-    /** initializes the dacs values to 0 */
-    for (int idac=0; idac<thisDetector->nDacs; idac++) {
-      *(dacs+idac+thisDetector->nDacs*imod)=0.;
+  for (int j=imin; j<imax; j++) {
+    if (detectors[j]) {
+      ans=detectors[j]->setOnline(off);
+      if (ret==GET_ONLINE_FLAG && err==0)
+	ret=ans;
+      if (ret!=ans) {
+	err=1;
+	ret=GET_ONLINE_FLAG;
+      }
     }
-    
+  }
+  return ret;
+};
 
-    /** initializes the adc values to 0 */
-  for (int iadc=0; iadc<thisDetector->nAdcs; iadc++) {
-    *(adcs+iadc+thisDetector->nAdcs*imod)=0.;
+
+int multiSlsDetector::exists(int id) {
+
+  for (int i=0; i<nDetectors; i++) {
+    if (detectors[i]) {
+      if ((detectors[i]->getId())==id)
+	return 1;
     }
-
-
-
-    /** initializes the chip registers to 0 */
-    for (int ichip=0; ichip<thisDetector->nChips; ichip++) {
-      *(chipregs+ichip+thisDetector->nChips*imod)=-1;
-    }
-    
-    
-    /** initializes the channel registers to 0 */
-    for (int ichan=0; ichan<thisDetector->nChans*thisDetector->nChips; ichan++) {
-      *(chanregs+ichan+thisDetector->nChips*thisDetector->nChans*imod)=-1;
-    }
-    /** initialize gain and offset to -1 */
-    thisMod->gain=-1.;
-    thisMod->offset=-1.;
   }
   return 0;
-}
 
-sls_detector_module*  slsDetector::createModule() {
-
-  sls_detector_module *myMod=(sls_detector_module*)malloc(sizeof(sls_detector_module));
-  float *dacs=new float[thisDetector->nDacs];
-  float *adcs=new float[thisDetector->nAdcs];
-  int *chipregs=new int[thisDetector->nChips];
-  int *chanregs=new int[thisDetector->nChips*thisDetector->nChans];
-  myMod->ndac=thisDetector->nDacs;
-  myMod->nadc=thisDetector->nAdcs;
-  myMod->nchip=thisDetector->nChips;
-  myMod->nchan=thisDetector->nChips*thisDetector->nChans;
- 
-  myMod->dacs=dacs;
-  myMod->adcs=adcs;
-  myMod->chipregs=chipregs;
-  myMod->chanregs=chanregs;
-  return myMod;
-}
-
-
-void  slsDetector::deleteModule(sls_detector_module *myMod) {
-  delete [] myMod->dacs;
-  delete [] myMod->adcs;
-  delete [] myMod->chipregs;
-  delete [] myMod->chanregs;
-  delete myMod;
 }
 
 
 
-int slsDetector::sendChannel(sls_detector_channel *myChan) {
-  return  controlSocket->SendDataOnly(myChan, sizeof(sls_detector_channel));
-}
-
-int slsDetector::sendChip(sls_detector_chip *myChip) {
-  int ts=0;
-  ts+=controlSocket->SendDataOnly(myChip,sizeof(sls_detector_chip));
-#ifdef VERY_VERBOSE
-  std::cout<< "chip structure sent" << std::endl;
-  std::cout<< "now sending " << myChip->nchan << " channles" << std::endl;
-#endif
-
-  ts=controlSocket->SendDataOnly(myChip->chanregs,sizeof(int)*myChip->nchan );
-
-#ifdef VERBOSE
-  std::cout<< "chip's channels sent " <<ts  << std::endl;
-#endif
-  return ts;			  
-}
-
-int slsDetector::sendModule(sls_detector_module *myMod) {
-  int ts=0;
-  ts+=controlSocket->SendDataOnly(myMod,sizeof(sls_detector_module));
-  ts+=controlSocket->SendDataOnly(myMod->dacs,sizeof(float)*(myMod->ndac));
-  ts+=controlSocket->SendDataOnly(myMod->adcs,sizeof(float)*(myMod->nadc));
-  ts+=controlSocket->SendDataOnly(myMod->chipregs,sizeof(int)*(myMod->nchip));
-  ts+=controlSocket->SendDataOnly(myMod->chanregs,sizeof(int)*(myMod->nchan));
-  return ts;
-}
-
-int slsDetector::receiveChannel(sls_detector_channel *myChan) {
-  return controlSocket->ReceiveDataOnly(myChan,sizeof(sls_detector_channel));
-}
-
-int slsDetector::receiveChip(sls_detector_chip* myChip) {
-  int *ptr=myChip->chanregs;
-  int nchanold=myChip->nchan;
-  int ts=0;
-  int nch;
-  ts+=controlSocket->ReceiveDataOnly(myChip,sizeof(sls_detector_chip));
-  myChip->chanregs=ptr;
-  if (nchanold<(myChip->nchan)) {
-    nch=nchanold;
-    printf("number of channels received is too large!\n");
-  } else
-    nch=myChip->nchan;
-
-  ts+=controlSocket->ReceiveDataOnly(myChip->chanregs,sizeof(int)*nch);
- 
-  return ts;
-}
-
-int  slsDetector::receiveModule(sls_detector_module* myMod) {
-
-  float *dacptr=myMod->dacs;
-  float *adcptr=myMod->adcs;
-  int *chipptr=myMod->chipregs;
-  int *chanptr=myMod->chanregs;
-  int ts=0;
-  ts+=controlSocket->ReceiveDataOnly(myMod,sizeof(sls_detector_module));
-  myMod->dacs=dacptr;
-  myMod->adcs=adcptr;
-  myMod->chipregs=chipptr;
-  myMod->chanregs=chanptr;
-  
-#ifdef VERBOSE
-  std::cout<< "received module " << myMod->module << " of size "<< ts << " register " << myMod->reg << std::endl;
-#endif
-  ts+=controlSocket->ReceiveDataOnly(myMod->dacs,sizeof(float)*(myMod->ndac));
-#ifdef VERBOSE
-  std::cout<< "received dacs " << myMod->module << " of size "<< ts << std::endl;
-#endif
-  ts+=controlSocket->ReceiveDataOnly(myMod->adcs,sizeof(float)*(myMod->nadc));
-#ifdef VERBOSE
-  std::cout<< "received adcs " << myMod->module << " of size "<< ts << std::endl;
-#endif
-  ts+=controlSocket->ReceiveDataOnly(myMod->chipregs,sizeof(int)*(myMod->nchip));
-#ifdef VERBOSE
-  std::cout<< "received chips " << myMod->module << " of size "<< ts << std::endl;
-#endif
-  ts+=controlSocket->ReceiveDataOnly(myMod->chanregs,sizeof(int)*(myMod->nchan));
-#ifdef VERBOSE
-  std::cout<< "nchans= " << thisDetector->nChans << " nchips= " << thisDetector->nChips;
-  std::cout<< "mod - nchans= " << myMod->nchan << " nchips= " <<myMod->nchip;
-  
-  std::cout<< "received chans " << myMod->module << " of size "<< ts << std::endl;
-#endif
-#ifdef VERBOSE
-  std::cout<< "received module " << myMod->module << " of size "<< ts << " register " << myMod->reg << std::endl;
-#endif
-
-  return ts;
-}
 
 
-int slsDetector::setOnline(int off) {
-  if (off!=GET_ONLINE_FLAG)
-    thisDetector->onlineFlag=off;
-  return thisDetector->onlineFlag;
-};
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -525,305 +126,136 @@ int slsDetector::setOnline(int off) {
 
   */
 
-int slsDetector::setTCPSocket(string const name, int const control_port, int const stop_port,  int const data_port){
+int multiSlsDetector::setTCPSocket(int i, string const name, int const control_port, int const stop_port,  int const data_port){
 
-
-  char thisName[MAX_STR_LENGTH];
-  int thisCP, thisSP, thisDP;
-  int retval=OK;
-
-  if (strcmp(name.c_str(),"")!=0) {
-#ifdef VERBOSE
-    std::cout<< "setting hostname" << std::endl;
-#endif
-    strcpy(thisName,name.c_str());
-    strcpy(thisDetector->hostname,thisName);
-    if (controlSocket) {
-       delete controlSocket;
-       controlSocket=NULL;
-    }
-    if (stopSocket) {
-       delete stopSocket;
-       stopSocket=NULL;
-    }
-    if (dataSocket){
-       delete dataSocket; 
-       dataSocket=NULL;
-    }
-  } else
-    strcpy(thisName,thisDetector->hostname);
-    
-  if (control_port>0) {
-#ifdef VERBOSE
-    std::cout<< "setting control port" << std::endl;
-#endif
-    thisCP=control_port;
-    thisDetector->controlPort=thisCP; 
-    if (controlSocket) {
-       delete controlSocket;
-       controlSocket=NULL;
-    }
-  } else
-    thisCP=thisDetector->controlPort;
-
-  if (stop_port>0) {
-#ifdef VERBOSE
-    std::cout<< "setting stop port" << std::endl;
-#endif
-    thisSP=stop_port;
-    thisDetector->stopPort=thisSP;
-    if (stopSocket) {
-       delete stopSocket;
-       stopSocket=NULL;
-    }
-  } else
-    thisSP=thisDetector->stopPort;
-
-
-  if (data_port>0) {
-#ifdef VERBOSE
-    std::cout<< "setting data port" << std::endl;
-#endif
-    thisDP=data_port;
-    thisDetector->dataPort=thisDP;
-    if (dataSocket){
-       delete dataSocket; 
-       dataSocket=NULL;
-    }
-  } else
-    thisDP=thisDetector->dataPort;
-
-
-  if (!controlSocket) {
-    controlSocket= new MySocketTCP(thisName, thisCP);
-    if (controlSocket->getErrorStatus()){
-#ifdef VERBOSE
-      std::cout<< "Could not connect Control socket " << thisName  << " " << thisCP << std::endl;
-#endif 
-      retval=FAIL;
-    }
-#ifdef VERYVERBOSE
-    else
-      std::cout<< "Control socket connected " <<thisName  << " " << thisCP << std::endl;
-#endif
-  }
-  if (!stopSocket) {
-    stopSocket=new MySocketTCP(thisName, thisSP);
-    if (stopSocket->getErrorStatus()){
-#ifdef VERBOSE
-    std::cout<< "Could not connect Stop socket "<<thisName  << " " << thisSP << std::endl;
-#endif
-    retval=FAIL;
-    } 
-#ifdef VERYVERBOSE
-    else
-      std::cout<< "Stop socket connected " << thisName << " " << thisSP << std::endl;
-#endif
-  }
-  if (!dataSocket) {
-  dataSocket=new MySocketTCP(thisName, thisDP);
-  if (dataSocket->getErrorStatus()){
-#ifdef VERBOSE
-    std::cout<< "Could not connect Data socket "<<thisName  << " " << thisDP << std::endl;
-#endif
-    retval=FAIL;
-  } 
-#ifdef VERYVERBOSE
+  if (i<0)
+    return FAIL;
+  if (detectors[i])
+    return detectors[i]->setTCPSocket(name, control_port, stop_port, data_port);
   else
-    std::cout<< "Data socket connected "<< thisName << " " << thisDP << std::endl;
-#endif
-  }
-  if (retval!=FAIL) {
-    if (controlSocket->Connect()<0) {
-      controlSocket->SetTimeOut(5);
-      thisDetector->onlineFlag=OFFLINE_FLAG;
-      retval=FAIL;
-#ifdef VERBOSE
-    std::cout<< "offline!" << std::endl;
-#endif
-    }   else {
-      thisDetector->onlineFlag=ONLINE_FLAG;
-      controlSocket->SetTimeOut(100);
-      controlSocket->Disconnect();
-#ifdef VERBOSE
-      std::cout<< "online!" << std::endl;
-#endif
-    }
-  } else {
-      thisDetector->onlineFlag=OFFLINE_FLAG;
-#ifdef VERBOSE
-    std::cout<< "offline!" << std::endl;
-#endif
-    
-  }
-
-
-  return retval;
+    return FAIL;
 };
 
 
 
+
+char* multiSlsDetector::getHostname(int i) {
+  if (i<0)
+    return FAIL;
+  if (detectors[i])
+    return detectors[i]->getHostname();
+  else
+    return NULL;
+}
+
+int multiSlsDetector::getControlPort(int i) {
+
+
+  int imin=0, imax=nDetectors;
+  int ret=-1, err=0;
+ if (i>=0) {
+    imin=i;
+    imax=i;
+  }
+  for (int j=imin; j<imax; j++) {
+    if (detectors[j]) {
+      if (ret==-1 && err==0)
+	ret=detectors[j]->getControlPort();
+      else if (detectors[j]->getControlPort()!=ret) {
+	ret=-1;
+	err=1;
+      }
+    }  else {
+      ret=-1;
+      err=1;
+    }
+  }
+  return ret;
+}
+
+int multiSlsDetector::getDataPort(int i) {
+
+
+
+
+  int imin=0, imax=nDetectors;
+  int ret=-1, err=0;
+ if (i>=0) {
+    imin=i;
+    imax=i;
+  }
+  for (int j=imin; j<imax; j++) {
+    if (detectors[j]) {
+      if (ret==-1 && err==0)
+	ret=detectors[j]->getDataPort();
+      else if (detectors[j]->getDataPort()!=ret) {
+	ret=-1;
+	err=1;
+      }
+    }  else {
+      ret=-1;
+      err=1;
+    }
+  }
+  return ret;
+
+
+
+
+}
+
+
+int multiSlsDetector::getStopPort(int i) {
+
+  int imin=0, imax=nDetectors;
+  int ret=-1, err=0;
+ if (i>=0) {
+    imin=i;
+    imax=i;
+  }
+  for (int j=imin; j<imax; j++) {
+    if (detectors[j]) {
+      if (ret==-1 && err==0)
+	ret=detectors[j]->getStopPort();
+      else if (detectors[j]->getStopPort()!=ret) {
+	ret=-1;
+	err=1;
+      }
+    }  else {
+      ret=-1;
+      err=1;
+    }
+  }
+  return ret;
+
+}
 
 
   /* I/O */
 
 /* generates file name without extension*/
 
-string slsDetector::createFileName() {
+string multiSlsDetector::createFileName() {
   
+  string ret=string("error"), ans;
+  int err=0;
 
-  ostringstream osfn;
-  /*directory name +root file name */
-  osfn << thisDetector->filePath << "/" << thisDetector->fileName;
-  
-  // scan level 0
-  if (thisDetector->actionMask & (1 << (MAX_ACTIONS)))
-    osfn << "_S" << fixed << setprecision(thisDetector->scanPrecision[0]) << currentScanVariable[0];
-
-  //scan level 1
-  if (thisDetector->actionMask & (1 << (MAX_ACTIONS+1)))
-    osfn << "_s" << fixed << setprecision(thisDetector->scanPrecision[1]) << currentScanVariable[1];
-  
-
-  //position
-  if (currentPositionIndex>0 && currentPositionIndex<=thisDetector->numberOfPositions)
-    osfn << "_p" << currentPositionIndex;
-
-  // file index
-  osfn << "_" << thisDetector->fileIndex;
-
-
-#ifdef VERBOSE
-  cout << "created file name " << osfn.str() << endl;
-#endif
-
-  return osfn.str();
-
-}
-
-
-int slsDetector::getFileIndexFromFileName(string fname) {
-  int i;
-  size_t dot=fname.rfind(".");
-  if (dot==string::npos)
-    return -1;
-  size_t uscore=fname.rfind("_");
-  if (uscore==string::npos)
-    return -1;
-
-  if (sscanf( fname.substr(uscore+1,dot-uscore-1).c_str(),"%d",&i)) {
-
-  return i;
-  } 
-  //#ifdef VERBOSE
-  cout << "******************************** cannot parse file index" << endl;
-  //#endif
-  return 0;
-}
-
-int slsDetector::getVariablesFromFileName(string fname, int &index, int &p_index, float &sv0, float &sv1) {
-  
-  int i;
-  float f;
-  string s;
-
-
-  index=-1;
-  p_index=-1;
-  sv0=-1;
-  sv1=-1;
-
-
-  //  size_t dot=fname.rfind(".");
-  //if (dot==string::npos)
-  //  return -1;
-  size_t uscore=fname.rfind("_");
-  if (uscore==string::npos)
-    return -1;
-  s=fname;
-
-  //if (sscanf(s.substr(uscore+1,dot-uscore-1).c_str(),"%d",&i)) {
-  if (sscanf(s.substr(uscore+1,s.size()-uscore-1).c_str(),"%d",&i)) {
-    index=i;
-#ifdef VERBOSE
-    cout << "******************************** file index is " << index << endl;
-#endif
-    //return i;
-    s=fname.substr(0,uscore);
+  for (int i=0; i<ndetectors; i++) {
+    if (detectors[i])
+      ans=detectors[i]->createFileName();
+    else {
+      ans=string("error");
+      err=1;
+    }
+    if (ret==string("error") && err==0)
+      ret=ans;
+    else if (ans!=ret) {
+      ret=string("error");
+      err=1;
+    } 
   }
-#ifdef VERBOSE 
-  else
-    cout << "******************************** cannot parse file index" << endl;
-  
-  cout << s << endl;
-#endif
+  return ret;
 
-  
-  uscore=s.rfind("_");
-
-
-
-
-  if (sscanf( s.substr(uscore+1,s.size()-uscore-1).c_str(),"p%d",&i)) {
-    p_index=i;
-#ifdef VERBOSE
-    cout << "******************************** position index is " << p_index << endl;
-#endif
-    s=fname.substr(0,uscore);
-  }
-#ifdef VERBOSE 
-  else 
-    cout << "******************************** cannot parse position index" << endl;
-
-  cout << s << endl;
-
-
-#endif
-
-
-  
-  
-  uscore=s.rfind("_");
-
-
-
-
-  if (sscanf( s.substr(uscore+1,s.size()-uscore-1).c_str(),"s%f",&f)) {
-    sv1=f;
-#ifdef VERBOSE
-    cout << "******************************** scan variable 1 is " << sv1 << endl;
-#endif
-    s=fname.substr(0,uscore);
-  }
-#ifdef VERBOSE
-  else 
-    cout << "******************************** cannot parse scan varable 1" << endl;
-
-  cout << s << endl;
-
-
-#endif
-  
-  uscore=s.rfind("_");
-
-
-
-
-  if (sscanf( s.substr(uscore+1,s.size()-uscore-1).c_str(),"S%f",&f)) {
-    sv0=f;
-#ifdef VERBOSE
-    cout << "******************************** scan variable 0 is " << sv0 << endl;
-#endif
-  } 
-#ifdef VERBOSE
-  else 
-    cout << "******************************** cannot parse scan varable 0" << endl;
-
-#endif
-
-
-
-  return index;
 }
 
 
@@ -861,7 +293,7 @@ int slsDetector::getVariablesFromFileName(string fname, int &index, int &p_index
      executes a system command on the server 
      e.g. mount an nfs disk, reboot and returns answer etc.
   */
-int slsDetector::execCommand(string cmd, string answer){
+int multiSlsDetector::execCommand(string cmd, string answer){
 
   char arg[MAX_STR_LENGTH], retval[MAX_STR_LENGTH];
   int fnum=F_EXEC_COMMAND;
@@ -911,7 +343,7 @@ int slsDetector::execCommand(string cmd, string answer){
      };
 
   */
-int slsDetector::setDetectorType(detectorType const type){
+int multiSlsDetector::setDetectorType(detectorType const type){
   
   int arg, retval=FAIL;
   int fnum=F_GET_DETECTOR_TYPE;
@@ -962,7 +394,7 @@ int slsDetector::setDetectorType(detectorType const type){
   return retType;
 };
 
-int slsDetector::setDetectorType(string const type){
+int multiSlsDetector::setDetectorType(string const type){
   detectorType dtype=GENERIC;
   if (type=="Mythen")
     dtype=MYTHEN;
@@ -977,7 +409,7 @@ int slsDetector::setDetectorType(string const type){
   return setDetectorType(dtype);
 };
 
-void slsDetector::getDetectorType(char *type){
+void multiSlsDetector::getDetectorType(char *type){
 
   switch (thisDetector->myDetectorType) {
   case MYTHEN:
@@ -1006,7 +438,7 @@ void slsDetector::getDetectorType(char *type){
 
   /* needed to set/get the size of the detector */
 // if n=GET_FLAG returns the number of installed modules,
-int slsDetector::setNumberOfModules(int n, dimension d){
+int multiSlsDetector::setNumberOfModules(int n, dimension d){
   
   int arg[2], retval;
   int fnum=F_SET_NUMBER_OF_MODULES;
@@ -1085,7 +517,7 @@ int slsDetector::setNumberOfModules(int n, dimension d){
 
 
  
-int slsDetector::getMaxNumberOfModules(dimension d){
+int multiSlsDetector::getMaxNumberOfModules(dimension d){
 
   int retval;
   int fnum=F_GET_MAX_NUMBER_OF_MODULES;
@@ -1147,7 +579,7 @@ enum externalSignalFlag {
 }{};
   */
 
- externalSignalFlag slsDetector::setExternalSignalFlags(externalSignalFlag pol, int signalindex){
+ externalSignalFlag multiSlsDetector::setExternalSignalFlags(externalSignalFlag pol, int signalindex){
 
 
 
@@ -1217,7 +649,7 @@ enum externalSignalFlag {
 
   */
 
-   externalCommunicationMode slsDetector::setExternalCommunicationMode( externalCommunicationMode pol){
+   externalCommunicationMode multiSlsDetector::setExternalCommunicationMode( externalCommunicationMode pol){
 
 
 
@@ -1284,7 +716,7 @@ enum externalSignalFlag {
 
 
 
-int64_t slsDetector::getId( idMode mode, int imod){
+int64_t multiSlsDetector::getId( idMode mode, int imod){
 
 
   int64_t retval=-1;
@@ -1356,7 +788,7 @@ int64_t slsDetector::getId( idMode mode, int imod){
     returns ok or error mask
   */
 
-int slsDetector::digitalTest( digitalTestMode mode, int imod){
+int multiSlsDetector::digitalTest( digitalTestMode mode, int imod){
 
 
   int retval;
@@ -1412,7 +844,7 @@ int slsDetector::digitalTest( digitalTestMode mode, int imod){
 
   */
 /*
-int* slsDetector::analogTest(analogTestMode mode){
+int* multiSlsDetector::analogTest(analogTestMode mode){
   std::cout<< "function not yet implemented " << std::endl;
 };
 */
@@ -1420,7 +852,7 @@ int* slsDetector::analogTest(analogTestMode mode){
      enable analog output of channel 
   */
 /*
-int slsDetector::enableAnalogOutput(int ichan){
+int multiSlsDetector::enableAnalogOutput(int ichan){
   int imod=ichan/(nChans*nChips);
   ichan-=imod*(nChans*nChips);
   int ichip=ichan/nChans;
@@ -1428,7 +860,7 @@ int slsDetector::enableAnalogOutput(int ichan){
   enableAnalogOutput(imod,ichip,ichan);
   
 };
-int slsDetector::enableAnalogOutput(int imod, int ichip, int ichan){
+int multiSlsDetector::enableAnalogOutput(int imod, int ichip, int ichan){
   std::cout<< "function not yet implemented " << std::endl;
 };
 */
@@ -1436,7 +868,7 @@ int slsDetector::enableAnalogOutput(int imod, int ichip, int ichan){
      give a train of calibration pulses 
   */ 
 /*
-int slsDetector::giveCalibrationPulse(float vcal, int npulses){
+int multiSlsDetector::giveCalibrationPulse(float vcal, int npulses){
   std::cout<< "function not yet implemented " << std::endl;
 };
 */
@@ -1446,7 +878,7 @@ int slsDetector::giveCalibrationPulse(float vcal, int npulses){
 
   /* write or read register */
 
-int slsDetector::writeRegister(int addr, int val){
+int multiSlsDetector::writeRegister(int addr, int val){
 
 
   int retval;
@@ -1493,7 +925,7 @@ int slsDetector::writeRegister(int addr, int val){
 
 
 
-int slsDetector::readRegister(int addr){
+int multiSlsDetector::readRegister(int addr){
 
 
   int retval;
@@ -1554,7 +986,7 @@ int slsDetector::readRegister(int addr){
   */
 
 
-float slsDetector::setDAC(float val, dacIndex index, int imod){
+float multiSlsDetector::setDAC(float val, dacIndex index, int imod){
 
 
   float retval;
@@ -1612,7 +1044,7 @@ float slsDetector::setDAC(float val, dacIndex index, int imod){
 };
 
 
-float slsDetector::getADC(dacIndex index, int imod){
+float multiSlsDetector::getADC(dacIndex index, int imod){
 
   float retval;
   int fnum=F_GET_ADC;
@@ -1671,7 +1103,7 @@ float slsDetector::getADC(dacIndex index, int imod){
 
   */
 
-int slsDetector::setChannel(int64_t reg, int ichan, int ichip, int imod){
+int multiSlsDetector::setChannel(int64_t reg, int ichan, int ichip, int imod){
   sls_detector_channel myChan;
 #ifdef VERBOSE
   std::cout<< "Setting channel "<< ichan << " " << ichip << " " << imod << " to " << reg << std::endl;
@@ -1711,7 +1143,7 @@ int slsDetector::setChannel(int64_t reg, int ichan, int ichip, int imod){
 
 
 
-int slsDetector::setChannel(sls_detector_channel chan){
+int multiSlsDetector::setChannel(sls_detector_channel chan){
   int fnum=F_SET_CHANNEL;
   int retval;
   int ret=FAIL;
@@ -1784,7 +1216,7 @@ int mmin=imod, mmax=imod+1, chimin=ichip, chimax=ichip+1, chamin=ichan, chamax=i
 	
 }
 
- sls_detector_channel  slsDetector::getChannel(int ichan, int ichip, int imod){
+ sls_detector_channel  multiSlsDetector::getChannel(int ichan, int ichip, int imod){
 
 
   int fnum=F_GET_CHANNEL;
@@ -1833,7 +1265,7 @@ int mmin=imod, mmax=imod+1, chimin=ichip, chimax=ichip+1, chamin=ichan, chamax=i
        OUTPUT_WIDTH // should always be the last
        }{};
   */
-int slsDetector::setChip(int reg, int ichip, int imod){
+int multiSlsDetector::setChip(int reg, int ichip, int imod){
    sls_detector_chip myChip;
 
 #ifdef VERBOSE
@@ -1873,7 +1305,7 @@ int slsDetector::setChip(int reg, int ichip, int imod){
   return ret;
 }
 
-int slsDetector::setChip(sls_detector_chip chip){
+int multiSlsDetector::setChip(sls_detector_chip chip){
 
   int fnum=F_SET_CHIP;
   int retval;
@@ -1917,7 +1349,7 @@ int slsDetector::setChip(sls_detector_chip chip){
 };
 
 
- sls_detector_chip slsDetector::getChip(int ichip, int imod){
+ sls_detector_chip multiSlsDetector::getChip(int ichip, int imod){
 
   int fnum=F_GET_CHIP;
   sls_detector_chip myChip;
@@ -1981,7 +1413,7 @@ int slsDetector::setChip(sls_detector_chip chip){
      }{};
   */
 
-int slsDetector::setModule(int reg, int imod){
+int multiSlsDetector::setModule(int reg, int imod){
   sls_detector_module myModule;
   
 #ifdef VERBOSE
@@ -2060,7 +1492,7 @@ int slsDetector::setModule(int reg, int imod){
 
 
 
-int slsDetector::setModule(sls_detector_module module){
+int multiSlsDetector::setModule(sls_detector_module module){
 
 
   int fnum=F_SET_MODULE;
@@ -2141,7 +1573,7 @@ int slsDetector::setModule(sls_detector_module module){
   return retval;
 };
 
-sls_detector_module  *slsDetector::getModule(int imod){
+sls_detector_module  *multiSlsDetector::getModule(int imod){
 
 #ifdef VERBOSE
   std::cout << "slsDetector get module " << std::endl;
@@ -2251,7 +1683,7 @@ sls_detector_module  *slsDetector::getModule(int imod){
 /*
   really needed?
 
-int slsDetector::setCalibration(int imod,  detectorSettings isettings, float gain, float offset){
+int multiSlsDetector::setCalibration(int imod,  detectorSettings isettings, float gain, float offset){
   std::cout<< "function not yet implemented " << std::endl; 
   
   
@@ -2259,7 +1691,7 @@ int slsDetector::setCalibration(int imod,  detectorSettings isettings, float gai
   return OK;
 
 }
-int slsDetector::getCalibration(int imod,  detectorSettings isettings, float &gain, float &offset){
+int multiSlsDetector::getCalibration(int imod,  detectorSettings isettings, float &gain, float &offset){
 
   std::cout<< "function not yet implemented " << std::endl; 
 
@@ -2272,7 +1704,7 @@ int slsDetector::getCalibration(int imod,  detectorSettings isettings, float &ga
     calibrated setup of the threshold
   */
 
-int slsDetector::getThresholdEnergy(int imod){
+int multiSlsDetector::getThresholdEnergy(int imod){
 
   int fnum=  F_GET_THRESHOLD_ENERGY;
   int retval;
@@ -2303,7 +1735,7 @@ int slsDetector::getThresholdEnergy(int imod){
   return  thisDetector->currentThresholdEV;
 };  
 
-int slsDetector::setThresholdEnergy(int e_eV,  int imod, detectorSettings isettings){
+int multiSlsDetector::setThresholdEnergy(int e_eV,  int imod, detectorSettings isettings){
 
   int fnum=  F_SET_THRESHOLD_ENERGY;
   int retval;
@@ -2343,9 +1775,9 @@ int slsDetector::setThresholdEnergy(int e_eV,  int imod, detectorSettings isetti
   /*
     select detector settings
   */
- detectorSettings  slsDetector::getSettings(int imod){
+ detectorSettings  multiSlsDetector::getSettings(int imod){
 
-   
+
   int fnum=F_SET_SETTINGS;
   int ret=FAIL;
   char mess[100];
@@ -2380,29 +1812,16 @@ int slsDetector::setThresholdEnergy(int e_eV,  int imod, detectorSettings isetti
 
 };
 
-
-
- detectorSettings slsDetector::setSettings( detectorSettings isettings, int imod){
-   //#ifdef VERBOSE
+ detectorSettings multiSlsDetector::setSettings( detectorSettings isettings, int imod){
+#ifdef VERBOSE
   std::cout<< "slsDetector setSettings "<< std::endl;
-  //#endif
+#endif
   sls_detector_module *myMod=createModule();
   int modmi=imod, modma=imod+1, im=imod;
-  string settingsfname, calfname;
+  string trimfname, calfname;
   string ssettings;
-  detectorSettings minsettings, maxsettings;
 
-  switch(thisDetector->myDetectorType){
-    case GOTTHARD:
-    minsettings = HIGHGAIN;
-    maxsettings = GAIN3;
-    break;
-  default:
-    minsettings = STANDARD;
-    maxsettings = HIGHGAIN;
-  }
-    
-  if (isettings>=minsettings && isettings<=maxsettings) {
+  if (isettings>=STANDARD && isettings<=HIGHGAIN) {
     switch (isettings) {
     case STANDARD:
       ssettings="/standard";
@@ -2416,26 +1835,10 @@ int slsDetector::setThresholdEnergy(int e_eV,  int imod, detectorSettings isetti
       ssettings="/highgain";
       thisDetector->currentSettings=HIGHGAIN;
       break;
-    case DYNAMICGAIN:
-      ssettings="/dynamicgain";
-      thisDetector->currentSettings=DYNAMICGAIN;
-      break;
-    case GAIN1:
-      ssettings="/gain1";
-      thisDetector->currentSettings=GAIN1;
-      break;
-    case GAIN2:
-      ssettings="/gain2";
-      thisDetector->currentSettings=GAIN2;
-      break;
-    case GAIN3:
-      ssettings="/gain3";
-      thisDetector->currentSettings=GAIN3;
-      break;
     default:
       std::cout<< "Unknown settings!" << std::endl;
     }
-       
+    
     if (imod<0) {
       modmi=0;
       //  modma=thisDetector->nModMax[X]*thisDetector->nModMax[Y];
@@ -2446,46 +1849,31 @@ int slsDetector::setThresholdEnergy(int e_eV,  int imod, detectorSettings isetti
       ostringstream ostfn, oscfn;
       myMod->module=im;
       //create file names
-      switch(thisDetector->myDetectorType){
-      case GOTTHARD:
-	ostfn << thisDetector->settingsDir << ssettings <<"/settings.sn";//  << setfill('0') << setw(3) << hex << getId(MODULE_SERIAL_NUMBER, im) << setbase(10); 
-	oscfn << thisDetector->calDir << ssettings << "/calibration.sn";//  << setfill('0') << setw(3) << hex << getId(MODULE_SERIAL_NUMBER, im) << setbase(10); 
-	std::cout<< thisDetector->settingsDir<<endl<< thisDetector->calDir <<endl;
-      break;
-      default:
-	ostfn << thisDetector->settingsDir << ssettings <<"/noise.sn"  << setfill('0') << setw(3) << hex << getId(MODULE_SERIAL_NUMBER, im) << setbase(10); 
-	oscfn << thisDetector->calDir << ssettings << "/calibration.sn"  << setfill('0') << setw(3) << hex << getId(MODULE_SERIAL_NUMBER, im) << setbase(10); 
-      }
-      //oscfn << thisDetector->calDir << ssettings << "/calibration.sn"  << setfill('0') << setw(3) << hex << getId(MODULE_SERIAL_NUMBER, im) << setbase(10); 
-      
-      settingsfname=ostfn.str();
-      //#ifdef VERBOSE
-      cout << "the settings name is "<<settingsfname << endl;
-      //#endif
-      if (readSettingsFile(settingsfname,myMod)) {
+      ostfn << thisDetector->trimDir << ssettings <<"/noise.sn"  << setfill('0') << setw(3) << hex << getId(MODULE_SERIAL_NUMBER, im) << setbase(10); 
+      oscfn << thisDetector->calDir << ssettings << "/calibration.sn"  << setfill('0') << setw(3) << hex << getId(MODULE_SERIAL_NUMBER, im) << setbase(10); 
+      //
+      trimfname=ostfn.str();
+#ifdef VERBOSE
+      cout << trimfname << endl;
+#endif
+      if (readTrimFile(trimfname,myMod)) {
 	calfname=oscfn.str();
 #ifdef VERBOSE
-	cout << calfname << endl;
+      cout << calfname << endl;
 #endif
 	readCalibrationFile(calfname,myMod->gain, myMod->offset);
 	setModule(*myMod);
       } else {
 	ostringstream ostfn,oscfn;
-	switch(thisDetector->myDetectorType){
-	case GOTTHARD:
-	  ostfn << thisDetector->settingsDir << ssettings << ssettings << ".settings";
-	  break;
-	default:
-	  ostfn << thisDetector->settingsDir << ssettings << ssettings << ".trim"; 
-	}
+	ostfn << thisDetector->trimDir << ssettings << ssettings << ".trim"; 
 	oscfn << thisDetector->calDir << ssettings << ssettings << ".cal";
 	calfname=oscfn.str();
-	settingsfname=ostfn.str();
+	trimfname=ostfn.str();
 #ifdef VERBOSE
-	cout << settingsfname << endl;
-	cout << calfname << endl;
+      cout << trimfname << endl;
+      cout << calfname << endl;
 #endif
-	if (readSettingsFile(settingsfname,myMod)) {
+	if (readTrimFile(trimfname,myMod)) {
 	  calfname=oscfn.str();
 	  readCalibrationFile(calfname,myMod->gain, myMod->offset);
 	  setModule(*myMod);
@@ -2494,27 +1882,22 @@ int slsDetector::setThresholdEnergy(int e_eV,  int imod, detectorSettings isetti
     }
   }
   deleteModule(myMod);
-  /*
   if (thisDetector->correctionMask&(1<<RATE_CORRECTION)) {
     int isett=getSettings(imod);
     float t[]=defaultTDead;
     if (isett>-1 && isett<3) {
       thisDetector->tDead=t[isett];
-      }
+    }
   }
-  */
+
 
   return  getSettings(imod);
 };
 
-
-
-
-
 // Acquisition functions
 /* change these funcs accepting also ok/fail */
 
-int slsDetector::startAcquisition(){
+int multiSlsDetector::startAcquisition(){
 
 
   int fnum=F_START_ACQUISITION;
@@ -2543,7 +1926,7 @@ int slsDetector::startAcquisition(){
 
 
 };
-int slsDetector::stopAcquisition(){
+int multiSlsDetector::stopAcquisition(){
 
 
   int fnum=F_STOP_ACQUISITION;
@@ -2572,7 +1955,7 @@ int slsDetector::stopAcquisition(){
 
 };
 
-int slsDetector::startReadOut(){
+int multiSlsDetector::startReadOut(){
 
   int fnum=F_START_READOUT;
   int ret=FAIL;
@@ -2599,7 +1982,7 @@ int slsDetector::startReadOut(){
 
 
 
-/*int slsDetector::getRunStatus(){
+/*int multiSlsDetector::getRunStatus(){
   int fnum=F_GET_RUN_STATUS;
   int retval;
   int ret=FAIL;
@@ -2627,7 +2010,7 @@ int slsDetector::startReadOut(){
 };
 */
 
-int* slsDetector::readFrame(){
+int* multiSlsDetector::readFrame(){
 
   int fnum=F_READ_FRAME;
   int* retval=NULL;
@@ -2650,7 +2033,7 @@ int* slsDetector::readFrame(){
   return retval;
 };
 
-int* slsDetector::getDataFromDetector(){
+int* multiSlsDetector::getDataFromDetector(){
 
   int nel=thisDetector->dataBytes/sizeof(int);
   int n;
@@ -2698,7 +2081,7 @@ int* slsDetector::getDataFromDetector(){
 
 
 
-int* slsDetector::readAll(){
+int* multiSlsDetector::readAll(){
   
   int fnum=F_READ_ALL;
   int* retval; // check what we return!
@@ -2729,7 +2112,7 @@ int* slsDetector::readAll(){
 
 };
 
-int* slsDetector::startAndReadAll(){
+int* multiSlsDetector::startAndReadAll(){
 
  
   int* retval;
@@ -2760,7 +2143,7 @@ int* slsDetector::startAndReadAll(){
 
 
 
-int slsDetector::startAndReadAllNoWait(){
+int multiSlsDetector::startAndReadAllNoWait(){
 
   int fnum= F_START_AND_READ_ALL;
   
@@ -2779,7 +2162,7 @@ int slsDetector::startAndReadAllNoWait(){
   return FAIL;
 };
 
-int* slsDetector::getDataFromDetectorNoWait() {
+int* multiSlsDetector::getDataFromDetectorNoWait() {
   int *retval=getDataFromDetector();
   if (thisDetector->onlineFlag==ONLINE_FLAG) {
     if (controlSocket) {
@@ -2803,7 +2186,7 @@ int* slsDetector::getDataFromDetectorNoWait() {
 
 
 
-int* slsDetector::popDataQueue() {
+int* multiSlsDetector::popDataQueue() {
   int *retval=NULL;
   if( !dataQueue.empty() ) {
     retval=dataQueue.front();
@@ -2812,7 +2195,7 @@ int* slsDetector::popDataQueue() {
   return retval;
 }
 
-detectorData* slsDetector::popFinalDataQueue() {
+detectorData* multiSlsDetector::popFinalDataQueue() {
   detectorData *retval=NULL;
   if( !finalDataQueue.empty() ) {
     retval=finalDataQueue.front();
@@ -2821,7 +2204,7 @@ detectorData* slsDetector::popFinalDataQueue() {
   return retval;
 }
 
-void slsDetector::resetDataQueue() {
+void multiSlsDetector::resetDataQueue() {
   int *retval=NULL;
   while( !dataQueue.empty() ) {
     retval=dataQueue.front();
@@ -2831,7 +2214,7 @@ void slsDetector::resetDataQueue() {
  
 }
 
-void slsDetector::resetFinalDataQueue() {
+void multiSlsDetector::resetFinalDataQueue() {
   detectorData *retval=NULL;
   while( !finalDataQueue.empty() ) {
     retval=finalDataQueue.front();
@@ -2854,7 +2237,7 @@ void slsDetector::resetFinalDataQueue() {
      GATE_INTEGRATED_TIME
      }
   */
-int64_t slsDetector::setTimer(timerIndex index, int64_t t){
+int64_t multiSlsDetector::setTimer(timerIndex index, int64_t t){
   
 
   int fnum=F_SET_TIMER;
@@ -2918,7 +2301,7 @@ int64_t slsDetector::setTimer(timerIndex index, int64_t t){
 
 
 
-int slsDetector::setTotalProgress() {
+int multiSlsDetector::setTotalProgress() {
 
        int nf=1, npos=1, nscan[MAX_SCAN_LEVELS]={1,1}, nc=1;
       
@@ -2952,7 +2335,7 @@ int slsDetector::setTotalProgress() {
 }
 
 
-float slsDetector::getCurrentProgress() {
+float multiSlsDetector::getCurrentProgress() {
 
   return 100.*((float)thisDetector->progressIndex)/((float)thisDetector->totalProgress);
 }
@@ -2981,7 +2364,7 @@ enum speedVariable {
 };
 */
 
-int slsDetector::setSpeed(speedVariable sp, int value) {
+int multiSlsDetector::setSpeed(speedVariable sp, int value) {
 
 
   int fnum=F_SET_SPEED;
@@ -3034,7 +2417,7 @@ int slsDetector::setSpeed(speedVariable sp, int value) {
 
 
 
-int64_t slsDetector::getTimeLeft(timerIndex index){
+int64_t multiSlsDetector::getTimeLeft(timerIndex index){
   
 
   int fnum=F_GET_TIME_LEFT;
@@ -3086,7 +2469,7 @@ int64_t slsDetector::getTimeLeft(timerIndex index){
 
 
   // Flags
-int slsDetector::setDynamicRange(int n){
+int multiSlsDetector::setDynamicRange(int n){
 
   int fnum=F_SET_DYNAMIC_RANGE;
   int retval=-1;
@@ -3144,7 +2527,7 @@ int slsDetector::setDynamicRange(int n){
 
 /*
 
-int slsDetector::setROI(int nroi, int *xmin, int *xmax, int *ymin, int *ymax){
+int multiSlsDetector::setROI(int nroi, int *xmin, int *xmax, int *ymin, int *ymax){
 
 
 };
@@ -3162,7 +2545,7 @@ enum readOutFlags {
  
   */
 
-int slsDetector::setReadOutFlags(readOutFlags flag){
+int multiSlsDetector::setReadOutFlags(readOutFlags flag){
 
   
   int fnum=F_SET_READOUT_FLAGS;
@@ -3211,7 +2594,7 @@ enum trimMode {
   OFFLINE_TRIMMING
 }{};
   */
-int slsDetector::executeTrimming(trimMode mode, int par1, int par2, int imod){
+int multiSlsDetector::executeTrimming(trimMode mode, int par1, int par2, int imod){
   
   int fnum= F_EXECUTE_TRIMMING;
   int retval=FAIL;
@@ -3255,7 +2638,7 @@ int slsDetector::executeTrimming(trimMode mode, int par1, int par2, int imod){
 
 };
 
-float* slsDetector::decodeData(int *datain) {
+float* multiSlsDetector::decodeData(int *datain) {
   float *dataout=new float[thisDetector->nChans*thisDetector->nChips*thisDetector->nMods];
   const int bytesize=8;
 
@@ -3360,7 +2743,7 @@ float* slsDetector::decodeData(int *datain) {
     }
   */
 
-int slsDetector::setFlatFieldCorrection(string fname){
+int multiSlsDetector::setFlatFieldCorrection(string fname){
   float data[thisDetector->nModMax[X]*thisDetector->nModMax[Y]*thisDetector->nChans*thisDetector->nChips];
   //float err[thisDetector->nModMax[X]*thisDetector->nModMax[Y]*thisDetector->nChans*thisDetector->nChips];
    float xmed[thisDetector->nModMax[X]*thisDetector->nModMax[Y]*thisDetector->nChans*thisDetector->nChips];
@@ -3443,7 +2826,7 @@ int slsDetector::setFlatFieldCorrection(string fname){
   return thisDetector->correctionMask&(1<<FLAT_FIELD_CORRECTION);
 }
  
-int slsDetector::getFlatFieldCorrection(float *corr, float *ecorr) {
+int multiSlsDetector::getFlatFieldCorrection(float *corr, float *ecorr) {
   if (thisDetector->correctionMask&(1<<FLAT_FIELD_CORRECTION)) {
 #ifdef VERBOSE
     std::cout<< "Flat field correction is enabled" << std::endl;
@@ -3473,7 +2856,7 @@ int slsDetector::getFlatFieldCorrection(float *corr, float *ecorr) {
 }
 
 
-int slsDetector::flatFieldCorrect(float datain, float errin, float &dataout, float &errout, float ffcoefficient, float fferr){
+int multiSlsDetector::flatFieldCorrect(float datain, float errin, float &dataout, float &errout, float ffcoefficient, float fferr){
   float e;
 
   dataout=datain*ffcoefficient;
@@ -3491,7 +2874,7 @@ int slsDetector::flatFieldCorrect(float datain, float errin, float &dataout, flo
   return 0;
 };
 
-int slsDetector::flatFieldCorrect(float* datain, float *errin, float* dataout, float *errout){
+int multiSlsDetector::flatFieldCorrect(float* datain, float *errin, float* dataout, float *errout){
 #ifdef VERBOSE
     std::cout<< "Flat field correcting data" << std::endl;
 #endif
@@ -3512,7 +2895,7 @@ int slsDetector::flatFieldCorrect(float* datain, float *errin, float* dataout, f
 
 };
 
-int slsDetector::setRateCorrection(float t){
+int multiSlsDetector::setRateCorrection(float t){
   float tdead[]=defaultTDead;
 
   if (t==0) {
@@ -3538,7 +2921,7 @@ int slsDetector::setRateCorrection(float t){
 }
 
 
-int slsDetector::getRateCorrection(float &t){
+int multiSlsDetector::getRateCorrection(float &t){
 
   if (thisDetector->correctionMask&(1<<RATE_CORRECTION)) {
 #ifdef VERBOSE
@@ -3554,7 +2937,7 @@ int slsDetector::getRateCorrection(float &t){
     return 0;
 };
 
-float slsDetector::getRateCorrectionTau(){
+float multiSlsDetector::getRateCorrectionTau(){
 
   if (thisDetector->correctionMask&(1<<RATE_CORRECTION)) {
 #ifdef VERBOSE
@@ -3575,7 +2958,7 @@ float slsDetector::getRateCorrectionTau(){
 
 
 
-int slsDetector::getRateCorrection(){
+int multiSlsDetector::getRateCorrection(){
 
   if (thisDetector->correctionMask&(1<<RATE_CORRECTION)) {
     return 1;
@@ -3586,7 +2969,7 @@ int slsDetector::getRateCorrection(){
 
 
 
- int slsDetector::rateCorrect(float datain, float errin, float &dataout, float &errout, float tau, float t){
+ int multiSlsDetector::rateCorrect(float datain, float errin, float &dataout, float &errout, float tau, float t){
 
    // float data;
    float e;
@@ -3607,7 +2990,7 @@ int slsDetector::getRateCorrection(){
 };
 
 
-int slsDetector::rateCorrect(float* datain, float *errin, float* dataout, float *errout){
+int multiSlsDetector::rateCorrect(float* datain, float *errin, float* dataout, float *errout){
   float tau=thisDetector->tDead;
   float t=thisDetector->timerValue[ACQUISITION_TIME];
   // float data;
@@ -3631,7 +3014,7 @@ int slsDetector::rateCorrect(float* datain, float *errin, float* dataout, float 
 };
 
 
-int slsDetector::setBadChannelCorrection(string fname){
+int multiSlsDetector::setBadChannelCorrection(string fname){
   ifstream infile;
   string str;
   int interrupt=0;
@@ -3714,7 +3097,7 @@ int slsDetector::setBadChannelCorrection(string fname){
   return thisDetector->nBadChans;
 }
 
-int slsDetector::getBadChannelCorrection(int *bad) {
+int multiSlsDetector::getBadChannelCorrection(int *bad) {
   int ichan;
   if (thisDetector->correctionMask&(1<< DISCARD_BAD_CHANNELS)) {
     if (bad) {
@@ -3729,7 +3112,7 @@ int slsDetector::getBadChannelCorrection(int *bad) {
 }
 
 
-int slsDetector::fillBadChannelMask() {
+int multiSlsDetector::fillBadChannelMask() {
 
   if (thisDetector->correctionMask&(1<< DISCARD_BAD_CHANNELS)) {
     if (badChannelMask) 
@@ -3764,11 +3147,12 @@ int slsDetector::fillBadChannelMask() {
 
 }
 
-int slsDetector::exitServer(){  
+int multiSlsDetector::exitServer(){  
   
   int retval;
   int fnum=F_EXIT_SERVER;
- 
+  
+  
   if (thisDetector->onlineFlag==ONLINE_FLAG) {
   if (controlSocket) {
     controlSocket->Connect();
@@ -3777,13 +3161,12 @@ int slsDetector::exitServer(){
     controlSocket->Disconnect();
   }
   }
-  if (retval!=OK) {
+  if (retval==OK) {
     std::cout<< std::endl;
     std::cout<< "Shutting down the server" << std::endl;
     std::cout<< std::endl;
   }
   return retval;
-
 };
 
 
@@ -3801,7 +3184,7 @@ int slsDetector::exitServer(){
       \param fname for script ("" disable but leaves script unchanged, "none" disables and overwrites)
       \returns 0 if action disabled, >0 otherwise
   */
-int slsDetector::setAction(int iaction, string fname, string par) {
+int multiSlsDetector::setAction(int iaction, string fname, string par) {
 
   if (iaction>=0 && iaction<MAX_ACTIONS) {
 
@@ -3852,7 +3235,7 @@ int slsDetector::setAction(int iaction, string fname, string par) {
 }
 
 
-int slsDetector::setActionScript(int iaction, string fname) {
+int multiSlsDetector::setActionScript(int iaction, string fname) {
 #ifdef VERBOSE
   
 #endif
@@ -3861,7 +3244,7 @@ int slsDetector::setActionScript(int iaction, string fname) {
 
 
 
-int slsDetector::setActionParameter(int iaction, string par) {
+int multiSlsDetector::setActionParameter(int iaction, string par) {
   if (iaction>=0 && iaction<MAX_ACTIONS) {
 
     if (par!="") {
@@ -3884,7 +3267,7 @@ int slsDetector::setActionParameter(int iaction, string par) {
       \param iaction can be enum {startScript, scriptBefore, headerBefore, headerAfter,scriptAfter, stopScript}
       \returns action script
   */
-string slsDetector::getActionScript(int iaction){
+string multiSlsDetector::getActionScript(int iaction){
   if (iaction>=0 && iaction<MAX_ACTIONS) 
     return string(thisDetector->actionScript[iaction]);
   else
@@ -3896,7 +3279,7 @@ string slsDetector::getActionScript(int iaction){
 	\param iaction can be enum {startScript, scriptBefore, headerBefore, headerAfter,scriptAfter, stopScript}
 	\returns action parameter
     */
-string slsDetector::getActionParameter(int iaction){
+string multiSlsDetector::getActionParameter(int iaction){
   if (iaction>=0 && iaction<MAX_ACTIONS) 
     return string(thisDetector->actionParameter[iaction]);
   else
@@ -3908,7 +3291,7 @@ string slsDetector::getActionParameter(int iaction){
 	\param iaction can be enum {startScript, scriptBefore, headerBefore, headerAfter,scriptAfter, stopScript}
 	\returns action mode
     */
-int slsDetector::getActionMode(int iaction){
+int multiSlsDetector::getActionMode(int iaction){
   if (iaction>=0 && iaction<MAX_ACTIONS) {
 #ifdef VERBOSE
     cout << "slsDetetctor : action " << iaction << " mode is " <<  thisDetector->actionMode[iaction] << endl;
@@ -3929,7 +3312,7 @@ int slsDetector::getActionMode(int iaction){
       \param fname for script ("" disable)
       \returns 0 if scan disabled, >0 otherwise
   */
-int slsDetector::setScan(int iscan, string script, int nvalues, float *values, string par, int precision) {
+int multiSlsDetector::setScan(int iscan, string script, int nvalues, float *values, string par, int precision) {
   if (iscan>=0 && iscan<MAX_SCAN_LEVELS) {
 
     if (script=="") {
@@ -4001,7 +3384,7 @@ int slsDetector::setScan(int iscan, string script, int nvalues, float *values, s
   
 }
 
-int slsDetector::setScanScript(int iscan, string script) {
+int multiSlsDetector::setScanScript(int iscan, string script) {
  if (iscan>=0 && iscan<MAX_SCAN_LEVELS) {
     if (script=="") {
       thisDetector->scanMode[iscan]=0;
@@ -4058,7 +3441,7 @@ int slsDetector::setScanScript(int iscan, string script) {
 
 
 
-int slsDetector::setScanParameter(int iscan, string par) {
+int multiSlsDetector::setScanParameter(int iscan, string par) {
 
 
   if (iscan>=0 && iscan<MAX_SCAN_LEVELS) {
@@ -4071,7 +3454,7 @@ int slsDetector::setScanParameter(int iscan, string par) {
 }
 
 
-int slsDetector::setScanPrecision(int iscan, int precision) {
+int multiSlsDetector::setScanPrecision(int iscan, int precision) {
   if (iscan>=0 && iscan<MAX_SCAN_LEVELS) {
     if (precision>=0)
       thisDetector->scanPrecision[iscan]=precision;
@@ -4081,7 +3464,7 @@ int slsDetector::setScanPrecision(int iscan, int precision) {
 
 }
 
-int slsDetector::setScanSteps(int iscan, int nvalues, float *values) {
+int multiSlsDetector::setScanSteps(int iscan, int nvalues, float *values) {
 
   if (iscan>=0 && iscan<MAX_SCAN_LEVELS) {
   
@@ -4133,7 +3516,7 @@ int slsDetector::setScanSteps(int iscan, int nvalues, float *values) {
       \param iscan can be (0,1) 
       \returns scan script
   */
-string slsDetector::getScanScript(int iscan){
+string multiSlsDetector::getScanScript(int iscan){
   if (iscan>=0 && iscan<MAX_SCAN_LEVELS) {
       if (thisDetector->scanMode[iscan])
 	return string(thisDetector->scanScript[iscan]);
@@ -4149,7 +3532,7 @@ string slsDetector::getScanScript(int iscan){
 	\param iscan can be (0,1)
 	\returns scan parameter
     */
-string slsDetector::getScanParameter(int iscan){
+string multiSlsDetector::getScanParameter(int iscan){
   if (iscan>=0 && iscan<MAX_SCAN_LEVELS) {
     if (thisDetector->scanMode[iscan])
       return string(thisDetector->scanParameter[iscan]);
@@ -4165,7 +3548,7 @@ string slsDetector::getScanParameter(int iscan){
 	\param iscan can be (0,1)
 	\returns scan mode
     */
-int slsDetector::getScanMode(int iscan){
+int multiSlsDetector::getScanMode(int iscan){
   if (iscan>=0 && iscan<MAX_SCAN_LEVELS)
     return thisDetector->scanMode[iscan];
   else
@@ -4179,7 +3562,7 @@ int slsDetector::getScanMode(int iscan){
 	\param v is the pointer to the scan steps
 	\returns scan steps
     */
-int slsDetector::getScanSteps(int iscan, float *v) {
+int multiSlsDetector::getScanSteps(int iscan, float *v) {
 
   if (iscan>=0 && iscan<MAX_SCAN_LEVELS) {
     if (v) {
@@ -4214,7 +3597,7 @@ int slsDetector::getScanSteps(int iscan, float *v) {
 }
 
 
-int slsDetector::getScanPrecision(int iscan){
+int multiSlsDetector::getScanPrecision(int iscan){
   if (iscan>=0 && iscan<MAX_SCAN_LEVELS) {
     return thisDetector->scanPrecision[iscan];
   } else
@@ -4239,42 +3622,3 @@ int slsDetector::getScanPrecision(int iscan){
 
 
 
-
-
-/*
-void slsDetector::startThread() {
-  pthread_attr_t tattr, mattr;
-  int ret;
-  int newprio;
-  sched_param param, mparam;
-  void *arg;
-  int policy= SCHED_OTHER;
-
-  ret = pthread_attr_init(&tattr);
-
-  // set the priority; others are unchanged
-  //newprio = 30;
-  mparam.sched_priority = 30;
-  // scheduling parameters of main thread 
-  ret = pthread_setschedparam(pthread_self(), policy, &mparam);
-
-
-  printf("current priority is %d\n",param.sched_priority);
-  ret = pthread_create(&dataProcessingThread, NULL,startProcessData, (void*)this);
-
-
-  param.sched_priority = 1;
-  // scheduling parameters of target thread
-  ret = pthread_setschedparam(dataProcessingThread, policy, &param);
-
-
-}
-
-void* startProcessData(void *n) {
-
-  //void* processData(void *n) {
-  void *w;
-  slsDetector *myDet=(slsDetector*)n;
-  myDet->processData(0);
-}
-*/

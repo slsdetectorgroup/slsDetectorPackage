@@ -1,8 +1,8 @@
 
 
 
-#ifndef MYTHEN_DETECTOR_H
-#define MYTHEN_DETECTOR_H
+#ifndef GOTTHARD_DETECTOR_H
+#define GOTTHARD_DETECTOR_H
 
 //#include <ostream>
 #include "slsDetector.h"
@@ -12,7 +12,7 @@
 
 //using namespace std;
 /**
- \mainpage C++ class with MYTHEN specific functions
+ \mainpage C++ class with GOTTHARD specific functions
  *
  
 
@@ -22,7 +22,7 @@
 
 
 
-class mythenDetector : public slsDetector{
+class gotthardDetector : public slsDetector{
 
   
   
@@ -30,13 +30,17 @@ class mythenDetector : public slsDetector{
   /** 
       (default) constructor 
   */
-  mythenDetector(int id=0, detectorType t=MYTHEN) : slsDetector(t, id){};
+  gotthardDetector(int id=0, detectorType t=GOTTHARD) : slsDetector(t, id){};
   //slsDetector(string  const fname);
   //  ~slsDetector(){while(dataQueue.size()>0){}};
   /** destructor */ 
-  virtual ~mythenDetector(){};
+  virtual ~gotthardDetector(){};
+   
+
+  char* gotthardStringname(string name);
 
 
+ 
   /**
      executes a set of string arguments according to a given format. It is used to read/write configuration file, dump and retrieve detector settings and for the command line interface command parsing
      \param narg number of arguments
@@ -316,6 +320,14 @@ enum {GET_ACTION, PUT_ACTION, READOUT_ACTION};
   */
   runStatus getRunStatus();
 
+
+  /**
+   get current temperature 
+      \returns current temperature
+  */
+
+  float getTemperature(int imod=0);
+
  private:
   /**
     start data processing thread
@@ -331,6 +343,8 @@ enum {GET_ACTION, PUT_ACTION, READOUT_ACTION};
  /** data queue size */
   int queuesize;
 };
+
+
 
 static void* startProcessData(void *n);
 static void* startProcessDataNoDelete(void *n);

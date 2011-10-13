@@ -5,12 +5,12 @@
 WD=$(shell pwd)
 LIBRARYDIR=$(WD)/slsDetectorSoftware
 TLIBRARYDIR=$(WD)/TMythenDetector
-CLIENTDIR=$(WD)/mythenClient
+CLIENTDIR=$(WD)/slsDetectorClient
 GUIDIR=$(WD)/mythenGUI
 LIBDOCDIR=$(WD)/slsDetectorSoftware
 
 
-all: lib mythenClient mythenGUI 
+all: lib mythenClient gotthardClient mythenGUI 
 
 
 lib:
@@ -20,7 +20,11 @@ Tlib:
 	cd $(TLIBRARYDIR) && $(MAKE) lib
 
 mythenClient: lib
-	cd $(CLIENTDIR) && $(MAKE)
+	cd $(CLIENTDIR) && $(MAKE) mythen
+	mv $(CLIENTDIR)/bin/* bin/
+
+gotthardClient: lib
+	cd $(CLIENTDIR) && $(MAKE) gotthard
 	mv $(CLIENTDIR)/bin/* bin/
 
 mythenGUI: lib Tlib 
@@ -88,6 +92,7 @@ help:
 	@echo "make lib           	compile library"
 	@echo "make tlib           	compile Root/Qt library"
 	@echo "make mythenClient  	compile mythenClient"
+	@echo "make gotthardClient  	compile gotthardClient"
 	@echo "make mythenGUI	   	compile mythenGUI"
 	@echo "make install_client     install mythenClient"
 	@echo "make install_gui        install mythenGUI"

@@ -35,7 +35,7 @@
 #define DEBUGOUT
 #endif
 
-#define CLK_FREQ 100E+6
+#define CLK_FREQ 32.1E+6
 
 
 #define THIS_SOFTWARE_VERSION 0x20100429

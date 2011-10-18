@@ -254,14 +254,14 @@ enum dacIndex {
   VSH_POT, /**< chiptest board power supply vsh */
   VIO_POT, /**< chiptest board power supply va */
   HV_POT, /**< chiptest board high voltage */
-  G_VREF_DS,  /**< gotthard */
-  G_VCASCN_PB,  /**< gotthard  */ 
-  G_VCASCP_PB,  /**< gotthard   */ 
-  G_VOUT_CM,  /**< gotthard   */ 
-  G_VCASC_OUT,  /**<  gotthard  */ 
-  G_VIN_CM,   /**< gotthard   */
-  G_VREF_COMP,  /**<  gotthard  */ 
-  G_IB_TESTC  /**< gotthard   */
+  G_VREF_DS,    /**< gotthard */
+  G_VCASCN_PB,  /**< gotthard */ 
+  G_VCASCP_PB,  /**< gotthard */ 
+  G_VOUT_CM,    /**< gotthard */ 
+  G_VCASC_OUT,  /**< gotthard */ 
+  G_VIN_CM,     /**< gotthard */
+  G_VREF_COMP,  /**< gotthard */ 
+  G_IB_TESTC    /**< gotthard */
 };
 
 /** 
@@ -461,9 +461,6 @@ enum {
 
   F_EXIT_SERVER,  /**< turnoff detector server */
 
-  F_GET_TEMPERATURE,
-  F_SET_GOTTHARD,
-  F_GET_GOTTHARD,
 
   F_GET_ACTUAL_TIME, /**< Gets the actual time of the detector's internal timer */
   F_GET_MEASUREMENT_TIME  /**< Gets the time of the measurement from the detector (fifo) */

@@ -28,7 +28,7 @@ extern int nModX;
 extern int nModY;
 extern int dataBytes;
 extern int dynamicRange;
-extern int  storeInRAM;
+extern int storeInRAM;
 
 
 /* global variables for optimized readout */
@@ -36,8 +36,6 @@ extern int *ram_values;
 char *dataretval=NULL;
 int nframes, iframes, dataret;
 char mess[1000]; 
-char stringname[100]="whatever i want it to be"; 
-float default_temperature = 999.99;
 
 
 
@@ -150,9 +148,6 @@ int function_table() {
   flist[F_SET_SPEED]=&set_speed;
   flist[F_SET_READOUT_FLAGS]=&set_readout_flags;
   flist[F_EXECUTE_TRIMMING]=&execute_trimming;
-  flist[F_GET_TEMPERATURE]=&get_temperature;
-  flist[F_GET_GOTTHARD]=&getGotthard;
-  flist[F_SET_GOTTHARD]=&setGotthard;
 #ifdef VERBOSE
   /*  for (i=0;i<256;i++){
     printf("function %d located at %x\n",i,flist[i]);
@@ -2330,159 +2325,3 @@ int execute_trimming(int fnum) {
     
   return ret; 
 }
-
-
-
-
-
-
-float get_temperature(int fnum) {
-
-  float retval;
-  int ret=OK;
-  int imod,n;
-
-  n = receiveDataOnly(&imod,sizeof(imod));
-  if (n < 0) {
-    sprintf(mess,"Error reading from socket\n");
-    ret=FAIL;
-  }
-
-#ifdef VERBOSE
-  printf("Getting Temperature of module %d \n", imod);
-#endif 
-
-  /*
-  if (imod>=getNModBoard())
-    ret=FAIL;
-  if (imod<0)
-    imod=ALLMOD;
-  */
-
-  /* execute action if the arguments correctly arrived*/
-  if (ret==OK) {
-    retval = default_temperature;  //getTemperature(imod);
-  }
-
-#ifdef VERBOSE
-  printf("Temperature of module %d is %f \n",imod,retval);
-#endif  
-
-  //validate somehow if the temperature read makes sense, else ret=FAIL
-  ret=OK;
-  strcpy(mess,"Getting temperature ERROR\n");
-
-  /* send ret */
-  n = sendDataOnly(&ret,sizeof(ret));
-  if (n < 0) {
-    sprintf(mess,"Error writing to socket");
-    retval=FAIL;
-  }
-  if (ret==OK) {
-    /* send return argument */
-    n = sendDataOnly(&retval,sizeof(retval));
-    if (n < 0) {
-      sprintf(mess,"Error writing to socket");
-      ret=FAIL;
-    }
-  } else {
-    n = sendDataOnly(mess,sizeof(mess));
-  }
-
-  /*return ok/fail*/
-  return ret; 
-
-}
-
-int getGotthard(int fnum) {
-
-  int retval=OK;
-  int ret=0;
-  //  char val[100];
-  int n=0;
-  printf("in getgotthard fn\n");
- /* receive arguments
-  n = receiveDataOnly(val,sizeof(val));
-  if (n < 0) {
-    sprintf(mess,"Error reading from socket\n");
-    retval=FAIL;
-  }
- */
-  /* execute action if the arguments correctly arrived*/
-  if (retval==OK) {
-
-    printf("getting stringname %s\n", stringname);
-
-  }
-
-   /* send ret */
-  n = sendDataOnly(&ret,sizeof(ret));
-  if (n < 0) {
-    sprintf(mess,"Error writing to socket");
-    retval=FAIL;
-  }
- 
-  /* send answer */
-  n = sendDataOnly(stringname,sizeof(stringname));
-  if (n < 0) {
-    sprintf(mess,"Error writing to socket");
-    retval=FAIL;
-  }
-
-  if(retval==FAIL)
-    sendDataOnly(mess,sizeof(mess));
- 
-
-
-  /*return ok/fail*/
-  return retval; 
- 
-}
-
-int setGotthard(int fnum) {
- int retval=OK;
-  int ret=0;
-  char val[100];
-  int n=0;
-  printf("in setgotthard fn\n");
- /* receive arguments */
-  n = receiveDataOnly(val,sizeof(val));
-  if (n < 0) {
-    sprintf(mess,"Error reading from socket\n");
-    retval=FAIL;
-  }
-
-  /* execute action if the arguments correctly arrived*/
-  if (retval==OK) {
-
-    printf("setting stringname %s\n", val);
-
-  }
-
-  strcpy(stringname, val);
-
-   /* send ret */
-  n = sendDataOnly(&ret,sizeof(ret));
-  if (n < 0) {
-    sprintf(mess,"Error writing to socket");
-    retval=FAIL;
-  }
- 
-  /* send answer */
-  n = sendDataOnly(stringname,sizeof(stringname));
-  if (n < 0) {
-    sprintf(mess,"Error writing to socket");
-    retval=FAIL;
-  }
-
-  if(retval==FAIL)
-    sendDataOnly(mess,sizeof(mess));
-
-  /*return ok/fail*/
-  return retval; 
-  
-}
-
-
-
-  

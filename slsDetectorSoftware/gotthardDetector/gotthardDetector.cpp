@@ -6,72 +6,6 @@
 //using namespace std;
 
 
-char* gotthardDetector::gotthardStringname(string name) {
-
-  char retval[100];
-  int fnum, set=0;
-  char val[100];
-
-
-  if (name.length()==0){
-      fnum=F_GET_GOTTHARD;
-   }
-  else
-    {
-      fnum=F_SET_GOTTHARD;
-      set=1;
-      strcpy(val,name.c_str());
-    }
-  int ret=FAIL;
-
-
-  char mess[100];
-   // int arg[1];
-  // arg[0]=name;
- 
-
-  //#ifdef VERBOSE
-  std::cout<< std::endl;
-  if(set)
-    std::cout<< "Setting Stringname" << std::endl; 
-  else
-    std::cout<< "Retreiving stringname" << std::endl; 
-  //#endif
-
- 
-    if (controlSocket) {
-      std::cout<< "controlsocket worked\n";
-      if  (controlSocket->Connect()>=0) {
-	 std::cout<< "connectsocket worked\n";
-	 std::cout<<"fnum:"<<fnum<<endl;
-	controlSocket->SendDataOnly(&fnum,sizeof(fnum));
-	//controlSocket->SendDataOnly(arg,sizeof(arg));
-	if(set)
-	  controlSocket->SendDataOnly(val,sizeof(val));
-	controlSocket->ReceiveDataOnly(&ret,sizeof(ret));
-	if (ret==OK) {
-	  controlSocket->ReceiveDataOnly(&retval,sizeof(retval));
-	} else {
-	  controlSocket->ReceiveDataOnly(mess,sizeof(mess));
-	  std::cout<< "Detector returned error: " << mess << std::endl;
-	}
-	controlSocket->Disconnect();
-      }
-	
-    }
-  
-    //#ifdef VERBOSE
-  std::cout<< "Stringname set to "<< retval << std::endl;
-  //#endif
-  if (ret==FAIL) {
-    std::cout<< "Setting/Getting  stringname failed " << std::endl;
-  }
-  return retval;
-
-}
-
-
-
 string gotthardDetector::executeLine(int narg, char *args[], int action) {
 
 
@@ -163,25 +97,7 @@ string gotthardDetector::executeLine(int narg, char *args[], int action) {
     return string("more questions? Refere to software documentation!");
   }
 
-  if (var=="gotthardString") 
-    {	setTCPSocket();
-	if (action==PUT_ACTION) 
-	  {
-	    	sval=string(args[1]);
-	    std::cout<<"in setting\n";
-	    sval=string(args[1]);
-	    gotthardStringname(sval);
-	  }
-	std::cout<<"in getting\n";
-	strcpy(answer, gotthardStringname(""));
-	return string(answer);
-    } else if (var=="exitserver") {
-   setTCPSocket();
-    ival=exitServer();
-    if(ival!=OK)
-      return string("Closing Server..");
-    else return string("Error closing server\n");
-  } else if (var=="hostname") { 
+  if (var=="hostname") { 
       if (action==PUT_ACTION) {
 	setTCPSocket(args[1]);
       } 
@@ -903,14 +819,7 @@ string gotthardDetector::executeLine(int narg, char *args[], int action) {
        return string(answer);
       }
 
- else if (var=="temp") { 
-       if (action==PUT_ACTION) {
-	return string("cannot set");
-      }
-      sprintf(answer,"%f",getTemperature());
-      return string(answer);
-  }
-
+  //////////////////////////////////////////////////////////////////////enter new stuff here if required
   //timers
 
   else if (var=="exptime") {
@@ -3302,44 +3211,3 @@ int gotthardDetector::getPositions(float *pos){
   return     thisDetector->numberOfPositions;
 };
   
-
-
-float gotthardDetector::getTemperature(int imod){
-
-  float retval;
-  int fnum=F_GET_TEMPERATURE;
-  int ret=FAIL;
-  char mess[100];
-  //int arg = imod;
-
-  //#ifdef VERBOSE
-  std::cout<< "GOTTHARD Getting  Temperature of module "<< imod <<  std::endl;
-  //#endif
-  if (thisDetector->onlineFlag==ONLINE_FLAG) {
-
-      std::cout<< "onlineflag worked\n";
-    if (controlSocket) {
-      std::cout<< "controlsocket worked\n";
-      if  (controlSocket->Connect()>=0) {
-	controlSocket->SendDataOnly(&fnum,sizeof(fnum));
-	controlSocket->SendDataOnly(&imod,sizeof(imod));
-	controlSocket->ReceiveDataOnly(&ret,sizeof(ret));
-	if (ret==OK) {
-	  controlSocket->ReceiveDataOnly(&retval,sizeof(retval));
-	} else {
-	  controlSocket->ReceiveDataOnly(mess,sizeof(mess));
-	  std::cout<< "Detector returned error: " << mess << std::endl;
-	}
-	controlSocket->Disconnect();
-      }
-    }
-  }
-  //#ifdef VERBOSE
-  std::cout<< "Temperature is "<< retval << std::endl;
-  //#endif
-  if (ret==FAIL) {
-    std::cout<< "Getting temperature failed " << std::endl;
-  }
-  return retval;
-
-}

@@ -141,7 +141,7 @@ int multiSlsDetector::setTCPSocket(int i, string const name, int const control_p
 
 char* multiSlsDetector::getHostname(int i) {
   if (i<0)
-    return FAIL;
+    return NULL;
   if (detectors[i])
     return detectors[i]->getHostname();
   else
@@ -174,9 +174,6 @@ int multiSlsDetector::getControlPort(int i) {
 }
 
 int multiSlsDetector::getDataPort(int i) {
-
-
-
 
   int imin=0, imax=nDetectors;
   int ret=-1, err=0;

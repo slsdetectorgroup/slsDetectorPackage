@@ -225,12 +225,14 @@ int MySocketTCP::SendDataOnly(void* buf,int length){//length in characters
 
   cout << "want to send "<< length << " Bytes" << endl; 
 #endif
-
+  int nsending;
+  int nsent;
   if (file_des<0) return -1;
   int total_sent=0;
+  
   while(length>0){
-    int nsending = (length>send_rec_max_size) ? send_rec_max_size:length;
-    int nsent = write(file_des,(char*)buf+total_sent,nsending); 
+    nsending = (length>send_rec_max_size) ? send_rec_max_size:length;
+    nsent = write(file_des,(char*)buf+total_sent,nsending); 
     if(!nsent) break;
     length-=nsent;
     total_sent+=nsent;
@@ -268,13 +270,14 @@ int MySocketTCP::ReceiveDataOnly(void* buf,int length){//length in characters
 #ifdef VERY_VERBOSE
   cout << "want to receive "<< length << " Bytes" << endl; 
 #endif
-
+  int nreceiving;
+  int nreceived;
   while(length>0){
-    int nreceiving = (length>send_rec_max_size) ? send_rec_max_size:length;
+    nreceiving = (length>send_rec_max_size) ? send_rec_max_size:length;
 #ifdef VERY_VERBOSE
   cout << "start to receive "<< nreceiving << " Bytes" << endl; 
 #endif
-    int nreceived = read(file_des,(char*)buf+total_received,nreceiving);
+    nreceived = read(file_des,(char*)buf+total_received,nreceiving);
 #ifdef VERY_VERBOSE
     cout << "received "<< nreceived << " Bytes on fd " << file_des  << endl; 
 #endif 

@@ -172,9 +172,9 @@ class multiSlsDetector : public slsDetector {
 
   /* I/O */
   /** returns the detector trimbit directory  \sa sharedSlsDetector */
-  char* getTrimDir(int i=-1);
+  char* getSettingsDir(int i=-1);
   /** sets the detector trimbit directory  \sa sharedSlsDetector */
-  char* setTrimDir(string s, int i=-1);
+  char* setSettingsDir(string s, int i=-1);
   /** returns the number of trim energies and their value  \sa sharedSlsDetector 
    \param point to the array that will contain the trim energies (in ev)
   \returns number of trim energies

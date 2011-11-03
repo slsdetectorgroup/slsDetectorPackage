@@ -52,9 +52,16 @@
 #define SET_TRAINS_LSB_REG    0x01E000   
 #define SET_TRAINS_MSB_REG    0x01F000   
 #define GET_TRAINS_LSB_REG    0x020000   
-#define GET_TRAINS_MSB_REG    0x021000   
+#define GET_TRAINS_MSB_REG    0x021000 
+  
 
 #define GET_SHIFT_IN_REG      0x022000   
+
+#define GET_MEASUREMENT_TIME_LSB_REG    0x023000   
+#define GET_MEASUREMENT_TIME_MSB_REG    0x024000 
+  
+#define GET_ACTUAL_TIME_LSB_REG    0x025000   
+#define GET_ACTUAL_TIME_MSB_REG    0x026000   
 
 #define MOD_DACS1_REG         0x030000  
 #define MOD_DACS2_REG         0x040000   

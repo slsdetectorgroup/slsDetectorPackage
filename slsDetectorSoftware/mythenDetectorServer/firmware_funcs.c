@@ -580,10 +580,14 @@ int64_t set64BitReg(int64_t value, int aLSB, int aMSB){
 int64_t get64BitReg(int aLSB, int aMSB){
   int64_t v64;
   u_int32_t vLSB,vMSB;
-  vLSB=bus_r(aLSB);
   vMSB=bus_r(aMSB);
+  vLSB=bus_r(aLSB);
   v64=vMSB;
   v64=(v64<<32) | vLSB;
+#ifdef VERBOSE
+  printf("MSB %08x LSB %08x, %016llx\n", vMSB, vLSB, v64);
+#endif
+
   return v64;
 }
   
@@ -696,6 +700,23 @@ int64_t getProgress() {
   //should be done in firmware!!!!
   
 
+}
+
+
+int64_t getActualTime(){
+  return get64BitReg(GET_ACTUAL_TIME_LSB_REG, GET_ACTUAL_TIME_MSB_REG)/(1E-9*CLK_FREQ);  
+}
+
+int64_t getMeasurementTime(){
+  int64_t v=get64BitReg(GET_MEASUREMENT_TIME_LSB_REG, GET_MEASUREMENT_TIME_MSB_REG);
+  int64_t mask=0x8000000000000000;
+  if (v & mask ) {
+#ifdef VERBOSE
+    printf("no measurement time left\n");
+#endif
+    return -1E+9;
+  } else
+    return v/(1E-9*CLK_FREQ);
 }
 
 

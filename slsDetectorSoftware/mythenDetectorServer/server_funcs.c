@@ -74,7 +74,7 @@ int decode_function() {
 #endif 
   n = receiveDataOnly(&fnum,sizeof(fnum));
   if (n <= 0) {
-    printf("ERROR reading from socket %d", n);
+    printf("ERROR reading from socket %d\n", n);
     return FAIL;
   }
 #ifdef VERBOSE
@@ -1965,6 +1965,12 @@ int get_time_left(int fnum) {
     case PROGRESS: 
       retval=getProgress();
       break;
+    case ACTUAL_TIME:
+      retval=getActualTime();
+      break;
+    case MEASUREMENT_TIME: 
+      retval=getMeasurementTime();
+      break;
     default:
       ret=FAIL;
       sprintf(mess,"timer index unknown %d\n",ind);
@@ -1976,12 +1982,21 @@ int get_time_left(int fnum) {
     printf("get time left failed\n");
   }
 
+#ifdef VERBOSE
+
+  printf("time left on timer %d is %lld\n",ind, retval);
+#endif 
+
   n = sendDataOnly(&ret,sizeof(ret));
   if (ret!=OK) {
     n += sendDataOnly(mess,sizeof(mess));
   } else {
     n = sendDataOnly(&retval,sizeof(retval));
   }
+#ifdef VERBOSE
+
+  printf("data sent\n");
+#endif 
 
   return ret; 
 

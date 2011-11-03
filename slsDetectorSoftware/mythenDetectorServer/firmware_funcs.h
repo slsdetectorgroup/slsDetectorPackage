@@ -78,7 +78,8 @@ int64_t getProbes();
 int64_t getProgress();
 int64_t setProgress();
 
-
+int64_t getActualTime();
+int64_t getMeasurementTime();
 
 u_int32_t runBusy(void); 
 u_int32_t runState(void); 

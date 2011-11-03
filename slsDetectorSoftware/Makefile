@@ -29,15 +29,17 @@ picassoServer:  $(SRC_MYTHEN_SVC)
 
 
 
-package: $(SRC_CLNT)
+package: $(SRC_CLNT)	
+#	$(CXX) -fPIC -g -o objs/multiSlsDetector.o -c -Wall multiSlsDetector/multiSlsDetector.cpp $(INCLUDES) $(FLAGS) 
 	$(CXX) -fPIC -g -o objs/slsDetector.o -c -Wall slsDetector/slsDetector.cpp $(INCLUDES) $(FLAGS) 
 #	$(CXX) -fPIC -g -o objs/eigerDetector.o -c -Wall eigerDetector/eigerDetector.cpp $(INCLUDES) $(FLAGS) 
 	$(CXX) -fPIC -g -o objs/mythenDetector.o -c -Wall mythenDetector/mythenDetector.cpp $(INCLUDES) $(FLAGS) 
 	$(CXX) -fPIC -g -o objs/gotthardDetector.o -c -Wall gotthardDetector/gotthardDetector.cpp $(INCLUDES) $(FLAGS) 
 	$(CXX) -fPIC -g -o objs/usersFunctions.o -c -Wall usersFunctions/usersFunctions.c $(INCLUDES) $(FLAGS) $(EPICSFLAGS)
-	$(CXX) -fPIC -g -o objs/MySocketTCP.o -c -Wall MySocketTCP/MySocketTCP.cxx $(INCLUDES) $(FLAGS) 
-	$(CXX) -shared -Wl,-soname,libSlsDetector.so.1 -o libSlsDetector.so.1.0.1 objs/slsDetector.o   objs/mythenDetector.o  objs/gotthardDetector.o objs/usersFunctions.o  objs/MySocketTCP.o  -lc $(INCLUDES) $(FLAGS) $(EPICSFLAGS)
+	$(CXX) -fPIC -g -o objs/MySocketTCP.o -c -Wall MySocketTCP/MySocketTCP.cpp $(INCLUDES) $(FLAGS) 
+	$(CXX) -shared -Wl,-soname,libSlsDetector.so.1 -o libSlsDetector.so.1.0.1  objs/slsDetector.o   objs/mythenDetector.o  objs/gotthardDetector.o objs/usersFunctions.o  objs/MySocketTCP.o  -lc $(INCLUDES) $(FLAGS) $(EPICSFLAGS)
 	ln -sf libSlsDetector.so.1.0.1  libSlsDetector.so
+	ln -sf libSlsDetector.so.1  libSlsDetector.so
 	ar  rcs libSlsDetector.a      objs/slsDetector.o   objs/mythenDetector.o  objs/gotthardDetector.o  objs/usersFunctions.o  objs/MySocketTCP.o
 
 clean:

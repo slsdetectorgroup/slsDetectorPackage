@@ -6082,7 +6082,7 @@ int slsDetector::finalizeMerging(float *mp, float *mv, float *me, int *mm) {
       np++;
     }
   }
-  return OK;
+  return np;
 }
 
 int  slsDetector::addToMerging(float *p1, float *v1, float *e1, float *mp, float *mv,float *me, int *mm) {
@@ -6567,11 +6567,12 @@ void* slsDetector::processData(int delflag) {
 	/** write raw data file */	   
 	if (thisDetector->correctionMask==0 && delflag==1) {
 
-
-	  writeDataFile (fname.append(".raw"), fdata, NULL, NULL, 'i'); 
+	  //cout << "line 6570----" << endl;
+	  writeDataFile (fname+string(".raw"), fdata, NULL, NULL, 'i'); 
 	  delete [] fdata;
 	} else {
-	  writeDataFile (fname.append(".raw"), fdata, NULL, NULL, 'i');
+	  //cout << "line 6574----" << endl;
+	  writeDataFile (fname+string(".raw"), fdata, NULL, NULL, 'i');
 
 	  /** rate correction */
 	  if (thisDetector->correctionMask&(1<<RATE_CORRECTION)) {
@@ -6628,23 +6629,29 @@ void* slsDetector::processData(int delflag) {
 	      ang[ip]=angle(ip%(thisDetector->nChans*thisDetector->nChips),currentPosition,thisDetector->fineOffset+thisDetector->globalOffset,thisDetector->angOff[imod].r_conversion,thisDetector->angOff[imod].center, thisDetector->angOff[imod].offset,thisDetector->angOff[imod].tilt,thisDetector->angDirection);
 	    }
 	    
-	    if (thisDetector->correctionMask!=0)
-	      writeDataFile (fname.append(".dat"), ffcdata, ffcerr,ang);
+	    if (thisDetector->correctionMask!=0) {
+	      //cout << "line 6633----" << endl; 
+	      if (thisDetector->numberOfPositions>1)
+		writeDataFile (fname+string(".dat"), ffcdata, ffcerr,ang);
+	    }
 	    addToMerging(ang, ffcdata, ffcerr, mergingBins, mergingCounts,mergingErrors, mergingMultiplicity);
+	    
 	    if ((currentPositionIndex==thisDetector->numberOfPositions) || (currentPositionIndex==0)) {
 	      np=finalizeMerging(mergingBins, mergingCounts,mergingErrors, mergingMultiplicity);
 	      /** file writing */
 	      currentPositionIndex++;
 	      fname=createFileName();
-	      if (thisDetector->correctionMask!=0)
-		writeDataFile (fname.append(".dat"),mergingCounts, mergingErrors, mergingBins,'f',np);
+	      if (thisDetector->correctionMask!=0) {
+		//	cout << "line 6643----" << endl; 
+		writeDataFile (fname+string(".dat"),mergingCounts, mergingErrors, mergingBins,'f',np);
+	      }
 	      if (delflag) {
 		delete [] mergingBins;
 		delete [] mergingCounts;
 		delete [] mergingErrors;
 		delete [] mergingMultiplicity;
 	      } else {
-		thisData=new detectorData(mergingCounts,mergingErrors,mergingBins,getCurrentProgress(),(fname.append(ext)).c_str(),np);/*
+		thisData=new detectorData(mergingCounts,mergingErrors,mergingBins,getCurrentProgress(),(fname+string(ext)).c_str(),np);/*
 		if (thisDetector->correctionMask!=0) {
 		  //thisData=new detectorData(mergingCounts,mergingErrors,mergingBins,thisDetector->progressIndex+1,(fname().append(".dat")).c_str(),np);
 		  thisData=new detectorData(mergingCounts,mergingErrors,mergingBins,getCurrentProgress(),(fname().append(".dat")).c_str(),np);
@@ -6664,7 +6671,8 @@ void* slsDetector::processData(int delflag) {
 	      delete [] ang;
 	  } else {
 	    if (thisDetector->correctionMask!=0) {
-	      writeDataFile (fname.append(".dat"), ffcdata, ffcerr);
+	      // cout << "line 6672----" << endl; 
+	      writeDataFile (fname+string(".dat"), ffcdata, ffcerr);
 	    }
 	    if (delflag) {
 	      if (ffcdata)
@@ -6674,7 +6682,7 @@ void* slsDetector::processData(int delflag) {
 	      if (ang)
 		delete [] ang;
 	    } else {
-	      thisData=new detectorData(ffcdata,ffcerr,NULL,getCurrentProgress(),(fname.append(ext)).c_str(),thisDetector->nChans*thisDetector->nChips*thisDetector->nMods);/*
+	      thisData=new detectorData(ffcdata,ffcerr,NULL,getCurrentProgress(),(fname+string(ext)).c_str(),thisDetector->nChans*thisDetector->nChips*thisDetector->nMods);/*
 	      if (thisDetector->correctionMask!=0) {
 		thisData=new detectorData(ffcdata,ffcerr,NULL,getCurrentProgress(),(fname().append(".dat")).c_str(),thisDetector->nChans*thisDetector->nChips*thisDetector->nMods);
 		//thisData=new detectorData(ffcdata,ffcerr,NULL,thisDetector->progressIndex+1,(fname().append(".dat")).c_str(),thisDetector->nChans*thisDetector->nChips*thisDetector->nMods);

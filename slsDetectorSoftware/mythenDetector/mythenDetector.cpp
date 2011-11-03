@@ -562,6 +562,10 @@ int mythenDetector::writeSettingsFile(string fname, int imod){
 
 
 int mythenDetector::writeDataFile(string fname, float *data, float *err, float *ang, char dataformat, int nch){
+
+
+
+
   if (nch==-1)
     nch=thisDetector->nChans*thisDetector->nChips*thisDetector->nMods;
 

@@ -35,6 +35,9 @@ extern "C" {
   int go_to_position(float p);
   int go_to_position_no_wait(float p);
 
+  int connect_channels();
+  int disconnect_channels();
+
 
   float get_i0();
   

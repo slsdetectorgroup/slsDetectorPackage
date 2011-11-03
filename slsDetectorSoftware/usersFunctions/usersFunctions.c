@@ -198,3 +198,5 @@ float get_i0() {
   return i0++;
 }
   
+int disconnect_channels() { }
+int connect_channels() {}

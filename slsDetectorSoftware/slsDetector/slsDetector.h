@@ -312,7 +312,7 @@ typedef  struct sharedSlsDetector {
   //slsDetector(string  const fname);
   //  ~slsDetector(){while(dataQueue.size()>0){}};
   /** destructor */ 
-  virtual ~slsDetector(){};
+  virtual ~slsDetector();//{ disconnect_channels();};
 
 
   /** sets the onlineFlag
@@ -348,13 +348,13 @@ typedef  struct sharedSlsDetector {
     Should be implemented in the specific detector class
     /sa mythenDetector::dumpDetectorSetup
   */
-  virtual int dumpDetectorSetup(string const fname, int level)=0;  
+  virtual int dumpDetectorSetup(string const fname, int level=0)=0;  
   /** 
     Purely virtual function
     Should be implemented in the specific detector class
     /sa mythenDetector::retrieveDetectorSetup
   */
-  virtual int retrieveDetectorSetup(string const fname, int level)=0;
+  virtual int retrieveDetectorSetup(string const fname, int level=0)=0;
 
   /** 
      configure the socket communication and initializes the socket instances
@@ -587,14 +587,14 @@ typedef  struct sharedSlsDetector {
       \param fname file to be read
   \sa  angleConversionConstant mythenDetector::readAngularConversion
   */
-  virtual int readAngularConversion(string fname="")=0;
+  int readAngularConversion(string fname="");
   /**
      Pure virtual function
      writes an angular conversion file
       \param fname file to be written
   \sa  angleConversionConstant mythenDetector::writeAngularConversion
   */
-  virtual int writeAngularConversion(string fname="")=0;
+  int writeAngularConversion(string fname="");
 
   /** Returns the number of channels per chip */
   int getNChans(){return thisDetector->nChans;}; //
@@ -930,7 +930,8 @@ typedef  struct sharedSlsDetector {
      get run status
     \returns status mask
   */
-  virtual runStatus  getRunStatus()=0;
+  //virtual runStatus  getRunStatus()=0;
+  runStatus  getRunStatus();
 
   /**
     start detector acquisition and read all data putting them a data queue
@@ -1161,7 +1162,7 @@ s
       \returns 0 if angular conversion disabled, >0 otherwise
       \sa mythenDetector::setAngularConversion
   */
-  virtual int setAngularConversion(string fname="")=0;
+  int setAngularConversion(string fname="");
 
   /** 
       pure virtual function
@@ -1171,41 +1172,41 @@ s
       \returns 0 if angular conversion disabled, >0 otherwise
       \sa mythenDetector::getAngularConversion
   */
-  virtual int getAngularConversion(int &direction,  angleConversionConstant *angconv=NULL)=0;
+  int getAngularConversion(int &direction,  angleConversionConstant *angconv=NULL) ;
   
   
   /**
       pure virtual function
       returns the angular conversion file
       \sa mythenDetector::getAngularConversion */
-  virtual string getAngularConversion()=0;
+  string getAngularConversion(){if (thisDetector->correctionMask&(1<< ANGULAR_CONVERSION)) return string(thisDetector->angConvFile); else return string("none");};
   
   /** 
       pure virtual function
       set detector global offset
       \sa mythenDetector::setGlobalOffset
   */
-  virtual float setGlobalOffset(float f)=0; 
+  float setGlobalOffset(float f){thisDetector->globalOffset=f; return thisDetector->globalOffset;}; 
 
   /** 
       pure virtual function
       set detector fine offset
       \sa mythenDetector::setFineOffset
   */
-  virtual float setFineOffset(float f)=0;
+  float setFineOffset(float f){thisDetector->fineOffset=f; return thisDetector->fineOffset;};
   /** 
       pure virtual function
       get detector fine offset
       \sa mythenDetector::getFineOffset
   */
-  virtual float getFineOffset()=0;
+  float getFineOffset(){return thisDetector->fineOffset;};
   
   /** 
       pure virtual function
       get detector global offset
       \sa mythenDetector::getGlobalOffset
   */
-  virtual float getGlobalOffset()=0;
+  float getGlobalOffset(){return thisDetector->globalOffset;};
 
   /** 
       pure virtual function
@@ -1215,7 +1216,7 @@ s
       \returns number of positions
       \sa mythenDetector::setPositions
   */
-  virtual int setPositions(int nPos, float *pos)=0;
+  int setPositions(int nPos, float *pos);
    /** 
       pure virtual function
       get  positions for the acquisition
@@ -1223,7 +1224,7 @@ s
       \returns number of positions
       \sa mythenDetector::getPositions
   */
-  virtual int getPositions(float *pos=NULL)=0;
+  int getPositions(float *pos=NULL);
   
   
   /** pure virtual function
@@ -1232,13 +1233,13 @@ s
       \returns current bin size
       \sa mythenDetector::setBinSize
 */
-  virtual float setBinSize(float bs)=0;
+  float setBinSize(float bs){thisDetector->binSize=bs; return thisDetector->binSize;};
 
   /** pure virtual function
       return detector bin size used for merging (approx angular resolution)
       \sa mythenDetector::getBinSize
   */
-  virtual float getBinSize()=0;
+  float getBinSize() {return thisDetector->binSize;};
 
 
 
@@ -1412,7 +1413,7 @@ s
       \returns OK or FAIL
       \sa mythenDetector::resetMerging
   */
-  virtual int resetMerging(float *mp, float *mv,float *me, int *mm)=0;
+  int resetMerging(float *mp, float *mv,float *me, int *mm);
   /** 
       pure virtual function
   merge dataset
@@ -1425,7 +1426,7 @@ s
       \param mm multiplicity of merged arrays
       \sa mythenDetector::addToMerging
   */
-  virtual int addToMerging(float *p1, float *v1, float *e1, float *mp, float *mv,float *me, int *mm)=0;
+  int addToMerging(float *p1, float *v1, float *e1, float *mp, float *mv,float *me, int *mm);
 
   /** pure virtual function
       calculates the "final" positions, data value and errors for the emrged data
@@ -1448,7 +1449,7 @@ s
      /param delflag if 1 the data are processed, written to file and then deleted. If 0 they are added to the finalDataQueue
      \sa mythenDetector::processData
   */
-  virtual void* processData(int delflag=1)=0; // thread function
+  void* processData(int delflag=1); // thread function
   /** Allocates the memory for a sls_detector_module structure and initializes it
       \returns myMod the pointer to the allocate dmemory location
 
@@ -1473,7 +1474,7 @@ s
      \sa mythenDetector::acquire()
   */
   
-  virtual void acquire(int delflag=1)=0;
+  void acquire(int delflag=1);
 
   /** calcualtes the total number of steps of the acquisition.
       called when number of frames, number of cycles, number of positions and scan steps change
@@ -1483,6 +1484,90 @@ s
   /** returns the current progress in % */
   float getCurrentProgress();
   
+
+
+
+ /**
+    type of action performed (for text client)
+ */
+enum {GET_ACTION, PUT_ACTION, READOUT_ACTION};
+
+
+  /**
+     executes a set of string arguments according to a given format. It is used to read/write configuration file, dump and retrieve detector settings and for the command line interface command parsing
+     \param narg number of arguments
+     \param args array of string arguments
+     \param action can be PUT_ACTION or GET_ACTION (from text client even READOUT_ACTION for acquisition)
+     \returns answer string 
+  */
+    string executeLine(int narg, char *args[], int action=GET_ACTION);
+  
+  /**
+     returns the help for the executeLine command 
+     \param os output stream to return the help to
+     \param action can be PUT_ACTION or GET_ACTION (from text client even READOUT_ACTION for acquisition) 
+  */
+   static string helpLine(int action=GET_ACTION);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
  protected:
  
@@ -1660,7 +1745,40 @@ s
      fill bad channel mask (0 if channel is good, 1 if bad)
   */
   int fillBadChannelMask();
+
+
+  /**
+    start data processing thread
+  */
+  void startThread(int delflag=1); //
+  /** the data processing thread */
+
+  pthread_t dataProcessingThread;
+
+ /** sets when the acquisition is finished */
+  int jointhread;
+
+ /** data queue size */
+  int queuesize;
+
+
+
+
+ /** mutex to synchronize threads */
+  pthread_mutex_t mp;
+
+
+
+
+
+
+
+
+
 };
+
+static void* startProcessData(void *n);
+static void* startProcessDataNoDelete(void *n);
 
 
 //static void* startProcessData(void *n);

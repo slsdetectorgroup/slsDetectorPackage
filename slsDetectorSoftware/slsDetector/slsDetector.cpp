@@ -3660,7 +3660,7 @@ int slsDetector::setBadChannelCorrection(string fname){
 #endif
 
   if (fname=="") {
-    thisDetector->correctionMask&=~(1<< DISCARD_BAD_CHANNELS);
+    thisDetector->correctionMask&=~(1<<DISCARD_BAD_CHANNELS);
     thisDetector->nBadChans=0;
   } else { 
     if (fname=="default")
@@ -6102,9 +6102,10 @@ int  slsDetector::addToMerging(float *p1, float *v1, float *e1, float *mp, float
 
   if (thisDetector->angDirection>0) {
     for (int ip=0; ip<thisDetector->nChans*thisDetector->nChips*thisDetector->nMods; ip++) {
-      if (thisDetector->correctionMask&DISCARD_BAD_CHANNELS) {
-	if (badChannelMask[ip])
+      if ((thisDetector->correctionMask)&(1<< DISCARD_BAD_CHANNELS)) {
+	if (badChannelMask[ip]) {
 	  continue;
+	}
       }
       imod=ip/(thisDetector->nChans*thisDetector->nChips);
       if (p1)
@@ -6133,10 +6134,11 @@ int  slsDetector::addToMerging(float *p1, float *v1, float *e1, float *mp, float
  
   } else {
     for (int ip=thisDetector->nChans*thisDetector->nChips*thisDetector->nMods-1; ip>=0; ip--) {
-      if (thisDetector->correctionMask&(1<< DISCARD_BAD_CHANNELS)) {
-	if (badChannelMask[ip])
-	  continue;
-      }
+	if ((thisDetector->correctionMask)&(1<< DISCARD_BAD_CHANNELS)) {
+	  if (badChannelMask[ip])
+	    continue;
+       
+	}
 
       while (binma<ang) {
 	ibin++;
@@ -6566,7 +6568,6 @@ void* slsDetector::processData(int delflag) {
 	
 	/** write raw data file */	   
 	if (thisDetector->correctionMask==0 && delflag==1) {
-
 	  //cout << "line 6570----" << endl;
 	  writeDataFile (fname+string(".raw"), fdata, NULL, NULL, 'i'); 
 	  delete [] fdata;

@@ -97,7 +97,7 @@
 #define STOP_EXPOSURE_BIT   0x00000080  
 #define START_TRAIN_BIT     0x00000100  
 #define STOP_TRAIN_BIT      0x00000200  
-#define SYNC_RESET          0x80000000
+#define SYNC_RESET          0x00000400
 
 /* for status register */
 #define RUN_BUSY_BIT             0x00000001

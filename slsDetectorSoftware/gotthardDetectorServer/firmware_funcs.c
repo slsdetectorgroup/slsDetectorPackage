@@ -131,42 +131,52 @@ int setDummyRegister() {
 	valw=((valw&(~(0x1<<ddx)))+(((codata>>(24-i))&0x1)<<ddx));bus_w(offw,valw);//write data (i)
 	//	printf("%d ", ((codata>>(24-i))&0x1));
 	valw=((valw&(~(0x1<<cdx)))+(0x1<<cdx));bus_w(offw,valw);//clkup
-      }
-      valw=((valw&(~(0x1<<csdx)))+(0x1<<csdx));bus_w(offw,valw); //csup
-      valw=(valw&(~(0x1<<cdx)));bus_w(offw,valw); //cldwn
-      valw=0xffff; bus_w(offw,(valw)); // stop point =start point of course 
-      printf("Writing %d in DAC(0-7) %d \n",dacvalue,dacnum);
-    }
-*/
+	}
+	valw=((valw&(~(0x1<<csdx)))+(0x1<<csdx));bus_w(offw,valw); //csup
+	valw=(valw&(~(0x1<<cdx)));bus_w(offw,valw); //cldwn
+	valw=0xffff; bus_w(offw,(valw)); // stop point =start point of course 
+	printf("Writing %d in DAC(0-7) %d \n",dacvalue,dacnum);
+	}
+  */
   u_int32_t val,addr;
 
   addr = DUMMY_REG;
   // (else use bs_w16)
-
-
- //dummy register
-  val=45;
-  bus_w(addr, val);
-  val=bus_r(addr);
-  if (val==45) {
-    printf("FPGA dummy register ok!! %x\n",val);
-  } else {
-    printf("FPGA dummy register wrong!! %x instead of 0xF0F0F0F0 \n",val);
-    result=FAIL;
-    //    return FAIL;
-  }
-  //dummy register
-  val=0x0F0F0F0F;
-  bus_w(addr, val);
-  val=bus_r(addr);
-  if (val==0x0F0F0F0F) {
-    printf("FPGA dummy register ok!! %x\n",val);
-  } else {
-    printf("FPGA dummy register wrong!! %x instead of 0x0F0F0F0F \n",val);
-    result=FAIL;
-    //    return FAIL;
-  }
-    
+  int i;
+  for(i=0;i<100;i++)
+    if(result==OK)
+      {
+	//dummy register
+	val=45;
+	bus_w(addr, val);
+	val=bus_r(addr);
+	if (val!=45) {
+	  printf("ATTEMPT:%d:\tFPGA dummy register wrong!! %x instead of 0xF0F0F0F0 \n",i,val);
+	  result=FAIL;
+	}
+	//dummy register
+	val=0x0F0F0F0F;
+	bus_w(addr, val);
+	val=bus_r(addr);
+	if (val!=0x0F0F0F0F) {
+	  printf("ATTEMPT:%d:\tFPGA dummy register wrong!! %x instead of 0x0F0F0F0F \n",i,val);
+	  result=FAIL;
+	}
+	//dummy register
+	val=0xF0F0F0F0;
+	bus_w(DUMMY_REG, val);
+	val=bus_r(DUMMY_REG);
+	if (val!=0xF0F0F0F0)  {
+	  printf("ATTEMPT:%d:\tFPGA dummy register wrong!! %x instead of 0xF0F0F0F0 \n",i,val);
+	  result=FAIL;
+	}
+      }
+  if(result==OK)
+    {
+      printf("\n\n----------------------------------------------------------------------------------------------");
+      printf("\nATTEMPT 100: FPGA DUMMY REGISTER OK!!\n");
+      printf("----------------------------------------------------------------------------------------------\n\n");
+    }
   return result;
 }
 

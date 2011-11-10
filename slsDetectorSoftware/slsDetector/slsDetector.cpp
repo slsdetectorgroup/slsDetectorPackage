@@ -16,6 +16,7 @@ int slsDetector::initSharedMemory(detectorType type, int id) {
    int nch, nm, nc, nd;
    int sz;
 
+   //shmId=-1;
 
    switch(type) {
    case MYTHEN:
@@ -72,6 +73,7 @@ int slsDetector::initSharedMemory(detectorType type, int id) {
     /**
       shm_id returns -1 is shared memory initialization fails
    */
+  //shmId=shm_id;
   return shm_id;
 
 }
@@ -92,6 +94,25 @@ int slsDetector::freeSharedMemory() {
     printf("Shared memory %d deleted\n", shmId);
     return OK;
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 slsDetector::slsDetector(detectorType type, int id):
@@ -150,6 +171,149 @@ slsDetector::slsDetector(detectorType type, int id):
 
 slsDetector::~slsDetector(){};
 
+slsDetector::slsDetector(char *name, int id, int cport) :
+  thisDetector(NULL),  
+  detId(0),
+  shmId(-1), 
+  controlSocket(NULL),
+  stopSocket(NULL),
+  dataSocket(NULL),
+  currentPosition(0),
+  currentPositionIndex(0),
+  currentI0(0),
+  mergingBins(NULL),
+  mergingCounts(NULL),
+  mergingErrors(NULL),
+  mergingMultiplicity(NULL),
+  ffcoefficients(NULL),
+  fferrors(NULL),
+  detectorModules(NULL),
+  dacs(NULL),
+  adcs(NULL),
+  chipregs(NULL),
+  chanregs(NULL),
+  badChannelMask(NULL) 
+{
+  
+  detectorType type=(detectorType)getDetectorType(name, cport);
+  
+  
+  while (shmId<0) {
+       /**Initlializes shared memory \sa initSharedMemory
+	  
+       if it fails the detector id is incremented until it succeeds
+       */
+    shmId=initSharedMemory(type,id);
+    id++;
+  }
+  id--;
+#ifdef VERBOSE
+  std::cout<< "Detector id is " << id << std::endl;
+#endif
+  detId=id;
+  
+  
+  /**Initializes the detector stucture \sa initializeDetectorSize
+      */
+  initializeDetectorSize(type);
+
+
+
+
+  pthread_mutex_t mp1 = PTHREAD_MUTEX_INITIALIZER; 
+  
+  mp=mp1;
+  
+  pthread_mutex_init(&mp, NULL);
+  
+  setTCPSocket(name, cport);
+
+}
+
+detectorType slsDetector::getDetectorType(char *name, int cport) {
+  
+  int retval=FAIL;
+  detectorType t=GENERIC;
+  int fnum=F_GET_DETECTOR_TYPE;
+  MySocketTCP *s= new MySocketTCP(name, cport);
+  char m[1000];
+  
+ if (s->Connect()>=0) {
+    s->SendDataOnly(&fnum,sizeof(fnum));
+    s->ReceiveDataOnly(&retval,sizeof(retval));
+    
+    if (retval==OK)
+      s->ReceiveDataOnly(&t,sizeof(t));
+    else {
+      s->ReceiveDataOnly(m,sizeof(m));
+      std::cout<< "Detector returned error: " << m << std::endl;
+    }
+    s->Disconnect();
+ } else {
+   cout << "Cannot connect to server " << name << " over port " << cport << endl;
+ }
+
+ delete s;
+ return t;
+
+}
+
+detectorType slsDetector::getDetectorType(int id) {
+  
+  detectorType t=GENERIC;
+
+
+   key_t     mem_key=DEFAULT_SHM_KEY+id;
+   int       shm_id;
+   int sz;
+
+   sz=sizeof(sharedSlsDetector);
+
+   shm_id = shmget(mem_key,sz,IPC_CREAT  | 0666); // allocate shared memory
+
+  if (shm_id < 0) {
+    std::cout<<"*** shmget error (server) ***"<< shm_id << std::endl;
+    return t;
+  }
+  
+   /**
+      thisDetector pointer is set to the memory address of the shared memory
+   */
+
+  sharedSlsDetector* det = (sharedSlsDetector*) shmat(shm_id, NULL, 0);  /* attach */
+  
+  if (det == (void*)-1) {
+    std::cout<<"*** shmat error (server) ***" << std::endl;
+    return t;
+  }
+    /**
+      shm_id returns -1 is shared memory initialization fails
+   */
+  //shmId=shm_id;
+
+  t=det->myDetectorType;
+
+
+  if (det->alreadyExisting==0) {
+  // Detach Memory address
+    if (shmdt(det) == -1) {
+      perror("shmdt failed\n");
+      return t;
+    }
+    //printf("Shared memory %d detached\n", shmId);
+    // remove shared memory
+    if (shmctl(shm_id, IPC_RMID, 0) == -1) {
+      perror("shmctl(IPC_RMID) failed\n");
+      return t;
+    }
+    //printf("Shared memory %d deleted\n", shmId);
+  }
+  return t;
+
+
+}
+
+
 int slsDetector::initializeDetectorSize(detectorType type) {
   char  *goff;
   goff=(char*)thisDetector;
@@ -203,12 +367,12 @@ int slsDetector::initializeDetectorSize(detectorType type) {
        thisDetector->dynamicRange=1;
        break;
      default:
-       thisDetector->nChans=65536;
-       thisDetector->nChips=8;
-       thisDetector->nDacs=16;
-       thisDetector->nAdcs=16;
-       thisDetector->nModMax[X]=6;
-       thisDetector->nModMax[Y]=6;  
+       thisDetector->nChans=0;
+       thisDetector->nChips=0;
+       thisDetector->nDacs=0;
+       thisDetector->nAdcs=0;
+       thisDetector->nModMax[X]=0;
+       thisDetector->nModMax[Y]=0;  
        thisDetector->dynamicRange=32;
      }
      thisDetector->nModsMax=thisDetector->nModMax[0]*thisDetector->nModMax[1];
@@ -987,26 +1151,26 @@ int slsDetector::setDetectorType(string const type){
   return setDetectorType(dtype);
 };
 
-void slsDetector::getDetectorType(char *type){
+string slsDetector::getDetectorType(){
 
   switch (thisDetector->myDetectorType) {
   case MYTHEN:
-    strcpy(type,"Mythen");
+    return string("Mythen");
     break;
   case PILATUS:
-    strcpy(type,"Pilatus");
+    return string("Pilatus");
     break;
   case EIGER:
-    strcpy(type,"Eiger");
+    return string("Eiger");
     break;
   case GOTTHARD:
-    strcpy(type,"Gotthard");
+    return string("Gotthard");
     break;
   case AGIPD:
-    strcpy(type,"Agipd");
+    return string("Agipd");
     break;
   default:
-    strcpy(type,"Unknown");
+    return string("Unknown");
     break;
   }
 };

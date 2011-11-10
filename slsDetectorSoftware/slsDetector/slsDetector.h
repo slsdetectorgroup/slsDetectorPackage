@@ -309,6 +309,9 @@ typedef  struct sharedSlsDetector {
 
 */
   slsDetector(detectorType type=GENERIC, int id=0);
+
+
+  slsDetector(char *name, int id=0,  int cport=DEFAULT_PORTNO);
   //slsDetector(string  const fname);
   //  ~slsDetector(){while(dataQueue.size()>0){}};
   /** destructor */ 
@@ -329,13 +332,13 @@ typedef  struct sharedSlsDetector {
     /sa mythenDetector::readConfigurationFile
   */
 
-  virtual int readConfigurationFile(string const fname)=0;  
+  virtual int readConfigurationFile(string const fname){};  
   /**  
     Purely virtual function
     Should be implemented in the specific detector class
     /sa mythenDetector::writeConfigurationFile
   */
-  virtual int writeConfigurationFile(string const fname)=0;
+  virtual int writeConfigurationFile(string const fname){};
 
 
   /* 
@@ -348,13 +351,13 @@ typedef  struct sharedSlsDetector {
     Should be implemented in the specific detector class
     /sa mythenDetector::dumpDetectorSetup
   */
-  virtual int dumpDetectorSetup(string const fname, int level=0)=0;  
+  virtual int dumpDetectorSetup(string const fname, int level=0){};  
   /** 
     Purely virtual function
     Should be implemented in the specific detector class
     /sa mythenDetector::retrieveDetectorSetup
   */
-  virtual int retrieveDetectorSetup(string const fname, int level=0)=0;
+  virtual int retrieveDetectorSetup(string const fname, int level=0){};
 
   /** 
      configure the socket communication and initializes the socket instances
@@ -412,7 +415,7 @@ typedef  struct sharedSlsDetector {
      \sa mythenDetector::readSettingsFile
   */
 
-  virtual sls_detector_module* readSettingsFile(string fname,  sls_detector_module* myMod=NULL)=0;
+  virtual sls_detector_module* readSettingsFile(string fname,  sls_detector_module* myMod=NULL){};
 
   /**
      Pure virtual function
@@ -423,7 +426,7 @@ typedef  struct sharedSlsDetector {
 
      \sa ::sls_detector_module mythenDetector::writeSettingsFile(string, sls_detector_module)
   */
-  virtual int writeSettingsFile(string fname, sls_detector_module mod)=0; 
+  virtual int writeSettingsFile(string fname, sls_detector_module mod){}; 
   
   /**
      Pure virtual function
@@ -433,7 +436,7 @@ typedef  struct sharedSlsDetector {
      \returns OK or FAIL if the file could not be written   
      \sa ::sls_detector_module sharedSlsDetector mythenDetector::writeSettingsFile(string, int)
   */
-  virtual int writeSettingsFile(string fname, int imod)=0;
+  virtual int writeSettingsFile(string fname, int imod){};
 
 
   /**
@@ -511,7 +514,7 @@ typedef  struct sharedSlsDetector {
        \sa mythenDetector::writeDataFile
  
   */
-  virtual int writeDataFile(string fname, float *data, float *err=NULL, float *ang=NULL, char dataformat='f', int nch=-1)=0; 
+  virtual int writeDataFile(string fname, float *data, float *err=NULL, float *ang=NULL, char dataformat='f', int nch=-1){}; 
   
   /**
      Pure virtual function
@@ -521,7 +524,7 @@ typedef  struct sharedSlsDetector {
        \returns OK or FAIL if it could not write the file or data=NULL  
        \sa mythenDetector::writeDataFile
   */
-  virtual int writeDataFile(string fname, int *data)=0;
+  virtual int writeDataFile(string fname, int *data){};
   
   /**
      Pure virtual function
@@ -537,7 +540,7 @@ typedef  struct sharedSlsDetector {
        
        \sa mythenDetector::readDataFile
   */
-  virtual int readDataFile(string fname, float *data, float *err=NULL, float *ang=NULL, char dataformat='f', int nch=0)=0;  
+  virtual int readDataFile(string fname, float *data, float *err=NULL, float *ang=NULL, char dataformat='f', int nch=0){};  
 
   /**
      Pure virtual function
@@ -547,7 +550,7 @@ typedef  struct sharedSlsDetector {
        \returns OK or FAIL if it could not read the file or data=NULL
        \sa mythenDetector::readDataFile
   */
-  virtual int readDataFile(string fname, int *data)=0;
+  virtual int readDataFile(string fname, int *data){};
 
  /**
      returns the location of the calibration files
@@ -569,7 +572,7 @@ typedef  struct sharedSlsDetector {
       \offset reference to the offset variable
   \sa  sharedSlsDetector mythenDetector::readCalibrationFile
   */
-  virtual int readCalibrationFile(string fname, float &gain, float &offset)=0;
+  virtual int readCalibrationFile(string fname, float &gain, float &offset){};
   /**
      Pure virtual function
       writes a calibration file
@@ -578,7 +581,7 @@ typedef  struct sharedSlsDetector {
       \param offset
   \sa  sharedSlsDetector mythenDetector::writeCalibrationFile
   */
-  virtual int writeCalibrationFile(string fname, float gain, float offset)=0;
+  virtual int writeCalibrationFile(string fname, float gain, float offset){};
 
 
   /**
@@ -636,7 +639,7 @@ typedef  struct sharedSlsDetector {
      normally  the detector knows what type of detector it is
      \param type is the string where the detector type will be written ("Mythen", "Pilatus", "XFS", "Gotthard", Agipd")
   */
-  void getDetectorType(char *type);
+  string getDetectorType();
 
 
   // Detector configuration functions
@@ -1041,6 +1044,17 @@ typedef  struct sharedSlsDetector {
   */
   int setDynamicRange(int n=-1);
  
+  /** 
+      set/get dynamic range
+      \returns number of bytes sent by the detector
+      \sa sharedSlsDetector
+  */
+  int getDataBytes(){return thisDetector->dataBytes;};
+ 
+
+
+  
+
   /** 
       set roi
 
@@ -1511,62 +1525,23 @@ enum {GET_ACTION, PUT_ACTION, READOUT_ACTION};
 
 
 
+  /**
+     returns the detector type from hostname and controlport
+     \param 
+     \param action can be PUT_ACTION or GET_ACTION (from text client even READOUT_ACTION for acquisition) 
+  */
+   static detectorType getDetectorType(char *name, int cport=DEFAULT_PORTNO);
+
+  /**
+     returns the detector type from hostname and controlport
+     \param 
+     \param action can be PUT_ACTION or GET_ACTION (from text client even READOUT_ACTION for acquisition) 
+  */
+   static detectorType getDetectorType(int id);
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+   int getDetectorId() { return detId;};
+   
 
 
  protected:

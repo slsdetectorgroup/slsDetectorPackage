@@ -5345,7 +5345,7 @@ else if (var=="vref_ds") {
       return string(answer);
   }
   */
-
+ 
   //timers
 
   else if (var=="exptime") {
@@ -5370,13 +5370,19 @@ else if (var=="vref_ds") {
       sprintf(answer,"%f",(float)setTimer(DELAY_AFTER_TRIGGER)*1E-9);
       return string(answer);
       } else if (var=="gates") {
-	if (action==PUT_ACTION) {
-	 sscanf(args[1],"%d",&ival); 
-	  setTimer( GATES_NUMBER,ival);
-	} 
-	
-	sprintf(answer,"%lld",setTimer(GATES_NUMBER));
-	return string(answer);
+          switch(thisDetector->myDetectorType) {
+            case GOTTHARD:
+	      sprintf(answer,"Number of gates is always 1 for this detector",sval.c_str());
+	      return string(answer);
+	      break;
+	    default:
+	      if (action==PUT_ACTION) {
+		sscanf(args[1],"%d",&ival); 
+		setTimer( GATES_NUMBER,ival);
+	      } 
+	      sprintf(answer,"%lld",setTimer(GATES_NUMBER));
+	      return string(answer);
+	  }
     } else if (var=="frames") {
 	if (action==PUT_ACTION) {
 	 sscanf(args[1],"%d",&ival);

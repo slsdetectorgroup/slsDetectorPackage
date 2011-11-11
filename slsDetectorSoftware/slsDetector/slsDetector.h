@@ -487,6 +487,7 @@ typedef  struct sharedSlsDetector {
   */
   int getFileIndex() {return thisDetector->fileIndex;};
   
+
   /** generates file name without extension
 
       always appends to file path and file name the run index.
@@ -495,13 +496,51 @@ typedef  struct sharedSlsDetector {
        
       Filenames will be of the form: filepath/filename(_px)_i
       where x is the position index and i is the run index
+      \param filepath outdir
+      \param filename file root name
+      \param aMask action mask (scans, positions)
+      \param sv0 scan variable 0
+      \param prec0 scan precision 0
+      \param sv1 scan variable 1
+      \param prec1 scan precision 1
+      \param pindex position index
+      \param number of positions
+      \param findex file index
+      \returns file name without extension
+  */
+  static string  createFileName(char *filepath, char *filename, int aMask, float sv0, int prec0, float sv1, int prec1, int pindex, int npos, int findex);
+  /** generates file name without extension
 
+      always appends to file path and file name the run index.
+
+      in case also appends the position index 
+       
+      Filenames will be of the form: filepath/filename(_px)_i
+      where x is the position index and i is the run index
+      \returns file name without extension
   */
 
   string createFileName();
   
+
+
+  /** static function that returns the file index from the file name 
+      \param fname file name
+      \returns file index*/
+  static int getFileIndexFromFileName(string fname);
+
+  /** static function that returns the variables from the file name 
+      \param fname file name
+      \param index reference to index
+      \param p_index reference to position index
+      \param sv0 reference to scan variable 0
+      \param sv1 reference to scan variable 1
+      \returns file index
+  */
+  static int getVariablesFromFileName(string fname, int &index, int &p_index, float &sv0, float &sv1);
+  
     /**
-       Pure virtual function
+     
        writes a data file
        \param name of the file to be written
        \param data array of data values
@@ -517,7 +556,7 @@ typedef  struct sharedSlsDetector {
   virtual int writeDataFile(string fname, float *data, float *err=NULL, float *ang=NULL, char dataformat='f', int nch=-1){}; 
   
   /**
-     Pure virtual function
+   
        writes a data file
        \param name of the file to be written
        \param data array of data values
@@ -527,7 +566,7 @@ typedef  struct sharedSlsDetector {
   virtual int writeDataFile(string fname, int *data){};
   
   /**
-     Pure virtual function
+   
        reads a data file
        \param name of the file to be read
        \param data array of data values to be filled
@@ -543,7 +582,7 @@ typedef  struct sharedSlsDetector {
   virtual int readDataFile(string fname, float *data, float *err=NULL, float *ang=NULL, char dataformat='f', int nch=0){};  
 
   /**
-     Pure virtual function
+   
        reads a data file
        \param name of the file to be read
        \param data array of data values
@@ -565,7 +604,7 @@ typedef  struct sharedSlsDetector {
   */
   char* setCalDir(string s) {sprintf(thisDetector->calDir, s.c_str()); return thisDetector->calDir;}; 
   /**
-     Pure virtual function
+   
       reads a calibration file
       \param fname file to be read
       \param gain reference to the gain variable
@@ -574,7 +613,7 @@ typedef  struct sharedSlsDetector {
   */
   virtual int readCalibrationFile(string fname, float &gain, float &offset){};
   /**
-     Pure virtual function
+   
       writes a calibration file
       \param fname file to be written
       \param gain 
@@ -585,7 +624,7 @@ typedef  struct sharedSlsDetector {
 
 
   /**
-     Pure virtual function
+   
       reads an angular conversion file
       \param fname file to be read
   \sa  angleConversionConstant mythenDetector::readAngularConversion
@@ -1546,9 +1585,6 @@ enum {GET_ACTION, PUT_ACTION, READOUT_ACTION};
 
  protected:
  
-  int getFileIndexFromFileName(string fname);
-  int getVariablesFromFileName(string fname, int &index, int &p_index, float &sv0, float &sv1);
-
 
   static const int64_t thisSoftwareVersion=0x20110113;
 

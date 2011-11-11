@@ -1,3 +1,12 @@
+/*******************************************************************
+
+Date:       $Date$
+Revision:   $Rev$
+Author:     $Author$
+URL:        $URL$
+ID:         $Id$
+
+********************************************************************/
 
 
 
@@ -10,46 +19,120 @@
 
 
 //using namespace std;
-/**
- \mainpage Common C++ library for SLS detectors data acquisition
- *
- * \section intro_sec Introduction
-
- * \subsection mot_sec Motivation
- Although the SLS detectors group delvelops several types of detectors (1/2D, counting/integrating etc.) it is common interest of the group to use a common platfor for data acquisition
-  \subsection arch_sec System Architecture
-  The architecture of the acquisitions system is intended as follows:
-  \li A socket server running on the detector (or more than one in some special cases)
-  \li C++ classes common to all detectors for client-server communication. These can be supplied to users as libraries and embedded also in acquisition systems which are not developed by the SLS \sa MySocketTCP slsDetector
-  \li the possibility of using a Qt-based graphical user interface (with eventually root analisys capabilities)
-  \li the possibility of runnin alla commands from command line. In order to ensure a fast operation of this so called "text client" the detector parameters should not be re-initialized everytime. For this reason a shared memory block is allocated where the main detector flags and parameters are stored \sa slsDetector::sharedSlsDetector
- \section howto_sec How to use it
- The best way to operate the slsDetectors is to use the software (text client or GUI) developed by the sls detectors group.
-In case you need to embed the detector control in a previously existing software, compile these classes using <BR>
-make package
-<br>
-and link the shared library created to your software bin/libSlsDetector.so.1.0.1
-Then in your software you should use the class related to the detector you want to control (mythenDetector or eigerDetector).
-
- @author Anna Bergamaschi
-
-*/
 
 
 
 /**
  * 
  *
-@libdoc The slsDetector class is expected to become the interface class for all SLS Detectors acquisition (and analysis) software.
+@libdoc The multiSlsDetector class is used to operate several slsDetectors in parallel.
  *
- * @short This is the base class for all SLS detector functionalities
+ * @short This is the base class for multi detector system functionalities
  * @author Anna Bergamaschi
  * @version 0.1alpha
 
-
  */
 
-class multiSlsDetector : public slsDetector {
+class multiSlsDetector  {
+
+
+  
+  typedef  struct sharedMultiSlsDetector {
+    /** already existing flag. If the detector does not yet exist (alreadyExisting=0) the sharedMemory will be created, otherwise it will simly be linked */
+    int alreadyExisting;
+    /** online flag - is set if the detector is connected, unset if socket connection is not possible  */
+    int onlineFlag;
+    
+  
+    /** stopped flag - is set if an acquisition error occurs or the detector is stopped manually. Is reset to 0 at the start of the acquisition */
+    int stoppedFlag;
+    
+    
+    /** Number of detectors operated at once */
+    int numberOfDetectors;
+
+    /** Ids of the detectors to be operated at once */
+    int detectorIds[MAXDET];
+
+    /** id of the master detector */
+    int masterPosition;
+    
+    /** type of synchronization between detectors */
+    synchronizationMode syncMode;
+      
+    /**  size of the data that are transfered from all detectors */
+    int dataBytes;
+  
+
+
+
+ 
+    /** indicator for the acquisition progress - set to 0 at the beginning of the acquisition and incremented every time that the data are written to file */   
+    int progressIndex;	
+    /** total number of frames to be acquired */   
+    int totalProgress;	   
+    /** current index of the output file */   
+    int fileIndex;
+    /** path of the output files */  
+    char filePath[MAX_STR_LENGTH];
+    /** name root of the output files */  
+    char fileName[MAX_STR_LENGTH];
+    
+
+    /** corrections  to be applied to the data \see ::correctionFlags */
+    int correctionMask;
+    /** threaded processing flag (i.e. if data are processed and written to file in a separate thread)  */
+    int threadedProcessing;
+    /** dead time (in ns) for rate corrections */
+    float tDead;
+    /** directory where the flat field files are stored */
+    char flatFieldDir[MAX_STR_LENGTH];
+    /** file used for flat field corrections */
+    char flatFieldFile[MAX_STR_LENGTH];
+    /** number of bad channels from bad channel list */
+    int nBadChans;
+    /** file with the bad channels */
+    char badChanFile[MAX_STR_LENGTH];
+    /** list of bad channels */
+    int badChansList[MAX_BADCHANS];
+    /** number of bad channels from flat field i.e. channels which read 0 in the flat field file */
+    int nBadFF;
+    /** list of bad channels from flat field i.e. channels which read 0 in the flat field file */
+    int badFFList[MAX_BADCHANS];
+    
+
+    /** Scans and scripts */
+
+    int actionMask;
+    
+    int actionMode[MAX_ACTIONS];
+    char actionScript[MAX_ACTIONS][MAX_STR_LENGTH];
+    char actionParameter[MAX_ACTIONS][MAX_STR_LENGTH];
+    
+
+    int scanMode[MAX_SCAN_LEVELS];
+    char scanScript[MAX_SCAN_LEVELS][MAX_STR_LENGTH];
+    char scanParameter[MAX_SCAN_LEVELS][MAX_STR_LENGTH];
+    int nScanSteps[MAX_SCAN_LEVELS];
+    float scanSteps[MAX_SCAN_LEVELS][MAX_SCAN_STEPS];
+    int scanPrecision[MAX_SCAN_LEVELS];
+    
+    
+
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -63,32 +146,78 @@ class multiSlsDetector : public slsDetector {
 
 
 /** (default) constructor 
- \param  type is needed to define the size of the detector shared memory 9defaults to GENERIC i.e. the largest shared memory needed by any slsDetector is allocated
- \param  id is the detector index which is needed to define the shared memory id. Different physical detectors should have different IDs in order to work independently
-
-
+    \param  id is the detector index which is needed to define the shared memory id. Different physical detectors should have different IDs in order to work independently
+    
+    
 */
-  multiSlsDetector(detectorType type=GENERIC, int ndet=1, int id=0);
+  multiSlsDetector(int id=0);
   //slsDetector(string  const fname);
   /** destructor */ 
   virtual ~multiSlsDetector();
   
   
+  /** frees the shared memory occpied by the sharedMultiSlsDetector structure */
+  int freeSharedMemory() ;
+  
+  /** allocates the shared memory occpied for the sharedMultiSlsDetector structure */
+  int initSharedMemory() ;
+  
+  /** adds the detector with ID id in postion pos
+   \param id of the detector to be added (should already exist!)
+   \param pos position where it should be added (normally at the end of the list (default to -1)
+   \return the actual number of detectors*/
+  int addSlsDetector(int id, int pos=-1);
+
+  /**removes the detector in position pos from the multidetector
+     \param pos position of the detector to be removed from the multidetector system (defaults to -1 i.e. last detector)
+     \returns the actual number of detectors
+  */
+  int removeSlsDetector(int pos=-1);
+
+  /** returns the id of the detector in position i
+   \param i position of the detector
+  \returns detector ID or -1 if detector in position i is empty*/
+  int getDetectorId(int i) {if (i>=0) if (detectors[i]) return detectors[i]->getDetectorId(); else return -1;};
 
 
-  int addSlsDetector(detectorType type=GENERIC, int id=0);
-  int removeSlsDetector(int i=-1);
+  /** returns the number of detectors in the multidetector structure
+      \returns number of detectors */
+  int getNumberOfDetectors() {return thisMultiDetector->numberOfDetectors;};
+
+  /** sets the detector in position i as master of the structure (e.g. it gates the other detectors and therefore must be started as last. <BR> Assumes that signal 0 is gate in, signal 1 is trigger in, signal 2 is gate out
+      \param i position of master (-1 gets)
+      \return master's position (-1 none)
+  */
+  int setMaster(int i=-1);
+  
+  /** 
+      Sets/gets the synchronization mode of the various detectors
+      \param sync syncronization mode
+      \returns current syncronization mode
+  */
+  synchronizationMode setSyncronization(synchronizationMode sync=GET_SYNHRONIZATION_MODE);
+  
+  /** synchronization of the various detectors (should be set for each detector individually?!?!?) */
+      
+  enum synchronyzationMode {
+    GET_SYNHRONIZATION_MODE=-1, /**< the multidetector will return its synchronization mode */
+    NONE, /**< all detectors are independent (no cabling) */
+    MASTER_GATES, /**< the master gates the other detectors */
+    MASTER_TRIGGERS, /**< the master triggers the other detectors */
+    SLAVE_STARTS_WHEN_MASTER_STOPS /**< the slave acquires when the master finishes, to avoid deadtime */
+  }
 
 
-  int getDetectorId(int i) {if (detectors[i]) return detectors[i]->getDetectorId();};
 
 
   /** sets the onlineFlag
-      \param off can be: <BR> GET_ONLINE_FLAG, returns wether the detector is in online or offline state;<BR> OFFLINE_FLAG, detector in offline state (i.e. no communication to the detector - using only local structure - no data acquisition possible!);<BR> ONLINE_FLAG  detector in online state (i.e. communication to the detector updating the local structure) */
-  int setOnline(int const online=GET_ONLINE_FLAG, int i=-1);  
+      \param off can be:  GET_ONLINE_FLAG, returns wether the detector is in online or offline state; OFFLINE_FLAG, detector in offline state (i.e. no communication to the detector - using only local structure - no data acquisition possible!); ONLINE_FLAG  detector in online state (i.e. communication to the detector updating the local structure) 
+      \returns online/offline status
+  */
+  int setOnline(int const online=GET_ONLINE_FLAG);  
   /** sets the onlineFlag
       \returns 1 if the detector structure has already be initlialized with the given idand belongs to this multiDetector instance, 0 otherwise */
-  int exists(int id) ;
+  int exists() ;
 
   /**
     Purely virtual function
@@ -96,13 +225,13 @@ class multiSlsDetector : public slsDetector {
     /sa mythenDetector::readConfigurationFile
   */
 
-  virtual int readConfigurationFile(string const fname)=0;  
+  int readConfigurationFile(string const fname);  
   /**  
     Purely virtual function
     Should be implemented in the specific detector class
     /sa mythenDetector::writeConfigurationFile
   */
-  virtual int writeConfigurationFile(string const fname)=0;
+  int writeConfigurationFile(string const fname);
 
 
   /* 
@@ -115,36 +244,15 @@ class multiSlsDetector : public slsDetector {
     Should be implemented in the specific detector class
     /sa mythenDetector::dumpDetectorSetup
   */
-  virtual int dumpDetectorSetup(string const fname, int level)=0;  
+  int dumpMultiDetectorSetup(string const fname, int level);  
   /** 
     Purely virtual function
     Should be implemented in the specific detector class
     /sa mythenDetector::retrieveDetectorSetup
   */
-  virtual int retrieveDetectorSetup(string const fname, int level)=0;
+  int retrieveMultiDetectorSetup(string const fname, int level);
 
-  /** 
-     configure the socket communication and initializes the socket instances
 
-     \param name hostname - if "" the current hostname is used
-     \param control_port port for control commands - if -1 the current is used
-     \param stop_port port for stop command - if -1 the current is used
-     \param data_port port for receiving data - if -1 the current is used
-
-     \returns OK is connection succeded, FAIL otherwise
-     \sa sharedSlsDetector
-  */
-  int setTCPSocket(int i, string const name="", int const control_port=-1, int const stop_port=-1, int const data_port=-1);
-
-  /** returns the detector hostname \sa sharedSlsDetector  */
-  char* getHostname(int i) ;
-  /** returns the detector control port  \sa sharedSlsDetector */
-  int getControlPort(int i=-1);
-  /** returns the detector stop  port  \sa sharedSlsDetector */
-  int getStopPort(int i=-1);
-  /** returns the detector data port  \sa sharedSlsDetector */
-  int getDataPort(int i=-1);
- 
   /** generates file name without extension
 
       always appends to file path and file name the run index.
@@ -152,11 +260,35 @@ class multiSlsDetector : public slsDetector {
       in case also appends the position index 
        
       Filenames will be of the form: filepath/filename(_px)_i
-      where x is the position index and i is the run index
+      where x is the position index and i is the run index  
+      \returns file name without extension
+      \sa slsDetector::createFileName 
 
   */
   string createFileName();
 
+  /**
+     function that returns the file index from the file name 
+      \param fname file name
+      \returns file index
+      \sa slsDetector::getFileIndexFromFileName 
+
+  */
+  int multiSlsDetector::getFileIndexFromFileName(string fname) ;
+
+  /**
+
+  function that returns the variables from the file name 
+  \param fname file name
+      \param index reference to index
+      \param p_index reference to position index
+      \param sv0 reference to scan variable 0
+      \param sv1 reference to scan variable 1
+      \returns file index
+      \sa slsDetector::getVariablesFromFileName 
+
+  */
+  int multiSlsDetector::getVariablesFromFileName(string fname, int &index, int &p_index, float &sv0, float &sv1) ;
 
 
 
@@ -171,108 +303,47 @@ class multiSlsDetector : public slsDetector {
 
 
   /* I/O */
-  /** returns the detector trimbit directory  \sa sharedSlsDetector */
-  char* getSettingsDir(int i=-1);
-  /** sets the detector trimbit directory  \sa sharedSlsDetector */
-  char* setSettingsDir(string s, int i=-1);
-  /** returns the number of trim energies and their value  \sa sharedSlsDetector 
-   \param point to the array that will contain the trim energies (in ev)
-  \returns number of trim energies
-
-  unused!
-
-  \sa  sharedSlsDetector
-  */
-  int getTrimEn(int *en=NULL, int i=-1);
-  /** sets the number of trim energies and their value  \sa sharedSlsDetector 
-   \param nen number of energies
-   \param en array of energies
-   \returns number of trim energies
-
-   unused!
-
-  \sa  sharedSlsDetector
-  */
-  int setTrimEn(int nen, int *en=NULL, int i=-1);
-
-  /**
-     Pure virtual function
-     reads a trim file
-     \param fname name of the file to be read
-     \param myMod pointer to the module structure which has to be set. <BR> If it is NULL a new module structure will be created
-     \returns the pointer to myMod or NULL if reading the file failed
-     \sa mythenDetector::readTrimFile
-  */
-
-  virtual sls_detector_module* readTrimFile(string fname,  sls_detector_module* myMod=NULL)=0;
-
-  /**
-     Pure virtual function
-     writes a trim file
-     \param fname name of the file to be written
-     \param mod module structure which has to be written to file
-     \returns OK or FAIL if the file could not be written
-
-     \sa ::sls_detector_module mythenDetector::writeTrimFile(string, sls_detector_module)
-  */
-  virtual int writeTrimFile(string fname, sls_detector_module mod)=0; 
-  
-  /**
-     returns currently the loaded trimfile name
-  */
-
-  const char *getTrimFile(int i=-1);
-
-  /**
-     Pure virtual function
-     writes a trim file for module number imod - the values will be read from the current detector structure
-     \param fname name of the file to be written
-     \param imod module number
-     \returns OK or FAIL if the file could not be written   
-     \sa ::sls_detector_module sharedSlsDetector mythenDetector::writeTrimFile(string, int)
-  */
-  virtual int writeTrimFile(string fname, int imod, int i)=0;
 
   /**
      sets the default output files path
-  \sa  sharedSlsDetector
+  \sa  sharedMultiSlsDetector
   */
-  char* setFilePath(string s, int i=-1);
+  char* setFilePath(string s, int i=-1) {sprintf(thisMultiDetector->filePath, s.c_str()); return thisMultiDetector->filePath;};;
 
   /**
      sets the default output files root name
-  \sa  sharedSlsDetector
+  \sa  sharedMultiSlsDetector
   */
-  char* setFileName(string s, int i=-1); 
+  char* setFileName(string s, int i=-1){sprintf(thisMultiDetector->fileName, s.c_str()); return thisMultiDetector->fileName;}; 
 
   /**
      sets the default output file index
-  \sa  sharedSlsDetector
+  \sa  sharedMultiSlsDetector
   */
-  int setFileIndex(int i, int id=-1); 
+  int setFileIndex(int i, int id=-1){thisMultiDetector->fileIndex=i; return thisMultiDetector->fileIndex;}; 
   
   /**
      returns the default output files path
-  \sa  sharedSlsDetector
+  \sa  sharedMultiSlsDetector
   */
-  char* getFilePath(int id=-1);
+  char* getFilePath(int id=-1) {return thisMultiDetector->filePath;};
   
   /**
      returns the default output files root name
-  \sa  sharedSlsDetector
+  \sa  sharedMultiSlsDetector
   */
-  char* getFileName(int id=-1) ;
+  char* getFileName(int id=-1) {return thisMultiDetector->fileName;};
 
   /**
      returns the default output file index
-  \sa  sharedSlsDetector
+  \sa  sharedMultiSlsDetector
   */
-  int getFileIndex(int id=-1) ;
+  int getFileIndex(int id=-1) {return thisMultiDetector->fileIndex;};
   
 
   
     /**
-       Pure virtual function
+     
        writes a data file
        \param name of the file to be written
        \param data array of data values
@@ -285,20 +356,20 @@ class multiSlsDetector : public slsDetector {
        \sa mythenDetector::writeDataFile
  
   */
-  virtual int writeDataFile(string fname, float *data, float *err=NULL, float *ang=NULL, char dataformat='f', int nch=-1)=0; 
+  int writeDataFile(string fname, float *data, float *err=NULL, float *ang=NULL, char dataformat='f', int nch=-1); 
   
   /**
-     Pure virtual function
+    
        writes a data file
        \param name of the file to be written
        \param data array of data values
        \returns OK or FAIL if it could not write the file or data=NULL  
        \sa mythenDetector::writeDataFile
   */
-  virtual int writeDataFile(string fname, int *data)=0;
+  int writeDataFile(string fname, int *data);
   
   /**
-     Pure virtual function
+    
        reads a data file
        \param name of the file to be read
        \param data array of data values to be filled
@@ -311,334 +382,67 @@ class multiSlsDetector : public slsDetector {
        
        \sa mythenDetector::readDataFile
   */
-  virtual int readDataFile(string fname, float *data, float *err=NULL, float *ang=NULL, char dataformat='f', int nch=0)=0;  
+  int readDataFile(string fname, float *data, float *err=NULL, float *ang=NULL, char dataformat='f', int nch=0);  
 
   /**
-     Pure virtual function
+    
        reads a data file
        \param name of the file to be read
        \param data array of data values
        \returns OK or FAIL if it could not read the file or data=NULL
        \sa mythenDetector::readDataFile
   */
-  virtual int readDataFile(string fname, int *data)=0;
-
- /**
-     returns the location of the calibration files
-  \sa  sharedSlsDetector
-  */
-  char* getCalDir(int id=-1);
-
-
-   /**
-      sets the location of the calibration files
-  \sa  sharedSlsDetector
-  */
-  char* setCalDir(string s, int id=-1)
-  /**
-     Pure virtual function
-      reads a calibration file
-      \param fname file to be read
-      \param gain reference to the gain variable
-      \offset reference to the offset variable
-  \sa  sharedSlsDetector mythenDetector::readCalibrationFile
-  */
-  virtual int readCalibrationFile(string fname, float &gain, float &offset)=0;
-  /**
-     Pure virtual function
-      writes a calibration file
-      \param fname file to be written
-      \param gain 
-      \param offset
-  \sa  sharedSlsDetector mythenDetector::writeCalibrationFile
-  */
-  virtual int writeCalibrationFile(string fname, float gain, float offset)=0;
+  int readDataFile(string fname, int *data);
 
 
   /**
-     Pure virtual function
-      reads an angular conversion file
+     
+      reads an angular conversion file for all detectors
       \param fname file to be read
   \sa  angleConversionConstant mythenDetector::readAngularConversion
   */
-  virtual int readAngularConversion(string fname="", int id=-1)=0;
+  virtual int readAngularConversion(string fname="", int id=-1);
+
+
+
   /**
-     Pure virtual function
-     writes an angular conversion file
+    
+     writes an angular conversion file for all detectors
       \param fname file to be written
   \sa  angleConversionConstant mythenDetector::writeAngularConversion
   */
-  virtual int writeAngularConversion(string fname="", int id=-1)=0;
+  virtual int writeAngularConversion(string fname="", int id=-1);
 
-  /** Returns the number of channels per chip */
-  int getNChans(int id=-1); //
 
-  /** Returns the number of chips per module */
-  int getNChips(int id=-1); //
+
+
+
+
+
+
+
 
 
   /* Communication to server */
 
 
-  /**
-     executes a system command on the server 
-     e.g. mount an nfs disk, reboot and returns answer etc.
-     \param cmd is the command to be executed
-     \param answer is the answer from the detector
-     \returns OK or FAIL depending on the command outcome
-  */
-  int execCommand(string cmd, string answer, int id=-1);
-  
-  /**
-     sets/gets detector type
-     normally  the detector knows what type of detector it is
-     \param type is the detector type (defaults to GET_DETECTOR_TYPE)
-     \returns returns detector type index (1 GENERIC, 2 MYTHEN, 3 PILATUS, 4 XFS, 5 GOTTHARD, 6 AGIPD, -1 command failed)
-  */
-  int setDetectorType(detectorType type=GET_DETECTOR_TYPE, int id=-1);  
-
-  /** 
-     sets/gets detector type
-     normally  the detector knows what type of detector it is
-     \param type is the detector type ("Mythen", "Pilatus", "XFS", "Gotthard", Agipd")
-     \returns returns detector type index (1 GENERIC, 2 MYTHEN, 3 PILATUS, 4 XFS, 5 GOTTHARD, 6 AGIPD, -1 command failed)
-  */
-  int setDetectorType(string type, int id=-1);  
-
-  /** 
-     gets detector type
-     normally  the detector knows what type of detector it is
-     \param type is the string where the detector type will be written ("Mythen", "Pilatus", "XFS", "Gotthard", Agipd")
-  */
-  void getDetectorType(char *type, int id=-1);
 
 
-  // Detector configuration functions
-  /** 
-      set/get the size of the detector 
-      \param n number of modules
-      \param d dimension
-      \returns current number of modules in direction d
-  */
-
-  // Detector configuration functions
-  /** 
-      set/get the size of the detector 
-      \param n number of modules
-      \param d dimension
-      \returns current number of modules in direction d
-  */
-  int setNumberOfModules(int n=GET_FLAG, dimension d=X, int id=-1); // if n=GET_FLAG returns the number of installed modules
-
-  /*
-    returns the instrinsic size of the detector (maxmodx, maxmody, nchans, nchips, ndacs
-    enum numberOf {
-    MAXMODX,
-    MAXMODY,
-    CHANNELS,
-    CHIPS,
-    DACS
-    }
-  */
 
 
-  /** 
-      get the maximum size of the detector 
-      \param d dimension
-      \returns maximum number of modules that can be installed in direction d
-  */
-  int getMaxNumberOfModules(dimension d=X, int id=-1); //
- 
- 
-  /** 
-     set/get the use of an external signal 
-      \param pol meaning of the signal \sa externalSignalFlag
-      \param signalIndex index of the signal
-      \returns current meaning of signal signalIndex
-  */
-  externalSignalFlag setExternalSignalFlags(externalSignalFlag pol=GET_EXTERNAL_SIGNAL_FLAG , int signalindex=0, int id=-1);
-
- 
-  /** 
-     set/get the external communication mode
-     
-     obsolete \sa setExternalSignalFlags
-      \param pol value to be set \sa externalCommunicationMode
-      \returns current external communication mode
-  */
-  externalCommunicationMode setExternalCommunicationMode(externalCommunicationMode pol=GET_EXTERNAL_COMMUNICATION_MODE, int id=-1);
 
 
-  // Tests and identification
- 
-  /**
-     get detector ids/versions for module
-     \param mode which id/version has to be read
-     \param imod module number for module serial number
-     \returns id
-  */
-  int64_t getId(idMode mode, int imod=0, int id=0);
-  int64_t getId(idMode mode, int imod=0);
-  /**
-    Digital test of the modules
-    \param mode test mode
-    \param imod module number for chip test or module firmware test
-    \returns OK or error mask
-  */
-  int digitalTest(digitalTestMode mode, int imod=0);
-  int digitalTest(digitalTestMode mode, int imod=0, int id=0);
-  /**
-     analog test
-     \param modte test mode
-     \return pointer to acquired data
- 
-     not yet implemented
-  */
 
-  int* analogTest(analogTestMode mode);
-  
-  /** 
-     enable analog output of channel ichan
- 
-     not yet implemented
-  */
-  int enableAnalogOutput(int ichan);
-  
-  /** 
-     enable analog output of channel ichan, chip ichip, module imod
- 
-     not yet implemented
-  */
-  int enableAnalogOutput(int imod, int ichip, int ichan);
 
-  /**
-     give a train of calibration pulses 
-     \param vcal pulse amplitude
-     \param npulses number of pulses
- 
-     not yet implemented
-     
-  */ 
-  int giveCalibrationPulse(float vcal, int npulses);
+
+
+
+
 
   // Expert Initialization functions
  
 
-  /** 
-      write  register 
-      \param addr address
-      \val value
-      \returns current register value
 
-  */
-  int writeRegister(int addr, int val);
-  
-  /** 
-      read  register 
-      \param addr address
-      \returns current register value
-
-  */
-  int readRegister(int addr);
-
-  /**
-    set dacs value
-    \param val value (in V)
-    \param index DAC index
-    \param imod module number (if -1 alla modules)
-    \returns current DAC value
-  */
-  float setDAC(float val, dacIndex index, int imod=-1);
-  
-  /**
-    set dacs value
-    \param index ADC index
-    \param imod module number
-    \returns current ADC value
-  */
-  float getADC(dacIndex index, int imod=0); 
- 
-  /**
-    configure channel
-    \param reg channel register
-    \param ichan channel number (-1 all)
-    \param ichip chip number (-1 all)
-    \param imod module number (-1 all)
-    \returns current register value
-    \sa ::sls_detector_channel
-  */
-  int setChannel(int64_t reg, int ichan=-1, int ichip=-1, int imod=-1);  
-
-  /**
-    configure channel
-    \param chan channel to be set - must contain correct channel, module and chip number
-    \returns current register value
-  */
-  int setChannel(sls_detector_channel chan);
-
-  /**
-    get channel
-    \param ichan channel number 
-    \param ichip chip number
-    \param imod module number
-    \returns current channel structure for channel
-  */
-  sls_detector_channel getChannel(int ichan, int ichip, int imod);
-  
-
-
-  /** 
-       configure chip
-       \param reg chip register
-       \param ichip chip number (-1 all)
-       \param imod module number (-1 all)
-       \returns current register value
-       \sa ::sls_detector_chip
-  */
-  int setChip(int reg, int ichip=-1, int imod=-1);
-  
-  /** 
-       configure chip
-       \param chip chip to be set - must contain correct module and chip number and also channel registers
-       \returns current register value
-       \sa ::sls_detector_chip
-  */
-  int setChip(sls_detector_chip chip); 
-
-  /**
-    get chip
-    \param ichip chip number
-    \param imod module number
-    \returns current chip structure for channel
-
-    \bug probably does not return corretly!
-  */
-  sls_detector_chip getChip(int ichip, int imod);
-
-
-  /** 
-     configure module
-       \param imod module number (-1 all)
-       \returns current register value
-       \sa ::sls_detector_module
-  */
-  virtual int setModule(int reg, int imod=-1); 
-
-  /** 
-       configure chip
-       \param module module to be set - must contain correct module number and also channel and chip registers
-       \returns current register value
-       \sa ::sls_detector_module
-  */
-  virtual int setModule(sls_detector_module module);
-
-  /**
-    get module
-    \param imod module number
-    \returns pointer to module structure (which has bee created and must then be deleted)
-  */
-  virtual sls_detector_module *getModule(int imod);
- 
   // calibration functions
   //  int setCalibration(int imod, detectorSettings isettings, float gain, float offset);
   //int getCalibration(int imod, detectorSettings isettings, float &gain, float &offset);
@@ -681,32 +485,59 @@ class multiSlsDetector : public slsDetector {
   virtual detectorSettings setSettings(detectorSettings isettings, int imod=-1);
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 // Acquisition functions
 
 
   /**
-    start detector acquisition
-    \returns OK/FAIL
+    start detector acquisition (master is started as last)
+    \returns OK if all detectors are properly started, FAIL otherwise
   */
   int startAcquisition();
 
   /**
-    stop detector acquisition
+    stop detector acquisition (master firtst)
     \returns OK/FAIL
   */
   int stopAcquisition();
   
   /**
-    start readout (without exposure or interrupting exposure)
+    start readout (without exposure or interrupting exposure) (master first)
     \returns OK/FAIL
   */
   int startReadOut();
 
   /**
-     get run status
+     get run status <BR> Does it make sense to ask the status for all detectors?!?!?!
     \returns status mask
   */
-  virtual runStatus  getRunStatus()=0;
+  runStatus  getRunStatus();
 
   /**
     start detector acquisition and read all data putting them a data queue
@@ -796,15 +627,6 @@ class multiSlsDetector : public slsDetector {
   int64_t getTimeLeft(timerIndex index);
 
 
-
-
-  /** sets/gets the value of important readout speed parameters
-      \param sp is the parameter to be set/get
-      \param value is the value to be set, if -1 get value
-      \returns current value for the specified parameter
-      \sa speedVariable
-   */
-  int setSpeed(speedVariable sp, int value=-1);
 
   // Flags
   /** 
@@ -1225,29 +1047,7 @@ s
      \sa mythenDetector::processData
   */
   virtual void* processData(int delflag=1)=0; // thread function
-  /** Allocates the memory for a sls_detector_module structure and initializes it
-      \returns myMod the pointer to the allocate dmemory location
 
-  */
-  sls_detector_module*  createModule();
-  /** frees the memory for a sls_detector_module structure 
-      \param myMod the pointer to the memory to be freed
-
-  */
-  
-  void deleteModule(sls_detector_module *myMod);
-
-
-  /** pure virtual function
-      performs the complete acquisition and data processing 
-     moves the detector to next position <br>
-     starts and reads the detector <br>
-     reads the IC (if required) <br>
-     reads the encoder (iof required for angualr conversion) <br>
-     processes the data (flat field, rate, angular conversion and merging ::processData())
-     /param delflag if 1 the data are processed, written to file and then deleted. If 0 they are added to the finalDataQueue
-     \sa mythenDetector::acquire()
-  */
   
   virtual void acquire(int delflag=1)=0;
 
@@ -1264,13 +1064,57 @@ s
  
 
 
-
-  int nDetectors;
-
+  int shmId;
 
   slsDetector *detectors[MAXDET];
 
 
+  sharedMultiSlsDetector *thisMultiDetector;
+
+  /**
+     current position of the detector
+  */
+  float currentPosition;
+  
+  /**
+     current position index of the detector
+  */
+  int currentPositionIndex;
+  
+  /**
+     I0 measured
+  */
+  float currentI0;
+  
+  
+
+
+  /**
+     current scan variable of the detector
+  */
+  float currentScanVariable[MAX_SCAN_LEVELS];
+  
+  /**
+     current scan variable index of the detector
+  */
+  int currentScanIndex[MAX_SCAN_LEVELS];
+  
+  
+
+
+  /** merging bins */
+  float *mergingBins;
+
+  /** merging counts */
+  float *mergingCounts;
+
+  /** merging errors */
+  float *mergingErrors;
+
+  /** merging multiplicity */
+  int *mergingMultiplicity;
+  
+ 
 };
 
 

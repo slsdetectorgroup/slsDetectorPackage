@@ -844,27 +844,30 @@ int slsDetector::setTCPSocket(string const name, int const control_port, int con
 /* generates file name without extension*/
 
 string slsDetector::createFileName() {
+  createFileName(thisDetector->filePath, thisDetector->fileName, thisDetector->actionMask, currentScanVariable[0], thisDetector->scanPrecision[0], currentScanVariable[1], thisDetector->scanPrecision[1], currentPositionIndex, thisDetector->numberOfPositions, thisDetector->fileIndex);
   
+}
 
+string  slsDetector::createFileName(char *filepath, char *filename, int aMask, float sv0, int prec0, float sv1, int prec1, int pindex, int npos, int findex) {
   ostringstream osfn;
   /*directory name +root file name */
-  osfn << thisDetector->filePath << "/" << thisDetector->fileName;
+  osfn << filepath << "/" << filename;
   
   // scan level 0
-  if (thisDetector->actionMask & (1 << (MAX_ACTIONS)))
-    osfn << "_S" << fixed << setprecision(thisDetector->scanPrecision[0]) << currentScanVariable[0];
+  if ( aMask& (1 << (MAX_ACTIONS)))
+    osfn << "_S" << fixed << setprecision(prec0) << sv0;
 
   //scan level 1
-  if (thisDetector->actionMask & (1 << (MAX_ACTIONS+1)))
-    osfn << "_s" << fixed << setprecision(thisDetector->scanPrecision[1]) << currentScanVariable[1];
+  if (aMask & (1 << (MAX_ACTIONS+1)))
+    osfn << "_s" << fixed << setprecision(prec1) << sv1;
   
 
   //position
-  if (currentPositionIndex>0 && currentPositionIndex<=thisDetector->numberOfPositions)
-    osfn << "_p" << currentPositionIndex;
+  if (pindex>0 && pindex<=npos)
+    osfn << "_p" << pindex;
 
   // file index
-  osfn << "_" << thisDetector->fileIndex;
+  osfn << "_" << findex;
 
 
 #ifdef VERBOSE
@@ -874,6 +877,16 @@ string slsDetector::createFileName() {
   return osfn.str();
 
 }
+
+
+
+
+
+
+
+
+
+
 
 
 int slsDetector::getFileIndexFromFileName(string fname) {

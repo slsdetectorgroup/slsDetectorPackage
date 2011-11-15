@@ -756,8 +756,9 @@ void showbits(int h)
 
 int initDACs(int* v,int imod)
 {
+#ifdef VERBOSE
   printf("\n..inside initdacs\n");
-
+#endif
   int iaddr;
   //  sDac=0;
   for (iaddr=0; iaddr<8; iaddr++) {
@@ -783,7 +784,9 @@ int initDACs(int* v,int imod)
 
 int setSettings(int i) 
 {
+#ifdef VERBOSE
   printf("\ninside set settings wit settins=%d...\n",i);
+#endif
   int imod, isett, is;
   int vrefds[] = VREFDS_VALS;
   int vcascn[] = VCASCN_VALS;

@@ -18,7 +18,7 @@ int main(int argc, char *argv[])
   int  portno, b;
   char cmd[100];
   int retval=OK;
-
+ 
   if (argc==1) {
     portno = DEFAULT_PORTNO;
     sprintf(cmd,"%s %d &",argv[0],DEFAULT_PORTNO+1);

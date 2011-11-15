@@ -2,7 +2,7 @@
 #define COMMUNICATION_FUNCS_H
 
 #define SEND_REC_MAX_SIZE 4096
-#define DEFAULT_PORTNO    1955
+#define DEFAULT_PORTNO    1952
 #include <sys/types.h>
 #include <sys/socket.h>
 

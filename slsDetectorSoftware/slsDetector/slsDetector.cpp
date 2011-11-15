@@ -325,17 +325,9 @@ int slsDetector::initializeDetectorSize(detectorType type) {
      /** sets onlineFlag to OFFLINE_FLAG */
      thisDetector->onlineFlag=OFFLINE_FLAG;
      /** set ports to defaults */
-     switch(type){
-     case GOTTHARD:
-     thisDetector->controlPort=DEFAULT_PORTNO_GOTTHARD;
-     thisDetector->stopPort=DEFAULT_PORTNO_GOTTHARD+1;
-     thisDetector->dataPort=DEFAULT_PORTNO_GOTTHARD+2;
-     break;
-     default:
      thisDetector->controlPort=DEFAULT_PORTNO;
      thisDetector->stopPort=DEFAULT_PORTNO+1;
      thisDetector->dataPort=DEFAULT_PORTNO+2;
-     }
      /** set thisDetector->myDetectorType to type and according to this set nChans, nChips, nDacs, nAdcs, nModMax, dynamicRange, nMod*/
      thisDetector->myDetectorType=type;
      switch(thisDetector->myDetectorType) {

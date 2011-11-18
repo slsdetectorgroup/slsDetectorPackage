@@ -225,7 +225,6 @@ u_int32_t putout(char *s, int modnum) {
   }
   //addr=MCB_CNTRL_REG_OFF+(modnum<<4);
   addr=MCB_CNTRL_REG_OFF;//+(modnum<<SHIFTMOD); commented by dhanya
-  //printf("\n\tpat=");showbits(pat);
   bus_w(addr, pat);
 
   return OK;
@@ -806,8 +805,6 @@ int setDACRegister(int idac, int val, int imod) {
   u_int32_t addr, reg, mask;
   int off;
 #ifdef VERBOSE
-   printf("\ninside setdacref.....\n");
-  printf("val=%d\n",val);
   printf("Settings dac %d module %d register to %d\n",idac,imod,val);
 #endif
 
@@ -855,6 +852,41 @@ int setDACRegister(int idac, int val, int imod) {
 }
 
 
+float getTemperature(int tempSensor, int imod)
+{
+  float val;
+  char cTempSensor[2][100]={"ADCs/ASICs","VRs/FPGAs"}; 
+  imod=0;//ignoring more than 1 mod for now
+  int i,j,k,repeats=6,times=11;
+  u_int32_t tempVal=0;
+
+#ifdef VERBOSE
+  printf("Getting Temperature of module:%d for the %s\n",imod,cTempSensor[tempSensor]);
+#endif
+  bus_w(TEMP_SPI_IN,T1_CLK_BIT|T1_CS_BIT|T2_CLK_BIT|T2_CS_BIT);//standby
+  bus_w(TEMP_SPI_IN,(T1_CLK_BIT)&~(T1_CS_BIT)|(T2_CLK_BIT));//high clk low cs
+
+  for(k=0;k<2;k++){
+    for(i=0;i<times;i++) {
+      //repeats is number of register writes for delay
+      for(j=0;j<repeats;j++)
+	bus_w(TEMP_SPI_IN,~(T1_CLK_BIT)&~(T1_CS_BIT)&~(T2_CLK_BIT)&~(T2_CS_BIT));//low clk low cs
+      for(j=0;j<repeats;j++)
+	bus_w(TEMP_SPI_IN,(T1_CLK_BIT)&~(T1_CS_BIT)|(T2_CLK_BIT));//high clk low cs
+
+      if(times==11)//only the first time
+	tempVal= (tempVal<<1) + (bus_r(TEMP_SPI_OUT) & (1<<tempSensor));
+    }
+    times=8;
+  }
+  bus_w(TEMP_SPI_IN,T1_CLK_BIT|T1_CS_BIT|T2_CLK_BIT|T2_CS_BIT);//standby
+  val=((float)tempVal)/4.0;	
+
+#ifdef VERBOSE//read time from start needed??
+   printf("Temperature of module:%d for the %s is %.2fC\n",imod,cTempSensor[tempSensor],val);
+#endif
+ return val;
+}
 
 
 u_int32_t runBusy(void) {

@@ -25,18 +25,14 @@
 
 
 // DAC definitions
-
 enum {VREF_DS, VCASCN_PB, VCASCP_PB, VOUT_CM, VCASC_OUT, VIN_CM, VREF_COMP, IB_TESTC};
-
-
-/* DAC adresses */
-//#define DACCS {0,0,1,1,2,2}
-//#define DACADDR {0,1,0,1,0,1}
 
 /* DAC adresses */
 #define DACCS   {0,0,1,1,2,2,3,3,4,4,5,5,6,6}
 #define DACADDR {0,1,0,1,0,1,0,1,0,1,0,1,0,1}
 
+//Temp definitions
+enum {TEMP_ADC, TEMP_FPGA};
 
 //dynamic range
 #define MAX5523

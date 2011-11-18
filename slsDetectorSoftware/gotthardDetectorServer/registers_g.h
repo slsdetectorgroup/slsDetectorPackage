@@ -20,6 +20,10 @@
 #define GAIN_REG         0x10<<11
 #define DAQ_REG          0x1b<<11
 
+//temperature
+#define TEMP_SPI_IN      0x81<<11
+#define TEMP_SPI_OUT     0x82<<11
+
 //not used so far
 #define SPEED_REG        0x006000
 #define SET_NBITS_REG    0x008000
@@ -160,6 +164,13 @@
 #define EXT_RO_TRIG_OUT_FALLING        0xC
 
 
+/* for temperature register */
+#define T1_CLK_BIT             0x00000001
+#define T1_CS_BIT              0x00000002
+#define T2_CLK_BIT             0x00000004
+#define T2_CS_BIT              0x00000008
+
+
 
 /* fifo control register */
 #define FIFO_RESET_BIT              0x00000001 
@@ -167,7 +178,6 @@
 
 
 //chip shiftin register meaning
-
 #define OUTMUX_OFF 20
 #define OUTMUX_MASK   0x1f
 #define PROBES_OFF 4
@@ -176,3 +186,4 @@
 #define OUTBUF_MASK 1
 
 #endif
+

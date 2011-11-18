@@ -792,8 +792,9 @@ int set_dac(int fnum) {
   int n;
   float val;
   int idac=0;
+  int itemp=-1;
 
-  sprintf(mess,"Can't set DAC\n");
+  sprintf(mess,"Can't set DAC/POT/TEMP\n");
 
 
   n = receiveDataOnly(arg,sizeof(arg));
@@ -811,7 +812,7 @@ int set_dac(int fnum) {
   }
 
 #ifdef VERBOSE
-  printf("Setting DAC %d of module %d to %f V\n", ind, imod, val);
+  printf("Setting DAC/POT/TEMP %d of module %d to %f V\n", ind, imod, val);
 #endif 
 
   if (imod>=getNModBoard())
@@ -845,25 +846,39 @@ int set_dac(int fnum) {
   case G_IB_TESTC:
     idac=IB_TESTC;
     break;
- default:
-    printf("Unknown DAC index %d\n",ind);
-    sprintf(mess,"Unknown DAC index %d\n",ind);
+  case TEMPERATURE_ADC:
+    itemp=TEMP_ADC;
+    break;
+  case TEMPERATURE_FPGA:
+    itemp=TEMP_FPGA;
+    break;
+  default:
+    printf("Unknown DAC/POT/TEMP index %d\n",ind);
+    sprintf(mess,"Unknown DAC/POT/TEMP index %d\n",ind);
     ret=FAIL;
   }
  
   if (ret==OK) {
+    if(itemp!=-1) {
+      if (imod>=0 && imod<nModX)	
+	retval=getTemperature(itemp,imod);
+      else
+	//get only the first mods temp, but dunno when this is used
+	retval=getTemperature(itemp,0);
+    }
+    else
       retval=initDACbyIndexDACU(idac,val,imod);
   }
 #endif
 
 #ifdef VERBOSE
-  printf("DAC set to %f V\n",  retval);
+  printf("DAC/POT/TEMP set to %f V\n",  retval);
 #endif  
   if (retval==val || val==-1)
     ret=OK;
   else {
     ret=FAIL;
-    printf("Setting dac %d of module %d: wrote %f but read %f\n", ind, imod, val, retval);
+    printf("Setting dac/pot %d of module %d: wrote %f but read %f\n", ind, imod, val, retval);
   }
 
 

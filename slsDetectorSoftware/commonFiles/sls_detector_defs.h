@@ -246,7 +246,8 @@ enum dacIndex {
   PREAMP,   /**< preamp feedback */
   SHAPER1,    /**< shaper1 feedback */
   SHAPER2,  /**< shaper2 feedback */
-  TEMPERATURE,  /**< temperature sensor (adc) */
+  TEMPERATURE_ADC,  /**< temperature sensor (adc) */
+  TEMPERATURE_FPGA,  /**< temperature sensor (fpga) */
   HUMIDITY,  /**< humidity sensor (adc) */
   DETECTOR_BIAS,   /**< detector bias */
   VA_POT, /**< power supply va */

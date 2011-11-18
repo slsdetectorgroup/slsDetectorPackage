@@ -37,10 +37,6 @@ class gotthardDetector : public slsDetector{
   virtual ~gotthardDetector(){};
    
 
-  char* gotthardStringname(string name);
-
-
- 
 
   /**
     reads configuration file fname calling executeLine

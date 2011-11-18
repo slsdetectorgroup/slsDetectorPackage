@@ -1746,7 +1746,7 @@ float slsDetector::setDAC(float val, dacIndex index, int imod){
 
 #ifdef VERBOSE
   std::cout<< std::endl;
-  std::cout<< "Setting DAC/POT "<< index << "of module " << imod  <<  " to " << val << std::endl; 
+  std::cout<< "Setting DAC/POT/TEMP "<< index << "of module " << imod  <<  " to " << val << std::endl; 
 #endif
   if (thisDetector->onlineFlag==ONLINE_FLAG) {
     if (controlSocket) {
@@ -1779,10 +1779,10 @@ float slsDetector::setDAC(float val, dacIndex index, int imod){
     }
   }
 #ifdef VERBOSE
-  std::cout<< "Dac/Pot set to "<< retval << std::endl;
+  std::cout<< "Dac/Pot/Temp set to "<< retval << std::endl;
 #endif
   if (ret==FAIL) {
-    std::cout<< "Set dac/pot failed " << std::endl;
+    std::cout<< "Set dac/pot/temp failed " << std::endl;
   }
   return retval;
 
@@ -4492,22 +4492,6 @@ string slsDetector::executeLine(int narg, char *args[], int action) {
     return string("more questions? Refere to software documentation!");
   }
 
-  /*
-   if (var=="gotthardString") {	
-     setTCPSocket();
-     if (action==PUT_ACTION) 
-       {
-	 sval=string(args[1]);
-	 std::cout<<"in setting\n";
-	  sval=string(args[1]);
-	  gotthardStringname(sval);
-       }
-     std::cout<<"in getting\n";
-     strcpy(answer, gotthardStringname(""));
-      return string(answer);
-   } else 
-  */
-
   if (var=="exitserver") {
      setTCPSocket();
      ival=exitServer();
@@ -5283,7 +5267,7 @@ string slsDetector::executeLine(int narg, char *args[], int action) {
        return string(answer);
       }
   /* GOTTHARD POTS */
-else if (var=="vref_ds") {
+      else if (var=="vref_ds") {
       if (action==PUT_ACTION) {
 	sscanf(args[1],"%f",&fval);
 	setDAC(fval,G_VREF_DS );
@@ -5340,17 +5324,19 @@ else if (var=="vref_ds") {
        sprintf(answer,"%f",setDAC(-1,G_IB_TESTC));
        return string(answer);
       }
-
-  /*
- else if (var=="temp") { 
-       if (action==PUT_ACTION) {
-	return string("cannot set");
+       /* GOTTHARD TEMPERATURE */ 
+      else if (var=="temp_adc") {
+       if (action==PUT_ACTION) 
+         return string("cannot set");
+       sprintf(answer,"%f",setDAC(-1,TEMPERATURE_ADC));
+       return string(answer);
+      } else if (var=="temp_fpga") {
+       if (action==PUT_ACTION) 
+         return string("cannot set");
+       sprintf(answer,"%f",setDAC(-1,TEMPERATURE_FPGA));
+       return string(answer);
       }
-      sprintf(answer,"%f",getTemperature());
-      return string(answer);
-  }
-  */
- 
+
   //timers
 
   else if (var=="exptime") {

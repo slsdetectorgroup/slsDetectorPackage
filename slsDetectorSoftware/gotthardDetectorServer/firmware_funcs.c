@@ -102,9 +102,9 @@ int mapCSP0(void) {
   printf("values=%08x\n",values);
   fifocntrl=(u_int32_t*)(CSP0BASE+FIFO_CNTRL_REG_OFF);
   printf("fifcntrl=%08x\n",fifocntrl);
+  */
   statusreg=(u_int32_t*)(CSP0BASE+STATUS_REG);
   printf("statusreg=%08x\n",statusreg);
-  */
   return OK;
 }
 
@@ -139,17 +139,13 @@ int setDummyRegister() {
       }
   */
   volatile u_int32_t val,addr;
-
   addr = DUMMY_REG;
-  // (else use bs_w16)
   int i;
   for(i=0;i<100;i++)
     {
       //dummy register
       val=0x5A5A5A5A-i;
       bus_w(addr, val);
-      //	bus_w(SET_DELAY_LSB_REG,0);
-      //val=bus_r(addr);	
       val=bus_r(addr);
       if (val!=0x5A5A5A5A-i) {
 	printf("ATTEMPT:%d:\tFPGA dummy register wrong!! %x instead of %x \n",i,val,0x5A5A5A5A-i);

@@ -3,71 +3,71 @@
 
 
 /* Definitions for FPGA*/
-#define CSP0 0x20200000 // Base Addresse CSP0 //done
-//#define CSP4 0xa0000000 // Base Addresse CSP4
-
-//#define MEM_SIZE 0xFFFFFF // map so much memory
-#define MEM_SIZE 0x100000 // map so much memory //done
-
+#define CSP0 0x20200000
+#define MEM_SIZE 0x100000 
 
 
 /* registers defined in FPGA */
-#define FIX_PATT_REG     0x45<<11  //0x000000
-#define FPGA_VERSION_REG 0x47<<11  //0x001000
-#define DUMMY_REG        0x13<<11  //0x002000
+#define FIX_PATT_REG     0x45<<11
+#define FPGA_VERSION_REG 0x47<<11
+#define DUMMY_REG        0x13<<11
 
-#define CONTROL_REG      0x5d<<11  //0x003000
-#define STATUS_REG       0x5e<<11  //0x004000
-#define CONFIG_REG       0x5f<<11  //0x005000
-#define EXT_SIGNAL_REG   0x6a<<11  //0x007000
+#define CONTROL_REG      0x5d<<11
+#define STATUS_REG       0x5e<<11
+#define CONFIG_REG       0x5f<<11
+#define EXT_SIGNAL_REG   0x6a<<11
 
+#define GAIN_REG         0x10<<11
+#define DAQ_REG          0x1b<<11
+
+//not used so far
 #define SPEED_REG        0x006000
 #define SET_NBITS_REG    0x008000
 #define LOOK_AT_ME_REG   0x009000
 
-#define SET_DELAY_LSB_REG     0x44<<11  //0x01A000   
-#define SET_DELAY_MSB_REG     0x45<<11  //0x01B000   
-#define GET_DELAY_LSB_REG     0x46<<11  //0x01C000   
-#define GET_DELAY_MSB_REG     0x47<<11  //0x01D000   
+//user entered
+#define SET_DELAY_LSB_REG     0x44<<11
+#define SET_DELAY_MSB_REG     0x45<<11
+#define GET_DELAY_LSB_REG     0x46<<11
+#define GET_DELAY_MSB_REG     0x47<<11
 
-#define SET_TRAINS_LSB_REG    0x48<<11  //0x01E000   
-#define SET_TRAINS_MSB_REG    0x49<<11  //0x01F000   
-#define GET_TRAINS_LSB_REG    0x4a<<11  //0x020000   
-#define GET_TRAINS_MSB_REG    0x4b<<11  //0x021000  
+#define SET_TRAINS_LSB_REG    0x48<<11
+#define SET_TRAINS_MSB_REG    0x49<<11 
+#define GET_TRAINS_LSB_REG    0x4a<<11
+#define GET_TRAINS_MSB_REG    0x4b<<11
 
-#define SET_FRAMES_LSB_REG    0x4c<<11  //0x00A000   
-#define SET_FRAMES_MSB_REG    0x4d<<11  //0x00B000   
-#define GET_FRAMES_LSB_REG    0x4e<<11  //0x00C000   
-#define GET_FRAMES_MSB_REG    0x4f<<11  //0x00D000 
+#define SET_FRAMES_LSB_REG    0x4c<<11
+#define SET_FRAMES_MSB_REG    0x4d<<11
+#define GET_FRAMES_LSB_REG    0x4e<<11
+#define GET_FRAMES_MSB_REG    0x4f<<11
 
-#define SET_PERIOD_LSB_REG    0x51<<11  //0x016000   
-#define SET_PERIOD_MSB_REG    0x52<<11  //0x017000   
-#define GET_PERIOD_LSB_REG    0x53<<11  //0x018000   
-#define GET_PERIOD_MSB_REG    0x54<<11  //0x019000   
+#define SET_PERIOD_LSB_REG    0x51<<11
+#define SET_PERIOD_MSB_REG    0x52<<11
+#define GET_PERIOD_LSB_REG    0x53<<11
+#define GET_PERIOD_MSB_REG    0x54<<11
 
-#define SET_EXPTIME_LSB_REG   0x55<<11   //0x00E000   
-#define SET_EXPTIME_MSB_REG   0x56<<11   //0x00F000   
-#define GET_EXPTIME_LSB_REG   0x57<<11   //0x010000   
-#define GET_EXPTIME_MSB_REG   0x58<<11   //0x011000   
+#define SET_EXPTIME_LSB_REG   0x55<<11
+#define SET_EXPTIME_MSB_REG   0x56<<11
+#define GET_EXPTIME_LSB_REG   0x57<<11
+#define GET_EXPTIME_MSB_REG   0x58<<11
 
-#define SET_GATES_LSB_REG     0x59<<11  //0x012000   
-#define SET_GATES_MSB_REG     0x5a<<11  //0x013000   
-#define GET_GATES_LSB_REG     0x5b<<11  //0x014000   
-#define GET_GATES_MSB_REG     0x5c<<11  //0x015000   
-
-
-
+#define SET_GATES_LSB_REG     0x59<<11
+#define SET_GATES_MSB_REG     0x5a<<11
+#define GET_GATES_LSB_REG     0x5b<<11
+#define GET_GATES_MSB_REG     0x5c<<11
 
 
- 
-
+//not used
 #define GET_SHIFT_IN_REG      0x022000   
 
-#define MOD_DACS1_REG         0x41<<11//edited by dhanya  
+//to read back dac registers
+#define MOD_DACS1_REG         0x41<<11
 #define MOD_DACS2_REG         0x42<<11
 #define MOD_DACS3_REG         0x43<<11 
 
-#define MCB_CNTRL_REG_OFF     0x37<<11 //0x100000 used to send vals to dacs
+#define MCB_CNTRL_REG_OFF     0x37<<11//used to control the dacs
+
+//not used
 #define MCB_DOUT_REG_OFF      0x200000
 #define FIFO_CNTRL_REG_OFF    0x300000
 #define FIFO_COUNTR_REG_OFF   0x400000
@@ -123,8 +123,7 @@
 #define FIFO_NC_MASK             0x001ffe00
 #define FIFO_NC_OFF              9
 
-/* for config register */
-
+/* for config register *///not really used yet
 #define TOT_ENABLE_BIT           0x00000002
 #define TIMED_GATE_BIT           0x00000004
 #define CONT_RO_ENABLE_BIT       0x00080000  
@@ -132,7 +131,6 @@
 
 
 /* for speed register */
-
 #define CLK_DIVIDER_MASK              0x000000ff 
 #define CLK_DIVIDER_OFFSET            0 
 #define SET_LENGTH_MASK               0x00000f00 
@@ -145,7 +143,6 @@
 #define TOTCLK_DUTYCYCLE_OFFSET       16
 
 /* for external signal register */
-
 #define SIGNAL_OFFSET                 4
 #define SIGNAL_MASK                   0xF
 #define EXT_SIG_OFF                   0x0

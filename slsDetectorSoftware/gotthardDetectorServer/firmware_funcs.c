@@ -863,7 +863,7 @@ float getTemperature(int tempSensor, int imod)
 #ifdef VERBOSE
   printf("Getting Temperature of module:%d for the %s\n",imod,cTempSensor[tempSensor]);
 #endif
-  bus_w(TEMP_SPI_IN,T1_CLK_BIT|T1_CS_BIT|T2_CLK_BIT|T2_CS_BIT);//standby
+  bus_w(TEMP_SPI_IN,(T1_CLK_BIT)|(T1_CS_BIT)|(T2_CLK_BIT)|(T2_CS_BIT));//standby
   bus_w(TEMP_SPI_IN,(T1_CLK_BIT)&~(T1_CS_BIT)|(T2_CLK_BIT));//high clk low cs
 
   for(k=0;k<2;k++){
@@ -879,7 +879,7 @@ float getTemperature(int tempSensor, int imod)
     }
     times=8;
   }
-  bus_w(TEMP_SPI_IN,T1_CLK_BIT|T1_CS_BIT|T2_CLK_BIT|T2_CS_BIT);//standby
+  bus_w(TEMP_SPI_IN,(T1_CLK_BIT)|(T1_CS_BIT)|(T2_CLK_BIT)|(T2_CS_BIT));//standby
   val=((float)tempVal)/4.0;	
 
 #ifdef VERBOSE//read time from start needed??

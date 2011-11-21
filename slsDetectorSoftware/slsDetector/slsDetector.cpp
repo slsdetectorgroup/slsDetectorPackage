@@ -322,6 +322,12 @@ int slsDetector::initializeDetectorSize(detectorType type) {
    if (thisDetector->alreadyExisting==0) {
      /** set hostname to default */
      strcpy(thisDetector->hostname,DEFAULT_HOSTNAME);
+
+     /** set client ip address */
+     strcpy(thisDetector->clientIPAddress,"none");
+     /** set client mac address */
+     strcpy(thisDetector->clientMacAddress,"none");
+
      /** sets onlineFlag to OFFLINE_FLAG */
      thisDetector->onlineFlag=OFFLINE_FLAG;
      /** set ports to defaults */
@@ -2562,9 +2568,9 @@ int slsDetector::setThresholdEnergy(int e_eV,  int imod, detectorSettings isetti
 
 
  detectorSettings slsDetector::setSettings( detectorSettings isettings, int imod){
-   //#ifdef VERBOSE
+#ifdef VERBOSE
   std::cout<< "slsDetector setSettings "<< std::endl;
-  //#endif
+#endif
   sls_detector_module *myMod=createModule();
   int modmi=imod, modma=imod+1, im=imod;
   string settingsfname, calfname;
@@ -2629,7 +2635,9 @@ int slsDetector::setThresholdEnergy(int e_eV,  int imod, detectorSettings isetti
       case GOTTHARD:
 	ostfn << thisDetector->settingsDir << ssettings <<"/settings.sn";//  << setfill('0') << setw(3) << hex << getId(MODULE_SERIAL_NUMBER, im) << setbase(10); 
 	oscfn << thisDetector->calDir << ssettings << "/calibration.sn";//  << setfill('0') << setw(3) << hex << getId(MODULE_SERIAL_NUMBER, im) << setbase(10); 
+#ifdef VERBOSE
 	std::cout<< thisDetector->settingsDir<<endl<< thisDetector->calDir <<endl;
+#endif
       break;
       default:
 	ostfn << thisDetector->settingsDir << ssettings <<"/noise.sn"  << setfill('0') << setw(3) << hex << getId(MODULE_SERIAL_NUMBER, im) << setbase(10); 
@@ -2638,9 +2646,9 @@ int slsDetector::setThresholdEnergy(int e_eV,  int imod, detectorSettings isetti
       //oscfn << thisDetector->calDir << ssettings << "/calibration.sn"  << setfill('0') << setw(3) << hex << getId(MODULE_SERIAL_NUMBER, im) << setbase(10); 
       
       settingsfname=ostfn.str();
-      //#ifdef VERBOSE
+#ifdef VERBOSE
       cout << "the settings name is "<<settingsfname << endl;
-      //#endif
+#endif
       if (readSettingsFile(settingsfname,myMod)) {
 	calfname=oscfn.str();
 #ifdef VERBOSE

@@ -370,10 +370,10 @@ int gotthardDetector::retrieveDetectorSetup(string fname1, int level){
   ifstream infile;
   ostringstream oss;
   int iline=0;
-  //   string names[]={"Vref", "VcascN","VcascP", "Vout", "Vcasc", "Vin", "Vref_comp", "Vib_test", "config", "HV"};
-  string sargname;
+  string sargname,sargname2;
   int ival;
   int ichan=0, ichip=0, idac=0;
+  string::size_type pos=0;
 
  
 
@@ -386,6 +386,7 @@ int gotthardDetector::retrieveDetectorSetup(string fname1, int level){
 #endif
     infile.open(myfname.c_str(), ios_base::in);
     if (infile.is_open()) {
+      //dacs---------------
 	for (int iarg=0; iarg<thisDetector->nDacs; iarg++) {
 	  getline(infile,str);
 	  iline++;
@@ -401,6 +402,7 @@ int gotthardDetector::retrieveDetectorSetup(string fname1, int level){
 	  idac++;
 	}
 
+	//config---------------
 	  getline(infile,str);
 	  iline++;
 #ifdef VERBOSE
@@ -409,22 +411,65 @@ int gotthardDetector::retrieveDetectorSetup(string fname1, int level){
 	  istringstream ssstr(str);
 	  ssstr >> sargname >> ival;
 #ifdef VERBOSE
-	  std::cout<< sargname << " (config) is " << ival << std::endl;
+	  std::cout<< sargname << " is " << ival << std::endl;
 #endif
 	   int configval = ival;//myMod->dacs[idac]=ival;
 
+	   //HV---------------
+	  getline(infile,str);
+	  iline++;
+#ifdef VERBOSE
+	  std::cout<< str << std::endl;
+#endif
+	  ssstr.str(str);
+	  ssstr >> sargname >> ival;
+#ifdef VERBOSE
+	  std::cout<< sargname << " is " << ival << std::endl;
+#endif
+	   int HVval = ival;//myMod->dacs[idac]=ival;
 
+	   //mac address----------
 	  getline(infile,str);
 	  iline++;
 #ifdef VERBOSE
 	  std::cout<< str << std::endl;
 #endif
 	  istringstream sstr(str);
-	  sstr >> sargname >> ival;
+	  sstr >> sargname >> sargname2;
 #ifdef VERBOSE
-	  std::cout<< sargname << " (HV) is " << ival << std::endl;
+	  std::cout<< sargname << " is " << sargname2 << std::endl;
 #endif
-	   int HVval = ival;//myMod->dacs[idac]=ival;
+	  //getting rid of dots
+	  pos = sargname2.find(".");
+	  while(pos != string::npos)
+	    {
+	      sargname2.erase( pos, 1 );
+	      pos = sargname2.find(".");
+	    }
+	  strcpy(thisDetector->clientMacAddress,sargname2.c_str());
+	  cout<<"macaddress:"<<thisDetector->clientMacAddress<<endl;
+
+	  //ip address---------------
+	  getline(infile,str);
+	  iline++;
+#ifdef VERBOSE
+	  std::cout<< str << std::endl;
+#endif
+	   istringstream sssstr(str);
+	  sssstr >> sargname >> sargname2;
+#ifdef VERBOSE
+	  std::cout<< sargname << " is " << sargname2 << std::endl;
+#endif
+	  //getting rid of dots
+	  pos = sargname2.find(".");
+	  while(pos != string::npos)
+	    {
+	      sargname2.erase( pos, 1 );
+	      pos = sargname2.find(".");
+	    }
+	  strcpy(thisDetector->clientIPAddress,sargname2.c_str());
+	  cout<<"ipaddress:"<<thisDetector->clientIPAddress<<endl;
+
 
 
       infile.close();
@@ -443,7 +488,7 @@ int gotthardDetector::retrieveDetectorSetup(string fname1, int level){
 int gotthardDetector::writeSettingsFile(string fname, sls_detector_module mod){
   
   ofstream outfile;
-  string names[]={"Vref", "VcascN","VcascP", "Vout", "Vcasc", "Vin", "Vref_comp", "Vib_test", "config", "HV"};
+  string names[]={"Vref", "VcascN","VcascP", "Vout", "Vcasc", "Vin", "Vref_comp", "Vib_test", "config", "HV", "macaddress","ipaddress"};
   int iv, ichan, ichip;
   int iv1, idac;
   int nb;

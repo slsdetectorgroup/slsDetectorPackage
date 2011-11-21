@@ -8,3 +8,5 @@ VREF_COMP 420
 IB_TESTC 440
 config 0x07
 hv 100
+macaddress 129.129.202.255
+ipaddress 129.129.202.176

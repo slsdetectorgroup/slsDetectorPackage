@@ -6,7 +6,6 @@ VCASC_OUT 380
 VIN_CM 400
 VREF_COMP 420
 IB_TESTC 440
-config 0x07
-hv 100
-macaddress 129.129.202.255
+gain 0
+macaddress 00:30:4F:10:B3:A4
 ipaddress 129.129.202.176

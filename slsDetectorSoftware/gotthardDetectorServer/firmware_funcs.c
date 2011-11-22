@@ -889,25 +889,36 @@ float getTemperature(int tempSensor, int imod){
 
 int getHighVoltage(int val, int imod){
 #ifdef VERBOSE
-  printf("Getting High Voltage of module:%d\n",imod);
+  printf("Setting/Getting High Voltage of module:%d with val:%d\n",imod,val);
 #endif
   volatile u_int32_t addr=HV_REG;
+  int loop;
+  int found=0;
   int input []={  0, 90,110,120,150,180,200};
   int value1[]={0x0,0x0,0x2,0x4,0x6,0x8,0xA};
   int value2[]={0x0,0x1,0x3,0x5,0x7,0x9,0xB};
-  //changing anything here should also be changed in 
-  //server_funcs.c to check if wrongly written
-  switch(val){
-  case -1:  break;
-  case 0:   bus_w(addr,0x0); break;
-  case 90:  bus_w(addr,0x0); bus_w(addr,0x1);  break;
-  case 110: bus_w(addr,0x2); bus_w(addr,0x3);  break;
-  case 120: bus_w(addr,0x4); bus_w(addr,0x5);  break;
-  case 150: bus_w(addr,0x6); bus_w(addr,0x7);  break;
-  case 180: bus_w(addr,0x8); bus_w(addr,0x9);  break;
-  case 200: bus_w(addr,0xA); bus_w(addr,0xB);  break;
-  default : printf("Not a valid voltage\n"); return -1; break;
-  }
+  if(val!=-1)
+    {
+      for(loop=0;loop<7;loop++)
+	if(val==input[loop]) {
+	  found=1;
+#ifdef VERBOSE 
+	  printf("Value sent for val:%d is %d and then %d\n",val,value1[loop],value2[loop]);
+#endif
+	  bus_w(addr,value1[loop]);
+	  bus_w(addr,value2[loop]);
+	  val=bus_r(addr);
+	  if(val!=value2[loop])
+	    {
+	      printf("Error setting high voltage:Value read is %d\n",val);
+	      return -1;
+	    }
+	}
+      if(!found){
+	printf("Not a valid voltage\n"); 
+	return -1;
+      }
+    }
   val=bus_r(addr);
 #ifdef VERBOSE
   printf("High Voltage of module:%d is %d\n",imod,val);

@@ -878,8 +878,10 @@ int set_dac(int fnum) {
   printf("DAC/TEMP/HV set to %f V\n",  retval);
 #endif  
   ret=FAIL;
-  if((itemp==HIGH_VOLTAGE)&&(retval!=-1))
-    ret =OK;
+  if (itemp==HIGH_VOLTAGE){
+    if (retval!=-1)
+      ret=OK;
+  }
   else if (retval==val || val==-1)
     ret=OK;
    
@@ -887,7 +889,7 @@ int set_dac(int fnum) {
     printf("Setting dac/hv %d of module %d: wrote %f but read %f\n", ind, imod, val, retval);
     
 
-/* send answer */
+  /* send answer */
 /* send OK/failed */
 n = sendDataOnly(&ret,sizeof(ret));
 if (ret==OK) {

@@ -25,14 +25,14 @@
 
 
 // DAC definitions
-enum {VREF_DS, VCASCN_PB, VCASCP_PB, VOUT_CM, VCASC_OUT, VIN_CM, VREF_COMP, IB_TESTC};
+enum {VREF_DS, VCASCN_PB, VCASCP_PB, VOUT_CM, VCASC_OUT, VIN_CM, VREF_COMP, IB_TESTC, };
 
 /* DAC adresses */
 #define DACCS   {0,0,1,1,2,2,3,3,4,4,5,5,6,6}
 #define DACADDR {0,1,0,1,0,1,0,1,0,1,0,1,0,1}
 
-//Temp definitions
-enum {TEMP_ADC, TEMP_FPGA};
+//Temp/HIGH VOLTAGE Definitions
+enum {TEMP_ADC, TEMP_FPGA, HIGH_VOLTAGE};
 
 //dynamic range
 #define MAX5523
@@ -119,6 +119,11 @@ float initDACbyIndexDACU(int ind,int val, int imod);
 float getDACbyIndexDACU(int ind,  int imod);
 int getThresholdEnergy();
 int setThresholdEnergy(int ethr);
+
+/* Temp/HV routines*/
+float getTemperatureByModule(int tempSensor, int imod);
+int getHighVoltageByModule(int val, int imod);
+
 /* Initialization*/
 int initChannel(int ft,int cae, int ae, int coe, int ocoe, int counts,int imod );
 int initChannelbyNumber(sls_detector_channel myChan);

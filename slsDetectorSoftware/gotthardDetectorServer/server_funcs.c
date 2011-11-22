@@ -783,7 +783,7 @@ int read_register(int fnum) {
 }
 
 int set_dac(int fnum) {
-
+  //everything in here does for all mods
   float retval;
   int ret=OK;
   int arg[2];
@@ -794,7 +794,7 @@ int set_dac(int fnum) {
   int idac=0;
   int itemp=-1;
 
-  sprintf(mess,"Can't set DAC/POT/TEMP\n");
+  sprintf(mess,"Can't set DAC/TEMP/HV\n");
 
 
   n = receiveDataOnly(arg,sizeof(arg));
@@ -812,7 +812,7 @@ int set_dac(int fnum) {
   }
 
 #ifdef VERBOSE
-  printf("Setting DAC/POT/TEMP %d of module %d to %f V\n", ind, imod, val);
+  printf("Setting DAC/TEMP/HV %d of module %d to %f V\n", ind, imod, val);
 #endif 
 
   if (imod>=getNModBoard())
@@ -852,51 +852,52 @@ int set_dac(int fnum) {
   case TEMPERATURE_FPGA:
     itemp=TEMP_FPGA;
     break;
+  case HV_POT:
+    itemp=HIGH_VOLTAGE;
+    break;
   default:
-    printf("Unknown DAC/POT/TEMP index %d\n",ind);
-    sprintf(mess,"Unknown DAC/POT/TEMP index %d\n",ind);
+    printf("Unknown DAC/TEMP/HV index %d\n",ind);
+    sprintf(mess,"Unknown DAC/TEMP/HV index %d\n",ind);
     ret=FAIL;
   }
  
   if (ret==OK) {
-    if(itemp!=-1) {
-      if (imod>=0 && imod<nModX)	
-	retval=getTemperature(itemp,imod);
-      else
-	//get only the first mods temp, but dunno when this is used
-	retval=getTemperature(itemp,0);
-    }
-    else
+    //dac
+    if(itemp==-1)
       retval=initDACbyIndexDACU(idac,val,imod);
+    else
+      {	//HV
+	if(itemp==HIGH_VOLTAGE)
+	  retval=getHighVoltageByModule(val,imod);
+	else//Temp
+	  retval=getTemperatureByModule(itemp,imod);
+      }
   }
 #endif
-
 #ifdef VERBOSE
-  printf("DAC/POT/TEMP set to %f V\n",  retval);
+  printf("DAC/TEMP/HV set to %f V\n",  retval);
 #endif  
-  if (retval==val || val==-1)
+  ret=FAIL;
+  if((itemp==HIGH_VOLTAGE)&&(retval!=-1))
+    ret =OK;
+  else if (retval==val || val==-1)
     ret=OK;
-  else {
-    ret=FAIL;
-    printf("Setting dac/pot %d of module %d: wrote %f but read %f\n", ind, imod, val, retval);
-  }
+   
+  if(ret==FAIL)
+    printf("Setting dac/hv %d of module %d: wrote %f but read %f\n", ind, imod, val, retval);
+    
 
-
-  /* send answer */
-  /* send OK/failed */
-  n = sendDataOnly(&ret,sizeof(ret));
-  if (ret==OK) {
-    /* send return argument */
-    n += sendDataOnly(&retval,sizeof(retval));
-  } else {
-    n += sendDataOnly(mess,sizeof(mess));
-  }
-
-  /* Maybe this is done inside the initialization funcs */
-  //detectorDacs[imod][ind]=val;
-  /*return ok/fail*/
-  return ret; 
-
+/* send answer */
+/* send OK/failed */
+n = sendDataOnly(&ret,sizeof(ret));
+if (ret==OK) {
+  /* send return argument */
+  n += sendDataOnly(&retval,sizeof(retval));
+ } else {
+  n += sendDataOnly(mess,sizeof(mess));
+ }
+/*return ok/fail*/
+return ret; 
 }
 
 

@@ -587,6 +587,7 @@ float initDACbyIndexDACU(int ind, int val, int imod) {
 	
       if (setDACRegister(ind,  -1, im)!=setDACRegister(ind,  -1, 0)) {
 #ifdef VERBOSE
+
       printf("mod %d returning -1\n",im);
 #endif
 	return -1;
@@ -727,7 +728,6 @@ float getDACbyIndexDACU(int ind,  int imod) {
 }
 
 
-//changed arguments by dhanya
 int initDAC(int dac_addr, int value, int imod) {
   int i;
 #ifdef VERBOSE
@@ -739,6 +739,43 @@ int initDAC(int dac_addr, int value, int imod) {
   clearDACSregister(imod);
 
   return 0;
+}
+
+float getTemperatureByModule(int tempSensor, int imod)
+{
+  int im;
+  //for the particular module
+  if (imod>=0 && imod<nModX) { 
+    return getTemperature(tempSensor,imod);
+  }
+  else{
+    //checks if all modules have the same value(ALLMOD)
+    for (im=1; im<nModX; im++) {
+      if (getTemperature(tempSensor,im)!=getTemperature(tempSensor,0)) {
+	return -1;
+      }
+    }
+    return getTemperature(tempSensor,0);
+  }
+}
+
+
+int getHighVoltageByModule(int val, int imod)
+{
+  int im;
+  //for the particular module
+  if (imod>=0 && imod<nModX) { 
+    return getHighVoltage(val,imod);
+  }
+  else{
+    //checks if all modules have the same value(ALLMOD)
+    for (im=1; im<nModX; im++) {
+      if (getHighVoltage(val,im)!=getHighVoltage(val,0)) {
+	return -1;
+      }
+    }
+    return getHighVoltage(val,0);
+  }
 }
 
 

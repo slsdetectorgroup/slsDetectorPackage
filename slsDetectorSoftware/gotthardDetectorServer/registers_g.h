@@ -8,21 +8,24 @@
 
 
 /* registers defined in FPGA */
+#define GAIN_REG         0x10<<11
+#define DAQ_REG          0x1b<<11
+
+#define DUMMY_REG        0x13<<11
 #define FIX_PATT_REG     0x45<<11
 #define FPGA_VERSION_REG 0x47<<11
-#define DUMMY_REG        0x13<<11
 
 #define CONTROL_REG      0x5d<<11
 #define STATUS_REG       0x5e<<11
 #define CONFIG_REG       0x5f<<11
 #define EXT_SIGNAL_REG   0x6a<<11
 
-#define GAIN_REG         0x10<<11
-#define DAQ_REG          0x1b<<11
-
 //temperature
-#define TEMP_SPI_IN      0x81<<11
-#define TEMP_SPI_OUT     0x82<<11
+#define TEMP_IN_REG      0x81<<11
+#define TEMP_OUT_REG     0x82<<11
+
+//HV
+#define HV_REG           0x93<<11
 
 //not used so far
 #define SPEED_REG        0x006000

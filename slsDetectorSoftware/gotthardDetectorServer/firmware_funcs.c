@@ -852,8 +852,7 @@ int setDACRegister(int idac, int val, int imod) {
 }
 
 
-float getTemperature(int tempSensor, int imod)
-{
+float getTemperature(int tempSensor, int imod){
   float val;
   char cTempSensor[2][100]={"ADCs/ASICs","VRs/FPGAs"}; 
   imod=0;//ignoring more than 1 mod for now
@@ -863,29 +862,57 @@ float getTemperature(int tempSensor, int imod)
 #ifdef VERBOSE
   printf("Getting Temperature of module:%d for the %s\n",imod,cTempSensor[tempSensor]);
 #endif
-  bus_w(TEMP_SPI_IN,(T1_CLK_BIT)|(T1_CS_BIT)|(T2_CLK_BIT)|(T2_CS_BIT));//standby
-  bus_w(TEMP_SPI_IN,(T1_CLK_BIT)&~(T1_CS_BIT)|(T2_CLK_BIT));//high clk low cs
+  bus_w(TEMP_IN_REG,(T1_CLK_BIT)|(T1_CS_BIT)|(T2_CLK_BIT)|(T2_CS_BIT));//standby
+  bus_w(TEMP_IN_REG,(T1_CLK_BIT)&~(T1_CS_BIT)|(T2_CLK_BIT));//high clk low cs
 
   for(k=0;k<2;k++){
     for(i=0;i<times;i++) {
       //repeats is number of register writes for delay
       for(j=0;j<repeats;j++)
-	bus_w(TEMP_SPI_IN,~(T1_CLK_BIT)&~(T1_CS_BIT)&~(T2_CLK_BIT)&~(T2_CS_BIT));//low clk low cs
+	bus_w(TEMP_IN_REG,~(T1_CLK_BIT)&~(T1_CS_BIT)&~(T2_CLK_BIT)&~(T2_CS_BIT));//low clk low cs
       for(j=0;j<repeats;j++)
-	bus_w(TEMP_SPI_IN,(T1_CLK_BIT)&~(T1_CS_BIT)|(T2_CLK_BIT));//high clk low cs
+	bus_w(TEMP_IN_REG,(T1_CLK_BIT)&~(T1_CS_BIT)|(T2_CLK_BIT));//high clk low cs
 
       if(times==11)//only the first time
-	tempVal= (tempVal<<1) + (bus_r(TEMP_SPI_OUT) & (1<<tempSensor));
+	tempVal= (tempVal<<1) + (bus_r(TEMP_OUT_REG) & (1<<tempSensor));
     }
     times=8;
   }
-  bus_w(TEMP_SPI_IN,(T1_CLK_BIT)|(T1_CS_BIT)|(T2_CLK_BIT)|(T2_CS_BIT));//standby
+  bus_w(TEMP_IN_REG,(T1_CLK_BIT)|(T1_CS_BIT)|(T2_CLK_BIT)|(T2_CS_BIT));//standby
   val=((float)tempVal)/4.0;	
 
-#ifdef VERBOSE//read time from start needed??
+#ifdef VERBOSE
    printf("Temperature of module:%d for the %s is %.2fC\n",imod,cTempSensor[tempSensor],val);
 #endif
  return val;
+}
+
+int getHighVoltage(int val, int imod){
+#ifdef VERBOSE
+  printf("Getting High Voltage of module:%d\n",imod);
+#endif
+  volatile u_int32_t addr=HV_REG;
+  int input []={  0, 90,110,120,150,180,200};
+  int value1[]={0x0,0x0,0x2,0x4,0x6,0x8,0xA};
+  int value2[]={0x0,0x1,0x3,0x5,0x7,0x9,0xB};
+  //changing anything here should also be changed in 
+  //server_funcs.c to check if wrongly written
+  switch(val){
+  case -1:  break;
+  case 0:   bus_w(addr,0x0); break;
+  case 90:  bus_w(addr,0x0); bus_w(addr,0x1);  break;
+  case 110: bus_w(addr,0x2); bus_w(addr,0x3);  break;
+  case 120: bus_w(addr,0x4); bus_w(addr,0x5);  break;
+  case 150: bus_w(addr,0x6); bus_w(addr,0x7);  break;
+  case 180: bus_w(addr,0x8); bus_w(addr,0x9);  break;
+  case 200: bus_w(addr,0xA); bus_w(addr,0xB);  break;
+  default : printf("Not a valid voltage\n"); return -1; break;
+  }
+  val=bus_r(addr);
+#ifdef VERBOSE
+  printf("High Voltage of module:%d is %d\n",imod,val);
+#endif
+  return val;
 }
 
 

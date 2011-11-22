@@ -254,7 +254,7 @@ enum dacIndex {
   VDD_POT, /**< chiptest board power supply vdd */
   VSH_POT, /**< chiptest board power supply vsh */
   VIO_POT, /**< chiptest board power supply va */
-  HV_POT, /**< chiptest board high voltage */
+  HV_POT, /**< Gotthard, chiptest board high voltage */
   G_VREF_DS,  /**< gotthard */
   G_VCASCN_PB,  /**< gotthard  */ 
   G_VCASCP_PB,  /**< gotthard   */ 

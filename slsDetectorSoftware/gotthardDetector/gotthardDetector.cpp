@@ -365,124 +365,112 @@ int gotthardDetector::retrieveDetectorSetup(string fname1, int level){
      myMod=createModule();
      nflag=1;
    }
-  string myfname;
-  string str;
-  ifstream infile;
-  ostringstream oss;
-  int iline=0;
-  string sargname,sargname2;
-  int ival;
-  int ichan=0, ichip=0, idac=0;
-  string::size_type pos=0;
+   string myfname;
+   string str;
+   ifstream infile;
+   ostringstream oss;
+   int iline=0;
+   string sargname,sargname2;
+   int ival;
+   int ichan=0, ichip=0, idac=0;
+   string::size_type pos=0;
 
  
 
 #ifdef VERBOSE
-  std::cout<<   "reading settings file for module number "<< myMod->module << std::endl;
+   std::cout<<   "reading settings file for module number "<< myMod->module << std::endl;
 #endif
-      myfname=fname;
+   myfname=fname;
 #ifdef VERBOSE
-    std::cout<< "settings file name is "<< myfname <<   std::endl;
+   std::cout<< "settings file name is "<< myfname <<   std::endl;
 #endif
-    infile.open(myfname.c_str(), ios_base::in);
-    if (infile.is_open()) {
-      //dacs---------------
-	for (int iarg=0; iarg<thisDetector->nDacs; iarg++) {
-	  getline(infile,str);
-	  iline++;
+   infile.open(myfname.c_str(), ios_base::in);
+   if (infile.is_open()) {
+     //---------------dacs---------------
+     for (int iarg=0; iarg<thisDetector->nDacs; iarg++) {
+       getline(infile,str);
+       iline++;
 #ifdef VERBOSE
-	  std::cout<< str << std::endl;
+       std::cout<< str << std::endl;
 #endif
-	  istringstream ssstr(str);
-	  ssstr >> sargname >> ival;
+       istringstream ssstr(str);
+       ssstr >> sargname >> ival;
 #ifdef VERBOSE
-	  std::cout<< sargname << " dac nr. " << idac << " is " << ival << std::endl;
+       std::cout<< sargname << " dac nr. " << idac << " is " << ival << std::endl;
 #endif
-	  myMod->dacs[idac]=ival;
-	  idac++;
-	}
+       myMod->dacs[idac]=ival;
+       idac++;
+     }
 
-	//config---------------
-	  getline(infile,str);
-	  iline++;
+     //---------------config---------------
+     getline(infile,str);
+     iline++;
 #ifdef VERBOSE
-	  std::cout<< str << std::endl;
+     std::cout<< str << std::endl;
 #endif
-	  istringstream ssstr(str);
-	  ssstr >> sargname >> ival;
+     istringstream ssstr(str);
+     ssstr >> sargname >> ival;
 #ifdef VERBOSE
-	  std::cout<< sargname << " is " << ival << std::endl;
+     std::cout<< sargname << " is " << ival << std::endl;
 #endif
-	   int configval = ival;//myMod->dacs[idac]=ival;
+     int configval = ival;//myMod->dacs[idac]=ival;
 
-	   //HV---------------
-	  getline(infile,str);
-	  iline++;
+     //---------------mac address----------
+     getline(infile,str);
+     iline++;
 #ifdef VERBOSE
-	  std::cout<< str << std::endl;
+     std::cout<< str << std::endl;
 #endif
-	  ssstr.str(str);
-	  ssstr >> sargname >> ival;
+     istringstream sstr(str);
+     sstr >> sargname >> sargname2;
 #ifdef VERBOSE
-	  std::cout<< sargname << " is " << ival << std::endl;
+     std::cout<< sargname << " is " << sargname2 << std::endl;
 #endif
-	   int HVval = ival;//myMod->dacs[idac]=ival;
+     //getting rid of dots
+     pos = sargname2.find(":");
+     while(pos != string::npos)
+       {
+	 sargname2.erase( pos, 1 );
+	 pos = sargname2.find(":");
+       }
+     strcpy(thisDetector->clientMacAddress,sargname2.c_str());
+     //sprintf(thisDetector->clientMacAddress,"%0llX",atoll(sargname2.c_str()));
+     cout<<"macaddress:"<<thisDetector->clientMacAddress<<endl;
 
-	   //mac address----------
-	  getline(infile,str);
-	  iline++;
+     //---------------ip address---------------
+     getline(infile,str);
+     iline++;
 #ifdef VERBOSE
-	  std::cout<< str << std::endl;
+     std::cout<< str << std::endl;
 #endif
-	  istringstream sstr(str);
-	  sstr >> sargname >> sargname2;
+     istringstream sssstr(str);
+     sssstr >> sargname >> sargname2;
 #ifdef VERBOSE
-	  std::cout<< sargname << " is " << sargname2 << std::endl;
+     std::cout<< sargname << " is " << sargname2 << std::endl;
 #endif
-	  //getting rid of dots
-	  pos = sargname2.find(".");
-	  while(pos != string::npos)
-	    {
-	      sargname2.erase( pos, 1 );
-	      pos = sargname2.find(".");
-	    }
-	  strcpy(thisDetector->clientMacAddress,sargname2.c_str());
-	  cout<<"macaddress:"<<thisDetector->clientMacAddress<<endl;
-
-	  //ip address---------------
-	  getline(infile,str);
-	  iline++;
-#ifdef VERBOSE
-	  std::cout<< str << std::endl;
-#endif
-	   istringstream sssstr(str);
-	  sssstr >> sargname >> sargname2;
-#ifdef VERBOSE
-	  std::cout<< sargname << " is " << sargname2 << std::endl;
-#endif
-	  //getting rid of dots
-	  pos = sargname2.find(".");
-	  while(pos != string::npos)
-	    {
-	      sargname2.erase( pos, 1 );
-	      pos = sargname2.find(".");
-	    }
-	  strcpy(thisDetector->clientIPAddress,sargname2.c_str());
-	  cout<<"ipaddress:"<<thisDetector->clientIPAddress<<endl;
+     //getting rid of dots
+     pos = sargname2.find(".");
+     while(pos != string::npos)
+       {
+	 sargname2.erase( pos, 1 );
+	 pos = sargname2.find(".");
+       }
+     strcpy(thisDetector->clientIPAddress,sargname2.c_str());
+     cout<<"ipaddress:"<<thisDetector->clientIPAddress<<endl;
 
 
 
-      infile.close();
-      strcpy(thisDetector->settingsFile,fname.c_str());
-      return myMod;
-    } else {
-      std::cout<< "could not open settings file " <<  myfname << std::endl;
-      if (nflag)
-	deleteModule(myMod);
-      return NULL;
-    }
+     infile.close();
+     strcpy(thisDetector->settingsFile,fname.c_str());
+     return myMod;
+   } else {
+     std::cout<< "could not open settings file " <<  myfname << std::endl;
+     if (nflag)
+       deleteModule(myMod);
+     return NULL;
+   }
  
-};
+ };
 
 
 int gotthardDetector::writeSettingsFile(string fname, sls_detector_module mod){

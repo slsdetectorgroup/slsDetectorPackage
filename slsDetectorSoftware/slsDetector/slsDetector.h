@@ -149,10 +149,6 @@ typedef  struct sharedSlsDetector {
 
     /** is the hostname (or IP address) of the detector. needs to be set before startin the communication */
     char hostname[MAX_STR_LENGTH];
-  /** is the ip address of the client for gotthard to send data to  **/
-  char clientIPAddress[MAX_STR_LENGTH];
-  /** is the mac address of the client for gotthard to send data to **/
-  char clientMacAddress[MAX_STR_LENGTH];
 
     /** is the port used for control functions normally it should not be changed*/
     int controlPort;
@@ -302,6 +298,16 @@ typedef  struct sharedSlsDetector {
     int chipoff;
     /** memory offsets for the channel register arrays */
     int chanoff;
+
+
+  /*extra gotthard members*/
+    /** is the ip address of the client for gotthard; read from settings file **/
+    char clientIPAddress[MAX_STR_LENGTH];
+    /** is the mac address of the client for gotthard; read from settings file **/
+    char clientMacAddress[MAX_STR_LENGTH];
+    /** gain for gotthard read from settings file**/
+    int confGain;
+
 
 } sharedSlsDetector;
 

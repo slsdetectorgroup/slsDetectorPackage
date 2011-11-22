@@ -240,29 +240,30 @@ enum analogTestMode {
    detector dacs indexes
 */
 enum dacIndex {
-  THRESHOLD,  /**< comparator threshold level */
+  THRESHOLD,    /**< comparator threshold level */
   CALIBRATION_PULSE,  /**< calibration input pulse height */
-  TRIMBIT_SIZE,   /**< voltage to determine the trimbits LSB */
-  PREAMP,   /**< preamp feedback */
-  SHAPER1,    /**< shaper1 feedback */
-  SHAPER2,  /**< shaper2 feedback */
-  TEMPERATURE_ADC,  /**< temperature sensor (adc) */
+  TRIMBIT_SIZE, /**< voltage to determine the trimbits LSB */
+  PREAMP,       /**< preamp feedback */
+  SHAPER1,      /**< shaper1 feedback */
+  SHAPER2,      /**< shaper2 feedback */
+  TEMPERATURE_ADC,   /**< temperature sensor (adc) */
   TEMPERATURE_FPGA,  /**< temperature sensor (fpga) */
-  HUMIDITY,  /**< humidity sensor (adc) */
-  DETECTOR_BIAS,   /**< detector bias */
-  VA_POT, /**< power supply va */
-  VDD_POT, /**< chiptest board power supply vdd */
-  VSH_POT, /**< chiptest board power supply vsh */
-  VIO_POT, /**< chiptest board power supply va */
-  HV_POT, /**< Gotthard, chiptest board high voltage */
-  G_VREF_DS,  /**< gotthard */
-  G_VCASCN_PB,  /**< gotthard  */ 
-  G_VCASCP_PB,  /**< gotthard   */ 
-  G_VOUT_CM,  /**< gotthard   */ 
-  G_VCASC_OUT,  /**<  gotthard  */ 
-  G_VIN_CM,   /**< gotthard   */
-  G_VREF_COMP,  /**<  gotthard  */ 
-  G_IB_TESTC  /**< gotthard   */
+  HUMIDITY,     /**< humidity sensor (adc) */
+  DETECTOR_BIAS,/**< detector bias */
+  VA_POT,       /**< power supply va */
+  VDD_POT,      /**< chiptest board power supply vdd */
+  VSH_POT,      /**< chiptest board power supply vsh */
+  VIO_POT,      /**< chiptest board power supply va */
+  HV_POT,       /**< gotthard, chiptest board high voltage */
+  G_VREF_DS,    /**< gotthard */
+  G_VCASCN_PB,  /**< gotthard */ 
+  G_VCASCP_PB,  /**< gotthard */ 
+  G_VOUT_CM,    /**< gotthard */ 
+  G_VCASC_OUT,  /**< gotthard */ 
+  G_VIN_CM,     /**< gotthard */
+  G_VREF_COMP,  /**< gotthard */ 
+  G_IB_TESTC,   /**< gotthard */
+  G_CONF_GAIN   /**< gotthard gain for the dacs  */
 };
 
 /** 

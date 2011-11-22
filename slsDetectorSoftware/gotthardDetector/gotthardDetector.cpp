@@ -402,7 +402,7 @@ int gotthardDetector::retrieveDetectorSetup(string fname1, int level){
        idac++;
      }
 
-     //---------------config---------------
+     //---------------gain---------------
      getline(infile,str);
      iline++;
 #ifdef VERBOSE
@@ -413,7 +413,7 @@ int gotthardDetector::retrieveDetectorSetup(string fname1, int level){
 #ifdef VERBOSE
      std::cout<< sargname << " is " << ival << std::endl;
 #endif
-     int configval = ival;//myMod->dacs[idac]=ival;
+     thisDetector->confGain = ival;
 
      //---------------mac address----------
      getline(infile,str);

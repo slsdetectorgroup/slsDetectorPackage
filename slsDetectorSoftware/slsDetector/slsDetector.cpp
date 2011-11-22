@@ -2567,7 +2567,7 @@ int slsDetector::setThresholdEnergy(int e_eV,  int imod, detectorSettings isetti
 
 
 
- detectorSettings slsDetector::setSettings( detectorSettings isettings, int imod){
+detectorSettings slsDetector::setSettings( detectorSettings isettings, int imod){
 #ifdef VERBOSE
   std::cout<< "slsDetector setSettings "<< std::endl;
 #endif
@@ -2578,7 +2578,7 @@ int slsDetector::setThresholdEnergy(int e_eV,  int imod, detectorSettings isetti
   detectorSettings minsettings, maxsettings;
 
   switch(thisDetector->myDetectorType){
-    case GOTTHARD:
+  case GOTTHARD:
     minsettings = HIGHGAIN;
     maxsettings = GAIN3;
     break;
@@ -2638,13 +2638,11 @@ int slsDetector::setThresholdEnergy(int e_eV,  int imod, detectorSettings isetti
 #ifdef VERBOSE
 	std::cout<< thisDetector->settingsDir<<endl<< thisDetector->calDir <<endl;
 #endif
-      break;
+	break;
       default:
 	ostfn << thisDetector->settingsDir << ssettings <<"/noise.sn"  << setfill('0') << setw(3) << hex << getId(MODULE_SERIAL_NUMBER, im) << setbase(10); 
 	oscfn << thisDetector->calDir << ssettings << "/calibration.sn"  << setfill('0') << setw(3) << hex << getId(MODULE_SERIAL_NUMBER, im) << setbase(10); 
       }
-      //oscfn << thisDetector->calDir << ssettings << "/calibration.sn"  << setfill('0') << setw(3) << hex << getId(MODULE_SERIAL_NUMBER, im) << setbase(10); 
-      
       settingsfname=ostfn.str();
 #ifdef VERBOSE
       cout << "the settings name is "<<settingsfname << endl;
@@ -2678,19 +2676,24 @@ int slsDetector::setThresholdEnergy(int e_eV,  int imod, detectorSettings isetti
 	  setModule(*myMod);
 	}
       }
+      //all mods set gain here
+      setDAC(thisDetector->confGain,G_CONF_GAIN);
+      
     }
   }
   deleteModule(myMod);
-  /*
-  if (thisDetector->correctionMask&(1<<RATE_CORRECTION)) {
-    int isett=getSettings(imod);
-    float t[]=defaultTDead;
-    if (isett>-1 && isett<3) {
-      thisDetector->tDead=t[isett];
+  switch(thisDetector->myDetectorType){
+  case GOTTHARD:
+    break;
+  default:
+    if (thisDetector->correctionMask&(1<<RATE_CORRECTION)) {
+      int isett=getSettings(imod);
+      float t[]=defaultTDead;
+      if (isett>-1 && isett<3) {
+	thisDetector->tDead=t[isett];
       }
+    }
   }
-  */
-
   return  getSettings(imod);
 };
 

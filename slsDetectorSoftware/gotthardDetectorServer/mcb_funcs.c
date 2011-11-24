@@ -760,21 +760,40 @@ float getTemperatureByModule(int tempSensor, int imod)
 }
 
 
-int getHighVoltageByModule(int val, int imod)
+int initHighVoltageByModule(int val, int imod)
 {
   int im;
   //for the particular module
   if (imod>=0 && imod<nModX) { 
-    return getHighVoltage(val,imod);
+    return initHighVoltage(val,imod);
   }
   else{
     //checks if all modules have the same value(ALLMOD)
     for (im=1; im<nModX; im++) {
-      if (getHighVoltage(val,im)!=getHighVoltage(val,0)) {
+      if (initHighVoltage(val,im)!=initHighVoltage(val,0)) {
 	return -1;
       }
     }
-    return getHighVoltage(val,0);
+    return initHighVoltage(val,0);
+  }
+}
+
+
+int initConfGainByModule(int val, int imod)
+{
+  int im;
+  //for the particular module
+  if (imod>=0 && imod<nModX) { 
+    return initConfGain(val,imod);
+  }
+  else{
+    //checks if all modules have the same value(ALLMOD)
+    for (im=1; im<nModX; im++) {
+      if (initConfGain(val,im)!=initConfGain(val,0)) {
+	return -1;
+      }
+    }
+    return initConfGain(val,0);
   }
 }
 

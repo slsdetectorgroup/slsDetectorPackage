@@ -31,8 +31,8 @@ enum {VREF_DS, VCASCN_PB, VCASCP_PB, VOUT_CM, VCASC_OUT, VIN_CM, VREF_COMP, IB_T
 #define DACCS   {0,0,1,1,2,2,3,3,4,4,5,5,6,6}
 #define DACADDR {0,1,0,1,0,1,0,1,0,1,0,1,0,1}
 
-//Temp/HIGH VOLTAGE Definitions
-enum {TEMP_ADC, TEMP_FPGA, HIGH_VOLTAGE};
+//Register Definitions for temp,hv,dac gain
+enum {TEMP_ADC, TEMP_FPGA, HIGH_VOLTAGE, CONFGAIN};
 
 //dynamic range
 #define MAX5523
@@ -120,9 +120,10 @@ float getDACbyIndexDACU(int ind,  int imod);
 int getThresholdEnergy();
 int setThresholdEnergy(int ethr);
 
-/* Temp/HV routines*/
+/* Other DAC index routines*/
 float getTemperatureByModule(int tempSensor, int imod);
-int getHighVoltageByModule(int val, int imod);
+int initHighVoltageByModule(int val, int imod);
+int initConfGainByModule(int val, int imod);
 
 /* Initialization*/
 int initChannel(int ft,int cae, int ae, int coe, int ocoe, int counts,int imod );

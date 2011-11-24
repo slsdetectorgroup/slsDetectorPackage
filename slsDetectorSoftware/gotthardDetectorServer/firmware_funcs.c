@@ -856,30 +856,31 @@ float getTemperature(int tempSensor, int imod){
   float val;
   char cTempSensor[2][100]={"ADCs/ASICs","VRs/FPGAs"}; 
   imod=0;//ignoring more than 1 mod for now
-  int i,j,k,repeats=6,times=11;
-  u_int32_t tempVal=0;
-
+  int i,j,k,repeats=6;
+  u_int32_t tempVal=0,tempVal2=0;
 #ifdef VERBOSE
-  printf("Getting Temperature of module:%d for the %s\n",imod,cTempSensor[tempSensor]);
+  printf("Getting Temperature of module:%d for the %s for tempsensor:%d\n",imod,cTempSensor[tempSensor],tempSensor);
 #endif
   bus_w(TEMP_IN_REG,(T1_CLK_BIT)|(T1_CS_BIT)|(T2_CLK_BIT)|(T2_CS_BIT));//standby
   bus_w(TEMP_IN_REG,(T1_CLK_BIT)&~(T1_CS_BIT)|(T2_CLK_BIT));//high clk low cs
 
-  for(k=0;k<2;k++){
-    for(i=0;i<times;i++) {
-      //repeats is number of register writes for delay
-      for(j=0;j<repeats;j++)
-	bus_w(TEMP_IN_REG,~(T1_CLK_BIT)&~(T1_CS_BIT)&~(T2_CLK_BIT)&~(T2_CS_BIT));//low clk low cs
-      for(j=0;j<repeats;j++)
-	bus_w(TEMP_IN_REG,(T1_CLK_BIT)&~(T1_CS_BIT)|(T2_CLK_BIT));//high clk low cs
+  for(i=0;i<20;i++) {
+    //repeats is number of register writes for delay
+    for(j=0;j<repeats;j++)
+      bus_w(TEMP_IN_REG,~(T1_CLK_BIT)&~(T1_CS_BIT)&~(T2_CLK_BIT)&~(T2_CS_BIT));//low clk low cs
+    for(j=0;j<repeats;j++)
+      bus_w(TEMP_IN_REG,(T1_CLK_BIT)&~(T1_CS_BIT)|(T2_CLK_BIT));//high clk low cs
 
-      if(times==11)//only the first time
-	tempVal= (tempVal<<1) + (bus_r(TEMP_OUT_REG) & (1<<tempSensor));
+    if(i<=10){//only the first time
+      if(!tempSensor)
+	tempVal= (tempVal<<1) + (bus_r(TEMP_OUT_REG) & (1));//adc
+      else
+	tempVal= (tempVal<<1) + ((bus_r(TEMP_OUT_REG) & (2))>>1);//fpga
     }
-    times=8;
   }
+
   bus_w(TEMP_IN_REG,(T1_CLK_BIT)|(T1_CS_BIT)|(T2_CLK_BIT)|(T2_CS_BIT));//standby
-  val=((float)tempVal)/4.0;	
+  val=((float)tempVal)/4.0;
 
 #ifdef VERBOSE
    printf("Temperature of module:%d for the %s is %.2fC\n",imod,cTempSensor[tempSensor],val);
@@ -887,44 +888,94 @@ float getTemperature(int tempSensor, int imod){
  return val;
 }
 
-int getHighVoltage(int val, int imod){
+
+
+int initHighVoltage(int val, int imod){
 #ifdef VERBOSE
   printf("Setting/Getting High Voltage of module:%d with val:%d\n",imod,val);
 #endif
   volatile u_int32_t addr=HV_REG;
-  int loop;
-  int found=0;
-  int input []={  0, 90,110,120,150,180,200};
-  int value1[]={0x0,0x0,0x2,0x4,0x6,0x8,0xA};
-  int value2[]={0x0,0x1,0x3,0x5,0x7,0x9,0xB};
-  if(val!=-1)
-    {
-      for(loop=0;loop<7;loop++)
-	if(val==input[loop]) {
-	  found=1;
-#ifdef VERBOSE 
-	  printf("Value sent for val:%d is %d and then %d\n",val,value1[loop],value2[loop]);
-#endif
-	  bus_w(addr,value1[loop]);
-	  bus_w(addr,value2[loop]);
-	  val=bus_r(addr);
-	  if(val!=value2[loop])
-	    {
-	      printf("Error setting high voltage:Value read is %d\n",val);
-	      return -1;
-	    }
-	}
-      if(!found){
-	printf("Not a valid voltage\n"); 
-	return -1;
-      }
-    }
+  int writeVal,writeVal2;
+  switch(val){
+  case -1: break;
+  case 0:  writeVal=0x0; writeVal2=0x0; break;
+  case 90: writeVal=0x0; writeVal2=0x1; break; 
+  case 110:writeVal=0x2; writeVal2=0x3; break;
+  case 120:writeVal=0x4; writeVal2=0x5; break;  
+  case 150:writeVal=0x6; writeVal2=0x7; break;  
+  case 180:writeVal=0x8; writeVal2=0x9; break;  
+  case 200:writeVal=0xA; writeVal2=0xB; break;  
+  default :printf("Invalid voltage\n");return -2;break;
+  }
+  //to set value
+  if(val!=-1){
+    //set value to converted value
+    bus_w(addr,writeVal);
+    bus_w(addr,writeVal2);
+#ifdef VERBOSE
+    printf("Value sent is %d and then %d\n",writeVal,writeVal2);
+#endif 
+  }
+ //read value and return the converted value
   val=bus_r(addr);
 #ifdef VERBOSE
-  printf("High Voltage of module:%d is %d\n",imod,val);
-#endif
-  return val;
+    printf("Value read from reg is %d\n",val);
+#endif 
+  switch(val){
+  case 0x0:val=0;break;
+  case 0x1:val=90;break;
+  case 0x3:val=110;break;
+  case 0x5:val=120;break;
+  case 0x7:val=150;break;
+  case 0x9:val=180;break;
+  case 0xB:val=200;break;
+  default:printf("Weird value read:%d\n",val);return -3;break;
+  }
+#ifdef VERBOSE
+  printf("High voltage of module:%d is %d\n",imod,val);
+#endif  
+   return val;
 }
+
+
+
+int initConfGain(int val, int imod){
+#ifdef VERBOSE
+  printf("Setting/Getting confgain of module:%d with val:%d\n",imod,val);
+#endif
+  volatile u_int32_t addr=GAIN_REG;
+  int writeVals[]={6,2,0,1};
+  char cGainVal[][100]={"lower","medium","high","very high"};
+
+  //to set value
+  if(val!=-1){
+    //default value
+    if((val>4)||(val<1))
+      val=3;
+    //set value to converted value
+    bus_w(addr,writeVals[val-1]);
+#ifdef VERBOSE
+    printf("Value sent is %d\n",writeVals[val-1]);
+#endif 
+  }
+ //read value and return the converted value
+  val=bus_r(addr);
+#ifdef VERBOSE
+    printf("Value read from reg is %d\n",val);
+#endif 
+  switch(val){
+  case 6:val=1;break;
+  case 2:val=2;break;
+  case 0:val=3;break;
+  case 1:val=4;break;
+  default:printf("Weird value read:%d\n",val);return -3;break;
+  }
+#ifdef VERBOSE
+  printf("Confgain of module:%d is set to %s gain of val:%d\n",imod,cGainVal[val-1],val);
+#endif  
+   return val;
+}
+
 
 
 u_int32_t runBusy(void) {

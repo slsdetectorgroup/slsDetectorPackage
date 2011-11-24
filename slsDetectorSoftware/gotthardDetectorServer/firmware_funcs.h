@@ -47,7 +47,8 @@ int setContinousReadOut(int d);
 int setDACRegister(int idac, int val, int imod);
 
 float getTemperature(int tempSensor, int imod);
-int getHighVoltage(int val, int imod);
+int initHighVoltage(int val, int imod);
+int initConfGain(int val, int imod);
 
 u_int64_t getMcsNumber();
 u_int32_t getMcsVersion();

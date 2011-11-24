@@ -792,7 +792,7 @@ int set_dac(int fnum) {
   int n;
   float val;
   int idac=0;
-  int itemp=-1;
+  int ireg=-1;
 
   sprintf(mess,"Can't set DAC/TEMP/HV\n");
 
@@ -847,13 +847,16 @@ int set_dac(int fnum) {
     idac=IB_TESTC;
     break;
   case TEMPERATURE_ADC:
-    itemp=TEMP_ADC;
+    ireg=TEMP_ADC;
     break;
   case TEMPERATURE_FPGA:
-    itemp=TEMP_FPGA;
+    ireg=TEMP_FPGA;
     break;
   case HV_POT:
-    itemp=HIGH_VOLTAGE;
+    ireg=HIGH_VOLTAGE;
+    break;
+  case G_CONF_GAIN:
+    ireg=CONFGAIN;
     break;
   default:
     printf("Unknown DAC/TEMP/HV index %d\n",ind);
@@ -863,14 +866,18 @@ int set_dac(int fnum) {
  
   if (ret==OK) {
     //dac
-    if(itemp==-1)
+    if(ireg==-1)
       retval=initDACbyIndexDACU(idac,val,imod);
     else
-      {	//HV
-	if(itemp==HIGH_VOLTAGE)
-	  retval=getHighVoltageByModule(val,imod);
-	else//Temp
-	  retval=getTemperatureByModule(itemp,imod);
+      {//Conf gain
+	if (ireg==CONFGAIN)
+	  retval=initConfGainByModule(val,imod);
+	//HV or conf gain
+	else if(ireg==HIGH_VOLTAGE)
+	  retval=initHighVoltageByModule(val,imod);
+	//Temp
+	else
+	  retval=getTemperatureByModule(ireg,imod);
       }
   }
 #endif
@@ -878,8 +885,12 @@ int set_dac(int fnum) {
   printf("DAC/TEMP/HV set to %f V\n",  retval);
 #endif  
   ret=FAIL;
-  if (itemp==HIGH_VOLTAGE){
-    if (retval!=-1)
+  if((ireg==HIGH_VOLTAGE)||(ireg==CONFGAIN)){
+    if(retval==-2)
+      strcpy(mess,"Invalid Voltage.Valid values are 0,90,110,120,150,180,200");
+    else if(retval==-3)
+      strcpy(mess,"Weird value read back\n");
+    else
       ret=OK;
   }
   else if (retval==val || val==-1)
@@ -888,7 +899,6 @@ int set_dac(int fnum) {
   if(ret==FAIL)
     printf("Setting dac/hv %d of module %d: wrote %f but read %f\n", ind, imod, val, retval);
     
-
   /* send answer */
 /* send OK/failed */
 n = sendDataOnly(&ret,sizeof(ret));

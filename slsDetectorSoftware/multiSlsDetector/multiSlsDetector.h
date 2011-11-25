@@ -15,10 +15,23 @@ ID:         $Id$
 
 #include "slsDetector.h"
 
+#include "sls_detector_defs.h"
+
 #define MAXDET 100
 
 
 //using namespace std;
+
+   /** synchronization of the various detectors (should be set for each detector individually?!?!?) */
+      
+  enum synchronizationMode {
+    GET_SYNCHRONIZATION_MODE=-1, /**< the multidetector will return its synchronization mode */
+    NONE, /**< all detectors are independent (no cabling) */
+    MASTER_GATES, /**< the master gates the other detectors */
+    MASTER_TRIGGERS, /**< the master triggers the other detectors */
+    SLAVE_STARTS_WHEN_MASTER_STOPS /**< the slave acquires when the master finishes, to avoid deadtime */
+  };
+
 
 
 
@@ -38,8 +51,18 @@ class multiSlsDetector  {
 
   
   typedef  struct sharedMultiSlsDetector {
+
+
+
+
     /** already existing flag. If the detector does not yet exist (alreadyExisting=0) the sharedMemory will be created, otherwise it will simly be linked */
     int alreadyExisting;
+
+
+    /** last process id accessing the shared memory */
+    pid_t lastPID;
+
+
     /** online flag - is set if the detector is connected, unset if socket connection is not possible  */
     int onlineFlag;
     
@@ -54,7 +77,13 @@ class multiSlsDetector  {
     /** Ids of the detectors to be operated at once */
     int detectorIds[MAXDET];
 
-    /** id of the master detector */
+
+    /** Detectors offset in the X direction (in number of channels)*/
+    int offsetX[MAXDET];
+    /** Detectors offsets  in the Y direction (in number of channels) */
+    int offsetY[MAXDET];
+
+    /** position of the master detector */
     int masterPosition;
     
     /** type of synchronization between detectors */
@@ -63,15 +92,27 @@ class multiSlsDetector  {
     /**  size of the data that are transfered from all detectors */
     int dataBytes;
   
+    /**  total number of channels for all detectors */
+    int numberOfChannels;
+  
 
 
+    /** timer values */
+    int64_t timerValue[MAX_TIMERS];
+    /** detector settings (standard, fast, etc.) */
+    detectorSettings currentSettings;
+    /** detector threshold (eV) */
+    int currentThresholdEV;
 
  
     /** indicator for the acquisition progress - set to 0 at the beginning of the acquisition and incremented every time that the data are written to file */   
     int progressIndex;	
     /** total number of frames to be acquired */   
     int totalProgress;	   
-    /** current index of the output file */   
+ 
+
+
+   /** current index of the output file */   
     int fileIndex;
     /** path of the output files */  
     char filePath[MAX_STR_LENGTH];
@@ -85,21 +126,33 @@ class multiSlsDetector  {
     int threadedProcessing;
     /** dead time (in ns) for rate corrections */
     float tDead;
+
+
+
     /** directory where the flat field files are stored */
     char flatFieldDir[MAX_STR_LENGTH];
     /** file used for flat field corrections */
     char flatFieldFile[MAX_STR_LENGTH];
-    /** number of bad channels from bad channel list */
-    int nBadChans;
+
+
     /** file with the bad channels */
     char badChanFile[MAX_STR_LENGTH];
-    /** list of bad channels */
-    int badChansList[MAX_BADCHANS];
-    /** number of bad channels from flat field i.e. channels which read 0 in the flat field file */
-    int nBadFF;
-    /** list of bad channels from flat field i.e. channels which read 0 in the flat field file */
-    int badFFList[MAX_BADCHANS];
-    
+
+     /** array of angular conversion constants for each module \see ::angleConversionConstant */
+    angleConversionConstant angOff[MAXMODS];
+    /** angular direction (1 if it corresponds to the encoder direction i.e. channel 0 is 0, maxchan is positive high angle, 0 otherwise  */
+    int angDirection;
+     /** beamline fine offset (of the order of mdeg, might be adjusted for each measurements)  */
+    float fineOffset;
+     /** beamline offset (might be a few degrees beacuse of encoder offset - normally it is kept fixed for a long period of time)  */
+    float globalOffset;
+     /** number of positions at which the detector should acquire  */
+    int numberOfPositions;
+     /** list of encoder positions at which the detector should acquire */
+    float detPositions[MAXPOS];
+    /** bin size for data merging */
+    float binSize;
+
 
     /** Scans and scripts */
 
@@ -119,7 +172,7 @@ class multiSlsDetector  {
     
     
 
-}
+  };
 
 
 
@@ -137,8 +190,8 @@ class multiSlsDetector  {
 
 
  public:
-  
 
+ 
   /** 
       @short Structure allocated in shared memory to store detector settings and be accessed in parallel by several applications (take care of possible conflicts!)
       
@@ -160,13 +213,13 @@ class multiSlsDetector  {
   int freeSharedMemory() ;
   
   /** allocates the shared memory occpied for the sharedMultiSlsDetector structure */
-  int initSharedMemory() ;
+  int initSharedMemory(int) ;
   
   /** adds the detector with ID id in postion pos
    \param id of the detector to be added (should already exist!)
    \param pos position where it should be added (normally at the end of the list (default to -1)
    \return the actual number of detectors*/
-  int addSlsDetector(int id, int pos=-1);
+  int addSlsDetector(int id, int pos=-1, int oX=-1, int oY=-1);
 
   /**removes the detector in position pos from the multidetector
      \param pos position of the detector to be removed from the multidetector system (defaults to -1 i.e. last detector)
@@ -184,6 +237,25 @@ class multiSlsDetector  {
       \returns number of detectors */
   int getNumberOfDetectors() {return thisMultiDetector->numberOfDetectors;};
 
+
+  /** returns the detector offset (in number of channels)
+      \param pos position of the detector
+      \param ox reference to the offset in x
+      \param oy reference to the offset in y
+      \returns OK/FAIL if the detector does not exist
+  */
+  int getDetectorOffset(int pos, int &ox, int &oy);
+
+    /** sets the detector offset (in number of channels)
+      \param pos position of the detector
+      \param ox offset in x (-1 does not change)
+      \param oy offset in y (-1 does not change)
+      \returns OK/FAIL if the detector does not exist
+  */
+  int setDetectorOffset(int pos, int ox=-1, int oy=-1);
+
+  
+
   /** sets the detector in position i as master of the structure (e.g. it gates the other detectors and therefore must be started as last. <BR> Assumes that signal 0 is gate in, signal 1 is trigger in, signal 2 is gate out
       \param i position of master (-1 gets)
       \return master's position (-1 none)
@@ -195,17 +267,7 @@ class multiSlsDetector  {
       \param sync syncronization mode
       \returns current syncronization mode
   */
-  synchronizationMode setSyncronization(synchronizationMode sync=GET_SYNHRONIZATION_MODE);
-  
-  /** synchronization of the various detectors (should be set for each detector individually?!?!?) */
-      
-  enum synchronyzationMode {
-    GET_SYNHRONIZATION_MODE=-1, /**< the multidetector will return its synchronization mode */
-    NONE, /**< all detectors are independent (no cabling) */
-    MASTER_GATES, /**< the master gates the other detectors */
-    MASTER_TRIGGERS, /**< the master triggers the other detectors */
-    SLAVE_STARTS_WHEN_MASTER_STOPS /**< the slave acquires when the master finishes, to avoid deadtime */
-  }
+  synchronizationMode setSynchronization(synchronizationMode sync=GET_SYNCHRONIZATION_MODE);
 
 
 
@@ -214,7 +276,7 @@ class multiSlsDetector  {
       \param off can be:  GET_ONLINE_FLAG, returns wether the detector is in online or offline state; OFFLINE_FLAG, detector in offline state (i.e. no communication to the detector - using only local structure - no data acquisition possible!); ONLINE_FLAG  detector in online state (i.e. communication to the detector updating the local structure) 
       \returns online/offline status
   */
-  int setOnline(int const online=GET_ONLINE_FLAG);  
+  int setOnline(int const online=slsDetector::GET_ONLINE_FLAG);  
   /** sets the onlineFlag
       \returns 1 if the detector structure has already be initlialized with the given idand belongs to this multiDetector instance, 0 otherwise */
   int exists() ;
@@ -274,7 +336,7 @@ class multiSlsDetector  {
       \sa slsDetector::getFileIndexFromFileName 
 
   */
-  int multiSlsDetector::getFileIndexFromFileName(string fname) ;
+  int getFileIndexFromFileName(string fname) ;
 
   /**
 
@@ -288,7 +350,7 @@ class multiSlsDetector  {
       \sa slsDetector::getVariablesFromFileName 
 
   */
-  int multiSlsDetector::getVariablesFromFileName(string fname, int &index, int &p_index, float &sv0, float &sv1) ;
+  int getVariablesFromFileName(string fname, int &index, int &p_index, float &sv0, float &sv1) ;
 
 
 
@@ -443,14 +505,7 @@ class multiSlsDetector  {
  
 
 
-  // calibration functions
-  //  int setCalibration(int imod, detectorSettings isettings, float gain, float offset);
-  //int getCalibration(int imod, detectorSettings isettings, float &gain, float &offset);
   
-
-  /*
-    calibrated setup of the threshold
-  */  
   /**
     get threshold energy
     \param imod module number (-1 all)
@@ -482,7 +537,7 @@ class multiSlsDetector  {
 
     in this function trimbits and calibration files are searched in the trimDir and calDir directories and the detector is initialized
   */
-  virtual detectorSettings setSettings(detectorSettings isettings, int imod=-1);
+  detectorSettings setSettings(detectorSettings isettings, int imod=-1);
 
 
 
@@ -557,7 +612,13 @@ class multiSlsDetector  {
     \returns pointer to the data or NULL. If NULL disconnects the socket
     \sa getDataFromDetector
   */ 
-  int* getDataFromDetectorNoWait(); 
+  //int* getDataFromDetectorNoWait(); 
+  /**
+    receives a data frame from the detector socket
+    \returns pointer to the data or NULL. If NULL disconnects the socket
+    \sa getDataFromDetector
+  */ 
+  int* getDataFromDetector(); 
 
   /**
    asks and  receives a data frame from the detector and puts it in the data queue
@@ -619,24 +680,27 @@ class multiSlsDetector  {
   */
   int64_t setTimer(timerIndex index, int64_t t=-1);
 
-  /** 
-      get current timer value
-      \param index timer index
-      \returns elapsed time value in ns or number of...(e.g. frames, gates, probes)
-  */
-  int64_t getTimeLeft(timerIndex index);
+/*   /\**  */
+/*       get current timer value */
+/*       \param index timer index */
+/*       \returns elapsed time value in ns or number of...(e.g. frames, gates, probes) */
+/*   *\/ */
+/*   int64_t getTimeLeft(timerIndex index); */
 
 
 
   // Flags
   /** 
-      set/get dynamic range
+      set/get dynamic range and updates the number of dataBytes
       \param n dynamic range (-1 get)
+      \param pos detector position (-1 all detectors)
       \returns current dynamic range
       updates the size of the data expected from the detector
       \sa sharedSlsDetector
   */
-  int setDynamicRange(int n=-1);
+  int setDynamicRange(int n=-1, int pos=-1);
+
+
  
   /** 
       set roi
@@ -646,22 +710,6 @@ class multiSlsDetector  {
   int setROI(int nroi=-1, int *xmin=NULL, int *xmax=NULL, int *ymin=NULL, int *ymax=NULL);
   
 
-  /**
-     set/get readout flags
-     \param flag readout flag to be set
-     \returns current flag
-  */
-  int setReadOutFlags(readOutFlags flag);
-
-    /**
-       execute trimming
-     \param mode trim mode
-     \param par1 if noise, beam or fixed setting trimming it is count limit, if improve maximum number of iterations
-     \param par2 if noise or beam nsigma, if improve par2!=means vthreshold will be optimized, if fixed settings par2<0 trimwith median, par2>=0 trim with level
-     \param imod module number (-1 all)
-     \returns OK or FAIl (FAIL also if some channel are 0 or 63
-  */
-  int executeTrimming(trimMode mode, int par1, int par2, int imod=-1);
 
  
   //Corrections  
@@ -673,7 +721,7 @@ s
       \returns thread flag
   */
 
-  int setThreadedProcessing(int b=-1) {if (b>=0) thisDetector->threadedProcessing=b; return  thisDetector->threadedProcessing;}
+  int setThreadedProcessing(int b=-1) {if (b>=0) thisMultiDetector->threadedProcessing=b; return  thisMultiDetector->threadedProcessing;}
 
   /** 
       set flat field corrections
@@ -694,18 +742,18 @@ s
       get flat field corrections file directory
       \returns flat field correction file directory
   */
-  char *getFlatFieldCorrectionDir(){return thisDetector->flatFieldDir;};
+  char *getFlatFieldCorrectionDir(){return thisMultiDetector->flatFieldDir;};
  /** 
       set flat field corrections file directory
       \param flat field correction file directory
   */
-  void setFlatFieldCorrectionDir(string dir){strcpy(thisDetector->flatFieldDir,dir.c_str());};
+  void setFlatFieldCorrectionDir(string dir){strcpy(thisMultiDetector->flatFieldDir,dir.c_str());};
   
  /** 
       get flat field corrections file name
       \returns flat field correction file name
   */
-  char *getFlatFieldCorrectionFile(){  if (thisDetector->correctionMask&(1<<FLAT_FIELD_CORRECTION)) return thisDetector->flatFieldFile; else return "none";};
+  char *getFlatFieldCorrectionFile(){  if (thisMultiDetector->correctionMask&(1<<FLAT_FIELD_CORRECTION)) return thisMultiDetector->flatFieldFile; else return "none";};
 
   /** 
       set rate correction
@@ -749,7 +797,7 @@ s
   int getBadChannelCorrection(int *bad=NULL);
 
   /** returns the bad channel list file */
-  string getBadChannelCorrectionFile() {if (thisDetector->correctionMask&(1<< DISCARD_BAD_CHANNELS)) return string(thisDetector->badChanFile); else return string("none");};
+  string getBadChannelCorrectionFile() {if (thisMultiDetector->correctionMask&(1<< DISCARD_BAD_CHANNELS)) return string(thisMultiDetector->badChanFile); else return string("none");};
 
   
   /** 
@@ -1063,13 +1111,35 @@ s
  protected:
  
 
-
+  /** Shared memory ID */
   int shmId;
 
+  /** pointers to the slsDetector structures */
   slsDetector *detectors[MAXDET];
 
-
+  /** Shared memory structure */
   sharedMultiSlsDetector *thisMultiDetector;
+
+
+
+
+
+
+  /**
+     data queue
+  */
+  queue<int*> dataQueue;
+  /**
+     queue containing the postprocessed data
+  */
+  queue<detectorData*> finalDataQueue;
+  
+  
+
+
+
+
+
 
   /**
      current position of the detector

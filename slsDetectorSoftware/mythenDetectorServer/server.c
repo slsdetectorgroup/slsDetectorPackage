@@ -5,7 +5,7 @@
 #include <stdlib.h>
 
 
-int sockfd;
+extern int sockfd;
 
 
 void error(char *msg)
@@ -18,6 +18,8 @@ int main(int argc, char *argv[])
   int  portno, b;
   char cmd[100];
   int retval=OK;
+  int sd, fd;
+
 
   if (argc==1) {
     portno = DEFAULT_PORTNO;
@@ -37,8 +39,12 @@ int main(int argc, char *argv[])
   init_detector(b); 
 
 
-  bindSocket(portno);
-  if (getServerError()) {
+  sd=bindSocket(portno);
+
+  sockfd=sd;
+
+
+  if (getServerError(sd)) {
     printf("server error!\n");
     return -1;
   }
@@ -58,21 +64,21 @@ int main(int argc, char *argv[])
 #ifdef VERY_VERBOSE
     printf("Waiting for client call\n");
 #endif
-    acceptConnection();
+    fd=acceptConnection(sockfd);
 #ifdef VERY_VERBOSE
     printf("Conenction accepted\n");
 #endif
-    retval=decode_function();
-#ifdef VERY_VERBOSE
+    retval=decode_function(fd);
+    //#ifdef VERY_VERBOSE
     printf("function executed\n");
-#endif
-    closeConnection();
+    //#endif
+    closeConnection(fd);
 #ifdef VERY_VERBOSE
     printf("connection closed\n");
 #endif
   }
 
-  exitServer();
+  exitServer(sockfd);
   printf("Goodbye!\n");
 
   return 0; 

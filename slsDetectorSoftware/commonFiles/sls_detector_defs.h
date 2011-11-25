@@ -383,6 +383,12 @@ enum correctionFlags {
   I0_NORMALIZATION
 };
 
+enum portType {
+  CONTROL_PORT, /**< control port */ 
+  STOP_PORT, /**<stop port */
+  DATA_PORT /**< data port */
+}; 
+
 /** 
    function indexes to call on the server
 
@@ -466,9 +472,11 @@ enum {
 
   F_EXIT_SERVER,  /**< turn off detector server */
 
-  F_GET_TEMPERATURE,
-  F_SET_GOTTHARD,
-  F_GET_GOTTHARD
+  F_LOCK_SERVER, /**< Locks/Unlocks server communication to the given client */ 
+
+  F_GET_LAST_CLIENT_IP,  /**< returns the IP of the client last connected to the detector */ 
+  
+  F_SET_PORT /**< Changes communication port of the server */
 
 
   /* Always append functions hereafter!!! */

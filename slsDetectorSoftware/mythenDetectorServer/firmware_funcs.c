@@ -975,14 +975,13 @@ u_int32_t* fifo_read_event()
 
 #ifdef VERYVERBOSE
   printf("Copying to ptr %x %d\n",now_ptr, dataBytes);
-#endif
-#ifdef VERYVERBOSE
   printf("after readout %08x %08x\n", runState(), bus_r(LOOK_AT_ME_REG)); 
   for (ichip=0; ichip<nModBoard*NCHIP; ichip++) {
      if ((fifoReadCounter(ichip)&FIFO_COUNTER_MASK)%128)
       printf("FIFO %d contains %d words\n",ichip,(fifoReadCounter(ichip)&FIFO_COUNTER_MASK)); 
   }
 #endif
+
   if (storeInRAM>0) {
     now_ptr+=dataBytes;
   }

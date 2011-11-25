@@ -28,6 +28,10 @@ extern int dataBytes;
 extern int dynamicRange;
 extern int  storeInRAM;
 
+extern int lockStatus;
+extern char lastClientIP[INET_ADDRSTRLEN];
+extern char thisClientIP[INET_ADDRSTRLEN];
+
 
 /* global variables for optimized readout */
 extern int *ram_values;
@@ -62,19 +66,22 @@ int init_detector( int b) {
   }
 #endif
   strcpy(mess,"dummy message");
+  strcpy(lastClientIP,"none");
+  strcpy(thisClientIP,"none1");
+  lockStatus=0;
   return OK;
 }
 
 
-int decode_function() {
+int decode_function(int file_des) {
   int fnum,n;
   int retval=FAIL;
 #ifdef VERBOSE
   printf( "receive data\n");
 #endif 
-  n = receiveDataOnly(&fnum,sizeof(fnum));
+  n = receiveDataOnly(file_des,&fnum,sizeof(fnum));
   if (n <= 0) {
-    printf("ERROR reading from socket %d\n", n);
+    printf("ERROR reading from socket %d, %d %d\n", n, fnum, file_des);
     return FAIL;
   }
 #ifdef VERBOSE
@@ -86,7 +93,7 @@ int decode_function() {
 #endif
   if (fnum<0 || fnum>255)
     fnum=255;
-  retval=(*flist[fnum])(fnum);
+  retval=(*flist[fnum])(file_des);
   if (retval==FAIL)
     printf( "Error executing the function = %d \n",fnum);    
   return retval;
@@ -134,6 +141,9 @@ int function_table() {
   flist[F_SET_SPEED]=&set_speed;
   flist[F_SET_READOUT_FLAGS]=&set_readout_flags;
   flist[F_EXECUTE_TRIMMING]=&execute_trimming;
+  flist[F_LOCK_SERVER]=&lock_server;
+  flist[F_SET_PORT]=&set_port;
+  flist[F_GET_LAST_CLIENT_IP]=&get_last_client_ip;
 #ifdef VERBOSE
   /*  for (i=0;i<256;i++){
     printf("function %d located at %x\n",i,flist[i]);
@@ -143,27 +153,27 @@ int function_table() {
 }
 
 
-int  M_nofunc(int fnum){
+int  M_nofunc(int file_des){
   
   int retval=FAIL;
-  sprintf(mess,"Unrecognized Function %d\n",fnum);
+  sprintf(mess,"Unrecognized Function\n");
   printf(mess);
-  sendDataOnly(&retval,sizeof(retval));
-  sendDataOnly(mess,sizeof(mess));
+  sendDataOnly(file_des,&retval,sizeof(retval));
+  sendDataOnly(file_des,mess,sizeof(mess));
   return GOODBYE;
 }
 
 
-int exit_server(int fnum) {
+int exit_server(int file_des) {
   int retval=FAIL;
-  sendDataOnly(&retval,sizeof(retval));
+  sendDataOnly(file_des,&retval,sizeof(retval));
   printf("closing server.");
   sprintf(mess,"closing server");
-  sendDataOnly(mess,sizeof(mess));
+  sendDataOnly(file_des,mess,sizeof(mess));
   return GOODBYE;
 }
 
-int exec_command(int fnum) {
+int exec_command(int file_des) {
   char cmd[MAX_STR_LENGTH];
   char answer[MAX_STR_LENGTH];
   int retval=OK;
@@ -171,7 +181,7 @@ int exec_command(int fnum) {
   int n=0;
 
  /* receive arguments */
-  n = receiveDataOnly(cmd,MAX_STR_LENGTH);
+  n = receiveDataOnly(file_des,cmd,MAX_STR_LENGTH);
   if (n < 0) {
     sprintf(mess,"Error reading from socket\n");
     retval=FAIL;
@@ -195,7 +205,7 @@ int exec_command(int fnum) {
   }
   
   /* send answer */
-  n = sendDataOnly(answer,MAX_STR_LENGTH);
+  n = sendDataOnly(file_des,answer,MAX_STR_LENGTH);
   if (n < 0) {
     sprintf(mess,"Error writing to socket");
     retval=FAIL;
@@ -209,7 +219,7 @@ int exec_command(int fnum) {
 
 
 
-int get_detector_type(int fnum) {
+int get_detector_type(int file_des) {
   int n=0;
   enum detectorType ret;
   int retval=OK;
@@ -227,12 +237,12 @@ int get_detector_type(int fnum) {
 
   /* send answer */  
   /* send OK/failed */
-  n += sendDataOnly(&retval,sizeof(retval));
+  n += sendDataOnly(file_des,&retval,sizeof(retval));
   if (retval==OK) {
     /* send return argument */
-    n += sendDataOnly(&ret,sizeof(ret));
+    n += sendDataOnly(file_des,&ret,sizeof(ret));
   } else {
-    n += sendDataOnly(mess,sizeof(mess));
+    n += sendDataOnly(file_des,mess,sizeof(mess));
   }
   /*return ok/fail*/
   return retval; 
@@ -241,7 +251,7 @@ int get_detector_type(int fnum) {
 }
 
 
-int set_number_of_modules(int fnum) {
+int set_number_of_modules(int file_des) {
   int n;
   int arg[2], ret=0; 
   int retval=OK;
@@ -250,7 +260,7 @@ int set_number_of_modules(int fnum) {
   sprintf(mess,"Can't set number of modules\n");
 
   /* receive arguments */
-  n = receiveDataOnly(&arg,sizeof(arg));
+  n = receiveDataOnly(file_des,&arg,sizeof(arg));
   if (n < 0) {
     sprintf(mess,"Error reading from socket %d", n);
     retval=GOODBYE;
@@ -287,12 +297,12 @@ int set_number_of_modules(int fnum) {
   
   /* send answer */
   /* send OK/failed */
-  n = sendDataOnly(&retval,sizeof(retval));
+  n = sendDataOnly(file_des,&retval,sizeof(retval));
   if (retval==OK) {
     /* send return argument */
-    n += sendDataOnly(&ret,sizeof(ret));
+    n += sendDataOnly(file_des,&ret,sizeof(ret));
   } else {
-    n += sendDataOnly(mess,sizeof(mess));
+    n += sendDataOnly(file_des,mess,sizeof(mess));
   }
   /*return ok/fail*/
   return retval; 
@@ -300,7 +310,7 @@ int set_number_of_modules(int fnum) {
 }
 
 
-int get_max_number_of_modules(int fnum) {
+int get_max_number_of_modules(int file_des) {
   int n;
   int ret; 
   int retval=OK;
@@ -308,7 +318,7 @@ int get_max_number_of_modules(int fnum) {
   
   sprintf(mess,"Can't get max number of modules\n");
   /* receive arguments */
-  n = receiveDataOnly(&arg,sizeof(arg));
+  n = receiveDataOnly(file_des,&arg,sizeof(arg));
   if (n < 0) {
     sprintf(mess,"Error reading from socket\n");
     retval=FAIL;
@@ -339,12 +349,12 @@ int get_max_number_of_modules(int fnum) {
 
   /* send answer */
   /* send OK/failed */
-  n = sendDataOnly(&retval,sizeof(retval));
+  n = sendDataOnly(file_des,&retval,sizeof(retval));
   if (retval==OK) {
     /* send return argument */
-    n += sendDataOnly(&ret,sizeof(ret));
+    n += sendDataOnly(file_des,&ret,sizeof(ret));
   } else {
-    n += sendDataOnly(mess,sizeof(mess));
+    n += sendDataOnly(file_des,mess,sizeof(mess));
   }
 
 
@@ -359,7 +369,7 @@ int get_max_number_of_modules(int fnum) {
 //index 2 is out gate
 //index 3 is out trigger
 
-int set_external_signal_flag(int fnum) {
+int set_external_signal_flag(int file_des) {
   int n;
   int arg[2]; 
   int ret=OK;
@@ -369,7 +379,7 @@ int set_external_signal_flag(int fnum) {
   sprintf(mess,"Can't set external signal flag\n");
 
   /* receive arguments */
-  n = receiveDataOnly(&arg,sizeof(arg));
+  n = receiveDataOnly(file_des,&arg,sizeof(arg));
   if (n < 0) {
     sprintf(mess,"Error reading from socket\n");
     ret=FAIL;
@@ -401,12 +411,12 @@ int set_external_signal_flag(int fnum) {
 
   /* send answer */
   /* send OK/failed */
-  n = sendDataOnly(&ret,sizeof(ret));
+  n = sendDataOnly(file_des,&ret,sizeof(ret));
   if (ret==OK) {
     /* send return argument */
-    n += sendDataOnly(&retval,sizeof(retval));
+    n += sendDataOnly(file_des,&retval,sizeof(retval));
   } else {
-    n += sendDataOnly(mess,sizeof(mess));
+    n += sendDataOnly(file_des,mess,sizeof(mess));
   }
 
 
@@ -416,7 +426,7 @@ int set_external_signal_flag(int fnum) {
 }
 
 
-int set_external_communication_mode(int fnum) {
+int set_external_communication_mode(int file_des) {
   int n;
   enum externalCommunicationMode arg, ret;
   int retval=OK;
@@ -425,7 +435,7 @@ int set_external_communication_mode(int fnum) {
 
 
   /* receive arguments */
-  n = receiveDataOnly(&arg,sizeof(arg));
+  n = receiveDataOnly(file_des,&arg,sizeof(arg));
   if (n < 0) {
     sprintf(mess,"Error reading from socket\n");
     retval=FAIL;
@@ -462,12 +472,12 @@ enum externalCommunicationMode{
 
   /* send answer */
   /* send OK/failed */
-  n = sendDataOnly(&retval,sizeof(retval));
+  n = sendDataOnly(file_des,&retval,sizeof(retval));
   if (retval==OK) {
     /* send return argument */
-    n += sendDataOnly(&ret,sizeof(ret));
+    n += sendDataOnly(file_des,&ret,sizeof(ret));
   } else {
-    n += sendDataOnly(mess,sizeof(mess));
+    n += sendDataOnly(file_des,mess,sizeof(mess));
   }
 
   /*return ok/fail*/
@@ -478,7 +488,7 @@ enum externalCommunicationMode{
 
 
 
-int get_id(int fnum) {
+int get_id(int file_des) {
   // sends back 64 bits!
   int64_t retval;
   int ret=OK;
@@ -489,7 +499,7 @@ int get_id(int fnum) {
   sprintf(mess,"Can't return id\n");
 
   /* receive arguments */
-  n = receiveDataOnly(&arg,sizeof(arg));
+  n = receiveDataOnly(file_des,&arg,sizeof(arg));
   if (n < 0) {
     sprintf(mess,"Error reading from socket\n");
     ret=FAIL;
@@ -501,7 +511,7 @@ int get_id(int fnum) {
 
   switch (arg) {
   case  MODULE_SERIAL_NUMBER:
-    n = receiveDataOnly(&imod,sizeof(imod));
+    n = receiveDataOnly(file_des,&imod,sizeof(imod));
     if (n < 0) {
       sprintf(mess,"Error reading from socket\n");
       retval=FAIL;
@@ -545,12 +555,12 @@ int get_id(int fnum) {
  
   /* send answer */
   /* send OK/failed */
-  n = sendDataOnly(&ret,sizeof(ret));
+  n = sendDataOnly(file_des,&ret,sizeof(ret));
   if (ret==OK) {
     /* send return argument */
-    n += sendDataOnly(&retval,sizeof(retval));
+    n += sendDataOnly(file_des,&retval,sizeof(retval));
   } else {
-    n += sendDataOnly(mess,sizeof(mess));
+    n += sendDataOnly(file_des,mess,sizeof(mess));
   }
 
   /*return ok/fail*/
@@ -558,7 +568,7 @@ int get_id(int fnum) {
 
 }
 
-int digital_test(int fnum) {
+int digital_test(int file_des) {
 
   int retval;
   int ret=OK;
@@ -570,7 +580,7 @@ int digital_test(int fnum) {
   
   sprintf(mess,"Can't send digital test\n");
 
-  n = receiveDataOnly(&arg,sizeof(arg));
+  n = receiveDataOnly(file_des,&arg,sizeof(arg));
   if (n < 0) {
     sprintf(mess,"Error reading from socket\n");
     ret=FAIL;
@@ -582,7 +592,7 @@ int digital_test(int fnum) {
 
   switch (arg) {
   case  CHIP_TEST:
-    n = receiveDataOnly(&imod,sizeof(imod));
+    n = receiveDataOnly(file_des,&imod,sizeof(imod));
     if (n < 0) {
       sprintf(mess,"Error reading from socket\n");
       retval=FAIL;
@@ -652,12 +662,12 @@ int digital_test(int fnum) {
  
   /* send answer */
   /* send OK/failed */
-  n = sendDataOnly(&ret,sizeof(ret));
+  n = sendDataOnly(file_des,&ret,sizeof(ret));
   if (ret==OK) {
     /* send return argument */
-    n += sendDataOnly(&retval,sizeof(retval));
+    n += sendDataOnly(file_des,&retval,sizeof(retval));
   } else {
-    n += sendDataOnly(mess,sizeof(mess));
+    n += sendDataOnly(file_des,mess,sizeof(mess));
   }
 
   /*return ok/fail*/
@@ -665,7 +675,7 @@ int digital_test(int fnum) {
 
 }
 
-int write_register(int fnum) {
+int write_register(int file_des) {
 
   int retval;
   int ret=OK;
@@ -676,7 +686,7 @@ int write_register(int fnum) {
   
   sprintf(mess,"Can't write to register\n");
 
-  n = receiveDataOnly(arg,sizeof(arg));
+  n = receiveDataOnly(file_des,arg,sizeof(arg));
   if (n < 0) {
     sprintf(mess,"Error reading from socket\n");
     ret=FAIL;
@@ -704,12 +714,12 @@ int write_register(int fnum) {
 
   /* send answer */
   /* send OK/failed */
-  n = sendDataOnly(&ret,sizeof(ret));
+  n = sendDataOnly(file_des,&ret,sizeof(ret));
   if (ret==OK) {
     /* send return argument */
-    n += sendDataOnly(&retval,sizeof(retval));
+    n += sendDataOnly(file_des,&retval,sizeof(retval));
   } else {
-    n += sendDataOnly(mess,sizeof(mess));
+    n += sendDataOnly(file_des,mess,sizeof(mess));
   }
 
   /*return ok/fail*/
@@ -717,7 +727,7 @@ int write_register(int fnum) {
 
 }
 
-int read_register(int fnum) {
+int read_register(int file_des) {
 
   int retval;
   int ret=OK;
@@ -728,7 +738,7 @@ int read_register(int fnum) {
   
   sprintf(mess,"Can't read register\n");
 
-  n = receiveDataOnly(&arg,sizeof(arg));
+  n = receiveDataOnly(file_des,&arg,sizeof(arg));
   if (n < 0) {
     sprintf(mess,"Error reading from socket\n");
     ret=FAIL;
@@ -755,12 +765,12 @@ int read_register(int fnum) {
 
   /* send answer */
   /* send OK/failed */
-  n = sendDataOnly(&ret,sizeof(ret));
+  n = sendDataOnly(file_des,&ret,sizeof(ret));
   if (ret==OK) {
     /* send return argument */
-    n += sendDataOnly(&retval,sizeof(retval));
+    n += sendDataOnly(file_des,&retval,sizeof(retval));
   } else {
-    n += sendDataOnly(mess,sizeof(mess));
+    n += sendDataOnly(file_des,mess,sizeof(mess));
   }
 
   /*return ok/fail*/
@@ -768,7 +778,7 @@ int read_register(int fnum) {
 
 }
 
-int set_dac(int fnum) {
+int set_dac(int file_des) {
 
   float retval;
   int ret=OK;
@@ -782,7 +792,7 @@ int set_dac(int fnum) {
   sprintf(mess,"Can't set DAC\n");
 
 
-  n = receiveDataOnly(arg,sizeof(arg));
+  n = receiveDataOnly(file_des,arg,sizeof(arg));
   if (n < 0) {
     sprintf(mess,"Error reading from socket\n");
     ret=FAIL;
@@ -790,7 +800,7 @@ int set_dac(int fnum) {
   ind=arg[0];
   imod=arg[1];
 
-  n = receiveDataOnly(&val,sizeof(val));
+  n = receiveDataOnly(file_des,&val,sizeof(val));
   if (n < 0) {
     sprintf(mess,"Error reading from socket\n");
     ret=FAIL;
@@ -857,12 +867,12 @@ add possible potentiometers like in chiptest board!!!!!!!!!!!!!!!
 
   /* send answer */
   /* send OK/failed */
-  n = sendDataOnly(&ret,sizeof(ret));
+  n = sendDataOnly(file_des,&ret,sizeof(ret));
   if (ret==OK) {
     /* send return argument */
-    n += sendDataOnly(&retval,sizeof(retval));
+    n += sendDataOnly(file_des,&retval,sizeof(retval));
   } else {
-    n += sendDataOnly(mess,sizeof(mess));
+    n += sendDataOnly(file_des,mess,sizeof(mess));
   }
 
   /* Maybe this is done inside the initialization funcs */
@@ -874,7 +884,7 @@ add possible potentiometers like in chiptest board!!!!!!!!!!!!!!!
 
 
 
-int get_adc(int fnum) {
+int get_adc(int file_des) {
 
   float retval;
   int ret=OK;
@@ -887,7 +897,7 @@ int get_adc(int fnum) {
   sprintf(mess,"Can't read ADC\n");
 
 
-  n = receiveDataOnly(arg,sizeof(arg));
+  n = receiveDataOnly(file_des,arg,sizeof(arg));
   if (n < 0) {
     sprintf(mess,"Error reading from socket\n");
     ret=FAIL;
@@ -943,12 +953,12 @@ int get_adc(int fnum) {
 
   /* send answer */
   /* send OK/failed */
-  n = sendDataOnly(&ret,sizeof(ret));
+  n = sendDataOnly(file_des,&ret,sizeof(ret));
   if (ret==OK) {
     /* send return argument */
-    n += sendDataOnly(&retval,sizeof(retval));
+    n += sendDataOnly(file_des,&retval,sizeof(retval));
   } else {
-    n += sendDataOnly(mess,sizeof(mess));
+    n += sendDataOnly(file_des,mess,sizeof(mess));
   }
 
   /*return ok/fail*/
@@ -956,7 +966,7 @@ int get_adc(int fnum) {
 
 }
 
-int set_channel(int fnum) {
+int set_channel(int file_des) {
   int ret=OK;
   sls_detector_channel myChan;
   int retval;
@@ -968,7 +978,7 @@ int set_channel(int fnum) {
 #ifdef VERBOSE
   printf("Setting channel\n");
 #endif
-  ret=receiveChannel(&myChan);
+  ret=receiveChannel(file_des, &myChan);
   if (ret>=0)
     ret=OK;
   else
@@ -1001,12 +1011,12 @@ int set_channel(int fnum) {
 
   /* send answer */
   /* send OK/failed */
-  n = sendDataOnly(&ret,sizeof(ret));
+  n = sendDataOnly(file_des,&ret,sizeof(ret));
   if (ret==OK) {
     /* send return argument */
-    n += sendDataOnly(&retval,sizeof(retval));
+    n += sendDataOnly(file_des,&retval,sizeof(retval));
   } else {
-    n += sendDataOnly(mess,sizeof(mess));
+    n += sendDataOnly(file_des,mess,sizeof(mess));
   }
 
 
@@ -1018,7 +1028,7 @@ int set_channel(int fnum) {
 
 
 
-int get_channel(int fnum) {
+int get_channel(int file_des) {
 
   int ret=OK;
   sls_detector_channel retval;
@@ -1031,7 +1041,7 @@ int get_channel(int fnum) {
 
 
 
-  n = receiveDataOnly(arg,sizeof(arg));
+  n = receiveDataOnly(file_des,arg,sizeof(arg));
   if (n < 0) {
     sprintf(mess,"Error reading from socket\n");
     ret=FAIL;
@@ -1072,12 +1082,12 @@ int get_channel(int fnum) {
 
   /* send answer */
   /* send OK/failed */
-  n = sendDataOnly(&ret,sizeof(ret));
+  n = sendDataOnly(file_des,&ret,sizeof(ret));
   if (ret==OK) {
     /* send return argument */
-    ret=sendChannel(&retval);
+    ret=sendChannel(file_des, &retval);
   } else {
-    n += sendDataOnly(mess,sizeof(mess));
+    n += sendDataOnly(file_des,mess,sizeof(mess));
   }
 
 
@@ -1089,7 +1099,7 @@ int get_channel(int fnum) {
 }
 
 
-int set_chip(int fnum) {
+int set_chip(int file_des) {
 
   sls_detector_chip myChip;
   int ch[NCHAN];
@@ -1107,7 +1117,7 @@ int set_chip(int fnum) {
 #ifdef VERBOSE
   printf("Setting chip\n");
 #endif
-  ret=receiveChip(&myChip);
+  ret=receiveChip(file_des, &myChip);
 #ifdef VERBOSE
   printf("Chip received\n");
 #endif
@@ -1135,19 +1145,19 @@ int set_chip(int fnum) {
 
   /* send answer */
   /* send OK/failed */
-  n = sendDataOnly(&ret,sizeof(ret));
+  n = sendDataOnly(file_des,&ret,sizeof(ret));
   if (ret==OK) {
     /* send return argument */
-    n += sendDataOnly(&retval,sizeof(retval));
+    n += sendDataOnly(file_des,&retval,sizeof(retval));
   } else {
-    n += sendDataOnly(mess,sizeof(mess));
+    n += sendDataOnly(file_des,mess,sizeof(mess));
   }
 
 
   return ret;
 }
 
-int get_chip(int fnum) {
+int get_chip(int file_des) {
 
   
   int ret=OK;
@@ -1158,7 +1168,7 @@ int get_chip(int fnum) {
   
 
 
-  n = receiveDataOnly(arg,sizeof(arg));
+  n = receiveDataOnly(file_des,arg,sizeof(arg));
   if (n < 0) {
     sprintf(mess,"Error reading from socket\n");
     ret=FAIL;
@@ -1193,12 +1203,12 @@ int get_chip(int fnum) {
 
   /* send answer */
   /* send OK/failed */
-  n = sendDataOnly(&ret,sizeof(ret));
+  n = sendDataOnly(file_des,&ret,sizeof(ret));
   if (ret==OK) {
     /* send return argument */  
-    ret=sendChip(&retval);
+    ret=sendChip(file_des, &retval);
   } else {
-    n += sendDataOnly(mess,sizeof(mess));
+    n += sendDataOnly(file_des,mess,sizeof(mess));
   }
 
 
@@ -1208,7 +1218,7 @@ int get_chip(int fnum) {
 
 
 }
-int set_module(int fnum) {
+int set_module(int file_des) {
   sls_detector_module myModule;
   int *myChip=malloc(NCHIP*sizeof(int));
   int *myChan=malloc(NCHIP*NCHAN*sizeof(int));
@@ -1254,7 +1264,7 @@ int set_module(int fnum) {
 #ifdef VERBOSE
   printf("Setting module\n");
 #endif 
-  ret=receiveModule(&myModule);
+  ret=receiveModule(file_des, &myModule);
  
 
   if (ret>=0)
@@ -1287,12 +1297,12 @@ int set_module(int fnum) {
 
   /* send answer */
   /* send OK/failed */
-  n = sendDataOnly(&ret,sizeof(ret));
+  n = sendDataOnly(file_des,&ret,sizeof(ret));
   if (ret==OK) {
     /* send return argument */
-    n += sendDataOnly(&retval,sizeof(retval));
+    n += sendDataOnly(file_des,&retval,sizeof(retval));
   } else {
-    n += sendDataOnly(mess,sizeof(mess));
+    n += sendDataOnly(file_des,mess,sizeof(mess));
   }
   free(myChip);
   free(myChan);
@@ -1308,7 +1318,7 @@ int set_module(int fnum) {
 
 
 
-int get_module(int fnum) {
+int get_module(int file_des) {
 
   
   int ret=OK;
@@ -1361,7 +1371,7 @@ int get_module(int fnum) {
 
 
 
-  n = receiveDataOnly(&arg,sizeof(arg));
+  n = receiveDataOnly(file_des,&arg,sizeof(arg));
   if (n < 0) {
     sprintf(mess,"Error reading from socket\n");
     ret=FAIL;
@@ -1384,12 +1394,12 @@ int get_module(int fnum) {
  } 
   /* send answer */
   /* send OK/failed */
-  n = sendDataOnly(&ret,sizeof(ret));
+  n = sendDataOnly(file_des,&ret,sizeof(ret));
   if (ret==OK) {
     /* send return argument */  
-    ret=sendModule(&myModule);
+    ret=sendModule(file_des, &myModule);
   } else {
-    n += sendDataOnly(mess,sizeof(mess));
+    n += sendDataOnly(file_des,mess,sizeof(mess));
   }
 
   
@@ -1410,14 +1420,14 @@ int get_module(int fnum) {
   return ret; 
 
 }
-int get_threshold_energy(int fnum) { 
+int get_threshold_energy(int file_des) { 
   int retval;
   int ret=OK;
   int n;
   int  imod;
 
 
-  n = receiveDataOnly(&imod,sizeof(imod));
+  n = receiveDataOnly(file_des,&imod,sizeof(imod));
   if (n < 0) {
     sprintf(mess,"Error reading from socket\n");
     ret=FAIL;
@@ -1439,11 +1449,11 @@ int get_threshold_energy(int fnum) {
 
  
   /* send answer */
-  n = sendDataOnly(&ret,sizeof(ret));
+  n = sendDataOnly(file_des,&ret,sizeof(ret));
   if (ret!=OK) {
-    n += sendDataOnly(mess,sizeof(mess));
+    n += sendDataOnly(file_des,mess,sizeof(mess));
   } else
-    n += sendDataOnly(&retval,sizeof(retval));
+    n += sendDataOnly(file_des,&retval,sizeof(retval));
   
   
   /* Maybe this is done inside the initialization funcs */
@@ -1453,7 +1463,7 @@ int get_threshold_energy(int fnum) {
 
 }
  
-int set_threshold_energy(int fnum) { 
+int set_threshold_energy(int file_des) { 
   int retval;
   int ret=OK;
   int arg[3];
@@ -1462,7 +1472,7 @@ int set_threshold_energy(int fnum) {
   enum detectorSettings isett;
 
 
-  n = receiveDataOnly(&arg,sizeof(arg));
+  n = receiveDataOnly(file_des,&arg,sizeof(arg));
   if (n < 0) {
     sprintf(mess,"Error reading from socket\n");
     ret=FAIL;
@@ -1493,11 +1503,11 @@ int set_threshold_energy(int fnum) {
 
  
   /* send answer */
-  n = sendDataOnly(&ret,sizeof(ret));
+  n = sendDataOnly(file_des,&ret,sizeof(ret));
   if (ret!=OK) {
-    n += sendDataOnly(mess,sizeof(mess));
+    n += sendDataOnly(file_des,mess,sizeof(mess));
   } else
-    n += sendDataOnly(&retval,sizeof(retval));
+    n += sendDataOnly(file_des,&retval,sizeof(retval));
   
   
   /* Maybe this is done inside the initialization funcs */
@@ -1507,7 +1517,7 @@ int set_threshold_energy(int fnum) {
 
 }
  
-int set_settings(int fnum) {
+int set_settings(int file_des) {
 
   int retval;
   int ret=OK;
@@ -1517,7 +1527,7 @@ int set_settings(int fnum) {
   enum detectorSettings isett;
 
 
-  n = receiveDataOnly(&arg,sizeof(arg));
+  n = receiveDataOnly(file_des,&arg,sizeof(arg));
   if (n < 0) {
     sprintf(mess,"Error reading from socket\n");
     ret=FAIL;
@@ -1545,11 +1555,11 @@ int set_settings(int fnum) {
   }
 
   /* send answer */
-  n = sendDataOnly(&ret,sizeof(ret));
+  n = sendDataOnly(file_des,&ret,sizeof(ret));
   if (ret!=OK) {
-    n += sendDataOnly(mess,sizeof(mess));
+    n += sendDataOnly(file_des,mess,sizeof(mess));
   } else
-    n += sendDataOnly(&retval,sizeof(retval));
+    n += sendDataOnly(file_des,&retval,sizeof(retval));
     
  
   
@@ -1558,7 +1568,7 @@ int set_settings(int fnum) {
 
 }
 
-int start_acquisition(int fnum) {
+int start_acquisition(int file_des) {
 
   int ret=OK;
   int n;
@@ -1574,15 +1584,15 @@ int start_acquisition(int fnum) {
   if (ret!=OK)
     sprintf(mess,"Start acquisition failed\n");
 
-  n = sendDataOnly(&ret,sizeof(ret));
+  n = sendDataOnly(file_des,&ret,sizeof(ret));
   if (ret!=OK) {
-    n += sendDataOnly(mess,sizeof(mess));
+    n += sendDataOnly(file_des,mess,sizeof(mess));
   }
   return ret; 
 
 }
 
-int stop_acquisition(int fnum) {
+int stop_acquisition(int file_des) {
 
   int ret=OK;
   int n;
@@ -1598,16 +1608,16 @@ int stop_acquisition(int fnum) {
   if (ret!=OK)
     sprintf(mess,"Stop acquisition failed\n");
 
-  n = sendDataOnly(&ret,sizeof(ret));
+  n = sendDataOnly(file_des,&ret,sizeof(ret));
   if (ret!=OK) {
-    n += sendDataOnly(mess,sizeof(mess));
+    n += sendDataOnly(file_des,mess,sizeof(mess));
   }
   return ret; 
 
 
 }
 
-int start_readout(int fnum) {
+int start_readout(int file_des) {
 
 
   int ret=OK;
@@ -1623,9 +1633,9 @@ int start_readout(int fnum) {
   if (ret!=OK)
     sprintf(mess,"Start readout failed\n");
 
-  n = sendDataOnly(&ret,sizeof(ret));
+  n = sendDataOnly(file_des,&ret,sizeof(ret));
   if (ret!=OK) {
-    n += sendDataOnly(mess,sizeof(mess));
+    n += sendDataOnly(file_des,mess,sizeof(mess));
   }
   return ret; 
 
@@ -1633,7 +1643,7 @@ int start_readout(int fnum) {
 
 }
 
-int get_run_status(int fnum) {  
+int get_run_status(int file_des) {  
 
   int ret=OK;
   int n;
@@ -1668,11 +1678,11 @@ int get_run_status(int fnum) {
     printf("get status failed\n");
   }
 
-  n = sendDataOnly(&ret,sizeof(ret));
+  n = sendDataOnly(file_des,&ret,sizeof(ret));
   if (ret!=OK) {
-    n += sendDataOnly(mess,sizeof(mess));
+    n += sendDataOnly(file_des,mess,sizeof(mess));
   } else {
-    n += sendDataOnly(&s,sizeof(s));
+    n += sendDataOnly(file_des,&s,sizeof(s));
   }
   return ret; 
 
@@ -1680,7 +1690,7 @@ int get_run_status(int fnum) {
 
 }
 
-int read_frame(int fnum) {
+int read_frame(int file_des) {
   /*
   int *retval=NULL;
   char *ptr=NULL;
@@ -1697,13 +1707,10 @@ int read_frame(int fnum) {
 #ifdef VERYVERBOSE
       printf("Sending ptr %x %d\n",dataretval, dataBytes);
 #endif 
-      sendDataOnly(&dataret,sizeof(dataret));
+      sendDataOnly(file_des,&dataret,sizeof(dataret));
+      sendDataOnly(file_des,dataretval,dataBytes);
 #ifdef VERBOSE
-      n=sendDataOnly(dataretval,dataBytes);
-      printf("sent %d bytes\n",n);
-#else
-      
-      sendDataOnly(dataretval,dataBytes);
+      printf("sent %d bytes\n",n);   
 #endif
       return OK;
     }  else {
@@ -1720,8 +1727,8 @@ int read_frame(int fnum) {
 #ifdef VERYVERBOSE
       printf("%d %d %x %s\n",sizeof(mess),strlen(mess), mess,mess);
 #endif
-      sendDataOnly(&dataret,sizeof(dataret));
-      sendDataOnly(mess,sizeof(mess));//sizeof(mess));//sizeof(mess));
+      sendDataOnly(file_des,&dataret,sizeof(dataret));
+      sendDataOnly(file_des,mess,sizeof(mess));//sizeof(mess));//sizeof(mess));
 #ifdef VERYVERBOSE
       printf("message sent\n",mess);
 #endif 
@@ -1738,11 +1745,11 @@ int read_frame(int fnum) {
     printf("sending data of %d frames\n",nframes);
 #endif 
     for (iframes=0; iframes<nframes; iframes++) {
-      sendDataOnly(&dataret,sizeof(dataret));
+      sendDataOnly(file_des,&dataret,sizeof(dataret));
 #ifdef VERYVERBOSE
       printf("sending pointer %x of size %d\n",dataretval,dataBytes);
 #endif 
-      sendDataOnly(dataretval,dataBytes);
+      sendDataOnly(file_des,dataretval,dataBytes);
       dataretval+=dataBytes;
     }
     if (getFrames()>-2) {
@@ -1757,8 +1764,8 @@ int read_frame(int fnum) {
 #ifdef VERBOSE
       printf("Frames left %d\n",getFrames());
 #endif 
-    sendDataOnly(&dataret,sizeof(dataret));
-    sendDataOnly(mess,sizeof(mess));
+    sendDataOnly(file_des,&dataret,sizeof(dataret));
+    sendDataOnly(file_des,mess,sizeof(mess));
     return dataret;
   }
   
@@ -1772,7 +1779,7 @@ int read_frame(int fnum) {
 
 
 
-int read_all(int fnum) {
+int read_all(int file_des) {
 
  
   while(read_frame(0)==OK) {
@@ -1790,7 +1797,7 @@ int read_all(int fnum) {
 
 }
 
-int start_and_read_all(int fnum) {
+int start_and_read_all(int file_des) {
   //  int ret=OK;
 #ifdef VERBOSE
   printf("Starting and reading all frames\n");
@@ -1800,8 +1807,8 @@ int start_and_read_all(int fnum) {
   /*  ret=startStateMachine();  
       if (ret!=OK) {
       sprintf(mess,"could not start state machine\n");
-    sendDataOnly(&ret,sizeof(ret));
-    sendDataOnly(mess,sizeof(mess));
+    sendDataOnly(file_des,&ret,sizeof(ret));
+    sendDataOnly(file_des,mess,sizeof(mess));
     
     #ifdef VERBOSE
     printf("could not start state machine\n");
@@ -1819,7 +1826,7 @@ int start_and_read_all(int fnum) {
 
 }
 
-int set_timer(int fnum) {
+int set_timer(int file_des) {
   enum timerIndex ind;
   int64_t tns;
   int n;
@@ -1829,13 +1836,13 @@ int set_timer(int fnum) {
 
   sprintf(mess,"can't set timer\n");
   
-  n = receiveDataOnly(&ind,sizeof(ind));
+  n = receiveDataOnly(file_des,&ind,sizeof(ind));
   if (n < 0) {
     sprintf(mess,"Error reading from socket\n");
     ret=FAIL;
   }
   
-  n = receiveDataOnly(&tns,sizeof(tns));
+  n = receiveDataOnly(file_des,&tns,sizeof(tns));
   if (n < 0) {
     sprintf(mess,"Error reading from socket\n");
     ret=FAIL;
@@ -1893,19 +1900,19 @@ int set_timer(int fnum) {
       sprintf(mess, "could not allocate RAM for %lld frames\n", tns);
   }
 
-  n = sendDataOnly(&ret,sizeof(ret));
+  n = sendDataOnly(file_des,&ret,sizeof(ret));
   if (ret!=OK) {
 #ifdef VERBOSE
   printf("returning error\n");
 #endif 
 
-    n = sendDataOnly(mess,sizeof(mess));
+    n = sendDataOnly(file_des,mess,sizeof(mess));
   } else {
 #ifdef VERBOSE
   printf("returning ok %d\n",sizeof(retval));
 #endif 
 
-    n = sendDataOnly(&retval,sizeof(retval));
+    n = sendDataOnly(file_des,&retval,sizeof(retval));
   }
 
   return ret; 
@@ -1919,7 +1926,7 @@ int set_timer(int fnum) {
 
 
 
-int get_time_left(int fnum) {
+int get_time_left(int file_des) {
 
   enum timerIndex ind;
   int n;
@@ -1927,7 +1934,7 @@ int get_time_left(int fnum) {
   int ret=OK;
   
   sprintf(mess,"can't get timer\n");
-  n = receiveDataOnly(&ind,sizeof(ind));
+  n = receiveDataOnly(file_des,&ind,sizeof(ind));
   if (n < 0) {
     sprintf(mess,"Error reading from socket\n");
     ret=FAIL;
@@ -1987,11 +1994,11 @@ int get_time_left(int fnum) {
   printf("time left on timer %d is %lld\n",ind, retval);
 #endif 
 
-  n = sendDataOnly(&ret,sizeof(ret));
+  n = sendDataOnly(file_des,&ret,sizeof(ret));
   if (ret!=OK) {
-    n += sendDataOnly(mess,sizeof(mess));
+    n += sendDataOnly(file_des,mess,sizeof(mess));
   } else {
-    n = sendDataOnly(&retval,sizeof(retval));
+    n = sendDataOnly(file_des,&retval,sizeof(retval));
   }
 #ifdef VERBOSE
 
@@ -2003,7 +2010,7 @@ int get_time_left(int fnum) {
 
 }
 
-int set_dynamic_range(int fnum) {
+int set_dynamic_range(int file_des) {
 
 
  
@@ -2016,7 +2023,7 @@ int set_dynamic_range(int fnum) {
   sprintf(mess,"can't set dynamic range\n");
   
 
-  n = receiveDataOnly(&dr,sizeof(dr));
+  n = receiveDataOnly(file_des,&dr,sizeof(dr));
   if (n < 0) {
     sprintf(mess,"Error reading from socket\n");
     ret=FAIL;
@@ -2066,28 +2073,28 @@ int set_dynamic_range(int fnum) {
       sprintf(mess,"Could not allocate RAM for the dynamic range selected\n");
   }
 
-  n = sendDataOnly(&ret,sizeof(ret));
+  n = sendDataOnly(file_des,&ret,sizeof(ret));
   if (ret!=OK) {
-    n = sendDataOnly(mess,sizeof(mess));
+    n = sendDataOnly(file_des,mess,sizeof(mess));
   } else {
-    n = sendDataOnly(&retval,sizeof(retval));
+    n = sendDataOnly(file_des,&retval,sizeof(retval));
   }
   return ret; 
 }
 
-int set_roi(int fnum) {
+int set_roi(int file_des) {
 
   return FAIL;
 
 }
 
-int get_roi(int fnum) {
+int get_roi(int file_des) {
 
 
   return FAIL;
 }
 
-int set_speed(int fnum) {
+int set_speed(int file_des) {
 
   enum speedVariable arg;
   int val, n;
@@ -2097,12 +2104,12 @@ int set_speed(int fnum) {
   sprintf(mess,"can't set speed variable\n");
   
 
-  n = receiveDataOnly(&arg,sizeof(arg));
+  n = receiveDataOnly(file_des,&arg,sizeof(arg));
   if (n < 0) {
     sprintf(mess,"Error reading from socket\n");
     ret=FAIL;
   }
-   n = receiveDataOnly(&val,sizeof(val));
+   n = receiveDataOnly(file_des,&val,sizeof(val));
    if (n < 0) {
      sprintf(mess,"Error reading from socket\n");
      ret=FAIL;
@@ -2147,18 +2154,18 @@ int set_speed(int fnum) {
       ret=FAIL;
     }
   }
-  n = sendDataOnly(&ret,sizeof(ret));
+  n = sendDataOnly(file_des,&ret,sizeof(ret));
   if (ret!=OK) {
-    n = sendDataOnly(mess,sizeof(mess));
+    n = sendDataOnly(file_des,mess,sizeof(mess));
   } else {
-    n = sendDataOnly(&retval,sizeof(retval));
+    n = sendDataOnly(file_des,&retval,sizeof(retval));
   }
   return ret; 
 }
 
 
 
-int set_readout_flags(int fnum) {
+int set_readout_flags(int file_des) {
 
   enum readOutFlags retval;
   enum readOutFlags arg;
@@ -2170,7 +2177,7 @@ int set_readout_flags(int fnum) {
   sprintf(mess,"can't set readout flags\n");
   
 
-  n = receiveDataOnly(&arg,sizeof(arg));
+  n = receiveDataOnly(file_des,&arg,sizeof(arg));
   if (n < 0) {
     sprintf(mess,"Error reading from socket\n");
     ret=FAIL;
@@ -2228,11 +2235,11 @@ int set_readout_flags(int fnum) {
     printf("set readout flags failed\n");
     sprintf(mess,"Could not allocate RAM\n");
   } 
-  n = sendDataOnly(&ret,sizeof(ret));
+  n = sendDataOnly(file_des,&ret,sizeof(ret));
   if (ret!=OK) {
-    n = sendDataOnly(mess,sizeof(mess));
+    n = sendDataOnly(file_des,mess,sizeof(mess));
   } else {
-    n = sendDataOnly(&retval,sizeof(retval));
+    n = sendDataOnly(file_des,&retval,sizeof(retval));
   }
   return ret; 
 }
@@ -2241,7 +2248,7 @@ int set_readout_flags(int fnum) {
 
 
 
-int execute_trimming(int fnum) {
+int execute_trimming(int file_des) {
  
   int arg[3];
   int n;
@@ -2251,14 +2258,14 @@ int execute_trimming(int fnum) {
   
   sprintf(mess,"can't set execute trimming\n");
   
-  n = receiveDataOnly(&mode,sizeof(mode));
+  n = receiveDataOnly(file_des,&mode,sizeof(mode));
   if (n < 0) {
     sprintf(mess,"Error reading from socket\n");
     printf("Error reading from socket (mode)\n");
     ret=FAIL;
   }
   
-  n = receiveDataOnly(arg,sizeof(arg));
+  n = receiveDataOnly(file_des,arg,sizeof(arg));
   if (n < 0) {
     sprintf(mess,"Error reading from socket\n");
     printf("Error reading from socket (args)\n");
@@ -2311,16 +2318,110 @@ int execute_trimming(int fnum) {
   if (ret!=OK) {
     printf("trimming failed\n");
   } 
-  n = sendDataOnly(&ret,sizeof(ret));
+  n = sendDataOnly(file_des,&ret,sizeof(ret));
   if (ret!=OK) {
-    n = sendDataOnly(mess,sizeof(mess));
+    n = sendDataOnly(file_des,mess,sizeof(mess));
   } 
     
   return ret; 
 }
 
 
-
-
+int lock_server(int file_des) {
 
   
+  int n;
+  int ret=OK;
+
+  int lock;
+  n = receiveDataOnly(file_des,&lock,sizeof(lock));
+  if (n < 0) {
+    sprintf(mess,"Error reading from socket\n");
+    printf("Error reading from socket (lock)\n");
+    ret=FAIL;
+  }
+  if (lock>=0) {
+    if (lockStatus==0 || strcmp(lastClientIP,thisClientIP)==0 || strcmp(lastClientIP,"none")==0)
+      lockStatus=lock;
+    else {
+      ret=FAIL;
+      sprintf(mess,"Server already locked by %s\n", lastClientIP);
+    }
+  }
+
+  
+  n = sendDataOnly(file_des,&ret,sizeof(ret));
+  if (ret!=OK) {
+    n = sendDataOnly(file_des,mess,sizeof(mess));
+  }  else
+    n = sendDataOnly(file_des,&lockStatus,sizeof(lockStatus));
+  
+  return ret;
+
+}
+
+int set_port(int file_des) {
+  int n;
+  int ret=OK;
+  int sd;
+
+  enum portType p_type; /** data? control? stop? Unused! */
+  int p_number; /** new port number */
+
+  n = receiveDataOnly(file_des,&p_type,sizeof(p_type));
+  if (n < 0) {
+    sprintf(mess,"Error reading from socket\n");
+    printf("Error reading from socket (ptype)\n");
+    ret=FAIL;
+  }
+  
+  n = receiveDataOnly(file_des,&p_number,sizeof(p_number));
+  if (n < 0) {
+    sprintf(mess,"Error reading from socket\n");
+    printf("Error reading from socket (pnum)\n");
+    ret=FAIL;
+  }
+  
+  if (p_number<1024) {
+    sprintf(mess,"Too low port number %d\n", p_number);
+    printf("\n");
+    ret=FAIL;
+  }
+  
+  printf("set port %d to %d\n",p_type, p_number);
+
+    sd=bindSocket(p_number);
+    
+    if (sd>=0) {
+      ret=OK;
+    } else {
+      ret=FAIL;
+      sprintf(mess,"Could not bind port %d\n", p_number);
+      printf("Could not bind port %d\n", p_number); 
+    }
+
+    n = sendDataOnly(file_des,&ret,sizeof(ret));
+    if (ret!=OK) {
+      n = sendDataOnly(file_des,mess,sizeof(mess));
+    } else {
+      n = sendDataOnly(file_des,&p_number,sizeof(p_number));
+      closeConnection(file_des);
+      exitServer(sockfd);
+      sockfd=sd;
+      
+    }
+
+  return ret;
+
+}
+
+int get_last_client_ip(int file_des) {
+  int ret=OK;
+  int n;
+
+  n = sendDataOnly(file_des,&ret,sizeof(ret));
+  n = sendDataOnly(file_des,lastClientIP,sizeof(lastClientIP));
+  
+  return ret;
+
+}

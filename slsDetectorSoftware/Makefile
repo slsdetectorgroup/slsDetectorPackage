@@ -1,12 +1,12 @@
 CFLAGS= -DC_ONLY 
 FLAGS=
 #-DVERBOSE 
-INCLUDES= -I commonFiles -I slsDetector -I MySocketTCP -I eigerDetector -ImythenDetector -IgotthardDetector  -I usersFunctions
+INCLUDES= -I commonFiles -I slsDetector -I MySocketTCP -I eigerDetector -ImythenDetector -IgotthardDetector  -I usersFunctions -I multiSlsDetector 
 
 #EPICSFLAGS=-D EPICS -I/usr/local/epics/base/include/ -I /usr/local/epics/base/include/os/Linux/ -L /usr/local/epics/base/lib/SL5-x86/ -Wl,-R/usr/local/epics/base/lib/SL5-x86  -lca -lCom 
 
 
-SRC_CLNT= slsDetector/slsDetector.cpp MySocketTCP/MySocketTCP.cxx usersFunctions/usersFunctions.c mythenDetector/mythenDetector.cpp eigerDetector/eigerDetector.cpp gotthardDetector/gotthardDetector.cpp
+SRC_CLNT= slsDetector/slsDetector.cpp MySocketTCP/MySocketTCP.cxx usersFunctions/usersFunctions.c mythenDetector/mythenDetector.cpp eigerDetector/eigerDetector.cpp gotthardDetector/gotthardDetector.cpp multiSlsDetector/multiSlsDetector.cpp 
 
 SRC_MYTHEN_SVC = mythenDetectorServer/server.c mythenDetectorServer/server_funcs.c mythenDetectorServer/communication_funcs.c mythenDetectorServer/firmware_funcs.c mythenDetectorServer/mcb_funcs.c mythenDetectorServer/trimming_funcs.c 
 #mythenDetectorServer/sharedmemory.c
@@ -19,7 +19,7 @@ doc: $(SRC_H) $(SRC_CLNT)
 
 
 mythenServer:  $(SRC_MYTHEN_SVC) 
-	$(CC)  $(SRC_MYTHEN_SVC)  $(CFLAGS) $(FLAGS) $(INCLUDES) -ImythenDetectorServer -DVIRTUAL -lm -D MCB_FUNCS -DC_ONLY
+	$(CC)  $(SRC_MYTHEN_SVC)  $(CFLAGS) $(FLAGS) $(INCLUDES) -ImythenDetectorServer -DVIRTUAL -lm -D MCB_FUNCS -DC_ONLY -DVERBOSE
 	mv a.out mythenServer
 
 
@@ -37,7 +37,8 @@ package: $(SRC_CLNT)
 	$(CXX) -fPIC -g -o objs/gotthardDetector.o -c -Wall gotthardDetector/gotthardDetector.cpp $(INCLUDES) $(FLAGS) 
 	$(CXX) -fPIC -g -o objs/usersFunctions.o -c -Wall usersFunctions/usersFunctions.c $(INCLUDES) $(FLAGS) $(EPICSFLAGS)
 	$(CXX) -fPIC -g -o objs/MySocketTCP.o -c -Wall MySocketTCP/MySocketTCP.cpp $(INCLUDES) $(FLAGS) 
-	$(CXX) -shared -Wl,-soname,libSlsDetector.so.1 -o libSlsDetector.so.1.0.1  objs/slsDetector.o   objs/mythenDetector.o  objs/gotthardDetector.o objs/usersFunctions.o  objs/MySocketTCP.o  -lc $(INCLUDES) $(FLAGS) $(EPICSFLAGS)
+	$(CXX) -fPIC -g -o objs/multiSDetector.o -c -Wall multiSlsDetector/multiSlsDetector.cpp $(INCLUDES) $(FLAGS) 
+	$(CXX) -shared -Wl,-soname,libSlsDetector.so.1 -o libSlsDetector.so.1.0.1  objs/slsDetector.o   objs/mythenDetector.o  objs/gotthardDetector.o objs/usersFunctions.o  objs/MySocketTCP.o  objs/multiSDetector.o -lc $(INCLUDES) $(FLAGS) $(EPICSFLAGS)
 	ln -sf libSlsDetector.so.1.0.1  libSlsDetector.so
 	ln -sf libSlsDetector.so.1  libSlsDetector.so
 	ar  rcs libSlsDetector.a      objs/slsDetector.o   objs/mythenDetector.o  objs/gotthardDetector.o  objs/usersFunctions.o  objs/MySocketTCP.o

@@ -12,9 +12,12 @@
 
 
 #define GOODBYE -200
+
+int sockfd;
+
 int function_table();
 
-int decode_function();
+int decode_function(int);
 
 int init_detector(int);
 
@@ -64,7 +67,9 @@ int get_roi(int);
 int set_speed(int);
 int set_readout_flags(int);
 int execute_trimming(int);
-
+int lock_server(int);
+int set_port(int);
+int get_last_client_ip(int);
   
 
 

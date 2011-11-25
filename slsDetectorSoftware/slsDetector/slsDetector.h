@@ -21,7 +21,6 @@ extern "C" {
  #include <sys/types.h>
  #include <sys/uio.h>
 
-
 #include "sls_detector_defs.h"
 
 #define MAX_TIMERS 10
@@ -140,6 +139,17 @@ class slsDetector {
 typedef  struct sharedSlsDetector {
   /** already existing flag. If the detector does not yet exist (alreadyExisting=0) the sharedMemory will be created, otherwise it will simly be linked */
     int alreadyExisting;
+
+
+
+
+    /** last process id accessing the shared memory */
+   
+  pid_t  lastPID;
+
+
+
+
   /** online flag - is set if the detector is connected, unset if socket connection is not possible  */
   int onlineFlag;
  
@@ -321,6 +331,14 @@ typedef  struct sharedSlsDetector {
 */
   slsDetector(detectorType type=GENERIC, int id=0);
 
+/** constructor 
+ 
+ \param  id is the detector index which is needed to define the shared memory id. Different physical detectors should have different IDs in order to work independently
+
+
+*/
+  slsDetector(int id){slsDetector(getDetectorType(id),id);};
+
 
   slsDetector(char *name, int id=0,  int cport=DEFAULT_PORTNO);
   //slsDetector(string  const fname);
@@ -382,6 +400,26 @@ typedef  struct sharedSlsDetector {
      \sa sharedSlsDetector
   */
   int setTCPSocket(string const name="", int const control_port=-1, int const stop_port=-1, int const data_port=-1);
+
+  /**
+     changes/gets the port number
+     \param type port type
+     \param num new port number (-1 gets)
+     \returns actual port number
+  */
+  int setPort(portType type, int num=-1);
+
+  /** Locks/Unlocks the connection to the server
+      /param lock sets (1), usets (0), gets (-1) the lock
+      /returns lock status of the server
+  */
+  int lockServer(int lock=-1);
+
+  /** 
+      Returns the IP of the last client connecting to the detector
+  */
+  string getLastClientIP();
+
   /** returns the detector hostname \sa sharedSlsDetector  */
   char* getHostname() {return thisDetector->hostname;};
   /** returns the detector control port  \sa sharedSlsDetector */
@@ -391,6 +429,21 @@ typedef  struct sharedSlsDetector {
   /** returns the detector data port  \sa sharedSlsDetector */
   int getDataPort() {return thisDetector->dataPort;};
  
+  /** connect to the control port */
+  int connectControl();
+  /** disconnect from the control port */
+  int disconnectControl();
+
+  /** connect to the data port */
+  int connectData();
+  /** disconnect from the data port */
+  int disconnectData();
+
+  /** connect to the stop port */
+  int connectStop();
+  /** disconnect from the stop port */
+  int disconnectStop();
+
 
   /* I/O */
   /** returns the detector trimbit/settings directory  \sa sharedSlsDetector */
@@ -649,11 +702,14 @@ typedef  struct sharedSlsDetector {
   */
   int writeAngularConversion(string fname="");
 
-  /** Returns the number of channels per chip */
+  /** Returns the number of channels per chip (without connecting to the detector) */
   int getNChans(){return thisDetector->nChans;}; //
 
-  /** Returns the number of chips per module */
+  /** Returns the number of chips per module (without connecting to the detector) */
   int getNChips(){return thisDetector->nChips;}; //
+
+  /** Returns the number of  modules (without connecting to the detector) */
+  int getNMods(){return thisDetector->nMods;}; //
 
 
   /* Communication to server */
@@ -994,17 +1050,18 @@ typedef  struct sharedSlsDetector {
   int* startAndReadAll();
   
   /**
-    start detector acquisition and read out, but does not read data from socket 
+    start detector acquisition and read out, but does not read data from socket  leaving socket opened
+    \returns OK or FAIL
    
   */ 
   int startAndReadAllNoWait(); 
 
-  /**
-    receives a data frame from the detector socket
-    \returns pointer to the data or NULL. If NULL disconnects the socket
-    \sa getDataFromDetector
-  */ 
-  int* getDataFromDetectorNoWait(); 
+/*   /\** */
+/*     receives a data frame from the detector socket */
+/*     \returns pointer to the data or NULL. If NULL disconnects the socket */
+/*     \sa getDataFromDetector */
+/*   *\/  */
+/*   int* getDataFromDetectorNoWait();  */
 
   /**
    asks and  receives a data frame from the detector and puts it in the data queue
@@ -1019,6 +1076,12 @@ typedef  struct sharedSlsDetector {
     \sa getDataFromDetector  dataQueue
   */ 
   int* readAll();
+
+  /**
+   asks and  receives all data  from the detector  and leaves the socket opened
+    \returns OK or FAIL
+  */ 
+  int readAllNoWait();
 
   
   /**
@@ -1157,6 +1220,14 @@ s
   */
   int getFlatFieldCorrection(float *corr=NULL, float *ecorr=NULL);
 
+  /** 
+      set flat field corrections
+      \param corr if !=NULL the flat field corrections will be filled with corr (NULL usets ff corrections)
+      \param ecorr if !=NULL the flat field correction errors will be filled with ecorr (1 otherwise)
+      \returns 0 if ff correction disabled, >0 otherwise
+  */
+  int setFlatFieldCorrection(float *corr=NULL, float *ecorr=NULL);
+
  /** 
       get flat field corrections file directory
       \returns flat field correction file directory
@@ -1200,6 +1271,15 @@ s
       \returns 0 if rate correction disabled, >0 otherwise
   */
   int getRateCorrection();
+
+  /** 
+      set bad channels correction
+      \param fname file with bad channel list ("" disable)
+      \param nbad reference to number of bad channels
+      \param badlist array of badchannels
+      \returns 0 if bad channel disabled, >0 otherwise
+  */
+  static int setBadChannelCorrection(string fname, int &nbad, int *badlist);
   
   /** 
       set bad channels correction
@@ -1208,6 +1288,18 @@ s
   */
   int setBadChannelCorrection(string fname="");
   
+  /** 
+      set bad channels correction
+      \param nch number of bad channels
+      \param chs array of channels
+      \param ff 0 if normal bad channels, 1 if ff bad channels
+      \returns 0 if bad channel disabled, >0 otherwise
+  */
+  int setBadChannelCorrection(int nch, int *chs, int ff=0);
+  
+
+
+
   /** 
       get bad channels correction
       \param bad pointer to array that if bad!=NULL will be filled with the bad channel list
@@ -1430,7 +1522,7 @@ s
      \param fferr erro on ffcoefficient
      \returns 0
   */
-  int flatFieldCorrect(float datain, float errin, float &dataout, float &errout, float ffcoefficient, float fferr);
+  static int flatFieldCorrect(float datain, float errin, float &dataout, float &errout, float ffcoefficient, float fferr);
   
   /** 
      flat field correct data
@@ -1454,7 +1546,7 @@ s
      \param t acquisition time (in ns)
      \returns 0
   */
-  int rateCorrect(float datain, float errin, float &dataout, float &errout, float tau, float t);
+  static int rateCorrect(float datain, float errin, float &dataout, float &errout, float tau, float t);
   
   /** 
      rate correct data
@@ -1581,23 +1673,34 @@ enum {GET_ACTION, PUT_ACTION, READOUT_ACTION};
      \param action can be PUT_ACTION or GET_ACTION (from text client even READOUT_ACTION for acquisition) 
   */
    static detectorType getDetectorType(char *name, int cport=DEFAULT_PORTNO);
-
+ 
   /**
      returns the detector type from hostname and controlport
      \param 
      \param action can be PUT_ACTION or GET_ACTION (from text client even READOUT_ACTION for acquisition) 
   */
    static detectorType getDetectorType(int id);
+ 
 
+   /** 
+      Returns detector id
+      \return pointer to the data (or NULL if failed)
+  */
 
    int getDetectorId() { return detId;};
    
+  /** 
+      Receives a data frame from the detector socket
+      \return pointer to the data (or NULL if failed)
+
+  */
+  int* getDataFromDetector();
 
 
  protected:
  
 
-  static const int64_t thisSoftwareVersion=0x20110113;
+  static const int64_t thisSoftwareVersion=0x20111124;
 
   /**
     address of the detector structure in shared memory
@@ -1707,12 +1810,6 @@ enum {GET_ACTION, PUT_ACTION, READOUT_ACTION};
   /** pointer to bad channel mask  0 is channel is good 1 if it is bad \sa fillBadChannelMask() */
   int *badChannelMask;
 
-  /** 
-      Receives a data frame from the detector socket
-      \return pointer to the data (or NULL if failed)
-
-  */
-  int* getDataFromDetector();
 
   /** Initializes the shared memory 
       \param type is needed to define the size of the shared memory

@@ -679,7 +679,7 @@ int mythenDetector::readDataFile(string fname, float *data, float *err, float *a
       if (ang==NULL) {
 	ssstr >> ichan >> fdata;
 	ich=ichan;
-	if (!ssstr.good()) {
+	if (ssstr.fail() || ssstr.bad()) {
 	  interrupt=1;
 	  break;
 	}
@@ -689,13 +689,13 @@ int mythenDetector::readDataFile(string fname, float *data, float *err, float *a
 	ssstr >> fang >> fdata;
 	ich=iline;
       }
-      if (!ssstr.good()) {
+      if (ssstr.fail() || ssstr.bad()) {
 	interrupt=1;
 	break;
       }
        if (err)
 	 ssstr >> ferr;
-      if (!ssstr.good()) {
+      if (ssstr.fail() || ssstr.bad()) {
 	interrupt=1;
 	break;
       }
@@ -707,7 +707,7 @@ int mythenDetector::readDataFile(string fname, float *data, float *err, float *a
        if (err)
 	 err[ich]=ferr;
        iline++;
-     } else {
+      } else {
        std::cout<< " too many lines in file: "<< iline << " instead of " << maxchans << std::endl;
        interrupt=1;
        break;
@@ -744,7 +744,7 @@ int mythenDetector::readDataFile(string fname, int *data){
 #endif
       istringstream ssstr(str);
       ssstr >> ichan >> idata;
-      if (!ssstr.good()) {
+      if (ssstr.fail() || ssstr.bad()) {
 	interrupt=1;
 	break;
       }

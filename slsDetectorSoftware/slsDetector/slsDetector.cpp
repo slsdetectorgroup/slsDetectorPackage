@@ -37,11 +37,17 @@ int slsDetector::initSharedMemory(detectorType type, int id) {
      nc=10;
      nd=13; // dacs+adcs
      break;
-   default:
+   case EIGER:
      nch=65535; // one EIGER module
      nm=1; //modules/detector
      nc=8; //chips
      nd=16; //dacs+adcs
+   default:
+     nch=0; // one EIGER module
+     nm=0; //modules/detector
+     nc=0; //chips
+     nd=0; //dacs+adcs
+     
    }
    /**
       The size of the shared memory is:
@@ -159,7 +165,6 @@ slsDetector::slsDetector(detectorType type, int id):
 
 
 
-
      pthread_mutex_t mp1 = PTHREAD_MUTEX_INITIALIZER; 
     
      mp=mp1;
@@ -258,6 +263,33 @@ detectorType slsDetector::getDetectorType(char *name, int cport) {
 
 }
 
+// detectorType slsDetector::getDetectorType(int id) {
+  
+//   detectorType t=GENERIC;
+//   initSharedMemory(GENERIC, id);
+//   sharedSlsDetector* det = (sharedSlsDetector*) shmat(shm_id, NULL, 0);
+//   if (det == (void*)-1) {
+//     std::cout<<"*** shmat error - detector id not found ***" << std::endl;
+//     return t;
+//   }
+  
+
+//   return t;
+
+// }
+
+
+
+
+
+
+
+
+
+
+
+
+
 detectorType slsDetector::getDetectorType(int id) {
   
   detectorType t=GENERIC;
@@ -351,7 +383,7 @@ int slsDetector::initializeDetectorSize(detectorType type) {
        thisDetector->nChips=12;
        thisDetector->nDacs=6;
        thisDetector->nAdcs=0;
-       thisDetector->nModMax[X]=24;
+       thisDetector->nModMax[X]=6;
        thisDetector->nModMax[Y]=1;
        thisDetector->dynamicRange=24;
        break;
@@ -497,6 +529,11 @@ int slsDetector::initializeDetectorSize(detectorType type) {
    } 
    /** fill the BadChannelMask \sa  fillBadChannelMask */
    fillBadChannelMask();
+
+
+   /** modifies the last PID accessing the detector */
+   thisDetector->lastPID=getpid();
+
    return OK;
 }
 
@@ -833,6 +870,46 @@ int slsDetector::setTCPSocket(string const name, int const control_port, int con
   return retval;
 };
 
+
+  /** connect to the control port */
+int slsDetector::connectControl() {
+  if (controlSocket)
+    return controlSocket->Connect();
+}
+  /** disconnect from the control port */
+int slsDetector::disconnectControl() {
+  if (controlSocket)
+    controlSocket->Disconnect();
+  return OK;
+}
+
+
+
+  /** connect to the data port */
+  int slsDetector::connectData() {
+  if (dataSocket)
+    return dataSocket->Connect();
+};
+  /** disconnect from the data port */
+  int slsDetector::disconnectData(){
+  if (dataSocket)
+    dataSocket->Disconnect();
+  return OK;
+}
+;
+
+  /** connect to the stop port */
+  int slsDetector::connectStop() {
+  if (stopSocket)
+    return stopSocket->Connect();
+};
+  /** disconnect from the stop port */
+  int slsDetector::disconnectStop(){
+  if (stopSocket)
+    stopSocket->Disconnect();
+  return OK;
+}
+;
 
 
 
@@ -2917,6 +2994,36 @@ int* slsDetector::readAll(){
 
 };
 
+
+
+
+
+int slsDetector::readAllNoWait(){
+
+  int fnum= F_READ_ALL;
+  
+#ifdef VERBOSE
+  std::cout<< "Reading all frames "<< std::endl;
+#endif
+  
+  if (thisDetector->onlineFlag==ONLINE_FLAG) {
+    if (controlSocket) {
+      if  (controlSocket->Connect()>=0) {
+	controlSocket->SendDataOnly(&fnum,sizeof(fnum));
+	return OK;
+      }
+    }
+  }
+  return FAIL;
+};
+
+
+
+
+
+
+
+
 int* slsDetector::startAndReadAll(){
 
  
@@ -2971,25 +3078,25 @@ int slsDetector::startAndReadAllNoWait(){
   return FAIL;
 };
 
-int* slsDetector::getDataFromDetectorNoWait() {
-  int *retval=getDataFromDetector();
-  if (thisDetector->onlineFlag==ONLINE_FLAG) {
-    if (controlSocket) {
-      if (retval==NULL){
-	controlSocket->Disconnect();
+// int* slsDetector::getDataFromDetectorNoWait() {
+//   int *retval=getDataFromDetector();
+//   if (thisDetector->onlineFlag==ONLINE_FLAG) {
+//     if (controlSocket) {
+//       if (retval==NULL){
+// 	controlSocket->Disconnect();
 
-#ifdef VERBOSE
-  std::cout<< "Run finished "<< std::endl;
-#endif
-  } else {
-#ifdef VERBOSE
-    std::cout<< "Frame received "<< std::endl;
-#endif
-  }
-    }
-  }
-  return retval; // check what we return!
-};
+// #ifdef VERBOSE
+//   std::cout<< "Run finished "<< std::endl;
+// #endif
+//   } else {
+// #ifdef VERBOSE
+//     std::cout<< "Frame received "<< std::endl;
+// #endif
+//   }
+//     }
+//   }
+//   return retval; // check what we return!
+// };
 
 
 
@@ -3104,6 +3211,195 @@ int64_t slsDetector::setTimer(timerIndex index, int64_t t){
   return thisDetector->timerValue[index];
   
 };
+
+int slsDetector::lockServer(int lock) {
+  int fnum=F_LOCK_SERVER;
+  int retval=-1;
+  int ret=OK;
+  char mess[100];
+  
+  if (thisDetector->onlineFlag==ONLINE_FLAG) {
+    if (controlSocket) {
+      if  (controlSocket->Connect()>=0) {
+	controlSocket->SendDataOnly(&fnum,sizeof(fnum));
+	controlSocket->SendDataOnly(&lock,sizeof(lock));
+	controlSocket->ReceiveDataOnly(&ret,sizeof(ret));
+	if (ret!=OK) {
+	  controlSocket->ReceiveDataOnly(mess,sizeof(mess));
+	  std::cout<< "Detector returned error: " << mess << std::endl;
+	} else {
+	  controlSocket->ReceiveDataOnly(&retval,sizeof(retval)); 
+	} 
+	controlSocket->Disconnect();
+      }
+    }
+  }
+
+  return retval;
+
+
+}
+
+ 
+string slsDetector::getLastClientIP() {
+
+  int fnum=F_GET_LAST_CLIENT_IP;
+  char clientName[INET_ADDRSTRLEN];
+  char mess[100];
+  int ret=OK;
+  
+  if (thisDetector->onlineFlag==ONLINE_FLAG) {
+    if (controlSocket) {
+      if  (controlSocket->Connect()>=0) {
+	controlSocket->SendDataOnly(&fnum,sizeof(fnum));
+	controlSocket->ReceiveDataOnly(&ret,sizeof(ret));
+	if (ret!=OK) {
+	  controlSocket->ReceiveDataOnly(mess,sizeof(mess));
+	  std::cout<< "Detector returned error: " << mess << std::endl;
+	} else {
+	  controlSocket->ReceiveDataOnly(clientName,sizeof(clientName)); 
+	} 
+	controlSocket->Disconnect();
+      }
+    }
+  }
+
+  return string(clientName);
+
+}
+
+
+int slsDetector::setPort(portType index, int num){
+  
+
+  int fnum=F_SET_PORT;
+  int retval;
+  uint64_t ut;
+  char mess[100];
+  int ret=OK;
+  int n=0;
+  
+  MySocketTCP *s;
+
+
+  switch(index) {
+  case CONTROL_PORT:
+    s=controlSocket;
+    retval=thisDetector->controlPort;
+    break;
+  case DATA_PORT:
+    s=dataSocket;
+    retval=thisDetector->dataPort;
+    break;
+  case STOP_PORT:
+    s=stopSocket;
+    retval=thisDetector->stopPort;
+    break;
+  default:
+    s=NULL;
+  }
+
+
+  if (thisDetector->onlineFlag==ONLINE_FLAG) {
+    if (s) {
+      if  (s->Connect()>=0) {
+	s->SendDataOnly(&fnum,sizeof(fnum));
+	s->SendDataOnly(&index,sizeof(index));
+	n=s->SendDataOnly(&num,sizeof(num));
+	s->ReceiveDataOnly(&ret,sizeof(ret));
+	if (ret!=OK) {
+	  s->ReceiveDataOnly(mess,sizeof(mess));
+	  std::cout<< "Detector returned error: " << mess << std::endl;
+	} else {
+	  s->ReceiveDataOnly(&retval,sizeof(retval)); 
+	} 
+	s->Disconnect();
+      }
+    } else {
+
+      switch(index) {
+      case CONTROL_PORT:
+	thisDetector->controlPort=num;
+	break;
+      case DATA_PORT:
+	thisDetector->dataPort=num;
+	break;
+      case STOP_PORT:
+	thisDetector->stopPort=num;
+	break;
+      default:
+	;
+      }
+    
+      return num;
+    }
+  } else {
+
+      switch(index) {
+      case CONTROL_PORT:
+	thisDetector->controlPort=num;
+	break;
+      case DATA_PORT:
+	thisDetector->dataPort=num;
+	break;
+      case STOP_PORT:
+	thisDetector->stopPort=num;
+	break;
+      default:
+	;
+      }
+    
+      return num;
+    }
+
+
+
+
+  if (ret==OK) {
+
+    switch(index) {
+    case CONTROL_PORT:
+      thisDetector->controlPort=retval;
+      break;
+    case DATA_PORT:
+      thisDetector->dataPort=retval;
+      break;
+    case STOP_PORT:
+      thisDetector->stopPort=retval;
+      break;
+    default:
+      ;
+    }
+    
+    
+
+  }
+  // setTCPSocket();
+
+
+
+
+
+  return retval;
+  
+};
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -3634,6 +3930,35 @@ int slsDetector::setFlatFieldCorrection(string fname){
   }
   return thisDetector->correctionMask&(1<<FLAT_FIELD_CORRECTION);
 }
+
+
+
+
+
+int slsDetector::setFlatFieldCorrection(float *corr, float *ecorr) {
+  if (corr!=NULL) {
+    for (int ichan=0; ichan<thisDetector->nMod[X]*thisDetector->nMod[Y]*thisDetector->nChans*thisDetector->nChips; ichan++) {
+      ffcoefficients[ichan]=corr[ichan];
+      if (ecorr!=NULL)
+	fferrors[ichan]=ecorr[ichan];
+      else
+	fferrors[ichan]=1;
+    }
+    thisDetector->correctionMask|=(1<<FLAT_FIELD_CORRECTION);
+  } else
+   thisDetector->correctionMask&=~(1<<FLAT_FIELD_CORRECTION);
+  
+  return thisDetector->correctionMask&(1<<FLAT_FIELD_CORRECTION);
+}
+
+
+
+
+
+
+
+
+
  
 int slsDetector::getFlatFieldCorrection(float *corr, float *ecorr) {
   if (thisDetector->correctionMask&(1<<FLAT_FIELD_CORRECTION)) {
@@ -3821,9 +4146,24 @@ int slsDetector::rateCorrect(float* datain, float *errin, float* dataout, float 
   
   return 0;
 };
-
-
 int slsDetector::setBadChannelCorrection(string fname){
+
+  if (fname=="default")
+    fname=string(thisDetector->badChanFile);
+  int ret=setBadChannelCorrection(fname, thisDetector->nBadChans, thisDetector->badChansList);
+
+  if (ret) {
+    thisDetector->correctionMask|=(1<<DISCARD_BAD_CHANNELS);
+    strcpy(thisDetector->badChanFile,fname.c_str());
+  } else
+    thisDetector->correctionMask&=~(1<<DISCARD_BAD_CHANNELS);
+
+  fillBadChannelMask();
+  return  thisDetector->correctionMask&(1<<DISCARD_BAD_CHANNELS);
+}
+
+
+int slsDetector::setBadChannelCorrection(string fname, int &nbad, int *badlist){
   ifstream infile;
   string str;
   int interrupt=0;
@@ -3834,17 +4174,15 @@ int slsDetector::setBadChannelCorrection(string fname){
 #endif
 
   if (fname=="") {
-    thisDetector->correctionMask&=~(1<<DISCARD_BAD_CHANNELS);
-    thisDetector->nBadChans=0;
+    nbad=0;
+    return 0;
   } else { 
-    if (fname=="default")
-      fname=string(thisDetector->badChanFile);
     infile.open(fname.c_str(), ios_base::in);
     if (infile.is_open()==0) {
       std::cout << "could not open file " << fname <<std::endl;
       return -1;
     }
-    thisDetector->nBadChans=0;
+    nbad=0;
     while (infile.good() and interrupt==0) {
       getline(infile,str);
 #ifdef VERBOSE
@@ -3852,7 +4190,7 @@ int slsDetector::setBadChannelCorrection(string fname){
 #endif
       istringstream ssstr;
       ssstr.str(str);
-      if (!ssstr.good() || infile.eof()) {
+      if (ssstr.bad() || ssstr.fail() || infile.eof()) {
 	interrupt=1;
 	break;
       }
@@ -3864,11 +4202,11 @@ int slsDetector::setBadChannelCorrection(string fname){
 	std::cout << "channels between"<< chmin << " and " << chmax << std::endl;
 #endif
 	for (ich=chmin; ich<=chmax; ich++) {
-	  if (thisDetector->nBadChans<MAX_BADCHANS) {
-	    thisDetector->badChansList[thisDetector->nBadChans]=ich;
-	    thisDetector->nBadChans++;
+	  if (nbad<MAX_BADCHANS) {
+	    badlist[nbad]=ich;
+	    nbad++;
 #ifdef VERBOSE
-	    std::cout<< thisDetector->nBadChans << " Found bad channel "<< ich << std::endl;
+	    std::cout<< nbad << " Found bad channel "<< ich << std::endl;
 #endif
 	  } else
 	    interrupt=1;
@@ -3878,11 +4216,11 @@ int slsDetector::setBadChannelCorrection(string fname){
 #ifdef VERBOSE
 	std::cout << "channel "<< ich << std::endl;
 #endif
-	if (thisDetector->nBadChans<MAX_BADCHANS) {
-	  thisDetector->badChansList[thisDetector->nBadChans]=ich;
-	  thisDetector->nBadChans++;
+	if (nbad<MAX_BADCHANS) {
+	  badlist[nbad]=ich;
+	  nbad++;
 #ifdef VERBOSE
-	  std::cout << thisDetector->nBadChans << " Found bad channel "<< ich << std::endl;
+	  std::cout << nbad << " Found bad channel "<< ich << std::endl;
 #endif
 	} else
 	  interrupt=1;
@@ -3890,20 +4228,39 @@ int slsDetector::setBadChannelCorrection(string fname){
 
 
     }
-    if (thisDetector->nBadChans>0 && thisDetector->nBadChans<MAX_BADCHANS) {
-      thisDetector->correctionMask|=(1<< DISCARD_BAD_CHANNELS);
-      strcpy(thisDetector->badChanFile,fname.c_str());
-    }
   }
   infile.close();
-#ifdef VERBOSE
-  std::cout << "found " << thisDetector->nBadChans << " badchannels "<< std::endl;
-#endif
+  if (nbad>0 && nbad<MAX_BADCHANS) {
+    return 1;
+  } else
+  return 0;
+}
+
+
+
+int slsDetector::setBadChannelCorrection(int nch, int *chs, int ff) {
+
+  if (ff==0) {
+    if (nch<MAX_BADCHANS) {
+      thisDetector->nBadChans=nch;
+      for (int ich=0 ;ich<nch; ich++) {
+	thisDetector->badChansList[ich]=chs[ich];
+      }
+    }
+  } else {
+    if (nch<MAX_BADCHANS) {
+      thisDetector->nBadFF=nch;
+      for (int ich=0 ;ich<nch; ich++) {
+	thisDetector->badFFList[ich]=chs[ich];
+      }
+    }
+  }
   fillBadChannelMask();
-#ifdef VERBOSE
-  std::cout << " badchannels mask filled"<< std::endl;
-#endif
-  return thisDetector->nBadChans;
+  if (thisDetector->correctionMask&(1<< DISCARD_BAD_CHANNELS)) {
+    return thisDetector->nBadChans+thisDetector->nBadFF;
+  } else
+   return 0;
+
 }
 
 int slsDetector::getBadChannelCorrection(int *bad) {
@@ -4509,25 +4866,6 @@ string slsDetector::executeLine(int narg, char *args[], int action) {
      } 
      strcpy(answer, getHostname());
     return string(answer);
-  } else if (var=="port") {
-    if (action==PUT_ACTION) {
-      if (sscanf(args[1],"%d",&ival)) {
-	sval="";
-	setTCPSocket(sval,ival);
-      }
-    } 
-    sprintf(answer,"%d",getControlPort());
-    return string(answer);
-  } else if (var=="stopport") {
-    if (action==PUT_ACTION) {
-      if (sscanf(args[1],"%d",&ival)) {
-	sval="";
-	setTCPSocket(sval,-1,ival);
-      }
-    } 
-    sprintf(answer,"%d",getStopPort());
-    return string(answer);
-    
   } else if (var=="flatfield") {
     if (action==PUT_ACTION) {
       sval=string(args[1]);
@@ -4981,6 +5319,55 @@ string slsDetector::executeLine(int narg, char *args[], int action) {
   if (setOnline())
     setTCPSocket();
   
+
+  if (var=="port") {
+    if (action==PUT_ACTION) {
+      sscanf(args[1],"%d",&ival);
+      setPort(CONTROL_PORT, ival);
+    } else
+      ival=-1;
+    sprintf(answer,"%d",getControlPort());
+    return string(answer);
+  } else if (var=="stopport") {
+    if (action==PUT_ACTION) {
+      sscanf(args[1],"%d",&ival);
+      setPort(STOP_PORT, ival);
+    } else
+      ival=-1;
+    sprintf(answer,"%d",getStopPort());
+    return string(answer);
+    
+  }  else if (var=="dataport") {
+    if (action==PUT_ACTION) {
+      sscanf(args[1],"%d",&ival);
+      setPort(DATA_PORT, ival);
+    } else
+      ival=-1;
+    sprintf(answer,"%d",getDataPort());
+    return string(answer);
+    
+  }  else if (var=="lock") {
+    if (action==PUT_ACTION) {
+      sscanf(args[1],"%d",&ival);
+    } else
+      ival=-1;
+    sprintf(answer,"%d",lockServer(ival));
+    return string(answer);
+  } else if (var=="lastclient") {
+    if (action==PUT_ACTION) {
+      return string("cannot set");
+    } else
+      return getLastClientIP();
+  }
+    
+
+
+
+
+
+
+
+
   if (var=="nmod") {
     if (action==PUT_ACTION) {
      sscanf(args[1],"%d",&ival);

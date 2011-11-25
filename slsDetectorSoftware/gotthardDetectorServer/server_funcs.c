@@ -846,11 +846,11 @@ int set_dac(int fnum) {
   case G_IB_TESTC:
     idac=IB_TESTC;
     break;
-  case TEMPERATURE_ADC:
-    ireg=TEMP_ADC;
-    break;
   case TEMPERATURE_FPGA:
     ireg=TEMP_FPGA;
+    break;
+  case TEMPERATURE_ADC:
+    ireg=TEMP_ADC;
     break;
   case HV_POT:
     ireg=HIGH_VOLTAGE;

@@ -32,7 +32,7 @@ enum {VREF_DS, VCASCN_PB, VCASCP_PB, VOUT_CM, VCASC_OUT, VIN_CM, VREF_COMP, IB_T
 #define DACADDR {0,1,0,1,0,1,0,1,0,1,0,1,0,1}
 
 //Register Definitions for temp,hv,dac gain
-enum {TEMP_ADC, TEMP_FPGA, HIGH_VOLTAGE, CONFGAIN};
+enum {TEMP_FPGA, TEMP_ADC, HIGH_VOLTAGE, CONFGAIN};
 
 //dynamic range
 #define MAX5523

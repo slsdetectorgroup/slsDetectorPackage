@@ -1791,9 +1791,6 @@ float slsDetector::setDAC(float val, dacIndex index, int imod){
     std::cout<< "Set dac/pot/temp failed " << std::endl;
   }
   return retval;
-
-
-
 };
 
 
@@ -2676,16 +2673,13 @@ detectorSettings slsDetector::setSettings( detectorSettings isettings, int imod)
 	  setModule(*myMod);
 	}
       }
-      //all mods set gain here
-      setDAC(thisDetector->confGain,G_CONF_GAIN);
-      
+      //setting the gain for the dacs,read from the settings
+      if (thisDetector->myDetectorType==GOTTHARD)
+	setDAC(thisDetector->confGain,G_CONF_GAIN);
     }
   }
   deleteModule(myMod);
-  switch(thisDetector->myDetectorType){
-  case GOTTHARD:
-    break;
-  default:
+  switch(thisDetector->myDetectorType==MYTHEN){
     if (thisDetector->correctionMask&(1<<RATE_CORRECTION)) {
       int isett=getSettings(imod);
       float t[]=defaultTDead;
@@ -5345,6 +5339,22 @@ string slsDetector::executeLine(int narg, char *args[], int action) {
        if (action==PUT_ACTION) 
          return string("cannot set");
        sprintf(answer,"%f",setDAC(-1,TEMPERATURE_FPGA));
+       return string(answer);
+      }
+      /* GOTTHARD CONFGAIN */ 
+      else if (var=="confgain") {
+       if (action==PUT_ACTION) {
+         sscanf(args[1],"%f",&fval);
+         setDAC(fval,G_CONF_GAIN );
+       }
+       int val=setDAC(-1,G_CONF_GAIN);
+       switch(val){
+       case 1:strcpy(answer,"lower gain");break;
+       case 2:strcpy(answer,"medium gain");break;
+       case 3:strcpy(answer,"high gain");break;
+       case 4:strcpy(answer,"very high gain");break;
+       default:strcpy(answer,"Unknown value");break;
+       }
        return string(answer);
       }
 

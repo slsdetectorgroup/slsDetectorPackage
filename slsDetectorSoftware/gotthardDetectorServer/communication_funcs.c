@@ -136,7 +136,6 @@ int acceptConnection() {
 
 
     if (socketDescriptor>0) {
-      //if ((file_des = accept(socketDescriptor,(struct sockaddr *) &addressC, &address_length)) < 0) {
        if ((file_des = accept(socketDescriptor,(struct sockaddr *) &addressC, &address_length)) < 0) {
 
 
@@ -195,8 +194,34 @@ int acceptConnection() {
 	socketDescriptor=-1;
       }
 #ifdef VERBOSE
+
+
+struct sockaddr_in6 sa;
+char str[INET6_ADDRSTRLEN];
+
+// store this IP address in sa:
+inet_pton(AF_INET6, "2001:db8:8714:3a90::12", &(sa.sin6_addr));
+
+// now get it back and print it
+inet_ntop(AF_INET6, &(sa.sin6_addr), str, INET6_ADDRSTRLEN);
+
+printf("%s\n\n", str); // prints "2001:db8:8714:3a90::12"
+
+
       printf("client connected %d\n", file_des);
+      printf("addressC family %d port %d addr %s\n",addressC.sin_family,addressC.sin_port,inet_ntoa(addressC.sin_addr));//edited
 #endif
+
+      //strcpy(lastClientIP,inet_ntoa(addressC.sin_addr)); //In case you want to lock the server...
+
+
+      // struct sockaddr_in
+      //{
+      //short int sin_family; /* Famyly of the address*/
+      //unsigned short int sin_port; /* Port */
+      //struct in_addr sin_addr; /* Network address */
+      //unsigned char sin_zero[8]; /* Same size of struct sockaddr */
+      //};
     }
  
 

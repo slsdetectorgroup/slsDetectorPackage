@@ -9,6 +9,7 @@
 #define RGSH1VALS {300,200,400}
 #define RGSH2VALS {260,300,260}
 
+//high,dynamic,low,medium,very high
 #define VREFDS_VALS   {0,0,200,300,400,500,600}
 #define VCASCN_VALS   {0,0,220,320,420,520,620}
 #define VCASCP_VALS   {0,0,240,340,440,540,640}
@@ -17,6 +18,7 @@
 #define VINCM_VALS    {0,0,300,400,500,600,700}
 #define VREFCOMP_VALS {0,0,320,420,520,620,720}
 #define IBTESTC_VALS  {0,0,340,440,540,640,740}
+#define CONF_GAIN     {0,0,  0,  1,  6,  2,  1}//dynamic gain confgain yet to be figured out
 
 
 #define DEFAULTGAIN {11.66,9.32,14.99}

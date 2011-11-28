@@ -855,9 +855,6 @@ int set_dac(int fnum) {
   case HV_POT:
     ireg=HIGH_VOLTAGE;
     break;
-  case G_CONF_GAIN:
-    ireg=CONFGAIN;
-    break;
   default:
     printf("Unknown DAC/TEMP/HV index %d\n",ind);
     sprintf(mess,"Unknown DAC/TEMP/HV index %d\n",ind);
@@ -869,11 +866,8 @@ int set_dac(int fnum) {
     if(ireg==-1)
       retval=initDACbyIndexDACU(idac,val,imod);
     else
-      {//Conf gain
-	if (ireg==CONFGAIN)
-	  retval=initConfGainByModule(val,imod);
-	//HV or conf gain
-	else if(ireg==HIGH_VOLTAGE)
+      {	//HV or conf gain
+	if(ireg==HIGH_VOLTAGE)
 	  retval=initHighVoltageByModule(val,imod);
 	//Temp
 	else
@@ -885,7 +879,7 @@ int set_dac(int fnum) {
   printf("DAC/TEMP/HV set to %f V\n",  retval);
 #endif  
   ret=FAIL;
-  if((ireg==HIGH_VOLTAGE)||(ireg==CONFGAIN)){
+  if(ireg==HIGH_VOLTAGE){
     if(retval==-2)
       strcpy(mess,"Invalid Voltage.Valid values are 0,90,110,120,150,180,200");
     else if(retval==-3)
@@ -1326,6 +1320,7 @@ int set_module(int fnum) {
   if (ret==OK) {
 #ifdef MCB_FUNCS
     retval=initModulebyNumber(myModule);
+
 #endif
   }
 

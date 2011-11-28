@@ -860,20 +860,20 @@ int setSettings(int i)
   for (ind=0; ind<NDAC; ind++)
     v[ind]=-1;
  
-  if ((i!=GET_SETTINGS) && ((i>=HIGHGAIN) && (i<= GAIN3)))
-    {
-      v[VREF_DS]=vrefds[i];
-      v[VCASCN_PB]=vcascn[i];
-      v[VCASCP_PB]=vcascp[i];
-      v[VOUT_CM]=voutcm[i];
-      v[VCASC_OUT]=vcascout[i];
-      v[VIN_CM]=vincm[i];
-      v[VREF_COMP]=vrefcomp[i];
-      v[IB_TESTC]=ibtestc[i];
+  //if not get settings
+  if ((i>=HIGHGAIN) && (i<= GAIN3)) {
+    v[VREF_DS]=vrefds[i];
+    v[VCASCN_PB]=vcascn[i];
+    v[VCASCP_PB]=vcascp[i];
+    v[VOUT_CM]=voutcm[i];
+    v[VCASC_OUT]=vcascout[i];
+    v[VIN_CM]=vincm[i];
+    v[VREF_COMP]=vrefcomp[i];
+    v[IB_TESTC]=ibtestc[i];
   
-      initDACs(v,ALLMOD);
-      thisSettings=i;
-    }
+    initDACs(v,ALLMOD);
+    thisSettings=i;
+  }
  
   //check settings for module 0 
   imod=0;
@@ -934,7 +934,6 @@ int setSettings(int i)
     ;
   else
     thisSettings=isett;
-
   return thisSettings;
 }
 
@@ -1651,7 +1650,13 @@ int initModulebyNumber(sls_detector_module myMod) {
     }
   } 
   thisSettings=UNDEFINED;
-  setSettings(GET_SETTINGS);
+  int modSet=setSettings(GET_SETTINGS);
+  printf("\n\n modSet:%d\n\n",modSet);
+    //changing the confGain register
+  //retval=initConfGainByModule(val,imod);
+   //if(retval==-3)
+  //  strcpy(mess,"Weird value read back\n");
+  
   return myMod.reg;
 }
 

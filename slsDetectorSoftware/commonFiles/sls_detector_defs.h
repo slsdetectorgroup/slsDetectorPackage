@@ -262,8 +262,7 @@ enum dacIndex {
   G_VCASC_OUT,  /**< gotthard */ 
   G_VIN_CM,     /**< gotthard */
   G_VREF_COMP,  /**< gotthard */ 
-  G_IB_TESTC,   /**< gotthard */
-  G_CONF_GAIN   /**< gotthard gain for the dacs  */
+  G_IB_TESTC   /**< gotthard */
 };
 
 /** 
@@ -271,15 +270,15 @@ enum dacIndex {
 */
 enum detectorSettings{  
   GET_SETTINGS=-1,  /**< return current detector settings */
-  STANDARD,   /**< standard settings */
-  FAST,   /**< fast settings */
-  HIGHGAIN,  /**< highgain  settings */
-  DYNAMICGAIN,  /**< dynamic gain  settings */
-  GAIN1, /**< gain 1  settings */
-  GAIN2, /**< gain 2  settings */
-  GAIN3, /**< gain 3  settings */
-  UNDEFINED,  /**< undefined or custom  settings */
-  UNINITIALIZED  /**< uninitialiazed (status at startup) */
+  STANDARD,         /**< standard settings */
+  FAST,             /**< fast settings */
+  HIGHGAIN,         /**< highgain  settings */
+  DYNAMICGAIN,      /**< dynamic gain  settings */
+  LOWGAIN,          /**< low gain  settings */
+  MEDIUMGAIN,       /**< medium gain  settings */
+  VERYHIGHGAIN,     /**< very high gain  settings */
+  UNDEFINED,        /**< undefined or custom  settings */
+  UNINITIALIZED     /**< uninitialiazed (status at startup) */
 };
 /** 
    meaning of the channel register bits

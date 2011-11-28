@@ -861,7 +861,7 @@ int setSettings(int i)
     v[ind]=-1;
  
   //if not get settings
-  if ((i>=HIGHGAIN) && (i<= GAIN3)) {
+  if ((i>=HIGHGAIN) && (i<= VERYHIGHGAIN)) {
     v[VREF_DS]=vrefds[i];
     v[VCASCN_PB]=vcascn[i];
     v[VCASCP_PB]=vcascp[i];

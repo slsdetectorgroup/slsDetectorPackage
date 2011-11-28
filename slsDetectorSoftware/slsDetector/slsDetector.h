@@ -311,13 +311,10 @@ typedef  struct sharedSlsDetector {
 
 
   /*extra gotthard members*/
-    /** is the ip address of the client for gotthard; read from settings file **/
+    /** is the ip address of the client for gotthard; read from configuration file **/
     char clientIPAddress[MAX_STR_LENGTH];
-    /** is the mac address of the client for gotthard; read from settings file **/
+    /** is the mac address of the client for gotthard; read from configuration file **/
     char clientMacAddress[MAX_STR_LENGTH];
-    /** gain for gotthard read from settings file**/
-    int confGain;
-
 
 } sharedSlsDetector;
 

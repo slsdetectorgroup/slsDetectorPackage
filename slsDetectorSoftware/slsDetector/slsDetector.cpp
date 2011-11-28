@@ -2654,7 +2654,7 @@ detectorSettings slsDetector::setSettings( detectorSettings isettings, int imod)
   switch(thisDetector->myDetectorType){
   case GOTTHARD:
     minsettings = HIGHGAIN;
-    maxsettings = GAIN3;
+    maxsettings = VERYHIGHGAIN;
     break;
   default:
     minsettings = STANDARD;
@@ -2679,16 +2679,16 @@ detectorSettings slsDetector::setSettings( detectorSettings isettings, int imod)
       ssettings="/dynamicgain";
       thisDetector->currentSettings=DYNAMICGAIN;
       break;
-    case GAIN1:
-      ssettings="/gain1";
+    case LOWGAIN:
+      ssettings="/lowgain";
       thisDetector->currentSettings=GAIN1;
       break;
-    case GAIN2:
-      ssettings="/gain2";
+    case MEDIUMGAIN:
+      ssettings="/mediumgain";
       thisDetector->currentSettings=GAIN2;
       break;
-    case GAIN3:
-      ssettings="/gain3";
+    case VERYHIGHGAIN:
+      ssettings="/veryhighgain";
       thisDetector->currentSettings=GAIN3;
       break;
     default:

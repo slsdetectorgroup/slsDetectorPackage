@@ -205,7 +205,7 @@ inet_pton(AF_INET6, "2001:db8:8714:3a90::12", &(sa.sin6_addr));
 // now get it back and print it
 inet_ntop(AF_INET6, &(sa.sin6_addr), str, INET6_ADDRSTRLEN);
 
-printf("%s\n\n", str); // prints "2001:db8:8714:3a90::12"
+//printf("%s\n\n", str); // prints "2001:db8:8714:3a90::12"
 
 
       printf("client connected %d\n", file_des);

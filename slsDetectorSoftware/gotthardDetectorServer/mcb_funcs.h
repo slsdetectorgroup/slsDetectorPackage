@@ -19,7 +19,7 @@
 #define VREFCOMP_VALS {0,0,320,420,520,620,720}
 #define IBTESTC_VALS  {0,0,340,440,540,640,740}
 #define CONF_GAIN     {0,0,  0,  1,  6,  2,  1}//dynamic gain confgain yet to be figured out
-
+ 
 
 #define DEFAULTGAIN {11.66,9.32,14.99}
 #define DEFAULTOFFSET {817.5,828.6,804.2}

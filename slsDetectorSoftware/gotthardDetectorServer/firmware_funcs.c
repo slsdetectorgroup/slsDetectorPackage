@@ -943,36 +943,15 @@ int initConfGain(int val, int imod){
 #ifdef VERBOSE
   printf("Setting/Getting confgain of module:%d with val:%d\n",imod,val);
 #endif
-  volatile u_int32_t addr=GAIN_REG;
-  int writeVals[]={6,2,0,1};
-  char cGainVal[][100]={"lower","medium","high","very high"};
-
-  //to set value
-  if(val!=-1){
-    //default value
-    if((val>4)||(val<1))
-      val=3;
-    //set value to converted value
-    bus_w(addr,writeVals[val-1]);
+  u_int32_t addr=GAIN_REG;
+  bus_w(addr,val);
 #ifdef VERBOSE
-    printf("Value sent is %d\n",writeVals[val-1]);
+  printf("Value sent to confGain reg is %d\n",val);
 #endif 
-  }
- //read value and return the converted value
   val=bus_r(addr);
 #ifdef VERBOSE
-    printf("Value read from reg is %d\n",val);
+    printf("Value read from confGain reg is %d\n",val);
 #endif 
-  switch(val){
-  case 6:val=1;break;
-  case 2:val=2;break;
-  case 0:val=3;break;
-  case 1:val=4;break;
-  default:printf("Weird value read:%d\n",val);return -3;break;
-  }
-#ifdef VERBOSE
-  printf("Confgain of module:%d is set to %s gain of val:%d\n",imod,cGainVal[val-1],val);
-#endif  
    return val;
 }
 

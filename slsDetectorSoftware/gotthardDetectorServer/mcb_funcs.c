@@ -859,7 +859,10 @@ int setSettings(int i)
   int ind;
   for (ind=0; ind<NDAC; ind++)
     v[ind]=-1;
- 
+  
+  //for confGain Register
+  if(thisSettings!=UNDEFINED)
+  
   //if not get settings
   if ((i>=HIGHGAIN) && (i<= VERYHIGHGAIN)) {
     v[VREF_DS]=vrefds[i];
@@ -1650,13 +1653,16 @@ int initModulebyNumber(sls_detector_module myMod) {
     }
   } 
   thisSettings=UNDEFINED;
-  int modSet=setSettings(GET_SETTINGS);
-  printf("\n\n modSet:%d\n\n",modSet);
-    //changing the confGain register
-  //retval=initConfGainByModule(val,imod);
-   //if(retval==-3)
-  //  strcpy(mess,"Weird value read back\n");
-  
+  setSettings(GET_SETTINGS);
+  int confgain[] = CONF_GAIN;
+  if ((thisSettings>=HIGHGAIN) && (thisSettings<= VERYHIGHGAIN)) {
+    int retval=initConfGainByModule(confgain[thisSettings],imod);
+    if(retval!=confgain[thisSettings]){
+      printf("Weird Value read from the confGain Reg, changing settings to UNDEFINED",retval);
+      thisSettings=UNDEFINED;
+      return -1;
+    }
+  }
   return myMod.reg;
 }
 

@@ -1320,7 +1320,10 @@ int set_module(int fnum) {
   if (ret==OK) {
 #ifdef MCB_FUNCS
     retval=initModulebyNumber(myModule);
-
+    if(retval==-1){
+      ret=FAIL;
+      strcpy(mess,"Cannot set this settings as confGain register read back weird value\n");
+    }
 #endif
   }
 

@@ -2681,15 +2681,15 @@ detectorSettings slsDetector::setSettings( detectorSettings isettings, int imod)
       break;
     case LOWGAIN:
       ssettings="/lowgain";
-      thisDetector->currentSettings=GAIN1;
+      thisDetector->currentSettings=LOWGAIN;
       break;
     case MEDIUMGAIN:
       ssettings="/mediumgain";
-      thisDetector->currentSettings=GAIN2;
+      thisDetector->currentSettings=MEDIUMGAIN;
       break;
     case VERYHIGHGAIN:
       ssettings="/veryhighgain";
-      thisDetector->currentSettings=GAIN3;
+      thisDetector->currentSettings=VERYHIGHGAIN;
       break;
     default:
       std::cout<< "Unknown settings!" << std::endl;
@@ -5532,12 +5532,12 @@ string slsDetector::executeLine(int narg, char *args[], int action) {
 	  sett=HIGHGAIN;
 	else if (sval=="dynamicgain")
 	  sett=DYNAMICGAIN;
-	else if (sval=="gain1")
-	  sett=GAIN1;
-	else if (sval=="gain2")
-	  sett=GAIN2;
-	else if (sval=="gain3")
-	  sett=GAIN3;
+	else if (sval=="lowgain")
+	  sett=LOWGAIN;
+	else if (sval=="mediumgain")
+	  sett=MEDIUMGAIN;
+	else if (sval=="veryhighgain")
+	  sett=VERYHIGHGAIN;
 	else {
 	  sprintf(answer,"%s not defined for this detector",sval.c_str());
 	  return string(answer);
@@ -5558,12 +5558,12 @@ string slsDetector::executeLine(int narg, char *args[], int action) {
 	return string("highgain");
       case DYNAMICGAIN:
 	return string("dynamicgain");
-      case GAIN1:
-	return string("gain1");
-      case GAIN2:
-	return string("gain2");
-      case GAIN3:
-	return string("gain3");
+      case LOWGAIN:
+	return string("lowgain");
+      case MEDIUMGAIN:
+	return string("mediumgain");
+      case VERYHIGHGAIN:
+	return string("veryhighgain");
       default:
 	return string("undefined");
       }

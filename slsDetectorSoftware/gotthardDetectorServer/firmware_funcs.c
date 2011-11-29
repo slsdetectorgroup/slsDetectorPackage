@@ -944,10 +944,12 @@ int initConfGain(int val, int imod){
   printf("Setting/Getting confgain of module:%d with val:%d\n",imod,val);
 #endif
   u_int32_t addr=GAIN_REG;
-  bus_w(addr,val);
+  if(val!=-1){
+    bus_w(addr,val);
 #ifdef VERBOSE
-  printf("Value sent to confGain reg is %d\n",val);
+    printf("Value sent to confGain reg is %d\n",val);
 #endif 
+  }
   val=bus_r(addr);
 #ifdef VERBOSE
     printf("Value read from confGain reg is %d\n",val);

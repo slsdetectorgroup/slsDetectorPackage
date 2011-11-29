@@ -931,7 +931,7 @@ int setSettings(int i)
   }
  
 #ifdef VERBOSE
-  printf("detector settings are %d\n",isett);
+  printf("detector settings are %d and confGain is %d\n",isett,initConfGainByModule(-1,-1));
 #endif
   if (isett==UNDEFINED && thisSettings==UNINITIALIZED) 
     ;

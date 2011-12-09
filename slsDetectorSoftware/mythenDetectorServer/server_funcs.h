@@ -71,6 +71,7 @@ int lock_server(int);
 int set_port(int);
 int get_last_client_ip(int);
   
-
+int update_client(int);
+int send_update(int);
 
 #endif

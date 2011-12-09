@@ -159,7 +159,8 @@ enum dimension {
 enum  {
   OK, /**< function succeeded */
   FAIL, /**< function failed */
-  FINISHED /**< acquisition finished */
+  FINISHED, /**< acquisition finished */
+  FORCE_UPDATE
 };
 
 /** 
@@ -475,7 +476,9 @@ enum {
 
   F_GET_LAST_CLIENT_IP,  /**< returns the IP of the client last connected to the detector */ 
   
-  F_SET_PORT /**< Changes communication port of the server */
+  F_SET_PORT, /**< Changes communication port of the server */
+
+  F_UPDATE_CLIENT /**< Returns all the important parameters to update the shared memory of the client */
 
 
   /* Always append functions hereafter!!! */

@@ -232,6 +232,7 @@ slsDetector::slsDetector(char *name, int id, int cport) :
   pthread_mutex_init(&mp, NULL);
   
   setTCPSocket(name, cport);
+  updateDetector();
 
 }
 
@@ -919,36 +920,49 @@ int slsDetector::disconnectControl() {
 /* generates file name without extension*/
 
 string slsDetector::createFileName() {
-  createFileName(thisDetector->filePath, thisDetector->fileName, thisDetector->actionMask, currentScanVariable[0], thisDetector->scanPrecision[0], currentScanVariable[1], thisDetector->scanPrecision[1], currentPositionIndex, thisDetector->numberOfPositions, thisDetector->fileIndex);
+  return createFileName(thisDetector->filePath, thisDetector->fileName, thisDetector->actionMask, currentScanVariable[0], thisDetector->scanPrecision[0], currentScanVariable[1], thisDetector->scanPrecision[1], currentPositionIndex, thisDetector->numberOfPositions, thisDetector->fileIndex);
   
 }
 
 string  slsDetector::createFileName(char *filepath, char *filename, int aMask, float sv0, int prec0, float sv1, int prec1, int pindex, int npos, int findex) {
   ostringstream osfn;
+  // string fn;
   /*directory name +root file name */
   osfn << filepath << "/" << filename;
-  
+
+  // cout << osfn.str() << endl;
+
   // scan level 0
   if ( aMask& (1 << (MAX_ACTIONS)))
     osfn << "_S" << fixed << setprecision(prec0) << sv0;
+
+  //cout << osfn.str() << endl;
 
   //scan level 1
   if (aMask & (1 << (MAX_ACTIONS+1)))
     osfn << "_s" << fixed << setprecision(prec1) << sv1;
   
+  //cout << osfn.str() << endl;
+
 
   //position
   if (pindex>0 && pindex<=npos)
     osfn << "_p" << pindex;
 
+  //cout << osfn.str() << endl;
+
   // file index
   osfn << "_" << findex;
+
+  //cout << osfn.str() << endl;
 
 
 #ifdef VERBOSE
   cout << "created file name " << osfn.str() << endl;
 #endif
 
+  //cout << osfn.str() << endl;
+  //fn=oosfn.str()sfn.str();
   return osfn.str();
 
 }
@@ -1192,13 +1206,15 @@ int slsDetector::setDetectorType(detectorType const type){
       if (controlSocket->Connect()>=0) {
 	controlSocket->SendDataOnly(&fnum,sizeof(fnum));
 	controlSocket->ReceiveDataOnly(&retval,sizeof(retval));
-	if (retval==OK)
+	if (retval!=FAIL)
 	  controlSocket->ReceiveDataOnly(&retType,sizeof(retType));
 	else {
 	  controlSocket->ReceiveDataOnly(mess,sizeof(mess));
 	  std::cout<< "Detector returned error: " << mess << std::endl;
 	}
 	controlSocket->Disconnect();
+	if (ret==FORCE_UPDATE)
+	  updateDetector();
       }
     }
   } else {
@@ -1296,13 +1312,15 @@ int slsDetector::setNumberOfModules(int n, dimension d){
 	controlSocket->SendDataOnly(&fnum,sizeof(fnum));
 	controlSocket->SendDataOnly(&arg,sizeof(arg));
 	controlSocket->ReceiveDataOnly(&ret,sizeof(ret));
-	if (ret==OK)
+	if (ret!=FAIL) {
 	  controlSocket->ReceiveDataOnly(&retval,sizeof(retval));
-	else {
+	}	else {
 	  controlSocket->ReceiveDataOnly(mess,sizeof(mess));
-	  std::cout<< "Deterctor returned error: " << mess << std::endl;
+	  std::cout<< "Detector returned error: " << mess << std::endl;
 	}
 	controlSocket->Disconnect();
+	if (ret==FORCE_UPDATE)
+	  updateDetector();
       }
     }
   } else {
@@ -1368,13 +1386,15 @@ int slsDetector::getMaxNumberOfModules(dimension d){
 	controlSocket->SendDataOnly(&fnum,sizeof(fnum));
 	controlSocket->SendDataOnly(&d,sizeof(d));
 	controlSocket->ReceiveDataOnly(&ret,sizeof(ret));
-	if (ret==OK)
+	if (ret!=FAIL)
 	  controlSocket->ReceiveDataOnly(&retval,sizeof(retval));
 	else {
 	  controlSocket->ReceiveDataOnly(mess,sizeof(mess));
 	  std::cout<< "Deterctor returned error: " << mess << std::endl;
 	}
 	controlSocket->Disconnect();
+	if (ret==FORCE_UPDATE)
+	  updateDetector();
       }
     }
   } else {
@@ -1435,13 +1455,15 @@ enum externalSignalFlag {
 	controlSocket->SendDataOnly(&fnum,sizeof(fnum));
 	controlSocket->SendDataOnly(&arg,sizeof(arg));
 	controlSocket->ReceiveDataOnly(&ret,sizeof(ret));
-	if (ret==OK)
+	if (ret!=FAIL)
 	  controlSocket->ReceiveDataOnly(&retval,sizeof(retval));
 	else {
 	  controlSocket->ReceiveDataOnly(mess,sizeof(mess));
 	  std::cout<< "Detector returned error: " << mess << std::endl;
 	}
 	controlSocket->Disconnect();
+	if (ret==FORCE_UPDATE)
+	  updateDetector();
       }
     }
   } else {
@@ -1504,13 +1526,15 @@ enum externalSignalFlag {
 	controlSocket->SendDataOnly(&fnum,sizeof(fnum));
 	controlSocket->SendDataOnly(&arg,sizeof(arg));
 	controlSocket->ReceiveDataOnly(&ret,sizeof(ret));
-	if (ret==OK)
+	if (ret!=FAIL)
 	  controlSocket->ReceiveDataOnly(&retval,sizeof(retval));
 	else {
 	  controlSocket->ReceiveDataOnly(mess,sizeof(mess));
 	  std::cout<< "Detector returned error: " << mess << std::endl;
 	}
 	controlSocket->Disconnect();
+	if (ret==FORCE_UPDATE)
+	  updateDetector();
       }
     }
   } else {
@@ -1574,13 +1598,15 @@ int64_t slsDetector::getId( idMode mode, int imod){
 	  if (mode==MODULE_SERIAL_NUMBER)
 	    controlSocket->SendDataOnly(&imod,sizeof(imod));
 	  controlSocket->ReceiveDataOnly(&ret,sizeof(ret));
-	  if (ret==OK)
+	  if (ret!=FAIL)
 	    controlSocket->ReceiveDataOnly(&retval,sizeof(retval));
 	  else {
 	    controlSocket->ReceiveDataOnly(mess,sizeof(mess));
 	    std::cout<< "Detector returned error: " << mess << std::endl;
 	  }
 	  controlSocket->Disconnect();
+	  if (ret==FORCE_UPDATE)
+	    updateDetector();
 	} else 
 	  ret=FAIL;
       } else {
@@ -1641,13 +1667,15 @@ int slsDetector::digitalTest( digitalTestMode mode, int imod){
 	if (mode==CHIP_TEST)
 	   controlSocket->SendDataOnly(&imod,sizeof(imod));
 	controlSocket->ReceiveDataOnly(&ret,sizeof(ret));
-	if (ret==OK)
+	if (ret!=FAIL)
 	  controlSocket->ReceiveDataOnly(&retval,sizeof(retval));
 	else {
 	  controlSocket->ReceiveDataOnly(mess,sizeof(mess));
 	  std::cout<< "Detector returned error: " << mess << std::endl;
 	}
 	controlSocket->Disconnect();
+	if (ret==FORCE_UPDATE)
+	  updateDetector();
       }
     }
   } else {
@@ -1732,13 +1760,15 @@ int slsDetector::writeRegister(int addr, int val){
 	controlSocket->SendDataOnly(&fnum,sizeof(fnum));
 	controlSocket->SendDataOnly(arg,sizeof(arg));
 	controlSocket->ReceiveDataOnly(&ret,sizeof(ret));
-	if (ret==OK)
+	if (ret!=FAIL)
 	  controlSocket->ReceiveDataOnly(&retval,sizeof(retval));
 	else {
 	  controlSocket->ReceiveDataOnly(mess,sizeof(mess));
 	  std::cout<< "Detector returned error: " << mess << std::endl;
 	}
 	controlSocket->Disconnect();
+	if (ret==FORCE_UPDATE)
+	  updateDetector();
       }
     }
   } 
@@ -1778,13 +1808,15 @@ int slsDetector::readRegister(int addr){
 	controlSocket->SendDataOnly(&fnum,sizeof(fnum));
 	controlSocket->SendDataOnly(&arg,sizeof(arg));
 	controlSocket->ReceiveDataOnly(&ret,sizeof(ret));
-	if (ret==OK)
+	if (ret!=FAIL)
 	  controlSocket->ReceiveDataOnly(&retval,sizeof(retval));
 	else {
 	  controlSocket->ReceiveDataOnly(mess,sizeof(mess));
 	  std::cout<< "Detector returned error: " << mess << std::endl;
 	}
 	controlSocket->Disconnect();
+	if (ret==FORCE_UPDATE)
+	  updateDetector();
       }
     }
   } 
@@ -1838,7 +1870,7 @@ float slsDetector::setDAC(float val, dacIndex index, int imod){
 	controlSocket->SendDataOnly(arg,sizeof(arg));
 	controlSocket->SendDataOnly(&val,sizeof(val));
 	controlSocket->ReceiveDataOnly(&ret,sizeof(ret));
-	if (ret==OK) {
+	if (ret!=FAIL) {
 	  controlSocket->ReceiveDataOnly(&retval,sizeof(retval));
 	  if (index <  thisDetector->nDacs){
 
@@ -1857,6 +1889,8 @@ float slsDetector::setDAC(float val, dacIndex index, int imod){
 	  std::cout<< "Detector returned error: " << mess << std::endl;
 	}
 	controlSocket->Disconnect();
+	if (ret==FORCE_UPDATE)
+	  updateDetector();
       }
 	
     }
@@ -1894,7 +1928,7 @@ float slsDetector::getADC(dacIndex index, int imod){
 	controlSocket->SendDataOnly(&fnum,sizeof(fnum));
 	controlSocket->SendDataOnly(arg,sizeof(arg));
 	controlSocket->ReceiveDataOnly(&ret,sizeof(ret));
-	if (ret==OK) {
+	if (ret!=FAIL) {
 	  controlSocket->ReceiveDataOnly(&retval,sizeof(retval));
 	  if (adcs) {
 	      *(adcs+index+imod*thisDetector->nAdcs)=retval;
@@ -1904,6 +1938,8 @@ float slsDetector::getADC(dacIndex index, int imod){
 	  std::cout<< "Detector returned error: " << mess << std::endl;
 	  }
 	controlSocket->Disconnect();
+	if (ret==FORCE_UPDATE)
+	  updateDetector();
       }
     }
   } 
@@ -1987,19 +2023,21 @@ int slsDetector::setChannel(sls_detector_channel chan){
       sendChannel(&chan);
       
       controlSocket->ReceiveDataOnly(&ret,sizeof(ret));
-      if (ret==OK) {
+      if (ret!=FAIL) {
 	controlSocket->ReceiveDataOnly(&retval,sizeof(retval));
       } else {
 	controlSocket->ReceiveDataOnly(mess,sizeof(mess));
 	std::cout<< "Detector returned error: " << mess << std::endl;
       }
       controlSocket->Disconnect();
+	if (ret==FORCE_UPDATE)
+	  updateDetector();
     }
     }
   }
 
 
-  if (ret==OK) {
+  if (ret!=FAIL) {
     if (chanregs) {
 
 int mmin=imod, mmax=imod+1, chimin=ichip, chimax=ichip+1, chamin=ichan, chamax=ichan+1;
@@ -2061,19 +2099,21 @@ int mmin=imod, mmax=imod+1, chimin=ichip, chimax=ichip+1, chamin=ichan, chamax=i
       controlSocket->SendDataOnly(arg,sizeof(arg));
    
       controlSocket->ReceiveDataOnly(&ret,sizeof(ret));
-      if (ret==OK) {
+      if (ret!=FAIL) {
 	receiveChannel(&myChan);
       } else {
 	controlSocket->ReceiveDataOnly(mess,sizeof(mess));
 	std::cout<< "Detector returned error: " << mess << std::endl;
       }
       controlSocket->Disconnect();
+      if (ret==FORCE_UPDATE)
+	  updateDetector();
     }
     }
   }
   
 
-  if (ret==OK) {
+  if (ret!=FAIL) {
     if (chanregs) {
       *(chanregs+imod*thisDetector->nChans*thisDetector->nChips+ichip*thisDetector->nChips+ichan)=myChan.reg;    
     }
@@ -2152,19 +2192,21 @@ int slsDetector::setChip(sls_detector_chip chip){
       controlSocket->SendDataOnly(&fnum,sizeof(fnum));
       sendChip(&chip);
       controlSocket->ReceiveDataOnly(&ret,sizeof(ret));
-      if (ret==OK) {
+      if (ret!=FAIL) {
 	controlSocket->ReceiveDataOnly(&retval,sizeof(retval));
       } else {
 	controlSocket->ReceiveDataOnly(mess,sizeof(mess));
 	std::cout<< "Detector returned error: " << mess << std::endl;
       }
       controlSocket->Disconnect();
+      if (ret==FORCE_UPDATE)
+	  updateDetector();
     }
     }
   }
 
 
-  if (ret==OK) {
+  if (ret!=FAIL) {
     if (chipregs)
       *(chipregs+ichi+im*thisDetector->nChips)=retval;
   }
@@ -2205,19 +2247,21 @@ int slsDetector::setChip(sls_detector_chip chip){
       controlSocket->SendDataOnly(arg,sizeof(arg));
    
       controlSocket->ReceiveDataOnly(&ret,sizeof(ret));
-      if (ret==OK) {
+      if (ret!=FAIL) {
 	receiveChip(&myChip);
       } else {
 	controlSocket->ReceiveDataOnly(mess,sizeof(mess));
 	std::cout<< "Detector returned error: " << mess << std::endl;
       }
       controlSocket->Disconnect();
+	if (ret==FORCE_UPDATE)
+	  updateDetector();
     }
     }
   }
   
 
-  if (ret==OK) {
+  if (ret!=FAIL) {
     if (chipregs)
       *(chipregs+ichip+imod*thisDetector->nChips)=myChip.reg;
     if (chanregs) {
@@ -2342,19 +2386,21 @@ int slsDetector::setModule(sls_detector_module module){
       controlSocket->SendDataOnly(&fnum,sizeof(fnum));
       sendModule(&module);
       controlSocket->ReceiveDataOnly(&ret,sizeof(ret));
-      if (ret==OK) {
+      if (ret!=FAIL) {
 	controlSocket->ReceiveDataOnly(&retval,sizeof(retval));
       } else {
 	controlSocket->ReceiveDataOnly(mess,sizeof(mess));
 	std::cout<< "Detector returned error: " << mess << std::endl;
       }
       controlSocket->Disconnect();
+	if (ret==FORCE_UPDATE)
+	  updateDetector();
     }
     }
   }
 
   
-  if (ret==OK) {
+  if (ret!=FAIL) {
     if (detectorModules) {
       if (imod>=0 && imod<thisDetector->nMod[X]*thisDetector->nMod[Y]) {
 	(detectorModules+imod)->nchan=module.nchan;
@@ -2446,19 +2492,21 @@ sls_detector_module  *slsDetector::getModule(int imod){
       controlSocket->SendDataOnly(&imod,sizeof(imod));
    
       controlSocket->ReceiveDataOnly(&ret,sizeof(ret));
-      if (ret==OK) {
+      if (ret!=FAIL) {
 	receiveModule(myMod);
       } else {
 	controlSocket->ReceiveDataOnly(mess,sizeof(mess));
 	std::cout<< "Detector returned error: " << mess << std::endl;
       }
       controlSocket->Disconnect();
+	if (ret==FORCE_UPDATE)
+	  updateDetector();
     }
     }
   }
   
 
-  if (ret==OK) {
+  if (ret!=FAIL) {
     if (detectorModules) {
       if (imod>=0 && imod<thisDetector->nMod[X]*thisDetector->nMod[Y]) {
 	(detectorModules+imod)->nchan=myMod->nchan;
@@ -2547,7 +2595,7 @@ int slsDetector::getThresholdEnergy(int imod){
 	controlSocket->SendDataOnly(&fnum,sizeof(fnum));
 	controlSocket->SendDataOnly(&imod,sizeof(imod));
 	controlSocket->ReceiveDataOnly(&ret,sizeof(ret));
-	if (ret!=OK) {
+	if (ret==FAIL) {
 	  std::cout<< "Detector returned error: "<< std::endl;
 	  controlSocket->ReceiveDataOnly(mess,sizeof(mess));
 	  std::cout<<  mess << std::endl;
@@ -2556,6 +2604,8 @@ int slsDetector::getThresholdEnergy(int imod){
 	  thisDetector->currentThresholdEV=retval;
 	}
 	controlSocket->Disconnect();
+	if (ret==FORCE_UPDATE)
+	  updateDetector();
       }
     }
   } 
@@ -2579,7 +2629,7 @@ int slsDetector::setThresholdEnergy(int e_eV,  int imod, detectorSettings isetti
 	controlSocket->SendDataOnly(&imod,sizeof(imod));
 	controlSocket->SendDataOnly(&isettings,sizeof(isettings));
 	controlSocket->ReceiveDataOnly(&ret,sizeof(ret));
-	if (ret!=OK) {
+	if (ret==FAIL) {
 	  std::cout<< "Detector returned error: "<< std::endl;
 	  controlSocket->ReceiveDataOnly(mess,sizeof(mess));
 	  std::cout<<  mess << std::endl;
@@ -2591,6 +2641,8 @@ int slsDetector::setThresholdEnergy(int e_eV,  int imod, detectorSettings isetti
 	  thisDetector->currentThresholdEV=retval;   
 	}
 	controlSocket->Disconnect();
+	if (ret==FORCE_UPDATE)
+	  updateDetector();
       }
     }
   } else {
@@ -2621,17 +2673,19 @@ int slsDetector::setThresholdEnergy(int e_eV,  int imod, detectorSettings isetti
 	controlSocket->SendDataOnly(&fnum,sizeof(fnum));
 	controlSocket->SendDataOnly(arg,sizeof(arg));
 	controlSocket->ReceiveDataOnly(&ret,sizeof(ret));
-	if (ret!=OK) {
+	if (ret==FAIL) {
 	  controlSocket->ReceiveDataOnly(mess,sizeof(mess));
 	  std::cout<< "Detector returned error: " << mess << std::endl;
 	} else{
 	  controlSocket->ReceiveDataOnly(&retval,sizeof(retval));
 	  thisDetector->currentSettings=(detectorSettings)retval;
-#ifdef VERBOSE
+	  //#ifdef VERBOSE
 	  std::cout<< "Settings are "<< retval << std::endl;
-#endif
+	  //#endif
     }
 	controlSocket->Disconnect();
+	if (ret==FORCE_UPDATE)
+	  updateDetector();
       }
     }
   }
@@ -2766,6 +2820,87 @@ detectorSettings slsDetector::setSettings( detectorSettings isettings, int imod)
 };
 
 
+int slsDetector::updateDetectorNoWait() {
+
+  int ret=OK;
+  enum detectorSettings t;
+  int thr, n, nm;
+  int it;
+  int64_t retval, tns=-1;
+  char lastClientIP[INET_ADDRSTRLEN];
+
+
+  n = 	controlSocket->ReceiveDataOnly(lastClientIP,sizeof(lastClientIP));
+  cout << "Updating detector last modified by " << lastClientIP << endl;
+
+  n = 	controlSocket->ReceiveDataOnly(&nm,sizeof(nm));
+  thisDetector->nMod[X]=nm;
+  n = 	controlSocket->ReceiveDataOnly( &nm,sizeof(nm));
+  thisDetector->nMod[Y]=nm;
+  thisDetector->nMods=thisDetector->nMod[Y]*thisDetector->nMod[X];
+
+  n = 	controlSocket->ReceiveDataOnly( &nm,sizeof(nm));
+  thisDetector->dynamicRange=nm;
+   
+  n = 	controlSocket->ReceiveDataOnly( &nm,sizeof(nm));
+  thisDetector->dataBytes=nm;
+  //t=setSettings(GET_SETTINGS);
+  n = 	controlSocket->ReceiveDataOnly( &t,sizeof(t));
+  thisDetector->currentSettings=t;
+  //thr=getThresholdEnergy();
+  n = 	controlSocket->ReceiveDataOnly( &thr,sizeof(thr));
+  thisDetector->currentThresholdEV=thr;
+  //retval=setFrames(tns);  
+  n = 	controlSocket->ReceiveDataOnly( &retval,sizeof(int64_t));
+  thisDetector->timerValue[FRAME_NUMBER]=retval;
+  // retval=setExposureTime(tns);
+  n = 	controlSocket->ReceiveDataOnly( &retval,sizeof(int64_t));
+  thisDetector->timerValue[ACQUISITION_TIME]=retval;
+  
+  //retval=setPeriod(tns);
+  n = 	controlSocket->ReceiveDataOnly( &retval,sizeof(int64_t));
+  thisDetector->timerValue[FRAME_PERIOD]=retval;
+  //retval=setDelay(tns);
+  n = 	controlSocket->ReceiveDataOnly( &retval,sizeof(int64_t));
+  thisDetector->timerValue[DELAY_AFTER_TRIGGER]=retval;
+  // retval=setGates(tns);
+  n = 	controlSocket->ReceiveDataOnly( &retval,sizeof(int64_t));
+  thisDetector->timerValue[GATES_NUMBER]=retval;
+  //retval=setProbes(tns);
+  n = 	controlSocket->ReceiveDataOnly( &retval,sizeof(int64_t));
+  thisDetector->timerValue[PROBES_NUMBER]=retval;
+  //retval=setTrains(tns);
+  n = 	controlSocket->ReceiveDataOnly( &retval,sizeof(int64_t));
+  thisDetector->timerValue[CYCLES_NUMBER]=retval;
+  
+  return OK;
+
+}
+
+
+
+
+int slsDetector::updateDetector() {
+  int fnum=F_UPDATE_CLIENT;
+  int ret=OK;
+  char mess[100];
+
+  if (thisDetector->onlineFlag==ONLINE_FLAG) {
+    if (controlSocket) {
+      if  (controlSocket->Connect()>=0) {
+	controlSocket->SendDataOnly(&fnum,sizeof(fnum));
+	controlSocket->ReceiveDataOnly(&ret,sizeof(ret));
+	if (ret==FAIL) {
+	  controlSocket->ReceiveDataOnly(mess,sizeof(mess));
+	  std::cout<< "Detector returned error: " << mess << std::endl;
+	} else
+	  updateDetectorNoWait();
+	controlSocket->Disconnect();
+      }
+    }
+  }
+  return ret;
+}
 
 
 
@@ -2788,11 +2923,13 @@ int slsDetector::startAcquisition(){
       if  (controlSocket->Connect()>=0) {
 	controlSocket->SendDataOnly(&fnum,sizeof(fnum));
 	controlSocket->ReceiveDataOnly(&ret,sizeof(ret));
-	if (ret!=OK) {
+	if (ret==FAIL) {
 	  controlSocket->ReceiveDataOnly(mess,sizeof(mess));
 	  std::cout<< "Detector returned error: " << mess << std::endl;
 	}
-    controlSocket->Disconnect();
+	controlSocket->Disconnect();
+	if (ret==FORCE_UPDATE)
+	  updateDetector();
       }
     }
   }
@@ -2816,7 +2953,7 @@ int slsDetector::stopAcquisition(){
   if  (stopSocket->Connect()>=0) {
     stopSocket->SendDataOnly(&fnum,sizeof(fnum));
     stopSocket->ReceiveDataOnly(&ret,sizeof(ret));
-    if (ret!=OK) {
+    if (ret==FAIL) {
       stopSocket->ReceiveDataOnly(mess,sizeof(mess));
       std::cout<< "Detector returned error: " << mess << std::endl;
     }
@@ -2844,11 +2981,13 @@ int slsDetector::startReadOut(){
   if  (controlSocket->Connect()>=0) {
     controlSocket->SendDataOnly(&fnum,sizeof(fnum));
     controlSocket->ReceiveDataOnly(&ret,sizeof(ret));
-    if (ret!=OK) {
+    if (ret==FAIL) {
       controlSocket->ReceiveDataOnly(mess,sizeof(mess));
       std::cout<< "Detector returned error: " << mess << std::endl;
     }
     controlSocket->Disconnect();
+    if (ret==FORCE_UPDATE)
+      updateDetector();
   }
     }
   }
@@ -2869,13 +3008,15 @@ runStatus slsDetector::getRunStatus(){
   if  (stopSocket->Connect()>=0) {
     stopSocket->SendDataOnly(&fnum,sizeof(fnum));
     stopSocket->ReceiveDataOnly(&ret,sizeof(ret));
-    if (ret!=OK) {
+    if (ret==FAIL) {
       stopSocket->ReceiveDataOnly(mess,sizeof(mess));
       std::cout<< "Detector returned error: " << mess << std::endl;
     } else {
       stopSocket->ReceiveDataOnly(&retval,sizeof(retval));   
     } 
     stopSocket->Disconnect();
+    if (ret==FORCE_UPDATE)
+      updateDetector();
   }
     }
   }
@@ -2919,10 +3060,11 @@ int* slsDetector::getDataFromDetector(){
   int i;
 #endif     
 
-#ifdef VERBOSE
-  //  std::cout<< "getting data "<< std::endl;
-#endif
+  //#ifdef VERBOSE
+  std::cout<< "getting data "<< thisDetector->dataBytes << " " << nel<< std::endl;
+  //#endif
     controlSocket->ReceiveDataOnly(&ret,sizeof(ret));
+    cout << "ret=" << ret << endl;
     if (ret!=OK) {
       n= controlSocket->ReceiveDataOnly(mess,sizeof(mess));
       if (ret==FAIL) {
@@ -2967,10 +3109,10 @@ int* slsDetector::readAll(){
 #endif
   if (thisDetector->onlineFlag==ONLINE_FLAG) {
     if (controlSocket) {
-  if  (controlSocket->Connect()>=0) {
-    controlSocket->SendDataOnly(&fnum,sizeof(fnum));
-    while ((retval=getDataFromDetector())){
-      i++;
+      if  (controlSocket->Connect()>=0) {
+	controlSocket->SendDataOnly(&fnum,sizeof(fnum));
+	while ((retval=getDataFromDetector())){
+	  i++;
 #ifdef VERBOSE
       std::cout<< i << std::endl;
 #else
@@ -3027,6 +3169,9 @@ int* slsDetector::startAndReadAll(){
   int* retval;
   int i=0;
   startAndReadAllNoWait();  
+  //#ifdef VERBOSE
+  // std::cout<< "started" << std::endl;
+//#endif
   while ((retval=getDataFromDetector())){
       i++;
 #ifdef VERBOSE
@@ -3066,10 +3211,11 @@ int slsDetector::startAndReadAllNoWait(){
   thisDetector->stoppedFlag=0;
   if (thisDetector->onlineFlag==ONLINE_FLAG) {
     if (controlSocket) {
-  if  (controlSocket->Connect()>=0) {
-    controlSocket->SendDataOnly(&fnum,sizeof(fnum));
-    return OK;
-  }
+      if  (controlSocket->Connect()>=0) {
+	//std::cout<< "connected" << std::endl;
+	controlSocket->SendDataOnly(&fnum,sizeof(fnum));
+	return OK;
+      }
     }
   }
   return FAIL;
@@ -3173,7 +3319,7 @@ int64_t slsDetector::setTimer(timerIndex index, int64_t t){
 	controlSocket->SendDataOnly(&index,sizeof(index));
 	n=controlSocket->SendDataOnly(&t,sizeof(t));
 	controlSocket->ReceiveDataOnly(&ret,sizeof(ret));
-	if (ret!=OK) {
+	if (ret==FAIL) {
 	  controlSocket->ReceiveDataOnly(mess,sizeof(mess));
 	  std::cout<< "Detector returned error: " << mess << std::endl;
 	} else {
@@ -3181,6 +3327,8 @@ int64_t slsDetector::setTimer(timerIndex index, int64_t t){
 	  thisDetector->timerValue[index]=retval; 
 	} 
 	controlSocket->Disconnect();
+	if (ret==FORCE_UPDATE)
+	  updateDetector();
       }
     }
   } else {
@@ -3221,13 +3369,15 @@ int slsDetector::lockServer(int lock) {
 	controlSocket->SendDataOnly(&fnum,sizeof(fnum));
 	controlSocket->SendDataOnly(&lock,sizeof(lock));
 	controlSocket->ReceiveDataOnly(&ret,sizeof(ret));
-	if (ret!=OK) {
+	if (ret==FAIL) {
 	  controlSocket->ReceiveDataOnly(mess,sizeof(mess));
 	  std::cout<< "Detector returned error: " << mess << std::endl;
 	} else {
 	  controlSocket->ReceiveDataOnly(&retval,sizeof(retval)); 
 	} 
 	controlSocket->Disconnect();
+	if (ret==FORCE_UPDATE)
+	  updateDetector();
       }
     }
   }
@@ -3250,13 +3400,15 @@ string slsDetector::getLastClientIP() {
       if  (controlSocket->Connect()>=0) {
 	controlSocket->SendDataOnly(&fnum,sizeof(fnum));
 	controlSocket->ReceiveDataOnly(&ret,sizeof(ret));
-	if (ret!=OK) {
+	if (ret==FAIL) {
 	  controlSocket->ReceiveDataOnly(mess,sizeof(mess));
 	  std::cout<< "Detector returned error: " << mess << std::endl;
 	} else {
 	  controlSocket->ReceiveDataOnly(clientName,sizeof(clientName)); 
 	} 
 	controlSocket->Disconnect();
+	if (ret==FORCE_UPDATE)
+	  updateDetector();
       }
     }
   }
@@ -3304,7 +3456,7 @@ int slsDetector::setPort(portType index, int num){
 	s->SendDataOnly(&index,sizeof(index));
 	n=s->SendDataOnly(&num,sizeof(num));
 	s->ReceiveDataOnly(&ret,sizeof(ret));
-	if (ret!=OK) {
+	if (ret==FAIL) {
 	  s->ReceiveDataOnly(mess,sizeof(mess));
 	  std::cout<< "Detector returned error: " << mess << std::endl;
 	} else {
@@ -3352,7 +3504,7 @@ int slsDetector::setPort(portType index, int num){
 
 
 
-  if (ret==OK) {
+  if (ret!=FAIL) {
 
     switch(index) {
     case CONTROL_PORT:
@@ -3487,13 +3639,15 @@ int slsDetector::setSpeed(speedVariable sp, int value) {
 	std::cout<< "Sent  "<< n << " bytes "  << std::endl;
 #endif
 	controlSocket->ReceiveDataOnly(&ret,sizeof(ret));
-	if (ret!=OK) {
+	if (ret==FAIL) {
 	  controlSocket->ReceiveDataOnly(mess,sizeof(mess));
 	  std::cout<< "Detector returned error: " << mess << std::endl;
 	} else {
 	  controlSocket->ReceiveDataOnly(&retval,sizeof(retval));  
 	} 
 	controlSocket->Disconnect();
+	if (ret==FORCE_UPDATE)
+	  updateDetector();
       }
     }
   }
@@ -3589,13 +3743,15 @@ int slsDetector::setDynamicRange(int n){
 	controlSocket->SendDataOnly(&fnum,sizeof(fnum));
 	controlSocket->SendDataOnly(&n,sizeof(n));
 	controlSocket->ReceiveDataOnly(&ret,sizeof(ret));
-	if (ret!=OK) {
+	if (ret==FAIL) {
 	  controlSocket->ReceiveDataOnly(mess,sizeof(mess));
 	  std::cout<< "Detector returned error: " << mess << std::endl;
     } else {
 	  controlSocket->ReceiveDataOnly(&retval,sizeof(retval)); 
 	}
 	controlSocket->Disconnect();
+	if (ret==FORCE_UPDATE)
+	  updateDetector();
       }
     }
   } else {
@@ -3604,7 +3760,7 @@ int slsDetector::setDynamicRange(int n){
     retval=thisDetector->dynamicRange;
   }
     
-  if (ret==OK && retval>0) {
+  if (ret!=FAIL && retval>0) {
     /* checking the number of probes to chose the data size */
     if (thisDetector->timerValue[PROBES_NUMBER]==0) {
       thisDetector->dataBytes=thisDetector->nMod[X]*thisDetector->nMod[Y]*thisDetector->nChips*thisDetector->nChans*retval/8;
@@ -3665,7 +3821,7 @@ int slsDetector::setReadOutFlags(readOutFlags flag){
 	controlSocket->SendDataOnly(&fnum,sizeof(fnum));
 	controlSocket->SendDataOnly(&flag,sizeof(flag));
 	controlSocket->ReceiveDataOnly(&ret,sizeof(ret));
-	if (ret!=OK) {
+	if (ret==FAIL) {
 	  controlSocket->ReceiveDataOnly(mess,sizeof(mess));
 	  std::cout<< "Detector returned error: " << mess << std::endl;
 	} else {
@@ -3673,6 +3829,8 @@ int slsDetector::setReadOutFlags(readOutFlags flag){
 	  thisDetector->roFlags=retval;
 	}
 	controlSocket->Disconnect();
+	if (ret==FORCE_UPDATE)
+	  updateDetector();
       }
     }
   } else {
@@ -3719,7 +3877,7 @@ int slsDetector::executeTrimming(trimMode mode, int par1, int par2, int imod){
     std::cout<< "sending mode bytes= "<<  controlSocket->SendDataOnly(&mode,sizeof(mode)) << std::endl;
     controlSocket->SendDataOnly(arg,sizeof(arg));
     controlSocket->ReceiveDataOnly(&ret,sizeof(ret));
-    if (ret!=OK) {
+    if (ret==FAIL) {
       controlSocket->ReceiveDataOnly(mess,sizeof(mess));
       std::cout<< "Detector returned error: " << mess << std::endl;
     } else {
@@ -3733,6 +3891,8 @@ int slsDetector::executeTrimming(trimMode mode, int par1, int par2, int imod){
       retval=ret;
     }
     controlSocket->Disconnect();
+    if (ret==FORCE_UPDATE)
+      updateDetector();
   }
     }
   }
@@ -5513,6 +5673,7 @@ string slsDetector::executeLine(int narg, char *args[], int action) {
      switch(thisDetector->myDetectorType) {
 
      case MYTHEN:
+     case PICASSO:
      case EIGER:       
 	if (sval=="standard")
 	  sett=STANDARD;
@@ -6753,7 +6914,7 @@ void  slsDetector::acquire(int delflag){
   if (thisDetector->threadedProcessing) {
     startThread(delflag);
   }
-
+  //cout << "data thread started " << endl;
   int np=1;
   if (thisDetector->numberOfPositions>0) 
     np=thisDetector->numberOfPositions;
@@ -6776,7 +6937,7 @@ void  slsDetector::acquire(int delflag){
 
 
 
-  //action at start
+  //cout << "action at start" << endl;
   if (thisDetector->stoppedFlag==0) {
       if (thisDetector->actionMask & (1 << startScript)) {
 	//"Custom start script. The arguments are passed as nrun=n par=p.");
@@ -6788,7 +6949,8 @@ void  slsDetector::acquire(int delflag){
       }
   }
 
-  for (int is0=0; is0<ns0; is0++) {//scan0 loop
+  for (int is0=0; is0<ns0; is0++) {
+    //  cout << "scan0 loop" << endl;
 
   if (thisDetector->stoppedFlag==0) {
 
@@ -6823,7 +6985,8 @@ void  slsDetector::acquire(int delflag){
     break;
   
 
-  for (int is1=0; is1<ns1; is1++) {//scan0 loop
+  for (int is1=0; is1<ns1; is1++) {
+    // cout << "scan1 loop" << endl;
 
      if (thisDetector->stoppedFlag==0) {
 
@@ -6871,6 +7034,7 @@ void  slsDetector::acquire(int delflag){
      currentPositionIndex=0;
      
      for (int ip=0; ip<np; ip++) {
+       //   cout << "positions " << endl;
        if (thisDetector->stoppedFlag==0) {
 	 if  (thisDetector->numberOfPositions>0) {
 	   go_to_position (thisDetector->detPositions[ip]);
@@ -6886,7 +7050,11 @@ void  slsDetector::acquire(int delflag){
 	 //cmd=headerBeforeScript;
 	 //Custom script to write the header. \n The arguments will be passed as nrun=n fn=filenam acqtime=t gainmode=g threshold=thr badfile=badf angfile=angf bloffset=blo fineoffset=fo fffile=fffn tau=deadtau par=p")
        
+       //   cout << "aaaaa" << endl;
+       //cout << createFileName() << endl;
+       //cout << "bbbbb" << endl;
        fn=createFileName();
+       //cout << fn << endl;
        nowindex=thisDetector->fileIndex;
 
        if (thisDetector->stoppedFlag==0) {
@@ -6894,6 +7062,8 @@ void  slsDetector::acquire(int delflag){
 
 	 if (thisDetector->correctionMask&(1<< I0_NORMALIZATION))
 	   currentI0=get_i0();
+	 
+	 // cout << "header " << endl;
 	 if (thisDetector->actionMask & (1 << headerBefore)) {
 	   //Custom script after each frame. The arguments are passed as nrun=n fn=filename par=p sv0=scanvar0 sv1=scanvar1 p0=par0 p1=par1"
 	   sprintf(cmd,"%s nrun=%d fn=%s acqtime=%f gainmode=%d threshold=%d badfile=%s angfile=%s bloffset=%f fineoffset=%f fffile=%s/%s tau=%f par=%s",thisDetector->actionScript[headerBefore],nowindex,fn.c_str(),((float)thisDetector->timerValue[ACQUISITION_TIME])*1E-9, thisDetector->currentSettings, thisDetector->currentThresholdEV, getBadChannelCorrectionFile().c_str(), getAngularConversion().c_str(), thisDetector->globalOffset, thisDetector->fineOffset,getFlatFieldCorrectionDir(),getFlatFieldCorrectionFile(), getRateCorrectionTau(), thisDetector->actionParameter[headerBefore]);
@@ -6908,6 +7078,8 @@ void  slsDetector::acquire(int delflag){
        
        
        if (thisDetector->stoppedFlag==0) {
+
+	 //	 cout << "starting???? " << endl;
 	 startAndReadAll();
 	 
 	 if (thisDetector->correctionMask&(1<< ANGULAR_CONVERSION))

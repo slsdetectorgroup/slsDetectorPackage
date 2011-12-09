@@ -151,8 +151,13 @@ u_int32_t readin(int modnum) {
   u_int32_t val;
   //addr=MCB_DOUT_REG_OFF+(modnum<<4);
   addr=MCB_DOUT_REG_OFF+(modnum<<SHIFTMOD);
-  val=bus_r(addr) & 0x3ff;
-  //  printf("reading 0x%08x, value 0x%08x\n",addr,val);
+#ifndef PICASSOD 
+  val=bus_r(addr) & 0x3ff;   //anna (MYTHEN: reads direct input for 10 chips per module)
+#else
+  val=bus_r(addr) & 0xfff;  //frances. despite changed, errors still in the ShiftStSel, shiftIn and shiftOut. 
+#endif
+    
+
   return val;
 }
 

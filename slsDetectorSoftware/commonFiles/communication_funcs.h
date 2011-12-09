@@ -17,6 +17,7 @@
 char lastClientIP[INET_ADDRSTRLEN];
 char thisClientIP[INET_ADDRSTRLEN];
 int lockStatus;
+int differentClients;
 
 int bindSocket(unsigned short int port_number);
 int acceptConnection(int socketDescriptor);

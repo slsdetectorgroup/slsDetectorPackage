@@ -1898,7 +1898,7 @@ int testShiftIn(int imod) {
       //for (k=0; k<nModX; k++) {
       val=readin(k);
       //val=bus_r(MCB_DOUT_REG_OFF+(k<<SHIFTMOD)) & 0x3ff;
-	for (j=0; j<10; j++) {	
+	for (j=0; j<NCHIP; j++) {	
 	  if ( (val & 1<<j)>0 && i%2==0) {   
 	    printf("Shift in: module %d chip %i bit %d read %d instead of %d \n",k,j,i,val & 1<< j, i%2);
 	    result++;
@@ -1955,7 +1955,7 @@ int testShiftOut(int imod) {
     val=readin(k);
     //val=bus_r(MCB_DOUT_REG_OFF+(k<<SHIFTMOD)) & 0x3ff;
       //printf("%8x\n",val);
-      for (j=0; j<10; j++) {	
+      for (j=0; j<NCHIP; j++) {	
 	if ( (val & (1<<j))>0 && (dum & (1<<i))==0) {   
 	  printf("Shift out: module %d chip %i bit %d read %d instead of %d \n",k,j,i,val & 1<< j, (dum &1<<j));
 	  result++;
@@ -2536,7 +2536,7 @@ int testFpgaMux(int imod)  {
 #ifdef DEBUGOUT
 	  printf("%d %x\n",i*dist, val);
 #endif    
-	  for (j=0; j<10; j++) {
+	  for (j=0; j<NCHIP; j++) {
 	    v=val & 1<< j;
 	    if (pat & (1<<(i*dist))) {
 	      if (v==0) {
@@ -2588,7 +2588,7 @@ int calibration_sensor(int num, int *v, int *dacs) {
     printf("calibrating sensor...");
   for (imod=0; imod<nModX; imod++) {
     //selMod(imod);   
-    for (ichip=0; ichip<10; ichip++) { 
+    for (ichip=0; ichip<NCHIP; ichip++) { 
       selChip(ichip,imod);
       for (ich=0; ich<128; ich++){ 
 	selChannel(ich,imod);
@@ -2641,7 +2641,7 @@ int calibration_chip(int num, int *v, int *dacs) {
   for (imod=0; imod<nModX; imod++) {
     //selMod(imod);
     initMCBregisters(0,imod);
-    for (ichip=0; ichip<10; ichip++) { 
+    for (ichip=0; ichip<NCHIP; ichip++) { 
       selChip(ichip,imod);
       for (ich=0; ich<128; ich++){ 
 	selChannel(ich,imod);
@@ -2671,7 +2671,7 @@ int calibration_chip(int num, int *v, int *dacs) {
     readOutChan(val); // readout channel
     for (imod=0; imod<nModX; imod++) {
       //selMod(imod);
-      for (ichip=0; ichip<10; ichip++) {
+      for (ichip=0; ichip<NCHIP; ichip++) {
 	*(v+(ichip+imod*NCHIP)*NCHAN+ich)=val[ichip+imod*NCHIP]; 
 	selChip(ichip,imod); // select chip 
 	selChannel(ich,imod); // select channel 

@@ -1010,6 +1010,24 @@ typedef  struct sharedSlsDetector {
   */
   virtual detectorSettings setSettings(detectorSettings isettings, int imod=-1);
 
+  /**
+
+  updates the shared memory receiving the data from the detector (without asking and closing the connection
+  /returns OK
+
+  */
+
+  int updateDetectorNoWait();
+
+  /**
+
+  updates the shared memory receiving the data from the detector 
+  /returns OK
+
+  */
+
+
+  int updateDetector();
 
 // Acquisition functions
 

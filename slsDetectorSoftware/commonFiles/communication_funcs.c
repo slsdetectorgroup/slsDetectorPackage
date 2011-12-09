@@ -16,6 +16,7 @@ const int send_rec_max_size=SEND_REC_MAX_SIZE;
 extern int errno;
 
 
+char dummyClientIP[INET_ADDRSTRLEN];
 
 //struct sockaddr_in address;
 //#define VERBOSE
@@ -26,9 +27,9 @@ int bindSocket(unsigned short int port_number) {
 
   struct sockaddr_in addressS;
   int socketDescriptor;
-  int file_des;
+  //int file_des;
 
-  file_des= -1;
+  //file_des= -1;
   socketDescriptor = socket(AF_INET, SOCK_STREAM,0); //tcp
 
   //socketDescriptor = socket(PF_INET, SOCK_STREAM, 0);
@@ -71,9 +72,6 @@ int bindSocket(unsigned short int port_number) {
 
 
 
-     printf(" %s %s\n",lastClientIP, thisClientIP);
-
-
   return socketDescriptor;
 
 }
@@ -91,12 +89,12 @@ int getServerError(int socketDescriptor)
 
 int acceptConnection(int socketDescriptor) {
   struct sockaddr_in addressC;
-  int file_des;
+  int file_des=-1;
 
   //socklen_t address_length;
   size_t address_length=sizeof(struct sockaddr_in);
   
-  if(file_des>0) return file_des;
+  //  if(file_des>0) return file_des;
 
 
 #ifndef C_ONLY
@@ -162,15 +160,9 @@ int acceptConnection(int socketDescriptor) {
 
 	socketDescriptor=-1;
       }
-      inet_ntop(AF_INET, &(addressC.sin_addr), thisClientIP, INET_ADDRSTRLEN);
+      inet_ntop(AF_INET, &(addressC.sin_addr), dummyClientIP, INET_ADDRSTRLEN);
 
-#ifdef VERBOSE
-      printf("client connected %d\n", file_des); 
-
-      printf("addressC  %s\n", thisClientIP);
-      printf("addressC  %s\n", lastClientIP);
-#endif
-
+      
 
 
       // struct sockaddr_in
@@ -218,48 +210,7 @@ void exitServer(int socketDescriptor) {
 
 
 
-/* client close conenction */
-/*
-#ifndef C_ONLY
-void MySocketTCP::Disconnect(){
-  
-  if(file_des>=0){ //then was open
-    if(is_a_server){ 
-      close(file_des);
-    }
-    else { 
-      close(socketDescriptor);
-      socketDescriptor=-1;
-    } 
-  file_des=-1;
-  }
-
-}
-#endif
-*/
-
-
  int sendDataOnly(int file_des, void* buf,int length) {
- /*
- int total_sent=0;
- int nsending;
- int nsent;
- 
-
-#ifdef VERY_VERBOSE
-  printf("want to send %d Bytes\n", length);
-#endif
-  if (file_des<0) return -1;
- 
-  while(length>0){
-    nsending = (length>send_rec_max_size) ? send_rec_max_size:length;
-    nsent = write(file_des,(char*)buf+total_sent,nsending); 
-    if(!nsent) break;
-    length-=nsent;
-    total_sent+=nsent;
-    //    cout<<"nsent: "<<nsent<<endl;
-  }
-  */
 
 
   return   write(file_des, buf, length);  
@@ -296,7 +247,14 @@ void MySocketTCP::Disconnect(){
 #ifdef VERY_VERBOSE
   printf("received %d Bytes\n", total_received); 
 #endif
-  
+
+  if (total_received>0)
+    strcpy(thisClientIP,dummyClientIP);
+  if (strcmp(lastClientIP,thisClientIP))
+    differentClients=1;
+  else
+    differentClients=0;
+
   return total_received;
 }
 

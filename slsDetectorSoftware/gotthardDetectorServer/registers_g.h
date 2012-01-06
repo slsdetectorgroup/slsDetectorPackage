@@ -189,5 +189,29 @@
 #define OUTBUF_OFF 0
 #define OUTBUF_MASK 1
 
+
+/* multi purpose register */
+#define PHASE_STEP_BIT               0x00000001
+#define PHASE_STEP_OFFSET            0
+
+#define READOUT_BUSY_BIT             0x00000002
+#define FIFOTEST_BUSY_BIT            0x00000004 
+#define WAITING_FOR_TRIGGER_BIT      0x00000008
+#define DELAYBEFORE_BIT              0x00000010
+
+#define SW1_BIT                      0x00000020
+#define SW1_OFFSET                   5
+
+
+#define ENET_RESETN_BIT              0x00000800
+#define ENET_RESETN_OFFSET           11
+
+#define INT_RSTN_BIT                 0x00002000
+#define INT_RSTN_OFFSET              13
+
+#define CHANGE_AT_POWER_ON_BIT       0x00008000
+#define CHANGE_AT_POWER_ON_OFFSET    15
+
+
 #endif
 

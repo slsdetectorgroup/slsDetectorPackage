@@ -167,34 +167,44 @@ int setDAQRegister()
       result=FAIL;
   }
 #ifdef VERBOSE
-  printf("DAQ reg:20916770:%d\n",reg);
+  printf("DAQ reg:20916770:%d",reg);
 #endif
   return result;
 }
 
 
+
 int setPhaseShiftOnce(){
-  u_int32_t addr, reg, val;
-  int result=OK, i,off;
+  u_int32_t addr, reg;
+  int result=OK, i,val,powerOn=0;
   addr=MULTI_PURPOSE_REG;
-  //off=15;
-  // mask=((0x1)<<off);
+  reg=bus_r(addr);
+#ifdef VERBOSE
+  printf("Multipurpose reg:%d\n",reg);
+#endif
+
+  //Checking if it is power on(negative number)
+  if(((reg&0xFFFF0000)>>16)>0){
+    bus_w(addr,0x0);   //clear the reg
+#ifdef VERBOSE
+    printf("Implementing Phase Shift-Reg:%d\n",bus_r(addr));
+#endif
+    //phase shift
+    for (i=1;i<PHASE_SHIFT;i++) {
+      bus_w(addr,(INT_RSTN_BIT|ENET_RESETN_BIT|SW1_BIT|PHASE_STEP_BIT));//0x2821
+      bus_w(addr,(INT_RSTN_BIT|ENET_RESETN_BIT|SW1_BIT&~PHASE_STEP_BIT));//0x2820
+     }
+    //confirming phase change by setting CHANGE_AT_POWER_ON_BIT(for later uses)
+    bus_w(addr,(CHANGE_AT_POWER_ON_BIT|
+		INT_RSTN_BIT|ENET_RESETN_BIT|SW1_BIT&~PHASE_STEP_BIT));
+  }
 
   reg=bus_r(addr);
-  if(reg
-  reg|=((0x1)<<off);
-  
-  // if(reg&
-  for (i=1;i<PHASE_SHIFT;i++) {
-    bus_w(addr,0x2821);
-    bus_w(addr,0x2820);
-  }
-  reg=bus_r(addr);
-  
-  //  bus_w(addr, 1<<
+  printf("\nREG:%d\n",reg);
 
   return result;
 }
+
 
 
 //aldos function volatile (not needed) 

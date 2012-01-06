@@ -68,7 +68,7 @@ int init_detector( int b) {
     initDetector();
     printf("\ninitdetector done! \n");
     setDummyRegister();
-    // setPhaseShiftOnce();
+    setPhaseShiftOnce();
     setDAQRegister();
     setSettings(GET_SETTINGS);
 

@@ -73,54 +73,6 @@ int gotthardDetector::readConfigurationFile(string const fname){
 #endif
       }
 
-
-     /*
-     //---------------mac address----------
-     getline(infile,str);
-     iline++;
-#ifdef VERBOSE
-     std::cout<< str << std::endl;
-#endif
-     istringstream sstr(str);
-     sstr >> sargname >> sargname2;
-#ifdef VERBOSE
-     std::cout<< sargname << " is " << sargname2 << std::endl;
-#endif
-     //getting rid of dots
-     pos = sargname2.find(":");
-     while(pos != string::npos)
-       {
-	 sargname2.erase( pos, 1 );
-	 pos = sargname2.find(":");
-       }
-     strcpy(thisDetector->clientMacAddress,sargname2.c_str());
-     //sprintf(thisDetector->clientMacAddress,"%0llX",atoll(sargname2.c_str()));
-     cout<<"macaddress:"<<thisDetector->clientMacAddress<<endl;
-
-     //---------------ip address---------------
-     getline(infile,str);
-     iline++;
-#ifdef VERBOSE
-     std::cout<< str << std::endl;
-#endif
-     istringstream sssstr(str);
-     sssstr >> sargname >> sargname2;
-#ifdef VERBOSE
-     std::cout<< sargname << " is " << sargname2 << std::endl;
-#endif
-     //getting rid of dots
-     pos = sargname2.find(".");
-     while(pos != string::npos)
-       {
-	 sargname2.erase( pos, 1 );
-	 pos = sargname2.find(".");
-       }
-     strcpy(thisDetector->clientIPAddress,sargname2.c_str());
-     cout<<"ipaddress:"<<thisDetector->clientIPAddress<<endl;
-     */
-
-
-
       iline++;
     }
     infile.close();
@@ -141,23 +93,12 @@ int gotthardDetector::writeConfigurationFile(string const fname){
     "hostname",\
     "caldir",\
     "settingsdir",\
-    "trimen",\
     "outdir",\
-    "ffdir",\
-    "headerbefore",\
-    "headerafter",\
-    "headerbeforepar",\
-    "headerafterpar",\
-    "nmod",\
-    "badchannels",\
-    "angconv",\
-    "globaloff",\
-    "binsize",\
-    "threaded",\
-    "waitstates",\
-    "setlength",\
-    "clkdivider"};
-  int nvar=19;
+    //    "nmod",
+    "clientip",\
+    "clientmac"};
+
+  int nvar=6;
   ofstream outfile;
   int iv=0;
   char *args[100];
@@ -165,13 +106,12 @@ int gotthardDetector::writeConfigurationFile(string const fname){
     args[ia]=new char[1000];
   }
 
-
   outfile.open(fname.c_str(),ios_base::out);
   if (outfile.is_open()) {
     for (iv=0; iv<nvar; iv++) {
       strcpy(args[0],names[iv].c_str());
       outfile << names[iv] << " " << executeLine(1,args,GET_ACTION) << std::endl;
-    }
+     }
     outfile.close();
   }
   else {

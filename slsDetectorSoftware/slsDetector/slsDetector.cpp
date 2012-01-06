@@ -1213,7 +1213,7 @@ int slsDetector::setDetectorType(detectorType const type){
 	  std::cout<< "Detector returned error: " << mess << std::endl;
 	}
 	controlSocket->Disconnect();
-	if (ret==FORCE_UPDATE)
+	if (retval==FORCE_UPDATE)
 	  updateDetector();
       }
     }

@@ -10,6 +10,7 @@
 /* registers defined in FPGA */
 #define GAIN_REG         0x10<<11
 #define DAQ_REG          0x1b<<11
+#define MULTI_PURPOSE_REG 0x94<<11
 
 #define DUMMY_REG        0x13<<11
 #define FIX_PATT_REG     0x45<<11

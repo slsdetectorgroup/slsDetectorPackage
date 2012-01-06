@@ -67,8 +67,11 @@ int init_detector( int b) {
   if (b) {
     initDetector();
     printf("\ninitdetector done! \n");
-    setDummyRegister(); 
+    setDummyRegister();
+    // setPhaseShiftOnce();
+    setDAQRegister();
     setSettings(GET_SETTINGS);
+
 
     //testRAM();
   }

@@ -89,6 +89,7 @@ int initDetector() {
   sDac=noneSelected;
   sAdc=noneSelected;
   
+
   /*
   setCSregister(ALLMOD); //commented out by dhanya
   setSSregister(ALLMOD);

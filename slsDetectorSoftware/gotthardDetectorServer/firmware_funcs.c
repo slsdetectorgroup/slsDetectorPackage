@@ -111,33 +111,6 @@ int mapCSP0(void) {
 
 int setDummyRegister() {
   int result = OK;
-  /*
-  //to check if the dac really works with aldos code
-  int dacnum,dacvalue=700;
-  u_int32_t offw,codata;
-  u_int16_t valw; 
-  int iru,i,ddx,csdx,cdx;
-  offw=0x37;
-  for(dacnum=0;dacnum<8;dacnum++)
-    {
-      ddx=2; csdx=0; cdx=1;
-      codata=((((0x2)<<4)+((dacnum)&0xf))<<16)+((dacvalue<<4)&0xfff0);  
-  
-      valw=0xffff; bus_w(offw,(valw)); // start point
-      valw=((valw&(~(0x1<<csdx))));bus_w(offw,valw); //chip sel bar down
-      for (i=1;i<25;i++) {
-
-      valw=(valw&(~(0x1<<cdx)));bus_w(offw,valw); //cldwn	
-      valw=((valw&(~(0x1<<ddx)))+(((codata>>(24-i))&0x1)<<ddx));bus_w(offw,valw);//write data (i)
-      //	printf("%d ", ((codata>>(24-i))&0x1));
-      valw=((valw&(~(0x1<<cdx)))+(0x1<<cdx));bus_w(offw,valw);//clkup
-      }
-      valw=((valw&(~(0x1<<csdx)))+(0x1<<csdx));bus_w(offw,valw); //csup
-      valw=(valw&(~(0x1<<cdx)));bus_w(offw,valw); //cldwn
-      valw=0xffff; bus_w(offw,(valw)); // stop point =start point of course 
-      printf("Writing %d in DAC(0-7) %d \n",dacvalue,dacnum);
-      }
-  */
   volatile u_int32_t val,addr;
   addr = DUMMY_REG;
   int i;
@@ -173,8 +146,53 @@ int setDummyRegister() {
     {
       printf("\n\n----------------------------------------------------------------------------------------------");
       printf("\nATTEMPT 100: FPGA DUMMY REGISTER OK!!\n");
-      printf("----------------------------------------------------------------------------------------------\n\n");
+      printf("----------------------------------------------------------------------------------------------\n");
     }
+  return result;
+}
+
+
+int setDAQRegister()
+{
+  u_int32_t addr, reg, val;
+  int result=OK;
+  addr=DAQ_REG;
+  val=34+(42<<8)+(319<<16);
+  reg=bus_r(addr);
+  //write to daqreg if not valid
+  if(reg!=val){
+    bus_w(addr,val);
+    reg=bus_r(addr);
+    if(reg!=val)
+      result=FAIL;
+  }
+#ifdef VERBOSE
+  printf("DAQ reg:20916770:%d\n",reg);
+#endif
+  return result;
+}
+
+
+int setPhaseShiftOnce(){
+  u_int32_t addr, reg, val;
+  int result=OK, i,off;
+  addr=MULTI_PURPOSE_REG;
+  //off=15;
+  // mask=((0x1)<<off);
+
+  reg=bus_r(addr);
+  if(reg
+  reg|=((0x1)<<off);
+  
+  // if(reg&
+  for (i=1;i<PHASE_SHIFT;i++) {
+    bus_w(addr,0x2821);
+    bus_w(addr,0x2820);
+  }
+  reg=bus_r(addr);
+  
+  //  bus_w(addr, 1<<
+
   return result;
 }
 

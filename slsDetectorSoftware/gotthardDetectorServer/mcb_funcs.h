@@ -18,7 +18,7 @@
 #define VINCM_VALS    {0,0,300,400,500,600,700}
 #define VREFCOMP_VALS {0,0,320,420,520,620,720}
 #define IBTESTC_VALS  {0,0,340,440,540,640,740}
-#define CONF_GAIN     {0,0,  0,  1,  6,  2,  1}//dynamic gain confgain yet to be figured out
+#define CONF_GAIN     {0,0,  0,  1,  6,  2,  1}//dynamic gain confgain yet to be figured out-probably 8 or 16
  
 
 #define DEFAULTGAIN {11.66,9.32,14.99}

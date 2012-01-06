@@ -27,6 +27,8 @@
 #define TRIM_DR (((int)pow(2,NTRIMBITS))-1)
 #define COUNT_DR (((int)pow(2,NCOUNTBITS))-1)
 
+#define PHASE_SHIFT 120
+
 
 #define ALLMOD 0xffff
 #define ALLFIFO 0xffff

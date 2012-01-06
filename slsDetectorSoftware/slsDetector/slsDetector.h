@@ -312,9 +312,9 @@ typedef  struct sharedSlsDetector {
 
   /*extra gotthard members*/
     /** is the ip address of the client for gotthard; read from configuration file **/
-    char clientIPAddress[MAX_STR_LENGTH];
+    char clientIP[MAX_STR_LENGTH];
     /** is the mac address of the client for gotthard; read from configuration file **/
-    char clientMacAddress[MAX_STR_LENGTH];
+    char clientMAC[MAX_STR_LENGTH];
 
 } sharedSlsDetector;
 
@@ -440,6 +440,16 @@ typedef  struct sharedSlsDetector {
   int connectStop();
   /** disconnect from the stop port */
   int disconnectStop();
+
+
+  /** returns the client IP address for gotthard \sa sharedSlsDetector  */
+  char* getClientIP() {return thisDetector->clientIP;};
+  /** returns the  client MAC address for gotthard \sa sharedSlsDetector  */
+  char* getClientMAC() {return thisDetector->clientMAC;};
+  /** sets the client IP address for gotthard \sa sharedSlsDetector  */
+  char* setClientIP(string clientIP) {sprintf(thisDetector->clientIP,clientIP.c_str()); return thisDetector->clientIP;};
+  /** sets the  client MAC address for gotthard \sa sharedSlsDetector  */
+  char* setClientMAC(string clientMAC) {sprintf(thisDetector->clientMAC,clientMAC.c_str());return thisDetector->clientMAC;};
 
 
   /* I/O */

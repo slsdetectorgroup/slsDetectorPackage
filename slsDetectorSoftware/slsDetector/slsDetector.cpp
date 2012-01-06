@@ -357,9 +357,9 @@ int slsDetector::initializeDetectorSize(detectorType type) {
      strcpy(thisDetector->hostname,DEFAULT_HOSTNAME);
 
      /** set client ip address */
-     strcpy(thisDetector->clientIPAddress,"none");
+     strcpy(thisDetector->clientIP,"none");
      /** set client mac address */
-     strcpy(thisDetector->clientMacAddress,"none");
+     strcpy(thisDetector->clientMAC,"none");
 
      /** sets onlineFlag to OFFLINE_FLAG */
      thisDetector->onlineFlag=OFFLINE_FLAG;
@@ -5460,7 +5460,20 @@ string slsDetector::executeLine(int narg, char *args[], int action) {
       sprintf(answer,form,answer,oen[ie]);
     }
     return string(answer);
+  }else if (var=="clientip") {
+    if (action==PUT_ACTION) {
+      sval=string(args[1]);
+      return string(setClientIP(sval));
+    } else
+      return getClientIP();
+  } else if (var=="clientmac") {
+    if (action==PUT_ACTION) {
+      sval=string(args[1]);
+      return string(setClientMAC(sval));
+    } else
+      return getClientMAC();
   } 
+
 
 
 

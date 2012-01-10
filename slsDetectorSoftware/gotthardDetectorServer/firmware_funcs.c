@@ -176,7 +176,7 @@ int setDAQRegister()
 
 int setPhaseShiftOnce(){
   u_int32_t addr, reg;
-  int result=OK, i,val,powerOn=0;
+  int result=OK, i,val;
   addr=MULTI_PURPOSE_REG;
   reg=bus_r(addr);
 #ifdef VERBOSE
@@ -200,7 +200,26 @@ int setPhaseShiftOnce(){
   }
 
   reg=bus_r(addr);
-  printf("\nREG:%d\n",reg);
+  printf("Multipupose reg now:%d\n",reg);
+
+  //for init_enet.. to convert ipaddress
+  /*
+  string sval;
+  sval.assign("129.129.202.176");
+  stringstream sstr(sval);
+  string word;
+  char chex[50],cword[50];
+  int i,inum;
+
+
+  while(getline(sstr,word,'.')){
+  i=atoi(word.c_str());
+    sprintf(chex,"%02x",i);
+    strcat(cword,chex);
+  }
+  printf("%s\n\n",cword);
+  */
+
 
   return result;
 }

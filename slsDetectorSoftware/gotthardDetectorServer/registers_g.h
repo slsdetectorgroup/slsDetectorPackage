@@ -202,6 +202,8 @@
 #define SW1_BIT                      0x00000020
 #define SW1_OFFSET                   5
 
+#define RESET_BIT                    0x00000080
+#define RESET_OFFSET                 7
 
 #define ENET_RESETN_BIT              0x00000800
 #define ENET_RESETN_OFFSET           11

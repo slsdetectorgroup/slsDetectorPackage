@@ -360,6 +360,11 @@ typedef  struct sharedSlsDetector {
   */
   static int exists(int i);
 
+  /**  
+     configures mac for gotthard readout
+  */
+  int configureMAC();
+
   /**
     Purely virtual function
     Should be implemented in the specific detector class
@@ -373,11 +378,6 @@ typedef  struct sharedSlsDetector {
     /sa mythenDetector::writeConfigurationFile
   */
   virtual int writeConfigurationFile(string const fname);
-
-  /**  
-     configures mac for gotthard readout
-  */
-  int configureMAC();
 
   /* 
      It should be possible to dump all the settings of the detector (including trimbits, threshold energy, gating/triggering, acquisition time etc.

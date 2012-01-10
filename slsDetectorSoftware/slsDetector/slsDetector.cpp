@@ -2844,6 +2844,7 @@ int slsDetector::setThresholdEnergy(int e_eV,  int imod, detectorSettings isetti
 
 
 detectorSettings slsDetector::setSettings( detectorSettings isettings, int imod){
+  std::cout<<"dfgfdgdgdf"<<endl;
 #ifdef VERBOSE
   std::cout<< "slsDetector setSettings "<< std::endl;
 #endif
@@ -5066,14 +5067,22 @@ int slsDetector::getScanPrecision(int iscan){
 
 
 char* slsDetector::setClientIP(string clientIP){
+  int wrongFormat=1;
   struct sockaddr_in sa;
-  int result = inet_pton(AF_INET, clientIP.c_str(), &(sa.sin_addr));
-  if((!result)||(clientIP.length()>15))
-    return ("IP Address should be VALID and in xxx.xxx.xxx.xxx format");
-  else
-    sprintf(thisDetector->clientIP,clientIP.c_str()); 
-  return thisDetector->clientIP;
-};
+  if(clientIP.length()==15){
+    if((clientIP[3]==':')&&(clientIP[7]==':')&&(clientIP[11]==':')){
+      int result = inet_pton(AF_INET, clientIP.c_str(), &(sa.sin_addr));
+      if(result!=0){
+	sprintf(thisDetector->clientIP,clientIP.c_str()); 
+	wrongFormat=0;
+      }
+    }
+  }
+    if(!wrongFormat)
+      return thisDetector->clientIP;
+    else 
+      return ("IP Address should be VALID and in xxx.xxx.xxx.xxx format");
+}
 
 
 char* slsDetector::setClientMAC(string clientMAC){
@@ -5089,6 +5098,20 @@ char* slsDetector::setClientMAC(string clientMAC){
 
   return thisDetector->clientMAC;
 };
+
+
+
+
+int slsDetector::configureMAC(){
+  if(!strcmp(getClientIP(),"none"))
+     return -1;
+  else if(!strcmp(getClientMAC(),"none"))    
+    return -1;
+
+  cout<<"\n\ndfgfdgklfdhgldf\n\n\n";
+
+  return 0;
+}
 
 
 
@@ -6349,10 +6372,11 @@ string slsDetector::executeLine(int narg, char *args[], int action) {
 	sprintf(answer,"%d", setSpeed(TOT_DUTY_CYCLE));
 	return string(answer);
 	//gotthard
-      }/*else if (var=="configuremac") {
-        configureMAC();
+      }else if (var=="configuremac") {
+         if(configureMAC()==-1)
+	   return string("client ip address/client mac address not valid");
 	return string("mac configuration completed");
-	}*/
+	}
   return ("Unknown command");
 
 }
@@ -7741,6 +7765,7 @@ int slsDetector::getPositions(float *pos){
   return     thisDetector->numberOfPositions;
 }
   
+
 
 
 int slsDetector::readConfigurationFile(string const fname){

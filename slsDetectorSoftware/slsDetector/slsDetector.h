@@ -446,8 +446,8 @@ typedef  struct sharedSlsDetector {
   char* getClientIP() {return thisDetector->clientIP;};
   /** returns the  client MAC address for gotthard \sa sharedSlsDetector  */
   char* getClientMAC() {return thisDetector->clientMAC;};
-  /** sets the client IP address for gotthard \sa sharedSlsDetector  */
-  char* setClientIP(string clientIP) {sprintf(thisDetector->clientIP,clientIP.c_str()); return thisDetector->clientIP;};
+  /** validates and sets the client IP address for gotthard \sa sharedSlsDetector  */
+  char* setClientIP(string clientIP);
   /** sets the  client MAC address for gotthard \sa sharedSlsDetector  */
   char* setClientMAC(string clientMAC) {sprintf(thisDetector->clientMAC,clientMAC.c_str());return thisDetector->clientMAC;};
 

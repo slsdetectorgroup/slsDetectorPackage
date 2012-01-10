@@ -3,7 +3,8 @@
 #include  <sys/types.h>
 #include  <sys/ipc.h>
 #include  <sys/shm.h>
-
+#include <sys/socket.h>
+#include <arpa/inet.h>
 
 int slsDetector::initSharedMemory(detectorType type, int id) {
 
@@ -4915,8 +4916,15 @@ int slsDetector::getScanPrecision(int iscan){
 }
 
 
-
-
+char* slsDetector::setClientIP(string clientIP){
+  struct sockaddr_in sa;
+  int result = inet_pton(AF_INET, clientIP.c_str(), &(sa.sin_addr));
+  if((!result)||(clientIP.length()>15))
+    sprintf(thisDetector->clientIP,"IP Address should be VALID and in xxx.xxx.xxx.xxx format");
+  else
+    sprintf(thisDetector->clientIP,clientIP.c_str()); 
+  return thisDetector->clientIP;
+};
 
 
 

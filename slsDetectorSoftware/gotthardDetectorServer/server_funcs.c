@@ -151,7 +151,7 @@ int function_table() {
   flist[F_SET_SPEED]=&set_speed;
   flist[F_SET_READOUT_FLAGS]=&set_readout_flags;
   flist[F_EXECUTE_TRIMMING]=&execute_trimming;
-  flist[F_CONFIGURE_MAC]=&configure_mac;
+  // flist[F_CONFIGURE_MAC]=&configure_mac;
 
 #ifdef VERBOSE
   /*  for (i=0;i<256;i++){

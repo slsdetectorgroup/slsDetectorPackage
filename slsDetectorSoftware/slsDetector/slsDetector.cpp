@@ -6349,10 +6349,10 @@ string slsDetector::executeLine(int narg, char *args[], int action) {
 	sprintf(answer,"%d", setSpeed(TOT_DUTY_CYCLE));
 	return string(answer);
 	//gotthard
-      }else if (var=="configuremac") {
+      }/*else if (var=="configuremac") {
         configureMAC();
 	return string("mac configuration completed");
-      }
+	}*/
   return ("Unknown command");
 
 }

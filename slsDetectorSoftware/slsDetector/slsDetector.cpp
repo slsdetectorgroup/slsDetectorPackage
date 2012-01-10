@@ -6348,6 +6348,10 @@ string slsDetector::executeLine(int narg, char *args[], int action) {
 	} 
 	sprintf(answer,"%d", setSpeed(TOT_DUTY_CYCLE));
 	return string(answer);
+	//gotthard
+      }else if (var=="configuremac") {
+        configureMAC();
+	return string("mac configuration completed");
       }
   return ("Unknown command");
 
@@ -7813,7 +7817,7 @@ int slsDetector::readConfigurationFile(string const fname){
 
 int slsDetector::writeConfigurationFile(string const fname){
   
-  
+  int nvar;
   string names[]={				\
     "hostname",					\
     "caldir",					\
@@ -7839,12 +7843,16 @@ int slsDetector::writeConfigurationFile(string const fname){
   case MYTHEN:
     names[2]="trimdir";
     break;
+  case GOTTHARD:
+    names[3]="outdir";
+    names[4]="clientip";
+    names[5]="clientmac";
+    nvar=6;
+    break;
   default:
-    ;
+    nvar=19;
   }
 
-
-  int nvar=19;
   ofstream outfile;
   int iv=0;
   char *args[100];

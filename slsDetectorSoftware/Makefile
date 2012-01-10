@@ -10,7 +10,7 @@ SRC_CLNT= slsDetector/slsDetector.cpp MySocketTCP/MySocketTCP.cxx usersFunctions
 SRC_MYTHEN_SVC = mythenDetectorServer/server.c mythenDetectorServer/server_funcs.c mythenDetectorServer/communication_funcs.c mythenDetectorServer/firmware_funcs.c mythenDetectorServer/mcb_funcs.c mythenDetectorServer/trimming_funcs.c 
 #mythenDetectorServer/sharedmemory.c
 
-all: package mythenServer doc picassoServer
+all: package doc #picassoServer #mythenServer
 
 doc: $(SRC_H) $(SRC_CLNT) 
 	doxygen doxy.config

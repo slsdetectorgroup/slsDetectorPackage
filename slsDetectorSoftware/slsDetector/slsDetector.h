@@ -374,6 +374,10 @@ typedef  struct sharedSlsDetector {
   */
   virtual int writeConfigurationFile(string const fname);
 
+  /**  
+     configures mac for gotthard readout
+  */
+  int configureMAC();
 
   /* 
      It should be possible to dump all the settings of the detector (including trimbits, threshold energy, gating/triggering, acquisition time etc.

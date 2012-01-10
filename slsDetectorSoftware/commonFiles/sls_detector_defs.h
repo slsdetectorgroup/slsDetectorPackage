@@ -478,9 +478,10 @@ enum {
   
   F_SET_PORT, /**< Changes communication port of the server */
 
-  F_UPDATE_CLIENT /**< Returns all the important parameters to update the shared memory of the client */
+  F_UPDATE_CLIENT, /**< Returns all the important parameters to update the shared memory of the client */
 
-
+  F_CONFIGURE_MAC /**< Configures MAC for Gotthard readout */
+  
   /* Always append functions hereafter!!! */
 
 

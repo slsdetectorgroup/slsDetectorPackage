@@ -4920,12 +4920,26 @@ char* slsDetector::setClientIP(string clientIP){
   struct sockaddr_in sa;
   int result = inet_pton(AF_INET, clientIP.c_str(), &(sa.sin_addr));
   if((!result)||(clientIP.length()>15))
-    sprintf(thisDetector->clientIP,"IP Address should be VALID and in xxx.xxx.xxx.xxx format");
+    return ("IP Address should be VALID and in xxx.xxx.xxx.xxx format");
   else
     sprintf(thisDetector->clientIP,clientIP.c_str()); 
   return thisDetector->clientIP;
 };
 
+
+char* slsDetector::setClientMAC(string clientMAC){
+  if(clientMAC.length()==17){
+    if((clientMAC[2]==':')&&(clientMAC[5]==':')&&(clientMAC[8]==':')&&
+       (clientMAC[11]==':')&&(clientMAC[14]==':'))
+      sprintf(thisDetector->clientMAC,clientMAC.c_str()); 
+    else
+      return("MAC Address should be in xx:xx:xx:xx:xx:xx format");  
+  }
+  else
+    return("MAC Address should be in xx:xx:xx:xx:xx:xx format");  
+
+  return thisDetector->clientMAC;
+};
 
 
 

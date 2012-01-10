@@ -62,17 +62,20 @@ int trim_with_noise(int countlim, int nsigma, int im)
 #ifdef VERBOSE
   printf("trimming with noise.....\n");
 #endif
-  retval2=trim_with_level(countlim, im);
-  
+  if (retval1==OK)
+    retval2=trim_with_level(countlim, im);
+  else
+    retval2=-1;
+
 #ifdef DEBUGOUT
   printf("done\n");
 #endif
-  if (retval1==OK && retval2==OK)
-    retval=OK;
-  else
-    retval=FAIL;
+  //if (retval1==OK && retval2==OK)
+  //  retval=OK;
+  //else
+  //  retval=FAIL;
 
-  return retval;
+  return retval2;
 
 }
 
@@ -94,18 +97,20 @@ int trim_with_beam(int countlim, int nsigma, int im) //rpc
 #endif
   
   retval1=choose_vthresh_and_vtrim(countlim,nsigma,im);
-  retval2=trim_with_median(TRIM_DR, im);
+  if (retval1==OK)
+    retval2=trim_with_median(TRIM_DR, im);
+  else return -1;
 
 #ifdef DEBUGOUT
     printf("done\n");
 #endif
 
-  if (retval1==OK && retval2==OK)
-    retval=OK;
-  else
-    retval=FAIL;
+    // if (retval1==OK && retval2==OK)
+    // retval=OK;
+    //else
+    // retval=FAIL;
 
-  return retval;
+  return retval2;
 
 }
 
@@ -126,17 +131,19 @@ int  trim_improve(int maxit, int par2, int im) //rpc
 
   if (par2!=0 && im==ALLMOD)
     retval1=choose_vthresh();
-
-  retval2=trim_with_median(2*maxit+1, im);
+  if (retval1==OK)
+    retval2=trim_with_median(2*maxit+1, im);
+  else
+    return -1;
 #ifdef DEBUGOUT
     printf("done\n");
 #endif
-  if (retval1==OK && retval2==OK)
-    retval=OK;
-  else
-    retval=FAIL;
+    //  if (retval1==OK && retval2==OK)
+    // retval=OK;
+    //else
+    //retval=FAIL;
 
-  return retval;
+  return retval2;
 
 }
 
@@ -328,7 +335,7 @@ int trim_with_level(int countlim, int im) {
   u_int32_t *scan;
   int *inttrim;
   int modma, modmi, nm;
-  int retval=OK;
+  int retval=0;
   int *fifodata;
   sls_detector_channel myChan;
   printf("trimming module number %d", im);
@@ -411,10 +418,13 @@ int trim_with_level(int countlim, int im) {
       for (ichan=0; ichan<nChans; ichan++) {
 	nextStrip(imod);
 	ich=ichan+imod*nChans*nChips+ichip*nChans;
-	if (*(inttrim+ich)==-1) {
-	  *(inttrim+ich)=TRIM_DR;
+	//if (*(inttrim+ich)==-1) {
+	if (*(inttrim+ich)<1) {
+	  if (*(inttrim+ich)==-1) {
+	    *(inttrim+ich)=TRIM_DR;
+	  }
 	  //	  printf("could not trim channel %d chip %d module %d - set to %d\n", ichan, ichip, imod, *(inttrim+ich) );
-	  retval=FAIL;
+	  retval++;
 	}
 #ifdef VERBOSE 
 	//	else
@@ -433,32 +443,62 @@ int trim_with_level(int countlim, int im) {
 
 
 #define ELEM_SWAP(a,b) { register int t=(a);(a)=(b);(b)=t; }
-#define median(a,n) kth_smallest(a,n,(((n)&1)?((n)/2):(((n)/2)-1)))
-
 
 int kth_smallest(int *a, int n, int k)
 {
-    register int i,j,l,m ;
-    register float x ;
+  register int i,j,l,m ;
+  register float x ;
+  
+  l=0 ; m=n-1 ;
+  while (l<m) {
+    x=a[k] ;
+    i=l ;
+    j=m ;
+    do {
+      while (a[i]<x) i++ ;
+      while (x<a[j]) j-- ;
+      if (i<=j) {
+	    ELEM_SWAP(a[i],a[j]) ;
+	    i++ ; j-- ;
+      }
+    } while (i<=j) ;
+    if (j<k) l=i ;
+    if (k<i) m=j ;
+  }
+  return a[k] ;
 
-    l=0 ; m=n-1 ;
-    while (l<m) {
-        x=a[k] ;
-        i=l ;
-        j=m ;
-        do {
-            while (a[i]<x) i++ ;
-            while (x<a[j]) j-- ;
-            if (i<=j) {
-                ELEM_SWAP(a[i],a[j]) ;
-                i++ ; j-- ;
-            }
-        } while (i<=j) ;
-        if (j<k) l=i ;
-        if (k<i) m=j ;
-    }
-    return a[k] ;
 }
+
+
+
+int  median(int *a,int n) {
+  
+  int i=0, k=n/2;
+  float k1=0.5*n;
+
+  //discard zeroes and 0xffffff
+  for (i=0; i<n; i++) {
+    if (a[i]==0)
+      k1+=0.5;
+    else if (a[i]==0xffffff)
+      k1-=0.5;
+  }
+  
+  kth_smallest(a, n, k1);
+
+
+/*   for (k=0; k<n; k++) { */
+/*     printf("%d ",a[k]); */
+/*   } */
+/*   printf("\n"); */
+
+  k=k1;
+  
+  return a[k] ;
+
+
+}
+
 
 
 
@@ -610,7 +650,7 @@ int choose_vthresh() {
 int trim_with_median(int stop, int im) {
  
  
-  int retval=OK;
+  int retval=0;
 
 #ifdef MCB_FUNCS
   int  ichan, imod, ichip, ich;
@@ -726,12 +766,12 @@ int trim_with_median(int stop, int im) {
 	    if (trim>TRIM_DR) {
 	      trim=63;
 	      printf("can't trim channel %d chip %d module %d to trim %d\n",ich, ichip, imod, trim);
-	      retval=FAIL;
+	      retval++;
 	    }
 	    if (trim<0) {
 	      printf("can't trim channel %d chip %d module %d to trim %d\n",ich, ichip, imod, trim);
 	      trim=0;
-	      retval=FAIL;
+	      retval++;
 	    }
 	    initChannel(trim,0,0,1,0,0,imod);
 	  }

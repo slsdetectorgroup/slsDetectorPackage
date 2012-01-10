@@ -13,5 +13,5 @@ int trim_with_level(int countlim, int imod);
 int trim_with_median(int stop, int imod);
 int calcthr_from_vcal(int vcal);
 int calccal_from_vthr(int vthr);
-
+int median(int *a,int n); 
 #endif

@@ -192,9 +192,6 @@ void closeConnection(int file_des) {
 #endif 
   if(file_des>=0)
     close(file_des);
-  if (lockStatus==0) {
-    strcpy(lastClientIP,thisClientIP);
-  }
   file_des=-1;
 }
 

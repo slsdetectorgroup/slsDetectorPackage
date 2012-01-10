@@ -58,7 +58,7 @@ int slsDetector::initSharedMemory(detectorType type, int id) {
 
    sz=sizeof(sharedSlsDetector)+nm*(2*nch*nc*sizeof(float)+sizeof(sls_detector_module)+sizeof(int)*nc+sizeof(float)*nd+sizeof(int)*nch*nc);
 #ifdef VERBOSE
-   std::cout<<"Size of shared memory is "<< sz << std::endl;
+   std::cout<<"Size of shared memory is "<< sz << "(type " << type << " - id " << mem_key << ")"<< std::endl;
 #endif
    shm_id = shmget(mem_key,sz,IPC_CREAT  | 0666); // allocate shared memory
 
@@ -118,13 +118,73 @@ int slsDetector::freeSharedMemory() {
 
 
 
+slsDetector::slsDetector(int id) :
+  thisDetector(NULL),  
+  detId(id),
+  shmId(-1), 
+  controlSocket(NULL),
+  stopSocket(NULL),
+  dataSocket(NULL),
+  currentPosition(0),
+  currentPositionIndex(0),
+  currentI0(0),
+  mergingBins(NULL),
+  mergingCounts(NULL),
+  mergingErrors(NULL),
+  mergingMultiplicity(NULL),
+  ffcoefficients(NULL),
+  fferrors(NULL),
+  detectorModules(NULL),
+  dacs(NULL),
+  adcs(NULL),
+  chipregs(NULL),
+  chanregs(NULL),
+  badChannelMask(NULL)
+
+
+{
+  detectorType type=(detectorType)getDetectorType(id);
+  
+  
+  while (shmId<0) {
+       /**Initlializes shared memory \sa initSharedMemory
+	  
+       if it fails the detector id is incremented until it succeeds
+       */
+    shmId=initSharedMemory(type,id);
+    id++;
+  }
+  id--;
+#ifdef VERBOSE
+  std::cout<< "Detector id is " << id << std::endl;
+#endif
+  detId=id;
+  
+  
+  /**Initializes the detector stucture \sa initializeDetectorSize
+      */
+  initializeDetectorSize(type);
+
+
+
+
+  pthread_mutex_t mp1 = PTHREAD_MUTEX_INITIALIZER; 
+  
+  mp=mp1;
+  
+  pthread_mutex_init(&mp, NULL);
+  
+
+
+};
+
 
 
 
 
 slsDetector::slsDetector(detectorType type, int id):
   thisDetector(NULL),  
-  detId(0),
+  detId(id),
   shmId(-1), 
   controlSocket(NULL),
   stopSocket(NULL),
@@ -155,7 +215,7 @@ slsDetector::slsDetector(detectorType type, int id):
      }
      id--;
 #ifdef VERBOSE
-     std::cout<< "Detector id is " << id << std::endl;
+     std::cout<< "Detector id is " << id << " type is " << type << std::endl;
 #endif
      detId=id;
 
@@ -175,11 +235,21 @@ slsDetector::slsDetector(detectorType type, int id):
 }
 
 
-slsDetector::~slsDetector(){};
+slsDetector::~slsDetector(){
+
+  // Detach Memory address
+    if (shmdt(thisDetector) == -1) {
+      perror("shmdt failed\n");
+      printf("Could not detach shared memory %d\n", shmId);
+    } else
+      printf("Shared memory %d detached\n", shmId);
+
+
+};
 
 slsDetector::slsDetector(char *name, int id, int cport) :
   thisDetector(NULL),  
-  detId(0),
+  detId(id),
   shmId(-1), 
   controlSocket(NULL),
   stopSocket(NULL),
@@ -243,7 +313,7 @@ detectorType slsDetector::getDetectorType(char *name, int cport) {
   detectorType t=GENERIC;
   int fnum=F_GET_DETECTOR_TYPE;
   MySocketTCP *s= new MySocketTCP(name, cport);
-  char m[1000];
+  char m[100];
   
  if (s->Connect()>=0) {
     s->SendDataOnly(&fnum,sizeof(fnum));
@@ -287,6 +357,68 @@ detectorType slsDetector::getDetectorType(char *name, int cport) {
 
 
 
+int slsDetector::exists(int id) {
+
+     key_t     mem_key=DEFAULT_SHM_KEY+id;
+   int       shm_id;
+   int sz;
+
+   sz=sizeof(sharedSlsDetector);
+
+
+#ifdef VERBOSE
+   cout << "getDetectorType: generic shared memory of size " << sz << endl;
+#endif
+   shm_id = shmget(mem_key,sz,IPC_CREAT  | 0666); // allocate shared memory
+
+  if (shm_id < 0) {
+    std::cout<<"*** shmget error (server) ***"<< shm_id << std::endl;
+    return -1;
+  }
+  
+   /**
+      thisDetector pointer is set to the memory address of the shared memory
+   */
+
+  sharedSlsDetector* det = (sharedSlsDetector*) shmat(shm_id, NULL, 0);  /* attach */
+  
+  if (det == (void*)-1) {
+    std::cout<<"*** shmat error (server) ***" << std::endl;
+    return -1;
+  }
+    /**
+      shm_id returns -1 is shared memory initialization fails
+   */
+  //shmId=shm_id;
+
+
+
+
+  if (det->alreadyExisting==0) {
+  // Detach Memory address
+    if (shmdt(det) == -1) {
+      perror("shmdt failed\n");
+      return 0;
+    }
+#ifdef VERBOSE
+    printf("Shared memory %d detached\n", shm_id);
+#endif
+    // remove shared memory
+    if (shmctl(shm_id, IPC_RMID, 0) == -1) {
+      perror("shmctl(IPC_RMID) failed\n");
+      return 0;
+    }
+#ifdef VERBOSE
+    printf("Shared memory %d deleted\n", shm_id);
+#endif
+    return 0;
+  }
+
+  return 1;
+
+
+
+}
 
 
 
@@ -303,6 +435,10 @@ detectorType slsDetector::getDetectorType(int id) {
 
    sz=sizeof(sharedSlsDetector);
 
+
+#ifdef VERBOSE
+   cout << "getDetectorType: generic shared memory of size " << sz << endl;
+#endif
    shm_id = shmget(mem_key,sz,IPC_CREAT  | 0666); // allocate shared memory
 
   if (shm_id < 0) {
@@ -334,14 +470,23 @@ detectorType slsDetector::getDetectorType(int id) {
       perror("shmdt failed\n");
       return t;
     }
-    //printf("Shared memory %d detached\n", shmId);
+#ifdef VERBOSE
+    printf("Shared memory %d detached\n", shm_id);
+#endif
     // remove shared memory
     if (shmctl(shm_id, IPC_RMID, 0) == -1) {
       perror("shmctl(IPC_RMID) failed\n");
       return t;
     }
-    //printf("Shared memory %d deleted\n", shmId);
+#ifdef VERBOSE
+    printf("Shared memory %d deleted\n", shm_id);
+#endif
   }
+
+#ifdef VERBOSE
+  cout << "Detector type is " << t << endl;
+#endif
+
   return t;
 
 
@@ -516,8 +661,8 @@ int slsDetector::initializeDetectorSize(detectorType type) {
    fferrors=(float*)(goff+thisDetector->fferroff);
    detectorModules=(sls_detector_module*)(goff+ thisDetector->modoff);
 #ifdef VERBOSE
-   for (int imod=0; imod< thisDetector->nModsMax; imod++)
-     std::cout<< hex << detectorModules+imod << dec <<std::endl;
+   //   for (int imod=0; imod< thisDetector->nModsMax; imod++)
+   //  std::cout<< hex << detectorModules+imod << dec <<std::endl;
 #endif
    dacs=(float*)(goff+thisDetector->dacoff);
    adcs=(float*)(goff+thisDetector->adcoff);
@@ -535,7 +680,9 @@ int slsDetector::initializeDetectorSize(detectorType type) {
 
    /** modifies the last PID accessing the detector */
    thisDetector->lastPID=getpid();
-
+#ifdef VERBOSE
+   cout << "Det size initialized " << endl;
+#endif
    return OK;
 }
 
@@ -3061,11 +3208,13 @@ int* slsDetector::getDataFromDetector(){
   int i;
 #endif     
 
-  //#ifdef VERBOSE
+#ifdef VERBOSE
   std::cout<< "getting data "<< thisDetector->dataBytes << " " << nel<< std::endl;
-  //#endif
+#endif
     controlSocket->ReceiveDataOnly(&ret,sizeof(ret));
+#ifdef VERBOSE
     cout << "ret=" << ret << endl;
+#endif
     if (ret!=OK) {
       n= controlSocket->ReceiveDataOnly(mess,sizeof(mess));
       if (ret==FAIL) {
@@ -5043,8 +5192,8 @@ string slsDetector::executeLine(int narg, char *args[], int action) {
      if (action==PUT_ACTION) {
        setTCPSocket(args[1]);
      } 
-     strcpy(answer, getHostname());
-    return string(answer);
+     //strcpy(answer, getHostname());
+     return getHostname();//string(answer);
   } else if (var=="flatfield") {
     if (action==PUT_ACTION) {
       sval=string(args[1]);
@@ -6155,7 +6304,8 @@ string slsDetector::executeLine(int narg, char *args[], int action) {
 	    deleteModule(myMod);
 	  }
 	  }
-      }	else if (action==PUT_ACTION) {
+	  return string("done");
+	}	else if (action==PUT_ACTION) {
 	  return string("cannot set ");
 	}
       } else if (var=="clkdivider") {
@@ -7587,6 +7737,891 @@ int slsDetector::getPositions(float *pos){
   return     thisDetector->numberOfPositions;
 }
   
+
+
+int slsDetector::readConfigurationFile(string const fname){
+  
+
+
+    string ans;
+    string str;
+    ifstream infile;
+    int iargval;
+    int interrupt=0;
+    char *args[100];
+    for (int ia=0; ia<100; ia++) {
+      args[ia]=new char[1000];
+    }
+    
+    
+    string sargname, sargval;
+    int iline=0;
+    std::cout<< "config file name "<< fname << std::endl;
+    infile.open(fname.c_str(), ios_base::in);
+    if (infile.is_open()) {
+      while (infile.good() and interrupt==0) {
+	sargname="none";
+	sargval="0";
+	getline(infile,str);
+	iline++;
+#ifdef VERBOSE
+	std::cout<<  str << std::endl;
+#endif
+	if (str.find('#')!=string::npos) {
+#ifdef VERBOSE
+	  std::cout<< "Line is a comment " << std::endl;
+	  std::cout<< str << std::endl;
+#endif
+	  continue;
+	} else if (str.length()<2) {
+#ifdef VERBOSE
+	  std::cout<< "Empty line " << std::endl;
+#endif
+	  continue;
+	} else {
+	  istringstream ssstr(str);
+	  iargval=0;
+	  while (ssstr.good()) {
+	    ssstr >> sargname;
+	    //if (ssstr.good()) {
+#ifdef VERBOSE 
+	    std::cout<< iargval << " " << sargname  << std::endl;
+#endif
+	    strcpy(args[iargval],sargname.c_str());
+	    iargval++;
+	    //}
+	}
+	  ans=executeLine(iargval,args,PUT_ACTION);
+#ifdef VERBOSE 
+	  std::cout<< ans << std::endl;
+#endif
+	}
+	iline++;
+      }
+      infile.close();
+  } else {
+      std::cout<< "Error opening configuration file " << fname << " for reading" << std::endl;
+      return FAIL;
+    }
+#ifdef VERBOSE
+    std::cout<< "Read configuration file of " << iline << " lines" << std::endl;
+#endif
+    return iline;
+
+}
+
+
+int slsDetector::writeConfigurationFile(string const fname){
+  
+  
+  string names[]={				\
+    "hostname",					\
+    "caldir",					\
+    "settingsdir",				\
+    "trimen",					\
+    "outdir",					\
+    "ffdir",					\
+    "headerbefore",				\
+    "headerafter",				\
+    "headerbeforepar",				\
+    "headerafterpar",				\
+    "nmod",					\
+    "badchannels",				\
+    "angconv",					\
+    "globaloff",				\
+    "binsize",					\
+    "threaded",					\
+    "waitstates",				\
+    "setlength",				\
+    "clkdivider"};
+
+  switch (thisDetector->myDetectorType) {
+  case MYTHEN:
+    names[2]="trimdir";
+    break;
+  default:
+    ;
+  }
+
+
+  int nvar=19;
+  ofstream outfile;
+  int iv=0;
+  char *args[100];
+  for (int ia=0; ia<100; ia++) {
+    args[ia]=new char[1000];
+  }
+  
+  
+  outfile.open(fname.c_str(),ios_base::out);
+  if (outfile.is_open()) {
+    for (iv=0; iv<nvar; iv++) {
+      strcpy(args[0],names[iv].c_str());
+      outfile << names[iv] << " " << executeLine(1,args,GET_ACTION) << std::endl;
+    }
+    outfile.close();
+  }
+  else {
+    std::cout<< "Error opening configuration file " << fname << " for writing" << std::endl;
+    return FAIL;
+  }
+#ifdef VERBOSE
+  std::cout<< "wrote " <<iv << " lines to configuration file " << std::endl;
+#endif
+  return iv;
+
+
+}
+
+
+  /* 
+     It should be possible to dump all the settings of the detector (including trimbits, threshold energy, gating/triggering, acquisition time etc.
+     in a file and retrieve it for repeating the measurement with identicals ettings, if necessary
+  */
+int slsDetector::dumpDetectorSetup(string fname, int level){  
+  string names[]={
+    "fname",\
+    "index",\
+    "flags",\
+    "dr",\
+    "settings",\
+    "threshold",\
+    "exptime",\
+    "period",\
+    "delay",\
+    "gates",\
+    "frames",\
+    "cycles",\
+    "probes",\
+    "fineoff",\
+    "ratecorr",\
+    "startscript",\
+    "startscriptpar",\
+    "stopscript",\
+    "stopscriptpar",\
+    "scriptbefore",\
+    "scriptbeforepar",\
+    "scriptafter",\
+    "scriptafterpar",\
+    "headerbefore",\
+    "headerbeforepar",\
+    "headerafter",\
+    "headerafterpar",\
+    "scan0script",\
+    "scan0par",\
+    "scan0prec",\
+    "scan0steps",\
+    "scan1script",\
+    "scan1par",\
+    "scan1prec",\
+    "scan1steps",\
+    "flatfield",\
+    "badchannels",\
+    "angconv",\
+    "trimbits",\
+    "extsig"
+  };
+  int nvar=40;
+  int iv=0;
+  string fname1;
+  ofstream outfile;
+  char *args[2];
+  for (int ia=0; ia<2; ia++) {
+    args[ia]=new char[1000];
+  }
+  int nargs;
+  if (level==2)
+    nargs=2;
+  else
+    nargs=1;
+
+
+  if (level==2) {
+    fname1=fname+string(".config");
+    writeConfigurationFile(fname1);
+    fname1=fname+string(".det");
+  } else
+    fname1=fname;
+
+  outfile.open(fname1.c_str(),ios_base::out);
+  if (outfile.is_open()) {
+    for (iv=0; iv<nvar-5; iv++) {
+      strcpy(args[0],names[iv].c_str());
+      outfile << names[iv] << " " << executeLine(1,args,GET_ACTION) << std::endl;
+    }
+
+
+    strcpy(args[0],names[iv].c_str());
+    if (level==2) {
+      fname1=fname+string(".ff");
+      strcpy(args[1],fname1.c_str());
+    }
+    outfile << names[iv] << " " << executeLine(nargs,args,GET_ACTION) << std::endl;
+    iv++;
+
+    strcpy(args[0],names[iv].c_str());
+    if (level==2) {
+      fname1=fname+string(".bad");
+      strcpy(args[1],fname1.c_str());
+    }
+    outfile << names[iv] << " " << executeLine(nargs,args,GET_ACTION) << std::endl;
+    iv++;
+
+      
+    strcpy(args[0],names[iv].c_str());
+    if (level==2) {
+      fname1=fname+string(".angoff");
+      strcpy(args[1],fname1.c_str());
+    }
+    outfile << names[iv] << " " << executeLine(nargs,args,GET_ACTION) << std::endl;
+    iv++;
+    
+    strcpy(args[0],names[iv].c_str());
+    if (level==2) {
+      size_t c=fname.rfind('/');
+      if (c<string::npos) {
+	fname1=fname.substr(0,c+1)+string("trim_")+fname.substr(c+1);
+      } else {
+	fname1=string("trim_")+fname;
+      }
+      strcpy(args[1],fname1.c_str());
+#ifdef VERBOSE
+      std::cout<< "writing to file " << fname1 << std::endl;
+#endif
+    }
+    outfile << names[iv] << " " << executeLine(nargs,args,GET_ACTION) << std::endl;
+    iv++;
+    
+    for (int is=0; is<4; is++) {
+      sprintf(args[0],"%s:%d",names[iv].c_str(),is);
+      outfile << args[0] << " " << executeLine(1,args,GET_ACTION) << std::endl;	
+    }
+    iv++;
+    outfile.close();
+  }
+  else {
+    std::cout<< "Error opening parameters file " << fname1 << " for writing" << std::endl;
+    return FAIL;
+  }
+  
+#ifdef VERBOSE
+  std::cout<< "wrote " <<iv << " lines to  "<< fname1 << std::endl;
+#endif
+  return 0;
+}
+
+
+
+int slsDetector::retrieveDetectorSetup(string fname1, int level){ 
+
+   
+   string fname;
+   string str;
+   ifstream infile;
+   int iargval;
+   int interrupt=0;
+  char *args[2];
+  for (int ia=0; ia<2; ia++) {
+    args[ia]=new char[1000];
+  }
+  string sargname, sargval;
+  int iline=0;
+  
+  if (level==2) {
+    fname=fname1+string(".config");
+    readConfigurationFile(fname);
+    //cout << "config file read" << endl;
+    fname=fname1+string(".det");
+  }  else
+    fname=fname1;
+  infile.open(fname.c_str(), ios_base::in);
+  if (infile.is_open()) {
+    while (infile.good() and interrupt==0) {
+      sargname="none";
+      sargval="0";
+      getline(infile,str);
+      iline++;
+#ifdef VERBOSE
+      std::cout<<  str << std::endl;
+#endif
+      if (str.find('#')!=string::npos) {
+#ifdef VERBOSE
+	std::cout<< "Line is a comment " << std::endl;
+	std::cout<< str << std::endl;
+#endif
+	continue;
+      } else {
+	istringstream ssstr(str);
+	iargval=0;
+	while (ssstr.good()) {
+	  ssstr >> sargname;
+	  //  if (ssstr.good()) {
+	    strcpy(args[iargval],sargname.c_str());
+#ifdef VERBOSE
+      std::cout<< args[iargval]  << std::endl;
+#endif
+	    iargval++;
+	    // }
+	}
+	if (level==2) {
+	  executeLine(iargval,args,PUT_ACTION);
+	} else {
+	  if (string(args[0])==string("flatfield"))
+	    ;
+	  else if  (string(args[0])==string("badchannels"))
+	    ;
+	  else if  (string(args[0])==string("angconv"))
+	    ;
+	  else if (string(args[0])==string("trimbits"))
+	    ;
+	  else
+	    executeLine(iargval,args,PUT_ACTION);
+	}
+      }
+      iline++;
+    }
+    infile.close();
+  } else {
+    std::cout<< "Error opening  " << fname << " for reading" << std::endl;
+    return FAIL;
+  }
+#ifdef VERBOSE
+  std::cout<< "Read  " << iline << " lines" << std::endl;
+#endif
+  return iline;
+
+};
+
+
+
+  /* I/O */
+
+
+ sls_detector_module* slsDetector::readSettingsFile(string fname,  sls_detector_module *myMod){
+  
+   int nflag=0;
+
+   if (myMod==NULL) {
+     myMod=createModule();
+     nflag=1;
+   }
+   string myfname;
+  string str;
+  ifstream infile;
+  ostringstream oss;
+  int iline=0;
+  // string names[]={"Vtrim", "Vthresh", "Rgsh1", "Rgsh2", "Rgpr", "Vcal", "outBuffEnable"};
+  string sargname;
+  int ival;
+  int ichan=0, ichip=0, idac=0;
+
+ 
+
+#ifdef VERBOSE
+  std::cout<<   "reading settings file for module number "<< myMod->module << std::endl;
+#endif
+      myfname=fname;
+#ifdef VERBOSE
+    std::cout<< "trim file name is "<< myfname <<   std::endl;
+#endif
+    infile.open(myfname.c_str(), ios_base::in);
+    if (infile.is_open()) {
+
+
+      switch (thisDetector->myDetectorType) {
+
+      case MYTHEN:
+	
+	for (int iarg=0; iarg<thisDetector->nDacs; iarg++) {
+	  getline(infile,str);
+	  iline++;
+	  istringstream ssstr(str);
+	  ssstr >> sargname >> ival;
+#ifdef VERBOSE
+	  std::cout<< sargname << " dac nr. " << idac << " is " << ival << std::endl;
+#endif
+	  myMod->dacs[idac]=ival;
+	  idac++;
+	}
+	for (ichip=0; ichip<thisDetector->nChips; ichip++) { 
+	  getline(infile,str); 
+	  iline++;
+#ifdef VERBOSE
+	  //	  std::cout<< str << std::endl;
+#endif
+	  istringstream ssstr(str);
+	  ssstr >> sargname >> ival;
+#ifdef VERBOSE
+	  //	  std::cout<< "chip " << ichip << " " << sargname << " is " << ival << std::endl;
+#endif
+	  
+	  myMod->chipregs[ichip]=ival;
+	  for (ichan=0; ichan<thisDetector->nChans; ichan++) {
+	    getline(infile,str); 
+#ifdef VERBOSE
+	    // std::cout<< str << std::endl;
+#endif
+	    istringstream ssstr(str);
+	    
+#ifdef VERBOSE
+	    //   std::cout<< "channel " << ichan+ichip*thisDetector->nChans <<" iline " << iline<< std::endl;
+#endif
+	    iline++;
+	    myMod->chanregs[ichip*thisDetector->nChans+ichan]=0;
+	    for (int iarg=0; iarg<6 ; iarg++) {
+	      ssstr >>  ival; 
+	      //if (ssstr.good()) {
+	      switch (iarg) {
+	      case 0:
+#ifdef VERBOSE
+		//		 std::cout<< "trimbits " << ival ;
+#endif
+		 myMod->chanregs[ichip*thisDetector->nChans+ichan]|=ival&0x3f;
+		 break;
+	      case 1:
+#ifdef VERBOSE
+		//std::cout<< " compen " << ival ;
+#endif
+		myMod->chanregs[ichip*thisDetector->nChans+ichan]|=ival<<9;
+		break;
+	      case 2:
+#ifdef VERBOSE
+		//std::cout<< " anen " << ival ;
+#endif
+		myMod->chanregs[ichip*thisDetector->nChans+ichan]|=ival<<8;
+		break;
+	      case 3:
+#ifdef VERBOSE
+		//std::cout<< " calen " << ival  ;
+#endif
+		myMod->chanregs[ichip*thisDetector->nChans+ichan]|=ival<<7;
+		break;
+	      case 4:
+#ifdef VERBOSE
+		//std::cout<< " outcomp " << ival  ;
+#endif
+		myMod->chanregs[ichip*thisDetector->nChans+ichan]|=ival<<10;
+		break;
+	      case 5:
+#ifdef VERBOSE
+		//std::cout<< " counts " << ival  << std::endl;
+#endif
+		 myMod->chanregs[ichip*thisDetector->nChans+ichan]|=ival<<11;
+		 break;
+	      default:
+		std::cout<< " too many columns" << std::endl; 
+		break;
+	      }
+	    }
+	  }
+	  //	}
+      }
+#ifdef VERBOSE
+      std::cout<< "read " << ichan*ichip << " channels" <<std::endl; 
+#endif
+
+
+      break;
+
+
+      case GOTTHARD:
+	     //---------------dacs---------------
+	for (int iarg=0; iarg<thisDetector->nDacs; iarg++) {
+	  getline(infile,str);
+	  iline++;
+#ifdef VERBOSE
+	  std::cout<< str << std::endl;
+#endif
+	  istringstream ssstr(str);
+	  ssstr >> sargname >> ival;
+#ifdef VERBOSE
+	  std::cout<< sargname << " dac nr. " << idac << " is " << ival << std::endl;
+#endif
+	  myMod->dacs[idac]=ival;
+	  idac++;
+	}
+	break;
+	
+
+      default:
+	std::cout<< "Unknown detector type - don't know how to read file" <<  myfname << std::endl;
+	infile.close();
+	deleteModule(myMod);
+	return NULL;
+
+      }
+
+      infile.close();
+      strcpy(thisDetector->settingsFile,fname.c_str());
+      return myMod;
+    } else {
+      std::cout<< "could not open trim file " <<  myfname << std::endl;
+
+      if (nflag)
+	deleteModule(myMod);
+      return NULL;
+    }
+ 
+};
+
+
+int slsDetector::writeSettingsFile(string fname, sls_detector_module mod){
+
+  ofstream outfile;
+
+  string names[100];
+  int id=0;
+  switch (thisDetector->myDetectorType) {
+  case MYTHEN:
+    names[id++]="Vtrim";
+    names[id++]="Vthresh"; 
+    names[id++]="Rgsh1";
+    names[id++]="Rgsh2";
+    names[id++]="Rgpr";
+    names[id++]="Vcal";
+    names[id++]="outBuffEnable";
+    break;
+  case GOTTHARD:
+    names[id++]="Vref";
+    names[id++]="VcascN";
+    names[id++]="VcascP";
+    names[id++]="Vout";
+    names[id++]="Vcasc";
+    names[id++]="Vin";
+    names[id++]="Vref_comp";
+    names[id++]="Vib_test";
+    names[id++]="config";
+    names[id++]="HV"; 
+    names[id++]="macaddress";
+    names[id++]="ipaddress";
+    break;
+  default:
+    cout << "Unknown detector type - unknown format for settings file" << endl;
+    return FAIL;
+  }
+
+  int iv, ichan, ichip;
+  int iv1, idac;
+  int nb;
+    outfile.open(fname.c_str(), ios_base::out);
+
+    if (outfile.is_open()) {
+      for (idac=0; idac<mod.ndac; idac++) {
+	iv=(int)mod.dacs[idac];
+	outfile << names[idac] << " " << iv << std::endl;
+      }
+      
+	for (ichip=0; ichip<mod.nchip; ichip++) {
+	  iv1=mod.chipregs[ichip]&1;
+	  outfile << names[idac] << " " << iv1 << std::endl;
+	  for (ichan=0; ichan<thisDetector->nChans; ichan++) {
+	    iv=mod.chanregs[ichip*thisDetector->nChans+ichan];
+	    iv1= (iv&0x3f);
+	    outfile <<iv1 << " ";
+	    nb=9;
+	    iv1=((iv&(1<<nb))>>nb);
+	    outfile << iv1 << " ";
+	    nb=8;
+	    iv1=((iv&(1<<nb))>>nb);
+	    outfile << iv1 << " ";
+	    nb=7;
+	    iv1=((iv&(1<<nb))>>nb);
+	    outfile <<iv1  << " ";
+	    nb=10;
+	    iv1=((iv&(1<<nb))>>nb);
+	    outfile << iv1 << " ";
+	    nb=11;
+	    iv1= ((iv&0xfffff800)>>nb);
+	    outfile << iv1  << std::endl;
+	  }
+	}
+      outfile.close();
+      return OK;
+    } else {
+      std::cout<< "could not open SETTINGS file " << fname << std::endl;
+      return FAIL;
+    }
+
+};
+
+
+
+
+int slsDetector::writeSettingsFile(string fname, int imod){
+
+  return writeSettingsFile(fname,detectorModules[imod]);
+
+};
+
+
+int slsDetector::writeDataFile(string fname, float *data, float *err, float *ang, char dataformat, int nch){
+
+
+
+
+  if (nch==-1)
+    nch=thisDetector->nChans*thisDetector->nChips*thisDetector->nMods;
+
+
+  ofstream outfile;
+  int idata;
+  if (data==NULL)
+    return FAIL;
+
+  //  args|=0x10; // one line per channel!
+
+  outfile.open (fname.c_str(),ios_base::out);
+  if (outfile.is_open())
+  {
+#ifdef VERBOSE
+    std::cout<< "writeDataFile Writing to file " << fname << std::endl;
+#endif
+    for (int ichan=0; ichan<nch; ichan++) {
+      if (ang==NULL) {
+	outfile << ichan << " ";
+      } else {
+	outfile << ang[ichan] << " ";
+      }
+	
+      switch (dataformat) {
+      case 'f':
+	outfile << *(data+ichan)<< " ";
+	break;
+      case 'i':
+      default:
+	idata=(int)(*(data+ichan));
+	outfile << idata << " ";
+      }
+     if (err) {
+       outfile << *(err+ichan)<< " ";
+     }
+     //   if (args&0x10) {
+       outfile << std::endl;
+       // }
+    }
+
+    outfile.close();
+    return OK;
+  } else {
+    std::cout<< "Could not open file " << fname << "for writing"<< std::endl;
+    return FAIL;
+  }
+};
+
+
+
+
+
+
+
+/*writes raw data file */
+int slsDetector::writeDataFile(string fname, int *data){
+  ofstream outfile;
+  if (data==NULL)
+    return FAIL;
+
+  outfile.open (fname.c_str(),ios_base::out);
+  if (outfile.is_open())
+  {
+#ifdef VERBOSE
+    std::cout<< "Writing to file " << fname << std::endl;
+#endif
+    for (int ichan=0; ichan<thisDetector->nChans*thisDetector->nChips*thisDetector->nMods; ichan++)
+      outfile << ichan << " " << *(data+ichan) << std::endl;
+    outfile.close();
+    return OK;
+  } else {
+    std::cout<< "Could not open file " << fname << "for writing"<< std::endl;
+    return FAIL;
+  }
+};
+
+
+
+int slsDetector::readDataFile(string fname, float *data, float *err, float *ang, char dataformat) {
+  return readDataFile(thisDetector->nChans*thisDetector->nChips*thisDetector->nMods, fname, data, err, ang, dataformat);
+
+}
+
+  int slsDetector::readDataFile(int nch, string fname, float *data, float *err, float *ang, char dataformat){
+
+
+  ifstream infile;
+  int ichan, iline=0;
+  int interrupt=0;
+  float fdata, ferr, fang;
+  int maxchans;
+  int ich;
+  string str;
+
+
+  maxchans=nch;
+    
+#ifdef VERBOSE
+  std::cout<< "Opening file "<< fname << std::endl;
+#endif
+  infile.open(fname.c_str(), ios_base::in);
+  if (infile.is_open()) {
+    while (infile.good() and interrupt==0) {
+      getline(infile,str);
+#ifdef VERBOSE
+      std::cout<< str << std::endl;
+#endif
+      istringstream ssstr(str);
+      if (ang==NULL) {
+	ssstr >> ichan >> fdata;
+	ich=ichan;
+	if (ssstr.fail() || ssstr.bad()) {
+	  interrupt=1;
+	  break;
+	}
+	if (ich!=iline) 
+	  std::cout<< "Channel number " << ichan << " does not match with line number " << iline << " " << dataformat << std::endl;
+      } else {
+	ssstr >> fang >> fdata;
+	ich=iline;
+      }
+      if (ssstr.fail() || ssstr.bad()) {
+	interrupt=1;
+	break;
+      }
+       if (err)
+	 ssstr >> ferr;
+      if (ssstr.fail() || ssstr.bad()) {
+	interrupt=1;
+	break;
+      }
+      if (ich<maxchans) { 
+       if (ang) {
+	 ang[ich]=fang;
+       } 
+       data[ich]=fdata; 
+       if (err)
+	 err[ich]=ferr;
+       iline++;
+      } else {
+       std::cout<< " too many lines in file: "<< iline << " instead of " << maxchans << std::endl;
+       interrupt=1;
+       break;
+     }
+    }
+    infile.close();
+  } else {
+    std::cout<< "Could not read file " << fname << std::endl;
+    return -1;
+  }
+  return iline;
+};
+
+
+
+
+
+
+
+
+
+int slsDetector::readDataFile(string fname, int *data){
+
+  return readDataFile(fname, data, thisDetector->nChans*thisDetector->nChips*thisDetector->nMods);
+};
+
+int slsDetector::readDataFile(string fname, int *data, int nch){
+
+  ifstream infile;
+  int ichan, idata, iline=0;
+  int interrupt=0;
+  string str;
+
+#ifdef VERBOSE
+  std::cout<< "Opening file "<< fname << std::endl;
+#endif
+  infile.open(fname.c_str(), ios_base::in);
+  if (infile.is_open()) {
+    while (infile.good() and interrupt==0) {
+      getline(infile,str);
+#ifdef VERBOSE
+      std::cout<< str << std::endl;
+#endif
+      istringstream ssstr(str);
+      ssstr >> ichan >> idata;
+      if (ssstr.fail() || ssstr.bad()) {
+	interrupt=1;
+	break;
+      }
+      if (ichan!=iline) {
+	std::cout<< " Expected channel "<< iline <<" but read channel "<< ichan << std::endl;
+	interrupt=1;
+	break;
+      } else {
+	if (iline<nch) {
+	  data[iline]=idata;
+	  iline++;
+	} else {
+	  interrupt=1;
+	  break;
+	}
+      }
+    }
+    infile.close();
+  } else {
+    std::cout<< "Could not read file " << fname << std::endl;
+    return -1;
+  }
+  return iline;
+};
+
+
+
+
+int slsDetector::readCalibrationFile(string fname, float &gain, float &offset){
+
+  string str;
+  ifstream infile;
+#ifdef VERBOSE
+  std::cout<< "Opening file "<< fname << std::endl;
+#endif
+  infile.open(fname.c_str(), ios_base::in);
+  if (infile.is_open()) {
+    getline(infile,str);
+#ifdef VERBOSE
+    std::cout<< str << std::endl;
+#endif
+    istringstream ssstr(str);
+    ssstr >> offset >> gain;
+    infile.close();
+  } else {
+    std::cout<< "Could not open calibration file "<< fname << std::endl;
+    gain=0.;
+    offset=0.;
+    return -1;
+  }
+  return 0;
+};
+
+int slsDetector::writeCalibrationFile(string fname, float gain, float offset){
+  //std::cout<< "Function not yet implemented " << std::endl;
+  ofstream outfile;
+
+  outfile.open (fname.c_str());
+
+  // >> i/o operations here <<
+  if (outfile.is_open()) {
+    outfile << offset << " " << gain << std::endl;
+  } else {
+    std::cout<< "Could not open calibration file "<< fname << " for writing" << std::endl;
+    return -1;
+  }
+
+  outfile.close();
+
+  return 0;
+};
+
+
+
+
+
 
 
 

@@ -15,7 +15,9 @@ ID:         $Id$
 #include  <sys/types.h>
 #include  <sys/ipc.h>
 #include  <sys/shm.h>
-
+#include  <iostream>
+#include  <string>
+using namespace std;
 
 
 
@@ -50,7 +52,7 @@ int multiSlsDetector::initSharedMemory(int id=0) {
 
 
    #ifdef VERBOSE
-   std::cout<<"multiSlsDetector: Size of shared memory is "<< sz << std::endl;
+  std::cout<<"multiSlsDetector: Size of shared memory is "<< sz << " - id " << mem_key << std::endl;
 #endif
    shm_id = shmget(mem_key,sz,IPC_CREAT  | 0666); // allocate shared memory
 
@@ -106,6 +108,7 @@ multiSlsDetector::multiSlsDetector(int id) :  shmId(-1)
 
 
   for (int i=0; i<thisMultiDetector->numberOfDetectors; i++) {
+    cout << thisMultiDetector->detectorIds[i] << endl;
     detectors[i]=new slsDetector(thisMultiDetector->detectorIds[i]);
   }
   for (int i=thisMultiDetector->numberOfDetectors; i<MAXDET; i++)
@@ -126,24 +129,49 @@ multiSlsDetector::~multiSlsDetector() {
 int multiSlsDetector::addSlsDetector(int id, int pos, int ox, int oy) {
   int j=thisMultiDetector->numberOfDetectors;
 
+#ifdef VERBOSE
+  cout << "Adding detector " << id << " in position " << pos << endl;
+#endif
+
   if (pos<0)
     pos=j;
 
   if (pos>j)
-    return thisMultiDetector->numberOfDetectors;
+    pos=thisMultiDetector->numberOfDetectors;
+  
 
-  for (int ip=thisMultiDetector->numberOfDetectors-1; ip>pos; ip--) {
-    thisMultiDetector->detectorIds[ip+1]=thisMultiDetector->detectorIds[ip];
-    detectors[ip+1]=detectors[ip];
+  if (pos!=thisMultiDetector->numberOfDetectors) {
+    for (int ip=thisMultiDetector->numberOfDetectors-1; ip>=pos; ip--) {
+#ifdef VERBOSE
+      cout << "Moving detector " << thisMultiDetector->detectorIds[ip] << " from position " << ip << " to " << ip+1 << endl;
+#endif
+      thisMultiDetector->detectorIds[ip+1]=thisMultiDetector->detectorIds[ip];
+      detectors[ip+1]=detectors[ip];
+    }
   }
+#ifdef VERBOSE
+  cout << "Creating new detector " << pos << endl;
+#endif
 
-  detectorType t=slsDetector::getDetectorType(id);
-  detectors[pos]=new slsDetector(t,id);
 
+  // detectorType t=slsDetector::getDetectorType(id);
+  detectors[pos]=new slsDetector(id);
+  thisMultiDetector->detectorIds[pos]=detectors[pos]->getDetectorId();
   thisMultiDetector->numberOfDetectors++;
-  thisMultiDetector->dataBytes+=detectors[pos]->getDataBytes();
-  thisMultiDetector->numberOfChannels+=detectors[pos]->getNChans()*detectors[pos]->getNChips()*detectors[pos]->getNMods();
 
+
+
+  thisMultiDetector->dataBytes+=detectors[pos]->getDataBytes();
+ 
+  thisMultiDetector->numberOfChannels+=detectors[pos]->getNChans()*detectors[pos]->getNChips()*detectors[pos]->getNMods();
+ 
+#ifdef VERBOSE
+  cout << "Detector added " << thisMultiDetector->numberOfDetectors<< endl;
+
+  for (int ip=0; ip<thisMultiDetector->numberOfDetectors; ip++) {
+    cout << "Detector " << thisMultiDetector->detectorIds[ip] << " position " << ip << " "  << detectors[ip]->getHostname() << endl;
+  }
+#endif
 
   return thisMultiDetector->numberOfDetectors;
 
@@ -188,6 +216,10 @@ int multiSlsDetector::setDetectorOffset(int pos, int ox, int oy) {
 int multiSlsDetector::removeSlsDetector(int pos) {
   int j;
   
+#ifdef VERBOSE
+  cout << "Removing detector in position " << pos << endl;
+#endif
+
   if (pos<0 )
     pos=thisMultiDetector->numberOfDetectors-1;
 
@@ -1128,7 +1160,11 @@ int multiSlsDetector::setFlatFieldCorrection(string fname){
 #endif
    sprintf(ffffname,"%s/%s",thisMultiDetector->flatFieldDir,fname.c_str());
    nch=readDataFile(string(ffffname),data);
-    if (nch>0) {
+
+   if (nch>thisMultiDetector->numberOfChannels)
+     nch=thisMultiDetector->numberOfChannels;
+
+   if (nch>0) {
       strcpy(thisMultiDetector->flatFieldFile,fname.c_str());
      
 
@@ -1292,7 +1328,7 @@ int multiSlsDetector::setRateCorrection(float t){
       }
     }
 #ifdef VERBOSE
-    std::cout<< "Setting rate correction with dead time "<< thisDetector->tDead << std::endl;
+    std::cout<< "Setting rate correction with dead time "<< thisMultiDetector->tDead << std::endl;
 #endif
   }
   return thisMultiDetector->correctionMask&(1<<RATE_CORRECTION);
@@ -1303,7 +1339,7 @@ int multiSlsDetector::getRateCorrection(float &t){
 
   if (thisMultiDetector->correctionMask&(1<<RATE_CORRECTION)) {
 #ifdef VERBOSE
-    std::cout<< "Rate correction is enabled with dead time "<< thisDetector->tDead << std::endl;
+    std::cout<< "Rate correction is enabled with dead time "<< thisMultiDetector->tDead << std::endl;
 #endif
     //which t should we return if they are all different?
     return 1;
@@ -1319,7 +1355,7 @@ float multiSlsDetector::getRateCorrectionTau(){
 
   if (thisMultiDetector->correctionMask&(1<<RATE_CORRECTION)) {
 #ifdef VERBOSE
-    std::cout<< "Rate correction is enabled with dead time "<< thisDetector->tDead << std::endl;
+    std::cout<< "Rate correction is enabled with dead time "<< thisMultiDetector->tDead << std::endl;
 #endif
     //which t should we return if they are all different?
     return 1;
@@ -1911,6 +1947,197 @@ float multiSlsDetector::getCurrentProgress() {
 }
 
 
+
+
+
+
+string multiSlsDetector::executeLine(int narg, char *args[], int action) {
+
+  ostringstream os;
+
+  string var=string(args[0]), sval;
+  int ival, ivar;
+  int id;
+  int myId=-1;
+
+  os << "Executing " ;
+  for (int ia=0; ia<narg; ia++) 
+    os << args[ia] << " " ;
+  os << " action " << action << endl;
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+  if (action==slsDetector::READOUT_ACTION) {
+    os << "Executing readout" << endl;
+    return string("ok");
+  }
+
+
+
+  if (var.find("add")==0) {
+     if (var.size()<=4)
+       ivar=-1;
+     else {
+       //return string("syntax is add:i where i is the detector position");
+       istringstream vvstr(var.substr(9));
+       vvstr >> ivar;
+       if (vvstr.fail())
+	 ivar=-1; //append at the end
+       //return string("syntax is add:i where i is the detector position");
+     }
+    if (action==slsDetector::PUT_ACTION) {
+      // if (ivar>thisMultiDetector->numberOfDetectors || ivar<0) {
+      //	ivar=thisMultiDetector->numberOfDetectors;
+      //	cout << "Appending detector " << endl;
+      //}
+
+      if (sscanf(args[1],"%d",&ival)) {
+	// add by detector id
+#ifdef VERBOSE
+	cout << "Add detector by id " << thisMultiDetector->numberOfDetectors << endl;
+#endif
+	
+	for (id=0; id<thisMultiDetector->numberOfDetectors; id++) {
+	  //check that it is not already in the list, in that case move to new position
+	  if (detectors[id]) {
+	    if (detectors[id]->getDetectorId()==ival) { 
+	      cout << "Detector " << id << "exists!" << endl;
+	      if (id==ivar)
+		break;
+	      if (id==(thisMultiDetector->numberOfDetectors-1) && ivar==-1)
+		break;
+	      removeSlsDetector(id);
+	      addSlsDetector(ival, ivar);
+	      break;
+	    }
+	  }
+	}
+	if (id==thisMultiDetector->numberOfDetectors) {
+	  if (slsDetector::exists(ivar)==0) {
+	    return string("Detector does not exist - You should first create it to determine type etc.");
+	  }
+	  addSlsDetector(ival, ivar);
+	}
+	// if it does not already exist create it
+      } else {
+	//add by hostname
+#ifdef VERBOSE
+	cout << "Adding " << args[1] << " in position " << ivar << endl;
+#endif
+
+	for (id=0; id<thisMultiDetector->numberOfDetectors; id++) {
+	  //check that it is not already in the list, in that case move to new position
+	  if (detectors[id]) {
+#ifdef VERBOSE
+	    cout << "Detector " << id << " is " << detectors[id]->getHostname() << endl;
+#endif
+	    if (detectors[id]->getHostname()==string(args[1])) { 
+#ifdef VERBOSE
+	      cout << "Detector " << id << " exists!" << endl;
+#endif
+	      if (id==ivar)
+		break;
+	      if (id==(thisMultiDetector->numberOfDetectors-1) && ivar==-1)
+		break;
+	      myId=detectors[id]->getDetectorId();
+	      removeSlsDetector(id);
+	      addSlsDetector(myId, ivar);
+	      break;
+	    }
+	  }
+	}
+	if (id==thisMultiDetector->numberOfDetectors) {
+	  detectorType t=slsDetector::getDetectorType(args[1], DEFAULT_PORTNO);
+	  if (t==GENERIC)
+	    return string("could not connect to detector to determine type");
+#ifdef VERBOSE
+	  else
+	    cout << "Detector type is " << t << endl;
+#endif
+	  myId=10;
+	  slsDetector *s=NULL;
+	  while (slsDetector::exists(myId)>0) {
+	    cout << myId << endl;
+	    s=new slsDetector(myId);
+	    if (s->getHostname()==string(args[1]))
+	      break;
+	    delete s;
+	    s=NULL;
+	    myId++;
+	  }
+	  // if it does not already exist create it
+	  if (s==NULL) {
+#ifdef VERBOSE
+	    cout << "Creating new detector with id " << myId << endl;
+#endif
+	    s=new slsDetector(t, myId);
+	    s->setTCPSocket(args[1]);
+	    delete s;
+	  }
+	  addSlsDetector(myId, ivar);
+	}
+	
+      }
+      
+    }
+    
+
+
+
+  } else if (var.find("hostname")==0) {
+
+    if (var.size()<=9)
+      return string("syntax is hostname:i where i is the detector id");
+    istringstream vvstr(var.substr(9));
+    vvstr >> ival;
+    if (vvstr.fail())
+      return string("syntax is hostname:i where i is the detector id");
+    if (action==slsDetector::PUT_ACTION) {
+      sval=string(args[1]);
+      os << "setting hostname of detector " << ival << " to " << sval << endl;
+      //cout << slsDetector::getDetectorType(args[1], DEFAULT_PORTNO) << endl;
+      
+      //controlla che non esista gia'
+      // se esiste modifica l'hostname, altrimenti aggiungilo in coda
+
+
+
+    }
+    os << "getting hostname of detector " << ival << endl; 
+  }
+
+
+
+
+
+
+
+
+
+  return os.str();
+}
+
+
+
+string multiSlsDetector::helpLine(int action) {
+  ostringstream os;
+
+  os << "This is the help line of action " << action << endl;
+
+  return os.str();
+}
 
 
 

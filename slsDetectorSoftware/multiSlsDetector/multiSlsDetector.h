@@ -431,7 +431,6 @@ class multiSlsDetector  {
   int writeDataFile(string fname, int *data);
   
   /**
-    
        reads a data file
        \param name of the file to be read
        \param data array of data values to be filled
@@ -444,7 +443,7 @@ class multiSlsDetector  {
        
        \sa mythenDetector::readDataFile
   */
-  int readDataFile(string fname, float *data, float *err=NULL, float *ang=NULL, char dataformat='f', int nch=0);  
+  int readDataFile(string fname, float *data, float *err=NULL, float *ang=NULL, char dataformat='f', int nch=0) {return slsDetector::readDataFile(nch, fname, data, err, ang, dataformat);}
 
   /**
     
@@ -454,7 +453,7 @@ class multiSlsDetector  {
        \returns OK or FAIL if it could not read the file or data=NULL
        \sa mythenDetector::readDataFile
   */
-  int readDataFile(string fname, int *data);
+  int readDataFile(string fname, int *data){slsDetector::readDataFile(fname,data,thisMultiDetector->numberOfChannels);};
 
 
   /**
@@ -463,7 +462,7 @@ class multiSlsDetector  {
       \param fname file to be read
   \sa  angleConversionConstant mythenDetector::readAngularConversion
   */
-  virtual int readAngularConversion(string fname="", int id=-1);
+  /////////////////////////////// virtual int readAngularConversion(string fname="", int id=-1);
 
 
 
@@ -473,7 +472,7 @@ class multiSlsDetector  {
       \param fname file to be written
   \sa  angleConversionConstant mythenDetector::writeAngularConversion
   */
-  virtual int writeAngularConversion(string fname="", int id=-1);
+  /////////////////////////////////////////virtual int writeAngularConversion(string fname="", int id=-1);
 
 
 
@@ -807,7 +806,7 @@ s
       \returns 0 if angular conversion disabled, >0 otherwise
       \sa mythenDetector::setAngularConversion
   */
-  virtual int setAngularConversion(string fname="")=0;
+  /////////////////////////////////////////////////// virtual int setAngularConversion(string fname="");
 
   /** 
       pure virtual function
@@ -817,41 +816,41 @@ s
       \returns 0 if angular conversion disabled, >0 otherwise
       \sa mythenDetector::getAngularConversion
   */
-  virtual int getAngularConversion(int &direction,  angleConversionConstant *angconv=NULL)=0;
+  /////////////////////////////////////////////////// virtual int getAngularConversion(int &direction,  angleConversionConstant *angconv=NULL);
   
   
   /**
       pure virtual function
       returns the angular conversion file
       \sa mythenDetector::getAngularConversion */
-  virtual string getAngularConversion()=0;
+  /////////////////////////////////////////////////// virtual string getAngularConversion();
   
   /** 
       pure virtual function
       set detector global offset
       \sa mythenDetector::setGlobalOffset
   */
-  virtual float setGlobalOffset(float f)=0; 
+  /////////////////////////////////////////////////// virtual float setGlobalOffset(float f); 
 
   /** 
       pure virtual function
       set detector fine offset
       \sa mythenDetector::setFineOffset
   */
-  virtual float setFineOffset(float f)=0;
+  /////////////////////////////////////////////////// virtual float setFineOffset(float f);
   /** 
       pure virtual function
       get detector fine offset
       \sa mythenDetector::getFineOffset
   */
-  virtual float getFineOffset()=0;
+  /////////////////////////////////////////////////// virtual float getFineOffset();
   
   /** 
       pure virtual function
       get detector global offset
       \sa mythenDetector::getGlobalOffset
   */
-  virtual float getGlobalOffset()=0;
+  /////////////////////////////////////////////////// virtual float getGlobalOffset();
 
   /** 
       pure virtual function
@@ -861,7 +860,7 @@ s
       \returns number of positions
       \sa mythenDetector::setPositions
   */
-  virtual int setPositions(int nPos, float *pos)=0;
+  /////////////////////////////////////////////////// virtual int setPositions(int nPos, float *pos);
    /** 
       pure virtual function
       get  positions for the acquisition
@@ -869,7 +868,7 @@ s
       \returns number of positions
       \sa mythenDetector::getPositions
   */
-  virtual int getPositions(float *pos=NULL)=0;
+  /////////////////////////////////////////////////// virtual int getPositions(float *pos=NULL);
   
   
   /** pure virtual function
@@ -878,13 +877,13 @@ s
       \returns current bin size
       \sa mythenDetector::setBinSize
 */
-  virtual float setBinSize(float bs)=0;
+  /////////////////////////////////////////////////// virtual float setBinSize(float bs);
 
   /** pure virtual function
       return detector bin size used for merging (approx angular resolution)
       \sa mythenDetector::getBinSize
   */
-  virtual float getBinSize()=0;
+  /////////////////////////////////////////////////// virtual float getBinSize();
 
 
 
@@ -1058,7 +1057,7 @@ s
       \returns OK or FAIL
       \sa mythenDetector::resetMerging
   */
-  virtual int resetMerging(float *mp, float *mv,float *me, int *mm)=0;
+  /////////////////////////////////////////////////// virtual int resetMerging(float *mp, float *mv,float *me, int *mm);
   /** 
       pure virtual function
   merge dataset
@@ -1071,7 +1070,7 @@ s
       \param mm multiplicity of merged arrays
       \sa mythenDetector::addToMerging
   */
-  virtual int addToMerging(float *p1, float *v1, float *e1, float *mp, float *mv,float *me, int *mm)=0;
+  /////////////////////////////////////////////////// virtual int addToMerging(float *p1, float *v1, float *e1, float *mp, float *mv,float *me, int *mm);
 
   /** pure virtual function
       calculates the "final" positions, data value and errors for the emrged data
@@ -1089,15 +1088,15 @@ s
   */
   int exitServer();
 
-  /** pure virtual function
+  /** pure /////////////////////////////////////////////////// virtual function
      function for processing data
      /param delflag if 1 the data are processed, written to file and then deleted. If 0 they are added to the finalDataQueue
      \sa mythenDetector::processData
   */
-  virtual void* processData(int delflag=1)=0; // thread function
+  ///////////////////////////////////////////////////  virtual void* processData(int delflag=1); // thread function
 
   
-  virtual void acquire(int delflag=1)=0;
+  /////////////////////////////////////////////////// virtual void acquire(int delflag=1);
 
   /** calcualtes the total number of steps of the acquisition.
       called when number of frames, number of cycles, number of positions and scan steps change
@@ -1107,6 +1106,28 @@ s
   /** returns the current progress in % */
   float getCurrentProgress();
   
+
+
+
+
+
+
+
+
+
+
+
+  string executeLine(int narg, char *args[], int action=slsDetector::GET_ACTION);
+
+
+
+  static string helpLine(int action=slsDetector::GET_ACTION);
+
+
+
+
+
+
 
  protected:
  

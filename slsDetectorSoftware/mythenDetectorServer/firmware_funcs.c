@@ -434,11 +434,11 @@ int getNModBoard() {
   u_int32_t val;
   val=bus_r(FPGA_VERSION_REG)&0xff000000;
   
-  printf("version register %08x\n",val);
+  //  printf("version register %08x\n",val);
   nmodboard=val >> 24;
-  //#ifdef VERY_VERBOSE
+  #ifdef VERY_VERBOSE
   printf("The board hosts %d modules\n",nmodboard); 
-  //#endif
+  #endif
   nModBoard=nmodboard;
   //getNModBoard()=nmodboard;
   return nmodboard;

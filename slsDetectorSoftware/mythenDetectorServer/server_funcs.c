@@ -2484,11 +2484,16 @@ int execute_trimming(int file_des) {
     } 
   }
 
-  if (ret!=OK) {
-    printf("trimming failed\n");
+  
+  if (ret<0) {
+    sprintf(mess,"can't set execute trimming\n");
+    ret=FAIL;
+  } else if (ret>0) {
+    sprintf(mess,"Could not trim %d channels\n", ret);
+    ret=FAIL;
   } else if (differentClients)
     ret=FORCE_UPDATE;
-
+  
   n = sendDataOnly(file_des,&ret,sizeof(ret));
   if (ret==FAIL) {
     n = sendDataOnly(file_des,mess,sizeof(mess));
@@ -2638,6 +2643,10 @@ int send_update(int file_des) {
   retval=setTrains(tns);
   n = sendDataOnly(file_des,&retval,sizeof(int64_t));
   
+  if (lockStatus==0) {
+    strcpy(lastClientIP,thisClientIP);
+  }
+
   return ret;
   
 

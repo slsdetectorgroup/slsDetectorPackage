@@ -20,6 +20,7 @@
 #undef DEBUGOUT
 
 extern int nModX;
+extern int nModBoard;
 extern int dataBytes;
 extern int dynamicRange;
 const int nChans=NCHAN;
@@ -1024,11 +1025,13 @@ int getChannelbyNumber(sls_detector_channel* myChan) {
 
 int getTrimbit(int imod, int ichip, int ichan) {
   if (detectorChans) {
-    if (imod<getNModBoard() && imod>=0)
+    if (imod<nModBoard && imod>=0)
       if (ichip<(detectorModules+imod)->nchip && ichan<(detectorModules+imod)->nchan/(detectorModules+imod)->nchip)
 	return (detectorChans[imod*NCHAN*NCHIP+ichip*NCHAN+ichan] & TRIM_DR);
-  } else
-    return -1;
+  } //else
+  return -1;
+ 
+
 }
 
 int initChannel(int ft,int cae, int ae, int coe, int ocoe, int counts, int imod){

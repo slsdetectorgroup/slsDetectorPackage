@@ -334,7 +334,7 @@ typedef  struct sharedSlsDetector {
 
 
 */
-  slsDetector(int id){slsDetector(getDetectorType(id),id);};
+  slsDetector(int id);
 
 
   slsDetector(char *name, int id=0,  int cport=DEFAULT_PORTNO);
@@ -351,6 +351,14 @@ typedef  struct sharedSlsDetector {
       \returns 1 if the detector structure has already be initlialized, 0 otherwise */
   int exists() {return thisDetector->alreadyExisting;};
 
+  /** 
+      checks if detector id exists 
+      \param i detector id
+      \returns 1 if the detector already exists, 0 otherwise
+
+
+  */
+  static int exists(int i);
 
   /**
     Purely virtual function
@@ -358,13 +366,13 @@ typedef  struct sharedSlsDetector {
     /sa mythenDetector::readConfigurationFile
   */
 
-  virtual int readConfigurationFile(string const fname){};  
+  virtual int readConfigurationFile(string const fname);  
   /**  
     Purely virtual function
     Should be implemented in the specific detector class
     /sa mythenDetector::writeConfigurationFile
   */
-  virtual int writeConfigurationFile(string const fname){};
+  virtual int writeConfigurationFile(string const fname);
 
 
   /* 
@@ -377,13 +385,13 @@ typedef  struct sharedSlsDetector {
     Should be implemented in the specific detector class
     /sa mythenDetector::dumpDetectorSetup
   */
-  virtual int dumpDetectorSetup(string const fname, int level=0){};  
+  virtual int dumpDetectorSetup(string const fname, int level=0);  
   /** 
     Purely virtual function
     Should be implemented in the specific detector class
     /sa mythenDetector::retrieveDetectorSetup
   */
-  virtual int retrieveDetectorSetup(string const fname, int level=0){};
+  virtual int retrieveDetectorSetup(string const fname, int level=0);
 
   /** 
      configure the socket communication and initializes the socket instances
@@ -418,7 +426,7 @@ typedef  struct sharedSlsDetector {
   string getLastClientIP();
 
   /** returns the detector hostname \sa sharedSlsDetector  */
-  char* getHostname() {return thisDetector->hostname;};
+  string getHostname() {return string(thisDetector->hostname);};
   /** returns the detector control port  \sa sharedSlsDetector */
   int getControlPort() {return  thisDetector->controlPort;};
   /** returns the detector stop  port  \sa sharedSlsDetector */
@@ -486,7 +494,7 @@ typedef  struct sharedSlsDetector {
      \sa mythenDetector::readSettingsFile
   */
 
-  virtual sls_detector_module* readSettingsFile(string fname,  sls_detector_module* myMod=NULL){};
+  virtual sls_detector_module* readSettingsFile(string fname,  sls_detector_module* myMod=NULL);
 
   /**
      Pure virtual function
@@ -497,7 +505,7 @@ typedef  struct sharedSlsDetector {
 
      \sa ::sls_detector_module mythenDetector::writeSettingsFile(string, sls_detector_module)
   */
-  virtual int writeSettingsFile(string fname, sls_detector_module mod){}; 
+  virtual int writeSettingsFile(string fname, sls_detector_module mod); 
   
   /**
      Pure virtual function
@@ -507,7 +515,7 @@ typedef  struct sharedSlsDetector {
      \returns OK or FAIL if the file could not be written   
      \sa ::sls_detector_module sharedSlsDetector mythenDetector::writeSettingsFile(string, int)
   */
-  virtual int writeSettingsFile(string fname, int imod){};
+  virtual int writeSettingsFile(string fname, int imod);
 
 
   /**
@@ -624,7 +632,7 @@ typedef  struct sharedSlsDetector {
        \sa mythenDetector::writeDataFile
  
   */
-  virtual int writeDataFile(string fname, float *data, float *err=NULL, float *ang=NULL, char dataformat='f', int nch=-1){}; 
+  virtual int writeDataFile(string fname, float *data, float *err=NULL, float *ang=NULL, char dataformat='f', int nch=-1); 
   
   /**
    
@@ -634,7 +642,7 @@ typedef  struct sharedSlsDetector {
        \returns OK or FAIL if it could not write the file or data=NULL  
        \sa mythenDetector::writeDataFile
   */
-  virtual int writeDataFile(string fname, int *data){};
+  virtual int writeDataFile(string fname, int *data);
   
   /**
    
@@ -650,7 +658,7 @@ typedef  struct sharedSlsDetector {
        
        \sa mythenDetector::readDataFile
   */
-  virtual int readDataFile(string fname, float *data, float *err=NULL, float *ang=NULL, char dataformat='f', int nch=0){};  
+  int readDataFile(string fname, float *data, float *err=NULL, float *ang=NULL, char dataformat='f');  
 
   /**
    
@@ -660,7 +668,32 @@ typedef  struct sharedSlsDetector {
        \returns OK or FAIL if it could not read the file or data=NULL
        \sa mythenDetector::readDataFile
   */
-  virtual int readDataFile(string fname, int *data){};
+  int readDataFile(string fname, int *data);
+  /**
+   
+       reads a data file
+       \param name of the file to be read
+       \param data array of data values to be filled
+       \param err array of arrors on the data. If NULL no errors are expected on the file
+       
+       \param ang array of angular values. If NULL data are expected in the form chan-val(-err) otherwise ang-val(-err)
+       \param dataformat format of the data: can be 'i' integer or 'f' float (default)
+       \param nch number of channels to be written to file. if <=0 defaults to the number of installed channels of the detector
+       \returns number of channels read or -1 if it could not read the file or data=NULL
+       
+       \sa mythenDetector::readDataFile
+  */
+  static int readDataFile(int nch, string fname, float *data, float *err=NULL, float *ang=NULL, char dataformat='f');  
+
+  /**
+   
+       reads a data file
+       \param name of the file to be read
+       \param data array of data values
+       \returns OK or FAIL if it could not read the file or data=NULL
+       \sa mythenDetector::readDataFile
+  */
+  static int readDataFile(string fname, int *data, int nch);
 
  /**
      returns the location of the calibration files
@@ -682,7 +715,7 @@ typedef  struct sharedSlsDetector {
       \offset reference to the offset variable
   \sa  sharedSlsDetector mythenDetector::readCalibrationFile
   */
-  virtual int readCalibrationFile(string fname, float &gain, float &offset){};
+  virtual int readCalibrationFile(string fname, float &gain, float &offset);
   /**
    
       writes a calibration file
@@ -691,7 +724,7 @@ typedef  struct sharedSlsDetector {
       \param offset
   \sa  sharedSlsDetector mythenDetector::writeCalibrationFile
   */
-  virtual int writeCalibrationFile(string fname, float gain, float offset){};
+  virtual int writeCalibrationFile(string fname, float gain, float offset);
 
 
   /**
@@ -1712,7 +1745,7 @@ enum {GET_ACTION, PUT_ACTION, READOUT_ACTION};
       \return pointer to the data (or NULL if failed)
   */
 
-   int getDetectorId() { return detId;};
+   int getDetectorId() {return detId;};
    
   /** 
       Receives a data frame from the detector socket

@@ -13,7 +13,8 @@ INSTMODE= 	0777
 SRCS= 		 server.c server_funcs.c communication_funcs.c firmware_funcs.c mcb_funcs.c trimming_funcs.c  sharedmemory.c
 OBJS= 	$(SRCS:%.c=%.o) 
 
-CFLAGS+= 	-Wall -DC_ONLY -DMCB_FUNCS -DVERBOSE 
+CFLAGS+= 	-Wall -DC_ONLY -DMCB_FUNCS 
+#-DVERBOSE 
 #-DVERYVERBOSE 
 #-Werror
 

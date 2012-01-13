@@ -14,19 +14,24 @@
 
 #include "sls_detector_defs.h"
 
-int bindSocket(unsigned short int port_number);
-int acceptConnection();
-void closeConnection();
-void exitServer();
-int sendDataOnly(void* buf,int length);
-int receiveDataOnly(void* buf,int length);
+char lastClientIP[INET_ADDRSTRLEN];
+char thisClientIP[INET_ADDRSTRLEN];
+int lockStatus;
+int differentClients;
 
-int getServerError();
-int sendChannel(sls_detector_channel *myChan); 
-int sendChip(sls_detector_chip *myChip);
-int sendModule(sls_detector_module *myMod);
-int receiveChannel(sls_detector_channel *myChan); 
-int receiveChip(sls_detector_chip* myChip); 
-int  receiveModule(sls_detector_module* myMod);
+int bindSocket(unsigned short int port_number);
+int acceptConnection(int socketDescriptor);
+void closeConnection(int file_Des);
+void exitServer(int socketDescriptor);
+int sendDataOnly(int file_des, void* buf,int length);
+int receiveDataOnly(int file_des, void* buf,int length);
+
+int getServerError(int socketDescriptor);
+int sendChannel(int file_des, sls_detector_channel *myChan); 
+int sendChip(int file_des, sls_detector_chip *myChip);
+int sendModule(int file_des, sls_detector_module *myMod);
+int receiveChannel(int file_des, sls_detector_channel *myChan); 
+int receiveChip(int file_des, sls_detector_chip* myChip); 
+int  receiveModule(int file_des, sls_detector_module* myMod);
 
 #endif

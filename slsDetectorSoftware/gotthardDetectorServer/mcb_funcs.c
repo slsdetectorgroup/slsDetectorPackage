@@ -944,9 +944,8 @@ int setSettings(int i)
 
 
 
-
-
 /* Initialization*/
+
 int initChannelbyNumber(sls_detector_channel myChan) {
   int reg=myChan.reg;
   int ft=reg & TRIM_DR;

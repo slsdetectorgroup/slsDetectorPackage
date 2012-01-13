@@ -12,14 +12,20 @@
 
 
 #define GOODBYE -200
+
+int sockfd;
+
 int function_table();
 
-int decode_function();
-
+int decode_function(int);
+ 
 int init_detector(int);
 
 int M_nofunc(int);
 int exit_server(int);
+
+
+
 
 // General purpose functions
 int get_detector_type(int);
@@ -61,11 +67,12 @@ int get_roi(int);
 int set_speed(int);
 int set_readout_flags(int);
 int execute_trimming(int);
-
-// to take out/not by dhanya..
-int getGotthard(int);
-int setGotthard(int);
-float get_temperature(int);  
-
+int lock_server(int);
+int set_port(int);
+int get_last_client_ip(int);
+  
+int update_client(int);
+int send_update(int);
+int configure_mac(int);
 
 #endif

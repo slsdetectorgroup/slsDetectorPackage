@@ -28,6 +28,10 @@
 //HV
 #define HV_REG           0x93<<11
 
+//configure MAC
+#define ENET_CONF_REG    0x91<<11
+#define TSE_CONF_REG     0x90<<11
+
 //not used so far
 #define SPEED_REG        0x006000
 #define SET_NBITS_REG    0x008000
@@ -67,6 +71,12 @@
 
 //not used
 #define GET_SHIFT_IN_REG      0x022000   
+
+#define GET_MEASUREMENT_TIME_LSB_REG    0x023000   
+#define GET_MEASUREMENT_TIME_MSB_REG    0x024000 
+  
+#define GET_ACTUAL_TIME_LSB_REG    0x025000   
+#define GET_ACTUAL_TIME_MSB_REG    0x026000  
 
 //to read back dac registers
 #define MOD_DACS1_REG         0x41<<11
@@ -201,6 +211,9 @@
 
 #define SW1_BIT                      0x00000020
 #define SW1_OFFSET                   5
+
+#define WRITE_BACK_BIT               0x00000040
+#define WRITE_BACK_OFFSET            6
 
 #define RESET_BIT                    0x00000080
 #define RESET_OFFSET                 7

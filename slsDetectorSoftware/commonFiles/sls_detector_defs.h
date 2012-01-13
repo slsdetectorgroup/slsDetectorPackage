@@ -502,8 +502,5 @@ typedef struct  {
 } angleConversionConstant;
 
 
-enum reg{
-ADC_WRITE
-};
 
 #endif

@@ -1902,7 +1902,7 @@ int slsDetector::writeRegister(int addr, int val){
 
 #ifdef VERBOSE
   std::cout<< std::endl;
-  std::cout<< "Writing to register "<< addr <<  " data " << val << std::endl; 
+  std::cout<< "Writing to register "<< hex<<addr <<  " data " << hex<<val << std::endl; 
 #endif
   if (thisDetector->onlineFlag==ONLINE_FLAG) {
     if (controlSocket) {
@@ -1950,7 +1950,7 @@ int slsDetector::readRegister(int addr){
 
 #ifdef VERBOSE
   std::cout<< std::endl;
-  std::cout<< "Reding register "<< addr  << std::endl; 
+  std::cout<< "Reading register "<< hex<<addr  << std::endl; 
 #endif
   if (thisDetector->onlineFlag==ONLINE_FLAG) {
     if (controlSocket) {
@@ -5287,6 +5287,7 @@ string slsDetector::executeLine(int narg, char *args[], int action) {
   float  fval;
   string sval;
   int    ival;
+  int    ival2;  //for debugging
   if (var=="free") {
     freeSharedMemory();
     return("freed");
@@ -6189,15 +6190,15 @@ string slsDetector::executeLine(int narg, char *args[], int action) {
        sprintf(answer,"%f",setDAC(-1,TEMPERATURE_FPGA));
        return string(answer);
       }
-      /* GOTTHARD ADC_WRITE_REG */ 
-      else if (var=="adc_write") {
-       if (action==PUT_ACTION) {
-         sscanf(args[1],"%x",&ival);
-	 writeRegister(ADC_WRITE,ival);
-	 // setDAC(fval,G_ADC_WRITE);
-       }
-       sprintf(answer,"%x",readRegister(ADC_WRITE));
-       return string(answer);
+      /* DEBUGGING FUNCTIONS */ 
+      else if (var=="reg_rw") {
+	sscanf(args[1],"%x",&ival);
+	if (action==PUT_ACTION) {
+	  sscanf(args[2],"%x",&ival2);
+	  sprintf(answer,"%x",writeRegister(ival,ival2));
+	}
+	sprintf(answer,"%x",readRegister(ival));
+	return string(answer);
       }
 
   //timers

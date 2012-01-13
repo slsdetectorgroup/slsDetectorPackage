@@ -506,6 +506,8 @@ int slsDetector::initializeDetectorSize(detectorType type) {
      strcpy(thisDetector->clientIP,"none");
      /** set client mac address */
      strcpy(thisDetector->clientMAC,"none");
+     /** set server mac address */
+     strcpy(thisDetector->serverMAC,"00:aa:bb:cc:dd:ee");
 
      /** sets onlineFlag to OFFLINE_FLAG */
      thisDetector->onlineFlag=OFFLINE_FLAG;
@@ -5105,27 +5107,43 @@ char* slsDetector::setClientMAC(string clientMAC){
 };
 
 
+char* slsDetector::setServerMAC(string serverMAC){
+  if(serverMAC.length()==17){
+    if((serverMAC[2]==':')&&(serverMAC[5]==':')&&(serverMAC[8]==':')&&
+       (serverMAC[11]==':')&&(serverMAC[14]==':'))
+      sprintf(thisDetector->serverMAC,serverMAC.c_str()); 
+    else
+      return("server MAC Address should be in xx:xx:xx:xx:xx:xx format");  
+  }
+  else
+    return("server MAC Address should be in xx:xx:xx:xx:xx:xx format");  
+
+  return thisDetector->serverMAC;
+};
 
 
-int slsDetector::configureMAC(){
-  int retval;
+int slsDetector::configureMAC(int ival){
+  int retval,i;
   int ret=FAIL;
   int fnum=F_CONFIGURE_MAC;
   char mess[100];
-  char arg[2][50];
+  char arg[3][50];
   char cword[50]="", *pcword;
   string sword;
   strcpy(arg[0],getClientIP());
   strcpy(arg[1],getClientMAC());
+  strcpy(arg[2],getServerMAC());
 
 
 #ifdef VERBOSE
   std::cout<< "slsDetector configureMAC "<< std::endl;
 #endif
-  if(!strcmp(arg[0],"none"))
-    return -1;
-  else if(!strcmp(arg[1],"none"))    
-    return -1;
+
+  for(i=0;i<3;i++){
+    if(!strcmp(arg[i],"none"))
+      return -1;
+  }
+
 #ifdef VERBOSE
   std::cout<< "IP/MAC Addresses in valid format "<< std::endl;
 #endif
@@ -5148,12 +5166,21 @@ int slsDetector::configureMAC(){
     strcat(arg[1],sword.c_str());
   std::cout<<"arg1:"<<arg[1]<<"."<<std::endl; 
 
+  //converting server MACaddress to hex.
+  sword.assign(arg[2]);
+  strcpy(arg[2],"");
+  stringstream ssstr(sword);
+  while(getline(ssstr,sword,':'))
+    strcat(arg[2],sword.c_str());
+  std::cout<<"arg2:"<<arg[2]<<"."<<std::endl; 
+
   //send to server
   if (thisDetector->onlineFlag==ONLINE_FLAG) {
     if (controlSocket) {
       if  (controlSocket->Connect()>=0) {
 	controlSocket->SendDataOnly(&fnum,sizeof(fnum));
 	controlSocket->SendDataOnly(arg,sizeof(arg));
+	controlSocket->SendDataOnly(&ival,sizeof(ival));
 	controlSocket->ReceiveDataOnly(&ret,sizeof(ret));
 	if (ret!=FAIL)
 	  controlSocket->ReceiveDataOnly(&retval,sizeof(retval));
@@ -5729,6 +5756,12 @@ string slsDetector::executeLine(int narg, char *args[], int action) {
       return string(setClientMAC(sval));
     } else
       return getClientMAC();
+  } else if (var=="servermac") {
+    if (action==PUT_ACTION) {
+      sval=string(args[1]);
+      return string(setServerMAC(sval));
+    } else
+      return getServerMAC();
   } 
 
 
@@ -6436,10 +6469,17 @@ string slsDetector::executeLine(int narg, char *args[], int action) {
 	return string(answer);
 	//gotthard
       }else if (var=="configuremac") {
-         if(configureMAC()==-1)
+	if (action==GET_ACTION) {
+	  return string("cannot use GET for this function");
+	} else if (action==PUT_ACTION) {
+	  sscanf(args[1],"%d",&ival);
+	  if((ival<0)||(ival>1))
+	    return string("use only 0/1 to reset/set digital_test_bit");
+	  if(configureMAC(ival)==-1)
 	   return string("client ip address/client mac address not valid");
-	return string("mac configuration completed");
-	}
+	  return string("mac configuration completed");
+	} 
+      }
   return ("Unknown command");
 
 }
@@ -7935,7 +7975,8 @@ int slsDetector::writeConfigurationFile(string const fname){
     names[3]="outdir";
     names[4]="clientip";
     names[5]="clientmac";
-    nvar=6;
+    names[6]="servermac";
+    nvar=7;
     break;
   default:
     nvar=19;

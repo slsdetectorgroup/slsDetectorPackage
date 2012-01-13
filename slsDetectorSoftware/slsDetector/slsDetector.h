@@ -315,6 +315,8 @@ typedef  struct sharedSlsDetector {
     char clientIP[MAX_STR_LENGTH];
     /** is the mac address of the client for gotthard; read from configuration file **/
     char clientMAC[MAX_STR_LENGTH];
+    /** is the mac address of the server for gotthard; read from configuration file **/
+    char serverMAC[MAX_STR_LENGTH];
 
 } sharedSlsDetector;
 
@@ -362,8 +364,9 @@ typedef  struct sharedSlsDetector {
 
   /**  
      configures mac for gotthard readout
+     \param ival temporarily used to set/reset the digital test bit
   */
-  int configureMAC();
+  int configureMAC(int ival);
 
   /**
     Purely virtual function
@@ -459,11 +462,14 @@ typedef  struct sharedSlsDetector {
   char* getClientIP() {return thisDetector->clientIP;};
   /** returns the  client MAC address for gotthard \sa sharedSlsDetector  */
   char* getClientMAC() {return thisDetector->clientMAC;};
+  /** returns the  server MAC address for gotthard \sa sharedSlsDetector  */
+  char* getServerMAC() {return thisDetector->serverMAC;};
   /** validates and sets the client IP address for gotthard \sa sharedSlsDetector  */
   char* setClientIP(string clientIP);
   /** validates the format of client MAC address  and sets it for gotthard \sa sharedSlsDetector  */
   char* setClientMAC(string clientMAC);
-
+  /** validates the format of server MAC address  and sets it for gotthard \sa sharedSlsDetector  */
+  char* setServerMAC(string serverMAC);
 
   /* I/O */
   /** returns the detector trimbit/settings directory  \sa sharedSlsDetector */

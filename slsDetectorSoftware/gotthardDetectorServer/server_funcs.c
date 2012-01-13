@@ -746,7 +746,7 @@ int write_register(int file_des) {
   int addr, val;
   int n;
   u_int32_t address;
-  
+
   sprintf(mess,"Can't write to register\n");
 
   n = receiveDataOnly(file_des,arg,sizeof(arg));
@@ -766,11 +766,12 @@ int write_register(int file_des) {
     sprintf(mess,"Detector locked by %s\n",lastClientIP);    
   }
 
-  
+
   if(ret!=FAIL){
-    ret=bus_write(addr,val);
+    address=(addr<<11);
+    ret=bus_w(address,val);
     if(ret==OK)
-      retval=bus_read(addr);
+      retval=bus_r(address);
   }
   
 
@@ -809,7 +810,7 @@ int read_register(int file_des) {
   int addr;
   int n;
   u_int32_t address;
-  
+
   sprintf(mess,"Can't read register\n");
 
   n = receiveDataOnly(file_des,&arg,sizeof(arg));
@@ -825,8 +826,10 @@ int read_register(int file_des) {
   printf("reading  register 0x%x\n", addr);
 #endif  
 
-    if(ret!=FAIL)
-      retval=bus_read(address);
+  if(ret!=FAIL){
+    address=(addr<<11);
+      retval=bus_r(address);
+  }
 
 
 

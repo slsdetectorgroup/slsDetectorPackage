@@ -314,7 +314,7 @@ int setDAQRegister()
 }
 
 
-
+/*
 u_int32_t bus_write(int addr, u_int32_t data) {
   u_int32_t *ptr1,offset;
   switch(addr){
@@ -344,7 +344,7 @@ u_int32_t bus_read(int addr) {
   return *ptr1;
 }
 
-
+*/
 
 // direct pattern output 
 u_int32_t putout(char *s, int modnum) {

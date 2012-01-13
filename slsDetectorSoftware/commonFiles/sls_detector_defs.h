@@ -3,7 +3,6 @@
 
 #include <stdint.h> 
 
-
 typedef float float32_t;
 typedef int int32_t;    
 
@@ -502,75 +501,6 @@ typedef struct  {
   float etilt; /**< error in the tilt determination */
 } angleConversionConstant;
 
-/**
-   ENEt conf structs
-*/
-typedef struct mac_header_struct{
-  u_int8_t    mac_dest_mac2;
-  u_int8_t    mac_dest_mac1;
-  u_int8_t    mac_dummy1;
-  u_int8_t    mac_dummy2;
-  u_int8_t    mac_dest_mac6;
-  u_int8_t    mac_dest_mac5;
-  u_int8_t    mac_dest_mac4;
-  u_int8_t    mac_dest_mac3;
-  u_int8_t    mac_src_mac4;
-  u_int8_t    mac_src_mac3;
-  u_int8_t    mac_src_mac2;
-  u_int8_t    mac_src_mac1;
-  u_int16_t   mac_ether_type;
-  u_int8_t    mac_src_mac6;
-  u_int8_t    mac_src_mac5;
-} mac_header;
 
-typedef struct ip_header_struct {
-  u_int16_t     ip_len;
-  u_int8_t      ip_tos; 
-  u_int8_t      ip_ihl:4 ,ip_ver:4;
-  u_int16_t     ip_offset:13,ip_flag:3;
-  u_int16_t     ip_ident;
-  u_int16_t     ip_chksum;
-  u_int8_t      ip_protocol;
-  u_int8_t      ip_ttl;
-  u_int32_t     ip_sourceip;
-  u_int32_t     ip_destip;
-} ip_header;
-
-typedef struct udp_header_struct{
-  u_int16_t   udp_destport;
-  u_int16_t   udp_srcport;
-  u_int16_t   udp_chksum;
-  u_int16_t   udp_len;
-} udp_header;
-
-typedef struct mac_conf_struct{
-  mac_header  mac;
-  ip_header   ip;
-  udp_header  udp;
-  u_int32_t   npack;   
-  u_int32_t   lpack;   
-  u_int32_t   npad;   
-  u_int32_t   cdone;   
-} mac_conf;
-
-typedef struct tse_conf_struct{
-  u_int32_t   rev;                    //0x0
-  u_int32_t   scratch;                
-  u_int32_t   command_config;
-  u_int32_t   mac_0;                  //0x3
-  u_int32_t   mac_1;
-  u_int32_t   frm_length;
-  u_int32_t   pause_quant;
-  u_int32_t   rx_section_empty;       //0x7
-  u_int32_t   rx_section_full;
-  u_int32_t   tx_section_empty;
-  u_int32_t   tx_section_full;
-  u_int32_t   rx_almost_empty;        //0xB
-  u_int32_t   rx_almost_full;
-  u_int32_t   tx_almost_empty;
-  u_int32_t   tx_almost_full;
-  u_int32_t   mdio_addr0;             //0xF
-  u_int32_t   mdio_addr1;
-}tse_conf;
 
 #endif

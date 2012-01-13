@@ -32,6 +32,10 @@
 #define ENET_CONF_REG    0x91<<11
 #define TSE_CONF_REG     0x90<<11
 
+//ADC
+#define ADC_WRITE_REG    0x3a<<11
+#define ADC_SYNC_REG     0x3b<<11
+
 //not used so far
 #define SPEED_REG        0x006000
 #define SET_NBITS_REG    0x008000
@@ -204,10 +208,10 @@
 #define PHASE_STEP_BIT               0x00000001
 #define PHASE_STEP_OFFSET            0
 
-#define READOUT_BUSY_BIT             0x00000002
+/* #define READOUT_BUSY_BIT             0x00000002
 #define FIFOTEST_BUSY_BIT            0x00000004 
 #define WAITING_FOR_TRIGGER_BIT      0x00000008
-#define DELAYBEFORE_BIT              0x00000010
+#define DELAYBEFORE_BIT              0x00000010  */
 
 #define SW1_BIT                      0x00000020
 #define SW1_OFFSET                   5
@@ -223,6 +227,9 @@
 
 #define INT_RSTN_BIT                 0x00002000
 #define INT_RSTN_OFFSET              13
+
+#define DIGITAL_TEST_BIT             0x00004000
+#define DIGITAL_TEST_OFFSET          14
 
 #define CHANGE_AT_POWER_ON_BIT       0x00008000
 #define CHANGE_AT_POWER_ON_OFFSET    15

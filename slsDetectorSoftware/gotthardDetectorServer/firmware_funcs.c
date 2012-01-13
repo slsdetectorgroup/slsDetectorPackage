@@ -241,6 +241,18 @@ int setDAQRegister()
 #ifdef VERBOSE
   printf("DAQ reg:20916770:%d",reg);
 #endif
+
+
+  //setting ADC reg temporary
+  addr=ADC_WRITE_REG;
+  val=0xFFFFFFFF;
+  bus_w(addr,val);
+  reg=bus_r(addr);
+ #ifdef VERBOSE
+  printf("\n\nADC write reg:%X",reg);
+#endif
+ 
+  
   return result;
 }
 
@@ -267,11 +279,10 @@ int setPhaseShiftOnce(){
       bus_w(addr,(INT_RSTN_BIT|ENET_RESETN_BIT|SW1_BIT&~PHASE_STEP_BIT));//0x2820
      }
     //confirming phase change by setting CHANGE_AT_POWER_ON_BIT(for later uses)
-    bus_w(addr,(CHANGE_AT_POWER_ON_BIT|
+    bus_w(addr,(CHANGE_AT_POWER_ON_BIT|//DIGITAL_TEST_BIT|
 		INT_RSTN_BIT|ENET_RESETN_BIT|SW1_BIT&~PHASE_STEP_BIT));
   }
 
-  reg=bus_r(addr);
 #ifdef VERBOSE
   printf("Multipupose reg now:%d\n",reg);
 #endif
@@ -1075,7 +1086,7 @@ int initConfGain(int val, int imod){
 }
 
 
-int configureMAC(int ipad, long long int macad){
+int configureMAC(int ipad,long long int macad,long long int servermacad,int ival){
   u_int32_t addrr=MULTI_PURPOSE_REG;
   u_int32_t offset=ENET_CONF_REG, offset2=TSE_CONF_REG;
   mac_conf *mac_conf_regs;
@@ -1091,32 +1102,40 @@ int configureMAC(int ipad, long long int macad){
 #ifdef VERBOSE
   printf("Configuring MAC\n");
 #endif
-  powerOn=((bus_r(addrr)&0x00008000)>>CHANGE_AT_POWER_ON_OFFSET);
+  powerOn=((bus_r(addrr)&CHANGE_AT_POWER_ON_BIT)>>CHANGE_AT_POWER_ON_OFFSET);
 
 
-  
-  bus_w(addrr,RESET_BIT); //0x080,reset mac (reset) 
+  if(ival)
+    bus_w(addrr,(RESET_BIT|DIGITAL_TEST_BIT)); //0x080,reset mac (reset) 
+  else
+    bus_w(addrr,RESET_BIT); //0x080,reset mac (reset) 
   val=bus_r(addrr);
 #ifdef VERBOSE
     printf("Value read from Multi-purpose Reg:%x\n",val);
 #endif 
-  if(val!=0x080) return -1;
+    //  if(val!=0x080) return -1;
 
   usleep(500000);
+  
+  if(ival)
+    bus_w(addrr,(ENET_RESETN_BIT|WRITE_BACK_BIT|DIGITAL_TEST_BIT)); //0x840,write shadow regs(enet reset,write bak)
+  else
+    bus_w(addrr,(ENET_RESETN_BIT|WRITE_BACK_BIT)); //0x840,write shadow regs(enet reset,write bak)
+  val=bus_r(addrr);
+#ifdef VERBOSE
+  printf("Value read from Multi-purpose Reg:%x\n",val);
+#endif 
+    //  if(val!=0x840) return -1;
 
-  bus_w(addrr,(ENET_RESETN_BIT|WRITE_BACK_BIT)); //0x840,write shadow regs(enet reset,write bak)
+  if(ival)
+    bus_w(addrr,(ENET_RESETN_BIT|DIGITAL_TEST_BIT)); //0x800,nreset phy(enet reset)
+  else
+    bus_w(addrr,ENET_RESETN_BIT); //0x800,nreset phy(enet reset)
   val=bus_r(addrr);
 #ifdef VERBOSE
     printf("Value read from Multi-purpose Reg:%x\n",val);
 #endif 
-  if(val!=0x840) return -1;
-
-  bus_w(addrr,ENET_RESETN_BIT); //0x800,nreset phy(enet reset)
-  val=bus_r(addrr);
-#ifdef VERBOSE
-    printf("Value read from Multi-purpose Reg:%x\n",val);
-#endif 
-  if(val!=0x800) return -1;
+    //  if(val!=0x800) return -1;
 
 
   mac_conf_regs->mac.mac_dest_mac1  =((macad>>(8*5))&0xFF);// 0x00; //pc7060  
@@ -1125,13 +1144,22 @@ int configureMAC(int ipad, long long int macad){
   mac_conf_regs->mac.mac_dest_mac4  =((macad>>(8*2))&0xFF);// 0x24; //pc7060  
   mac_conf_regs->mac.mac_dest_mac5  =((macad>>(8*1))&0xFF);// 0xEB; //pc7060  
   mac_conf_regs->mac.mac_dest_mac6  =((macad>>(8*0))&0xFF);// 0xEE; //pc7060  
+  /*
   mac_conf_regs->mac.mac_src_mac1   = 0x00;     
   mac_conf_regs->mac.mac_src_mac2   = 0xAA;     
   mac_conf_regs->mac.mac_src_mac3   = 0xBB;     
   mac_conf_regs->mac.mac_src_mac4   = 0xCC;     
   mac_conf_regs->mac.mac_src_mac5   = 0xDD;     
   mac_conf_regs->mac.mac_src_mac6   = 0xEE;     
+  */
+  mac_conf_regs->mac.mac_src_mac1  =((servermacad>>(8*5))&0xFF);
+  mac_conf_regs->mac.mac_src_mac2  =((servermacad>>(8*4))&0xFF);
+  mac_conf_regs->mac.mac_src_mac3  =((servermacad>>(8*3))&0xFF);
+  mac_conf_regs->mac.mac_src_mac4  =((servermacad>>(8*2))&0xFF);
+  mac_conf_regs->mac.mac_src_mac5  =((servermacad>>(8*1))&0xFF);
+  mac_conf_regs->mac.mac_src_mac6  =((servermacad>>(8*0))&0xFF);
   mac_conf_regs->mac.mac_ether_type   = 0x0800;   //ipv4
+  
 
   mac_conf_regs->ip.ip_ver            = 0x4;
   mac_conf_regs->ip.ip_ihl            = 0x5;
@@ -1147,7 +1175,22 @@ int configureMAC(int ipad, long long int macad){
   mac_conf_regs->ip.ip_destip         = ipad; //CA57
 
 #ifdef VERBOSE
-  printf("mac_src_6:%x\n",mac_conf_regs->mac.mac_dest_mac6);
+  printf("mac_dest:%llx %x:%x:%x:%x:%x:%x\n",
+	 macad,
+	 mac_conf_regs->mac.mac_dest_mac1,
+	 mac_conf_regs->mac.mac_dest_mac2,
+	 mac_conf_regs->mac.mac_dest_mac3,
+	 mac_conf_regs->mac.mac_dest_mac4,
+	 mac_conf_regs->mac.mac_dest_mac5,
+	 mac_conf_regs->mac.mac_dest_mac6);
+  printf("mac_src:%llx %x:%x:%x:%x:%x:%x\n",
+	 servermacad,
+	 mac_conf_regs->mac.mac_src_mac1,
+	 mac_conf_regs->mac.mac_src_mac2,
+	 mac_conf_regs->mac.mac_src_mac3,
+	 mac_conf_regs->mac.mac_src_mac4,
+	 mac_conf_regs->mac.mac_src_mac5,
+	 mac_conf_regs->mac.mac_src_mac6);
   printf("ip_ttl:%x\n",mac_conf_regs->ip.ip_ttl);
 #endif
 
@@ -1195,21 +1238,31 @@ int configureMAC(int ipad, long long int macad){
 
 
 
-  bus_w(addrr,(INT_RSTN_BIT|ENET_RESETN_BIT|WRITE_BACK_BIT)); //0x2840,write shadow regs..  
+  bus_w(addrr,(INT_RSTN_BIT|ENET_RESETN_BIT|WRITE_BACK_BIT|(DIGITAL_TEST_BIT&ival))); //0x2840,write shadow regs..  
   val=bus_r(addrr);
 #ifdef VERBOSE
     printf("Value read from Multi-purpose Reg:%x\n",val);
 #endif 
-  if(val!=0x2840) return -1;
+    //  if(val!=0x2840) return -1;
 
   usleep(100000);
-
-  bus_w(addrr,(INT_RSTN_BIT|ENET_RESETN_BIT|SW1_BIT)); //0x2820,write shadow regs..  
+  if(powerOn){
+    if(ival)
+      bus_w(addrr,(INT_RSTN_BIT|ENET_RESETN_BIT|SW1_BIT|DIGITAL_TEST_BIT|CHANGE_AT_POWER_ON_BIT)); //0x2820,write shadow regs..  
+    else
+      bus_w(addrr,(INT_RSTN_BIT|ENET_RESETN_BIT|SW1_BIT|CHANGE_AT_POWER_ON_BIT)); //0x2820,write shadow regs..  
+  }  
+  else {
+    if(ival)
+      bus_w(addrr,(INT_RSTN_BIT|ENET_RESETN_BIT|SW1_BIT|DIGITAL_TEST_BIT)); //0x2820,write shadow regs..  
+    else
+      bus_w(addrr,(INT_RSTN_BIT|ENET_RESETN_BIT|SW1_BIT)); //0x2820,write shadow regs..  
+  }
   val=bus_r(addrr);
 #ifdef VERBOSE
     printf("Value read from Multi-purpose Reg:%x\n",val);
 #endif 
-  if(val!=0x2820) return -1;
+    //  if(val!=0x2820) return -1;
 
 
 

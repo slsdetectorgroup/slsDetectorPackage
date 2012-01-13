@@ -53,7 +53,7 @@ float getTemperature(int tempSensor, int imod);
 int initHighVoltage(int val, int imod);
 int initConfGain(int val, int imod);
 
-int configureMAC(int ipad, long long int macad);
+int configureMAC(int ipad, long long int macad, long long int servermacad, int ival);
 
 u_int64_t getMcsNumber();
 u_int32_t getMcsVersion();

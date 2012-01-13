@@ -2723,14 +2723,13 @@ int configure_mac(int file_des) {
 
   int retval;
   int ret=OK;
-  char arg[2][50];
-  int n,i;
+  char arg[3][50];
+  int n,i,ival;
 
   int imod=0;//should be in future sent from client as -1, arg[2]
   int ipad;
   long long int imacadd;
-
-  int idac=0;
+  long long int iservermacadd;
   
   sprintf(mess,"Can't configure MAC\n");
 
@@ -2740,14 +2739,26 @@ int configure_mac(int file_des) {
     sprintf(mess,"Error reading from socket\n");
     ret=FAIL;
   }
+  n = receiveDataOnly(file_des,&ival,sizeof(ival));
+  if (n < 0) {
+    sprintf(mess,"Error reading from socket\n");
+    ret=FAIL;
+  }
+
+
   sscanf(arg[0], "%x", &ipad); 
   sscanf(arg[1], "%llx", &imacadd);
+  sscanf(arg[2], "%llx", &iservermacadd);
 #ifdef VERBOSE
-  printf("\n%x\t",ipad); 
+  printf("\nival %d\t",ival); 
+  printf("\nipadd %x\t",ipad); 
   printf("destination ip is %d.%d.%d.%d = 0x%x \n",(ipad>>24)&0xff,(ipad>>16)&0xff,(ipad>>8)&0xff,(ipad)&0xff,ipad);
   printf("macad:%llx\n",imacadd);
   for (i=0;i<6;i++) 
-    printf("mac adress %d is  0x%x \n\n",6-i,((imacadd>>(8*i))&0xFF));
+    printf("mac adress %d is  0x%x \n",6-i,((imacadd>>(8*i))&0xFF));
+  printf("server macad:%llx\n",iservermacadd);
+  for (i=0;i<6;i++) 
+    printf("server mac adress %d is  0x%x \n\n",6-i,((iservermacadd>>(8*i))&0xFF));
 #endif 
 
   if (imod>=getNModBoard())
@@ -2760,7 +2771,7 @@ int configure_mac(int file_des) {
 #endif
 #ifdef MCB_FUNCS
   if (ret==OK) {
-    retval=configureMAC(ipad,imacadd);
+    retval=configureMAC(ipad,imacadd,iservermacadd,ival);
     if(retval==-1) ret=FAIL;
   }
 #endif

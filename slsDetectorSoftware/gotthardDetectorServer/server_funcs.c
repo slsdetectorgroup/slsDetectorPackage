@@ -920,11 +920,13 @@ int set_dac(int file_des) {
   case HV_POT:
     ireg=HIGH_VOLTAGE;
     break;
-
+  case G_ADC_WRITE:
+    ireg=ADC_WRITE;
+    break;
 
   default:
-    printf("Unknown DAC/TEMP/HV index %d\n",ind);
-    sprintf(mess,"Unknown DAC/TEMP/HV index %d\n",ind);
+    printf("Unknown DAC/TEMP/HV/ADC_write index %d\n",ind);
+    sprintf(mess,"Unknown DAC/TEMP/HV/ADC_write index %d\n",ind);
     ret=FAIL;
   }
  
@@ -937,8 +939,11 @@ int set_dac(int file_des) {
       if(ireg==-1)
 	retval=initDACbyIndexDACU(idac,val,imod);
       else
-	{	//HV or conf gain
-	  if(ireg==HIGH_VOLTAGE)
+	{ //ADC_write
+	  if(ireg==ADC_WRITE)
+	    retval=setADCWriteRegister(val);
+	  //HV
+	  else if(ireg==HIGH_VOLTAGE)
 	    retval=initHighVoltageByModule(val,imod);
 	  //Temp
 	  else
@@ -963,7 +968,7 @@ int set_dac(int file_des) {
   else if (retval==val || val==-1)
     ret=OK;
   if(ret==FAIL)
-    printf("Setting dac/hv %d of module %d: wrote %f but read %f\n", ind, imod, val, retval);
+    printf("Setting dac/hv/adc_write %d of module %d: wrote %f but read %f\n", ind, imod, val, retval);
   else{
     if (differentClients)
       ret=FORCE_UPDATE; 

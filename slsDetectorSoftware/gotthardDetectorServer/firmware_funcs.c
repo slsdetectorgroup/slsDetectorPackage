@@ -181,6 +181,35 @@ int mapCSP0(void) {
 }
 
 
+//aldos function volatile (not needed) 
+u_int16_t bus_w16(u_int32_t offset, u_int16_t data) {
+  u_int16_t *ptr1;
+  ptr1=(u_int16_t*)(CSP0BASE+offset*2);
+  // printf("writing at 0x%x data 0x%x %d%d%d\n",CSP0BASE+offset*2,data, (data>>2)&0x1,(data>>1)&0x1 ,(data>>0)&0x1);
+
+  *ptr1=data;
+  return OK;
+}
+
+
+u_int32_t bus_w(u_int32_t offset, u_int32_t data) {
+  u_int32_t *ptr1;
+
+  ptr1=(u_int32_t*)(CSP0BASE+offset*2);
+  *ptr1=data;
+
+  return OK;
+}
+
+
+u_int32_t bus_r(u_int32_t offset) {
+  u_int32_t *ptr1;
+  
+  ptr1=(u_int32_t*)(CSP0BASE+offset*2);
+  return *ptr1;
+}
+
+
 int setDummyRegister() {
   int result = OK;
   volatile u_int32_t val,addr;
@@ -224,39 +253,6 @@ int setDummyRegister() {
 }
 
 
-int setDAQRegister()
-{
-  u_int32_t addr, reg, val;
-  int result=OK;
-  addr=DAQ_REG;
-  val=34+(42<<8)+(319<<16);
-  reg=bus_r(addr);
-  //write to daqreg if not valid
-  if(reg!=val){
-    bus_w(addr,val);
-    reg=bus_r(addr);
-    if(reg!=val)
-      result=FAIL;
-  }
-#ifdef VERBOSE
-  printf("DAQ reg:20916770:%d",reg);
-#endif
-
-
-  //setting ADC reg temporary
-  addr=ADC_WRITE_REG;
-  val=0xFFFFFFFF;
-  bus_w(addr,val);
-  reg=bus_r(addr);
- #ifdef VERBOSE
-  printf("\n\nADC write reg:%X",reg);
-#endif
- 
-  
-  return result;
-}
-
-
 
 int setPhaseShiftOnce(){
   u_int32_t addr, reg;
@@ -290,34 +286,47 @@ int setPhaseShiftOnce(){
 }
 
 
-
-//aldos function volatile (not needed) 
-u_int16_t bus_w16(u_int32_t offset, u_int16_t data) {
-  u_int16_t *ptr1;
-  ptr1=(u_int16_t*)(CSP0BASE+offset*2);
-  // printf("writing at 0x%x data 0x%x %d%d%d\n",CSP0BASE+offset*2,data, (data>>2)&0x1,(data>>1)&0x1 ,(data>>0)&0x1);
-
-  *ptr1=data;
-  return OK;
+int setDAQRegister()
+{
+  u_int32_t addr, reg, val;
+  int result=OK;
+  addr=DAQ_REG;
+  val=34+(42<<8)+(319<<16);
+  reg=bus_r(addr);
+  //write to daqreg if not valid
+  if(reg!=val){
+    bus_w(addr,val);
+    reg=bus_r(addr);
+    if(reg!=val)
+      result=FAIL;
+  }
+#ifdef VERBOSE
+  printf("DAQ reg:20916770:%d",reg);
+#endif
+  return result;
 }
 
+float setADCWriteRegister(float val){
+  u_int32_t addr, reg;
 
-u_int32_t bus_w(u_int32_t offset, u_int32_t data) {
-  u_int32_t *ptr1;
+  printf("\n\n\nChecking a few stuff\n");
+  printf("\nval received is %f,%d,%x",val,val,val); 
+  printf("\nval converted to int and hex is %d,%x\n",(int)val,(float)val);
 
-  ptr1=(u_int32_t*)(CSP0BASE+offset*2);
-  *ptr1=data;
-
-  return OK;
-}
-
-
-u_int32_t bus_r(u_int32_t offset) {
-  u_int32_t *ptr1;
   
-  ptr1=(u_int32_t*)(CSP0BASE+offset*2);
-  return *ptr1;
+  //setting ADC reg temporary
+  addr=ADC_WRITE_REG;
+  val=0xFFFFFFFF;
+  bus_w(addr,val);
+  reg=bus_r(addr);
+#ifdef VERBOSE
+  printf("\n\nADC write reg:%X",reg);
+#endif
+
+
+  return val;
 }
+
 
 // direct pattern output 
 u_int32_t putout(char *s, int modnum) {

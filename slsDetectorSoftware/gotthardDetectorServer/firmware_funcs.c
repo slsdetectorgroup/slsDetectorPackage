@@ -303,29 +303,47 @@ int setDAQRegister()
 #ifdef VERBOSE
   printf("DAQ reg:20916770:%d",reg);
 #endif
-  return result;
-}
-
-float setADCWriteRegister(float val){
-  u_int32_t addr, reg;
-
-  printf("\n\n\nChecking a few stuff\n");
-  printf("\nval received is %f,%d,%x",val,val,val); 
-  printf("\nval converted to int and hex is %d,%x\n",(int)val,(float)val);
-
-  
-  //setting ADC reg temporary
-  addr=ADC_WRITE_REG;
-  val=0xFFFFFFFF;
+  addr=ADC_SYNC_REG;
+  val=12;
   bus_w(addr,val);
   reg=bus_r(addr);
 #ifdef VERBOSE
-  printf("\n\nADC write reg:%X",reg);
+  printf("\nADC SYNC reg:%d",reg);
 #endif
-
-
-  return val;
+  return result;
 }
+
+
+
+u_int32_t bus_write(int addr, u_int32_t data) {
+  u_int32_t *ptr1,offset;
+  switch(addr){
+  case ADC_WRITE:
+    offset=ADC_WRITE_REG;
+    break;
+  default:
+    return FAIL;
+  }
+  ptr1=(u_int32_t*)(CSP0BASE+offset*2);
+  *ptr1=data;
+
+  return OK;
+}
+
+
+u_int32_t bus_read(int addr) {
+  u_int32_t *ptr1,offset;
+  switch(addr){
+  case ADC_WRITE:
+    offset=ADC_WRITE_REG;
+    break;
+  default:
+    offset=ADC_WRITE_REG;
+  }
+  ptr1=(u_int32_t*)(CSP0BASE+offset*2);
+  return *ptr1;
+}
+
 
 
 // direct pattern output 

@@ -745,7 +745,7 @@ int write_register(int file_des) {
   int arg[2]; 
   int addr, val;
   int n;
-
+  u_int32_t address;
   
   sprintf(mess,"Can't write to register\n");
 
@@ -764,10 +764,15 @@ int write_register(int file_des) {
   if (differentClients==1 && lockStatus==1) {
     ret=FAIL;
     sprintf(mess,"Detector locked by %s\n",lastClientIP);    
-  } else
-    retval=bus_w(addr,val);
+  }
 
-
+  
+  if(ret!=FAIL){
+    ret=bus_write(addr,val);
+    if(ret==OK)
+      retval=bus_read(addr);
+  }
+  
 
 #ifdef VERBOSE
   printf("Data set to 0x%x\n",  retval);
@@ -803,7 +808,7 @@ int read_register(int file_des) {
   int arg; 
   int addr;
   int n;
-
+  u_int32_t address;
   
   sprintf(mess,"Can't read register\n");
 
@@ -820,7 +825,9 @@ int read_register(int file_des) {
   printf("reading  register 0x%x\n", addr);
 #endif  
 
-  retval=bus_r(addr);
+    if(ret!=FAIL)
+      retval=bus_read(address);
+
 
 
 #ifdef VERBOSE
@@ -920,13 +927,10 @@ int set_dac(int file_des) {
   case HV_POT:
     ireg=HIGH_VOLTAGE;
     break;
-  case G_ADC_WRITE:
-    ireg=ADC_WRITE;
-    break;
 
   default:
-    printf("Unknown DAC/TEMP/HV/ADC_write index %d\n",ind);
-    sprintf(mess,"Unknown DAC/TEMP/HV/ADC_write index %d\n",ind);
+    printf("Unknown DAC/TEMP/HV index %d\n",ind);
+    sprintf(mess,"Unknown DAC/TEMP/HV index %d\n",ind);
     ret=FAIL;
   }
  
@@ -939,11 +943,8 @@ int set_dac(int file_des) {
       if(ireg==-1)
 	retval=initDACbyIndexDACU(idac,val,imod);
       else
-	{ //ADC_write
-	  if(ireg==ADC_WRITE)
-	    retval=setADCWriteRegister(val);
-	  //HV
-	  else if(ireg==HIGH_VOLTAGE)
+	{ //HV
+	  if(ireg==HIGH_VOLTAGE)
 	    retval=initHighVoltageByModule(val,imod);
 	  //Temp
 	  else
@@ -968,7 +969,7 @@ int set_dac(int file_des) {
   else if (retval==val || val==-1)
     ret=OK;
   if(ret==FAIL)
-    printf("Setting dac/hv/adc_write %d of module %d: wrote %f but read %f\n", ind, imod, val, retval);
+    printf("Setting dac/hv %d of module %d: wrote %f but read %f\n", ind, imod, val, retval);
   else{
     if (differentClients)
       ret=FORCE_UPDATE; 

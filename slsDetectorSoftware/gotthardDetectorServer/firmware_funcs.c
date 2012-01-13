@@ -64,6 +64,78 @@ const int nAdcs=NADC;
 
 int dacVals[NDAC];
 
+/**
+   ENEt conf structs
+*/
+typedef struct mac_header_struct{
+  u_int8_t    mac_dest_mac2;
+  u_int8_t    mac_dest_mac1;
+  u_int8_t    mac_dummy1;
+  u_int8_t    mac_dummy2;
+  u_int8_t    mac_dest_mac6;
+  u_int8_t    mac_dest_mac5;
+  u_int8_t    mac_dest_mac4;
+  u_int8_t    mac_dest_mac3;
+  u_int8_t    mac_src_mac4;
+  u_int8_t    mac_src_mac3;
+  u_int8_t    mac_src_mac2;
+  u_int8_t    mac_src_mac1;
+  u_int16_t   mac_ether_type;
+  u_int8_t    mac_src_mac6;
+  u_int8_t    mac_src_mac5;
+} mac_header;
+
+typedef struct ip_header_struct {
+  u_int16_t     ip_len;
+  u_int8_t      ip_tos; 
+  u_int8_t      ip_ihl:4 ,ip_ver:4;
+  u_int16_t     ip_offset:13,ip_flag:3;
+  u_int16_t     ip_ident;
+  u_int16_t     ip_chksum;
+  u_int8_t      ip_protocol;
+  u_int8_t      ip_ttl;
+  u_int32_t     ip_sourceip;
+  u_int32_t     ip_destip;
+} ip_header;
+
+typedef struct udp_header_struct{
+  u_int16_t   udp_destport;
+  u_int16_t   udp_srcport;
+  u_int16_t   udp_chksum;
+  u_int16_t   udp_len;
+} udp_header;
+
+typedef struct mac_conf_struct{
+  mac_header  mac;
+  ip_header   ip;
+  udp_header  udp;
+  u_int32_t   npack;   
+  u_int32_t   lpack;   
+  u_int32_t   npad;   
+  u_int32_t   cdone;   
+} mac_conf;
+
+typedef struct tse_conf_struct{
+  u_int32_t   rev;                    //0x0
+  u_int32_t   scratch;                
+  u_int32_t   command_config;
+  u_int32_t   mac_0;                  //0x3
+  u_int32_t   mac_1;
+  u_int32_t   frm_length;
+  u_int32_t   pause_quant;
+  u_int32_t   rx_section_empty;       //0x7
+  u_int32_t   rx_section_full;
+  u_int32_t   tx_section_empty;
+  u_int32_t   tx_section_full;
+  u_int32_t   rx_almost_empty;        //0xB
+  u_int32_t   rx_almost_full;
+  u_int32_t   tx_almost_empty;
+  u_int32_t   tx_almost_full;
+  u_int32_t   mdio_addr0;             //0xF
+  u_int32_t   mdio_addr1;
+}tse_conf;
+
+
 
 int mapCSP0(void) {
   printf("Mapping memory\n");
@@ -200,27 +272,9 @@ int setPhaseShiftOnce(){
   }
 
   reg=bus_r(addr);
+#ifdef VERBOSE
   printf("Multipupose reg now:%d\n",reg);
-
-  //for init_enet.. to convert ipaddress
-  /*
-  string sval;
-  sval.assign("129.129.202.176");
-  stringstream sstr(sval);
-  string word;
-  char chex[50],cword[50];
-  int i,inum;
-
-
-  while(getline(sstr,word,'.')){
-  i=atoi(word.c_str());
-    sprintf(chex,"%02x",i);
-    strcat(cword,chex);
-  }
-  printf("%s\n\n",cword);
-  */
-
-
+#endif
   return result;
 }
 
@@ -833,6 +887,22 @@ int64_t getProgress() {
 
 }
 
+int64_t getActualTime(){
+  return get64BitReg(GET_ACTUAL_TIME_LSB_REG, GET_ACTUAL_TIME_MSB_REG)/(1E-9*CLK_FREQ);  
+}
+
+int64_t getMeasurementTime(){
+  int64_t v=get64BitReg(GET_MEASUREMENT_TIME_LSB_REG, GET_MEASUREMENT_TIME_MSB_REG);
+  int64_t mask=0x8000000000000000;
+  if (v & mask ) {
+#ifdef VERBOSE
+    printf("no measurement time left\n");
+#endif
+    return -1E+9;
+  } else
+    return v/(1E-9*CLK_FREQ);
+}
+
 
 
 int64_t getProbes(){
@@ -1003,6 +1073,149 @@ int initConfGain(int val, int imod){
 #endif 
    return val;
 }
+
+
+int configureMAC(int ipad, long long int macad){
+  u_int32_t addrr=MULTI_PURPOSE_REG;
+  u_int32_t offset=ENET_CONF_REG, offset2=TSE_CONF_REG;
+  mac_conf *mac_conf_regs;
+  tse_conf *tse_conf_regs;
+  long int sum = 0;
+  long int checksum;
+  int count,val,powerOn=0;
+  unsigned short *addr;
+
+  mac_conf_regs=(mac_conf*)(CSP0BASE+offset*2);
+  tse_conf_regs=(tse_conf*)(CSP0BASE+offset2*2);
+
+#ifdef VERBOSE
+  printf("Configuring MAC\n");
+#endif
+  powerOn=((bus_r(addrr)&0x00008000)>>CHANGE_AT_POWER_ON_OFFSET);
+
+
+  
+  bus_w(addrr,RESET_BIT); //0x080,reset mac (reset) 
+  val=bus_r(addrr);
+#ifdef VERBOSE
+    printf("Value read from Multi-purpose Reg:%x\n",val);
+#endif 
+  if(val!=0x080) return -1;
+
+  usleep(500000);
+
+  bus_w(addrr,(ENET_RESETN_BIT|WRITE_BACK_BIT)); //0x840,write shadow regs(enet reset,write bak)
+  val=bus_r(addrr);
+#ifdef VERBOSE
+    printf("Value read from Multi-purpose Reg:%x\n",val);
+#endif 
+  if(val!=0x840) return -1;
+
+  bus_w(addrr,ENET_RESETN_BIT); //0x800,nreset phy(enet reset)
+  val=bus_r(addrr);
+#ifdef VERBOSE
+    printf("Value read from Multi-purpose Reg:%x\n",val);
+#endif 
+  if(val!=0x800) return -1;
+
+
+  mac_conf_regs->mac.mac_dest_mac1  =((macad>>(8*5))&0xFF);// 0x00; //pc7060  
+  mac_conf_regs->mac.mac_dest_mac2  =((macad>>(8*4))&0xFF);// 0x19; //pc7060    
+  mac_conf_regs->mac.mac_dest_mac3  =((macad>>(8*3))&0xFF);// 0x99; //pc7060  
+  mac_conf_regs->mac.mac_dest_mac4  =((macad>>(8*2))&0xFF);// 0x24; //pc7060  
+  mac_conf_regs->mac.mac_dest_mac5  =((macad>>(8*1))&0xFF);// 0xEB; //pc7060  
+  mac_conf_regs->mac.mac_dest_mac6  =((macad>>(8*0))&0xFF);// 0xEE; //pc7060  
+  mac_conf_regs->mac.mac_src_mac1   = 0x00;     
+  mac_conf_regs->mac.mac_src_mac2   = 0xAA;     
+  mac_conf_regs->mac.mac_src_mac3   = 0xBB;     
+  mac_conf_regs->mac.mac_src_mac4   = 0xCC;     
+  mac_conf_regs->mac.mac_src_mac5   = 0xDD;     
+  mac_conf_regs->mac.mac_src_mac6   = 0xEE;     
+  mac_conf_regs->mac.mac_ether_type   = 0x0800;   //ipv4
+
+  mac_conf_regs->ip.ip_ver            = 0x4;
+  mac_conf_regs->ip.ip_ihl            = 0x5;
+  mac_conf_regs->ip.ip_tos            = 0x0;
+  mac_conf_regs->ip.ip_len            = 0x0522;   // was 0x0526; 
+  mac_conf_regs->ip.ip_ident          = 0x0000;
+  mac_conf_regs->ip.ip_flag           = 0x2;
+  mac_conf_regs->ip.ip_offset         = 0x00;
+  mac_conf_regs->ip.ip_ttl            = 0x70;
+  mac_conf_regs->ip.ip_protocol       = 0x11;
+  mac_conf_regs->ip.ip_chksum         = 0x0000 ; //6E42 now is automatically computed 
+  mac_conf_regs->ip.ip_sourceip       = 0x8181CA2E;
+  mac_conf_regs->ip.ip_destip         = ipad; //CA57
+
+#ifdef VERBOSE
+  printf("mac_src_6:%x\n",mac_conf_regs->mac.mac_dest_mac6);
+  printf("ip_ttl:%x\n",mac_conf_regs->ip.ip_ttl);
+#endif
+
+  //checksum
+  count=sizeof(mac_conf_regs->ip);
+  addr=&(mac_conf_regs->ip);
+  while( count > 1 )  {
+    sum += *addr++;
+    count -= 2;
+  }
+  if( count > 0 )  sum += *addr;                     // Add left-over byte, if any 
+  while (sum>>16) sum = (sum & 0xffff) + (sum >> 16);// Fold 32-bit sum to 16 bits 
+  checksum = (~sum)&0xffff;
+  mac_conf_regs->ip.ip_chksum   =  checksum;
+#ifdef VERBOSE
+  printf("IP header checksum is 0x%x s\n",checksum);
+#endif
+
+  mac_conf_regs->udp.udp_srcport      = 0xE185;
+  mac_conf_regs->udp.udp_destport     = 0xC351;
+  mac_conf_regs->udp.udp_len          = 0x050E;    //was  0x0512;
+  mac_conf_regs->udp.udp_chksum       = 0x0000;
+
+#ifdef VERBOSE
+  printf("Configuring TSE\n");
+#endif
+  tse_conf_regs->rev                 = 0xA00;
+  tse_conf_regs->scratch             = 0xCCCCCCCC;
+  tse_conf_regs->command_config      = 0xB;    
+  tse_conf_regs->mac_0               = 0x17231C00;
+  tse_conf_regs->mac_1               = 0xCB4A;
+  tse_conf_regs->frm_length          = 0x5DC;      //max frame length (1500 bytes) (was 0x41C)
+  tse_conf_regs->pause_quant         = 0x0;
+  tse_conf_regs->rx_section_empty    = 0x7F0;
+  tse_conf_regs->rx_section_full     = 0x10;
+  tse_conf_regs->tx_section_empty    = 0x3F8;      //was 0x7F0;
+  tse_conf_regs->tx_section_full     = 0x16;
+  tse_conf_regs->rx_almost_empty     = 0x8;
+  tse_conf_regs->rx_almost_full      = 0x8;
+  tse_conf_regs->tx_almost_empty     = 0x8;
+  tse_conf_regs->tx_almost_full      = 0x3;
+  tse_conf_regs->mdio_addr0          = 0x12;
+  tse_conf_regs->mdio_addr1          = 0x0;
+  mac_conf_regs->cdone               = 0xFFFFFFFF;
+
+
+
+  bus_w(addrr,(INT_RSTN_BIT|ENET_RESETN_BIT|WRITE_BACK_BIT)); //0x2840,write shadow regs..  
+  val=bus_r(addrr);
+#ifdef VERBOSE
+    printf("Value read from Multi-purpose Reg:%x\n",val);
+#endif 
+  if(val!=0x2840) return -1;
+
+  usleep(100000);
+
+  bus_w(addrr,(INT_RSTN_BIT|ENET_RESETN_BIT|SW1_BIT)); //0x2820,write shadow regs..  
+  val=bus_r(addrr);
+#ifdef VERBOSE
+    printf("Value read from Multi-purpose Reg:%x\n",val);
+#endif 
+  if(val!=0x2820) return -1;
+
+
+
+  return OK;
+}
+
 
 
 

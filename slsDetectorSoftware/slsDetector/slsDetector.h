@@ -341,8 +341,8 @@ typedef  struct sharedSlsDetector {
   //slsDetector(string  const fname);
   //  ~slsDetector(){while(dataQueue.size()>0){}};
   /** destructor */ 
-  virtual ~slsDetector();//{ disconnect_channels();};
-
+  ~slsDetector();//{ disconnect_channels();};
+  //virtual ~slsDetector();//{ disconnect_channels();};
 
   /** sets the onlineFlag
       \param off can be: <BR> GET_ONLINE_FLAG, returns wether the detector is in online or offline state;<BR> OFFLINE_FLAG, detector in offline state (i.e. no communication to the detector - using only local structure - no data acquisition possible!);<BR> ONLINE_FLAG  detector in online state (i.e. communication to the detector updating the local structure) */
@@ -370,15 +370,15 @@ typedef  struct sharedSlsDetector {
     Should be implemented in the specific detector class
     /sa mythenDetector::readConfigurationFile
   */
-
-  virtual int readConfigurationFile(string const fname);  
+  int readConfigurationFile(string const fname);  
+  //  virtual int readConfigurationFile(string const fname);  
   /**  
     Purely virtual function
     Should be implemented in the specific detector class
     /sa mythenDetector::writeConfigurationFile
   */
-  virtual int writeConfigurationFile(string const fname);
-
+  int writeConfigurationFile(string const fname);
+  //virtual int writeConfigurationFile(string const fname);
   /* 
      It should be possible to dump all the settings of the detector (including trimbits, threshold energy, gating/triggering, acquisition time etc.
      in a file and retrieve it for repeating the measurement with identicals ettings, if necessary
@@ -389,14 +389,15 @@ typedef  struct sharedSlsDetector {
     Should be implemented in the specific detector class
     /sa mythenDetector::dumpDetectorSetup
   */
-  virtual int dumpDetectorSetup(string const fname, int level=0);  
+  int dumpDetectorSetup(string const fname, int level=0);  
+  //virtual int dumpDetectorSetup(string const fname, int level=0);  
   /** 
     Purely virtual function
     Should be implemented in the specific detector class
     /sa mythenDetector::retrieveDetectorSetup
   */
-  virtual int retrieveDetectorSetup(string const fname, int level=0);
-
+  int retrieveDetectorSetup(string const fname, int level=0);
+  //virtual int retrieveDetectorSetup(string const fname, int level=0);
   /** 
      configure the socket communication and initializes the socket instances
 
@@ -498,7 +499,8 @@ typedef  struct sharedSlsDetector {
      \sa mythenDetector::readSettingsFile
   */
 
-  virtual sls_detector_module* readSettingsFile(string fname,  sls_detector_module* myMod=NULL);
+  sls_detector_module* readSettingsFile(string fname,  sls_detector_module* myMod=NULL);
+  //virtual sls_detector_module* readSettingsFile(string fname,  sls_detector_module* myMod=NULL);
 
   /**
      Pure virtual function
@@ -509,7 +511,8 @@ typedef  struct sharedSlsDetector {
 
      \sa ::sls_detector_module mythenDetector::writeSettingsFile(string, sls_detector_module)
   */
-  virtual int writeSettingsFile(string fname, sls_detector_module mod); 
+  int writeSettingsFile(string fname, sls_detector_module mod); 
+  //virtual int writeSettingsFile(string fname, sls_detector_module mod); 
   
   /**
      Pure virtual function
@@ -519,7 +522,8 @@ typedef  struct sharedSlsDetector {
      \returns OK or FAIL if the file could not be written   
      \sa ::sls_detector_module sharedSlsDetector mythenDetector::writeSettingsFile(string, int)
   */
-  virtual int writeSettingsFile(string fname, int imod);
+   int writeSettingsFile(string fname, int imod);
+  //virtual int writeSettingsFile(string fname, int imod);
 
 
   /**
@@ -719,7 +723,9 @@ typedef  struct sharedSlsDetector {
       \offset reference to the offset variable
   \sa  sharedSlsDetector mythenDetector::readCalibrationFile
   */
-  virtual int readCalibrationFile(string fname, float &gain, float &offset);
+  int readCalibrationFile(string fname, float &gain, float &offset);
+  //virtual int readCalibrationFile(string fname, float &gain, float &offset);
+  
   /**
    
       writes a calibration file
@@ -728,7 +734,8 @@ typedef  struct sharedSlsDetector {
       \param offset
   \sa  sharedSlsDetector mythenDetector::writeCalibrationFile
   */
-  virtual int writeCalibrationFile(string fname, float gain, float offset);
+  int writeCalibrationFile(string fname, float gain, float offset);
+  //virtual int writeCalibrationFile(string fname, float gain, float offset);
 
 
   /**
@@ -999,7 +1006,8 @@ typedef  struct sharedSlsDetector {
        \returns current register value
        \sa ::sls_detector_module
   */
-  virtual int setModule(int reg, int imod=-1); 
+  int setModule(int reg, int imod=-1); 
+  //virtual int setModule(int reg, int imod=-1); 
 
   /** 
        configure chip
@@ -1007,14 +1015,16 @@ typedef  struct sharedSlsDetector {
        \returns current register value
        \sa ::sls_detector_module
   */
-  virtual int setModule(sls_detector_module module);
+  int setModule(sls_detector_module module);
+  //virtual int setModule(sls_detector_module module);
 
   /**
     get module
     \param imod module number
     \returns pointer to module structure (which has bee created and must then be deleted)
   */
-  virtual sls_detector_module *getModule(int imod);
+  sls_detector_module *getModule(int imod);
+  //virtual sls_detector_module *getModule(int imod);
  
   // calibration functions
   //  int setCalibration(int imod, detectorSettings isettings, float gain, float offset);
@@ -1055,7 +1065,8 @@ typedef  struct sharedSlsDetector {
 
     in this function trimbits/settings and calibration files are searched in the settingsDir and calDir directories and the detector is initialized
   */
-  virtual detectorSettings setSettings(detectorSettings isettings, int imod=-1);
+  detectorSettings setSettings(detectorSettings isettings, int imod=-1);
+  //virtual detectorSettings setSettings(detectorSettings isettings, int imod=-1);
 
   /**
 

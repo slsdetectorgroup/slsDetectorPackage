@@ -2844,7 +2844,6 @@ int slsDetector::setThresholdEnergy(int e_eV,  int imod, detectorSettings isetti
 
 
 detectorSettings slsDetector::setSettings( detectorSettings isettings, int imod){
-  std::cout<<"dfgfdgdgdf"<<endl;
 #ifdef VERBOSE
   std::cout<< "slsDetector setSettings "<< std::endl;
 #endif
@@ -2978,50 +2977,55 @@ int slsDetector::updateDetectorNoWait() {
   int64_t retval, tns=-1;
   char lastClientIP[INET_ADDRSTRLEN];
 
+  switch(thisDetector->myDetectorType){
+  case GOTTHARD:
+    n = 	controlSocket->ReceiveDataOnly(lastClientIP,sizeof(lastClientIP));
+    cout << "Updating detector last modified by " << lastClientIP << endl;
+    break;
+  default:
+    n = 	controlSocket->ReceiveDataOnly(lastClientIP,sizeof(lastClientIP));
+    cout << "Updating detector last modified by " << lastClientIP << endl;
 
-  n = 	controlSocket->ReceiveDataOnly(lastClientIP,sizeof(lastClientIP));
-  cout << "Updating detector last modified by " << lastClientIP << endl;
+    n = 	controlSocket->ReceiveDataOnly(&nm,sizeof(nm));
+    thisDetector->nMod[X]=nm;
+    n = 	controlSocket->ReceiveDataOnly( &nm,sizeof(nm));
+    thisDetector->nMod[Y]=nm;
+    thisDetector->nMods=thisDetector->nMod[Y]*thisDetector->nMod[X];
 
-  n = 	controlSocket->ReceiveDataOnly(&nm,sizeof(nm));
-  thisDetector->nMod[X]=nm;
-  n = 	controlSocket->ReceiveDataOnly( &nm,sizeof(nm));
-  thisDetector->nMod[Y]=nm;
-  thisDetector->nMods=thisDetector->nMod[Y]*thisDetector->nMod[X];
-
-  n = 	controlSocket->ReceiveDataOnly( &nm,sizeof(nm));
-  thisDetector->dynamicRange=nm;
+    n = 	controlSocket->ReceiveDataOnly( &nm,sizeof(nm));
+    thisDetector->dynamicRange=nm;
    
-  n = 	controlSocket->ReceiveDataOnly( &nm,sizeof(nm));
-  thisDetector->dataBytes=nm;
-  //t=setSettings(GET_SETTINGS);
-  n = 	controlSocket->ReceiveDataOnly( &t,sizeof(t));
-  thisDetector->currentSettings=t;
-  //thr=getThresholdEnergy();
-  n = 	controlSocket->ReceiveDataOnly( &thr,sizeof(thr));
-  thisDetector->currentThresholdEV=thr;
-  //retval=setFrames(tns);  
-  n = 	controlSocket->ReceiveDataOnly( &retval,sizeof(int64_t));
-  thisDetector->timerValue[FRAME_NUMBER]=retval;
-  // retval=setExposureTime(tns);
-  n = 	controlSocket->ReceiveDataOnly( &retval,sizeof(int64_t));
-  thisDetector->timerValue[ACQUISITION_TIME]=retval;
+    n = 	controlSocket->ReceiveDataOnly( &nm,sizeof(nm));
+    thisDetector->dataBytes=nm;
+    //t=setSettings(GET_SETTINGS);
+    n = 	controlSocket->ReceiveDataOnly( &t,sizeof(t));
+    thisDetector->currentSettings=t;
+    //thr=getThresholdEnergy();
+    n = 	controlSocket->ReceiveDataOnly( &thr,sizeof(thr));
+    thisDetector->currentThresholdEV=thr;
+    //retval=setFrames(tns);  
+    n = 	controlSocket->ReceiveDataOnly( &retval,sizeof(int64_t));
+    thisDetector->timerValue[FRAME_NUMBER]=retval;
+    // retval=setExposureTime(tns);
+    n = 	controlSocket->ReceiveDataOnly( &retval,sizeof(int64_t));
+    thisDetector->timerValue[ACQUISITION_TIME]=retval;
   
-  //retval=setPeriod(tns);
-  n = 	controlSocket->ReceiveDataOnly( &retval,sizeof(int64_t));
-  thisDetector->timerValue[FRAME_PERIOD]=retval;
-  //retval=setDelay(tns);
-  n = 	controlSocket->ReceiveDataOnly( &retval,sizeof(int64_t));
-  thisDetector->timerValue[DELAY_AFTER_TRIGGER]=retval;
-  // retval=setGates(tns);
-  n = 	controlSocket->ReceiveDataOnly( &retval,sizeof(int64_t));
-  thisDetector->timerValue[GATES_NUMBER]=retval;
-  //retval=setProbes(tns);
-  n = 	controlSocket->ReceiveDataOnly( &retval,sizeof(int64_t));
-  thisDetector->timerValue[PROBES_NUMBER]=retval;
-  //retval=setTrains(tns);
-  n = 	controlSocket->ReceiveDataOnly( &retval,sizeof(int64_t));
-  thisDetector->timerValue[CYCLES_NUMBER]=retval;
-  
+    //retval=setPeriod(tns);
+    n = 	controlSocket->ReceiveDataOnly( &retval,sizeof(int64_t));
+    thisDetector->timerValue[FRAME_PERIOD]=retval;
+    //retval=setDelay(tns);
+    n = 	controlSocket->ReceiveDataOnly( &retval,sizeof(int64_t));
+    thisDetector->timerValue[DELAY_AFTER_TRIGGER]=retval;
+    // retval=setGates(tns);
+    n = 	controlSocket->ReceiveDataOnly( &retval,sizeof(int64_t));
+    thisDetector->timerValue[GATES_NUMBER]=retval;
+    //retval=setProbes(tns);
+    n = 	controlSocket->ReceiveDataOnly( &retval,sizeof(int64_t));
+    thisDetector->timerValue[PROBES_NUMBER]=retval;
+    //retval=setTrains(tns);
+    n = 	controlSocket->ReceiveDataOnly( &retval,sizeof(int64_t));
+    thisDetector->timerValue[CYCLES_NUMBER]=retval;
+  }  
   return OK;
 
 }
@@ -5068,9 +5072,10 @@ int slsDetector::getScanPrecision(int iscan){
 
 char* slsDetector::setClientIP(string clientIP){
   int wrongFormat=1;
+
   struct sockaddr_in sa;
-  if(clientIP.length()==15){
-    if((clientIP[3]==':')&&(clientIP[7]==':')&&(clientIP[11]==':')){
+  if(clientIP.length()<16){
+    if((clientIP[3]=='.')&&(clientIP[7]=='.')&&(clientIP[11]=='.')){
       int result = inet_pton(AF_INET, clientIP.c_str(), &(sa.sin_addr));
       if(result!=0){
 	sprintf(thisDetector->clientIP,clientIP.c_str()); 
@@ -5103,14 +5108,72 @@ char* slsDetector::setClientMAC(string clientMAC){
 
 
 int slsDetector::configureMAC(){
-  if(!strcmp(getClientIP(),"none"))
-     return -1;
-  else if(!strcmp(getClientMAC(),"none"))    
+  int retval;
+  int ret=FAIL;
+  int fnum=F_CONFIGURE_MAC;
+  char mess[100];
+  char arg[2][50];
+  char cword[50]="", *pcword;
+  string sword;
+  strcpy(arg[0],getClientIP());
+  strcpy(arg[1],getClientMAC());
+
+
+#ifdef VERBOSE
+  std::cout<< "slsDetector configureMAC "<< std::endl;
+#endif
+  if(!strcmp(arg[0],"none"))
     return -1;
+  else if(!strcmp(arg[1],"none"))    
+    return -1;
+#ifdef VERBOSE
+  std::cout<< "IP/MAC Addresses in valid format "<< std::endl;
+#endif
 
-  cout<<"\n\ndfgfdgklfdhgldf\n\n\n";
+  //converting IPaddress to hex. 
+  pcword = strtok (arg[0],".");
+  while (pcword != NULL) {
+    sprintf(arg[0],"%02x",atoi(pcword));
+    strcat(cword,arg[0]);
+    pcword = strtok (NULL, ".");
+  }
+  strcpy(arg[0],cword);
+  std::cout<<"arg0:"<<arg[0]<<"."<<std::endl;
 
-  return 0;
+  //converting MACaddress to hex.
+  sword.assign(arg[1]);
+  strcpy(arg[1],"");
+  stringstream sstr(sword);
+  while(getline(sstr,sword,':'))
+    strcat(arg[1],sword.c_str());
+  std::cout<<"arg1:"<<arg[1]<<"."<<std::endl; 
+
+  //send to server
+  if (thisDetector->onlineFlag==ONLINE_FLAG) {
+    if (controlSocket) {
+      if  (controlSocket->Connect()>=0) {
+	controlSocket->SendDataOnly(&fnum,sizeof(fnum));
+	controlSocket->SendDataOnly(arg,sizeof(arg));
+	controlSocket->ReceiveDataOnly(&ret,sizeof(ret));
+	if (ret!=FAIL)
+	  controlSocket->ReceiveDataOnly(&retval,sizeof(retval));
+	else {
+	  controlSocket->ReceiveDataOnly(mess,sizeof(mess));
+	  std::cout<< "Detector returned error: " << mess << std::endl;
+	}
+	controlSocket->Disconnect();
+	if (ret==FORCE_UPDATE)
+	  updateDetector();
+      }	
+    }
+  }
+#ifdef VERBOSE
+  std::cout<< "Configuring MAC - returned "<< retval << std::endl;
+#endif
+  if (ret==FAIL) {
+    std::cout<< "Configuring MAC failed " << std::endl;
+  }
+  return retval;
 }
 
 
@@ -8155,7 +8218,7 @@ int slsDetector::retrieveDetectorSetup(string fname1, int level){
 #endif
       myfname=fname;
 #ifdef VERBOSE
-    std::cout<< "trim file name is "<< myfname <<   std::endl;
+    std::cout<< "file name is "<< myfname <<   std::endl;
 #endif
     infile.open(myfname.c_str(), ios_base::in);
     if (infile.is_open()) {
@@ -8288,7 +8351,7 @@ int slsDetector::retrieveDetectorSetup(string fname1, int level){
       strcpy(thisDetector->settingsFile,fname.c_str());
       return myMod;
     } else {
-      std::cout<< "could not open trim file " <<  myfname << std::endl;
+      std::cout<< "could not open settings file " <<  myfname << std::endl;
 
       if (nflag)
 	deleteModule(myMod);

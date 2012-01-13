@@ -2755,10 +2755,11 @@ int configure_mac(int file_des) {
   printf("destination ip is %d.%d.%d.%d = 0x%x \n",(ipad>>24)&0xff,(ipad>>16)&0xff,(ipad>>8)&0xff,(ipad)&0xff,ipad);
   printf("macad:%llx\n",imacadd);
   for (i=0;i<6;i++) 
-    printf("mac adress %d is  0x%x \n",6-i,((imacadd>>(8*i))&0xFF));
+    printf("mac adress %d is 0x%x \n",6-i,((imacadd>>(8*i))&0xFF));
   printf("server macad:%llx\n",iservermacadd);
   for (i=0;i<6;i++) 
-    printf("server mac adress %d is  0x%x \n\n",6-i,((iservermacadd>>(8*i))&0xFF));
+    printf("server mac adress %d is 0x%x \n",6-i,((iservermacadd>>(8*i))&0xFF));
+  printf("\n");
 #endif 
 
   if (imod>=getNModBoard())

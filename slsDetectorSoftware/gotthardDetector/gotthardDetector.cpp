@@ -16,7 +16,7 @@
      eventually secondary portnumber (e.g. mythen stop function)
      number of modules installed if different from the detector size (x,y)
   */
-
+/*
 int gotthardDetector::readConfigurationFile(string const fname){
   
   string ans;
@@ -123,6 +123,7 @@ int gotthardDetector::writeConfigurationFile(string const fname){
 #endif
   return iv;
 };
+*/
   /* 
      It should be possible to dump all the settings of the detector (including trimbits, threshold energy, gating/triggering, acquisition time etc.
      in a file and retrieve it for repeating the measurement with identicals ettings, if necessary
@@ -345,7 +346,7 @@ int gotthardDetector::retrieveDetectorSetup(string fname1, int level){
 
   /* I/O */
 
-
+/*
  sls_detector_module* gotthardDetector::readSettingsFile(string fname,  sls_detector_module *myMod){
  
    int nflag=0;
@@ -459,7 +460,7 @@ int gotthardDetector::writeSettingsFile(string fname, int imod){
   return writeSettingsFile(fname,detectorModules[imod]);
 
 };
-
+*/
 
 int gotthardDetector::writeDataFile(string fname, float *data, float *err, float *ang, char dataformat, int nch){
 

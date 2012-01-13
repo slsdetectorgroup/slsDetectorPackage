@@ -42,12 +42,12 @@ class gotthardDetector : public slsDetector{
     reads configuration file fname calling executeLine
     \param fname file to be read
   */
-  int readConfigurationFile(string const fname);  
+  // int readConfigurationFile(string const fname);  
   /**
      writes configuration file calling executeLine
     \param fname file to write to
   */
-  int writeConfigurationFile(string const fname);
+  // int writeConfigurationFile(string const fname);
   /** 
     dumps all the possible detector parameters calling executeLine
     \param fname file to write to
@@ -67,7 +67,7 @@ class gotthardDetector : public slsDetector{
      \returns the pointer to myMod or NULL if reading the file failed
   */
 
-  sls_detector_module* readSettingsFile(string fname,  sls_detector_module* myMod=NULL);
+  // sls_detector_module* readSettingsFile(string fname,  sls_detector_module* myMod=NULL);
 
   /**
      writes a trim/settings file
@@ -77,7 +77,7 @@ class gotthardDetector : public slsDetector{
 
      \sa ::sls_detector_module
   */
-  int writeSettingsFile(string fname, sls_detector_module mod); 
+  //int writeSettingsFile(string fname, sls_detector_module mod); 
   
   /**
      writes a trim/settings file for module number imod - the values will be read from the current detector structure
@@ -86,7 +86,7 @@ class gotthardDetector : public slsDetector{
      \returns OK or FAIL if the file could not be written   
      \sa ::sls_detector_module sharedSlsDetector
   */
-  int writeSettingsFile(string fname, int imod);
+  //int writeSettingsFile(string fname, int imod);
 
     /**
        writes a data file

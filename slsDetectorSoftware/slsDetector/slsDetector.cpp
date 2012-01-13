@@ -2011,7 +2011,7 @@ float slsDetector::setDAC(float val, dacIndex index, int imod){
 
 #ifdef VERBOSE
   std::cout<< std::endl;
-  std::cout<< "Setting DAC/POT/TEMP/HV/ADC_WRITE "<< index << "of module " << imod  <<  " to " << val << std::endl; 
+  std::cout<< "Setting DAC/POT/TEMP/HV "<< index << "of module " << imod  <<  " to " << val << std::endl; 
 #endif
   if (thisDetector->onlineFlag==ONLINE_FLAG) {
     if (controlSocket) {
@@ -2046,10 +2046,10 @@ float slsDetector::setDAC(float val, dacIndex index, int imod){
     }
   }
 #ifdef VERBOSE
-  std::cout<< "Dac/Pot/Temp/HV/ADC_write set to "<< retval << std::endl;
+  std::cout<< "Dac/Pot/Temp/HV set to "<< retval << std::endl;
 #endif
   if (ret==FAIL) {
-    std::cout<< "Set dac/pot/temp/HV/ADC_write failed " << std::endl;
+    std::cout<< "Set dac/pot/temp/HV failed " << std::endl;
   }
   return retval;
 };
@@ -6192,10 +6192,11 @@ string slsDetector::executeLine(int narg, char *args[], int action) {
       /* GOTTHARD ADC_WRITE_REG */ 
       else if (var=="adc_write") {
        if (action==PUT_ACTION) {
-         sscanf(args[1],"%f",&fval);
-         setDAC(fval,G_ADC_WRITE);
+         sscanf(args[1],"%x",&ival);
+	 writeRegister(ADC_WRITE,ival);
+	 // setDAC(fval,G_ADC_WRITE);
        }
-       sprintf(answer,"%f",setDAC(-1,G_ADC_WRITE));
+       sprintf(answer,"%x",readRegister(ADC_WRITE));
        return string(answer);
       }
 

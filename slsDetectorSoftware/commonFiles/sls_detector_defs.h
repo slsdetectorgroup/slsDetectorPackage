@@ -262,8 +262,7 @@ enum dacIndex {
   G_VCASC_OUT,  /**< gotthard */ 
   G_VIN_CM,     /**< gotthard */
   G_VREF_COMP,  /**< gotthard */ 
-  G_IB_TESTC,   /**< gotthard */
-  G_ADC_WRITE     /**< gotthard: ADC WRITE REG*/
+  G_IB_TESTC   /**< gotthard */
 };
 
 /** 
@@ -503,5 +502,8 @@ typedef struct  {
 } angleConversionConstant;
 
 
+enum reg{
+ADC_WRITE
+};
 
 #endif

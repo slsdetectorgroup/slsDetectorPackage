@@ -2911,6 +2911,8 @@ detectorSettings slsDetector::setSettings( detectorSettings isettings, int imod)
       //create file names
       switch(thisDetector->myDetectorType){
       case GOTTHARD:
+	//settings is saved in myMod.reg for gotthard
+	myMod->reg=thisDetector->currentSettings;
 	ostfn << thisDetector->settingsDir << ssettings <<"/settings.sn";//  << setfill('0') << setw(3) << hex << getId(MODULE_SERIAL_NUMBER, im) << setbase(10); 
 	oscfn << thisDetector->calDir << ssettings << "/calibration.sn";//  << setfill('0') << setw(3) << hex << getId(MODULE_SERIAL_NUMBER, im) << setbase(10); 
 #ifdef VERBOSE

@@ -73,7 +73,7 @@ int init_detector( int b) {
     setDummyRegister();
     setPhaseShiftOnce();
     setDAQRegister();
-    setSettings(GET_SETTINGS);
+    setSettings(GET_SETTINGS,-1);
 
 
     //testRAM();
@@ -1435,10 +1435,6 @@ int set_module(int file_des) {
     } else {
 #ifdef MCB_FUNCS
     retval=initModulebyNumber(myModule);
-    if(retval==-1){
-      ret=FAIL;
-      strcpy(mess,"Cannot set this settings as confGain register read back weird value\n");
-    }
 #endif
     }
   }
@@ -1712,10 +1708,10 @@ int set_settings(int file_des) {
     sprintf(mess,"Detector locked by %s\n",lastClientIP);  
   } else {
 #ifdef MCB_FUNCS
-    retval=setSettings(arg[0]);
+    retval=setSettings(arg[0],imod);
 #endif
 #ifdef VERBOSE
-    printf("Settings changed to %d\n",  isett);
+    printf("Settings changed to %d\n",retval);
 #endif  
     
     if (retval==isett || isett<0) {

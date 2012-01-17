@@ -10,14 +10,6 @@
 #define RGSH2VALS {260,300,260}
 
 //high,dynamic,low,medium,very high
-#define VREFDS_VALS   {0,0,200,300,400,500,600}
-#define VCASCN_VALS   {0,0,220,320,420,520,620}
-#define VCASCP_VALS   {0,0,240,340,440,540,640}
-#define VOUTCM_VALS   {0,0,260,360,460,560,660}
-#define VCASCOUT_VALS {0,0,280,380,480,580,680}
-#define VINCM_VALS    {0,0,300,400,500,600,700}
-#define VREFCOMP_VALS {0,0,320,420,520,620,720}
-#define IBTESTC_VALS  {0,0,340,440,540,640,740}
 #define CONF_GAIN     {0,0,  0,  1,  6,  2,  1}//dynamic gain confgain yet to be figured out-probably 8 or 16
  
 
@@ -115,7 +107,7 @@ int program_one_dac(int addr, int value,int imod );
 int set_one_dac(int imod);
 int initDAC(int dac_addr, int value,int imod );
 int initDACs(int* v,int imod );
-int setSettings(int i);
+int setSettings(int i,int imod);
 float initDACbyIndex(int ind,float val, int imod);
 float initDACbyIndexDACU(int ind,int val, int imod);
 float getDACbyIndexDACU(int ind,  int imod);
@@ -125,7 +117,7 @@ int setThresholdEnergy(int ethr);
 /* Other DAC index routines*/
 float getTemperatureByModule(int tempSensor, int imod);
 int initHighVoltageByModule(int val, int imod);
-int initConfGainByModule(int val, int imod);
+int initConfGainByModule(int isettings,int val,int imod);
 
 /* Initialization*/
 int initChannel(int ft,int cae, int ae, int coe, int ocoe, int counts,int imod );

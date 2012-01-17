@@ -667,7 +667,7 @@ int setThresholdEnergy(int ethr) {
   int imod;
   int ret=ethr;
 
-  setSettings(GET_SETTINGS);
+  setSettings(GET_SETTINGS,-1);//-1 added by dhanya
   if (thisSettings>=0 || thisSettings<3){
     myg=g[thisSettings];
     myo=o[thisSettings];
@@ -780,21 +780,20 @@ int initHighVoltageByModule(int val, int imod)
 }
 
 
-int initConfGainByModule(int val, int imod)
+int initConfGainByModule(int isettings,int val, int imod)
 {
   int im;
   //for the particular module
   if (imod>=0 && imod<nModX) { 
-    return initConfGain(val,imod);
+    return initConfGain(isettings,val,imod);
   }
   else{
     //checks if all modules have the same value(ALLMOD)
     for (im=1; im<nModX; im++) {
-      if (initConfGain(val,im)!=initConfGain(val,0)) {
+      if (initConfGain(isettings,val,im)!=initConfGain(isettings,val,0))
 	return -1;
-      }
     }
-    return initConfGain(val,0);
+    return initConfGain(isettings,val,0);
   }
 }
 
@@ -839,105 +838,42 @@ int initDACs(int* v,int imod)
 
 
 
-int setSettings(int i) 
+int setSettings(int i, int imod) 
 {
 #ifdef VERBOSE
   printf("\ninside set settings wit settins=%d...\n",i);
 #endif
-  int imod, isett, is;
-  int vrefds[] = VREFDS_VALS;
-  int vcascn[] = VCASCN_VALS;
-  int vcascp[] = VCASCP_VALS;  
-  int voutcm[] = VOUTCM_VALS;
-  int vcascout[] =VCASCOUT_VALS;
-  int vincm[] = VINCM_VALS;
-  int vrefcomp[] = VREFCOMP_VALS ;
-  int ibtestc[] = IBTESTC_VALS;
+  int confgain[] = CONF_GAIN;
+  int isett=-2,retval;
 
-  int ivrefds,ivcascn,ivcascp,ivoutcm,ivcascout,ivincm,ivrefcomp,iibtestc;
-
-  int v[NDAC];
-  int ind;
-  for (ind=0; ind<NDAC; ind++)
-    v[ind]=-1;
-  
-  //for confGain Register
-  if(thisSettings!=UNDEFINED)
-  
-  //if not get settings
-  if ((i>=HIGHGAIN) && (i<= VERYHIGHGAIN)) {
-    v[VREF_DS]=vrefds[i];
-    v[VCASCN_PB]=vcascn[i];
-    v[VCASCP_PB]=vcascp[i];
-    v[VOUT_CM]=voutcm[i];
-    v[VCASC_OUT]=vcascout[i];
-    v[VIN_CM]=vincm[i];
-    v[VREF_COMP]=vrefcomp[i];
-    v[IB_TESTC]=ibtestc[i];
-  
-    initDACs(v,ALLMOD);
-    thisSettings=i;
+  //reading settings
+  if(i==GET_SETTINGS){
+    retval=initConfGainByModule(i,i,imod);
+    if(retval==i)
+      isett=UNDEFINED;
   }
- 
-  //check settings for module 0 
-  imod=0;
-  isett=UNDEFINED;
-  ivrefds=setDACRegister(VREF_DS,-1,imod);
-  ivcascn=setDACRegister(VCASCN_PB,-1,imod);
-  ivcascp=setDACRegister(VCASCP_PB,-1,imod);
-  ivoutcm=setDACRegister(VOUT_CM,-1,imod);
-  ivcascout=setDACRegister(VCASC_OUT,-1,imod);
-  ivincm=setDACRegister(VIN_CM,-1,imod);
-  ivrefcomp=setDACRegister(VREF_COMP,-1,imod);
-  iibtestc=setDACRegister(IB_TESTC,-1,imod);
-
-  for (is=HIGHGAIN; is<UNDEFINED; is++) {
-    if (ivrefds==vrefds[is] && ivcascn==vcascn[is] && ivcascp==vcascp[is] && 
-	ivoutcm==voutcm[is] && ivcascout==vcascout[is] && ivincm==vincm[is] && 
-	ivrefcomp==vrefcomp[is] && iibtestc==ibtestc[is] ) {
-      printf("ivref from dummyreg =%d\n",ivrefds);
-      printf("vreg[%d]  is %d\n",is,vrefds[is]);
-      isett = is;
-    }
-  
-#ifdef VERBOSE
-    printf("Settings of module 0 are %d\n",isett);
-#endif
+  //writing settings  
+  else{
+    retval=initConfGainByModule(i,confgain[i],imod);
+    if(retval!=i)
+      isett=UNDEFINED;
   }
-  
-  for (imod=1; imod<nModX; imod++) {
-    if (isett!=UNDEFINED) {
-      ivrefds=setDACRegister(VREF_DS,-1,imod);
-      ivcascn=setDACRegister(VCASCN_PB,-1,imod);
-      ivcascp=setDACRegister(VCASCP_PB,-1,imod);
-      ivoutcm=setDACRegister(VOUT_CM,-1,imod);
-      ivcascout=setDACRegister(VCASC_OUT,-1,imod);
-      ivincm=setDACRegister(VIN_CM,-1,imod);
-      ivrefcomp=setDACRegister(VREF_COMP,-1,imod);
-      iibtestc=setDACRegister(IB_TESTC,-1,imod);
-
-      if (ivrefds!=vrefds[isett] || ivcascn!=vcascn[isett] || ivcascp!=vcascp[isett] || 
-	  ivoutcm!=voutcm[isett] || ivcascout!=vcascout[isett] || ivincm!=vincm[isett] || 
-	  ivrefcomp!=vrefcomp[isett] || iibtestc!=ibtestc[isett] ) {
-
-	isett=UNDEFINED; 
-#ifdef VERBOSE
-	printf("Settings of module %d are undefined\n",imod);
-	printf("%d %d %d %d %d %d %d %d \n", ivrefds,ivcascn,ivcascp,ivoutcm,ivcascout,ivincm,ivrefcomp,iibtestc);
-	//commented out by dhanya,should be changed back after firmware update
-	//printf("dacs 1: %08x dacs2: %08x\n",bus_r(MOD_DACS1_REG+(imod<<SHIFTMOD)), bus_r(MOD_DACS2_REG+(imod<<SHIFTMOD)));
-#endif
-      }
+  //if error while read/writing
+  if(isett==UNDEFINED)
+    printf("Error:Weird Value read back from the Gain/Settings Reg\n");
+  else{
+    //validating the settings read back
+    if((retval>=HIGHGAIN)&&(retval<=VERYHIGHGAIN))
+      isett=retval; 
+    else{
+      isett==UNDEFINED;
+      printf("Error:Wrong Settings Read out:%d\n",retval);
     }
   }
- 
+  thisSettings=isett;
 #ifdef VERBOSE
-  printf("detector settings are %d and confGain is %d\n",isett,initConfGainByModule(-1,-1));
+  printf("detector settings are %d\n",thisSettings);
 #endif
-  if (isett==UNDEFINED && thisSettings==UNINITIALIZED) 
-    ;
-  else
-    thisSettings=isett;
   return thisSettings;
 }
 
@@ -1652,17 +1588,10 @@ int initModulebyNumber(sls_detector_module myMod) {
       copyModule(detectorModules+im,&myMod);
     }
   } 
-  thisSettings=UNDEFINED;
-  setSettings(GET_SETTINGS);
-  int confgain[] = CONF_GAIN;
-  if ((thisSettings>=HIGHGAIN) && (thisSettings<= VERYHIGHGAIN)) {
-    int retval=initConfGainByModule(confgain[thisSettings],imod);
-    if(retval!=confgain[thisSettings]){
-      printf("Weird Value read from the confGain Reg, changing settings to UNDEFINED",retval);
-      thisSettings=UNDEFINED;
-      return -1;
-    }
-  }
+
+  //setting the conf gain and the settings register
+  setSettings(myMod.reg,imod);
+  
   return myMod.reg;
 }
 

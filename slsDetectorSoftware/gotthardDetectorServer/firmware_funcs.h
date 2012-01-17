@@ -51,9 +51,9 @@ int setContinousReadOut(int d);
 
 int setDACRegister(int idac, int val, int imod);
 
-float getTemperature(int tempSensor, int imod);
-int initHighVoltage(int val, int imod);
-int initConfGain(int val, int imod);
+float getTemperature(int tempSensor,int imod);
+int initHighVoltage(int val,int imod);
+int initConfGain(int isettings,int val,int imod);
 
 int configureMAC(int ipad, long long int macad, long long int servermacad, int ival);
 

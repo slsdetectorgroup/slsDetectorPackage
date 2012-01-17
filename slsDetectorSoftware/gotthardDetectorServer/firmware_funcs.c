@@ -278,7 +278,7 @@ int setPhaseShiftOnce(){
     bus_w(addr,(CHANGE_AT_POWER_ON_BIT|//DIGITAL_TEST_BIT|
 		INT_RSTN_BIT|ENET_RESETN_BIT|SW1_BIT&~PHASE_STEP_BIT));
   }
-
+  reg=bus_r(addr);
 #ifdef VERBOSE
   printf("Multipupose reg now:%d\n",reg);
 #endif
@@ -960,11 +960,12 @@ int setDACRegister(int idac, int val, int imod) {
   u_int32_t addr, reg, mask;
   int off;
 #ifdef VERBOSE
-  printf("Settings dac %d module %d register to %d\n",idac,imod,val);
+  if(val==-1)
+    printf("Getting dac register%d module %d\n",idac,imod);    
+  else
+    printf("Setting dac register %d module %d to %d\n",idac,imod,val);
 #endif
 
-  //  addr=DUMMY_REG;
-  //off=0;
   switch(idac){
   case 0:
   case 1:
@@ -1094,22 +1095,39 @@ int initHighVoltage(int val, int imod){
 
 
 
-int initConfGain(int val, int imod){
-#ifdef VERBOSE
-  printf("Setting/Getting confgain of module:%d with val:%d\n",imod,val);
-#endif
+int initConfGain(int isettings,int val,int imod){
+  int retval;
   u_int32_t addr=GAIN_REG;
+
   if(val!=-1){
-    bus_w(addr,val);
 #ifdef VERBOSE
-    printf("Value sent to confGain reg is %d\n",val);
-#endif 
+    printf("Setting Gain of module:%d with val:%d\n",imod,val);
+#endif
+    bus_w(addr,((val<<GAIN_OFFSET)|(bus_r(addr)&~GAIN_MASK)));
   }
-  val=bus_r(addr);
+  retval=(bus_r(addr)&GAIN_MASK);
 #ifdef VERBOSE
-    printf("Value read from confGain reg is %d\n",val);
+  printf("Value read from Gain reg is %d\n",retval);
 #endif 
-   return val;
+  if((val!=-1)&&(retval!=val))
+    return -1;
+
+  if(isettings!=-1){
+#ifdef VERBOSE
+    printf("Writing Settings of module:%d with val:%d\n",imod,isettings);
+#endif
+    bus_w(addr,((isettings<<SETTINGS_OFFSET)|(bus_r(addr)&~SETTINGS_MASK)));
+  }
+      retval=((bus_r(addr)&SETTINGS_MASK)>>SETTINGS_OFFSET);
+#ifdef VERBOSE
+    printf("Settings read from reg is %d\n",retval);
+#endif 
+    if((isettings!=-1)&&(retval!=isettings)){
+      printf("\n\nSettings r\n\n");
+    return -1;
+    }
+
+   return retval;
 }
 
 

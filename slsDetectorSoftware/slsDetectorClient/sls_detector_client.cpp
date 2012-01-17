@@ -1,13 +1,7 @@
 #include <iostream>
 #include <string>
 
-#ifdef MYTHEN_DET
-#include "mythenDetector.h"
-#endif
-
-#ifdef GOTTHARD_DET
-#include "gotthardDetector.h"
-#endif
+#include "slsDetector.h"
 
 
 #include <stdlib.h>
@@ -17,54 +11,54 @@ int main(int argc, char *argv[])
   
 {
 
+
   int    id=0;
   char *c;
   string answer;
   int action;
-#ifdef MYTHEN_DET
-  mythenDetector *myDetector;
+ slsDetector *myDetector;
+
+
+
 #ifdef READOUT 
-  action=mythenDetector::READOUT_ACTION;
+  action=slsDetector::READOUT_ACTION;
 #elif PUT   
-  action=mythenDetector::PUT_ACTION;
+  action=slsDetector::PUT_ACTION;
 #elif GET   
-  action=mythenDetector::GET_ACTION;
-#endif  
-#endif 
-  
-#ifdef GOTTHARD_DET
-  gotthardDetector *myDetector;
-#ifdef READOUT 
-  action=gotthardDetector::READOUT_ACTION;
-#elif PUT   
-  action=gotthardDetector::PUT_ACTION;
-#elif GET   
-  action=gotthardDetector::GET_ACTION;
+  action=slsDetector::GET_ACTION;
 #endif  
 
+
+
+  detectorType t;
+  
+#ifdef MYTHEN_DET
+#ifndef PICASSOD
+  t=MYTHEN;
+#else
+  t=PICASSO;
+#endif;
+#elif GOTTHARD_DET
+  t=GOTTHARD;
+#else
+  t=GENERIC;
 #endif
+
+
+
 
   if (argc>1 && sscanf(argv[1],"%d",&id)){
 
-#ifdef MYTHEN_DET
-#ifndef PICASSOD
-      myDetector=new mythenDetector(id);
-#else
-      myDetector=new mythenDetector(id,PICASSO);
-#endif
-#endif 
-#ifdef GOTTHARD_DET
-      myDetector=new gotthardDetector(id);
-#endif
+
+    myDetector=new slsDetector(t,id);
+
+
   } else { 
       cout << "Wrong usage - should be: "<< argv[0] << " id";
       cout <<     "(:channel arg)" << endl;
-#ifdef MYTHEN_DET
-      cout << mythenDetector::helpLine(action);
-#endif
-#ifdef GOTTHARD_DET
-      cout << gotthardDetector::helpLine(action);
-#endif
+
+      cout << slsDetector::helpLine(action);
+
       cout << endl;
       return -1;
     }
@@ -75,12 +69,9 @@ int main(int argc, char *argv[])
   if (argc<3) {
     cout << "Wrong usage - should be: "<< argv[0] << " id";
     cout <<     ":channel arg" << endl;
-#ifdef MYTHEN_DET
-    cout << mythenDetector::helpLine(action);
-#endif
-#ifdef GOTTHARD_DET
-      cout << gotthardDetector::helpLine(action);
-#endif
+
+    cout << slsDetector::helpLine(action);
+
     cout << endl;
     return -1;
   }

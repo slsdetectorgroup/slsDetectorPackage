@@ -13,8 +13,6 @@
 #define MULTI_PURPOSE_REG 0x94<<11
 
 #define DUMMY_REG        0x13<<11
-#define FIX_PATT_REG     0x45<<11
-#define FPGA_VERSION_REG 0x47<<11
 
 #define CONTROL_REG      0x5d<<11
 #define STATUS_REG       0x5e<<11
@@ -98,7 +96,8 @@
 #define SHIFTMOD 2
 #define SHIFTFIFO 9
 
-
+#define FIX_PATT_REG     0x96<<11
+#define FPGA_VERSION_REG 0x95<<11
 
 /* values defined for FPGA */
 #define MCSNUM        0x0
@@ -223,8 +222,8 @@
 #define INT_RSTN_OFFSET              13
 #define DIGITAL_TEST_BIT             0x00004000
 #define DIGITAL_TEST_OFFSET          14
-#define CHANGE_AT_POWER_ON_BIT       0x00008000
-#define CHANGE_AT_POWER_ON_OFFSET    15
+//#define CHANGE_AT_POWER_ON_BIT       0x00008000
+//#define CHANGE_AT_POWER_ON_OFFSET    15
 
 
 /* settings/conf gain register */

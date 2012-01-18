@@ -260,27 +260,24 @@ int setPhaseShiftOnce(){
   addr=MULTI_PURPOSE_REG;
   reg=bus_r(addr);
 #ifdef VERBOSE
-  printf("Multipurpose reg:%d\n",reg);
+  printf("Multipurpose reg:%x\n",reg);
 #endif
 
   //Checking if it is power on(negative number)
   if(((reg&0xFFFF0000)>>16)>0){
     bus_w(addr,0x0);   //clear the reg
 #ifdef VERBOSE
-    printf("Implementing Phase Shift-Reg:%d\n",bus_r(addr));
+    printf("Implementing Phase Shift-Reg:%x\n",bus_r(addr));
 #endif
     //phase shift
     for (i=1;i<PHASE_SHIFT;i++) {
       bus_w(addr,(INT_RSTN_BIT|ENET_RESETN_BIT|SW1_BIT|PHASE_STEP_BIT));//0x2821
       bus_w(addr,(INT_RSTN_BIT|ENET_RESETN_BIT|SW1_BIT&~PHASE_STEP_BIT));//0x2820
      }
-    //confirming phase change by setting CHANGE_AT_POWER_ON_BIT(for later uses)
-    bus_w(addr,(CHANGE_AT_POWER_ON_BIT|//DIGITAL_TEST_BIT|
-		INT_RSTN_BIT|ENET_RESETN_BIT|SW1_BIT&~PHASE_STEP_BIT));
   }
   reg=bus_r(addr);
 #ifdef VERBOSE
-  printf("Multipupose reg now:%d\n",reg);
+  printf("Multipupose reg now:%x\n",reg);
 #endif
   return result;
 }
@@ -594,6 +591,7 @@ u_int32_t testFpga(void) {
   int result=OK;
   //while (1) {
   //fixed pattern
+
   val=bus_r(FIX_PATT_REG);
   if (val==FIXED_PATT_VAL) {
     printf("fixed pattern ok!! %08x\n",val);
@@ -1138,7 +1136,7 @@ int configureMAC(int ipad,long long int macad,long long int servermacad,int ival
   tse_conf *tse_conf_regs;
   long int sum = 0;
   long int checksum;
-  int count,val,powerOn=0;
+  int count,val;
   unsigned short *addr;
 
   mac_conf_regs=(mac_conf*)(CSP0BASE+offset*2);
@@ -1147,8 +1145,6 @@ int configureMAC(int ipad,long long int macad,long long int servermacad,int ival
 #ifdef VERBOSE
   printf("Configuring MAC\n");
 #endif
-  powerOn=((bus_r(addrr)&CHANGE_AT_POWER_ON_BIT)>>CHANGE_AT_POWER_ON_OFFSET);
-
 
   if(ival)
     bus_w(addrr,(RESET_BIT|DIGITAL_TEST_BIT)); //0x080,reset mac (reset) 
@@ -1282,8 +1278,11 @@ int configureMAC(int ipad,long long int macad,long long int servermacad,int ival
   mac_conf_regs->cdone               = 0xFFFFFFFF;
 
 
-
-  bus_w(addrr,(INT_RSTN_BIT|ENET_RESETN_BIT|WRITE_BACK_BIT|(DIGITAL_TEST_BIT&ival))); //0x2840,write shadow regs..  
+  if(ival)
+    bus_w(addrr,(INT_RSTN_BIT|ENET_RESETN_BIT|WRITE_BACK_BIT|DIGITAL_TEST_BIT)); //0x2840,write shadow regs..  
+  else
+    bus_w(addrr,(INT_RSTN_BIT|ENET_RESETN_BIT|WRITE_BACK_BIT)); //0x2840,write shadow regs..  
+    
   val=bus_r(addrr);
 #ifdef VERBOSE
     printf("Value read from Multi-purpose Reg:%x\n",val);
@@ -1291,18 +1290,12 @@ int configureMAC(int ipad,long long int macad,long long int servermacad,int ival
     //  if(val!=0x2840) return -1;
 
   usleep(100000);
-  if(powerOn){
-    if(ival)
-      bus_w(addrr,(INT_RSTN_BIT|ENET_RESETN_BIT|SW1_BIT|DIGITAL_TEST_BIT|CHANGE_AT_POWER_ON_BIT)); //0x2820,write shadow regs..  
-    else
-      bus_w(addrr,(INT_RSTN_BIT|ENET_RESETN_BIT|SW1_BIT|CHANGE_AT_POWER_ON_BIT)); //0x2820,write shadow regs..  
-  }  
-  else {
-    if(ival)
-      bus_w(addrr,(INT_RSTN_BIT|ENET_RESETN_BIT|SW1_BIT|DIGITAL_TEST_BIT)); //0x2820,write shadow regs..  
-    else
-      bus_w(addrr,(INT_RSTN_BIT|ENET_RESETN_BIT|SW1_BIT)); //0x2820,write shadow regs..  
-  }
+
+  if(ival)
+    bus_w(addrr,(INT_RSTN_BIT|ENET_RESETN_BIT|SW1_BIT|DIGITAL_TEST_BIT)); //0x2820,write shadow regs..  
+  else
+    bus_w(addrr,(INT_RSTN_BIT|ENET_RESETN_BIT|SW1_BIT)); //0x2820,write shadow regs..  
+
   val=bus_r(addrr);
 #ifdef VERBOSE
     printf("Value read from Multi-purpose Reg:%x\n",val);

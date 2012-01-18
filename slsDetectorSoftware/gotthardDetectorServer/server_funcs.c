@@ -70,6 +70,7 @@ int init_detector( int b) {
   if (b) {
     initDetector();
     printf("\ninitdetector done! \n");
+    testFpga();
     setDummyRegister();
     setPhaseShiftOnce();
     setDAQRegister();

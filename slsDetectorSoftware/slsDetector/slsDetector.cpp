@@ -6194,8 +6194,12 @@ string slsDetector::executeLine(int narg, char *args[], int action) {
       }
       /* DEBUGGING FUNCTIONS */ 
       else if (var=="reg_rw") {
+	if(narg<2)
+	  return string("\nError:Use gotthard_put i:reg_rw (address) (value in hex)OR gotthard_get i:reg_rw (address)");
 	sscanf(args[1],"%x",&ival);
 	if (action==PUT_ACTION) {
+	  if(narg<3)
+	    return string("\nError:Use gotthard_put i:reg_rw (address) (value in hex)OR gotthard_get i:reg_rw (address)");
 	  sscanf(args[2],"%x",&ival2);
 	  sprintf(answer,"%x",writeRegister(ival,ival2));
 	}

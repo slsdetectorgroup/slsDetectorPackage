@@ -169,7 +169,7 @@ int mapCSP0(void) {
   printf("CSPObase is 0x%x \n",CSP0BASE);
   printf("CSPOBASE=from %08x to %x\n",CSP0BASE,CSP0BASE+MEM_SIZE);
   
-  /* must b uncommented later////////////////////////////////////////////////////////
+  /* must b uncommentedlater////////////////////////////////////////////////////////
   values=(u_int32_t*)(CSP0BASE+FIFO_DATA_REG_OFF);
   printf("values=%08x\n",values);
   fifocntrl=(u_int32_t*)(CSP0BASE+FIFO_CNTRL_REG_OFF);
@@ -208,50 +208,6 @@ u_int32_t bus_r(u_int32_t offset) {
   ptr1=(u_int32_t*)(CSP0BASE+offset*2);
   return *ptr1;
 }
-
-
-int setDummyRegister() {
-  int result = OK;
-  volatile u_int32_t val,addr;
-  addr = DUMMY_REG;
-  int i;
-  for(i=0;i<100;i++)
-    {
-      //dummy register
-      val=0x5A5A5A5A-i;
-      bus_w(addr, val);
-      val=bus_r(addr);
-      if (val!=0x5A5A5A5A-i) {
-	printf("ATTEMPT:%d:\tFPGA dummy register wrong!! %x instead of %x \n",i,val,0x5A5A5A5A-i);
-	result=FAIL;
-      }
-	
-      //dummy register
-      val=0x0F0F0F0F;
-      bus_w(addr, val);
-      val=bus_r(addr);
-      if (val!=0x0F0F0F0F) {
-	printf("ATTEMPT:%d:\tFPGA dummy register wrong!! %x instead of 0x0F0F0F0F \n",i,val);
-	result=FAIL;
-      }
-      //dummy register
-      val=0xF0F0F0F0;
-      bus_w(DUMMY_REG, val);
-      val=bus_r(DUMMY_REG);
-      if (val!=0xF0F0F0F0)  {
-	printf("ATTEMPT:%d:\tFPGA dummy register wrong!! %x instead of 0xF0F0F0F0 \n\n",i,val);
-	result=FAIL;
-      }
-    }
-  if(result==OK)
-    {
-      printf("\n\n----------------------------------------------------------------------------------------------");
-      printf("\nATTEMPT 100: FPGA DUMMY REGISTER OK!!\n");
-      printf("----------------------------------------------------------------------------------------------\n");
-    }
-  return result;
-}
-
 
 
 int setPhaseShiftOnce(){
@@ -310,38 +266,6 @@ int setDAQRegister()
   return result;
 }
 
-
-/*
-u_int32_t bus_write(int addr, u_int32_t data) {
-  u_int32_t *ptr1,offset;
-  switch(addr){
-  case ADC_WRITE:
-    offset=ADC_WRITE_REG;
-    break;
-  default:
-    return FAIL;
-  }
-  ptr1=(u_int32_t*)(CSP0BASE+offset*2);
-  *ptr1=data;
-
-  return OK;
-}
-
-
-u_int32_t bus_read(int addr) {
-  u_int32_t *ptr1,offset;
-  switch(addr){
-  case ADC_WRITE:
-    offset=ADC_WRITE_REG;
-    break;
-  default:
-    offset=ADC_WRITE_REG;
-  }
-  ptr1=(u_int32_t*)(CSP0BASE+offset*2);
-  return *ptr1;
-}
-
-*/
 
 // direct pattern output 
 u_int32_t putout(char *s, int modnum) {
@@ -587,18 +511,15 @@ u_int32_t  getMcsVersion() {
 
 // for fpga test 
 u_int32_t testFpga(void) {
-  u_int32_t val;
-  int result=OK;
-  //while (1) {
+  u_int32_t val,addr;
+  int result=OK,i;
   //fixed pattern
-
   val=bus_r(FIX_PATT_REG);
   if (val==FIXED_PATT_VAL) {
     printf("fixed pattern ok!! %08x\n",val);
   } else {
     printf("fixed pattern wrong!! %08x\n",val);
     result=FAIL;
-    //    return FAIL;
   }
   //FPGA code version
   val=bus_r(FPGA_VERSION_REG)&0x00ffffff;
@@ -606,32 +527,40 @@ u_int32_t testFpga(void) {
     printf("FPGA version ok!! %06x\n",val);
   } else {
     printf("FPGA version too old! %06x\n",val);
-    return FAIL;
+    result= FAIL;
   }
   //dummy register
-  val=0xF0F0F0F0;
-  bus_w(DUMMY_REG, val);
-  val=bus_r(DUMMY_REG);
-  if (val==0xF0F0F0F0) {
-    printf("FPGA dummy register ok!! %x\n",val);
-  } else {
-    printf("FPGA dummy register wrong!! %x instead of 0xF0F0F0F0 \n",val);
-    result=FAIL;
-    //    return FAIL;
-  }
-  //dummy register
-  val=0x0F0F0F0F;
-  bus_w(DUMMY_REG, val);
-  val=bus_r(DUMMY_REG);
-  if (val==0x0F0F0F0F) {
-    printf("FPGA dummy register ok!! %x\n",val);
-  } else {
-    printf("FPGA dummy register wrong!! %x instead of 0x0F0F0F0F \n",val);
-    result=FAIL;
-    //    return FAIL;
-  }
-  //  }
-  
+  addr = DUMMY_REG;
+  for(i=0;i<100;i++)
+    {
+      val=0x5A5A5A5A-i;
+      bus_w(addr, val);
+      val=bus_r(addr);
+      if (val!=0x5A5A5A5A-i) {
+	printf("ATTEMPT:%d:\tFPGA dummy register wrong!! %x instead of %x \n",i,val,0x5A5A5A5A-i);
+	result=FAIL;
+      }
+      val=0x0F0F0F0F;
+      bus_w(addr, val);
+      val=bus_r(addr);
+      if (val!=0x0F0F0F0F) {
+	printf("ATTEMPT:%d:\tFPGA dummy register wrong!! %x instead of 0x0F0F0F0F \n",i,val);
+	result=FAIL;
+      }
+      val=0xF0F0F0F0;
+      bus_w(DUMMY_REG, val);
+      val=bus_r(DUMMY_REG);
+      if (val!=0xF0F0F0F0)  {
+	printf("ATTEMPT:%d:\tFPGA dummy register wrong!! %x instead of 0xF0F0F0F0 \n\n",i,val);
+	result=FAIL;
+      }
+    }
+  if(result==OK)
+    {
+      printf("----------------------------------------------------------------------------------------------");
+      printf("\nATTEMPT 100: FPGA DUMMY REGISTER OK!!\n");
+      printf("----------------------------------------------------------------------------------------------\n");
+    }
   return result;
 }
 
@@ -652,15 +581,11 @@ int getNModBoard() {
   int nmodboard;
   u_int32_t val;
   val=bus_r(FPGA_VERSION_REG)&0xff000000;
-  
-  printf("version register %08x\n",val);
-  nmodboard = 1;//val >> 24;
-  //#ifdef VERY_VERBOSE
+  nmodboard=val >> 24;
+#ifdef VERY_VERBOSE
   printf("The board hosts %d modules\n",nmodboard); 
-  nmodboard=1;//edited by dhanya 
-  //#endif
+#endif
   nModBoard=nmodboard;
-  //getNModBoard()=nmodboard;
   return nmodboard;
 }
 

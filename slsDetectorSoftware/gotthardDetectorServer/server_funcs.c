@@ -41,7 +41,7 @@ char mess[1000];
 
 
 
-
+   
 
 int init_detector( int b) {
 #ifndef PICASSOD
@@ -71,7 +71,8 @@ int init_detector( int b) {
     initDetector();
     printf("\ninitdetector done! \n");
     testFpga();
-    setDummyRegister();
+
+    //gotthard specific
     setPhaseShiftOnce();
     setDAQRegister();
     setSettings(GET_SETTINGS,-1);

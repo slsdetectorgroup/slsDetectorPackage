@@ -58,7 +58,6 @@ int init_detector( int b) {
   system("bus -a 0xb0000000");
 #endif
 #endif
-  testFpga(); shouldnt this be inside virtual as well?!
   
   */  
   if (res<0) { printf("Could not map memory\n");
@@ -71,14 +70,12 @@ int init_detector( int b) {
     initDetector();
     printf("\ninitdetector done! \n");
     testFpga();
+    //testRAM();
 
     //gotthard specific
     setPhaseShiftOnce();
     setDAQRegister();
     setSettings(GET_SETTINGS,-1);
-
-
-    //testRAM();
   }
 #endif
   strcpy(mess,"dummy message");

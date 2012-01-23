@@ -511,6 +511,7 @@ u_int32_t  getMcsVersion() {
 
 // for fpga test 
 u_int32_t testFpga(void) {
+  printf("Test FPGA:\n");
   u_int32_t val,addr;
   int result=OK,i;
   //fixed pattern
@@ -572,7 +573,7 @@ u_int32_t testRAM(void) {
   allocateRAM();
   //  while(i<100000) {
     memcpy(ram_values, values, dataBytes);
-    printf ("%d: copied fifo %x to memory %x size %d\n",i++, values, ram_values, dataBytes);
+    printf ("Test RAM:\t%d: copied fifo %x to memory %x size %d\n",i++, values, ram_values, dataBytes);
     // }
   return result;
 }
@@ -1677,7 +1678,6 @@ int allocateRAM() {
 #ifdef VERBOSE
       printf("RAM of size %d already allocated: nothing to be done\n", size);
 #endif
- 
       return OK;
     }
     

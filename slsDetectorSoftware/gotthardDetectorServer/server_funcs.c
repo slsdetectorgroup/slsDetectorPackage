@@ -70,7 +70,7 @@ int init_detector( int b) {
     initDetector();
     printf("\ninitdetector done! \n");
     testFpga();
-    //testRAM();
+    testRAM();
 
     //gotthard specific
     setPhaseShiftOnce();
@@ -821,13 +821,16 @@ int read_register(int file_des) {
 
  
 
-#ifdef VERBOSE
+//#ifdef VERBOSE
   printf("reading  register 0x%x\n", addr);
-#endif  
+//#endif
 
   if(ret!=FAIL){
     address=(addr<<11);
-      retval=bus_r(address);
+    	if((addr==0x98)||(addr==0x99))
+    		retval=bus_r16(address);
+    	else
+    		retval=bus_r(address);
   }
 
 
@@ -1368,7 +1371,7 @@ int set_module(int file_des) {
   int ret=OK;
   int dr, ow;
 
-  //  dr=setDynamicRange(-1);  commented out by dhanya
+  dr=setDynamicRange(-1);
 
   if (myDac)
     myModule.dacs=myDac;
@@ -1418,8 +1421,7 @@ int set_module(int file_des) {
 #endif
   
   if (ret==OK) {
-    // if (myModule.module>=getNModBoard()) {//commented out by dhanya
-       if (myModule.module>=1) {
+	  if (myModule.module>=getNModBoard()) {
       ret=FAIL;
       printf("Module number is too large %d\n",myModule.module);
     }
@@ -1458,7 +1460,7 @@ int set_module(int file_des) {
   free(myDac);
   free(myAdc);
 
-  //  setDynamicRange(dr);commentedout by dhanya
+  //  setDynamicRange(dr);  always 16 commented out
 
   
   return ret;
@@ -1905,19 +1907,18 @@ int read_frame(int file_des) {
     return dataret;
 
   }
-
  
   if (storeInRAM==0) {
     if ((dataretval=(char*)fifo_read_event())) {
       dataret=OK;
-#ifdef VERYVERBOSE
+//#ifdef VERYVERBOSE
       printf("Sending ptr %x %d\n",dataretval, dataBytes);
-#endif 
+//#endif
       sendDataOnly(file_des,&dataret,sizeof(dataret));
       sendDataOnly(file_des,dataretval,dataBytes);
-#ifdef VERBOSE
+//#ifdef VERBOSE
       printf("sent %d bytes\n",dataBytes);   
-#endif
+//#endif
       printf("dataret OK\n");
       return OK;
     }  else {
@@ -1938,7 +1939,7 @@ int read_frame(int file_des) {
       sendDataOnly(file_des,mess,sizeof(mess));//sizeof(mess));//sizeof(mess));
 #ifdef VERYVERBOSE
       printf("message sent\n",mess);
-#endif 
+#endif
       printf("dataret %d\n",dataret);
       return dataret;
     }
@@ -1949,14 +1950,14 @@ int read_frame(int file_des) {
     }
     dataretval=(char*)ram_values;
     dataret=OK;
-#ifdef VERBOSE
+//#ifdef VERBOSE
     printf("sending data of %d frames\n",nframes);
-#endif 
+//#endif
     for (iframes=0; iframes<nframes; iframes++) {
       sendDataOnly(file_des,&dataret,sizeof(dataret));
-#ifdef VERYVERBOSE
+//#ifdef VERYVERBOSE
       printf("sending pointer %x of size %d\n",dataretval,dataBytes);
-#endif 
+//#endif
       sendDataOnly(file_des,dataretval,dataBytes);
       dataretval+=dataBytes;
     }
@@ -1971,9 +1972,9 @@ int read_frame(int file_des) {
       if (differentClients)
 	dataret=FORCE_UPDATE;
     }
-#ifdef VERBOSE
+//#ifdef VERBOSE
       printf("Frames left %d\n",getFrames());
-#endif 
+//#endif
     sendDataOnly(file_des,&dataret,sizeof(dataret));
     sendDataOnly(file_des,mess,sizeof(mess));
     printf("dataret %d\n",dataret);

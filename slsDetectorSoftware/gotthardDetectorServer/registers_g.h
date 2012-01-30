@@ -37,7 +37,6 @@
 //not used so far
 #define SPEED_REG        0x006000
 #define SET_NBITS_REG    0x008000
-#define LOOK_AT_ME_REG   0x009000
 
 //user entered
 #define SET_DELAY_LSB_REG     0x44<<11
@@ -91,7 +90,13 @@
 #define MCB_DOUT_REG_OFF      0x200000
 #define FIFO_CNTRL_REG_OFF    0x300000
 #define FIFO_COUNTR_REG_OFF   0x400000
-#define FIFO_DATA_REG_OFF     0x800000
+
+//FIFO
+#define LOOK_AT_ME_REG   	  0x97<<11
+
+
+#define FIFO_DATA_REG_OFF     0x98<<11
+#define COUNTER_REG_OFF       0x99<<11
 
 #define SHIFTMOD 2
 #define SHIFTFIFO 9

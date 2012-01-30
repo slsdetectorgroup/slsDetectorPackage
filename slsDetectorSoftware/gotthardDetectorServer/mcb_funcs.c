@@ -98,7 +98,7 @@ int initDetector() {
   */
 
   /* initialize dynamic range etc. */
-  /* dynamicRange=getDynamicRange(); //commented out by dhanya
+  /* dynamicRange=getDynamicRange(); //always 16 not required commented out
      nModX=setNMod(-1);*/
 
   //dataBytes=nModX*NCHIP*NCHAN*4;
@@ -106,7 +106,7 @@ int initDetector() {
   // initChip(0, 0,ALLMOD);
   //nModX=n; 
   //
-  // allocateRAM();
+  allocateRAM();
 
 
   return OK;

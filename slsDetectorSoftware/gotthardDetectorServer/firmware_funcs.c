@@ -26,12 +26,12 @@ int fr;
 int wait_time;
 int *fifocntrl;
 int *values;
-int *statusreg;
+//int *statusreg; commented out by dhanya
 const int nModY=1;
 int nModBoard;
 int nModX=NMAXMOD;
-int dynamicRange=32;
-int dataBytes=NMAXMOD*NCHIP*NCHAN*4;
+int dynamicRange=16;//32;
+int dataBytes=NMAXMOD*NCHIP*NCHAN*2;
 int storeInRAM=0;
 int *ram_values=NULL;
 char *now_ptr=NULL;
@@ -169,18 +169,28 @@ int mapCSP0(void) {
   printf("CSPObase is 0x%x \n",CSP0BASE);
   printf("CSPOBASE=from %08x to %x\n",CSP0BASE,CSP0BASE+MEM_SIZE);
   
+  u_int32_t address;
+  address = FIFO_DATA_REG_OFF;
+  values=(u_int16_t*)(CSP0BASE+address*2);
+  printf("values=%04x\n",values);
+  //printf("values=%08x\n",((u_int32_t*)(CSP0BASE+FIFO_DATA_REG_OFF*2)));
+
   /* must b uncommentedlater////////////////////////////////////////////////////////
   values=(u_int32_t*)(CSP0BASE+FIFO_DATA_REG_OFF);
   printf("values=%08x\n",values);
   fifocntrl=(u_int32_t*)(CSP0BASE+FIFO_CNTRL_REG_OFF);
   printf("fifcntrl=%08x\n",fifocntrl);
   */
-  statusreg=(u_int32_t*)(CSP0BASE+STATUS_REG);
-  printf("statusreg=%08x\n",statusreg);
+ // statusreg=(u_int32_t*)(CSP0BASE+STATUS_REG*2);
+  printf("statusreg=%08x\n",bus_r(STATUS_REG));
   return OK;
 }
 
-
+u_int16_t bus_r16(u_int32_t offset){
+  u_int16_t *ptr1;
+  ptr1=(u_int16_t*)(CSP0BASE+offset*2);
+  return *ptr1;
+}
 //aldos function volatile (not needed) 
 u_int16_t bus_w16(u_int32_t offset, u_int16_t data) {
   u_int16_t *ptr1;
@@ -1391,20 +1401,21 @@ u_int32_t* fifo_read_event()
 #ifdef VIRTUAL
   return NULL;
 #endif
+  printf("before looping\n");
 #ifdef VERYVERBOSE
   printf("before looping\n");
   for (ichip=0; ichip<nModBoard*NCHIP; ichip++) {
     if ((fifoReadCounter(ichip)&FIFO_COUNTER_MASK)%128)
       printf("FIFO %d contains %d words\n",ichip,(fifoReadCounter(ichip)&FIFO_COUNTER_MASK)); 
   }
-#endif 
-  while(bus_r(LOOK_AT_ME_REG)==0) {
-#ifdef VERYVERBOSE
-    printf("Waiting for data status %x\n",runState());
 #endif
+  while(bus_r(LOOK_AT_ME_REG)==0) {
+//#ifdef VERYVERBOSE
+    printf("Waiting for data status %x\n",runState());
+//#endif
     if (runBusy()==0) {
        if (bus_r(LOOK_AT_ME_REG)==0) {
-#ifdef VERBOSE
+//#ifdef VERBOSE
 	 printf("no frame found - exiting ");
 
 	 printf("%08x %08x\n", runState(), bus_r(LOOK_AT_ME_REG)); 
@@ -1413,16 +1424,17 @@ u_int32_t* fifo_read_event()
       printf("FIFO %d contains %d words\n",ichip,(fifoReadCounter(ichip)&FIFO_COUNTER_MASK)); 
   }
   */
-#endif
+//#endif
 	 return NULL;
        } else {
-#ifdef VERYVERBOSE
+//#ifdef VERYVERBOSE
 	 printf("no frame found %x status %x\n", bus_r(LOOK_AT_ME_REG),runState());
-#endif
+//#endif
 	 break;
        }
     }
    }
+  printf("before readout %08x %08x\n", runState(), bus_r(LOOK_AT_ME_REG));
 #ifdef VERYVERBOSE
   printf("before readout %08x %08x\n", runState(), bus_r(LOOK_AT_ME_REG));
   for (ichip=0; ichip<nModBoard*NCHIP; ichip++) {
@@ -1432,7 +1444,7 @@ u_int32_t* fifo_read_event()
 #endif
   memcpy(now_ptr, values, dataBytes);
   /*
-    #ifdef VERBOSE
+#ifdef VERBOSE
   for (ichip=0;ichip<dataBytes/4; ichip++) {
     now_ptr[ichip*4]=values[ichip];
 #ifdef VERBOSE 
@@ -1440,16 +1452,17 @@ u_int32_t* fifo_read_event()
       printf("chip %d ch %d %d\n",ichip/128, ichip%128, (fifoReadCounter(ichip/128)&FIFO_COUNTER_MASK));
 #endif   
   }
-  //#endif
+#endif
   */
 
 
 
-#ifdef VERYVERBOSE
+//#ifdef VERYVERBOSE
   printf("Copying to ptr %x %d\n",now_ptr, dataBytes);
-#endif
-#ifdef VERYVERBOSE
+//#endif
   printf("after readout %08x %08x\n", runState(), bus_r(LOOK_AT_ME_REG)); 
+#ifdef VERYVERBOSE
+  printf("after readout %08x %08x\n", runState(), bus_r(LOOK_AT_ME_REG));
   for (ichip=0; ichip<nModBoard*NCHIP; ichip++) {
      if ((fifoReadCounter(ichip)&FIFO_COUNTER_MASK)%128)
       printf("FIFO %d contains %d words\n",ichip,(fifoReadCounter(ichip)&FIFO_COUNTER_MASK)); 
@@ -1527,6 +1540,7 @@ u_int32_t* decode_data(int *datain)
 
 
 int setDynamicRange(int dr) {
+	/*
   int ow;
   int nm;
 
@@ -1557,7 +1571,7 @@ int setDynamicRange(int dr) {
     putout("0000000000000000",ALLMOD);
     setNMod(nm);
   }
-  
+  */
 
   return   getDynamicRange();
 }
@@ -1568,6 +1582,7 @@ int setDynamicRange(int dr) {
 
 
 int getDynamicRange() {
+	/*
   int dr;
   u_int32_t shiftin=bus_r(GET_SHIFT_IN_REG);
   u_int32_t outmux=(shiftin >> OUTMUX_OFF) & OUTMUX_MASK;
@@ -1606,7 +1621,8 @@ int getDynamicRange() {
       ;
   } else
     printf("ram not allocated\n");
-
+*/
+	dynamicRange=16;
   return dynamicRange;
 
 }
@@ -1670,7 +1686,7 @@ int allocateRAM() {
     size=dataBytes;
 
 #ifdef VERBOSE
-  printf("nmodx=%d nmody=%d dynamicRange=%d dataBytes=%d nFrames=%d nTrains, size=%d\n",nModX,nModY,dynamicRange,dataBytes,nf,nt,size );
+  printf("\nnmodx=%d nmody=%d dynamicRange=%d dataBytes=%d nFrames=%d nTrains=%d, size=%d\n",nModX,nModY,dynamicRange,dataBytes,nf,nt,size );
 #endif
 
     if (size==ram_size) {

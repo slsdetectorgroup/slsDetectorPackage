@@ -827,7 +827,7 @@ int read_register(int file_des) {
 
   if(ret!=FAIL){
     address=(addr<<11);
-    	if((addr==0x98)||(addr==0x99))
+    	if((addr==0x29)||(addr==0x80))
     		retval=bus_r16(address);
     	else
     		retval=bus_r(address);

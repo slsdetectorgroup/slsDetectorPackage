@@ -7,68 +7,96 @@
 #define MEM_SIZE 0x100000 
 
 
+
+/* values defined for FPGA */
+#define MCSNUM            0x0
+#define MCSVERSION        0x101
+#define FIXED_PATT_VAL    0xacdc1980
+#define FPGA_VERSION_VAL  0x01110825  //0x00090514
+#define FPGA_INIT_PAT     0x60008
+#define FPGA_INIT_ADDR    0xb0000000
+
+
+
+
 /* registers defined in FPGA */
-#define GAIN_REG         0x10<<11
-#define DAQ_REG          0x1b<<11
-#define MULTI_PURPOSE_REG 0x94<<11
-
-#define DUMMY_REG        0x13<<11
-
-#define CONTROL_REG      0x5d<<11
-#define STATUS_REG       0x5e<<11
-#define CONFIG_REG       0x5f<<11
-#define EXT_SIGNAL_REG   0x6a<<11
-
-//temperature
-#define TEMP_IN_REG      0x81<<11
-#define TEMP_OUT_REG     0x82<<11
-
-//HV
-#define HV_REG           0x93<<11
-
-//configure MAC
-#define ENET_CONF_REG    0x91<<11
-#define TSE_CONF_REG     0x90<<11
-
+#define GAIN_REG              0x10<<11
+//#define FLOW_CONTROL_REG      0x11<<11
+//#define FLOW_STATUS_REG       0x12<<11
+//#define FRAME_REG             0x13<<11
+#define MULTI_PURPOSE_REG     0x14<<11
+#define DAQ_REG               0x15<<11
+//#define TIME_FROM_START_REG   0x16<<11
+#define MCB_CNTRL_REG_OFF     0x17<<11// control the dacs
 //ADC
-#define ADC_WRITE_REG    0x3a<<11
-#define ADC_SYNC_REG     0x3b<<11
+#define ADC_WRITE_REG         0x18<<11
+#define ADC_SYNC_REG          0x19<<11
+//#define MUTIME_REG            0x1a<<11
+//temperature
+#define TEMP_IN_REG           0x1b<<11
+#define TEMP_OUT_REG          0x1c<<11
+//configure MAC
+#define TSE_CONF_REG          0x1d<<11
+#define ENET_CONF_REG         0x1e<<11
+//#define WRTSE_SHAD_REG        0x1f<<11
+//HV
+#define HV_REG                0x20<<11
+#define DUMMY_REG             0x21<<11
+#define FPGA_VERSION_REG      0x22<<11
+#define FIX_PATT_REG          0x23<<11
+#define CONTROL_REG           0x24<<11
+#define STATUS_REG            0x25<<11
+#define CONFIG_REG            0x26<<11
+#define EXT_SIGNAL_REG   	  0x27<<11
+
+
+//FIFO
+#define LOOK_AT_ME_REG   	  0x28<<11
+#define COUNTER_REG_OFF       0x29<<11
+#define FIFO_DATA_REG_OFF     0x80<<11 ///////
+
+
+//to read back dac registers
+#define MOD_DACS1_REG         0x2a<<11
+#define MOD_DACS2_REG         0x2b<<11
+#define MOD_DACS3_REG         0x2c<<11
+
+//user entered
+#define SET_DELAY_LSB_REG     0x2d<<11
+#define SET_DELAY_MSB_REG     0x2e<<11
+#define GET_DELAY_LSB_REG     0x2f<<11
+#define GET_DELAY_MSB_REG     0x30<<11
+
+#define SET_TRAINS_LSB_REG    0x31<<11
+#define SET_TRAINS_MSB_REG    0x32<<11
+#define GET_TRAINS_LSB_REG    0x33<<11
+#define GET_TRAINS_MSB_REG    0x34<<11
+
+#define SET_FRAMES_LSB_REG    0x35<<11
+#define SET_FRAMES_MSB_REG    0x36<<11
+#define GET_FRAMES_LSB_REG    0x37<<11
+#define GET_FRAMES_MSB_REG    0x38<<11
+
+#define SET_PERIOD_LSB_REG    0x39<<11
+#define SET_PERIOD_MSB_REG    0x3a<<11
+#define GET_PERIOD_LSB_REG    0x3b<<11
+#define GET_PERIOD_MSB_REG    0x3c<<11
+
+#define SET_EXPTIME_LSB_REG   0x3d<<11
+#define SET_EXPTIME_MSB_REG   0x3e<<11
+#define GET_EXPTIME_LSB_REG   0x3f<<11
+#define GET_EXPTIME_MSB_REG   0x40<<11
+
+#define SET_GATES_LSB_REG     0x41<<11
+#define SET_GATES_MSB_REG     0x42<<11
+#define GET_GATES_LSB_REG     0x43<<11
+#define GET_GATES_MSB_REG     0x44<<11
+
+
 
 //not used so far
 #define SPEED_REG        0x006000
 #define SET_NBITS_REG    0x008000
-
-//user entered
-#define SET_DELAY_LSB_REG     0x44<<11
-#define SET_DELAY_MSB_REG     0x45<<11
-#define GET_DELAY_LSB_REG     0x46<<11
-#define GET_DELAY_MSB_REG     0x47<<11
-
-#define SET_TRAINS_LSB_REG    0x48<<11
-#define SET_TRAINS_MSB_REG    0x49<<11 
-#define GET_TRAINS_LSB_REG    0x4a<<11
-#define GET_TRAINS_MSB_REG    0x4b<<11
-
-#define SET_FRAMES_LSB_REG    0x4c<<11
-#define SET_FRAMES_MSB_REG    0x4d<<11
-#define GET_FRAMES_LSB_REG    0x4e<<11
-#define GET_FRAMES_MSB_REG    0x4f<<11
-
-#define SET_PERIOD_LSB_REG    0x51<<11
-#define SET_PERIOD_MSB_REG    0x52<<11
-#define GET_PERIOD_LSB_REG    0x53<<11
-#define GET_PERIOD_MSB_REG    0x54<<11
-
-#define SET_EXPTIME_LSB_REG   0x55<<11
-#define SET_EXPTIME_MSB_REG   0x56<<11
-#define GET_EXPTIME_LSB_REG   0x57<<11
-#define GET_EXPTIME_MSB_REG   0x58<<11
-
-#define SET_GATES_LSB_REG     0x59<<11
-#define SET_GATES_MSB_REG     0x5a<<11
-#define GET_GATES_LSB_REG     0x5b<<11
-#define GET_GATES_MSB_REG     0x5c<<11
-
 
 //not used
 #define GET_SHIFT_IN_REG      0x022000   
@@ -79,38 +107,17 @@
 #define GET_ACTUAL_TIME_LSB_REG    0x025000   
 #define GET_ACTUAL_TIME_MSB_REG    0x026000  
 
-//to read back dac registers
-#define MOD_DACS1_REG         0x41<<11
-#define MOD_DACS2_REG         0x42<<11
-#define MOD_DACS3_REG         0x43<<11 
-
-#define MCB_CNTRL_REG_OFF     0x37<<11//used to control the dacs
 
 //not used
 #define MCB_DOUT_REG_OFF      0x200000
 #define FIFO_CNTRL_REG_OFF    0x300000
 #define FIFO_COUNTR_REG_OFF   0x400000
 
-//FIFO
-#define LOOK_AT_ME_REG   	  0x97<<11
 
-
-#define FIFO_DATA_REG_OFF     0x98<<11
-#define COUNTER_REG_OFF       0x99<<11
 
 #define SHIFTMOD 2
 #define SHIFTFIFO 9
 
-#define FIX_PATT_REG     0x96<<11
-#define FPGA_VERSION_REG 0x95<<11
-
-/* values defined for FPGA */
-#define MCSNUM        0x0
-#define MCSVERSION    0x101
-#define FIXED_PATT_VAL 0xacdc1980
-#define FPGA_VERSION_VAL 0x01110825  //0x00090514
-#define FPGA_INIT_PAT 0x60008
-#define FPGA_INIT_ADDR 0xb0000000
 
 /* for control register */
 #define START_ACQ_BIT      0x00000001

@@ -15,6 +15,9 @@
 #include <sys/ipc.h>
 #include <sys/shm.h>
 #include <sys/stat.h>
+#include </opt/uClinux/bfin-linux-uclibc/bfin-linux-uclibc/runtime/usr/include/bfin_sram.h>
+
+
 
 
 //for memory mapping
@@ -171,8 +174,8 @@ int mapCSP0(void) {
   
   u_int32_t address;
   address = FIFO_DATA_REG_OFF;
-  values=(u_int16_t*)(CSP0BASE+address*2);
-  printf("values=%04x\n",values);
+  values=(u_int32_t*)(CSP0BASE+address*2);
+  printf("values=%08x\n",values);
   //printf("values=%08x\n",((u_int32_t*)(CSP0BASE+FIFO_DATA_REG_OFF*2)));
 
   /* must b uncommentedlater////////////////////////////////////////////////////////
@@ -1263,7 +1266,7 @@ u_int32_t runState(void) {
     write_status_sm("Stopped");  
 #endif
 #ifdef VERBOSE
-  printf("status %08x\n",s);
+  printf("status %04x\n",s);
 #endif
   return s;
 }
@@ -1272,9 +1275,9 @@ u_int32_t runState(void) {
 // State Machine 
 
 u_int32_t  startStateMachine(){
-#ifdef VERBOSE
+//#ifdef VERBOSE
   printf("Starting State Machine\n");
-#endif
+//#endif
   // fifoReset();   printf("Starting State Machine\n");
   now_ptr=(char*)ram_values;
 #ifdef SHAREDMEMORY
@@ -1442,7 +1445,35 @@ u_int32_t* fifo_read_event()
       printf("FIFO %d contains %d words\n",ichip,(fifoReadCounter(ichip)&FIFO_COUNTER_MASK)); 
   }
 #endif
-  memcpy(now_ptr, values, dataBytes);
+
+
+  //unsigned long flags;
+
+ // register int ihalf;
+
+ // save_flags(flags);
+ // cli(); /* This code runs with interrupts disabled */
+
+
+/*  for (ihalf=0;ihalf<dataBytes/sizeof(int); ihalf++){
+	  ram_values[ihalf]=*values;
+  }*/
+
+
+ // restore_flags(flags);
+
+/*
+  for (ihalf=0;ihalf<dataBytes/sizeof(int); ihalf++)
+  	  printf("\n%d: 0x%0x 0x%0x",ihalf,ram_values[ihalf]&0xffff,(ram_values[ihalf]>>16)&0xffff);
+*/
+
+/* for (ichip=0;ichip<dataBytes/2; ichip++)
+	  printf("\n%d: %08x",ichip,*values);*/
+
+
+      //sram_free(now_ptr);
+      memcpy(now_ptr, values, dataBytes);
+
   /*
 #ifdef VERBOSE
   for (ichip=0;ichip<dataBytes/4; ichip++) {

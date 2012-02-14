@@ -96,8 +96,7 @@ int acceptConnection(int socketDescriptor) {
   
   //  if(file_des>0) return file_des;
 
-  //next 3 lines commented out by dhanya
-  //#ifndef C_ONLY
+ //#ifndef C_ONLY
   //  if(is_a_server){ //server; the server will wait for the clients connection
   //#endif
 

@@ -52,45 +52,45 @@
 
 //FIFO
 #define LOOK_AT_ME_REG   	  0x28<<11
-#define COUNTER_REG_OFF       0x29<<11
+
 #define FIFO_DATA_REG_OFF     0x80<<11 ///////
 
 
 //to read back dac registers
-#define MOD_DACS1_REG         0x2a<<11
-#define MOD_DACS2_REG         0x2b<<11
-#define MOD_DACS3_REG         0x2c<<11
+#define MOD_DACS1_REG         0x65<<11
+#define MOD_DACS2_REG         0x66<<11
+#define MOD_DACS3_REG         0x67<<11
 
 //user entered
-#define SET_DELAY_LSB_REG     0x2d<<11
-#define SET_DELAY_MSB_REG     0x2e<<11
-#define GET_DELAY_LSB_REG     0x2f<<11
-#define GET_DELAY_MSB_REG     0x30<<11
+#define SET_DELAY_LSB_REG     0x68<<11
+#define SET_DELAY_MSB_REG     0x69<<11
+#define GET_DELAY_LSB_REG     0x6a<<11
+#define GET_DELAY_MSB_REG     0x6b<<11
 
-#define SET_TRAINS_LSB_REG    0x31<<11
-#define SET_TRAINS_MSB_REG    0x32<<11
-#define GET_TRAINS_LSB_REG    0x33<<11
-#define GET_TRAINS_MSB_REG    0x34<<11
+#define SET_TRAINS_LSB_REG    0x6c<<11
+#define SET_TRAINS_MSB_REG    0x6d<<11
+#define GET_TRAINS_LSB_REG    0x6e<<11
+#define GET_TRAINS_MSB_REG    0x6f<<11
 
-#define SET_FRAMES_LSB_REG    0x35<<11
-#define SET_FRAMES_MSB_REG    0x36<<11
-#define GET_FRAMES_LSB_REG    0x37<<11
-#define GET_FRAMES_MSB_REG    0x38<<11
+#define SET_FRAMES_LSB_REG    0x70<<11
+#define SET_FRAMES_MSB_REG    0x71<<11
+#define GET_FRAMES_LSB_REG    0x72<<11
+#define GET_FRAMES_MSB_REG    0x73<<11
 
-#define SET_PERIOD_LSB_REG    0x39<<11
-#define SET_PERIOD_MSB_REG    0x3a<<11
-#define GET_PERIOD_LSB_REG    0x3b<<11
-#define GET_PERIOD_MSB_REG    0x3c<<11
+#define SET_PERIOD_LSB_REG    0x74<<11
+#define SET_PERIOD_MSB_REG    0x75<<11
+#define GET_PERIOD_LSB_REG    0x76<<11
+#define GET_PERIOD_MSB_REG    0x77<<11
 
-#define SET_EXPTIME_LSB_REG   0x3d<<11
-#define SET_EXPTIME_MSB_REG   0x3e<<11
-#define GET_EXPTIME_LSB_REG   0x3f<<11
-#define GET_EXPTIME_MSB_REG   0x40<<11
+#define SET_EXPTIME_LSB_REG   0x78<<11
+#define SET_EXPTIME_MSB_REG   0x79<<11
+#define GET_EXPTIME_LSB_REG   0x7a<<11
+#define GET_EXPTIME_MSB_REG   0x7b<<11
 
-#define SET_GATES_LSB_REG     0x41<<11
-#define SET_GATES_MSB_REG     0x42<<11
-#define GET_GATES_LSB_REG     0x43<<11
-#define GET_GATES_MSB_REG     0x44<<11
+#define SET_GATES_LSB_REG     0x7c<<11
+#define SET_GATES_MSB_REG     0x7d<<11
+#define GET_GATES_LSB_REG     0x7e<<11
+#define GET_GATES_MSB_REG     0x7f<<11
 
 
 

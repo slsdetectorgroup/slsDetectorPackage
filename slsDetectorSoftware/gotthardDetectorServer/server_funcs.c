@@ -94,7 +94,7 @@ int decode_function(int file_des) {
 #endif 
   n = receiveDataOnly(file_des,&fnum,sizeof(fnum));
   if (n <= 0) {
-    printf("ERROR reading from socket %d, %d %d\n", n, fnum, file_des);
+    //printf("ERROR reading from socket %d, %d %d\n", n, fnum, file_des);
     return FAIL;
   }
 #ifdef VERBOSE
@@ -1853,6 +1853,16 @@ int get_run_status(int file_des) {
 
   retval= runState();
   printf("\n\nSTATUS=%x\n",retval);
+
+  if (retval&0x00000001){
+	  printf("-----------------------------------RUNNING-----------------------------------\n");
+	  s=RUNNING;
+  }
+  else{
+	  printf("-----------------------------------IDLE----------------------------------\n");
+	  s=IDLE;
+  }
+  /*
   if (retval&0x8000)
     s=ERROR;
   else if (retval&0x00000001)
@@ -1867,7 +1877,7 @@ int get_run_status(int file_des) {
     s=WAITING;
   else
     s=IDLE;
-
+*/
 
 
   if (ret!=OK) {
@@ -1995,6 +2005,7 @@ int read_all(int file_des) {
 
  
   while(read_frame(file_des)==OK) {
+	  //usleep(0);
 #ifdef VERBOSE
   printf("frame read\n");
 #endif   

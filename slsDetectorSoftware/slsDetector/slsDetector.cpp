@@ -5,6 +5,7 @@
 #include  <sys/shm.h>
 #include <sys/socket.h>
 #include <arpa/inet.h>
+#include <bitset>
 
 int slsDetector::initSharedMemory(detectorType type, int id) {
 
@@ -543,7 +544,7 @@ int slsDetector::initializeDetectorSize(detectorType type) {
        thisDetector->nAdcs=5;
        thisDetector->nModMax[X]=1;
        thisDetector->nModMax[Y]=1;
-       thisDetector->dynamicRange=1;
+       thisDetector->dynamicRange=16;
        break;
      default:
        thisDetector->nChans=0;
@@ -1001,7 +1002,7 @@ int slsDetector::setTCPSocket(string const name, int const control_port, int con
 #ifdef VERBOSE
     std::cout<< "offline!" << std::endl;
 #endif
-    }   else {
+    }  else {
       thisDetector->onlineFlag=ONLINE_FLAG;
       controlSocket->SetTimeOut(100);
       controlSocket->Disconnect();
@@ -2011,7 +2012,7 @@ float slsDetector::setDAC(float val, dacIndex index, int imod){
 
 #ifdef VERBOSE
   std::cout<< std::endl;
-  std::cout<< "Setting DAC/POT/TEMP/HV "<< index << "of module " << imod  <<  " to " << val << std::endl; 
+  std::cout<< "Setting DAC "<< index << " of module " << imod  <<  " to " << val << std::endl;
 #endif
   if (thisDetector->onlineFlag==ONLINE_FLAG) {
     if (controlSocket) {
@@ -2046,10 +2047,10 @@ float slsDetector::setDAC(float val, dacIndex index, int imod){
     }
   }
 #ifdef VERBOSE
-  std::cout<< "Dac/Pot/Temp/HV set to "<< retval << std::endl;
+  std::cout<< "Dac set to "<< retval << std::endl;
 #endif
   if (ret==FAIL) {
-    std::cout<< "Set dac/pot/temp/HV failed " << std::endl;
+    std::cout<< "Set dac failed " << std::endl;
   }
   return retval;
 };
@@ -2070,7 +2071,7 @@ float slsDetector::getADC(dacIndex index, int imod){
 
 #ifdef VERBOSE
   std::cout<< std::endl;
-  std::cout<< "Getting ADC "<< index << "of module " << imod  <<   std::endl; 
+  std::cout<< "Getting ADC "<< index << " of module " << imod  <<   std::endl;
 #endif
   if (thisDetector->onlineFlag==ONLINE_FLAG) {
     if (controlSocket) {
@@ -3242,7 +3243,7 @@ int* slsDetector::getDataFromDetector(){
 	
 #ifdef VERBOSE
       std::cout<< "Received "<< n << " data bytes" << std::endl;
-#endif 
+#endif
       if (n!=thisDetector->dataBytes) {
 	std::cout<< "wrong data size received: received " << n << " but expected " << thisDetector->dataBytes << std::endl;
 	thisDetector->stoppedFlag=1;
@@ -3251,7 +3252,6 @@ int* slsDetector::getDataFromDetector(){
 	retval=NULL;
       }
     }
-
     return retval;
 };
 
@@ -5264,7 +5264,7 @@ string slsDetector::executeLine(int narg, char *args[], int action) {
       else
 	return string("unknown action");
     } 
-    runStatus s=getRunStatus();  
+    runStatus s=getRunStatus();
     switch (s) {
     case ERROR:
        return string("error");
@@ -5278,7 +5278,7 @@ string slsDetector::executeLine(int narg, char *args[], int action) {
       return string("finished");
    default:
        return string("idle");
-    }
+   }
   } 
 
   
@@ -6182,14 +6182,10 @@ string slsDetector::executeLine(int narg, char *args[], int action) {
       }
        /* GOTTHARD TEMPERATURE */ 
       else if (var=="temp_adc") {
-       if (action==PUT_ACTION) 
-         return string("cannot set");
-       sprintf(answer,"%f",setDAC(-1,TEMPERATURE_ADC));
+       sprintf(answer,"%f",getADC(TEMPERATURE_ADC));
        return string(answer);
       } else if (var=="temp_fpga") {
-       if (action==PUT_ACTION) 
-         return string("cannot set");
-       sprintf(answer,"%f",setDAC(-1,TEMPERATURE_FPGA));
+       sprintf(answer,"%f",getADC(TEMPERATURE_FPGA));
        return string(answer);
       }
       /* DEBUGGING FUNCTIONS */ 
@@ -6206,6 +6202,61 @@ string slsDetector::executeLine(int narg, char *args[], int action) {
 	sprintf(answer,"%x",readRegister(ival));
 	return string(answer);
       }
+      else if (var=="reg_frame") {
+    	  int i=0;
+    	  int val;
+    	  ofstream outfile;
+    	  outfile.open ("/home/l_maliakal_d/wORKSPACE/scratch/frame.txt",ios_base::out);
+    	  if (outfile.is_open())
+    	  {
+    		  for (i=0;i<2560;i++){
+    			  val=readRegister(0x80);
+    			  outfile <<i<<" " <<val<<std::endl;
+    		  }
+    		  outfile.close();
+    	  }
+    	  strcpy(answer,"done");
+    	  return string(answer);
+      }
+      else if (var=="start_test") {
+    	  string ans;
+    	  size_t found;
+    	  int stat,stat_old,count=0;
+    	  char *arg[100];
+    	  for (int ia=0; ia<100; ia++) {
+    		  arg[ia]=new char[1000];
+    	  }
+    	  int times=0,i=0,correct=0,idle=0;
+
+    	  if (action==PUT_ACTION) {
+    		  sscanf(args[1],"%d",&times);
+    		  for(i=0;i<times;i++){
+    			  std::cout<<std::endl<<dec<<i+1<<": \t";
+    			  idle=0;
+    			  strcpy(arg[0],"status");
+    			  strcpy(arg[1],"start");
+    			  ans=executeLine(2,arg,PUT_ACTION);
+
+    			  found=ans.find("idle");
+    			  if(found!=string::npos){
+    				  std::cout<<"NOTTT WORKED"<<std::endl;
+    				  exit(-1);
+    			  }
+    			  else{
+    				  while(found==string::npos){
+    					  ans=executeLine(1,arg,GET_ACTION);
+    					  found=ans.find("idle");
+    					  usleep(1000000);
+    				  }
+    				  std::cout<<"WORKED\t";
+    			  }
+    			  std::cout<<std::endl;
+    		  }
+    	  }
+    	  sprintf(answer,"%d",correct);
+    	  return string(answer);
+      }
+
 
   //timers
 

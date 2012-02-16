@@ -19,14 +19,14 @@
 
 
 // DAC definitions
-enum dacsVal{VREF_DS, VCASCN_PB, VCASCP_PB, VOUT_CM, VCASC_OUT, VIN_CM, VREF_COMP, IB_TESTC};
+enum dacsVal{VREF_DS, VCASCN_PB, VCASCP_PB, VOUT_CM, VCASC_OUT, VIN_CM, VREF_COMP, IB_TESTC,HIGH_VOLTAGE, CONFGAIN};
 
 /* DAC adresses */
 #define DACCS   {0,0,1,1,2,2,3,3,4,4,5,5,6,6}
 #define DACADDR {0,1,0,1,0,1,0,1,0,1,0,1,0,1}
 
 //Register Definitions for temp,hv,dac gain
-enum RegVals{TEMP_FPGA, TEMP_ADC, HIGH_VOLTAGE, CONFGAIN};
+enum adcVals{TEMP_FPGA, TEMP_ADC};
 
 //dynamic range
 #define MAX5523

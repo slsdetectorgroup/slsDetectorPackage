@@ -174,8 +174,8 @@ int mapCSP0(void) {
   
   u_int32_t address;
   address = FIFO_DATA_REG_OFF;
-  values=(u_int32_t*)(CSP0BASE+address*2);
-  printf("values=%08x\n",values);
+  values=(u_int16_t*)(CSP0BASE+address*2);
+  //printf("values=%04x\n",values);
   //printf("values=%08x\n",((u_int32_t*)(CSP0BASE+FIFO_DATA_REG_OFF*2)));
 
   /* must b uncommentedlater////////////////////////////////////////////////////////
@@ -1396,109 +1396,51 @@ u_int32_t  fifo_full(void)
 
 u_int32_t* fifo_read_event()
 {
-
-#ifdef VERBOSE
-  int ichip;
-  int ichan;
-#endif
 #ifdef VIRTUAL
   return NULL;
 #endif
+
+#ifdef VERBOSE
   printf("before looping\n");
-#ifdef VERYVERBOSE
-  printf("before looping\n");
-  for (ichip=0; ichip<nModBoard*NCHIP; ichip++) {
-    if ((fifoReadCounter(ichip)&FIFO_COUNTER_MASK)%128)
-      printf("FIFO %d contains %d words\n",ichip,(fifoReadCounter(ichip)&FIFO_COUNTER_MASK)); 
-  }
 #endif
   while(bus_r(LOOK_AT_ME_REG)==0) {
-//#ifdef VERYVERBOSE
+#ifdef VERBOSE
     printf("Waiting for data status %x\n",runState());
-//#endif
+#endif
     if (runBusy()==0) {
        if (bus_r(LOOK_AT_ME_REG)==0) {
-//#ifdef VERBOSE
+#ifdef VERBOSE
 	 printf("no frame found - exiting ");
+	 printf("%08x %08x\n", runState(), bus_r(LOOK_AT_ME_REG));
 
-	 printf("%08x %08x\n", runState(), bus_r(LOOK_AT_ME_REG)); 
-  /* for (ichip=0; ichip<nModBoard*NCHIP; ichip++) {
-    if ((fifoReadCounter(ichip)&FIFO_COUNTER_MASK)%128)
-      printf("FIFO %d contains %d words\n",ichip,(fifoReadCounter(ichip)&FIFO_COUNTER_MASK)); 
-  }
-  */
-//#endif
+#endif
 	 return NULL;
        } else {
-//#ifdef VERYVERBOSE
+#ifdef VERBOSE
 	 printf("no frame found %x status %x\n", bus_r(LOOK_AT_ME_REG),runState());
-//#endif
+#endif
 	 break;
        }
     }
    }
-  printf("before readout %08x %08x\n", runState(), bus_r(LOOK_AT_ME_REG));
-#ifdef VERYVERBOSE
-  printf("before readout %08x %08x\n", runState(), bus_r(LOOK_AT_ME_REG));
-  for (ichip=0; ichip<nModBoard*NCHIP; ichip++) {
-    if ((fifoReadCounter(ichip)&FIFO_COUNTER_MASK)%128)
-      printf("FIFO %d contains %d words\n",ichip,(fifoReadCounter(ichip)&FIFO_COUNTER_MASK)); 
-  }
-#endif
-
-
-  //unsigned long flags;
-
- // register int ihalf;
-
- // save_flags(flags);
- // cli(); /* This code runs with interrupts disabled */
-
-
-/*  for (ihalf=0;ihalf<dataBytes/sizeof(int); ihalf++){
-	  ram_values[ihalf]=*values;
-  }*/
-
-
- // restore_flags(flags);
-
-/*
-  for (ihalf=0;ihalf<dataBytes/sizeof(int); ihalf++)
-  	  printf("\n%d: 0x%0x 0x%0x",ihalf,ram_values[ihalf]&0xffff,(ram_values[ihalf]>>16)&0xffff);
-*/
-
-/* for (ichip=0;ichip<dataBytes/2; ichip++)
-	  printf("\n%d: %08x",ichip,*values);*/
-
-
-      //sram_free(now_ptr);
-      memcpy(now_ptr, values, dataBytes);
-
-  /*
 #ifdef VERBOSE
-  for (ichip=0;ichip<dataBytes/4; ichip++) {
-    now_ptr[ichip*4]=values[ichip];
-#ifdef VERBOSE 
-    if (((fifoReadCounter(ichip/128)&FIFO_COUNTER_MASK)+(ichip%128))>128)
-      printf("chip %d ch %d %d\n",ichip/128, ichip%128, (fifoReadCounter(ichip/128)&FIFO_COUNTER_MASK));
-#endif   
-  }
+  printf("before readout %08x %08x\n", runState(), bus_r(LOOK_AT_ME_REG));
 #endif
-  */
+  dma_memcpy(now_ptr,values ,dataBytes);
 
-
-
-//#ifdef VERYVERBOSE
-  printf("Copying to ptr %x %d\n",now_ptr, dataBytes);
-//#endif
-  printf("after readout %08x %08x\n", runState(), bus_r(LOOK_AT_ME_REG)); 
 #ifdef VERYVERBOSE
-  printf("after readout %08x %08x\n", runState(), bus_r(LOOK_AT_ME_REG));
-  for (ichip=0; ichip<nModBoard*NCHIP; ichip++) {
-     if ((fifoReadCounter(ichip)&FIFO_COUNTER_MASK)%128)
-      printf("FIFO %d contains %d words\n",ichip,(fifoReadCounter(ichip)&FIFO_COUNTER_MASK)); 
-  }
+  printf("\n x%08x\n",now_ptr);
+  int a;
+  for (a=0;a<10; a=a+2)
+	  printf("\n%d: x%04x",a,now_ptr[a]);
+  printf("\n");
+  //memcpy(now_ptr, values, dataBytes);
 #endif
+#ifdef VERBOSE
+  printf("Copying to ptr %08x %d\n",now_ptr, dataBytes);
+  printf("after readout %08x %08x\n", runState(), bus_r(LOOK_AT_ME_REG)); 
+#endif
+
   if (storeInRAM>0) {
     now_ptr+=dataBytes;
   }
@@ -1735,7 +1677,8 @@ int allocateRAM() {
 #endif
     //  clearRAM();
     // ram_values=malloc(size);
-    ram_values=realloc(ram_values,size);
+    //+2 was added since dma_memcpy would switch the 16 bit values and the mem is 32 bit
+    ram_values=realloc(ram_values,size)+2;
 
   if (ram_values) {
     now_ptr=(char*)ram_values;
@@ -1750,7 +1693,7 @@ int allocateRAM() {
       printf("retrying\n");
       storeInRAM=0;
       size=dataBytes;
-      ram_values=realloc(ram_values,size);
+      ram_values=realloc(ram_values,size)+2;
       if (ram_values==NULL)
 	printf("Fatal error: there must be a memory leak somewhere! You can't allocate even one frame!\n");
       else {

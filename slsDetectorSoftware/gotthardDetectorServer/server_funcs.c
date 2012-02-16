@@ -821,16 +821,16 @@ int read_register(int file_des) {
 
  
 
-//#ifdef VERBOSE
+  //#ifdef VERBOSE
   printf("reading  register 0x%x\n", addr);
-//#endif
+  //#endif
 
   if(ret!=FAIL){
-    address=(addr<<11);
-    	if((addr==0x29)||(addr==0x80))
-    		retval=bus_r16(address);
-    	else
-    		retval=bus_r(address);
+	  address=(addr<<11);
+	  if(addr==0x80)
+		  retval=bus_r16(address);
+	  else
+		  retval=bus_r(address);
   }
 
 
@@ -861,232 +861,201 @@ int read_register(int file_des) {
 }
 
 int set_dac(int file_des) {
-  //everything in here does for all mods
-  float retval;
-  int ret=OK;
-  int arg[2];
-  enum dacIndex ind;
-  int imod;
-  int n;
-  float val;
-  int idac=0;
-  int ireg=-1;
+	//default:all mods
+	float retval;
+	int ret=OK;
+	int arg[2];
+	enum dacIndex ind;
+	int imod;
+	int n;
+	float val;
+	int idac=0;
 
-  sprintf(mess,"Can't set DAC/TEMP/HV\n");
+	sprintf(mess,"Can't set DAC\n");
 
-  n = receiveDataOnly(file_des,arg,sizeof(arg));
-  if (n < 0) {
-    sprintf(mess,"Error reading from socket\n");
-    ret=FAIL;
-  }
-  ind=arg[0];
-  imod=arg[1];
+	n = receiveDataOnly(file_des,arg,sizeof(arg));
+	if (n < 0) {
+		sprintf(mess,"Error reading from socket\n");
+		ret=FAIL;
+	}
+	ind=arg[0];
+	imod=arg[1];
 
-  n = receiveDataOnly(file_des,&val,sizeof(val));
-  if (n < 0) {
-    sprintf(mess,"Error reading from socket\n");
-    ret=FAIL;
-  }
+	n = receiveDataOnly(file_des,&val,sizeof(val));
+	if (n < 0) {
+		sprintf(mess,"Error reading from socket\n");
+		ret=FAIL;
+	}
 
 #ifdef VERBOSE
-  printf("Setting DAC/TEMP/HV %d of module %d to %f V\n", ind, imod, val);
+	printf("Setting DAC %d of module %d to %f V\n", ind, imod, val);
 #endif 
 
-  if (imod>=getNModBoard())
-    ret=FAIL;
-  if (imod<0)
-    imod=ALLMOD;
+	if (imod>=getNModBoard())
+		ret=FAIL;
+	if (imod<0)
+		imod=ALLMOD;
 
 #ifdef MCB_FUNCS
-  switch (ind) {
-  case G_VREF_DS :
-    idac=VREF_DS;
-    break;
-  case G_VCASCN_PB:
-    idac=VCASCN_PB;
-    break;
-  case G_VCASCP_PB:
-    idac=VCASCP_PB;
-    break;
-  case G_VOUT_CM:
-    idac=VOUT_CM;
-    break;
-  case G_VCASC_OUT:
-    idac=VCASC_OUT;
-    break;
-  case G_VIN_CM:
-    idac=VIN_CM;
-    break;
-  case G_VREF_COMP:
-    idac=VREF_COMP;
-    break;
-  case G_IB_TESTC:
-    idac=IB_TESTC;
-    break;
-  case TEMPERATURE_FPGA:
-    ireg=TEMP_FPGA;
-    break;
-  case TEMPERATURE_ADC:
-    ireg=TEMP_ADC;
-    break;
-  case HV_POT:
-    ireg=HIGH_VOLTAGE;
-    break;
+	switch (ind) {
+	case G_VREF_DS :
+		idac=VREF_DS;
+		break;
+	case G_VCASCN_PB:
+		idac=VCASCN_PB;
+		break;
+	case G_VCASCP_PB:
+		idac=VCASCP_PB;
+		break;
+	case G_VOUT_CM:
+		idac=VOUT_CM;
+		break;
+	case G_VCASC_OUT:
+		idac=VCASC_OUT;
+		break;
+	case G_VIN_CM:
+		idac=VIN_CM;
+		break;
+	case G_VREF_COMP:
+		idac=VREF_COMP;
+		break;
+	case G_IB_TESTC:
+		idac=IB_TESTC;
+		break;
+	case HV_POT:
+		idac=HIGH_VOLTAGE;
+		break;
 
-  default:
-    printf("Unknown DAC/TEMP/HV index %d\n",ind);
-    sprintf(mess,"Unknown DAC/TEMP/HV index %d\n",ind);
-    ret=FAIL;
-  }
- 
-  if (ret==OK) {
-    if (differentClients==1 && lockStatus==1 && val!=-1) {
-      ret=FAIL;
-      sprintf(mess,"Detector locked by %s\n",lastClientIP);    
-    } else{
-      //dac
-      if(ireg==-1)
-	retval=initDACbyIndexDACU(idac,val,imod);
-      else
-	{ //HV
-	  if(ireg==HIGH_VOLTAGE)
-	    retval=initHighVoltageByModule(val,imod);
-	  //Temp
-	  else
-	    retval=getTemperatureByModule(ireg,imod);
+	default:
+		printf("Unknown DAC index %d\n",ind);
+		sprintf(mess,"Unknown DAC index %d\n",ind);
+		ret=FAIL;
 	}
-    }
-  }
+
+	if (ret==OK) {
+		if (differentClients==1 && lockStatus==1 && val!=-1) {
+			ret=FAIL;
+			sprintf(mess,"Detector locked by %s\n",lastClientIP);
+		} else{
+			if(idac==HIGH_VOLTAGE)
+				retval=initHighVoltageByModule(val,imod);
+			else
+				retval=initDACbyIndexDACU(idac,val,imod);
+		}
+	}
+	if(ret==OK){
+		ret=FAIL;
+		if(idac==HIGH_VOLTAGE){
+			if(retval==-2)
+				strcpy(mess,"Invalid Voltage.Valid values are 0,90,110,120,150,180,200");
+			else if(retval==-3)
+				strcpy(mess,"Weird value read back or it has not been set yet\n");
+			else
+				ret=OK;
+		}
+		else if (retval==val || val==-1)
+			ret=OK;
+	}
 #endif
 
 #ifdef VERBOSE
-  printf("DAC/TEMP/HV set to %f V\n",  retval);
+	printf("DAC set to %f V\n",  retval);
 #endif  
-  ret=FAIL;
-  if(ireg==HIGH_VOLTAGE){
-    if(retval==-2)
-      strcpy(mess,"Invalid Voltage.Valid values are 0,90,110,120,150,180,200");
-    else if(retval==-3)
-      strcpy(mess,"Weird value read back\n");
-    else
-      ret=OK;
-  }
-  else if (retval==val || val==-1)
-    ret=OK;
-  if(ret==FAIL)
-    printf("Setting dac/hv %d of module %d: wrote %f but read %f\n", ind, imod, val, retval);
-  else{
-    if (differentClients)
-      ret=FORCE_UPDATE; 
-  }
+
+	if(ret==FAIL)
+		printf("Setting dac %d of module %d: wrote %f but read %f\n", ind, imod, val, retval);
+	else{
+		if (differentClients)
+			ret=FORCE_UPDATE;
+	}
 
 
-  /* send answer */
-  /* send OK/failed */
-  n = sendDataOnly(file_des,&ret,sizeof(ret));
-  if (ret!=FAIL) {
-    /* send return argument */
-    n += sendDataOnly(file_des,&retval,sizeof(retval));
-  } else {
-    n += sendDataOnly(file_des,mess,sizeof(mess));
-  }
+	/* send answer */
+	/* send OK/failed */
+	n = sendDataOnly(file_des,&ret,sizeof(ret));
+	if (ret!=FAIL) {
+		/* send return argument */
+		n += sendDataOnly(file_des,&retval,sizeof(retval));
+	} else {
+		n += sendDataOnly(file_des,mess,sizeof(mess));
+	}
 
 
-  /*return ok/fail*/
-  return ret; 
+	/*return ok/fail*/
+	return ret;
 
 }
 
 
 
 int get_adc(int file_des) {
+	//default: mod 0
+	float retval;
+	int ret=OK;
+	int arg[2];
+	enum dacIndex ind;
+	int imod;
+	int n;
+	int idac=0;
 
-  float retval;
-  int ret=OK;
-  int arg[2];
-  enum dacIndex ind;
-  int imod;
-  int n;
-  int idac=0;
-  
-  sprintf(mess,"Can't read ADC\n");
-
-
-  n = receiveDataOnly(file_des,arg,sizeof(arg));
-  if (n < 0) {
-    sprintf(mess,"Error reading from socket\n");
-    ret=FAIL;
-  }
-  ind=arg[0];
-  imod=arg[1];
+	sprintf(mess,"Can't read ADC\n");
 
 
-  if (imod>=getNModBoard() || imod<0)
-    ret=FAIL;
+	n = receiveDataOnly(file_des,arg,sizeof(arg));
+	if (n < 0) {
+		sprintf(mess,"Error reading from socket\n");
+		ret=FAIL;
+	}
+	ind=arg[0];
+	imod=arg[1];
+
+#ifdef VERBOSE
+	printf("Getting ADC %d of module %d\n", ind, imod);
+#endif
+
+	if (imod>=getNModBoard() || imod<0)
+		ret=FAIL;
 
 #ifdef MCB_FUNCS
-  switch (ind) {
- case G_VREF_DS :
-    idac=VREF_DS;
-    break;
-  case G_VCASCN_PB:
-    idac=VCASCN_PB;
-    break;
-  case G_VCASCP_PB:
-    idac=VCASCP_PB;
-    break;
-  case G_VOUT_CM:
-    idac=VOUT_CM;
-    break;
-  case G_VCASC_OUT:
-    idac=VCASC_OUT;
-    break;
-  case G_VIN_CM:
-    idac=VIN_CM;
-    break;
-  case G_VREF_COMP:
-    idac=VREF_COMP;
-    break;
-  case G_IB_TESTC:
-    idac=IB_TESTC;
-    break;
-  default:
-    printf("Unknown DAC index %d\n",ind);
-    ret=FAIL;
-    sprintf(mess,"Unknown DAC index %d\n",ind);
-  }
- 
-  if (ret==OK) {
-    retval=getDACbyIndexDACU(idac,imod);
-  }
- #endif
-#ifdef VERBOSE
-  printf("Getting ADC %d of module %d\n", ind, imod);
-#endif 
+	switch (ind) {
+	case TEMPERATURE_FPGA:
+		idac=TEMP_FPGA;
+		break;
+	case TEMPERATURE_ADC:
+		idac=TEMP_ADC;
+		break;
+	default:
+		printf("Unknown DAC index %d\n",ind);
+		sprintf(mess,"Unknown DAC index %d\n",ind);
+		ret=FAIL;
+	}
+
+	if (ret==OK)
+		retval=getTemperatureByModule(idac,imod);
+#endif
 
 #ifdef VERBOSE
-  printf("ADC is %f V\n",  retval);
+	printf("ADC is %f V\n",  retval);
 #endif  
-  if (ret==FAIL) {
-    printf("Getting adc %d of module %d failed\n", ind, imod);
-  }
+	if (ret==FAIL) {
+		printf("Getting adc %d of module %d failed\n", ind, imod);
+	}
 
+	if (differentClients)
+		ret=FORCE_UPDATE;
 
-  if (differentClients)
-    ret=FORCE_UPDATE;
+	/* send answer */
+	/* send OK/failed */
+	n = sendDataOnly(file_des,&ret,sizeof(ret));
+	if (ret!=FAIL) {
+		/* send return argument */
+		n += sendDataOnly(file_des,&retval,sizeof(retval));
+	} else {
+		n += sendDataOnly(file_des,mess,sizeof(mess));
+	}
 
-  /* send answer */
-  /* send OK/failed */
-  n = sendDataOnly(file_des,&ret,sizeof(ret));
-  if (ret!=FAIL) {
-    /* send return argument */
-    n += sendDataOnly(file_des,&retval,sizeof(retval));
-  } else {
-    n += sendDataOnly(file_des,mess,sizeof(mess));
-  }
-
-  /*return ok/fail*/
-  return ret; 
+	/*return ok/fail*/
+	return ret;
 
 }
 
@@ -1852,7 +1821,7 @@ int get_run_status(int file_des) {
 #endif 
 
   retval= runState();
-  printf("\n\nSTATUS=%x\n",retval);
+  printf("\n\nSTATUS=%08x\n",retval);
 
   if (retval&0x00000001){
 	  printf("-----------------------------------RUNNING-----------------------------------\n");
@@ -1898,12 +1867,7 @@ int get_run_status(int file_des) {
 }
 
 int read_frame(int file_des) {
-  /*
-  int *retval=NULL;
-  char *ptr=NULL;
-  int ret=OK; 
-  int f=0, i;
-  */
+
 #ifdef VERBOSE
   int n;
 #endif
@@ -1921,14 +1885,14 @@ int read_frame(int file_des) {
   if (storeInRAM==0) {
     if ((dataretval=(char*)fifo_read_event())) {
       dataret=OK;
-//#ifdef VERYVERBOSE
+#ifdef VERYVERBOSE
       printf("Sending ptr %x %d\n",dataretval, dataBytes);
-//#endif
+#endif
       sendDataOnly(file_des,&dataret,sizeof(dataret));
       sendDataOnly(file_des,dataretval,dataBytes);
-//#ifdef VERBOSE
+#ifdef VERBOSE
       printf("sent %d bytes\n",dataBytes);   
-//#endif
+#endif
       printf("dataret OK\n");
       return OK;
     }  else {
@@ -1946,7 +1910,7 @@ int read_frame(int file_des) {
       printf("%d %d %x %s\n",sizeof(mess),strlen(mess), mess,mess);
 #endif
       sendDataOnly(file_des,&dataret,sizeof(dataret));
-      sendDataOnly(file_des,mess,sizeof(mess));//sizeof(mess));//sizeof(mess));
+      sendDataOnly(file_des,mess,sizeof(mess));
 #ifdef VERYVERBOSE
       printf("message sent\n",mess);
 #endif
@@ -1960,14 +1924,14 @@ int read_frame(int file_des) {
     }
     dataretval=(char*)ram_values;
     dataret=OK;
-//#ifdef VERBOSE
+#ifdef VERBOSE
     printf("sending data of %d frames\n",nframes);
-//#endif
+#endif
     for (iframes=0; iframes<nframes; iframes++) {
       sendDataOnly(file_des,&dataret,sizeof(dataret));
-//#ifdef VERYVERBOSE
+#ifdef VERYVERBOSE
       printf("sending pointer %x of size %d\n",dataretval,dataBytes);
-//#endif
+#endif
       sendDataOnly(file_des,dataretval,dataBytes);
       dataretval+=dataBytes;
     }
@@ -1982,9 +1946,9 @@ int read_frame(int file_des) {
       if (differentClients)
 	dataret=FORCE_UPDATE;
     }
-//#ifdef VERBOSE
+#ifdef VERBOSE
       printf("Frames left %d\n",getFrames());
-//#endif
+#endif
     sendDataOnly(file_des,&dataret,sizeof(dataret));
     sendDataOnly(file_des,mess,sizeof(mess));
     printf("dataret %d\n",dataret);

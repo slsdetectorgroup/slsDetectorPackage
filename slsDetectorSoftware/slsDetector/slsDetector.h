@@ -5,75 +5,30 @@
 #define SLS_DETECTOR_H
 
 #include "MySocketTCP.h"
-#include <iostream>
-#include <fstream>
-#include <iomanip>
-#include <cstring>
-#include <string>
-#include <sstream>
- #include <queue>
-extern "C" {
- #include <pthread.h>
-}
- #include <fcntl.h>
- #include <unistd.h>
- #include <sys/stat.h>
- #include <sys/types.h>
- #include <sys/uio.h>
+/* #include <iostream> */
+/* #include <fstream> */
+/* #include <iomanip> */
+/* #include <cstring> */
+/* #include <string> */
+/* #include <sstream> */
+/*  #include <queue> */
+/* extern "C" { */
+/*  #include <pthread.h> */
+/* } */
+/*  #include <fcntl.h> */
+/*  #include <unistd.h> */
+/*  #include <sys/stat.h> */
+/*  #include <sys/types.h> */
+/*  #include <sys/uio.h> */
 
-#include "sls_detector_defs.h"
-
-#define MAX_TIMERS 10
-#define MAX_ROIS 100
-#define MAX_BADCHANS 2000
-#define MAXPOS 50
-#define MAX_SCAN_LEVELS 2
-#define MAX_SCAN_STEPS 2000
-
-#define NMODMAXX 24
-#define NMODMAXY 24
-#define MAXMODS 36
-#define NCHIPSMAX 10
-#define NCHANSMAX 65536
-#define NDACSMAX 16
-
-#define DEFAULT_HOSTNAME  "localhost"
-#define DEFAULT_SHM_KEY  5678
-
-#define defaultTDead {170,90,750} /**< should be changed in order to have it separate for the different detector types */
+//#include "sls_detector_defs.h"
+#include "slsDetectorUtils.h"
 
 
 
-enum {startScript, scriptBefore, headerBefore, headerAfter,scriptAfter, stopScript, MAX_ACTIONS};
+//enum {startScript, scriptBefore, headerBefore, headerAfter,scriptAfter, stopScript, MAX_ACTIONS};
 
 
-/**
-   data structure to hold the detector data after postprocessing (e.g. to plot, store in a root tree etc.)
- */
-class detectorData {
- public:
-  /** The constructor
-      \param val pointer to the data
-      \param err pointer to errors
-      \param ang pointer to the angles
-      \param f_ind file index
-      \param fname file name to which the data are saved
-      \param np number of points defaults to the number of detector channels
-  */
-  detectorData(float *val=NULL, float *err=NULL, float *ang=NULL,  int p_ind=-1, const char *fname="", int np=-1) : values(val), errors(err), angles(ang),  progressIndex(p_ind), npoints(np){strcpy(fileName,fname);};
-    /** 
-	the destructor
-	deletes also the arrays pointing to data/errors/angles if not NULL
-    */
-    ~detectorData() {if (values) delete [] values; if (errors) delete [] errors; if (angles) delete [] angles;};
-    //private:
-    float *values; /**< pointer to the data */
-    float *errors; /**< pointer to the errors */
-    float *angles;/**< pointer to the angles */
-    int progressIndex;/**< file index */
-    char fileName[1000];/**< file name */
-    int npoints;/**< number of points */
-};
 
 
 
@@ -117,18 +72,18 @@ Then in your software you should use the class related to the detector you want 
 
  */
 
-class slsDetector {
+class slsDetector : public slsDetectorUtils {
 
 
 
  public:
   
 
-  /** online flags enum \sa setOnline*/
-  enum {GET_ONLINE_FLAG=-1, /**< returns wether the detector is in online or offline state */
-	OFFLINE_FLAG=0, /**< detector in offline state (i.e. no communication to the detector - using only local structure - no data acquisition possible!) */
-	ONLINE_FLAG =1/**< detector in online state (i.e. communication to the detector updating the local structure) */
-  };
+/*   /\** online flags enum \sa setOnline*\/ */
+/*   enum {GET_ONLINE_FLAG=-1, /\**< returns wether the detector is in online or offline state *\/ */
+/* 	OFFLINE_FLAG=0, /\**< detector in offline state (i.e. no communication to the detector - using only local structure - no data acquisition possible!) *\/ */
+/* 	ONLINE_FLAG =1/\**< detector in online state (i.e. communication to the detector updating the local structure) *\/ */
+/*   }; */
 
 
 
@@ -234,7 +189,7 @@ typedef  struct sharedSlsDetector {
     /** number of bad channels from flat field i.e. channels which read 0 in the flat field file */
     int nBadFF;
     /** list of bad channels from flat field i.e. channels which read 0 in the flat field file */
-    int badFFList[MAX_BADCHANS];
+  int badFFList[MAX_BADCHANS];
     
   /** file with the angular conversion factors */
   char angConvFile[MAX_STR_LENGTH];
@@ -276,21 +231,22 @@ typedef  struct sharedSlsDetector {
 
 
   /** Scans and scripts */
-
+  ////////////////////////// only in the multi detector class?!?!?!? additional shared memory class?!?!?!?
   int actionMask;
   
-  int actionMode[MAX_ACTIONS];
-  char actionScript[MAX_ACTIONS][MAX_STR_LENGTH];
-  char actionParameter[MAX_ACTIONS][MAX_STR_LENGTH];
+  mystring actionScript[MAX_ACTIONS];
+
+  mystring actionParameter[MAX_ACTIONS];
 
 
   int scanMode[MAX_SCAN_LEVELS];
-  char scanScript[MAX_SCAN_LEVELS][MAX_STR_LENGTH];
-  char scanParameter[MAX_SCAN_LEVELS][MAX_STR_LENGTH];
+  mystring scanScript[MAX_SCAN_LEVELS];
+  mystring scanParameter[MAX_SCAN_LEVELS];
   int nScanSteps[MAX_SCAN_LEVELS];
-  float scanSteps[MAX_SCAN_LEVELS][MAX_SCAN_STEPS];
+  mysteps scanSteps[MAX_SCAN_LEVELS];
   int scanPrecision[MAX_SCAN_LEVELS];
   
+  ////////////////////////////////////////////////////////////////////////////////////////////////
 
     
   /*offsets*/
@@ -298,7 +254,7 @@ typedef  struct sharedSlsDetector {
     int ffoff;
     /** memory offsets for the flat filed coefficient errors */
     int fferroff;
-    /** memory offsets for the module structures */
+    /** memory offsets for the module structures  */
     int modoff;
     /** memory offsets for the dac arrays */
     int dacoff;
@@ -306,7 +262,7 @@ typedef  struct sharedSlsDetector {
     int adcoff;
     /** memory offsets for the chip register arrays */
     int chipoff;
-    /** memory offsets for the channel register arrays */
+    /** memory offsets for the channel register arrays  -trimbits*/
     int chanoff;
 
 
@@ -321,6 +277,25 @@ typedef  struct sharedSlsDetector {
 } sharedSlsDetector;
 
 
+
+
+
+
+
+
+
+ using slsDetectorUtils::getDetectorType;
+ using slsDetectorUtils::flatFieldCorrect;
+ using slsDetectorUtils::rateCorrect;
+ using slsDetectorUtils::setBadChannelCorrection;
+ using slsDetectorUtils::readAngularConversion;
+ using slsDetectorUtils::writeAngularConversion;
+ using slsDetectorUtils::resetMerging;
+ using slsDetectorUtils::finalizeMerging;
+ using slsDetectorUtils::addToMerging;
+ using slsDetectorUtils::readDataFile;
+ using slsDetectorUtils::writeDataFile;
+ using slsDetectorUtils::createFileName;
 
 /** (default) constructor 
  \param  type is needed to define the size of the detector shared memory 9defaults to GENERIC i.e. the largest shared memory needed by any slsDetector is allocated
@@ -348,19 +323,16 @@ typedef  struct sharedSlsDetector {
 
   /** sets the onlineFlag
       \param off can be: <BR> GET_ONLINE_FLAG, returns wether the detector is in online or offline state;<BR> OFFLINE_FLAG, detector in offline state (i.e. no communication to the detector - using only local structure - no data acquisition possible!);<BR> ONLINE_FLAG  detector in online state (i.e. communication to the detector updating the local structure) */
-  int setOnline(int const online=GET_ONLINE_FLAG);  
-  /** sets the onlineFlag
+  int setOnline(int const online=GET_ONLINE_FLAG);
+  
+  /** returns if the detector already existed
       \returns 1 if the detector structure has already be initlialized, 0 otherwise */
   int exists() {return thisDetector->alreadyExisting;};
-
-  /** 
-      checks if detector id exists 
-      \param i detector id
-      \returns 1 if the detector already exists, 0 otherwise
-
-
-  */
-  static int exists(int i);
+  
+  /** returns 1 if the detetcor with id has already been allocated and initialized in shared memory
+      \param detector id
+      \returns 1 if the detector structure has already be initlialized, 0 otherwise */
+  static int exists(int id);
 
   /**  
      configures mac for gotthard readout
@@ -421,7 +393,14 @@ typedef  struct sharedSlsDetector {
      \returns actual port number
   */
   int setPort(portType type, int num=-1);
-
+ 
+  /** returns the detector control port  \sa sharedSlsDetector */
+  int getControlPort() {return  thisDetector->controlPort;};
+  /** returns the detector stop  port  \sa sharedSlsDetector */
+  int getStopPort() {return thisDetector->stopPort;};
+  /** returns the detector data port  \sa sharedSlsDetector */
+  int getDataPort() {return thisDetector->dataPort;};
+ 
   /** Locks/Unlocks the connection to the server
       /param lock sets (1), usets (0), gets (-1) the lock
       /returns lock status of the server
@@ -434,14 +413,9 @@ typedef  struct sharedSlsDetector {
   string getLastClientIP();
 
   /** returns the detector hostname \sa sharedSlsDetector  */
-  string getHostname() {return string(thisDetector->hostname);};
-  /** returns the detector control port  \sa sharedSlsDetector */
-  int getControlPort() {return  thisDetector->controlPort;};
-  /** returns the detector stop  port  \sa sharedSlsDetector */
-  int getStopPort() {return thisDetector->stopPort;};
-  /** returns the detector data port  \sa sharedSlsDetector */
-  int getDataPort() {return thisDetector->dataPort;};
- 
+  string getHostname(int ipos=-1) {return string(thisDetector->hostname);};
+  /** returns the detector hostname \sa sharedSlsDetector  */
+  string setHostname(char *name, int ipos=-1) {setTCPSocket(string(name)); return string(thisDetector->hostname);};
   /** connect to the control port */
   int connectControl();
   /** disconnect from the control port */
@@ -458,27 +432,36 @@ typedef  struct sharedSlsDetector {
   int disconnectStop();
 
 
-  /** returns the client IP address for gotthard \sa sharedSlsDetector  */
-  char* getClientIP() {return thisDetector->clientIP;};
-  /** returns the  client MAC address for gotthard \sa sharedSlsDetector  */
-  char* getClientMAC() {return thisDetector->clientMAC;};
-  /** returns the  server MAC address for gotthard \sa sharedSlsDetector  */
-  char* getServerMAC() {return thisDetector->serverMAC;};
-  /** validates and sets the client IP address for gotthard \sa sharedSlsDetector  */
-  char* setClientIP(string clientIP);
-  /** validates the format of client MAC address  and sets it for gotthard \sa sharedSlsDetector  */
-  char* setClientMAC(string clientMAC);
-  /** validates the format of server MAC address  and sets it for gotthard \sa sharedSlsDetector  */
-  char* setServerMAC(string serverMAC);
+  char* setNetworkParameter(networkParameter index, string value);
+
+  char* getNetworkParameter(networkParameter index);
 
   /* I/O */
+
   /** returns the detector trimbit/settings directory  \sa sharedSlsDetector */
   char* getSettingsDir() {return thisDetector->settingsDir;};
   /** sets the detector trimbit/settings directory  \sa sharedSlsDetector */
   char* setSettingsDir(string s) {sprintf(thisDetector->settingsDir, s.c_str()); return thisDetector->settingsDir;};
+
+
+
+ /**
+     returns the location of the calibration files
+  \sa  sharedSlsDetector
+  */
+  char* getCalDir() {return thisDetector->calDir;};
+   /**
+      sets the location of the calibration files
+  \sa  sharedSlsDetector
+  */
+  char* setCalDir(string s) {sprintf(thisDetector->calDir, s.c_str()); return thisDetector->calDir;}; 
+
+
+
   /** returns the number of trim energies and their value  \sa sharedSlsDetector 
    \param point to the array that will contain the trim energies (in ev)
   \returns number of trim energies
+
 
   unused!
 
@@ -518,6 +501,8 @@ typedef  struct sharedSlsDetector {
      \sa ::sls_detector_module mythenDetector::writeSettingsFile(string, sls_detector_module)
   */
   int writeSettingsFile(string fname, sls_detector_module mod); 
+
+
   //virtual int writeSettingsFile(string fname, sls_detector_module mod); 
   
   /**
@@ -529,7 +514,6 @@ typedef  struct sharedSlsDetector {
      \sa ::sls_detector_module sharedSlsDetector mythenDetector::writeSettingsFile(string, int)
   */
    int writeSettingsFile(string fname, int imod);
-  //virtual int writeSettingsFile(string fname, int imod);
 
 
   /**
@@ -544,204 +528,12 @@ typedef  struct sharedSlsDetector {
     return thisDetector->settingsFile;\
   };
 
-  /**
-     sets the default output files path
-  \sa  sharedSlsDetector
-  */
-  char* setFilePath(string s) {sprintf(thisDetector->filePath, s.c_str()); return thisDetector->filePath;};
 
-  /**
-     sets the default output files root name
-  \sa  sharedSlsDetector
-  */
-  char* setFileName(string s) {sprintf(thisDetector->fileName, s.c_str()); return thisDetector->fileName;}; 
+  /** loads the modules settings/trimbits reading from a file -  file name extension is automatically generated! */
+  int loadSettingsFile(string fname, int nmod=0);
 
-  /**
-     sets the default output file index
-  \sa  sharedSlsDetector
-  */
-  int setFileIndex(int i) {thisDetector->fileIndex=i; return thisDetector->fileIndex;}; 
-  
-  /**
-     returns the default output files path
-  \sa  sharedSlsDetector
-  */
-  char* getFilePath() {return thisDetector->filePath;};
-  
-  /**
-     returns the default output files root name
-  \sa  sharedSlsDetector
-  */
-  char* getFileName() {return thisDetector->fileName;};
-
-  /**
-     returns the default output file index
-  \sa  sharedSlsDetector
-  */
-  int getFileIndex() {return thisDetector->fileIndex;};
-  
-
-  /** generates file name without extension
-
-      always appends to file path and file name the run index.
-
-      in case also appends the position index 
-       
-      Filenames will be of the form: filepath/filename(_px)_i
-      where x is the position index and i is the run index
-      \param filepath outdir
-      \param filename file root name
-      \param aMask action mask (scans, positions)
-      \param sv0 scan variable 0
-      \param prec0 scan precision 0
-      \param sv1 scan variable 1
-      \param prec1 scan precision 1
-      \param pindex position index
-      \param number of positions
-      \param findex file index
-      \returns file name without extension
-  */
-  static string  createFileName(char *filepath, char *filename, int aMask, float sv0, int prec0, float sv1, int prec1, int pindex, int npos, int findex);
-  /** generates file name without extension
-
-      always appends to file path and file name the run index.
-
-      in case also appends the position index 
-       
-      Filenames will be of the form: filepath/filename(_px)_i
-      where x is the position index and i is the run index
-      \returns file name without extension
-  */
-
-  string createFileName();
-  
-
-
-  /** static function that returns the file index from the file name 
-      \param fname file name
-      \returns file index*/
-  static int getFileIndexFromFileName(string fname);
-
-  /** static function that returns the variables from the file name 
-      \param fname file name
-      \param index reference to index
-      \param p_index reference to position index
-      \param sv0 reference to scan variable 0
-      \param sv1 reference to scan variable 1
-      \returns file index
-  */
-  static int getVariablesFromFileName(string fname, int &index, int &p_index, float &sv0, float &sv1);
-  
-    /**
-     
-       writes a data file
-       \param name of the file to be written
-       \param data array of data values
-       \param err array of arrors on the data. If NULL no errors will be written
-       
-       \param ang array of angular values. If NULL data will be in the form chan-val(-err) otherwise ang-val(-err)
-       \param dataformat format of the data: can be 'i' integer or 'f' float (default)
-       \param nch number of channels to be written to file. if -1 defaults to the number of installed channels of the detector
-       \returns OK or FAIL if it could not write the file or data=NULL
-       \sa mythenDetector::writeDataFile
- 
-  */
-  virtual int writeDataFile(string fname, float *data, float *err=NULL, float *ang=NULL, char dataformat='f', int nch=-1); 
-  
-  /**
-   
-       writes a data file
-       \param name of the file to be written
-       \param data array of data values
-       \returns OK or FAIL if it could not write the file or data=NULL  
-       \sa mythenDetector::writeDataFile
-  */
-  virtual int writeDataFile(string fname, int *data);
-  
-  /**
-   
-       reads a data file
-       \param name of the file to be read
-       \param data array of data values to be filled
-       \param err array of arrors on the data. If NULL no errors are expected on the file
-       
-       \param ang array of angular values. If NULL data are expected in the form chan-val(-err) otherwise ang-val(-err)
-       \param dataformat format of the data: can be 'i' integer or 'f' float (default)
-       \param nch number of channels to be written to file. if <=0 defaults to the number of installed channels of the detector
-       \returns OK or FAIL if it could not read the file or data=NULL
-       
-       \sa mythenDetector::readDataFile
-  */
-  int readDataFile(string fname, float *data, float *err=NULL, float *ang=NULL, char dataformat='f');  
-
-  /**
-   
-       reads a data file
-       \param name of the file to be read
-       \param data array of data values
-       \returns OK or FAIL if it could not read the file or data=NULL
-       \sa mythenDetector::readDataFile
-  */
-  int readDataFile(string fname, int *data);
-  /**
-   
-       reads a data file
-       \param name of the file to be read
-       \param data array of data values to be filled
-       \param err array of arrors on the data. If NULL no errors are expected on the file
-       
-       \param ang array of angular values. If NULL data are expected in the form chan-val(-err) otherwise ang-val(-err)
-       \param dataformat format of the data: can be 'i' integer or 'f' float (default)
-       \param nch number of channels to be written to file. if <=0 defaults to the number of installed channels of the detector
-       \returns number of channels read or -1 if it could not read the file or data=NULL
-       
-       \sa mythenDetector::readDataFile
-  */
-  static int readDataFile(int nch, string fname, float *data, float *err=NULL, float *ang=NULL, char dataformat='f');  
-
-  /**
-   
-       reads a data file
-       \param name of the file to be read
-       \param data array of data values
-       \returns OK or FAIL if it could not read the file or data=NULL
-       \sa mythenDetector::readDataFile
-  */
-  static int readDataFile(string fname, int *data, int nch);
-
- /**
-     returns the location of the calibration files
-  \sa  sharedSlsDetector
-  */
-  char* getCalDir() {return thisDetector->calDir;};
-
-
-   /**
-      sets the location of the calibration files
-  \sa  sharedSlsDetector
-  */
-  char* setCalDir(string s) {sprintf(thisDetector->calDir, s.c_str()); return thisDetector->calDir;}; 
-  /**
-   
-      reads a calibration file
-      \param fname file to be read
-      \param gain reference to the gain variable
-      \offset reference to the offset variable
-  \sa  sharedSlsDetector mythenDetector::readCalibrationFile
-  */
-  int readCalibrationFile(string fname, float &gain, float &offset);
-  //virtual int readCalibrationFile(string fname, float &gain, float &offset);
-  
-  /**
-   
-      writes a calibration file
-      \param fname file to be written
-      \param gain 
-      \param offset
-  \sa  sharedSlsDetector mythenDetector::writeCalibrationFile
-  */
-  int writeCalibrationFile(string fname, float gain, float offset);
-  //virtual int writeCalibrationFile(string fname, float gain, float offset);
+  /** gets the modules settings/trimbits and writes them to file -  file name extension is automatically generated! */
+  int saveSettingsFile(string fname, int nmod=0);
 
 
   /**
@@ -751,6 +543,18 @@ typedef  struct sharedSlsDetector {
   \sa  angleConversionConstant mythenDetector::readAngularConversion
   */
   int readAngularConversion(string fname="");
+
+
+  /**
+   
+      reads an angular conversion file
+      \param fname file to be read
+  \sa  angleConversionConstant mythenDetector::readAngularConversion
+  */
+  int readAngularConversion(ifstream& ifs);
+
+
+
   /**
      Pure virtual function
      writes an angular conversion file
@@ -758,6 +562,20 @@ typedef  struct sharedSlsDetector {
   \sa  angleConversionConstant mythenDetector::writeAngularConversion
   */
   int writeAngularConversion(string fname="");
+
+
+
+  /**
+     Pure virtual function
+     writes an angular conversion file
+      \param fname file to be written
+  \sa  angleConversionConstant mythenDetector::writeAngularConversion
+  */
+  int writeAngularConversion(ofstream &ofs);
+
+
+
+
 
   /** Returns the number of channels per chip (without connecting to the detector) */
   int getNChans(){return thisDetector->nChans;}; //
@@ -767,6 +585,9 @@ typedef  struct sharedSlsDetector {
 
   /** Returns the number of  modules (without connecting to the detector) */
   int getNMods(){return thisDetector->nMods;}; //
+
+
+  int getTotalNumberOfChannels(){return thisDetector->nChans*thisDetector->nChips*thisDetector->nMods;};
 
 
   /* Communication to server */
@@ -1162,40 +983,6 @@ typedef  struct sharedSlsDetector {
   */ 
   int readAllNoWait();
 
-  
-  /**
-   pops the data from the data queue
-    \returns pointer to the popped data  or NULL if the queue is empty. 
-    \sa  dataQueue
-  */ 
-  int* popDataQueue();
-
-  /**
-   pops the data from thepostprocessed data queue
-    \returns pointer to the popped data  or NULL if the queue is empty. 
-    \sa  finalDataQueue
-  */ 
-  detectorData* popFinalDataQueue();
-
-
-
-
-  /**
-  resets the raw data queue
-    \sa  dataQueue
-  */ 
-  void resetDataQueue();
-
-  /**
-  resets the postprocessed  data queue
-    \sa  finalDataQueue
-  */ 
-  void resetFinalDataQueue();
-
-
-
-
-
 
 
 
@@ -1260,7 +1047,7 @@ typedef  struct sharedSlsDetector {
      \param flag readout flag to be set
      \returns current flag
   */
-  int setReadOutFlags(readOutFlags flag);
+  int setReadOutFlags(readOutFlags flag=GET_READOUT_FLAGS);
 
     /**
        execute trimming
@@ -1275,29 +1062,13 @@ typedef  struct sharedSlsDetector {
  
   //Corrections  
 
-  /** 
-      set/get if the data processing and file writing should be done by a separate thread
-s
-      \param b 0 sequencial data acquisition and file writing, 1 separate thread, -1 get
-      \returns thread flag
-  */
-
-  int setThreadedProcessing(int b=-1) {if (b>=0) thisDetector->threadedProcessing=b; return  thisDetector->threadedProcessing;}
-
+ 
   /** 
       set flat field corrections
       \param fname name of the flat field file (or "" if disable)
       \returns 0 if disable (or file could not be read), >0 otherwise
   */
   int setFlatFieldCorrection(string fname=""); 
-
-  /** 
-      get flat field corrections
-      \param corr if !=NULL will be filled with the correction coefficients
-      \param ecorr if !=NULL will be filled with the correction coefficients errors
-      \returns 0 if ff correction disabled, >0 otherwise
-  */
-  int getFlatFieldCorrection(float *corr=NULL, float *ecorr=NULL);
 
   /** 
       set flat field corrections
@@ -1307,22 +1078,15 @@ s
   */
   int setFlatFieldCorrection(float *corr=NULL, float *ecorr=NULL);
 
- /** 
-      get flat field corrections file directory
-      \returns flat field correction file directory
+
+  /** 
+      get flat field corrections
+      \param corr if !=NULL will be filled with the correction coefficients
+      \param ecorr if !=NULL will be filled with the correction coefficients errors
+      \returns 0 if ff correction disabled, >0 otherwise
   */
-  char *getFlatFieldCorrectionDir(){return thisDetector->flatFieldDir;};
- /** 
-      set flat field corrections file directory
-      \param flat field correction file directory
-  */
-  void setFlatFieldCorrectionDir(string dir){strcpy(thisDetector->flatFieldDir,dir.c_str());};
-  
- /** 
-      get flat field corrections file name
-      \returns flat field correction file name
-  */
-  char *getFlatFieldCorrectionFile(){  if (thisDetector->correctionMask&(1<<FLAT_FIELD_CORRECTION)) return thisDetector->flatFieldFile; else return "none";};
+  int getFlatFieldCorrection(float *corr=NULL, float *ecorr=NULL);
+
 
   /** 
       set rate correction
@@ -1354,15 +1118,6 @@ s
   /** 
       set bad channels correction
       \param fname file with bad channel list ("" disable)
-      \param nbad reference to number of bad channels
-      \param badlist array of badchannels
-      \returns 0 if bad channel disabled, >0 otherwise
-  */
-  static int setBadChannelCorrection(string fname, int &nbad, int *badlist);
-  
-  /** 
-      set bad channels correction
-      \param fname file with bad channel list ("" disable)
       \returns 0 if bad channel disabled, >0 otherwise
   */
   int setBadChannelCorrection(string fname="");
@@ -1375,9 +1130,6 @@ s
       \returns 0 if bad channel disabled, >0 otherwise
   */
   int setBadChannelCorrection(int nch, int *chs, int ff=0);
-  
-
-
 
   /** 
       get bad channels correction
@@ -1385,9 +1137,6 @@ s
       \returns 0 if bad channel disabled or no bad channels, >0 otherwise
   */
   int getBadChannelCorrection(int *bad=NULL);
-
-  /** returns the bad channel list file */
-  string getBadChannelCorrectionFile() {if (thisDetector->correctionMask&(1<< DISCARD_BAD_CHANNELS)) return string(thisDetector->badChanFile); else return string("none");};
 
   
   /** 
@@ -1398,7 +1147,6 @@ s
       \sa mythenDetector::setAngularConversion
   */
   int setAngularConversion(string fname="");
-
   /** 
       pure virtual function
       get angular conversion
@@ -1409,174 +1157,6 @@ s
   */
   int getAngularConversion(int &direction,  angleConversionConstant *angconv=NULL) ;
   
-  
-  /**
-      pure virtual function
-      returns the angular conversion file
-      \sa mythenDetector::getAngularConversion */
-  string getAngularConversion(){if (thisDetector->correctionMask&(1<< ANGULAR_CONVERSION)) return string(thisDetector->angConvFile); else return string("none");};
-  
-  /** 
-      pure virtual function
-      set detector global offset
-      \sa mythenDetector::setGlobalOffset
-  */
-  float setGlobalOffset(float f){thisDetector->globalOffset=f; return thisDetector->globalOffset;}; 
-
-  /** 
-      pure virtual function
-      set detector fine offset
-      \sa mythenDetector::setFineOffset
-  */
-  float setFineOffset(float f){thisDetector->fineOffset=f; return thisDetector->fineOffset;};
-  /** 
-      pure virtual function
-      get detector fine offset
-      \sa mythenDetector::getFineOffset
-  */
-  float getFineOffset(){return thisDetector->fineOffset;};
-  
-  /** 
-      pure virtual function
-      get detector global offset
-      \sa mythenDetector::getGlobalOffset
-  */
-  float getGlobalOffset(){return thisDetector->globalOffset;};
-
-  /** 
-      pure virtual function
-      set  positions for the acquisition
-      \param nPos number of positions
-      \param pos array with the encoder positions
-      \returns number of positions
-      \sa mythenDetector::setPositions
-  */
-  int setPositions(int nPos, float *pos);
-   /** 
-      pure virtual function
-      get  positions for the acquisition
-      \param pos array which will contain the encoder positions
-      \returns number of positions
-      \sa mythenDetector::getPositions
-  */
-  int getPositions(float *pos=NULL);
-  
-  
-  /** pure virtual function
-      set detector bin size used for merging (approx angular resolution)
-      \param bs bin size in degrees
-      \returns current bin size
-      \sa mythenDetector::setBinSize
-*/
-  float setBinSize(float bs){thisDetector->binSize=bs; return thisDetector->binSize;};
-
-  /** pure virtual function
-      return detector bin size used for merging (approx angular resolution)
-      \sa mythenDetector::getBinSize
-  */
-  float getBinSize() {return thisDetector->binSize;};
-
-
-
-
-
-  /** 
-      set action 
-      \param iaction can be enum {startScript, scriptBefore, headerBefore, headerAfter,scriptAfter, stopScript, MAX_ACTIONS}
-      \param fname for script ("" disable)
-      \param par for script 
-      \returns 0 if action disabled, >0 otherwise
-  */
-  int setAction(int iaction, string fname="", string par="");
-
-  /** 
-      set action 
-      \param iaction can be enum {startScript, scriptBefore, headerBefore, headerAfter,scriptAfter, stopScript, MAX_ACTIONS}
-      \param fname for script ("" disable)
-      \returns 0 if action disabled, >0 otherwise
-  */
-  int setActionScript(int iaction, string fname="");
-  /** 
-      set action 
-      \param iaction can be enum {startScript, scriptBefore, headerBefore, headerAfter,scriptAfter, stopScript, MAX_ACTIONS}
-      \param par for script ("" disable)
-      \returns 0 if action disabled, >0 otherwise
-  */
-  int setActionParameter(int iaction, string par="");
-
-  /** 
-      returns action script
-      \param iaction can be enum {startScript, scriptBefore, headerBefore, headerAfter,scriptAfter, stopScript}
-      \returns action script
-  */
-  string getActionScript(int iaction);
-
-    /** 
-	returns action parameter
-	\param iaction can be enum {startScript, scriptBefore, headerBefore, headerAfter,scriptAfter, stopScript}
-	\returns action parameter
-    */
-  string getActionParameter(int iaction);
-
-   /** 
-	returns action mode
-	\param iaction can be enum {startScript, scriptBefore, headerBefore, headerAfter,scriptAfter, stopScript}
-	\returns action mode
-    */
-  int getActionMode(int iaction);
-
-
-  /** 
-      set scan 
-      \param index of the scan (0,1)
-      \param fname for script ("" disables, "none" disables and overwrites current)
-      \param nvalues number of steps (0 disables, -1 leaves current value)
-      \param values pointer to steps (if NULL leaves current values)
-      \param par parameter for the scan script ("" leaves unchanged)
-      \returns 0 is scan disabled, >0 otherwise
-  */
-  int setScan(int index, string script="", int nvalues=-1, float *values=NULL, string par="", int precision=-1);
-  
-  int setScanScript(int index, string script="");
-  int setScanParameter(int index, string par="");
-  int setScanPrecision(int index, int precision=-1);
-  int setScanSteps(int index, int nvalues=-1, float *values=NULL);
-  /** 
-      returns scan script
-      \param iscan can be (0,1) 
-      \returns scan script
-  */
-  string getScanScript(int iscan);
-
-    /** 
-	returns scan parameter
-	\param iscan can be (0,1)
-	\returns scan parameter
-    */
-  string getScanParameter(int iscan);
-
-   /** 
-	returns scan mode
-	\param iscan can be (0,1)
-	\returns scan mode
-    */
-  int getScanMode(int iscan);
-
-   /** 
-	returns scan steps
-	\param iscan can be (0,1)
-	\param v is the pointer to the scan steps
-	\returns scan steps
-    */
-  int getScanSteps(int iscan, float *v=NULL);
-
-
-   /** 
-	returns scan precision
-	\param iscan can be (0,1)
-	\returns scan precision
-    */
-  int getScanPrecision(int iscan);
 
 
 
@@ -1591,17 +1171,6 @@ s
   
   
   
-  /** 
-     flat field correct data
-     \param datain data
-     \param errin error on data (if<=0 will default to sqrt(datain)
-     \param dataout corrected data
-     \param errout error on corrected data
-     \param ffcoefficient flat field correction coefficient
-     \param fferr erro on ffcoefficient
-     \returns 0
-  */
-  static int flatFieldCorrect(float datain, float errin, float &dataout, float &errout, float ffcoefficient, float fferr);
   
   /** 
      flat field correct data
@@ -1615,18 +1184,7 @@ s
  
 
   
-  /** 
-     rate correct data
-     \param datain data
-     \param errin error on data (if<=0 will default to sqrt(datain)
-     \param dataout corrected data
-     \param errout error on corrected data
-     \param tau dead time 9in ns)
-     \param t acquisition time (in ns)
-     \returns 0
-  */
-  static int rateCorrect(float datain, float errin, float &dataout, float &errout, float tau, float t);
-  
+
   /** 
      rate correct data
      \param datain data array
@@ -1648,7 +1206,9 @@ s
       \returns OK or FAIL
       \sa mythenDetector::resetMerging
   */
+  
   int resetMerging(float *mp, float *mv,float *me, int *mm);
+  
   /** 
       pure virtual function
   merge dataset
@@ -1684,7 +1244,7 @@ s
      /param delflag if 1 the data are processed, written to file and then deleted. If 0 they are added to the finalDataQueue
      \sa mythenDetector::processData
   */
-  void* processData(int delflag=1); // thread function
+  // void* processData(int delflag=1); // thread function
   /** Allocates the memory for a sls_detector_module structure and initializes it
       \returns myMod the pointer to the allocate dmemory location
 
@@ -1709,7 +1269,7 @@ s
      \sa mythenDetector::acquire()
   */
   
-  void acquire(int delflag=1);
+  //void acquire(int delflag=1);
 
   /** calcualtes the total number of steps of the acquisition.
       called when number of frames, number of cycles, number of positions and scan steps change
@@ -1720,29 +1280,9 @@ s
   float getCurrentProgress();
   
 
+  float* convertAngles(float pos);
 
 
- /**
-    type of action performed (for text client)
- */
-enum {GET_ACTION, PUT_ACTION, READOUT_ACTION};
-
-
-  /**
-     executes a set of string arguments according to a given format. It is used to read/write configuration file, dump and retrieve detector settings and for the command line interface command parsing
-     \param narg number of arguments
-     \param args array of string arguments
-     \param action can be PUT_ACTION or GET_ACTION (from text client even READOUT_ACTION for acquisition)
-     \returns answer string 
-  */
-    string executeLine(int narg, char *args[], int action=GET_ACTION);
-  
-  /**
-     returns the help for the executeLine command 
-     \param os output stream to return the help to
-     \param action can be PUT_ACTION or GET_ACTION (from text client even READOUT_ACTION for acquisition) 
-  */
-   static string helpLine(int action=GET_ACTION);
 
 
 
@@ -1763,14 +1303,17 @@ enum {GET_ACTION, PUT_ACTION, READOUT_ACTION};
 
    /** 
       Returns detector id
-      \return pointer to the data (or NULL if failed)
+      \returns detector id
   */
 
-   int getDetectorId() {return detId;};
+   int getDetectorId(int i=-1) {return detId;};
+  
+
    
+
   /** 
       Receives a data frame from the detector socket
-      \return pointer to the data (or NULL if failed)
+      \returns pointer to the data (or NULL if failed)
 
   */
   int* getDataFromDetector();
@@ -1778,8 +1321,6 @@ enum {GET_ACTION, PUT_ACTION, READOUT_ACTION};
 
  protected:
  
-
-  static const int64_t thisSoftwareVersion=0x20111124;
 
   /**
     address of the detector structure in shared memory
@@ -1816,66 +1357,16 @@ enum {GET_ACTION, PUT_ACTION, READOUT_ACTION};
   */
   MySocketTCP *dataSocket; 
   
-  /**
-     data queue
-  */
-  queue<int*> dataQueue;
-  /**
-     queue containing the postprocessed data
-  */
-  queue<detectorData*> finalDataQueue;
-  
-  
+ 
 
 
-  /**
-     current position of the detector
-  */
-  float currentPosition;
-  
-  /**
-     current position index of the detector
-  */
-  int currentPositionIndex;
-  
-  /**
-     I0 measured
-  */
-  float currentI0;
-  
-  
-
-
-  /**
-     current scan variable of the detector
-  */
-  float currentScanVariable[MAX_SCAN_LEVELS];
-  
-  /**
-     current scan variable index of the detector
-  */
-  int currentScanIndex[MAX_SCAN_LEVELS];
-  
-  
-
-
-  /** merging bins */
-  float *mergingBins;
-
-  /** merging counts */
-  float *mergingCounts;
-
-  /** merging errors */
-  float *mergingErrors;
-
-  /** merging multiplicity */
-  int *mergingMultiplicity;
-  
  
   /** pointer to flat field coefficients */
   float *ffcoefficients;
   /** pointer to flat field coefficient errors */
   float *fferrors;
+
+
   /** pointer to detector module structures */
   sls_detector_module *detectorModules;
   /** pointer to dac valuse */
@@ -1886,9 +1377,6 @@ enum {GET_ACTION, PUT_ACTION, READOUT_ACTION};
   int *chipregs;
   /** pointer to channal registers */
   int *chanregs;
-  /** pointer to bad channel mask  0 is channel is good 1 if it is bad \sa fillBadChannelMask() */
-  int *badChannelMask;
-
 
   /** Initializes the shared memory 
       \param type is needed to define the size of the shared memory
@@ -1934,39 +1422,27 @@ enum {GET_ACTION, PUT_ACTION, READOUT_ACTION};
   */
   int receiveModule(sls_detector_module*);
   
-  /**
-    start data processing thread
-  */
-  //void startThread();
-  
-  /**
-     fill bad channel mask (0 if channel is good, 1 if bad)
-  */
-  int fillBadChannelMask();
 
 
-  /**
-    start data processing thread
-  */
-  void startThread(int delflag=1); //
-  /** the data processing thread */
-
-  pthread_t dataProcessingThread;
-
- /** sets when the acquisition is finished */
-  int jointhread;
-
- /** data queue size */
-  int queuesize;
+/*  /\** mutex to synchronize threads *\/ */
+/*   pthread_mutex_t mp; */
 
 
 
 
- /** mutex to synchronize threads */
-  pthread_mutex_t mp;
 
-
-
+  /** returns the client IP address for gotthard \sa sharedSlsDetector  */
+  char* getClientIP() {return thisDetector->clientIP;};
+  /** returns the  client MAC address for gotthard \sa sharedSlsDetector  */
+  char* getClientMAC() {return thisDetector->clientMAC;};
+  /** returns the  server MAC address for gotthard \sa sharedSlsDetector  */
+  char* getServerMAC() {return thisDetector->serverMAC;};
+  /** validates and sets the client IP address for gotthard \sa sharedSlsDetector  */
+  char* setClientIP(string clientIP);
+  /** validates the format of client MAC address  and sets it for gotthard \sa sharedSlsDetector  */
+  char* setClientMAC(string clientMAC);
+  /** validates the format of server MAC address  and sets it for gotthard \sa sharedSlsDetector  */
+  char* setServerMAC(string serverMAC);
 
 
 
@@ -1975,9 +1451,4 @@ enum {GET_ACTION, PUT_ACTION, READOUT_ACTION};
 
 };
 
-static void* startProcessData(void *n);
-static void* startProcessDataNoDelete(void *n);
-
-
-//static void* startProcessData(void *n);
 #endif

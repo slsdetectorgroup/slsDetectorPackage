@@ -13,25 +13,16 @@ ID:         $Id$
 #ifndef MULTI_SLS_DETECTOR_H
 #define MULTI_SLS_DETECTOR_H
 
-#include "slsDetector.h"
+#include "slsDetectorUtils.h"
 
-#include "sls_detector_defs.h"
+class slsDetector;
+
+//#include "sls_detector_defs.h"
 
 #define MAXDET 100
 
 
 //using namespace std;
-
-   /** synchronization of the various detectors (should be set for each detector individually?!?!?) */
-      
-  enum synchronizationMode {
-    GET_SYNCHRONIZATION_MODE=-1, /**< the multidetector will return its synchronization mode */
-    NONE, /**< all detectors are independent (no cabling) */
-    MASTER_GATES, /**< the master gates the other detectors */
-    MASTER_TRIGGERS, /**< the master triggers the other detectors */
-    SLAVE_STARTS_WHEN_MASTER_STOPS /**< the slave acquires when the master finishes, to avoid deadtime */
-  };
-
 
 
 
@@ -46,7 +37,7 @@ ID:         $Id$
 
  */
 
-class multiSlsDetector  {
+class multiSlsDetector  : public slsDetectorUtils {
 
 
   
@@ -98,11 +89,12 @@ class multiSlsDetector  {
 
 
     /** timer values */
-    int64_t timerValue[MAX_TIMERS];
+    int64_t timerValue[MAX_TIMERS]; // needed?!?!?!?
+
     /** detector settings (standard, fast, etc.) */
-    detectorSettings currentSettings;
+    detectorSettings currentSettings; // needed?!?!?!?
     /** detector threshold (eV) */
-    int currentThresholdEV;
+    int currentThresholdEV; // needed?!?!?!?
 
  
     /** indicator for the acquisition progress - set to 0 at the beginning of the acquisition and incremented every time that the data are written to file */   
@@ -138,8 +130,12 @@ class multiSlsDetector  {
     /** file with the bad channels */
     char badChanFile[MAX_STR_LENGTH];
 
+
+    /** angular conversion file */
+    char angConvFile[MAX_STR_LENGTH];
+
      /** array of angular conversion constants for each module \see ::angleConversionConstant */
-    angleConversionConstant angOff[MAXMODS];
+    //angleConversionConstant angOff[MAXMODS];
     /** angular direction (1 if it corresponds to the encoder direction i.e. channel 0 is 0, maxchan is positive high angle, 0 otherwise  */
     int angDirection;
      /** beamline fine offset (of the order of mdeg, might be adjusted for each measurements)  */
@@ -158,16 +154,16 @@ class multiSlsDetector  {
 
     int actionMask;
     
-    int actionMode[MAX_ACTIONS];
-    char actionScript[MAX_ACTIONS][MAX_STR_LENGTH];
-    char actionParameter[MAX_ACTIONS][MAX_STR_LENGTH];
+    //int actionMode[MAX_ACTIONS];
+    mystring actionScript[MAX_ACTIONS];
+    mystring actionParameter[MAX_ACTIONS];
     
 
     int scanMode[MAX_SCAN_LEVELS];
-    char scanScript[MAX_SCAN_LEVELS][MAX_STR_LENGTH];
-    char scanParameter[MAX_SCAN_LEVELS][MAX_STR_LENGTH];
+    mystring scanScript[MAX_SCAN_LEVELS];
+    mystring scanParameter[MAX_SCAN_LEVELS];
     int nScanSteps[MAX_SCAN_LEVELS];
-    float scanSteps[MAX_SCAN_LEVELS][MAX_SCAN_STEPS];
+    mysteps scanSteps[MAX_SCAN_LEVELS];
     int scanPrecision[MAX_SCAN_LEVELS];
     
     
@@ -192,6 +188,19 @@ class multiSlsDetector  {
  public:
 
  
+
+ using slsDetectorUtils::flatFieldCorrect;
+ using slsDetectorUtils::rateCorrect;
+ using slsDetectorUtils::setBadChannelCorrection;
+ using slsDetectorUtils::readAngularConversion;
+ using slsDetectorUtils::writeAngularConversion;
+ using slsDetectorUtils::resetMerging;
+ using slsDetectorUtils::finalizeMerging;
+ using slsDetectorUtils::addToMerging;
+ using slsDetectorUtils::readDataFile;
+ using slsDetectorUtils::writeDataFile;
+ using slsDetectorUtils::createFileName;
+
   /** 
       @short Structure allocated in shared memory to store detector settings and be accessed in parallel by several applications (take care of possible conflicts!)
       
@@ -218,8 +227,14 @@ class multiSlsDetector  {
   /** adds the detector with ID id in postion pos
    \param id of the detector to be added (should already exist!)
    \param pos position where it should be added (normally at the end of the list (default to -1)
-   \return the actual number of detectors*/
-  int addSlsDetector(int id, int pos=-1, int oX=-1, int oY=-1);
+   \return the actual number of detectors or -1 if it failed*/
+  int addSlsDetector(int id, int pos=-1);
+
+  /** adds the detector with ID id in postion pos
+   \param name of the detector to be added (should already exist in shared memory or at least be online) 
+   \param pos position where it should be added (normally at the end of the list (default to -1)
+   \return the actual number of detectors or -1 if it failed*/
+  int addSlsDetector(char *name, int pos=-1);
 
   /**removes the detector in position pos from the multidetector
      \param pos position of the detector to be removed from the multidetector system (defaults to -1 i.e. last detector)
@@ -227,17 +242,44 @@ class multiSlsDetector  {
   */
   int removeSlsDetector(int pos=-1);
 
+  /**removes the detector in position pos from the multidetector
+     \param name is the name of the detector
+     \returns the actual number of detectors
+  */
+  int removeSlsDetector(char *name);
+
+
+
+
+  string setHostname(char*, int pos=-1);
+
+
+  string getHostname(int pos=-1);
+
+
+
+  /** adds a detector by id in position pos
+   \param ival detector id to be added
+   \param pos position to add it (-1 fails)
+   \returns detector ID or -1 if detector in position i is empty
+  */
+  int setDetectorId(int ival, int pos=-1);
+
+
+
   /** returns the id of the detector in position i
    \param i position of the detector
   \returns detector ID or -1 if detector in position i is empty*/
-  int getDetectorId(int i) {if (i>=0) if (detectors[i]) return detectors[i]->getDetectorId(); else return -1;};
+  int getDetectorId(int i);
 
 
   /** returns the number of detectors in the multidetector structure
       \returns number of detectors */
   int getNumberOfDetectors() {return thisMultiDetector->numberOfDetectors;};
 
+  int getTotalNumberOfChannels(){return thisMultiDetector->numberOfChannels;};
 
+  float getScanStep(int index, int istep){return thisMultiDetector->scanSteps[index][istep];};
   /** returns the detector offset (in number of channels)
       \param pos position of the detector
       \param ox reference to the offset in x
@@ -265,21 +307,29 @@ class multiSlsDetector  {
   /** 
       Sets/gets the synchronization mode of the various detectors
       \param sync syncronization mode
-      \returns current syncronization mode
-  */
+      \returns current syncronization mode   
+  */   
+/*   enum synchronizationMode { */
+/*     GET_SYNCHRONIZATION_MODE=-1, /\**< the multidetector will return its synchronization mode *\/ */
+/*     NONE, /\**< all detectors are independent (no cabling) *\/ */
+/*     MASTER_GATES, /\**< the master gates the other detectors *\/ */
+/*     MASTER_TRIGGERS, /\**< the master triggers the other detectors *\/ */
+/*     SLAVE_STARTS_WHEN_MASTER_STOPS /\**< the slave acquires when the master finishes, to avoid deadtime *\/ */
+/*   }; */
+
   synchronizationMode setSynchronization(synchronizationMode sync=GET_SYNCHRONIZATION_MODE);
-
-
 
 
   /** sets the onlineFlag
       \param off can be:  GET_ONLINE_FLAG, returns wether the detector is in online or offline state; OFFLINE_FLAG, detector in offline state (i.e. no communication to the detector - using only local structure - no data acquisition possible!); ONLINE_FLAG  detector in online state (i.e. communication to the detector updating the local structure) 
       \returns online/offline status
   */
-  int setOnline(int const online=slsDetector::GET_ONLINE_FLAG);  
-  /** sets the onlineFlag
-      \returns 1 if the detector structure has already be initlialized with the given idand belongs to this multiDetector instance, 0 otherwise */
-  int exists() ;
+  int setOnline(int const online=GET_ONLINE_FLAG);  
+  /**
+      \returns 1 if the detector structure has already be initlialized with the given id and belongs to this multiDetector instance, 0 otherwise */
+  int exists();
+
+
 
   /**
     Purely virtual function
@@ -306,204 +356,21 @@ class multiSlsDetector  {
     Should be implemented in the specific detector class
     /sa mythenDetector::dumpDetectorSetup
   */
-  int dumpMultiDetectorSetup(string const fname, int level);  
+  int dumpMultiDetectorSetup(string const fname, int level=0);  
   /** 
     Purely virtual function
     Should be implemented in the specific detector class
     /sa mythenDetector::retrieveDetectorSetup
   */
-  int retrieveMultiDetectorSetup(string const fname, int level);
-
-
-  /** generates file name without extension
-
-      always appends to file path and file name the run index.
-
-      in case also appends the position index 
-       
-      Filenames will be of the form: filepath/filename(_px)_i
-      where x is the position index and i is the run index  
-      \returns file name without extension
-      \sa slsDetector::createFileName 
-
-  */
-  string createFileName();
-
-  /**
-     function that returns the file index from the file name 
-      \param fname file name
-      \returns file index
-      \sa slsDetector::getFileIndexFromFileName 
-
-  */
-  int getFileIndexFromFileName(string fname) ;
-
-  /**
-
-  function that returns the variables from the file name 
-  \param fname file name
-      \param index reference to index
-      \param p_index reference to position index
-      \param sv0 reference to scan variable 0
-      \param sv1 reference to scan variable 1
-      \returns file index
-      \sa slsDetector::getVariablesFromFileName 
-
-  */
-  int getVariablesFromFileName(string fname, int &index, int &p_index, float &sv0, float &sv1) ;
-
-
-
-
-
-
-
-
-
-
-
-
+  int retrieveMultiDetectorSetup(string const fname, int level=0);
 
   /* I/O */
-
-  /**
-     sets the default output files path
-  \sa  sharedMultiSlsDetector
-  */
-  char* setFilePath(string s, int i=-1) {sprintf(thisMultiDetector->filePath, s.c_str()); return thisMultiDetector->filePath;};;
-
-  /**
-     sets the default output files root name
-  \sa  sharedMultiSlsDetector
-  */
-  char* setFileName(string s, int i=-1){sprintf(thisMultiDetector->fileName, s.c_str()); return thisMultiDetector->fileName;}; 
-
-  /**
-     sets the default output file index
-  \sa  sharedMultiSlsDetector
-  */
-  int setFileIndex(int i, int id=-1){thisMultiDetector->fileIndex=i; return thisMultiDetector->fileIndex;}; 
   
-  /**
-     returns the default output files path
-  \sa  sharedMultiSlsDetector
-  */
-  char* getFilePath(int id=-1) {return thisMultiDetector->filePath;};
-  
-  /**
-     returns the default output files root name
-  \sa  sharedMultiSlsDetector
-  */
-  char* getFileName(int id=-1) {return thisMultiDetector->fileName;};
-
-  /**
-     returns the default output file index
-  \sa  sharedMultiSlsDetector
-  */
-  int getFileIndex(int id=-1) {return thisMultiDetector->fileIndex;};
-  
-
-  
-    /**
-     
-       writes a data file
-       \param name of the file to be written
-       \param data array of data values
-       \param err array of arrors on the data. If NULL no errors will be written
-       
-       \param ang array of angular values. If NULL data will be in the form chan-val(-err) otherwise ang-val(-err)
-       \param dataformat format of the data: can be 'i' integer or 'f' float (default)
-       \param nch number of channels to be written to file. if -1 defaults to the number of installed channels of the detector
-       \returns OK or FAIL if it could not write the file or data=NULL
-       \sa mythenDetector::writeDataFile
- 
-  */
-  int writeDataFile(string fname, float *data, float *err=NULL, float *ang=NULL, char dataformat='f', int nch=-1); 
-  
-  /**
-    
-       writes a data file
-       \param name of the file to be written
-       \param data array of data values
-       \returns OK or FAIL if it could not write the file or data=NULL  
-       \sa mythenDetector::writeDataFile
-  */
-  int writeDataFile(string fname, int *data);
-  
-  /**
-       reads a data file
-       \param name of the file to be read
-       \param data array of data values to be filled
-       \param err array of arrors on the data. If NULL no errors are expected on the file
-       
-       \param ang array of angular values. If NULL data are expected in the form chan-val(-err) otherwise ang-val(-err)
-       \param dataformat format of the data: can be 'i' integer or 'f' float (default)
-       \param nch number of channels to be written to file. if <=0 defaults to the number of installed channels of the detector
-       \returns OK or FAIL if it could not read the file or data=NULL
-       
-       \sa mythenDetector::readDataFile
-  */
-  int readDataFile(string fname, float *data, float *err=NULL, float *ang=NULL, char dataformat='f', int nch=0) {return slsDetector::readDataFile(nch, fname, data, err, ang, dataformat);}
-
-  /**
-    
-       reads a data file
-       \param name of the file to be read
-       \param data array of data values
-       \returns OK or FAIL if it could not read the file or data=NULL
-       \sa mythenDetector::readDataFile
-  */
-  int readDataFile(string fname, int *data){slsDetector::readDataFile(fname,data,thisMultiDetector->numberOfChannels);};
-
-
-  /**
-     
-      reads an angular conversion file for all detectors
-      \param fname file to be read
-  \sa  angleConversionConstant mythenDetector::readAngularConversion
-  */
-  /////////////////////////////// virtual int readAngularConversion(string fname="", int id=-1);
-
-
-
-  /**
-    
-     writes an angular conversion file for all detectors
-      \param fname file to be written
-  \sa  angleConversionConstant mythenDetector::writeAngularConversion
-  */
-  /////////////////////////////////////////virtual int writeAngularConversion(string fname="", int id=-1);
-
-
-
-
-
-
-
-
-
 
 
   /* Communication to server */
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
   // Expert Initialization functions
- 
-
-
   
   /**
     get threshold energy
@@ -543,6 +410,21 @@ class multiSlsDetector  {
 
 
 
+ 
+  int64_t getId(idMode mode, int imod=0);
+  int digitalTest(digitalTestMode mode, int imod=0);
+  int executeTrimming(trimMode mode, int par1, int par2, int imod=-1);
+  const char *getSettingsFile();
+
+
+  int decodeNMod(int i, int &idet, int &imod);
+
+
+  /** loads the modules settings/trimbits reading from a file -  file name extension is automatically generated! */
+  int loadSettingsFile(string fname, int nmod=0);
+
+  /** gets the modules settings/trimbits and writes them to file -  file name extension is automatically generated! */
+  int saveSettingsFile(string fname, int nmod=0);
 
 
 
@@ -550,9 +432,8 @@ class multiSlsDetector  {
 
 
 
-
-
-
+  int dumpDetectorSetup(string const fname, int level=0); 
+  int retrieveDetectorSetup(string const fname, int level=0);
 
 
 
@@ -587,11 +468,7 @@ class multiSlsDetector  {
   */
   int startReadOut();
 
-  /**
-     get run status <BR> Does it make sense to ask the status for all detectors?!?!?!
-    \returns status mask
-  */
-  runStatus  getRunStatus();
+
 
   /**
     start detector acquisition and read all data putting them a data queue
@@ -669,6 +546,7 @@ class multiSlsDetector  {
 
 
 
+  int setSpeed(speedVariable sp, int value=-1);
 
 
   /** 
@@ -678,6 +556,13 @@ class multiSlsDetector  {
       \returns timer set value in ns or number of...(e.g. frames, gates, probes)
   */
   int64_t setTimer(timerIndex index, int64_t t=-1);
+  /** 
+      set/get timer value
+      \param index timer index
+      \param t time in ns or number of...(e.g. frames, gates, probes)
+      \returns timer set value in ns or number of...(e.g. frames, gates, probes)
+  */
+  int64_t getTimeLeft(timerIndex index);
 
 /*   /\**  */
 /*       get current timer value */
@@ -713,14 +598,6 @@ class multiSlsDetector  {
  
   //Corrections  
 
-  /** 
-      set/get if the data processing and file writing should be done by a separate thread
-s
-      \param b 0 sequencial data acquisition and file writing, 1 separate thread, -1 get
-      \returns thread flag
-  */
-
-  int setThreadedProcessing(int b=-1) {if (b>=0) thisMultiDetector->threadedProcessing=b; return  thisMultiDetector->threadedProcessing;}
 
   /** 
       set flat field corrections
@@ -730,6 +607,14 @@ s
   int setFlatFieldCorrection(string fname=""); 
 
   /** 
+      set flat field corrections
+      \param corr if !=NULL the flat field corrections will be filled with corr (NULL usets ff corrections)
+      \param ecorr if !=NULL the flat field correction errors will be filled with ecorr (1 otherwise)
+      \returns 0 if ff correction disabled, >0 otherwise
+  */
+  int setFlatFieldCorrection(float *corr=NULL, float *ecorr=NULL);
+
+  /** 
       get flat field corrections
       \param corr if !=NULL will be filled with the correction coefficients
       \param ecorr if !=NULL will be filled with the correction coefficients errors
@@ -737,22 +622,12 @@ s
   */
   int getFlatFieldCorrection(float *corr=NULL, float *ecorr=NULL);
 
- /** 
-      get flat field corrections file directory
-      \returns flat field correction file directory
-  */
-  char *getFlatFieldCorrectionDir(){return thisMultiDetector->flatFieldDir;};
- /** 
-      set flat field corrections file directory
-      \param flat field correction file directory
-  */
-  void setFlatFieldCorrectionDir(string dir){strcpy(thisMultiDetector->flatFieldDir,dir.c_str());};
-  
- /** 
-      get flat field corrections file name
-      \returns flat field correction file name
-  */
-  char *getFlatFieldCorrectionFile(){  if (thisMultiDetector->correctionMask&(1<<FLAT_FIELD_CORRECTION)) return thisMultiDetector->flatFieldFile; else return "none";};
+
+
+
+
+
+
 
   /** 
       set rate correction
@@ -788,6 +663,11 @@ s
   */
   int setBadChannelCorrection(string fname="");
   
+
+  int setBadChannelCorrection(int nch, int *chs, int ff);
+
+
+
   /** 
       get bad channels correction
       \param bad pointer to array that if bad!=NULL will be filled with the bad channel list
@@ -795,19 +675,8 @@ s
   */
   int getBadChannelCorrection(int *bad=NULL);
 
-  /** returns the bad channel list file */
-  string getBadChannelCorrectionFile() {if (thisMultiDetector->correctionMask&(1<< DISCARD_BAD_CHANNELS)) return string(thisMultiDetector->badChanFile); else return string("none");};
 
-  
-  /** 
-      pure virtual function
-      set angular conversion
-      \param fname file with angular conversion constants ("" disable)
-      \returns 0 if angular conversion disabled, >0 otherwise
-      \sa mythenDetector::setAngularConversion
-  */
-  /////////////////////////////////////////////////// virtual int setAngularConversion(string fname="");
-
+ 
   /** 
       pure virtual function
       get angular conversion
@@ -819,173 +688,13 @@ s
   /////////////////////////////////////////////////// virtual int getAngularConversion(int &direction,  angleConversionConstant *angconv=NULL);
   
   
-  /**
-      pure virtual function
-      returns the angular conversion file
-      \sa mythenDetector::getAngularConversion */
-  /////////////////////////////////////////////////// virtual string getAngularConversion();
-  
-  /** 
-      pure virtual function
-      set detector global offset
-      \sa mythenDetector::setGlobalOffset
-  */
-  /////////////////////////////////////////////////// virtual float setGlobalOffset(float f); 
+  int setAngularConversion(string fname);
 
-  /** 
-      pure virtual function
-      set detector fine offset
-      \sa mythenDetector::setFineOffset
-  */
-  /////////////////////////////////////////////////// virtual float setFineOffset(float f);
-  /** 
-      pure virtual function
-      get detector fine offset
-      \sa mythenDetector::getFineOffset
-  */
-  /////////////////////////////////////////////////// virtual float getFineOffset();
-  
-  /** 
-      pure virtual function
-      get detector global offset
-      \sa mythenDetector::getGlobalOffset
-  */
-  /////////////////////////////////////////////////// virtual float getGlobalOffset();
+  int readAngularConversion(string fname);
 
-  /** 
-      pure virtual function
-      set  positions for the acquisition
-      \param nPos number of positions
-      \param pos array with the encoder positions
-      \returns number of positions
-      \sa mythenDetector::setPositions
-  */
-  /////////////////////////////////////////////////// virtual int setPositions(int nPos, float *pos);
-   /** 
-      pure virtual function
-      get  positions for the acquisition
-      \param pos array which will contain the encoder positions
-      \returns number of positions
-      \sa mythenDetector::getPositions
-  */
-  /////////////////////////////////////////////////// virtual int getPositions(float *pos=NULL);
-  
-  
-  /** pure virtual function
-      set detector bin size used for merging (approx angular resolution)
-      \param bs bin size in degrees
-      \returns current bin size
-      \sa mythenDetector::setBinSize
-*/
-  /////////////////////////////////////////////////// virtual float setBinSize(float bs);
+  int writeAngularConversion(string fname);
 
-  /** pure virtual function
-      return detector bin size used for merging (approx angular resolution)
-      \sa mythenDetector::getBinSize
-  */
-  /////////////////////////////////////////////////// virtual float getBinSize();
-
-
-
-
-
-  /** 
-      set action 
-      \param iaction can be enum {startScript, scriptBefore, headerBefore, headerAfter,scriptAfter, stopScript, MAX_ACTIONS}
-      \param fname for script ("" disable)
-      \param par for script 
-      \returns 0 if action disabled, >0 otherwise
-  */
-  int setAction(int iaction, string fname="", string par="");
-
-  /** 
-      set action 
-      \param iaction can be enum {startScript, scriptBefore, headerBefore, headerAfter,scriptAfter, stopScript, MAX_ACTIONS}
-      \param fname for script ("" disable)
-      \returns 0 if action disabled, >0 otherwise
-  */
-  int setActionScript(int iaction, string fname="");
-  /** 
-      set action 
-      \param iaction can be enum {startScript, scriptBefore, headerBefore, headerAfter,scriptAfter, stopScript, MAX_ACTIONS}
-      \param par for script ("" disable)
-      \returns 0 if action disabled, >0 otherwise
-  */
-  int setActionParameter(int iaction, string par="");
-
-  /** 
-      returns action script
-      \param iaction can be enum {startScript, scriptBefore, headerBefore, headerAfter,scriptAfter, stopScript}
-      \returns action script
-  */
-  string getActionScript(int iaction);
-
-    /** 
-	returns action parameter
-	\param iaction can be enum {startScript, scriptBefore, headerBefore, headerAfter,scriptAfter, stopScript}
-	\returns action parameter
-    */
-  string getActionParameter(int iaction);
-
-   /** 
-	returns action mode
-	\param iaction can be enum {startScript, scriptBefore, headerBefore, headerAfter,scriptAfter, stopScript}
-	\returns action mode
-    */
-  int getActionMode(int iaction);
-
-
-  /** 
-      set scan 
-      \param index of the scan (0,1)
-      \param fname for script ("" disables, "none" disables and overwrites current)
-      \param nvalues number of steps (0 disables, -1 leaves current value)
-      \param values pointer to steps (if NULL leaves current values)
-      \param par parameter for the scan script ("" leaves unchanged)
-      \returns 0 is scan disabled, >0 otherwise
-  */
-  int setScan(int index, string script="", int nvalues=-1, float *values=NULL, string par="", int precision=-1);
-  
-  int setScanScript(int index, string script="");
-  int setScanParameter(int index, string par="");
-  int setScanPrecision(int index, int precision=-1);
-  int setScanSteps(int index, int nvalues=-1, float *values=NULL);
-  /** 
-      returns scan script
-      \param iscan can be (0,1) 
-      \returns scan script
-  */
-  string getScanScript(int iscan);
-
-    /** 
-	returns scan parameter
-	\param iscan can be (0,1)
-	\returns scan parameter
-    */
-  string getScanParameter(int iscan);
-
-   /** 
-	returns scan mode
-	\param iscan can be (0,1)
-	\returns scan mode
-    */
-  int getScanMode(int iscan);
-
-   /** 
-	returns scan steps
-	\param iscan can be (0,1)
-	\param v is the pointer to the scan steps
-	\returns scan steps
-    */
-  int getScanSteps(int iscan, float *v=NULL);
-
-
-   /** 
-	returns scan precision
-	\param iscan can be (0,1)
-	\returns scan precision
-    */
-  int getScanPrecision(int iscan);
+  float* convertAngles(float pos);
 
 
 
@@ -1047,41 +756,41 @@ s
   int rateCorrect(float* datain, float *errin, float* dataout, float *errout);
 
   
-  /** 
-      pure virtual function
-  sets the arrays of the merged data to 0. NB The array should be created with size >= 360./getBinSize(); 
-      \param mp already merged postions
-      \param mv already merged data
-      \param me already merged errors (squared sum)
-      \param mm multiplicity of merged arrays
-      \returns OK or FAIL
-      \sa mythenDetector::resetMerging
-  */
-  /////////////////////////////////////////////////// virtual int resetMerging(float *mp, float *mv,float *me, int *mm);
-  /** 
-      pure virtual function
-  merge dataset
-      \param p1 angular positions of dataset
-      \param v1 data
-      \param e1 errors
-      \param mp already merged postions
-      \param mv already merged data
-      \param me already merged errors (squared sum)
-      \param mm multiplicity of merged arrays
-      \sa mythenDetector::addToMerging
-  */
-  /////////////////////////////////////////////////// virtual int addToMerging(float *p1, float *v1, float *e1, float *mp, float *mv,float *me, int *mm);
+/*   /\**  */
+/*       pure virtual function */
+/*   sets the arrays of the merged data to 0. NB The array should be created with size >= 360./getBinSize();  */
+/*       \param mp already merged postions */
+/*       \param mv already merged data */
+/*       \param me already merged errors (squared sum) */
+/*       \param mm multiplicity of merged arrays */
+/*       \returns OK or FAIL */
+/*       \sa mythenDetector::resetMerging */
+/*   *\/ */
+/*   int resetMerging(float *mp, float *mv,float *me, int *mm) ; */
+/*   /\**  */
+/*       pure virtual function */
+/*   merge dataset */
+/*       \param p1 angular positions of dataset */
+/*       \param v1 data */
+/*       \param e1 errors */
+/*       \param mp already merged postions */
+/*       \param mv already merged data */
+/*       \param me already merged errors (squared sum) */
+/*       \param mm multiplicity of merged arrays */
+/*       \sa mythenDetector::addToMerging */
+/*   *\/ */
+/*   int addToMerging(float *p1, float *v1, float *e1, float *mp, float *mv,float *me, int *mm); */
 
-  /** pure virtual function
-      calculates the "final" positions, data value and errors for the emrged data
-      \param mp already merged postions
-      \param mv already merged data
-      \param me already merged errors (squared sum)
-      \param mm multiplicity of merged arrays
-      \returns FAIL or the number of non empty bins (i.e. points belonging to the pattern)
-      \sa mythenDetector::finalizeMerging
-  */
-  int finalizeMerging(float *mp, float *mv,float *me, int *mm);
+/*   /\** pure virtual function */
+/*       calculates the "final" positions, data value and errors for the emrged data */
+/*       \param mp already merged postions */
+/*       \param mv already merged data */
+/*       \param me already merged errors (squared sum) */
+/*       \param mm multiplicity of merged arrays */
+/*       \returns FAIL or the number of non empty bins (i.e. points belonging to the pattern) */
+/*       \sa mythenDetector::finalizeMerging */
+/*   *\/ */
+/*   int finalizeMerging(float *mp, float *mv,float *me, int *mm); */
 
   /** 
       turns off server
@@ -1107,27 +816,108 @@ s
   float getCurrentProgress();
   
 
+  /**
+     get run status
+    \returns status mask
+  */
+  //virtual runStatus  getRunStatus()=0;
+  runStatus  getRunStatus();
+
+
+  /**
+    set dacs value
+    \param val value (in V)
+    \param index DAC index
+    \param imod module number (if -1 alla modules)
+    \returns current DAC value
+  */
+  float setDAC(float val, dacIndex index, int imod=-1);
+  /**
+    set dacs value
+    \param val value (in V)
+    \param index DAC index
+    \param imod module number (if -1 alla modules)
+    \returns current DAC value
+  */
+  float getADC(dacIndex index, int imod=0);
+    /**
+    configure channel
+    \param reg channel register
+    \param ichan channel number (-1 all)
+    \param ichip chip number (-1 all)
+    \param imod module number (-1 all)
+    \returns current register value
+    \sa ::sls_detector_channel
+  */
+  int setChannel(int64_t reg, int ichan=-1, int ichip=-1, int imod=-1);  
+  /** 
+      pure virtual function
+      get angular conversion
+      \param reference to diffractometer direction
+      \param angconv array that will be filled with the angular conversion constants
+      \returns 0 if angular conversion disabled, >0 otherwise
+      \sa mythenDetector::getAngularConversion
+  */
+  int getAngularConversion(int &direction,  angleConversionConstant *angconv=NULL) ;
+  
+  
 
 
 
 
 
 
+  /** returns the detector trimbit/settings directory  \sa sharedSlsDetector */
+  char* getSettingsDir();
+  /** sets the detector trimbit/settings directory  \sa sharedSlsDetector */
+  char* setSettingsDir(string s);
+ /**
+     returns the location of the calibration files
+  \sa  sharedSlsDetector
+  */
+  char* getCalDir();
+   /**
+      sets the location of the calibration files
+  \sa  sharedSlsDetector
+  */
+  char* setCalDir(string s); 
+
+
+  char *getNetworkParameter(networkParameter);
+  char *setNetworkParameter(networkParameter, std::string);
+  int setPort(portType, int);
+  int lockServer(int);
+    
+  string getLastClientIP();
+
+
+  int configureMAC(int);
 
 
 
 
-  string executeLine(int narg, char *args[], int action=slsDetector::GET_ACTION);
-
-
-
-  static string helpLine(int action=slsDetector::GET_ACTION);
+  int setNumberOfModules(int i=-1, dimension d=X);
+  int getMaxNumberOfModules(dimension d=X);
+  int setDynamicRange(int i=-1);
 
 
 
 
 
+  int writeRegister(int addr, int val);
+  
 
+  int readRegister(int addr);
+
+
+
+ int setTrimEn(int nen, int *en=NULL);
+ int getTrimEn(int *en=NULL);
+
+
+ externalSignalFlag setExternalSignalFlags(externalSignalFlag pol=GET_EXTERNAL_SIGNAL_FLAG , int signalindex=0);
+ int setReadOutFlags(readOutFlags flag=GET_READOUT_FLAGS);
+ externalCommunicationMode setExternalCommunicationMode(externalCommunicationMode pol=GET_EXTERNAL_COMMUNICATION_MODE);
 
  protected:
  
@@ -1205,8 +995,9 @@ s
   /** merging multiplicity */
   int *mergingMultiplicity;
   
- 
+
 };
+
 
 
 #endif

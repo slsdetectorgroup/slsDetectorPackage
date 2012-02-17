@@ -2159,7 +2159,7 @@ int get_time_left(int file_des) {
 #endif 
 
   n = sendDataOnly(file_des,&ret,sizeof(ret));
-  if (ret!=OK) {
+  if (ret==FAIL) {
     n += sendDataOnly(file_des,mess,sizeof(mess));
   } else {
     n = sendDataOnly(file_des,&retval,sizeof(retval));

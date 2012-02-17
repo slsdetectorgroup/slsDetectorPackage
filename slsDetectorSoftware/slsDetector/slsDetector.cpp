@@ -78,6 +78,11 @@ int slsDetector::initSharedMemory(detectorType type, int id) {
     std::cout<<"*** shmat error (server) ***" << std::endl;
     return shm_id;
   }
+
+
+
+
+
     /**
       shm_id returns -1 is shared memory initialization fails
    */
@@ -119,28 +124,20 @@ int slsDetector::freeSharedMemory() {
 
 
 
-slsDetector::slsDetector(int id) :
+slsDetector::slsDetector(int id) :slsDetectorUtils(),
   thisDetector(NULL),  
   detId(id),
   shmId(-1), 
   controlSocket(NULL),
   stopSocket(NULL),
   dataSocket(NULL),
-  currentPosition(0),
-  currentPositionIndex(0),
-  currentI0(0),
-  mergingBins(NULL),
-  mergingCounts(NULL),
-  mergingErrors(NULL),
-  mergingMultiplicity(NULL),
   ffcoefficients(NULL),
   fferrors(NULL),
   detectorModules(NULL),
   dacs(NULL),
   adcs(NULL),
   chipregs(NULL),
-  chanregs(NULL),
-  badChannelMask(NULL)
+  chanregs(NULL)
 
 
 {
@@ -168,43 +165,26 @@ slsDetector::slsDetector(int id) :
 
 
 
-
-  pthread_mutex_t mp1 = PTHREAD_MUTEX_INITIALIZER; 
-  
-  mp=mp1;
-  
-  pthread_mutex_init(&mp, NULL);
-  
-
-
 };
 
 
 
 
 
-slsDetector::slsDetector(detectorType type, int id):
+slsDetector::slsDetector(detectorType type, int id): slsDetectorUtils(),
   thisDetector(NULL),  
   detId(id),
   shmId(-1), 
   controlSocket(NULL),
   stopSocket(NULL),
   dataSocket(NULL),
-  currentPosition(0),
-  currentPositionIndex(0),
-  currentI0(0),
-  mergingBins(NULL),
-  mergingCounts(NULL),
-  mergingErrors(NULL),
-  mergingMultiplicity(NULL),
   ffcoefficients(NULL),
   fferrors(NULL),
   detectorModules(NULL),
   dacs(NULL),
   adcs(NULL),
   chipregs(NULL),
-  chanregs(NULL),
-  badChannelMask(NULL)
+  chanregs(NULL)
  {
      while (shmId<0) {
        /**Initlializes shared memory \sa initSharedMemory
@@ -227,12 +207,6 @@ slsDetector::slsDetector(detectorType type, int id):
 
 
 
-     pthread_mutex_t mp1 = PTHREAD_MUTEX_INITIALIZER; 
-    
-     mp=mp1;
-
-     pthread_mutex_init(&mp, NULL);
-
 }
 
 
@@ -248,28 +222,20 @@ slsDetector::~slsDetector(){
 
 };
 
-slsDetector::slsDetector(char *name, int id, int cport) :
+slsDetector::slsDetector(char *name, int id, int cport) : slsDetectorUtils(),
   thisDetector(NULL),  
   detId(id),
   shmId(-1), 
   controlSocket(NULL),
   stopSocket(NULL),
   dataSocket(NULL),
-  currentPosition(0),
-  currentPositionIndex(0),
-  currentI0(0),
-  mergingBins(NULL),
-  mergingCounts(NULL),
-  mergingErrors(NULL),
-  mergingMultiplicity(NULL),
   ffcoefficients(NULL),
   fferrors(NULL),
   detectorModules(NULL),
   dacs(NULL),
   adcs(NULL),
   chipregs(NULL),
-  chanregs(NULL),
-  badChannelMask(NULL) 
+  chanregs(NULL)
 {
   
   detectorType type=(detectorType)getDetectorType(name, cport);
@@ -297,11 +263,6 @@ slsDetector::slsDetector(char *name, int id, int cport) :
 
 
 
-  pthread_mutex_t mp1 = PTHREAD_MUTEX_INITIALIZER; 
-  
-  mp=mp1;
-  
-  pthread_mutex_init(&mp, NULL);
   
   setTCPSocket(name, cport);
   updateDetector();
@@ -315,14 +276,21 @@ detectorType slsDetector::getDetectorType(char *name, int cport) {
   int fnum=F_GET_DETECTOR_TYPE;
   MySocketTCP *s= new MySocketTCP(name, cport);
   char m[100];
-  
+#ifdef VERBOSE
+  cout << "Getting detector type " << endl;
+#endif 
  if (s->Connect()>=0) {
     s->SendDataOnly(&fnum,sizeof(fnum));
     s->ReceiveDataOnly(&retval,sizeof(retval));
     
-    if (retval==OK)
+    if (retval!=FAIL) {
       s->ReceiveDataOnly(&t,sizeof(t));
-    else {
+
+#ifdef VERBOSE
+      cout << "Detector type is "<< t << endl;
+#endif 
+      
+    } else {
       s->ReceiveDataOnly(m,sizeof(m));
       std::cout<< "Detector returned error: " << m << std::endl;
     }
@@ -335,21 +303,6 @@ detectorType slsDetector::getDetectorType(char *name, int cport) {
  return t;
 
 }
-
-// detectorType slsDetector::getDetectorType(int id) {
-  
-//   detectorType t=GENERIC;
-//   initSharedMemory(GENERIC, id);
-//   sharedSlsDetector* det = (sharedSlsDetector*) shmat(shm_id, NULL, 0);
-//   if (det == (void*)-1) {
-//     std::cout<<"*** shmat error - detector id not found ***" << std::endl;
-//     return t;
-//   }
-  
-
-//   return t;
-
-// }
 
 
 
@@ -629,7 +582,6 @@ int slsDetector::initializeDetectorSize(detectorType type) {
 
 
      for (int ia=0; ia<MAX_ACTIONS; ia++) {
-       thisDetector->actionMode[ia]=0;
        strcpy(thisDetector->actionScript[ia],"none");
        strcpy(thisDetector->actionParameter[ia],"none");
      }
@@ -677,9 +629,54 @@ int slsDetector::initializeDetectorSize(detectorType type) {
      /** set  thisDetector->alreadyExisting=1  */   
      thisDetector->alreadyExisting=1;
    } 
+
+#ifdef VERBOSE
+   cout << "passing pointers" << endl;
+#endif   
+
+   getPointers(&thisDetector->stoppedFlag,				\
+	       &thisDetector->threadedProcessing,			\
+	       &thisDetector->actionMask,				\
+	       thisDetector->actionScript,				\
+	       thisDetector->actionParameter,				\
+	       thisDetector->nScanSteps,				\
+	       thisDetector->scanMode,					\
+	       thisDetector->scanScript,				\
+	       thisDetector->scanParameter,				\
+	       thisDetector->scanSteps,					\
+	       thisDetector->scanPrecision,				\
+	       &thisDetector->numberOfPositions,			\
+	       thisDetector->detPositions,				\
+	       thisDetector->angConvFile,				\
+	       &thisDetector->correctionMask,				\
+	       &thisDetector->binSize,					\
+	       &thisDetector->fineOffset,				\
+	       &thisDetector->globalOffset,				\
+	       &thisDetector->angDirection,				\
+	       thisDetector->flatFieldDir,				\
+	       thisDetector->flatFieldFile,				\
+	       thisDetector->badChanFile,				\
+	       thisDetector->timerValue,				\
+	       &thisDetector->currentSettings,				\
+	       &thisDetector->currentThresholdEV,			\
+	       thisDetector->filePath,					\
+	       thisDetector->fileName,					\
+	       &thisDetector->fileIndex);
+
+
+
+#ifdef VERBOSE
+   cout << "done" << endl;
+#endif   
+#ifdef VERBOSE
+   cout << "filling bad channel mask" << endl;
+#endif   
    /** fill the BadChannelMask \sa  fillBadChannelMask */
    fillBadChannelMask();
 
+#ifdef VERBOSE
+   cout << "done" << endl;
+#endif 
 
    /** modifies the last PID accessing the detector */
    thisDetector->lastPID=getpid();
@@ -869,10 +866,13 @@ int  slsDetector::receiveModule(sls_detector_module* myMod) {
 
 
 int slsDetector::setOnline(int off) {
-  if (off!=GET_ONLINE_FLAG)
+  if (off!=GET_ONLINE_FLAG) {
     thisDetector->onlineFlag=off;
+    if (thisDetector->onlineFlag==ONLINE_FLAG)
+      setTCPSocket();
+  }
   return thisDetector->onlineFlag;
-};
+}
 
 
 
@@ -1066,207 +1066,6 @@ int slsDetector::disconnectControl() {
 
 
 
-  /* I/O */
-
-/* generates file name without extension*/
-
-string slsDetector::createFileName() {
-  return createFileName(thisDetector->filePath, thisDetector->fileName, thisDetector->actionMask, currentScanVariable[0], thisDetector->scanPrecision[0], currentScanVariable[1], thisDetector->scanPrecision[1], currentPositionIndex, thisDetector->numberOfPositions, thisDetector->fileIndex);
-  
-}
-
-string  slsDetector::createFileName(char *filepath, char *filename, int aMask, float sv0, int prec0, float sv1, int prec1, int pindex, int npos, int findex) {
-  ostringstream osfn;
-  // string fn;
-  /*directory name +root file name */
-  osfn << filepath << "/" << filename;
-
-  // cout << osfn.str() << endl;
-
-  // scan level 0
-  if ( aMask& (1 << (MAX_ACTIONS)))
-    osfn << "_S" << fixed << setprecision(prec0) << sv0;
-
-  //cout << osfn.str() << endl;
-
-  //scan level 1
-  if (aMask & (1 << (MAX_ACTIONS+1)))
-    osfn << "_s" << fixed << setprecision(prec1) << sv1;
-  
-  //cout << osfn.str() << endl;
-
-
-  //position
-  if (pindex>0 && pindex<=npos)
-    osfn << "_p" << pindex;
-
-  //cout << osfn.str() << endl;
-
-  // file index
-  osfn << "_" << findex;
-
-  //cout << osfn.str() << endl;
-
-
-#ifdef VERBOSE
-  cout << "created file name " << osfn.str() << endl;
-#endif
-
-  //cout << osfn.str() << endl;
-  //fn=oosfn.str()sfn.str();
-  return osfn.str();
-
-}
-
-
-
-
-
-
-
-
-
-
-
-
-int slsDetector::getFileIndexFromFileName(string fname) {
-  int i;
-  size_t dot=fname.rfind(".");
-  if (dot==string::npos)
-    return -1;
-  size_t uscore=fname.rfind("_");
-  if (uscore==string::npos)
-    return -1;
-
-  if (sscanf( fname.substr(uscore+1,dot-uscore-1).c_str(),"%d",&i)) {
-
-  return i;
-  } 
-  //#ifdef VERBOSE
-  cout << "******************************** cannot parse file index" << endl;
-  //#endif
-  return 0;
-}
-
-int slsDetector::getVariablesFromFileName(string fname, int &index, int &p_index, float &sv0, float &sv1) {
-  
-  int i;
-  float f;
-  string s;
-
-
-  index=-1;
-  p_index=-1;
-  sv0=-1;
-  sv1=-1;
-
-
-  //  size_t dot=fname.rfind(".");
-  //if (dot==string::npos)
-  //  return -1;
-  size_t uscore=fname.rfind("_");
-  if (uscore==string::npos)
-    return -1;
-  s=fname;
-
-  //if (sscanf(s.substr(uscore+1,dot-uscore-1).c_str(),"%d",&i)) {
-  if (sscanf(s.substr(uscore+1,s.size()-uscore-1).c_str(),"%d",&i)) {
-    index=i;
-#ifdef VERBOSE
-    cout << "******************************** file index is " << index << endl;
-#endif
-    //return i;
-    s=fname.substr(0,uscore);
-  }
-#ifdef VERBOSE 
-  else
-    cout << "******************************** cannot parse file index" << endl;
-  
-  cout << s << endl;
-#endif
-
-  
-  uscore=s.rfind("_");
-
-
-
-
-  if (sscanf( s.substr(uscore+1,s.size()-uscore-1).c_str(),"p%d",&i)) {
-    p_index=i;
-#ifdef VERBOSE
-    cout << "******************************** position index is " << p_index << endl;
-#endif
-    s=fname.substr(0,uscore);
-  }
-#ifdef VERBOSE 
-  else 
-    cout << "******************************** cannot parse position index" << endl;
-
-  cout << s << endl;
-
-
-#endif
-
-
-  
-  
-  uscore=s.rfind("_");
-
-
-
-
-  if (sscanf( s.substr(uscore+1,s.size()-uscore-1).c_str(),"s%f",&f)) {
-    sv1=f;
-#ifdef VERBOSE
-    cout << "******************************** scan variable 1 is " << sv1 << endl;
-#endif
-    s=fname.substr(0,uscore);
-  }
-#ifdef VERBOSE
-  else 
-    cout << "******************************** cannot parse scan varable 1" << endl;
-
-  cout << s << endl;
-
-
-#endif
-  
-  uscore=s.rfind("_");
-
-
-
-
-  if (sscanf( s.substr(uscore+1,s.size()-uscore-1).c_str(),"S%f",&f)) {
-    sv0=f;
-#ifdef VERBOSE
-    cout << "******************************** scan variable 0 is " << sv0 << endl;
-#endif
-  } 
-#ifdef VERBOSE
-  else 
-    cout << "******************************** cannot parse scan varable 0" << endl;
-
-#endif
-
-
-
-  return index;
-}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -1391,44 +1190,15 @@ int slsDetector::setDetectorType(detectorType const type){
   return retType;
 };
 
-int slsDetector::setDetectorType(string const type){
-  detectorType dtype=GENERIC;
-  if (type=="Mythen")
-    dtype=MYTHEN;
-  else if  (type=="Pilatus")
-      dtype=PILATUS;
-  else if  (type=="Eiger")
-    dtype=EIGER;
-  else if  (type=="Gotthard")
-    dtype=GOTTHARD;
-  else if  (type=="Agipd")
-    dtype=AGIPD;
-  return setDetectorType(dtype);
+int slsDetector::setDetectorType(string const stype){
+  return setDetectorType(getDetectorType(stype));
 };
 
 string slsDetector::getDetectorType(){
 
-  switch (thisDetector->myDetectorType) {
-  case MYTHEN:
-    return string("Mythen");
-    break;
-  case PILATUS:
-    return string("Pilatus");
-    break;
-  case EIGER:
-    return string("Eiger");
-    break;
-  case GOTTHARD:
-    return string("Gotthard");
-    break;
-  case AGIPD:
-    return string("Agipd");
-    break;
-  default:
-    return string("Unknown");
-    break;
-  }
-};
+  return getDetectorType(thisDetector->myDetectorType);
+
+}
 
 
 
@@ -2181,8 +1951,8 @@ int slsDetector::setChannel(sls_detector_channel chan){
 	std::cout<< "Detector returned error: " << mess << std::endl;
       }
       controlSocket->Disconnect();
-	if (ret==FORCE_UPDATE)
-	  updateDetector();
+      if (ret==FORCE_UPDATE)
+	updateDetector();
     }
     }
   }
@@ -2191,48 +1961,65 @@ int slsDetector::setChannel(sls_detector_channel chan){
   if (ret!=FAIL) {
     if (chanregs) {
 
-int mmin=imod, mmax=imod+1, chimin=ichip, chimax=ichip+1, chamin=ichan, chamax=ichan+1;
+      int mmin=imod, mmax=imod+1, chimin=ichip, chimax=ichip+1, chamin=ichan, chamax=ichan+1;
 
- if (imod==-1) {
-    mmin=0;
-    mmax=thisDetector->nModsMax;
-  }
+      if (imod==-1) {
+	mmin=0;
+	mmax=thisDetector->nModsMax;
+      }
 
-  if (ichip==-1) {
-    chimin=0;
-    chimax=thisDetector->nChips;
-  }
-
-  if (ichan==-1) {
-    chamin=0;
-    chamax=thisDetector->nChans;
-  }
-
-
-
+      if (ichip==-1) {
+	chimin=0;
+	chimax=thisDetector->nChips;
+      }
+      
+      if (ichan==-1) {
+	chamin=0;
+	chamax=thisDetector->nChans;
+      }
+      
 
 
 
-  for (int im=mmin; im<mmax; im++) {
-   for (int ichi=chimin; ichi<chimax; ichi++) {
-     for (int icha=chamin; icha<chamax; icha++) {
 
-      *(chanregs+im*thisDetector->nChans*thisDetector->nChips+ichi*thisDetector->nChips+icha)=retval;     
 
-    }
-  }
-}
- 
+      for (int im=mmin; im<mmax; im++) {
+	for (int ichi=chimin; ichi<chimax; ichi++) {
+	  for (int icha=chamin; icha<chamax; icha++) {
+	    
+	    *(chanregs+im*thisDetector->nChans*thisDetector->nChips+ichi*thisDetector->nChips+icha)=retval;     
+	    
+	  }
+	}
+      }
+      
     }
   }
 #ifdef VERBOSE
   std::cout<< "Channel register returned "<<  retval << std::endl;
 #endif
   return retval;
-	
+  
 }
 
- sls_detector_channel  slsDetector::getChannel(int ichan, int ichip, int imod){
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+sls_detector_channel  slsDetector::getChannel(int ichan, int ichip, int imod){
 
 
   int fnum=F_GET_CHANNEL;
@@ -3403,45 +3190,6 @@ int slsDetector::startAndReadAllNoWait(){
 
 
 
-
-int* slsDetector::popDataQueue() {
-  int *retval=NULL;
-  if( !dataQueue.empty() ) {
-    retval=dataQueue.front();
-    dataQueue.pop();
-  }
-  return retval;
-}
-
-detectorData* slsDetector::popFinalDataQueue() {
-  detectorData *retval=NULL;
-  if( !finalDataQueue.empty() ) {
-    retval=finalDataQueue.front();
-    finalDataQueue.pop();
-  }
-  return retval;
-}
-
-void slsDetector::resetDataQueue() {
-  int *retval=NULL;
-  while( !dataQueue.empty() ) {
-    retval=dataQueue.front();
-    dataQueue.pop();
-    delete [] retval;
-  }
- 
-}
-
-void slsDetector::resetFinalDataQueue() {
-  detectorData *retval=NULL;
-  while( !finalDataQueue.empty() ) {
-    retval=finalDataQueue.front();
-    finalDataQueue.pop();
-    delete retval;
-  }
-
-}
-
   /* 
      set or read the acquisition timers 
      enum timerIndex {
@@ -3864,7 +3612,7 @@ int64_t slsDetector::getTimeLeft(timerIndex index){
 	stopSocket->SendDataOnly(&fnum,sizeof(fnum));
 	stopSocket->SendDataOnly(&index,sizeof(index));
 	stopSocket->ReceiveDataOnly(&ret,sizeof(ret));
-	if (ret!=OK) {
+	if (ret==FAIL) {
 	  stopSocket->ReceiveDataOnly(mess,sizeof(mess));
 	  std::cout<< "Detector returned error: " << mess << std::endl;
 	} else {
@@ -4306,24 +4054,6 @@ int slsDetector::getFlatFieldCorrection(float *corr, float *ecorr) {
 }
 
 
-int slsDetector::flatFieldCorrect(float datain, float errin, float &dataout, float &errout, float ffcoefficient, float fferr){
-  float e;
-
-  dataout=datain*ffcoefficient;
-
-  if (errin==0 && datain>=0) 
-    e=sqrt(datain);
-  else
-    e=errin;
-  
-  if (dataout>0)
-    errout=sqrt(e*ffcoefficient*e*ffcoefficient+datain*fferr*datain*fferr);
-  else
-    errout=1.;
-  
-  return 0;
-};
-
 int slsDetector::flatFieldCorrect(float* datain, float *errin, float* dataout, float *errout){
 #ifdef VERBOSE
     std::cout<< "Flat field correcting data" << std::endl;
@@ -4419,27 +4149,6 @@ int slsDetector::getRateCorrection(){
 
 
 
- int slsDetector::rateCorrect(float datain, float errin, float &dataout, float &errout, float tau, float t){
-
-   // float data;
-   float e;
- 
-   dataout=(datain*exp(tau*datain/t));
-   
-   if (errin==0 && datain>=0) 
-     e=sqrt(datain);
-   else
-     e=errin;
-   
-   if (dataout>0)
-     errout=e*dataout*sqrt((1/(datain*datain)+tau*tau/(t*t)));
-   else 
-     errout=1.;
-   return 0;
-
-};
-
-
 int slsDetector::rateCorrect(float* datain, float *errin, float* dataout, float *errout){
   float tau=thisDetector->tDead;
   float t=thisDetector->timerValue[ACQUISITION_TIME];
@@ -4479,81 +4188,6 @@ int slsDetector::setBadChannelCorrection(string fname){
 }
 
 
-int slsDetector::setBadChannelCorrection(string fname, int &nbad, int *badlist){
-  ifstream infile;
-  string str;
-  int interrupt=0;
-  int ich;
-  int chmin,chmax;
-#ifdef VERBOSE
-  std::cout << "Setting bad channel correction to " << fname << std::endl;
-#endif
-
-  if (fname=="") {
-    nbad=0;
-    return 0;
-  } else { 
-    infile.open(fname.c_str(), ios_base::in);
-    if (infile.is_open()==0) {
-      std::cout << "could not open file " << fname <<std::endl;
-      return -1;
-    }
-    nbad=0;
-    while (infile.good() and interrupt==0) {
-      getline(infile,str);
-#ifdef VERBOSE
-      std::cout << str << std::endl;
-#endif
-      istringstream ssstr;
-      ssstr.str(str);
-      if (ssstr.bad() || ssstr.fail() || infile.eof()) {
-	interrupt=1;
-	break;
-      }
-      if (str.find('-')!=string::npos) {
-	ssstr >> chmin ;
-	ssstr.str(str.substr(str.find('-')+1,str.size()));
-	ssstr >> chmax;
-#ifdef VERBOSE
-	std::cout << "channels between"<< chmin << " and " << chmax << std::endl;
-#endif
-	for (ich=chmin; ich<=chmax; ich++) {
-	  if (nbad<MAX_BADCHANS) {
-	    badlist[nbad]=ich;
-	    nbad++;
-#ifdef VERBOSE
-	    std::cout<< nbad << " Found bad channel "<< ich << std::endl;
-#endif
-	  } else
-	    interrupt=1;
-	}
-      } else {
-	ssstr >> ich;
-#ifdef VERBOSE
-	std::cout << "channel "<< ich << std::endl;
-#endif
-	if (nbad<MAX_BADCHANS) {
-	  badlist[nbad]=ich;
-	  nbad++;
-#ifdef VERBOSE
-	  std::cout << nbad << " Found bad channel "<< ich << std::endl;
-#endif
-	} else
-	  interrupt=1;
-      }
-
-
-    }
-  }
-  infile.close();
-  if (nbad>0 && nbad<MAX_BADCHANS) {
-    return 1;
-  } else
-  return 0;
-}
-
-
-
 int slsDetector::setBadChannelCorrection(int nch, int *chs, int ff) {
 
   if (ff==0) {
@@ -4579,6 +4213,13 @@ int slsDetector::setBadChannelCorrection(int nch, int *chs, int ff) {
 
 }
 
+
+
+
+
+
+
+
 int slsDetector::getBadChannelCorrection(int *bad) {
   int ichan;
   if (thisDetector->correctionMask&(1<< DISCARD_BAD_CHANNELS)) {
@@ -4594,40 +4235,13 @@ int slsDetector::getBadChannelCorrection(int *bad) {
 }
 
 
-int slsDetector::fillBadChannelMask() {
 
-  if (thisDetector->correctionMask&(1<< DISCARD_BAD_CHANNELS)) {
-    if (badChannelMask) 
-      delete [] badChannelMask;
-    badChannelMask=new int[thisDetector->nChans*thisDetector->nChips*thisDetector->nMods];
-    for (int ichan=0; ichan<thisDetector->nChans*thisDetector->nChips*thisDetector->nMods; ichan++)
-      badChannelMask[ichan]=0;
-    for (int ichan=0; ichan<thisDetector->nBadChans; ichan++) {
-      if (thisDetector->badChansList[ichan]<thisDetector->nChans*thisDetector->nChips*thisDetector->nMods) {
-	badChannelMask[thisDetector->badChansList[ichan]]=1;
-#ifdef VERBOSE
-      std::cout << ichan << " badchannel "<< ichan << std::endl;
-#endif
-      }
-    }
-    for (int ichan=0; ichan<thisDetector->nBadFF; ichan++) {
-      if (thisDetector->badFFList[ichan]<thisDetector->nChans*thisDetector->nChips*thisDetector->nMods) {
-	badChannelMask[thisDetector->badFFList[ichan]]=1;
-#ifdef VERBOSE
-      std::cout << ichan << "ff badchannel "<< thisDetector->badFFList[ichan] << std::endl;
-#endif
-      }
-    }
-    
-  } else {
-    if (badChannelMask) {
-      delete [] badChannelMask;
-      badChannelMask=NULL;
-    }
-  }
-  return  thisDetector->nBadFF;
 
-}
+
+
+
+
+
 
 int slsDetector::exitServer(){  
   
@@ -4652,426 +4266,45 @@ int slsDetector::exitServer(){
 };
 
 
-
-
-
-
-
-
-
-
-  /** 
-      set action 
-      \param iaction can be enum {startScript, scriptBefore, headerBefore, headerAfter,scriptAfter, stopScript, MAX_ACTIONS}
-      \param fname for script ("" disable but leaves script unchanged, "none" disables and overwrites)
-      \returns 0 if action disabled, >0 otherwise
-  */
-int slsDetector::setAction(int iaction, string fname, string par) {
-
-  if (iaction>=0 && iaction<MAX_ACTIONS) {
-
-    if (fname=="") {
-      thisDetector->actionMode[iaction]=0;
-    } else if (fname=="none") {
-      thisDetector->actionMode[iaction]=0;
-      strcpy(thisDetector->actionScript[iaction],fname.c_str());
-    } else {
-      strcpy(thisDetector->actionScript[iaction],fname.c_str());
-      thisDetector->actionMode[iaction]=1;
-    }
-    
-    if (par!="") {
-      strcpy(thisDetector->actionParameter[iaction],par.c_str());
-    }
-    
-    if (thisDetector->actionMode[iaction]) {
-
-#ifdef VERBOSE
-      cout << iaction << "  " << hex << (1 << iaction) << " " << thisDetector->actionMask << dec;
-#endif
-    
-      thisDetector->actionMask |= (1 << iaction);
-
-#ifdef VERBOSE
-    cout << " set " << hex << thisDetector->actionMask << dec << endl;
-#endif
-    
-    } else {
-#ifdef VERBOSE
-    cout << iaction << "  " << hex << thisDetector->actionMask << dec;
-#endif
-    
-    thisDetector->actionMask &= ~(1 << iaction);
-
-#ifdef VERBOSE
-    cout << "  unset " << hex << thisDetector->actionMask << dec << endl;
-#endif
-    }
-#ifdef VERBOSE
-    cout << iaction << " Action mask set to " << hex << thisDetector->actionMask << dec << endl;
-#endif
-    
-    return thisDetector->actionMode[iaction]; 
-  } else
-    return -1;
-}
-
-
-int slsDetector::setActionScript(int iaction, string fname) {
-#ifdef VERBOSE
+char* slsDetector::setNetworkParameter(networkParameter index, string value) {
   
-#endif
-  return setAction(iaction,fname,"");
-}
-
-
-
-int slsDetector::setActionParameter(int iaction, string par) {
-  if (iaction>=0 && iaction<MAX_ACTIONS) {
-
-    if (par!="") {
-      strcpy(thisDetector->actionParameter[iaction],par.c_str());
-    }
-    
-    if (thisDetector->actionMode[iaction]) {
-      thisDetector->actionMask |= (1 << iaction);
-    } else {
-      thisDetector->actionMask &= ~(1 << iaction);
-    }
-    
-    return thisDetector->actionMode[iaction]; 
-  } else
-    return -1; 
-}
-
-  /** 
-      returns action script
-      \param iaction can be enum {startScript, scriptBefore, headerBefore, headerAfter,scriptAfter, stopScript}
-      \returns action script
-  */
-string slsDetector::getActionScript(int iaction){
-  if (iaction>=0 && iaction<MAX_ACTIONS) 
-    return string(thisDetector->actionScript[iaction]);
-  else
-    return string("wrong index");
-};
-
-    /** 
-	returns action parameter
-	\param iaction can be enum {startScript, scriptBefore, headerBefore, headerAfter,scriptAfter, stopScript}
-	\returns action parameter
-    */
-string slsDetector::getActionParameter(int iaction){
-  if (iaction>=0 && iaction<MAX_ACTIONS) 
-    return string(thisDetector->actionParameter[iaction]);
-  else
-    return string("wrong index");
-}
-
-   /** 
-	returns action mode
-	\param iaction can be enum {startScript, scriptBefore, headerBefore, headerAfter,scriptAfter, stopScript}
-	\returns action mode
-    */
-int slsDetector::getActionMode(int iaction){
-  if (iaction>=0 && iaction<MAX_ACTIONS) {
-#ifdef VERBOSE
-    cout << "slsDetetctor : action " << iaction << " mode is " <<  thisDetector->actionMode[iaction] << endl;
-#endif
-    return thisDetector->actionMode[iaction];
-  } else {
-#ifdef VERBOSE
-    cout << "slsDetetctor : wrong action index " << iaction <<  endl;
-#endif
-    return -1;
+  switch (index) {
+  case CLIENT_IP:
+    return setClientIP(value);
+    break;
+  case CLIENT_MAC:
+    return setClientMAC(value);
+    break;
+  case SERVER_MAC:
+    return setServerMAC(value);
+    break;
+  default:
+    return ("unknown network parameter");
   }
+
 }
 
-
-  /** 
-      set scan 
-      \param index of the scan (0,1)
-      \param fname for script ("" disable)
-      \returns 0 if scan disabled, >0 otherwise
-  */
-int slsDetector::setScan(int iscan, string script, int nvalues, float *values, string par, int precision) {
-  if (iscan>=0 && iscan<MAX_SCAN_LEVELS) {
-
-    if (script=="") {
-      thisDetector->scanMode[iscan]=0;
-    } else {
-      strcpy(thisDetector->scanScript[iscan],script.c_str());
-      if (script=="none") {
-	thisDetector->scanMode[iscan]=0;
-      } else if (script=="energy") {
-	thisDetector->scanMode[iscan]=1;
-      }  else if (script=="threshold") {
-	thisDetector->scanMode[iscan]=2;
-      } else if (script=="trimbits") {
-	thisDetector->scanMode[iscan]=3;
-      } else {
-	thisDetector->scanMode[iscan]=4;
-      }  
-    }
-    
+char* slsDetector::getNetworkParameter(networkParameter index) {
   
-
-    
-
-    
-    if (par!="")
-      strcpy(thisDetector->scanParameter[iscan],par.c_str());
-      
-      if (nvalues>=0) {    
-	if (nvalues==0)
-	  thisDetector->scanMode[iscan]=0;
-	else {
-	  thisDetector->nScanSteps[iscan]=nvalues;
-	  if (nvalues>MAX_SCAN_STEPS)
-	    thisDetector->nScanSteps[iscan]=MAX_SCAN_STEPS;
-	}
-      }
-      
-      if (values && 	thisDetector->scanMode[iscan]>0 ) {
-	for (int iv=0; iv<thisDetector->nScanSteps[iscan]; iv++) {
-	  thisDetector->scanSteps[iscan][iv]=values[iv];
-	}
-      }
-
-      if (precision>=0)
-	thisDetector->scanPrecision[iscan]=precision;
-      
-      if (thisDetector->scanMode[iscan]>0){
-	thisDetector->actionMask |= 1<< (iscan+MAX_ACTIONS);
-      } else {
-	thisDetector->actionMask &= ~(1 <<  (iscan+MAX_ACTIONS));
-      }
-
-
-
-      setTotalProgress();
-
-
-
-
-
-
-
-
-
-
-      return thisDetector->scanMode[iscan];
-  }  else 
-    return -1;
-  
-}
-
-int slsDetector::setScanScript(int iscan, string script) {
- if (iscan>=0 && iscan<MAX_SCAN_LEVELS) {
-    if (script=="") {
-      thisDetector->scanMode[iscan]=0;
-    } else {
-      strcpy(thisDetector->scanScript[iscan],script.c_str());
-      if (script=="none") {
-	thisDetector->scanMode[iscan]=0;
-      } else if (script=="energy") {
-	thisDetector->scanMode[iscan]=1;
-      }  else if (script=="threshold") {
-	thisDetector->scanMode[iscan]=2;
-      } else if (script=="trimbits") {
-	thisDetector->scanMode[iscan]=3;
-      } else {
-	thisDetector->scanMode[iscan]=4;
-      }  
-    }
-    
-    if (thisDetector->scanMode[iscan]>0){
-      thisDetector->actionMask |= (1 << (iscan+MAX_ACTIONS));
-    } else {
-      thisDetector->actionMask &= ~(1 <<  (iscan+MAX_ACTIONS));
-    }
-
-    setTotalProgress();
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    
-#ifdef VERBOSE
-      cout << "Action mask is " << hex << thisDetector->actionMask << dec << endl;
-#endif
-    return thisDetector->scanMode[iscan];
-    
-    
- } else 
-   return -1;
- 
-}
-
-
-
-int slsDetector::setScanParameter(int iscan, string par) {
-
-
-  if (iscan>=0 && iscan<MAX_SCAN_LEVELS) {
-      if (par!="")
-	strcpy(thisDetector->scanParameter[iscan],par.c_str());
-      return thisDetector->scanMode[iscan];
-  } else
-    return -1;
+  switch (index) {
+  case CLIENT_IP:
+    return getClientIP();
+    break;
+  case CLIENT_MAC:
+    return getClientMAC();
+    break;
+  case SERVER_MAC:
+    return getServerMAC();
+    break;
+  default:
+    return ("unknown network parameter");
+  }
 
 }
 
 
-int slsDetector::setScanPrecision(int iscan, int precision) {
-  if (iscan>=0 && iscan<MAX_SCAN_LEVELS) {
-    if (precision>=0)
-      thisDetector->scanPrecision[iscan]=precision;
-    return thisDetector->scanMode[iscan];
-  } else
-    return -1;
-
-}
-
-int slsDetector::setScanSteps(int iscan, int nvalues, float *values) {
-
-  if (iscan>=0 && iscan<MAX_SCAN_LEVELS) {
-  
-      if (nvalues>=0) {    
-	if (nvalues==0)
-	  thisDetector->scanMode[iscan]=0;
-	else {
-	  thisDetector->nScanSteps[iscan]=nvalues;
-	  if (nvalues>MAX_SCAN_STEPS)
-	    thisDetector->nScanSteps[iscan]=MAX_SCAN_STEPS;
-	}
-      }
-      
-      if (values) {
-	for (int iv=0; iv<thisDetector->nScanSteps[iscan]; iv++) {
-	  thisDetector->scanSteps[iscan][iv]=values[iv];
-	}
-      }
-     
-      if (thisDetector->scanMode[iscan]>0){
-	thisDetector->actionMask |= (1 << (iscan+MAX_ACTIONS));
-      } else {
-	thisDetector->actionMask &= ~(1 <<  (iscan+MAX_ACTIONS));
-      }
-
-#ifdef VERBOSE
-      cout << "Action mask is " << hex << thisDetector->actionMask << dec << endl;
-#endif
-      setTotalProgress();
 
 
-
-
-      return thisDetector->scanMode[iscan];
-  
-
-  } else 
-      return -1;
-  
-  
-  
-  
-}
-
-
-
-  /** 
-      returns scan script
-      \param iscan can be (0,1) 
-      \returns scan script
-  */
-string slsDetector::getScanScript(int iscan){
-  if (iscan>=0 && iscan<MAX_SCAN_LEVELS) {
-      if (thisDetector->scanMode[iscan])
-	return string(thisDetector->scanScript[iscan]);
-      else
-	return string("none");
-  } else
-      return string("wrong index");
-      
-};
-
-    /** 
-	returns scan parameter
-	\param iscan can be (0,1)
-	\returns scan parameter
-    */
-string slsDetector::getScanParameter(int iscan){
-  if (iscan>=0 && iscan<MAX_SCAN_LEVELS) {
-    if (thisDetector->scanMode[iscan])
-      return string(thisDetector->scanParameter[iscan]);
-    else
-      return string("none");
-  }   else
-      return string("wrong index");
-}
-
-
-   /** 
-	returns scan mode
-	\param iscan can be (0,1)
-	\returns scan mode
-    */
-int slsDetector::getScanMode(int iscan){
-  if (iscan>=0 && iscan<MAX_SCAN_LEVELS)
-    return thisDetector->scanMode[iscan];
-  else
-    return -1;
-}
-
-
-   /** 
-	returns scan steps
-	\param iscan can be (0,1)
-	\param v is the pointer to the scan steps
-	\returns scan steps
-    */
-int slsDetector::getScanSteps(int iscan, float *v) {
-
-  if (iscan>=0 && iscan<MAX_SCAN_LEVELS) {
-    if (v) {
-      for (int iv=0; iv<thisDetector->nScanSteps[iscan]; iv++) {
-	v[iv]=thisDetector->scanSteps[iscan][iv];
-      }
-    }
-
-
-    setTotalProgress();
-
-
-    if (thisDetector->scanMode[iscan])
-      return thisDetector->nScanSteps[iscan];
-    else
-      return 0;
-  } else
-    return -1;
-}
-
-
-int slsDetector::getScanPrecision(int iscan){
-  if (iscan>=0 && iscan<MAX_SCAN_LEVELS) {
-    return thisDetector->scanPrecision[iscan];
-  } else
-    return -1;
-}
 
 
 char* slsDetector::setClientIP(string clientIP){
@@ -5207,1824 +4440,7 @@ int slsDetector::configureMAC(int ival){
 
 
 
-string slsDetector::executeLine(int narg, char *args[], int action) {
-
-
-#ifdef VERBOSE
-  for (int ia=0; ia<narg; ia++)
-    std::cout<< args[ia] << " ";
-  std::cout<<std::endl;
-  std::cout<<narg << std::endl;
-#endif
-  
-
-  if (action==READOUT_ACTION) {
-    setThreadedProcessing(1);
-    //setThreadedProcessing(0);
-    setTCPSocket();
-    acquire(1);
-    return string("ok");
-  }
-
-  string var(args[0]);
-
-  if (var=="data") {
-    if (action==PUT_ACTION) {
-      return  string("cannot set");
-    } else {
-      setTCPSocket();
-      //acquire();
-      readAll();
-      processData(1);
-      return string("ok");
-    } 
-  }
-  
-  if (var=="frame") {
-    if (action==PUT_ACTION) {
-      return  string("cannot set");
-    } else {
-      setTCPSocket();
-      readFrame();
-      processData(1);
-      return string("ok");
-    } 
-  }
-  
-
-  if (var=="status") {
-    setTCPSocket();
-    if (action==PUT_ACTION) {
-      setThreadedProcessing(0);
-      //return  string("cannot set");
-      if (string(args[1])=="start")
-	startAcquisition();
-      else if (string(args[1])=="stop")
-	stopAcquisition();
-      else
-	return string("unknown action");
-    } 
-    runStatus s=getRunStatus();
-    switch (s) {
-    case ERROR:
-       return string("error");
-    case  WAITING:
-      return  string("waiting");
-    case RUNNING:
-      return string("running");
-    case TRANSMITTING:
-      return string("data");
-    case  RUN_FINISHED:
-      return string("finished");
-   default:
-       return string("idle");
-   }
-  } 
-
-  
-  
-
-
-  char answer[1000];
-  float  fval;
-  string sval;
-  int    ival;
-  int    ival2;  //for debugging
-  if (var=="free") {
-    freeSharedMemory();
-    return("freed");
-  }  if (var=="help") {
-    std::cout<< helpLine(action);
-    return string("more questions? Refere to software documentation!");
-  }
-
-  if (var=="exitserver") {
-     setTCPSocket();
-     ival=exitServer();
-     if(ival!=OK)
-       return string("Server shut down.");
-     else return string("Error closing server\n");
-   } else if (var=="hostname") { 
-     if (action==PUT_ACTION) {
-       setTCPSocket(args[1]);
-     } 
-     //strcpy(answer, getHostname());
-     return getHostname();//string(answer);
-  } else if (var=="flatfield") {
-    if (action==PUT_ACTION) {
-      sval=string(args[1]);
-      if (sval=="none")
-	sval="";
-      setFlatFieldCorrection(sval);
-      return string(getFlatFieldCorrectionFile());
-    } else if (action==GET_ACTION) {
-      if (narg>1)
-	sval=string(args[1]);
-      else
-	sval="none";
-      float corr[24*1280], ecorr[24*1280];
-      if (getFlatFieldCorrection(corr,ecorr)) {
-	if (sval!="none") {
-	  writeDataFile(sval,corr,ecorr,NULL,'i');
-	  return sval;
-	} 
-	return string(getFlatFieldCorrectionFile());
-      } else {
-	return string("none");
-      }
-    }
-  } else if (var=="ffdir") {
-    if (action==PUT_ACTION) {
-      sval=string(args[1]);
-      if (sval=="none")
-	sval="";
-      setFlatFieldCorrectionDir(sval); 
-    }
-    return string(getFlatFieldCorrectionDir());
-  } else if (var=="ratecorr") {
-    if (action==PUT_ACTION) {
-      sscanf(args[1],"%f",&fval);
-      setRateCorrection(fval);
-    } 
-    float t;
-    if (getRateCorrection(t)) {
-      sprintf(answer,"%f",t);
-    } else {
-	sprintf(answer,"%f",0.);
-    }
-    return string(answer);
-  } else if (var=="badchannels") {
-    if (action==PUT_ACTION) {
-      sval=string(args[1]);
-      if (sval=="none")
-	sval="";
-      setBadChannelCorrection(sval);
-    } else if (action==GET_ACTION) {
-      if (narg>1)
-	sval=string(args[1]);
-      else
-	sval="none";
-      int bch[24*1280], nbch;
-      if ((nbch=getBadChannelCorrection(bch))) {
-	if (sval!="none") {  
-	  ofstream outfile;
-	  outfile.open (sval.c_str(),ios_base::out);
-	  if (outfile.is_open()) {
-	    for (int ich=0; ich<nbch; ich++) {
-	      outfile << bch[ich] << std::endl;
-	    }
-	    outfile.close();	
-	    return sval;
-	  } else 
-	    std::cout<< "Could not open file " << sval << " for writing " << std::endl;
-	}
-      } 
-    }
-    return string(getBadChannelCorrectionFile());
-  } else if (var=="angconv") {
-    if (action==PUT_ACTION) {
-      sval=string(args[1]);
-
-      if (sval=="none")
-	sval="";
-
-      setAngularConversion(sval);
-
-      return string(getAngularConversion());
-    } else if (action==GET_ACTION) {
-      if (narg>1)
-	sval=string(args[1]);
-      else
-	sval="none";
-      int dir;
-      if (getAngularConversion(dir)) {
-	if (sval!="none") {  
-	  writeAngularConversion(sval.c_str());
-	  return sval;
-	}
-	return string(getAngularConversion());
-      } else {
-	return string("none");
-      }
-    }
-  } else if (var=="globaloff") {
-    if (action==PUT_ACTION) {
-      sscanf(args[1],"%f",&fval);
-      setGlobalOffset(fval);
-    }
-    sprintf(answer,"%f",getGlobalOffset());
-    return string(answer);
-  } else if (var=="fineoff") {
-    if (action==PUT_ACTION) {
-      sscanf(args[1],"%f",&fval);
-      setFineOffset(fval);
-    }
-    sprintf(answer,"%f",getFineOffset());
-    return string(answer); 
-  } else if (var=="binsize") {
-    if (action==PUT_ACTION) {
-      sscanf(args[1],"%f",&fval);
-      setBinSize(fval);
-    } 
-    sprintf(answer,"%f",getBinSize());
-    return string(answer); 
-  } else if (var=="positions") {
-    if (action==PUT_ACTION) {
-      sscanf(args[1],"%d",&ival);
-      float pos[ival];
-      for (int ip=0; ip<ival;ip++) {  
-	if ((2+ip)<narg) {
-	sscanf(args[2+ip],"%f",pos+ip);
-#ifdef VERBOSE
-	std::cout<< "Setting position " << ip <<" to " << pos[ip] <<  std::endl; 
-#endif
-	}
-      }
-      setPositions(ival,pos); 
-    }
-    int npos=getPositions();
-    sprintf(answer,"%d",npos);
-    float opos[npos];
-    getPositions(opos);
-    for (int ip=0; ip<npos;ip++) {
-      sprintf(answer,"%s %f",answer,opos[ip]);
-    }
-    return string(answer);
-  } 
-  
-  if (var=="trimdir" || var=="settingsdir") {
-    if (action==PUT_ACTION) {
-      sval=string(args[1]);
-      setSettingsDir(sval);
-    } 
-    return string(getSettingsDir());
-  } else if (var=="caldir") {
-    if (action==PUT_ACTION) {
-     sval=string(args[1]);
-      setCalDir(sval);
-    } 
-    return string(getCalDir());
-  } else if (var=="config") {
-    if (action==PUT_ACTION) {
-     sval=string(args[1]);
-      readConfigurationFile(sval);
-    } else if (action==GET_ACTION) {
-     sval=string(args[1]);
-     writeConfigurationFile(sval);
-    }  
-    return sval;
-  } else if (var=="parameters") {
-    if (action==PUT_ACTION) {
-     sval=string(args[1]);
-     retrieveDetectorSetup(sval);
-    } else if (action==GET_ACTION) {
-     sval=string(args[1]);
-     dumpDetectorSetup(sval);
-    }  
-    return sval;
-  } else if (var=="setup") {
-    if (action==PUT_ACTION) {
-     sval=string(args[1]);
-     retrieveDetectorSetup(sval,2);
-    } else if (action==GET_ACTION) {
-     sval=string(args[1]);
-     dumpDetectorSetup(sval,2);
-    }  
-    return sval;
-
-  } else if (var=="outdir") {
-    if (action==PUT_ACTION) {
-     sval=string(args[1]);
-      setFilePath(sval);
-    } 
-    return string(getFilePath());
-  } else if (var=="fname") {
-    if (action==PUT_ACTION) {
-     sval=string(args[1]);
-      setFileName(sval);
-      
-    } 
-    return(getFileName());
-  } else if (var=="index") {
-    if (action==PUT_ACTION) {
-      sscanf(args[1],"%d",&ival);
-      setFileIndex(ival);
-    } 
-    sprintf(answer,"%d",getFileIndex());
-    return string(answer);
-  }  else if (var=="trimen") {
-    if (action==PUT_ACTION) {
-      sscanf(args[1],"%d",&ival);
-      //std::cout<< ival << std::endl ;
-      if (ival>narg-2)
-	ival=narg-2;
-      int ene[ival];
-      for (int ie=0; ie<ival; ie++) {
-	sscanf(args[2+ie],"%d",ene+ie);
-      }
-      setTrimEn(ival,ene);
-    }
-    std::cout<< " trim energies set" << std::endl;
-    int nen=getTrimEn();
-    std::cout<< "returned " << nen << " trim energies" << std::endl;
-    sprintf(answer,"%d",nen);
-    int oen[nen];
-    getTrimEn(oen);
-    for (int ie=0; ie<nen;ie++) {
-      sprintf(answer,"%s %d",answer,oen[ie]);
-    }
-    return string(answer);
-  } else if (var=="threaded") {
-    if (action==PUT_ACTION) {
-      sscanf(args[1],"%d",&ival);
-      setThreadedProcessing(ival);
-    }
-    sprintf(answer,"%d",setThreadedProcessing());
-    return string(answer);
-  } else if (var=="online") {
-    if (action==PUT_ACTION) {
-      sscanf(args[1],"%d",&ival);
-      setOnline(ival);
-    }
-    sprintf(answer,"%d",setOnline());
-    return string(answer);
-  }
-  else if (var=="startscript") {
-    ival=startScript;
-    if (action==PUT_ACTION) {
-      setAction(ival,args[1]);
-    }
-    if (getActionMode(ival)==0)
-      sprintf(answer,"none");
-    else
-      sprintf(answer,"%s",getActionScript(ival).c_str());
-    return string(answer);
-  } else if (var=="startscriptpar") {
-    ival=startScript;
-    if (action==PUT_ACTION) {
-      setActionParameter(ival,args[1]);
-    }
-    
-    return getActionParameter(ival);
-
-
-  } else if (var=="stopscript") {
-    ival=stopScript;
-    if (action==PUT_ACTION) {
-      setAction(ival,args[1]);
-    }
-    if (getActionMode(ival)==0)
-      sprintf(answer,"none");
-    else
-      sprintf(answer,"%s",getActionScript(ival).c_str());
-    return string(answer);
-  } else if (var=="stopscriptpar") {
-    ival=stopScript;
-    if (action==PUT_ACTION) {
-      setActionParameter(ival,args[1]);
-    }
-    return getActionParameter(ival);
-
-  } else if (var=="scriptbefore") {
-    ival=scriptBefore;
-    if (action==PUT_ACTION) {
-      setAction(ival,args[1]);
-    }
-    if (getActionMode(ival)==0)
-      sprintf(answer,"none");
-    else
-      sprintf(answer,"%s",getActionScript(ival).c_str());
-    return string(answer);
-  } else if (var=="scriptbeforepar") {
-    ival=scriptBefore;
-    if (action==PUT_ACTION) {
-      setActionParameter(ival,args[1]);
-    }
-
-    return getActionParameter(ival);
-
-  } else if (var=="scriptafter") {
-    ival=scriptAfter;
-    if (action==PUT_ACTION) {
-      setAction(ival,args[1]);
-    }
-    if (getActionMode(ival)==0)
-      sprintf(answer,"none");
-    else
-      sprintf(answer,"%s",getActionScript(ival).c_str());
-    return string(answer);
-  } else if (var=="scriptafterpar") {
-    ival=scriptAfter;
-    if (action==PUT_ACTION) {
-      setActionParameter(ival,args[1]);
-    }
-    return getActionParameter(ival);
-    
-
-
-  } else if (var=="headerafter") {
-    ival=headerAfter;
-    if (action==PUT_ACTION) {
-      setAction(ival,args[1]);
-    }
-    if (getActionMode(ival)==0)
-      sprintf(answer,"none");
-    else
-      sprintf(answer,"%s", getActionScript(ival).c_str());
-    return string(answer);
-  } else if (var=="headerafterpar") {
-    ival=headerAfter;
-    if (action==PUT_ACTION) {
-      setActionParameter(ival,args[1]);
-    }
-    return getActionParameter(ival);
-    
-
-
-  } else if (var=="headerbefore") {
-    ival=headerBefore;
-    if (action==PUT_ACTION) {
-      setAction(ival,args[1]);
-    }
-    if (getActionMode(ival)==0)
-      sprintf(answer,"none");
-    else
-      sprintf(answer,"%s", getActionScript(ival).c_str());
-    return string(answer);
-  } else if (var=="headerbeforepar") {
-    ival=headerBefore;
-    if (action==PUT_ACTION) {
-      setActionParameter(ival,args[1]);
-    }
-    return getActionParameter(ival);
-  } 
-
-  else if (var=="scan0script") {
-    int ind=0;
-    if (action==PUT_ACTION) {
-      setScanScript(ind,args[1]);
-    }
-    return getScanScript(ind);
-  } else if (var=="scan0par") {
-    int ind=0;
-    if (action==PUT_ACTION) {
-      setScanParameter(ind,args[1]);
-    }
-    return getScanParameter(ind);
-  } else if (var=="scan0prec") {
-    int ind=0;
-    if (action==PUT_ACTION) {
-      sscanf(args[1],"%d",&ival);
-      setScanPrecision(ind,ival);
-    }
-    sprintf(answer,"%d",getScanPrecision(ind));
-    return string(answer);
-  } else if (var=="scan0steps") {
-    int ind=0;
-    if (action==PUT_ACTION) {
-      sscanf(args[1],"%d",&ival);
-      //cout << ival << " " << narg << endl;
-      if (ival>narg-2)
-	ival=narg-2;
-      float ene[ival];
-      for (int ie=0; ie<ival; ie++) {
-	sscanf(args[2+ie],"%f",ene+ie);
-      }
-      setScanSteps(ind,ival,ene);
-    }  
-    int nen=getScanSteps(ind);
-    sprintf(answer,"%d",nen);
-    float oen[nen];
-    getScanSteps(ind,oen);
-    char form[20];
-    sprintf(form,"%%s %%0.%df",getScanPrecision(ind));
-    for (int ie=0; ie<nen;ie++) {
-      sprintf(answer,form,answer,oen[ie]);
-    }
-    return string(answer);
-  } 
-
-
-  else if (var=="scan1script") {
-    int ind=1;
-    if (action==PUT_ACTION) {
-      setScanScript(ind,args[1]);
-    }
-    return getScanScript(ind);
-  } else if (var=="scan1par") {
-    int ind=1;
-    if (action==PUT_ACTION) {
-      setScanParameter(ind,args[1]);
-    }
-    return getScanParameter(ind);
-  } else if (var=="scan1prec") {
-    int ind=1;
-    if (action==PUT_ACTION) {
-      sscanf(args[1],"%d",&ival);
-      setScanPrecision(ind,ival);
-    }
-    sprintf(answer,"%d",getScanPrecision(ind));
-    return string(answer);
-  } else if (var=="scan1steps") {
-    int ind=1;
-    if (action==PUT_ACTION) {
-      sscanf(args[1],"%d",&ival);
-      if (ival>narg-2)
-	ival=narg-2;
-      float ene[ival];
-      for (int ie=0; ie<ival; ie++) {
-	sscanf(args[2+ie],"%f",ene+ie);
-      }
-      setScanSteps(ind,ival,ene);
-    }  
-    int nen=getScanSteps(ind);
-    sprintf(answer,"%d",nen);
-    float oen[nen];
-    getScanSteps(ind,oen);
-    char form[20];
-    sprintf(form,"%%s %%0.%df",getScanPrecision(ind));
-    for (int ie=0; ie<nen;ie++) {
-      sprintf(answer,form,answer,oen[ie]);
-    }
-    return string(answer);
-  }else if (var=="clientip") {
-    if (action==PUT_ACTION) {
-      sval=string(args[1]);
-      return string(setClientIP(sval));
-    } else
-      return getClientIP();
-  } else if (var=="clientmac") {
-    if (action==PUT_ACTION) {
-      sval=string(args[1]);
-      return string(setClientMAC(sval));
-    } else
-      return getClientMAC();
-  } else if (var=="servermac") {
-    if (action==PUT_ACTION) {
-      sval=string(args[1]);
-      return string(setServerMAC(sval));
-    } else
-      return getServerMAC();
-  } 
-
-
-
-
-
-
-
-
-
-
-
-
-
-  if (setOnline())
-    setTCPSocket();
-  
-
-  if (var=="port") {
-    if (action==PUT_ACTION) {
-      sscanf(args[1],"%d",&ival);
-      setPort(CONTROL_PORT, ival);
-    } else
-      ival=-1;
-    sprintf(answer,"%d",getControlPort());
-    return string(answer);
-  } else if (var=="stopport") {
-    if (action==PUT_ACTION) {
-      sscanf(args[1],"%d",&ival);
-      setPort(STOP_PORT, ival);
-    } else
-      ival=-1;
-    sprintf(answer,"%d",getStopPort());
-    return string(answer);
-    
-  }  else if (var=="dataport") {
-    if (action==PUT_ACTION) {
-      sscanf(args[1],"%d",&ival);
-      setPort(DATA_PORT, ival);
-    } else
-      ival=-1;
-    sprintf(answer,"%d",getDataPort());
-    return string(answer);
-    
-  }  else if (var=="lock") {
-    if (action==PUT_ACTION) {
-      sscanf(args[1],"%d",&ival);
-    } else
-      ival=-1;
-    sprintf(answer,"%d",lockServer(ival));
-    return string(answer);
-  } else if (var=="lastclient") {
-    if (action==PUT_ACTION) {
-      return string("cannot set");
-    } else
-      return getLastClientIP();
-  }
-    
-
-
-
-
-
-
-
-
-  if (var=="nmod") {
-    if (action==PUT_ACTION) {
-     sscanf(args[1],"%d",&ival);
-    } else
-      ival=GET_FLAG;
-    setNumberOfModules(ival);
-    sprintf(answer,"%d",setNumberOfModules(GET_FLAG));
-    return string(answer);
-  } else if (var=="maxmod") {
-    if (action==PUT_ACTION) {
-      return string("cannot set");
-    } 
-    sprintf(answer,"%d",getMaxNumberOfModules());
-    return string(answer);
-  } else if (var.find("extsig")==0) {
-    if (var.size()<=7)
-      return string("syntax is extsig:i where signal is signal number");
-    istringstream vvstr(var.substr(7));
-    vvstr >> ival;
-    if (vvstr.fail())
-      return string("syntax is extsig:i where signal is signal number");
-    externalSignalFlag flag=GET_EXTERNAL_SIGNAL_FLAG, ret;
-    if (action==PUT_ACTION) {
-      sval=string(args[1]);
-#ifdef VERBOSE
-      std::cout<< "sig " << ival << " flag " << sval;
-#endif
-      if (sval=="off")      flag=SIGNAL_OFF;
-      else if (sval=="gate_in_active_high")      flag=GATE_IN_ACTIVE_HIGH;
-      else if  (sval=="gate_in_active_low") flag=GATE_IN_ACTIVE_LOW;
-      else if  (sval=="trigger_in_rising_edge") flag=TRIGGER_IN_RISING_EDGE;
-      else if  (sval=="trigger_in_falling_edge") flag=TRIGGER_IN_FALLING_EDGE;
-      else if  (sval=="ro_trigger_in_rising_edge") flag=RO_TRIGGER_IN_RISING_EDGE;
-      else if  (sval=="ro_trigger_in_falling_edge") flag=RO_TRIGGER_IN_FALLING_EDGE;
-      else if (sval=="gate_out_active_high")      flag=GATE_OUT_ACTIVE_HIGH;
-      else if  (sval=="gate_out_active_low") flag=GATE_OUT_ACTIVE_LOW;
-      else if  (sval=="trigger_out_rising_edge") flag=TRIGGER_OUT_RISING_EDGE;
-      else if  (sval=="trigger_out_falling_edge") flag=TRIGGER_OUT_FALLING_EDGE;
-      else if  (sval=="ro_trigger_out_rising_edge") flag=RO_TRIGGER_OUT_RISING_EDGE;
-      else if  (sval=="ro_trigger_out_falling_edge") flag=RO_TRIGGER_OUT_FALLING_EDGE;
-     
-      
-    }
-    ret= setExternalSignalFlags(flag,ival);
-    switch (ret) {
-    case SIGNAL_OFF:
-      return string( "off");
-    case GATE_IN_ACTIVE_HIGH:
-      return string( "gate_in_active_high");
-    case GATE_IN_ACTIVE_LOW:
-      return string( "gate_in_active_low");
-    case TRIGGER_IN_RISING_EDGE:
-      return string( "trigger_in_rising_edge");
-    case TRIGGER_IN_FALLING_EDGE:
-      return string( "trigger_in_falling_edge");
-    case RO_TRIGGER_IN_RISING_EDGE:
-      return string( "ro_trigger_in_rising_edge");
-    case RO_TRIGGER_IN_FALLING_EDGE:
-      return string( "ro_trigger_in_falling_edge");
-    case GATE_OUT_ACTIVE_HIGH:
-      return string( "gate_out_active_high");
-    case GATE_OUT_ACTIVE_LOW:
-      return string( "gate_out_active_low");
-    case TRIGGER_OUT_RISING_EDGE:
-      return string( "trigger_out_rising_edge");
-    case TRIGGER_OUT_FALLING_EDGE:
-      return string( "trigger_out_falling_edge");
-    case RO_TRIGGER_OUT_RISING_EDGE:
-      return string( "ro_trigger_out_rising_edge");
-    case RO_TRIGGER_OUT_FALLING_EDGE:
-      return string( "ro_trigger_out_falling_edge");
-    default:
-      return string( "unknown");
-    }
-  }  else if (var.find("modulenumber")==0) {//else if (var=="modulenumber") {
-    cout << "modulenumber" << endl;
-    if (action==PUT_ACTION) {
-      return string("cannot set");
-    }
-    if (var.size()<=13)
-      return string("syntax is modulenumber:i where i is module number");
-    istringstream vvstr(var.substr(13));
-    vvstr >> ival; 
-    if (vvstr.fail())
-      return string("syntax is modulenumber:i where i is module number");
-    //cout << var.substr(13) << endl;
-    sprintf(answer,"%llx",getId(MODULE_SERIAL_NUMBER,ival));
-    return string(answer);
-  } else if (var=="moduleversion") {
-    if (action==PUT_ACTION) {
-      return string("cannot set" );
-    }   
-    sprintf(answer,"%llx",getId(MODULE_FIRMWARE_VERSION));
-    return string(answer);
-  } else if (var=="detectornumber") {
-    if (action==PUT_ACTION) {
-      return string("cannot set ");
-    }    
-    sprintf(answer,"%llx",getId(DETECTOR_SERIAL_NUMBER));
-    return string(answer);
-  } else if (var=="detectorversion") {
-    if (action==PUT_ACTION) {
-      return string("cannot set ");
-    } 
-    sprintf(answer,"%llx",getId(DETECTOR_FIRMWARE_VERSION));
-    return string(answer);
-  } else if (var=="softwareversion") {
-    if (action==PUT_ACTION) {
-      return string("cannot set ");
-    }
-    sprintf(answer,"%llx",getId(DETECTOR_SOFTWARE_VERSION));
-    return string(answer);
-  } else if (var=="thisversion") {
-    if (action==PUT_ACTION) {
-      return string("cannot set ");
-    }
-    sprintf(answer,"%llx",getId(THIS_SOFTWARE_VERSION));
-    return string(answer);
-  } 
-
-  else if (var.find("digitest")==0) {//else if (var=="digitest") {
-    cout << "digitest" << endl;
-    if (action==PUT_ACTION) {
-	return string("cannot set ");
-    } 
-    if (var.size()<=9)
-      return string("syntax is digitest:i where i is the module number");
-   
-  
-    istringstream vvstr(var.substr(9));
-    vvstr >> ival;
-    if (vvstr.fail()) 
-      return string("syntax is digitest:i where i is the module number");
-    sprintf(answer,"%x",digitalTest(CHIP_TEST, ival));
-    return string(answer);
-  } else if (var=="bustest") {
-    if (action==PUT_ACTION) {
-      return string("cannot set ");
-    } 
-    sprintf(answer,"%x",digitalTest(DETECTOR_BUS_TEST));
-    return string(answer);
-  } else if (var=="settings") {
-    detectorSettings sett=GET_SETTINGS;
-    if (action==PUT_ACTION) {
-     sval=string(args[1]);
-     switch(thisDetector->myDetectorType) {
-
-     case MYTHEN:
-     case PICASSO:
-     case EIGER:       
-	if (sval=="standard")
-	  sett=STANDARD;
-	else if (sval=="fast")
-	  sett=FAST;
-	else if (sval=="highgain")
-	  sett=HIGHGAIN;
-	else {
-	  sprintf(answer,"%s not defined for this detector",sval.c_str());
-	  return string(answer);
-	}
-	break;
-
-     case GOTTHARD:
-     case AGIPD:
-	if (sval=="highgain")
-	  sett=HIGHGAIN;
-	else if (sval=="dynamicgain")
-	  sett=DYNAMICGAIN;
-	else if (sval=="lowgain")
-	  sett=LOWGAIN;
-	else if (sval=="mediumgain")
-	  sett=MEDIUMGAIN;
-	else if (sval=="veryhighgain")
-	  sett=VERYHIGHGAIN;
-	else {
-	  sprintf(answer,"%s not defined for this detector",sval.c_str());
-	  return string(answer);
-	}
-	break;
-
-     default:
-        sprintf(answer,"%s not defined for this detector",sval.c_str());
-	return string(answer);
-     }
-    }
-    switch (setSettings(sett)) {
-      case STANDARD:
-	return string("standard");
-      case FAST:
-	return string("fast");
-      case HIGHGAIN:
-	return string("highgain");
-      case DYNAMICGAIN:
-	return string("dynamicgain");
-      case LOWGAIN:
-	return string("lowgain");
-      case MEDIUMGAIN:
-	return string("mediumgain");
-      case VERYHIGHGAIN:
-	return string("veryhighgain");
-      default:
-	return string("undefined");
-      }
-    } else if (var=="threshold") {
-      if (action==PUT_ACTION) {
-	sscanf(args[1],"%d",&ival);
-	setThresholdEnergy(ival);
-      } 
-      sprintf(answer,"%d",getThresholdEnergy());
-      return string(answer);
-    } 
-
-  /* MYTHEN POTS */
-  else if (var=="vthreshold") {
-      if (action==PUT_ACTION) {
-	sscanf(args[1],"%f",&fval);
-	setDAC(fval, THRESHOLD);
-      } 
-      sprintf(answer,"%f",setDAC(-1,THRESHOLD));
-      return string(answer);
-    } else if (var=="vcalibration") {
-       if (action==PUT_ACTION) {
-         sscanf(args[1],"%f",&fval);
-         setDAC(fval, CALIBRATION_PULSE);
-       }
-       sprintf(answer,"%f",setDAC(-1,CALIBRATION_PULSE));
-       return string(answer);
-      } else if (var=="vtrimbit") {
-       if (action==PUT_ACTION) {
-         sscanf(args[1],"%f",&fval);
-         setDAC(fval, TRIMBIT_SIZE);
-       }
-       sprintf(answer,"%f",setDAC(-1,TRIMBIT_SIZE));
-      return string(answer);
-      } else if (var=="vpreamp") {
-       if (action==PUT_ACTION) {
-         sscanf(args[1],"%f",&fval);
-         setDAC(fval, PREAMP);
-       }
-       sprintf(answer,"%f",setDAC(-1,PREAMP));
-       return string(answer);
-      } else if (var=="vshaper1") {
-       if (action==PUT_ACTION) {
-         sscanf(args[1],"%f",&fval);
-         setDAC(fval, SHAPER1);
-       }
-       sprintf(answer,"%f",setDAC(-1,SHAPER1));
-       return string(answer);
-      } else if (var=="vshaper2") {
-       if (action==PUT_ACTION) {
-         sscanf(args[1],"%f",&fval);
-         setDAC(fval, SHAPER2);
-       }
-       sprintf(answer,"%f",setDAC(-1,SHAPER2));
-       return string(answer);
-      } else if (var=="vhighvoltage") {
-       if (action==PUT_ACTION) {
-         sscanf(args[1],"%f",&fval);
-         setDAC(fval, HV_POT);
-      }
-      sprintf(answer,"%f",setDAC(-1,HV_POT));
-       return string(answer);
-      } else if (var=="vapower") {
-       if (action==PUT_ACTION) {
-         sscanf(args[1],"%f",&fval);
-         setDAC(fval, VA_POT);
-       }
-       sprintf(answer,"%f",setDAC(-1,VA_POT));
-       return string(answer);
-      } else if (var=="vddpower") {
-       if (action==PUT_ACTION) {
-         sscanf(args[1],"%f",&fval);
-         setDAC(fval, VDD_POT);
-       }
-       sprintf(answer,"%f",setDAC(-1,VDD_POT));
-       return string(answer);
-      } else if (var=="vshpower") {
-       if (action==PUT_ACTION) {
-         sscanf(args[1],"%f",&fval);
-         setDAC(fval, VSH_POT);
-       }
-       sprintf(answer,"%f",setDAC(-1,VSH_POT));
-       return string(answer);
-      } else if (var=="viopower") {
-       if (action==PUT_ACTION) {
-         sscanf(args[1],"%f",&fval);
-         setDAC(fval, VIO_POT);
-       }
-       sprintf(answer,"%f",setDAC(-1,VIO_POT));
-       return string(answer);
-      }
-  /* GOTTHARD POTS */
-      else if (var=="vref_ds") {
-      if (action==PUT_ACTION) {
-	sscanf(args[1],"%f",&fval);
-	setDAC(fval,G_VREF_DS );
-      } 
-      sprintf(answer,"%f",setDAC(-1,G_VREF_DS));
-      return string(answer);
-    } else if (var=="vcascn_pb") {
-       if (action==PUT_ACTION) {
-         sscanf(args[1],"%f",&fval);
-         setDAC(fval,G_VCASCN_PB );
-       }
-       sprintf(answer,"%f",setDAC(-1,G_VCASCN_PB));
-       return string(answer);
-      } else if (var=="vcascp_pb") {
-       if (action==PUT_ACTION) {
-         sscanf(args[1],"%f",&fval);
-         setDAC(fval, G_VCASCP_PB);
-       }
-       sprintf(answer,"%f",setDAC(-1,G_VCASCP_PB));
-      return string(answer);
-      } else if (var=="vout_cm") {
-       if (action==PUT_ACTION) {
-         sscanf(args[1],"%f",&fval);
-         setDAC(fval,G_VOUT_CM );
-       }
-       sprintf(answer,"%f",setDAC(-1,G_VOUT_CM));
-       return string(answer);
-      } else if (var=="vcasc_out") {
-       if (action==PUT_ACTION) {
-         sscanf(args[1],"%f",&fval);
-         setDAC(fval,G_VCASC_OUT );
-       }
-       sprintf(answer,"%f",setDAC(-1,G_VCASC_OUT));
-       return string(answer);
-      } else if (var=="vin_cm") {
-       if (action==PUT_ACTION) {
-         sscanf(args[1],"%f",&fval);
-         setDAC(fval,G_VIN_CM );
-       }
-       sprintf(answer,"%f",setDAC(-1,G_VIN_CM));
-       return string(answer);
-      } else if (var=="vref_comp") {
-       if (action==PUT_ACTION) {
-         sscanf(args[1],"%f",&fval);
-         setDAC(fval,G_VREF_COMP);
-      }
-      sprintf(answer,"%f",setDAC(-1,G_VREF_COMP));
-       return string(answer);
-      } else if (var=="ib_test_c") {
-       if (action==PUT_ACTION) {
-         sscanf(args[1],"%f",&fval);
-         setDAC(fval,G_IB_TESTC );
-       }
-       sprintf(answer,"%f",setDAC(-1,G_IB_TESTC));
-       return string(answer);
-      }
-       /* GOTTHARD TEMPERATURE */ 
-      else if (var=="temp_adc") {
-       sprintf(answer,"%f",getADC(TEMPERATURE_ADC));
-       return string(answer);
-      } else if (var=="temp_fpga") {
-       sprintf(answer,"%f",getADC(TEMPERATURE_FPGA));
-       return string(answer);
-      }
-      /* DEBUGGING FUNCTIONS */ 
-      else if (var=="reg_rw") {
-	if(narg<2)
-	  return string("\nError:Use gotthard_put i:reg_rw (address) (value in hex)OR gotthard_get i:reg_rw (address)");
-	sscanf(args[1],"%x",&ival);
-	if (action==PUT_ACTION) {
-	  if(narg<3)
-	    return string("\nError:Use gotthard_put i:reg_rw (address) (value in hex)OR gotthard_get i:reg_rw (address)");
-	  sscanf(args[2],"%x",&ival2);
-	  sprintf(answer,"%x",writeRegister(ival,ival2));
-	}
-	sprintf(answer,"%x",readRegister(ival));
-	return string(answer);
-      }
-      else if (var=="reg_frame") {
-    	  int i=0;
-    	  int val;
-    	  ofstream outfile;
-    	  outfile.open ("/home/l_maliakal_d/wORKSPACE/scratch/frame.txt",ios_base::out);
-    	  if (outfile.is_open())
-    	  {
-    		  for (i=0;i<2560;i++){
-    			  val=readRegister(0x80);
-    			  outfile <<i<<" " <<val<<std::endl;
-    		  }
-    		  outfile.close();
-    	  }
-    	  strcpy(answer,"done");
-    	  return string(answer);
-      }
-      else if (var=="start_test") {
-    	  string ans;
-    	  size_t found;
-    	  int stat,stat_old,count=0;
-    	  char *arg[100];
-    	  for (int ia=0; ia<100; ia++) {
-    		  arg[ia]=new char[1000];
-    	  }
-    	  int times=0,i=0,correct=0,idle=0;
-
-    	  if (action==PUT_ACTION) {
-    		  sscanf(args[1],"%d",&times);
-    		  for(i=0;i<times;i++){
-    			  std::cout<<std::endl<<dec<<i+1<<": \t";
-    			  idle=0;
-    			  strcpy(arg[0],"status");
-    			  strcpy(arg[1],"start");
-    			  ans=executeLine(2,arg,PUT_ACTION);
-
-    			  found=ans.find("idle");
-    			  if(found!=string::npos){
-    				  std::cout<<"NOTTT WORKED"<<std::endl;
-    				  exit(-1);
-    			  }
-    			  else{
-    				  while(found==string::npos){
-    					  ans=executeLine(1,arg,GET_ACTION);
-    					  found=ans.find("idle");
-    					  usleep(1000000);
-    				  }
-    				  std::cout<<"WORKED\t";
-    			  }
-    			  std::cout<<std::endl;
-    		  }
-    	  }
-    	  sprintf(answer,"%d",correct);
-    	  return string(answer);
-      }
-
-
-  //timers
-
-  else if (var=="exptime") {
-      if (action==PUT_ACTION) {
-	sscanf(args[1],"%f",&fval);// in seconds!
-	setTimer(ACQUISITION_TIME,(int64_t)(fval*1E+9));
-      } 
-      sprintf(answer,"%f",(float)setTimer(ACQUISITION_TIME)*1E-9);
-      return string(answer);
-    } else if (var=="period") {
-      if (action==PUT_ACTION) {
-	sscanf(args[1],"%f",&fval);// in seconds!
-	setTimer(FRAME_PERIOD,(int64_t)(fval*1E+9));
-      }
-      sprintf(answer,"%f",(float)setTimer(FRAME_PERIOD)*1E-9);
-      return string(answer);
-    } else if (var=="delay") {
-      if (action==PUT_ACTION) {
-	sscanf(args[1],"%f",&fval);// in seconds!
-	setTimer(DELAY_AFTER_TRIGGER,(int64_t)(fval*1E+9));
-      } 
-      sprintf(answer,"%f",(float)setTimer(DELAY_AFTER_TRIGGER)*1E-9);
-      return string(answer);
-      } else if (var=="gates") {
-          switch(thisDetector->myDetectorType) {
-            case GOTTHARD:
-	      sprintf(answer,"Number of gates is always 1 for this detector",sval.c_str());
-	      return string(answer);
-	      break;
-	    default:
-	      if (action==PUT_ACTION) {
-		sscanf(args[1],"%d",&ival); 
-		setTimer( GATES_NUMBER,ival);
-	      } 
-	      sprintf(answer,"%lld",setTimer(GATES_NUMBER));
-	      return string(answer);
-	  }
-    } else if (var=="frames") {
-	if (action==PUT_ACTION) {
-	 sscanf(args[1],"%d",&ival);
-	 setTimer(FRAME_NUMBER,ival);
-	} 
-	sprintf(answer,"%lld",setTimer(FRAME_NUMBER));
-	return string(answer);
-    } else if (var=="cycles") {
-	if (action==PUT_ACTION) {
-	 sscanf(args[1],"%d",&ival); 
-	  setTimer(CYCLES_NUMBER,ival);
-	} 
-	sprintf(answer,"%lld",setTimer(CYCLES_NUMBER));
-	return string(answer);
-    } else if (var=="probes") {
-	if (action==PUT_ACTION) {
-	 sscanf(args[1],"%d",&ival); 
-	  setTimer(PROBES_NUMBER,ival);
-	} 
-	sprintf(answer,"%lld",setTimer(PROBES_NUMBER));
-	return string(answer);
-    } 
-
-  else if (var=="exptimel") {
-      if (action==PUT_ACTION) {
-	sprintf(answer,"Cannot set\n");
-      } else
-	sprintf(answer,"%f",(float)getTimeLeft(ACQUISITION_TIME)*1E-9);
-      return string(answer);
-    } else if (var=="periodl") {
-      if (action==PUT_ACTION) {
-	sprintf(answer,"Cannot set\n");
-      } else
-	sprintf(answer,"%f",(float)getTimeLeft(FRAME_PERIOD)*1E-9);
-      return string(answer);
-    } else if (var=="delayl") {
-      if (action==PUT_ACTION) {
-	sprintf(answer,"Cannot set\n");
-      } else
-	sprintf(answer,"%f",(float)getTimeLeft(DELAY_AFTER_TRIGGER)*1E-9);
-      return string(answer);
-    } else if (var=="gatesl") {
-      if (action==PUT_ACTION) {
-	sprintf(answer,"Cannot set\n");
-      } else
-	sprintf(answer,"%f",(float)getTimeLeft(GATES_NUMBER));
-      return string(answer);
-    } else if (var=="framesl") {
-      if (action==PUT_ACTION) {
-	sprintf(answer,"Cannot set\n");
-      } else
-	sprintf(answer,"%f",(float)getTimeLeft(FRAME_NUMBER)+2);
-      return string(answer);
-    } else if (var=="cyclesl") {
-      if (action==PUT_ACTION) {
-	sprintf(answer,"Cannot set\n");
-      } else
-	sprintf(answer,"%f",(float)getTimeLeft(CYCLES_NUMBER)+2);
-      return string(answer);
-    } else if (var=="progress") {
-      if (action==PUT_ACTION) {
-	setTotalProgress();
-	sprintf(answer,"Cannot set\n");
-      } else
-	sprintf(answer,"%f",getCurrentProgress());
-      return string(answer);
-    }  else if (var=="now") {
-      if (action==PUT_ACTION) {
-	sprintf(answer,"Cannot set\n");
-      } else
-	sprintf(answer,"%0.9f",(float)getTimeLeft(ACTUAL_TIME)*1E-9);
-      //sprintf(answer,"%x",getTimeLeft(ACTUAL_TIME));
-      return string(answer);
-    }  else if (var=="timestamp") {
-      if (action==PUT_ACTION) {
-	sprintf(answer,"Cannot set\n");
-      } else
-	sprintf(answer,"%0.9f",(float)getTimeLeft(MEASUREMENT_TIME)*1E-9);
-      //sprintf(answer,"%x",getTimeLeft(MEASUREMENT_TIME));
-      return string(answer);
-    }  
-
-  
-  else if (var=="dr") {
-    if (action==PUT_ACTION) {
-      sscanf(args[1],"%d",&ival);
-      setDynamicRange(ival);
-    }
-    sprintf(answer,"%d",setDynamicRange());
-    return string(answer);
-  } else if (var=="flags") {
-    if (action==PUT_ACTION) {
-      sval=string(args[1]);
-      readOutFlags flag=GET_READOUT_FLAGS;
-      if (sval=="none")
-	flag=NORMAL_READOUT;
-      //else if (sval=="pumpprobe")
-      // flag=PUMP_PROBE_MODE;
-      else if (sval=="storeinram")
-	    flag=STORE_IN_RAM;
-	  else if (sval=="tot")
-	    flag=TOT_MODE;
-	  else if (sval=="continous")
-	    flag=CONTINOUS_RO;
-	  setReadOutFlags(flag);
-
-	}
-  
-	switch (setReadOutFlags(GET_READOUT_FLAGS)) {
-	case NORMAL_READOUT:
-	  return string("none");
-	case STORE_IN_RAM:
-	  return string("storeinram");
-	case TOT_MODE:
-	  return string("tot");
-	case CONTINOUS_RO:
-	  return string("continous");
-	default:
-	  return string("unknown");
-	}  
-      } else if (var=="trimbits") {
-	if (narg>=2) {
-	  int nm=setNumberOfModules(GET_FLAG,X)*setNumberOfModules(GET_FLAG,Y);
-	  sls_detector_module  *myMod=NULL;
-	  sval=string(args[1]);
-	  std::cout<< " trimfile " << sval << std::endl;
-	  
-	  for (int im=0; im<nm; im++) {
-	    ostringstream ostfn, oscfn;
-	   //create file names
-	    if (action==GET_ACTION) {   
-	      ostfn << sval << ".sn"  << setfill('0') << setw(3) << hex << getId(MODULE_SERIAL_NUMBER, im); 
-	      if ((myMod=getModule(im))) {
-		writeSettingsFile(ostfn.str(),*myMod);
-		deleteModule(myMod);
-	      }
-	    } else if (action==PUT_ACTION) {
-	      ostfn << sval ;
-	      if (sval.find('.',sval.length()-7)<string::npos)
-		ostfn << ".sn"  << setfill('0') << setw(3) << hex << getId(MODULE_SERIAL_NUMBER, im); 
-	      myMod=readSettingsFile(ostfn.str());
-	      if (myMod) {
-		myMod->module=im;
-		setModule(*myMod);
-		deleteModule(myMod);
-	      } //else		cout << "myMod NULL" << endl; 
-	    } 
-	  }
-	} 
-	std::cout<< "Returning trimfile " << std::endl;
-	return string(getSettingsFile());
-      }  else if (var.find("trim")==0) {
-	if (action==GET_ACTION) {
-	  trimMode mode=NOISE_TRIMMING;
-	  int par1=0, par2=0;
-	  if (var.size()<=5)
-	    return string("trim:mode fname");
-
-	  if (var.substr(5)=="noise") {
-	  // par1 is countlim; par2 is nsigma
-	    mode=NOISE_TRIMMING;
-	    par1=500;
-	    par2=4;
-	  } else if (var.substr(5)=="beam") {
-	    // par1 is countlim; par2 is nsigma
-	    mode=BEAM_TRIMMING;
-	    par1=1000;
-	    par2=4;
-	  } else if (var.substr(5)=="improve") {
-	    // par1 is maxit; if par2!=0 vthresh will be optimized
-	    mode=IMPROVE_TRIMMING;
-	    par1=5;
-	    par2=0;
-	  } else if (var.substr(5)=="fix") {
-	    // par1 is countlim; if par2<0 then trimwithlevel else trim with median 
-	    mode=FIXEDSETTINGS_TRIMMING;
-	    par1=1000;
-	    par2=1;
-	  } else if (var.substr(5)=="offline") {
-	    mode=OFFLINE_TRIMMING;
-	} else {
-	    return string("Unknown trim mode ")+var.substr(5);
-	  } 
-	  executeTrimming(mode, par1, par2);
-	  sval=string(args[1]);
-	  sls_detector_module  *myMod=NULL;
-	  int nm=setNumberOfModules(GET_FLAG,X)*setNumberOfModules(GET_FLAG,Y);
-	  for (int im=0; im<nm; im++) {
-	    ostringstream ostfn, oscfn;
-	    //create file names
-	  ostfn << sval << ".sn"  << setfill('0') << setw(3) << hex << getId(MODULE_SERIAL_NUMBER, im); 
-	  if ((myMod=getModule(im))) {
-	    writeSettingsFile(ostfn.str(),*myMod);
-	    deleteModule(myMod);
-	  }
-	  }
-	  return string("done");
-	}	else if (action==PUT_ACTION) {
-	  return string("cannot set ");
-	}
-      } else if (var=="clkdivider") {
-	if (action==PUT_ACTION) {
-	  sscanf(args[1],"%d",&ival);
-	  setSpeed(CLOCK_DIVIDER,ival);
-	} 
-	sprintf(answer,"%d", setSpeed(CLOCK_DIVIDER));
-	return string(answer);
-      } else if (var=="setlength") {
-	if (action==PUT_ACTION) {
-	  sscanf(args[1],"%d",&ival);
-	  setSpeed(SET_SIGNAL_LENGTH,ival);
-	  
-	} 
-      
-	sprintf(answer,"%d", setSpeed(SET_SIGNAL_LENGTH));
-	return string(answer);
-	
-      } else if (var=="waitstates") {
-	if (action==PUT_ACTION) {
-	  sscanf(args[1],"%d",&ival);
-	  setSpeed(WAIT_STATES,ival);
-	
-	} 
-	sprintf(answer,"%d", setSpeed(WAIT_STATES));
-	return string(answer);
-	
-      } else if (var=="totdivider") {
-	if (action==PUT_ACTION) {
-	  sscanf(args[1],"%d",&ival);
-	  setSpeed(TOT_CLOCK_DIVIDER,ival);
-	} 
-	sprintf(answer,"%d", setSpeed(TOT_CLOCK_DIVIDER));
-	return string(answer);
-      } else if (var=="totdutycycle") {
-	if (action==PUT_ACTION) {
-	  sscanf(args[1],"%d",&ival);
-	  setSpeed(TOT_DUTY_CYCLE,ival);
-	} 
-	sprintf(answer,"%d", setSpeed(TOT_DUTY_CYCLE));
-	return string(answer);
-	//gotthard
-      }else if (var=="configuremac") {
-	if (action==GET_ACTION) {
-	  return string("cannot use GET for this function");
-	} else if (action==PUT_ACTION) {
-	  sscanf(args[1],"%d",&ival);
-	  if((ival<0)||(ival>1))
-	    return string("use only 0/1 to reset/set digital_test_bit");
-	  if(configureMAC(ival)==-1)
-	   return string("client ip address/client mac address not valid");
-	  return string("mac configuration completed");
-	} 
-      }
-  return ("Unknown command");
-
-}
-
-
-
-
-
-
-
-
-string slsDetector::helpLine( int action) {
-  
-
-  ostringstream os;
-  
-  if (action==READOUT_ACTION) {
-    os << "Usage is "<< std::endl << "mythen_acquire  id " << std::endl;
-    os << "where id is the id of the detector " << std::endl;
-    os << "the detector will be started, the data acquired, processed and written to file according to the preferences configured " << std::endl;
-  } else  if (action==PUT_ACTION) {
-    os << "help \t This help " << std::endl;
-    os << std::endl;
-    os << "config  fname\t reads the configuration file specified and sets the values " << std::endl;
-    os << std::endl;
-    os << "parameters  fname\t sets the detector parameters specified in the file " << std::endl;
-    os << std::endl;
-    os << "setup rootname\t reads the files specfied (and that could be created by get setup) and resets the complete detector configuration including flatfield corrections, badchannels, trimbits etc. " << std::endl;
-    os << std::endl;
-    os << "status s \t either start or stop " << std::endl;
-    os << std::endl;
-    os << "hostname name \t Sets the detector hostname (or IP address) " << std::endl;
-    os << std::endl;
-    os << "caldir path \t Sets path of the calibration files " << std::endl;
-    os << std::endl;
-    os << "trimdir path \t Sets path of the trim files " << std::endl;
-    os << std::endl;
-    os << "trimen nen [e0 e1...en] \t sets the number of energies for which trimbit files exist and their value"<< std::endl;
-    os << std::endl;
-
-
-
-
-
-
-
-
-    os << "startscript script \t sets script to execute at the beginning of the measurements - \"none\" to unset - will be launched as a system call with arguments nrun=fileindex par=startscriptpar"<< std::endl;
-    os << std::endl;
-    os << "startscriptpar par \t sets start script parameter (see startscript)"<< std::endl;
-    os << std::endl;
-
-    os << "scan0script script \t sets script to launch at level 0 scan. If \"energy\" energy scan, if \"threshold\" threshold scan, if \"trimbits\" trimbits scan, \"none\" unsets otherwise will be launched as a system call with arguments nrun=fileindex fn=filename var=scan0var par=scan0par"<< std::endl;
-    os << std::endl;
-    os << "scan0par par\t sets the level 0 scan parameter. See scan0script"<< std::endl;
-    os << std::endl;
-    os << "scan0prec n \t sets the level 0 scan precision for the output file name. See scan0script"<< std::endl;
-    os << std::endl;
-    os << "scan0steps nsteps [s0 s1...] \t sets the level 0 scan steps. See scan0script - nsteps=0 unsets the scan level"<< std::endl;
-    os << std::endl;
-
-
-    os << "scan1script script \t sets script to launch at level 1 scan. If \"energy\" energy scan, if \"threshold\" threshold scan, if \"trimbits\" trimbits scan, \"none\" unsets otherwise will be launched as a system call with arguments nrun=fileindex fn=filename var=scan1var par=scan1par"<< std::endl;
-    os << std::endl;
-
-    os << "scan1par par\t sets the level 1 scan parameter. See scan1script"<< std::endl;
-    os << std::endl;
-    os << "scan1prec n \t sets the level 1 scan precision for the output file name. See scan1script"<< std::endl;
-    os << std::endl;
-    os << "scan1steps nsteps [s0 s1...] \t sets the level 1 scan steps. See scan1script - nsteps=0 unsets the scan level"<< std::endl;
-    os << std::endl;
-
-
-    os << "scriptbefore script \t sets script to execute at the beginning of the realtime acquisition - \"none\" to unset - will be launched as a system call with arguments nrun=fileindex fn=filename par=scriptbeforepar sv0=scan0var sv1=scan1var p0=scan0par p1=scan1par"<< std::endl;
-    os << std::endl;
-    os << "scriptbeforepar \t sets  script before parameter (see scriptbefore)"<< std::endl;
-    os << std::endl;
-
-    os << "headerbefore script \n script to launch to acquire the headerfile just before  the acquisition -  \"none\" to unset - will be launched as a system call with arguments nrun=fileindex fn=filename acqtime=t gainmode=sett threshold=thr badfile=badf angfile=angf bloffset=bloffset fineoffset=fineoffset fffile=ffile tau=taucorr par=headerbeforepar"<< std::endl;
-    os << std::endl;
-    os << "headerbeforepar \t sets header before parameter (see headerbefore)"<< std::endl;
-    os << std::endl;
-
-
-    os << "headerafter script \n script to launch to acquire the headerfile just after the acquisition -  \"none\" to unset - will be launched as a system call with arguments nrun=fileindex fn=filename acqtime=t gainmode=sett threshold=thr badfile=badf angfile=angf bloffset=bloffset fineoffset=fineoffset fffile=ffile tau=taucorr par=headerafterpar"<< std::endl;
-    os << std::endl;
-    os << "headerafterpar par \t sets header after parameter (see headerafter)"<< std::endl;
-    os << std::endl;
-
-    os << "scriptafter script \t sets script to execute at the end of the realtime acquisition - \"none\" to unset - will be launched as a system call with arguments nrun=fileindex fn=filename par=scriptafterpar sv0=scan0var sv1=scan1var p0=scan0par p1=scan1par"<< std::endl;
-    os << std::endl;
-    os << "scriptafterpar par \t sets  script after parameter (see scriptafter)"<< std::endl;
-    os << std::endl;
-
-
-    os << "stopscript script \t sets script to execute at the end of the measurements - \"none\" to unset - will be launched as a system call with arguments nrun=fileindex par=stopscriptpar"<< std::endl;
-    os << std::endl;
-    os << "stopscriptpar par\t sets stop script parameter (see stopscript)"<< std::endl;
-    os << std::endl;
-
-
-
-
-
-    os << "outdir \t directory to which the files will be written by default" << std::endl;
-    os << std::endl;
-    os <<  "fname \t filename to which the files will be written by default (to which file and position indexes will eventually be attached)" << std::endl;
-    os << std::endl;
-    os << "index \t start index of the files (automatically incremented by the acquisition functions)" << std::endl;
-    os << std::endl;
-    os << "nmod n \t Sets number of detector modules " << std::endl;
-    os << std::endl;
-    os << "extsig:i mode \t Sets usage of the external digital signal i. mode can be: " << std::endl;
-    os << "\t off";
-    os << std::endl;
-    os << "\t gate_in_active_high";
-    os << std::endl;
-    os << "\t gate_in_active_low";
-    os << std::endl;
-    os << "\t trigger_in_rising_edge";
-    os << std::endl;
-    os << "\t trigger_in_falling_edge";
-    os << std::endl;
-    os << "\t ro_trigger_in_rising_edge";
-    os << std::endl;
-    os << "\t ro_trigger_in_falling_edge";
-    os << std::endl;
-    os << "\t gate_out_active_high";
-    os << std::endl;
-    os << "\t gate_out_active_low";
-    os << std::endl;
-    os << "\t trigger_out_rising_edge";
-    os << std::endl;
-    os << "\t trigger_out_falling_edge";
-    os << std::endl;
-    os << "\t ro_trigger_out_rising_edge";
-    os << std::endl;
-    os << "\t ro_trigger_out_falling_edge"    << std::endl;
-    os << std::endl;
-    os << "settings sett \t Sets detector settings. Can be: " << std::endl;
-    os << "\t standard \t fast \t highgain" << std::endl;
-    os << "\t depending on trheshold energy and maximum count rate: please refere to manual for limit values!"<< std::endl;
-    os << std::endl;
-    os << "threshold ev \t Sets detector threshold in eV. Should be half of the beam energy. It is precise only if the detector is calibrated"<< std::endl;
-    os << std::endl;
-    os << "vthreshold dacu\t sets the detector threshold in dac units (0-1024). The energy is approx 800-15*keV" << std::endl;
-    os << std::endl;
-
-    os << "vcalibration " << "dacu\t sets the calibration pulse amplitude in dac units (0-1024)." << std::endl;
-    os << std::endl;
-      os << "vtrimbit " << "dacu\t sets the trimbit amplitude in dac units (0-1024)." << std::endl;
-    os << std::endl;
-  os << "vpreamp " << "dacu\t sets the preamp feedback voltage in dac units (0-1024)." << std::endl;
-    os << std::endl;
-  os << "vshaper1 " << "dacu\t sets the shaper1 feedback voltage in dac units (0-1024)." << std::endl;
-    os << std::endl;
-  os << "vshaper2 " << "dacu\t sets the  shaper2 feedback voltage in dac units (0-1024)." << std::endl;
-    os << std::endl;
-  os << "vhighvoltage " << "dacu\t CHIPTEST BOARD ONLY - sets the detector HV in dac units (0-1024)." << std::endl;
-    os << std::endl;
-  os << "vapower " << "dacu\t CHIPTEST BOARD ONLY - sets the analog power supply in dac units (0-1024)." << std::endl;
-    os << std::endl;
-  os << "vddpower " << "dacu\t CHIPTEST BOARD ONLY - sets the digital power supply in dac units (0-1024)." << std::endl;
-    os << std::endl;
-  os << "vshpower " << "dacu\t CHIPTEST BOARD ONLY - sets the comparator power supply in dac units (0-1024)." << std::endl;
-    os << std::endl;
-  os << "viopower " << "dacu\t CHIPTEST BOARD ONLY - sets the FPGA I/O power supply in dac units (0-1024)." << std::endl;
-
-    os << std::endl;
-    os << "exptime t \t Sets the exposure time per frame (in s)"<< std::endl;
-    os << std::endl;
-    os << "period t \t Sets the frames period (in s)"<< std::endl;
-    os << std::endl;
-    os << "delay t \t Sets the delay after trigger (in s)"<< std::endl;
-    os << std::endl;
-    os << "gates n \t Sets the number of gates per frame"<< std::endl;
-    os << std::endl;
-    os << "frames n \t Sets the number of frames per cycle (e.g. after each trigger)"<< std::endl;
-    os << std::endl;
-    os << "cycles n \t Sets the number of cycles (e.g. number of triggers)"<< std::endl;
-    os << std::endl;
-    os << "probes n \t Sets the number of probes to accumulate (max 3)"<< std::endl;
-    os << std::endl;
-    os << "dr n \t Sets the dynamic range - can be 1, 4, 8,16 or 24 bits"<< std::endl;
-    os << std::endl;
-    os << "flags mode \t Sets the readout flags - can be none or storeinram"<< std::endl;
-    os << std::endl;
-    os << "ffdir dir \t Sets the default directory where the flat field are located"<< std::endl;
-    os << std::endl;
-    os << "flatfield fname \t Sets the flatfield file name - none disable flat field corrections"<< std::endl;
-    os << std::endl;
-    os << "ratecorr t \t Sets the rate corrections with dead time t ns (0 unsets, -1 uses default dead time for chosen settings"<< std::endl;
-    os << std::endl;
-    os << "badchannels fname \t Sets the badchannels file name - none disable bad channels corrections"<< std::endl;
-    os << std::endl;
-    os << "angconv fname \t Sets the angular conversion file name"<< std::endl;
-    os << std::endl;
-    os << "globaloff o \t sets the fixed angular offset of your encoder - should be almost constant!"<< std::endl;
-    os << std::endl;
-    os << "fineoff o \t sets a possible angular offset of your setup - should be small but can be senseful to modify"<< std::endl;
-    os << std::endl;
-    os << "binsize s\t sets the binning size of the angular conversion (otherwise defaults from the angualr conversion constants)"<< std::endl;
-    os << std::endl;
-    os << "positions np [pos0 pos1...posnp] \t sets the number of positions at which the detector is moved during the acquisition and their values"<< std::endl;
-    os << std::endl;
-    os << "threaded b \t sets whether the postprocessing and file writing of the data is done in a separate thread (0 sequencial, 1 threaded). Please remeber to set the threaded mode if you acquire long real time measurements and/or use the storeinram option  otherwise you risk to lose your data"<< std::endl;
-    os << std::endl;
-    os << "online  b\t sets the detector in online (1) or offline (0) state " << std::endl;
-    os << std::endl;
-  } else if (action==GET_ACTION) {
-    os << "help \t This help " << std::endl;
-    
-
-  os << "status \t gets the detector status - can be: running, error, transmitting, finished, waiting or idle" << std::endl;
-  os << "data \t gets all data from the detector (if any) processes them and writes them to file according to the preferences already setup" << std::endl;
-  os << "frame \t gets a single frame from the detector (if any) processes it and writes it to file according to the preferences already setup" << std::endl;
-    os << "config  fname\t writes the configuration file" << std::endl;
-    os << std::endl;
-    os << "parameters  fname\t writes the main detector parameters for the measuremen tin the file " << std::endl;
-    os << std::endl;
-    os << "setup rootname\t writes the complete detector setup (including configuration, trimbits, flat field coefficients, badchannels etc.) in a set of files for which the extension is automatically generated " << std::endl;
-    os << std::endl;
-    os << "hostname \t Gets the detector hostname (or IP address) " << std::endl;
-    os << std::endl;
-    os << "caldir \t Gets path of the calibration files " << std::endl;
-    os << std::endl;
-    os << "trimdir \t Gets path of the trim files " << std::endl;
-    os << std::endl;
-    os << "trimen \t returns the number of energies for which trimbit files exist and their values"<< std::endl;
-
-
-
-
-
-
-    os << "startscript \t gets script to execute at the beginning of the measurements - \"none\" to unset - will be launched as a system call with arguments nrun=fileindex par=startscriptpar"<< std::endl;
-    os << std::endl;
-    os << "startscriptpar \t gets start script parameter (see startscript)"<< std::endl;
-    os << std::endl;
-
-    os << "scan0script \t gets script to launch at level 0 scan. If \"energy\" energy scan, if \"threshold\" threshold scan, if \"trimbits\" trimbits scan, \"none\" unsets otherwise will be launched as a system call with arguments nrun=fileindex fn=filename var=scan0var par=scan0par"<< std::endl;
-    os << std::endl;
-    os << "scan0par \t gets the level 0 scan parameter. See scan0script"<< std::endl;
-    os << std::endl;
-    os << "scan0prec \t gets the level 0 scan precision for the output file name. See scan0script"<< std::endl;
-    os << std::endl;
-    os << "scan0steps \t gets the level 0 scan steps. See scan0script - nsteps=0 unsets the scan level"<< std::endl;
-    os << std::endl;
-
-
-    os << "scan1script \t gets script to launch at level 1 scan. If \"energy\" energy scan, if \"threshold\" threshold scan, if \"trimbits\" trimbits scan, \"none\" unsets otherwise will be launched as a system call with arguments nrun=fileindex fn=filename var=scan1var par=scan1par"<< std::endl;
-    os << std::endl;
-
-    os << "scan1par \t gets the level 1 scan parameter. See scan1script"<< std::endl;
-    os << std::endl;
-    os << "scan1prec \t gets the level 1 scan precision for the output file name. See scan1script"<< std::endl;
-    os << std::endl;
-    os << "scan1steps \t gets the level 1 scan steps. See scan1script - nsteps=0 unsets the scan level"<< std::endl;
-    os << std::endl;
-
-
-    os << "scriptbefore \t gets script to execute at the beginning of the realtime acquisition - \"none\" to unset - will be launched as a system call with arguments nrun=fileindex fn=filename par=scriptbeforepar sv0=scan0var sv1=scan1var p0=scan0par p1=scan1par"<< std::endl;
-    os << std::endl;
-    os << "scriptbeforepar \t gets  script before parameter (see scriptbefore)"<< std::endl;
-    os << std::endl;
-
-    os << "headerbefore \n gets the script to launch to acquire the headerfile just before  the acquisition -  \"none\" to unset - will be launched as a system call with arguments nrun=fileindex fn=filename acqtime=t gainmode=sett threshold=thr badfile=badf angfile=angf bloffset=bloffset fineoffset=fineoffset fffile=ffile tau=taucorr par=headerbeforepar"<< std::endl;
-    os << std::endl;
-    os << "headerbeforepar \t gets header before parameter (see headerbefore)"<< std::endl;
-    os << std::endl;
-
-
-    os << "headerafter \n gets the script to launch to acquire the headerfile just after the acquisition -  \"none\" to unset - will be launched as a system call with arguments nrun=fileindex fn=filename acqtime=t gainmode=sett threshold=thr badfile=badf angfile=angf bloffset=bloffset fineoffset=fineoffset fffile=ffile tau=taucorr par=headerafterpar"<< std::endl;
-    os << std::endl;
-    os << "headerafterpar \t gets header after parameter (see headerafter)"<< std::endl;
-    os << std::endl;
-
-    os << "scriptafter \t gets script to execute at the end of the realtime acquisition - \"none\" to unset - will be launched as a system call with arguments nrun=fileindex fn=filename par=scriptafterpar sv0=scan0var sv1=scan1var p0=scan0par p1=scan1par"<< std::endl;
-    os << std::endl;
-    os << "scriptafterpar \t gets  script after parameter (see scriptafter)"<< std::endl;
-    os << std::endl;
-
-
-    os << "stopscript \t gets script to execute at the end of the measurements - \"none\" to unset - will be launched as a system call with arguments nrun=fileindex par=stopscriptpar"<< std::endl;
-    os << std::endl;
-    os << "stopscriptpar\t gets stop script parameter (see stopscript)"<< std::endl;
-    os << std::endl;
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    os << "outdir \t directory to which the files will be written by default" << std::endl;
-    os << std::endl;
-      os <<  "fname \t filename to which the files will be written by default (to which file and position indexes will eventually be attached)" << std::endl;
-    os << std::endl;
-    os << "index \t start index of the files (automatically incremented by the acquisition functions)" << std::endl;
-    os << std::endl;
-    os << "nmod \t Gets number of detector modules " << std::endl;
-    os << std::endl;
-    os << "maxmod \t Gets maximum number of detector modules " << std::endl;
-    os << std::endl;
-    os << "extsig:i\t Gets usage of the external digital signal i. The return value can be: " << std::endl;
-    os << "\t 0 off";
-    os << std::endl;
-    os << "\t 1 gate_in_active_high";
-    os << std::endl;
-    os << "\t 2 gate_in_active_low";
-    os << std::endl;
-    os << "\t 3 trigger_in_rising_edge";
-    os << std::endl;
-    os << "\t 4 trigger_in_falling_edge";
-    os << std::endl;
-    os << "\t 5 ro_trigger_in_rising_edge";
-    os << std::endl;
-    os << "\t 6 ro_trigger_in_falling_edge";
-    os << std::endl;
-    os << "\t 7 gate_out_active_high";
-    os << std::endl;
-    os << "\t 8 gate_out_active_low";
-    os << std::endl;
-    os << "\t 9 trigger_out_rising_edge";
-    os << std::endl;
-    os << "\t 10 trigger_out_falling_edge";
-    os << std::endl;
-    os << "\t 11 ro_trigger_out_rising_edge";
-    os << std::endl;
-    os << "\t 12 ro_trigger_out_falling_edge" << std::endl;
-    os << std::endl;
-    os << "modulenumber:i \t Gets the serial number of module i" << std::endl;
-    os << std::endl;
-    os << "moduleversion\t Gets the module version " << std::endl;
-    os << std::endl;
-    os << "detectornumber\t Gets the detector number (MAC address) " << std::endl;
-    os << std::endl;
-    os << "detectorversion\t Gets the detector firmware version " << std::endl;
-    os << std::endl;
-    os << "softwareversion\t Gets the detector software version " << std::endl;
-    os << std::endl;
-    os << "thisversion\t Gets the version of this software" << std::endl;
-    os << std::endl;
-    os << "digitest:i\t Makes a digital test of the detector module i. Returns 0 if it succeeds " << std::endl;
-    os << std::endl;
-    os << "bustest\t Makes a test of the detector bus. Returns 0 if it succeeds " << std::endl; 
-    os << std::endl;
-    os << "settings\t Gets detector settings. Can be: " << std::endl;
-    os << "\t 0 standard \t 1 fast \t 2 highgain \t else undefined" << std::endl;
-    os << std::endl;
-    os << "threshold\t Gets detector threshold in eV. It is precise only if the detector is calibrated"<< std::endl;
-    os << std::endl;
-    os << "vthreshold \t Gets the detector threshold in dac units (0-1024). The energy is approx 800-15*keV" << std::endl;
-    os << std::endl;
-
-    os << "vcalibration " << "dacu\t gets the calibration pulse amplitude in dac units (0-1024)." << std::endl;
-    os << std::endl;
-      os << "vtrimbit " << "dacu\t gets the trimbit amplitude in dac units (0-1024)." << std::endl;
-    os << std::endl;
-  os << "vpreamp " << "dacu\t gets the preamp feedback voltage in dac units (0-1024)." << std::endl;
-    os << std::endl;
-  os << "vshaper1 " << "dacu\t gets the shaper1 feedback voltage in dac units (0-1024)." << std::endl;
-    os << std::endl;
-  os << "vshaper2 " << "dacu\t gets the  shaper2 feedback voltage in dac units (0-1024)." << std::endl;
-    os << std::endl;
-  os << "vhighvoltage " << "dacu\t CHIPTEST BOARD ONLY - gets the detector HV in dac units (0-1024)." << std::endl;
-    os << std::endl;
-  os << "vapower " << "dacu\t CHIPTEST BOARD ONLY - gets the analog power supply in dac units (0-1024)." << std::endl;
-    os << std::endl;
-  os << "vddpower " << "dacu\t CHIPTEST BOARD ONLY - gets the digital power supply in dac units (0-1024)." << std::endl;
-    os << std::endl;
-  os << "vshpower " << "dacu\t CHIPTEST BOARD ONLY - gets the comparator power supply in dac units (0-1024)." << std::endl;
-    os << std::endl;
-  os << "viopower " << "dacu\t CHIPTEST BOARD ONLY - gets the FPGA I/O power supply in dac units (0-1024)." << std::endl;
-    os << std::endl;
-
-
-    os << "exptime\t Gets the exposure time per frame (in s)"<< std::endl;
-    os << std::endl;
-    os << "period \t Gets the frames period (in s)"<< std::endl;
-    os << std::endl;
-    os << "delay \t Gets the delay after trigger (in s)"<< std::endl;
-    os << std::endl;    
-    os << "gates \t Gets the number of gates per frame"<< std::endl;
-    os << std::endl;
-    os << "frames \t Gets the number of frames per cycle (e.g. after each trigger)"<< std::endl;
-    os << std::endl;
-    os << "cycles \t Gets the number of cycles (e.g. number of triggers)"<< std::endl;
-    os << std::endl;
-    os << "probes \t Gets the number of probes to accumulate (max 3)"<< std::endl;
-
-
-
-
-    os << "exptimel\t Gets the exposure time left in the current frame (in s)"<< std::endl;
-    os << std::endl;
-    os << "periodl \t Gets the period left in the current frame (in s)"<< std::endl;
-    os << std::endl;
-    os << "delayl \t Gets the delay after current trigger left (in s)"<< std::endl;
-    os << std::endl;    
-    os << "gatesl \t Gets the number of gates left in the current frame"<< std::endl;
-    os << std::endl;
-    os << "framesl \t Gets the number of frames left (after the current trigger)"<< std::endl;
-    os << std::endl;
-    os << "cyclesl \t Gets the number of cycles left (e.g. number of triggers)"<< std::endl;
-    //os << std::endl;
-    //os << "progress \t Gets acquisition progress - to be implemented"<< std::endl;
-
-    os << std::endl;
-    os << "now \t Gets the actual time of the detector (in s)"<< std::endl;
-
-
-    os << std::endl;
-    os << "timestamp \t Gets the  time of the measurements of the detector (in s, -1 if no measurement left)"<< std::endl;
-
-
-
-
-
-    os << std::endl;
-    os << "dr \t Gets the dynamic range"<< std::endl;
-    os << std::endl;
-    os << "trim:mode fname \t trims the detector and writes the trimfile fname.snxx "<< std::endl;
-    os << "\t mode can be:\t noise\t beam\t improve\t fix\t offline "<< std::endl;
-    os << "Check that the start conditions are OK!!!"<< std::endl;
-    os << std::endl;
-    os << "ffdir \t Returns the default directory where the flat field are located"<< std::endl;
-    os << std::endl;
-    os << "flatfield fname \t returns wether the flat field corrections are enabled and if so writes the coefficients to the specified filename. If fname is none it is not written"<< std::endl;
-    os << std::endl;
-    os << "ratecorr \t returns wether teh rate corrections are enabled and what is the dead time used in ns"<< std::endl;
-    os << std::endl;
-    os << "badchannels fname \t returns wether the bad channels corrections are enabled and if so writes the bad channels to the specified filename. If fname is none it is not written"<< std::endl;
-    os << std::endl;
-    os << "angconv fname \t returns wether the angular conversion is enabled and if so writes the angular conversion coefficients to the specified filename. If fname is none, it is not written"<< std::endl;
-    os << std::endl;
-    os << "globaloff \t returns the fixed angular offset of your encoder - should be almost constant!"<< std::endl;
-    os << std::endl;
-    os << "fineoff \t returns a possible angualr offset of your setup - should be small but can be senseful to modify"<< std::endl;
-    os << std::endl;
-    os << "binsize \t returns the binning size of the anular conversion"<< std::endl;
-    os << std::endl;
-    os << "positions \t returns the number of positions at which the detector is moved during the acquisition and their values"<< std::endl;
-    os << std::endl;
-    os << "threaded \t gets whether the postprocessing and file writing of the data is done in a separate thread (0 sequencial, 1 threaded). Check that it is set to 1 if you acquire long real time measurements and/or use the storeinram option otherwise you risk to lose your data"<< std::endl;
-    os << std::endl; 
-    os << "online  \t gets the detector online (1) or offline (0) state " << std::endl;
-    os << std::endl; 
-
-
-  }
-
-   
-  return os.str();
-}
-
-
-
-
-
 //Corrections
-
-
 
 int slsDetector::setAngularConversion(string fname) {
   if (fname=="") {
@@ -7077,865 +4493,92 @@ int slsDetector::getAngularConversion(int &direction,  angleConversionConstant *
 
 
 
-int slsDetector::readAngularConversion(string fname) {
-  string str;
-  ifstream infile;
-  int mod;
-  float center, ecenter;
-  float r_conv, er_conv;
-  float off, eoff;
-  string ss;
-  int interrupt=0;
+ int slsDetector::readAngularConversion(string fname) {
 
-  //" module %i center %E +- %E conversion %E +- %E offset %f +- %f \n"
-#ifdef VERBOSE
-  std::cout<< "Opening file "<< fname << std::endl;
-#endif
-  infile.open(fname.c_str(), ios_base::in);
-  if (infile.is_open()) {
-    while (infile.good() and interrupt==0) {
-      getline(infile,str);
-#ifdef VERBOSE
-      std::cout<< str << std::endl;
-#endif
-      istringstream ssstr(str);
-      ssstr >> ss >> mod;
-      ssstr >> ss >> center;
-      ssstr >> ss >> ecenter;
-      ssstr >> ss >> r_conv;
-      ssstr >> ss >> er_conv;
-      ssstr >> ss >> off;
-      ssstr >> ss >> eoff;
-      if (mod<thisDetector->nModsMax && mod>=0) {
-	thisDetector->angOff[mod].center=center;
-	thisDetector->angOff[mod].r_conversion=r_conv;
-	thisDetector->angOff[mod].offset=off;
-	thisDetector->angOff[mod].ecenter=ecenter;
-	thisDetector->angOff[mod].er_conversion=er_conv;
-	thisDetector->angOff[mod].eoffset=eoff;
-      }
-    }
-  } else {
-    std::cout<< "Could not open calibration file "<< fname << std::endl;
-    return -1;
+   return readAngularConversion(fname,thisDetector->nModsMax,  thisDetector->angOff);
+
+ }
+
+ int slsDetector::readAngularConversion(ifstream& ifs) {
+
+   return readAngularConversion(ifs,thisDetector->nModsMax,  thisDetector->angOff);
+
+ }
+
+
+
+
+
+
+
+
+
+
+
+
+float* slsDetector::convertAngles(float pos) {
+  int imod;
+  float    *ang=new float[thisDetector->nChans*thisDetector->nChips*thisDetector->nMods]; 
+  for (int ip=0; ip<thisDetector->nChans*thisDetector->nChips*thisDetector->nMods; ip++) {
+    imod=ip/(thisDetector->nChans*thisDetector->nChips);
+    ang[ip]=angle(ip%(thisDetector->nChans*thisDetector->nChips),pos,thisDetector->fineOffset+thisDetector->globalOffset,thisDetector->angOff[imod].r_conversion,thisDetector->angOff[imod].center, thisDetector->angOff[imod].offset,thisDetector->angOff[imod].tilt,thisDetector->angDirection);
   }
-  return 0;
+  return ang;
 }
+
+
+
 
 
 int slsDetector:: writeAngularConversion(string fname) {
-  ofstream outfile;
-  outfile.open (fname.c_str(),ios_base::out);
-  if (outfile.is_open())
-  {  
-    for (int imod=0; imod<thisDetector->nMods; imod++) {
-      outfile << " module " << imod << " center "<< thisDetector->angOff[imod].center<<"  +- "<< thisDetector->angOff[imod].ecenter<<" conversion "<< thisDetector->angOff[imod].r_conversion << " +- "<< thisDetector->angOff[imod].er_conversion <<  " offset "<< thisDetector->angOff[imod].offset << " +- "<< thisDetector->angOff[imod].eoffset << std::endl;
-    }
-    outfile.close();
-  } else {
-    std::cout<< "Could not open file " << fname << "for writing"<< std::endl;
-    return -1;
-  }
-  //" module %i center %E +- %E conversion %E +- %E offset %f +- %f \n"
-  return 0;
-}
 
-int slsDetector::resetMerging(float *mp, float *mv, float *me, int *mm) {
-  
-  float binsize;
-  if (thisDetector->binSize>0)
-    binsize=thisDetector->binSize;
-  else 
-    return FAIL;
-  
-  for (int ibin=0; ibin<(360./binsize); ibin++) {
-    mp[ibin]=0;
-    mv[ibin]=0;
-    me[ibin]=0;
-    mm[ibin]=0;
-  }
-  return OK;
+  return writeAngularConversion(fname, thisDetector->nMods, thisDetector->angOff);
+
 }
 
 
-int slsDetector::finalizeMerging(float *mp, float *mv, float *me, int *mm) {
-  float binsize;
-  int np=0;
+int slsDetector:: writeAngularConversion(ofstream &ofs) {
 
-  if (thisDetector->binSize>0)
-    binsize=thisDetector->binSize;
-  else 
-    return FAIL;
-  
-  for (int ibin=0; ibin<(360./binsize); ibin++) {
-    if (mm[ibin]>0) {
-      mp[np]=mp[ibin]/mm[ibin];
-      mv[np]=mv[ibin]/mm[ibin];
-      me[np]=me[ibin]/mm[ibin];
-      me[np]=sqrt(me[ibin]);
-      mm[np]=mm[ibin];
-      np++;
-    }
-  }
-  return np;
-}
+  return writeAngularConversion(ofs, thisDetector->nMods, thisDetector->angOff);
 
-int  slsDetector::addToMerging(float *p1, float *v1, float *e1, float *mp, float *mv,float *me, int *mm) {
-
-  float binsize;
-  float binmi=-180., binma;
-  int ibin=0;
-  int imod;
-  float ang=0;
-  if (thisDetector->binSize>0)
-    binsize=thisDetector->binSize;
-  else 
-    return FAIL;
-  binmi=-180.;
-  binma=binmi+binsize;
-  
-
-  if (thisDetector->angDirection>0) {
-    for (int ip=0; ip<thisDetector->nChans*thisDetector->nChips*thisDetector->nMods; ip++) {
-      if ((thisDetector->correctionMask)&(1<< DISCARD_BAD_CHANNELS)) {
-	if (badChannelMask[ip]) {
-	  continue;
-	}
-      }
-      imod=ip/(thisDetector->nChans*thisDetector->nChips);
-      if (p1)
-	ang=p1[ip];
-      else
-	ang=angle(ip,currentPosition,thisDetector->fineOffset+thisDetector->globalOffset,thisDetector->angOff[imod].r_conversion,thisDetector->angOff[imod].center, thisDetector->angOff[imod].offset,thisDetector->angOff[imod].tilt,thisDetector->angDirection);
-      
-      
-      
-      while (binma<ang) {
-	ibin++;
-	binmi+=binsize;
-	binma+=binsize;
-      }
-      if (ibin<(360./binsize)) {
-	mp[ibin]+=ang;
-	mv[ibin]+=v1[ip];
-	if (e1)
-	  me[ibin]+=(e1[ip]*e1[ip]);
-	else
-	  me[ibin]+=v1[ip];
-	mm[ibin]++;
-      } else
-	return FAIL;
-    }
- 
-  } else {
-    for (int ip=thisDetector->nChans*thisDetector->nChips*thisDetector->nMods-1; ip>=0; ip--) {
-	if ((thisDetector->correctionMask)&(1<< DISCARD_BAD_CHANNELS)) {
-	  if (badChannelMask[ip])
-	    continue;
-       
-	}
-
-      while (binma<ang) {
-	ibin++;
-	binmi+=binsize;
-	binma+=binsize;
-      }
-      if (ibin<(360./binsize)) {
-	mp[ibin]+=ang;
-	mv[ibin]+=v1[ip];
-	if (e1)
-	  me[ibin]+=(e1[ip]*e1[ip]);
-	else
-	  me[ibin]+=v1[ip];
-	mm[ibin]++;
-      } else
-	return FAIL;
-    }
-  }
-  return OK;
-}
-
-void  slsDetector::acquire(int delflag){
-  void *status;
-  //#ifdef VERBOSE
-  //int iloop=0;
-  //#endif
-  int trimbit;
-  int startindex=thisDetector->fileIndex;
-  int lastindex=thisDetector->fileIndex;
-  char cmd[MAX_STR_LENGTH];
-  int nowindex=thisDetector->fileIndex;
-  string fn;
-
-
-  //string sett;
-  if ((thisDetector->correctionMask&(1<< ANGULAR_CONVERSION)) || (thisDetector->correctionMask&(1<< I0_NORMALIZATION)))
-       connect_channels();
-       
-
-
-
-  thisDetector->progressIndex=0;
-  thisDetector->stoppedFlag=0;
-
-
-
-  resetFinalDataQueue();
-  resetDataQueue();
-
-  
-  //cout << "main mutex lock line 6188" << endl;
-  pthread_mutex_lock(&mp);
-  jointhread=0;
-  queuesize=0;
-  pthread_mutex_unlock(&mp);
-  //cout << "main mutex unlock line 6188" << endl;
-
-
-
-
-
-  if (thisDetector->threadedProcessing) {
-    startThread(delflag);
-  }
-  //cout << "data thread started " << endl;
-  int np=1;
-  if (thisDetector->numberOfPositions>0) 
-    np=thisDetector->numberOfPositions;
-
-  int ns0=1;
-  if (thisDetector->actionMask & (1 << MAX_ACTIONS)) {
-    ns0=thisDetector->nScanSteps[0];
-  }
-  if (ns0<1)
-    ns0=1;
-
-
-  int ns1=1;
-  if (thisDetector->actionMask & (1 << (MAX_ACTIONS+1))) {
-    ns1=thisDetector->nScanSteps[1];
-  }
-  if (ns1<1)
-    ns1=1;
-
-
-
-
-  //cout << "action at start" << endl;
-  if (thisDetector->stoppedFlag==0) {
-      if (thisDetector->actionMask & (1 << startScript)) {
-	//"Custom start script. The arguments are passed as nrun=n par=p.");
-	sprintf(cmd,"%s nrun=%d par=%s",thisDetector->actionScript[startScript],thisDetector->fileIndex,thisDetector->actionParameter[startScript]);
-#ifdef VERBOSE
-	cout << "Executing start script " << cmd << endl;
-#endif
-	system(cmd);
-      }
-  }
-
-  for (int is0=0; is0<ns0; is0++) {
-    //  cout << "scan0 loop" << endl;
-
-  if (thisDetector->stoppedFlag==0) {
-
-    currentScanVariable[0]=thisDetector->scanSteps[0][is0];
-    currentScanIndex[0]=is0;
-
-    switch(thisDetector->scanMode[0]) {
-    case 1:
-      setThresholdEnergy((int)currentScanVariable[0]); //energy scan
-      break;
-    case 2:
-      setDAC(currentScanVariable[0],THRESHOLD); // threshold scan
-      break;
-    case 3:
-      trimbit=(int)currentScanVariable[0];
-      setChannel((trimbit<<((int)TRIMBIT_OFF))|((int)COMPARATOR_ENABLE)); // trimbit scan
-      break;
-    case 0:
-       currentScanVariable[0]=0;
-       break;
-    default:
-    //Custom scan script level 0. The arguments are passed as nrun=n fn=filename var=v par=p"
-      sprintf(cmd,"%s nrun=%d fn=%s var=%f par=%s",thisDetector->scanScript[0],thisDetector->fileIndex,createFileName().c_str(),currentScanVariable[0],thisDetector->scanParameter[0]);
-#ifdef VERBOSE
-      cout << "Executing scan script 0 " << cmd << endl;
-#endif
-      system(cmd);
-     
-
-    }
-  } else
-    break;
-  
-
-  for (int is1=0; is1<ns1; is1++) {
-    // cout << "scan1 loop" << endl;
-
-     if (thisDetector->stoppedFlag==0) {
-
-    currentScanVariable[1]=thisDetector->scanSteps[1][is1];
-    currentScanIndex[1]=is1;
-
-    switch(thisDetector->scanMode[1]) {
-    case 1:
-      setThresholdEnergy((int)currentScanVariable[1]); //energy scan
-      break;
-    case 2:
-      setDAC(currentScanVariable[1],THRESHOLD); // threshold scan
-      break;
-    case 3:
-      trimbit=(int)currentScanVariable[1];
-      setChannel((trimbit<<((int)TRIMBIT_OFF))|((int)COMPARATOR_ENABLE)); // trimbit scan
-      break;
-    case 0:
-       currentScanVariable[1]=0;
-       break;
-    default:
-    //Custom scan script level 1. The arguments are passed as nrun=n fn=filename var=v par=p"
-      sprintf(cmd,"%s nrun=%d fn=%s var=%f par=%s",thisDetector->scanScript[1],thisDetector->fileIndex,createFileName().c_str(),currentScanVariable[1],thisDetector->scanParameter[1]);
-#ifdef VERBOSE
-      cout << "Executing scan script 1 " << cmd << endl;
-#endif
-      system(cmd);
-    }
-  
-     } else
-       break;
-
-     if (thisDetector->stoppedFlag==0) {
-       if (thisDetector->actionMask & (1 << scriptBefore)) {
-	 //Custom script before each frame. The arguments are passed as nrun=n fn=filename par=p sv0=scanvar0 sv1=scanvar1 p0=par0 p1=par1"
-	 sprintf(cmd,"%s nrun=%d fn=%s par=%s sv0=%f sv1=%f p0=%s p1=%s",thisDetector->actionScript[scriptBefore],thisDetector->fileIndex,createFileName().c_str(),thisDetector->actionParameter[scriptBefore],currentScanVariable[0],currentScanVariable[1],thisDetector->scanParameter[0],thisDetector->scanParameter[1]);
-#ifdef VERBOSE
-	 cout << "Executing script before " << cmd << endl;
-#endif
-	 system(cmd);
-       }
-     } else
-       break;
-
-     currentPositionIndex=0;
-     
-     for (int ip=0; ip<np; ip++) {
-       //   cout << "positions " << endl;
-       if (thisDetector->stoppedFlag==0) {
-	 if  (thisDetector->numberOfPositions>0) {
-	   go_to_position (thisDetector->detPositions[ip]);
-	   currentPositionIndex=ip+1;
-#ifdef VERBOSE
-	   std::cout<< "moving to position" << std::endl;
-#endif
-	 } 
-       } else
-	 break;
-       
-	 //write header before?
-	 //cmd=headerBeforeScript;
-	 //Custom script to write the header. \n The arguments will be passed as nrun=n fn=filenam acqtime=t gainmode=g threshold=thr badfile=badf angfile=angf bloffset=blo fineoffset=fo fffile=fffn tau=deadtau par=p")
-       
-       //   cout << "aaaaa" << endl;
-       //cout << createFileName() << endl;
-       //cout << "bbbbb" << endl;
-       fn=createFileName();
-       //cout << fn << endl;
-       nowindex=thisDetector->fileIndex;
-
-       if (thisDetector->stoppedFlag==0) {
-
-
-	 if (thisDetector->correctionMask&(1<< I0_NORMALIZATION))
-	   currentI0=get_i0();
-	 
-	 // cout << "header " << endl;
-	 if (thisDetector->actionMask & (1 << headerBefore)) {
-	   //Custom script after each frame. The arguments are passed as nrun=n fn=filename par=p sv0=scanvar0 sv1=scanvar1 p0=par0 p1=par1"
-	   sprintf(cmd,"%s nrun=%d fn=%s acqtime=%f gainmode=%d threshold=%d badfile=%s angfile=%s bloffset=%f fineoffset=%f fffile=%s/%s tau=%f par=%s",thisDetector->actionScript[headerBefore],nowindex,fn.c_str(),((float)thisDetector->timerValue[ACQUISITION_TIME])*1E-9, thisDetector->currentSettings, thisDetector->currentThresholdEV, getBadChannelCorrectionFile().c_str(), getAngularConversion().c_str(), thisDetector->globalOffset, thisDetector->fineOffset,getFlatFieldCorrectionDir(),getFlatFieldCorrectionFile(), getRateCorrectionTau(), thisDetector->actionParameter[headerBefore]);
-#ifdef VERBOSE
-	   cout << "Executing header before " << cmd << endl;
-#endif
-	   system(cmd);
-	 }
-       } else
-	 break;
-       
-       
-       
-       if (thisDetector->stoppedFlag==0) {
-
-	 //	 cout << "starting???? " << endl;
-	 startAndReadAll();
-	 
-	 if (thisDetector->correctionMask&(1<< ANGULAR_CONVERSION))
-	   currentPosition=get_position();  
-	 
-	 if (thisDetector->correctionMask&(1<< I0_NORMALIZATION))
-	   currentI0=get_i0()-currentI0;
-	 
-	 
-	 if (thisDetector->threadedProcessing==0)
-	   processData(delflag); 
-	 
-	 
-       } else
-	 break;
-       
-       //while (!dataQueue.empty()){
-       //cout << "main mutex lock line 6372" << endl;
-       pthread_mutex_lock(&mp);
-       while (queuesize){
-	 pthread_mutex_unlock(&mp);
-	 //cout << "main mutex unlock line 6375" << endl;
-	 usleep(10000);
-	 //cout << "main mutex lock line 6378" << endl;
-	 pthread_mutex_lock(&mp);
-       }
-       pthread_mutex_unlock(&mp);
-       //cout << "main mutex unlock line 6381" << endl;
-    
-    if (thisDetector->stoppedFlag==0) {
-      if (thisDetector->actionMask & (1 << headerAfter)) {
-	//Custom script after each frame. The arguments are passed as nrun=n fn=filename par=p sv0=scanvar0 sv1=scanvar1 p0=par0 p1=par1"
-	sprintf(cmd,"%s nrun=%d fn=%s acqtime=%f gainmode=%d threshold=%d badfile=%s angfile=%s bloffset=%f fineoffset=%f fffile=%s/%s tau=%f par=%s", \
-		thisDetector->actionScript[headerAfter],		\
-		nowindex,							\
-		fn.c_str(),				\
-		((float)thisDetector->timerValue[ACQUISITION_TIME])*1E-9, \
-		thisDetector->currentSettings,				\
-		thisDetector->currentThresholdEV,			\
-		getBadChannelCorrectionFile().c_str(),			\
-		getAngularConversion().c_str(),				\
-		thisDetector->globalOffset,				\
-		thisDetector->fineOffset,				\
-		getFlatFieldCorrectionDir(),				\
-		getFlatFieldCorrectionFile(),				\
-		getRateCorrectionTau(),					\
-		thisDetector->actionParameter[headerAfter]);
-#ifdef VERBOSE
-	cout << "Executing header after " << cmd << endl;
-#endif
-	system(cmd);
-	
-      }
-      if (thisDetector->fileIndex>lastindex)
-	lastindex=thisDetector->fileIndex;
-    } else {
-
-      
-      if (thisDetector->fileIndex>lastindex)
-	lastindex=thisDetector->fileIndex;
-
-      break;
-    }
-     
-
-    
-    if (thisDetector->stoppedFlag) {
-#ifdef VERBOSE
-      std::cout<< "exiting since the detector has been stopped" << std::endl;
-#endif
-      break;
-    } else if (ip<(np-1)) {
-      thisDetector->fileIndex=startindex; 
-    }
-     } // loop on position finished
-
-  //script after
-        if (thisDetector->stoppedFlag==0) {
-	  if (thisDetector->actionMask & (1 << scriptAfter)) {
-	    //Custom script after each frame. The arguments are passed as nrun=n fn=filename par=p sv0=scanvar0 sv1=scanvar1 p0=par0 p1=par1"
-	    sprintf(cmd,"%s nrun=%d fn=%s par=%s sv0=%f sv1=%f p0=%s p1=%s",thisDetector->actionScript[scriptAfter],thisDetector->fileIndex,createFileName().c_str(),thisDetector->actionParameter[scriptAfter],currentScanVariable[0],currentScanVariable[1],thisDetector->scanParameter[0],thisDetector->scanParameter[1]);
-#ifdef VERBOSE
-	    cout << "Executing script after " << cmd << endl;
-#endif
-	    system(cmd);
-	  } 
-	} else
-	    break;
-  
-
-    if (thisDetector->stoppedFlag) {
-#ifdef VERBOSE
-      std::cout<< "exiting since the detector has been stopped" << std::endl;
-#endif
-      break;
-    } else if (is1<(ns1-1)) {
-      thisDetector->fileIndex=startindex; 
-    }
-
-
-  } 
-
-  //end scan1 loop is1
-  //currentScanVariable[MAX_SCAN_LEVELS];
-  
-
-    if (thisDetector->stoppedFlag) {
-#ifdef VERBOSE
-      std::cout<< "exiting since the detector has been stopped" << std::endl;
-#endif
-      break;
-    } else if (is0<(ns0-1)) {
-      thisDetector->fileIndex=startindex; 
-    }
-  } //end scan0 loop is0
-
-  thisDetector->fileIndex=lastindex;
-  if (thisDetector->stoppedFlag==0) {
-    if (thisDetector->actionMask & (1 << stopScript)) {
-      //Custom stop script. The arguments are passed as nrun=n par=p.
-      sprintf(cmd,"%s nrun=%d par=%s",thisDetector->actionScript[stopScript],thisDetector->fileIndex,thisDetector->actionParameter[stopScript]);
-#ifdef VERBOSE
-      cout << "Executing stop script " << cmd << endl;
-#endif
-      system(cmd);
-    }
-  } 
-
-
-   if (thisDetector->threadedProcessing) { 
-     //#ifdef VERBOSE
-     //  std::cout<< " ***********************waiting for data processing thread to finish " << queuesize <<" " << thisDetector->fileIndex << std::endl ;
-    //#endif
-     //cout << "main mutex lock line 6488" << endl;
-     pthread_mutex_lock(&mp);
-     jointhread=1;
-     pthread_mutex_unlock(&mp);
-     //cout << "main mutex unlock line 6488" << endl;
-     pthread_join(dataProcessingThread, &status);
-     // std::cout<< " ***********************data processing  finished " << queuesize <<" " << thisDetector->fileIndex << std::endl ;
-   }
-
-      if ((thisDetector->correctionMask&(1<< ANGULAR_CONVERSION)) || (thisDetector->correctionMask&(1<< I0_NORMALIZATION)))
-	  disconnect_channels();
-}
-
-
-void* slsDetector::processData(int delflag) {
-
-
-  //cout << "thread mutex lock line 6505" << endl;
-  pthread_mutex_lock(&mp);
-  queuesize=dataQueue.size();
-  pthread_mutex_unlock(&mp);
-  //cout << "thread mutex unlock line 6505" << endl;
-
-  int *myData;
-  float *fdata;
-  float *rcdata=NULL, *rcerr=NULL;
-  float *ffcdata=NULL, *ffcerr=NULL;
-  float *ang=NULL;
-  float bs=0.004;
-  int imod;
-  int nb;
-  int np;
-  detectorData *thisData;
-  int dum=1;
-  string ext;
-  string fname;
-
-
-#ifdef ACQVERBOSE
-  std::cout<< " processing data - threaded mode " << thisDetector->threadedProcessing;
-#endif
-
-  if (thisDetector->correctionMask!=0) {
-    ext=".dat";
-  } else {
-    ext=".raw";
-  }
-  while(dum | thisDetector->threadedProcessing) { // ????????????????????????
-    
-    
-    //  while( !dataQueue.empty() ) {
-    //cout << "thread mutex lock line 6539" << endl;
-    pthread_mutex_lock(&mp);
-    while((queuesize=dataQueue.size())>0) {
-      pthread_mutex_unlock(&mp);
-      //cout << "thread mutex unlock line 6543" << endl;
-	  //queuesize=dataQueue.size();
-
-      /** Pop data queue */
-      myData=dataQueue.front(); // get the data from the queue 
-      if (myData) {
-
-
-
-	thisDetector->progressIndex++;
-#ifdef VERBOSE
-	cout << "Progress is " << getCurrentProgress() << " \%" << endl;
-#endif
-
-	//process data
-	/** decode data */
-	fdata=decodeData(myData);
-	
-	fname=createFileName();
-	
-	/** write raw data file */	   
-	if (thisDetector->correctionMask==0 && delflag==1) {
-	  //cout << "line 6570----" << endl;
-	  writeDataFile (fname+string(".raw"), fdata, NULL, NULL, 'i'); 
-	  delete [] fdata;
-	} else {
-	  //cout << "line 6574----" << endl;
-	  writeDataFile (fname+string(".raw"), fdata, NULL, NULL, 'i');
-
-	  /** rate correction */
-	  if (thisDetector->correctionMask&(1<<RATE_CORRECTION)) {
-	    rcdata=new float[thisDetector->nChans*thisDetector->nChips*thisDetector->nMods]; 
-	    rcerr=new float[thisDetector->nChans*thisDetector->nChips*thisDetector->nMods];
-	    rateCorrect(fdata,NULL,rcdata,rcerr);
-	    delete [] fdata;
-	  } else {
-	    rcdata=fdata;
-	    fdata=NULL;
-	  }
-	  
-	  /** flat field correction */
-	  if (thisDetector->correctionMask&(1<<FLAT_FIELD_CORRECTION)) {
-	    
-	    ffcdata=new float[thisDetector->nChans*thisDetector->nChips*thisDetector->nMods]; 
-	    ffcerr=new float[thisDetector->nChans*thisDetector->nChips*thisDetector->nMods];
-	    flatFieldCorrect(rcdata,rcerr,ffcdata,ffcerr);
-	    delete [] rcdata;
-	    delete [] rcerr;
-	  } else {
-	    ffcdata=rcdata;
-	    ffcerr=rcerr;
-	    rcdata=NULL;
-	    rcerr=NULL;
-	  }
-	  
-	  if (thisDetector->correctionMask&(1<< ANGULAR_CONVERSION)) {
-
-	    if (currentPositionIndex<=1) {     
-	      if (thisDetector->binSize>0)
-		bs=thisDetector->binSize;
-	      else if (thisDetector->angOff[0].r_conversion>0) {
-		bs=180./PI*atan(thisDetector->angOff[0].r_conversion);
-		thisDetector->binSize=bs;
-	      } else
-		thisDetector->binSize=bs;
-	      
-	      
-	      nb=(int)(360./bs);
-	      
-	      mergingBins=new float[nb];
-	      mergingCounts=new float[nb];
-	      mergingErrors=new float[nb];
-	      mergingMultiplicity=new int[nb];
-	      
-	      resetMerging(mergingBins, mergingCounts,mergingErrors, mergingMultiplicity);
-	    }
-	    /* it would be better to create an ang0 with 0 encoder position and add to merging/write to file simply specifying that offset so that when it cycles writing the data or adding to merging it also calculates the angular position */
-	    
-	    ang=new float[thisDetector->nChans*thisDetector->nChips*thisDetector->nMods]; 
-	    for (int ip=0; ip<thisDetector->nChans*thisDetector->nChips*thisDetector->nMods; ip++) {
-	      imod=ip/(thisDetector->nChans*thisDetector->nChips);
-	      ang[ip]=angle(ip%(thisDetector->nChans*thisDetector->nChips),currentPosition,thisDetector->fineOffset+thisDetector->globalOffset,thisDetector->angOff[imod].r_conversion,thisDetector->angOff[imod].center, thisDetector->angOff[imod].offset,thisDetector->angOff[imod].tilt,thisDetector->angDirection);
-	    }
-	    
-	    if (thisDetector->correctionMask!=0) {
-	      //cout << "line 6633----" << endl; 
-	      if (thisDetector->numberOfPositions>1)
-		writeDataFile (fname+string(".dat"), ffcdata, ffcerr,ang);
-	    }
-	    addToMerging(ang, ffcdata, ffcerr, mergingBins, mergingCounts,mergingErrors, mergingMultiplicity);
-	    
-	    if ((currentPositionIndex==thisDetector->numberOfPositions) || (currentPositionIndex==0)) {
-	      np=finalizeMerging(mergingBins, mergingCounts,mergingErrors, mergingMultiplicity);
-	      /** file writing */
-	      currentPositionIndex++;
-	      fname=createFileName();
-	      if (thisDetector->correctionMask!=0) {
-		//	cout << "line 6643----" << endl; 
-		writeDataFile (fname+string(".dat"),mergingCounts, mergingErrors, mergingBins,'f',np);
-	      }
-	      if (delflag) {
-		delete [] mergingBins;
-		delete [] mergingCounts;
-		delete [] mergingErrors;
-		delete [] mergingMultiplicity;
-	      } else {
-		thisData=new detectorData(mergingCounts,mergingErrors,mergingBins,getCurrentProgress(),(fname+string(ext)).c_str(),np);/*
-		if (thisDetector->correctionMask!=0) {
-		  //thisData=new detectorData(mergingCounts,mergingErrors,mergingBins,thisDetector->progressIndex+1,(fname().append(".dat")).c_str(),np);
-		  thisData=new detectorData(mergingCounts,mergingErrors,mergingBins,getCurrentProgress(),(fname().append(".dat")).c_str(),np);
-		} else {
-		  thisData=new detectorData(mergingCounts,mergingErrors,mergingBins,getCurrentProgress(),(fname().append(".raw")).c_str(),np);
-		  //thisData=new detectorData(mergingCounts,mergingErrors,mergingBins,thisDetector->progressIndex+1,(fname().append(".raw")).c_str(),np);
-		  }*/
-		finalDataQueue.push(thisData);
-	      }
-	    }
-	    
-	    if (ffcdata)
-	      delete [] ffcdata;
-	    if (ffcerr)
-	      delete [] ffcerr;
-	    if (ang)
-	      delete [] ang;
-	  } else {
-	    if (thisDetector->correctionMask!=0) {
-	      // cout << "line 6672----" << endl; 
-	      writeDataFile (fname+string(".dat"), ffcdata, ffcerr);
-	    }
-	    if (delflag) {
-	      if (ffcdata)
-		delete [] ffcdata;
-	      if (ffcerr)
-		delete [] ffcerr;
-	      if (ang)
-		delete [] ang;
-	    } else {
-	      thisData=new detectorData(ffcdata,ffcerr,NULL,getCurrentProgress(),(fname+string(ext)).c_str(),thisDetector->nChans*thisDetector->nChips*thisDetector->nMods);/*
-	      if (thisDetector->correctionMask!=0) {
-		thisData=new detectorData(ffcdata,ffcerr,NULL,getCurrentProgress(),(fname().append(".dat")).c_str(),thisDetector->nChans*thisDetector->nChips*thisDetector->nMods);
-		//thisData=new detectorData(ffcdata,ffcerr,NULL,thisDetector->progressIndex+1,(fname().append(".dat")).c_str(),thisDetector->nChans*thisDetector->nChips*thisDetector->nMods);
-	      }	else {
-		thisData=new detectorData(ffcdata,ffcerr,NULL,getCurrentProgress(),(fname().append(".raw")).c_str(),thisDetector->nChans*thisDetector->nChips*thisDetector->nMods);
-		//thisData=new detectorData(ffcdata,ffcerr,NULL,thisDetector->progressIndex+1,(fname().append(".raw")).c_str(),thisDetector->nChans*thisDetector->nChips*thisDetector->nMods);
-		}*/
-	      finalDataQueue.push(thisData);  
-	    }  
-	  }
-	}
-	thisDetector->fileIndex++;
-
-	/*
-	thisDetector->progressIndex++;
-#ifdef VERBOSE
-	cout << "Progress is " << getCurrentProgress() << " \%" << endl;
-#endif
-	*/
-
-	delete [] myData;
-	myData=NULL;
-	dataQueue.pop(); //remove the data from the queue
-	//cout << "thread mutex lock line 6697" << endl;
-	pthread_mutex_lock(&mp);
-	queuesize=dataQueue.size();
-	pthread_mutex_unlock(&mp);
-	//cout << "thread mutex unlock line 6697" << endl;
-	usleep(1000);
-	//pthread_mutex_unlock(&mp);
-      }
-      pthread_mutex_unlock(&mp);
-      //cout << "thread mutex unlock line 6706" << endl;
-      usleep(1000);
-      //  cout << "PPPPPPPPPPPPPPPPPPPP " << queuesize << " " << thisDetector->fileIndex << endl;
-    }    
-    pthread_mutex_unlock(&mp);
-    //cout << "thread mutex unlock line 6711" << endl;
-    //cout << "thread mutex lock line 6711" << endl;
-    pthread_mutex_lock(&mp);
-    if (jointhread) {
-      pthread_mutex_unlock(&mp);
-      //cout << "thread mutex unlock line 6715" << endl;
-      if (dataQueue.size()==0)
-	break;
-    } else
-      pthread_mutex_unlock(&mp);
-    //cout << "thread mutex unlock line 6720" << endl;
-      
-    dum=0;
-  } // ????????????????????????
-  return 0;
 }
 
 
 
-void slsDetector::startThread(int delflag) {
-  pthread_attr_t tattr;
-  int ret;
-  sched_param param, mparam;
-  int policy= SCHED_OTHER;
-
-
-  // set the priority; others are unchanged
-  //newprio = 30;
-  mparam.sched_priority =1;
-  param.sched_priority =1;   
-
-
-   /* Initialize and set thread detached attribute */
-   pthread_attr_init(&tattr);
-   pthread_attr_setdetachstate(&tattr, PTHREAD_CREATE_JOINABLE);
-
-
-
-  // param.sched_priority = 5;
-  // scheduling parameters of main thread 
-  ret = pthread_setschedparam(pthread_self(), policy, &mparam);
-  //#ifdef VERBOSE
-    // printf("current priority is %d\n",param.sched_priority);
-  //#endif
-  if (delflag)
-    ret = pthread_create(&dataProcessingThread, &tattr,startProcessData, (void*)this);
-  else
-    ret = pthread_create(&dataProcessingThread, &tattr,startProcessDataNoDelete, (void*)this);
-    
-  pthread_attr_destroy(&tattr);
-   // scheduling parameters of target thread
-  ret = pthread_setschedparam(dataProcessingThread, policy, &param);
-  
-}
-
-
-void* startProcessData(void *n) {
-  //void* processData(void *n) {
-   slsDetector *myDet=(slsDetector*)n;
-   myDet->processData(1);
-   pthread_exit(NULL);
-   
-}
-
-void* startProcessDataNoDelete(void *n) {
-   //void* processData(void *n) {
-  slsDetector *myDet=(slsDetector*)n;
-  myDet->processData(0);
-  pthread_exit(NULL);
-
-}
- 
 
 
 
 
-  /*
-      set  positions for the acquisition
-      \param nPos number of positions
-      \param pos array with the encoder positions
-      \returns number of positions
-  */
-int slsDetector::setPositions(int nPos, float *pos){
-  if (nPos>=0)
-    thisDetector->numberOfPositions=nPos; 
-  for (int ip=0; ip<nPos; ip++) 
-    thisDetector->detPositions[ip]=pos[ip]; 
 
 
-  setTotalProgress();
-  
-  return thisDetector->numberOfPositions;
-}
-/* 
-   get  positions for the acquisition
-   \param pos array which will contain the encoder positions
-   \returns number of positions
-*/
-int slsDetector::getPositions(float *pos){ 
-  if (pos ) {
-    for (int ip=0; ip<thisDetector->numberOfPositions; ip++) 
-      pos[ip]=thisDetector->detPositions[ip];
-  } 
-  setTotalProgress();
 
-  
-  return     thisDetector->numberOfPositions;
-}
-  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -8559,274 +5202,57 @@ int slsDetector::writeSettingsFile(string fname, int imod){
 };
 
 
-int slsDetector::writeDataFile(string fname, float *data, float *err, float *ang, char dataformat, int nch){
 
 
+int slsDetector::loadSettingsFile(string fname, int imod) {
 
-
-  if (nch==-1)
-    nch=thisDetector->nChans*thisDetector->nChips*thisDetector->nMods;
-
-
-  ofstream outfile;
-  int idata;
-  if (data==NULL)
-    return FAIL;
-
-  //  args|=0x10; // one line per channel!
-
-  outfile.open (fname.c_str(),ios_base::out);
-  if (outfile.is_open())
-  {
-#ifdef VERBOSE
-    std::cout<< "writeDataFile Writing to file " << fname << std::endl;
-#endif
-    for (int ichan=0; ichan<nch; ichan++) {
-      if (ang==NULL) {
-	outfile << ichan << " ";
-      } else {
-	outfile << ang[ichan] << " ";
-      }
-	
-      switch (dataformat) {
-      case 'f':
-	outfile << *(data+ichan)<< " ";
-	break;
-      case 'i':
-      default:
-	idata=(int)(*(data+ichan));
-	outfile << idata << " ";
-      }
-     if (err) {
-       outfile << *(err+ichan)<< " ";
-     }
-     //   if (args&0x10) {
-       outfile << std::endl;
-       // }
+  sls_detector_module  *myMod=NULL;
+  string fn;
+  fn=fname;
+  int mmin=0, mmax=setNumberOfModules();
+  if (imod>=0) {
+    mmin=imod;
+    mmax=imod+1;
+  }
+  for (int im=mmin; im<mmax; im++) {
+    if (fname.find(".sn")==string::npos) {
+      ostringstream ostfn;
+      ostfn << fname << ".sn"  << setfill('0') << setw(3) << hex << getId(MODULE_SERIAL_NUMBER, im); 
+      fn=ostfn.str();
     }
-
-    outfile.close();
-    return OK;
-  } else {
-    std::cout<< "Could not open file " << fname << "for writing"<< std::endl;
-    return FAIL;
+    myMod=readSettingsFile(fn);
+    if (myMod) {
+      myMod->module=im;
+      setModule(*myMod);
+      deleteModule(myMod);
+    } else	
+      return FAIL;
   }
-};
-
-
-
-
-
-
-
-/*writes raw data file */
-int slsDetector::writeDataFile(string fname, int *data){
-  ofstream outfile;
-  if (data==NULL)
-    return FAIL;
-
-  outfile.open (fname.c_str(),ios_base::out);
-  if (outfile.is_open())
-  {
-#ifdef VERBOSE
-    std::cout<< "Writing to file " << fname << std::endl;
-#endif
-    for (int ichan=0; ichan<thisDetector->nChans*thisDetector->nChips*thisDetector->nMods; ichan++)
-      outfile << ichan << " " << *(data+ichan) << std::endl;
-    outfile.close();
-    return OK;
-  } else {
-    std::cout<< "Could not open file " << fname << "for writing"<< std::endl;
-    return FAIL;
-  }
-};
-
-
-
-int slsDetector::readDataFile(string fname, float *data, float *err, float *ang, char dataformat) {
-  return readDataFile(thisDetector->nChans*thisDetector->nChips*thisDetector->nMods, fname, data, err, ang, dataformat);
-
+  return OK;
 }
 
-  int slsDetector::readDataFile(int nch, string fname, float *data, float *err, float *ang, char dataformat){
+
+int slsDetector::saveSettingsFile(string fname, int imod) {
 
 
-  ifstream infile;
-  int ichan, iline=0;
-  int interrupt=0;
-  float fdata, ferr, fang;
-  int maxchans;
-  int ich;
-  string str;
+  sls_detector_module  *myMod=NULL;
+  int ret=FAIL;
 
-
-  maxchans=nch;
-    
-#ifdef VERBOSE
-  std::cout<< "Opening file "<< fname << std::endl;
-#endif
-  infile.open(fname.c_str(), ios_base::in);
-  if (infile.is_open()) {
-    while (infile.good() and interrupt==0) {
-      getline(infile,str);
-#ifdef VERBOSE
-      std::cout<< str << std::endl;
-#endif
-      istringstream ssstr(str);
-      if (ang==NULL) {
-	ssstr >> ichan >> fdata;
-	ich=ichan;
-	if (ssstr.fail() || ssstr.bad()) {
-	  interrupt=1;
-	  break;
-	}
-	if (ich!=iline) 
-	  std::cout<< "Channel number " << ichan << " does not match with line number " << iline << " " << dataformat << std::endl;
-      } else {
-	ssstr >> fang >> fdata;
-	ich=iline;
-      }
-      if (ssstr.fail() || ssstr.bad()) {
-	interrupt=1;
-	break;
-      }
-       if (err)
-	 ssstr >> ferr;
-      if (ssstr.fail() || ssstr.bad()) {
-	interrupt=1;
-	break;
-      }
-      if (ich<maxchans) { 
-       if (ang) {
-	 ang[ich]=fang;
-       } 
-       data[ich]=fdata; 
-       if (err)
-	 err[ich]=ferr;
-       iline++;
-      } else {
-       std::cout<< " too many lines in file: "<< iline << " instead of " << maxchans << std::endl;
-       interrupt=1;
-       break;
-     }
+  int mmin=0,  mmax=setNumberOfModules();
+  if (imod>=0) {
+    mmin=imod;
+    mmax=imod+1;
+  }
+  for (int im=mmin; im<mmax; im++) {
+    ostringstream ostfn;
+    ostfn << fname << ".sn"  << setfill('0') << setw(3) << hex << getId(MODULE_SERIAL_NUMBER, im); 
+    if ((myMod=getModule(im))) {
+      ret=writeSettingsFile(ostfn.str(),*myMod);
+       deleteModule(myMod);
     }
-    infile.close();
-  } else {
-    std::cout<< "Could not read file " << fname << std::endl;
-    return -1;
   }
-  return iline;
-};
-
-
-
-
-
-
-
-
-
-int slsDetector::readDataFile(string fname, int *data){
-
-  return readDataFile(fname, data, thisDetector->nChans*thisDetector->nChips*thisDetector->nMods);
-};
-
-int slsDetector::readDataFile(string fname, int *data, int nch){
-
-  ifstream infile;
-  int ichan, idata, iline=0;
-  int interrupt=0;
-  string str;
-
-#ifdef VERBOSE
-  std::cout<< "Opening file "<< fname << std::endl;
-#endif
-  infile.open(fname.c_str(), ios_base::in);
-  if (infile.is_open()) {
-    while (infile.good() and interrupt==0) {
-      getline(infile,str);
-#ifdef VERBOSE
-      std::cout<< str << std::endl;
-#endif
-      istringstream ssstr(str);
-      ssstr >> ichan >> idata;
-      if (ssstr.fail() || ssstr.bad()) {
-	interrupt=1;
-	break;
-      }
-      if (ichan!=iline) {
-	std::cout<< " Expected channel "<< iline <<" but read channel "<< ichan << std::endl;
-	interrupt=1;
-	break;
-      } else {
-	if (iline<nch) {
-	  data[iline]=idata;
-	  iline++;
-	} else {
-	  interrupt=1;
-	  break;
-	}
-      }
-    }
-    infile.close();
-  } else {
-    std::cout<< "Could not read file " << fname << std::endl;
-    return -1;
-  }
-  return iline;
-};
-
-
-
-
-int slsDetector::readCalibrationFile(string fname, float &gain, float &offset){
-
-  string str;
-  ifstream infile;
-#ifdef VERBOSE
-  std::cout<< "Opening file "<< fname << std::endl;
-#endif
-  infile.open(fname.c_str(), ios_base::in);
-  if (infile.is_open()) {
-    getline(infile,str);
-#ifdef VERBOSE
-    std::cout<< str << std::endl;
-#endif
-    istringstream ssstr(str);
-    ssstr >> offset >> gain;
-    infile.close();
-  } else {
-    std::cout<< "Could not open calibration file "<< fname << std::endl;
-    gain=0.;
-    offset=0.;
-    return -1;
-  }
-  return 0;
-};
-
-int slsDetector::writeCalibrationFile(string fname, float gain, float offset){
-  //std::cout<< "Function not yet implemented " << std::endl;
-  ofstream outfile;
-
-  outfile.open (fname.c_str());
-
-  // >> i/o operations here <<
-  if (outfile.is_open()) {
-    outfile << offset << " " << gain << std::endl;
-  } else {
-    std::cout<< "Could not open calibration file "<< fname << " for writing" << std::endl;
-    return -1;
-  }
-
-  outfile.close();
-
-  return 0;
-};
-
-
-
-
-
+  return ret;
+}
 
 
 

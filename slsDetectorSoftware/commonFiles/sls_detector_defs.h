@@ -3,8 +3,16 @@
 
 #include <stdint.h> 
 
+/** default maximum string length */
+#define MAX_STR_LENGTH 1000
+/** default maximum string length */
+#define MAX_SCAN_STEPS 2000
+
+
 typedef float float32_t;
-typedef int int32_t;    
+typedef int int32_t;   
+typedef char mystring[MAX_STR_LENGTH];
+typedef float mysteps[MAX_SCAN_STEPS]; 
 
 /** 
     \file sls_detector_defs.h
@@ -17,11 +25,14 @@ and to the server programs running on the detector
  * @see slsDetector
 */
 
-/** default maximum string length */
-#define MAX_STR_LENGTH 1000
 
 /** get flag form most functions */
 #define GET_FLAG -1
+
+enum {startScript, scriptBefore, headerBefore, headerAfter,scriptAfter, stopScript, MAX_ACTIONS};
+
+
+
 /** 
     structure for a detector channel
     should not be used by unexperienced users
@@ -100,7 +111,6 @@ typedef struct {
    
 */
 typedef struct {
-
   int len;  /**< is the number of elements of the array */
   int *iptr; /**<  is the pointer to the array */
 } iarray ;
@@ -127,6 +137,37 @@ enum communicationProtocol{
   TCP,  /**< TCP/IP */
   UDP /**< UDP */
 };
+
+/** 
+     Communication protocol (normally TCP)
+*/
+enum networkParameter {
+  CLIENT_IP,  /**< client IP */
+  CLIENT_MAC, /**< client mac */
+  SERVER_MAC /**< server MAC */
+};
+
+ /**
+    type of action performed (for text client)
+ */
+enum {GET_ACTION, PUT_ACTION, READOUT_ACTION, HELP_ACTION};
+
+/** online flags enum \sa setOnline*/
+enum {GET_ONLINE_FLAG=-1, /**< returns wether the detector is in online or offline state */
+      OFFLINE_FLAG=0, /**< detector in offline state (i.e. no communication to the detector - using only local structure - no data acquisition possible!) */
+      ONLINE_FLAG =1/**< detector in online state (i.e. communication to the detector updating the local structure) */
+};
+
+   /** synchronization of the various detectors (should be set for each detector individually?!?!?) */
+      
+  enum synchronizationMode {
+    GET_SYNCHRONIZATION_MODE=-1, /**< the multidetector will return its synchronization mode */
+    NONE, /**< all detectors are independent (no cabling) */
+    MASTER_GATES, /**< the master gates the other detectors */
+    MASTER_TRIGGERS, /**< the master triggers the other detectors */
+    SLAVE_STARTS_WHEN_MASTER_STOPS /**< the slave acquires when the master finishes, to avoid deadtime */
+  };
+
 
 
 /** 

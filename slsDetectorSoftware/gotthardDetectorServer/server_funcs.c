@@ -160,6 +160,7 @@ int function_table() {
   flist[F_GET_LAST_CLIENT_IP]=&get_last_client_ip;
   flist[F_UPDATE_CLIENT]=&update_client;
   flist[F_CONFIGURE_MAC]=&configure_mac;
+  flist[F_LOAD_IMAGE]=&load_image;
 #ifdef VERBOSE
   /*  for (i=0;i<256;i++){
     printf("function %d located at %x\n",i,flist[i]);
@@ -933,7 +934,7 @@ int set_dac(int file_des) {
 	}
 
 	if (ret==OK) {
-		if (differentClients==1 && lockStatus==1 && val!=-1) {
+		if (differentClients==1 && lockStatus==1) {
 			ret=FAIL;
 			sprintf(mess,"Detector locked by %s\n",lastClientIP);
 		} else{
@@ -2780,4 +2781,78 @@ int configure_mac(int file_des) {
   /*return ok/fail*/
   return ret; 
 
+}
+
+
+
+int load_image(int file_des) {
+	int retval;
+	int ret=OK;
+	int n;
+	int index;
+	short int ImageVals[1280];
+
+	sprintf(mess,"Can't load image\n");
+
+	n = receiveDataOnly(file_des,index,sizeof(index));
+	if (n < 0) {
+		sprintf(mess,"Error reading from socket\n");
+		ret=FAIL;
+	}
+
+	n = receiveDataOnly(file_des,ImageVals,sizeof(ImageVals));
+	if (n < 0) {
+		sprintf(mess,"Error reading from socket\n");
+		ret=FAIL;
+	}
+
+	switch (index) {
+	case DARK_IMAGE :
+#ifdef VERBOSE
+		printf(" Loading Dark image\n");
+#endif
+		break;
+	case GAIN_IMAGE :
+#ifdef VERBOSE
+		printf(" Loading Dark image\n");
+#endif
+		break;
+	default:
+		printf("Unknown index %d\n",index);
+		sprintf(mess,"Unknown index %d\n",index);
+		ret=FAIL;
+	}
+
+	printf("%d\n%d\n",ImageVals[0],ImageVals[1]);
+
+	if (ret==OK) {
+		if (differentClients==1 && lockStatus==1) {
+			ret=FAIL;
+			sprintf(mess,"Detector locked by %s\n",lastClientIP);
+		} else{
+			retval=loadImage(index,ImageVals);
+			if (retval= -1)
+				ret = FAIL;
+		}
+	}
+
+	if(ret==FAIL)
+		printf("Loading image failed\n");
+	else{
+		if (differentClients)
+			ret=FORCE_UPDATE;
+	}
+
+	/* send answer */
+	/* send OK/failed */
+	n = sendDataOnly(file_des,&ret,sizeof(ret));
+	if (ret!=FAIL) {
+		/* send return argument */
+		n += sendDataOnly(file_des,&retval,sizeof(retval));
+	} else {
+		n += sendDataOnly(file_des,mess,sizeof(mess));
+	}
+
+	/*return ok/fail*/
+	return ret;
 }

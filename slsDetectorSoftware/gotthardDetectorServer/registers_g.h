@@ -94,6 +94,13 @@
 
 
 
+
+//image
+#define DARK_IMAGE_REG     0x81<<11
+#define GAIN_IMAGE_REG     0x82<<11
+
+
+
 //not used so far
 #define SPEED_REG        0x006000
 #define SET_NBITS_REG    0x008000

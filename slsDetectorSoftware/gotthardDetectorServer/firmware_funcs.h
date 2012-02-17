@@ -91,6 +91,8 @@ int64_t setProgress();
 int64_t getActualTime();
 int64_t getMeasurementTime();
 
+int loadImage(int index, short int ImageVals[]);
+
 u_int32_t runBusy(void); 
 u_int32_t runState(void); 
 u_int32_t dataPresent(void); 

@@ -75,4 +75,6 @@ int update_client(int);
 int send_update(int);
 int configure_mac(int);
 
+int load_image(int);
+
 #endif

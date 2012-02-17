@@ -880,6 +880,24 @@ int64_t getMeasurementTime(){
 
 
 
+
+int loadImage(int index, short int ImageVals[]){
+	u_int32_t address;
+	switch (index) {
+	case DARK_IMAGE :
+		address = DARK_IMAGE_REG;
+		break;
+	case GAIN_IMAGE :
+		address = GAIN_IMAGE_REG;
+		break;
+	}
+	int *ptr=(u_int16_t*)(CSP0BASE+address*2);
+	dma_memcpy(ptr,ImageVals ,2560);
+	return 0;
+}
+
+
+
 int64_t getProbes(){
   u_int32_t shiftin=bus_r(GET_SHIFT_IN_REG);
   u_int32_t np=(shiftin >>PROBES_OFF) & PROBES_MASK;
@@ -1185,9 +1203,9 @@ int configureMAC(int ipad,long long int macad,long long int servermacad,int ival
   while (sum>>16) sum = (sum & 0xffff) + (sum >> 16);// Fold 32-bit sum to 16 bits 
   checksum = (~sum)&0xffff;
   mac_conf_regs->ip.ip_chksum   =  checksum;
-#ifdef VERBOSE
+  //#ifdef VERBOSE
   printf("IP header checksum is 0x%x s\n",checksum);
-#endif
+  //#endif
 
   mac_conf_regs->udp.udp_srcport      = 0xE185;
   mac_conf_regs->udp.udp_destport     = 0xC351;

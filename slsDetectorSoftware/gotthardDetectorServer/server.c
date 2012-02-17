@@ -69,9 +69,9 @@ int main(int argc, char *argv[])
     printf("Conenction accepted\n");
 #endif
     retval=decode_function(fd);
-    //#ifdef VERY_VERBOSE
+#ifdef VERY_VERBOSE
     printf("function executed\n");
-    //#endif
+#endif
     closeConnection(fd);
 #ifdef VERY_VERBOSE
     printf("connection closed\n");

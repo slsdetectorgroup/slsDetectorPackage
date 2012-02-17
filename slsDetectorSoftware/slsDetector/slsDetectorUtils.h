@@ -162,7 +162,6 @@ class slsDetectorUtils : public slsDetectorCommand {
  
   */
   int writeDataFile(string fname, float *data, float *err=NULL, float *ang=NULL, char dataformat='f', int nch=-1); 
-   
   int writeDataFile(ofstream &outfile, float *data, float *err=NULL, float *ang=NULL, char dataformat='f', int nch=-1); 
   
 
@@ -175,6 +174,7 @@ class slsDetectorUtils : public slsDetectorCommand {
        \sa mythenDetector::writeDataFile
   */
   int writeDataFile(string fname, int *data);
+  int writeDataFile(ofstream &outfile, int *data);
   
   /**
    
@@ -191,6 +191,7 @@ class slsDetectorUtils : public slsDetectorCommand {
        \sa mythenDetector::readDataFile
   */
   int readDataFile(string fname, float *data, float *err=NULL, float *ang=NULL, char dataformat='f');  
+  int readDataFile(ifstream& infile, float *data, float *err=NULL, float *ang=NULL, char dataformat='f');  
 
   /**
    
@@ -201,6 +202,7 @@ class slsDetectorUtils : public slsDetectorCommand {
        \sa mythenDetector::readDataFile
   */
   int readDataFile(string fname, int *data);
+  int readDataFile(ifstream &infile, int *data);
 
     /**
      
@@ -218,7 +220,7 @@ class slsDetectorUtils : public slsDetectorCommand {
   */
 
    static  int  writeDataFile(string fname, int nch, float *data, float *err=NULL, float *ang=NULL, char dataformat='f'); 
-  
+   static  int writeDataFile(ofstream &outfile, int nch, float *data, float *err=NULL, float *ang=NULL, char dataformat='f'); 
   /**
    
        writes a data file
@@ -228,6 +230,7 @@ class slsDetectorUtils : public slsDetectorCommand {
        \sa mythenDetector::writeDataFile
   */
   static int writeDataFile(string fname,int nch,  int *data);
+  static  int writeDataFile(ofstream &outfile,int nch,  int *data);
    
    /**
    
@@ -244,6 +247,7 @@ class slsDetectorUtils : public slsDetectorCommand {
        \sa mythenDetector::readDataFile
   */
    static int readDataFile(int nch, string fname, float *data, float *err=NULL, float *ang=NULL, char dataformat='f');  
+   static int readDataFile(int nch, ifstream &infile, float *data, float *err=NULL, float *ang=NULL, char dataformat='f');  
 
   /**
    
@@ -254,6 +258,7 @@ class slsDetectorUtils : public slsDetectorCommand {
        \sa mythenDetector::readDataFile
   */
    static int readDataFile(string fname, int *data, int nch);
+   static int readDataFile(ifstream &infile, int *data, int nch);
   /**
    
       reads an angular conversion file

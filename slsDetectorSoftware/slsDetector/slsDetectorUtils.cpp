@@ -758,14 +758,13 @@ int slsDetectorUtils::writeDataFile(string fname, int nch, int *data){
   }
 };
 
+
+
 /*writes raw data file */
 int slsDetectorUtils::writeDataFile(ofstream &outfile, int nch, int *data){
   if (data==NULL)
     return FAIL;
 
-#ifdef VERBOSE
-    std::cout<< "Writing to file " << fname << std::endl;
-#endif
     for (int ichan=0; ichan<nch; ichan++)
       outfile << ichan << " " << *(data+ichan) << std::endl;
    
@@ -782,7 +781,7 @@ int slsDetectorUtils::writeDataFile(ofstream &outfile, int nch, int *data){
 
 
 
-  int slsDetectorUtils::readDataFile(int nch, string fname, float *data, float *err, float *ang, char dataformat){
+int slsDetectorUtils::readDataFile(int nch, string fname, float *data, float *err, float *ang, char dataformat){
 
 
   ifstream infile;
@@ -801,6 +800,30 @@ int slsDetectorUtils::writeDataFile(ofstream &outfile, int nch, int *data){
 #endif
   infile.open(fname.c_str(), ios_base::in);
   if (infile.is_open()) {
+    readDataFile(nch, infile, data, err, ang, dataformat);
+    infile.close();
+  } else {
+    std::cout<< "Could not read file " << fname << std::endl;
+    return -1;
+  }
+  return iline;
+};
+
+
+int slsDetectorUtils::readDataFile(int nch, ifstream &infile, float *data, float *err, float *ang, char dataformat){
+
+
+  int ichan, iline=0;
+  int interrupt=0;
+  float fdata, ferr, fang;
+  int maxchans;
+  int ich;
+  string str;
+
+
+  maxchans=nch;
+    
+
     while (infile.good() and interrupt==0) {
       getline(infile,str);
 #ifdef VERBOSE
@@ -844,11 +867,6 @@ int slsDetectorUtils::writeDataFile(ofstream &outfile, int nch, int *data){
        break;
      }
     }
-    infile.close();
-  } else {
-    std::cout<< "Could not read file " << fname << std::endl;
-    return -1;
-  }
   return iline;
 };
 
@@ -866,7 +884,23 @@ int slsDetectorUtils::readDataFile(string fname, int *data, int nch){
 #endif
   infile.open(fname.c_str(), ios_base::in);
   if (infile.is_open()) {
-    while (infile.good() and interrupt==0) {
+    readDataFile(infile, data, nch);
+    infile.close();
+  } else {
+    std::cout<< "Could not read file " << fname << std::endl;
+    return -1;
+  }
+  return iline;
+};
+
+int slsDetectorUtils::readDataFile(ifstream &infile, int *data, int nch){
+
+  int ichan, idata, iline=0;
+  int interrupt=0;
+  string str;
+
+
+  while (infile.good() and interrupt==0) {
       getline(infile,str);
 #ifdef VERBOSE
       std::cout<< str << std::endl;
@@ -891,11 +925,6 @@ int slsDetectorUtils::readDataFile(string fname, int *data, int nch){
 	}
       }
     }
-    infile.close();
-  } else {
-    std::cout<< "Could not read file " << fname << std::endl;
-    return -1;
-  }
   return iline;
 };
 
@@ -911,6 +940,13 @@ int slsDetectorUtils::writeDataFile(string fname, float *data, float *err, float
   return writeDataFile(fname, nch, data, err, ang, dataformat);
 
 }
+int slsDetectorUtils::writeDataFile(ofstream &outfile, float *data, float *err, float *ang, char dataformat, int nch){
+  if (nch==-1)
+    nch=getTotalNumberOfChannels();
+  
+  return writeDataFile(outfile, nch, data, err, ang, dataformat);
+
+}
 
 
 
@@ -920,10 +956,20 @@ int slsDetectorUtils::writeDataFile(string fname, int *data){
   return writeDataFile(fname, getTotalNumberOfChannels(), data);
 }
 
+int slsDetectorUtils::writeDataFile(ofstream &outfile, int *data){
+  
+  return writeDataFile(outfile, getTotalNumberOfChannels(), data);
+}
+
 
 
 int slsDetectorUtils::readDataFile(string fname, float *data, float *err, float *ang, char dataformat) {
   return readDataFile(getTotalNumberOfChannels(), fname, data, err, ang, dataformat);
+
+}
+
+int slsDetectorUtils::readDataFile(ifstream &infile, float *data, float *err, float *ang, char dataformat) {
+  return readDataFile(getTotalNumberOfChannels(), infile, data, err, ang, dataformat);
 
 }
 
@@ -932,6 +978,12 @@ int slsDetectorUtils::readDataFile(string fname, float *data, float *err, float 
 int slsDetectorUtils::readDataFile(string fname, int *data){
 
   return readDataFile(fname, data, getTotalNumberOfChannels());
+};
+
+
+int slsDetectorUtils::readDataFile(ifstream &infile, int *data){
+
+  return readDataFile(infile, data, getTotalNumberOfChannels());
 };
 
 

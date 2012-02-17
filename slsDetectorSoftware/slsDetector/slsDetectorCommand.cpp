@@ -1085,7 +1085,8 @@ string slsDetectorCommand::cmdHostname(int narg, char *args[], int action){
       strcpy(hostname,"");
       for (int id=1; id<narg; id++) {
 	strcat(hostname,args[id]);
-	strcat(hostname,"+");
+	if(narg>2)
+		strcat(hostname,"+");
       } 
     }  else
       strcpy(hostname,args[1]);

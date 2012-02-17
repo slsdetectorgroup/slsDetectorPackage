@@ -1318,6 +1318,15 @@ typedef  struct sharedSlsDetector {
   */
   int* getDataFromDetector();
 
+  /**
+      Loads dark image or gain image to the detector
+      \param index is 0 for dark image and 1 for gain image
+      \fname file name to load data from
+
+  */
+  int loadImageToDetector(int index,string const fname);
+
+
 
  protected:
  

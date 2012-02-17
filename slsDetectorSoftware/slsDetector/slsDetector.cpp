@@ -2772,7 +2772,7 @@ int slsDetector::updateDetectorNoWait() {
   switch(thisDetector->myDetectorType){
   case GOTTHARD:
     n = 	controlSocket->ReceiveDataOnly(lastClientIP,sizeof(lastClientIP));
-    cout << "Updating detector last modified by " << lastClientIP << endl;
+    //cout << "Updating detector last modified by " << lastClientIP << endl; commented out by dhanya for now
     break;
   default:
     n = 	controlSocket->ReceiveDataOnly(lastClientIP,sizeof(lastClientIP));

@@ -21,11 +21,11 @@ int main(int argc, char *argv[])
 
 
 #ifdef READOUT 
-  action=slsDetector::READOUT_ACTION;
+  action=READOUT_ACTION;
 #elif PUT   
-  action=slsDetector::PUT_ACTION;
+  action=PUT_ACTION;
 #elif GET   
-  action=slsDetector::GET_ACTION;
+  action=GET_ACTION;
 #endif  
 
 
@@ -57,7 +57,7 @@ int main(int argc, char *argv[])
       cout << "Wrong usage - should be: "<< argv[0] << " id";
       cout <<     "(:channel arg)" << endl;
 
-      cout << slsDetector::helpLine(action);
+      cout << slsDetector::helpLine(argc-1, argv+1, action);
 
       cout << endl;
       return -1;
@@ -70,7 +70,7 @@ int main(int argc, char *argv[])
     cout << "Wrong usage - should be: "<< argv[0] << " id";
     cout <<     ":channel arg" << endl;
 
-    cout << slsDetector::helpLine(action);
+    cout << slsDetector::helpLine(argc-1, argv+1, action);
 
     cout << endl;
     return -1;

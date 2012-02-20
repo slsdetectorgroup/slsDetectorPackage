@@ -891,7 +891,7 @@ class multiSlsDetector  : public slsDetectorUtils {
   string getLastClientIP();
 
 
-  int configureMAC(int);
+  int configureMAC();
 
 
 

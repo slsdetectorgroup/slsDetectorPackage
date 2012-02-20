@@ -299,7 +299,7 @@ class slsDetectorCommand;
   virtual int setPort(portType t, int i=-1)=0;
   virtual int lockServer(int i=-1)=0;
   virtual string getLastClientIP()=0;
-  virtual int configureMAC(int)=0;
+  virtual int configureMAC()=0;
   virtual int setNumberOfModules(int i=-1, dimension d=X)=0;
   virtual int getMaxNumberOfModules(dimension d=X)=0;
   virtual int setDynamicRange(int i=-1)=0;

@@ -346,6 +346,10 @@ slsDetectorCommand::slsDetectorCommand() {
   descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdDigiTest;
   i++;
 
+  descrToFuncMap[i].m_pFuncName="digibittest"; //
+  descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdDigiTest;
+  i++;
+
   descrToFuncMap[i].m_pFuncName="reg_rw"; //
   descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdRegister;
   i++;
@@ -2222,12 +2226,19 @@ string slsDetectorCommand::cmdConfigureMac(int narg, char *args[], int action) {
   int ival;
   int ret;
   char ans[1000];
-  if (action==PUT_ACTION) {
-    if (sscanf(args[1],"%d",&ival))
-      ret=configureMAC(ival);
-    else
-      return string("Could not scan digital test bit ")+string(args[1]);
+
+  if (action==PUT_ACTION){
+	  if (sscanf(args[1],"%d",&ival))
+		  if(ival==1){
+			  setOnline(ONLINE_FLAG);
+			  ret=configureMAC();
+		  }
+		  else
+			  return string("Not yet implemented with arguments other than 1");
   }
+  else
+	  return string("Cannot get ")+cmd;
+
   sprintf(ans,"%d",ret);
   return ans;
 }
@@ -2235,13 +2246,12 @@ string slsDetectorCommand::cmdConfigureMac(int narg, char *args[], int action) {
 string slsDetectorCommand::helpConfigureMac(int narg, char *args[], int action) {
 
   ostringstream os;  
-  if (action==PUT_ACTION || action==HELP_ACTION) {
-    os << "configuremac i \n configures the MAC of the detector and sets/resets (1/0) the digital test bit"<< std::endl;
+  if (action==PUT_ACTION || action==HELP_ACTION)
+    os << "configuremac i \n configures the MAC of the detector. i=1 for configure; i=0 for unconfigure(not implemented yet)"<< std::endl;
+  if (action==GET_ACTION || action==HELP_ACTION)
+		os << "configuremac " << "Cannot get " << std::endl;
   
-  }
   return os.str();
-
-
 }
 
 
@@ -2497,31 +2507,46 @@ string slsDetectorCommand::cmdDigiTest(int narg, char *args[], int action) {
 
   char answer[1000];
 
-
-  if (action==PUT_ACTION)
-    return string("cannot set");
-
-
   if (action==HELP_ACTION)
-    return helpSN(narg, args, action);
-  
+	  return helpSN(narg, args, action);
+
 
   setOnline(ONLINE_FLAG);
 
   if (cmd=="bustest"){
-    sprintf(answer,"%x",digitalTest(DETECTOR_BUS_TEST));
-    return string(answer);
+	  if (action==PUT_ACTION)
+		  return string("cannot set ")+cmd;
+	  sprintf(answer,"%x",digitalTest(DETECTOR_BUS_TEST));
+	  return string(answer);
   } 
 
- if (cmd=="digitest") {
-   int ival=-1;
-   if (sscanf(args[0],"digitest:%d",&ival)) {
-     sprintf(answer,"%x",digitalTest(CHIP_TEST, ival));
-     return string(answer);
-   } else
-     return string("undefined module number");
- }
- 
+  if (cmd=="digitest") {
+	  if (action==PUT_ACTION)
+		  return string("cannot set ")+cmd;
+	  int ival=-1;
+	  if (sscanf(args[0],"digitest:%d",&ival)) {
+		  sprintf(answer,"%x",digitalTest(CHIP_TEST, ival));
+		  return string(answer);
+	  } else
+		  return string("undefined module number");
+  }
+
+  if (cmd=="digibittest") {
+	  if (action==GET_ACTION)
+		  return string("cannot get ")+cmd;
+	  int ival=-1;
+	  if (sscanf(args[1],"%d",&ival)) {
+		  if((ival==0)||(ival==1)){
+		 	sprintf(answer,"%x",digitalTest(DIGITAL_BIT_TEST,ival));
+		 	return string(answer);
+		  }
+		  else
+			  return string("Use only 0 or 1 to set/clear digital test bit\n");
+	  } else
+		  return string("undefined value");
+  }
+
+
  return string("unknown digital test mode ")+cmd;
 
 }

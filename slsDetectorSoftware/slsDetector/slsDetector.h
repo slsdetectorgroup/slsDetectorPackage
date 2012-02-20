@@ -336,9 +336,8 @@ typedef  struct sharedSlsDetector {
 
   /**  
      configures mac for gotthard readout
-     \param ival temporarily used to set/reset the digital test bit
   */
-  int configureMAC(int ival);
+  int configureMAC();
 
   /**
     Purely virtual function

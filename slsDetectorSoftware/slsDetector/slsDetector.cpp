@@ -1571,21 +1571,19 @@ int slsDetector::digitalTest( digitalTestMode mode, int imod){
   int retval;
   int fnum=F_DIGITAL_TEST;
   int ret=FAIL;
-
   char mess[100];
 
 #ifdef VERBOSE
   std::cout<< std::endl;
   std::cout<< "Getting id of "<< mode << std::endl; 
 #endif
+
   if (thisDetector->onlineFlag==ONLINE_FLAG) {
-
-
     if (controlSocket) {
       if  (controlSocket->Connect()>=0) {
 	controlSocket->SendDataOnly(&fnum,sizeof(fnum));
 	controlSocket->SendDataOnly(&mode,sizeof(mode));
-	if (mode==CHIP_TEST)
+	if ((mode==CHIP_TEST)|| (mode==DIGITAL_BIT_TEST))
 	   controlSocket->SendDataOnly(&imod,sizeof(imod));
 	controlSocket->ReceiveDataOnly(&ret,sizeof(ret));
 	if (ret!=FAIL)
@@ -4356,7 +4354,7 @@ char* slsDetector::setServerMAC(string serverMAC){
 };
 
 
-int slsDetector::configureMAC(int ival){
+int slsDetector::configureMAC(){
   int retval,i;
   int ret=FAIL;
   int fnum=F_CONFIGURE_MAC;
@@ -4414,7 +4412,6 @@ int slsDetector::configureMAC(int ival){
       if  (controlSocket->Connect()>=0) {
 	controlSocket->SendDataOnly(&fnum,sizeof(fnum));
 	controlSocket->SendDataOnly(arg,sizeof(arg));
-	controlSocket->SendDataOnly(&ival,sizeof(ival));
 	controlSocket->ReceiveDataOnly(&ret,sizeof(ret));
 	if (ret!=FAIL)
 	  controlSocket->ReceiveDataOnly(&retval,sizeof(retval));

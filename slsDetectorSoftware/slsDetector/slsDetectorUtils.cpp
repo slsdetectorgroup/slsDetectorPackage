@@ -929,6 +929,63 @@ int slsDetectorUtils::readDataFile(ifstream &infile, int *data, int nch){
 };
 
 
+int slsDetectorUtils::readDataFile(string fname, short int *data, int nch){
+
+  ifstream infile;
+  int ichan, iline=0;
+  int interrupt=0;
+  string str;
+
+#ifdef VERBOSE
+  std::cout<< "Opening file "<< fname << std::endl;
+#endif
+  infile.open(fname.c_str(), ios_base::in);
+  if (infile.is_open()) {
+    readDataFile(infile, data, nch);
+    infile.close();
+  } else {
+    std::cout<< "Could not read file " << fname << std::endl;
+    return -1;
+  }
+  return iline;
+};
+
+int slsDetectorUtils::readDataFile(ifstream &infile, short int *data, int nch){
+
+  int ichan, iline=0;
+  short int idata;
+  int interrupt=0;
+  string str;
+
+
+  while (infile.good() and interrupt==0) {
+      getline(infile,str);
+#ifdef VERBOSE
+      std::cout<< str << std::endl;
+#endif
+      istringstream ssstr(str);
+      ssstr >> ichan >> idata;
+      if (ssstr.fail() || ssstr.bad()) {
+	interrupt=1;
+	break;
+      }
+      if (ichan!=iline) {
+	std::cout<< " Expected channel "<< iline <<" but read channel "<< ichan << std::endl;
+	interrupt=1;
+	break;
+      } else {
+	if (iline<nch) {
+	  data[iline]=idata;
+	  iline++;
+	} else {
+	  interrupt=1;
+	  break;
+	}
+      }
+    }
+  return iline;
+};
+
 
 
 /*writes raw data file */
@@ -987,6 +1044,19 @@ int slsDetectorUtils::readDataFile(ifstream &infile, int *data){
 };
 
 
+
+
+
+int slsDetectorUtils::readDataFile(string fname, short int *data){
+
+  return readDataFile(fname, data, getTotalNumberOfChannels());
+};
+
+
+int slsDetectorUtils::readDataFile(ifstream &infile, short int *data){
+
+  return readDataFile(infile, data, getTotalNumberOfChannels());
+};
 
 
 

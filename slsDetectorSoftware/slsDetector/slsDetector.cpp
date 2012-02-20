@@ -1764,7 +1764,6 @@ int slsDetector::readRegister(int addr){
     PREAMP,
     TEMPERATURE,
     HUMIDITY,
-    DETECTOR_BIAS
 }{};
   */
 
@@ -4544,7 +4543,52 @@ int slsDetector:: writeAngularConversion(ofstream &ofs) {
 }
 
 
+int slsDetector::loadImageToDetector(int index,string const fname){
+	int retval;
+	int fnum=F_LOAD_IMAGE;
+	int ret=FAIL;
+	char mess[100];
+	short int arg[1280];
 
+#ifdef VERBOSE
+	std::cout<< std::endl<< "Loading ";
+	if(!index)
+		std::cout<<"Dark";
+	else
+		std::cout<<"Gain";
+	std::cout<<" image from file " << fname << std::endl;
+#endif
+
+	if(readDataFile(fname,arg)){
+		std::cout<< "Could not open file "<< fname << std::endl;
+		return -1;
+	}
+		if (thisDetector->onlineFlag==ONLINE_FLAG) {
+			if (controlSocket) {
+				if  (controlSocket->Connect()>=0) {
+					controlSocket->SendDataOnly(&fnum,sizeof(fnum));
+					controlSocket->SendDataOnly(&index,sizeof(index));
+					controlSocket->SendDataOnly(arg,sizeof(arg));
+					controlSocket->ReceiveDataOnly(&ret,sizeof(ret));
+					if (ret!=FAIL)
+						controlSocket->ReceiveDataOnly(&retval,sizeof(retval));
+					else {
+						controlSocket->ReceiveDataOnly(mess,sizeof(mess));
+						std::cout<< "Detector returned error: " << mess << std::endl;
+					}
+					controlSocket->Disconnect();
+					if (ret==FORCE_UPDATE)
+						updateDetector();
+				}
+
+			}
+		}
+		if (ret==FAIL) {
+			std::cout<< "failed " << std::endl;
+			return -1;
+		}
+	return 0;
+}
 
 
 

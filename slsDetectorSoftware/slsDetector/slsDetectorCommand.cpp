@@ -109,6 +109,14 @@ slsDetectorCommand::slsDetectorCommand() {
   descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdThreaded;
   i++;
 
+  descrToFuncMap[i].m_pFuncName="darkimage"; //
+  descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdImage;
+  i++;
+
+  descrToFuncMap[i].m_pFuncName="gainimage"; //
+  descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdImage;
+  i++;
+
   /* trim/cal directories */
   descrToFuncMap[i].m_pFuncName="trimdir"; //OK
   descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdSettingsDir;
@@ -438,12 +446,14 @@ slsDetectorCommand::slsDetectorCommand() {
   descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdDAC;
   i++;
 
+  /* r/w timers */
+
   descrToFuncMap[i].m_pFuncName="temp_adc"; //
-  descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdDAC;
+  descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdADC;
   i++;
 
   descrToFuncMap[i].m_pFuncName="temp_fpga"; //
-  descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdDAC;
+  descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdADC;
   i++;
 
   /* r/w timers */
@@ -769,8 +779,10 @@ string slsDetectorCommand::executeLine(int narg, char *args[], int action) {
     /* otherwise one could try if truncated key is unique */
 
 
-    size_t p=(descrToFuncMap[i].m_pFuncName).find(key);
-    if (p==0) {
+   // size_t p=(descrToFuncMap[i].m_pFuncName).find();
+  //  if (p==0) {
+
+    	if(key==descrToFuncMap[i].m_pFuncName){
 #ifdef VERBOSE  
       std::cout<<i << " command="<< descrToFuncMap[i].m_pFuncName<<" key="<<key <<std::endl;
 #endif      
@@ -1731,6 +1743,42 @@ string slsDetectorCommand::helpThreaded(int narg, char *args[], int action){
    
 
 
+string slsDetectorCommand::cmdImage(int narg, char *args[], int action){
+	string sval;
+	int retval;
+	if (action==HELP_ACTION)
+		return helpImage(narg,args,HELP_ACTION);
+	else if (action==GET_ACTION)
+		return string("Cannot get");
+
+	sval=string(args[1]);
+	setOnline(ONLINE_FLAG);
+
+	if (string(args[0])==string("darkimage"))
+		retval=loadImageToDetector(DARK_IMAGE,sval);
+	else if (string(args[0])==string("gainimage"))
+		retval=loadImageToDetector(GAIN_IMAGE,sval);
+
+	if(!retval)
+		return string("Image loaded succesfully");
+	else
+		return string("Image NOT loaded");
+}
+
+
+string slsDetectorCommand::helpImage(int narg, char *args[], int action){
+	if (action==PUT_ACTION || action==HELP_ACTION){
+		if (string(args[0])==string("darkimage"))
+			return string("darkimage f \t  loads the image to detector from file f\n");
+		else
+			return string("gainimage f \t  loads the image to detector from file f\n");
+	}
+	else
+		return string("Cannot get");
+}
+
+
+
 
 string slsDetectorCommand::cmdPositions(int narg, char *args[], int action){
   int ival;
@@ -2552,159 +2600,194 @@ string slsDetectorCommand::helpRegister(int narg, char *args[], int action) {
 
 string slsDetectorCommand::cmdDAC(int narg, char *args[], int action) {
 
-  if (action==HELP_ACTION)
-    return helpRegister(narg, args, action);
-  
-  dacIndex dac;
-  float val=-1;
-  char answer[1000];
+	if (action==HELP_ACTION)
+		return helpDAC(narg, args, action);
 
-  if (cmd=="vthreshold")
-    dac=THRESHOLD;
-  else if (cmd=="vcalibration")
-    dac=CALIBRATION_PULSE;
-  else if (cmd=="vtrimbit")
-    dac=TRIMBIT_SIZE;
-  else if (cmd=="vpreamp")
-    dac=PREAMP;
-  else if (cmd=="vshaper1")
-    dac=SHAPER1;
-  else if (cmd=="vshaper2")
-    dac=SHAPER2;
-  else if (cmd=="vhighvoltage")
-    dac=HV_POT;
-  else if (cmd=="vapower")
-    dac=VA_POT;
-  else if (cmd=="vddpower")
-    dac=VDD_POT;
-  else if (cmd=="vshpower")
-    dac=VSH_POT;
-  else if (cmd=="viopower")
-    dac=VIO_POT;
-  else if (cmd=="vrefds")
-    dac=G_VREF_DS;
-  else if (cmd=="vcascn_pb")
-    dac=G_VCASCN_PB;
-  else if (cmd=="vcascp_pb")
-    dac=G_VCASCP_PB;
-  else if (cmd=="vout_cm")
-    dac=G_VOUT_CM;
-  else if (cmd=="vcasc_out")
-    dac=G_VCASC_OUT;
-  else if (cmd=="vin_cm")
-    dac=G_VIN_CM;
-  else if (cmd=="vref_comp")
-    dac=G_VREF_COMP;
-  else if (cmd=="ib_test_c")
-    dac=G_IB_TESTC;
-  else if (cmd=="temp_adc") {
-    dac=TEMPERATURE_ADC;
-    if (action==PUT_ACTION)
-      return string("cannot set ")+cmd;
-  } else if (cmd=="temp_fpga") {
-    dac=TEMPERATURE_FPGA;
-    if (action==PUT_ACTION)
-      return string("cannot set ")+cmd;
-  } else
-    return string("cannot decode dac ")+cmd;
+	dacIndex dac;
+	float val=-1;
+	char answer[1000];
 
-  if (action==PUT_ACTION) {
-    if (sscanf(args[1],"%f", &val))
-      ;
-    else
-      return string("cannot scan DAC value ")+string(args[1]);
-  }
-   
-  setOnline(ONLINE_FLAG);
+	if (cmd=="vthreshold")
+		dac=THRESHOLD;
+	else if (cmd=="vcalibration")
+		dac=CALIBRATION_PULSE;
+	else if (cmd=="vtrimbit")
+		dac=TRIMBIT_SIZE;
+	else if (cmd=="vpreamp")
+		dac=PREAMP;
+	else if (cmd=="vshaper1")
+		dac=SHAPER1;
+	else if (cmd=="vshaper2")
+		dac=SHAPER2;
+	else if (cmd=="vhighvoltage")
+		dac=HV_POT;
+	else if (cmd=="vapower")
+		dac=VA_POT;
+	else if (cmd=="vddpower")
+		dac=VDD_POT;
+	else if (cmd=="vshpower")
+		dac=VSH_POT;
+	else if (cmd=="viopower")
+		dac=VIO_POT;
+	else if (cmd=="vrefds")
+		dac=G_VREF_DS;
+	else if (cmd=="vcascn_pb")
+		dac=G_VCASCN_PB;
+	else if (cmd=="vcascp_pb")
+		dac=G_VCASCP_PB;
+	else if (cmd=="vout_cm")
+		dac=G_VOUT_CM;
+	else if (cmd=="vcasc_out")
+		dac=G_VCASC_OUT;
+	else if (cmd=="vin_cm")
+		dac=G_VIN_CM;
+	else if (cmd=="vref_comp")
+		dac=G_VREF_COMP;
+	else if (cmd=="ib_test_c")
+		dac=G_IB_TESTC;
+	else if (cmd=="temp_adc") {
+		dac=TEMPERATURE_ADC;
+		if (action==PUT_ACTION)
+			return string("cannot set ")+cmd;
+	} else if (cmd=="temp_fpga") {
+		dac=TEMPERATURE_FPGA;
+		if (action==PUT_ACTION)
+			return string("cannot set ")+cmd;
+	} else
+		return string("cannot decode dac ")+cmd;
 
-  sprintf(answer,"%f",setDAC(val,dac));
+	if (action==PUT_ACTION) {
+		if (sscanf(args[1],"%f", &val))
+			;
+		else
+			return string("cannot scan DAC value ")+string(args[1]);
+	}
+
+	setOnline(ONLINE_FLAG);
+
+	sprintf(answer,"%f",setDAC(val,dac));
+	return string(answer);
+
+}
+
+
+string slsDetectorCommand::helpDAC(int narg, char *args[], int action) {
+
+	ostringstream os;
+	if (action==PUT_ACTION || action==HELP_ACTION) {
+		os << "vthreshold dacu\t sets the detector threshold in dac units (0-1024). The energy is approx 800-15*keV" << std::endl;
+		os << std::endl;
+
+		os << "vcalibration " << "dacu\t sets the calibration pulse amplitude in dac units (0-1024)." << std::endl;
+		os << std::endl;
+		os << "vtrimbit " << "dacu\t sets the trimbit amplitude in dac units (0-1024)." << std::endl;
+		os << std::endl;
+		os << "vpreamp " << "dacu\t sets the preamp feedback voltage in dac units (0-1024)." << std::endl;
+		os << std::endl;
+		os << "vshaper1 " << "dacu\t sets the shaper1 feedback voltage in dac units (0-1024)." << std::endl;
+		os << std::endl;
+		os << "vshaper2 " << "dacu\t sets the  shaper2 feedback voltage in dac units (0-1024)." << std::endl;
+		os << std::endl;
+		os << "vhighvoltage " << "dacu\t CHIPTEST BOARD ONLY - sets the detector HV in dac units (0-1024)." << std::endl;
+		os << std::endl;
+		os << "vapower " << "dacu\t CHIPTEST BOARD ONLY - sets the analog power supply in dac units (0-1024)." << std::endl;
+		os << std::endl;
+		os << "vddpower " << "dacu\t CHIPTEST BOARD ONLY - sets the digital power supply in dac units (0-1024)." << std::endl;
+		os << std::endl;
+		os << "vshpower " << "dacu\t CHIPTEST BOARD ONLY - sets the comparator power supply in dac units (0-1024)." << std::endl;
+		os << std::endl;
+		os << "viopower " << "dacu\t CHIPTEST BOARD ONLY - sets the FPGA I/O power supply in dac units (0-1024)." << std::endl;
+
+
+
+		os << "vrefds " << "dacu\t sets vrefds" << std::endl;
+		os << "vcascn_pb " << "dacu\t sets vcascn_pb" << std::endl;
+		os << "vcascp_pb " << "dacu\t sets vcascp_pb" << std::endl;
+		os << "vout_cm " << "dacu\t sets vout_cm" << std::endl;
+		os << "vin_cm " << "dacu\t sets vin_cm" << std::endl;
+		os << "vcasc_out " << "dacu\t sets vcasc_out" << std::endl;
+		os << "vref_comp " << "dacu\t sets vref_comp" << std::endl;
+		os << "ib_test_c " << "dacu\t sets ib_test_c" << std::endl;
+
+	}
+	if (action==GET_ACTION || action==HELP_ACTION) {
+
+		os << "vthreshold \t Gets the detector threshold in dac units (0-1024). The energy is approx 800-15*keV" << std::endl;
+		os << std::endl;
+
+		os << "vcalibration " << "dacu\t gets the calibration pulse amplitude in dac units (0-1024)." << std::endl;
+		os << std::endl;
+		os << "vtrimbit " << "dacu\t gets the trimbit amplitude in dac units (0-1024)." << std::endl;
+		os << std::endl;
+		os << "vpreamp " << "dacu\t gets the preamp feedback voltage in dac units (0-1024)." << std::endl;
+		os << std::endl;
+		os << "vshaper1 " << "dacu\t gets the shaper1 feedback voltage in dac units (0-1024)." << std::endl;
+		os << std::endl;
+		os << "vshaper2 " << "dacu\t gets the  shaper2 feedback voltage in dac units (0-1024)." << std::endl;
+		os << std::endl;
+		os << "vhighvoltage " << "dacu\t CHIPTEST BOARD ONLY - gets the detector HV in dac units (0-1024)." << std::endl;
+		os << std::endl;
+		os << "vapower " << "dacu\t CHIPTEST BOARD ONLY - gets the analog power supply in dac units (0-1024)." << std::endl;
+		os << std::endl;
+		os << "vddpower " << "dacu\t CHIPTEST BOARD ONLY - gets the digital power supply in dac units (0-1024)." << std::endl;
+		os << std::endl;
+		os << "vshpower " << "dacu\t CHIPTEST BOARD ONLY - gets the comparator power supply in dac units (0-1024)." << std::endl;
+		os << std::endl;
+		os << "viopower " << "dacu\t CHIPTEST BOARD ONLY - gets the FPGA I/O power supply in dac units (0-1024)." << std::endl;
+		os << std::endl;
+
+
+		os << "vrefds " << "\t gets vrefds" << std::endl;
+		os << "vcascn_pb " << "\t gets vcascn_pb" << std::endl;
+		os << "vcascp_pb " << "\t gets vcascp_pb" << std::endl;
+		os << "vout_cm " << "\t gets vout_cm" << std::endl;
+		os << "vin_cm " << "\t gets vin_cm" << std::endl;
+		os << "vcasc_out " << "\t gets vcasc_out" << std::endl;
+		os << "vref_comp " << "\t gets vref_comp" << std::endl;
+		os << "ib_test_c " << "\t gets ib_test_c" << std::endl;
+	}
+	return os.str();
+}
+
+
+
+string slsDetectorCommand::cmdADC(int narg, char *args[], int action) {
+
+	dacIndex adc;
+	float val=-1;
+	char answer[1000];
+
+	if (action==HELP_ACTION)
+		return helpADC(narg, args, action);
+	else if (action==PUT_ACTION)
+		return string("cannot set ")+cmd;
+
+	if (cmd=="temp_adc")
+		adc=TEMPERATURE_ADC;
+	else if (cmd=="temp_fpga")
+		adc=TEMPERATURE_FPGA;
+	else
+		return string("cannot decode adc ")+cmd;
+
+	setOnline(ONLINE_FLAG);
+
+  sprintf(answer,"%f",getADC(adc));
   return string(answer);
 
 }
 
-string slsDetectorCommand::helpDAC(int narg, char *args[], int action) {
+string slsDetectorCommand::helpADC(int narg, char *args[], int action) {
 
-  ostringstream os;  
-  if (action==PUT_ACTION || action==HELP_ACTION) {
-    os << "vthreshold dacu\t sets the detector threshold in dac units (0-1024). The energy is approx 800-15*keV" << std::endl;
-    os << std::endl;
-
-    os << "vcalibration " << "dacu\t sets the calibration pulse amplitude in dac units (0-1024)." << std::endl;
-    os << std::endl;
-      os << "vtrimbit " << "dacu\t sets the trimbit amplitude in dac units (0-1024)." << std::endl;
-    os << std::endl;
-  os << "vpreamp " << "dacu\t sets the preamp feedback voltage in dac units (0-1024)." << std::endl;
-    os << std::endl;
-  os << "vshaper1 " << "dacu\t sets the shaper1 feedback voltage in dac units (0-1024)." << std::endl;
-    os << std::endl;
-  os << "vshaper2 " << "dacu\t sets the  shaper2 feedback voltage in dac units (0-1024)." << std::endl;
-    os << std::endl;
-  os << "vhighvoltage " << "dacu\t CHIPTEST BOARD ONLY - sets the detector HV in dac units (0-1024)." << std::endl;
-    os << std::endl;
-  os << "vapower " << "dacu\t CHIPTEST BOARD ONLY - sets the analog power supply in dac units (0-1024)." << std::endl;
-    os << std::endl;
-  os << "vddpower " << "dacu\t CHIPTEST BOARD ONLY - sets the digital power supply in dac units (0-1024)." << std::endl;
-    os << std::endl;
-  os << "vshpower " << "dacu\t CHIPTEST BOARD ONLY - sets the comparator power supply in dac units (0-1024)." << std::endl;
-    os << std::endl;
-  os << "viopower " << "dacu\t CHIPTEST BOARD ONLY - sets the FPGA I/O power supply in dac units (0-1024)." << std::endl;
-
-
-
-  os << "vrefds " << "dacu\t sets vrefds" << std::endl;
-  os << "vcascn_pb " << "dacu\t sets vcascn_pb" << std::endl;
-  os << "vcascp_pb " << "dacu\t sets vcascp_pb" << std::endl;
-  os << "vout_cm " << "dacu\t sets vout_cm" << std::endl;
-  os << "vin_cm " << "dacu\t sets vin_cm" << std::endl;
-  os << "vcasc_out " << "dacu\t sets vcasc_out" << std::endl;
-  os << "vref_comp " << "dacu\t sets vref_comp" << std::endl;
-  os << "ib_test_c " << "dacu\t sets ib_test_c" << std::endl;
-
-  }
-  if (action==GET_ACTION || action==HELP_ACTION) {
-
-
-    os << "vthreshold \t Gets the detector threshold in dac units (0-1024). The energy is approx 800-15*keV" << std::endl;
-    os << std::endl;
-    
-    os << "vcalibration " << "dacu\t gets the calibration pulse amplitude in dac units (0-1024)." << std::endl;
-    os << std::endl;
-      os << "vtrimbit " << "dacu\t gets the trimbit amplitude in dac units (0-1024)." << std::endl;
-    os << std::endl;
-  os << "vpreamp " << "dacu\t gets the preamp feedback voltage in dac units (0-1024)." << std::endl;
-    os << std::endl;
-  os << "vshaper1 " << "dacu\t gets the shaper1 feedback voltage in dac units (0-1024)." << std::endl;
-    os << std::endl;
-  os << "vshaper2 " << "dacu\t gets the  shaper2 feedback voltage in dac units (0-1024)." << std::endl;
-    os << std::endl;
-  os << "vhighvoltage " << "dacu\t CHIPTEST BOARD ONLY - gets the detector HV in dac units (0-1024)." << std::endl;
-    os << std::endl;
-  os << "vapower " << "dacu\t CHIPTEST BOARD ONLY - gets the analog power supply in dac units (0-1024)." << std::endl;
-    os << std::endl;
-  os << "vddpower " << "dacu\t CHIPTEST BOARD ONLY - gets the digital power supply in dac units (0-1024)." << std::endl;
-    os << std::endl;
-  os << "vshpower " << "dacu\t CHIPTEST BOARD ONLY - gets the comparator power supply in dac units (0-1024)." << std::endl;
-    os << std::endl;
-  os << "viopower " << "dacu\t CHIPTEST BOARD ONLY - gets the FPGA I/O power supply in dac units (0-1024)." << std::endl;
-    os << std::endl;
-
-
-  os << "vrefds " << "\t gets vrefds" << std::endl;
-  os << "vcascn_pb " << "\t gets vcascn_pb" << std::endl;
-  os << "vcascp_pb " << "\t gets vcascp_pb" << std::endl;
-  os << "vout_cm " << "\t gets vout_cm" << std::endl;
-  os << "vin_cm " << "\t gets vin_cm" << std::endl;
-  os << "vcasc_out " << "\t gets vcasc_out" << std::endl;
-  os << "vref_comp " << "\t gets vref_comp" << std::endl;
-  os << "ib_test_c " << "\t gets ib_test_c" << std::endl;
-  os << "temp_adc " << "\t gets the temperature of the adc" << std::endl;
-  os << "temp_fpga " << "\t gets the temperature of the fpga" << std::endl;
-
-  } 
-  return os.str();
-
-
-
+	ostringstream os;
+	if (action==PUT_ACTION || action==HELP_ACTION) {
+		os << "temp_adc " << "Cannot be set" << std::endl;
+		os << "temp_fpga " << "Cannot be set" << std::endl;
+	}
+	if (action==GET_ACTION || action==HELP_ACTION) {
+		os << "temp_adc " << "\t gets the temperature of the adc" << std::endl;
+		os << "temp_fpga " << "\t gets the temperature of the fpga" << std::endl;
+	}
+	return os.str();
 }
 
 

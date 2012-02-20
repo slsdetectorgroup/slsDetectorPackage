@@ -204,7 +204,18 @@ class slsDetectorUtils : public slsDetectorCommand {
   int readDataFile(string fname, int *data);
   int readDataFile(ifstream &infile, int *data);
 
-    /**
+  /**
+
+       reads a data file
+       \param name of the file to be read
+       \param data array of data values
+       \returns OK or FAIL if it could not read the file or data=NULL
+       \sa mythenDetector::readDataFile
+  */
+  int readDataFile(string fname, short int *data);
+  int readDataFile(ifstream &infile, short int *data);
+
+  /**
      
        writes a data file
        \param name of the file to be written
@@ -259,6 +270,18 @@ class slsDetectorUtils : public slsDetectorCommand {
   */
    static int readDataFile(string fname, int *data, int nch);
    static int readDataFile(ifstream &infile, int *data, int nch);
+
+   /**
+
+        reads a data file
+        \param name of the file to be read
+        \param data array of data values
+        \returns OK or FAIL if it could not read the file or data=NULL
+        \sa mythenDetector::readDataFile
+   */
+    static int readDataFile(string fname, short int *data, int nch);
+    static int readDataFile(ifstream &infile, short int *data, int nch);
+
   /**
    
       reads an angular conversion file

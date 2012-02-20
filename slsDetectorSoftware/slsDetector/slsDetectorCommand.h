@@ -124,6 +124,9 @@ class slsDetectorCommand;
    string cmdThreaded(int narg, char *args[], int action);
    static string helpThreaded(int narg, char *args[], int action);
 
+   string cmdImage(int narg, char *args[], int action);
+   static string helpImage(int narg, char *args[], int action);
+
    string cmdPositions(int narg, char *args[], int action);
    static string helpPositions(int narg, char *args[], int action);
 
@@ -179,6 +182,8 @@ class slsDetectorCommand;
    string cmdDAC(int narg, char *args[], int action);
    static string helpDAC(int narg, char *args[], int action);
 
+   string cmdADC(int narg, char *args[], int action);
+   static string helpADC(int narg, char *args[], int action);
 
    string cmdTimer(int narg, char *args[], int action);
    static string helpTimer(int narg, char *args[], int action);
@@ -324,6 +329,8 @@ class slsDetectorCommand;
   virtual int writeConfigurationFile(string const fname)=0;
   virtual int dumpDetectorSetup(string const fname, int level=0)=0; 
   virtual int retrieveDetectorSetup(string const fname, int level=0)=0;
+  virtual int loadImageToDetector(int index,string const fname)=0;
+
 
 
 

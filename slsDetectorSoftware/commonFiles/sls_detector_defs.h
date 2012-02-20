@@ -267,7 +267,8 @@ enum digitalTestMode {
   DETECTOR_FIRMWARE_TEST,  /**< test detector system firmware */
   DETECTOR_MEMORY_TEST,  /**< test detector system memory */
   DETECTOR_BUS_TEST,  /**< test detector system CPU-FPGA bus */
-  DETECTOR_SOFTWARE_TEST  /**< test detector system software */
+  DETECTOR_SOFTWARE_TEST,  /**< test detector system software */
+  DIGITAL_BIT_TEST			/**< gotthard digital bit test */
 };
 /** 
     detector analogue test modes

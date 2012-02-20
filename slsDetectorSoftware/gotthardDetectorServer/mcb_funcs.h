@@ -29,7 +29,8 @@ enum dacsVal{VREF_DS, VCASCN_PB, VCASCP_PB, VOUT_CM, VCASC_OUT, VIN_CM, VREF_COM
 enum adcVals{TEMP_FPGA, TEMP_ADC};
 
 //dynamic range
-#define MAX5523
+/*
+#define MAX5523 commented out by dhanya
 #ifndef MAX5523
 #define MAX5533
 #endif
@@ -37,8 +38,9 @@ enum adcVals{TEMP_FPGA, TEMP_ADC};
 #define DAC_DR 4096
 #endif
 #ifdef MAX5523
+*/
 #define DAC_DR 1024
-#endif
+//#endif
 
 
 //reference voltage

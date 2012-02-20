@@ -2794,7 +2794,7 @@ int load_image(int file_des) {
 
 	sprintf(mess,"Can't load image\n");
 
-	n = receiveDataOnly(file_des,index,sizeof(index));
+	n = receiveDataOnly(file_des,&index,sizeof(index));
 	if (n < 0) {
 		sprintf(mess,"Error reading from socket\n");
 		ret=FAIL;
@@ -2814,7 +2814,7 @@ int load_image(int file_des) {
 		break;
 	case GAIN_IMAGE :
 #ifdef VERBOSE
-		printf(" Loading Dark image\n");
+		printf(" Loading Gain image\n");
 #endif
 		break;
 	default:
@@ -2822,16 +2822,16 @@ int load_image(int file_des) {
 		sprintf(mess,"Unknown index %d\n",index);
 		ret=FAIL;
 	}
-
+#ifdef VERYVERBOSE
 	printf("%d\n%d\n",ImageVals[0],ImageVals[1]);
-
+#endif
 	if (ret==OK) {
 		if (differentClients==1 && lockStatus==1) {
 			ret=FAIL;
 			sprintf(mess,"Detector locked by %s\n",lastClientIP);
 		} else{
 			retval=loadImage(index,ImageVals);
-			if (retval= -1)
+			if (retval==-1)
 				ret = FAIL;
 		}
 	}

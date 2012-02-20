@@ -891,8 +891,12 @@ int loadImage(int index, short int ImageVals[]){
 		address = GAIN_IMAGE_REG;
 		break;
 	}
-	int *ptr=(u_int16_t*)(CSP0BASE+address*2);
-	dma_memcpy(ptr,ImageVals ,2560);
+	volatile u_int16_t *ptr;
+	ptr=(u_int16_t*)(CSP0BASE+address*2);
+	memcpy(ptr,ImageVals ,2560);
+#ifdef VERBOSE
+	printf("Loaded x%08x address with image of index %d\n",ptr,index);
+#endif
 	return 0;
 }
 

@@ -6,7 +6,7 @@
 CROSS  = bfin-uclinux-
 CC    = $(CROSS)gcc
 
-CFLAGS += -Wall  -DMCB_FUNCS #-DVERBOSE #-DVERYVERBOSE #-DVIRTUAL
+CFLAGS += -Wall  -DMCB_FUNCS -DVERBOSE -DVERYVERBOSE #-DVIRTUAL
 
 #INCLUDES= /usr/src/kernels/2.6.18-238.12.1.el5-i686/include
 #/home/l_maliakal_d/bfin/blackfin-linux-dist/linux-2.6.x/include

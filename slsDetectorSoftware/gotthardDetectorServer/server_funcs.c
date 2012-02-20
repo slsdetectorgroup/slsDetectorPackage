@@ -39,7 +39,7 @@ char *dataretval=NULL;
 int nframes, iframes, dataret;
 char mess[1000]; 
 
-
+int digitalTestBit = 0;
 
    
 
@@ -625,6 +625,7 @@ int digital_test(int file_des) {
   int n=0;
   int ibit=0;
   int ow;
+  int ival;
   enum digitalTestMode arg; 
   
   sprintf(mess,"Can't send digital test\n");
@@ -709,6 +710,23 @@ int digital_test(int file_des) {
   case DETECTOR_SOFTWARE_TEST:
     retval=testFpga();
     break;
+  case DIGITAL_BIT_TEST:
+	  n = receiveDataOnly(file_des,&ival,sizeof(ival));
+	  if (n < 0) {
+		  sprintf(mess,"Error reading from socket\n");
+		  retval=FAIL;
+	  }
+#ifdef VERBOSE
+	  printf("with value %d\n", ival);
+#endif
+	  if (differentClients==1 && lockStatus==1) {
+		  ret=FAIL;
+		  sprintf(mess,"Detector locked by %s\n",lastClientIP);
+		  break;
+	  }
+	  digitalTestBit = ival;
+	  retval=digitalTestBit;
+	  break;
   default:
     printf("Unknown digital test required %d\n",arg);
     ret=FAIL;
@@ -2705,7 +2723,7 @@ int configure_mac(int file_des) {
   int retval;
   int ret=OK;
   char arg[3][50];
-  int n,i,ival;
+  int n,i;
 
   int imod=0;//should be in future sent from client as -1, arg[2]
   int ipad;
@@ -2720,18 +2738,12 @@ int configure_mac(int file_des) {
     sprintf(mess,"Error reading from socket\n");
     ret=FAIL;
   }
-  n = receiveDataOnly(file_des,&ival,sizeof(ival));
-  if (n < 0) {
-    sprintf(mess,"Error reading from socket\n");
-    ret=FAIL;
-  }
-
 
   sscanf(arg[0], "%x", &ipad); 
   sscanf(arg[1], "%llx", &imacadd);
   sscanf(arg[2], "%llx", &iservermacadd);
 #ifdef VERBOSE
-  printf("\nival %d\t",ival); 
+  printf("\ndigital_test_bit in server %d\t",digitalTestBit);
   printf("\nipadd %x\t",ipad); 
   printf("destination ip is %d.%d.%d.%d = 0x%x \n",(ipad>>24)&0xff,(ipad>>16)&0xff,(ipad>>8)&0xff,(ipad)&0xff,ipad);
   printf("macad:%llx\n",imacadd);
@@ -2753,7 +2765,7 @@ int configure_mac(int file_des) {
 #endif
 #ifdef MCB_FUNCS
   if (ret==OK) {
-    retval=configureMAC(ipad,imacadd,iservermacadd,ival);
+    retval=configureMAC(ipad,imacadd,iservermacadd,digitalTestBit);
     if(retval==-1) ret=FAIL;
   }
 #endif

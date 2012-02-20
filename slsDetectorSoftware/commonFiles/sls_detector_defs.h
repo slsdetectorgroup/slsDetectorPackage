@@ -429,6 +429,11 @@ enum portType {
   DATA_PORT /**< data port */
 }; 
 
+enum image {
+  DARK_IMAGE,  /**< dark image */
+  GAIN_IMAGE   /**< gain image */
+};
+
 /** 
    function indexes to call on the server
 
@@ -520,8 +525,10 @@ enum {
 
   F_UPDATE_CLIENT, /**< Returns all the important parameters to update the shared memory of the client */
 
-  F_CONFIGURE_MAC /**< Configures MAC for Gotthard readout */
-  
+  F_CONFIGURE_MAC, /**< Configures MAC for Gotthard readout */
+
+  F_LOAD_IMAGE   /**< Loads Dark/Gain image to the Gotthard detector */
+
   /* Always append functions hereafter!!! */
 
 

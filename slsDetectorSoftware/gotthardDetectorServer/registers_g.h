@@ -148,8 +148,19 @@
 #define DELAYAFTER_BIT           0x00000020
 #define EXPOSING_BIT             0x00000040
 #define COUNT_ENABLE_BIT         0x00000080
+#define RUNSTATE_0_BIT     		 0x00000100
+#define RUNSTATE_1_BIT    		 0x00000200
+#define RUNSTATE_2_BIT    		 0x00000400
+
+#define READSTATE_0_BIT     	 0x00001000
+#define READSTATE_1_BIT    		 0x00002000
+#define READSTATE_2_BIT    		 0x00004000
 #define SOME_FIFO_FULL_BIT       0x00008000 // error!
 #define ALL_FIFO_EMPTY_BIT       0x00010000 // data ready
+#define RUNMACHINE_BUSY_BIT      0x00020000
+#define READMACHINE_BUSY_BIT     0x00040000
+
+
 
 /* for fifo status register */
 #define FIFO_ENABLED_BIT         0x80000000

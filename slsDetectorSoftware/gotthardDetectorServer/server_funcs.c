@@ -1842,30 +1842,51 @@ int get_run_status(int file_des) {
   retval= runState();
   printf("\n\nSTATUS=%08x\n",retval);
 
-  if (retval&0x00000001){
-	  printf("-----------------------------------RUNNING-----------------------------------\n");
-	  s=RUNNING;
+  //if runbusy=0
+  if(!(retval&0x00020000)){
+	  //and readbusy=1, its last frame read
+	  if(retval&0x00040000){
+		  printf("-----------------------------------LAST FRAME READ--------------------------\n");
+		  s=TRANSMITTING;
+	  }
+	  //and readbusy=0,idle
+	  if(!(retval&0x00000001)){
+		  printf("-----------------------------------IDLE--------------------------------------\n");
+		  s=IDLE;
+	  }
   }
-  else{
-	  printf("-----------------------------------IDLE----------------------------------\n");
-	  s=IDLE;
+  //if runbusy=1
+  else {
+	  if (retval&0x00000008){
+		  printf("-----------------------------------WAITING-----------------------------------\n");
+		  s=WAITING;
+	  }
+	  else{
+		  printf("-----------------------------------RUNNING-----------------------------------\n");
+		  s=RUNNING;
+	  }
   }
-  /*
+
+
+
+
+/*
   if (retval&0x8000)
-    s=ERROR;
+	  s=ERROR;
   else if (retval&0x00000001)
-    //if (retval&0x00010000)
-    if (retval&0x00000002)
-      s=TRANSMITTING;
-    else
-      s=RUNNING;
+	  //if (retval&0x00010000)
+	  if (retval&0x00000002)
+		  s=TRANSMITTING;
+	  else
+		  s=RUNNING;
   else if (retval&0x00010000)
-    s=RUN_FINISHED;
+	  s=RUN_FINISHED;
   else if (retval&0x00000008)
-    s=WAITING;
+	  s=WAITING;
   else
-    s=IDLE;
+	  s=IDLE;
 */
+
 
 
   if (ret!=OK) {

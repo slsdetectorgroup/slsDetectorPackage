@@ -1329,7 +1329,8 @@ u_int32_t  stopStateMachine(){
 #endif
   bus_w(CONTROL_REG, STOP_ACQ_BIT); 
   usleep(500);
-  if (!runBusy())
+ // if (!runBusy())
+  if(!(bus_r(STATUS_REG)&RUNMACHINE_BUSY_BIT))
     return OK;
   else 
     return FAIL; 

@@ -5296,4 +5296,47 @@ int slsDetector::saveSettingsFile(string fname, int imod) {
 }
 
 
+int slsDetector::testFunction(int times) {
+	int val = 0,i,oldval=0;
+	runStatus s;
+
+
+	for(i=0;i<times;i++){
+		std::cout<<std::endl<<dec<<i+1<<": \t";
+		usleep(2000000);
+		startAcquisition();
+		s = getRunStatus();
+		if(s==IDLE){
+			std::cout<<"NOTTT WORKED"<<std::endl;
+			exit(-1);
+		}
+		else if (s==RUNNING){
+			while(s==RUNNING){
+				usleep(20);
+				val=readRegister(0x25);
+				if(val!=oldval)
+					std::cout<<hex<<val<<"\t";
+				if(val){
+					if((val&0x100)||(val&0x200)||(val&0x400))
+						s = getRunStatus();
+					else{
+						std::cout<<"\nStuck status.Exit\n";
+						exit(-1);
+					}
+				}
+				else
+					break;
+				oldval=val;
+			}
+		}
+		else{
+			std::cout<<"\nWeird Status.Exit\n";
+			exit(-1);
+		}
+	}
+	std::cout<<std::endl;
+	return 0;
+}
+
+
 

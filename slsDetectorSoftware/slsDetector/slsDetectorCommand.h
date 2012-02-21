@@ -331,7 +331,7 @@ class slsDetectorCommand;
   virtual int retrieveDetectorSetup(string const fname, int level=0)=0;
   virtual int loadImageToDetector(int index,string const fname)=0;
 
-
+  virtual int testFunction(int times=0)=0;
 
 
 

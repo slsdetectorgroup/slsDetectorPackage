@@ -350,6 +350,10 @@ slsDetectorCommand::slsDetectorCommand() {
   descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdDigiTest;
   i++;
 
+  descrToFuncMap[i].m_pFuncName="acqtest"; //
+  descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdDigiTest;
+  i++;
+
   descrToFuncMap[i].m_pFuncName="reg_rw"; //
   descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdRegister;
   i++;
@@ -2543,9 +2547,23 @@ string slsDetectorCommand::cmdDigiTest(int narg, char *args[], int action) {
 		  else
 			  return string("Use only 0 or 1 to set/clear digital test bit\n");
 	  } else
-		  return string("undefined value");
+		  return string("undefined number");
   }
 
+  if (cmd=="acqtest") {
+	  if (action==GET_ACTION)
+		  return string("cannot get ")+cmd;
+	  int ival=-1;
+	  if (sscanf(args[1],"%d",&ival)) {
+		  if(ival<1)
+			  return helpDigiTest(narg, args, action);
+		  else {
+			  sprintf(answer,"%x",testFunction(ival));
+			  return string(answer);
+		  }
+	  } else
+		  return string("undefined number");
+  }
 
  return string("unknown digital test mode ")+cmd;
 
@@ -2558,6 +2576,10 @@ string slsDetectorCommand::helpDigiTest(int narg, char *args[], int action) {
   if (action==GET_ACTION || action==HELP_ACTION) {
     os << "digitaltest:i \n performs digital test of the module i. Returns 0 if succeeded, otherwise error mask."<< std::endl;
     os << "bustest \n performs test of the bus interface between FPGA and embedded Linux system. Can last up to a few minutes."<< std::endl;
+  }
+  if (action==PUT_ACTION || action==HELP_ACTION) {
+    os << "digibittest i\n sets a variable in the server to be used in configuremac function. i sets/clears the digital test bit."<< std::endl;
+    os << "acqtest i\n runs start acquisition i number of times."<< std::endl;
   } 
   return os.str();
 }

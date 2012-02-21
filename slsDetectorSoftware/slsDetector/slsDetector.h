@@ -1453,6 +1453,10 @@ typedef  struct sharedSlsDetector {
   char* setServerMAC(string serverMAC);
 
 
+  /** temporary test fucntion  */
+  int testFunction(int times=0);
+
+
 
 
 

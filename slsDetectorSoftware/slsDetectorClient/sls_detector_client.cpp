@@ -4,6 +4,7 @@
 
 #include "multiSlsDetector.h"
 #include "slsDetector.h"
+#include "slsDetectorCommand.h"
 
 
 #include <stdlib.h>
@@ -19,7 +20,8 @@ int main(int argc, char *argv[])
   string answer;
   char cmd[100];
   int action;
-  slsDetectorCommand *myDetector;
+  slsDetectorBase *myDetector;
+  slsDetectorCommand *myCmd;
   
 
 
@@ -73,7 +75,7 @@ int main(int argc, char *argv[])
   } else {
 #ifdef GET
     cout << "Wrong usage - should be: "<< argv[0] << "[id:/id-]channel" << endl;
-    cout << myDetector->helpLine(argc-1, argv, action);
+    cout << slsDetectorCommand::helpLine(argc-1, argv, action);
     cout << endl;
     return -1;
 #endif
@@ -81,7 +83,7 @@ int main(int argc, char *argv[])
 #ifdef PUT
   if (argc<3) {
     cout << "Wrong usage - should be: "<< argv[0] << "[id:/id-]channel arg" << endl;
-    cout << myDetector->helpLine(argc-1, argv+1, action);
+    cout << slsDetectorCommand::helpLine(argc-1, argv+1, action);
     cout << endl;
     return -1;
   }  
@@ -90,26 +92,23 @@ int main(int argc, char *argv[])
 	  cout << "Using default multiSlsDetector" << id << endl;
 #endif
   myDetector=new multiSlsDetector();
-  answer=myDetector->executeLine(argc-1, argv, action);
-  cout << answer<< endl;
-  return 0;
   }
 
 
 #ifdef PUT
   if (argc<3) {
     cout << "Wrong usage - should be: "<< argv[0] <<" " << argv[1]<< "  arg" << endl;
-    cout << myDetector->helpLine(argc-1, argv+1, action);
+    cout << slsDetectorCommand::helpLine(argc-1, argv+1, action);
     cout << endl;
     return -1;
   }  
 #endif
-
+  myCmd=new slsDetectorCommand(myDetector);
 
   if (argc<2) {
-    answer=myDetector->executeLine(argc-1, argv, action);
+    answer=myCmd->executeLine(argc-1, argv, action);
   } else {
-    answer=myDetector->executeLine(argc-1, argv+1, action);
+    answer=myCmd->executeLine(argc-1, argv+1, action);
   }
   cout << answer<< endl;
 

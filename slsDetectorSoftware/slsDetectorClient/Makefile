@@ -1,15 +1,17 @@
 CFLAGS= -DC_ONLY 
-FLAGS=-DVERBOSE 
-INCLUDES= -I../slsDetectorSoftware/commonFiles -I../slsDetectorSoftware/slsDetector -I ../slsDetectorSoftware/MySocketTCP  -I../slsDetectorSoftware/mythenDetector -I../slsDetectorSoftware/gotthardDetector  -I../slsDetectorSoftware/usersFunctions -I../slsDetectorSoftware/multiSlsDetector
+#FLAGS=-DVERBOSE 
+INCLUDES= -I../slsDetectorSoftware/commonFiles -I../slsDetectorSoftware/slsDetector -I ../slsDetectorSoftware/MySocketTCP  -I../slsDetectorSoftware/usersFunctions -I../slsDetectorSoftware/multiSlsDetector
 #LIBS=-L../TMythenDetector/bin/ -L$(QTDIR)/lib
 LIBS= -L../slsDetectorSoftware/
 LDFLAG= -lSlsDetector -lpthread
 
 BIN=bin
 
-SRC_CLNT=multi_sls_detector_client.cpp
+SRC_CLNT=sls_detector_client.cpp
 
-all:  lib sls_detector_put sls_detector_get sls_detector_acquire sls_detector_help
+clients: sls_detector_put sls_detector_get sls_detector_acquire sls_detector_help
+
+all:  lib clients
 
 lib:
 	cd ../slsDetectorSoftware && $(MAKE) lib
@@ -45,6 +47,7 @@ install_sls_detector: all
 	cp -P $(BIN)/sls_detector_put $(DESTDIR)
 	cp -P $(BIN)/sls_detector_get $(DESTDIR)
 	cp -P $(BIN)/sls_detector_acquire $(DESTDIR)
+	cp -P $(BIN)/sls_detector_help $(DESTDIR)
 
 
 

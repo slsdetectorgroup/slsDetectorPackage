@@ -402,6 +402,76 @@ int slsDetectorUtils::setBadChannelCorrection(string fname, int &nbad, int *badl
 
 
 
+
+
+
+
+
+
+   /**
+     sets the value of s angular conversion parameter
+     \param c can be ANGULAR_DIRECTION, GLOBAL_OFFSET, FINE_OFFSET, BIN_SIZE
+     \param v the value to be set
+     \returns the actual value
+  */
+
+float slsDetectorUtils::setAngularConversionParameter(angleConversionParameter c, float v){
+  
+
+  switch (c) {
+  case ANGULAR_DIRECTION:
+    if (v<0)
+      *angDirection=-1;
+    else
+      *angDirection=1;
+    return *angDirection;
+  case GLOBAL_OFFSET:
+    *globalOffset=v;
+    return *globalOffset;
+  case FINE_OFFSET:
+    *fineOffset=v;
+    return *fineOffset;
+  case BIN_SIZE:
+    *binSize=v;
+    return *binSize;
+  default:
+    return 0;
+  }
+}
+
+  /**
+     returns the value of an angular conversion parameter
+     \param c can be ANGULAR_DIRECTION, GLOBAL_OFFSET, FINE_OFFSET, BIN_SIZE
+     \returns the actual value
+
+  */
+
+float slsDetectorUtils::getAngularConversionParameter(angleConversionParameter c) {
+
+  switch (c) {
+  case ANGULAR_DIRECTION:
+    return *angDirection;
+  case GLOBAL_OFFSET:
+    return *globalOffset;
+  case FINE_OFFSET:
+    return *fineOffset;
+  case BIN_SIZE:
+    return *binSize;
+  default:
+    return 0;
+  }
+}
+
+
+
+
+
+
+
+
+
+
+
 int slsDetectorUtils::readAngularConversion(string fname, int nmod, angleConversionConstant *angOff) {
 
   ifstream infile;
@@ -1114,6 +1184,15 @@ void  slsDetectorUtils::acquire(int delflag){
 
 
 
+#ifdef VERBOSE
+  cout << "Acquire function "<< delflag << endl;
+#endif
+
+#ifdef VERBOSE
+  cout << "Stopped flag is "<< stoppedFlag << delflag << endl;
+#endif
+
+
   void *status;
   int trimbit;
 
@@ -1134,7 +1213,7 @@ void  slsDetectorUtils::acquire(int delflag){
        
 
 
-
+  setTotalProgress();
   progressIndex=0;
   *stoppedFlag=0;
 
@@ -1153,7 +1232,9 @@ void  slsDetectorUtils::acquire(int delflag){
 
 
 
-
+#ifdef VERBOSE
+  cout << " starting thread " << endl;
+#endif
 
   if (*threadedProcessing) {
     startThread(delflag);
@@ -1186,7 +1267,7 @@ void  slsDetectorUtils::acquire(int delflag){
 
 
   //cout << "action at start" << endl;
-  if (stoppedFlag==0) {
+  if (*stoppedFlag==0) {
       if (*actionMask & (1 << startScript)) {
 	//"Custom start script. The arguments are passed as nrun=n par=p.");
 	sprintf(cmd,"%s nrun=%d par=%s",getActionScript(startScript).c_str(),*fileIndex,getActionParameter(startScript).c_str());
@@ -1267,7 +1348,7 @@ void  slsDetectorUtils::acquire(int delflag){
      } else
        break;
 
-     if (stoppedFlag==0) {
+     if (*stoppedFlag==0) {
        if (*actionMask & (1 << scriptBefore)) {
 	 //Custom script before each frame. The arguments are passed as nrun=n fn=filename par=p sv0=scanvar0 sv1=scanvar1 p0=par0 p1=par1"
 	 sprintf(cmd,"%s nrun=%d fn=%s par=%s sv0=%f sv1=%f p0=%s p1=%s",getActionScript(scriptBefore).c_str(),*fileIndex,createFileName().c_str(),getActionParameter(scriptBefore).c_str(),currentScanVariable[0],currentScanVariable[1],getScanParameter(0).c_str(),getScanParameter(1).c_str());
@@ -1283,7 +1364,7 @@ void  slsDetectorUtils::acquire(int delflag){
      
      for (int ip=0; ip<np; ip++) {
        //   cout << "positions " << endl;
-       if (stoppedFlag==0) {
+       if (*stoppedFlag==0) {
 	 if  (*numberOfPositions>0) {
 	   go_to_position (detPositions[ip]);
 	   currentPositionIndex=ip+1;
@@ -1367,7 +1448,7 @@ void  slsDetectorUtils::acquire(int delflag){
        }
        pthread_mutex_unlock(&mp);
     
-    if (stoppedFlag==0) {
+    if (*stoppedFlag==0) {
       if (*actionMask & (1 << headerAfter)) {
 	//Custom script after each frame. The arguments are passed as nrun=n fn=filename par=p sv0=scanvar0 sv1=scanvar1 p0=par0 p1=par1"
 	sprintf(cmd,"%s nrun=%d fn=%s acqtime=%f gainmode=%d threshold=%d badfile=%s angfile=%s bloffset=%f fineoffset=%f fffile=%s/%s tau=%f par=%s", \
@@ -1527,13 +1608,13 @@ void* slsDetectorUtils::processData(int delflag) {
     while((queuesize=dataQueue.size())>0) {
       pthread_mutex_unlock(&mp);
       //cout << "thread mutex unlock line 6543" << endl;
-	  //queuesize=dataQueue.size();
+      //queuesize=dataQueue.size();
 
       /** Pop data queue */
       myData=dataQueue.front(); // get the data from the queue 
       if (myData) {
-
-
+	
+	
 
 	progressIndex++;
 #ifdef VERBOSE
@@ -1548,11 +1629,9 @@ void* slsDetectorUtils::processData(int delflag) {
 	
 	/** write raw data file */	   
 	if (*correctionMask==0 && delflag==1) {
-	  //cout << "line 6570----" << endl;
 	  writeDataFile (fname+string(".raw"), getTotalNumberOfChannels(),fdata, NULL, NULL, 'i'); 
 	  delete [] fdata;
 	} else {
-	  //cout << "line 6574----" << endl;
 	  writeDataFile (fname+string(".raw"), getTotalNumberOfChannels(),fdata, NULL, NULL, 'i');
 
 	  /** rate correction */
@@ -1586,10 +1665,6 @@ void* slsDetectorUtils::processData(int delflag) {
 	    if (currentPositionIndex<=1) {     
 	      if (*binSize>0)
 		bs=*binSize;
-	      //else // if (angOff[0].r_conversion>0) {
-// 		bs=180./PI*atan(angOff[0].r_conversion);
-// 		*binSize=bs;
-	      //  } 
 	    else
 		*binSize=bs;
 	      
@@ -1608,7 +1683,6 @@ void* slsDetectorUtils::processData(int delflag) {
 	    ang=convertAngles(currentPosition);
 
 	    if (*correctionMask!=0) {
-	      //cout << "line 6633----" << endl; 
 	      if (*numberOfPositions>1)
 		writeDataFile (fname+string(".dat"), getTotalNumberOfChannels(), ffcdata, ffcerr,ang);
 	    }
@@ -1620,7 +1694,6 @@ void* slsDetectorUtils::processData(int delflag) {
 	      currentPositionIndex++;
 	      fname=createFileName();
 	      if (*correctionMask!=0) {
-		//	cout << "line 6643----" << endl; 
 		writeDataFile (fname+string(".dat"),np,mergingCounts, mergingErrors, mergingBins,'f');
 	      }
 	      if (delflag) {
@@ -1629,14 +1702,7 @@ void* slsDetectorUtils::processData(int delflag) {
 		delete [] mergingErrors;
 		delete [] mergingMultiplicity;
 	      } else {
-		thisData=new detectorData(mergingCounts,mergingErrors,mergingBins,getCurrentProgress(),(fname+string(ext)).c_str(),np);/*
-		if (thisDetector->*correctionMask!=0) {
-		  //thisData=new detectorData(mergingCounts,mergingErrors,mergingBins,thisDetector->progressIndex+1,(fname().append(".dat")).c_str(),np);
-		  thisData=new detectorData(mergingCounts,mergingErrors,mergingBins,getCurrentProgress(),(fname().append(".dat")).c_str(),np);
-		} else {
-		  thisData=new detectorData(mergingCounts,mergingErrors,mergingBins,getCurrentProgress(),(fname().append(".raw")).c_str(),np);
-		  //thisData=new detectorData(mergingCounts,mergingErrors,mergingBins,thisDetector->progressIndex+1,(fname().append(".raw")).c_str(),np);
-		  }*/
+		thisData=new detectorData(mergingCounts,mergingErrors,mergingBins,getCurrentProgress(),(fname+string(ext)).c_str(),np);
 		finalDataQueue.push(thisData);
 	      }
 	    }
@@ -1649,7 +1715,6 @@ void* slsDetectorUtils::processData(int delflag) {
 	      delete [] ang;
 	  } else {
 	    if (*correctionMask!=0) {
-	      // cout << "line 6672----" << endl; 
 	      writeDataFile (fname+string(".dat"), getTotalNumberOfChannels(), ffcdata, ffcerr);
 	    }
 	    if (delflag) {
@@ -1661,60 +1726,35 @@ void* slsDetectorUtils::processData(int delflag) {
 		delete [] ang;
 	    } else {
 	      thisData=new detectorData(ffcdata,ffcerr,NULL,getCurrentProgress(),(fname+string(ext)).c_str(),getTotalNumberOfChannels());
-	      
-	      /*
-		
-	      if (thisDetector->*correctionMask!=0) {
-	      thisData=new detectorData(ffcdata,ffcerr,NULL,getCurrentProgress(),(fname().append(".dat")).c_str(),thisDetector->nChans*thisDetector->nChips*thisDetector->nMods);
-	      //thisData=new detectorData(ffcdata,ffcerr,NULL,thisDetector->progressIndex+1,(fname().append(".dat")).c_str(),thisDetector->nChans*thisDetector->nChips*thisDetector->nMods);
-	      }	else {
-	      thisData=new detectorData(ffcdata,ffcerr,NULL,getCurrentProgress(),(fname().append(".raw")).c_str(),thisDetector->nChans*thisDetector->nChips*thisDetector->nMods);
-	      //thisData=new detectorData(ffcdata,ffcerr,NULL,thisDetector->progressIndex+1,(fname().append(".raw")).c_str(),thisDetector->nChans*thisDetector->nChips*thisDetector->nMods);
-	      }
-	      
-	      */
-	      
 	      finalDataQueue.push(thisData);  
 	    }  
 	  }
 	}
-	*fileIndex++;
-
-	/*
-	thisDetector->progressIndex++;
+	(*fileIndex)++;
 #ifdef VERBOSE
-	cout << "Progress is " << getCurrentProgress() << " \%" << endl;
+	cout << "Incrementing file index " << *fileIndex << endl;
 #endif
-	*/
+
 
 	delete [] myData;
 	myData=NULL;
 	dataQueue.pop(); //remove the data from the queue
-	//cout << "thread mutex lock line 6697" << endl;
 	pthread_mutex_lock(&mp);
 	queuesize=dataQueue.size();
 	pthread_mutex_unlock(&mp);
-	//cout << "thread mutex unlock line 6697" << endl;
 	usleep(1000);
-	//pthread_mutex_unlock(&mp);
       }
       pthread_mutex_unlock(&mp);
-      //cout << "thread mutex unlock line 6706" << endl;
       usleep(1000);
-      //  cout << "PPPPPPPPPPPPPPPPPPPP " << queuesize << " " << thisDetector->fileIndex << endl;
     }    
     pthread_mutex_unlock(&mp);
-    //cout << "thread mutex unlock line 6711" << endl;
-    //cout << "thread mutex lock line 6711" << endl;
     pthread_mutex_lock(&mp);
     if (jointhread) {
       pthread_mutex_unlock(&mp);
-      //cout << "thread mutex unlock line 6715" << endl;
       if (dataQueue.size()==0)
 	break;
     } else
       pthread_mutex_unlock(&mp);
-    //cout << "thread mutex unlock line 6720" << endl;
       
     dum=0;
   } // ????????????????????????
@@ -2335,7 +2375,9 @@ int slsDetectorUtils::setTotalProgress() {
 
 
 float slsDetectorUtils::getCurrentProgress() {
-
+#ifdef VERBOSE
+  cout << progressIndex << " / " << totalProgress << endl;
+#endif
   return 100.*((float)progressIndex)/((float)totalProgress);
 }
 

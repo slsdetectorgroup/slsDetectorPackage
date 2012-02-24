@@ -25,6 +25,7 @@ using namespace std;
 
 #include "sls_detector_defs.h"
 #include "slsDetectorCommand.h"
+//#include "slsDetectorBase.h"
 
 #define MAX_TIMERS 10
 #define MAX_ROIS 100
@@ -86,7 +87,7 @@ class slsDetectorUtils : public slsDetectorCommand {
   
   slsDetectorUtils();
     
-    virtual ~slsDetectorUtils(){};
+  virtual ~slsDetectorUtils(){};
 
 
 
@@ -286,26 +287,22 @@ class slsDetectorUtils : public slsDetectorCommand {
    
       reads an angular conversion file
       \param fname file to be read
-  \sa  angleConversionConstant mythenDetector::readAngularConversion
   */
-   static int readAngularConversion(string fname, int nmod, angleConversionConstant *angOff);  
-
+   static int readAngularConversion(string fname, int nmod, angleConversionConstant *angOff); 
+   
    /**
    
       reads an angular conversion file
       \param fname file to be read
-  \sa  angleConversionConstant mythenDetector::readAngularConversion
   */
    static int readAngularConversion(ifstream& ifs, int nmod, angleConversionConstant *angOff);
   /**
-     Pure virtual function
      writes an angular conversion file
       \param fname file to be written
   \sa  angleConversionConstant mythenDetector::writeAngularConversion
   */
    static int writeAngularConversion(string fname, int nmod, angleConversionConstant *angOff);
  /**
-     Pure virtual function
      writes an angular conversion file
       \param fname file to be written
   \sa  angleConversionConstant mythenDetector::writeAngularConversion
@@ -319,6 +316,8 @@ class slsDetectorUtils : public slsDetectorCommand {
       \returns 0 if bad channel disabled, >0 otherwise
   */
    static int setBadChannelCorrection(string fname, int &nbad, int *badlist);
+
+
   /** 
      flat field correct data
      \param datain data
@@ -330,6 +329,7 @@ class slsDetectorUtils : public slsDetectorCommand {
      \returns 0
   */
    static int flatFieldCorrect(float datain, float errin, float &dataout, float &errout, float ffcoefficient, float fferr);
+
   /** 
      rate correct data
      \param datain data
@@ -416,19 +416,16 @@ class slsDetectorUtils : public slsDetectorCommand {
 
   /**
      sets the default output files path
-  \sa  sharedSlsDetector
   */
   char* setFilePath(string s) {sprintf(filePath, s.c_str()); return filePath;};
 
   /**
      sets the default output files root name
-  \sa  sharedSlsDetector
   */
   char* setFileName(string s) {sprintf(fileName, s.c_str()); return fileName;}; 
 
   /**
      sets the default output file index
-  \sa  sharedSlsDetector
   */
   int setFileIndex(int i) {*fileIndex=i; return *fileIndex;}; 
   
@@ -440,13 +437,11 @@ class slsDetectorUtils : public slsDetectorCommand {
   
   /**
      returns the default output files root name
-  \sa  sharedSlsDetector
   */
   char* getFileName() {return fileName;};
 
   /**
      returns the default output file index
-  \sa  sharedSlsDetector
   */
   int getFileIndex() {return *fileIndex;};
   
@@ -454,20 +449,17 @@ class slsDetectorUtils : public slsDetectorCommand {
 
 
   /** 
-      pure virtual function
+   
       set  positions for the acquisition
       \param nPos number of positions
       \param pos array with the encoder positions
       \returns number of positions
-      \sa mythenDetector::setPositions
   */
   int setPositions(int nPos, float *pos);
    /** 
-      pure virtual function
       get  positions for the acquisition
       \param pos array which will contain the encoder positions
       \returns number of positions
-      \sa mythenDetector::getPositions
   */
   int getPositions(float *pos=NULL);
   
@@ -589,32 +581,44 @@ s
 
 
 
-  /** 
+
+
+
+
+
+
+
+
+
+
+
+
+  /**
       pure virtual function
       set detector global offset
       \sa mythenDetector::setGlobalOffset
   */
-  float setGlobalOffset(float f){*globalOffset=f; return *globalOffset;}; 
+  float setGlobalOffset(float f){return setAngularConversionParameter(GLOBAL_OFFSET,f);};
 
-  /** 
+  /**
       pure virtual function
       set detector fine offset
       \sa mythenDetector::setFineOffset
   */
-  float setFineOffset(float f){*fineOffset=f; return *fineOffset;};
-  /** 
+  float setFineOffset(float f){return setAngularConversionParameter(FINE_OFFSET,f);};
+  /**
       pure virtual function
       get detector fine offset
       \sa mythenDetector::getFineOffset
   */
-  float getFineOffset(){return *fineOffset;};
+  float getFineOffset(){return getAngularConversionParameter(FINE_OFFSET);};
   
-  /** 
+  /**
       pure virtual function
       get detector global offset
       \sa mythenDetector::getGlobalOffset
   */
-  float getGlobalOffset(){return *globalOffset;};
+  float getGlobalOffset(){return getAngularConversionParameter(GLOBAL_OFFSET);};
 
 
  
@@ -624,13 +628,32 @@ s
       \returns current bin size
       \sa mythenDetector::setBinSize
 */
-  float setBinSize(float bs){*binSize=bs; return *binSize;};
+  float setBinSize(float bs){return setAngularConversionParameter(BIN_SIZE,bs);};
 
   /** pure virtual function
       return detector bin size used for merging (approx angular resolution)
       \sa mythenDetector::getBinSize
   */
-  float getBinSize() {return *binSize;};
+  float getBinSize() {return getAngularConversionParameter(BIN_SIZE);};
+
+
+   /**
+     sets the value of s angular conversion parameter
+     \param c can be ANGULAR_DIRECTION, GLOBAL_OFFSET, FINE_OFFSET, BIN_SIZE
+     \param v the value to be set
+     \returns the actual value
+  */
+
+  float setAngularConversionParameter(angleConversionParameter c, float v);
+
+  /**
+     returns the value of an angular conversion parameter
+     \param c can be ANGULAR_DIRECTION, GLOBAL_OFFSET, FINE_OFFSET, BIN_SIZE
+     \returns the actual value
+
+  */
+
+  float getAngularConversionParameter(angleConversionParameter c);
 
 
 
@@ -657,8 +680,9 @@ s
  /** 
       set flat field corrections file directory
       \param flat field correction file directory
+      \returns flat field correction file directory
   */
-  void setFlatFieldCorrectionDir(string dir){strcpy(flatFieldDir,dir.c_str());};
+  char *setFlatFieldCorrectionDir(string dir){strcpy(flatFieldDir,dir.c_str()); return flatFieldDir;};
   
  /** 
       get flat field corrections file name
@@ -677,9 +701,24 @@ s
 
 
 
+  /** performs a complete acquisition including scansand data processing 
+     moves the detector to next position <br>
+     starts and reads the detector <br>
+     reads the IC (if required) <br>
+     reads the encoder (iof required for angualr conversion) <br>
+     processes the data (flat field, rate, angular conversion and merging ::processData())
+      \param delflag 0 leaves the data in the final data queue
+      \returns nothing
+  */
+
   void acquire(int delflag);
 
-  // must change to total number of channels!
+
+  /** processes the data
+      \param delflag 0 leaves the data in the final data queue
+      \returns nothing
+      
+  */
   void *processData(int delflag);
 
   virtual float* convertAngles(float pos)=0;
@@ -690,7 +729,9 @@ s
   virtual float getRateCorrectionTau()=0;
   virtual int* startAndReadAll()=0;
   virtual float* decodeData(int *datain)=0;
+
   virtual int rateCorrect(float*, float*, float*, float*)=0;
+
   virtual int flatFieldCorrect(float*, float*, float*, float*)=0;
 
   virtual int getTotalNumberOfChannels()=0;
@@ -909,12 +950,12 @@ s
 
   pthread_t dataProcessingThread;
 
-  /** 
-      get bad channels correction
-      \param bad pointer to array that if bad!=NULL will be filled with the bad channel list
-      \returns 0 if bad channel disabled or no bad channels, >0 otherwise
-  */
-  virtual int getBadChannelCorrection(int *bad=NULL)=0;
+ /*  /\**  */
+/*       get bad channels correction */
+/*       \param bad pointer to array that if bad!=NULL will be filled with the bad channel list */
+/*       \returns 0 if bad channel disabled or no bad channels, >0 otherwise */
+/*   *\/ */
+/*   virtual int getBadChannelCorrection(int *bad=NULL)=0; */
 
 
   

@@ -194,14 +194,8 @@ class multiSlsDetector  : public slsDetectorUtils {
  using slsDetectorUtils::setBadChannelCorrection;
  using slsDetectorUtils::readAngularConversion;
  using slsDetectorUtils::writeAngularConversion;
- using slsDetectorUtils::resetMerging;
- using slsDetectorUtils::finalizeMerging;
- using slsDetectorUtils::addToMerging;
- using slsDetectorUtils::readDataFile;
- using slsDetectorUtils::writeDataFile;
- using slsDetectorUtils::createFileName;
 
-  /** 
+/* 
       @short Structure allocated in shared memory to store detector settings and be accessed in parallel by several applications (take care of possible conflicts!)
       
   */
@@ -719,7 +713,7 @@ class multiSlsDetector  : public slsDetectorUtils {
      \param fferr erro on ffcoefficient
      \returns 0
   */
-  int flatFieldCorrect(float datain, float errin, float &dataout, float &errout, float ffcoefficient, float fferr);
+  // int flatFieldCorrect(float datain, float errin, float &dataout, float &errout, float ffcoefficient, float fferr);
   
   /** 
      flat field correct data
@@ -743,7 +737,7 @@ class multiSlsDetector  : public slsDetectorUtils {
      \param t acquisition time (in ns)
      \returns 0
   */
-  int rateCorrect(float datain, float errin, float &dataout, float &errout, float tau, float t);
+  //  int rateCorrect(float datain, float errin, float &dataout, float &errout, float tau, float t);
   
   /** 
      rate correct data
@@ -754,43 +748,6 @@ class multiSlsDetector  : public slsDetectorUtils {
      \returns 0
   */
   int rateCorrect(float* datain, float *errin, float* dataout, float *errout);
-
-  
-/*   /\**  */
-/*       pure virtual function */
-/*   sets the arrays of the merged data to 0. NB The array should be created with size >= 360./getBinSize();  */
-/*       \param mp already merged postions */
-/*       \param mv already merged data */
-/*       \param me already merged errors (squared sum) */
-/*       \param mm multiplicity of merged arrays */
-/*       \returns OK or FAIL */
-/*       \sa mythenDetector::resetMerging */
-/*   *\/ */
-/*   int resetMerging(float *mp, float *mv,float *me, int *mm) ; */
-/*   /\**  */
-/*       pure virtual function */
-/*   merge dataset */
-/*       \param p1 angular positions of dataset */
-/*       \param v1 data */
-/*       \param e1 errors */
-/*       \param mp already merged postions */
-/*       \param mv already merged data */
-/*       \param me already merged errors (squared sum) */
-/*       \param mm multiplicity of merged arrays */
-/*       \sa mythenDetector::addToMerging */
-/*   *\/ */
-/*   int addToMerging(float *p1, float *v1, float *e1, float *mp, float *mv,float *me, int *mm); */
-
-/*   /\** pure virtual function */
-/*       calculates the "final" positions, data value and errors for the emrged data */
-/*       \param mp already merged postions */
-/*       \param mv already merged data */
-/*       \param me already merged errors (squared sum) */
-/*       \param mm multiplicity of merged arrays */
-/*       \returns FAIL or the number of non empty bins (i.e. points belonging to the pattern) */
-/*       \sa mythenDetector::finalizeMerging */
-/*   *\/ */
-/*   int finalizeMerging(float *mp, float *mv,float *me, int *mm); */
 
   /** 
       turns off server
@@ -919,6 +876,23 @@ class multiSlsDetector  : public slsDetectorUtils {
  int setReadOutFlags(readOutFlags flag=GET_READOUT_FLAGS);
  externalCommunicationMode setExternalCommunicationMode(externalCommunicationMode pol=GET_EXTERNAL_COMMUNICATION_MODE);
 
+ /**
+      Loads dark image or gain image to the detector
+      \param index can be DARK_IMAGE or GAIN_IMAGE
+      \fname file name to load data from
+      \returns OK or FAIL
+ */
+  int loadImageToDetector(imageType index,string const fname);
+
+  
+   /**
+      Test function
+      \param times number of repetitions
+      \returns repetition when it fails
+ */
+  int testFunction(int times=0);
+
+
  protected:
  
 
@@ -934,67 +908,6 @@ class multiSlsDetector  : public slsDetectorUtils {
 
 
 
-
-
-  /**
-     data queue
-  */
-  queue<int*> dataQueue;
-  /**
-     queue containing the postprocessed data
-  */
-  queue<detectorData*> finalDataQueue;
-  
-  
-
-
-
-
-
-
-  /**
-     current position of the detector
-  */
-  float currentPosition;
-  
-  /**
-     current position index of the detector
-  */
-  int currentPositionIndex;
-  
-  /**
-     I0 measured
-  */
-  float currentI0;
-  
-  
-
-
-  /**
-     current scan variable of the detector
-  */
-  float currentScanVariable[MAX_SCAN_LEVELS];
-  
-  /**
-     current scan variable index of the detector
-  */
-  int currentScanIndex[MAX_SCAN_LEVELS];
-  
-  
-
-
-  /** merging bins */
-  float *mergingBins;
-
-  /** merging counts */
-  float *mergingCounts;
-
-  /** merging errors */
-  float *mergingErrors;
-
-  /** merging multiplicity */
-  int *mergingMultiplicity;
-  
 
 };
 

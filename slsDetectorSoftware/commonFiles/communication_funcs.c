@@ -8,6 +8,7 @@
 #include <stdio.h>
 #include <errno.h>
 
+#include <sys/time.h>
 
 
 
@@ -17,6 +18,13 @@ extern int errno;
 
 
 char dummyClientIP[INET_ADDRSTRLEN];
+
+
+fd_set readset, tempset;
+int isock=0, maxfd;
+
+
+int myport=-1;
 
 //struct sockaddr_in address;
 //#define VERBOSE
@@ -30,6 +38,23 @@ int bindSocket(unsigned short int port_number) {
   //int file_des;
 
   //file_des= -1;
+
+
+
+
+
+
+
+
+
+
+  if (myport==port_number)
+    return -10;
+
+
+
+
+
   socketDescriptor = socket(AF_INET, SOCK_STREAM,0); //tcp
 
   //socketDescriptor = socket(PF_INET, SOCK_STREAM, 0);
@@ -59,12 +84,22 @@ int bindSocket(unsigned short int port_number) {
 
 	 socketDescriptor=-1;
        } else {
-	 listen(socketDescriptor, 5);
+	 if (listen(socketDescriptor, 5)==0) {
+
+	   if (isock==0) {
+	     FD_ZERO(&readset);
+	   }
+	   
+	   
+	   FD_SET(socketDescriptor, &readset);
+	   isock++;
+	   maxfd = socketDescriptor;
+	   printf ("%d port %d fd %d\n",isock, port_number,socketDescriptor);
+	   myport=port_number;
+	 } else
+	   printf("error on listen");
        }
      }
- 
-
-
      
 
 
@@ -88,94 +123,124 @@ int getServerError(int socketDescriptor)
 
 
 int acceptConnection(int socketDescriptor) {
+  
+
+  int j;
+
+
   struct sockaddr_in addressC;
   int file_des=-1;
+  struct timeval tv;
+  int result;
+
 
   //socklen_t address_length;
   size_t address_length=sizeof(struct sockaddr_in);
   
-  //  if(file_des>0) return file_des;
+  if (socketDescriptor<0)
+    return -1;
+
+   memcpy(&tempset, &readset, sizeof(tempset));
+   tv.tv_sec = 10000000;
+   tv.tv_usec = 0;
+   result = select(maxfd + 1, &tempset, NULL, NULL, &tv);
+
+   if (result == 0) {
+      printf("select() timed out!\n");
+   }  else if (result < 0 && errno != EINTR) {
+      printf("Error in select(): %s\n", strerror(errno));
+   } else if (result > 0) {
+     printf("select returned!\n");
+     for (j=0; j<maxfd+1; j++) {
+       if (FD_ISSET(j, &tempset)) {
+	
+	 printf("fd %d is set\n",j);
+	 FD_CLR(j, &tempset);
 
 
-#ifndef C_ONLY
-  if(is_a_server){ //server; the server will wait for the clients connection
-#endif
-
-
-    if (socketDescriptor>0) {
-      //if ((file_des = accept(socketDescriptor,(struct sockaddr *) &address, &address_length)) < 0) {
-      if ((file_des = accept(socketDescriptor,(struct sockaddr *) &addressC, &address_length)) < 0) {
-
-
-	printf("Error: with server accept, connection refused %d\n", errno);
-
-
-	switch(errno) {
-	case EWOULDBLOCK:
-	  printf("ewouldblock eagain\n");
-	  break;
-	case EBADF:
-	  printf("ebadf\n");
-	  break;
-	case ECONNABORTED:
+	 if ((file_des = accept(j,(struct sockaddr *) &addressC, &address_length)) < 0) {
+	 printf("Error in accept(): %s\n", strerror(errno));
+	 printf("Error: with server accept, connection refused %d\n", errno);
+	 
+	 
+	 switch(errno) {
+	 case EWOULDBLOCK:
+	   printf("ewouldblock eagain\n");
+	   break;
+	 case EBADF:
+	   printf("ebadf\n");
+	   break;
+	 case ECONNABORTED:
 	  printf("econnaborted\n");
 	  break;
-	case EFAULT:
-	  printf("efault\n");
-	  break;
-	case EINTR:
-	  printf("eintr\n");
-	  break;
+	 case EFAULT:
+	   printf("efault\n");
+	   break;
+	 case EINTR:
+	   printf("eintr\n");
+	   break;
 	case EINVAL:
 	  printf("einval\n");
 	  break;
-	case EMFILE: 
-	  printf("emfile\n");
+	 case EMFILE: 
+	   printf("emfile\n");
 	  break;
-	case ENFILE:
-	  printf("enfile\n");
-	  break;
+	 case ENFILE:
+	   printf("enfile\n");
+	   break;
 	case ENOTSOCK:
 	  printf("enotsock\n");
 	  break;
-	case EOPNOTSUPP:
-	  printf("eOPNOTSUPP\n");
+	 case EOPNOTSUPP:
+	   printf("eOPNOTSUPP\n");
 	  break;
-	case ENOBUFS:
-	  printf("ENOBUFS\n");
+	 case ENOBUFS:
+	   printf("ENOBUFS\n");
+	   break;
+	 case ENOMEM:
+	   printf("ENOMEM\n");
 	  break;
-	case ENOMEM:
-	  printf("ENOMEM\n");
-	  break;
-	case ENOSR:
-	  printf("ENOSR\n");
-	  break;
+	 case ENOSR:
+	   printf("ENOSR\n");
+	   break;
         case EPROTO:
 	  printf("EPROTO\n");
 	  break;
-	default:
-	  printf("unknown error\n");
-	}
+	 default:
+	   printf("unknown error\n");
+	 }
+	 
+	 // should remove descriptor
+
+	 socketDescriptor=-1;
+	 }  else {
+	   
+	   inet_ntop(AF_INET, &(addressC.sin_addr), dummyClientIP, INET_ADDRSTRLEN);
+	   
+	   printf("connection accepted %d\n",file_des);
+	   FD_SET(file_des, &readset);
+	   maxfd = (maxfd < file_des)?file_des:maxfd;
+	 }
+
+       }
+     }
+   }
+   /*       for (j=0; j<maxfd+1; j++) { */
+/*          if (FD_ISSET(j, &tempset)) { */
+   
+/* 	   printf("%d is set!\n",j); */
+/* 	   ///////////executes the function!!!! */
 
 
-	socketDescriptor=-1;
-      }
-      inet_ntop(AF_INET, &(addressC.sin_addr), dummyClientIP, INET_ADDRSTRLEN);
 
-      
-
-
-      // struct sockaddr_in
-      //{
-      //short int sin_family; /* Famyly of the address*/
-      //unsigned short int sin_port; /* Port */
-      //struct in_addr sin_addr; /* Network address */
-      //unsigned char sin_zero[8]; /* Same size of struct sockaddr */
-      //};
-    }
+/*          }      // end if (FD_ISSET(j, &tempset)) */
+/*       }      // end for (j=0;...) */
+/*    }      // end else if (result > 0) */
 
 
-  return file_des;
+
+
+   return file_des;
 }
 
 
@@ -185,14 +250,11 @@ int acceptConnection(int socketDescriptor) {
 
 
 void closeConnection(int file_des) {
-  //fflush(stdout);
-  //printf("Closing file_des %d\n", file_des);
-  //sleep(1);
 #ifdef VERY_VERBOSE
 #endif 
-  if(file_des>=0)
-    close(file_des);
-  file_des=-1;
+   if(file_des>=0)
+     close(file_des);
+  FD_CLR(file_des, &readset);
 }
 
 void exitServer(int socketDescriptor) {
@@ -201,7 +263,9 @@ void exitServer(int socketDescriptor) {
 #ifdef VERY_VERBOSE
   printf("Closing server\n");
 #endif
+  FD_CLR(socketDescriptor, &readset);
   socketDescriptor=-1;
+  isock--;
 }
 
 

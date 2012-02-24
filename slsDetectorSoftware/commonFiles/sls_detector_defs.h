@@ -147,9 +147,9 @@ enum networkParameter {
   SERVER_MAC /**< server MAC */
 };
 
- /**
+/**
     type of action performed (for text client)
- */
+*/
 enum {GET_ACTION, PUT_ACTION, READOUT_ACTION, HELP_ACTION};
 
 /** online flags enum \sa setOnline*/
@@ -157,18 +157,6 @@ enum {GET_ONLINE_FLAG=-1, /**< returns wether the detector is in online or offli
       OFFLINE_FLAG=0, /**< detector in offline state (i.e. no communication to the detector - using only local structure - no data acquisition possible!) */
       ONLINE_FLAG =1/**< detector in online state (i.e. communication to the detector updating the local structure) */
 };
-
-   /** synchronization of the various detectors (should be set for each detector individually?!?!?) */
-      
-  enum synchronizationMode {
-    GET_SYNCHRONIZATION_MODE=-1, /**< the multidetector will return its synchronization mode */
-    NONE, /**< all detectors are independent (no cabling) */
-    MASTER_GATES, /**< the master gates the other detectors */
-    MASTER_TRIGGERS, /**< the master triggers the other detectors */
-    SLAVE_STARTS_WHEN_MASTER_STOPS /**< the slave acquires when the master finishes, to avoid deadtime */
-  };
-
-
 
 /** 
      flags to get (or set) the size of the detector
@@ -423,17 +411,35 @@ enum correctionFlags {
   ANGULAR_CONVERSION,/**< angular conversion is calculated */
   I0_NORMALIZATION
 };
-
+/** port type */
 enum portType {
   CONTROL_PORT, /**< control port */ 
   STOP_PORT, /**<stop port */
   DATA_PORT /**< data port */
 }; 
 
-enum image {
+/** hierarchy in multi-detector structure, if any */
+enum masterFlags {
+  GET_MASTER=-1, /**< return master flag */
+  NO_MASTER, /**< no master/slave hierarchy defined */
+  IS_MASTER, /**<is master */
+  IS_SLAVE /**< is slave */
+}; 
+
+/** synchronization in a multidetector structure, if any */
+enum synchronizationMode {
+  GET_SYNCHRONIZATION_MODE=-1, /**< the multidetector will return its synchronization mode */
+  NONE, /**< all detectors are independent (no cabling) */
+  MASTER_GATES, /**< the master gates the other detectors */
+  MASTER_TRIGGERS, /**< the master triggers the other detectors */
+  SLAVE_STARTS_WHEN_MASTER_STOPS /**< the slave acquires when the master finishes, to avoid deadtime */
+};
+
+enum imageType {
   DARK_IMAGE,  /**< dark image */
   GAIN_IMAGE   /**< gain image */
 };
+
 
 /** 
    function indexes to call on the server
@@ -527,11 +533,17 @@ enum {
   F_UPDATE_CLIENT, /**< Returns all the important parameters to update the shared memory of the client */
 
   F_CONFIGURE_MAC, /**< Configures MAC for Gotthard readout */
+  
+  F_LOAD_IMAGE,   /**< Loads Dark/Gain image to the Gotthard detector */
 
-  F_LOAD_IMAGE   /**< Loads Dark/Gain image to the Gotthard detector */
+  // multi detector structures
+
+  F_SET_MASTER, /**< sets master/slave flag for multi detector structures */
+
+  F_SET_SYNCHRONIZATION_MODE /**< sets master/slave synchronization mode for multidetector structures */
+
 
   /* Always append functions hereafter!!! */
-
 
 };
 
@@ -549,6 +561,15 @@ typedef struct  {
   float tilt; /**< ossible tilt in the orthogonal direction (unused)*/
   float etilt; /**< error in the tilt determination */
 } angleConversionConstant;
+
+
+enum angleConversionParameter {
+  ANGULAR_DIRECTION, /**< angular direction of the diffractometer */
+  GLOBAL_OFFSET, /**< global offset of the diffractometer */
+  FINE_OFFSET, /**< fine offset of the diffractometer */
+  BIN_SIZE /**< angular bin size */
+}; 
+
 
 
 

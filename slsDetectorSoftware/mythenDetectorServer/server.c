@@ -68,14 +68,16 @@ int main(int argc, char *argv[])
 #ifdef VERY_VERBOSE
     printf("Conenction accepted\n");
 #endif
-    retval=decode_function(fd);
-    //#ifdef VERY_VERBOSE
-    printf("function executed\n");
-    //#endif
-    closeConnection(fd);
+    if (fd>0) {
+      retval=decode_function(fd);
+      //#ifdef VERY_VERBOSE
+      printf("function executed\n");
+      //#endif
+      closeConnection(fd);
 #ifdef VERY_VERBOSE
-    printf("connection closed\n");
+      printf("connection closed\n");
 #endif
+    }
   }
 
   exitServer(sockfd);

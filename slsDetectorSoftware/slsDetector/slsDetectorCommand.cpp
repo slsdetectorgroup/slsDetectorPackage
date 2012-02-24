@@ -1,8 +1,12 @@
 #include "slsDetectorCommand.h"
 
+#include <iostream>
+#include <sstream>
+#include <fstream>
+
 #include <iomanip>
 
-slsDetectorCommand::slsDetectorCommand() {
+slsDetectorCommand::slsDetectorCommand() : slsDetectorBase() {
 
  
   int i=0;
@@ -105,6 +109,10 @@ slsDetectorCommand::slsDetectorCommand() {
   descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdAngConv;
   i++;
 
+  descrToFuncMap[i].m_pFuncName="angdir" ;//
+  descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdAngConv;
+  i++;
+
   descrToFuncMap[i].m_pFuncName="threaded"; //
   descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdThreaded;
   i++;
@@ -150,7 +158,7 @@ slsDetectorCommand::slsDetectorCommand() {
 
   
   descrToFuncMap[i].m_pFuncName="online"; //
-  descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdUnderDevelopment;
+  descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdOnline;
   i++;
 
   /* Acquisition actions */
@@ -770,6 +778,8 @@ detectorSettings slsDetectorCommand::getDetectorSettings(string s ){
 
 string slsDetectorCommand::executeLine(int narg, char *args[], int action) {
   
+
+
   if (action==READOUT_ACTION)
     return cmdAcquire(narg, args, action);
 
@@ -1613,7 +1623,7 @@ string slsDetectorCommand::cmdAngConv(int narg, char *args[], int action){
   string sval;
   char answer[1000];
   float fval;
-
+  angleConversionParameter c;
 
   if (string(args[0])==string("angconv")) {
     if (action==PUT_ACTION) {
@@ -1642,30 +1652,31 @@ string slsDetectorCommand::cmdAngConv(int narg, char *args[], int action){
       }
     }
   } else if  (string(args[0])==string("globaloff")) {
-    if (action==PUT_ACTION) {
-      if (sscanf(args[1],"%f",&fval))
-	setGlobalOffset(fval);
-    }
-    sprintf(answer,"%f",getGlobalOffset());
-    return string(answer);
+    c=GLOBAL_OFFSET;
+
 
   } else if  (string(args[0])==string("fineoff")) {
-    if (action==PUT_ACTION) {
-      if (sscanf(args[1],"%f",&fval))
-	setFineOffset(fval);
-    }
-    sprintf(answer,"%f",getFineOffset());
-    return string(answer); 
+    c=FINE_OFFSET;
+
 
   } else if  (string(args[0])==string("binsize")) {
+    c=BIN_SIZE;
+
+  } else if  (string(args[0])==string("angdir")) {
+    c=ANGULAR_DIRECTION;
+
+  } else
+    return string("could not decode angular conversion parameter ")+cmd;
+
+
+
     if (action==PUT_ACTION) {
       if (sscanf(args[1],"%f",&fval))
-	setBinSize(fval);
+	setAngularConversionParameter(c,fval);
     } 
-    sprintf(answer,"%f",getBinSize());
+    sprintf(answer,"%f",getAngularConversionParameter(c));
     return string(answer); 
 
-  } 
 
 }
  
@@ -1752,37 +1763,37 @@ string slsDetectorCommand::helpThreaded(int narg, char *args[], int action){
 
 
 string slsDetectorCommand::cmdImage(int narg, char *args[], int action){
-	string sval;
-	int retval;
-	if (action==HELP_ACTION)
-		return helpImage(narg,args,HELP_ACTION);
-	else if (action==GET_ACTION)
-		return string("Cannot get");
-
-	sval=string(args[1]);
-	setOnline(ONLINE_FLAG);
-
-	if (string(args[0])==string("darkimage"))
-		retval=loadImageToDetector(DARK_IMAGE,sval);
-	else if (string(args[0])==string("gainimage"))
-		retval=loadImageToDetector(GAIN_IMAGE,sval);
-
-	if(!retval)
-		return string("Image loaded succesfully");
-	else
-		return string("Image NOT loaded");
+  string sval;
+  int retval;
+  if (action==HELP_ACTION)
+    return helpImage(narg,args,HELP_ACTION);
+  else if (action==GET_ACTION)
+    return string("Cannot get");
+  
+  sval=string(args[1]);
+  setOnline(ONLINE_FLAG);
+  
+  if (string(args[0])==string("darkimage"))
+    retval=loadImageToDetector(DARK_IMAGE,sval);
+  else if (string(args[0])==string("gainimage"))
+    retval=loadImageToDetector(GAIN_IMAGE,sval);
+  
+  if(!retval)
+    return string("Image loaded succesfully");
+  else
+    return string("Image NOT loaded");
 }
 
 
 string slsDetectorCommand::helpImage(int narg, char *args[], int action){
-	if (action==PUT_ACTION || action==HELP_ACTION){
-		if (string(args[0])==string("darkimage"))
-			return string("darkimage f \t  loads the image to detector from file f\n");
-		else
-			return string("gainimage f \t  loads the image to detector from file f\n");
-	}
-	else
-		return string("Cannot get");
+  if (action==PUT_ACTION || action==HELP_ACTION){
+    if (string(args[0])==string("darkimage"))
+      return string("darkimage f \t  loads the image to detector from file f\n");
+    else
+      return string("gainimage f \t  loads the image to detector from file f\n");
+  }
+  else
+    return string("Cannot get");
 }
 
 
@@ -2083,12 +2094,12 @@ string slsDetectorCommand::cmdPort(int narg, char *args[], int action) {
 
   if (cmd=="port") {
     index=CONTROL_PORT;
-  } if (cmd=="dataport") {
+  } else if (cmd=="dataport") {
     index=DATA_PORT;
-  } if (cmd=="stopport") {
+  } else if (cmd=="stopport") {
     index=STOP_PORT;
   } else
-    return string("unknown port type")+cmd;
+    return string("unknown port type ")+cmd;
   
   setOnline(ONLINE_FLAG);
   if (action==PUT_ACTION)
@@ -2230,18 +2241,18 @@ string slsDetectorCommand::cmdConfigureMac(int narg, char *args[], int action) {
   int ival;
   int ret;
   char ans[1000];
-
+  
   if (action==PUT_ACTION){
-	  if (sscanf(args[1],"%d",&ival))
-		  if(ival==1){
-			  setOnline(ONLINE_FLAG);
-			  ret=configureMAC();
-		  }
-		  else
-			  return string("Not yet implemented with arguments other than 1");
+    if (sscanf(args[1],"%d",&ival))
+      if(ival==1){
+	setOnline(ONLINE_FLAG);
+	ret=configureMAC();
+      }
+      else
+	return string("Not yet implemented with arguments other than 1");
   }
   else
-	  return string("Cannot get ")+cmd;
+    return string("Cannot get ")+cmd;
 
   sprintf(ans,"%d",ret);
   return ans;
@@ -2253,7 +2264,7 @@ string slsDetectorCommand::helpConfigureMac(int narg, char *args[], int action) 
   if (action==PUT_ACTION || action==HELP_ACTION)
     os << "configuremac i \n configures the MAC of the detector. i=1 for configure; i=0 for unconfigure(not implemented yet)"<< std::endl;
   if (action==GET_ACTION || action==HELP_ACTION)
-		os << "configuremac " << "Cannot get " << std::endl;
+    os << "configuremac " << "Cannot get " << std::endl;
   
   return os.str();
 }
@@ -2281,12 +2292,12 @@ string slsDetectorCommand::cmdDetectorSize(int narg, char *args[], int action) {
 
   if (cmd=="nmod") {
     ret=setNumberOfModules(val);
-  } if (cmd=="maxmod") {
+  } else if (cmd=="maxmod") {
     ret=getMaxNumberOfModules();
-  } if (cmd=="dr") {
+  } else if (cmd=="dr") {
     ret=setDynamicRange(val);
   } else
-    return string("unknown detector size")+cmd;
+    return string("unknown detector size ")+cmd;
   
 
   sprintf(ans,"%d",ret);
@@ -2338,7 +2349,7 @@ string slsDetectorCommand::cmdSettings(int narg, char *args[], int action) {
     if (action==PUT_ACTION) 
       setSettings(getDetectorSettings(string(args[1])));
     return getDetectorSettings(getSettings());
-  } if (cmd=="threshold") {
+  } else if (cmd=="threshold") {
     if (action==PUT_ACTION) {
       if (sscanf(args[1],"%d",&val))
 	setThresholdEnergy(val);
@@ -2347,7 +2358,7 @@ string slsDetectorCommand::cmdSettings(int narg, char *args[], int action) {
     }
     sprintf(ans,"%d",getThresholdEnergy());
     return string(ans);
-  } if (cmd=="trimbits") {
+  } else if (cmd=="trimbits") {
     if (narg>=2) {
       string sval=string(args[1]);
 #ifdef VERBOSE
@@ -2518,54 +2529,54 @@ string slsDetectorCommand::cmdDigiTest(int narg, char *args[], int action) {
   setOnline(ONLINE_FLAG);
 
   if (cmd=="bustest"){
-	  if (action==PUT_ACTION)
-		  return string("cannot set ")+cmd;
-	  sprintf(answer,"%x",digitalTest(DETECTOR_BUS_TEST));
-	  return string(answer);
+    if (action==PUT_ACTION)
+      return string("cannot set ")+cmd;
+    sprintf(answer,"%x",digitalTest(DETECTOR_BUS_TEST));
+    return string(answer);
   } 
 
   if (cmd=="digitest") {
-	  if (action==PUT_ACTION)
-		  return string("cannot set ")+cmd;
-	  int ival=-1;
-	  if (sscanf(args[0],"digitest:%d",&ival)) {
-		  sprintf(answer,"%x",digitalTest(CHIP_TEST, ival));
-		  return string(answer);
-	  } else
-		  return string("undefined module number");
+    if (action==PUT_ACTION)
+      return string("cannot set ")+cmd;
+    int ival=-1;
+    if (sscanf(args[0],"digitest:%d",&ival)) {
+      sprintf(answer,"%x",digitalTest(CHIP_TEST, ival));
+      return string(answer);
+    } else
+      return string("undefined module number");
   }
 
   if (cmd=="digibittest") {
-	  if (action==GET_ACTION)
-		  return string("cannot get ")+cmd;
-	  int ival=-1;
-	  if (sscanf(args[1],"%d",&ival)) {
-		  if((ival==0)||(ival==1)){
-		 	sprintf(answer,"%x",digitalTest(DIGITAL_BIT_TEST,ival));
-		 	return string(answer);
-		  }
-		  else
-			  return string("Use only 0 or 1 to set/clear digital test bit\n");
-	  } else
-		  return string("undefined number");
+    if (action==GET_ACTION)
+      return string("cannot get ")+cmd;
+    int ival=-1;
+    if (sscanf(args[1],"%d",&ival)) {
+      if((ival==0)||(ival==1)){
+	sprintf(answer,"%x",digitalTest(DIGITAL_BIT_TEST,ival));
+	return string(answer);
+      }
+      else
+	return string("Use only 0 or 1 to set/clear digital test bit\n");
+    } else
+      return string("undefined number");
   }
 
   if (cmd=="acqtest") {
-	  if (action==GET_ACTION)
-		  return string("cannot get ")+cmd;
-	  int ival=-1;
-	  if (sscanf(args[1],"%d",&ival)) {
-		  if(ival<1)
-			  return helpDigiTest(narg, args, action);
-		  else {
-			  sprintf(answer,"%x",testFunction(ival));
-			  return string(answer);
-		  }
-	  } else
-		  return string("undefined number");
+    if (action==GET_ACTION)
+      return string("cannot get ")+cmd;
+    int ival=-1;
+    if (sscanf(args[1],"%d",&ival)) {
+      if(ival<1)
+	return helpDigiTest(narg, args, action);
+      else {
+	sprintf(answer,"%x",testFunction(ival));
+	return string(answer);
+      }
+    } else
+      return string("undefined number");
   }
-
- return string("unknown digital test mode ")+cmd;
+  
+  return string("unknown digital test mode ")+cmd;
 
 }
 
@@ -2574,12 +2585,12 @@ string slsDetectorCommand::helpDigiTest(int narg, char *args[], int action) {
 
   ostringstream os;  
   if (action==GET_ACTION || action==HELP_ACTION) {
-    os << "digitaltest:i \n performs digital test of the module i. Returns 0 if succeeded, otherwise error mask."<< std::endl;
-    os << "bustest \n performs test of the bus interface between FPGA and embedded Linux system. Can last up to a few minutes."<< std::endl;
+    os << "digitaltest:i \t performs digital test of the module i. Returns 0 if succeeded, otherwise error mask."<< std::endl;
+    os << "bustest \t performs test of the bus interface between FPGA and embedded Linux system. Can last up to a few minutes."<< std::endl;
   }
   if (action==PUT_ACTION || action==HELP_ACTION) {
-    os << "digibittest i\n sets a variable in the server to be used in configuremac function. i sets/clears the digital test bit."<< std::endl;
-    os << "acqtest i\n runs start acquisition i number of times."<< std::endl;
+    os << "digibittest i\t sets a variable in the server to be used in configuremac function. i sets/clears the digital test bit."<< std::endl;
+    os << "acqtest i\t runs start acquisition i number of times."<< std::endl;
   } 
   return os.str();
 }
@@ -2647,73 +2658,73 @@ string slsDetectorCommand::helpRegister(int narg, char *args[], int action) {
 
 string slsDetectorCommand::cmdDAC(int narg, char *args[], int action) {
 
-	if (action==HELP_ACTION)
-		return helpDAC(narg, args, action);
-
-	dacIndex dac;
-	float val=-1;
-	char answer[1000];
-
-	if (cmd=="vthreshold")
-		dac=THRESHOLD;
-	else if (cmd=="vcalibration")
-		dac=CALIBRATION_PULSE;
-	else if (cmd=="vtrimbit")
-		dac=TRIMBIT_SIZE;
-	else if (cmd=="vpreamp")
-		dac=PREAMP;
-	else if (cmd=="vshaper1")
-		dac=SHAPER1;
-	else if (cmd=="vshaper2")
-		dac=SHAPER2;
-	else if (cmd=="vhighvoltage")
-		dac=HV_POT;
-	else if (cmd=="vapower")
-		dac=VA_POT;
-	else if (cmd=="vddpower")
-		dac=VDD_POT;
-	else if (cmd=="vshpower")
-		dac=VSH_POT;
-	else if (cmd=="viopower")
-		dac=VIO_POT;
-	else if (cmd=="vrefds")
-		dac=G_VREF_DS;
-	else if (cmd=="vcascn_pb")
-		dac=G_VCASCN_PB;
-	else if (cmd=="vcascp_pb")
-		dac=G_VCASCP_PB;
-	else if (cmd=="vout_cm")
-		dac=G_VOUT_CM;
-	else if (cmd=="vcasc_out")
-		dac=G_VCASC_OUT;
-	else if (cmd=="vin_cm")
-		dac=G_VIN_CM;
-	else if (cmd=="vref_comp")
-		dac=G_VREF_COMP;
-	else if (cmd=="ib_test_c")
-		dac=G_IB_TESTC;
-	else if (cmd=="temp_adc") {
-		dac=TEMPERATURE_ADC;
-		if (action==PUT_ACTION)
-			return string("cannot set ")+cmd;
-	} else if (cmd=="temp_fpga") {
-		dac=TEMPERATURE_FPGA;
-		if (action==PUT_ACTION)
-			return string("cannot set ")+cmd;
-	} else
-		return string("cannot decode dac ")+cmd;
-
-	if (action==PUT_ACTION) {
-		if (sscanf(args[1],"%f", &val))
-			;
-		else
-			return string("cannot scan DAC value ")+string(args[1]);
-	}
-
-	setOnline(ONLINE_FLAG);
-
-	sprintf(answer,"%f",setDAC(val,dac));
-	return string(answer);
+  if (action==HELP_ACTION)
+    return helpDAC(narg, args, action);
+  
+  dacIndex dac;
+  float val=-1;
+  char answer[1000];
+  
+  if (cmd=="vthreshold")
+    dac=THRESHOLD;
+  else if (cmd=="vcalibration")
+    dac=CALIBRATION_PULSE;
+  else if (cmd=="vtrimbit")
+    dac=TRIMBIT_SIZE;
+  else if (cmd=="vpreamp")
+    dac=PREAMP;
+  else if (cmd=="vshaper1")
+    dac=SHAPER1;
+  else if (cmd=="vshaper2")
+    dac=SHAPER2;
+  else if (cmd=="vhighvoltage")
+    dac=HV_POT;
+  else if (cmd=="vapower")
+    dac=VA_POT;
+  else if (cmd=="vddpower")
+    dac=VDD_POT;
+  else if (cmd=="vshpower")
+    dac=VSH_POT;
+  else if (cmd=="viopower")
+    dac=VIO_POT;
+  else if (cmd=="vrefds")
+    dac=G_VREF_DS;
+  else if (cmd=="vcascn_pb")
+    dac=G_VCASCN_PB;
+  else if (cmd=="vcascp_pb")
+    dac=G_VCASCP_PB;
+  else if (cmd=="vout_cm")
+    dac=G_VOUT_CM;
+  else if (cmd=="vcasc_out")
+    dac=G_VCASC_OUT;
+  else if (cmd=="vin_cm")
+    dac=G_VIN_CM;
+  else if (cmd=="vref_comp")
+    dac=G_VREF_COMP;
+  else if (cmd=="ib_test_c")
+    dac=G_IB_TESTC;
+  else if (cmd=="temp_adc") {
+    dac=TEMPERATURE_ADC;
+    if (action==PUT_ACTION)
+      return string("cannot set ")+cmd;
+  } else if (cmd=="temp_fpga") {
+    dac=TEMPERATURE_FPGA;
+    if (action==PUT_ACTION)
+      return string("cannot set ")+cmd;
+  } else
+    return string("cannot decode dac ")+cmd;
+  
+  if (action==PUT_ACTION) {
+    if (sscanf(args[1],"%f", &val))
+      ;
+    else
+      return string("cannot scan DAC value ")+string(args[1]);
+  }
+  
+  setOnline(ONLINE_FLAG);
+  
+  sprintf(answer,"%f",setDAC(val,dac));
+  return string(answer);
 
 }
 
@@ -2800,24 +2811,24 @@ string slsDetectorCommand::helpDAC(int narg, char *args[], int action) {
 
 string slsDetectorCommand::cmdADC(int narg, char *args[], int action) {
 
-	dacIndex adc;
-	float val=-1;
-	char answer[1000];
-
-	if (action==HELP_ACTION)
-		return helpADC(narg, args, action);
-	else if (action==PUT_ACTION)
-		return string("cannot set ")+cmd;
-
-	if (cmd=="temp_adc")
-		adc=TEMPERATURE_ADC;
-	else if (cmd=="temp_fpga")
-		adc=TEMPERATURE_FPGA;
-	else
-		return string("cannot decode adc ")+cmd;
-
-	setOnline(ONLINE_FLAG);
-
+  dacIndex adc;
+  float val=-1;
+  char answer[1000];
+  
+  if (action==HELP_ACTION)
+    return helpADC(narg, args, action);
+  else if (action==PUT_ACTION)
+    return string("cannot set ")+cmd;
+  
+  if (cmd=="temp_adc")
+    adc=TEMPERATURE_ADC;
+  else if (cmd=="temp_fpga")
+    adc=TEMPERATURE_FPGA;
+  else
+    return string("cannot decode adc ")+cmd;
+  
+  setOnline(ONLINE_FLAG);
+  
   sprintf(answer,"%f",getADC(adc));
   return string(answer);
 
@@ -2825,16 +2836,16 @@ string slsDetectorCommand::cmdADC(int narg, char *args[], int action) {
 
 string slsDetectorCommand::helpADC(int narg, char *args[], int action) {
 
-	ostringstream os;
-	if (action==PUT_ACTION || action==HELP_ACTION) {
-		os << "temp_adc " << "Cannot be set" << std::endl;
-		os << "temp_fpga " << "Cannot be set" << std::endl;
-	}
-	if (action==GET_ACTION || action==HELP_ACTION) {
-		os << "temp_adc " << "\t gets the temperature of the adc" << std::endl;
-		os << "temp_fpga " << "\t gets the temperature of the fpga" << std::endl;
-	}
-	return os.str();
+  ostringstream os;
+  if (action==PUT_ACTION || action==HELP_ACTION) {
+    os << "temp_adc " << "Cannot be set" << std::endl;
+    os << "temp_fpga " << "Cannot be set" << std::endl;
+  }
+  if (action==GET_ACTION || action==HELP_ACTION) {
+    os << "temp_adc " << "\t gets the temperature of the adc" << std::endl;
+    os << "temp_fpga " << "\t gets the temperature of the fpga" << std::endl;
+  }
+  return os.str();
 }
 
 

@@ -2580,6 +2580,11 @@ int set_port(int file_des) {
       ret=FAIL;
       sprintf(mess,"Could not bind port %d\n", p_number);
       printf("Could not bind port %d\n", p_number); 
+      if (sd==-10) {
+      sprintf(mess,"Port %d already set\n", p_number);
+      printf("Port %d already set\n", p_number); 
+
+      }
     }
 
     n = sendDataOnly(file_des,&ret,sizeof(ret));

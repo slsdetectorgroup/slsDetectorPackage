@@ -577,7 +577,8 @@ int slsDetector::initializeDetectorSize(detectorType type) {
      /** set binsize*/
      thisDetector->binSize=0;
      thisDetector->stoppedFlag=0;
-     
+     thisDetector->threadedProcessing=1;
+
      thisDetector->actionMask=0;
 
 
@@ -961,6 +962,8 @@ int slsDetector::setTCPSocket(string const name, int const control_port, int con
 #ifdef VERBOSE
       std::cout<< "Could not connect Control socket " << thisName  << " " << thisCP << std::endl;
 #endif 
+      delete controlSocket;
+      controlSocket=NULL;
       retval=FAIL;
     }
 #ifdef VERYVERBOSE
@@ -974,6 +977,8 @@ int slsDetector::setTCPSocket(string const name, int const control_port, int con
 #ifdef VERBOSE
     std::cout<< "Could not connect Stop socket "<<thisName  << " " << thisSP << std::endl;
 #endif
+    delete stopSocket;
+    stopSocket=NULL;
     retval=FAIL;
     } 
 #ifdef VERYVERBOSE
@@ -987,6 +992,12 @@ int slsDetector::setTCPSocket(string const name, int const control_port, int con
 #ifdef VERBOSE
     std::cout<< "Could not connect Data socket "<<thisName  << " " << thisDP << std::endl;
 #endif
+    
+
+    delete dataSocket;
+    dataSocket=NULL;
+
+
     retval=FAIL;
   } 
 #ifdef VERYVERBOSE
@@ -998,6 +1009,8 @@ int slsDetector::setTCPSocket(string const name, int const control_port, int con
     if (controlSocket->Connect()<0) {
       controlSocket->SetTimeOut(5);
       thisDetector->onlineFlag=OFFLINE_FLAG;
+      delete controlSocket; 
+      controlSocket=NULL;
       retval=FAIL;
 #ifdef VERBOSE
     std::cout<< "offline!" << std::endl;
@@ -3329,34 +3342,64 @@ int slsDetector::setPort(portType index, int num){
   int retval;
   uint64_t ut;
   char mess[100];
-  int ret=OK;
+  int ret=FAIL;
   int n=0;
   
   MySocketTCP *s;
 
+  if (num>1024) {
 
   switch(index) {
   case CONTROL_PORT:
     s=controlSocket;
     retval=thisDetector->controlPort;
+#ifdef VERBOSE
+    cout << "s="<< s<< endl;
+      cout << thisDetector->controlPort<< " " << thisDetector->dataPort << " " << thisDetector->stopPort << endl;
+#endif 
+    if (s==NULL) {
+      
+#ifdef VERBOSE
+      cout << "s=NULL"<< endl;
+      cout << thisDetector->controlPort<< " " << thisDetector->dataPort << " " << thisDetector->stopPort << endl;
+#endif 
+      setTCPSocket("",DEFAULT_PORTNO);
+    }
+    if (controlSocket) {
+      s=controlSocket;
+    } else {
+#ifdef VERBOSE
+      cout << "still cannot connect!"<< endl;
+      cout << thisDetector->controlPort<< " " << thisDetector->dataPort << " " << thisDetector->stopPort << endl;
+#endif 
+  
+
+
+      setTCPSocket("",retval);
+    }
     break;
   case DATA_PORT:
     s=dataSocket;
     retval=thisDetector->dataPort;
+    if (s==NULL) setTCPSocket("",-1,-1,DEFAULT_PORTNO+2);
+    if (dataSocket) s=dataSocket;
+    else setTCPSocket("",-1,-1,retval);
     break;
   case STOP_PORT:
     s=stopSocket;
     retval=thisDetector->stopPort;
+    if (s==NULL) setTCPSocket("",-1,DEFAULT_PORTNO+1);
+    if (stopSocket) s=stopSocket;
+    else setTCPSocket("",-1,retval);
     break;
   default:
     s=NULL;
   }
 
-
-  if (thisDetector->onlineFlag==ONLINE_FLAG) {
-    if (s) {
-      if  (s->Connect()>=0) {
-	s->SendDataOnly(&fnum,sizeof(fnum));
+    if (thisDetector->onlineFlag==ONLINE_FLAG) {
+      if (s) {
+	if  (s->Connect()>=0) {
+	  s->SendDataOnly(&fnum,sizeof(fnum));
 	s->SendDataOnly(&index,sizeof(index));
 	n=s->SendDataOnly(&num,sizeof(num));
 	s->ReceiveDataOnly(&ret,sizeof(ret));
@@ -3367,9 +3410,32 @@ int slsDetector::setPort(portType index, int num){
 	  s->ReceiveDataOnly(&retval,sizeof(retval)); 
 	} 
 	s->Disconnect();
+	}
+      } 
+      
+  }
+    if (ret!=FAIL) {
+      
+      switch(index) {
+      case CONTROL_PORT:
+	thisDetector->controlPort=retval;
+	break;
+      case DATA_PORT:
+	thisDetector->dataPort=retval;
+	break;
+      case STOP_PORT:
+	thisDetector->stopPort=retval;
+      break;
+      default:
+	;
       }
+    
+      
+#ifdef VERBOSE
+      cout << "ret is ok" << endl;
+#endif 
+      
     } else {
-
       switch(index) {
       case CONTROL_PORT:
 	thisDetector->controlPort=num;
@@ -3383,54 +3449,29 @@ int slsDetector::setPort(portType index, int num){
       default:
 	;
       }
-    
-      return num;
     }
-  } else {
-
-      switch(index) {
-      case CONTROL_PORT:
-	thisDetector->controlPort=num;
-	break;
-      case DATA_PORT:
-	thisDetector->dataPort=num;
-	break;
-      case STOP_PORT:
-	thisDetector->stopPort=num;
-	break;
-      default:
-	;
-      }
-    
-      return num;
-    }
-
-
-
-
-  if (ret!=FAIL) {
-
+  }
     switch(index) {
     case CONTROL_PORT:
-      thisDetector->controlPort=retval;
+      retval=thisDetector->controlPort;
       break;
     case DATA_PORT:
-      thisDetector->dataPort=retval;
+      retval=thisDetector->dataPort;
       break;
     case STOP_PORT:
-      thisDetector->stopPort=retval;
-      break;
+      retval=thisDetector->stopPort;
+    break;
     default:
-      ;
+      retval=-1;
     }
     
+    // setTCPSocket();
     
-
-  }
-  // setTCPSocket();
-
-
-
+    
+#ifdef VERBOSE
+    cout << thisDetector->controlPort<< " " << thisDetector->dataPort << " " << thisDetector->stopPort << endl;
+#endif 
+  
 
 
   return retval;
@@ -4540,51 +4581,51 @@ int slsDetector:: writeAngularConversion(ofstream &ofs) {
 }
 
 
-int slsDetector::loadImageToDetector(int index,string const fname){
-	int retval;
-	int fnum=F_LOAD_IMAGE;
-	int ret=FAIL;
-	char mess[100];
-	short int arg[1280];
-
+int slsDetector::loadImageToDetector(imageType index,string const fname){
+  int retval;
+  int fnum=F_LOAD_IMAGE;
+  int ret=FAIL;
+  char mess[100];
+  short int arg[1280];
+  
 #ifdef VERBOSE
-	std::cout<< std::endl<< "Loading ";
-	if(!index)
-		std::cout<<"Dark";
-	else
-		std::cout<<"Gain";
-	std::cout<<" image from file " << fname << std::endl;
+  std::cout<< std::endl<< "Loading ";
+  if(!index)
+    std::cout<<"Dark";
+  else
+    std::cout<<"Gain";
+  std::cout<<" image from file " << fname << std::endl;
 #endif
-
-	if(readDataFile(fname,arg)){
-		std::cout<< "Could not open file "<< fname << std::endl;
-		return -1;
+  
+  if(readDataFile(fname,arg)){
+    std::cout<< "Could not open file "<< fname << std::endl;
+    return -1;
+  }
+  if (thisDetector->onlineFlag==ONLINE_FLAG) {
+    if (controlSocket) {
+      if  (controlSocket->Connect()>=0) {
+	controlSocket->SendDataOnly(&fnum,sizeof(fnum));
+	controlSocket->SendDataOnly(&index,sizeof(index));
+	controlSocket->SendDataOnly(arg,sizeof(arg));
+	controlSocket->ReceiveDataOnly(&ret,sizeof(ret));
+	if (ret!=FAIL)
+	  controlSocket->ReceiveDataOnly(&retval,sizeof(retval));
+	else {
+	  controlSocket->ReceiveDataOnly(mess,sizeof(mess));
+	  std::cout<< "Detector returned error: " << mess << std::endl;
 	}
-		if (thisDetector->onlineFlag==ONLINE_FLAG) {
-			if (controlSocket) {
-				if  (controlSocket->Connect()>=0) {
-					controlSocket->SendDataOnly(&fnum,sizeof(fnum));
-					controlSocket->SendDataOnly(&index,sizeof(index));
-					controlSocket->SendDataOnly(arg,sizeof(arg));
-					controlSocket->ReceiveDataOnly(&ret,sizeof(ret));
-					if (ret!=FAIL)
-						controlSocket->ReceiveDataOnly(&retval,sizeof(retval));
-					else {
-						controlSocket->ReceiveDataOnly(mess,sizeof(mess));
-						std::cout<< "Detector returned error: " << mess << std::endl;
-					}
-					controlSocket->Disconnect();
-					if (ret==FORCE_UPDATE)
-						updateDetector();
-				}
-
-			}
-		}
-		if (ret==FAIL) {
-			std::cout<< "failed " << std::endl;
-			return -1;
-		}
-	return 0;
+	controlSocket->Disconnect();
+	if (ret==FORCE_UPDATE)
+	  updateDetector();
+      }
+      
+    }
+  }
+  if (ret==FAIL) {
+    std::cout<< "failed " << std::endl;
+    return -1;
+  }
+  return 0;
 }
 
 
@@ -4643,6 +4684,36 @@ int slsDetector::readConfigurationFile(string const fname){
     std::cout<< "config file name "<< fname << std::endl;
     infile.open(fname.c_str(), ios_base::in);
     if (infile.is_open()) {
+      iline=readConfigurationFile(infile);
+      infile.close();
+    } else {
+      std::cout<< "Error opening configuration file " << fname << " for reading" << std::endl;
+      return FAIL;
+    }
+#ifdef VERBOSE
+    std::cout<< "Read configuration file of " << iline << " lines" << std::endl;
+#endif
+    return iline;
+
+}
+
+
+int slsDetector::readConfigurationFile(ifstream &infile){
+  
+
+
+    string ans;
+    string str;
+    int iargval;
+    int interrupt=0;
+    char *args[100];
+    for (int ia=0; ia<100; ia++) {
+      args[ia]=new char[1000];
+    }
+    
+    
+    string sargname, sargval;
+    int iline=0;
       while (infile.good() and interrupt==0) {
 	sargname="none";
 	sargval="0";
@@ -4682,24 +4753,51 @@ int slsDetector::readConfigurationFile(string const fname){
 	}
 	iline++;
       }
-      infile.close();
-  } else {
-      std::cout<< "Error opening configuration file " << fname << " for reading" << std::endl;
-      return FAIL;
-    }
-#ifdef VERBOSE
-    std::cout<< "Read configuration file of " << iline << " lines" << std::endl;
-#endif
     return iline;
 
 }
 
 
+
+
+
+
+
+
+
+
 int slsDetector::writeConfigurationFile(string const fname){
+  
+
+  ofstream outfile;
+  int ret;
+  
+  outfile.open(fname.c_str(),ios_base::out);
+  if (outfile.is_open()) {
+    ret=writeConfigurationFile(outfile);
+    outfile.close();
+  }
+  else {
+    std::cout<< "Error opening configuration file " << fname << " for writing" << std::endl;
+    return FAIL;
+  }
+#ifdef VERBOSE
+  std::cout<< "wrote " <<ret << " lines to configuration file " << std::endl;
+#endif
+  return ret;
+
+
+}
+
+
+int slsDetector::writeConfigurationFile(ofstream &outfile){
   
   int nvar;
   string names[]={				\
     "hostname",					\
+    "port",					\
+    "dataport",					\
+    "stopport",					\
     "caldir",					\
     "settingsdir",				\
     "trimen",					\
@@ -4720,21 +4818,17 @@ int slsDetector::writeConfigurationFile(string const fname){
     "clkdivider"};
 
   switch (thisDetector->myDetectorType) {
-  case MYTHEN:
-    names[2]="trimdir";
-    break;
   case GOTTHARD:
     names[3]="outdir";
     names[4]="clientip";
     names[5]="clientmac";
     names[6]="servermac";
-    nvar=7;
+    nvar=10;
     break;
   default:
-    nvar=19;
+    nvar=22;
   }
 
-  ofstream outfile;
   int iv=0;
   char *args[100];
   for (int ia=0; ia<100; ia++) {
@@ -4742,32 +4836,32 @@ int slsDetector::writeConfigurationFile(string const fname){
   }
   
   
-  outfile.open(fname.c_str(),ios_base::out);
-  if (outfile.is_open()) {
-    for (iv=0; iv<nvar; iv++) {
-      strcpy(args[0],names[iv].c_str());
-      outfile << names[iv] << " " << executeLine(1,args,GET_ACTION) << std::endl;
-    }
-    outfile.close();
+  for (iv=0; iv<nvar; iv++) {
+    strcpy(args[0],names[iv].c_str());
+    outfile << names[iv] << " " << executeLine(1,args,GET_ACTION) << std::endl;
   }
-  else {
-    std::cout<< "Error opening configuration file " << fname << " for writing" << std::endl;
-    return FAIL;
-  }
-#ifdef VERBOSE
-  std::cout<< "wrote " <<iv << " lines to configuration file " << std::endl;
-#endif
+
   return iv;
-
-
 }
+
+
+
+
+
+
+
+
+
+
+
+
 
 
   /* 
      It should be possible to dump all the settings of the detector (including trimbits, threshold energy, gating/triggering, acquisition time etc.
-     in a file and retrieve it for repeating the measurement with identicals ettings, if necessary
+     in a file and retrieve it for repeating the measurement with identicals settings, if necessary
   */
-int slsDetector::dumpDetectorSetup(string fname, int level){  
+int slsDetector::dumpDetectorSetup(string const fname, int level){  
   string names[]={
     "fname",\
     "index",\
@@ -4983,6 +5077,34 @@ int slsDetector::retrieveDetectorSetup(string fname1, int level){
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
   /* I/O */
 
 
@@ -4990,10 +5112,12 @@ int slsDetector::retrieveDetectorSetup(string fname1, int level){
   
    int nflag=0;
 
+      
    if (myMod==NULL) {
      myMod=createModule();
      nflag=1;
    }
+
    string myfname;
   string str;
   ifstream infile;
@@ -5143,11 +5267,13 @@ int slsDetector::retrieveDetectorSetup(string fname1, int level){
       infile.close();
       strcpy(thisDetector->settingsFile,fname.c_str());
       return myMod;
+
     } else {
       std::cout<< "could not open settings file " <<  myfname << std::endl;
-
+      
       if (nflag)
 	deleteModule(myMod);
+
       return NULL;
     }
  
@@ -5289,7 +5415,7 @@ int slsDetector::saveSettingsFile(string fname, int imod) {
     ostfn << fname << ".sn"  << setfill('0') << setw(3) << hex << getId(MODULE_SERIAL_NUMBER, im); 
     if ((myMod=getModule(im))) {
       ret=writeSettingsFile(ostfn.str(),*myMod);
-       deleteModule(myMod);
+      deleteModule(myMod);
     }
   }
   return ret;
@@ -5297,45 +5423,45 @@ int slsDetector::saveSettingsFile(string fname, int imod) {
 
 
 int slsDetector::testFunction(int times) {
-	int val = 0,i,oldval=0;
-	runStatus s;
-
-
-	for(i=0;i<times;i++){
-		std::cout<<std::endl<<dec<<i+1<<": \t";
-		usleep(2000000);
-		startAcquisition();
-		s = getRunStatus();
-		if(s==IDLE){
-			std::cout<<"NOTTT WORKED"<<std::endl;
-			exit(-1);
-		}
-		else if (s==RUNNING){
-			while(s==RUNNING){
-				usleep(20);
-				val=readRegister(0x25);
-				if(val!=oldval)
-					std::cout<<hex<<val<<"\t";
-				if(val){
-					if((val&0x100)||(val&0x200)||(val&0x400))
-						s = getRunStatus();
-					else{
-						std::cout<<"\nStuck status.Exit\n";
-						exit(-1);
-					}
-				}
-				else
-					break;
-				oldval=val;
-			}
-		}
-		else{
-			std::cout<<"\nWeird Status.Exit\n";
-			exit(-1);
-		}
+  int val = 0,i,oldval=0;
+  runStatus s;
+  
+  
+  for(i=0;i<times;i++){
+    std::cout<<std::endl<<dec<<i+1<<": \t";
+    usleep(2000000);
+    startAcquisition();
+    s = getRunStatus();
+    if(s==IDLE){
+      std::cout<<"NOTTT WORKED"<<std::endl;
+      exit(-1);
+    }
+    else if (s==RUNNING){
+      while(s==RUNNING){
+	usleep(20);
+	val=readRegister(0x25);
+	if(val!=oldval)
+	  std::cout<<hex<<val<<"\t";
+	if(val){
+	  if((val&0x100)||(val&0x200)||(val&0x400))
+	    s = getRunStatus();
+	  else{
+	    std::cout<<"\nStuck status.Exit\n";
+	    exit(-1);
+	  }
 	}
-	std::cout<<std::endl;
-	return 0;
+	else
+	  break;
+	oldval=val;
+      }
+    }
+    else{
+      std::cout<<"\nWeird Status.Exit\n";
+      exit(-1);
+    }
+  }
+  std::cout<<std::endl;
+  return 0;
 }
 
 

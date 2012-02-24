@@ -24,8 +24,8 @@ using namespace std;
 
 
 #include "sls_detector_defs.h"
-#include "slsDetectorCommand.h"
-//#include "slsDetectorBase.h"
+//#include "slsDetectorCommand.h"
+#include "slsDetectorBase.h"
 
 #define MAX_TIMERS 10
 #define MAX_ROIS 100
@@ -79,7 +79,7 @@ class detectorData {
 
 
 
-class slsDetectorUtils : public slsDetectorCommand {
+class slsDetectorUtils : public slsDetectorBase {
 
 
 

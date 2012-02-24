@@ -12,12 +12,12 @@ using namespace std;
 /*     It is inherited by both slsDetector and multiSlsDetector */
 
 /* *\/ */
-class slsDetectorCommand : public slsDetectorBase{ 
+class slsDetectorCommand { 
 
  public:
 
 
-   slsDetectorCommand();
+   slsDetectorCommand(slsDetectorBase *det);
 
 
   /*   /\** */
@@ -87,71 +87,6 @@ class slsDetectorCommand : public slsDetectorBase{
 
 
 
-  /** returns string from run status index
-      \param s can be ERROR, WAITING, RUNNING, TRANSMITTING, RUN_FINISHED
-      \returns string error, waiting, running, data, finished
-  */
-  static string runStatusType(runStatus);
-
-  /** returns detector type string from detector type index
-      \param type string can be Mythen, Pilatus, Eiger, Gotthard, Agipd, Unknown
-      \returns MYTHEN, PILATUS, EIGER, GOTTHARD, AGIPD, GENERIC
-  */
-  static string getDetectorType(detectorType t);
-
-  /** returns detector type index from detector type string
-      \param t can be MYTHEN, PILATUS, EIGER, GOTTHARD, AGIPD, GENERIC
-      \returns Mythen, Pilatus, Eiger, Gotthard, Agipd, Unknown
-  */
-  static detectorType getDetectorType(string const type);
-
-
-  /** returns synchronization type index from string
-      \param t can be none, gating, trigger, complementary
-      \returns ONE, MASTER_GATES, MASTER_TRIGGERS, SLAVE_STARTS_WHEN_MASTER_STOPS
-  */
-  static synchronizationMode getSyncType(string const type);
-
-
-
-  /** returns synchronization type string from index
-      \param t can be NONE, MASTER_GATES, MASTER_TRIGGERS, SLAVE_STARTS_WHEN_MASTER_STOPS
-      \returns none, gating, trigger, complementary
-  */
-  static string getSyncType(synchronizationMode s );
-
-
-  /** returns string from external signal type index
-      \param f can be SIGNAL_OFF, GATE_IN_ACTIVE_HIGH, GATE_IN_ACTIVE_LOW, TRIGGER_IN_RISING_EDGE, TRIGGER_IN_FALLING_EDGE, RO_TRIGGER_IN_RISING_EDGE, RO_TRIGGER_IN_FALLING_EDGE, GATE_OUT_ACTIVE_HIGH, GATE_OUT_ACTIVE_LOW, =TRIGGER_OUT_RISING_EDGE, TRIGGER_OUT_FALLING_EDGE, RO_TRIGGER_OUT_RISING_EDGE, RO_TRIGGER_OUT_FALLING_EDGE
-      \returns string  off, gate_in_active_high, gate_in_active_low, trigger_in_rising_edge, trigger_in_falling_edge, ro_trigger_in_rising_edge, ro_trigger_in_falling_edge, gate_out_active_high, gate_out_active_low, trigger_out_rising_edge, trigger_out_falling_edge, ro_trigger_out_rising_edge, ro_trigger_out_falling_edge, unknown
-  */
-  static string externalSignalType(externalSignalFlag f);
-
-
-
-  /** returns external signal type index from string
-      \param string  off, gate_in_active_high, gate_in_active_low, trigger_in_rising_edge, trigger_in_falling_edge, ro_trigger_in_rising_edge, ro_trigger_in_falling_edge, gate_out_active_high, gate_out_active_low, trigger_out_rising_edge, trigger_out_falling_edge, ro_trigger_out_rising_edge, ro_trigger_out_falling_edge, unknown
-      \returns f can be SIGNAL_OFF, GATE_IN_ACTIVE_HIGH, GATE_IN_ACTIVE_LOW, TRIGGER_IN_RISING_EDGE, TRIGGER_IN_FALLING_EDGE, RO_TRIGGER_IN_RISING_EDGE, RO_TRIGGER_IN_FALLING_EDGE, GATE_OUT_ACTIVE_HIGH, GATE_OUT_ACTIVE_LOW, =TRIGGER_OUT_RISING_EDGE, TRIGGER_OUT_FALLING_EDGE, RO_TRIGGER_OUT_RISING_EDGE, RO_TRIGGER_OUT_FALLING_EDGE,GET_EXTERNAL_SIGNAL_FLAG (if unknown)
-  */
-
-  static externalSignalFlag externalSignalType(string sval);
-
-
-  /** returns synchronization type string from index
-      \param t can be NONE, MASTER_GATES, MASTER_TRIGGERS, SLAVE_STARTS_WHEN_MASTER_STOPS
-      \returns none, gating, trigger, complementary
-  */
-  static detectorSettings getDetectorSettings(string s);
-
-  /** returns detector settings string from index
-      \param t can be STANDARD, FAST, HIGHGAIN, DYNAMICGAIN, LOWGAIN, MEDIUMGAIN, VERYHIGHGAIN, GET_SETTINGS
-      \returns standard, fast, highgain, dynamicgain, lowgain, mediumgain, veryhighgain, undefined
-  */
-  static string getDetectorSettings(detectorSettings s);
-
-  
-
-
 
 
 
@@ -163,7 +98,7 @@ class slsDetectorCommand : public slsDetectorBase{
  private:
 
 
-
+  slsDetectorBase *myDet;
    
    string cmdUnderDevelopment(int narg, char *args[], int action); 
 

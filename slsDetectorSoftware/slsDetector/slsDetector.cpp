@@ -1,5 +1,6 @@
 #include "slsDetector.h"
 #include "usersFunctions.h"
+#include "slsDetectorCommand.h"
 #include  <sys/types.h>
 #include  <sys/ipc.h>
 #include  <sys/shm.h>
@@ -1208,7 +1209,6 @@ int slsDetector::setDetectorType(string const stype){
 };
 
 string slsDetector::getDetectorType(){
-
   return getDetectorType(thisDetector->myDetectorType);
 
 }
@@ -4702,6 +4702,9 @@ int slsDetector::readConfigurationFile(ifstream &infile){
   
 
 
+
+  slsDetectorCommand *cmd=new slsDetectorCommand(this);
+
     string ans;
     string str;
     int iargval;
@@ -4746,13 +4749,14 @@ int slsDetector::readConfigurationFile(ifstream &infile){
 	    iargval++;
 	    //}
 	}
-	  ans=executeLine(iargval,args,PUT_ACTION);
+	  ans=cmd->executeLine(iargval,args,PUT_ACTION);
 #ifdef VERBOSE 
 	  std::cout<< ans << std::endl;
 #endif
 	}
 	iline++;
       }
+      delete cmd;
     return iline;
 
 }
@@ -4792,6 +4796,7 @@ int slsDetector::writeConfigurationFile(string const fname){
 
 int slsDetector::writeConfigurationFile(ofstream &outfile){
   
+  slsDetectorCommand *cmd=new slsDetectorCommand(this);
   int nvar;
   string names[]={				\
     "hostname",					\
@@ -4838,9 +4843,9 @@ int slsDetector::writeConfigurationFile(ofstream &outfile){
   
   for (iv=0; iv<nvar; iv++) {
     strcpy(args[0],names[iv].c_str());
-    outfile << names[iv] << " " << executeLine(1,args,GET_ACTION) << std::endl;
+    outfile << names[iv] << " " << cmd->executeLine(1,args,GET_ACTION) << std::endl;
   }
-
+  delete cmd;
   return iv;
 }
 
@@ -4861,7 +4866,8 @@ int slsDetector::writeConfigurationFile(ofstream &outfile){
      It should be possible to dump all the settings of the detector (including trimbits, threshold energy, gating/triggering, acquisition time etc.
      in a file and retrieve it for repeating the measurement with identicals settings, if necessary
   */
-int slsDetector::dumpDetectorSetup(string const fname, int level){  
+int slsDetector::dumpDetectorSetup(string const fname, int level){ 
+  slsDetectorCommand *cmd=new slsDetectorCommand(this); 
   string names[]={
     "fname",\
     "index",\
@@ -4930,7 +4936,7 @@ int slsDetector::dumpDetectorSetup(string const fname, int level){
   if (outfile.is_open()) {
     for (iv=0; iv<nvar-5; iv++) {
       strcpy(args[0],names[iv].c_str());
-      outfile << names[iv] << " " << executeLine(1,args,GET_ACTION) << std::endl;
+      outfile << names[iv] << " " << cmd->executeLine(1,args,GET_ACTION) << std::endl;
     }
 
 
@@ -4939,7 +4945,7 @@ int slsDetector::dumpDetectorSetup(string const fname, int level){
       fname1=fname+string(".ff");
       strcpy(args[1],fname1.c_str());
     }
-    outfile << names[iv] << " " << executeLine(nargs,args,GET_ACTION) << std::endl;
+    outfile << names[iv] << " " << cmd->executeLine(nargs,args,GET_ACTION) << std::endl;
     iv++;
 
     strcpy(args[0],names[iv].c_str());
@@ -4947,7 +4953,7 @@ int slsDetector::dumpDetectorSetup(string const fname, int level){
       fname1=fname+string(".bad");
       strcpy(args[1],fname1.c_str());
     }
-    outfile << names[iv] << " " << executeLine(nargs,args,GET_ACTION) << std::endl;
+    outfile << names[iv] << " " << cmd->executeLine(nargs,args,GET_ACTION) << std::endl;
     iv++;
 
       
@@ -4956,7 +4962,7 @@ int slsDetector::dumpDetectorSetup(string const fname, int level){
       fname1=fname+string(".angoff");
       strcpy(args[1],fname1.c_str());
     }
-    outfile << names[iv] << " " << executeLine(nargs,args,GET_ACTION) << std::endl;
+    outfile << names[iv] << " " << cmd->executeLine(nargs,args,GET_ACTION) << std::endl;
     iv++;
     
     strcpy(args[0],names[iv].c_str());
@@ -4972,12 +4978,12 @@ int slsDetector::dumpDetectorSetup(string const fname, int level){
       std::cout<< "writing to file " << fname1 << std::endl;
 #endif
     }
-    outfile << names[iv] << " " << executeLine(nargs,args,GET_ACTION) << std::endl;
+    outfile << names[iv] << " " << cmd->executeLine(nargs,args,GET_ACTION) << std::endl;
     iv++;
     
     for (int is=0; is<4; is++) {
       sprintf(args[0],"%s:%d",names[iv].c_str(),is);
-      outfile << args[0] << " " << executeLine(1,args,GET_ACTION) << std::endl;	
+      outfile << args[0] << " " << cmd->executeLine(1,args,GET_ACTION) << std::endl;	
     }
     iv++;
     outfile.close();
@@ -4990,6 +4996,7 @@ int slsDetector::dumpDetectorSetup(string const fname, int level){
 #ifdef VERBOSE
   std::cout<< "wrote " <<iv << " lines to  "<< fname1 << std::endl;
 #endif
+  delete cmd;
   return 0;
 }
 
@@ -4998,6 +5005,7 @@ int slsDetector::dumpDetectorSetup(string const fname, int level){
 int slsDetector::retrieveDetectorSetup(string fname1, int level){ 
 
    
+  slsDetectorCommand *cmd=new slsDetectorCommand(this);
    string fname;
    string str;
    ifstream infile;
@@ -5047,7 +5055,8 @@ int slsDetector::retrieveDetectorSetup(string fname1, int level){
 	    // }
 	}
 	if (level==2) {
-	  executeLine(iargval,args,PUT_ACTION);
+	  ;
+	  cmd->executeLine(iargval,args,PUT_ACTION);
 	} else {
 	  if (string(args[0])==string("flatfield"))
 	    ;
@@ -5057,8 +5066,10 @@ int slsDetector::retrieveDetectorSetup(string fname1, int level){
 	    ;
 	  else if (string(args[0])==string("trimbits"))
 	    ;
-	  else
-	    executeLine(iargval,args,PUT_ACTION);
+	  else {
+	    ;
+	    cmd->executeLine(iargval,args,PUT_ACTION);
+	  }
 	}
       }
       iline++;
@@ -5071,6 +5082,7 @@ int slsDetector::retrieveDetectorSetup(string fname1, int level){
 #ifdef VERBOSE
   std::cout<< "Read  " << iline << " lines" << std::endl;
 #endif
+  delete cmd;
   return iline;
 
 };

@@ -6,8 +6,9 @@
 
 #include <iomanip>
 
-slsDetectorCommand::slsDetectorCommand() : slsDetectorBase() {
+slsDetectorCommand::slsDetectorCommand(slsDetectorBase *det)  {
 
+  myDet=det;
  
   int i=0;
 
@@ -586,194 +587,6 @@ slsDetectorCommand::slsDetectorCommand() : slsDetectorBase() {
 
 
 
-string slsDetectorCommand::externalSignalType(externalSignalFlag f) {
-  switch(f) {
-  case SIGNAL_OFF:
-      return string( "off");
-  case GATE_IN_ACTIVE_HIGH:
-    return string( "gate_in_active_high");
-  case GATE_IN_ACTIVE_LOW:
-    return string( "gate_in_active_low");
-  case TRIGGER_IN_RISING_EDGE:
-    return string( "trigger_in_rising_edge");
-  case TRIGGER_IN_FALLING_EDGE:
-    return string( "trigger_in_falling_edge");
-  case RO_TRIGGER_IN_RISING_EDGE:
-    return string( "ro_trigger_in_rising_edge");
-  case RO_TRIGGER_IN_FALLING_EDGE:
-    return string( "ro_trigger_in_falling_edge");
-  case GATE_OUT_ACTIVE_HIGH:
-    return string( "gate_out_active_high");
-  case GATE_OUT_ACTIVE_LOW:
-    return string( "gate_out_active_low");
-  case TRIGGER_OUT_RISING_EDGE:
-    return string( "trigger_out_rising_edge");
-  case TRIGGER_OUT_FALLING_EDGE:
-    return string( "trigger_out_falling_edge");
-  case RO_TRIGGER_OUT_RISING_EDGE:
-      return string( "ro_trigger_out_rising_edge");
-  case RO_TRIGGER_OUT_FALLING_EDGE:
-    return string( "ro_trigger_out_falling_edge");
-  default:
-    return string( "unknown");
-  }  
-}
-
-externalSignalFlag slsDetectorCommand::externalSignalType(string sval) {
-
-  externalSignalFlag flag=GET_EXTERNAL_SIGNAL_FLAG;
-  if (sval=="off")      flag=SIGNAL_OFF;
-  else if (sval=="gate_in_active_high")      flag=GATE_IN_ACTIVE_HIGH;
-  else if  (sval=="gate_in_active_low") flag=GATE_IN_ACTIVE_LOW;
-  else if  (sval=="trigger_in_rising_edge") flag=TRIGGER_IN_RISING_EDGE;
-  else if  (sval=="trigger_in_falling_edge") flag=TRIGGER_IN_FALLING_EDGE;
-  else if  (sval=="ro_trigger_in_rising_edge") flag=RO_TRIGGER_IN_RISING_EDGE;
-  else if  (sval=="ro_trigger_in_falling_edge") flag=RO_TRIGGER_IN_FALLING_EDGE;
-  else if (sval=="gate_out_active_high")      flag=GATE_OUT_ACTIVE_HIGH;
-  else if  (sval=="gate_out_active_low") flag=GATE_OUT_ACTIVE_LOW;
-  else if  (sval=="trigger_out_rising_edge") flag=TRIGGER_OUT_RISING_EDGE;
-  else if  (sval=="trigger_out_falling_edge") flag=TRIGGER_OUT_FALLING_EDGE;
-  else if  (sval=="ro_trigger_out_rising_edge") flag=RO_TRIGGER_OUT_RISING_EDGE;
-  else if  (sval=="ro_trigger_out_falling_edge") flag=RO_TRIGGER_OUT_FALLING_EDGE;
-  return flag;
-}
-
-
-
-
-
-string slsDetectorCommand::runStatusType(runStatus s) {
-  switch (s) {
-    case ERROR:
-       return string("error");
-    case  WAITING:
-      return  string("waiting");
-    case RUNNING:
-      return string("running");
-    case TRANSMITTING:
-      return string("data");
-    case  RUN_FINISHED:
-      return string("finished");
-   default:
-       return string("idle");
-    }
-
-}
-
-
-string slsDetectorCommand::getDetectorType(detectorType t){
-
-  switch (t) {
-  case MYTHEN:
-    return string("Mythen");
-    break;
-  case PILATUS:
-    return string("Pilatus");
-    break;
-  case EIGER:
-    return string("Eiger");
-    break;
-  case GOTTHARD:
-    return string("Gotthard");
-    break;
-  case AGIPD:
-    return string("Agipd");
-    break;
-  default:
-    return string("Unknown");
-    break;
-  }
-};
-
-
-detectorType slsDetectorCommand::getDetectorType(string const type){
-  detectorType dtype=GENERIC;
-  if (type=="Mythen")
-    dtype=MYTHEN;
-  else if  (type=="Pilatus")
-      dtype=PILATUS;
-  else if  (type=="Eiger")
-    dtype=EIGER;
-  else if  (type=="Gotthard")
-    dtype=GOTTHARD;
-  else if  (type=="Agipd")
-    dtype=AGIPD;
-  return dtype;
-};
-
-
-synchronizationMode slsDetectorCommand::getSyncType(string const type){
-  synchronizationMode s;
-  if (type=="none")
-    s=NONE;
-  else if (type=="gating")
-    s=MASTER_GATES;
-  else if (type=="trigger")
-    s=MASTER_TRIGGERS;
-  else if (type=="complementary")
-    s=SLAVE_STARTS_WHEN_MASTER_STOPS;
-  else 
-    s=GET_SYNCHRONIZATION_MODE;
-  return s;
-}
-
-
-
-string slsDetectorCommand::getSyncType(synchronizationMode s ){
-
-  switch(s) {
-  case NONE:
-    return string("none");
-  case MASTER_GATES:
-    return string("gating");
-  case MASTER_TRIGGERS:
-    return string("trigger");
-  case SLAVE_STARTS_WHEN_MASTER_STOPS:
-    return string("complementary");
-  default:
-    return string("unknown");
-  }
-
-};
-
-string slsDetectorCommand::getDetectorSettings(detectorSettings s ){
-
-  switch(s) {
-  case STANDARD:
-    return string("standard");
-  case FAST:
-    return string("fast");
-  case HIGHGAIN:
-    return string("highgain");
-  case DYNAMICGAIN:
-    return string("dynamicgain");
-  case LOWGAIN:
-    return string("lowgain");
-  case MEDIUMGAIN:
-    return string("mediumgain");
-  case VERYHIGHGAIN:
-    return string("veryhighgain");
-  default:
-    return string("undefined");
-  }
-
-};
-
-detectorSettings slsDetectorCommand::getDetectorSettings(string s ){
-
-
-  if (s=="standard") return STANDARD;
-  if (s=="fast") return FAST;
-  if (s=="highgain") return HIGHGAIN;
-  if (s=="dynamicgain") return DYNAMICGAIN;
-  if (s=="lowgain") return LOWGAIN;
-  if (s=="mediumgain") return MEDIUMGAIN;
-  if (s=="veryhighgain") return VERYHIGHGAIN;
-  
-  return GET_SETTINGS;
-};
-
-
 
 
 string slsDetectorCommand::executeLine(int narg, char *args[], int action) {
@@ -838,41 +651,23 @@ string slsDetectorCommand::helpLine(int narg, char *args[], int action) {
   if (action==READOUT_ACTION) {
     return helpAcquire(narg,args,HELP_ACTION);
   }
-  cout << "#"<< endl;
   os << helpAcquire(narg,args,action);
-  cout << "#"<< endl;
   os << helpData(narg,args,action);
-  cout << "#"<< endl;
   os << helpFrame(narg,args,action);
-  cout << "#"<< endl;
   os << helpStatus(narg,args,action);
-  cout << "#"<< endl;
   os << helpFree(narg,args,action);
-  cout << "#"<< endl;
   os << helpAdd(narg,args,action);
-  cout << "#"<< endl;
   os << helpRemove(narg,args,action);
-  cout << "#"<< endl;
   os << helpHostname(narg,args,action);
-  cout << "#"<< endl;
   os << helpId(narg,args,action);
-  cout << "#"<< endl;
   os << helpMaster(narg,args,action);
-  cout << "#"<< endl;
   os << helpSync(narg,args,action);
-  cout << "#"<< endl;
   os << helpExitServer(narg,args,action);
-  cout << "#"<< endl;
   os << helpSettingsDir(narg,args,action);
-  cout << "#"<< endl;
   os << helpCalDir(narg,args,action);
-  cout << "#"<< endl;
   os << helpOutDir(narg,args,action);
-  cout << "#"<< endl;
   os << helpFileName(narg,args,action);
-  cout << "#"<< endl;
   os << helpFileIndex(narg,args,action);
-  cout << "#"<< endl;
   
   return os.str();
 }
@@ -884,8 +679,8 @@ string slsDetectorCommand::cmdAcquire(int narg, char *args[], int action) {
 #ifdef VERBOSE
   cout << string("Executing command ")+string(args[0])+string(" ( ")+cmd+string(" )\n");
 #endif
-  setOnline(ONLINE_FLAG);
-  acquire(1);
+  myDet->setOnline(ONLINE_FLAG);
+  myDet->acquire(1);
   return string("ok");
 
 }
@@ -917,9 +712,9 @@ string slsDetectorCommand::cmdData(int narg, char *args[], int action) {
   } else if (action==HELP_ACTION) {
     return helpData(narg,args,HELP_ACTION);
   } else {
-    setOnline(ONLINE_FLAG);
-    readAll();
-    processData(1);
+    myDet->setOnline(ONLINE_FLAG);
+    myDet->readAll();
+    myDet->processData(1);
     return string("ok");
   } 
 }
@@ -946,9 +741,9 @@ string slsDetectorCommand::cmdFrame(int narg, char *args[], int action) {
     } else if (action==HELP_ACTION) {
       return helpFrame(narg,args,HELP_ACTION);
     } else {
-      setOnline(ONLINE_FLAG);
-      readFrame();
-      processData(1);
+      myDet->setOnline(ONLINE_FLAG);
+      myDet->readFrame();
+      myDet->processData(1);
       return string("ok");
     } 
 
@@ -967,20 +762,20 @@ string slsDetectorCommand::cmdStatus(int narg, char *args[], int action) {
 #ifdef VERBOSE
   cout << string("Executing command ")+string(args[0])+string(" ( ")+cmd+string(" )\n");
 #endif
-  setOnline(ONLINE_FLAG);
+  myDet->setOnline(ONLINE_FLAG);
   if (action==PUT_ACTION) {
-    setThreadedProcessing(0);
+    //myDet->setThreadedProcessing(0);
     if (string(args[1])=="start")
-      startAcquisition();
+      myDet->startAcquisition();
     else if (string(args[1])=="stop")
-      stopAcquisition();
+      myDet->stopAcquisition();
     else
       return string("unknown action");
   } else if (action==HELP_ACTION) {
     return helpStatus(narg,args,HELP_ACTION);
   } 
-  runStatus s=getRunStatus();  
-  return runStatusType(s);
+  runStatus s=myDet->getRunStatus();  
+  return myDet->runStatusType(s);
 
 }
 
@@ -1005,7 +800,7 @@ string slsDetectorCommand::helpStatus(int narg, char *args[], int action) {
   if (action==HELP_ACTION) {
     return helpFree(narg,args,HELP_ACTION);
   } 
-  freeSharedMemory();
+  myDet->freeSharedMemory();
   return("freed");
  }
 
@@ -1039,10 +834,10 @@ string slsDetectorCommand::cmdAdd(int narg, char *args[], int action) {
 
     if (sscanf(args[1],"%d",&ival)) {
       // add by detector id
-      os<< addSlsDetector(ival, ivar)<< endl;;
+      os<< myDet->addSlsDetector(ival, ivar)<< endl;;
     } else {
       //add by hostname
-      os<< addSlsDetector(args[1], ivar)<< endl;
+      os<< myDet->addSlsDetector(args[1], ivar)<< endl;
     }
     return os.str();
   } 
@@ -1070,10 +865,10 @@ string slsDetectorCommand::cmdRemove(int narg, char *args[], int action){
   } else    if (action==PUT_ACTION) {
     if (sscanf(args[1],"%d",&ival)) {
       // remove detector in position ival
-      os << removeSlsDetector(ival);
+      os << myDet->removeSlsDetector(ival);
     } else {
       // remove detector by hostname
-      os<< removeSlsDetector(args[1]);
+      os<< myDet->removeSlsDetector(args[1]);
     }
     return os.str();
   }
@@ -1116,14 +911,14 @@ string slsDetectorCommand::cmdHostname(int narg, char *args[], int action){
       for (int id=1; id<narg; id++) {
 	strcat(hostname,args[id]);
 	if(narg>2)
-		strcat(hostname,"+");
+	  strcat(hostname,"+");
       } 
     }  else
       strcpy(hostname,args[1]);
-    setHostname(hostname, ivar);
+    myDet->setHostname(hostname, ivar);
   }
   
-  return string(getHostname(ivar));
+  return string(myDet->getHostname(ivar));
 
 
 }
@@ -1174,9 +969,9 @@ string slsDetectorCommand::cmdId(int narg, char *args[], int action){
     if (vvstr.fail()) 
       ival=-1;
 
-    setDetectorId(ival, ivar);
+    myDet->setDetectorId(ival, ivar);
   }
-  os << getDetectorId(ivar);
+  os << myDet->getDetectorId(ivar);
 
   return os.str();
 
@@ -1205,15 +1000,15 @@ string slsDetectorCommand::cmdMaster(int narg, char *args[], int action){
   if (action==HELP_ACTION) {
     return helpMaster(narg,args,HELP_ACTION);
   } 
-  setOnline(ONLINE_FLAG);
+  myDet->setOnline(ONLINE_FLAG);
   if (action==PUT_ACTION) {
     istringstream vvstr(args[1]);
     vvstr >> ival;
     if (vvstr.fail()) 
       return helpMaster(narg,args,HELP_ACTION);
-    setMaster(ival);
+    myDet->setMaster(ival);
   } 
-  os <<  setMaster();
+  os <<  myDet->setMaster();
   return os.str();
   
 }
@@ -1238,12 +1033,12 @@ string slsDetectorCommand::cmdSync(int narg, char *args[], int action){
   if (action==HELP_ACTION) {
     return helpSync(narg,args,HELP_ACTION);
   } 
-  setOnline(ONLINE_FLAG);
+  myDet->setOnline(ONLINE_FLAG);
   if (action==PUT_ACTION) {
-    if (getSyncType(string(args[1]))==GET_SYNCHRONIZATION_MODE) return helpSync(narg,args, action);
-    setSynchronization(getSyncType(string(args[1])));
+    if (myDet->getSyncType(string(args[1]))==GET_SYNCHRONIZATION_MODE) return helpSync(narg,args, action);
+    myDet->setSynchronization(myDet->getSyncType(string(args[1])));
   }
-  return getSyncType(setSynchronization());
+  return myDet->getSyncType(myDet->setSynchronization());
 
 }
 string slsDetectorCommand::helpSync(int narg, char *args[], int action){
@@ -1272,9 +1067,9 @@ string slsDetectorCommand::cmdExitServer(int narg, char *args[], int action){
   if (action==HELP_ACTION) {
     return helpExitServer(narg, args, action);
   } 
-  setOnline(ONLINE_FLAG);
+  myDet->setOnline(ONLINE_FLAG);
   if (action==PUT_ACTION) {
-    if (exitServer()!=OK)
+    if (myDet->exitServer()!=OK)
       return string("Server shut down.");
     else 
       return string("Error closing server\n");
@@ -1296,11 +1091,11 @@ string slsDetectorCommand::cmdSettingsDir(int narg, char *args[], int action){
     return helpSettingsDir(narg, args, action);
   } 
   if (action==PUT_ACTION) {
-    setSettingsDir(string(args[1]));
+    myDet->setSettingsDir(string(args[1]));
   }
-  if (getSettingsDir()==NULL)
+  if (myDet->getSettingsDir()==NULL)
     return string("undefined");
-  return string(getSettingsDir());
+  return string(myDet->getSettingsDir());
 }
 
 
@@ -1326,11 +1121,11 @@ string slsDetectorCommand::cmdCalDir(int narg, char *args[], int action){
     return helpCalDir(narg, args, action);
   } 
   if (action==PUT_ACTION) {
-    setCalDir(string(args[1]));
+    myDet->setCalDir(string(args[1]));
   }
-  if (getCalDir()==NULL)
+  if (myDet->getCalDir()==NULL)
     return string("undefined");
-  return string(getCalDir());
+  return string(myDet->getCalDir());
 }
 
 
@@ -1364,13 +1159,13 @@ string slsDetectorCommand::cmdTrimEn(int narg, char *args[], int action){
 	    break;
 	}
       }
-      setTrimEn(ip,pos); 
+      myDet->setTrimEn(ip,pos); 
     }
   }
-  int npos=getTrimEn();
+  int npos=myDet->getTrimEn();
   sprintf(answer,"%d",npos);
   int opos[npos];
-  getTrimEn(opos);
+  myDet->getTrimEn(opos);
   for (int ip=0; ip<npos;ip++) {
     sprintf(answer,"%s %d",answer,opos[ip]);
   }
@@ -1395,9 +1190,9 @@ string slsDetectorCommand::cmdOutDir(int narg, char *args[], int action){
     return helpOutDir(narg, args, action);
   } 
   if (action==PUT_ACTION) {
-    setFilePath(string(args[1]));
+    myDet->setFilePath(string(args[1]));
   }
-  return string(getFilePath());
+  return string(myDet->getFilePath());
 }
 
 
@@ -1420,9 +1215,9 @@ string slsDetectorCommand::cmdFileName(int narg, char *args[], int action){
     return helpFileName(narg, args, action);
   } 
   if (action==PUT_ACTION) {
-    setFileName(string(args[1]));
+    myDet->setFileName(string(args[1]));
   }
-  return string(getFileName());
+  return string(myDet->getFileName());
 }
 
 
@@ -1447,9 +1242,9 @@ string slsDetectorCommand::cmdFileIndex(int narg, char *args[], int action){
   } 
   if (action==PUT_ACTION) {
     if (sscanf(args[1],"%d",&i))
-      setFileIndex(i);
+      myDet->setFileIndex(i);
   }
-  sprintf(ans,"%d", getFileIndex());
+  sprintf(ans,"%d", myDet->getFileIndex());
   return string(ans);
 }
 
@@ -1474,9 +1269,9 @@ string slsDetectorCommand::cmdFlatField(int narg, char *args[], int action){
       sval=string(args[1]);
       if (sval=="none")
 	sval="";
-      setFlatFieldCorrectionDir(sval); 
+      myDet->setFlatFieldCorrectionDir(sval); 
     }
-    return string(getFlatFieldCorrectionDir());
+    return string(myDet->getFlatFieldCorrectionDir());
 
   } else if  (string(args[0])==string("flatfield")) {
 
@@ -1484,8 +1279,8 @@ string slsDetectorCommand::cmdFlatField(int narg, char *args[], int action){
       sval=string(args[1]);
       if (sval=="none")
 	sval="";
-      setFlatFieldCorrection(sval);
-      return string(getFlatFieldCorrectionFile());
+      myDet->setFlatFieldCorrection(sval);
+      return string(myDet->getFlatFieldCorrectionFile());
       
     }  else if (action==GET_ACTION) {
       if (narg>1)
@@ -1493,12 +1288,12 @@ string slsDetectorCommand::cmdFlatField(int narg, char *args[], int action){
       else
 	sval="none";
       float corr[24*1280], ecorr[24*1280];
-      if (getFlatFieldCorrection(corr,ecorr)) {
+      if (myDet->getFlatFieldCorrection(corr,ecorr)) {
 	if (sval!="none") {
-	  writeDataFile(sval,corr,ecorr,NULL,'i');
+	  myDet->writeDataFile(sval,corr,ecorr,NULL,'i');
 	  return sval;
 	} 
-	return string(getFlatFieldCorrectionFile());
+	return string(myDet->getFlatFieldCorrectionFile());
       } else {
 	return string("none");
       }
@@ -1545,10 +1340,10 @@ string slsDetectorCommand::cmdRateCorr(int narg, char *args[], int action){
 
   if (action==PUT_ACTION) {
     sscanf(args[1],"%f",&fval);
-    setRateCorrection(fval);
+    myDet->setRateCorrection(fval);
   } 
   float t;
-  if (getRateCorrection(t)) {
+  if (myDet->getRateCorrection(t)) {
     sprintf(answer,"%f",t);
   } else {
     sprintf(answer,"%f",0.);
@@ -1579,14 +1374,14 @@ string slsDetectorCommand::cmdBadChannels(int narg, char *args[], int action){
       sval=string(args[1]);
       if (sval=="none")
 	sval="";
-      setBadChannelCorrection(sval);
+      myDet->setBadChannelCorrection(sval);
     } else if (action==GET_ACTION) {
       if (narg>1)
 	sval=string(args[1]);
       else
 	sval="none";
       int bch[24*1280], nbch;
-      if ((nbch=getBadChannelCorrection(bch))) {
+      if ((nbch=myDet->getBadChannelCorrection(bch))) {
 	if (sval!="none") {  
 	  ofstream outfile;
 	  outfile.open (sval.c_str(),ios_base::out);
@@ -1601,7 +1396,7 @@ string slsDetectorCommand::cmdBadChannels(int narg, char *args[], int action){
 	}
       } 
     }
-    return string(getBadChannelCorrectionFile());
+    return string(myDet->getBadChannelCorrectionFile());
 
 }
  
@@ -1632,21 +1427,21 @@ string slsDetectorCommand::cmdAngConv(int narg, char *args[], int action){
       if (sval=="none")
 	sval="";
 
-      setAngularConversion(sval);
+      myDet->setAngularConversion(sval);
 
-      return string(getAngularConversion());
+      return string(myDet->getAngularConversion());
     } else if (action==GET_ACTION) {
       if (narg>1)
 	sval=string(args[1]);
       else
 	sval="none";
       int dir;
-      if (getAngularConversion(dir)) {
+      if (myDet->getAngularConversion(dir)) {
 	if (sval!="none") {  
-	  writeAngularConversion(sval.c_str());
+	  myDet->writeAngularConversion(sval.c_str());
 	  return sval;
 	}
-	return string(getAngularConversion());
+	return string(myDet->getAngularConversion());
       } else {
 	return string("none");
       }
@@ -1672,9 +1467,9 @@ string slsDetectorCommand::cmdAngConv(int narg, char *args[], int action){
 
     if (action==PUT_ACTION) {
       if (sscanf(args[1],"%f",&fval))
-	setAngularConversionParameter(c,fval);
+	myDet->setAngularConversionParameter(c,fval);
     } 
-    sprintf(answer,"%f",getAngularConversionParameter(c));
+    sprintf(answer,"%f",myDet->getAngularConversionParameter(c));
     return string(answer); 
 
 
@@ -1741,9 +1536,9 @@ string slsDetectorCommand::cmdThreaded(int narg, char *args[], int action){
 
   if (action==PUT_ACTION) {
     if (sscanf(args[1],"%d",&ival))
-      setThreadedProcessing(ival);
+      myDet->setThreadedProcessing(ival);
   } 
-  sprintf(answer,"%d",setThreadedProcessing());
+  sprintf(answer,"%d",myDet->setThreadedProcessing());
   return string(answer); 
     
 } 
@@ -1771,12 +1566,12 @@ string slsDetectorCommand::cmdImage(int narg, char *args[], int action){
     return string("Cannot get");
   
   sval=string(args[1]);
-  setOnline(ONLINE_FLAG);
+  myDet->setOnline(ONLINE_FLAG);
   
   if (string(args[0])==string("darkimage"))
-    retval=loadImageToDetector(DARK_IMAGE,sval);
+    retval=myDet->loadImageToDetector(DARK_IMAGE,sval);
   else if (string(args[0])==string("gainimage"))
-    retval=loadImageToDetector(GAIN_IMAGE,sval);
+    retval=myDet->loadImageToDetector(GAIN_IMAGE,sval);
   
   if(!retval)
     return string("Image loaded succesfully");
@@ -1820,13 +1615,13 @@ string slsDetectorCommand::cmdPositions(int narg, char *args[], int action){
 	    break;
 	}
       }
-      setPositions(ip,pos); 
+      myDet->setPositions(ip,pos); 
     }
   }
-  int npos=getPositions();
+  int npos=myDet->getPositions();
   sprintf(answer,"%d",npos);
   float opos[npos];
-  getPositions(opos);
+  myDet->getPositions(opos);
   for (int ip=0; ip<npos;ip++) {
     sprintf(answer,"%s %f",answer,opos[ip]);
   }
@@ -1863,16 +1658,16 @@ string slsDetectorCommand::cmdScripts(int narg, char *args[], int action) {
   if (cmd.find("par")!=string::npos) {
     
     if (action==PUT_ACTION) {
-      setActionParameter(ia, args[1]);
+      myDet->setActionParameter(ia, args[1]);
     }
-    return string(getActionParameter(ia));
+    return string(myDet->getActionParameter(ia));
 		  
   } else {
 
     if (action==PUT_ACTION) {
-      setActionScript(ia, args[1]);
+      myDet->setActionScript(ia, args[1]);
     }
-    return string(getActionScript(ia));
+    return string(myDet->getActionScript(ia));
     
   }
   return string("could not decode command")+cmd;
@@ -1908,24 +1703,24 @@ string slsDetectorCommand::cmdScans(int narg, char *args[], int action) {
 
   if (cmd.find("par")!=string::npos) {
     if (action==PUT_ACTION) {
-      setScanParameter(is, args[1]);
+      myDet->setScanParameter(is, args[1]);
     }
-    return getScanParameter(is);
+    return myDet->getScanParameter(is);
   }
   if (cmd.find("script")!=string::npos) {
     if (action==PUT_ACTION) {
-      setScanScript(is, args[1]);
+      myDet->setScanScript(is, args[1]);
     }
-    return getScanScript(is);
+    return myDet->getScanScript(is);
   }
   if (cmd.find("prec")!=string::npos) {
     if (action==PUT_ACTION) {
       if (sscanf(args[1],"%d",&ival)) {
-	setScanPrecision(is, ival);
+	myDet->setScanPrecision(is, ival);
       } else
 	return string("invalid precision ")+cmd;
     }
-    sprintf(answer,"%d", getScanPrecision(is));
+    sprintf(answer,"%d", myDet->getScanPrecision(is));
     return string(answer);
   }
   if (cmd.find("steps")!=string::npos) {
@@ -1942,15 +1737,15 @@ string slsDetectorCommand::cmdScans(int narg, char *args[], int action) {
 	  } else
 	    break;
 	}
-	setScanSteps(is, ns, values);
+	myDet->setScanSteps(is, ns, values);
 	delete [] values;
       } else {
 	return string("invalid number of steps ")+string(args[1]);
       }
     }
-    ns=getScanSteps(is);
+    ns=myDet->getScanSteps(is);
     values=new float[ns];
-    ns=getScanSteps(is, values);
+    ns=myDet->getScanSteps(is, values);
     sprintf(answer,"%d ",ns);
     for (int i=0; i<ns; i++) {
       sprintf(answer,"%s %f",answer,values[i]);
@@ -2001,13 +1796,13 @@ string slsDetectorCommand::cmdScans(int narg, char *args[], int action) {
       for (int i=0; i<ns; i++) {
 	values[i]=fmin+i*fstep;
       }
-      setScanSteps(is, ns, values);
+      myDet->setScanSteps(is, ns, values);
       delete [] values;
     } 
     
-    ns=getScanSteps(is);
+    ns=myDet->getScanSteps(is);
     values=new float[ns];
-    ns=getScanSteps(is, values);
+    ns=myDet->getScanSteps(is, values);
     sprintf(answer,"%d ",ns);
     for (int i=0; i<ns; i++) {
       sprintf(answer,"%s %f",answer,values[i]);
@@ -2038,22 +1833,23 @@ string slsDetectorCommand::helpScans(int narg, char *args[], int action) {
 
 string slsDetectorCommand::cmdNetworkParameter(int narg, char *args[], int action) {
 
+  networkParameter t;
+
   if (action==HELP_ACTION)
     return helpNetworkParameter(narg,args,action);
 
   if (cmd=="clientip") {
-    if (action==PUT_ACTION)
-      setNetworkParameter(CLIENT_IP, args[1]);
-    return getNetworkParameter(CLIENT_IP);
+    t=CLIENT_IP;
   } else if (cmd=="clientmac") {
-    if (action==PUT_ACTION)
-      setNetworkParameter(CLIENT_MAC, args[1]);
-    return getNetworkParameter(CLIENT_MAC);
+    t=CLIENT_MAC;
   } else if (cmd=="servermac") {
-    if (action==PUT_ACTION)
-      setNetworkParameter(SERVER_MAC, args[1]);
-    return getNetworkParameter(SERVER_MAC);
+    t=SERVER_MAC;
   } else return ("unknown network parameter")+cmd;
+  
+  if (action==PUT_ACTION)
+    myDet->setNetworkParameter(t, args[1]);
+  return myDet->getNetworkParameter(t);
+
 }
 
 string slsDetectorCommand::helpNetworkParameter(int narg, char *args[], int action) {
@@ -2101,11 +1897,11 @@ string slsDetectorCommand::cmdPort(int narg, char *args[], int action) {
   } else
     return string("unknown port type ")+cmd;
   
-  setOnline(ONLINE_FLAG);
+  myDet->setOnline(ONLINE_FLAG);
   if (action==PUT_ACTION)
-    setPort(index,val);
+    myDet->setPort(index,val);
   
-  sprintf(ans,"%d",setPort(index));
+  sprintf(ans,"%d",myDet->setPort(index));
   return string(ans);
 
 }
@@ -2141,15 +1937,15 @@ string slsDetectorCommand::cmdLock(int narg, char *args[], int action) {
   int val, ret;
   char ans[1000];
   
-  setOnline(ONLINE_FLAG);
+  myDet->setOnline(ONLINE_FLAG);
   if (action==PUT_ACTION) {
     if (sscanf(args[1],"%d",&val))
-      lockServer(val);
+      myDet->lockServer(val);
     else
       return string("could not lock status")+string(args[1]);
   }
   
-  sprintf(ans,"%d",lockServer());
+  sprintf(ans,"%d",myDet->lockServer());
   return string(ans);
 }
 
@@ -2177,12 +1973,12 @@ string slsDetectorCommand::cmdLastClient(int narg, char *args[], int action) {
   if (action==HELP_ACTION)
     return helpLastClient(narg,args,action);
   
-  setOnline(ONLINE_FLAG);
+  myDet->setOnline(ONLINE_FLAG);
  
   if (action==PUT_ACTION)
     return string("cannot set");
   
-  return getLastClientIP();
+  return myDet->getLastClientIP();
 
 }
 
@@ -2207,11 +2003,11 @@ string slsDetectorCommand::cmdOnline(int narg, char *args[], int action) {
   char ans[1000];
   if (action==PUT_ACTION) {
     if (sscanf(args[1],"%d",&ival))
-      setOnline(ival);
+      myDet->setOnline(ival);
     else
       return string("Could not scan online mode ")+string(args[1]);
   }
-  sprintf(ans,"%d",setOnline());
+  sprintf(ans,"%d",myDet->setOnline());
   return ans;
 }
 
@@ -2245,8 +2041,8 @@ string slsDetectorCommand::cmdConfigureMac(int narg, char *args[], int action) {
   if (action==PUT_ACTION){
     if (sscanf(args[1],"%d",&ival))
       if(ival==1){
-	setOnline(ONLINE_FLAG);
-	ret=configureMAC();
+	myDet->setOnline(ONLINE_FLAG);
+	ret=myDet->configureMAC();
       }
       else
 	return string("Not yet implemented with arguments other than 1");
@@ -2285,17 +2081,17 @@ string slsDetectorCommand::cmdDetectorSize(int narg, char *args[], int action) {
     if (sscanf(args[1],"%d",&val))
       ;
     else
-      return string("could not scan port number")+string(args[1]);
+      return string("could not scan ")+string(args[0])+string(" ")+string(args[1]);
   } 
 
-  setOnline(ONLINE_FLAG);
+  myDet->setOnline(ONLINE_FLAG);
 
   if (cmd=="nmod") {
-    ret=setNumberOfModules(val);
+    ret=myDet->setNumberOfModules(val);
   } else if (cmd=="maxmod") {
-    ret=getMaxNumberOfModules();
+    ret=myDet->getMaxNumberOfModules();
   } else if (cmd=="dr") {
-    ret=setDynamicRange(val);
+    ret=myDet->setDynamicRange(val);
   } else
     return string("unknown detector size ")+cmd;
   
@@ -2343,20 +2139,20 @@ string slsDetectorCommand::cmdSettings(int narg, char *args[], int action) {
 //       return string("could not scan port number")+string(args[1]);
 //   } 
 
-  setOnline(ONLINE_FLAG);
+  myDet->setOnline(ONLINE_FLAG);
 
   if (cmd=="settings") {
     if (action==PUT_ACTION) 
-      setSettings(getDetectorSettings(string(args[1])));
-    return getDetectorSettings(getSettings());
+      myDet->setSettings(myDet->getDetectorSettings(string(args[1])));
+    return myDet->getDetectorSettings(myDet->getSettings());
   } else if (cmd=="threshold") {
     if (action==PUT_ACTION) {
       if (sscanf(args[1],"%d",&val))
-	setThresholdEnergy(val);
+	myDet->setThresholdEnergy(val);
       else
 	return string("invalid threshold value ")+cmd;
     }
-    sprintf(ans,"%d",getThresholdEnergy());
+    sprintf(ans,"%d",myDet->getThresholdEnergy());
     return string(ans);
   } else if (cmd=="trimbits") {
     if (narg>=2) {
@@ -2366,12 +2162,12 @@ string slsDetectorCommand::cmdSettings(int narg, char *args[], int action) {
 #endif 
       if (action==GET_ACTION) {
 	//create file names
-	saveSettingsFile(sval, -1);
+	myDet->saveSettingsFile(sval, -1);
       } else if (action==PUT_ACTION) {
-	loadSettingsFile(sval,-1);
+	myDet->loadSettingsFile(sval,-1);
       }
     }
-    return string(getSettingsFile());
+    return string(myDet->getSettingsFile());
   } else if (cmd=="trim") { 
     if (action==GET_ACTION) {
       return string("cannot get!");
@@ -2405,9 +2201,9 @@ string slsDetectorCommand::cmdSettings(int narg, char *args[], int action) {
       } else {
 	return string("Unknown trim mode ")+cmd;
       } 
-      executeTrimming(mode, par1, par2);
+      myDet->executeTrimming(mode, par1, par2);
       string sval=string(args[1]);
-      saveSettingsFile(sval, -1);
+      myDet->saveSettingsFile(sval, -1);
       return string("done");
     }
   }
@@ -2458,41 +2254,41 @@ string slsDetectorCommand::cmdSN(int narg, char *args[], int action) {
 
 
   if (cmd=="thisversion"){
-    sprintf(answer,"%llx",getId(THIS_SOFTWARE_VERSION));
+    sprintf(answer,"%llx",myDet->getId(THIS_SOFTWARE_VERSION));
     return string(answer);
   } 
 
-  setOnline(ONLINE_FLAG);
+  myDet->setOnline(ONLINE_FLAG);
 
 
   if (cmd=="moduleversion") {
     int ival=-1;
     if (sscanf(args[0],"moduleversion:%d",&ival)) {
-      sprintf(answer,"%llx",getId(MODULE_FIRMWARE_VERSION,ival));
+      sprintf(answer,"%llx",myDet->getId(MODULE_FIRMWARE_VERSION,ival));
       return string(answer);
     } else
       return string("undefined module number");
   }
   if (cmd=="detectornumber") {
-    sprintf(answer,"%llx",getId(DETECTOR_SERIAL_NUMBER));
+    sprintf(answer,"%llx",myDet->getId(DETECTOR_SERIAL_NUMBER));
     return string(answer);
   }
   if (cmd.find("modulenumber")!=string::npos) {
     int ival=-1;
     if (sscanf(args[0],"modulenumber:%d",&ival)) {
-      sprintf(answer,"%llx",getId(MODULE_SERIAL_NUMBER,ival));
+      sprintf(answer,"%llx",myDet->getId(MODULE_SERIAL_NUMBER,ival));
       return string(answer);
     } else
       return string("undefined module number");
   }
 
   if (cmd=="detectorversion") {
-    sprintf(answer,"%llx",getId(DETECTOR_FIRMWARE_VERSION));
+    sprintf(answer,"%llx",myDet->getId(DETECTOR_FIRMWARE_VERSION));
     return string(answer);
   }
   
   if (cmd=="softwareversion") {
-    sprintf(answer,"%llx",getId(DETECTOR_SOFTWARE_VERSION));
+    sprintf(answer,"%llx",myDet->getId(DETECTOR_SOFTWARE_VERSION));
     return string(answer);
   }
 
@@ -2526,12 +2322,12 @@ string slsDetectorCommand::cmdDigiTest(int narg, char *args[], int action) {
 	  return helpSN(narg, args, action);
 
 
-  setOnline(ONLINE_FLAG);
+  myDet->setOnline(ONLINE_FLAG);
 
   if (cmd=="bustest"){
     if (action==PUT_ACTION)
       return string("cannot set ")+cmd;
-    sprintf(answer,"%x",digitalTest(DETECTOR_BUS_TEST));
+    sprintf(answer,"%x",myDet->digitalTest(DETECTOR_BUS_TEST));
     return string(answer);
   } 
 
@@ -2540,7 +2336,7 @@ string slsDetectorCommand::cmdDigiTest(int narg, char *args[], int action) {
       return string("cannot set ")+cmd;
     int ival=-1;
     if (sscanf(args[0],"digitest:%d",&ival)) {
-      sprintf(answer,"%x",digitalTest(CHIP_TEST, ival));
+      sprintf(answer,"%x",myDet->digitalTest(CHIP_TEST, ival));
       return string(answer);
     } else
       return string("undefined module number");
@@ -2552,7 +2348,7 @@ string slsDetectorCommand::cmdDigiTest(int narg, char *args[], int action) {
     int ival=-1;
     if (sscanf(args[1],"%d",&ival)) {
       if((ival==0)||(ival==1)){
-	sprintf(answer,"%x",digitalTest(DIGITAL_BIT_TEST,ival));
+	sprintf(answer,"%x",myDet->digitalTest(DIGITAL_BIT_TEST,ival));
 	return string(answer);
       }
       else
@@ -2569,7 +2365,7 @@ string slsDetectorCommand::cmdDigiTest(int narg, char *args[], int action) {
       if(ival<1)
 	return helpDigiTest(narg, args, action);
       else {
-	sprintf(answer,"%x",testFunction(ival));
+	sprintf(answer,"%x",myDet->testFunction(ival));
 	return string(answer);
       }
     } else
@@ -2604,7 +2400,7 @@ string slsDetectorCommand::cmdRegister(int narg, char *args[], int action) {
   int addr, val;
   char answer[1000];
 
-  setOnline(ONLINE_FLAG);
+  myDet->setOnline(ONLINE_FLAG);
   
   if (action==PUT_ACTION) {
     if(narg<3) 
@@ -2620,7 +2416,7 @@ string slsDetectorCommand::cmdRegister(int narg, char *args[], int action) {
       return string("Could not scan value  (hexadecimal fomat) ")+string(args[2]);
     
     
-    sprintf(answer,"%x",writeRegister(addr,val));
+    sprintf(answer,"%x",myDet->writeRegister(addr,val));
     
   } else {
       if (narg<2) 
@@ -2631,7 +2427,7 @@ string slsDetectorCommand::cmdRegister(int narg, char *args[], int action) {
 	return string("Could not scan address  (hexadecimal fomat) ")+string(args[1]);
 	
 	
-      sprintf(answer,"%x",readRegister(addr));
+      sprintf(answer,"%x",myDet->readRegister(addr));
       
   }
 
@@ -2721,9 +2517,9 @@ string slsDetectorCommand::cmdDAC(int narg, char *args[], int action) {
       return string("cannot scan DAC value ")+string(args[1]);
   }
   
-  setOnline(ONLINE_FLAG);
+  myDet->setOnline(ONLINE_FLAG);
   
-  sprintf(answer,"%f",setDAC(val,dac));
+  sprintf(answer,"%f",myDet->setDAC(val,dac));
   return string(answer);
 
 }
@@ -2827,9 +2623,9 @@ string slsDetectorCommand::cmdADC(int narg, char *args[], int action) {
   else
     return string("cannot decode adc ")+cmd;
   
-  setOnline(ONLINE_FLAG);
+  myDet->setOnline(ONLINE_FLAG);
   
-  sprintf(answer,"%f",getADC(adc));
+  sprintf(answer,"%f",myDet->getADC(adc));
   return string(answer);
 
 }
@@ -2890,9 +2686,9 @@ string slsDetectorCommand::cmdTimer(int narg, char *args[], int action) {
   }
   
   
-  setOnline(ONLINE_FLAG);
+  myDet->setOnline(ONLINE_FLAG);
 
-  ret=setTimer(index,t);
+  ret=myDet->setTimer(index,t);
   if (index==ACQUISITION_TIME || index==FRAME_PERIOD || index==DELAY_AFTER_TRIGGER)
     rval=(float)ret*1E-9;
   else rval=ret;
@@ -2984,9 +2780,9 @@ string slsDetectorCommand::cmdTimeLeft(int narg, char *args[], int action) {
   
 
   
-  setOnline(ONLINE_FLAG);
+  myDet->setOnline(ONLINE_FLAG);
 
-  ret=getTimeLeft(index);
+  ret=myDet->getTimeLeft(index);
 
   if (index==ACQUISITION_TIME || index==FRAME_PERIOD || index==DELAY_AFTER_TRIGGER || index==ACTUAL_TIME || index==MEASUREMENT_TIME)
     rval=(float)ret*1E-9;
@@ -3065,9 +2861,9 @@ string slsDetectorCommand::cmdSpeed(int narg, char *args[], int action) {
   }
   
   
-  setOnline(ONLINE_FLAG);
+  myDet->setOnline(ONLINE_FLAG);
 
-  ret=setSpeed(index,t);
+  ret=myDet->setSpeed(index,t);
   
 
   sprintf(answer,"%d",ret);
@@ -3142,9 +2938,9 @@ string slsDetectorCommand::cmdAdvanced(int narg, char *args[], int action) {
     }
   
 
-    setOnline(ONLINE_FLAG);
+    myDet->setOnline(ONLINE_FLAG);
 
-    switch (setReadOutFlags(flag)) {
+    switch (myDet->setReadOutFlags(flag)) {
     case NORMAL_READOUT:
       return string("none");
     case STORE_IN_RAM:
@@ -3166,13 +2962,13 @@ string slsDetectorCommand::cmdAdvanced(int narg, char *args[], int action) {
       return string("could not scan signal number ")+string(args[0]);
 	
     if (action==PUT_ACTION) {
-      flag=externalSignalType(args[1]);
+      flag=myDet->externalSignalType(args[1]);
       if (flag==GET_EXTERNAL_SIGNAL_FLAG)
 	return string("could not scan external signal mode ")+string(args[1]);
     }
-    setOnline(ONLINE_FLAG);
+    myDet->setOnline(ONLINE_FLAG);
     
-    return externalSignalType(setExternalSignalFlags(flag,is));
+    return myDet->externalSignalType(myDet->setExternalSignalFlags(flag,is));
 
   } else
     return string("could not decode flag ")+cmd;
@@ -3221,33 +3017,33 @@ string slsDetectorCommand::cmdConfiguration(int narg, char *args[], int action) 
   if (narg<2)
     return string("should specify I/O file");
 
-  setOnline(ONLINE_FLAG);
+  myDet->setOnline(ONLINE_FLAG);
 
   if (cmd=="config") {
     if (action==PUT_ACTION) {
      sval=string(args[1]);
-     readConfigurationFile(sval);
+     myDet->readConfigurationFile(sval);
     } else if (action==GET_ACTION) {
       sval=string(args[1]);
-      writeConfigurationFile(sval);
+      myDet->writeConfigurationFile(sval);
     }  
     return sval;
   } else if (cmd=="parameters") {
     if (action==PUT_ACTION) {
      sval=string(args[1]);
-     retrieveDetectorSetup(sval);
+     myDet->retrieveDetectorSetup(sval);
     } else if (action==GET_ACTION) {
      sval=string(args[1]);
-     dumpDetectorSetup(sval);
+     myDet->dumpDetectorSetup(sval);
     }  
     return sval;
   } else if (cmd=="setup") {
     if (action==PUT_ACTION) {
      sval=string(args[1]);
-     retrieveDetectorSetup(sval,2);
+     myDet->retrieveDetectorSetup(sval,2);
     } else if (action==GET_ACTION) {
      sval=string(args[1]);
-     dumpDetectorSetup(sval,2);
+     myDet->dumpDetectorSetup(sval,2);
     }  
     return sval;
   }
@@ -3285,489 +3081,5 @@ string slsDetectorCommand::helpConfiguration(int narg, char *args[], int action)
 
 
 }
-
-
-
-
-// // string slsDetectorCommand::executeLine2(int narg, char *args[], int action) {
-
-
-
-
-
-// //     } else if (var=="progress") {
-// //       if (action==PUT_ACTION) {
-// // 	setTotalProgress();
-// // 	sprintf(answer,"Cannot set\n");
-// //       } else
-// // 	sprintf(answer,"%f",getCurrentProgress());
-// //       return string(answer);
-// //     }  
-
-
-
-
-
-
-
-
-// // string slsDetectorCommand::helpLine2( int action) {
-  
-
-// //   ostringstream os;
-  
-// //   if (action==READOUT_ACTION) {
-// //     os << "Usage is "<< std::endl << "mythen_acquire  id " << std::endl;
-// //     os << "where id is the id of the detector " << std::endl;
-// //     os << "the detector will be started, the data acquired, processed and written to file according to the preferences configured " << std::endl;
-// //   } else  if (action==PUT_ACTION) {
-// //     os << "help \t This help " << std::endl;
-// //     os << std::endl;
-// //     os << "config  fname\t reads the configuration file specified and sets the values " << std::endl;
-// //     os << std::endl;
-// //     os << "parameters  fname\t sets the detector parameters specified in the file " << std::endl;
-// //     os << std::endl;
-// //     os << "setup rootname\t reads the files specfied (and that could be created by get setup) and resets the complete detector configuration including flatfield corrections, badchannels, trimbits etc. " << std::endl;
-// //     os << std::endl;
-// //     os << "status s \t either start or stop " << std::endl;
-// //     os << std::endl;
-// //     os << "hostname name \t Sets the detector hostname (or IP address) " << std::endl;
-// //     os << std::endl;
-// //     os << "caldir path \t Sets path of the calibration files " << std::endl;
-// //     os << std::endl;
-// //     os << "trimdir path \t Sets path of the trim files " << std::endl;
-// //     os << std::endl;
-// //     os << "trimen nen [e0 e1...en] \t sets the number of energies for which trimbit files exist and their value"<< std::endl;
-// //     os << std::endl;
-
-
-
-
-
-
-
-
-// //     os << "startscript script \t sets script to execute at the beginning of the measurements - \"none\" to unset - will be launched as a system call with arguments nrun=fileindex par=startscriptpar"<< std::endl;
-// //     os << std::endl;
-// //     os << "startscriptpar par \t sets start script parameter (see startscript)"<< std::endl;
-// //     os << std::endl;
-
-// //     os << "scan0script script \t sets script to launch at level 0 scan. If \"energy\" energy scan, if \"threshold\" threshold scan, if \"trimbits\" trimbits scan, \"none\" unsets otherwise will be launched as a system call with arguments nrun=fileindex fn=filename var=scan0var par=scan0par"<< std::endl;
-// //     os << std::endl;
-// //     os << "scan0par par\t sets the level 0 scan parameter. See scan0script"<< std::endl;
-// //     os << std::endl;
-// //     os << "scan0prec n \t sets the level 0 scan precision for the output file name. See scan0script"<< std::endl;
-// //     os << std::endl;
-// //     os << "scan0steps nsteps [s0 s1...] \t sets the level 0 scan steps. See scan0script - nsteps=0 unsets the scan level"<< std::endl;
-// //     os << std::endl;
-
-
-// //     os << "scan1script script \t sets script to launch at level 1 scan. If \"energy\" energy scan, if \"threshold\" threshold scan, if \"trimbits\" trimbits scan, \"none\" unsets otherwise will be launched as a system call with arguments nrun=fileindex fn=filename var=scan1var par=scan1par"<< std::endl;
-// //     os << std::endl;
-
-// //     os << "scan1par par\t sets the level 1 scan parameter. See scan1script"<< std::endl;
-// //     os << std::endl;
-// //     os << "scan1prec n \t sets the level 1 scan precision for the output file name. See scan1script"<< std::endl;
-// //     os << std::endl;
-// //     os << "scan1steps nsteps [s0 s1...] \t sets the level 1 scan steps. See scan1script - nsteps=0 unsets the scan level"<< std::endl;
-// //     os << std::endl;
-
-
-// //     os << "scriptbefore script \t sets script to execute at the beginning of the realtime acquisition - \"none\" to unset - will be launched as a system call with arguments nrun=fileindex fn=filename par=scriptbeforepar sv0=scan0var sv1=scan1var p0=scan0par p1=scan1par"<< std::endl;
-// //     os << std::endl;
-// //     os << "scriptbeforepar \t sets  script before parameter (see scriptbefore)"<< std::endl;
-// //     os << std::endl;
-
-// //     os << "headerbefore script \n script to launch to acquire the headerfile just before  the acquisition -  \"none\" to unset - will be launched as a system call with arguments nrun=fileindex fn=filename acqtime=t gainmode=sett threshold=thr badfile=badf angfile=angf bloffset=bloffset fineoffset=fineoffset fffile=ffile tau=taucorr par=headerbeforepar"<< std::endl;
-// //     os << std::endl;
-// //     os << "headerbeforepar \t sets header before parameter (see headerbefore)"<< std::endl;
-// //     os << std::endl;
-
-
-// //     os << "headerafter script \n script to launch to acquire the headerfile just after the acquisition -  \"none\" to unset - will be launched as a system call with arguments nrun=fileindex fn=filename acqtime=t gainmode=sett threshold=thr badfile=badf angfile=angf bloffset=bloffset fineoffset=fineoffset fffile=ffile tau=taucorr par=headerafterpar"<< std::endl;
-// //     os << std::endl;
-// //     os << "headerafterpar par \t sets header after parameter (see headerafter)"<< std::endl;
-// //     os << std::endl;
-
-// //     os << "scriptafter script \t sets script to execute at the end of the realtime acquisition - \"none\" to unset - will be launched as a system call with arguments nrun=fileindex fn=filename par=scriptafterpar sv0=scan0var sv1=scan1var p0=scan0par p1=scan1par"<< std::endl;
-// //     os << std::endl;
-// //     os << "scriptafterpar par \t sets  script after parameter (see scriptafter)"<< std::endl;
-// //     os << std::endl;
-
-
-// //     os << "stopscript script \t sets script to execute at the end of the measurements - \"none\" to unset - will be launched as a system call with arguments nrun=fileindex par=stopscriptpar"<< std::endl;
-// //     os << std::endl;
-// //     os << "stopscriptpar par\t sets stop script parameter (see stopscript)"<< std::endl;
-// //     os << std::endl;
-
-
-
-
-
-// //     os << "outdir \t directory to which the files will be written by default" << std::endl;
-// //     os << std::endl;
-// //     os <<  "fname \t filename to which the files will be written by default (to which file and position indexes will eventually be attached)" << std::endl;
-// //     os << std::endl;
-// //     os << "index \t start index of the files (automatically incremented by the acquisition functions)" << std::endl;
-// //     os << std::endl;
-// //     os << "nmod n \t Sets number of detector modules " << std::endl;
-// //     os << std::endl;
-// //     os << "extsig:i mode \t Sets usage of the external digital signal i. mode can be: " << std::endl;
-// //     os << "\t off";
-// //     os << std::endl;
-// //     os << "\t gate_in_active_high";
-// //     os << std::endl;
-// //     os << "\t gate_in_active_low";
-// //     os << std::endl;
-// //     os << "\t trigger_in_rising_edge";
-// //     os << std::endl;
-// //     os << "\t trigger_in_falling_edge";
-// //     os << std::endl;
-// //     os << "\t ro_trigger_in_rising_edge";
-// //     os << std::endl;
-// //     os << "\t ro_trigger_in_falling_edge";
-// //     os << std::endl;
-// //     os << "\t gate_out_active_high";
-// //     os << std::endl;
-// //     os << "\t gate_out_active_low";
-// //     os << std::endl;
-// //     os << "\t trigger_out_rising_edge";
-// //     os << std::endl;
-// //     os << "\t trigger_out_falling_edge";
-// //     os << std::endl;
-// //     os << "\t ro_trigger_out_rising_edge";
-// //     os << std::endl;
-// //     os << "\t ro_trigger_out_falling_edge"    << std::endl;
-// //     os << std::endl;
-// //     os << "settings sett \t Sets detector settings. Can be: " << std::endl;
-// //     os << "\t standard \t fast \t highgain" << std::endl;
-// //     os << "\t depending on trheshold energy and maximum count rate: please refere to manual for limit values!"<< std::endl;
-// //     os << std::endl;
-// //     os << "threshold ev \t Sets detector threshold in eV. Should be half of the beam energy. It is precise only if the detector is calibrated"<< std::endl;
-// //     os << std::endl;
-// //     os << "vthreshold dacu\t sets the detector threshold in dac units (0-1024). The energy is approx 800-15*keV" << std::endl;
-// //     os << std::endl;
-
-// //     os << "vcalibration " << "dacu\t sets the calibration pulse amplitude in dac units (0-1024)." << std::endl;
-// //     os << std::endl;
-// //       os << "vtrimbit " << "dacu\t sets the trimbit amplitude in dac units (0-1024)." << std::endl;
-// //     os << std::endl;
-// //   os << "vpreamp " << "dacu\t sets the preamp feedback voltage in dac units (0-1024)." << std::endl;
-// //     os << std::endl;
-// //   os << "vshaper1 " << "dacu\t sets the shaper1 feedback voltage in dac units (0-1024)." << std::endl;
-// //     os << std::endl;
-// //   os << "vshaper2 " << "dacu\t sets the  shaper2 feedback voltage in dac units (0-1024)." << std::endl;
-// //     os << std::endl;
-// //   os << "vhighvoltage " << "dacu\t CHIPTEST BOARD ONLY - sets the detector HV in dac units (0-1024)." << std::endl;
-// //     os << std::endl;
-// //   os << "vapower " << "dacu\t CHIPTEST BOARD ONLY - sets the analog power supply in dac units (0-1024)." << std::endl;
-// //     os << std::endl;
-// //   os << "vddpower " << "dacu\t CHIPTEST BOARD ONLY - sets the digital power supply in dac units (0-1024)." << std::endl;
-// //     os << std::endl;
-// //   os << "vshpower " << "dacu\t CHIPTEST BOARD ONLY - sets the comparator power supply in dac units (0-1024)." << std::endl;
-// //     os << std::endl;
-// //   os << "viopower " << "dacu\t CHIPTEST BOARD ONLY - sets the FPGA I/O power supply in dac units (0-1024)." << std::endl;
-
-// //     os << std::endl;
-// //     os << "exptime t \t Sets the exposure time per frame (in s)"<< std::endl;
-// //     os << std::endl;
-// //     os << "period t \t Sets the frames period (in s)"<< std::endl;
-// //     os << std::endl;
-// //     os << "delay t \t Sets the delay after trigger (in s)"<< std::endl;
-// //     os << std::endl;
-// //     os << "gates n \t Sets the number of gates per frame"<< std::endl;
-// //     os << std::endl;
-// //     os << "frames n \t Sets the number of frames per cycle (e.g. after each trigger)"<< std::endl;
-// //     os << std::endl;
-// //     os << "cycles n \t Sets the number of cycles (e.g. number of triggers)"<< std::endl;
-// //     os << std::endl;
-// //     os << "probes n \t Sets the number of probes to accumulate (max 3)"<< std::endl;
-// //     os << std::endl;
-// //     os << "dr n \t Sets the dynamic range - can be 1, 4, 8,16 or 24 bits"<< std::endl;
-// //     os << std::endl;
-// //     os << "flags mode \t Sets the readout flags - can be none or storeinram"<< std::endl;
-// //     os << std::endl;
-// //     os << "ffdir dir \t Sets the default directory where the flat field are located"<< std::endl;
-// //     os << std::endl;
-// //     os << "flatfield fname \t Sets the flatfield file name - none disable flat field corrections"<< std::endl;
-// //     os << std::endl;
-// //     os << "ratecorr t \t Sets the rate corrections with dead time t ns (0 unsets, -1 uses default dead time for chosen settings"<< std::endl;
-// //     os << std::endl;
-// //     os << "badchannels fname \t Sets the badchannels file name - none disable bad channels corrections"<< std::endl;
-// //     os << std::endl;
-// //     os << "angconv fname \t Sets the angular conversion file name"<< std::endl;
-// //     os << std::endl;
-// //     os << "globaloff o \t sets the fixed angular offset of your encoder - should be almost constant!"<< std::endl;
-// //     os << std::endl;
-// //     os << "fineoff o \t sets a possible angular offset of your setup - should be small but can be senseful to modify"<< std::endl;
-// //     os << std::endl;
-// //     os << "binsize s\t sets the binning size of the angular conversion (otherwise defaults from the angualr conversion constants)"<< std::endl;
-// //     os << std::endl;
-// //     os << "positions np [pos0 pos1...posnp] \t sets the number of positions at which the detector is moved during the acquisition and their values"<< std::endl;
-// //     os << std::endl;
-// //     os << "threaded b \t sets whether the postprocessing and file writing of the data is done in a separate thread (0 sequencial, 1 threaded). Please remeber to set the threaded mode if you acquire long real time measurements and/or use the storeinram option  otherwise you risk to lose your data"<< std::endl;
-// //     os << std::endl;
-// //     os << "online  b\t sets the detector in online (1) or offline (0) state " << std::endl;
-// //     os << std::endl;
-// //   } else if (action==GET_ACTION) {
-// //     os << "help \t This help " << std::endl;
-    
-
-// //   os << "status \t gets the detector status - can be: running, error, transmitting, finished, waiting or idle" << std::endl;
-// //   os << "data \t gets all data from the detector (if any) processes them and writes them to file according to the preferences already setup" << std::endl;
-// //   os << "frame \t gets a single frame from the detector (if any) processes it and writes it to file according to the preferences already setup" << std::endl;
-// //     os << "config  fname\t writes the configuration file" << std::endl;
-// //     os << std::endl;
-// //     os << "parameters  fname\t writes the main detector parameters for the measuremen tin the file " << std::endl;
-// //     os << std::endl;
-// //     os << "setup rootname\t writes the complete detector setup (including configuration, trimbits, flat field coefficients, badchannels etc.) in a set of files for which the extension is automatically generated " << std::endl;
-// //     os << std::endl;
-// //     os << "hostname \t Gets the detector hostname (or IP address) " << std::endl;
-// //     os << std::endl;
-// //     os << "caldir \t Gets path of the calibration files " << std::endl;
-// //     os << std::endl;
-// //     os << "trimdir \t Gets path of the trim files " << std::endl;
-// //     os << std::endl;
-// //     os << "trimen \t returns the number of energies for which trimbit files exist and their values"<< std::endl;
-
-
-
-
-
-
-// //     os << "startscript \t gets script to execute at the beginning of the measurements - \"none\" to unset - will be launched as a system call with arguments nrun=fileindex par=startscriptpar"<< std::endl;
-// //     os << std::endl;
-// //     os << "startscriptpar \t gets start script parameter (see startscript)"<< std::endl;
-// //     os << std::endl;
-
-// //     os << "scan0script \t gets script to launch at level 0 scan. If \"energy\" energy scan, if \"threshold\" threshold scan, if \"trimbits\" trimbits scan, \"none\" unsets otherwise will be launched as a system call with arguments nrun=fileindex fn=filename var=scan0var par=scan0par"<< std::endl;
-// //     os << std::endl;
-// //     os << "scan0par \t gets the level 0 scan parameter. See scan0script"<< std::endl;
-// //     os << std::endl;
-// //     os << "scan0prec \t gets the level 0 scan precision for the output file name. See scan0script"<< std::endl;
-// //     os << std::endl;
-// //     os << "scan0steps \t gets the level 0 scan steps. See scan0script - nsteps=0 unsets the scan level"<< std::endl;
-// //     os << std::endl;
-
-
-// //     os << "scan1script \t gets script to launch at level 1 scan. If \"energy\" energy scan, if \"threshold\" threshold scan, if \"trimbits\" trimbits scan, \"none\" unsets otherwise will be launched as a system call with arguments nrun=fileindex fn=filename var=scan1var par=scan1par"<< std::endl;
-// //     os << std::endl;
-
-// //     os << "scan1par \t gets the level 1 scan parameter. See scan1script"<< std::endl;
-// //     os << std::endl;
-// //     os << "scan1prec \t gets the level 1 scan precision for the output file name. See scan1script"<< std::endl;
-// //     os << std::endl;
-// //     os << "scan1steps \t gets the level 1 scan steps. See scan1script - nsteps=0 unsets the scan level"<< std::endl;
-// //     os << std::endl;
-
-
-// //     os << "scriptbefore \t gets script to execute at the beginning of the realtime acquisition - \"none\" to unset - will be launched as a system call with arguments nrun=fileindex fn=filename par=scriptbeforepar sv0=scan0var sv1=scan1var p0=scan0par p1=scan1par"<< std::endl;
-// //     os << std::endl;
-// //     os << "scriptbeforepar \t gets  script before parameter (see scriptbefore)"<< std::endl;
-// //     os << std::endl;
-
-// //     os << "headerbefore \n gets the script to launch to acquire the headerfile just before  the acquisition -  \"none\" to unset - will be launched as a system call with arguments nrun=fileindex fn=filename acqtime=t gainmode=sett threshold=thr badfile=badf angfile=angf bloffset=bloffset fineoffset=fineoffset fffile=ffile tau=taucorr par=headerbeforepar"<< std::endl;
-// //     os << std::endl;
-// //     os << "headerbeforepar \t gets header before parameter (see headerbefore)"<< std::endl;
-// //     os << std::endl;
-
-
-// //     os << "headerafter \n gets the script to launch to acquire the headerfile just after the acquisition -  \"none\" to unset - will be launched as a system call with arguments nrun=fileindex fn=filename acqtime=t gainmode=sett threshold=thr badfile=badf angfile=angf bloffset=bloffset fineoffset=fineoffset fffile=ffile tau=taucorr par=headerafterpar"<< std::endl;
-// //     os << std::endl;
-// //     os << "headerafterpar \t gets header after parameter (see headerafter)"<< std::endl;
-// //     os << std::endl;
-
-// //     os << "scriptafter \t gets script to execute at the end of the realtime acquisition - \"none\" to unset - will be launched as a system call with arguments nrun=fileindex fn=filename par=scriptafterpar sv0=scan0var sv1=scan1var p0=scan0par p1=scan1par"<< std::endl;
-// //     os << std::endl;
-// //     os << "scriptafterpar \t gets  script after parameter (see scriptafter)"<< std::endl;
-// //     os << std::endl;
-
-
-// //     os << "stopscript \t gets script to execute at the end of the measurements - \"none\" to unset - will be launched as a system call with arguments nrun=fileindex par=stopscriptpar"<< std::endl;
-// //     os << std::endl;
-// //     os << "stopscriptpar\t gets stop script parameter (see stopscript)"<< std::endl;
-// //     os << std::endl;
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-// //     os << "outdir \t directory to which the files will be written by default" << std::endl;
-// //     os << std::endl;
-// //       os <<  "fname \t filename to which the files will be written by default (to which file and position indexes will eventually be attached)" << std::endl;
-// //     os << std::endl;
-// //     os << "index \t start index of the files (automatically incremented by the acquisition functions)" << std::endl;
-// //     os << std::endl;
-// //     os << "nmod \t Gets number of detector modules " << std::endl;
-// //     os << std::endl;
-// //     os << "maxmod \t Gets maximum number of detector modules " << std::endl;
-// //     os << std::endl;
-// //     os << "extsig:i\t Gets usage of the external digital signal i. The return value can be: " << std::endl;
-// //     os << "\t 0 off";
-// //     os << std::endl;
-// //     os << "\t 1 gate_in_active_high";
-// //     os << std::endl;
-// //     os << "\t 2 gate_in_active_low";
-// //     os << std::endl;
-// //     os << "\t 3 trigger_in_rising_edge";
-// //     os << std::endl;
-// //     os << "\t 4 trigger_in_falling_edge";
-// //     os << std::endl;
-// //     os << "\t 5 ro_trigger_in_rising_edge";
-// //     os << std::endl;
-// //     os << "\t 6 ro_trigger_in_falling_edge";
-// //     os << std::endl;
-// //     os << "\t 7 gate_out_active_high";
-// //     os << std::endl;
-// //     os << "\t 8 gate_out_active_low";
-// //     os << std::endl;
-// //     os << "\t 9 trigger_out_rising_edge";
-// //     os << std::endl;
-// //     os << "\t 10 trigger_out_falling_edge";
-// //     os << std::endl;
-// //     os << "\t 11 ro_trigger_out_rising_edge";
-// //     os << std::endl;
-// //     os << "\t 12 ro_trigger_out_falling_edge" << std::endl;
-// //     os << std::endl;
-// //     os << "modulenumber:i \t Gets the serial number of module i" << std::endl;
-// //     os << std::endl;
-// //     os << "moduleversion\t Gets the module version " << std::endl;
-// //     os << std::endl;
-// //     os << "detectornumber\t Gets the detector number (MAC address) " << std::endl;
-// //     os << std::endl;
-// //     os << "detectorversion\t Gets the detector firmware version " << std::endl;
-// //     os << std::endl;
-// //     os << "softwareversion\t Gets the detector software version " << std::endl;
-// //     os << std::endl;
-// //     os << "thisversion\t Gets the version of this software" << std::endl;
-// //     os << std::endl;
-// //     os << "digitest:i\t Makes a digital test of the detector module i. Returns 0 if it succeeds " << std::endl;
-// //     os << std::endl;
-// //     os << "bustest\t Makes a test of the detector bus. Returns 0 if it succeeds " << std::endl; 
-// //     os << std::endl;
-// //     os << "settings\t Gets detector settings. Can be: " << std::endl;
-// //     os << "\t 0 standard \t 1 fast \t 2 highgain \t else undefined" << std::endl;
-// //     os << std::endl;
-// //     os << "threshold\t Gets detector threshold in eV. It is precise only if the detector is calibrated"<< std::endl;
-// //     os << std::endl;
-// //     os << "vthreshold \t Gets the detector threshold in dac units (0-1024). The energy is approx 800-15*keV" << std::endl;
-// //     os << std::endl;
-
-// //     os << "vcalibration " << "dacu\t gets the calibration pulse amplitude in dac units (0-1024)." << std::endl;
-// //     os << std::endl;
-// //       os << "vtrimbit " << "dacu\t gets the trimbit amplitude in dac units (0-1024)." << std::endl;
-// //     os << std::endl;
-// //   os << "vpreamp " << "dacu\t gets the preamp feedback voltage in dac units (0-1024)." << std::endl;
-// //     os << std::endl;
-// //   os << "vshaper1 " << "dacu\t gets the shaper1 feedback voltage in dac units (0-1024)." << std::endl;
-// //     os << std::endl;
-// //   os << "vshaper2 " << "dacu\t gets the  shaper2 feedback voltage in dac units (0-1024)." << std::endl;
-// //     os << std::endl;
-// //   os << "vhighvoltage " << "dacu\t CHIPTEST BOARD ONLY - gets the detector HV in dac units (0-1024)." << std::endl;
-// //     os << std::endl;
-// //   os << "vapower " << "dacu\t CHIPTEST BOARD ONLY - gets the analog power supply in dac units (0-1024)." << std::endl;
-// //     os << std::endl;
-// //   os << "vddpower " << "dacu\t CHIPTEST BOARD ONLY - gets the digital power supply in dac units (0-1024)." << std::endl;
-// //     os << std::endl;
-// //   os << "vshpower " << "dacu\t CHIPTEST BOARD ONLY - gets the comparator power supply in dac units (0-1024)." << std::endl;
-// //     os << std::endl;
-// //   os << "viopower " << "dacu\t CHIPTEST BOARD ONLY - gets the FPGA I/O power supply in dac units (0-1024)." << std::endl;
-// //     os << std::endl;
-
-
-// //     os << "exptime\t Gets the exposure time per frame (in s)"<< std::endl;
-// //     os << std::endl;
-// //     os << "period \t Gets the frames period (in s)"<< std::endl;
-// //     os << std::endl;
-// //     os << "delay \t Gets the delay after trigger (in s)"<< std::endl;
-// //     os << std::endl;    
-// //     os << "gates \t Gets the number of gates per frame"<< std::endl;
-// //     os << std::endl;
-// //     os << "frames \t Gets the number of frames per cycle (e.g. after each trigger)"<< std::endl;
-// //     os << std::endl;
-// //     os << "cycles \t Gets the number of cycles (e.g. number of triggers)"<< std::endl;
-// //     os << std::endl;
-// //     os << "probes \t Gets the number of probes to accumulate (max 3)"<< std::endl;
-
-
-
-
-// //     os << "exptimel\t Gets the exposure time left in the current frame (in s)"<< std::endl;
-// //     os << std::endl;
-// //     os << "periodl \t Gets the period left in the current frame (in s)"<< std::endl;
-// //     os << std::endl;
-// //     os << "delayl \t Gets the delay after current trigger left (in s)"<< std::endl;
-// //     os << std::endl;    
-// //     os << "gatesl \t Gets the number of gates left in the current frame"<< std::endl;
-// //     os << std::endl;
-// //     os << "framesl \t Gets the number of frames left (after the current trigger)"<< std::endl;
-// //     os << std::endl;
-// //     os << "cyclesl \t Gets the number of cycles left (e.g. number of triggers)"<< std::endl;
-// //     //os << std::endl;
-// //     //os << "progress \t Gets acquisition progress - to be implemented"<< std::endl;
-
-// //     os << std::endl;
-// //     os << "now \t Gets the actual time of the detector (in s)"<< std::endl;
-
-
-// //     os << std::endl;
-// //     os << "timestamp \t Gets the  time of the measurements of the detector (in s, -1 if no measurement left)"<< std::endl;
-
-
-
-
-
-// //     os << std::endl;
-// //     os << "dr \t Gets the dynamic range"<< std::endl;
-// //     os << std::endl;
-// //     os << "trim:mode fname \t trims the detector and writes the trimfile fname.snxx "<< std::endl;
-// //     os << "\t mode can be:\t noise\t beam\t improve\t fix\t offline "<< std::endl;
-// //     os << "Check that the start conditions are OK!!!"<< std::endl;
-// //     os << std::endl;
-// //     os << "ffdir \t Returns the default directory where the flat field are located"<< std::endl;
-// //     os << std::endl;
-// //     os << "flatfield fname \t returns wether the flat field corrections are enabled and if so writes the coefficients to the specified filename. If fname is none it is not written"<< std::endl;
-// //     os << std::endl;
-// //     os << "ratecorr \t returns wether teh rate corrections are enabled and what is the dead time used in ns"<< std::endl;
-// //     os << std::endl;
-// //     os << "badchannels fname \t returns wether the bad channels corrections are enabled and if so writes the bad channels to the specified filename. If fname is none it is not written"<< std::endl;
-// //     os << std::endl;
-// //     os << "angconv fname \t returns wether the angular conversion is enabled and if so writes the angular conversion coefficients to the specified filename. If fname is none, it is not written"<< std::endl;
-// //     os << std::endl;
-// //     os << "globaloff \t returns the fixed angular offset of your encoder - should be almost constant!"<< std::endl;
-// //     os << std::endl;
-// //     os << "fineoff \t returns a possible angualr offset of your setup - should be small but can be senseful to modify"<< std::endl;
-// //     os << std::endl;
-// //     os << "binsize \t returns the binning size of the anular conversion"<< std::endl;
-// //     os << std::endl;
-// //     os << "positions \t returns the number of positions at which the detector is moved during the acquisition and their values"<< std::endl;
-// //     os << std::endl;
-// //     os << "threaded \t gets whether the postprocessing and file writing of the data is done in a separate thread (0 sequencial, 1 threaded). Check that it is set to 1 if you acquire long real time measurements and/or use the storeinram option otherwise you risk to lose your data"<< std::endl;
-// //     os << std::endl; 
-// //     os << "online  \t gets the detector online (1) or offline (0) state " << std::endl;
-// //     os << std::endl; 
-
-
-// //   }
-
-   
-// //   return os.str();
-// // }
 
 

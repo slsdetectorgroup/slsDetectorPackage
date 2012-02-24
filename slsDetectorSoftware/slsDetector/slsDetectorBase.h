@@ -805,7 +805,161 @@ class slsDetectorBase {
  */
   virtual int testFunction(int times=0)=0;
 
+  /************************************************************************
+
+                           STATIC FUNCTIONS
+
+  *********************************************************************/  
+
+  /** returns string from run status index
+      \param s can be ERROR, WAITING, RUNNING, TRANSMITTING, RUN_FINISHED
+      \returns string error, waiting, running, data, finished
+  */
+  static string runStatusType(runStatus s){\
+    switch (s) {				\
+    case ERROR:       return string("error");		\
+    case  WAITING:      return  string("waiting");	\
+    case RUNNING:      return string("running");\
+    case TRANSMITTING:      return string("data");	\
+    case  RUN_FINISHED:      return string("finished");	\
+    default:       return string("idle");		\
+    }};
+  
+  /** returns detector type string from detector type index
+      \param type string can be Mythen, Pilatus, Eiger, Gotthard, Agipd, Unknown
+      \returns MYTHEN, PILATUS, EIGER, GOTTHARD, AGIPD, GENERIC
+  */
+  static string getDetectorType(detectorType t){\
+    switch (t) {\
+    case MYTHEN:    return string("Mythen");	\
+    case PILATUS:    return string("Pilatus");	\
+    case EIGER:    return string("Eiger");	\
+    case GOTTHARD:    return string("Gotthard");	\
+    case AGIPD:    return string("Agipd");		\
+    default:    return string("Unknown");		\
+  }};
+
+  /** returns detector type index from detector type string
+      \param t can be MYTHEN, PILATUS, EIGER, GOTTHARD, AGIPD, GENERIC
+      \returns Mythen, Pilatus, Eiger, Gotthard, Agipd, Unknown
+  */
+  static detectorType getDetectorType(string const type){\
+    if (type=="Mythen")      return MYTHEN;\
+    else if  (type=="Pilatus")      return PILATUS;	\
+    else if  (type=="Eiger")    return EIGER;		\
+    else if  (type=="Gotthard")    return GOTTHARD;	\
+    else if  (type=="Agipd")    return AGIPD;		\
+    return GENERIC;};
+
+
+
+  /** returns synchronization type index from string
+      \param t can be none, gating, trigger, complementary
+      \returns ONE, MASTER_GATES, MASTER_TRIGGERS, SLAVE_STARTS_WHEN_MASTER_STOPS
+  */
+  static synchronizationMode getSyncType(string const type){\
+    if (type=="none")    return NONE;\
+    else if (type=="gating")    return MASTER_GATES;\
+    else if (type=="trigger")    return MASTER_TRIGGERS;		\
+    else if (type=="complementary") return SLAVE_STARTS_WHEN_MASTER_STOPS; \
+    else return GET_SYNCHRONIZATION_MODE;				\
+  };
+
+  /** returns synchronization type string from index
+      \param t can be NONE, MASTER_GATES, MASTER_TRIGGERS, SLAVE_STARTS_WHEN_MASTER_STOPS
+      \returns none, gating, trigger, complementary
+  */
+  static string getSyncType(synchronizationMode s ){\
+    switch(s) {					    \
+    case NONE:    return string("none");	    \
+    case MASTER_GATES:    return string("gating");	\
+    case MASTER_TRIGGERS:    return string("trigger");			\
+    case SLAVE_STARTS_WHEN_MASTER_STOPS:    return string("complementary"); \
+    default:    return string("unknown");				\
+    }};
+
+
+
+  /** returns string from external signal type index
+      \param f can be SIGNAL_OFF, GATE_IN_ACTIVE_HIGH, GATE_IN_ACTIVE_LOW, TRIGGER_IN_RISING_EDGE, TRIGGER_IN_FALLING_EDGE, RO_TRIGGER_IN_RISING_EDGE, RO_TRIGGER_IN_FALLING_EDGE, GATE_OUT_ACTIVE_HIGH, GATE_OUT_ACTIVE_LOW, =TRIGGER_OUT_RISING_EDGE, TRIGGER_OUT_FALLING_EDGE, RO_TRIGGER_OUT_RISING_EDGE, RO_TRIGGER_OUT_FALLING_EDGE
+      \returns string  off, gate_in_active_high, gate_in_active_low, trigger_in_rising_edge, trigger_in_falling_edge, ro_trigger_in_rising_edge, ro_trigger_in_falling_edge, gate_out_active_high, gate_out_active_low, trigger_out_rising_edge, trigger_out_falling_edge, ro_trigger_out_rising_edge, ro_trigger_out_falling_edge, unknown
+  */
+  static string externalSignalType(externalSignalFlag f){\
+    switch(f) {						 \
+    case SIGNAL_OFF:      return string( "off");			\
+    case GATE_IN_ACTIVE_HIGH:    return string( "gate_in_active_high");	\
+    case GATE_IN_ACTIVE_LOW:    return string( "gate_in_active_low");	\
+    case TRIGGER_IN_RISING_EDGE:    return string( "trigger_in_rising_edge"); \
+    case TRIGGER_IN_FALLING_EDGE:    return string( "trigger_in_falling_edge");	\
+    case RO_TRIGGER_IN_RISING_EDGE:    return string( "ro_trigger_in_rising_edge"); \
+    case RO_TRIGGER_IN_FALLING_EDGE:    return string( "ro_trigger_in_falling_edge"); \
+    case GATE_OUT_ACTIVE_HIGH:    return string( "gate_out_active_high"); \
+    case GATE_OUT_ACTIVE_LOW:    return string( "gate_out_active_low");	\
+    case TRIGGER_OUT_RISING_EDGE:    return string( "trigger_out_rising_edge");	\
+    case TRIGGER_OUT_FALLING_EDGE:    return string( "trigger_out_falling_edge"); \
+  case RO_TRIGGER_OUT_RISING_EDGE:      return string( "ro_trigger_out_rising_edge");\
+    case RO_TRIGGER_OUT_FALLING_EDGE:    return string( "ro_trigger_out_falling_edge");	\
+    default:    return string( "unknown");				\
+    }    };
+  
+
+
+
+  /** returns external signal type index from string
+      \param string  off, gate_in_active_high, gate_in_active_low, trigger_in_rising_edge, trigger_in_falling_edge, ro_trigger_in_rising_edge, ro_trigger_in_falling_edge, gate_out_active_high, gate_out_active_low, trigger_out_rising_edge, trigger_out_falling_edge, ro_trigger_out_rising_edge, ro_trigger_out_falling_edge, unknown
+      \returns f can be SIGNAL_OFF, GATE_IN_ACTIVE_HIGH, GATE_IN_ACTIVE_LOW, TRIGGER_IN_RISING_EDGE, TRIGGER_IN_FALLING_EDGE, RO_TRIGGER_IN_RISING_EDGE, RO_TRIGGER_IN_FALLING_EDGE, GATE_OUT_ACTIVE_HIGH, GATE_OUT_ACTIVE_LOW, =TRIGGER_OUT_RISING_EDGE, TRIGGER_OUT_FALLING_EDGE, RO_TRIGGER_OUT_RISING_EDGE, RO_TRIGGER_OUT_FALLING_EDGE,GET_EXTERNAL_SIGNAL_FLAG (if unknown)
+  */
+
+  static externalSignalFlag externalSignalType(string sval){\
+  externalSignalFlag flag=GET_EXTERNAL_SIGNAL_FLAG;\
+  if (sval=="off")      flag=SIGNAL_OFF;\
+  else if (sval=="gate_in_active_high")      flag=GATE_IN_ACTIVE_HIGH;	\
+  else if  (sval=="gate_in_active_low") flag=GATE_IN_ACTIVE_LOW;\
+  else if  (sval=="trigger_in_rising_edge") flag=TRIGGER_IN_RISING_EDGE;\
+  else if  (sval=="trigger_in_falling_edge") flag=TRIGGER_IN_FALLING_EDGE;\
+  else if  (sval=="ro_trigger_in_rising_edge") flag=RO_TRIGGER_IN_RISING_EDGE;\
+  else if  (sval=="ro_trigger_in_falling_edge") flag=RO_TRIGGER_IN_FALLING_EDGE;\
+  else if (sval=="gate_out_active_high")      flag=GATE_OUT_ACTIVE_HIGH;\
+  else if  (sval=="gate_out_active_low") flag=GATE_OUT_ACTIVE_LOW;\
+  else if  (sval=="trigger_out_rising_edge") flag=TRIGGER_OUT_RISING_EDGE;\
+  else if  (sval=="trigger_out_falling_edge") flag=TRIGGER_OUT_FALLING_EDGE;\
+  else if  (sval=="ro_trigger_out_rising_edge") flag=RO_TRIGGER_OUT_RISING_EDGE;\
+  else if  (sval=="ro_trigger_out_falling_edge") flag=RO_TRIGGER_OUT_FALLING_EDGE;\
+  return flag;};
+
+
+  /** returns synchronization type string from index
+      \param t can be NONE, MASTER_GATES, MASTER_TRIGGERS, SLAVE_STARTS_WHEN_MASTER_STOPS
+      \returns none, gating, trigger, complementary
+  */
+  static detectorSettings getDetectorSettings(string s){\
+    if (s=="standard") return STANDARD;\
+    if (s=="fast") return FAST;\
+    if (s=="highgain") return HIGHGAIN;		\
+    if (s=="dynamicgain") return DYNAMICGAIN;	\
+    if (s=="lowgain") return LOWGAIN;		\
+    if (s=="mediumgain") return MEDIUMGAIN;	\
+    if (s=="veryhighgain") return VERYHIGHGAIN;	\
+    return GET_SETTINGS;\
+  };
+
+  /** returns detector settings string from index
+      \param t can be STANDARD, FAST, HIGHGAIN, DYNAMICGAIN, LOWGAIN, MEDIUMGAIN, VERYHIGHGAIN, GET_SETTINGS
+      \returns standard, fast, highgain, dynamicgain, lowgain, mediumgain, veryhighgain, undefined
+  */
+  static string getDetectorSettings(detectorSettings s){\
+    switch(s) {\
+    case STANDARD:      return string("standard");\
+    case FAST:      return string("fast");\
+    case HIGHGAIN:      return string("highgain");\
+    case DYNAMICGAIN:    return string("dynamicgain");	\
+    case LOWGAIN:    return string("lowgain");		\
+    case MEDIUMGAIN:    return string("mediumgain");	\
+    case VERYHIGHGAIN:    return string("veryhighgain");	\
+    default:    return string("undefined");			\
+    }};
 
   
+
 };
 #endif

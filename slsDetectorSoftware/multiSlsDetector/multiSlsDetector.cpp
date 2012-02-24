@@ -12,6 +12,7 @@ ID:         $Id$
 
 #include "multiSlsDetector.h"
 #include "slsDetector.h"
+#include "slsDetectorCommand.h"
 #include "usersFunctions.h"
 #include  <sys/types.h>
 #include  <sys/ipc.h>
@@ -2709,6 +2710,8 @@ int multiSlsDetector::readRegister(int addr){
 int multiSlsDetector::readConfigurationFile(string const fname){
 
   
+
+  slsDetectorCommand *cmd=new slsDetectorCommand(this);
   char ext[100];
 
 
@@ -2763,7 +2766,7 @@ int multiSlsDetector::readConfigurationFile(string const fname){
 	    iargval++;
 	    //}
 	}
-	  ans=executeLine(iargval,args,PUT_ACTION);
+	  ans=cmd->executeLine(iargval,args,PUT_ACTION);
 #ifdef VERBOSE 
 	  std::cout<< ans << std::endl;
 #endif
@@ -2797,6 +2800,9 @@ int multiSlsDetector::readConfigurationFile(string const fname){
 #ifdef VERBOSE
     std::cout<< "Read configuration file of " << iline << " lines" << std::endl;
 #endif
+
+
+    delete cmd;
     return iline;
 
 
@@ -2810,6 +2816,8 @@ int multiSlsDetector::writeConfigurationFile(string const fname){
 
 
 
+
+  slsDetectorCommand *cmd=new slsDetectorCommand(this);
 
   string names[]={				\
     "hostname",					\
@@ -2851,7 +2859,7 @@ int multiSlsDetector::writeConfigurationFile(string const fname){
 
     for (iv=0; iv<nvar; iv++) {
       strcpy(args[0],names[iv].c_str());
-      outfile << names[iv] << " " << executeLine(1,args,GET_ACTION) << std::endl;
+      outfile << names[iv] << " " << cmd->executeLine(1,args,GET_ACTION) << std::endl;
     }
     
     
@@ -2873,13 +2881,26 @@ int multiSlsDetector::writeConfigurationFile(string const fname){
 #ifdef VERBOSE
   std::cout<< "wrote " <<ret << " lines to configuration file " << std::endl;
 #endif
-  
+  delete cmd;
   return iv;
 
-
-
 };
+
+
+
+
+
+
+
+
+
+
+
+
 int multiSlsDetector::dumpDetectorSetup(string const fname, int level){
+
+  slsDetectorCommand *cmd=new slsDetectorCommand(this);
+
   string names[]={
     "fname",\
     "index",\
@@ -2956,7 +2977,7 @@ int multiSlsDetector::dumpDetectorSetup(string const fname, int level){
   if (outfile.is_open()) {
     for (iv=0; iv<nvar-5; iv++) {
       strcpy(args[0],names[iv].c_str());
-      outfile << names[iv] << " " << executeLine(1,args,GET_ACTION) << std::endl;
+      outfile << names[iv] << " " << cmd->executeLine(1,args,GET_ACTION) << std::endl;
     }
 
 
@@ -2965,7 +2986,7 @@ int multiSlsDetector::dumpDetectorSetup(string const fname, int level){
       fname1=fname+string(".ff");
       strcpy(args[1],fname1.c_str());
     }
-    outfile << names[iv] << " " << executeLine(nargs,args,GET_ACTION) << std::endl;
+    outfile << names[iv] << " " << cmd->executeLine(nargs,args,GET_ACTION) << std::endl;
     iv++;
 
     strcpy(args[0],names[iv].c_str());
@@ -2973,7 +2994,7 @@ int multiSlsDetector::dumpDetectorSetup(string const fname, int level){
       fname1=fname+string(".bad");
       strcpy(args[1],fname1.c_str());
     }
-    outfile << names[iv] << " " << executeLine(nargs,args,GET_ACTION) << std::endl;
+    outfile << names[iv] << " " << cmd->executeLine(nargs,args,GET_ACTION) << std::endl;
     iv++;
 
       
@@ -2982,7 +3003,7 @@ int multiSlsDetector::dumpDetectorSetup(string const fname, int level){
       fname1=fname+string(".angoff");
       strcpy(args[1],fname1.c_str());
     }
-    outfile << names[iv] << " " << executeLine(nargs,args,GET_ACTION) << std::endl;
+    outfile << names[iv] << " " << cmd->executeLine(nargs,args,GET_ACTION) << std::endl;
     iv++;
 
     outfile.close();
@@ -3006,6 +3027,8 @@ int multiSlsDetector::dumpDetectorSetup(string const fname, int level){
 #ifdef VERBOSE
   std::cout<< "wrote " <<iv << " lines to  "<< fname1 << std::endl;
 #endif
+
+  delete cmd;
   return 0;
 
 
@@ -3026,6 +3049,8 @@ int multiSlsDetector::dumpDetectorSetup(string const fname, int level){
 int multiSlsDetector::retrieveDetectorSetup(string const fname1, int level){
 
 
+
+  slsDetectorCommand *cmd=new slsDetectorCommand(this);
 
 
     char ext[100];
@@ -3080,7 +3105,7 @@ int multiSlsDetector::retrieveDetectorSetup(string const fname1, int level){
 	    // }
 	}
 	if (level==2) {
-	  executeLine(iargval,args,PUT_ACTION);
+	  cmd->executeLine(iargval,args,PUT_ACTION);
 	} else {
 	  if (string(args[0])==string("flatfield"))
 	    ;
@@ -3090,8 +3115,10 @@ int multiSlsDetector::retrieveDetectorSetup(string const fname1, int level){
 	    ;
 	  else if (string(args[0])==string("trimbits"))
 	    ;
-	  else
-	    executeLine(iargval,args,PUT_ACTION);
+	  else {
+	    ;
+	    cmd->executeLine(iargval,args,PUT_ACTION);
+	  }
 	}
       }
       iline++;
@@ -3115,18 +3142,8 @@ int multiSlsDetector::retrieveDetectorSetup(string const fname1, int level){
 #ifdef VERBOSE
   std::cout<< "Read  " << iline << " lines" << std::endl;
 #endif
+  delete cmd;
   return iline;
-
-
-
-
-
-
-
-
-
-
-
 
 
 };

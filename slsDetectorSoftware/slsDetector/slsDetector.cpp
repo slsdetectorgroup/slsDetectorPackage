@@ -2960,19 +2960,17 @@ runStatus slsDetector::getRunStatus(){
 #endif
   if (thisDetector->onlineFlag==ONLINE_FLAG) {
     if (stopSocket) {
-  if  (stopSocket->Connect()>=0) {
-    stopSocket->SendDataOnly(&fnum,sizeof(fnum));
-    stopSocket->ReceiveDataOnly(&ret,sizeof(ret));
-    if (ret==FAIL) {
-      stopSocket->ReceiveDataOnly(mess,sizeof(mess));
-      std::cout<< "Detector returned error: " << mess << std::endl;
-    } else {
-      stopSocket->ReceiveDataOnly(&retval,sizeof(retval));   
-    } 
-    stopSocket->Disconnect();
-    if (ret==FORCE_UPDATE)
-      updateDetector();
-  }
+      if  (stopSocket->Connect()>=0) {
+	stopSocket->SendDataOnly(&fnum,sizeof(fnum));
+	stopSocket->ReceiveDataOnly(&ret,sizeof(ret));
+	if (ret==FAIL) {
+	  stopSocket->ReceiveDataOnly(mess,sizeof(mess));
+	  std::cout<< "Detector returned error: " << mess << std::endl;
+	} else {
+	  stopSocket->ReceiveDataOnly(&retval,sizeof(retval));   
+	} 
+	stopSocket->Disconnect();
+      }
     }
   }
   return retval;
@@ -3630,21 +3628,6 @@ int64_t slsDetector::getTimeLeft(timerIndex index){
   std::cout<< "Getting  timer  "<< index <<  std::endl;
 #endif
   if (thisDetector->onlineFlag==ONLINE_FLAG) {
-//     if (controlSocket) {
-//   if  (controlSocket->Connect()>=0) {
-//     controlSocket->SendDataOnly(&fnum,sizeof(fnum));
-//     controlSocket->SendDataOnly(&index,sizeof(index));
-//     controlSocket->ReceiveDataOnly(&ret,sizeof(ret));
-//     if (ret!=OK) {
-//       controlSocket->ReceiveDataOnly(mess,sizeof(mess));
-//       std::cout<< "Detector returned error: " << mess << std::endl;
-//     } else {
-//       controlSocket->ReceiveDataOnly(&retval,sizeof(retval)); 
-//       // thisDetector->timerValue[index]=retval;
-//     }   
-//     controlSocket->Disconnect();
-//   }
-//     }
     if (stopSocket) {
       if  (stopSocket->Connect()>=0) {
 	stopSocket->SendDataOnly(&fnum,sizeof(fnum));
@@ -3655,7 +3638,6 @@ int64_t slsDetector::getTimeLeft(timerIndex index){
 	  std::cout<< "Detector returned error: " << mess << std::endl;
 	} else {
 	  stopSocket->ReceiveDataOnly(&retval,sizeof(retval)); 
-	  // thisDetector->timerValue[index]=retval;
 	}   
 	stopSocket->Disconnect();
       }
@@ -5478,3 +5460,91 @@ int slsDetector::testFunction(int times) {
 
 
 
+
+  /* returns if the detector is Master, slave or nothing 
+      \param flag can be GET_MASTER, NO_MASTER, IS_MASTER, IS_SLAVE
+      \returns master flag of the detector
+  */
+masterFlags  slsDetector::setMaster(masterFlags flag) {
+  
+
+  int fnum=F_SET_MASTER;
+  masterFlags retval=GET_MASTER;
+  char mess[100];
+  int ret=OK;
+
+#ifdef VERBOSE
+  std::cout<< "Setting master flags to "<< flag << std::endl;
+#endif
+  
+  if (thisDetector->onlineFlag==ONLINE_FLAG) {
+    if (controlSocket) {
+      if  (controlSocket->Connect()>=0) {
+	controlSocket->SendDataOnly(&fnum,sizeof(fnum));
+	controlSocket->SendDataOnly(&flag,sizeof(flag));
+	controlSocket->ReceiveDataOnly(&ret,sizeof(ret));
+	if (ret==FAIL) {
+	  controlSocket->ReceiveDataOnly(mess,sizeof(mess));
+	  std::cout<< "Detector returned error: " << mess << std::endl;
+	} else {
+	  controlSocket->ReceiveDataOnly(&retval,sizeof(retval)); 
+	}
+	controlSocket->Disconnect();
+	if (ret==FORCE_UPDATE)
+	  updateDetector();
+      }
+    }
+  } 
+
+#ifdef VERBOSE
+  std::cout<< "Readout flag set to  "<< retval   << std::endl;
+#endif
+  return retval;
+}
+
+
+
+
+  /*
+      Sets/gets the synchronization mode of the various detectors
+      \param sync syncronization mode can be GET_SYNCHRONIZATION_MODE, NO_SYNCHRONIZATION, MASTER_GATES, MASTER_TRIGGERS, SLAVE_STARTS_WHEN_MASTER_STOPS
+      \returns current syncronization mode   
+  */   
+synchronizationMode slsDetector::setSynchronization(synchronizationMode flag) {
+  
+
+  
+  int fnum=F_SET_SYNCHRONIZATION_MODE;
+  synchronizationMode retval=GET_SYNCHRONIZATION_MODE;
+  char mess[100];
+  int ret=OK;
+
+#ifdef VERBOSE
+  std::cout<< "Setting synchronization mode to "<< flag << std::endl;
+#endif
+  
+  if (thisDetector->onlineFlag==ONLINE_FLAG) {
+    if (controlSocket) {
+      if  (controlSocket->Connect()>=0) {
+	controlSocket->SendDataOnly(&fnum,sizeof(fnum));
+	controlSocket->SendDataOnly(&flag,sizeof(flag));
+	controlSocket->ReceiveDataOnly(&ret,sizeof(ret));
+	if (ret==FAIL) {
+	  controlSocket->ReceiveDataOnly(mess,sizeof(mess));
+	  std::cout<< "Detector returned error: " << mess << std::endl;
+	} else {
+	  controlSocket->ReceiveDataOnly(&retval,sizeof(retval)); 
+	}
+	controlSocket->Disconnect();
+	if (ret==FORCE_UPDATE)
+	  updateDetector();
+      }
+    }
+  } 
+
+#ifdef VERBOSE
+  std::cout<< "Readout flag set to  "<< retval   << std::endl;
+#endif
+  return retval;
+
+}

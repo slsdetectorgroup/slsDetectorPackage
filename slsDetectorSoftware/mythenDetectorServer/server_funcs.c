@@ -146,6 +146,8 @@ int function_table() {
   flist[F_SET_PORT]=&set_port;
   flist[F_GET_LAST_CLIENT_IP]=&get_last_client_ip;
   flist[F_UPDATE_CLIENT]=&update_client;
+  flist[F_SET_MASTER]=&set_master;
+  flist[F_SET_SYNCHRONIZATION_MODE]=&set_synchronization;
 #ifdef VERBOSE
   /*  for (i=0;i<256;i++){
     printf("function %d located at %x\n",i,flist[i]);
@@ -459,7 +461,7 @@ int set_external_signal_flag(int file_des) {
 
 int set_external_communication_mode(int file_des) {
   int n;
-  enum externalCommunicationMode arg, ret;
+  enum externalCommunicationMode arg, ret=GET_EXTERNAL_COMMUNICATION_MODE;
   int retval=OK;
   
   sprintf(mess,"Can't set external communication mode\n");
@@ -485,14 +487,16 @@ enum externalCommunicationMode{
   GATE_COINCIDENCE_WITH_INTERNAL_ENABLE
 };
   */
-  ret=AUTO;
   if (retval==OK) {
   /* execute action */
-    switch(arg) {
-    default:
-      sprintf(mess,"The meaning of single signals should be set\n");
-      retval=FAIL;
-    }
+   
+    ret=setTiming(arg);
+
+/*     switch(arg) { */
+/*     default: */
+/*       sprintf(mess,"The meaning of single signals should be set\n"); */
+/*       retval=FAIL; */
+/*     } */
 
 
 #ifdef VERBOSE
@@ -2665,4 +2669,93 @@ int update_client(int file_des) {
   
   
 
+}
+
+
+int set_master(int file_des) {
+
+  enum masterFlags retval=GET_MASTER;
+  enum masterFlags arg;
+  int n;
+  int ret=OK;
+  int regret=OK;
+  
+
+  sprintf(mess,"can't set master flags\n");
+  
+  
+  n = receiveDataOnly(file_des,&arg,sizeof(arg));
+  if (n < 0) {
+    sprintf(mess,"Error reading from socket\n");
+    ret=FAIL;
+  }
+  
+
+#ifdef VERBOSE
+  printf("setting master flags  to %d\n",arg);
+#endif 
+
+  if (differentClients==1 && lockStatus==1 && arg!=GET_READOUT_FLAGS) {
+    ret=FAIL;
+    sprintf(mess,"Detector locked by %s\n",lastClientIP);
+  }  else {
+    retval=setMaster(arg);
+    
+  }
+  if (retval==GET_MASTER) {
+    ret=FAIL;
+  }
+  n = sendDataOnly(file_des,&ret,sizeof(ret));
+  if (ret==FAIL) {
+    n = sendDataOnly(file_des,mess,sizeof(mess));
+  } else {
+    n = sendDataOnly(file_des,&retval,sizeof(retval));
+  }
+  return ret; 
+}
+
+
+
+
+
+
+int set_synchronization(int file_des) {
+
+  enum synchronizationMode retval=GET_MASTER;
+  enum synchronizationMode arg;
+  int n;
+  int ret=OK;
+  int regret=OK;
+  
+
+  sprintf(mess,"can't set synchronization mode\n");
+  
+  
+  n = receiveDataOnly(file_des,&arg,sizeof(arg));
+  if (n < 0) {
+    sprintf(mess,"Error reading from socket\n");
+    ret=FAIL;
+  }
+#ifdef VERBOSE
+  printf("setting master flags  to %d\n",arg);
+#endif 
+
+  if (differentClients==1 && lockStatus==1 && arg!=GET_READOUT_FLAGS) {
+    ret=FAIL;
+    sprintf(mess,"Detector locked by %s\n",lastClientIP);
+  }  else {
+    //ret=setStoreInRAM(0);
+    // initChipWithProbes(0,0,0, ALLMOD);
+    retval=setSynchronization(arg);
+  }
+  if (retval==GET_SYNCHRONIZATION_MODE) {
+    ret=FAIL;
+  }
+  n = sendDataOnly(file_des,&ret,sizeof(ret));
+  if (ret==FAIL) {
+    n = sendDataOnly(file_des,mess,sizeof(mess));
+  } else {
+    n = sendDataOnly(file_des,&retval,sizeof(retval));
+  }
+  return ret; 
 }

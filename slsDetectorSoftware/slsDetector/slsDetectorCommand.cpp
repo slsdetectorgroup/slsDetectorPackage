@@ -475,6 +475,10 @@ slsDetectorCommand::slsDetectorCommand(slsDetectorBase *det)  {
 
   /* r/w timers */
 
+  descrToFuncMap[i].m_pFuncName="timing"; //
+  descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdTiming;
+  i++;
+
   descrToFuncMap[i].m_pFuncName="exptime"; //
   descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdTimer;
   i++;
@@ -2641,6 +2645,32 @@ string slsDetectorCommand::helpADC(int narg, char *args[], int action) {
     os << "temp_adc " << "\t gets the temperature of the adc" << std::endl;
     os << "temp_fpga " << "\t gets the temperature of the fpga" << std::endl;
   }
+  return os.str();
+}
+
+string slsDetectorCommand::cmdTiming(int narg, char *args[], int action){
+#ifdef VERBOSE
+  cout << string("Executing command ")+string(args[0])+string(" ( ")+cmd+string(" )\n");
+#endif
+
+  if (action==HELP_ACTION) {
+    return helpTiming(narg,args,HELP_ACTION);
+  } 
+  myDet->setOnline(ONLINE_FLAG);
+  if (action==PUT_ACTION) {
+    if (myDet->externalCommunicationType(string(args[1]))== GET_EXTERNAL_COMMUNICATION_MODE) return helpTiming(narg,args, action);
+    myDet->setExternalCommunicationMode(myDet->externalCommunicationType(string(args[1])));
+  }
+  return myDet->externalCommunicationType(myDet->setExternalCommunicationMode());
+
+}
+string slsDetectorCommand::helpTiming(int narg, char *args[], int action){
+  
+  ostringstream os;
+  if (action==GET_ACTION || action==HELP_ACTION)
+    os << string("sync \t gets the synchronization mode of the structure\n");
+  if (action==PUT_ACTION || action==HELP_ACTION)
+    os << string("sync mode \t sets synchronization mode of the structure. Cane be none, gating, trigger, complementary \n");
   return os.str();
 }
 

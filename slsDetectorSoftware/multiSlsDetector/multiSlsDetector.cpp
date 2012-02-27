@@ -554,63 +554,61 @@ int multiSlsDetector::removeSlsDetector(int pos) {
 
  
 int multiSlsDetector::setMaster(int i) {
-  if (i>=0 && i<thisMultiDetector->numberOfDetectors) 
-    if (detectors[i]) 
-      thisMultiDetector->masterPosition=i;
 
-  switch (thisMultiDetector->syncMode) {
-  case MASTER_GATES:
-    for (int i=0; i<thisMultiDetector->numberOfDetectors; i++) {
-      if (i!=thisMultiDetector->masterPosition) {
-	  if (detectors[i]) {
-	    detectors[i]->setExternalSignalFlags(GATE_IN_ACTIVE_HIGH, 0);
-	    detectors[i]->setTimer(GATES_NUMBER, 1);
-	    detectors[i]->setExternalSignalFlags(SIGNAL_OFF, 1);
-	  }
-      } else {
-	detectors[i]->setExternalSignalFlags(GATE_OUT_ACTIVE_HIGH, 2);
+  int ret=-1, slave=0;
+  masterFlags f;
+
+  if (i>=0 && i<thisMultiDetector->numberOfDetectors) {
+    if (detectors[i]) {
+       thisMultiDetector->masterPosition=i;
+       detectors[i]->setMaster(IS_MASTER);
+    }
+    for (int id=0; id<thisMultiDetector->numberOfDetectors; id++) {
+      if (i!=id) {
+	if (detectors[id]) {
+	  detectors[id]->setMaster(IS_SLAVE);
+	}
+      }
+    }
+
+  } else if (i==-2) {
+    for (int id=0; id<thisMultiDetector->numberOfDetectors; id++) {
+	if (detectors[id]) {
+	  detectors[id]->setMaster(NO_MASTER);
 	}
     }
-    break;
     
-  case MASTER_TRIGGERS:
-      for (int i=0; i<thisMultiDetector->numberOfDetectors; i++) {
-	if (i!=thisMultiDetector->masterPosition) {
-	  if (detectors[i]) {
-	    detectors[i]->setExternalSignalFlags(SIGNAL_OFF, 0);
-	    detectors[i]->setExternalSignalFlags(TRIGGER_IN_RISING_EDGE, 1);
-	  }
-	} else {
-	  detectors[i]->setExternalSignalFlags(GATE_OUT_ACTIVE_HIGH, 2);
-	}
-      }
-      break;  
-      
-  case SLAVE_STARTS_WHEN_MASTER_STOPS:
-    for (int i=0; i<thisMultiDetector->numberOfDetectors; i++) {
-      if (detectors[i]) {
-	if (i!=thisMultiDetector->masterPosition) {
-	  detectors[i]->setExternalSignalFlags(SIGNAL_OFF, 0);
-	  detectors[i]->setExternalSignalFlags(TRIGGER_IN_FALLING_EDGE, 1);
-	} else {
-	  detectors[i]->setExternalSignalFlags(GATE_OUT_ACTIVE_HIGH, 2);
-	}
-      }
-    }
-    break;
-  
-  
-  default:  
-    for (int i=0; i<thisMultiDetector->numberOfDetectors; i++) {
-      if (detectors[i]) {
-	detectors[i]->setExternalSignalFlags(SIGNAL_OFF, 0);
-	detectors[i]->setExternalSignalFlags(SIGNAL_OFF, 1);
-      }
-    }
-   
   }
 
+
+  for (int id=0; id<thisMultiDetector->numberOfDetectors; id++) {
+    if (detectors[id]) {
+      f=detectors[id]->setMaster(GET_MASTER);
+      switch (f) {
+      case NO_MASTER:
+	if (ret!=-1)
+	  ret=-2;
+	break;
+      case IS_MASTER:
+	if (ret==-1)
+	  ret=id;
+	else
+	  ret=-2;
+	break;
+      case IS_SLAVE:
+	slave=1;
+      default:
+	ret=-2;
+      }
+    }
+  }
+  if (slave>0 && ret<0)
+    ret=-2;
   
+  if (ret<0)
+    ret=-1;
+  
+  thisMultiDetector->masterPosition=ret;
 
   return thisMultiDetector->masterPosition;
 }
@@ -629,71 +627,22 @@ int multiSlsDetector::setMaster(int i) {
       \returns current syncronization mode
   */
 synchronizationMode multiSlsDetector::setSynchronization(synchronizationMode sync) {
-  if (sync>GET_SYNCHRONIZATION_MODE) {
+
   
-    
-    switch (sync) {
-    case MASTER_GATES:
+  synchronizationMode ret=GET_SYNCHRONIZATION_MODE, ret1=GET_SYNCHRONIZATION_MODE;
+  
+  for (int id=0; id<thisMultiDetector->numberOfDetectors; id++) {
+    if (detectors[id]) {
+      ret1=detectors[id]->setSynchronization(sync);
+      if (id==0)
+	ret=ret1;
+      else if (ret!=ret1)
+	ret=GET_SYNCHRONIZATION_MODE;
 
-      if (thisMultiDetector->masterPosition>=0 && thisMultiDetector->masterPosition<thisMultiDetector->numberOfDetectors) {
-	for (int i=0; i<thisMultiDetector->numberOfDetectors; i++) {
-	  if (i!=thisMultiDetector->masterPosition) {
-	    if (detectors[i]) {
-	      detectors[i]->setExternalSignalFlags(GATE_IN_ACTIVE_HIGH, 0);
-	      detectors[i]->setTimer(GATES_NUMBER, 1);
-	      detectors[i]->setExternalSignalFlags(SIGNAL_OFF, 1);
-	    }
-	  } else {
-	    detectors[i]->setExternalSignalFlags(GATE_OUT_ACTIVE_HIGH, 2);
-	  }
-	}
-	thisMultiDetector->syncMode=sync;
-      }
-      break;
-
-    case MASTER_TRIGGERS:
-      if (thisMultiDetector->masterPosition>=0 && thisMultiDetector->masterPosition<thisMultiDetector->numberOfDetectors) {
-	for (int i=0; i<thisMultiDetector->numberOfDetectors; i++) {
-	  if (i!=thisMultiDetector->masterPosition) {
-	    if (detectors[i]) {
-	    detectors[i]->setExternalSignalFlags(SIGNAL_OFF, 0);
-	    detectors[i]->setExternalSignalFlags(TRIGGER_IN_RISING_EDGE, 1);
-	    }
-	  } else {
-	    detectors[i]->setExternalSignalFlags(GATE_OUT_ACTIVE_HIGH, 2);
-	  }
-	}
-	thisMultiDetector->syncMode=sync;
-      }
-      break;  
- 
-    case SLAVE_STARTS_WHEN_MASTER_STOPS:
-      if (thisMultiDetector->masterPosition>=0 && thisMultiDetector->masterPosition<thisMultiDetector->numberOfDetectors) {
-	for (int i=0; i<thisMultiDetector->numberOfDetectors; i++) {
-	  if (detectors[i]) {
-	    if (i!=thisMultiDetector->masterPosition) {
-	      detectors[i]->setExternalSignalFlags(SIGNAL_OFF, 0);
-	      detectors[i]->setExternalSignalFlags(TRIGGER_IN_FALLING_EDGE, 1);
-	    }
-	  } else {
-	    detectors[i]->setExternalSignalFlags(GATE_OUT_ACTIVE_HIGH, 2);
-	  }
-	}
-	thisMultiDetector->syncMode=sync;
-      }
-      break;
-      
-      
-    default:  
-      for (int i=0; i<thisMultiDetector->numberOfDetectors; i++) {
-	if (detectors[i]) {
-	  detectors[i]->setExternalSignalFlags(SIGNAL_OFF, 0);
-	  detectors[i]->setExternalSignalFlags(SIGNAL_OFF, 1);
-	}
-      }
-      thisMultiDetector->syncMode=sync; 
     }
-  }  
+  }
+  
+  thisMultiDetector->syncMode=ret;
 
   return thisMultiDetector->syncMode;
   
@@ -1261,53 +1210,21 @@ int64_t multiSlsDetector::setTimer(timerIndex index, int64_t t){
   int64_t ret1=-100, ret;
 
 
-  if (index!=ACQUISITION_TIME) {
-    for (i=0; i<thisMultiDetector->numberOfDetectors; i++) {
-      if (detectors[i]) {
-	ret=detectors[i]->setTimer(index,t);
-	if (ret1==-100)
-	  ret1=ret;
-	else if (ret!=ret1)
-	  ret1=FAIL;
-	    
-      }
-    }
-  } else {
-    switch(thisMultiDetector->syncMode) {
-    case MASTER_GATES:      
-      for (i=0; i<thisMultiDetector->numberOfDetectors; i++) {
-	if (i!=thisMultiDetector->masterPosition)
-	  if (detectors[i]) {
-	    ret=detectors[i]->setTimer(GATES_NUMBER,1);
-	  }
-      }
+  
+  for (i=0; i<thisMultiDetector->numberOfDetectors; i++) {
+    if (detectors[i]) {
+      ret=detectors[i]->setTimer(index,t);
+      if (ret1==-100)
+	ret1=ret;
+      else if (ret!=ret1)
+	ret1=FAIL;
       
-      i=thisMultiDetector->masterPosition;
-      if (thisMultiDetector->masterPosition>=0) {
-	if (detectors[i]) {
-	  ret=detectors[i]->setTimer(index,t);
-	  ret1=ret;
-	}
-      }
-      break;
-      
-    default:
-      for (i=0; i<thisMultiDetector->numberOfDetectors; i++) {
-	if (detectors[i]) {
-	  ret=detectors[i]->setTimer(index,t);
-	if (ret1==-100)
-	  ret1=ret;
-	else if (ret!=ret1)
-	  ret1=FAIL;
-	}
-      }
     }
   }
-
 // check return values!!!
-
+  
   thisMultiDetector->timerValue[index]=ret1;
-
+  
   return ret1;
 };
 

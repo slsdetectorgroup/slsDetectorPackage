@@ -74,6 +74,7 @@ class slsDetectorCommand {
    static string helpRegister(int narg, char *args[], int action);
    static string helpDAC(int narg, char *args[], int action);
    static string helpTimer(int narg, char *args[], int action);
+   static string helpTiming(int narg, char *args[], int action);
    static string helpTimeLeft(int narg, char *args[], int action);
    static string helpSpeed(int narg, char *args[], int action);
    static string helpAdvanced(int narg, char *args[], int action);
@@ -197,6 +198,7 @@ class slsDetectorCommand {
 
    string cmdDAC(int narg, char *args[], int action);
 
+   string cmdTiming(int narg, char *args[], int action);
 
    string cmdTimer(int narg, char *args[], int action);
 

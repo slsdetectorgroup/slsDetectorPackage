@@ -748,8 +748,6 @@ class slsDetectorBase {
 
  /** 
      set/get the external communication mode
-     
-     obsolete \sa setExternalSignalFlags
       \param pol value to be set \sa externalCommunicationMode
       \returns current external communication mode
   */
@@ -845,10 +843,10 @@ class slsDetectorBase {
   */
   static detectorType getDetectorType(string const type){\
     if (type=="Mythen")      return MYTHEN;\
-    else if  (type=="Pilatus")      return PILATUS;	\
-    else if  (type=="Eiger")    return EIGER;		\
-    else if  (type=="Gotthard")    return GOTTHARD;	\
-    else if  (type=="Agipd")    return AGIPD;		\
+    if  (type=="Pilatus")      return PILATUS;	\
+    if  (type=="Eiger")    return EIGER;		\
+    if  (type=="Gotthard")    return GOTTHARD;	\
+    if  (type=="Agipd")    return AGIPD;		\
     return GENERIC;};
 
 
@@ -858,11 +856,11 @@ class slsDetectorBase {
       \returns ONE, MASTER_GATES, MASTER_TRIGGERS, SLAVE_STARTS_WHEN_MASTER_STOPS
   */
   static synchronizationMode getSyncType(string const type){\
-    if (type=="none")    return NONE;\
-    else if (type=="gating")    return MASTER_GATES;\
-    else if (type=="trigger")    return MASTER_TRIGGERS;		\
-    else if (type=="complementary") return SLAVE_STARTS_WHEN_MASTER_STOPS; \
-    else return GET_SYNCHRONIZATION_MODE;				\
+    if (type=="none")    return NO_SYNCHRONIZATION;\
+    if (type=="gating")    return MASTER_GATES;\
+    if (type=="trigger")    return MASTER_TRIGGERS;		\
+    if (type=="complementary") return SLAVE_STARTS_WHEN_MASTER_STOPS; \
+    return GET_SYNCHRONIZATION_MODE;				\
   };
 
   /** returns synchronization type string from index
@@ -871,7 +869,7 @@ class slsDetectorBase {
   */
   static string getSyncType(synchronizationMode s ){\
     switch(s) {					    \
-    case NONE:    return string("none");	    \
+    case NO_SYNCHRONIZATION:    return string("none");	    \
     case MASTER_GATES:    return string("gating");	\
     case MASTER_TRIGGERS:    return string("trigger");			\
     case SLAVE_STARTS_WHEN_MASTER_STOPS:    return string("complementary"); \
@@ -881,8 +879,8 @@ class slsDetectorBase {
 
 
   /** returns string from external signal type index
-      \param f can be SIGNAL_OFF, GATE_IN_ACTIVE_HIGH, GATE_IN_ACTIVE_LOW, TRIGGER_IN_RISING_EDGE, TRIGGER_IN_FALLING_EDGE, RO_TRIGGER_IN_RISING_EDGE, RO_TRIGGER_IN_FALLING_EDGE, GATE_OUT_ACTIVE_HIGH, GATE_OUT_ACTIVE_LOW, =TRIGGER_OUT_RISING_EDGE, TRIGGER_OUT_FALLING_EDGE, RO_TRIGGER_OUT_RISING_EDGE, RO_TRIGGER_OUT_FALLING_EDGE
-      \returns string  off, gate_in_active_high, gate_in_active_low, trigger_in_rising_edge, trigger_in_falling_edge, ro_trigger_in_rising_edge, ro_trigger_in_falling_edge, gate_out_active_high, gate_out_active_low, trigger_out_rising_edge, trigger_out_falling_edge, ro_trigger_out_rising_edge, ro_trigger_out_falling_edge, unknown
+      \param f can be SIGNAL_OFF, GATE_IN_ACTIVE_HIGH, GATE_IN_ACTIVE_LOW, TRIGGER_IN_RISING_EDGE, TRIGGER_IN_FALLING_EDGE, RO_TRIGGER_IN_RISING_EDGE, RO_TRIGGER_IN_FALLING_EDGE, GATE_OUT_ACTIVE_HIGH, GATE_OUT_ACTIVE_LOW, =TRIGGER_OUT_RISING_EDGE, TRIGGER_OUT_FALLING_EDGE, RO_TRIGGER_OUT_RISING_EDGE, RO_TRIGGER_OUT_FALLING_EDGE, OUTPUT_LOW, OUTPUT_HIGH, MASTER_SLAVE_SYNCHRONIZATION,  GET_EXTERNAL_SIGNAL_FLAG
+      \returns string  off, gate_in_active_high, gate_in_active_low, trigger_in_rising_edge, trigger_in_falling_edge, ro_trigger_in_rising_edge, ro_trigger_in_falling_edge, gate_out_active_high, gate_out_active_low, trigger_out_rising_edge, trigger_out_falling_edge, ro_trigger_out_rising_edge, ro_trigger_out_falling_edge, gnd, vcc, sync, unknown
   */
   static string externalSignalType(externalSignalFlag f){\
     switch(f) {						 \
@@ -897,8 +895,11 @@ class slsDetectorBase {
     case GATE_OUT_ACTIVE_LOW:    return string( "gate_out_active_low");	\
     case TRIGGER_OUT_RISING_EDGE:    return string( "trigger_out_rising_edge");	\
     case TRIGGER_OUT_FALLING_EDGE:    return string( "trigger_out_falling_edge"); \
-  case RO_TRIGGER_OUT_RISING_EDGE:      return string( "ro_trigger_out_rising_edge");\
+    case RO_TRIGGER_OUT_RISING_EDGE:      return string( "ro_trigger_out_rising_edge");	\
     case RO_TRIGGER_OUT_FALLING_EDGE:    return string( "ro_trigger_out_falling_edge");	\
+    case MASTER_SLAVE_SYNCHRONIZATION: return string("sync");		\
+    case OUTPUT_LOW: return string("gnd");		\
+    case OUTPUT_HIGH: return string("vcc");		\
     default:    return string( "unknown");				\
     }    };
   
@@ -906,26 +907,28 @@ class slsDetectorBase {
 
 
   /** returns external signal type index from string
-      \param string  off, gate_in_active_high, gate_in_active_low, trigger_in_rising_edge, trigger_in_falling_edge, ro_trigger_in_rising_edge, ro_trigger_in_falling_edge, gate_out_active_high, gate_out_active_low, trigger_out_rising_edge, trigger_out_falling_edge, ro_trigger_out_rising_edge, ro_trigger_out_falling_edge, unknown
-      \returns f can be SIGNAL_OFF, GATE_IN_ACTIVE_HIGH, GATE_IN_ACTIVE_LOW, TRIGGER_IN_RISING_EDGE, TRIGGER_IN_FALLING_EDGE, RO_TRIGGER_IN_RISING_EDGE, RO_TRIGGER_IN_FALLING_EDGE, GATE_OUT_ACTIVE_HIGH, GATE_OUT_ACTIVE_LOW, =TRIGGER_OUT_RISING_EDGE, TRIGGER_OUT_FALLING_EDGE, RO_TRIGGER_OUT_RISING_EDGE, RO_TRIGGER_OUT_FALLING_EDGE,GET_EXTERNAL_SIGNAL_FLAG (if unknown)
+      \param string  off, gate_in_active_high, gate_in_active_low, trigger_in_rising_edge, trigger_in_falling_edge, ro_trigger_in_rising_edge, ro_trigger_in_falling_edge, gate_out_active_high, gate_out_active_low, trigger_out_rising_edge, trigger_out_falling_edge, ro_trigger_out_rising_edge, ro_trigger_out_falling_edge, gnd, vcc, sync, unknown
+      \returns f can be SIGNAL_OFF, GATE_IN_ACTIVE_HIGH, GATE_IN_ACTIVE_LOW, TRIGGER_IN_RISING_EDGE, TRIGGER_IN_FALLING_EDGE, RO_TRIGGER_IN_RISING_EDGE, RO_TRIGGER_IN_FALLING_EDGE, GATE_OUT_ACTIVE_HIGH, GATE_OUT_ACTIVE_LOW, TRIGGER_OUT_RISING_EDGE, TRIGGER_OUT_FALLING_EDGE, RO_TRIGGER_OUT_RISING_EDGE, RO_TRIGGER_OUT_FALLING_EDGE, OUTPUT_LOW, OUTPUT_HIGH, MASTER_SLAVE_SYNCHRONIZATION,  GET_EXTERNAL_SIGNAL_FLAG (if unknown)
   */
 
   static externalSignalFlag externalSignalType(string sval){\
-  externalSignalFlag flag=GET_EXTERNAL_SIGNAL_FLAG;\
-  if (sval=="off")      flag=SIGNAL_OFF;\
-  else if (sval=="gate_in_active_high")      flag=GATE_IN_ACTIVE_HIGH;	\
-  else if  (sval=="gate_in_active_low") flag=GATE_IN_ACTIVE_LOW;\
-  else if  (sval=="trigger_in_rising_edge") flag=TRIGGER_IN_RISING_EDGE;\
-  else if  (sval=="trigger_in_falling_edge") flag=TRIGGER_IN_FALLING_EDGE;\
-  else if  (sval=="ro_trigger_in_rising_edge") flag=RO_TRIGGER_IN_RISING_EDGE;\
-  else if  (sval=="ro_trigger_in_falling_edge") flag=RO_TRIGGER_IN_FALLING_EDGE;\
-  else if (sval=="gate_out_active_high")      flag=GATE_OUT_ACTIVE_HIGH;\
-  else if  (sval=="gate_out_active_low") flag=GATE_OUT_ACTIVE_LOW;\
-  else if  (sval=="trigger_out_rising_edge") flag=TRIGGER_OUT_RISING_EDGE;\
-  else if  (sval=="trigger_out_falling_edge") flag=TRIGGER_OUT_FALLING_EDGE;\
-  else if  (sval=="ro_trigger_out_rising_edge") flag=RO_TRIGGER_OUT_RISING_EDGE;\
-  else if  (sval=="ro_trigger_out_falling_edge") flag=RO_TRIGGER_OUT_FALLING_EDGE;\
-  return flag;};
+  if (sval=="off")      return SIGNAL_OFF;\
+  if (sval=="gate_in_active_high")      return GATE_IN_ACTIVE_HIGH;	\
+  if  (sval=="gate_in_active_low") return GATE_IN_ACTIVE_LOW;\
+  if  (sval=="trigger_in_rising_edge")  return TRIGGER_IN_RISING_EDGE;\
+  if  (sval=="trigger_in_falling_edge") return TRIGGER_IN_FALLING_EDGE;\
+  if  (sval=="ro_trigger_in_rising_edge") return RO_TRIGGER_IN_RISING_EDGE;\
+  if  (sval=="ro_trigger_in_falling_edge") return RO_TRIGGER_IN_FALLING_EDGE;\
+  if (sval=="gate_out_active_high")      return GATE_OUT_ACTIVE_HIGH;\
+  if  (sval=="gate_out_active_low") return GATE_OUT_ACTIVE_LOW;\
+  if  (sval=="trigger_out_rising_edge") return TRIGGER_OUT_RISING_EDGE;\
+  if  (sval=="trigger_out_falling_edge") return TRIGGER_OUT_FALLING_EDGE;\
+  if  (sval=="ro_trigger_out_rising_edge") return RO_TRIGGER_OUT_RISING_EDGE;\
+  if  (sval=="ro_trigger_out_falling_edge") return RO_TRIGGER_OUT_FALLING_EDGE;\
+  if  (sval=="sync") return MASTER_SLAVE_SYNCHRONIZATION;\
+  if  (sval=="gnd") return OUTPUT_LOW;\
+  if  (sval=="vcc") return OUTPUT_HIGH;\
+  return GET_EXTERNAL_SIGNAL_FLAG ;};
 
 
   /** returns synchronization type string from index
@@ -959,7 +962,40 @@ class slsDetectorBase {
     default:    return string("undefined");			\
     }};
 
+
+  /**
+     returns external communication mode string from index
+     \param f can be AUTO_TIMING, TRIGGER_EXPOSURE, TRIGGER_READOUT, GATE_FIX_NUMBER, GATE_WITH_START_TRIGGER, GET_EXTERNAL_COMMUNICATION_MODE
+     \returns  auto, trigger, ro_trigger, gating, triggered_gating, unknown
+  */
+
+  static string externalCommunicationType(externalCommunicationMode f){	\
+    switch(f) {						 \
+    case AUTO_TIMING:      return string( "auto");			\
+    case TRIGGER_EXPOSURE: return string("trigger");			\
+    case TRIGGER_READOUT: return string("ro_trigger");			\
+    case GATE_FIX_NUMBER: return string("gating");			\
+    case GATE_WITH_START_TRIGGER: return string("triggered_gating");	\
+    default:    return string( "unknown");				\
+    }    };
   
+
+
+
+  /**
+     returns external communication mode index from string
+     \param s can be auto, trigger, ro_trigger, gating, triggered_gating
+     \returns AUTO_TIMING, TRIGGER_EXPOSURE, TRIGGER_READOUT, GATE_FIX_NUMBER, GATE_WITH_START_TRIGGER, GET_EXTERNAL_COMMUNICATION_MODE
+  */
+
+  static externalCommunicationMode externalCommunicationType(string sval){\
+  if (sval=="auto")      return AUTO_TIMING;\
+  if (sval=="trigger")     return TRIGGER_EXPOSURE;	\
+  if  (sval=="ro_trigger") return TRIGGER_READOUT;\
+  if  (sval=="gating") return GATE_FIX_NUMBER;\
+  if  (sval=="triggered_gating") return GATE_WITH_START_TRIGGER;\
+  return GET_EXTERNAL_COMMUNICATION_MODE;};
+
 
 };
 #endif

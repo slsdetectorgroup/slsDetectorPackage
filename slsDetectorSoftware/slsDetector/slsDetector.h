@@ -1314,16 +1314,16 @@ typedef  struct sharedSlsDetector {
       \param flag can be GET_MASTER, NO_MASTER, IS_MASTER, IS_SLAVE
       \returns master flag of the detector
   */
-  masterFlags  setMaster(masterFlags flag){return GET_MASTER;};
+  masterFlags  setMaster(masterFlags flag);
 
 
 
   /** 
       Sets/gets the synchronization mode of the various detectors
-      \param sync syncronization mode
+      \param sync syncronization mode can be GET_SYNCHRONIZATION_MODE, NONE, MASTER_GATES, MASTER_TRIGGERS, SLAVE_STARTS_WHEN_MASTER_STOPS
       \returns current syncronization mode   
   */   
-  synchronizationMode setSynchronization(synchronizationMode sync=GET_SYNCHRONIZATION_MODE){return GET_SYNCHRONIZATION_MODE;};
+  synchronizationMode setSynchronization(synchronizationMode sync=GET_SYNCHRONIZATION_MODE);
   
   int loadImageToDetector(imageType index,string const fname);
 

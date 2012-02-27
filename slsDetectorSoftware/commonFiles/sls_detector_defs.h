@@ -204,7 +204,7 @@ enum {
 */
 enum externalSignalFlag {
   GET_EXTERNAL_SIGNAL_FLAG=-1,  /**<return flag for signal */
-  SIGNAL_OFF, /**<signal unused*/
+  SIGNAL_OFF, /**<signal unused - tristate*/
   GATE_IN_ACTIVE_HIGH,  /**<input gate active high*/
   GATE_IN_ACTIVE_LOW,  /**<input gate active low */
   TRIGGER_IN_RISING_EDGE,  /**<input exposure trigger on rising edge */
@@ -216,24 +216,25 @@ enum externalSignalFlag {
   TRIGGER_OUT_RISING_EDGE,  /**<output trigger rising edge at start of exposure */
   TRIGGER_OUT_FALLING_EDGE, /**<output trigger falling edge at start of exposure */
   RO_TRIGGER_OUT_RISING_EDGE,   /**<output trigger rising edge at start of readout */
-  RO_TRIGGER_OUT_FALLING_EDGE  /**<output trigger falling edge at start of readout */
+  RO_TRIGGER_OUT_FALLING_EDGE,  /**<output trigger falling edge at start of readout */
+  OUTPUT_LOW, /**< output always low */
+  OUTPUT_HIGH, /**< output always high */
+  MASTER_SLAVE_SYNCHRONIZATION /**< reserved for master/slave synchronization in multi detector systems */
 };
 
 /** 
-  communication mode using external signals (obsolete: it will be authomatically determined by the external signal flags)
-
-\see ::externalSignalFlag
+  communication mode using external signals
 */
 enum externalCommunicationMode{
-  GET_EXTERNAL_COMMUNICATION_MODE=-1,
-  AUTO,
-  TRIGGER_EXPOSURE,
-  TRIGGER_READOUT,
-  TRIGGER_COINCIDENCE_WITH_INTERNAL_ENABLE,
-  GATE_FIX_NUMBER,
-  GATE_FIX_DURATION,
-  GATE_WITH_START_TRIGGER,
-  GATE_COINCIDENCE_WITH_INTERNAL_ENABLE
+  GET_EXTERNAL_COMMUNICATION_MODE=-1,/**<return flag for communication mode */
+  AUTO_TIMING, /**< internal timing */
+  TRIGGER_EXPOSURE, /**< trigger mode i.e. exposure is triggered */
+  TRIGGER_READOUT, /**< stop trigger mode i.e. readout is triggered by external signal */
+  TRIGGER_COINCIDENCE_WITH_INTERNAL_ENABLE, /**< still to be implemented */
+  GATE_FIX_NUMBER, /**< gated and reads out after a fixxed number of gates */
+  GATE_FIX_DURATION, /**< still to be implemented */
+  GATE_WITH_START_TRIGGER, /**< gated with start trigger */
+  GATE_COINCIDENCE_WITH_INTERNAL_ENABLE /**< still to be implemented */
 };
 /** 
     detector IDs/versions
@@ -429,7 +430,7 @@ enum masterFlags {
 /** synchronization in a multidetector structure, if any */
 enum synchronizationMode {
   GET_SYNCHRONIZATION_MODE=-1, /**< the multidetector will return its synchronization mode */
-  NONE, /**< all detectors are independent (no cabling) */
+  NO_SYNCHRONIZATION, /**< all detectors are independent (no cabling) */
   MASTER_GATES, /**< the master gates the other detectors */
   MASTER_TRIGGERS, /**< the master triggers the other detectors */
   SLAVE_STARTS_WHEN_MASTER_STOPS /**< the slave acquires when the master finishes, to avoid deadtime */

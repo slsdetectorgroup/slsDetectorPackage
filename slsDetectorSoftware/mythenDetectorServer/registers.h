@@ -160,6 +160,9 @@
 #define EXT_TRIG_OUT_FALLING           0xA
 #define EXT_RO_TRIG_OUT_RISING         0xB
 #define EXT_RO_TRIG_OUT_FALLING        0xC
+#define EXT_OUT_LOW                    0xD // to be implemented in firmware (and corrected in software)
+#define EXT_OUT_HIGH                   0xE // to be implemented in firmware (and corrected in software) 
+#define EXT_MASTER_SLAVE_SYNC          0xF // to be implemented in firmware (and corrected in software) 
 
 
 

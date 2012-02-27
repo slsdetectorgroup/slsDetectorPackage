@@ -293,7 +293,7 @@ class multiSlsDetector  : public slsDetectorUtils {
   
 
   /** sets the detector in position i as master of the structure (e.g. it gates the other detectors and therefore must be started as last. <BR> Assumes that signal 0 is gate in, signal 1 is trigger in, signal 2 is gate out
-      \param i position of master (-1 gets)
+      \param i position of master (-1 gets, -2 unset)
       \return master's position (-1 none)
   */
   int setMaster(int i=-1);
@@ -874,6 +874,8 @@ class multiSlsDetector  : public slsDetectorUtils {
 
  externalSignalFlag setExternalSignalFlags(externalSignalFlag pol=GET_EXTERNAL_SIGNAL_FLAG , int signalindex=0);
  int setReadOutFlags(readOutFlags flag=GET_READOUT_FLAGS);
+
+
  externalCommunicationMode setExternalCommunicationMode(externalCommunicationMode pol=GET_EXTERNAL_COMMUNICATION_MODE);
 
  /**

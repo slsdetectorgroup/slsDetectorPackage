@@ -4864,6 +4864,7 @@ int slsDetector::dumpDetectorSetup(string const fname, int level){
     "frames",\
     "cycles",\
     "probes",\
+    "timing",\
     "fineoff",\
     "ratecorr",\
     "startscript",\
@@ -4892,7 +4893,7 @@ int slsDetector::dumpDetectorSetup(string const fname, int level){
     "trimbits",\
     "extsig"
   };
-  int nvar=40;
+  int nvar=41;
   int iv=0;
   string fname1;
   ofstream outfile;
@@ -5497,7 +5498,7 @@ masterFlags  slsDetector::setMaster(masterFlags flag) {
   } 
 
 #ifdef VERBOSE
-  std::cout<< "Readout flag set to  "<< retval   << std::endl;
+  std::cout<< "Master flag set to  "<< retval   << std::endl;
 #endif
   return retval;
 }

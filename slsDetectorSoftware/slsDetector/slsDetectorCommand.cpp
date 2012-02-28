@@ -879,6 +879,7 @@ string slsDetectorCommand::cmdRemove(int narg, char *args[], int action){
   return string("cannot get");
 
 }
+
 string slsDetectorCommand::helpRemove(int narg, char *args[], int action){ 
   return string("remove det \t removes a detector. det can either be the detector hostname or the detector position. Returns the total number of detectors in the multidetector structure\n");
 }

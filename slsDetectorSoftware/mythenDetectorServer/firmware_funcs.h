@@ -33,8 +33,8 @@ u_int32_t setWaitStates(int d);
 u_int32_t getWaitStates();
 u_int32_t setTotClockDivider(int d);
 u_int32_t getTotClockDivider();
-u_int32_t setTotClockDutyCycle(int d);
-u_int32_t getTotClockDutyCycle();
+u_int32_t setTotDutyCycle(int d);
+u_int32_t getTotDutyCycle();
 
 u_int32_t setExtSignal(int d, enum externalSignalFlag  mode);
 int  getExtSignal(int d);
@@ -75,7 +75,7 @@ int64_t setGates(int64_t value);
 int64_t getGates();
 
 int64_t setDelay(int64_t value);
-int64_t getDelaye();
+int64_t getDelay();
 
 int64_t setPeriod(int64_t value);
 int64_t getPeriod();

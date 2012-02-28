@@ -347,7 +347,7 @@ int sendChip(int file_des, sls_detector_chip *myChip) {
 
 int sendModule(int file_des, sls_detector_module *myMod) {
   int ts=0;
-  int idac;
+  //int idac;
   int nChips=myMod->nchip;
   int nChans=myMod->nchan;
   int nAdcs=myMod->nadc;

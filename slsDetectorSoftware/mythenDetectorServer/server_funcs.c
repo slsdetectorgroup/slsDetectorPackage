@@ -58,13 +58,16 @@ int init_detector( int b) {
 #endif
 #endif
   testFpga();
-#ifdef MCB_FUNCS
   if (b) {
+#ifdef MCB_FUNCS
     initDetector();
     setSettings(GET_SETTINGS);
     testRAM();
-  }
 #endif
+    setTiming(GET_EXTERNAL_COMMUNICATION_MODE);
+    setMaster(GET_MASTER);
+    setSynchronization(GET_SYNCHRONIZATION_MODE);
+  }
   strcpy(mess,"dummy message");
   strcpy(lastClientIP,"none");
   strcpy(thisClientIP,"none1");
@@ -1313,7 +1316,7 @@ int set_module(int file_des) {
   float *myAdc=malloc(NADC*sizeof(int));
   int retval, n;
   int ret=OK;
-  int dr, ow;
+  int dr;//, ow;
 
   dr=setDynamicRange(-1); 
 
@@ -2624,7 +2627,7 @@ int send_update(int file_des) {
   int ret=OK;
   enum detectorSettings t;
   int thr, n;
-  int it;
+  // int it;
   int64_t retval, tns=-1;
 
  
@@ -2678,7 +2681,7 @@ int set_master(int file_des) {
   enum masterFlags arg;
   int n;
   int ret=OK;
-  int regret=OK;
+  // int regret=OK;
   
 
   sprintf(mess,"can't set master flags\n");
@@ -2725,7 +2728,7 @@ int set_synchronization(int file_des) {
   enum synchronizationMode arg;
   int n;
   int ret=OK;
-  int regret=OK;
+  //int regret=OK;
   
 
   sprintf(mess,"can't set synchronization mode\n");

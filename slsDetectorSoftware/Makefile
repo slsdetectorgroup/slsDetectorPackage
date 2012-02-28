@@ -1,5 +1,5 @@
 CFLAGS= -DC_ONLY 
-#FLAGS=-DVERBOSE 
+FLAGS=-DVERBOSE 
 INCLUDES= -IcommonFiles -IslsDetector -IMySocketTCP -IusersFunctions -ImultiSlsDetector -IslsDetectorUtils -IslsDetectorCommand
 #-I eigerDetector -ImythenDetector -IgotthardDetector  
 #EPICSFLAGS=-D EPICS -I/usr/local/epics/base/include/ -I /usr/local/epics/base/include/os/Linux/ -L /usr/local/epics/base/lib/SL5-x86/ -Wl,-R/usr/local/epics/base/lib/SL5-x86  -lca -lCom 

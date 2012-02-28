@@ -431,7 +431,7 @@ int program_one_dac(int addr, int value, int imod) {
   int im;
   int idac;
   int v=value;
-  int reg, mask;
+  //  int reg, mask;
   
   //  sls_detector_module *myMod;
   control=9+addr; 
@@ -660,7 +660,7 @@ float initDACbyIndexDACU(int ind, int val, int imod) {
  
   int cs=daccs[ind];
   int addr=dacaddr[ind];
-  int iv;
+  //  int iv;
   int im;
 
   if (val>=0) {
@@ -705,7 +705,7 @@ int getThresholdEnergy() {
   float g[3]=DEFAULTGAIN;
   float o[3]=DEFAULTOFFSET;
   float myg=-1, myo=-1;
-  int dacu;
+  //  int dacu;
   int imod;
   int ethr=-1;
   int ret=FAIL;

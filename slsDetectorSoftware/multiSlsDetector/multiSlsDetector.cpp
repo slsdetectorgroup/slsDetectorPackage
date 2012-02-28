@@ -557,15 +557,23 @@ int multiSlsDetector::setMaster(int i) {
 
   int ret=-1, slave=0;
   masterFlags f;
-
+#ifdef VERBOSE
+  cout << "settin master in position " << i << endl;
+#endif
   if (i>=0 && i<thisMultiDetector->numberOfDetectors) {
     if (detectors[i]) {
+#ifdef VERBOSE
+      cout << "detector position " << i << " ";
+#endif
        thisMultiDetector->masterPosition=i;
        detectors[i]->setMaster(IS_MASTER);
     }
     for (int id=0; id<thisMultiDetector->numberOfDetectors; id++) {
       if (i!=id) {
 	if (detectors[id]) {
+#ifdef VERBOSE
+      cout << "detector position " << id << " ";
+#endif
 	  detectors[id]->setMaster(IS_SLAVE);
 	}
       }
@@ -574,15 +582,22 @@ int multiSlsDetector::setMaster(int i) {
   } else if (i==-2) {
     for (int id=0; id<thisMultiDetector->numberOfDetectors; id++) {
 	if (detectors[id]) {
+#ifdef VERBOSE
+      cout << "detector position " << id << " ";
+#endif
 	  detectors[id]->setMaster(NO_MASTER);
 	}
     }
     
   }
 
+  // check return value
 
   for (int id=0; id<thisMultiDetector->numberOfDetectors; id++) {
     if (detectors[id]) {
+#ifdef VERBOSE
+      cout << "detector position " << id << " ";
+#endif
       f=detectors[id]->setMaster(GET_MASTER);
       switch (f) {
       case NO_MASTER:
@@ -597,6 +612,7 @@ int multiSlsDetector::setMaster(int i) {
 	break;
       case IS_SLAVE:
 	slave=1;
+	break;
       default:
 	ret=-2;
       }
@@ -2832,6 +2848,7 @@ int multiSlsDetector::dumpDetectorSetup(string const fname, int level){
     "frames",\
     "cycles",\
     "probes",\
+    "timing",\
     "fineoff",\
     "ratecorr",\
     "startscript",\
@@ -2858,7 +2875,7 @@ int multiSlsDetector::dumpDetectorSetup(string const fname, int level){
     "badchannels",\
     "angconv"
   };
-  int nvar=38;
+  int nvar=39;
 
 
 

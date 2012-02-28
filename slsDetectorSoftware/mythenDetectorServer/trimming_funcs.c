@@ -44,7 +44,7 @@ int trim_with_noise(int countlim, int nsigma, int im)
 {
 
 
-  int retval=OK, retval1=OK, retval2=OK;
+  int retval1=OK, retval2=OK;
 #ifdef VERBOSE
   printf("Trimming using noise\n");
 #endif
@@ -83,7 +83,7 @@ int trim_with_beam(int countlim, int nsigma, int im) //rpc
 {
 
 
-  int retval=OK, retval1=OK, retval2=OK;
+  int retval1=OK, retval2=OK;
 
   printf("Trimming using beam\n");
   //return OK;
@@ -118,7 +118,7 @@ int trim_with_beam(int countlim, int nsigma, int im) //rpc
 int  trim_improve(int maxit, int par2, int im) //rpc
 {
 
-  int retval=OK, retval1=OK, retval2=OK;
+  int retval1=OK, retval2=OK;
 
 
 #ifdef VERBOSE

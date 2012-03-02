@@ -87,6 +87,13 @@ int slsDetectorUtils::getPointers(int * const l_stoppedFlag,		\
   fileName=l_fileName;
   fileIndex=l_fileIndex;
 
+#ifdef VERBOSE
+  cout << "pointer to badChannelMask is "<< badChannelMask << endl;
+#endif
+  fillBadChannelMask();
+#ifdef VERBOSE
+  cout << "pointer to badChannelMask is "<< badChannelMask << endl;
+#endif
   return OK;
 
 
@@ -337,7 +344,7 @@ int slsDetectorUtils::setBadChannelCorrection(string fname, int &nbad, int *badl
   std::cout << "Setting bad channel correction to " << fname << std::endl;
 #endif
 
-  if (fname=="") {
+  if (fname=="" || fname=="none") {
     nbad=0;
     return 0;
   } else { 
@@ -395,7 +402,7 @@ int slsDetectorUtils::setBadChannelCorrection(string fname, int &nbad, int *badl
   }
   infile.close();
   if (nbad>0 && nbad<MAX_BADCHANS) {
-    return 1;
+    return nbad;
   } else
   return 0;
 }
@@ -512,6 +519,7 @@ int slsDetectorUtils::readAngularConversion( ifstream& infile, int nmod, angleCo
   while (infile.good() and interrupt==0) {
     getline(infile,str);
 #ifdef VERBOSE
+    cout << "** mod " << nm << " " ;
     std::cout<< str << std::endl;
 #endif
     istringstream ssstr(str);
@@ -522,15 +530,18 @@ int slsDetectorUtils::readAngularConversion( ifstream& infile, int nmod, angleCo
     ssstr >> ss >> er_conv;
     ssstr >> ss >> off;
     ssstr >> ss >> eoff;
-    if (mod<nmod && mod>=0) {
-      angOff[mod].center=center;
-      angOff[mod].r_conversion=r_conv;
-      angOff[mod].offset=off;
-      angOff[mod].ecenter=ecenter;
-      angOff[mod].er_conversion=er_conv;
-      angOff[mod].eoffset=eoff;
-      nm++;
-    }
+    if (nm<nmod && nm>=0 ) {
+      angOff[nm].center=center;
+      angOff[nm].r_conversion=r_conv;
+      angOff[nm].offset=off;
+      angOff[nm].ecenter=ecenter;
+      angOff[nm].er_conversion=er_conv;
+      angOff[nm].eoffset=eoff;
+    } else
+      break;
+    nm++;
+    if (nm>=nmod)
+      break;
   }
   return nm;
  }
@@ -616,12 +627,17 @@ int  slsDetectorUtils::addToMerging(float *p1, float *v1, float *e1, float *mp, 
 
   binmi=-180.;
   binma=binmi+binsize;
-  
+#ifdef VERBOSE
+  cout << "pointer to badchan mask is " << badChanMask << endl; 
+#endif
 
   if (angDir>0) {
     for (int ip=0; ip<nchans; ip++) {
       if ((cm)&(1<< DISCARD_BAD_CHANNELS)) {
 	if (badChanMask[ip]) {
+#ifdef VERBOSE
+	  cout << "channel " << ip << " is bad " << endl;
+#endif
 	  continue;
 	}
       }
@@ -752,7 +768,8 @@ int slsDetectorUtils::writeDataFile(string fname, int nch, float *data, float *e
   outfile.open (fname.c_str(),ios_base::out);
   if (outfile.is_open())
   {
-    writeDataFile(outfile, nch, data, err, ang, dataformat);
+    writeDataFile(outfile, nch, data, err, ang, dataformat, 0);
+    outfile.close();
     return OK;
   } else {
     std::cout<< "Could not open file " << fname << "for writing"<< std::endl;
@@ -761,7 +778,7 @@ int slsDetectorUtils::writeDataFile(string fname, int nch, float *data, float *e
 };
 
 
-int slsDetectorUtils::writeDataFile(ofstream &outfile, int nch, float *data, float *err, float *ang, char dataformat){
+int slsDetectorUtils::writeDataFile(ofstream &outfile, int nch, float *data, float *err, float *ang, char dataformat, int offset){
 
 
   int idata;
@@ -773,7 +790,7 @@ int slsDetectorUtils::writeDataFile(ofstream &outfile, int nch, float *data, flo
 
     for (int ichan=0; ichan<nch; ichan++) {
       if (ang==NULL) {
-	outfile << ichan << " ";
+	outfile << ichan+offset << " ";
       } else {
 	outfile << ang[ichan] << " ";
       }
@@ -795,7 +812,7 @@ int slsDetectorUtils::writeDataFile(ofstream &outfile, int nch, float *data, flo
        // }
     }
 
-    outfile.close();
+    return OK;
 }
 
 
@@ -819,7 +836,7 @@ int slsDetectorUtils::writeDataFile(string fname, int nch, int *data){
   outfile.open (fname.c_str(),ios_base::out);
   if (outfile.is_open())
   {
-    writeDataFile(outfile, nch, data);
+    writeDataFile(outfile, nch, data, 0);
     outfile.close();
     return OK;
   } else {
@@ -831,13 +848,14 @@ int slsDetectorUtils::writeDataFile(string fname, int nch, int *data){
 
 
 /*writes raw data file */
-int slsDetectorUtils::writeDataFile(ofstream &outfile, int nch, int *data){
+int slsDetectorUtils::writeDataFile(ofstream &outfile, int nch, int *data, int offset){
   if (data==NULL)
     return FAIL;
 
     for (int ichan=0; ichan<nch; ichan++)
-      outfile << ichan << " " << *(data+ichan) << std::endl;
+      outfile << ichan+offset << " " << *(data+ichan) << std::endl;
    
+    return OK;
 };
 
 
@@ -870,7 +888,7 @@ int slsDetectorUtils::readDataFile(int nch, string fname, float *data, float *er
 #endif
   infile.open(fname.c_str(), ios_base::in);
   if (infile.is_open()) {
-    readDataFile(nch, infile, data, err, ang, dataformat);
+    iline=readDataFile(nch, infile, data, err, ang, dataformat, 0);
     infile.close();
   } else {
     std::cout<< "Could not read file " << fname << std::endl;
@@ -880,7 +898,7 @@ int slsDetectorUtils::readDataFile(int nch, string fname, float *data, float *er
 };
 
 
-int slsDetectorUtils::readDataFile(int nch, ifstream &infile, float *data, float *err, float *ang, char dataformat){
+int slsDetectorUtils::readDataFile(int nch, ifstream &infile, float *data, float *err, float *ang, char dataformat, int offset){
 
 
   int ichan, iline=0;
@@ -902,13 +920,16 @@ int slsDetectorUtils::readDataFile(int nch, ifstream &infile, float *data, float
       istringstream ssstr(str);
       if (ang==NULL) {
 	ssstr >> ichan >> fdata;
-	ich=ichan;
+	//ich=ichan;
 	if (ssstr.fail() || ssstr.bad()) {
 	  interrupt=1;
 	  break;
 	}
-	if (ich!=iline) 
-	  std::cout<< "Channel number " << ichan << " does not match with line number " << iline << " " << dataformat << std::endl;
+	//	if (ich!=iline) 
+	//  std::cout<< "Channel number " << ichan << " does not match with line number " << iline << " " << dataformat << std::endl;
+	ich=iline;
+	if (ichan<offset)
+	  continue;
       } else {
 	ssstr >> fang >> fdata;
 	ich=iline;
@@ -924,18 +945,22 @@ int slsDetectorUtils::readDataFile(int nch, ifstream &infile, float *data, float
 	break;
       }
       if (ich<maxchans) { 
-       if (ang) {
+	if (ang) {
 	 ang[ich]=fang;
        } 
        data[ich]=fdata; 
        if (err)
 	 err[ich]=ferr;
        iline++;
-      } else {
-       std::cout<< " too many lines in file: "<< iline << " instead of " << maxchans << std::endl;
-       interrupt=1;
-       break;
-     }
+      } // else {
+//        std::cout<< " too many lines in file: "<< iline << " instead of " << maxchans << std::endl;
+//        interrupt=1;
+//        break;
+//      }
+      if (iline>=nch) {
+	interrupt=1;
+	break;
+      }
     }
   return iline;
 };
@@ -954,7 +979,7 @@ int slsDetectorUtils::readDataFile(string fname, int *data, int nch){
 #endif
   infile.open(fname.c_str(), ios_base::in);
   if (infile.is_open()) {
-    readDataFile(infile, data, nch);
+    iline=readDataFile(infile, data, nch, 0);
     infile.close();
   } else {
     std::cout<< "Could not read file " << fname << std::endl;
@@ -963,7 +988,7 @@ int slsDetectorUtils::readDataFile(string fname, int *data, int nch){
   return iline;
 };
 
-int slsDetectorUtils::readDataFile(ifstream &infile, int *data, int nch){
+int slsDetectorUtils::readDataFile(ifstream &infile, int *data, int nch, int offset){
 
   int ichan, idata, iline=0;
   int interrupt=0;
@@ -981,19 +1006,21 @@ int slsDetectorUtils::readDataFile(ifstream &infile, int *data, int nch){
 	interrupt=1;
 	break;
       }
-      if (ichan!=iline) {
-	std::cout<< " Expected channel "<< iline <<" but read channel "<< ichan << std::endl;
-	interrupt=1;
-	break;
-      } else {
-	if (iline<nch) {
+ //      if (ichan!=iline) {
+// 	std::cout<< " Expected channel "<< iline <<" but read channel "<< ichan << std::endl;
+// 	interrupt=1;
+// 	break;
+//       } else {
+      if (iline<nch) {
+	if (ichan>=offset) {
 	  data[iline]=idata;
 	  iline++;
-	} else {
+	} 
+      } else {
 	  interrupt=1;
 	  break;
 	}
-      }
+	//  }
     }
   return iline;
 };
@@ -1011,7 +1038,7 @@ int slsDetectorUtils::readDataFile(string fname, short int *data, int nch){
 #endif
   infile.open(fname.c_str(), ios_base::in);
   if (infile.is_open()) {
-    readDataFile(infile, data, nch);
+    iline=readDataFile(infile, data, nch, 0);
     infile.close();
   } else {
     std::cout<< "Could not read file " << fname << std::endl;
@@ -1020,14 +1047,12 @@ int slsDetectorUtils::readDataFile(string fname, short int *data, int nch){
   return iline;
 };
 
-int slsDetectorUtils::readDataFile(ifstream &infile, short int *data, int nch){
+int slsDetectorUtils::readDataFile(ifstream &infile, short int *data, int nch, int offset){
 
   int ichan, iline=0;
   short int idata;
   int interrupt=0;
   string str;
-
-
   while (infile.good() and interrupt==0) {
       getline(infile,str);
 #ifdef VERBOSE
@@ -1039,22 +1064,27 @@ int slsDetectorUtils::readDataFile(ifstream &infile, short int *data, int nch){
 	interrupt=1;
 	break;
       }
-      if (ichan!=iline) {
-	std::cout<< " Expected channel "<< iline <<" but read channel "<< ichan << std::endl;
-	interrupt=1;
-	break;
-      } else {
-	if (iline<nch) {
+     //  if (ichan!=iline) {
+// 	std::cout<< " Expected channel "<< iline <<" but read channel "<< ichan << std::endl;
+// 	interrupt=1;
+// 	break;
+//       } else {
+      if (iline<nch) {
+	if (ichan>=offset) {
 	  data[iline]=idata;
 	  iline++;
-	} else {
-	  interrupt=1;
-	  break;
 	}
+      } else {
+	interrupt=1;
+	break;
       }
-    }
+	// }
+#ifdef VERBOSE
+	std::cout<< "read " << iline <<" channels " << std::endl;
+#endif
+  }
   return iline;
-};
+}
 
 
 
@@ -1067,11 +1097,11 @@ int slsDetectorUtils::writeDataFile(string fname, float *data, float *err, float
   return writeDataFile(fname, nch, data, err, ang, dataformat);
 
 }
-int slsDetectorUtils::writeDataFile(ofstream &outfile, float *data, float *err, float *ang, char dataformat, int nch){
+int slsDetectorUtils::writeDataFile(ofstream &outfile, float *data, float *err, float *ang, char dataformat, int nch, int offset){
   if (nch==-1)
     nch=getTotalNumberOfChannels();
   
-  return writeDataFile(outfile, nch, data, err, ang, dataformat);
+  return writeDataFile(outfile, nch, data, err, ang, dataformat, offset);
 
 }
 
@@ -1083,9 +1113,9 @@ int slsDetectorUtils::writeDataFile(string fname, int *data){
   return writeDataFile(fname, getTotalNumberOfChannels(), data);
 }
 
-int slsDetectorUtils::writeDataFile(ofstream &outfile, int *data){
+int slsDetectorUtils::writeDataFile(ofstream &outfile, int *data, int offset){
   
-  return writeDataFile(outfile, getTotalNumberOfChannels(), data);
+  return writeDataFile(outfile, getTotalNumberOfChannels(), data, offset);
 }
 
 
@@ -1095,8 +1125,8 @@ int slsDetectorUtils::readDataFile(string fname, float *data, float *err, float 
 
 }
 
-int slsDetectorUtils::readDataFile(ifstream &infile, float *data, float *err, float *ang, char dataformat) {
-  return readDataFile(getTotalNumberOfChannels(), infile, data, err, ang, dataformat);
+int slsDetectorUtils::readDataFile(ifstream &infile, float *data, float *err, float *ang, char dataformat, int offset) {
+  return readDataFile(getTotalNumberOfChannels(), infile, data, err, ang, dataformat, offset);
 
 }
 
@@ -1108,9 +1138,9 @@ int slsDetectorUtils::readDataFile(string fname, int *data){
 };
 
 
-int slsDetectorUtils::readDataFile(ifstream &infile, int *data){
+int slsDetectorUtils::readDataFile(ifstream &infile, int *data, int offset){
 
-  return readDataFile(infile, data, getTotalNumberOfChannels());
+  return readDataFile(infile, data, getTotalNumberOfChannels(), offset);
 };
 
 
@@ -1123,9 +1153,9 @@ int slsDetectorUtils::readDataFile(string fname, short int *data){
 };
 
 
-int slsDetectorUtils::readDataFile(ifstream &infile, short int *data){
+int slsDetectorUtils::readDataFile(ifstream &infile, short int *data, int offset){
 
-  return readDataFile(infile, data, getTotalNumberOfChannels());
+  return readDataFile(infile, data, getTotalNumberOfChannels(),offset);
 };
 
 
@@ -1627,12 +1657,16 @@ void* slsDetectorUtils::processData(int delflag) {
 	
 	fname=createFileName();
 	
+
+	//uses static function?!?!?!?
+	//	writeDataFile (fname+string(".raw"), getTotalNumberOfChannels(),fdata, NULL, NULL, 'i'); 
+	writeDataFile (fname+string(".raw"),fdata, NULL, NULL, 'i'); 
+ 
+
 	/** write raw data file */	   
 	if (*correctionMask==0 && delflag==1) {
-	  writeDataFile (fname+string(".raw"), getTotalNumberOfChannels(),fdata, NULL, NULL, 'i'); 
 	  delete [] fdata;
 	} else {
-	  writeDataFile (fname+string(".raw"), getTotalNumberOfChannels(),fdata, NULL, NULL, 'i');
 
 	  /** rate correction */
 	  if (*correctionMask&(1<<RATE_CORRECTION)) {
@@ -1650,9 +1684,15 @@ void* slsDetectorUtils::processData(int delflag) {
 	    
 	    ffcdata=new float[getTotalNumberOfChannels()]; 
 	    ffcerr=new float[getTotalNumberOfChannels()];
+#ifdef VERBOSE
+	    cout << "array size " << getTotalNumberOfChannels() << endl;
+#endif
 	    flatFieldCorrect(rcdata,rcerr,ffcdata,ffcerr);
+#ifdef VERBOSE
+	    cout << "FF corr done " << endl;
+#endif
 	    delete [] rcdata;
-	    delete [] rcerr;
+	    if (rcerr)	    delete [] rcerr;
 	  } else {
 	    ffcdata=rcdata;
 	    ffcerr=rcerr;
@@ -1683,8 +1723,11 @@ void* slsDetectorUtils::processData(int delflag) {
 	    ang=convertAngles(currentPosition);
 
 	    if (*correctionMask!=0) {
-	      if (*numberOfPositions>1)
-		writeDataFile (fname+string(".dat"), getTotalNumberOfChannels(), ffcdata, ffcerr,ang);
+	      if (*numberOfPositions>1) {
+		//uses static function?!?!?!?
+		//writeDataFile (fname+string(".dat"), getTotalNumberOfChannels(), ffcdata, ffcerr,ang);
+		writeDataFile (fname+string(".dat"), ffcdata, ffcerr,ang);
+	      }
 	    }
 	    addToMerging(ang, ffcdata, ffcerr, mergingBins, mergingCounts,mergingErrors, mergingMultiplicity, getTotalNumberOfChannels(), bs, *angDirection, *correctionMask, badChannelMask );
 	    
@@ -1694,6 +1737,7 @@ void* slsDetectorUtils::processData(int delflag) {
 	      currentPositionIndex++;
 	      fname=createFileName();
 	      if (*correctionMask!=0) {
+		//uses static function?!?!?!?
 		writeDataFile (fname+string(".dat"),np,mergingCounts, mergingErrors, mergingBins,'f');
 	      }
 	      if (delflag) {
@@ -1715,7 +1759,9 @@ void* slsDetectorUtils::processData(int delflag) {
 	      delete [] ang;
 	  } else {
 	    if (*correctionMask!=0) {
-	      writeDataFile (fname+string(".dat"), getTotalNumberOfChannels(), ffcdata, ffcerr);
+	      //uses static function?!?!?!?
+	      //writeDataFile (fname+string(".dat"), getTotalNumberOfChannels(), ffcdata, ffcerr);
+	      writeDataFile (fname+string(".dat"),  ffcdata, ffcerr);
 	    }
 	    if (delflag) {
 	      if (ffcdata)
@@ -1841,10 +1887,14 @@ void slsDetectorUtils::startThread(int delflag) {
 int slsDetectorUtils::fillBadChannelMask() {
 
   int nbad=0;
-  
+
+
+
   if (*correctionMask&(1<< DISCARD_BAD_CHANNELS)) {
     nbad=getBadChannelCorrection();
-
+#ifdef VERBOSE
+    cout << "number of bad channels is " << nbad << endl;
+#endif
     if (nbad>0) {
       
       int *badChansList=new int[nbad];
@@ -1853,9 +1903,16 @@ int slsDetectorUtils::fillBadChannelMask() {
       if (badChannelMask) 
 	delete [] badChannelMask;
       badChannelMask=new int[getTotalNumberOfChannels()];
+
+#ifdef VERBOSE
+      cout << " pointer to bad channel mask is " << badChannelMask << endl;
+#endif
       for (int ichan=0; ichan<getTotalNumberOfChannels(); ichan++)
 	badChannelMask[ichan]=0;
-      for (int ichan=0; ichan<*nBadChans; ichan++) {
+#ifdef VERBOSE
+      cout << " badChanMask has be reset" << badChannelMask << endl;
+#endif
+      for (int ichan=0; ichan<nbad; ichan++) {
 	if (badChansList[ichan]<getTotalNumberOfChannels() && badChansList[ichan]>=0 ) {
 	  if (badChannelMask[badChansList[ichan]]==0)
 	    nbad++;
@@ -1867,18 +1924,31 @@ int slsDetectorUtils::fillBadChannelMask() {
 
     } else {
       if (badChannelMask) {
+#ifdef VERBOSE
+      cout << "deleting bad channel mask beacuse number of bad channels is 0" << endl;
+#endif
+	
 	delete [] badChannelMask;
 	badChannelMask=NULL;
       }
     }
 
   } else {
+#ifdef VERBOSE
+    cout << "bad channel correction is disabled " << nbad << endl;
+#endif
     if (badChannelMask) {
+#ifdef VERBOSE
+      cout << "deleting bad channel mask beacuse no bad channel correction is selected" << endl;
+#endif
       delete [] badChannelMask;
       badChannelMask=NULL;
     }
   }
 
+#ifdef VERBOSE
+    cout << "number of bad channels is " << nbad << endl;
+#endif
   return  nbad;
 }
 

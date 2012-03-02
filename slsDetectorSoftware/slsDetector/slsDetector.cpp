@@ -670,15 +670,15 @@ int slsDetector::initializeDetectorSize(detectorType type) {
 #ifdef VERBOSE
    cout << "done" << endl;
 #endif   
-#ifdef VERBOSE
-   cout << "filling bad channel mask" << endl;
-#endif   
-   /** fill the BadChannelMask \sa  fillBadChannelMask */
-   fillBadChannelMask();
+// #ifdef VERBOSE
+//    cout << "filling bad channel mask" << endl;
+// #endif   
+//    /** fill the BadChannelMask \sa  fillBadChannelMask */
+//    fillBadChannelMask();
 
-#ifdef VERBOSE
-   cout << "done" << endl;
-#endif 
+// #ifdef VERBOSE
+//    cout << "done" << endl;
+// #endif 
 
    /** modifies the last PID accessing the detector */
    thisDetector->lastPID=getpid();
@@ -1041,6 +1041,7 @@ int slsDetector::setTCPSocket(string const name, int const control_port, int con
 int slsDetector::connectControl() {
   if (controlSocket)
     return controlSocket->Connect();
+  return FAIL;
 }
   /** disconnect from the control port */
 int slsDetector::disconnectControl() {
@@ -1055,6 +1056,7 @@ int slsDetector::disconnectControl() {
   int slsDetector::connectData() {
   if (dataSocket)
     return dataSocket->Connect();
+  return FAIL;
 };
   /** disconnect from the data port */
   int slsDetector::disconnectData(){
@@ -1068,6 +1070,7 @@ int slsDetector::disconnectControl() {
   int slsDetector::connectStop() {
   if (stopSocket)
     return stopSocket->Connect();
+  return FAIL;
 };
   /** disconnect from the stop port */
   int slsDetector::disconnectStop(){
@@ -4021,7 +4024,10 @@ int slsDetector::setFlatFieldCorrection(string fname){
 
 int slsDetector::setFlatFieldCorrection(float *corr, float *ecorr) {
   if (corr!=NULL) {
-    for (int ichan=0; ichan<thisDetector->nMod[X]*thisDetector->nMod[Y]*thisDetector->nChans*thisDetector->nChips; ichan++) {
+    for (int ichan=0; ichan<thisDetector->nMod[X]*thisDetector->nChans*thisDetector->nChips; ichan++) {
+// #ifdef VERBOSE
+//       std::cout<< ichan << " "<< corr[ichan] << std::endl;
+// #endif
       ffcoefficients[ichan]=corr[ichan];
       if (ecorr!=NULL)
 	fferrors[ichan]=ecorr[ichan];
@@ -4079,16 +4085,19 @@ int slsDetector::flatFieldCorrect(float* datain, float *errin, float* dataout, f
     std::cout<< "Flat field correcting data" << std::endl;
 #endif
   float e, eo;
-  if (thisDetector->correctionMask&(1<<FLAT_FIELD_CORRECTION)) {
-    for (int ichan=0; ichan<thisDetector->nMod[X]*thisDetector->nMod[Y]*thisDetector->nChans*thisDetector->nChips; ichan++) {
-      if (errin==NULL) 
+  if (thisDetector->correctionMask & (1<<FLAT_FIELD_CORRECTION)) {
+    for (int ichan=0; ichan<thisDetector->nMod[X]*thisDetector->nChans*thisDetector->nChips; ichan++) {
+      if (errin==NULL) {
 	e=0;
-      else
+      } else {
 	e=errin[ichan];
-      
+      }
       flatFieldCorrect(datain[ichan],e,dataout[ichan],eo,ffcoefficients[ichan],fferrors[ichan]);
       if (errout)
 	errout[ichan]=eo;
+// #ifdef VERBOSE
+//       cout << ichan << " " <<datain[ichan]<< " " << ffcoefficients[ichan]<< " " << dataout[ichan] << endl;
+// #endif
     }
   }
   return 0;
@@ -4209,22 +4218,29 @@ int slsDetector::setBadChannelCorrection(string fname){
 
 
 int slsDetector::setBadChannelCorrection(int nch, int *chs, int ff) {
-
+#ifdef VERBOSE
+  cout << "setting " << nch << " bad chans " << endl;
+#endif
   if (ff==0) {
-    if (nch<MAX_BADCHANS) {
+    if (nch<MAX_BADCHANS && nch>0) {
+      thisDetector->correctionMask|=(1<<DISCARD_BAD_CHANNELS);
       thisDetector->nBadChans=nch;
       for (int ich=0 ;ich<nch; ich++) {
 	thisDetector->badChansList[ich]=chs[ich];
       }
-    }
+    } else
+      thisDetector->correctionMask&=~(1<<DISCARD_BAD_CHANNELS);
   } else {
-    if (nch<MAX_BADCHANS) {
+    if (nch<MAX_BADCHANS && nch>0) {
       thisDetector->nBadFF=nch;
       for (int ich=0 ;ich<nch; ich++) {
 	thisDetector->badFFList[ich]=chs[ich];
       }
     }
   }
+#ifdef VERBOSE
+  cout << "badchans flag is "<< (thisDetector->correctionMask&(1<< DISCARD_BAD_CHANNELS)) << endl;
+#endif
   fillBadChannelMask();
   if (thisDetector->correctionMask&(1<< DISCARD_BAD_CHANNELS)) {
     return thisDetector->nBadChans+thisDetector->nBadFF;

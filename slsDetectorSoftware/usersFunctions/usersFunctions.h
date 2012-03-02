@@ -26,7 +26,6 @@ extern "C" {
   int caputq(chid ch_id,  double value);
   void put_callback(struct event_handler_args args);
   int caput(chid ch_id,  double value);
-  
 #endif
 
 
@@ -34,10 +33,8 @@ extern "C" {
   float get_position();
   int go_to_position(float p);
   int go_to_position_no_wait(float p);
-
   int connect_channels();
   int disconnect_channels();
-
 
   float get_i0();
   

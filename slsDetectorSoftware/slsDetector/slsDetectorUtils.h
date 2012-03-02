@@ -159,11 +159,10 @@ class slsDetectorUtils : public slsDetectorBase {
        \param dataformat format of the data: can be 'i' integer or 'f' float (default)
        \param nch number of channels to be written to file. if -1 defaults to the number of installed channels of the detector
        \returns OK or FAIL if it could not write the file or data=NULL
-       \sa mythenDetector::writeDataFile
  
   */
-  int writeDataFile(string fname, float *data, float *err=NULL, float *ang=NULL, char dataformat='f', int nch=-1); 
-  int writeDataFile(ofstream &outfile, float *data, float *err=NULL, float *ang=NULL, char dataformat='f', int nch=-1); 
+   virtual int writeDataFile(string fname, float *data, float *err=NULL, float *ang=NULL, char dataformat='f', int nch=-1); 
+   int writeDataFile(ofstream &outfile, float *data, float *err=NULL, float *ang=NULL, char dataformat='f', int nch=-1, int offset=0); 
   
 
   /**
@@ -174,8 +173,8 @@ class slsDetectorUtils : public slsDetectorBase {
        \returns OK or FAIL if it could not write the file or data=NULL  
        \sa mythenDetector::writeDataFile
   */
-  int writeDataFile(string fname, int *data);
-  int writeDataFile(ofstream &outfile, int *data);
+  virtual int writeDataFile(string fname, int *data);
+  int writeDataFile(ofstream &outfile, int *data, int offset=0);
   
   /**
    
@@ -189,10 +188,9 @@ class slsDetectorUtils : public slsDetectorBase {
        \param nch number of channels to be written to file. if <=0 defaults to the number of installed channels of the detector
        \returns OK or FAIL if it could not read the file or data=NULL
        
-       \sa mythenDetector::readDataFile
   */
-  int readDataFile(string fname, float *data, float *err=NULL, float *ang=NULL, char dataformat='f');  
-  int readDataFile(ifstream& infile, float *data, float *err=NULL, float *ang=NULL, char dataformat='f');  
+  virtual int readDataFile(string fname, float *data, float *err=NULL, float *ang=NULL, char dataformat='f');  
+  int readDataFile(ifstream& infile, float *data, float *err=NULL, float *ang=NULL, char dataformat='f', int offset=0);  
 
   /**
    
@@ -200,10 +198,9 @@ class slsDetectorUtils : public slsDetectorBase {
        \param name of the file to be read
        \param data array of data values
        \returns OK or FAIL if it could not read the file or data=NULL
-       \sa mythenDetector::readDataFile
   */
-  int readDataFile(string fname, int *data);
-  int readDataFile(ifstream &infile, int *data);
+  virtual int readDataFile(string fname, int *data);
+  int readDataFile(ifstream &infile, int *data, int offset=0);
 
   /**
 
@@ -211,10 +208,9 @@ class slsDetectorUtils : public slsDetectorBase {
        \param name of the file to be read
        \param data array of data values
        \returns OK or FAIL if it could not read the file or data=NULL
-       \sa mythenDetector::readDataFile
   */
-  int readDataFile(string fname, short int *data);
-  int readDataFile(ifstream &infile, short int *data);
+  virtual int readDataFile(string fname, short int *data);
+  int readDataFile(ifstream &infile, short int *data, int offset=0);
 
   /**
      
@@ -232,7 +228,7 @@ class slsDetectorUtils : public slsDetectorBase {
   */
 
    static  int  writeDataFile(string fname, int nch, float *data, float *err=NULL, float *ang=NULL, char dataformat='f'); 
-   static  int writeDataFile(ofstream &outfile, int nch, float *data, float *err=NULL, float *ang=NULL, char dataformat='f'); 
+   static  int writeDataFile(ofstream &outfile, int nch, float *data, float *err=NULL, float *ang=NULL, char dataformat='f', int offset=0); 
   /**
    
        writes a data file
@@ -242,7 +238,7 @@ class slsDetectorUtils : public slsDetectorBase {
        \sa mythenDetector::writeDataFile
   */
   static int writeDataFile(string fname,int nch,  int *data);
-  static  int writeDataFile(ofstream &outfile,int nch,  int *data);
+  static  int writeDataFile(ofstream &outfile,int nch,  int *data, int offset=0);
    
    /**
    
@@ -259,7 +255,7 @@ class slsDetectorUtils : public slsDetectorBase {
        \sa mythenDetector::readDataFile
   */
    static int readDataFile(int nch, string fname, float *data, float *err=NULL, float *ang=NULL, char dataformat='f');  
-   static int readDataFile(int nch, ifstream &infile, float *data, float *err=NULL, float *ang=NULL, char dataformat='f');  
+   static int readDataFile(int nch, ifstream &infile, float *data, float *err=NULL, float *ang=NULL, char dataformat='f', int offset=0);  
 
   /**
    
@@ -270,7 +266,7 @@ class slsDetectorUtils : public slsDetectorBase {
        \sa mythenDetector::readDataFile
   */
    static int readDataFile(string fname, int *data, int nch);
-   static int readDataFile(ifstream &infile, int *data, int nch);
+   static int readDataFile(ifstream &infile, int *data, int nch, int offset=0);
 
    /**
 
@@ -281,7 +277,7 @@ class slsDetectorUtils : public slsDetectorBase {
         \sa mythenDetector::readDataFile
    */
     static int readDataFile(string fname, short int *data, int nch);
-    static int readDataFile(ifstream &infile, short int *data, int nch);
+    static int readDataFile(ifstream &infile, short int *data, int nch, int offset=0);
 
   /**
    
@@ -735,6 +731,7 @@ s
   virtual int flatFieldCorrect(float*, float*, float*, float*)=0;
 
   virtual int getTotalNumberOfChannels()=0;
+  virtual int getMaxNumberOfChannels()=0;
   
 
 

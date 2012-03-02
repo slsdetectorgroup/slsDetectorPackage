@@ -601,8 +601,13 @@ typedef  struct sharedSlsDetector {
   /** Returns the number of  modules (without connecting to the detector) */
   int getNMods(){return thisDetector->nMods;}; //
 
+  /** Returns the number of  modules (without connecting to the detector) */
+  int getMaxMods(){return thisDetector->nModsMax;}; //
+
 
   int getTotalNumberOfChannels(){return thisDetector->nChans*thisDetector->nChips*thisDetector->nMods;};
+
+  int getMaxNumberOfChannels(){return thisDetector->nChans*thisDetector->nChips*thisDetector->nModsMax;};
 
 
   /* Communication to server */

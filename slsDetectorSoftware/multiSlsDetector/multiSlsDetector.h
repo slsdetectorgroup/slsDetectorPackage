@@ -86,6 +86,9 @@ class multiSlsDetector  : public slsDetectorUtils {
     /**  total number of channels for all detectors */
     int numberOfChannels;
   
+    /**  total number of channels for all detectors */
+    int maxNumberOfChannels;
+  
 
 
     /** timer values */
@@ -272,6 +275,8 @@ class multiSlsDetector  : public slsDetectorUtils {
   int getNumberOfDetectors() {return thisMultiDetector->numberOfDetectors;};
 
   int getTotalNumberOfChannels(){return thisMultiDetector->numberOfChannels;};
+
+  int getMaxNumberOfChannels(){return thisMultiDetector->maxNumberOfChannels;};
 
   float getScanStep(int index, int istep){return thisMultiDetector->scanSteps[index][istep];};
   /** returns the detector offset (in number of channels)
@@ -894,7 +899,69 @@ class multiSlsDetector  : public slsDetectorUtils {
  */
   int testFunction(int times=0);
 
+   /**
+     sets the value of s angular conversion parameter
+     \param c can be ANGULAR_DIRECTION, GLOBAL_OFFSET, FINE_OFFSET, BIN_SIZE
+     \param v the value to be set
+     \returns the actual value
+  */
 
+  float setAngularConversionParameter(angleConversionParameter c, float v);
+
+    /**
+     
+       writes a data file
+       \param name of the file to be written
+       \param data array of data values
+       \param err array of arrors on the data. If NULL no errors will be written
+       
+       \param ang array of angular values. If NULL data will be in the form chan-val(-err) otherwise ang-val(-err)
+       \param dataformat format of the data: can be 'i' integer or 'f' float (default)
+       \param nch number of channels to be written to file. if -1 defaults to the number of installed channels of the detector
+       \returns OK or FAIL if it could not write the file or data=NULL
+       \sa mythenDetector::writeDataFile
+ 
+  */
+   int writeDataFile(string fname, float *data, float *err=NULL, float *ang=NULL, char dataformat='f', int nch=-1); 
+  
+
+  /**
+   
+       writes a data file
+       \param name of the file to be written
+       \param data array of data values
+       \returns OK or FAIL if it could not write the file or data=NULL  
+       \sa mythenDetector::writeDataFile
+  */
+   int writeDataFile(string fname, int *data);
+  
+  /**
+   
+       reads a data file
+       \param name of the file to be read
+       \param data array of data values to be filled
+       \param err array of arrors on the data. If NULL no errors are expected on the file
+       
+       \param ang array of angular values. If NULL data are expected in the form chan-val(-err) otherwise ang-val(-err)
+       \param dataformat format of the data: can be 'i' integer or 'f' float (default)
+       \param nch number of channels to be written to file. if <=0 defaults to the number of installed channels of the detector
+       \returns OK or FAIL if it could not read the file or data=NULL
+       
+       \sa mythenDetector::readDataFile
+  */
+   int readDataFile(string fname, float *data, float *err=NULL, float *ang=NULL, char dataformat='f'); 
+
+
+  /**
+   
+       reads a data file
+       \param name of the file to be read
+       \param data array of data values
+       \returns OK or FAIL if it could not read the file or data=NULL
+       \sa mythenDetector::readDataFile
+  */
+   int readDataFile(string fname, int *data);
+ 
  protected:
  
 

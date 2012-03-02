@@ -105,6 +105,7 @@ multiSlsDetector::multiSlsDetector(int id) :  slsDetectorUtils(), shmId(-1)
     thisMultiDetector->dataBytes=0;
     thisMultiDetector->numberOfChannels=0;
 
+    thisMultiDetector->maxNumberOfChannels=0;
 
     
 
@@ -225,15 +226,15 @@ multiSlsDetector::multiSlsDetector(int id) :  slsDetectorUtils(), shmId(-1)
 	       &thisMultiDetector->fileIndex);
 
   
-#ifdef VERBOSE
-   cout << "filling bad channel mask" << endl;
-#endif   
-   /** fill the BadChannelMask \sa  fillBadChannelMask */
-   fillBadChannelMask();
+// #ifdef VERBOSE
+//    cout << "filling bad channel mask" << endl;
+// #endif   
+//    /** fill the BadChannelMask \sa  fillBadChannelMask */
+//    fillBadChannelMask();
    
-#ifdef VERBOSE
-   cout << "done" << endl;
-#endif 
+// #ifdef VERBOSE
+//    cout << "done" << endl;
+// #endif 
 
 }
 
@@ -297,7 +298,8 @@ int multiSlsDetector::addSlsDetector(int id, int pos) {
 
   thisMultiDetector->dataBytes+=detectors[pos]->getDataBytes();
  
-  thisMultiDetector->numberOfChannels+=detectors[pos]->getNChans()*detectors[pos]->getNChips()*detectors[pos]->getNMods();
+  thisMultiDetector->numberOfChannels+=detectors[pos]->getTotalNumberOfChannels();
+  thisMultiDetector->maxNumberOfChannels-=detectors[j]->getMaxNumberOfChannels();
  
 #ifdef VERBOSE
   cout << "Detector added " << thisMultiDetector->numberOfDetectors<< endl;
@@ -528,7 +530,8 @@ int multiSlsDetector::removeSlsDetector(int pos) {
   if (detectors[j]) {
 
   thisMultiDetector->dataBytes-=detectors[j]->getDataBytes();
-  thisMultiDetector->numberOfChannels-=detectors[j]->getNChans()*detectors[pos]->getNChips()*detectors[pos]->getNMods();
+  thisMultiDetector->numberOfChannels-=detectors[j]->getTotalNumberOfChannels();
+  thisMultiDetector->maxNumberOfChannels-=detectors[j]->getMaxNumberOfChannels();
 
     delete detectors[j];
     thisMultiDetector->numberOfDetectors--;
@@ -738,7 +741,7 @@ int multiSlsDetector::getThresholdEnergy(int pos) {
       ret=detectors[i]->getThresholdEnergy();
       if (ret1==-100)
 	ret1=ret;
-      else if (ret!=ret1)
+      else if (ret<(ret1-200) || ret>(ret1+200))
 	ret1=FAIL;
       
     }
@@ -767,11 +770,17 @@ int multiSlsDetector::setThresholdEnergy(int e_eV, int pos, detectorSettings ise
   for (i=posmin; i<posmax; i++) {
     if (detectors[i]) {
       ret=detectors[i]->setThresholdEnergy(e_eV,-1,isettings);
+#ifdef VERBOSE
+      cout << "detetcor " << i << " threshold " << ret << endl;
+#endif
       if (ret1==-100)
 	ret1=ret;
-      else if (ret!=ret1)
+      else if (ret<(ret1-200) || ret>(ret1+200))
 	ret1=FAIL;
       
+#ifdef VERBOSE
+      cout << "return value " << ret1 << endl;
+#endif
     }
    
   }
@@ -1350,14 +1359,14 @@ float* multiSlsDetector::decodeData(int *datain) {
   float *dataout=new float[thisMultiDetector->numberOfChannels];
   int ich=0;
   float *detp;
-  int   *datap=datain;
+  int  *datap=datain;
 
 
   for (int i=0; i<thisMultiDetector->numberOfDetectors; i++) {
     if (detectors[i]) {
       detp=detectors[i]->decodeData(datap);
-      datap+=detectors[i]->getDataBytes();
-      for (int j=0; j<detectors[i]->getNChans()*detectors[i]->getNChips()*detectors[i]->getNMods(); j++) {
+      datap+=detectors[i]->getDataBytes()/sizeof(int);
+      for (int j=0; j<detectors[i]->getTotalNumberOfChannels(); j++) {
 	dataout[ich]=detp[j];
 	ich++;
       }
@@ -1429,7 +1438,7 @@ int multiSlsDetector::setFlatFieldCorrection(string fname){
 
       for (int ichan=0; ichan<nch; ichan++) {
 	if (detectors[idet]) {
-	  if (ichdet>=detectors[idet]->getNChans()*detectors[idet]->getNChips()*detectors[idet]->getNMods()) {
+	  if (ichdet>=detectors[idet]->getTotalNumberOfChannels()) {
 	    ichdet=0;
 	    detectors[idet]->setBadChannelCorrection(nbad,badlist,1);
 	    idet++;
@@ -1468,13 +1477,18 @@ int multiSlsDetector::setFlatFieldCorrection(string fname){
 
 	idet=0; 
 	ichdet=0;
+	int detoff=0;
 
 	for (int ichan=0; ichan<nch; ichan++) {
 
 	  if (detectors[idet]) {
-	    if (ichdet>=detectors[idet]->getNChans()*detectors[idet]->getNChips()*detectors[idet]->getNMods()) {
-	      detectors[idet]->setFlatFieldCorrection(ffcoefficients+ichdet, fferrors+ichdet);
-	      ichdet=ichan;
+	    if (ichdet>=detectors[idet]->getTotalNumberOfChannels()) {
+#ifdef VERBOSE
+	      cout << "Set flat field detector " << idet << "(offset "<< detoff << ")" << endl; 
+#endif
+	      detectors[idet]->setFlatFieldCorrection(ffcoefficients+detoff, fferrors+detoff);
+	      ichdet=0;//ichan;
+	      detoff=ichan;
 	      idet++;
 	    } 
 	  }
@@ -1487,9 +1501,13 @@ int multiSlsDetector::setFlatFieldCorrection(string fname){
 	    ffcoefficients[ichan]=0.;
 	    fferrors[ichan]=1.;
 	  }
+	  ichdet++;
 	}
 	if (detectors[idet]) {
-	  detectors[idet]->setFlatFieldCorrection(ffcoefficients+ichdet, fferrors+ichdet);
+#ifdef VERBOSE
+	      cout << "**Set flat field detector " << idet << "(offset "<< detoff << ")" <<  endl; 
+#endif
+	  detectors[idet]->setFlatFieldCorrection(ffcoefficients+detoff, fferrors+detoff);
 	}
       } else {
 	std::cout<< "Flat field data from file " << fname << " are not valid (" << nmed << "///" << xmed[nmed/2] << std::endl;
@@ -1500,7 +1518,7 @@ int multiSlsDetector::setFlatFieldCorrection(string fname){
 	}
 	return -1;
       }
-    } else {
+   } else {
       std::cout<< "Flat field from file " << fname << " is not valid " << nch << std::endl;  
       thisMultiDetector->correctionMask&=~(1<<FLAT_FIELD_CORRECTION);
       for (int i=0; i<thisMultiDetector->numberOfDetectors; i++) {
@@ -1531,7 +1549,7 @@ int multiSlsDetector::setFlatFieldCorrection(float *corr, float *ecorr) {
       else
 	ep=NULL;
       detectors[idet]->setFlatFieldCorrection(p, ep);
-      ichdet+=detectors[idet]->getNChans()*detectors[idet]->getNChips()*detectors[idet]->getNMods();
+      ichdet+=detectors[idet]->getTotalNumberOfChannels();
     }
   }
   return 0;
@@ -1559,7 +1577,7 @@ int multiSlsDetector::getFlatFieldCorrection(float *corr, float *ecorr) {
       else
 	ep=NULL;
       detectors[idet]->getFlatFieldCorrection(p, ep);
-      ichdet+=detectors[idet]->getNChans()*detectors[idet]->getNChips()*detectors[idet]->getNMods();
+      ichdet+=detectors[idet]->getTotalNumberOfChannels();
     }
   }
   return 0;
@@ -1590,10 +1608,16 @@ int multiSlsDetector::getFlatFieldCorrection(float *corr, float *ecorr) {
 int multiSlsDetector::flatFieldCorrect(float* datain, float *errin, float* dataout, float *errout){  
 
   int ichdet=0;
+  float *pdata, *perr=errin;
   for (int idet=0; idet<thisMultiDetector->numberOfDetectors; idet++) {
     if (detectors[idet]) {
-      detectors[idet]->flatFieldCorrect(datain+ichdet, errin+ichdet, dataout+ichdet, errout+ichdet);
-      ichdet+=detectors[idet]->getNChans()*detectors[idet]->getNChips()*detectors[idet]->getNMods();
+#ifdef VERBOSE
+      cout << " detector " << idet << " offset " << ichdet << endl;
+#endif
+      if (errin)
+	perr+=ichdet;
+      detectors[idet]->flatFieldCorrect(datain+ichdet, perr, dataout+ichdet, errout+ichdet);
+      ichdet+=detectors[idet]->getTotalNumberOfChannels();//detectors[idet]->getNChans()*detectors[idet]->getNChips()*detectors[idet]->getNMods();
     }
   }
   return 0;
@@ -1677,10 +1701,13 @@ int multiSlsDetector::getRateCorrection(){
 int multiSlsDetector::rateCorrect(float* datain, float *errin, float* dataout, float *errout){
 
   int ichdet=0;
+  float *perr=errin;
   for (int idet=0; idet<thisMultiDetector->numberOfDetectors; idet++) {
     if (detectors[idet]) {
-      detectors[idet]->rateCorrect(datain+ichdet, errin+ichdet, dataout+ichdet, errout+ichdet);
-      ichdet+=detectors[idet]->getNChans()*detectors[idet]->getNChips()*detectors[idet]->getNMods();
+      if (errin)
+	perr+=ichdet;
+      detectors[idet]->rateCorrect(datain+ichdet, perr, dataout+ichdet, errout+ichdet);
+      ichdet+=detectors[idet]->getTotalNumberOfChannels();
     }
   }
   return 0;
@@ -1696,9 +1723,16 @@ int multiSlsDetector::setBadChannelCorrection(string fname){
     fname=string(thisMultiDetector->badChanFile);
 
   int ret=setBadChannelCorrection(fname, nbad, badlist);
-  
-  if (ret==0)
+#ifdef VERBOSE
+  cout << "file contained " << ret << " badcahns" << endl; 
+#endif
+  if (ret==0) {
+    thisMultiDetector->correctionMask&=~(1<<DISCARD_BAD_CHANNELS);
     nbad=0;
+  } else {
+    thisMultiDetector->correctionMask|=(1<<DISCARD_BAD_CHANNELS);
+    strcpy(thisMultiDetector->badChanFile,fname.c_str());
+  }
 
   return setBadChannelCorrection(nbad,badlist,0);
 
@@ -1717,9 +1751,12 @@ int multiSlsDetector::setBadChannelCorrection(int nbad, int *badlist, int ff) {
     
     for (int ich=0; ich<nbad; ich++) {
       if (detectors[idet]) {
-	while ((badlist[ich]-choff)>=detectors[idet]->getNChans()*detectors[idet]->getNChips()*detectors[idet]->getNMods()) {
+	if ((badlist[ich]-choff)>=detectors[idet]->getTotalNumberOfChannels()) {
+#ifdef VERBOSE
+	  cout << "setting " << nbaddet << " badchans to detector " << idet << endl;
+#endif
 	  detectors[idet]->setBadChannelCorrection(nbaddet,badlist,0);
-	  choff+=detectors[idet]->getNChans()*detectors[idet]->getNChips()*detectors[idet]->getNMods();
+	  choff+=detectors[idet]->getTotalNumberOfChannels();
 	  nbaddet=0;
 	  idet++;
 	  if (detectors[idet]==NULL)
@@ -1727,10 +1764,26 @@ int multiSlsDetector::setBadChannelCorrection(int nbad, int *badlist, int ff) {
 	}
 	badlistdet[nbaddet]=(badlist[ich]-choff);
 	nbaddet++;
+	cout << nbaddet << " " << badlist[ich] << " " << badlistdet[nbaddet-1] << endl;
+      }
+    }
+    if (nbaddet>0) {
+
+      if (detectors[idet]) {
+#ifdef VERBOSE
+	cout << "setting " << nbaddet << " badchans to detector " << idet << endl;
+#endif
+	detectors[idet]->setBadChannelCorrection(nbaddet,badlist,0);
+	choff+=detectors[idet]->getTotalNumberOfChannels();
+	nbaddet=0;
+	idet++;
       }
     }
     nbaddet=0;
     for (int i=idet; i<thisMultiDetector->numberOfDetectors; i++) {
+#ifdef VERBOSE
+	  cout << "setting " << 0 << " badchans to detector " << i << endl;
+#endif
       if (detectors[i]) {
 	detectors[i]->setBadChannelCorrection(nbaddet,badlist,0);
       }
@@ -1740,12 +1793,17 @@ int multiSlsDetector::setBadChannelCorrection(int nbad, int *badlist, int ff) {
     nbaddet=0;
     for (int i=0; i<thisMultiDetector->numberOfDetectors; i++) {
       if (detectors[idet]) {
+#ifdef VERBOSE
+	  cout << "setting " << 0 << " badchans to detector " << idet << endl;
+#endif
 	detectors[idet]->setBadChannelCorrection(nbaddet,badlist,0);
       }
     }
     thisMultiDetector->correctionMask&=~(1<<DISCARD_BAD_CHANNELS);
   }  
-    
+#ifdef VERBOSE 
+  cout << (thisMultiDetector->correctionMask&(1<<DISCARD_BAD_CHANNELS)) << endl;
+#endif
   return thisMultiDetector->correctionMask&(1<<DISCARD_BAD_CHANNELS);
 
 }
@@ -1784,6 +1842,9 @@ int multiSlsDetector::readAngularConversion(string fname) {
 
     for (int idet=0; idet<thisMultiDetector->numberOfDetectors; idet++) {
       if (detectors[idet]) {
+#ifdef VERBOSE
+	cout << " detector " << idet << endl;
+#endif
 	detectors[idet]->readAngularConversion(infile);
       }
     }
@@ -1918,6 +1979,24 @@ int multiSlsDetector::setChannel(long long reg, int ichan, int ichip, int imod) 
 
 
 
+   /**
+     sets the value of s angular conversion parameter
+     \param c can be ANGULAR_DIRECTION, GLOBAL_OFFSET, FINE_OFFSET, BIN_SIZE
+     \param v the value to be set
+     \returns the actual value
+  */
+
+float multiSlsDetector::setAngularConversionParameter(angleConversionParameter c, float v) {
+  float ret=slsDetectorUtils::setAngularConversionParameter(c,v);
+  for (int idet=0; idet<thisMultiDetector->numberOfDetectors; idet++) {
+    
+      if (detectors[idet]) {
+	
+	detectors[idet]->setAngularConversionParameter(c,v);
+      }
+  }
+  return ret;
+}
 
 
 
@@ -1931,10 +2010,10 @@ float* multiSlsDetector::convertAngles(float pos) {
     
     if (detectors[idet]) {
       p=detectors[idet]->convertAngles(pos);
-      for (int ich=0; ich<detectors[idet]->getNChans()*detectors[idet]->getNChips()*detectors[idet]->getNMods(); ich++) {
+      for (int ich=0; ich<detectors[idet]->getTotalNumberOfChannels(); ich++) {
 	ang[choff+ich]=p[ich];
 	}
-      choff+=detectors[idet]->getNChans()*detectors[idet]->getNChips()*detectors[idet]->getNMods();
+      choff+=detectors[idet]->getTotalNumberOfChannels();
       delete [] p;
     }
   }
@@ -1953,12 +2032,12 @@ int multiSlsDetector::getBadChannelCorrection(int *bad) {
       bd = new int[nd];
       nd=detectors[idet]->getBadChannelCorrection(bd);
       for (int id=0; id<nd; id++) {
-	if (bd[id]<detectors[idet]->getNChans()*detectors[idet]->getNChips()*detectors[idet]->getNMods()) {
+	if (bd[id]<detectors[idet]->getTotalNumberOfChannels()) {
 	  if (bad) bad[ntot]=choff+bd[id];
 	  ntot++;
 	}
       }
-      choff+=detectors[idet]->getNChans()*detectors[idet]->getNChips()*detectors[idet]->getNMods();
+      choff+=detectors[idet]->getTotalNumberOfChannels();
       delete [] bd;
     }
   }
@@ -2408,7 +2487,7 @@ int multiSlsDetector::setDynamicRange(int p) {
     if (detectors[idet]) {
       ret1=detectors[idet]->setDynamicRange(p);
       thisMultiDetector->dataBytes+=detectors[idet]->getDataBytes();
-      thisMultiDetector->numberOfChannels+=detectors[idet]->getNChans()*detectors[idet]->getNChips()*detectors[idet]->getNMods();
+      thisMultiDetector->numberOfChannels+=detectors[idet]->getTotalNumberOfChannels();
       if (ret==-100)
 	ret=ret1;
       else if (ret!=ret1)
@@ -2459,7 +2538,7 @@ int multiSlsDetector::setNumberOfModules(int p, dimension d) {
       }
       ret+=detectors[idet]->setNumberOfModules(nm);
       thisMultiDetector->dataBytes+=detectors[idet]->getDataBytes();
-      thisMultiDetector->numberOfChannels+=detectors[idet]->getNChans()*detectors[idet]->getNChips()*detectors[idet]->getNMods();
+      thisMultiDetector->numberOfChannels+=detectors[idet]->getTotalNumberOfChannels();
     }
   }  
   return ret;
@@ -2471,7 +2550,7 @@ int multiSlsDetector::decodeNMod(int i, int &id, int &im) {
     cout << " Module " << i << " belongs to detector ";
 #endif
 
-  if (i<0 || i>=setNumberOfModules()) {
+  if (i<0 || i>=getMaxNumberOfModules()) {
     id=-1;
     im=-1;
 #ifdef VERBOSE
@@ -3089,4 +3168,162 @@ int multiSlsDetector::loadImageToDetector(imageType t, string s) {
 }
 int multiSlsDetector::testFunction(int times) {
 
+}
+  
+
+int multiSlsDetector::writeDataFile(string fname, float *data, float *err, float *ang, char dataformat, int nch) {
+
+#ifdef VERBOSE
+  cout << "using overloaded multiSlsDetector function to write formatted data file " << endl;
+#endif
+
+
+  ofstream outfile;
+  int idata, choff=0, off=0;
+  float *pe=err, *pa=ang;
+  int nch_left=nch, n;
+
+  if (nch_left<=0)
+    nch_left=getTotalNumberOfChannels();
+
+
+  if (data==NULL)
+    return FAIL;
+
+  //  args|=0x10; // one line per channel!
+
+  outfile.open (fname.c_str(),ios_base::out);
+  if (outfile.is_open())
+  {
+    
+   for (int i=0; i<thisMultiDetector->numberOfDetectors; i++) {
+     if (detectors[i]) {
+       n=detectors[i]->getTotalNumberOfChannels();
+       if (nch_left<n)
+	 n=nch_left;
+       detectors[i]->writeDataFile(outfile,n, data+off, pe, pa, dataformat, choff);
+       nch_left-=n;
+       choff+=detectors[i]->getMaxNumberOfChannels();
+       off+=n;
+       if (pe)
+	 pe=pe+off;
+       if (pa)
+	 pa=pa+off;
+     }
+   }
+
+   outfile.close();
+   return OK;
+  } else {
+    std::cout<< "Could not open file " << fname << "for writing"<< std::endl;
+    return FAIL;
+  }
+}
+
+
+int multiSlsDetector::writeDataFile(string fname, int *data) {
+  ofstream outfile;
+  int choff=0, off=0;
+
+#ifdef VERBOSE
+  cout << "using overloaded multiSlsDetector function to write raw data file " << endl;
+#endif
+
+  if (data==NULL)
+    return FAIL;
+
+  outfile.open (fname.c_str(),ios_base::out);
+  if (outfile.is_open())
+  {
+   for (int i=0; i<thisMultiDetector->numberOfDetectors; i++) {
+     if (detectors[i]) {
+       detectors[i]->writeDataFile(outfile, detectors[i]->getTotalNumberOfChannels(), data+off, choff);
+	choff+=detectors[i]->getMaxNumberOfChannels();
+	off+=detectors[i]->getTotalNumberOfChannels();
+      }
+    }
+
+
+    outfile.close();
+    return OK;
+  } else {
+    std::cout<< "Could not open file " << fname << "for writing"<< std::endl;
+    return FAIL;
+  }
+}
+
+
+int multiSlsDetector::readDataFile(string fname, float *data, float *err, float *ang, char dataformat){
+
+#ifdef VERBOSE
+  cout << "using overloaded multiSlsDetector function to read formatted data file " << endl;
+#endif
+
+  ifstream infile;
+  int ichan, iline=0;
+  int interrupt=0;
+  string str;
+  int choff=0, off=0;
+  float *pe=err, *pa=ang;
+
+#ifdef VERBOSE
+  std::cout<< "Opening file "<< fname << std::endl;
+#endif
+  infile.open(fname.c_str(), ios_base::in);
+  if (infile.is_open()) {
+
+    for (int i=0; i<thisMultiDetector->numberOfDetectors; i++) {
+      if (detectors[i]) {
+	iline+=detectors[i]->readDataFile(detectors[i]->getTotalNumberOfChannels(), infile, data+off, pe, pa, dataformat, choff);
+	choff+=detectors[i]->getMaxNumberOfChannels();
+	off+=detectors[i]->getTotalNumberOfChannels();
+       if (pe)
+	 pe=pe+off;
+       if (pa)
+	 pa=pa+off;
+      }
+    }
+
+
+    infile.close();
+  } else {
+    std::cout<< "Could not read file " << fname << std::endl;
+    return -1;
+  }
+  return iline;
+
+}
+
+
+int multiSlsDetector::readDataFile(string fname, int *data) {
+
+#ifdef VERBOSE
+  cout << "using overloaded multiSlsDetector function to read raw data file " << endl;
+#endif
+
+  ifstream infile;
+  int ichan, iline=0;
+  int interrupt=0;
+  string str;
+  int choff=0, off=0;
+
+#ifdef VERBOSE
+  std::cout<< "Opening file "<< fname << std::endl;
+#endif
+  infile.open(fname.c_str(), ios_base::in);
+  if (infile.is_open()) {
+
+    for (int i=0; i<thisMultiDetector->numberOfDetectors; i++) {
+      if (detectors[i]) {
+	iline+=detectors[i]->readDataFile(infile, data+off,detectors[i]->getTotalNumberOfChannels(), choff);
+	choff+=detectors[i]->getMaxNumberOfChannels();
+	off+=detectors[i]->getTotalNumberOfChannels();
+      }
+    }
+    infile.close();
+  } else {
+    std::cout<< "Could not read file " << fname << std::endl;
+    return -1;
+  }
+  return iline;
 }

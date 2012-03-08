@@ -1,9 +1,10 @@
 CFLAGS= -DC_ONLY 
-#FLAGS=-DVERBOSE 
+FLAGS=-DVERBOSE 
 INCLUDES= -I../slsDetectorSoftware/commonFiles -I../slsDetectorSoftware/slsDetector -I ../slsDetectorSoftware/MySocketTCP  -I../slsDetectorSoftware/usersFunctions -I../slsDetectorSoftware/multiSlsDetector
-#LIBS=-L../TMythenDetector/bin/ -L$(QTDIR)/lib
 LIBS= -L../slsDetectorSoftware/
 LDFLAG= -lSlsDetector -lpthread
+
+EPICSFLAGS=-DEPICS  -I/usr/local/epics/base/include/ -I /usr/local/epics/base/include/os/Linux/ -L /usr/local/epics/base/lib/SL5-x86/ -Wl,-R/usr/local/epics/base/lib/SL5-x86  -lca -lCom 
 
 BIN=bin
 
@@ -18,21 +19,21 @@ lib:
 
 
 
-sls_detector_put: $(SRC_CLNT) lib
+sls_detector_put: $(SRC_CLNT)
 	mkdir -p $(BIN)
-	$(CXX) -static -o $(BIN)/sls_detector_put $(SRC_CLNT)   $(FLAGS) -lpthread $(INCLUDES) -DPUT $(LIBS) $(LDFLAG) 
+	$(CXX) -o $(BIN)/sls_detector_put $(SRC_CLNT)   $(FLAGS)  $(INCLUDES) -DPUT $(LIBS) $(LDFLAG)  $(EPICSFLAGS)
 
-sls_detector_get: $(SRC_CLNT) lib
+sls_detector_get: $(SRC_CLNT)
 	mkdir -p $(BIN)
-	$(CXX) -static -o $(BIN)/sls_detector_get $(SRC_CLNT)   $(FLAGS) -lpthread $(INCLUDES) -DGET  $(LIBS) $(LDFLAG)
+	$(CXX) -o $(BIN)/sls_detector_get $(SRC_CLNT)   $(FLAGS)  $(INCLUDES) -DGET  $(LIBS) $(LDFLAG)  $(EPICSFLAGS)
 
-sls_detector_acquire: $(SRC_CLNT) lib
+sls_detector_acquire: $(SRC_CLNT)
 	mkdir -p $(BIN)
-	$(CXX) -static -o $(BIN)/sls_detector_acquire $(SRC_CLNT)   $(FLAGS) -lpthread $(INCLUDES) -DREADOUT  $(LIBS) $(LDFLAG)
+	$(CXX)  -o $(BIN)/sls_detector_acquire $(SRC_CLNT)   $(FLAGS) $(INCLUDES) -DREADOUT  $(LIBS) $(LDFLAG)  $(EPICSFLAGS)
 
-sls_detector_help: $(SRC_CLNT) lib
+sls_detector_help: $(SRC_CLNT)
 	mkdir -p $(BIN)
-	$(CXX) -static -o $(BIN)/sls_detector_help $(SRC_CLNT)   $(FLAGS) -lpthread $(INCLUDES) -DHELP  $(LIBS) $(LDFLAG)
+	$(CXX)  -o $(BIN)/sls_detector_help $(SRC_CLNT)   $(FLAGS) $(INCLUDES) -DHELP  $(LIBS) $(LDFLAG)  $(EPICSFLAGS)
 
 
 clean:

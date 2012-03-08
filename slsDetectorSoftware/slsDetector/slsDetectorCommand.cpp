@@ -1303,7 +1303,9 @@ string slsDetectorCommand::cmdFlatField(int narg, char *args[], int action){
 	return string("none");
       }
     }
-  }
+  } else
+    return string("could not decode flat field action ")+cmd;
+  
 }
  
 

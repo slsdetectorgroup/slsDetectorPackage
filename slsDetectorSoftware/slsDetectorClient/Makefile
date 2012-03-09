@@ -1,7 +1,6 @@
 CFLAGS= -DC_ONLY 
 #FLAGS=-DVERBOSE 
 INCLUDES= -I../slsDetectorSoftware/commonFiles -I../slsDetectorSoftware/slsDetector -I ../slsDetectorSoftware/MySocketTCP  -I../slsDetectorSoftware/usersFunctions -I../slsDetectorSoftware/multiSlsDetector
-#LIBS=-L../TMythenDetector/bin/ -L$(QTDIR)/lib
 LIBS= -L../slsDetectorSoftware/
 LDFLAG= -lSlsDetector -lpthread
 

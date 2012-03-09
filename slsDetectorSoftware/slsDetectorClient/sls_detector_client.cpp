@@ -34,7 +34,10 @@ int main(int argc, char *argv[])
 #elif HELP  
   action=HELP_ACTION;
 #endif 
-
+#ifdef VERBOSE
+  for (int ia=0; ia<argc; ia++)
+    cout << argv[ia] << endl;
+#endif
   if (argc>1){
 
 
@@ -109,6 +112,7 @@ int main(int argc, char *argv[])
     answer=myCmd->executeLine(argc-1, argv, action);
   } else {
     answer=myCmd->executeLine(argc-1, argv+1, action);
+    cout << argv[1] << " " ;
   }
   cout << answer<< endl;
 

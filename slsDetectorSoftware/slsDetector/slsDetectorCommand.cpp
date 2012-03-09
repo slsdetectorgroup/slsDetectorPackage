@@ -711,14 +711,18 @@ string slsDetectorCommand::cmdData(int narg, char *args[], int action) {
 #ifdef VERBOSE
   cout << string("Executing command ")+string(args[0])+string(" ( ")+cmd+string(" )\n");
 #endif
+  int b;
   if (action==PUT_ACTION) {
     return  string("cannot set");
   } else if (action==HELP_ACTION) {
     return helpData(narg,args,HELP_ACTION);
   } else {
+    b=myDet->setThreadedProcessing(-1);
+    myDet->setThreadedProcessing(0);
     myDet->setOnline(ONLINE_FLAG);
     myDet->readAll();
     myDet->processData(1);
+    myDet->setThreadedProcessing(b);
     return string("ok");
   } 
 }
@@ -736,7 +740,7 @@ string slsDetectorCommand::helpData(int narg, char *args[], int action){
 
 string slsDetectorCommand::cmdFrame(int narg, char *args[], int action) {
 
-
+  int b;
 #ifdef VERBOSE
   cout << string("Executing command ")+string(args[0])+string(" ( ")+cmd+string(" )\n");
 #endif
@@ -745,9 +749,12 @@ string slsDetectorCommand::cmdFrame(int narg, char *args[], int action) {
     } else if (action==HELP_ACTION) {
       return helpFrame(narg,args,HELP_ACTION);
     } else {
+       b=myDet->setThreadedProcessing(-1);
+       myDet->setThreadedProcessing(0);
       myDet->setOnline(ONLINE_FLAG);
       myDet->readFrame();
       myDet->processData(1);
+       myDet->setThreadedProcessing(b);
       return string("ok");
     } 
 
@@ -1772,16 +1779,22 @@ string slsDetectorCommand::cmdScans(int narg, char *args[], int action) {
 	;
       else
 	return string("invalid scan minimum")+string(args[1]);
-      if (sscanf(args[2],"%f",&fmin)) 
+      if (sscanf(args[2],"%f",&fmax)) 
 	;
       else
-	return string("invalid scan minimum")+string(args[2]);
-      if (sscanf(args[2],"%f",&fstep)) 
+	return string("invalid scan maximum")+string(args[2]);
+      if (sscanf(args[3],"%f",&fstep)) 
 	;
       else
 	return string("invalid scan step")+string(args[3]);
+
+
       if (fstep==0)
 	return string("scan step cannot be 0!");
+
+#ifdef VERBOSE
+      cout << fmin << " " << fmax << " " << fstep << endl;
+#endif
       
       ns=(fmax-fmin)/fstep;
       if (ns<0)
@@ -2176,7 +2189,7 @@ string slsDetectorCommand::cmdSettings(int narg, char *args[], int action) {
     }
     return string(myDet->getSettingsFile());
   } else if (cmd=="trim") { 
-    if (action==GET_ACTION) {
+    if (action==GET_ACTION) 
       return string("cannot get!");
 
       trimMode mode=NOISE_TRIMMING;
@@ -2212,7 +2225,7 @@ string slsDetectorCommand::cmdSettings(int narg, char *args[], int action) {
       string sval=string(args[1]);
       myDet->saveSettingsFile(sval, -1);
       return string("done");
-    }
+    
   }
   return string("unknown settings command ")+cmd;
   

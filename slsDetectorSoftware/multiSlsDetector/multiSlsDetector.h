@@ -779,14 +779,6 @@ class multiSlsDetector  : public slsDetectorUtils {
   
 
   /**
-     get run status
-    \returns status mask
-  */
-  //virtual runStatus  getRunStatus()=0;
-  runStatus  getRunStatus();
-
-
-  /**
     set dacs value
     \param val value (in V)
     \param index DAC index
@@ -824,6 +816,12 @@ class multiSlsDetector  : public slsDetectorUtils {
   
   
 
+  /**
+     get run status
+    \returns status mask
+  */
+  //virtual runStatus  getRunStatus()=0;
+  runStatus  getRunStatus();
 
 
 

@@ -1792,16 +1792,22 @@ void* slsDetectorUtils::processData(int delflag) {
       }
       pthread_mutex_unlock(&mp);
       usleep(1000);
-    }    
-    pthread_mutex_unlock(&mp);
-    pthread_mutex_lock(&mp);
+#ifdef VERBOSE
+      //  cout << "looping on dataque size" << endl;
+#endif
+    }
+    //pthread_mutex_unlock(&mp);
+    //pthread_mutex_lock(&mp);
     if (jointhread) {
       pthread_mutex_unlock(&mp);
       if (dataQueue.size()==0)
 	break;
-    } else
+    } else {
+#ifdef VERBOSE
+      //  cout << "waiting on jointhread  "<< jointhread << " " << (*threadedProcessing) << endl;
+#endif
       pthread_mutex_unlock(&mp);
-      
+    }
     dum=0;
   } // ????????????????????????
   return 0;

@@ -152,7 +152,7 @@ float get_position() {
 	pos=value;
     } else
         printf(ca_message(status));
-#endif;
+#endif
 
 
 
@@ -171,12 +171,12 @@ int go_to_position(float p) {
     int status;
     if (ch_pos<0) return -1;
  /*    /\* caput and wait until done *\/ */
-    if ((status = caput(ch_pos, p)) == ECA_NORMAL)
+    if ((status = caput(ch_pos, p)) == ECA_NORMAL) {
       ;
 #ifdef VERBOSE
         printf("caput: success\n");
 #endif
-    else
+    } else
         printf(ca_message(status));
 #else
     pos=p;
@@ -199,13 +199,12 @@ int go_to_position_no_wait(float p) {
     int status;
     if (ch_pos<0) return -1;
  /*    /\* caput and wait until done *\/ */
-    if ((status = caputq(ch_pos, p)) == ECA_NORMAL)
+    if ((status = caputq(ch_pos, p)) == ECA_NORMAL) {
       ;
 #ifdef VERBOSE
         printf("caputq: success\n");
 #endif
-
-    else
+    } else
         printf(ca_message(status));
 #else
     pos=p;
@@ -244,7 +243,7 @@ float get_i0() {
         printf(ca_message(status));
 #else
     i0++;
-#endif;
+#endif
 
   //"ca_get X04SA-ES2-SC:CH6"
   return i0;

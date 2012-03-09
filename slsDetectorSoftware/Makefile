@@ -32,28 +32,17 @@ picassoServer:  $(SRC_MYTHEN_SVC)
 
 
 
-.cpp.o:	
-	echo "short syntax"
-	$(CXX) -c -Wall  $< -o $@ $(INCLUDES) $(FLAGS)  $(EPICSFLAGS)
 
+%.o : %.cpp %.h
+	$(CXX) -Wall -o $@ -c $< $(INCLUDES) $(FLAGS)  $(EPICSFLAGS)
 
 
 package: $(OBJS)
 	echo $(OBJS)
-
-
-#	$(CXX) -fPIC -g -o objs/slsDetectorCommand.o -c -Wall slsDetector/slsDetectorCommand.cpp $(INCLUDES) $(FLAGS) 
-#	$(CXX) -fPIC -g -o objs/slsDetectorUtils.o -c -Wall slsDetector/slsDetectorUtils.cpp $(INCLUDES) $(FLAGS)
-#	$(CXX) -fPIC -g -o objs/slsDetector.o -c -Wall slsDetector/slsDetector.cpp $(INCLUDES) $(FLAGS) 
-#	$(CXX) -fPIC -g -o objs/multiSlsDetector.o -c -Wall multiSlsDetector/multiSlsDetector.cpp $(INCLUDES) $(FLAGS) 
-#	$(CXX) -fPIC -g -o objs/usersFunctions.o -c -Wall usersFunctions/usersFunctions.c $(INCLUDES) $(FLAGS)  $(EPICSFLAGS)
-#	$(CXX) -fPIC -g -o objs/MySocketTCP.o -c -Wall MySocketTCP/MySocketTCP.cpp $(INCLUDES) $(FLAGS) 
 	$(CXX) -shared -Wl,-soname,libSlsDetector.so.1 -o libSlsDetector.so.1.0.1  objs/slsDetector.o    objs/slsDetectorUtils.o  objs/slsDetectorCommand.o  objs/multiSlsDetector.o     objs/usersFunctions.o  objs/MySocketTCP.o   -lc $(INCLUDES) $(FLAGS) $(EPICSFLAGS)
 	ln -sf libSlsDetector.so libSlsDetector.so.1  
 	ln -sf libSlsDetector.so libSlsDetector.so.1.0.1 
 	ar  rcs libSlsDetector.a  $(OBJS)
-
-#objs/slsDetector.o   objs/usersFunctions.o  objs/MySocketTCP.o objs/multiSlsDetector.o  objs/slsDetectorUtils.o   objs/slsDetectorCommand.o 
 
 clean:
 	rm -rf libSlsDetector.so.1  libSlsDetector.so.1.0.1  libSlsDetector.so core  docs/* $(OBJS)

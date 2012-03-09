@@ -152,7 +152,7 @@ float get_position() {
 	pos=value;
     } else
         printf(ca_message(status));
-#endif;
+#endif
 
 
 
@@ -244,7 +244,7 @@ float get_i0() {
         printf(ca_message(status));
 #else
     i0++;
-#endif;
+#endif
 
   //"ca_get X04SA-ES2-SC:CH6"
   return i0;

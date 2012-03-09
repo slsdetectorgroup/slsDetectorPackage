@@ -917,7 +917,7 @@ int multiSlsDetector::stopAcquisition(){
   }
   for (i=0; i<thisMultiDetector->numberOfDetectors; i++) {
     if (detectors[i]) {
-      ret=detectors[i]->startAcquisition();
+      ret=detectors[i]->stopAcquisition();
       if (ret!=OK)
 	ret1=FAIL;
     }
@@ -1027,7 +1027,6 @@ int* multiSlsDetector::readFrame(){
 	memcpy(p,retdet,n);
 	delete [] retdet;
 	p+=n/sizeof(int);
-	
       } else {
 #ifdef VERBOSE
 	cout << "Detector " << id << " does not have data left " << endl;
@@ -1037,6 +1036,7 @@ int* multiSlsDetector::readFrame(){
       }
     }
   }
+  dataQueue.push(retval);
   return retval;
 
 };
@@ -1115,7 +1115,7 @@ int* multiSlsDetector::startAndReadAll(){
  }
 
 #ifdef VERBOSE
-  std::cout<< "recieved "<< i<< " frames" << std::endl;
+  std::cout<< "MMMM recieved "<< i<< " frames" << std::endl;
 #endif
   return dataQueue.front(); // check what we return!
 
@@ -1751,12 +1751,12 @@ int multiSlsDetector::setBadChannelCorrection(int nbad, int *badlist, int ff) {
     
     for (int ich=0; ich<nbad; ich++) {
       if (detectors[idet]) {
-	if ((badlist[ich]-choff)>=detectors[idet]->getTotalNumberOfChannels()) {
+	if ((badlist[ich]-choff)>=detectors[idet]->getMaxNumberOfChannels()) {
 #ifdef VERBOSE
 	  cout << "setting " << nbaddet << " badchans to detector " << idet << endl;
 #endif
 	  detectors[idet]->setBadChannelCorrection(nbaddet,badlist,0);
-	  choff+=detectors[idet]->getTotalNumberOfChannels();
+	  choff+=detectors[idet]->getMaxNumberOfChannels();
 	  nbaddet=0;
 	  idet++;
 	  if (detectors[idet]==NULL)
@@ -1774,7 +1774,7 @@ int multiSlsDetector::setBadChannelCorrection(int nbad, int *badlist, int ff) {
 	cout << "setting " << nbaddet << " badchans to detector " << idet << endl;
 #endif
 	detectors[idet]->setBadChannelCorrection(nbaddet,badlist,0);
-	choff+=detectors[idet]->getTotalNumberOfChannels();
+	choff+=detectors[idet]->getMaxNumberOfChannels();
 	nbaddet=0;
 	idet++;
       }
@@ -3040,21 +3040,11 @@ int multiSlsDetector::dumpDetectorSetup(string const fname, int level){
 #ifdef VERBOSE
   std::cout<< "wrote " <<iv << " lines to  "<< fname1 << std::endl;
 #endif
-
+  
   delete cmd;
   return 0;
 
-
-
-
-}; 
-
-
-
-
-
-
-
+} 
 
 
 
@@ -3159,7 +3149,7 @@ int multiSlsDetector::retrieveDetectorSetup(string const fname1, int level){
   return iline;
 
 
-};
+}
 
 
 
@@ -3293,7 +3283,6 @@ int multiSlsDetector::readDataFile(string fname, float *data, float *err, float 
   return iline;
 
 }
-
 
 int multiSlsDetector::readDataFile(string fname, int *data) {
 

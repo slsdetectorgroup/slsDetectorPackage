@@ -1321,7 +1321,21 @@ typedef  struct sharedSlsDetector {
   */
   masterFlags  setMaster(masterFlags flag);
 
+  /**
+      Loads dark image or gain image from a file and sends it to the detector
+      \param index is 0 for dark image and 1 for gain image
+      \param fname file name to load data from
 
+  */
+  int loadImageToDetector(imageType index,string const fname);
+
+  /**
+      Called from loadImageToDetector to send the image to detector
+      \param index is 0 for dark image and 1 for gain image
+      \param arg image
+
+  */
+  int sendImageToDetector(imageType index,short int arg[]);
 
   /** 
       Sets/gets the synchronization mode of the various detectors
@@ -1330,9 +1344,6 @@ typedef  struct sharedSlsDetector {
   */   
   synchronizationMode setSynchronization(synchronizationMode sync=GET_SYNCHRONIZATION_MODE);
   
-  int loadImageToDetector(imageType index,string const fname);
-
-
  protected:
  
 

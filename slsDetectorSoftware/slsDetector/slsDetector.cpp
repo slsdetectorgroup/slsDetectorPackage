@@ -2,7 +2,6 @@
 #include "usersFunctions.h"
 #include "slsDetectorCommand.h"
 #include  <sys/types.h>
-#include  <sys/ipc.h>
 #include  <sys/shm.h>
 #include <sys/socket.h>
 #include <arpa/inet.h>
@@ -3005,53 +3004,57 @@ int* slsDetector::readFrame(){
   return retval;
 };
 
+
+
+
 int* slsDetector::getDataFromDetector(){
-
-  int nel=thisDetector->dataBytes/sizeof(int);
-  int n;
-  int* retval=new int[nel];
-  int ret=FAIL;
-  char mess[100]="Nothing"; 
-#ifdef VERY_VERBOSE
-  int i;
-#endif     
+	int nel=thisDetector->dataBytes/sizeof(int);
+	int n;
+	int* retval=new int[nel];
+	int ret=FAIL;
+	char mess[100]="Nothing";
 
 #ifdef VERBOSE
-  std::cout<< "getting data "<< thisDetector->dataBytes << " " << nel<< std::endl;
+	std::cout<< "getting data "<< thisDetector->dataBytes << " " << nel<< std::endl;
 #endif
-    controlSocket->ReceiveDataOnly(&ret,sizeof(ret));
+	controlSocket->ReceiveDataOnly(&ret,sizeof(ret));
 #ifdef VERBOSE
-    cout << "ret=" << ret << endl;
+	cout << "ret=" << ret << endl;
 #endif
-    if (ret!=OK) {
-      n= controlSocket->ReceiveDataOnly(mess,sizeof(mess));
-      if (ret==FAIL) {
-	thisDetector->stoppedFlag=1;
-	std::cout<< "Detector returned: " << mess << " " << n << std::endl;
-      } else {
-	;
+	if (ret!=OK) {
+		n= controlSocket->ReceiveDataOnly(mess,sizeof(mess));
+		if (ret==FAIL) {
+			thisDetector->stoppedFlag=1;
+			std::cout<< "Detector returned: " << mess << " " << n << std::endl;
+		} else {
+			;
 #ifdef VERBOSE
-	std::cout<< "Detector successfully returned: " << mess << " " << n << std::endl;
+			std::cout<< "Detector successfully returned: " << mess << " " << n << std::endl;
 #endif	
-      } 
-      delete [] retval;
-      retval=NULL;
-    } else {
-      n=controlSocket->ReceiveDataOnly(retval,thisDetector->dataBytes);
-	
+		}
+		delete [] retval;
+		retval=NULL;
+	} else {
+		n=controlSocket->ReceiveDataOnly(retval,thisDetector->dataBytes);
+
 #ifdef VERBOSE
-      std::cout<< "Received "<< n << " data bytes" << std::endl;
+		std::cout<< "Received "<< n << " data bytes" << std::endl;
 #endif
-      if (n!=thisDetector->dataBytes) {
-	std::cout<< "wrong data size received: received " << n << " but expected " << thisDetector->dataBytes << std::endl;
-	thisDetector->stoppedFlag=1;
-	ret=FAIL;
-	delete [] retval;
-	retval=NULL;
-      }
-    }
-    return retval;
+		if (n!=thisDetector->dataBytes) {
+			std::cout<< "wrong data size received: received " << n << " but expected " << thisDetector->dataBytes << std::endl;
+			thisDetector->stoppedFlag=1;
+			ret=FAIL;
+			delete [] retval;
+			retval=NULL;
+		}
+	}
+
+	return retval;
+
 };
+
+
+
 
 
 
@@ -3068,6 +3071,7 @@ int* slsDetector::readAll(){
     if (controlSocket) {
       if  (controlSocket->Connect()>=0) {
 	controlSocket->SendDataOnly(&fnum,sizeof(fnum));
+
 	while ((retval=getDataFromDetector())){
 	  i++;
 #ifdef VERBOSE
@@ -3084,7 +3088,7 @@ int* slsDetector::readAll(){
 #ifdef VERBOSE
   std::cout<< "received "<< i<< " frames" << std::endl;
 #else
-   std::cout << std::endl; 
+   std::cout << std::endl;
 #endif
   return dataQueue.front(); // check what we return!
 
@@ -4579,51 +4583,33 @@ int slsDetector:: writeAngularConversion(ofstream &ofs) {
 }
 
 
+
+
+
+
+
+
+
 int slsDetector::loadImageToDetector(imageType index,string const fname){
-  int retval;
-  int fnum=F_LOAD_IMAGE;
-  int ret=FAIL;
-  char mess[100];
-  short int arg[1280];
-  
+
+	int ret=FAIL;
+	short int arg[thisDetector->nChans*thisDetector->nChips];
+
 #ifdef VERBOSE
-  std::cout<< std::endl<< "Loading ";
-  if(!index)
-    std::cout<<"Dark";
-  else
-    std::cout<<"Gain";
-  std::cout<<" image from file " << fname << std::endl;
+	std::cout<< std::endl<< "Loading ";
+	if(!index)
+		std::cout<<"Dark";
+	else
+		std::cout<<"Gain";
+	std::cout<<" image from file " << fname << std::endl;
 #endif
-  
-  if(readDataFile(fname,arg)){
-    std::cout<< "Could not open file "<< fname << std::endl;
-    return -1;
-  }
-  if (thisDetector->onlineFlag==ONLINE_FLAG) {
-    if (controlSocket) {
-      if  (controlSocket->Connect()>=0) {
-	controlSocket->SendDataOnly(&fnum,sizeof(fnum));
-	controlSocket->SendDataOnly(&index,sizeof(index));
-	controlSocket->SendDataOnly(arg,sizeof(arg));
-	controlSocket->ReceiveDataOnly(&ret,sizeof(ret));
-	if (ret!=FAIL)
-	  controlSocket->ReceiveDataOnly(&retval,sizeof(retval));
-	else {
-	  controlSocket->ReceiveDataOnly(mess,sizeof(mess));
-	  std::cout<< "Detector returned error: " << mess << std::endl;
+
+	if(readDataFile(fname,arg)){
+		std::cout<< "Could not open file "<< fname << std::endl;
+		return ret;
 	}
-	controlSocket->Disconnect();
-	if (ret==FORCE_UPDATE)
-	  updateDetector();
-      }
-      
-    }
-  }
-  if (ret==FAIL) {
-    std::cout<< "failed " << std::endl;
-    return -1;
-  }
-  return 0;
+	ret = sendImageToDetector(index,arg);
+	return ret;
 }
 
 
@@ -4634,25 +4620,43 @@ int slsDetector::loadImageToDetector(imageType index,string const fname){
 
 
 
+int slsDetector::sendImageToDetector(imageType index,short int arg[]){
 
+	int ret=FAIL;
+	int retval;
+	int fnum=F_LOAD_IMAGE;
+	char mess[100];
 
+#ifdef VERBOSE
+	std::cout<< std::endl<< "Sending image to detector " << std::endl;
+#endif
 
+	if (thisDetector->onlineFlag==ONLINE_FLAG) {
+		if (controlSocket) {
+			if  (controlSocket->Connect()>=0) {
+				controlSocket->SendDataOnly(&fnum,sizeof(fnum));
+				controlSocket->SendDataOnly(&index,sizeof(index));
+				controlSocket->SendDataOnly(arg,sizeof(arg));
+				controlSocket->ReceiveDataOnly(&ret,sizeof(ret));
+				if (ret!=FAIL)
+					controlSocket->ReceiveDataOnly(&retval,sizeof(retval));
+				else {
+					controlSocket->ReceiveDataOnly(mess,sizeof(mess));
+					std::cout<< "Detector returned error: " << mess << std::endl;
+				}
+				controlSocket->Disconnect();
+				if (ret==FORCE_UPDATE)
+					updateDetector();
+			}
 
+		}
+	}
+	if (ret==FAIL) {
+		std::cout<< "failed " << std::endl;
+	}
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+	return ret;
+}
 
 
 
@@ -4822,10 +4826,10 @@ int slsDetector::writeConfigurationFile(ofstream &outfile){
 
   switch (thisDetector->myDetectorType) {
   case GOTTHARD:
-    names[3]="outdir";
-    names[4]="clientip";
-    names[5]="clientmac";
-    names[6]="servermac";
+    names[6]="outdir";
+    names[7]="clientip";
+    names[8]="clientmac";
+    names[9]="servermac";
     nvar=10;
     break;
   default:
@@ -5434,47 +5438,63 @@ int slsDetector::saveSettingsFile(string fname, int imod) {
 
 
 int slsDetector::testFunction(int times) {
-  int val = 0,i,oldval=0;
-  runStatus s;
-  
-  
-  for(i=0;i<times;i++){
-    std::cout<<std::endl<<dec<<i+1<<": \t";
-    usleep(2000000);
-    startAcquisition();
-    s = getRunStatus();
-    if(s==IDLE){
-      std::cout<<"NOTTT WORKED"<<std::endl;
-      exit(-1);
-    }
-    else if (s==RUNNING){
-      while(s==RUNNING){
-	usleep(20);
-	val=readRegister(0x25);
-	if(val!=oldval)
-	  std::cout<<hex<<val<<"\t";
-	if(val){
-	  if((val&0x100)||(val&0x200)||(val&0x400))
-	    s = getRunStatus();
-	  else{
-	    std::cout<<"\nStuck status.Exit\n";
-	    exit(-1);
-	  }
-	}
-	else
-	  break;
-	oldval=val;
-      }
-    }
-    else{
-      std::cout<<"\nWeird Status.Exit\n";
-      exit(-1);
-    }
-  }
-  std::cout<<std::endl;
-  return 0;
-}
+	int i,count=0;
+	runStatus s;
+	short int dataVals[thisDetector->nChans*thisDetector->nChips];
 
+	for(i=0;i<times;i++){
+		std::cout<<std::endl<<dec<<i+1<<": \t";
+		//usleep(2000000);
+		startAcquisition();
+		s = getRunStatus();
+		if(s==IDLE){
+			s = getRunStatus();
+			if(s==IDLE)
+				std::cout<<"IDLE"<<std::endl;
+			//exit(-1);
+		}
+		else if (s==RUNNING){
+			count=0;
+			while(s==RUNNING){
+				count++;
+				if(count==3){
+					std::cout<<"STUCK"<<std::endl;
+					exit(-1);
+				}
+				usleep(2);
+				//val=readRegister(0x25);
+				s = getRunStatus();
+			}
+		}
+		else{
+			std::cout<<"\nWeird Status.Exit\n";
+			exit(-1);
+		}
+		system("rm ~/wORKSPACE/scratch/run*  ");
+		//system("more ~/wORKSPACE/scratch/run*  ");
+		usleep(1000000);
+
+		setFileIndex(0);
+	    readAll();
+	    processData(1);
+
+
+		if(readDataFile("/home/l_maliakal_d/wORKSPACE/scratch/run_1.raw",dataVals)){
+			std::cout<< "Could not open file "<< std::endl;
+			exit(-1);
+		}
+
+		for(int j=1277;j< (thisDetector->nChans*thisDetector->nChips);j++)
+			cout<<"\t"<<j<<":"<<dataVals[j];
+
+		if(dataVals[1278]!=2558){
+			std::cout<< "DATA ERROR!! "<< std::endl;
+			exit(-1);
+		}
+	}
+	std::cout<<std::endl;
+	return 0;
+}
 
 
 
@@ -5505,6 +5525,27 @@ masterFlags  slsDetector::setMaster(masterFlags flag) {
 	  std::cout<< "Detector returned error: " << mess << std::endl;
 	} else {
 	  controlSocket->ReceiveDataOnly(&retval,sizeof(retval)); 
+		system("rm ~/wORKSPACE/scratch/run*  ");
+		//system("more ~/wORKSPACE/scratch/run*  ");
+		usleep(1000000);
+
+		setFileIndex(0);
+	    readAll();
+	    processData(1);
+
+
+		if(readDataFile("/home/l_maliakal_d/wORKSPACE/scratch/run_1.raw",dataVals)){
+			std::cout<< "Could not open file "<< std::endl;
+			exit(-1);
+		}
+
+		for(int j=1277;j< (thisDetector->nChans*thisDetector->nChips);j++)
+			cout<<"\t"<<j<<":"<<dataVals[j];
+
+		if(dataVals[1278]!=2558){
+			std::cout<< "DATA ERROR!! "<< std::endl;
+			exit(-1);
+		}
 	}
 	controlSocket->Disconnect();
 	if (ret==FORCE_UPDATE)

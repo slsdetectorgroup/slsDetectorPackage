@@ -78,7 +78,7 @@ int main(int argc, char *argv[])
   } else {
 #ifdef GET
     cout << "Wrong usage - should be: "<< argv[0] << "[id:/id-]channel" << endl;
-    cout << slsDetectorCommand::helpLine(argc-1, argv, action);
+    //  cout << slsDetectorCommand::helpLine(argc-1, argv, action);
     cout << endl;
     return -1;
 #endif
@@ -86,7 +86,7 @@ int main(int argc, char *argv[])
 #ifdef PUT
   if (argc<3) {
     cout << "Wrong usage - should be: "<< argv[0] << "[id:/id-]channel arg" << endl;
-    cout << slsDetectorCommand::helpLine(argc-1, argv+1, action);
+    //  cout << slsDetectorCommand::helpLine(argc-1, argv+1, action);
     cout << endl;
     return -1;
   }  
@@ -101,7 +101,7 @@ int main(int argc, char *argv[])
 #ifdef PUT
   if (argc<3) {
     cout << "Wrong usage - should be: "<< argv[0] <<" " << argv[1]<< "  arg" << endl;
-    cout << slsDetectorCommand::helpLine(argc-1, argv+1, action);
+    //cout << slsDetectorCommand::helpLine(argc-1, argv+1, action);
     cout << endl;
     return -1;
   }  

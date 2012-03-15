@@ -868,7 +868,7 @@ string slsDetectorCommand::cmdRemove(int narg, char *args[], int action){
  
     
   ostringstream os;
-  int ivar, ival;
+  int ival;//ivar, 
   string var=string(args[0]);
   
   if (action==HELP_ACTION) {
@@ -901,7 +901,7 @@ string slsDetectorCommand::cmdHostname(int narg, char *args[], int action){
   } 
 
   ostringstream os;
-  int ivar, ival;
+  int ivar;//, ival;
   string var=string(args[0]);
   char hostname[1000];
   
@@ -960,7 +960,7 @@ string slsDetectorCommand::cmdId(int narg, char *args[], int action){
   ostringstream os;
   int ivar, ival;
   string var=string(args[0]);
-  char answer[1000];
+  // char answer[1000];
   
 
   size_t p=string(args[0]).find(':');
@@ -1274,6 +1274,9 @@ string slsDetectorCommand::helpFileIndex(int narg, char *args[], int action){
 
 string slsDetectorCommand::cmdFlatField(int narg, char *args[], int action){
 
+  if (action==HELP_ACTION) {
+    return helpFlatField(narg, args, action);
+  } 
   string sval;
 
   if (string(args[0])==string("ffdir")) {
@@ -1294,7 +1297,7 @@ string slsDetectorCommand::cmdFlatField(int narg, char *args[], int action){
       myDet->setFlatFieldCorrection(sval);
       return string(myDet->getFlatFieldCorrectionFile());
       
-    }  else if (action==GET_ACTION) {
+    }  else {// if (action==GET_ACTION) {
       if (narg>1)
 	sval=string(args[1]);
       else
@@ -1310,8 +1313,8 @@ string slsDetectorCommand::cmdFlatField(int narg, char *args[], int action){
 	return string("none");
       }
     }
-  } else
-    return string("could not decode flat field action ")+cmd;
+  }
+  return string("could not decode flat field action ")+cmd;
   
 }
  
@@ -1349,6 +1352,9 @@ string slsDetectorCommand::helpFlatField(int narg, char *args[], int action){
 
 string slsDetectorCommand::cmdRateCorr(int narg, char *args[], int action){
 
+  if (action==HELP_ACTION) {
+    return helpRateCorr(narg, args, action);
+  } 
   float fval;
   char answer[1000];
 
@@ -1383,7 +1389,9 @@ string slsDetectorCommand::cmdBadChannels(int narg, char *args[], int action){
   
   string sval;
 
-
+  if (action==HELP_ACTION) {
+    return helpBadChannels(narg, args, action);
+  } 
   if (action==PUT_ACTION) {
       sval=string(args[1]);
       if (sval=="none")
@@ -1429,6 +1437,9 @@ string slsDetectorCommand::helpBadChannels(int narg, char *args[], int action){
  
 string slsDetectorCommand::cmdAngConv(int narg, char *args[], int action){ 
 
+  if (action==HELP_ACTION) {
+    return helpAngConv(narg, args, action);
+  } 
   string sval;
   char answer[1000];
   float fval;
@@ -1796,7 +1807,7 @@ string slsDetectorCommand::cmdScans(int narg, char *args[], int action) {
       cout << fmin << " " << fmax << " " << fstep << endl;
 #endif
       
-      ns=(fmax-fmin)/fstep;
+      ns=(int)((fmax-fmin)/fstep);
       if (ns<0)
 	ns=-1*ns;
       
@@ -1897,7 +1908,7 @@ string slsDetectorCommand::cmdPort(int narg, char *args[], int action) {
 
   if (action==HELP_ACTION)
     return helpPort(narg,args,action);
-  int ret, val;
+  int val; //ret,
   char ans[1000];
   portType index;
 
@@ -1954,7 +1965,7 @@ string slsDetectorCommand::cmdLock(int narg, char *args[], int action) {
   if (action==HELP_ACTION)
     return helpLock(narg,args,action);
   
-  int val, ret;
+  int val;//, ret;
   char ans[1000];
   
   myDet->setOnline(ONLINE_FLAG);
@@ -2092,7 +2103,7 @@ string slsDetectorCommand::cmdDetectorSize(int narg, char *args[], int action) {
     return helpDetectorSize(narg,args,action);
   int ret, val=-1;
   char ans[1000];
-  portType index;
+  //  portType index;
 
   if (action==PUT_ACTION) {
     if (cmd=="maxmod") 
@@ -2146,9 +2157,9 @@ string slsDetectorCommand::cmdSettings(int narg, char *args[], int action) {
 
   if (action==HELP_ACTION)
     return helpSettings(narg,args,action);
-  int ret, val=-1;
+  int val=-1;//ret, 
   char ans[1000];
-  portType index;
+  //  portType index;
 
  
 
@@ -2628,7 +2639,7 @@ string slsDetectorCommand::helpDAC(int narg, char *args[], int action) {
 string slsDetectorCommand::cmdADC(int narg, char *args[], int action) {
 
   dacIndex adc;
-  float val=-1;
+  //  float val=-1;
   char answer[1000];
   
   if (action==HELP_ACTION)
@@ -2727,8 +2738,8 @@ string slsDetectorCommand::cmdTimer(int narg, char *args[], int action) {
     else
       return string("cannot scan timer value ")+string(args[1]);
     if (index==ACQUISITION_TIME || index==FRAME_PERIOD || index==DELAY_AFTER_TRIGGER)
-      t=val*1E+9;
-    else t=val;
+      t=(int64_t)(val*1E+9);
+    else t=(int64_t)val;
   }
   
   

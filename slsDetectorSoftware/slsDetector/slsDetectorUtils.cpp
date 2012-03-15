@@ -215,10 +215,10 @@ int slsDetectorUtils::getVariablesFromFileName(string fname, int &index, int &p_
     //return i;
     s=fname.substr(0,uscore);
   }
-#ifdef VERBOSE 
   else
     cout << "******************************** cannot parse file index" << endl;
   
+#ifdef VERBOSE 
   cout << s << endl;
 #endif
 
@@ -235,13 +235,11 @@ int slsDetectorUtils::getVariablesFromFileName(string fname, int &index, int &p_
 #endif
     s=fname.substr(0,uscore);
   }
-#ifdef VERBOSE 
   else 
     cout << "******************************** cannot parse position index" << endl;
 
+#ifdef VERBOSE 
   cout << s << endl;
-
-
 #endif
 
 
@@ -259,10 +257,10 @@ int slsDetectorUtils::getVariablesFromFileName(string fname, int &index, int &p_
 #endif
     s=fname.substr(0,uscore);
   }
-#ifdef VERBOSE
   else 
     cout << "******************************** cannot parse scan varable 1" << endl;
 
+#ifdef VERBOSE
   cout << s << endl;
 
 
@@ -279,10 +277,10 @@ int slsDetectorUtils::getVariablesFromFileName(string fname, int &index, int &p_
     cout << "******************************** scan variable 0 is " << sv0 << endl;
 #endif
   } 
-#ifdef VERBOSE
   else 
     cout << "******************************** cannot parse scan varable 0" << endl;
 
+#ifdef VERBOSE
 #endif
 
 
@@ -482,12 +480,12 @@ float slsDetectorUtils::getAngularConversionParameter(angleConversionParameter c
 int slsDetectorUtils::readAngularConversion(string fname, int nmod, angleConversionConstant *angOff) {
 
   ifstream infile;
-  int mod;
-  float center, ecenter;
-  float r_conv, er_conv;
-  float off, eoff;
+  //  int mod;
+  // float center, ecenter;
+  // float r_conv, er_conv;
+  // float off, eoff;
   string ss;
-  int interrupt=0;
+  // int interrupt=0;
 
   //" module %i center %E +- %E conversion %E +- %E offset %f +- %f \n"
 #ifdef VERBOSE
@@ -621,7 +619,7 @@ int  slsDetectorUtils::addToMerging(float *p1, float *v1, float *e1, float *mp, 
 
   float binmi=-180., binma;
   int ibin=0;
-  int imod;
+  //  int imod;
   float ang=0;
 
 
@@ -725,8 +723,8 @@ int  slsDetectorUtils::addToMerging(float *p1, float *v1, float *e1, float *mp, 
 
 
 
-  int ibin=0;
-  int imod;
+  //  int ibin=0;
+  //  int imod;
   
   int del=0;
 
@@ -759,7 +757,7 @@ int slsDetectorUtils::writeDataFile(string fname, int nch, float *data, float *e
 
 
   ofstream outfile;
-  int idata;
+  // int idata;
   if (data==NULL)
     return FAIL;
 
@@ -873,11 +871,11 @@ int slsDetectorUtils::readDataFile(int nch, string fname, float *data, float *er
 
 
   ifstream infile;
-  int ichan, iline=0;
-  int interrupt=0;
-  float fdata, ferr, fang;
+  int  iline=0;//ichan,
+  //int interrupt=0;
+  //float fdata, ferr, fang;
   int maxchans;
-  int ich;
+  //int ich;
   string str;
 
 
@@ -901,7 +899,7 @@ int slsDetectorUtils::readDataFile(int nch, string fname, float *data, float *er
 int slsDetectorUtils::readDataFile(int nch, ifstream &infile, float *data, float *err, float *ang, char dataformat, int offset){
 
 
-  int ichan, iline=0;
+  int  ichan,iline=0; 
   int interrupt=0;
   float fdata, ferr, fang;
   int maxchans;
@@ -970,8 +968,8 @@ int slsDetectorUtils::readDataFile(int nch, ifstream &infile, float *data, float
 int slsDetectorUtils::readDataFile(string fname, int *data, int nch){
 
   ifstream infile;
-  int ichan, idata, iline=0;
-  int interrupt=0;
+  int  iline=0;//ichan, idata,
+  //int interrupt=0;
   string str;
 
 #ifdef VERBOSE
@@ -1029,8 +1027,8 @@ int slsDetectorUtils::readDataFile(ifstream &infile, int *data, int nch, int off
 int slsDetectorUtils::readDataFile(string fname, short int *data, int nch){
 
   ifstream infile;
-  int ichan, iline=0;
-  int interrupt=0;
+  int iline=0;//ichan, 
+  //int interrupt=0;
   string str;
 
 #ifdef VERBOSE
@@ -1639,7 +1637,7 @@ void* slsDetectorUtils::processData(int delflag) {
   float *ffcdata=NULL, *ffcerr=NULL;
   float *ang=NULL;
   float bs=0.004;
-  int imod;
+  // int imod;
   int nb;
   int np;
   detectorData *thisData;
@@ -1793,7 +1791,7 @@ void* slsDetectorUtils::processData(int delflag) {
 
 	    
 	      pthread_mutex_lock(&mp);
-	      if (currentPositionIndex==(*numberOfPositions) && posfinished==1 && queuesize==1) {
+	      if (currentPositionIndex>=(*numberOfPositions) && posfinished==1 && queuesize==1) {
 
 
 	    //  if ((currentPositionIndex>=(*numberOfPositions)) || (currentPositionIndex==0)) {
@@ -1808,7 +1806,7 @@ void* slsDetectorUtils::processData(int delflag) {
 	      //	      pthread_mutex_lock(&mp);
 	      // if (currentPositionIndex==(*numberOfPositions) && posfinished==1 && queuesize==1) {
 		
-		cout << "PPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPP Incrementing positon index " << endl;
+	      //cout << "PPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPP Incrementing positon index " << endl;
 
 
 

@@ -184,7 +184,7 @@ int go_to_position(float p) {
   //"caputq X04SA-ES2-TH2:RO p"
   //cawait -nounit  -timeout 3600 X04SA-ES2-TH2:RO.DMOV '==1'
 
-  return p;
+    return (int)p;
 }
 
 /* moves the encoder to position p without waiting */
@@ -211,13 +211,13 @@ int go_to_position_no_wait(float p) {
 #endif
   //"caputq X04SA-ES2-TH2:RO p"
 
-  return p;
+    return (int)p;
 
 
 
 
   pos=p;
-  return pos;
+  return (int)pos;
 }
 
 

@@ -2629,9 +2629,9 @@ int slsDetector::setThresholdEnergy(int e_eV,  int imod, detectorSettings isetti
 	} else{
 	  controlSocket->ReceiveDataOnly(&retval,sizeof(retval));
 	  thisDetector->currentSettings=(detectorSettings)retval;
-	  //#ifdef VERBOSE
+#ifdef VERBOSE
 	  std::cout<< "Settings are "<< retval << std::endl;
-	  //#endif
+#endif
     }
 	controlSocket->Disconnect();
 	if (ret==FORCE_UPDATE)
@@ -2774,22 +2774,25 @@ detectorSettings slsDetector::setSettings( detectorSettings isettings, int imod)
 
 int slsDetector::updateDetectorNoWait() {
 
-  int ret=OK;
+  // int ret=OK;
   enum detectorSettings t;
   int thr, n, nm;
-  int it;
-  int64_t retval, tns=-1;
+  // int it;
+  int64_t retval;// tns=-1;
   char lastClientIP[INET_ADDRSTRLEN];
 
   switch(thisDetector->myDetectorType){
   case GOTTHARD:
     n = 	controlSocket->ReceiveDataOnly(lastClientIP,sizeof(lastClientIP));
-    //cout << "Updating detector last modified by " << lastClientIP << endl; commented out by dhanya for now
+#ifdef VERBOSE
+    cout << "Updating detector last modified by " << lastClientIP << endl;// commented out by dhanya for now
+#endif
     break;
   default:
     n = 	controlSocket->ReceiveDataOnly(lastClientIP,sizeof(lastClientIP));
-    cout << "Updating detector last modified by " << lastClientIP << endl;
-
+#ifdef VERBOSE
+   cout << "Updating detector last modified by " << lastClientIP << endl;
+#endif
     n = 	controlSocket->ReceiveDataOnly(&nm,sizeof(nm));
     thisDetector->nMod[X]=nm;
     n = 	controlSocket->ReceiveDataOnly( &nm,sizeof(nm));
@@ -3021,32 +3024,33 @@ int* slsDetector::getDataFromDetector(){
 #ifdef VERBOSE
 	cout << "ret=" << ret << endl;
 #endif
-	if (ret!=OK) {
-		n= controlSocket->ReceiveDataOnly(mess,sizeof(mess));
-		if (ret==FAIL) {
-			thisDetector->stoppedFlag=1;
-			std::cout<< "Detector returned: " << mess << " " << n << std::endl;
-		} else {
-			;
-#ifdef VERBOSE
-			std::cout<< "Detector successfully returned: " << mess << " " << n << std::endl;
-#endif	
-		}
-		delete [] retval;
-		retval=NULL;
-	} else {
-		n=controlSocket->ReceiveDataOnly(retval,thisDetector->dataBytes);
 
+	if (ret!=OK) {
+	  n= controlSocket->ReceiveDataOnly(mess,sizeof(mess));
+	  if (ret==FAIL) {
+	    thisDetector->stoppedFlag=1;
+	    std::cout<< "Detector returned: " << mess << " " << n << std::endl;
+	  } else {
+	    ;
 #ifdef VERBOSE
-		std::cout<< "Received "<< n << " data bytes" << std::endl;
+	    std::cout<< "Detector successfully returned: " << mess << " " << n << std::endl;
+#endif	
+	  }
+	  delete [] retval;
+	  retval=NULL;
+	} else {
+	  n=controlSocket->ReceiveDataOnly(retval,thisDetector->dataBytes);
+	  
+#ifdef VERBOSE
+	  std::cout<< "Received "<< n << " data bytes" << std::endl;
 #endif
-		if (n!=thisDetector->dataBytes) {
-			std::cout<< "wrong data size received: received " << n << " but expected " << thisDetector->dataBytes << std::endl;
-			thisDetector->stoppedFlag=1;
-			ret=FAIL;
-			delete [] retval;
-			retval=NULL;
-		}
+	  if (n!=thisDetector->dataBytes) {
+	    std::cout<< "wrong data size received: received " << n << " but expected " << thisDetector->dataBytes << std::endl;
+	    thisDetector->stoppedFlag=1;
+	    ret=FAIL;
+	    delete [] retval;
+	    retval=NULL;
+	  }
 	}
 
 	return retval;
@@ -3077,7 +3081,7 @@ int* slsDetector::readAll(){
 #ifdef VERBOSE
       std::cout<< i << std::endl;
 #else
-      std::cout << "-" ;
+      std::cout << "-" << flush ;
 #endif
       dataQueue.push(retval);
     }
@@ -3138,7 +3142,7 @@ int* slsDetector::startAndReadAll(){
 #ifdef VERBOSE
       std::cout<< i << std::endl;
 #else
-      std::cout<< "-" ;
+      std::cout<< "-" << flush;
 #endif
       dataQueue.push(retval);
   }
@@ -3345,7 +3349,7 @@ int slsDetector::setPort(portType index, int num){
 
   int fnum=F_SET_PORT;
   int retval;
-  uint64_t ut;
+  //  uint64_t ut;
   char mess[100];
   int ret=FAIL;
   int n=0;
@@ -3808,7 +3812,9 @@ int slsDetector::executeTrimming(trimMode mode, int par1, int par2, int imod){
     if (controlSocket) {
   if  (controlSocket->Connect()>=0) {
     controlSocket->SendDataOnly(&fnum,sizeof(fnum));
+#ifdef VERBOSE
     std::cout<< "sending mode bytes= "<<  controlSocket->SendDataOnly(&mode,sizeof(mode)) << std::endl;
+#endif
     controlSocket->SendDataOnly(arg,sizeof(arg));
     controlSocket->ReceiveDataOnly(&ret,sizeof(ret));
     if (ret==FAIL) {
@@ -4485,17 +4491,17 @@ int slsDetector::setAngularConversion(string fname) {
   if (fname=="") {
     thisDetector->correctionMask&=~(1<< ANGULAR_CONVERSION);
     //strcpy(thisDetector->angConvFile,"none");
-    //#ifdef VERBOSE
+#ifdef VERBOSE
      std::cout << "Unsetting angular conversion" <<  std::endl;
-    //#endif
+#endif
   } else {
     if (fname=="default") {
       fname=string(thisDetector->angConvFile);
     }
     
-    //#ifdef VERBOSE
-     std::cout << "Setting angular conversion to" << fname << std:: endl;
-    //#endif
+#ifdef VERBOSE
+    std::cout << "Setting angular conversion to" << fname << std:: endl;
+#endif
     if (readAngularConversion(fname)>=0) {
       thisDetector->correctionMask|=(1<< ANGULAR_CONVERSION);
       strcpy(thisDetector->angConvFile,fname.c_str());
@@ -4673,8 +4679,8 @@ int slsDetector::readConfigurationFile(string const fname){
     string ans;
     string str;
     ifstream infile;
-    int iargval;
-    int interrupt=0;
+    //    int iargval;
+    // int interrupt=0;
     char *args[100];
     for (int ia=0; ia<100; ia++) {
       args[ia]=new char[1000];
@@ -4683,7 +4689,9 @@ int slsDetector::readConfigurationFile(string const fname){
     
     string sargname, sargval;
     int iline=0;
+#ifdef VERBOSE
     std::cout<< "config file name "<< fname << std::endl;
+#endif
     infile.open(fname.c_str(), ios_base::in);
     if (infile.is_open()) {
       iline=readConfigurationFile(infile);

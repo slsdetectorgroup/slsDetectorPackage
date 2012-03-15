@@ -10,21 +10,31 @@ GUIDIR=$(WD)/mythenGUI
 LIBDOCDIR=$(WD)/slsDetectorSoftware
 
 
-all: lib mythenClient gotthardClient mythenGUI 
 
+
+#FLAGS=-DVERBOSE
+
+
+
+all: lib  slsDetectorClient
+# mythenGUI 
 
 lib:
-	cd $(LIBRARYDIR) && $(MAKE) lib
+	cd $(LIBRARYDIR) && $(MAKE) lib FLAGS=$(FLAGS)
 
 Tlib:
 	cd $(TLIBRARYDIR) && $(MAKE) lib
 
-mythenClient: lib
-	cd $(CLIENTDIR) && $(MAKE) mythen
-	mv $(CLIENTDIR)/bin/* bin/
+#mythenClient: lib
+#	cd $(CLIENTDIR) && $(MAKE) mythen
+#	mv $(CLIENTDIR)/bin/* bin/
 
-gotthardClient: lib
-	cd $(CLIENTDIR) && $(MAKE) gotthard
+#gotthardClient: lib
+#	cd $(CLIENTDIR) && $(MAKE) gotthard
+#	mv $(CLIENTDIR)/bin/* bin/
+
+slsDetectorClient: lib
+	cd  $(CLIENTDIR) && $(MAKE)  FLAGS=$(FLAGS)
 	mv $(CLIENTDIR)/bin/* bin/
 
 mythenGUI: lib Tlib 
@@ -33,7 +43,7 @@ mythenGUI: lib Tlib
 	mv $(GUIDIR)/bin/* bin/
 
 clean:
-	rm bin/*
+	rm bin/sls_detector_*
 	cd $(LIBRARYDIR) && $(MAKE) clean
 	cd $(TLIBRARYDIR) && $(MAKE) clean
 	cd $(CLIENTDIR) && $(MAKE) clean

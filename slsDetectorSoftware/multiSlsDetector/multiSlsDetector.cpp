@@ -1457,8 +1457,10 @@ int multiSlsDetector::setFlatFieldCorrection(string fname){
 	  xmed[im]=data[ichan];
 	  nmed++;
         } else {
-	  badlist[nbad]=ichdet;
-	  nbad++;
+	  if (nbad<MAX_BADCHANS) {
+	    badlist[nbad]=ichdet;
+	    nbad++;
+	  }
 	}
       }
       if (detectors[idet]) 

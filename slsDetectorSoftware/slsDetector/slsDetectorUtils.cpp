@@ -1223,6 +1223,9 @@ void  slsDetectorUtils::acquire(int delflag){
 #endif
 
 
+  posfinished=0;
+
+
   void *status;
   int trimbit;
 
@@ -1453,18 +1456,39 @@ void  slsDetectorUtils::acquire(int delflag){
        
        if (*stoppedFlag==0) {
 
+	 if (*correctionMask&(1<< ANGULAR_CONVERSION)) {
+	   pthread_mutex_lock(&mp);
+	   currentPosition=get_position();  
+	   posfinished=0;
+	   pthread_mutex_unlock(&mp);
+	 }
+
+
 	 //	 cout << "starting???? " << endl;
 	 startAndReadAll();
-	 
-	 if (*correctionMask&(1<< ANGULAR_CONVERSION))
-	   currentPosition=get_position();  
+
+	 pthread_mutex_lock(&mp);
+	 posfinished=1;
+	 pthread_mutex_unlock(&mp);
+
+#ifdef VERBOSE	
+	 cout << "returned " << endl;
+	 pthread_mutex_lock(&mp);
+	 cout << "AAAA queue size " << dataQueue.size()<< endl;
+	 pthread_mutex_unlock(&mp);
+#endif
+
 	 
 	 if (*correctionMask&(1<< I0_NORMALIZATION))
 	   currentI0=get_i0()-currentI0;
 	 
 	 ////////////////// Reput in in case of unthreaded processing
-// 	 if (*threadedProcessing==0)
-// 	   processData(delflag); 
+ 	 if (*threadedProcessing==0){
+#ifdef VERBOSE
+	   cout << "start unthreaded process data " << endl;
+#endif
+ 	   processData(delflag); 
+	 }
 	 
 	 
        } else
@@ -1524,7 +1548,7 @@ void  slsDetectorUtils::acquire(int delflag){
       *fileIndex=startindex; 
     }
      } // loop on position finished
-
+  
   //script after
         if (*stoppedFlag==0) {
 	  if (*actionMask & (1 << scriptAfter)) {
@@ -1599,6 +1623,10 @@ void  slsDetectorUtils::acquire(int delflag){
 void* slsDetectorUtils::processData(int delflag) {
 
 
+#ifdef VERBOSE
+  std::cout<< " processing data - threaded mode " << *threadedProcessing << endl;
+#endif
+
   //cout << "thread mutex lock line 6505" << endl;
   pthread_mutex_lock(&mp);
   queuesize=dataQueue.size();
@@ -1606,7 +1634,7 @@ void* slsDetectorUtils::processData(int delflag) {
   //cout << "thread mutex unlock line 6505" << endl;
 
   int *myData;
-  float *fdata;
+  float *fdata=NULL;
   float *rcdata=NULL, *rcerr=NULL;
   float *ffcdata=NULL, *ffcerr=NULL;
   float *ang=NULL;
@@ -1620,9 +1648,6 @@ void* slsDetectorUtils::processData(int delflag) {
   string fname;
 
 
-#ifdef ACQVERBOSE
-  std::cout<< " processing data - threaded mode " << *threadedProcessing;
-#endif
 
   if (*correctionMask!=0) {
     ext=".dat";
@@ -1633,11 +1658,16 @@ void* slsDetectorUtils::processData(int delflag) {
     
     
     //  while( !dataQueue.empty() ) {
-    //cout << "thread mutex lock line 6539" << endl;
+    // cout << "thread mutex lock line 6539" << endl;
     pthread_mutex_lock(&mp);
     while((queuesize=dataQueue.size())>0) {
+      
+#ifdef VERBOSE
+      std::cout<< " queue size " << queuesize << endl;
+#endif
+
       pthread_mutex_unlock(&mp);
-      //cout << "thread mutex unlock line 6543" << endl;
+      //   cout << "thread mutex unlock line 6543" << endl;
       //queuesize=dataQueue.size();
 
       /** Pop data queue */
@@ -1674,6 +1704,7 @@ void* slsDetectorUtils::processData(int delflag) {
 	    rcerr=new float[getTotalNumberOfChannels()];
 	    rateCorrect(fdata,NULL,rcdata,rcerr);
 	    delete [] fdata;
+	    fdata=NULL;
 	  } else {
 	    rcdata=fdata;
 	    fdata=NULL;
@@ -1692,7 +1723,9 @@ void* slsDetectorUtils::processData(int delflag) {
 	    cout << "FF corr done " << endl;
 #endif
 	    delete [] rcdata;
+	    rcdata=NULL;
 	    if (rcerr)	    delete [] rcerr;
+	    rcerr=NULL;
 	  } else {
 	    ffcdata=rcdata;
 	    ffcerr=rcerr;
@@ -1701,62 +1734,179 @@ void* slsDetectorUtils::processData(int delflag) {
 	  }
 	  
 	  if (*correctionMask&(1<< ANGULAR_CONVERSION)) {
-
+#ifdef VERBOSE
+	    cout << "**************Current position index is " << currentPositionIndex << endl;
+#endif
 	    if (currentPositionIndex<=1) {     
 	      if (*binSize>0)
 		bs=*binSize;
 	    else
-		*binSize=bs;
+	      *binSize=bs;
 	      
 	      
-	      nb=(int)(360./bs);
+	      nb=(int)(360./bs)+1;
 	      
+#ifdef VERBOSE
+	      cout << "creating merging arrays "<<  nb << endl;
+#endif
 	      mergingBins=new float[nb];
 	      mergingCounts=new float[nb];
 	      mergingErrors=new float[nb];
 	      mergingMultiplicity=new int[nb];
-	      
+      
+#ifdef VERBOSE
+	      cout << mergingBins<< " "<<  mergingCounts<< " "<<  mergingErrors<< " "<<  mergingMultiplicity<< " "  << endl;
+#endif
+
+#ifdef VERBOSE
+	      cout << "reset merging " << endl;
+#endif
 	      resetMerging(mergingBins, mergingCounts,mergingErrors, mergingMultiplicity, bs);
 	    }
 	    /* it would be better to create an ang0 with 0 encoder position and add to merging/write to file simply specifying that offset so that when it cycles writing the data or adding to merging it also calculates the angular position */
 	    
+#ifdef VERBOSE
+	    cout << "convert angles" << endl;
+#endif
 	    ang=convertAngles(currentPosition);
 
 	    if (*correctionMask!=0) {
 	      if (*numberOfPositions>1) {
 		//uses static function?!?!?!?
 		//writeDataFile (fname+string(".dat"), getTotalNumberOfChannels(), ffcdata, ffcerr,ang);
+#ifdef VERBOSE
+		cout << "Write angular converted file for position " << currentPositionIndex << endl;
+#endif
+
 		writeDataFile (fname+string(".dat"), ffcdata, ffcerr,ang);
 	      }
 	    }
+#ifdef VERBOSE
+	    cout << "add to merging "<< currentPositionIndex << endl;
+#endif
 	    addToMerging(ang, ffcdata, ffcerr, mergingBins, mergingCounts,mergingErrors, mergingMultiplicity, getTotalNumberOfChannels(), bs, *angDirection, *correctionMask, badChannelMask );
 	    
-	    if ((currentPositionIndex==*numberOfPositions) || (currentPositionIndex==0)) {
+#ifdef VERBOSE
+	    cout << currentPositionIndex << " " << (*numberOfPositions) << endl;
+	     
+#endif
+
+	    
+	      pthread_mutex_lock(&mp);
+	      if (currentPositionIndex==(*numberOfPositions) && posfinished==1 && queuesize==1) {
+
+
+	    //  if ((currentPositionIndex>=(*numberOfPositions)) || (currentPositionIndex==0)) {
+#ifdef VERBOSE
+	      cout << "finalize merging " << currentPositionIndex<< endl;
+#endif
 	      np=finalizeMerging(mergingBins, mergingCounts,mergingErrors, mergingMultiplicity, bs);
 	      /** file writing */
-	      currentPositionIndex++;
+
+
+
+	      //	      pthread_mutex_lock(&mp);
+	      // if (currentPositionIndex==(*numberOfPositions) && posfinished==1 && queuesize==1) {
+		
+		cout << "PPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPP Incrementing positon index " << endl;
+
+
+
+		currentPositionIndex++;
+		// }
+	      pthread_mutex_unlock(&mp);
+
+	      
 	      fname=createFileName();
-	      if (*correctionMask!=0) {
+	      
+	      
+//if (*correctionMask!=0) { ///////is this necessary?!?!?!?
 		//uses static function?!?!?!?
+#ifdef VERBOSE
+		cout << "writing merged data file" << endl;
+#endif
 		writeDataFile (fname+string(".dat"),np,mergingCounts, mergingErrors, mergingBins,'f');
-	      }
+#ifdef VERBOSE
+		cout << " done" << endl;
+#endif
+		//}
+
+
+// 	      if ((*numberOfPositions)==0)
+// 		currentPositionIndex--;
+
+
 	      if (delflag) {
+#ifdef VERBOSE
+	      cout << mergingBins<< " " <<  mergingCounts<< " " <<  mergingErrors << " " <<  mergingMultiplicity << " " << endl;
+#endif
+
+	      if (mergingBins) {
+#ifdef VERBOSE
+		cout << "deleting merged bins "<< mergingBins << " size " << sizeof(mergingBins) << endl;
+#endif
 		delete [] mergingBins;
+		mergingBins=NULL;
+	      }
+	      if (mergingCounts) {
+#ifdef VERBOSE
+		cout << "deleting merged counts "<< mergingCounts << endl;
+#endif
 		delete [] mergingCounts;
+		mergingCounts=NULL;
+	      }
+	      if (mergingErrors) {
+#ifdef VERBOSE
+		cout << "deleting merged errors "<< mergingErrors  << endl;
+#endif
 		delete [] mergingErrors;
+		mergingErrors=NULL;
+	      }
+	      if (mergingMultiplicity){
+#ifdef VERBOSE
+		cout << "deleting merged multiplicity "<<mergingMultiplicity  << endl;
+#endif
 		delete [] mergingMultiplicity;
-	      } else {
+		mergingMultiplicity=NULL;
+	      }
+#ifdef VERBOSE
+	      cout << "deleting merged data done " << endl;
+	      //#ifdef VERBOSE
+	      cout << mergingBins<< " " <<  mergingCounts<< " " <<  mergingErrors << " " <<  mergingMultiplicity << " " << endl;
+	      //#endif
+
+#endif
+		} else {
 		thisData=new detectorData(mergingCounts,mergingErrors,mergingBins,getCurrentProgress(),(fname+string(ext)).c_str(),np);
 		finalDataQueue.push(thisData);
 	      }
-	    }
+	      pthread_mutex_lock(&mp);
+	      }
+	      pthread_mutex_unlock(&mp);
+	      
+
+#ifdef VERBOSE
+	    cout << "delete data" << ffcdata << endl;
+#endif	    
 	    
 	    if (ffcdata)
 	      delete [] ffcdata;
-	    if (ffcerr)
-	      delete [] ffcerr;
+	      ffcdata=NULL;
+
+#ifdef VERBOSE
+	      cout << "delete err " << ffcerr << endl;
+#endif	    
+	      if (ffcerr) 
+		delete [] ffcerr;
+	      ffcerr=NULL;
+#ifdef VERBOSE
+	      cout << "delete ang " << ang <<  endl;
+#endif	    
 	    if (ang)
 	      delete [] ang;
+	    ang=NULL;
+
+
 	  } else {
 	    if (*correctionMask!=0) {
 	      //uses static function?!?!?!?
@@ -1768,7 +1918,7 @@ void* slsDetectorUtils::processData(int delflag) {
 		delete [] ffcdata;
 	      if (ffcerr)
 		delete [] ffcerr;
-	      if (ang)
+	      if ( ang)
 		delete [] ang;
 	    } else {
 	      thisData=new detectorData(ffcdata,ffcerr,NULL,getCurrentProgress(),(fname+string(ext)).c_str(),getTotalNumberOfChannels());
@@ -1781,9 +1931,16 @@ void* slsDetectorUtils::processData(int delflag) {
 	cout << "Incrementing file index " << *fileIndex << endl;
 #endif
 
+#ifdef VERBOSE
+	cout << "delete data " << myData << endl;
+#endif
 
 	delete [] myData;
 	myData=NULL;
+#ifdef VERBOSE
+	cout << "Pop data queue " << *fileIndex << endl;
+#endif
+
 	dataQueue.pop(); //remove the data from the queue
 	pthread_mutex_lock(&mp);
 	queuesize=dataQueue.size();
@@ -1796,12 +1953,22 @@ void* slsDetectorUtils::processData(int delflag) {
       //  cout << "looping on dataque size" << endl;
 #endif
     }
-    //pthread_mutex_unlock(&mp);
-    //pthread_mutex_lock(&mp);
+    
+#ifdef VERBOSE
+    //   cout << "queue empty -mutex unlock line 1883" << endl;
+#endif
+    pthread_mutex_unlock(&mp);
+    pthread_mutex_lock(&mp);
     if (jointhread) {
-      pthread_mutex_unlock(&mp);
-      if (dataQueue.size()==0)
+      if (dataQueue.size()==0) {
+	pthread_mutex_unlock(&mp);
 	break;
+      }
+      
+#ifdef VERBOSE
+      cout << "data Queue size is " << dataQueue.size() << endl;
+#endif
+      pthread_mutex_unlock(&mp);
     } else {
 #ifdef VERBOSE
       //  cout << "waiting on jointhread  "<< jointhread << " " << (*threadedProcessing) << endl;

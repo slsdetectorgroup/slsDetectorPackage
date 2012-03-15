@@ -884,6 +884,10 @@ s
  /** sets when the acquisition is finished */
   int jointhread;
 
+ /** sets when the position is finished */
+  int posfinished;  
+
+
  /** data queue size */
   int queuesize;
 

@@ -5,16 +5,10 @@
 
 CROSS  = bfin-uclinux-
 CC    = $(CROSS)gcc
-
 CFLAGS += -Wall  -DMCB_FUNCS -DVERBOSE -DVERYVERBOSE #-DVIRTUAL
-
-#INCLUDES= /usr/src/kernels/2.6.18-238.12.1.el5-i686/include
-#/home/l_maliakal_d/bfin/blackfin-linux-dist/linux-2.6.x/include
-#/usr/include/asm/page.h
 
 
 PROGS= 		gotthardDetectorServer 
-
 INSTDIR= 	/tftpboot
 INSTMODE= 	0777
 
@@ -25,9 +19,6 @@ SRCS = server.c server_funcs.c communication_funcs.c firmware_funcs.c mcb_funcs.
 OBJS = $(SRCS:%.c=%.o) 
 
 
-#LDLIBS+= 	-lm 
-
-
 
 all:	clean $(PROGS) 
 
@@ -35,7 +26,7 @@ boot: $(OBJS)
 
 $(PROGS): $(OBJS)
 	echo $(OBJS)
-	$(CC) $(CFLAGS)  -o $@ $^ $(LDLIBS_$@) $(LDFLAGS_$@)
+	$(CC) $(CFLAGS) -o $@ $^ $(LDLIBS_$@) $(LDFLAGS_$@)
 
 
 install:	$(PROGS)
@@ -43,14 +34,11 @@ install:	$(PROGS)
 	$(INSTALL) -m $(INSTMODE) $(PROGS) $(INSTDIR)
 
 
-#CFLAGS+= 	-Wall -DC_ONLY -DMCB_FUNCS 
-#-DVERBOSE 
-#-DVERYVERBOSE 
-#-Werror
-
+romfs:
+	$(ROMFSINST)	/bin/$(PROGS) 
 
 clean:
-	rm -rf $(PROGS)  *.o
+	rm -rf $(PROGS)  *.o *.gdb
 
 
 

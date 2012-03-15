@@ -53,7 +53,7 @@
 //FIFO
 #define LOOK_AT_ME_REG   	  0x28<<11
 
-#define FIFO_DATA_REG_OFF     0x80<<11 ///////
+#define FIFO_DATA_REG_OFF     0x50<<11 ///////
 
 
 //to read back dac registers

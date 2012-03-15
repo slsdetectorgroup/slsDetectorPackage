@@ -10,11 +10,12 @@
 #include "trimming_funcs.h"
 
 
+
+
+
 // Global variables
 
 int (*flist[256])(int);
-
-
 
 #ifdef MCB_FUNCS
 extern const enum detectorType myDetectorType;
@@ -34,7 +35,7 @@ extern char thisClientIP[INET_ADDRSTRLEN];
 extern int differentClients;
 
 /* global variables for optimized readout */
-extern int *ram_values;
+extern unsigned int *ram_values;
 char *dataretval=NULL;
 int nframes, iframes, dataret;
 char mess[1000]; 
@@ -68,7 +69,7 @@ int init_detector( int b) {
 #ifdef MCB_FUNCS
   if (b) {
     initDetector();
-    printf("\ninitdetector done! \n");
+    printf("\n----initdetector done! new serverRdRR\n\n");
     testFpga();
     testRAM();
 
@@ -846,7 +847,7 @@ int read_register(int file_des) {
 
   if(ret!=FAIL){
 	  address=(addr<<11);
-	  if(addr==0x80)
+	  if(addr==0x50)
 		  retval=bus_r16(address);
 	  else
 		  retval=bus_r(address);
@@ -1931,7 +1932,7 @@ int read_frame(int file_des) {
       sendDataOnly(file_des,&dataret,sizeof(dataret));
       sendDataOnly(file_des,dataretval,dataBytes);
 #ifdef VERBOSE
-      printf("sent %d bytes\n",dataBytes);   
+      printf("sent %d bytes \n",dataBytes);
 #endif
       printf("dataret OK\n");
       return OK;
@@ -2007,15 +2008,13 @@ int read_frame(int file_des) {
 
 int read_all(int file_des) {
 
- 
-  while(read_frame(file_des)==OK) {
-	  //usleep(0);
+	while(read_frame(file_des)==OK) {
+
 #ifdef VERBOSE
   printf("frame read\n");
 #endif   
     ;
   }
-
 #ifdef VERBOSE
   printf("Frames finished\n");
 #endif   

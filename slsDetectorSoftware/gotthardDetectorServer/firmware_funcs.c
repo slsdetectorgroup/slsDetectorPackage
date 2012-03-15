@@ -15,8 +15,9 @@
 #include <sys/ipc.h>
 #include <sys/shm.h>
 #include <sys/stat.h>
-#include </opt/uClinux/bfin-linux-uclibc/bfin-linux-uclibc/runtime/usr/include/bfin_sram.h>
 
+#include <time.h>
+#include <sched.h>
 
 
 
@@ -28,7 +29,7 @@ FILE *debugfp, *datafp;
 int fr;
 int wait_time;
 int *fifocntrl;
-int *values;
+volatile const u_int16_t *values;
 //int *statusreg; commented out by dhanya
 const int nModY=1;
 int nModBoard;
@@ -36,8 +37,8 @@ int nModX=NMAXMOD;
 int dynamicRange=16;//32;
 int dataBytes=NMAXMOD*NCHIP*NCHAN*2;
 int storeInRAM=0;
-int *ram_values=NULL;
-char *now_ptr=NULL;
+volatile  u_int32_t *ram_values=NULL;
+volatile char *now_ptr=NULL;
 int ram_size=0;
 
 int64_t totalTime=1;
@@ -190,13 +191,13 @@ int mapCSP0(void) {
 }
 
 u_int16_t bus_r16(u_int32_t offset){
-  u_int16_t *ptr1;
+  volatile u_int16_t *ptr1;
   ptr1=(u_int16_t*)(CSP0BASE+offset*2);
   return *ptr1;
 }
 //aldos function volatile (not needed) 
 u_int16_t bus_w16(u_int32_t offset, u_int16_t data) {
-  u_int16_t *ptr1;
+  volatile u_int16_t *ptr1;
   ptr1=(u_int16_t*)(CSP0BASE+offset*2);
   // printf("writing at 0x%x data 0x%x %d%d%d\n",CSP0BASE+offset*2,data, (data>>2)&0x1,(data>>1)&0x1 ,(data>>0)&0x1);
 
@@ -206,7 +207,7 @@ u_int16_t bus_w16(u_int32_t offset, u_int16_t data) {
 
 
 u_int32_t bus_w(u_int32_t offset, u_int32_t data) {
-  u_int32_t *ptr1;
+ volatile u_int32_t *ptr1;
 
   ptr1=(u_int32_t*)(CSP0BASE+offset*2);
   *ptr1=data;
@@ -216,7 +217,7 @@ u_int32_t bus_w(u_int32_t offset, u_int32_t data) {
 
 
 u_int32_t bus_r(u_int32_t offset) {
-  u_int32_t *ptr1;
+  volatile u_int32_t *ptr1;
   
   ptr1=(u_int32_t*)(CSP0BASE+offset*2);
   return *ptr1;
@@ -525,7 +526,7 @@ u_int32_t  getMcsVersion() {
 // for fpga test 
 u_int32_t testFpga(void) {
   printf("Test FPGA:\n");
-  u_int32_t val,addr;
+  volatile u_int32_t val,addr,val2;
   int result=OK,i;
   //fixed pattern
   val=bus_r(FIX_PATT_REG);
@@ -543,15 +544,25 @@ u_int32_t testFpga(void) {
     printf("FPGA version too old! %06x\n",val);
     result= FAIL;
   }
+
+
+
   //dummy register
   addr = DUMMY_REG;
-  for(i=0;i<100;i++)
+  for(i=0;i<1000000;i++)
     {
       val=0x5A5A5A5A-i;
       bus_w(addr, val);
       val=bus_r(addr);
       if (val!=0x5A5A5A5A-i) {
 	printf("ATTEMPT:%d:\tFPGA dummy register wrong!! %x instead of %x \n",i,val,0x5A5A5A5A-i);
+	result=FAIL;
+      }
+      val=(i+(i<<10)+(i<<20));
+      bus_w(addr, val);
+      val2=bus_r(addr);
+      if (val2!=val) {
+	printf("ATTEMPT:%d:\tFPGA dummy register wrong!! read %x instead of %x.\n",i,val2,val);
 	result=FAIL;
       }
       val=0x0F0F0F0F;
@@ -562,8 +573,8 @@ u_int32_t testFpga(void) {
 	result=FAIL;
       }
       val=0xF0F0F0F0;
-      bus_w(DUMMY_REG, val);
-      val=bus_r(DUMMY_REG);
+      bus_w(addr, val);
+      val=bus_r(addr);
       if (val!=0xF0F0F0F0)  {
 	printf("ATTEMPT:%d:\tFPGA dummy register wrong!! %x instead of 0xF0F0F0F0 \n\n",i,val);
 	result=FAIL;
@@ -572,7 +583,7 @@ u_int32_t testFpga(void) {
   if(result==OK)
     {
       printf("----------------------------------------------------------------------------------------------");
-      printf("\nATTEMPT 100: FPGA DUMMY REGISTER OK!!\n");
+      printf("\nATTEMPT 1000000: FPGA DUMMY REGISTER OK!!!\n");
       printf("----------------------------------------------------------------------------------------------\n");
     }
   return result;
@@ -1451,12 +1462,31 @@ u_int32_t* fifo_read_event()
 #endif
   dma_memcpy(now_ptr,values ,dataBytes);
 
+  //memcpy(now_ptr,values ,dataBytes);
+/*  struct timeval t1,t2;
+  long long t;
+  gettimeofday(&t1,NULL);
+	if(geteuid()==0){
+		struct sched_param sp;
+		memset(&sp,0,sizeof(sp));
+		sp.sched_priority= sched_get_priority_max(SCHED_FIFO);
+		sched_setscheduler(0,SCHED_FIFO,&sp);
+		mlockall(MCL_CURRENT | MCL_FUTURE);
+	}
+	  gettimeofday(&t2,NULL);
+  memmove(now_ptr,values ,dataBytes);
+  	t = ((t2.tv_sec * 1000000) + t2.tv_usec) - ((t1.tv_sec * 1000000) + t1.tv_usec);
+  	    printf("\n*********Call took %lld us*******\n",  t);
+*/
+
+
 #ifdef VERYVERBOSE
-  printf("\n x%08x\n",now_ptr);
   int a;
-  for (a=0;a<10; a=a+2)
-	  printf("\n%d: x%04x",a,now_ptr[a]);
-  printf("\n");
+  for (a=0;a<8; a=a+2)
+	  printf("\n%d %d: x%04x x%04x ",a+1,a,*(now_ptr+a+1),*(now_ptr+a) );
+  for (a=2554;a<2560; a=a+2)
+	  printf("\n%d %d: x%04x x%04x ",a+1,a,*(now_ptr+a+1),*(now_ptr+a) );
+  printf("********\n");
   //memcpy(now_ptr, values, dataBytes);
 #endif
 #ifdef VERBOSE

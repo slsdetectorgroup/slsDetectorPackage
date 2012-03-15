@@ -1,7 +1,7 @@
 
 
 #include "communication_funcs.h" 
-//#include <sys/socket.h> 
+//#include <sys/socket.h>
 #include <netinet/tcp.h> /* for TCP_NODELAY */ 
 #include <stdlib.h>
 #include <string.h>
@@ -209,7 +209,7 @@ void exitServer(int socketDescriptor) {
  int sendDataOnly(int file_des, void* buf,int length) {
 
 
-  return   write(file_des, buf, length);  
+  return   write(file_des, buf, length);
 }
 
 

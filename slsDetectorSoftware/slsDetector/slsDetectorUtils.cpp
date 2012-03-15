@@ -2454,13 +2454,13 @@ int slsDetectorUtils::setScanSteps(int iscan, int nvalues, float *values) {
 	  scanSteps[iscan][iv]=values[iv];
 	}
       }
-     
+      
       if (scanMode[iscan]>0){
 	*actionMask |= (1 << (iscan+MAX_ACTIONS));
       } else {
 	*actionMask &= ~(1 <<  (iscan+MAX_ACTIONS));
       }
-
+      
 #ifdef VERBOSE
       cout << "Action mask is " << hex << actionMask << dec << endl;
 #endif

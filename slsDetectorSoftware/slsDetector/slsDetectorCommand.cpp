@@ -655,25 +655,72 @@ string slsDetectorCommand::helpLine(int narg, char *args[], int action) {
   if (action==READOUT_ACTION) {
     return helpAcquire(narg,args,HELP_ACTION);
   }
-  os << helpAcquire(narg,args,action);
-  os << helpData(narg,args,action);
-  os << helpFrame(narg,args,action);
-  os << helpStatus(narg,args,action);
-  os << helpFree(narg,args,action);
-  os << helpAdd(narg,args,action);
-  os << helpRemove(narg,args,action);
-  os << helpHostname(narg,args,action);
-  os << helpId(narg,args,action);
-  os << helpMaster(narg,args,action);
-  os << helpSync(narg,args,action);
-  os << helpExitServer(narg,args,action);
-  os << helpSettingsDir(narg,args,action);
-  os << helpCalDir(narg,args,action);
-  os << helpOutDir(narg,args,action);
-  os << helpFileName(narg,args,action);
-  os << helpFileIndex(narg,args,action);
+
+
+  if (narg==0) {
+    os << "Command can be: " << endl;
+    for(int i=0; i<numberOfCommands; ++i) {  
+      os << descrToFuncMap[i].m_pFuncName << "\t" ;
+    }
+    os << endl;
+    return os.str();
+  }
+
+  return executeLine(narg,args,HELP_ACTION);
+
+
+
+
+
+
+//   os << helpAcquire(narg,args,action) << endl;
   
-  return os.str();
+//   os << helpData(narg,args,action) << endl;
+//   os << helpFrame(narg,args,action) << endl;
+//   os << helpStatus(narg,args,action) << endl;
+//   os << helpFree(narg,args,action) << endl;
+//   os << helpAdd(narg,args,action) << endl;
+//   os << helpRemove(narg,args,action) << endl;
+//   os << helpHostname(narg,args,action) << endl;
+//   os << helpId(narg,args,action) << endl;
+//   os << helpMaster(narg,args,action) << endl;
+//   os << helpSync(narg,args,action) << endl;
+//   os << helpExitServer(narg,args,action) << endl;
+//   os << helpSettingsDir(narg,args,action) << endl;
+//   os << helpCalDir(narg,args,action) << endl;
+//   os << helpOutDir(narg,args,action) << endl;
+//   os << helpFileName(narg,args,action) << endl;
+//   os << helpFileIndex(narg,args,action) << endl;
+//   os << helpFlatField(narg,args,action) << endl;
+//   os << helpRateCorr(narg,args,action) << endl;
+//    os << helpBadChannels(narg,args,action) << endl;
+//    os << helpAngConv(narg,args,action) << endl;
+//    os << helpThreaded(narg,args,action) << endl;
+//    os << helpPositions(narg,args,action) << endl;
+//    os << helpScripts(narg,args,action) << endl;
+//    os << helpScans(narg,args,action) << endl;
+//    os << helpNetworkParameter(narg,args,action) << endl;
+//    os << helpPort(narg,args,action) << endl;
+//    os << helpLock(narg,args,action) << endl;
+//    os << helpLastClient(narg,args,action) << endl;
+//    os << helpOnline(narg,args,action) << endl;
+//    os << helpConfigureMac(narg,args,action) << endl;
+//    os << helpDetectorSize(narg,args,action) << endl;
+//    os << helpSettings(narg,args,action) << endl;
+//    os << helpSN(narg,args,action) << endl;
+//    os << helpDigiTest(narg,args,action) << endl;
+//    os << helpRegister(narg,args,action) << endl;
+//    os << helpDAC(narg,args,action) << endl;
+//    os << helpTimer(narg,args,action) << endl;
+//    os << helpTiming(narg,args,action) << endl;
+//    os << helpTimeLeft(narg,args,action) << endl;
+//    os << helpSpeed(narg,args,action) << endl;
+//    os << helpAdvanced(narg,args,action) << endl;
+//    os << helpConfiguration(narg,args,action) << endl;
+//    os << helpImage(narg,args,action) << endl;
+//    os << helpADC(narg,args,action) << endl;
+  
+//   return os.str();
 }
 
 
@@ -1716,7 +1763,7 @@ string slsDetectorCommand::helpScripts(int narg, char *args[], int action) {
 string slsDetectorCommand::cmdScans(int narg, char *args[], int action) {
 
   int is=-1, ival, ns=0;
-  char answer[1000];
+  char answer[MAX_STR_LENGTH*10];
   float *values;
   if (action==HELP_ACTION)
     return helpScans(narg,args,action);
@@ -1752,6 +1799,10 @@ string slsDetectorCommand::cmdScans(int narg, char *args[], int action) {
 
     if (action==PUT_ACTION) {
       if (sscanf(args[1],"%d",&ival)) {
+      
+	if (ival>MAX_SCAN_STEPS)
+	  return string("too many steps required!");
+      
 	values=new float[ival];
 	for (int i=0; i<ival; i++) {
 	  if (narg>=(i+2)) {
@@ -1771,9 +1822,12 @@ string slsDetectorCommand::cmdScans(int narg, char *args[], int action) {
     ns=myDet->getScanSteps(is);
     values=new float[ns];
     ns=myDet->getScanSteps(is, values);
+    int p=myDet->getScanPrecision(is);
+    char format[1000];
+    sprintf(format, "%%s %%0.%df",p);
     sprintf(answer,"%d ",ns);
     for (int i=0; i<ns; i++) {
-      sprintf(answer,"%s %f",answer,values[i]);
+      sprintf(answer,format,answer,values[i]);
     }
     delete [] values;
     return string(answer);
@@ -1810,6 +1864,7 @@ string slsDetectorCommand::cmdScans(int narg, char *args[], int action) {
       ns=(int)((fmax-fmin)/fstep);
       if (ns<0)
 	ns=-1*ns;
+      ns++;
       
       if (ns>MAX_SCAN_STEPS)
 	return string("too many steps required!");
@@ -1834,9 +1889,12 @@ string slsDetectorCommand::cmdScans(int narg, char *args[], int action) {
     ns=myDet->getScanSteps(is);
     values=new float[ns];
     ns=myDet->getScanSteps(is, values);
+    int p=myDet->getScanPrecision(is);
+    char format[1000];
+    sprintf(format, "%%s %%0.%df",p);
     sprintf(answer,"%d ",ns);
     for (int i=0; i<ns; i++) {
-      sprintf(answer,"%s %f",answer,values[i]);
+      sprintf(answer,format,answer,values[i]);
     }
     delete [] values;
     return string(answer);

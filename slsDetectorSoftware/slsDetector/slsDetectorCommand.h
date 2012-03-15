@@ -34,7 +34,7 @@ class slsDetectorCommand {
 /*      \param os output stream to return the help to */
 /*      \param action can be PUT_ACTION or GET_ACTION (from text client even READOUT_ACTION for acquisition)  */
 /*   *\/ */
-   static string helpLine(int narg, char *args[], int action=HELP_ACTION); 
+   string helpLine(int narg, char *args[], int action=HELP_ACTION); 
    static string helpAcquire(int narg, char *args[], int action);
    static string helpData(int narg, char *args[], int action);
    static string helpFrame(int narg, char *args[], int action);
@@ -102,114 +102,51 @@ class slsDetectorCommand {
   slsDetectorBase *myDet;
    
    string cmdUnderDevelopment(int narg, char *args[], int action); 
-
    string cmdUnknown(int narg, char *args[], int action); 
-
    string cmdAcquire(int narg, char *args[], int action); 
-   
    string cmdData(int narg, char *args[], int action); 
-   
    string cmdFrame(int narg, char *args[], int action); 
-   
    string cmdStatus(int narg, char *args[], int action); 
-      
    string cmdFree(int narg, char *args[], int action);
-   
    string cmdAdd(int narg, char *args[], int action);
-
    string cmdRemove(int narg, char *args[], int action);
-
    string cmdHostname(int narg, char *args[], int action);
-
    string cmdId(int narg, char *args[], int action);
-
    string cmdMaster(int narg, char *args[], int action);
-
    string cmdSync(int narg, char *args[], int action);
-
    string cmdHelp(int narg, char *args[], int action);
-
    string cmdExitServer(int narg, char *args[], int action);
-
-
    string cmdSettingsDir(int narg, char *args[], int action);
-
    string cmdCalDir(int narg, char *args[], int action);
-
-
    string cmdTrimEn(int narg, char *args[], int action);
-
    string cmdOutDir(int narg, char *args[], int action);
-
    string cmdFileName(int narg, char *args[], int action);
-
-
    string cmdFileIndex(int narg, char *args[], int action);
    string cmdFlatField(int narg, char *args[], int action);
-
-
    string cmdRateCorr(int narg, char *args[], int action);
-
-
    string cmdBadChannels(int narg, char *args[], int action);
-
-
    string cmdAngConv(int narg, char *args[], int action);
-
    string cmdThreaded(int narg, char *args[], int action);
-
    string cmdPositions(int narg, char *args[], int action);
-
    string cmdScripts(int narg, char *args[], int action);
-
    string cmdScans(int narg, char *args[], int action);
-
-
    string cmdNetworkParameter(int narg, char *args[], int action);
-
    string cmdPort(int narg, char *args[], int action);
-
-
    string cmdLock(int narg, char *args[], int action);
-
-
    string cmdLastClient(int narg, char *args[], int action);
-
-
    string cmdOnline(int narg, char *args[], int action);
-
-
    string cmdConfigureMac(int narg, char *args[], int action);
-
-
    string cmdDetectorSize(int narg, char *args[], int action);
-
-
    string cmdSettings(int narg, char *args[], int action);
-
-
    string cmdSN(int narg, char *args[], int action);
-
-
    string cmdDigiTest(int narg, char *args[], int action);
-
    string cmdRegister(int narg, char *args[], int action);
-
-
    string cmdDAC(int narg, char *args[], int action);
-
    string cmdTiming(int narg, char *args[], int action);
-
    string cmdTimer(int narg, char *args[], int action);
-
-
    string cmdTimeLeft(int narg, char *args[], int action);
-
    string cmdSpeed(int narg, char *args[], int action);
-
    string cmdAdvanced(int narg, char *args[], int action);
-
-
    string cmdConfiguration(int narg, char *args[], int action);
    string cmdImage(int narg, char *args[], int action);
    string cmdADC(int narg, char *args[], int action);

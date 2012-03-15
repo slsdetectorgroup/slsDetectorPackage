@@ -5525,27 +5525,6 @@ masterFlags  slsDetector::setMaster(masterFlags flag) {
 	  std::cout<< "Detector returned error: " << mess << std::endl;
 	} else {
 	  controlSocket->ReceiveDataOnly(&retval,sizeof(retval)); 
-		system("rm ~/wORKSPACE/scratch/run*  ");
-		//system("more ~/wORKSPACE/scratch/run*  ");
-		usleep(1000000);
-
-		setFileIndex(0);
-	    readAll();
-	    processData(1);
-
-
-		if(readDataFile("/home/l_maliakal_d/wORKSPACE/scratch/run_1.raw",dataVals)){
-			std::cout<< "Could not open file "<< std::endl;
-			exit(-1);
-		}
-
-		for(int j=1277;j< (thisDetector->nChans*thisDetector->nChips);j++)
-			cout<<"\t"<<j<<":"<<dataVals[j];
-
-		if(dataVals[1278]!=2558){
-			std::cout<< "DATA ERROR!! "<< std::endl;
-			exit(-1);
-		}
 	}
 	controlSocket->Disconnect();
 	if (ret==FORCE_UPDATE)

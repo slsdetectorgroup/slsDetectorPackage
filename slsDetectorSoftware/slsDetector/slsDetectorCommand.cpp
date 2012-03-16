@@ -962,7 +962,7 @@ string slsDetectorCommand::cmdHostname(int narg, char *args[], int action){
     if (vvstr.fail()) 
       ivar=-1;
   }
-  
+
   if (action==PUT_ACTION) {
     //add by hostname
     if (ivar==-1) {
@@ -2711,9 +2711,9 @@ string slsDetectorCommand::cmdADC(int narg, char *args[], int action) {
     adc=TEMPERATURE_FPGA;
   else
     return string("cannot decode adc ")+cmd;
-  
+
   myDet->setOnline(ONLINE_FLAG);
-  
+
   sprintf(answer,"%f",myDet->getADC(adc));
   return string(answer);
 

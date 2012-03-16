@@ -142,8 +142,7 @@ slsDetector::slsDetector(int id) :slsDetectorUtils(),
 
 {
   detectorType type=(detectorType)getDetectorType(id);
-  
-  
+
   while (shmId<0) {
        /**Initlializes shared memory \sa initSharedMemory
 	  
@@ -278,7 +277,7 @@ detectorType slsDetector::getDetectorType(char *name, int cport) {
   char m[100];
 #ifdef VERBOSE
   cout << "Getting detector type " << endl;
-#endif 
+#endif
  if (s->Connect()>=0) {
     s->SendDataOnly(&fnum,sizeof(fnum));
     s->ReceiveDataOnly(&retval,sizeof(retval));
@@ -288,7 +287,7 @@ detectorType slsDetector::getDetectorType(char *name, int cport) {
 
 #ifdef VERBOSE
       cout << "Detector type is "<< t << endl;
-#endif 
+#endif
       
     } else {
       s->ReceiveDataOnly(m,sizeof(m));
@@ -2780,18 +2779,17 @@ int slsDetector::updateDetectorNoWait() {
   // int it;
   int64_t retval;// tns=-1;
   char lastClientIP[INET_ADDRSTRLEN];
-
   switch(thisDetector->myDetectorType){
   case GOTTHARD:
     n = 	controlSocket->ReceiveDataOnly(lastClientIP,sizeof(lastClientIP));
 #ifdef VERBOSE
-    cout << "Updating detector last modified by " << lastClientIP << endl;// commented out by dhanya for now
+    cout << "Updating detector last modighfied by " << lastClientIP << std::endl;// commented out by dhanya for now
 #endif
     break;
   default:
     n = 	controlSocket->ReceiveDataOnly(lastClientIP,sizeof(lastClientIP));
 #ifdef VERBOSE
-   cout << "Updating detector last modified by " << lastClientIP << endl;
+   cout << "Updating detector last modified by " << lastClientIP << std::endl;
 #endif
     n = 	controlSocket->ReceiveDataOnly(&nm,sizeof(nm));
     thisDetector->nMod[X]=nm;

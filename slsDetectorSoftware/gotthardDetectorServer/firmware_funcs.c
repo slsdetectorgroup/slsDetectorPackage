@@ -1676,6 +1676,7 @@ u_int32_t* fifo_read_event()
 #ifdef VERBOSE
   printf("before readout %08x %08x\n", runState(), bus_r(LOOK_AT_ME_REG));
 #endif
+  //added+2 for creating ram_values memory
   dma_memcpy(now_ptr,values ,dataBytes);
 
   //memcpy(now_ptr,values ,dataBytes);

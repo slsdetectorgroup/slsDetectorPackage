@@ -837,8 +837,7 @@ int initDACs(int* v,int imod)
 
 
 
-int setSettings(int i, int imod) 
-{
+int setSettings(int i, int imod) {
 #ifdef VERBOSE
   printf("\ninside set settings wit settins=%d...\n",i);
 #endif

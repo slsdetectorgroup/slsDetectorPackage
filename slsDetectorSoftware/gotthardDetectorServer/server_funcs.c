@@ -2692,19 +2692,16 @@ int send_update(int file_des) {
   int thr, n;
   //int it;
   int64_t retval, tns=-1;
-
-
   n = sendDataOnly(file_des,lastClientIP,sizeof(lastClientIP));
-  /*
   n = sendDataOnly(file_des,&nModX,sizeof(nModX));
   n = sendDataOnly(file_des,&nModY,sizeof(nModY));
   n = sendDataOnly(file_des,&dynamicRange,sizeof(dynamicRange));
   n = sendDataOnly(file_des,&dataBytes,sizeof(dataBytes));
-  t=setSettings(GET_SETTINGS);
+  t=setSettings(GET_SETTINGS,-1);
   n = sendDataOnly(file_des,&t,sizeof(t));
-  thr=getThresholdEnergy();
-  n = sendDataOnly(file_des,&thr,sizeof(thr));
-  retval=setFrames(tns);  
+/*  thr=getThresholdEnergy();
+  n = sendDataOnly(file_des,&thr,sizeof(thr));*/
+  retval=setFrames(tns);
   n = sendDataOnly(file_des,&retval,sizeof(int64_t));
   retval=setExposureTime(tns);
   n = sendDataOnly(file_des,&retval,sizeof(int64_t));
@@ -2714,11 +2711,11 @@ int send_update(int file_des) {
   n = sendDataOnly(file_des,&retval,sizeof(int64_t));
   retval=setGates(tns);
   n = sendDataOnly(file_des,&retval,sizeof(int64_t));
-  retval=setProbes(tns);
-  n = sendDataOnly(file_des,&retval,sizeof(int64_t));
+/*  retval=setProbes(tns);
+  n = sendDataOnly(file_des,&retval,sizeof(int64_t));*/
   retval=setTrains(tns);
   n = sendDataOnly(file_des,&retval,sizeof(int64_t));
-  */
+
   if (lockStatus==0) {
     strcpy(lastClientIP,thisClientIP);
   }

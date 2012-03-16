@@ -3080,8 +3080,8 @@ int* slsDetector::readAll(){
 	  i++;
 #ifdef VERBOSE
       std::cout<< i << std::endl;
-#else
-      std::cout << "-" << flush ;
+      //#else
+      //std::cout << "-" << flush ;
 #endif
       dataQueue.push(retval);
     }
@@ -3141,8 +3141,8 @@ int* slsDetector::startAndReadAll(){
       i++;
 #ifdef VERBOSE
       std::cout<< i << std::endl;
-#else
-      std::cout<< "-" << flush;
+      //#else
+      //std::cout<< "-" << flush;
 #endif
       dataQueue.push(retval);
   }

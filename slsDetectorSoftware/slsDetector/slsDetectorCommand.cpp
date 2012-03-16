@@ -619,15 +619,15 @@ string slsDetectorCommand::executeLine(int narg, char *args[], int action) {
 
     	if(key==descrToFuncMap[i].m_pFuncName){
 #ifdef VERBOSE  
-      std::cout<<i << " command="<< descrToFuncMap[i].m_pFuncName<<" key="<<key <<std::endl;
+	  std::cout<<i << " command="<< descrToFuncMap[i].m_pFuncName<<" key="<<key <<std::endl;
 #endif      
       cmd=descrToFuncMap[i].m_pFuncName;
 
       MemFuncGetter memFunc=descrToFuncMap[i].m_pFuncPtr;
       string dResult=(this->*memFunc)(narg, args, action);  
-
+      
       return dResult;
-    }
+	}
   }
   return cmdUnknown(narg,args,action);
   
@@ -637,7 +637,7 @@ string slsDetectorCommand::executeLine(int narg, char *args[], int action) {
 
 
 string slsDetectorCommand::cmdUnknown(int narg, char *args[], int action) {
-  return string("Unknown command ")+string(args[0])+string("\n")+helpLine(narg, args, action);
+  return string("Unknown command ")+string(args[0])+string("\n");//+helpLine(narg, args, action);
 
 }
 string slsDetectorCommand::cmdUnderDevelopment(int narg, char *args[], int action) {
@@ -732,7 +732,7 @@ string slsDetectorCommand::cmdAcquire(int narg, char *args[], int action) {
 #endif
   myDet->setOnline(ONLINE_FLAG);
   myDet->acquire(1);
-  return string("ok");
+  return string("");
 
 }
 
@@ -770,7 +770,7 @@ string slsDetectorCommand::cmdData(int narg, char *args[], int action) {
     myDet->readAll();
     myDet->processData(1);
     myDet->setThreadedProcessing(b);
-    return string("ok");
+    return string("");
   } 
 }
 
@@ -798,11 +798,11 @@ string slsDetectorCommand::cmdFrame(int narg, char *args[], int action) {
     } else {
        b=myDet->setThreadedProcessing(-1);
        myDet->setThreadedProcessing(0);
-      myDet->setOnline(ONLINE_FLAG);
-      myDet->readFrame();
-      myDet->processData(1);
+       myDet->setOnline(ONLINE_FLAG);
+       myDet->readFrame();
+       myDet->processData(1);
        myDet->setThreadedProcessing(b);
-      return string("ok");
+       return string("ok");
     } 
 
 }
@@ -1763,7 +1763,7 @@ string slsDetectorCommand::helpScripts(int narg, char *args[], int action) {
 string slsDetectorCommand::cmdScans(int narg, char *args[], int action) {
 
   int is=-1, ival, ns=0;
-  char answer[MAX_STR_LENGTH*10];
+  char answer[MAX_SCAN_STEPS*10];
   float *values;
   if (action==HELP_ACTION)
     return helpScans(narg,args,action);

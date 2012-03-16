@@ -1077,8 +1077,8 @@ int* multiSlsDetector::readAll(){
       i++;
 #ifdef VERBOSE
       std::cout<< i << std::endl;
-#else
-      std::cout << "-" << flush;
+      //#else
+      //std::cout << "-" << flush;
 #endif
       dataQueue.push(retval);
     }
@@ -1117,8 +1117,8 @@ int* multiSlsDetector::startAndReadAll(){
       i++;
 #ifdef VERBOSE
       std::cout<< i << std::endl;
-#else
-      std::cout << "-" << flush;
+      //#else
+      //std::cout << "-" << flush;
 #endif
       dataQueue.push(retval);
     }
@@ -2887,8 +2887,10 @@ int multiSlsDetector::writeConfigurationFile(string const fname){
   
 
   ofstream outfile;
-  // int ret;
-  
+#ifdef VERBOSE
+  int ret;
+#endif
+
   outfile.open(fname.c_str(),ios_base::out);
   if (outfile.is_open()) {
 

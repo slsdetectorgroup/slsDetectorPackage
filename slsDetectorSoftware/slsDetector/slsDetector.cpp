@@ -2773,65 +2773,66 @@ detectorSettings slsDetector::setSettings( detectorSettings isettings, int imod)
 
 int slsDetector::updateDetectorNoWait() {
 
-  // int ret=OK;
-  enum detectorSettings t;
-  int thr, n, nm;
-  // int it;
-  int64_t retval;// tns=-1;
-  char lastClientIP[INET_ADDRSTRLEN];
-  switch(thisDetector->myDetectorType){
-  case GOTTHARD:
-    n = 	controlSocket->ReceiveDataOnly(lastClientIP,sizeof(lastClientIP));
-#ifdef VERBOSE
-    cout << "Updating detector last modighfied by " << lastClientIP << std::endl;// commented out by dhanya for now
-#endif
-    break;
-  default:
-    n = 	controlSocket->ReceiveDataOnly(lastClientIP,sizeof(lastClientIP));
-#ifdef VERBOSE
-   cout << "Updating detector last modified by " << lastClientIP << std::endl;
-#endif
-    n = 	controlSocket->ReceiveDataOnly(&nm,sizeof(nm));
-    thisDetector->nMod[X]=nm;
-    n = 	controlSocket->ReceiveDataOnly( &nm,sizeof(nm));
-    thisDetector->nMod[Y]=nm;
-    thisDetector->nMods=thisDetector->nMod[Y]*thisDetector->nMod[X];
+	// int ret=OK;
+	enum detectorSettings t;
+	int thr, n, nm;
+	// int it;
+	int64_t retval;// tns=-1;
+	char lastClientIP[INET_ADDRSTRLEN];
 
-    n = 	controlSocket->ReceiveDataOnly( &nm,sizeof(nm));
-    thisDetector->dynamicRange=nm;
-   
-    n = 	controlSocket->ReceiveDataOnly( &nm,sizeof(nm));
-    thisDetector->dataBytes=nm;
-    //t=setSettings(GET_SETTINGS);
-    n = 	controlSocket->ReceiveDataOnly( &t,sizeof(t));
-    thisDetector->currentSettings=t;
-    //thr=getThresholdEnergy();
-    n = 	controlSocket->ReceiveDataOnly( &thr,sizeof(thr));
-    thisDetector->currentThresholdEV=thr;
-    //retval=setFrames(tns);  
-    n = 	controlSocket->ReceiveDataOnly( &retval,sizeof(int64_t));
-    thisDetector->timerValue[FRAME_NUMBER]=retval;
-    // retval=setExposureTime(tns);
-    n = 	controlSocket->ReceiveDataOnly( &retval,sizeof(int64_t));
-    thisDetector->timerValue[ACQUISITION_TIME]=retval;
-  
-    //retval=setPeriod(tns);
-    n = 	controlSocket->ReceiveDataOnly( &retval,sizeof(int64_t));
-    thisDetector->timerValue[FRAME_PERIOD]=retval;
-    //retval=setDelay(tns);
-    n = 	controlSocket->ReceiveDataOnly( &retval,sizeof(int64_t));
-    thisDetector->timerValue[DELAY_AFTER_TRIGGER]=retval;
-    // retval=setGates(tns);
-    n = 	controlSocket->ReceiveDataOnly( &retval,sizeof(int64_t));
-    thisDetector->timerValue[GATES_NUMBER]=retval;
-    //retval=setProbes(tns);
-    n = 	controlSocket->ReceiveDataOnly( &retval,sizeof(int64_t));
-    thisDetector->timerValue[PROBES_NUMBER]=retval;
-    //retval=setTrains(tns);
-    n = 	controlSocket->ReceiveDataOnly( &retval,sizeof(int64_t));
-    thisDetector->timerValue[CYCLES_NUMBER]=retval;
-  }  
-  return OK;
+	n = 	controlSocket->ReceiveDataOnly(lastClientIP,sizeof(lastClientIP));
+#ifdef VERBOSE
+	cout << "Updating detector last modified by " << lastClientIP << std::endl;
+#endif
+	n = 	controlSocket->ReceiveDataOnly(&nm,sizeof(nm));
+	thisDetector->nMod[X]=nm;
+	n = 	controlSocket->ReceiveDataOnly( &nm,sizeof(nm));
+	thisDetector->nMod[Y]=nm;
+	thisDetector->nMods=thisDetector->nMod[Y]*thisDetector->nMod[X];
+
+	n = 	controlSocket->ReceiveDataOnly( &nm,sizeof(nm));
+	thisDetector->dynamicRange=nm;
+
+	n = 	controlSocket->ReceiveDataOnly( &nm,sizeof(nm));
+	thisDetector->dataBytes=nm;
+	//t=setSettings(GET_SETTINGS);
+	n = 	controlSocket->ReceiveDataOnly( &t,sizeof(t));
+	thisDetector->currentSettings=t;
+
+	if(thisDetector->myDetectorType!= GOTTHARD){
+		//thr=getThresholdEnergy();
+		n = 	controlSocket->ReceiveDataOnly( &thr,sizeof(thr));
+		thisDetector->currentThresholdEV=thr;
+	}
+
+	//retval=setFrames(tns);
+	n = 	controlSocket->ReceiveDataOnly( &retval,sizeof(int64_t));
+	thisDetector->timerValue[FRAME_NUMBER]=retval;
+	// retval=setExposureTime(tns);
+	n = 	controlSocket->ReceiveDataOnly( &retval,sizeof(int64_t));
+	thisDetector->timerValue[ACQUISITION_TIME]=retval;
+
+	//retval=setPeriod(tns);
+	n = 	controlSocket->ReceiveDataOnly( &retval,sizeof(int64_t));
+	thisDetector->timerValue[FRAME_PERIOD]=retval;
+	//retval=setDelay(tns);
+	n = 	controlSocket->ReceiveDataOnly( &retval,sizeof(int64_t));
+	thisDetector->timerValue[DELAY_AFTER_TRIGGER]=retval;
+	// retval=setGates(tns);
+	n = 	controlSocket->ReceiveDataOnly( &retval,sizeof(int64_t));
+	thisDetector->timerValue[GATES_NUMBER]=retval;
+
+	//retval=setProbes(tns);
+	if(thisDetector->myDetectorType!= GOTTHARD){
+		n = 	controlSocket->ReceiveDataOnly( &retval,sizeof(int64_t));
+		thisDetector->timerValue[PROBES_NUMBER]=retval;
+	}
+
+	//retval=setTrains(tns);
+	n = 	controlSocket->ReceiveDataOnly( &retval,sizeof(int64_t));
+	thisDetector->timerValue[CYCLES_NUMBER]=retval;
+
+	return OK;
 
 }
 

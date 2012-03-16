@@ -1337,6 +1337,9 @@ typedef  struct sharedSlsDetector {
   */
   int sendImageToDetector(imageType index,short int arg[]);
 
+  /** temporary test fucntion  */
+  int testFunction(int times=0);
+
   /** 
       Sets/gets the synchronization mode of the various detectors
       \param sync syncronization mode can be GET_SYNCHRONIZATION_MODE, NONE, MASTER_GATES, MASTER_TRIGGERS, SLAVE_STARTS_WHEN_MASTER_STOPS
@@ -1460,14 +1463,6 @@ typedef  struct sharedSlsDetector {
   char* setClientMAC(string clientMAC);
   /** validates the format of server MAC address  and sets it for gotthard \sa sharedSlsDetector  */
   char* setServerMAC(string serverMAC);
-
-
-  /** temporary test fucntion  */
-  int testFunction(int times=0);
-
-
-
-
 
 
 };

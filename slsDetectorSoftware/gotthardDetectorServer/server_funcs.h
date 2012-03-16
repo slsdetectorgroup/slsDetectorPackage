@@ -70,7 +70,9 @@ int execute_trimming(int);
 int lock_server(int);
 int set_port(int);
 int get_last_client_ip(int);
-  
+int set_master(int);
+int set_synchronization(int);
+
 int update_client(int);
 int send_update(int);
 int configure_mac(int);

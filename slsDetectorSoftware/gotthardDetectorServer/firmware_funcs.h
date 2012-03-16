@@ -43,6 +43,13 @@ u_int32_t getTotClockDutyCycle();
 
 u_int32_t setExtSignal(int d, enum externalSignalFlag  mode);
 int  getExtSignal(int d);
+
+u_int32_t setFPGASignal(int d, enum externalSignalFlag  mode);
+int  getFPGASignal(int d);
+
+int setTiming(int t);
+
+
 int setConfigurationRegister(int d);
 int setToT(int d);
 int setContinousReadOut(int d);
@@ -122,6 +129,10 @@ int setNMod(int n);
 int setStoreInRAM(int b);
 int allocateRAM();
 int clearRAM();
+
+
+int setMaster(int f);
+int setSynchronization(int s);
 
 /*
 

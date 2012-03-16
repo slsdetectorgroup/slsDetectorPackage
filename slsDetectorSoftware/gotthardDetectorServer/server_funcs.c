@@ -10,9 +10,6 @@
 #include "trimming_funcs.h"
 
 
-
-
-
 // Global variables
 
 int (*flist[256])(int);
@@ -66,19 +63,21 @@ int init_detector( int b) {
   }
 
   //testFpga();
-#ifdef MCB_FUNCS
   if (b) {
+#ifdef MCB_FUNCS
     initDetector();
     printf("\n----initdetector done! new serverRdRR\n\n");
     testFpga();
     testRAM();
-
     //gotthard specific
     setPhaseShiftOnce();
     setDAQRegister();
     setSettings(GET_SETTINGS,-1);
-  }
 #endif
+    setTiming(GET_EXTERNAL_COMMUNICATION_MODE);
+    setMaster(GET_MASTER);
+    setSynchronization(GET_SYNCHRONIZATION_MODE);
+  }
   strcpy(mess,"dummy message");
   strcpy(lastClientIP,"none");
   strcpy(thisClientIP,"none1");
@@ -95,7 +94,7 @@ int decode_function(int file_des) {
 #endif 
   n = receiveDataOnly(file_des,&fnum,sizeof(fnum));
   if (n <= 0) {
-    //printf("ERROR reading from socket %d, %d %d\n", n, fnum, file_des);
+    printf("ERROR reading from socket %d, %d %d\n", n, fnum, file_des);
     return FAIL;
   }
 #ifdef VERBOSE
@@ -162,11 +161,8 @@ int function_table() {
   flist[F_UPDATE_CLIENT]=&update_client;
   flist[F_CONFIGURE_MAC]=&configure_mac;
   flist[F_LOAD_IMAGE]=&load_image;
-#ifdef VERBOSE
-  /*  for (i=0;i<256;i++){
-    printf("function %d located at %x\n",i,flist[i]);
-    }*/
-#endif
+  flist[F_SET_MASTER]=&set_master;
+  flist[F_SET_SYNCHRONIZATION_MODE]=&set_synchronization;
   return OK;
 }
 
@@ -474,63 +470,63 @@ int set_external_signal_flag(int file_des) {
 
 
 int set_external_communication_mode(int file_des) {
-  int n;
-  enum externalCommunicationMode arg, ret;
-  int retval=OK;
-  
-  sprintf(mess,"Can't set external communication mode\n");
+	int n;
+	enum externalCommunicationMode arg, ret=GET_EXTERNAL_COMMUNICATION_MODE;
+	int retval=OK;
+
+	sprintf(mess,"Can't set external communication mode\n");
 
 
-  /* receive arguments */
-  n = receiveDataOnly(file_des,&arg,sizeof(arg));
-  if (n < 0) {
-    sprintf(mess,"Error reading from socket\n");
-    retval=FAIL;
-  }
-  /*
-enum externalCommunicationMode{
-  GET_EXTERNAL_COMMUNICATION_MODE,
-  AUTO,
-  TRIGGER_EXPOSURE_SERIES,
-  TRIGGER_EXPOSURE_BURST,
-  TRIGGER_READOUT,
-  TRIGGER_COINCIDENCE_WITH_INTERNAL_ENABLE,
-  GATE_FIX_NUMBER,
-  GATE_FIX_DURATION,
-  GATE_WITH_START_TRIGGER,
-  GATE_COINCIDENCE_WITH_INTERNAL_ENABLE
-};
-  */
-  ret=AUTO;
-  if (retval==OK) {
-  /* execute action */
-    switch(arg) {
-    default:
-      sprintf(mess,"The meaning of single signals should be set\n");
-      retval=FAIL;
-    }
+	/* receive arguments */
+	n = receiveDataOnly(file_des,&arg,sizeof(arg));
+	if (n < 0) {
+		sprintf(mess,"Error reading from socket\n");
+		retval=FAIL;
+	}
+	/*
+	enum externalCommunicationMode{
+	  GET_EXTERNAL_COMMUNICATION_MODE,
+	  AUTO,
+	  TRIGGER_EXPOSURE_SERIES,
+	  TRIGGER_EXPOSURE_BURST,
+	  TRIGGER_READOUT,
+	  TRIGGER_COINCIDENCE_WITH_INTERNAL_ENABLE,
+	  GATE_FIX_NUMBER,
+	  GATE_FIX_DURATION,
+	  GATE_WITH_START_TRIGGER,
+	  GATE_COINCIDENCE_WITH_INTERNAL_ENABLE
+	};
+	 */
+	if (retval==OK) {
+		/* execute action */
+
+		ret=setTiming(arg);
+
+		/*     switch(arg) { */
+		/*     default: */
+		/*       sprintf(mess,"The meaning of single signals should be set\n"); */
+		/*       retval=FAIL; */
+		/*     } */
 
 
 #ifdef VERBOSE
-      printf("Setting external communication mode to %d\n", arg);
+		printf("Setting external communication mode to %d\n", arg);
 #endif
-  } else
-    ret=FAIL;
+	} else
+		ret=FAIL;
 
-  /* send answer */
-  /* send OK/failed */
-  n = sendDataOnly(file_des,&retval,sizeof(retval));
-  if (retval!=FAIL) {
-    /* send return argument */
-    n += sendDataOnly(file_des,&ret,sizeof(ret));
-  } else {
-    n += sendDataOnly(file_des,mess,sizeof(mess));
-  }
+	/* send answer */
+	/* send OK/failed */
+	n = sendDataOnly(file_des,&retval,sizeof(retval));
+	if (retval!=FAIL) {
+		/* send return argument */
+		n += sendDataOnly(file_des,&ret,sizeof(ret));
+	} else {
+		n += sendDataOnly(file_des,mess,sizeof(mess));
+	}
 
-  /*return ok/fail*/
-  return retval; 
-  
-
+	/*return ok/fail*/
+	return retval;
 }
 
 
@@ -2654,6 +2650,11 @@ int set_port(int file_des) {
       ret=FAIL;
       sprintf(mess,"Could not bind port %d\n", p_number);
       printf("Could not bind port %d\n", p_number); 
+      if (sd==-10) {
+      sprintf(mess,"Port %d already set\n", p_number);
+      printf("Port %d already set\n", p_number);
+
+      }
     }
 
     n = sendDataOnly(file_des,&ret,sizeof(ret));
@@ -2689,10 +2690,10 @@ int send_update(int file_des) {
   int ret=OK;
   enum detectorSettings t;
   int thr, n;
-  int it;
+  //int it;
   int64_t retval, tns=-1;
 
- 
+
   n = sendDataOnly(file_des,lastClientIP,sizeof(lastClientIP));
   /*
   n = sendDataOnly(file_des,&nModX,sizeof(nModX));
@@ -2888,3 +2889,96 @@ int load_image(int file_des) {
 	/*return ok/fail*/
 	return ret;
 }
+
+
+
+int set_master(int file_des) {
+
+  enum masterFlags retval=GET_MASTER;
+  enum masterFlags arg;
+  int n;
+  int ret=OK;
+  // int regret=OK;
+
+
+  sprintf(mess,"can't set master flags\n");
+
+
+  n = receiveDataOnly(file_des,&arg,sizeof(arg));
+  if (n < 0) {
+    sprintf(mess,"Error reading from socket\n");
+    ret=FAIL;
+  }
+
+
+#ifdef VERBOSE
+  printf("setting master flags  to %d\n",arg);
+#endif
+
+  if (differentClients==1 && lockStatus==1 && arg!=GET_READOUT_FLAGS) {
+    ret=FAIL;
+    sprintf(mess,"Detector locked by %s\n",lastClientIP);
+  }  else {
+    retval=setMaster(arg);
+
+  }
+  if (retval==GET_MASTER) {
+    ret=FAIL;
+  }
+  n = sendDataOnly(file_des,&ret,sizeof(ret));
+  if (ret==FAIL) {
+    n = sendDataOnly(file_des,mess,sizeof(mess));
+  } else {
+    n = sendDataOnly(file_des,&retval,sizeof(retval));
+  }
+  return ret;
+}
+
+
+
+
+
+
+int set_synchronization(int file_des) {
+
+  enum synchronizationMode retval=GET_MASTER;
+  enum synchronizationMode arg;
+  int n;
+  int ret=OK;
+  //int regret=OK;
+
+
+  sprintf(mess,"can't set synchronization mode\n");
+
+
+  n = receiveDataOnly(file_des,&arg,sizeof(arg));
+  if (n < 0) {
+    sprintf(mess,"Error reading from socket\n");
+    ret=FAIL;
+  }
+#ifdef VERBOSE
+  printf("setting master flags  to %d\n",arg);
+#endif
+
+  if (differentClients==1 && lockStatus==1 && arg!=GET_READOUT_FLAGS) {
+    ret=FAIL;
+    sprintf(mess,"Detector locked by %s\n",lastClientIP);
+  }  else {
+    //ret=setStoreInRAM(0);
+    // initChipWithProbes(0,0,0, ALLMOD);
+    retval=setSynchronization(arg);
+  }
+  if (retval==GET_SYNCHRONIZATION_MODE) {
+    ret=FAIL;
+  }
+  n = sendDataOnly(file_des,&ret,sizeof(ret));
+  if (ret==FAIL) {
+    n = sendDataOnly(file_des,mess,sizeof(mess));
+  } else {
+    n = sendDataOnly(file_des,&retval,sizeof(retval));
+  }
+  return ret;
+}
+
+
+

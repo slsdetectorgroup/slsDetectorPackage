@@ -3218,7 +3218,6 @@ int multiSlsDetector::retrieveDetectorSetup(string const fname1, int level){
 
 
 
-  return OK;
 
 int multiSlsDetector::testFunction(int times) {
   return OK;

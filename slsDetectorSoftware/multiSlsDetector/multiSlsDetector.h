@@ -493,7 +493,7 @@ class multiSlsDetector  : public slsDetectorUtils {
     \returns pointer to the data or NULL. If NULL disconnects the socket
     \sa getDataFromDetector
   */ 
-  int* getDataFromDetector(); 
+  int* getDataFromDetector();
 
   /**
    asks and  receives a data frame from the detector and puts it in the data queue
@@ -852,9 +852,6 @@ class multiSlsDetector  : public slsDetectorUtils {
 
 
   int configureMAC();
-
-
-
 
   int setNumberOfModules(int i=-1, dimension d=X);
   int getMaxNumberOfModules(dimension d=X);

@@ -236,7 +236,6 @@ multiSlsDetector::multiSlsDetector(int id) :  slsDetectorUtils(), shmId(-1)
 // #ifdef VERBOSE
 //    cout << "done" << endl;
 // #endif 
-
 }
 
 multiSlsDetector::~multiSlsDetector() {
@@ -1020,6 +1019,7 @@ int* multiSlsDetector::getDataFromDetector() {
 
   return retval;
 };
+
 
 
 int* multiSlsDetector::readFrame(){
@@ -2500,6 +2500,44 @@ int multiSlsDetector::configureMAC() {
 }
 
 
+
+int multiSlsDetector::loadImageToDetector(imageType index,string const fname){
+
+	int ret=-100, ret1;
+	short int arg[thisMultiDetector->numberOfChannels];
+
+	ifstream infile;
+	infile.open(fname.c_str(), ios_base::in);
+	if (infile.is_open()) {
+#ifdef VERBOSE
+		std::cout<< std::endl<< "Loading ";
+		if(!index)
+			std::cout<<"Dark";
+		else
+			std::cout<<"Gain";
+		std::cout<<" image from file " << fname << std::endl;
+#endif
+		for (int idet=0; idet<thisMultiDetector->numberOfDetectors; idet++) {
+			if (detectors[idet]) {
+				if(detectors[idet]->readDataFile(infile,arg)>=0){
+					ret1=detectors[idet]->sendImageToDetector(index,arg);
+					if (ret==-100)
+						ret=ret1;
+					else if (ret!=ret1)
+						ret=-1;
+				}
+			}
+		}
+		infile.close();
+	} else {
+		std::cout<< "Could not open file "<< fname << std::endl;
+		return -1;
+	}
+	return ret;
+}
+
+
+
 int multiSlsDetector::setDynamicRange(int p) {
 
   int ret=-100, ret1;
@@ -3180,10 +3218,8 @@ int multiSlsDetector::retrieveDetectorSetup(string const fname1, int level){
 
 
 
-int multiSlsDetector::loadImageToDetector(imageType t, string s) {
   return OK;
 
-}
 int multiSlsDetector::testFunction(int times) {
   return OK;
 }

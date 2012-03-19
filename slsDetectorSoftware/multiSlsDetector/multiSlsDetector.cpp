@@ -3218,23 +3218,6 @@ int multiSlsDetector::retrieveDetectorSetup(string const fname1, int level){
 
 
 
-
-int multiSlsDetector::testFunction(int times) {
-
-	int ret=-100, ret1;
-	for (int idet=0; idet<thisMultiDetector->numberOfDetectors; idet++) {
-		if (detectors[idet]) {
-			ret1=detectors[idet]->testFunction(times);
-			if (ret==-100)
-				ret=ret1;
-			else if (ret!=ret1)
-				ret=-1;
-		}
-	}
-	return ret;
-}
-  
-
 int multiSlsDetector::writeDataFile(string fname, float *data, float *err, float *ang, char dataformat, int nch) {
 
 #ifdef VERBOSE

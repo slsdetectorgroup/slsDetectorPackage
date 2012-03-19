@@ -886,14 +886,6 @@ class multiSlsDetector  : public slsDetectorUtils {
  */
   int loadImageToDetector(imageType index,string const fname);
 
-  
-   /**
-      Test function
-      \param times number of repetitions
-      \returns repetition when it fails
- */
-  int testFunction(int times=0);
-
    /**
      sets the value of s angular conversion parameter
      \param c can be ANGULAR_DIRECTION, GLOBAL_OFFSET, FINE_OFFSET, BIN_SIZE

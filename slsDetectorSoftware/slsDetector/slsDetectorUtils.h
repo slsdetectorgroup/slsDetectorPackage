@@ -776,6 +776,10 @@ s
   int setTotalProgress();
   float getCurrentProgress();
 
+
+  /** temporary test fucntion  */
+  int testFunction(int times=0);
+
  protected:
    static const int64_t thisSoftwareVersion=0x20120124;
 

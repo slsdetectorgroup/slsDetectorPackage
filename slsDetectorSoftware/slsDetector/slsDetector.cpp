@@ -4610,10 +4610,10 @@ int slsDetector::loadImageToDetector(imageType index,string const fname){
 #endif
 
 	if(readDataFile(fname,arg)){
-		std::cout<< "Could not open file "<< fname << std::endl;
+		ret = sendImageToDetector(index,arg);
 		return ret;
 	}
-	ret = sendImageToDetector(index,arg);
+	std::cout<< "Could not open file "<< fname << std::endl;
 	return ret;
 }
 
@@ -5441,66 +5441,6 @@ int slsDetector::saveSettingsFile(string fname, int imod) {
     }
   }
   return ret;
-}
-
-
-int slsDetector::testFunction(int times) {
-	int i,count=0;
-	runStatus s;
-	short int dataVals[thisDetector->nChans*thisDetector->nChips];
-
-	for(i=0;i<times;i++){
-		std::cout<<std::endl<<dec<<i+1<<": \t";
-		//usleep(2000000);
-		startAcquisition();
-		s = getRunStatus();
-		if(s==IDLE){
-			s = getRunStatus();
-			if(s==IDLE)
-				std::cout<<"IDLE"<<std::endl;
-			//exit(-1);
-		}
-		else if (s==RUNNING){
-			count=0;
-			while(s==RUNNING){
-				count++;
-				if(count==3){
-					std::cout<<"STUCK"<<std::endl;
-					exit(-1);
-				}
-				usleep(2);
-				//val=readRegister(0x25);
-				s = getRunStatus();
-			}
-		}
-		else{
-			std::cout<<"\nWeird Status.Exit\n";
-			exit(-1);
-		}
-		system("rm ~/wORKSPACE/scratch/run*  ");
-		//system("more ~/wORKSPACE/scratch/run*  ");
-		usleep(1000000);
-
-		setFileIndex(0);
-	    readAll();
-	    processData(1);
-
-
-		if(readDataFile("/home/l_maliakal_d/wORKSPACE/scratch/run_1.raw",dataVals)){
-			std::cout<< "Could not open file "<< std::endl;
-			exit(-1);
-		}
-
-		for(int j=1277;j< (thisDetector->nChans*thisDetector->nChips);j++)
-			cout<<"\t"<<j<<":"<<dataVals[j];
-
-		if(dataVals[1278]!=2558){
-			std::cout<< "DATA ERROR!! "<< std::endl;
-			exit(-1);
-		}
-	}
-	std::cout<<std::endl;
-	return 0;
 }
 
 

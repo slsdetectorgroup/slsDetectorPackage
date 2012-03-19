@@ -1244,7 +1244,7 @@ void  slsDetectorUtils::acquire(int delflag){
        
 
 
-  setTotalProgress();
+ // setTotalProgress();
   progressIndex=0;
   *stoppedFlag=0;
 
@@ -1625,6 +1625,7 @@ void* slsDetectorUtils::processData(int delflag) {
   std::cout<< " processing data - threaded mode " << *threadedProcessing << endl;
 #endif
 
+  setTotalProgress();
   //cout << "thread mutex lock line 6505" << endl;
   pthread_mutex_lock(&mp);
   queuesize=dataQueue.size();
@@ -1688,14 +1689,14 @@ void* slsDetectorUtils::processData(int delflag) {
 	//process data
 	/** decode data */
 	fdata=decodeData(myData);
-	
+
 	fname=createFileName();
-	
+
 
 	//uses static function?!?!?!?
 	//	writeDataFile (fname+string(".raw"), getTotalNumberOfChannels(),fdata, NULL, NULL, 'i'); 
 	writeDataFile (fname+string(".raw"),fdata, NULL, NULL, 'i'); 
- 
+
 
 	/** write raw data file */	   
 	if (*correctionMask==0 && delflag==1) {
@@ -1941,7 +1942,7 @@ void* slsDetectorUtils::processData(int delflag) {
       //  cout << "looping on dataque size" << endl;
 #endif
     }
-    
+
 #ifdef VERBOSE
     //   cout << "queue empty -mutex unlock line 1883" << endl;
 #endif
@@ -2611,6 +2612,73 @@ float slsDetectorUtils::getCurrentProgress() {
   cout << progressIndex << " / " << totalProgress << endl;
 #endif
   return 100.*((float)progressIndex)/((float)totalProgress);
+}
+
+
+
+
+int slsDetectorUtils::testFunction(int times) {
+	int i,count=0;
+	runStatus s;
+
+	int nchans = getTotalNumberOfChannels();
+	short int dataVals[nchans];
+
+	for(i=0;i<times;i++){
+		std::cout<<std::endl<<dec<<i+1<<": \t";
+		startAcquisition();
+		s = getRunStatus();
+		if(s==IDLE){
+			s = getRunStatus();
+			if(s==IDLE)
+				std::cout<<"IDLE"<<std::endl;
+		}
+		else if (s==RUNNING){
+			count=0;
+			while(s==RUNNING){
+				count++;
+				if(count==5){
+					std::cout<<"STUCK"<<std::endl;
+					exit(-1);
+				}
+				usleep(2);
+				//val=readRegister(0x25);
+				s = getRunStatus();
+			}
+		}
+		else{
+			std::cout<<"\nWeird Status.Exit\n";
+			exit(-1);
+		}
+		system("rm ~/wORKSPACE/scratch/run*  ");
+		//system("more ~/wORKSPACE/scratch/run*  ");
+		usleep(1000000);
+
+		setFileIndex(0);
+		int b;
+
+		b=setThreadedProcessing(-1);
+		setThreadedProcessing(0);
+	    readAll();
+	    processData(1);
+	    setThreadedProcessing(b);
+
+		if(!readDataFile("/home/l_maliakal_d/wORKSPACE/scratch/run_1.raw",dataVals)){
+			std::cout<< "Could not open file "<< std::endl;
+			exit(-1);
+		}
+
+		std::cout<<std::endl;
+		for(int j=1277;j< (nchans);j++)
+			std::cout<<"\t"<<j<<":"<<dataVals[j];
+
+		if(dataVals[1278]!=2558){
+			std::cout<< "DATA ERROR!! "<< std::endl;
+			exit(-1);
+		}
+	}
+	std::cout<<std::endl;
+	return 0;
 }
 
 

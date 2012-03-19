@@ -839,7 +839,10 @@ int initDACs(int* v,int imod)
 
 int setSettings(int i, int imod) {
 #ifdef VERBOSE
-  printf("\ninside set settings wit settins=%d...\n",i);
+	if(i==-1)
+		printf("\nReading settings of detector...\n");
+	else
+		printf("\ninside set settings wit settings=%d...\n",i);
 #endif
   int confgain[] = CONF_GAIN;
   int isett=-2,retval;

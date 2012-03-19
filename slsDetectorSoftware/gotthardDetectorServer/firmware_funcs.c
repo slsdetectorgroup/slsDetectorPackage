@@ -495,7 +495,7 @@ int getFPGASignal(int d) {
     if (mode<=RO_TRIGGER_OUT_FALLING_EDGE) {
       if (modes[mode]!=SIGNAL_OFF && signals[d]!=MASTER_SLAVE_SYNCHRONIZATION)
 	signals[d]=modes[mode];
-#ifdef VERBOSE
+#ifdef VERYVERBOSE
       printf("gettings signal register number %d  value %04x\n", d, modes[mode]);
 #endif
       return modes[mode];

@@ -5,7 +5,7 @@
 
 CROSS  = bfin-uclinux-
 CC    = $(CROSS)gcc
-CFLAGS += -Wall  -DMCB_FUNCS -DVERBOSE -DVERYVERBOSE #-DVIRTUAL
+CFLAGS += -Wall  -DMCB_FUNCS -DVERBOSE #-DVERYVERBOSE #-DVIRTUAL
 
 
 PROGS= 		gotthardDetectorServer 

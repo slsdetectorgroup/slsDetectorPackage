@@ -973,18 +973,18 @@ int* multiSlsDetector::getDataFromDetector() {
 
   for (int id=0; id<thisMultiDetector->numberOfDetectors; id++) {
     if (detectors[id]) {
-      retdet=detectors[id]->getDataFromDetector();
+      retdet=detectors[id]->getDataFromDetector(p);
       n=detectors[id]->getDataBytes();
       if (retdet) {
 	nodata=0;
 #ifdef VERBOSE
 	cout << "Detector " << id << " returned " << n << " bytes " << endl;
 #endif
-	memcpy(p,retdet,n);
-#ifdef VERBOSE
-	cout << "Copied to pointer "<< p  << endl;
-#endif
-	delete [] retdet;
+	//	memcpy(p,retdet,n);
+	//#ifdef VERBOSE
+	//cout << "Copied to pointer "<< p  << endl;
+	//#endif
+	//	delete [] retdet;
       } else {
 	nodatadet=id;
 #ifdef VERBOSE
@@ -1003,8 +1003,7 @@ int* multiSlsDetector::getDataFromDetector() {
 	  cout << "Stopping detector "<< id << endl;
 #endif
 	  detectors[id]->stopAcquisition();
-	  while ((retdet=detectors[id]->getDataFromDetector())) {
-	    
+	  while ((retdet=detectors[id]->getDataFromDetector())) {  
 #ifdef VERBOSE
 	    cout << "Detector "<< id << " still sent data " << endl;
 #endif
@@ -2032,10 +2031,18 @@ float* multiSlsDetector::convertAngles(float pos) {
   for (int idet=0; idet<thisMultiDetector->numberOfDetectors; idet++) {
     
     if (detectors[idet]) {
-      p=detectors[idet]->convertAngles(pos);
+#ifdef EPICS
+      //  cout << "convert angle det " << idet << endl;
+      if (idet<2)
+#endif
+	p=detectors[idet]->convertAngles(pos);
+#ifdef EPICS
+      else //////////// GOOD ONLY AT THE BEAMLINE!!!!!!!!!!!!!
+	p=detectors[idet]->convertAngles(0);
+#endif
       for (int ich=0; ich<detectors[idet]->getTotalNumberOfChannels(); ich++) {
 	ang[choff+ich]=p[ich];
-	}
+      }
       choff+=detectors[idet]->getTotalNumberOfChannels();
       delete [] p;
     }

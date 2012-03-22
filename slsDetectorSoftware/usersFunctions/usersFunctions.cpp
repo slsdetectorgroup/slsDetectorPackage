@@ -126,6 +126,11 @@ float angle(int ichan, float encoder, float totalOffset, float conv_r, float cen
 
   ang=180./PI*(center*conv_r+atan((float)(ichan-center)*conv_r))+encoder+totalOffset+offset; 
 
+  
+  // printf("*** %f %f\n",offset,ang);
+
+
+
   return direction*ang;
 
 }

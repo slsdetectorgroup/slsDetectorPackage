@@ -276,6 +276,7 @@ typedef  struct sharedSlsDetector {
 
  using slsDetectorUtils::readAngularConversion;
  using slsDetectorUtils::writeAngularConversion;
+ // using slsDetectorBase::getDataFromDetector;
 
 
 
@@ -1313,7 +1314,10 @@ typedef  struct sharedSlsDetector {
       \returns pointer to the data (or NULL if failed)
 
   */
-  int* getDataFromDetector();
+  int* getDataFromDetector(int *retval=NULL);
+
+  //int*
+
 
   /** returns if the detector is Master, slave or nothing 
       \param flag can be GET_MASTER, NO_MASTER, IS_MASTER, IS_SLAVE

@@ -38,15 +38,13 @@ picassoServer:  $(SRC_MYTHEN_SVC)
 
 
 package: $(OBJS)
-	echo $(OBJS)
-	$(CXX) -shared -Wl,-soname,libSlsDetector.so.1 -o libSlsDetector.so.1.0.1  objs/slsDetector.o    objs/slsDetectorUtils.o  objs/slsDetectorCommand.o  objs/multiSlsDetector.o     objs/usersFunctions.o  objs/MySocketTCP.o   -lc $(INCLUDES) $(FLAGS) $(EPICSFLAGS)
-	ln -sf libSlsDetector.so libSlsDetector.so.1  
-	ln -sf libSlsDetector.so libSlsDetector.so.1.0.1 
+	$(CXX) -shared -Wl,-soname,libSlsDetector.so -o libSlsDetector.so  $(OBJS)  -lc $(INCLUDES) $(FLAGS) $(EPICSFLAGS)
 	ar  rcs libSlsDetector.a  $(OBJS)
 
 clean:
-	rm -rf libSlsDetector.so.1  libSlsDetector.so.1.0.1  libSlsDetector.so core  docs/* $(OBJS)
-#objs/* 
+	rm -rf libSlsDetector.a  libSlsDetector.so core  docs/* $(OBJS)
+
+
 #-------------------------------------------------------------------------------
 lib:    package
 

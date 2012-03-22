@@ -12,7 +12,8 @@ OBJS = $(SRC_CLNT:.cpp=.o)
 
 SRC_MYTHEN_SVC = mythenDetectorServer/server.c mythenDetectorServer/server_funcs.c mythenDetectorServer/communication_funcs.c mythenDetectorServer/firmware_funcs.c mythenDetectorServer/mcb_funcs.c mythenDetectorServer/trimming_funcs.c 
 
-all: package  doc
+all: package   $(SRC_CLNT) 
+	
 
 doc: $(SRC_H) $(SRC_CLNT) 
 	doxygen doxy.config
@@ -34,17 +35,11 @@ picassoServer:  $(SRC_MYTHEN_SVC)
 
 package: $(OBJS)
 	$(CXX) -shared -Wl,-soname,libSlsDetector.so -o libSlsDetector.so   $(OBJS)  -lc $(INCLUDES) $(FLAGS) $(EPICSFLAGS)
-#	$(CXX) -shared -Wl,-soname,libSlsDetector.so.1 -o libSlsDetector.so.1.0.1  objs/slsDetector.o    $(OBJS)  -lc $(INCLUDES) $(FLAGS) $(EPICSFLAGS)
-#	ln -sf libSlsDetector.so libSlsDetector.so.1  
-#	ln -sf libSlsDetector.so libSlsDetector.so.1.0.1 
 	ar  rcs libSlsDetector.a  $(OBJS)
-
-
-
-
+	
 
 clean:
-	rm -rf libSlsDetector.so.1  libSlsDetector.so.1.0.1  libSlsDetector.so core objs/*  docs/*
+	rm -rf libSlsDetector.so libSlsDetector.a core $(OBJS)  docs/*
 
 #-------------------------------------------------------------------------------
 lib:    package

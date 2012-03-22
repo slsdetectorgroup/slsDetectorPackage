@@ -537,9 +537,14 @@ int slsDetectorUtils::readAngularConversion( ifstream& infile, int nmod, angleCo
       angOff[nm].eoffset=eoff;
     } else
       break;
+    //cout << nm<<"  " << angOff[nm].offset << endl;
     nm++;
     if (nm>=nmod)
       break;
+
+    
+
+
   }
   return nm;
  }
@@ -620,7 +625,7 @@ int  slsDetectorUtils::addToMerging(float *p1, float *v1, float *e1, float *mp, 
   float binmi=-180., binma;
   int ibin=0;
   //  int imod;
-  float ang=0;
+  float ang=0, angold;
 
 
   binmi=-180.;
@@ -629,7 +634,7 @@ int  slsDetectorUtils::addToMerging(float *p1, float *v1, float *e1, float *mp, 
   cout << "pointer to badchan mask is " << badChanMask << endl; 
 #endif
 
-  if (angDir>0) {
+  //  if (angDir>0) {
     for (int ip=0; ip<nchans; ip++) {
       if ((cm)&(1<< DISCARD_BAD_CHANNELS)) {
 	if (badChanMask[ip]) {
@@ -640,38 +645,25 @@ int  slsDetectorUtils::addToMerging(float *p1, float *v1, float *e1, float *mp, 
 	}
       }
       ang=p1[ip];
+      if (ip==0)
+	angold=p1[ip];
       
-      while (binma<ang) {
-	ibin++;
-	binmi+=binsize;
-	binma+=binsize;
-      }
-      if (ibin<(360./binsize)) {
-	mp[ibin]+=ang;
-	mv[ibin]+=v1[ip];
-	if (e1)
-	  me[ibin]+=(e1[ip]*e1[ip]);
-	else
-	  me[ibin]+=v1[ip];
-	mm[ibin]++;
-      } else
-	return FAIL;
-    }
- 
-  } else {
-    for (int ip=nchans-1; ip>=0; ip--) {
-	if ((cm)&(1<< DISCARD_BAD_CHANNELS)) {
-	  if (badChanMask[ip])
-	    continue;
-       
-	}
 
-      while (binma<ang) {
-	ibin++;
-	binmi+=binsize;
-	binma+=binsize;
+      if (angold<=ang) {
+	while (binma<ang) {
+	  ibin++;
+	  binmi+=binsize;
+	  binma+=binsize;
+	}
+      } else {
+	 while (binmi>ang) {
+	   ibin--;
+	   binmi-=binsize;
+	   binma-=binsize;
+	 }
       }
-      if (ibin<(360./binsize)) {
+      if (ibin<(360./binsize) && ibin>=0) {
+	angold=ang;
 	mp[ibin]+=ang;
 	mv[ibin]+=v1[ip];
 	if (e1)
@@ -682,7 +674,32 @@ int  slsDetectorUtils::addToMerging(float *p1, float *v1, float *e1, float *mp, 
       } else
 	return FAIL;
     }
-  }
+    
+//   } else {
+//     for (int ip=nchans-1; ip>=0; ip--) {
+// 	if ((cm)&(1<< DISCARD_BAD_CHANNELS)) {
+// 	  if (badChanMask[ip])
+// 	    continue;
+       
+// 	}
+
+//       while (binma<ang) {
+// 	ibin++;
+// 	binmi+=binsize;
+// 	binma+=binsize;
+//       }
+//       if (ibin<(360./binsize)) {
+// 	mp[ibin]+=ang;
+// 	mv[ibin]+=v1[ip];
+// 	if (e1)
+// 	  me[ibin]+=(e1[ip]*e1[ip]);
+// 	else
+// 	  me[ibin]+=v1[ip];
+// 	mm[ibin]++;
+//       } else
+// 	return FAIL;
+//     }
+//   }
   return OK;
 
 }

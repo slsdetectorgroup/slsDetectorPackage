@@ -3009,10 +3009,17 @@ int* slsDetector::readFrame(){
 
 
 
-int* slsDetector::getDataFromDetector(){
+int* slsDetector::getDataFromDetector(int *retval){
 	int nel=thisDetector->dataBytes/sizeof(int);
 	int n;
-	int* retval=new int[nel];
+
+
+
+	//	int* retval=new int[nel];
+
+	if (retval==NULL)
+	  retval=new int[nel];
+
 	int ret=FAIL;
 	char mess[100]="Nothing";
 
@@ -3035,8 +3042,10 @@ int* slsDetector::getDataFromDetector(){
 	    std::cout<< "Detector successfully returned: " << mess << " " << n << std::endl;
 #endif	
 	  }
-	  delete [] retval;
-	  retval=NULL;
+	  if (retval==NULL) {
+	    delete [] retval;
+	  }
+	  return NULL;
 	} else {
 	  n=controlSocket->ReceiveDataOnly(retval,thisDetector->dataBytes);
 	  
@@ -3047,8 +3056,10 @@ int* slsDetector::getDataFromDetector(){
 	    std::cout<< "wrong data size received: received " << n << " but expected " << thisDetector->dataBytes << std::endl;
 	    thisDetector->stoppedFlag=1;
 	    ret=FAIL;
-	    delete [] retval;
-	    retval=NULL;
+	    if (retval==NULL) {
+	      delete [] retval;
+	    }
+	    return NULL;
 	  }
 	}
 
@@ -4565,7 +4576,16 @@ float* slsDetector::convertAngles(float pos) {
   float    *ang=new float[thisDetector->nChans*thisDetector->nChips*thisDetector->nMods]; 
   for (int ip=0; ip<thisDetector->nChans*thisDetector->nChips*thisDetector->nMods; ip++) {
     imod=ip/(thisDetector->nChans*thisDetector->nChips);
-    ang[ip]=angle(ip%(thisDetector->nChans*thisDetector->nChips),pos,thisDetector->fineOffset+thisDetector->globalOffset,thisDetector->angOff[imod].r_conversion,thisDetector->angOff[imod].center, thisDetector->angOff[imod].offset,thisDetector->angOff[imod].tilt,thisDetector->angDirection);
+    ang[ip]=angle(ip%(thisDetector->nChans*thisDetector->nChips),\
+		  pos,							\
+		  thisDetector->fineOffset+thisDetector->globalOffset,	\
+		  thisDetector->angOff[imod].r_conversion,		\
+		  thisDetector->angOff[imod].center,			\
+		  thisDetector->angOff[imod].offset,			\
+		  thisDetector->angOff[imod].tilt,			\
+		  thisDetector->angDirection
+		  );
+    // cout << imod << " " << thisDetector->angOff[imod].offset << " " << ang[ip] << endl;
   }
   return ang;
 }

@@ -123,8 +123,14 @@ float angle(int ichan, float encoder, float totalOffset, float conv_r, float cen
   
   (void) tilt; /* to avoid warning: unused parameter */
   float ang;
+  
+
 
   ang=180./PI*(center*conv_r+atan((float)(ichan-center)*conv_r))+encoder+totalOffset+offset; 
+
+  
+  cout <<"***" << offset << " " <<  ang << endl;
+
 
   return direction*ang;
 

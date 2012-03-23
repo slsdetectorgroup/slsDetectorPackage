@@ -126,6 +126,14 @@ slsDetectorCommand::slsDetectorCommand(slsDetectorBase *det)  {
   descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdImage;
   i++;
 
+  descrToFuncMap[i].m_pFuncName="readctr"; //
+  descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdCounter;
+  i++;
+
+  descrToFuncMap[i].m_pFuncName="resetctr"; //
+  descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdCounter;
+  i++;
+
   /* trim/cal directories */
   descrToFuncMap[i].m_pFuncName="trimdir"; //OK
   descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdSettingsDir;
@@ -1635,34 +1643,88 @@ string slsDetectorCommand::cmdImage(int narg, char *args[], int action){
   if (action==HELP_ACTION)
     return helpImage(narg,args,HELP_ACTION);
   else if (action==GET_ACTION)
-    return string("Cannot get");
-  
+	  return string("Cannot get");
+
   sval=string(args[1]);
   myDet->setOnline(ONLINE_FLAG);
-  
+
+
   if (string(args[0])==string("darkimage"))
-    retval=myDet->loadImageToDetector(DARK_IMAGE,sval);
+	  retval=myDet->loadImageToDetector(DARK_IMAGE,sval);
   else if (string(args[0])==string("gainimage"))
-    retval=myDet->loadImageToDetector(GAIN_IMAGE,sval);
+	  retval=myDet->loadImageToDetector(GAIN_IMAGE,sval);
+
   
-  if(!retval)
+  if(retval==OK)
     return string("Image loaded succesfully");
   else
-    return string("Image NOT loaded");
+    return string("Image load failed");
 }
 
 
 string slsDetectorCommand::helpImage(int narg, char *args[], int action){
-  if (action==PUT_ACTION || action==HELP_ACTION){
-    if (string(args[0])==string("darkimage"))
-      return string("darkimage f \t  loads the image to detector from file f\n");
-    else
-      return string("gainimage f \t  loads the image to detector from file f\n");
-  }
-  else
-    return string("Cannot get");
+	ostringstream os;
+	if (action==PUT_ACTION || action==HELP_ACTION){
+		os << "darkimage f \t  loads the image to detector from file f"<< std::endl;
+		os << "gainimage f \t  loads the image to detector from file f"<< std::endl;
+	}
+	if (action==GET_ACTION || action==HELP_ACTION){
+		os << "darkimage \t  Cannot get"<< std::endl;
+		os << "gainimage \t  Cannot get"<< std::endl;
+	}
+	return os.str();
 }
 
+
+
+string slsDetectorCommand::cmdCounter(int narg, char *args[], int action){
+  int ival;
+  string sval;
+  int retval;
+  if (action==HELP_ACTION)
+    return helpCounter(narg,args,HELP_ACTION);
+  else if (action==PUT_ACTION)
+	  ival=atoi(args[1]);
+
+  myDet->setOnline(ONLINE_FLAG);
+
+ if (string(args[0])==string("readctr")){
+	  if (action==PUT_ACTION)
+		  return string("Cannot put");
+	  else{
+		  if (narg<3)
+		    return string("should specify I/O file");
+		  sval=string(args[2]);
+		  retval=myDet->writeCounterBlockFile(sval,ival);
+	  }
+  }
+  else if (string(args[0])==string("resetctr")){
+	  if (action==GET_ACTION)
+		  return string("Cannot get");
+	  else
+		  retval=myDet->resetCounterBlock(ival);
+  }
+
+
+  if(retval==OK)
+    return string("Counter read/reset succesfully");
+  else
+    return string("Counter read/reset failed");
+}
+
+
+string slsDetectorCommand::helpCounter(int narg, char *args[], int action){
+	ostringstream os;
+	os << std::endl;
+	if (action==PUT_ACTION || action==HELP_ACTION){
+		os << "readctr \t  Cannot put"<< std::endl;
+		os << "resetctr i \t  resets counter in detector, restarts acquisition if i=1"<< std::endl;
+	}
+	if (action==GET_ACTION || action==HELP_ACTION)
+		os << "readctr i fname\t  reads counter in detector to file fname, restarts acquisition if i=1"<< std::endl;
+		os << "resetctr \t  Cannot get"<< std::endl;
+	return os.str();
+}
 
 
 

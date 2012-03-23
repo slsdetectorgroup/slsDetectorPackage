@@ -880,6 +880,39 @@ int slsDetectorUtils::writeDataFile(ofstream &outfile, int nch, int *data, int o
 
 
 
+/*writes raw data file */
+int slsDetectorUtils::writeDataFile(string fname, int nch, short int *data){
+  ofstream outfile;
+  if (data==NULL)
+    return FAIL;
+
+  outfile.open (fname.c_str(),ios_base::out);
+  if (outfile.is_open())
+  {
+    writeDataFile(outfile, nch, data, 0);
+    outfile.close();
+    return OK;
+  } else {
+    std::cout<< "Could not open file " << fname << "for writing"<< std::endl;
+    return FAIL;
+  }
+};
+
+
+
+/*writes raw data file */
+int slsDetectorUtils::writeDataFile(ofstream &outfile, int nch, short int *data, int offset){
+  if (data==NULL)
+    return FAIL;
+
+    for (int ichan=0; ichan<nch; ichan++)
+      outfile << ichan+offset << " " << *(data+ichan) << std::endl;
+
+    return OK;
+};
+
+
+
 
 
 
@@ -1071,7 +1104,7 @@ int slsDetectorUtils::readDataFile(ifstream &infile, short int *data, int nch, i
   while (infile.good() and interrupt==0) {
       getline(infile,str);
 #ifdef VERBOSE
-      std::cout<< str << std::endl;
+      ;//std::cout<< str << std::endl;
 #endif
       istringstream ssstr(str);
       ssstr >> ichan >> idata;
@@ -1095,7 +1128,7 @@ int slsDetectorUtils::readDataFile(ifstream &infile, short int *data, int nch, i
       }
 	// }
 #ifdef VERBOSE
-	std::cout<< "read " << iline <<" channels " << std::endl;
+	;//std::cout<< "read " << iline <<" channels " << std::endl;
 #endif
   }
   return iline;
@@ -1132,6 +1165,21 @@ int slsDetectorUtils::writeDataFile(ofstream &outfile, int *data, int offset){
   
   return writeDataFile(outfile, getTotalNumberOfChannels(), data, offset);
 }
+
+
+
+
+
+int slsDetectorUtils::writeDataFile(string fname, short int *data){
+
+  return writeDataFile(fname, getTotalNumberOfChannels(), data);
+}
+
+int slsDetectorUtils::writeDataFile(ofstream &outfile, short int *data, int offset){
+
+  return writeDataFile(outfile, getTotalNumberOfChannels(), data, offset);
+}
+
 
 
 

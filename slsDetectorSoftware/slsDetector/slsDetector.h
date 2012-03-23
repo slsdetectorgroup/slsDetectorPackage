@@ -9,7 +9,6 @@
 //#include "slsDetectorCommand.h"
 
 
-
 //enum {startScript, scriptBefore, headerBefore, headerAfter,scriptAfter, stopScript, MAX_ACTIONS};
 
 
@@ -1339,7 +1338,7 @@ typedef  struct sharedSlsDetector {
       \param arg image
 
   */
-  int sendImageToDetector(imageType index,short int arg[]);
+  int sendImageToDetector(imageType index,short int imageVals[]);
 
   /** 
       Sets/gets the synchronization mode of the various detectors
@@ -1348,6 +1347,33 @@ typedef  struct sharedSlsDetector {
   */   
   synchronizationMode setSynchronization(synchronizationMode sync=GET_SYNCHRONIZATION_MODE);
   
+  /**
+       writes the counter memory block from the detector
+       \param startACQ is 1 to start acquisition after reading counter
+       \param fname file name to load data from
+       \returns OK or FAIL
+  */
+  int writeCounterBlockFile(string const fname,int startACQ=0);
+
+
+  /**
+       gets counter memory block in detector
+       \param startACQ is 1 to start acquisition after reading counter
+       \param arg counter memory block from detector
+       \returns OK or FAIL
+  */
+  int getCounterBlock(short int arg[],int startACQ=0);
+
+
+  /**
+       Resets counter in detector
+       \param startACQ is 1 to start acquisition after resetting counter
+       \returns OK or FAIL
+  */
+  int resetCounterBlock(int startACQ=0);
+
+
+
  protected:
  
 

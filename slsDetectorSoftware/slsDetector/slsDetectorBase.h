@@ -794,14 +794,30 @@ class slsDetectorBase {
       \returns OK or FAIL
  */
   virtual int loadImageToDetector(imageType index,string const fname)=0;
-
   
-   /**
-      Test function
-      \param times number of repetitions
-      \returns repetition when it fails
- */
-  virtual int testFunction(int times=0)=0;
+
+  /**
+       writes the counter memory block from the detector
+       \param startACQ is 1 to start acquisition after reading counter
+       \fname file fname to load data from
+       \returns OK or FAIL
+  */
+  virtual int writeCounterBlockFile(string const fname,int startACQ=0)=0;
+
+
+  /**
+       Resets counter memory block in detector
+       \param startACQ is 1 to start acquisition after resetting counter
+       \returns OK or FAIL
+  */
+  virtual int resetCounterBlock(int startACQ=0)=0;
+
+
+  /**
+   function to test acquisition
+  */
+  virtual int testFunction(int itimes=0)=0;
+
 
   /************************************************************************
 

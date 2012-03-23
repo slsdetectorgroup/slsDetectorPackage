@@ -4645,7 +4645,7 @@ int slsDetector::loadImageToDetector(imageType index,string const fname){
 
 
 
-int slsDetector::sendImageToDetector(imageType index,short int arg[]){
+int slsDetector::sendImageToDetector(imageType index,short int imageVals[]){
 
 	int ret=FAIL;
 	int retval;
@@ -4653,7 +4653,7 @@ int slsDetector::sendImageToDetector(imageType index,short int arg[]){
 	char mess[100];
 
 #ifdef VERBOSE
-	std::cout<< std::endl<< "Sending image to detector " << std::endl;
+	std::cout<<"Sending image to detector " <<std::endl;
 #endif
 
 	if (thisDetector->onlineFlag==ONLINE_FLAG) {
@@ -4661,7 +4661,7 @@ int slsDetector::sendImageToDetector(imageType index,short int arg[]){
 			if  (controlSocket->Connect()>=0) {
 				controlSocket->SendDataOnly(&fnum,sizeof(fnum));
 				controlSocket->SendDataOnly(&index,sizeof(index));
-				controlSocket->SendDataOnly(arg,sizeof(arg));
+				controlSocket->SendDataOnly(imageVals,thisDetector->dataBytes);
 				controlSocket->ReceiveDataOnly(&ret,sizeof(ret));
 				if (ret!=FAIL)
 					controlSocket->ReceiveDataOnly(&retval,sizeof(retval));
@@ -4675,9 +4675,6 @@ int slsDetector::sendImageToDetector(imageType index,short int arg[]){
 			}
 
 		}
-	}
-	if (ret==FAIL) {
-		std::cout<< "failed " << std::endl;
 	}
 
 	return ret;
@@ -5552,3 +5549,86 @@ synchronizationMode slsDetector::setSynchronization(synchronizationMode flag) {
   return retval;
 
 }
+
+
+int slsDetector::getCounterBlock(short int arg[],int startACQ){
+
+	int ret=FAIL;
+	int fnum=F_READ_COUNTER_BLOCK;
+	char mess[100];
+
+	if (thisDetector->onlineFlag==ONLINE_FLAG) {
+		if (controlSocket) {
+			if  (controlSocket->Connect()>=0) {
+				controlSocket->SendDataOnly(&fnum,sizeof(fnum));
+				controlSocket->SendDataOnly(&startACQ,sizeof(startACQ));
+				controlSocket->ReceiveDataOnly(&ret,sizeof(ret));
+				if (ret!=FAIL)
+					controlSocket->ReceiveDataOnly(arg,thisDetector->dataBytes);
+				else {
+					controlSocket->ReceiveDataOnly(mess,sizeof(mess));
+					std::cout<< "Detector returned error: " << mess << std::endl;
+				}
+				controlSocket->Disconnect();
+				if (ret==FORCE_UPDATE)
+					updateDetector();
+			}
+		}
+	}
+
+	return ret;
+}
+
+int slsDetector::writeCounterBlockFile(string const fname,int startACQ){
+
+	int ret=FAIL;
+	short int counterVals[thisDetector->nChans*thisDetector->nChips];
+
+#ifdef VERBOSE
+		std::cout<< std::endl<< "Reading Counter to \""<<fname;
+		if(startACQ==1)
+			std::cout<<"\" and Restarting Acquisition";
+		std::cout<<std::endl;
+#endif
+
+	ret=getCounterBlock(counterVals,startACQ);
+	if(ret==OK)
+		ret=writeDataFile(fname,counterVals);
+	return ret;
+}
+
+
+
+int slsDetector::resetCounterBlock(int startACQ){
+
+	int ret=FAIL;
+	int fnum=F_RESET_COUNTER_BLOCK;
+	char mess[100];
+
+#ifdef VERBOSE
+	std::cout<< std::endl<< "Resetting Counter";
+	if(startACQ==1)
+		std::cout<<" and Restarting Acquisition";
+	std::cout<<std::endl;
+#endif
+
+	if (thisDetector->onlineFlag==ONLINE_FLAG) {
+		if (controlSocket) {
+			if  (controlSocket->Connect()>=0) {
+				controlSocket->SendDataOnly(&fnum,sizeof(fnum));
+				controlSocket->SendDataOnly(&startACQ,sizeof(startACQ));
+				controlSocket->ReceiveDataOnly(&ret,sizeof(ret));
+				if (ret==FAIL){
+					controlSocket->ReceiveDataOnly(mess,sizeof(mess));
+					std::cout<< "Detector returned error: " << mess << std::endl;
+				}
+				controlSocket->Disconnect();
+				if (ret==FORCE_UPDATE)
+					updateDetector();
+			}
+		}
+	}
+
+	return ret;
+}
+

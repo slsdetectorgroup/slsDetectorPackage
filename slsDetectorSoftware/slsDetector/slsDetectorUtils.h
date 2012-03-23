@@ -176,6 +176,19 @@ class slsDetectorUtils : public slsDetectorBase {
   virtual int writeDataFile(string fname, int *data);
   int writeDataFile(ofstream &outfile, int *data, int offset=0);
   
+
+  /**
+
+       writes a data file
+       \param name of the file to be written
+       \param data array of data values
+       \returns OK or FAIL if it could not write the file or data=NULL
+       \sa mythenDetector::writeDataFile
+  */
+  virtual int writeDataFile(string fname, short int *data);
+  int writeDataFile(ofstream &outfile, short int *data, int offset=0);
+
+
   /**
    
        reads a data file
@@ -229,7 +242,8 @@ class slsDetectorUtils : public slsDetectorBase {
 
    static  int  writeDataFile(string fname, int nch, float *data, float *err=NULL, float *ang=NULL, char dataformat='f'); 
    static  int writeDataFile(ofstream &outfile, int nch, float *data, float *err=NULL, float *ang=NULL, char dataformat='f', int offset=0); 
-  /**
+
+   /**
    
        writes a data file
        \param name of the file to be written
@@ -239,7 +253,17 @@ class slsDetectorUtils : public slsDetectorBase {
   */
   static int writeDataFile(string fname,int nch,  int *data);
   static  int writeDataFile(ofstream &outfile,int nch,  int *data, int offset=0);
+
+  /**
    
+       writes a data file
+       \param name of the file to be written
+       \param data array of data values
+       \returns OK or FAIL if it could not write the file or data=NULL
+       \sa mythenDetector::writeDataFile
+  */
+  static int writeDataFile(string fname,int nch, short int *data);
+  static  int writeDataFile(ofstream &outfile,int nch,  short int *data, int offset=0);
    /**
    
        reads a data file

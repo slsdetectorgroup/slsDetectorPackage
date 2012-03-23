@@ -80,6 +80,7 @@ class slsDetectorCommand {
    static string helpAdvanced(int narg, char *args[], int action);
    static string helpConfiguration(int narg, char *args[], int action);
    static string helpImage(int narg, char *args[], int action);
+   static string helpCounter(int narg, char *args[], int action);
    static string helpADC(int narg, char *args[], int action);
 
 
@@ -149,6 +150,7 @@ class slsDetectorCommand {
    string cmdAdvanced(int narg, char *args[], int action);
    string cmdConfiguration(int narg, char *args[], int action);
    string cmdImage(int narg, char *args[], int action);
+   string cmdCounter(int narg, char *args[], int action);
    string cmdADC(int narg, char *args[], int action);
 
 

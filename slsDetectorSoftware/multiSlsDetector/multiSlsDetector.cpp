@@ -2511,7 +2511,7 @@ int multiSlsDetector::configureMAC() {
 int multiSlsDetector::loadImageToDetector(imageType index,string const fname){
 
 	int ret=-100, ret1;
-	short int arg[thisMultiDetector->numberOfChannels];
+	short int imageVals[thisMultiDetector->numberOfChannels];
 
 	ifstream infile;
 	infile.open(fname.c_str(), ios_base::in);
@@ -2526,8 +2526,8 @@ int multiSlsDetector::loadImageToDetector(imageType index,string const fname){
 #endif
 		for (int idet=0; idet<thisMultiDetector->numberOfDetectors; idet++) {
 			if (detectors[idet]) {
-				if(detectors[idet]->readDataFile(infile,arg)>=0){
-					ret1=detectors[idet]->sendImageToDetector(index,arg);
+				if(detectors[idet]->readDataFile(infile,imageVals)>=0){
+					ret1=detectors[idet]->sendImageToDetector(index,imageVals);
 					if (ret==-100)
 						ret=ret1;
 					else if (ret!=ret1)
@@ -3379,4 +3379,55 @@ int multiSlsDetector::readDataFile(string fname, int *data) {
     return -1;
   }
   return iline;
+}
+
+
+
+int multiSlsDetector::writeCounterBlockFile(string const fname,int startACQ){
+
+	int ret=OK, ret1=OK;
+	short int arg[thisMultiDetector->numberOfChannels];
+	ofstream outfile;
+	outfile.open(fname.c_str(), ios_base::out);
+	if (outfile.is_open()) {
+#ifdef VERBOSE
+		std::cout<< std::endl<< "Reading Counter to \""<<fname;
+		if(startACQ==1)
+			std::cout<<"\" and Restarting Acquisition";
+		std::cout<<std::endl;
+#endif
+		for (int idet=0; idet<thisMultiDetector->numberOfDetectors; idet++) {
+			if (detectors[idet]) {
+				ret1=detectors[idet]->getCounterBlock(arg,startACQ);
+				if(ret1!=OK)
+					ret=FAIL;
+				else{
+					ret1=detectors[idet]->writeDataFile(outfile,arg);
+					if(ret1!=OK)
+						ret=FAIL;
+				}
+			}
+		}
+		outfile.close();
+	} else {
+		std::cout<< "Could not open file "<< fname << std::endl;
+		return -1;
+	}
+	return ret;
+}
+
+
+int multiSlsDetector::resetCounterBlock(int startACQ){
+
+	int ret=-100, ret1;
+	for (int idet=0; idet<thisMultiDetector->numberOfDetectors; idet++) {
+		if (detectors[idet]) {
+			ret1=detectors[idet]->resetCounterBlock(startACQ);
+			if (ret==-100)
+				ret=ret1;
+			else if (ret!=ret1)
+				ret=-1;
+		}
+	}
+	return ret;
 }

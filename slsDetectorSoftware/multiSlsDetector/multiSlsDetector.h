@@ -948,7 +948,25 @@ class multiSlsDetector  : public slsDetectorUtils {
        \sa mythenDetector::readDataFile
   */
    int readDataFile(string fname, int *data);
+
+
+   /**
+        writes the counter memory block from the detector
+        \param startACQ is 1 to start acquisition after reading counter
+        \param fname file name to load data from
+        \returns OK or FAIL
+   */
+   int writeCounterBlockFile(string const fname,int startACQ=0);
  
+
+  /**
+        Resets counter in detector
+        \param startACQ is 1 to start acquisition after resetting counter
+        \returns OK or FAIL
+   */
+   int resetCounterBlock(int startACQ=0);
+
+
  protected:
  
 

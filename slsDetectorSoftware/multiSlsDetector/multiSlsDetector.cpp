@@ -1091,8 +1091,8 @@ int* multiSlsDetector::readAll(){
 
 #ifdef VERBOSE
   std::cout<< "received "<< i<< " frames" << std::endl;
-#else
-   std::cout << std::endl; 
+  //#else
+  // std::cout << std::endl; 
 #endif
   return dataQueue.front(); // check what we return!
 
@@ -1132,8 +1132,8 @@ int* multiSlsDetector::startAndReadAll(){
 
 #ifdef VERBOSE
   std::cout<< "MMMM recieved "<< i<< " frames" << std::endl;
-#else
-   std::cout << std::endl; 
+  //#else
+  // std::cout << std::endl; 
 #endif
   return dataQueue.front(); // check what we return!
 

@@ -19,6 +19,8 @@ slsDetectorUtils::slsDetectorUtils() :    queuesize(0),
   pthread_mutex_t mp1 = PTHREAD_MUTEX_INITIALIZER;
   mp=mp1;
   pthread_mutex_init(&mp, NULL);  
+  mg=mp1;
+  pthread_mutex_init(&mg, NULL);  
 }
 
 
@@ -1852,57 +1854,57 @@ void* slsDetectorUtils::processData(int delflag) {
 		//	cout << "Write angular converted file for position " << currentPositionIndex << endl;
 #endif
 
-		writeDataFile (fname+string(".dat"), ffcdata, ffcerr,ang);
+	    writeDataFile (fname+string(".dat"), ffcdata, ffcerr,ang);
 		// }
 		// }
 #ifdef VERBOSE
 	    //	    cout << "add to merging "<< currentPositionIndex << endl;
 #endif
-		if (*numberOfPositions>0 || delflag==0) {
-		  addToMerging(ang, ffcdata, ffcerr, mergingBins, mergingCounts,mergingErrors, mergingMultiplicity, getTotalNumberOfChannels(), bs, *angDirection, *correctionMask, badChannelMask );
+	    if (*numberOfPositions>0 || delflag==0) {
+	      addToMerging(ang, ffcdata, ffcerr, mergingBins, mergingCounts,mergingErrors, mergingMultiplicity, getTotalNumberOfChannels(), bs, *angDirection, *correctionMask, badChannelMask );
 		
 #ifdef VERBOSE
-		  cout << currentPositionIndex << " " << (*numberOfPositions) << endl;
+	      cout << currentPositionIndex << " " << (*numberOfPositions) << endl;
 	     
 #endif
 		
+	      
+	      pthread_mutex_lock(&mp);
+	      if ((currentPositionIndex>=(*numberOfPositions) && posfinished==1 && queuesize==1)) {
 		
-		  pthread_mutex_lock(&mp);
-		  if ((currentPositionIndex>=(*numberOfPositions) && posfinished==1 && queuesize==1)) {
-		    
-		    
-	    //  if ((currentPositionIndex>=(*numberOfPositions)) || (currentPositionIndex==0)) {
+		
+		//  if ((currentPositionIndex>=(*numberOfPositions)) || (currentPositionIndex==0)) {
 #ifdef VERBOSE
 		    //      cout << "finalize merging " << currentPositionIndex<< endl;
 #endif
-		    np=finalizeMerging(mergingBins, mergingCounts,mergingErrors, mergingMultiplicity, bs);
+		np=finalizeMerging(mergingBins, mergingCounts,mergingErrors, mergingMultiplicity, bs);
 	      /** file writing */
+		
+		
 
-
-
-
-		    currentPositionIndex++;
-		    pthread_mutex_unlock(&mp);
-
+		
+		currentPositionIndex++;
+		pthread_mutex_unlock(&mp);
+		
 	      
-		    fname=createFileName();
+		fname=createFileName();
 	      
-	      
+		
 #ifdef VERBOSE
-	      //		cout << "writing merged data file" << endl;
+		//		cout << "writing merged data file" << endl;
 #endif
-		    writeDataFile (fname+string(".dat"),np,mergingCounts, mergingErrors, mergingBins,'f');
+		writeDataFile (fname+string(".dat"),np,mergingCounts, mergingErrors, mergingBins,'f');
 #ifdef VERBOSE
 		//	cout << " done" << endl;
 #endif
+		
+		
 
-
-
-		    if (delflag) {
+		if (delflag) {
 #ifdef VERBOSE
-		      //	      cout << mergingBins<< " " <<  mergingCounts<< " " <<  mergingErrors << " " <<  mergingMultiplicity << " " << endl;
+		  //	      cout << mergingBins<< " " <<  mergingCounts<< " " <<  mergingErrors << " " <<  mergingMultiplicity << " " << endl;
 #endif
-		      
+		  
 		      if (mergingBins) {
 #ifdef VERBOSE
 			//	cout << "deleting merged bins "<< mergingBins << " size " << sizeof(mergingBins) << endl;
@@ -1932,24 +1934,26 @@ void* slsDetectorUtils::processData(int delflag) {
 			mergingMultiplicity=NULL;
 		      }
 #ifdef VERBOSE
-	      //	      cout << "deleting merged data done " << endl;
+		      //	      cout << "deleting merged data done " << endl;
 	  
-	      //      cout << mergingBins<< " " <<  mergingCounts<< " " <<  mergingErrors << " " <<  mergingMultiplicity << " " << endl;
-
+		      //      cout << mergingBins<< " " <<  mergingCounts<< " " <<  mergingErrors << " " <<  mergingMultiplicity << " " << endl;
+		      
 #endif
 		    }
-		} else {
-		    thisData=new detectorData(mergingCounts,mergingErrors,mergingBins,getCurrentProgress(),(fname+string(ext)).c_str(),np);
-		    
-		    finalDataQueue.push(thisData);
-		  }
-		  pthread_mutex_lock(&mp);
-		}
-	      pthread_mutex_unlock(&mp);
-	      
-
+	      } else {
+		thisData=new detectorData(mergingCounts,mergingErrors,mergingBins,getCurrentProgress(),(fname+string(ext)).c_str(),np);
+		
+		pthread_mutex_lock(&mg);
+		finalDataQueue.push(thisData);
+		pthread_mutex_unlock(&mg);
+	      }
+	      pthread_mutex_lock(&mp);
+	    }
+	    pthread_mutex_unlock(&mp);
+	    
+	    
 #ifdef VERBOSE
-	      //    cout << "delete data" << ffcdata << endl;
+	    //    cout << "delete data" << ffcdata << endl;
 #endif	    
 	    
 	    if (ffcdata)
@@ -1965,11 +1969,11 @@ void* slsDetectorUtils::processData(int delflag) {
 #ifdef VERBOSE
 	      //     cout << "delete ang " << ang <<  endl;
 #endif	    
-	    if (ang)
+	      if (ang)
 	      delete [] ang;
-	    ang=NULL;
-
-
+	      ang=NULL;
+	      
+	      
 	  } else {
 	    if (*correctionMask!=0) {
 	      writeDataFile (fname+string(".dat"),  ffcdata, ffcerr);
@@ -1983,7 +1987,9 @@ void* slsDetectorUtils::processData(int delflag) {
 		delete [] ang;
 	    } else {
 	      thisData=new detectorData(ffcdata,ffcerr,NULL,getCurrentProgress(),(fname+string(ext)).c_str(),getTotalNumberOfChannels());
+	      pthread_mutex_lock(&mg);
 	      finalDataQueue.push(thisData);  
+	      pthread_mutex_unlock(&mg);
 	    }  
 	  }
 	}
@@ -2054,10 +2060,12 @@ int* slsDetectorUtils::popDataQueue() {
 
 detectorData* slsDetectorUtils::popFinalDataQueue() {
   detectorData *retval=NULL;
+  pthread_mutex_unlock(&mg);
   if( !finalDataQueue.empty() ) {
     retval=finalDataQueue.front();
     finalDataQueue.pop();
   }
+  pthread_mutex_unlock(&mg);
   return retval;
 }
 
@@ -2073,11 +2081,13 @@ void slsDetectorUtils::resetDataQueue() {
 
 void slsDetectorUtils::resetFinalDataQueue() {
   detectorData *retval=NULL;
+  pthread_mutex_lock(&mg);
   while( !finalDataQueue.empty() ) {
     retval=finalDataQueue.front();
     finalDataQueue.pop();
     delete retval;
   }
+  pthread_mutex_unlock(&mg);
 
 }
 

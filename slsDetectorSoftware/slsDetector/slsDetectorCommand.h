@@ -4,7 +4,7 @@
 
 
 #include "sls_detector_defs.h"
-#include "slsDetectorBase.h"
+#include "slsDetectorUtils.h"
 using namespace std;
 
 
@@ -12,12 +12,12 @@ using namespace std;
 /*     It is inherited by both slsDetector and multiSlsDetector */
 
 /* *\/ */
-class slsDetectorCommand { 
+class slsDetectorCommand : public slsDetectorDefs { 
 
  public:
 
 
-   slsDetectorCommand(slsDetectorBase *det);
+   slsDetectorCommand(slsDetectorUtils *det);
 
 
   /*   /\** */
@@ -100,7 +100,7 @@ class slsDetectorCommand {
  private:
 
 
-  slsDetectorBase *myDet;
+  slsDetectorUtils *myDet;
    
    string cmdUnderDevelopment(int narg, char *args[], int action); 
    string cmdUnknown(int narg, char *args[], int action); 

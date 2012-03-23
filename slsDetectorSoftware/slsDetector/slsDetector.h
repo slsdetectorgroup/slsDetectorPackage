@@ -4,8 +4,11 @@
 #ifndef SLS_DETECTOR_H
 #define SLS_DETECTOR_H
 
-#include "MySocketTCP.h"
+
+class MySocketTCP;
+
 #include "slsDetectorUtils.h"
+#include "MySocketTCP.h"
 //#include "slsDetectorCommand.h"
 
 
@@ -1096,7 +1099,7 @@ typedef  struct sharedSlsDetector {
       \param ecorr if !=NULL the flat field correction errors will be filled with ecorr (1 otherwise)
       \returns 0 if ff correction disabled, >0 otherwise
   */
-  int setFlatFieldCorrection(float *corr=NULL, float *ecorr=NULL);
+  int setFlatFieldCorrection(float *corr, float *ecorr=NULL);
 
 
   /** 

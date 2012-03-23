@@ -581,7 +581,7 @@ class multiSlsDetector  : public slsDetectorUtils {
       updates the size of the data expected from the detector
       \sa sharedSlsDetector
   */
-  int setDynamicRange(int n=-1, int pos=-1);
+  int setDynamicRange(int n, int pos);
 
 
  
@@ -611,7 +611,7 @@ class multiSlsDetector  : public slsDetectorUtils {
       \param ecorr if !=NULL the flat field correction errors will be filled with ecorr (1 otherwise)
       \returns 0 if ff correction disabled, >0 otherwise
   */
-  int setFlatFieldCorrection(float *corr=NULL, float *ecorr=NULL);
+  int setFlatFieldCorrection(float *corr, float *ecorr=NULL);
 
   /** 
       get flat field corrections

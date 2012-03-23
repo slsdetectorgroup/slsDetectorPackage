@@ -3,6 +3,29 @@
 #ifndef SLS_DETECTOR_UTILS_H
 #define SLS_DETECTOR_UTILS_H
 
+
+#ifdef __CINT__
+class pthread_mutex_t;
+class pthread_t;
+#endif
+
+extern "C" {
+#include <pthread.h>
+}
+
+#include <sys/stat.h>
+#include <sys/types.h>
+#include <sys/uio.h>
+#include <fcntl.h>
+#include <unistd.h>
+
+
+#ifdef __MAKECINT__
+#pragma link off class _FTCOMSTAT-;
+#pragma link off class _FTDCB-;
+#endif
+
+
 //#include "MySocketTCP.h"
 #include <iostream>
 #include <fstream>
@@ -10,16 +33,9 @@
 #include <cstring>
 #include <string>
 #include <sstream>
- #include <queue>
-extern "C" {
- #include <pthread.h>
-}
- #include <fcntl.h>
- #include <unistd.h>
- #include <sys/stat.h>
- #include <sys/types.h>
- #include <sys/uio.h>
+#include <queue>
 #include <math.h>
+
 using namespace std;
 
 
@@ -95,11 +111,43 @@ class slsDetectorUtils : public slsDetectorBase {
 
 
 
+  using slsDetectorBase::setBadChannelCorrection;
+  using slsDetectorBase::getAngularConversion;
 
 
+  /** adds the detector with ID id in postion pos
+   \param id of the detector to be added (should already exist!)
+   \param pos position where it should be added (normally at the end of the list (default to -1)
+   \returns the actual number of detectors or -1 if it failed (always for slsDetector)
+  */
+  virtual int addSlsDetector(int id, int pos=-1){return -1;};
 
 
+  /** adds the detector name in position pos
+   \param name of the detector to be added (should already exist in shared memory or at least be online) 
+   \param pos position where it should be added (normally at the end of the list (default to -1)
+   \return the actual number of detectors or -1 if it failed (always for slsDetector)
+  */
+  virtual int addSlsDetector(char* name, int pos=-1){return -1;};
 
+
+  /**
+     removes the detector in position pos from the multidetector
+     \param pos position of the detector to be removed from the multidetector system (defaults to -1 i.e. last detector)
+     \returns the actual number of detectors or -1 if it failed (always for slsDetector)
+  */
+  virtual int removeSlsDetector(int pos=-1){return -1;};
+
+ /**removes the detector in position pos from the multidetector
+    \param name is the name of the detector
+    \returns the actual number of detectors or -1 if it failed  (always for slsDetector)
+ */
+  virtual int removeSlsDetector(char* name){return -1;};
+
+    /** 
+      Turns off the server -  do not use except for debugging!
+  */   
+  virtual int exitServer()=0;
 
 
 
@@ -287,10 +335,9 @@ class slsDetectorUtils : public slsDetectorBase {
        \param name of the file to be read
        \param data array of data values
        \returns OK or FAIL if it could not read the file or data=NULL
-       \sa mythenDetector::readDataFile
   */
    static int readDataFile(string fname, int *data, int nch);
-   static int readDataFile(ifstream &infile, int *data, int nch, int offset=0);
+   static int readDataFile(ifstream &infile, int *data, int nch, int offset);
 
    /**
 
@@ -301,7 +348,7 @@ class slsDetectorUtils : public slsDetectorBase {
         \sa mythenDetector::readDataFile
    */
     static int readDataFile(string fname, short int *data, int nch);
-    static int readDataFile(ifstream &infile, short int *data, int nch, int offset=0);
+    static int readDataFile(ifstream &infile, short int *data, int nch, int offset);
 
   /**
    
@@ -768,14 +815,15 @@ s
   */ 
   int* popDataQueue();
 
+
+
+
   /**
    pops the data from thepostprocessed data queue
     \returns pointer to the popped data  or NULL if the queue is empty. 
     \sa  finalDataQueue
   */ 
   detectorData* popFinalDataQueue();
-
-
 
 
   /**
@@ -790,6 +838,16 @@ s
   */ 
   void resetFinalDataQueue();
 
+
+
+
+   
+  
+ 
+
+
+
+
 /*   virtual string getScanScript(int iscan)=0; */
 /*   virtual string getScanParameter(int iscan)=0; */
 /*   virtual string getActionScript(int iscan)=0; */
@@ -803,6 +861,25 @@ s
 
   /** temporary test fucntion  */
   int testFunction(int times=0);
+  /** 
+      write  register 
+      \param addr address
+      \param val value
+      \returns current register value
+      
+      DO NOT USE!!! ONLY EXPERT USER!!!
+  */
+  virtual int writeRegister(int addr, int val)=0; 
+
+ 
+  /** 
+      read  register 
+      \param addr address
+      \returns current register value
+
+      DO NOT USE!!! ONLY EXPERT USER!!!
+  */
+  virtual int readRegister(int addr)=0;
 
  protected:
    static const int64_t thisSoftwareVersion=0x20120124;
@@ -904,10 +981,11 @@ s
   char *fileName;
   int *fileIndex;
 
-
- /** mutex to synchronize threads */
+ /** mutex to synchronize main and data processing threads */
    pthread_mutex_t mp;
 
+ /** mutex to synchronizedata processing and plotting threads */
+   pthread_mutex_t mg;
 
  /** sets when the acquisition is finished */
   int jointhread;

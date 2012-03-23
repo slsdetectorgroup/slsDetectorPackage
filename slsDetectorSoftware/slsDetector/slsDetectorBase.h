@@ -16,7 +16,8 @@ This class contains the functions accessible by the users to control the slsDete
 */
 
 
-class slsDetectorBase { 
+class slsDetectorBase : public slsDetectorDefs
+ { 
 
  public:
 
@@ -28,7 +29,7 @@ class slsDetectorBase {
    virtual ~slsDetectorBase(){};
 
   /** sets the onlineFlag
-      \param off can be: <BR> GET_ONLINE_FLAG, returns wether the detector is in online or offline state;<BR> OFFLINE_FLAG, detector in offline state (i.e. no communication to the detector - using only local structure - no data acquisition possible!);<BR> ONLINE_FLAG  detector in online state (i.e. communication to the detector updating the local structure) 
+      \param online can be: <BR> GET_ONLINE_FLAG, returns wether the detector is in online or offline state;<BR> OFFLINE_FLAG, detector in offline state (i.e. no communication to the detector - using only local structure - no data acquisition possible!);<BR> ONLINE_FLAG  detector in online state (i.e. communication to the detector updating the local structure) 
       \returns ONLINE_FLAG or OFFLINE_FLAG
   */
   virtual int setOnline(int const online=GET_ONLINE_FLAG)=0;
@@ -61,12 +62,17 @@ class slsDetectorBase {
   */ 
   virtual int* readFrame()=0;
 
-  /** processes the data
-      \param delflag 0 leaves the data in the final data queue
-      \returns nothing
+/*   /\** processes the data */
+/*       \param delflag 0 leaves the data in the final data queue */
+/*       \returns nothing */
       
-  */
-  virtual void* processData(int delflag)=0;
+/*   *\/ */
+/*   virtual void* processData(int delflag)=0; */
+
+
+
+
+
 
 
   /**
@@ -86,43 +92,43 @@ class slsDetectorBase {
   */
   virtual runStatus getRunStatus()=0;
 
-  /** Frees the shared memory  -  should not be used except for debugging*/
-  virtual int freeSharedMemory()=0;
+/*   /\** Frees the shared memory  -  should not be used except for debugging*\/ */
+/*   virtual int freeSharedMemory()=0; */
 
-  /** adds the detector with ID id in postion pos
-   \param id of the detector to be added (should already exist!)
-   \param pos position where it should be added (normally at the end of the list (default to -1)
-   \returns the actual number of detectors or -1 if it failed (always for slsDetector)
-  */
-  virtual int addSlsDetector(int id, int pos=-1){return -1;};
-
-
-  /** adds the detector name in position pos
-   \param name of the detector to be added (should already exist in shared memory or at least be online) 
-   \param pos position where it should be added (normally at the end of the list (default to -1)
-   \return the actual number of detectors or -1 if it failed (always for slsDetector)
-  */
-  virtual int addSlsDetector(char* name, int pos=-1){return -1;};
+/*   /\** adds the detector with ID id in postion pos */
+/*    \param id of the detector to be added (should already exist!) */
+/*    \param pos position where it should be added (normally at the end of the list (default to -1) */
+/*    \returns the actual number of detectors or -1 if it failed (always for slsDetector) */
+/*   *\/ */
+/*   virtual int addSlsDetector(int id, int pos=-1){return -1;}; */
 
 
-  /**
-     removes the detector in position pos from the multidetector
-     \param pos position of the detector to be removed from the multidetector system (defaults to -1 i.e. last detector)
-     \returns the actual number of detectors or -1 if it failed (always for slsDetector)
-  */
-  virtual int removeSlsDetector(int pos=-1){return -1;};
+/*   /\** adds the detector name in position pos */
+/*    \param name of the detector to be added (should already exist in shared memory or at least be online)  */
+/*    \param pos position where it should be added (normally at the end of the list (default to -1) */
+/*    \return the actual number of detectors or -1 if it failed (always for slsDetector) */
+/*   *\/ */
+/*   virtual int addSlsDetector(char* name, int pos=-1){return -1;}; */
 
- /**removes the detector in position pos from the multidetector
-    \param name is the name of the detector
-    \returns the actual number of detectors or -1 if it failed  (always for slsDetector)
- */
-  virtual int removeSlsDetector(char* name){return -1;};
+
+/*   /\** */
+/*      removes the detector in position pos from the multidetector */
+/*      \param pos position of the detector to be removed from the multidetector system (defaults to -1 i.e. last detector) */
+/*      \returns the actual number of detectors or -1 if it failed (always for slsDetector) */
+/*   *\/ */
+/*   virtual int removeSlsDetector(int pos=-1){return -1;}; */
+
+/*  /\**removes the detector in position pos from the multidetector */
+/*     \param name is the name of the detector */
+/*     \returns the actual number of detectors or -1 if it failed  (always for slsDetector) */
+/*  *\/ */
+/*   virtual int removeSlsDetector(char* name){return -1;}; */
 
   
   
   /** returns the detector hostname 
       \param pos position in the multi detector structure (is -1 returns concatenated hostnames divided by a +)
-      \retruns hostname
+      \returns hostname
   */
   virtual string getHostname(int pos=-1)=0;
 
@@ -160,10 +166,6 @@ class slsDetectorBase {
   */   
   virtual synchronizationMode setSynchronization(synchronizationMode sync=GET_SYNCHRONIZATION_MODE)=0;
 
-  /** 
-      Turns off the server -  do not use except for debugging!
-  */   
-  virtual int exitServer()=0;
 
   /** 
       returns the detector trimbit/settings directory   
@@ -223,7 +225,7 @@ class slsDetectorBase {
   
   /** 
       set flat field corrections file directory
-      \param flat field correction file directory
+      \param dir flat field correction file directory
       \returns flat field correction file directory
   */
   virtual char *setFlatFieldCorrectionDir(string dir)=0;
@@ -255,7 +257,7 @@ class slsDetectorBase {
       \param ecorr if !=NULL the flat field correction errors will be filled with ecorr (1 otherwise)
       \returns 0 if ff correction disabled, >0 otherwise
   */
-  virtual int setFlatFieldCorrection(float *corr=NULL, float *ecorr=NULL)=0;
+  virtual int setFlatFieldCorrection(float *corr, float *ecorr=NULL)=0;
   
   /** 
       set rate correction
@@ -320,7 +322,7 @@ class slsDetectorBase {
   
   /** 
       get angular conversion
-      \param reference to diffractometer direction
+      \param direction reference to diffractometer direction
       \param angconv array that will be filled with the angular conversion constants
       \returns 0 if angular conversion disabled, >0 otherwise
   */
@@ -349,33 +351,33 @@ class slsDetectorBase {
   */
   virtual float getAngularConversionParameter(angleConversionParameter c)=0;
 
-  /**   
-	writes a data file
-	\param name of the file to be written
-	\param data array of data values
-	\param err array of arrors on the data. If NULL no errors will be written
+/*   /\**    */
+/* 	writes a data file */
+/* 	\param name of the file to be written */
+/* 	\param data array of data values */
+/* 	\param err array of arrors on the data. If NULL no errors will be written */
 	
-	\param ang array of angular values. If NULL data will be in the form chan-val(-err) otherwise ang-val(-err)
-	\param dataformat format of the data: can be 'i' integer or 'f' float (default)
-	\param nch number of channels to be written to file. if -1 defaults to the number of installed channels of the detector
-	\returns OK or FAIL if it could not write the file or data=NULL
-  */
-  virtual int writeDataFile(string fname, float *data, float *err=NULL, float *ang=NULL, char dataformat='f', int nch=-1)=0; 
+/* 	\param ang array of angular values. If NULL data will be in the form chan-val(-err) otherwise ang-val(-err) */
+/* 	\param dataformat format of the data: can be 'i' integer or 'f' float (default) */
+/* 	\param nch number of channels to be written to file. if -1 defaults to the number of installed channels of the detector */
+/* 	\returns OK or FAIL if it could not write the file or data=NULL */
+/*   *\/ */
+/*   virtual int writeDataFile(string fname, float *data, float *err=NULL, float *ang=NULL, char dataformat='f', int nch=-1)=0;  */
 
-  /**
-     writes an angular conversion file
-     \param fname file to be written
-     \return OK/FAIL
-  */
-  virtual int writeAngularConversion(string fname)=0;
+/*   /\** */
+/*      writes an angular conversion file */
+/*      \param fname file to be written */
+/*      \return OK/FAIL */
+/*   *\/ */
+/*   virtual int writeAngularConversion(string fname)=0; */
 
-  /** 
-      set/get if the data processing and file writing should be done by a separate thread - do not use except for debugging!
-      \param b 0 sequencial data acquisition and file writing, 1 separate thread, -1 get
-      \returns thread flag
-  */
-  virtual int setThreadedProcessing(int i=-1)=0;
-  
+/*    /\**  */
+/*       set/get if the data processing and file writing should be done by a separate thread - do not use except for debugging! */
+/*       \param i 0 sequencial data acquisition and file writing, 1 separate thread, -1 get */
+/*       \returns thread flag */
+/*   *\/ */
+/*   virtual int setThreadedProcessing(int i=-1)=0; */
+ 
   /** 
       set  positions for the acquisition
       \param nPos number of positions
@@ -424,7 +426,7 @@ class slsDetectorBase {
  /** 
       set scan script
       \param index is the scan index (0 or 1)
-      \param fname for script ("" disable, "none" disables and overwrites current, "threshold" makes threshold scan, "trimbits" make trimbits scan, "energy" makes energy scan)
+      \param script fname for script ("" disable, "none" disables and overwrites current, "threshold" makes threshold scan, "trimbits" make trimbits scan, "energy" makes energy scan)
       \returns 0 if scan disabled, >0 otherwise
   */
   virtual int setScanScript(int index, string script="")=0;
@@ -502,8 +504,8 @@ class slsDetectorBase {
 
 /**
      changes/gets the port number
-     \param type port type can be CONTROL_PORT, DATA_PORT, STOP_PORT
-     \param num new port number (<1024 gets)
+     \param t type port type can be CONTROL_PORT, DATA_PORT, STOP_PORT
+     \param i new port number (<1024 gets)
      \returns actual port number
   */
   virtual int setPort(portType t, int i=-1)=0; 
@@ -531,7 +533,7 @@ class slsDetectorBase {
 
   /** 
       set/get the size of the detector 
-      \param n number of modules
+      \param i number of modules
       \param d dimension
       \returns current number of modules in direction d
   */
@@ -548,10 +550,8 @@ class slsDetectorBase {
 
     /** 
       set/get dynamic range
-      \param n dynamic range (-1 get)
+      \param i dynamic range (-1 get)
       \returns current dynamic range
-      updates the size of the data expected from the detector
-      \sa sharedSlsDetector
   */
   virtual int setDynamicRange(int i=-1)=0;
 
@@ -642,25 +642,6 @@ class slsDetectorBase {
 
 
 
-  /** 
-      write  register 
-      \param addr address
-      \val value
-      \returns current register value
-      
-      DO NOT USE!!! ONLY EXPERT USER!!!
-  */
-  virtual int writeRegister(int addr, int val)=0; 
-
- 
-  /** 
-      read  register 
-      \param addr address
-      \returns current register value
-
-      DO NOT USE!!! ONLY EXPERT USER!!!
-  */
-  virtual int readRegister(int addr)=0;
 
 
   /**
@@ -670,7 +651,7 @@ class slsDetectorBase {
     \param imod module number (if -1 alla modules)
     \returns current DAC value
   */
-  virtual float setDAC(float , dacIndex, int imod=-1)=0;
+  virtual float setDAC(float val, dacIndex index , int imod=-1)=0;
 
 
   /**
@@ -679,7 +660,7 @@ class slsDetectorBase {
      \param imod module number
      \returns current ADC value
   */
-  virtual float getADC(dacIndex, int imod=0)=0;
+  virtual float getADC(dacIndex index, int imod=0)=0;
 
 
   /** 
@@ -722,7 +703,7 @@ class slsDetectorBase {
   virtual int setTrimEn(int nen, int *en=NULL)=0;
 
   /** returns the number of trim energies and their value  \sa sharedSlsDetector 
-      \param point to the array that will contain the trim energies (in ev)
+      \param en pointer to the array that will contain the trim energies (in ev)
       \returns number of trim energies
 
       unused!
@@ -733,7 +714,7 @@ class slsDetectorBase {
   /** 
      set/get the use of an external signal 
       \param pol meaning of the signal \sa externalSignalFlag
-      \param signalIndex index of the signal
+      \param signalindex index of the signal
       \returns current meaning of signal signalIndex
   */
   virtual externalSignalFlag setExternalSignalFlags(externalSignalFlag pol=GET_EXTERNAL_SIGNAL_FLAG , int signalindex=0)=0;
@@ -790,35 +771,12 @@ class slsDetectorBase {
  /**
       Loads dark image or gain image to the detector
       \param index can be DARK_IMAGE or GAIN_IMAGE
-      \fname file name to load data from
+      \param fname file name to load data from
       \returns OK or FAIL
  */
   virtual int loadImageToDetector(imageType index,string const fname)=0;
+
   
-
-  /**
-       writes the counter memory block from the detector
-       \param startACQ is 1 to start acquisition after reading counter
-       \fname file fname to load data from
-       \returns OK or FAIL
-  */
-  virtual int writeCounterBlockFile(string const fname,int startACQ=0)=0;
-
-
-  /**
-       Resets counter memory block in detector
-       \param startACQ is 1 to start acquisition after resetting counter
-       \returns OK or FAIL
-  */
-  virtual int resetCounterBlock(int startACQ=0)=0;
-
-
-  /**
-   function to test acquisition
-  */
-  virtual int testFunction(int itimes=0)=0;
-
-
   /************************************************************************
 
                            STATIC FUNCTIONS
@@ -840,7 +798,7 @@ class slsDetectorBase {
     }};
   
   /** returns detector type string from detector type index
-      \param type string can be Mythen, Pilatus, Eiger, Gotthard, Agipd, Unknown
+      \param t string can be Mythen, Pilatus, Eiger, Gotthard, Agipd, Unknown
       \returns MYTHEN, PILATUS, EIGER, GOTTHARD, AGIPD, GENERIC
   */
   static string getDetectorType(detectorType t){\
@@ -854,7 +812,7 @@ class slsDetectorBase {
   }};
 
   /** returns detector type index from detector type string
-      \param t can be MYTHEN, PILATUS, EIGER, GOTTHARD, AGIPD, GENERIC
+      \param type can be MYTHEN, PILATUS, EIGER, GOTTHARD, AGIPD, GENERIC
       \returns Mythen, Pilatus, Eiger, Gotthard, Agipd, Unknown
   */
   static detectorType getDetectorType(string const type){\
@@ -868,7 +826,7 @@ class slsDetectorBase {
 
 
   /** returns synchronization type index from string
-      \param t can be none, gating, trigger, complementary
+      \param type can be none, gating, trigger, complementary
       \returns ONE, MASTER_GATES, MASTER_TRIGGERS, SLAVE_STARTS_WHEN_MASTER_STOPS
   */
   static synchronizationMode getSyncType(string const type){\
@@ -880,8 +838,8 @@ class slsDetectorBase {
   };
 
   /** returns synchronization type string from index
-      \param t can be NONE, MASTER_GATES, MASTER_TRIGGERS, SLAVE_STARTS_WHEN_MASTER_STOPS
-      \returns none, gating, trigger, complementary
+      \param s can be NONE, MASTER_GATES, MASTER_TRIGGERS, SLAVE_STARTS_WHEN_MASTER_STOPS
+      \returns none, gating, trigger, complementary, unknown
   */
   static string getSyncType(synchronizationMode s ){\
     switch(s) {					    \
@@ -923,8 +881,8 @@ class slsDetectorBase {
 
 
   /** returns external signal type index from string
-      \param string  off, gate_in_active_high, gate_in_active_low, trigger_in_rising_edge, trigger_in_falling_edge, ro_trigger_in_rising_edge, ro_trigger_in_falling_edge, gate_out_active_high, gate_out_active_low, trigger_out_rising_edge, trigger_out_falling_edge, ro_trigger_out_rising_edge, ro_trigger_out_falling_edge, gnd, vcc, sync, unknown
-      \returns f can be SIGNAL_OFF, GATE_IN_ACTIVE_HIGH, GATE_IN_ACTIVE_LOW, TRIGGER_IN_RISING_EDGE, TRIGGER_IN_FALLING_EDGE, RO_TRIGGER_IN_RISING_EDGE, RO_TRIGGER_IN_FALLING_EDGE, GATE_OUT_ACTIVE_HIGH, GATE_OUT_ACTIVE_LOW, TRIGGER_OUT_RISING_EDGE, TRIGGER_OUT_FALLING_EDGE, RO_TRIGGER_OUT_RISING_EDGE, RO_TRIGGER_OUT_FALLING_EDGE, OUTPUT_LOW, OUTPUT_HIGH, MASTER_SLAVE_SYNCHRONIZATION,  GET_EXTERNAL_SIGNAL_FLAG (if unknown)
+      \param sval  off, gate_in_active_high, gate_in_active_low, trigger_in_rising_edge, trigger_in_falling_edge, ro_trigger_in_rising_edge, ro_trigger_in_falling_edge, gate_out_active_high, gate_out_active_low, trigger_out_rising_edge, trigger_out_falling_edge, ro_trigger_out_rising_edge, ro_trigger_out_falling_edge, gnd, vcc, sync, unknown
+      \returns can be SIGNAL_OFF, GATE_IN_ACTIVE_HIGH, GATE_IN_ACTIVE_LOW, TRIGGER_IN_RISING_EDGE, TRIGGER_IN_FALLING_EDGE, RO_TRIGGER_IN_RISING_EDGE, RO_TRIGGER_IN_FALLING_EDGE, GATE_OUT_ACTIVE_HIGH, GATE_OUT_ACTIVE_LOW, TRIGGER_OUT_RISING_EDGE, TRIGGER_OUT_FALLING_EDGE, RO_TRIGGER_OUT_RISING_EDGE, RO_TRIGGER_OUT_FALLING_EDGE, OUTPUT_LOW, OUTPUT_HIGH, MASTER_SLAVE_SYNCHRONIZATION,  GET_EXTERNAL_SIGNAL_FLAG (if unknown)
   */
 
   static externalSignalFlag externalSignalType(string sval){\
@@ -946,11 +904,11 @@ class slsDetectorBase {
   if  (sval=="vcc") return OUTPUT_HIGH;\
   return GET_EXTERNAL_SIGNAL_FLAG ;};
 
-
-  /** returns synchronization type string from index
-      \param t can be NONE, MASTER_GATES, MASTER_TRIGGERS, SLAVE_STARTS_WHEN_MASTER_STOPS
-      \returns none, gating, trigger, complementary
+  /** returns detector settings string from index
+      \param s can be standard, fast, highgain, dynamicgain, lowgain, mediumgain, veryhighgain, undefined
+      \returns   STANDARD, FAST, HIGHGAIN, DYNAMICGAIN, LOWGAIN, MEDIUMGAIN, VERYHIGHGAIN, GET_SETTINGS
   */
+
   static detectorSettings getDetectorSettings(string s){\
     if (s=="standard") return STANDARD;\
     if (s=="fast") return FAST;\
@@ -963,7 +921,7 @@ class slsDetectorBase {
   };
 
   /** returns detector settings string from index
-      \param t can be STANDARD, FAST, HIGHGAIN, DYNAMICGAIN, LOWGAIN, MEDIUMGAIN, VERYHIGHGAIN, GET_SETTINGS
+      \param s can be STANDARD, FAST, HIGHGAIN, DYNAMICGAIN, LOWGAIN, MEDIUMGAIN, VERYHIGHGAIN, GET_SETTINGS
       \returns standard, fast, highgain, dynamicgain, lowgain, mediumgain, veryhighgain, undefined
   */
   static string getDetectorSettings(detectorSettings s){\
@@ -1000,7 +958,7 @@ class slsDetectorBase {
 
   /**
      returns external communication mode index from string
-     \param s can be auto, trigger, ro_trigger, gating, triggered_gating
+     \param sval can be auto, trigger, ro_trigger, gating, triggered_gating
      \returns AUTO_TIMING, TRIGGER_EXPOSURE, TRIGGER_READOUT, GATE_FIX_NUMBER, GATE_WITH_START_TRIGGER, GET_EXTERNAL_COMMUNICATION_MODE
   */
 
@@ -1011,7 +969,6 @@ class slsDetectorBase {
   if  (sval=="gating") return GATE_FIX_NUMBER;\
   if  (sval=="triggered_gating") return GATE_WITH_START_TRIGGER;\
   return GET_EXTERNAL_COMMUNICATION_MODE;};
-
 
 };
 #endif

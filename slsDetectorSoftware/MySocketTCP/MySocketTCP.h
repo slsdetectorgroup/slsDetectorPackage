@@ -43,10 +43,26 @@ using namespace std;
   added a function which really does not close the socket between send/receive (senddataonly, receivedataonly)
 */
 
+#ifdef __CINT__
+//class  sockaddr_in;
+class socklen_t;
+class uint32_t;
+class uint32_t_ss; 
+// CINT view of types:
+class sockaddr_in;
+// {
+//     unsigned short int sa_family;
+//    unsigned char sa_data[14];
+//   };
+#else
 
 #include <arpa/inet.h>
 #include <netdb.h>
 #include <netinet/in.h>
+#endif
+
+
+
 #include <unistd.h>
 
 

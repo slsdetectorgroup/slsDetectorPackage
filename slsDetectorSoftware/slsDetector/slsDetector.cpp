@@ -1,3 +1,4 @@
+
 #include "slsDetector.h"
 #include "usersFunctions.h"
 #include "slsDetectorCommand.h"
@@ -268,7 +269,7 @@ slsDetector::slsDetector(char *name, int id, int cport) : slsDetectorUtils(),
 
 }
 
-detectorType slsDetector::getDetectorType(char *name, int cport) {
+slsDetectorDefs::detectorType slsDetector::getDetectorType(char *name, int cport) {
   
   int retval=FAIL;
   detectorType t=GENERIC;
@@ -377,7 +378,7 @@ int slsDetector::exists(int id) {
 
 
 
-detectorType slsDetector::getDetectorType(int id) {
+slsDetectorDefs::detectorType slsDetector::getDetectorType(int id) {
   
   detectorType t=GENERIC;
 
@@ -740,7 +741,7 @@ int slsDetector::initializeDetectorStructure() {
   return 0;
 }
 
-sls_detector_module*  slsDetector::createModule() {
+slsDetectorDefs::sls_detector_module*  slsDetector::createModule() {
 
   sls_detector_module *myMod=(sls_detector_module*)malloc(sizeof(sls_detector_module));
   float *dacs=new float[thisDetector->nDacs];
@@ -1364,7 +1365,7 @@ enum externalSignalFlag {
 }{};
   */
 
- externalSignalFlag slsDetector::setExternalSignalFlags(externalSignalFlag pol, int signalindex){
+slsDetectorDefs::externalSignalFlag slsDetector::setExternalSignalFlags(externalSignalFlag pol, int signalindex){
 
 
 
@@ -1436,7 +1437,7 @@ enum externalSignalFlag {
 
   */
 
-   externalCommunicationMode slsDetector::setExternalCommunicationMode( externalCommunicationMode pol){
+slsDetectorDefs::externalCommunicationMode slsDetector::setExternalCommunicationMode( externalCommunicationMode pol){
 
 
 
@@ -2030,7 +2031,7 @@ int slsDetector::setChannel(sls_detector_channel chan){
 
 
 
-sls_detector_channel  slsDetector::getChannel(int ichan, int ichip, int imod){
+slsDetectorDefs::sls_detector_channel  slsDetector::getChannel(int ichan, int ichip, int imod){
 
 
   int fnum=F_GET_CHANNEL;
@@ -2167,7 +2168,7 @@ int slsDetector::setChip(sls_detector_chip chip){
 };
 
 
- sls_detector_chip slsDetector::getChip(int ichip, int imod){
+ slsDetectorDefs::sls_detector_chip slsDetector::getChip(int ichip, int imod){
 
   int fnum=F_GET_CHIP;
   sls_detector_chip myChip;
@@ -2395,7 +2396,7 @@ int slsDetector::setModule(sls_detector_module module){
   return retval;
 };
 
-sls_detector_module  *slsDetector::getModule(int imod){
+slsDetectorDefs::sls_detector_module  *slsDetector::getModule(int imod){
 
 #ifdef VERBOSE
   std::cout << "slsDetector get module " << std::endl;
@@ -2603,7 +2604,7 @@ int slsDetector::setThresholdEnergy(int e_eV,  int imod, detectorSettings isetti
   /*
     select detector settings
   */
- detectorSettings  slsDetector::getSettings(int imod){
+ slsDetectorDefs::detectorSettings  slsDetector::getSettings(int imod){
 
    
   int fnum=F_SET_SETTINGS;
@@ -2644,7 +2645,7 @@ int slsDetector::setThresholdEnergy(int e_eV,  int imod, detectorSettings isetti
 
 
 
-detectorSettings slsDetector::setSettings( detectorSettings isettings, int imod){
+slsDetectorDefs::detectorSettings slsDetector::setSettings( detectorSettings isettings, int imod){
 #ifdef VERBOSE
   std::cout<< "slsDetector setSettings "<< std::endl;
 #endif
@@ -2954,7 +2955,7 @@ int slsDetector::startReadOut(){
 };
 
 
-runStatus slsDetector::getRunStatus(){
+slsDetectorDefs::runStatus slsDetector::getRunStatus(){
   int fnum=F_GET_RUN_STATUS;
   int ret=FAIL;
   char mess[100];
@@ -3012,7 +3013,8 @@ int* slsDetector::readFrame(){
 int* slsDetector::getDataFromDetector(int *retval){
 	int nel=thisDetector->dataBytes/sizeof(int);
 	int n;
-
+	
+	int *r=retval;
 
 
 	//	int* retval=new int[nel];
@@ -3042,7 +3044,7 @@ int* slsDetector::getDataFromDetector(int *retval){
 	    std::cout<< "Detector successfully returned: " << mess << " " << n << std::endl;
 #endif	
 	  }
-	  if (retval==NULL) {
+	  if (r==NULL) {
 	    delete [] retval;
 	  }
 	  return NULL;
@@ -3056,7 +3058,7 @@ int* slsDetector::getDataFromDetector(int *retval){
 	    std::cout<< "wrong data size received: received " << n << " but expected " << thisDetector->dataBytes << std::endl;
 	    thisDetector->stoppedFlag=1;
 	    ret=FAIL;
-	    if (retval==NULL) {
+	    if (r==NULL) {
 	      delete [] retval;
 	    }
 	    return NULL;
@@ -3101,8 +3103,8 @@ int* slsDetector::readAll(){
   }
 #ifdef VERBOSE
   std::cout<< "received "<< i<< " frames" << std::endl;
-#else
-   std::cout << std::endl;
+  //#else
+  // std::cout << std::endl;
 #endif
   return dataQueue.front(); // check what we return!
 
@@ -3160,8 +3162,8 @@ int* slsDetector::startAndReadAll(){
 
 #ifdef VERBOSE
   std::cout<< "received "<< i<< " frames" << std::endl;
-#else
-   std::cout << std::endl; 
+  //#else
+  // std::cout << std::endl; 
 #endif
   return dataQueue.front(); // check what we return!
 /* while ((retval=getDataFromDetectorNoWait()))
@@ -5147,7 +5149,7 @@ int slsDetector::retrieveDetectorSetup(string fname1, int level){
   /* I/O */
 
 
- sls_detector_module* slsDetector::readSettingsFile(string fname,  sls_detector_module *myMod){
+ slsDetectorDefs::sls_detector_module* slsDetector::readSettingsFile(string fname,  sls_detector_module *myMod){
   
    int nflag=0;
 
@@ -5466,7 +5468,7 @@ int slsDetector::saveSettingsFile(string fname, int imod) {
       \param flag can be GET_MASTER, NO_MASTER, IS_MASTER, IS_SLAVE
       \returns master flag of the detector
   */
-masterFlags  slsDetector::setMaster(masterFlags flag) {
+slsDetectorDefs::masterFlags  slsDetector::setMaster(masterFlags flag) {
   
 
   int fnum=F_SET_MASTER;
@@ -5511,7 +5513,7 @@ masterFlags  slsDetector::setMaster(masterFlags flag) {
       \param sync syncronization mode can be GET_SYNCHRONIZATION_MODE, NO_SYNCHRONIZATION, MASTER_GATES, MASTER_TRIGGERS, SLAVE_STARTS_WHEN_MASTER_STOPS
       \returns current syncronization mode   
   */   
-synchronizationMode slsDetector::setSynchronization(synchronizationMode flag) {
+slsDetectorDefs::synchronizationMode slsDetector::setSynchronization(synchronizationMode flag) {
   
 
   

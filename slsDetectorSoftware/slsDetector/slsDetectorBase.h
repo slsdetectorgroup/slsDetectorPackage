@@ -768,13 +768,13 @@ class slsDetectorBase : public slsDetectorDefs
   virtual int retrieveDetectorSetup(string const fname, int level=0)=0;
 
 
- /**
-      Loads dark image or gain image to the detector
-      \param index can be DARK_IMAGE or GAIN_IMAGE
-      \param fname file name to load data from
-      \returns OK or FAIL
- */
-  virtual int loadImageToDetector(imageType index,string const fname)=0;
+/*  /\** */
+/*       Loads dark image or gain image to the detector */
+/*       \param index can be DARK_IMAGE or GAIN_IMAGE */
+/*       \param fname file name to load data from */
+/*       \returns OK or FAIL */
+/*  *\/ */
+/*   virtual int loadImageToDetector(imageType index,string const fname)=0; */
 
   
   /************************************************************************

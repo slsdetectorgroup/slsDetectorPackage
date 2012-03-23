@@ -653,7 +653,7 @@ int multiSlsDetector::setMaster(int i) {
       \param sync syncronization mode
       \returns current syncronization mode
   */
-synchronizationMode multiSlsDetector::setSynchronization(synchronizationMode sync) {
+slsDetectorDefs::synchronizationMode multiSlsDetector::setSynchronization(synchronizationMode sync) {
 
   
   synchronizationMode ret=GET_SYNCHRONIZATION_MODE, ret1=GET_SYNCHRONIZATION_MODE;
@@ -797,7 +797,7 @@ int multiSlsDetector::setThresholdEnergy(int e_eV, int pos, detectorSettings ise
 
 }
  
-detectorSettings multiSlsDetector::getSettings(int pos) {
+slsDetectorDefs::detectorSettings multiSlsDetector::getSettings(int pos) {
 
   int i, posmin, posmax;
   detectorSettings ret1=GET_SETTINGS, ret;
@@ -825,7 +825,7 @@ detectorSettings multiSlsDetector::getSettings(int pos) {
   return ret1;
 }
 
-detectorSettings multiSlsDetector::setSettings(detectorSettings isettings, int pos) {
+slsDetectorDefs::detectorSettings multiSlsDetector::setSettings(detectorSettings isettings, int pos) {
 
 
   int i, posmin, posmax;
@@ -1172,7 +1172,7 @@ int multiSlsDetector::startAndReadAllNoWait(){
    get run status
    \returns status mask
 */
-runStatus  multiSlsDetector::getRunStatus() {
+slsDetectorDefs::runStatus  multiSlsDetector::getRunStatus() {
 
   runStatus s,s1;
 
@@ -2405,7 +2405,7 @@ int multiSlsDetector::setReadOutFlags(readOutFlags flag) {
 }
 
 
-externalCommunicationMode multiSlsDetector::setExternalCommunicationMode(externalCommunicationMode pol) {
+slsDetectorDefs::externalCommunicationMode multiSlsDetector::setExternalCommunicationMode(externalCommunicationMode pol) {
 
   externalCommunicationMode  ret, ret1;
 
@@ -2429,7 +2429,7 @@ externalCommunicationMode multiSlsDetector::setExternalCommunicationMode(externa
 
 
 
-externalSignalFlag multiSlsDetector::setExternalSignalFlags(externalSignalFlag pol, int signalindex) {
+slsDetectorDefs::externalSignalFlag multiSlsDetector::setExternalSignalFlags(externalSignalFlag pol, int signalindex) {
 
   externalSignalFlag  ret, ret1;
 
@@ -2507,7 +2507,6 @@ int multiSlsDetector::configureMAC() {
 }
 
 
-
 int multiSlsDetector::loadImageToDetector(imageType index,string const fname){
 
 	int ret=-100, ret1;
@@ -2542,6 +2541,57 @@ int multiSlsDetector::loadImageToDetector(imageType index,string const fname){
 	}
 	return ret;
 }
+
+int multiSlsDetector::writeCounterBlockFile(string const fname,int startACQ){
+
+	int ret=OK, ret1=OK;
+	short int arg[thisMultiDetector->numberOfChannels];
+	ofstream outfile;
+	outfile.open(fname.c_str(), ios_base::out);
+	if (outfile.is_open()) {
+#ifdef VERBOSE
+		std::cout<< std::endl<< "Reading Counter to \""<<fname;
+		if(startACQ==1)
+			std::cout<<"\" and Restarting Acquisition";
+		std::cout<<std::endl;
+#endif
+		for (int idet=0; idet<thisMultiDetector->numberOfDetectors; idet++) {
+			if (detectors[idet]) {
+				ret1=detectors[idet]->getCounterBlock(arg,startACQ);
+				if(ret1!=OK)
+					ret=FAIL;
+				else{
+					ret1=detectors[idet]->writeDataFile(outfile,arg);
+					if(ret1!=OK)
+						ret=FAIL;
+				}
+			}
+		}
+		outfile.close();
+	} else {
+		std::cout<< "Could not open file "<< fname << std::endl;
+		return -1;
+	}
+	return ret;
+}
+
+
+int multiSlsDetector::resetCounterBlock(int startACQ){
+
+	int ret=-100, ret1;
+	for (int idet=0; idet<thisMultiDetector->numberOfDetectors; idet++) {
+		if (detectors[idet]) {
+			ret1=detectors[idet]->resetCounterBlock(startACQ);
+			if (ret==-100)
+				ret=ret1;
+			else if (ret!=ret1)
+				ret=-1;
+		}
+	}
+	return ret;
+}
+
+
 
 
 
@@ -3382,52 +3432,3 @@ int multiSlsDetector::readDataFile(string fname, int *data) {
 }
 
 
-
-int multiSlsDetector::writeCounterBlockFile(string const fname,int startACQ){
-
-	int ret=OK, ret1=OK;
-	short int arg[thisMultiDetector->numberOfChannels];
-	ofstream outfile;
-	outfile.open(fname.c_str(), ios_base::out);
-	if (outfile.is_open()) {
-#ifdef VERBOSE
-		std::cout<< std::endl<< "Reading Counter to \""<<fname;
-		if(startACQ==1)
-			std::cout<<"\" and Restarting Acquisition";
-		std::cout<<std::endl;
-#endif
-		for (int idet=0; idet<thisMultiDetector->numberOfDetectors; idet++) {
-			if (detectors[idet]) {
-				ret1=detectors[idet]->getCounterBlock(arg,startACQ);
-				if(ret1!=OK)
-					ret=FAIL;
-				else{
-					ret1=detectors[idet]->writeDataFile(outfile,arg);
-					if(ret1!=OK)
-						ret=FAIL;
-				}
-			}
-		}
-		outfile.close();
-	} else {
-		std::cout<< "Could not open file "<< fname << std::endl;
-		return -1;
-	}
-	return ret;
-}
-
-
-int multiSlsDetector::resetCounterBlock(int startACQ){
-
-	int ret=-100, ret1;
-	for (int idet=0; idet<thisMultiDetector->numberOfDetectors; idet++) {
-		if (detectors[idet]) {
-			ret1=detectors[idet]->resetCounterBlock(startACQ);
-			if (ret==-100)
-				ret=ret1;
-			else if (ret!=ret1)
-				ret=-1;
-		}
-	}
-	return ret;
-}

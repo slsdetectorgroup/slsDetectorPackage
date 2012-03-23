@@ -113,6 +113,8 @@ class slsDetectorUtils : public slsDetectorBase {
 
   using slsDetectorBase::setBadChannelCorrection;
   using slsDetectorBase::getAngularConversion;
+  /** Frees the shared memory  -  should not be used except for debugging*/
+  virtual int freeSharedMemory()=0;
 
 
   /** adds the detector with ID id in postion pos
@@ -375,6 +377,11 @@ class slsDetectorUtils : public slsDetectorBase {
   \sa  angleConversionConstant mythenDetector::writeAngularConversion
   */
    static int writeAngularConversion(ofstream& ofs, int nmod, angleConversionConstant *angOff);
+
+
+
+   virtual int writeAngularConversion(const char *fname)=0;
+
   /** 
       set bad channels correction
       \param fname file with bad channel list ("" disable)
@@ -649,6 +656,31 @@ s
 
 
 
+
+/**
+      Loads dark image or gain image to the detector
+      \param index can be DARK_IMAGE or GAIN_IMAGE
+      \fname file name to load data from
+      \returns OK or FAIL
+ */
+  virtual int loadImageToDetector(imageType index,string const fname)=0;
+  
+
+  /**
+       writes the counter memory block from the detector
+       \param startACQ is 1 to start acquisition after reading counter
+       \fname file fname to load data from
+       \returns OK or FAIL
+  */
+  virtual int writeCounterBlockFile(string const fname,int startACQ=0)=0;
+
+
+  /**
+       Resets counter memory block in detector
+       \param startACQ is 1 to start acquisition after resetting counter
+       \returns OK or FAIL
+  */
+  virtual int resetCounterBlock(int startACQ=0)=0;
 
 
 

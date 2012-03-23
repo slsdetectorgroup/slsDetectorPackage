@@ -6,7 +6,7 @@
 
 #include <iomanip>
 
-slsDetectorCommand::slsDetectorCommand(slsDetectorBase *det)  {
+slsDetectorCommand::slsDetectorCommand(slsDetectorUtils *det)  {
 
   myDet=det;
  
@@ -133,6 +133,7 @@ slsDetectorCommand::slsDetectorCommand(slsDetectorBase *det)  {
   descrToFuncMap[i].m_pFuncName="resetctr"; //
   descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdCounter;
   i++;
+
 
   /* trim/cal directories */
   descrToFuncMap[i].m_pFuncName="trimdir"; //OK
@@ -1636,7 +1637,6 @@ string slsDetectorCommand::helpThreaded(int narg, char *args[], int action){
 } 
    
 
-
 string slsDetectorCommand::cmdImage(int narg, char *args[], int action){
   string sval;
   int retval;
@@ -1674,7 +1674,6 @@ string slsDetectorCommand::helpImage(int narg, char *args[], int action){
 	}
 	return os.str();
 }
-
 
 
 string slsDetectorCommand::cmdCounter(int narg, char *args[], int action){
@@ -1725,6 +1724,7 @@ string slsDetectorCommand::helpCounter(int narg, char *args[], int action){
 		os << "resetctr \t  Cannot get"<< std::endl;
 	return os.str();
 }
+
 
 
 

@@ -97,8 +97,11 @@ enum {
 
   F_SET_MASTER, /**< sets master/slave flag for multi detector structures */
 
-  F_SET_SYNCHRONIZATION_MODE /**< sets master/slave synchronization mode for multidetector structures */
+  F_SET_SYNCHRONIZATION_MODE, /**< sets master/slave synchronization mode for multidetector structures */
 
+  F_READ_COUNTER_BLOCK,
+
+  F_RESET_COUNTER_BLOCK,
 
   /* Always append functions hereafter!!! */
 

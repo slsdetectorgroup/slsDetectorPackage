@@ -482,7 +482,7 @@ enum angleConversionParameter {
  protected:
 #endif
 
-#include "sls_detector_funcs.h
+#include "sls_detector_funcs.h"
 
 
 #ifdef __cplusplus

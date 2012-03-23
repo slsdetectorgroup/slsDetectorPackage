@@ -78,5 +78,7 @@ int send_update(int);
 int configure_mac(int);
 
 int load_image(int);
+int read_counter_block(int);
+int reset_counter_block(int);
 
 #endif

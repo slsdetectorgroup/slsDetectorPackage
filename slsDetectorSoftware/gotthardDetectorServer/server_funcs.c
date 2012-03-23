@@ -94,7 +94,9 @@ int decode_function(int file_des) {
 #endif 
   n = receiveDataOnly(file_des,&fnum,sizeof(fnum));
   if (n <= 0) {
+#ifdef VERBOSE
     printf("ERROR reading from socket %d, %d %d\n", n, fnum, file_des);
+#endif
     return FAIL;
   }
 #ifdef VERBOSE
@@ -103,13 +105,13 @@ int decode_function(int file_des) {
 #endif
 
 #ifdef VERBOSE
-  printf( "calling function fnum = %d %x\n",fnum,flist[fnum]);
+  printf( "calling function fnum = %d %x\n",fnum,(unsigned int)(flist[fnum]));
 #endif
   if (fnum<0 || fnum>255)
     fnum=255;
   retval=(*flist[fnum])(file_des);
   if (retval==FAIL)
-    printf( "Error executing the function = %d \n",fnum);    
+    printf( "Error executing the function = %d \n",fnum);
   return retval;
 }
 
@@ -163,6 +165,8 @@ int function_table() {
   flist[F_LOAD_IMAGE]=&load_image;
   flist[F_SET_MASTER]=&set_master;
   flist[F_SET_SYNCHRONIZATION_MODE]=&set_synchronization;
+  flist[F_READ_COUNTER_BLOCK]=&read_counter_block;
+  flist[F_RESET_COUNTER_BLOCK]=&reset_counter_block;
   return OK;
 }
 
@@ -368,6 +372,7 @@ int get_max_number_of_modules(int file_des) {
     default:
       ret=FAIL;
       retval=FAIL;
+      break;
     }
 #ifdef VERBOSE
     printf("Max number of module in dimension %d is %d\n",arg,ret );
@@ -402,70 +407,69 @@ int get_max_number_of_modules(int file_des) {
 //index 3 is out trigger
 
 int set_external_signal_flag(int file_des) {
-  int n;
-  int arg[2]; 
-  int ret=OK;
-  int signalindex;
-  enum externalSignalFlag flag, retval;
-  
-  sprintf(mess,"Can't set external signal flag\n");
+	int n;
+	int arg[2];
+	int ret=OK;
+	int signalindex;
+	enum externalSignalFlag flag, retval;
 
-  /* receive arguments */
-  n = receiveDataOnly(file_des,&arg,sizeof(arg));
-  if (n < 0) {
-    sprintf(mess,"Error reading from socket\n");
-    ret=FAIL;
-  }
-  retval=SIGNAL_OFF;
-  if (ret==OK) {
-    signalindex=arg[0];
-    flag=arg[1];
-    /* execute action */
-    switch (flag) {
-    case GET_EXTERNAL_SIGNAL_FLAG:
-      retval=getExtSignal(signalindex);
-      break;
+	sprintf(mess,"Can't set external signal flag\n");
 
-    default:
-      if (differentClients==0 || lockStatus==0) {
-	retval=setExtSignal(signalindex,flag);
-      } else {
-	if (lockStatus!=0) {
-	  ret=FAIL;
-	  sprintf(mess,"Detector locked by %s\n", lastClientIP);
+	/* receive arguments */
+	n = receiveDataOnly(file_des,&arg,sizeof(arg));
+	if (n < 0) {
+		sprintf(mess,"Error reading from socket\n");
+		ret=FAIL;
 	}
-      }
+	retval=SIGNAL_OFF;
+	if (ret==OK) {
+		signalindex=arg[0];
+		flag=arg[1];
+		/* execute action */
+		switch (flag) {
+		case GET_EXTERNAL_SIGNAL_FLAG:
+			retval=getExtSignal(signalindex);
+			break;
 
-
-    }
+		default:
+			if (differentClients==0 || lockStatus==0) {
+				retval=setExtSignal(signalindex,flag);
+			} else {
+				if (lockStatus!=0) {
+					ret=FAIL;
+					sprintf(mess,"Detector locked by %s\n", lastClientIP);
+				}
+			}
+			break;
+		}
 
 #ifdef VERBOSE
-    printf("Setting external signal %d to flag %d\n",signalindex,flag );
-    printf("Set to flag %d\n",retval);
+		printf("Setting external signal %d to flag %d\n",signalindex,flag );
+		printf("Set to flag %d\n",retval);
 #endif
 
-  } else {
-    ret=FAIL;
-  }
+	} else {
+		ret=FAIL;
+	}
 
-  if (ret==OK && differentClients!=0)
-    ret=FORCE_UPDATE;
-
-
-  /* send answer */
-  /* send OK/failed */
-  n = sendDataOnly(file_des,&ret,sizeof(ret));
-  if (ret!=FAIL) {
-    /* send return argument */
-    n += sendDataOnly(file_des,&retval,sizeof(retval));
-  } else {
-    n += sendDataOnly(file_des,mess,sizeof(mess));
-  }
+	if (ret==OK && differentClients!=0)
+		ret=FORCE_UPDATE;
 
 
-  /*return ok/fail*/
-  return ret; 
-  
+	/* send answer */
+	/* send OK/failed */
+	n = sendDataOnly(file_des,&ret,sizeof(ret));
+	if (ret!=FAIL) {
+		/* send return argument */
+		n += sendDataOnly(file_des,&retval,sizeof(retval));
+	} else {
+		n += sendDataOnly(file_des,mess,sizeof(mess));
+	}
+
+
+	/*return ok/fail*/
+	return ret;
+
 }
 
 
@@ -590,6 +594,7 @@ int get_id(int file_des) {
     printf("Required unknown id %d \n", arg);
     ret=FAIL;
     retval=FAIL;
+    break;
   }
   
 #ifdef VERBOSE
@@ -728,6 +733,7 @@ int digital_test(int file_des) {
     printf("Unknown digital test required %d\n",arg);
     ret=FAIL;
     retval=FAIL;
+    break;
   }
   
 #ifdef VERBOSE
@@ -946,6 +952,7 @@ int set_dac(int file_des) {
 		printf("Unknown DAC index %d\n",ind);
 		sprintf(mess,"Unknown DAC index %d\n",ind);
 		ret=FAIL;
+	    break;
 	}
 
 	if (ret==OK) {
@@ -1044,6 +1051,7 @@ int get_adc(int file_des) {
 		printf("Unknown DAC index %d\n",ind);
 		sprintf(mess,"Unknown DAC index %d\n",ind);
 		ret=FAIL;
+	    break;
 	}
 
 	if (ret==OK)
@@ -1354,7 +1362,7 @@ int set_module(int file_des) {
   float *myAdc=malloc(NADC*sizeof(int));
   int retval, n;
   int ret=OK;
-  int dr, ow;
+  int dr;// ow;
 
   dr=setDynamicRange(-1);
 
@@ -1905,10 +1913,6 @@ int get_run_status(int file_des) {
 
 int read_frame(int file_des) {
 
-#ifdef VERBOSE
-  int n;
-#endif
-
   if (differentClients==1 && lockStatus==1) {
     dataret=FAIL;
     sprintf(mess,"Detector locked by %s\n",lastClientIP);  
@@ -1923,7 +1927,7 @@ int read_frame(int file_des) {
     if ((dataretval=(char*)fifo_read_event())) {
       dataret=OK;
 #ifdef VERYVERBOSE
-      printf("Sending ptr %x %d\n",dataretval, dataBytes);
+      printf("Sending ptr %x %d\n",(unsigned int)(dataretval), dataBytes);
 #endif
       sendDataOnly(file_des,&dataret,sizeof(dataret));
       sendDataOnly(file_des,dataretval,dataBytes);
@@ -1936,7 +1940,7 @@ int read_frame(int file_des) {
       //might add delay????
       if(getFrames()>-2) {
 	dataret=FAIL;
-	sprintf(mess,"no data and run stopped: %d frames left\n",getFrames()+2); 
+	sprintf(mess,"no data and run stopped: %d frames left\n",(int)(getFrames()+2));
 	printf("%s\n",mess);
       } else {
 	dataret=FINISHED;
@@ -1944,12 +1948,12 @@ int read_frame(int file_des) {
 	printf("%s\n",mess);
       }
 #ifdef VERYVERBOSE
-      printf("%d %d %x %s\n",sizeof(mess),strlen(mess), mess,mess);
+      printf("%d %d %x %s\n",(int)(sizeof(mess)),(int)(strlen(mess)),(unsigned int)( mess),mess);
 #endif
       sendDataOnly(file_des,&dataret,sizeof(dataret));
       sendDataOnly(file_des,mess,sizeof(mess));
 #ifdef VERYVERBOSE
-      printf("message sent\n",mess);
+      printf("message sent %s\n",mess);
 #endif
       printf("dataret %d\n",dataret);
       return dataret;
@@ -1967,14 +1971,14 @@ int read_frame(int file_des) {
     for (iframes=0; iframes<nframes; iframes++) {
       sendDataOnly(file_des,&dataret,sizeof(dataret));
 #ifdef VERYVERBOSE
-      printf("sending pointer %x of size %d\n",dataretval,dataBytes);
+      printf("sending pointer %x of size %d\n",(unsigned int)(dataretval),dataBytes);
 #endif
       sendDataOnly(file_des,dataretval,dataBytes);
       dataretval+=dataBytes;
     }
     if (getFrames()>-2) {
       dataret=FAIL;
-      sprintf(mess,"no data and run stopped: %d frames left\n",getFrames()+2);
+      sprintf(mess,"no data and run stopped: %d frames left\n",(int)(getFrames()+2));
       printf("%s\n",mess);
     } else {
       dataret=FINISHED;
@@ -1984,7 +1988,7 @@ int read_frame(int file_des) {
 	dataret=FORCE_UPDATE;
     }
 #ifdef VERBOSE
-      printf("Frames left %d\n",getFrames());
+      printf("Frames left %d\n",(int)(getFrames()));
 #endif
     sendDataOnly(file_des,&dataret,sizeof(dataret));
     sendDataOnly(file_des,mess,sizeof(mess));
@@ -2118,6 +2122,7 @@ int set_timer(int file_des) {
       default:
 	ret=FAIL;
 	sprintf(mess,"timer index unknown %d\n",ind);
+    break;
       }
     }
   }
@@ -2142,7 +2147,7 @@ int set_timer(int file_des) {
     n = sendDataOnly(file_des,mess,sizeof(mess));
   } else {
 #ifdef VERBOSE
-  printf("returning ok %d\n",sizeof(retval));
+  printf("returning ok %d\n",(int)(sizeof(retval)));
 #endif 
 
     n = sendDataOnly(file_des,&retval,sizeof(retval));
@@ -2214,6 +2219,7 @@ int get_time_left(int file_des) {
     default:
       ret=FAIL;
       sprintf(mess,"timer index unknown %d\n",ind);
+      break;
     }
   }
 
@@ -2353,6 +2359,7 @@ int set_speed(int file_des) {
 	  break;
 	default:
 	  ret=FAIL;
+	    break;
 	}
       }
     } else {
@@ -2375,6 +2382,7 @@ int set_speed(int file_des) {
 	break;
       default:
 	ret=FAIL;
+    break;
       }
     }
   }
@@ -2448,7 +2456,8 @@ int set_readout_flags(int file_des) {
     default:
       ret=setStoreInRAM(0);
       regret=setConfigurationRegister(0);
-      ret=OK;       
+      ret=OK;
+      break;
     } 
   }
   retval=NORMAL_READOUT;
@@ -2550,6 +2559,7 @@ int execute_trimming(int file_des) {
 	printf("Unknown trimming mode\n");
 	sprintf(mess,"Unknown trimming mode\n");
 	ret=FAIL;
+    break;
       }
     } 
   }
@@ -2689,7 +2699,7 @@ int send_update(int file_des) {
 
   int ret=OK;
   enum detectorSettings t;
-  int thr, n;
+  int n;//int thr, n;
   //int it;
   int64_t retval, tns=-1;
   n = sendDataOnly(file_des,lastClientIP,sizeof(lastClientIP));
@@ -2766,10 +2776,10 @@ int configure_mac(int file_des) {
   printf("destination ip is %d.%d.%d.%d = 0x%x \n",(ipad>>24)&0xff,(ipad>>16)&0xff,(ipad>>8)&0xff,(ipad)&0xff,ipad);
   printf("macad:%llx\n",imacadd);
   for (i=0;i<6;i++) 
-    printf("mac adress %d is 0x%x \n",6-i,((imacadd>>(8*i))&0xFF));
+    printf("mac adress %d is 0x%x \n",6-i,(unsigned int)(((imacadd>>(8*i))&0xFF)));
   printf("server macad:%llx\n",iservermacadd);
   for (i=0;i<6;i++) 
-    printf("server mac adress %d is 0x%x \n",6-i,((iservermacadd>>(8*i))&0xFF));
+    printf("server mac adress %d is 0x%x \n",6-i,(unsigned int)(((iservermacadd>>(8*i))&0xFF)));
   printf("\n");
 #endif 
 
@@ -2819,10 +2829,10 @@ int load_image(int file_des) {
 	int retval;
 	int ret=OK;
 	int n;
-	int index;
-	short int ImageVals[1280];
+	enum imageType index;
+	short int ImageVals[NCHAN*NCHIP];
 
-	sprintf(mess,"Can't load image\n");
+	sprintf(mess,"Loading image failed\n");
 
 	n = receiveDataOnly(file_des,&index,sizeof(index));
 	if (n < 0) {
@@ -2830,7 +2840,7 @@ int load_image(int file_des) {
 		ret=FAIL;
 	}
 
-	n = receiveDataOnly(file_des,ImageVals,sizeof(ImageVals));
+	n = receiveDataOnly(file_des,ImageVals,dataBytes);
 	if (n < 0) {
 		sprintf(mess,"Error reading from socket\n");
 		ret=FAIL;
@@ -2839,22 +2849,21 @@ int load_image(int file_des) {
 	switch (index) {
 	case DARK_IMAGE :
 #ifdef VERBOSE
-		printf(" Loading Dark image\n");
+		printf("Loading Dark image\n");
 #endif
 		break;
 	case GAIN_IMAGE :
 #ifdef VERBOSE
-		printf(" Loading Gain image\n");
+		printf("Loading Gain image\n");
 #endif
 		break;
 	default:
 		printf("Unknown index %d\n",index);
 		sprintf(mess,"Unknown index %d\n",index);
 		ret=FAIL;
+	    break;
 	}
-#ifdef VERYVERBOSE
-	printf("%d\n%d\n",ImageVals[0],ImageVals[1]);
-#endif
+
 	if (ret==OK) {
 		if (differentClients==1 && lockStatus==1) {
 			ret=FAIL;
@@ -2866,9 +2875,7 @@ int load_image(int file_des) {
 		}
 	}
 
-	if(ret==FAIL)
-		printf("Loading image failed\n");
-	else{
+	if(ret==OK){
 		if (differentClients)
 			ret=FORCE_UPDATE;
 	}
@@ -2975,6 +2982,101 @@ int set_synchronization(int file_des) {
     n = sendDataOnly(file_des,&retval,sizeof(retval));
   }
   return ret;
+}
+
+
+
+
+
+
+int read_counter_block(int file_des) {
+
+	int ret=OK;
+	int n;
+	int startACQ;
+	//char *retval=NULL;
+	short int CounterVals[NCHAN*NCHIP];
+
+	sprintf(mess,"Read counter block failed\n");
+
+	n = receiveDataOnly(file_des,&startACQ,sizeof(startACQ));
+	if (n < 0) {
+		sprintf(mess,"Error reading from socket\n");
+		ret=FAIL;
+	}
+
+	if (ret==OK) {
+		if (differentClients==1 && lockStatus==1) {
+			ret=FAIL;
+			sprintf(mess,"Detector locked by %s\n",lastClientIP);
+		} else{
+			ret=readCounterBlock(startACQ,CounterVals);
+#ifdef VERBOSE
+			int i;
+			for(i=0;i<6;i++)
+				printf("%d:%d\t",i,CounterVals[i]);
+#endif
+		}
+	}
+
+	if(ret!=FAIL){
+		if (differentClients)
+			ret=FORCE_UPDATE;
+	}
+
+	/* send answer */
+	/* send OK/failed */
+	n = sendDataOnly(file_des,&ret,sizeof(ret));
+	if (ret!=FAIL) {
+		/* send return argument */
+		n += sendDataOnly(file_des,CounterVals,dataBytes);//1280*2
+	} else {
+		n += sendDataOnly(file_des,mess,sizeof(mess));
+	}
+
+	/*return ok/fail*/
+	return ret;
+}
+
+
+
+
+
+int reset_counter_block(int file_des) {
+
+	int ret=OK;
+	int n;
+	int startACQ;
+
+	sprintf(mess,"Reset counter block failed\n");
+
+	n = receiveDataOnly(file_des,&startACQ,sizeof(startACQ));
+	if (n < 0) {
+		sprintf(mess,"Error reading from socket\n");
+		ret=FAIL;
+	}
+
+	if (ret==OK) {
+		if (differentClients==1 && lockStatus==1) {
+			ret=FAIL;
+			sprintf(mess,"Detector locked by %s\n",lastClientIP);
+		} else
+			ret=resetCounterBlock(startACQ);
+	}
+
+	if(ret==OK){
+		if (differentClients)
+			ret=FORCE_UPDATE;
+	}
+
+	/* send answer */
+	/* send OK/failed */
+	n = sendDataOnly(file_des,&ret,sizeof(ret));
+	if (ret==FAIL)
+		n += sendDataOnly(file_des,mess,sizeof(mess));
+
+	/*return ok/fail*/
+	return ret;
 }
 
 

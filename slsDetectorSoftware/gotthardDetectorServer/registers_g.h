@@ -99,7 +99,8 @@
 #define DARK_IMAGE_REG     0x81<<11
 #define GAIN_IMAGE_REG     0x82<<11
 
-
+//counter block memory
+#define COUNTER_MEMORY_REG 0x85<<11
 
 //not used so far
 #define SPEED_REG        0x006000
@@ -236,10 +237,11 @@
 /* multi purpose register */
 #define PHASE_STEP_BIT               0x00000001
 #define PHASE_STEP_OFFSET            0
-/* #define READOUT_BUSY_BIT             0x00000002
-#define FIFOTEST_BUSY_BIT            0x00000004 
-#define WAITING_FOR_TRIGGER_BIT      0x00000008
-#define DELAYBEFORE_BIT              0x00000010  */
+// #define xxx_BIT                   0x00000002
+#define RESET_COUNTER_BIT            0x00000004
+#define RESET_COUNTER_OFFSET         2
+//#define xxx_BIT                    0x00000008
+//#define xxx_BIT                    0x00000010
 #define SW1_BIT                      0x00000020
 #define SW1_OFFSET                   5
 #define WRITE_BACK_BIT               0x00000040

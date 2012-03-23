@@ -20,7 +20,7 @@
 #undef DEBUGOUT
 
 extern int nModX;
-extern int dataBytes;
+//extern int dataBytes;
 extern int dynamicRange;
 const int nChans=NCHAN;
 const int nChips=NCHIP;
@@ -59,11 +59,11 @@ int initDetector() {
   detectorDacs=malloc(n*NDAC*sizeof(float));
   detectorAdcs=malloc(n*NADC*sizeof(float));
 #ifdef VERBOSE
-  printf("modules from 0x%x to 0x%x\n",detectorModules, detectorModules+n);
-  printf("chips from 0x%x to 0x%x\n",detectorChips, detectorChips+n*NCHIP);
-  printf("chans from 0x%x to 0x%x\n",detectorChans, detectorChans+n*NCHIP*NCHAN);
-  printf("dacs from 0x%x to 0x%x\n",detectorDacs, detectorDacs+n*NDAC);
-  printf("adcs from 0x%x to 0x%x\n",detectorAdcs, detectorAdcs+n*NADC);
+  printf("modules from 0x%x to 0x%x\n",(unsigned int)(detectorModules), (unsigned int)(detectorModules+n));
+  printf("chips from 0x%x to 0x%x\n",(unsigned int)(detectorChips), (unsigned int)(detectorChips+n*NCHIP));
+  printf("chans from 0x%x to 0x%x\n",(unsigned int)(detectorChans), (unsigned int)(detectorChans+n*NCHIP*NCHAN));
+  printf("dacs from 0x%x to 0x%x\n",(unsigned int)(detectorDacs), (unsigned int)(detectorDacs+n*NDAC));
+  printf("adcs from 0x%x to 0x%x\n",(unsigned int)(detectorAdcs), (unsigned int)(detectorAdcs+n*NADC));
 #endif
   for (imod=0; imod<n; imod++) {
 
@@ -151,7 +151,7 @@ int copyModule(sls_detector_module *destMod, sls_detector_module *srcMod) {
   int ret=OK;
 
 #ifdef VERBOSE
-    printf("Copying module %x to module %x\n",srcMod,destMod);
+    printf("Copying module %x to module %x\n",(unsigned int)(srcMod),(unsigned int)(destMod));
 #endif
 
   if (srcMod->module>=0) {
@@ -480,7 +480,7 @@ int program_one_dac(int addr, int value, int imod) {
     if (imod>=0 && imod<nModX) {
       detectorDacs[idac+NDAC*imod]=v;
 #ifdef VERBOSE
-      printf("module=%d index=%d, val=%d addr=%x\n",imod, idac, v, detectorDacs+idac+NDAC*imod);
+      printf("module=%d index=%d, val=%d addr=%x\n",imod, idac, v, (unsigned int)(detectorDacs+idac+NDAC*imod));
 #endif
 
       setDACRegister(idac,v,imod);
@@ -564,7 +564,7 @@ float initDACbyIndexDACU(int ind, int val, int imod) {
  
   //  int cs=daccs[ind];
   //  int addr=dacaddr[ind];
-  int iv;
+ // int iv;
   int im;
 
   if (val>=0) 
@@ -604,7 +604,7 @@ int getThresholdEnergy() {
   float g[3]=DEFAULTGAIN;
   float o[3]=DEFAULTOFFSET;
   float myg=-1, myo=-1;
-  int dacu;
+ // int dacu;
   int imod;
   int ethr=-1;
   int ret=FAIL;
@@ -643,7 +643,7 @@ int getThresholdEnergy() {
       }
 #ifdef VERBOSE
       //printf("module=%d gain=%f, offset=%f, dacu=%f\n",imod, myg, myo, detectorDacs[VTHRESH+imod*NDAC]);
-      printf("module=%d gain=%f, offset=%f, dacu=%f\n",imod, myg, myo,setDACRegister(VREF_DS,-1,imod));//edited by dhanya
+      printf("module=%d gain=%f, offset=%f, dacu=%f\n",imod, myg, myo,(float)(setDACRegister(VREF_DS,-1,imod)));//edited by dhanya
       printf("Threshold energy of module %d is %d eV\n", imod, ethr);
 #endif 
       
@@ -700,7 +700,7 @@ int setThresholdEnergy(int ethr) {
     if (myg>0 && myo>0) {
       dacu=myo-myg*((float)ethr)/1000.;
 #ifdef VERBOSE    
-      printf("module %d (%x): gain %f, off %f, energy %d eV, dac %d\n",imod,(detectorModules+imod),(detectorModules+imod)->gain,(detectorModules+imod)->offset, ethr,dacu);
+      printf("module %d (%x): gain %f, off %f, energy %d eV, dac %d\n",imod,(unsigned int)((detectorModules+imod)),(detectorModules+imod)->gain,(detectorModules+imod)->offset, ethr,dacu);
 #endif
     } else {
       dacu=ethr;
@@ -729,7 +729,7 @@ float getDACbyIndexDACU(int ind,  int imod) {
 
 
 int initDAC(int dac_addr, int value, int imod) {
-  int i;
+//  int i;
 #ifdef VERBOSE
   printf("Programming dac %d with value %d\n", dac_addr, value);
 #endif
@@ -867,7 +867,7 @@ int setSettings(int i, int imod) {
     if((retval>=HIGHGAIN)&&(retval<=VERYHIGHGAIN))
       isett=retval; 
     else{
-      isett==UNDEFINED;
+      isett=UNDEFINED;
       printf("Error:Wrong Settings Read out:%d\n",retval);
     }
   }
@@ -940,8 +940,9 @@ int getTrimbit(int imod, int ichip, int ichan) {
     if (imod<getNModBoard() && imod>=0)
       if (ichip<(detectorModules+imod)->nchip && ichan<(detectorModules+imod)->nchan/(detectorModules+imod)->nchip)
 	return (detectorChans[imod*NCHAN*NCHIP+ichip*NCHAN+ichan] & TRIM_DR);
-  } else
-    return -1;
+  }
+
+  return -1;
 }
 
 int initChannel(int ft,int cae, int ae, int coe, int ocoe, int counts, int imod){
@@ -1381,14 +1382,14 @@ int initChipWithProbes(int obe, int ow,int nprobes, int imod){
   }
 
 #ifdef VERBOSE 
-  printf("\n \n \n",regval);
+ // printf("\n \n \n",regval);
   printf("initChip ow=%d omask=%d probes=%d\n",ow, omask,nprobes);
 #endif
   regval|=(omask<<OUTMUX_OFFSET);
   regval|=(nprobes<<PROBES_OFFSET);
   regval|=(obe<<OUTBUF_OFFSET);
 #ifdef VERBOSE
-  printf("initChip : shift in will be %08x\n",regval);
+  printf("initChip : shift in will be %08x\n",(unsigned int)(regval));
 #endif
   /* clearing shift in register */
 
@@ -1509,7 +1510,7 @@ int initMCBregisters(int cm, int imod){
     for (im=modmi; im<modma; im++) {
       ((detectorModules+im)->reg)=cm;
 #ifdef VERBOSE
-      printf("imod=%d reg=%d (%x)\n",im,(detectorModules+im)->reg,(detectorModules+im));
+      printf("imod=%d reg=%d (%x)\n",im,(detectorModules+im)->reg,(unsigned int)((detectorModules+im)));
 #endif
     }
   }
@@ -1520,12 +1521,12 @@ int initModulebyNumber(sls_detector_module myMod) {
 
   printf("\ninside initmoduleynumber..\n");
  
-  int ichip, nchip, ichan, nchan;
+  int nchip,nchan;//int ichip, nchip, ichan, nchan;
   int im, modmi,modma;
-  int ft,  cae, ae, coe, ocoe, counts, chanreg;
+ // int ft,  cae, ae, coe, ocoe, counts, chanreg;
   int imod;
-  int obe;
-  int ow;
+ // int obe;
+ // int ow;
   int v[NDAC];
 
 
@@ -1984,7 +1985,7 @@ int testExtPulse(int imod) {
   //startStateMachine();
   startReadOut();
   usleep(100);
-  val1=decode_data(fifo_read_event());
+  val1=(int*)(decode_data((int*)(fifo_read_event())));
   // val1=fifo_read_event();
   //imod=0;
   //for (imod=0; imod<nModX; imod++) {
@@ -2053,9 +2054,9 @@ int testExtPulseMux(int imod, int ow) {
 
   startReadOut();
   usleep(100);
-  v1=fifo_read_event();
+  v1=(int*)(fifo_read_event());
   if (v1)
-    values=decode_data(v1);
+    values=(int*)(decode_data(v1));
   else {
     printf("no data found in fifos\n");
     return 1;
@@ -2128,9 +2129,9 @@ int testDataInOutMux(int imod, int ow, int num) {
   printf("mux %d\n",ow);
   startReadOut();
   usleep(100);  
-  v1=fifo_read_event();
+  v1=(int*)(fifo_read_event());
   if (v1)
-    values=decode_data(v1);
+    values=(int*)(decode_data(v1));
   else {
     printf("no data found in fifos\n");
     return 1;

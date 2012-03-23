@@ -38,8 +38,8 @@ u_int32_t setWaitStates(int d);
 u_int32_t getWaitStates();
 u_int32_t setTotClockDivider(int d);
 u_int32_t getTotClockDivider();
-u_int32_t setTotClockDutyCycle(int d);
-u_int32_t getTotClockDutyCycle();
+u_int32_t setTotDutyCycle(int d);
+u_int32_t getTotDutyCycle();
 
 u_int32_t setExtSignal(int d, enum externalSignalFlag  mode);
 int  getExtSignal(int d);
@@ -83,7 +83,7 @@ int64_t setGates(int64_t value);
 int64_t getGates();
 
 int64_t setDelay(int64_t value);
-int64_t getDelaye();
+int64_t getDelay();
 
 int64_t setPeriod(int64_t value);
 int64_t getPeriod();
@@ -100,7 +100,6 @@ int64_t setProgress();
 int64_t getActualTime();
 int64_t getMeasurementTime();
 
-int loadImage(int index, short int ImageVals[]);
 
 u_int32_t runBusy(void); 
 u_int32_t runState(void); 
@@ -134,6 +133,9 @@ int clearRAM();
 int setMaster(int f);
 int setSynchronization(int s);
 
+int loadImage(int index, short int ImageVals[]);
+int readCounterBlock(int startACQ, short int CounterVals[]);
+int resetCounterBlock(int startACQ);
 /*
 
 u_int32_t setNBits(u_int32_t);

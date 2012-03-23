@@ -21,7 +21,7 @@ FILE *debugfp, *datafp;
 int fr;
 int wait_time;
 int *fifocntrl;
-volatile const u_int16_t *values;
+
 //int *statusreg; commented out by dhanya
 const int nModY=1;
 int nModBoard;
@@ -29,8 +29,10 @@ int nModX=NMAXMOD;
 int dynamicRange=16;//32;
 int dataBytes=NMAXMOD*NCHIP*NCHAN*2;
 int storeInRAM=0;
-volatile  u_int32_t *ram_values=NULL;
+
+u_int32_t *ram_values=NULL;
 volatile char *now_ptr=NULL;
+volatile  u_int16_t *values;
 int ram_size=0;
 
 int64_t totalTime=1;
@@ -48,8 +50,8 @@ enum externalSignalFlag  signals[4]={EXT_SIG_OFF, EXT_SIG_OFF, EXT_SIG_OFF, EXT_
 #ifdef MCB_FUNCS
 extern const int nChans;
 extern const int nChips;
-extern const int nDacs;
-extern const int nAdcs;
+//extern const int nDacs;
+//extern const int nAdcs;
 #endif
 #ifndef MCB_FUNCS
 
@@ -60,7 +62,7 @@ const int nAdcs=NADC;
 #endif
 
 
-int dacVals[NDAC];
+
 
 /**
    ENEt conf structs
@@ -216,7 +218,7 @@ u_int32_t bus_r(u_int32_t offset) {
 
 int setPhaseShiftOnce(){
   u_int32_t addr, reg;
-  int result=OK, i,val;
+  int result=OK, i;
   addr=MULTI_PURPOSE_REG;
   reg=bus_r(addr);
 #ifdef VERBOSE
@@ -232,7 +234,7 @@ int setPhaseShiftOnce(){
     //phase shift
     for (i=1;i<PHASE_SHIFT;i++) {
       bus_w(addr,(INT_RSTN_BIT|ENET_RESETN_BIT|SW1_BIT|PHASE_STEP_BIT));//0x2821
-      bus_w(addr,(INT_RSTN_BIT|ENET_RESETN_BIT|SW1_BIT&~PHASE_STEP_BIT));//0x2820
+      bus_w(addr,(INT_RSTN_BIT|ENET_RESETN_BIT|(SW1_BIT&~PHASE_STEP_BIT)));//0x2820
      }
   }
   reg=bus_r(addr);
@@ -425,6 +427,7 @@ u_int32_t setExtSignal(int d, enum externalSignalFlag  mode) {
 			break;
 		default:
 			setFPGASignal(d,mode);
+			break;
 		}
 
 		setTiming(GET_EXTERNAL_COMMUNICATION_MODE);
@@ -600,7 +603,7 @@ int setTiming(int ti) {
     break;
 
   default:
-    ;
+	  break;
 
   }
 
@@ -652,7 +655,7 @@ int setConfigurationRegister(int d) {
 }
 
 int setToT(int d) {
- int ret=0;
+ //int ret=0;
  int reg;
 #ifdef VERBOSE
   printf("Setting ToT to %d\n",d);
@@ -677,7 +680,7 @@ int setToT(int d) {
 }
 
 int setContinousReadOut(int d) {
- int ret=0;
+ //int ret=0;
  int reg;
 #ifdef VERBOSE
   printf("Setting Continous readout to %d\n",d);
@@ -762,7 +765,6 @@ u_int32_t testFpga(void) {
   }
 
 
-
   //dummy register
   addr = DUMMY_REG;
   for(i=0;i<1000000;i++)
@@ -813,7 +815,7 @@ u_int32_t testRAM(void) {
   allocateRAM();
   //  while(i<100000) {
     memcpy(ram_values, values, dataBytes);
-    printf ("Test RAM:\t%d: copied fifo %x to memory %x size %d\n",i++, values, ram_values, dataBytes);
+    printf ("Test RAM:\t%d: copied fifo %x to memory %x size %d\n",i++, (unsigned int)(values), (unsigned int)(ram_values), dataBytes);
     // }
   return result;
 }
@@ -832,7 +834,9 @@ int getNModBoard() {
 
 int setNMod(int n) {
   
-  int fifo;
+
+	/* commented out by dhanya
+ // int fifo;
   // int ifsta, ifsto, ifste;
   int imod;
   int rval;
@@ -856,6 +860,7 @@ int setNMod(int n) {
       break;
     default:
       shiftfifo=SHIFTFIFO;
+      break;
     }
   } else
     shiftfifo=SHIFTFIFO;
@@ -867,7 +872,7 @@ int setNMod(int n) {
   if (n>0 && n<=ntot) {
     nModX=n;
  
-  /*d isable the fifos relative to the unused modules */
+  //d isable the fifos relative to the unused modules
       for (ififo=0; ififo<ntot*NCHIP; ififo++) {
 	reg=bus_r(FIFO_COUNTR_REG_OFF+(ififo<<shiftfifo));
       if (ififo<n*NCHIP) {
@@ -938,7 +943,7 @@ int setNMod(int n) {
   printf("There are %d modules enabled (%d fifos)\n",nModX, nf);
 #endif
   getDynamicRange();
-
+*/
   return nModX;
 }
 
@@ -947,6 +952,7 @@ int setNMod(int n) {
 u_int32_t  testFifos(void) {
   printf("Fifo test not implemented!\n");
   bus_w(CONTROL_REG, START_FIFOTEST_BIT); 
+  bus_w(CONTROL_REG, 0x0);
   return OK;
 }
 
@@ -1062,6 +1068,7 @@ int64_t setProbes(int64_t value){
     break;
   default:
     ow=1;
+    break;
   }
   if (value>=0) {
     setCSregister(ALLMOD);
@@ -1078,6 +1085,8 @@ int64_t setProgress() {
 
   //????? eventually call after setting the registers
 
+return 0;
+
 }
 
 
@@ -1086,6 +1095,7 @@ int64_t getProgress() {
 
   //should be done in firmware!!!!
   
+	return 0;
 
 }
 
@@ -1120,11 +1130,16 @@ int loadImage(int index, short int ImageVals[]){
 	}
 	volatile u_int16_t *ptr;
 	ptr=(u_int16_t*)(CSP0BASE+address*2);
-	memcpy(ptr,ImageVals ,2560);
 #ifdef VERBOSE
-	printf("Loaded x%08x address with image of index %d\n",ptr,index);
+	int i;
+	for(i=0;i<6;i++)
+		printf("%d:%d\t",i,ImageVals[i]);
 #endif
-	return 0;
+	memcpy(ptr,ImageVals ,dataBytes);
+#ifdef VERBOSE
+	printf("\nLoaded x%08x address with image of index %d\n",(unsigned int)(ptr),index);
+#endif
+	return OK;
 }
 
 
@@ -1177,7 +1192,6 @@ int setDACRegister(int idac, int val, int imod) {
   mask=~((0x3ff)<<off);
 
   if (val>=0 && val<DAC_DR) {
-    dacVals[idac];
     reg=bus_r(addr+(imod<<SHIFTMOD));
       reg&=mask;
       reg|=(val<<off);
@@ -1198,20 +1212,20 @@ float getTemperature(int tempSensor, int imod){
   float val;
   char cTempSensor[2][100]={"ADCs/ASICs","VRs/FPGAs"}; 
   imod=0;//ignoring more than 1 mod for now
-  int i,j,k,repeats=6;
-  u_int32_t tempVal=0,tempVal2=0;
+  int i,j,repeats=6;
+  u_int32_t tempVal=0;
 #ifdef VERBOSE
   printf("Getting Temperature of module:%d for the %s for tempsensor:%d\n",imod,cTempSensor[tempSensor],tempSensor);
 #endif
   bus_w(TEMP_IN_REG,(T1_CLK_BIT)|(T1_CS_BIT)|(T2_CLK_BIT)|(T2_CS_BIT));//standby
-  bus_w(TEMP_IN_REG,(T1_CLK_BIT)&~(T1_CS_BIT)|(T2_CLK_BIT));//high clk low cs
+  bus_w(TEMP_IN_REG,((T1_CLK_BIT)&~(T1_CS_BIT))|(T2_CLK_BIT));//high clk low cs
 
   for(i=0;i<20;i++) {
     //repeats is number of register writes for delay
     for(j=0;j<repeats;j++)
       bus_w(TEMP_IN_REG,~(T1_CLK_BIT)&~(T1_CS_BIT)&~(T2_CLK_BIT)&~(T2_CS_BIT));//low clk low cs
     for(j=0;j<repeats;j++)
-      bus_w(TEMP_IN_REG,(T1_CLK_BIT)&~(T1_CS_BIT)|(T2_CLK_BIT));//high clk low cs
+      bus_w(TEMP_IN_REG,((T1_CLK_BIT)&~(T1_CS_BIT))|(T2_CLK_BIT));//high clk low cs
 
     if(i<=10){//only the first time
       if(!tempSensor)
@@ -1435,7 +1449,7 @@ int configureMAC(int ipad,long long int macad,long long int servermacad,int ival
   checksum = (~sum)&0xffff;
   mac_conf_regs->ip.ip_chksum   =  checksum;
   //#ifdef VERBOSE
-  printf("IP header checksum is 0x%x s\n",checksum);
+  printf("IP header checksum is 0x%x s\n",(unsigned int)(checksum));
   //#endif
 
   mac_conf_regs->udp.udp_srcport      = 0xE185;
@@ -1533,12 +1547,15 @@ u_int32_t  startStateMachine(){
   write_stop_sm(0);
   write_status_sm("Started");
 #endif
+/*
 #ifdef MCB_FUNCS
-  //  setCSregister(ALLMOD);
+  setCSregister(ALLMOD);
   clearSSregister(ALLMOD);
 #endif
-  putout("0000000000000000",ALLMOD);
+*/
+  //putout("0000000000000000",ALLMOD);
   bus_w(CONTROL_REG, START_ACQ_BIT |  START_EXPOSURE_BIT); 
+  bus_w(CONTROL_REG, 0x0);
   return OK;
 }
 
@@ -1555,6 +1572,7 @@ u_int32_t  stopStateMachine(){
   write_status_sm("Stopped");
 #endif
   bus_w(CONTROL_REG, STOP_ACQ_BIT); 
+  bus_w(CONTROL_REG, 0x0);
   usleep(500);
  // if (!runBusy())
   if(!(bus_r(STATUS_REG)&RUNMACHINE_BUSY_BIT))
@@ -1574,6 +1592,7 @@ u_int32_t startReadOut(){
   printf("State machine status is %08x\n",bus_r(STATUS_REG));
 #endif
   bus_w(CONTROL_REG,  START_ACQ_BIT |START_READOUT_BIT);   //  start readout
+  bus_w(CONTROL_REG,  0x0);
   return OK;
 }
 
@@ -1620,6 +1639,7 @@ u_int32_t fifoReadCounter(int fifonum)
     break;
   default:
     shiftfifo=SHIFTFIFO;
+    break;
   }
 
   rval=bus_r(FIFO_COUNTR_REG_OFF+(fifonum<<shiftfifo));
@@ -1707,7 +1727,7 @@ u_int32_t* fifo_read_event()
   //memcpy(now_ptr, values, dataBytes);
 #endif
 #ifdef VERBOSE
-  printf("Copying to ptr %08x %d\n",now_ptr, dataBytes);
+  printf("Copying to ptr %08x %d\n",(unsigned int)(now_ptr), dataBytes);
   printf("after readout %08x %08x\n", runState(), bus_r(LOOK_AT_ME_REG)); 
 #endif
 
@@ -1722,13 +1742,13 @@ u_int32_t* fifo_read_event()
 u_int32_t* decode_data(int *datain)
 {
   u_int32_t *dataout;
-  const char one=1;
+ // const char one=1;
   const int bytesize=8;
   char *ptr=(char*)datain;
   //int nbits=dynamicRange;
   int  ipos=0, ichan=0;;
   //int nch, boff=0;
-  int ibyte, ibit;
+  int ibyte;//, ibit;
   char iptr;
 
 #ifdef VERBOSE
@@ -1772,6 +1792,7 @@ u_int32_t* decode_data(int *datain)
   default:    
     for (ichan=0; ichan<nChans*nChips*nModX; ichan++)
       dataout[ichan]=datain[ichan]&0xffffff;
+    break;
   }
   
 #ifdef VERBOSE
@@ -1873,7 +1894,7 @@ int getDynamicRange() {
 int testBus() {
   u_int32_t j;
   u_int64_t i, n, nt;
-  char cmd[100];
+ // char cmd[100];
   u_int32_t val=0x0;
   int ifail=OK;
   // printf("%s\n",cmd);
@@ -1882,7 +1903,7 @@ int testBus() {
 
   n=1000000;
   nt=n/100;
-  printf("testing bus %d times\n",n);
+  printf("testing bus %d times\n",(int)n);
   while (i<n) {
     // val=bus_r(FIX_PATT_REG);
     bus_w(DUMMY_REG,val);
@@ -1890,7 +1911,7 @@ int testBus() {
     j=bus_r(DUMMY_REG);
     //if (i%10000==1)
     if (j!=val){
-      printf("%d :  read wrong value %08x instead of %08x\n",i,j, val);
+      printf("%d :  read wrong value %08x instead of %08x\n",(int)i,j, val);
       ifail++;
       //return FAIL;
     }// else
@@ -1929,13 +1950,13 @@ int allocateRAM() {
     size=dataBytes;
 
 #ifdef VERBOSE
-  printf("\nnmodx=%d nmody=%d dynamicRange=%d dataBytes=%d nFrames=%d nTrains=%d, size=%d\n",nModX,nModY,dynamicRange,dataBytes,nf,nt,size );
+  printf("\nnmodx=%d nmody=%d dynamicRange=%d dataBytes=%d nFrames=%d nTrains=%d, size=%d\n",nModX,nModY,dynamicRange,dataBytes,nf,nt,(int)size );
 #endif
 
     if (size==ram_size) {
      
 #ifdef VERBOSE
-      printf("RAM of size %d already allocated: nothing to be done\n", size);
+      printf("RAM of size %d already allocated: nothing to be done\n",(int) size);
 #endif
       return OK;
     }
@@ -1943,7 +1964,7 @@ int allocateRAM() {
   
 
 #ifdef VERBOSE
-    printf("reallocating ram %x\n",ram_values);
+    printf("reallocating ram %x\n",(unsigned int)ram_values);
 #endif
     //  clearRAM();
     // ram_values=malloc(size);
@@ -1953,12 +1974,12 @@ int allocateRAM() {
   if (ram_values) {
     now_ptr=(char*)ram_values;
 #ifdef VERBOSE
-    printf("ram allocated 0x%x of size %d to %x\n",now_ptr, size, now_ptr+size);
+    printf("ram allocated 0x%x of size %d to %x\n",(int)now_ptr,(unsigned int) size,(unsigned int)(now_ptr+size));
 #endif
     ram_size=size;
     return OK;
   } else {
-    printf("could not allocate %d bytes\n",size);
+    printf("could not allocate %d bytes\n",(int)size);
     if (storeInRAM==1) {
       printf("retrying\n");
       storeInRAM=0;
@@ -1970,7 +1991,7 @@ int allocateRAM() {
 	now_ptr=(char*)ram_values;
 	ram_size=size;
 #ifdef VERBOSE
-	printf("ram allocated 0x%x of size %d to %x\n",now_ptr, size, now_ptr+size);
+	printf("ram allocated 0x%x of size %d to %x\n",(int)now_ptr,(unsigned int) size,(unsigned int)(now_ptr+size));
 #endif
       }
     } else {
@@ -2066,7 +2087,7 @@ int setMaster(int f) {
 		break;
 	default:
 		//do nothing
-		;
+		break;
 	}
 
 	switch(masterMode) {
@@ -2101,6 +2122,7 @@ int setMaster(int f) {
 
 			}
 		}
+		break;
 
 	case IS_SLAVE:
 		for (i=0; i<4; i++) {
@@ -2124,6 +2146,7 @@ int setMaster(int f) {
 				}
 			}
 		}
+		break;
 	}
 	return masterMode;
 }
@@ -2187,7 +2210,7 @@ int setSynchronization(int s) {
 
 	default:
 		//do nothing
-		;
+		break;
 	}
 
 	switch (syncMode) {
@@ -2236,4 +2259,138 @@ int setSynchronization(int s) {
 	return NO_SYNCHRONIZATION;
 
 }
+
+
+
+int readCounterBlock(int startACQ, short int CounterVals[]){
+
+	//char *counterVals=NULL;
+	//counterVals=realloc(counterVals,dataBytes);
+
+	u_int32_t val;
+	volatile u_int16_t *ptr;
+	int i;
+
+	u_int32_t address = COUNTER_MEMORY_REG;
+	ptr=(u_int16_t*)(CSP0BASE+address*2);
+
+
+	if (runBusy()) {
+		if(stopStateMachine()==FAIL)
+			return FAIL;
+		//waiting for the last frame read to be done
+		while(runBusy())  usleep(500);
+#ifdef VERBOSE
+		printf("State machine stopped\n");
+#endif
+	}
+
+		val=bus_r(MULTI_PURPOSE_REG);
+#ifdef VERBOSE
+		printf("Value of multipurpose reg:%d\n",bus_r(MULTI_PURPOSE_REG));
+#endif
+
+		memcpy(CounterVals,ptr,dataBytes);
+#ifdef VERBOSE
+		printf("Copied counter memory block with size of %d bytes..\n",dataBytes);
+		for(i=0;i<6;i++)
+			printf("%d: %d\t",i,CounterVals[i]);
+#endif
+
+
+		bus_w(MULTI_PURPOSE_REG,(val&~RESET_COUNTER_BIT));
+#ifdef VERBOSE
+		printf("\nClearing bit 2 of multipurpose reg:%d\n",bus_r(MULTI_PURPOSE_REG));
+#endif
+
+		if(startACQ==1){
+			startStateMachine();
+			if(runBusy())
+				printf("State machine RUNNING\n");
+			else
+				printf("State machine IDLE\n");
+		}
+
+/*		if(sizeof(CounterVals)<=0){
+			printf("ERROR:size of counterVals=%d\n",(int)sizeof(CounterVals));
+			return FAIL;
+		}*/
+
+
+	return OK;
+}
+
+
+
+
+int resetCounterBlock(int startACQ){
+
+	char *counterVals=NULL;
+	counterVals=realloc(counterVals,dataBytes);
+
+	int ret = OK;
+	u_int32_t val;
+	volatile u_int16_t *ptr;
+	int i;
+
+
+	u_int32_t address = COUNTER_MEMORY_REG;
+	ptr=(u_int16_t*)(CSP0BASE+address*2);
+
+
+	if (runBusy()) {
+		if(stopStateMachine()==FAIL)
+			return FAIL;
+		//waiting for the last frame read to be done
+		while(runBusy())  usleep(500);
+#ifdef VERBOSE
+		printf("State machine stopped\n");
+#endif
+	}
+
+		val=bus_r(MULTI_PURPOSE_REG);
+#ifdef VERBOSE
+		printf("Value of multipurpose reg:%d\n",bus_r(MULTI_PURPOSE_REG));
+#endif
+
+
+		bus_w(MULTI_PURPOSE_REG,(val|RESET_COUNTER_BIT));
+#ifdef VERBOSE
+		printf("Setting bit 2 of multipurpose reg:%d\n",bus_r(MULTI_PURPOSE_REG));
+#endif
+
+
+		memcpy(counterVals,ptr,dataBytes);
+#ifdef VERBOSE
+		printf("Copied counter memory block with size of %d bytes..\n",(int)sizeof(counterVals));
+		for(i=0;i<6;i=i+2)
+			printf("%d: %d\t",i,*(counterVals+i));
+#endif
+
+
+		bus_w(MULTI_PURPOSE_REG,(val&~RESET_COUNTER_BIT));
+#ifdef VERBOSE
+		printf("\nClearing bit 2 of multipurpose reg:%d\n",bus_r(MULTI_PURPOSE_REG));
+#endif
+
+		if(startACQ==1){
+			startStateMachine();
+			if(runBusy())
+				printf("State machine RUNNING\n");
+			else
+				printf("State machine IDLE\n");
+		}
+
+		if(sizeof(counterVals)<=0){
+			printf("ERROR:size of counterVals=%d\n",(int)sizeof(counterVals));
+			ret = FAIL;
+		}
+
+		return ret;
+
+	}
+
+
+
+
 

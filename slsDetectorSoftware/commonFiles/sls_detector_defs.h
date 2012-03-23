@@ -437,9 +437,10 @@ enum synchronizationMode {
 };
 
 enum imageType {
-  DARK_IMAGE,  /**< dark image */
+  DARK_IMAGE,   /**< dark image */
   GAIN_IMAGE   /**< gain image */
 };
+
 
 
 /** 
@@ -541,8 +542,13 @@ enum {
 
   F_SET_MASTER, /**< sets master/slave flag for multi detector structures */
 
-  F_SET_SYNCHRONIZATION_MODE /**< sets master/slave synchronization mode for multidetector structures */
+  F_SET_SYNCHRONIZATION_MODE, /**< sets master/slave synchronization mode for multidetector structures */
 
+  // not multi detector
+
+  F_READ_COUNTER_BLOCK, /**< reads counter memory block for the Gotthard detector */
+
+  F_RESET_COUNTER_BLOCK /**< resets counter memory block for the Gotthard detector */
 
   /* Always append functions hereafter!!! */
 

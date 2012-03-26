@@ -20,19 +20,19 @@ int main(int argc, char *argv[])
   string answer;
   char cmd[100];
   int action;
-  slsDetectorBase *myDetector;
+  slsDetectorUtils *myDetector;
   slsDetectorCommand *myCmd;
   
 
 
 #ifdef READOUT 
-  action=READOUT_ACTION;
+  action=slsDetectorDefs::READOUT_ACTION;
 #elif PUT   
-  action=PUT_ACTION;
+  action=slsDetectorDefs::PUT_ACTION;
 #elif GET   
-  action=GET_ACTION;
+  action=slsDetectorDefs::GET_ACTION;
 #elif HELP  
-  action=HELP_ACTION;
+  action=slsDetectorDefs::HELP_ACTION;
 #endif 
 #ifdef VERBOSE
   for (int ia=0; ia<argc; ia++)

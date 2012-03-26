@@ -1685,6 +1685,277 @@ void  slsDetectorUtils::acquire(int delflag){
 }
 
 
+
+
+
+
+
+
+
+
+
+void slsDetectorUtils::processFrame(int *myData, int delflag) {
+
+  string fname;
+  float *fdata;
+  
+  progressIndex++;
+  //#ifdef VERBOSE
+  cout << fixed << setprecision(2) << setw (6) << getCurrentProgress() << " \%";
+#ifdef VERBOSE
+  cout << endl;
+#else
+  cout << "\r" << flush;
+#endif
+  
+  //process data
+  /** decode data */
+  fdata=decodeData(myData);
+  
+  fname=createFileName();
+  
+  
+  //uses static function?!?!?!?
+  //	writeDataFile (fname+string(".raw"), getTotalNumberOfChannels(),fdata, NULL, NULL, 'i'); 
+  writeDataFile (fname+string(".raw"),fdata, NULL, NULL, 'i'); 
+  
+  doProcessing(fdata,delflag);
+
+  delete [] myData;
+  myData=NULL;
+#ifdef VERBOSE
+  //	cout << "Pop data queue " << *fileIndex << endl;
+#endif
+
+  pthread_mutex_lock(&mp);
+  dataQueue.pop(); //remove the data from the queue
+  queuesize=dataQueue.size();
+  pthread_mutex_unlock(&mp);
+
+  
+}
+
+
+
+void slsDetectorUtils::doProcessing(float *fdata, int delflag) {
+
+
+  float *rcdata=NULL, *rcerr=NULL;
+  float *ffcdata=NULL, *ffcerr=NULL;
+  float *ang=NULL;
+  float bs=0.004;
+  // int imod;
+  int nb;
+  int np;
+  string ext;
+  string fname;
+  detectorData *thisData;
+
+
+
+  if (*correctionMask!=0) {
+    ext=".dat";
+  } else {
+    ext=".raw";
+  }
+
+  fname=createFileName();
+
+  /** write raw data file */	   
+  if (*correctionMask==0 && delflag==1) {
+    delete [] fdata;
+  } else {
+    
+    /** rate correction */
+    if (*correctionMask&(1<<RATE_CORRECTION)) {
+      rcdata=new float[getTotalNumberOfChannels()]; 
+      rcerr=new float[getTotalNumberOfChannels()];
+      rateCorrect(fdata,NULL,rcdata,rcerr);
+      delete [] fdata;
+      fdata=NULL;
+    } else {
+      rcdata=fdata;
+      fdata=NULL;
+    }
+	
+
+ 	  
+    /** flat field correction */
+    if (*correctionMask&(1<<FLAT_FIELD_CORRECTION)) {
+      
+      ffcdata=new float[getTotalNumberOfChannels()]; 
+      ffcerr=new float[getTotalNumberOfChannels()];
+      flatFieldCorrect(rcdata,rcerr,ffcdata,ffcerr);
+      delete [] rcdata;
+      rcdata=NULL;
+      if (rcerr)	    
+	delete [] rcerr;
+      rcerr=NULL;
+    } else {
+      ffcdata=rcdata;
+      ffcerr=rcerr;
+      rcdata=NULL;
+      rcerr=NULL;
+    }
+	  	
+
+
+
+
+
+
+    // writes angualr converted files
+
+    if (*correctionMask!=0) {
+      if (*correctionMask&(1<< ANGULAR_CONVERSION))
+	ang=convertAngles(currentPosition);
+      writeDataFile (fname+string(".dat"),  ffcdata, ffcerr,ang);
+    }
+
+
+    
+    
+    
+    if (*correctionMask&(1<< ANGULAR_CONVERSION) && (*numberOfPositions)>0) {
+#ifdef VERBOSE
+      cout << "**************Current position index is " << currentPositionIndex << endl;
+#endif
+      // if (*numberOfPositions>0) {
+      if (currentPositionIndex<=1) {     
+	if (*binSize>0)
+	  bs=*binSize;
+	else
+	  *binSize=bs;
+	      
+		
+	nb=(int)(360./bs)+1;
+		
+#ifdef VERBOSE
+	cout << "creating merging arrays "<<  nb << endl;
+#endif
+	mergingBins=new float[nb];
+	mergingCounts=new float[nb];
+	mergingErrors=new float[nb];
+	mergingMultiplicity=new int[nb];
+#ifdef VERBOSE
+	cout << "reset merging " << endl;
+#endif
+	resetMerging(mergingBins, mergingCounts,mergingErrors, mergingMultiplicity, bs);
+      }
+      
+#ifdef VERBOSE
+      cout << "add to merging "<< currentPositionIndex << endl;
+#endif
+      addToMerging(ang, ffcdata, ffcerr, mergingBins, mergingCounts,mergingErrors, mergingMultiplicity, getTotalNumberOfChannels(), bs, *angDirection, *correctionMask, badChannelMask );
+      
+#ifdef VERBOSE
+      cout << currentPositionIndex << " " << (*numberOfPositions) << endl;
+	
+#endif
+      
+      
+      pthread_mutex_lock(&mp);
+      if ((currentPositionIndex>=(*numberOfPositions) && posfinished==1 && queuesize==1)) {
+	  
+#ifdef VERBOSE
+	cout << "finalize merging " << currentPositionIndex<< endl;
+#endif
+	np=finalizeMerging(mergingBins, mergingCounts,mergingErrors, mergingMultiplicity, bs);
+	/** file writing */
+	
+	currentPositionIndex++;
+	pthread_mutex_unlock(&mp);
+	
+	
+	fname=createFileName();
+	
+#ifdef VERBOSE
+	cout << "writing merged data file" << endl;
+#endif
+	writeDataFile (fname+string(".dat"),np,mergingCounts, mergingErrors, mergingBins,'f');
+#ifdef VERBOSE
+	cout << " done" << endl;
+#endif
+		
+	  
+
+	if (delflag) {
+	  
+	  if (mergingBins) {
+	    delete [] mergingBins;
+	    mergingBins=NULL;
+	  }
+	  if (mergingCounts) {
+	    delete [] mergingCounts;
+	    mergingCounts=NULL;
+	  }
+	  if (mergingErrors) {
+	    delete [] mergingErrors;
+	    mergingErrors=NULL;
+	  }
+	  if (mergingMultiplicity){
+	    delete [] mergingMultiplicity;
+	    mergingMultiplicity=NULL;
+	  }
+#ifdef VERBOSE
+	  cout << "deleting merged data done " << endl;
+#endif
+	} else {
+	  thisData=new detectorData(mergingCounts,mergingErrors,mergingBins,getCurrentProgress(),(fname+string(ext)).c_str(),np);
+	  
+	  pthread_mutex_lock(&mg);
+	  finalDataQueue.push(thisData);
+	  pthread_mutex_unlock(&mg);
+	}
+	pthread_mutex_lock(&mp);
+      }
+      pthread_mutex_unlock(&mp);
+    
+	
+  
+	
+      if (ffcdata)
+	delete [] ffcdata;
+      ffcdata=NULL;
+      
+      if (ffcerr) 
+	delete [] ffcerr;
+      ffcerr=NULL;
+      if (ang)
+	delete [] ang;
+      ang=NULL;
+      
+    }   else { 
+      if (delflag) {
+	if (ffcdata)
+	  delete [] ffcdata;
+	if (ffcerr)
+	  delete [] ffcerr;
+	if ( ang)
+	  delete [] ang;
+      } else {
+	thisData=new detectorData(ffcdata,ffcerr,NULL,getCurrentProgress(),(fname+string(ext)).c_str(),getTotalNumberOfChannels());
+	pthread_mutex_lock(&mg);
+	finalDataQueue.push(thisData);  
+	pthread_mutex_unlock(&mg);
+      }
+    }
+  }
+  (*fileIndex)++;
+#ifdef VERBOSE
+  cout << "Incrementing file index " << *fileIndex << endl;
+#endif
+  
+
+}
+
+
+
+
+
+
+
+
 void* slsDetectorUtils::processData(int delflag) {
 
 
@@ -1700,26 +1971,21 @@ void* slsDetectorUtils::processData(int delflag) {
   //cout << "thread mutex unlock line 6505" << endl;
 
   int *myData;
-  float *fdata=NULL;
-  float *rcdata=NULL, *rcerr=NULL;
-  float *ffcdata=NULL, *ffcerr=NULL;
-  float *ang=NULL;
-  float bs=0.004;
-  // int imod;
-  int nb;
-  int np;
-  detectorData *thisData;
+//   float *fdata=NULL;
+//   float *rcdata=NULL, *rcerr=NULL;
+//   float *ffcdata=NULL, *ffcerr=NULL;
+//   float *ang=NULL;
+//   float bs=0.004;
+//   // int imod;
+//   int nb;
+//   int np;
+//   detectorData *thisData;
   int dum=1;
-  string ext;
-  string fname;
+//   string ext;
+//   string fname;
 
 
 
-  if (*correctionMask!=0) {
-    ext=".dat";
-  } else {
-    ext=".raw";
-  }
   while(dum | *threadedProcessing) { // ????????????????????????
     
     
@@ -1742,276 +2008,276 @@ void* slsDetectorUtils::processData(int delflag) {
 
       if (myData) {
 	
-	
+	processFrame(myData,delflag);
 
-	progressIndex++;
-	//#ifdef VERBOSE
-	cout << fixed << setprecision(2) << setw (6) << getCurrentProgress() << " \%";
-#ifdef VERBOSE
-	cout << endl;
-#else
-	cout << "\r" << flush;
-#endif
+// 	progressIndex++;
+// 	//#ifdef VERBOSE
+// 	cout << fixed << setprecision(2) << setw (6) << getCurrentProgress() << " \%";
+// #ifdef VERBOSE
+// 	cout << endl;
+// #else
+// 	cout << "\r" << flush;
+// #endif
 
-	//process data
-	/** decode data */
-	fdata=decodeData(myData);
+// 	//process data
+// 	/** decode data */
+// 	fdata=decodeData(myData);
 
-	fname=createFileName();
-
-
-	//uses static function?!?!?!?
-	//	writeDataFile (fname+string(".raw"), getTotalNumberOfChannels(),fdata, NULL, NULL, 'i'); 
-	writeDataFile (fname+string(".raw"),fdata, NULL, NULL, 'i'); 
+// 	fname=createFileName();
 
 
-	/** write raw data file */	   
-	if (*correctionMask==0 && delflag==1) {
-	  delete [] fdata;
-	} else {
+// 	//uses static function?!?!?!?
+// 	//	writeDataFile (fname+string(".raw"), getTotalNumberOfChannels(),fdata, NULL, NULL, 'i'); 
+// 	writeDataFile (fname+string(".raw"),fdata, NULL, NULL, 'i'); 
 
-	  /** rate correction */
-	  if (*correctionMask&(1<<RATE_CORRECTION)) {
-	    rcdata=new float[getTotalNumberOfChannels()]; 
-	    rcerr=new float[getTotalNumberOfChannels()];
-	    rateCorrect(fdata,NULL,rcdata,rcerr);
-	    delete [] fdata;
-	    fdata=NULL;
-	  } else {
-	    rcdata=fdata;
-	    fdata=NULL;
-	  }
+
+// 	/** write raw data file */	   
+// 	if (*correctionMask==0 && delflag==1) {
+// 	  delete [] fdata;
+// 	} else {
+
+// 	  /** rate correction */
+// 	  if (*correctionMask&(1<<RATE_CORRECTION)) {
+// 	    rcdata=new float[getTotalNumberOfChannels()]; 
+// 	    rcerr=new float[getTotalNumberOfChannels()];
+// 	    rateCorrect(fdata,NULL,rcdata,rcerr);
+// 	    delete [] fdata;
+// 	    fdata=NULL;
+// 	  } else {
+// 	    rcdata=fdata;
+// 	    fdata=NULL;
+// 	  }
 	  
-	  /** flat field correction */
-	  if (*correctionMask&(1<<FLAT_FIELD_CORRECTION)) {
+// 	  /** flat field correction */
+// 	  if (*correctionMask&(1<<FLAT_FIELD_CORRECTION)) {
 	    
-	    ffcdata=new float[getTotalNumberOfChannels()]; 
-	    ffcerr=new float[getTotalNumberOfChannels()];
-#ifdef VERBOSE
-	    //    cout << "array size " << getTotalNumberOfChannels() << endl;
-#endif
-	    flatFieldCorrect(rcdata,rcerr,ffcdata,ffcerr);
-#ifdef VERBOSE
-	    //    cout << "FF corr done " << endl;
-#endif
-	    delete [] rcdata;
-	    rcdata=NULL;
-	    if (rcerr)	    delete [] rcerr;
-	    rcerr=NULL;
-	  } else {
-	    ffcdata=rcdata;
-	    ffcerr=rcerr;
-	    rcdata=NULL;
-	    rcerr=NULL;
-	  }
+// 	    ffcdata=new float[getTotalNumberOfChannels()]; 
+// 	    ffcerr=new float[getTotalNumberOfChannels()];
+// #ifdef VERBOSE
+// 	    //    cout << "array size " << getTotalNumberOfChannels() << endl;
+// #endif
+// 	    flatFieldCorrect(rcdata,rcerr,ffcdata,ffcerr);
+// #ifdef VERBOSE
+// 	    //    cout << "FF corr done " << endl;
+// #endif
+// 	    delete [] rcdata;
+// 	    rcdata=NULL;
+// 	    if (rcerr)	    delete [] rcerr;
+// 	    rcerr=NULL;
+// 	  } else {
+// 	    ffcdata=rcdata;
+// 	    ffcerr=rcerr;
+// 	    rcdata=NULL;
+// 	    rcerr=NULL;
+// 	  }
 	  
-	  if (*correctionMask&(1<< ANGULAR_CONVERSION)) {
-#ifdef VERBOSE
-	    //   cout << "**************Current position index is " << currentPositionIndex << endl;
-#endif
+// 	  if (*correctionMask&(1<< ANGULAR_CONVERSION)) {
+// #ifdef VERBOSE
+// 	    //   cout << "**************Current position index is " << currentPositionIndex << endl;
+// #endif
 
-	    if (*numberOfPositions>0 || delflag==0) {
+// 	    if (*numberOfPositions>0 || delflag==0) {
 	    
-	      if (currentPositionIndex<=1) {     
-		if (*binSize>0)
-		  bs=*binSize;
-		else
-		  *binSize=bs;
+// 	      if (currentPositionIndex<=1) {     
+// 		if (*binSize>0)
+// 		  bs=*binSize;
+// 		else
+// 		  *binSize=bs;
 	      
 		
-		nb=(int)(360./bs)+1;
+// 		nb=(int)(360./bs)+1;
 		
-#ifdef VERBOSE
-		//	      cout << "creating merging arrays "<<  nb << endl;
-#endif
-		mergingBins=new float[nb];
-		mergingCounts=new float[nb];
-		mergingErrors=new float[nb];
-		mergingMultiplicity=new int[nb];
+// #ifdef VERBOSE
+// 		//	      cout << "creating merging arrays "<<  nb << endl;
+// #endif
+// 		mergingBins=new float[nb];
+// 		mergingCounts=new float[nb];
+// 		mergingErrors=new float[nb];
+// 		mergingMultiplicity=new int[nb];
 		
-#ifdef VERBOSE
-		cout << mergingBins<< " "<<  mergingCounts<< " "<<  mergingErrors<< " "<<  mergingMultiplicity<< " "  << endl;
-#endif
+// #ifdef VERBOSE
+// 		cout << mergingBins<< " "<<  mergingCounts<< " "<<  mergingErrors<< " "<<  mergingMultiplicity<< " "  << endl;
+// #endif
 		
-#ifdef VERBOSE
-	      //   cout << "reset merging " << endl;
-#endif
-		resetMerging(mergingBins, mergingCounts,mergingErrors, mergingMultiplicity, bs);
-	      }
-	    }
-	    /* it would be better to create an ang0 with 0 encoder position and add to merging/write to file simply specifying that offset so that when it cycles writing the data or adding to merging it also calculates the angular position */
+// #ifdef VERBOSE
+// 	      //   cout << "reset merging " << endl;
+// #endif
+// 		resetMerging(mergingBins, mergingCounts,mergingErrors, mergingMultiplicity, bs);
+// 	      }
+// 	    }
+// 	    /* it would be better to create an ang0 with 0 encoder position and add to merging/write to file simply specifying that offset so that when it cycles writing the data or adding to merging it also calculates the angular position */
 	    
-#ifdef VERBOSE
-	    //	    cout << "convert angles" << endl;
-#endif
-	    ang=convertAngles(currentPosition);
+// #ifdef VERBOSE
+// 	    //	    cout << "convert angles" << endl;
+// #endif
+// 	    ang=convertAngles(currentPosition);
 
-	    // if (*correctionMask!=0) {
-	      // if (*numberOfPositions>1) {
-		//uses static function?!?!?!?
-		//writeDataFile (fname+string(".dat"), getTotalNumberOfChannels(), ffcdata, ffcerr,ang);
-#ifdef VERBOSE
-		//	cout << "Write angular converted file for position " << currentPositionIndex << endl;
-#endif
+// 	    // if (*correctionMask!=0) {
+// 	      // if (*numberOfPositions>1) {
+// 		//uses static function?!?!?!?
+// 		//writeDataFile (fname+string(".dat"), getTotalNumberOfChannels(), ffcdata, ffcerr,ang);
+// #ifdef VERBOSE
+// 		//	cout << "Write angular converted file for position " << currentPositionIndex << endl;
+// #endif
 
-	    writeDataFile (fname+string(".dat"), ffcdata, ffcerr,ang);
-		// }
-		// }
-#ifdef VERBOSE
-	    //	    cout << "add to merging "<< currentPositionIndex << endl;
-#endif
-	    if (*numberOfPositions>0 || delflag==0) {
-	      addToMerging(ang, ffcdata, ffcerr, mergingBins, mergingCounts,mergingErrors, mergingMultiplicity, getTotalNumberOfChannels(), bs, *angDirection, *correctionMask, badChannelMask );
+// 	    writeDataFile (fname+string(".dat"), ffcdata, ffcerr,ang);
+// 		// }
+// 		// }
+// #ifdef VERBOSE
+// 	    //	    cout << "add to merging "<< currentPositionIndex << endl;
+// #endif
+// 	    if (*numberOfPositions>0 || delflag==0) {
+// 	      addToMerging(ang, ffcdata, ffcerr, mergingBins, mergingCounts,mergingErrors, mergingMultiplicity, getTotalNumberOfChannels(), bs, *angDirection, *correctionMask, badChannelMask );
 		
-#ifdef VERBOSE
-	      cout << currentPositionIndex << " " << (*numberOfPositions) << endl;
+// #ifdef VERBOSE
+// 	      cout << currentPositionIndex << " " << (*numberOfPositions) << endl;
 	     
-#endif
+// #endif
 		
 	      
-	      pthread_mutex_lock(&mp);
-	      if ((currentPositionIndex>=(*numberOfPositions) && posfinished==1 && queuesize==1)) {
+// 	      pthread_mutex_lock(&mp);
+// 	      if ((currentPositionIndex>=(*numberOfPositions) && posfinished==1 && queuesize==1)) {
 		
 		
-		//  if ((currentPositionIndex>=(*numberOfPositions)) || (currentPositionIndex==0)) {
-#ifdef VERBOSE
-		    //      cout << "finalize merging " << currentPositionIndex<< endl;
-#endif
-		np=finalizeMerging(mergingBins, mergingCounts,mergingErrors, mergingMultiplicity, bs);
-	      /** file writing */
+// 		//  if ((currentPositionIndex>=(*numberOfPositions)) || (currentPositionIndex==0)) {
+// #ifdef VERBOSE
+// 		    //      cout << "finalize merging " << currentPositionIndex<< endl;
+// #endif
+// 		np=finalizeMerging(mergingBins, mergingCounts,mergingErrors, mergingMultiplicity, bs);
+// 	      /** file writing */
 		
 		
 
 		
-		currentPositionIndex++;
-		pthread_mutex_unlock(&mp);
+// 		currentPositionIndex++;
+// 		pthread_mutex_unlock(&mp);
 		
 	      
-		fname=createFileName();
+// 		fname=createFileName();
 	      
 		
-#ifdef VERBOSE
-		//		cout << "writing merged data file" << endl;
-#endif
-		writeDataFile (fname+string(".dat"),np,mergingCounts, mergingErrors, mergingBins,'f');
-#ifdef VERBOSE
-		//	cout << " done" << endl;
-#endif
+// #ifdef VERBOSE
+// 		//		cout << "writing merged data file" << endl;
+// #endif
+// 		writeDataFile (fname+string(".dat"),np,mergingCounts, mergingErrors, mergingBins,'f');
+// #ifdef VERBOSE
+// 		//	cout << " done" << endl;
+// #endif
 		
 		
 
-		if (delflag) {
-#ifdef VERBOSE
-		  //	      cout << mergingBins<< " " <<  mergingCounts<< " " <<  mergingErrors << " " <<  mergingMultiplicity << " " << endl;
-#endif
+// 		if (delflag) {
+// #ifdef VERBOSE
+// 		  //	      cout << mergingBins<< " " <<  mergingCounts<< " " <<  mergingErrors << " " <<  mergingMultiplicity << " " << endl;
+// #endif
 		  
-		      if (mergingBins) {
-#ifdef VERBOSE
-			//	cout << "deleting merged bins "<< mergingBins << " size " << sizeof(mergingBins) << endl;
-#endif
-			delete [] mergingBins;
-			mergingBins=NULL;
-		      }
-		      if (mergingCounts) {
-#ifdef VERBOSE
-			//	cout << "deleting merged counts "<< mergingCounts << endl;
-#endif
-			delete [] mergingCounts;
-			mergingCounts=NULL;
-		      }
-		      if (mergingErrors) {
-#ifdef VERBOSE
-			//	cout << "deleting merged errors "<< mergingErrors  << endl;
-#endif
-			delete [] mergingErrors;
-			mergingErrors=NULL;
-		      }
-		      if (mergingMultiplicity){
-#ifdef VERBOSE
-			//		cout << "deleting merged multiplicity "<<mergingMultiplicity  << endl;
-#endif
-			delete [] mergingMultiplicity;
-			mergingMultiplicity=NULL;
-		      }
-#ifdef VERBOSE
-		      //	      cout << "deleting merged data done " << endl;
+// 		      if (mergingBins) {
+// #ifdef VERBOSE
+// 			//	cout << "deleting merged bins "<< mergingBins << " size " << sizeof(mergingBins) << endl;
+// #endif
+// 			delete [] mergingBins;
+// 			mergingBins=NULL;
+// 		      }
+// 		      if (mergingCounts) {
+// #ifdef VERBOSE
+// 			//	cout << "deleting merged counts "<< mergingCounts << endl;
+// #endif
+// 			delete [] mergingCounts;
+// 			mergingCounts=NULL;
+// 		      }
+// 		      if (mergingErrors) {
+// #ifdef VERBOSE
+// 			//	cout << "deleting merged errors "<< mergingErrors  << endl;
+// #endif
+// 			delete [] mergingErrors;
+// 			mergingErrors=NULL;
+// 		      }
+// 		      if (mergingMultiplicity){
+// #ifdef VERBOSE
+// 			//		cout << "deleting merged multiplicity "<<mergingMultiplicity  << endl;
+// #endif
+// 			delete [] mergingMultiplicity;
+// 			mergingMultiplicity=NULL;
+// 		      }
+// #ifdef VERBOSE
+// 		      //	      cout << "deleting merged data done " << endl;
 	  
-		      //      cout << mergingBins<< " " <<  mergingCounts<< " " <<  mergingErrors << " " <<  mergingMultiplicity << " " << endl;
+// 		      //      cout << mergingBins<< " " <<  mergingCounts<< " " <<  mergingErrors << " " <<  mergingMultiplicity << " " << endl;
 		      
-#endif
-		    }
-	      } else {
-		thisData=new detectorData(mergingCounts,mergingErrors,mergingBins,getCurrentProgress(),(fname+string(ext)).c_str(),np);
+// #endif
+// 		    }
+// 	      } else {
+// 		thisData=new detectorData(mergingCounts,mergingErrors,mergingBins,getCurrentProgress(),(fname+string(ext)).c_str(),np);
 		
-		pthread_mutex_lock(&mg);
-		finalDataQueue.push(thisData);
-		pthread_mutex_unlock(&mg);
-	      }
-	      pthread_mutex_lock(&mp);
-	    }
-	    pthread_mutex_unlock(&mp);
+// 		pthread_mutex_lock(&mg);
+// 		finalDataQueue.push(thisData);
+// 		pthread_mutex_unlock(&mg);
+// 	      }
+// 	      pthread_mutex_lock(&mp);
+// 	    }
+// 	    pthread_mutex_unlock(&mp);
 	    
 	    
-#ifdef VERBOSE
-	    //    cout << "delete data" << ffcdata << endl;
-#endif	    
+// #ifdef VERBOSE
+// 	    //    cout << "delete data" << ffcdata << endl;
+// #endif	    
 	    
-	    if (ffcdata)
-	      delete [] ffcdata;
-	      ffcdata=NULL;
+// 	    if (ffcdata)
+// 	      delete [] ffcdata;
+// 	      ffcdata=NULL;
 
-#ifdef VERBOSE
-	      //	      cout << "delete err " << ffcerr << endl;
-#endif	    
-	      if (ffcerr) 
-		delete [] ffcerr;
-	      ffcerr=NULL;
-#ifdef VERBOSE
-	      //     cout << "delete ang " << ang <<  endl;
-#endif	    
-	      if (ang)
-	      delete [] ang;
-	      ang=NULL;
+// #ifdef VERBOSE
+// 	      //	      cout << "delete err " << ffcerr << endl;
+// #endif	    
+// 	      if (ffcerr) 
+// 		delete [] ffcerr;
+// 	      ffcerr=NULL;
+// #ifdef VERBOSE
+// 	      //     cout << "delete ang " << ang <<  endl;
+// #endif	    
+// 	      if (ang)
+// 	      delete [] ang;
+// 	      ang=NULL;
 	      
 	      
-	  } else {
-	    if (*correctionMask!=0) {
-	      writeDataFile (fname+string(".dat"),  ffcdata, ffcerr);
-	    }
-	    if (delflag) {
-	      if (ffcdata)
-		delete [] ffcdata;
-	      if (ffcerr)
-		delete [] ffcerr;
-	      if ( ang)
-		delete [] ang;
-	    } else {
-	      thisData=new detectorData(ffcdata,ffcerr,NULL,getCurrentProgress(),(fname+string(ext)).c_str(),getTotalNumberOfChannels());
-	      pthread_mutex_lock(&mg);
-	      finalDataQueue.push(thisData);  
-	      pthread_mutex_unlock(&mg);
-	    }  
-	  }
-	}
-	(*fileIndex)++;
-#ifdef VERBOSE
-	//	cout << "Incrementing file index " << *fileIndex << endl;
-#endif
+// 	  } else {
+// 	    if (*correctionMask!=0) {
+// 	      writeDataFile (fname+string(".dat"),  ffcdata, ffcerr);
+// 	    }
+// 	    if (delflag) {
+// 	      if (ffcdata)
+// 		delete [] ffcdata;
+// 	      if (ffcerr)
+// 		delete [] ffcerr;
+// 	      if ( ang)
+// 		delete [] ang;
+// 	    } else {
+// 	      thisData=new detectorData(ffcdata,ffcerr,NULL,getCurrentProgress(),(fname+string(ext)).c_str(),getTotalNumberOfChannels());
+// 	      pthread_mutex_lock(&mg);
+// 	      finalDataQueue.push(thisData);  
+// 	      pthread_mutex_unlock(&mg);
+// 	    }  
+// 	  }
+// 	}
+// 	(*fileIndex)++;
+// #ifdef VERBOSE
+// 	//	cout << "Incrementing file index " << *fileIndex << endl;
+// #endif
 
-#ifdef VERBOSE
-	//	cout << "delete data " << myData << endl;
-#endif
+// #ifdef VERBOSE
+// 	//	cout << "delete data " << myData << endl;
+// #endif
 
-	delete [] myData;
-	myData=NULL;
-#ifdef VERBOSE
-	//	cout << "Pop data queue " << *fileIndex << endl;
-#endif
+// 	delete [] myData;
+// 	myData=NULL;
+// #ifdef VERBOSE
+// 	//	cout << "Pop data queue " << *fileIndex << endl;
+// #endif
 
-	pthread_mutex_lock(&mp);
-	dataQueue.pop(); //remove the data from the queue
-	queuesize=dataQueue.size();
-	pthread_mutex_unlock(&mp);
+// 	pthread_mutex_lock(&mp);
+// 	dataQueue.pop(); //remove the data from the queue
+// 	queuesize=dataQueue.size();
+// 	pthread_mutex_unlock(&mp);
 	usleep(1000);
       }
       pthread_mutex_unlock(&mp);

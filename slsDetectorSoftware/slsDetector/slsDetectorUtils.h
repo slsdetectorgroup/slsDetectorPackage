@@ -380,7 +380,7 @@ class slsDetectorUtils : public slsDetectorBase {
 
 
 
-   virtual int writeAngularConversion(const char *fname)=0;
+   virtual int writeAngularConversion(string fname)=0;
 
   /** 
       set bad channels correction
@@ -819,6 +819,20 @@ s
       
   */
   void *processData(int delflag);
+
+  /** processes the data
+      \param delflag 0 leaves the data in the final data queue
+      \returns nothing
+      
+  */
+  void processFrame(int* myData, int delflag);
+
+  /** processes the data
+      \param delflag 0 leaves the data in the final data queue
+      \returns nothing
+      
+  */
+  void doProcessing(float* myData, int delflag);
 
   virtual float* convertAngles(float pos)=0;
   virtual int setThresholdEnergy(int, int im=-1, detectorSettings isettings=GET_SETTINGS)=0;

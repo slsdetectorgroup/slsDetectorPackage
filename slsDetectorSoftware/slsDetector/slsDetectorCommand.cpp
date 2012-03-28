@@ -372,7 +372,7 @@ slsDetectorCommand::slsDetectorCommand(slsDetectorUtils *det)  {
   descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdDigiTest;
   i++;
 
-  descrToFuncMap[i].m_pFuncName="reg_rw"; //
+  descrToFuncMap[i].m_pFuncName="reg"; //
   descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdRegister;
   i++;
 
@@ -2591,10 +2591,10 @@ string slsDetectorCommand::helpRegister(int narg, char *args[], int action) {
 
   ostringstream os;  
   if (action==PUT_ACTION || action==HELP_ACTION) {
-    os << "reg_rw addr val \n writes the register addr with the value val"<< std::endl;
+    os << "reg addr val \n writes the register addr with the value val"<< std::endl;
   }
   if (action==GET_ACTION || action==HELP_ACTION) {
-    os << "reg_rw addr \n reads the register addr"<< std::endl;
+    os << "reg addr \n reads the register addr"<< std::endl;
   } 
   return os.str();
 

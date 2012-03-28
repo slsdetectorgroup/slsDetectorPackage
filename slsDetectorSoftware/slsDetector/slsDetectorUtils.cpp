@@ -2968,25 +2968,41 @@ float slsDetectorUtils::getCurrentProgress() {
 int slsDetectorUtils::testFunction(int times) {
 	int i,count=0;
 	runStatus s;
+	char controlval[1000];
+	char statusval[1000];
 
 	int nchans = getTotalNumberOfChannels();
 	short int dataVals[nchans];
 
 	for(i=0;i<times;i++){
-		std::cout<<std::endl<<dec<<i+1<<": \t";
+	    sprintf(statusval,"%x",readRegister(0x25));
+		std::cout<<std::endl<<dec<<i+1<<": \t"<<statusval<<"\t";
+usleep(10000);
+
 		startAcquisition();
+
+	    //sprintf(statusval,"%x",readRegister(0x25));
+	    //std::cout<<statusval<<std::endl;
 		s = getRunStatus();
 		if(s==IDLE){
+			std::cout<<"IDLE\t"<<std::endl;
 			s = getRunStatus();
-			if(s==IDLE)
+			if(s==IDLE){
 				std::cout<<"IDLE"<<std::endl;
+				exit(-1);
+			}
+
 		}
-		else if (s==RUNNING){
+		else {
+			if (s==RUNNING){
 			count=0;
 			while(s==RUNNING){
 				count++;
 				if(count==5){
-					std::cout<<"STUCK"<<std::endl;
+					sprintf(statusval,"%x",readRegister(0x25));
+
+
+					std::cout<<"STUCK: "<<statusval<<std::endl;
 					exit(-1);
 				}
 				usleep(2);
@@ -2994,10 +3010,11 @@ int slsDetectorUtils::testFunction(int times) {
 				s = getRunStatus();
 			}
 		}
-		else{
-			std::cout<<"\nWeird Status.Exit\n";
-			exit(-1);
 		}
+/*		else{
+			std::cout<<"\nWeird Status. "<<runStatusType(s)<<" Exit\n";
+			exit(-1);
+		}*/
 		system("rm ~/wORKSPACE/scratch/run*  ");
 		//system("more ~/wORKSPACE/scratch/run*  ");
 		usleep(1000000);
@@ -3010,6 +3027,7 @@ int slsDetectorUtils::testFunction(int times) {
 	    readAll();
 	    processData(1);
 	    setThreadedProcessing(b);
+
 
 		if(!readDataFile("/home/l_maliakal_d/wORKSPACE/scratch/run_1.raw",dataVals)){
 			std::cout<< "Could not open file "<< std::endl;

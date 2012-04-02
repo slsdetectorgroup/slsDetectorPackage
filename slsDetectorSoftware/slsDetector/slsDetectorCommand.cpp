@@ -114,6 +114,13 @@ slsDetectorCommand::slsDetectorCommand(slsDetectorUtils *det)  {
   descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdAngConv;
   i++;
 
+
+  descrToFuncMap[i].m_pFuncName="moveflag" ;//
+  descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdAngConv;
+  i++;
+
+
+
   descrToFuncMap[i].m_pFuncName="threaded"; //
   descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdThreaded;
   i++;
@@ -1508,9 +1515,9 @@ string slsDetectorCommand::cmdAngConv(int narg, char *args[], int action){
       if (sval=="none")
 	sval="";
 
-      myDet->setAngularConversion(sval);
+      myDet->setAngularConversionFile(sval);
 
-      return string(myDet->getAngularConversion());
+      return string(myDet->getAngularConversionFile());
     } else if (action==GET_ACTION) {
       if (narg>1)
 	sval=string(args[1]);
@@ -1522,7 +1529,7 @@ string slsDetectorCommand::cmdAngConv(int narg, char *args[], int action){
 	  myDet->writeAngularConversion(sval.c_str());
 	  return sval;
 	}
-	return string(myDet->getAngularConversion());
+	return string(myDet->getAngularConversionFile());
       } else {
 	return string("none");
       }
@@ -1541,6 +1548,8 @@ string slsDetectorCommand::cmdAngConv(int narg, char *args[], int action){
   } else if  (string(args[0])==string("angdir")) {
     c=ANGULAR_DIRECTION;
 
+  } else if  (string(args[0])==string("moveflag")) {
+    c=MOVE_FLAG;
   } else
     return string("could not decode angular conversion parameter ")+cmd;
 

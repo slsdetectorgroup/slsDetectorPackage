@@ -1,14 +1,17 @@
 CFLAGS= -DC_ONLY 
 #FLAGS=-DVERBOSE 
-INCLUDES= -IcommonFiles -IslsDetector -IMySocketTCP -IusersFunctions -ImultiSlsDetector -IslsDetectorUtils -IslsDetectorCommand
+INCLUDES= -IcommonFiles -IslsDetector -IMySocketTCP -IusersFunctions -ImultiSlsDetector -IslsDetectorUtils -IslsDetectorCommand -IslsDetectorAnalysis
 
 #EPICSFLAGS=-D EPICS -I/usr/local/epics/base/include/ -I /usr/local/epics/base/include/os/Linux/ -L /usr/local/epics/base/lib/SL5-x86/ -Wl,-R/usr/local/epics/base/lib/SL5-x86  -lca -lCom 
 CC=g++
 
 
-SRC_CLNT= slsDetector/slsDetector.cpp MySocketTCP/MySocketTCP.cpp usersFunctions/usersFunctions.cpp multiSlsDetector/multiSlsDetector.cpp  slsDetector/slsDetectorUtils.cpp slsDetector/slsDetectorCommand.cpp 
+SRC_CLNT= slsDetectorAnalysis/fileIO.cpp slsDetector/slsDetector.cpp MySocketTCP/MySocketTCP.cpp usersFunctions/usersFunctions.cpp multiSlsDetector/multiSlsDetector.cpp  slsDetector/slsDetectorUtils.cpp slsDetector/slsDetectorCommand.cpp slsDetectorAnalysis/angularConversion.cpp slsDetectorAnalysis/energyConversion.cpp slsDetector/slsDetectorActions.cpp slsDetectorAnalysis/postProcessing.cpp 
 
 OBJS = $(SRC_CLNT:.cpp=.o) 
+
+HEADERS = $(SRC_CLNT:.cpp=.h) commonFiles/sls_detector_defs.h slsDetectorAnalysis/detectorData.h
+
 
 
 SRC_MYTHEN_SVC = mythenDetectorServer/server.c mythenDetectorServer/server_funcs.c mythenDetectorServer/communication_funcs.c mythenDetectorServer/firmware_funcs.c mythenDetectorServer/mcb_funcs.c mythenDetectorServer/trimming_funcs.c 
@@ -56,14 +59,8 @@ install_lib: lib
 
 install_inc:
 	$(shell test -d $(DESTDIR) || mkdir -p $(DESTDIR))
-	cp -P ../slsDetectorSoftware/MySocketTCP/MySocketTCP.h $(DESTDIR)
-	cp -P ../slsDetectorSoftware/slsDetector/slsDetectorBase.h $(DESTDIR)
-	cp -P ../slsDetectorSoftware/slsDetector/slsDetector.h $(DESTDIR)
-	cp -P ../slsDetectorSoftware/slsDetector/slsDetectorUtils.h $(DESTDIR)
-	cp -P ../slsDetectorSoftware/slsDetector/slsDetectorCommand.h $(DESTDIR)
-	cp -P ../slsDetectorSoftware/multiSlsDetector/multiSlsDetector.h $(DESTDIR)
-	cp -P ../slsDetectorSoftware/commonFiles/sls_detector_defs.h  $(DESTDIR)
-	cp -P ../slsDetectorSoftware/usersFunctions/usersFunctions.h $(DESTDIR)
+	cp -P $(HEADERS) $(DESTDIR)
+
 
 install_doc:
 	$(shell test -d $(DESTDIR) || mkdir -p $(DESTDIR))

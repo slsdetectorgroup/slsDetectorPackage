@@ -41,12 +41,12 @@ int slsDetector::initSharedMemory(detectorType type, int id) {
      nd=13; // dacs+adcs
      break;
    case EIGER:
-     nch=65535; // one EIGER module
+     nch=65536; // one EIGER half module
      nm=1; //modules/detector
-     nc=8; //chips
+     nc=4; //chips
      nd=16; //dacs+adcs
    default:
-     nch=0; // one EIGER module
+     nch=0; // dum!
      nm=0; //modules/detector
      nc=0; //chips
      nd=0; //dacs+adcs
@@ -81,9 +81,6 @@ int slsDetector::initSharedMemory(detectorType type, int id) {
   }
 
 
-
-
-
     /**
       shm_id returns -1 is shared memory initialization fails
    */
@@ -108,20 +105,6 @@ int slsDetector::freeSharedMemory() {
     printf("Shared memory %d deleted\n", shmId);
     return OK;
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -480,6 +463,7 @@ int slsDetector::initializeDetectorSize(detectorType type) {
        thisDetector->nModMax[X]=24;
        thisDetector->nModMax[Y]=1;
        thisDetector->dynamicRange=24;
+       thisDetector->moveFlag=1;
        break;
      case PICASSO:
        thisDetector->nChans=128;
@@ -635,36 +619,69 @@ int slsDetector::initializeDetectorSize(detectorType type) {
    cout << "passing pointers" << endl;
 #endif   
 
-   getPointers(&thisDetector->stoppedFlag,				\
-	       &thisDetector->threadedProcessing,			\
-	       &thisDetector->actionMask,				\
-	       thisDetector->actionScript,				\
-	       thisDetector->actionParameter,				\
-	       thisDetector->nScanSteps,				\
-	       thisDetector->scanMode,					\
-	       thisDetector->scanScript,				\
-	       thisDetector->scanParameter,				\
-	       thisDetector->scanSteps,					\
-	       thisDetector->scanPrecision,				\
-	       &thisDetector->numberOfPositions,			\
-	       thisDetector->detPositions,				\
-	       thisDetector->angConvFile,				\
-	       &thisDetector->correctionMask,				\
-	       &thisDetector->binSize,					\
-	       &thisDetector->fineOffset,				\
-	       &thisDetector->globalOffset,				\
-	       &thisDetector->angDirection,				\
-	       thisDetector->flatFieldDir,				\
-	       thisDetector->flatFieldFile,				\
-	       thisDetector->badChanFile,				\
-	       thisDetector->timerValue,				\
-	       &thisDetector->currentSettings,				\
-	       &thisDetector->currentThresholdEV,			\
-	       thisDetector->filePath,					\
-	       thisDetector->fileName,					\
-	       &thisDetector->fileIndex);
 
+//    getPointers(&thisDetector->stoppedFlag,				\
+// 	       &thisDetector->threadedProcessing,			\
+// 	       &thisDetector->actionMask,				\
+// 	       thisDetector->actionScript,				\
+// 	       thisDetector->actionParameter,				\
+// 	       thisDetector->nScanSteps,				\
+// 	       thisDetector->scanMode,					\
+// 	       thisDetector->scanScript,				\
+// 	       thisDetector->scanParameter,				\
+// 	       thisDetector->scanSteps,					\
+// 	       thisDetector->scanPrecision,				\
+// 	       &thisDetector->numberOfPositions,			\
+// 	       thisDetector->detPositions,				\
+// 	       thisDetector->angConvFile,				\
+// 	       &thisDetector->correctionMask,				\
+// 	       &thisDetector->binSize,					\
+// 	       &thisDetector->fineOffset,				\
+// 	       &thisDetector->globalOffset,				\
+// 	       &thisDetector->angDirection,				\
+// 	       thisDetector->flatFieldDir,				\
+// 	       thisDetector->flatFieldFile,				\
+// 	       thisDetector->badChanFile,				\
+// 	       thisDetector->timerValue,				\
+// 	       &thisDetector->currentSettings,				\
+// 	       &thisDetector->currentThresholdEV,			\
+// 	       thisDetector->filePath,					\
+// 	       thisDetector->fileName,					\
+// 	       &thisDetector->fileIndex);
 
+   stoppedFlag=&thisDetector->stoppedFlag;
+   threadedProcessing=&thisDetector->threadedProcessing;
+   actionMask=&thisDetector->actionMask;
+   actionScript=thisDetector->actionScript;		
+   actionParameter=thisDetector->actionParameter;      
+   nScanSteps=thisDetector->nScanSteps;
+   scanMode=thisDetector->scanMode;
+   scanScript=thisDetector->scanScript;
+   scanParameter=thisDetector->scanParameter;
+   scanSteps=thisDetector->scanSteps;
+   scanPrecision=thisDetector->scanPrecision;
+   numberOfPositions=&thisDetector->numberOfPositions;
+   detPositions=thisDetector->detPositions;
+   angConvFile=thisDetector->angConvFile;
+   correctionMask=&thisDetector->correctionMask;
+   binSize=&thisDetector->binSize;
+   fineOffset=&thisDetector->fineOffset;
+   globalOffset=&thisDetector->globalOffset;
+   angDirection=&thisDetector->angDirection;
+   flatFieldDir=thisDetector->flatFieldDir;
+   flatFieldFile=thisDetector->flatFieldFile;
+   badChanFile=thisDetector->badChanFile;
+   timerValue=thisDetector->timerValue;
+   currentSettings=&thisDetector->currentSettings;
+   currentThresholdEV=&thisDetector->currentThresholdEV;
+   filePath=thisDetector->filePath;
+   fileName=thisDetector->fileName;
+   fileIndex=&thisDetector->fileIndex;
+   moveFlag=&thisDetector->moveFlag;
+
+   settingsFile=thisDetector->settingsFile;
+
+   //  setAngularConversionPointer(thisDetector->angOff,&thisDetector->nMods, thisDetector->nChans*thisDetector->nChips);
 
 #ifdef VERBOSE
    cout << "done" << endl;
@@ -741,17 +758,55 @@ int slsDetector::initializeDetectorStructure() {
   return 0;
 }
 
-slsDetectorDefs::sls_detector_module*  slsDetector::createModule() {
+slsDetectorDefs::sls_detector_module*  slsDetector::createModule(detectorType t) {
 
   sls_detector_module *myMod=(sls_detector_module*)malloc(sizeof(sls_detector_module));
-  float *dacs=new float[thisDetector->nDacs];
-  float *adcs=new float[thisDetector->nAdcs];
-  int *chipregs=new int[thisDetector->nChips];
-  int *chanregs=new int[thisDetector->nChips*thisDetector->nChans];
-  myMod->ndac=thisDetector->nDacs;
-  myMod->nadc=thisDetector->nAdcs;
-  myMod->nchip=thisDetector->nChips;
-  myMod->nchan=thisDetector->nChips*thisDetector->nChans;
+
+
+  int nch, nm, nc, nd, na=0;
+
+   switch(t) {
+   case MYTHEN:
+     nch=128; // complete mythen system
+     nm=24;
+     nc=10;
+     nd=6; // dacs
+     break;
+   case PICASSO:
+     nch=128; // complete mythen system
+     nm=24;
+     nc=12;
+     nd=6; // dacs+adcs
+     break;
+   case GOTTHARD:
+     nch=128; 
+     nm=1;
+     nc=10;
+     nd=8; // dacs+adcs
+     na=5;
+     break;
+   case EIGER:
+     nch=65536; // one EIGER half module
+     nm=1; //modules/detector
+     nc=4; //chips
+     nd=16; //dacs
+     na=16; 
+   default:
+     nch=0; // dum!
+     nm=0; //modules/detector
+     nc=0; //chips
+     nd=0; //dacs+adcs
+     na=0;
+   }
+
+  float *dacs=new float[nd];
+  float *adcs=new float[na];
+  int *chipregs=new int[nc];
+  int *chanregs=new int[nch*nc];
+  myMod->ndac=nd;
+  myMod->nadc=na;
+  myMod->nchip=nc;
+  myMod->nchan=nch*nc;
  
   myMod->dacs=dacs;
   myMod->adcs=adcs;
@@ -2727,7 +2782,7 @@ slsDetectorDefs::detectorSettings slsDetector::setSettings( detectorSettings ise
 #ifdef VERBOSE
       cout << "the settings name is "<<settingsfname << endl;
 #endif
-      if (readSettingsFile(settingsfname,myMod)) {
+      if (readSettingsFile(settingsfname,thisDetector->myDetectorType, myMod)) {
 	calfname=oscfn.str();
 #ifdef VERBOSE
 	cout << calfname << endl;
@@ -2750,7 +2805,7 @@ slsDetectorDefs::detectorSettings slsDetector::setSettings( detectorSettings ise
 	cout << settingsfname << endl;
 	cout << calfname << endl;
 #endif
-	if (readSettingsFile(settingsfname,myMod)) {
+	if (readSettingsFile(settingsfname,thisDetector->myDetectorType, myMod)) {
 	  calfname=oscfn.str();
 	  readCalibrationFile(calfname,myMod->gain, myMod->offset);
 	  setModule(*myMod);
@@ -4499,29 +4554,6 @@ int slsDetector::configureMAC(){
 
 //Corrections
 
-int slsDetector::setAngularConversion(string fname) {
-  if (fname=="") {
-    thisDetector->correctionMask&=~(1<< ANGULAR_CONVERSION);
-    //strcpy(thisDetector->angConvFile,"none");
-#ifdef VERBOSE
-     std::cout << "Unsetting angular conversion" <<  std::endl;
-#endif
-  } else {
-    if (fname=="default") {
-      fname=string(thisDetector->angConvFile);
-    }
-    
-#ifdef VERBOSE
-    std::cout << "Setting angular conversion to" << fname << std:: endl;
-#endif
-    if (readAngularConversion(fname)>=0) {
-      thisDetector->correctionMask|=(1<< ANGULAR_CONVERSION);
-      strcpy(thisDetector->angConvFile,fname.c_str());
-    }
-  }
-  return thisDetector->correctionMask&(1<< ANGULAR_CONVERSION);
-}
-
 
 
 
@@ -4550,7 +4582,7 @@ int slsDetector::getAngularConversion(int &direction,  angleConversionConstant *
 
 
 
- int slsDetector::readAngularConversion(string fname) {
+ int slsDetector::readAngularConversionFile(string fname) {
 
    return readAngularConversion(fname,thisDetector->nModsMax,  thisDetector->angOff);
 
@@ -4573,24 +4605,23 @@ int slsDetector::getAngularConversion(int &direction,  angleConversionConstant *
 
 
 
-float* slsDetector::convertAngles(float pos) {
-  int imod;
-  float    *ang=new float[thisDetector->nChans*thisDetector->nChips*thisDetector->nMods]; 
-  for (int ip=0; ip<thisDetector->nChans*thisDetector->nChips*thisDetector->nMods; ip++) {
-    imod=ip/(thisDetector->nChans*thisDetector->nChips);
-    ang[ip]=angle(ip%(thisDetector->nChans*thisDetector->nChips),\
-		  pos,							\
-		  thisDetector->fineOffset+thisDetector->globalOffset,	\
-		  thisDetector->angOff[imod].r_conversion,		\
-		  thisDetector->angOff[imod].center,			\
-		  thisDetector->angOff[imod].offset,			\
-		  thisDetector->angOff[imod].tilt,			\
-		  thisDetector->angDirection
-		  );
-    // cout << imod << " " << thisDetector->angOff[imod].offset << " " << ang[ip] << endl;
-  }
-  return ang;
-}
+// float* slsDetector::convertAngles(float pos) {
+//   int imod;
+//   float    *ang=new float[thisDetector->nChans*thisDetector->nChips*thisDetector->nMods]; 
+//   for (int ip=0; ip<thisDetector->nChans*thisDetector->nChips*thisDetector->nMods; ip++) {
+//     imod=ip/(thisDetector->nChans*thisDetector->nChips);
+//     ang[ip]=angle(ip%(thisDetector->nChans*thisDetector->nChips),\
+// 		  pos,							\
+// 		  thisDetector->fineOffset+thisDetector->globalOffset,	\
+// 		  thisDetector->angOff[imod].r_conversion,		\
+// 		  thisDetector->angOff[imod].center,			\
+// 		  thisDetector->angOff[imod].offset,			\
+// 		  thisDetector->angOff[imod].tilt,			\
+// 		  thisDetector->angDirection
+// 		  );
+//   }
+//   return ang;
+// }
 
 
 
@@ -5191,293 +5222,9 @@ int slsDetector::retrieveDetectorSetup(string fname1, int level){
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-  /* I/O */
-
-
- slsDetectorDefs::sls_detector_module* slsDetector::readSettingsFile(string fname,  sls_detector_module *myMod){
-  
-   int nflag=0;
-
-      
-   if (myMod==NULL) {
-     myMod=createModule();
-     nflag=1;
-   }
-
-   string myfname;
-  string str;
-  ifstream infile;
-  ostringstream oss;
-  int iline=0;
-  // string names[]={"Vtrim", "Vthresh", "Rgsh1", "Rgsh2", "Rgpr", "Vcal", "outBuffEnable"};
-  string sargname;
-  int ival;
-  int ichan=0, ichip=0, idac=0;
-
- 
-
-#ifdef VERBOSE
-  std::cout<<   "reading settings file for module number "<< myMod->module << std::endl;
-#endif
-      myfname=fname;
-#ifdef VERBOSE
-    std::cout<< "file name is "<< myfname <<   std::endl;
-#endif
-    infile.open(myfname.c_str(), ios_base::in);
-    if (infile.is_open()) {
-
-
-      switch (thisDetector->myDetectorType) {
-
-      case MYTHEN:
-	
-	for (int iarg=0; iarg<thisDetector->nDacs; iarg++) {
-	  getline(infile,str);
-	  iline++;
-	  istringstream ssstr(str);
-	  ssstr >> sargname >> ival;
-#ifdef VERBOSE
-	  std::cout<< sargname << " dac nr. " << idac << " is " << ival << std::endl;
-#endif
-	  myMod->dacs[idac]=ival;
-	  idac++;
-	}
-	for (ichip=0; ichip<thisDetector->nChips; ichip++) { 
-	  getline(infile,str); 
-	  iline++;
-#ifdef VERBOSE
-	  //	  std::cout<< str << std::endl;
-#endif
-	  istringstream ssstr(str);
-	  ssstr >> sargname >> ival;
-#ifdef VERBOSE
-	  //	  std::cout<< "chip " << ichip << " " << sargname << " is " << ival << std::endl;
-#endif
-	  
-	  myMod->chipregs[ichip]=ival;
-	  for (ichan=0; ichan<thisDetector->nChans; ichan++) {
-	    getline(infile,str); 
-#ifdef VERBOSE
-	    // std::cout<< str << std::endl;
-#endif
-	    istringstream ssstr(str);
-	    
-#ifdef VERBOSE
-	    //   std::cout<< "channel " << ichan+ichip*thisDetector->nChans <<" iline " << iline<< std::endl;
-#endif
-	    iline++;
-	    myMod->chanregs[ichip*thisDetector->nChans+ichan]=0;
-	    for (int iarg=0; iarg<6 ; iarg++) {
-	      ssstr >>  ival; 
-	      //if (ssstr.good()) {
-	      switch (iarg) {
-	      case 0:
-#ifdef VERBOSE
-		//		 std::cout<< "trimbits " << ival ;
-#endif
-		 myMod->chanregs[ichip*thisDetector->nChans+ichan]|=ival&0x3f;
-		 break;
-	      case 1:
-#ifdef VERBOSE
-		//std::cout<< " compen " << ival ;
-#endif
-		myMod->chanregs[ichip*thisDetector->nChans+ichan]|=ival<<9;
-		break;
-	      case 2:
-#ifdef VERBOSE
-		//std::cout<< " anen " << ival ;
-#endif
-		myMod->chanregs[ichip*thisDetector->nChans+ichan]|=ival<<8;
-		break;
-	      case 3:
-#ifdef VERBOSE
-		//std::cout<< " calen " << ival  ;
-#endif
-		myMod->chanregs[ichip*thisDetector->nChans+ichan]|=ival<<7;
-		break;
-	      case 4:
-#ifdef VERBOSE
-		//std::cout<< " outcomp " << ival  ;
-#endif
-		myMod->chanregs[ichip*thisDetector->nChans+ichan]|=ival<<10;
-		break;
-	      case 5:
-#ifdef VERBOSE
-		//std::cout<< " counts " << ival  << std::endl;
-#endif
-		 myMod->chanregs[ichip*thisDetector->nChans+ichan]|=ival<<11;
-		 break;
-	      default:
-		std::cout<< " too many columns" << std::endl; 
-		break;
-	      }
-	    }
-	  }
-	  //	}
-      }
-#ifdef VERBOSE
-      std::cout<< "read " << ichan*ichip << " channels" <<std::endl; 
-#endif
-
-
-      break;
-
-
-      case GOTTHARD:
-	     //---------------dacs---------------
-	for (int iarg=0; iarg<thisDetector->nDacs; iarg++) {
-	  getline(infile,str);
-	  iline++;
-#ifdef VERBOSE
-	  std::cout<< str << std::endl;
-#endif
-	  istringstream ssstr(str);
-	  ssstr >> sargname >> ival;
-#ifdef VERBOSE
-	  std::cout<< sargname << " dac nr. " << idac << " is " << ival << std::endl;
-#endif
-	  myMod->dacs[idac]=ival;
-	  idac++;
-	}
-	break;
-	
-
-      default:
-	std::cout<< "Unknown detector type - don't know how to read file" <<  myfname << std::endl;
-	infile.close();
-	deleteModule(myMod);
-	return NULL;
-
-      }
-
-      infile.close();
-      strcpy(thisDetector->settingsFile,fname.c_str());
-      return myMod;
-
-    } else {
-      std::cout<< "could not open settings file " <<  myfname << std::endl;
-      
-      if (nflag)
-	deleteModule(myMod);
-
-      return NULL;
-    }
- 
-};
-
-
-int slsDetector::writeSettingsFile(string fname, sls_detector_module mod){
-
-  ofstream outfile;
-
-  string names[100];
-  int id=0;
-  switch (thisDetector->myDetectorType) {
-  case MYTHEN:
-    names[id++]="Vtrim";
-    names[id++]="Vthresh"; 
-    names[id++]="Rgsh1";
-    names[id++]="Rgsh2";
-    names[id++]="Rgpr";
-    names[id++]="Vcal";
-    names[id++]="outBuffEnable";
-    break;
-  case GOTTHARD:
-    names[id++]="Vref";
-    names[id++]="VcascN";
-    names[id++]="VcascP";
-    names[id++]="Vout";
-    names[id++]="Vcasc";
-    names[id++]="Vin";
-    names[id++]="Vref_comp";
-    names[id++]="Vib_test";
-    names[id++]="config";
-    names[id++]="HV"; 
-    names[id++]="macaddress";
-    names[id++]="ipaddress";
-    break;
-  default:
-    cout << "Unknown detector type - unknown format for settings file" << endl;
-    return FAIL;
-  }
-
-  int iv, ichan, ichip;
-  int iv1, idac;
-  int nb;
-    outfile.open(fname.c_str(), ios_base::out);
-
-    if (outfile.is_open()) {
-      for (idac=0; idac<mod.ndac; idac++) {
-	iv=(int)mod.dacs[idac];
-	outfile << names[idac] << " " << iv << std::endl;
-      }
-      
-	for (ichip=0; ichip<mod.nchip; ichip++) {
-	  iv1=mod.chipregs[ichip]&1;
-	  outfile << names[idac] << " " << iv1 << std::endl;
-	  for (ichan=0; ichan<thisDetector->nChans; ichan++) {
-	    iv=mod.chanregs[ichip*thisDetector->nChans+ichan];
-	    iv1= (iv&0x3f);
-	    outfile <<iv1 << " ";
-	    nb=9;
-	    iv1=((iv&(1<<nb))>>nb);
-	    outfile << iv1 << " ";
-	    nb=8;
-	    iv1=((iv&(1<<nb))>>nb);
-	    outfile << iv1 << " ";
-	    nb=7;
-	    iv1=((iv&(1<<nb))>>nb);
-	    outfile <<iv1  << " ";
-	    nb=10;
-	    iv1=((iv&(1<<nb))>>nb);
-	    outfile << iv1 << " ";
-	    nb=11;
-	    iv1= ((iv&0xfffff800)>>nb);
-	    outfile << iv1  << std::endl;
-	  }
-	}
-      outfile.close();
-      return OK;
-    } else {
-      std::cout<< "could not open SETTINGS file " << fname << std::endl;
-      return FAIL;
-    }
-
-};
-
-
-
-
 int slsDetector::writeSettingsFile(string fname, int imod){
 
-  return writeSettingsFile(fname,detectorModules[imod]);
+  return writeSettingsFile(fname,thisDetector->myDetectorType, detectorModules[imod]);
 
 };
 
@@ -5500,7 +5247,7 @@ int slsDetector::loadSettingsFile(string fname, int imod) {
       ostfn << fname << ".sn"  << setfill('0') << setw(3) << hex << getId(MODULE_SERIAL_NUMBER, im); 
       fn=ostfn.str();
     }
-    myMod=readSettingsFile(fn);
+    myMod=readSettingsFile(fn, thisDetector->myDetectorType);
     if (myMod) {
       myMod->module=im;
       setModule(*myMod);
@@ -5527,7 +5274,7 @@ int slsDetector::saveSettingsFile(string fname, int imod) {
     ostringstream ostfn;
     ostfn << fname << ".sn"  << setfill('0') << setw(3) << hex << getId(MODULE_SERIAL_NUMBER, im); 
     if ((myMod=getModule(im))) {
-      ret=writeSettingsFile(ostfn.str(),*myMod);
+      ret=writeSettingsFile(ostfn.str(), thisDetector->myDetectorType, *myMod);
       deleteModule(myMod);
     }
   }

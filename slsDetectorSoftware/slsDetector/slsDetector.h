@@ -5,17 +5,9 @@
 #define SLS_DETECTOR_H
 
 
-class MySocketTCP;
 
 #include "slsDetectorUtils.h"
 #include "MySocketTCP.h"
-//#include "slsDetectorCommand.h"
-
-
-//enum {startScript, scriptBefore, headerBefore, headerAfter,scriptAfter, stopScript, MAX_ACTIONS};
-
-
-
 
 
 //using namespace std;
@@ -54,17 +46,20 @@ Then in your software you should use the class related to the detector you want 
  * @short This is the base class for all SLS detector functionalities
  * @author Anna Bergamaschi
  * @version 0.1alpha
-
-
  */
 
-class slsDetector : public slsDetectorUtils {
+#define NMODMAXX 24
+#define NMODMAXY 24
+#define NCHIPSMAX 10
+#define NCHANSMAX 65536
+#define NDACSMAX 16
+
+class slsDetector : public slsDetectorUtils, public energyConversion {
 
 
 
  public:
   
-
 /*   /\** online flags enum \sa setOnline*\/ */
 /*   enum {GET_ONLINE_FLAG=-1, /\**< returns wether the detector is in online or offline state *\/ */
 /* 	OFFLINE_FLAG=0, /\**< detector in offline state (i.e. no communication to the detector - using only local structure - no data acquisition possible!) *\/ */
@@ -180,27 +175,32 @@ typedef  struct sharedSlsDetector {
   /** file with the angular conversion factors */
   char angConvFile[MAX_STR_LENGTH];
     /** array of angular conversion constants for each module \see ::angleConversionConstant */
-    angleConversionConstant angOff[MAXMODS];
+  angleConversionConstant angOff[MAXMODS];
     /** angular direction (1 if it corresponds to the encoder direction i.e. channel 0 is 0, maxchan is positive high angle, 0 otherwise  */
-    int angDirection;
-     /** beamline fine offset (of the order of mdeg, might be adjusted for each measurements)  */
-    float fineOffset;
+  int angDirection;
+  /** beamline fine offset (of the order of mdeg, might be adjusted for each measurements)  */
+  float fineOffset;
      /** beamline offset (might be a few degrees beacuse of encoder offset - normally it is kept fixed for a long period of time)  */
-    float globalOffset;
+  float globalOffset;
      /** number of positions at which the detector should acquire  */
-    int numberOfPositions;
+  int numberOfPositions;
      /** list of encoder positions at which the detector should acquire */
-    float detPositions[MAXPOS];
+  float detPositions[MAXPOS];
   /** bin size for data merging */
   float binSize;
+  /** add encoder value flag (i.e. wether the detector is moving - 1 - or stationary - 0) */ 
+  int moveFlag;
+
 
   /* infos necessary for the readout to determine the size of the data */
-    /** number of rois defined */
-    int nROI;
-    /** list of rois */
-    ROI roiLimits[MAX_ROIS];
-    /** readout flags */
-    readOutFlags roFlags;
+
+  /** number of rois defined */
+  int nROI;
+  /** list of rois */
+  ROI roiLimits[MAX_ROIS];
+  
+  /** readout flags */
+  readOutFlags roFlags;
 
 
  /* detector setup - not needed */
@@ -268,17 +268,19 @@ typedef  struct sharedSlsDetector {
 
 
 
-
-
  using slsDetectorUtils::getDetectorType;
 
- using slsDetectorUtils::flatFieldCorrect;
- using slsDetectorUtils::rateCorrect;
- using slsDetectorUtils::setBadChannelCorrection;
+ using postProcessing::flatFieldCorrect;
+ using postProcessing::rateCorrect;
+ using postProcessing::setBadChannelCorrection;
 
- using slsDetectorUtils::readAngularConversion;
- using slsDetectorUtils::writeAngularConversion;
- // using slsDetectorBase::getDataFromDetector;
+ using angularConversion::readAngularConversion;
+ using angularConversion::writeAngularConversion;
+
+ using slsDetectorUtils::getAngularConversion;
+
+
+
 
 
 
@@ -487,40 +489,17 @@ typedef  struct sharedSlsDetector {
   */
   int setTrimEn(int nen, int *en=NULL) {if (en) {for (int ien=0; ien<nen; ien++) thisDetector->trimEnergies[ien]=en[ien]; thisDetector->nTrimEn=nen;} return (thisDetector->nTrimEn);};
 
-  /**
-     Pure virtual function
-     reads a trim/settings file
-     \param fname name of the file to be read
-     \param myMod pointer to the module structure which has to be set. <BR> If it is NULL a new module structure will be created
-     \returns the pointer to myMod or NULL if reading the file failed
-     \sa mythenDetector::readSettingsFile
-  */
-
-  sls_detector_module* readSettingsFile(string fname,  sls_detector_module* myMod=NULL);
-  //virtual sls_detector_module* readSettingsFile(string fname,  sls_detector_module* myMod=NULL);
-
-  /**
-     Pure virtual function
-     writes a trim/settings file
-     \param fname name of the file to be written
-     \param mod module structure which has to be written to file
-     \returns OK or FAIL if the file could not be written
-
-     \sa ::sls_detector_module mythenDetector::writeSettingsFile(string, sls_detector_module)
-  */
-  int writeSettingsFile(string fname, sls_detector_module mod); 
-
 
   //virtual int writeSettingsFile(string fname, sls_detector_module mod); 
   
   /**
-     Pure virtual function
      writes a trim/settings file for module number imod - the values will be read from the current detector structure
      \param fname name of the file to be written
      \param imod module number
      \returns OK or FAIL if the file could not be written   
      \sa ::sls_detector_module sharedSlsDetector mythenDetector::writeSettingsFile(string, int)
   */
+  using energyConversion::writeSettingsFile;
    int writeSettingsFile(string fname, int imod);
 
 
@@ -560,7 +539,7 @@ typedef  struct sharedSlsDetector {
       \param fname file to be read
   \sa  angleConversionConstant mythenDetector::readAngularConversion
   */
-  int readAngularConversion(string fname="");
+  int readAngularConversionFile(string fname="");
 
 
   /**
@@ -603,6 +582,8 @@ typedef  struct sharedSlsDetector {
 
   /** Returns the number of  modules (without connecting to the detector) */
   int getNMods(){return thisDetector->nMods;}; //
+  
+  int getChansPerMod(int imod=0){return thisDetector->nChans*thisDetector->nChips;};
 
   /** Returns the number of  modules (without connecting to the detector) */
   int getMaxMods(){return thisDetector->nModsMax;}; //
@@ -1161,14 +1142,7 @@ typedef  struct sharedSlsDetector {
   */
   int getBadChannelCorrection(int *bad=NULL);
 
-  
-  /** 
-      set angular conversion
-      \param fname file with angular conversion constants ("" disable)
-      \returns 0 if angular conversion disabled, >0 otherwise
-      \sa mythenDetector::setAngularConversion
-  */
-  int setAngularConversion(string fname="");
+ 
   /** 
       pure virtual function
       get angular conversion
@@ -1179,7 +1153,7 @@ typedef  struct sharedSlsDetector {
   */
   int getAngularConversion(int &direction,  angleConversionConstant *angconv=NULL) ;
   
-
+  angleConversionConstant *getAngularConversionPointer(int imod=0) {return &thisDetector->angOff[imod];};
 
 
 
@@ -1218,43 +1192,43 @@ typedef  struct sharedSlsDetector {
   int rateCorrect(float* datain, float *errin, float* dataout, float *errout);
 
   
-  /** 
-      pure virtual function
-  sets the arrays of the merged data to 0. NB The array should be created with size >= 360./getBinSize(); 
-      \param mp already merged postions
-      \param mv already merged data
-      \param me already merged errors (squared sum)
-      \param mm multiplicity of merged arrays
-      \returns OK or FAIL
-      \sa mythenDetector::resetMerging
-  */
+/*   /\**  */
+/*       pure virtual function */
+/*   sets the arrays of the merged data to 0. NB The array should be created with size >= 360./getBinSize();  */
+/*       \param mp already merged postions */
+/*       \param mv already merged data */
+/*       \param me already merged errors (squared sum) */
+/*       \param mm multiplicity of merged arrays */
+/*       \returns OK or FAIL */
+/*       \sa mythenDetector::resetMerging */
+/*   *\/ */
   
-  int resetMerging(float *mp, float *mv,float *me, int *mm);
+/*   int resetMerging(float *mp, float *mv,float *me, int *mm); */
   
-  /** 
-      pure virtual function
-  merge dataset
-      \param p1 angular positions of dataset
-      \param v1 data
-      \param e1 errors
-      \param mp already merged postions
-      \param mv already merged data
-      \param me already merged errors (squared sum)
-      \param mm multiplicity of merged arrays
-      \sa mythenDetector::addToMerging
-  */
-  int addToMerging(float *p1, float *v1, float *e1, float *mp, float *mv,float *me, int *mm);
+/*   /\**  */
+/*       pure virtual function */
+/*   merge dataset */
+/*       \param p1 angular positions of dataset */
+/*       \param v1 data */
+/*       \param e1 errors */
+/*       \param mp already merged postions */
+/*       \param mv already merged data */
+/*       \param me already merged errors (squared sum) */
+/*       \param mm multiplicity of merged arrays */
+/*       \sa mythenDetector::addToMerging */
+/*   *\/ */
+/*   int addToMerging(float *p1, float *v1, float *e1, float *mp, float *mv,float *me, int *mm); */
 
-  /** pure virtual function
-      calculates the "final" positions, data value and errors for the emrged data
-      \param mp already merged postions
-      \param mv already merged data
-      \param me already merged errors (squared sum)
-      \param mm multiplicity of merged arrays
-      \returns FAIL or the number of non empty bins (i.e. points belonging to the pattern)
-      \sa mythenDetector::finalizeMerging
-  */
-  int finalizeMerging(float *mp, float *mv,float *me, int *mm);
+/*   /\** pure virtual function */
+/*       calculates the "final" positions, data value and errors for the emrged data */
+/*       \param mp already merged postions */
+/*       \param mv already merged data */
+/*       \param me already merged errors (squared sum) */
+/*       \param mm multiplicity of merged arrays */
+/*       \returns FAIL or the number of non empty bins (i.e. points belonging to the pattern) */
+/*       \sa mythenDetector::finalizeMerging */
+/*   *\/ */
+/*   int finalizeMerging(float *mp, float *mv,float *me, int *mm); */
 
   /** 
       turns off server
@@ -1266,7 +1240,15 @@ typedef  struct sharedSlsDetector {
       \returns myMod the pointer to the allocate dmemory location
 
   */
-  sls_detector_module*  createModule();
+  sls_detector_module*  createModule(){return createModule(thisDetector->myDetectorType);};
+
+
+  /** Allocates the memory for a sls_detector_module structure and initializes it
+      \returns myMod the pointer to the allocate dmemory location
+
+  */
+  sls_detector_module*  createModule(detectorType myDetectorType);
+
   /** frees the memory for a sls_detector_module structure 
       \param myMod the pointer to the memory to be freed
 
@@ -1284,7 +1266,7 @@ typedef  struct sharedSlsDetector {
   float getCurrentProgress();
   
 
-  float* convertAngles(float pos);
+  //  float* convertAngles(float pos);
 
 
 
@@ -1375,6 +1357,8 @@ typedef  struct sharedSlsDetector {
   */
   int resetCounterBlock(int startACQ=0);
 
+
+  int getMoveFlag(int imod){if (moveFlag) return *moveFlag; else return 1;};
 
 
  protected:

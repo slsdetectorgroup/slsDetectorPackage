@@ -189,6 +189,10 @@ multiSlsDetector::multiSlsDetector(int id) :  slsDetectorUtils(), shmId(-1)
     cout << thisMultiDetector->detectorIds[i] << endl;
 #endif
     detectors[i]=new slsDetector(thisMultiDetector->detectorIds[i]);
+    
+
+    //  setAngularConversionPointer(detectors[i]->getAngularConversionPointer(),detectors[i]->getNModsPointer(),detectors[i]->getNChans()*detectors[i]->getNChips(), i);
+
   }
   for (int i=thisMultiDetector->numberOfDetectors; i<MAXDET; i++)
     detectors[i]=NULL;
@@ -197,45 +201,70 @@ multiSlsDetector::multiSlsDetector(int id) :  slsDetectorUtils(), shmId(-1)
 
    /** modifies the last PID accessing the detector system*/
   thisMultiDetector->lastPID=getpid();
-   getPointers(&thisMultiDetector->stoppedFlag,				\
-	       &thisMultiDetector->threadedProcessing,			\
-	       &thisMultiDetector->actionMask,				\
-	       thisMultiDetector->actionScript,				\
-	       thisMultiDetector->actionParameter,			\
-	       thisMultiDetector->nScanSteps,				\
-	       thisMultiDetector->scanMode,				\
-	       thisMultiDetector->scanScript,				\
-	       thisMultiDetector->scanParameter,			\
-	       thisMultiDetector->scanSteps,				\
-	       thisMultiDetector->scanPrecision,			\
-	       &thisMultiDetector->numberOfPositions,			\
-	       thisMultiDetector->detPositions,				\
-	       thisMultiDetector->angConvFile,				\
-	       &thisMultiDetector->correctionMask,			\
-	       &thisMultiDetector->binSize,				\
-	       &thisMultiDetector->fineOffset,				\
-	       &thisMultiDetector->globalOffset,			\
-	       &thisMultiDetector->angDirection,			\
-	       thisMultiDetector->flatFieldDir,				\
-	       thisMultiDetector->flatFieldFile,			\
-	       thisMultiDetector->badChanFile,				\
-	       thisMultiDetector->timerValue,				\
-	       &thisMultiDetector->currentSettings,			\
-	       &thisMultiDetector->currentThresholdEV,			\
-	       thisMultiDetector->filePath,				\
-	       thisMultiDetector->fileName,				\
-	       &thisMultiDetector->fileIndex);
+
+
+//    getPointers(&thisMultiDetector->stoppedFlag,				\
+// 	       &thisMultiDetector->threadedProcessing,			\
+// 	       &thisMultiDetector->actionMask,				\
+// 	       thisMultiDetector->actionScript,				\
+// 	       thisMultiDetector->actionParameter,			\
+// 	       thisMultiDetector->nScanSteps,				\
+// 	       thisMultiDetector->scanMode,				\
+// 	       thisMultiDetector->scanScript,				\
+// 	       thisMultiDetector->scanParameter,			\
+// 	       thisMultiDetector->scanSteps,				\
+// 	       thisMultiDetector->scanPrecision,			\
+// 	       &thisMultiDetector->numberOfPositions,			\
+// 	       thisMultiDetector->detPositions,				\
+// 	       thisMultiDetector->angConvFile,				\
+// 	       &thisMultiDetector->correctionMask,			\
+// 	       &thisMultiDetector->binSize,				\
+// 	       &thisMultiDetector->fineOffset,				\
+// 	       &thisMultiDetector->globalOffset,			\
+// 	       &thisMultiDetector->angDirection,			\
+// 	       thisMultiDetector->flatFieldDir,				\
+// 	       thisMultiDetector->flatFieldFile,			\
+// 	       thisMultiDetector->badChanFile,				\
+// 	       thisMultiDetector->timerValue,				\
+// 	       &thisMultiDetector->currentSettings,			\
+// 	       &thisMultiDetector->currentThresholdEV,			\
+// 	       thisMultiDetector->filePath,				\
+// 	       thisMultiDetector->fileName,				\
+// 	       &thisMultiDetector->fileIndex);
 
   
-// #ifdef VERBOSE
-//    cout << "filling bad channel mask" << endl;
-// #endif   
-//    /** fill the BadChannelMask \sa  fillBadChannelMask */
-//    fillBadChannelMask();
-   
-// #ifdef VERBOSE
-//    cout << "done" << endl;
-// #endif 
+
+   stoppedFlag=&thisMultiDetector->stoppedFlag;
+   threadedProcessing=&thisMultiDetector->threadedProcessing;
+   actionMask=&thisMultiDetector->actionMask;
+   actionScript=thisMultiDetector->actionScript;		
+   actionParameter=thisMultiDetector->actionParameter;      
+   nScanSteps=thisMultiDetector->nScanSteps;
+   scanMode=thisMultiDetector->scanMode;
+   scanScript=thisMultiDetector->scanScript;
+   scanParameter=thisMultiDetector->scanParameter;
+   scanSteps=thisMultiDetector->scanSteps;
+   scanPrecision=thisMultiDetector->scanPrecision;
+   numberOfPositions=&thisMultiDetector->numberOfPositions;
+   detPositions=thisMultiDetector->detPositions;
+   angConvFile=thisMultiDetector->angConvFile;
+   correctionMask=&thisMultiDetector->correctionMask;
+   binSize=&thisMultiDetector->binSize;
+   fineOffset=&thisMultiDetector->fineOffset;
+   globalOffset=&thisMultiDetector->globalOffset;
+   angDirection=&thisMultiDetector->angDirection;
+   flatFieldDir=thisMultiDetector->flatFieldDir;
+   flatFieldFile=thisMultiDetector->flatFieldFile;
+   badChanFile=thisMultiDetector->badChanFile;
+   timerValue=thisMultiDetector->timerValue;
+   currentSettings=&thisMultiDetector->currentSettings;
+   currentThresholdEV=&thisMultiDetector->currentThresholdEV;
+   filePath=thisMultiDetector->filePath;
+   fileName=thisMultiDetector->fileName;
+   fileIndex=&thisMultiDetector->fileIndex;
+   moveFlag=NULL;
+
+
 }
 
 multiSlsDetector::~multiSlsDetector() {
@@ -1617,11 +1646,53 @@ int multiSlsDetector::getFlatFieldCorrection(float *corr, float *ecorr) {
 
 
 
+int multiSlsDetector::getNMods(){
+  int nm=0;
+  for (int idet=0; idet<thisMultiDetector->numberOfDetectors; idet++) {
+    if (detectors[idet]) {
+      nm+=detectors[idet]->getNMods();
+    }
+  }
+  return nm;
+}
+
+
+int multiSlsDetector::getChansPerMod(int imod){
+  int id=-1, im=-1;
+  if (decodeNMod(imod, id, im)>=0) {
+    if (detectors[id]) {
+      return detectors[id]->getChansPerMod(im);
+    }
+  }
+  return -1;
+
+}
+
+int  multiSlsDetector::getMoveFlag(int imod){
+  int id=-1, im=-1;
+  decodeNMod(imod, id, im);
+  if (id>=0) {
+    if (detectors[id]) {
+      return detectors[id]->getMoveFlag(im);
+    }
+  }
+  //default!!!
+  return 1;
+}
 
 
 
 
+angleConversionConstant * multiSlsDetector::getAngularConversionPointer(int imod){
+  int id=-1, im=-1;
+  if (decodeNMod(imod, id, im)>=0) {
+    if (detectors[id]) {
+      return detectors[id]->getAngularConversionPointer(im);
+    }
+  }
+  return NULL;
 
+}
 
 
 
@@ -1642,6 +1713,8 @@ int multiSlsDetector::flatFieldCorrect(float* datain, float *errin, float* datao
   }
   return 0;
 };
+
+
 
 
 
@@ -1831,30 +1904,11 @@ int multiSlsDetector::setBadChannelCorrection(int nbad, int *badlist, int ff) {
 }
 
 
-int multiSlsDetector::setAngularConversion(string fname) {
-  if (fname=="") {
-    thisMultiDetector->correctionMask&=~(1<< ANGULAR_CONVERSION);
-    //strcpy(thisDetector->angConvFile,"none");
-#ifdef VERBOSE
-     std::cout << "Unsetting angular conversion" <<  std::endl;
-#endif
-  } else {
-    if (fname=="default") {
-      fname=string(thisMultiDetector->angConvFile);
-    }
-    
-#ifdef VERBOSE
-    std::cout << "Setting angular conversion to " << fname << std:: endl;
-#endif
-    if (readAngularConversion(fname)>=0) {
-      thisMultiDetector->correctionMask|=(1<< ANGULAR_CONVERSION);
-      strcpy(thisMultiDetector->angConvFile,fname.c_str());
-    }
-  }
-  return thisMultiDetector->correctionMask&(1<< ANGULAR_CONVERSION);
-}
 
-int multiSlsDetector::readAngularConversion(string fname) {
+
+
+
+int multiSlsDetector::readAngularConversionFile(string fname) {
 
   
   ifstream infile;
@@ -2022,33 +2076,33 @@ float multiSlsDetector::setAngularConversionParameter(angleConversionParameter c
 
 
 
-float* multiSlsDetector::convertAngles(float pos) {
-  float *ang=new float[thisMultiDetector->numberOfChannels];
+// float* multiSlsDetector::convertAngles(float pos) {
+//   float *ang=new float[thisMultiDetector->numberOfChannels];
 
-  float *p=ang;
-  int choff=0;
+//   float *p=ang;
+//   int choff=0;
 
-  for (int idet=0; idet<thisMultiDetector->numberOfDetectors; idet++) {
+//   for (int idet=0; idet<thisMultiDetector->numberOfDetectors; idet++) {
     
-    if (detectors[idet]) {
-#ifdef EPICS
-      //  cout << "convert angle det " << idet << endl;
-      if (idet<2)
-#endif
-	p=detectors[idet]->convertAngles(pos);
-#ifdef EPICS
-      else //////////// GOOD ONLY AT THE BEAMLINE!!!!!!!!!!!!!
-	p=detectors[idet]->convertAngles(0);
-#endif
-      for (int ich=0; ich<detectors[idet]->getTotalNumberOfChannels(); ich++) {
-	ang[choff+ich]=p[ich];
-      }
-      choff+=detectors[idet]->getTotalNumberOfChannels();
-      delete [] p;
-    }
-  }
-  return ang;
-}
+//     if (detectors[idet]) {
+// #ifdef EPICS
+//       //  cout << "convert angle det " << idet << endl;
+//       if (idet<2)
+// #endif
+// 	p=detectors[idet]->convertAngles(pos);
+// #ifdef EPICS
+//       else //////////// GOOD ONLY AT THE BEAMLINE!!!!!!!!!!!!!
+// 	p=detectors[idet]->convertAngles(0);
+// #endif
+//       for (int ich=0; ich<detectors[idet]->getTotalNumberOfChannels(); ich++) {
+// 	ang[choff+ich]=p[ich];
+//       }
+//       choff+=detectors[idet]->getTotalNumberOfChannels();
+//       delete [] p;
+//     }
+//   }
+//   return ang;
+// }
 
 
 int multiSlsDetector::getBadChannelCorrection(int *bad) {

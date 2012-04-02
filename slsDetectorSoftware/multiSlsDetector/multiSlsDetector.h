@@ -19,7 +19,6 @@ class slsDetector;
 
 //#include "sls_detector_defs.h"
 
-#define MAXDET 100
 
 
 //using namespace std;
@@ -137,6 +136,12 @@ class multiSlsDetector  : public slsDetectorUtils {
     /** angular conversion file */
     char angConvFile[MAX_STR_LENGTH];
 
+
+
+
+
+
+
      /** array of angular conversion constants for each module \see ::angleConversionConstant */
     //angleConversionConstant angOff[MAXMODS];
     /** angular direction (1 if it corresponds to the encoder direction i.e. channel 0 is 0, maxchan is positive high angle, 0 otherwise  */
@@ -145,12 +150,18 @@ class multiSlsDetector  : public slsDetectorUtils {
     float fineOffset;
      /** beamline offset (might be a few degrees beacuse of encoder offset - normally it is kept fixed for a long period of time)  */
     float globalOffset;
+    /** bin size for data merging */
+    float binSize;
+
+
      /** number of positions at which the detector should acquire  */
     int numberOfPositions;
      /** list of encoder positions at which the detector should acquire */
     float detPositions[MAXPOS];
-    /** bin size for data merging */
-    float binSize;
+
+
+
+
 
 
     /** Scans and scripts */
@@ -273,6 +284,14 @@ class multiSlsDetector  : public slsDetectorUtils {
   /** returns the number of detectors in the multidetector structure
       \returns number of detectors */
   int getNumberOfDetectors() {return thisMultiDetector->numberOfDetectors;};
+
+  
+
+
+ int getNMods();
+ int getChansPerMod(int imod=0);
+ angleConversionConstant *getAngularConversionPointer(int imod=0);
+  
 
   int getTotalNumberOfChannels(){return thisMultiDetector->numberOfChannels;};
 
@@ -687,13 +706,12 @@ class multiSlsDetector  : public slsDetectorUtils {
   /////////////////////////////////////////////////// virtual int getAngularConversion(int &direction,  angleConversionConstant *angconv=NULL);
   
   
-  int setAngularConversion(string fname);
 
-  int readAngularConversion(string fname);
+  int readAngularConversionFile(string fname);
 
   int writeAngularConversion(string fname);
 
-  float* convertAngles(float pos);
+  //  float* convertAngles(float pos);
 
 
 
@@ -772,10 +790,10 @@ class multiSlsDetector  : public slsDetectorUtils {
   /** calcualtes the total number of steps of the acquisition.
       called when number of frames, number of cycles, number of positions and scan steps change
   */
-  int setTotalProgress();
+  /////////////////////////////////////// int setTotalProgress(); ////////////// from slsDetectorUtils!
 
   /** returns the current progress in % */
-  float getCurrentProgress();
+  ////////////////////////////////float getCurrentProgress();////////////// from slsDetectorUtils!
   
 
   /**
@@ -966,6 +984,7 @@ class multiSlsDetector  : public slsDetectorUtils {
    */
    int resetCounterBlock(int startACQ=0);
 
+   int getMoveFlag(int imod);
 
  protected:
  

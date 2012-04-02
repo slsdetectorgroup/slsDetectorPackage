@@ -7,7 +7,10 @@
 #define MAX_STR_LENGTH 1000
 /** default maximum string length */
 #define MAX_SCAN_STEPS 2000
-
+/** maxmimum number of modules per controller*/
+#define MAXMODS 24
+/** maxmimum number of detectors ina multidetector structure*/
+#define MAXDET 100
 
 typedef float float32_t;
 typedef int int32_t;   
@@ -453,26 +456,27 @@ enum imageType {
 
 
 
-/**
-   angular conversion constant for a module
- */
-typedef struct  {
-  float center;  /**< center of the module (channel at which the radius is perpendicular to the module surface) */
-  float ecenter; /**< error in the center determination */
-  float r_conversion;  /**<  detector pixel size (or strip pitch) divided by the diffractometer radius */
-  float er_conversion;  /**< error in the r_conversion determination */
-  float offset; /**< the module offset i.e. the position of channel 0 with respect to the diffractometer 0 */
-  float eoffset; /**< error in the offset determination */
-  float tilt; /**< ossible tilt in the orthogonal direction (unused)*/
-  float etilt; /**< error in the tilt determination */
-} angleConversionConstant;
+/* /\** */
+/*    angular conversion constant for a module */
+/*  *\/ */
+/* typedef struct  { */
+/*   float center;  /\**< center of the module (channel at which the radius is perpendicular to the module surface) *\/ */
+/*   float ecenter; /\**< error in the center determination *\/ */
+/*   float r_conversion;  /\**<  detector pixel size (or strip pitch) divided by the diffractometer radius *\/ */
+/*   float er_conversion;  /\**< error in the r_conversion determination *\/ */
+/*   float offset; /\**< the module offset i.e. the position of channel 0 with respect to the diffractometer 0 *\/ */
+/*   float eoffset; /\**< error in the offset determination *\/ */
+/*   float tilt; /\**< ossible tilt in the orthogonal direction (unused)*\/ */
+/*   float etilt; /\**< error in the tilt determination *\/ */
+/* } angleConversionConstant; */
 
 
 enum angleConversionParameter {
   ANGULAR_DIRECTION, /**< angular direction of the diffractometer */
   GLOBAL_OFFSET, /**< global offset of the diffractometer */
   FINE_OFFSET, /**< fine offset of the diffractometer */
-  BIN_SIZE /**< angular bin size */
+  BIN_SIZE, /**< angular bin size */
+  MOVE_FLAG /**< wether the detector moves with the motor or not in a multi detector system */
 }; 
 
 

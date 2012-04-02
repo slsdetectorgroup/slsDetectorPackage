@@ -29,7 +29,7 @@ extern "C" {
 #endif
 
 
-  float angle(int ichan, float encoder, float totalOffset, float conv_r, float center, float offset, float tilt, int direction);
+  float angle(float ichan, float encoder, float totalOffset, float conv_r, float center, float offset, float tilt, int direction);
   float get_position();
   int go_to_position(float p);
   int go_to_position_no_wait(float p);

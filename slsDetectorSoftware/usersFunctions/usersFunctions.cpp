@@ -118,20 +118,17 @@ int caput(chid ch_id,  double value) {
 */
 
 
-float angle(int ichan, float encoder, float totalOffset, float conv_r, float center, float offset, float tilt, int direction) {
+float angle(float ichan, float encoder, float totalOffset, float conv_r, float center, float offset, float tilt, int direction) {
  
   
   (void) tilt; /* to avoid warning: unused parameter */
   float ang;
 
-  ang=180./PI*(center*conv_r+atan((float)(ichan-center)*conv_r))+encoder+totalOffset+offset; 
+  ang=180./PI*(center*conv_r+direction*atan((float)(ichan-center)*conv_r))+encoder+totalOffset+offset; 
 
   
-  // printf("*** %f %f\n",offset,ang);
 
-
-
-  return direction*ang;
+  return ang;
 
 }
 

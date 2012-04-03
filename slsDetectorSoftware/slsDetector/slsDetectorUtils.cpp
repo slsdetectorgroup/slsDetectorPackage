@@ -501,11 +501,14 @@ int slsDetectorUtils::testFunction(int times) {
 
 	for(i=0;i<times;i++){
 	    sprintf(statusval,"%x",readRegister(0x25));
-		std::cout<<std::endl<<dec<<i+1<<": \t"<<statusval<<"\t";
-usleep(10000);
+		std::cout<<std::endl<<dec<<i+1<<": stat:\t"<<statusval<<"\t";
+		sprintf(controlval,"%x",readRegister(0x24));
+		std::cout<<"cont:"<<controlval<<"\t"<<std::endl;
 
 		startAcquisition();
 
+		sprintf(controlval,"%x",readRegister(0x24));
+		std::cout<<"cont:"<<controlval<<"\t"<<std::endl;
 	    //sprintf(statusval,"%x",readRegister(0x25));
 	    //std::cout<<statusval<<std::endl;
 		s = getRunStatus();
@@ -516,21 +519,21 @@ usleep(10000);
 				std::cout<<"IDLE"<<std::endl;
 				exit(-1);
 			}
-
+			;
 		}
 		else {
 			if (s==RUNNING){
 			count=0;
 			while(s==RUNNING){
-				count++;
-				if(count==5){
+				count++;//std::cout<<"count:"<<count<<std::endl;
+				if(count==4){
 					sprintf(statusval,"%x",readRegister(0x25));
 
 
-					std::cout<<"STUCK: "<<statusval<<std::endl;
+					std::cout<<"STUCK: stat"<<statusval<<std::endl;
 					exit(-1);
 				}
-				usleep(2);
+				usleep(50000);
 				//val=readRegister(0x25);
 				s = getRunStatus();
 			}

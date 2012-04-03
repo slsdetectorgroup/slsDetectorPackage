@@ -43,7 +43,7 @@ mythenGUI: lib Tlib
 	mv $(GUIDIR)/bin/* bin/
 
 clean:
-	rm bin/sls_detector_*
+	rm -rf bin/sls_detector_*
 	cd $(LIBRARYDIR) && $(MAKE) clean
 	cd $(TLIBRARYDIR) && $(MAKE) clean
 	cd $(CLIENTDIR) && $(MAKE) clean

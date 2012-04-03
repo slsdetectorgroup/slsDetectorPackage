@@ -64,7 +64,7 @@ int configureMAC(int ipad, long long int macad, long long int servermacad, int i
 
 u_int64_t getMcsNumber();
 u_int32_t getMcsVersion();
-u_int32_t testFifos(void);
+int testFifos(void);
 u_int32_t testFpga(void);
 u_int32_t testRAM(void);
 int testBus(void);
@@ -106,9 +106,9 @@ u_int32_t runState(void);
 u_int32_t dataPresent(void); 
 
 
-u_int32_t startStateMachine();
-u_int32_t stopStateMachine();
-u_int32_t startReadOut();
+int startStateMachine();
+int stopStateMachine();
+int startReadOut();
 u_int32_t fifoReset(void);
 u_int32_t fifoReadCounter(int fifonum);
 u_int32_t fifoReadStatus();

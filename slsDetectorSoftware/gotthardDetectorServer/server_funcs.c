@@ -9,7 +9,8 @@
 #include "mcb_funcs.h"
 #include "trimming_funcs.h"
 
-
+#define FIFO_DATA_REG_OFF     0x50<<11
+#define CONTROL_REG           0x24<<11
 // Global variables
 
 int (*flist[256])(int);
@@ -790,9 +791,16 @@ int write_register(int file_des) {
 
   if(ret!=FAIL){
     address=(addr<<11);
-    ret=bus_w(address,val);
-    if(ret==OK)
-      retval=bus_r(address);
+    if((address==FIFO_DATA_REG_OFF)||(address==CONTROL_REG))
+    	ret = bus_w16(address,val);
+    else
+    	ret=bus_w(address,val);
+    if(ret==OK){
+    	if((address==FIFO_DATA_REG_OFF)||(address==CONTROL_REG))
+        	retval=bus_r16(address);
+        else
+        	retval=bus_r(address);
+    }
   }
   
 
@@ -849,7 +857,7 @@ int read_register(int file_des) {
 
   if(ret!=FAIL){
 	  address=(addr<<11);
-	  if(addr==0x50)
+	  if((address==FIFO_DATA_REG_OFF)||(address==CONTROL_REG))
 		  retval=bus_r16(address);
 	  else
 		  retval=bus_r(address);
@@ -1855,9 +1863,14 @@ int get_run_status(int file_des) {
 		  s=TRANSMITTING;
 	  }
 	  //and readbusy=0,idle
-	  if(!(retval&0x00000001)){
+	  else if(!(retval&0x000FFFFF)){
+	  //if(!(retval&0x00000001)){
 		  printf("-----------------------------------IDLE--------------------------------------\n");
 		  s=IDLE;
+	  }
+	  else  {
+		  printf("-----------------------------------ERROR--------------------------------------x%0x\n",retval);
+		  s=ERROR;
 	  }
   }
   //if runbusy=1
@@ -2008,7 +2021,7 @@ int read_frame(int file_des) {
 
 int read_all(int file_des) {
 
-	while(read_frame(file_des)==OK) {
+while(read_frame(file_des)==OK) {
 
 #ifdef VERBOSE
   printf("frame read\n");

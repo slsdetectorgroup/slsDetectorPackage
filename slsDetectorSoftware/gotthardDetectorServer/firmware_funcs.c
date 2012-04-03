@@ -949,10 +949,10 @@ int setNMod(int n) {
 
 
 // fifo test 
-u_int32_t  testFifos(void) {
+int testFifos(void) {
   printf("Fifo test not implemented!\n");
-  bus_w(CONTROL_REG, START_FIFOTEST_BIT); 
-  bus_w(CONTROL_REG, 0x0);
+  bus_w16(CONTROL_REG, START_FIFOTEST_BIT);
+  bus_w16(CONTROL_REG, 0x0);
   return OK;
 }
 
@@ -1537,7 +1537,7 @@ u_int32_t runState(void) {
 
 // State Machine 
 
-u_int32_t  startStateMachine(){
+int startStateMachine(){
 //#ifdef VERBOSE
   printf("Starting State Machine\n");
 //#endif
@@ -1554,15 +1554,16 @@ u_int32_t  startStateMachine(){
 #endif
 */
   //putout("0000000000000000",ALLMOD);
-  bus_w(CONTROL_REG, START_ACQ_BIT |  START_EXPOSURE_BIT); 
-  bus_w(CONTROL_REG, 0x0);
+  bus_w16(CONTROL_REG, START_ACQ_BIT |  START_EXPOSURE_BIT);
+  bus_w16(CONTROL_REG, 0x0);
+  printf("statusreg=%08x\n",bus_r(STATUS_REG));
   return OK;
 }
 
 
 
 
-u_int32_t  stopStateMachine(){ 
+int stopStateMachine(){
 
 #ifdef VERBOSE
   printf("Stopping State Machine\n");
@@ -1571,8 +1572,8 @@ u_int32_t  stopStateMachine(){
   write_stop_sm(1);
   write_status_sm("Stopped");
 #endif
-  bus_w(CONTROL_REG, STOP_ACQ_BIT); 
-  bus_w(CONTROL_REG, 0x0);
+  bus_w16(CONTROL_REG, STOP_ACQ_BIT);
+  bus_w16(CONTROL_REG, 0x0);
   usleep(500);
  // if (!runBusy())
   if(!(bus_r(STATUS_REG)&RUNMACHINE_BUSY_BIT))
@@ -1582,7 +1583,7 @@ u_int32_t  stopStateMachine(){
 }
 
 
-u_int32_t startReadOut(){ 
+int startReadOut(){
   u_int32_t status;
 #ifdef VERBOSE
   printf("Starting State Machine Readout\n");
@@ -1591,8 +1592,8 @@ u_int32_t startReadOut(){
 #ifdef DEBUG
   printf("State machine status is %08x\n",bus_r(STATUS_REG));
 #endif
-  bus_w(CONTROL_REG,  START_ACQ_BIT |START_READOUT_BIT);   //  start readout
-  bus_w(CONTROL_REG,  0x0);
+  bus_w16(CONTROL_REG,  START_ACQ_BIT |START_READOUT_BIT);   //  start readout
+  bus_w16(CONTROL_REG,  0x0);
   return OK;
 }
 

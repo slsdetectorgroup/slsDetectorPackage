@@ -1,7 +1,6 @@
 # do not change below this line
 
 
-
 WD=$(shell pwd)
 LIBRARYDIR=$(WD)/slsDetectorSoftware
 TLIBRARYDIR=$(WD)/TMythenDetector
@@ -45,9 +44,9 @@ mythenGUI: lib Tlib
 clean:
 	rm -rf bin/sls_detector_*
 	cd $(LIBRARYDIR) && $(MAKE) clean
-	cd $(TLIBRARYDIR) && $(MAKE) clean
+#	cd $(TLIBRARYDIR) && $(MAKE) clean
 	cd $(CLIENTDIR) && $(MAKE) clean
-	cd $(GUIDIR) && $(MAKE) clean
+#	cd $(GUIDIR) && $(MAKE) clean
 #	cd $(LIBDOCDIR) && $(MAKE) clean
 
 install_lib:

@@ -193,7 +193,7 @@ s
       \returns nothing
       
   */
-  void doProcessing(float* myData, int delflag);
+  void doProcessing(float* myData, int delflag, string fname);
 
 
   /**

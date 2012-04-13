@@ -36,9 +36,10 @@ extern "C" {
   int connect_channels();
   int disconnect_channels();
 
-  float get_i0();
+  float get_i0(int t);
   
 
+  
 
 
 

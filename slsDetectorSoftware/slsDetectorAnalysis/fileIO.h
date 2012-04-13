@@ -402,6 +402,7 @@ class fileIO : public slsDetectorDefs {
     
  protected:
 
+    string currentFileName;
 
     
     /** output directory */

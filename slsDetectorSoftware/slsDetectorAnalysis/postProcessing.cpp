@@ -112,8 +112,6 @@ int postProcessing::setBadChannelCorrection(string fname, int &nbad, int *badlis
 	} else
 	  interrupt=1;
       }
-
-
     }
   }
   infile.close();
@@ -142,7 +140,7 @@ void postProcessing::processFrame(int *myData, int delflag) {
   //uses static function?!?!?!?
   writeDataFile (fname+string(".raw"),fdata, NULL, NULL, 'i'); 
   
- doProcessing(fdata,delflag);
+  doProcessing(fdata,delflag, fname);
 
  delete [] myData;
  myData=NULL;
@@ -161,17 +159,7 @@ void postProcessing::processFrame(int *myData, int delflag) {
 
 
 
-void postProcessing::doProcessing(float *fdata, int delflag) {
-
-
-  float *rcdata=NULL, *rcerr=NULL;
-  float *ffcdata=NULL, *ffcerr=NULL;
-  float *ang=NULL;
-  // int imod;
-  int np;
-  string ext;
-  string fname;
-  detectorData *thisData;
+void postProcessing::doProcessing(float *fdata, int delflag, string fname) {
 
 
   /** write raw data file */	   
@@ -179,9 +167,21 @@ void postProcessing::doProcessing(float *fdata, int delflag) {
     //  delete [] fdata;
     ;
   } else {
+
+
     
-    ext=".dat";
-    fname=createFileName();
+
+    float *rcdata=NULL, *rcerr=NULL;
+    float *ffcdata=NULL, *ffcerr=NULL;
+    float *ang=NULL;
+    // int imod;
+    int np;
+    //string fname;
+    detectorData *thisData;
+
+    
+    string ext=".dat";
+    // fname=createFileName();
 
     /** rate correction */
     if (*correctionMask&(1<<RATE_CORRECTION)) {
@@ -214,34 +214,22 @@ void postProcessing::doProcessing(float *fdata, int delflag) {
       rcdata=NULL;
       rcerr=NULL;
     }
-	  	
-
-
-
-
-
 
     // writes angualr converted files
 
     if (*correctionMask!=0) {
       if (*correctionMask&(1<< ANGULAR_CONVERSION))
 	ang=convertAngles(currentPosition);
-      writeDataFile (fname+string(".dat"),  ffcdata, ffcerr,ang);
+      writeDataFile (fname+ext,  ffcdata, ffcerr,ang);
     }
-
-
-    
-    
-    
+  
     if (*correctionMask&(1<< ANGULAR_CONVERSION) && (*numberOfPositions)>0) {
 #ifdef VERBOSE
       cout << "**************Current position index is " << currentPositionIndex << endl;
 #endif
       // if (*numberOfPositions>0) {
       if (currentPositionIndex<=1) {
-	      
-		
-
+	   
 #ifdef VERBOSE
 	cout << "reset merging " << endl;
 #endif
@@ -270,7 +258,6 @@ void postProcessing::doProcessing(float *fdata, int delflag) {
 #endif
 	np=finalizeMerging();
 	/** file writing */
-	
 	currentPositionIndex++;
 	pthread_mutex_unlock(&mp);
 	
@@ -280,7 +267,7 @@ void postProcessing::doProcessing(float *fdata, int delflag) {
 #ifdef VERBOSE
 	cout << "writing merged data file" << endl;
 #endif
-	writeDataFile (fname+string(".dat"),np,getMergedCounts(), getMergedErrors(), getMergedPositions(),'f');
+	writeDataFile (fname+ext,np,getMergedCounts(), getMergedErrors(), getMergedPositions(),'f');
 #ifdef VERBOSE
 	cout << " done" << endl;
 #endif
@@ -290,7 +277,7 @@ void postProcessing::doProcessing(float *fdata, int delflag) {
 	if (delflag) {
 	  deleteMerging();
 	} else {
-	  thisData=new detectorData(getMergedCounts(),getMergedErrors(),getMergedPositions(),getCurrentProgress(),(fname+string(ext)).c_str(),np);
+	  thisData=new detectorData(getMergedCounts(),getMergedErrors(),getMergedPositions(),getCurrentProgress(),(fname+ext).c_str(),np);
 	  
 	  pthread_mutex_lock(&mg);
 	  finalDataQueue.push(thisData);
@@ -321,7 +308,7 @@ void postProcessing::doProcessing(float *fdata, int delflag) {
 	if ( ang)
 	  delete [] ang;
       } else {
-	thisData=new detectorData(ffcdata,ffcerr,NULL,getCurrentProgress(),(fname+string(ext)).c_str(),getTotalNumberOfChannels());
+	thisData=new detectorData(ffcdata,ffcerr,NULL,getCurrentProgress(),(fname+ext).c_str(),getTotalNumberOfChannels());
 	pthread_mutex_lock(&mg);
 	finalDataQueue.push(thisData);  
 	pthread_mutex_unlock(&mg);
@@ -466,6 +453,7 @@ void* postProcessing::processData(int delflag) {
 
   if (fdata)
     delete [] fdata;
+
   return 0;
 }
 
@@ -509,7 +497,6 @@ void postProcessing::resetFinalDataQueue() {
     delete retval;
   }
   pthread_mutex_unlock(&mg);
-
 }
 
 

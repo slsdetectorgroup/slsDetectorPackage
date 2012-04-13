@@ -20,13 +20,6 @@ extern "C" {
 #include <unistd.h>
 
 
-#ifdef __MAKECINT__
-#pragma link off class _FTCOMSTAT-;
-#pragma link off class _FTDCB-;
-#endif
-
-
-//#include "MySocketTCP.h"
 #include <iostream>
 #include <fstream>
 #include <iomanip>
@@ -42,7 +35,6 @@ using namespace std;
 #include "sls_detector_defs.h"
 #include "slsDetectorBase.h"
 #include "energyConversion.h"
-#include "postProcessing.h"
 #include "slsDetectorActions.h"
 
 #define MAX_TIMERS 10
@@ -57,7 +49,7 @@ using namespace std;
 
    (used in the PSi command line interface)
 */
-class slsDetectorUtils : public slsDetectorActions, public postProcessing, public slsDetectorBase  {
+class slsDetectorUtils : public slsDetectorActions, public slsDetectorBase  {
 
 
 
@@ -390,7 +382,7 @@ class slsDetectorUtils : public slsDetectorActions, public postProcessing, publi
   // virtual float* convertAngles(float pos)=0;
 
   virtual int setThresholdEnergy(int, int im=-1, detectorSettings isettings=GET_SETTINGS)=0;
-  virtual int setChannel(long long, int ich=-1, int ichip=-1, int imod=-1)=0;
+   virtual int setChannel(long long, int ich=-1, int ichip=-1, int imod=-1)=0;
 
   virtual float getRateCorrectionTau()=0;
   virtual int* startAndReadAll()=0;

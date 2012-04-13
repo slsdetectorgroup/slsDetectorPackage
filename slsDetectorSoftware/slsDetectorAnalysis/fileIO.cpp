@@ -52,7 +52,7 @@ string  fileIO::createFileName(char *filepath, char *filename, int aMask, float 
 /* generates file name without extension*/
 
 string fileIO::createFileName() {
-  return createFileName(filePath, \
+  currentFileName=createFileName(filePath, \
 			fileName, \
 			getActionMask(),	\
 			getCurrentScanVariable(0),	\
@@ -63,6 +63,7 @@ string fileIO::createFileName() {
 			getNumberOfPositions(),		\
 			*fileIndex	      \
 			);
+  return currentFileName;
   
 }
 

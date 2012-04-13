@@ -3,7 +3,7 @@
 
 
 
-#include "sls_detector_defs.h"
+#include "postProcessing.h"
 #include <string>
 #include <fstream>
 
@@ -20,7 +20,7 @@ using namespace std;
 
 */
 
-class slsDetectorActions : public slsDetectorDefs {
+class slsDetectorActions : public postProcessing {
  public :
   /** default constructor */
   slsDetectorActions(){};
@@ -179,7 +179,34 @@ class slsDetectorActions : public slsDetectorDefs {
   float getCurrentScanVariable(int index) {return currentScanVariable[index];};
   //  int getScanPrecision(int index) {return scanPrecision[index];};
 
+
+
+  
+  /**
+    set dacs value
+    \param val value (in V)
+    \param index DAC index
+    \param imod module number (if -1 alla modules)
+    \returns current DAC value
+  */
+  virtual float setDAC(float val, dacIndex index , int imod=-1)=0;
+
+
+  virtual int setThresholdEnergy(int, int im=-1, detectorSettings isettings=GET_SETTINGS)=0;
+  virtual int setChannel(long long, int ich=-1, int ichip=-1, int imod=-1)=0;
+
+
+  int setStartIndex(int i=-1){if (i>=0) {startIndex=i; lastIndex=startIndex; nowIndex=startIndex;};return startIndex;};
+  int setLastIndex(int i=-1){if (i>=0 && i>lastIndex) lastIndex=i; return lastIndex;};
+  
+  
  protected:
+
+
+  int executeScan(int level, int istep);
+  int executeAction(int level);
+
+
 
   /** action mask */
   int *actionMask;  
@@ -222,7 +249,13 @@ class slsDetectorActions : public slsDetectorDefs {
 
 
 
+ private:
+  int startIndex;
+  int lastIndex;
+  int nowIndex;
+  string fName;
 
+  
 
 
 

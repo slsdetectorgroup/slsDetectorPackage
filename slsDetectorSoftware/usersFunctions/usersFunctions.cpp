@@ -225,7 +225,7 @@ int go_to_position_no_wait(float p) {
 
 /* reads I0 and returns the intensity */
 
-float get_i0() {
+float get_i0(int t) {
 #ifdef VERBOSE
   printf("Getting I0 readout \n");
 #endif
@@ -240,7 +240,15 @@ float get_i0() {
 #ifdef VERBOSE
         printf("caget: %f\n",  value);
 #endif
-	i0=value;
+
+	
+	if (t==0)
+	  i0=value;
+	else
+	  i0=value-i0;
+	
+
+
     } else
         printf(ca_message(status));
 #else
@@ -249,6 +257,7 @@ float get_i0() {
 
   //"ca_get X04SA-ES2-SC:CH6"
   return i0;
+
 }
   
 

@@ -401,3 +401,97 @@ int slsDetectorActions::getScanPrecision(int iscan){
 }
 
 
+
+int slsDetectorActions::executeScan(int level, int istep) {
+
+  int trimbit;
+  char cmd[MAX_STR_LENGTH];
+
+  if (level<0 || level>MAX_SCAN_LEVELS)
+    return -1;
+  
+  currentScanVariable[level]=getScanStep(level,istep);
+  currentScanIndex[level]=istep;
+
+  switch(scanMode[level]) {
+  case 1:
+    setThresholdEnergy((int)currentScanVariable[level]); //energy scan
+    break;
+  case 2:
+    setDAC(currentScanVariable[level],THRESHOLD); // threshold scan
+    break;
+  case 3:
+    trimbit=(int)currentScanVariable[level];
+    setChannel((trimbit<<((int)TRIMBIT_OFF))|((int)COMPARATOR_ENABLE)); // trimbit scan
+    break;
+  case 0:
+    currentScanVariable[level]=0;
+    break;
+  default:
+    //Custom scan script level 1. The arguments are passed as nrun=n fn=filename var=v par=p"
+    sprintf(cmd,"%s nrun=%d fn=%s var=%f par=%s",getScanScript(level).c_str(),*fileIndex,createFileName().c_str(),currentScanVariable[level],getScanParameter(level).c_str());
+#ifdef VERBOSE
+    cout << "Executing scan script "<< level << " "  << cmd << endl;
+#endif
+    system(cmd);
+  }
+  return 0;
+
+}
+
+int slsDetectorActions::executeAction(int level) {
+  
+
+   if (*actionMask & (1 << level)) {
+
+     char cmd[MAX_STR_LENGTH];
+     switch (level) {
+       case startScript:
+       case stopScript:
+	 sprintf(cmd,"%s nrun=%d par=%s",getActionScript(level).c_str(),*fileIndex,getActionParameter(level).c_str());
+	 break;
+     case scriptBefore: 
+     case scriptAfter: 
+       sprintf(cmd,"%s nrun=%d fn=%s par=%s sv0=%f sv1=%f p0=%s p1=%s",getActionScript(level).c_str(),*fileIndex,currentFileName.c_str(),getActionParameter(level).c_str(),currentScanVariable[0],currentScanVariable[1],getScanParameter(0).c_str(),getScanParameter(1).c_str());
+       break;
+     case headerBefore:
+       fName=currentFileName;
+       nowIndex=getFileIndexFromFileName(currentFileName);
+     case headerAfter:
+// 	sprintf(cmd,"%s nrun=%d fn=%s acqtime=%f gainmode=%d threshold=%d badfile=%s angfile=%s bloffset=%f fineoffset=%f fffile=%s/%s tau=%f par=%s", \
+// 		getActionScript(level).c_str(),		\
+// 		getFileIndexFromFileName(currentFileName),  \
+// 		currentFileName.c_str(),		    \
+// 		((float)timerValue[ACQUISITION_TIME])*1E-9, \
+// 		*currentSettings,			\
+// 		*currentThresholdEV,			\
+// 		getBadChannelCorrectionFile().c_str(),	\
+// 		angularConversion::getAngularConversionFile().c_str(),	\
+// 		*globalOffset,				\
+// 		*fineOffset,				\
+// 		getFlatFieldCorrectionDir().c_str(),		\
+// 		getFlatFieldCorrectionFile().c_str(),		\
+// 		getRateCorrectionTau(),			\
+// 		getActionParameter(level).c_str());
+       
+// all other parameters should be taken using text client calls in the header scripts!
+
+	sprintf(cmd,"%s nrun=%d fn=%s par=%s", \
+		getActionScript(level).c_str(),		\
+		nowIndex,  \
+		fName.c_str(),		    \
+		getActionParameter(level).c_str());
+	break;
+     default:
+       strcpy(cmd,"");
+     }
+#ifdef VERBOSE
+     cout << "Executing  script "<< level << " "  << cmd << endl;
+#endif
+     system(cmd);
+     return 1;
+   }
+   return 0;
+
+
+}

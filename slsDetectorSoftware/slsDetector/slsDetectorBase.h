@@ -1,6 +1,50 @@
 
 #ifndef SLS_DETECTOR_BASE_H
 #define SLS_DETECTOR_BASE_H
+/**
+ \mainpage Common C++ library for SLS detectors data acquisition
+ *
+ * \section intro_sec Introduction
+
+ * \subsection mot_sec Motivation
+ Although the SLS detectors group delvelops several types of detectors (1/2D, counting/integrating etc.) it is common interest of the group to use a common platfor for data acquisition
+  \subsection arch_sec System Architecture
+  The architecture of the acquisitions system is intended as follows:
+  \li A socket server running on the detector (or more than one in some special cases)
+  \li C++ classes common to all detectors for client-server communication. These can be supplied to users as libraries and embedded also in acquisition systems which are not developed by the SLS
+  \li the possibility of using a Qt-based graphical user interface (with eventually root analisys capabilities)
+  \li the possibility of running all commands from command line. In order to ensure a fast operation of this so called "text client" the detector parameters should not be re-initialized everytime. For this reason a shared memory block is allocated where the main detector flags and parameters are stored 
+  \li a Root library for data postprocessing and detector calibration (energy, angle).
+
+ \section howto_sec How to use it
+
+ The detectors can be simply operated by using the provided GUi or command line executable. <br>
+In case you need to embed the detector control e.g in the beamline control software, compile these classes using 
+<BR>
+make package
+<br>
+and link the shared library created to your software slsDetectorSoftware/bin/libSlsDetector.so
+<br>
+The software can also be installed (with super-user rights)<br>
+make install
+<br>
+<br>
+Most methods of interest for the user are implemented in the ::slsDetectorBase interface class, but the classes to be implemented in the main program are either ::slsDetector (for single controller detectors) or ::multiSlsDetector (for multiple controllers, but can work also for single controllers).
+
+@author Anna Bergamaschi
+@version 0.1alpha
+
+*/
+
+
+
+/**
+ * 
+ *
+ *
+ * @author Anna Bergamaschi
+ * @version 0.1alpha
+ */
 
 
 #include "sls_detector_defs.h"
@@ -11,7 +55,12 @@
 using namespace std;
 /** 
 
+@libdoc The slsDetectorBase class is a minimal purely virtual interface class which should be instantiated by the users in their acquisition software (EPICS, spec etc.). More advanced configuration functions are not implemented and can be written in a configuration file tha can be read/written.
+
+
 This class contains the functions accessible by the users to control the slsDetectors (both multiSlsDetector and slsDetector)
+
+ * @short This is the base class for detector functionalities of interest for the users.
 
 */
 
@@ -42,10 +91,10 @@ class slsDetectorBase : public slsDetectorDefs
      reads the IC (if required) <br>
      reads the encoder (iof required for angualr conversion) <br>
      processes the data (flat field, rate, angular conversion and merging ::processData())
-      \param delflag 0 leaves the data in the final data queue
+      \param delflag 0 leaves the data in the final data queue (default is 1)
       \returns nothing
   */
-  virtual void acquire(int delflag)=0;
+  virtual void acquire(int delflag=1)=0;
 
   /**
    asks and  receives a data frame from the detector, writes it to disk and processes the data

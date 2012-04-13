@@ -1402,22 +1402,30 @@ int multiSlsDetector::setROI(int nroi, int *xmin, int *xmax, int *ymin, int *yma
 */
 
 
-float* multiSlsDetector::decodeData(int *datain) {
-  float *dataout=new float[thisMultiDetector->numberOfChannels];
-  int ich=0;
-  float *detp;
+float* multiSlsDetector::decodeData(int *datain, float *fdata) {
+  float *dataout;
+  if (fdata)
+    dataout=fdata;
+  else
+    dataout=new float[thisMultiDetector->numberOfChannels];
+  
+  // int ich=0;
+
+  float *detp=dataout;
   int  *datap=datain;
 
-
+  
   for (int i=0; i<thisMultiDetector->numberOfDetectors; i++) {
     if (detectors[i]) {
-      detp=detectors[i]->decodeData(datap);
+      detectors[i]->decodeData(datap, detp);
       datap+=detectors[i]->getDataBytes()/sizeof(int);
-      for (int j=0; j<detectors[i]->getTotalNumberOfChannels(); j++) {
-	dataout[ich]=detp[j];
-	ich++;
-      }
-      delete [] detp;
+      detp+=detectors[i]->getTotalNumberOfChannels();
+
+//       for (int j=0; j<detectors[i]->getTotalNumberOfChannels(); j++) {
+// 	dataout[ich]=detp[j];
+// 	ich++;
+//       }
+      //delete [] detp;
     }
   }
 
@@ -3339,7 +3347,7 @@ int multiSlsDetector::writeDataFile(string fname, float *data, float *err, float
   ofstream outfile;
   int choff=0, off=0; //idata, 
   float *pe=err, *pa=ang;
-  int nch_left=nch, n;
+  int nch_left=nch, n, nd;
 
   if (nch_left<=0)
     nch_left=getTotalNumberOfChannels();
@@ -3348,28 +3356,35 @@ int multiSlsDetector::writeDataFile(string fname, float *data, float *err, float
   if (data==NULL)
     return FAIL;
 
-  //  args|=0x10; // one line per channel!
-
   outfile.open (fname.c_str(),ios_base::out);
   if (outfile.is_open())
   {
     
    for (int i=0; i<thisMultiDetector->numberOfDetectors; i++) {
+     
      if (detectors[i]) {
        n=detectors[i]->getTotalNumberOfChannels();
-       if (nch_left<n)
+       if (nch_left<nd)
 	 n=nch_left;
+
        detectors[i]->writeDataFile(outfile,n, data+off, pe, pa, dataformat, choff);
+
        nch_left-=n;
+
        choff+=detectors[i]->getMaxNumberOfChannels();
+       
        off+=n;
+    
        if (pe)
 	 pe=pe+off;
+       
        if (pa)
 	 pa=pa+off;
+     
      }
+     
    }
-
+   
    outfile.close();
    return OK;
   } else {

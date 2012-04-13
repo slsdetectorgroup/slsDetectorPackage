@@ -8,10 +8,9 @@
 using namespace std;
 
 
-/* /\** This class handles the command line I/Os, help etc.  */
-/*     It is inherited by both slsDetector and multiSlsDetector */
+/** @short This class handles the command line I/Os, help etc. of the text clients  */
 
-/* *\/ */
+
 class slsDetectorCommand : public slsDetectorDefs { 
 
  public:

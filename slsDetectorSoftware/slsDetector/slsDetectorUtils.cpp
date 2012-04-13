@@ -477,6 +477,8 @@ float slsDetectorUtils::getCurrentProgress() {
   return 100.*((float)progressIndex)/((float)totalProgress);
 }
 
+
+
 void slsDetectorUtils::incrementProgress()  { 
   progressIndex++;							
   cout << fixed << setprecision(2) << setw (6) << getCurrentProgress() << " \%";

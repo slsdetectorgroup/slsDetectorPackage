@@ -10,40 +10,11 @@
 #include "MySocketTCP.h"
 
 
-//using namespace std;
-/**
- \mainpage Common C++ library for SLS detectors data acquisition
- *
- * \section intro_sec Introduction
-
- * \subsection mot_sec Motivation
- Although the SLS detectors group delvelops several types of detectors (1/2D, counting/integrating etc.) it is common interest of the group to use a common platfor for data acquisition
-  \subsection arch_sec System Architecture
-  The architecture of the acquisitions system is intended as follows:
-  \li A socket server running on the detector (or more than one in some special cases)
-  \li C++ classes common to all detectors for client-server communication. These can be supplied to users as libraries and embedded also in acquisition systems which are not developed by the SLS \sa MySocketTCP slsDetector
-  \li the possibility of using a Qt-based graphical user interface (with eventually root analisys capabilities)
-  \li the possibility of runnin alla commands from command line. In order to ensure a fast operation of this so called "text client" the detector parameters should not be re-initialized everytime. For this reason a shared memory block is allocated where the main detector flags and parameters are stored \sa slsDetector::sharedSlsDetector
- \section howto_sec How to use it
- The best way to operate the slsDetectors is to use the software (text client or GUI) developed by the sls detectors group.
-In case you need to embed the detector control in a previously existing software, compile these classes using <BR>
-make package
-<br>
-and link the shared library created to your software bin/libSlsDetector.so.1.0.1
-Then in your software you should use the class related to the detector you want to control (mythenDetector or eigerDetector).
-
- @author Anna Bergamaschi
-
-*/
-
 
 
 /**
  * 
- *
-@libdoc The slsDetector class is expected to become the interface class for all SLS Detectors acquisition (and analysis) software.
- *
- * @short This is the base class for all SLS detector functionalities
+ * @short the slsDetector class takes care of the communication with the detector and all kind actions related with a single detector controller
  * @author Anna Bergamaschi
  * @version 0.1alpha
  */
@@ -54,6 +25,10 @@ Then in your software you should use the class related to the detector you want 
 #define NCHANSMAX 65536
 #define NDACSMAX 16
 
+
+/**
+   @short complete detector functionalities for a single module detector
+*/
 class slsDetector : public slsDetectorUtils, public energyConversion {
 
 
@@ -69,7 +44,9 @@ class slsDetector : public slsDetectorUtils, public energyConversion {
 
 
   /** 
-      @short Structure allocated in shared memory to store detector settings and be accessed in parallel by several applications (take care of possible conflicts!)
+      @short Structure allocated in shared memory to store detector settings.
+
+Structure allocated in shared memory to store detector settings and be accessed in parallel by several applications on the same machine (take care of possible conflicts, particularly if things are run on different machines!)
       
   */
 typedef  struct sharedSlsDetector {
@@ -1162,7 +1139,7 @@ typedef  struct sharedSlsDetector {
      \param datain data from the detector
      \returns pointer to a float array with a data per channel
   */
-  float* decodeData(int *datain);
+  float* decodeData(int *datain, float *fdata=NULL);
 
   
   

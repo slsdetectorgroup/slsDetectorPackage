@@ -127,34 +127,34 @@ int postProcessing::setBadChannelCorrection(string fname, int &nbad, int *badlis
 void postProcessing::processFrame(int *myData, int delflag) {
 
   string fname;
-  float *fdata;
+  // float *fdata=NULL;
   
   
-  incrementProgress();
-
-  /** decode data */
-  fdata=decodeData(myData);
-  
-  fname=createFileName();
-  
+ incrementProgress();
+ 
+ /** decode data */
+ 
+ fdata=decodeData(myData, fdata);
+ 
+ fname=createFileName();
+ 
   
   //uses static function?!?!?!?
-  //	writeDataFile (fname+string(".raw"), getTotalNumberOfChannels(),fdata, NULL, NULL, 'i'); 
   writeDataFile (fname+string(".raw"),fdata, NULL, NULL, 'i'); 
   
-  doProcessing(fdata,delflag);
+ doProcessing(fdata,delflag);
 
-  delete [] myData;
-  myData=NULL;
+ delete [] myData;
+ myData=NULL;
 #ifdef VERBOSE
   //	cout << "Pop data queue " << *fileIndex << endl;
 #endif
-
+  
   pthread_mutex_lock(&mp);
   dataQueue.pop(); //remove the data from the queue
   queuesize=dataQueue.size();
   pthread_mutex_unlock(&mp);
-
+  
   
 }
 
@@ -174,20 +174,15 @@ void postProcessing::doProcessing(float *fdata, int delflag) {
   detectorData *thisData;
 
 
-
-  if (*correctionMask!=0) {
-    ext=".dat";
-  } else {
-    ext=".raw";
-  }
-
-  fname=createFileName();
-
   /** write raw data file */	   
   if (*correctionMask==0 && delflag==1) {
-    delete [] fdata;
+    //  delete [] fdata;
+    ;
   } else {
     
+    ext=".dat";
+    fname=createFileName();
+
     /** rate correction */
     if (*correctionMask&(1<<RATE_CORRECTION)) {
       rcdata=new float[getTotalNumberOfChannels()]; 
@@ -333,6 +328,7 @@ void postProcessing::doProcessing(float *fdata, int delflag) {
       }
     }
   }
+
   incrementFileIndex();
 
 
@@ -422,6 +418,8 @@ void* postProcessing::processData(int delflag) {
   std::cout<< " processing data - threaded mode " << *threadedProcessing << endl;
 #endif
 
+
+
   setTotalProgress();
   pthread_mutex_lock(&mp);
   queuesize=dataQueue.size();
@@ -430,46 +428,44 @@ void* postProcessing::processData(int delflag) {
   int *myData;
   int dum=1;
 
+  fdata=NULL;
 
 
   while(dum | *threadedProcessing) { // ????????????????????????
     
     
+    /* IF THERE ARE DATA PROCESS THEM*/
     pthread_mutex_lock(&mp);
     while((queuesize=dataQueue.size())>0) {
-
       /** Pop data queue */
       myData=dataQueue.front(); // get the data from the queue 
       pthread_mutex_unlock(&mp);
-
-
+     
       if (myData) {
-	
 	processFrame(myData,delflag);
-
-	usleep(1000);
+	//usleep(1000);
       }
-      pthread_mutex_unlock(&mp);
-      usleep(1000);
+      pthread_mutex_lock(&mp);
 
     }
-
-
     pthread_mutex_unlock(&mp);
+   
+    /* IF THERE ARE NO DATA look if acquisition is finished */
     pthread_mutex_lock(&mp);
     if (jointhread) {
       if (dataQueue.size()==0) {
 	pthread_mutex_unlock(&mp);
 	break;
       }
-      
-
       pthread_mutex_unlock(&mp);
     } else {
       pthread_mutex_unlock(&mp);
     }
     dum=0;
   }
+
+  if (fdata)
+    delete [] fdata;
   return 0;
 }
 

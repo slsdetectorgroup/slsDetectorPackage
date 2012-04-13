@@ -25,6 +25,12 @@ using namespace std;
 
 #define defaultTDead {170,90,750} /**< should be changed in order to have it separate for the different detector types */
 
+
+/**
+   @short methods for data postprocessing 
+
+   (including thread for writing data files and plotting in parallel with the acquisition) 
+*/
 class postProcessing : public angularConversion, public fileIO  {
 
 
@@ -232,7 +238,7 @@ s
    virtual int setTotalProgress()=0;
 
 
-  virtual float* decodeData(int *datain)=0;
+   virtual float* decodeData(int *datain, float *fdata=NULL)=0;
   virtual int getTotalNumberOfChannels()=0;
 
 
@@ -353,7 +359,7 @@ s
   */
   float currentI0;
   
-  
+  float *fdata;
 
 
 

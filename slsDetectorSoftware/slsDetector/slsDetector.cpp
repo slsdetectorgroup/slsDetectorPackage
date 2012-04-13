@@ -3199,14 +3199,16 @@ int* slsDetector::startAndReadAll(){
 
  
   int* retval;
+#ifdef VERBOSE
   int i=0;
+#endif
   startAndReadAllNoWait();  
   //#ifdef VERBOSE
   // std::cout<< "started" << std::endl;
 //#endif
   while ((retval=getDataFromDetector())){
-      i++;
 #ifdef VERBOSE
+      i++;
       std::cout<< i << std::endl;
       //#else
       //std::cout<< "-" << flush;
@@ -3907,8 +3909,14 @@ int slsDetector::executeTrimming(trimMode mode, int par1, int par2, int imod){
 
 };
 
-float* slsDetector::decodeData(int *datain) {
-  float *dataout=new float[thisDetector->nChans*thisDetector->nChips*thisDetector->nMods];
+float* slsDetector::decodeData(int *datain, float *fdata) {
+  
+  float *dataout;
+  if (fdata)
+    dataout=fdata;
+  else
+    dataout=new float[thisDetector->nChans*thisDetector->nChips*thisDetector->nMods];
+  
   const int bytesize=8;
 
   int ival=0;
@@ -3916,7 +3924,9 @@ float* slsDetector::decodeData(int *datain) {
   char iptr;
 
   int nbits=thisDetector->dynamicRange;
+  int nch=thisDetector->nChans*thisDetector->nChips*thisDetector->nMods;
   int  ipos=0, ichan=0, ibyte;
+
   if (thisDetector->timerValue[PROBES_NUMBER]==0) {
     switch (nbits) {
     case 1:
@@ -3948,7 +3958,7 @@ float* slsDetector::decodeData(int *datain) {
       }
       break;
     case 16:
-      for (ichan=0; ichan<thisDetector->nChans*thisDetector->nChips*thisDetector->nMods; ichan++) {
+      for (ichan=0; ichan<nch; ichan++) {
 	// dataout[ichan]=0;
 	ival=0;
 	for (ibyte=0; ibyte<2; ibyte++) {
@@ -3959,40 +3969,18 @@ float* slsDetector::decodeData(int *datain) {
       }
       break;
     default:    
-      for (ichan=0; ichan<thisDetector->nChans*thisDetector->nChips*thisDetector->nMods; ichan++) {
+      for (ichan=0; ichan<nch; ichan++) {
 	ival=datain[ichan]&0xffffff;
 	dataout[ichan]=ival;
       }
     }
   } else { 
-    for (ichan=0; ichan<thisDetector->nChans*thisDetector->nChips*thisDetector->nMods; ichan++) {
+    for (ichan=0; ichan<nch; ichan++) {
       dataout[ichan]=datain[ichan];
     }
   }
 
-  /*
 
-  if (nbits==32) {
-    for (ichan=0; ichan<thisDetector->nChans*thisDetector->nChips*thisDetector->nMods; ichan++)
-      dataout[ichan]=(datain[ichan]&0xffffff);
-  } else {
-  for (int ibyte=0; ibyte<thisDetector->dataBytes; ibyte++) {
-    for (int ibit=0; ibit<bytesize; ibit++) {
-      ival|=(ptr[ibyte]&(one<<ibit)>>ibit)<<ipos++;
-      if (ipos==thisDetector->dynamicRange) {
-	ipos=0;
-	dataout[ichan]=ival;
-	ichan++;
-	ival=0;
-	if (ichan>thisDetector->nChans*thisDetector->nChips*thisDetector->nMods){
-	  std::cout<< "error: decoding too many channels!" << ichan;
-	  break;
-	}
-      }
-    }
-  }
-  }
-  */
 #ifdef VERBOSE
   std::cout<< "decoded "<< ichan << " channels" << std::endl;
 #endif

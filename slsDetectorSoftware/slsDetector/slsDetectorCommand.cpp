@@ -653,7 +653,7 @@ string slsDetectorCommand::executeLine(int narg, char *args[], int action) {
 
 
 string slsDetectorCommand::cmdUnknown(int narg, char *args[], int action) {
-  return string("Unknown command ")+string(args[0])+string("\n");//+helpLine(narg, args, action);
+  return string("Unknown command ")+string(args[0])+string("\n")+helpLine(0, args, action);
 
 }
 string slsDetectorCommand::cmdUnderDevelopment(int narg, char *args[], int action) {
@@ -672,7 +672,7 @@ string slsDetectorCommand::helpLine(int narg, char *args[], int action) {
     return helpAcquire(narg,args,HELP_ACTION);
   }
 
-
+  
   if (narg==0) {
     os << "Command can be: " << endl;
     for(int i=0; i<numberOfCommands; ++i) {  
@@ -681,62 +681,11 @@ string slsDetectorCommand::helpLine(int narg, char *args[], int action) {
     os << endl;
     return os.str();
   }
-
   return executeLine(narg,args,HELP_ACTION);
 
 
 
 
-
-
-//   os << helpAcquire(narg,args,action) << endl;
-  
-//   os << helpData(narg,args,action) << endl;
-//   os << helpFrame(narg,args,action) << endl;
-//   os << helpStatus(narg,args,action) << endl;
-//   os << helpFree(narg,args,action) << endl;
-//   os << helpAdd(narg,args,action) << endl;
-//   os << helpRemove(narg,args,action) << endl;
-//   os << helpHostname(narg,args,action) << endl;
-//   os << helpId(narg,args,action) << endl;
-//   os << helpMaster(narg,args,action) << endl;
-//   os << helpSync(narg,args,action) << endl;
-//   os << helpExitServer(narg,args,action) << endl;
-//   os << helpSettingsDir(narg,args,action) << endl;
-//   os << helpCalDir(narg,args,action) << endl;
-//   os << helpOutDir(narg,args,action) << endl;
-//   os << helpFileName(narg,args,action) << endl;
-//   os << helpFileIndex(narg,args,action) << endl;
-//   os << helpFlatField(narg,args,action) << endl;
-//   os << helpRateCorr(narg,args,action) << endl;
-//    os << helpBadChannels(narg,args,action) << endl;
-//    os << helpAngConv(narg,args,action) << endl;
-//    os << helpThreaded(narg,args,action) << endl;
-//    os << helpPositions(narg,args,action) << endl;
-//    os << helpScripts(narg,args,action) << endl;
-//    os << helpScans(narg,args,action) << endl;
-//    os << helpNetworkParameter(narg,args,action) << endl;
-//    os << helpPort(narg,args,action) << endl;
-//    os << helpLock(narg,args,action) << endl;
-//    os << helpLastClient(narg,args,action) << endl;
-//    os << helpOnline(narg,args,action) << endl;
-//    os << helpConfigureMac(narg,args,action) << endl;
-//    os << helpDetectorSize(narg,args,action) << endl;
-//    os << helpSettings(narg,args,action) << endl;
-//    os << helpSN(narg,args,action) << endl;
-//    os << helpDigiTest(narg,args,action) << endl;
-//    os << helpRegister(narg,args,action) << endl;
-//    os << helpDAC(narg,args,action) << endl;
-//    os << helpTimer(narg,args,action) << endl;
-//    os << helpTiming(narg,args,action) << endl;
-//    os << helpTimeLeft(narg,args,action) << endl;
-//    os << helpSpeed(narg,args,action) << endl;
-//    os << helpAdvanced(narg,args,action) << endl;
-//    os << helpConfiguration(narg,args,action) << endl;
-//    os << helpImage(narg,args,action) << endl;
-//    os << helpADC(narg,args,action) << endl;
-  
-//   return os.str();
 }
 
 
@@ -978,7 +927,7 @@ string slsDetectorCommand::cmdHostname(int narg, char *args[], int action){
     if (vvstr.fail()) 
       ivar=-1;
   }
-
+  
   if (action==PUT_ACTION) {
     //add by hostname
     if (ivar==-1) {
@@ -1009,6 +958,7 @@ string slsDetectorCommand::helpHostname(int narg, char *args[], int action){
     os << string("hostname[:i] name [name name]\t configures the hostnames of the detector structure. i is the detector position in a multi detector system\n");
   return os.str();
 }
+
 
 string slsDetectorCommand::cmdId(int narg, char *args[], int action){
 #ifdef VERBOSE
@@ -1130,7 +1080,14 @@ string slsDetectorCommand::cmdHelp(int narg, char *args[], int action){
 #ifdef VERBOSE
   cout << string("Executing command ")+string(args[0])+string(" ( ")+cmd+string(" )\n");
 #endif
-  return helpLine(narg, args, action);
+
+  cout << narg << endl;
+
+  if (narg>=1)
+    return helpLine(narg-1, args+1, action);
+  else
+    return helpLine(0, args, action);
+    
 
 
 }

@@ -5,19 +5,23 @@
 #include <string>
 
 using namespace std;
-
+/**
+   @short class handling the energy calibration and trim files IO
+*/
 
 
 class energyConversion: public slsDetectorDefs {
 
  public:
+  /** default constrauctor */
   energyConversion(){};
+  /** default destructor */
   virtual ~energyConversion(){};
 
   
   /**
    
-      reads a calibration file MOVE TO ENERGY CALIBRATION?!?!??!?
+      reads a calibration file 
       \param fname file to be read
       \param gain reference to the gain variable
       \offset reference to the offset variable
@@ -26,7 +30,7 @@ class energyConversion: public slsDetectorDefs {
   
   /**
    
-      writes a calibration file MOVE TO ENERGY CALIBRATION?!?!??!?
+      writes a calibration file 
       \param fname file to be written
       \param gain 
       \param offset
@@ -37,9 +41,9 @@ class energyConversion: public slsDetectorDefs {
   /**
      reads a trim/settings file
      \param fname name of the file to be read
+     \param myDetectorType detector type (needed for number of channels, chips, dacs etc.)
      \param myMod pointer to the module structure which has to be set. <BR> If it is NULL a new module structure will be created
      \returns the pointer to myMod or NULL if reading the file failed
-     \sa mythenDetector::readSettingsFile
   */
 
   sls_detector_module* readSettingsFile(string fname, detectorType myDetectorType, sls_detector_module* myMod=NULL);
@@ -47,6 +51,7 @@ class energyConversion: public slsDetectorDefs {
   /**
      writes a trim/settings file
      \param fname name of the file to be written
+     \param myDetectorType detector type (needed for number of channels, chips, dacs etc.)
      \param mod module structure which has to be written to file
      \returns OK or FAIL if the file could not be written
 
@@ -54,12 +59,20 @@ class energyConversion: public slsDetectorDefs {
   */
   int writeSettingsFile(string fname, detectorType myDetectorType, sls_detector_module mod); 
   
-
+  /** allocates the momery for a detector module structure
+      \param myDetectorType detector type (needed for number of channels, chips, dacs etc.)
+      \returns pointer to detector module
+  */
   virtual sls_detector_module*  createModule(detectorType myDetectorType)=0;
   
+  /**
+     frees the memory of a detector module structure
+     \param myMod pointer to memeory to be freed
+  */
   virtual void deleteModule(sls_detector_module *myMod)=0;
   
  protected:
+  /** pointer to settings file name */
   char *settingsFile;
   
 

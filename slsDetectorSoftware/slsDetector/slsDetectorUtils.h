@@ -52,7 +52,11 @@ using namespace std;
 #define DEFAULT_HOSTNAME  "localhost"
 #define DEFAULT_SHM_KEY  5678
 
+/**
+   @short class containing all the possible detector functionalities 
 
+   (used in the PSi command line interface)
+*/
 class slsDetectorUtils : public slsDetectorActions, public postProcessing, public slsDetectorBase  {
 
 
@@ -86,6 +90,11 @@ class slsDetectorUtils : public slsDetectorActions, public postProcessing, publi
 
 
   int getScanPrecision(int i){return slsDetectorActions::getScanPrecision(i);};
+
+  int getActionMask() {return slsDetectorActions::getActionMask();};
+  float getCurrentScanVariable(int i) {return slsDetectorActions::getCurrentScanVariable(i);};
+  int getCurrentPositionIndex(){return angularConversion::getCurrentPositionIndex();}; 
+  int getNumberOfPositions(){return angularConversion::getNumberOfPositions();};
 
 
   string getFlatFieldCorrectionDir(){return postProcessing::getFlatFieldCorrectionDir();};
@@ -374,7 +383,7 @@ class slsDetectorUtils : public slsDetectorActions, public postProcessing, publi
       \returns nothing
   */
 
-  void acquire(int delflag);
+  void acquire(int delflag=1);
 
 
   //  float* convertAngles(){return convertAngles(currentPosition);};

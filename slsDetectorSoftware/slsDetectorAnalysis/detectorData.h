@@ -3,7 +3,9 @@
 #include <cstring>
 
 /**
-   data structure to hold the detector data after postprocessing (e.g. to plot, store in a root tree etc.)
+   @short data structure to hold the detector data after postprocessing 
+
+   (e.g. to plot, store in a root tree etc.)
  */
 class detectorData {
  public:

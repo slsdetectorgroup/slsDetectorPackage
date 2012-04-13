@@ -33,6 +33,8 @@ and to the server programs running on the detector
 #define GET_FLAG -1
 
 #ifdef __cplusplus
+
+/** @short class containing all the structures, constants and enum definitions */
 class slsDetectorDefs {
 
  public:
@@ -47,7 +49,8 @@ class slsDetectorDefs {
 
 
 /** 
-    structure for a detector channel
+    @short  structure for a detector channel
+
     should not be used by unexperienced users
 
     \see  ::channelRegisterBit
@@ -60,7 +63,8 @@ class slsDetectorDefs {
   } sls_detector_channel;
   
   /** 
-    structure for a detector chip
+    @short  structure for a detector chip
+
     should not be used by unexperienced users
     \see  ::chipRegisterBit ::channelRegisterBit
 */
@@ -75,7 +79,8 @@ class slsDetectorDefs {
   } sls_detector_chip;
   
 /** 
-    structure for a detector module
+    @short  structure for a detector module
+
     should not be used by unexperienced users
     
     \see  :: moduleRegisterBit ::chipRegisterBit :channelRegisterBit
@@ -108,7 +113,7 @@ typedef struct {
 } sls_detector_module;
 
 /** 
-    structure for a region of interest
+    @short structure for a region of interest
     
     xmin,xmax,ymin,ymax define the limits of the region
 */
@@ -119,14 +124,13 @@ typedef struct {
   int ymax;   /**< is the roi ymax  (in channel number)*/
 } ROI ;
 
-/** 
-    structure for a generic integer array
-   
-*/
-typedef struct {
-  int len;  /**< is the number of elements of the array */
-  int *iptr; /**<  is the pointer to the array */
-} iarray ;
+/* /\*  */
+/*     @short structure for a generic integer array */
+/* *\/ */
+/* typedef struct { */
+/*   int len;  /\**< is the number of elements of the array *\/ */
+/*   int *iptr; /\**<  is the pointer to the array *\/ */
+/* } iarray ; */
 
 
 /** 

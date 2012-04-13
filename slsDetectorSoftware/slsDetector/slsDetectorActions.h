@@ -15,14 +15,17 @@ using namespace std;
 
 /**
 
-class implementing the script and scan utilities of the detectors
+@short class implementing the script and scan utilities of the detectors
 
 
 */
 
 class slsDetectorActions : public slsDetectorDefs {
  public :
+  /** default constructor */
   slsDetectorActions(){};
+  
+  /** virtual destructor */
   virtual ~slsDetectorActions(){};
 
   /** 
@@ -35,19 +38,22 @@ class slsDetectorActions : public slsDetectorDefs {
   int setAction(int iaction, string fname="", string par="");
 
   /** 
-      set action 
+      set action script 
       \param iaction can be enum {startScript, scriptBefore, headerBefore, headerAfter,scriptAfter, stopScript, MAX_ACTIONS}
       \param fname for script ("" disable)
       \returns 0 if action disabled, >0 otherwise
   */
   int setActionScript(int iaction, string fname="");
+
+
   /** 
       set action 
       \param iaction can be enum {startScript, scriptBefore, headerBefore, headerAfter,scriptAfter, stopScript, MAX_ACTIONS}
-      \param par for script ("" disable)
+      \param par for script
       \returns 0 if action disabled, >0 otherwise
   */
   int setActionParameter(int iaction, string par="");
+
 
   /** 
       returns action script
@@ -62,31 +68,61 @@ class slsDetectorActions : public slsDetectorDefs {
 	\returns action parameter
     */
   string getActionParameter(int iaction);
-
-   /** 
-	returns action mode
-	\param iaction can be enum {startScript, scriptBefore, headerBefore, headerAfter,scriptAfter, stopScript}
-	\returns action mode
-    */
+  
+  /** 
+      returns action mode
+      \param iaction can be enum {startScript, scriptBefore, headerBefore, headerAfter,scriptAfter, stopScript}
+      \returns action mode
+  */
   int getActionMode(int iaction);
-
-
+  
+  
   /** 
       set scan 
       \param index of the scan (0,1)
-      \param fname for script ("" disables, "none" disables and overwrites current)
+      \param script fname for script ("" disables, "none" disables and overwrites current, "threshold" threshold scan, "trimbits", trimbits scan)
       \param nvalues number of steps (0 disables, -1 leaves current value)
       \param values pointer to steps (if NULL leaves current values)
       \param par parameter for the scan script ("" leaves unchanged)
+      \param precision to write the scan varaible in the scan name (-1 unchanged)
       \returns 0 is scan disabled, >0 otherwise
   */
   int setScan(int index, string script="", int nvalues=-1, float *values=NULL, string par="", int precision=-1);
   
-  int setScanScript(int index, string script="");
-  int setScanParameter(int index, string par="");
+  /** set scan script
+      \param index of the scan (0,1)
+      \param script fname for script ("" disables, "none" disables and overwrites current, "threshold" threshold scan, "trimbits", trimbits scan)
+      \returns 0 is scan disabled, >0 otherwise
+  */
+  int setScanScript(int index, string script=""); 
+  /** set scan script parameter
+      \param index of the scan (0,1)
+      \param script parameter for scan
+      \returns 0 is scan disabled, >0 otherwise
+  */
+  int setScanParameter(int index, string par="");  
+  /** set scan script parameter
+      \param index of the scan (0,1)
+      \param precision scan varaible precision to be printed in file name
+      \returns 0 is scan disabled, >0 otherwise
+  */
   int setScanPrecision(int index, int precision=-1);
-  int setScanSteps(int index, int nvalues=-1, float *values=NULL);
-  float getScanStep(int index, int istep){if (index<MAX_SCAN_LEVELS && istep<MAX_SCAN_STEPS) return scanSteps[index][istep]; else return -1;};
+
+   
+  /** set scan steps
+      \param index of the scan (0,1)
+      \param nvalues number of steps
+      \param values pointer to array of values
+      \returns 0 is scan disabled, >0 otherwise
+  */
+  int setScanSteps(int index, int nvalues=-1, float *values=NULL); 
+  
+  /** get scan step
+      \param index of the scan (0,1)
+      \param istep step number
+      \returns value of the scan variable
+  */
+  float getScanStep(int index, int istep){if (index<MAX_SCAN_LEVELS && index>=0 && istep>=0 && istep<MAX_SCAN_STEPS) return scanSteps[index][istep]; else return -1;};
   /** 
       returns scan script
       \param iscan can be (0,1) 
@@ -112,7 +148,7 @@ class slsDetectorActions : public slsDetectorDefs {
 	returns scan steps
 	\param iscan can be (0,1)
 	\param v is the pointer to the scan steps
-	\returns scan steps
+	\returns number of scan steps
     */
   int getScanSteps(int iscan, float *v=NULL);
 
@@ -125,25 +161,47 @@ class slsDetectorActions : public slsDetectorDefs {
   int getScanPrecision(int iscan);
 
 
+  /** calculates the total number of steps for the acquisition 
+      \returns total number of steps for the acquisitions
+  */
   virtual int setTotalProgress()=0;
 
+  /**
+     \returns the action mask
+  */
   int getActionMask() {if (actionMask) return *actionMask; return 0;};
 
+
+  /**
+     \param index scan level index
+     \returns value of the current scan variable
+  */
   float getCurrentScanVariable(int index) {return currentScanVariable[index];};
   //  int getScanPrecision(int index) {return scanPrecision[index];};
 
  protected:
 
-  
-  int *actionMask;  	   
-  mystring *actionScript;	      
+  /** action mask */
+  int *actionMask;  
+  /** array of action scripts */
+  mystring *actionScript;	
+  /** array of actionparameters */
   mystring *actionParameter; 	      
 
+  /** pointer to number of steps [2] */
   int *nScanSteps;		      
+  /** pointer to arrays of step values [2] */
   mysteps *scanSteps;	 	    
+  /** pointer to array of scan mode [2] */
   int *scanMode;		    
+
+  /** POINTER TO ARRAY OF SCAN PRECISION [2] */
   int *scanPrecision;
+
+  /** pointer to array of scan scripts [2] */
   mystring *scanScript; 
+
+  /** pointer to array of scan parameters [2] */
   mystring *scanParameter; 
 
 

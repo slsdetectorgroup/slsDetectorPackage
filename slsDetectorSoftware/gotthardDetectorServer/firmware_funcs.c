@@ -1513,7 +1513,8 @@ int configureMAC(int ipad,long long int macad,long long int servermacad,int ival
 
 
 u_int32_t runBusy(void) {
-  return bus_r(STATUS_REG)&RUN_BUSY_BIT;
+
+  return (bus_r(STATUS_REG)&RUN_BUSY_BIT);
 }
 
 u_int32_t dataPresent(void) {
@@ -1531,6 +1532,9 @@ u_int32_t runState(void) {
 #ifdef VERBOSE
   printf("status %04x\n",s);
 #endif
+
+/*  if (s==0x62001)
+    exit(-1);*/
   return s;
 }
 
@@ -1674,26 +1678,39 @@ u_int32_t* fifo_read_event()
 #ifdef VERBOSE
   printf("before looping\n");
 #endif
-  while(bus_r(LOOK_AT_ME_REG)==0) {
-#ifdef VERBOSE
-    printf("Waiting for data status %x\n",runState());
-#endif
-    if (runBusy()==0) {
-       if (bus_r(LOOK_AT_ME_REG)==0) {
-#ifdef VERBOSE
-	 printf("no frame found - exiting ");
-	 printf("%08x %08x\n", runState(), bus_r(LOOK_AT_ME_REG));
 
-#endif
-	 return NULL;
-       } else {
+  volatile u_int32_t t = bus_r(LOOK_AT_ME_REG);
 #ifdef VERBOSE
-	 printf("no frame found %x status %x\n", bus_r(LOOK_AT_ME_REG),runState());
+  printf("lookatmereg=x%x\n",t);
 #endif
-	 break;
-       }
-    }
-   }
+   while ((t&0x1)==0)  
+     {
+       t = bus_r(LOOK_AT_ME_REG);
+       if (!runBusy())
+	 return NULL;
+     }
+
+
+/*   while(bus_r(LOOK_AT_ME_REG)==0) { */
+/* #ifdef VERBOSE */
+/*     printf("Waiting for data status %x\n",runState()); */
+/* #endif */
+/*     // if (runBusy()==0) { */
+/*        if (bus_r(LOOK_AT_ME_REG)==0) { */
+/* #ifdef VERBOSE */
+/* 	 printf("no frame found - exiting "); */
+/* 	 printf("%08x %08x\n", runState(), bus_r(LOOK_AT_ME_REG)); */
+
+/* #endif */
+/* 	 return NULL; */
+/*        } else { */
+/* #ifdef VERBOSE */
+/* 	 printf("no frame found %x status %x\n", bus_r(LOOK_AT_ME_REG),runState()); */
+/* #endif */
+/* 	 break; */
+/*        } */
+/*        //} */
+/*    } */
 #ifdef VERBOSE
   printf("before readout %08x %08x\n", runState(), bus_r(LOOK_AT_ME_REG));
 #endif
@@ -1701,21 +1718,7 @@ u_int32_t* fifo_read_event()
   dma_memcpy(now_ptr,values ,dataBytes);
 
   //memcpy(now_ptr,values ,dataBytes);
-/*  struct timeval t1,t2;
-  long long t;
-  gettimeofday(&t1,NULL);
-	if(geteuid()==0){
-		struct sched_param sp;
-		memset(&sp,0,sizeof(sp));
-		sp.sched_priority= sched_get_priority_max(SCHED_FIFO);
-		sched_setscheduler(0,SCHED_FIFO,&sp);
-		mlockall(MCL_CURRENT | MCL_FUTURE);
-	}
-	  gettimeofday(&t2,NULL);
-  memmove(now_ptr,values ,dataBytes);
-  	t = ((t2.tv_sec * 1000000) + t2.tv_usec) - ((t1.tv_sec * 1000000) + t1.tv_usec);
-  	    printf("\n*********Call took %lld us*******\n",  t);
-*/
+
 
 
 #ifdef VERYVERBOSE

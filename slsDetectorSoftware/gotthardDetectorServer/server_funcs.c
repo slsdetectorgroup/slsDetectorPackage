@@ -1855,27 +1855,28 @@ int get_run_status(int file_des) {
   retval= runState();
   printf("\n\nSTATUS=%08x\n",retval);
 
-  //if runbusy=0
-  if(!(retval&0x00020000)){
+  //error
+  if(retval&0x8000){
+	  printf("-----------------------------------ERROR--------------------------------------x%0x\n",retval);
+	  s=ERROR;
+  }
+  //runbusy=0
+  else if(!(retval&0x20000)){
 	  //and readbusy=1, its last frame read
-	  if(retval&0x00040000){
+	  if(retval&0x40000){
 		  printf("-----------------------------------LAST FRAME READ--------------------------\n");
 		  s=TRANSMITTING;
 	  }
 	  //and readbusy=0,idle
-	  else if(!(retval&0x000FFFFF)){
-	  //if(!(retval&0x00000001)){
+	  else if(!(retval&0xFFFFF)){
+		  //if(!(retval&0x00000001)){
 		  printf("-----------------------------------IDLE--------------------------------------\n");
 		  s=IDLE;
-	  }
-	  else  {
-		  printf("-----------------------------------ERROR--------------------------------------x%0x\n",retval);
-		  s=ERROR;
 	  }
   }
   //if runbusy=1
   else {
-	  if (retval&0x00000008){
+	  if (retval&0x8){
 		  printf("-----------------------------------WAITING-----------------------------------\n");
 		  s=WAITING;
 	  }
@@ -1931,7 +1932,9 @@ int read_frame(int file_des) {
     sprintf(mess,"Detector locked by %s\n",lastClientIP);  
     sendDataOnly(file_des,&dataret,sizeof(dataret));
     sendDataOnly(file_des,mess,sizeof(mess));
+#ifdef VERBOSE
     printf("dataret %d\n",dataret);
+#endif
     return dataret;
 
   }
@@ -1946,8 +1949,8 @@ int read_frame(int file_des) {
       sendDataOnly(file_des,dataretval,dataBytes);
 #ifdef VERBOSE
       printf("sent %d bytes \n",dataBytes);
-#endif
       printf("dataret OK\n");
+#endif
       return OK;
     }  else {
       //might add delay????

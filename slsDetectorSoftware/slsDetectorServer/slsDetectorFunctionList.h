@@ -22,6 +22,7 @@ Here are the definitions, but the actual implementation should be done for each 
 
 ****************************************************/
 
+
 //if b>0 all the detector must be initialized, otherwise it is just the stop server
 int initializeDetector(int b);
 

@@ -9,7 +9,17 @@ int (*flist[256])(int);
 
 
 //defined in the detector specific file
-extern const enum detectorType myDetectorType;
+#ifdef MYTHEND
+const enum detectorType myDetectorType=MYTHEN;
+#elif GOTTHARDD
+const enum detectorType myDetectorType=GOTTHARD;
+#elif EIGERD
+const enum detectorType myDetectorType=EIGER;
+#elif PICASSOD
+const enum detectorType myDetectorType=PICASSO;
+#else
+const enum detectorType myDetectorType=GENERIC;
+#endif
 
 
 //define in communication_funcs

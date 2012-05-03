@@ -400,6 +400,23 @@ string multiSlsDetector::getHostname(int pos) {
   
 }
 
+
+string multiSlsDetector::getDetectorsType(int pos) {
+
+  string s=string("");
+#ifdef VERBOSE
+  cout << "returning type " << pos << endl;
+#endif
+  if (pos>=0) {
+    if (detectors[pos])
+      return detectors[pos]->getDetectorsType();
+  } else
+	  return detectors[0]->getDetectorsType();
+  return s;
+
+}
+
+
 int multiSlsDetector::getDetectorId(int pos) {
   
 #ifdef VERBOSE
@@ -3499,5 +3516,4 @@ int multiSlsDetector::readDataFile(string fname, int *data) {
   }
   return iline;
 }
-
 

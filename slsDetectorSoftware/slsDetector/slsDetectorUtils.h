@@ -111,6 +111,13 @@ class slsDetectorUtils : public slsDetectorActions, public slsDetectorBase  {
   virtual string setHostname(char* name, int pos=-1)=0;
 
 
+  /** returns the detector type
+      \param pos position in the multi detector structure (is -1 returns type of detector with id -1)
+      \returns type
+  */
+  virtual string getDetectorsType(int pos=-1)=0;
+
+
   
   /** Gets the detector id (shared memory id) of an slsDetector
       \param i position in the multiSlsDetector structure

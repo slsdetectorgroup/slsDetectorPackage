@@ -325,6 +325,7 @@ slsDetectorCommand::slsDetectorCommand(slsDetectorUtils *det)  {
   descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdDetectorSize;
   i++;
 
+
   /* flags */
 
   descrToFuncMap[i].m_pFuncName="flags";
@@ -360,6 +361,7 @@ slsDetectorCommand::slsDetectorCommand(slsDetectorUtils *det)  {
   descrToFuncMap[i].m_pFuncName="thisversion"; //
   descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdSN;
   i++;
+
 
   /* digital test and debugging */
 
@@ -2192,7 +2194,7 @@ string slsDetectorCommand::cmdDetectorSize(int narg, char *args[], int action) {
   //  portType index;
 
   if (action==PUT_ACTION) {
-    if (cmd=="maxmod") 
+    if (cmd=="maxmod")
       return string("cannot put!");
 
     if (sscanf(args[1],"%d",&val))
@@ -2373,7 +2375,7 @@ string slsDetectorCommand::cmdSN(int narg, char *args[], int action) {
   if (cmd=="thisversion"){
     sprintf(answer,"%llx",myDet->getId(THIS_SOFTWARE_VERSION));
     return string(answer);
-  } 
+  }
 
   myDet->setOnline(ONLINE_FLAG);
 

@@ -1265,7 +1265,7 @@ int slsDetector::setDetectorType(string const stype){
   return setDetectorType(getDetectorType(stype));
 };
 
-string slsDetector::getDetectorType(){
+string slsDetector::getDetectorsType(int pos){
   return getDetectorType(thisDetector->myDetectorType);
 
 }

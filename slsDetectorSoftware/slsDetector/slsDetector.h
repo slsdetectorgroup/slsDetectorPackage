@@ -604,7 +604,7 @@ typedef  struct sharedSlsDetector {
      normally  the detector knows what type of detector it is
      \param type is the string where the detector type will be written ("Mythen", "Pilatus", "XFS", "Gotthard", Agipd")
   */
-  string getDetectorType();
+  string getDetectorsType(int pos=-1);
 
 
   // Detector configuration functions

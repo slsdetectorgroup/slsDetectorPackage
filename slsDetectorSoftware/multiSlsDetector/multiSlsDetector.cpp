@@ -403,17 +403,16 @@ string multiSlsDetector::getHostname(int pos) {
 
 string multiSlsDetector::getDetectorsType(int pos) {
 
-  string s=string("");
+  string s=string("Unknown");
 #ifdef VERBOSE
   cout << "returning type " << pos << endl;
 #endif
   if (pos>=0) {
     if (detectors[pos])
       return detectors[pos]->getDetectorsType();
-  } else
+  } else if (detectors[0])
 	  return detectors[0]->getDetectorsType();
   return s;
-
 }
 
 

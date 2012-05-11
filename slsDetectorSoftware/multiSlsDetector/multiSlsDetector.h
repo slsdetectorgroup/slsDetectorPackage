@@ -264,7 +264,7 @@ class multiSlsDetector  : public slsDetectorUtils {
 
   string getHostname(int pos=-1);
 
-  string getDetectorsType(int pos=-1);
+  detectorType getDetectorsType(int pos=-1);
 
 
   /** adds a detector by id in position pos

@@ -401,11 +401,11 @@ string multiSlsDetector::getHostname(int pos) {
 }
 
 
-string multiSlsDetector::getDetectorsType(int pos) {
+slsDetectorDefs::detectorType multiSlsDetector::getDetectorsType(int pos) {
 
-  string s=string("Unknown");
+  detectorType s =GENERIC;
 #ifdef VERBOSE
-  cout << "returning type " << pos << endl;
+  cout << "returning type of detector with ID " << pos << endl;
 #endif
   if (pos>=0) {
     if (detectors[pos])

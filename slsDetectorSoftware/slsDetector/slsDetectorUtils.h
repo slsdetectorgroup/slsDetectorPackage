@@ -115,7 +115,7 @@ class slsDetectorUtils : public slsDetectorActions, public slsDetectorBase  {
       \param pos position in the multi detector structure (is -1 returns type of detector with id -1)
       \returns type
   */
-  virtual string getDetectorsType(int pos=-1)=0;
+  virtual detectorType getDetectorsType(int pos=-1)=0;
 
 
   

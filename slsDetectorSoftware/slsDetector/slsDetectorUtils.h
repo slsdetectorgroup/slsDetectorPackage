@@ -32,10 +32,8 @@ extern "C" {
 using namespace std;
 
 
-#include "sls_detector_defs.h"
-#include "slsDetectorBase.h"
-#include "energyConversion.h"
 #include "slsDetectorActions.h"
+#include "postProcessing.h"
 
 #define MAX_TIMERS 10
 #define MAX_ROIS 100
@@ -49,7 +47,7 @@ using namespace std;
 
    (used in the PSi command line interface)
 */
-class slsDetectorUtils : public slsDetectorActions, public slsDetectorBase  {
+class slsDetectorUtils :  public slsDetectorActions, public postProcessing {
 
 
 
@@ -66,34 +64,35 @@ class slsDetectorUtils : public slsDetectorActions, public slsDetectorBase  {
   
 
 
-  int setPositions(int nPos, float *pos){return angularConversion::setPositions(nPos, pos);};
-  int getPositions(float *pos=NULL){return angularConversion::getPositions(pos);};
+  //int setPositions(int nPos, float *pos){return angularConversion::setPositions(nPos, pos);};
+
+  // int getPositions(float *pos=NULL){return angularConversion::getPositions(pos);};
   
   using slsDetectorBase::setFlatFieldCorrection;
   
-  string getFilePath(){return fileIO::getFilePath();};
-  string setFilePath(string s){return fileIO::setFilePath(s);};
+  // string getFilePath(){return fileIO::getFilePath();};
+  // string setFilePath(string s){return fileIO::setFilePath(s);};
   
-  string getFileName(){return fileIO::getFileName();};
-  string setFileName(string s){return fileIO::setFileName(s);};
+  // string getFileName(){return fileIO::getFileName();};
+  // string setFileName(string s){return fileIO::setFileName(s);};
 
-  int getFileIndex(){return fileIO::getFileIndex();};
-  int setFileIndex(int s){return fileIO::setFileIndex(s);};
-
-
-  int getScanPrecision(int i){return slsDetectorActions::getScanPrecision(i);};
-
-  int getActionMask() {return slsDetectorActions::getActionMask();};
-  float getCurrentScanVariable(int i) {return slsDetectorActions::getCurrentScanVariable(i);};
-  int getCurrentPositionIndex(){return angularConversion::getCurrentPositionIndex();}; 
-  int getNumberOfPositions(){return angularConversion::getNumberOfPositions();};
+  // int getFileIndex(){return fileIO::getFileIndex();};
+  // int setFileIndex(int s){return fileIO::setFileIndex(s);};
 
 
-  string getFlatFieldCorrectionDir(){return postProcessing::getFlatFieldCorrectionDir();};
-  string setFlatFieldCorrectionDir(string s){return postProcessing::setFlatFieldCorrectionDir(s);};
-  string getFlatFieldCorrectionFile(){return postProcessing::getFlatFieldCorrectionFile();};
-  int enableBadChannelCorrection(int i){return postProcessing::enableBadChannelCorrection(i);};
-  int enableAngularConversion(int i){return postProcessing::enableAngularConversion(i);};
+  // int getScanPrecision(int i){return slsDetectorActions::getScanPrecision(i);};
+
+  // int getActionMask() {return slsDetectorActions::getActionMask();};
+  // float getCurrentScanVariable(int i) {return slsDetectorActions::getCurrentScanVariable(i);};
+  // int getCurrentPositionIndex(){return angularConversion::getCurrentPositionIndex();}; 
+  // int getNumberOfPositions(){return angularConversion::getNumberOfPositions();};
+
+
+  // string getFlatFieldCorrectionDir(){return postProcessing::getFlatFieldCorrectionDir();};
+  // string setFlatFieldCorrectionDir(string s){return postProcessing::setFlatFieldCorrectionDir(s);};
+  // string getFlatFieldCorrectionFile(){return postProcessing::getFlatFieldCorrectionFile();};
+  // int enableBadChannelCorrection(int i){return postProcessing::enableBadChannelCorrection(i);};
+  // int enableAngularConversion(int i){return postProcessing::enableAngularConversion(i);};
   
 
   /** returns the detector hostname 
@@ -409,7 +408,6 @@ class slsDetectorUtils : public slsDetectorActions, public slsDetectorBase  {
 
 
   void incrementProgress();
-  void incrementFileIndex() { (*fileIndex)++;};
 
 
 

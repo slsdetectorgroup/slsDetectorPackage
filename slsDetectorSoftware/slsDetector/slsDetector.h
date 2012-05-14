@@ -7,6 +7,7 @@
 
 
 #include "slsDetectorUtils.h"
+#include "energyConversion.h"
 #include "MySocketTCP.h"
 
 

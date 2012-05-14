@@ -311,6 +311,10 @@ void exitServer(int socketDescriptor) {
 
   if (total_received>0)
     strcpy(thisClientIP,dummyClientIP);
+  
+  if (strcmp(lastClientIP,"none")==0)
+    strcpy(lastClientIP,thisClientIP);
+  
   if (strcmp(lastClientIP,thisClientIP))
     differentClients=1;
   else
@@ -347,7 +351,9 @@ int sendChip(int file_des, sls_detector_chip *myChip) {
 
 int sendModule(int file_des, sls_detector_module *myMod) {
   int ts=0;
-  //int idac;
+#ifdef VERBOSE
+  int idac;
+#endif
   int nChips=myMod->nchip;
   int nChans=myMod->nchan;
   int nAdcs=myMod->nadc;

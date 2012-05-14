@@ -219,16 +219,16 @@ void postProcessing::doProcessing(float *fdata, int delflag, string fname) {
 
     if (*correctionMask!=0) {
       if (*correctionMask&(1<< ANGULAR_CONVERSION))
-	ang=convertAngles(currentPosition);
+	ang=convertAngles();
       writeDataFile (fname+ext,  ffcdata, ffcerr,ang);
     }
   
-    if (*correctionMask&(1<< ANGULAR_CONVERSION) && (*numberOfPositions)>0) {
+    if (*correctionMask&(1<< ANGULAR_CONVERSION) && getNumberOfPositions()>0) {
 #ifdef VERBOSE
-      cout << "**************Current position index is " << currentPositionIndex << endl;
+      cout << "**************Current position index is " << getCurrentPositionIndex() << endl;
 #endif
       // if (*numberOfPositions>0) {
-      if (currentPositionIndex<=1) {
+      if (getCurrentPositionIndex()<=1) {
 	   
 #ifdef VERBOSE
 	cout << "reset merging " << endl;
@@ -237,7 +237,7 @@ void postProcessing::doProcessing(float *fdata, int delflag, string fname) {
       }
       
 #ifdef VERBOSE
-      cout << "add to merging "<< currentPositionIndex << endl;
+      cout << "add to merging "<< getCurrentPositionIndex() << endl;
 #endif
 
       if (*correctionMask&(1<< ANGULAR_CONVERSION))
@@ -245,20 +245,20 @@ void postProcessing::doProcessing(float *fdata, int delflag, string fname) {
      
       
 #ifdef VERBOSE
-      cout << currentPositionIndex << " " << (*numberOfPositions) << endl;
+      cout << getCurrentPositionIndex() << " " << getNumberOfPositions() << endl;
 	
 #endif
       
       
       pthread_mutex_lock(&mp);
-      if ((currentPositionIndex>=(*numberOfPositions) && posfinished==1 && queuesize==1)) {
+      if ((getCurrentPositionIndex()>=getNumberOfPositions() && posfinished==1 && queuesize==1)) {
 	  
 #ifdef VERBOSE
-	cout << "finalize merging " << currentPositionIndex<< endl;
+	cout << "finalize merging " << getCurrentPositionIndex()<< endl;
 #endif
 	np=finalizeMerging();
 	/** file writing */
-	currentPositionIndex++;
+	incrementPositionIndex();
 	pthread_mutex_unlock(&mp);
 	
 	
@@ -328,8 +328,6 @@ void postProcessing::doProcessing(float *fdata, int delflag, string fname) {
 int postProcessing::fillBadChannelMask() {
 
   int nbad=0;
-
-
 
   if (*correctionMask&(1<< DISCARD_BAD_CHANNELS)) {
     nbad=getBadChannelCorrection();

@@ -47,6 +47,7 @@ Most methods of interest for the user are implemented in the ::slsDetectorBase i
  */
 
 
+//#include "slsDetectorUsers.h"
 #include "sls_detector_defs.h"
 
 #include <string>
@@ -55,17 +56,15 @@ Most methods of interest for the user are implemented in the ::slsDetectorBase i
 using namespace std;
 /** 
 
-@libdoc The slsDetectorBase class is a minimal purely virtual interface class which should be instantiated by the users in their acquisition software (EPICS, spec etc.). More advanced configuration functions are not implemented and can be written in a configuration file tha can be read/written.
+@libdoc The slsDetectorBase contains also a set of purely virtual functions useful for the implementation of the derived classes
 
 
-This class contains the functions accessible by the users to control the slsDetectors (both multiSlsDetector and slsDetector)
-
- * @short This is the base class for detector functionalities of interest for the users.
+ * @short This is the base class for all detector functionalities
 
 */
 
-
-class slsDetectorBase : public slsDetectorDefs
+//public virtual slsDetectorUsers,
+class slsDetectorBase :  public virtual slsDetectorDefs
  { 
 
  public:
@@ -77,146 +76,183 @@ class slsDetectorBase : public slsDetectorDefs
    /** virtual destructor */
    virtual ~slsDetectorBase(){};
 
-  /** sets the onlineFlag
-      \param online can be: <BR> GET_ONLINE_FLAG, returns wether the detector is in online or offline state;<BR> OFFLINE_FLAG, detector in offline state (i.e. no communication to the detector - using only local structure - no data acquisition possible!);<BR> ONLINE_FLAG  detector in online state (i.e. communication to the detector updating the local structure) 
-      \returns ONLINE_FLAG or OFFLINE_FLAG
+
+   // protected:
+
+  /**
+      set angular conversion
+      \param fname file with angular conversion constants ("" disable)
+      \returns 0 if angular conversion disabled, >0 otherwise
   */
-  virtual int setOnline(int const online=GET_ONLINE_FLAG)=0;
+  virtual int setAngularConversionFile(string fname="")=0;
+  
+
+  /**
+     pure virtual function
+      returns the angular conversion file
+  */
+  virtual string getAngularConversionFile()=0;
+
 
  
-
-  /** performs a complete acquisition including scansand data processing 
-     moves the detector to next position <br>
-     starts and reads the detector <br>
-     reads the IC (if required) <br>
-     reads the encoder (iof required for angualr conversion) <br>
-     processes the data (flat field, rate, angular conversion and merging ::processData())
-      \param delflag 0 leaves the data in the final data queue (default is 1)
-      \returns nothing
+ /**
+      set action
+      \param iaction can be enum {startScript, scriptBefore, headerBefore, headerAfter,scriptAfter, stopScript, MAX_ACTIONS}
+      \param fname for script ("" disable)
+      \returns 0 if action disabled, >0 otherwise
   */
-  virtual void acquire(int delflag=1)=0;
+  virtual int setActionScript(int iaction, string fname="")=0;
 
   /**
-   asks and  receives a data frame from the detector, writes it to disk and processes the data
-    \returns pointer to the data or NULL (unused!!!). 
-  */ 
-  virtual int* readFrame()=0;
-
-/*   /\** processes the data */
-/*       \param delflag 0 leaves the data in the final data queue */
-/*       \returns nothing */
-      
-/*   *\/ */
-/*   virtual void* processData(int delflag)=0; */
+      set action
+      \param iaction can be enum {startScript, scriptBefore, headerBefore, headerAfter,scriptAfter, stopScript, MAX_ACTIONS}
+      \param par for script ("" disable)
+      \returns 0 if action disabled, >0 otherwise
+  */
+  virtual int setActionParameter(int iaction, string par="")=0;
 
   /**
-    start detector acquisition
-    \returns OK/FAIL
+      returns action script
+      \param iaction can be enum {startScript, scriptBefore, headerBefore, headerAfter,scriptAfter, stopScript}
+      \returns action script
   */
-  virtual int startAcquisition()=0;
-  /**
-    stop detector acquisition
-    \returns OK/FAIL
-  */
-  virtual int stopAcquisition()=0;
+  virtual string getActionScript(int iaction)=0;
 
   /**
-     get run status
-    \returns status mask
-  */
-  virtual runStatus getRunStatus()=0;
-
-/*   /\** Frees the shared memory  -  should not be used except for debugging*\/ */
-/*   virtual int freeSharedMemory()=0; */
-
-/*   /\** adds the detector with ID id in postion pos */
-/*    \param id of the detector to be added (should already exist!) */
-/*    \param pos position where it should be added (normally at the end of the list (default to -1) */
-/*    \returns the actual number of detectors or -1 if it failed (always for slsDetector) */
-/*   *\/ */
-/*   virtual int addSlsDetector(int id, int pos=-1){return -1;}; */
-
-
-/*   /\** adds the detector name in position pos */
-/*    \param name of the detector to be added (should already exist in shared memory or at least be online)  */
-/*    \param pos position where it should be added (normally at the end of the list (default to -1) */
-/*    \return the actual number of detectors or -1 if it failed (always for slsDetector) */
-/*   *\/ */
-/*   virtual int addSlsDetector(char* name, int pos=-1){return -1;}; */
-
-
-/*   /\** */
-/*      removes the detector in position pos from the multidetector */
-/*      \param pos position of the detector to be removed from the multidetector system (defaults to -1 i.e. last detector) */
-/*      \returns the actual number of detectors or -1 if it failed (always for slsDetector) */
-/*   *\/ */
-/*   virtual int removeSlsDetector(int pos=-1){return -1;}; */
-
-/*  /\**removes the detector in position pos from the multidetector */
-/*     \param name is the name of the detector */
-/*     \returns the actual number of detectors or -1 if it failed  (always for slsDetector) */
-/*  *\/ */
-/*   virtual int removeSlsDetector(char* name){return -1;}; */
-
-  
-  /**
-     returns the default output files path
-  */
-  virtual string getFilePath()=0;
+	returns action parameter
+	\param iaction can be enum {startScript, scriptBefore, headerBefore, headerAfter,scriptAfter, stopScript}
+	\returns action parameter
+    */
+  virtual string getActionParameter(int iaction)=0;
 
  /**
-     sets the default output files path
-     \param s file path
-     \returns file path
+      set scan script
+      \param index is the scan index (0 or 1)
+      \param script fname for script ("" disable, "none" disables and overwrites current, "threshold" makes threshold scan, "trimbits" make trimbits scan, "energy" makes energy scan)
+      \returns 0 if scan disabled, >0 otherwise
   */
-  virtual string setFilePath(string s)=0;  
+  virtual int setScanScript(int index, string script="")=0;
+
+ /**
+      set scan script parameter
+      \param index is the scan index (0 or 1)
+      \param spar parameter to be passed to the scan script with syntax par=spar
+      \returns 0 if scan disabled, >0 otherwise
+  */
+  virtual int setScanParameter(int index, string spar="")=0;
+
+ 
+  /**     set scan precision
+      \param index is the scan index (0 or 1)
+      \param precision number of decimals to use for the scan variable in the file name
+      \returns 0 if scan disabled, >0 otherwise */
+  virtual int setScanPrecision(int index, int precision=-1)=0;
 
   /**
-     returns the default output files root name
+      set scan steps (passed to the scan script as var=step)
+      \param index is the scan index (0 or 1)
+      \param nvalues is the number of steps
+      \param values array of steps
+      \returns 0 if scan disabled, >0 otherwise*/
+
+  virtual int setScanSteps(int index, int nvalues=-1, float *values=NULL)=0;
+
+   /**
+      get scan script
+      \param index is the scan index (0 or 1)
+      \returns "none" if disables, "threshold" threshold scan, "trimbits" trimbits scan, "energy"  energy scan or scan script name
   */
-  virtual string getFileName()=0;  
+  virtual string getScanScript(int index)=0;
+
+     /**
+      get scan script
+      \param index is the scan index (0 or 1)
+      \returns scan script parameter
+  */
+  virtual string getScanParameter(int index)=0;
+
+   /**
+      get scan precision
+      \param index is the scan index (0 or 1)
+      \returns precision i.e. number of decimals to use for the scan variable in the file name
+  */
+  virtual int getScanPrecision(int index)=0;
+
+     /**
+      get scan steps
+      \param index is the scan index (0 or 1)
+      \param values pointer to array of values (must be allocated in advance)
+      \returns number of steps
+  */
+  virtual int getScanSteps(int index, float *values=NULL)=0;
+
 
   /**
-     sets the default output files path
+     Writes the configuration file -- will contain all the informations needed for the configuration (e.g. for a PSI detector caldir, settingsdir, angconv, badchannels etc.)
+     \param fname file name
+     \returns OK or FAIL
   */
-  virtual string setFileName(string s)=0;  
-  
-  /**
-     returns the default output file index
-  */
-  virtual int getFileIndex()=0;
-  
-  /**
-     sets the default output file index
-  */
-  virtual int setFileIndex(int i)=0;
+  virtual int writeConfigurationFile(string const fname)=0;
 
-  /** 
-    get flat field corrections file directory
-    \returns flat field correction file directory
-  */
-  virtual string getFlatFieldCorrectionDir()=0; 
+
+ /**
+      Loads dark image or gain image to the detector
+      \param index can be DARK_IMAGE or GAIN_IMAGE
+      \param fname file name to load data from
+      \returns OK or FAIL
+ */
+  virtual int loadImageToDetector(imageType index,string const fname)=0;
+
+  /**
+       \returns number of positions
+    */
+    virtual int getNumberOfPositions()=0;// {return 0;};
   
-  /** 
-      set flat field corrections file directory
-      \param dir flat field correction file directory
-      \returns flat field correction file directory
-  */
-  virtual string setFlatFieldCorrectionDir(string dir)=0;
-  
-  /** 
-      get flat field corrections file name
-      \returns flat field correction file name
-  */
-  virtual string getFlatFieldCorrectionFile()=0;
-  
-  /** 
-      set flat field corrections
-      \param fname name of the flat field file (or "" if disable)
-      \returns 0 if disable (or file could not be read), >0 otherwise
-  */
-  virtual int setFlatFieldCorrection(string fname="")=0; 
-  
+    /**
+       \returns action mask
+    */
+    virtual int getActionMask()=0;// {return 0;};
+   /**
+      \param index scan level index
+       \returns current scan variable
+    */
+    virtual float getCurrentScanVariable(int index)=0;// {return 0;};
+
+    /**
+       \returns current position index
+    */
+    virtual int getCurrentPositionIndex()=0;// {return 0;};
+
+    /**
+       \returns total number of channels
+    */
+    virtual int getTotalNumberOfChannels()=0;
+    
+
+  /** generates file name without extension */
+    virtual string createFileName()=0;
+
+
+
+
+
+
+   virtual void incrementProgress()=0;
+   virtual float getCurrentProgress()=0;
+   virtual void incrementFileIndex()=0;
+   virtual int setTotalProgress()=0;
+
+
+   virtual float* decodeData(int *datain, float *fdata=NULL)=0;
+
+
+   virtual string getCurrentFileName()=0;
+
+
+
+   virtual int getFileIndexFromFileName(string fname)=0;
+
+   virtual float *convertAngles()=0;
   /** 
       set rate correction
       \param t dead time in ns - if 0 disable correction, if >0 set dead time to t, if <0 set deadtime to default dead time for current settings
@@ -237,147 +273,16 @@ class slsDetectorBase : public slsDetectorDefs
   */
   virtual int getRateCorrection()=0;
 
-/*   /\**  */
-/*       returns the bad channel list file  */
-/*   *\/ */
-/*   virtual string getBadChannelCorrectionFile()=0; */
-  
+  virtual int setFlatFieldCorrection(string fname="")=0; 
 
 
 
-  virtual int enableBadChannelCorrection(int i=-1)=0;
-
-  virtual int enableAngularConversion(int i=-1)=0;
-
-
-/*   /\**  */
-/*       set angular conversion */
-/*       \param fname file with angular conversion constants ("" disable) */
-/*       \returns 0 if angular conversion disabled, >0 otherwise */
-/*   *\/ */
-/*   virtual int setAngularConversionFile(string fname="")=0; */
-  
-
-/*   /\** */
-/*      pure virtual function */
-/*       returns the angular conversion file  */
-/*   *\/ */
-/*   virtual string getAngularConversionFile()=0; */
-
-
-  /** 
-      set  positions for the acquisition
-      \param nPos number of positions
-      \param pos array with the encoder positions
-      \returns number of positions
+    /** 
+      set/get dynamic range
+      \param i dynamic range (-1 get)
+      \returns current dynamic range
   */
-  virtual int setPositions(int nPos, float *pos)=0;
-  
-  /** 
-      get  positions for the acquisition
-      \param pos array which will contain the encoder positions
-      \returns number of positions
-  */
-  virtual int getPositions(float *pos=NULL)=0;
-  
-/*  /\**  */
-/*       set action  */
-/*       \param iaction can be enum {startScript, scriptBefore, headerBefore, headerAfter,scriptAfter, stopScript, MAX_ACTIONS} */
-/*       \param fname for script ("" disable) */
-/*       \returns 0 if action disabled, >0 otherwise */
-/*   *\/ */
-/*   virtual int setActionScript(int iaction, string fname="")=0; */
-
-/*   /\**  */
-/*       set action  */
-/*       \param iaction can be enum {startScript, scriptBefore, headerBefore, headerAfter,scriptAfter, stopScript, MAX_ACTIONS} */
-/*       \param par for script ("" disable) */
-/*       \returns 0 if action disabled, >0 otherwise */
-/*   *\/ */
-/*   virtual int setActionParameter(int iaction, string par="")=0; */
-
-/*   /\**  */
-/*       returns action script */
-/*       \param iaction can be enum {startScript, scriptBefore, headerBefore, headerAfter,scriptAfter, stopScript} */
-/*       \returns action script */
-/*   *\/ */
-/*   virtual string getActionScript(int iaction)=0; */
-
-/*   /\**  */
-/* 	returns action parameter */
-/* 	\param iaction can be enum {startScript, scriptBefore, headerBefore, headerAfter,scriptAfter, stopScript} */
-/* 	\returns action parameter */
-/*     *\/ */
-/*   virtual string getActionParameter(int iaction)=0; */
-
-/*  /\**  */
-/*       set scan script */
-/*       \param index is the scan index (0 or 1) */
-/*       \param script fname for script ("" disable, "none" disables and overwrites current, "threshold" makes threshold scan, "trimbits" make trimbits scan, "energy" makes energy scan) */
-/*       \returns 0 if scan disabled, >0 otherwise */
-/*   *\/ */
-/*   virtual int setScanScript(int index, string script="")=0; */
-
-/*  /\**  */
-/*       set scan script parameter */
-/*       \param index is the scan index (0 or 1) */
-/*       \param spar parameter to be passed to the scan script with syntax par=spar */
-/*       \returns 0 if scan disabled, >0 otherwise */
-/*   *\/ */
-/*   virtual int setScanParameter(int index, string spar="")=0; */
-
-/*  /\**  */
-/*       set scan precision */
-/*       \param index is the scan index (0 or 1) */
-/*       \param precision number of decimals to use for the scan variable in the file name */
-/*       \returns 0 if scan disabled, >0 otherwise */
-/*   *\/ */
-/*   virtual int setScanPrecision(int index, int precision=-1)=0;  */
-
-/*   /\**  */
-/*       set scan steps (passed to the scan script as var=step) */
-/*       \param index is the scan index (0 or 1) */
-/*       \param nvalues is the number of steps */
-/*       \param values array of steps */
-/*       \returns 0 if scan disabled, >0 otherwise */
-/*   *\/ */
-/*   virtual int setScanSteps(int index, int nvalues=-1, float *values=NULL)=0; */
-
-/*    /\**  */
-/*       get scan script */
-/*       \param index is the scan index (0 or 1) */
-/*       \returns "none" if disables, "threshold" threshold scan, "trimbits" trimbits scan, "energy"  energy scan or scan script name */
-/*   *\/ */
-/*   virtual string getScanScript(int index)=0; */
-
-/*      /\**  */
-/*       get scan script */
-/*       \param index is the scan index (0 or 1) */
-/*       \returns scan script parameter */
-/*   *\/ */
-/*   virtual string getScanParameter(int index)=0; */
-
-/*    /\**  */
-/*       get scan precision */
-/*       \param index is the scan index (0 or 1) */
-/*       \returns precision i.e. number of decimals to use for the scan variable in the file name */
-/*   *\/ */
-/*   virtual int getScanPrecision(int index)=0; */
-
-/*      /\**  */
-/*       get scan steps */
-/*       \param index is the scan index (0 or 1) */
-/*       \param values pointer to array of values (must be allocated in advance) */
-/*       \returns number of steps */
-/*   *\/ */
-/*   virtual int getScanSteps(int index, float *values=NULL)=0;  */
-
-  /** Locks/Unlocks the connection to the server
-      /param lock sets (1), usets (0), gets (-1) the lock
-      /returns lock status of the server
-  */
-  virtual int lockServer(int i=-1)=0;  
-
+  virtual int setDynamicRange(int i=-1)=0;
 
 
   /** 
@@ -390,30 +295,76 @@ class slsDetectorBase : public slsDetectorDefs
 
 
 
-    /** 
-      set/get dynamic range
-      \param i dynamic range (-1 get)
-      \returns current dynamic range
+  /** Locks/Unlocks the connection to the server
+      /param lock sets (1), usets (0), gets (-1) the lock
+      /returns lock status of the server
   */
-  virtual int setDynamicRange(int i=-1)=0;
+  virtual int lockServer(int i=-1)=0;  
+
+  
+
+  /** performs a complete acquisition including scansand data processing 
+     moves the detector to next position <br>
+     starts and reads the detector <br>
+     reads the IC (if required) <br>
+     reads the encoder (iof required for angualr conversion) <br>
+     processes the data (flat field, rate, angular conversion and merging ::processData())
+      \param delflag 0 leaves the data in the final data queue (default is 1)
+      \returns nothing
+  */
+  virtual void acquire(int delflag=1)=0;
+
 
   /**
-    get detector settings
-    \param imod module number (-1 all)
-    \returns current settings
+   asks and  receives a data frame from the detector, writes it to disk and processes the data
+    \returns pointer to the data or NULL (unused!!!). 
+  */ 
+  virtual int* readFrame()=0;
+
+
+  /**
+    start detector acquisition
+    \returns OK/FAIL
   */
-  virtual detectorSettings getSettings(int imod=-1)=0; 
+  virtual int startAcquisition()=0;
+  /**
+    stop detector acquisition
+    \returns OK/FAIL
+  */
+  virtual int stopAcquisition()=0;
 
-   /**
-    set detector settings
-    \param isettings  settings
-    \param imod module number (-1 all)
+
+
+  /**
+      set/get timer value
+      \param index timer index
+      \param t time in ns or number of...(e.g. frames, gates, probes)
+      \returns timer set value in ns or number of...(e.g. frames, gates, probes)
+  */
+  virtual int64_t setTimer(timerIndex index, int64_t t=-1)=0;
+
+  ///////////////////////////////////////////////////////////////////////////////////////////
+  /**
+      @short get run status
+    \returns status mask
+  */
+  virtual runStatus getRunStatus()=0;
+
+
+
+  /**  @short sets the onlineFlag
+      \param online can be: -1 returns wether the detector is in online (1) or offline (0) state; 0 detector in offline state; 1  detector in online state
+      \returns 0 (offline) or 1 (online)
+  */
+  virtual int setOnline(int const online=-1)=0;
+  /**
+         @short set detector settings
+    \param isettings  settings index (-1 gets)
     \returns current settings
-
-    in this function trimbits/settings and calibration files are searched in the settingsDir and calDir directories and the detector is initialized
   */
   virtual detectorSettings setSettings(detectorSettings isettings, int imod=-1)=0;
 
+   virtual detectorSettings getSettings(int imod=-1)=0;  
   /**
     get threshold energy
     \param imod module number (-1 all)
@@ -422,30 +373,10 @@ class slsDetectorBase : public slsDetectorDefs
   virtual int getThresholdEnergy(int imod=-1)=0;  
 
 
-  /**
-    set threshold energy
-    \param e_eV threshold in eV
-    \param imod module number (-1 all)
-    \param isettings ev. change settings
-    \returns current threshold value for imod in ev (-1 failed)
-  */
-  virtual int setThresholdEnergy(int e_eV, int imod=-1, detectorSettings isettings=GET_SETTINGS)=0;
-
-
-
-
   /** 
-      set/get timer value
-      \param index timer index
-      \param t time in ns or number of...(e.g. frames, gates, probes)
-      \returns timer set value in ns or number of...(e.g. frames, gates, probes)
-  */
-  virtual int64_t setTimer(timerIndex index, int64_t t=-1)=0;
-
-
-
- /** 
      set/get the external communication mode
+     
+     obsolete \sa setExternalSignalFlags
       \param pol value to be set \sa externalCommunicationMode
       \returns current external communication mode
   */
@@ -453,67 +384,26 @@ class slsDetectorBase : public slsDetectorDefs
 
 
   /**
-     Reads the configuration file -- will contain all the informations needed for the configuration (e.g. for a PSI detector caldir, settingsdir, angconv, badchannels etc.)
+     Reads the configuration file fname
      \param fname file name
      \returns OK or FAIL
-  */  
-  virtual int readConfigurationFile(string const fname)=0;  
-
-
-/*   /\**   */
-/*      Writes the configuration file -- will contain all the informations needed for the configuration (e.g. for a PSI detector caldir, settingsdir, angconv, badchannels etc.) */
-/*      \param fname file name */
-/*      \returns OK or FAIL */
-/*   *\/ */
-/*   virtual int writeConfigurationFile(string const fname)=0; */
-
-  /** 
-      Reads the parameters from the detector and writes them to file
-      \param fname file to write to
-      \param level if 2 reads also trimbits, flat field, angular correction etc. and writes them to files with automatically added extension
-      \returns OK or FAIL
-  
   */
-  virtual int dumpDetectorSetup(string const fname, int level=0)=0; 
-  /** 
-     Loads the detector setup from file
-      \param fname file to read from
-      \param level if 2 reads also reads trimbits, angular conversion coefficients etc. from files with default extensions as generated by dumpDetectorSetup
-      \returns OK or FAIL
-  
-  */
+  virtual int readConfigurationFile(string const fname)=0; 
+  virtual int dumpDetectorSetup(string const fname, int level=0)=0;  
   virtual int retrieveDetectorSetup(string const fname, int level=0)=0;
-
-
-/*  /\** */
-/*       Loads dark image or gain image to the detector */
-/*       \param index can be DARK_IMAGE or GAIN_IMAGE */
-/*       \param fname file name to load data from */
-/*       \returns OK or FAIL */
-/*  *\/ */
-/*   virtual int loadImageToDetector(imageType index,string const fname)=0; */
-
-  
-  /************************************************************************
-
-                           STATIC FUNCTIONS
-
-  *********************************************************************/  
-
-  /** returns string from run status index
-      \param s can be ERROR, WAITING, RUNNING, TRANSMITTING, RUN_FINISHED
-      \returns string error, waiting, running, data, finished
+  /** 
+      @short 
+     \returns the default output file index
   */
-  static string runStatusType(runStatus s){\
-    switch (s) {				\
-    case ERROR:       return string("error");		\
-    case  WAITING:      return  string("waiting");	\
-    case RUNNING:      return string("running");\
-    case TRANSMITTING:      return string("data");	\
-    case  RUN_FINISHED:      return string("finished");	\
-    default:       return string("idle");		\
-    }};
+  virtual int getFileIndex()=0;
   
+  /**
+          @short sets the default output file index
+     \param i file index
+     \returns the default output file index
+  */
+  virtual int setFileIndex(int i)=0;
+
   /** returns detector type string from detector type index
       \param t string can be Mythen, Pilatus, Eiger, Gotthard, Agipd, Unknown
       \returns MYTHEN, PILATUS, EIGER, GOTTHARD, AGIPD, GENERIC
@@ -622,22 +512,6 @@ class slsDetectorBase : public slsDetectorDefs
   return GET_EXTERNAL_SIGNAL_FLAG ;};
 
   /** returns detector settings string from index
-      \param s can be standard, fast, highgain, dynamicgain, lowgain, mediumgain, veryhighgain, undefined
-      \returns   STANDARD, FAST, HIGHGAIN, DYNAMICGAIN, LOWGAIN, MEDIUMGAIN, VERYHIGHGAIN, GET_SETTINGS
-  */
-
-  static detectorSettings getDetectorSettings(string s){\
-    if (s=="standard") return STANDARD;\
-    if (s=="fast") return FAST;\
-    if (s=="highgain") return HIGHGAIN;		\
-    if (s=="dynamicgain") return DYNAMICGAIN;	\
-    if (s=="lowgain") return LOWGAIN;		\
-    if (s=="mediumgain") return MEDIUMGAIN;	\
-    if (s=="veryhighgain") return VERYHIGHGAIN;	\
-    return GET_SETTINGS;\
-  };
-
-  /** returns detector settings string from index
       \param s can be STANDARD, FAST, HIGHGAIN, DYNAMICGAIN, LOWGAIN, MEDIUMGAIN, VERYHIGHGAIN, GET_SETTINGS
       \returns standard, fast, highgain, dynamicgain, lowgain, mediumgain, veryhighgain, undefined
   */
@@ -652,6 +526,22 @@ class slsDetectorBase : public slsDetectorDefs
     case VERYHIGHGAIN:    return string("veryhighgain");	\
     default:    return string("undefined");			\
     }};
+
+  /** returns detector settings string from index
+      \param s can be standard, fast, highgain, dynamicgain, lowgain, mediumgain, veryhighgain, undefined
+      \returns   setting index STANDARD, FAST, HIGHGAIN, DYNAMICGAIN, LOWGAIN, MEDIUMGAIN, VERYHIGHGAIN, GET_SETTINGS
+  */
+
+  static detectorSettings getDetectorSettings(string s){	\
+    if (s=="standard") return STANDARD;				\
+    if (s=="fast") return FAST;			\
+    if (s=="highgain") return HIGHGAIN;		\
+    if (s=="dynamicgain") return DYNAMICGAIN;		\
+    if (s=="lowgain") return LOWGAIN;			\
+    if (s=="mediumgain") return MEDIUMGAIN;		\
+    if (s=="veryhighgain") return VERYHIGHGAIN;		\
+    return GET_SETTINGS;						\
+  };
 
 
   /**
@@ -672,7 +562,6 @@ class slsDetectorBase : public slsDetectorDefs
   
 
 
-
   /**
      returns external communication mode index from string
      \param sval can be auto, trigger, ro_trigger, gating, triggered_gating
@@ -685,7 +574,22 @@ class slsDetectorBase : public slsDetectorDefs
   if  (sval=="ro_trigger") return TRIGGER_READOUT;\
   if  (sval=="gating") return GATE_FIX_NUMBER;\
   if  (sval=="triggered_gating") return GATE_WITH_START_TRIGGER;\
-  return GET_EXTERNAL_COMMUNICATION_MODE;};
+  return GET_EXTERNAL_COMMUNICATION_MODE;			\
+  };
+
+  /** returns string from run status index
+      \param s can be ERROR, WAITING, RUNNING, TRANSMITTING, RUN_FINISHED
+      \returns string error, waiting, running, data, finished
+  */
+  static string runStatusType(runStatus s){\
+    switch (s) {				\
+    case ERROR:       return string("error");		\
+    case  WAITING:      return  string("waiting");	\
+    case RUNNING:      return string("running");\
+    case TRANSMITTING:      return string("data");	\
+    case  RUN_FINISHED:      return string("finished");	\
+    default:       return string("idle");		\
+    }};
 
 };
 #endif

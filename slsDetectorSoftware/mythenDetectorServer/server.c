@@ -36,21 +36,24 @@ int main(int argc, char *argv[])
     b=0;
     printf("opening stop server on port %d\n",portno);
   }
-  init_detector(b); 
 
 
-  sd=bindSocket(portno);
+  
+  init_detector(b); //defined in server_funcs
+
+
+  sd=bindSocket(portno); //defined in communication_funcs
 
   sockfd=sd;
 
 
-  if (getServerError(sd)) {
+  if (getServerError(sd)) {  //defined in communication_funcs
     printf("server error!\n");
     return -1;
   }
 
   /* assign function table */
-  function_table();
+  function_table();  //defined in server_funcs
 #ifdef VERBOSE
   printf("function table assigned \n");
 #endif
@@ -64,23 +67,23 @@ int main(int argc, char *argv[])
 #ifdef VERY_VERBOSE
     printf("Waiting for client call\n");
 #endif
-    fd=acceptConnection(sockfd);
+    fd=acceptConnection(sockfd);  //defined in communication_funcs
 #ifdef VERY_VERBOSE
     printf("Conenction accepted\n");
 #endif
     if (fd>0) {
-      retval=decode_function(fd);
-      //#ifdef VERY_VERBOSE
+      retval=decode_function(fd);   //defined in server_funcs
+#ifdef VERY_VERBOSE
       printf("function executed\n");
-      //#endif
-      closeConnection(fd);
+#endif
+      closeConnection(fd);  //defined in communication_funcs
 #ifdef VERY_VERBOSE
       printf("connection closed\n");
 #endif
     }
   }
 
-  exitServer(sockfd);
+  exitServer(sockfd); //defined in communication_funcs
   printf("Goodbye!\n");
 
   return 0; 

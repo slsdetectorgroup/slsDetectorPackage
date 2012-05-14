@@ -10,7 +10,7 @@ using namespace std;
 */
 
 
-class energyConversion: public slsDetectorDefs {
+class energyConversion: private virtual slsDetectorDefs {
 
  public:
   /** default constrauctor */

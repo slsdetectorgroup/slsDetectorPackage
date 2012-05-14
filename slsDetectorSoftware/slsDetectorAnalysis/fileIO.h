@@ -1,7 +1,7 @@
 #ifndef FILEIO_H
 #define FILEIO_H
 
-#include "sls_detector_defs.h"
+#include "slsDetectorBase.h"
 #include <iostream>
 #include <fstream>
 #include <iomanip>
@@ -15,7 +15,8 @@ using namespace std;
 /**
    @short class handling the data file I/O flags
 */
-class fileIO : public slsDetectorDefs {
+
+class fileIO : public virtual slsDetectorBase {
 
 
 
@@ -47,6 +48,8 @@ class fileIO : public slsDetectorDefs {
   */
   int setFileIndex(int i) {*fileIndex=i; return *fileIndex;}; 
   
+
+
   /**
      \returns the  output files path
      
@@ -91,15 +94,14 @@ class fileIO : public slsDetectorDefs {
   static string  createFileName(char *filepath, char *filename, int aMask, float sv0, int prec0, float sv1, int prec1, int pindex, int npos, int findex);
 
 
-  /** generates file name without extension */
-  virtual string createFileName();
+  string createFileName();
 
 
   /** static function that returns the file index from the file name 
       \param fname file name
       \returns file index
   */
-  static int getFileIndexFromFileName(string fname);
+  int getFileIndexFromFileName(string fname);
 
   /** static function that returns the variables from the file name 
       \param fname file name
@@ -372,35 +374,12 @@ class fileIO : public slsDetectorDefs {
     static int readDataFile(ifstream &infile, short int *data, int nch, int offset);
 
     
-    /**
-       \returns action mask
-    */
-    virtual int getActionMask()=0;// {return 0;};
-   /**
-      \param index scan level index
-       \returns current scan variable
-    */
-    virtual float getCurrentScanVariable(int index)=0;// {return 0;}; 
-   /**
-      \param index scan level index
-       \returns current scan variable precision (for file name)
-    */
-    virtual int getScanPrecision(int index)=0;// {return 0;};
-    /**
-       \returns current position index
-    */
-    virtual int getCurrentPositionIndex()=0;// {return 0;};
-    /**
-       \returns number of positions
-    */
-    virtual int getNumberOfPositions()=0;// {return 0;};
-
-    /**
-       \returns total number of channels
-    */
-    virtual int getTotalNumberOfChannels()=0;
-    
  protected:
+
+
+    void incrementFileIndex() { (*fileIndex)++;};
+
+    string getCurrentFileName(){return currentFileName;};
 
     string currentFileName;
 

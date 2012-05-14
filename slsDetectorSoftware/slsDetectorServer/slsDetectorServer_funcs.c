@@ -34,8 +34,6 @@ extern int differentClients;
 
 char *dataretval=NULL;
 int dataret;
-
-
 char mess[1000]; 
 int dataBytes;
 

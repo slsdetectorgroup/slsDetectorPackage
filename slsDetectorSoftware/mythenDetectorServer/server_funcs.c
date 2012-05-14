@@ -2426,9 +2426,12 @@ int execute_trimming(int file_des) {
   int imod, par1,par2;
   enum trimMode mode;
   
+  printf("called function execute trimming\n");
+
   sprintf(mess,"can't set execute trimming\n");
   
   n = receiveDataOnly(file_des,&mode,sizeof(mode));
+  printf("mode received\n");
   if (n < 0) {
     sprintf(mess,"Error reading from socket\n");
     printf("Error reading from socket (mode)\n");
@@ -2436,6 +2439,7 @@ int execute_trimming(int file_des) {
   }
   
   n = receiveDataOnly(file_des,arg,sizeof(arg));
+  printf("arg received\n");
   if (n < 0) {
     sprintf(mess,"Error reading from socket\n");
     printf("Error reading from socket (args)\n");
@@ -2524,9 +2528,10 @@ int lock_server(int file_des) {
     ret=FAIL;
   }
   if (lock>=0) {
-    if (lockStatus==0 || strcmp(lastClientIP,thisClientIP)==0 || strcmp(lastClientIP,"none")==0)
+    if (lockStatus==0 || strcmp(lastClientIP,thisClientIP)==0 || strcmp(lastClientIP,"none")==0) {
       lockStatus=lock;
-    else {
+      
+    }   else {
       ret=FAIL;
       sprintf(mess,"Server already locked by %s\n", lastClientIP);
     }

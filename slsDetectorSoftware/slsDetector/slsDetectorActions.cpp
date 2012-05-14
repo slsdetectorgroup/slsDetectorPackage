@@ -429,7 +429,7 @@ int slsDetectorActions::executeScan(int level, int istep) {
     break;
   default:
     //Custom scan script level 1. The arguments are passed as nrun=n fn=filename var=v par=p"
-    sprintf(cmd,"%s nrun=%d fn=%s var=%f par=%s",getScanScript(level).c_str(),*fileIndex,createFileName().c_str(),currentScanVariable[level],getScanParameter(level).c_str());
+    sprintf(cmd,"%s nrun=%d fn=%s var=%f par=%s",getScanScript(level).c_str(),getFileIndex(),createFileName().c_str(),currentScanVariable[level],getScanParameter(level).c_str());
 #ifdef VERBOSE
     cout << "Executing scan script "<< level << " "  << cmd << endl;
 #endif
@@ -448,15 +448,15 @@ int slsDetectorActions::executeAction(int level) {
      switch (level) {
        case startScript:
        case stopScript:
-	 sprintf(cmd,"%s nrun=%d par=%s",getActionScript(level).c_str(),*fileIndex,getActionParameter(level).c_str());
+	 sprintf(cmd,"%s nrun=%d par=%s",getActionScript(level).c_str(),getFileIndex(),getActionParameter(level).c_str());
 	 break;
      case scriptBefore: 
      case scriptAfter: 
-       sprintf(cmd,"%s nrun=%d fn=%s par=%s sv0=%f sv1=%f p0=%s p1=%s",getActionScript(level).c_str(),*fileIndex,currentFileName.c_str(),getActionParameter(level).c_str(),currentScanVariable[0],currentScanVariable[1],getScanParameter(0).c_str(),getScanParameter(1).c_str());
+       sprintf(cmd,"%s nrun=%d fn=%s par=%s sv0=%f sv1=%f p0=%s p1=%s",getActionScript(level).c_str(),getFileIndex(),getCurrentFileName().c_str(),getActionParameter(level).c_str(),currentScanVariable[0],currentScanVariable[1],getScanParameter(0).c_str(),getScanParameter(1).c_str());
        break;
      case headerBefore:
-       fName=currentFileName;
-       nowIndex=getFileIndexFromFileName(currentFileName);
+       fName=getCurrentFileName();
+       nowIndex=getFileIndexFromFileName(getCurrentFileName());
      case headerAfter:
 // 	sprintf(cmd,"%s nrun=%d fn=%s acqtime=%f gainmode=%d threshold=%d badfile=%s angfile=%s bloffset=%f fineoffset=%f fffile=%s/%s tau=%f par=%s", \
 // 		getActionScript(level).c_str(),		\

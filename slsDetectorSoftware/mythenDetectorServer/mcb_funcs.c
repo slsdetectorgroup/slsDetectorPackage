@@ -1872,30 +1872,30 @@ int getModuleNumber(int modnum) {
 
 int testShiftIn(int imod) {
   int val,i,j, k, result=OK;
-  setCSregister(ALLMOD); 
+  setCSregister(imod); 
   printf("testing shift in for module %d\n", imod);
   //for (j=0; j<10; j++) {
   //selChip(j);
   for (i=0; i<34; i++) {
     if (i%2) {
-      putout("0100000000000000",ALLMOD);
-      putout("0100000000000000",ALLMOD);  
-      putout("0110000000000000",ALLMOD);  
-      putout("0110000000000000",ALLMOD); 
-      putout("0100000000000000",ALLMOD);
-      putout("0100000000000000",ALLMOD); 
+      putout("0100000000000000",imod);
+      putout("0100000000000000",imod);  
+      putout("0110000000000000",imod);  
+      putout("0110000000000000",imod); 
+      putout("0100000000000000",imod);
+      putout("0100000000000000",imod); 
     } else {
-      putout("0000000000000000",ALLMOD);
-      putout("0000000000000000",ALLMOD);  
-      putout("0010000000000000",ALLMOD);  
-      putout("0010000000000000",ALLMOD);  
-      putout("0000000000000000",ALLMOD);
-      putout("0000000000000000",ALLMOD);
+      putout("0000000000000000",imod);
+      putout("0000000000000000",imod);  
+      putout("0010000000000000",imod);  
+      putout("0010000000000000",imod);  
+      putout("0000000000000000",imod);
+      putout("0000000000000000",imod);
     } 
   }
-    putout("0000000000000000",ALLMOD);    
+    putout("0000000000000000",imod);    
     for (i=0; i<34; i++) {
-      putout("0000000000000000",ALLMOD); 
+      putout("0000000000000000",imod); 
       
       k=imod;
       //for (k=0; k<nModX; k++) {
@@ -1912,12 +1912,12 @@ int testShiftIn(int imod) {
 	  }
 	}
 	//}
-      putout("0010000000000000",ALLMOD); 
-      putout("0010000000000000",ALLMOD); 
-      putout("0000000000000000",ALLMOD); 
+      putout("0010000000000000",imod); 
+      putout("0010000000000000",imod); 
+      putout("0000000000000000",imod); 
       
     }
-    putout("0000000000000000", ALLMOD); 
+    putout("0000000000000000", imod); 
     printf("Shift in module %d : %d errors\n", imod,result);
     if (result)
       return 1;
@@ -1932,25 +1932,25 @@ int testShiftOut(int imod) {
 
   printf("testing shift out for module %d\n", imod);
 
-  setCSregister(ALLMOD);
+  setCSregister(imod);
   for (i=0; i<24; i++) {
     if (dum & 1<<i) {
-      putout("0100010000000000",ALLMOD);  
-      putout("0110010000000000",ALLMOD);  
-      putout("0110010000000000",ALLMOD);  
-      putout("0100010000000000",ALLMOD);  
+      putout("0100010000000000",imod);  
+      putout("0110010000000000",imod);  
+      putout("0110010000000000",imod);  
+      putout("0100010000000000",imod);  
     } else {
-      putout("0000010000000000",ALLMOD);  
-      putout("0010010000000000",ALLMOD);  
-      putout("0010010000000000",ALLMOD);  
-      putout("0000010000000000",ALLMOD); 
+      putout("0000010000000000",imod);  
+      putout("0010010000000000",imod);  
+      putout("0010010000000000",imod);  
+      putout("0000010000000000",imod); 
     }
   }
-  putout("0000000100000000",ALLMOD); 
+  putout("0000000100000000",imod); 
 
   for (i=0; i<24; i++) {
-    putout("0000010000000000",ALLMOD);
-    putout("0000010000000000",ALLMOD);  
+    putout("0000010000000000",imod);
+    putout("0000010000000000",imod);  
 
 
     k=imod;
@@ -1969,9 +1969,9 @@ int testShiftOut(int imod) {
 	}
       }
       //}
-    putout("0010010000000000",ALLMOD);  
+    putout("0010010000000000",imod);  
   }
-  putout("0000000000000000", ALLMOD);  
+  putout("0000000000000000", imod);  
   printf("Shift out module %d : %d errors\n", imod,result);
     if (result)
       return 1;
@@ -1983,21 +1983,21 @@ int testShiftStSel(int imod) {
   int result=OK;
   int val,i,j,k;
   printf("testing shift stsel for module %d\n", imod);
-  setCSregister(ALLMOD);  
+  setCSregister(imod);  
   for (i=0; i<NCHAN; i++) {
     if (i%2) {
-      putout("0100011000000000",ALLMOD);  
-      putout("0110011000000000",ALLMOD);  
-      putout("0100011000000000",ALLMOD); 
+      putout("0100011000000000",imod);  
+      putout("0110011000000000",imod);  
+      putout("0100011000000000",imod); 
     } else { 
-      putout("0000011000000000",ALLMOD);  
-      putout("0010011000000000",ALLMOD);  
-      putout("0000011000000000",ALLMOD);
+      putout("0000011000000000",imod);  
+      putout("0010011000000000",imod);  
+      putout("0000011000000000",imod);
     }
   }
-  putout("0010011000000000",ALLMOD); 
+  putout("0010011000000000",imod); 
   for (i=0; i<NCHAN; i++) {
-    putout("0000011000000000",ALLMOD); 
+    putout("0000011000000000",imod); 
 
 
     k=imod;
@@ -2019,9 +2019,9 @@ int testShiftStSel(int imod) {
 
 
 
-    putout("0010011000000000",ALLMOD);  
+    putout("0010011000000000",imod);  
   }  
-  putout("0000011000000000",ALLMOD); 
+  putout("0000011000000000",imod); 
   printf("Shift stsel module %d : %d errors\n", imod,result); 
     if (result)
       return 1;
@@ -2035,16 +2035,16 @@ int testShiftStSel(int imod) {
 int testDataInOut(int num, int imod) {
   int val[NCHIP*nModX], result=OK;
   int ich, ichip;
-  setCSregister(ALLMOD);
+  setCSregister(imod);
   printf("Testing data in out for module %d pattern 0x%x\n", imod, num);
-  setSSregister(ALLMOD);
-  initChannel(0,0,0,0,0,num,ALLMOD);
-  putout("0000000000000000",ALLMOD);
-  setCSregister(ALLMOD);
-  initChip(0, 0,ALLMOD);
-  clearSSregister(ALLMOD);
+  setSSregister(imod);
+  initChannel(0,0,0,0,0,num,imod);
+  putout("0000000000000000",imod);
+  setCSregister(imod);
+  initChip(0, 0,imod);
+  clearSSregister(imod);
   for (ich=0; ich<NCHAN; ich++) {
-    nextStrip(ALLMOD);
+    nextStrip(imod);
     readOutChan(val);
     //imod=0;
     //for (imod=0; imod<nModX; imod++) {
@@ -2071,20 +2071,20 @@ int testExtPulse(int imod) {
 
   printf("Testing counter for module %d\n", imod);
 
-  setCSregister(ALLMOD);
-  setSSregister(ALLMOD);
-  counterClear(ALLMOD);  
-  putout("0000000000000000",ALLMOD);
-  putout("0000100000000000",ALLMOD);
-  putout("0000000000000000",ALLMOD);
+  setCSregister(imod);
+  setSSregister(imod);
+  counterClear(imod);  
+  putout("0000000000000000",imod);
+  putout("0000100000000000",imod);
+  putout("0000000000000000",imod);
   for (i=0; i<NCHAN; i++) {
-    putout("0000000000000000",ALLMOD);
-    putout("0000000000001000",ALLMOD);
-    putout("0000000000000000",ALLMOD);
-    extPulse(1,ALLMOD);
+    putout("0000000000000000",imod);
+    putout("0000000000001000",imod);
+    putout("0000000000000000",imod);
+    extPulse(1,imod);
   }
-  clearSSregister(ALLMOD);
-  putout("0000000000000000",ALLMOD);
+  clearSSregister(imod);
+  putout("0000000000000000",imod);
 
  
   // Readout with SM 
@@ -2141,13 +2141,13 @@ int testExtPulseMux(int imod, int ow) {
   setSSregister(ALLMOD);
   counterClear(ALLMOD); 
   initChipWithProbes(0, ow,0,ALLMOD); 
-  //  initChip(0, ow,ALLMOD);
+  //  initChip(0, ow,imod);
   for (ichip=0; ichip<NCHIP; ichip++) {
-  setSSregister(ALLMOD);
+  setSSregister(imod);
     for (i=0; i<NCHAN; i++) {
-      putout("0000000000000000",ALLMOD);
-      putout("0000000000001000",ALLMOD);
-      putout("0000000000000000",ALLMOD);
+      putout("0000000000000000",imod);
+      putout("0000000000001000",imod);
+      putout("0000000000000000",imod);
       extPulse(1,ALLMOD);
     }
     nextChip(ALLMOD);
@@ -2224,8 +2224,8 @@ int testDataInOutMux(int imod, int ow, int num) {
   //printf("Testin data in out\n");
   setSSregister(ALLMOD);
   counterClear(ALLMOD); 
-  initChannel(0,0,0,0,0,num,ALLMOD);
-  putout("0000000000000000",ALLMOD);
+  initChannel(0,0,0,0,0,num,imod);
+  putout("0000000000000000",imod);
   clearSSregister(ALLMOD);
   initChipWithProbes(0, ow,0,ALLMOD);
   clearSSregister(ALLMOD);
@@ -2275,42 +2275,42 @@ int testOutMux(int imod) {
   int result=OK;
   long pat=0xf0f0f0;
   printf("testing outmux for module %d\n", imod);
-  setCSregister(ALLMOD);
+  setCSregister(imod);
   // Clear outshift reg 
-  putout("0000010000000000",ALLMOD);
+  putout("0000010000000000",imod);
   for (ibit=0; ibit<10;ibit++)
-    putout("0000110000000000",ALLMOD);
-  putout("0000010000000000",ALLMOD);
+    putout("0000110000000000",imod);
+  putout("0000010000000000",imod);
 
   // Clear inshift reg 
-  putout("0000000000000000",ALLMOD);
+  putout("0000000000000000",imod);
   for (ibit=0; ibit<10;ibit++)
-    putout("0000100000000000",ALLMOD);
-  putout("0000000000000000",ALLMOD);
+    putout("0000100000000000",imod);
+  putout("0000000000000000",imod);
 
   // input pattern 0f0f0f 
 
   for (ibit=0; ibit<24;ibit++) {
     if (pat & (1 << ibit)) {
-      putout("0100010000000000",ALLMOD);
-      putout("0110010000000000",ALLMOD); //write in the data 1 
-      putout("0100010000000000",ALLMOD);
+      putout("0100010000000000",imod);
+      putout("0110010000000000",imod); //write in the data 1 
+      putout("0100010000000000",imod);
 
     } else {
-      putout("0000010000000000",ALLMOD);
-      putout("0010010000000000",ALLMOD); //write in the data 0 
-      putout("0000010000000000",ALLMOD);
+      putout("0000010000000000",imod);
+      putout("0010010000000000",imod); //write in the data 0 
+      putout("0000010000000000",imod);
     }
   }  
   
-  putout("0100000000000000",ALLMOD);
-  putout("0110000000000000",ALLMOD); //shift in 1 
-  putout("0100000000000000",ALLMOD);
+  putout("0100000000000000",imod);
+  putout("0110000000000000",imod); //shift in 1 
+  putout("0100000000000000",imod);
 
   for (ibit=0; ibit<20;ibit++) {
-    putout("0000000000000000",ALLMOD);
-    putout("0010000000000000",ALLMOD); //shift in 20 bits 
-    putout("0000000000000000",ALLMOD);
+    putout("0000000000000000",imod);
+    putout("0010000000000000",imod); //shift in 20 bits 
+    putout("0000000000000000",imod);
   }  
       
   // check pattern, with different oumux settings 
@@ -2326,9 +2326,9 @@ int testOutMux(int imod) {
 
 
    
-      putout("0000010001000000",ALLMOD);
-      putout("0000010001000000",ALLMOD); //output is out0
-      putout("0000010001000000",ALLMOD);
+      putout("0000010001000000",imod);
+      putout("0000010001000000",imod); //output is out0
+      putout("0000010001000000",imod);
 
       i=0;
       k=imod;
@@ -2354,9 +2354,9 @@ int testOutMux(int imod) {
 	}
       }
       //}
-      putout("0000010001100000",ALLMOD);
-      putout("0000010001100000",ALLMOD); //output is out1
-      putout("0000010001100000",ALLMOD);
+      putout("0000010001100000",imod);
+      putout("0000010001100000",imod); //output is out1
+      putout("0000010001100000",imod);
 
       i++;
       k=imod;
@@ -2386,9 +2386,9 @@ int testOutMux(int imod) {
 
 
 
-      putout("0000010001010000",ALLMOD);
-      putout("0000010001010000",ALLMOD); //output is out2
-      putout("0000010001010000",ALLMOD);
+      putout("0000010001010000",imod);
+      putout("0000010001010000",imod); //output is out2
+      putout("0000010001010000",imod);
 
 
       i++;
@@ -2416,9 +2416,9 @@ int testOutMux(int imod) {
       }
       //}
 
-      putout("0000010001110000",ALLMOD);
-      putout("0000010001110000",ALLMOD); //output is out3
-      putout("0000010001110000",ALLMOD);
+      putout("0000010001110000",imod);
+      putout("0000010001110000",imod); //output is out3
+      putout("0000010001110000",imod);
       i++;
       k=imod;
       //for (k=0; k<nModX; k++) {
@@ -2444,9 +2444,9 @@ int testOutMux(int imod) {
       }
       //}
 
-      putout("0000000000000000",ALLMOD);
-      putout("0010000000000000",ALLMOD); //change mux setting 
-      putout("0000000000000000",ALLMOD);
+      putout("0000000000000000",imod);
+      putout("0010000000000000",imod); //change mux setting 
+      putout("0000000000000000",imod);
     }  
     
     printf("Test OutMux module %d : %d errors\n", imod,result);
@@ -2468,40 +2468,40 @@ int testFpgaMux(int imod)  {
   printf("testing fpga mux of module %d\n",imod);
 
   // Clear outshift reg 
-  putout("0000010000000000",ALLMOD);
+  putout("0000010000000000",imod);
   for (ibit=0; ibit<10;ibit++)
-    putout("0000110000000000",ALLMOD);
-  putout("0000010000000000",ALLMOD);
+    putout("0000110000000000",imod);
+  putout("0000010000000000",imod);
 
   // Clear inshift reg 
-  putout("0000000000000000",ALLMOD);
+  putout("0000000000000000",imod);
   for (ibit=0; ibit<10;ibit++)
-    putout("0000100000000000",ALLMOD);
-  putout("0000000000000000",ALLMOD);
+    putout("0000100000000000",imod);
+  putout("0000000000000000",imod);
 
   // input pattern 0f0f0f 
 
   for (ibit=0; ibit<24;ibit++) {
     if (pat & (1 << ibit)) {
-      putout("0100010000000000",ALLMOD);
-      putout("0110010000000000",ALLMOD); //write in the data 1 
-      putout("0100010000000000",ALLMOD);
+      putout("0100010000000000",imod);
+      putout("0110010000000000",imod); //write in the data 1 
+      putout("0100010000000000",imod);
 
     } else {
-      putout("0000010000000000",ALLMOD);
-      putout("0010010000000000",ALLMOD); //write in the data 0 
-      putout("0000010000000000",ALLMOD);
+      putout("0000010000000000",imod);
+      putout("0010010000000000",imod); //write in the data 0 
+      putout("0000010000000000",imod);
     }
   }  
   
-  putout("0100000000000000",ALLMOD);
-  putout("0110000000000000",ALLMOD); //shift in 1 
-  putout("0100000000000000",ALLMOD);
+  putout("0100000000000000",imod);
+  putout("0110000000000000",imod); //shift in 1 
+  putout("0100000000000000",imod);
 
   for (ibit=0; ibit<20;ibit++) {
-    putout("0000000000000000",ALLMOD);
-    putout("0010000000000000",ALLMOD); //shift in 20 bits 
-    putout("0000000000000000",ALLMOD);
+    putout("0000000000000000",imod);
+    putout("0010000000000000",imod); //shift in 20 bits 
+    putout("0000000000000000",imod);
   }  
       
   // check pattern, with different oumux settings 
@@ -2519,10 +2519,10 @@ int testFpgaMux(int imod)  {
     
       //This should test the parallel to serial converter
 
-      putout("0000010000000000",ALLMOD) ; 	
-      putout("0000010100000000",ALLMOD) ; // reset readout		     
-      putout("0000010100000000",ALLMOD) ; 		     
-      putout("0000010000000000",ALLMOD) ; 
+      putout("0000010000000000",imod) ; 	
+      putout("0000010100000000",imod) ; // reset readout		     
+      putout("0000010100000000",imod) ; 		     
+      putout("0000010000000000",imod) ; 
 
 
 #ifdef DEBUGOUT
@@ -2555,17 +2555,17 @@ int testFpgaMux(int imod)  {
 	    }
 	  }
 	  //}
-	putout("0000010000000000",ALLMOD);
-	putout("0010010000000000",ALLMOD); //output
-	putout("0000010000000000",ALLMOD );
+	putout("0000010000000000",imod);
+	putout("0010010000000000",imod); //output
+	putout("0000010000000000",imod );
 
       }
       pat = pat >> 1;
      
 
-      putout("0000000000000000",ALLMOD);
-      putout("0010000000000000",ALLMOD); //change mux setting 
-      putout("0000000000000000",ALLMOD);
+      putout("0000000000000000",imod);
+      putout("0010000000000000",imod); //change mux setting 
+      putout("0000000000000000",imod);
     }  
     
     printf("Test FpgaMux module %d : %d errors\n", imod,result);
@@ -2664,13 +2664,13 @@ int calibration_chip(int num, int *v, int *dacs) {
       }
     }
     //setMSregister();
-    setCSregister(ALLMOD); 
-    clearSSregister(ALLMOD);
-    countEnable(ALLMOD);
+    setCSregister(imod); 
+    clearSSregister(imod);
+    countEnable(imod);
     usleep(20);
-    calPulse(num,ALLMOD); // give pulses//	  
+    calPulse(num,imod); // give pulses//	  
     usleep(20);  
-    selChannel(ich,ALLMOD); // select channel 
+    selChannel(ich,imod); // select channel 
     readOutChan(val); // readout channel
     for (imod=0; imod<nModX; imod++) {
       //selMod(imod);

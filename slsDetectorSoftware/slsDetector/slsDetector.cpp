@@ -3880,10 +3880,13 @@ int slsDetector::executeTrimming(trimMode mode, int par1, int par2, int imod){
     if (controlSocket) {
   if  (controlSocket->Connect()>=0) {
     controlSocket->SendDataOnly(&fnum,sizeof(fnum));
-#ifdef VERBOSE
+#ifndef VERBOSE
+    controlSocket->SendDataOnly(&mode,sizeof(mode));
+#else
     std::cout<< "sending mode bytes= "<<  controlSocket->SendDataOnly(&mode,sizeof(mode)) << std::endl;
 #endif
     controlSocket->SendDataOnly(arg,sizeof(arg));
+
     controlSocket->ReceiveDataOnly(&ret,sizeof(ret));
     if (ret==FAIL) {
       controlSocket->ReceiveDataOnly(mess,sizeof(mess));

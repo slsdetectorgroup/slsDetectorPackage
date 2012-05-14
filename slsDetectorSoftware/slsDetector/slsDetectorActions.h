@@ -3,7 +3,7 @@
 
 
 
-#include "postProcessing.h"
+#include "slsDetectorBase.h"
 #include <string>
 #include <fstream>
 
@@ -20,7 +20,9 @@ using namespace std;
 
 */
 
-class slsDetectorActions : public postProcessing {
+class slsDetectorActions : public virtual slsDetectorBase
+// : public virtual postProcessing 
+{
  public :
   /** default constructor */
   slsDetectorActions(){};

@@ -3,7 +3,7 @@
 #define ANGULARCONVERSION_H
 
 
-#include "sls_detector_defs.h"
+#include "slsDetectorBase.h"
 #include <string>
 #include <fstream>
 
@@ -38,7 +38,7 @@ class containing the methods to set/unset the angular conversion and merge the d
 The angular conversion itself is defined by the angle() function defined in usersFunctions.cpp
    
 */
-class angularConversion : public slsDetectorDefs {
+class angularConversion : public virtual slsDetectorBase {
 
  public:
   /** default constructor */
@@ -281,12 +281,7 @@ class angularConversion : public slsDetectorDefs {
   */
    float getAngularConversionParameter(angleConversionParameter c);
    
-   /**
-      pure virtual function
-      \returns total number of channels of the (multi)detector
-   */
-   virtual int getTotalNumberOfChannels()=0;
-
+ 
 
 
   /** 
@@ -386,11 +381,6 @@ class angularConversion : public slsDetectorDefs {
   virtual int getMoveFlag(int imod)=0;
 
   /**
-     returns current position index
-  */
-  int getCurrentPositionIndex() {return currentPositionIndex;};
-
-  /**
      returns number of positions
   */
   int getNumberOfPositions() {return *numberOfPositions;};
@@ -428,6 +418,7 @@ class angularConversion : public slsDetectorDefs {
   */
   float currentPosition;
   
+  
   /**
      current position index of the detector
   */
@@ -441,6 +432,11 @@ class angularConversion : public slsDetectorDefs {
   */
   virtual int setAngularCorrectionMask(int i=-1)=0;
   
+  /**
+     returns current position index
+  */
+  int getCurrentPositionIndex() {return currentPositionIndex;};
+  void incrementPositionIndex() {currentPositionIndex++;};
 
  private:
   /** merging bins */

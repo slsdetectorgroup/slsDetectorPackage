@@ -2,8 +2,8 @@
 #define POSTPROCESSING_H
 
 
-#include "sls_detector_defs.h"
 #include "detectorData.h"
+#include "slsDetectorBase.h"
 #include "angularConversion.h"
 #include "fileIO.h"
 #include <string>
@@ -31,7 +31,9 @@ using namespace std;
 
    (including thread for writing data files and plotting in parallel with the acquisition) 
 */
-class postProcessing : public angularConversion, public fileIO  {
+class postProcessing : public angularConversion, public fileIO
+//: public virtual angularConversion, public virtual fileIO 
+ {
 
 
 
@@ -48,7 +50,7 @@ class postProcessing : public angularConversion, public fileIO  {
       \returns 0 if bad channel disabled or no bad channels, >0 otherwise
   */
   virtual int getBadChannelCorrection(int *bad=NULL)=0;
-  
+
 
   /** 
       get flat field corrections
@@ -232,18 +234,6 @@ s
 
 
 
-   virtual void incrementProgress()=0;
-   virtual float getCurrentProgress()=0;
-   virtual void incrementFileIndex()=0;
-   virtual int setTotalProgress()=0;
-
-
-   virtual float* decodeData(int *datain, float *fdata=NULL)=0;
-  virtual int getTotalNumberOfChannels()=0;
-
-
-
-
   virtual int rateCorrect(float*, float*, float*, float*)=0;
   virtual int flatFieldCorrect(float*, float*, float*, float*)=0;
 
@@ -360,6 +350,19 @@ s
   float currentI0;
   
   float *fdata;
+
+  // private:
+
+
+/*    virtual void incrementProgress()=0; */
+/*    virtual float getCurrentProgress()=0; */
+/*    virtual void incrementFileIndex()=0; */
+/*    virtual int setTotalProgress()=0; */
+
+
+/*    virtual float* decodeData(int *datain, float *fdata=NULL)=0; */
+/*   virtual int getTotalNumberOfChannels()=0; */
+
 
 
 

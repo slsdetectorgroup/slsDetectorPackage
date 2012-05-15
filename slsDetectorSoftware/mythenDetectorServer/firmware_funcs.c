@@ -46,7 +46,7 @@ int ififostart, ififostop, ififostep, ififo;
 
 int masterMode=NO_MASTER, syncMode=NO_SYNCHRONIZATION, timingMode=AUTO_TIMING;
 
-enum externalSignalFlag  signals[4]={EXT_SIG_OFF, EXT_SIG_OFF, EXT_SIG_OFF, EXT_SIG_OFF};
+enum externalSignalFlag signals[4]={GATE_IN_ACTIVE_HIGH, TRIGGER_IN_RISING_EDGE, SIGNAL_OFF, SIGNAL_OFF};
 
 
 #ifdef MCB_FUNCS

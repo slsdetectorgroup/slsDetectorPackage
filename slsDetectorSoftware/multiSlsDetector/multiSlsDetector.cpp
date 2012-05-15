@@ -1434,9 +1434,15 @@ float* multiSlsDetector::decodeData(int *datain, float *fdata) {
   for (int i=0; i<thisMultiDetector->numberOfDetectors; i++) {
     if (detectors[i]) {
       detectors[i]->decodeData(datap, detp);
+#ifdef VERBOSE
+      cout << "increment pointers " << endl;
+#endif
       datap+=detectors[i]->getDataBytes()/sizeof(int);
       detp+=detectors[i]->getTotalNumberOfChannels();
 
+#ifdef VERBOSE
+      cout << "done " << endl;
+#endif
 //       for (int j=0; j<detectors[i]->getTotalNumberOfChannels(); j++) {
 // 	dataout[ich]=detp[j];
 // 	ich++;
@@ -1683,7 +1689,11 @@ int multiSlsDetector::getNMods(){
 
 int multiSlsDetector::getChansPerMod(int imod){
   int id=-1, im=-1;
-  if (decodeNMod(imod, id, im)>=0) {
+#ifdef VERBOSE
+  cout << "get chans per mod " << imod << endl;
+#endif
+  decodeNMod(imod, id, im);
+  if (id >=0) {
     if (detectors[id]) {
       return detectors[id]->getChansPerMod(im);
     }
@@ -1709,6 +1719,9 @@ int  multiSlsDetector::getMoveFlag(int imod){
 
 angleConversionConstant * multiSlsDetector::getAngularConversionPointer(int imod){
   int id=-1, im=-1;
+#ifdef VERBOSE
+  cout << "get angular conversion pointer " << endl;
+#endif
   if (decodeNMod(imod, id, im)>=0) {
     if (detectors[id]) {
       return detectors[id]->getAngularConversionPointer(im);
@@ -2695,6 +2708,21 @@ int multiSlsDetector::setDynamicRange(int p) {
 
 }
 
+int multiSlsDetector::getMaxMods() {
+
+
+  int ret=0, ret1;
+  
+  for (int idet=0; idet<thisMultiDetector->numberOfDetectors; idet++) {
+    if (detectors[idet]) {
+      ret1=detectors[idet]->getMaxMods();
+      ret+=ret1;
+    }
+  }
+  return ret;
+
+}
+
 
 int multiSlsDetector::getMaxNumberOfModules(dimension d) {
 
@@ -2702,7 +2730,7 @@ int multiSlsDetector::getMaxNumberOfModules(dimension d) {
   
   for (int idet=0; idet<thisMultiDetector->numberOfDetectors; idet++) {
     if (detectors[idet]) {
-      ret1=detectors[idet]->getMaxNumberOfModules();
+      ret1=detectors[idet]->getMaxNumberOfModules(d);
       ret+=ret1;
     }
   }
@@ -2743,14 +2771,14 @@ int multiSlsDetector::setNumberOfModules(int p, dimension d) {
 
 int multiSlsDetector::decodeNMod(int i, int &id, int &im) {
 #ifdef VERBOSE
-    cout << " Module " << i << " belongs to detector ";
+  cout << " Module " << i << " belongs to detector " << id ;
 #endif
 
-  if (i<0 || i>=getMaxNumberOfModules()) {
+  if (i<0 || i>=getMaxMods()) {
     id=-1;
     im=-1;
 #ifdef VERBOSE
-    cout  << id << " position " << im << endl;
+    cout  << "A---------" << id << " position " << im << endl;
 #endif
 
     return -1;
@@ -2763,7 +2791,7 @@ int multiSlsDetector::decodeNMod(int i, int &id, int &im) {
 	id=idet;
 	im=i;
 #ifdef VERBOSE
-    cout  << id << " position " << im << endl;
+    cout  << "B---------" <<id << " position " << im << endl;
 #endif
 	return im;
       } else {
@@ -2774,7 +2802,7 @@ int multiSlsDetector::decodeNMod(int i, int &id, int &im) {
   id=-1;
   im=-1;
 #ifdef VERBOSE
-    cout  << id << " position " << im << endl;
+    cout  <<"C---------" << id << " position " << im << endl;
 #endif
   return -1;
   
@@ -3426,9 +3454,12 @@ int multiSlsDetector::writeDataFile(string fname, int *data) {
   {
    for (int i=0; i<thisMultiDetector->numberOfDetectors; i++) {
      if (detectors[i]) {
+#ifdef VERBOSE
+       cout << " write " << i << endl;
+#endif
        detectors[i]->writeDataFile(outfile, detectors[i]->getTotalNumberOfChannels(), data+off, choff);
-	choff+=detectors[i]->getMaxNumberOfChannels();
-	off+=detectors[i]->getTotalNumberOfChannels();
+       choff+=detectors[i]->getMaxNumberOfChannels();
+       off+=detectors[i]->getTotalNumberOfChannels();
       }
     }
 

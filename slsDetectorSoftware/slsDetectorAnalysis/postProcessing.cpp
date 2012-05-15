@@ -137,15 +137,17 @@ void postProcessing::processFrame(int *myData, int delflag) {
  fname=createFileName();
  
   
-  //uses static function?!?!?!?
-  writeDataFile (fname+string(".raw"),fdata, NULL, NULL, 'i'); 
-  
-  doProcessing(fdata,delflag, fname);
+ //uses static function?!?!?!?
+ writeDataFile (fname+string(".raw"),fdata, NULL, NULL, 'i'); 
+ 
+ doProcessing(fdata,delflag, fname);
 
- delete [] myData;
- myData=NULL;
+  delete [] myData;
+  myData=NULL;
+  fdata=NULL;
+
 #ifdef VERBOSE
-  //	cout << "Pop data queue " << *fileIndex << endl;
+  cout << "Pop data queue " << *fileIndex << endl;
 #endif
   
   pthread_mutex_lock(&mp);
@@ -159,7 +161,7 @@ void postProcessing::processFrame(int *myData, int delflag) {
 
 
 
-void postProcessing::doProcessing(float *fdata, int delflag, string fname) {
+void postProcessing::doProcessing(float *lfdata, int delflag, string fname) {
 
 
   /** write raw data file */	   
@@ -187,13 +189,13 @@ void postProcessing::doProcessing(float *fdata, int delflag, string fname) {
     if (*correctionMask&(1<<RATE_CORRECTION)) {
       rcdata=new float[getTotalNumberOfChannels()]; 
       rcerr=new float[getTotalNumberOfChannels()];
-      rateCorrect(fdata,NULL,rcdata,rcerr);
-      delete [] fdata;
-      fdata=NULL;
+      rateCorrect(lfdata,NULL,rcdata,rcerr);
+      delete [] lfdata;
     } else {
-      rcdata=fdata;
-      fdata=NULL;
+      rcdata=lfdata;
     }
+    lfdata=NULL;
+    
 	
 
  	  
@@ -250,6 +252,7 @@ void postProcessing::doProcessing(float *fdata, int delflag, string fname) {
 #endif
       
       
+      cout << "lock 1" << endl;
       pthread_mutex_lock(&mp);
       if ((getCurrentPositionIndex()>=getNumberOfPositions() && posfinished==1 && queuesize==1)) {
 	  
@@ -259,6 +262,7 @@ void postProcessing::doProcessing(float *fdata, int delflag, string fname) {
 	np=finalizeMerging();
 	/** file writing */
 	incrementPositionIndex();
+	cout << "unlock 1" << endl;
 	pthread_mutex_unlock(&mp);
 	
 	
@@ -279,16 +283,21 @@ void postProcessing::doProcessing(float *fdata, int delflag, string fname) {
 	} else {
 	  thisData=new detectorData(getMergedCounts(),getMergedErrors(),getMergedPositions(),getCurrentProgress(),(fname+ext).c_str(),np);
 	  
+	  cout << "lock 2" << endl;
 	  pthread_mutex_lock(&mg);
 	  finalDataQueue.push(thisData);
+	  cout << "unlock 2" << endl;
 	  pthread_mutex_unlock(&mg);
 	}
+	cout << "lock 3" << endl;
 	pthread_mutex_lock(&mp);
       }
+      cout << "unlock 3" << endl;
       pthread_mutex_unlock(&mp);
 	
       if (ffcdata)
 	delete [] ffcdata;
+     
       ffcdata=NULL;
 
       if (ffcerr) 
@@ -317,8 +326,10 @@ void postProcessing::doProcessing(float *fdata, int delflag, string fname) {
   }
 
   incrementFileIndex();
-
-
+#ifdef VERBOSE
+  cout << "fdata is " << fdata << endl;
+#endif
+  
 }
 
 
@@ -449,9 +460,15 @@ void* postProcessing::processData(int delflag) {
     dum=0;
   }
 
-  if (fdata)
+  if (fdata) {
+#ifdef VERBOSE
+    cout << "delete fdata" << endl;
+#endif
     delete [] fdata;
-
+#ifdef VERBOSE
+    cout << "done " << endl;
+#endif
+  }
   return 0;
 }
 

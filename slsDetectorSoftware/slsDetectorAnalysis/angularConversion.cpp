@@ -36,21 +36,40 @@ angularConversion::~angularConversion(){
 
 
 float* angularConversion::convertAngles(float pos) {
-  int imod;
+  int imod=0;
   float    *ang=new float[getTotalNumberOfChannels()]; 
   float enc=pos;
   angleConversionConstant *p=NULL;
+
+  int ch0=0;
+  int chlast=getChansPerMod(0);
+  int nchmod=getChansPerMod(0);
+  p=getAngularConversionPointer(imod);      
+  if (getMoveFlag(imod)==0)
+    enc=0;
+  else
+    enc=pos;
+  
   for (int ip=0; ip<getTotalNumberOfChannels(); ip++) {
-    imod=ip/(getChansPerMod(0)); // always for module 0?????
-    p=getAngularConversionPointer(imod);
-
-    if (getMoveFlag(imod)==0)
-      enc=0;
-    else
-      enc=pos;
-
+#ifdef VERBOSE
+    //  cout << "ip " << ip << " ch0 " << ch0 << " chlast " << chlast << " imod " << imod << endl;
+#endif
+    if (ip>=chlast) {
+      imod++; 
+      p=getAngularConversionPointer(imod);      
+      if (getMoveFlag(imod)==0)
+	enc=0;
+      else
+	enc=pos;
+      
+      ch0=chlast;
+      nchmod=getChansPerMod(imod);
+      if (nchmod>0)
+	chlast+=nchmod;
+    }
+    
     if (p)
-      ang[ip]=angle(ip%(getChansPerMod()),		\
+      ang[ip]=angle(ip-ch0,		\
 		    enc,				\
 		    (*fineOffset)+(*globalOffset),	\
 		    p->r_conversion,			\

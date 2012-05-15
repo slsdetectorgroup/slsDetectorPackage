@@ -1380,7 +1380,7 @@ int slsDetector::getMaxNumberOfModules(dimension d){
 	  controlSocket->ReceiveDataOnly(&retval,sizeof(retval));
 	else {
 	  controlSocket->ReceiveDataOnly(mess,sizeof(mess));
-	  std::cout<< "Deterctor returned error: " << mess << std::endl;
+	  std::cout<< "Detector returned error: " << mess << std::endl;
 	}
 	controlSocket->Disconnect();
 	if (ret==FORCE_UPDATE)
@@ -4919,6 +4919,8 @@ int slsDetector::writeConfigurationFile(ofstream &outfile){
   
   slsDetectorCommand *cmd=new slsDetectorCommand(this);
   int nvar;
+  int nsig=-1;
+
   string names[]={				\
     "hostname",					\
     "port",					\
@@ -4941,7 +4943,8 @@ int slsDetector::writeConfigurationFile(ofstream &outfile){
     "threaded",					\
     "waitstates",				\
     "setlength",				\
-    "clkdivider"};
+    "clkdivider",				\
+    "extsig"					  };
 
   switch (thisDetector->myDetectorType) {
   case GOTTHARD:
@@ -4951,8 +4954,11 @@ int slsDetector::writeConfigurationFile(ofstream &outfile){
     names[9]="servermac";
     nvar=10;
     break;
+  case MYTHEN:
+    nsig=4;
   default:
-    nvar=22;
+    nvar=23;
+    
   }
 
   int iv=0;
@@ -4963,8 +4969,16 @@ int slsDetector::writeConfigurationFile(ofstream &outfile){
   
   
   for (iv=0; iv<nvar; iv++) {
-    strcpy(args[0],names[iv].c_str());
-    outfile << names[iv] << " " << cmd->executeLine(1,args,GET_ACTION) << std::endl;
+    cout << iv << " " << names[iv] << endl;
+    if (names[iv]=="extsig") {
+      for (int is=0; is<nsig; is++) {
+	sprintf(args[0],"%s:%d",names[iv].c_str(),is);
+	outfile << names[iv] << " " << cmd->executeLine(1,args,GET_ACTION) << std::endl;
+      }
+    } else {
+      strcpy(args[0],names[iv].c_str());
+      outfile << names[iv] << " " << cmd->executeLine(1,args,GET_ACTION) << std::endl;
+    }
   }
   delete cmd;
   return iv;
@@ -5030,7 +5044,7 @@ int slsDetector::dumpDetectorSetup(string const fname, int level){
     "badchannels",\
     "angconv",\
     "trimbits",\
-    "extsig"
+    "timing"
   };
   int nvar=41;
   int iv=0;
@@ -5103,10 +5117,11 @@ int slsDetector::dumpDetectorSetup(string const fname, int level){
     outfile << names[iv] << " " << cmd->executeLine(nargs,args,GET_ACTION) << std::endl;
     iv++;
     
-    for (int is=0; is<4; is++) {
-      sprintf(args[0],"%s:%d",names[iv].c_str(),is);
+    strcpy(args[0],names[iv].c_str());
+    //  for (int is=0; is<4; is++) {
+    //  sprintf(args[0],"%s:%d",names[iv].c_str(),is);
       outfile << args[0] << " " << cmd->executeLine(1,args,GET_ACTION) << std::endl;	
-    }
+      // }
     iv++;
     outfile.close();
   }

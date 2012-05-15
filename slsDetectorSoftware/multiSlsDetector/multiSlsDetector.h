@@ -288,9 +288,10 @@ class multiSlsDetector  : public slsDetectorUtils {
 
   
 
-
+  int getMaxMods();
  int getNMods();
  int getChansPerMod(int imod=0);
+
  angleConversionConstant *getAngularConversionPointer(int imod=0);
   
 

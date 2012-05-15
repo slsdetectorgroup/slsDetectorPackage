@@ -417,8 +417,6 @@ class angularConversion : public virtual slsDetectorBase {
      current position of the detector
   */
   float currentPosition;
-  
-  
   /**
      current position index of the detector
   */

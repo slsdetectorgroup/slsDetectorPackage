@@ -242,7 +242,9 @@ class multiSlsDetector  : public slsDetectorUtils {
    \param name of the detector to be added (should already exist in shared memory or at least be online) 
    \param pos position where it should be added (normally at the end of the list (default to -1)
    \return the actual number of detectors or -1 if it failed*/
-  int addSlsDetector(char *name, int pos=-1);
+  int addSlsDetector(const char *name, int pos=-1);
+
+  int addSlsDetector(detectorType type, int pos=-1);
 
   /**removes the detector in position pos from the multidetector
      \param pos position of the detector to be removed from the multidetector system (defaults to -1 i.e. last detector)
@@ -259,12 +261,18 @@ class multiSlsDetector  : public slsDetectorUtils {
 
 
 
-  string setHostname(char*, int pos=-1);
+  string setHostname(const char*, int pos=-1);
 
 
   string getHostname(int pos=-1);
 
+
   detectorType getDetectorsType(int pos=-1);
+  detectorType setDetectorsType(detectorType type=GET_DETECTOR_TYPE, int pos=-1){addSlsDetector(type, pos); return getDetectorsType(pos);}; 
+
+  string sgetDetectorsType(int pos=-1);
+  string ssetDetectorsType(detectorType type=GET_DETECTOR_TYPE, int pos=-1){return getDetectorType(setDetectorsType(type, pos));}; //
+  string ssetDetectorsType(string s, int pos=-1);//{return getDetectorType(setDetectorsType(getDetectorType(s),pos));}; // should decode detector type
 
 
   /** adds a detector by id in position pos
@@ -987,6 +995,9 @@ class multiSlsDetector  : public slsDetectorUtils {
    int resetCounterBlock(int startACQ=0);
 
    int getMoveFlag(int imod);
+
+
+   slsDetector *getSlsDetector(int pos) {if (pos>=0 && pos< MAXDET) return detectors[pos]; return NULL;};
 
  protected:
  

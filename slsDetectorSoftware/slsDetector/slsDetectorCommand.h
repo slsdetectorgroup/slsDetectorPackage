@@ -11,7 +11,7 @@ using namespace std;
 /** @short This class handles the command line I/Os, help etc. of the text clients  */
 
 
-class slsDetectorCommand : public slsDetectorDefs { 
+class slsDetectorCommand : public virtual slsDetectorDefs { 
 
  public:
 
@@ -26,7 +26,7 @@ class slsDetectorCommand : public slsDetectorDefs {
 /*      \param action can be PUT_ACTION or GET_ACTION (from text client even READOUT_ACTION for acquisition) */
 /*      \returns answer string  */
 /*   *\/ */
-   string executeLine(int narg, char *args[], int action=HELP_ACTION); 
+   virtual string executeLine(int narg, char *args[], int action); 
   
 /*   /\** */
 /*      returns the help for the executeLine command  */

@@ -12,7 +12,8 @@ ID:         $Id$
 
 #include "multiSlsDetector.h"
 #include "slsDetector.h"
-#include "slsDetectorCommand.h"
+#include "multiSlsDetectorCommand.h"
+#include "multiSlsDetectorClient.h"
 #include "usersFunctions.h"
 #include  <sys/types.h>
 #include  <sys/ipc.h>
@@ -26,6 +27,12 @@ using namespace std;
 
 int multiSlsDetector::freeSharedMemory() {
   // Detach Memory address
+  for (int id=0; id<thisMultiDetector->numberOfDetectors; id++) {
+    if (detectors[id])
+      detectors[id]->freeSharedMemory();
+  }
+
+
     if (shmdt(thisMultiDetector) == -1) {
       perror("shmdt failed\n");
       return FAIL;
@@ -343,7 +350,7 @@ int multiSlsDetector::addSlsDetector(int id, int pos) {
 }
 
 
-string multiSlsDetector::setHostname(char* name, int pos){
+string multiSlsDetector::setHostname(const char* name, int pos){
 
   // int id=0;
   string s;
@@ -361,7 +368,6 @@ string multiSlsDetector::setHostname(char* name, int pos){
       addSlsDetector(hn, pos);
     } else {
       while (p2!=string::npos) {
-
 	strcpy(hn,s.substr(p1,p2-p1).c_str());
 	addSlsDetector(hn, pos);
 	s=s.substr(p2+1);
@@ -372,6 +378,36 @@ string multiSlsDetector::setHostname(char* name, int pos){
   return getHostname(pos);
 }
 
+string multiSlsDetector::ssetDetectorsType(string name, int pos) {
+
+
+  // int id=0;
+  string s;
+  if (pos>=0) {
+    if (getDetectorType(name)!=GET_DETECTOR_TYPE)
+      addSlsDetector(name.c_str(), pos);
+  } else {
+    removeSlsDetector(); //reset detector list!
+    size_t p1=0;
+    s=string(name);
+    size_t p2=s.find('+',p1);
+    char hn[1000];
+    if (p2==string::npos) {
+      strcpy(hn,s.c_str());
+      addSlsDetector(hn, pos);
+    } else {
+      while (p2!=string::npos) {
+	strcpy(hn,s.substr(p1,p2-p1).c_str());
+	if (getDetectorType(hn)!=GET_DETECTOR_TYPE)
+	  addSlsDetector(hn, pos);
+	s=s.substr(p2+1);
+	p2=s.find('+');
+      }
+    }
+  }
+  return sgetDetectorsType(pos);
+
+}
 
 string multiSlsDetector::getHostname(int pos) {
   
@@ -416,6 +452,36 @@ slsDetectorDefs::detectorType multiSlsDetector::getDetectorsType(int pos) {
 }
 
 
+string multiSlsDetector::sgetDetectorsType(int pos) {
+  
+  string s=string("");
+#ifdef VERBOSE
+  cout << "returning type" << pos << endl;
+#endif
+  if (pos>=0) {
+    if (detectors[pos])
+      return detectors[pos]->sgetDetectorsType();
+  } else {
+    for (int ip=0; ip<thisMultiDetector->numberOfDetectors; ip++) {
+#ifdef VERBOSE
+  cout << "detector " << ip << endl;
+#endif
+      if (detectors[ip]) {
+	s+=detectors[ip]->sgetDetectorsType();
+	s+=string("+");
+      }
+#ifdef VERBOSE
+  cout << "type " << s << endl;
+#endif
+    }
+  }
+  return s;
+  
+}
+
+
+
+
 int multiSlsDetector::getDetectorId(int pos) {
   
 #ifdef VERBOSE
@@ -445,10 +511,11 @@ int multiSlsDetector::setDetectorId(int ival, int pos){
 }
 
 
-int multiSlsDetector::addSlsDetector(char *name, int pos) {
+int multiSlsDetector::addSlsDetector(const char *name, int pos) {
   
 
-  detectorType t=GENERIC;
+  detectorType t=getDetectorType(string(name));
+  int online=0;
   slsDetector *s=NULL;
   int id;
 #ifdef VERBOSE
@@ -456,60 +523,101 @@ int multiSlsDetector::addSlsDetector(char *name, int pos) {
 #endif
 
 
-  for (int i=0; i<thisMultiDetector->numberOfDetectors; i++) {
-    if (detectors[i]) {
-     if (detectors[i]->getHostname()==string(name)) {
-	cout << "Detector " << name << "already part of the multiDetector in position " << i << "!" << endl<<  "Remove it before adding it back in a new position!"<< endl;
-	return -1;	
-     }
-   }
-  }
+  if (t==GENERIC) {
+    for (int i=0; i<thisMultiDetector->numberOfDetectors; i++) {
+      if (detectors[i]) {
+	if (detectors[i]->getHostname()==string(name)) {
+	  cout << "Detector " << name << "already part of the multiDetector in position " << i << "!" << endl<<  "Remove it before adding it back in a new position!"<< endl;
+	  return -1;	
+	}
+      }
+    }
    
    //checking that the detector doesn't already exists
-
-  for (id=0; id<MAXDET; id++) {
+    
+    for (id=0; id<MAXDET; id++) {
+      if (slsDetector::exists(id)>0) {
 #ifdef VERBOSE
-    cout << id << endl;
+	cout << "Detector " << id << " already exists" << endl;
 #endif
-     if (slsDetector::exists(id)>0) {
-       s=new slsDetector(id);
-       if (s->getHostname()==string(name))
-	 break;
-       delete s;
-       s=NULL;
-       id++;
-     }
-   }
+	s=new slsDetector(id);
+	if (s->getHostname()==string(name))
+	  break;
+	delete s;
+	s=NULL;
+	//id++;
+      }
+    }
 
-   if (s==NULL) {
-     t=slsDetector::getDetectorType(name, DEFAULT_PORTNO);
-     if (t==GENERIC) {
-       cout << "Detector " << name << "does not exist in shared memory and could not connect to it to determine the type!" << endl;
-       return -1;
-     }
+    if (s==NULL) {
+      t=slsDetector::getDetectorType(name, DEFAULT_PORTNO);
+      if (t==GENERIC) {
+	cout << "Detector " << name << "does not exist in shared memory and could not connect to it to determine the type (which is not specified)!" << endl;
+	return -1;
+      }
 #ifdef VERBOSE
-     else
-       cout << "Detector type is " << t << endl;
+      else
+	cout << "Detector type is " << t << endl;
+#endif  
+      online=1;
+    }
+  } 
+#ifdef VERBOSE
+  else
+    cout << "Adding detector by type " << getDetectorType(t) << endl;
 #endif  
 
-     for (id=0; id<MAXDET; id++) {
-       if (slsDetector::exists(id)==0) {
-	 break;
-       }
-     }
-     
-     s=new slsDetector(t, id);
-     s->setTCPSocket(name);
-     delete s;
-   }
-
-   return addSlsDetector(id, pos);
 
 
+  if (s==NULL) {
+    for (id=0; id<MAXDET; id++) {
+      if (slsDetector::exists(id)==0) {
+	break;
+      }
+    }
+    
+#ifdef VERBOSE
+    cout << "Creating detector " << id << " of type "  << getDetectorType(t) << endl;
+#endif
+    s=new slsDetector(t, id);
+    if (online)
+      s->setTCPSocket(name);
+    delete s;
+  }
+#ifdef VERBOSE
+  cout << "Adding it to the multi detector structure" << endl;
+#endif
+  return addSlsDetector(id, pos);
+
+
+}
+
+
+int multiSlsDetector::addSlsDetector(detectorType t, int pos) {
+  
+  int id;
+
+  if (t==GENERIC) {
+    return -1;
   }
 
+  for (id=0; id<MAXDET; id++) {
+    if (slsDetector::exists(id)==0) {
+      break;
+    }
+  }
+    
+#ifdef VERBOSE
+  cout << "Creating detector " << id << " of type "  << getDetectorType(t) << endl;
+#endif
+  slsDetector *s=new slsDetector(t, id);
+#ifdef VERBOSE
+  cout << "Adding it to the multi detector structure" << endl;
+#endif
 
+  return addSlsDetector(id, pos);
 
+}
 
 
 
@@ -572,33 +680,46 @@ int multiSlsDetector::removeSlsDetector(int pos) {
   cout << "Removing detector in position " << pos << endl;
 #endif
 
-  if (pos<0 )
-    pos=thisMultiDetector->numberOfDetectors-1;
+  int mi=0, ma=thisMultiDetector->numberOfDetectors, single=0;
+
+  if (pos>=0) {
+    mi=pos;
+    ma=pos+1;
+    single=1;
+  }
+
+//   if (pos<0 )
+//     pos=thisMultiDetector->numberOfDetectors-1;
 
   if (pos>=thisMultiDetector->numberOfDetectors)
     return thisMultiDetector->numberOfDetectors;
 
-  j=pos;
+  //j=pos;
 
-  if (detectors[j]) {
+  for (j=mi; j<ma; j++) {
+    
+    if (detectors[j]) {
 
-  thisMultiDetector->dataBytes-=detectors[j]->getDataBytes();
-  thisMultiDetector->numberOfChannels-=detectors[j]->getTotalNumberOfChannels();
-  thisMultiDetector->maxNumberOfChannels-=detectors[j]->getMaxNumberOfChannels();
+      thisMultiDetector->dataBytes-=detectors[j]->getDataBytes();
+      thisMultiDetector->numberOfChannels-=detectors[j]->getTotalNumberOfChannels();
+      thisMultiDetector->maxNumberOfChannels-=detectors[j]->getMaxNumberOfChannels();
 
-    delete detectors[j];
-    thisMultiDetector->numberOfDetectors--;
+      delete detectors[j];
+      thisMultiDetector->numberOfDetectors--;
     
     
 
-    
-    for (int i=j+1; i<thisMultiDetector->numberOfDetectors+1; i++) {
-      detectors[i-1]=detectors[i];
-      thisMultiDetector->detectorIds[i-1]=thisMultiDetector->detectorIds[i];
+      if (single) {
+	for (int i=j+1; i<thisMultiDetector->numberOfDetectors+1; i++) {
+	  detectors[i-1]=detectors[i];
+	  thisMultiDetector->detectorIds[i-1]=thisMultiDetector->detectorIds[i];
+	}
+	detectors[thisMultiDetector->numberOfDetectors]=NULL;
+	thisMultiDetector->detectorIds[thisMultiDetector->numberOfDetectors]=-1;
+      }
     }
-    detectors[thisMultiDetector->numberOfDetectors]=NULL;
-    thisMultiDetector->detectorIds[thisMultiDetector->numberOfDetectors]=-1;
   }
+
   return thisMultiDetector->numberOfDetectors;
 }
 
@@ -2947,7 +3068,7 @@ int multiSlsDetector::readConfigurationFile(string const fname){
 
   
 
-  slsDetectorCommand *cmd=new slsDetectorCommand(this);
+  multiSlsDetectorClient *cmd;
   char ext[100];
 
 
@@ -3001,27 +3122,25 @@ int multiSlsDetector::readConfigurationFile(string const fname){
 	    strcpy(args[iargval],sargname.c_str());
 	    iargval++;
 	    //}
-	}
-	  ans=cmd->executeLine(iargval,args,PUT_ACTION);
-#ifdef VERBOSE 
-	  std::cout<< ans << std::endl;
-#endif
+	  }
+	  cmd=new multiSlsDetectorClient(iargval, args, PUT_ACTION, this);
+	  delete cmd;
 	}
 	iline++;
-      }
+    }
 
 
 
 
-      infile.close();
+    infile.close();
 
       
-      for (int i=0; i<thisMultiDetector->numberOfDetectors; i++) {
-	sprintf(ext,".det%d",i);
-	if (detectors[i]) {
-	  detectors[i]->readConfigurationFile(fname+string(ext));
-	}
-      }
+//       for (int i=0; i<thisMultiDetector->numberOfDetectors; i++) {
+// 	sprintf(ext,".det%d",i);
+// 	if (detectors[i]) {
+// 	  detectors[i]->readConfigurationFile(fname+string(ext));
+// 	}
+//       }
 
 
 
@@ -3038,7 +3157,6 @@ int multiSlsDetector::readConfigurationFile(string const fname){
 #endif
 
 
-    delete cmd;
     return iline;
 
 
@@ -3053,15 +3171,10 @@ int multiSlsDetector::writeConfigurationFile(string const fname){
 
 
 
-  slsDetectorCommand *cmd=new slsDetectorCommand(this);
-
   string names[]={				\
-    "hostname",					\
+    "type",					\
     "master",					\
     "sync",					\
-    "caldir",					\
-    "settingsdir",				\
-    "trimen",					\
     "outdir",					\
     "ffdir",					\
     "headerbefore",				\
@@ -3075,7 +3188,7 @@ int multiSlsDetector::writeConfigurationFile(string const fname){
     "binsize",					\
     "threaded"				};
 
-  int nvar=18;
+  int nvar=15;
  
   char ext[100];
   
@@ -3095,33 +3208,43 @@ int multiSlsDetector::writeConfigurationFile(string const fname){
   outfile.open(fname.c_str(),ios_base::out);
   if (outfile.is_open()) {
 
-    for (iv=0; iv<nvar; iv++) {
+
+
+    slsDetectorCommand *cmd=new slsDetectorCommand(this);
+    
+    // detector types!!!
+    strcpy(args[0],names[iv].c_str());
+    outfile << names[iv] << " " << cmd->executeLine(1,args,GET_ACTION) << std::endl;
+
+    // single detector configuration
+    for (int i=0; i<thisMultiDetector->numberOfDetectors; i++) {
+      //    sprintf(ext,".det%d",i);
+      if (detectors[i]) {
+	iv+=detectors[i]->writeConfigurationFile(outfile,i);
+      }
+    }
+  
+
+    //other configurations
+    for (iv=1; iv<nvar; iv++) {
       strcpy(args[0],names[iv].c_str());
       outfile << names[iv] << " " << cmd->executeLine(1,args,GET_ACTION) << std::endl;
     }
     
     
-  outfile.close();
   
-
-  for (int i=0; i<thisMultiDetector->numberOfDetectors; i++) {
-    sprintf(ext,".det%d",i);
-    if (detectors[i]) {
-      detectors[i]->writeConfigurationFile(fname+string(ext));
-    }
-  }
-
-  }
-  else {
+    delete cmd;
+    outfile.close();
+  }  else {
     std::cout<< "Error opening configuration file " << fname << " for writing" << std::endl;
     return FAIL;
   }
 #ifdef VERBOSE
   std::cout<< "wrote " <<ret << " lines to configuration file " << std::endl;
 #endif
-  delete cmd;
+  
   return iv;
-
+  
 };
 
 
@@ -3245,7 +3368,6 @@ int multiSlsDetector::dumpDetectorSetup(string const fname, int level){
     outfile << names[iv] << " " << cmd->executeLine(nargs,args,GET_ACTION) << std::endl;
     iv++;
 
-    outfile.close();
 
 
 
@@ -3253,10 +3375,11 @@ int multiSlsDetector::dumpDetectorSetup(string const fname, int level){
     for (int i=0; i<thisMultiDetector->numberOfDetectors; i++) {
       sprintf(ext,".det%d",i);
       if (detectors[i]) {
-	detectors[i]->dumpDetectorSetup(fname+string(ext), level);
+	iv+=detectors[i]->dumpDetectorSetup(fname+string(ext),outfile, level, i);
       }
     }
 
+    outfile.close();
   }
   else {
     std::cout<< "Error opening parameters file " << fname1 << " for writing" << std::endl;
@@ -3279,7 +3402,7 @@ int multiSlsDetector::retrieveDetectorSetup(string const fname1, int level){
 
 
 
-  slsDetectorCommand *cmd=new slsDetectorCommand(this);
+  multiSlsDetectorClient *cmd;
 
 
     char ext[100];
@@ -3297,8 +3420,8 @@ int multiSlsDetector::retrieveDetectorSetup(string const fname1, int level){
   int iline=0;
   
   if (level==2) {
-    fname=fname1+string(".config");
-    readConfigurationFile(fname);
+//     fname=fname1+string(".config");
+//     readConfigurationFile(fname);
 #ifdef VERBOSE
     cout << "config file read" << endl;
 #endif
@@ -3336,7 +3459,7 @@ int multiSlsDetector::retrieveDetectorSetup(string const fname1, int level){
 	    // }
 	}
 	if (level==2) {
-	  cmd->executeLine(iargval,args,PUT_ACTION);
+	  cmd=new multiSlsDetectorClient(iargval,args,PUT_ACTION,this);
 	} else {
 	  if (string(args[0])==string("flatfield"))
 	    ;
@@ -3347,8 +3470,7 @@ int multiSlsDetector::retrieveDetectorSetup(string const fname1, int level){
 	  else if (string(args[0])==string("trimbits"))
 	    ;
 	  else {
-	    ;
-	    cmd->executeLine(iargval,args,PUT_ACTION);
+	    cmd=new multiSlsDetectorClient(iargval,args,PUT_ACTION,this);
 	  }
 	}
       }
@@ -3358,12 +3480,12 @@ int multiSlsDetector::retrieveDetectorSetup(string const fname1, int level){
     
 
 
-    for (int i=0; i<thisMultiDetector->numberOfDetectors; i++) {
-      sprintf(ext,".det%d",i);
-      if (detectors[i]) {
-	detectors[i]->retrieveDetectorSetup(fname1+string(ext), level);
-      }
-    }
+//     for (int i=0; i<thisMultiDetector->numberOfDetectors; i++) {
+//       sprintf(ext,".det%d",i);
+//       if (detectors[i]) {
+// 	detectors[i]->retrieveDetectorSetup(fname1+string(ext), level);
+//       }
+//     }
 
 
   } else {
@@ -3373,7 +3495,6 @@ int multiSlsDetector::retrieveDetectorSetup(string const fname1, int level){
 #ifdef VERBOSE
   std::cout<< "Read  " << iline << " lines" << std::endl;
 #endif
-  delete cmd;
   return iline;
 
 

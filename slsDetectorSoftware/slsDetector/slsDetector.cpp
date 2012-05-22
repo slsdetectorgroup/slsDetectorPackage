@@ -125,6 +125,8 @@ slsDetector::slsDetector(int id) :slsDetectorUtils(),
 
 
 {
+
+
   detectorType type=(detectorType)getDetectorType(id);
 
   while (shmId<0) {
@@ -220,7 +222,6 @@ slsDetector::slsDetector(char *name, int id, int cport) : slsDetectorUtils(),
   chipregs(NULL),
   chanregs(NULL)
 {
-  
   detectorType type=(detectorType)getDetectorType(name, cport);
   
   
@@ -252,7 +253,7 @@ slsDetector::slsDetector(char *name, int id, int cport) : slsDetectorUtils(),
 
 }
 
-slsDetectorDefs::detectorType slsDetector::getDetectorType(char *name, int cport) {
+slsDetectorDefs::detectorType slsDetector::getDetectorType(const char *name, int cport) {
   
   int retval=FAIL;
   detectorType t=GENERIC;
@@ -433,9 +434,14 @@ slsDetectorDefs::detectorType slsDetector::getDetectorType(int id) {
 int slsDetector::initializeDetectorSize(detectorType type) {
   char  *goff;
   goff=(char*)thisDetector;
+  
+  //  cout << "init detector size" << endl;
 
   /** if the shared memory has newly be created, initialize the detector variables */
    if (thisDetector->alreadyExisting==0) {
+
+     // cout << "detector not existing " << endl;
+
      /** set hostname to default */
      strcpy(thisDetector->hostname,DEFAULT_HOSTNAME);
 
@@ -464,6 +470,7 @@ int slsDetector::initializeDetectorSize(detectorType type) {
        thisDetector->nModMax[Y]=1;
        thisDetector->dynamicRange=24;
        thisDetector->moveFlag=1;
+       cout << "move flag" << thisDetector->moveFlag<< endl;
        break;
      case PICASSO:
        thisDetector->nChans=128;
@@ -620,35 +627,6 @@ int slsDetector::initializeDetectorSize(detectorType type) {
 #endif   
 
 
-//    getPointers(&thisDetector->stoppedFlag,				\
-// 	       &thisDetector->threadedProcessing,			\
-// 	       &thisDetector->actionMask,				\
-// 	       thisDetector->actionScript,				\
-// 	       thisDetector->actionParameter,				\
-// 	       thisDetector->nScanSteps,				\
-// 	       thisDetector->scanMode,					\
-// 	       thisDetector->scanScript,				\
-// 	       thisDetector->scanParameter,				\
-// 	       thisDetector->scanSteps,					\
-// 	       thisDetector->scanPrecision,				\
-// 	       &thisDetector->numberOfPositions,			\
-// 	       thisDetector->detPositions,				\
-// 	       thisDetector->angConvFile,				\
-// 	       &thisDetector->correctionMask,				\
-// 	       &thisDetector->binSize,					\
-// 	       &thisDetector->fineOffset,				\
-// 	       &thisDetector->globalOffset,				\
-// 	       &thisDetector->angDirection,				\
-// 	       thisDetector->flatFieldDir,				\
-// 	       thisDetector->flatFieldFile,				\
-// 	       thisDetector->badChanFile,				\
-// 	       thisDetector->timerValue,				\
-// 	       &thisDetector->currentSettings,				\
-// 	       &thisDetector->currentThresholdEV,			\
-// 	       thisDetector->filePath,					\
-// 	       thisDetector->fileName,					\
-// 	       &thisDetector->fileIndex);
-
    stoppedFlag=&thisDetector->stoppedFlag;
    threadedProcessing=&thisDetector->threadedProcessing;
    actionMask=&thisDetector->actionMask;
@@ -686,21 +664,15 @@ int slsDetector::initializeDetectorSize(detectorType type) {
 #ifdef VERBOSE
    cout << "done" << endl;
 #endif   
-// #ifdef VERBOSE
-//    cout << "filling bad channel mask" << endl;
-// #endif   
-//    /** fill the BadChannelMask \sa  fillBadChannelMask */
-//    fillBadChannelMask();
 
-// #ifdef VERBOSE
-//    cout << "done" << endl;
-// #endif 
 
    /** modifies the last PID accessing the detector */
    thisDetector->lastPID=getpid();
+
 #ifdef VERBOSE
    cout << "Det size initialized " << endl;
 #endif
+
    return OK;
 }
 
@@ -4915,7 +4887,7 @@ int slsDetector::writeConfigurationFile(string const fname){
 }
 
 
-int slsDetector::writeConfigurationFile(ofstream &outfile){
+int slsDetector::writeConfigurationFile(ofstream &outfile, int id){
   
   slsDetectorCommand *cmd=new slsDetectorCommand(this);
   int nvar;
@@ -4938,6 +4910,8 @@ int slsDetector::writeConfigurationFile(ofstream &outfile){
     "nmod",					\
     "badchannels",				\
     "angconv",					\
+    "angdir",					\
+    "moveflag",					\
     "globaloff",				\
     "binsize",					\
     "threaded",					\
@@ -4957,7 +4931,7 @@ int slsDetector::writeConfigurationFile(ofstream &outfile){
   case MYTHEN:
     nsig=4;
   default:
-    nvar=23;
+    nvar=25;
     
   }
 
@@ -4969,14 +4943,19 @@ int slsDetector::writeConfigurationFile(ofstream &outfile){
   
   
   for (iv=0; iv<nvar; iv++) {
-    cout << iv << " " << names[iv] << endl;
+    //   cout << iv << " " << names[iv] << endl;
     if (names[iv]=="extsig") {
       for (int is=0; is<nsig; is++) {
 	sprintf(args[0],"%s:%d",names[iv].c_str(),is);
+	if (id>=0)
+	  outfile << id << ":";
+
 	outfile << names[iv] << " " << cmd->executeLine(1,args,GET_ACTION) << std::endl;
       }
     } else {
       strcpy(args[0],names[iv].c_str());
+      if (id>=0)
+	  outfile << id << ":";
       outfile << names[iv] << " " << cmd->executeLine(1,args,GET_ACTION) << std::endl;
     }
   }
@@ -5001,7 +4980,7 @@ int slsDetector::writeConfigurationFile(ofstream &outfile){
      It should be possible to dump all the settings of the detector (including trimbits, threshold energy, gating/triggering, acquisition time etc.
      in a file and retrieve it for repeating the measurement with identicals settings, if necessary
   */
-int slsDetector::dumpDetectorSetup(string const fname, int level){ 
+int slsDetector::dumpDetectorSetup(string const fname, ofstream &outfile, int level, int id){ 
   slsDetectorCommand *cmd=new slsDetectorCommand(this); 
   string names[]={
     "fname",\
@@ -5049,7 +5028,6 @@ int slsDetector::dumpDetectorSetup(string const fname, int level){
   int nvar=41;
   int iv=0;
   string fname1;
-  ofstream outfile;
   char *args[2];
   for (int ia=0; ia<2; ia++) {
     args[ia]=new char[1000];
@@ -5061,71 +5039,127 @@ int slsDetector::dumpDetectorSetup(string const fname, int level){
     nargs=1;
 
 
+
   if (level==2) {
     fname1=fname+string(".config");
-    writeConfigurationFile(fname1);
+    strcpy(args[0],"config");
+    strcpy(args[1],fname1.c_str());
+    if (id>=0)
+      outfile << id << ":";
+    outfile << names[iv] << " " << cmd->executeLine(2,args,GET_ACTION) << std::endl;
+    iv++;
+  } 
+  
+
+
+  for (iv=0; iv<nvar-5; iv++) {
+    strcpy(args[0],names[iv].c_str());
+    if (id>=0)
+      outfile << id << ":";
+    outfile << names[iv] << " " << cmd->executeLine(1,args,GET_ACTION) << std::endl;
+    iv++;
+  }
+
+
+  strcpy(args[0],names[iv].c_str());
+  if (level==2) {
+    fname1=fname+string(".ff");
+    strcpy(args[1],fname1.c_str());
+  }
+  if (id>=0)
+    outfile << id << ":";
+  outfile << names[iv] << " " << cmd->executeLine(nargs,args,GET_ACTION) << std::endl;
+  iv++;
+
+  strcpy(args[0],names[iv].c_str());
+  if (level==2) {
+    fname1=fname+string(".bad");
+    strcpy(args[1],fname1.c_str());
+  }
+  if (id>=0)
+    outfile << id << ":";
+  outfile << names[iv] << " " << cmd->executeLine(nargs,args,GET_ACTION) << std::endl;
+  iv++;
+
+  
+  strcpy(args[0],names[iv].c_str());
+  if (level==2) {
+    fname1=fname+string(".angoff");
+    strcpy(args[1],fname1.c_str());
+  }
+  if (id>=0)
+    outfile << id << ":";
+  outfile << names[iv] << " " << cmd->executeLine(nargs,args,GET_ACTION) << std::endl;
+  iv++;
+  
+  strcpy(args[0],names[iv].c_str());
+  if (level==2) {
+    size_t c=fname.rfind('/');
+    if (c<string::npos) {
+      fname1=fname.substr(0,c+1)+string("trim_")+fname.substr(c+1);
+    } else {
+      fname1=string("trim_")+fname;
+    }
+    strcpy(args[1],fname1.c_str());
+#ifdef VERBOSE
+    std::cout<< "writing to file " << fname1 << std::endl;
+#endif
+  }
+  if (id>=0)
+    outfile << id << ":";
+  outfile << names[iv] << " " << cmd->executeLine(nargs,args,GET_ACTION) << std::endl;
+  iv++;
+  
+  strcpy(args[0],names[iv].c_str());
+    //  for (int is=0; is<4; is++) {
+    //  sprintf(args[0],"%s:%d",names[iv].c_str(),is);
+  if (id>=0)
+    outfile << id << ":";
+  outfile << args[0] << " " << cmd->executeLine(1,args,GET_ACTION) << std::endl;	
+  // }
+  iv++;
+  delete cmd;
+  return 0;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  /* 
+     It should be possible to dump all the settings of the detector (including trimbits, threshold energy, gating/triggering, acquisition time etc.
+     in a file and retrieve it for repeating the measurement with identicals settings, if necessary
+  */
+int slsDetector::dumpDetectorSetup(string const fname, int level){ 
+  
+  string fname1;
+  ofstream outfile;
+
+  if (level==2) {
     fname1=fname+string(".det");
   } else
     fname1=fname;
 
   outfile.open(fname1.c_str(),ios_base::out);
   if (outfile.is_open()) {
-    for (iv=0; iv<nvar-5; iv++) {
-      strcpy(args[0],names[iv].c_str());
-      outfile << names[iv] << " " << cmd->executeLine(1,args,GET_ACTION) << std::endl;
-    }
 
+    dumpDetectorSetup(fname, outfile, level);
 
-    strcpy(args[0],names[iv].c_str());
-    if (level==2) {
-      fname1=fname+string(".ff");
-      strcpy(args[1],fname1.c_str());
-    }
-    outfile << names[iv] << " " << cmd->executeLine(nargs,args,GET_ACTION) << std::endl;
-    iv++;
-
-    strcpy(args[0],names[iv].c_str());
-    if (level==2) {
-      fname1=fname+string(".bad");
-      strcpy(args[1],fname1.c_str());
-    }
-    outfile << names[iv] << " " << cmd->executeLine(nargs,args,GET_ACTION) << std::endl;
-    iv++;
-
-      
-    strcpy(args[0],names[iv].c_str());
-    if (level==2) {
-      fname1=fname+string(".angoff");
-      strcpy(args[1],fname1.c_str());
-    }
-    outfile << names[iv] << " " << cmd->executeLine(nargs,args,GET_ACTION) << std::endl;
-    iv++;
-    
-    strcpy(args[0],names[iv].c_str());
-    if (level==2) {
-      size_t c=fname.rfind('/');
-      if (c<string::npos) {
-	fname1=fname.substr(0,c+1)+string("trim_")+fname.substr(c+1);
-      } else {
-	fname1=string("trim_")+fname;
-      }
-      strcpy(args[1],fname1.c_str());
-#ifdef VERBOSE
-      std::cout<< "writing to file " << fname1 << std::endl;
-#endif
-    }
-    outfile << names[iv] << " " << cmd->executeLine(nargs,args,GET_ACTION) << std::endl;
-    iv++;
-    
-    strcpy(args[0],names[iv].c_str());
-    //  for (int is=0; is<4; is++) {
-    //  sprintf(args[0],"%s:%d",names[iv].c_str(),is);
-      outfile << args[0] << " " << cmd->executeLine(1,args,GET_ACTION) << std::endl;	
-      // }
-    iv++;
     outfile.close();
-  }
-  else {
+  }  else {
     std::cout<< "Error opening parameters file " << fname1 << " for writing" << std::endl;
     return FAIL;
   }
@@ -5133,9 +5167,52 @@ int slsDetector::dumpDetectorSetup(string const fname, int level){
 #ifdef VERBOSE
   std::cout<< "wrote " <<iv << " lines to  "<< fname1 << std::endl;
 #endif
-  delete cmd;
   return 0;
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

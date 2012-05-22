@@ -431,7 +431,10 @@ float angularConversion::getAngularConversionParameter(angleConversionParameter 
   case BIN_SIZE:
     return *binSize;
   case MOVE_FLAG:
-    return *moveFlag;
+    if (moveFlag)
+      return *moveFlag;
+    else
+      return -1;
   default:
     return 0;
   }

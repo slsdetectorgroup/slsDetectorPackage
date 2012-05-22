@@ -103,6 +103,10 @@ int initDetector() {
   dynamicRange=getDynamicRange();
   nModX=setNMod(-1);
 
+  
+
+
+
   //dataBytes=nModX*NCHIP*NCHAN*4;
   // dynamicRange=32;
   // initChip(0, 0,ALLMOD);

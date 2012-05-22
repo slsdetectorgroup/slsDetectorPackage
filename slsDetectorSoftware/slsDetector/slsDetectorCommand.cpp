@@ -53,6 +53,10 @@ slsDetectorCommand::slsDetectorCommand(slsDetectorUtils *det)  {
   i++;
 
 
+  descrToFuncMap[i].m_pFuncName="type"; //OK
+  descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdHostname;
+  i++;
+
   descrToFuncMap[i].m_pFuncName="hostname"; //OK
   descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdHostname;
   i++;
@@ -929,23 +933,44 @@ string slsDetectorCommand::cmdHostname(int narg, char *args[], int action){
     if (vvstr.fail()) 
       ivar=-1;
   }
+  p=string(args[0]).find("hostname");
   
-  if (action==PUT_ACTION) {
-    //add by hostname
-    if (ivar==-1) {
-      strcpy(hostname,"");
-      for (int id=1; id<narg; id++) {
-	strcat(hostname,args[id]);
-	if(narg>2)
-	  strcat(hostname,"+");
-      } 
-    }  else
-      strcpy(hostname,args[1]);
-    myDet->setHostname(hostname, ivar);
-  }
-  
-  return string(myDet->getHostname(ivar));
+  if (p==string::npos) {
+    //type 
+    // cout << "should add by type!" << endl;
+    
+    if (action==PUT_ACTION) {
+      //add by type
+      if (ivar==-1) {
+	strcpy(hostname,"");
+	for (int id=1; id<narg; id++) {
+	  strcat(hostname,args[id]);
+	  if(narg>2)
+	    strcat(hostname,"+");
+	} 
+      }  else
+	strcpy(hostname,args[1]);
 
+      myDet->ssetDetectorsType(hostname, ivar);
+    }
+    return myDet->sgetDetectorsType(ivar);
+  } else {
+    if (action==PUT_ACTION) {
+      //add by hostname
+      if (ivar==-1) {
+	strcpy(hostname,"");
+	for (int id=1; id<narg; id++) {
+	  strcat(hostname,args[id]);
+	  if(narg>2)
+	    strcat(hostname,"+");
+	} 
+      }  else
+	strcpy(hostname,args[1]);
+      myDet->setHostname(hostname, ivar);
+    }
+    
+    return string(myDet->getHostname(ivar));
+  }
 
 }
 

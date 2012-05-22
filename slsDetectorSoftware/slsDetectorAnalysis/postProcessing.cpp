@@ -252,7 +252,7 @@ void postProcessing::doProcessing(float *lfdata, int delflag, string fname) {
 #endif
       
       
-      cout << "lock 1" << endl;
+      //  cout << "lock 1" << endl;
       pthread_mutex_lock(&mp);
       if ((getCurrentPositionIndex()>=getNumberOfPositions() && posfinished==1 && queuesize==1)) {
 	  
@@ -262,7 +262,7 @@ void postProcessing::doProcessing(float *lfdata, int delflag, string fname) {
 	np=finalizeMerging();
 	/** file writing */
 	incrementPositionIndex();
-	cout << "unlock 1" << endl;
+	//	cout << "unlock 1" << endl;
 	pthread_mutex_unlock(&mp);
 	
 	
@@ -283,16 +283,16 @@ void postProcessing::doProcessing(float *lfdata, int delflag, string fname) {
 	} else {
 	  thisData=new detectorData(getMergedCounts(),getMergedErrors(),getMergedPositions(),getCurrentProgress(),(fname+ext).c_str(),np);
 	  
-	  cout << "lock 2" << endl;
+	  // cout << "lock 2" << endl;
 	  pthread_mutex_lock(&mg);
 	  finalDataQueue.push(thisData);
-	  cout << "unlock 2" << endl;
+	  // cout << "unlock 2" << endl;
 	  pthread_mutex_unlock(&mg);
 	}
-	cout << "lock 3" << endl;
+	//	cout << "lock 3" << endl;
 	pthread_mutex_lock(&mp);
       }
-      cout << "unlock 3" << endl;
+      // cout << "unlock 3" << endl;
       pthread_mutex_unlock(&mp);
 	
       if (ffcdata)

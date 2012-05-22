@@ -270,11 +270,8 @@ typedef  struct sharedSlsDetector {
 */
   slsDetector(detectorType type=GENERIC, int id=0);
 
-/** constructor 
- 
+/** constructor
  \param  id is the detector index which is needed to define the shared memory id. Different physical detectors should have different IDs in order to work independently
-
-
 */
   slsDetector(int id);
 
@@ -321,8 +318,7 @@ typedef  struct sharedSlsDetector {
 
   */
   int writeConfigurationFile(string const fname);
-  int writeConfigurationFile(ofstream &outfile);
-
+  int writeConfigurationFile(ofstream &outfile, int id=-1);
 
 
 
@@ -336,6 +332,9 @@ typedef  struct sharedSlsDetector {
   
   */
   int dumpDetectorSetup(string const fname, int level=0);  
+  int dumpDetectorSetup(string const fname, ofstream &outfile, int level=0, int id=-1);
+
+
   /** 
      Loads the detector setup from file
       \param fname file to read from
@@ -389,7 +388,7 @@ typedef  struct sharedSlsDetector {
   /** returns the detector hostname \sa sharedSlsDetector  */
   string getHostname(int ipos=-1) {return string(thisDetector->hostname);};
   /** returns the detector hostname \sa sharedSlsDetector  */
-  string setHostname(char *name, int ipos=-1) {setTCPSocket(string(name)); return string(thisDetector->hostname);};
+  string setHostname(const char *name, int ipos=-1) {setTCPSocket(string(name)); return string(thisDetector->hostname);};
   /** connect to the control port */
   int connectControl();
   /** disconnect from the control port */
@@ -607,6 +606,12 @@ typedef  struct sharedSlsDetector {
   */
   detectorType getDetectorsType(int pos=-1);
 
+  detectorType setDetectorsType(detectorType type=GET_DETECTOR_TYPE, int pos=-1){return getDetectorsType(pos);};
+
+  string sgetDetectorsType(int pos=-1){return getDetectorType(getDetectorsType(pos));};
+
+  string ssetDetectorsType(detectorType type=GET_DETECTOR_TYPE, int pos=-1){return getDetectorType(getDetectorsType(pos));};
+  string ssetDetectorsType(string t, int pos=-1){return getDetectorType(getDetectorsType(pos));}
 
   // Detector configuration functions
   /** 
@@ -1255,7 +1260,7 @@ typedef  struct sharedSlsDetector {
      \param 
      \param action can be PUT_ACTION or GET_ACTION (from text client even READOUT_ACTION for acquisition) 
   */
-   static detectorType getDetectorType(char *name, int cport=DEFAULT_PORTNO);
+   static detectorType getDetectorType(const char *name, int cport=DEFAULT_PORTNO);
  
   /**
      returns the detector type from hostname and controlport
@@ -1338,6 +1343,8 @@ typedef  struct sharedSlsDetector {
 
   int getMoveFlag(int imod){if (moveFlag) return *moveFlag; else return 1;};
 
+  /** Frees the shared memory  -  should not be used*/
+  int freeSharedMemory();
 
  protected:
  
@@ -1401,8 +1408,6 @@ typedef  struct sharedSlsDetector {
   */
   int initSharedMemory(detectorType type=GENERIC, int id=0);
 
-  /** Frees the shared memory  -  should not be used*/
-  int freeSharedMemory();
   /** 
       Initializes the thisDetector structure
       \param type is needed to define the number of channels, chips, modules etc.

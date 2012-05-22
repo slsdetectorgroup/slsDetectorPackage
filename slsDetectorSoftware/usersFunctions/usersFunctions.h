@@ -13,7 +13,7 @@ Functions depending on the experimental setup should be defined here
 #include <cadef.h>
 #include <epicsEvent.h>
 #endif
-
+#include "detectorData.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -29,17 +29,15 @@ extern "C" {
 #endif
 
 
-  float angle(float ichan, float encoder, float totalOffset, float conv_r, float center, float offset, float tilt, int direction);
-  float get_position();
-  int go_to_position(float p);
-  int go_to_position_no_wait(float p);
-  int connect_channels();
-  int disconnect_channels();
-
-  float get_i0(int t);
+  float defaultAngleFunction(float ichan, float encoder, float totalOffset, float conv_r, float center, float offset, float tilt, int direction);
+  float defaultGetPosition();
+  int defaultGoToPosition(float p);
+  int defaultGoToPositionNoWait(float p);
+  int defaultConnectChannels();
+  int defaultDisconnectChannels();
+  float defaultGetI0(int t);
   
-
-  
+  int defaultDataReadyFunc(detectorData* d);
 
 
 

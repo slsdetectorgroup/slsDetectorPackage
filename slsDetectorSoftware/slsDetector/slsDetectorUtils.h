@@ -512,11 +512,23 @@ class slsDetectorUtils :  public slsDetectorActions, public postProcessing {
   */
   virtual int writeConfigurationFile(string const fname)=0;
 
+
+
+
+  void registerGetPositionCallback( float (*func)(void)){get_position=func;};
+  void registerConnectChannelsCallback( int (*func)(void)){connect_channels=func;};
+  void registerDisconnectChannelsCallback( int (*func)(void)){disconnect_channels=func;};
+  
+  void registerGoToPositionCallback( int (*func)(float)){go_to_position=func;};
+  void registerGoToPositionNoWaitCallback( int (*func)(float)){go_to_position_no_wait=func;};
+  void registerGetI0Callback( float (*func)(int)){get_i0=func;};
+  
+
+
  protected:
    static const int64_t thisSoftwareVersion=0x20120124;
 
 
- protected:
 
    //protected:
   int *stoppedFlag;	 
@@ -530,6 +542,13 @@ class slsDetectorUtils :  public slsDetectorActions, public postProcessing {
 	      		  
   int progressIndex;
 	  
+  float (*get_position)(void);
+  int (*go_to_position)(float);
+  int (*go_to_position_no_wait)(float);
+  int (*connect_channels)(void);
+  int (*disconnect_channels)(void);
+  float (*get_i0)(int);
+  
 
   
 };

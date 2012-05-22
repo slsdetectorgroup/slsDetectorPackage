@@ -436,6 +436,13 @@ class angularConversion : public virtual slsDetectorBase {
   int getCurrentPositionIndex() {return currentPositionIndex;};
   void incrementPositionIndex() {currentPositionIndex++;};
 
+ 
+
+
+  void registerAngleFunctionCallback(float( *fun)(float, float, float, float, float, float, float, int)) {angle = fun;};
+  
+  
+
  private:
   /** merging bins */
   float *mergingBins;
@@ -449,7 +456,7 @@ class angularConversion : public virtual slsDetectorBase {
   /** merging multiplicity */
   int *mergingMultiplicity;
   
-
+  float (*angle)(float, float, float, float, float, float, float, int);
 
 };
 

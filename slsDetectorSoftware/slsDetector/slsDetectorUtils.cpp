@@ -5,7 +5,17 @@
 #include  <sys/shm.h>
 
 
-slsDetectorUtils::slsDetectorUtils()   {};
+slsDetectorUtils::slsDetectorUtils()   {
+  cout << "setting callbacks" << endl;
+  registerGetPositionCallback(&defaultGetPosition);
+  registerConnectChannelsCallback(&defaultConnectChannels);
+  registerDisconnectChannelsCallback(&defaultDisconnectChannels);
+  registerGoToPositionCallback(&defaultGoToPosition);
+  registerGoToPositionNoWaitCallback(&defaultGoToPositionNoWait);
+  registerGetI0Callback(&defaultGetI0);
+  cout << "done " << endl;
+
+};
   
 
 
@@ -28,8 +38,10 @@ void  slsDetectorUtils::acquire(int delflag){
   //  int lastindex=startindex, nowindex=startindex;
 
 
-  if ((*correctionMask&(1<< ANGULAR_CONVERSION)) || (*correctionMask&(1<< I0_NORMALIZATION)))
-       connect_channels();
+  if ((*correctionMask&(1<< ANGULAR_CONVERSION)) || (*correctionMask&(1<< I0_NORMALIZATION))) {
+    if (connect_channels())
+      connect_channels();
+  }
        
 
 
@@ -114,7 +126,8 @@ void  slsDetectorUtils::acquire(int delflag){
        //   cout << "positions " << endl;
        if (*stoppedFlag==0) {
 	 if  (*numberOfPositions>0) {
-	   go_to_position (detPositions[ip]);
+	   if (go_to_position)
+	     go_to_position (detPositions[ip]);
 	   currentPositionIndex=ip+1;
 #ifdef VERBOSE
 	   std::cout<< "moving to position" << std::endl;
@@ -137,18 +150,23 @@ void  slsDetectorUtils::acquire(int delflag){
 	 
        if (*correctionMask&(1<< ANGULAR_CONVERSION)) {
 	 pthread_mutex_lock(&mp);
-	 currentPosition=get_position();  
+	 if (get_position)
+	   currentPosition=get_position();  
 	 posfinished=0;
 	 pthread_mutex_unlock(&mp);
        }
 
-       if (*correctionMask&(1<< I0_NORMALIZATION))
-	 get_i0(0);
+       if (*correctionMask&(1<< I0_NORMALIZATION)) {
+	 if (get_i0)
+	   get_i0(0);
+       }
        
        startAndReadAll();
        
-       if (*correctionMask&(1<< I0_NORMALIZATION))
+       if (*correctionMask&(1<< I0_NORMALIZATION)) {
+	 if (get_i0) 
 	   currentI0=get_i0(1); // this is the correct i0!!!!!
+       }
        
        pthread_mutex_lock(&mp);
        posfinished=1;
@@ -242,9 +260,10 @@ void  slsDetectorUtils::acquire(int delflag){
    }
 
    
-   if ((*correctionMask&(1<< ANGULAR_CONVERSION)) || (*correctionMask&(1<< I0_NORMALIZATION)))
-     disconnect_channels();
-   
+   if ((*correctionMask&(1<< ANGULAR_CONVERSION)) || (*correctionMask&(1<< I0_NORMALIZATION))) {
+     if (disconnect_channels)
+       disconnect_channels();
+   }
 }
 
 

@@ -11,7 +11,8 @@ using namespace std;
 angularConversion::angularConversion():  currentPosition(0), 
 					  currentPositionIndex(0) 
 {
- 
+  //angleFunctionPointer=0;
+  registerAngleFunctionCallback(&defaultAngleFunction);
 
 }
 

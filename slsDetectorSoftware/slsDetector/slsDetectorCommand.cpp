@@ -702,7 +702,7 @@ string slsDetectorCommand::cmdAcquire(int narg, char *args[], int action) {
   cout << string("Executing command ")+string(args[0])+string(" ( ")+cmd+string(" )\n");
 #endif
   myDet->setOnline(ONLINE_FLAG);
-  myDet->acquire(1);
+  myDet->acquire();
   return string("");
 
 }

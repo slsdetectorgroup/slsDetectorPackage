@@ -3134,19 +3134,6 @@ int multiSlsDetector::readConfigurationFile(string const fname){
 
     infile.close();
 
-      
-//       for (int i=0; i<thisMultiDetector->numberOfDetectors; i++) {
-// 	sprintf(ext,".det%d",i);
-// 	if (detectors[i]) {
-// 	  detectors[i]->readConfigurationFile(fname+string(ext));
-// 	}
-//       }
-
-
-
-
-
-
 
     } else {
       std::cout<< "Error opening configuration file " << fname << " for reading" << std::endl;
@@ -3478,15 +3465,6 @@ int multiSlsDetector::retrieveDetectorSetup(string const fname1, int level){
     }
     infile.close();
     
-
-
-//     for (int i=0; i<thisMultiDetector->numberOfDetectors; i++) {
-//       sprintf(ext,".det%d",i);
-//       if (detectors[i]) {
-// 	detectors[i]->retrieveDetectorSetup(fname1+string(ext), level);
-//       }
-//     }
-
 
   } else {
     std::cout<< "Error opening  " << fname << " for reading" << std::endl;

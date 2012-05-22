@@ -1,4 +1,5 @@
 #include "postProcessing.h"
+#include "usersFunctions.h"
 
 
 postProcessing::postProcessing(){							
@@ -7,6 +8,10 @@ postProcessing::postProcessing(){
   pthread_mutex_init(&mp, NULL);  
   mg=mp1;
   pthread_mutex_init(&mg, NULL);  
+  //cout << "reg callback "<< endl;
+  dataReady = 0;
+  registerDataCallback(&defaultDataReadyFunc);
+  //cout << "done "<< endl;
 }
 
 
@@ -164,11 +169,14 @@ void postProcessing::processFrame(int *myData, int delflag) {
 void postProcessing::doProcessing(float *lfdata, int delflag, string fname) {
 
 
-  /** write raw data file */	   
-  if (*correctionMask==0 && delflag==1) {
-    //  delete [] fdata;
-    ;
-  } else {
+//   /** write raw data file */	   
+//   if (*correctionMask==0 && delflag==1) {
+//     //  delete [] fdata;
+
+
+
+//     ;
+//   } else {
 
 
     
@@ -278,17 +286,25 @@ void postProcessing::doProcessing(float *lfdata, int delflag, string fname) {
 		
 	
 
-	if (delflag) {
-	  deleteMerging();
-	} else {
+// 	if (delflag) {
+// 	  deleteMerging();
+// 	} else {
 	  thisData=new detectorData(getMergedCounts(),getMergedErrors(),getMergedPositions(),getCurrentProgress(),(fname+ext).c_str(),np);
 	  
-	  // cout << "lock 2" << endl;
-	  pthread_mutex_lock(&mg);
-	  finalDataQueue.push(thisData);
-	  // cout << "unlock 2" << endl;
-	  pthread_mutex_unlock(&mg);
-	}
+	 //  // cout << "lock 2" << endl;
+// 	  pthread_mutex_lock(&mg);
+// 	  finalDataQueue.push(thisData);
+// 	  // cout << "unlock 2" << endl;
+	  
+// 	  pthread_mutex_unlock(&mg);
+
+	  if (dataReady) {
+
+	    dataReady(thisData);
+	    delete thisData;
+	  }
+
+// 	}
 	//	cout << "lock 3" << endl;
 	pthread_mutex_lock(&mp);
       }
@@ -309,21 +325,29 @@ void postProcessing::doProcessing(float *lfdata, int delflag, string fname) {
       ang=NULL;
       
     }   else { 
-      if (delflag) {
-	if (ffcdata)
-	  delete [] ffcdata;
-	if (ffcerr)
-	  delete [] ffcerr;
-	if ( ang)
-	  delete [] ang;
-      } else {
+//       if (delflag) {
+// 	if (ffcdata)
+// 	  delete [] ffcdata;
+// 	if (ffcerr)
+// 	  delete [] ffcerr;
+// 	if ( ang)
+// 	  delete [] ang;
+//       } else {
 	thisData=new detectorData(ffcdata,ffcerr,NULL,getCurrentProgress(),(fname+ext).c_str(),getTotalNumberOfChannels());
-	pthread_mutex_lock(&mg);
-	finalDataQueue.push(thisData);  
-	pthread_mutex_unlock(&mg);
-      }
+
+
+	if (dataReady) {
+	  dataReady(thisData);
+	  delete thisData;
+	}
+// 	pthread_mutex_lock(&mg);
+// 	finalDataQueue.push(thisData); 
+
+ 
+// 	pthread_mutex_unlock(&mg);
+//       }
     }
-  }
+    //}
 
   incrementFileIndex();
 #ifdef VERBOSE

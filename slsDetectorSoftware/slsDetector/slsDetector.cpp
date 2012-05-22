@@ -5147,7 +5147,7 @@ int slsDetector::dumpDetectorSetup(string const fname, int level){
   
   string fname1;
   ofstream outfile;
-
+  int iv;
   if (level==2) {
     fname1=fname+string(".det");
   } else
@@ -5156,7 +5156,7 @@ int slsDetector::dumpDetectorSetup(string const fname, int level){
   outfile.open(fname1.c_str(),ios_base::out);
   if (outfile.is_open()) {
 
-    dumpDetectorSetup(fname, outfile, level);
+    iv=dumpDetectorSetup(fname, outfile, level);
 
     outfile.close();
   }  else {

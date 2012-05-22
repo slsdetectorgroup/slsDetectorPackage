@@ -118,7 +118,7 @@ int caput(chid ch_id,  double value) {
 */
 
 
-float angle(float ichan, float encoder, float totalOffset, float conv_r, float center, float offset, float tilt, int direction) {
+float defaultAngleFunction(float ichan, float encoder, float totalOffset, float conv_r, float center, float offset, float tilt, int direction) {
  
   
   (void) tilt; /* to avoid warning: unused parameter */
@@ -134,7 +134,7 @@ float angle(float ichan, float encoder, float totalOffset, float conv_r, float c
 
 /* reads the encoder and returns the position */
 
-float get_position() {
+float defaultGetPosition() {
 #ifdef VERBOSE
   printf("Getting motor position \n");
 #endif
@@ -164,7 +164,7 @@ float get_position() {
 /* moves the encoder to position p */
 
 
-int go_to_position(float p) {
+int defaultGoToPosition(float p) {
 #ifdef VERBOSE
   printf("Setting  motor position \n");
 #endif
@@ -191,7 +191,7 @@ int go_to_position(float p) {
 
 /* moves the encoder to position p without waiting */
 
-int go_to_position_no_wait(float p) {
+int defaultGoToPositionNoWait(float p) {
 #ifdef VERBOSE
   printf("Setting  motor position no wait \n");
 #endif
@@ -215,9 +215,6 @@ int go_to_position_no_wait(float p) {
 
     return (int)p;
 
-
-
-
   pos=p;
   return (int)pos;
 }
@@ -225,7 +222,7 @@ int go_to_position_no_wait(float p) {
 
 /* reads I0 and returns the intensity */
 
-float get_i0(int t) {
+float defaultGetI0(int t) {
 #ifdef VERBOSE
   printf("Getting I0 readout \n");
 #endif
@@ -261,7 +258,7 @@ float get_i0(int t) {
 }
   
 
-int connect_channels() {
+int defaultConnectChannels() {
 #ifdef EPICS
   //double value = 256;
     /* channel name */
@@ -311,7 +308,7 @@ int connect_channels() {
     return 0;
 }
 
-int disconnect_channels() {  
+int defaultDisconnectChannels() {  
 #ifdef EPICS
     /* close channel connect */
     disconnect_channel(ch_i0);
@@ -326,6 +323,11 @@ int disconnect_channels() {
 
 
 
-
+int defaultDataReadyFunc(detectorData* d) {
+#ifdef VERBOSE
+  printf("UUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUU Data received \n");
+#endif
+  return 0;
+}
 
 

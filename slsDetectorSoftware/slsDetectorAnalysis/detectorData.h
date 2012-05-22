@@ -1,7 +1,8 @@
 
 #include <unistd.h>
 #include <cstring>
-
+#ifndef DETECTOR_DATA_H
+#define DETECTOR_DATA_H
 /**
    @short data structure to hold the detector data after postprocessing 
 
@@ -32,3 +33,5 @@ class detectorData {
     int npoints;/**< number of points */
 };
 
+
+#endif

@@ -1,10 +1,4 @@
-#include <iostream>
-#include <string>
-
-
-#include "multiSlsDetector.h"
-#include "slsDetector.h"
-#include "slsDetectorCommand.h"
+#include "multiSlsDetectorClient.h"
 
 
 #include <stdlib.h>
@@ -13,110 +7,31 @@ using namespace std;
 int main(int argc, char *argv[])
   
 {
-
-
-  int    id=-1, iv=0;
-  char *c;
-  string answer;
-  char cmd[100];
-  int action;
-  slsDetectorUtils *myDetector;
-  slsDetectorCommand *myCmd;
-  
-
-
-#ifdef READOUT 
-  action=slsDetectorDefs::READOUT_ACTION;
-#elif PUT   
-  action=slsDetectorDefs::PUT_ACTION;
-#elif GET   
-  action=slsDetectorDefs::GET_ACTION;
-#elif HELP  
-  action=slsDetectorDefs::HELP_ACTION;
-#endif 
-#ifdef VERBOSE
-  for (int ia=0; ia<argc; ia++)
-    cout << argv[ia] << endl;
+#ifdef PUT
+  int action=slsDetectorDefs::PUT_ACTION;
 #endif
-  if (argc>1){
-
-
-
-    iv=sscanf(argv[1],"%d%s",&id, cmd);
-    if (id>=0) {
-      if (iv==2) {
-	if (cmd[0]=='-') {
-#ifdef VERBOSE
-	  cout << "Using multiSlsDetector id=" << id << endl;
-#endif
-	  myDetector=new multiSlsDetector(id);
-	  argv[1]=cmd+1;
-	} else if (cmd[0]==':') {
-#ifdef VERBOSE
-	  cout << "Using slsDetector id=" << id << endl;
-#endif
-	  myDetector=new slsDetector(id);
-	  argv[1]=cmd+1;
-	} else {
-	  cout << "Wrong syntax: no channels starts with integer number "<<id <<". Bhould be " << argv[0] << endl;
-	  cout           << id << ":channel  for single detector" ;
-	  cout << " or " << id << "-channel  for multiple detectors" << endl; 
-	  return -1;
-	}
-      } else {
-#ifdef VERBOSE
-	cout << "Using slsDetector id=" << id << endl;
-#endif
-	myDetector=new slsDetector(id);
-      }
-    } else {
-#ifdef VERBOSE
-	  cout << "Using default multiSlsDetector" << id << endl;
-#endif
-      myDetector=new multiSlsDetector();
-    }
-  } else {
+    
 #ifdef GET
-    cout << "Wrong usage - should be: "<< argv[0] << "[id:/id-]channel" << endl;
-    //  cout << slsDetectorCommand::helpLine(argc-1, argv, action);
-    cout << endl;
-    return -1;
+  int action=slsDetectorDefs::GET_ACTION;
+#endif
+    
+
+#ifdef READOUT
+  int action=slsDetectorDefs::READOUT_ACTION;
+#endif
+    
+
+#ifdef HELP
+  int action=slsDetectorDefs::HELP_ACTION;
 #endif
 
-#ifdef PUT
-  if (argc<3) {
-    cout << "Wrong usage - should be: "<< argv[0] << "[id:/id-]channel arg" << endl;
-    //  cout << slsDetectorCommand::helpLine(argc-1, argv+1, action);
-    cout << endl;
-    return -1;
-  }  
-#endif
-#ifdef VERBOSE
-	  cout << "Using default multiSlsDetector" << id << endl;
-#endif
-  myDetector=new multiSlsDetector();
-  }
+  multiSlsDetectorClient *cl;
+  if (argc>1)
+    cl=new multiSlsDetectorClient(argc-1, argv+1, action);
+  else
+    cl=new multiSlsDetectorClient(argc-1, argv, action);
 
-
-#ifdef PUT
-  if (argc<3) {
-    cout << "Wrong usage - should be: "<< argv[0] <<" " << argv[1]<< "  arg" << endl;
-    //cout << slsDetectorCommand::helpLine(argc-1, argv+1, action);
-    cout << endl;
-    return -1;
-  }  
-#endif
-  myCmd=new slsDetectorCommand(myDetector);
-
-  if (argc<2) {
-    answer=myCmd->executeLine(argc-1, argv, action);
-  } else {
-    answer=myCmd->executeLine(argc-1, argv+1, action);
-    cout << argv[1] << " " ;
-  }
-  cout << answer<< endl;
-
-  
-  return 0;
+  delete cl;
 }
+
   

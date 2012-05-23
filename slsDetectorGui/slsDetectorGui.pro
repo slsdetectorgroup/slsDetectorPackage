@@ -81,7 +81,6 @@ HEADERS 			=  		\
 
 FORMS = 					\
 							forms/form_detectormain.ui\
-							forms/form_drawplot.ui\
 							forms/form_tab_measurement.ui\
 							forms/form_tab_dataoutput.ui\
 							forms/form_tab_plot.ui\

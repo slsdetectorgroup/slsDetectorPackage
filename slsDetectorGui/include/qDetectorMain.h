@@ -60,10 +60,14 @@ private:
 	/**Tab Widget */
 	QTabWidget *tabs;
 
-	static const int NUMBER_OF_TABS = 8;
+	/** height of Plot Window when undocked */
+	int heightPlotWindow;
+
+	/** enumeration of the tabs */
+	enum {Measurement, DataOutput, Plot, Actions, Settings, Advanced, Debugging, Developer, NumberOfTabs };
 
 	/* Scroll Area for the tabs**/
-	QScrollArea *scroll[NUMBER_OF_TABS];
+	QScrollArea *scroll[NumberOfTabs];
 	QScrollArea *scrollMain;
 	/**Measurement tab */
 	qTabMeasurement *tab_measurement;
@@ -73,17 +77,14 @@ private:
 	qTabPlot *tab_plot;
 	/**Actions tab */
 	qTabActions *tab_actions;
+	/**Settings tab */
+	qTabSettings *tab_settings;
 	/**Advanced tab */
 	qTabAdvanced *tab_advanced;
-	/**Settings tab */
-	qTabSettings *tab_Settings;
 	/**Debugging tab */
 	qTabDebugging *tab_debugging;
 	/**Developer tab */
 	qTabDeveloper *tab_developer;
-
-	/** enumeration of the tabs */
-	enum {Measurement, DataOutput, Plot, Actions, Advanced, Settings, Debugging, Developer };
 
 
 	/**Sets up the layout of the widget
@@ -152,6 +153,16 @@ void Version();
 
 /** Executing About */
 void About();
+
+/** Resizes the main window if the plot is docked/undocked
+ *	@param b bool TRUE if undocked(outside main window), FALSE docked
+ */
+void ResizeMainWindow(bool b);
+
+/** Sets the Size of the undocked/docked terminal window
+ *	@param b bool TRUE if undocked(outside main window), FALSE docked
+ */
+void SetTerminalWindowSize(bool b);
 
 
 signals:

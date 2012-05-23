@@ -44,6 +44,8 @@ private:
 	/** The Plot widget	 */
 	qDrawPlot *myPlot;
 
+	enum{None, Auto, Gated, Trigger_Exp_Series, Trigger_Frame, Trigger_Readout, Gated_Start, Trigger_Window, NumTimingModes};
+
 
 /** methods */
 	/** Sets up the widget
@@ -51,8 +53,16 @@ private:
 	void SetupWidgetWindow();
 
 	/** Sets up all the slots and signals
+	 * @param timingChange only some of the signals are disconnected when timing mode is changed
+	 * This method is to reconnect them again.
 	 */
-	void Initialization();
+	void Initialization(int timingChange=0);
+
+	/** Disconnects all the slots and signals (which depend on timing mode)
+	 * to retrieve all the parameters from client.
+	 * This is done only when Timing mode is changed
+	 */
+	void DeInitialization();
 
 	/** Enables/Disables all the widgets
 	 */
@@ -66,24 +76,9 @@ public slots:
 void UpdateFinished();
 
 
+
+
 private slots:
-/** Set settings according to selection
- *  @param index index of selection
- */
-void setSettings(int index);
-/** Set number of frames
- *  @param val number of frames to be set
- */
-void setNumFrames(int val);
-
-/** Set acquisition time
- */
-void setAcquisitionTime();
-
-/** Set frame period between exposures
- */
-void setFramePeriod();
-
 /** Set file name
  * @param fName name of file
  */
@@ -97,6 +92,44 @@ void setRunIndex(int index);
 /** starts/stops Acquisition
  */
 void startStopAcquisition();
+
+/** Sets the timing mode
+ * @ param mode cane be None, Auto, Gated, Trigger Exposure Series,
+ * Trigger Frame, Trigger Readout, External Trigger Window
+ */
+void setTimingMode(int mode);
+
+/** Set number of frames
+ *  @param val number of frames to be set
+ */
+void setNumFrames(int val);
+
+/** Set acquisition time
+ */
+void setExposureTime();
+
+/** Set frame period between exposures
+ */
+void setAcquisitionPeriod();
+
+/** Set number of triggers
+ *  @param val number of triggers to be set
+ */
+void setNumTriggers(int val);
+
+/** Set delay
+ */
+void setDelay();
+
+/** Set number of gates
+ *  @param val number of gates to be set
+ */
+void setNumGates(int val);
+
+/** Set number of probes
+ *  @param val number of probes to be set
+ */
+void setNumProbes(int val);
 
 signals:
 

@@ -59,7 +59,8 @@ void qTabPlot::Initialization(){
 
 
 void qTabPlot::Enable(bool enable){
-	boxPlot->setEnabled(enable);
+	btnClone->setEnabled(enable);
+	btnCloseClones->setEnabled(enable);
 	box1D->setEnabled(enable);
 	box2D->setEnabled(enable);
 	boxPlotAxis->setEnabled(enable);

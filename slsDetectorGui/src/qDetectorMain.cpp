@@ -14,6 +14,7 @@
 #include "multiSlsDetector.h"
 #include "sls_detector_defs.h"
 /** Qt Include Headers */
+#include <QSizePolicy>
 /** C++ Include Headers */
 #include<iostream>
 #include <string>
@@ -34,13 +35,22 @@ int main (int argc, char **argv) {
 
 
 
-qDetectorMain::qDetectorMain(int argc, char **argv, QApplication *app, QWidget *parent) : QMainWindow(parent), theApp(app),myPlot(NULL),tabs(NULL){
+qDetectorMain::qDetectorMain(int argc, char **argv, QApplication *app, QWidget *parent) :
+		QMainWindow(parent), theApp(app),myPlot(NULL),tabs(NULL){
 	myDet = 0;
 	setupUi(this);
 	SetUpWidgetWindow();
 	Initialization();
 	SetDeveloperMode();
 	/**need to use argc and argv to determine which slsdet or multidet to use.*/
+
+	if(argc>1){
+		if(!strcasecmp(argv[1],"-developer"))
+			tabs->setTabEnabled(Developer,true);
+		else
+			tabs->setTabEnabled(Developer,false);
+	}
+
 }
 
 
@@ -68,7 +78,8 @@ void qDetectorMain::SetUpWidgetWindow(){
 	SetUpDetector();
 
 /** plot setup*/
-	myPlot = new qDrawPlot(framePlot,myDet);
+	myPlot = new qDrawPlot(dockWidgetPlot,myDet);
+	dockWidgetPlot->setWidget(myPlot);
 
 /**tabs setup*/
 	tabs = new QTabWidget(this);
@@ -78,12 +89,12 @@ void qDetectorMain::SetUpWidgetWindow(){
 	tab_dataoutput 		=  new qTabDataOutput	(this,	myDet);
 	tab_plot 			=  new qTabPlot			(this,	myDet,myPlot);
 	tab_actions			=  new qTabActions		(this,	myDet);
+	tab_settings 		=  new qTabSettings		(this,	myDet);
 	tab_advanced 		=  new qTabAdvanced		(this,	myDet);
-	tab_Settings 		=  new qTabSettings		(this,	myDet);
 	tab_debugging 		=  new qTabDebugging	(this,	myDet);
 	tab_developer 		=  new qTabDeveloper	(this,	myDet);
 	/**	creating the scroll area widgets for the tabs */
-	for(int i=0;i<NUMBER_OF_TABS;i++){
+	for(int i=0;i<NumberOfTabs;i++){
 		scroll[i] = new QScrollArea;
 		scroll[i]->setFrameShape(QFrame::NoFrame);
 	}
@@ -92,8 +103,8 @@ void qDetectorMain::SetUpWidgetWindow(){
 	scroll[DataOutput]	->setWidget(tab_dataoutput);
 	scroll[Plot]		->setWidget(tab_plot);
 	scroll[Actions]		->setWidget(tab_actions);
+	scroll[Settings]	->setWidget(tab_settings);
 	scroll[Advanced]	->setWidget(tab_advanced);
-	scroll[Settings]	->setWidget(tab_Settings);
 	scroll[Debugging]	->setWidget(tab_debugging);
 	scroll[Developer]	->setWidget(tab_developer);
 	/** inserting all the tabs*/
@@ -101,8 +112,8 @@ void qDetectorMain::SetUpWidgetWindow(){
 	tabs->insertTab(DataOutput,		scroll[DataOutput],		"Data Output");
 	tabs->insertTab(Plot,			scroll[Plot],			"Plot");
 	tabs->insertTab(Actions,		scroll[Actions],		"Actions");
-	tabs->insertTab(Advanced,		scroll[Advanced],		"Advanced");
 	tabs->insertTab(Settings,		scroll[Settings],		"Settings");
+	tabs->insertTab(Advanced,		scroll[Advanced],		"Advanced");
 	tabs->insertTab(Debugging,		scroll[Debugging],		"Debugging");
 	tabs->insertTab(Developer,		scroll[Developer],		"Developer");
 
@@ -117,6 +128,8 @@ void qDetectorMain::SetUpWidgetWindow(){
 
 
 void qDetectorMain::SetUpDetector(){
+
+
 	/**instantiate detector and set window title*/
 	myDet = new multiSlsDetector(Detector_Index);
 	if(!myDet->getHostname(Detector_Index).length()){
@@ -138,7 +151,9 @@ void qDetectorMain::SetUpDetector(){
 
 
 void qDetectorMain::Initialization(){
-
+/** Dockable Plot*/
+	connect(dockWidgetPlot,SIGNAL(topLevelChanged(bool)),this,SLOT(ResizeMainWindow(bool)));
+	connect(dockWidgetTerminal,SIGNAL(topLevelChanged(bool)),this,SLOT(SetTerminalWindowSize(bool)));
 
 /** tabs */
 	connect(tabs,SIGNAL(currentChanged(int)),this, SLOT(refresh(int)));//( QWidget*)));
@@ -170,6 +185,8 @@ void qDetectorMain::Initialization(){
 		connect(actionAbout,SIGNAL(triggered()),this,SLOT(About()));
 		connect(actionVersion,SIGNAL(triggered()),this,SLOT(Version()));
 
+		heightPlotWindow = dockWidgetPlot->size().height();
+
 }
 
 
@@ -200,7 +217,6 @@ void qDetectorMain::SetExpertMode(bool b){
 #endif
 	//threshold part in measu is enabled
 	tabs->setTabEnabled(Advanced,b);
-	tabs->setTabEnabled(Settings,b);
 	tab_advanced->setEnabled(b);
 }
 
@@ -217,12 +233,16 @@ void qDetectorMain::refresh(int index){
 
 void qDetectorMain::SetDockableMode(bool b){
 #ifdef VERBOSE
-	cout<<"Setting Dockable Plot Mode to "<<b<<endl;
+	cout<<"Setting Dockable Mode to "<<b<<endl;
 #endif
-	if(b)
-		dockWidgetPlot->setFeatures(QDockWidget::DockWidgetMovable | QDockWidget::DockWidgetFloatable);
-	else
+	if(b){
+		dockWidgetPlot->setFeatures(QDockWidget::DockWidgetFloatable);
+		dockWidgetTerminal->setFeatures(QDockWidget::DockWidgetFloatable|QDockWidget::DockWidgetVerticalTitleBar);
+
+	}else{
 		dockWidgetPlot->setFeatures(QDockWidget::NoDockWidgetFeatures);
+		dockWidgetTerminal->setFeatures(QDockWidget::DockWidgetVerticalTitleBar);
+	}
 
 }
 
@@ -289,3 +309,36 @@ void qDetectorMain::About(){
 #endif
 }
 
+
+void qDetectorMain::ResizeMainWindow(bool b){
+#ifdef VERBOSE
+	cout<<"Resizing Main Window: height:"<<height()<<endl;
+#endif
+	if(b)/** sets the main window height to a smaller maximum to get rid of space*/
+		setMaximumHeight(height()-heightPlotWindow-9);
+	else
+		setMaximumHeight(QWIDGETSIZE_MAX);
+
+	cout<<"size hint ht:"<<sizeHint().height()<<endl;
+}
+
+void qDetectorMain::SetTerminalWindowSize(bool b){
+#ifdef VERBOSE
+	cout<<"Resizing Terminal Window"<<endl;
+#endif
+
+	cout<<"min width:"<<dockWidgetTerminal->minimumWidth()<<endl;
+	cout<<"min height:"<<dockWidgetTerminal->minimumHeight()<<endl;
+	if(b){
+		dockWidgetTerminal->setMinimumWidth(width()/2);
+			}
+		//dockWidgetTerminal->setFixedSize(width()/2,dockWidgetTerminal->minimumHeight());
+
+	else{
+		dockWidgetTerminal->setMinimumWidth(38);
+		QSizePolicy sizePolicy(QSizePolicy::Preferred,QSizePolicy::Preferred);
+		dockWidgetTerminal->setSizePolicy(sizePolicy);
+		//dockWidgetTerminal->setSizePolicy(new QSizePolicy(QSizePolicy::Expanding,QSizePolicy::Expanding));
+		//dockWidgetTerminal->setFixedSize(dockWidgetTerminal->minimumWidth(),dockWidgetTerminal->minimumHeight());
+	}
+}

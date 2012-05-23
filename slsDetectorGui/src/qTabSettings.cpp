@@ -39,18 +39,29 @@ qTabSettings::~qTabSettings(){
 
 
 void qTabSettings::SetupWidgetWindow(){
+	/** Settings */
+	comboSettings->setCurrentIndex(myDet->getSettings(Detector_Index));
 }
 
 
 
 void qTabSettings::Initialization(){
+	/** Settings */
+	connect(comboSettings,SIGNAL(currentIndexChanged(int)),this,SLOT(setSettings(int)));
 }
 
 
 
 void qTabSettings::Enable(bool enable){
-	//this->setEnabled(enable);
-
+	comboSettings->setEnabled(enable);
 }
 
+
+void qTabSettings::setSettings(int index){
+	slsDetectorDefs::detectorSettings sett = myDet->setSettings((slsDetectorDefs::detectorSettings)index,Detector_Index);
+#ifdef VERBOSE
+	cout<<"Settings have been set to "<<myDet->slsDetectorBase::getDetectorSettings(sett)<<endl;
+#endif
+
+}
 

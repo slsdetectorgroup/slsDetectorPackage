@@ -6,37 +6,108 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>952</width>
-    <height>445</height>
+    <width>748</width>
+    <height>339</height>
    </rect>
+  </property>
+  <property name="sizePolicy">
+   <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+    <horstretch>0</horstretch>
+    <verstretch>0</verstretch>
+   </sizepolicy>
   </property>
   <property name="minimumSize">
    <size>
-    <width>952</width>
-    <height>445</height>
+    <width>0</width>
+    <height>0</height>
    </size>
   </property>
   <property name="maximumSize">
    <size>
-    <width>952</width>
-    <height>445</height>
+    <width>1000</width>
+    <height>1000</height>
    </size>
   </property>
   <property name="windowTitle">
    <string>Form</string>
   </property>
-  <widget class="QPushButton" name="pushButton">
+  <widget class="QWidget" name="gridLayoutWidget">
    <property name="geometry">
     <rect>
-     <x>333</x>
-     <y>161</y>
-     <width>75</width>
-     <height>25</height>
+     <x>13</x>
+     <y>16</y>
+     <width>227</width>
+     <height>47</height>
     </rect>
    </property>
-   <property name="text">
-    <string>PushButton</string>
-   </property>
+   <layout class="QGridLayout" name="gridLayout">
+    <item row="0" column="0">
+     <widget class="QLabel" name="label_3">
+      <property name="text">
+       <string>Settings:</string>
+      </property>
+     </widget>
+    </item>
+    <item row="0" column="1">
+     <widget class="QComboBox" name="comboSettings">
+      <property name="sizePolicy">
+       <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+        <horstretch>0</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
+      </property>
+      <property name="toolTip">
+       <string>Settings of the detector. 
+ #settings#</string>
+      </property>
+      <item>
+       <property name="text">
+        <string>Standard</string>
+       </property>
+      </item>
+      <item>
+       <property name="text">
+        <string>Fast</string>
+       </property>
+      </item>
+      <item>
+       <property name="text">
+        <string>High Gain</string>
+       </property>
+      </item>
+      <item>
+       <property name="text">
+        <string>Dynamic Gain</string>
+       </property>
+      </item>
+      <item>
+       <property name="text">
+        <string>Low Gain</string>
+       </property>
+      </item>
+      <item>
+       <property name="text">
+        <string>Medium Gain</string>
+       </property>
+      </item>
+      <item>
+       <property name="text">
+        <string>Very High Gain</string>
+       </property>
+      </item>
+      <item>
+       <property name="text">
+        <string>Undefined</string>
+       </property>
+      </item>
+      <item>
+       <property name="text">
+        <string>Uninitialized</string>
+       </property>
+      </item>
+     </widget>
+    </item>
+   </layout>
   </widget>
  </widget>
  <resources/>

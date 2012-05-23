@@ -41,7 +41,6 @@ private:
 	/** The Plot widget	 */
 	qDrawPlot *myPlot;
 
-
 /** methods */
 	/** Sets up the widget
 	 */

@@ -7,8 +7,7 @@
 #ifndef QDRAWPLOT_H
 #define QDRAWPLOT_H
 
-/** Form Header */
-#include "ui_form_drawplot.h"
+
 /** Project Class Headers */
 class slsDetectorUtils;
 /** Qt Project Class Headers */
@@ -17,13 +16,17 @@ class SlsQt1DPlot;
 class SlsQt2DPlotLayout;
 class qCloneWidget;
 /** Qt Include Headers */
-class QTimer;
-class QGridLayout;
+
+#include <QWidget>
+#include <QGridLayout>
+#include <QGroupBox>
+#include <QTimer>
+
 
 /**
  *@short Sets up the plot widget
  */
-class qDrawPlot:public QWidget, private Ui::DrawPlotObject{
+class qDrawPlot:public QWidget{
 	Q_OBJECT
 
 public:
@@ -41,36 +44,12 @@ public:
 	 */
 	void StartStopDaqToggle(bool stop_if_running=0);
 
-public slots:
-/** To select 1D or 2D plot
- * @param i is 1 for 1D, else 2D plot
- */
-void SelectPlot(int i=2);
-
-/** To select 1D plot
- */
-void Select1DPlot() {SelectPlot(1);}
-
-/** To select 2D plot
- */
-void Select2DPlot() {SelectPlot(2);}
-
-/** To clear plot
- */
-void Clear1DPlot();
-
-/** Creates a clone of the plot
- * */
-void ClonePlot();
-
-/** Closes all the clone plots
- * */
-void CloseClones();
-
-
 private:
 	/** The sls detector object */
 	slsDetectorUtils *myDet;
+
+	/** Number of Measurements */
+	int numberOfMeasurements;
 	/**	 Number of Exposures */
 	int number_of_exposures;
 	/**	 Duration between Exposures */
@@ -79,16 +58,22 @@ private:
 	double acquisitionTime;
 
 /** Widgets needed to plot the clone */
+	/**	Max Number of Clone Windows */
 	static const int MAXCloneWindows = 50;
-	/**	 */
+	/**	Array of clone window widget pointers */
 	qCloneWidget			*winClone[MAXCloneWindows];
-	/**	 */
+
+/** Widgets needed to set up plot*/
+	QGroupBox 			*boxPlot;
+	QGridLayout 		*layout;
+	QGridLayout 		*plotLayout;
+	/**	Timer to update plot */
 	QTimer* 			plot_update_timer;
-	/**	 */
+	/**	1D object */
 	SlsQt1DPlot* 		plot1D;
-	/**	 */
+	/**	2D object */
 	SlsQt2DPlotLayout* 	plot2D;
-	/**	 */
+	/**	1D hist values */
 	QVector<SlsQtH1D*> 	plot1D_hists;
 
 
@@ -99,37 +84,37 @@ private:
 	pthread_mutex_t last_image_complete_mutex;
 
 /**variables for histograms */
-	/**	 */
+	/**	1D or 2D */
 	unsigned int plot_in_scope;
-	/**	 */
+	/**	Current Image Number */
 	unsigned int lastImageNumber;
-	/**	 */
+	/**	Title in 2D */
 	std::string  imageTitle;
-	/**	 */
+	/**	X Axis Title in 2D */
 	std::string  imageXAxisTitle;
-	/**	 */
+	/** Y Axis Title in 2D */
 	std::string  imageYAxisTitle;
-	/**	 */
+	/**	Z Axis Title in 2D */
 	std::string  imageZAxisTitle;
-	/**	 */
+	/**	Number of Pixels in X Axis */
 	unsigned int nPixelsX;
-	/**	 */
+	/**	Number of Pixels in Y Axis */
 	unsigned int nPixelsY;
-	/**	 */
+	/**	Current Image Values in 1D */
 	double*      lastImageArray;
-	/**	 */
+	/**	Number of graphs in 1D */
 	unsigned int nHists;
-	/**	 */
+	/**	Title for all the graphs in 1D */
 	std::string  histTitle[10];
-	/**	 */
+	/**	X Axis Title in 1D */
 	std::string  histXAxisTitle;
-	/**	 */
+	/**	Y Axis Title in 1D */
 	std::string  histYAxisTitle;
-	/**	 */
+	/**	Total Number of X axis values/channels in 1D */
 	int          histNBins;
-	/**	 */
+	/**	X Axis value in 1D */
 	double*      histXAxis;
-	/**	 */
+	/** Y Axis value in 1D  */
 	double*      histYAxis[10];
 
 
@@ -194,6 +179,40 @@ private:
 	static void* DataAcquisionThread(void *this_pointer);
 	/**	 */
 	void*        AcquireImages();
+
+
+
+public slots:
+/** Set number of measurements
+ *  @param num number of measurements to be set
+ */
+void setNumMeasurements(int num);
+
+/** To select 1D or 2D plot
+ * @param i is 1 for 1D, else 2D plot
+ */
+void SelectPlot(int i=2);
+
+/** To select 1D plot
+ */
+void Select1DPlot() {SelectPlot(1);}
+
+/** To select 2D plot
+ */
+void Select2DPlot() {SelectPlot(2);}
+
+/** To clear plot
+ */
+void Clear1DPlot();
+
+/** Creates a clone of the plot
+ * */
+void ClonePlot();
+
+/** Closes all the clone plots
+ * */
+void CloseClones();
+
 
 
 private slots:

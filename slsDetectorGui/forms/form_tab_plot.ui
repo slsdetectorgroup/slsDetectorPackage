@@ -6,20 +6,20 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>952</width>
-    <height>445</height>
+    <width>748</width>
+    <height>339</height>
    </rect>
   </property>
   <property name="minimumSize">
    <size>
-    <width>952</width>
-    <height>445</height>
+    <width>0</width>
+    <height>0</height>
    </size>
   </property>
   <property name="maximumSize">
    <size>
-    <width>952</width>
-    <height>445</height>
+    <width>1000</width>
+    <height>1000</height>
    </size>
   </property>
   <property name="windowTitle">
@@ -29,24 +29,30 @@
    <property name="geometry">
     <rect>
      <x>10</x>
-     <y>250</y>
-     <width>571</width>
+     <y>180</y>
+     <width>731</width>
      <height>151</height>
     </rect>
    </property>
    <property name="title">
     <string>Plot Axis</string>
    </property>
+   <property name="flat">
+    <bool>false</bool>
+   </property>
    <widget class="QWidget" name="gridLayoutWidget">
     <property name="geometry">
      <rect>
       <x>10</x>
       <y>20</y>
-      <width>551</width>
+      <width>712</width>
       <height>121</height>
      </rect>
     </property>
-    <layout class="QGridLayout" name="gridLayout">
+    <layout class="QGridLayout" name="gridLayout" columnstretch="0,0,0,0,0,0,0,0">
+     <property name="sizeConstraint">
+      <enum>QLayout::SetNoConstraint</enum>
+     </property>
      <item row="1" column="0">
       <widget class="QCheckBox" name="chkXAxis">
        <property name="text">
@@ -54,18 +60,44 @@
        </property>
       </widget>
      </item>
-     <item row="1" column="1">
-      <widget class="QLineEdit" name="dispXAxis"/>
+     <item row="1" column="1" colspan="2">
+      <widget class="QLineEdit" name="dispXAxis">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+         <horstretch>2</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+      </widget>
      </item>
      <item row="1" column="3">
       <widget class="QCheckBox" name="chkXMin">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
        <property name="text">
         <string>X min:</string>
        </property>
       </widget>
      </item>
      <item row="1" column="4">
-      <widget class="QLineEdit" name="dispXMin"/>
+      <widget class="QLineEdit" name="dispXMin">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+       <property name="minimumSize">
+        <size>
+         <width>20</width>
+         <height>0</height>
+        </size>
+       </property>
+      </widget>
      </item>
      <item row="1" column="6">
       <widget class="QCheckBox" name="chkXMax">
@@ -75,7 +107,14 @@
       </widget>
      </item>
      <item row="1" column="7">
-      <widget class="QLineEdit" name="dispXMax"/>
+      <widget class="QLineEdit" name="dispXMax">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+      </widget>
      </item>
      <item row="2" column="0">
       <widget class="QCheckBox" name="chkYAxis">
@@ -84,18 +123,44 @@
        </property>
       </widget>
      </item>
-     <item row="2" column="1">
-      <widget class="QLineEdit" name="dispYAxis"/>
+     <item row="2" column="1" colspan="2">
+      <widget class="QLineEdit" name="dispYAxis">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+         <horstretch>2</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+      </widget>
      </item>
      <item row="2" column="3">
       <widget class="QCheckBox" name="chkYMin">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
        <property name="text">
         <string>Y min:</string>
        </property>
       </widget>
      </item>
      <item row="2" column="4">
-      <widget class="QLineEdit" name="dispYMin"/>
+      <widget class="QLineEdit" name="dispYMin">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+       <property name="minimumSize">
+        <size>
+         <width>20</width>
+         <height>0</height>
+        </size>
+       </property>
+      </widget>
      </item>
      <item row="2" column="6">
       <widget class="QCheckBox" name="chkYMax">
@@ -105,7 +170,14 @@
       </widget>
      </item>
      <item row="2" column="7">
-      <widget class="QLineEdit" name="dispYMax"/>
+      <widget class="QLineEdit" name="dispYMax">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+      </widget>
      </item>
      <item row="3" column="0">
       <widget class="QCheckBox" name="chkZAxis">
@@ -114,18 +186,37 @@
        </property>
       </widget>
      </item>
-     <item row="3" column="1">
+     <item row="3" column="1" colspan="2">
       <widget class="QLineEdit" name="dispZAxis"/>
      </item>
      <item row="3" column="3">
       <widget class="QCheckBox" name="chkZMin">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
        <property name="text">
         <string>Z min:</string>
        </property>
       </widget>
      </item>
      <item row="3" column="4">
-      <widget class="QLineEdit" name="dispZMin"/>
+      <widget class="QLineEdit" name="dispZMin">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+       <property name="minimumSize">
+        <size>
+         <width>20</width>
+         <height>0</height>
+        </size>
+       </property>
+      </widget>
      </item>
      <item row="3" column="6">
       <widget class="QCheckBox" name="chkZMax">
@@ -135,20 +226,20 @@
       </widget>
      </item>
      <item row="3" column="7">
-      <widget class="QLineEdit" name="dispZMax"/>
-     </item>
-     <item row="1" column="2">
-      <spacer name="horizontalSpacer">
-       <property name="orientation">
-        <enum>Qt::Horizontal</enum>
+      <widget class="QLineEdit" name="dispZMax">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
        </property>
-       <property name="sizeHint" stdset="0">
+       <property name="minimumSize">
         <size>
-         <width>60</width>
-         <height>20</height>
+         <width>0</width>
+         <height>0</height>
         </size>
        </property>
-      </spacer>
+      </widget>
      </item>
      <item row="1" column="5">
       <spacer name="horizontalSpacer_2">
@@ -157,7 +248,7 @@
        </property>
        <property name="sizeHint" stdset="0">
         <size>
-         <width>60</width>
+         <width>20</width>
          <height>20</height>
         </size>
        </property>
@@ -180,7 +271,7 @@
    <property name="geometry">
     <rect>
      <x>10</x>
-     <y>170</y>
+     <y>100</y>
      <width>571</width>
      <height>61</height>
     </rect>
@@ -188,48 +279,19 @@
    <property name="title">
     <string>2D Plot Options</string>
    </property>
+   <property name="flat">
+    <bool>false</bool>
+   </property>
    <widget class="QWidget" name="gridLayoutWidget_2">
     <property name="geometry">
      <rect>
       <x>10</x>
       <y>20</y>
-      <width>551</width>
+      <width>585</width>
       <height>31</height>
      </rect>
     </property>
     <layout class="QGridLayout" name="gridLayout_2">
-     <item row="0" column="1">
-      <spacer name="horizontalSpacer_4">
-       <property name="orientation">
-        <enum>Qt::Horizontal</enum>
-       </property>
-       <property name="sizeType">
-        <enum>QSizePolicy::Fixed</enum>
-       </property>
-       <property name="sizeHint" stdset="0">
-        <size>
-         <width>20</width>
-         <height>20</height>
-        </size>
-       </property>
-      </spacer>
-     </item>
-     <item row="0" column="3">
-      <spacer name="horizontalSpacer_5">
-       <property name="orientation">
-        <enum>Qt::Horizontal</enum>
-       </property>
-       <property name="sizeType">
-        <enum>QSizePolicy::Fixed</enum>
-       </property>
-       <property name="sizeHint" stdset="0">
-        <size>
-         <width>20</width>
-         <height>20</height>
-        </size>
-       </property>
-      </spacer>
-     </item>
      <item row="0" column="0">
       <widget class="QCheckBox" name="chkInterpolate">
        <property name="text">
@@ -237,19 +299,35 @@
        </property>
       </widget>
      </item>
-     <item row="0" column="2">
+     <item row="0" column="1">
       <widget class="QCheckBox" name="chkContour">
        <property name="text">
         <string>Contour</string>
        </property>
       </widget>
      </item>
-     <item row="0" column="4">
+     <item row="0" column="2">
       <widget class="QCheckBox" name="chkLogz">
        <property name="text">
         <string>Log Scale (Z)</string>
        </property>
       </widget>
+     </item>
+     <item row="0" column="3">
+      <spacer name="horizontalSpacer_9">
+       <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+       </property>
+       <property name="sizeType">
+        <enum>QSizePolicy::Fixed</enum>
+       </property>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>250</width>
+         <height>20</height>
+        </size>
+       </property>
+      </spacer>
      </item>
     </layout>
    </widget>
@@ -258,7 +336,7 @@
    <property name="geometry">
     <rect>
      <x>10</x>
-     <y>90</y>
+     <y>20</y>
      <width>571</width>
      <height>61</height>
     </rect>
@@ -266,17 +344,40 @@
    <property name="title">
     <string>1D Plot Options</string>
    </property>
+   <property name="flat">
+    <bool>false</bool>
+   </property>
    <widget class="QWidget" name="gridLayoutWidget_3">
     <property name="geometry">
      <rect>
       <x>10</x>
       <y>20</y>
-      <width>551</width>
-      <height>31</height>
+      <width>658</width>
+      <height>30</height>
      </rect>
     </property>
     <layout class="QGridLayout" name="gridLayout_3">
      <item row="0" column="0">
+      <widget class="QCheckBox" name="chkLogz_2">
+       <property name="enabled">
+        <bool>false</bool>
+       </property>
+       <property name="text">
+        <string>Log Scale (Z)</string>
+       </property>
+      </widget>
+     </item>
+     <item row="0" column="1">
+      <widget class="QCheckBox" name="chkLogz_3">
+       <property name="enabled">
+        <bool>false</bool>
+       </property>
+       <property name="text">
+        <string>Superimpose</string>
+       </property>
+      </widget>
+     </item>
+     <item row="0" column="2">
       <spacer name="horizontalSpacer_8">
        <property name="orientation">
         <enum>Qt::Horizontal</enum>
@@ -286,7 +387,7 @@
        </property>
        <property name="sizeHint" stdset="0">
         <size>
-         <width>430</width>
+         <width>295</width>
          <height>20</height>
         </size>
        </property>
@@ -295,76 +396,43 @@
     </layout>
    </widget>
   </widget>
-  <widget class="QGroupBox" name="boxPlot">
+  <widget class="QWidget" name="gridLayoutWidget_4">
    <property name="geometry">
     <rect>
-     <x>10</x>
-     <y>10</y>
-     <width>571</width>
-     <height>61</height>
+     <x>610</x>
+     <y>22</y>
+     <width>121</width>
+     <height>71</height>
     </rect>
    </property>
-   <property name="title">
-    <string>Plot Options</string>
-   </property>
-   <widget class="QWidget" name="gridLayoutWidget_4">
-    <property name="geometry">
-     <rect>
-      <x>10</x>
-      <y>20</y>
-      <width>551</width>
-      <height>31</height>
-     </rect>
-    </property>
-    <layout class="QGridLayout" name="gridLayout_4">
-     <item row="0" column="1">
-      <spacer name="horizontalSpacer_6">
-       <property name="orientation">
-        <enum>Qt::Horizontal</enum>
-       </property>
-       <property name="sizeType">
-        <enum>QSizePolicy::Fixed</enum>
-       </property>
-       <property name="sizeHint" stdset="0">
-        <size>
-         <width>10</width>
-         <height>20</height>
-        </size>
-       </property>
-      </spacer>
-     </item>
-     <item row="0" column="3">
-      <spacer name="horizontalSpacer_7">
-       <property name="orientation">
-        <enum>Qt::Horizontal</enum>
-       </property>
-       <property name="sizeType">
-        <enum>QSizePolicy::Fixed</enum>
-       </property>
-       <property name="sizeHint" stdset="0">
-        <size>
-         <width>300</width>
-         <height>20</height>
-        </size>
-       </property>
-      </spacer>
-     </item>
-     <item row="0" column="0">
-      <widget class="QPushButton" name="btnClone">
-       <property name="text">
-        <string>Clone</string>
-       </property>
-      </widget>
-     </item>
-     <item row="0" column="2">
-      <widget class="QPushButton" name="btnCloseClones">
-       <property name="text">
-        <string>Close All Clones</string>
-       </property>
-      </widget>
-     </item>
-    </layout>
-   </widget>
+   <layout class="QGridLayout" name="gridLayout_4">
+    <item row="0" column="0">
+     <widget class="QPushButton" name="btnClone">
+      <property name="sizePolicy">
+       <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+        <horstretch>0</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
+      </property>
+      <property name="text">
+       <string>Clone</string>
+      </property>
+     </widget>
+    </item>
+    <item row="1" column="0">
+     <widget class="QPushButton" name="btnCloseClones">
+      <property name="sizePolicy">
+       <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+        <horstretch>0</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
+      </property>
+      <property name="text">
+       <string>Close All Clones</string>
+      </property>
+     </widget>
+    </item>
+   </layout>
   </widget>
  </widget>
  <resources/>

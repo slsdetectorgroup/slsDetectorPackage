@@ -13,7 +13,7 @@
 #include "slsDetector.h"
 #include "multiSlsDetector.h"
 /** Qt Include Headers */
-#include <QTimer>
+#include <QFont>
 /** C++ Include Headers */
 #include <iostream>
 #include <string>
@@ -23,9 +23,8 @@ using namespace std;
 #define Detector_Index 0
 
 
-qDrawPlot::qDrawPlot(QWidget *parent,slsDetectorUtils*& detector):QWidget(parent),myDet(detector){
+qDrawPlot::qDrawPlot(QWidget *parent,slsDetectorUtils*& detector):QWidget(parent),myDet(detector),numberOfMeasurements(1){
 	if(myDet)	{
-		setupUi(this);
 		Initialization();
 		SetupWidgetWindow();
 		StartStopDaqToggle(); //as default
@@ -36,15 +35,11 @@ qDrawPlot::qDrawPlot(QWidget *parent,slsDetectorUtils*& detector):QWidget(parent
 qDrawPlot::~qDrawPlot(){
 	/** Clear plot*/
 	Clear1DPlot();
-	for(QVector<SlsQtH1D*>::iterator h = plot1D_hists.begin();h!=plot1D_hists.end();h++){
+	for(QVector<SlsQtH1D*>::iterator h = plot1D_hists.begin();h!=plot1D_hists.end();h++)
 		delete *h;
-	}
 	plot1D_hists.clear();
-
-
 	delete[] lastImageArray; lastImageArray=0;
 	StartOrStopThread(0);
-
 	/** delete detector object pointer*/
 	delete myDet;
 }
@@ -77,6 +72,13 @@ void qDrawPlot::Initialization(){
 
 
 void qDrawPlot::SetupWidgetWindow(){
+	/** Setting up window*/
+	setFont(QFont("Sans Serif",9));
+	layout = new QGridLayout;
+	boxPlot = new QGroupBox("Start Image");
+	layout->addWidget(boxPlot,1,1);
+	this->setLayout(layout);
+
 	plot_update_timer = new QTimer(this);
 	connect(plot_update_timer, SIGNAL(timeout()), this, SLOT(UpdatePlot()));
 
@@ -224,6 +226,7 @@ void* qDrawPlot::AcquireImages(){
 	//cout<<"filePath:"<<filePath<<endl;
 	//string fileName;
 
+	//numberOfMeasurements
 	for(int i=0;i<number_of_exposures;i++){
 
 		/////
@@ -301,6 +304,9 @@ void* qDrawPlot::AcquireImages(){
 
 
 
+void qDrawPlot::setNumMeasurements(int num){
+	numberOfMeasurements = num;
+}
 
 
 

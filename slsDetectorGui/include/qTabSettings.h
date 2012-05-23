@@ -47,6 +47,13 @@ private:
 	 */
 	void Enable(bool enable);
 
+
+private slots:
+/** Set settings according to selection
+ *  @param index index of selection
+ */
+void setSettings(int index);
+
 };
 
 

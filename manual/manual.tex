@@ -4,7 +4,7 @@
 \usepackage{verbatim}
 \begin{document}
 
-\title{Mythen v2.0 manual}
+\title{Mythen v3.0 manual}
 \date{\today}
 \maketitle
 
@@ -22,9 +22,7 @@ The actual software for the Mythen II system (MCS1 to MCS24) runs on 32~bit Scie
 The complete software package is composed of several programs which can be instaleld (or locally compiled) depending on the needs:
 \begin{itemize}
 \item The \textbf{slsDetector shared and static libraries} which are necessary for all user interfaces and can be simply used for implementig custom detector drivers;
-\item  The \textbf{TSlsDetector shared and static libraries} which require root and Qt3.3 installation and are necessary to install the mytheGUI;  
-\item The \textbf{command line interface (mythenClient) mythen\_put, mythen\_get, mythen\_acquire} which is provided to communicate with the detectors;
-\item The \textbf{Graphical User Interface mythenGUI} which provides a user-friendly use of the detector;
+\item The \textbf{command line interface (slsDetectorClient) sls\_detector\_put, sls\_detector\_get, sls\_detector\_acquire} which is provided to communicate with the detectors;
 \item A \textbf{virtual server mythenServer} which can be used to simulate the behavior of the detector for what concerns the communication in case the detector is not online or is in use.
 \end{itemize}
 
@@ -34,6 +32,8 @@ The complete software package is composed of several programs which can be insta
 
 For installing the slsDetector shared and static libraries and the mythenClient software, any Linux installation with a working gcc should be fine.\\
 
+
+\begin{comment}
 For installing the TSlsDetector shared and static libraries and the mythenGUI, working installations of Qt and Root should be present on the PC.\\
 
 A Qt version equal or higher to 3.3 (but lower than Qt4) should be installed on the PC. It can be downloaded from \\
@@ -62,20 +62,22 @@ export PATH=$QTDIR/bin:$ROOTSYS/bin::$PATH
 export LD_LIBRARY_PATH=$QTDIR/lib:$ROOTSYS/lib:$LD_LIBRARY_PATH
 export MANPATH=$QTDIR/doc/man/usr/local/man:$MANPATH
 \end{verbatim}
+\end{comment}
 
 \section{Compilation} 
 If you simply want to install the software in the working directory you can:
 \begin{itemize}
 \item \verb=make lib=     	compile slsDetector library
-\item \verb=make tlib=          	compile Root/Qt TSlsDetector library
+%\item \verb=make tlib=          	compile Root/Qt TSlsDetector library
 \item \verb=make mythenClient=  	compile mythenClient package
-\item \verb=make mythenGUI=	compile mythenGUI
-\item \verb=make all=	compile slsDetector and TSlsDetector libraries, the mythenClient package and the mythenGUI
+%\item \verb=make mythenGUI=	compile mythenGUI
+%\item \verb=make all=	compile slsDetector and TSlsDetector libraries, the mythenClient package and the mythenGUI
+\item \verb=make all=	compile slsDetector libraries, the mythenClient package 
 \item \verb=make clean=              remove object files and executables
 \item \verb=make help=               lists possible targets
 \end{itemize}
 
-To be able to run the mythenClient and the mythenGUI as commands, add mythenClient/bin and mythenGUI/bin to your path.
+To be able to run the mythenClient and the mythenGUI as commands, add their location to your path.
 
 
 \section{Building}
@@ -86,8 +88,8 @@ To install the software you should first configure some enviroment variables by 
 (NOT \verb=>./configure= otherwise the enviroment variables will not be available for the \verb=make= command). 
 This allows you to configure:
 \begin{itemize}
-\item \textbf{QTDIR} i.e. the Qt installation directory. Ignore if you don't want to install the GUI, otherwise it should be defined in your \verb=.bashrc= and added to \verb=PATH= and \verb=LD_LIBRARY_PATH= 
-\item  \textbf{ROOTSYS} i.e. the Root installation directory. Ignore if you don't want to install the GUI, otherwise it should be defined in your \verb=.bashrc= and added to \verb=PATH= and \verb=LD_LIBRARY_PATH=
+%\item \textbf{QTDIR} i.e. the Qt installation directory. Ignore if you don't want to install the GUI, otherwise it should be defined in your \verb=.bashrc= and added to \verb=PATH= and \verb=LD_LIBRARY_PATH= 
+%\item  \textbf{ROOTSYS} i.e. the Root installation directory. Ignore if you don't want to install the GUI, otherwise it should be defined in your \verb=.bashrc= and added to \verb=PATH= and \verb=LD_LIBRARY_PATH=
 \item \textbf{INSTALLROOT} Directory where you want to install the software. Defaults to /usr/local/
 \item \textbf{BINDIR} Directory where you want to install the binaries. Defaults to bin/
 \item \textbf{INCDIR} Directory where you want to pute the header files. Defaults to include/slsdetector/
@@ -98,20 +100,21 @@ This allows you to configure:
 To build you can:
 \begin{itemize}
 \item \verb=make install_lib=       install detector library and include files"
-\item \verb=make install_tlib=        install detector Root/Qt library and include files"
-\item \verb=make install_client=     install mythenClient
-\item \verb=make install_gui=        install mythenGUI
-\item \verb=make install=            install library, include files, mythenClient and mythenGUI"
+%\item \verb=make install_tlib=        install detector Root/Qt library and include files"
+\item \verb=make install_client=     install slsDetectorClient
+%\item \verb=make install_gui=        install mythenGUI
+%\item \verb=make install=            install library, include files, mythenClient and mythenGUI"
+\item \verb=make install=            install library, include files and mythenClient'' 
 \item \verb=make install_libdoc=     install library documentation
 \item \verb=make install_clientdoc=  install mythenClient documentation
-\item \verb=make install_guidoc=     install mythenGUI documentation
+%\item \verb=make install_guidoc=     install mythenGUI documentation
 \item \verb=make install_doc=        install all documentation
 \item \verb=make help=               lists possible targets
 \end{itemize}
 
 \section{Detector upgrade}
 
-The upgrade of the detector consists in both the upgrade of the comminication software and of the firmware.\\
+The upgrade of the detector consists in both the upgrade of the communication software and of the firmware.\\
 
 To upgrade the firmware you need either a working version of the Altera Quartus software or of the Quartus programmer, which can easly be downloade from \\
 \verb=https://www.altera.com/download/programming/quartus2/pq2-index.jsp= \\
@@ -157,7 +160,7 @@ The default calibration files for each file will be stored in the directory acco
 
 
 
-\chapter{mythenClient}
+\chapter{slsDetectorClient}
 
 \section{Introduction}
 
@@ -165,28 +168,31 @@ This program is intended to control the MYTHEN detectors via command line interf
 
 To get all the possibilities of usage simply type:
 \begin{description}
-\item[mythen\_acquire] to readout the detector at full speed
-\item[mythen\_put] to set detector parameters
-\item[mythen\_get] to retrieve detector parameters
+\item[sls\_detector\_acquire] to readout the detector at full speed
+\item[sls\_detector\_put] to set detector parameters
+\item[sls\_detector\_get] to retrieve detector parameters
 \end{description}
 
-You will need to characterize your detector with a unique id (e.g. 0, but take care if you want to operate more than one detector in parallel!). Different detector types (e.g. MYTHEN, PICASSO etc.) must have different ids i.e. if you assign 0 to a MYTHEN detector you can't replace it with a PICASSO unless you reboot your PC.
+There are different ways for communicationg with your detector(s).
+\begin{itemize}
+\item[multiDetector] is represented by a group of controllers which operate symultaneously with the same parameters. You can define several multiDetector systems and int this case you address them using different indexes. In this case the syntax will be  \verb=sls\_detector\_cmd i-= where cmd can be acquire, put, get and i is the index of the multiDetector entity (if omitted defaults to 0 -  standard usage). Normally it is handy to use the multiDetector structure also in case of single detectors. However in some cases one cannot avoid using the slsDetector structure for detailed configuration (e.g. meaning of external signals or other flags)
+\item[slsDetector] is represented by a single controller. You can define several multiDetector systems and int this case you address them using different indexes. In this case the syntax will be  \verb=sls\_detector\_cmd i:= where cmd can be acquire, put, get and i is the index of the slsDetector entity, which cannot be omitted. When creating the multiDetector structure, the indexes are automatically assigned to the detectors contained in it. You can retrieve the indexes relative to the slsDetector using: \verb=sls\_detector\_get hostname:pos,  sls\_detector\_get id:pos= whic will return the hostname in position pos of your multiDetector structure (pos=0 in case of single detectors) and its index.
+\end{itemize}
+
 
 \section{Acquisition}
-mythen\_acquire id
+mythen\_acquire [id[-/:]]
 
 the detector is started and the data are acquired, postprocessed and written to file according to the configuration
 
 
 \section{Detector setup}
 
-mythen\_put id:var arg
+mythen\_put [id[:/-]]var arg
 
 is used to configure the detector parameter var
   e.g. mythen\_put 0:exptime 1 sets the exposure time to 1 s
 
-
-The possibilites are:
 \begin{description}
 \item[help i]		get help
 \item[config fname]     reads the configuration file specified and sets the values
@@ -202,6 +208,7 @@ The possibilites are:
 \item[index i]  	start index of the files (automatically incremented by the acquisition functions)
 \item[nmod n]  	Sets number of detector modules
 \item[extsig:i mode]  	Sets usage of the external digital signal i. mode can be: off, gate\_in\_active\_high, gate\_in\_active\_low, trigger\_in\_rising\_edge, trigger\_in\_falling\_edge, ro\_trigger\_in\_rising\_edge, ro\_trigger\_in\_falling\_edge, gate\_out\_active\_high, gate\_out\_active\_low, trigger\_out\_rising\_edge, trigger\_out\_falling\_edge, ro\_trigger\_out\_rising\_edge, ro\_trigger\_out\_falling\_edge
+\item[timing]           Sets the timing mode of the detector. Can be auto, gating  (works only if at least one of the signals is configured as gate\_in), trigger (works only if at least one of the signals is configured as trigger\_in), ro\_trigger (works only if at least one of the signals is configured as ro\_trigger\_in), triggered\_gating (works only if one ofthe signals is configured as gate\_in and one as trigger\_in).
 \item[settings sett]  	Sets detector settings. Can be:  standard fast  highgain (depending on trheshold energy and maximum count rate: please refere to manual for limit values!);
 \item[threshold ev]  	Sets detector threshold in eV. Should be half of the beam energy. It is precise only if the detector is calibrated
 \item[vthreshold dac]  	Sets detector threshold in DAC units. A very rough calibration is dac=800-10*keV
@@ -221,17 +228,41 @@ The possibilites are:
 \item[globaloff o]  	sets the fixed angular offset of your encoder - should be almost constant!
 \item[fineoff o] 	sets a possible angular offset of your setup - should be small but can be senseful to modify
 \item[binsize s] 	sets the binning size of the angular conversion (otherwise defaults from the angualr conversion constants)
+\item[angdir i] 	sets the angular direction of the detector (i can be 1 or -1 - by default 1, channel 0 is smaller angle)
 \item[positions np (pos0 pos1...posnp)] 	Sets the number of positions at which the detector is moved during the acquisition and their values
-\item[threaded b]  	Sets whether the postprocessing and file writing of the data is done in a separate thread (0 sequencial, 1 threaded). Please remeber to set the threaded mode if you acquire long real time measurements and/or use the storeinram option  otherwise you risk to lose your data
-
+\item[startscript script] sets a script to be executed at the beginning of the measurements (e.g. open shutter). \textit{none} unsets. Parameters will be parsed as \verb|script nrun=i par=spar| where i is the run number and spar is the value of startscriptpar.
+\item[stopscript script] sets a script to be executed at the end of the measurement (e.g. close shutter). \textit{none} unsets. Parameters will be parsed as \verb|script nrun=i par=spar| where i is the run number and spar is the value of stopscriptpar.
+\item[startscriptpar spar] sets a parameter passed to the start script as string with the syntax par=spar. Its meaning must be interpreted inside the script!
+\item[stopscriptpar spar] sets a parameter passed to the start script as string with the syntax par=spar. Its meaning must be interpreted inside the script!
+\item[scan0script script] Sets a scan script to be executed at higher level. Script can be none (unset), threshold (change threshold DAC values for all modules), energy (change energy threshold DAC values using calibration for each module), trimbits (change trimbits for all channels) or any script (e.g changing temperature or moving sample) which will be called with the syntax \verb| script nrun=i fn=fname var=val par=spar| where i is the file index, fname is the file name val is the current value of the scan variable and spar is the value of the scan parameter
+\item[scan1script script]  Sets a scan script to be executed at lower level. Script can be none (unset), threshold (change threshold DAC values for all modules), energy (change energy threshold DAC values using calibration for each module), trimbits (change trimbits for all channels) or any script (e.g changing temperature or moving sample) which will be called with the syntax \verb| script nrun=i fn=fname var=val par=spar| where i is the file index, fname is the file name val is the current value of the scan variable and spar is the value of the scan parameter
+\item[scan0par spar] sets the scan parameter to be passed to scan0script as a string with syntax par=spar. Its meaning has to be interpreted insode the script! 
+\item[scan1par spar] sets the scan parameter to be passed to scan1script as a string with syntax par=spar. Its meaning has to be interpreted insode the script! 
+\item[scan0prec i] sets the precision of the scan variable in order to properly generate the file names for scan0
+\item[scan1prec i] sets the precision of the scan variable in order to properly generate the file names for scan1
+\item[scan0steps n (f0 f1..fn)] sets the steps for the scan0script. n is the number of steps and the following values are the step values.
+\item[scan1steps n (f0 f1..fn)]  sets the steps for the scan1script. n is the number of steps and the following values are the step values.
+\item[scan0range mi ma st] generates the steps for the scan0script in the range mi to ma with step st (is mi smaller than ma specify a negative step)
+\item[scan1range mi ma st] generates the steps for the scan1script in the range mi to ma with step st (is mi smaller than ma specify a negative step)
+\item[scriptbefore script] sets the script to be executed before each acquisition (before all positions) with the syntax \verb|script nrun=i fn=fname par=spar sv0=svar0 sv1=svar1 p0=spar0 p1=spar1| where i is the file index, fname is the file name, sva0, svar1 are the current values of the scan variables 0 and 1, spar0, spar1 are tthe scan parameter 0 and 1. \textit{none} unsets.
+\item[scriptafter script] sets the script to be executed after each acquisition (after all positions) with the syntax \verb|script nrun=i fn=fname par=spar sv0=svar0 sv1=svar1 p0=spar0 p1=spar1| where i is the file index, fname is the file name, sva0, svar1 are the current values of the scan variables 0 and 1, spar0, spar1 are tthe scan parameter 0 and 1. \textit{none} unsets.
+\item[scriptbeforepar spar] sets the parameter to be passed to the script before witht he syntax par=spar 
+\item[scriptafterpar spar] sets the parameter to be passed to the script after witht he syntax par=spar 
+\item[headerbefore script] sets the script to be executed before each acquisition (after moving the detector) with the syntax \verb|script nrun=i fn=fname par=spar| where i is the run number, fname is the file name, spar is the header before parameter. The script is normally used to save a file header. \textit{none} unsets.
+\item[headerafter script] sets the script to be executed after each acquisition (after each position) with the syntax \verb|script nrun=i fn=fname par=spar| where i is the run number, fname is the file name, spar is the header after parameter. The script is normally used to complete the file header. \textit{none} unsets.
+\item[headerbeforepar spar] sets the parameter to be passed to the header before script with the syntax par=spar
+\item[headerafterpar spar] sets the parameter to be passed to the header after script with the syntax par=spar
 \end{description}
 
 
+
+
 \section{Retrieving detector parameters (plus trimming and test modalities)}
-mythen\_get id:var arg
+mythen\_get [id[:/-]]var arg
 
 is used to retrieve the detector parameter var
   e.g. mythen\_get 0:exptime returns the exposure time in seconds
+
 
 
 \begin{description}
@@ -251,7 +282,7 @@ is used to retrieve the detector parameter var
 \item[index]  		start index of the files (automatically incremented by the acquisition functions)
 \item[nmod]  		Gets number of detector modules 
 \item[maxmod]  	Gets maximum number of detector modules 
-\item[extsig:i] 	Gets usage of the external digital signal i. The return value can be: off, gate\_in\_active\_high, gate\_in\_active\_low, trigger\_in\_rising\_edge, trigger\_in\_falling\_edge, ro\_trigger\_in\_rising\_edge, ro\_trigger\_in\_falling\_edge, gate\_out\_active\_high, gate\_out\_active\_low, trigger\_out\_rising\_edge, trigger\_out\_falling\_edge, ro\_trigger\_out\_rising\_edge, ro\_trigger\_out\_falling\_edge
+\item[extsig:i] 	Gets usage of the external digital signal i. The return value can be: off, gate\_in\_active\_high, gate\_in\_active\_low, trigger\_in\_rising\_edge, trigger\_in\_falling\_edge, ro\_trigger\_in\_rising\_edge, ro\_trigger\_in\_falling\_edge, gate\_out\_active\_high, gate\_out\_active\_low, trigger\_out\_rising\_edge, trigger\_out\_falling\_edge, ro\_trigger\_out\_rising\_edge, ro\_trigger\_out\_falling\_edge\item[timing]           Sets the timing mode of the detector. Can be auto, gating  (works only if at least one of the signals is configured as gate\_in), trigger (works only if at least one of the signals is configured as trigger\_in), ro\_trigger (works only if at least one of the signals is configured as ro\_trigger\_in), triggered\_gating (works only if one ofthe signals is configured as gate\_in and one as trigger\_in).
 \item[modulenumber] 	Gets the module serial number
 \item[moduleversion] 	Gets the module version 
 \item[detectornumber] 	Gets the detector number (MAC address)
@@ -269,6 +300,7 @@ is used to retrieve the detector parameter var
 \item[frames] 		Gets the number of frames per cycle (e.g. after each trigger)
 \item[cycles] 		Gets the number of cycles (e.g. number of triggers)
 \item[probes] 		Gets the number of probes to accumulate (max 3)
+\item[timestamp]        Gets the internal time stamp of the nex frame acquired (i.e. during an acquisition, all timestamps of the frames are stored in a FIFO which can be read after the acquisition - returns -1 if the FIFO is empty) 
 \item[dr] 		Gets the dynamic range
 \item[trim:mode fname] Trims the detector and writes the trimfile fname.snxxx.  mode can be: noise beam improve fix offline - Check that the start conditions are OK!!!
 \item[flatfield] fname  returns whether the flat field corrections are enabled and if so writes the coefficients to the specified filename. If fname is none it is not written
@@ -277,9 +309,31 @@ is used to retrieve the detector parameter var
 \item[angconv fname]  	returns wether the angular conversion is enabled and if so writes the angular conversion coefficients to the specified filename. If fname is none, it is not written
 \item[globaloff]  	returns the fixed angular offset of your encoder - should be almost constant!
 \item[fineoff]  returns a possible angualr offset of your setup - should be small but can be senseful to modify
-\item[binsize]  	returns the binning size of the angular conversion    
+\item[binsize]  	returns the binning size of the angular conversion  
+\item[angdir] 	gets the angular direction of the detector (can be 1 or -1 - by default 1, channel 0 is smaller angle)  
 \item[positions]  	returns the number of positions at which the detector is moved during the acquisition and their values
-\item[threaded] 	gets whether the postprocessing and file writing of the data is done in a separate thread (0 sequencial, 1 threaded). Check that it is set to 1 if you acquire long real time measurements and/or use the storeinram option otherwise you risk to lose your data
+\item[startscript script] sets a script to be executed at the beginning of the measurements (e.g. open shutter). \textit{none} unsets. Parameters will be parsed as \verb|script nrun=i par=spar| where i is the run number and spar is the value of startscriptpar.
+\item[stopscript] returns the script to be executed at the end of the measurement (e.g. close shutter). \textit{none} unsets. Parameters will be parsed as \verb|script nrun=i par=spar| where i is the run number and spar is the value of stopscriptpar.
+\item[startscriptpar] returns the parameter passed to the start script as string with the syntax par=spar. Its meaning must be interpreted inside the script!
+\item[stopscriptpar]returns the parameter passed to the start script as string with the syntax par=spar. Its meaning must be interpreted inside the script!
+\item[scan0script] returns the scan script to be executed at higher level. Script can be none (unset), threshold (change threshold DAC values for all modules), energy (change energy threshold DAC values using calibration for each module), trimbits (change trimbits for all channels) or any script (e.g changing temperature or moving sample) which will be called with the syntax \verb| script nrun=i fn=fname var=val par=spar| where i is the file index, fname is the file name val is the current value of the scan variable and spar is the value of the scan parameter
+\item[scan1script] returns the scan script to be executed at lower level. Script can be none (unset), threshold (change threshold DAC values for all modules), energy (change energy threshold DAC values using calibration for each module), trimbits (change trimbits for all channels) or any script (e.g changing temperature or moving sample) which will be called with the syntax \verb| script nrun=i fn=fname var=val par=spar| where i is the file index, fname is the file name val is the current value of the scan variable and spar is the value of the scan parameter
+\item[scan0par] returns the scan parameter to be passed to scan0script as a string with syntax par=spar. Its meaning has to be interpreted insode the script! 
+\item[scan1par] returns the scan parameter to be passed to scan1script as a string with syntax par=spar. Its meaning has to be interpreted insode the script! 
+\item[scan0prec] returns the precision of the scan variable in order to properly generate the file names for scan0
+\item[scan1prec] returns the precision of the scan variable in order to properly generate the file names for scan1
+\item[scan0steps] returns the steps for the scan0script. n is the number of steps and the following values are the step values.
+\item[scan1steps]  returns the steps for the scan1script. n is the number of steps and the following values are the step values.
+\item[scan0range] returns the steps for the scan0script. n is the number of steps and the following values are the step values.
+\item[scan1range]  returns the steps for the scan1script. n is the number of steps and the following values are the step values.
+\item[scriptbefore] returns the script to be executed before each acquisition (before all positions) with the syntax \verb|script nrun=i fn=fname par=spar sv0=svar0 sv1=svar1 p0=spar0 p1=spar1| where i is the file index, fname is the file name, sva0, svar1 are the current values of the scan variables 0 and 1, spar0, spar1 are tthe scan parameter 0 and 1.
+\item[scriptafter] returns the script to be executed after each acquisition (after all positions) with the syntax \verb|script nrun=i fn=fname par=spar sv0=svar0 sv1=svar1 p0=spar0 p1=spar1| where i is the file index, fname is the file name, sva0, svar1 are the current values of the scan variables 0 and 1, spar0, spar1 are tthe scan parameter 0 and 1.
+\item[scriptbeforepar] returns the parameter to be passed to the script before witht he syntax par=spar 
+\item[scriptafterpar] returns the parameter to be passed to the script after witht he syntax par=spar 
+\item[headerbefore] returns the script to be executed before each acquisition (after moving the detector) with the syntax \verb|script nrun=i fn=fname par=spar| where i is the run number, fname is the file name, spar is the header before parameter. The script is normally used to save a file header.
+\item[headerafter] returns the script to be executed after each acquisition (after each position) with the syntax \verb|script nrun=i fn=fname par=spar| where i is the run number, fname is the file name, spar is the header after parameter. The script is normally used to complete the file header.
+\item[headerbeforepar] returns the  parameter to be passed to the header before script with the syntax par=spar
+\item[headerafterpar]returns the parameter to be passed to the header after script with the syntax par=spar
 \end{description}
 
 \section{Tips}
@@ -287,39 +341,40 @@ is used to retrieve the detector parameter var
 \subsubsection{Mandatory setup}
 First of all you should setup the hostname and the detector size and dynamic range:
 \begin{verbatim}
-mythen_put 0:hostname mcs1x00
-mythen_get 0:nmod
-mythen_get 0:dr
+mythen_put hostname mcs1x00
+mythen_get nmod
+mythen_get dr
 \end{verbatim}
 You should also tell the program where to find the default trimbits files and calibration files: 
 \begin{verbatim}
-mythen_put 0:trimdir /scratch/trimbits
-mythen_get 0:caldir /scratch/calibration
+mythen_put trimdir /scratch/trimbits
+mythen_get caldir /scratch/calibration
 \end{verbatim}
 To chose the detector settings (e.g. standard):
 \begin{verbatim}
-mythen_put 0:settings standard
+mythen_put settings standard
 \end{verbatim}
-In case \verb=mythen_get 0:settings= does not answer correctly, it most probably means that there is a problem in the architecture or setting of \textit{trimdir} and \textit{caldir} (see section~\ref{sec:trimdir}).
+In case \verb=mythen_get settings= does not answer correctly, it most probably means that there is a problem in the architecture or setting of \textit{trimdir} and \textit{caldir} (see section~\ref{sec:trimdir}).
 
 \subsubsection{Acquisition setup}
 You need to setup where the files will be written to
 \begin{verbatim}
-mythen_put 0:outdir /scratch
-mythen_put 0:fname run
-mythen_put 0:index 0
+mythen_put outdir /scratch
+mythen_put fname run
+mythen_put index 0
 \end{verbatim}
 this way your files will al be named /scracth/run\_i.dat where is starts from 0 and is automatically incremented.
 
 You will then need to setup the detector threshold and settings, the exposure time, the number of real time frames and eventually how many real time frames should be acquired:
 \begin{verbatim}
-mythen_put 0:settings standard
-mythen_put 0:threshold 6000
-mythen_put 0:exptime 1.
-mythen_put 0:frames 10
+mythen_put settings standard
+mythen_put threshold 6000
+mythen_put exptime 1.
+mythen_put frames 10
 \end{verbatim}
 In this case 10 consecutive 1s frames will be acquired.
 External gating and triggering or more advanced acquisition modes are not explained here.
+
 \subsubsection{Acquiring}
 There are two ways of acquiring data.\\
 The first is fully automatic and freezes the terminal until the acquisition is finished:
@@ -328,23 +383,22 @@ mythen_acquire 0
 \end{verbatim}
 This is particulary indicated for fast real time acquisitions.
 
-
 If you want to acquire few long frames you can run:
 \begin{verbatim}
-mythen_put 0:status start
+mythen_put status start
 \end{verbatim}
 and the poll the detector status using
 \begin{verbatim}
-mythen_get 0:status 
+mythen_get status 
 \end{verbatim}
 if the answer is either transmitting or finished, the data are ready to be downloaded from the detector.
 This can be done using either:
 \begin{verbatim}
-mythen_get 0:frame
+mythen_get frame
 \end{verbatim}
 where a single data frame is downloaded or
 \begin{verbatim}
-mythen_get 0:data
+mythen_get data
 \end{verbatim}
 where all data present on the detector are downloaded.
 This is not indicated when many short real time frames should be acquired since the detector memory would be full before finishing the acquisition since the download time is so limited.
@@ -352,10 +406,18 @@ This is not indicated when many short real time frames should be acquired since 
 \subsubsection{Data processing}
 Flat field and rate corrections can be applied direcly by simply selecting:
 \begin{verbatim}
-mythen_put 0:flatield myflatfield.raw
-mythen_put 0:ratecorr -1
+mythen_put flatield myflatfield.raw
+mythen_put ratecorr -1
 \end{verbatim}
 
+Concerning the angular conversion, it is very reccomended that the users edit the file usersFunctions.cpp contained in the folder slsDetectorSoftware/usersFunctions. 
+In the file it is possible to modify the function used for calculating the angular conversion and the ones used for interfacing with the diffractometer equipment i.e. reading the encoder fo the detector position, the ionization chanmbers etc.
+
+It is also possible to configure some scans/scripts to be executed during the acquisition. They will be normally called as system calls except for threshold, energy and trimbits scans.
+
+
+
+\begin{comment}
 
 \chapter{mythenGUI}
 
@@ -452,6 +514,9 @@ In offline mode, you are required to enter the range and step of the calibration
 \item Chose the directory and the root of the calibrations files name. An extension corresponding to the serial number of the modules will be generated. 
 \item The calibration files for each module should be generated. For each energy you can set the start parameters of the fit and the fitting range (press enter after each change) so that the fitted curves nicely fit the data. The linear fit between energies and inflection points can also be checked.
 \end{enumerate}
+
+\end{comment}
+
 
 \end{document}
 

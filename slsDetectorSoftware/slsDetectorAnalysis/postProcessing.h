@@ -74,10 +74,8 @@ class postProcessing : public angularConversion, public fileIO
       \returns 0 if bad channel disabled, >0 otherwise
   */
   virtual int setBadChannelCorrection(string fname="")=0;
-
-
-
-
+  
+  static int setBadChannelCorrection(ifstream &infile, int &nbad, int *badlist, int moff=0);
   /** 
       set bad channels correction
       \param fname file with bad channel list ("" disable)
@@ -85,7 +83,7 @@ class postProcessing : public angularConversion, public fileIO
       \param badlist array of badchannels
       \returns 0 if bad channel disabled, >0 otherwise
   */
-   static int setBadChannelCorrection(string fname, int &nbad, int *badlist);
+  virtual int setBadChannelCorrection(string fname, int &nbad, int *badlist, int off=0)=0;
 
   
   /** 

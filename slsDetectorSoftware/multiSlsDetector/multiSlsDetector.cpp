@@ -1969,13 +1969,19 @@ int multiSlsDetector::setBadChannelCorrection(string fname){
 
   int badlist[MAX_BADCHANS];// badlistdet[MAX_BADCHANS];
   int nbad=0;//, nbaddet=0, choff=0, idet=0;
+  int ret=0;
+
 
   if (fname=="default")
     fname=string(thisMultiDetector->badChanFile);
+  
+  
+  
 
-  int ret=setBadChannelCorrection(fname, nbad, badlist);
+
+  ret=setBadChannelCorrection(fname, nbad, badlist);
 #ifdef VERBOSE
-  cout << "file contained " << ret << " badcahns" << endl; 
+  cout << "file contained " << ret << " badchans" << endl; 
 #endif
   if (ret==0) {
     thisMultiDetector->correctionMask&=~(1<<DISCARD_BAD_CHANNELS);
@@ -2021,7 +2027,7 @@ int multiSlsDetector::setBadChannelCorrection(int nbad, int *badlist, int ff) {
       }
     }
     if (nbaddet>0) {
-
+      
       if (detectors[idet]) {
 #ifdef VERBOSE
 	cout << "setting " << nbaddet << " badchans to detector " << idet << endl;
@@ -2035,7 +2041,7 @@ int multiSlsDetector::setBadChannelCorrection(int nbad, int *badlist, int ff) {
     nbaddet=0;
     for (int i=idet; i<thisMultiDetector->numberOfDetectors; i++) {
 #ifdef VERBOSE
-	  cout << "setting " << 0 << " badchans to detector " << i << endl;
+      cout << "setting " << 0 << " badchans to detector " << i << endl;
 #endif
       if (detectors[i]) {
 	detectors[i]->setBadChannelCorrection(nbaddet,badlist,0);
@@ -2047,9 +2053,9 @@ int multiSlsDetector::setBadChannelCorrection(int nbad, int *badlist, int ff) {
     for (int i=0; i<thisMultiDetector->numberOfDetectors; i++) {
       if (detectors[idet]) {
 #ifdef VERBOSE
-	  cout << "setting " << 0 << " badchans to detector " << idet << endl;
+	cout << "setting " << 0 << " badchans to detector " << idet << endl;
 #endif
-	detectors[idet]->setBadChannelCorrection(nbaddet,badlist,0);
+	  detectors[idet]->setBadChannelCorrection(nbaddet,badlist,0);
       }
     }
     thisMultiDetector->correctionMask&=~(1<<DISCARD_BAD_CHANNELS);

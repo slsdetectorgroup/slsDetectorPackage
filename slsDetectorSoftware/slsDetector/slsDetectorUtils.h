@@ -69,7 +69,8 @@ class slsDetectorUtils :  public slsDetectorActions, public postProcessing {
   // int getPositions(float *pos=NULL){return angularConversion::getPositions(pos);};
   
   using slsDetectorBase::setFlatFieldCorrection;
-  
+  using postProcessing::setBadChannelCorrection;
+
   // string getFilePath(){return fileIO::getFilePath();};
   // string setFilePath(string s){return fileIO::setFilePath(s);};
   
@@ -269,6 +270,7 @@ class slsDetectorUtils :  public slsDetectorActions, public postProcessing {
 
 
 
+  int setBadChannelCorrection(string fname, int &nbadtot, int *badchanlist, int off=0);
 
 
 

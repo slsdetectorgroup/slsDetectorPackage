@@ -313,6 +313,81 @@ int slsDetectorUtils::setTotalProgress() {
 
 
 
+int slsDetectorUtils::setBadChannelCorrection(string fname, int &nbadtot, int *badchanlist, int off){
+
+  int nbad;
+  int badlist[MAX_BADCHANS];
+
+  ifstream infile;
+  string str;
+  int interrupt=0;
+  int ich;
+  int chmin,chmax;
+#ifdef VERBOSE
+  std::cout << "Setting bad channel correction to " << fname << std::endl;
+#endif
+  int modmi=0, modma=1;
+  int singlefile=0;
+
+  string fn;
+  int offset=off;
+
+
+  nbadtot=0;
+
+  if (fname=="" || fname=="none") {
+    ;
+  } else { 
+
+    if (fname.find(".sn")==string::npos && fname.find(".chans")==string::npos) {
+      modma=setNumberOfModules();
+      singlefile=1;
+    }
+
+    for (int im=0; im<modma; im++) {
+      
+
+      if (singlefile) {
+
+	ostringstream ostfn;
+	ostfn << fname << ".sn"  << setfill('0') << setw(3) << hex << getId(MODULE_SERIAL_NUMBER, im); 
+	fn=ostfn.str();
+  
+      } else
+	fn=fname;
+      
+
+
+    infile.open(fn.c_str(), ios_base::in);
+    if (infile.is_open()==0) {
+      std::cout << "could not open file " << fname <<std::endl;
+      return -1;
+    }
+
+
+    nbad=setBadChannelCorrection(infile, nbad, badlist, offset);
+    infile.close();
+    
+    for (int ich=0; ich<nbad; ich++) {
+      if (nbadtot<MAX_BADCHANS) {
+	badchanlist[nbadtot]=badlist[ich];
+	nbadtot++;
+      }
+    }
+    
+    offset+=getChansPerMod(im); 
+    
+  }
+  
+  }
+  if (nbadtot>0 && nbadtot<MAX_BADCHANS) {
+    return nbadtot;
+  } else
+    return 0;
+
+}
+
+
 
 
 float slsDetectorUtils::getCurrentProgress() {

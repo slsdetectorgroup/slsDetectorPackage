@@ -1108,7 +1108,7 @@ typedef  struct sharedSlsDetector {
       \returns 0 if bad channel disabled, >0 otherwise
   */
   int setBadChannelCorrection(string fname="");
-  
+
   /** 
       set bad channels correction
       \param nch number of bad channels

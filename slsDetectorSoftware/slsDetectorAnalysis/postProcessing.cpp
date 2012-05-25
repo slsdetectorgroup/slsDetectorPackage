@@ -55,33 +55,26 @@ int postProcessing::flatFieldCorrect(float datain, float errin, float &dataout, 
 };
 
 
-int postProcessing::setBadChannelCorrection(string fname, int &nbad, int *badlist){
-  ifstream infile;
-  string str;
+
+
+
+int postProcessing::setBadChannelCorrection(ifstream &infile, int &nbad, int *badlist, int moff){
+  
   int interrupt=0;
   int ich;
   int chmin,chmax;
-#ifdef VERBOSE
-  std::cout << "Setting bad channel correction to " << fname << std::endl;
-#endif
+  string str;
 
-  if (fname=="" || fname=="none") {
-    nbad=0;
-    return 0;
-  } else { 
-    infile.open(fname.c_str(), ios_base::in);
-    if (infile.is_open()==0) {
-      std::cout << "could not open file " << fname <<std::endl;
-      return -1;
-    }
-    nbad=0;
-    while (infile.good() and interrupt==0) {
-      getline(infile,str);
+
+  
+  nbad=0;
+  while (infile.good() and interrupt==0) {
+    getline(infile,str);
 #ifdef VERBOSE
-      std::cout << str << std::endl;
+    std::cout << str << std::endl;
 #endif
-      istringstream ssstr;
-      ssstr.str(str);
+    istringstream ssstr;
+    ssstr.str(str);
       if (ssstr.bad() || ssstr.fail() || infile.eof()) {
 	interrupt=1;
 	break;
@@ -117,14 +110,24 @@ int postProcessing::setBadChannelCorrection(string fname, int &nbad, int *badlis
 	} else
 	  interrupt=1;
       }
-    }
   }
-  infile.close();
-  if (nbad>0 && nbad<MAX_BADCHANS) {
-    return nbad;
-  } else
-  return 0;
+
+  for (int ich=0; ich<nbad; ich++) {
+    badlist[ich]=badlist[ich]+moff;
+  }
+  return nbad;
 }
+
+
+
+
+
+
+
+
+
+
+
 
 
 void postProcessing::processFrame(int *myData, int delflag) {
@@ -401,12 +404,12 @@ int postProcessing::fillBadChannelMask() {
 #ifdef VERBOSE
       cout << "deleting bad channel mask beacuse number of bad channels is 0" << endl;
 #endif
-	
-	delete [] badChannelMask;
-	badChannelMask=NULL;
+      
+      delete [] badChannelMask;
+      badChannelMask=NULL;
       }
     }
-
+    
   } else {
 #ifdef VERBOSE
     cout << "bad channel correction is disabled " << nbad << endl;
@@ -419,11 +422,12 @@ int postProcessing::fillBadChannelMask() {
       badChannelMask=NULL;
     }
   }
-
+  
 #ifdef VERBOSE
-    cout << "number of bad channels is " << nbad << endl;
+  cout << "number of bad channels is " << nbad << endl;
 #endif
   return  nbad;
+
 }
 
 

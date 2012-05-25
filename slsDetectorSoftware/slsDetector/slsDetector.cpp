@@ -4239,21 +4239,42 @@ int slsDetector::rateCorrect(float* datain, float *errin, float* dataout, float 
   
   return 0;
 };
-int slsDetector::setBadChannelCorrection(string fname){
 
+
+
+
+
+
+
+int slsDetector::setBadChannelCorrection(string fname){
+  
+
+  int nbadmod,ret=0;
+  int badchanlist[MAX_BADCHANS];
+  int off;
+
+  string fn=fname;
+  
   if (fname=="default")
-    fname=string(thisDetector->badChanFile);
-  int ret=setBadChannelCorrection(fname, thisDetector->nBadChans, thisDetector->badChansList);
+    fname=string(badChanFile);
+
+  if (nBadChans && badChansList)
+    ret=setBadChannelCorrection(fname, *nBadChans, badChansList);
 
   if (ret) {
-    thisDetector->correctionMask|=(1<<DISCARD_BAD_CHANNELS);
-    strcpy(thisDetector->badChanFile,fname.c_str());
+    *correctionMask|=(1<<DISCARD_BAD_CHANNELS);
+    strcpy(badChanFile,fname.c_str());
   } else
-    thisDetector->correctionMask&=~(1<<DISCARD_BAD_CHANNELS);
+    *correctionMask&=~(1<<DISCARD_BAD_CHANNELS);
 
   fillBadChannelMask();
-  return  thisDetector->correctionMask&(1<<DISCARD_BAD_CHANNELS);
+  return  (*correctionMask)&(1<<DISCARD_BAD_CHANNELS);
 }
+
+
+
+
+
 
 
 int slsDetector::setBadChannelCorrection(int nch, int *chs, int ff) {
@@ -4263,9 +4284,12 @@ int slsDetector::setBadChannelCorrection(int nch, int *chs, int ff) {
   if (ff==0) {
     if (nch<MAX_BADCHANS && nch>0) {
       thisDetector->correctionMask|=(1<<DISCARD_BAD_CHANNELS);
-      thisDetector->nBadChans=nch;
+      thisDetector->nBadChans=0;
       for (int ich=0 ;ich<nch; ich++) {
-	thisDetector->badChansList[ich]=chs[ich];
+	if (chs[ich]<getMaxNumberOfChannels()) {
+	  thisDetector->badChansList[ich]=chs[ich];
+	  thisDetector->nBadChans++;
+	}
       }
     } else
       thisDetector->correctionMask&=~(1<<DISCARD_BAD_CHANNELS);
@@ -5316,7 +5340,7 @@ int slsDetector::writeSettingsFile(string fname, int imod){
 int slsDetector::loadSettingsFile(string fname, int imod) {
 
   sls_detector_module  *myMod=NULL;
-  string fn;
+  string fn=fname;
   fn=fname;
   int mmin=0, mmax=setNumberOfModules();
   if (imod>=0) {
@@ -5324,7 +5348,7 @@ int slsDetector::loadSettingsFile(string fname, int imod) {
     mmax=imod+1;
   }
   for (int im=mmin; im<mmax; im++) {
-    if (fname.find(".sn")==string::npos) {
+    if (fname.find(".sn")==string::npos && fname.find(".trim")) {
       ostringstream ostfn;
       ostfn << fname << ".sn"  << setfill('0') << setw(3) << hex << getId(MODULE_SERIAL_NUMBER, im); 
       fn=ostfn.str();

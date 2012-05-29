@@ -24,6 +24,7 @@ class slsDetectorUtils;
 #include "sls_detector_defs.h"
 /** Qt Include Headers */
 #include <QScrollArea>
+#include <QGridLayout>
 
 /**
  *@short Main window of the GUI.
@@ -50,16 +51,14 @@ public:
 private:
 	/** The Qt Application */
 	QApplication *theApp;
-
 	/** The sls detector object */
 	slsDetectorUtils *myDet;
-
 	/** The Plot widget	 */
 	qDrawPlot *myPlot;
-
 	/**Tab Widget */
 	QTabWidget *tabs;
-
+	/**Layout of the central Widget */
+	QGridLayout *layoutTabs;
 	/** height of Plot Window when undocked */
 	int heightPlotWindow;
 
@@ -68,7 +67,6 @@ private:
 
 	/* Scroll Area for the tabs**/
 	QScrollArea *scroll[NumberOfTabs];
-	QScrollArea *scrollMain;
 	/**Measurement tab */
 	qTabMeasurement *tab_measurement;
 	/**DataOutput tab */
@@ -99,9 +97,10 @@ private:
 	 */
 	void Initialization();
 
-	/** Enables the developer tab
+	/** Sets/unsets the developer mode (developer tab)
+	 * @param b bool TRUE sets, FALSE unsets\
 	 */
-	void SetDeveloperMode();
+	void SetDeveloperMode(bool b);
 
 private slots:
 /** Sets/unsets the debug mode i.e. enables/disables the debug tab

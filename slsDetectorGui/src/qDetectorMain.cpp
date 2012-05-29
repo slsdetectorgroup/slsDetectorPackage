@@ -41,20 +41,26 @@ qDetectorMain::qDetectorMain(int argc, char **argv, QApplication *app, QWidget *
 	setupUi(this);
 	SetUpWidgetWindow();
 	Initialization();
-	SetDeveloperMode();
 	/**need to use argc and argv to determine which slsdet or multidet to use.*/
 
-	if(argc>1){
-		if(!strcasecmp(argv[1],"-developer"))
-			tabs->setTabEnabled(Developer,true);
-		else
-			tabs->setTabEnabled(Developer,false);
+	for(int iarg=1; iarg<argc; iarg++){
+		if(!strcasecmp(argv[1],"-developer"))		SetDeveloperMode(true);
+
+		if(!strcasecmp(argv[1],"-help")){
+			cout<<"Possible Arguments are:"<<endl;
+			cout<<"-help \t\t : \t This help"<<endl;
+			cout<<"-developer \t : \t Enables the developer tab"<<endl;
+			//cout<<"-id i \t : \t Sets the detector to id i (the default is 0). ";
+					//cout<<"Required only when more than one detector is connected in parallel."<<endl;
+
+		}
 	}
 
+
+	//centralwidget->setFixedHeight(centralwidget->height());
 }
 
 
-//Qt::ScrollBarAsNeeded
 
 
 qDetectorMain::~qDetectorMain(){
@@ -70,12 +76,11 @@ qDetectorMain::~qDetectorMain(){
 void qDetectorMain::SetUpWidgetWindow(){
 
 
-/*	scrollMain = new QScrollArea;
-	setCentralWidget(scrollMain);
-	scrollMain ->setWidget(centralwidget);
-	scrollMain->setWidgetResizable(true);*/
-
 	SetUpDetector();
+
+/** Layout */
+	layoutTabs= new QGridLayout;
+	centralwidget->setLayout(layoutTabs);
 
 /** plot setup*/
 	myPlot = new qDrawPlot(dockWidgetPlot,myDet);
@@ -107,6 +112,7 @@ void qDetectorMain::SetUpWidgetWindow(){
 	scroll[Advanced]	->setWidget(tab_advanced);
 	scroll[Debugging]	->setWidget(tab_debugging);
 	scroll[Developer]	->setWidget(tab_developer);
+
 	/** inserting all the tabs*/
 	tabs->insertTab(Measurement,	scroll[Measurement],	"Measurement");
 	tabs->insertTab(DataOutput,		scroll[DataOutput],		"Data Output");
@@ -121,6 +127,8 @@ void qDetectorMain::SetUpWidgetWindow(){
 	SetDebugMode(false);
 	SetBeamlineMode(false);
 	SetExpertMode(false);
+	SetDeveloperMode(false);
+
 }
 
 
@@ -190,11 +198,11 @@ void qDetectorMain::Initialization(){
 }
 
 
-void qDetectorMain::SetDeveloperMode(){
+void qDetectorMain::SetDeveloperMode(bool b){
 #ifdef VERBOSE
-	cout<<"Enabling Developer Mode "<<endl;
+	cout<<"Setting Developer Mode to "<<b<<endl;
 #endif
-	tabs->setTabEnabled(Developer,true);
+	tabs->setTabEnabled(Developer,b);
 }
 
 
@@ -314,31 +322,32 @@ void qDetectorMain::ResizeMainWindow(bool b){
 #ifdef VERBOSE
 	cout<<"Resizing Main Window: height:"<<height()<<endl;
 #endif
-	if(b)/** sets the main window height to a smaller maximum to get rid of space*/
+	/** undocked from the main window */
+	if(b){/** sets the main window height to a smaller maximum to get rid of space*/
 		setMaximumHeight(height()-heightPlotWindow-9);
-	else
+		dockWidgetPlot->setMinimumHeight(0);
+	}
+	else{
 		setMaximumHeight(QWIDGETSIZE_MAX);
+		dockWidgetPlot->setMinimumHeight(heightPlotWindow);
 
-	cout<<"size hint ht:"<<sizeHint().height()<<endl;
+	}
+
+
 }
 
 void qDetectorMain::SetTerminalWindowSize(bool b){
 #ifdef VERBOSE
 	cout<<"Resizing Terminal Window"<<endl;
 #endif
-
-	cout<<"min width:"<<dockWidgetTerminal->minimumWidth()<<endl;
-	cout<<"min height:"<<dockWidgetTerminal->minimumHeight()<<endl;
+//depends on gridlayout in qdrawterminal widget class
 	if(b){
 		dockWidgetTerminal->setMinimumWidth(width()/2);
 			}
-		//dockWidgetTerminal->setFixedSize(width()/2,dockWidgetTerminal->minimumHeight());
 
 	else{
 		dockWidgetTerminal->setMinimumWidth(38);
 		QSizePolicy sizePolicy(QSizePolicy::Preferred,QSizePolicy::Preferred);
 		dockWidgetTerminal->setSizePolicy(sizePolicy);
-		//dockWidgetTerminal->setSizePolicy(new QSizePolicy(QSizePolicy::Expanding,QSizePolicy::Expanding));
-		//dockWidgetTerminal->setFixedSize(dockWidgetTerminal->minimumWidth(),dockWidgetTerminal->minimumHeight());
 	}
 }

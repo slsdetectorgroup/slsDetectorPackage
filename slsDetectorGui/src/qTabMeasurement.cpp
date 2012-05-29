@@ -319,30 +319,27 @@ void qTabMeasurement::setTimingMode(int mode){
 	cout<<"Setting Timing mode to " << comboTimingMode->currentText().toAscii().data()<<endl;
 #endif
 	//need to send to client to set the timing mode
+
+	/** Default settings */
+	lblNumFrames->setEnabled(false);	spinNumFrames->setEnabled(false);
+	lblExpTime->setEnabled(false);		spinExpTime->setEnabled(false);			comboExpUnit->setEnabled(false);
+	lblPeriod->setEnabled(false);		spinPeriod->setEnabled(false);			comboPeriodUnit->setEnabled(false);
+	lblNumTriggers->setEnabled(false);	spinNumTriggers->setEnabled(false);
+	lblDelay->setEnabled(false);		spinDelay->setEnabled(false);			comboDelayUnit->setEnabled(false);
+	lblNumGates->setEnabled(false);		spinNumGates->setEnabled(false);
+	lblNumProbes->setEnabled(false);	spinNumProbes->setEnabled(false);
+
+
 	switch(mode){
 	case None:
-		lblNumFrames->setEnabled(false);	spinNumFrames->setEnabled(false);
-		lblExpTime->setEnabled(false);		spinExpTime->setEnabled(false);			comboExpUnit->setEnabled(false);
-		lblPeriod->setEnabled(false);		spinPeriod->setEnabled(false);			comboPeriodUnit->setEnabled(false);
-		lblNumTriggers->setEnabled(false);	spinNumTriggers->setEnabled(false);
-		lblDelay->setEnabled(false);		spinDelay->setEnabled(false);			comboDelayUnit->setEnabled(false);
-		lblNumGates->setEnabled(false);		spinNumGates->setEnabled(false);
-		lblNumProbes->setEnabled(false);	spinNumProbes->setEnabled(false);
 		break;
 	case Auto:
 		lblNumFrames->setEnabled(true);		spinNumFrames->setEnabled(true);
 		lblExpTime->setEnabled(true);		spinExpTime->setEnabled(true);			comboExpUnit->setEnabled(true);
 		lblPeriod->setEnabled(true);		spinPeriod->setEnabled(true);			comboPeriodUnit->setEnabled(true);
-		lblNumTriggers->setEnabled(false);	spinNumTriggers->setEnabled(false);
-		lblDelay->setEnabled(false);		spinDelay->setEnabled(false);			comboDelayUnit->setEnabled(false);
-		lblNumGates->setEnabled(false);		spinNumGates->setEnabled(false);
 		break;
 	case Gated:
 		lblNumFrames->setEnabled(true);		spinNumFrames->setEnabled(true);
-		lblExpTime->setEnabled(false);		spinExpTime->setEnabled(false);			comboExpUnit->setEnabled(false);
-		lblPeriod->setEnabled(false);		spinPeriod->setEnabled(false);			comboPeriodUnit->setEnabled(false);
-		lblNumTriggers->setEnabled(false);	spinNumTriggers->setEnabled(false);
-		lblDelay->setEnabled(false);		spinDelay->setEnabled(false);			comboDelayUnit->setEnabled(false);
 		lblNumGates->setEnabled(true);		spinNumGates->setEnabled(true);
 		break;
 	case Trigger_Exp_Series:
@@ -351,39 +348,26 @@ void qTabMeasurement::setTimingMode(int mode){
 		lblPeriod->setEnabled(true);		spinPeriod->setEnabled(true);			comboPeriodUnit->setEnabled(true);
 		lblNumTriggers->setEnabled(true);	spinNumTriggers->setEnabled(true);
 		lblDelay->setEnabled(true);			spinDelay->setEnabled(true);			comboDelayUnit->setEnabled(true);
-		lblNumGates->setEnabled(false);		spinNumGates->setEnabled(false);
 		break;
 	case Trigger_Readout:
 		lblNumFrames->setEnabled(true);		spinNumFrames->setEnabled(true);
 		lblExpTime->setEnabled(true);		spinExpTime->setEnabled(true);			comboExpUnit->setEnabled(true);
 		lblPeriod->setEnabled(true);		spinPeriod->setEnabled(true);			comboPeriodUnit->setEnabled(true);
-		lblNumTriggers->setEnabled(false);	spinNumTriggers->setEnabled(false);
 		lblDelay->setEnabled(true);			spinDelay->setEnabled(true);			comboDelayUnit->setEnabled(true);
-		lblNumGates->setEnabled(false);		spinNumGates->setEnabled(false);
 		break;
 	case Gated_Start:
 		lblNumFrames->setEnabled(true);		spinNumFrames->setEnabled(true);
 		lblExpTime->setEnabled(true);		spinExpTime->setEnabled(true);			comboExpUnit->setEnabled(true);
 		lblPeriod->setEnabled(true);		spinPeriod->setEnabled(true);			comboPeriodUnit->setEnabled(true);
 		lblNumTriggers->setEnabled(true);	spinNumTriggers->setEnabled(true);
-		lblDelay->setEnabled(false);		spinDelay->setEnabled(false);			comboDelayUnit->setEnabled(false);
 		lblNumGates->setEnabled(true);		spinNumGates->setEnabled(true);
 		break;
 	case Trigger_Frame:
-		lblNumFrames->setEnabled(false);	spinNumFrames->setEnabled(false);
 		lblExpTime->setEnabled(true);		spinExpTime->setEnabled(true);			comboExpUnit->setEnabled(true);
-		lblPeriod->setEnabled(false);		spinPeriod->setEnabled(false);			comboPeriodUnit->setEnabled(false);
 		lblNumTriggers->setEnabled(true);	spinNumTriggers->setEnabled(true);
-		lblDelay->setEnabled(false);		spinDelay->setEnabled(false);			comboDelayUnit->setEnabled(false);
-		lblNumGates->setEnabled(false);		spinNumGates->setEnabled(false);
 		break;
 	case Trigger_Window:
-		lblNumFrames->setEnabled(false);	spinNumFrames->setEnabled(false);
-		lblExpTime->setEnabled(false);		spinExpTime->setEnabled(false);			comboExpUnit->setEnabled(false);
-		lblPeriod->setEnabled(false);		spinPeriod->setEnabled(false);			comboPeriodUnit->setEnabled(false);
 		lblNumTriggers->setEnabled(true);	spinNumTriggers->setEnabled(true);
-		lblDelay->setEnabled(false);		spinDelay->setEnabled(false);			comboDelayUnit->setEnabled(false);
-		lblNumGates->setEnabled(false);		spinNumGates->setEnabled(false);
 		break;
 	default:
 		cout<<"ERROR: Timing mode being set to other should never happen"<<endl;
@@ -392,9 +376,7 @@ void qTabMeasurement::setTimingMode(int mode){
 
 	if(mode!=None){
 		if(myDet->getDetectorsType()==slsDetectorDefs::MYTHEN){
-			lblNumProbes->setEnabled(true);	spinNumProbes->setEnabled(true);
-		}else{
-			lblNumProbes->setEnabled(false);	spinNumProbes->setEnabled(false);
+			lblNumProbes->setEnabled(true);		spinNumProbes->setEnabled(true);
 		}
 	}
 

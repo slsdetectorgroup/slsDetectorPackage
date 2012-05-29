@@ -21,6 +21,7 @@ class qCloneWidget;
 #include <QGridLayout>
 #include <QGroupBox>
 #include <QTimer>
+#include <QString>
 
 
 /**
@@ -44,6 +45,20 @@ public:
 	 */
 	void StartStopDaqToggle(bool stop_if_running=0);
 
+	/**	sets plot Title */
+	void  		SetPlotTitle(QString title)      		{boxPlot->setTitle(title);}
+	/**	sets 1D X Axis Title */
+	void  		SetHistXAxisTitle(QString title)      	{histXAxisTitle = title;}
+	/**	sets 1D Y Axis Title */
+	void  		SetHistYAxisTitle(QString title)      	{histYAxisTitle = title;}
+	/**	sets 2D X Axis Title */
+	void  		SetImageXAxisTitle(QString title)      	{imageXAxisTitle = title;}
+	/**	sets 2D Y Axis Title */
+	void  		SetImageYAxisTitle(QString title)      	{imageYAxisTitle = title;}
+	/**	sets 2D Z Axis Title */
+	void  		SetImageZAxisTitle(QString title)      	{imageZAxisTitle = title;}
+
+
 private:
 	/** The sls detector object */
 	slsDetectorUtils *myDet;
@@ -61,7 +76,7 @@ private:
 	/**	Max Number of Clone Windows */
 	static const int MAXCloneWindows = 50;
 	/**	Array of clone window widget pointers */
-	qCloneWidget			*winClone[MAXCloneWindows];
+	qCloneWidget		*winClone[MAXCloneWindows];
 
 /** Widgets needed to set up plot*/
 	QGroupBox 			*boxPlot;
@@ -69,13 +84,16 @@ private:
 	QGridLayout 		*plotLayout;
 	/**	Timer to update plot */
 	QTimer* 			plot_update_timer;
+
+
+
 	/**	1D object */
 	SlsQt1DPlot* 		plot1D;
 	/**	2D object */
 	SlsQt2DPlotLayout* 	plot2D;
-	/**	1D hist values */
+	/**	vector of 1D hist values */
 	QVector<SlsQtH1D*> 	plot1D_hists;
-
+	QVector<SlsQtH1D*> 	cloneplot1D_hists;
 
 /**variables for threads */
 	/**	 */
@@ -91,11 +109,11 @@ private:
 	/**	Title in 2D */
 	std::string  imageTitle;
 	/**	X Axis Title in 2D */
-	std::string  imageXAxisTitle;
+	QString  imageXAxisTitle;
 	/** Y Axis Title in 2D */
-	std::string  imageYAxisTitle;
+	QString  imageYAxisTitle;
 	/**	Z Axis Title in 2D */
-	std::string  imageZAxisTitle;
+	QString  imageZAxisTitle;
 	/**	Number of Pixels in X Axis */
 	unsigned int nPixelsX;
 	/**	Number of Pixels in Y Axis */
@@ -107,9 +125,9 @@ private:
 	/**	Title for all the graphs in 1D */
 	std::string  histTitle[10];
 	/**	X Axis Title in 1D */
-	std::string  histXAxisTitle;
+	QString  histXAxisTitle;
 	/**	Y Axis Title in 1D */
-	std::string  histYAxisTitle;
+	QString  histYAxisTitle;
 	/**	Total Number of X axis values/channels in 1D */
 	int          histNBins;
 	/**	X Axis value in 1D */
@@ -123,45 +141,18 @@ private:
 	/**	 */
 	int    UnlockLastImageArray()		{return pthread_mutex_unlock(&last_image_complete_mutex);}
 	/**	 */
-	SlsQt1DPlot*       Get1DPlotPtr() 	{return plot1D;}
-	/**	 */
-	SlsQt2DPlotLayout* Get2DPlotPtr() 	{return plot2D;}
-	/**	 */
 	int    StartDaqForGui() 		  	{return StartOrStopThread(1) ? 1:0;}
 	/**	 */
 	int    StopDaqForGui() 			  	{return StartOrStopThread(0) ? 0:1;}
-	/**	 */
-	unsigned int PlotInScope()        	{return plot_in_scope;}
-	/**	 */
-	unsigned int GetLastImageNumber() 	{return lastImageNumber;}
+
 	/**	 */
 	const char*  GetImageTitle()      	{return imageTitle.c_str();}
 	/**	 */
-	const char*  GetImageXAxisTitle() 	{return imageXAxisTitle.c_str();}
-	/**	 */
-	const char*  GetImageYAxisTitle() 	{return imageYAxisTitle.c_str();}
-	/**	 */
-	const char*  GetImageZAxisTitle() 	{return imageZAxisTitle.c_str();}
-	/**	 */
-	unsigned int GetNPixelsX()        	{return nPixelsX;}
-	/**	 */
-	unsigned int GetNPixelsY()        	{return nPixelsY;}
-	/**	 */
-	double*      GetLastImageArray()  	{return lastImageArray;}
-	/**	 */
-	unsigned int GetNHists()          	{return nHists;}
-	/**	 */
 	const char*  GetHistTitle(int i)  	{return (i>=0&&i<10) ? histTitle[i].c_str():0;} //int for hist number
 	/**	 */
-	const char*  GetHistXAxisTitle()  	{return histXAxisTitle.c_str();}
-	/**	 */
-	const char*  GetHistYAxisTitle()  	{return histYAxisTitle.c_str();}
-	/**	 */
-	unsigned int GetHistNBins()       	{return histNBins;}
-	/**	 */
-	double*      GetHistXAxis()       	{return histXAxis;}
-	/**	 */
 	double*      GetHistYAxis(int i)  	{return (i>=0&&i<10) ? histYAxis[i]:0;} //int for hist number
+
+
 
 	/** Initializes all its members and the thread */
 	void Initialization();
@@ -229,6 +220,9 @@ void StopUpdatePlot();
  */
 void StartDaq(bool start);
 
+/** To set the reference to zero after closing a clone
+ * @param id is the id of the clone
+ */
 void CloneCloseEvent(int id);
 signals:
 

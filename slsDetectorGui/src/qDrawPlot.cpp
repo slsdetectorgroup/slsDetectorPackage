@@ -25,8 +25,8 @@ using namespace std;
 
 qDrawPlot::qDrawPlot(QWidget *parent,slsDetectorUtils*& detector):QWidget(parent),myDet(detector),numberOfMeasurements(1){
 	if(myDet)	{
-		Initialization();
 		SetupWidgetWindow();
+		Initialization();
 		StartStopDaqToggle(); //as default
 	}
 }
@@ -35,47 +35,44 @@ qDrawPlot::qDrawPlot(QWidget *parent,slsDetectorUtils*& detector):QWidget(parent
 qDrawPlot::~qDrawPlot(){
 	/** Clear plot*/
 	Clear1DPlot();
-	for(QVector<SlsQtH1D*>::iterator h = plot1D_hists.begin();h!=plot1D_hists.end();h++)
-		delete *h;
+	for(QVector<SlsQtH1D*>::iterator h = plot1D_hists.begin();h!=plot1D_hists.end();h++)	delete *h;
 	plot1D_hists.clear();
 	delete[] lastImageArray; lastImageArray=0;
 	StartOrStopThread(0);
-	/** delete detector object pointer*/
 	delete myDet;
+	for(int i=0;i<MAXCloneWindows;i++) delete winClone[i];
 }
-
-
-
-
-void qDrawPlot::Initialization(){
-#ifdef VERBOSE
-	 cout<<"Setting up plot variables"<<endl;
-#endif
-	  stop_signal = 0;
-	  pthread_mutex_init(&last_image_complete_mutex,NULL);
-
-	  plot_in_scope   = 0;
-	  lastImageNumber = 0;
-	  nPixelsX = 0;
-	  nPixelsY = 0;
-	  lastImageArray = 0;
-
-	  nHists    = 0;
-	  histNBins = 0;
-	  histXAxis = 0;
-	  for(int i=0;i<10;i++) histYAxis[i]=0;
-
-	  for(int i=0;i<MAXCloneWindows;i++) winClone[i]=0;
-}
-
-
 
 
 void qDrawPlot::SetupWidgetWindow(){
+#ifdef VERBOSE
+	cout<<"Setting up plot variables"<<endl;
+#endif
+	stop_signal = 0;
+	pthread_mutex_init(&last_image_complete_mutex,NULL);
+
+	plot_in_scope   = 0;
+	lastImageNumber = 0;
+	nPixelsX = 0;
+	nPixelsY = 0;
+	lastImageArray = 0;
+
+	nHists    = 0;
+	histNBins = 0;
+	histXAxis = 0;
+	for(int i=0;i<10;i++) histYAxis[i]=0;
+
+	for(int i=0;i<MAXCloneWindows;i++) winClone[i]=0;
+
+
 	/** Setting up window*/
 	setFont(QFont("Sans Serif",9));
 	layout = new QGridLayout;
-	boxPlot = new QGroupBox("Start Image");
+	boxPlot = new QGroupBox("Measurement");
+
+	boxPlot->setAlignment(Qt::AlignHCenter);
+	boxPlot->setFont(QFont("Sans Serif",11,QFont::Bold));
+
 	layout->addWidget(boxPlot,1,1);
 	this->setLayout(layout);
 
@@ -83,26 +80,28 @@ void qDrawPlot::SetupWidgetWindow(){
 	connect(plot_update_timer, SIGNAL(timeout()), this, SLOT(UpdatePlot()));
 
 	plot1D = new SlsQt1DPlot(boxPlot);
-	plot1D->SetXTitle("x axis");
-	plot1D->SetYTitle("y axis");
+	plot1D->setFont(QFont("Sans Serif",9,QFont::Normal));
 	plot1D->hide();
 
 	plot2D = new SlsQt2DPlotLayout(boxPlot);
-	plot2D->SetXTitle("pixel");
-	plot2D->SetYTitle("pixel");
-	plot2D->SetZTitle("Intensity");
-	boxPlot->setFlat(1);
-	boxPlot->setTitle("Startup Image");
+	plot2D->setFont(QFont("Sans Serif",9,QFont::Normal));
+	plot2D->setTitle("Start Image");
+	plot2D->setAlignment(Qt::AlignLeft);
+	boxPlot->setFlat(true);
+
 
 	plotLayout =  new QGridLayout(boxPlot);
 	plotLayout->addWidget(plot1D,1,1,1,1);
 	plotLayout->addWidget(plot2D,1,1,1,1);
+}
 
 
+
+
+void qDrawPlot::Initialization(){
 	connect(this, 		SIGNAL(InterpolateSignal(bool)),	plot2D, 	SIGNAL(InterpolateSignal(bool)));
 	connect(this, 		SIGNAL(ContourSignal(bool)),		plot2D, 	SIGNAL(ContourSignal(bool)));
 	connect(this, 		SIGNAL(LogzSignal(bool)),			plot2D, 	SLOT(SetZScaleToLog(bool)));
-
 }
 
 
@@ -269,7 +268,7 @@ void* qDrawPlot::AcquireImages(){
 		if(!pthread_mutex_trylock(&last_image_complete_mutex)){
 
 			//plot_in_scope = 1;//i%2 + 1;
-			plot_in_scope = 2;
+			//plot_in_scope = 2;
 			cout<<"value:"<<image_data[6]<<endl;
 
 			lastImageNumber = i+1;
@@ -278,8 +277,6 @@ void* qDrawPlot::AcquireImages(){
 			nHists = 2;
 			sprintf(temp_title,"curve one %d",i);    histTitle[0] = temp_title;
 			sprintf(temp_title,"curve two %d",i);    histTitle[1] = temp_title;
-			sprintf(temp_title,"Channel Number");  histXAxisTitle=temp_title;
-			sprintf(temp_title,"Intensity");  histYAxisTitle=temp_title;
 			histNBins = nx;
 			memcpy(histXAxis,    xvalues,nx*sizeof(double));
 			memcpy(histYAxis[0],yvalues0,nx*sizeof(double));
@@ -287,9 +284,6 @@ void* qDrawPlot::AcquireImages(){
 
 			//2d image stuff
 			sprintf(temp_title,"Image number %d",i); imageTitle=temp_title;
-			sprintf(temp_title,"The x-axis title");  imageXAxisTitle=temp_title;
-			sprintf(temp_title,"The y-axis title");  imageYAxisTitle=temp_title;
-			sprintf(temp_title,"The z-axis title");  imageZAxisTitle=temp_title;
 			nPixelsX = nx;
 			nPixelsY = ny;
 			memcpy(lastImageArray,image_data,nx*ny*sizeof(double));
@@ -315,9 +309,13 @@ void qDrawPlot::SelectPlot(int i){ //1 for 1D otherwise 2D
 	if(i==1){
 		plot1D->show();
 		plot2D->hide();
+		boxPlot->setFlat(false);
+		plot_in_scope=1;
 	}else{
 		plot1D->hide();
 		plot2D->show();
+		boxPlot->setFlat(true);
+		plot_in_scope=2;
 	}
 }
 
@@ -339,17 +337,17 @@ void qDrawPlot::UpdatePlot(){
 
 	LockLastImageArray();
 	//1-d plot stuff
-	if(GetHistNBins()){
-		plot1D->SetXTitle(GetHistXAxisTitle());
-		plot1D->SetYTitle(GetHistYAxisTitle());
-		for(int hist_num=0;hist_num<GetNHists();hist_num++){
+	if(histNBins){
+		plot1D->SetXTitle(histXAxisTitle.toAscii().constData());
+		plot1D->SetYTitle(histYAxisTitle.toAscii().constData());
+		for(int hist_num=0;hist_num<nHists;hist_num++){
 			SlsQtH1D*  h;
 			if(hist_num+1>plot1D_hists.size()){
-				plot1D_hists.append(h=new SlsQtH1D("1d plot",GetHistNBins(),GetHistXAxis(),GetHistYAxis(hist_num)));
+				plot1D_hists.append(h=new SlsQtH1D("1d plot",histNBins,histXAxis,GetHistYAxis(hist_num)));
 				h->SetLineColor(hist_num+1);
 			}else{
 				h=plot1D_hists.at(hist_num);
-				h->SetData(GetHistNBins(),GetHistXAxis(),GetHistYAxis(hist_num));
+				h->SetData(histNBins,histXAxis,GetHistYAxis(hist_num));
 			}
 			h->setTitle(GetHistTitle(hist_num));
 			h->Attach(plot1D);
@@ -359,23 +357,23 @@ void qDrawPlot::UpdatePlot(){
 
 	//2-d plot stuff
 	static int last_plot_number = 0;
-	if(GetLastImageArray()){
-		if(GetLastImageNumber()&&last_plot_number!=GetLastImageNumber() && //there is a new plot
-				GetNPixelsX()>0&&GetNPixelsY()>0){
-			plot2D->GetPlot()->SetData(GetNPixelsX(),-0.5,GetNPixelsX()-0.5,GetNPixelsY(),-0.5,GetNPixelsY()-0.5,GetLastImageArray());
+	if(lastImageArray){
+		if(lastImageNumber&&last_plot_number!=lastImageNumber && //there is a new plot
+				nPixelsX>0&&nPixelsY>0){
+			plot2D->GetPlot()->SetData(nPixelsX,-0.5,nPixelsX-0.5,nPixelsY,-0.5,nPixelsY-0.5,lastImageArray);
 			//as it inherits a widget
-			boxPlot->setTitle(GetImageTitle());
-			plot2D->SetXTitle(GetImageXAxisTitle());
-			plot2D->SetYTitle(GetImageYAxisTitle());
-			plot2D->SetZTitle(GetImageZAxisTitle());
+			plot2D->setTitle(GetImageTitle());
+			plot2D->SetXTitle(imageXAxisTitle);
+			plot2D->SetYTitle(imageYAxisTitle);
+			plot2D->SetZTitle(imageZAxisTitle);
 			plot2D->UpdateNKeepSetRangeIfSet(); //this will keep a "set" z range, and call Plot()->Update();
 		}
 	}
-	last_plot_number=GetLastImageNumber();
+	last_plot_number=lastImageNumber;
 	UnlockLastImageArray();
 
-	if(PlotInScope()==1)      SelectPlot(1);
-	else if(PlotInScope()==2) SelectPlot(2);
+/*	if(plot_in_scope==1)      SelectPlot(1);
+	else if(plot_in_scope==2) SelectPlot(2);*/
 
 	if(number_of_exposures==last_plot_number){
 		StartStopDaqToggle(1);
@@ -407,13 +405,32 @@ void qDrawPlot::ClonePlot(){
 		exit(-1);
 	}
 
-	winClone[i] = new qCloneWidget(this,i,boxPlot->size(),(int)PlotInScope(),plot1D,plot2D);
-	if(PlotInScope()==1)
+	winClone[i] = new qCloneWidget(this,i,boxPlot->size(),boxPlot->title(),(int)plot_in_scope,plot1D,plot2D);
+	if(plot_in_scope==1){
 		plot1D = new SlsQt1DPlot(boxPlot);
-	else
+		plot1D->setFont(QFont("Sans Serif",9,QFont::Normal));
+		plotLayout->addWidget(plot1D,1,1,1,1);
+		/** Somehow the 1d plot hists are lost*/
+		SlsQtH1D*  h;
+		for(int hist_num=0;hist_num<nHists;hist_num++){
+			SlsQtH1D*  k;
+			if(hist_num+1>cloneplot1D_hists.size()){
+				cloneplot1D_hists.append(k=new SlsQtH1D("1d plot",histNBins,histXAxis,GetHistYAxis(hist_num)));
+				k->SetLineColor(hist_num+1);
+			}else{
+				k=cloneplot1D_hists.at(hist_num);
+				k->SetData(histNBins,histXAxis,GetHistYAxis(hist_num));
+			}
+			k->setTitle(GetHistTitle(hist_num));
+			k->Attach(winClone[i]->Get1Dplot());
+		}
+		winClone[i]->Get1Dplot()->UnZoom();
+	}
+	else{
 		plot2D = new SlsQt2DPlotLayout(boxPlot);
-	plotLayout->addWidget(plot1D,1,1,1,1);
-	plotLayout->addWidget(plot2D,1,1,1,1);
+		plot2D->setFont(QFont("Sans Serif",9,QFont::Normal));
+		plotLayout->addWidget(plot2D,1,1,1,1);
+	}
 	UpdatePlot();
 	connect(this, 		SIGNAL(InterpolateSignal(bool)),	plot2D, 	SIGNAL(InterpolateSignal(bool)));
 	connect(this, 		SIGNAL(ContourSignal(bool)),		plot2D, 	SIGNAL(ContourSignal(bool)));

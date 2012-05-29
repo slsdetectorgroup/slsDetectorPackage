@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>734</width>
+    <width>718</width>
     <height>339</height>
    </rect>
   </property>
@@ -153,9 +153,9 @@
    <property name="geometry">
     <rect>
      <x>20</x>
-     <y>20</y>
+     <y>10</y>
      <width>321</width>
-     <height>117</height>
+     <height>130</height>
     </rect>
    </property>
    <layout class="QGridLayout" name="gridLayout">
@@ -270,9 +270,9 @@
    <property name="geometry">
     <rect>
      <x>390</x>
-     <y>20</y>
+     <y>11</y>
      <width>322</width>
-     <height>312</height>
+     <height>321</height>
     </rect>
    </property>
    <layout class="QGridLayout" name="gridTimeResolved">
@@ -788,7 +788,7 @@
    <property name="geometry">
     <rect>
      <x>20</x>
-     <y>150</y>
+     <y>170</y>
      <width>319</width>
      <height>90</height>
     </rect>

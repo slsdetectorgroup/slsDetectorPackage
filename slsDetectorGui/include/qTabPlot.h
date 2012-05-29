@@ -41,6 +41,15 @@ private:
 	/** The Plot widget	 */
 	qDrawPlot *myPlot;
 
+	/** some Default Values */
+	static QString defaultPlotTitle;
+	static QString defaultHistXAxisTitle;
+	static QString defaultHistYAxisTitle;
+	static QString defaultImageXAxisTitle;
+	static QString defaultImageYAxisTitle;
+	static QString defaultImageZAxisTitle;
+
+
 /** methods */
 	/** Sets up the widget
 	 */
@@ -63,6 +72,22 @@ public slots:
 
 
 private slots:
+/** Selects the plot to display, enables/disables widgets
+ * @param b true to select plot dimension 1, else false to select 2D
+ */
+void Select1DPlot(bool b);
+
+/**Sets the titles in plot axis
+ */
+void SetTitles();
+
+/** Enables/Sets Titles to default
+ */
+void EnableTitles();
+
+
+
+
 signals:
 
 

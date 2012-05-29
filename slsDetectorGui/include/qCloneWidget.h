@@ -14,6 +14,14 @@ class SlsQt2DPlotLayout;
 /** Qt Include Headers */
 #include <QFrame>
 #include <QCloseEvent>
+#include <QGroupBox>
+#include <QWidget>
+#include <QHBoxLayout>
+#include <QPushButton>
+#include <QLabel>
+#include <QLineEdit>
+#include <QComboBox>
+#include <QCheckBox>
 
 /**
  *@short Sets up the clone plot widget
@@ -24,13 +32,16 @@ class qCloneWidget:public QFrame{
 public:
 	/** \short The constructor
 	 */
-	qCloneWidget(QWidget *parent,int id,QSize fSize,int numDim,SlsQt1DPlot*& plot1D,SlsQt2DPlotLayout*& plot2D);
+	qCloneWidget(QWidget *parent,int id,QSize fSize,QString title,int numDim,SlsQt1DPlot*& plot1D,SlsQt2DPlotLayout*& plot2D);
 
 	/** Destructor
 	 */
 	~qCloneWidget();
 
 
+	/** Get the 1D plot reference
+	 */
+	SlsQt1DPlot* Get1Dplot(){ return cloneplot1D;};
 
 public slots:
 
@@ -44,6 +55,17 @@ private:
 	/**	clone 2D Plot */
 	SlsQt2DPlotLayout* 	cloneplot2D;
 
+	QGridLayout *mainLayout;
+    QGroupBox *boxSave;
+    QWidget *horizontalLayoutWidget;
+    QHBoxLayout *layoutSave;
+    QLabel *lblFName;
+    QHBoxLayout *hLayoutSave;
+    QLineEdit *dispFName;
+    QComboBox *comboFormat;
+    QPushButton *btnSave;
+    QCheckBox *chkAutoFName;
+    QCheckBox *chkSaveAll;
 protected:
 	void closeEvent(QCloseEvent* event);
 

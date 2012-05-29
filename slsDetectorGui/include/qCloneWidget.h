@@ -26,7 +26,7 @@ class SlsQt2DPlotLayout;
 /**
  *@short Sets up the clone plot widget
  */
-class qCloneWidget:public QFrame{
+class qCloneWidget:public QMainWindow{
 	Q_OBJECT
 
 public:

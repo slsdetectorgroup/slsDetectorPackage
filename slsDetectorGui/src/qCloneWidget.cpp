@@ -24,11 +24,11 @@ using namespace std;
 
 
 
-qCloneWidget::qCloneWidget(QWidget *parent,int id,QSize fSize,QString title,int numDim,SlsQt1DPlot*& plot1D,SlsQt2DPlotLayout*& plot2D):QFrame(parent,Qt::Popup|Qt::SubWindow),id(id){
+qCloneWidget::qCloneWidget(QWidget *parent,int id,QSize fSize,QString title,int numDim,SlsQt1DPlot*& plot1D,SlsQt2DPlotLayout*& plot2D):QMainWindow(parent),id(id){
 
 
-	mainLayout = new QGridLayout(this);
-	setLayout(mainLayout);
+/*	mainLayout = new QGridLayout(this);
+	setLayout(mainLayout);*/
 
 
 
@@ -51,6 +51,7 @@ qCloneWidget::qCloneWidget(QWidget *parent,int id,QSize fSize,QString title,int 
 		cloneBox->setFlat(true);
 	}
 
+	cloneBox->setCentralWidget();
 
 /*
 			boxSave = new QGroupBox(this);
@@ -105,8 +106,8 @@ qCloneWidget::qCloneWidget(QWidget *parent,int id,QSize fSize,QString title,int 
 
 	        gridClone->addWidget(boxSave,0,0);
 	        mainLayout->addWidget(boxSave,1,1);*/
-
-	        mainLayout->addWidget(cloneBox,0,0);
+/*
+	        mainLayout->addWidget(cloneBox,0,0);*/
 
 }
 

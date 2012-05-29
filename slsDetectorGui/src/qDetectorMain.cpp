@@ -82,6 +82,7 @@ void qDetectorMain::SetUpWidgetWindow(){
 	layoutTabs= new QGridLayout;
 	centralwidget->setLayout(layoutTabs);
 
+
 /** plot setup*/
 	myPlot = new qDrawPlot(dockWidgetPlot,myDet);
 	dockWidgetPlot->setWidget(myPlot);

@@ -23,6 +23,8 @@ class qCloneWidget;
 #include <QTimer>
 #include <QString>
 
+#define MAX_1DPLOTS 10
+
 
 /**
  *@short Sets up the plot widget
@@ -93,7 +95,7 @@ private:
 	SlsQt2DPlotLayout* 	plot2D;
 	/**	vector of 1D hist values */
 	QVector<SlsQtH1D*> 	plot1D_hists;
-	QVector<SlsQtH1D*> 	cloneplot1D_hists;
+
 
 /**variables for threads */
 	/**	 */
@@ -123,7 +125,7 @@ private:
 	/**	Number of graphs in 1D */
 	unsigned int nHists;
 	/**	Title for all the graphs in 1D */
-	std::string  histTitle[10];
+	std::string  histTitle[MAX_1DPLOTS];
 	/**	X Axis Title in 1D */
 	QString  histXAxisTitle;
 	/**	Y Axis Title in 1D */
@@ -133,7 +135,7 @@ private:
 	/**	X Axis value in 1D */
 	double*      histXAxis;
 	/** Y Axis value in 1D  */
-	double*      histYAxis[10];
+	double*      histYAxis[MAX_1DPLOTS];
 
 
 	/**	 */
@@ -148,9 +150,9 @@ private:
 	/**	 */
 	const char*  GetImageTitle()      	{return imageTitle.c_str();}
 	/**	 */
-	const char*  GetHistTitle(int i)  	{return (i>=0&&i<10) ? histTitle[i].c_str():0;} //int for hist number
+	const char*  GetHistTitle(int i)  	{return (i>=0&&i<MAX_1DPLOTS) ? histTitle[i].c_str():0;} //int for hist number
 	/**	 */
-	double*      GetHistYAxis(int i)  	{return (i>=0&&i<10) ? histYAxis[i]:0;} //int for hist number
+	double*      GetHistYAxis(int i)  	{return (i>=0&&i<MAX_1DPLOTS) ? histYAxis[i]:0;} //int for hist number
 
 
 
@@ -170,7 +172,6 @@ private:
 	static void* DataAcquisionThread(void *this_pointer);
 	/**	 */
 	void*        AcquireImages();
-
 
 
 public slots:
@@ -204,7 +205,10 @@ void ClonePlot();
  * */
 void CloseClones();
 
-
+/** To Save plot
+ * @param FName full name of file
+ * */
+void SavePlot(QString FName);
 
 private slots:
 /** To update plot
@@ -230,6 +234,7 @@ void UpdatingPlotFinished();
 void InterpolateSignal(bool);
 void ContourSignal(bool);
 void LogzSignal(bool);
+
 
 };
 

@@ -483,7 +483,7 @@
       <x>10</x>
       <y>20</y>
       <width>551</width>
-      <height>16</height>
+      <height>27</height>
      </rect>
     </property>
     <layout class="QGridLayout" name="gridLayout_3">
@@ -494,11 +494,31 @@
        </property>
       </widget>
      </item>
+     <item row="0" column="1">
+      <widget class="QPushButton" name="btnClear">
+       <property name="focusPolicy">
+        <enum>Qt::NoFocus</enum>
+       </property>
+       <property name="text">
+        <string>Clear</string>
+       </property>
+      </widget>
+     </item>
+     <item row="0" column="2">
+      <spacer name="horizontalSpacer">
+       <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+       </property>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>40</width>
+         <height>20</height>
+        </size>
+       </property>
+      </spacer>
+     </item>
     </layout>
    </widget>
-   <zorder>gridLayoutWidget_3</zorder>
-   <zorder>btnClear</zorder>
-   <zorder>gridLayoutWidget_4</zorder>
   </widget>
   <widget class="QGroupBox" name="boxSave">
    <property name="geometry">
@@ -628,9 +648,9 @@
    <property name="geometry">
     <rect>
      <x>599</x>
-     <y>41</y>
+     <y>10</y>
      <width>121</width>
-     <height>80</height>
+     <height>111</height>
     </rect>
    </property>
    <property name="title">
@@ -639,10 +659,10 @@
    <widget class="QWidget" name="gridLayoutWidget_2">
     <property name="geometry">
      <rect>
-      <x>10</x>
-      <y>10</y>
-      <width>101</width>
-      <height>71</height>
+      <x>20</x>
+      <y>20</y>
+      <width>81</width>
+      <height>81</height>
      </rect>
     </property>
     <layout class="QGridLayout" name="gridLayout_2">
@@ -653,7 +673,7 @@
       <number>9</number>
      </property>
      <property name="verticalSpacing">
-      <number>-1</number>
+      <number>13</number>
      </property>
      <item row="0" column="0">
       <widget class="QPushButton" name="btnClone">
@@ -689,28 +709,6 @@
      </item>
     </layout>
    </widget>
-  </widget>
-  <widget class="QWidget" name="verticalLayoutWidget">
-   <property name="geometry">
-    <rect>
-     <x>600</x>
-     <y>16</y>
-     <width>121</width>
-     <height>21</height>
-    </rect>
-   </property>
-   <layout class="QVBoxLayout" name="verticalLayout">
-    <item>
-     <widget class="QPushButton" name="btnClear">
-      <property name="focusPolicy">
-       <enum>Qt::NoFocus</enum>
-      </property>
-      <property name="text">
-       <string>Clear</string>
-      </property>
-     </widget>
-    </item>
-   </layout>
   </widget>
  </widget>
  <resources/>

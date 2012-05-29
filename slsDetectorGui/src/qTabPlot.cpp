@@ -36,6 +36,7 @@ qTabPlot::qTabPlot(QWidget *parent,slsDetectorUtils*& detector, qDrawPlot*& plot
 		//This also selects the text if unchecked
 		//includes setupwidgetwindow
 		//SelectPlot(1);
+		Select1DPlot(false);
 		Initialization();
 	}
 }
@@ -65,13 +66,15 @@ void qTabPlot::SetupWidgetWindow(){
 	dispXMax->setEnabled(false);
 	dispYMax->setEnabled(false);
 	dispZMax->setEnabled(false);
+
+	//dispFName->setText(QString(myDet->getFilePath().c_str())+'/');
+
 }
 
 
 void qTabPlot::Select1DPlot(bool b){
 	SetupWidgetWindow();
 	if(b){
-		myPlot->Select1DPlot();
 		box1D->setEnabled(true);
 		box2D->setEnabled(false);
 		chkZAxis->setEnabled(false);
@@ -81,8 +84,8 @@ void qTabPlot::Select1DPlot(bool b){
 		dispXAxis->setText(defaultHistXAxisTitle);
 		myPlot->SetHistYAxisTitle(defaultHistYAxisTitle);
 		dispYAxis->setText(defaultHistYAxisTitle);
+		myPlot->Select1DPlot();
 	}else{
-		myPlot->Select2DPlot();
 		box1D->setEnabled(false);
 		box2D->setEnabled(true);
 		chkZAxis->setEnabled(true);
@@ -94,6 +97,7 @@ void qTabPlot::Select1DPlot(bool b){
 		dispYAxis->setText(defaultImageYAxisTitle);
 		myPlot->SetImageZAxisTitle(defaultImageZAxisTitle);
 		dispZAxis->setText(defaultImageZAxisTitle);
+		myPlot->Select2DPlot();
 	}
 }
 
@@ -115,12 +119,13 @@ void qTabPlot::Initialization(){
 	connect(dispXAxis, 		SIGNAL(returnPressed()), this, 	SLOT(SetTitles()));
 	connect(dispYAxis, 		SIGNAL(returnPressed()), this, 	SLOT(SetTitles()));
 	connect(dispZAxis, 		SIGNAL(returnPressed()), this, 	SLOT(SetTitles()));
-
 /** Common Buttons*/
-	connect(btnClear, 		SIGNAL(clicked()),myPlot, 	SLOT(Clear1DPlot()));
+	connect(btnClear, 		SIGNAL(clicked()),		myPlot, SLOT(Clear1DPlot()));
+/** Save */
+	connect(btnSave, 		SIGNAL(clicked()),		this, 	SLOT(SavePlot()));
 
 /** test for 1D*/
-	connect(chktest1D,  	SIGNAL(toggled(bool)), this, 	SLOT(Select1DPlot(bool)));
+	connect(chktest1D,  	SIGNAL(toggled(bool)), 	this, 	SLOT(Select1DPlot(bool)));
 }
 
 
@@ -194,4 +199,7 @@ void qTabPlot::EnableTitles(){
 }
 
 
-
+void qTabPlot::SavePlot(){
+	QString fullFileName = QString(myDet->getFilePath().c_str())+'/'+dispFName->text()+comboFormat->currentText();
+	myPlot->SavePlot(fullFileName);
+}

@@ -14,6 +14,8 @@
 #include "multiSlsDetector.h"
 /** Qt Include Headers */
 #include <QFont>
+#include <QImage>
+#include <QPainter>
 /** C++ Include Headers */
 #include <iostream>
 #include <string>
@@ -60,7 +62,7 @@ void qDrawPlot::SetupWidgetWindow(){
 	nHists    = 0;
 	histNBins = 0;
 	histXAxis = 0;
-	for(int i=0;i<10;i++) histYAxis[i]=0;
+	for(int i=0;i<MAX_1DPLOTS;i++) histYAxis[i]=0;
 
 	for(int i=0;i<MAXCloneWindows;i++) winClone[i]=0;
 
@@ -68,31 +70,53 @@ void qDrawPlot::SetupWidgetWindow(){
 	/** Setting up window*/
 	setFont(QFont("Sans Serif",9));
 	layout = new QGridLayout;
-	boxPlot = new QGroupBox("Measurement");
+	this->setLayout(layout);
 
+	boxPlot = new QGroupBox("Measurement");
+	layout->addWidget(boxPlot,1,1);
 	boxPlot->setAlignment(Qt::AlignHCenter);
 	boxPlot->setFont(QFont("Sans Serif",11,QFont::Bold));
-
-	layout->addWidget(boxPlot,1,1);
-	this->setLayout(layout);
 
 	plot_update_timer = new QTimer(this);
 	connect(plot_update_timer, SIGNAL(timeout()), this, SLOT(UpdatePlot()));
 
+
+	/** Defaults - only for the initial picture*/
+	histXAxisTitle="Channel Number";
+	histYAxisTitle="Counts";
+	for(int i=0;i<MAX_1DPLOTS;i++)
+		histTitle[i].assign("curve"+i);
+	imageTitle.assign("Start Image");
+	imageXAxisTitle="Pixel";
+	imageYAxisTitle="Pixel";
+	imageZAxisTitle="Intensity";
+
+
+
+
 	plot1D = new SlsQt1DPlot(boxPlot);
 	plot1D->setFont(QFont("Sans Serif",9,QFont::Normal));
+	plot1D->SetXTitle(histXAxisTitle.toAscii().constData());
+	plot1D->SetYTitle(histYAxisTitle.toAscii().constData());
 	plot1D->hide();
 
 	plot2D = new SlsQt2DPlotLayout(boxPlot);
 	plot2D->setFont(QFont("Sans Serif",9,QFont::Normal));
-	plot2D->setTitle("Start Image");
+	plot2D->setTitle(GetImageTitle());
+	plot2D->SetXTitle(imageXAxisTitle);
+	plot2D->SetYTitle(imageYAxisTitle);
+	plot2D->SetZTitle(imageZAxisTitle);
 	plot2D->setAlignment(Qt::AlignLeft);
 	boxPlot->setFlat(true);
 
+	//QSizePolicy sizePolicy(QSizePolicy::Preferred,QSizePolicy::Preferred);
+	//boxPlot->setSizePolicy(sizePolicy);
 
 	plotLayout =  new QGridLayout(boxPlot);
 	plotLayout->addWidget(plot1D,1,1,1,1);
 	plotLayout->addWidget(plot2D,1,1,1,1);
+
+	boxPlot->setContentsMargins(0,15,0,0);
 }
 
 
@@ -219,7 +243,7 @@ void* qDrawPlot::AcquireImages(){
 
 
 
-	char cIndex[200];
+//	char cIndex[200];
 
 	//string filePath = myDet->getFilePath()+'/'+myDet->getFileName()+'_';
 	//cout<<"filePath:"<<filePath<<endl;
@@ -307,11 +331,16 @@ void qDrawPlot::setNumMeasurements(int num){
 
 void qDrawPlot::SelectPlot(int i){ //1 for 1D otherwise 2D
 	if(i==1){
+		plot1D->SetXTitle(histXAxisTitle.toAscii().constData());
+		plot1D->SetYTitle(histYAxisTitle.toAscii().constData());
 		plot1D->show();
 		plot2D->hide();
 		boxPlot->setFlat(false);
 		plot_in_scope=1;
 	}else{
+		plot2D->SetXTitle(imageXAxisTitle);
+		plot2D->SetYTitle(imageYAxisTitle);
+		plot2D->SetZTitle(imageZAxisTitle);
 		plot1D->hide();
 		plot2D->show();
 		boxPlot->setFlat(true);
@@ -391,6 +420,8 @@ void qDrawPlot::StopUpdatePlot(){
 
 
 
+/**----------------------------CLONES-------------------------*/
+
 
 void qDrawPlot::ClonePlot(){
 	int i=0;
@@ -405,30 +436,22 @@ void qDrawPlot::ClonePlot(){
 		exit(-1);
 	}
 
-	winClone[i] = new qCloneWidget(this,i,boxPlot->size(),boxPlot->title(),(int)plot_in_scope,plot1D,plot2D);
+	winClone[i] = new qCloneWidget(this,i,boxPlot->title(),(int)plot_in_scope,plot1D,plot2D,myDet->getFilePath());
 	if(plot_in_scope==1){
 		plot1D = new SlsQt1DPlot(boxPlot);
 		plot1D->setFont(QFont("Sans Serif",9,QFont::Normal));
+		plot1D->SetXTitle(histXAxisTitle.toAscii().constData());
+		plot1D->SetYTitle(histYAxisTitle.toAscii().constData());
 		plotLayout->addWidget(plot1D,1,1,1,1);
-		/** Somehow the 1d plot hists are lost*/
-		SlsQtH1D*  h;
-		for(int hist_num=0;hist_num<nHists;hist_num++){
-			SlsQtH1D*  k;
-			if(hist_num+1>cloneplot1D_hists.size()){
-				cloneplot1D_hists.append(k=new SlsQtH1D("1d plot",histNBins,histXAxis,GetHistYAxis(hist_num)));
-				k->SetLineColor(hist_num+1);
-			}else{
-				k=cloneplot1D_hists.at(hist_num);
-				k->SetData(histNBins,histXAxis,GetHistYAxis(hist_num));
-			}
-			k->setTitle(GetHistTitle(hist_num));
-			k->Attach(winClone[i]->Get1Dplot());
-		}
-		winClone[i]->Get1Dplot()->UnZoom();
+		winClone[i]->SetCloneHists((int)nHists,histNBins,histXAxis,histYAxis,histTitle);
 	}
 	else{
 		plot2D = new SlsQt2DPlotLayout(boxPlot);
 		plot2D->setFont(QFont("Sans Serif",9,QFont::Normal));
+		plot2D->setTitle(GetImageTitle());
+		plot2D->SetXTitle(imageXAxisTitle);
+		plot2D->SetYTitle(imageYAxisTitle);
+		plot2D->SetZTitle(imageZAxisTitle);
 		plotLayout->addWidget(plot2D,1,1,1,1);
 	}
 	UpdatePlot();
@@ -455,3 +478,15 @@ void qDrawPlot::CloneCloseEvent(int id){
 #endif
 }
 
+
+
+
+
+
+/**----------------------------SAVE-------------------------*/
+void qDrawPlot::SavePlot(QString FName){
+	QImage img(size().width(),size().height(),QImage::Format_RGB32);
+	QPainter painter(&img);
+	render(&painter);
+	img.save(FName);
+}

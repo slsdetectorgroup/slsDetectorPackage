@@ -85,8 +85,9 @@ void SetTitles();
  */
 void EnableTitles();
 
-
-
+/** Save Plot
+ */
+void SavePlot();
 
 signals:
 

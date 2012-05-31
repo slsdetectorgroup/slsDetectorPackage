@@ -3149,7 +3149,7 @@ int multiSlsDetector::readConfigurationFile(string const fname){
     std::cout<< "Read configuration file of " << iline << " lines" << std::endl;
 #endif
 
-
+    setNumberOfModules(-1);
     return iline;
 
 
@@ -3174,14 +3174,13 @@ int multiSlsDetector::writeConfigurationFile(string const fname){
     "headerafter",				\
     "headerbeforepar",				\
     "headerafterpar",				\
-    "nmod",					\
     "badchannels",				\
     "angconv",					\
     "globaloff",				\
     "binsize",					\
     "threaded"				};
 
-  int nvar=15;
+  int nvar=14;
  
   char ext[100];
   
@@ -3206,6 +3205,7 @@ int multiSlsDetector::writeConfigurationFile(string const fname){
     slsDetectorCommand *cmd=new slsDetectorCommand(this);
     
     // detector types!!!
+    cout << iv << " " << names[iv] << endl;
     strcpy(args[0],names[iv].c_str());
     outfile << names[iv] << " " << cmd->executeLine(1,args,GET_ACTION) << std::endl;
 
@@ -3220,6 +3220,8 @@ int multiSlsDetector::writeConfigurationFile(string const fname){
 
     //other configurations
     for (iv=1; iv<nvar; iv++) {
+      
+      cout << iv << " " << names[iv] << endl;
       strcpy(args[0],names[iv].c_str());
       outfile << names[iv] << " " << cmd->executeLine(1,args,GET_ACTION) << std::endl;
     }
@@ -3250,239 +3252,6 @@ int multiSlsDetector::writeConfigurationFile(string const fname){
 
 
 
-
-int multiSlsDetector::dumpDetectorSetup(string const fname, int level){
-
-  slsDetectorCommand *cmd=new slsDetectorCommand(this);
-
-  string names[]={
-    "fname",\
-    "index",\
-    "flags",\
-    "dr",\
-    "settings",\
-    "threshold",\
-    "exptime",\
-    "period",\
-    "delay",\
-    "gates",\
-    "frames",\
-    "cycles",\
-    "probes",\
-    "timing",\
-    "fineoff",\
-    "ratecorr",\
-    "startscript",\
-    "startscriptpar",\
-    "stopscript",\
-    "stopscriptpar",\
-    "scriptbefore",\
-    "scriptbeforepar",\
-    "scriptafter",\
-    "scriptafterpar",\
-    "headerbefore",\
-    "headerbeforepar",\
-    "headerafter",\
-    "headerafterpar",\
-    "scan0script",\
-    "scan0par",\
-    "scan0prec",\
-    "scan0steps",\
-    "scan1script",\
-    "scan1par",\
-    "scan1prec",\
-    "scan1steps",\
-    "flatfield",\
-    "badchannels",\
-    "angconv"
-  };
-  int nvar=39;
-
-
-
-    char ext[100];
-
-  int iv=0;
-  string fname1;
-
-
-
-  ofstream outfile;
-  char *args[2];
-  for (int ia=0; ia<2; ia++) {
-    args[ia]=new char[1000];
-  }
-  int nargs;
-  if (level==2)
-    nargs=2;
-  else
-    nargs=1;
-
-
-  if (level==2) {
-    fname1=fname+string(".config");
-    writeConfigurationFile(fname1);
-    fname1=fname+string(".det");
-  } else
-    fname1=fname;
-
-
-
-  outfile.open(fname1.c_str(),ios_base::out);
-  if (outfile.is_open()) {
-    for (iv=0; iv<nvar-5; iv++) {
-      strcpy(args[0],names[iv].c_str());
-      outfile << names[iv] << " " << cmd->executeLine(1,args,GET_ACTION) << std::endl;
-    }
-
-
-    strcpy(args[0],names[iv].c_str());
-    if (level==2) {
-      fname1=fname+string(".ff");
-      strcpy(args[1],fname1.c_str());
-    }
-    outfile << names[iv] << " " << cmd->executeLine(nargs,args,GET_ACTION) << std::endl;
-    iv++;
-
-    strcpy(args[0],names[iv].c_str());
-    if (level==2) {
-      fname1=fname+string(".bad");
-      strcpy(args[1],fname1.c_str());
-    }
-    outfile << names[iv] << " " << cmd->executeLine(nargs,args,GET_ACTION) << std::endl;
-    iv++;
-
-      
-    strcpy(args[0],names[iv].c_str());
-    if (level==2) {
-      fname1=fname+string(".angoff");
-      strcpy(args[1],fname1.c_str());
-    }
-    outfile << names[iv] << " " << cmd->executeLine(nargs,args,GET_ACTION) << std::endl;
-    iv++;
-
-
-
-
-
-    for (int i=0; i<thisMultiDetector->numberOfDetectors; i++) {
-      sprintf(ext,".det%d",i);
-      if (detectors[i]) {
-	iv+=detectors[i]->dumpDetectorSetup(fname+string(ext),outfile, level, i);
-      }
-    }
-
-    outfile.close();
-  }
-  else {
-    std::cout<< "Error opening parameters file " << fname1 << " for writing" << std::endl;
-    return FAIL;
-  }
-  
-#ifdef VERBOSE
-  std::cout<< "wrote " <<iv << " lines to  "<< fname1 << std::endl;
-#endif
-  
-  delete cmd;
-  return 0;
-
-} 
-
-
-
-
-int multiSlsDetector::retrieveDetectorSetup(string const fname1, int level){
-
-
-
-  multiSlsDetectorClient *cmd;
-
-
-    char ext[100];
-   
-   string fname;
-   string str;
-   ifstream infile;
-   int iargval;
-   int interrupt=0;
-  char *args[2];
-  for (int ia=0; ia<2; ia++) {
-    args[ia]=new char[1000];
-  }
-  string sargname, sargval;
-  int iline=0;
-  
-  if (level==2) {
-//     fname=fname1+string(".config");
-//     readConfigurationFile(fname);
-#ifdef VERBOSE
-    cout << "config file read" << endl;
-#endif
-    fname=fname1+string(".det");
-  }  else
-    fname=fname1;
-
-  infile.open(fname.c_str(), ios_base::in);
-  if (infile.is_open()) {
-    while (infile.good() and interrupt==0) {
-      sargname="none";
-      sargval="0";
-      getline(infile,str);
-      iline++;
-#ifdef VERBOSE
-      std::cout<<  str << std::endl;
-#endif
-      if (str.find('#')!=string::npos) {
-#ifdef VERBOSE
-	std::cout<< "Line is a comment " << std::endl;
-	std::cout<< str << std::endl;
-#endif
-	continue;
-      } else {
-	istringstream ssstr(str);
-	iargval=0;
-	while (ssstr.good()) {
-	  ssstr >> sargname;
-	  //  if (ssstr.good()) {
-	    strcpy(args[iargval],sargname.c_str());
-#ifdef VERBOSE
-      std::cout<< args[iargval]  << std::endl;
-#endif
-	    iargval++;
-	    // }
-	}
-	if (level==2) {
-	  cmd=new multiSlsDetectorClient(iargval,args,PUT_ACTION,this);
-	} else {
-	  if (string(args[0])==string("flatfield"))
-	    ;
-	  else if  (string(args[0])==string("badchannels"))
-	    ;
-	  else if  (string(args[0])==string("angconv"))
-	    ;
-	  else if (string(args[0])==string("trimbits"))
-	    ;
-	  else {
-	    cmd=new multiSlsDetectorClient(iargval,args,PUT_ACTION,this);
-	  }
-	}
-      }
-      iline++;
-    }
-    infile.close();
-    
-
-  } else {
-    std::cout<< "Error opening  " << fname << " for reading" << std::endl;
-    return FAIL;
-  }
-#ifdef VERBOSE
-  std::cout<< "Read  " << iline << " lines" << std::endl;
-#endif
-  return iline;
-
-
-}
 
 
 

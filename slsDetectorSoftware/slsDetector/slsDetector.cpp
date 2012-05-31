@@ -470,7 +470,9 @@ int slsDetector::initializeDetectorSize(detectorType type) {
        thisDetector->nModMax[Y]=1;
        thisDetector->dynamicRange=24;
        thisDetector->moveFlag=1;
+#ifdef VERBOSE
        cout << "move flag" << thisDetector->moveFlag<< endl;
+#endif
        break;
      case PICASSO:
        thisDetector->nChans=128;
@@ -4920,42 +4922,35 @@ int slsDetector::writeConfigurationFile(ofstream &outfile, int id){
   string names[]={				\
     "hostname",					\
     "port",					\
-    "dataport",					\
     "stopport",					\
-    "caldir",					\
     "settingsdir",				\
-    "trimen",					\
     "outdir",					\
-    "ffdir",					\
-    "headerbefore",				\
-    "headerafter",				\
-    "headerbeforepar",				\
-    "headerafterpar",				\
-    "nmod",					\
-    "badchannels",				\
-    "angconv",					\
     "angdir",					\
     "moveflag",					\
-    "globaloff",				\
-    "binsize",					\
-    "threaded",					\
+    "lock",					\
+    "caldir",					\
+    "ffdir",					\
+    "nmod",					\
     "waitstates",				\
     "setlength",				\
     "clkdivider",				\
     "extsig"					  };
 
+  // to be added in the future
+  //    "trimen",
+  //   "dataport",						
+	
   switch (thisDetector->myDetectorType) {
   case GOTTHARD:
-    names[6]="outdir";
-    names[7]="clientip";
-    names[8]="clientmac";
-    names[9]="servermac";
-    nvar=10;
+    names[9]="clientip";
+    names[10]="clientmac";
+    names[11]="servermac";
+    nvar=12;
     break;
   case MYTHEN:
     nsig=4;
   default:
-    nvar=25;
+    nvar=15;
     
   }
 
@@ -4967,21 +4962,22 @@ int slsDetector::writeConfigurationFile(ofstream &outfile, int id){
   
   
   for (iv=0; iv<nvar; iv++) {
-    //   cout << iv << " " << names[iv] << endl;
-    if (names[iv]=="extsig") {
-      for (int is=0; is<nsig; is++) {
-	sprintf(args[0],"%s:%d",names[iv].c_str(),is);
-	if (id>=0)
-	  outfile << id << ":";
+     cout << iv << " " << names[iv] << endl;
+     if (names[iv]=="extsig") {
+       for (int is=0; is<nsig; is++) {
+	 sprintf(args[0],"%s:%d",names[iv].c_str(),is);
 
-	outfile << names[iv] << " " << cmd->executeLine(1,args,GET_ACTION) << std::endl;
-      }
-    } else {
-      strcpy(args[0],names[iv].c_str());
-      if (id>=0)
-	  outfile << id << ":";
-      outfile << names[iv] << " " << cmd->executeLine(1,args,GET_ACTION) << std::endl;
-    }
+	 if (id>=0)
+	   outfile << id << ":";
+	 
+	 outfile << args[0] << " " << cmd->executeLine(1,args,GET_ACTION) << std::endl;
+       }
+     } else {
+       strcpy(args[0],names[iv].c_str());
+       if (id>=0)
+	 outfile << id << ":";
+       outfile << names[iv] << " " << cmd->executeLine(1,args,GET_ACTION) << std::endl;
+     }
   }
   delete cmd;
   return iv;
@@ -5000,151 +4996,7 @@ int slsDetector::writeConfigurationFile(ofstream &outfile, int id){
 
 
 
-  /* 
-     It should be possible to dump all the settings of the detector (including trimbits, threshold energy, gating/triggering, acquisition time etc.
-     in a file and retrieve it for repeating the measurement with identicals settings, if necessary
-  */
-int slsDetector::dumpDetectorSetup(string const fname, ofstream &outfile, int level, int id){ 
-  slsDetectorCommand *cmd=new slsDetectorCommand(this); 
-  string names[]={
-    "fname",\
-    "index",\
-    "flags",\
-    "dr",\
-    "settings",\
-    "threshold",\
-    "exptime",\
-    "period",\
-    "delay",\
-    "gates",\
-    "frames",\
-    "cycles",\
-    "probes",\
-    "timing",\
-    "fineoff",\
-    "ratecorr",\
-    "startscript",\
-    "startscriptpar",\
-    "stopscript",\
-    "stopscriptpar",\
-    "scriptbefore",\
-    "scriptbeforepar",\
-    "scriptafter",\
-    "scriptafterpar",\
-    "headerbefore",\
-    "headerbeforepar",\
-    "headerafter",\
-    "headerafterpar",\
-    "scan0script",\
-    "scan0par",\
-    "scan0prec",\
-    "scan0steps",\
-    "scan1script",\
-    "scan1par",\
-    "scan1prec",\
-    "scan1steps",\
-    "flatfield",\
-    "badchannels",\
-    "angconv",\
-    "trimbits",\
-    "timing"
-  };
-  int nvar=41;
-  int iv=0;
-  string fname1;
-  char *args[2];
-  for (int ia=0; ia<2; ia++) {
-    args[ia]=new char[1000];
-  }
-  int nargs;
-  if (level==2)
-    nargs=2;
-  else
-    nargs=1;
-
-
-
-  if (level==2) {
-    fname1=fname+string(".config");
-    strcpy(args[0],"config");
-    strcpy(args[1],fname1.c_str());
-    if (id>=0)
-      outfile << id << ":";
-    outfile << names[iv] << " " << cmd->executeLine(2,args,GET_ACTION) << std::endl;
-    iv++;
-  } 
-  
-
-
-  for (iv=0; iv<nvar-5; iv++) {
-    strcpy(args[0],names[iv].c_str());
-    if (id>=0)
-      outfile << id << ":";
-    outfile << names[iv] << " " << cmd->executeLine(1,args,GET_ACTION) << std::endl;
-    iv++;
-  }
-
-
-  strcpy(args[0],names[iv].c_str());
-  if (level==2) {
-    fname1=fname+string(".ff");
-    strcpy(args[1],fname1.c_str());
-  }
-  if (id>=0)
-    outfile << id << ":";
-  outfile << names[iv] << " " << cmd->executeLine(nargs,args,GET_ACTION) << std::endl;
-  iv++;
-
-  strcpy(args[0],names[iv].c_str());
-  if (level==2) {
-    fname1=fname+string(".bad");
-    strcpy(args[1],fname1.c_str());
-  }
-  if (id>=0)
-    outfile << id << ":";
-  outfile << names[iv] << " " << cmd->executeLine(nargs,args,GET_ACTION) << std::endl;
-  iv++;
 
-  
-  strcpy(args[0],names[iv].c_str());
-  if (level==2) {
-    fname1=fname+string(".angoff");
-    strcpy(args[1],fname1.c_str());
-  }
-  if (id>=0)
-    outfile << id << ":";
-  outfile << names[iv] << " " << cmd->executeLine(nargs,args,GET_ACTION) << std::endl;
-  iv++;
-  
-  strcpy(args[0],names[iv].c_str());
-  if (level==2) {
-    size_t c=fname.rfind('/');
-    if (c<string::npos) {
-      fname1=fname.substr(0,c+1)+string("trim_")+fname.substr(c+1);
-    } else {
-      fname1=string("trim_")+fname;
-    }
-    strcpy(args[1],fname1.c_str());
-#ifdef VERBOSE
-    std::cout<< "writing to file " << fname1 << std::endl;
-#endif
-  }
-  if (id>=0)
-    outfile << id << ":";
-  outfile << names[iv] << " " << cmd->executeLine(nargs,args,GET_ACTION) << std::endl;
-  iv++;
-  
-  strcpy(args[0],names[iv].c_str());
-    //  for (int is=0; is<4; is++) {
-    //  sprintf(args[0],"%s:%d",names[iv].c_str(),is);
-  if (id>=0)
-    outfile << id << ":";
-  outfile << args[0] << " " << cmd->executeLine(1,args,GET_ACTION) << std::endl;	
-  // }
-  iv++;
-  delete cmd;
-  return 0;
-}
 
 
 
@@ -5163,36 +5015,9 @@ int slsDetector::dumpDetectorSetup(string const fname, ofstream &outfile, int le
 
 
 
-  /* 
-     It should be possible to dump all the settings of the detector (including trimbits, threshold energy, gating/triggering, acquisition time etc.
-     in a file and retrieve it for repeating the measurement with identicals settings, if necessary
-  */
-int slsDetector::dumpDetectorSetup(string const fname, int level){ 
-  
-  string fname1;
-  ofstream outfile;
-  int iv;
-  if (level==2) {
-    fname1=fname+string(".det");
-  } else
-    fname1=fname;
 
-  outfile.open(fname1.c_str(),ios_base::out);
-  if (outfile.is_open()) {
 
-    iv=dumpDetectorSetup(fname, outfile, level);
 
-    outfile.close();
-  }  else {
-    std::cout<< "Error opening parameters file " << fname1 << " for writing" << std::endl;
-    return FAIL;
-  }
-  
-#ifdef VERBOSE
-  std::cout<< "wrote " <<iv << " lines to  "<< fname1 << std::endl;
-#endif
-  return 0;
-}
 
 
 
@@ -5217,113 +5042,6 @@ int slsDetector::dumpDetectorSetup(string const fname, int level){
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-int slsDetector::retrieveDetectorSetup(string fname1, int level){ 
-
-   
-  slsDetectorCommand *cmd=new slsDetectorCommand(this);
-   string fname;
-   string str;
-   ifstream infile;
-   int iargval;
-   int interrupt=0;
-  char *args[2];
-  for (int ia=0; ia<2; ia++) {
-    args[ia]=new char[1000];
-  }
-  string sargname, sargval;
-  int iline=0;
-  
-  if (level==2) {
-    fname=fname1+string(".config");
-    readConfigurationFile(fname);
-    //cout << "config file read" << endl;
-    fname=fname1+string(".det");
-  }  else
-    fname=fname1;
-  infile.open(fname.c_str(), ios_base::in);
-  if (infile.is_open()) {
-    while (infile.good() and interrupt==0) {
-      sargname="none";
-      sargval="0";
-      getline(infile,str);
-      iline++;
-#ifdef VERBOSE
-      std::cout<<  str << std::endl;
-#endif
-      if (str.find('#')!=string::npos) {
-#ifdef VERBOSE
-	std::cout<< "Line is a comment " << std::endl;
-	std::cout<< str << std::endl;
-#endif
-	continue;
-      } else {
-	istringstream ssstr(str);
-	iargval=0;
-	while (ssstr.good()) {
-	  ssstr >> sargname;
-	  //  if (ssstr.good()) {
-	    strcpy(args[iargval],sargname.c_str());
-#ifdef VERBOSE
-      std::cout<< args[iargval]  << std::endl;
-#endif
-	    iargval++;
-	    // }
-	}
-	if (level==2) {
-	  ;
-	  cmd->executeLine(iargval,args,PUT_ACTION);
-	} else {
-	  if (string(args[0])==string("flatfield"))
-	    ;
-	  else if  (string(args[0])==string("badchannels"))
-	    ;
-	  else if  (string(args[0])==string("angconv"))
-	    ;
-	  else if (string(args[0])==string("trimbits"))
-	    ;
-	  else {
-	    ;
-	    cmd->executeLine(iargval,args,PUT_ACTION);
-	  }
-	}
-      }
-      iline++;
-    }
-    infile.close();
-  } else {
-    std::cout<< "Error opening  " << fname << " for reading" << std::endl;
-    return FAIL;
-  }
-#ifdef VERBOSE
-  std::cout<< "Read  " << iline << " lines" << std::endl;
-#endif
-  delete cmd;
-  return iline;
-
-};
 
 
 

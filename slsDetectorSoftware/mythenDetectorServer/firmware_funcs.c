@@ -701,7 +701,7 @@ int setNMod(int n) {
 #ifdef VERBOSE
   printf("SetNMod called arg %d -- dr %d shiftfifo %d\n",n,dynamicRange,shiftfifo);
 #endif
-  if (n>0 && n<=ntot) {
+  if (n>=0 && n<=ntot) {
     nModX=n;
  
   /*d isable the fifos relative to the unused modules */

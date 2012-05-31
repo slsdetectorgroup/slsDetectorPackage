@@ -2584,7 +2584,7 @@ int set_port(int file_des) {
     
     sd=bindSocket(p_number);
   }
-    if (sd>=0) {
+    if (sd>=0 || sd==-10) {
       ret=OK;
       if (differentClients )
 	ret=FORCE_UPDATE;
@@ -2592,11 +2592,7 @@ int set_port(int file_des) {
       ret=FAIL;
       sprintf(mess,"Could not bind port %d\n", p_number);
       printf("Could not bind port %d\n", p_number); 
-      if (sd==-10) {
-      sprintf(mess,"Port %d already set\n", p_number);
-      printf("Port %d already set\n", p_number); 
 
-      }
     }
 
     n = sendDataOnly(file_des,&ret,sizeof(ret));
@@ -2604,9 +2600,11 @@ int set_port(int file_des) {
       n = sendDataOnly(file_des,mess,sizeof(mess));
     } else {
       n = sendDataOnly(file_des,&p_number,sizeof(p_number));
-      closeConnection(file_des);
-      exitServer(sockfd);
-      sockfd=sd;
+      if (sd>=0) {
+	closeConnection(file_des);
+	exitServer(sockfd);
+	sockfd=sd;
+      }
       
     }
 

@@ -374,24 +374,7 @@ class multiSlsDetector  : public slsDetectorUtils {
   int writeConfigurationFile(string const fname);
 
 
-  /* 
-     It should be possible to dump all the settings of the detector (including trimbits, threshold energy, gating/triggering, acquisition time etc.
-     in a file and retrieve it for repeating the measurement with identicals ettings, if necessary
-  */
-  /** 
-    
-    Purely virtual function
-    Should be implemented in the specific detector class
-    /sa mythenDetector::dumpDetectorSetup
-  */
-  int dumpMultiDetectorSetup(string const fname, int level=0);  
-  /** 
-    Purely virtual function
-    Should be implemented in the specific detector class
-    /sa mythenDetector::retrieveDetectorSetup
-  */
-  int retrieveMultiDetectorSetup(string const fname, int level=0);
-
+ 
   /* I/O */
   
 
@@ -459,9 +442,6 @@ class multiSlsDetector  : public slsDetectorUtils {
 
 
 
-
-  int dumpDetectorSetup(string const fname, int level=0); 
-  int retrieveDetectorSetup(string const fname, int level=0);
 
 
 

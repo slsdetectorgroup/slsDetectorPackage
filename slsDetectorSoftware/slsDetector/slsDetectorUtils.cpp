@@ -1,19 +1,24 @@
 #include "slsDetectorUtils.h"
 #include "usersFunctions.h"
+#include "slsDetectorCommand.h"
 
 #include  <sys/ipc.h>
 #include  <sys/shm.h>
 
 
 slsDetectorUtils::slsDetectorUtils()   {
+#ifdef VERBOSE
   cout << "setting callbacks" << endl;
+#endif
   registerGetPositionCallback(&defaultGetPosition);
   registerConnectChannelsCallback(&defaultConnectChannels);
   registerDisconnectChannelsCallback(&defaultDisconnectChannels);
   registerGoToPositionCallback(&defaultGoToPosition);
   registerGoToPositionNoWaitCallback(&defaultGoToPositionNoWait);
   registerGetI0Callback(&defaultGetI0);
+#ifdef VERBOSE
   cout << "done " << endl;
+#endif
 
 };
   
@@ -497,4 +502,233 @@ int slsDetectorUtils::testFunction(int times) {
 	return 0;
 }
 
+
+
+
+int slsDetectorUtils::retrieveDetectorSetup(string const fname1, int level){
+
+
+
+  slsDetectorCommand *cmd;
+
+
+    char ext[100];
+    int skip=0;
+   string fname;
+   string str;
+   ifstream infile;
+   int iargval;
+   int interrupt=0;
+  char *args[2];
+  for (int ia=0; ia<2; ia++) {
+    args[ia]=new char[1000];
+  }
+  string sargname, sargval;
+  int iline=0;
+  
+  if (level==2) {
+//     fname=fname1+string(".config");
+//     readConfigurationFile(fname);
+#ifdef VERBOSE
+    cout << "config file read" << endl;
+#endif
+    fname=fname1+string(".det");
+  }  else
+    fname=fname1;
+
+  infile.open(fname.c_str(), ios_base::in);
+  if (infile.is_open()) {
+    cmd=new slsDetectorCommand(this);
+    while (infile.good() and interrupt==0) {
+      sargname="none";
+      sargval="0";
+      getline(infile,str);
+      iline++;
+#ifdef VERBOSE
+      std::cout<<  str << std::endl;
+#endif
+      if (str.find('#')!=string::npos) {
+#ifdef VERBOSE
+	std::cout<< "Line is a comment " << std::endl;
+	std::cout<< str << std::endl;
+#endif
+	continue;
+      } else {
+	istringstream ssstr(str);
+	iargval=0;
+	while (ssstr.good()) {
+	  ssstr >> sargname;
+	  //  if (ssstr.good()) {
+	    strcpy(args[iargval],sargname.c_str());
+#ifdef VERBOSE
+      std::cout<< args[iargval]  << std::endl;
+#endif
+	    iargval++;
+	    // }
+	    skip=0;
+	}
+
+	if (level!=2) {
+	  if (string(args[0])==string("flatfield"))
+	    skip=1;
+	  else if  (string(args[0])==string("badchannels"))
+	    skip=1;
+	  else if (string(args[0])==string("trimbits"))
+	    skip=1;
+	}
+	if (skip==0)
+	  cmd->executeLine(iargval,args,PUT_ACTION);
+      }
+      iline++;
+    }
+    delete cmd;
+    infile.close();
+
+  } else {
+    std::cout<< "Error opening  " << fname << " for reading" << std::endl;
+    return FAIL;
+  }
+#ifdef VERBOSE
+  std::cout<< "Read  " << iline << " lines" << std::endl;
+#endif
+  return iline;
+
+
+}
+
+
+int slsDetectorUtils::dumpDetectorSetup(string const fname, int level){
+
+  slsDetectorCommand *cmd=new slsDetectorCommand(this);
+
+  string names[]={
+    "fname",\
+    "index",\
+    "flags",\
+    "dr",\
+    "settings",\
+    "threshold",\
+    "exptime",\
+    "period",\
+    "delay",\
+    "gates",\
+    "frames",\
+    "cycles",\
+    "probes",\
+    "timing",\
+    "fineoff",\
+    "startscript",\
+    "startscriptpar",\
+    "stopscript",\
+    "stopscriptpar",\
+    "scriptbefore",\
+    "scriptbeforepar",\
+    "scriptafter",\
+    "scriptafterpar",\
+    "scan0script",\
+    "scan0par",\
+    "scan0prec",\
+    "scan0steps",\
+    "scan1script",\
+    "scan1par",\
+    "scan1prec",\
+    "scan1steps",\
+    "ratecorr",\
+    "flatfield",\
+    "badchannels",\
+    "trimbits"
+  };
+  int nvar=35;
+
+
+
+    char ext[100];
+
+  int iv=0;
+  string fname1;
+
+
+
+  ofstream outfile;
+  char *args[2];
+  for (int ia=0; ia<2; ia++) {
+    args[ia]=new char[1000];
+  }
+  int nargs;
+  if (level==2)
+    nargs=2;
+  else
+    nargs=1;
+
+
+  if (level==2) {
+    fname1=fname+string(".config");
+    writeConfigurationFile(fname1);
+    fname1=fname+string(".det");
+  } else
+    fname1=fname;
+
+
+
+  outfile.open(fname1.c_str(),ios_base::out);
+  if (outfile.is_open()) {
+    for (iv=0; iv<nvar-3; iv++) {
+      strcpy(args[0],names[iv].c_str());
+      outfile << names[iv] << " " << cmd->executeLine(1,args,GET_ACTION) << std::endl;
+    }
+
+
+    strcpy(args[0],names[iv].c_str());
+    if (level==2) {
+      fname1=fname+string(".ff");
+      strcpy(args[1],fname1.c_str());
+    }
+    outfile << names[iv] << " " << cmd->executeLine(nargs,args,GET_ACTION) << std::endl;
+    iv++;
+
+    strcpy(args[0],names[iv].c_str());
+    if (level==2) {
+      fname1=fname+string(".bad");
+      strcpy(args[1],fname1.c_str());
+    }
+    outfile << names[iv] << " " << cmd->executeLine(nargs,args,GET_ACTION) << std::endl;
+    iv++;
+
+      
+
+  strcpy(args[0],names[iv].c_str());
+  if (level==2) {
+    size_t c=fname.rfind('/');
+    if (c<string::npos) {
+      fname1=fname.substr(0,c+1)+string("trim_")+fname.substr(c+1);
+    } else {
+      fname1=string("trim_")+fname;
+    }
+    strcpy(args[1],fname1.c_str());
+#ifdef VERBOSE
+    std::cout<< "writing to file " << fname1 << std::endl;
+#endif
+  }
+  outfile << names[iv] << " " << cmd->executeLine(nargs,args,GET_ACTION) << std::endl;
+  iv++;
+  
+
+
+ 
+
+    outfile.close();
+  }
+  else {
+    std::cout<< "Error opening parameters file " << fname1 << " for writing" << std::endl;
+    return FAIL;
+  }
+  
+#ifdef VERBOSE
+  std::cout<< "wrote " <<iv << " lines to  "<< fname1 << std::endl;
+#endif
+  
+  delete cmd;
+  return 0;
+
+} 
 

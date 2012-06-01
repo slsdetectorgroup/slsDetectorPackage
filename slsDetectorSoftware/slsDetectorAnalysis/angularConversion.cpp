@@ -204,19 +204,24 @@ int angularConversion::finalizeMerging(float *mp, float *mv, float *me, int *mm,
    int np=0;
    for (int ibin=0; ibin<nb; ibin++) {
      if (mm[ibin]>0) {
+      	
+#ifdef VERBOSE 
+       cout << "finalize " << ibin << "  "<< mm[ibin] << " " << mp[ibin]<< mv[ibin] << me[ibin] << endl;
+#endif
        mp[np]=mp[ibin]/mm[ibin];
        mv[np]=mv[ibin]/mm[ibin];
-      me[np]=me[ibin]/mm[ibin];
-      me[np]=sqrt(me[ibin]);
-      mm[np]=mm[ibin];
-      np++;
-    }
+       me[np]=me[ibin]/mm[ibin];
+       me[np]=sqrt(me[ibin]);
+       mm[np]=mm[ibin];
+       np++;
+     }
   }
   return np;
 }
 
 //static
 int  angularConversion::addToMerging(float *p1, float *v1, float *e1, float *mp, float *mv,float *me, int *mm, int nchans, float binsize,int nbins, int *badChanMask ) {
+
 
   float binmi=-180.;
   int ibin=0;
@@ -238,23 +243,24 @@ int  angularConversion::addToMerging(float *p1, float *v1, float *e1, float *mp,
   if (nchans==0)
     return FAIL;
   
-  if (binsize==0)
+  if (binsize<=0)
     return FAIL;
-  if (nbins==0)
+
+  if (nbins<=0)
     return FAIL;
   
-
   for (int ip=0; ip<nchans; ip++) {
     if (badChanMask) {
       if (badChanMask[ip]) {
 #ifdef VERBOSE
 	cout << "channel " << ip << " is bad " << endl;
 #endif
-	continue;
+	  continue;
       }
     }
     ibin=(int)((p1[ip]-binmi)/binsize);
    
+ 
     if (ibin<nbins && ibin>=0) {
       mp[ibin]+=p1[ip];
       mv[ibin]+=v1[ip];
@@ -263,6 +269,10 @@ int  angularConversion::addToMerging(float *p1, float *v1, float *e1, float *mp,
       else
 	me[ibin]+=v1[ip];
       mm[ibin]++;
+
+#ifdef VERBOSE
+      cout << "add " << ibin << "  "<< mm[ibin] << " " << mp[ibin]<< mv[ibin] << me[ibin] << endl;
+#endif
     } else
       return FAIL;
   }
@@ -287,6 +297,7 @@ int angularConversion::deleteMerging() {
 
 
 int angularConversion::resetMerging() {
+  getAngularConversionParameter(BIN_SIZE);
 
   mergingBins=new float[nBins];
   
@@ -304,6 +315,7 @@ int angularConversion::resetMerging() {
 }
 
 int angularConversion::resetMerging(float *mp, float *mv, float *me, int *mm) {
+  getAngularConversionParameter(BIN_SIZE);
   if (nBins)
     return resetMerging(mp, mv, me, mm,nBins);
   else 
@@ -327,7 +339,6 @@ int angularConversion::finalizeMerging() {
 
 
 int angularConversion::finalizeMerging(float *mp, float *mv, float *me, int *mm) {
- 
   if (nBins)
     return finalizeMerging(mp, mv, me, mm, nBins);
   else
@@ -335,7 +346,7 @@ int angularConversion::finalizeMerging(float *mp, float *mv, float *me, int *mm)
 }
 
 int  angularConversion::addToMerging(float *p1, float *v1, float *e1, int *badChanMask ) {
-  
+
   return addToMerging(p1,v1,e1,mergingBins,mergingCounts, mergingErrors, mergingMultiplicity, badChanMask);
 
 
@@ -344,20 +355,24 @@ int  angularConversion::addToMerging(float *p1, float *v1, float *e1, int *badCh
 
 int  angularConversion::addToMerging(float *p1, float *v1, float *e1, float *mp, float *mv,float *me, int *mm, int *badChanMask ) {
 
-
   int del=0;
-
-  if (*binSize==0)
-    return FAIL;
   
-  if (nBins==0)
+  if (getAngularConversionParameter(BIN_SIZE)==0){
+    cout << "no bin size " << endl;
     return FAIL;
+  }
+  
+  if (nBins==0) {
+    cout << "no bins " << endl;
+    return FAIL;
+  }
   
   if (p1==NULL) {
     del=1;
     p1=convertAngles();
   }
   
+
   int ret=addToMerging(p1, v1, e1, mp, mv,me, mm,getTotalNumberOfChannels(), *binSize,nBins, badChanMask );
   
   
@@ -429,7 +444,11 @@ float angularConversion::getAngularConversionParameter(angleConversionParameter 
     return *globalOffset;
   case FINE_OFFSET:
     return *fineOffset;
-  case BIN_SIZE:
+  case BIN_SIZE: 
+    if (*binSize>0)
+      nBins=360./(*binSize);
+    else 
+      nBins=0;
     return *binSize;
   case MOVE_FLAG:
     if (moveFlag)

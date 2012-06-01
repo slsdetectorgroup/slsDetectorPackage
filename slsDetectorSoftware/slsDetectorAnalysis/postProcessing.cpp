@@ -181,7 +181,6 @@ void postProcessing::doProcessing(float *lfdata, int delflag, string fname) {
 //     ;
 //   } else {
 
-
     
 
     float *rcdata=NULL, *rcerr=NULL;
@@ -235,7 +234,7 @@ void postProcessing::doProcessing(float *lfdata, int delflag, string fname) {
 	ang=convertAngles();
       writeDataFile (fname+ext,  ffcdata, ffcerr,ang);
     }
-  
+   
     if (*correctionMask&(1<< ANGULAR_CONVERSION) && getNumberOfPositions()>0) {
 #ifdef VERBOSE
       cout << "**************Current position index is " << getCurrentPositionIndex() << endl;
@@ -252,10 +251,8 @@ void postProcessing::doProcessing(float *lfdata, int delflag, string fname) {
 #ifdef VERBOSE
       cout << "add to merging "<< getCurrentPositionIndex() << endl;
 #endif
-
-      if (*correctionMask&(1<< ANGULAR_CONVERSION))
+    
 	addToMerging(ang, ffcdata, ffcerr, badChannelMask );
-     
       
 #ifdef VERBOSE
       cout << getCurrentPositionIndex() << " " << getNumberOfPositions() << endl;

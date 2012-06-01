@@ -97,7 +97,6 @@ void  slsDetectorUtils::acquire(int delflag){
     ns1=1;
 
 
-
   //cout << "action at start" << endl;
   if (*stoppedFlag==0) {
     executeAction(startScript);
@@ -142,6 +141,8 @@ void  slsDetectorUtils::acquire(int delflag){
 	 break;
        
 
+       createFileName();
+
        if (*stoppedFlag==0) {
 	 executeAction(scriptBefore);
        } else
@@ -149,6 +150,7 @@ void  slsDetectorUtils::acquire(int delflag){
        
        
        
+
        if (*stoppedFlag==0) {
 
 	 executeAction(headerBefore);
@@ -195,8 +197,9 @@ void  slsDetectorUtils::acquire(int delflag){
        pthread_mutex_lock(&mp);
        while (queuesize){
 	 pthread_mutex_unlock(&mp);
-	 usleep(10000);
+	 usleep(100000);
 	 pthread_mutex_lock(&mp);
+	 
        }
        pthread_mutex_unlock(&mp);
        

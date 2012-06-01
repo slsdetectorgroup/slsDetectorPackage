@@ -1,6 +1,6 @@
 CFLAGS= -DC_ONLY 
 FLAGS=-DVERBOSE 
-INCLUDES= -I../slsDetectorSoftware/commonFiles -I../slsDetectorSoftware/slsDetector -I ../slsDetectorSoftware/MySocketTCP  -I../slsDetectorSoftware/usersFunctions -I../slsDetectorSoftware/multiSlsDetector
+INCLUDES= -I../slsDetectorSoftware/commonFiles -I../slsDetectorSoftware/slsDetector -I ../slsDetectorSoftware/MySocketTCP  -I../slsDetectorSoftware/usersFunctions -I../slsDetectorSoftware/multiSlsDetector -I../slsDetectorSoftware/slsDetectorAnalysis
 LIBS= -L../slsDetectorSoftware/
 LDFLAG= -lSlsDetector -lpthread
 
@@ -37,7 +37,7 @@ sls_detector_help: $(SRC_CLNT)
 
 
 clean:
-	rm  -rf $(BIN)/sls_detector_put sls_detector_get sls_detector_acquire  sls_detector_help
+	rm  -rf $(BIN)/sls_detector_*
 
 
 

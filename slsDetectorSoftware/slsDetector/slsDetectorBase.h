@@ -47,7 +47,7 @@ Most methods of interest for the user are implemented in the ::slsDetectorBase i
  */
 
 
-//#include "slsDetectorUsers.h"
+#include "slsDetectorUsers.h"
 #include "sls_detector_defs.h"
 
 #include <string>
@@ -64,8 +64,7 @@ using namespace std;
 */
 
 //public virtual slsDetectorUsers,
-class slsDetectorBase :  public virtual slsDetectorDefs
- { 
+class slsDetectorBase :  public virtual slsDetectorDefs, public slsDetectorUsers  { 
 
  public:
 
@@ -76,7 +75,7 @@ class slsDetectorBase :  public virtual slsDetectorDefs
    /** virtual destructor */
    virtual ~slsDetectorBase(){};
 
-
+   string getDetectorDeveloper(){return string("PSI");};
    // protected:
 
   /**
@@ -275,15 +274,15 @@ class slsDetectorBase :  public virtual slsDetectorDefs
 
   virtual int setFlatFieldCorrection(string fname="")=0; 
 
-
-
+  int setFlatFieldCorrectionFile(string fname=""){return setFlatFieldCorrection(fname);};
+    
     /** 
       set/get dynamic range
       \param i dynamic range (-1 get)
       \returns current dynamic range
   */
   virtual int setDynamicRange(int i=-1)=0;
-
+  int setBitDepth(int i=-1){return setDynamicRange(i);};
 
   /** 
       set/get the size of the detector 
@@ -293,6 +292,12 @@ class slsDetectorBase :  public virtual slsDetectorDefs
   */
   virtual int setNumberOfModules(int i=-1, dimension d=X)=0;
 
+  int setDetectorSize(int x0=-1, int y0=-1, int nx=-1, int ny=-1){return setNumberOfModules(nx,X);};
+
+  int getDetectorSize(int &x0, int &y0, int &nx, int &ny){x0=0; nx=setNumberOfModules(-1,X); return nx;};
+
+  virtual int getMaxNumberOfModules(dimension d=X)=0; //
+  int getMaximumDetectorSize(int &nx, int &ny){nx=getMaxNumberOfModules(X); ny=1; return nx;};
 
 
   /** Locks/Unlocks the connection to the server
@@ -314,6 +319,7 @@ class slsDetectorBase :  public virtual slsDetectorDefs
   */
   virtual void acquire(int delflag=1)=0;
 
+  int startMeasurement(){acquire(0); return OK;};
 
   /**
    asks and  receives a data frame from the detector, writes it to disk and processes the data
@@ -332,7 +338,7 @@ class slsDetectorBase :  public virtual slsDetectorDefs
     \returns OK/FAIL
   */
   virtual int stopAcquisition()=0;
-
+  int stopMeasurement(){return stopAcquisition();};
 
 
   /**
@@ -342,6 +348,12 @@ class slsDetectorBase :  public virtual slsDetectorDefs
       \returns timer set value in ns or number of...(e.g. frames, gates, probes)
   */
   virtual int64_t setTimer(timerIndex index, int64_t t=-1)=0;
+  int64_t setExposureTime(int64_t t=-1){return setTimer(ACQUISITION_TIME,t);};
+int64_t setExposurePeriod(int64_t t=-1){return setTimer(FRAME_PERIOD,t);};
+int64_t setDelayAfterTrigger(int64_t t=-1){return setTimer(DELAY_AFTER_TRIGGER,t);};
+int64_t setNumberOfGates(int64_t t=-1){return setTimer(GATES_NUMBER,t);};
+int64_t setNumberOfFrames(int64_t t=-1){return setTimer(FRAME_NUMBER,t);};
+int64_t setNumberOfCycles(int64_t t=-1){return setTimer(CYCLES_NUMBER,t);};
 
   ///////////////////////////////////////////////////////////////////////////////////////////
   /**
@@ -349,7 +361,7 @@ class slsDetectorBase :  public virtual slsDetectorDefs
     \returns status mask
   */
   virtual runStatus getRunStatus()=0;
-
+  int getDetectorStatus() {return (int)getRunStatus();};
 
 
   /**  @short sets the onlineFlag
@@ -363,15 +375,15 @@ class slsDetectorBase :  public virtual slsDetectorDefs
     \returns current settings
   */
   virtual detectorSettings setSettings(detectorSettings isettings, int imod=-1)=0;
-
+  int setSettings(int isettings){return (int)setSettings((detectorSettings)isettings,-1);};
    virtual detectorSettings getSettings(int imod=-1)=0;  
   /**
     get threshold energy
     \param imod module number (-1 all)
     \returns current threshold value for imod in ev (-1 failed)
   */
-  virtual int getThresholdEnergy(int imod=-1)=0;  
-
+  virtual int getThresholdEnergy(int imod)=0;  
+  int getThresholdEnergy(){return getThresholdEnergy(-1);};
 
   /** 
      set/get the external communication mode
@@ -381,6 +393,16 @@ class slsDetectorBase :  public virtual slsDetectorDefs
       \returns current external communication mode
   */
   virtual externalCommunicationMode setExternalCommunicationMode(externalCommunicationMode pol=GET_EXTERNAL_COMMUNICATION_MODE)=0;
+  int setTimingMode(int i=-1){return (int)setExternalCommunicationMode((externalCommunicationMode)i);};
+
+
+  virtual int setThresholdEnergy(int e_eV,  int imod, detectorSettings isettings=GET_SETTINGS)=0;
+  int setThresholdEnergy(int e_eV){return setThresholdEnergy(e_eV,-1);};
+
+
+  int getBeamEnergy(){return 2*getThresholdEnergy();};
+  int setBeamEnergy(int e){return 2*setThresholdEnergy(e/2);};
+
 
 
   /**
@@ -389,8 +411,10 @@ class slsDetectorBase :  public virtual slsDetectorDefs
      \returns OK or FAIL
   */
   virtual int readConfigurationFile(string const fname)=0; 
-  virtual int dumpDetectorSetup(string const fname, int level=0)=0;  
-  virtual int retrieveDetectorSetup(string const fname, int level=0)=0;
+  virtual int dumpDetectorSetup(string const fname, int level)=0;  
+  int dumpDetectorSetup(string const fname){return dumpDetectorSetup(fname,0);};
+  virtual int retrieveDetectorSetup(string const fname, int level)=0;
+  int retrieveDetectorSetup(string const fname){return retrieveDetectorSetup(fname,0);};
   /** 
       @short 
      \returns the default output file index

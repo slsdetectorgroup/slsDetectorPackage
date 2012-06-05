@@ -735,3 +735,116 @@ int slsDetectorUtils::dumpDetectorSetup(string const fname, int level){
 
 } 
 
+
+// int slsDetectorUtils::setFlatFieldCorrectionFile(string fname){
+//   int tch=getTotalNumberOfChannels();
+
+
+
+//   float data[tch],  xmed[tch];
+//   float ffcoefficients[tch], fferrors[tch];
+//   int nmed=0;
+//   int idet=0, ichdet=-1;
+//   char ffffname[MAX_STR_LENGTH*2];
+//   int nbad=0, nch;
+//   int badlist[MAX_BADCHANS];
+//   int im=0;
+
+//  if (fname=="default") {
+//    fname=string(flatFieldFile);
+//  }
+//   if (fname=="") {
+// #ifdef VERBOSE
+//    std::cout<< "disabling flat field correction" << std::endl;
+// #endif
+//    (*correctionMask)&=~(1<<FLAT_FIELD_CORRECTION);
+//     //  strcpy(thisMultiDetector->flatFieldFile,"none");
+    
+//    setFlatFieldCorrection(NULL, NULL);
+//   } else { 
+
+// #ifdef VERBOSE
+//    std::cout<< "Setting flat field correction from file " << fname << std::endl;
+// #endif
+//    sprintf(ffffname,"%s/%s",flatFieldDir,fname.c_str());
+//    nch=readDataFile(string(ffffname),data);
+
+//    if (nch>tch)
+//      nch=tch;
+   
+//    if (nch>0) {
+//      strcpy(flatFieldFile,fname.c_str());
+     
+
+//      nbad=0;
+//      for (int ichan=0; ichan<nch; ichan++) {
+     
+//        if (data[ichan]>0) {
+// 	 /* add to median */
+// 	 im=0;
+// 	 while ((im<nmed) && (xmed[im]<data[ichan])) 
+// 	   im++;
+// 	  for (int i=nmed; i>im; i--) 
+// 	    xmed[i]=xmed[i-1];
+// 	  xmed[im]=data[ichan];
+// 	  nmed++;
+//        } else {
+// 	 if (nbad<MAX_BADCHANS) {
+// 	   badlist[nbad]=ichan;
+// 	   nbad++;
+// 	 }
+//        }
+//      }
+     
+	
+//      if (nmed>1 && xmed[nmed/2]>0) {
+// #ifdef VERBOSE
+//        std::cout<< "Flat field median is " << xmed[nmed/2] << " calculated using "<< nmed << " points" << std::endl;
+// #endif
+       
+//        thisMultiDetector->correctionMask|=(1<<FLAT_FIELD_CORRECTION);
+
+// 	// add to ff coefficients and errors of single detectors
+
+	  
+
+       
+//        for (int ichan=0; ichan<nch; ichan++) {
+	
+// 	 setFlatFieldCorrection(ffcoefficients, fferrors);
+	 
+// 	 if (data[ichan]>0) {
+// 	   ffcoefficients[ichan]=xmed[nmed/2]/data[ichan];
+// 	   fferrors[ichan]=ffcoefficients[ichan]*sqrt(data[ichan])/data[ichan];
+// 	  } else {
+// 	   ffcoefficients[ichan]=0.;
+// 	   fferrors[ichan]=1.;
+// 	 }
+	
+//        }
+       
+//        setFlatFieldCorrection(ffcoefficients, fferrors);
+       
+      
+//      } else {
+// 	std::cout<< "Flat field data from file " << fname << " are not valid (" << nmed << "///" << xmed[nmed/2] << std::endl;
+// 	thisMultiDetector->correctionMask&=~(1<<FLAT_FIELD_CORRECTION);
+// 	for (int i=0; i<thisMultiDetector->numberOfDetectors; i++) {
+// 	  if (detectors[i])
+// 	    detectors[i]->setFlatFieldCorrection(NULL, NULL);
+// 	}
+// 	return -1;
+//       }
+//    } else {
+//       std::cout<< "Flat field from file " << fname << " is not valid " << nch << std::endl;  
+//       thisMultiDetector->correctionMask&=~(1<<FLAT_FIELD_CORRECTION);
+//       for (int i=0; i<thisMultiDetector->numberOfDetectors; i++) {
+// 	if (detectors[i])
+// 	  detectors[i]->setFlatFieldCorrection(NULL, NULL);
+//       }
+//       return -1;
+//     } 
+//   }
+//   return thisMultiDetector->correctionMask&(1<<FLAT_FIELD_CORRECTION);
+// }
+ 

@@ -3985,14 +3985,17 @@ int slsDetector::setFlatFieldCorrection(string fname){
    thisDetector->nBadFF=0;
 
    char ffffname[MAX_STR_LENGTH*2];
+   if (fname=="default") {
+     fname=string("thisDetector->flatFieldFile");
+   }
 
-  if (fname=="") {
+   if (fname=="") {
 #ifdef VERBOSE
-   std::cout<< "disabling flat field correction" << std::endl;
+     std::cout<< "disabling flat field correction" << std::endl;
 #endif
-    thisDetector->correctionMask&=~(1<<FLAT_FIELD_CORRECTION);
-    strcpy(thisDetector->flatFieldFile,"none");
-  } else { 
+     thisDetector->correctionMask&=~(1<<FLAT_FIELD_CORRECTION);
+     //strcpy(thisDetector->flatFieldFile,"none");
+   } else { 
 #ifdef VERBOSE
    std::cout<< "Setting flat field correction from file " << fname << std::endl;
 #endif

@@ -265,7 +265,9 @@ class multiSlsDetector  : public slsDetectorUtils {
 
 
   string getHostname(int pos=-1);
+  using slsDetectorBase::getDetectorType;
 
+  string getDetectorType(){return sgetDetectorsType();};
 
   detectorType getDetectorsType(int pos=-1);
   detectorType setDetectorsType(detectorType type=GET_DETECTOR_TYPE, int pos=-1){addSlsDetector(type, pos); return getDetectorsType(pos);}; 

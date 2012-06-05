@@ -1608,13 +1608,15 @@ int multiSlsDetector::setFlatFieldCorrection(string fname){
   int badlist[MAX_BADCHANS];
   int im=0;
 
-
+ if (fname=="default") {
+   fname=string(thisMultiDetector->flatFieldFile);
+ }
   if (fname=="") {
 #ifdef VERBOSE
    std::cout<< "disabling flat field correction" << std::endl;
 #endif
     thisMultiDetector->correctionMask&=~(1<<FLAT_FIELD_CORRECTION);
-    strcpy(thisMultiDetector->flatFieldFile,"none");
+    //  strcpy(thisMultiDetector->flatFieldFile,"none");
     for (int i=0; i<thisMultiDetector->numberOfDetectors; i++) {
       if (detectors[i])
 	detectors[i]->setFlatFieldCorrection(NULL, NULL);

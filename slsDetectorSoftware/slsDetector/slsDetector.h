@@ -258,7 +258,7 @@ typedef  struct sharedSlsDetector {
  using slsDetectorUtils::getAngularConversion;
 
 
-
+ string getDetectorType(){return sgetDetectorsType();};
 
 
 

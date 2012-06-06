@@ -12,13 +12,7 @@
 #include "slsDetector.h"
 #include "multiSlsDetector.h"
 /** Qt Include Headers */
-
-#include <QGridLayout>
-#include <QPushButton>
-#include <QLabel>
-#include <QScrollArea>
-#include <QLayoutItem>
-#include <QPalette>
+#include <QButtonGroup>
 /** C++ Include Headers */
 #include<iostream>
 using namespace std;
@@ -29,7 +23,6 @@ using namespace std;
 
 
 qTabActions::qTabActions(QWidget *parent,slsDetectorUtils*& detector):QWidget(parent),myDet(detector){
-	//setupUi(this);
 	if(myDet)
 	{
 		SetupWidgetWindow();
@@ -48,7 +41,6 @@ qTabActions::~qTabActions(){
 
 
 void qTabActions::SetupWidgetWindow(){
-	setupUi(this);
 	/** Window Settings*/
 	setFixedSize(705,350);
 	setContentsMargins(0,0,0,0);

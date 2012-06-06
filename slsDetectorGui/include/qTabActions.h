@@ -8,25 +8,22 @@
 #ifndef QTABACTIONS_H_
 #define QTABACTIONS_H_
 
-
-/** Form Header */
-#include "ui_form_tab_actions.h"
 /** Project Class Headers */
 class slsDetectorUtils;
 class ActionsWidget;
 
-
-class QPushButton;
-class QLabel;
-class QScrollArea;
-class QGridLayout;
-class QPalette;
+#include <QWidget>
+#include <QPushButton>
+#include <QLabel>
+#include <QScrollArea>
+#include <QGridLayout>
+#include <QPalette>
 
 
 /**
  *@short sets up the acions parameters
  */
-class qTabActions:public QWidget,private Ui::TabActionsObject{
+class qTabActions:public QWidget{
 	Q_OBJECT
 
 public:

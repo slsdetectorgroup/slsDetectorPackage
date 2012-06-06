@@ -86,7 +86,7 @@ FORMS = 					\
 							forms/form_tab_measurement.ui\
 							forms/form_tab_dataoutput.ui\
 							forms/form_tab_plot.ui\
-							forms/form_tab_actions.ui\
+#							forms/form_tab_actions.ui\
 							forms/form_tab_advanced.ui\
 							forms/form_tab_settings.ui\
 							forms/form_tab_debugging.ui\

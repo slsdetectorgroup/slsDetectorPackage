@@ -185,9 +185,11 @@ void ActionsWidget::SetupWidgetWindow(int scanType){
 
 void ActionsWidget::Initialization(){
 	connect(comboScript,SIGNAL(currentIndexChanged(int)),this,SLOT(SetScript(int)));
-	connect(radioConstant,SIGNAL(toggled(bool)),this,SLOT(EnableSizeWidgets()));
-	connect(radioSpecific,SIGNAL(toggled(bool)),this,SLOT(EnableSizeWidgets()));
-	connect(radioValue,SIGNAL(toggled(bool)),this,SLOT(EnableSizeWidgets()));
+	if(comboScript->count()>2){
+		connect(radioConstant,SIGNAL(toggled(bool)),this,SLOT(EnableSizeWidgets()));
+		connect(radioSpecific,SIGNAL(toggled(bool)),this,SLOT(EnableSizeWidgets()));
+		connect(radioValue,SIGNAL(toggled(bool)),this,SLOT(EnableSizeWidgets()));
+	}
 }
 
 

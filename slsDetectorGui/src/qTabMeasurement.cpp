@@ -333,6 +333,7 @@ void qTabMeasurement::setTimingMode(int mode){
 
 	switch(mode){
 	case None:
+		lblExpTime->setEnabled(true);		spinExpTime->setEnabled(true);			comboExpUnit->setEnabled(true);
 		break;
 	case Auto:
 		lblNumFrames->setEnabled(true);		spinNumFrames->setEnabled(true);

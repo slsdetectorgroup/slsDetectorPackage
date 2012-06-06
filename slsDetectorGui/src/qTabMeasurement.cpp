@@ -170,9 +170,8 @@ void qTabMeasurement::DeInitialization(){
 
 
 void qTabMeasurement::Enable(bool enable){
-	gridTimeResolved->setEnabled(enable);
-	gridLayout->setEnabled(enable);
-	boxProgress->setEnabled(enable);
+	frameTimeResolved->setEnabled(enable);
+	frameNotTimeResolved->setEnabled(enable);
 	/** Enable this always **/
 	if(!enable) btnStartStop->setEnabled(true);
 }
@@ -217,12 +216,14 @@ void qTabMeasurement::startStopAcquisition(){
 #endif
 		btnStartStop->setText("Stop");
 		Enable(0);
+		emit StartSignal();
 	}else{
 #ifdef VERBOSE
 		cout<<"Stopping Acquisition"<<endl;
 #endif
 		btnStartStop->setText("Start");
 		Enable(1);
+		emit StopSignal();
 	}
 	myPlot->StartStopDaqToggle();
 }

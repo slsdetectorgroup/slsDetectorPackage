@@ -36,7 +36,7 @@ qTabPlot::qTabPlot(QWidget *parent,slsDetectorUtils*& detector, qDrawPlot*& plot
 		//This also selects the text if unchecked
 		//includes setupwidgetwindow
 		//SelectPlot(1);
-		Select1DPlot(false);
+		Select1DPlot(true);
 		Initialization();
 	}
 }
@@ -115,10 +115,10 @@ void qTabPlot::Initialization(){
 	connect(chkXAxis, 		SIGNAL(toggled(bool)), this, 	SLOT(EnableTitles()));
 	connect(chkYAxis, 		SIGNAL(toggled(bool)), this, 	SLOT(EnableTitles()));
 	connect(chkZAxis, 		SIGNAL(toggled(bool)), this, 	SLOT(EnableTitles()));
-	connect(dispTitle, 		SIGNAL(returnPressed()), this, 	SLOT(SetTitles()));
-	connect(dispXAxis, 		SIGNAL(returnPressed()), this, 	SLOT(SetTitles()));
-	connect(dispYAxis, 		SIGNAL(returnPressed()), this, 	SLOT(SetTitles()));
-	connect(dispZAxis, 		SIGNAL(returnPressed()), this, 	SLOT(SetTitles()));
+	connect(dispTitle, 		SIGNAL(textChanged(const QString&)), this, 	SLOT(SetTitles()));
+	connect(dispXAxis, 		SIGNAL(textChanged(const QString&)), this, 	SLOT(SetTitles()));
+	connect(dispYAxis, 		SIGNAL(textChanged(const QString&)), this, 	SLOT(SetTitles()));
+	connect(dispZAxis, 		SIGNAL(textChanged(const QString&)), this, 	SLOT(SetTitles()));
 /** Common Buttons*/
 	connect(btnClear, 		SIGNAL(clicked()),		myPlot, SLOT(Clear1DPlot()));
 /** Save */

@@ -36,7 +36,7 @@ int main (int argc, char **argv) {
 
 
 qDetectorMain::qDetectorMain(int argc, char **argv, QApplication *app, QWidget *parent) :
-		QMainWindow(parent), theApp(app),myPlot(NULL),tabs(NULL){
+		QMainWindow(parent), theApp(app),myPlot(NULL),tabs(NULL),isDeveloper(0){
 	myDet = 0;
 	setupUi(this);
 	SetUpWidgetWindow();
@@ -44,7 +44,7 @@ qDetectorMain::qDetectorMain(int argc, char **argv, QApplication *app, QWidget *
 	/**need to use argc and argv to determine which slsdet or multidet to use.*/
 
 	for(int iarg=1; iarg<argc; iarg++){
-		if(!strcasecmp(argv[1],"-developer"))		SetDeveloperMode(true);
+		if(!strcasecmp(argv[1],"-developer"))		{isDeveloper=1;SetDeveloperMode(true);}
 
 		if(!strcasecmp(argv[1],"-help")){
 			cout<<"Possible Arguments are:"<<endl;
@@ -56,8 +56,6 @@ qDetectorMain::qDetectorMain(int argc, char **argv, QApplication *app, QWidget *
 		}
 	}
 
-
-	//centralwidget->setFixedHeight(centralwidget->height());
 }
 
 
@@ -88,7 +86,7 @@ void qDetectorMain::SetUpWidgetWindow(){
 	dockWidgetPlot->setWidget(myPlot);
 
 /**tabs setup*/
-	tabs = new QTabWidget(this);
+	tabs = new MyTabWidget(this);
 	layoutTabs->addWidget(tabs);
 	/** creating all the tab widgets */
 	tab_measurement 	=  new qTabMeasurement	(this,	myDet,myPlot);
@@ -114,6 +112,7 @@ void qDetectorMain::SetUpWidgetWindow(){
 	scroll[Debugging]	->setWidget(tab_debugging);
 	scroll[Developer]	->setWidget(tab_developer);
 
+
 	/** inserting all the tabs*/
 	tabs->insertTab(Measurement,	scroll[Measurement],	"Measurement");
 	tabs->insertTab(DataOutput,		scroll[DataOutput],		"Data Output");
@@ -129,6 +128,9 @@ void qDetectorMain::SetUpWidgetWindow(){
 	SetBeamlineMode(false);
 	SetExpertMode(false);
 	SetDeveloperMode(false);
+
+	tabs->tabBar()->setTabTextColor(0,QColor(0,0,200,255));
+
 
 }
 
@@ -172,6 +174,9 @@ void qDetectorMain::Initialization(){
 
 /** Plotting */
 		/** When the acquisition is finished, must update the meas tab */
+		connect(tab_measurement,	SIGNAL(StartSignal()),			this,SLOT(EnableTabs()));
+		connect(tab_measurement,	SIGNAL(StopSignal()),			this,SLOT(EnableTabs()));
+		connect(myPlot,				SIGNAL(UpdatingPlotFinished()),	this,SLOT(EnableTabs()));
 		connect(myPlot,				SIGNAL(UpdatingPlotFinished()),	tab_measurement,SLOT(UpdateFinished()));
 
 
@@ -195,7 +200,7 @@ void qDetectorMain::Initialization(){
 		connect(actionVersion,SIGNAL(triggered()),this,SLOT(Version()));
 
 		heightPlotWindow = dockWidgetPlot->size().height();
-
+		heightCentralWidget = centralwidget->size().height();
 }
 
 
@@ -224,9 +229,8 @@ void qDetectorMain::SetExpertMode(bool b){
 #ifdef VERBOSE
 	cout<<"Setting Expert Mode to "<<b<<endl;
 #endif
-	//threshold part in measu is enabled
 	tabs->setTabEnabled(Advanced,b);
-	tab_advanced->setEnabled(b);
+
 }
 
 
@@ -237,6 +241,13 @@ void qDetectorMain::refresh(int index){
 	else{
 ;
 	}
+	for(int i=0;i<NumberOfTabs;i++){
+		if(tabs->isTabEnabled(i))
+			tabs->tabBar()->setTabTextColor(i,Qt::black);
+		else
+			tabs->tabBar()->setTabTextColor(i,Qt::gray);
+	}
+	tabs->tabBar()->setTabTextColor(index,QColor(0,0,200,255));
 }
 
 
@@ -324,24 +335,45 @@ void qDetectorMain::ResizeMainWindow(bool b){
 	cout<<"Resizing Main Window: height:"<<height()<<endl;
 #endif
 	/** undocked from the main window */
-	if(b){/** sets the main window height to a smaller maximum to get rid of space*/
+	if(b){
+		/** sets the main window height to a smaller maximum to get rid of space*/
 		setMaximumHeight(height()-heightPlotWindow-9);
 		dockWidgetPlot->setMinimumHeight(0);
+		cout<<"undocking it from main window"<<endl;
 	}
 	else{
 		setMaximumHeight(QWIDGETSIZE_MAX);
-		dockWidgetPlot->setMinimumHeight(heightPlotWindow);
-
+		/** the minimum for plot will be set when the widget gets resized automatically*/
 	}
-
-
 }
 
+
+void qDetectorMain::resizeEvent(QResizeEvent* event){
+	if(!dockWidgetPlot->isFloating()){
+		if(tabs->currentIndex()== Actions){
+			dockWidgetPlot->setMinimumHeight(heightPlotWindow-100);
+			centralwidget->setMaximumHeight(QWIDGETSIZE_MAX);
+
+		}
+		else{
+			dockWidgetPlot->setMinimumHeight(height()-centralwidget->height()-50);
+			centralwidget->setMaximumHeight(heightCentralWidget);
+		}
+	}
+#ifdef VERBOSE
+	cout<<"height:"<<height()<<endl;
+	cout<<"dockWidgetPlot height:"<<dockWidgetPlot->height()<<endl;
+#endif
+}
+
+
+
+//prolly not needed
 void qDetectorMain::SetTerminalWindowSize(bool b){
 #ifdef VERBOSE
 	cout<<"Resizing Terminal Window"<<endl;
 #endif
-//depends on gridlayout in qdrawterminal widget class
+/*//depends on gridlayout in qdrawterminal widget class
 	if(b){
 		dockWidgetTerminal->setMinimumWidth(width()/2);
 			}
@@ -350,5 +382,34 @@ void qDetectorMain::SetTerminalWindowSize(bool b){
 		dockWidgetTerminal->setMinimumWidth(38);
 		QSizePolicy sizePolicy(QSizePolicy::Preferred,QSizePolicy::Preferred);
 		dockWidgetTerminal->setSizePolicy(sizePolicy);
+	}*/
+}
+
+
+
+void qDetectorMain::EnableTabs(){
+	bool enable;
+	enable=(tabs->isTabEnabled(DataOutput)?false:true);
+
+	// or use the Enable/Disable button
+	/** normal tabs*/
+	tabs->setTabEnabled(DataOutput,enable);
+	tabs->setTabEnabled(Actions,enable);
+	tabs->setTabEnabled(Settings,enable);
+
+	/** special tabs */
+	if(enable==false){
+		tabs->setTabEnabled(Debugging,enable);
+		tabs->setTabEnabled(Advanced,enable);
+		tabs->setTabEnabled(Developer,enable);
+	}
+	else{
+	/** enable these tabs only if they were enabled earlier */
+		if(actionDebug->isChecked())
+			tabs->setTabEnabled(Debugging,enable);
+		if(actionExpert->isChecked())
+			tabs->setTabEnabled(Advanced,enable);
+		if(isDeveloper)
+			tabs->setTabEnabled(Developer,enable);
 	}
 }

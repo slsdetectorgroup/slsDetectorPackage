@@ -52,7 +52,6 @@ void qCloneWidget::SetupWidgetWindow(QString title,int numDim,SlsQt1DPlot*& plot
 	gridClone = new QGridLayout(cloneBox);
 	cloneBox->setLayout(gridClone);
 	cloneBox->setContentsMargins(0,0,0,0);
-		//cloneBox->resize(400,200);
 		cloneBox->setTitle(title);
 		cloneBox->setAlignment(Qt::AlignHCenter);
 		cloneBox->setFont(QFont("Sans Serif",11,QFont::Bold));
@@ -86,6 +85,7 @@ void qCloneWidget::SetupWidgetWindow(QString title,int numDim,SlsQt1DPlot*& plot
         	hLayoutSave->setSpacing(0);
         	/** file name */
         	dispFName = new QLineEdit(this);
+        	dispFName->setSizePolicy(QSizePolicy::Fixed,QSizePolicy::Fixed);
         	hLayoutSave->addWidget(dispFName);
         	/** file format */
         	comboFormat = new QComboBox(this);
@@ -118,6 +118,8 @@ void qCloneWidget::SetupWidgetWindow(QString title,int numDim,SlsQt1DPlot*& plot
 	/** Save */
 		connect(btnSave, SIGNAL(clicked()),	this, SLOT(SavePlot()));
 
+	setMinimumHeight(300);
+	resize(500,350);
 
 }
 

@@ -7,11 +7,11 @@
     <x>0</x>
     <y>0</y>
     <width>734</width>
-    <height>339</height>
+    <height>345</height>
    </rect>
   </property>
   <property name="sizePolicy">
-   <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+   <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
     <horstretch>0</horstretch>
     <verstretch>0</verstretch>
    </sizepolicy>
@@ -37,11 +37,14 @@
      <x>10</x>
      <y>130</y>
      <width>711</width>
-     <height>151</height>
+     <height>146</height>
     </rect>
    </property>
    <property name="title">
     <string>Plot Axis</string>
+   </property>
+   <property name="alignment">
+    <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
    </property>
    <property name="flat">
     <bool>false</bool>
@@ -288,11 +291,14 @@
      <x>11</x>
      <y>70</y>
      <width>571</width>
-     <height>51</height>
+     <height>46</height>
     </rect>
    </property>
    <property name="title">
     <string>2D Plot Options</string>
+   </property>
+   <property name="alignment">
+    <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
    </property>
    <property name="flat">
     <bool>false</bool>
@@ -350,7 +356,7 @@
      <x>10</x>
      <y>10</y>
      <width>571</width>
-     <height>51</height>
+     <height>46</height>
     </rect>
    </property>
    <property name="palette">
@@ -474,6 +480,9 @@
    <property name="title">
     <string>1D Plot Options</string>
    </property>
+   <property name="alignment">
+    <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+   </property>
    <property name="flat">
     <bool>false</bool>
    </property>
@@ -482,20 +491,26 @@
      <rect>
       <x>10</x>
       <y>20</y>
-      <width>551</width>
-      <height>27</height>
+      <width>641</width>
+      <height>21</height>
      </rect>
     </property>
     <layout class="QGridLayout" name="gridLayout_3">
      <item row="0" column="0">
       <widget class="QCheckBox" name="chktest1D">
        <property name="text">
-        <string/>
+        <string>Superimpose</string>
        </property>
       </widget>
      </item>
      <item row="0" column="1">
       <widget class="QPushButton" name="btnClear">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
        <property name="focusPolicy">
         <enum>Qt::NoFocus</enum>
        </property>
@@ -509,22 +524,27 @@
        <property name="orientation">
         <enum>Qt::Horizontal</enum>
        </property>
+       <property name="sizeType">
+        <enum>QSizePolicy::Fixed</enum>
+       </property>
        <property name="sizeHint" stdset="0">
         <size>
-         <width>40</width>
-         <height>20</height>
+         <width>400</width>
+         <height>10</height>
         </size>
        </property>
       </spacer>
      </item>
     </layout>
    </widget>
+   <zorder>gridLayoutWidget_3</zorder>
+   <zorder>groupBox_2</zorder>
   </widget>
   <widget class="QGroupBox" name="boxSave">
    <property name="geometry">
     <rect>
      <x>10</x>
-     <y>288</y>
+     <y>290</y>
      <width>711</width>
      <height>51</height>
     </rect>
@@ -532,11 +552,17 @@
    <property name="title">
     <string>Save</string>
    </property>
+   <property name="alignment">
+    <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+   </property>
+   <property name="flat">
+    <bool>false</bool>
+   </property>
    <widget class="QWidget" name="horizontalLayoutWidget">
     <property name="geometry">
      <rect>
       <x>10</x>
-      <y>13</y>
+      <y>15</y>
       <width>698</width>
       <height>31</height>
      </rect>
@@ -645,24 +671,33 @@
    </widget>
   </widget>
   <widget class="QGroupBox" name="groupBox_2">
+   <property name="enabled">
+    <bool>true</bool>
+   </property>
    <property name="geometry">
     <rect>
      <x>599</x>
      <y>10</y>
      <width>121</width>
-     <height>111</height>
+     <height>81</height>
     </rect>
    </property>
    <property name="title">
     <string>Clone</string>
    </property>
+   <property name="alignment">
+    <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+   </property>
+   <property name="flat">
+    <bool>false</bool>
+   </property>
    <widget class="QWidget" name="gridLayoutWidget_2">
     <property name="geometry">
      <rect>
-      <x>20</x>
-      <y>20</y>
-      <width>81</width>
-      <height>81</height>
+      <x>5</x>
+      <y>10</y>
+      <width>111</width>
+      <height>76</height>
      </rect>
     </property>
     <layout class="QGridLayout" name="gridLayout_2">
@@ -673,7 +708,7 @@
       <number>9</number>
      </property>
      <property name="verticalSpacing">
-      <number>13</number>
+      <number>-1</number>
      </property>
      <item row="0" column="0">
       <widget class="QPushButton" name="btnClone">

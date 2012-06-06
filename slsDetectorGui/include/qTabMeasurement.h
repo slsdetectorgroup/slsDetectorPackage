@@ -70,11 +70,11 @@ private:
 
 
 public slots:
+
 /** update plot is finished,
  * changes start/stop text and enables/disables all widgets
  */
 void UpdateFinished();
-
 
 
 
@@ -133,7 +133,8 @@ void setNumProbes(int val);
 
 signals:
 
-
+void StartSignal();
+void StopSignal();
 };
 
 

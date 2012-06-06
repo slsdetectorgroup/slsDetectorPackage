@@ -50,6 +50,7 @@ SOURCES 			= 		\
 							src/qTabDataOutput.cpp\
 							src/qTabPlot.cpp\
 							src/qTabActions.cpp\
+							src/qActionsWidget.cpp\
 							src/qTabAdvanced.cpp\
 							src/qTabSettings.cpp\
 							src/qTabDebugging.cpp\
@@ -72,6 +73,7 @@ HEADERS 			=  		\
 							include/qTabDataOutput.h\
 							include/qTabPlot.h\
 							include/qTabActions.h\
+							include/qActionsWidget.h\
 							include/qTabAdvanced.h\
 							include/qTabSettings.h\
 							include/qTabDebugging.h\

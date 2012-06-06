@@ -47,8 +47,8 @@
   <widget class="QPushButton" name="btnTemp">
    <property name="geometry">
     <rect>
-     <x>52</x>
-     <y>106</y>
+     <x>10</x>
+     <y>14</y>
      <width>91</width>
      <height>41</height>
     </rect>
@@ -67,8 +67,8 @@ Temperature</string>
   <widget class="QLineEdit" name="dispTempFpga">
    <property name="geometry">
     <rect>
-     <x>222</x>
-     <y>132</y>
+     <x>180</x>
+     <y>40</y>
      <width>151</width>
      <height>21</height>
     </rect>
@@ -90,8 +90,8 @@ Temperature</string>
   <widget class="QLabel" name="label_10">
    <property name="geometry">
     <rect>
-     <x>162</x>
-     <y>102</y>
+     <x>120</x>
+     <y>10</y>
      <width>41</width>
      <height>20</height>
     </rect>
@@ -103,8 +103,8 @@ Temperature</string>
   <widget class="QLabel" name="label_11">
    <property name="geometry">
     <rect>
-     <x>162</x>
-     <y>132</y>
+     <x>120</x>
+     <y>40</y>
      <width>41</width>
      <height>20</height>
     </rect>
@@ -116,8 +116,8 @@ Temperature</string>
   <widget class="QLineEdit" name="dispTempAdc">
    <property name="geometry">
     <rect>
-     <x>222</x>
-     <y>102</y>
+     <x>180</x>
+     <y>10</y>
      <width>151</width>
      <height>21</height>
     </rect>

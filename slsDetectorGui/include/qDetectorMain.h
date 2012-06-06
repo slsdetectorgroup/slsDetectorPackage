@@ -25,6 +25,23 @@ class slsDetectorUtils;
 /** Qt Include Headers */
 #include <QScrollArea>
 #include <QGridLayout>
+#include <QResizeEvent>
+
+class MyTabWidget:public QTabWidget
+{
+public:
+    MyTabWidget(QWidget* parent = 0)
+    {
+      setParent(parent);
+    }
+
+    //Overridden method from QTabWidget
+    QTabBar* tabBar()
+    {
+      return QTabWidget::tabBar();
+    }
+};
+
 
 /**
  *@short Main window of the GUI.
@@ -56,12 +73,13 @@ private:
 	/** The Plot widget	 */
 	qDrawPlot *myPlot;
 	/**Tab Widget */
-	QTabWidget *tabs;
+	MyTabWidget *tabs;
 	/**Layout of the central Widget */
 	QGridLayout *layoutTabs;
-	/** height of Plot Window when undocked */
+	/** default height of Plot Window when docked */
 	int heightPlotWindow;
-
+	/** default height of central widgetwhen plot Window when docked */
+	int heightCentralWidget;
 	/** enumeration of the tabs */
 	enum {Measurement, DataOutput, Plot, Actions, Settings, Advanced, Debugging, Developer, NumberOfTabs };
 
@@ -83,6 +101,8 @@ private:
 	qTabDebugging *tab_debugging;
 	/**Developer tab */
 	qTabDeveloper *tab_developer;
+	/**if the developer tab should be enabled,known from command line */
+	int isDeveloper;
 
 
 	/**Sets up the layout of the widget
@@ -163,6 +183,12 @@ void ResizeMainWindow(bool b);
  */
 void SetTerminalWindowSize(bool b);
 
+/** Enables/disables tabs depending on if acquisition is currently in progress
+ */
+void EnableTabs();
+
+protected:
+void resizeEvent(QResizeEvent* event);
 
 signals:
 

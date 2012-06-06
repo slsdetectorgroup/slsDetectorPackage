@@ -286,14 +286,14 @@ void* qDrawPlot::AcquireImages(){
 
 /*		if(framePeriod<acquisitionTime) usleep((int)acquisitionTime*1e6);
 		else                         	usleep((int)framePeriod*1e6);*/
-		cout<<"Reading in image: "<<i<<endl;
+		//cout<<"Reading in image: "<<i<<endl;
 //usleep(1000000);
 		if(stop_signal) break; //stop_signal should also go to readout function
 		if(!pthread_mutex_trylock(&last_image_complete_mutex)){
 
 			//plot_in_scope = 1;//i%2 + 1;
 			//plot_in_scope = 2;
-			cout<<"value:"<<image_data[6]<<endl;
+			//cout<<"value:"<<image_data[6]<<endl;
 
 			lastImageNumber = i+1;
 			char temp_title[2000];
@@ -431,11 +431,14 @@ void qDrawPlot::ClonePlot(){
 			found=true;
 			break;
 		}
+	/** no space for more clone widget references*/
 	if(!found){
 		cout<<"Too many clones"<<endl;
 		exit(-1);
 	}
-
+	/** save height to keep maintain same height of plot */
+	int preheight = height();
+	/** create clone */
 	winClone[i] = new qCloneWidget(this,i,boxPlot->title(),(int)plot_in_scope,plot1D,plot2D,myDet->getFilePath());
 	if(plot_in_scope==1){
 		plot1D = new SlsQt1DPlot(boxPlot);
@@ -454,11 +457,16 @@ void qDrawPlot::ClonePlot(){
 		plot2D->SetZTitle(imageZAxisTitle);
 		plotLayout->addWidget(plot2D,1,1,1,1);
 	}
+	setMinimumHeight(preheight);
+	resize(width(),preheight);
+	/** update the actual plot */
 	UpdatePlot();
 	connect(this, 		SIGNAL(InterpolateSignal(bool)),	plot2D, 	SIGNAL(InterpolateSignal(bool)));
 	connect(this, 		SIGNAL(ContourSignal(bool)),		plot2D, 	SIGNAL(ContourSignal(bool)));
 	connect(this, 		SIGNAL(LogzSignal(bool)),			plot2D, 	SLOT(SetZScaleToLog(bool)));
 	winClone[i]->show();
+
+	/** to remember which all clone widgets were closed*/
 	connect(winClone[i], SIGNAL(CloneClosedSignal(int)),this, SLOT(CloneCloseEvent(int)));
 
 }

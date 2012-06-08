@@ -8,6 +8,9 @@
 #ifndef QDEFS_H
 #define QDEFS_H
 
+#include <iostream>
+using namespace std;
+
 class qDefs
 {
 public:
@@ -32,18 +35,18 @@ public:
 	 * @param value time
 	 * returns time value in ns
 	 */
-	static int64_t get64bTime(timeUnit unit, double value){
-		int64_t value64=value;
+	static float getNSTime(timeUnit unit, float value){
+		float valueNS=value;
 		switch(unit){
-		case HOURS:			value64*=60;
-		case MINUTES:		value64*=60;
-		case SECONDS:		value64*=1000;
-		case MILLISECONDS:	value64*=1000;
-		case MICROSECONDS:	value64*=1000;
+		case HOURS:			valueNS*=60;
+		case MINUTES:		valueNS*=60;
+		case SECONDS:		valueNS*=1000;
+		case MILLISECONDS:	valueNS*=1000;
+		case MICROSECONDS:	valueNS*=1000;
 		case NANOSECONDS:
 		default:;
 		}
-		return value64;
+		return valueNS;
 	};
 
 

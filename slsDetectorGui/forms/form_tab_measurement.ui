@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>718</width>
-    <height>339</height>
+    <width>775</width>
+    <height>345</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -25,7 +25,7 @@
   <property name="maximumSize">
    <size>
     <width>1000</width>
-    <height>339</height>
+    <height>345</height>
    </size>
   </property>
   <property name="palette">
@@ -152,7 +152,7 @@
   <widget class="QGroupBox" name="boxProgress">
    <property name="geometry">
     <rect>
-     <x>20</x>
+     <x>30</x>
      <y>179</y>
      <width>319</width>
      <height>90</height>
@@ -213,7 +213,7 @@
   <widget class="QPushButton" name="btnStartStop">
    <property name="geometry">
     <rect>
-     <x>20</x>
+     <x>30</x>
      <y>289</y>
      <width>319</width>
      <height>31</height>
@@ -238,7 +238,7 @@
   <widget class="QFrame" name="frameTimeResolved">
    <property name="geometry">
     <rect>
-     <x>352</x>
+     <x>390</x>
      <y>8</y>
      <width>362</width>
      <height>342</height>
@@ -329,6 +329,9 @@
        <property name="toolTip">
         <string>Frame period between exposures. 
  #period#</string>
+       </property>
+       <property name="decimals">
+        <number>9</number>
        </property>
        <property name="maximum">
         <double>2000000000.000000000000000</double>
@@ -595,7 +598,7 @@
      <item row="2" column="0">
       <widget class="QLabel" name="lblExpTime">
        <property name="enabled">
-        <bool>false</bool>
+        <bool>true</bool>
        </property>
        <property name="text">
         <string>Exposure Time:</string>
@@ -605,7 +608,7 @@
      <item row="2" column="2">
       <widget class="QDoubleSpinBox" name="spinExpTime">
        <property name="enabled">
-        <bool>false</bool>
+        <bool>true</bool>
        </property>
        <property name="sizePolicy">
         <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
@@ -617,18 +620,24 @@
         <string>Exposure time of each frame. 
  #exptime#</string>
        </property>
+       <property name="decimals">
+        <number>9</number>
+       </property>
+       <property name="minimum">
+        <double>0.000000000000000</double>
+       </property>
        <property name="maximum">
         <double>2000000000.000000000000000</double>
        </property>
        <property name="value">
-        <double>0.000000000000000</double>
+        <double>1.000000000000000</double>
        </property>
       </widget>
      </item>
      <item row="2" column="3">
       <widget class="QComboBox" name="comboExpUnit">
        <property name="enabled">
-        <bool>false</bool>
+        <bool>true</bool>
        </property>
        <property name="sizePolicy">
         <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
@@ -695,6 +704,9 @@
        <property name="toolTip">
         <string>Frame period between exposures. 
  #period#</string>
+       </property>
+       <property name="decimals">
+        <number>9</number>
        </property>
        <property name="maximum">
         <double>2000000000.000000000000000</double>
@@ -772,7 +784,7 @@
   <widget class="QFrame" name="frameNotTimeResolved">
    <property name="geometry">
     <rect>
-     <x>10</x>
+     <x>20</x>
      <y>5</y>
      <width>336</width>
      <height>159</height>
@@ -901,6 +913,56 @@
      </item>
     </layout>
    </widget>
+  </widget>
+  <widget class="QLabel" name="lblNote">
+   <property name="geometry">
+    <rect>
+     <x>130</x>
+     <y>330</y>
+     <width>521</width>
+     <height>16</height>
+    </rect>
+   </property>
+   <property name="palette">
+    <palette>
+     <active>
+      <colorrole role="WindowText">
+       <brush brushstyle="SolidPattern">
+        <color alpha="255">
+         <red>255</red>
+         <green>0</green>
+         <blue>0</blue>
+        </color>
+       </brush>
+      </colorrole>
+     </active>
+     <inactive>
+      <colorrole role="WindowText">
+       <brush brushstyle="SolidPattern">
+        <color alpha="255">
+         <red>255</red>
+         <green>0</green>
+         <blue>0</blue>
+        </color>
+       </brush>
+      </colorrole>
+     </inactive>
+     <disabled>
+      <colorrole role="WindowText">
+       <brush brushstyle="SolidPattern">
+        <color alpha="255">
+         <red>193</red>
+         <green>193</green>
+         <blue>193</blue>
+        </color>
+       </brush>
+      </colorrole>
+     </disabled>
+    </palette>
+   </property>
+   <property name="text">
+    <string>* Note: The Acquisition Period should be greater than or equal to the Exposure Time.</string>
+   </property>
   </widget>
  </widget>
  <resources/>

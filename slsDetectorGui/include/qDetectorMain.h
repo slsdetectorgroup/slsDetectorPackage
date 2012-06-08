@@ -27,19 +27,12 @@ class slsDetectorUtils;
 #include <QGridLayout>
 #include <QResizeEvent>
 
-class MyTabWidget:public QTabWidget
-{
+/** To Over-ride the QTabWidget class to get the tabBar */
+class MyTabWidget:public QTabWidget{
 public:
-    MyTabWidget(QWidget* parent = 0)
-    {
-      setParent(parent);
-    }
-
+    MyTabWidget(QWidget* parent = 0) {setParent(parent);}
     //Overridden method from QTabWidget
-    QTabBar* tabBar()
-    {
-      return QTabWidget::tabBar();
-    }
+    QTabBar* tabBar(){return QTabWidget::tabBar();}
 };
 
 
@@ -81,7 +74,9 @@ private:
 	/** default height of central widgetwhen plot Window when docked */
 	int heightCentralWidget;
 	/** enumeration of the tabs */
-	enum {Measurement, DataOutput, Plot, Actions, Settings, Advanced, Debugging, Developer, NumberOfTabs };
+	enum {Measurement, Settings, DataOutput, Plot, Actions, Advanced, Debugging, Developer, NumberOfTabs };
+
+	QColor defaultTabColor;
 
 	/* Scroll Area for the tabs**/
 	QScrollArea *scroll[NumberOfTabs];
@@ -177,11 +172,6 @@ void About();
  *	@param b bool TRUE if undocked(outside main window), FALSE docked
  */
 void ResizeMainWindow(bool b);
-
-/** Sets the Size of the undocked/docked terminal window
- *	@param b bool TRUE if undocked(outside main window), FALSE docked
- */
-void SetTerminalWindowSize(bool b);
 
 /** Enables/disables tabs depending on if acquisition is currently in progress
  */

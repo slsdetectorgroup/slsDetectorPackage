@@ -36,8 +36,8 @@
     <rect>
      <x>13</x>
      <y>16</y>
-     <width>227</width>
-     <height>47</height>
+     <width>311</width>
+     <height>151</height>
     </rect>
    </property>
    <layout class="QGridLayout" name="gridLayout">
@@ -106,6 +106,43 @@
        </property>
       </item>
      </widget>
+    </item>
+    <item row="1" column="0">
+     <widget class="QLabel" name="label_4">
+      <property name="text">
+       <string>Threshold:</string>
+      </property>
+     </widget>
+    </item>
+    <item row="1" column="1">
+     <widget class="QSpinBox" name="spinBox">
+      <property name="minimum">
+       <number>-1</number>
+      </property>
+      <property name="value">
+       <number>-1</number>
+      </property>
+     </widget>
+    </item>
+    <item row="2" column="0">
+     <widget class="QLabel" name="label_5">
+      <property name="text">
+       <string>Number of Modules:</string>
+      </property>
+     </widget>
+    </item>
+    <item row="3" column="0">
+     <widget class="QLabel" name="label_6">
+      <property name="text">
+       <string>Dynamic Range:</string>
+      </property>
+     </widget>
+    </item>
+    <item row="3" column="1">
+     <widget class="QComboBox" name="comboBox"/>
+    </item>
+    <item row="2" column="1">
+     <widget class="QSpinBox" name="spinBox_2"/>
     </item>
    </layout>
   </widget>

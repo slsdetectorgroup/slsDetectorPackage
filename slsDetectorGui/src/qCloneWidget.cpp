@@ -71,7 +71,7 @@ void qCloneWidget::SetupWidgetWindow(QString title,int numDim,SlsQt1DPlot*& plot
 	}
 
 	/** Save group box */
-	boxSave = new QGroupBox("Save",this);
+	boxSave = new QGroupBox("Save Image",this);
 	boxSave->setFixedHeight(45);
 	boxSave->setContentsMargins(0,8,0,0);
     layoutSave = new QHBoxLayout;

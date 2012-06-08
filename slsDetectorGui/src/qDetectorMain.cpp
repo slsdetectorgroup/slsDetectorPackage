@@ -164,7 +164,6 @@ void qDetectorMain::SetUpDetector(){
 void qDetectorMain::Initialization(){
 /** Dockable Plot*/
 	connect(dockWidgetPlot,SIGNAL(topLevelChanged(bool)),this,SLOT(ResizeMainWindow(bool)));
-	connect(dockWidgetTerminal,SIGNAL(topLevelChanged(bool)),this,SLOT(SetTerminalWindowSize(bool)));
 
 /** tabs */
 	connect(tabs,SIGNAL(currentChanged(int)),this, SLOT(refresh(int)));//( QWidget*)));
@@ -201,6 +200,8 @@ void qDetectorMain::Initialization(){
 
 		heightPlotWindow = dockWidgetPlot->size().height();
 		heightCentralWidget = centralwidget->size().height();
+
+		defaultTabColor = tabs->tabBar()->tabTextColor(DataOutput);
 }
 
 
@@ -241,12 +242,8 @@ void qDetectorMain::refresh(int index){
 	else{
 ;
 	}
-	for(int i=0;i<NumberOfTabs;i++){
-		if(tabs->isTabEnabled(i))
-			tabs->tabBar()->setTabTextColor(i,Qt::black);
-		else
-			tabs->tabBar()->setTabTextColor(i,Qt::gray);
-	}
+	for(int i=0;i<NumberOfTabs;i++)
+		tabs->tabBar()->setTabTextColor(i,defaultTabColor);
 	tabs->tabBar()->setTabTextColor(index,QColor(0,0,200,255));
 }
 
@@ -255,15 +252,12 @@ void qDetectorMain::SetDockableMode(bool b){
 #ifdef VERBOSE
 	cout<<"Setting Dockable Mode to "<<b<<endl;
 #endif
-	if(b){
+	if(b)
 		dockWidgetPlot->setFeatures(QDockWidget::DockWidgetFloatable);
-		dockWidgetTerminal->setFeatures(QDockWidget::DockWidgetFloatable|QDockWidget::DockWidgetVerticalTitleBar);
-
-	}else{
+	else{
+		dockWidgetPlot->setFloating(false);
 		dockWidgetPlot->setFeatures(QDockWidget::NoDockWidgetFeatures);
-		dockWidgetTerminal->setFeatures(QDockWidget::DockWidgetVerticalTitleBar);
 	}
-
 }
 
 
@@ -366,24 +360,6 @@ void qDetectorMain::resizeEvent(QResizeEvent* event){
 #endif
 }
 
-
-
-//prolly not needed
-void qDetectorMain::SetTerminalWindowSize(bool b){
-#ifdef VERBOSE
-	cout<<"Resizing Terminal Window"<<endl;
-#endif
-/*//depends on gridlayout in qdrawterminal widget class
-	if(b){
-		dockWidgetTerminal->setMinimumWidth(width()/2);
-			}
-
-	else{
-		dockWidgetTerminal->setMinimumWidth(38);
-		QSizePolicy sizePolicy(QSizePolicy::Preferred,QSizePolicy::Preferred);
-		dockWidgetTerminal->setSizePolicy(sizePolicy);
-	}*/
-}
 
 
 

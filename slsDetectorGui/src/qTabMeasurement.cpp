@@ -48,6 +48,13 @@ qTabMeasurement::~qTabMeasurement(){
 
 void qTabMeasurement::SetupWidgetWindow(){
 
+	/** Exp Time **/
+	float time = (float)(myDet->setTimer(slsDetectorDefs::ACQUISITION_TIME,-1)*(1E-9));
+	spinExpTime->setValue(time);
+	comboExpUnit->setCurrentIndex(qDefs::SECONDS);
+
+	lblNote->hide();
+
 	/** File Name **/
 	dispFileName->setText(QString(myDet->getFileName().c_str()));
 	/** File Index **/
@@ -241,30 +248,58 @@ void qTabMeasurement::setNumFrames(int val){
 
 
 void qTabMeasurement::setExposureTime(){
-	int64_t exptime64;
+	int64_t exptimeNS;
 	/** Get the 64 bit value of timer**/
-	exptime64 = qDefs::get64bTime((qDefs::timeUnit)comboExpUnit->currentIndex(),spinExpTime->value());
+	exptimeNS = qDefs::getNSTime((qDefs::timeUnit)comboExpUnit->currentIndex(),spinExpTime->value());
 #ifdef VERBOSE
-	cout<<"Setting acquisition time to " << exptime64 << " clocks" << endl;
+	cout<<"Setting acquisition time to " << exptimeNS << " clocks" << endl;
 #endif
-	myDet->setTimer(slsDetectorDefs::ACQUISITION_TIME,exptime64);
+	myDet->setTimer(slsDetectorDefs::ACQUISITION_TIME,exptimeNS);
 
-	//float t=exptime64;
+	if(lblPeriod->isEnabled()){
+		int64_t acqtimeNS;
+		acqtimeNS = qDefs::getNSTime((qDefs::timeUnit)comboPeriodUnit->currentIndex(),spinPeriod->value());
+		if(exptimeNS>acqtimeNS) {
+			lblNote->show();
+			lblPeriod->setPalette(lblNote->palette());
+			lblPeriod->setText("* Acquisition Period");
+		}
+		else {
+			lblNote->hide();
+			lblPeriod->setPalette(lblNumFrames->palette());
+			lblPeriod->setText("Acquisition Period");
+		}
+	}
+	//float t=exptimeNS;
 	//emit acquisitionTimeChanged(t/(100E+6)); ??????????????????????
 }
 
 
 
 void qTabMeasurement::setAcquisitionPeriod(){
-	int64_t exptime64;
+	int64_t acqtimeNS;
 	/** Get the 64 bit value of timer**/
-	exptime64 = qDefs::get64bTime((qDefs::timeUnit)comboPeriodUnit->currentIndex(),spinPeriod->value());
+	acqtimeNS = qDefs::getNSTime((qDefs::timeUnit)comboPeriodUnit->currentIndex(),spinPeriod->value());
 #ifdef VERBOSE
-	cout<<"Setting frame period between exposures to " << exptime64 << " clocks" << endl;
+	cout<<"Setting frame period between exposures to " << acqtimeNS << " clocks" << endl;
 #endif
-	myDet->setTimer(slsDetectorDefs::FRAME_PERIOD,exptime64);
+	myDet->setTimer(slsDetectorDefs::FRAME_PERIOD,acqtimeNS);
 
-	//float t=exptime64;
+	int64_t exptimeNS;
+	exptimeNS = qDefs::getNSTime((qDefs::timeUnit)comboExpUnit->currentIndex(),spinExpTime->value());
+	if(exptimeNS>acqtimeNS){
+		lblNote->show();
+		lblPeriod->setPalette(lblNote->palette());
+		lblPeriod->setText("* Acquisition Period");
+	}
+	else {
+		lblNote->hide();
+		lblPeriod->setPalette(lblNumFrames->palette());
+		lblPeriod->setText("Acquisition Period");
+	}
+
+
+	//float t=exptimeNS;
 	//emit acquisitionTimeChanged(t/(100E+6)); ??????????????????????
 }
 
@@ -283,13 +318,13 @@ void qTabMeasurement::setNumTriggers(int val){
 
 
 void qTabMeasurement::setDelay(){
-	int64_t exptime64;
+	int64_t exptimeNS;
 	/** Get the 64 bit value of timer**/
-	exptime64 = qDefs::get64bTime((qDefs::timeUnit)comboDelayUnit->currentIndex(),spinDelay->value());
+	exptimeNS = qDefs::getNSTime((qDefs::timeUnit)comboDelayUnit->currentIndex(),spinDelay->value());
 #ifdef VERBOSE
-	cout<<"Setting delay after trigger to " << exptime64 << " clocks" << endl;
+	cout<<"Setting delay after trigger to " << exptimeNS << " clocks" << endl;
 #endif
-	myDet->setTimer(slsDetectorDefs::DELAY_AFTER_TRIGGER,exptime64);
+	myDet->setTimer(slsDetectorDefs::DELAY_AFTER_TRIGGER,exptimeNS);
 }
 
 
@@ -415,6 +450,24 @@ void qTabMeasurement::setTimingMode(int mode){
 #endif
 		spinPeriod->setValue(time);
 		comboPeriodUnit->setCurrentIndex(qDefs::SECONDS);
+
+		int64_t exptimeNS,acqtimeNS;
+		exptimeNS = qDefs::getNSTime((qDefs::timeUnit)comboExpUnit->currentIndex(),spinExpTime->value());
+		acqtimeNS = qDefs::getNSTime((qDefs::timeUnit)comboPeriodUnit->currentIndex(),spinPeriod->value());
+		if(exptimeNS>acqtimeNS) {
+			lblNote->show();
+			lblPeriod->setPalette(lblNote->palette());
+			lblPeriod->setText("* Acquisition Period");
+		}
+		else {
+			lblNote->hide();
+			lblPeriod->setPalette(lblNumFrames->palette());
+			lblPeriod->setText("Acquisition Period");
+		}
+	}else	{
+		lblNote->hide();
+		lblPeriod->setPalette(lblNumFrames->palette());
+		lblPeriod->setText("Acquisition Period");
 	}
 
 	/**Number of Triggers */

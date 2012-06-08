@@ -74,61 +74,8 @@
        </property>
       </widget>
      </item>
-     <item row="0" column="2" colspan="4">
+     <item row="0" column="3" colspan="5">
       <widget class="QLineEdit" name="lineEdit_2"/>
-     </item>
-     <item row="0" column="7">
-      <widget class="QPushButton" name="pushButton_3">
-       <property name="text">
-        <string>Acquire Flat Field Data</string>
-       </property>
-      </widget>
-     </item>
-     <item row="1" column="2">
-      <widget class="QRadioButton" name="radioButton_3">
-       <property name="text">
-        <string>Auto</string>
-       </property>
-      </widget>
-     </item>
-     <item row="1" column="7">
-      <widget class="QSpinBox" name="spinBox"/>
-     </item>
-     <item row="0" column="6">
-      <widget class="QPushButton" name="pushButton_2">
-       <property name="sizePolicy">
-        <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-         <horstretch>0</horstretch>
-         <verstretch>0</verstretch>
-        </sizepolicy>
-       </property>
-       <property name="text">
-        <string>Browse</string>
-       </property>
-      </widget>
-     </item>
-     <item row="1" column="5" colspan="2">
-      <widget class="QRadioButton" name="radioButton">
-       <property name="text">
-        <string>Custom dead time(ns):</string>
-       </property>
-      </widget>
-     </item>
-     <item row="1" column="3">
-      <spacer name="horizontalSpacer_2">
-       <property name="orientation">
-        <enum>Qt::Horizontal</enum>
-       </property>
-       <property name="sizeType">
-        <enum>QSizePolicy::Fixed</enum>
-       </property>
-       <property name="sizeHint" stdset="0">
-        <size>
-         <width>40</width>
-         <height>20</height>
-        </size>
-       </property>
-      </spacer>
      </item>
      <item row="3" column="0">
       <widget class="QCheckBox" name="checkBox_5">
@@ -156,6 +103,68 @@
         <string>:</string>
        </property>
       </widget>
+     </item>
+     <item row="0" column="8">
+      <widget class="QPushButton" name="pushButton_2">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+       <property name="text">
+        <string>Browse</string>
+       </property>
+      </widget>
+     </item>
+     <item row="1" column="3">
+      <widget class="QRadioButton" name="radioButton_3">
+       <property name="text">
+        <string>Auto</string>
+       </property>
+      </widget>
+     </item>
+     <item row="1" column="4">
+      <spacer name="horizontalSpacer_2">
+       <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+       </property>
+       <property name="sizeType">
+        <enum>QSizePolicy::Fixed</enum>
+       </property>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>40</width>
+         <height>20</height>
+        </size>
+       </property>
+      </spacer>
+     </item>
+     <item row="1" column="5">
+      <widget class="QRadioButton" name="radioButton">
+       <property name="text">
+        <string>Custom dead time(ns):</string>
+       </property>
+      </widget>
+     </item>
+     <item row="1" column="6">
+      <widget class="QSpinBox" name="spinBox"/>
+     </item>
+     <item row="0" column="2">
+      <spacer name="horizontalSpacer_3">
+       <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+       </property>
+       <property name="sizeType">
+        <enum>QSizePolicy::Fixed</enum>
+       </property>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>40</width>
+         <height>20</height>
+        </size>
+       </property>
+      </spacer>
      </item>
     </layout>
    </widget>

@@ -47,6 +47,7 @@ private:
 	enum{None, Auto, Gated, Trigger_Exp_Series, Trigger_Frame, Trigger_Readout, Gated_Start, Trigger_Window, NumTimingModes};
 
 
+
 /** methods */
 	/** Sets up the widget
 	 */

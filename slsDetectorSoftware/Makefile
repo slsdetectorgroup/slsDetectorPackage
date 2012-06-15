@@ -62,6 +62,6 @@ install_inc:
 	cp -P $(HEADERS) $(DESTDIR)
 
 
-install_doc:
+install_doc: doc
 	$(shell test -d $(DESTDIR) || mkdir -p $(DESTDIR))
 	cp -Pr docs/* $(DESTDIR)  

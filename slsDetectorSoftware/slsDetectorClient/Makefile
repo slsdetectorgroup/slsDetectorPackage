@@ -41,7 +41,7 @@ clean:
 
 
 
-install_sls_detector: all
+install: all
 	$(shell test -d $(DESTDIR) || mkdir -p $(DESTDIR))
 	cp -P $(BIN)/sls_detector_put $(DESTDIR)
 	cp -P $(BIN)/sls_detector_get $(DESTDIR)

@@ -38,6 +38,8 @@ clean:
 	rm  -rf $(BIN)/sls_detector_put sls_detector_get sls_detector_acquire  sls_detector_help
 
 
+install_doc:
+	
 
 
 

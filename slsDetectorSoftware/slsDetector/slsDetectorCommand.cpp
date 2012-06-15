@@ -919,7 +919,7 @@ string slsDetectorCommand::cmdHostname(int narg, char *args[], int action){
   } 
 
   ostringstream os;
-  int ivar;//, ival;
+  int ivar=-1;//, ival;
   string var=string(args[0]);
   char hostname[1000];
   
@@ -933,6 +933,9 @@ string slsDetectorCommand::cmdHostname(int narg, char *args[], int action){
     if (vvstr.fail()) 
       ivar=-1;
   }
+
+
+
   p=string(args[0]).find("hostname");
   
   if (p==string::npos) {

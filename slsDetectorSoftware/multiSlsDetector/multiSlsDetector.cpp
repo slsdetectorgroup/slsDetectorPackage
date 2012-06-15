@@ -427,6 +427,7 @@ string multiSlsDetector::getHostname(int pos) {
 	s+=detectors[ip]->getHostname();
 	s+=string("+");
       }
+      cout << s <<endl;
 #ifdef VERBOSE
   cout << "hostname " << s << endl;
 #endif
@@ -434,6 +435,7 @@ string multiSlsDetector::getHostname(int pos) {
   }
   return s;
   
+
 }
 
 
@@ -3180,6 +3182,7 @@ int multiSlsDetector::readConfigurationFile(string const fname){
 #endif
 
     setNumberOfModules(-1);
+    getMaxNumberOfModules();
     return iline;
 
 
@@ -3312,9 +3315,12 @@ int multiSlsDetector::writeDataFile(string fname, float *data, float *err, float
      
      if (detectors[i]) {
        n=detectors[i]->getTotalNumberOfChannels();
-       if (nch_left<nd)
+       if (nch_left<n)
 	 n=nch_left;
 
+       //#ifdef VERBOSE
+       cout << " write " << i << " position " << off << " offset " << choff << endl;
+       //#endif
        detectors[i]->writeDataFile(outfile,n, data+off, pe, pa, dataformat, choff);
 
        nch_left-=n;
@@ -3359,7 +3365,7 @@ int multiSlsDetector::writeDataFile(string fname, int *data) {
    for (int i=0; i<thisMultiDetector->numberOfDetectors; i++) {
      if (detectors[i]) {
 #ifdef VERBOSE
-       cout << " write " << i << endl;
+       cout << " write " << i << " position " << off << " offset " << choff << endl;
 #endif
        detectors[i]->writeDataFile(outfile, detectors[i]->getTotalNumberOfChannels(), data+off, choff);
        choff+=detectors[i]->getMaxNumberOfChannels();

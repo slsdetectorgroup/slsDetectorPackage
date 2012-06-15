@@ -179,9 +179,6 @@ void postProcessing::doProcessing(float *lfdata, int delflag, string fname) {
 //   /** write raw data file */	   
 //   if (*correctionMask==0 && delflag==1) {
 //     //  delete [] fdata;
-
-
-
 //     ;
 //   } else {
 

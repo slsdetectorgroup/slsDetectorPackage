@@ -55,7 +55,7 @@ lib:    package
 # added install target, HBl
 install_lib: lib
 	$(shell test -d $(DESTDIR) || mkdir -p $(DESTDIR))
-	cp -P libSlsDetector.so.1.0.1  libSlsDetector.so libSlsDetector.so.1  $(DESTDIR)
+	cp -P libSlsDetector.so $(DESTDIR)
 
 install_inc:
 	$(shell test -d $(DESTDIR) || mkdir -p $(DESTDIR))

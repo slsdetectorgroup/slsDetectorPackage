@@ -407,7 +407,7 @@ class slsDetectorUtils :  public slsDetectorActions, public postProcessing {
   // virtual float* convertAngles(float pos)=0;
 
   virtual int setThresholdEnergy(int, int im=-1, detectorSettings isettings=GET_SETTINGS)=0;
-   virtual int setChannel(long long, int ich=-1, int ichip=-1, int imod=-1)=0;
+   virtual int setChannel(int64_t, int ich=-1, int ichip=-1, int imod=-1)=0;
 
   virtual float getRateCorrectionTau()=0;
   virtual int* startAndReadAll()=0;

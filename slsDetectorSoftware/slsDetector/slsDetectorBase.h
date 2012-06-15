@@ -292,12 +292,12 @@ class slsDetectorBase :  public virtual slsDetectorDefs, public slsDetectorUsers
   */
   virtual int setNumberOfModules(int i=-1, dimension d=X)=0;
 
-  int setDetectorSize(int x0=-1, int y0=-1, int nx=-1, int ny=-1){return setNumberOfModules(nx,X);};
+  int setDetectorSize(int x0=-1, int y0=-1, int nx=-1, int ny=-1){return setNumberOfModules(nx/getChansPerMod(0),X);};
 
-  int getDetectorSize(int &x0, int &y0, int &nx, int &ny){x0=0; nx=setNumberOfModules(-1,X); return nx;};
+  int getDetectorSize(int &x0, int &y0, int &nx, int &ny){x0=0; nx=setNumberOfModules(-1,X)*getChansPerMod(0); return nx;};
 
   virtual int getMaxNumberOfModules(dimension d=X)=0; //
-  int getMaximumDetectorSize(int &nx, int &ny){nx=getMaxNumberOfModules(X); ny=1; return nx;};
+  int getMaximumDetectorSize(int &nx, int &ny){nx=getMaxNumberOfModules(X)*getChansPerMod(0); ny=1; return nx;};
 
 
   /** Locks/Unlocks the connection to the server
@@ -339,7 +339,7 @@ class slsDetectorBase :  public virtual slsDetectorDefs, public slsDetectorUsers
   */
   virtual int stopAcquisition()=0;
   int stopMeasurement(){return stopAcquisition();};
-
+  virtual int getChansPerMod(int imod=0)=0;
 
   /**
       set/get timer value

@@ -36,6 +36,7 @@ qTabPlot::qTabPlot(QWidget *parent,slsDetectorUtils*& detector, qDrawPlot*& plot
 		//This also selects the text if unchecked
 		//includes setupwidgetwindow
 		//SelectPlot(1);
+		//switch(myDet->detectorytype)
 		Select1DPlot(true);
 		Initialization();
 	}
@@ -66,9 +67,12 @@ void qTabPlot::SetupWidgetWindow(){
 	dispXMax->setEnabled(false);
 	dispYMax->setEnabled(false);
 	dispZMax->setEnabled(false);
-
-	//dispFName->setText(QString(myDet->getFilePath().c_str())+'/');
-
+/*	dispXMin->setValidator(new QDoubleValidator(dispXMin));
+	dispYMin->setValidator(new QDoubleValidator(dispYMin));
+	dispZMin->setValidator(new QDoubleValidator(dispZMin));
+	dispXMax->setValidator(new QDoubleValidator(dispXMax));
+	dispYMax->setValidator(new QDoubleValidator(dispYMax));
+	dispZMax->setValidator(new QDoubleValidator(dispZMax));*/
 }
 
 
@@ -103,9 +107,14 @@ void qTabPlot::Select1DPlot(bool b){
 
 
 void qTabPlot::Initialization(){
-/** Plot box*/
+/** Plot arguments box*/
+	connect(chkNoPlot, SIGNAL(toggled(bool)),myPlot, SLOT(EnablePlot(bool)));
+/** Snapshot box*/
 	connect(btnClone, 		SIGNAL(clicked()),myPlot, 	SLOT(ClonePlot()));
 	connect(btnCloseClones, SIGNAL(clicked()),myPlot, 	SLOT(CloseClones()));
+/** 1D Plot box*/
+	connect(chkSuperimpose, SIGNAL(toggled(bool)),this, SLOT(EnablePersistency(bool)));
+	connect(spinPersistency,SIGNAL(valueChanged(int)),myPlot,SLOT(SetPersistency(int)));
 /** 2D Plot box*/
 	connect(chkInterpolate, SIGNAL(toggled(bool)),myPlot, SIGNAL(InterpolateSignal(bool)));
 	connect(chkContour, 	SIGNAL(toggled(bool)),myPlot, SIGNAL(ContourSignal(bool)));
@@ -119,13 +128,26 @@ void qTabPlot::Initialization(){
 	connect(dispXAxis, 		SIGNAL(textChanged(const QString&)), this, 	SLOT(SetTitles()));
 	connect(dispYAxis, 		SIGNAL(textChanged(const QString&)), this, 	SLOT(SetTitles()));
 	connect(dispZAxis, 		SIGNAL(textChanged(const QString&)), this, 	SLOT(SetTitles()));
+
+	connect(chkXMin, 		SIGNAL(toggled(bool)), this, 	SLOT(EnableRange()));
+	connect(chkXMax, 		SIGNAL(toggled(bool)), this, 	SLOT(EnableRange()));
+	connect(chkYMin, 		SIGNAL(toggled(bool)), this, 	SLOT(EnableRange()));
+	connect(chkYMax, 		SIGNAL(toggled(bool)), this, 	SLOT(EnableRange()));
+	connect(chkZMin, 		SIGNAL(toggled(bool)), this, 	SLOT(EnableRange()));
+	connect(chkZMax, 		SIGNAL(toggled(bool)), this, 	SLOT(EnableRange()));
+
+	connect(dispXMin, 		SIGNAL(returnPressed()), this, 	SLOT(SetAxesRange()));
+	connect(dispXMax, 		SIGNAL(returnPressed()), this, 	SLOT(SetAxesRange()));
+	connect(dispYMin, 		SIGNAL(returnPressed()), this, 	SLOT(SetAxesRange()));
+	connect(dispYMax, 		SIGNAL(returnPressed()), this, 	SLOT(SetAxesRange()));
+	connect(dispZMin, 		SIGNAL(returnPressed()), this, 	SLOT(SetAxesRange()));
+	connect(dispZMax, 		SIGNAL(returnPressed()), this, 	SLOT(SetAxesRange()));
+
 /** Common Buttons*/
 	connect(btnClear, 		SIGNAL(clicked()),		myPlot, SLOT(Clear1DPlot()));
 /** Save */
 	connect(btnSave, 		SIGNAL(clicked()),		this, 	SLOT(SavePlot()));
 
-/** test for 1D*/
-	connect(chktest1D,  	SIGNAL(toggled(bool)), 	this, 	SLOT(Select1DPlot(bool)));
 }
 
 
@@ -137,6 +159,16 @@ void qTabPlot::Enable(bool enable){
 	box2D->setEnabled(enable);
 	boxPlotAxis->setEnabled(enable);
 }
+
+void qTabPlot::EnablePersistency(bool enable){
+	lblPersistency->setEnabled(enable);
+	spinPersistency->setEnabled(enable);
+	if(enable)		myPlot->SetPersistency(spinPersistency->value());
+	else			myPlot->SetPersistency(0);
+
+}
+
+
 
 void qTabPlot::SetTitles(){
 	int oneD = box1D->isEnabled();
@@ -157,6 +189,7 @@ void qTabPlot::SetTitles(){
 	if(dispZAxis->isEnabled())
 		myPlot->SetImageZAxisTitle(dispZAxis->text());
 }
+
 
 
 void qTabPlot::EnableTitles(){
@@ -199,7 +232,91 @@ void qTabPlot::EnableTitles(){
 }
 
 
+
+
+void qTabPlot::EnableRange(){
+	bool disableZoom = false;
+	if(!chkXMin->isChecked())	{dispXMin->setText("");	dispXMin->setEnabled(false);}
+	else						{disableZoom = true;	dispXMin->setEnabled(true);	}
+	if(!chkXMax->isChecked())	{dispXMax->setText("");	dispXMax->setEnabled(false);}
+	else 						{disableZoom = true;	dispXMax->setEnabled(true); }
+	if(!chkYMin->isChecked())	{dispYMin->setText("");	dispYMin->setEnabled(false);}
+	else 						{disableZoom = true;	dispYMin->setEnabled(true);	}
+	if(!chkYMax->isChecked())	{dispYMax->setText("");	dispYMax->setEnabled(false);}
+	else 						{disableZoom = true;	dispYMax->setEnabled(true); }
+	if(!chkZMin->isChecked())	{dispZMin->setText("");	dispZMin->setEnabled(false);}
+	else 						{disableZoom = true;	dispZMin->setEnabled(true); }
+	if(!chkZMax->isChecked())	{dispZMax->setText("");	dispZMax->setEnabled(false);}
+	else 						{disableZoom = true;	dispZMax->setEnabled(true); }
+	myPlot->DisableZoom(disableZoom);
+	emit DisableZoomSignal(disableZoom);
+}
+
+
+
+void qTabPlot::SetAxesRange(){
+	double xmin,xmax,ymin,ymax,zmin,zmax;
+	int oneD = box1D->isEnabled();
+	//should be filled for 2d as well
+	if(!dispXMin->text().isEmpty())	xmin = dispXMin->text().toDouble();
+	else {	if(oneD)				xmin = myPlot->GetHistXAxisLowerBound();}
+	if(!dispXMax->text().isEmpty())	xmax = dispXMax->text().toDouble();
+	else {	if(oneD)				xmax = myPlot->GetHistXAxisUpperBound();}
+	if(!dispYMin->text().isEmpty())	ymin = dispYMin->text().toDouble();
+	else {	if(oneD)				ymin = myPlot->GetHistYAxisLowerBound();}
+	if(!dispYMax->text().isEmpty())	ymax = dispYMax->text().toDouble();
+	else {	if(oneD)				ymax = myPlot->GetHistYAxisUpperBound();}
+	if(!dispZMin->text().isEmpty())	zmin = dispZMin->text().toDouble();
+	if(!dispZMax->text().isEmpty())	zmax = dispZMax->text().toDouble();
+	//should be filled for 2d as well
+	if(oneD){
+		myPlot->SetHistXAxisScale(xmin,xmax);
+		myPlot->SetHistYAxisScale(ymin,ymax);
+	}
+}
+
+
 void qTabPlot::SavePlot(){
 	QString fullFileName = QString(myDet->getFilePath().c_str())+'/'+dispFName->text()+comboFormat->currentText();
 	myPlot->SavePlot(fullFileName);
 }
+
+
+
+
+
+
+//dispzmin... when unchecked, unzoom and get lower and upper bound... when checked just set lower and upper bound
+
+/*
+
+#include "SlsQtValidators.h"
+
+class QDoubleValidator;
+SlsQtDoubleValidator*  validator_double[2];
+
+
+
+
+validator_double = new SlsQtDoubleValidator(num_field);
+num_field->setValidator(validator_double);
+//default settings
+validator_double->setDecimals(3);
+double v= num_field->text().toDouble(ok););
+is ok 1? for correct conversion
+
+QString s = QString::number(v);
+validator_double->fixup(s);
+num_field->setText(s);
+
+
+num_field[i]->setAlignment(Qt::AlignRight);
+
+
+
+connect(num_field[i],SIGNAL(lostFocus()),this,SLOT(FirstValueEntered()));
+
+*/
+
+
+

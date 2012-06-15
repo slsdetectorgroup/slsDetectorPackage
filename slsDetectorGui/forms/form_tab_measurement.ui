@@ -229,7 +229,7 @@
     <enum>Qt::NoFocus</enum>
    </property>
    <property name="toolTip">
-    <string>Starts Acquisition</string>
+    <string>Starts or Stops Acquisition</string>
    </property>
    <property name="text">
     <string>Start</string>

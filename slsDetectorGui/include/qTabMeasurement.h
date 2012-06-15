@@ -46,7 +46,7 @@ private:
 
 	enum{None, Auto, Gated, Trigger_Exp_Series, Trigger_Frame, Trigger_Readout, Gated_Start, Trigger_Window, NumTimingModes};
 
-
+	QTimer *progressTimer;
 
 /** methods */
 	/** Sets up the widget
@@ -131,6 +131,9 @@ void setNumGates(int val);
  *  @param val number of probes to be set
  */
 void setNumProbes(int val);
+
+/** Update progress*/
+void UpdateProgress();
 
 signals:
 

@@ -169,7 +169,7 @@ void qDetectorMain::Initialization(){
 	connect(tabs,SIGNAL(currentChanged(int)),this, SLOT(refresh(int)));//( QWidget*)));
 		/**	Measurement tab*/
 		/** Plot tab */
-
+		connect(tab_plot,SIGNAL(DisableZoomSignal(bool)),this, SLOT(SetZoomToolTip(bool)));
 
 /** Plotting */
 		/** When the acquisition is finished, must update the meas tab */
@@ -202,6 +202,7 @@ void qDetectorMain::Initialization(){
 		heightCentralWidget = centralwidget->size().height();
 
 		defaultTabColor = tabs->tabBar()->tabTextColor(DataOutput);
+		zoomToolTip = dockWidgetPlot->toolTip();
 }
 
 
@@ -364,8 +365,11 @@ void qDetectorMain::resizeEvent(QResizeEvent* event){
 
 
 void qDetectorMain::EnableTabs(){
+#ifdef VERBOSE
+	cout<<"Entering EnableTabs function"<<endl;
+#endif
 	bool enable;
-	enable=(tabs->isTabEnabled(DataOutput)?false:true);
+	enable=!(tabs->isTabEnabled(DataOutput));
 
 	// or use the Enable/Disable button
 	/** normal tabs*/
@@ -388,4 +392,13 @@ void qDetectorMain::EnableTabs(){
 		if(isDeveloper)
 			tabs->setTabEnabled(Developer,enable);
 	}
+}
+
+
+
+void qDetectorMain::SetZoomToolTip(bool disable){
+	if(disable)
+		dockWidgetPlot->setToolTip("<span style=\" color:#00007f;\">To Enable mouse-controlled zooming capabilities,\ndisable min and max for all axes.<span> ");
+	else
+		dockWidgetPlot->setToolTip(zoomToolTip);
 }

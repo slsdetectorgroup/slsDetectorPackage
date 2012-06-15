@@ -52,9 +52,22 @@ int SlsQtH1D::SetLineColor(int c){
   static int last_color = 1;
   if(c<0) c=(last_color+1)%3;
      
-  if(c==0)      pen_ptr->setColor(Qt::black);
+  switch(c){
+  case 0:	pen_ptr->setColor(Qt::black);	break;
+  case 1:	pen_ptr->setColor(Qt::red);		break;
+  case 2:	pen_ptr->setColor(Qt::blue);	break;
+  case 3:	pen_ptr->setColor(Qt::green);	break;
+  case 4:	pen_ptr->setColor(Qt::magenta);	break;
+  case 5:	pen_ptr->setColor(Qt::cyan);	break;
+  case 6:	pen_ptr->setColor(Qt::darkYellow);	break;
+  case 7:	pen_ptr->setColor(Qt::gray);	break;
+  case 8:	pen_ptr->setColor(Qt::darkBlue);	break;
+  case 9:	pen_ptr->setColor(Qt::darkGreen);	break;
+  case 10:	pen_ptr->setColor(Qt::darkMagenta);	break;
+  }
+/*  if(c==0)      pen_ptr->setColor(Qt::black);
   else if(c==1) pen_ptr->setColor(Qt::red);
-  else          pen_ptr->setColor(Qt::blue);
+  else          pen_ptr->setColor(Qt::blue);*/
 
   setPen(*pen_ptr);
 
@@ -281,7 +294,8 @@ void SlsQt1DPlot::CalculateNResetZoomBase(){
 void SlsQt1DPlot::NewHistogramAttached(SlsQtH1D* h){
   hist_list->Add(h);
   CalculateNResetZoomBase();
-  if(!hist_list->Next()) UnZoom();
+  //commented out by dhanya to take off zooming every hist in 1d plots
+  //if(!hist_list->Next()) UnZoom();
   Update();
 }
 
@@ -300,10 +314,14 @@ void SlsQt1DPlot::SetTitle(const char* title){
 }
 
 void SlsQt1DPlot::SetXTitle(const char* title){
-  setAxisTitle(QwtPlot::xBottom,title);
+	QwtText t(title);
+	t.setFont(QFont("Sans Serif",11,QFont::Normal));
+	setAxisTitle(QwtPlot::xBottom,t);
 }
 void SlsQt1DPlot::SetYTitle(const char* title){
-  setAxisTitle(QwtPlot::yLeft,title);
+	QwtText t(title);
+	t.setFont(QFont("Sans Serif",11,QFont::Normal));
+	setAxisTitle(QwtPlot::yLeft,t);
 }
 
 void SlsQt1DPlot::SetLogX(bool yes){ SetLog(QwtPlot::xBottom,yes);}
@@ -437,4 +455,38 @@ void SlsQt1DPlot::UnknownStuff(){
 #endif
 #endif
 }
+
+
+void SlsQt1DPlot::DisableZoom(bool disableZoom){
+#ifdef VERBOSE
+	if(disableZoom) cout<<"Disabling zoom"<<endl;
+	else cout<<"Enabling zoom"<<endl;
+#endif
+	if(disableZoom){
+		if(zoomer){
+			 zoomer->setMousePattern(QwtEventPattern::MouseSelect1,Qt::NoButton);
+#if QT_VERSION < 0x040000
+			zoomer->setMousePattern(QwtEventPattern::MouseSelect2,Qt::NoButton, Qt::ControlButton);
+#else
+			zoomer->setMousePattern(QwtEventPattern::MouseSelect2,Qt::NoButton, Qt::ControlModifier);
+#endif
+			zoomer->setMousePattern(QwtEventPattern::MouseSelect3,Qt::NoButton);
+		}
+		if(panner)	panner->setMouseButton(Qt::NoButton);
+	}else {
+		if(zoomer){
+			zoomer->setMousePattern(QwtEventPattern::MouseSelect1,Qt::LeftButton);
+#if QT_VERSION < 0x040000
+			zoomer->setMousePattern(QwtEventPattern::MouseSelect2,Qt::RightButton, Qt::ControlButton);
+#else
+			zoomer->setMousePattern(QwtEventPattern::MouseSelect2,Qt::RightButton, Qt::ControlModifier);
+#endif
+			zoomer->setMousePattern(QwtEventPattern::MouseSelect3,Qt::RightButton);
+		}
+		if(panner)	panner->setMouseButton(Qt::MidButton);
+	}
+}
+
+
+
 

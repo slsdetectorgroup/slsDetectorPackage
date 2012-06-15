@@ -10,8 +10,9 @@
 
 /** Project Class Headers */
 class slsDetectorUtils;
+#include "detectorData.h"
 /** Qt Project Class Headers */
-class SlsQtH1D;
+#include "SlsQt1DPlot.h"
 class SlsQt1DPlot;
 class SlsQt2DPlotLayout;
 class qCloneWidget;
@@ -60,19 +61,27 @@ public:
 	/**	sets 2D Z Axis Title */
 	void  		SetImageZAxisTitle(QString title)      	{imageZAxisTitle = title;}
 
+	void SetHistXAxisScale(double min,double max){plot1D->SetXAxisScale(min,max);};
+	void SetHistYAxisScale(double min,double max){plot1D->SetYAxisScale(min,max);};
+	int GetPixelsX(){return nPixelsX;};
+	int GetPixelsY(){return nPixelsY;};
+	void Unzoom1D(){plot1D->UnZoom();};
+	double GetHistXAxisLowerBound(){return plot1D->GetXAxisLowerBound();};
+	double GetHistXAxisUpperBound(){return plot1D->GetXAxisUpperBound();};
+	double GetHistYAxisLowerBound(){return plot1D->GetYAxisLowerBound();};
+	double GetHistYAxisUpperBound(){return plot1D->GetYAxisUpperBound();};
+
+	/** Disables zoom if any of the axes range are checked and fixed with a value */
+	void DisableZoom(bool disable);
+
+
+	/** gets the progress of acquisition to the measurement tab*/
+	int GetProgress(){return progress;};
 
 private:
 	/** The sls detector object */
 	slsDetectorUtils *myDet;
 
-	/** Number of Measurements */
-	int numberOfMeasurements;
-	/**	 Number of Exposures */
-	int number_of_exposures;
-	/**	 Duration between Exposures */
-	double framePeriod;
-	/**	 Acquisition Time */
-	double acquisitionTime;
 
 /** Widgets needed to plot the clone */
 	/**	Max Number of Clone Windows */
@@ -97,17 +106,26 @@ private:
 	QVector<SlsQtH1D*> 	plot1D_hists;
 
 
+
+	/** Number of Measurements */
+	int numberOfMeasurements;
+	/** currentFrame */
+	static int currentFrame;
+	/**	 Number of Exposures */
+	static int number_of_exposures;
+	/**	 Duration between Exposures */
+	double framePeriod;
+	/**	 Acquisition Time */
+	double acquisitionTime;
+
+
 /**variables for threads */
 	/**	 */
 	volatile bool   stop_signal;
 	/**	 */
-	pthread_mutex_t last_image_complete_mutex;
+	static pthread_mutex_t last_image_complete_mutex;
 
 /**variables for histograms */
-	/**	1D or 2D */
-	unsigned int plot_in_scope;
-	/**	Current Image Number */
-	unsigned int lastImageNumber;
 	/**	Title in 2D */
 	std::string  imageTitle;
 	/**	X Axis Title in 2D */
@@ -116,26 +134,40 @@ private:
 	QString  imageYAxisTitle;
 	/**	Z Axis Title in 2D */
 	QString  imageZAxisTitle;
-	/**	Number of Pixels in X Axis */
-	unsigned int nPixelsX;
-	/**	Number of Pixels in Y Axis */
-	unsigned int nPixelsY;
-	/**	Current Image Values in 1D */
-	double*      lastImageArray;
-	/**	Number of graphs in 1D */
-	unsigned int nHists;
 	/**	Title for all the graphs in 1D */
-	std::string  histTitle[MAX_1DPLOTS];
+	static std::string  histTitle[MAX_1DPLOTS];
 	/**	X Axis Title in 1D */
 	QString  histXAxisTitle;
 	/**	Y Axis Title in 1D */
 	QString  histYAxisTitle;
+	/**	1D or 2D */
+	static unsigned int plot_in_scope;
+	/**	Number of Pixels in X Axis */
+	static unsigned int nPixelsX;
+	/**	Number of Pixels in Y Axis */
+	static unsigned int nPixelsY;
+	/**	Current Image Number */
+	static unsigned int lastImageNumber;
+
+	/**	Number of graphs in 1D */
+	static unsigned int nHists;
 	/**	Total Number of X axis values/channels in 1D */
-	int          histNBins;
+	static int          histNBins;
 	/**	X Axis value in 1D */
-	double*      histXAxis;
+	static double*      histXAxis;
 	/** Y Axis value in 1D  */
-	double*      histYAxis[MAX_1DPLOTS];
+	static double*      histYAxis[MAX_1DPLOTS];
+	/**	Current Image Values in 2D */
+	static double*      lastImageArray;
+	/**	temporary Y Axis value in 1D */
+	static double* 	 yvalues[MAX_1DPLOTS];
+	/**	temporary Image Values in 2D */
+	static double* 	 image_data;
+	static bool  gui_acquisition_thread_running;
+	static int persistency;
+	static int currentPersistency;
+	static int progress;
+	static bool plotEnable;
 
 
 	/**	 */
@@ -168,10 +200,12 @@ private:
 	/**acquisition thread stuff */
 	/**	 */
 	bool         StartOrStopThread(bool start);
+
 	/**	 */
-	static void* DataAcquisionThread(void *this_pointer);
+	static void* DataStartAcquireThread(void *this_pointer);
+
 	/**	 */
-	void*        AcquireImages();
+	static int GetDataCallBack(detectorData *data);
 
 
 public slots:
@@ -210,6 +244,14 @@ void CloseClones();
  * */
 void SavePlot(QString FName);
 
+/**	Sets persistency from plot tab */
+void SetPersistency(int val);
+
+/**	Enables plot */
+void EnablePlot(bool enable);
+
+
+
 private slots:
 /** To update plot
  */
@@ -228,12 +270,15 @@ void StartDaq(bool start);
  * @param id is the id of the clone
  */
 void CloneCloseEvent(int id);
+
+
 signals:
 
 void UpdatingPlotFinished();
 void InterpolateSignal(bool);
 void ContourSignal(bool);
 void LogzSignal(bool);
+
 
 
 };

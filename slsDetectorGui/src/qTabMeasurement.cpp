@@ -48,6 +48,8 @@ qTabMeasurement::~qTabMeasurement(){
 
 void qTabMeasurement::SetupWidgetWindow(){
 
+	progressTimer = new QTimer(this);
+	//btnStartStop->setStyleSheet("color:green");
 	/** Exp Time **/
 	float time = (float)(myDet->setTimer(slsDetectorDefs::ACQUISITION_TIME,-1)*(1E-9));
 	spinExpTime->setValue(time);
@@ -106,7 +108,7 @@ void qTabMeasurement::SetupWidgetWindow(){
 		}
 	}
 
-
+	progressBar->setValue(0);
 	//get timing mode from client
 
 
@@ -127,6 +129,8 @@ void qTabMeasurement::Initialization(int timingChange){
 		connect(btnStartStop,SIGNAL(clicked()),						this,	SLOT(startStopAcquisition()));
 		/** Timing Mode **/
 		connect(comboTimingMode,SIGNAL(currentIndexChanged(int)),	this,	SLOT(setTimingMode(int)));//
+
+		connect(progressTimer, SIGNAL(timeout()), this, SLOT(UpdateProgress()));
 	}
 	/** Number of Frames**/
 	connect(spinNumFrames,SIGNAL(valueChanged(int)),			this,	SLOT(setNumFrames(int)));
@@ -189,15 +193,17 @@ void qTabMeasurement::Enable(bool enable){
 void qTabMeasurement::UpdateFinished(){
 	disconnect(btnStartStop,SIGNAL(clicked()),this,SLOT(startStopAcquisition()));
 	btnStartStop->setText("Start");
+	//btnStartStop->setStyleSheet("color:green");
+	//btnStartStop->setStyleSheet("background:rgb(239,239,239)");
 	Enable(1);
 	connect(btnStartStop,SIGNAL(clicked()),this,SLOT(startStopAcquisition()));
+	UpdateProgress();
+	progressTimer->stop();
 }
 
 
 
 void qTabMeasurement::setFileName(const QString& fName){
-	//  emit fileNameChanged(fName);
-	//  thred-->fileName=s;myDet->setFileName(fName.ascii());
 	myDet->setFileName(fName.toAscii().data());
 #ifdef VERBOSE
 	cout<<"Setting File name to " << myDet->getFileName()<<endl;
@@ -209,6 +215,7 @@ void qTabMeasurement::setFileName(const QString& fName){
 
 void qTabMeasurement::setRunIndex(int index){
 	myDet->setFileIndex(index);
+	lblProgressIndex->setText(QString::number(index));
 #ifdef VERBOSE
 	cout<<"Setting File Index to " << myDet->getFileIndex()<<endl;
 #endif
@@ -221,13 +228,20 @@ void qTabMeasurement::startStopAcquisition(){
 #ifdef VERBOSE
 		cout<<endl<<endl<<"Starting Acquisition"<<endl;
 #endif
+		//btnStartStop->setStyleSheet("color:red");
 		btnStartStop->setText("Stop");
 		Enable(0);
+		progressBar->setValue(0);
+		progressTimer->start(200);
+
 		emit StartSignal();
 	}else{
 #ifdef VERBOSE
 		cout<<"Stopping Acquisition"<<endl;
 #endif
+		//btnStartStop->setStyleSheet("color:green");
+		//btnStartStop->setStyleSheet("background:rgb(239,239,239)");
+		progressTimer->stop();
 		btnStartStop->setText("Start");
 		Enable(1);
 		emit StopSignal();
@@ -270,8 +284,6 @@ void qTabMeasurement::setExposureTime(){
 			lblPeriod->setText("Acquisition Period");
 		}
 	}
-	//float t=exptimeNS;
-	//emit acquisitionTimeChanged(t/(100E+6)); ??????????????????????
 }
 
 
@@ -297,10 +309,6 @@ void qTabMeasurement::setAcquisitionPeriod(){
 		lblPeriod->setPalette(lblNumFrames->palette());
 		lblPeriod->setText("Acquisition Period");
 	}
-
-
-	//float t=exptimeNS;
-	//emit acquisitionTimeChanged(t/(100E+6)); ??????????????????????
 }
 
 
@@ -345,6 +353,12 @@ void qTabMeasurement::setNumProbes(int val){
 #ifdef VERBOSE
 	cout<<"Setting number of frames to " << (int)myDet->setTimer(slsDetectorDefs::PROBES_NUMBER,-1)<<endl;
 #endif
+}
+
+
+void qTabMeasurement::UpdateProgress(){
+	progressBar->setValue(myPlot->GetProgress());
+	lblProgressIndex->setText(QString::number(myDet->getFileIndex()));
 }
 
 

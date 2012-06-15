@@ -77,6 +77,7 @@ private:
 	enum {Measurement, Settings, DataOutput, Plot, Actions, Advanced, Debugging, Developer, NumberOfTabs };
 
 	QColor defaultTabColor;
+	QString zoomToolTip;
 
 	/* Scroll Area for the tabs**/
 	QScrollArea *scroll[NumberOfTabs];
@@ -173,9 +174,11 @@ void About();
  */
 void ResizeMainWindow(bool b);
 
-/** Enables/disables tabs depending on if acquisition is currently in progress
- */
+/** Enables/disables tabs depending on if acquisition is currently in progress */
 void EnableTabs();
+
+/** Set the tool tip of mouse controlled zooming depening on if its enabled/disabled*/
+void SetZoomToolTip(bool disable);
 
 protected:
 void resizeEvent(QResizeEvent* event);

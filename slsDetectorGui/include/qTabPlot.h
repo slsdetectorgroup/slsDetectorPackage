@@ -49,7 +49,6 @@ private:
 	static QString defaultImageYAxisTitle;
 	static QString defaultImageZAxisTitle;
 
-
 /** methods */
 	/** Sets up the widget
 	 */
@@ -65,6 +64,8 @@ private:
 
 
 
+
+
 public slots:
 
 
@@ -77,20 +78,24 @@ private slots:
  */
 void Select1DPlot(bool b);
 
-/**Sets the titles in plot axis
- */
+/**Enables Persistency depending on Superimpose checkbox */
+void EnablePersistency(bool enable);
+
+/**Sets the titles in plot axis */
 void SetTitles();
-
-/** Enables/Sets Titles to default
- */
+/** Enables/Sets default Titles to default */
 void EnableTitles();
+/** Enables range of the axes */
+void EnableRange();
+/** Sets the range of the axes */
+void SetAxesRange();
 
-/** Save Plot
- */
+/** Save Plot */
 void SavePlot();
 
-signals:
 
+signals:
+void DisableZoomSignal(bool);
 
 };
 

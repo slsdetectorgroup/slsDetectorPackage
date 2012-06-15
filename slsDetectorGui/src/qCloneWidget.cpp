@@ -141,7 +141,7 @@ for(int hist_num=0;hist_num<nHists;hist_num++){
 	k->setTitle(histTitle[hist_num].c_str());
 	k->Attach(cloneplot1D);
 }
-cloneplot1D->UnZoom();
+//cloneplot1D->UnZoom();
 
 
 }

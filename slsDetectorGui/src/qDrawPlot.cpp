@@ -7,11 +7,11 @@
 /** Qt Project Class Headers */
 #include "qDrawPlot.h"
 #include "qCloneWidget.h"
-#include "SlsQt1DPlot.h"
 #include "SlsQt2DPlotLayout.h"
 /** Project Class Headers */
 #include "slsDetector.h"
 #include "multiSlsDetector.h"
+#include "postProcessing.h"
 /** Qt Include Headers */
 #include <QFont>
 #include <QImage>
@@ -19,10 +19,39 @@
 /** C++ Include Headers */
 #include <iostream>
 #include <string>
+#include <sstream>
 using namespace std;
 
 
 #define Detector_Index 0
+
+
+
+
+//int numberOfMeasurements;
+int qDrawPlot::currentFrame;
+int qDrawPlot::number_of_exposures;
+//double framePeriod;
+//double acquisitionTime;
+pthread_mutex_t qDrawPlot::last_image_complete_mutex;
+//std::string  imageTitle;
+std::string  qDrawPlot::histTitle[MAX_1DPLOTS];
+unsigned int qDrawPlot::plot_in_scope;
+unsigned int qDrawPlot::nPixelsX;
+unsigned int qDrawPlot::nPixelsY;
+unsigned int qDrawPlot::lastImageNumber;
+unsigned int qDrawPlot::nHists;
+int          qDrawPlot::histNBins;
+double*      qDrawPlot::histXAxis;
+double*  	 qDrawPlot::histYAxis[MAX_1DPLOTS];
+double*      qDrawPlot::lastImageArray;
+double* 	 qDrawPlot::yvalues[MAX_1DPLOTS];
+double* 	 qDrawPlot::image_data;
+bool     	 qDrawPlot::gui_acquisition_thread_running;
+int    		 qDrawPlot::persistency;
+int    		 qDrawPlot::currentPersistency;
+int 		 qDrawPlot::progress;
+bool		 qDrawPlot::plotEnable;
 
 
 qDrawPlot::qDrawPlot(QWidget *parent,slsDetectorUtils*& detector):QWidget(parent),myDet(detector),numberOfMeasurements(1){
@@ -52,40 +81,52 @@ void qDrawPlot::SetupWidgetWindow(){
 #endif
 	stop_signal = 0;
 	pthread_mutex_init(&last_image_complete_mutex,NULL);
-
+	gui_acquisition_thread_running = 0;
+	/** Default Plotting*/
 	plot_in_scope   = 0;
+	/**2d*/
 	lastImageNumber = 0;
-	nPixelsX = 0;
-	nPixelsY = 0;
-	lastImageArray = 0;
 
+
+	nPixelsX = 1280; nPixelsY = 100;
+
+	lastImageArray = 0;
+	image_data = 0;
+	/**1d*/
 	nHists    = 0;
 	histNBins = 0;
 	histXAxis = 0;
-	for(int i=0;i<MAX_1DPLOTS;i++) histYAxis[i]=0;
+	persistency = 0;
+	currentPersistency = 0;
+	progress = 0;
+	plotEnable=true;
+	for(int i=0;i<MAX_1DPLOTS;i++) {histYAxis[i]=0;yvalues[i]=0; }
 
+	/*clone*/
 	for(int i=0;i<MAXCloneWindows;i++) winClone[i]=0;
 
 
 	/** Setting up window*/
 	setFont(QFont("Sans Serif",9));
 	layout = new QGridLayout;
-	this->setLayout(layout);
-
+		this->setLayout(layout);
 	boxPlot = new QGroupBox("Measurement");
-	layout->addWidget(boxPlot,1,1);
-	boxPlot->setAlignment(Qt::AlignHCenter);
-	boxPlot->setFont(QFont("Sans Serif",11,QFont::Bold));
-
+		layout->addWidget(boxPlot,1,1);
+		boxPlot->setAlignment(Qt::AlignHCenter);
+		boxPlot->setFont(QFont("Sans Serif",11,QFont::Normal));
 	plot_update_timer = new QTimer(this);
 	connect(plot_update_timer, SIGNAL(timeout()), this, SLOT(UpdatePlot()));
 
 
-	/** Defaults - only for the initial picture*/
+	/** Default titles- only for the initial picture*/
 	histXAxisTitle="Channel Number";
 	histYAxisTitle="Counts";
-	for(int i=0;i<MAX_1DPLOTS;i++)
-		histTitle[i].assign("curve"+i);
+
+	char temp_title[2000];
+	for(int i=0;i<MAX_1DPLOTS;i++){
+		sprintf(temp_title,"Frame -%d",i);
+		histTitle[i] = temp_title;
+	}
 	imageTitle.assign("Start Image");
 	imageXAxisTitle="Pixel";
 	imageYAxisTitle="Pixel";
@@ -93,30 +134,26 @@ void qDrawPlot::SetupWidgetWindow(){
 
 
 
-
+	/** setting default plot titles and settings*/
 	plot1D = new SlsQt1DPlot(boxPlot);
-	plot1D->setFont(QFont("Sans Serif",9,QFont::Normal));
-	plot1D->SetXTitle(histXAxisTitle.toAscii().constData());
-	plot1D->SetYTitle(histYAxisTitle.toAscii().constData());
-	plot1D->hide();
+		plot1D->setFont(QFont("Sans Serif",9,QFont::Normal));
+		plot1D->SetXTitle(histXAxisTitle.toAscii().constData());
+		plot1D->SetYTitle(histYAxisTitle.toAscii().constData());
+		plot1D->hide();
 
 	plot2D = new SlsQt2DPlotLayout(boxPlot);
-	plot2D->setFont(QFont("Sans Serif",9,QFont::Normal));
-	plot2D->setTitle(GetImageTitle());
-	plot2D->SetXTitle(imageXAxisTitle);
-	plot2D->SetYTitle(imageYAxisTitle);
-	plot2D->SetZTitle(imageZAxisTitle);
-	plot2D->setAlignment(Qt::AlignLeft);
+		plot2D->setFont(QFont("Sans Serif",9,QFont::Normal));
+		plot2D->setTitle(GetImageTitle());
+		plot2D->SetXTitle(imageXAxisTitle);
+		plot2D->SetYTitle(imageYAxisTitle);
+		plot2D->SetZTitle(imageZAxisTitle);
+		plot2D->setAlignment(Qt::AlignLeft);
 	boxPlot->setFlat(true);
-
-	//QSizePolicy sizePolicy(QSizePolicy::Preferred,QSizePolicy::Preferred);
-	//boxPlot->setSizePolicy(sizePolicy);
+	boxPlot->setContentsMargins(0,15,0,0);
 
 	plotLayout =  new QGridLayout(boxPlot);
-	plotLayout->addWidget(plot1D,1,1,1,1);
-	plotLayout->addWidget(plot2D,1,1,1,1);
-
-	boxPlot->setContentsMargins(0,15,0,0);
+		plotLayout->addWidget(plot1D,1,1,1,1);
+		plotLayout->addWidget(plot2D,1,1,1,1);
 }
 
 
@@ -188,8 +225,8 @@ int qDrawPlot::ResetDaqForGui(){
 
 
 bool qDrawPlot::StartOrStopThread(bool start){
-	static bool             gui_acquisition_thread_running = 0;
 	static pthread_t        gui_acquisition_thread;
+	static pthread_t		gui_start_acquire_thread;
 	static pthread_mutex_t  gui_acquisition_start_stop_mutex = PTHREAD_MUTEX_INITIALIZER;
 
 	pthread_mutex_lock(&gui_acquisition_start_stop_mutex);
@@ -197,128 +234,111 @@ bool qDrawPlot::StartOrStopThread(bool start){
 	if(gui_acquisition_thread_running){
 		cout<<"Stopping current acquisition thread ...."<<endl;
 		stop_signal = 1;
-		pthread_join(gui_acquisition_thread,NULL); //wait until he's finished, ie. exits
+		myDet->stopAcquisition();
+		//pthread_join(gui_acquisition_thread,NULL); //wait until he's finished, ie. exits
 		gui_acquisition_thread_running = 0;
 	}
 
 	//start part
 	if(start){
+		/** Defaults */
+		currentFrame = 0;
 		stop_signal = 0;
+		histNBins = nPixelsX;
+		if(!image_data) image_data = new double[nPixelsX*nPixelsY];
+		if(!lastImageArray) lastImageArray = new double[nPixelsX*nPixelsY];
+		if(!histXAxis)    histXAxis    = new double [nPixelsX];
+		for(unsigned int px=0;px<nPixelsX;px++)	histXAxis[px]  = px+10;
+		if(!yvalues[0]) yvalues[0] = new double [nPixelsX];
+		if(!histYAxis[0]) histYAxis[0] = new double [nPixelsX];
+
+
+		Clear1DPlot();
 		cout<<"Starting new acquisition thread ...."<<endl;
-		gui_acquisition_thread_running = !pthread_create(&gui_acquisition_thread, NULL,qDrawPlot::DataAcquisionThread, (void*) this);
-		cout<<"created"<<endl;
-		//myDet->acquire(1);//acquiring
+		/** Setting the callback function to get data from software client*/
+		myDet->registerDataCallback(&(GetDataCallBack));
+		/** Start acquiring data from server */
+		pthread_create(&gui_start_acquire_thread, NULL,DataStartAcquireThread, (void*) this);
+		gui_acquisition_thread_running=1;
+		cout<<"Started acquiring"<<endl;
 	}
 	pthread_mutex_unlock(&gui_acquisition_start_stop_mutex);
-
 	return gui_acquisition_thread_running;
 }
 
 
-
-
-
-
-
-void* qDrawPlot::DataAcquisionThread(void *this_pointer){
-	((qDrawPlot*)this_pointer)->AcquireImages();
+void* qDrawPlot::DataStartAcquireThread(void *this_pointer){
+	((qDrawPlot*)this_pointer)->myDet->acquire(1);
 	return this_pointer;
 }
 
 
 
+int qDrawPlot::GetDataCallBack(detectorData *data){
+#ifdef VERYVERBOSE
+	cout<<"Entering GetDataCallBack function"<<endl;
+#endif
+	progress=(int)data->progressIndex;
 
-void* qDrawPlot::AcquireImages(){
-	//send data to detector
-
-	static unsigned int nx=1280,ny=100;
-	static double* image_data = new double[nx*ny];
-	if(!lastImageArray) lastImageArray = new double[nx*ny];
-	static double* xvalues  = new double [nx];
-	static double* yvalues0 = new double [nx];
-	static double* yvalues1 = new double [nx];
-	if(!histXAxis)    histXAxis    = new double [nx];
-	if(!histYAxis[0]) histYAxis[0] = new double [nx];
-	if(!histYAxis[1]) histYAxis[1] = new double [nx];
-
-
-
-//	char cIndex[200];
-
-	//string filePath = myDet->getFilePath()+'/'+myDet->getFileName()+'_';
-	//cout<<"filePath:"<<filePath<<endl;
-	//string fileName;
-
-	//numberOfMeasurements
-	for(int i=0;i<number_of_exposures;i++){
-
-		/////
-		//fileName.assign(filePath);
-		//sprintf(cIndex,"%d",i);
-		//fileName.append(cIndex);
-		//fileName.append(".raw");
-		//cout<<"filename:"<<fileName<<endl;
-		//short int arg[1280];
-
-		//while(myDet->readDataFile(fileName,arg)==-1);
-
-
-		/////////
-
-
-		//readout detector
-		//fill and write data here
-		for(unsigned int px=0;px<nx;px++)
-			for(unsigned int py=0;py<ny;py++)
-				image_data[py*nx+px] = sqrt(pow(i+1,2)*pow(double(px)-nx/2,2)/pow(nx/2,2)/pow(number_of_exposures+1,2) + pow(double(py)-ny/2,2)/pow(ny/2,2))/sqrt(2);
-
-		for(unsigned int px=0;px<nx;px++){
-/*
-			xvalues[px]  = px;//+10;
-			yvalues0[px] = (double)arg[px];//i + pow(1 - 2*fabs(double(px)-nx/2)/nx,2);
-			yvalues1[px] = 0;//i + pow(1 - 2*fabs(double(px)-nx/2)/nx,4);
-*/
-			xvalues[px]  = px+10;
-			yvalues0[px] = i + pow(1 - 2*fabs(double(px)-nx/2)/nx,2);
-			yvalues1[px] = i + pow(1 - 2*fabs(double(px)-nx/2)/nx,4);
-
-		}
-
-/*		if(framePeriod<acquisitionTime) usleep((int)acquisitionTime*1e6);
-		else                         	usleep((int)framePeriod*1e6);*/
-		//cout<<"Reading in image: "<<i<<endl;
-//usleep(1000000);
-		if(stop_signal) break; //stop_signal should also go to readout function
-		if(!pthread_mutex_trylock(&last_image_complete_mutex)){
-
-			//plot_in_scope = 1;//i%2 + 1;
-			//plot_in_scope = 2;
-			//cout<<"value:"<<image_data[6]<<endl;
-
-			lastImageNumber = i+1;
-			char temp_title[2000];
-			//1d image stuff
-			nHists = 2;
-			sprintf(temp_title,"curve one %d",i);    histTitle[0] = temp_title;
-			sprintf(temp_title,"curve two %d",i);    histTitle[1] = temp_title;
-			histNBins = nx;
-			memcpy(histXAxis,    xvalues,nx*sizeof(double));
-			memcpy(histYAxis[0],yvalues0,nx*sizeof(double));
-			memcpy(histYAxis[1],yvalues1,nx*sizeof(double));
-
-			//2d image stuff
-			sprintf(temp_title,"Image number %d",i); imageTitle=temp_title;
-			nPixelsX = nx;
-			nPixelsY = ny;
-			memcpy(lastImageArray,image_data,nx*ny*sizeof(double));
-
-			pthread_mutex_unlock(&last_image_complete_mutex);
-		}
+	if(!plotEnable) {
+		lastImageNumber= currentFrame+1;
+		currentFrame++;
+		return 0;
 	}
 
-	return this;
+	/** Persistency */
+	if(currentPersistency < persistency)currentPersistency++;
+	else currentPersistency=persistency;
+	for(int i=currentPersistency;i>0;i--)
+		memcpy(yvalues[i],yvalues[i-1],nPixelsX*sizeof(double));
+	nHists = currentPersistency+1;
+		/** Get data from client */
+	memcpy(yvalues[0],data->values,nPixelsX*sizeof(double));
+
+	/**1d*/
+	//	if(plot_in_scope==1){
+	if((currentFrame)<(number_of_exposures)){
+#ifdef VERYVERBOSE
+		cout<<"Reading in image: "<<currentFrame+1<<endl;
+#endif
+		if(!pthread_mutex_trylock(&(last_image_complete_mutex))){
+			/** only if you got the lock, do u need to remember lastimagenumber to plot*/
+			lastImageNumber= currentFrame+1;
+			/** Titles*/
+			stringstream s;
+			s<<"Frame "<<currentFrame;
+			histTitle[0]=s.str();
+			/** copy data*/
+
+			//memcpy(histXAxis,    xvalues,nPixelsX*sizeof(double));
+			for(int i=currentPersistency;i>0;i--)
+				memcpy(histYAxis[i],histYAxis[i-1],nPixelsX*sizeof(double));
+			memcpy(histYAxis[0],yvalues[0],nPixelsX*sizeof(double));
+			pthread_mutex_unlock(&(last_image_complete_mutex));
+		}
+
+		currentFrame++;
+	}
+	//}
+	///**2d*/
+	//else{
+	//	;
+	//}
+
+#ifdef VERYVERBOSE
+	cout<<"Exiting GetDataCallBack function"<<endl;
+#endif
+	return 0;
 }
 
+
+void qDrawPlot::SetPersistency(int val){
+	for(int i=0;i<=val;i++){
+		if(!yvalues[i]) yvalues[i] = new double [nPixelsX];
+		if(!histYAxis[i]) histYAxis[i] = new double [nPixelsX];
+	}
+	persistency = val;
+}
 
 
 
@@ -361,50 +381,61 @@ void qDrawPlot::Clear1DPlot(){
 
 void qDrawPlot::UpdatePlot(){
 	//emit UpdatingPlot();
+	static int last_plot_number = 0;
 
 	plot_update_timer->stop();
+	if(plotEnable){
+		LockLastImageArray();
+		//1-d plot stuff
+		if(lastImageNumber){
+			if(histNBins){
+#ifdef VERYVERBOSE
+				cout<<"Last Image Number: "<<lastImageNumber<<endl;
+#endif
+				Clear1DPlot();
+				plot1D->SetXTitle(histXAxisTitle.toAscii().constData());
+				plot1D->SetYTitle(histYAxisTitle.toAscii().constData());
+				for(int hist_num=0;hist_num<nHists;hist_num++){
+					SlsQtH1D*  h;
+					if(hist_num+1>plot1D_hists.size()){
+						plot1D_hists.append(h=new SlsQtH1D("1d plot",histNBins,histXAxis,GetHistYAxis(hist_num)));
+						h->SetLineColor(hist_num+1);
+					}else{
+						h=plot1D_hists.at(hist_num);
+						h->SetData(histNBins,histXAxis,GetHistYAxis(hist_num));
+					}
+					h->setTitle(GetHistTitle(hist_num));
+					h->Attach(plot1D);
 
-	LockLastImageArray();
-	//1-d plot stuff
-	if(histNBins){
-		plot1D->SetXTitle(histXAxisTitle.toAscii().constData());
-		plot1D->SetYTitle(histYAxisTitle.toAscii().constData());
-		for(int hist_num=0;hist_num<nHists;hist_num++){
-			SlsQtH1D*  h;
-			if(hist_num+1>plot1D_hists.size()){
-				plot1D_hists.append(h=new SlsQtH1D("1d plot",histNBins,histXAxis,GetHistYAxis(hist_num)));
-				h->SetLineColor(hist_num+1);
-			}else{
-				h=plot1D_hists.at(hist_num);
-				h->SetData(histNBins,histXAxis,GetHistYAxis(hist_num));
+				}
+				//plot1D->UnZoom();
+				//if(first){plot1D->UnZoom();first = !first;}
+				//plot1D->SetZoom(double xmin,double ymin,double x_width,double y_width);
+
 			}
-			h->setTitle(GetHistTitle(hist_num));
-			h->Attach(plot1D);
 		}
-		plot1D->UnZoom();
-	}
 
-	//2-d plot stuff
-	static int last_plot_number = 0;
-	if(lastImageArray){
-		if(lastImageNumber&&last_plot_number!=lastImageNumber && //there is a new plot
-				nPixelsX>0&&nPixelsY>0){
-			plot2D->GetPlot()->SetData(nPixelsX,-0.5,nPixelsX-0.5,nPixelsY,-0.5,nPixelsY-0.5,lastImageArray);
-			//as it inherits a widget
-			plot2D->setTitle(GetImageTitle());
-			plot2D->SetXTitle(imageXAxisTitle);
-			plot2D->SetYTitle(imageYAxisTitle);
-			plot2D->SetZTitle(imageZAxisTitle);
-			plot2D->UpdateNKeepSetRangeIfSet(); //this will keep a "set" z range, and call Plot()->Update();
+		//2-d plot stuff
+		if(lastImageArray){
+			if(lastImageNumber&&last_plot_number!=lastImageNumber && //there is a new plot
+					nPixelsX>0&&nPixelsY>0){
+				plot2D->GetPlot()->SetData(nPixelsX,-0.5,nPixelsX-0.5,nPixelsY,-0.5,nPixelsY-0.5,lastImageArray);
+				//as it inherits a widget
+				plot2D->setTitle(GetImageTitle());
+				plot2D->SetXTitle(imageXAxisTitle);
+				plot2D->SetYTitle(imageYAxisTitle);
+				plot2D->SetZTitle(imageZAxisTitle);
+				plot2D->UpdateNKeepSetRangeIfSet(); //this will keep a "set" z range, and call Plot()->Update();
+			}
 		}
 	}
 	last_plot_number=lastImageNumber;
-	UnlockLastImageArray();
-
-/*	if(plot_in_scope==1)      SelectPlot(1);
+	if(plotEnable) UnlockLastImageArray();
+	/*	if(plot_in_scope==1)      SelectPlot(1);
 	else if(plot_in_scope==2) SelectPlot(2);*/
 
 	if(number_of_exposures==last_plot_number){
+		gui_acquisition_thread_running=0;
 		StartStopDaqToggle(1);
 		emit UpdatingPlotFinished();
 	}else{
@@ -497,4 +528,25 @@ void qDrawPlot::SavePlot(QString FName){
 	QPainter painter(&img);
 	render(&painter);
 	img.save(FName);
+}
+
+
+
+void qDrawPlot::EnablePlot(bool enable){
+#ifdef VERBOSE
+	cout<<"Plotting set to:"<<enable<<endl;
+#endif
+	plotEnable = !enable;
+	Clear1DPlot();
+
+}
+
+
+
+
+void qDrawPlot::DisableZoom(bool disable){
+	if(plot_in_scope==1)
+		plot1D->DisableZoom(disable);
+///disable zoom
+
 }

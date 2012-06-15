@@ -10,7 +10,7 @@
 #include <qwt_plot.h>
 #include <qwt_plot_curve.h>
 #include <qwt_plot_marker.h>
-
+#include <qwt_scale_div.h>
 #include  "SlsQt1DZoomer.h"
 
 class QPen;
@@ -103,6 +103,15 @@ class SlsQt1DPlot:public QwtPlot{
   void RemoveHLine();
   void InsertVLine(double v);
   void RemoveVLine();
+
+  void DisableZoom(bool disableZoom);
+
+  void SetXAxisScale(double min,double max){setAxisScale(QwtPlot::xBottom,min,max);};
+  void SetYAxisScale(double min,double max){setAxisScale(QwtPlot::yLeft,min,max);};
+  double GetXAxisLowerBound(){return axisScaleDiv(QwtPlot::xBottom)->lowerBound();};
+  double GetXAxisUpperBound(){return axisScaleDiv(QwtPlot::xBottom)->upperBound();};
+  double GetYAxisLowerBound(){return axisScaleDiv(QwtPlot::yLeft)->lowerBound();};
+  double GetYAxisUpperBound(){return axisScaleDiv(QwtPlot::yLeft)->upperBound(); };
 
   void SetZoom(double xmin,double ymin,double x_width,double y_width);
   void SetZoomBase(double xmin,double ymin,double x_width, double y_width){ zoomer->SetZoomBase(xmin,ymin,x_width,y_width);}

@@ -30,7 +30,7 @@ The complete software package is composed of several programs which can be insta
 
 \section{Requirements}
 
-For installing the slsDetector shared and static libraries and the mythenClient software, any Linux installation with a working gcc should be fine.\\
+For installing the slsDetector shared and static libraries and the slsDetectorClient software, any Linux installation with a working gcc should be fine.\\
 
 
 \begin{comment}
@@ -69,15 +69,15 @@ If you simply want to install the software in the working directory you can:
 \begin{itemize}
 \item \verb=make lib=     	compile slsDetector library
 %\item \verb=make tlib=          	compile Root/Qt TSlsDetector library
-\item \verb=make mythenClient=  	compile mythenClient package
+\item \verb=make slsDetectorClient=  	compile slsDetectorClient package
 %\item \verb=make mythenGUI=	compile mythenGUI
 %\item \verb=make all=	compile slsDetector and TSlsDetector libraries, the mythenClient package and the mythenGUI
-\item \verb=make all=	compile slsDetector libraries, the mythenClient package 
+\item \verb=make all=	compile slsDetector libraries, the slsDetectorClient package 
 \item \verb=make clean=              remove object files and executables
 \item \verb=make help=               lists possible targets
 \end{itemize}
 
-To be able to run the mythenClient and the mythenGUI as commands, add their location to your path.
+To be able to run the slsDetectorClient commands, add their location to your path.
 
 
 \section{Building}
@@ -496,7 +496,7 @@ Where to find some important parameters (should be set only once, then it should
 \chapter{Energy calibration} \label{sec:encal}
 The energy calibration should be performed by illuminating the detector with monochromatic radiation at at least 2 (better 3-4) energies larger than 8~keV. The energy calibration should be performed after trimming and the trim files used should be properly copied in the trimbits directory and used as default.
 
-The data can be acquired either with the mythenGUI (by using the calibration wizard or the threshold scan utility in the Action tab) or with the mythenClient (by scanning the threshold using mythen\_put 0:vthreshold), but since the analysis needs the use of root, the GUI must be used to finalize the calibration.
+The data can be acquired either with the mythenGUI (by using the calibration wizard or the threshold scan utility in the Action tab) or with the slsDetectorClient (by scanning the threshold using mythen\_put 0:vthreshold), but since the analysis needs the use of root, the GUI must be used to finalize the calibration.
 
 In the mythenGUI menu Utilities/Calibration wizard it is possible to simply and automatically perform the energy calibration of the detector:
 \begin{enumerate}

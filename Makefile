@@ -16,71 +16,45 @@ LIBDOCDIR=$(WD)/slsDetectorSoftware
 
 
 all: lib  slsDetectorClient
-# mythenGUI 
+	
 
 lib:
 	cd $(LIBRARYDIR) && $(MAKE) lib FLAGS=$(FLAGS)
-
-Tlib:
-	cd $(TLIBRARYDIR) && $(MAKE) lib
-
-#mythenClient: lib
-#	cd $(CLIENTDIR) && $(MAKE) mythen
-#	mv $(CLIENTDIR)/bin/* bin/
-
-#gotthardClient: lib
-#	cd $(CLIENTDIR) && $(MAKE) gotthard
-#	mv $(CLIENTDIR)/bin/* bin/
 
 slsDetectorClient: lib
 	cd  $(CLIENTDIR) && $(MAKE)  FLAGS=$(FLAGS)
 	mv $(CLIENTDIR)/bin/* bin/
 
-mythenGUI: lib Tlib 
-	cd $(GUIDIR) && qmake mythenGUI.pro
-	cd $(GUIDIR) && $(MAKE)
-	mv $(GUIDIR)/bin/* bin/
 
 clean:
 	rm -rf bin/sls_detector_*
 	cd $(LIBRARYDIR) && $(MAKE) clean
-#	cd $(TLIBRARYDIR) && $(MAKE) clean
 	cd $(CLIENTDIR) && $(MAKE) clean
-#	cd $(GUIDIR) && $(MAKE) clean
-#	cd $(LIBDOCDIR) && $(MAKE) clean
 
 install_lib:
 	cd $(LIBRARYDIR) && $(MAKE) install_lib DESTDIR=$(INSTALLROOT)/$(LIBDIR)
 	cd $(LIBRARYDIR) && $(MAKE) install_inc DESTDIR=$(INSTALLROOT)/$(INCDIR)
 
-install_tlib:
-	cd $(TLIBRARYDIR) && $(MAKE) install_lib DESTDIR=$(INSTALLROOT)/$(LIBDIR)
-	cd $(TLIBRARYDIR) && $(MAKE) install_inc DESTDIR=$(INSTALLROOT)/$(INCDIR)
 
 install_client:
 	cd $(CLIENTDIR) && $(MAKE) install DESTDIR=$(INSTALLROOT)/$(BINDIR)
 
-install_gui:  
-	cd $(GUIDIR) && $(MAKE) install_target DESTDIR=$(INSTALLROOT)/$(BINDIR)
 
 install_libdoc: lib_doc
-	cd $(LIBDOCDIR)  && $(MAKE) install_doc DESTDIR=$(INSTALLROOT)/$(DOCDIR)/slsdetector
+	cd $(LIBDOCDIR)  && $(MAKE) install_doc DESTDIR=$(INSTALLROOT)/$(DOCDIR)/slsDetector
 
 install_clientdoc:
-	cd $(CLIENTDIR) && $(MAKE) install_doc DESTDIR=$(INSTALLROOT)/$(DOCDIR)/mythenClient
-
-install_guidoc: 
-	cd $(GUIDIR) && doxygen doxy.config
-	cd $(GUIDIR) && qmake
-	cd $(GUIDIR) && $(MAKE) install_documentation INSTALL_ROOT=$(INSTALLROOT) DOCPATH=$(DOCDIR)/mythenGui
+	cd $(CLIENTDIR) && $(MAKE) install_doc DESTDIR=$(INSTALLROOT)/$(DOCDIR)/slsDetectorClient
 
 lib_doc:
 	cd $(LIBDOCDIR)  && $(MAKE) doc
 
-install_doc: install_libdoc install_clientdoc install_guidoc
+install_doc: install_libdoc install_clientdoc 
+	cp -r manual $(INSTALLROOT)/$(DOCDIR)/
 
 
-install: configure install_lib install_client install_gui install_doc
+install: conf install_lib install_client install_doc
+	
 
 
 conf:
@@ -99,26 +73,18 @@ help:
 	@echo "Targets:"
 	@echo "make all           	compile library, mythenClient and mythenGUI"
 	@echo "make lib           	compile library"
-	@echo "make tlib           	compile Root/Qt library"
-	@echo "make mythenClient  	compile mythenClient"
-	@echo "make gotthardClient  	compile gotthardClient"
-	@echo "make mythenGUI	   	compile mythenGUI"
-	@echo "make install_client     install mythenClient"
-	@echo "make install_gui        install mythenGUI"
+	@echo "make slsDetectorClient  	compile slsDetectorClient"
+	@echo "make install_client     install slsDetectorClient"
 	@echo "make install_lib        install detector library and include files"
-	@echo "make install_tlib        install detector Root/Qt library and include files"
 	@echo "make install            install library, include files, mythenClient and mythenGUI"
 	@echo "make install_libdoc     install library documentaion"
 	@echo "make install_clientdoc  install mythenClient documentation"
-	@echo "make install_guidoc     install mythenGUI documentation"
 	@echo "make install_doc        install all documentation"
 	@echo "make clean              remove object files and executables"
 	@echo "make help               lists possible targets"
 	@echo ""
 	@echo "Variables:"
 	@echo "INSTALLROOT=</yourdir>:    installation root dir, default /usr/local"
-	@echo "QTDIR=</yourqtdir>:	   your qt3 installation, default /usr/lib/qt-3.3"
-	@echo "ROOTSYS=</yourroot>:	   your root installation, default /usr/local/root"
 	@echo "BINDIR=<yourbin>:          binary installation dir below INSTALLROOT, default bin"
 	@echo "LIBDIR=<yourlib>:          library installation dir below INSTALLROOT, default lib"
 	@echo "INCDIR=<yourincludes>:     header installation dir below INSTALLROOT, default include/slsdetector"

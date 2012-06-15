@@ -605,9 +605,9 @@ slsDetectorCommand::slsDetectorCommand(slsDetectorUtils *det)  {
 
   numberOfCommands=i;
   
-#ifdef VERBOSE
-  cout << "Number of commands is " << numberOfCommands << endl;
-#endif
+// #ifdef VERBOSE
+//   cout << "Number of commands is " << numberOfCommands << endl;
+// #endif
 }
 
 

@@ -41,6 +41,7 @@ class multiSlsDetectorClient  {
     if (action==slsDetectorDefs::GET_ACTION && argc<1) {		\
       cout << "Wrong usage - should be: "<< argv[0] << "[id-][pos:]channel arg" << endl; \
       cout << endl;							\
+
       return;								\
     };									\
     if (myDetector==NULL) {

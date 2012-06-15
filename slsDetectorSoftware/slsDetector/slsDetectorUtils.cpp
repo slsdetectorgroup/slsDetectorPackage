@@ -523,9 +523,11 @@ int slsDetectorUtils::retrieveDetectorSetup(string const fname1, int level){
    int iargval;
    int interrupt=0;
   char *args[2];
-  for (int ia=0; ia<2; ia++) {
-    args[ia]=new char[1000];
-  }
+
+  char myargs[2][1000];
+  args[0]=myargs[0];
+  args[1]=myargs[1];
+
   string sargname, sargval;
   int iline=0;
   
@@ -562,7 +564,7 @@ int slsDetectorUtils::retrieveDetectorSetup(string const fname1, int level){
 	while (ssstr.good()) {
 	  ssstr >> sargname;
 	  //  if (ssstr.good()) {
-	    strcpy(args[iargval],sargname.c_str());
+	    strcpy(myargs[iargval],sargname.c_str());
 #ifdef VERBOSE
       std::cout<< args[iargval]  << std::endl;
 #endif

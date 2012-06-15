@@ -4792,11 +4792,10 @@ int slsDetector::readConfigurationFile(string const fname){
     ifstream infile;
     //    int iargval;
     // int interrupt=0;
-    char *args[100];
-    for (int ia=0; ia<100; ia++) {
-      args[ia]=new char[1000];
-    }
-    
+    char *args[1000];
+//     for (int ia=0; ia<100; ia++) {
+//       args[ia]=new char[1000];
+//     }
     
     string sargname, sargval;
     int iline=0;
@@ -4831,10 +4830,7 @@ int slsDetector::readConfigurationFile(ifstream &infile){
     int iargval;
     int interrupt=0;
     char *args[100];
-    for (int ia=0; ia<100; ia++) {
-      args[ia]=new char[1000];
-    }
-    
+    char myargs[1000][1000];
     
     string sargname, sargval;
     int iline=0;
@@ -4866,7 +4862,8 @@ int slsDetector::readConfigurationFile(ifstream &infile){
 #ifdef VERBOSE 
 	    std::cout<< iargval << " " << sargname  << std::endl;
 #endif
-	    strcpy(args[iargval],sargname.c_str());
+	    strcpy(myargs[iargval],sargname.c_str());
+	    args[iargval]=myargs[iargval];
 	    iargval++;
 	    //}
 	}

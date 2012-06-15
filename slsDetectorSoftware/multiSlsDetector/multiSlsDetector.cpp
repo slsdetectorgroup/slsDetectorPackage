@@ -3076,6 +3076,22 @@ int multiSlsDetector::readConfigurationFile(string const fname){
 
   
 
+  int nd=thisMultiDetector->numberOfDetectors;
+  
+    for (int i=0; i<nd; i++) {
+      //    sprintf(ext,".det%d",i);
+      if (detectors[i]) {
+	detectors[i]->freeSharedMemory();
+      }
+    }
+    thisMultiDetector->numberOfDetectors=0;
+
+
+
+
+
+
+
   multiSlsDetectorClient *cmd;
   char ext[100];
 
@@ -3086,11 +3102,10 @@ int multiSlsDetector::readConfigurationFile(string const fname){
     ifstream infile;
     int iargval;
     int interrupt=0;
-    char *args[100];
-    for (int ia=0; ia<100; ia++) {
-      args[ia]=new char[1000];
-    }
-    
+    char *args[1000];
+
+    char myargs[1000][1000];
+
     
     string sargname, sargval;
     int iline=0;
@@ -3127,10 +3142,23 @@ int multiSlsDetector::readConfigurationFile(string const fname){
 #ifdef VERBOSE 
 	    std::cout<< iargval << " " << sargname  << std::endl;
 #endif
-	    strcpy(args[iargval],sargname.c_str());
+
+	    strcpy(myargs[iargval], sargname.c_str());
+	    args[iargval]=myargs[iargval];
+
+#ifdef VERBOSE 
+	    std::cout<< "--" << iargval << " " << args[iargval]  << std::endl;
+#endif
+
 	    iargval++;
 	    //}
 	  }
+
+#ifdef VERBOSE 
+	  cout << endl;
+	  for (int ia=0; ia<iargval; ia++) cout << args[ia] << " ??????? ";
+	  cout << endl;
+#endif	
 	  cmd=new multiSlsDetectorClient(iargval, args, PUT_ACTION, this);
 	  delete cmd;
 	}

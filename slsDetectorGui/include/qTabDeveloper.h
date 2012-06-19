@@ -43,9 +43,6 @@ private:
 	 */
 	void Initialization();
 
-	/** Enables/Disables all the widgets
-	 */
-	void Enable(bool enable);
 
 };
 

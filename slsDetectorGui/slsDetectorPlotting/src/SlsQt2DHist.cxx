@@ -72,7 +72,6 @@ void SlsQt2DHist::SetData(int nbinsx, double xmin, double xmax, int nbinsy,doubl
   ny=nbinsy;
   nb=nx*ny;
   data[nb]=0;//set over flow to zero
-
   if(d){
     memcpy(data,d,nb*sizeof(double));
     SetMinMax(zmin,zmax);

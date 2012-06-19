@@ -4,6 +4,7 @@ OBJECTS_DIR 		= 		objs
 UI_HEADERS_DIR		= 		forms/include
 
 DEFINES 			+= 		VERBOSE
+							
 
 target.path 		+= 		$(DESTDIR)
 documentation.path 	= 		/$(DOCPATH)

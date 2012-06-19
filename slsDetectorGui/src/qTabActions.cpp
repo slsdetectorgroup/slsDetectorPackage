@@ -102,14 +102,6 @@ void qTabActions::Initialization(){
 
 
 
-
-void qTabActions::Enable(bool enable){
-
-
-}
-
-
-
 void qTabActions::Expand(QAbstractButton *button ){
 	int index = group->id(button);
 	/** Collapse */

@@ -457,6 +457,8 @@ void SlsQt1DPlot::UnknownStuff(){
 }
 
 
+
+//Added by Dhanya on 19.06.2012 to disable zooming when any of the axes range has been set
 void SlsQt1DPlot::DisableZoom(bool disableZoom){
 #ifdef VERBOSE
 	if(disableZoom) cout<<"Disabling zoom"<<endl;

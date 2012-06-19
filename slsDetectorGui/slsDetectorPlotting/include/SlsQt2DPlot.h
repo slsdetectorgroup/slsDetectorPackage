@@ -2,6 +2,12 @@
 /**
  * @author Ian Johnson
  * @version 1.0
+ * Modifications:
+ * 19.06.2012: {Some functions have been added by Dhanya to enable zooming in and out
+ * without using mouse control:
+ * DisableZoom,
+ * SetXMinMax,SetYMinMax,
+ * GetXMinimum,GetXMaximum,GetYMinimum,GetYMaximum}
  */
 
 
@@ -43,9 +49,21 @@ public:
     SlsQt2DPlot(QWidget * = NULL);
 
     //    SlsQt2DHist *GetHistogram(){ return hist; }
-
     void   UnZoom();
     void   SetZoom(double xmin,double ymin,double x_width,double y_width);
+
+
+    /**	This group of functions have been added by Dhanya on 19.06.2012 to be able to
+    	use zooming functionality without mouse control*/
+    void   DisableZoom(bool disableZoom);
+    void SetXMinMax(double min,double max){setAxisScale(QwtPlot::xBottom,min,max);};
+    void SetYMinMax(double min,double max){setAxisScale(QwtPlot::yLeft,min,max);};
+    double GetXMinimum(){return hist->GetXMin();};
+    double GetXMaximum(){return hist->GetXMax();};
+    double GetYMinimum(){return hist->GetYMin();};
+    double GetYMaximum(){return hist->GetYMax();};
+    /**---*/
+
 
     double GetZMinimum(){ return hist->GetMinimum();}
     double GetZMaximum(){ return hist->GetMaximum();}

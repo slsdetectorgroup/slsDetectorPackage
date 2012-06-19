@@ -2,7 +2,13 @@
 /**
  * @author Ian Johnson
  * @version 1.0
- */
+ * Modifications:
+ * 19.06.2012: {Some functions have been added by Dhanya to enable zooming in and out
+ * without using mouse control:
+ * DisableZoom,
+ * SetXMinMax,SetYMinMax,
+ * GetXMinimum,GetXMaximum,GetYMinimum,GetYMaximum}
+ *  */
 
 #ifndef SLSQT1DPLOT_H
 #define SLSQT1DPLOT_H
@@ -12,6 +18,8 @@
 #include <qwt_plot_marker.h>
 #include <qwt_scale_div.h>
 #include  "SlsQt1DZoomer.h"
+#include <iostream>
+using namespace std;
 
 class QPen;
 class SlsQt1DPlot;
@@ -104,14 +112,18 @@ class SlsQt1DPlot:public QwtPlot{
   void InsertVLine(double v);
   void RemoveVLine();
 
-  void DisableZoom(bool disableZoom);
 
-  void SetXAxisScale(double min,double max){setAxisScale(QwtPlot::xBottom,min,max);};
-  void SetYAxisScale(double min,double max){setAxisScale(QwtPlot::yLeft,min,max);};
-  double GetXAxisLowerBound(){return axisScaleDiv(QwtPlot::xBottom)->lowerBound();};
-  double GetXAxisUpperBound(){return axisScaleDiv(QwtPlot::xBottom)->upperBound();};
-  double GetYAxisLowerBound(){return axisScaleDiv(QwtPlot::yLeft)->lowerBound();};
-  double GetYAxisUpperBound(){return axisScaleDiv(QwtPlot::yLeft)->upperBound(); };
+  /**	This group of functions have been added by Dhanya on 19.06.2012 to be able to
+  	use zooming functionality without mouse control*/
+  void DisableZoom(bool disableZoom);
+  void SetXMinMax(double min,double max){setAxisScale(QwtPlot::xBottom,min,max);};
+  void SetYMinMax(double min,double max){setAxisScale(QwtPlot::yLeft,min,max);};
+  double GetXMinimum(){return hist_list->Hist()->GetXMin();};
+  double GetXMaximum(){return hist_list->Hist()->GetXMax();};
+  double GetYMinimum(){return hist_list->Hist()->GetYMin();};
+  double GetYMaximum(){return hist_list->Hist()->GetYMax();};
+  /**---*/
+
 
   void SetZoom(double xmin,double ymin,double x_width,double y_width);
   void SetZoomBase(double xmin,double ymin,double x_width, double y_width){ zoomer->SetZoomBase(xmin,ymin,x_width,y_width);}

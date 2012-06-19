@@ -129,8 +129,14 @@ void SlsQt2DPlot::SetupZoom(){
     zoomer->setTrackerPen(c);
 }
 
+/*void SlsQt2DPlot::CompletelyUnZoom(){
+	  setAxisScale(QwtPlot::xBottom,hist->GetXMin(),hist->GetXMin()+(hist->GetXMax()-hist->GetXMin()));
+	  setAxisScale(QwtPlot::yLeft,hist->GetYMin(),hist->GetYMin()+(hist->GetYMax()-hist->GetYMin()));
+	  zoomer->setZoomBase();
+	  //replot();
+}*/
+
 void SlsQt2DPlot::UnZoom(){
-  
   zoomer->setZoomBase(QwtDoubleRect(hist->GetXMin(),hist->GetYMin(),hist->GetXMax()-hist->GetXMin(),hist->GetYMax()-hist->GetYMin()));
 
   zoomer->setZoomBase();//Call replot for the attached plot before initializing the zoomer with its scales.
@@ -147,7 +153,7 @@ void SlsQt2DPlot::SetZMinMax(double zmin,double zmax){
 
 
 void SlsQt2DPlot::Update(){
-  rightAxis->setColorMap(d_spectrogram->data().range(),d_spectrogram->colorMap());  
+  rightAxis->setColorMap(d_spectrogram->data().range(),d_spectrogram->colorMap());
   if(!zoomer->zoomRectIndex()) UnZoom();
   setAxisScale(QwtPlot::yRight,d_spectrogram->data().range().minValue(),
 	                       d_spectrogram->data().range().maxValue());
@@ -190,6 +196,36 @@ void SlsQt2DPlot::LogZ(bool on){
 
 }
 
+//Added by Dhanya on 19.06.2012 to disable zooming when any of the axes range has been set
+void SlsQt2DPlot::DisableZoom(bool disableZoom){
+#ifdef VERBOSE
+	if(disableZoom) cout<<"Disabling zoom"<<endl;
+	else cout<<"Enabling zoom"<<endl;
+#endif
+	if(disableZoom){
+		if(zoomer){
+			 zoomer->setMousePattern(QwtEventPattern::MouseSelect1,Qt::NoButton);
+#if QT_VERSION < 0x040000
+			zoomer->setMousePattern(QwtEventPattern::MouseSelect2,Qt::NoButton, Qt::ControlButton);
+#else
+			zoomer->setMousePattern(QwtEventPattern::MouseSelect2,Qt::NoButton, Qt::ControlModifier);
+#endif
+			zoomer->setMousePattern(QwtEventPattern::MouseSelect3,Qt::NoButton);
+		}
+		if(panner)	panner->setMouseButton(Qt::NoButton);
+	}else {
+		if(zoomer){
+			zoomer->setMousePattern(QwtEventPattern::MouseSelect1,Qt::LeftButton);
+#if QT_VERSION < 0x040000
+			zoomer->setMousePattern(QwtEventPattern::MouseSelect2,Qt::RightButton, Qt::ControlButton);
+#else
+			zoomer->setMousePattern(QwtEventPattern::MouseSelect2,Qt::RightButton, Qt::ControlModifier);
+#endif
+			zoomer->setMousePattern(QwtEventPattern::MouseSelect3,Qt::RightButton);
+		}
+		if(panner)	panner->setMouseButton(Qt::MidButton);
+	}
+}
 
 
 /*

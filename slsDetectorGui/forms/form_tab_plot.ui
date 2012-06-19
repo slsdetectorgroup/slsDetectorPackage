@@ -37,7 +37,7 @@
      <x>10</x>
      <y>135</y>
      <width>751</width>
-     <height>136</height>
+     <height>141</height>
     </rect>
    </property>
    <property name="title">
@@ -603,10 +603,6 @@
      <bool>true</bool>
     </property>
    </widget>
-   <zorder>gridLayoutWidget_3</zorder>
-   <zorder>btnClear</zorder>
-   <zorder>btnClear</zorder>
-   <zorder>btnClear</zorder>
   </widget>
   <widget class="QGroupBox" name="boxSave">
    <property name="geometry">

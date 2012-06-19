@@ -59,9 +59,6 @@ private:
 	/** Sets up all the slots and signals */
 	void Initialization();
 
-	/** Enables/Disables all the widgets */
-	void Enable(bool enable);
-
 
 private slots:
 /** To Expand the Action Widget */

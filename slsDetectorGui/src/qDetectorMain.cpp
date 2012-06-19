@@ -27,7 +27,7 @@ int main (int argc, char **argv) {
 	QApplication *theApp = new QApplication(argc, argv);
 	qDetectorMain *det=new qDetectorMain(argc, argv, theApp,0);
 	det->show();
-	theApp->connect( theApp, SIGNAL(lastWindowClosed()), theApp, SLOT(quit()));
+	//theApp->connect( theApp, SIGNAL(lastWindowClosed()), theApp, SLOT(quit()));
 	return theApp->exec();
 }
 
@@ -355,6 +355,7 @@ void qDetectorMain::resizeEvent(QResizeEvent* event){
 			centralwidget->setMaximumHeight(heightCentralWidget);
 		}
 	}
+	event->accept();
 #ifdef VERBOSE
 	cout<<"height:"<<height()<<endl;
 	cout<<"dockWidgetPlot height:"<<dockWidgetPlot->height()<<endl;

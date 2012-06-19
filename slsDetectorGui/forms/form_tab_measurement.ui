@@ -520,12 +520,7 @@
        </item>
        <item>
         <property name="text">
-         <string>Gated</string>
-        </property>
-       </item>
-       <item>
-        <property name="text">
-         <string>Trigger Exposure</string>
+         <string>Trigger Exposure Series</string>
         </property>
        </item>
        <item>
@@ -536,6 +531,11 @@
        <item>
         <property name="text">
          <string>Trigger Readout</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>Gated with Fixed Number</string>
         </property>
        </item>
        <item>

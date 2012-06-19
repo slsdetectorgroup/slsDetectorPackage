@@ -87,16 +87,20 @@ void SetTitles();
 void EnableTitles();
 /** Enables range of the axes */
 void EnableRange();
-/** Sets the range of the axes */
+/** Sets the range of the x and y axes */
 void SetAxesRange();
-
+/** Sets the range of the z axis */
+void SetZRange();
+/** Enables the range of the z axis */
+void EnableZRange();
 /** Save Plot */
 void SavePlot();
 
 
 signals:
 void DisableZoomSignal(bool);
-
+void SetZRangeSignal(double,double);
+void EnableZRangeSignal(bool);
 };
 
 

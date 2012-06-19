@@ -30,14 +30,17 @@ QString qTabPlot::defaultImageZAxisTitle("Intensity");
 
 qTabPlot::qTabPlot(QWidget *parent,slsDetectorUtils*& detector, qDrawPlot*& plot):QWidget(parent),myDet(detector),myPlot(plot){
 	setupUi(this);
-	if(myDet)
-	{
-		// wherever you choose plot do all these steps
-		//This also selects the text if unchecked
-		//includes setupwidgetwindow
-		//SelectPlot(1);
-		//switch(myDet->detectorytype)
-		Select1DPlot(true);
+	if(myDet){
+		SetupWidgetWindow();
+		/** Depending on whether the detector is 1d or 2d*/
+		switch(myDet->getDetectorsType()){
+			case slsDetectorDefs::MYTHEN:	Select1DPlot(true);	break;
+			case slsDetectorDefs::EIGER:	Select1DPlot(false);break;
+			case slsDetectorDefs::GOTTHARD:	Select1DPlot(true);break;
+			default:
+				cout<<"ERROR: Detector Type is Generic"<<endl;
+				exit(-1);
+		}
 		Initialization();
 	}
 }
@@ -67,12 +70,12 @@ void qTabPlot::SetupWidgetWindow(){
 	dispXMax->setEnabled(false);
 	dispYMax->setEnabled(false);
 	dispZMax->setEnabled(false);
-/*	dispXMin->setValidator(new QDoubleValidator(dispXMin));
+	dispXMin->setValidator(new QDoubleValidator(dispXMin));
 	dispYMin->setValidator(new QDoubleValidator(dispYMin));
 	dispZMin->setValidator(new QDoubleValidator(dispZMin));
 	dispXMax->setValidator(new QDoubleValidator(dispXMax));
 	dispYMax->setValidator(new QDoubleValidator(dispYMax));
-	dispZMax->setValidator(new QDoubleValidator(dispZMax));*/
+	dispZMax->setValidator(new QDoubleValidator(dispZMax));
 }
 
 
@@ -119,6 +122,8 @@ void qTabPlot::Initialization(){
 	connect(chkInterpolate, SIGNAL(toggled(bool)),myPlot, SIGNAL(InterpolateSignal(bool)));
 	connect(chkContour, 	SIGNAL(toggled(bool)),myPlot, SIGNAL(ContourSignal(bool)));
 	connect(chkLogz, 		SIGNAL(toggled(bool)),myPlot, SIGNAL(LogzSignal(bool)));
+
+
 /** Plot Axis **/
 	connect(chkTitle, 		SIGNAL(toggled(bool)), this, 	SLOT(EnableTitles()));
 	connect(chkXAxis, 		SIGNAL(toggled(bool)), this, 	SLOT(EnableTitles()));
@@ -133,15 +138,17 @@ void qTabPlot::Initialization(){
 	connect(chkXMax, 		SIGNAL(toggled(bool)), this, 	SLOT(EnableRange()));
 	connect(chkYMin, 		SIGNAL(toggled(bool)), this, 	SLOT(EnableRange()));
 	connect(chkYMax, 		SIGNAL(toggled(bool)), this, 	SLOT(EnableRange()));
-	connect(chkZMin, 		SIGNAL(toggled(bool)), this, 	SLOT(EnableRange()));
-	connect(chkZMax, 		SIGNAL(toggled(bool)), this, 	SLOT(EnableRange()));
+	connect(chkZMin, 		SIGNAL(toggled(bool)), this, 	SLOT(EnableZRange()));
+	connect(chkZMax, 		SIGNAL(toggled(bool)), this, 	SLOT(EnableZRange()));
+	connect(this, 			SIGNAL(EnableZRangeSignal(bool)), myPlot, 	SIGNAL(EnableZRangeSignal(bool)));
 
 	connect(dispXMin, 		SIGNAL(returnPressed()), this, 	SLOT(SetAxesRange()));
 	connect(dispXMax, 		SIGNAL(returnPressed()), this, 	SLOT(SetAxesRange()));
 	connect(dispYMin, 		SIGNAL(returnPressed()), this, 	SLOT(SetAxesRange()));
 	connect(dispYMax, 		SIGNAL(returnPressed()), this, 	SLOT(SetAxesRange()));
-	connect(dispZMin, 		SIGNAL(returnPressed()), this, 	SLOT(SetAxesRange()));
-	connect(dispZMax, 		SIGNAL(returnPressed()), this, 	SLOT(SetAxesRange()));
+	connect(dispZMin, 		SIGNAL(returnPressed()), this, 	SLOT(SetZRange()));
+	connect(dispZMax, 		SIGNAL(returnPressed()), this, 	SLOT(SetZRange()));
+	connect(this,			SIGNAL(SetZRangeSignal(double,double)),myPlot, SIGNAL(SetZRangeSignal(double,double)));
 
 /** Common Buttons*/
 	connect(btnClear, 		SIGNAL(clicked()),		myPlot, SLOT(Clear1DPlot()));
@@ -167,7 +174,6 @@ void qTabPlot::EnablePersistency(bool enable){
 	else			myPlot->SetPersistency(0);
 
 }
-
 
 
 void qTabPlot::SetTitles(){
@@ -236,87 +242,60 @@ void qTabPlot::EnableTitles(){
 
 void qTabPlot::EnableRange(){
 	bool disableZoom = false;
-	if(!chkXMin->isChecked())	{dispXMin->setText("");	dispXMin->setEnabled(false);}
-	else						{disableZoom = true;	dispXMin->setEnabled(true);	}
-	if(!chkXMax->isChecked())	{dispXMax->setText("");	dispXMax->setEnabled(false);}
-	else 						{disableZoom = true;	dispXMax->setEnabled(true); }
-	if(!chkYMin->isChecked())	{dispYMin->setText("");	dispYMin->setEnabled(false);}
-	else 						{disableZoom = true;	dispYMin->setEnabled(true);	}
-	if(!chkYMax->isChecked())	{dispYMax->setText("");	dispYMax->setEnabled(false);}
-	else 						{disableZoom = true;	dispYMax->setEnabled(true); }
-	if(!chkZMin->isChecked())	{dispZMin->setText("");	dispZMin->setEnabled(false);}
-	else 						{disableZoom = true;	dispZMin->setEnabled(true); }
-	if(!chkZMax->isChecked())	{dispZMax->setText("");	dispZMax->setEnabled(false);}
-	else 						{disableZoom = true;	dispZMax->setEnabled(true); }
+	if(!chkXMin->isChecked())	dispXMin->setEnabled(false);
+	else{disableZoom = true;	dispXMin->setEnabled(true);	}
+	if(!chkXMax->isChecked())	dispXMax->setEnabled(false);
+	else{disableZoom = true;	dispXMax->setEnabled(true); }
+	if(!chkYMin->isChecked())	dispYMin->setEnabled(false);
+	else{disableZoom = true;	dispYMin->setEnabled(true);	}
+	if(!chkYMax->isChecked())	dispYMax->setEnabled(false);
+	else{disableZoom = true;	dispYMax->setEnabled(true); }
+
 	myPlot->DisableZoom(disableZoom);
 	emit DisableZoomSignal(disableZoom);
+	SetAxesRange();
 }
 
 
 
 void qTabPlot::SetAxesRange(){
-	double xmin,xmax,ymin,ymax,zmin,zmax;
-	int oneD = box1D->isEnabled();
-	//should be filled for 2d as well
-	if(!dispXMin->text().isEmpty())	xmin = dispXMin->text().toDouble();
-	else {	if(oneD)				xmin = myPlot->GetHistXAxisLowerBound();}
-	if(!dispXMax->text().isEmpty())	xmax = dispXMax->text().toDouble();
-	else {	if(oneD)				xmax = myPlot->GetHistXAxisUpperBound();}
-	if(!dispYMin->text().isEmpty())	ymin = dispYMin->text().toDouble();
-	else {	if(oneD)				ymin = myPlot->GetHistYAxisLowerBound();}
-	if(!dispYMax->text().isEmpty())	ymax = dispYMax->text().toDouble();
-	else {	if(oneD)				ymax = myPlot->GetHistYAxisUpperBound();}
-	if(!dispZMin->text().isEmpty())	zmin = dispZMin->text().toDouble();
-	if(!dispZMax->text().isEmpty())	zmax = dispZMax->text().toDouble();
-	//should be filled for 2d as well
-	if(oneD){
-		myPlot->SetHistXAxisScale(xmin,xmax);
-		myPlot->SetHistYAxisScale(ymin,ymax);
-	}
+	double xmin=0,xmax=0,ymin=0,ymax=0;
+
+	/** If disabled, get the min or max range of the plot as default */
+	if((dispXMin->isEnabled())&&(!dispXMin->text().isEmpty()))
+		xmin = dispXMin->text().toDouble();
+	else xmin = myPlot->GetXMinimum();
+	if((dispXMax->isEnabled())&&(!dispXMax->text().isEmpty()))
+		xmax = dispXMax->text().toDouble();
+	else xmax = myPlot->GetXMaximum();
+	if((dispYMin->isEnabled())&&(!dispYMin->text().isEmpty()))
+		ymin = dispYMin->text().toDouble();
+	else ymin = myPlot->GetYMinimum();
+	if((dispYMax->isEnabled())&&(!dispYMax->text().isEmpty()))
+		ymax = dispYMax->text().toDouble();
+	else ymax = myPlot->GetYMaximum();
+
+	/** Setting the range*/
+	myPlot->SetXMinMax(xmin,xmax);
+	myPlot->SetYMinMax(ymin,ymax);
 }
+
+
+
+void qTabPlot::SetZRange(){
+	emit SetZRangeSignal(dispZMin->text().toDouble(),dispZMax->text().toDouble());
+}
+
+void qTabPlot::EnableZRange(){
+	dispZMin->setEnabled(chkZMin->isChecked());
+	dispZMax->setEnabled(chkZMax->isChecked());
+	emit EnableZRangeSignal((chkZMin->isChecked())||(chkZMax->isChecked()));
+}
+
 
 
 void qTabPlot::SavePlot(){
 	QString fullFileName = QString(myDet->getFilePath().c_str())+'/'+dispFName->text()+comboFormat->currentText();
 	myPlot->SavePlot(fullFileName);
 }
-
-
-
-
-
-
-//dispzmin... when unchecked, unzoom and get lower and upper bound... when checked just set lower and upper bound
-
-/*
-
-#include "SlsQtValidators.h"
-
-class QDoubleValidator;
-SlsQtDoubleValidator*  validator_double[2];
-
-
-
-
-validator_double = new SlsQtDoubleValidator(num_field);
-num_field->setValidator(validator_double);
-//default settings
-validator_double->setDecimals(3);
-double v= num_field->text().toDouble(ok););
-is ok 1? for correct conversion
-
-QString s = QString::number(v);
-validator_double->fixup(s);
-num_field->setText(s);
-
-
-num_field[i]->setAlignment(Qt::AlignRight);
-
-
-
-connect(num_field[i],SIGNAL(lostFocus()),this,SLOT(FirstValueEntered()));
-
-*/
-
-
 

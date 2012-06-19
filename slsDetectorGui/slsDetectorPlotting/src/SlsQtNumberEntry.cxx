@@ -253,7 +253,7 @@ double SlsQtNumberEntry::SetNumber(double v,int which_number_field){
     }
     if(validator_double[i]){
       QString s = QString::number(v);
-      validator_double[i]->fixup(s);            
+      validator_double[i]->fixup(s);
       num_field[i]->setText(s);
     }
   }else if(spin_box[i]){
@@ -267,7 +267,7 @@ double SlsQtNumberEntry::SetNumber(double v,int which_number_field){
 void SlsQtNumberEntry::SetRange(int min, int max,int which_number_field){
   int i = (which_number_field<0||which_number_field>1) ? 0:which_number_field;
   if(min>max){
-    cout<<"Waring: SetRange(int,int) no effect min > max"<<endl;
+    cout<<"Warning: SetRange(int,int) no effect min > max"<<endl;
   }else{
     if(validator_int[i])    validator_int[i]->setRange(min,max);
     if(validator_double[i]) validator_double[i]->setRange(min,max,validator_double[i]->decimals());
@@ -280,7 +280,7 @@ void SlsQtNumberEntry::SetRange(int min, int max,int which_number_field){
 void SlsQtNumberEntry::SetRange(double min, double max,int which_number_field){
   int i = (which_number_field<0||which_number_field>1) ? 0:which_number_field;
   if(min>max){
-    cout<<"Waring: SetRange(double,double) no effect min >= max"<<endl;
+    cout<<"Warning: SetRange(double,double) no effect min >= max"<<endl;
   }else{
     if(validator_int[i])    cout<<"Waring can not call SetRange(double,double) with \"int\" type Validator"<<endl;
     if(validator_double[i]) validator_double[i]->setRange(min,max,validator_double[i]->decimals());

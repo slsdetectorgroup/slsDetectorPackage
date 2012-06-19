@@ -44,7 +44,7 @@ private:
 	/** The Plot widget	 */
 	qDrawPlot *myPlot;
 
-	enum{None, Auto, Gated, Trigger_Exp_Series, Trigger_Frame, Trigger_Readout, Gated_Start, Trigger_Window, NumTimingModes};
+	enum{None, Auto, Trigger_Exp_Series, Trigger_Frame, Trigger_Readout, Gated, Gated_Start, Trigger_Window, NumTimingModes};
 
 	QTimer *progressTimer;
 

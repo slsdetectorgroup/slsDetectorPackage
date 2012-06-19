@@ -47,9 +47,3 @@ void qTabDeveloper::Initialization(){
 
 
 
-void qTabDeveloper::Enable(bool enable){
-	//this->setEnabled(enable);
-
-}
-
-

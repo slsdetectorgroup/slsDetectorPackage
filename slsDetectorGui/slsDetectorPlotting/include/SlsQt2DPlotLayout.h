@@ -1,6 +1,10 @@
 /**
  * @author Ian Johnson
  * @version 1.0
+ * @comments
+ * 19.06.2012 All modifications with the Ian flag has been made since
+ * z_range_ne and the buttons are defined in another class.
+ * Logz button and z_range_ne have wrappers to connect them
  */
 
 
@@ -15,7 +19,7 @@
 
 class QGridLayout;
 class QString;
-
+class QToolButton;
 
 
 class SlsQt2DPlotLayout: public QGroupBox{
@@ -26,33 +30,42 @@ public:
     SlsQt2DPlotLayout(QWidget * = NULL);
     ~SlsQt2DPlotLayout();
 
-    SlsQt2DPlot*    GetPlot()   {return the_plot;}
+    SlsQt2DPlot* GetPlot(){return the_plot;}
     void         SetXTitle(QString st);
     void         SetYTitle(QString st);
     void         SetZTitle(QString st);
+    void 		 UpdateNKeepSetRangeIfSet();
 
-    void UpdateNKeepSetRangeIfSet();
 
 private:
-    QGridLayout* the_layout;
-    SlsQt2DPlot*    the_plot;
+    QGridLayout* 		the_layout;
+    QToolButton* 		btnInterpolate;
+    QToolButton* 		btnContour;
+    QToolButton* 		btnLogz;
+    SlsQt2DPlot*    	the_plot;
+    SlsQtNumberEntry* 	z_range_ne;
 
-    SlsQtNumberEntry* z_range_ne;
+#ifndef IAN
+    bool zRangeChecked;
+#endif
 
-    bool logsChecked;
-
+    void CreateTheButtons();
     void ConnectSignalsAndSlots();
-
     void Layout();
 
 public slots:
 void SetZScaleToLog(bool yes);
 void ResetRange();
-void SetTitle(QString st);
+
+#ifndef IAN
+void SetZRange(double,double);
+void EnableZRange(bool enable);
+#endif
 
 signals:
 void InterpolateSignal(bool);
 void ContourSignal(bool);
+
 };
 
 #endif

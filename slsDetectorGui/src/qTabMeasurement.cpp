@@ -76,32 +76,29 @@ void qTabMeasurement::SetupWidgetWindow(){
 
 		switch(myDet->getDetectorsType()){
 		case slsDetectorDefs::MYTHEN:
-			item[(int)Gated]->setEnabled(true);
 			item[(int)Trigger_Exp_Series]->setEnabled(true);
 			item[(int)Trigger_Frame]->setEnabled(false);
 			item[(int)Trigger_Readout]->setEnabled(true);
+			item[(int)Gated]->setEnabled(true);
 			item[(int)Gated_Start]->setEnabled(true);
 			item[(int)Trigger_Window]->setEnabled(false);
 			break;
 		case slsDetectorDefs::EIGER:
-			item[(int)Gated]->setEnabled(false);
 			item[(int)Trigger_Exp_Series]->setEnabled(true);
 			item[(int)Trigger_Frame]->setEnabled(true);
 			item[(int)Trigger_Readout]->setEnabled(false);
+			item[(int)Gated]->setEnabled(false);
 			item[(int)Gated_Start]->setEnabled(false);
 			item[(int)Trigger_Window]->setEnabled(true);
 			break;
 		case slsDetectorDefs::GOTTHARD:
-			item[(int)Gated]->setEnabled(false);
 			item[(int)Trigger_Exp_Series]->setEnabled(true);
 			item[(int)Trigger_Frame]->setEnabled(false);
 			item[(int)Trigger_Readout]->setEnabled(false);
+			item[(int)Gated]->setEnabled(false);
 			item[(int)Gated_Start]->setEnabled(false);
 			item[(int)Trigger_Window]->setEnabled(false);
 			break;
-/*		case slsDetectorDefs::PICASSO:
-        case slsDetectorDefs::PILATUS:
-		case slsDetectorDefs::AGIPD:*/
 		default:
 			cout<<"ERROR: Detector Type is Generic"<<endl;
 			exit(-1);
@@ -190,19 +187,6 @@ void qTabMeasurement::Enable(bool enable){
 
 
 
-void qTabMeasurement::UpdateFinished(){
-	disconnect(btnStartStop,SIGNAL(clicked()),this,SLOT(startStopAcquisition()));
-	btnStartStop->setText("Start");
-	//btnStartStop->setStyleSheet("color:green");
-	//btnStartStop->setStyleSheet("background:rgb(239,239,239)");
-	Enable(1);
-	connect(btnStartStop,SIGNAL(clicked()),this,SLOT(startStopAcquisition()));
-	UpdateProgress();
-	progressTimer->stop();
-}
-
-
-
 void qTabMeasurement::setFileName(const QString& fName){
 	myDet->setFileName(fName.toAscii().data());
 #ifdef VERBOSE
@@ -252,6 +236,29 @@ void qTabMeasurement::startStopAcquisition(){
 
 
 
+void qTabMeasurement::UpdateFinished(){
+	disconnect(btnStartStop,SIGNAL(clicked()),this,SLOT(startStopAcquisition()));
+	btnStartStop->setText("Start");
+	//btnStartStop->setStyleSheet("color:green");
+	//btnStartStop->setStyleSheet("background:rgb(239,239,239)");
+	Enable(1);
+	connect(btnStartStop,SIGNAL(clicked()),this,SLOT(startStopAcquisition()));
+	UpdateProgress();
+	progressTimer->stop();
+}
+
+
+
+void qTabMeasurement::UpdateProgress(){
+	progressBar->setValue(myPlot->GetProgress());
+	lblProgressIndex->setText(QString::number(myDet->getFileIndex()));
+}
+
+
+
+
+
+
 void qTabMeasurement::setNumFrames(int val){
 	myDet->setTimer(slsDetectorDefs::FRAME_NUMBER,val);
 #ifdef VERBOSE
@@ -263,8 +270,8 @@ void qTabMeasurement::setNumFrames(int val){
 
 void qTabMeasurement::setExposureTime(){
 	int64_t exptimeNS;
-	/** Get the 64 bit value of timer**/
-	exptimeNS = qDefs::getNSTime((qDefs::timeUnit)comboExpUnit->currentIndex(),spinExpTime->value());
+	/** Get the value of timer in ns **/
+	exptimeNS = (int64_t)qDefs::getNSTime((qDefs::timeUnit)comboExpUnit->currentIndex(),spinExpTime->value());
 #ifdef VERBOSE
 	cout<<"Setting acquisition time to " << exptimeNS << " clocks" << endl;
 #endif
@@ -272,7 +279,7 @@ void qTabMeasurement::setExposureTime(){
 
 	if(lblPeriod->isEnabled()){
 		int64_t acqtimeNS;
-		acqtimeNS = qDefs::getNSTime((qDefs::timeUnit)comboPeriodUnit->currentIndex(),spinPeriod->value());
+		acqtimeNS = (int64_t)qDefs::getNSTime((qDefs::timeUnit)comboPeriodUnit->currentIndex(),spinPeriod->value());
 		if(exptimeNS>acqtimeNS) {
 			lblNote->show();
 			lblPeriod->setPalette(lblNote->palette());
@@ -290,15 +297,15 @@ void qTabMeasurement::setExposureTime(){
 
 void qTabMeasurement::setAcquisitionPeriod(){
 	int64_t acqtimeNS;
-	/** Get the 64 bit value of timer**/
-	acqtimeNS = qDefs::getNSTime((qDefs::timeUnit)comboPeriodUnit->currentIndex(),spinPeriod->value());
+	/** Get the value of timer in ns **/
+	acqtimeNS = (int64_t)qDefs::getNSTime((qDefs::timeUnit)comboPeriodUnit->currentIndex(),spinPeriod->value());
 #ifdef VERBOSE
 	cout<<"Setting frame period between exposures to " << acqtimeNS << " clocks" << endl;
 #endif
 	myDet->setTimer(slsDetectorDefs::FRAME_PERIOD,acqtimeNS);
 
 	int64_t exptimeNS;
-	exptimeNS = qDefs::getNSTime((qDefs::timeUnit)comboExpUnit->currentIndex(),spinExpTime->value());
+	exptimeNS = (int64_t)qDefs::getNSTime((qDefs::timeUnit)comboExpUnit->currentIndex(),spinExpTime->value());
 	if(exptimeNS>acqtimeNS){
 		lblNote->show();
 		lblPeriod->setPalette(lblNote->palette());
@@ -327,8 +334,8 @@ void qTabMeasurement::setNumTriggers(int val){
 
 void qTabMeasurement::setDelay(){
 	int64_t exptimeNS;
-	/** Get the 64 bit value of timer**/
-	exptimeNS = qDefs::getNSTime((qDefs::timeUnit)comboDelayUnit->currentIndex(),spinDelay->value());
+	/** Get the value of timer in ns **/
+	exptimeNS = (int64_t)qDefs::getNSTime((qDefs::timeUnit)comboDelayUnit->currentIndex(),spinDelay->value());
 #ifdef VERBOSE
 	cout<<"Setting delay after trigger to " << exptimeNS << " clocks" << endl;
 #endif
@@ -356,13 +363,6 @@ void qTabMeasurement::setNumProbes(int val){
 }
 
 
-void qTabMeasurement::UpdateProgress(){
-	progressBar->setValue(myPlot->GetProgress());
-	lblProgressIndex->setText(QString::number(myDet->getFileIndex()));
-}
-
-
-
 
 void qTabMeasurement::setTimingMode(int mode){
 #ifdef VERBOSE
@@ -381,43 +381,43 @@ void qTabMeasurement::setTimingMode(int mode){
 
 
 	switch(mode){
-	case None:
+	case None:/** Exposure Time */
 		lblExpTime->setEnabled(true);		spinExpTime->setEnabled(true);			comboExpUnit->setEnabled(true);
 		break;
-	case Auto:
+	case Auto:/** Number of Frames, Exposure Time, Acquisition Period */
 		lblNumFrames->setEnabled(true);		spinNumFrames->setEnabled(true);
 		lblExpTime->setEnabled(true);		spinExpTime->setEnabled(true);			comboExpUnit->setEnabled(true);
 		lblPeriod->setEnabled(true);		spinPeriod->setEnabled(true);			comboPeriodUnit->setEnabled(true);
 		break;
-	case Gated:
-		lblNumFrames->setEnabled(true);		spinNumFrames->setEnabled(true);
-		lblNumGates->setEnabled(true);		spinNumGates->setEnabled(true);
-		break;
-	case Trigger_Exp_Series:
+	case Trigger_Exp_Series:/** Number of Frames, Exposure Time, Acquisition Period, Number of Triggers, Delay */
 		lblNumFrames->setEnabled(true);		spinNumFrames->setEnabled(true);
 		lblExpTime->setEnabled(true);		spinExpTime->setEnabled(true);			comboExpUnit->setEnabled(true);
 		lblPeriod->setEnabled(true);		spinPeriod->setEnabled(true);			comboPeriodUnit->setEnabled(true);
 		lblNumTriggers->setEnabled(true);	spinNumTriggers->setEnabled(true);
 		lblDelay->setEnabled(true);			spinDelay->setEnabled(true);			comboDelayUnit->setEnabled(true);
 		break;
-	case Trigger_Readout:
+	case Trigger_Frame:/** Exposure Time, Number of Triggers */
+		lblExpTime->setEnabled(true);		spinExpTime->setEnabled(true);			comboExpUnit->setEnabled(true);
+		lblNumTriggers->setEnabled(true);	spinNumTriggers->setEnabled(true);
+		break;
+	case Trigger_Readout:/** Number of Frames, Exposure Time, Acquisition Period, Delay */
 		lblNumFrames->setEnabled(true);		spinNumFrames->setEnabled(true);
 		lblExpTime->setEnabled(true);		spinExpTime->setEnabled(true);			comboExpUnit->setEnabled(true);
 		lblPeriod->setEnabled(true);		spinPeriod->setEnabled(true);			comboPeriodUnit->setEnabled(true);
 		lblDelay->setEnabled(true);			spinDelay->setEnabled(true);			comboDelayUnit->setEnabled(true);
 		break;
-	case Gated_Start:
+	case Gated:/** Number of Frames, Number of Gates */
+		lblNumFrames->setEnabled(true);		spinNumFrames->setEnabled(true);
+		lblNumGates->setEnabled(true);		spinNumGates->setEnabled(true);
+		break;
+	case Gated_Start:/** Number of Frames, Exposure Time, Acquisition Period, Number of Triggers, Number of Gates */
 		lblNumFrames->setEnabled(true);		spinNumFrames->setEnabled(true);
 		lblExpTime->setEnabled(true);		spinExpTime->setEnabled(true);			comboExpUnit->setEnabled(true);
 		lblPeriod->setEnabled(true);		spinPeriod->setEnabled(true);			comboPeriodUnit->setEnabled(true);
 		lblNumTriggers->setEnabled(true);	spinNumTriggers->setEnabled(true);
 		lblNumGates->setEnabled(true);		spinNumGates->setEnabled(true);
 		break;
-	case Trigger_Frame:
-		lblExpTime->setEnabled(true);		spinExpTime->setEnabled(true);			comboExpUnit->setEnabled(true);
-		lblNumTriggers->setEnabled(true);	spinNumTriggers->setEnabled(true);
-		break;
-	case Trigger_Window:
+	case Trigger_Window:/** Number of Triggers */
 		lblNumTriggers->setEnabled(true);	spinNumTriggers->setEnabled(true);
 		break;
 	default:
@@ -425,7 +425,7 @@ void qTabMeasurement::setTimingMode(int mode){
 		exit(-1);
 	}
 
-	if(mode!=None){
+	if(mode!=None){/** Number of Probes */
 		if(myDet->getDetectorsType()==slsDetectorDefs::MYTHEN){
 			lblNumProbes->setEnabled(true);		spinNumProbes->setEnabled(true);
 		}
@@ -466,8 +466,8 @@ void qTabMeasurement::setTimingMode(int mode){
 		comboPeriodUnit->setCurrentIndex(qDefs::SECONDS);
 
 		int64_t exptimeNS,acqtimeNS;
-		exptimeNS = qDefs::getNSTime((qDefs::timeUnit)comboExpUnit->currentIndex(),spinExpTime->value());
-		acqtimeNS = qDefs::getNSTime((qDefs::timeUnit)comboPeriodUnit->currentIndex(),spinPeriod->value());
+		exptimeNS = (int64_t)qDefs::getNSTime((qDefs::timeUnit)comboExpUnit->currentIndex(),spinExpTime->value());
+		acqtimeNS = (int64_t)qDefs::getNSTime((qDefs::timeUnit)comboPeriodUnit->currentIndex(),spinPeriod->value());
 		if(exptimeNS>acqtimeNS) {
 			lblNote->show();
 			lblPeriod->setPalette(lblNote->palette());

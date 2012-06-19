@@ -23,6 +23,7 @@ lib:
 
 slsDetectorClient: lib
 	cd  $(CLIENTDIR) && $(MAKE)  FLAGS=$(FLAGS)
+	$(shell test -d bin || mkdir -p bin)
 	mv $(CLIENTDIR)/bin/* bin/
 
 

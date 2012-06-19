@@ -241,7 +241,7 @@ s
 
 
 
-  void registerDataCallback(int( *userCallback)(detectorData*)) {dataReady = userCallback;};
+  void registerDataCallback(int( *userCallback)(detectorData*, void*),  void *pArg) {dataReady = userCallback; pCallbackArg = pArg;};
   
 
 
@@ -363,8 +363,8 @@ s
 /*   virtual int getTotalNumberOfChannels()=0; */
 
   
-  int (*dataReady)(detectorData*); 
-
+  int (*dataReady)(detectorData*,void*); 
+  void *pCallbackArg; 
 
 };
 

@@ -346,7 +346,7 @@ class slsDetectorUsers
      \param userCallback function for plotting/analyzing the data
   */
 
-  virtual void registerDataCallback(int( *userCallback)(detectorData*))=0;
+  virtual void registerDataCallback(int( *userCallback)(detectorData*, void*), void *pArg)=0;
   
   /**
      @short register calbback for reading detector position

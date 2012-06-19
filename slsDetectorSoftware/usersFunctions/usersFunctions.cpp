@@ -323,7 +323,7 @@ int defaultDisconnectChannels() {
 
 
 
-int defaultDataReadyFunc(detectorData* d) {
+int defaultDataReadyFunc(detectorData* d,  void* p) {
 #ifdef VERBOSE
   printf("UUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUU Data received \n");
 #endif

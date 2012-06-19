@@ -37,7 +37,7 @@ extern "C" {
   int defaultDisconnectChannels();
   float defaultGetI0(int t);
   
-  int defaultDataReadyFunc(detectorData* d);
+  int defaultDataReadyFunc(detectorData* d,  void* p);
 
 
 

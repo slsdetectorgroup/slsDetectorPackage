@@ -10,7 +10,8 @@ postProcessing::postProcessing(){
   pthread_mutex_init(&mg, NULL);  
   //cout << "reg callback "<< endl;
   dataReady = 0;
-  registerDataCallback(&defaultDataReadyFunc);
+  pCallbackArg = 0; 
+  registerDataCallback(&defaultDataReadyFunc,  NULL);
   //cout << "done "<< endl;
 }
 
@@ -301,7 +302,7 @@ void postProcessing::doProcessing(float *lfdata, int delflag, string fname) {
 
 	  if (dataReady) {
 
-	    dataReady(thisData);
+	    dataReady(thisData, pCallbackArg);
 	    delete thisData;
 	  }
 
@@ -338,7 +339,7 @@ void postProcessing::doProcessing(float *lfdata, int delflag, string fname) {
 
 
 	if (dataReady) {
-	  dataReady(thisData);
+	  dataReady(thisData, pCallbackArg);
 	  delete thisData;
 	}
 // 	pthread_mutex_lock(&mg);

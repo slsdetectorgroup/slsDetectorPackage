@@ -3707,6 +3707,7 @@ int64_t slsDetector::getTimeLeft(timerIndex index){
   // Flags
 int slsDetector::setDynamicRange(int n){
 
+  // cout << "single "  << endl;
   int fnum=F_SET_DYNAMIC_RANGE;
   int retval=-1;
   char mess[100];

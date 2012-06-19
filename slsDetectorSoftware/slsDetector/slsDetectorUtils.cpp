@@ -522,11 +522,12 @@ int slsDetectorUtils::retrieveDetectorSetup(string const fname1, int level){
    ifstream infile;
    int iargval;
    int interrupt=0;
-  char *args[2];
+  char *args[10];
 
-  char myargs[2][1000];
-  args[0]=myargs[0];
-  args[1]=myargs[1];
+  char myargs[10][1000];
+
+  //args[0]=myargs[0];
+  //args[1]=myargs[1];
 
   string sargname, sargval;
   int iline=0;
@@ -565,6 +566,7 @@ int slsDetectorUtils::retrieveDetectorSetup(string const fname1, int level){
 	  ssstr >> sargname;
 	  //  if (ssstr.good()) {
 	    strcpy(myargs[iargval],sargname.c_str());
+	    args[iargval]=myargs[iargval];
 #ifdef VERBOSE
       std::cout<< args[iargval]  << std::endl;
 #endif
@@ -604,7 +606,7 @@ int slsDetectorUtils::retrieveDetectorSetup(string const fname1, int level){
 
 int slsDetectorUtils::dumpDetectorSetup(string const fname, int level){
 
-  slsDetectorCommand *cmd=new slsDetectorCommand(this);
+  slsDetectorCommand *cmd;
 
   string names[]={
     "fname",\
@@ -659,6 +661,11 @@ int slsDetectorUtils::dumpDetectorSetup(string const fname, int level){
   for (int ia=0; ia<2; ia++) {
     args[ia]=new char[1000];
   }
+
+
+
+
+
   int nargs;
   if (level==2)
     nargs=2;
@@ -677,6 +684,7 @@ int slsDetectorUtils::dumpDetectorSetup(string const fname, int level){
 
   outfile.open(fname1.c_str(),ios_base::out);
   if (outfile.is_open()) {
+    cmd=new slsDetectorCommand(this);
     for (iv=0; iv<nvar-3; iv++) {
       strcpy(args[0],names[iv].c_str());
       outfile << names[iv] << " " << cmd->executeLine(1,args,GET_ACTION) << std::endl;
@@ -701,8 +709,8 @@ int slsDetectorUtils::dumpDetectorSetup(string const fname, int level){
 
       
 
-  strcpy(args[0],names[iv].c_str());
   if (level==2) {
+    strcpy(args[0],names[iv].c_str());
     size_t c=fname.rfind('/');
     if (c<string::npos) {
       fname1=fname.substr(0,c+1)+string("trim_")+fname.substr(c+1);
@@ -713,13 +721,14 @@ int slsDetectorUtils::dumpDetectorSetup(string const fname, int level){
 #ifdef VERBOSE
     std::cout<< "writing to file " << fname1 << std::endl;
 #endif
-  }
   outfile << names[iv] << " " << cmd->executeLine(nargs,args,GET_ACTION) << std::endl;
   iv++;
   
 
+  }
 
  
+  delete cmd;
 
     outfile.close();
   }
@@ -732,7 +741,6 @@ int slsDetectorUtils::dumpDetectorSetup(string const fname, int level){
   std::cout<< "wrote " <<iv << " lines to  "<< fname1 << std::endl;
 #endif
   
-  delete cmd;
   return 0;
 
 } 

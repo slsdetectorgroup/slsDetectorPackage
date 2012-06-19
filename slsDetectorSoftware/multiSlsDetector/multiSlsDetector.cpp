@@ -1506,6 +1506,7 @@ int multiSlsDetector::setSpeed(speedVariable index, int value){
   // Flags
 int multiSlsDetector::setDynamicRange(int n, int pos){
 
+  //  cout << "multi "  << endl;
   int imi, ima, i;
   int ret, ret1=-100;
 
@@ -1518,6 +1519,8 @@ int multiSlsDetector::setDynamicRange(int n, int pos){
   }
  
   for (i=imi; i<ima; i++) {
+    //  cout << "multi ************ detector " << i << endl;
+
     if (detectors[i]) {
       thisMultiDetector->dataBytes-=detectors[i]->getDataBytes();
       ret=detectors[i]->setDynamicRange(n);
@@ -3087,12 +3090,6 @@ int multiSlsDetector::readConfigurationFile(string const fname){
       }
     }
     thisMultiDetector->numberOfDetectors=0;
-
-
-
-
-
-
 
   multiSlsDetectorClient *cmd;
   char ext[100];

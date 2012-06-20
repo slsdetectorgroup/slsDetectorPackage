@@ -26,14 +26,13 @@ using namespace std;
 
 
 
+//-------------------------------------------------------------------------------------------------------------------------------------------------
 
-//int numberOfMeasurements;
+/** Static Members */
+int qDrawPlot::numberOfMeasurements;
 int qDrawPlot::currentFrame;
 int qDrawPlot::number_of_exposures;
-//double framePeriod;
-//double acquisitionTime;
 pthread_mutex_t qDrawPlot::last_image_complete_mutex;
-//std::string  imageTitle;
 
 unsigned int qDrawPlot::plot_in_scope;
 unsigned int qDrawPlot::nPixelsX;
@@ -57,8 +56,9 @@ int    		 qDrawPlot::currentPersistency;
 int 		 qDrawPlot::progress;
 bool		 qDrawPlot::plotEnable;
 
+//-------------------------------------------------------------------------------------------------------------------------------------------------
 
-qDrawPlot::qDrawPlot(QWidget *parent,slsDetectorUtils*& detector):QWidget(parent),myDet(detector),numberOfMeasurements(1){
+qDrawPlot::qDrawPlot(QWidget *parent,slsDetectorUtils*& detector):QWidget(parent),myDet(detector){
 	if(myDet)	{
 		SetupWidgetWindow();
 		Initialization();
@@ -66,6 +66,7 @@ qDrawPlot::qDrawPlot(QWidget *parent,slsDetectorUtils*& detector):QWidget(parent
 	}
 }
 
+//-------------------------------------------------------------------------------------------------------------------------------------------------
 
 qDrawPlot::~qDrawPlot(){
 	/** Clear plot*/
@@ -78,11 +79,13 @@ qDrawPlot::~qDrawPlot(){
 	for(int i=0;i<MAXCloneWindows;i++) delete winClone[i];
 }
 
+//-------------------------------------------------------------------------------------------------------------------------------------------------
 
 void qDrawPlot::SetupWidgetWindow(){
 #ifdef VERBOSE
 	cout<<"Setting up plot variables"<<endl;
 #endif
+	numberOfMeasurements=1;
 	stop_signal = 0;
 	pthread_mutex_init(&last_image_complete_mutex,NULL);
 	gui_acquisition_thread_running = 0;
@@ -160,8 +163,7 @@ void qDrawPlot::SetupWidgetWindow(){
 		plotLayout->addWidget(plot2D,1,1,1,1);
 }
 
-
-
+//-------------------------------------------------------------------------------------------------------------------------------------------------
 
 void qDrawPlot::Initialization(){
 	connect(this, 		SIGNAL(InterpolateSignal(bool)),plot2D, 	SIGNAL(InterpolateSignal(bool)));
@@ -173,8 +175,7 @@ void qDrawPlot::Initialization(){
 
 }
 
-
-
+//-------------------------------------------------------------------------------------------------------------------------------------------------
 
 void qDrawPlot::StartStopDaqToggle(bool stop_if_running){
 	static bool running = 1;
@@ -187,8 +188,7 @@ void qDrawPlot::StartStopDaqToggle(bool stop_if_running){
 	}
 }
 
-
-
+//-------------------------------------------------------------------------------------------------------------------------------------------------
 
 void qDrawPlot::StartDaq(bool start){
 	if(start){
@@ -216,9 +216,7 @@ void qDrawPlot::StartDaq(bool start){
 	}
 }
 
-
-
-
+//-------------------------------------------------------------------------------------------------------------------------------------------------
 
 int qDrawPlot::ResetDaqForGui(){
 	if(!StopDaqForGui()) return 0;
@@ -226,11 +224,7 @@ int qDrawPlot::ResetDaqForGui(){
 	return 1;
 }
 
-
-
-
-
-
+//-------------------------------------------------------------------------------------------------------------------------------------------------
 
 bool qDrawPlot::StartOrStopThread(bool start){
 	static pthread_t        gui_acquisition_thread;
@@ -274,15 +268,14 @@ bool qDrawPlot::StartOrStopThread(bool start){
 	return gui_acquisition_thread_running;
 }
 
-
+//-------------------------------------------------------------------------------------------------------------------------------------------------
 
 void* qDrawPlot::DataStartAcquireThread(void *this_pointer){
 	((qDrawPlot*)this_pointer)->myDet->acquire(1);
 	return this_pointer;
 }
 
-
-
+//-------------------------------------------------------------------------------------------------------------------------------------------------
 
 int qDrawPlot::GetDataCallBack(detectorData *data){
 #ifdef VERYVERBOSE
@@ -350,14 +343,13 @@ int qDrawPlot::GetDataCallBack(detectorData *data){
 	return 0;
 }
 
-
+//-------------------------------------------------------------------------------------------------------------------------------------------------
 
 void qDrawPlot::setNumMeasurements(int num){
 	numberOfMeasurements = num;
 }
 
-
-
+//-------------------------------------------------------------------------------------------------------------------------------------------------
 
 void qDrawPlot::SelectPlot(int i){ //1 for 1D otherwise 2D
 	if(i==1){
@@ -378,16 +370,14 @@ void qDrawPlot::SelectPlot(int i){ //1 for 1D otherwise 2D
 	}
 }
 
-
-
+//-------------------------------------------------------------------------------------------------------------------------------------------------
 
 void qDrawPlot::Clear1DPlot(){
 	for(QVector<SlsQtH1D*>::iterator h = plot1D_hists.begin();
 			h!=plot1D_hists.end();h++) (*h)->Detach(plot1D); //clear plot
 }
 
-
-
+//-------------------------------------------------------------------------------------------------------------------------------------------------
 
 void qDrawPlot::UpdatePlot(){
 	static int last_plot_number = 0;
@@ -448,16 +438,13 @@ void qDrawPlot::UpdatePlot(){
 	}
 }
 
-
+//-------------------------------------------------------------------------------------------------------------------------------------------------
 
 void qDrawPlot::StopUpdatePlot(){
 	plot_update_timer->stop();
 }
 
-
-
-/**----------------------------CLONES-------------------------*/
-
+//-------------------------------------------------------------------------------------------------------------------------------------------------
 
 void qDrawPlot::ClonePlot(){
 	int i=0;
@@ -504,8 +491,9 @@ void qDrawPlot::ClonePlot(){
 
 	/** to remember which all clone widgets were closed*/
 	connect(winClone[i], SIGNAL(CloneClosedSignal(int)),this, SLOT(CloneCloseEvent(int)));
-
 }
+
+//-------------------------------------------------------------------------------------------------------------------------------------------------
 
 void qDrawPlot::CloseClones(){
 	for(int i=0;i<MAXCloneWindows;i++)
@@ -514,6 +502,7 @@ void qDrawPlot::CloseClones(){
 
 }
 
+//-------------------------------------------------------------------------------------------------------------------------------------------------
 
 void qDrawPlot::CloneCloseEvent(int id){
 	winClone[id]=0;
@@ -522,12 +511,8 @@ void qDrawPlot::CloneCloseEvent(int id){
 #endif
 }
 
+//-------------------------------------------------------------------------------------------------------------------------------------------------
 
-
-
-
-
-/**----------------------------SAVE-------------------------*/
 void qDrawPlot::SavePlot(QString FName){
 	QImage img(size().width(),size().height(),QImage::Format_RGB32);
 	QPainter painter(&img);
@@ -535,7 +520,7 @@ void qDrawPlot::SavePlot(QString FName){
 	img.save(FName);
 }
 
-
+//-------------------------------------------------------------------------------------------------------------------------------------------------
 
 void qDrawPlot::SetPersistency(int val){
 	for(int i=0;i<=val;i++){
@@ -545,8 +530,7 @@ void qDrawPlot::SetPersistency(int val){
 	persistency = val;
 }
 
-
-
+//-------------------------------------------------------------------------------------------------------------------------------------------------
 
 void qDrawPlot::EnablePlot(bool enable){
 #ifdef VERBOSE
@@ -557,8 +541,7 @@ void qDrawPlot::EnablePlot(bool enable){
 
 }
 
-
-
+//-------------------------------------------------------------------------------------------------------------------------------------------------
 
 void qDrawPlot::DisableZoom(bool disable){
 	if(plot_in_scope==1)
@@ -566,3 +549,5 @@ void qDrawPlot::DisableZoom(bool disable){
 	else
 		plot2D->GetPlot()->DisableZoom(disable);
 }
+
+//-------------------------------------------------------------------------------------------------------------------------------------------------

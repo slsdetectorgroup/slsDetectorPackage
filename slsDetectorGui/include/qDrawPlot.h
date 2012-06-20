@@ -108,7 +108,7 @@ private:
 
 
 	/** Number of Measurements */
-	int numberOfMeasurements;
+	static int numberOfMeasurements;
 	/** currentFrame */
 	static int currentFrame;
 	/**	 Number of Exposures */

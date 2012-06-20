@@ -246,12 +246,11 @@ enum externalCommunicationMode{
   GET_EXTERNAL_COMMUNICATION_MODE=-1,/**<return flag for communication mode */
   AUTO_TIMING, /**< internal timing */
   TRIGGER_EXPOSURE, /**< trigger mode i.e. exposure is triggered */
+  TRIGGER_FRAME, /**< each trigger triggers one frame at a time */
   TRIGGER_READOUT, /**< stop trigger mode i.e. readout is triggered by external signal */
-  TRIGGER_COINCIDENCE_WITH_INTERNAL_ENABLE, /**< still to be implemented */
-  GATE_FIX_NUMBER, /**< gated and reads out after a fixxed number of gates */
-  GATE_FIX_DURATION, /**< still to be implemented */
+  GATE_FIX_NUMBER, /**< gated and reads out after a fixed number of gates */
   GATE_WITH_START_TRIGGER, /**< gated with start trigger */
-  GATE_COINCIDENCE_WITH_INTERNAL_ENABLE /**< still to be implemented */
+  TRIGGER_WINDOW /**< exposure time coincides with the external signal */
 };
 /** 
     detector IDs/versions

@@ -27,11 +27,12 @@ class slsDetectorUtils;
 #include <QGridLayout>
 #include <QResizeEvent>
 
+
 /** To Over-ride the QTabWidget class to get the tabBar */
 class MyTabWidget:public QTabWidget{
 public:
     MyTabWidget(QWidget* parent = 0) {setParent(parent);}
-    //Overridden method from QTabWidget
+    /** Overridden method from QTabWidget */
     QTabBar* tabBar(){return QTabWidget::tabBar();}
 };
 
@@ -53,10 +54,8 @@ public:
 	 */
 	qDetectorMain(int argc, char **argv, QApplication *app, QWidget *parent = 0);
 
-	/**Destructor
-	 */
+	/**Destructor */
 	~qDetectorMain();
-
 
 private:
 	/** The Qt Application */
@@ -73,12 +72,12 @@ private:
 	int heightPlotWindow;
 	/** default height of central widgetwhen plot Window when docked */
 	int heightCentralWidget;
+	/** The default zooming tool tip */
+	QString zoomToolTip;
+	/** The default tab heading color */
+	QColor defaultTabColor;
 	/** enumeration of the tabs */
 	enum {Measurement, Settings, DataOutput, Plot, Actions, Advanced, Debugging, Developer, NumberOfTabs };
-
-	QColor defaultTabColor;
-	QString zoomToolTip;
-
 	/* Scroll Area for the tabs**/
 	QScrollArea *scroll[NumberOfTabs];
 	/**Measurement tab */
@@ -99,8 +98,6 @@ private:
 	qTabDeveloper *tab_developer;
 	/**if the developer tab should be enabled,known from command line */
 	int isDeveloper;
-
-
 	/**Sets up the layout of the widget
 	 */
 	void SetUpWidgetWindow();

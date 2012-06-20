@@ -1,5 +1,6 @@
 /** Qt Project Class Headers */
 #include "qDetectorMain.h"
+#include "qDefs.h"
 #include "qDrawPlot.h"
 #include "qTabMeasurement.h"
 #include "qTabDataOutput.h"
@@ -22,6 +23,8 @@ using namespace std;
 
 #define Detector_Index 0
 
+//-------------------------------------------------------------------------------------------------------------------------------------------------
+
 int main (int argc, char **argv) {
 
 	QApplication *theApp = new QApplication(argc, argv);
@@ -31,9 +34,7 @@ int main (int argc, char **argv) {
 	return theApp->exec();
 }
 
-
-
-
+//-------------------------------------------------------------------------------------------------------------------------------------------------
 
 qDetectorMain::qDetectorMain(int argc, char **argv, QApplication *app, QWidget *parent) :
 		QMainWindow(parent), theApp(app),myPlot(NULL),tabs(NULL),isDeveloper(0){
@@ -52,14 +53,11 @@ qDetectorMain::qDetectorMain(int argc, char **argv, QApplication *app, QWidget *
 			cout<<"-developer \t : \t Enables the developer tab"<<endl;
 			//cout<<"-id i \t : \t Sets the detector to id i (the default is 0). ";
 					//cout<<"Required only when more than one detector is connected in parallel."<<endl;
-
 		}
 	}
-
 }
 
-
-
+//-------------------------------------------------------------------------------------------------------------------------------------------------
 
 qDetectorMain::~qDetectorMain(){
 	delete myDet;
@@ -67,9 +65,7 @@ qDetectorMain::~qDetectorMain(){
 	if (centralwidget) delete centralwidget;
 }
 
-
-
-
+//-------------------------------------------------------------------------------------------------------------------------------------------------
 
 void qDetectorMain::SetUpWidgetWindow(){
 
@@ -134,9 +130,7 @@ void qDetectorMain::SetUpWidgetWindow(){
 
 }
 
-
-
-
+//-------------------------------------------------------------------------------------------------------------------------------------------------
 
 void qDetectorMain::SetUpDetector(){
 
@@ -151,6 +145,18 @@ void qDetectorMain::SetUpDetector(){
 		myDet = 0;
 	}
 	else{
+		/** Check if type valid. If not, exit*/
+		switch(myDet->getDetectorsType()){
+				case slsDetectorDefs::MYTHEN:	break;
+				case slsDetectorDefs::EIGER:	break;
+				case slsDetectorDefs::GOTTHARD:	break;
+				default:
+					string detName = myDet->slsDetectorBase::getDetectorType(myDet->getDetectorsType());
+					string hostname = myDet->getHostname(Detector_Index);
+					string errorMess = string("ERROR:  ")+hostname+string(" has unknown detector type \"")+detName+string("\". Exiting GUI.");
+					qDefs::ErrorMessage(errorMess,"Main: ERROR");
+					exit(-1);
+				}
 		setWindowTitle("SLS Detector GUI : "+QString(slsDetectorBase::getDetectorType(myDet->getDetectorsType()).c_str())+" - "+QString(myDet->getHostname(Detector_Index).c_str()));
 #ifdef VERBOSE
 		cout<<endl<<"Type : "<<slsDetectorBase::getDetectorType(myDet->getDetectorsType())<<"\t\t\tDetector : "<<myDet->getHostname(Detector_Index)<<endl;
@@ -159,7 +165,7 @@ void qDetectorMain::SetUpDetector(){
 	}
 }
 
-
+//-------------------------------------------------------------------------------------------------------------------------------------------------
 
 void qDetectorMain::Initialization(){
 /** Dockable Plot*/
@@ -205,6 +211,7 @@ void qDetectorMain::Initialization(){
 		zoomToolTip = dockWidgetPlot->toolTip();
 }
 
+//-------------------------------------------------------------------------------------------------------------------------------------------------
 
 void qDetectorMain::SetDeveloperMode(bool b){
 #ifdef VERBOSE
@@ -213,6 +220,7 @@ void qDetectorMain::SetDeveloperMode(bool b){
 	tabs->setTabEnabled(Developer,b);
 }
 
+//-------------------------------------------------------------------------------------------------------------------------------------------------
 
 void qDetectorMain::SetDebugMode(bool b){
 #ifdef VERBOSE
@@ -221,21 +229,24 @@ void qDetectorMain::SetDebugMode(bool b){
 	tabs->setTabEnabled(Debugging,b);
 }
 
+//-------------------------------------------------------------------------------------------------------------------------------------------------
+
 void qDetectorMain::SetBeamlineMode(bool b){
 #ifdef VERBOSE
 	cout<<"Setting Beamline Mode to "<<b<<endl;
 #endif
 }
 
+//-------------------------------------------------------------------------------------------------------------------------------------------------
+
 void qDetectorMain::SetExpertMode(bool b){
 #ifdef VERBOSE
 	cout<<"Setting Expert Mode to "<<b<<endl;
 #endif
 	tabs->setTabEnabled(Advanced,b);
-
 }
 
-
+//-------------------------------------------------------------------------------------------------------------------------------------------------
 
 void qDetectorMain::refresh(int index){
 	if(!tabs->isTabEnabled(index))
@@ -248,6 +259,7 @@ void qDetectorMain::refresh(int index){
 	tabs->tabBar()->setTabTextColor(index,QColor(0,0,200,255));
 }
 
+//-------------------------------------------------------------------------------------------------------------------------------------------------
 
 void qDetectorMain::SetDockableMode(bool b){
 #ifdef VERBOSE
@@ -261,6 +273,7 @@ void qDetectorMain::SetDockableMode(bool b){
 	}
 }
 
+//-------------------------------------------------------------------------------------------------------------------------------------------------
 
 void qDetectorMain::OpenSetup(){
 #ifdef VERBOSE
@@ -268,6 +281,7 @@ void qDetectorMain::OpenSetup(){
 #endif
 }
 
+//-------------------------------------------------------------------------------------------------------------------------------------------------
 
 void qDetectorMain::SaveSetup(){
 #ifdef VERBOSE
@@ -275,12 +289,15 @@ void qDetectorMain::SaveSetup(){
 #endif
 }
 
+//-------------------------------------------------------------------------------------------------------------------------------------------------
 
 void qDetectorMain::MeasurementWizard(){
 #ifdef VERBOSE
 	cout<<"Measurement Wizard"<<endl;
 #endif
 }
+
+//-------------------------------------------------------------------------------------------------------------------------------------------------
 
 
 void qDetectorMain::OpenConfiguration(){
@@ -289,6 +306,7 @@ void qDetectorMain::OpenConfiguration(){
 #endif
 }
 
+//-------------------------------------------------------------------------------------------------------------------------------------------------
 
 void qDetectorMain::SaveConfiguration(){
 #ifdef VERBOSE
@@ -296,6 +314,7 @@ void qDetectorMain::SaveConfiguration(){
 #endif
 }
 
+//-------------------------------------------------------------------------------------------------------------------------------------------------
 
 void qDetectorMain::EnergyCalibration(){
 #ifdef VERBOSE
@@ -303,6 +322,7 @@ void qDetectorMain::EnergyCalibration(){
 #endif
 }
 
+//-------------------------------------------------------------------------------------------------------------------------------------------------
 
 void qDetectorMain::AngularCalibration(){
 #ifdef VERBOSE
@@ -310,6 +330,7 @@ void qDetectorMain::AngularCalibration(){
 #endif
 }
 
+//-------------------------------------------------------------------------------------------------------------------------------------------------
 
 void qDetectorMain::Version(){
 #ifdef VERBOSE
@@ -317,6 +338,7 @@ void qDetectorMain::Version(){
 #endif
 }
 
+//-------------------------------------------------------------------------------------------------------------------------------------------------
 
 void qDetectorMain::About(){
 #ifdef VERBOSE
@@ -324,6 +346,7 @@ void qDetectorMain::About(){
 #endif
 }
 
+//-------------------------------------------------------------------------------------------------------------------------------------------------
 
 void qDetectorMain::ResizeMainWindow(bool b){
 #ifdef VERBOSE
@@ -356,14 +379,9 @@ void qDetectorMain::resizeEvent(QResizeEvent* event){
 		}
 	}
 	event->accept();
-#ifdef VERBOSE
-	cout<<"height:"<<height()<<endl;
-	cout<<"dockWidgetPlot height:"<<dockWidgetPlot->height()<<endl;
-#endif
 }
 
-
-
+//-------------------------------------------------------------------------------------------------------------------------------------------------
 
 void qDetectorMain::EnableTabs(){
 #ifdef VERBOSE
@@ -395,6 +413,7 @@ void qDetectorMain::EnableTabs(){
 	}
 }
 
+//-------------------------------------------------------------------------------------------------------------------------------------------------
 
 
 void qDetectorMain::SetZoomToolTip(bool disable){
@@ -403,3 +422,5 @@ void qDetectorMain::SetZoomToolTip(bool disable){
 	else
 		dockWidgetPlot->setToolTip(zoomToolTip);
 }
+
+//-------------------------------------------------------------------------------------------------------------------------------------------------

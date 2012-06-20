@@ -9,14 +9,18 @@
 #define QDEFS_H
 
 #include <iostream>
+#include <QMessageBox>
 using namespace std;
 
-class qDefs
-{
+class qDefs:public QWidget{
 public:
+//-------------------------------------------------------------------------------------------------------------------------------------------------
+
 	/** Empty Constructor
 	 */
 	qDefs(){};
+
+//-------------------------------------------------------------------------------------------------------------------------------------------------
 
 	/** unit of time
 	 */
@@ -29,6 +33,7 @@ public:
 		NANOSECONDS		/** ns 	*/
 	};
 
+//-------------------------------------------------------------------------------------------------------------------------------------------------
 
 	/** returns the value in ns to send to server.
 	 * @param unit unit of time
@@ -49,7 +54,20 @@ public:
 		return valueNS;
 	};
 
+//-------------------------------------------------------------------------------------------------------------------------------------------------
 
+	/**displays an error message
+	 * @param errorMessage the message to be displayed
+	 * @param source is the tab or the source of the error
+	 * */
+	static void  ErrorMessage(string errorMessage,char source[])
+	{
+		static QMessageBox* msgBox;
+		msgBox= new QMessageBox(QMessageBox::Warning,source,tr(errorMessage.c_str()),QMessageBox::Ok, msgBox);
+		msgBox->exec();
+	}
+
+//-------------------------------------------------------------------------------------------------------------------------------------------------
 
 };
 

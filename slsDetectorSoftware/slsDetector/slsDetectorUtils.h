@@ -520,13 +520,13 @@ class slsDetectorUtils :  public slsDetectorActions, public postProcessing {
 
 
 
-  void registerGetPositionCallback( float (*func)(void)){get_position=func;};
-  void registerConnectChannelsCallback( int (*func)(void)){connect_channels=func;};
-  void registerDisconnectChannelsCallback( int (*func)(void)){disconnect_channels=func;};
+  void registerGetPositionCallback( float (*func)(void*),void *arg){get_position=func; POarg=arg;};
+  void registerConnectChannelsCallback( int (*func)(void*),void *arg){connect_channels=func; CCarg=arg;};
+  void registerDisconnectChannelsCallback(int (*func)(void*),void*arg){disconnect_channels=func;DCarg=arg;};
   
-  void registerGoToPositionCallback( int (*func)(float)){go_to_position=func;};
-  void registerGoToPositionNoWaitCallback( int (*func)(float)){go_to_position_no_wait=func;};
-  void registerGetI0Callback( float (*func)(int)){get_i0=func;};
+  void registerGoToPositionCallback( int (*func)(float, void*),void *arg){go_to_position=func;GTarg=arg;};
+  void registerGoToPositionNoWaitCallback(int (*func)(float, void*),void*arg){go_to_position_no_wait=func;GTNarg=arg;};
+  void registerGetI0Callback( float (*func)(int, void*),void *arg){get_i0=func;IOarg=arg;};
   
   /** 
      Saves the detector setup to file
@@ -565,12 +565,13 @@ class slsDetectorUtils :  public slsDetectorActions, public postProcessing {
 	      		  
   int progressIndex;
 	  
-  float (*get_position)(void);
-  int (*go_to_position)(float);
-  int (*go_to_position_no_wait)(float);
-  int (*connect_channels)(void);
-  int (*disconnect_channels)(void);
-  float (*get_i0)(int);
+  float (*get_position)(void*);
+  int (*go_to_position)(float, void*);
+  int (*go_to_position_no_wait)(float, void*);
+  int (*connect_channels)(void*);
+  int (*disconnect_channels)(void*);
+  float (*get_i0)(int, void*);
+  void *POarg,*CCarg,*DCarg,*GTarg,*GTNarg,*IOarg;
   
 
   

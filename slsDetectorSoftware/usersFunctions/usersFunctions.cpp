@@ -134,7 +134,7 @@ float defaultAngleFunction(float ichan, float encoder, float totalOffset, float 
 
 /* reads the encoder and returns the position */
 
-float defaultGetPosition() {
+float defaultGetPosition(void *d) {
 #ifdef VERBOSE
   printf("Getting motor position \n");
 #endif
@@ -158,13 +158,14 @@ float defaultGetPosition() {
 
 
 
-  return pos;
+  return pos
+;
 }
 
 /* moves the encoder to position p */
 
 
-int defaultGoToPosition(float p) {
+int defaultGoToPosition(float p,void *d) {
 #ifdef VERBOSE
   printf("Setting  motor position \n");
 #endif
@@ -191,7 +192,7 @@ int defaultGoToPosition(float p) {
 
 /* moves the encoder to position p without waiting */
 
-int defaultGoToPositionNoWait(float p) {
+int defaultGoToPositionNoWait(float p,void *d) {
 #ifdef VERBOSE
   printf("Setting  motor position no wait \n");
 #endif
@@ -222,7 +223,7 @@ int defaultGoToPositionNoWait(float p) {
 
 /* reads I0 and returns the intensity */
 
-float defaultGetI0(int t) {
+float defaultGetI0(int t,void *d) {
 #ifdef VERBOSE
   printf("Getting I0 readout \n");
 #endif
@@ -258,7 +259,7 @@ float defaultGetI0(int t) {
 }
   
 
-int defaultConnectChannels() {
+int defaultConnectChannels(void*d) {
 #ifdef EPICS
   //double value = 256;
     /* channel name */
@@ -308,7 +309,7 @@ int defaultConnectChannels() {
     return 0;
 }
 
-int defaultDisconnectChannels() {  
+int defaultDisconnectChannels(void *d) {  
 #ifdef EPICS
     /* close channel connect */
     disconnect_channel(ch_i0);

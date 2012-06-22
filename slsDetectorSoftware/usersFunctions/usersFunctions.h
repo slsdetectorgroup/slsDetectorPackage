@@ -30,12 +30,12 @@ extern "C" {
 
 
   float defaultAngleFunction(float ichan, float encoder, float totalOffset, float conv_r, float center, float offset, float tilt, int direction);
-  float defaultGetPosition();
-  int defaultGoToPosition(float p);
-  int defaultGoToPositionNoWait(float p);
-  int defaultConnectChannels();
-  int defaultDisconnectChannels();
-  float defaultGetI0(int t);
+  float defaultGetPosition(void *d);
+  int defaultGoToPosition(float p,void *d);
+  int defaultGoToPositionNoWait(float p,void *d);
+  int defaultConnectChannels(void *d);
+  int defaultDisconnectChannels(void *d);
+  float defaultGetI0(int t,void *d);
   
   int defaultDataReadyFunc(detectorData* d,  void* p);
 

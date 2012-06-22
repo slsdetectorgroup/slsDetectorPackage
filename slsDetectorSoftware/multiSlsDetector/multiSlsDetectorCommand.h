@@ -30,13 +30,15 @@ class multiSlsDetectorCommand : public slsDetectorCommand {
     
     string executeLine(int narg, char *args[], int action, int id=-1) { \
       string s;								\
+      printf("mess %d of %d\n",id, myDet->getNumberOfDetectors());		\
       if (id>=0) {
 	slsDetector *d=myDet->getSlsDetector(id);			\
 	if (d) {							\
 	  slsDetectorCommand *cmd=new slsDetectorCommand(d);		\
 	  s=cmd->executeLine(narg, args, action);			\
 	  delete cmd;	
-	} else s=string("detector does no exist");		\
+	} else
+	  s=string("detector does no exist");			\
       } else							\
 	s=slsDetectorCommand::executeLine(narg,args,action);	\
       return s;		    

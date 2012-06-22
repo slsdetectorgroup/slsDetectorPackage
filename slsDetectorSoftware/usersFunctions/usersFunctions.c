@@ -13,6 +13,7 @@ float i0=0;
 static double timeout = 3.0; 
 
 chid ch_pos,ch_i0, ch_getpos;
+void *ch_arg,*ch_darg,*ch_parg,*ch_poarg,*ch_ioarg;
 
 
 
@@ -138,7 +139,7 @@ float angle(int ichan, float encoder, float totalOffset, float conv_r, float cen
 
 /* reads the encoder and returns the position */
 
-float get_position() {
+float get_position(void *ch_poarg) {
 #ifdef VERBOSE
   printf("Getting motor position \n");
 #endif
@@ -168,7 +169,7 @@ float get_position() {
 /* moves the encoder to position p */
 
 
-int go_to_position(float p) {
+int go_to_position(float p,void *ch_parg) {
 #ifdef VERBOSE
   printf("Setting  motor position \n");
 #endif
@@ -230,7 +231,7 @@ int go_to_position_no_wait(float p) {
 
 /* reads I0 and returns the intensity */
 
-float get_i0() {
+float get_i0(void *ch_ioarg) {
 #ifdef VERBOSE
   printf("Getting I0 readout \n");
 #endif
@@ -257,7 +258,7 @@ float get_i0() {
 }
   
 
-int connect_channels() {
+int connect_channels(void *ch_arg) {
 #ifdef EPICS
   //double value = 256;
     /* channel name */
@@ -278,7 +279,7 @@ int connect_channels() {
     //"ca_get X04SA-ES2-SC:CH6"
 
     /* open the channel by name and return ch_id */
-    status = connect_channel("X04SA-ES2-SC:CH6",  &ch_i0);
+    status = connect_channel("NULLX04SA-ES2-SC:CH6",  &ch_i0);
     if (status  ==  ECA_NORMAL)
         printf("I0 channel connected \n");
     else {
@@ -307,7 +308,7 @@ int connect_channels() {
     return 0;
 }
 
-int disconnect_channels() {  
+int disconnect_channels(void *ch_darg) {  
 #ifdef EPICS
     /* close channel connect */
     disconnect_channel(ch_i0);

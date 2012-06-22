@@ -1,4 +1,3 @@
-
 #ifndef SLS_DETECTOR_USERS_H
 #define SLS_DETECTOR_USERS_H
 
@@ -354,32 +353,32 @@ class slsDetectorUsers
      \param func function for reading the detector position
   */
   
-  virtual void registerGetPositionCallback( float (*func)(void))=0;
+  virtual void registerGetPositionCallback( float (*func)(void*),void *arg)=0;
   /**
      @short register callback for connecting to the epics channels
      \param func function for connecting to the epics channels
   */
-  virtual void registerConnectChannelsCallback( int (*func)(void))=0;
+  virtual void registerConnectChannelsCallback( int (*func)(void*),void *arg)=0;
   /**
      @short register callback to disconnect the epics channels
      \param func function to disconnect the epics channels
   */
-  virtual void registerDisconnectChannelsCallback( int (*func)(void))=0;  
+  virtual void registerDisconnectChannelsCallback( int (*func)(void*),void *arg)=0;  
   /**
      @short register callback for moving the detector
      \param func function for moving the detector
   */
-  virtual void registerGoToPositionCallback( int (*func)(float))=0;
+  virtual void registerGoToPositionCallback( int (*func)(float,void*),void *arg)=0;
   /**
      @short register callback for moving the detector without waiting
      \param func function for moving the detector
   */
-  virtual void registerGoToPositionNoWaitCallback( int (*func)(float))=0;
+  virtual void registerGoToPositionNoWaitCallback( int (*func)(float,void*),void *arg)=0;
   /**
      @short register calbback reading to I0
      \param func function for reading the I0 (called with parameter 0 before the acquisition, 1 after and the return value used as I0)
   */
-  virtual void registerGetI0Callback( float (*func)(int))=0;
+  virtual void registerGetI0Callback( float (*func)(int,void*),void *arg)=0;
   
   /************************************************************************
 

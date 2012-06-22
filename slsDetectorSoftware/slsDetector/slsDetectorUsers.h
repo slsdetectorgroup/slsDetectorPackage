@@ -15,6 +15,7 @@
 
 #include "detectorData.h"
 
+#include <stdint.h>
 #include <string>
 
 

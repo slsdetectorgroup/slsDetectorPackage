@@ -7,6 +7,7 @@
 #include <iostream>
 #include <math.h>
 #include <errno.h>
+#include <cstdio>
 
 using namespace std;
 

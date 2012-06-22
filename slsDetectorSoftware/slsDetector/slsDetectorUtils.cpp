@@ -2,6 +2,7 @@
 #include "usersFunctions.h"
 #include "slsDetectorCommand.h"
 
+#include  <cstdlib>
 #include  <sys/ipc.h>
 #include  <sys/shm.h>
 

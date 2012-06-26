@@ -22,48 +22,13 @@
 using namespace std;
 
 
-#define Detector_Index 0
-
-
-
-//-------------------------------------------------------------------------------------------------------------------------------------------------
-
-/** Static Members */
-int qDrawPlot::numberOfMeasurements;
-int qDrawPlot::currentFrame;
-int qDrawPlot::number_of_exposures;
-pthread_mutex_t qDrawPlot::last_image_complete_mutex;
-
-unsigned int qDrawPlot::plot_in_scope;
-unsigned int qDrawPlot::nPixelsX;
-unsigned int qDrawPlot::nPixelsY;
-unsigned int qDrawPlot::lastImageNumber;
-
-string  	 qDrawPlot::histTitle[MAX_1DPLOTS];
-unsigned int qDrawPlot::nHists;
-int          qDrawPlot::histNBins;
-double*      qDrawPlot::histXAxis;
-double* 	 qDrawPlot::yvalues[MAX_1DPLOTS];
-double*  	 qDrawPlot::histYAxis[MAX_1DPLOTS];
-
-string  	 qDrawPlot::imageTitle;
-double*      qDrawPlot::lastImageArray;
-double* 	 qDrawPlot::image_data;
-
-bool     	 qDrawPlot::gui_acquisition_thread_running;
-int    		 qDrawPlot::persistency;
-int    		 qDrawPlot::currentPersistency;
-int 		 qDrawPlot::progress;
-bool		 qDrawPlot::plotEnable;
 
 //-------------------------------------------------------------------------------------------------------------------------------------------------
 
 qDrawPlot::qDrawPlot(QWidget *parent,slsDetectorUtils*& detector):QWidget(parent),myDet(detector){
-	if(myDet)	{
-		SetupWidgetWindow();
-		Initialization();
-		StartStopDaqToggle(); //as default
-	}
+	SetupWidgetWindow();
+	Initialization();
+	StartStopDaqToggle(); //as default
 }
 
 //-------------------------------------------------------------------------------------------------------------------------------------------------
@@ -85,15 +50,16 @@ void qDrawPlot::SetupWidgetWindow(){
 #ifdef VERBOSE
 	cout<<"Setting up plot variables"<<endl;
 #endif
-	numberOfMeasurements=1;
+	number_of_measurements=1;
+	currentMeasurement = 0;
 	stop_signal = 0;
 	pthread_mutex_init(&last_image_complete_mutex,NULL);
-	gui_acquisition_thread_running = 0;
+	//gui_acquisition_thread_running = 0;
 	/** Default Plotting*/
 	plot_in_scope   = 0;
 	/**2d*/
 	lastImageNumber = 0;
-
+	last_plot_number = 0;
 
 	nPixelsX = 1280; nPixelsY = 100;
 
@@ -183,7 +149,21 @@ void qDrawPlot::StartStopDaqToggle(bool stop_if_running){
 		StartDaq(0);
 		running=!running;
 	}else if(!stop_if_running){ //then start
-		StartDaq(1);
+
+		/**Do the following only once before each n measurements */
+		/** Reset Current Measurement */
+		currentMeasurement = 0;
+		/** Number of Exposures */
+		number_of_exposures= (int)myDet->setTimer(slsDetectorDefs::FRAME_NUMBER,-1);
+		cout<<"\tNumber of Exposures:"<<number_of_exposures<<endl;
+		/** ExposureTime */
+		exposureTime= ((double)(myDet->setTimer(slsDetectorDefs::ACQUISITION_TIME,-1))*1E-9);
+		cout<<"\tExposure Time:"<<setprecision (10)<<exposureTime<<endl;
+		/** Acquisition Period*/
+		acquisitionPeriod= ((double)(myDet->setTimer(slsDetectorDefs::FRAME_PERIOD,-1))*1E-9);
+		cout<<"\tAcquisition Period:"<<setprecision (10)<<acquisitionPeriod<<endl;
+
+		StartDaq(true);
 		running=!running;
 	}
 }
@@ -193,23 +173,14 @@ void qDrawPlot::StartStopDaqToggle(bool stop_if_running){
 void qDrawPlot::StartDaq(bool start){
 	if(start){
 #ifdef VERBOSE
-		cout<<"Start Daq(1) function"<<endl;
+		cout<<"Start Daq(true) function"<<endl;
 #endif
-		number_of_exposures= (int)myDet->setTimer(slsDetectorDefs::FRAME_NUMBER,-1);
-		cout<<"\tNumber of Exposures:"<<number_of_exposures<<endl;
-
-		acquisitionTime= ((double)(myDet->setTimer(slsDetectorDefs::ACQUISITION_TIME,-1))*1E-9);
-		cout<<"\tAcquisition Time:"<<setprecision (10)<<acquisitionTime<<endl;
-
-		framePeriod= ((double)(myDet->setTimer(slsDetectorDefs::FRAME_PERIOD,-1))*1E-9);
-		cout<<"\tFrame Period:"<<setprecision (10)<<framePeriod<<endl;
-
 		ResetDaqForGui();
 		StartDaqForGui();
 		UpdatePlot();
 	}else{
 #ifdef VERBOSE
-		cout<<"Start Daq(0) function"<<endl;
+		cout<<"Start Daq(false) function"<<endl;
 #endif
 		StopDaqForGui();
 		StopUpdatePlot();
@@ -220,6 +191,7 @@ void qDrawPlot::StartDaq(bool start){
 
 int qDrawPlot::ResetDaqForGui(){
 	if(!StopDaqForGui()) return 0;
+	cout<<"Resetting image number"<<endl;
 	lastImageNumber = 0;
 	return 1;
 }
@@ -227,6 +199,7 @@ int qDrawPlot::ResetDaqForGui(){
 //-------------------------------------------------------------------------------------------------------------------------------------------------
 
 bool qDrawPlot::StartOrStopThread(bool start){
+	static bool             gui_acquisition_thread_running = 0;
 	static pthread_t        gui_acquisition_thread;
 	static pthread_mutex_t  gui_acquisition_start_stop_mutex = PTHREAD_MUTEX_INITIALIZER;
 
@@ -234,8 +207,7 @@ bool qDrawPlot::StartOrStopThread(bool start){
 	//stop part, before start or restart
 	if(gui_acquisition_thread_running){
 		cout<<"Stopping current acquisition thread ...."<<endl;
-		stop_signal = 1;
-		myDet->stopAcquisition();
+		stop_signal = 1;//sort of useless
 		pthread_join(gui_acquisition_thread,NULL); //wait until he's finished, ie. exits
 		gui_acquisition_thread_running = 0;
 	}
@@ -243,6 +215,7 @@ bool qDrawPlot::StartOrStopThread(bool start){
 	//start part
 	if(start){
 		/** Defaults */
+		progress = 0;
 		currentFrame = 0;
 		stop_signal = 0;
 		histNBins = nPixelsX;
@@ -255,14 +228,16 @@ bool qDrawPlot::StartOrStopThread(bool start){
 
 
 		if(plot_in_scope==1) Clear1DPlot();
-		cout<<"Starting new acquisition thread ...."<<endl;
+		cout<<"Starting new acquisition threadddd ...."<<endl;
 		/** Setting the callback function to get data from software client*/
-		myDet->registerDataCallback(&(GetDataCallBack));
+		myDet->registerDataCallback(&(GetDataCallBack),this);
 		/** Start acquiring data from server */
 		pthread_create(&gui_acquisition_thread, NULL,DataStartAcquireThread, (void*) this);
-		/** This is later reset to zero when all the plotting is done */
+		/** This is set here and later reset to zero when all the plotting is done
+		 * This is manually done instead of keeping track of thread because
+		 * this thread returns immediately after executing the acquire command*/
 		gui_acquisition_thread_running=1;
-		cout<<"Started acquiring"<<endl;
+		cout<<"Started acquiring threaddd"<<endl;
 	}
 	pthread_mutex_unlock(&gui_acquisition_start_stop_mutex);
 	return gui_acquisition_thread_running;
@@ -271,16 +246,26 @@ bool qDrawPlot::StartOrStopThread(bool start){
 //-------------------------------------------------------------------------------------------------------------------------------------------------
 
 void* qDrawPlot::DataStartAcquireThread(void *this_pointer){
+	cout<<"before acquire ...."<<endl;
 	((qDrawPlot*)this_pointer)->myDet->acquire(1);
+	cout<<"after acquire ...."<<endl;
 	return this_pointer;
 }
 
 //-------------------------------------------------------------------------------------------------------------------------------------------------
 
-int qDrawPlot::GetDataCallBack(detectorData *data){
-#ifdef VERYVERBOSE
-	cout<<"Entering GetDataCallBack function"<<endl;
-#endif
+int qDrawPlot::GetDataCallBack(detectorData *data, void *this_pointer){
+	((qDrawPlot*)this_pointer)->GetData(data);
+	return 0;
+}
+
+//-------------------------------------------------------------------------------------------------------------------------------------------------
+
+int qDrawPlot::GetData(detectorData *data){
+//#ifdef VERYVERBOSE
+	cout<<"Entering GetDatafunction"<<endl;
+//#endif
+
 	progress=(int)data->progressIndex;
 
 	if(!plotEnable) {
@@ -338,7 +323,7 @@ int qDrawPlot::GetDataCallBack(detectorData *data){
 		currentFrame++;
 	}
 #ifdef VERYVERBOSE
-	cout<<"Exiting GetDataCallBack function"<<endl;
+	cout<<"Exiting GetData function"<<endl;
 #endif
 	return 0;
 }
@@ -346,7 +331,7 @@ int qDrawPlot::GetDataCallBack(detectorData *data){
 //-------------------------------------------------------------------------------------------------------------------------------------------------
 
 void qDrawPlot::setNumMeasurements(int num){
-	numberOfMeasurements = num;
+	number_of_measurements = num;
 }
 
 //-------------------------------------------------------------------------------------------------------------------------------------------------
@@ -380,7 +365,7 @@ void qDrawPlot::Clear1DPlot(){
 //-------------------------------------------------------------------------------------------------------------------------------------------------
 
 void qDrawPlot::UpdatePlot(){
-	static int last_plot_number = 0;
+	//static int last_plot_number = 0;
 
 	plot_update_timer->stop();
 	if(plotEnable){
@@ -425,16 +410,27 @@ void qDrawPlot::UpdatePlot(){
 		}
 	}
 	last_plot_number=lastImageNumber;
-	if(plotEnable) UnlockLastImageArray();
-	/*	if(plot_in_scope==1)      SelectPlot(1);
-	else if(plot_in_scope==2) SelectPlot(2);*/
 
-	if(number_of_exposures==last_plot_number){
-		gui_acquisition_thread_running=0;
-		StartStopDaqToggle(1);
-		emit UpdatingPlotFinished();
-	}else{
+	if(plotEnable) UnlockLastImageArray();
+
+	/** Measurement not over, continue*/
+	if(number_of_exposures!=last_plot_number){
 		plot_update_timer->start(500);
+	}
+	/** if a measurement is over */
+	else{
+		currentMeasurement++;
+		cout<<"currentMeausremet:"<<currentMeasurement<<endl;
+		/** if all the measurements are over */
+		if(currentMeasurement==number_of_measurements){
+			StartStopDaqToggle(true);
+			emit UpdatingPlotFinished();
+		}/** To start the next measurement*/
+		else{
+			StopDaqForGui();
+			//StartDaq(false);
+			StartDaq(true);
+		}
 	}
 }
 

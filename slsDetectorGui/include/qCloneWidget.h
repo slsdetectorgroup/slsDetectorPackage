@@ -13,7 +13,10 @@ class SlsQtH1D;
 class SlsQt1DPlot;
 class SlsQt2DPlotLayout;
 /** Qt Include Headers */
-#include <QFrame>
+#include <QMainWindow>
+#include <QMenu>
+#include <QMenuBar>
+#include <QAction>
 #include <QGridLayout>
 #include <QCloseEvent>
 #include <QGroupBox>
@@ -31,7 +34,7 @@ using namespace std;
 /**
  *@short Sets up the clone plot widget
  */
-class qCloneWidget:public QFrame{
+class qCloneWidget:public QMainWindow{
 	Q_OBJECT
 
 public:
@@ -77,6 +80,10 @@ private:
 	QVector<SlsQtH1D*> 	cloneplot1D_hists;
 
 
+	 QMenuBar 	*menubar;
+	// QMenu 		*menuFile;
+	 QAction 	*actionSave;
+
 	QGridLayout *mainLayout;
 	QGroupBox 	*cloneBox;
 	QGridLayout *gridClone;
@@ -90,6 +97,8 @@ private:
     QCheckBox 	*chkAutoFName;
     QCheckBox 	*chkSaveAll;
 
+    /** Gets the current time stamp for the window title*/
+    char* GetCurrentTimeStamp();
 
 
 private slots:

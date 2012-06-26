@@ -7,30 +7,33 @@
 
 /** Qt Project Class Headers */
 #include "qCloneWidget.h"
+#include "qDefs.h"
 #include "SlsQt1DPlot.h"
 #include "SlsQt2DPlotLayout.h"
 /** Qt Include Headers */
 #include <QImage>
 #include <QPainter>
+#include <QFileDialog>
 /** C++ Include Headers */
 #include <iostream>
 using namespace std;
 
 
+//-------------------------------------------------------------------------------------------------------------------------------------------------
 
-
-
-qCloneWidget::qCloneWidget(QWidget *parent,int id,QString title,int numDim,SlsQt1DPlot*& plot1D,SlsQt2DPlotLayout*& plot2D,string FilePath):QFrame(parent,Qt::Popup|Qt::SubWindow),id(id),filePath(FilePath){
+qCloneWidget::qCloneWidget(QWidget *parent,int id,QString title,int numDim,SlsQt1DPlot*& plot1D,SlsQt2DPlotLayout*& plot2D,string FilePath):
+		QMainWindow(parent),id(id),filePath(FilePath){
 	/** Window title*/
-	char winTitle[100];
-	sprintf(winTitle,"SLS Detector GUI Clone %d",id);
+	char winTitle[300],currTime[50];
+	strcpy(currTime,GetCurrentTimeStamp());
+	sprintf(winTitle,"Snapshot:%d  -  %s",id,currTime);
 	setWindowTitle(QString(winTitle));
 
 	/** Set up widget*/
 	SetupWidgetWindow(title,numDim,plot1D,plot2D);
-
 }
 
+//-------------------------------------------------------------------------------------------------------------------------------------------------
 
 qCloneWidget::~qCloneWidget(){
 	delete cloneplot1D;
@@ -39,13 +42,22 @@ qCloneWidget::~qCloneWidget(){
 	delete boxSave;
 }
 
-
+//-------------------------------------------------------------------------------------------------------------------------------------------------
 
 void qCloneWidget::SetupWidgetWindow(QString title,int numDim,SlsQt1DPlot*& plot1D,SlsQt2DPlotLayout*& plot2D){
 
+	 menubar = new QMenuBar(this);
+	 //menuFile = new QMenu("&File",menubar);
+	 actionSave = new QAction("&Save",this);
+	// menubar->addAction(menuFile->menuAction());
+	 menubar->addAction(actionSave);
+	 setMenuBar(menubar);
+
+
 	/** Main Window Layout */
-	mainLayout = new QGridLayout(this);
-	setLayout(mainLayout);
+	 QWidget *centralWidget = new QWidget(this);
+	 mainLayout = new QGridLayout(centralWidget);
+	 centralWidget->setLayout(mainLayout);
 
 	/** plot group box*/
 	cloneBox = new QGroupBox(this);
@@ -71,23 +83,24 @@ void qCloneWidget::SetupWidgetWindow(QString title,int numDim,SlsQt1DPlot*& plot
 	}
 
 	/** Save group box */
+/*
 	boxSave = new QGroupBox("Save Image",this);
 	boxSave->setFixedHeight(45);
 	boxSave->setContentsMargins(0,8,0,0);
     layoutSave = new QHBoxLayout;
     boxSave->setLayout(layoutSave);
-    	/** Label file name*/
+    	* Label file name
         lblFName = new QLabel("File Name:",this);
         layoutSave->addWidget(lblFName);
-        /** To get 0 spacing between the next 2 widgets file name and file format */
+        * To get 0 spacing between the next 2 widgets file name and file format
         hLayoutSave = new QHBoxLayout();
         layoutSave->addLayout(hLayoutSave);
         	hLayoutSave->setSpacing(0);
-        	/** file name */
+        	* file name
         	dispFName = new QLineEdit(this);
         	dispFName->setSizePolicy(QSizePolicy::Fixed,QSizePolicy::Fixed);
         	hLayoutSave->addWidget(dispFName);
-        	/** file format */
+        	* file format
         	comboFormat = new QComboBox(this);
         	comboFormat->setFrame(true);
         	comboFormat->addItem(".gif");
@@ -100,67 +113,88 @@ void qCloneWidget::SetupWidgetWindow(QString title,int numDim,SlsQt1DPlot*& plot
 	    	comboFormat->addItem(".xpm");
 	    	comboFormat->addItem(".C");
 	    	hLayoutSave->addWidget(comboFormat);
-	    /** save button */
+	    * save button
 	    btnSave = new QPushButton("Save",this);
 	    btnSave->setFocusPolicy(Qt::NoFocus);
 	    layoutSave->addWidget(btnSave);
-	    /** automatic file name check box */
+	    * automatic file name check box
 	    chkAutoFName = new QCheckBox("Automatic File Name",this);
 	    layoutSave->addWidget(chkAutoFName);
-	    /** automatic save all check box */
+	    * automatic save all check box
 	    chkSaveAll = new QCheckBox("Save All",this);
 	    layoutSave->addWidget(chkSaveAll);
+*/
 
 	/** main window widgets */
-	mainLayout->addWidget(boxSave,0,0);
+	//mainLayout->addWidget(boxSave,0,0);
 	mainLayout->addWidget(cloneBox,1,0);
+	setCentralWidget(centralWidget);
 
 	/** Save */
-		connect(btnSave, SIGNAL(clicked()),	this, SLOT(SavePlot()));
+	connect(actionSave,SIGNAL(triggered()),this,SLOT(SavePlot()));
+		//connect(btnSave, SIGNAL(clicked()),	this, SLOT(SavePlot()));
 
 	setMinimumHeight(300);
 	resize(500,350);
-
 }
 
-
-
+//-------------------------------------------------------------------------------------------------------------------------------------------------
 
 void qCloneWidget::SetCloneHists(int nHists,int histNBins,double* histXAxis,double* histYAxis[],string histTitle[]){
-/** for each plot*/
-for(int hist_num=0;hist_num<nHists;hist_num++){
-	/** create hists */
-	SlsQtH1D*  k;
-	if(hist_num+1>cloneplot1D_hists.size()){
-		cloneplot1D_hists.append(k=new SlsQtH1D("1d plot",histNBins,histXAxis,histYAxis[hist_num]));
-		k->SetLineColor(hist_num+1);
-	}else{
-		k=cloneplot1D_hists.at(hist_num);
-		k->SetData(histNBins,histXAxis,histYAxis[hist_num]);
+	/** for each plot*/
+	for(int hist_num=0;hist_num<nHists;hist_num++){
+		/** create hists */
+		SlsQtH1D*  k;
+		if(hist_num+1>cloneplot1D_hists.size()){
+			cloneplot1D_hists.append(k=new SlsQtH1D("1d plot",histNBins,histXAxis,histYAxis[hist_num]));
+			k->SetLineColor(hist_num+1);
+		}else{
+			k=cloneplot1D_hists.at(hist_num);
+			k->SetData(histNBins,histXAxis,histYAxis[hist_num]);
+		}
+		k->setTitle(histTitle[hist_num].c_str());
+		k->Attach(cloneplot1D);
 	}
-	k->setTitle(histTitle[hist_num].c_str());
-	k->Attach(cloneplot1D);
+	//cloneplot1D->UnZoom();
 }
-//cloneplot1D->UnZoom();
+//-------------------------------------------------------------------------------------------------------------------------------------------------
 
+char* qCloneWidget::GetCurrentTimeStamp(){
+	char output[30];
+	char *result;
 
+	//using sys cmds to get output or str
+	FILE* sysFile = popen("date", "r");
+	fgets(output, sizeof(output), sysFile);
+	pclose(sysFile);
+
+	result = output + 0;
+	return result;
 }
 
-
-
+//-------------------------------------------------------------------------------------------------------------------------------------------------
 
 void qCloneWidget::SavePlot(){
-	QString fName = QString(filePath.c_str())+'/'+dispFName->text()+comboFormat->currentText();
+	//QString fName = QString(filePath.c_str())+'/'+dispFName->text()+comboFormat->currentText();
+	char cID[10];
+	sprintf(cID,"%d",id);
+	QString fName = QString(filePath.c_str())+"/Snapshot_"+QString(cID)+".png";
 	QImage img(cloneBox->size().width(),cloneBox->size().height(),QImage::Format_RGB32);
 	QPainter painter(&img);
 	cloneBox->render(&painter);
-	img.save(fName);
+
+    fName = QFileDialog::getSaveFileName(this,tr("Save Snapshot "),
+    		fName,tr("Images (*.png *.xpm *.jpg)"));
+    if (!fName.isEmpty())
+    	if(!(img.save(fName)))
+    		qDefs::ErrorMessage("ERROR: Attempt to save snapshot failed","Snapshot: WARNING");
 }
 
-
-
+//-------------------------------------------------------------------------------------------------------------------------------------------------
 
 void qCloneWidget::closeEvent(QCloseEvent* event){
 	emit CloneClosedSignal(id);
 	event->accept();
 }
+
+//-------------------------------------------------------------------------------------------------------------------------------------------------

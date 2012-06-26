@@ -1,0 +1,5 @@
+<RCC version="1.0">
+    <qresource prefix="/icons">
+	<file>../images/mountain.png</file>
+    </qresource>
+</RCC>

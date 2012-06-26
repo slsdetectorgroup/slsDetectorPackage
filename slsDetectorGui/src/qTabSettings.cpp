@@ -15,17 +15,13 @@
 using namespace std;
 
 
-#define Detector_Index 0
 
-
-
-qTabSettings::qTabSettings(QWidget *parent,slsDetectorUtils*& detector):QWidget(parent),myDet(detector){
+qTabSettings::qTabSettings(QWidget *parent,slsDetectorUtils*& detector,int detID):
+		QWidget(parent),myDet(detector),detID(detID){
 	setupUi(this);
-	if(myDet)
-	{
-		SetupWidgetWindow();
-		Initialization();
-	}
+	SetupWidgetWindow();
+	Initialization();
+
 }
 
 
@@ -40,7 +36,7 @@ qTabSettings::~qTabSettings(){
 
 void qTabSettings::SetupWidgetWindow(){
 	/** Settings */
-	comboSettings->setCurrentIndex(myDet->getSettings(Detector_Index));
+	comboSettings->setCurrentIndex(myDet->getSettings(detID));
 }
 
 
@@ -52,13 +48,8 @@ void qTabSettings::Initialization(){
 
 
 
-void qTabSettings::Enable(bool enable){
-	comboSettings->setEnabled(enable);
-}
-
-
 void qTabSettings::setSettings(int index){
-	slsDetectorDefs::detectorSettings sett = myDet->setSettings((slsDetectorDefs::detectorSettings)index,Detector_Index);
+	slsDetectorDefs::detectorSettings sett = myDet->setSettings((slsDetectorDefs::detectorSettings)index,detID);
 #ifdef VERBOSE
 	cout<<"Settings have been set to "<<myDet->slsDetectorBase::getDetectorSettings(sett)<<endl;
 #endif

@@ -56,6 +56,40 @@ public:
 
 //-------------------------------------------------------------------------------------------------------------------------------------------------
 
+	/** returns the time in the appropriate time unit
+	 * @param unit unit of time
+	 * @param value time in seconds
+	 * returns the corresponding time value
+	 */
+	static float getCorrectTime(timeUnit& unit, float value){
+		int intUnit = (int)SECONDS;
+
+		/** hr, min, sec */
+		if(value>=1){
+			float newVal = value;
+			while((newVal>=1)&&(intUnit>=(int)HOURS)){
+				/** value retains the old value */
+				value = newVal;
+				newVal = value/60;
+				intUnit--;
+			}
+			/** returning the previous value*/
+			unit = (timeUnit)(intUnit+1);
+			return value;
+		}
+		/** ms, us, ns */
+		else{
+			while((value<1)&&(intUnit<(int)NANOSECONDS)){
+				value = value*1000;
+				intUnit++;
+			}
+			unit = (timeUnit)(intUnit);
+			return value;
+		}
+	};
+
+//-------------------------------------------------------------------------------------------------------------------------------------------------
+
 	/**displays an error message
 	 * @param errorMessage the message to be displayed
 	 * @param source is the tab or the source of the error

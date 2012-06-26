@@ -62,6 +62,8 @@ private:
 	QApplication *theApp;
 	/** The sls detector object */
 	slsDetectorUtils *myDet;
+	/** sls detector id */
+	int detID;
 	/** The Plot widget	 */
 	qDrawPlot *myPlot;
 	/**Tab Widget */
@@ -74,6 +76,7 @@ private:
 	int heightCentralWidget;
 	/** The default zooming tool tip */
 	QString zoomToolTip;
+
 	/** The default tab heading color */
 	QColor defaultTabColor;
 	/** enumeration of the tabs */
@@ -97,6 +100,7 @@ private:
 	/**Developer tab */
 	qTabDeveloper *tab_developer;
 	/**if the developer tab should be enabled,known from command line */
+
 	int isDeveloper;
 	/**Sets up the layout of the widget
 	 */

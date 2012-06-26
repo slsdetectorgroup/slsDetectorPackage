@@ -24,7 +24,6 @@
 using namespace std;
 
 
-#define Detector_Index 0
 
 
 ActionsWidget::ActionsWidget(QWidget *parent, int scanType): QFrame(parent){

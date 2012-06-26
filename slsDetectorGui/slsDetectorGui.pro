@@ -3,6 +3,9 @@ MOC_DIR   			= 		mocs
 OBJECTS_DIR 		= 		objs
 UI_HEADERS_DIR		= 		forms/include
 
+RESOURCES   		+=  	icons.qrc
+
+
 DEFINES 			+= 		VERBOSE
 							
 

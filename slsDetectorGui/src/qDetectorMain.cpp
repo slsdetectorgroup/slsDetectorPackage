@@ -21,13 +21,13 @@
 #include <string>
 using namespace std;
 
-#define Detector_Index 0
 
 //-------------------------------------------------------------------------------------------------------------------------------------------------
 
 int main (int argc, char **argv) {
 
 	QApplication *theApp = new QApplication(argc, argv);
+	theApp->setWindowIcon(QIcon( ":/icons/images/mountain.png" ));
 	qDetectorMain *det=new qDetectorMain(argc, argv, theApp,0);
 	det->show();
 	//theApp->connect( theApp, SIGNAL(lastWindowClosed()), theApp, SLOT(quit()));
@@ -37,24 +37,27 @@ int main (int argc, char **argv) {
 //-------------------------------------------------------------------------------------------------------------------------------------------------
 
 qDetectorMain::qDetectorMain(int argc, char **argv, QApplication *app, QWidget *parent) :
-		QMainWindow(parent), theApp(app),myPlot(NULL),tabs(NULL),isDeveloper(0){
-	myDet = 0;
-	setupUi(this);
-	SetUpWidgetWindow();
-	Initialization();
-	/**need to use argc and argv to determine which slsdet or multidet to use.*/
+		QMainWindow(parent), theApp(app),myDet(0),detID(0),myPlot(NULL),tabs(NULL),isDeveloper(0){
 
+	/** Getting all the command line arguments */
 	for(int iarg=1; iarg<argc; iarg++){
-		if(!strcasecmp(argv[1],"-developer"))		{isDeveloper=1;SetDeveloperMode(true);}
+		if(!strcasecmp(argv[iarg],"-developer"))	{isDeveloper=1;}
+		if(!strcasecmp(argv[iarg],"-id"))			{detID=atoi(argv[iarg+1]);}
 
-		if(!strcasecmp(argv[1],"-help")){
+		if(!strcasecmp(argv[iarg],"-help")){
 			cout<<"Possible Arguments are:"<<endl;
 			cout<<"-help \t\t : \t This help"<<endl;
 			cout<<"-developer \t : \t Enables the developer tab"<<endl;
-			//cout<<"-id i \t : \t Sets the detector to id i (the default is 0). ";
-					//cout<<"Required only when more than one detector is connected in parallel."<<endl;
+			cout<<"-id i \t : \t Sets the detector to id i (the default is 0). "
+				"Required only when more than one detector is connected in parallel."<<endl;
 		}
 	}
+
+	setupUi(this);
+	SetUpDetector();
+	SetUpWidgetWindow();
+	Initialization();
+
 }
 
 //-------------------------------------------------------------------------------------------------------------------------------------------------
@@ -68,9 +71,6 @@ qDetectorMain::~qDetectorMain(){
 //-------------------------------------------------------------------------------------------------------------------------------------------------
 
 void qDetectorMain::SetUpWidgetWindow(){
-
-
-	SetUpDetector();
 
 /** Layout */
 	layoutTabs= new QGridLayout;
@@ -89,7 +89,7 @@ void qDetectorMain::SetUpWidgetWindow(){
 	tab_dataoutput 		=  new qTabDataOutput	(this,	myDet);
 	tab_plot 			=  new qTabPlot			(this,	myDet,myPlot);
 	tab_actions			=  new qTabActions		(this,	myDet);
-	tab_settings 		=  new qTabSettings		(this,	myDet);
+	tab_settings 		=  new qTabSettings		(this,	myDet, detID);
 	tab_advanced 		=  new qTabAdvanced		(this,	myDet);
 	tab_debugging 		=  new qTabDebugging	(this,	myDet);
 	tab_developer 		=  new qTabDeveloper	(this,	myDet);
@@ -124,6 +124,7 @@ void qDetectorMain::SetUpWidgetWindow(){
 	SetBeamlineMode(false);
 	SetExpertMode(false);
 	SetDeveloperMode(false);
+	SetDeveloperMode(isDeveloper);
 
 	tabs->tabBar()->setTabTextColor(0,QColor(0,0,200,255));
 
@@ -136,13 +137,17 @@ void qDetectorMain::SetUpDetector(){
 
 
 	/**instantiate detector and set window title*/
-	myDet = new multiSlsDetector(Detector_Index);
-	if(!myDet->getHostname(Detector_Index).length()){
-		setWindowTitle("SLS Detector GUI : No Detector Connected");
+	myDet = new multiSlsDetector(detID);
+	if(!myDet->getHostname(detID).length()){
 #ifdef VERBOSE
-		cout<<endl<<"No Detector Connected"<<endl;
+		cout<<endl<<"No Detector Connected at id:"<<detID<<endl;
+		cout<<myDet->getHostname(detID)<<endl;
 #endif
-		myDet = 0;
+		char cIndex[10];
+		sprintf(cIndex,"%d",detID);
+		qDefs::ErrorMessage(string("ERROR: No Detector Connected at "
+				"id : ")+string(cIndex),"Main: ERROR");
+		exit(-1);
 	}
 	else{
 		/** Check if type valid. If not, exit*/
@@ -152,14 +157,18 @@ void qDetectorMain::SetUpDetector(){
 				case slsDetectorDefs::GOTTHARD:	break;
 				default:
 					string detName = myDet->slsDetectorBase::getDetectorType(myDet->getDetectorsType());
-					string hostname = myDet->getHostname(Detector_Index);
-					string errorMess = string("ERROR:  ")+hostname+string(" has unknown detector type \"")+detName+string("\". Exiting GUI.");
+					string hostname = myDet->getHostname(detID);
+					string errorMess = string("ERROR:  ")+hostname+string(" has "
+							"unknown detector type \"")+detName+string("\". Exiting GUI.");
 					qDefs::ErrorMessage(errorMess,"Main: ERROR");
 					exit(-1);
 				}
-		setWindowTitle("SLS Detector GUI : "+QString(slsDetectorBase::getDetectorType(myDet->getDetectorsType()).c_str())+" - "+QString(myDet->getHostname(Detector_Index).c_str()));
+		setWindowTitle("SLS Detector GUI : "+
+				QString(slsDetectorBase::getDetectorType(myDet->getDetectorsType()).c_str())+
+				" - "+QString(myDet->getHostname(detID).c_str()));
 #ifdef VERBOSE
-		cout<<endl<<"Type : "<<slsDetectorBase::getDetectorType(myDet->getDetectorsType())<<"\t\t\tDetector : "<<myDet->getHostname(Detector_Index)<<endl;
+		cout<<endl<<"Type : "<<slsDetectorBase::getDetectorType(myDet->getDetectorsType())<<"\t\t\tDetector : "
+				""<<myDet->getHostname(detID)<<endl;
 #endif
 		myDet->setOnline(slsDetectorDefs::ONLINE_FLAG);
 	}

@@ -18,16 +18,11 @@
 using namespace std;
 
 
-#define Detector_Index 0
-
 
 
 qTabActions::qTabActions(QWidget *parent,slsDetectorUtils*& detector):QWidget(parent),myDet(detector){
-	if(myDet)
-	{
-		SetupWidgetWindow();
-		Initialization();
-	}
+	SetupWidgetWindow();
+	Initialization();
 }
 
 

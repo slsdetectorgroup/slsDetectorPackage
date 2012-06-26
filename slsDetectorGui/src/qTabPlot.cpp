@@ -17,8 +17,6 @@
 using namespace std;
 
 
-#define Detector_Index 0
-
 
 QString qTabPlot::defaultPlotTitle("Measurement");
 QString qTabPlot::defaultHistXAxisTitle("Channel Number");
@@ -30,19 +28,17 @@ QString qTabPlot::defaultImageZAxisTitle("Intensity");
 
 qTabPlot::qTabPlot(QWidget *parent,slsDetectorUtils*& detector, qDrawPlot*& plot):QWidget(parent),myDet(detector),myPlot(plot){
 	setupUi(this);
-	if(myDet){
-		SetupWidgetWindow();
-		/** Depending on whether the detector is 1d or 2d*/
-		switch(myDet->getDetectorsType()){
-			case slsDetectorDefs::MYTHEN:	Select1DPlot(true);	break;
-			case slsDetectorDefs::EIGER:	Select1DPlot(false);break;
-			case slsDetectorDefs::GOTTHARD:	Select1DPlot(true);break;
-			default:
-				cout<<"ERROR: Detector Type is Generic"<<endl;
-				exit(-1);
-		}
-		Initialization();
+	SetupWidgetWindow();
+	/** Depending on whether the detector is 1d or 2d*/
+	switch(myDet->getDetectorsType()){
+	case slsDetectorDefs::MYTHEN:	Select1DPlot(true);	break;
+	case slsDetectorDefs::EIGER:	Select1DPlot(false);break;
+	case slsDetectorDefs::GOTTHARD:	Select1DPlot(true);break;
+	default:
+		cout<<"ERROR: Detector Type is Generic"<<endl;
+		exit(-1);
 	}
+	Initialization();
 }
 
 

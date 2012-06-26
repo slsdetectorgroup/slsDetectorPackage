@@ -23,8 +23,9 @@ public:
 	/** \short The constructor
 	 *    @param parent is the parent tab widget
 	 *    @param detector is the detector returned from the detector tab
+	 *    @param detID is the id of the detector
 	 */
-	qTabSettings(QWidget *parent,slsDetectorUtils*& detector);
+	qTabSettings(QWidget *parent,slsDetectorUtils*& detector,int detID);
 
 	/** Destructor
 	 */
@@ -35,6 +36,10 @@ private:
 	/** The sls detector object */
 	slsDetectorUtils *myDet;
 
+	/** sls detector id */
+	int detID;
+
+
 	/** Sets up the widget
 	 */
 	void SetupWidgetWindow();
@@ -43,9 +48,6 @@ private:
 	 */
 	void Initialization();
 
-	/** Enables/Disables all the widgets
-	 */
-	void Enable(bool enable);
 
 
 private slots:

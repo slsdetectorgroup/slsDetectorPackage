@@ -20,19 +20,17 @@
 using namespace std;
 
 
-#define Detector_Index 0
-#define UndefinedSettings 7
+
+
 
 //-------------------------------------------------------------------------------------------------------------------------------------------------
 
 qTabMeasurement::qTabMeasurement(QWidget *parent,slsDetectorUtils*& detector, qDrawPlot*& plot):
 								QWidget(parent),myDet(detector),myPlot(plot){
 	setupUi(this);
-	if(myDet)
-	{
-		SetupWidgetWindow();
-		Initialization();
-	}
+	SetupWidgetWindow();
+	Initialization();
+
 }
 
 //-------------------------------------------------------------------------------------------------------------------------------------------------
@@ -49,9 +47,10 @@ void qTabMeasurement::SetupWidgetWindow(){
 	progressTimer = new QTimer(this);
 	//btnStartStop->setStyleSheet("color:green");
 	/** Exp Time **/
-	float time = (float)(myDet->setTimer(slsDetectorDefs::ACQUISITION_TIME,-1)*(1E-9));
+	qDefs::timeUnit unit;
+	float time = qDefs::getCorrectTime(unit,((float)(myDet->setTimer(slsDetectorDefs::ACQUISITION_TIME,-1)*(1E-9))));
 	spinExpTime->setValue(time);
-	comboExpUnit->setCurrentIndex(qDefs::SECONDS);
+	comboExpUnit->setCurrentIndex((int)unit);
 	/** Hide the error message **/
 	lblNote->hide();
 	/** File Name **/
@@ -85,7 +84,7 @@ void qTabMeasurement::SetupWidgetWindow(){
 			item[(int)Gated_Start]->setEnabled(true);
 			item[(int)Trigger_Window]->setEnabled(false);
 			break;
-		case slsDetectorDefs::GOTTHARD:
+		case slsDetectorDefs::EIGER:
 			item[(int)Trigger_Exp_Series]->setEnabled(true);
 			item[(int)Trigger_Frame]->setEnabled(true);
 			item[(int)Trigger_Readout]->setEnabled(false);
@@ -93,7 +92,7 @@ void qTabMeasurement::SetupWidgetWindow(){
 			item[(int)Gated_Start]->setEnabled(false);
 			item[(int)Trigger_Window]->setEnabled(true);
 			break;
-		case slsDetectorDefs::EIGER:
+		case slsDetectorDefs::GOTTHARD:
 			item[(int)Trigger_Exp_Series]->setEnabled(true);
 			item[(int)Trigger_Frame]->setEnabled(false);
 			item[(int)Trigger_Readout]->setEnabled(false);
@@ -146,7 +145,7 @@ void qTabMeasurement::SetupWidgetWindow(){
 //-------------------------------------------------------------------------------------------------------------------------------------------------
 
 void qTabMeasurement::Initialization(int timingChange){
-	/** These signals are connected only at start up*/
+	/** These signals are connected only at start up. The others are reinitialized when changing timing mode*/
 	if(!timingChange){
 		/** Number of Measurements**/
 		connect(spinNumMeasurements,SIGNAL(valueChanged(int)),		myPlot,	SLOT(setNumMeasurements(int)));
@@ -242,13 +241,14 @@ void qTabMeasurement::startStopAcquisition(){
 		btnStartStop->setText("Stop");
 		Enable(0);
 		progressBar->setValue(0);
-		progressTimer->start(200);
+		progressTimer->start(100);
 
 		emit StartSignal();
 	}else{
 #ifdef VERBOSE
 		cout<<"Stopping Acquisition"<<endl;
 #endif
+		myDet->stopAcquisition();
 		//btnStartStop->setStyleSheet("color:green");
 		//btnStartStop->setStyleSheet("background:rgb(239,239,239)");
 		progressTimer->stop();
@@ -476,6 +476,7 @@ void qTabMeasurement::setTimingMode(int mode){
 
 	float time;
 	int val;
+	qDefs::timeUnit unit;
 	/**Number of Frames */
 	if(lblNumFrames->isEnabled()){
 		val = (int)myDet->setTimer(slsDetectorDefs::FRAME_NUMBER,-1);
@@ -487,22 +488,22 @@ void qTabMeasurement::setTimingMode(int mode){
 
 	/**Exposure Time */
 	if(lblExpTime->isEnabled()){
-		time = (float)(myDet->setTimer(slsDetectorDefs::ACQUISITION_TIME,-1)*(1E-9));
+		time = qDefs::getCorrectTime(unit,((float)(myDet->setTimer(slsDetectorDefs::ACQUISITION_TIME,-1)*(1E-9))));
 #ifdef VERBOSE
 		cout<<"Getting acquisition time : " << time << "s" << endl;
 #endif
 		spinExpTime->setValue(time);
-		comboExpUnit->setCurrentIndex(qDefs::SECONDS);
+		comboExpUnit->setCurrentIndex((int)unit);
 	}
 
 	/**Frame Period between exposures */
 	if(lblPeriod->isEnabled()){
-		time = (float)(myDet->setTimer(slsDetectorDefs::FRAME_PERIOD,-1)*(1E-9));
+		time = qDefs::getCorrectTime(unit,((float)(myDet->setTimer(slsDetectorDefs::FRAME_PERIOD,-1)*(1E-9))));
 #ifdef VERBOSE
 		cout<<"Getting frame period between exposures : " << time << "s" << endl;
 #endif
 		spinPeriod->setValue(time);
-		comboPeriodUnit->setCurrentIndex(qDefs::SECONDS);
+		comboPeriodUnit->setCurrentIndex((int)unit);
 
 		int64_t exptimeNS,acqtimeNS;
 		exptimeNS = (int64_t)qDefs::getNSTime((qDefs::timeUnit)comboExpUnit->currentIndex(),spinExpTime->value());
@@ -534,12 +535,12 @@ void qTabMeasurement::setTimingMode(int mode){
 
 	/**Delay After Trigger */
 	if(lblDelay->isEnabled()){
-		time = (float)(myDet->setTimer(slsDetectorDefs::DELAY_AFTER_TRIGGER,-1)*(1E-9));
+		time = qDefs::getCorrectTime(unit,((float)(myDet->setTimer(slsDetectorDefs::DELAY_AFTER_TRIGGER,-1)*(1E-9))));
 #ifdef VERBOSE
 		cout<<"Getting delay after trigger : " << time << "s" << endl;
 #endif
 		spinDelay->setValue(time);
-		comboDelayUnit->setCurrentIndex(qDefs::SECONDS);
+		comboDelayUnit->setCurrentIndex((int)unit);
 	}
 
 	/**Number of Gates */

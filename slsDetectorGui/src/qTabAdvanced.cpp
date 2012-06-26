@@ -14,18 +14,13 @@
 using namespace std;
 
 
-#define Detector_Index 0
-
 
 
 qTabAdvanced::qTabAdvanced(QWidget *parent,slsDetectorUtils*& detector):QWidget(parent),myDet(detector){
 	setupUi(this);
-	if(myDet)
-	{
-		myDetType = (int)myDet->getDetectorsType();
-		SetupWidgetWindow();
-		Initialization();
-	}
+	myDetType = (int)myDet->getDetectorsType();
+	SetupWidgetWindow();
+	Initialization();
 }
 
 

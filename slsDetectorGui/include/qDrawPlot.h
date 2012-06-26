@@ -108,22 +108,24 @@ private:
 
 
 	/** Number of Measurements */
-	static int numberOfMeasurements;
+	int number_of_measurements;
+	/** Current Measurement */
+	int currentMeasurement;
 	/** currentFrame */
-	static int currentFrame;
+	int currentFrame;
 	/**	 Number of Exposures */
-	static int number_of_exposures;
+	int number_of_exposures;
 	/**	 Duration between Exposures */
-	double framePeriod;
+	double acquisitionPeriod;
 	/**	 Acquisition Time */
-	double acquisitionTime;
+	double exposureTime;
 
 
 /**variables for threads */
 	/**	 */
 	volatile bool   stop_signal;
 	/**	 */
-	static pthread_mutex_t last_image_complete_mutex;
+	pthread_mutex_t last_image_complete_mutex;
 
 /**variables for histograms */
 	/**	X Axis Title in 2D */
@@ -137,37 +139,38 @@ private:
 	/**	Y Axis Title in 1D */
 	QString  histYAxisTitle;
 	/**	Title for all the graphs in 1D */
-	static std::string  histTitle[MAX_1DPLOTS];
+	std::string  histTitle[MAX_1DPLOTS];
 	/**	Title in 2D */
-	static std::string  imageTitle;
+	std::string  imageTitle;
 	/**	1D or 2D */
-	static unsigned int plot_in_scope;
+	unsigned int plot_in_scope;
 	/**	Number of Pixels in X Axis */
-	static unsigned int nPixelsX;
+	unsigned int nPixelsX;
 	/**	Number of Pixels in Y Axis */
-	static unsigned int nPixelsY;
+	unsigned int nPixelsY;
 	/**	Current Image Number */
-	static unsigned int lastImageNumber;
+	unsigned int lastImageNumber;
+	int last_plot_number;
 
 	/**	Number of graphs in 1D */
-	static unsigned int nHists;
+	unsigned int nHists;
 	/**	Total Number of X axis values/channels in 1D */
-	static int          histNBins;
+	int          histNBins;
 	/**	X Axis value in 1D */
-	static double*      histXAxis;
+	double*      histXAxis;
 	/** Y Axis value in 1D  */
-	static double*      histYAxis[MAX_1DPLOTS];
+	double*      histYAxis[MAX_1DPLOTS];
 	/**	Current Image Values in 2D */
-	static double*      lastImageArray;
+	double*      lastImageArray;
 	/**	temporary Y Axis value in 1D */
-	static double* 	 yvalues[MAX_1DPLOTS];
+	double* 	 yvalues[MAX_1DPLOTS];
 	/**	temporary Image Values in 2D */
-	static double* 	 image_data;
-	static bool  gui_acquisition_thread_running;
-	static int persistency;
-	static int currentPersistency;
-	static int progress;
-	static bool plotEnable;
+	double* 	 image_data;
+	//bool  gui_acquisition_thread_running;
+	int persistency;
+	int currentPersistency;
+	int progress;
+	bool plotEnable;
 
 	/** Initializes all its members and the thread */
 	void Initialization();
@@ -197,8 +200,10 @@ private:
 	int    ResetDaqForGui();
 	/**	The function which is called when start acquisition thread is created */
 	static void* DataStartAcquireThread(void *this_pointer);
-	/**	This is called by the detector class to copt the data it jus acquired */
-	static int GetDataCallBack(detectorData *data);
+	/**	This is called by the detector class to copy the data it jus acquired */
+	static int GetDataCallBack(detectorData *data, void *this_pointer);
+	/**	This is called by the GetDataCallBack function to copy the data */
+	int GetData(detectorData *data);
 
 
 public slots:

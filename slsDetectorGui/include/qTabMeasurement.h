@@ -53,6 +53,10 @@ private:
 	 */
 	void SetupWidgetWindow();
 
+	/** Sets up the timing mode
+	 */
+	void SetupTimingMode();
+
 	/** Sets up all the slots and signals
 	 * @param timingChange only some of the signals are disconnected when timing mode is changed
 	 * This method is to reconnect them again.

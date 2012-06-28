@@ -10,6 +10,7 @@
 #include "qTabSettings.h"
 #include "qTabDebugging.h"
 #include "qTabDeveloper.h"
+#include "qTabMessages.h"
 /** Project Class Headers */
 #include "slsDetector.h"
 #include "multiSlsDetector.h"
@@ -93,6 +94,7 @@ void qDetectorMain::SetUpWidgetWindow(){
 	tab_advanced 		=  new qTabAdvanced		(this,	myDet);
 	tab_debugging 		=  new qTabDebugging	(this,	myDet);
 	tab_developer 		=  new qTabDeveloper	(this,	myDet);
+	tab_messages		=  new qTabMessages		(this,	myDet);
 	/**	creating the scroll area widgets for the tabs */
 	for(int i=0;i<NumberOfTabs;i++){
 		scroll[i] = new QScrollArea;
@@ -118,6 +120,8 @@ void qDetectorMain::SetUpWidgetWindow(){
 	tabs->insertTab(Advanced,		scroll[Advanced],		"Advanced");
 	tabs->insertTab(Debugging,		scroll[Debugging],		"Debugging");
 	tabs->insertTab(Developer,		scroll[Developer],		"Developer");
+	/** Prefer this to expand and not have scroll buttons*/
+	tabs->insertTab(Messages,		tab_messages,		"Messages");
 
 /** mode setup - to set up the tabs initially as disabled, not in form so done here */
 	SetDebugMode(false);
@@ -404,6 +408,7 @@ void qDetectorMain::EnableTabs(){
 	tabs->setTabEnabled(DataOutput,enable);
 	tabs->setTabEnabled(Actions,enable);
 	tabs->setTabEnabled(Settings,enable);
+	tabs->setTabEnabled(Messages,enable);
 
 	/** special tabs */
 	if(enable==false){

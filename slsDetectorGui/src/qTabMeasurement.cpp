@@ -12,9 +12,8 @@
 /** Project Class Headers */
 #include "slsDetector.h"
 #include "multiSlsDetector.h"
-
+/** Qt Include Headers */
 #include <QStandardItemModel>
-
 /** C++ Include Headers */
 #include<iostream>
 using namespace std;
@@ -63,8 +62,15 @@ void qTabMeasurement::SetupWidgetWindow(){
 	progressBar->setValue(0);
 
 	/** timing mode*/
+	SetupTimingMode();
+}
+
+//-------------------------------------------------------------------------------------------------------------------------------------------------
+
+void qTabMeasurement::SetupTimingMode(){
 	/** Get timing mode from detector*/
 	slsDetectorDefs::externalCommunicationMode mode = myDet->setExternalCommunicationMode();
+
 	/** To be able to index items on a combo box */
 	QStandardItemModel* model = qobject_cast<QStandardItemModel*>(comboTimingMode->model());
 	QModelIndex index[NumTimingModes];
@@ -112,15 +118,15 @@ void qTabMeasurement::SetupWidgetWindow(){
 			 * then the timing mode is 'None'.
 			 * This is for the inexperienced user */
 			if(mode==slsDetectorDefs::AUTO_TIMING){
-					int frames = (int)myDet->setTimer(slsDetectorDefs::FRAME_NUMBER,-1);
-					int triggers = (int)myDet->setTimer(slsDetectorDefs::CYCLES_NUMBER,-1);
-					if((frames==1)&&(triggers==1)){
-						comboTimingMode->setCurrentIndex((int)None);
-						setTimingMode((int)None);
-					}else{
-						comboTimingMode->setCurrentIndex((int)Auto);
-						setTimingMode((int)Auto);
-					}
+				int frames = (int)myDet->setTimer(slsDetectorDefs::FRAME_NUMBER,-1);
+				int triggers = (int)myDet->setTimer(slsDetectorDefs::CYCLES_NUMBER,-1);
+				if((frames==1)&&(triggers==1)){
+					comboTimingMode->setCurrentIndex((int)None);
+					setTimingMode((int)None);
+				}else{
+					comboTimingMode->setCurrentIndex((int)Auto);
+					setTimingMode((int)Auto);
+				}
 			}else{
 				/** mode +1 since the detector class has no timingmode as "None" */
 				comboTimingMode->setCurrentIndex((int)mode+1);
@@ -128,7 +134,7 @@ void qTabMeasurement::SetupWidgetWindow(){
 			}
 		}
 		/** Mode NOT ENABLED.
-		 * This should not happen only if the server and gui has a mismatch
+		 * This should not happen -only if the server and gui has a mismatch
 		 * on which all modes are allowed in detectors */
 		else{
 			qDefs::ErrorMessage("ERROR:  Unknown Timing Mode detected from detector."

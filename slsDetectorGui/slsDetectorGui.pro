@@ -58,7 +58,8 @@ SOURCES 			= 		\
 							src/qTabAdvanced.cpp\
 							src/qTabSettings.cpp\
 							src/qTabDebugging.cpp\
-							src/qTabDeveloper.cpp
+							src/qTabDeveloper.cpp\
+							src/qTabMessages.cpp
 
 HEADERS 			=  		\
 							slsDetectorPlotting/include/SlsQt1DPlot.h\
@@ -82,6 +83,7 @@ HEADERS 			=  		\
 							include/qTabSettings.h\
 							include/qTabDebugging.h\
 							include/qTabDeveloper.h\
+							include/qTabMessages.h\
 							../slsDetectorSoftware/commonFiles/sls_detector_defs.h
 
 
@@ -95,3 +97,4 @@ FORMS = 					\
 							forms/form_tab_settings.ui\
 							forms/form_tab_debugging.ui\
 							forms/form_tab_developer.ui
+#							forms/form_tab_messages.ui

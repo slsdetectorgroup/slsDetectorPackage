@@ -19,6 +19,7 @@ class qTabAdvanced;
 class qTabSettings;
 class qTabDebugging;
 class qTabDeveloper;
+class qTabMessages;
 /** Project Class Headers */
 class slsDetectorUtils;
 #include "sls_detector_defs.h"
@@ -80,25 +81,27 @@ private:
 	/** The default tab heading color */
 	QColor defaultTabColor;
 	/** enumeration of the tabs */
-	enum {Measurement, Settings, DataOutput, Plot, Actions, Advanced, Debugging, Developer, NumberOfTabs };
+	enum {Measurement, Settings, DataOutput, Plot, Actions, Advanced, Debugging, Developer, Messages, NumberOfTabs };
 	/* Scroll Area for the tabs**/
 	QScrollArea *scroll[NumberOfTabs];
 	/**Measurement tab */
-	qTabMeasurement *tab_measurement;
+	qTabMeasurement 	*tab_measurement;
 	/**DataOutput tab */
-	qTabDataOutput *tab_dataoutput;
+	qTabDataOutput 		*tab_dataoutput;
 	/**Plot tab */
-	qTabPlot *tab_plot;
+	qTabPlot		 	*tab_plot;
 	/**Actions tab */
-	qTabActions *tab_actions;
+	qTabActions 		*tab_actions;
 	/**Settings tab */
-	qTabSettings *tab_settings;
+	qTabSettings 		*tab_settings;
 	/**Advanced tab */
-	qTabAdvanced *tab_advanced;
+	qTabAdvanced 		*tab_advanced;
 	/**Debugging tab */
-	qTabDebugging *tab_debugging;
+	qTabDebugging 		*tab_debugging;
 	/**Developer tab */
-	qTabDeveloper *tab_developer;
+	qTabDeveloper 		*tab_developer;
+	/**Messages tab */
+	qTabMessages 		*tab_messages;
 	/**if the developer tab should be enabled,known from command line */
 
 	int isDeveloper;

@@ -35,7 +35,7 @@
    <property name="geometry">
     <rect>
      <x>10</x>
-     <y>135</y>
+     <y>200</y>
      <width>751</width>
      <height>141</height>
     </rect>
@@ -73,7 +73,26 @@
       </widget>
      </item>
      <item row="0" column="1" colspan="7">
-      <widget class="QLineEdit" name="dispTitle"/>
+      <widget class="QLineEdit" name="dispTitle">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+       <property name="minimumSize">
+        <size>
+         <width>250</width>
+         <height>0</height>
+        </size>
+       </property>
+       <property name="echoMode">
+        <enum>QLineEdit::Normal</enum>
+       </property>
+       <property name="readOnly">
+        <bool>false</bool>
+       </property>
+      </widget>
      </item>
      <item row="3" column="7">
       <widget class="QLineEdit" name="dispZMax">
@@ -392,10 +411,10 @@
    </property>
    <property name="geometry">
     <rect>
-     <x>150</x>
+     <x>315</x>
      <y>70</y>
-     <width>466</width>
-     <height>46</height>
+     <width>446</width>
+     <height>51</height>
     </rect>
    </property>
    <property name="title">
@@ -466,7 +485,7 @@
        </property>
        <property name="sizeHint" stdset="0">
         <size>
-         <width>210</width>
+         <width>180</width>
          <height>20</height>
         </size>
        </property>
@@ -478,10 +497,10 @@
   <widget class="QGroupBox" name="box1D">
    <property name="geometry">
     <rect>
-     <x>150</x>
+     <x>315</x>
      <y>10</y>
-     <width>466</width>
-     <height>46</height>
+     <width>446</width>
+     <height>51</height>
     </rect>
    </property>
    <property name="title">
@@ -499,7 +518,7 @@
       <x>10</x>
       <y>20</y>
       <width>254</width>
-      <height>23</height>
+      <height>21</height>
      </rect>
     </property>
     <layout class="QGridLayout" name="gridLayout_3">
@@ -575,8 +594,8 @@
    <widget class="QPushButton" name="btnClear">
     <property name="geometry">
      <rect>
-      <x>420</x>
-      <y>12</y>
+      <x>395</x>
+      <y>15</y>
       <width>40</width>
       <height>28</height>
      </rect>
@@ -608,7 +627,7 @@
    <property name="geometry">
     <rect>
      <x>10</x>
-     <y>290</y>
+     <y>135</y>
      <width>751</width>
      <height>51</height>
     </rect>
@@ -634,6 +653,12 @@
     <layout class="QHBoxLayout" name="layoutSave">
      <item>
       <widget class="QLabel" name="lblFName">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
        <property name="text">
         <string>File Name:</string>
        </property>
@@ -645,7 +670,20 @@
         <number>0</number>
        </property>
        <item>
-        <widget class="QLineEdit" name="dispFName"/>
+        <widget class="QLineEdit" name="dispFName">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+         <property name="minimumSize">
+          <size>
+           <width>250</width>
+           <height>0</height>
+          </size>
+         </property>
+        </widget>
        </item>
        <item>
         <widget class="QComboBox" name="comboFormat">
@@ -688,6 +726,22 @@
       </widget>
      </item>
      <item>
+      <spacer name="horizontalSpacer_10">
+       <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+       </property>
+       <property name="sizeType">
+        <enum>QSizePolicy::Fixed</enum>
+       </property>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>40</width>
+         <height>20</height>
+        </size>
+       </property>
+      </spacer>
+     </item>
+     <item>
       <widget class="QCheckBox" name="chkAutoFName">
        <property name="text">
         <string>Automatic File Name</string>
@@ -710,10 +764,10 @@
    </property>
    <property name="geometry">
     <rect>
-     <x>655</x>
-     <y>10</y>
-     <width>106</width>
-     <height>106</height>
+     <x>10</x>
+     <y>70</y>
+     <width>261</width>
+     <height>51</height>
     </rect>
    </property>
    <property name="title">
@@ -725,28 +779,16 @@
    <property name="flat">
     <bool>false</bool>
    </property>
-   <widget class="QWidget" name="gridLayoutWidget_2">
+   <widget class="QWidget" name="gridLayoutWidget_4">
     <property name="geometry">
      <rect>
       <x>5</x>
-      <y>19</y>
-      <width>96</width>
-      <height>81</height>
+      <y>21</y>
+      <width>251</width>
+      <height>21</height>
      </rect>
     </property>
-    <layout class="QGridLayout" name="gridLayout_2">
-     <property name="horizontalSpacing">
-      <number>28</number>
-     </property>
-     <property name="verticalSpacing">
-      <number>8</number>
-     </property>
-     <property name="topMargin">
-      <number>0</number>
-     </property>
-     <property name="bottomMargin">
-      <number>0</number>
-     </property>
+    <layout class="QGridLayout" name="gridLayout_4">
      <item row="0" column="0">
       <widget class="QPushButton" name="btnClone">
        <property name="sizePolicy">
@@ -762,11 +804,11 @@
         <string>Create</string>
        </property>
        <property name="flat">
-        <bool>false</bool>
+        <bool>true</bool>
        </property>
       </widget>
      </item>
-     <item row="1" column="0">
+     <item row="0" column="1">
       <widget class="QPushButton" name="btnCloseClones">
        <property name="sizePolicy">
         <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
@@ -779,6 +821,28 @@
        </property>
        <property name="text">
         <string>Close All</string>
+       </property>
+       <property name="flat">
+        <bool>true</bool>
+       </property>
+      </widget>
+     </item>
+     <item row="0" column="2">
+      <widget class="QPushButton" name="btnSaveClones">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+       <property name="focusPolicy">
+        <enum>Qt::NoFocus</enum>
+       </property>
+       <property name="text">
+        <string>Save All</string>
+       </property>
+       <property name="flat">
+        <bool>true</bool>
        </property>
       </widget>
      </item>
@@ -793,8 +857,8 @@
     <rect>
      <x>10</x>
      <y>10</y>
-     <width>106</width>
-     <height>106</height>
+     <width>261</width>
+     <height>51</height>
     </rect>
    </property>
    <property name="title">
@@ -806,16 +870,16 @@
    <property name="flat">
     <bool>false</bool>
    </property>
-   <widget class="QWidget" name="gridLayoutWidget_4">
+   <widget class="QWidget" name="gridLayoutWidget_6">
     <property name="geometry">
      <rect>
       <x>10</x>
-      <y>14</y>
-      <width>93</width>
-      <height>96</height>
+      <y>20</y>
+      <width>246</width>
+      <height>21</height>
      </rect>
     </property>
-    <layout class="QGridLayout" name="gridLayout_4">
+    <layout class="QGridLayout" name="gridLayout_6">
      <item row="0" column="0">
       <widget class="QCheckBox" name="chkNoPlot">
        <property name="text">
@@ -823,14 +887,14 @@
        </property>
       </widget>
      </item>
-     <item row="1" column="0">
+     <item row="0" column="1">
       <widget class="QCheckBox" name="chktest1D_3">
        <property name="text">
         <string>Data Graph</string>
        </property>
       </widget>
      </item>
-     <item row="2" column="0">
+     <item row="0" column="2">
       <widget class="QCheckBox" name="chktest1D_4">
        <property name="text">
         <string>Histogram</string>

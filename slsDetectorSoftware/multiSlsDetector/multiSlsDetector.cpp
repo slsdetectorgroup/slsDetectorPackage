@@ -3316,9 +3316,9 @@ int multiSlsDetector::writeDataFile(string fname, float *data, float *err, float
        if (nch_left<n)
 	 n=nch_left;
 
-       //#ifdef VERBOSE
+#ifdef VERBOSE
        cout << " write " << i << " position " << off << " offset " << choff << endl;
-       //#endif
+#endif
        detectors[i]->writeDataFile(outfile,n, data+off, pe, pa, dataformat, choff);
 
        nch_left-=n;

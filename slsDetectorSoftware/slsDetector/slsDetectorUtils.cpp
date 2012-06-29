@@ -658,9 +658,12 @@ int slsDetectorUtils::dumpDetectorSetup(string const fname, int level){
 
   ofstream outfile;
   char *args[2];
-  for (int ia=0; ia<2; ia++) {
-    args[ia]=new char[1000];
-  }
+  char myargs[2][1000];
+  args[0]=myargs[0];
+  args[1]=myargs[1];
+  //  for (int ia=0; ia<2; ia++) {
+  //  args[ia]=new char[1000];
+  //}
 
 
 
@@ -691,18 +694,18 @@ int slsDetectorUtils::dumpDetectorSetup(string const fname, int level){
     }
 
 
-    strcpy(args[0],names[iv].c_str());
+    strcpy(myargs[0],names[iv].c_str());
     if (level==2) {
       fname1=fname+string(".ff");
-      strcpy(args[1],fname1.c_str());
+      strcpy(myargs[1],fname1.c_str());
     }
     outfile << names[iv] << " " << cmd->executeLine(nargs,args,GET_ACTION) << std::endl;
     iv++;
 
-    strcpy(args[0],names[iv].c_str());
+    strcpy(myargs[0],names[iv].c_str());
     if (level==2) {
       fname1=fname+string(".bad");
-      strcpy(args[1],fname1.c_str());
+      strcpy(myargs[1],fname1.c_str());
     }
     outfile << names[iv] << " " << cmd->executeLine(nargs,args,GET_ACTION) << std::endl;
     iv++;
@@ -710,14 +713,14 @@ int slsDetectorUtils::dumpDetectorSetup(string const fname, int level){
       
 
   if (level==2) {
-    strcpy(args[0],names[iv].c_str());
+    strcpy(myargs[0],names[iv].c_str());
     size_t c=fname.rfind('/');
     if (c<string::npos) {
       fname1=fname.substr(0,c+1)+string("trim_")+fname.substr(c+1);
     } else {
       fname1=string("trim_")+fname;
     }
-    strcpy(args[1],fname1.c_str());
+    strcpy(myargs[1],fname1.c_str());
 #ifdef VERBOSE
     std::cout<< "writing to file " << fname1 << std::endl;
 #endif

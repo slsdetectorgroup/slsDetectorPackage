@@ -4957,8 +4957,12 @@ int slsDetector::writeConfigurationFile(ofstream &outfile, int id){
 
   int iv=0;
   char *args[100];
+  char myargs[100][1000];
+  
   for (int ia=0; ia<100; ia++) {
-    args[ia]=new char[1000];
+    //args[ia]=new char[1000];
+    
+    args[ia]=myargs[ia];
   }
   
   

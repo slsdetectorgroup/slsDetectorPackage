@@ -292,9 +292,9 @@ class slsDetectorBase :  public virtual slsDetectorDefs, public slsDetectorUsers
   */
   virtual int setNumberOfModules(int i=-1, dimension d=X)=0;
 
-  int setDetectorSize(int x0=-1, int y0=-1, int nx=-1, int ny=-1){return setNumberOfModules(nx/getChansPerMod(0),X);};
+  int setDetectorSize(int x0=-1, int y0=-1, int nx=-1, int ny=-1){int nm=-1; if (nx>=0) nm=nx/getChansPerMod(0); return setNumberOfModules(nm,X);};
 
-  int getDetectorSize(int &x0, int &y0, int &nx, int &ny){x0=0; nx=setNumberOfModules(-1,X)*getChansPerMod(0); return nx;};
+  int getDetectorSize(int &x0, int &y0, int &nx, int &ny){x0=0; nx=setNumberOfModules(-1,X)*getChansPerMod(0); y0=0; ny=1; return nx;};
 
   virtual int getMaxNumberOfModules(dimension d=X)=0; //
   int getMaximumDetectorSize(int &nx, int &ny){nx=getMaxNumberOfModules(X)*getChansPerMod(0); ny=1; return nx;};

@@ -417,11 +417,11 @@ int postProcessing::fillBadChannelMask() {
 #ifdef VERBOSE
       cout << "deleting bad channel mask beacuse no bad channel correction is selected" << endl;
 #endif
-      delete [] badChannelMask;
+      if (badChannelMask) delete [] badChannelMask;
       badChannelMask=NULL;
     }
   }
-  
+
 #ifdef VERBOSE
   cout << "number of bad channels is " << nbad << endl;
 #endif

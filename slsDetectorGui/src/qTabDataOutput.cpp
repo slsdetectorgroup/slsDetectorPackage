@@ -17,6 +17,7 @@
 using namespace std;
 
 
+//-------------------------------------------------------------------------------------------------------------------------------------------------
 
 
 qTabDataOutput::qTabDataOutput(QWidget *parent,slsDetectorUtils*& detector):
@@ -27,6 +28,7 @@ qTabDataOutput::qTabDataOutput(QWidget *parent,slsDetectorUtils*& detector):
 }
 
 
+//-------------------------------------------------------------------------------------------------------------------------------------------------
 
 
 qTabDataOutput::~qTabDataOutput(){
@@ -34,13 +36,15 @@ qTabDataOutput::~qTabDataOutput(){
 }
 
 
+//-------------------------------------------------------------------------------------------------------------------------------------------------
 
 
 void qTabDataOutput::SetupWidgetWindow(){
-	outputDir= QString(myDet->getFilePath().c_str());
-	dispOutputDir->setText(outputDir);
+	dispOutputDir->setText(QString(myDet->getFilePath().c_str()));
 }
 
+
+//-------------------------------------------------------------------------------------------------------------------------------------------------
 
 
 void qTabDataOutput::Initialization(){
@@ -49,20 +53,27 @@ void qTabDataOutput::Initialization(){
 }
 
 
-
-void qTabDataOutput::Enable(bool enable){
-	layoutOutput->setEnabled(enable);
-	boxCorrection->setEnabled(enable);
-}
+//-------------------------------------------------------------------------------------------------------------------------------------------------
 
 
 void qTabDataOutput::setOutputDir(const QString& path){
-	outputDir = path;
-	myDet->setFilePath(string(outputDir.toAscii().constData()));
+	myDet->setFilePath(string(path.toAscii().constData()));
 #ifdef VERBOSE
 	cout<<"Output Directory changed to :"<<myDet->getFilePath()<<endl;
 #endif
 }
+
+
+//-------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+void qTabDataOutput::Refresh(){
+	/** output dir*/
+	dispOutputDir->setText(QString(myDet->getFilePath().c_str()));
+}
+
+
+//-------------------------------------------------------------------------------------------------------------------------------------------------
 
 
 void qTabDataOutput::browseOutputDir()
@@ -73,3 +84,4 @@ void qTabDataOutput::browseOutputDir()
 }
 
 
+//-------------------------------------------------------------------------------------------------------------------------------------------------

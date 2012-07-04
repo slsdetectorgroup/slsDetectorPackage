@@ -30,6 +30,10 @@ public:
 	 */
 	~qTabAdvanced();
 
+	/** To refresh and update widgets
+	 */
+	void Refresh();
+
 
 private:
 	/** The sls detector object */

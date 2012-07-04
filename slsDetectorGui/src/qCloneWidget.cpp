@@ -141,7 +141,7 @@ void qCloneWidget::SetupWidgetWindow(QString title,int numDim,SlsQt1DPlot*& plot
 //-------------------------------------------------------------------------------------------------------------------------------------------------
 
 void qCloneWidget::SetCloneHists(int nHists,int histNBins,double* histXAxis,double* histYAxis[],string histTitle[]){
-	/** for each plot*/
+	/** for each plot*/cout<<"qclone nhists:"<<nHists<<endl;
 	for(int hist_num=0;hist_num<nHists;hist_num++){
 		/** create hists */
 		SlsQtH1D*  k;
@@ -183,11 +183,12 @@ void qCloneWidget::SavePlot(){
 	QPainter painter(&img);
 	cloneBox->render(&painter);
 
-    fName = QFileDialog::getSaveFileName(this,tr("Save Snapshot "),
-    		fName,tr("Images (*.png *.xpm *.jpg)"));
+    fName = QFileDialog::getSaveFileName(this,tr("Save Snapshot "),fName,tr("Images (*.png *.xpm *.jpg)"),0,QFileDialog::ShowDirsOnly);
     if (!fName.isEmpty())
-    	if(!(img.save(fName)))
-    		qDefs::ErrorMessage("ERROR: Attempt to save snapshot failed","Snapshot: WARNING");
+    	if((img.save(fName)))
+    		qDefs::InfoMessage("The SnapShot has been successfully saved","Snapshot: Information");
+    	else
+    		qDefs::ErrorMessage("ERROR: Attempt to save snapshot failed. Wrong Format","Snapshot: WARNING");
 }
 
 //-------------------------------------------------------------------------------------------------------------------------------------------------

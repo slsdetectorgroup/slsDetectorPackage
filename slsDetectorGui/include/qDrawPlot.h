@@ -40,6 +40,8 @@ public:
 	/** Destructor	 */
 	~qDrawPlot();
 
+	bool isRunning(){return running;};
+
 	/** Number of x axis pixels	 */
 	int GetPixelsX(){return nPixelsX;};
 	/** Number of y axis pixels	 */
@@ -72,7 +74,10 @@ public:
 	void DisableZoom(bool disable);
 	/** gets the progress of acquisition to the measurement tab*/
 	int GetProgress(){return progress;};
-
+	/**	Enables plot from the plot tab*/
+	void EnablePlot(bool enable);
+	/**	To know whether 1d started*/
+	bool DoesPlotExist(){return plotExists;};
 
 	/** Starts or stop acquisition
 	 * Calls startDaq() function
@@ -171,6 +176,8 @@ private:
 	int currentPersistency;
 	int progress;
 	bool plotEnable;
+	bool plotExists;
+	bool running;
 
 	/** Initializes all its members and the thread */
 	void Initialization();
@@ -223,13 +230,10 @@ void Clear1DPlot();
 void ClonePlot();
 /** Closes all the clone plots */
 void CloseClones();
-/** To Save plot
- @param FName full name of file */
-void SavePlot(QString FName);
+/** To Save plot */
+void SavePlot();
 /**	Sets persistency from plot tab */
 void SetPersistency(int val);
-/**	Enables plot */
-void EnablePlot(bool enable);
 
 
 

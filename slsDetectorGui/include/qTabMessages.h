@@ -15,7 +15,9 @@ class slsDetectorUtils;
 /** Qt Include Headers */
 #include <QWidget>
 #include <QTextEdit>
-#include <QLineEdit>
+#include <QEvent>
+#include <QPushButton>
+#include "qDebugStream.h"
 
 /**
  *@short sets up the Messages parameters
@@ -42,11 +44,14 @@ private:
 	/** Log of executed commands */
 	QTextEdit *dispLog;
 
-	/** Command display */
-	QLineEdit *dispCommand;
+	/** To save the log to file */
+	QPushButton *btnSave;
 
-	/** Path display */
-	QLineEdit *dispPath;
+	/** To clear the log to file */
+	QPushButton *btnClear;
+
+	/** This class creates the log */
+	qDebugStream *qout;
 
 /** methods */
 	/** Sets up the widget */
@@ -55,9 +60,15 @@ private:
 	/** Sets up all the slots and signals */
 	void Initialization();
 
-
 private slots:
-	void executeCommand();
+/** Stream log to textedit in GUI */
+void customEvent(QEvent *e);
+
+/** Save Log to File*/
+void SaveLog();
+
+/** Clear Log to File*/
+void ClearLog();
 
 };
 

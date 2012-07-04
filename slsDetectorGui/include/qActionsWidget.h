@@ -72,9 +72,6 @@ void SetScript(int index);
  * 	Options: constant size,specific values,values from file */
 void EnableSizeWidgets();
 
-
-
-protected:
 };
 
 

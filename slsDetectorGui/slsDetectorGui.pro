@@ -71,6 +71,7 @@ HEADERS 			=  		\
 							slsDetectorPlotting/include/SlsQtValidators.h\
 							slsDetectorPlotting/include/SlsQtNumberEntry.h\
 							include/qDefs.h\
+							include/qDebugStream.h\
 							include/qDetectorMain.h\
 							include/qDrawPlot.h\
 							include/qCloneWidget.h\

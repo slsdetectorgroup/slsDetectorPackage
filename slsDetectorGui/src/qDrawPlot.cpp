@@ -7,6 +7,8 @@
 /** Qt Project Class Headers */
 #include "qDrawPlot.h"
 #include "qCloneWidget.h"
+#include "qDefs.h"
+#include "slsDetector.h"
 /** Project Class Headers */
 #include "slsDetector.h"
 #include "multiSlsDetector.h"
@@ -15,12 +17,12 @@
 #include <QFont>
 #include <QImage>
 #include <QPainter>
+#include <QFileDialog>
 /** C++ Include Headers */
 #include <iostream>
 #include <string>
 #include <sstream>
 using namespace std;
-
 
 
 //-------------------------------------------------------------------------------------------------------------------------------------------------
@@ -73,6 +75,9 @@ void qDrawPlot::SetupWidgetWindow(){
 	currentPersistency = 0;
 	progress = 0;
 	plotEnable=true;
+	plotExists=false;
+	/** This is so that it initially stop and plots */
+	running = 1;
 	for(int i=0;i<MAX_1DPLOTS;i++) {histYAxis[i]=0;yvalues[i]=0; }
 
 	/*clone*/
@@ -144,9 +149,9 @@ void qDrawPlot::Initialization(){
 //-------------------------------------------------------------------------------------------------------------------------------------------------
 
 void qDrawPlot::StartStopDaqToggle(bool stop_if_running){
-	static bool running = 1;
+	//static bool running = 1;
 	if(running){ //stopping
-		StartDaq(0);
+		StartDaq(false);
 		running=!running;
 	}else if(!stop_if_running){ //then start
 
@@ -199,6 +204,7 @@ int qDrawPlot::ResetDaqForGui(){
 //-------------------------------------------------------------------------------------------------------------------------------------------------
 
 bool qDrawPlot::StartOrStopThread(bool start){
+	static bool firstTime = true;
 	static bool             gui_acquisition_thread_running = 0;
 	static pthread_t        gui_acquisition_thread;
 	static pthread_mutex_t  gui_acquisition_start_stop_mutex = PTHREAD_MUTEX_INITIALIZER;
@@ -207,13 +213,13 @@ bool qDrawPlot::StartOrStopThread(bool start){
 	//stop part, before start or restart
 	if(gui_acquisition_thread_running){
 		cout<<"Stopping current acquisition thread ...."<<endl;
-		stop_signal = 1;//sort of useless
-		pthread_join(gui_acquisition_thread,NULL); //wait until he's finished, ie. exits
+		stop_signal = 1;//sorta useless right now
 		gui_acquisition_thread_running = 0;
 	}
 
 	//start part
 	if(start){
+
 		/** Defaults */
 		progress = 0;
 		currentFrame = 0;
@@ -232,12 +238,14 @@ bool qDrawPlot::StartOrStopThread(bool start){
 		/** Setting the callback function to get data from software client*/
 		myDet->registerDataCallback(&(GetDataCallBack),this);
 		/** Start acquiring data from server */
+		if(!firstTime) pthread_join(gui_acquisition_thread,NULL);//wait until he's finished, ie. exits
 		pthread_create(&gui_acquisition_thread, NULL,DataStartAcquireThread, (void*) this);
+		firstTime = false;
 		/** This is set here and later reset to zero when all the plotting is done
 		 * This is manually done instead of keeping track of thread because
 		 * this thread returns immediately after executing the acquire command*/
 		gui_acquisition_thread_running=1;
-		cout<<"Started acquiring threaddd"<<endl;
+		cout<<"Started acquiring threaddd:"<<endl;
 	}
 	pthread_mutex_unlock(&gui_acquisition_start_stop_mutex);
 	return gui_acquisition_thread_running;
@@ -262,9 +270,9 @@ int qDrawPlot::GetDataCallBack(detectorData *data, void *this_pointer){
 //-------------------------------------------------------------------------------------------------------------------------------------------------
 
 int qDrawPlot::GetData(detectorData *data){
-//#ifdef VERYVERBOSE
+#ifdef VERYVERBOSE
 	cout<<"Entering GetDatafunction"<<endl;
-//#endif
+#endif
 
 	progress=(int)data->progressIndex;
 
@@ -332,6 +340,9 @@ int qDrawPlot::GetData(detectorData *data){
 
 void qDrawPlot::setNumMeasurements(int num){
 	number_of_measurements = num;
+#ifdef VERBOSE
+	cout<<"Setting Number of Measurements to " <<num<<endl;
+#endif
 }
 
 //-------------------------------------------------------------------------------------------------------------------------------------------------
@@ -366,7 +377,6 @@ void qDrawPlot::Clear1DPlot(){
 
 void qDrawPlot::UpdatePlot(){
 	//static int last_plot_number = 0;
-
 	plot_update_timer->stop();
 	if(plotEnable){
 		LockLastImageArray();
@@ -392,6 +402,8 @@ void qDrawPlot::UpdatePlot(){
 					h->Attach(plot1D);
 
 				}
+				/**plot exists is false in the beginning, right after cloning and when no plot  is checked*/
+				plotExists=true;
 			}
 		}
 
@@ -407,14 +419,15 @@ void qDrawPlot::UpdatePlot(){
 				plot2D->SetZTitle(imageZAxisTitle);
 				plot2D->UpdateNKeepSetRangeIfSet(); //this will keep a "set" z range, and call Plot()->Update();
 			}
+			/**plot exists is false in the beginning, right after cloning and when no plot  is checked*/
+			plotExists=true;
 		}
 	}
 	last_plot_number=lastImageNumber;
 
 	if(plotEnable) UnlockLastImageArray();
-
 	/** Measurement not over, continue*/
-	if(number_of_exposures!=last_plot_number){
+	if(number_of_exposures!=currentFrame){//las plot number?
 		plot_update_timer->start(500);
 	}
 	/** if a measurement is over */
@@ -428,7 +441,6 @@ void qDrawPlot::UpdatePlot(){
 		}/** To start the next measurement*/
 		else{
 			StopDaqForGui();
-			//StartDaq(false);
 			StartDaq(true);
 		}
 	}
@@ -457,7 +469,10 @@ void qDrawPlot::ClonePlot(){
 	}
 	/** save height to keep maintain same height of plot */
 	int preheight = height();
+
 	/** create clone */
+	/** plotexists is true after calling updateplot*/
+	plotExists=false;
 	winClone[i] = new qCloneWidget(this,i,boxPlot->title(),(int)plot_in_scope,plot1D,plot2D,myDet->getFilePath());
 	if(plot_in_scope==1){
 		plot1D = new SlsQt1DPlot(boxPlot);
@@ -465,7 +480,7 @@ void qDrawPlot::ClonePlot(){
 		plot1D->SetXTitle(histXAxisTitle.toAscii().constData());
 		plot1D->SetYTitle(histYAxisTitle.toAscii().constData());
 		plotLayout->addWidget(plot1D,1,1,1,1);
-		winClone[i]->SetCloneHists((int)nHists,histNBins,histXAxis,histYAxis,histTitle);
+		if(running) winClone[i]->SetCloneHists((int)nHists,histNBins,histXAxis,histYAxis,histTitle);
 	}
 	else{
 		plot2D = new SlsQt2DPlotLayout(boxPlot);
@@ -478,8 +493,9 @@ void qDrawPlot::ClonePlot(){
 	}
 	setMinimumHeight(preheight);
 	resize(width(),preheight);
-	/** update the actual plot */
-	UpdatePlot();
+
+	/** update the actual plot  only if running, else it doesnt know when its over*/
+	if(running)	UpdatePlot();
 	connect(this, 		SIGNAL(InterpolateSignal(bool)),	plot2D, 	SIGNAL(InterpolateSignal(bool)));
 	connect(this, 		SIGNAL(ContourSignal(bool)),		plot2D, 	SIGNAL(ContourSignal(bool)));
 	connect(this, 		SIGNAL(LogzSignal(bool)),			plot2D, 	SLOT(SetZScaleToLog(bool)));
@@ -509,11 +525,21 @@ void qDrawPlot::CloneCloseEvent(int id){
 
 //-------------------------------------------------------------------------------------------------------------------------------------------------
 
-void qDrawPlot::SavePlot(QString FName){
+void qDrawPlot::SavePlot(){
+	/** render image */
 	QImage img(size().width(),size().height(),QImage::Format_RGB32);
 	QPainter painter(&img);
 	render(&painter);
-	img.save(FName);
+
+	/** save image*/
+	QString fName = QString(myDet->getFilePath().c_str())+"/Image.png";
+	fName = QFileDialog::getSaveFileName(this,tr("Save Image"),fName,tr("Images (*.png *.xpm *.jpg)"));
+ 	if (!fName.isEmpty())
+	if(img.save(fName))
+		qDefs::InfoMessage("The Image has been successfully saved","Dock: Information");
+	else
+		qDefs::ErrorMessage("ERROR: Attempt to save image failed. Wrong Format","Dock: WARNING");
+
 }
 
 //-------------------------------------------------------------------------------------------------------------------------------------------------
@@ -532,7 +558,10 @@ void qDrawPlot::EnablePlot(bool enable){
 #ifdef VERBOSE
 	cout<<"Plotting set to:"<<enable<<endl;
 #endif
-	plotEnable = !enable;
+	plotEnable = enable;
+	/**if no plot, cant do setting range.
+	 * not true vice versa where plot was false and now set it to true*/
+	if(!enable)	plotExists=false;
 	Clear1DPlot();
 
 }

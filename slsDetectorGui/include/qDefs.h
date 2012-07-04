@@ -35,7 +35,24 @@ public:
 
 //-------------------------------------------------------------------------------------------------------------------------------------------------
 
-	/** returns the value in ns to send to server.
+	/** returns the unit in words
+	 * @param unit is the time unit
+	 */
+	static string getUnitString(timeUnit unit){
+		switch(unit){
+		case HOURS:			return string("hrs");
+		case MINUTES:		return string("min");
+		case SECONDS:		return string("sec");
+		case MILLISECONDS:	return string("msec");
+		case MICROSECONDS:	return string("usec");
+		case NANOSECONDS:	return string("nsec");
+		default:			return string("error");
+		}
+	};
+//-------------------------------------------------------------------------------------------------------------------------------------------------
+
+	/** returns the value in ns to send to server as the
+	 * server class slsdetector accepts in ns.
 	 * @param unit unit of time
 	 * @param value time
 	 * returns time value in ns
@@ -96,8 +113,21 @@ public:
 	 * */
 	static void  ErrorMessage(string errorMessage,char source[])
 	{
+		static QMessageBox* errorBox;
+		errorBox= new QMessageBox(QMessageBox::Warning,source,tr(errorMessage.c_str()),QMessageBox::Ok, errorBox);
+		errorBox->exec();
+	}
+
+//-------------------------------------------------------------------------------------------------------------------------------------------------
+
+	/**displays an information message
+	 * @param infoMessage the message to be displayed
+	 * @param source is the tab or the source of the information
+	 * */
+	static void  InfoMessage(string infoMessage,char source[])
+	{
 		static QMessageBox* msgBox;
-		msgBox= new QMessageBox(QMessageBox::Warning,source,tr(errorMessage.c_str()),QMessageBox::Ok, msgBox);
+		msgBox= new QMessageBox(QMessageBox::Information,source,tr(infoMessage.c_str()),QMessageBox::Ok, msgBox);
 		msgBox->exec();
 	}
 

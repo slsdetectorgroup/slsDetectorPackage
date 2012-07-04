@@ -302,7 +302,7 @@ void qTabMeasurement::setExposureTime(){
 	/** Get the value of timer in ns **/
 	exptimeNS = (int64_t)qDefs::getNSTime((qDefs::timeUnit)comboExpUnit->currentIndex(),spinExpTime->value());
 #ifdef VERBOSE
-	cout<<"Setting acquisition time to " << exptimeNS << " clocks" << endl;
+	cout<<"Setting acquisition time to " << exptimeNS << " clocks" << "/"<<spinExpTime->value()<<qDefs::getUnitString((qDefs::timeUnit)comboExpUnit->currentIndex())<<endl;
 #endif
 	myDet->setTimer(slsDetectorDefs::ACQUISITION_TIME,exptimeNS);
 
@@ -312,12 +312,12 @@ void qTabMeasurement::setExposureTime(){
 		if(exptimeNS>acqtimeNS) {
 			lblNote->show();
 			lblPeriod->setPalette(lblNote->palette());
-			lblPeriod->setText("* Acquisition Period");
+			lblPeriod->setText("Acquisition Period:*");
 		}
 		else {
 			lblNote->hide();
 			lblPeriod->setPalette(lblNumFrames->palette());
-			lblPeriod->setText("Acquisition Period");
+			lblPeriod->setText("Acquisition Period:");
 		}
 	}
 }
@@ -329,7 +329,7 @@ void qTabMeasurement::setAcquisitionPeriod(){
 	/** Get the value of timer in ns **/
 	acqtimeNS = (int64_t)qDefs::getNSTime((qDefs::timeUnit)comboPeriodUnit->currentIndex(),spinPeriod->value());
 #ifdef VERBOSE
-	cout<<"Setting frame period between exposures to " << acqtimeNS << " clocks" << endl;
+	cout<<"Setting frame period between exposures to " << acqtimeNS << " clocks"<< "/"<<spinPeriod->value()<<qDefs::getUnitString((qDefs::timeUnit)comboPeriodUnit->currentIndex())<<endl;
 #endif
 	myDet->setTimer(slsDetectorDefs::FRAME_PERIOD,acqtimeNS);
 
@@ -338,12 +338,12 @@ void qTabMeasurement::setAcquisitionPeriod(){
 	if(exptimeNS>acqtimeNS){
 		lblNote->show();
 		lblPeriod->setPalette(lblNote->palette());
-		lblPeriod->setText("* Acquisition Period");
+		lblPeriod->setText("Acquisition Period:*");
 	}
 	else {
 		lblNote->hide();
 		lblPeriod->setPalette(lblNumFrames->palette());
-		lblPeriod->setText("Acquisition Period");
+		lblPeriod->setText("Acquisition Period:");
 	}
 }
 
@@ -363,7 +363,7 @@ void qTabMeasurement::setDelay(){
 	/** Get the value of timer in ns **/
 	exptimeNS = (int64_t)qDefs::getNSTime((qDefs::timeUnit)comboDelayUnit->currentIndex(),spinDelay->value());
 #ifdef VERBOSE
-	cout<<"Setting delay after trigger to " << exptimeNS << " clocks" << endl;
+	cout<<"Setting delay after trigger to " << exptimeNS << " clocks"<< "/"<<spinDelay->value()<<qDefs::getUnitString((qDefs::timeUnit)comboDelayUnit->currentIndex())<<endl;
 #endif
 	myDet->setTimer(slsDetectorDefs::DELAY_AFTER_TRIGGER,exptimeNS);
 }
@@ -496,7 +496,7 @@ void qTabMeasurement::setTimingMode(int mode){
 	if(lblExpTime->isEnabled()){
 		time = qDefs::getCorrectTime(unit,((float)(myDet->setTimer(slsDetectorDefs::ACQUISITION_TIME,-1)*(1E-9))));
 #ifdef VERBOSE
-		cout<<"Getting acquisition time : " << time << "s" << endl;
+		cout<<"Getting acquisition time : " << time << qDefs::getUnitString(unit) << endl;
 #endif
 		spinExpTime->setValue(time);
 		comboExpUnit->setCurrentIndex((int)unit);
@@ -506,7 +506,7 @@ void qTabMeasurement::setTimingMode(int mode){
 	if(lblPeriod->isEnabled()){
 		time = qDefs::getCorrectTime(unit,((float)(myDet->setTimer(slsDetectorDefs::FRAME_PERIOD,-1)*(1E-9))));
 #ifdef VERBOSE
-		cout<<"Getting frame period between exposures : " << time << "s" << endl;
+		cout<<"Getting frame period between exposures : " << time <<  qDefs::getUnitString(unit) << endl;
 #endif
 		spinPeriod->setValue(time);
 		comboPeriodUnit->setCurrentIndex((int)unit);
@@ -517,17 +517,17 @@ void qTabMeasurement::setTimingMode(int mode){
 		if(exptimeNS>acqtimeNS) {
 			lblNote->show();
 			lblPeriod->setPalette(lblNote->palette());
-			lblPeriod->setText("* Acquisition Period");
+			lblPeriod->setText("Acquisition Period:*");
 		}
 		else {
 			lblNote->hide();
 			lblPeriod->setPalette(lblNumFrames->palette());
-			lblPeriod->setText("Acquisition Period");
+			lblPeriod->setText("Acquisition Period:");
 		}
 	}else	{
 		lblNote->hide();
 		lblPeriod->setPalette(lblNumFrames->palette());
-		lblPeriod->setText("Acquisition Period");
+		lblPeriod->setText("Acquisition Period:");
 	}
 
 	/**Number of Triggers */
@@ -543,7 +543,7 @@ void qTabMeasurement::setTimingMode(int mode){
 	if(lblDelay->isEnabled()){
 		time = qDefs::getCorrectTime(unit,((float)(myDet->setTimer(slsDetectorDefs::DELAY_AFTER_TRIGGER,-1)*(1E-9))));
 #ifdef VERBOSE
-		cout<<"Getting delay after trigger : " << time << "s" << endl;
+		cout<<"Getting delay after trigger : " << time <<  qDefs::getUnitString(unit) << endl;
 #endif
 		spinDelay->setValue(time);
 		comboDelayUnit->setCurrentIndex((int)unit);
@@ -573,5 +573,23 @@ void qTabMeasurement::setTimingMode(int mode){
 
 
 }
+
+
+//-------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+void qTabMeasurement::Refresh(){
+	/** File Name **/
+	dispFileName->setText(QString(myDet->getFileName().c_str()));
+	/** File Index **/
+	spinIndex->setValue(myDet->getFileIndex());
+	/** progress label index **/
+	lblProgressIndex->setText(QString::number(myDet->getFileIndex()));
+	/** Progress bar **/
+	progressBar->setValue(myDet->getCurrentProgress());
+	/** Timing mode**/
+	SetupTimingMode();//comboTimingMode->setCurrentIndex((int)myDet->setExternalCommunicationMode());
+}
+
 
 //-------------------------------------------------------------------------------------------------------------------------------------------------

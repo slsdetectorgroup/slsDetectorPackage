@@ -34,12 +34,16 @@ public:
 	~qTabPlot();
 
 
+
 private:
 	/** The sls detector object */
 	slsDetectorUtils *myDet;
 
 	/** The Plot widget	 */
 	qDrawPlot *myPlot;
+
+	/** 1d/2d plot	 */
+	bool isOneD;
 
 	/** some Default Values */
 	static QString defaultPlotTitle;
@@ -57,11 +61,6 @@ private:
 	/** Sets up all the slots and signals
 	 */
 	void Initialization();
-
-	/** Enables/Disables all the widgets
-	 */
-	void Enable(bool enable);
-
 
 
 
@@ -93,9 +92,10 @@ void SetAxesRange();
 void SetZRange();
 /** Enables the range of the z axis */
 void EnableZRange();
-/** Save Plot */
-void SavePlot();
-
+/** Set Plot to none, data graph, histogram*/
+void SetPlot();
+/** Enable Histogram */
+void EnableHistogram(bool enable);
 
 signals:
 void DisableZoomSignal(bool);

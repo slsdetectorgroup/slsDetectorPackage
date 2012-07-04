@@ -52,10 +52,11 @@ public:
 	 *   @param argv server options
 	 *   @param app the qapplication
 	 *   @param parent makes the parent window 0 by default
-	 */
+	 *   */
 	qDetectorMain(int argc, char **argv, QApplication *app, QWidget *parent = 0);
 
-	/**Destructor */
+	/**Destructor
+	 * */
 	~qDetectorMain();
 
 private:
@@ -103,88 +104,55 @@ private:
 	/**Messages tab */
 	qTabMessages 		*tab_messages;
 	/**if the developer tab should be enabled,known from command line */
-
 	int isDeveloper;
+
+
 	/**Sets up the layout of the widget
-	 */
+	 * */
 	void SetUpWidgetWindow();
 
 	/**Sets up detector
-	 */
+	 * */
 	void SetUpDetector();
 
 	/**Sets up the signals and the slots
-	 */
+	 * */
 	void Initialization();
 
-	/** Sets/unsets the developer mode (developer tab)
-	 * @param b bool TRUE sets, FALSE unsets\
-	 */
-	void SetDeveloperMode(bool b);
 
 private slots:
-/** Sets/unsets the debug mode i.e. enables/disables the debug tab
- *	@param b bool TRUE sets, FALSE unsets
- */
-void SetDebugMode(bool b);
+/** Enables modes as selected -Debug, Beamline, Expert, Dockable(calls setdockablemode())
+ * */
+void EnableModes(QAction *action);
 
-/** Sets/unsets the beamline mode (at the moment it doesn't do anything)
- * @param b bool TRUE sets, FALSE unsets
- */
-void SetBeamlineMode(bool b);
+/** Executes actions in the utilities menu as selected
+ * */
+void ExecuteUtilities(QAction *action);
 
-/** Sets/unsets the expert mode i.e. enables/disables the advanced and Settings tabs
- * @param b bool TRUE sets, FALSE unsets
- */
-void SetExpertMode(bool b);
+/** Executes actions in the utilities menu as selected
+ * */
+void ExecuteHelp(QAction *action);
 
-/** Sets/unsets the dockable plot mode
- * @param b bool TRUE sets, FALSE unsets
- */
-void SetDockableMode(bool b);
-
-/** Refreshes the tab each time the tab is changed. Also displays the next enabled tab */
-void refresh(int index);
-
-/** Opens Setup */
-void OpenSetup();
-
-/** Saves Setup */
-void SaveSetup();
-
-/** Measurement Wizard */
-void MeasurementWizard();
-
-/** Open Configuration*/
-void OpenConfiguration();
-
-/** Save Configuration */
-void SaveConfiguration();
-
-/** Executing Energy Calibration */
-void EnergyCalibration();
-
-/** Executing Angular Calibration */
-void AngularCalibration();
-
-/** Executing Version */
-void Version();
-
-/** Executing About */
-void About();
+/** Refreshes the tab each time the tab is changed. Also displays the next enabled tab
+ * */
+void Refresh(int index);
 
 /** Resizes the main window if the plot is docked/undocked
  *	@param b bool TRUE if undocked(outside main window), FALSE docked
- */
+ *	*/
 void ResizeMainWindow(bool b);
 
-/** Enables/disables tabs depending on if acquisition is currently in progress */
+/** Enables/disables tabs depending on if acquisition is currently in progress
+ * */
 void EnableTabs();
 
-/** Set the tool tip of mouse controlled zooming depening on if its enabled/disabled*/
+/** Set the tool tip of mouse controlled zooming depening on if its enabled/disabled
+ * */
 void SetZoomToolTip(bool disable);
 
 protected:
+/** Adjust the resizing to resize plot, except for actions tab
+ * */
 void resizeEvent(QResizeEvent* event);
 
 signals:

@@ -33,13 +33,15 @@ public:
 	 */
 	~qTabDataOutput();
 
+	/** To refresh and update widgets
+	 */
+	void Refresh();
+
+
 
 private:
 	/** The sls detector object */
 	slsDetectorUtils *myDet;
-
-	/** Output Directory */
-	QString outputDir;
 
 /** methods */
 	/** Sets up the widget */
@@ -47,9 +49,6 @@ private:
 
 	/** Sets up all the slots and signals */
 	void Initialization();
-
-	/** Enables/Disables all the widgets */
-	void Enable(bool enable);
 
 
 private slots:

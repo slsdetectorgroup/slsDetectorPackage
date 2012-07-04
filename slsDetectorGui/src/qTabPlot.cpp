@@ -11,11 +11,13 @@
 /** Project Class Headers */
 #include "slsDetector.h"
 #include "multiSlsDetector.h"
+/** Qt Include Headers */
 /** C++ Include Headers */
 #include <iostream>
 #include <string>
 using namespace std;
 
+//-------------------------------------------------------------------------------------------------------------------------------------------------
 
 
 QString qTabPlot::defaultPlotTitle("Measurement");
@@ -24,6 +26,9 @@ QString qTabPlot::defaultHistYAxisTitle("Counts");
 QString qTabPlot::defaultImageXAxisTitle("Pixel");
 QString qTabPlot::defaultImageYAxisTitle("Pixel");
 QString qTabPlot::defaultImageZAxisTitle("Intensity");
+
+
+//-------------------------------------------------------------------------------------------------------------------------------------------------
 
 
 qTabPlot::qTabPlot(QWidget *parent,slsDetectorUtils*& detector, qDrawPlot*& plot):QWidget(parent),myDet(detector),myPlot(plot){
@@ -42,6 +47,7 @@ qTabPlot::qTabPlot(QWidget *parent,slsDetectorUtils*& detector, qDrawPlot*& plot
 }
 
 
+//-------------------------------------------------------------------------------------------------------------------------------------------------
 
 
 qTabPlot::~qTabPlot(){
@@ -50,6 +56,7 @@ qTabPlot::~qTabPlot(){
 }
 
 
+//-------------------------------------------------------------------------------------------------------------------------------------------------
 
 
 void qTabPlot::SetupWidgetWindow(){
@@ -75,8 +82,11 @@ void qTabPlot::SetupWidgetWindow(){
 }
 
 
+//-------------------------------------------------------------------------------------------------------------------------------------------------
+
+
 void qTabPlot::Select1DPlot(bool b){
-	SetupWidgetWindow();
+	isOneD = b;
 	if(b){
 		box1D->setEnabled(true);
 		box2D->setEnabled(false);
@@ -105,9 +115,16 @@ void qTabPlot::Select1DPlot(bool b){
 }
 
 
+//-------------------------------------------------------------------------------------------------------------------------------------------------
+
+
 void qTabPlot::Initialization(){
 /** Plot arguments box*/
-	connect(chkNoPlot, SIGNAL(toggled(bool)),myPlot, SLOT(EnablePlot(bool)));
+	connect(radioNoPlot, 	SIGNAL(clicked()),this, SLOT(SetPlot()));
+	connect(radioHistogram, SIGNAL(clicked()),this, SLOT(SetPlot()));
+	connect(radioDataGraph, SIGNAL(clicked()),this, SLOT(SetPlot()));
+/** Scan box*/
+	//connect(radioNoPlot, SIGNAL(toggled(bool)),this, SLOT(EnablePlot(bool)));
 /** Snapshot box*/
 	connect(btnClone, 		SIGNAL(clicked()),myPlot, 	SLOT(ClonePlot()));
 	connect(btnCloseClones, SIGNAL(clicked()),myPlot, 	SLOT(CloseClones()));
@@ -147,21 +164,13 @@ void qTabPlot::Initialization(){
 	connect(this,			SIGNAL(SetZRangeSignal(double,double)),myPlot, SIGNAL(SetZRangeSignal(double,double)));
 
 /** Common Buttons*/
-	connect(btnClear, 		SIGNAL(clicked()),		myPlot, SLOT(Clear1DPlot()));
 /** Save */
-	connect(btnSave, 		SIGNAL(clicked()),		this, 	SLOT(SavePlot()));
-
+	connect(btnSave, 		SIGNAL(clicked()),		myPlot,	SLOT(SavePlot()));
 }
 
 
+//-------------------------------------------------------------------------------------------------------------------------------------------------
 
-void qTabPlot::Enable(bool enable){
-	btnClone->setEnabled(enable);
-	btnCloseClones->setEnabled(enable);
-	box1D->setEnabled(enable);
-	box2D->setEnabled(enable);
-	boxPlotAxis->setEnabled(enable);
-}
 
 void qTabPlot::EnablePersistency(bool enable){
 	lblPersistency->setEnabled(enable);
@@ -172,19 +181,21 @@ void qTabPlot::EnablePersistency(bool enable){
 }
 
 
+//-------------------------------------------------------------------------------------------------------------------------------------------------
+
+
 void qTabPlot::SetTitles(){
-	int oneD = box1D->isEnabled();
 	/** Plot Title*/
 	if(dispTitle->isEnabled())
 		myPlot->SetPlotTitle(dispTitle->text());
 	/** X Axis */
 	if(dispXAxis->isEnabled()){
-		if(oneD)	myPlot->SetHistXAxisTitle(dispXAxis->text());
+		if(isOneD)	myPlot->SetHistXAxisTitle(dispXAxis->text());
 		else	myPlot->SetImageXAxisTitle(dispXAxis->text());
 	}
 	/** Y Axis */
 	if(dispYAxis->isEnabled()){
-		if(oneD)	myPlot->SetHistYAxisTitle(dispYAxis->text());
+		if(isOneD)	myPlot->SetHistYAxisTitle(dispYAxis->text());
 		else	myPlot->SetImageYAxisTitle(dispYAxis->text());
 	}
 	/** Z Axis */
@@ -193,9 +204,10 @@ void qTabPlot::SetTitles(){
 }
 
 
+//-------------------------------------------------------------------------------------------------------------------------------------------------
+
 
 void qTabPlot::EnableTitles(){
-	int oneD = box1D->isEnabled();
 	/** Plot Title*/
 	dispTitle->setEnabled(chkTitle->isChecked());
 	if(!chkTitle->isChecked()){
@@ -205,7 +217,7 @@ void qTabPlot::EnableTitles(){
 	/** X Axis */
 	dispXAxis->setEnabled(chkXAxis->isChecked());
 	if(!chkXAxis->isChecked()){
-		if(oneD){
+		if(isOneD){
 			myPlot->SetHistXAxisTitle(defaultHistXAxisTitle);
 			dispXAxis->setText(defaultHistXAxisTitle);
 		}
@@ -217,7 +229,7 @@ void qTabPlot::EnableTitles(){
 	/** Y Axis */
 	dispYAxis->setEnabled(chkYAxis->isChecked());
 	if(!chkYAxis->isChecked()){
-		if(oneD){
+		if(isOneD){
 			myPlot->SetHistYAxisTitle(defaultHistYAxisTitle);
 			dispYAxis->setText(defaultHistYAxisTitle);
 		}else{
@@ -234,6 +246,7 @@ void qTabPlot::EnableTitles(){
 }
 
 
+//-------------------------------------------------------------------------------------------------------------------------------------------------
 
 
 void qTabPlot::EnableRange(){
@@ -253,6 +266,8 @@ void qTabPlot::EnableRange(){
 }
 
 
+//-------------------------------------------------------------------------------------------------------------------------------------------------
+
 
 void qTabPlot::SetAxesRange(){
 	double xmin=0,xmax=0,ymin=0,ymax=0;
@@ -260,27 +275,39 @@ void qTabPlot::SetAxesRange(){
 	/** If disabled, get the min or max range of the plot as default */
 	if((dispXMin->isEnabled())&&(!dispXMin->text().isEmpty()))
 		xmin = dispXMin->text().toDouble();
-	else xmin = myPlot->GetXMinimum();
+	else if(myPlot->DoesPlotExist())
+		xmin = myPlot->GetXMinimum();
 	if((dispXMax->isEnabled())&&(!dispXMax->text().isEmpty()))
 		xmax = dispXMax->text().toDouble();
-	else xmax = myPlot->GetXMaximum();
+	else if(myPlot->DoesPlotExist())
+		xmax = myPlot->GetXMaximum();
 	if((dispYMin->isEnabled())&&(!dispYMin->text().isEmpty()))
 		ymin = dispYMin->text().toDouble();
-	else ymin = myPlot->GetYMinimum();
+	else if(myPlot->DoesPlotExist())
+		ymin = myPlot->GetYMinimum();
 	if((dispYMax->isEnabled())&&(!dispYMax->text().isEmpty()))
 		ymax = dispYMax->text().toDouble();
-	else ymax = myPlot->GetYMaximum();
+	else if(myPlot->DoesPlotExist())
+		ymax = myPlot->GetYMaximum();
 
 	/** Setting the range*/
-	myPlot->SetXMinMax(xmin,xmax);
-	myPlot->SetYMinMax(ymin,ymax);
+	if(myPlot->DoesPlotExist()){
+		myPlot->SetXMinMax(xmin,xmax);
+		myPlot->SetYMinMax(ymin,ymax);
+	}
 }
 
+
+//-------------------------------------------------------------------------------------------------------------------------------------------------
 
 
 void qTabPlot::SetZRange(){
 	emit SetZRangeSignal(dispZMin->text().toDouble(),dispZMax->text().toDouble());
 }
+
+
+//-------------------------------------------------------------------------------------------------------------------------------------------------
+
 
 void qTabPlot::EnableZRange(){
 	dispZMin->setEnabled(chkZMin->isChecked());
@@ -289,9 +316,48 @@ void qTabPlot::EnableZRange(){
 }
 
 
+//-------------------------------------------------------------------------------------------------------------------------------------------------
 
-void qTabPlot::SavePlot(){
-	QString fullFileName = QString(myDet->getFilePath().c_str())+'/'+dispFName->text()+comboFormat->currentText();
-	myPlot->SavePlot(fullFileName);
+
+void qTabPlot::SetPlot(){
+	if(radioNoPlot->isChecked()){
+		myPlot->EnablePlot(false);
+		/**if enable is true, disable everything */
+		box1D->setEnabled(false);
+		box2D->setEnabled(false);
+		boxSnapshot->setEnabled(false);
+		boxSave->setEnabled(false);
+		boxPlotAxis->setEnabled(false);
+		boxScan->setEnabled(false);
+	}else if(radioHistogram->isChecked()){
+		myPlot->EnablePlot(true);
+		/**if enable is true, disable everything */
+		box1D->setEnabled(true);
+		box2D->setEnabled(true);
+		boxSnapshot->setEnabled(true);
+		boxSave->setEnabled(true);
+		boxPlotAxis->setEnabled(true);
+		boxScan->setEnabled(false);
+	}else{
+		myPlot->EnablePlot(true);
+		/**if enable is true, disable everything */
+		box1D->setEnabled(true);
+		box2D->setEnabled(true);
+		boxSnapshot->setEnabled(true);
+		boxSave->setEnabled(true);
+		boxPlotAxis->setEnabled(true);
+		boxScan->setEnabled(true);
+	}
 }
+
+
+//-------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+void qTabPlot::EnableHistogram(bool enable){
+	//boxScan->setEnabled(false);
+}
+
+
+//-------------------------------------------------------------------------------------------------------------------------------------------------
 

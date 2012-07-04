@@ -17,6 +17,7 @@
 #include "sls_detector_defs.h"
 /** Qt Include Headers */
 #include <QSizePolicy>
+#include <QFileDialog>
 /** C++ Include Headers */
 #include<iostream>
 #include <string>
@@ -24,6 +25,7 @@ using namespace std;
 
 
 //-------------------------------------------------------------------------------------------------------------------------------------------------
+
 
 int main (int argc, char **argv) {
 
@@ -35,7 +37,9 @@ int main (int argc, char **argv) {
 	return theApp->exec();
 }
 
+
 //-------------------------------------------------------------------------------------------------------------------------------------------------
+
 
 qDetectorMain::qDetectorMain(int argc, char **argv, QApplication *app, QWidget *parent) :
 		QMainWindow(parent), theApp(app),myDet(0),detID(0),myPlot(NULL),tabs(NULL),isDeveloper(0){
@@ -61,7 +65,9 @@ qDetectorMain::qDetectorMain(int argc, char **argv, QApplication *app, QWidget *
 
 }
 
+
 //-------------------------------------------------------------------------------------------------------------------------------------------------
+
 
 qDetectorMain::~qDetectorMain(){
 	delete myDet;
@@ -69,14 +75,15 @@ qDetectorMain::~qDetectorMain(){
 	if (centralwidget) delete centralwidget;
 }
 
+
 //-------------------------------------------------------------------------------------------------------------------------------------------------
+
 
 void qDetectorMain::SetUpWidgetWindow(){
 
 /** Layout */
 	layoutTabs= new QGridLayout;
 	centralwidget->setLayout(layoutTabs);
-
 
 /** plot setup*/
 	myPlot = new qDrawPlot(dockWidgetPlot,myDet);
@@ -86,6 +93,7 @@ void qDetectorMain::SetUpWidgetWindow(){
 	tabs = new MyTabWidget(this);
 	layoutTabs->addWidget(tabs);
 	/** creating all the tab widgets */
+	tab_messages		=  new qTabMessages		(this,	myDet);
 	tab_measurement 	=  new qTabMeasurement	(this,	myDet,myPlot);
 	tab_dataoutput 		=  new qTabDataOutput	(this,	myDet);
 	tab_plot 			=  new qTabPlot			(this,	myDet,myPlot);
@@ -94,7 +102,6 @@ void qDetectorMain::SetUpWidgetWindow(){
 	tab_advanced 		=  new qTabAdvanced		(this,	myDet);
 	tab_debugging 		=  new qTabDebugging	(this,	myDet);
 	tab_developer 		=  new qTabDeveloper	(this,	myDet);
-	tab_messages		=  new qTabMessages		(this,	myDet);
 	/**	creating the scroll area widgets for the tabs */
 	for(int i=0;i<NumberOfTabs;i++){
 		scroll[i] = new QScrollArea;
@@ -109,8 +116,6 @@ void qDetectorMain::SetUpWidgetWindow(){
 	scroll[Advanced]	->setWidget(tab_advanced);
 	scroll[Debugging]	->setWidget(tab_debugging);
 	scroll[Developer]	->setWidget(tab_developer);
-
-
 	/** inserting all the tabs*/
 	tabs->insertTab(Measurement,	scroll[Measurement],	"Measurement");
 	tabs->insertTab(DataOutput,		scroll[DataOutput],		"Data Output");
@@ -122,20 +127,37 @@ void qDetectorMain::SetUpWidgetWindow(){
 	tabs->insertTab(Developer,		scroll[Developer],		"Developer");
 	/** Prefer this to expand and not have scroll buttons*/
 	tabs->insertTab(Messages,		tab_messages,		"Messages");
+	/** Default tab color*/
+	defaultTabColor = tabs->tabBar()->tabTextColor(DataOutput);
+	/**Set the current tab(measurement) to blue as it is the current one*/
+	tabs->tabBar()->setTabTextColor(0,QColor(0,0,200,255));
+	/** increase the width so it uses all the empty space for the tab titles*/
+	tabs->tabBar()->setFixedWidth(width()+61);
 
 /** mode setup - to set up the tabs initially as disabled, not in form so done here */
-	SetDebugMode(false);
-	SetBeamlineMode(false);
-	SetExpertMode(false);
-	SetDeveloperMode(false);
-	SetDeveloperMode(isDeveloper);
+#ifdef VERBOSE
+	cout<<"Setting Debug Mode to 0\nSetting Beamline Mode to 0\n"
+			"Setting Expert Mode to 0\nSetting Dockable Mode to false\n"
+			"Setting Developer Mode to "<<isDeveloper<<endl;
+#endif
+	tabs->setTabEnabled(Debugging,false);
+	//beamline mode to false
+	tabs->setTabEnabled(Advanced,false);
+	dockWidgetPlot->setFloating(false);
+	dockWidgetPlot->setFeatures(QDockWidget::NoDockWidgetFeatures);
+	tabs->setTabEnabled(Developer,isDeveloper);
 
-	tabs->tabBar()->setTabTextColor(0,QColor(0,0,200,255));
-
-
+/** Other setup*/
+	/**Height of plot and central widget*/
+	heightPlotWindow = dockWidgetPlot->size().height();
+	heightCentralWidget = centralwidget->size().height();
+	/** Default zoom Tool Tip */
+	zoomToolTip = dockWidgetPlot->toolTip();
 }
 
+
 //-------------------------------------------------------------------------------------------------------------------------------------------------
+
 
 void qDetectorMain::SetUpDetector(){
 
@@ -178,14 +200,16 @@ void qDetectorMain::SetUpDetector(){
 	}
 }
 
+
 //-------------------------------------------------------------------------------------------------------------------------------------------------
+
 
 void qDetectorMain::Initialization(){
 /** Dockable Plot*/
 	connect(dockWidgetPlot,SIGNAL(topLevelChanged(bool)),this,SLOT(ResizeMainWindow(bool)));
 
 /** tabs */
-	connect(tabs,SIGNAL(currentChanged(int)),this, SLOT(refresh(int)));//( QWidget*)));
+	connect(tabs,SIGNAL(currentChanged(int)),this, SLOT(Refresh(int)));//( QWidget*)));
 		/**	Measurement tab*/
 		/** Plot tab */
 		connect(tab_plot,SIGNAL(DisableZoomSignal(bool)),this, SLOT(SetZoomToolTip(bool)));
@@ -200,166 +224,187 @@ void qDetectorMain::Initialization(){
 
 /** menubar */
 		/** Modes Menu */
-		connect(actionDebug,		SIGNAL(toggled(bool)),this,SLOT(SetDebugMode(bool)));
-		connect(actionBeamline,		SIGNAL(toggled(bool)),this,SLOT(SetBeamlineMode(bool)));
-		connect(actionExpert,		SIGNAL(toggled(bool)),this,SLOT(SetExpertMode(bool)));
-		connect(actionDockable,		SIGNAL(toggled(bool)),this,SLOT(SetDockableMode(bool)));
-
-
+		connect(menuModes,SIGNAL(triggered(QAction*)),SLOT(EnableModes(QAction*)));
 		/** Utilities Menu */
-		connect(actionOpenSetup,SIGNAL(triggered()),this,SLOT(OpenSetup()));
-		connect(actionSaveSetup,SIGNAL(triggered()),this,SLOT(SaveSetup()));
-		connect(actionMeasurementWizard,SIGNAL(triggered()),this,SLOT(MeasurementWizard()));
-		connect(actionOpenConfiguration,SIGNAL(triggered()),this,SLOT(OpenConfiguration()));
-		connect(actionSaveConfiguration,SIGNAL(triggered()),this,SLOT(SaveConfiguration()));
-		connect(actionEnergyCalibration,SIGNAL(triggered()),this,SLOT(EnergyCalibration()));
-		connect(actionAngularCalibration,SIGNAL(triggered()),this,SLOT(AngularCalibration()));
-		connect(actionAbout,SIGNAL(triggered()),this,SLOT(About()));
-		connect(actionVersion,SIGNAL(triggered()),this,SLOT(Version()));
-
-		heightPlotWindow = dockWidgetPlot->size().height();
-		heightCentralWidget = centralwidget->size().height();
-
-		defaultTabColor = tabs->tabBar()->tabTextColor(DataOutput);
-		zoomToolTip = dockWidgetPlot->toolTip();
+		connect(menuUtilities,SIGNAL(triggered(QAction*)),SLOT(ExecuteUtilities(QAction*)));
+		/** Help Menu */
+		connect(menuHelp,SIGNAL(triggered(QAction*)),SLOT(ExecuteHelp(QAction*)));
 }
+
 
 //-------------------------------------------------------------------------------------------------------------------------------------------------
 
-void qDetectorMain::SetDeveloperMode(bool b){
+
+void qDetectorMain::EnableModes(QAction *action){
+	bool enable;
+
+	/**Set DebugMode */
+	if(action==actionDebug){
+		enable = actionDebug->isChecked();
+		tabs->setTabEnabled(Debugging,enable);
 #ifdef VERBOSE
-	cout<<"Setting Developer Mode to "<<b<<endl;
+		cout<<"Setting Debug Mode to "<<enable<<endl;
 #endif
-	tabs->setTabEnabled(Developer,b);
-}
+	}
 
-//-------------------------------------------------------------------------------------------------------------------------------------------------
-
-void qDetectorMain::SetDebugMode(bool b){
+	/**Set BeamlineMode */
+	else if(action==actionBeamline){
+		enable = actionBeamline->isChecked();
 #ifdef VERBOSE
-	cout<<"Setting Debug Mode to "<<b<<endl;
+		cout<<"Setting Beamline Mode to "<<enable<<endl;
 #endif
-	tabs->setTabEnabled(Debugging,b);
-}
+	}
 
-//-------------------------------------------------------------------------------------------------------------------------------------------------
-
-void qDetectorMain::SetBeamlineMode(bool b){
+	/**Set ExpertMode */
+	else if(action==actionExpert){
+		enable = actionExpert->isChecked();
+		tabs->setTabEnabled(Advanced,enable);
 #ifdef VERBOSE
-	cout<<"Setting Beamline Mode to "<<b<<endl;
+		cout<<"Setting Expert Mode to "<<enable<<endl;
 #endif
-}
+	}
 
-//-------------------------------------------------------------------------------------------------------------------------------------------------
-
-void qDetectorMain::SetExpertMode(bool b){
+	/**Set DockableMode */
+	else{
+		enable = actionDockable->isChecked();
+		if(enable)
+			dockWidgetPlot->setFeatures(QDockWidget::DockWidgetFloatable);
+		else{
+			dockWidgetPlot->setFloating(false);
+			dockWidgetPlot->setFeatures(QDockWidget::NoDockWidgetFeatures);
+		}
 #ifdef VERBOSE
-	cout<<"Setting Expert Mode to "<<b<<endl;
+		cout<<"Setting Dockable Mode to "<<enable<<endl;
 #endif
-	tabs->setTabEnabled(Advanced,b);
+	}
 }
+
 
 //-------------------------------------------------------------------------------------------------------------------------------------------------
 
-void qDetectorMain::refresh(int index){
+
+void qDetectorMain::ExecuteUtilities(QAction *action){
+
+	if(action==actionOpenSetup){
+#ifdef VERBOSE
+		cout<<"Opening Setup"<<endl;
+#endif
+		QString fName = QString(myDet->getFilePath().c_str());
+		fName = QFileDialog::getOpenFileName(this,
+				tr("Load Detector Setup"),fName,
+				tr("Detector Setup files (*.det)"));
+		/** Gets called when cancelled as well*/
+		if (!fName.isEmpty()){
+			myDet->retrieveDetectorSetup(string(fName.toAscii().constData()));
+			qDefs::InfoMessage("The parameters have been successfully setup.","Main: Information");
+		}
+	}
+	else if(action==actionSaveSetup){
+#ifdef VERBOSE
+		cout<<"Saving Setup"<<endl;
+#endif
+		QString fName = QString(myDet->getFilePath().c_str());
+		fName = QFileDialog::getSaveFileName(this,
+				tr("Save Current Detector Setup"),fName,
+				tr("Detector Setup files (*.det) "));
+		/** Gets called when cancelled as well*/
+		if (!fName.isEmpty()){
+			myDet->dumpDetectorSetup(string(fName.toAscii().constData()));
+			qDefs::InfoMessage("The setup parameters have been successfully saved.","Main: Information");
+		}
+	}
+	else if(action==actionMeasurementWizard){
+#ifdef VERBOSE
+		cout<<"Measurement Wizard"<<endl;
+#endif
+	}
+	else if(action==actionOpenConfiguration){
+#ifdef VERBOSE
+		cout<<"Opening Configuration"<<endl;
+#endif
+		QString fName = QString(myDet->getFilePath().c_str());
+		fName = QFileDialog::getOpenFileName(this,
+				tr("Load Detector Configuration"),fName,
+				tr("Configuration files (*.config)"));
+		/** Gets called when cancelled as well*/
+		if (!fName.isEmpty()){
+			myDet->readConfigurationFile(string(fName.toAscii().constData()));
+			qDefs::InfoMessage("The parameters have been successfully configured.","Main: Information");
+		}
+	}
+	else if(action==actionSaveConfiguration){
+#ifdef VERBOSE
+		cout<<"Saving Configuration"<<endl;
+#endif
+		QString fName = QString(myDet->getFilePath().c_str());
+		fName = QFileDialog::getSaveFileName(this,
+				tr("Save Current Detector Configuration"),fName,
+				tr("Configuration files (*.config) "));
+		/** Gets called when cancelled as well*/
+		if (!fName.isEmpty()){
+			myDet->writeConfigurationFile(string(fName.toAscii().constData()));
+			qDefs::InfoMessage("The configuration parameters have been successfully saved.","Main: Information");
+		}
+	}
+	else if(action==actionEnergyCalibration){
+#ifdef VERBOSE
+		cout<<"Executing Energy Calibration"<<endl;
+#endif
+	}
+	else{
+#ifdef VERBOSE
+		cout<<"Executing Angular Calibration"<<endl;
+#endif
+	}
+
+	Refresh(tabs->currentIndex());
+}
+
+
+//-------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+void qDetectorMain::ExecuteHelp(QAction *action){
+	if(action==actionVersion){
+#ifdef VERBOSE
+		cout<<"Version"<<endl;
+#endif
+	}
+	else{
+#ifdef VERBOSE
+		cout<<"About"<<endl;
+#endif
+	}
+}
+
+
+//-------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+void qDetectorMain::Refresh(int index){
 	if(!tabs->isTabEnabled(index))
 		tabs->setCurrentIndex((index++)<(tabs->count()-1)?index:Measurement);
 	else{
-;
+		switch(tabs->currentIndex()){
+		case Measurement:	if(!myPlot->isRunning()) tab_measurement->Refresh();	break;
+		case Settings:		tab_settings->Refresh();	break;
+		case DataOutput:	tab_dataoutput->Refresh();	break;
+		case Plot:			break;
+		case Actions:		tab_actions->Refresh();		break;
+		case Advanced:		tab_advanced->Refresh();	break;
+		case Debugging:		tab_debugging->Refresh();	break;
+		case Developer:		tab_developer->Refresh();	break;
+		case Messages:		break;
+		}
 	}
 	for(int i=0;i<NumberOfTabs;i++)
 		tabs->tabBar()->setTabTextColor(i,defaultTabColor);
 	tabs->tabBar()->setTabTextColor(index,QColor(0,0,200,255));
 }
 
-//-------------------------------------------------------------------------------------------------------------------------------------------------
-
-void qDetectorMain::SetDockableMode(bool b){
-#ifdef VERBOSE
-	cout<<"Setting Dockable Mode to "<<b<<endl;
-#endif
-	if(b)
-		dockWidgetPlot->setFeatures(QDockWidget::DockWidgetFloatable);
-	else{
-		dockWidgetPlot->setFloating(false);
-		dockWidgetPlot->setFeatures(QDockWidget::NoDockWidgetFeatures);
-	}
-}
 
 //-------------------------------------------------------------------------------------------------------------------------------------------------
 
-void qDetectorMain::OpenSetup(){
-#ifdef VERBOSE
-	cout<<"Opening Setup"<<endl;
-#endif
-}
-
-//-------------------------------------------------------------------------------------------------------------------------------------------------
-
-void qDetectorMain::SaveSetup(){
-#ifdef VERBOSE
-	cout<<"Saving Setup"<<endl;
-#endif
-}
-
-//-------------------------------------------------------------------------------------------------------------------------------------------------
-
-void qDetectorMain::MeasurementWizard(){
-#ifdef VERBOSE
-	cout<<"Measurement Wizard"<<endl;
-#endif
-}
-
-//-------------------------------------------------------------------------------------------------------------------------------------------------
-
-
-void qDetectorMain::OpenConfiguration(){
-#ifdef VERBOSE
-	cout<<"Opening Configuration"<<endl;
-#endif
-}
-
-//-------------------------------------------------------------------------------------------------------------------------------------------------
-
-void qDetectorMain::SaveConfiguration(){
-#ifdef VERBOSE
-	cout<<"Saving Configuration"<<endl;
-#endif
-}
-
-//-------------------------------------------------------------------------------------------------------------------------------------------------
-
-void qDetectorMain::EnergyCalibration(){
-#ifdef VERBOSE
-	cout<<"Executing Energy Calibration"<<endl;
-#endif
-}
-
-//-------------------------------------------------------------------------------------------------------------------------------------------------
-
-void qDetectorMain::AngularCalibration(){
-#ifdef VERBOSE
-	cout<<"Executing Angular Calibration"<<endl;
-#endif
-}
-
-//-------------------------------------------------------------------------------------------------------------------------------------------------
-
-void qDetectorMain::Version(){
-#ifdef VERBOSE
-	cout<<"Executing Version"<<endl;
-#endif
-}
-
-//-------------------------------------------------------------------------------------------------------------------------------------------------
-
-void qDetectorMain::About(){
-#ifdef VERBOSE
-	cout<<"Executing About"<<endl;
-#endif
-}
-
-//-------------------------------------------------------------------------------------------------------------------------------------------------
 
 void qDetectorMain::ResizeMainWindow(bool b){
 #ifdef VERBOSE
@@ -379,6 +424,9 @@ void qDetectorMain::ResizeMainWindow(bool b){
 }
 
 
+//-------------------------------------------------------------------------------------------------------------------------------------------------
+
+
 void qDetectorMain::resizeEvent(QResizeEvent* event){
 	if(!dockWidgetPlot->isFloating()){
 		if(tabs->currentIndex()== Actions){
@@ -394,7 +442,9 @@ void qDetectorMain::resizeEvent(QResizeEvent* event){
 	event->accept();
 }
 
+
 //-------------------------------------------------------------------------------------------------------------------------------------------------
+
 
 void qDetectorMain::EnableTabs(){
 #ifdef VERBOSE
@@ -427,6 +477,7 @@ void qDetectorMain::EnableTabs(){
 	}
 }
 
+
 //-------------------------------------------------------------------------------------------------------------------------------------------------
 
 
@@ -436,5 +487,6 @@ void qDetectorMain::SetZoomToolTip(bool disable){
 	else
 		dockWidgetPlot->setToolTip(zoomToolTip);
 }
+
 
 //-------------------------------------------------------------------------------------------------------------------------------------------------

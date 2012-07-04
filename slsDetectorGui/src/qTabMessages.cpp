@@ -5,25 +5,26 @@
  *      Author: l_maliakal_d
  */
 
+/** Qt Project Class Headers */
 #include "qTabMessages.h"
+#include "qDefs.h"
 /** Project Class Headers */
 #include "slsDetector.h"
 #include "multiSlsDetector.h"
 /** Qt Include Headers */
 #include <QGridLayout>
-#include <QLabel>
-#include <QSpacerItem>
-#include <QDir>
-#include <QProcess>
-#include <QStringList>
+#include <QFile>
+#include <QTextStream>
+#include <QFileDialog>
+#include <QSizePolicy>
 /** C++ Include Headers */
 #include <iostream>
+#include <string>
 using namespace std;
 
 //-------------------------------------------------------------------------------------------------------------------------------------------------
 
-qTabMessages::qTabMessages(QWidget *parent,slsDetectorUtils*& detector):
-		QWidget(parent),myDet(detector){
+qTabMessages::qTabMessages(QWidget *parent,slsDetectorUtils*& detector):QWidget(parent),myDet(detector){
 	SetupWidgetWindow();
 	Initialization();
 }
@@ -33,8 +34,6 @@ qTabMessages::qTabMessages(QWidget *parent,slsDetectorUtils*& detector):
 qTabMessages::~qTabMessages(){
 	delete myDet;
 	delete dispLog;
-	delete dispCommand;
-	delete dispPath;
 }
 
 //-------------------------------------------------------------------------------------------------------------------------------------------------
@@ -42,88 +41,71 @@ qTabMessages::~qTabMessages(){
 void qTabMessages::SetupWidgetWindow(){
 	/** Layout */
 	QGridLayout *gridLayout = new QGridLayout(this);
-	QLabel *lblCommand 	= new QLabel("System Command:",this);
-	QLabel *lblPath 	= new QLabel("Working Directory:",this);
-	QSpacerItem *hSpacer= new QSpacerItem(20, 20, QSizePolicy::Fixed, QSizePolicy::Minimum);
-	dispLog 	= new QTextEdit(this);
-	dispCommand	= new QLineEdit(this);
-	dispPath	= new QLineEdit(this);
-	dispLog->setReadOnly(true);
-	dispPath->setReadOnly(true);
-	dispLog->setFocusPolicy(Qt::NoFocus);
-	dispPath->setFocusPolicy(Qt::NoFocus);
-	gridLayout->addWidget(dispLog, 		0, 0, 1, 3);
-	gridLayout->addWidget(lblCommand, 	1, 0, 1, 1);
-	gridLayout->addItem(hSpacer,		1, 1, 1, 1);
-	gridLayout->addWidget(dispCommand, 	1, 2, 1, 1);
-	gridLayout->addWidget(lblPath, 		2, 0, 1, 1);
-	gridLayout->addWidget(dispPath, 	2, 2, 1, 1);
 
-	/** Command & Path*/
-	dispCommand->setText("Insert your command here");
-	dispPath->setText(QDir("./").absolutePath());
+	dispLog 	= new QTextEdit(this);
+	dispLog->setReadOnly(true);
+	dispLog->setFocusPolicy(Qt::NoFocus);
+
+	QSizePolicy sizePolicy(QSizePolicy::Fixed,QSizePolicy::Fixed);
+
+	btnSave = new QPushButton("Save Log",this);
+	btnSave->setFocusPolicy(Qt::NoFocus);
+	btnSave->setSizePolicy(sizePolicy);
+
+	btnClear = new QPushButton("Clear",this);
+	btnClear->setFocusPolicy(Qt::NoFocus);
+	btnClear->setSizePolicy(sizePolicy);
+
+	gridLayout->addWidget(btnSave,0,0,1,1);
+	gridLayout->addWidget(btnClear,0,4,1,1);
+	gridLayout->addWidget(dispLog,1,0,1,5);
+
+	qout=new qDebugStream(std::cout,this);
 }
 
 //-------------------------------------------------------------------------------------------------------------------------------------------------
 
 void qTabMessages::Initialization(){
-	connect(dispCommand,SIGNAL(returnPressed()),this,SLOT(executeCommand()));
+	connect(btnSave,SIGNAL(clicked()),this,SLOT(SaveLog()));
+	connect(btnClear,SIGNAL(clicked()),this,SLOT(ClearLog()));
 }
 
 //-------------------------------------------------------------------------------------------------------------------------------------------------
 
-void qTabMessages::executeCommand(){
-#ifdef VERBOSE
-	cout<<"Calling: "<< dispCommand->text().toAscii().constData()<<endl;
-#endif
-	QProcess proc(this);
-#ifdef VERBOSE
-	//std::cout <<"working directory would be " << proc.workingDirectory().absPath() << std::endl;
-	cout<<"Original Working Directory: "<< proc.workingDirectory().toAscii().constData()<<endl;
-#endif
-	proc.setWorkingDirectory(QDir(dispPath->text()).absolutePath());
-#ifdef VERBOSE
-	//std::cout <<"working directory is " << proc.workingDirectory().absPath() << std::endl;
-	cout<<"Current Working Directory: "<<proc.workingDirectory().toAscii().constData()<<endl;
-#endif
-	proc.setArguments(QStringList::split(' ',dispCommand->text()));
-#ifdef VERBOSE
-/*	QStringList list = proc.arguments();
-	QStringList::Iterator it = list.begin();
-	while( it != list.end() ) {
-		cout<<*it<<endl;
-		++it;
-	}*/
-#endif
-	//if (!proc.start()) {
-	if(!(proc.state()==QProcess::Running)){
-		// error handling
-		cout<<"Could not launch process"<<endl;
-	} else {
-		//while(proc.isRunning()) {
-		while(proc.state()==QProcess::Running){
-			;
-#ifdef VERBOSE
-			cout<<"Process running "<< proc.exitStatus()<< endl;
-#endif
-		}
-		//if (proc.normalExit()) {
-		if(proc.exitStatus()==QProcess::NormalExit){
-			;
-#ifdef VERBOSE
-			cout<<" process returned OK"<<endl;
-#endif
-		} else
-			cout<<" process returned error"<<endl;
-		while (proc.canReadLineStdout()) {//readAllStandardOutput ()
-			cout<<proc.readLineStdout() <<endl;
-		}
-		while (proc.canReadLineStderr()) {
-			cout<<"Error: "<<proc.readLineStderr() <<endl;
-		}
-	}
-
-
+void qTabMessages::customEvent(QEvent *e) {
+  if (e->type() == STREAMEVENT)
+	  dispLog->append(((qStreamEvent*)e)->getString());
 }
+
+//-------------------------------------------------------------------------------------------------------------------------------------------------
+
+void qTabMessages::SaveLog() {
+	QString fName = QString(myDet->getFilePath().c_str());
+	fName = fName+"/LogFile.txt";
+    fName = QFileDialog::getSaveFileName(this,tr("Save Snapshot "),
+    		fName,tr("Text files (*.txt)"));
+    if (!fName.isEmpty()){
+    	QFile outfile;
+    	outfile.setFileName(fName);
+    	if(outfile.open(QIODevice::WriteOnly | QIODevice::Text)){//Append
+    		QTextStream out(&outfile);
+    		out<<dispLog->toPlainText() << endl;
+    		qDefs::InfoMessage(string("The Log has been successfully saved to "
+    				"")+fName.toAscii().constData(),"Messages: Information");
+    	}
+    	else qDefs::ErrorMessage("ERROR: Attempt to save log file failed.","Messages: WARNING");
+     }
+}
+
+
+//-------------------------------------------------------------------------------------------------------------------------------------------------
+
+void qTabMessages::ClearLog() {
+	dispLog->clear();
+#ifdef VERBOSE
+		cout<<"Log Cleared"<<endl;
+#endif
+}
+
 
 //-------------------------------------------------------------------------------------------------------------------------------------------------

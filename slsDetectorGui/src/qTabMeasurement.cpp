@@ -24,6 +24,7 @@ using namespace std;
 
 //-------------------------------------------------------------------------------------------------------------------------------------------------
 
+
 qTabMeasurement::qTabMeasurement(QWidget *parent,slsDetectorUtils*& detector, qDrawPlot*& plot):
 								QWidget(parent),myDet(detector),myPlot(plot){
 	setupUi(this);
@@ -32,14 +33,18 @@ qTabMeasurement::qTabMeasurement(QWidget *parent,slsDetectorUtils*& detector, qD
 
 }
 
+
 //-------------------------------------------------------------------------------------------------------------------------------------------------
+
 
 qTabMeasurement::~qTabMeasurement(){
 	delete myDet;
 	delete myPlot;
 }
 
+
 //-------------------------------------------------------------------------------------------------------------------------------------------------
+
 
 void qTabMeasurement::SetupWidgetWindow(){
 	/** Timer to update the progress bar **/
@@ -65,7 +70,9 @@ void qTabMeasurement::SetupWidgetWindow(){
 	SetupTimingMode();
 }
 
+
 //-------------------------------------------------------------------------------------------------------------------------------------------------
+
 
 void qTabMeasurement::SetupTimingMode(){
 	/** Get timing mode from detector*/
@@ -148,7 +155,9 @@ void qTabMeasurement::SetupTimingMode(){
 	}
 }
 
+
 //-------------------------------------------------------------------------------------------------------------------------------------------------
+
 
 void qTabMeasurement::Initialization(int timingChange){
 	/** These signals are connected only at start up. The others are reinitialized when changing timing mode*/
@@ -183,10 +192,11 @@ void qTabMeasurement::Initialization(int timingChange){
 	connect(spinNumGates,SIGNAL(valueChanged(int)),				this,	SLOT(setNumGates(int)));//
 	/** Number of Probes**/
 	connect(spinNumProbes,SIGNAL(valueChanged(int)),			this,	SLOT(setNumProbes(int)));//
-
 }
 
+
 //-------------------------------------------------------------------------------------------------------------------------------------------------
+
 
 void qTabMeasurement::DeInitialization(){
 	/** Number of Frames**/
@@ -208,7 +218,9 @@ void qTabMeasurement::DeInitialization(){
 	disconnect(spinNumProbes,SIGNAL(valueChanged(int)),			this,	SLOT(setNumProbes(int)));
 }
 
+
 //-------------------------------------------------------------------------------------------------------------------------------------------------
+
 
 void qTabMeasurement::Enable(bool enable){
 	frameTimeResolved->setEnabled(enable);
@@ -217,7 +229,9 @@ void qTabMeasurement::Enable(bool enable){
 	if(!enable) btnStartStop->setEnabled(true);
 }
 
+
 //-------------------------------------------------------------------------------------------------------------------------------------------------
+
 
 void qTabMeasurement::setFileName(const QString& fName){
 	myDet->setFileName(fName.toAscii().data());
@@ -225,6 +239,7 @@ void qTabMeasurement::setFileName(const QString& fName){
 	cout<<"Setting File name to " << myDet->getFileName()<<endl;
 #endif
 }
+
 
 //-------------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -237,6 +252,7 @@ void qTabMeasurement::setRunIndex(int index){
 }
 
 //-------------------------------------------------------------------------------------------------------------------------------------------------
+
 
 void qTabMeasurement::startStopAcquisition(){
 	if(!btnStartStop->text().compare("Start")){
@@ -265,7 +281,9 @@ void qTabMeasurement::startStopAcquisition(){
 	myPlot->StartStopDaqToggle();
 }
 
+
 //-------------------------------------------------------------------------------------------------------------------------------------------------
+
 
 void qTabMeasurement::UpdateFinished(){
 	disconnect(btnStartStop,SIGNAL(clicked()),this,SLOT(startStopAcquisition()));
@@ -278,14 +296,27 @@ void qTabMeasurement::UpdateFinished(){
 	progressTimer->stop();
 }
 
+
 //-------------------------------------------------------------------------------------------------------------------------------------------------
 
+
+void SetCurrentMeasurement(int val){
+	lblCurrentMeasurement->setText("0u");//lblCurrentMeasurement->setText(QString::number(val));
+}
+
+
+//-------------------------------------------------------------------------------------------------------------------------------------------------
+
+
 void qTabMeasurement::UpdateProgress(){
+
 	progressBar->setValue(myPlot->GetProgress());
 	lblProgressIndex->setText(QString::number(myDet->getFileIndex()));
 }
 
+
 //-------------------------------------------------------------------------------------------------------------------------------------------------
+
 
 void qTabMeasurement::setNumFrames(int val){
 	myDet->setTimer(slsDetectorDefs::FRAME_NUMBER,val);
@@ -295,7 +326,9 @@ void qTabMeasurement::setNumFrames(int val){
 
 }
 
+
 //-------------------------------------------------------------------------------------------------------------------------------------------------
+
 
 void qTabMeasurement::setExposureTime(){
 	int64_t exptimeNS;
@@ -322,7 +355,9 @@ void qTabMeasurement::setExposureTime(){
 	}
 }
 
+
 //-------------------------------------------------------------------------------------------------------------------------------------------------
+
 
 void qTabMeasurement::setAcquisitionPeriod(){
 	int64_t acqtimeNS;
@@ -347,7 +382,9 @@ void qTabMeasurement::setAcquisitionPeriod(){
 	}
 }
 
+
 //-------------------------------------------------------------------------------------------------------------------------------------------------
+
 
 void qTabMeasurement::setNumTriggers(int val){
 	myDet->setTimer(slsDetectorDefs::CYCLES_NUMBER,val);
@@ -356,7 +393,9 @@ void qTabMeasurement::setNumTriggers(int val){
 #endif
 }
 
+
 //-------------------------------------------------------------------------------------------------------------------------------------------------
+
 
 void qTabMeasurement::setDelay(){
 	int64_t exptimeNS;
@@ -368,7 +407,9 @@ void qTabMeasurement::setDelay(){
 	myDet->setTimer(slsDetectorDefs::DELAY_AFTER_TRIGGER,exptimeNS);
 }
 
+
 //-------------------------------------------------------------------------------------------------------------------------------------------------
+
 
 void qTabMeasurement::setNumGates(int val){
 	myDet->setTimer(slsDetectorDefs::GATES_NUMBER,val);
@@ -377,7 +418,9 @@ void qTabMeasurement::setNumGates(int val){
 #endif
 }
 
+
 //-------------------------------------------------------------------------------------------------------------------------------------------------
+
 
 void qTabMeasurement::setNumProbes(int val){
 	myDet->setTimer(slsDetectorDefs::PROBES_NUMBER,val);
@@ -386,7 +429,9 @@ void qTabMeasurement::setNumProbes(int val){
 #endif
 }
 
+
 //-------------------------------------------------------------------------------------------------------------------------------------------------
+
 
 void qTabMeasurement::setTimingMode(int mode){
 #ifdef VERBOSE
@@ -570,8 +615,6 @@ void qTabMeasurement::setTimingMode(int mode){
 
 	/** To reconnect all the signals after changing their values*/
 	Initialization(1);
-
-
 }
 
 
@@ -586,7 +629,7 @@ void qTabMeasurement::Refresh(){
 	/** progress label index **/
 	lblProgressIndex->setText(QString::number(myDet->getFileIndex()));
 	/** Progress bar **/
-	progressBar->setValue(myDet->getCurrentProgress());
+	progressBar->setValue((int)myDet->getCurrentProgress());
 	/** Timing mode**/
 	SetupTimingMode();//comboTimingMode->setCurrentIndex((int)myDet->setExternalCommunicationMode());
 }

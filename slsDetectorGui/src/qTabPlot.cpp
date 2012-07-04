@@ -332,8 +332,8 @@ void qTabPlot::SetPlot(){
 	}else if(radioHistogram->isChecked()){
 		myPlot->EnablePlot(true);
 		/**if enable is true, disable everything */
-		box1D->setEnabled(true);
-		box2D->setEnabled(true);
+		box1D->setEnabled(isOneD);
+		box2D->setEnabled(!isOneD);
 		boxSnapshot->setEnabled(true);
 		boxSave->setEnabled(true);
 		boxPlotAxis->setEnabled(true);
@@ -341,8 +341,8 @@ void qTabPlot::SetPlot(){
 	}else{
 		myPlot->EnablePlot(true);
 		/**if enable is true, disable everything */
-		box1D->setEnabled(true);
-		box2D->setEnabled(true);
+		box1D->setEnabled(isOneD);
+		box2D->setEnabled(!isOneD);
 		boxSnapshot->setEnabled(true);
 		boxSave->setEnabled(true);
 		boxPlotAxis->setEnabled(true);

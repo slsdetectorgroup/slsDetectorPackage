@@ -206,29 +206,26 @@ void qDetectorMain::SetUpDetector(){
 
 void qDetectorMain::Initialization(){
 /** Dockable Plot*/
-	connect(dockWidgetPlot,SIGNAL(topLevelChanged(bool)),this,SLOT(ResizeMainWindow(bool)));
-
+	connect(dockWidgetPlot,	SIGNAL(topLevelChanged(bool)),	this,SLOT(ResizeMainWindow(bool)));
 /** tabs */
-	connect(tabs,SIGNAL(currentChanged(int)),this, SLOT(Refresh(int)));//( QWidget*)));
+	connect(tabs,			SIGNAL(currentChanged(int)),	this, SLOT(Refresh(int)));//( QWidget*)));
 		/**	Measurement tab*/
+		connect(tab_measurement,	SIGNAL(StartSignal()),				this,SLOT(EnableTabs()));
+		connect(tab_measurement,	SIGNAL(StopSignal()),				this,SLOT(EnableTabs()));
 		/** Plot tab */
-		connect(tab_plot,SIGNAL(DisableZoomSignal(bool)),this, SLOT(SetZoomToolTip(bool)));
-
+		connect(tab_plot,			SIGNAL(DisableZoomSignal(bool)),	this,SLOT(SetZoomToolTip(bool)));
 /** Plotting */
-		/** When the acquisition is finished, must update the meas tab */
-		connect(tab_measurement,	SIGNAL(StartSignal()),			this,SLOT(EnableTabs()));
-		connect(tab_measurement,	SIGNAL(StopSignal()),			this,SLOT(EnableTabs()));
-		connect(myPlot,				SIGNAL(UpdatingPlotFinished()),	this,SLOT(EnableTabs()));
-		connect(myPlot,				SIGNAL(UpdatingPlotFinished()),	tab_measurement,SLOT(UpdateFinished()));
-
-
+	/** When the acquisition is finished, must update the meas tab */
+	connect(myPlot,	SIGNAL(UpdatingPlotFinished()),				this,				SLOT(EnableTabs()));
+	connect(myPlot,	SIGNAL(UpdatingPlotFinished()),				tab_measurement,	SLOT(UpdateFinished()));
+	connect(myPlot,	SIGNAL(SetCurrentMeasurementSignal(int)),	tab_measurement,	SLOT(SetCurrentMeasurement(int)));
 /** menubar */
-		/** Modes Menu */
-		connect(menuModes,SIGNAL(triggered(QAction*)),SLOT(EnableModes(QAction*)));
-		/** Utilities Menu */
-		connect(menuUtilities,SIGNAL(triggered(QAction*)),SLOT(ExecuteUtilities(QAction*)));
-		/** Help Menu */
-		connect(menuHelp,SIGNAL(triggered(QAction*)),SLOT(ExecuteHelp(QAction*)));
+	/** Modes Menu */
+	connect(menuModes,		SIGNAL(triggered(QAction*)),	this,SLOT(EnableModes(QAction*)));
+	/** Utilities Menu */
+	connect(menuUtilities,	SIGNAL(triggered(QAction*)),	this,SLOT(ExecuteUtilities(QAction*)));
+	/** Help Menu */
+	connect(menuHelp,		SIGNAL(triggered(QAction*)),	this,SLOT(ExecuteHelp(QAction*)));
 }
 
 

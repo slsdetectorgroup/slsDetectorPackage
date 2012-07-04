@@ -158,6 +158,7 @@ void qDrawPlot::StartStopDaqToggle(bool stop_if_running){
 		/**Do the following only once before each n measurements */
 		/** Reset Current Measurement */
 		currentMeasurement = 0;
+		emit SetCurrentMeasurementSignal(currentMeasurement);
 		/** Number of Exposures */
 		number_of_exposures= (int)myDet->setTimer(slsDetectorDefs::FRAME_NUMBER,-1);
 		cout<<"\tNumber of Exposures:"<<number_of_exposures<<endl;
@@ -432,8 +433,8 @@ void qDrawPlot::UpdatePlot(){
 	}
 	/** if a measurement is over */
 	else{
+		emit SetCurrentMeasurementSignal(currentMeasurement);
 		currentMeasurement++;
-		cout<<"currentMeausremet:"<<currentMeasurement<<endl;
 		/** if all the measurements are over */
 		if(currentMeasurement==number_of_measurements){
 			StartStopDaqToggle(true);

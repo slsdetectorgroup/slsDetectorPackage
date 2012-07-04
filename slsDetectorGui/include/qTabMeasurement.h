@@ -85,7 +85,10 @@ public slots:
  */
 void UpdateFinished();
 
-
+/** updates the current measurement
+ * @param val the value to be updated
+ */
+void SetCurrentMeasurement(int val);
 
 private slots:
 /** Set file name

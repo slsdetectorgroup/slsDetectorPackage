@@ -40,8 +40,8 @@ public:
 	/** Destructor	 */
 	~qDrawPlot();
 
+	/**is an acquisition running */
 	bool isRunning(){return running;};
-
 	/** Number of x axis pixels	 */
 	int GetPixelsX(){return nPixelsX;};
 	/** Number of y axis pixels	 */
@@ -257,6 +257,7 @@ void ContourSignal(bool);
 void LogzSignal(bool);
 void SetZRangeSignal(double,double);
 void EnableZRangeSignal(bool);
+void SetCurrentMeasurementSignal(int);
 
 };
 

@@ -15,6 +15,7 @@
 /** C++ Include Headers */
 #include <iostream>
 #include <string>
+#include <math.h>
 using namespace std;
 
 //-------------------------------------------------------------------------------------------------------------------------------------------------
@@ -79,6 +80,42 @@ void qTabPlot::SetupWidgetWindow(){
 	dispXMax->setValidator(new QDoubleValidator(dispXMax));
 	dispYMax->setValidator(new QDoubleValidator(dispYMax));
 	dispZMax->setValidator(new QDoubleValidator(dispZMax));
+
+	/** Plotting Frequency */
+
+	stackedLayout = new QStackedLayout;
+	stackedLayout->setSpacing(0);
+	spinNthFrame = new QSpinBox;
+		spinNthFrame->setMinimum(1);
+		spinNthFrame->setMaximum(2000000000);
+	spinTimeGap = new QDoubleSpinBox;
+		spinTimeGap->setMinimum(0);
+		spinTimeGap->setDecimals(3);
+		spinTimeGap->setMaximum(999999);
+		spinTimeGap->setValue(500.00);
+	comboTimeGapUnit = new QComboBox;
+		comboTimeGapUnit->addItem("hr");
+		comboTimeGapUnit->addItem("min");
+		comboTimeGapUnit->addItem("s");
+		comboTimeGapUnit->addItem("ms");
+		comboTimeGapUnit->setCurrentIndex(3);
+	QWidget *w = new QWidget;
+	QHBoxLayout *h1 = new QHBoxLayout;
+	w->setLayout(h1);
+	h1->setContentsMargins(0,0,0,0);
+		h1->setSpacing(3);
+		h1->addWidget(spinTimeGap);
+		h1->addWidget(comboTimeGapUnit);
+
+	stackedLayout->addWidget(w);
+	stackedLayout->addWidget(spinNthFrame);
+
+
+
+
+	stackWidget->setLayout(stackedLayout);
+
+
 }
 
 
@@ -88,8 +125,8 @@ void qTabPlot::SetupWidgetWindow(){
 void qTabPlot::Select1DPlot(bool b){
 	isOneD = b;
 	if(b){
-		box1D->setEnabled(true);
-		box2D->setEnabled(false);
+		box1D->show();
+		box2D->hide();
 		chkZAxis->setEnabled(false);
 		chkZMin->setEnabled(false);
 		chkZMax->setEnabled(false);
@@ -99,8 +136,8 @@ void qTabPlot::Select1DPlot(bool b){
 		dispYAxis->setText(defaultHistYAxisTitle);
 		myPlot->Select1DPlot();
 	}else{
-		box1D->setEnabled(false);
-		box2D->setEnabled(true);
+		box1D->hide();
+		box2D->show();
 		chkZAxis->setEnabled(true);
 		chkZMin->setEnabled(true);
 		chkZMax->setEnabled(true);
@@ -124,7 +161,7 @@ void qTabPlot::Initialization(){
 	connect(radioHistogram, SIGNAL(clicked()),this, SLOT(SetPlot()));
 	connect(radioDataGraph, SIGNAL(clicked()),this, SLOT(SetPlot()));
 /** Scan box*/
-	//connect(radioNoPlot, SIGNAL(toggled(bool)),this, SLOT(EnablePlot(bool)));
+	//connect(scna, SIGNAL(toggled(bool)),this, SLOT(scanstuff(bool)));
 /** Snapshot box*/
 	connect(btnClone, 		SIGNAL(clicked()),myPlot, 	SLOT(ClonePlot()));
 	connect(btnCloseClones, SIGNAL(clicked()),myPlot, 	SLOT(CloseClones()));
@@ -135,8 +172,11 @@ void qTabPlot::Initialization(){
 	connect(chkInterpolate, SIGNAL(toggled(bool)),myPlot, SIGNAL(InterpolateSignal(bool)));
 	connect(chkContour, 	SIGNAL(toggled(bool)),myPlot, SIGNAL(ContourSignal(bool)));
 	connect(chkLogz, 		SIGNAL(toggled(bool)),myPlot, SIGNAL(LogzSignal(bool)));
-
-
+/** Plotting frequency box */
+	connect(comboFrequency, SIGNAL(currentIndexChanged(int)),	this, SLOT(SetFrequency()));
+	connect(comboTimeGapUnit,SIGNAL(currentIndexChanged(int)),	this, SLOT(SetFrequency()));
+	connect(spinTimeGap,	SIGNAL(editingFinished()),			this, SLOT(SetFrequency()));
+	connect(spinNthFrame,	SIGNAL(editingFinished()),			this, SLOT(SetFrequency()));
 /** Plot Axis **/
 	connect(chkTitle, 		SIGNAL(toggled(bool)), this, 	SLOT(EnableTitles()));
 	connect(chkXAxis, 		SIGNAL(toggled(bool)), this, 	SLOT(EnableTitles()));
@@ -270,31 +310,29 @@ void qTabPlot::EnableRange(){
 
 
 void qTabPlot::SetAxesRange(){
-	double xmin=0,xmax=0,ymin=0,ymax=0;
+	bool changed = false;
+	/** x min */
+	changed = (dispXMin->isEnabled())&&(!dispXMin->text().isEmpty());
+	if(changed)	myPlot->SetXYRangeValues(dispXMin->text().toDouble(),qDefs::XMINIMUM);
+	myPlot->IsXYRangeValues(changed,qDefs::XMINIMUM);
 
-	/** If disabled, get the min or max range of the plot as default */
-	if((dispXMin->isEnabled())&&(!dispXMin->text().isEmpty()))
-		xmin = dispXMin->text().toDouble();
-	else if(myPlot->DoesPlotExist())
-		xmin = myPlot->GetXMinimum();
-	if((dispXMax->isEnabled())&&(!dispXMax->text().isEmpty()))
-		xmax = dispXMax->text().toDouble();
-	else if(myPlot->DoesPlotExist())
-		xmax = myPlot->GetXMaximum();
-	if((dispYMin->isEnabled())&&(!dispYMin->text().isEmpty()))
-		ymin = dispYMin->text().toDouble();
-	else if(myPlot->DoesPlotExist())
-		ymin = myPlot->GetYMinimum();
-	if((dispYMax->isEnabled())&&(!dispYMax->text().isEmpty()))
-		ymax = dispYMax->text().toDouble();
-	else if(myPlot->DoesPlotExist())
-		ymax = myPlot->GetYMaximum();
+	/** x max */
+	changed = (dispXMax->isEnabled())&&(!dispXMax->text().isEmpty());
+	if(changed)	myPlot->SetXYRangeValues(dispXMax->text().toDouble(),qDefs::XMAXIMUM);
+	myPlot->IsXYRangeValues(changed,qDefs::XMAXIMUM);
 
-	/** Setting the range*/
-	if(myPlot->DoesPlotExist()){
-		myPlot->SetXMinMax(xmin,xmax);
-		myPlot->SetYMinMax(ymin,ymax);
-	}
+	/** y min */
+	changed = (dispYMin->isEnabled())&&(!dispYMin->text().isEmpty());
+	if(changed)	myPlot->SetXYRangeValues(dispYMin->text().toDouble(),qDefs::YMINIMUM);
+	myPlot->IsXYRangeValues(changed,qDefs::YMINIMUM);
+
+	/** y max */
+	changed = (dispYMax->isEnabled())&&(!dispYMax->text().isEmpty());
+	if(changed)	myPlot->SetXYRangeValues(dispYMax->text().toDouble(),qDefs::YMAXIMUM);
+	myPlot->IsXYRangeValues(changed,qDefs::YMAXIMUM);
+
+	/**  To remind the updateplot in qdrawplot to set range after updating plot*/
+	myPlot->SetXYRange(true);
 }
 
 
@@ -323,28 +361,31 @@ void qTabPlot::SetPlot(){
 	if(radioNoPlot->isChecked()){
 		myPlot->EnablePlot(false);
 		/**if enable is true, disable everything */
-		box1D->setEnabled(false);
-		box2D->setEnabled(false);
+		box1D->hide();
+		box2D->hide();
 		boxSnapshot->setEnabled(false);
 		boxSave->setEnabled(false);
+		boxFrequency->setEnabled(false);
 		boxPlotAxis->setEnabled(false);
 		boxScan->setEnabled(false);
 	}else if(radioHistogram->isChecked()){
 		myPlot->EnablePlot(true);
 		/**if enable is true, disable everything */
-		box1D->setEnabled(isOneD);
-		box2D->setEnabled(!isOneD);
+		if(isOneD) box1D->show(); else box1D->hide();
+		if(!isOneD) box2D->show(); else box2D->hide();
 		boxSnapshot->setEnabled(true);
 		boxSave->setEnabled(true);
+		boxFrequency->setEnabled(true);
 		boxPlotAxis->setEnabled(true);
 		boxScan->setEnabled(false);
 	}else{
 		myPlot->EnablePlot(true);
 		/**if enable is true, disable everything */
-		box1D->setEnabled(isOneD);
-		box2D->setEnabled(!isOneD);
+		if(isOneD) box1D->show(); else box1D->hide();
+		if(!isOneD) box2D->show(); else box2D->hide();
 		boxSnapshot->setEnabled(true);
 		boxSave->setEnabled(true);
+		boxFrequency->setEnabled(true);
 		boxPlotAxis->setEnabled(true);
 		boxScan->setEnabled(true);
 	}
@@ -353,11 +394,73 @@ void qTabPlot::SetPlot(){
 
 //-------------------------------------------------------------------------------------------------------------------------------------------------
 
+int qTabPlot::SetFrequency(){
+	int ret=0;
+	disconnect(comboTimeGapUnit,SIGNAL(currentIndexChanged(int)),	this, SLOT(SetFrequency()));
+	disconnect(spinTimeGap,		SIGNAL(editingFinished()),			this, SLOT(SetFrequency()));
+	disconnect(spinNthFrame,	SIGNAL(editingFinished()),			this, SLOT(SetFrequency()));
 
-void qTabPlot::EnableHistogram(bool enable){
-	//boxScan->setEnabled(false);
+	double timeMS,acqPeriodMS;
+	double minPlotTimer = myPlot->GetMinimumPlotTimer();
+	char cplotms[200];
+	sprintf(cplotms,"%f ms",minPlotTimer);
+
+	stackedLayout->setCurrentIndex(comboFrequency->currentIndex());
+	switch(comboFrequency->currentIndex()){
+	case 0:
+		/* Get the time interval from gui in ms*/
+		timeMS = (qDefs::getNSTime((qDefs::timeUnit)comboTimeGapUnit->currentIndex(),spinTimeGap->value()))/(1e6);
+		if(timeMS<minPlotTimer){
+			ret = 1;
+			qDefs::WarningMessage("Interval between Plots - The Time Interval between plots "
+					"must be atleast "+string(cplotms)+".","Plot");
+			spinTimeGap->setValue(minPlotTimer);
+			comboTimeGapUnit->setCurrentIndex(qDefs::MILLISECONDS);
+		}
+		/**This is done so that its known which one was selected */
+		myPlot->SetFrameFactor(0);
+		/** Setting the timer value(ms) between plots */
+		myPlot->SetPlotTimer(timeMS);
+#ifdef VERBOSE
+	cout<<"Plotting Frequency: Time Gap - "<<spinTimeGap->value()<<qDefs::getUnitString((qDefs::timeUnit)comboTimeGapUnit->currentIndex())<<endl;
+#endif
+		break;
+	case 1:
+		acqPeriodMS = (myDet->setTimer(slsDetectorDefs::FRAME_PERIOD,-1)*(1E-6));
+		/** gets the acq period * number of frames*/
+		timeMS = (spinNthFrame->value())*acqPeriodMS;
+		/** To make sure the period between plotting is not less than minimum plot timer in  ms*/
+		if(timeMS<minPlotTimer){
+			ret = 1;
+			int minFrame = (ceil)(minPlotTimer/acqPeriodMS);
+			qDefs::WarningMessage("<b>Plot Tab:</b> Interval between Plots - The nth Image must be larger.<br><br>"
+					"Condition to be satisfied:\n(Acquisition Period)*(nth Image) >= 500ms."
+					"<br><br>Nth image adjusted to minimum, "
+					"for the chosen Acquisition Period.","Plot");
+			spinNthFrame->setValue(minFrame);
+		}
+		/** Setting the timer value (nth frames) between plots */
+		myPlot->SetFrameFactor(spinNthFrame->value());
+#ifdef VERBOSE
+	cout<<"Plotting Frequency: Nth Frame - "<<spinNthFrame->value()<<endl;
+#endif
+		break;
+	}
+
+	connect(comboTimeGapUnit,SIGNAL(currentIndexChanged(int)),	this, SLOT(SetFrequency()));
+	connect(spinTimeGap,	SIGNAL(editingFinished()),			this, SLOT(SetFrequency()));
+	connect(spinNthFrame,	SIGNAL(editingFinished()),			this, SLOT(SetFrequency()));
+
+	return ret;
 }
 
 
 //-------------------------------------------------------------------------------------------------------------------------------------------------
 
+
+void qTabPlot::Refresh(){
+	SetFrequency();
+}
+
+
+//-------------------------------------------------------------------------------------------------------------------------------------------------

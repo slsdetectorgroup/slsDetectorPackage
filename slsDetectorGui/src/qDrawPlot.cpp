@@ -7,7 +7,6 @@
 /** Qt Project Class Headers */
 #include "qDrawPlot.h"
 #include "qCloneWidget.h"
-#include "qDefs.h"
 #include "slsDetector.h"
 /** Project Class Headers */
 #include "slsDetector.h"
@@ -23,6 +22,7 @@
 #include <string>
 #include <sstream>
 using namespace std;
+
 
 
 //-------------------------------------------------------------------------------------------------------------------------------------------------
@@ -75,7 +75,10 @@ void qDrawPlot::SetupWidgetWindow(){
 	currentPersistency = 0;
 	progress = 0;
 	plotEnable=true;
-	plotExists=false;
+	XYRangeChanged = false;
+	timerValue = PLOT_TIMER_MS;
+	frameFactor=0;
+	plotLock = false;
 	/** This is so that it initially stop and plots */
 	running = 1;
 	for(int i=0;i<MAX_1DPLOTS;i++) {histYAxis[i]=0;yvalues[i]=0; }
@@ -143,6 +146,8 @@ void qDrawPlot::Initialization(){
 	connect(this, 		SIGNAL(EnableZRangeSignal(bool)),plot2D, 	SLOT(EnableZRange(bool)));
 
 	connect(this, 		SIGNAL(SetZRangeSignal(double,double)),	plot2D, 	SLOT(SetZRange(double,double)));
+
+
 
 }
 
@@ -292,7 +297,8 @@ int qDrawPlot::GetData(detectorData *data){
 		for(int i=currentPersistency;i>0;i--)
 			memcpy(yvalues[i],yvalues[i-1],nPixelsX*sizeof(double));
 		nHists = currentPersistency+1;
-		memcpy(yvalues[0],data->values,nPixelsX*sizeof(double));
+		//memcpy(yvalues[0],data->values,nPixelsX*sizeof(double));
+		for(int i=0;i<(int)nPixelsX;i++)		*(yvalues[0]+i) = (double)*(data->values+i);
 	}
 	/**2d*/
 	else{
@@ -306,6 +312,7 @@ int qDrawPlot::GetData(detectorData *data){
 #ifdef VERYVERBOSE
 		cout<<"Reading in image: "<<currentFrame+1<<endl;
 #endif
+		if(!plotLock){
 		if(!pthread_mutex_trylock(&(last_image_complete_mutex))){
 			char temp_title[2000];
 			/** only if you got the lock, do u need to remember lastimagenumber to plot*/
@@ -328,8 +335,13 @@ int qDrawPlot::GetData(detectorData *data){
 			}
 			pthread_mutex_unlock(&(last_image_complete_mutex));
 		}
-
+		}
 		currentFrame++;
+	}
+	/** To make sure plotting locks parameters until it has plotted */
+	if(frameFactor){
+		if(currentFrame==number_of_exposures) plotLock = true;
+		else if(!((currentFrame-1)%frameFactor)) plotLock = true;
 	}
 #ifdef VERYVERBOSE
 	cout<<"Exiting GetData function"<<endl;
@@ -341,9 +353,6 @@ int qDrawPlot::GetData(detectorData *data){
 
 void qDrawPlot::setNumMeasurements(int num){
 	number_of_measurements = num;
-#ifdef VERBOSE
-	cout<<"Setting Number of Measurements to " <<num<<endl;
-#endif
 }
 
 //-------------------------------------------------------------------------------------------------------------------------------------------------
@@ -376,52 +385,91 @@ void qDrawPlot::Clear1DPlot(){
 
 //-------------------------------------------------------------------------------------------------------------------------------------------------
 
+
 void qDrawPlot::UpdatePlot(){
-	//static int last_plot_number = 0;
-	plot_update_timer->stop();
-	if(plotEnable){
-		LockLastImageArray();
-		//1-d plot stuff
-		if(lastImageNumber){
-			if(histNBins){
 #ifdef VERYVERBOSE
-				cout<<"Last Image Number: "<<lastImageNumber<<endl;
+			cout<<"Entering UpdatePlot function"<<endl;
 #endif
-				Clear1DPlot();
-				plot1D->SetXTitle(histXAxisTitle.toAscii().constData());
-				plot1D->SetYTitle(histYAxisTitle.toAscii().constData());
-				for(int hist_num=0;hist_num<(int)nHists;hist_num++){
-					SlsQtH1D*  h;
-					if(hist_num+1>plot1D_hists.size()){
-						plot1D_hists.append(h=new SlsQtH1D("1d plot",histNBins,histXAxis,GetHistYAxis(hist_num)));
-						h->SetLineColor(hist_num+1);
-					}else{
-						h=plot1D_hists.at(hist_num);
-						h->SetData(histNBins,histXAxis,GetHistYAxis(hist_num));
+	bool canPlot = true;
+	if(frameFactor)	canPlot = plotLock;
+
+	plot_update_timer->stop();
+
+	/** only if no plot isnt enabled */
+	if(plotEnable){
+		/** It doesnt go in here only if nth frame plotting in on and its not the nth frame*/
+		if(canPlot){
+			LockLastImageArray();
+			/**1-d plot stuff */
+			if(lastImageNumber){
+				if(histNBins){
+#ifdef VERYVERBOSE
+					cout<<"Last Image Number: "<<lastImageNumber<<endl;
+#endif
+					Clear1DPlot();
+					plot1D->SetXTitle(histXAxisTitle.toAscii().constData());
+					plot1D->SetYTitle(histYAxisTitle.toAscii().constData());
+					for(int hist_num=0;hist_num<(int)nHists;hist_num++){
+						SlsQtH1D*  h;
+						if(hist_num+1>plot1D_hists.size()){
+							plot1D_hists.append(h=new SlsQtH1D("1d plot",histNBins,histXAxis,GetHistYAxis(hist_num)));
+							h->SetLineColor(hist_num+1);
+						}else{
+							h=plot1D_hists.at(hist_num);
+							h->SetData(histNBins,histXAxis,GetHistYAxis(hist_num));
+						}
+						h->setTitle(GetHistTitle(hist_num));
+						h->Attach(plot1D);
+
 					}
-					h->setTitle(GetHistTitle(hist_num));
-					h->Attach(plot1D);
+					/** update range if required */
+					if(XYRangeChanged){
+						if(!IsXYRange[qDefs::XMINIMUM])
+							XYRangeValues[qDefs::XMINIMUM]= plot1D->GetXMinimum();
+						if(!IsXYRange[qDefs::XMAXIMUM])
+							XYRangeValues[qDefs::XMAXIMUM]= plot1D->GetXMaximum();
+						if(!IsXYRange[qDefs::YMINIMUM])
+							XYRangeValues[qDefs::YMINIMUM]= plot1D->GetYMinimum();
+						if(!IsXYRange[qDefs::YMAXIMUM])
+							XYRangeValues[qDefs::YMAXIMUM]= plot1D->GetYMaximum();
 
+						plot1D->SetXMinMax(XYRangeValues[qDefs::XMINIMUM],XYRangeValues[qDefs::XMAXIMUM]);
+						plot1D->SetYMinMax(XYRangeValues[qDefs::YMINIMUM],XYRangeValues[qDefs::YMAXIMUM]);
+
+						XYRangeChanged	= false;
+					}
+					plotLock = false;
 				}
-				/**plot exists is false in the beginning, right after cloning and when no plot  is checked*/
-				plotExists=true;
 			}
-		}
+			/**2-d plot stuff */
+			if(lastImageArray){
+				if(lastImageNumber&&last_plot_number!=(int)lastImageNumber && //there is a new plot
+						nPixelsX>0&&nPixelsY>0){
+					plot2D->GetPlot()->SetData(nPixelsX,-0.5,nPixelsX-0.5,nPixelsY,-0.5,nPixelsY-0.5,lastImageArray);
+					plot2D->setTitle(GetImageTitle());
+					plot2D->SetXTitle(imageXAxisTitle);
+					plot2D->SetYTitle(imageYAxisTitle);
+					plot2D->SetZTitle(imageZAxisTitle);
+					plot2D->UpdateNKeepSetRangeIfSet(); //this will keep a "set" z range, and call Plot()->Update();
+				}
+				/** update range if required */
+				if(XYRangeChanged){
+					if(!IsXYRange[qDefs::XMINIMUM])
+						XYRangeValues[qDefs::XMINIMUM]= plot2D->GetPlot()->GetXMinimum();
+					if(!IsXYRange[qDefs::XMAXIMUM])
+						XYRangeValues[qDefs::XMAXIMUM]= plot2D->GetPlot()->GetXMaximum();
+					if(!IsXYRange[qDefs::YMINIMUM])
+						XYRangeValues[qDefs::YMINIMUM]= plot2D->GetPlot()->GetYMinimum();
+					if(!IsXYRange[qDefs::YMAXIMUM])
+						XYRangeValues[qDefs::YMAXIMUM]= plot2D->GetPlot()->GetYMaximum();
 
-		//2-d plot stuff
-		if(lastImageArray){
-			if(lastImageNumber&&last_plot_number!=(int)lastImageNumber && //there is a new plot
-					nPixelsX>0&&nPixelsY>0){
-				plot2D->GetPlot()->SetData(nPixelsX,-0.5,nPixelsX-0.5,nPixelsY,-0.5,nPixelsY-0.5,lastImageArray);
-				//as it inherits a widget
-				plot2D->setTitle(GetImageTitle());
-				plot2D->SetXTitle(imageXAxisTitle);
-				plot2D->SetYTitle(imageYAxisTitle);
-				plot2D->SetZTitle(imageZAxisTitle);
-				plot2D->UpdateNKeepSetRangeIfSet(); //this will keep a "set" z range, and call Plot()->Update();
+					plot2D->GetPlot()->SetXMinMax(XYRangeValues[qDefs::XMINIMUM],XYRangeValues[qDefs::XMAXIMUM]);
+					plot2D->GetPlot()->SetYMinMax(XYRangeValues[qDefs::YMINIMUM],XYRangeValues[qDefs::YMAXIMUM]);
+
+					XYRangeChanged	= false;
+				}
+				plotLock = false;
 			}
-			/**plot exists is false in the beginning, right after cloning and when no plot  is checked*/
-			plotExists=true;
 		}
 	}
 	last_plot_number=lastImageNumber;
@@ -429,18 +477,24 @@ void qDrawPlot::UpdatePlot(){
 	if(plotEnable) UnlockLastImageArray();
 	/** Measurement not over, continue*/
 	if(number_of_exposures!=currentFrame){//las plot number?
-		plot_update_timer->start(500);
+		/**if the interval is a timer and not nth frame **/
+		if(!frameFactor)
+			plot_update_timer->start((int)timerValue);
+		else
+			plot_update_timer->start((int)PLOT_TIMER_MS);
 	}
 	/** if a measurement is over */
 	else{
-		emit SetCurrentMeasurementSignal(currentMeasurement);
 		currentMeasurement++;
 		/** if all the measurements are over */
 		if(currentMeasurement==number_of_measurements){
+			plotLock = false;
 			StartStopDaqToggle(true);
 			emit UpdatingPlotFinished();
 		}/** To start the next measurement*/
 		else{
+			plotLock = false;
+			emit SetCurrentMeasurementSignal(currentMeasurement);
 			StopDaqForGui();
 			StartDaq(true);
 		}
@@ -472,8 +526,6 @@ void qDrawPlot::ClonePlot(){
 	int preheight = height();
 
 	/** create clone */
-	/** plotexists is true after calling updateplot*/
-	plotExists=false;
 	winClone[i] = new qCloneWidget(this,i,boxPlot->title(),(int)plot_in_scope,plot1D,plot2D,myDet->getFilePath());
 	if(plot_in_scope==1){
 		plot1D = new SlsQt1DPlot(boxPlot);
@@ -528,22 +580,24 @@ void qDrawPlot::CloneCloseEvent(int id){
 
 void qDrawPlot::SavePlot(){
 	/** render image */
-	QImage img(size().width(),size().height(),QImage::Format_RGB32);
-	QPainter painter(&img);
+	QImage savedImage(size().width(),size().height(),QImage::Format_RGB32);
+	QPainter painter(&savedImage);
 	render(&painter);
 
 	/** save image*/
 	QString fName = QString(myDet->getFilePath().c_str())+"/Image.png";
-	fName = QFileDialog::getSaveFileName(this,tr("Save Image"),fName,tr("Images (*.png *.xpm *.jpg)"));
- 	if (!fName.isEmpty())
-	if(img.save(fName))
-		qDefs::InfoMessage("The Image has been successfully saved","Dock: Information");
-	else
-		qDefs::ErrorMessage("ERROR: Attempt to save image failed. Wrong Format","Dock: WARNING");
+	fName = QFileDialog::getSaveFileName(0,tr("Save Image"),fName,tr("PNG Files (*.png);;XPM Files(*.xpm);;JPEG Files(*.jpg)"),0,QFileDialog::ShowDirsOnly);
 
+	if (!fName.isEmpty())
+		if(savedImage.save(fName))
+			qDefs::InfoMessage("The Image has been successfully saved","Dock");
+		else
+			qDefs::WarningMessage("Attempt to save image failed.\n"
+    				"Formats: .png, .jpg, .xpm.","Dock");
 }
 
 //-------------------------------------------------------------------------------------------------------------------------------------------------
+
 
 void qDrawPlot::SetPersistency(int val){
 	for(int i=0;i<=val;i++){
@@ -562,7 +616,6 @@ void qDrawPlot::EnablePlot(bool enable){
 	plotEnable = enable;
 	/**if no plot, cant do setting range.
 	 * not true vice versa where plot was false and now set it to true*/
-	if(!enable)	plotExists=false;
 	Clear1DPlot();
 
 }

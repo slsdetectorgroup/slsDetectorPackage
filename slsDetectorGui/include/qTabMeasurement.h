@@ -52,6 +52,10 @@ private:
 
 	QTimer *progressTimer;
 
+	int numMeasurement;
+
+	int currentMeasurement;
+
 /** methods */
 	/** Sets up the widget
 	 */
@@ -91,6 +95,10 @@ void UpdateFinished();
 void SetCurrentMeasurement(int val);
 
 private slots:
+/** Set number of measurements
+ *  @param num number of measurements to be set */
+void setNumMeasurements(int num);
+
 /** Set file name
  * @param fName name of file
  */
@@ -150,6 +158,7 @@ signals:
 
 void StartSignal();
 void StopSignal();
+void CheckPlotIntervalSignal();
 };
 
 

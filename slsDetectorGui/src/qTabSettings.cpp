@@ -96,7 +96,7 @@ void qTabSettings::SetupDetectorSettings(){
 			item[(int)VeryHighGain]->setEnabled(true);
 			break;
 		default:
-			qDefs::ErrorMessage("ERROR: Unknown detector type.","Settings: ERROR");
+			qDefs::ErrorMessage("Unknown detector type.","Settings");
 			exit(-1);
 			break;
 		}
@@ -104,8 +104,8 @@ void qTabSettings::SetupDetectorSettings(){
 		 * This should not happen -only if the server and gui has a mismatch
 		 * on which all modes are allowed in detectors */
 		if(!(item[(int)sett]->isEnabled())){
-			qDefs::ErrorMessage("ERROR:  Unknown Detector Settings retrieved from detector. "
-					"Exiting GUI.","Settings: ERROR");
+			qDefs::ErrorMessage("Unknown Detector Settings retrieved from detector. "
+					"Exiting GUI.","Settings");
 #ifdef VERBOSE
 			cout<<"ERROR:  Unknown Detector Settings retrieved from detector."<<endl;
 #endif

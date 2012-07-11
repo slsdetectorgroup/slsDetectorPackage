@@ -57,8 +57,8 @@ public:
 	 * @param value time
 	 * returns time value in ns
 	 */
-	static float getNSTime(timeUnit unit, float value){
-		float valueNS=value;
+	static double getNSTime(timeUnit unit, double value){
+		double valueNS=value;
 		switch(unit){
 		case HOURS:			valueNS*=60;
 		case MINUTES:		valueNS*=60;
@@ -78,12 +78,12 @@ public:
 	 * @param value time in seconds
 	 * returns the corresponding time value
 	 */
-	static float getCorrectTime(timeUnit& unit, float value){
+	static double getCorrectTime(timeUnit& unit, double value){
 		int intUnit = (int)SECONDS;
 
 		/** hr, min, sec */
 		if(value>=1){
-			float newVal = value;
+			double newVal = value;
 			while((newVal>=1)&&(intUnit>=(int)HOURS)){
 				/** value retains the old value */
 				value = newVal;
@@ -107,14 +107,29 @@ public:
 
 //-------------------------------------------------------------------------------------------------------------------------------------------------
 
+	/**displays an warning message
+	 * @param warningMessage the message to be displayed
+	 * @param source is the tab or the source of the warning
+	 * */
+	static void  WarningMessage(string warningMessage,string source)
+	{
+		static QMessageBox* warningBox;
+		source.append(": WARNING");
+		warningBox= new QMessageBox(QMessageBox::Warning,source.c_str(),tr(warningMessage.c_str()),QMessageBox::Ok, warningBox);
+		warningBox->exec();
+	}
+
+//-------------------------------------------------------------------------------------------------------------------------------------------------
+
 	/**displays an error message
 	 * @param errorMessage the message to be displayed
 	 * @param source is the tab or the source of the error
 	 * */
-	static void  ErrorMessage(string errorMessage,char source[])
+	static void  ErrorMessage(string errorMessage,string source)
 	{
 		static QMessageBox* errorBox;
-		errorBox= new QMessageBox(QMessageBox::Warning,source,tr(errorMessage.c_str()),QMessageBox::Ok, errorBox);
+		source.append(": ERROR");
+		errorBox= new QMessageBox(QMessageBox::Critical,source.c_str(),tr(errorMessage.c_str()),QMessageBox::Ok, errorBox);
 		errorBox->exec();
 	}
 
@@ -124,12 +139,24 @@ public:
 	 * @param infoMessage the message to be displayed
 	 * @param source is the tab or the source of the information
 	 * */
-	static void  InfoMessage(string infoMessage,char source[])
+	static void  InfoMessage(string infoMessage,string source)
 	{
 		static QMessageBox* msgBox;
-		msgBox= new QMessageBox(QMessageBox::Information,source,tr(infoMessage.c_str()),QMessageBox::Ok, msgBox);
+		source.append(": INFORMATION");
+		msgBox= new QMessageBox(QMessageBox::Information,source.c_str(),tr(infoMessage.c_str()),QMessageBox::Ok, msgBox);
 		msgBox->exec();
 	}
+
+//-------------------------------------------------------------------------------------------------------------------------------------------------
+
+	/** range of x and y axes
+	 */
+	enum range{
+		XMINIMUM,
+		XMAXIMUM,
+		YMINIMUM,
+		YMAXIMUM
+	};
 
 //-------------------------------------------------------------------------------------------------------------------------------------------------
 

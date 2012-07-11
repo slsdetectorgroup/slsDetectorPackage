@@ -45,6 +45,7 @@ void qTabMessages::SetupWidgetWindow(){
 	dispLog 	= new QTextEdit(this);
 	dispLog->setReadOnly(true);
 	dispLog->setFocusPolicy(Qt::NoFocus);
+	dispLog->setTextColor(Qt::darkBlue);
 
 	QSizePolicy sizePolicy(QSizePolicy::Fixed,QSizePolicy::Fixed);
 
@@ -91,9 +92,9 @@ void qTabMessages::SaveLog() {
     		QTextStream out(&outfile);
     		out<<dispLog->toPlainText() << endl;
     		qDefs::InfoMessage(string("The Log has been successfully saved to "
-    				"")+fName.toAscii().constData(),"Messages: Information");
+    				"")+fName.toAscii().constData(),"Messages");
     	}
-    	else qDefs::ErrorMessage("ERROR: Attempt to save log file failed.","Messages: WARNING");
+    	else qDefs::WarningMessage("Attempt to save log file failed.","Messages");
      }
 }
 

@@ -14,16 +14,18 @@ class slsDetectorUtils;
 /** Qt Project Class Headers */
 #include "SlsQt1DPlot.h"
 #include "SlsQt2DPlotLayout.h"
+#include "qDefs.h"
 class SlsQt1DPlot;
 class SlsQt2DPlotLayout;
 class qCloneWidget;
 /** Qt Include Headers */
-
 #include <QWidget>
 #include <QGridLayout>
 #include <QGroupBox>
 #include <QTimer>
 #include <QString>
+
+/** C++ Include Headers */
 
 #define MAX_1DPLOTS 10
 
@@ -40,50 +42,57 @@ public:
 	/** Destructor	 */
 	~qDrawPlot();
 
-	/**is an acquisition running */
+	/**is an acquisition running , need it to prevent measurement tab
+	 * from being refreshed when switching tabs during acquisition */
 	bool isRunning(){return running;};
-	/** Number of x axis pixels	 */
-	int GetPixelsX(){return nPixelsX;};
-	/** Number of y axis pixels	 */
-	int GetPixelsY(){return nPixelsY;};
-		/**	sets plot Title */
-	void  		SetPlotTitle(QString title)      	{boxPlot->setTitle(title);}
-	/**	sets 1D X Axis Title */
-	void  		SetHistXAxisTitle(QString title)   	{histXAxisTitle = title;}
-	/**	sets 1D Y Axis Title */
-	void  		SetHistYAxisTitle(QString title)   	{histYAxisTitle = title;}
-	/**	sets 2D X Axis Title */
-	void  		SetImageXAxisTitle(QString title)   {imageXAxisTitle = title;}
-	/**	sets 2D Y Axis Title */
-	void  		SetImageYAxisTitle(QString title)   {imageYAxisTitle = title;}
-	/**	sets 2D Z Axis Title */
-	void  		SetImageZAxisTitle(QString title)   {imageZAxisTitle = title;}
-	/**	Sets X min and max */
-	void SetXMinMax(double min,double max)	{if(plot_in_scope==1)plot1D->SetXMinMax(min,max);  else plot2D->GetPlot()->SetXMinMax(min,max);};
-	/**	Sets Y min and max */
-	void SetYMinMax(double min,double max)	{if(plot_in_scope==1)plot1D->SetYMinMax(min,max);  else plot2D->GetPlot()->SetYMinMax(min,max);};
-	/**	Gets X min */
-	double GetXMinimum(){if(plot_in_scope==1)return plot1D->GetXMinimum(); else return plot2D->GetPlot()->GetXMinimum();};
-	/**	Gets X max */
-	double GetXMaximum(){if(plot_in_scope==1)return plot1D->GetXMaximum(); else return plot2D->GetPlot()->GetXMaximum();};
-	/**	Gets Y min */
-	double GetYMinimum(){if(plot_in_scope==1)return plot1D->GetYMinimum(); else return plot2D->GetPlot()->GetYMinimum();};
-	/**	Gets Y max */
-	double GetYMaximum(){if(plot_in_scope==1)return plot1D->GetYMaximum(); else return plot2D->GetPlot()->GetYMaximum();};
-	/** Disables zoom if any of the axes range are checked and fixed with a value */
-	void DisableZoom(bool disable);
 	/** gets the progress of acquisition to the measurement tab*/
 	int GetProgress(){return progress;};
+
+	/**	sets plot Title */
+	void SetPlotTitle(QString title)      	{boxPlot->setTitle(title);}
+	/**	sets 1D X Axis Title */
+	void SetHistXAxisTitle(QString title)   	{histXAxisTitle = title;}
+	/**	sets 1D Y Axis Title */
+	void SetHistYAxisTitle(QString title)   	{histYAxisTitle = title;}
+	/**	sets 2D X Axis Title */
+	void SetImageXAxisTitle(QString title)   {imageXAxisTitle = title;}
+	/**	sets 2D Y Axis Title */
+	void SetImageYAxisTitle(QString title)   {imageYAxisTitle = title;}
+	/**	sets 2D Z Axis Title */
+	void SetImageZAxisTitle(QString title)   {imageZAxisTitle = title;}
+	/** Disables zoom if any of the axes range are checked and fixed with a value */
+	void DisableZoom(bool disable);
 	/**	Enables plot from the plot tab*/
 	void EnablePlot(bool enable);
-	/**	To know whether 1d started*/
-	bool DoesPlotExist(){return plotExists;};
+
+	/** Its a reminder to update plot to set the xy range
+	 * This is done only when there is a plot to update */
+	void SetXYRange(bool changed){XYRangeChanged = changed;};
+	/**Sets the min/max for x/y
+	 * @param val is the value to be set
+	 * @param xy is xmin,xmax,ymin or ymax */
+	void SetXYRangeValues(double val,qDefs::range xy){XYRangeValues[xy]=val;};
+	/**Sets if min/max for x/y is enabled
+	 * @param changed is if this has been changed
+	 * @param xy is xmin,xmax,ymin or ymax */
+	void IsXYRangeValues(bool changed,qDefs::range xy){IsXYRange[xy]=changed;};
+
+	/** Get minimum Plot timer - between plots */
+	double GetMinimumPlotTimer(){return PLOT_TIMER_MS;};
+	/** Set Plot timer - between plots in ms*/
+	void SetPlotTimer(double time){timerValue = time;};
+	/** Set  Plot frame factor - between plots */
+	void SetFrameFactor(int frame){frameFactor = frame;};
 
 	/** Starts or stop acquisition
 	 * Calls startDaq() function
 	 * @param stop_if_running is 0 to stop acquisition and 1 to start acquisition
 	 */
 	void StartStopDaqToggle(bool stop_if_running=0);
+	/** Set number of measurements
+	 *  @param num number of measurements to be set */
+	void setNumMeasurements(int num);
+
 
 private:
 	/** The sls detector object */
@@ -171,13 +180,39 @@ private:
 	double* 	 yvalues[MAX_1DPLOTS];
 	/**	temporary Image Values in 2D */
 	double* 	 image_data;
-	//bool  gui_acquisition_thread_running;
+
+	/**persistency to be reached*/
 	int persistency;
+	/** persistency takes time to reach as it increases per frame
+	 * this is the current one */
 	int currentPersistency;
+	/** to update the progress for each getData() so that
+	 * measurement tab can request on a timer basis*/
 	int progress;
+	/**If plot is enabled from plot tab*/
 	bool plotEnable;
-	bool plotExists;
+
+
+	/**if an acquisition is running, so as not to refresh tab
+	 * and also to update plot only if running (while creating clones)*/
 	bool running;
+
+	/** if the min/max of x and y has been changed,
+	 * to notify while plotting */
+	bool XYRangeChanged;
+	/**the specific min/max of x/y*/
+	double XYRangeValues[4];
+	/**if the specific min/max of x/y is enabled */
+	bool IsXYRange[4];
+
+	/** Default timer between plots*/
+	static const double PLOT_TIMER_MS = 500;
+	/** Specific timer value between plots */
+	double timerValue;
+	/** every nth frame when to plot */
+	int frameFactor;
+	bool plotLock;
+
 
 	/** Initializes all its members and the thread */
 	void Initialization();
@@ -214,9 +249,6 @@ private:
 
 
 public slots:
-/** Set number of measurements
- *  @param num number of measurements to be set */
-void setNumMeasurements(int num);
 /** To select 1D or 2D plot
  @param i is 1 for 1D, else 2D plot */
 void SelectPlot(int i=2);
@@ -250,6 +282,7 @@ void StartDaq(bool start);
 void CloneCloseEvent(int id);
 
 
+
 signals:
 void UpdatingPlotFinished();
 void InterpolateSignal(bool);
@@ -258,7 +291,6 @@ void LogzSignal(bool);
 void SetZRangeSignal(double,double);
 void EnableZRangeSignal(bool);
 void SetCurrentMeasurementSignal(int);
-
 };
 
 

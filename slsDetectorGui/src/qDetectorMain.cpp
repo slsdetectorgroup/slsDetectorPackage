@@ -171,8 +171,7 @@ void qDetectorMain::SetUpDetector(){
 #endif
 		char cIndex[10];
 		sprintf(cIndex,"%d",detID);
-		qDefs::ErrorMessage(string("ERROR: No Detector Connected at "
-				"id : ")+string(cIndex),"Main: ERROR");
+		qDefs::ErrorMessage(string("No Detector Connected at id : ")+string(cIndex),"Main");
 		exit(-1);
 	}
 	else{
@@ -184,9 +183,9 @@ void qDetectorMain::SetUpDetector(){
 				default:
 					string detName = myDet->slsDetectorBase::getDetectorType(myDet->getDetectorsType());
 					string hostname = myDet->getHostname(detID);
-					string errorMess = string("ERROR:  ")+hostname+string(" has "
-							"unknown detector type \"")+detName+string("\". Exiting GUI.");
-					qDefs::ErrorMessage(errorMess,"Main: ERROR");
+					string errorMess = hostname+string(" has unknown detector type \"")+
+							detName+string("\". Exiting GUI.");
+					qDefs::ErrorMessage(errorMess,"Main");
 					exit(-1);
 				}
 		setWindowTitle("SLS Detector GUI : "+
@@ -212,6 +211,7 @@ void qDetectorMain::Initialization(){
 		/**	Measurement tab*/
 		connect(tab_measurement,	SIGNAL(StartSignal()),				this,SLOT(EnableTabs()));
 		connect(tab_measurement,	SIGNAL(StopSignal()),				this,SLOT(EnableTabs()));
+		connect(tab_measurement,	SIGNAL(CheckPlotIntervalSignal()),	tab_plot,SLOT(SetFrequency()));
 		/** Plot tab */
 		connect(tab_plot,			SIGNAL(DisableZoomSignal(bool)),	this,SLOT(SetZoomToolTip(bool)));
 /** Plotting */
@@ -293,7 +293,7 @@ void qDetectorMain::ExecuteUtilities(QAction *action){
 		/** Gets called when cancelled as well*/
 		if (!fName.isEmpty()){
 			myDet->retrieveDetectorSetup(string(fName.toAscii().constData()));
-			qDefs::InfoMessage("The parameters have been successfully setup.","Main: Information");
+			qDefs::InfoMessage("The parameters have been successfully setup.","Main");
 		}
 	}
 	else if(action==actionSaveSetup){
@@ -307,7 +307,7 @@ void qDetectorMain::ExecuteUtilities(QAction *action){
 		/** Gets called when cancelled as well*/
 		if (!fName.isEmpty()){
 			myDet->dumpDetectorSetup(string(fName.toAscii().constData()));
-			qDefs::InfoMessage("The setup parameters have been successfully saved.","Main: Information");
+			qDefs::InfoMessage("The setup parameters have been successfully saved.","Main");
 		}
 	}
 	else if(action==actionMeasurementWizard){
@@ -326,7 +326,7 @@ void qDetectorMain::ExecuteUtilities(QAction *action){
 		/** Gets called when cancelled as well*/
 		if (!fName.isEmpty()){
 			myDet->readConfigurationFile(string(fName.toAscii().constData()));
-			qDefs::InfoMessage("The parameters have been successfully configured.","Main: Information");
+			qDefs::InfoMessage("The parameters have been successfully configured.","Main");
 		}
 	}
 	else if(action==actionSaveConfiguration){
@@ -340,7 +340,7 @@ void qDetectorMain::ExecuteUtilities(QAction *action){
 		/** Gets called when cancelled as well*/
 		if (!fName.isEmpty()){
 			myDet->writeConfigurationFile(string(fName.toAscii().constData()));
-			qDefs::InfoMessage("The configuration parameters have been successfully saved.","Main: Information");
+			qDefs::InfoMessage("The configuration parameters have been successfully saved.","Main");
 		}
 	}
 	else if(action==actionEnergyCalibration){
@@ -386,7 +386,7 @@ void qDetectorMain::Refresh(int index){
 		case Measurement:	if(!myPlot->isRunning()) tab_measurement->Refresh();	break;
 		case Settings:		tab_settings->Refresh();	break;
 		case DataOutput:	tab_dataoutput->Refresh();	break;
-		case Plot:			break;
+		case Plot:			tab_plot->Refresh();		break;
 		case Actions:		tab_actions->Refresh();		break;
 		case Advanced:		tab_advanced->Refresh();	break;
 		case Debugging:		tab_debugging->Refresh();	break;

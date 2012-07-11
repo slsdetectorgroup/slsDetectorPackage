@@ -47,12 +47,15 @@ qTabMeasurement::~qTabMeasurement(){
 
 
 void qTabMeasurement::SetupWidgetWindow(){
+	/** Number of measurements */
+	numMeasurement=1;
+
 	/** Timer to update the progress bar **/
 	progressTimer = new QTimer(this);
 	//btnStartStop->setStyleSheet("color:green");
 	/** Exp Time **/
 	qDefs::timeUnit unit;
-	float time = qDefs::getCorrectTime(unit,((float)(myDet->setTimer(slsDetectorDefs::ACQUISITION_TIME,-1)*(1E-9))));
+	double time = qDefs::getCorrectTime(unit,((double)(myDet->setTimer(slsDetectorDefs::ACQUISITION_TIME,-1)*(1E-9))));
 	spinExpTime->setValue(time);
 	comboExpUnit->setCurrentIndex((int)unit);
 	/** Hide the error message **/
@@ -65,6 +68,7 @@ void qTabMeasurement::SetupWidgetWindow(){
 	lblProgressIndex->setText(QString::number(myDet->getFileIndex()));
 	/** only initially **/
 	progressBar->setValue(0);
+	currentMeasurement = 0;
 
 	/** timing mode*/
 	SetupTimingMode();
@@ -114,7 +118,7 @@ void qTabMeasurement::SetupTimingMode(){
 			item[(int)Trigger_Window]->setEnabled(false);
 			break;
 		default:
-			qDefs::ErrorMessage("ERROR: Unknown detector type.","Measurement: ERROR");
+			qDefs::ErrorMessage("Unknown detector type.","Measurement");
 			exit(-1);
 			break;
 		}
@@ -144,11 +148,9 @@ void qTabMeasurement::SetupTimingMode(){
 		 * This should not happen -only if the server and gui has a mismatch
 		 * on which all modes are allowed in detectors */
 		else{
-			qDefs::ErrorMessage("ERROR:  Unknown Timing Mode detected from detector."
+			qDefs::WarningMessage("Unknown Timing Mode detected from detector."
 					"\n\nSetting the following defaults:\nTiming Mode \t: None\n"
-					"Number of Frames \t: 1\nNumber of Triggers \t: 1","Measurement: WARNING");
-			setNumFrames(1);
-			setNumTriggers(1);
+					"Number of Frames \t: 1\nNumber of Triggers \t: 1","Measurement");
 			comboTimingMode->setCurrentIndex((int)None);
 			setTimingMode((int)None);
 		}
@@ -163,7 +165,7 @@ void qTabMeasurement::Initialization(int timingChange){
 	/** These signals are connected only at start up. The others are reinitialized when changing timing mode*/
 	if(!timingChange){
 		/** Number of Measurements**/
-		connect(spinNumMeasurements,SIGNAL(valueChanged(int)),		myPlot,	SLOT(setNumMeasurements(int)));
+		connect(spinNumMeasurements,SIGNAL(valueChanged(int)),		this,	SLOT(setNumMeasurements(int)));
 		/** File Name**/
 		connect(dispFileName,SIGNAL(textChanged(const QString&)),	this,	SLOT(setFileName(const QString&)));
 		/** File Index**/
@@ -233,6 +235,16 @@ void qTabMeasurement::Enable(bool enable){
 //-------------------------------------------------------------------------------------------------------------------------------------------------
 
 
+void qTabMeasurement::setNumMeasurements(int val){
+#ifdef VERBOSE
+	cout<<"Setting Number of Measurements to " <<val<<endl;
+#endif
+	numMeasurement = val;
+	myPlot->setNumMeasurements(val);
+}
+//-------------------------------------------------------------------------------------------------------------------------------------------------
+
+
 void qTabMeasurement::setFileName(const QString& fName){
 	myDet->setFileName(fName.toAscii().data());
 #ifdef VERBOSE
@@ -263,6 +275,8 @@ void qTabMeasurement::startStopAcquisition(){
 		btnStartStop->setText("Stop");
 		Enable(0);
 		progressBar->setValue(0);
+		/** the progress which keeps adding up for all the measurements*/
+		currentMeasurement = 0;
 		progressTimer->start(100);
 
 		emit StartSignal();
@@ -300,8 +314,10 @@ void qTabMeasurement::UpdateFinished(){
 //-------------------------------------------------------------------------------------------------------------------------------------------------
 
 
-void SetCurrentMeasurement(int val){
-	lblCurrentMeasurement->setText("0u");//lblCurrentMeasurement->setText(QString::number(val));
+void qTabMeasurement::SetCurrentMeasurement(int val){
+	currentMeasurement = val;
+	lblCurrentMeasurement->setText(QString::number(val+1));
+
 }
 
 
@@ -309,8 +325,7 @@ void SetCurrentMeasurement(int val){
 
 
 void qTabMeasurement::UpdateProgress(){
-
-	progressBar->setValue(myPlot->GetProgress());
+	progressBar->setValue((int)(((currentMeasurement*100)+(myPlot->GetProgress()))/numMeasurement));
 	lblProgressIndex->setText(QString::number(myDet->getFileIndex()));
 }
 
@@ -331,17 +346,17 @@ void qTabMeasurement::setNumFrames(int val){
 
 
 void qTabMeasurement::setExposureTime(){
-	int64_t exptimeNS;
+	double exptimeNS;
 	/** Get the value of timer in ns **/
-	exptimeNS = (int64_t)qDefs::getNSTime((qDefs::timeUnit)comboExpUnit->currentIndex(),spinExpTime->value());
+	exptimeNS = qDefs::getNSTime((qDefs::timeUnit)comboExpUnit->currentIndex(),spinExpTime->value());
 #ifdef VERBOSE
 	cout<<"Setting acquisition time to " << exptimeNS << " clocks" << "/"<<spinExpTime->value()<<qDefs::getUnitString((qDefs::timeUnit)comboExpUnit->currentIndex())<<endl;
 #endif
-	myDet->setTimer(slsDetectorDefs::ACQUISITION_TIME,exptimeNS);
+	myDet->setTimer(slsDetectorDefs::ACQUISITION_TIME,(int64_t)exptimeNS);
 
 	if(lblPeriod->isEnabled()){
-		int64_t acqtimeNS;
-		acqtimeNS = (int64_t)qDefs::getNSTime((qDefs::timeUnit)comboPeriodUnit->currentIndex(),spinPeriod->value());
+		double acqtimeNS;
+		acqtimeNS = qDefs::getNSTime((qDefs::timeUnit)comboPeriodUnit->currentIndex(),spinPeriod->value());
 		if(exptimeNS>acqtimeNS) {
 			lblNote->show();
 			lblPeriod->setPalette(lblNote->palette());
@@ -360,16 +375,16 @@ void qTabMeasurement::setExposureTime(){
 
 
 void qTabMeasurement::setAcquisitionPeriod(){
-	int64_t acqtimeNS;
+	double acqtimeNS;
 	/** Get the value of timer in ns **/
-	acqtimeNS = (int64_t)qDefs::getNSTime((qDefs::timeUnit)comboPeriodUnit->currentIndex(),spinPeriod->value());
+	acqtimeNS = qDefs::getNSTime((qDefs::timeUnit)comboPeriodUnit->currentIndex(),spinPeriod->value());
 #ifdef VERBOSE
 	cout<<"Setting frame period between exposures to " << acqtimeNS << " clocks"<< "/"<<spinPeriod->value()<<qDefs::getUnitString((qDefs::timeUnit)comboPeriodUnit->currentIndex())<<endl;
 #endif
-	myDet->setTimer(slsDetectorDefs::FRAME_PERIOD,acqtimeNS);
+	myDet->setTimer(slsDetectorDefs::FRAME_PERIOD,(int64_t)acqtimeNS);
 
-	int64_t exptimeNS;
-	exptimeNS = (int64_t)qDefs::getNSTime((qDefs::timeUnit)comboExpUnit->currentIndex(),spinExpTime->value());
+	double exptimeNS;
+	exptimeNS = qDefs::getNSTime((qDefs::timeUnit)comboExpUnit->currentIndex(),spinExpTime->value());
 	if(exptimeNS>acqtimeNS){
 		lblNote->show();
 		lblPeriod->setPalette(lblNote->palette());
@@ -380,6 +395,9 @@ void qTabMeasurement::setAcquisitionPeriod(){
 		lblPeriod->setPalette(lblNumFrames->palette());
 		lblPeriod->setText("Acquisition Period:");
 	}
+
+	/** Check if the interval between plots is ok */
+	emit CheckPlotIntervalSignal();
 }
 
 
@@ -398,13 +416,13 @@ void qTabMeasurement::setNumTriggers(int val){
 
 
 void qTabMeasurement::setDelay(){
-	int64_t exptimeNS;
+	double exptimeNS;
 	/** Get the value of timer in ns **/
-	exptimeNS = (int64_t)qDefs::getNSTime((qDefs::timeUnit)comboDelayUnit->currentIndex(),spinDelay->value());
+	exptimeNS = qDefs::getNSTime((qDefs::timeUnit)comboDelayUnit->currentIndex(),spinDelay->value());
 #ifdef VERBOSE
 	cout<<"Setting delay after trigger to " << exptimeNS << " clocks"<< "/"<<spinDelay->value()<<qDefs::getUnitString((qDefs::timeUnit)comboDelayUnit->currentIndex())<<endl;
 #endif
-	myDet->setTimer(slsDetectorDefs::DELAY_AFTER_TRIGGER,exptimeNS);
+	myDet->setTimer(slsDetectorDefs::DELAY_AFTER_TRIGGER,(int64_t)exptimeNS);
 }
 
 
@@ -506,13 +524,17 @@ void qTabMeasurement::setTimingMode(int mode){
 			success = true;
 		break;
 	default:
-		qDefs::ErrorMessage("ERROR: Timing mode unknown to GUI","Measurement: ERROR");
+		/** This should never happen */
+		qDefs::ErrorMessage("Timing mode unknown to GUI","Measurement");
 		exit(-1);
 	}
 	if(!success){
-		qDefs::ErrorMessage("ERROR: The detector timing mode could not be set.\n"
-				"Please check the external flags","Measurement: ERROR");
-		exit(-1);
+		qDefs::WarningMessage("The detector timing mode could not be set.\n"
+				"Please check the external flags."
+				"\n\nSetting the following defaults:\nTiming Mode \t: None\n"
+				"Number of Frames \t: 1\nNumber of Triggers \t: 1","Measurement");
+		comboTimingMode->setCurrentIndex((int)None);
+		return;
 	}
 
 	if(mode!=None){/** Number of Probes */
@@ -525,7 +547,7 @@ void qTabMeasurement::setTimingMode(int mode){
 	DeInitialization();
 
 
-	float time;
+	double time;
 	int val;
 	qDefs::timeUnit unit;
 	/**Number of Frames */
@@ -539,7 +561,7 @@ void qTabMeasurement::setTimingMode(int mode){
 
 	/**Exposure Time */
 	if(lblExpTime->isEnabled()){
-		time = qDefs::getCorrectTime(unit,((float)(myDet->setTimer(slsDetectorDefs::ACQUISITION_TIME,-1)*(1E-9))));
+		time = qDefs::getCorrectTime(unit,((double)(myDet->setTimer(slsDetectorDefs::ACQUISITION_TIME,-1)*(1E-9))));
 #ifdef VERBOSE
 		cout<<"Getting acquisition time : " << time << qDefs::getUnitString(unit) << endl;
 #endif
@@ -549,16 +571,16 @@ void qTabMeasurement::setTimingMode(int mode){
 
 	/**Frame Period between exposures */
 	if(lblPeriod->isEnabled()){
-		time = qDefs::getCorrectTime(unit,((float)(myDet->setTimer(slsDetectorDefs::FRAME_PERIOD,-1)*(1E-9))));
+		time = qDefs::getCorrectTime(unit,((double)(myDet->setTimer(slsDetectorDefs::FRAME_PERIOD,-1)*(1E-9))));
 #ifdef VERBOSE
 		cout<<"Getting frame period between exposures : " << time <<  qDefs::getUnitString(unit) << endl;
 #endif
 		spinPeriod->setValue(time);
 		comboPeriodUnit->setCurrentIndex((int)unit);
 
-		int64_t exptimeNS,acqtimeNS;
-		exptimeNS = (int64_t)qDefs::getNSTime((qDefs::timeUnit)comboExpUnit->currentIndex(),spinExpTime->value());
-		acqtimeNS = (int64_t)qDefs::getNSTime((qDefs::timeUnit)comboPeriodUnit->currentIndex(),spinPeriod->value());
+		double exptimeNS,acqtimeNS;
+		exptimeNS = qDefs::getNSTime((qDefs::timeUnit)comboExpUnit->currentIndex(),spinExpTime->value());
+		acqtimeNS = qDefs::getNSTime((qDefs::timeUnit)comboPeriodUnit->currentIndex(),spinPeriod->value());
 		if(exptimeNS>acqtimeNS) {
 			lblNote->show();
 			lblPeriod->setPalette(lblNote->palette());
@@ -586,7 +608,7 @@ void qTabMeasurement::setTimingMode(int mode){
 
 	/**Delay After Trigger */
 	if(lblDelay->isEnabled()){
-		time = qDefs::getCorrectTime(unit,((float)(myDet->setTimer(slsDetectorDefs::DELAY_AFTER_TRIGGER,-1)*(1E-9))));
+		time = qDefs::getCorrectTime(unit,((double)(myDet->setTimer(slsDetectorDefs::DELAY_AFTER_TRIGGER,-1)*(1E-9))));
 #ifdef VERBOSE
 		cout<<"Getting delay after trigger : " << time <<  qDefs::getUnitString(unit) << endl;
 #endif
@@ -615,6 +637,8 @@ void qTabMeasurement::setTimingMode(int mode){
 
 	/** To reconnect all the signals after changing their values*/
 	Initialization(1);
+
+	return;
 }
 
 
@@ -628,10 +652,8 @@ void qTabMeasurement::Refresh(){
 	spinIndex->setValue(myDet->getFileIndex());
 	/** progress label index **/
 	lblProgressIndex->setText(QString::number(myDet->getFileIndex()));
-	/** Progress bar **/
-	progressBar->setValue((int)myDet->getCurrentProgress());
 	/** Timing mode**/
-	SetupTimingMode();//comboTimingMode->setCurrentIndex((int)myDet->setExternalCommunicationMode());
+	SetupTimingMode();
 }
 
 

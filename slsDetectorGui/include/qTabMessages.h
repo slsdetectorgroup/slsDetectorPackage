@@ -70,6 +70,8 @@ void SaveLog();
 /** Clear Log to File*/
 void ClearLog();
 
+
+
 };
 
 

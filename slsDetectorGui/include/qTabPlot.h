@@ -14,6 +14,8 @@
 class slsDetectorUtils;
 /** Qt Project Class Headers */
 class qDrawPlot;
+/** Qt Include Headers */
+#include <QStackedLayout>
 
 /**
  *@short sets up the Plot parameters
@@ -33,6 +35,9 @@ public:
 	 */
 	~qTabPlot();
 
+	/** To refresh and update widgets
+	 */
+	void Refresh();
 
 
 private:
@@ -44,6 +49,11 @@ private:
 
 	/** 1d/2d plot	 */
 	bool isOneD;
+
+	QStackedLayout* stackedLayout;
+	QSpinBox *spinNthFrame;
+	QDoubleSpinBox *spinTimeGap;
+	QComboBox *comboTimeGapUnit;
 
 	/** some Default Values */
 	static QString defaultPlotTitle;
@@ -66,7 +76,10 @@ private:
 
 
 public slots:
-
+/** Set frequency between plots
+ * returns 0 if there were no errors(important
+ * while editing acquisition period in measurement tab) */
+int SetFrequency();
 
 
 
@@ -94,8 +107,7 @@ void SetZRange();
 void EnableZRange();
 /** Set Plot to none, data graph, histogram*/
 void SetPlot();
-/** Enable Histogram */
-void EnableHistogram(bool enable);
+
 
 signals:
 void DisableZoomSignal(bool);

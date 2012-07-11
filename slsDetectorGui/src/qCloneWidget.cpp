@@ -183,12 +183,13 @@ void qCloneWidget::SavePlot(){
 	QPainter painter(&img);
 	cloneBox->render(&painter);
 
-    fName = QFileDialog::getSaveFileName(this,tr("Save Snapshot "),fName,tr("Images (*.png *.xpm *.jpg)"),0,QFileDialog::ShowDirsOnly);
+    fName = QFileDialog::getSaveFileName(this,tr("Save Snapshot "),fName,tr("PNG Files (*.png);;XPM Files(*.xpm);;JPEG Files(*.jpg)"),0,QFileDialog::ShowDirsOnly);
     if (!fName.isEmpty())
     	if((img.save(fName)))
-    		qDefs::InfoMessage("The SnapShot has been successfully saved","Snapshot: Information");
+    		qDefs::InfoMessage("The SnapShot has been successfully saved","Snapshot");
     	else
-    		qDefs::ErrorMessage("ERROR: Attempt to save snapshot failed. Wrong Format","Snapshot: WARNING");
+    		qDefs::WarningMessage("Attempt to save snapshot failed.\n"
+    				"Formats: .png, .jpg, .xpm.","Snapshot");
 }
 
 //-------------------------------------------------------------------------------------------------------------------------------------------------

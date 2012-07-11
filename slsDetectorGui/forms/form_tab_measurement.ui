@@ -137,9 +137,9 @@
      <colorrole role="Shadow">
       <brush brushstyle="SolidPattern">
        <color alpha="255">
-        <red>189</red>
-        <green>189</green>
-        <blue>189</blue>
+        <red>0</red>
+        <green>0</green>
+        <blue>0</blue>
        </color>
       </brush>
      </colorrole>
@@ -153,9 +153,9 @@
    <property name="geometry">
     <rect>
      <x>30</x>
-     <y>179</y>
+     <y>153</y>
      <width>319</width>
-     <height>90</height>
+     <height>116</height>
     </rect>
    </property>
    <property name="sizePolicy">
@@ -174,7 +174,7 @@
     <property name="geometry">
      <rect>
       <x>10</x>
-      <y>50</y>
+      <y>75</y>
       <width>300</width>
       <height>23</height>
      </rect>
@@ -187,7 +187,7 @@
     <property name="geometry">
      <rect>
       <x>10</x>
-      <y>30</y>
+      <y>25</y>
       <width>91</width>
       <height>16</height>
      </rect>
@@ -200,13 +200,54 @@
     <property name="geometry">
      <rect>
       <x>100</x>
-      <y>31</y>
+      <y>25</y>
       <width>101</width>
       <height>16</height>
      </rect>
     </property>
     <property name="text">
      <string>0</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="lblCurrentMeasurement">
+    <property name="geometry">
+     <rect>
+      <x>150</x>
+      <y>45</y>
+      <width>76</width>
+      <height>16</height>
+     </rect>
+    </property>
+    <property name="sizePolicy">
+     <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
+      <horstretch>0</horstretch>
+      <verstretch>0</verstretch>
+     </sizepolicy>
+    </property>
+    <property name="minimumSize">
+     <size>
+      <width>60</width>
+      <height>0</height>
+     </size>
+    </property>
+    <property name="text">
+     <string>0</string>
+    </property>
+    <property name="alignment">
+     <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label_2">
+    <property name="geometry">
+     <rect>
+      <x>10</x>
+      <y>45</y>
+      <width>136</width>
+      <height>16</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Current Measurement:</string>
     </property>
    </widget>
   </widget>
@@ -291,6 +332,9 @@
        <property name="whatsThis">
         <string/>
        </property>
+       <property name="alignment">
+        <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+       </property>
        <property name="suffix">
         <string/>
        </property>
@@ -330,6 +374,9 @@
         <string>Frame period between exposures. 
  #period#</string>
        </property>
+       <property name="alignment">
+        <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+       </property>
        <property name="decimals">
         <number>9</number>
        </property>
@@ -351,6 +398,9 @@
          <horstretch>0</horstretch>
          <verstretch>0</verstretch>
         </sizepolicy>
+       </property>
+       <property name="layoutDirection">
+        <enum>Qt::LeftToRight</enum>
        </property>
        <property name="currentIndex">
         <number>2</number>
@@ -424,6 +474,9 @@
        <property name="whatsThis">
         <string/>
        </property>
+       <property name="alignment">
+        <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+       </property>
        <property name="suffix">
         <string/>
        </property>
@@ -474,6 +527,9 @@
        </property>
        <property name="whatsThis">
         <string/>
+       </property>
+       <property name="alignment">
+        <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
        </property>
        <property name="suffix">
         <string/>
@@ -581,6 +637,9 @@
        <property name="whatsThis">
         <string/>
        </property>
+       <property name="alignment">
+        <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+       </property>
        <property name="suffix">
         <string/>
        </property>
@@ -620,8 +679,11 @@
         <string>Exposure time of each frame. 
  #exptime#</string>
        </property>
+       <property name="alignment">
+        <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+       </property>
        <property name="decimals">
-        <number>9</number>
+        <number>5</number>
        </property>
        <property name="minimum">
         <double>0.000000000000000</double>
@@ -644,6 +706,9 @@
          <horstretch>0</horstretch>
          <verstretch>0</verstretch>
         </sizepolicy>
+       </property>
+       <property name="layoutDirection">
+        <enum>Qt::LeftToRight</enum>
        </property>
        <property name="currentIndex">
         <number>2</number>
@@ -705,8 +770,11 @@
         <string>Frame period between exposures. 
  #period#</string>
        </property>
+       <property name="alignment">
+        <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+       </property>
        <property name="decimals">
-        <number>9</number>
+        <number>5</number>
        </property>
        <property name="maximum">
         <double>2000000000.000000000000000</double>
@@ -726,6 +794,9 @@
          <horstretch>0</horstretch>
          <verstretch>0</verstretch>
         </sizepolicy>
+       </property>
+       <property name="layoutDirection">
+        <enum>Qt::LeftToRight</enum>
        </property>
        <property name="currentIndex">
         <number>2</number>
@@ -816,7 +887,7 @@
        </property>
       </widget>
      </item>
-     <item row="0" column="1">
+     <item row="0" column="1" colspan="2">
       <widget class="QSpinBox" name="spinNumMeasurements">
        <property name="sizePolicy">
         <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
@@ -835,7 +906,7 @@
         <string/>
        </property>
        <property name="alignment">
-        <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+        <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
        </property>
        <property name="suffix">
         <string/>
@@ -878,7 +949,7 @@
      <item row="2" column="0">
       <widget class="QLabel" name="label_8">
        <property name="text">
-        <string>Run Index:</string>
+        <string>Start Run Index:</string>
        </property>
       </widget>
      </item>
@@ -900,6 +971,9 @@
        <property name="whatsThis">
         <string/>
        </property>
+       <property name="alignment">
+        <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+       </property>
        <property name="suffix">
         <string/>
        </property>
@@ -911,65 +985,6 @@
        </property>
        <property name="value">
         <number>0</number>
-       </property>
-      </widget>
-     </item>
-     <item row="0" column="2">
-      <widget class="QLabel" name="lblCurrentMeasurement">
-       <property name="sizePolicy">
-        <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
-         <horstretch>0</horstretch>
-         <verstretch>0</verstretch>
-        </sizepolicy>
-       </property>
-       <property name="minimumSize">
-        <size>
-         <width>60</width>
-         <height>0</height>
-        </size>
-       </property>
-       <property name="palette">
-        <palette>
-         <active>
-          <colorrole role="WindowText">
-           <brush brushstyle="SolidPattern">
-            <color alpha="255">
-             <red>0</red>
-             <green>0</green>
-             <blue>127</blue>
-            </color>
-           </brush>
-          </colorrole>
-         </active>
-         <inactive>
-          <colorrole role="WindowText">
-           <brush brushstyle="SolidPattern">
-            <color alpha="255">
-             <red>0</red>
-             <green>0</green>
-             <blue>127</blue>
-            </color>
-           </brush>
-          </colorrole>
-         </inactive>
-         <disabled>
-          <colorrole role="WindowText">
-           <brush brushstyle="SolidPattern">
-            <color alpha="255">
-             <red>193</red>
-             <green>193</green>
-             <blue>193</blue>
-            </color>
-           </brush>
-          </colorrole>
-         </disabled>
-        </palette>
-       </property>
-       <property name="text">
-        <string>0</string>
-       </property>
-       <property name="alignment">
-        <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
        </property>
       </widget>
      </item>

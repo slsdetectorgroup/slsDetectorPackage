@@ -74,6 +74,13 @@ int init_detector( int b) {
     setPhaseShiftOnce();
     setDAQRegister();
     setSettings(GET_SETTINGS,-1);
+    //Initialization
+    setFrames(1);
+    setTrains(1);
+    setExposureTime(1e9);
+    setPeriod(1e9);
+    setDelay(1e9);
+    setGates(1);
 #endif
     setTiming(GET_EXTERNAL_COMMUNICATION_MODE);
     setMaster(GET_MASTER);
@@ -2293,8 +2300,7 @@ int set_dynamic_range(int file_des) {
     retval=setDynamicRange(dr);
   }
 
-  if (dr>=0 && retval!=dr)
-    ret=FAIL;
+  //if (dr>=0 && retval!=dr)   ret=FAIL;
   if (ret!=OK) {
     sprintf(mess,"set dynamic range failed\n");
   } else {

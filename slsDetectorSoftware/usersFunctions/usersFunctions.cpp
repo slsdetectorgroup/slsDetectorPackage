@@ -158,9 +158,9 @@ float defaultGetPosition(void *d) {
 
 
 
-  return pos
-;
+  return pos;
 }
+
 
 /* moves the encoder to position p */
 
@@ -179,6 +179,7 @@ int defaultGoToPosition(float p,void *d) {
 #ifdef VERBOSE
         printf("caput: success\n");
 #endif
+
     } else
         printf(ca_message(status));
 #else

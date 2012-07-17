@@ -103,7 +103,7 @@ typedef struct {
   int reg; /**< is the module register (e.g. dynamic range?) 
 	      \see moduleRegisterBit */
   float *dacs; /**< is the pointer to the array of the dac values (in V) */
-  float *adcs;  /**< is the pointer to the array of the adc values (in V) */
+  float *adcs;  /**< is the pointer to the array of the adc values (in V) FLAT_FIELD_CORRECTION*/
   int *chipregs; /**< is the pointer to the array of the chip registers 
 		    \see ::chipRegisterBit */
   int *chanregs; /**< is the pointer to the array of the channel registers 
@@ -426,6 +426,7 @@ enum correctionFlags {
   FLAT_FIELD_CORRECTION,  /**< data are flat field corrected */
   RATE_CORRECTION,  /**< data are rate corrected */
   ANGULAR_CONVERSION,/**< angular conversion is calculated */
+  WRITE_FILE,
   I0_NORMALIZATION
 };
 /** port type */

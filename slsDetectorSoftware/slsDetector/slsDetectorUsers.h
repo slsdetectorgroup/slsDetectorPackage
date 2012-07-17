@@ -141,6 +141,7 @@ class slsDetectorUsers
       \returns 0 if disable (or file could not be read), >0 otherwise
   */
   virtual int setFlatFieldCorrectionFile(string fname="")=0; 
+
   
 
   /** 
@@ -170,6 +171,10 @@ class slsDetectorUsers
       \returns 0 if angular conversion disabled, 1 if enabled
   */
   virtual int enableAngularConversion(int i=-1)=0;
+
+  /**Enable write file function included*/
+
+  virtual int enableWriteToFile(int i=-1)=0;
 
   /** 
            @short set  positions for the acquisition

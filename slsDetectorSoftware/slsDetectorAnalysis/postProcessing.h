@@ -31,11 +31,11 @@ using namespace std;
 
    (including thread for writing data files and plotting in parallel with the acquisition) 
 */
-class postProcessing : public angularConversion, public fileIO
-//: public virtual angularConversion, public virtual fileIO 
- {
+
+class postProcessing : public virtual angularConversion, public virtual fileIO  {
 
 
+//: public angularConversion, public fileIO
 
  public:
   postProcessing();
@@ -66,7 +66,7 @@ class postProcessing : public angularConversion, public fileIO
       \param ecorr if !=NULL the flat field correction errors will be filled with ecorr (1 otherwise)
       \returns 0 if ff correction disabled, >0 otherwise
   */
-  virtual int setFlatFieldCorrection(float *corr, float *ecorr=NULL)=0;
+  virtual int  setFlatFieldCorrection(float *corr, float *ecorr=NULL)=0;
   
   /**
       set bad channels correction
@@ -120,16 +120,17 @@ class postProcessing : public angularConversion, public fileIO
    static int rateCorrect(float datain, float errin, float &dataout, float &errout, float tau, float t);
  
 
+  int enableWriteToFile(int i=-1) {if (i>0) ((*correctionMask)|=(1<<WRITE_FILE)); if(i==0)  ((*correctionMask)&=~(1<< WRITE_FILE)); return ((*correctionMask)&(1<< WRITE_FILE));};
 
 
   int setAngularCorrectionMask(int i=-1){if (i==0) (*correctionMask)&=~(1<< ANGULAR_CONVERSION); if (i>0) (*correctionMask)|=(1<< ANGULAR_CONVERSION); return ((*correctionMask)&(1<< ANGULAR_CONVERSION));};
 
 
 
-  int enableAngularConversion(int i=-1) {if (i>0) return setAngularConversionFile("default"); if (i==0) return setAngularConversionFile(""); return setAngularCorrectionMask();}
+  int enableAngularConversion(int i=-1) {if (i>0) return setAngularConversionFile("default"); if (i==0) return setAngularConversionFile(""); return setAngularCorrectionMask();};
 
 
-  int enableBadChannelCorrection(int i=-1) {if (i>0) return setBadChannelCorrection("default"); if (i==0) return setBadChannelCorrection(""); return ((*correctionMask)&(1<< DISCARD_BAD_CHANNELS));}
+  int enableBadChannelCorrection(int i=-1) {if (i>0) return setBadChannelCorrection("default"); if (i==0) return setBadChannelCorrection(""); return ((*correctionMask)&(1<< DISCARD_BAD_CHANNELS));};
 
 
   
@@ -138,11 +139,7 @@ class postProcessing : public angularConversion, public fileIO
   string getBadChannelCorrectionFile() {if ((*correctionMask)&(1<< DISCARD_BAD_CHANNELS)) return string(badChanFile); else return string("none");};
 
 
-
-
-
-
- /** 
+  /** 
       get flat field corrections file directory
       \returns flat field correction file directory
   */
@@ -169,7 +166,7 @@ s
       \returns thread flag
   */
 
-  int setThreadedProcessing(int b=-1) {if (b>=0) *threadedProcessing=b; return  *threadedProcessing;}
+  int setThreadedProcessing(int b=-1) {if (b>=0) *threadedProcessing=b; return  *threadedProcessing;};
 
 
 

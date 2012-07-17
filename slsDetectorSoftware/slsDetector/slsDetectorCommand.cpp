@@ -183,6 +183,11 @@ slsDetectorCommand::slsDetectorCommand(slsDetectorUtils *det)  {
   descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdOnline;
   i++;
 
+  descrToFuncMap[i].m_pFuncName="enablefwrite"; //
+  descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdEnablefwrite;
+  i++;
+
+
   /* Acquisition actions */
 
   descrToFuncMap[i].m_pFuncName="positions"; //
@@ -529,6 +534,7 @@ slsDetectorCommand::slsDetectorCommand(slsDetectorUtils *det)  {
   descrToFuncMap[i].m_pFuncName="probes"; //
   descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdTimer;
   i++;
+
 
   /* read only timers */
 
@@ -1295,6 +1301,32 @@ string slsDetectorCommand::helpFileName(int narg, char *args[], int action){
 }
 
 
+//enable file write
+string slsDetectorCommand::cmdEnablefwrite(int narg, char *args[], int action){
+
+  int i;
+  char ans[100];
+  if (action==HELP_ACTION) {
+    return helpFileName(narg, args, action);
+  } 
+  if (action==PUT_ACTION) {
+    if (sscanf(args[1],"%d",&i))
+      myDet->enableWriteToFile(i);
+  	;
+  }
+  return string(myDet->getFileName());
+}
+
+
+
+string slsDetectorCommand::helpEnablefwrite(int narg, char *args[], int action){
+  ostringstream os;
+  if (action==GET_ACTION || action==HELP_ACTION)
+    os << string("When Enabled writes the data into the file\n");
+  if (action==PUT_ACTION || action==HELP_ACTION)
+    os << string(" i \t  should be 1 or 0 or -1\n");
+  return os.str();
+}
 
 string slsDetectorCommand::cmdFileIndex(int narg, char *args[], int action){
 

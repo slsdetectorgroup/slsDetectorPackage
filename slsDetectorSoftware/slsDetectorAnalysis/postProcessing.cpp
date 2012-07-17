@@ -2,6 +2,7 @@
 #include "usersFunctions.h"
 
 
+
 postProcessing::postProcessing(){							
   pthread_mutex_t mp1 = PTHREAD_MUTEX_INITIALIZER;
   mp=mp1;
@@ -33,7 +34,7 @@ int postProcessing::flatFieldCorrect(float datain, float errin, float &dataout, 
   if (dataout>0)
     errout=sqrt(e*ffcoefficient*e*ffcoefficient+datain*fferr*datain*fferr);
   else
-    errout=1.;
+    errout=1.0;
   
   return 0;
 };
@@ -147,12 +148,19 @@ void postProcessing::processFrame(int *myData, int delflag) {
  
  fdata=decodeData(myData, fdata);
  
- fname=createFileName();
  
-  
+fname=createFileName();
+
+//Checking for write flag
+if(*correctionMask&(1<<WRITE_FILE)) 
+{
+
+
  //uses static function?!?!?!?
  writeDataFile (fname+string(".raw"),fdata, NULL, NULL, 'i'); 
- 
+
+} 
+
  doProcessing(fdata,delflag, fname);
 
   delete [] myData;

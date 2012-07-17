@@ -81,7 +81,7 @@ class slsDetectorCommand : public virtual slsDetectorDefs {
    static string helpImage(int narg, char *args[], int action);
    static string helpCounter(int narg, char *args[], int action);
    static string helpADC(int narg, char *args[], int action);
-
+   static string helpEnablefwrite(int narg, char *args[], int action);
 
 
 
@@ -151,7 +151,8 @@ class slsDetectorCommand : public virtual slsDetectorDefs {
    string cmdImage(int narg, char *args[], int action);
    string cmdCounter(int narg, char *args[], int action);
    string cmdADC(int narg, char *args[], int action);
-
+   //string helpADC(int narg, char *args[], int action);
+   string cmdEnablefwrite(int narg, char *args[], int action);
 
 
 

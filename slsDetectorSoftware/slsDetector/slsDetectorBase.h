@@ -64,7 +64,7 @@ using namespace std;
 */
 
 //public virtual slsDetectorUsers,
-class slsDetectorBase :  public virtual slsDetectorDefs, public slsDetectorUsers  { 
+class slsDetectorBase :  public virtual slsDetectorUsers , public virtual slsDetectorDefs  { 
 
  public:
 

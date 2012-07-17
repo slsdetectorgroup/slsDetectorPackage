@@ -3977,7 +3977,9 @@ float* slsDetector::decodeData(int *datain, float *fdata) {
     }
   */
 
-int slsDetector::setFlatFieldCorrection(string fname){
+int slsDetector::setFlatFieldCorrection(string fname)
+
+{
   float data[thisDetector->nModMax[X]*thisDetector->nModMax[Y]*thisDetector->nChans*thisDetector->nChips];
   //float err[thisDetector->nModMax[X]*thisDetector->nModMax[Y]*thisDetector->nChans*thisDetector->nChips];
    float xmed[thisDetector->nModMax[X]*thisDetector->nModMax[Y]*thisDetector->nChans*thisDetector->nChips];

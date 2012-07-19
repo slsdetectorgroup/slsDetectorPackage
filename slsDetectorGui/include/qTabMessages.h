@@ -11,7 +11,7 @@
 
 
 /** Project Class Headers */
-class slsDetectorUtils;
+class multiSlsDetector;
 /** Qt Include Headers */
 #include <QWidget>
 #include <QTextEdit>
@@ -30,7 +30,7 @@ public:
 	 *    @param parent is the parent tab widget
 	 *    @param detector is the detector returned from the detector tab
 	 */
-	qTabMessages(QWidget *parent,slsDetectorUtils*& detector);
+	qTabMessages(QWidget *parent,multiSlsDetector*& detector);
 
 	/** Destructor
 	 */
@@ -39,7 +39,7 @@ public:
 
 private:
 	/** The sls detector object */
-	slsDetectorUtils *myDet;
+	multiSlsDetector *myDet;
 
 	/** Log of executed commands */
 	QTextEdit *dispLog;

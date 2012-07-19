@@ -32,18 +32,9 @@ QString qTabPlot::defaultImageZAxisTitle("Intensity");
 //-------------------------------------------------------------------------------------------------------------------------------------------------
 
 
-qTabPlot::qTabPlot(QWidget *parent,slsDetectorUtils*& detector, qDrawPlot*& plot):QWidget(parent),myDet(detector),myPlot(plot){
+qTabPlot::qTabPlot(QWidget *parent,multiSlsDetector*& detector, qDrawPlot*& plot):QWidget(parent),myDet(detector),myPlot(plot){
 	setupUi(this);
 	SetupWidgetWindow();
-	/** Depending on whether the detector is 1d or 2d*/
-	switch(myDet->getDetectorsType()){
-	case slsDetectorDefs::MYTHEN:	Select1DPlot(true);	break;
-	case slsDetectorDefs::EIGER:	Select1DPlot(false);break;
-	case slsDetectorDefs::GOTTHARD:	Select1DPlot(true);break;
-	default:
-		cout<<"ERROR: Detector Type is Generic"<<endl;
-		exit(-1);
-	}
 	Initialization();
 }
 
@@ -61,6 +52,9 @@ qTabPlot::~qTabPlot(){
 
 
 void qTabPlot::SetupWidgetWindow(){
+	scanLevel[0]=false;
+	scanLevel[1]=false;
+
 /** Plot Axis*/
 	myPlot->SetPlotTitle(defaultPlotTitle);
 	dispTitle->setText(defaultPlotTitle);
@@ -109,13 +103,18 @@ void qTabPlot::SetupWidgetWindow(){
 
 	stackedLayout->addWidget(w);
 	stackedLayout->addWidget(spinNthFrame);
-
-
-
-
 	stackWidget->setLayout(stackedLayout);
 
 
+	/** Depending on whether the detector is 1d or 2d*/
+	switch(myDet->getDetectorsType()){
+	case slsDetectorDefs::MYTHEN:	Select1DPlot(true);	break;
+	case slsDetectorDefs::EIGER:	Select1DPlot(false);break;
+	case slsDetectorDefs::GOTTHARD:	Select1DPlot(true);break;
+	default:
+		cout<<"ERROR: Detector Type is Generic"<<endl;
+		exit(-1);
+	}
 }
 
 
@@ -149,6 +148,8 @@ void qTabPlot::Select1DPlot(bool b){
 		dispZAxis->setText(defaultImageZAxisTitle);
 		myPlot->Select2DPlot();
 	}
+
+	boxScan->setEnabled(false);
 }
 
 
@@ -368,7 +369,7 @@ void qTabPlot::SetPlot(){
 		boxFrequency->setEnabled(false);
 		boxPlotAxis->setEnabled(false);
 		boxScan->setEnabled(false);
-	}else if(radioHistogram->isChecked()){
+	}else {
 		myPlot->EnablePlot(true);
 		/**if enable is true, disable everything */
 		if(isOneD) box1D->show(); else box1D->hide();
@@ -377,25 +378,20 @@ void qTabPlot::SetPlot(){
 		boxSave->setEnabled(true);
 		boxFrequency->setEnabled(true);
 		boxPlotAxis->setEnabled(true);
-		boxScan->setEnabled(false);
-	}else{
-		myPlot->EnablePlot(true);
-		/**if enable is true, disable everything */
-		if(isOneD) box1D->show(); else box1D->hide();
-		if(!isOneD) box2D->show(); else box2D->hide();
-		boxSnapshot->setEnabled(true);
-		boxSave->setEnabled(true);
-		boxFrequency->setEnabled(true);
-		boxPlotAxis->setEnabled(true);
-		boxScan->setEnabled(true);
+
+		if(radioHistogram->isChecked())
+			boxScan->setEnabled(false);
+		else
+			//check first if there is a scan from actions tab
+			boxScan->setEnabled(false);
 	}
 }
 
 
 //-------------------------------------------------------------------------------------------------------------------------------------------------
 
-int qTabPlot::SetFrequency(){
-	int ret=0;
+void qTabPlot::SetFrequency(){
+
 	disconnect(comboTimeGapUnit,SIGNAL(currentIndexChanged(int)),	this, SLOT(SetFrequency()));
 	disconnect(spinTimeGap,		SIGNAL(editingFinished()),			this, SLOT(SetFrequency()));
 	disconnect(spinNthFrame,	SIGNAL(editingFinished()),			this, SLOT(SetFrequency()));
@@ -411,7 +407,6 @@ int qTabPlot::SetFrequency(){
 		/* Get the time interval from gui in ms*/
 		timeMS = (qDefs::getNSTime((qDefs::timeUnit)comboTimeGapUnit->currentIndex(),spinTimeGap->value()))/(1e6);
 		if(timeMS<minPlotTimer){
-			ret = 1;
 			qDefs::WarningMessage("Interval between Plots - The Time Interval between plots "
 					"must be atleast "+string(cplotms)+".","Plot");
 			spinTimeGap->setValue(minPlotTimer);
@@ -431,7 +426,6 @@ int qTabPlot::SetFrequency(){
 		timeMS = (spinNthFrame->value())*acqPeriodMS;
 		/** To make sure the period between plotting is not less than minimum plot timer in  ms*/
 		if(timeMS<minPlotTimer){
-			ret = 1;
 			int minFrame = (ceil)(minPlotTimer/acqPeriodMS);
 			qDefs::WarningMessage("<b>Plot Tab:</b> Interval between Plots - The nth Image must be larger.<br><br>"
 					"Condition to be satisfied:\n(Acquisition Period)*(nth Image) >= 500ms."
@@ -450,13 +444,48 @@ int qTabPlot::SetFrequency(){
 	connect(comboTimeGapUnit,SIGNAL(currentIndexChanged(int)),	this, SLOT(SetFrequency()));
 	connect(spinTimeGap,	SIGNAL(editingFinished()),			this, SLOT(SetFrequency()));
 	connect(spinNthFrame,	SIGNAL(editingFinished()),			this, SLOT(SetFrequency()));
-
-	return ret;
 }
 
 
 //-------------------------------------------------------------------------------------------------------------------------------------------------
 
+
+void qTabPlot::EnableScanBox(bool enable,int id){
+	cout<<"enable:"<<enable<<" id:"<<id<<endl;
+	/**find out when this is enabled*/
+
+	scanLevel[id]=enable;
+	//both are disabled
+	if((!scanLevel[0])&&(!scanLevel[1])){
+		boxScan->setEnabled(false);
+	}//both are enabled
+	else if((scanLevel[0])&&(scanLevel[1])){
+		//disable none and check the other
+		if(id) {radioLevel1->setEnabled(true);radioLevel1->setChecked(true);}
+		else	{radioLevel0->setEnabled(true);radioLevel0->setChecked(true);}
+	}//either 1 is enabled/disabled
+	else{
+		if(!boxScan->isEnabled()) {
+			boxScan->setEnabled(true);
+			radioFileIndex->setEnabled(false);
+		}
+		//disable one and check the other
+		if(id) {
+			radioLevel0->setEnabled(!enable);
+			radioLevel0->setChecked(!enable);
+			radioLevel1->setEnabled(enable);
+			radioLevel1->setChecked(enable);
+		}else{
+			radioLevel0->setEnabled(enable);
+			radioLevel0->setChecked(enable);
+			radioLevel1->setEnabled(!enable);
+			radioLevel1->setChecked(!enable);
+		}
+	}
+}
+
+
+//-------------------------------------------------------------------------------------------------------------------------------------------------
 
 void qTabPlot::Refresh(){
 	SetFrequency();

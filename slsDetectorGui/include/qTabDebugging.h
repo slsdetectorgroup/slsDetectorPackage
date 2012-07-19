@@ -11,7 +11,11 @@
 /** Form Header */
 #include "ui_form_tab_debugging.h"
 /** Project Class Headers */
-class slsDetectorUtils;
+class multiSlsDetector;
+/** Qt Include Headers */
+
+/** C++ Include Headers */
+#include "sls_detector_defs.h"
 
 /**
  *@short sets up the Debugging parameters
@@ -24,7 +28,7 @@ public:
 	 *    @param parent is the parent tab widget
 	 *    @param detector is the detector returned from the detector tab
 	 */
-	qTabDebugging(QWidget *parent,slsDetectorUtils*& detector);
+	qTabDebugging(QWidget *parent,multiSlsDetector*& detector);
 
 	/** Destructor
 	 */
@@ -36,7 +40,10 @@ public:
 
 private:
 	/** The sls detector object */
-	slsDetectorUtils *myDet;
+	multiSlsDetector *myDet;
+
+	/** detector type */
+	slsDetectorDefs::detectorType detType;
 
 	/** Sets up the widget
 	 */

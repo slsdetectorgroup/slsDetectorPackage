@@ -9,7 +9,7 @@
 #define QTABACTIONS_H_
 
 /** Project Class Headers */
-class slsDetectorUtils;
+class multiSlsDetector;
 class ActionsWidget;
 
 #include <QWidget>
@@ -31,7 +31,7 @@ public:
 	 *    @param parent is the parent tab widget
 	 *    @param detector is the detector returned from the detector tab
 	 */
-	qTabActions(QWidget *parent,slsDetectorUtils*& detector);
+	qTabActions(QWidget *parent,multiSlsDetector*& detector);
 
 	/** Destructor
 	 */
@@ -44,7 +44,7 @@ public:
 
 private:
 	/** The sls detector object */
-	slsDetectorUtils *myDet;
+	multiSlsDetector *myDet;
 
 	static const int NUM_ACTION_WIDGETS = 9;
 
@@ -57,6 +57,9 @@ private:
 	QPushButton 	*btnExpand[NUM_ACTION_WIDGETS];
 	QLabel			*lblName[NUM_ACTION_WIDGETS];
 
+	enum{Start,Scan0,Scan1,ActionBefore,NumPositions,
+		HeaderBefore,HeaderAfter,ActionAfter,Stop};
+
 	/** Sets up the widget */
 	void SetupWidgetWindow();
 
@@ -67,6 +70,14 @@ private:
 private slots:
 /** To Expand the Action Widget */
 void Expand(QAbstractButton *button);
+
+/** To set the script of action widget
+ * @param fName name of script
+ * @param index id of action widget*/
+void SetScript(const QString& fName,int index);
+
+signals:
+void EnableScanBox(bool,int);
 
 };
 

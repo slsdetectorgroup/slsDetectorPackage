@@ -9,7 +9,7 @@
 
 
 /** Project Class Headers */
-class slsDetectorUtils;
+class multiSlsDetector;
 #include "detectorData.h"
 /** Qt Project Class Headers */
 #include "SlsQt1DPlot.h"
@@ -38,7 +38,7 @@ class qDrawPlot:public QWidget{
 
 public:
 	/** \short The constructor	 */
-	qDrawPlot(QWidget *parent,slsDetectorUtils*& detector);
+	qDrawPlot(QWidget *parent,multiSlsDetector*& detector);
 	/** Destructor	 */
 	~qDrawPlot();
 
@@ -96,7 +96,7 @@ public:
 
 private:
 	/** The sls detector object */
-	slsDetectorUtils *myDet;
+	multiSlsDetector *myDet;
 
 
 /** Widgets needed to plot the clone */

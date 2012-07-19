@@ -11,7 +11,7 @@
 /** Form Header */
 #include "ui_form_tab_settings.h"
 /** Project Class Headers */
-class slsDetectorUtils;
+class multiSlsDetector;
 #include "sls_detector_defs.h"
 /** Qt Include Headers */
 #include <QStandardItemModel>
@@ -28,7 +28,7 @@ public:
 	 *    @param detector is the detector returned from the detector tab
 	 *    @param detID is the id of the detector
 	 */
-	qTabSettings(QWidget *parent,slsDetectorUtils*& detector,int detID);
+	qTabSettings(QWidget *parent,multiSlsDetector*& detector,int detID);
 
 	/** Destructor
 	 */
@@ -38,14 +38,24 @@ public:
 	 */
 	void Refresh();
 
+	/** enable expert mode
+	 *  @param enable true if expert mode is enabled
+	 */
+	void EnableExpertMode(bool enable){expertMode=enable;Refresh();};
+
+
 
 private:
 	/** The sls detector object */
-	slsDetectorUtils *myDet;
-	/**etector id */
+	multiSlsDetector *myDet;
+
+	/**detector id */
 	int detID;
+
 	/** detector type */
 	slsDetectorDefs::detectorType detType;
+
+	bool expertMode;
 
 	enum{Standard,Fast,HighGain,DynamicGain,LowGain,MediumGain,VeryHighGain,Undefined,Uninitialized,NumSettings};
 
@@ -68,12 +78,27 @@ private:
 
 
 
+
+
 private slots:
 /** Set settings according to selection
  *  @param index index of selection
  */
 void setSettings(int index);
 
+/** Set number of modules if possible
+ *  @param index number of modules
+ */
+void SetNumberOfModules(int index);
+
+/** Set dynamic range if possible
+ *  @param index selection
+ */
+void SetDynamicRange(int index);
+
+/** Set threshold energy
+ */
+void SetEnergy();
 };
 
 

@@ -25,7 +25,7 @@ using namespace std;
 //-------------------------------------------------------------------------------------------------------------------------------------------------
 
 
-qTabMeasurement::qTabMeasurement(QWidget *parent,slsDetectorUtils*& detector, qDrawPlot*& plot):
+qTabMeasurement::qTabMeasurement(QWidget *parent,multiSlsDetector*& detector, qDrawPlot*& plot):
 								QWidget(parent),myDet(detector),myPlot(plot){
 	setupUi(this);
 	SetupWidgetWindow();

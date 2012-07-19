@@ -24,7 +24,7 @@ using namespace std;
 
 //-------------------------------------------------------------------------------------------------------------------------------------------------
 
-qTabMessages::qTabMessages(QWidget *parent,slsDetectorUtils*& detector):QWidget(parent),myDet(detector){
+qTabMessages::qTabMessages(QWidget *parent,multiSlsDetector*& detector):QWidget(parent),myDet(detector){
 	SetupWidgetWindow();
 	Initialization();
 }

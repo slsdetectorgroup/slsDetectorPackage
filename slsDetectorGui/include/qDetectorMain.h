@@ -21,7 +21,7 @@ class qTabDebugging;
 class qTabDeveloper;
 class qTabMessages;
 /** Project Class Headers */
-class slsDetectorUtils;
+class multiSlsDetector;
 #include "sls_detector_defs.h"
 /** Qt Include Headers */
 #include <QScrollArea>
@@ -63,7 +63,7 @@ private:
 	/** The Qt Application */
 	QApplication *theApp;
 	/** The sls detector object */
-	slsDetectorUtils *myDet;
+	multiSlsDetector *myDet;
 	/** sls detector id */
 	int detID;
 	/** The Plot widget	 */

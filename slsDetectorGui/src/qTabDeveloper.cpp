@@ -16,7 +16,7 @@ using namespace std;
 
 
 
-qTabDeveloper::qTabDeveloper(QWidget *parent,slsDetectorUtils*& detector):QWidget(parent),myDet(detector){
+qTabDeveloper::qTabDeveloper(QWidget *parent,multiSlsDetector*& detector):QWidget(parent),myDet(detector){
 	setupUi(this);
 	SetupWidgetWindow();
 	Initialization();

@@ -24,13 +24,19 @@ class ActionsWidget : public QFrame{
 public:
 	/** \short The constructor
 	 *    @param parent is the parent tab widget
-	 *    @param detector is the detector returned from the detector tab
+	 *    @param scanType is if its an energy/threshold scan type
+	 *    @param id	is the id of the widget. to know which one was emitting it
 	 */
-	ActionsWidget(QWidget *parent, int scanType);
+	ActionsWidget(QWidget *parent, int scanType, int id);
 
 	~ActionsWidget();
 
 private:
+	/**if its a scan type*/
+	int scanType;
+	/**id of the action widget*/
+	int id;
+
 	QGridLayout *layout;
 	QComboBox 	*comboScript;
 	QLineEdit 	*dispScript;
@@ -56,8 +62,8 @@ private:
 	QPushButton	*btnValues;
 
 	/** Sets up the widget
-	 * @param scanType 1 if it includes Threshold Scan,Energy Scan and Trimbits Scan, else 0*/
-	void SetupWidgetWindow(int scanType);
+	 */
+	void SetupWidgetWindow();
 
 	/** Sets up all the slots and signals */
 	void Initialization();
@@ -71,6 +77,14 @@ void SetScript(int index);
 /** Enables widgets depending on which size is clicked.
  * 	Options: constant size,specific values,values from file */
 void EnableSizeWidgets();
+
+/** Browse for the script
+ * */
+void BrowsePath();
+
+signals:
+void EnableScanBox(bool,int);
+void SetScriptSignal(QString&,int);
 
 };
 

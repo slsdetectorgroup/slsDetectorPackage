@@ -16,7 +16,7 @@ using namespace std;
 
 
 
-qTabAdvanced::qTabAdvanced(QWidget *parent,slsDetectorUtils*& detector):QWidget(parent),myDet(detector){
+qTabAdvanced::qTabAdvanced(QWidget *parent,multiSlsDetector*& detector):QWidget(parent),myDet(detector){
 	setupUi(this);
 	myDetType = (int)myDet->getDetectorsType();
 	SetupWidgetWindow();

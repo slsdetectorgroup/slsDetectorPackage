@@ -5,9 +5,9 @@
  *      Author: l_maliakal_d
  */
 
-/** Qt Project Class Headers */
+// Qt Project Class Headers
 #include "qActionsWidget.h"
-/** Qt Include Headers */
+// Qt Include Headers
 #include <QGridLayout>
 #include <QHBoxLayout>
 #include <QComboBox>
@@ -19,20 +19,23 @@
 #include <QSpinBox>
 #include <QGroupBox>
 #include <QRadioButton>
-/** C++ Include Headers */
+#include <QFileDialog>
+// C++ Include Headers
 #include<iostream>
 using namespace std;
 
 
+//-------------------------------------------------------------------------------------------------------------------------------------------------
 
 
-ActionsWidget::ActionsWidget(QWidget *parent, int scanType): QFrame(parent){
-	SetupWidgetWindow(scanType);
+ActionsWidget::ActionsWidget(QWidget *parent, int scanType, int id):
+		QFrame(parent),scanType(scanType),id(id){
+	SetupWidgetWindow();
 	Initialization();
 }
 
 
-
+//-------------------------------------------------------------------------------------------------------------------------------------------------
 
 
 ActionsWidget::~ActionsWidget(){
@@ -40,24 +43,25 @@ ActionsWidget::~ActionsWidget(){
 }
 
 
+//-------------------------------------------------------------------------------------------------------------------------------------------------
 
 
-void ActionsWidget::SetupWidgetWindow(int scanType){
-	/** Widget Settings */
+void ActionsWidget::SetupWidgetWindow(){
+	// Widget Settings
 	//setFrameStyle(QFrame::Box);
 	//setFrameShadow(QFrame::Raised);
 	setFixedHeight(25);
 	if(scanType)	setFixedHeight(125);
 
 
-	/** Main Layout Settings */
+	// Main Layout Settings
 	layout = new QGridLayout(this);
 	setLayout(layout);
 	layout->setContentsMargins(0,0,0,0);
 	if(scanType)	layout->setVerticalSpacing(5);
 
 
-	/** Main Widgets*/
+	// Main Widgets
 	comboScript = new QComboBox(this);
 	if(!scanType){
 		comboScript->addItem("None");
@@ -88,7 +92,7 @@ void ActionsWidget::SetupWidgetWindow(int scanType){
 
 
 
-	/**	Scan Levels Widgets*/
+	//	Scan Levels Widgets
 	if(scanType){
 		lblSteps = new QLabel("Number of Steps:");
 			lblSteps->setEnabled(false);
@@ -104,13 +108,13 @@ void ActionsWidget::SetupWidgetWindow(int scanType){
 			layout->addWidget(spinPrecision,1,6);
 		group = new QGroupBox(this);
 			group->setEnabled(false);
-			/** Fix the size of the groupbox*/
+			// Fix the size of the groupbox
 			group->setFixedSize(513,66);
 			layout->addWidget(group,2,2,1,5);
 
 
-		/** Group Box for step size */
-		/**  Radio Buttons Layout */
+		// Group Box for step size
+		//  Radio Buttons Layout
 		QWidget *h1Widget = new QWidget(group);
 		h1Widget->setGeometry(QRect(10, 5, group->width()-20, 23));
 		QHBoxLayout *h1 = new QHBoxLayout(h1Widget);
@@ -124,7 +128,7 @@ void ActionsWidget::SetupWidgetWindow(int scanType){
 			radioValue->setSizePolicy(QSizePolicy::Fixed,QSizePolicy::Fixed);
 			h1->addWidget(radioValue);
 
-		/**  Constant Size Layout */
+		//  Constant Size Layout
 		QWidget *h2ConstantWidget = new QWidget(group);
 		h2ConstantWidget->setGeometry(QRect(10, 30, group->width()-20, 31));
 		QHBoxLayout *h2Constant = new QHBoxLayout(h2ConstantWidget);
@@ -149,7 +153,7 @@ void ActionsWidget::SetupWidgetWindow(int scanType){
 			h2Constant->addWidget(spinSize);
 		h2Constant->addItem(new QSpacerItem(50,20,QSizePolicy::Fixed,QSizePolicy::Fixed));
 
-		/**  Specific Values Layout */
+		//  Specific Values Layout
 		QWidget *h2SpecificWidget = new QWidget(group);
 		h2SpecificWidget->setGeometry(QRect(10, 30, group->width()-20, 31));
 		QHBoxLayout *h2Specific = new QHBoxLayout(h2SpecificWidget);
@@ -160,7 +164,7 @@ void ActionsWidget::SetupWidgetWindow(int scanType){
 			comboSpecific->hide();
 		h2Specific->addItem(new QSpacerItem(200,20,QSizePolicy::Fixed,QSizePolicy::Fixed));
 
-		/**  Values From a File Layout */
+		//  Values From a File Layout
 		QWidget *h2ValuesWidget = new QWidget(group);
 		h2ValuesWidget->setGeometry(QRect(10, 30, group->width()-20, 31));
 		QHBoxLayout *h2Values = new QHBoxLayout(h2ValuesWidget);
@@ -181,57 +185,67 @@ void ActionsWidget::SetupWidgetWindow(int scanType){
 }
 
 
+//-------------------------------------------------------------------------------------------------------------------------------------------------
+
 
 void ActionsWidget::Initialization(){
 	connect(comboScript,SIGNAL(currentIndexChanged(int)),this,SLOT(SetScript(int)));
-	if(comboScript->count()>2){
+	if(scanType){
 		connect(radioConstant,SIGNAL(toggled(bool)),this,SLOT(EnableSizeWidgets()));
 		connect(radioSpecific,SIGNAL(toggled(bool)),this,SLOT(EnableSizeWidgets()));
 		connect(radioValue,SIGNAL(toggled(bool)),this,SLOT(EnableSizeWidgets()));
 	}
+	connect(btnBrowse,	SIGNAL(clicked()), 	this, SLOT(BrowsePath()));
+
+
 }
 
 
+//-------------------------------------------------------------------------------------------------------------------------------------------------
+
 
 void ActionsWidget::SetScript(int index){
-	/** defaults */
+	// defaults
 	dispScript->setEnabled(false);
 	btnBrowse->setEnabled(false);
 	lblParameter->setEnabled(false);
 	dispParameter->setEnabled(false);
-	if(comboScript->count()>2){
+	if(scanType){
 		group->setEnabled(false);
 		lblSteps->setEnabled(false);
 		spinSteps->setEnabled(false);
 		lblPrecision->setEnabled(false);
 		spinPrecision->setEnabled(false);
 	}
-	/** If anything other than None is selected*/
+	// If anything other than None is selected
 	if(index){
-		/** Custom Script only enables the first layout with addnl parameters etc */
+		// Custom Script only enables the first layout with addnl parameters etc
 		if(!comboScript->currentText().compare("Custom Script")){
 			dispScript->setEnabled(true);
 			btnBrowse->setEnabled(true);
 			lblParameter->setEnabled(true);
 			dispParameter->setEnabled(true);
 		}
-		/** If this group includes Energy scan , threhold scan etc */
-		if(comboScript->count()>2){
+		// If this group includes Energy scan , threhold scan etc
+		if(scanType){
 			group->setEnabled(true);
 			lblPrecision->setEnabled(true);
 			spinPrecision->setEnabled(true);
-			/** Steps are enabled only if constant step size is not checked*/
+			// Steps are enabled only if constant step size is not checked
 			lblSteps->setEnabled(!radioConstant->isChecked());
 			spinSteps->setEnabled(!radioConstant->isChecked());
 		}
 	}
+	//emit signal to enable scanbox and the radiobuttons
+	if(scanType) emit EnableScanBox(index,((id==2)?1:0));
 }
 
 
+//-------------------------------------------------------------------------------------------------------------------------------------------------
 
 
 void ActionsWidget::EnableSizeWidgets(){
-	/** defaults */
+	// defaults
 	lblFrom->hide();
 	spinFrom->hide();
 	lblTo->hide();
@@ -243,7 +257,7 @@ void ActionsWidget::EnableSizeWidgets(){
 	btnValues->hide();
 	lblSteps->setEnabled(true);
 	spinSteps->setEnabled(true);
-	/** Constant Step Size */
+	// Constant Step Size
 	if(radioConstant->isChecked()){
 		lblFrom->show();
 		spinFrom->show();
@@ -253,13 +267,28 @@ void ActionsWidget::EnableSizeWidgets(){
 		spinSize->show();
 		lblSteps->setEnabled(false);
 		spinSteps->setEnabled(false);
-	}/** Specific Values */
+	}// Specific Values
 	else if(radioSpecific->isChecked())
 		comboSpecific->show();
-	/** Values from a File */
+	// Values from a File
 	else{
 		dispValues->show();
 		btnValues->show();
 	}
 }
 
+
+//-------------------------------------------------------------------------------------------------------------------------------------------------
+
+void ActionsWidget::BrowsePath(){
+	QString fName = dispScript->text();
+	QString dir = fName.section('/',0,-2,QString::SectionIncludeLeadingSep);
+	if(dir.isEmpty()) dir = "/home";
+	fName = QFileDialog::getOpenFileName(this,
+			tr("Load Script File"),dir,
+			tr("Script Files(*.awk);;All Files(*)"));//,0,QFileDialog::ShowDirsOnly);
+	if (!fName.isEmpty()){
+		dispScript->setText(fName);
+		emit SetScriptSignal(fName,id);
+	}
+}

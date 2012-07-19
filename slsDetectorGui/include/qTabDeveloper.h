@@ -11,7 +11,7 @@
 /** Form Header */
 #include "ui_form_tab_developer.h"
 /** Project Class Headers */
-class slsDetectorUtils;
+class multiSlsDetector;
 
 /**
  *@short sets up the Developer parameters
@@ -24,7 +24,7 @@ public:
 	 *    @param parent is the parent tab widget
 	 *    @param detector is the detector returned from the detector tab
 	 */
-	qTabDeveloper(QWidget *parent,slsDetectorUtils*& detector);
+	qTabDeveloper(QWidget *parent,multiSlsDetector*& detector);
 
 	/** Destructor
 	 */
@@ -36,7 +36,7 @@ public:
 
 private:
 	/** The sls detector object */
-	slsDetectorUtils *myDet;
+	multiSlsDetector *myDet;
 
 	/** Sets up the widget
 	 */

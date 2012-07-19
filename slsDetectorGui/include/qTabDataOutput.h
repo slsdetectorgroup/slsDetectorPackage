@@ -11,7 +11,8 @@
 /** Form Header */
 #include "ui_form_tab_dataoutput.h"
 /** Project Class Headers */
-class slsDetectorUtils;
+class multiSlsDetector;
+#include "sls_detector_defs.h"
 /** Qt Include Headers */
 #include <QString>
 
@@ -26,8 +27,9 @@ public:
 	/** \short The constructor
 	 *    @param parent is the parent tab widget
 	 *    @param detector is the detector returned from the detector tab
+	 *    @param detID is the id of the detector
 	 */
-	qTabDataOutput(QWidget *parent,slsDetectorUtils*& detector);
+	qTabDataOutput(QWidget *parent,multiSlsDetector*& detector,int detID);
 
 	/** Destructor
 	 */
@@ -41,7 +43,13 @@ public:
 
 private:
 	/** The sls detector object */
-	slsDetectorUtils *myDet;
+	multiSlsDetector *myDet;
+
+	/**detector id */
+	int detID;
+
+	/** detector type */
+	slsDetectorDefs::detectorType detType;
 
 /** methods */
 	/** Sets up the widget */
@@ -59,6 +67,27 @@ void setOutputDir(const QString& path);
 
 /** Open dialog to choose the output directory */
 void browseOutputDir();
+
+/**set flat field file*/
+void SetFlatField();
+
+/** update flat field correction from server */
+void UpdateFlatFieldFromServer();
+
+/**browse flat field*/
+void BrowseFlatFieldPath();
+
+/**rate correction*/
+void SetRateCorrection();
+
+/** update rate correction from server */
+void UpdateRateCorrectionFromServer();
+
+/**angular correction*/
+void SetAngularCorrection();
+
+/**discard bad channels*/
+void DiscardBadChannels();
 };
 
 

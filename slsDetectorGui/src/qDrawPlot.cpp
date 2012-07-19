@@ -27,7 +27,7 @@ using namespace std;
 
 //-------------------------------------------------------------------------------------------------------------------------------------------------
 
-qDrawPlot::qDrawPlot(QWidget *parent,slsDetectorUtils*& detector):QWidget(parent),myDet(detector){
+qDrawPlot::qDrawPlot(QWidget *parent,multiSlsDetector*& detector):QWidget(parent),myDet(detector){
 	SetupWidgetWindow();
 	Initialization();
 	StartStopDaqToggle(); //as default

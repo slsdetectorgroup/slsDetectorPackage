@@ -11,7 +11,7 @@
 /** Form Header */
 #include "ui_form_tab_plot.h"
 /** Project Class Headers */
-class slsDetectorUtils;
+class multiSlsDetector;
 /** Qt Project Class Headers */
 class qDrawPlot;
 /** Qt Include Headers */
@@ -29,7 +29,7 @@ public:
 	 *    @param detector is the detector returned from the detector tab
 	 *    @param plot plot object reference
 	 */
-	qTabPlot(QWidget *parent,slsDetectorUtils*& detector, qDrawPlot*& plot);
+	qTabPlot(QWidget *parent,multiSlsDetector*& detector, qDrawPlot*& plot);
 
 	/** Destructor
 	 */
@@ -42,13 +42,15 @@ public:
 
 private:
 	/** The sls detector object */
-	slsDetectorUtils *myDet;
+	multiSlsDetector *myDet;
 
 	/** The Plot widget	 */
 	qDrawPlot *myPlot;
 
 	/** 1d/2d plot	 */
 	bool isOneD;
+
+	bool scanLevel[2];
 
 	QStackedLayout* stackedLayout;
 	QSpinBox *spinNthFrame;
@@ -76,10 +78,13 @@ private:
 
 
 public slots:
-/** Set frequency between plots
- * returns 0 if there were no errors(important
- * while editing acquisition period in measurement tab) */
-int SetFrequency();
+/** Set frequency between plots*/
+void SetFrequency();
+/** Enable Scan box
+ * @param enable to enable the scan group box
+ * @param id is 0 if its scan level 0 or scan level 1
+ */
+void EnableScanBox(bool enable,int id);
 
 
 

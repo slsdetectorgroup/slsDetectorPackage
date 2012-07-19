@@ -10,7 +10,7 @@
 /** Form Header */
 #include "ui_form_tab_measurement.h"
 /** Project Class Headers */
-class slsDetectorUtils;
+class multiSlsDetector;
 /** Qt Project Class Headers */
 class qDrawPlot;
 
@@ -30,7 +30,7 @@ public:
 	 *    @param detector is the detector returned from the detector tab
 	 *    @param plot plot object reference
 	 */
-	qTabMeasurement(QWidget *parent,slsDetectorUtils*& detector, qDrawPlot*& plot);
+	qTabMeasurement(QWidget *parent,multiSlsDetector*& detector, qDrawPlot*& plot);
 
 	/** Destructor
 	 */
@@ -43,7 +43,7 @@ public:
 
 private:
 	/** The sls detector object */
-	slsDetectorUtils *myDet;
+	multiSlsDetector *myDet;
 
 	/** The Plot widget	 */
 	qDrawPlot *myPlot;

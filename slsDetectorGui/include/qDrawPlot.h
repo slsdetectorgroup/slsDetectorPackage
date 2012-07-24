@@ -91,7 +91,13 @@ public:
 	void StartStopDaqToggle(bool stop_if_running=0);
 	/** Set number of measurements
 	 *  @param num number of measurements to be set */
-	void setNumMeasurements(int num);
+	void setNumMeasurements(int num){number_of_measurements = num;};
+	/** Set frame enabled
+	 *  @param enable enable*/
+	void setFrameEnabled(bool enable){isFrameEnabled = enable;};
+	/** Set trigger enabled
+	 *  @param enable enable */
+	void setTriggerEnabled(bool enable){isTriggerEnabled = enable;};
 
 
 private:
@@ -212,6 +218,10 @@ private:
 	/** every nth frame when to plot */
 	int frameFactor;
 	bool plotLock;
+	/**if frame is enabled in measurement tab */
+	bool isFrameEnabled;
+	/**if trigger is enabled in measurement tab */
+	bool isTriggerEnabled;
 
 
 	/** Initializes all its members and the thread */

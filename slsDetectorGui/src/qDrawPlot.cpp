@@ -27,7 +27,8 @@ using namespace std;
 
 //-------------------------------------------------------------------------------------------------------------------------------------------------
 
-qDrawPlot::qDrawPlot(QWidget *parent,multiSlsDetector*& detector):QWidget(parent),myDet(detector){
+qDrawPlot::qDrawPlot(QWidget *parent,multiSlsDetector*& detector):
+		QWidget(parent),myDet(detector){
 	SetupWidgetWindow();
 	Initialization();
 	StartStopDaqToggle(); //as default
@@ -79,6 +80,8 @@ void qDrawPlot::SetupWidgetWindow(){
 	timerValue = PLOT_TIMER_MS;
 	frameFactor=0;
 	plotLock = false;
+	isFrameEnabled = false;
+	isTriggerEnabled = false;
 	/** This is so that it initially stop and plots */
 	running = 1;
 	for(int i=0;i<MAX_1DPLOTS;i++) {histYAxis[i]=0;yvalues[i]=0; }
@@ -165,7 +168,14 @@ void qDrawPlot::StartStopDaqToggle(bool stop_if_running){
 		currentMeasurement = 0;
 		emit SetCurrentMeasurementSignal(currentMeasurement);
 		/** Number of Exposures */
-		number_of_exposures= (int)myDet->setTimer(slsDetectorDefs::FRAME_NUMBER,-1);
+		int numFrames = (isFrameEnabled)*((int)myDet->setTimer(slsDetectorDefs::FRAME_NUMBER,-1));
+		int numTriggers = (isTriggerEnabled)*((int)myDet->setTimer(slsDetectorDefs::CYCLES_NUMBER,-1));
+
+		numFrames = ((numFrames==0)?1:numFrames);
+		numTriggers = ((numTriggers==0)?1:numTriggers);
+
+
+		number_of_exposures= numFrames * numTriggers;
 		cout<<"\tNumber of Exposures:"<<number_of_exposures<<endl;
 		/** ExposureTime */
 		exposureTime= ((double)(myDet->setTimer(slsDetectorDefs::ACQUISITION_TIME,-1))*1E-9);
@@ -347,12 +357,6 @@ int qDrawPlot::GetData(detectorData *data){
 	cout<<"Exiting GetData function"<<endl;
 #endif
 	return 0;
-}
-
-//-------------------------------------------------------------------------------------------------------------------------------------------------
-
-void qDrawPlot::setNumMeasurements(int num){
-	number_of_measurements = num;
 }
 
 //-------------------------------------------------------------------------------------------------------------------------------------------------

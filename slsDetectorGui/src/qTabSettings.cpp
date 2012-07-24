@@ -211,7 +211,7 @@ void qTabSettings::SetDynamicRange(int index){
 #endif
   ret=myDet->setDynamicRange(dr);
   if(ret!=dr){
-	  qDefs::WarningMessage("Dynamic Range cannot be set for this value.","Settings");
+	  qDefs::WarningMessage("Dynamic Range cannot be set to this value.","Settings");
 #ifdef VERBOSE
 	  cout << "ERROR: Setting dynamic range to "<< ret << endl;
 #endif

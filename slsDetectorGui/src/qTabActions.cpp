@@ -18,6 +18,7 @@
 using namespace std;
 
 
+//-------------------------------------------------------------------------------------------------------------------------------------------------
 
 
 qTabActions::qTabActions(QWidget *parent,multiSlsDetector*& detector):
@@ -27,6 +28,7 @@ qTabActions::qTabActions(QWidget *parent,multiSlsDetector*& detector):
 }
 
 
+//-------------------------------------------------------------------------------------------------------------------------------------------------
 
 
 qTabActions::~qTabActions(){
@@ -34,11 +36,12 @@ qTabActions::~qTabActions(){
 }
 
 
+//-------------------------------------------------------------------------------------------------------------------------------------------------
 
 
 void qTabActions::SetupWidgetWindow(){
 	// Window Settings
-	setFixedSize(705,350);
+	setFixedSize(710,350);
 	setContentsMargins(0,0,0,0);
 
 	// Scroll Area Settings
@@ -56,13 +59,14 @@ void qTabActions::SetupWidgetWindow(){
 	group 			= new QButtonGroup(this);
 	palette 		= new QPalette();
 
+
 	// For each level of Actions
 	for(int i=0;i<NUM_ACTION_WIDGETS;i++){
 		// Add the extra widgets only for the 1st 2 levels
-		if((i==Scan0)||(i==Scan1))
-			actionWidget[i] = new ActionsWidget(this,1,i);
+		if((i==ActionsWidget::Scan0)||(i==ActionsWidget::Scan1))
+			actionWidget[i] = new ActionsWidget(this,myDet,1,i);
 		else
-			actionWidget[i] = new ActionsWidget(this,0,i);
+			actionWidget[i] = new ActionsWidget(this,myDet,0,i);
 
 		btnExpand[i] 	= new QPushButton("+");
 			btnExpand[i]->setFixedSize(20,20);
@@ -78,35 +82,42 @@ void qTabActions::SetupWidgetWindow(){
 	}
 
 	// Label Values
-	lblName[Start]->setText("Action at Start");
-	lblName[Scan0]->setText("Scan Level 0");
-	lblName[Scan1]->setText("Scan Level 1");
-	lblName[ActionBefore]->setText("Action before each Frame");
-	lblName[NumPositions]->setText("Number of Positions");
-	lblName[HeaderBefore]->setText("Header before Frame");
-	lblName[HeaderAfter]->setText("Header after Frame");
-	lblName[ActionAfter]->setText("Action after each Frame");
-	lblName[Stop]->setText("Action at Stop");
+	lblName[ActionsWidget::Start]->setText("Action at Start");
+	lblName[ActionsWidget::Scan0]->setText("Scan Level 0");
+	lblName[ActionsWidget::Scan1]->setText("Scan Level 1");
+	lblName[ActionsWidget::ActionBefore]->setText("Action before each Frame");
+	lblName[ActionsWidget::NumPositions]->setText("Positions");
+	lblName[ActionsWidget::HeaderBefore]->setText("Header before Frame");
+	lblName[ActionsWidget::HeaderAfter]->setText("Header after Frame");
+	lblName[ActionsWidget::ActionAfter]->setText("Action after each Frame");
+	lblName[ActionsWidget::Stop]->setText("Action at Stop");
 
 	// initially hide all the widgets
 	for(int i=0;i<NUM_ACTION_WIDGETS;i++)
 		actionWidget[i]->hide();
 
+	//Number of positions is only for mythen or gotthard
+	slsDetectorDefs::detectorType detType = myDet->getDetectorsType();
+	if((detType == slsDetectorDefs::EIGER) || (detType == slsDetectorDefs::AGIPD)) {
+		lblName[ActionsWidget::NumPositions]->setEnabled(false);
+		btnExpand[ActionsWidget::NumPositions]->setEnabled(false);
+	}
+
 }
 
+
+//-------------------------------------------------------------------------------------------------------------------------------------------------
 
 
 void qTabActions::Initialization(){
 	connect(group,				SIGNAL(buttonClicked(QAbstractButton*)),	this,SLOT(Expand(QAbstractButton*)));
-	connect(actionWidget[Scan0],SIGNAL(EnableScanBox(bool,int)),			this,SIGNAL(EnableScanBox(bool,int)));
-	connect(actionWidget[Scan1],SIGNAL(EnableScanBox(bool,int)),			this,SIGNAL(EnableScanBox(bool,int)));
+	connect(actionWidget[ActionsWidget::Scan0],SIGNAL(EnableScanBox(bool,int)),			this,SIGNAL(EnableScanBox(bool,int)));
+	connect(actionWidget[ActionsWidget::Scan1],SIGNAL(EnableScanBox(bool,int)),			this,SIGNAL(EnableScanBox(bool,int)));
 
-	for(int i=0;i<NUM_ACTION_WIDGETS;i++){
-		connect(actionWidget[i],SIGNAL(SetScriptSignal(QString&,int)), this,SLOT(SetScript(QString&,int)));
-
-	}
 }
 
+
+//-------------------------------------------------------------------------------------------------------------------------------------------------
 
 
 void qTabActions::Expand(QAbstractButton *button ){
@@ -117,8 +128,11 @@ void qTabActions::Expand(QAbstractButton *button ){
 		lblName[index]->setPalette(*palette);
 		actionWidget[index]->hide();
 		button->setText("+");
-		if((index==Scan0)||(index==Scan1))
+		if((index==ActionsWidget::Scan0)||(index==ActionsWidget::Scan1)){
 			setFixedHeight(height()-130);
+		}
+		else if(index==ActionsWidget::NumPositions)
+			setFixedHeight(height()-80);
 		else
 			setFixedHeight(height()-30);
 	}else{
@@ -127,29 +141,28 @@ void qTabActions::Expand(QAbstractButton *button ){
 		lblName[index]->setPalette(*palette);
 		actionWidget[index]->show();
 		button->setText("-");
-		if((index==Scan0)||(index==Scan1))
+		if((index==ActionsWidget::Scan0)||(index==ActionsWidget::Scan1)){
 			setFixedHeight(height()+130);
+		}
+		else if(index==ActionsWidget::NumPositions)
+			setFixedHeight(height()+80);
 		else
 			setFixedHeight(height()+30);
 	}
 }
 
-//-------------------------------------------------------------------------------------------------------------------------------------------------
-
-
-void qTabActions::SetScript(const QString& fName,int index){
-#ifdef VERBOSE
-	cout << "Setting script file of action widget:" << index << " to " << fName.toAscii().constData() << endl;
-#endif
-
-}
-
 
 //-------------------------------------------------------------------------------------------------------------------------------------------------
+
 
 void qTabActions::Refresh(){
-
+#ifdef VERBOSE
+	cout << "Updating action widgets " << endl;
+#endif
+	for(int i=0;i<NUM_ACTION_WIDGETS;i++)
+		actionWidget[i]->Refresh();
 }
+
 
 //-------------------------------------------------------------------------------------------------------------------------------------------------
 

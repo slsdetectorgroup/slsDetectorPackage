@@ -634,9 +634,13 @@ void qTabMeasurement::setTimingMode(int mode){
 #endif
 	}
 
-
 	/** To reconnect all the signals after changing their values*/
 	Initialization(1);
+
+
+	// to let qdrawplot know that triggers or frames are used
+	myPlot->setFrameEnabled(lblNumTriggers->isEnabled());
+	myPlot->setTriggerEnabled(lblNumFrames->isEnabled());
 
 	return;
 }
@@ -654,6 +658,11 @@ void qTabMeasurement::Refresh(){
 	lblProgressIndex->setText(QString::number(myDet->getFileIndex()));
 	/** Timing mode**/
 	SetupTimingMode();
+
+	// to let qdrawplot know that triggers or frames are used
+	myPlot->setFrameEnabled(lblNumTriggers->isEnabled());
+	myPlot->setTriggerEnabled(lblNumFrames->isEnabled());
+
 }
 
 

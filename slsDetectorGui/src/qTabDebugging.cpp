@@ -15,6 +15,8 @@ using namespace std;
 
 
 
+//-------------------------------------------------------------------------------------------------------------------------------------------------
+
 
 qTabDebugging::qTabDebugging(QWidget *parent,multiSlsDetector*& detector):QWidget(parent),myDet(detector){
 	setupUi(this);
@@ -23,6 +25,7 @@ qTabDebugging::qTabDebugging(QWidget *parent,multiSlsDetector*& detector):QWidge
 }
 
 
+//-------------------------------------------------------------------------------------------------------------------------------------------------
 
 
 qTabDebugging::~qTabDebugging(){
@@ -30,6 +33,7 @@ qTabDebugging::~qTabDebugging(){
 }
 
 
+//-------------------------------------------------------------------------------------------------------------------------------------------------
 
 
 void qTabDebugging::SetupWidgetWindow(){
@@ -49,17 +53,12 @@ void qTabDebugging::SetupWidgetWindow(){
 	}
 }
 
+//-------------------------------------------------------------------------------------------------------------------------------------------------
 
 
 void qTabDebugging::Initialization(){
 }
 
-
-
-void qTabDebugging::Enable(bool enable){
-	//this->setEnabled(enable);
-
-}
 
 
 //-------------------------------------------------------------------------------------------------------------------------------------------------

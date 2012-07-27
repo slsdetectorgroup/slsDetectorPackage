@@ -55,6 +55,7 @@ SOURCES 			= 		\
 							src/qTabPlot.cpp\
 							src/qTabActions.cpp\
 							src/qActionsWidget.cpp\
+							src/qScanWidget.cpp\
 							src/qTabAdvanced.cpp\
 							src/qTabSettings.cpp\
 							src/qTabDebugging.cpp\
@@ -80,6 +81,7 @@ HEADERS 			=  		\
 							include/qTabPlot.h\
 							include/qTabActions.h\
 							include/qActionsWidget.h\
+							include/qScanWidget.h\
 							include/qTabAdvanced.h\
 							include/qTabSettings.h\
 							include/qTabDebugging.h\
@@ -97,5 +99,7 @@ FORMS = 					\
 							forms/form_tab_advanced.ui\
 							forms/form_tab_settings.ui\
 							forms/form_tab_debugging.ui\
-							forms/form_tab_developer.ui
+							forms/form_tab_developer.ui\
 #							forms/form_tab_messages.ui
+							forms/form_action.ui\
+							forms/form_scan.ui

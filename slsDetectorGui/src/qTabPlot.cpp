@@ -86,7 +86,7 @@ void qTabPlot::SetupWidgetWindow(){
 		spinTimeGap->setMinimum(0);
 		spinTimeGap->setDecimals(3);
 		spinTimeGap->setMaximum(999999);
-		spinTimeGap->setValue(500.00);
+		spinTimeGap->setValue(myPlot->GetMinimumPlotTimer());
 	comboTimeGapUnit = new QComboBox;
 		comboTimeGapUnit->addItem("hr");
 		comboTimeGapUnit->addItem("min");
@@ -362,8 +362,8 @@ void qTabPlot::SetPlot(){
 	if(radioNoPlot->isChecked()){
 		myPlot->EnablePlot(false);
 		/**if enable is true, disable everything */
-		box1D->hide();
-		box2D->hide();
+		if(isOneD) {box1D->show(); box1D->setEnabled(false); box2D->hide();}
+		if(!isOneD){box2D->show(); box2D->setEnabled(false); box1D->hide();}
 		boxSnapshot->setEnabled(false);
 		boxSave->setEnabled(false);
 		boxFrequency->setEnabled(false);
@@ -372,8 +372,8 @@ void qTabPlot::SetPlot(){
 	}else {
 		myPlot->EnablePlot(true);
 		/**if enable is true, disable everything */
-		if(isOneD) box1D->show(); else box1D->hide();
-		if(!isOneD) box2D->show(); else box2D->hide();
+		if(isOneD) {box1D->show();box1D->setEnabled(true);} else box1D->hide();
+		if(!isOneD){box2D->show();box2D->setEnabled(true);}	else box2D->hide();
 		boxSnapshot->setEnabled(true);
 		boxSave->setEnabled(true);
 		boxFrequency->setEnabled(true);
@@ -428,7 +428,7 @@ void qTabPlot::SetFrequency(){
 		if(timeMS<minPlotTimer){
 			int minFrame = (ceil)(minPlotTimer/acqPeriodMS);
 			qDefs::WarningMessage("<b>Plot Tab:</b> Interval between Plots - The nth Image must be larger.<br><br>"
-					"Condition to be satisfied:\n(Acquisition Period)*(nth Image) >= 500ms."
+					"Condition to be satisfied:\n(Acquisition Period)*(nth Image) >= 250ms."
 					"<br><br>Nth image adjusted to minimum, "
 					"for the chosen Acquisition Period.","Plot");
 			spinNthFrame->setValue(minFrame);

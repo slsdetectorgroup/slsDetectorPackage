@@ -221,13 +221,13 @@
         <string/>
        </property>
        <property name="minimum">
-        <number>0</number>
+        <number>1</number>
        </property>
        <property name="maximum">
         <number>2000000000</number>
        </property>
        <property name="value">
-        <number>0</number>
+        <number>1</number>
        </property>
       </widget>
      </item>
@@ -363,13 +363,13 @@
         <string/>
        </property>
        <property name="minimum">
-        <number>0</number>
+        <number>1</number>
        </property>
        <property name="maximum">
         <number>2000000000</number>
        </property>
        <property name="value">
-        <number>0</number>
+        <number>1</number>
        </property>
       </widget>
      </item>
@@ -417,13 +417,13 @@
         <string/>
        </property>
        <property name="minimum">
-        <number>0</number>
+        <number>1</number>
        </property>
        <property name="maximum">
         <number>2000000000</number>
        </property>
        <property name="value">
-        <number>0</number>
+        <number>1</number>
        </property>
       </widget>
      </item>

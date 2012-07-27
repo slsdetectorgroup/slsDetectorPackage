@@ -174,7 +174,6 @@ void qDrawPlot::StartStopDaqToggle(bool stop_if_running){
 		numFrames = ((numFrames==0)?1:numFrames);
 		numTriggers = ((numTriggers==0)?1:numTriggers);
 
-
 		number_of_exposures= numFrames * numTriggers;
 		cout<<"\tNumber of Exposures:"<<number_of_exposures<<endl;
 		/** ExposureTime */
@@ -289,69 +288,70 @@ int qDrawPlot::GetData(detectorData *data){
 #ifdef VERYVERBOSE
 	cout<<"Entering GetDatafunction"<<endl;
 #endif
+	if(!stop_signal){
+		progress=(int)data->progressIndex;
 
-	progress=(int)data->progressIndex;
-
-	if(!plotEnable) {
-		lastImageNumber= currentFrame+1;
-		currentFrame++;
-		return 0;
-	}
-
-	/** Get data from client */
-	/**1d*/
-	if(plot_in_scope==1){
-		/** Persistency */
-		if(currentPersistency < persistency)currentPersistency++;
-		else currentPersistency=persistency;
-		for(int i=currentPersistency;i>0;i--)
-			memcpy(yvalues[i],yvalues[i-1],nPixelsX*sizeof(double));
-		nHists = currentPersistency+1;
-		//memcpy(yvalues[0],data->values,nPixelsX*sizeof(double));
-		for(int i=0;i<(int)nPixelsX;i++)		*(yvalues[0]+i) = (double)*(data->values+i);
-	}
-	/**2d*/
-	else{
-		for(unsigned int px=0;px<nPixelsX;px++)
-			for(unsigned int py=0;py<nPixelsY;py++)
-				image_data[py*nPixelsX+px] = sqrt(pow(currentFrame+1,2)*pow(double(px)-nPixelsX/2,2)/pow(nPixelsX/2,2)/pow(number_of_exposures+1,2) + pow(double(py)-nPixelsY/2,2)/pow(nPixelsY/2,2))/sqrt(2);
-	}
-
-
-	if((currentFrame)<(number_of_exposures)){
-#ifdef VERYVERBOSE
-		cout<<"Reading in image: "<<currentFrame+1<<endl;
-#endif
-		if(!plotLock){
-		if(!pthread_mutex_trylock(&(last_image_complete_mutex))){
-			char temp_title[2000];
-			/** only if you got the lock, do u need to remember lastimagenumber to plot*/
+		if(!plotEnable) {
 			lastImageNumber= currentFrame+1;
+			currentFrame++;
+			return 0;
+		}
 
-			/**1d*/
-			if(plot_in_scope==1){
-				/** Titles*/
-				sprintf(temp_title,"Frame %d",currentFrame);    histTitle[0] = temp_title;
-				/** copy data*/
-				//memcpy(histXAxis,    xvalues,nPixelsX*sizeof(double));
-				for(int i=currentPersistency;i>0;i--)
-					memcpy(histYAxis[i],histYAxis[i-1],nPixelsX*sizeof(double));
-				memcpy(histYAxis[0],yvalues[0],nPixelsX*sizeof(double));
-			}
-			/**2d*/
-			else{
-				sprintf(temp_title,"Image Number %d",currentFrame);    imageTitle = temp_title;
-				memcpy(lastImageArray,image_data,nPixelsX*nPixelsY*sizeof(double));
-			}
-			pthread_mutex_unlock(&(last_image_complete_mutex));
+		/** Get data from client */
+		/**1d*/
+		if(plot_in_scope==1){
+			/** Persistency */
+			if(currentPersistency < persistency)currentPersistency++;
+			else currentPersistency=persistency;
+			for(int i=currentPersistency;i>0;i--)
+				memcpy(yvalues[i],yvalues[i-1],nPixelsX*sizeof(double));
+			nHists = currentPersistency+1;
+			//memcpy(yvalues[0],data->values,nPixelsX*sizeof(double));
+			for(int i=0;i<(int)nPixelsX;i++)		*(yvalues[0]+i) = (double)*(data->values+i);
 		}
+		/**2d*/
+		else{
+			for(unsigned int px=0;px<nPixelsX;px++)
+				for(unsigned int py=0;py<nPixelsY;py++)
+					image_data[py*nPixelsX+px] = sqrt(pow(currentFrame+1,2)*pow(double(px)-nPixelsX/2,2)/pow(nPixelsX/2,2)/pow(number_of_exposures+1,2) + pow(double(py)-nPixelsY/2,2)/pow(nPixelsY/2,2))/sqrt(2);
 		}
-		currentFrame++;
-	}
-	/** To make sure plotting locks parameters until it has plotted */
-	if(frameFactor){
-		if(currentFrame==number_of_exposures) plotLock = true;
-		else if(!((currentFrame-1)%frameFactor)) plotLock = true;
+
+
+		if((currentFrame)<(number_of_exposures)){
+#ifdef VERYVERBOSE
+			cout<<"Reading in image: "<<currentFrame+1<<endl;
+#endif
+			if(!plotLock){
+				if(!pthread_mutex_trylock(&(last_image_complete_mutex))){
+					char temp_title[2000];
+					/** only if you got the lock, do u need to remember lastimagenumber to plot*/
+					lastImageNumber= currentFrame+1;
+
+					/**1d*/
+					if(plot_in_scope==1){
+						/** Titles*/
+						sprintf(temp_title,"Frame %d",currentFrame);    histTitle[0] = temp_title;
+						/** copy data*/
+						//memcpy(histXAxis,    xvalues,nPixelsX*sizeof(double));
+						for(int i=currentPersistency;i>0;i--)
+							memcpy(histYAxis[i],histYAxis[i-1],nPixelsX*sizeof(double));
+						memcpy(histYAxis[0],yvalues[0],nPixelsX*sizeof(double));
+					}
+					/**2d*/
+					else{
+						sprintf(temp_title,"Image Number %d",currentFrame);    imageTitle = temp_title;
+						memcpy(lastImageArray,image_data,nPixelsX*nPixelsY*sizeof(double));
+					}
+					pthread_mutex_unlock(&(last_image_complete_mutex));
+				}
+			}
+			currentFrame++;
+		}
+		/** To make sure plotting locks parameters until it has plotted */
+		if(frameFactor){
+			if(currentFrame==number_of_exposures) plotLock = true;
+			else if(!((currentFrame-1)%frameFactor)) plotLock = true;
+		}
 	}
 #ifdef VERYVERBOSE
 	cout<<"Exiting GetData function"<<endl;

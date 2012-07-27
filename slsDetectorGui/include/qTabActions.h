@@ -8,12 +8,19 @@
 #ifndef QTABACTIONS_H_
 #define QTABACTIONS_H_
 
+
+/* Qt Project Class Headers */
+#include "qActionsWidget.h"
+#include "qScanWidget.h"
 /** Project Class Headers */
 class multiSlsDetector;
-class ActionsWidget;
+class qActionsWidget;
 /** Qt Include Headers */
 #include <QWidget>
 #include <QPushButton>
+#include <QSpinBox>
+#include <QComboBox>
+#include <QCheckBox>
 #include <QLabel>
 #include <QScrollArea>
 #include <QGridLayout>
@@ -46,16 +53,33 @@ private:
 	/** The sls detector object */
 	multiSlsDetector *myDet;
 
-	static const int NUM_ACTION_WIDGETS = 9;
+	enum actionIndex{Scan0=1, Scan1, NumPositions=4, NumTotalActions=9};
 
 	QGridLayout		*gridLayout;
 	QButtonGroup 	*group;
 	QPalette		*palette;
 
-	/** action widget objects */
-	ActionsWidget	*actionWidget[NUM_ACTION_WIDGETS];
-	QPushButton 	*btnExpand[NUM_ACTION_WIDGETS];
-	QLabel			*lblName[NUM_ACTION_WIDGETS];
+	/** all action widget objects */
+	qActionsWidget	*actionWidget[6];
+	qScanWidget		*scanWidget[2];
+	QWidget			*positionWidget;
+	QPushButton 	*btnExpand[NumTotalActions];
+	QLabel			*lblName[NumTotalActions];
+
+
+	/** NumPositions widget */
+	QLabel 		*lblNumPos;
+	QLabel 		*lblPosList;
+	QSpinBox 	*spinNumPos;
+	QComboBox	*comboPos;
+	QPushButton *btnDelete;
+	QCheckBox 	*chkInvert;
+	QCheckBox 	*chkSeparate;
+	QCheckBox 	*chkReturn;
+
+	float		*positions;
+	QPalette	normal;
+
 
 	/** Sets up the widget */
 	void SetupWidgetWindow();
@@ -63,12 +87,28 @@ private:
 	/** Sets up all the slots and signals */
 	void Initialization();
 
+	/** creates the Num Positions object */
+	void CreatePositionsWidget();
 
+	/** Returns the index in each of the classes
+	 * of actionwidget and scanwidget
+	 * @param index the index in the list of all widgets
+	 * returns actual index of the class
+	 */
+	int GetActualIndex(int index);
 
 private slots:
-/** To Expand the Action Widget */
+/** To Expand the Action Widget
+ * */
 void Expand(QAbstractButton *button);
 
+/** Sets the positions list and the number of positions
+ * */
+void SetPosition();
+
+/** Deletes current position
+ * */
+void DeletePosition();
 
 signals:
 void EnableScanBox(bool,int);

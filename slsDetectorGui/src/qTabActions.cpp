@@ -7,7 +7,6 @@
 // Qt Project Class Headers
 #include "qTabActions.h"
 #include "qDefs.h"
-#include "qActionsWidget.h"
 // Project Class Headers
 #include "slsDetector.h"
 #include "multiSlsDetector.h"
@@ -22,7 +21,7 @@ using namespace std;
 
 
 qTabActions::qTabActions(QWidget *parent,multiSlsDetector*& detector):
-		QWidget(parent),myDet(detector){
+		QWidget(parent),myDet(detector),positions(NULL){
 	SetupWidgetWindow();
 	Initialization();
 }
@@ -59,48 +58,54 @@ void qTabActions::SetupWidgetWindow(){
 	group 			= new QButtonGroup(this);
 	palette 		= new QPalette();
 
+	char names[NumTotalActions][200] = {
+			"Action at Start",
+			"Scan Level 0",
+			"Scan Level 1",
+			"Action before each Frame",
+			"Positions",
+			"Header before Frame",
+			"Header after Frame",
+			"Action after each Frame",
+			"Action at Stop"
+	};
 
 	// For each level of Actions
-	for(int i=0;i<NUM_ACTION_WIDGETS;i++){
-		// Add the extra widgets only for the 1st 2 levels
-		if((i==ActionsWidget::Scan0)||(i==ActionsWidget::Scan1))
-			actionWidget[i] = new ActionsWidget(this,myDet,1,i);
-		else
-			actionWidget[i] = new ActionsWidget(this,myDet,0,i);
-
+	for(int i=0;i<NumTotalActions;i++){
+		//common widgets
+		lblName[i]	 	= new QLabel(QString(names[i]));
 		btnExpand[i] 	= new QPushButton("+");
-			btnExpand[i]->setFixedSize(20,20);
-		lblName[i]	 	= new QLabel("");
+		btnExpand[i]->setFixedSize(20,20);
 		group->addButton(btnExpand[i],i);
+
+		//Number of positions is only for mythen or gotthard
+		slsDetectorDefs::detectorType detType = myDet->getDetectorsType();
+		if((detType == slsDetectorDefs::EIGER) || (detType == slsDetectorDefs::AGIPD)) {
+			lblName[NumPositions]->setEnabled(false);
+			btnExpand[NumPositions]->setEnabled(false);
+		}
+
+		//add the widgets to the layout , depending on the type create the widgets
 		gridLayout->addWidget(btnExpand[i],(i*2),0);
 		gridLayout->addWidget(lblName[i],(i*2),1);
-		gridLayout->addWidget(actionWidget[i],(i*2)+1,1,1,2);
-/*		gridLayout->addWidget(btnExpand[i],(i*2),i);
-		gridLayout->addWidget(lblName[i],(i*2),i+1);
-		gridLayout->addWidget(actionWidget[i],(i*2)+1,i+1,1,2);*/
 
-	}
+		if(i==NumPositions){
+			CreatePositionsWidget();
+			gridLayout->addWidget(positionWidget,(i*2)+1,1,1,2);
+			positionWidget->hide();
+		}else if((i==Scan0)||(i==Scan1)){
+			scanWidget[qScanWidget::NUM_SCAN_WIDGETS] = new qScanWidget(this,myDet);
+			gridLayout->addWidget(scanWidget[qScanWidget::NUM_SCAN_WIDGETS-1],(i*2)+1,1,1,2);
+			scanWidget[qScanWidget::NUM_SCAN_WIDGETS-1]->hide();
+		}else{
+			actionWidget[qActionsWidget::NUM_ACTION_WIDGETS] = new qActionsWidget(this,myDet);
+			gridLayout->addWidget(actionWidget[qActionsWidget::NUM_ACTION_WIDGETS-1],(i*2)+1,1,1,2);
+			actionWidget[qActionsWidget::NUM_ACTION_WIDGETS-1]->hide();
+		}
+		//gridLayout->addWidget(btnExpand[i],(i*2),i);
+		//gridLayout->addWidget(lblName[i],(i*2),i+1);
+		//gridLayout->addWidget(actionWidget[i],(i*2)+1,i+1,1,2);
 
-	// Label Values
-	lblName[ActionsWidget::Start]->setText("Action at Start");
-	lblName[ActionsWidget::Scan0]->setText("Scan Level 0");
-	lblName[ActionsWidget::Scan1]->setText("Scan Level 1");
-	lblName[ActionsWidget::ActionBefore]->setText("Action before each Frame");
-	lblName[ActionsWidget::NumPositions]->setText("Positions");
-	lblName[ActionsWidget::HeaderBefore]->setText("Header before Frame");
-	lblName[ActionsWidget::HeaderAfter]->setText("Header after Frame");
-	lblName[ActionsWidget::ActionAfter]->setText("Action after each Frame");
-	lblName[ActionsWidget::Stop]->setText("Action at Stop");
-
-	// initially hide all the widgets
-	for(int i=0;i<NUM_ACTION_WIDGETS;i++)
-		actionWidget[i]->hide();
-
-	//Number of positions is only for mythen or gotthard
-	slsDetectorDefs::detectorType detType = myDet->getDetectorsType();
-	if((detType == slsDetectorDefs::EIGER) || (detType == slsDetectorDefs::AGIPD)) {
-		lblName[ActionsWidget::NumPositions]->setEnabled(false);
-		btnExpand[ActionsWidget::NumPositions]->setEnabled(false);
 	}
 
 }
@@ -109,11 +114,75 @@ void qTabActions::SetupWidgetWindow(){
 //-------------------------------------------------------------------------------------------------------------------------------------------------
 
 
-void qTabActions::Initialization(){
-	connect(group,				SIGNAL(buttonClicked(QAbstractButton*)),	this,SLOT(Expand(QAbstractButton*)));
-	connect(actionWidget[ActionsWidget::Scan0],SIGNAL(EnableScanBox(bool,int)),			this,SIGNAL(EnableScanBox(bool,int)));
-	connect(actionWidget[ActionsWidget::Scan1],SIGNAL(EnableScanBox(bool,int)),			this,SIGNAL(EnableScanBox(bool,int)));
+void qTabActions::CreatePositionsWidget(){
+	positionWidget = new QWidget;
+	positionWidget->setFixedHeight(25);
 
+	QGridLayout *layout = new QGridLayout(positionWidget);
+	layout->setContentsMargins(0,0,0,0);
+	layout->setHorizontalSpacing(0);
+	layout->setVerticalSpacing(5);
+
+	lblNumPos = new QLabel("Number of Positions:");
+	lblNumPos->setSizePolicy(QSizePolicy::Fixed,QSizePolicy::Fixed);
+	layout->addWidget(lblNumPos,0,0);
+	layout->addItem(new QSpacerItem(5,20,QSizePolicy::Fixed,QSizePolicy::Fixed),0,1);
+	spinNumPos = new QSpinBox(this);
+	layout->addWidget(spinNumPos,0,2);
+	layout->addItem(new QSpacerItem(80,20,QSizePolicy::Fixed,QSizePolicy::Fixed),0,3);
+	lblPosList = new QLabel("List of Positions:");
+	lblPosList->setSizePolicy(QSizePolicy::Fixed,QSizePolicy::Fixed);
+	lblPosList->setEnabled(false);
+	lblPosList->setToolTip("<nobr>Enter the positions at which the detector should be moved.</nobr><br>"
+				"<nobr>Number of entries is restricted to <b>Number of Positions</b> field.</tnobr>");
+	layout->addWidget(lblPosList,0,4);
+	layout->addItem(new QSpacerItem(5,20,QSizePolicy::Fixed,QSizePolicy::Fixed),0,5);
+	comboPos = new QComboBox(this);
+	comboPos->setEditable(true);
+	comboPos->setCompleter(false);
+	normal = comboPos->palette();
+	comboPos->setEnabled(false);
+	QDoubleValidator *validate = new QDoubleValidator(comboPos);
+	comboPos->setValidator(validate);
+	layout->addWidget(comboPos,0,6);
+	layout->addItem(new QSpacerItem(5,20,QSizePolicy::Fixed,QSizePolicy::Fixed),0,7);
+	btnDelete = new QPushButton("Delete");
+	btnDelete->setSizePolicy(QSizePolicy::Fixed,QSizePolicy::Fixed);
+	layout->addWidget(btnDelete,0,8);
+
+	//might be included at some point
+/*	QGroupBox *w = new QGroupBox;
+	layout->addWidget(w,1,0,1,9);
+	QHBoxLayout *l1 = new QHBoxLayout(w);
+	l1->setContentsMargins(0,0,0,0);
+	l1->addItem(new QSpacerItem(20,20,QSizePolicy::Fixed,QSizePolicy::Fixed));
+	chkInvert = new QCheckBox("Invert Angles");
+	l1->addWidget(chkInvert);
+	chkSeparate = new QCheckBox("Separate Two Halves");
+	l1->addWidget(chkSeparate);
+	chkReturn = new QCheckBox("Return to Start Position");
+	chkReturn->setSizePolicy(QSizePolicy::Fixed,QSizePolicy::Fixed);
+	l1->addWidget(chkReturn);
+	l1->addItem(new QSpacerItem(20,20,QSizePolicy::Fixed,QSizePolicy::Fixed));
+	w->setLayout(l1);*/
+
+	positionWidget->setLayout(layout);
+}
+
+
+//-------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+void qTabActions::Initialization(){
+	//expand
+	connect(group,				SIGNAL(buttonClicked(QAbstractButton*)),	this,SLOT(Expand(QAbstractButton*)));
+	//enable scan box in plot tab
+	for(int i=0;i<qScanWidget::NUM_SCAN_WIDGETS;i++)
+		connect(scanWidget[i],	SIGNAL(EnableScanBox(bool,int)),	this,SIGNAL(EnableScanBox(bool,int)));
+	//positions
+	connect(comboPos,		SIGNAL(currentIndexChanged(int)), 		this, SLOT(SetPosition()));
+	connect(spinNumPos,		SIGNAL(valueChanged(int)), 				this, SLOT(SetPosition()));
+	connect(btnDelete,		SIGNAL(clicked()),						this, SLOT(DeletePosition()));
 }
 
 
@@ -126,28 +195,104 @@ void qTabActions::Expand(QAbstractButton *button ){
 	if(!QString::compare(button->text(), "-")){
 		palette->setColor(QPalette::WindowText,Qt::black);
 		lblName[index]->setPalette(*palette);
-		actionWidget[index]->hide();
 		button->setText("+");
-		if((index==ActionsWidget::Scan0)||(index==ActionsWidget::Scan1)){
+
+		if(index==NumPositions)	{
+			positionWidget->hide();
+			setFixedHeight(height()-30);//-80 if the checkboxes are included
+		}
+		else if((index==Scan0)||(index==Scan1)) {
+			scanWidget[GetActualIndex(index)]->hide();
 			setFixedHeight(height()-130);
 		}
-		else if(index==ActionsWidget::NumPositions)
-			setFixedHeight(height()-80);
-		else
+		else {
+			actionWidget[GetActualIndex(index)]->hide();
 			setFixedHeight(height()-30);
+		}
 	}else{
 		// Expand
 		palette->setColor(QPalette::WindowText,QColor(0,0,200,255));
 		lblName[index]->setPalette(*palette);
-		actionWidget[index]->show();
 		button->setText("-");
-		if((index==ActionsWidget::Scan0)||(index==ActionsWidget::Scan1)){
+		if(index==NumPositions){
+			positionWidget->show();
+			setFixedHeight(height()+30);//+80 if the checkboxes are included
+		}
+		else if((index==Scan0)||(index==Scan1)){
+			scanWidget[GetActualIndex(index)]->show();
 			setFixedHeight(height()+130);
 		}
-		else if(index==ActionsWidget::NumPositions)
-			setFixedHeight(height()+80);
-		else
+		else{
+			actionWidget[GetActualIndex(index)]->show();
 			setFixedHeight(height()+30);
+		}
+	}
+}
+
+
+//-------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+void qTabActions::SetPosition(){
+#ifdef VERBOSE
+	cout << "Entering SetPosition\tnum Pos:" << spinNumPos->value() << "\tlist count:" << comboPos->count() << endl;
+#endif
+	//get number of positions
+	int numPos = spinNumPos->value();
+	comboPos->setMaxCount(numPos);
+	comboPos->setEnabled(numPos);
+	lblPosList->setEnabled(numPos);
+
+	//deleting too many or not entering enough
+	if(numPos>comboPos->count()){
+
+		QPalette red = QPalette();
+		red.setColor(QPalette::Active,QPalette::WindowText,Qt::red);
+		lblPosList->setPalette(red);
+		QString tip = QString("<nobr>Enter the positions at which the detector should be moved.</nobr><br>"
+				"<nobr>Number of entries is restricted to <b>Number of Positions</b> field.</nobr><br><br>")+
+				QString("<nobr><font color=\"red\">Add ")+
+				(QString("%1").arg(((numPos)-(comboPos->count()))))+
+				QString(" more positions to the list to match <b>Number of Positions</b>.</font></nobr>");
+		lblPosList->setToolTip(tip);
+		lblPosList->setText("List of Positions:*");
+	}else{
+		lblPosList->setText("List of Positions:");
+		lblPosList->setPalette(normal);
+		lblPosList->setToolTip("<nobr>Enter the positions at which the detector should be moved.</nobr><br>"
+				"<nobr>Number of entries is restricted to <b>Number of Positions</b> field.</tnobr>");
+		//delete existing positions
+		if (positions)  delete [] positions;
+		positions=new float[numPos];
+		//copying the list
+		for(int i=0;i<numPos;i++)
+			positions[i] = comboPos->itemText(i).toDouble();
+		//setting the list and catching error
+		if(myDet->setPositions(numPos,positions)!=numPos)
+			qDefs::WarningMessage("The positions list was not set for some reason.","Actions");
+	}
+
+}
+
+
+//-------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+void qTabActions::DeletePosition(){
+	QString pos = comboPos->currentText();
+	bool found = false;
+	//loops through to find the index and to make sure its in the list
+	for(int i=0;i<comboPos->count();i++){
+		if(!comboPos->itemText(i).compare(pos)){
+			found = true;
+			comboPos->removeItem(i);
+			break;
+		}
+	}
+	if(found){
+#ifdef VERBOSE
+	cout << "Deleting Position " << endl;
+#endif
 	}
 }
 
@@ -157,12 +302,64 @@ void qTabActions::Expand(QAbstractButton *button ){
 
 void qTabActions::Refresh(){
 #ifdef VERBOSE
-	cout << "Updating action widgets " << endl;
+	cout << "Updating all action widgets " << endl;
 #endif
-	for(int i=0;i<NUM_ACTION_WIDGETS;i++)
+	if(lblName[NumPositions]->isEnabled()){
+		//delete existing positions
+		if (positions)  delete [] positions;
+		//get number of positions
+		int numPos=myDet->getPositions();
+		comboPos->setMaxCount(numPos);
+
+		//set the number of positions in the gui
+		disconnect(spinNumPos,	SIGNAL(valueChanged(int)), 	this, SLOT(SetPosition()));
+		spinNumPos->setValue(numPos);
+		connect(spinNumPos,		SIGNAL(valueChanged(int)), 	this, SLOT(SetPosition()));
+
+		positions=new float[numPos];
+		//load the positions
+		myDet->getPositions(positions);
+
+		//delete the combolist and reload it
+		disconnect(comboPos,SIGNAL(currentIndexChanged(int)), this, SLOT(SetPosition()));
+		comboPos->setEnabled(numPos);
+		lblPosList->setEnabled(numPos);
+		lblPosList->setText("List of Positions:");
+		lblPosList->setPalette(normal);
+		for(int i=0;i<comboPos->count();i++)
+			comboPos->removeItem(i);
+		for(int i=0;i<numPos;i++)
+			comboPos->insertItem(i,QString("%1").arg(positions[i]));
+		connect(comboPos,	SIGNAL(currentIndexChanged(int)), this, SLOT(SetPosition()));
+
+
+#ifdef VERBOSE
+	cout << "Updated position widget\tnum:" << numPos << endl;
+#endif
+	}
+	for(int i=0;i<qScanWidget::NUM_SCAN_WIDGETS;i++)
+		scanWidget[i]->Refresh();
+	for(int i=0;i<qActionsWidget::NUM_ACTION_WIDGETS;i++)
 		actionWidget[i]->Refresh();
 }
 
 
 //-------------------------------------------------------------------------------------------------------------------------------------------------
 
+
+int qTabActions::GetActualIndex(int index){
+	switch(index){
+	case 0: 			return slsDetectorDefs::startScript;
+	case Scan0:			return 0;
+	case Scan1: 		return 1;
+	case 3:				return slsDetectorDefs::scriptBefore;
+	case 5:				return slsDetectorDefs::headerBefore;
+	case 6:				return slsDetectorDefs::headerAfter;
+	case 7:				return slsDetectorDefs::scriptAfter;
+	case 8:				return slsDetectorDefs::stopScript;
+	default:			return -1;
+	}
+}
+
+
+//-------------------------------------------------------------------------------------------------------------------------------------------------

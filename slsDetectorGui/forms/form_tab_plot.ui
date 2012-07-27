@@ -196,7 +196,7 @@
      <rect>
       <x>10</x>
       <y>20</y>
-      <width>356</width>
+      <width>358</width>
       <height>26</height>
      </rect>
     </property>
@@ -219,6 +219,9 @@
      </item>
      <item row="0" column="3">
       <widget class="QCheckBox" name="checkBox">
+       <property name="enabled">
+        <bool>false</bool>
+       </property>
        <property name="sizePolicy">
         <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
          <horstretch>0</horstretch>
@@ -232,6 +235,9 @@
      </item>
      <item row="0" column="4">
       <widget class="QCheckBox" name="checkBox_2">
+       <property name="enabled">
+        <bool>false</bool>
+       </property>
        <property name="sizePolicy">
         <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
          <horstretch>0</horstretch>
@@ -373,6 +379,9 @@
      </item>
      <item>
       <widget class="QCheckBox" name="chkAutoFName">
+       <property name="enabled">
+        <bool>false</bool>
+       </property>
        <property name="sizePolicy">
         <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
          <horstretch>0</horstretch>
@@ -402,6 +411,9 @@
      </item>
      <item>
       <widget class="QCheckBox" name="chkSaveAll">
+       <property name="enabled">
+        <bool>false</bool>
+       </property>
        <property name="sizePolicy">
         <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
          <horstretch>0</horstretch>
@@ -1054,6 +1066,9 @@
      </item>
      <item row="0" column="2">
       <widget class="QRadioButton" name="radioHistogram">
+       <property name="enabled">
+        <bool>false</bool>
+       </property>
        <property name="sizePolicy">
         <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
          <horstretch>0</horstretch>
@@ -1442,6 +1457,9 @@
      </item>
      <item row="0" column="4">
       <widget class="QPushButton" name="btnCloseClones_2">
+       <property name="enabled">
+        <bool>false</bool>
+       </property>
        <property name="sizePolicy">
         <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
          <horstretch>0</horstretch>

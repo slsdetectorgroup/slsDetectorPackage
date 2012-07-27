@@ -639,8 +639,8 @@ void qTabMeasurement::setTimingMode(int mode){
 
 
 	// to let qdrawplot know that triggers or frames are used
-	myPlot->setFrameEnabled(lblNumTriggers->isEnabled());
-	myPlot->setTriggerEnabled(lblNumFrames->isEnabled());
+	myPlot->setFrameEnabled(lblNumFrames->isEnabled());
+	myPlot->setTriggerEnabled(lblNumTriggers->isEnabled());
 
 	return;
 }
@@ -660,8 +660,8 @@ void qTabMeasurement::Refresh(){
 	SetupTimingMode();
 
 	// to let qdrawplot know that triggers or frames are used
-	myPlot->setFrameEnabled(lblNumTriggers->isEnabled());
-	myPlot->setTriggerEnabled(lblNumFrames->isEnabled());
+	myPlot->setFrameEnabled(lblNumFrames->isEnabled());
+	myPlot->setTriggerEnabled(lblNumTriggers->isEnabled());
 
 }
 

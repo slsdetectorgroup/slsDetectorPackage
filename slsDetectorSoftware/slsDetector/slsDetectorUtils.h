@@ -307,7 +307,7 @@ class slsDetectorUtils :  public slsDetectorActions, public postProcessing {
   virtual char* getSettingsDir()=0;
 
   /** sets the detector trimbit/settings directory  */
-  virtual char* setSettingsDir(string s); 
+  virtual char* setSettingsDir(string s)=0;
 
   /**
      returns the location of the calibration files
@@ -524,8 +524,6 @@ class slsDetectorUtils :  public slsDetectorActions, public postProcessing {
      \returns OK or FAIL
   */
   virtual int writeConfigurationFile(string const fname)=0;
-
-  virtual int getAngularConversion(int &direction,  angleConversionConstant *angconv=NULL)=0; 
 
 
   void registerGetPositionCallback( double (*func)(void*),void *arg){get_position=func; POarg=arg;};

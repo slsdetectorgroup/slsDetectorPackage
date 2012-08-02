@@ -229,7 +229,7 @@ class slsDetectorBase :  public virtual slsDetectorUsers , public virtual slsDet
     
 
   /** generates file name without extension */
-    string createFileName(int aMask, float sv0, int prec0, float sv1, int prec1, int pindex, int npos);
+   virtual string createFileName(int aMask, double sv0, int prec0, double sv1, int prec1, int pindex, int npos)=0;
 
 
 

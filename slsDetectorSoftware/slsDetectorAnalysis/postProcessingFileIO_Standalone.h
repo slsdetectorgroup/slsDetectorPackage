@@ -3,7 +3,13 @@
 
 
 #include "detectorData.h"
-#include "fileIO.h"
+#include "sls_detector_defs.h"
+#include "slsDetectorBase.h"
+#include "slsDetectorUsers.h"
+#include "FileIO_Standalone.h"
+#include "AngularConversion_Standalone.h"
+//#include "externPostProcessing.h"
+
 #include <string>
 
 #include <iostream>
@@ -17,6 +23,7 @@
 
 
 class angularConversion;
+class fileIO;
 
 using namespace std;
 
@@ -32,7 +39,7 @@ using namespace std;
    (including thread for writing data files and plotting in parallel with the acquisition) 
 */
 
-class postProcessing : public virtual fileIO  {
+class postProcessing :  public virtual slsDetectorBase {
 
 
 //: public angularConversion, public fileIO
@@ -40,7 +47,6 @@ class postProcessing : public virtual fileIO  {
  public:
   postProcessing();
   virtual ~postProcessing(){};
-
 
 
 
@@ -58,7 +64,7 @@ class postProcessing : public virtual fileIO  {
       \param ecorr if !=NULL will be filled with the correction coefficients errors
       \returns 0 if ff correction disabled, >0 otherwise
   */
-  virtual int getFlatFieldCorrection(float *corr=NULL, float *ecorr=NULL)=0;
+  virtual int getFlatFieldCorrection(double *corr=NULL, double *ecorr=NULL)=0;
   
   /** 
       set flat field corrections
@@ -66,7 +72,7 @@ class postProcessing : public virtual fileIO  {
       \param ecorr if !=NULL the flat field correction errors will be filled with ecorr (1 otherwise)
       \returns 0 if ff correction disabled, >0 otherwise
   */
-  virtual int  setFlatFieldCorrection(float *corr, float *ecorr=NULL)=0;
+  virtual int  setFlatFieldCorrection(double *corr, double *ecorr=NULL)=0;
   
   /**
       set bad channels correction
@@ -79,8 +85,6 @@ class postProcessing : public virtual fileIO  {
   /** 
       set bad channels correction
       \param fname file with bad channel list ("" disable)
-
-ff
       \param nbad reference to number of bad channels
       \param badlist array of badchannels
       \returns 0 if bad channel disabled, >0 otherwise
@@ -107,7 +111,7 @@ ff
      \param fferr erro on ffcoefficient
      \returns 0
   */
-   static int flatFieldCorrect(float datain, float errin, float &dataout, float &errout, float ffcoefficient, float fferr);
+   static int flatFieldCorrect(double datain, double errin, double &dataout, double &errout, double ffcoefficient, double fferr);
 
   /** 
      rate correct data
@@ -119,7 +123,7 @@ ff
      \param t acquisition time (in ns)
      \returns 0
   */
-   static int rateCorrect(float datain, float errin, float &dataout, float &errout, float tau, float t);
+   static int rateCorrect(double datain, double errin, double &dataout, double &errout, double tau, double t);
  
 
   int enableWriteToFile(int i=-1) {if (i>0) ((*correctionMask)|=(1<<WRITE_FILE)); if(i==0)  ((*correctionMask)&=~(1<< WRITE_FILE)); return ((*correctionMask)&(1<< WRITE_FILE));};
@@ -159,7 +163,7 @@ ff
   */
   string getFlatFieldCorrectionFile(){  if ((*correctionMask)&(1<<FLAT_FIELD_CORRECTION)) return string(flatFieldFile); else return string("none");};
 
-
+   int getAngularConversion(int &direction,  angleConversionConstant *angoff=NULL);  
 
   /** 
       set/get if the data processing and file writing should be done by a separate thread
@@ -192,7 +196,7 @@ s
       \returns nothing
       
   */
-  void doProcessing(float* myData, int delflag, string fname);
+  void doProcessing(double* myData, int delflag, string fname);
 
 
   /**
@@ -231,17 +235,18 @@ s
 
 
 
-  virtual int rateCorrect(float*, float*, float*, float*)=0;
-  virtual int flatFieldCorrect(float*, float*, float*, float*)=0;
+  virtual int rateCorrect(double*, double*, double*, double*)=0;
+  virtual int flatFieldCorrect(double*, double*, double*, double*)=0;
 
 
 
 
-
-
+  
+  //void registerAngularConversionCallback(int (*sAngularConversion)(int & ,angleConversionConstant* ,void *), void *arg){seAngularConversion=sAngularConversion; pAngular= arg; };
 
   void registerDataCallback(int( *userCallback)(detectorData*, void*),  void *pArg) {dataReady = userCallback; pCallbackArg = pArg;};
-  //void registerCallBackGetChansPerMod(int (*func)(int, void *),void *arg){ getChansPerMod=func;pChpermod=arg;}
+  
+  void registerCallBackGetNumberofChannel(int (*func)(int, void *),void *arg){ getNoChannel=func;pNumberofChannel=arg;};
 
 
 
@@ -253,13 +258,15 @@ s
 
   int setAngularConversionFile(string fname);
 
-  
-  /**
+  //static int defaultAngularConversion(int &direc, angleConversionConstant *angoff,void *p=NULL){ return ((postProcessing *)p)->getAngularConversion( direc,angleConversionConstant *angoff=NULL);};
+     /**
       returns the angular conversion file
      */
   string getAngularConversionFile(){if (setAngularCorrectionMask()) return string(angConvFile); else return string("none");};
 
-
+  //static int setAngularConversion();
+ 
+  static int defaultGetTotalNumberofChannels (int nChannel, void *p=NULL){ if(nChannel>=0){ return ((postProcessing*)p)->getTotalNumberOfChannels();} else return -1;};
 
  protected:
      
@@ -275,6 +282,7 @@ s
   int *badChansList;
   int *nBadFF;
   int *badFFList;
+  int *direction;
 
   /** pointer to angular conversion file name*/
    char *angConvFile;
@@ -328,23 +336,39 @@ s
   /**
      I0 measured
   */
-  float currentI0;
+  double currentI0;
   
-  float *fdata;
+  double *fdata;
 
-
-  //int (*getChansPerMod)(int, void*);
-	
-  
+  int (*seAngularConversion)(int & ,angleConversionConstant* ,void*); 
+  int (*getNoChannel)(int ,void*); 
   int (*dataReady)(detectorData*,void*); 
-  void *pCallbackArg, *pChpermod; 
+  void *pCallbackArg, *pChpermod,*pNumberofChannel,*pAngular; 
 
 
 
  private:
-  angularConversion *angConv;
-  
 
+  angularConversion *angConv;
+  fileIO *IOfile;
+
+ /** pointer to beamlien fine offset*/
+   double *fineOffset;
+   /** pointer to beamlien global offset*/
+   double *globalOffset;
+  /** pointer to number of positions for the acquisition*/
+   int *numberOfPositions;
+   
+  /** pointer to the detector positions for the acquisition*/
+   double *detPositions;
+      
+   angleConversionConstant angcc[MAXMODS*MAXDET];
+
+   
+   /** pointer to angular bin size*/
+   double *binSize;
+
+   
 };
 
 

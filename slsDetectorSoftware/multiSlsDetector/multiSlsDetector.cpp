@@ -133,7 +133,7 @@ multiSlsDetector::multiSlsDetector(int id) :  slsDetectorUtils(), shmId(-1)
 
 
      /** set correction mask to 0*/
-     thisMultiDetector->correctionMask=0;
+     thisMultiDetector->correctionMask=1<<WRITE_FILE;
      /** set deat time*/
      thisMultiDetector->tDead=0;
      /** sets bad channel list file to none */

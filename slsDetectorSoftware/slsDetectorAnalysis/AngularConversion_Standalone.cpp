@@ -1,4 +1,4 @@
-#include "angularConversion.h"
+#include "AngularConversion_Standalone.h"
 
 #include <iostream>
 #include <fstream>
@@ -18,8 +18,9 @@ angularConversion::angularConversion(   int *np, double *pos, double *bs, double
 												
 {
   //angleFunctionPointer=0;
-  registerAngleFunctionCallback(&defaultAngleFunction);
-
+  registerAngleFunctionCallback(&defaultAngleFunction,NULL);
+  registerCallBackGetChansPerMod(&defaultGetChansPerMod,this);
+  registerCallBackGetNumberofChannel(&defaultGetNumberofChannel,this);
 }
 
 angularConversion::~angularConversion(){
@@ -49,28 +50,28 @@ double* angularConversion::convertAngles(double pos) {
   angleConversionConstant *p=NULL;
 
   int ch0=0;
-  int chlast=chansPerMod[imod];
-  int nchmod=chansPerMod[imod];
-  p=angConvs[imod];      
+  int chlast=getChansPerMods(imod);
+  int nchmod=getChansPerMods(imod);
+  p=angConvs+imod;      
   if (moveFlag[imod]==0)
     enc=0;
   else
     enc=pos;
   
-  for (int ip=0; ip<totalNumberOfChannels; ip++) {
+  for (int ip=0; ip<getTotalNumberofChannels(); ip++) {
 #ifdef VERBOSE
     //  cout << "ip " << ip << " ch0 " << ch0 << " chlast " << chlast << " imod " << imod << endl;
 #endif
     if (ip>=chlast) {
       imod++; 
-      p=angConvs[imod];      
+      p=angConvs+imod;      
       if (moveFlag[imod]==0)
 	enc=0;
       else
 	enc=pos;
       
       ch0=chlast;
-      nchmod=chansPerMod[imod];
+      nchmod=getChansPerMods(imod);
       if (nchmod>0)
 	chlast+=nchmod;
     }
@@ -150,10 +151,7 @@ int angularConversion::readAngularConversion( ifstream& infile, int nmod, angleC
     if (nm>=nmod)
       break;
 
-    
-
-
-  }
+   }
   return nm;
  }
 
@@ -379,7 +377,7 @@ int  angularConversion::addToMerging(double *p1, double *v1, double *e1, double 
   }
   
 
-  int ret=addToMerging(p1, v1, e1, mp, mv,me, mm,totalNumberOfChannels, *binSize,nBins, badChanMask );
+  int ret=addToMerging(p1, v1, e1, mp, mv,me, mm,getTotalNumberofChannels(), *binSize,nBins, badChanMask );
   
   
   if (del) {
@@ -468,7 +466,7 @@ double angularConversion::getAngularConversionParameter(angleConversionParameter
 
 
 
-
+/**
 int angularConversion::setAngularConversionFile(string fname) {
   if (fname=="") {
     setAngularCorrectionMask(0);
@@ -492,7 +490,7 @@ int angularConversion::setAngularConversionFile(string fname) {
 }
 
 
-
+*/
 
 
   /*

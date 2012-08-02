@@ -14,6 +14,8 @@ postProcessing::postProcessing(){
   pCallbackArg = 0; 
   registerDataCallback(&defaultDataReadyFunc,  NULL);
   //cout << "done "<< endl;
+
+
 }
 
 
@@ -429,7 +431,7 @@ int postProcessing::fillBadChannelMask() {
       //badChannelMask=NULL;
     }
   }
-
+  
 #ifdef VERBOSE
   cout << "number of bad channels is " << nbad << endl;
 #endif

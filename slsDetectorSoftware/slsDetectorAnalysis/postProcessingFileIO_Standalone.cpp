@@ -1,10 +1,9 @@
-#include "postProcessing.h"
+#include "postProcessingFileIO_Standalone.h"
 #include "usersFunctions.h"
-//#include "angularConversion.h"
+//#include "externPostProcessing.h"
 
-//#include "AngularConversion_Standalone.h"
-
-postProcessing::postProcessing(){							
+postProcessing::postProcessing(){	
+  						
   pthread_mutex_t mp1 = PTHREAD_MUTEX_INITIALIZER;
   mp=mp1;
   pthread_mutex_init(&mp, NULL);  
@@ -14,9 +13,13 @@ postProcessing::postProcessing(){
   dataReady = 0;
   pCallbackArg = 0; 
   registerDataCallback(&defaultDataReadyFunc,  NULL);
-  //tregisterCallBackGetChansPerMod(&defaultGetChansPerMod,NULL);
   //cout << "done "<< endl;
   angConv=new angularConversion(numberOfPositions,detPositions,binSize, fineOffset, globalOffset);
+  IOfile= new fileIO();
+
+  //registerCallBackGetChansPerMod(&getChannelPerMod,this);
+  registerCallBackGetNumberofChannel(&defaultGetTotalNumberofChannels,this);
+  //registerAngularConversionCallback(&defaultAngularConversion,this);
 }
 
 
@@ -152,7 +155,7 @@ void postProcessing::processFrame(int *myData, int delflag) {
  fdata=decodeData(myData, fdata);
  
  
-fname=createFileName();
+fname=IOfile->createFileName(getActionMask(),getCurrentScanVariable(0),getScanPrecision(0),getCurrentScanVariable(1),getScanPrecision(1),getCurrentPositionIndex(),getNumberOfPositions());
 
 //Checking for write flag
  if(*correctionMask&(1<<WRITE_FILE)) 
@@ -160,7 +163,7 @@ fname=createFileName();
   
 
      //uses static function?!?!?!?
-     writeDataFile (fname+string(".raw"),fdata, NULL, NULL, 'i'); 
+     IOfile->writeDataFile (fname+string(".raw"),fdata, NULL, NULL, 'i'); 
 
    } 
 
@@ -210,7 +213,7 @@ void postProcessing::doProcessing(double *lfdata, int delflag, string fname) {
 
     /** rate correction */
     if (*correctionMask&(1<<RATE_CORRECTION)) {
-      rcdata=new double[getTotalNumberOfChannels()];
+      rcdata=new double[getTotalNumberOfChannels()]; 
       rcerr=new double[getTotalNumberOfChannels()];
       rateCorrect(lfdata,NULL,rcdata,rcerr);
       delete [] lfdata;
@@ -225,7 +228,7 @@ void postProcessing::doProcessing(double *lfdata, int delflag, string fname) {
     /** flat field correction */
     if (*correctionMask&(1<<FLAT_FIELD_CORRECTION)) {
       
-      ffcdata=new double[getTotalNumberOfChannels()];
+      ffcdata=new double[getTotalNumberOfChannels()]; 
       ffcerr=new double[getTotalNumberOfChannels()];
       flatFieldCorrect(rcdata,rcerr,ffcdata,ffcerr);
       delete [] rcdata;
@@ -245,14 +248,16 @@ void postProcessing::doProcessing(double *lfdata, int delflag, string fname) {
     if (*correctionMask!=0) {
       if (*correctionMask&(1<< ANGULAR_CONVERSION))
 	ang=convertAngles();
-      writeDataFile (fname+ext,  ffcdata, ffcerr,ang);
+ if(*correctionMask&(1<<WRITE_FILE)) 
+   {
+      IOfile->writeDataFile (fname+ext,  ffcdata, ffcerr,ang);}
     }
    
     if (*correctionMask&(1<< ANGULAR_CONVERSION) && getNumberOfPositions()>0) {
 #ifdef VERBOSE
       cout << "**************Current position index is " << getCurrentPositionIndex() << endl;
 #endif
-      // if (*numberOfPositions>0) {
+      // if (*numberOfPositions>0) {setTotalNumberOfChannels
       if (getCurrentPositionIndex()<=1) {
 	   
 #ifdef VERBOSE
@@ -287,12 +292,14 @@ void postProcessing::doProcessing(double *lfdata, int delflag, string fname) {
 	pthread_mutex_unlock(&mp);
 	
 	
-	fname=createFileName();
+	fname=IOfile->createFileName(getActionMask(),getCurrentScanVariable(0),getScanPrecision(0),getCurrentScanVariable(1),getScanPrecision(1),getCurrentPositionIndex(),getNumberOfPositions());
 	
 #ifdef VERBOSE
 	cout << "writing merged data file" << endl;
 #endif
-	writeDataFile (fname+ext,np,angConv->getMergedCounts(), angConv->getMergedErrors(), angConv->getMergedPositions(),'f');
+ if(*correctionMask&(1<<WRITE_FILE)) 
+   {
+	IOfile->writeDataFile (fname+ext,np,angConv->getMergedCounts(), angConv->getMergedErrors(), angConv->getMergedPositions(),'f');}
 #ifdef VERBOSE
 	cout << " done" << endl;
 #endif
@@ -362,7 +369,8 @@ void postProcessing::doProcessing(double *lfdata, int delflag, string fname) {
     }
     //}
 
-  incrementFileIndex();
+   if(*correctionMask&(1<<WRITE_FILE)) 
+   {IOfile->incrementFileIndex();}
 #ifdef VERBOSE
   cout << "fdata is " << fdata << endl;
 #endif
@@ -454,6 +462,7 @@ void* postProcessing::processData(int delflag) {
 
 
   angConv->setTotalNumberOfChannels(getTotalNumberOfChannels());
+  IOfile->setTotalNumberofChannels(getTotalNumberOfChannels());
   setTotalProgress();
   pthread_mutex_lock(&mp);
   queuesize=dataQueue.size();
@@ -482,7 +491,7 @@ void* postProcessing::processData(int delflag) {
       pthread_mutex_lock(&mp);
 
     }
-    pthread_mutex_unlock(&mp);
+    pthread_mutex_unlock(&mp);                                           
    
     /* IF THERE ARE NO DATA look if acquisition is finished */
     pthread_mutex_lock(&mp);

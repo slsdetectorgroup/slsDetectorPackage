@@ -510,6 +510,7 @@ int slsDetector::initializeDetectorSize(detectorType type) {
      /** calculates the expected data size */
      thisDetector->timerValue[PROBES_NUMBER]=0;
      thisDetector->timerValue[FRAME_NUMBER]=1;
+     thisDetector->timerValue[MEASUREMENTS_NUMBER]=1;
      thisDetector->timerValue[CYCLES_NUMBER]=1;
      
 
@@ -3275,6 +3276,7 @@ int64_t slsDetector::setTimer(timerIndex index, int64_t t){
   int ret=OK;
   int n=0;
   
+	if (index!=MEASUREMENTS_NUMBER) {
   
 
 #ifdef VERBOSE
@@ -3304,8 +3306,11 @@ int64_t slsDetector::setTimer(timerIndex index, int64_t t){
     //std::cout<< "offline " << std::endl;
     if (t>=0)
       thisDetector->timerValue[index]=t;
-
-}
+  }
+} else {
+ if (t>=0)
+      thisDetector->timerValue[index]=t;
+}	
 #ifdef VERBOSE
   std::cout<< "Timer " << index << " set to  "<< thisDetector->timerValue[index] << "ns"  << std::endl;
 #endif
@@ -3541,20 +3546,11 @@ int slsDetector::setPort(portType index, int num){
 
 
 
-
-
-
-
-
-
-
-
-
-
+//Naveen change
 
 int slsDetector::setTotalProgress() {
 
-       int nf=1, npos=1, nscan[MAX_SCAN_LEVELS]={1,1}, nc=1;
+       int nf=1, npos=1, nscan[MAX_SCAN_LEVELS]={1,1}, nc=1, nm=1;
       
       if (thisDetector->timerValue[FRAME_NUMBER])
 	nf=thisDetector->timerValue[FRAME_NUMBER];
@@ -3564,6 +3560,10 @@ int slsDetector::setTotalProgress() {
 
       if (thisDetector->numberOfPositions>0)
 	npos=thisDetector->numberOfPositions;
+
+      if (timerValue[MEASUREMENTS_NUMBER]>0)
+	nc=timerValue[MEASUREMENTS_NUMBER];
+
 
       if ((thisDetector->nScanSteps[0]>0) && (thisDetector->actionMask & (1 << MAX_ACTIONS)))
 	nscan[0]=thisDetector->nScanSteps[0];
@@ -3575,6 +3575,7 @@ int slsDetector::setTotalProgress() {
 
 #ifdef VERBOSE
       cout << "nc " << nc << endl;
+      cout << "nm " << nm << endl;
       cout << "nf " << nf << endl;
       cout << "npos " << npos << endl;
       cout << "nscan[0] " << nscan[0] << endl;
@@ -4571,7 +4572,6 @@ int slsDetector::getAngularConversion(int &direction,  angleConversionConstant *
   } else {
     return 0;
   }
- 
 }
 
 

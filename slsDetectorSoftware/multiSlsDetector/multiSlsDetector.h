@@ -17,7 +17,7 @@ ID:         $Id$
 
 class slsDetector;
 
-//#include "sls_detector_defs.h"
+#include "sls_detector_defs.h"
 
 
 
@@ -36,7 +36,7 @@ class slsDetector;
 
  */
 
-class multiSlsDetector  : public slsDetectorUtils {
+class multiSlsDetector  : public virtual slsDetectorUtils {
 
 
   

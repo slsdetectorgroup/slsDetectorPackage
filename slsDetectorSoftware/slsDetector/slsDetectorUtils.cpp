@@ -1,13 +1,17 @@
 #include "slsDetectorUtils.h"
 #include "usersFunctions.h"
 #include "slsDetectorCommand.h"
+#include "postProcessing.h"
 
 #include  <cstdlib>
 #include  <sys/ipc.h>
 #include  <sys/shm.h>
 
+using namespace std;
 
 slsDetectorUtils::slsDetectorUtils()   {
+
+
 #ifdef VERBOSE
   cout << "setting callbacks" << endl;
 #endif
@@ -20,6 +24,8 @@ slsDetectorUtils::slsDetectorUtils()   {
 #ifdef VERBOSE
   cout << "done " << endl;
 #endif
+
+  
 
 };
  
@@ -38,8 +44,6 @@ void  slsDetectorUtils::acquire(int delflag){
 #endif
 
   void *status;
-
-  setStartIndex(*fileIndex);
   
   //  int lastindex=startindex, nowindex=startindex;
 
@@ -74,8 +78,7 @@ void  slsDetectorUtils::acquire(int delflag){
   if (*threadedProcessing) {
     startThread(delflag);
   }
-
-  //cout << "data thread started " << endl;
+ //cout << "data thread started " << endl;
   int np=1;
   if (*numberOfPositions>0) 
     np=*numberOfPositions;
@@ -97,6 +100,11 @@ void  slsDetectorUtils::acquire(int delflag){
     ns1=1;
 
 
+//loop measurements
+
+  setStartIndex(*fileIndex);
+
+ 
   //cout << "action at start" << endl;
   if (*stoppedFlag==0) {
     executeAction(startScript);
@@ -259,6 +267,9 @@ void  slsDetectorUtils::acquire(int delflag){
     executeAction(stopScript);
   } 
 
+// loop measurements
+
+
   // waiting for the data processing thread to finish!
    if (*threadedProcessing) { 
      pthread_mutex_lock(&mp);
@@ -278,11 +289,11 @@ void  slsDetectorUtils::acquire(int delflag){
 
 
 
-
+//Naveen change
 
 int slsDetectorUtils::setTotalProgress() {
   
-  int nf=1, npos=1, nscan[MAX_SCAN_LEVELS]={1,1}, nc=1;
+  int nf=1, npos=1, nscan[MAX_SCAN_LEVELS]={1,1}, nc=1, nm=1;
 
   if (timerValue[FRAME_NUMBER])
     nf=timerValue[FRAME_NUMBER];
@@ -290,19 +301,23 @@ int slsDetectorUtils::setTotalProgress() {
   if (timerValue[CYCLES_NUMBER]>0)
 	nc=timerValue[CYCLES_NUMBER];
 
-      if (*numberOfPositions>0)
+  if (timerValue[MEASUREMENTS_NUMBER]>0)
+	nc=timerValue[MEASUREMENTS_NUMBER];
+
+  if (*numberOfPositions>0)
 	npos=*numberOfPositions;
 
-      if ((nScanSteps[0]>0) && (*actionMask & (1 << MAX_ACTIONS)))
-	nscan[0]=nScanSteps[0];
+  if ((nScanSteps[0]>0) && (*actionMask & (1 << MAX_ACTIONS)))
+        nscan[0]=nScanSteps[0];
 
       if ((nScanSteps[1]>0) && (*actionMask & (1 << (MAX_ACTIONS+1))))
 	nscan[1]=nScanSteps[1];
       
-      totalProgress=nf*nc*npos*nscan[0]*nscan[1];
+      totalProgress=nm*nf*nc*npos*nscan[0]*nscan[1];
 
 #ifdef VERBOSE
       cout << "nc " << nc << endl;
+      cout << "nm " << nm << endl;
       cout << "nf " << nf << endl;
       cout << "npos " << npos << endl;
       cout << "nscan[0] " << nscan[0] << endl;
@@ -658,12 +673,9 @@ int slsDetectorUtils::dumpDetectorSetup(string const fname, int level){
 
   ofstream outfile;
   char *args[2];
-  char myargs[2][1000];
-  args[0]=myargs[0];
-  args[1]=myargs[1];
-  //  for (int ia=0; ia<2; ia++) {
-  //  args[ia]=new char[1000];
-  //}
+  for (int ia=0; ia<2; ia++) {
+    args[ia]=new char[1000];
+  }
 
 
 
@@ -694,18 +706,18 @@ int slsDetectorUtils::dumpDetectorSetup(string const fname, int level){
     }
 
 
-    strcpy(myargs[0],names[iv].c_str());
+    strcpy(args[0],names[iv].c_str());
     if (level==2) {
       fname1=fname+string(".ff");
-      strcpy(myargs[1],fname1.c_str());
+      strcpy(args[1],fname1.c_str());
     }
     outfile << names[iv] << " " << cmd->executeLine(nargs,args,GET_ACTION) << std::endl;
     iv++;
 
-    strcpy(myargs[0],names[iv].c_str());
+    strcpy(args[0],names[iv].c_str());
     if (level==2) {
       fname1=fname+string(".bad");
-      strcpy(myargs[1],fname1.c_str());
+      strcpy(args[1],fname1.c_str());
     }
     outfile << names[iv] << " " << cmd->executeLine(nargs,args,GET_ACTION) << std::endl;
     iv++;
@@ -713,14 +725,14 @@ int slsDetectorUtils::dumpDetectorSetup(string const fname, int level){
 
 
   if (level==2) {
-    strcpy(myargs[0],names[iv].c_str());
+    strcpy(args[0],names[iv].c_str());
     size_t c=fname.rfind('/');
     if (c<string::npos) {
       fname1=fname.substr(0,c+1)+string("trim_")+fname.substr(c+1);
     } else {
       fname1=string("trim_")+fname;
     }
-    strcpy(myargs[1],fname1.c_str());
+    strcpy(args[1],fname1.c_str());
 #ifdef VERBOSE
     std::cout<< "writing to file " << fname1 << std::endl;
 #endif

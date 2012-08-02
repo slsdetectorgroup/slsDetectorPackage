@@ -9,6 +9,7 @@ class pthread_mutex_t;
 class pthread_t;
 #endif
 
+
 extern "C" {
 #include <pthread.h>
 }
@@ -35,7 +36,7 @@ using namespace std;
 #include "slsDetectorActions.h"
 #include "postProcessing.h"
 
-#define MAX_TIMERS 10
+#define MAX_TIMERS 11
 #define MAX_ROIS 100
 #define MAXPOS 50
 
@@ -47,17 +48,18 @@ using namespace std;
 
    (used in the PSi command line interface)
 */
+
+//class postProcessing;
+
 class slsDetectorUtils :  public slsDetectorActions, public postProcessing {
 
-
+//public postProcessing
 
  public:
   
-  slsDetectorUtils();
+   slsDetectorUtils();
     
   virtual ~slsDetectorUtils(){};
-
-
 
 
   virtual int getNumberOfDetectors(){return 1;};
@@ -71,10 +73,10 @@ class slsDetectorUtils :  public slsDetectorActions, public postProcessing {
   using slsDetectorBase::setFlatFieldCorrection;
   using postProcessing::setBadChannelCorrection;
 
-  int enableFlatFieldCorrection(int i=-1) {if (i>0) setFlatFieldCorrectionFile("default"); else if (i==0) setFlatFieldCorrectionFile(""); return getFlatFieldCorrection();}
-  int enablePixelMaskCorrection(int i=-1) {if (i>0) setBadChannelCorrection("default"); else if (i==0) setBadChannelCorrection(""); return getBadChannelCorrection();}
-  int enableCountRateCorrection(int i=-1){if (i>0) setRateCorrection(-1); else if (i==0) setRateCorrection(0); return getRateCorrection();}
-  // string getFilePath(){return fileIO::getFilePath();};
+  int enableFlatFieldCorrection(int i=-1) {if (i>0) setFlatFieldCorrectionFile("default"); else if (i==0) setFlatFieldCorrectionFile(""); return getFlatFieldCorrection();};
+  int enablePixelMaskCorrection(int i=-1) {if (i>0) setBadChannelCorrection("default"); else if (i==0) setBadChannelCorrection(""); return getBadChannelCorrection();};
+  int enableCountRateCorrection(int i=-1){if (i>0) setRateCorrection(-1); else if (i==0) setRateCorrection(0); return getRateCorrection();};
+  // string getFilePath(){return fileIO::getFilePath();};;
   // string setFilePath(string s){return fileIO::setFilePath(s);};
   
   // string getFileName(){return fileIO::getFileName();};
@@ -83,8 +85,14 @@ class slsDetectorUtils :  public slsDetectorActions, public postProcessing {
   // int getFileIndex(){return fileIO::getFileIndex();};
   // int setFileIndex(int s){return fileIO::setFileIndex(s);};
 
+/*
+   int getScanPrecision(int i){return slsDetectorActions::getScanPrecision(i);};
 
-  // int getScanPrecision(int i){return slsDetectorActions::getScanPrecision(i);};
+   int getActionMask() {return slsDetectorActions::getActionMask();};
+   float getCurrentScanVariable(int i) {return slsDetectorActions::getCurrentScanVariable(i);};
+   int getCurrentPositionIndex(){return angularConversion::getCurrentPositionIndex();}; 
+   int getNumberOfPositions(){return angularConversion::getNumberOfPositions();};
+*/
 
   // int getActionMask() {return slsDetectorActions::getActionMask();};
   // double getCurrentScanVariable(int i) {return slsDetectorActions::getCurrentScanVariable(i);};
@@ -140,7 +148,7 @@ class slsDetectorUtils :  public slsDetectorActions, public postProcessing {
       \param i position in the multiSlsDetector structure
       \return id or -1 if FAIL
   */
-  virtual int getDetectorId(int i=-1) =0;
+  virtual int getDetectorId(int i=-1)=0;
 
   /** Sets the detector id (shared memory id) of an slsDetector in a multiSlsDetector structure
       \param ival id to be set
@@ -177,7 +185,7 @@ class slsDetectorUtils :  public slsDetectorActions, public postProcessing {
   virtual int setPort(portType t, int i=-1)=0; 
 
    /**
-     get detector ids/versions for module
+     get detector ids/versions for module=0
      \param mode which id/version has to be read
      \param imod module number for module serial number
      \returns id
@@ -299,7 +307,7 @@ class slsDetectorUtils :  public slsDetectorActions, public postProcessing {
   virtual char* getSettingsDir()=0;
 
   /** sets the detector trimbit/settings directory  */
-  virtual char* setSettingsDir(string s)=0; 
+  virtual char* setSettingsDir(string s); 
 
   /**
      returns the location of the calibration files
@@ -517,7 +525,7 @@ class slsDetectorUtils :  public slsDetectorActions, public postProcessing {
   */
   virtual int writeConfigurationFile(string const fname)=0;
 
-
+  virtual int getAngularConversion(int &direction,  angleConversionConstant *angconv=NULL)=0; 
 
 
   void registerGetPositionCallback( double (*func)(void*),void *arg){get_position=func; POarg=arg;};
@@ -548,11 +556,13 @@ class slsDetectorUtils :  public slsDetectorActions, public postProcessing {
   int retrieveDetectorSetup(string const fname, int level=0);
 
 
+
  protected:
+
    static const int64_t thisSoftwareVersion=0x20120124;
 
-
-
+ 
+ 
    //protected:
   int *stoppedFlag;	 
 

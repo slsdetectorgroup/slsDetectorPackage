@@ -1,6 +1,6 @@
 
-#ifndef ANGULARCONVERSION_H
-#define ANGULARCONVERSION_H
+#ifndef ANGULARCONVERSIONSTD_H
+#define ANGULARCONVERSIONSTD_H
 
 
 //#include "slsDetectorBase.h"
@@ -319,7 +319,7 @@ class angularConversion : public virtual slsDetectorDefs { //: public virtual sl
 /*       \param angconv array that will be filled with the angular conversion constants */
 /*       \returns 0 if angular conversion disabled, >0 otherwise */
 /*   *\/ */
-/*   virtual int getAngularConversion(int &direction,  angleConversionConstant *angconv=NULL)=0; */
+  virtual int getAngularConversion(int &direction,  angleConversionConstant *angoff=NULL); 
 
 /*    /\**  */
 /*        pure virtual function */
@@ -340,7 +340,15 @@ class angularConversion : public virtual slsDetectorDefs { //: public virtual sl
 /*      \param imod module number */
 /*      \returns number of channels in the module */
 /*   *\/ */
-/*   virtual int getChansPerMod(int imod=0)=0; */
+
+
+  static int defaultGetNumberofChannel(int nch, void *p=NULL ) { ((angularConversion*)p)->setTotalNumberOfChannels(nch); return 0;};
+  static int defaultGetChansPerMod(int imod=0, void *p=NULL){ ((angularConversion*)p)->setChansPerMod(0,imod); return 0;};
+
+  int setChansPerMod(int nch, int imod=0){if (nch<0) return -1; if (imod>=0 && imod<MAXMODS*MAXDET) {chansPerMod[imod]=nch; return chansPerMod[imod];} else return -1;};
+		
+  int setTotalNumberOfChannels(int i){if (i>=0){ totalNumberOfChannels=i; return totalNumberOfChannels;} else return -1;};
+  
 
 /*   /\** */
 /*      get the angular conversion  contant of one modules */
@@ -381,15 +389,28 @@ class angularConversion : public virtual slsDetectorDefs { //: public virtual sl
   */
   int getNumberOfPositions() {return *numberOfPositions;};
 
+  int getChansPerMods(int imod) { return chansPerMod[imod];};
+  int getTotalNumberofChannels(){ return totalNumberOfChannels;};
 
-
-  int setTotalNumberOfChannels(int i){if (i>=0) totalNumberOfChannels=i; return totalNumberOfChannels;};
 
   void incrementPositionIndex() {currentPositionIndex++;};
+
+  void registerCallBackGetChansPerMod(int (*func)(int, void *),void *arg){ getChansPerModule=func;pChpermod=arg;};
+  void registerCallBackGetNumberofChannel(int (*func)(int, void *),void *arg){ getNumberofChannel=func;pNumberofChannel=arg;};
+
  protected:
  
 
+	
  private:
+
+
+  int (*getChansPerModule)(int, void*);
+  int (*getNumberofChannel)(int, void*);
+	
+  void *pChpermod,*angPtr,*pNumberofChannel;
+
+
   /** merging bins */
   double *mergingBins;
   
@@ -403,6 +424,7 @@ class angularConversion : public virtual slsDetectorDefs { //: public virtual sl
   int *mergingMultiplicity;
   
   double (*angle)(double, double, double, double, double, double, double, int);
+  
 
 
   int totalNumberOfChannels;
@@ -420,17 +442,17 @@ class angularConversion : public virtual slsDetectorDefs { //: public virtual sl
    double *binSize;
 
   int *correctionMask;
-  int chansPerMod;
+  int chansPerMod[MAXMODS*MAXDET];
   int nMod;
   angleConversionConstant angConvs[MAXMODS*MAXDET];
   int directions[MAXMODS*MAXDET];
    
 
-   /** pointer to beamlien fine offset*/
+   /** pointer to beamline fine offset*/
    double *fineOffset;
-   /** pointer to beamlien global offset*/
+   /** pointer to beamline global offset*/
    double *globalOffset;
-   /** pointer to beamlien angular direction*/
+   /** pointer to beamline angular direction*/
    int *angDirection;
 
    /** pointer to detector move flag (1 moves with encoder, 0 not)*/
@@ -457,9 +479,10 @@ class angularConversion : public virtual slsDetectorDefs { //: public virtual sl
   int getCurrentPositionIndex() {return currentPositionIndex;};
 
  
+ 
 
 
-  void registerAngleFunctionCallback(double( *fun)(double, double, double, double, double, double, double, int)) {angle = fun;};
+ void registerAngleFunctionCallback(double( *fun)(double, double, double, double, double, double, double, int),void* arg) {angle = fun; angPtr=arg;};
   
   
 };

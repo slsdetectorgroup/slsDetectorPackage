@@ -1312,9 +1312,9 @@ string slsDetectorCommand::cmdEnablefwrite(int narg, char *args[], int action){
   if (action==PUT_ACTION) {
     if (sscanf(args[1],"%d",&i))
       myDet->enableWriteToFile(i);
-  	;
+  	return string("Write to File Enabled");
   }
-  return string(myDet->getFileName());
+  else return string("Write to File 'Not' Enabled");
 }
 
 

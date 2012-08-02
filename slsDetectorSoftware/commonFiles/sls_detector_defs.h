@@ -367,7 +367,8 @@ enum timerIndex {
   ACTUAL_TIME, /**< Actual time of the detector's internal timer */
   MEASUREMENT_TIME,  /**< Time of the measurement from the detector (fifo) */
 
-  PROGRESS /**< fraction of measurement elapsed - only get! */
+  PROGRESS, /**< fraction of measurement elapsed - only get! */
+  MEASUREMENTS_NUMBER
 };
 
 /** 
@@ -483,7 +484,16 @@ enum angleConversionParameter {
   MOVE_FLAG /**< wether the detector moves with the motor or not in a multi detector system */
 }; 
 
-
+//typedef struct  {
+  //float center;  /**< center of the module (channel at which the radius is perpendicular to the module surface) */
+  //float ecenter; /**< error in the center determination */
+  //float r_conversion;  /**<  detector pixel size (or strip pitch) divided by the diffractometer radius */
+  //float er_conversion;  /**< error in the r_conversion determination */
+  //float offset; /**< the module offset i.e. the position of channel 0 with respect to the diffractometer 0 */
+  //float eoffset; /**< error in the offset determination */
+  //float tilt; /**< ossible tilt in the orthogonal direction (unused)*/
+  //float etilt; /**< error in the tilt determination *//
+//} angleConversionConstant;
 
 
 #ifdef __cplusplus

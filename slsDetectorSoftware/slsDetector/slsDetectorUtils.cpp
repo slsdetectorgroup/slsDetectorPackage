@@ -45,6 +45,7 @@ void  slsDetectorUtils::acquire(int delflag){
 
   void *status;
   
+
   //  int lastindex=startindex, nowindex=startindex;
 
 

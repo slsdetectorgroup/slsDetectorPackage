@@ -26,7 +26,7 @@ Double_t energyCalibrationFunctions::gaussChargeSharing(Double_t *x, Double_t *p
 
 // basic erf function
 Double_t energyCalibrationFunctions::erfFunction(Double_t *x, Double_t *par) {	
-  float arg=0;
+  double arg=0;
   if (par[1]!=0) arg=(par[0]-x[0])/par[1];
   return ((par[2]/2.*(1+TMath::Erf(sign*arg/(TMath::Sqrt(2))))));  
 };
@@ -47,10 +47,10 @@ Double_t energyCalibrationFunctions::erfFuncFluo(Double_t *x, Double_t *par) {
 };
 #endif
 
-float energyCalibrationFunctions::median(float *x, int n){
+double energyCalibrationFunctions::median(double *x, int n){
   // sorts x into xmed array and returns median 
   // n is number of values already in the xmed array
-  float xmed[n];
+  double xmed[n];
   int k,i,j;
 
   for (i=0; i<n; i++) {
@@ -121,7 +121,7 @@ int energyCalibrationFunctions::quick_select(int arr[], int n){
 
 int energyCalibrationFunctions::kth_smallest(int *a, int n, int k){
     register int i,j,l,m ;
-    register float x ;
+    register double x ;
 
     l=0 ; m=n-1 ;
     while (l<m) {

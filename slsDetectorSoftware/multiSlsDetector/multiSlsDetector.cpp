@@ -1545,16 +1545,16 @@ int multiSlsDetector::setROI(int nroi, int *xmin, int *xmax, int *ymin, int *yma
 */
 
 
-float* multiSlsDetector::decodeData(int *datain, float *fdata) {
-  float *dataout;
+double* multiSlsDetector::decodeData(int *datain, double *fdata) {
+  double *dataout;
   if (fdata)
     dataout=fdata;
   else
-    dataout=new float[thisMultiDetector->numberOfChannels];
+    dataout=new double[thisMultiDetector->numberOfChannels];
   
   // int ich=0;
 
-  float *detp=dataout;
+  double *detp=dataout;
   int  *datap=datain;
 
   
@@ -1605,8 +1605,8 @@ float* multiSlsDetector::decodeData(int *datain, float *fdata) {
 
 
 int multiSlsDetector::setFlatFieldCorrection(string fname){
-  float data[thisMultiDetector->numberOfChannels],  xmed[thisMultiDetector->numberOfChannels];
-  float ffcoefficients[thisMultiDetector->numberOfChannels], fferrors[thisMultiDetector->numberOfChannels];
+  double data[thisMultiDetector->numberOfChannels],  xmed[thisMultiDetector->numberOfChannels];
+  double ffcoefficients[thisMultiDetector->numberOfChannels], fferrors[thisMultiDetector->numberOfChannels];
   int nmed=0;
   int idet=0, ichdet=-1;
   char ffffname[MAX_STR_LENGTH*2];
@@ -1743,9 +1743,9 @@ int multiSlsDetector::setFlatFieldCorrection(string fname){
 
 
 
-int multiSlsDetector::setFlatFieldCorrection(float *corr, float *ecorr) {
+int multiSlsDetector::setFlatFieldCorrection(double *corr, double *ecorr) {
   int ichdet=0;
-  float *p, *ep;
+  double *p, *ep;
   for (int idet=0; idet<thisMultiDetector->numberOfDetectors; idet++) {
     if (detectors[idet]) {
       if (corr!=NULL)
@@ -1771,9 +1771,9 @@ int multiSlsDetector::setFlatFieldCorrection(float *corr, float *ecorr) {
 
 
 
-int multiSlsDetector::getFlatFieldCorrection(float *corr, float *ecorr) {
+int multiSlsDetector::getFlatFieldCorrection(double *corr, double *ecorr) {
   int ichdet=0;
-  float *p, *ep;
+  double *p, *ep;
   for (int idet=0; idet<thisMultiDetector->numberOfDetectors; idet++) {
     if (detectors[idet]) {
       if (corr!=NULL)
@@ -1862,10 +1862,10 @@ angleConversionConstant * multiSlsDetector::getAngularConversionPointer(int imod
 
 
 
-int multiSlsDetector::flatFieldCorrect(float* datain, float *errin, float* dataout, float *errout){  
+int multiSlsDetector::flatFieldCorrect(double* datain, double *errin, double* dataout, double *errout){
 
   int ichdet=0;
-  float *perr=errin;//*pdata, 
+  double *perr=errin;//*pdata,
   for (int idet=0; idet<thisMultiDetector->numberOfDetectors; idet++) {
     if (detectors[idet]) {
 #ifdef VERBOSE
@@ -1887,8 +1887,8 @@ int multiSlsDetector::flatFieldCorrect(float* datain, float *errin, float* datao
 
 
 
-int multiSlsDetector::setRateCorrection(float t){
-  // float tdead[]=defaultTDead;
+int multiSlsDetector::setRateCorrection(double t){
+  // double tdead[]=defaultTDead;
 
   if (t==0) {
     thisMultiDetector->correctionMask&=~(1<<RATE_CORRECTION);
@@ -1909,7 +1909,7 @@ int multiSlsDetector::setRateCorrection(float t){
 }
 
 
-int multiSlsDetector::getRateCorrection(float &t){
+int multiSlsDetector::getRateCorrection(double &t){
 
   if (thisMultiDetector->correctionMask&(1<<RATE_CORRECTION)) {
 #ifdef VERBOSE
@@ -1925,7 +1925,7 @@ int multiSlsDetector::getRateCorrection(float &t){
     return 0;
 };
 
-float multiSlsDetector::getRateCorrectionTau(){
+double multiSlsDetector::getRateCorrectionTau(){
 
   if (thisMultiDetector->correctionMask&(1<<RATE_CORRECTION)) {
 #ifdef VERBOSE
@@ -1957,10 +1957,10 @@ int multiSlsDetector::getRateCorrection(){
 
 
 
-int multiSlsDetector::rateCorrect(float* datain, float *errin, float* dataout, float *errout){
+int multiSlsDetector::rateCorrect(double* datain, double *errin, double* dataout, double *errout){
 
   int ichdet=0;
-  float *perr=errin;
+  double *perr=errin;
   for (int idet=0; idet<thisMultiDetector->numberOfDetectors; idet++) {
     if (detectors[idet]) {
       if (errin)
@@ -2157,8 +2157,8 @@ int  multiSlsDetector::getAngularConversion(int &direction,  angleConversionCons
 
 
 
-float multiSlsDetector::setDAC(float val, dacIndex idac, int imod) {
-  float ret, ret1=-100;
+double multiSlsDetector::setDAC(double val, dacIndex idac, int imod) {
+  double ret, ret1=-100;
   
   int id=-1, im=-1;
   int dmi=0, dma=thisMultiDetector->numberOfDetectors;
@@ -2180,8 +2180,8 @@ float multiSlsDetector::setDAC(float val, dacIndex idac, int imod) {
  return ret1;
 }
 
-float multiSlsDetector::getADC(dacIndex idac, int imod) {
-  float ret, ret1=-100;
+double multiSlsDetector::getADC(dacIndex idac, int imod) {
+  double ret, ret1=-100;
   
   int id=-1, im=-1;
   int dmi=0, dma=thisMultiDetector->numberOfDetectors;
@@ -2234,8 +2234,8 @@ int multiSlsDetector::setChannel(long long reg, int ichan, int ichip, int imod) 
      \returns the actual value
   */
 
-float multiSlsDetector::setAngularConversionParameter(angleConversionParameter c, float v) {
-  float ret=slsDetectorUtils::setAngularConversionParameter(c,v);
+double multiSlsDetector::setAngularConversionParameter(angleConversionParameter c, double v) {
+  double ret=slsDetectorUtils::setAngularConversionParameter(c,v);
   for (int idet=0; idet<thisMultiDetector->numberOfDetectors; idet++) {
     
       if (detectors[idet]) {
@@ -2248,10 +2248,10 @@ float multiSlsDetector::setAngularConversionParameter(angleConversionParameter c
 
 
 
-// float* multiSlsDetector::convertAngles(float pos) {
-//   float *ang=new float[thisMultiDetector->numberOfChannels];
+// double* multiSlsDetector::convertAngles(double pos) {
+//   double *ang=new double[thisMultiDetector->numberOfChannels];
 
-//   float *p=ang;
+//   double *p=ang;
 //   int choff=0;
 
 //   for (int idet=0; idet<thisMultiDetector->numberOfDetectors; idet++) {
@@ -3286,7 +3286,7 @@ int multiSlsDetector::writeConfigurationFile(string const fname){
 
 
 
-int multiSlsDetector::writeDataFile(string fname, float *data, float *err, float *ang, char dataformat, int nch) {
+int multiSlsDetector::writeDataFile(string fname, double *data, double *err, double *ang, char dataformat, int nch) {
 
 #ifdef VERBOSE
   cout << "using overloaded multiSlsDetector function to write formatted data file " << endl;
@@ -3295,7 +3295,7 @@ int multiSlsDetector::writeDataFile(string fname, float *data, float *err, float
 
   ofstream outfile;
   int choff=0, off=0; //idata, 
-  float *pe=err, *pa=ang;
+  double *pe=err, *pa=ang;
   int nch_left=nch, n, nd;
 
   if (nch_left<=0)
@@ -3381,7 +3381,7 @@ int multiSlsDetector::writeDataFile(string fname, int *data) {
 }
 
 
-int multiSlsDetector::readDataFile(string fname, float *data, float *err, float *ang, char dataformat){
+int multiSlsDetector::readDataFile(string fname, double *data, double *err, double *ang, char dataformat){
 
 #ifdef VERBOSE
   cout << "using overloaded multiSlsDetector function to read formatted data file " << endl;
@@ -3392,7 +3392,7 @@ int multiSlsDetector::readDataFile(string fname, float *data, float *err, float 
   //int interrupt=0;
   string str;
   int choff=0, off=0;
-  float *pe=err, *pa=ang;
+  double *pe=err, *pa=ang;
 
 #ifdef VERBOSE
   std::cout<< "Opening file "<< fname << std::endl;

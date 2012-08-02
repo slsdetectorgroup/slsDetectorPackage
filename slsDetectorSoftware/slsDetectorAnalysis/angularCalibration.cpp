@@ -109,7 +109,7 @@ TF1 *fitPeak(TH1 *h) {
 
   TF1 *fitfun=NULL;
   int chmod, imod;
-  float ang;
+  double ang;
 
 // reads in a run and fits a gaussian to the peak as function
 //   of channel number also reads optical encoder 
@@ -134,8 +134,8 @@ TF1 *fitPeak(TH1 *h) {
 
 //     for (i=0;i<nchannel;i++) {
 //       if ( (angle(i)>minang) && (angle(i)<maxang) ) {
-// 	x[npoints]=(float) i;
-// 	y[npoints]=(float) data[i];
+// 	x[npoints]=(double) i;
+// 	y[npoints]=(double) data[i];
 // 	ex[npoints]=0.001;
 // 	ey[npoints]=dataerror[i];
 // 	anglefit[npoints]=angle(i);
@@ -255,11 +255,11 @@ TF1 *fitPeak(TH1 *h) {
 // // also set peak height,width and background in defines at beginning
 // //
 
-// void fitangle(char fname[80],char extension[10], int start, int stop, float startangle, float stopangle) {
+// void fitangle(char fname[80],char extension[10], int start, int stop, double startangle, double stopangle) {
 
 //   int i,nfit,mod,npoints,nnpoints;
-//   float x[MAXINMODULE],y[MAXINMODULE],ex[MAXINMODULE],ey[MAXINMODULE],min,max;
-//   float xx[MAXINMODULE],yy[MAXINMODULE],exx[MAXINMODULE],eyy[MAXINMODULE];
+//   double x[MAXINMODULE],y[MAXINMODULE],ex[MAXINMODULE],ey[MAXINMODULE],min,max;
+//   double xx[MAXINMODULE],yy[MAXINMODULE],exx[MAXINMODULE],eyy[MAXINMODULE];
 
 //   double channelfit[MAXRUN], channelerror[MAXRUN], encoderfit[MAXRUN];
 //   int runnrfit[MAXRUN], modulenr[MAXRUN];

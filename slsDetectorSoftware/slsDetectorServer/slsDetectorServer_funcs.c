@@ -776,13 +776,13 @@ int read_register(int file_des) {
 
 int set_dac(int file_des) {
 
-  float retval;
+  double retval;
   int ret=OK;
   int arg[2];
   enum dacIndex ind;
   int imod;
   int n;
-  float val;
+  double val;
 
   sprintf(mess,"Can't set DAC\n");
 
@@ -880,7 +880,7 @@ int set_dac(int file_des) {
 
 int get_adc(int file_des) {
 
-  float retval;
+  double retval;
   int ret=OK;
   int arg[2];
   enum dacIndex ind;
@@ -1239,8 +1239,8 @@ int set_module(int file_des) {
   sls_detector_module myModule;
   int *myChip=malloc(getNumberOfChipsPerModule()*sizeof(int));
   int *myChan=malloc(getNumberOfChannelsPerModule()*sizeof(int));
-  float *myDac=malloc(getNumberOfDACsPerModule()*sizeof(int));
-  float *myAdc=malloc(getNumberOfADCsPerModule()*sizeof(int));
+  double *myDac=malloc(getNumberOfDACsPerModule()*sizeof(int));
+  double *myAdc=malloc(getNumberOfADCsPerModule()*sizeof(int));
   int retval, n;
   int ret=OK;
   int dr;//, ow;
@@ -1343,8 +1343,8 @@ int get_module(int file_des) {
   sls_detector_module myModule;
   int *myChip=malloc(getNumberOfChipsPerModule()*sizeof(int));
   int *myChan=malloc(getNumberOfChannelsPerModule()*sizeof(int));
-  float *myDac=malloc(getNumberOfDACsPerModule()*sizeof(int));
-  float *myAdc=malloc(getNumberOfADCsPerModule()*sizeof(int));
+  double *myDac=malloc(getNumberOfDACsPerModule()*sizeof(int));
+  double *myAdc=malloc(getNumberOfADCsPerModule()*sizeof(int));
 
 
   if (myDac)

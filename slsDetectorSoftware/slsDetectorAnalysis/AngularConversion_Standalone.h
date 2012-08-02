@@ -10,7 +10,7 @@
 
 
 
-  //float angle(int ichan, float encoder, float totalOffset, float conv_r, float center, float offset, float tilt, int direction)
+  //double angle(int ichan, double encoder, double totalOffset, double conv_r, double center, double offset, double tilt, int direction)
 
 
 using namespace std;
@@ -19,14 +19,14 @@ using namespace std;
    @short Angular conversion constants needed  for a detector module
  */
 typedef struct  {
-  float center;  /**< center of the module (channel at which the radius is perpendicular to the module surface) */
-  float ecenter; /**< error in the center determination */
-  float r_conversion;  /**<  detector pixel size (or strip pitch) divided by the diffractometer radius */
-  float er_conversion;  /**< error in the r_conversion determination */
-  float offset; /**< the module offset i.e. the position of channel 0 with respect to the diffractometer 0 */
-  float eoffset; /**< error in the offset determination */
-  float tilt; /**< ossible tilt in the orthogonal direction (unused)*/
-  float etilt; /**< error in the tilt determination */
+  double center;  /**< center of the module (channel at which the radius is perpendicular to the module surface) */
+  double ecenter; /**< error in the center determination */
+  double r_conversion;  /**<  detector pixel size (or strip pitch) divided by the diffractometer radius */
+  double er_conversion;  /**< error in the r_conversion determination */
+  double offset; /**< the module offset i.e. the position of channel 0 with respect to the diffractometer 0 */
+  double eoffset; /**< error in the offset determination */
+  double tilt; /**< ossible tilt in the orthogonal direction (unused)*/
+  double etilt; /**< error in the tilt determination */
 } angleConversionConstant;
 
 
@@ -43,7 +43,7 @@ class angularConversion : public virtual slsDetectorDefs { //: public virtual sl
 
  public:
   /** default constructor */
-  angularConversion(int*, float*, float*, float*, float*);
+  angularConversion(int*, double*, double*, double*, double*);
   /** virtual destructor */
   virtual ~angularConversion();
  
@@ -100,7 +100,7 @@ class angularConversion : public virtual slsDetectorDefs { //: public virtual sl
        \param nbins number of bins
        \returns OK or FAIL
    */
-   static int resetMerging(float *mp, float *mv,float *me, int *mm, int nbins);
+   static int resetMerging(double *mp, double *mv,double *me, int *mm, int nbins);
    /** 
        sets the arrays of the merged data to 0. NB The array should be created with size >= 360./getBinSize(); 
        \param mp already merged postions
@@ -109,7 +109,7 @@ class angularConversion : public virtual slsDetectorDefs { //: public virtual sl
        \param mm multiplicity of merged arrays
        \returns OK or FAIL
    */
-   int resetMerging(float *mp, float *mv,float *me, int *mm);
+   int resetMerging(double *mp, double *mv,double *me, int *mm);
   
    /** 
        creates the arrays for merging the data and sets them to 0. 
@@ -132,7 +132,7 @@ class angularConversion : public virtual slsDetectorDefs { //: public virtual sl
       \returns OK or FAIL
   */
 
-   static int  addToMerging(float *p1, float *v1, float *e1, float *mp, float *mv,float *me, int *mm, int nchans, float binsize,int nb, int *badChanMask );
+   static int  addToMerging(double *p1, double *v1, double *e1, double *mp, double *mv,double *me, int *mm, int nchans, double binsize,int nb, int *badChanMask );
    
   /** 
       merge dataset
@@ -147,7 +147,7 @@ class angularConversion : public virtual slsDetectorDefs { //: public virtual sl
       \returns OK or FAIL
   */
 
-   int  addToMerging(float *p1, float *v1, float *e1, float *mp, float *mv,float *me, int *mm, int *badChanMask);
+   int  addToMerging(double *p1, double *v1, double *e1, double *mp, double *mv,double *me, int *mm, int *badChanMask);
   /** 
       merge dataset
       \param p1 angular positions of dataset
@@ -157,7 +157,7 @@ class angularConversion : public virtual slsDetectorDefs { //: public virtual sl
       \returns OK or FAIL
   */
 
-   int addToMerging(float *p1, float *v1, float *e1,int *badChanMask);
+   int addToMerging(double *p1, double *v1, double *e1,int *badChanMask);
 
    /**
       calculates the "final" positions, data value and errors for the merged data
@@ -169,7 +169,7 @@ class angularConversion : public virtual slsDetectorDefs { //: public virtual sl
       \returns FAIL or the number of non empty bins (i.e. points belonging to the pattern)
   */
 
-   static int finalizeMerging(float *mp, float *mv,float *me, int *mm, int nb);
+   static int finalizeMerging(double *mp, double *mv,double *me, int *mm, int nb);
    /**
       calculates the "final" positions, data value and errors for the merged data
       \param mp already merged postions
@@ -179,7 +179,7 @@ class angularConversion : public virtual slsDetectorDefs { //: public virtual sl
       \returns FAIL or the number of non empty bins (i.e. points belonging to the pattern)
   */
 
-   int finalizeMerging(float *mp, float *mv,float *me, int *mm);   
+   int finalizeMerging(double *mp, double *mv,double *me, int *mm);
 
 /**
       calculates the "final" positions, data value and errors for the merged data
@@ -194,7 +194,7 @@ class angularConversion : public virtual slsDetectorDefs { //: public virtual sl
       \param f global offset to be set
       \returns actual global offset
   */
-  float setGlobalOffset(float f){return setAngularConversionParameter(GLOBAL_OFFSET,f);};
+  double setGlobalOffset(double f){return setAngularConversionParameter(GLOBAL_OFFSET,f);};
 
  
   /**
@@ -202,19 +202,19 @@ class angularConversion : public virtual slsDetectorDefs { //: public virtual sl
       \param f global fine to be set
       \returns actual fine offset
   */
-  float setFineOffset(float f){return setAngularConversionParameter(FINE_OFFSET,f);};
+  double setFineOffset(double f){return setAngularConversionParameter(FINE_OFFSET,f);};
   
   /**
       get detector fine offset
       \returns actual fine offset
   */
-  float getFineOffset(){return getAngularConversionParameter(FINE_OFFSET);};
+  double getFineOffset(){return getAngularConversionParameter(FINE_OFFSET);};
   
   /**
       get detector global offset
       \returns actual global offset
   */
-  float getGlobalOffset(){return getAngularConversionParameter(GLOBAL_OFFSET);};
+  double getGlobalOffset(){return getAngularConversionParameter(GLOBAL_OFFSET);};
 
   /** 
       
@@ -222,13 +222,13 @@ class angularConversion : public virtual slsDetectorDefs { //: public virtual sl
       \param bs bin size to be set
       \returns actual bin size
   */
-  float setBinSize(float bs){if (bs>0) nBins=360/bs; return setAngularConversionParameter(BIN_SIZE,bs);};
+  double setBinSize(double bs){if (bs>0) nBins=360/bs; return setAngularConversionParameter(BIN_SIZE,bs);};
 
   /** 
       get detector bin size
       \returns detector bin size used for merging (approx angular resolution)
   */
-  float getBinSize() {return getAngularConversionParameter(BIN_SIZE);};
+  double getBinSize() {return getAngularConversionParameter(BIN_SIZE);};
 
 
 
@@ -246,7 +246,7 @@ class angularConversion : public virtual slsDetectorDefs { //: public virtual sl
       \param d angular direction to be set (1 is channel number increasing with angle, -1 decreasing)
       \returns actual angular direction (1 is channel number increasing with angle, -1 decreasing)
   */
-  int setAngularDirection(int d){return (int)setAngularConversionParameter(ANGULAR_DIRECTION, (float)d);};
+  int setAngularDirection(int d){return (int)setAngularConversionParameter(ANGULAR_DIRECTION, (double)d);};
 
   /**
      \returns  number of angular bins in the merging (360./binsize)
@@ -261,13 +261,13 @@ class angularConversion : public virtual slsDetectorDefs { //: public virtual sl
      \param v value to be set
      \returns actual value
   */
-   float setAngularConversionParameter(angleConversionParameter c, float v);
+   double setAngularConversionParameter(angleConversionParameter c, double v);
  /**
      get angular conversion parameter
      \param c parameter type (globaloffset, fineoffset, binsize, angular direction, move flag)
      \returns actual value
   */
-   float getAngularConversionParameter(angleConversionParameter c);
+   double getAngularConversionParameter(angleConversionParameter c);
    
  
 
@@ -278,13 +278,13 @@ class angularConversion : public virtual slsDetectorDefs { //: public virtual sl
       \param pos array with the encoder positions
       \returns number of positions
   */
-  virtual int setPositions(int nPos, float *pos);
+  virtual int setPositions(int nPos, double *pos);
    /** 
       get  positions for the acquisition
       \param pos array which will contain the encoder positions
       \returns number of positions
   */
-  virtual int getPositions(float *pos=NULL);
+  virtual int getPositions(double *pos=NULL);
  
   /**
      deletes the array of merged data
@@ -295,15 +295,15 @@ class angularConversion : public virtual slsDetectorDefs { //: public virtual sl
   /**
      \returns pointer to the array o merged positions
   */
-  float *getMergedPositions(){return mergingBins;};
+  double *getMergedPositions(){return mergingBins;};
   /**
      \returns pointer to the array of merged counts
   */
-  float *getMergedCounts(){return mergingCounts;};
+  double *getMergedCounts(){return mergingCounts;};
   /**
      \returns pointer to the array of merged errors
   */
-  float *getMergedErrors(){return mergingErrors;};
+  double *getMergedErrors(){return mergingErrors;};
   
 
 
@@ -368,12 +368,12 @@ class angularConversion : public virtual slsDetectorDefs { //: public virtual sl
      \param pos encoder position
      \returns array of angles corresponding to the channels
   */
-  float* convertAngles(float pos);
+  double* convertAngles(double pos);
   /**
      converts channel number to angle for the current encoder position
      \returns array of angles corresponding to the channels
   */
-  float *convertAngles(){return convertAngles(currentPosition);};
+  double *convertAngles(){return convertAngles(currentPosition);};
   
 
   /**
@@ -391,18 +391,18 @@ class angularConversion : public virtual slsDetectorDefs { //: public virtual sl
 
  private:
   /** merging bins */
-  float *mergingBins;
+  double *mergingBins;
   
   /** merging counts */
-  float *mergingCounts;
+  double *mergingCounts;
   
   /** merging errors */
-  float *mergingErrors;
+  double *mergingErrors;
   
   /** merging multiplicity */
   int *mergingMultiplicity;
   
-  float (*angle)(float, float, float, float, float, float, float, int);
+  double (*angle)(double, double, double, double, double, double, double, int);
 
 
   int totalNumberOfChannels;
@@ -413,11 +413,11 @@ class angularConversion : public virtual slsDetectorDefs { //: public virtual sl
    int *numberOfPositions;
    
   /** pointer to the detector positions for the acquisition*/
-   float *detPositions;
+   double *detPositions;
       
    
    /** pointer to angular bin size*/
-   float *binSize;
+   double *binSize;
 
   int *correctionMask;
   int chansPerMod;
@@ -427,9 +427,9 @@ class angularConversion : public virtual slsDetectorDefs { //: public virtual sl
    
 
    /** pointer to beamlien fine offset*/
-   float *fineOffset;
+   double *fineOffset;
    /** pointer to beamlien global offset*/
-   float *globalOffset;
+   double *globalOffset;
    /** pointer to beamlien angular direction*/
    int *angDirection;
 
@@ -444,7 +444,7 @@ class angularConversion : public virtual slsDetectorDefs { //: public virtual sl
   /**
      current position of the detector
   */
-  float currentPosition;
+  double currentPosition;
   /**
      current position index of the detector
   */
@@ -459,7 +459,7 @@ class angularConversion : public virtual slsDetectorDefs { //: public virtual sl
  
 
 
-  void registerAngleFunctionCallback(float( *fun)(float, float, float, float, float, float, float, int)) {angle = fun;};
+  void registerAngleFunctionCallback(double( *fun)(double, double, double, double, double, double, double, int)) {angle = fun;};
   
   
 };

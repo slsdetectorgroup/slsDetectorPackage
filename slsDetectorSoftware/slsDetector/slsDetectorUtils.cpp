@@ -398,11 +398,11 @@ int slsDetectorUtils::setBadChannelCorrection(string fname, int &nbadtot, int *b
 
 
 
-float slsDetectorUtils::getCurrentProgress() {
+double slsDetectorUtils::getCurrentProgress() {
 #ifdef VERBOSE
   cout << progressIndex << " / " << totalProgress << endl;
 #endif
-  return 100.*((float)progressIndex)/((float)totalProgress);
+  return 100.*((double)progressIndex)/((double)totalProgress);
 }
 
 
@@ -710,7 +710,7 @@ int slsDetectorUtils::dumpDetectorSetup(string const fname, int level){
     outfile << names[iv] << " " << cmd->executeLine(nargs,args,GET_ACTION) << std::endl;
     iv++;
 
-      
+
 
   if (level==2) {
     strcpy(myargs[0],names[iv].c_str());
@@ -754,8 +754,8 @@ int slsDetectorUtils::dumpDetectorSetup(string const fname, int level){
 
 
 
-//   float data[tch],  xmed[tch];
-//   float ffcoefficients[tch], fferrors[tch];
+//   double data[tch],  xmed[tch];
+//   double ffcoefficients[tch], fferrors[tch];
 //   int nmed=0;
 //   int idet=0, ichdet=-1;
 //   char ffffname[MAX_STR_LENGTH*2];

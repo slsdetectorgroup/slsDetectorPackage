@@ -59,7 +59,7 @@ int slsDetector::initSharedMemory(detectorType type, int id) {
    */
 
 
-   sz=sizeof(sharedSlsDetector)+nm*(2*nch*nc*sizeof(float)+sizeof(sls_detector_module)+sizeof(int)*nc+sizeof(float)*nd+sizeof(int)*nch*nc);
+   sz=sizeof(sharedSlsDetector)+nm*(2*nch*nc*sizeof(double)+sizeof(sls_detector_module)+sizeof(int)*nc+sizeof(double)*nd+sizeof(int)*nch*nc);
 #ifdef VERBOSE
    std::cout<<"Size of shared memory is "<< sz << "(type " << type << " - id " << mem_key << ")"<< std::endl;
 #endif
@@ -595,11 +595,11 @@ int slsDetector::initializeDetectorSize(detectorType type) {
      
      /** calculates the memory offsets for flat field coefficients and errors, module structures, dacs, adcs, chips and channels */ 
      thisDetector->ffoff=sizeof(sharedSlsDetector);
-     thisDetector->fferroff=thisDetector->ffoff+sizeof(float)*thisDetector->nChans*thisDetector->nChips*thisDetector->nModsMax;
-     thisDetector->modoff= thisDetector->fferroff+sizeof(float)*thisDetector->nChans*thisDetector->nChips*thisDetector->nModsMax;
+     thisDetector->fferroff=thisDetector->ffoff+sizeof(double)*thisDetector->nChans*thisDetector->nChips*thisDetector->nModsMax;
+     thisDetector->modoff= thisDetector->fferroff+sizeof(double)*thisDetector->nChans*thisDetector->nChips*thisDetector->nModsMax;
      thisDetector->dacoff=thisDetector->modoff+sizeof(sls_detector_module)*thisDetector->nModsMax;
-     thisDetector->adcoff=thisDetector->dacoff+sizeof(float)*thisDetector->nDacs*thisDetector->nModsMax;
-     thisDetector->chipoff=thisDetector->adcoff+sizeof(float)*thisDetector->nAdcs*thisDetector->nModsMax;
+     thisDetector->adcoff=thisDetector->dacoff+sizeof(double)*thisDetector->nDacs*thisDetector->nModsMax;
+     thisDetector->chipoff=thisDetector->adcoff+sizeof(double)*thisDetector->nAdcs*thisDetector->nModsMax;
      thisDetector->chanoff=thisDetector->chipoff+sizeof(int)*thisDetector->nChips*thisDetector->nModsMax;
      
      
@@ -607,15 +607,15 @@ int slsDetector::initializeDetectorSize(detectorType type) {
 
 
      /** also in case thisDetector alread existed initialize the pointer for flat field coefficients and errors, module structures, dacs, adcs, chips and channels */ 
-   ffcoefficients=(float*)(goff+thisDetector->ffoff);
-   fferrors=(float*)(goff+thisDetector->fferroff);
+   ffcoefficients=(double*)(goff+thisDetector->ffoff);
+   fferrors=(double*)(goff+thisDetector->fferroff);
    detectorModules=(sls_detector_module*)(goff+ thisDetector->modoff);
 #ifdef VERBOSE
    //   for (int imod=0; imod< thisDetector->nModsMax; imod++)
    //  std::cout<< hex << detectorModules+imod << dec <<std::endl;
 #endif
-   dacs=(float*)(goff+thisDetector->dacoff);
-   adcs=(float*)(goff+thisDetector->adcoff);
+   dacs=(double*)(goff+thisDetector->dacoff);
+   adcs=(double*)(goff+thisDetector->adcoff);
    chipregs=(int*)(goff+thisDetector->chipoff);
    chanregs=(int*)(goff+thisDetector->chanoff);
    if (thisDetector->alreadyExisting==0) {  
@@ -774,8 +774,8 @@ slsDetectorDefs::sls_detector_module*  slsDetector::createModule(detectorType t)
      na=0;
    }
 
-  float *dacs=new float[nd];
-  float *adcs=new float[na];
+  double *dacs=new double[nd];
+  double *adcs=new double[na];
   int *chipregs=new int[nc];
   int *chanregs=new int[nch*nc];
   myMod->ndac=nd;
@@ -824,8 +824,8 @@ int slsDetector::sendChip(sls_detector_chip *myChip) {
 int slsDetector::sendModule(sls_detector_module *myMod) {
   int ts=0;
   ts+=controlSocket->SendDataOnly(myMod,sizeof(sls_detector_module));
-  ts+=controlSocket->SendDataOnly(myMod->dacs,sizeof(float)*(myMod->ndac));
-  ts+=controlSocket->SendDataOnly(myMod->adcs,sizeof(float)*(myMod->nadc));
+  ts+=controlSocket->SendDataOnly(myMod->dacs,sizeof(double)*(myMod->ndac));
+  ts+=controlSocket->SendDataOnly(myMod->adcs,sizeof(double)*(myMod->nadc));
   ts+=controlSocket->SendDataOnly(myMod->chipregs,sizeof(int)*(myMod->nchip));
   ts+=controlSocket->SendDataOnly(myMod->chanregs,sizeof(int)*(myMod->nchan));
   return ts;
@@ -855,8 +855,8 @@ int slsDetector::receiveChip(sls_detector_chip* myChip) {
 
 int  slsDetector::receiveModule(sls_detector_module* myMod) {
 
-  float *dacptr=myMod->dacs;
-  float *adcptr=myMod->adcs;
+  double *dacptr=myMod->dacs;
+  double *adcptr=myMod->adcs;
   int *chipptr=myMod->chipregs;
   int *chanptr=myMod->chanregs;
   int ts=0;
@@ -869,11 +869,11 @@ int  slsDetector::receiveModule(sls_detector_module* myMod) {
 #ifdef VERBOSE
   std::cout<< "received module " << myMod->module << " of size "<< ts << " register " << myMod->reg << std::endl;
 #endif
-  ts+=controlSocket->ReceiveDataOnly(myMod->dacs,sizeof(float)*(myMod->ndac));
+  ts+=controlSocket->ReceiveDataOnly(myMod->dacs,sizeof(double)*(myMod->ndac));
 #ifdef VERBOSE
   std::cout<< "received dacs " << myMod->module << " of size "<< ts << std::endl;
 #endif
-  ts+=controlSocket->ReceiveDataOnly(myMod->adcs,sizeof(float)*(myMod->nadc));
+  ts+=controlSocket->ReceiveDataOnly(myMod->adcs,sizeof(double)*(myMod->nadc));
 #ifdef VERBOSE
   std::cout<< "received adcs " << myMod->module << " of size "<< ts << std::endl;
 #endif
@@ -1689,7 +1689,7 @@ int slsDetector::enableAnalogOutput(int imod, int ichip, int ichan){
      give a train of calibration pulses 
   */ 
 /*
-int slsDetector::giveCalibrationPulse(float vcal, int npulses){
+int slsDetector::giveCalibrationPulse(double vcal, int npulses){
   std::cout<< "function not yet implemented " << std::endl;
 };
 */
@@ -1810,10 +1810,10 @@ int slsDetector::readRegister(int addr){
   */
 
 
-float slsDetector::setDAC(float val, dacIndex index, int imod){
+double slsDetector::setDAC(double val, dacIndex index, int imod){
 
 
-  float retval;
+  double retval;
   int fnum=F_SET_DAC;
   int ret=FAIL;
   char mess[100];
@@ -1867,9 +1867,9 @@ float slsDetector::setDAC(float val, dacIndex index, int imod){
 };
 
 
-float slsDetector::getADC(dacIndex index, int imod){
+double slsDetector::getADC(dacIndex index, int imod){
 
-  float retval;
+  double retval;
   int fnum=F_GET_ADC;
   int ret=FAIL;
   char mess[100];
@@ -2271,7 +2271,7 @@ int slsDetector::setModule(int reg, int imod){
 #endif 
   int charegs[thisDetector->nChans*thisDetector->nChips];
   int chiregs[thisDetector->nChips];
-  float das[thisDetector->nDacs], ads[thisDetector->nAdcs];
+  double das[thisDetector->nDacs], ads[thisDetector->nAdcs];
   int mmin=imod, mmax=imod+1;
   int ret=FAIL;
   
@@ -2439,7 +2439,7 @@ slsDetectorDefs::sls_detector_module  *slsDetector::getModule(int imod){
 
   // int chanreg[thisDetector->nChans*thisDetector->nChips];
   //int chipreg[thisDetector->nChips];
-  //float dac[thisDetector->nDacs], adc[thisDetector->nAdcs];
+  //double dac[thisDetector->nDacs], adc[thisDetector->nAdcs];
 
   int ret=FAIL;
   char mess[100];
@@ -2537,7 +2537,7 @@ slsDetectorDefs::sls_detector_module  *slsDetector::getModule(int imod){
 /*
   really needed?
 
-int slsDetector::setCalibration(int imod,  detectorSettings isettings, float gain, float offset){
+int slsDetector::setCalibration(int imod,  detectorSettings isettings, double gain, double offset){
   std::cout<< "function not yet implemented " << std::endl; 
   
   
@@ -2545,7 +2545,7 @@ int slsDetector::setCalibration(int imod,  detectorSettings isettings, float gai
   return OK;
 
 }
-int slsDetector::getCalibration(int imod,  detectorSettings isettings, float &gain, float &offset){
+int slsDetector::getCalibration(int imod,  detectorSettings isettings, double &gain, double &offset){
 
   std::cout<< "function not yet implemented " << std::endl; 
 
@@ -2791,7 +2791,7 @@ slsDetectorDefs::detectorSettings slsDetector::setSettings( detectorSettings ise
   switch(thisDetector->myDetectorType==MYTHEN){
     if (thisDetector->correctionMask&(1<<RATE_CORRECTION)) {
       int isett=getSettings(imod);
-      float t[]=defaultTDead;
+      double t[]=defaultTDead;
       if (isett>-1 && isett<3) {
 	thisDetector->tDead=t[isett];
       }
@@ -3586,9 +3586,9 @@ int slsDetector::setTotalProgress() {
 }
 
 
-float slsDetector::getCurrentProgress() {
+double slsDetector::getCurrentProgress() {
 
-  return 100.*((float)thisDetector->progressIndex)/((float)thisDetector->totalProgress);
+  return 100.*((double)thisDetector->progressIndex)/((double)thisDetector->totalProgress);
 }
 
 
@@ -3886,13 +3886,13 @@ int slsDetector::executeTrimming(trimMode mode, int par1, int par2, int imod){
 
 };
 
-float* slsDetector::decodeData(int *datain, float *fdata) {
+double* slsDetector::decodeData(int *datain, double *fdata) {
   
-  float *dataout;
+  double *dataout;
   if (fdata)
     dataout=fdata;
   else
-    dataout=new float[thisDetector->nChans*thisDetector->nChips*thisDetector->nMods];
+    dataout=new double[thisDetector->nChans*thisDetector->nChips*thisDetector->nMods];
   
   const int bytesize=8;
 
@@ -3980,9 +3980,9 @@ float* slsDetector::decodeData(int *datain, float *fdata) {
 int slsDetector::setFlatFieldCorrection(string fname)
 
 {
-  float data[thisDetector->nModMax[X]*thisDetector->nModMax[Y]*thisDetector->nChans*thisDetector->nChips];
-  //float err[thisDetector->nModMax[X]*thisDetector->nModMax[Y]*thisDetector->nChans*thisDetector->nChips];
-   float xmed[thisDetector->nModMax[X]*thisDetector->nModMax[Y]*thisDetector->nChans*thisDetector->nChips];
+  double data[thisDetector->nModMax[X]*thisDetector->nModMax[Y]*thisDetector->nChans*thisDetector->nChips];
+  //double err[thisDetector->nModMax[X]*thisDetector->nModMax[Y]*thisDetector->nChans*thisDetector->nChips];
+   double xmed[thisDetector->nModMax[X]*thisDetector->nModMax[Y]*thisDetector->nChans*thisDetector->nChips];
    int nmed=0;
    int im=0;
    int nch;
@@ -4069,7 +4069,7 @@ int slsDetector::setFlatFieldCorrection(string fname)
 
 
 
-int slsDetector::setFlatFieldCorrection(float *corr, float *ecorr) {
+int slsDetector::setFlatFieldCorrection(double *corr, double *ecorr) {
   if (corr!=NULL) {
     for (int ichan=0; ichan<thisDetector->nMod[X]*thisDetector->nChans*thisDetector->nChips; ichan++) {
 // #ifdef VERBOSE
@@ -4097,7 +4097,7 @@ int slsDetector::setFlatFieldCorrection(float *corr, float *ecorr) {
 
 
  
-int slsDetector::getFlatFieldCorrection(float *corr, float *ecorr) {
+int slsDetector::getFlatFieldCorrection(double *corr, double *ecorr) {
   if (thisDetector->correctionMask&(1<<FLAT_FIELD_CORRECTION)) {
 #ifdef VERBOSE
     std::cout<< "Flat field correction is enabled" << std::endl;
@@ -4127,11 +4127,11 @@ int slsDetector::getFlatFieldCorrection(float *corr, float *ecorr) {
 }
 
 
-int slsDetector::flatFieldCorrect(float* datain, float *errin, float* dataout, float *errout){
+int slsDetector::flatFieldCorrect(double* datain, double *errin, double* dataout, double *errout){
 #ifdef VERBOSE
     std::cout<< "Flat field correcting data" << std::endl;
 #endif
-  float e, eo;
+  double e, eo;
   if (thisDetector->correctionMask & (1<<FLAT_FIELD_CORRECTION)) {
     for (int ichan=0; ichan<thisDetector->nMod[X]*thisDetector->nChans*thisDetector->nChips; ichan++) {
       if (errin==NULL) {
@@ -4151,8 +4151,8 @@ int slsDetector::flatFieldCorrect(float* datain, float *errin, float* dataout, f
 
 };
 
-int slsDetector::setRateCorrection(float t){
-  float tdead[]=defaultTDead;
+int slsDetector::setRateCorrection(double t){
+  double tdead[]=defaultTDead;
 
   if (t==0) {
 #ifdef VERBOSE
@@ -4177,7 +4177,7 @@ int slsDetector::setRateCorrection(float t){
 }
 
 
-int slsDetector::getRateCorrection(float &t){
+int slsDetector::getRateCorrection(double &t){
 
   if (thisDetector->correctionMask&(1<<RATE_CORRECTION)) {
 #ifdef VERBOSE
@@ -4193,7 +4193,7 @@ int slsDetector::getRateCorrection(float &t){
     return 0;
 };
 
-float slsDetector::getRateCorrectionTau(){
+double slsDetector::getRateCorrectionTau(){
 
   if (thisDetector->correctionMask&(1<<RATE_CORRECTION)) {
 #ifdef VERBOSE
@@ -4225,11 +4225,11 @@ int slsDetector::getRateCorrection(){
 
 
 
-int slsDetector::rateCorrect(float* datain, float *errin, float* dataout, float *errout){
-  float tau=thisDetector->tDead;
-  float t=thisDetector->timerValue[ACQUISITION_TIME];
-  // float data;
-  float e;
+int slsDetector::rateCorrect(double* datain, double *errin, double* dataout, double *errout){
+  double tau=thisDetector->tDead;
+  double t=thisDetector->timerValue[ACQUISITION_TIME];
+  // double data;
+  double e;
   if (thisDetector->correctionMask&(1<<RATE_CORRECTION)) {
 #ifdef VERBOSE
     std::cout<< "Rate correcting data with dead time "<< tau << " and acquisition time "<< t << std::endl;
@@ -4599,9 +4599,9 @@ int slsDetector::getAngularConversion(int &direction,  angleConversionConstant *
 
 
 
-// float* slsDetector::convertAngles(float pos) {
+// double* slsDetector::convertAngles(double pos) {
 //   int imod;
-//   float    *ang=new float[thisDetector->nChans*thisDetector->nChips*thisDetector->nMods]; 
+//   double    *ang=new double[thisDetector->nChans*thisDetector->nChips*thisDetector->nMods];
 //   for (int ip=0; ip<thisDetector->nChans*thisDetector->nChips*thisDetector->nMods; ip++) {
 //     imod=ip/(thisDetector->nChans*thisDetector->nChips);
 //     ang[ip]=angle(ip%(thisDetector->nChans*thisDetector->nChips),\

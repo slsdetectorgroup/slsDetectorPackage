@@ -89,7 +89,7 @@ class slsDetectorActions : public virtual slsDetectorBase
       \param precision to write the scan varaible in the scan name (-1 unchanged)
       \returns 0 is scan disabled, >0 otherwise
   */
-  int setScan(int index, string script="", int nvalues=-1, float *values=NULL, string par="", int precision=-1);
+  int setScan(int index, string script="", int nvalues=-1, double *values=NULL, string par="", int precision=-1);
   
   /** set scan script
       \param index of the scan (0,1)
@@ -117,14 +117,14 @@ class slsDetectorActions : public virtual slsDetectorBase
       \param values pointer to array of values
       \returns 0 is scan disabled, >0 otherwise
   */
-  int setScanSteps(int index, int nvalues=-1, float *values=NULL); 
+  int setScanSteps(int index, int nvalues=-1, double *values=NULL);
   
   /** get scan step
       \param index of the scan (0,1)
       \param istep step number
       \returns value of the scan variable
   */
-  float getScanStep(int index, int istep){if (index<MAX_SCAN_LEVELS && index>=0 && istep>=0 && istep<MAX_SCAN_STEPS) return scanSteps[index][istep]; else return -1;};
+  double getScanStep(int index, int istep){if (index<MAX_SCAN_LEVELS && index>=0 && istep>=0 && istep<MAX_SCAN_STEPS) return scanSteps[index][istep]; else return -1;};
   /** 
       returns scan script
       \param iscan can be (0,1) 
@@ -152,7 +152,7 @@ class slsDetectorActions : public virtual slsDetectorBase
 	\param v is the pointer to the scan steps
 	\returns number of scan steps
     */
-  int getScanSteps(int iscan, float *v=NULL);
+  int getScanSteps(int iscan, double *v=NULL);
 
 
    /** 
@@ -178,7 +178,7 @@ class slsDetectorActions : public virtual slsDetectorBase
      \param index scan level index
      \returns value of the current scan variable
   */
-  float getCurrentScanVariable(int index) {return currentScanVariable[index];};
+  double getCurrentScanVariable(int index) {return currentScanVariable[index];};
   //  int getScanPrecision(int index) {return scanPrecision[index];};
 
 
@@ -191,7 +191,7 @@ class slsDetectorActions : public virtual slsDetectorBase
     \param imod module number (if -1 alla modules)
     \returns current DAC value
   */
-  virtual float setDAC(float val, dacIndex index , int imod=-1)=0;
+  virtual double setDAC(double val, dacIndex index , int imod=-1)=0;
 
 
   virtual int setThresholdEnergy(int, int im=-1, detectorSettings isettings=GET_SETTINGS)=0;
@@ -241,7 +241,7 @@ class slsDetectorActions : public virtual slsDetectorBase
   /**
      current scan variable of the detector
   */
-  float currentScanVariable[MAX_SCAN_LEVELS];
+  double currentScanVariable[MAX_SCAN_LEVELS];
   
   /**
      current scan variable index of the detector

@@ -16,8 +16,8 @@ using namespace std;
 
 
 
-const float conven=1000./3.6; /**< electrons/keV */
-const float el=1.67E-4; /**< electron charge in fC */
+const double conven=1000./3.6; /**< electrons/keV */
+const double el=1.67E-4; /**< electron charge in fC */
 
 
 
@@ -148,7 +148,7 @@ Double_t erfFuncFluo(Double_t *x, Double_t *par);
 #endif
 
 /** Calculates the median of an array of n elements */
-  static float median(float *x, int n);
+  static double median(double *x, int n);
 /**  Calculates the median of an array of n elements  (swaps the arrays!)*/
   static int quick_select(int arr[], int n);
 /** Calculates the median of an array of n elements (swaps the arrays!)*/

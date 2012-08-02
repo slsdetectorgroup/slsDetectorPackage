@@ -11,7 +11,7 @@ using namespace std;
 
 
 
-int energyConversion::readCalibrationFile(string fname, float &gain, float &offset){
+int energyConversion::readCalibrationFile(string fname, double &gain, double &offset){
 
   string str;
   ifstream infile;
@@ -36,7 +36,7 @@ int energyConversion::readCalibrationFile(string fname, float &gain, float &offs
   return 0;
 };
 
-int energyConversion::writeCalibrationFile(string fname, float gain, float offset){
+int energyConversion::writeCalibrationFile(string fname, double gain, double offset){
   //std::cout<< "Function not yet implemented " << std::endl;
   ofstream outfile;
 

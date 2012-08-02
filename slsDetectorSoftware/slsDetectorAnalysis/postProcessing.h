@@ -58,7 +58,7 @@ class postProcessing : public virtual angularConversion, public virtual fileIO  
       \param ecorr if !=NULL will be filled with the correction coefficients errors
       \returns 0 if ff correction disabled, >0 otherwise
   */
-  virtual int getFlatFieldCorrection(float *corr=NULL, float *ecorr=NULL)=0;
+  virtual int getFlatFieldCorrection(double *corr=NULL, double *ecorr=NULL)=0;
   
   /** 
       set flat field corrections
@@ -66,7 +66,7 @@ class postProcessing : public virtual angularConversion, public virtual fileIO  
       \param ecorr if !=NULL the flat field correction errors will be filled with ecorr (1 otherwise)
       \returns 0 if ff correction disabled, >0 otherwise
   */
-  virtual int  setFlatFieldCorrection(float *corr, float *ecorr=NULL)=0;
+  virtual int  setFlatFieldCorrection(double *corr, double *ecorr=NULL)=0;
   
   /**
       set bad channels correction
@@ -105,7 +105,7 @@ class postProcessing : public virtual angularConversion, public virtual fileIO  
      \param fferr erro on ffcoefficient
      \returns 0
   */
-   static int flatFieldCorrect(float datain, float errin, float &dataout, float &errout, float ffcoefficient, float fferr);
+   static int flatFieldCorrect(double datain, double errin, double &dataout, double &errout, double ffcoefficient, double fferr);
 
   /** 
      rate correct data
@@ -117,7 +117,7 @@ class postProcessing : public virtual angularConversion, public virtual fileIO  
      \param t acquisition time (in ns)
      \returns 0
   */
-   static int rateCorrect(float datain, float errin, float &dataout, float &errout, float tau, float t);
+   static int rateCorrect(double datain, double errin, double &dataout, double &errout, double tau, double t);
  
 
   int enableWriteToFile(int i=-1) {if (i>0) ((*correctionMask)|=(1<<WRITE_FILE)); if(i==0)  ((*correctionMask)&=~(1<< WRITE_FILE)); return ((*correctionMask)&(1<< WRITE_FILE));};
@@ -190,7 +190,7 @@ s
       \returns nothing
       
   */
-  void doProcessing(float* myData, int delflag, string fname);
+  void doProcessing(double* myData, int delflag, string fname);
 
 
   /**
@@ -229,8 +229,8 @@ s
 
 
 
-  virtual int rateCorrect(float*, float*, float*, float*)=0;
-  virtual int flatFieldCorrect(float*, float*, float*, float*)=0;
+  virtual int rateCorrect(double*, double*, double*, double*)=0;
+  virtual int flatFieldCorrect(double*, double*, double*, double*)=0;
 
 
 
@@ -343,20 +343,20 @@ s
   /**
      I0 measured
   */
-  float currentI0;
+  double currentI0;
   
-  float *fdata;
+  double *fdata;
 
   // private:
 
 
 /*    virtual void incrementProgress()=0; */
-/*    virtual float getCurrentProgress()=0; */
+/*    virtual double getCurrentProgress()=0; */
 /*    virtual void incrementFileIndex()=0; */
 /*    virtual int setTotalProgress()=0; */
 
 
-/*    virtual float* decodeData(int *datain, float *fdata=NULL)=0; */
+/*    virtual double* decodeData(int *datain, double *fdata=NULL)=0; */
 /*   virtual int getTotalNumberOfChannels()=0; */
 
   

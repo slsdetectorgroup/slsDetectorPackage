@@ -22,8 +22,8 @@ postProcessing::postProcessing(){
 
 
 
-int postProcessing::flatFieldCorrect(float datain, float errin, float &dataout, float &errout, float ffcoefficient, float fferr){
-  float e;
+int postProcessing::flatFieldCorrect(double datain, double errin, double &dataout, double &errout, double ffcoefficient, double fferr){
+  double e;
 
   dataout=datain*ffcoefficient;
 
@@ -41,10 +41,10 @@ int postProcessing::flatFieldCorrect(float datain, float errin, float &dataout, 
 };
 
 
- int postProcessing::rateCorrect(float datain, float errin, float &dataout, float &errout, float tau, float t){
+ int postProcessing::rateCorrect(double datain, double errin, double &dataout, double &errout, double tau, double t){
 
-   // float data;
-   float e;
+   // double data;
+   double e;
  
    dataout=(datain*exp(tau*datain/t));
    
@@ -140,7 +140,7 @@ int postProcessing::setBadChannelCorrection(ifstream &infile, int &nbad, int *ba
 void postProcessing::processFrame(int *myData, int delflag) {
 
   string fname;
-  // float *fdata=NULL;
+  // double *fdata=NULL;
   
   
  incrementProgress();
@@ -183,7 +183,7 @@ fname=createFileName();
 
 
 
-void postProcessing::doProcessing(float *lfdata, int delflag, string fname) {
+void postProcessing::doProcessing(double *lfdata, int delflag, string fname) {
 
 
 //   /** write raw data file */	   
@@ -194,9 +194,9 @@ void postProcessing::doProcessing(float *lfdata, int delflag, string fname) {
 
     
 
-    float *rcdata=NULL, *rcerr=NULL;
-    float *ffcdata=NULL, *ffcerr=NULL;
-    float *ang=NULL;
+    double *rcdata=NULL, *rcerr=NULL;
+    double *ffcdata=NULL, *ffcerr=NULL;
+    double *ang=NULL;
     // int imod;
     int np;
     //string fname;
@@ -208,8 +208,8 @@ void postProcessing::doProcessing(float *lfdata, int delflag, string fname) {
 
     /** rate correction */
     if (*correctionMask&(1<<RATE_CORRECTION)) {
-      rcdata=new float[getTotalNumberOfChannels()]; 
-      rcerr=new float[getTotalNumberOfChannels()];
+      rcdata=new double[getTotalNumberOfChannels()];
+      rcerr=new double[getTotalNumberOfChannels()];
       rateCorrect(lfdata,NULL,rcdata,rcerr);
       delete [] lfdata;
     } else {
@@ -223,8 +223,8 @@ void postProcessing::doProcessing(float *lfdata, int delflag, string fname) {
     /** flat field correction */
     if (*correctionMask&(1<<FLAT_FIELD_CORRECTION)) {
       
-      ffcdata=new float[getTotalNumberOfChannels()]; 
-      ffcerr=new float[getTotalNumberOfChannels()];
+      ffcdata=new double[getTotalNumberOfChannels()];
+      ffcerr=new double[getTotalNumberOfChannels()];
       flatFieldCorrect(rcdata,rcerr,ffcdata,ffcerr);
       delete [] rcdata;
       rcdata=NULL;

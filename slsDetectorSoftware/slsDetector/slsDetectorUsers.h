@@ -182,14 +182,14 @@ class slsDetectorUsers
       \param pos array with the encoder positions
       \returns number of positions
   */
-  virtual int setPositions(int nPos, float *pos)=0;
+  virtual int setPositions(int nPos, double *pos)=0;
   
   /** 
            @short get  positions for the acquisition
       \param pos array which will contain the encoder positions
       \returns number of positions
   */
-  virtual int getPositions(float *pos=NULL)=0;
+  virtual int getPositions(double *pos=NULL)=0;
   
   /**
      @short sets the detector size
@@ -358,7 +358,7 @@ class slsDetectorUsers
      \param func function for reading the detector position
   */
   
-  virtual void registerGetPositionCallback( float (*func)(void*),void *arg)=0;
+  virtual void registerGetPositionCallback( double (*func)(void*),void *arg)=0;
   /**
      @short register callback for connecting to the epics channels
      \param func function for connecting to the epics channels
@@ -373,17 +373,17 @@ class slsDetectorUsers
      @short register callback for moving the detector
      \param func function for moving the detector
   */
-  virtual void registerGoToPositionCallback( int (*func)(float,void*),void *arg)=0;
+  virtual void registerGoToPositionCallback( int (*func)(double,void*),void *arg)=0;
   /**
      @short register callback for moving the detector without waiting
      \param func function for moving the detector
   */
-  virtual void registerGoToPositionNoWaitCallback( int (*func)(float,void*),void *arg)=0;
+  virtual void registerGoToPositionNoWaitCallback( int (*func)(double,void*),void *arg)=0;
   /**
      @short register calbback reading to I0
      \param func function for reading the I0 (called with parameter 0 before the acquisition, 1 after and the return value used as I0)
   */
-  virtual void registerGetI0Callback( float (*func)(int,void*),void *arg)=0;
+  virtual void registerGetI0Callback( double (*func)(int,void*),void *arg)=0;
   
   /************************************************************************
 

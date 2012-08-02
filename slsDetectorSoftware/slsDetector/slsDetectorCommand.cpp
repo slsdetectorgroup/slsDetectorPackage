@@ -1385,7 +1385,7 @@ string slsDetectorCommand::cmdFlatField(int narg, char *args[], int action){
 	sval=string(args[1]);
       else
 	sval="none";
-      float corr[24*1280], ecorr[24*1280];
+      double corr[24*1280], ecorr[24*1280];
       if (myDet->getFlatFieldCorrection(corr,ecorr)) {
 	if (sval!="none") {
 	  myDet->writeDataFile(sval,corr,ecorr,NULL,'i');
@@ -1438,14 +1438,14 @@ string slsDetectorCommand::cmdRateCorr(int narg, char *args[], int action){
   if (action==HELP_ACTION) {
     return helpRateCorr(narg, args, action);
   } 
-  float fval;
+  double fval;
   char answer[1000];
 
   if (action==PUT_ACTION) {
     sscanf(args[1],"%f",&fval);
     myDet->setRateCorrection(fval);
   } 
-  float t;
+  double t;
   if (myDet->getRateCorrection(t)) {
     sprintf(answer,"%f",t);
   } else {
@@ -1525,7 +1525,7 @@ string slsDetectorCommand::cmdAngConv(int narg, char *args[], int action){
   } 
   string sval;
   char answer[1000];
-  float fval;
+  double fval;
   angleConversionParameter c;
 
   if (string(args[0])==string("angconv")) {
@@ -1767,7 +1767,7 @@ string slsDetectorCommand::cmdPositions(int narg, char *args[], int action){
 
   if (action==PUT_ACTION) {
     if (sscanf(args[1],"%d",&ival)) {
-      float pos[ival];
+      double pos[ival];
       for (ip=0; ip<ival;ip++) {  
 	if ((2+ip)<narg) {
 	  if (sscanf(args[2+ip],"%f",pos+ip)) {
@@ -1783,7 +1783,7 @@ string slsDetectorCommand::cmdPositions(int narg, char *args[], int action){
   }
   int npos=myDet->getPositions();
   sprintf(answer,"%d",npos);
-  float opos[npos];
+  double opos[npos];
   myDet->getPositions(opos);
   for (int ip=0; ip<npos;ip++) {
     sprintf(answer,"%s %f",answer,opos[ip]);
@@ -1855,7 +1855,7 @@ string slsDetectorCommand::cmdScans(int narg, char *args[], int action) {
 
   int is=-1, ival, ns=0;
   char answer[MAX_SCAN_STEPS*10];
-  float *values;
+  double *values;
   if (action==HELP_ACTION)
     return helpScans(narg,args,action);
 
@@ -1894,7 +1894,7 @@ string slsDetectorCommand::cmdScans(int narg, char *args[], int action) {
 	if (ival>MAX_SCAN_STEPS)
 	  return string("too many steps required!");
       
-	values=new float[ival];
+	values=new double[ival];
 	for (int i=0; i<ival; i++) {
 	  if (narg>=(i+2)) {
 	    if (sscanf(args[i+2],"%f",values+i))
@@ -1911,7 +1911,7 @@ string slsDetectorCommand::cmdScans(int narg, char *args[], int action) {
       }
     }
     ns=myDet->getScanSteps(is);
-    values=new float[ns];
+    values=new double[ns];
     ns=myDet->getScanSteps(is, values);
     int p=myDet->getScanPrecision(is);
     char format[1000];
@@ -1927,7 +1927,7 @@ string slsDetectorCommand::cmdScans(int narg, char *args[], int action) {
 
 
     if (action==PUT_ACTION) {
-      float fmin, fmax, fstep;
+      double fmin, fmax, fstep;
       if (narg<4)
 	return string("wrong number of arguments ")+helpScans(narg,args,action);
       
@@ -1969,7 +1969,7 @@ string slsDetectorCommand::cmdScans(int narg, char *args[], int action) {
 	  fstep=-1*fstep;
 
       
-      values=new float[ns];
+      values=new double[ns];
       for (int i=0; i<ns; i++) {
 	values[i]=fmin+i*fstep;
       }
@@ -1978,7 +1978,7 @@ string slsDetectorCommand::cmdScans(int narg, char *args[], int action) {
     } 
     
     ns=myDet->getScanSteps(is);
-    values=new float[ns];
+    values=new double[ns];
     ns=myDet->getScanSteps(is, values);
     int p=myDet->getScanPrecision(is);
     char format[1000];
@@ -2638,7 +2638,7 @@ string slsDetectorCommand::cmdDAC(int narg, char *args[], int action) {
     return helpDAC(narg, args, action);
   
   dacIndex dac;
-  float val=-1;
+  double val=-1;
   char answer[1000];
   
   if (cmd=="vthreshold")
@@ -2788,7 +2788,7 @@ string slsDetectorCommand::helpDAC(int narg, char *args[], int action) {
 string slsDetectorCommand::cmdADC(int narg, char *args[], int action) {
 
   dacIndex adc;
-  //  float val=-1;
+  //  double val=-1;
   char answer[1000];
   
   if (action==HELP_ACTION)
@@ -2855,7 +2855,7 @@ string slsDetectorCommand::helpTiming(int narg, char *args[], int action){
 string slsDetectorCommand::cmdTimer(int narg, char *args[], int action) {
   timerIndex index; 
   int64_t t=-1, ret;
-  float val, rval;
+  double val, rval;
   
   char answer[1000];
 
@@ -2896,7 +2896,7 @@ string slsDetectorCommand::cmdTimer(int narg, char *args[], int action) {
 
   ret=myDet->setTimer(index,t);
   if (index==ACQUISITION_TIME || index==FRAME_PERIOD || index==DELAY_AFTER_TRIGGER)
-    rval=(float)ret*1E-9;
+    rval=(double)ret*1E-9;
   else rval=ret;
   
 
@@ -2949,7 +2949,7 @@ string slsDetectorCommand::helpTimer(int narg, char *args[], int action) {
 string slsDetectorCommand::cmdTimeLeft(int narg, char *args[], int action) {
   timerIndex index; 
   int64_t ret;
-  float rval;
+  double rval;
   
   char answer[1000];
 
@@ -2991,7 +2991,7 @@ string slsDetectorCommand::cmdTimeLeft(int narg, char *args[], int action) {
   ret=myDet->getTimeLeft(index);
 
   if (index==ACQUISITION_TIME || index==FRAME_PERIOD || index==DELAY_AFTER_TRIGGER || index==ACTUAL_TIME || index==MEASUREMENT_TIME)
-    rval=(float)ret*1E-9;
+    rval=(double)ret*1E-9;
   else rval=ret;
   
 

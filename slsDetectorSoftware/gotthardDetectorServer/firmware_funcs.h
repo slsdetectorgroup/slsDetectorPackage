@@ -56,7 +56,7 @@ int setContinousReadOut(int d);
 
 int setDACRegister(int idac, int val, int imod);
 
-float getTemperature(int tempSensor,int imod);
+double getTemperature(int tempSensor,int imod);
 int initHighVoltage(int val,int imod);
 int initConfGain(int isettings,int val,int imod);
 

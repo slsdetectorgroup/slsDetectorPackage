@@ -142,7 +142,7 @@ int slsDetectorActions::getActionMode(int iaction){
       \param fname for script ("" disable)
       \returns 0 if scan disabled, >0 otherwise
   */
-int slsDetectorActions::setScan(int iscan, string script, int nvalues, float *values, string par, int precision) {
+int slsDetectorActions::setScan(int iscan, string script, int nvalues, double *values, string par, int precision) {
   if (iscan>=0 && iscan<MAX_SCAN_LEVELS) {
 
     if (script=="") {
@@ -274,7 +274,7 @@ int slsDetectorActions::setScanPrecision(int iscan, int precision) {
 
 }
 
-int slsDetectorActions::setScanSteps(int iscan, int nvalues, float *values) {
+int slsDetectorActions::setScanSteps(int iscan, int nvalues, double *values) {
 
   if (iscan>=0 && iscan<MAX_SCAN_LEVELS) {
   
@@ -372,7 +372,7 @@ int slsDetectorActions::getScanMode(int iscan){
 	\param v is the pointer to the scan steps
 	\returns scan steps
     */
-int slsDetectorActions::getScanSteps(int iscan, float *v) {
+int slsDetectorActions::getScanSteps(int iscan, double *v) {
 
   if (iscan>=0 && iscan<MAX_SCAN_LEVELS) {
     if (v) {
@@ -463,7 +463,7 @@ int slsDetectorActions::executeAction(int level) {
 // 		getActionScript(level).c_str(),		\
 // 		getFileIndexFromFileName(currentFileName),  \
 // 		currentFileName.c_str(),		    \
-// 		((float)timerValue[ACQUISITION_TIME])*1E-9, \
+// 		((double)timerValue[ACQUISITION_TIME])*1E-9, \
 // 		*currentSettings,			\
 // 		*currentThresholdEV,			\
 // 		getBadChannelCorrectionFile().c_str(),	\

@@ -64,9 +64,9 @@ class slsDetectorUtils :  public slsDetectorActions, public postProcessing {
   
 
 
-  //int setPositions(int nPos, float *pos){return angularConversion::setPositions(nPos, pos);};
+  //int setPositions(int nPos, double *pos){return angularConversion::setPositions(nPos, pos);};
 
-  // int getPositions(float *pos=NULL){return angularConversion::getPositions(pos);};
+  // int getPositions(double *pos=NULL){return angularConversion::getPositions(pos);};
   
   using slsDetectorBase::setFlatFieldCorrection;
   using postProcessing::setBadChannelCorrection;
@@ -87,7 +87,7 @@ class slsDetectorUtils :  public slsDetectorActions, public postProcessing {
   // int getScanPrecision(int i){return slsDetectorActions::getScanPrecision(i);};
 
   // int getActionMask() {return slsDetectorActions::getActionMask();};
-  // float getCurrentScanVariable(int i) {return slsDetectorActions::getCurrentScanVariable(i);};
+  // double getCurrentScanVariable(int i) {return slsDetectorActions::getCurrentScanVariable(i);};
   // int getCurrentPositionIndex(){return angularConversion::getCurrentPositionIndex();}; 
   // int getNumberOfPositions(){return angularConversion::getNumberOfPositions();};
 
@@ -403,13 +403,13 @@ class slsDetectorUtils :  public slsDetectorActions, public postProcessing {
   void acquire(int delflag=1);
 
 
-  //  float* convertAngles(){return convertAngles(currentPosition);};
-  // virtual float* convertAngles(float pos)=0;
+  //  double* convertAngles(){return convertAngles(currentPosition);};
+  // virtual double* convertAngles(double pos)=0;
 
   virtual int setThresholdEnergy(int, int im=-1, detectorSettings isettings=GET_SETTINGS)=0;
    virtual int setChannel(int64_t, int ich=-1, int ichip=-1, int imod=-1)=0;
 
-  virtual float getRateCorrectionTau()=0;
+  virtual double getRateCorrectionTau()=0;
   virtual int* startAndReadAll()=0;
 
   virtual int getTotalNumberOfChannels()=0;
@@ -423,7 +423,7 @@ class slsDetectorUtils :  public slsDetectorActions, public postProcessing {
 
   int setTotalProgress();
   
-  float getCurrentProgress();
+  double getCurrentProgress();
 
 
   void incrementProgress();
@@ -491,7 +491,7 @@ class slsDetectorUtils :  public slsDetectorActions, public postProcessing {
     \param imod module number (if -1 alla modules)
     \returns current DAC value
   */
-  virtual float setDAC(float val, dacIndex index , int imod=-1)=0;
+  virtual double setDAC(double val, dacIndex index , int imod=-1)=0;
 
 
   /**
@@ -500,7 +500,7 @@ class slsDetectorUtils :  public slsDetectorActions, public postProcessing {
      \param imod module number
      \returns current ADC value
   */
-  virtual float getADC(dacIndex index, int imod=0)=0;
+  virtual double getADC(dacIndex index, int imod=0)=0;
 
   /**
       get the maximum size of the detector
@@ -520,13 +520,13 @@ class slsDetectorUtils :  public slsDetectorActions, public postProcessing {
 
 
 
-  void registerGetPositionCallback( float (*func)(void*),void *arg){get_position=func; POarg=arg;};
+  void registerGetPositionCallback( double (*func)(void*),void *arg){get_position=func; POarg=arg;};
   void registerConnectChannelsCallback( int (*func)(void*),void *arg){connect_channels=func; CCarg=arg;};
   void registerDisconnectChannelsCallback(int (*func)(void*),void*arg){disconnect_channels=func;DCarg=arg;};
   
-  void registerGoToPositionCallback( int (*func)(float, void*),void *arg){go_to_position=func;GTarg=arg;};
-  void registerGoToPositionNoWaitCallback(int (*func)(float, void*),void*arg){go_to_position_no_wait=func;GTNarg=arg;};
-  void registerGetI0Callback( float (*func)(int, void*),void *arg){get_i0=func;IOarg=arg;};
+  void registerGoToPositionCallback( int (*func)(double, void*),void *arg){go_to_position=func;GTarg=arg;};
+  void registerGoToPositionNoWaitCallback(int (*func)(double, void*),void*arg){go_to_position_no_wait=func;GTNarg=arg;};
+  void registerGetI0Callback( double (*func)(int, void*),void *arg){get_i0=func;IOarg=arg;};
   
   /** 
      Saves the detector setup to file
@@ -565,12 +565,12 @@ class slsDetectorUtils :  public slsDetectorActions, public postProcessing {
 	      		  
   int progressIndex;
 	  
-  float (*get_position)(void*);
-  int (*go_to_position)(float, void*);
-  int (*go_to_position_no_wait)(float, void*);
+  double (*get_position)(void*);
+  int (*go_to_position)(double, void*);
+  int (*go_to_position_no_wait)(double, void*);
   int (*connect_channels)(void*);
   int (*disconnect_channels)(void*);
-  float (*get_i0)(int, void*);
+  double (*get_i0)(int, void*);
   void *POarg,*CCarg,*DCarg,*GTarg,*GTNarg,*IOarg;
   
 

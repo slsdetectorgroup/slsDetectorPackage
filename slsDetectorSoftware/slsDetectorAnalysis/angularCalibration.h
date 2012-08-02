@@ -12,7 +12,7 @@
 class TH1;
 #endif
 
-  //float angle(int ichan, float encoder, float totalOffset, float conv_r, float center, float offset, float tilt, int direction)
+  //double angle(int ichan, double encoder, double totalOffset, double conv_r, double center, double offset, double tilt, int direction)
 
 
 
@@ -20,14 +20,14 @@ class TH1;
    angular conversion constant for a module
  */
 typedef struct  {
-  float center;  /**< center of the module (channel at which the radius is perpendicular to the module surface) */
-  float ecenter; /**< error in the center determination */
-  float r_conversion;  /**<  detector pixel size (or strip pitch) divided by the diffractometer radius */
-  float er_conversion;  /**< error in the r_conversion determination */
-  float offset; /**< the module offset i.e. the position of channel 0 with respect to the diffractometer 0 */
-  float eoffset; /**< error in the offset determination */
-  float tilt; /**< ossible tilt in the orthogonal direction (unused)*/
-  float etilt; /**< error in the tilt determination */
+  double center;  /**< center of the module (channel at which the radius is perpendicular to the module surface) */
+  double ecenter; /**< error in the center determination */
+  double r_conversion;  /**<  detector pixel size (or strip pitch) divided by the diffractometer radius */
+  double er_conversion;  /**< error in the r_conversion determination */
+  double offset; /**< the module offset i.e. the position of channel 0 with respect to the diffractometer 0 */
+  double eoffset; /**< error in the offset determination */
+  double tilt; /**< ossible tilt in the orthogonal direction (unused)*/
+  double etilt; /**< error in the tilt determination */
 } angleConversionConstant;
 
 
@@ -50,26 +50,26 @@ class angularCalibration {
       \param f encoder position to be set
       \returns current encoder position
   */
-  float setEncoder(float f) {encoder=f; return encoder;};  
+  double setEncoder(double f) {encoder=f; return encoder;};
 
   /** 
       gets the encoder position
       \returns encoder position
   */
-  float getEncoder() {return encoder;};
+  double getEncoder() {return encoder;};
 
   /** 
       sets the totalOffset of the detector
       \param f total offset to be set
       \returns current total offset
   */
-  float setTotalOffset(float f) {totalOffset=f; return totalOffset;};  
+  double setTotalOffset(double f) {totalOffset=f; return totalOffset;};
 
   /** 
       gets the encoder position
       \returns encoder position
   */
-  float getTotalOffset() {return totalOffset;};
+  double getTotalOffset() {return totalOffset;};
 
 
 
@@ -79,7 +79,7 @@ class angularCalibration {
      \param mi minimum of the angular range
      \param ma maximum of the angular range
   */
-  void setAngularRange(float mi, float ma){ang_min=mi; ang_max=ma;};
+  void setAngularRange(double mi, double ma){ang_min=mi; ang_max=ma;};
 
 
   /**
@@ -87,7 +87,7 @@ class angularCalibration {
      \param mi reference to the minimum of the angular range
      \param ma reference to the maximum of the angular range
   */
-  void getAngularRange(float &mi, float &ma){mi=ang_min; ma=ang_max;};
+  void getAngularRange(double &mi, double &ma){mi=ang_min; ma=ang_max;};
 
 
   /** sets and returns the number of modules
@@ -147,10 +147,10 @@ class angularCalibration {
   TF1 *fangle; /**< Root function based on function angleFunction */
   
 #endif
-  float encoder; /**< position of the detector encoder */
-  float totalOffset; /**< total offset of the detector */ 
-  float ang_min; /**< minimum of the angular range for peak fitting*/
-  float ang_max; /**< maximum of the angular range for peak fitting */
+  double encoder; /**< position of the detector encoder */
+  double totalOffset; /**< total offset of the detector */
+  double ang_min; /**< minimum of the angular range for peak fitting*/
+  double ang_max; /**< maximum of the angular range for peak fitting */
    
   int nmod;
   int nchmod;
@@ -161,8 +161,8 @@ class angularCalibration {
 
 
 
-/* void fitangle(char fname[80],char extension[10], int start, int stop, float startangle, float stopangle);  //fits all datasets and extracts the constants */
-/* int fitpeak(char fname[80],char extension[10], int nr, float minang, float maxang); // fits a peak from a pattern using nominal calibration constant */
+/* void fitangle(char fname[80],char extension[10], int start, int stop, double startangle, double stopangle);  //fits all datasets and extracts the constants */
+/* int fitpeak(char fname[80],char extension[10], int nr, double minang, double maxang); // fits a peak from a pattern using nominal calibration constant */
 
 
 };

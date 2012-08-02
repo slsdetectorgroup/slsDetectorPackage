@@ -134,7 +134,7 @@ typedef  struct sharedSlsDetector {
   /** threaded processing flag (i.e. if data are processed and written to file in a separate thread)  */
   int threadedProcessing;
     /** dead time (in ns) for rate corrections */
-    float tDead;
+    double tDead;
   /** directory where the flat field files are stored */
   char flatFieldDir[MAX_STR_LENGTH];
   /** file used for flat field corrections */
@@ -157,15 +157,15 @@ typedef  struct sharedSlsDetector {
     /** angular direction (1 if it corresponds to the encoder direction i.e. channel 0 is 0, maxchan is positive high angle, 0 otherwise  */
   int angDirection;
   /** beamline fine offset (of the order of mdeg, might be adjusted for each measurements)  */
-  float fineOffset;
+  double fineOffset;
      /** beamline offset (might be a few degrees beacuse of encoder offset - normally it is kept fixed for a long period of time)  */
-  float globalOffset;
+  double globalOffset;
      /** number of positions at which the detector should acquire  */
   int numberOfPositions;
      /** list of encoder positions at which the detector should acquire */
-  float detPositions[MAXPOS];
+  double detPositions[MAXPOS];
   /** bin size for data merging */
-  float binSize;
+  double binSize;
   /** add encoder value flag (i.e. wether the detector is moving - 1 - or stationary - 0) */ 
   int moveFlag;
 
@@ -698,7 +698,7 @@ typedef  struct sharedSlsDetector {
      not yet implemented
      
   */ 
-  int giveCalibrationPulse(float vcal, int npulses);
+  int giveCalibrationPulse(double vcal, int npulses);
 
   // Expert Initialization functions
  
@@ -727,7 +727,7 @@ typedef  struct sharedSlsDetector {
     \param imod module number (if -1 alla modules)
     \returns current DAC value
   */
-  float setDAC(float val, dacIndex index, int imod=-1);
+  double setDAC(double val, dacIndex index, int imod=-1);
   
   /**
     set dacs value
@@ -735,7 +735,7 @@ typedef  struct sharedSlsDetector {
     \param imod module number
     \returns current ADC value
   */
-  float getADC(dacIndex index, int imod=0); 
+  double getADC(dacIndex index, int imod=0);
  
   /**
     configure channel
@@ -822,8 +822,8 @@ typedef  struct sharedSlsDetector {
   //virtual sls_detector_module *getModule(int imod);
  
   // calibration functions
-  //  int setCalibration(int imod, detectorSettings isettings, float gain, float offset);
-  //int getCalibration(int imod, detectorSettings isettings, float &gain, float &offset);
+  //  int setCalibration(int imod, detectorSettings isettings, double gain, double offset);
+  //int getCalibration(int imod, detectorSettings isettings, double &gain, double &offset);
   
 
   /*
@@ -1044,7 +1044,7 @@ typedef  struct sharedSlsDetector {
       \param ecorr if !=NULL the flat field correction errors will be filled with ecorr (1 otherwise)
       \returns 0 if ff correction disabled, >0 otherwise
   */
-  int setFlatFieldCorrection(float *corr, float *ecorr=NULL);
+  int setFlatFieldCorrection(double *corr, double *ecorr=NULL);
 
 
   /** 
@@ -1053,7 +1053,7 @@ typedef  struct sharedSlsDetector {
       \param ecorr if !=NULL will be filled with the correction coefficients errors
       \returns 0 if ff correction disabled, >0 otherwise
   */
-  int getFlatFieldCorrection(float *corr=NULL, float *ecorr=NULL);
+  int getFlatFieldCorrection(double *corr=NULL, double *ecorr=NULL);
 
 
   /** 
@@ -1061,7 +1061,7 @@ typedef  struct sharedSlsDetector {
       \param t dead time in ns - if 0 disable correction, if >0 set dead time to t, if <0 set deadtime to default dead time for current settings
       \returns 0 if rate correction disabled, >0 otherwise
   */
-  int setRateCorrection(float t=0);
+  int setRateCorrection(double t=0);
 
   
   /** 
@@ -1069,14 +1069,14 @@ typedef  struct sharedSlsDetector {
       \param t reference for dead time
       \returns 0 if rate correction disabled, >0 otherwise
   */
-  int getRateCorrection(float &t);
+  int getRateCorrection(double &t);
 
   
   /** 
       get rate correction tau
       \returns 0 if rate correction disabled, otherwise the tau used for the correction
   */
-  float getRateCorrectionTau();
+  double getRateCorrectionTau();
   /** 
       get rate correction
       \returns 0 if rate correction disabled, >0 otherwise
@@ -1122,11 +1122,11 @@ typedef  struct sharedSlsDetector {
 
 
   /** 
-     decode data from the detector converting them to an array of floats, one for each channle
+     decode data from the detector converting them to an array of doubles, one for each channle
      \param datain data from the detector
-     \returns pointer to a float array with a data per channel
+     \returns pointer to a double array with a data per channel
   */
-  float* decodeData(int *datain, float *fdata=NULL);
+  double* decodeData(int *datain, double *fdata=NULL);
 
   
   
@@ -1140,7 +1140,7 @@ typedef  struct sharedSlsDetector {
      \param errout error on corrected data (if not NULL)
      \returns 0
   */
-  int flatFieldCorrect(float* datain, float *errin, float* dataout, float *errout);
+  int flatFieldCorrect(double* datain, double *errin, double* dataout, double *errout);
  
 
   
@@ -1153,7 +1153,7 @@ typedef  struct sharedSlsDetector {
      \param errout error on corrected data (if not NULL)
      \returns 0
   */
-  int rateCorrect(float* datain, float *errin, float* dataout, float *errout);
+  int rateCorrect(double* datain, double *errin, double* dataout, double *errout);
 
   
 /*   /\**  */
@@ -1167,7 +1167,7 @@ typedef  struct sharedSlsDetector {
 /*       \sa mythenDetector::resetMerging */
 /*   *\/ */
   
-/*   int resetMerging(float *mp, float *mv,float *me, int *mm); */
+/*   int resetMerging(double *mp, double *mv,double *me, int *mm); */
   
 /*   /\**  */
 /*       pure virtual function */
@@ -1181,7 +1181,7 @@ typedef  struct sharedSlsDetector {
 /*       \param mm multiplicity of merged arrays */
 /*       \sa mythenDetector::addToMerging */
 /*   *\/ */
-/*   int addToMerging(float *p1, float *v1, float *e1, float *mp, float *mv,float *me, int *mm); */
+/*   int addToMerging(double *p1, double *v1, double *e1, double *mp, double *mv,double *me, int *mm); */
 
 /*   /\** pure virtual function */
 /*       calculates the "final" positions, data value and errors for the emrged data */
@@ -1192,7 +1192,7 @@ typedef  struct sharedSlsDetector {
 /*       \returns FAIL or the number of non empty bins (i.e. points belonging to the pattern) */
 /*       \sa mythenDetector::finalizeMerging */
 /*   *\/ */
-/*   int finalizeMerging(float *mp, float *mv,float *me, int *mm); */
+/*   int finalizeMerging(double *mp, double *mv,double *me, int *mm); */
 
   /** 
       turns off server
@@ -1227,10 +1227,10 @@ typedef  struct sharedSlsDetector {
   int setTotalProgress();
 
   /** returns the current progress in % */
-  float getCurrentProgress();
+  double getCurrentProgress();
   
 
-  //  float* convertAngles(float pos);
+  //  double* convertAngles(double pos);
 
 
 
@@ -1366,17 +1366,17 @@ typedef  struct sharedSlsDetector {
 
  
   /** pointer to flat field coefficients */
-  float *ffcoefficients;
+  double *ffcoefficients;
   /** pointer to flat field coefficient errors */
-  float *fferrors;
+  double *fferrors;
 
 
   /** pointer to detector module structures */
   sls_detector_module *detectorModules;
   /** pointer to dac valuse */
-  float *dacs;
+  double *dacs;
   /** pointer to adc valuse */
-  float *adcs;
+  double *adcs;
   /** pointer to chip registers */
   int *chipregs;
   /** pointer to channal registers */

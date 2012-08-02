@@ -36,10 +36,10 @@ angularConversion::~angularConversion(){
 
 
 
-float* angularConversion::convertAngles(float pos) {
+double* angularConversion::convertAngles(double pos) {
   int imod=0;
-  float    *ang=new float[getTotalNumberOfChannels()]; 
-  float enc=pos;
+  double    *ang=new double[getTotalNumberOfChannels()];
+  double enc=pos;
   angleConversionConstant *p=NULL;
 
   int ch0=0;
@@ -109,9 +109,9 @@ int angularConversion::readAngularConversion(string fname, int nmod, angleConver
 int angularConversion::readAngularConversion( ifstream& infile, int nmod, angleConversionConstant *angOff) {
   string str;
   int mod;
-  float center, ecenter;
-  float r_conv, er_conv;
-  float off, eoff;
+  double center, ecenter;
+  double r_conv, er_conv;
+  double off, eoff;
   string ss;
   int interrupt=0;
   int nm=0;
@@ -181,7 +181,7 @@ int angularConversion:: writeAngularConversion(ofstream& outfile, int nmod, angl
 
 
 //static
-int angularConversion::resetMerging(float *mp, float *mv, float *me, int *mm, int nb) {
+int angularConversion::resetMerging(double *mp, double *mv, double *me, int *mm, int nb) {
   
 		
 #ifdef VERBOSE
@@ -200,7 +200,7 @@ int angularConversion::resetMerging(float *mp, float *mv, float *me, int *mm, in
 
 
 //static
-int angularConversion::finalizeMerging(float *mp, float *mv, float *me, int *mm,int nb) {
+int angularConversion::finalizeMerging(double *mp, double *mv, double *me, int *mm,int nb) {
    int np=0;
    for (int ibin=0; ibin<nb; ibin++) {
      if (mm[ibin]>0) {
@@ -220,10 +220,10 @@ int angularConversion::finalizeMerging(float *mp, float *mv, float *me, int *mm,
 }
 
 //static
-int  angularConversion::addToMerging(float *p1, float *v1, float *e1, float *mp, float *mv,float *me, int *mm, int nchans, float binsize,int nbins, int *badChanMask ) {
+int  angularConversion::addToMerging(double *p1, double *v1, double *e1, double *mp, double *mv,double *me, int *mm, int nchans, double binsize,int nbins, int *badChanMask ) {
 
 
-  float binmi=-180.;
+  double binmi=-180.;
   int ibin=0;
 
   if (p1==NULL)
@@ -299,13 +299,13 @@ int angularConversion::deleteMerging() {
 int angularConversion::resetMerging() {
   getAngularConversionParameter(BIN_SIZE);
 
-  mergingBins=new float[nBins];
+  mergingBins=new double[nBins];
   
 
-  mergingCounts=new float[nBins];
+  mergingCounts=new double[nBins];
 
 
-  mergingErrors=new float[nBins];
+  mergingErrors=new double[nBins];
 
   
   mergingMultiplicity=new int[nBins];
@@ -314,7 +314,7 @@ int angularConversion::resetMerging() {
 
 }
 
-int angularConversion::resetMerging(float *mp, float *mv, float *me, int *mm) {
+int angularConversion::resetMerging(double *mp, double *mv, double *me, int *mm) {
   getAngularConversionParameter(BIN_SIZE);
   if (nBins)
     return resetMerging(mp, mv, me, mm,nBins);
@@ -338,14 +338,14 @@ int angularConversion::finalizeMerging() {
 
 
 
-int angularConversion::finalizeMerging(float *mp, float *mv, float *me, int *mm) {
+int angularConversion::finalizeMerging(double *mp, double *mv, double *me, int *mm) {
   if (nBins)
     return finalizeMerging(mp, mv, me, mm, nBins);
   else
     return FAIL;
 }
 
-int  angularConversion::addToMerging(float *p1, float *v1, float *e1, int *badChanMask ) {
+int  angularConversion::addToMerging(double *p1, double *v1, double *e1, int *badChanMask ) {
 
   return addToMerging(p1,v1,e1,mergingBins,mergingCounts, mergingErrors, mergingMultiplicity, badChanMask);
 
@@ -353,7 +353,7 @@ int  angularConversion::addToMerging(float *p1, float *v1, float *e1, int *badCh
 }
 
 
-int  angularConversion::addToMerging(float *p1, float *v1, float *e1, float *mp, float *mv,float *me, int *mm, int *badChanMask ) {
+int  angularConversion::addToMerging(double *p1, double *v1, double *e1, double *mp, double *mv,double *me, int *mm, int *badChanMask ) {
 
   int del=0;
   
@@ -392,7 +392,7 @@ int  angularConversion::addToMerging(float *p1, float *v1, float *e1, float *mp,
      \returns the actual value
   */
 
-float angularConversion::setAngularConversionParameter(angleConversionParameter c, float v){
+double angularConversion::setAngularConversionParameter(angleConversionParameter c, double v){
   
 
   switch (c) {
@@ -435,7 +435,7 @@ float angularConversion::setAngularConversionParameter(angleConversionParameter 
 
   */
 
-float angularConversion::getAngularConversionParameter(angleConversionParameter c) {
+double angularConversion::getAngularConversionParameter(angleConversionParameter c) {
 
   switch (c) {
   case ANGULAR_DIRECTION:
@@ -495,7 +495,7 @@ int angularConversion::setAngularConversionFile(string fname) {
       \param pos array with the encoder positions
       \returns number of positions
   */
-int angularConversion::setPositions(int nPos, float *pos){
+int angularConversion::setPositions(int nPos, double *pos){
   if (nPos>=0)
     *numberOfPositions=nPos; 
   for (int ip=0; ip<nPos; ip++) 
@@ -508,7 +508,7 @@ int angularConversion::setPositions(int nPos, float *pos){
    \param pos array which will contain the encoder positions
    \returns number of positions
 */
-int angularConversion::getPositions(float *pos){ 
+int angularConversion::getPositions(double *pos){
   if (pos) {
     for (int ip=0; ip<(*numberOfPositions); ip++) 
       pos[ip]=detPositions[ip];

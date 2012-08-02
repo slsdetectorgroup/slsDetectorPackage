@@ -58,8 +58,8 @@ int bus_w(int addr,int val);
 //read register
 int bus_r(int addr);
 
-float setDAC(enum dacIndex ind, float val, int imod);
-float getADC(enum dacIndex ind,  int imod);
+double setDAC(enum dacIndex ind, double val, int imod);
+double getADC(enum dacIndex ind,  int imod);
 
 int setChannel(sls_detector_channel myChan);
 int getChannel(sls_detector_channel *myChan);

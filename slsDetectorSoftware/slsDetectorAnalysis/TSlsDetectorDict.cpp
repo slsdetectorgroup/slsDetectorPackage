@@ -359,7 +359,7 @@ static int G__TSlsDetectorDict_87_0_2(G__value* result7, G__CONST char* funcname
 
 static int G__TSlsDetectorDict_87_0_3(G__value* result7, G__CONST char* funcname, struct G__param* libp, int hash)
 {
-      G__letdouble(result7, 102, (double) ((angularCalibration*) G__getstructoffset())->setEncoder((float) G__double(libp->para[0])));
+      G__letdouble(result7, 102, (double) ((angularCalibration*) G__getstructoffset())->setEncoder((double) G__double(libp->para[0])));
    return(1 || funcname || hash || result7 || libp) ;
 }
 
@@ -371,7 +371,7 @@ static int G__TSlsDetectorDict_87_0_4(G__value* result7, G__CONST char* funcname
 
 static int G__TSlsDetectorDict_87_0_5(G__value* result7, G__CONST char* funcname, struct G__param* libp, int hash)
 {
-      G__letdouble(result7, 102, (double) ((angularCalibration*) G__getstructoffset())->setTotalOffset((float) G__double(libp->para[0])));
+      G__letdouble(result7, 102, (double) ((angularCalibration*) G__getstructoffset())->setTotalOffset((double) G__double(libp->para[0])));
    return(1 || funcname || hash || result7 || libp) ;
 }
 
@@ -383,14 +383,14 @@ static int G__TSlsDetectorDict_87_0_6(G__value* result7, G__CONST char* funcname
 
 static int G__TSlsDetectorDict_87_0_7(G__value* result7, G__CONST char* funcname, struct G__param* libp, int hash)
 {
-      ((angularCalibration*) G__getstructoffset())->setAngularRange((float) G__double(libp->para[0]), (float) G__double(libp->para[1]));
+      ((angularCalibration*) G__getstructoffset())->setAngularRange((double) G__double(libp->para[0]), (double) G__double(libp->para[1]));
       G__setnull(result7);
    return(1 || funcname || hash || result7 || libp) ;
 }
 
 static int G__TSlsDetectorDict_87_0_8(G__value* result7, G__CONST char* funcname, struct G__param* libp, int hash)
 {
-      ((angularCalibration*) G__getstructoffset())->getAngularRange(*(float*) G__Floatref(&libp->para[0]), *(float*) G__Floatref(&libp->para[1]));
+      ((angularCalibration*) G__getstructoffset())->getAngularRange(*(double*) G__doubleref(&libp->para[0]), *(double*) G__doubleref(&libp->para[1]));
       G__setnull(result7);
    return(1 || funcname || hash || result7 || libp) ;
 }

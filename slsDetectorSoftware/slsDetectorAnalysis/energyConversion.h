@@ -26,7 +26,7 @@ class energyConversion: private virtual slsDetectorDefs {
       \param gain reference to the gain variable
       \offset reference to the offset variable
   */
-  static int readCalibrationFile(string fname, float &gain, float &offset);
+  static int readCalibrationFile(string fname, double &gain, double &offset);
   
   /**
    
@@ -35,7 +35,7 @@ class energyConversion: private virtual slsDetectorDefs {
       \param gain 
       \param offset
   */
-  static int writeCalibrationFile(string fname, float gain, float offset);
+  static int writeCalibrationFile(string fname, double gain, double offset);
 
 
   /**

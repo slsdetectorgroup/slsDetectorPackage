@@ -3,7 +3,7 @@
 			   
 				   
 
-string  fileIO::createFileName(char *filepath, char *filename, int aMask, float sv0, int prec0, float sv1, int prec1, int pindex, int npos, int findex) {
+string  fileIO::createFileName(char *filepath, char *filename, int aMask, double sv0, int prec0, double sv1, int prec1, int pindex, int npos, int findex) {
   ostringstream osfn;
   // string fn;
   /*directory name +root file name */
@@ -87,10 +87,10 @@ int fileIO::getFileIndexFromFileName(string fname) {
   return 0;
 }
 
-int fileIO::getVariablesFromFileName(string fname, int &index, int &p_index, float &sv0, float &sv1) {
+int fileIO::getVariablesFromFileName(string fname, int &index, int &p_index, double &sv0, double &sv1) {
   
   int i;
-  float f;
+  double f;
   string s;
 
 
@@ -194,7 +194,7 @@ int fileIO::getVariablesFromFileName(string fname, int &index, int &p_index, flo
 
 
 
-int fileIO::writeDataFile(string fname, int nch, float *data, float *err, float *ang, char dataformat){
+int fileIO::writeDataFile(string fname, int nch, double *data, double *err, double *ang, char dataformat){
 
 
   ofstream outfile;
@@ -217,7 +217,7 @@ int fileIO::writeDataFile(string fname, int nch, float *data, float *err, float 
 };
 
 
-int fileIO::writeDataFile(ofstream &outfile, int nch, float *data, float *err, float *ang, char dataformat, int offset){
+int fileIO::writeDataFile(ofstream &outfile, int nch, double *data, double *err, double *ang, char dataformat, int offset){
 
 
   int idata;
@@ -341,13 +341,13 @@ int fileIO::writeDataFile(ofstream &outfile, int nch, short int *data, int offse
 
 
 
-int fileIO::readDataFile(int nch, string fname, float *data, float *err, float *ang, char dataformat){
+int fileIO::readDataFile(int nch, string fname, double *data, double *err, double *ang, char dataformat){
 
 
   ifstream infile;
   int  iline=0;//ichan,
   //int interrupt=0;
-  //float fdata, ferr, fang;
+  //double fdata, ferr, fang;
   int maxchans;
   //int ich;
   string str;
@@ -370,12 +370,12 @@ int fileIO::readDataFile(int nch, string fname, float *data, float *err, float *
 };
 
 
-int fileIO::readDataFile(int nch, ifstream &infile, float *data, float *err, float *ang, char dataformat, int offset){
+int fileIO::readDataFile(int nch, ifstream &infile, double *data, double *err, double *ang, char dataformat, int offset){
 
 
   int  ichan,iline=0; 
   int interrupt=0;
-  float fdata, ferr, fang;
+  double fdata, ferr, fang;
   int maxchans;
   int ich;
   string str;
@@ -562,14 +562,14 @@ int fileIO::readDataFile(ifstream &infile, short int *data, int nch, int offset)
 
 /*writes raw data file */
 
-int fileIO::writeDataFile(string fname, float *data, float *err, float *ang, char dataformat, int nch){
+int fileIO::writeDataFile(string fname, double *data, double *err, double *ang, char dataformat, int nch){
   if (nch==-1)
     nch=getTotalNumberOfChannels();
   
   return writeDataFile(fname, nch, data, err, ang, dataformat);
 
 }
-int fileIO::writeDataFile(ofstream &outfile, float *data, float *err, float *ang, char dataformat, int nch, int offset){
+int fileIO::writeDataFile(ofstream &outfile, double *data, double *err, double *ang, char dataformat, int nch, int offset){
   if (nch==-1)
     nch=getTotalNumberOfChannels();
   
@@ -607,12 +607,12 @@ int fileIO::writeDataFile(ofstream &outfile, short int *data, int offset){
 
 
 
-int fileIO::readDataFile(string fname, float *data, float *err, float *ang, char dataformat) {
+int fileIO::readDataFile(string fname, double *data, double *err, double *ang, char dataformat) {
   return readDataFile(getTotalNumberOfChannels(), fname, data, err, ang, dataformat);
 
 }
 
-int fileIO::readDataFile(ifstream &infile, float *data, float *err, float *ang, char dataformat, int offset) {
+int fileIO::readDataFile(ifstream &infile, double *data, double *err, double *ang, char dataformat, int offset) {
   return readDataFile(getTotalNumberOfChannels(), infile, data, err, ang, dataformat, offset);
 
 }

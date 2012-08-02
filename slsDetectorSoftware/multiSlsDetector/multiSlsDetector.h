@@ -119,7 +119,7 @@ class multiSlsDetector  : public slsDetectorUtils {
     /** threaded processing flag (i.e. if data are processed and written to file in a separate thread)  */
     int threadedProcessing;
     /** dead time (in ns) for rate corrections */
-    float tDead;
+    double tDead;
 
 
 
@@ -147,17 +147,17 @@ class multiSlsDetector  : public slsDetectorUtils {
     /** angular direction (1 if it corresponds to the encoder direction i.e. channel 0 is 0, maxchan is positive high angle, 0 otherwise  */
     int angDirection;
      /** beamline fine offset (of the order of mdeg, might be adjusted for each measurements)  */
-    float fineOffset;
+    double fineOffset;
      /** beamline offset (might be a few degrees beacuse of encoder offset - normally it is kept fixed for a long period of time)  */
-    float globalOffset;
+    double globalOffset;
     /** bin size for data merging */
-    float binSize;
+    double binSize;
 
 
      /** number of positions at which the detector should acquire  */
     int numberOfPositions;
      /** list of encoder positions at which the detector should acquire */
-    float detPositions[MAXPOS];
+    double detPositions[MAXPOS];
 
 
 
@@ -309,7 +309,7 @@ class multiSlsDetector  : public slsDetectorUtils {
 
   int getMaxNumberOfChannels(){return thisMultiDetector->maxNumberOfChannels;};
 
-  float getScanStep(int index, int istep){return thisMultiDetector->scanSteps[index][istep];};
+  double getScanStep(int index, int istep){return thisMultiDetector->scanSteps[index][istep];};
   /** returns the detector offset (in number of channels)
       \param pos position of the detector
       \param ox reference to the offset in x
@@ -622,7 +622,7 @@ class multiSlsDetector  : public slsDetectorUtils {
       \param ecorr if !=NULL the flat field correction errors will be filled with ecorr (1 otherwise)
       \returns 0 if ff correction disabled, >0 otherwise
   */
-  int setFlatFieldCorrection(float *corr, float *ecorr=NULL);
+  int setFlatFieldCorrection(double *corr, double *ecorr=NULL);
 
   /** 
       get flat field corrections
@@ -630,7 +630,7 @@ class multiSlsDetector  : public slsDetectorUtils {
       \param ecorr if !=NULL will be filled with the correction coefficients errors
       \returns 0 if ff correction disabled, >0 otherwise
   */
-  int getFlatFieldCorrection(float *corr=NULL, float *ecorr=NULL);
+  int getFlatFieldCorrection(double *corr=NULL, double *ecorr=NULL);
 
 
 
@@ -644,7 +644,7 @@ class multiSlsDetector  : public slsDetectorUtils {
       \param t dead time in ns - if 0 disable correction, if >0 set dead time to t, if <0 set deadtime to default dead time for current settings
       \returns 0 if rate correction disabled, >0 otherwise
   */
-  int setRateCorrection(float t=0);
+  int setRateCorrection(double t=0);
 
   
   /** 
@@ -652,14 +652,14 @@ class multiSlsDetector  : public slsDetectorUtils {
       \param t reference for dead time
       \returns 0 if rate correction disabled, >0 otherwise
   */
-  int getRateCorrection(float &t);
+  int getRateCorrection(double &t);
 
   
   /** 
       get rate correction tau
       \returns 0 if rate correction disabled, otherwise the tau used for the correction
   */
-  float getRateCorrectionTau();
+  double getRateCorrectionTau();
   /** 
       get rate correction
       \returns 0 if rate correction disabled, >0 otherwise
@@ -703,17 +703,17 @@ class multiSlsDetector  : public slsDetectorUtils {
 
   int writeAngularConversion(string fname);
 
-  //  float* convertAngles(float pos);
+  //  double* convertAngles(double pos);
 
 
 
 
   /** 
-     decode data from the detector converting them to an array of floats, one for each channle
+     decode data from the detector converting them to an array of doubles, one for each channle
      \param datain data from the detector
-     \returns pointer to a float array with a data per channel
+     \returns pointer to a double array with a data per channel
   */
-  float* decodeData(int *datain, float *fdata=NULL);
+  double* decodeData(int *datain, double *fdata=NULL);
 
   
   
@@ -728,7 +728,7 @@ class multiSlsDetector  : public slsDetectorUtils {
      \param fferr erro on ffcoefficient
      \returns 0
   */
-  // int flatFieldCorrect(float datain, float errin, float &dataout, float &errout, float ffcoefficient, float fferr);
+  // int flatFieldCorrect(double datain, double errin, double &dataout, double &errout, double ffcoefficient, double fferr);
   
   /** 
      flat field correct data
@@ -738,7 +738,7 @@ class multiSlsDetector  : public slsDetectorUtils {
      \param errout error on corrected data (if not NULL)
      \returns 0
   */
-  int flatFieldCorrect(float* datain, float *errin, float* dataout, float *errout);
+  int flatFieldCorrect(double* datain, double *errin, double* dataout, double *errout);
  
 
   
@@ -752,7 +752,7 @@ class multiSlsDetector  : public slsDetectorUtils {
      \param t acquisition time (in ns)
      \returns 0
   */
-  //  int rateCorrect(float datain, float errin, float &dataout, float &errout, float tau, float t);
+  //  int rateCorrect(double datain, double errin, double &dataout, double &errout, double tau, double t);
   
   /** 
      rate correct data
@@ -762,7 +762,7 @@ class multiSlsDetector  : public slsDetectorUtils {
      \param errout error on corrected data (if not NULL)
      \returns 0
   */
-  int rateCorrect(float* datain, float *errin, float* dataout, float *errout);
+  int rateCorrect(double* datain, double *errin, double* dataout, double *errout);
 
   /** 
       turns off server
@@ -785,7 +785,7 @@ class multiSlsDetector  : public slsDetectorUtils {
   /////////////////////////////////////// int setTotalProgress(); ////////////// from slsDetectorUtils!
 
   /** returns the current progress in % */
-  ////////////////////////////////float getCurrentProgress();////////////// from slsDetectorUtils!
+  ////////////////////////////////double getCurrentProgress();////////////// from slsDetectorUtils!
   
 
   /**
@@ -795,7 +795,7 @@ class multiSlsDetector  : public slsDetectorUtils {
     \param imod module number (if -1 alla modules)
     \returns current DAC value
   */
-  float setDAC(float val, dacIndex index, int imod=-1);
+  double setDAC(double val, dacIndex index, int imod=-1);
   /**
     set dacs value
     \param val value (in V)
@@ -803,7 +803,7 @@ class multiSlsDetector  : public slsDetectorUtils {
     \param imod module number (if -1 alla modules)
     \returns current DAC value
   */
-  float getADC(dacIndex index, int imod=0);
+  double getADC(dacIndex index, int imod=0);
     /**
     configure channel
     \param reg channel register
@@ -903,7 +903,7 @@ class multiSlsDetector  : public slsDetectorUtils {
      \returns the actual value
   */
 
-  float setAngularConversionParameter(angleConversionParameter c, float v);
+  double setAngularConversionParameter(angleConversionParameter c, double v);
 
     /**
      
@@ -913,13 +913,13 @@ class multiSlsDetector  : public slsDetectorUtils {
        \param err array of arrors on the data. If NULL no errors will be written
        
        \param ang array of angular values. If NULL data will be in the form chan-val(-err) otherwise ang-val(-err)
-       \param dataformat format of the data: can be 'i' integer or 'f' float (default)
+       \param dataformat format of the data: can be 'i' integer or 'f' double (default)
        \param nch number of channels to be written to file. if -1 defaults to the number of installed channels of the detector
        \returns OK or FAIL if it could not write the file or data=NULL
        \sa mythenDetector::writeDataFile
  
   */
-   int writeDataFile(string fname, float *data, float *err=NULL, float *ang=NULL, char dataformat='f', int nch=-1); 
+   int writeDataFile(string fname, double *data, double *err=NULL, double *ang=NULL, char dataformat='f', int nch=-1);
   
 
   /**
@@ -940,13 +940,13 @@ class multiSlsDetector  : public slsDetectorUtils {
        \param err array of arrors on the data. If NULL no errors are expected on the file
        
        \param ang array of angular values. If NULL data are expected in the form chan-val(-err) otherwise ang-val(-err)
-       \param dataformat format of the data: can be 'i' integer or 'f' float (default)
+       \param dataformat format of the data: can be 'i' integer or 'f' double (default)
        \param nch number of channels to be written to file. if <=0 defaults to the number of installed channels of the detector
        \returns OK or FAIL if it could not read the file or data=NULL
        
        \sa mythenDetector::readDataFile
   */
-   int readDataFile(string fname, float *data, float *err=NULL, float *ang=NULL, char dataformat='f'); 
+   int readDataFile(string fname, double *data, double *err=NULL, double *ang=NULL, char dataformat='f');
 
 
   /**

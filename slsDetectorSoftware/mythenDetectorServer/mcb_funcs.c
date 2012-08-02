@@ -38,8 +38,8 @@ const int noneSelected=-1;
 sls_detector_module *detectorModules=NULL;
 int *detectorChips=NULL;
 int *detectorChans=NULL;
-float *detectorDacs=NULL;
-float *detectorAdcs=NULL;
+double *detectorDacs=NULL;
+double *detectorAdcs=NULL;
 //int numberOfProbes;
 
 
@@ -61,8 +61,8 @@ int initDetector() {
   detectorChips=malloc(n*NCHIP*sizeof(int));
 
   detectorChans=malloc(n*NCHIP*NCHAN*sizeof(int));
-  detectorDacs=malloc(n*NDAC*sizeof(float));
-  detectorAdcs=malloc(n*NADC*sizeof(float));
+  detectorDacs=malloc(n*NDAC*sizeof(double));
+  detectorAdcs=malloc(n*NADC*sizeof(double));
 #ifdef VERBOSE
   printf("modules from 0x%x to 0x%x\n",detectorModules, detectorModules+n);
   printf("chips from 0x%x to 0x%x\n",detectorChips, detectorChips+n*NCHIP);
@@ -640,15 +640,15 @@ int set_one_dac(int imod) {
   return OK;
 }
 
-float initDACbyIndex(int ind,float val, int imod) {
+double initDACbyIndex(int ind,double val, int imod) {
   int v;
-  const float partref[NDAC]=PARTREF;
-  const float partr1[NDAC]=PARTR1;
-  const float partr2[NDAC]=PARTR2;
+  const double partref[NDAC]=PARTREF;
+  const double partr1[NDAC]=PARTR1;
+  const double partr2[NDAC]=PARTR2;
  
-  float ref=partref[ind];
-  float r1=partr1[ind];
-  float r2=partr2[ind];
+  double ref=partref[ind];
+  double r1=partr1[ind];
+  double r2=partr2[ind];
   
 
   v=(val+(val-ref)*r1/r2)*DAC_DR/DAC_MAX;
@@ -657,10 +657,10 @@ float initDACbyIndex(int ind,float val, int imod) {
   return (v*DAC_MAX/DAC_DR+ref*r1/r2)/(1+r1/r2);
 }
 
-float initDACbyIndexDACU(int ind, int val, int imod) {
+double initDACbyIndexDACU(int ind, int val, int imod) {
  
-  const float daccs[NDAC]=DACCS;
-  const float dacaddr[NDAC]=DACADDR;
+  const double daccs[NDAC]=DACCS;
+  const double dacaddr[NDAC]=DACADDR;
  
   int cs=daccs[ind];
   int addr=dacaddr[ind];
@@ -706,9 +706,9 @@ float initDACbyIndexDACU(int ind, int val, int imod) {
 }
 
 int getThresholdEnergy() {
-  float g[3]=DEFAULTGAIN;
-  float o[3]=DEFAULTOFFSET;
-  float myg=-1, myo=-1;
+  double g[3]=DEFAULTGAIN;
+  double o[3]=DEFAULTOFFSET;
+  double myg=-1, myo=-1;
   //  int dacu;
   int imod;
   int ethr=-1;
@@ -764,9 +764,9 @@ int getThresholdEnergy() {
 }
 
 int setThresholdEnergy(int ethr) {
-  float g[3]=DEFAULTGAIN;
-  float o[3]=DEFAULTOFFSET;
-  float myg=-1, myo=-1;
+  double g[3]=DEFAULTGAIN;
+  double o[3]=DEFAULTOFFSET;
+  double myg=-1, myo=-1;
   int dacu;
   int imod;
   int ret=ethr;
@@ -803,7 +803,7 @@ int setThresholdEnergy(int ethr) {
 	  myg=-1;
     }
     if (myg>0 && myo>0) {
-      dacu=myo-myg*((float)ethr)/1000.;
+      dacu=myo-myg*((double)ethr)/1000.;
 #ifdef VERBOSE    
       printf("module %d (%x): gain %f, off %f, energy %d eV, dac %d\n",imod,(detectorModules+imod),(detectorModules+imod)->gain,(detectorModules+imod)->offset, ethr,dacu);
 #endif
@@ -820,7 +820,7 @@ int setThresholdEnergy(int ethr) {
 
 
 
-float getDACbyIndexDACU(int ind,  int imod) {
+double getDACbyIndexDACU(int ind,  int imod) {
   /*
   if (detectorDacs) {
     if (imod<getNModBoard())

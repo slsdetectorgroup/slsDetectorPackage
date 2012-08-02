@@ -91,7 +91,7 @@ class fileIO : public virtual slsDetectorBase {
       \param findex file index
       \returns file name without extension
   */
-  static string  createFileName(char *filepath, char *filename, int aMask, float sv0, int prec0, float sv1, int prec1, int pindex, int npos, int findex);
+  static string  createFileName(char *filepath, char *filename, int aMask, double sv0, int prec0, double sv1, int prec1, int pindex, int npos, int findex);
 
 
   string createFileName();
@@ -111,7 +111,7 @@ class fileIO : public virtual slsDetectorBase {
       \param sv1 reference to scan variable 1
       \returns file index
   */
-  static int getVariablesFromFileName(string fname, int &index, int &p_index, float &sv0, float &sv1);
+  static int getVariablesFromFileName(string fname, int &index, int &p_index, double &sv0, double &sv1);
   
 
 
@@ -124,12 +124,12 @@ class fileIO : public virtual slsDetectorBase {
   \param err array of arrors on the data. If NULL no errors will be written
   
   \param ang array of angular values. If NULL data will be in the form chan-val(-err) otherwise ang-val(-err)
-  \param dataformat format of the data: can be 'i' integer or 'f' float (default)
+  \param dataformat format of the data: can be 'i' integer or 'f' double (default)
   \param nch number of channels to be written to file. if -1 defaults to the number of installed channels of the detector
   \returns OK or FAIL if it could not write the file or data=NULL
   
   */
-   virtual int writeDataFile(string fname, float *data, float *err=NULL, float *ang=NULL, char dataformat='f', int nch=-1); 
+   virtual int writeDataFile(string fname, double *data, double *err=NULL, double *ang=NULL, char dataformat='f', int nch=-1);
   
 
   /**
@@ -140,13 +140,13 @@ class fileIO : public virtual slsDetectorBase {
   \param err array of arrors on the data. If NULL no errors will be written
   
   \param ang array of angular values. If NULL data will be in the form chan-val(-err) otherwise ang-val(-err)
-  \param dataformat format of the data: can be 'i' integer or 'f' float (default)
+  \param dataformat format of the data: can be 'i' integer or 'f' double (default)
   \param nch number of channels to be written to file. if -1 defaults to the number of installed channels of the detector
   \param offset start channel number
   \returns OK or FAIL if it could not write the file or data=NULL
   
   */
-   int writeDataFile(ofstream &outfile, float *data, float *err=NULL, float *ang=NULL, char dataformat='f', int nch=-1, int offset=0); 
+   int writeDataFile(ofstream &outfile, double *data, double *err=NULL, double *ang=NULL, char dataformat='f', int nch=-1, int offset=0);
   
 
    /**
@@ -193,10 +193,10 @@ class fileIO : public virtual slsDetectorBase {
        \param err array of arrors on the data. If NULL no errors are expected on the file
        
        \param ang array of angular values. If NULL data are expected in the form chan-val(-err) otherwise ang-val(-err)
-       \param dataformat format of the data: can be 'i' integer or 'f' float (default)
+       \param dataformat format of the data: can be 'i' integer or 'f' double (default)
        \returns OK or FAIL if it could not read the file or data=NULL
   */
-  virtual int readDataFile(string fname, float *data, float *err=NULL, float *ang=NULL, char dataformat='f');  
+  virtual int readDataFile(string fname, double *data, double *err=NULL, double *ang=NULL, char dataformat='f');
 
   /**
        reads a data file
@@ -208,7 +208,7 @@ class fileIO : public virtual slsDetectorBase {
        \param offset start channel number to be expected
        \returns OK or FAIL if it could not read the file or data=NULL
   */
-  int readDataFile(ifstream& infile, float *data, float *err=NULL, float *ang=NULL, char dataformat='f', int offset=0);  
+  int readDataFile(ifstream& infile, double *data, double *err=NULL, double *ang=NULL, char dataformat='f', int offset=0);
 
   /**
        reads a raw data file
@@ -250,12 +250,12 @@ class fileIO : public virtual slsDetectorBase {
        \param data array of data values
        \param err array of arrors on the data. If NULL no errors will be written  
        \param ang array of angular values. If NULL data will be in the form chan-val(-err) otherwise ang-val(-err)
-       \param dataformat format of the data: can be 'i' integer or 'f' float (default)
+       \param dataformat format of the data: can be 'i' integer or 'f' double (default)
        \returns OK or FAIL if it could not write the file or data=NULL
  
   */
 
-   static  int  writeDataFile(string fname, int nch, float *data, float *err=NULL, float *ang=NULL, char dataformat='f');   
+   static  int  writeDataFile(string fname, int nch, double *data, double *err=NULL, double *ang=NULL, char dataformat='f');
    /**  
 	writes a data file
 	\param outfile output file stream
@@ -263,11 +263,11 @@ class fileIO : public virtual slsDetectorBase {
 	\param data array of data values
 	\param err array of arrors on the data. If NULL no errors will be written  
 	\param ang array of angular values. If NULL data will be in the form chan-val(-err) otherwise ang-val(-err)
-	\param dataformat format of the data: can be 'i' integer or 'f' float (default)
+	\param dataformat format of the data: can be 'i' integer or 'f' double (default)
 	\param offset start channel number
 	\returns OK or FAIL if it could not write the file or data=NULL
    */
-   static  int writeDataFile(ofstream &outfile, int nch, float *data, float *err=NULL, float *ang=NULL, char dataformat='f', int offset=0); 
+   static  int writeDataFile(ofstream &outfile, int nch, double *data, double *err=NULL, double *ang=NULL, char dataformat='f', int offset=0);
 
    /**
        writes a raw data file
@@ -317,11 +317,11 @@ class fileIO : public virtual slsDetectorBase {
        \param data array of data values to be filled
        \param err array of arrors on the data. If NULL no errors are expected on the file
        \param ang array of angular values. If NULL data are expected in the form chan-val(-err) otherwise ang-val(-err)
-       \param dataformat format of the data: can be 'i' integer or 'f' float (default)
+       \param dataformat format of the data: can be 'i' integer or 'f' double (default)
        \returns number of channels read or -1 if it could not read the file or data=NULL
        
   */
-   static int readDataFile(int nch, string fname, float *data, float *err=NULL, float *ang=NULL, char dataformat='f'); 
+   static int readDataFile(int nch, string fname, double *data, double *err=NULL, double *ang=NULL, char dataformat='f');
   /**
        reads a data file
        \param nch number of channels
@@ -329,12 +329,12 @@ class fileIO : public virtual slsDetectorBase {
        \param data array of data values to be filled
        \param err array of arrors on the data. If NULL no errors are expected on the file
        \param ang array of angular values. If NULL data are expected in the form chan-val(-err) otherwise ang-val(-err)
-       \param dataformat format of the data: can be 'i' integer or 'f' float (default)
+       \param dataformat format of the data: can be 'i' integer or 'f' double (default)
        \param offset start channel number
        \returns number of channels read or -1 if it could not read the file or data=NULL
        
   */ 
-   static int readDataFile(int nch, ifstream &infile, float *data, float *err=NULL, float *ang=NULL, char dataformat='f', int offset=0);  
+   static int readDataFile(int nch, ifstream &infile, double *data, double *err=NULL, double *ang=NULL, char dataformat='f', int offset=0);
 
   /**
        reads a raw data file

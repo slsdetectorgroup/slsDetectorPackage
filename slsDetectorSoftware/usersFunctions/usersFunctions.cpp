@@ -3,8 +3,8 @@
 #include <stdio.h>
 
 
-float pos;
-float i0=0;
+double pos;
+double i0=0;
 #ifdef EPICS
 
 #include <cadef.h>
@@ -118,13 +118,13 @@ int caput(chid ch_id,  double value) {
 */
 
 
-float defaultAngleFunction(float ichan, float encoder, float totalOffset, float conv_r, float center, float offset, float tilt, int direction) {
+double defaultAngleFunction(double ichan, double encoder, double totalOffset, double conv_r, double center, double offset, double tilt, int direction) {
  
   
   (void) tilt; /* to avoid warning: unused parameter */
-  float ang;
+  double ang;
 
-  ang=180./PI*(center*conv_r+direction*atan((float)(ichan-center)*conv_r))+encoder+totalOffset+offset; 
+  ang=180./PI*(center*conv_r+direction*atan((double)(ichan-center)*conv_r))+encoder+totalOffset+offset;
 
   
 
@@ -134,7 +134,7 @@ float defaultAngleFunction(float ichan, float encoder, float totalOffset, float 
 
 /* reads the encoder and returns the position */
 
-float defaultGetPosition(void *d) {
+double defaultGetPosition(void *d) {
 #ifdef VERBOSE
   printf("Getting motor position \n");
 #endif
@@ -165,7 +165,7 @@ float defaultGetPosition(void *d) {
 /* moves the encoder to position p */
 
 
-int defaultGoToPosition(float p,void *d) {
+int defaultGoToPosition(double p,void *d) {
 #ifdef VERBOSE
   printf("Setting  motor position \n");
 #endif
@@ -193,7 +193,7 @@ int defaultGoToPosition(float p,void *d) {
 
 /* moves the encoder to position p without waiting */
 
-int defaultGoToPositionNoWait(float p,void *d) {
+int defaultGoToPositionNoWait(double p,void *d) {
 #ifdef VERBOSE
   printf("Setting  motor position no wait \n");
 #endif
@@ -224,7 +224,7 @@ int defaultGoToPositionNoWait(float p,void *d) {
 
 /* reads I0 and returns the intensity */
 
-float defaultGetI0(int t,void *d) {
+double defaultGetI0(int t,void *d) {
 #ifdef VERBOSE
   printf("Getting I0 readout \n");
 #endif

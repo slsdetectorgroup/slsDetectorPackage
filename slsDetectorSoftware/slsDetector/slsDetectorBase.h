@@ -154,7 +154,7 @@ class slsDetectorBase :  public virtual slsDetectorUsers , public virtual slsDet
       \param values array of steps
       \returns 0 if scan disabled, >0 otherwise*/
 
-  virtual int setScanSteps(int index, int nvalues=-1, float *values=NULL)=0;
+  virtual int setScanSteps(int index, int nvalues=-1, double *values=NULL)=0;
 
    /**
       get scan script
@@ -183,7 +183,7 @@ class slsDetectorBase :  public virtual slsDetectorUsers , public virtual slsDet
       \param values pointer to array of values (must be allocated in advance)
       \returns number of steps
   */
-  virtual int getScanSteps(int index, float *values=NULL)=0;
+  virtual int getScanSteps(int index, double *values=NULL)=0;
 
 
   /**
@@ -215,7 +215,7 @@ class slsDetectorBase :  public virtual slsDetectorUsers , public virtual slsDet
       \param index scan level index
        \returns current scan variable
     */
-    virtual float getCurrentScanVariable(int index)=0;// {return 0;};
+    virtual double getCurrentScanVariable(int index)=0;// {return 0;};
 
     /**
        \returns current position index
@@ -237,12 +237,12 @@ class slsDetectorBase :  public virtual slsDetectorUsers , public virtual slsDet
 
 
    virtual void incrementProgress()=0;
-   virtual float getCurrentProgress()=0;
+   virtual double getCurrentProgress()=0;
    virtual void incrementFileIndex()=0;
    virtual int setTotalProgress()=0;
 
 
-   virtual float* decodeData(int *datain, float *fdata=NULL)=0;
+   virtual double* decodeData(int *datain, double *fdata=NULL)=0;
 
 
    virtual string getCurrentFileName()=0;
@@ -251,20 +251,20 @@ class slsDetectorBase :  public virtual slsDetectorUsers , public virtual slsDet
 
    virtual int getFileIndexFromFileName(string fname)=0;
 
-   virtual float *convertAngles()=0;
+   virtual double *convertAngles()=0;
   /** 
       set rate correction
       \param t dead time in ns - if 0 disable correction, if >0 set dead time to t, if <0 set deadtime to default dead time for current settings
       \returns 0 if rate correction disabled, >0 otherwise
   */
-  virtual int setRateCorrection(float t=0)=0;
+  virtual int setRateCorrection(double t=0)=0;
 
   /** 
       get rate correction
       \param t reference for dead time
       \returns 0 if rate correction disabled, >0 otherwise
   */
-  virtual int getRateCorrection(float &t)=0;
+  virtual int getRateCorrection(double &t)=0;
   
   /** 
       get rate correction
@@ -578,9 +578,11 @@ int64_t setNumberOfCycles(int64_t t=-1){return setTimer(CYCLES_NUMBER,t);};
     switch(f) {						 \
     case AUTO_TIMING:      return string( "auto");			\
     case TRIGGER_EXPOSURE: return string("trigger");			\
+    case TRIGGER_FRAME: return string("trigger_frame");			\
     case TRIGGER_READOUT: return string("ro_trigger");			\
     case GATE_FIX_NUMBER: return string("gating");			\
     case GATE_WITH_START_TRIGGER: return string("triggered_gating");	\
+    case TRIGGER_WINDOW: return string("trigger_window");	\
     default:    return string( "unknown");				\
     }    };
   
@@ -595,9 +597,11 @@ int64_t setNumberOfCycles(int64_t t=-1){return setTimer(CYCLES_NUMBER,t);};
   static externalCommunicationMode externalCommunicationType(string sval){\
   if (sval=="auto")      return AUTO_TIMING;\
   if (sval=="trigger")     return TRIGGER_EXPOSURE;	\
+  if (sval=="trigger_frame")     return TRIGGER_FRAME;	\
   if  (sval=="ro_trigger") return TRIGGER_READOUT;\
   if  (sval=="gating") return GATE_FIX_NUMBER;\
   if  (sval=="triggered_gating") return GATE_WITH_START_TRIGGER;\
+  if (sval=="trigger_window")     return TRIGGER_WINDOW;	\
   return GET_EXTERNAL_COMMUNICATION_MODE;			\
   };
 

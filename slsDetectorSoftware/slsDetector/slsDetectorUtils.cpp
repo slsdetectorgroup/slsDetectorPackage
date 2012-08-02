@@ -44,7 +44,7 @@ void  slsDetectorUtils::acquire(int delflag){
 #endif
 
   void *status;
-  
+
 
   //  int lastindex=startindex, nowindex=startindex;
 
@@ -100,11 +100,9 @@ void  slsDetectorUtils::acquire(int delflag){
   if (ns1<1)
     ns1=1;
 
-
-//loop measurements
+  //loop measurements
 
   setStartIndex(*fileIndex);
-
  
   //cout << "action at start" << endl;
   if (*stoppedFlag==0) {

@@ -266,8 +266,8 @@ typedef  struct sharedSlsDetector {
  \param  type is needed to define the size of the detector shared memory 9defaults to GENERIC i.e. the largest shared memory needed by any slsDetector is allocated
  \param  id is the detector index which is needed to define the shared memory id. Different physical detectors should have different IDs in order to work independently
 
-
 */
+
   slsDetector(detectorType type=GENERIC, int id=0);
 
 /** constructor

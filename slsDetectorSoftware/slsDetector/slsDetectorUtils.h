@@ -33,6 +33,7 @@ extern "C" {
 using namespace std;
 
 
+//#include "slsDetectorActions_Standalone.h"
 #include "slsDetectorActions.h"
 #include "postProcessing.h"
 

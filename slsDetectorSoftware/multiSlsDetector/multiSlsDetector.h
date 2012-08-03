@@ -17,7 +17,7 @@ ID:         $Id$
 
 class slsDetector;
 
-#include "sls_detector_defs.h"
+//#include "sls_detector_defs.h"
 
 
 
@@ -36,8 +36,9 @@ class slsDetector;
 
  */
 
-class multiSlsDetector  : public virtual slsDetectorUtils {
+class multiSlsDetector  : public slsDetectorUtils {
 
+//public virtual slsDetectorUtils {
 
   
   typedef  struct sharedMultiSlsDetector {

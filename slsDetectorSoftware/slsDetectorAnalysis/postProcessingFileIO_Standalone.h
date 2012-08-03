@@ -4,7 +4,7 @@
 
 #include "detectorData.h"
 #include "sls_detector_defs.h"
-#include "slsDetectorBase.h"
+#include "slsDetectorBase_Standalone.h"
 #include "slsDetectorUsers.h"
 #include "FileIO_Standalone.h"
 #include "AngularConversion_Standalone.h"
@@ -39,7 +39,7 @@ using namespace std;
    (including thread for writing data files and plotting in parallel with the acquisition) 
 */
 
-class postProcessing :  public virtual slsDetectorBase {
+class postProcessing :  public virtual slsDetectorBase1 {
 
 
 //: public angularConversion, public fileIO

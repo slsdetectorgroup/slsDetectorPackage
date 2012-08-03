@@ -32,10 +32,9 @@ using namespace std;
    (including thread for writing data files and plotting in parallel with the acquisition) 
 */
 
-class postProcessing : public virtual angularConversion, public virtual fileIO  {
+class postProcessing : public angularConversion, public fileIO {
 
-
-//: public angularConversion, public fileIO
+//public virtual angularConversion, public virtual fileIO  {
 
  public:
   postProcessing();

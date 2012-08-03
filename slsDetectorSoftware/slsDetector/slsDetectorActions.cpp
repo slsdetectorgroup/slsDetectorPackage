@@ -404,9 +404,7 @@ int slsDetectorActions::getScanPrecision(int iscan){
 
 
 int slsDetectorActions::executeScan(int level, int istep) {
-
-  int trimbit,aMask,prec0,prec1,pindex,npos;
-  float sv0,sv1;
+  int trimbit;
   char cmd[MAX_STR_LENGTH];
 
   if (level<0 || level>MAX_SCAN_LEVELS)
@@ -431,7 +429,7 @@ int slsDetectorActions::executeScan(int level, int istep) {
     break;
   default:
     //Custom scan script level 1. The arguments are passed as nrun=n fn=filename var=v par=p"
-    sprintf(cmd,"%s nrun=%d fn=%s var=%f par=%s",getScanScript(level).c_str(),getFileIndex(),createFileName(aMask,sv0,prec0,sv1,prec1,pindex,npos).c_str(),currentScanVariable[level],getScanParameter(level).c_str());
+       sprintf(cmd,"%s nrun=%d fn=%s var=%f par=%s",getScanScript(level).c_str(),getFileIndex(),createFileName().c_str(),currentScanVariable[level],getScanParameter(level).c_str());
 #ifdef VERBOSE
     cout << "Executing scan script "<< level << " "  << cmd << endl;
 #endif

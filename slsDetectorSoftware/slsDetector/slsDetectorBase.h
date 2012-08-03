@@ -64,7 +64,7 @@ using namespace std;
 */
 
 //public virtual slsDetectorUsers,
-class slsDetectorBase :  public virtual slsDetectorUsers , public virtual slsDetectorDefs  { 
+class slsDetectorBase :  public slsDetectorUsers , public virtual slsDetectorDefs  { 
 
  public:
 
@@ -229,7 +229,7 @@ class slsDetectorBase :  public virtual slsDetectorUsers , public virtual slsDet
     
 
   /** generates file name without extension */
-   virtual string createFileName(int aMask, double sv0, int prec0, double sv1, int prec1, int pindex, int npos)=0;
+    virtual string createFileName()=0;
 
 
 

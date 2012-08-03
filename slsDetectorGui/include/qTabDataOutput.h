@@ -51,6 +51,10 @@ private:
 	/** detector type */
 	slsDetectorDefs::detectorType detType;
 
+	QString 	flatFieldTip;
+	QString 	errFlatFieldTip;
+	QPalette	red;
+
 /** methods */
 	/** Sets up the widget */
 	void SetupWidgetWindow();

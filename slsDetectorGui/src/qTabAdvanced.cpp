@@ -64,11 +64,11 @@ void qTabAdvanced::Enable(bool enable){
 void qTabAdvanced::getTemperature(){
 	char ctemp[200];
 	/** adc */
-	float tempadc = myDet->getADC(slsDetectorDefs::TEMPERATURE_ADC);
+	double tempadc = myDet->getADC(slsDetectorDefs::TEMPERATURE_ADC);
 	sprintf(ctemp,"%f%cC",tempadc,0x00B0);
 	dispTempAdc->setText(QString(ctemp));
 	/** fpga */
-	float tempfpga = myDet->getADC(slsDetectorDefs::TEMPERATURE_FPGA);
+	double tempfpga = myDet->getADC(slsDetectorDefs::TEMPERATURE_FPGA);
 	sprintf(ctemp,"%f%cC",tempfpga,0x00B0);
 	dispTempFpga->setText(QString(ctemp));
 #ifdef VERBOSE

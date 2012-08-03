@@ -16,6 +16,7 @@ class multiSlsDetector;
 #include <QStackedLayout>
 /** C++ Include Headers */
 #include <string>
+#include <vector>
 using namespace std;
 
 
@@ -42,17 +43,34 @@ private:
 	multiSlsDetector *myDet;
 	/**id of the scan widget*/
 	int id;
+	/**type of steps*/
+	enum sizeIndex{RangeValues, CustomValues, FileValues};
+	enum modes{None,EnergyScan,ThresholdScan,TrimbitsScan,CustomScript,NumModes};
+	static const string modeNames[NumModes];
 
-	QStackedLayout 	*stackedLayout;
-	QLabel			*lblFrom;
-	QSpinBox		*spinFrom;
-	QLabel			*lblTo;
-	QSpinBox		*spinTo;
-	QLabel			*lblSize;
-	QSpinBox		*spinSize;
-	QComboBox 		*comboSpecific;
-	QLineEdit		*dispValues;
-	QPushButton		*btnValues;
+	/**values*/
+	int		actualNumSteps;
+	vector <double> positions;
+
+	/**non error font*/
+	QPalette normal;
+	QPalette red;
+	QString customTip;
+	QString fileTip;
+
+	/**widgets needed for diff size types*/
+	QButtonGroup 		*btnGroup;
+	QStackedLayout 		*stackedLayout;
+	QLabel				*lblFrom;
+	QDoubleSpinBox		*spinFrom;
+	QLabel				*lblTo;
+	QDoubleSpinBox		*spinTo;
+	QLabel				*lblSize;
+	QDoubleSpinBox		*spinSize;
+	QComboBox 			*comboCustom;
+	QPushButton			*btnCustom;
+	QLineEdit			*dispFile;
+	QPushButton			*btnFile;
 
 
 	/** Sets up the widget
@@ -62,16 +80,23 @@ private:
 	/** Sets up all the slots and signals */
 	void Initialization();
 
+	/** Sets up all the parameters from server/client */
+	void LoadPositions();
 
+	/** Sets up the scan parameters
+	 * returns if it was set
+	  */
+	int SetScan(int mode);
 
 private slots:
-/** Sets the scan or script. Accordingly enables, disables other widgets
- * 	@param index value chosen*/
-void SetScript(int index);
-
 /** Enables widgets depending on which size is clicked.
- * 	Options: constant size,specific values,values from file */
+ * Options: constant size,specific values,values from file
+ * */
 void EnableSizeWidgets();
+
+/** Sets the scan or script. Accordingly enables, disables other widgets
+ * 	@param mode value chosen*/
+void SetMode(int mode);
 
 /** Browse for the script
  * */
@@ -82,9 +107,34 @@ void BrowsePath();
 void SetScriptFile();
 
 /** Set Parameter
- * @param parameter is the parameter to be set to
  * */
-void SetParameter(const QString& parameter);
+void SetParameter();
+
+/** Set precision
+ * @param value value of precision to be set
+ * */
+void SetPrecision(int value);
+
+/** Set number of steps
+ * */
+void SetNSteps();
+
+/** Set custom steps
+ * returns OK if set properly
+ * */
+int SetCustomSteps();
+
+/** Delete custom steps
+ * */
+void DeleteCustomSteps();
+
+/** Reads the file to get the steps
+ * */
+void SetFileSteps();
+
+/** Browses for the file path for steps
+ * */
+void BrowseFileStepsPath();
 
 
 

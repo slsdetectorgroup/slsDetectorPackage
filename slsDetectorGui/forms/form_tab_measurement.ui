@@ -427,13 +427,6 @@
        </property>
       </widget>
      </item>
-     <item row="0" column="0">
-      <widget class="QLabel" name="label_4">
-       <property name="text">
-        <string>Timing Mode:</string>
-       </property>
-      </widget>
-     </item>
      <item row="0" column="2" colspan="2">
       <widget class="QComboBox" name="comboTimingMode">
        <property name="sizePolicy">
@@ -632,6 +625,10 @@
        <property name="enabled">
         <bool>false</bool>
        </property>
+       <property name="toolTip">
+        <string>Frame period between exposures. 
+ #period#</string>
+       </property>
        <property name="text">
         <string>Acquisition Period:</string>
        </property>
@@ -730,6 +727,13 @@
         </size>
        </property>
       </spacer>
+     </item>
+     <item row="0" column="0">
+      <widget class="QLabel" name="lblTimingMode">
+       <property name="text">
+        <string>Timing Mode:</string>
+       </property>
+      </widget>
      </item>
     </layout>
    </widget>
@@ -872,56 +876,6 @@
      </item>
     </layout>
    </widget>
-  </widget>
-  <widget class="QLabel" name="lblNote">
-   <property name="geometry">
-    <rect>
-     <x>130</x>
-     <y>330</y>
-     <width>521</width>
-     <height>16</height>
-    </rect>
-   </property>
-   <property name="palette">
-    <palette>
-     <active>
-      <colorrole role="WindowText">
-       <brush brushstyle="SolidPattern">
-        <color alpha="255">
-         <red>255</red>
-         <green>0</green>
-         <blue>0</blue>
-        </color>
-       </brush>
-      </colorrole>
-     </active>
-     <inactive>
-      <colorrole role="WindowText">
-       <brush brushstyle="SolidPattern">
-        <color alpha="255">
-         <red>255</red>
-         <green>0</green>
-         <blue>0</blue>
-        </color>
-       </brush>
-      </colorrole>
-     </inactive>
-     <disabled>
-      <colorrole role="WindowText">
-       <brush brushstyle="SolidPattern">
-        <color alpha="255">
-         <red>193</red>
-         <green>193</green>
-         <blue>193</blue>
-        </color>
-       </brush>
-      </colorrole>
-     </disabled>
-    </palette>
-   </property>
-   <property name="text">
-    <string>* Note: The Acquisition Period should be greater than or equal to the Exposure Time.</string>
-   </property>
   </widget>
  </widget>
  <resources/>

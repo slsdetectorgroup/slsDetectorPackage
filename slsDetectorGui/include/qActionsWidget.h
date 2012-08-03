@@ -58,9 +58,9 @@ private:
 
 private slots:
 /** Sets the scan or script. Accordingly enables, disables other widgets
- * 	@param index value chosen
+ * 	@param mode value chosen
  * 	*/
-void SetScript(int index);
+void SetMode(int mode);
 
 /** Browse for the script
  * */
@@ -71,9 +71,8 @@ void BrowsePath();
 void SetScriptFile();
 
 /** Set Parameter
- * @param parameter is the parameter to be set to
  * */
-void SetParameter(const QString& parameter);
+void SetParameter();
 
 };
 

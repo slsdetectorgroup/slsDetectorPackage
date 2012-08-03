@@ -62,19 +62,47 @@
       <string/>
      </property>
      <layout class="QGridLayout" name="gridLayout_2">
+      <property name="leftMargin">
+       <number>0</number>
+      </property>
+      <property name="topMargin">
+       <number>5</number>
+      </property>
+      <property name="rightMargin">
+       <number>0</number>
+      </property>
+      <property name="bottomMargin">
+       <number>2</number>
+      </property>
       <property name="horizontalSpacing">
        <number>0</number>
       </property>
       <property name="verticalSpacing">
        <number>5</number>
       </property>
-      <property name="margin">
-       <number>0</number>
-      </property>
       <item row="0" column="0">
        <layout class="QHBoxLayout" name="horizontalLayout_7">
         <item>
-         <widget class="QRadioButton" name="radioConstant">
+         <spacer name="horizontalSpacer_5">
+          <property name="orientation">
+           <enum>Qt::Horizontal</enum>
+          </property>
+          <property name="sizeType">
+           <enum>QSizePolicy::Fixed</enum>
+          </property>
+          <property name="sizeHint" stdset="0">
+           <size>
+            <width>10</width>
+            <height>20</height>
+           </size>
+          </property>
+         </spacer>
+        </item>
+        <item>
+         <widget class="QRadioButton" name="radioRange">
+          <property name="toolTip">
+           <string/>
+          </property>
           <property name="text">
            <string>Constant Step Size</string>
           </property>
@@ -84,7 +112,11 @@
          </widget>
         </item>
         <item>
-         <widget class="QRadioButton" name="radioSpecific">
+         <widget class="QRadioButton" name="radioCustom">
+          <property name="toolTip">
+           <string>&lt;nobr&gt;Measures only at specific values listed by the user.&lt;/nobr&gt;&lt;br&gt;
+&lt;nobr&gt;Number of entries is restricted to &lt;b&gt;Number of Steps&lt;/b&gt; field.&lt;/nobr&gt;</string>
+          </property>
           <property name="text">
            <string>Specific Values</string>
           </property>
@@ -94,12 +126,16 @@
          </widget>
         </item>
         <item>
-         <widget class="QRadioButton" name="radioValue">
+         <widget class="QRadioButton" name="radioFile">
           <property name="sizePolicy">
            <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
             <horstretch>0</horstretch>
             <verstretch>0</verstretch>
            </sizepolicy>
+          </property>
+          <property name="toolTip">
+           <string>&lt;nobr&gt;Measures only at the specific values listed in a file.&lt;/nobr&gt;&lt;br&gt;
+&lt;nobr&gt;Select the file, where these values are listed.&lt;/nobr&gt;</string>
           </property>
           <property name="text">
            <string>Values from File</string>
@@ -108,6 +144,22 @@
            <bool>false</bool>
           </property>
          </widget>
+        </item>
+        <item>
+         <spacer name="horizontalSpacer_6">
+          <property name="orientation">
+           <enum>Qt::Horizontal</enum>
+          </property>
+          <property name="sizeType">
+           <enum>QSizePolicy::Fixed</enum>
+          </property>
+          <property name="sizeHint" stdset="0">
+           <size>
+            <width>10</width>
+            <height>20</height>
+           </size>
+          </property>
+         </spacer>
         </item>
        </layout>
       </item>
@@ -283,13 +335,13 @@
         </sizepolicy>
        </property>
        <property name="minimum">
-        <number>1</number>
+        <number>0</number>
        </property>
        <property name="maximum">
         <number>1000000</number>
        </property>
        <property name="value">
-        <number>2</number>
+        <number>0</number>
        </property>
       </widget>
      </item>

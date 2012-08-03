@@ -56,6 +56,10 @@ private:
 
 	int currentMeasurement;
 
+	QString 	acqPeriodTip;
+	QString 	errPeriodTip;
+	QPalette	red;
+
 /** methods */
 	/** Sets up the widget
 	 */

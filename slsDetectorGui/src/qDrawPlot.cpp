@@ -306,8 +306,8 @@ int qDrawPlot::GetData(detectorData *data){
 			for(int i=currentPersistency;i>0;i--)
 				memcpy(yvalues[i],yvalues[i-1],nPixelsX*sizeof(double));
 			nHists = currentPersistency+1;
-			//memcpy(yvalues[0],data->values,nPixelsX*sizeof(double));
-			for(int i=0;i<(int)nPixelsX;i++)		*(yvalues[0]+i) = (double)*(data->values+i);
+			memcpy(yvalues[0],data->values,nPixelsX*sizeof(double));
+			//for(int i=0;i<(int)nPixelsX;i++)		*(yvalues[0]+i) = (double)*(data->values+i);
 		}
 		/**2d*/
 		else{

@@ -157,6 +157,7 @@ void qDetectorMain::SetUpWidgetWindow(){
 	heightCentralWidget = centralwidget->size().height();
 	// Default zoom Tool Tip
 	zoomToolTip = dockWidgetPlot->toolTip();
+
 }
 
 

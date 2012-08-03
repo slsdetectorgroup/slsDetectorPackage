@@ -53,40 +53,40 @@ void qActionsWidget::SetupWidgetWindow(){
 
 void qActionsWidget::Initialization(){
 	//mode
-	connect(comboScript,	SIGNAL(currentIndexChanged(int)),		this,SLOT(SetScript(int)));
+	connect(comboScript,	SIGNAL(currentIndexChanged(int)),		this,SLOT(SetMode(int)));
 	//file
 	connect(dispScript,		SIGNAL(editingFinished()),				this, SLOT(SetScriptFile()));
 	connect(btnBrowse,		SIGNAL(clicked()), 						this, SLOT(BrowsePath()));
 	//parameter
-	connect(dispParameter,	SIGNAL(textChanged(const QString&)), 	this, SLOT(SetParameter(const QString&)));
+	connect(dispParameter,	SIGNAL(editingFinished()), 				this, SLOT(SetParameter()));
 }
 
 
 //-------------------------------------------------------------------------------------------------------------------------------------------------
 
 
-void qActionsWidget::SetScript(int index){
+void qActionsWidget::SetMode(int mode){
 #ifdef VERBOSE
-	cout << "Setting mode of action widget:" << id << " to " << index << endl;
+	cout << "Setting\taction:" << id << "\tmode:" << mode << endl;
 #endif
 	//enabling/disabling
-	dispScript->setEnabled(index);
-	btnBrowse->setEnabled(index);
-	lblParameter->setEnabled(index);
-	dispParameter->setEnabled(index);
+	dispScript->setEnabled(mode);
+	btnBrowse->setEnabled(mode);
+	lblParameter->setEnabled(mode);
+	dispParameter->setEnabled(mode);
 
 	QString fName = dispScript->text();
 	//set the mode
-	if(index)	myDet->setActionScript(id,fName.toAscii().constData());
+	if(mode)	myDet->setActionScript(id,fName.toAscii().constData());
 	else myDet->setActionScript(id,"");
 	//mode is not set when fname is blank
 	if(!fName.isEmpty()){
 		//check if mode didnt get set
-		if(index!=myDet->getActionMode(id)){
+		if(mode!=myDet->getActionMode(id)){
 			qDefs::WarningMessage("The mode could not be changed.","ActionsWidget");
 			comboScript->setCurrentIndex(myDet->getActionMode(id));
 		}//if mode got set and its custom script
-		else if(index){
+		else if(mode){
 			//when the file name did not get set correctly
 			if(fName.compare(QString(myDet->getActionScript(id).c_str()))){
 				qDefs::WarningMessage("The file path could not be set.","ActionsWidget");
@@ -123,10 +123,8 @@ void qActionsWidget::BrowsePath(){
 void qActionsWidget::SetScriptFile(){
 	QString fName = dispScript->text();
 #ifdef VERBOSE
-	cout << "Setting script file of action widget:" << id << " to " << fName.toAscii().constData() << endl;
+	cout << "Setting\taction:" << id << "\tscript:" << fName.toAscii().constData() << endl;
 #endif
-	disconnect(dispScript,	SIGNAL(editingFinished()),	this, 	SLOT(SetScriptFile()));
-
 	bool set = false;
 
 	//blank
@@ -166,19 +164,20 @@ void qActionsWidget::SetScriptFile(){
 	//dont display if theres a none
 	if(!dispScript->text().compare("none")) dispScript->setText("");
 
-	connect(dispScript,	SIGNAL(editingFinished()),	this, 	SLOT(SetScriptFile()));
-
 }
 
 
 //-------------------------------------------------------------------------------------------------------------------------------------------------
 
 
-void qActionsWidget::SetParameter(const QString& parameter){
+void qActionsWidget::SetParameter(){
+	QString parameter = dispParameter->text();
 #ifdef VERBOSE
-	cout << "Setting parameter of action widget:" << id << " to " << parameter.toAscii().constData() << endl;
+	cout << "Setting\taction:" << id << "\tparameter:" << parameter.toAscii().constData() << endl;
 #endif
 	myDet->setActionParameter(id,parameter.toAscii().constData());
+	//dont display if theres a none
+	if(!dispParameter->text().compare("none")) dispParameter->setText("");
 }
 
 
@@ -189,16 +188,19 @@ void qActionsWidget::Refresh(){
 	int mode = (myDet->getActionMode(id)>0?1:0);
 	string script = myDet->getActionScript(id);
 	string parameter = myDet->getActionParameter(id);
-	//defaults
-	if(script == "none") script="";
-	if(parameter == "none") parameter="";
-	//settings values
+
+	//settings values and checking for none
 	dispScript->setText(QString(script.c_str()));
+	SetScriptFile();
 	dispParameter->setText(QString(parameter.c_str()));
+	SetParameter();
 	//set mode which also checks everything
 	comboScript->setCurrentIndex(mode);
 #ifdef VERBOSE
-	cout << "Updated action widget " << id << "\tmode:"<<mode<<"\tscript:" << script << "\tparameter:" << parameter << endl;
+	cout << "Updated\taction:" << id << "\t"
+			"mode:"<<mode<<"\t"
+			"script:" << script << "\t"
+			"parameter:" << parameter << endl << endl;
 #endif
 }
 

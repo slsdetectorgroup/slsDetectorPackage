@@ -77,7 +77,7 @@ private:
 	QCheckBox 	*chkSeparate;
 	QCheckBox 	*chkReturn;
 
-	float		*positions;
+	double		*positions;
 	QPalette	normal;
 
 

@@ -123,20 +123,20 @@ void qTabActions::CreatePositionsWidget(){
 	layout->setHorizontalSpacing(0);
 	layout->setVerticalSpacing(5);
 
-	lblNumPos = new QLabel("Number of Positions:");
+	lblNumPos = new QLabel("Number of Positions: ");
 	lblNumPos->setSizePolicy(QSizePolicy::Fixed,QSizePolicy::Fixed);
 	layout->addWidget(lblNumPos,0,0);
 	layout->addItem(new QSpacerItem(5,20,QSizePolicy::Fixed,QSizePolicy::Fixed),0,1);
 	spinNumPos = new QSpinBox(this);
 	layout->addWidget(spinNumPos,0,2);
 	layout->addItem(new QSpacerItem(80,20,QSizePolicy::Fixed,QSizePolicy::Fixed),0,3);
-	lblPosList = new QLabel("List of Positions:");
+	lblPosList = new QLabel("List of Positions: ");
 	lblPosList->setSizePolicy(QSizePolicy::Fixed,QSizePolicy::Fixed);
+	lblPosList->setFixedWidth(108);
 	lblPosList->setEnabled(false);
 	lblPosList->setToolTip("<nobr>Enter the positions at which the detector should be moved.</nobr><br>"
 				"<nobr>Number of entries is restricted to <b>Number of Positions</b> field.</tnobr>");
 	layout->addWidget(lblPosList,0,4);
-	layout->addItem(new QSpacerItem(5,20,QSizePolicy::Fixed,QSizePolicy::Fixed),0,5);
 	comboPos = new QComboBox(this);
 	comboPos->setEditable(true);
 	comboPos->setCompleter(false);
@@ -144,11 +144,11 @@ void qTabActions::CreatePositionsWidget(){
 	comboPos->setEnabled(false);
 	QDoubleValidator *validate = new QDoubleValidator(comboPos);
 	comboPos->setValidator(validate);
-	layout->addWidget(comboPos,0,6);
-	layout->addItem(new QSpacerItem(5,20,QSizePolicy::Fixed,QSizePolicy::Fixed),0,7);
+	layout->addWidget(comboPos,0,5);
+	layout->addItem(new QSpacerItem(5,20,QSizePolicy::Fixed,QSizePolicy::Fixed),0,6);
 	btnDelete = new QPushButton("Delete");
 	btnDelete->setSizePolicy(QSizePolicy::Fixed,QSizePolicy::Fixed);
-	layout->addWidget(btnDelete,0,8);
+	layout->addWidget(btnDelete,0,7);
 
 	//might be included at some point
 /*	QGroupBox *w = new QGroupBox;
@@ -251,19 +251,20 @@ void qTabActions::SetPosition(){
 		lblPosList->setPalette(red);
 		QString tip = QString("<nobr>Enter the positions at which the detector should be moved.</nobr><br>"
 				"<nobr>Number of entries is restricted to <b>Number of Positions</b> field.</nobr><br><br>")+
-				QString("<nobr><font color=\"red\">Add ")+
+				QString("<font color=\"red\"><nobr>Add ")+
 				(QString("%1").arg(((numPos)-(comboPos->count()))))+
-				QString(" more positions to the list to match <b>Number of Positions</b>.</font></nobr>");
+				QString(" more positions to the list to match <b>Number of Positions</b>.</nobr><br>"
+						"<nobr><nobr>Or reduce <b>Number of Positions</b>.</nobr></font>");
 		lblPosList->setToolTip(tip);
 		lblPosList->setText("List of Positions:*");
 	}else{
-		lblPosList->setText("List of Positions:");
+		lblPosList->setText("List of Positions: ");
 		lblPosList->setPalette(normal);
 		lblPosList->setToolTip("<nobr>Enter the positions at which the detector should be moved.</nobr><br>"
-				"<nobr>Number of entries is restricted to <b>Number of Positions</b> field.</tnobr>");
+				"<nobr>Number of entries is restricted to <b>Number of Positions</b> field.</nobr>");
 		//delete existing positions
 		if (positions)  delete [] positions;
-		positions=new float[numPos];
+		positions=new double[numPos];
 		//copying the list
 		for(int i=0;i<numPos;i++)
 			positions[i] = comboPos->itemText(i).toDouble();
@@ -302,7 +303,7 @@ void qTabActions::DeletePosition(){
 
 void qTabActions::Refresh(){
 #ifdef VERBOSE
-	cout << "Updating all action widgets " << endl;
+	cout << "\nUpdating all action widgets " << endl;
 #endif
 	if(lblName[NumPositions]->isEnabled()){
 		//delete existing positions
@@ -316,7 +317,7 @@ void qTabActions::Refresh(){
 		spinNumPos->setValue(numPos);
 		connect(spinNumPos,		SIGNAL(valueChanged(int)), 	this, SLOT(SetPosition()));
 
-		positions=new float[numPos];
+		positions=new double[numPos];
 		//load the positions
 		myDet->getPositions(positions);
 
@@ -324,7 +325,7 @@ void qTabActions::Refresh(){
 		disconnect(comboPos,SIGNAL(currentIndexChanged(int)), this, SLOT(SetPosition()));
 		comboPos->setEnabled(numPos);
 		lblPosList->setEnabled(numPos);
-		lblPosList->setText("List of Positions:");
+		lblPosList->setText("List of Positions: ");
 		lblPosList->setPalette(normal);
 		for(int i=0;i<comboPos->count();i++)
 			comboPos->removeItem(i);
@@ -334,7 +335,7 @@ void qTabActions::Refresh(){
 
 
 #ifdef VERBOSE
-	cout << "Updated position widget\tnum:" << numPos << endl;
+	cout << "Updated position widget\tnum:" << numPos << endl << endl;
 #endif
 	}
 	for(int i=0;i<qScanWidget::NUM_SCAN_WIDGETS;i++)

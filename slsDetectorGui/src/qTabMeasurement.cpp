@@ -59,7 +59,13 @@ void qTabMeasurement::SetupWidgetWindow(){
 	spinExpTime->setValue(time);
 	comboExpUnit->setCurrentIndex((int)unit);
 	/** Hide the error message **/
-	lblNote->hide();
+	red = QPalette();
+	red.setColor(QPalette::Active,QPalette::WindowText,Qt::red);
+	acqPeriodTip = spinPeriod->toolTip();
+	errPeriodTip = QString("<nobr>Frame period between exposures.</nobr><br>"
+			"<nobr> #period#</nobr><br><br>")+
+			QString("<nobr><font color=\"red\"><b>Acquisition Period</b> should be"
+					" greater than or equal to <b>Exposure Time</b>.</font></nobr>");
 	/** File Name **/
 	dispFileName->setText(QString(myDet->getFileName().c_str()));
 	/** File Index **/
@@ -358,13 +364,15 @@ void qTabMeasurement::setExposureTime(){
 		double acqtimeNS;
 		acqtimeNS = qDefs::getNSTime((qDefs::timeUnit)comboPeriodUnit->currentIndex(),spinPeriod->value());
 		if(exptimeNS>acqtimeNS) {
-			lblNote->show();
-			lblPeriod->setPalette(lblNote->palette());
+			spinPeriod->setToolTip(errPeriodTip);
+			lblPeriod->setToolTip(errPeriodTip);
+			lblPeriod->setPalette(red);
 			lblPeriod->setText("Acquisition Period:*");
 		}
 		else {
-			lblNote->hide();
-			lblPeriod->setPalette(lblNumFrames->palette());
+			spinPeriod->setToolTip(acqPeriodTip);
+			lblPeriod->setToolTip(acqPeriodTip);
+			lblPeriod->setPalette(lblTimingMode->palette());
 			lblPeriod->setText("Acquisition Period:");
 		}
 	}
@@ -386,13 +394,15 @@ void qTabMeasurement::setAcquisitionPeriod(){
 	double exptimeNS;
 	exptimeNS = qDefs::getNSTime((qDefs::timeUnit)comboExpUnit->currentIndex(),spinExpTime->value());
 	if(exptimeNS>acqtimeNS){
-		lblNote->show();
-		lblPeriod->setPalette(lblNote->palette());
+		spinPeriod->setToolTip(errPeriodTip);
+		lblPeriod->setToolTip(errPeriodTip);
+		lblPeriod->setPalette(red);
 		lblPeriod->setText("Acquisition Period:*");
 	}
 	else {
-		lblNote->hide();
-		lblPeriod->setPalette(lblNumFrames->palette());
+		spinPeriod->setToolTip(acqPeriodTip);
+		lblPeriod->setToolTip(acqPeriodTip);
+		lblPeriod->setPalette(lblTimingMode->palette());
 		lblPeriod->setText("Acquisition Period:");
 	}
 
@@ -582,18 +592,23 @@ void qTabMeasurement::setTimingMode(int mode){
 		exptimeNS = qDefs::getNSTime((qDefs::timeUnit)comboExpUnit->currentIndex(),spinExpTime->value());
 		acqtimeNS = qDefs::getNSTime((qDefs::timeUnit)comboPeriodUnit->currentIndex(),spinPeriod->value());
 		if(exptimeNS>acqtimeNS) {
-			lblNote->show();
-			lblPeriod->setPalette(lblNote->palette());
+
+			spinPeriod->setToolTip(errPeriodTip);
+			lblPeriod->setToolTip(errPeriodTip);
+			lblPeriod->setPalette(red);
 			lblPeriod->setText("Acquisition Period:*");
 		}
 		else {
-			lblNote->hide();
-			lblPeriod->setPalette(lblNumFrames->palette());
+
+			spinPeriod->setToolTip(acqPeriodTip);
+			lblPeriod->setToolTip(acqPeriodTip);
+			lblPeriod->setPalette(lblTimingMode->palette());
 			lblPeriod->setText("Acquisition Period:");
 		}
 	}else	{
-		lblNote->hide();
-		lblPeriod->setPalette(lblNumFrames->palette());
+		spinPeriod->setToolTip(acqPeriodTip);
+		lblPeriod->setToolTip(acqPeriodTip);
+		lblPeriod->setPalette(lblTimingMode->palette());
 		lblPeriod->setText("Acquisition Period:");
 	}
 

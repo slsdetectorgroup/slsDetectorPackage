@@ -451,7 +451,6 @@ void qTabPlot::SetFrequency(){
 
 
 void qTabPlot::EnableScanBox(bool enable,int id){
-	cout<<"enable:"<<enable<<" id:"<<id<<endl;
 	/**find out when this is enabled*/
 
 	scanLevel[id]=enable;

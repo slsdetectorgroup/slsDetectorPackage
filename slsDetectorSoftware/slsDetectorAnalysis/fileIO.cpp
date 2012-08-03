@@ -152,7 +152,7 @@ int fileIO::getVariablesFromFileName(string fname, int &index, int &p_index, dou
 
 
 
-  if (sscanf( s.substr(uscore+1,s.size()-uscore-1).c_str(),"s%f",&f)) {
+  if (sscanf( s.substr(uscore+1,s.size()-uscore-1).c_str(),"s%lf",&f)) {
     sv1=f;
 #ifdef VERBOSE
     cout << "******************************** scan variable 1 is " << sv1 << endl;
@@ -173,7 +173,7 @@ int fileIO::getVariablesFromFileName(string fname, int &index, int &p_index, dou
 
 
 
-  if (sscanf( s.substr(uscore+1,s.size()-uscore-1).c_str(),"S%f",&f)) {
+  if (sscanf( s.substr(uscore+1,s.size()-uscore-1).c_str(),"S%lf",&f)) {
     sv0=f;
 #ifdef VERBOSE
     cout << "******************************** scan variable 0 is " << sv0 << endl;

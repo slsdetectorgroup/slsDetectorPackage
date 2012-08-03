@@ -1442,7 +1442,7 @@ string slsDetectorCommand::cmdRateCorr(int narg, char *args[], int action){
   char answer[1000];
 
   if (action==PUT_ACTION) {
-    sscanf(args[1],"%f",&fval);
+    sscanf(args[1],"%lf",&fval);
     myDet->setRateCorrection(fval);
   } 
   double t;
@@ -1576,7 +1576,7 @@ string slsDetectorCommand::cmdAngConv(int narg, char *args[], int action){
 
 
     if (action==PUT_ACTION) {
-      if (sscanf(args[1],"%f",&fval))
+      if (sscanf(args[1],"%lf",&fval))
 	myDet->setAngularConversionParameter(c,fval);
     } 
     sprintf(answer,"%f",myDet->getAngularConversionParameter(c));
@@ -1770,7 +1770,7 @@ string slsDetectorCommand::cmdPositions(int narg, char *args[], int action){
       double pos[ival];
       for (ip=0; ip<ival;ip++) {  
 	if ((2+ip)<narg) {
-	  if (sscanf(args[2+ip],"%f",pos+ip)) {
+	  if (sscanf(args[2+ip],"%lf",pos+ip)) {
 #ifdef VERBOSE
 	    std::cout<< "Setting position " << ip <<" to " << pos[ip] <<  std::endl; 
 #endif
@@ -1897,7 +1897,7 @@ string slsDetectorCommand::cmdScans(int narg, char *args[], int action) {
 	values=new double[ival];
 	for (int i=0; i<ival; i++) {
 	  if (narg>=(i+2)) {
-	    if (sscanf(args[i+2],"%f",values+i))
+	    if (sscanf(args[i+2],"%lf",values+i))
 	      ns++;
 	    else
 	      break;
@@ -1931,15 +1931,15 @@ string slsDetectorCommand::cmdScans(int narg, char *args[], int action) {
       if (narg<4)
 	return string("wrong number of arguments ")+helpScans(narg,args,action);
       
-      if (sscanf(args[1],"%f",&fmin)) 
+      if (sscanf(args[1],"%lf",&fmin))
 	;
       else
 	return string("invalid scan minimum")+string(args[1]);
-      if (sscanf(args[2],"%f",&fmax)) 
+      if (sscanf(args[2],"%lf",&fmax))
 	;
       else
 	return string("invalid scan maximum")+string(args[2]);
-      if (sscanf(args[3],"%f",&fstep)) 
+      if (sscanf(args[3],"%lf",&fstep))
 	;
       else
 	return string("invalid scan step")+string(args[3]);
@@ -2691,7 +2691,7 @@ string slsDetectorCommand::cmdDAC(int narg, char *args[], int action) {
     return string("cannot decode dac ")+cmd;
   
   if (action==PUT_ACTION) {
-    if (sscanf(args[1],"%f", &val))
+    if (sscanf(args[1],"%lf", &val))
       ;
     else
       return string("cannot scan DAC value ")+string(args[1]);
@@ -2882,7 +2882,7 @@ string slsDetectorCommand::cmdTimer(int narg, char *args[], int action) {
 
   
   if (action==PUT_ACTION) {
-    if (sscanf(args[1],"%f", &val))
+    if (sscanf(args[1],"%lf", &val))
       ;
     else
       return string("cannot scan timer value ")+string(args[1]);

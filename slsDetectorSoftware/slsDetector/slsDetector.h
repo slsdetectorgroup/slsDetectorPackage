@@ -280,7 +280,7 @@ typedef  struct sharedSlsDetector {
   //slsDetector(string  const fname);
   //  ~slsDetector(){while(dataQueue.size()>0){}};
   /** destructor */ 
-  ~slsDetector();
+  virtual ~slsDetector();
 
   int setOnline(int const online=GET_ONLINE_FLAG);
   

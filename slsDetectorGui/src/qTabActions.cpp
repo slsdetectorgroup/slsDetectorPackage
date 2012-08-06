@@ -76,6 +76,9 @@ void qTabActions::SetupWidgetWindow(){
 		lblName[i]	 	= new QLabel(QString(names[i]));
 		btnExpand[i] 	= new QPushButton("+");
 		btnExpand[i]->setFixedSize(20,20);
+		QString tip = "<nobr>Click on the \"+\" to Expand or \"-\" to Collapse.</nobr>";
+		lblName[i]->setToolTip(tip);
+		btnExpand[i]->setToolTip(tip);
 		group->addButton(btnExpand[i],i);
 
 		//Number of positions is only for mythen or gotthard

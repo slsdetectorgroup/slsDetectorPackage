@@ -57,6 +57,7 @@ private:
 	QPalette red;
 	QString customTip;
 	QString fileTip;
+	QString rangeTip;
 
 	/**widgets needed for diff size types*/
 	QButtonGroup 		*btnGroup;
@@ -116,8 +117,13 @@ void SetParameter();
 void SetPrecision(int value);
 
 /** Set number of steps
+ * @param int num is the number of steps
  * */
-void SetNSteps();
+void SetNSteps(int num);
+
+/** Set range for scan
+ * */
+void SetRangeSteps();
 
 /** Set custom steps
  * returns OK if set properly

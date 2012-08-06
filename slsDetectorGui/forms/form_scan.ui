@@ -101,7 +101,7 @@
         <item>
          <widget class="QRadioButton" name="radioRange">
           <property name="toolTip">
-           <string/>
+           <string>&lt;nobr&gt;Defines scan range for a constant step size.&lt;/nobr&gt;</string>
           </property>
           <property name="text">
            <string>Constant Step Size</string>

@@ -482,6 +482,9 @@ void qTabPlot::EnableScanBox(bool enable,int id){
 			radioLevel1->setChecked(!enable);
 		}
 	}
+	/**if(boxScan->isEnabled()){
+		myDet->setPlotType(i);
+	}*/
 }
 
 

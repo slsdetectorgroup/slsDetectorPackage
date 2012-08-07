@@ -99,7 +99,7 @@ FORMS = 					\
 							forms/form_tab_advanced.ui\
 							forms/form_tab_settings.ui\
 							forms/form_tab_debugging.ui\
-							forms/form_tab_developer.ui\
+#							forms/form_tab_developer.ui\
 #							forms/form_tab_messages.ui
 							forms/form_action.ui\
 							forms/form_scan.ui

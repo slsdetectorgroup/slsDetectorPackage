@@ -484,26 +484,19 @@ void qDrawPlot::UpdatePlot(){
 					}else{
 						h=plot1D_hists.at(hist_num);
 						h->SetData(histNBins,histXAxis,GetHistYAxis(hist_num));
-						h->SetDotStyle(plotDotted);
 					}
+					h->SetDotStyle(plotDotted);
 					h->setTitle(GetHistTitle(hist_num));
 					h->Attach(plot1D);
-
 				}
 				// update range if required
 				if(XYRangeChanged){
-					if(!IsXYRange[qDefs::XMINIMUM])
-						XYRangeValues[qDefs::XMINIMUM]= plot1D->GetXMinimum();
-					if(!IsXYRange[qDefs::XMAXIMUM])
-						XYRangeValues[qDefs::XMAXIMUM]= plot1D->GetXMaximum();
-					if(!IsXYRange[qDefs::YMINIMUM])
-						XYRangeValues[qDefs::YMINIMUM]= plot1D->GetYMinimum();
-					if(!IsXYRange[qDefs::YMAXIMUM])
-						XYRangeValues[qDefs::YMAXIMUM]= plot1D->GetYMaximum();
-
+					if(!IsXYRange[qDefs::XMINIMUM])		XYRangeValues[qDefs::XMINIMUM]= plot1D->GetXMinimum();
+					if(!IsXYRange[qDefs::XMAXIMUM])		XYRangeValues[qDefs::XMAXIMUM]= plot1D->GetXMaximum();
+					if(!IsXYRange[qDefs::YMINIMUM])		XYRangeValues[qDefs::YMINIMUM]= plot1D->GetYMinimum();
+					if(!IsXYRange[qDefs::YMAXIMUM])		XYRangeValues[qDefs::YMAXIMUM]= plot1D->GetYMaximum();
 					plot1D->SetXMinMax(XYRangeValues[qDefs::XMINIMUM],XYRangeValues[qDefs::XMAXIMUM]);
 					plot1D->SetYMinMax(XYRangeValues[qDefs::YMINIMUM],XYRangeValues[qDefs::YMAXIMUM]);
-
 					XYRangeChanged	= false;
 				}
 			}
@@ -521,18 +514,12 @@ void qDrawPlot::UpdatePlot(){
 			}
 			// update range if required
 			if(XYRangeChanged){
-				if(!IsXYRange[qDefs::XMINIMUM])
-					XYRangeValues[qDefs::XMINIMUM]= plot2D->GetPlot()->GetXMinimum();
-				if(!IsXYRange[qDefs::XMAXIMUM])
-					XYRangeValues[qDefs::XMAXIMUM]= plot2D->GetPlot()->GetXMaximum();
-				if(!IsXYRange[qDefs::YMINIMUM])
-					XYRangeValues[qDefs::YMINIMUM]= plot2D->GetPlot()->GetYMinimum();
-				if(!IsXYRange[qDefs::YMAXIMUM])
-					XYRangeValues[qDefs::YMAXIMUM]= plot2D->GetPlot()->GetYMaximum();
-
+				if(!IsXYRange[qDefs::XMINIMUM])			XYRangeValues[qDefs::XMINIMUM]= plot2D->GetPlot()->GetXMinimum();
+				if(!IsXYRange[qDefs::XMAXIMUM])			XYRangeValues[qDefs::XMAXIMUM]= plot2D->GetPlot()->GetXMaximum();
+				if(!IsXYRange[qDefs::YMINIMUM])			XYRangeValues[qDefs::YMINIMUM]= plot2D->GetPlot()->GetYMinimum();
+				if(!IsXYRange[qDefs::YMAXIMUM])			XYRangeValues[qDefs::YMAXIMUM]= plot2D->GetPlot()->GetYMaximum();
 				plot2D->GetPlot()->SetXMinMax(XYRangeValues[qDefs::XMINIMUM],XYRangeValues[qDefs::XMAXIMUM]);
 				plot2D->GetPlot()->SetYMinMax(XYRangeValues[qDefs::YMINIMUM],XYRangeValues[qDefs::YMAXIMUM]);
-
 				XYRangeChanged	= false;
 			}
 		}

@@ -8,15 +8,27 @@
 #ifndef QTABDEVELOPER_H_
 #define QTABDEVELOPER_H_
 
-/** Form Header */
-#include "ui_form_tab_developer.h"
 /** Project Class Headers */
 class multiSlsDetector;
+#include "sls_detector_defs.h"
+/** Qt Include Headers */
+#include <QWidget>
+#include <QGridLayout>
+#include <QGroupBox>
+#include <QLabel>
+#include <QDoubleSpinBox>
+#include <QScrollArea>
+#include <QTimer>
+/** C++ Include Headers */
+#include <string>
+#include <vector>
+using namespace std;
+
 
 /**
  *@short sets up the Developer parameters
  */
-class qTabDeveloper:public QWidget, private Ui::TabDeveloperObject{
+class qTabDeveloper:public QWidget{
 	Q_OBJECT
 
 public:
@@ -37,6 +49,29 @@ public:
 private:
 	/** The sls detector object */
 	multiSlsDetector *myDet;
+	/** detector type */
+	slsDetectorDefs::detectorType detType;
+	/**number of dac widgets*/
+	static int NUM_DAC_WIDGETS;
+	/**number of adc widgets*/
+	static int NUM_ADC_WIDGETS;
+
+	static const int ADC_TIMEOUT = 5000;
+
+	vector<string>dacNames;
+	vector<string>adcNames;
+
+
+	/**widgets needed*/
+	QGridLayout 	*layout;
+	QScrollArea 	*scroll;
+	QGroupBox		*boxDacs;
+	QGroupBox		*boxAdcs;
+	QLabel 			*lblDacs[20];
+	QLabel			*lblAdcs[20];
+	QDoubleSpinBox	*spinDacs[20];
+	QDoubleSpinBox	*spinAdcs[20];
+	QTimer 			*adcTimer;
 
 	/** Sets up the widget
 	 */
@@ -46,6 +81,26 @@ private:
 	 */
 	void Initialization();
 
+	/** Sets up the DAC Widgets
+	 */
+	void CreateDACWidgets();
+
+	/** Sets up the ADC Widgets
+	 */
+	void CreateADCWidgets();
+
+	/** Gets the sls index to set/get dac/adc
+	 * @param index is the gui dac/adc index
+	 * returns the sls index
+	 */
+	slsDetectorDefs::dacIndex getSLSIndex(int index);
+
+
+
+private slots:
+/** Refreshes the adcs
+ */
+void RefreshAdcs();
 
 };
 

@@ -422,7 +422,7 @@ void qTabPlot::SetFrequency(){
 		break;
 	case 1:
 		acqPeriodMS = (myDet->setTimer(slsDetectorDefs::FRAME_PERIOD,-1)*(1E-6));
-		/** gets the acq period * number of frames*/
+		/** gets the acq period * number of nth frames*/
 		timeMS = (spinNthFrame->value())*acqPeriodMS;
 		/** To make sure the period between plotting is not less than minimum plot timer in  ms*/
 		if(timeMS<minPlotTimer){

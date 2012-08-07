@@ -288,7 +288,7 @@ void qTabMeasurement::startStopAcquisition(){
 		emit StartSignal();
 	}else{
 #ifdef VERBOSE
-		cout<<"Stopping Acquisition"<<endl;
+		cout << "Stopping Acquisition" << endl<< endl;
 #endif
 		myDet->stopAcquisition();
 		//btnStartStop->setStyleSheet("color:green");

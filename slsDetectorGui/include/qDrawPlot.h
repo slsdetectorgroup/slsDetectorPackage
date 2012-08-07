@@ -118,6 +118,10 @@ private:
 	/**	Timer to update plot */
 	QTimer* 			plot_update_timer;
 
+	/** Timer to pause getting data from client */
+	QTimer*				data_pause_timer;
+	bool 				data_pause_over;
+
 
 	/**	1D object */
 	SlsQt1DPlot* 		plot1D;
@@ -217,7 +221,9 @@ private:
 	double timerValue;
 	/** every nth frame when to plot */
 	int frameFactor;
-	bool plotLock;
+	/** old data that did not get lock(for frame factor)**/
+	bool oldCopy;
+	int oldFrameNumber;
 	/**if frame is enabled in measurement tab */
 	bool isFrameEnabled;
 	/**if trigger is enabled in measurement tab */
@@ -291,7 +297,7 @@ void StartDaq(bool start);
  * @param id is the id of the clone */
 void CloneCloseEvent(int id);
 
-
+void UpdatePause(){data_pause_over=true;};
 
 signals:
 void UpdatingPlotFinished();

@@ -808,13 +808,6 @@
        </property>
       </widget>
      </item>
-     <item row="1" column="0">
-      <widget class="QLabel" name="label_7">
-       <property name="text">
-        <string>File Name:</string>
-       </property>
-      </widget>
-     </item>
      <item row="1" column="1" colspan="2">
       <widget class="QLineEdit" name="dispFileName">
        <property name="sizePolicy">
@@ -871,6 +864,20 @@
        </property>
        <property name="value">
         <number>0</number>
+       </property>
+      </widget>
+     </item>
+     <item row="1" column="0">
+      <widget class="QCheckBox" name="chkFile">
+       <property name="toolTip">
+        <string>&lt;nobr&gt;Sets output file name prefix&lt;/nobr&gt;&lt;br&gt;
+&lt;nobr&gt;Check the box to enable write to file. &lt;/nobr&gt;</string>
+       </property>
+       <property name="text">
+        <string>File Name:</string>
+       </property>
+       <property name="checked">
+        <bool>true</bool>
        </property>
       </widget>
      </item>

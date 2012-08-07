@@ -8,6 +8,8 @@
  * DisableZoom,
  * SetXMinMax,SetYMinMax,
  * GetXMinimum,GetXMaximum,GetYMinimum,GetYMaximum}
+ * 07.08.2012:{function to change lines, points etc }
+ * SetDotStyle
  *  */
 
 #ifndef SLSQT1DPLOT_H
@@ -60,6 +62,9 @@ class SlsQtH1D:public QwtPlotCurve{
 
   SlsQtH1D*   Add(double v);
 
+  /** Added by Dhanya to change style of graph*/
+  void SetDotStyle(bool enable){if(enable) setStyle(QwtPlotCurve::Dots); else setStyle(QwtPlotCurve::Lines);};
+  /**---*/
 
  private:
   int    ndata;

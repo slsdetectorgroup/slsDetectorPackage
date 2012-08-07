@@ -158,6 +158,10 @@ void setNumProbes(int val);
 /** Update progress*/
 void UpdateProgress();
 
+/** Enable write to file */
+void EnableFileWrite(bool enable);
+
+
 signals:
 
 void StartSignal();

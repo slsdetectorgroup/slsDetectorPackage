@@ -76,6 +76,7 @@ void qDrawPlot::SetupWidgetWindow(){
 	currentPersistency = 0;
 	progress = 0;
 	plotEnable=true;
+	plotDotted = false;
 	XYRangeChanged = false;
 	timerValue = PLOT_TIMER_MS;
 	frameFactor=0;
@@ -483,6 +484,7 @@ void qDrawPlot::UpdatePlot(){
 					}else{
 						h=plot1D_hists.at(hist_num);
 						h->SetData(histNBins,histXAxis,GetHistYAxis(hist_num));
+						h->SetDotStyle(plotDotted);
 					}
 					h->setTitle(GetHistTitle(hist_num));
 					h->Attach(plot1D);

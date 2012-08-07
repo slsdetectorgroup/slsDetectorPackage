@@ -167,8 +167,9 @@ void qTabPlot::Initialization(){
 	connect(btnClone, 		SIGNAL(clicked()),myPlot, 	SLOT(ClonePlot()));
 	connect(btnCloseClones, SIGNAL(clicked()),myPlot, 	SLOT(CloseClones()));
 /** 1D Plot box*/
-	connect(chkSuperimpose, SIGNAL(toggled(bool)),this, SLOT(EnablePersistency(bool)));
-	connect(spinPersistency,SIGNAL(valueChanged(int)),myPlot,SLOT(SetPersistency(int)));
+	connect(chkSuperimpose, SIGNAL(toggled(bool)),		this, SLOT(EnablePersistency(bool)));
+	connect(spinPersistency,SIGNAL(valueChanged(int)),	myPlot,SLOT(SetPersistency(int)));
+	connect(chkPoints, 		SIGNAL(toggled(bool)),		myPlot, SLOT(SetDottedPlot(bool)));
 /** 2D Plot box*/
 	connect(chkInterpolate, SIGNAL(toggled(bool)),myPlot, SIGNAL(InterpolateSignal(bool)));
 	connect(chkContour, 	SIGNAL(toggled(bool)),myPlot, SIGNAL(ContourSignal(bool)));

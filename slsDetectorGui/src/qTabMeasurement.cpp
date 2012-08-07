@@ -78,6 +78,10 @@ void qTabMeasurement::SetupWidgetWindow(){
 
 	/** timing mode*/
 	SetupTimingMode();
+
+	/**file write enabled/disabled*/
+	myDet->enableWriteToFile(true);
+	//check if file enabled
 }
 
 
@@ -171,17 +175,19 @@ void qTabMeasurement::Initialization(int timingChange){
 	/** These signals are connected only at start up. The others are reinitialized when changing timing mode*/
 	if(!timingChange){
 		/** Number of Measurements**/
-		connect(spinNumMeasurements,SIGNAL(valueChanged(int)),		this,	SLOT(setNumMeasurements(int)));
+		connect(spinNumMeasurements,SIGNAL(valueChanged(int)),			this,	SLOT(setNumMeasurements(int)));
 		/** File Name**/
-		connect(dispFileName,SIGNAL(textChanged(const QString&)),	this,	SLOT(setFileName(const QString&)));
+		connect(dispFileName,		SIGNAL(textChanged(const QString&)),this,	SLOT(setFileName(const QString&)));
 		/** File Index**/
-		connect(spinIndex,SIGNAL(valueChanged(int)),				this,	SLOT(setRunIndex(int)));
+		connect(spinIndex,			SIGNAL(valueChanged(int)),			this,	SLOT(setRunIndex(int)));
 		/** Start/Stop Acquisition**/
-		connect(btnStartStop,SIGNAL(clicked()),						this,	SLOT(startStopAcquisition()));
+		connect(btnStartStop,		SIGNAL(clicked()),					this,	SLOT(startStopAcquisition()));
 		/** Timing Mode **/
-		connect(comboTimingMode,SIGNAL(currentIndexChanged(int)),	this,	SLOT(setTimingMode(int)));//
-
-		connect(progressTimer, SIGNAL(timeout()), this, SLOT(UpdateProgress()));
+		connect(comboTimingMode,	SIGNAL(currentIndexChanged(int)),	this,	SLOT(setTimingMode(int)));//
+		/** progress bar */
+		connect(progressTimer, 		SIGNAL(timeout()), 					this, SLOT(UpdateProgress()));
+		/** enable write to file */
+		connect(chkFile, 			SIGNAL(toggled(bool)), 				this, SLOT(EnableFileWrite(bool)));
 	}
 	/** Number of Frames**/
 	connect(spinNumFrames,SIGNAL(valueChanged(int)),			this,	SLOT(setNumFrames(int)));
@@ -660,6 +666,14 @@ void qTabMeasurement::setTimingMode(int mode){
 	return;
 }
 
+void qTabMeasurement::EnableFileWrite(bool enable){
+#ifdef VERBOSE
+	cout << "Enable File Write:" << enable << endl;
+#endif
+	myDet->enableWriteToFile(enable);
+	dispFileName->setEnabled(enable);
+	if(enable) setFileName(dispFileName->text());
+};
 
 //-------------------------------------------------------------------------------------------------------------------------------------------------
 

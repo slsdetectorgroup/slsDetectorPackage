@@ -201,6 +201,8 @@ private:
 	int progress;
 	/**If plot is enabled from plot tab*/
 	bool plotEnable;
+	/**If plot is dotted */
+	bool plotDotted;
 
 
 	/**if an acquisition is running, so as not to refresh tab
@@ -282,7 +284,8 @@ void CloseClones();
 void SavePlot();
 /**	Sets persistency from plot tab */
 void SetPersistency(int val);
-
+/**	sets style of plot to dotted */
+void SetDottedPlot(bool enable){plotDotted = enable;};
 
 
 private slots:

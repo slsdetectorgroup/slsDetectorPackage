@@ -25,6 +25,27 @@ class multiSlsDetector;
 using namespace std;
 
 
+/**To override the spin box class to have an id and emit it*/
+class MyDoubleSpinBox:public QDoubleSpinBox{
+Q_OBJECT
+private:
+	int myId;
+	private slots:
+	void valueChangedWithID() {emit editingFinished(myId);};
+	public:
+	/** Overridden constructor from QDoubleSpinBox */
+	MyDoubleSpinBox(int id,QWidget* parent = 0)
+	:QDoubleSpinBox(parent),myId(id){
+		//setParent(parent);
+		connect(this,SIGNAL(editingFinished()),
+				this,SLOT(valueChangedWithID()));
+	}
+	signals:
+	void editingFinished(int myId);
+};
+
+
+
 /**
  *@short sets up the Developer parameters
  */
@@ -69,7 +90,7 @@ private:
 	QGroupBox		*boxAdcs;
 	QLabel 			*lblDacs[20];
 	QLabel			*lblAdcs[20];
-	QDoubleSpinBox	*spinDacs[20];
+	MyDoubleSpinBox	*spinDacs[20];
 	QDoubleSpinBox	*spinAdcs[20];
 	QTimer 			*adcTimer;
 
@@ -101,6 +122,11 @@ private slots:
 /** Refreshes the adcs
  */
 void RefreshAdcs();
+
+/** Set Dac values
+ * @param id id of dac
+ */
+void SetDacValues(int id);
 
 };
 

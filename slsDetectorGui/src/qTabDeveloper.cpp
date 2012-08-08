@@ -128,8 +128,8 @@ void qTabDeveloper::SetupWidgetWindow(){
 void qTabDeveloper::Initialization(){
 	connect(adcTimer, 	SIGNAL(timeout()), 		this, SLOT(RefreshAdcs()));
 
-	//for(int i=0;i<NUM_DAC_WIDGETS;i++){
-	//connect(spinDacs[i],		SIGNAL(editingFinished()),				this, SLOT(SetFileSteps()));
+	for(int i=0;i<NUM_DAC_WIDGETS;i++)
+		connect(spinDacs[i],	SIGNAL(editingFinished(int)),	this, SLOT(SetDacValues(int)));
 
 }
 
@@ -142,7 +142,7 @@ void qTabDeveloper::CreateDACWidgets(){
 
 	for(int i=0;i<NUM_DAC_WIDGETS;i++){
 		lblDacs[i] 	= new QLabel(QString(dacNames[i].c_str()),boxDacs);
-		spinDacs[i]	= new QDoubleSpinBox(boxDacs);
+		spinDacs[i]	= new MyDoubleSpinBox(i,boxDacs);
 		spinDacs[i]->setMaximum(10000);
 
 		dacLayout->addWidget(lblDacs[i],(int)(i/2),((i%2)==0)?1:4);
@@ -175,6 +175,18 @@ void qTabDeveloper::CreateADCWidgets(){
 			adcLayout->addItem(new QSpacerItem(20,20,QSizePolicy::Fixed,QSizePolicy::Fixed),(int)(i/2),6);
 		}
 	}
+}
+
+
+//-------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+void qTabDeveloper::SetDacValues(int id){
+#ifdef VERYVERBOSE
+	cout << "Setting dac:" <<dacNames[id] << " : " << spinDacs[id]->value() << endl;
+#endif
+
+	spinDacs[id]->setValue(myDet->setDAC(spinDacs[id]->value(),getSLSIndex(id)));
 }
 
 

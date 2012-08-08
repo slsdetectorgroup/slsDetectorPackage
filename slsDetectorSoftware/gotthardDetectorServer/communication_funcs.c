@@ -431,7 +431,7 @@ int  receiveModule(int file_des, sls_detector_module* myMod) {
     free(dacptr);
     return FAIL;
   }
-
+/*
   if (nadcdiff<=0) {
     ts+=receiveDataOnly(file_des,myMod->adcs, sizeof(double)*nAdcs);
 #ifdef VERBOSE 
@@ -444,8 +444,7 @@ int  receiveModule(int file_des, sls_detector_module* myMod) {
     ts+=receiveDataOnly(file_des,adcptr, sizeof(double)*nadcdiff);
     free(adcptr);
     return FAIL;
-  }
-
+  }*/
   if (nchipdiff<=0) {
     ts+=receiveDataOnly(file_des,myMod->chipregs, sizeof(int)*nChips);
 #ifdef VERBOSE 

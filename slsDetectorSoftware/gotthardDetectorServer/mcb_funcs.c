@@ -816,6 +816,7 @@ int initDACs(int* v,int imod)
 #endif
   int iaddr;
   //  sDac=0;
+
   for (iaddr=0; iaddr<8; iaddr++) {
     clearDACSregister(imod);
     if (v[iaddr]>=0) { 

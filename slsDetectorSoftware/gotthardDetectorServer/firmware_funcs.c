@@ -1187,6 +1187,8 @@ int setDACRegister(int idac, int val, int imod) {
     return -1;
     break;
   }
+  //saving only the msb
+  val=val>>2;
 
   off=(idac%3)*10;
   mask=~((0x3ff)<<off);
@@ -1198,9 +1200,12 @@ int setDACRegister(int idac, int val, int imod) {
       bus_w(addr+(imod<<SHIFTMOD),reg);
   }
   val=(bus_r(addr+(imod<<SHIFTMOD))>>off)&0x3ff;
+  //since we saved only the msb
+  val=val<<2;
+
   //val=(bus_r(addr)>>off)&0x3ff;
   
-  
+
 #ifdef VERBOSE
   printf("Dac %d module %d register is %d\n\n",idac,imod,val);
 #endif

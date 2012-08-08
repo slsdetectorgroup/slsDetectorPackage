@@ -990,8 +990,8 @@ int set_dac(int file_des) {
 				strcpy(mess,"Weird value read back or it has not been set yet\n");
 			else
 				ret=OK;
-		}
-		else if (retval==val || val==-1)
+		}//since v r saving only msb
+		else if ((retval-val)<=3 || val==-1)
 			ret=OK;
 	}
 #endif
@@ -1416,7 +1416,7 @@ int set_module(int file_des) {
   printf("Setting module\n");
 #endif 
   ret=receiveModule(file_des, &myModule);
- 
+
 
   if (ret>=0)
     ret=OK;

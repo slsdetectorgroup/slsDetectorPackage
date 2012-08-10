@@ -2663,7 +2663,7 @@ string slsDetectorCommand::cmdDAC(int narg, char *args[], int action) {
     dac=VSH_POT;
   else if (cmd=="viopower")
     dac=VIO_POT;
-  else if (cmd=="vrefds")
+  else if (cmd=="vref_ds")
     dac=G_VREF_DS;
   else if (cmd=="vcascn_pb")
     dac=G_VCASCN_PB;

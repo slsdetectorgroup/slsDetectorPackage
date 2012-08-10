@@ -2354,7 +2354,6 @@ int slsDetector::setModule(sls_detector_module module){
   int imod=module.module;
 
 
-
 #ifdef VERBOSE
     std::cout << "slsDetector set module " << std::endl;
 #endif 

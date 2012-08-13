@@ -168,11 +168,11 @@ int choose_vthresh_and_vtrim(int countlim,  int nsigma, int im) {
 
   int *fifodata;
 
-  double vthreshmean, vthreshSTDev;
+  float vthreshmean, vthreshSTDev;
   int *thrmi, *thrma;
-  double c;
-  double b=BVTRIM;
-  double a=AVTRIM;
+  float c;
+  float b=BVTRIM;       
+  float a=AVTRIM; 
   int *trim;
   int ich, imod, ichan;
   int nvalid=0;
@@ -447,7 +447,7 @@ int trim_with_level(int countlim, int im) {
 int kth_smallest(int *a, int n, int k)
 {
   register int i,j,l,m ;
-  register double x ;
+  register float x ;
   
   l=0 ; m=n-1 ;
   while (l<m) {
@@ -474,7 +474,7 @@ int kth_smallest(int *a, int n, int k)
 int  median(int *a,int n) {
   
   int i=0, k=n/2;
-  double k1=0.5*n;
+  float k1=0.5*n;
 
   //discard zeroes and 0xffffff
   for (i=0; i<n; i++) {
@@ -506,7 +506,7 @@ int ave(int *a, int n)
 {
   int av=0,i;
   for (i=0; i<n; i++)
-    av=av+((double)*(a+i))/((double)n);
+    av=av+((float)*(a+i))/((float)n);
   return av;
 }
 

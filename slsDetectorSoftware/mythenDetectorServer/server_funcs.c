@@ -842,13 +842,13 @@ int read_register(int file_des) {
 
 int set_dac(int file_des) {
 
-  double retval;
+  float retval;
   int ret=OK;
   int arg[2];
   enum dacIndex ind;
   int imod;
   int n;
-  double val;
+  float val;
   int idac=0;
 
   sprintf(mess,"Can't set DAC\n");
@@ -954,7 +954,7 @@ add possible potentiometers like in chiptest board!!!!!!!!!!!!!!!
 
 int get_adc(int file_des) {
 
-  double retval;
+  float retval;
   int ret=OK;
   int arg[2];
   enum dacIndex ind;
@@ -1312,8 +1312,8 @@ int set_module(int file_des) {
   sls_detector_module myModule;
   int *myChip=malloc(NCHIP*sizeof(int));
   int *myChan=malloc(NCHIP*NCHAN*sizeof(int));
-  double *myDac=malloc(NDAC*sizeof(int));
-  double *myAdc=malloc(NADC*sizeof(int));
+  float *myDac=malloc(NDAC*sizeof(int));
+  float *myAdc=malloc(NADC*sizeof(int));
   int retval, n;
   int ret=OK;
   int dr;//, ow;
@@ -1431,8 +1431,8 @@ int get_module(int file_des) {
   sls_detector_module myModule;
   int *myChip=malloc(NCHIP*sizeof(int));
   int *myChan=malloc(NCHIP*NCHAN*sizeof(int));
-  double *myDac=malloc(NDAC*sizeof(int));
-  double *myAdc=malloc(NADC*sizeof(int));
+  float *myDac=malloc(NDAC*sizeof(int));
+  float *myAdc=malloc(NADC*sizeof(int));
 
 
   if (myDac)

@@ -1416,7 +1416,7 @@ int set_module(int file_des) {
   printf("Setting module\n");
 #endif 
   ret=receiveModule(file_des, &myModule);
-
+  printf("11vref_ds:%f\n",myModule.dacs[0]);printf("11vin_cm:%f\n",myModule.dacs[5]);
 
   if (ret>=0)
     ret=OK;

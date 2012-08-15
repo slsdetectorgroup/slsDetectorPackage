@@ -419,7 +419,7 @@ int  receiveModule(int file_des, sls_detector_module* myMod) {
     printf("received %d adcs\n",nAdcs);
 #endif
   if (ndacdiff<=0) {
-    ts+=receiveDataOnly(file_des,myMod->dacs, sizeof(double)*nDacs);
+    ts+=receiveDataOnly(file_des,myMod->dacs, sizeof(dacs_t)*nDacs);
 #ifdef VERBOSE 
     printf("dacs received\n");
 #endif
@@ -431,9 +431,9 @@ int  receiveModule(int file_des, sls_detector_module* myMod) {
     free(dacptr);
     return FAIL;
   }
-/*
-  if (nadcdiff<=0) {
-    ts+=receiveDataOnly(file_des,myMod->adcs, sizeof(double)*nAdcs);
+//  printf("ndacdiff\t11vref_ds:%f\n",myMod->dacs[0]);printf("11vin_cm:%f\n",myMod->dacs[5]);
+/*  if (nadcdiff<=0) {
+    ts+=receiveDataOnly(file_des,myMod->adcs, sizeof(dacs_t)*nAdcs);
 #ifdef VERBOSE 
     printf("adcs received\n");
 #endif
@@ -444,7 +444,7 @@ int  receiveModule(int file_des, sls_detector_module* myMod) {
     ts+=receiveDataOnly(file_des,adcptr, sizeof(double)*nadcdiff);
     free(adcptr);
     return FAIL;
-  }*/
+  } *///printf("nadcdiff\t22vref_ds:%f\n",myMod->dacs[0]);printf("22vin_cm:%f\n",myMod->dacs[5]);
   if (nchipdiff<=0) {
     ts+=receiveDataOnly(file_des,myMod->chipregs, sizeof(int)*nChips);
 #ifdef VERBOSE 
@@ -457,8 +457,7 @@ int  receiveModule(int file_des, sls_detector_module* myMod) {
     ts+=receiveDataOnly(file_des,chipptr, sizeof(int)*nchipdiff);
     free(chipptr);
     return FAIL;
-  }
-
+  }//printf("nchipdiff\t33vref_ds:%f\n",myMod->dacs[0]);printf("33vin_cm:%f\n",myMod->dacs[5]);
   if (nchandiff<=0) {
     ts+=receiveDataOnly(file_des,myMod->chanregs, sizeof(int)*nChans);
 #ifdef VERBOSE 
@@ -471,7 +470,7 @@ int  receiveModule(int file_des, sls_detector_module* myMod) {
     ts+=receiveDataOnly(file_des,chanptr, sizeof(int)*nchandiff);
     free(chanptr);
     return FAIL;
-  }
+  }//printf("nchandiff\t44vref_ds:%f\n",myMod->dacs[0]);printf("44vin_cm:%f\n",myMod->dacs[5]);
 #ifdef VERBOSE
   printf("received module %d of size %d register %x\n",myMod->module,ts,myMod->reg);
 #endif

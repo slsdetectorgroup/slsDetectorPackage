@@ -181,7 +181,7 @@ void qTabActions::Initialization(){
 	connect(group,				SIGNAL(buttonClicked(QAbstractButton*)),	this,SLOT(Expand(QAbstractButton*)));
 	//enable scan box in plot tab
 	for(int i=0;i<qScanWidget::NUM_SCAN_WIDGETS;i++)
-		connect(scanWidget[i],	SIGNAL(EnableScanBox(bool,int)),	this,SIGNAL(EnableScanBox(bool,int)));
+		connect(scanWidget[i],	SIGNAL(EnableScanBox(int,int)),	this,SIGNAL(EnableScanBox(int,int)));
 	//positions
 	connect(comboPos,		SIGNAL(currentIndexChanged(int)), 		this, SLOT(SetPosition()));
 	connect(spinNumPos,		SIGNAL(valueChanged(int)), 				this, SLOT(SetPosition()));

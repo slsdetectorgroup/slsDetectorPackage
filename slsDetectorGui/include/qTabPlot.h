@@ -49,8 +49,9 @@ private:
 
 	/** 1d/2d plot	 */
 	bool isOneD;
+	bool isOrginallyOneD;
 
-	bool scanLevel[2];
+	int scanLevel[2];
 
 	QStackedLayout* stackedLayout;
 	QSpinBox *spinNthFrame;
@@ -84,7 +85,7 @@ void SetFrequency();
  * @param enable to enable the scan group box
  * @param id is 0 if its scan level 0 or scan level 1
  */
-void EnableScanBox(bool enable,int id);
+void EnableScanBox(int mode,int id);
 
 
 
@@ -118,6 +119,7 @@ signals:
 void DisableZoomSignal(bool);
 void SetZRangeSignal(double,double);
 void EnableZRangeSignal(bool);
+void ThresholdScanSignal(int);
 };
 
 

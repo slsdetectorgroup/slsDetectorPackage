@@ -64,7 +64,8 @@ void qDrawPlot::SetupWidgetWindow(){
 	lastImageNumber = 0;
 	last_plot_number = 0;
 
-	nPixelsX = 1280; nPixelsY = 100;
+	nPixelsX = myDet->getTotalNumberOfChannels();
+	nPixelsY = 100;
 
 	lastImageArray = 0;
 	image_data = 0;
@@ -426,7 +427,63 @@ int qDrawPlot::GetData(detectorData *data){
 	return 0;
 }
 
+
 //-------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+int qDrawPlot::GetScanDataCallBack(detectorData *data, void *this_pointer){
+	((qDrawPlot*)this_pointer)->GetScanData(data);
+	return 0;
+}
+
+
+//-------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+int qDrawPlot::GetScanData(detectorData *data){/*
+#ifdef VERYVERBOSE
+	cout<<"Entering GetScanDatafunction"<<endl;
+#endif
+	if(!stop_signal){
+		//if plot disabled, RETURN
+		if(!plotEnable) {
+			progress=(int)data->progressIndex;
+			//lastImageNumber= currentFrame+1;
+			currentThrehold++;
+			return 0;
+		}
+		//what comes here has plot enabled AND (frame factor OR data pause over )
+		progress=(int)data->progressIndex;
+
+#ifdef VERYVERBOSE
+		cout<<"Reading in image: "<<currentThrehold<<endl;
+#endif
+		if(!pthread_mutex_trylock(&(last_image_complete_mutex))){
+			char temp_title[2000];
+			// only if you got the lock, do u need to remember lastimagenumber to plot
+			lastImageNumber= currentThrehold+1;
+
+			nPixelsY = currentThrehold+1;
+			// Titles
+			sprintf(temp_title,"Adding Threshold %f",threhold[currentThrehold]);
+			imageTitle = temp_title;
+			// copy data
+			memcpy(lastImageArray[i],data->values,nPixelsX*sizeof(double));
+
+			pthread_mutex_unlock(&(last_image_complete_mutex));
+		}
+		currentThrehold++;
+
+	}
+#ifdef VERYVERBOSE
+	cout<<"Exiting GetScanData function"<<endl;
+#endif*/
+	return 0;
+}
+
+
+//-------------------------------------------------------------------------------------------------------------------------------------------------
+
 
 void qDrawPlot::SelectPlot(int i){ //1 for 1D otherwise 2D
 	if(i==1){

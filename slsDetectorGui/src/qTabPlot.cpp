@@ -8,11 +8,11 @@
 #include "qTabPlot.h"
 #include "qDefs.h"
 #include "qDrawPlot.h"
-/** Project Class Headers */
+// Project Class Headers
 #include "slsDetector.h"
 #include "multiSlsDetector.h"
-/** Qt Include Headers */
-/** C++ Include Headers */
+// Qt Include Headers
+// C++ Include Headers
 #include <iostream>
 #include <string>
 #include <math.h>
@@ -55,7 +55,7 @@ void qTabPlot::SetupWidgetWindow(){
 	scanLevel[0]=false;
 	scanLevel[1]=false;
 
-/** Plot Axis*/
+// Plot Axis
 	myPlot->SetPlotTitle(defaultPlotTitle);
 	dispTitle->setText(defaultPlotTitle);
 	dispTitle->setEnabled(false);
@@ -75,7 +75,7 @@ void qTabPlot::SetupWidgetWindow(){
 	dispYMax->setValidator(new QDoubleValidator(dispYMax));
 	dispZMax->setValidator(new QDoubleValidator(dispZMax));
 
-	/** Plotting Frequency */
+	// Plotting Frequency
 
 	stackedLayout = new QStackedLayout;
 	stackedLayout->setSpacing(0);
@@ -106,13 +106,13 @@ void qTabPlot::SetupWidgetWindow(){
 	stackWidget->setLayout(stackedLayout);
 
 
-	/** Depending on whether the detector is 1d or 2d*/
+	// Depending on whether the detector is 1d or 2d
 	switch(myDet->getDetectorsType()){
-	case slsDetectorDefs::MYTHEN:	Select1DPlot(true);	break;
-	case slsDetectorDefs::EIGER:	Select1DPlot(false);break;
-	case slsDetectorDefs::GOTTHARD:	Select1DPlot(true);break;
+	case slsDetectorDefs::MYTHEN:	isOrginallyOneD = true; 	Select1DPlot(true);	break;
+	case slsDetectorDefs::EIGER:	isOrginallyOneD = false;	Select1DPlot(false);break;
+	case slsDetectorDefs::GOTTHARD:	isOrginallyOneD = true; 	Select1DPlot(true);break;
 	default:
-		cout<<"ERROR: Detector Type is Generic"<<endl;
+		cout << "ERROR: Detector Type is Generic" << endl;
 		exit(-1);
 	}
 }
@@ -140,10 +140,20 @@ void qTabPlot::Select1DPlot(bool b){
 		chkZAxis->setEnabled(true);
 		chkZMin->setEnabled(true);
 		chkZMax->setEnabled(true);
-		myPlot->SetImageXAxisTitle(defaultImageXAxisTitle);
-		dispXAxis->setText(defaultImageXAxisTitle);
-		myPlot->SetImageYAxisTitle(defaultImageYAxisTitle);
-		dispYAxis->setText(defaultImageYAxisTitle);
+
+		//threshold scan
+		if((scanLevel[0]==2)||(scanLevel[1]==2)){
+			myPlot->SetImageXAxisTitle("Channel Number");
+			dispXAxis->setText("Channel Number");
+			dispYAxis->setText("Threshold");
+			myPlot->SetImageYAxisTitle("Threshold");
+		}
+		else{
+			myPlot->SetImageXAxisTitle(defaultImageXAxisTitle);
+			dispXAxis->setText(defaultImageXAxisTitle);
+			dispYAxis->setText(defaultImageYAxisTitle);
+			myPlot->SetImageYAxisTitle(defaultImageYAxisTitle);
+		}
 		myPlot->SetImageZAxisTitle(defaultImageZAxisTitle);
 		dispZAxis->setText(defaultImageZAxisTitle);
 		myPlot->Select2DPlot();
@@ -157,29 +167,29 @@ void qTabPlot::Select1DPlot(bool b){
 
 
 void qTabPlot::Initialization(){
-/** Plot arguments box*/
-	connect(radioNoPlot, 	SIGNAL(clicked()),this, SLOT(SetPlot()));
-	connect(radioHistogram, SIGNAL(clicked()),this, SLOT(SetPlot()));
-	connect(radioDataGraph, SIGNAL(clicked()),this, SLOT(SetPlot()));
-/** Scan box*/
+// Plot arguments box
+	connect(radioNoPlot, 	SIGNAL(toggled(bool)),this, SLOT(SetPlot()));
+	connect(radioHistogram, SIGNAL(toggled(bool)),this, SLOT(SetPlot()));
+	connect(radioDataGraph, SIGNAL(toggled(bool)),this, SLOT(SetPlot()));
+// Scan box
 	//connect(scna, SIGNAL(toggled(bool)),this, SLOT(scanstuff(bool)));
-/** Snapshot box*/
+// Snapshot box
 	connect(btnClone, 		SIGNAL(clicked()),myPlot, 	SLOT(ClonePlot()));
 	connect(btnCloseClones, SIGNAL(clicked()),myPlot, 	SLOT(CloseClones()));
-/** 1D Plot box*/
+// 1D Plot box
 	connect(chkSuperimpose, SIGNAL(toggled(bool)),		this, SLOT(EnablePersistency(bool)));
 	connect(spinPersistency,SIGNAL(valueChanged(int)),	myPlot,SLOT(SetPersistency(int)));
 	connect(chkPoints, 		SIGNAL(toggled(bool)),		myPlot, SLOT(SetDottedPlot(bool)));
-/** 2D Plot box*/
+// 2D Plot box
 	connect(chkInterpolate, SIGNAL(toggled(bool)),myPlot, SIGNAL(InterpolateSignal(bool)));
 	connect(chkContour, 	SIGNAL(toggled(bool)),myPlot, SIGNAL(ContourSignal(bool)));
 	connect(chkLogz, 		SIGNAL(toggled(bool)),myPlot, SIGNAL(LogzSignal(bool)));
-/** Plotting frequency box */
+// Plotting frequency box
 	connect(comboFrequency, SIGNAL(currentIndexChanged(int)),	this, SLOT(SetFrequency()));
 	connect(comboTimeGapUnit,SIGNAL(currentIndexChanged(int)),	this, SLOT(SetFrequency()));
 	connect(spinTimeGap,	SIGNAL(editingFinished()),			this, SLOT(SetFrequency()));
 	connect(spinNthFrame,	SIGNAL(editingFinished()),			this, SLOT(SetFrequency()));
-/** Plot Axis **/
+// Plot Axis *
 	connect(chkTitle, 		SIGNAL(toggled(bool)), this, 	SLOT(EnableTitles()));
 	connect(chkXAxis, 		SIGNAL(toggled(bool)), this, 	SLOT(EnableTitles()));
 	connect(chkYAxis, 		SIGNAL(toggled(bool)), this, 	SLOT(EnableTitles()));
@@ -205,8 +215,8 @@ void qTabPlot::Initialization(){
 	connect(dispZMax, 		SIGNAL(returnPressed()), this, 	SLOT(SetZRange()));
 	connect(this,			SIGNAL(SetZRangeSignal(double,double)),myPlot, SIGNAL(SetZRangeSignal(double,double)));
 
-/** Common Buttons*/
-/** Save */
+// Common Buttons
+// Save
 	connect(btnSave, 		SIGNAL(clicked()),		myPlot,	SLOT(SavePlot()));
 }
 
@@ -227,20 +237,20 @@ void qTabPlot::EnablePersistency(bool enable){
 
 
 void qTabPlot::SetTitles(){
-	/** Plot Title*/
+	// Plot Title
 	if(dispTitle->isEnabled())
 		myPlot->SetPlotTitle(dispTitle->text());
-	/** X Axis */
+	// X Axis
 	if(dispXAxis->isEnabled()){
 		if(isOneD)	myPlot->SetHistXAxisTitle(dispXAxis->text());
 		else	myPlot->SetImageXAxisTitle(dispXAxis->text());
 	}
-	/** Y Axis */
+	// Y Axis
 	if(dispYAxis->isEnabled()){
 		if(isOneD)	myPlot->SetHistYAxisTitle(dispYAxis->text());
 		else	myPlot->SetImageYAxisTitle(dispYAxis->text());
 	}
-	/** Z Axis */
+	// Z Axis
 	if(dispZAxis->isEnabled())
 		myPlot->SetImageZAxisTitle(dispZAxis->text());
 }
@@ -250,13 +260,13 @@ void qTabPlot::SetTitles(){
 
 
 void qTabPlot::EnableTitles(){
-	/** Plot Title*/
+	// Plot Title
 	dispTitle->setEnabled(chkTitle->isChecked());
 	if(!chkTitle->isChecked()){
 		myPlot->SetPlotTitle(defaultPlotTitle);
 		dispTitle->setText(defaultPlotTitle);
 	}
-	/** X Axis */
+	// X Axis
 	dispXAxis->setEnabled(chkXAxis->isChecked());
 	if(!chkXAxis->isChecked()){
 		if(isOneD){
@@ -268,7 +278,7 @@ void qTabPlot::EnableTitles(){
 			dispXAxis->setText(defaultImageXAxisTitle);
 		}
 	}
-	/** Y Axis */
+	// Y Axis
 	dispYAxis->setEnabled(chkYAxis->isChecked());
 	if(!chkYAxis->isChecked()){
 		if(isOneD){
@@ -279,7 +289,7 @@ void qTabPlot::EnableTitles(){
 			dispYAxis->setText(defaultImageYAxisTitle);
 		}
 	}
-	/** Z Axis */
+	// Z Axis
 	dispZAxis->setEnabled(chkZAxis->isChecked());
 	if(!chkZAxis->isChecked()){
 		myPlot->SetImageZAxisTitle(defaultImageZAxisTitle);
@@ -313,27 +323,27 @@ void qTabPlot::EnableRange(){
 
 void qTabPlot::SetAxesRange(){
 	bool changed = false;
-	/** x min */
+	// x min
 	changed = (dispXMin->isEnabled())&&(!dispXMin->text().isEmpty());
 	if(changed)	myPlot->SetXYRangeValues(dispXMin->text().toDouble(),qDefs::XMINIMUM);
 	myPlot->IsXYRangeValues(changed,qDefs::XMINIMUM);
 
-	/** x max */
+	// x max
 	changed = (dispXMax->isEnabled())&&(!dispXMax->text().isEmpty());
 	if(changed)	myPlot->SetXYRangeValues(dispXMax->text().toDouble(),qDefs::XMAXIMUM);
 	myPlot->IsXYRangeValues(changed,qDefs::XMAXIMUM);
 
-	/** y min */
+	// y min
 	changed = (dispYMin->isEnabled())&&(!dispYMin->text().isEmpty());
 	if(changed)	myPlot->SetXYRangeValues(dispYMin->text().toDouble(),qDefs::YMINIMUM);
 	myPlot->IsXYRangeValues(changed,qDefs::YMINIMUM);
 
-	/** y max */
+	// y max
 	changed = (dispYMax->isEnabled())&&(!dispYMax->text().isEmpty());
 	if(changed)	myPlot->SetXYRangeValues(dispYMax->text().toDouble(),qDefs::YMAXIMUM);
 	myPlot->IsXYRangeValues(changed,qDefs::YMAXIMUM);
 
-	/**  To remind the updateplot in qdrawplot to set range after updating plot*/
+	//  To remind the updateplot in qdrawplot to set range after updating plot
 	myPlot->SetXYRange(true);
 }
 
@@ -360,31 +370,46 @@ void qTabPlot::EnableZRange(){
 
 
 void qTabPlot::SetPlot(){
+#ifdef VERBOSE
+	cout << "Entering Set Plot()" ;
+#endif
 	if(radioNoPlot->isChecked()){
+		cout << " - No Plot" << endl;
+		Select1DPlot(isOrginallyOneD);
 		myPlot->EnablePlot(false);
-		/**if enable is true, disable everything */
-		if(isOneD) {box1D->show(); box1D->setEnabled(false); box2D->hide();}
-		if(!isOneD){box2D->show(); box2D->setEnabled(false); box1D->hide();}
+		//if enable is true, disable everything
+		if(isOrginallyOneD) {box1D->show(); box1D->setEnabled(false); box2D->hide();}
+		if(!isOrginallyOneD){box2D->show(); box2D->setEnabled(false); box1D->hide();}
 		boxSnapshot->setEnabled(false);
 		boxSave->setEnabled(false);
 		boxFrequency->setEnabled(false);
 		boxPlotAxis->setEnabled(false);
 		boxScan->setEnabled(false);
-	}else {
+	}else if(radioDataGraph->isChecked()){
+		cout << " - DataGraph" << endl;
 		myPlot->EnablePlot(true);
-		/**if enable is true, disable everything */
-		if(isOneD) {box1D->show();box1D->setEnabled(true);} else box1D->hide();
-		if(!isOneD){box2D->show();box2D->setEnabled(true);}	else box2D->hide();
+		//if enable is true, disable everything
+		if(isOrginallyOneD) {box1D->show();box1D->setEnabled(true);} else box1D->hide();
+		if(!isOrginallyOneD){box2D->show();box2D->setEnabled(true);}	else box2D->hide();
+		Select1DPlot(isOrginallyOneD);
 		boxSnapshot->setEnabled(true);
 		boxSave->setEnabled(true);
 		boxFrequency->setEnabled(true);
 		boxPlotAxis->setEnabled(true);
-
-		if(radioHistogram->isChecked())
-			boxScan->setEnabled(false);
-		else
-			//check first if there is a scan from actions tab
-			boxScan->setEnabled(false);
+	}else{
+		cout << " - Histogram" << endl;
+		myPlot->EnablePlot(true);
+		Select1DPlot(false);
+		box1D->hide();
+		box2D->show();
+		box2D->setEnabled(true);
+		boxSnapshot->setEnabled(true);
+		boxSave->setEnabled(true);
+		boxFrequency->setEnabled(false);
+		boxPlotAxis->setEnabled(true);
+		boxScan->setEnabled(false);
+		myPlot->SetPlotTimer(250);
+		emit ThresholdScanSignal(0);
 	}
 }
 
@@ -405,7 +430,7 @@ void qTabPlot::SetFrequency(){
 	stackedLayout->setCurrentIndex(comboFrequency->currentIndex());
 	switch(comboFrequency->currentIndex()){
 	case 0:
-		/* Get the time interval from gui in ms*/
+		// Get the time interval from gui in ms
 		timeMS = (qDefs::getNSTime((qDefs::timeUnit)comboTimeGapUnit->currentIndex(),spinTimeGap->value()))/(1e6);
 		if(timeMS<minPlotTimer){
 			qDefs::WarningMessage("Interval between Plots - The Time Interval between plots "
@@ -413,19 +438,19 @@ void qTabPlot::SetFrequency(){
 			spinTimeGap->setValue(minPlotTimer);
 			comboTimeGapUnit->setCurrentIndex(qDefs::MILLISECONDS);
 		}
-		/**This is done so that its known which one was selected */
+		//This is done so that its known which one was selected
 		myPlot->SetFrameFactor(0);
-		/** Setting the timer value(ms) between plots */
+		// Setting the timer value(ms) between plots
 		myPlot->SetPlotTimer(timeMS);
 #ifdef VERBOSE
-	cout<<"Plotting Frequency: Time Gap - "<<spinTimeGap->value()<<qDefs::getUnitString((qDefs::timeUnit)comboTimeGapUnit->currentIndex())<<endl;
+	cout << "Plotting Frequency: Time Gap - " << spinTimeGap->value() << qDefs::getUnitString((qDefs::timeUnit)comboTimeGapUnit->currentIndex()) << endl;
 #endif
 		break;
 	case 1:
 		acqPeriodMS = (myDet->setTimer(slsDetectorDefs::FRAME_PERIOD,-1)*(1E-6));
-		/** gets the acq period * number of nth frames*/
+		// gets the acq period * number of nth frames
 		timeMS = (spinNthFrame->value())*acqPeriodMS;
-		/** To make sure the period between plotting is not less than minimum plot timer in  ms*/
+		// To make sure the period between plotting is not less than minimum plot timer in  ms
 		if(timeMS<minPlotTimer){
 			int minFrame = (ceil)(minPlotTimer/acqPeriodMS);
 			qDefs::WarningMessage("<b>Plot Tab:</b> Interval between Plots - The nth Image must be larger.<br><br>"
@@ -434,10 +459,10 @@ void qTabPlot::SetFrequency(){
 					"for the chosen Acquisition Period.","Plot");
 			spinNthFrame->setValue(minFrame);
 		}
-		/** Setting the timer value (nth frames) between plots */
+		// Setting the timer value (nth frames) between plots
 		myPlot->SetFrameFactor(spinNthFrame->value());
 #ifdef VERBOSE
-	cout<<"Plotting Frequency: Nth Frame - "<<spinNthFrame->value()<<endl;
+	cout << "Plotting Frequency: Nth Frame - " << spinNthFrame->value() << endl;
 #endif
 		break;
 	}
@@ -451,10 +476,13 @@ void qTabPlot::SetFrequency(){
 //-------------------------------------------------------------------------------------------------------------------------------------------------
 
 
-void qTabPlot::EnableScanBox(bool enable,int id){
-	/**find out when this is enabled*/
+void qTabPlot::EnableScanBox(int mode,int id){
+#ifdef VERBOSE
+	cout << "Entering Enable Scan Box()" << endl;
+#endif
 
-	scanLevel[id]=enable;
+
+	scanLevel[id]=mode;
 	//both are disabled
 	if((!scanLevel[0])&&(!scanLevel[1])){
 		boxScan->setEnabled(false);
@@ -467,22 +495,30 @@ void qTabPlot::EnableScanBox(bool enable,int id){
 	else{
 		if(!boxScan->isEnabled()) {
 			boxScan->setEnabled(true);
-			radioFileIndex->setEnabled(false);
+			radioFileIndex->setEnabled(false);/**???*/
 		}
 		//disable one and check the other
 		if(id) {
-			radioLevel0->setEnabled(!enable);
-			radioLevel0->setChecked(!enable);
-			radioLevel1->setEnabled(enable);
-			radioLevel1->setChecked(enable);
+			radioLevel0->setEnabled(!mode);
+			radioLevel0->setChecked(!mode);
+			radioLevel1->setEnabled(mode);
+			radioLevel1->setChecked(mode);
 		}else{
-			radioLevel0->setEnabled(enable);
-			radioLevel0->setChecked(enable);
-			radioLevel1->setEnabled(!enable);
-			radioLevel1->setChecked(!enable);
+			radioLevel0->setEnabled(mode);
+			radioLevel0->setChecked(mode);
+			radioLevel1->setEnabled(!mode);
+			radioLevel1->setChecked(!mode);
 		}
 	}
-	/**if(boxScan->isEnabled()){
+
+	//check for threshold
+	if((scanLevel[0]==2)||(scanLevel[1]==2))
+		radioHistogram->setChecked(true);
+	else
+		radioDataGraph->setChecked(true);
+
+	/*
+	if(boxScan->isEnabled()){
 		myDet->setPlotType(i);
 	}*/
 }

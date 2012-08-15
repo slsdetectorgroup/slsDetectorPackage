@@ -143,15 +143,15 @@ void qTabMeasurement::SetupTimingMode(){
 				int triggers = (int)myDet->setTimer(slsDetectorDefs::CYCLES_NUMBER,-1);
 				if((frames==1)&&(triggers==1)){
 					comboTimingMode->setCurrentIndex((int)None);
-					setTimingMode((int)None);
+					SetTimingMode((int)None);
 				}else{
 					comboTimingMode->setCurrentIndex((int)Auto);
-					setTimingMode((int)Auto);
+					SetTimingMode((int)Auto);
 				}
 			}else{
 				//mode +1 since the detector class has no timingmode as "None"
 				comboTimingMode->setCurrentIndex((int)mode+1);
-				setTimingMode((int)mode+1);
+				SetTimingMode((int)mode+1);
 			}
 		}
 		// Mode NOT ENABLED.
@@ -162,7 +162,7 @@ void qTabMeasurement::SetupTimingMode(){
 					"\n\nSetting the following defaults:\nTiming Mode \t: None\n"
 					"Number of Frames \t: 1\nNumber of Triggers \t: 1","Measurement");
 			comboTimingMode->setCurrentIndex((int)None);
-			setTimingMode((int)None);
+			SetTimingMode((int)None);
 		}
 	}
 }
@@ -183,7 +183,7 @@ void qTabMeasurement::Initialization(int timingChange){
 		//Start/Stop Acquisition
 		connect(btnStartStop,		SIGNAL(clicked()),					this,	SLOT(startStopAcquisition()));
 		//Timing Mode
-		connect(comboTimingMode,	SIGNAL(currentIndexChanged(int)),	this,	SLOT(setTimingMode(int)));//
+		connect(comboTimingMode,	SIGNAL(currentIndexChanged(int)),	this,	SLOT(SetTimingMode(int)));//
 		//progress bar
 		connect(progressTimer, 		SIGNAL(timeout()), 					this, SLOT(UpdateProgress()));
 		//enable write to file
@@ -467,7 +467,7 @@ void qTabMeasurement::setNumProbes(int val){
 //-------------------------------------------------------------------------------------------------------------------------------------------------
 
 
-void qTabMeasurement::setTimingMode(int mode){
+void qTabMeasurement::SetTimingMode(int mode){
 #ifdef VERBOSE
 	cout << "Setting Timing mode to " << comboTimingMode->currentText().toAscii().data() << endl;
 #endif

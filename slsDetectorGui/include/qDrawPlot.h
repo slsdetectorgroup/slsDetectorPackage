@@ -264,7 +264,10 @@ private:
 	static int GetDataCallBack(detectorData *data, void *this_pointer);
 	/**	This is called by the GetDataCallBack function to copy the data */
 	int GetData(detectorData *data);
-
+	/**	This is called by the detector class to copy the scan data it jus acquired */
+	static int GetScanDataCallBack(detectorData *data, void *this_pointer);
+	/**	This is called by the GetDataCallBack function to copy the scan data */
+	int GetScanData(detectorData *data);
 
 public slots:
 /** To select 1D or 2D plot

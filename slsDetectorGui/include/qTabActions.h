@@ -111,7 +111,7 @@ void SetPosition();
 void DeletePosition();
 
 signals:
-void EnableScanBox(bool,int);
+void EnableScanBox(int,int);
 
 };
 

@@ -138,7 +138,7 @@ void qDetectorMain::SetUpWidgetWindow(){
 	// increase the width so it uses all the empty space for the tab titles
 	tabs->tabBar()->setFixedWidth(width()+61);
 
-// mode setup - to set up the tabs initially as disabled, not in form so done here
+	// mode setup - to set up the tabs initially as disabled, not in form so done here
 #ifdef VERBOSE
 	cout << "Setting Debug Mode to 0\nSetting Beamline Mode to 0\n"
 			"Setting Expert Mode to 0\nSetting Dockable Mode to false\n"
@@ -224,9 +224,9 @@ void qDetectorMain::Initialization(){
 		connect(tab_measurement,	SIGNAL(CheckPlotIntervalSignal()),	tab_plot,SLOT(SetFrequency()));
 		// Plot tab
 		connect(tab_plot,			SIGNAL(DisableZoomSignal(bool)),	this,SLOT(SetZoomToolTip(bool)));
+		connect(tab_plot,			SIGNAL(ThresholdScanSignal(int)),	tab_measurement,SLOT(SetTimingMode(int)));
 		// Actions tab
-		connect(tab_actions,		SIGNAL(EnableScanBox(bool,int)),	tab_plot,SLOT(EnableScanBox(bool,int)));
-
+		connect(tab_actions,		SIGNAL(EnableScanBox(int,int)),		tab_plot,SLOT(EnableScanBox(int,int)));
 // Plotting
 	// When the acquisition is finished, must update the meas tab
 	connect(myPlot,	SIGNAL(UpdatingPlotFinished()),				this,				SLOT(EnableTabs()));
@@ -453,6 +453,14 @@ void qDetectorMain::resizeEvent(QResizeEvent* event){
 			centralwidget->setMaximumHeight(heightCentralWidget);
 		}
 	}
+
+	//adjusting tab width
+	if(width()>=800){ tabs->tabBar()->setFixedWidth(width()+61);}
+	else { tabs->tabBar()->setMinimumWidth(0);
+		tabs->tabBar()->setExpanding(true);
+		tabs->tabBar()->setUsesScrollButtons(true);
+	}
+
 	event->accept();
 }
 

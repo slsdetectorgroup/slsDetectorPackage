@@ -182,11 +182,11 @@ void qTabDeveloper::CreateADCWidgets(){
 
 
 void qTabDeveloper::SetDacValues(int id){
-#ifdef VERYVERBOSE
+#ifdef VERBOSE
 	cout << "Setting dac:" <<dacNames[id] << " : " << spinDacs[id]->value() << endl;
 #endif
 
-	spinDacs[id]->setValue(myDet->setDAC(spinDacs[id]->value(),getSLSIndex(id)));
+	spinDacs[id]->setValue((double)myDet->setDAC(spinDacs[id]->value(),getSLSIndex(id)));
 }
 
 
@@ -246,7 +246,7 @@ void qTabDeveloper::RefreshAdcs(){
 #endif
 	adcTimer->stop();
 	for(int i=0;i<NUM_ADC_WIDGETS;i++)
-		spinAdcs[i]->setValue(myDet->getADC(getSLSIndex(i+NUM_DAC_WIDGETS)));
+		spinAdcs[i]->setValue((double)myDet->getADC(getSLSIndex(i+NUM_DAC_WIDGETS)));
 	adcTimer->start(ADC_TIMEOUT);
 }
 
@@ -260,8 +260,7 @@ void qTabDeveloper::Refresh(){
 #endif
 	//dacs
 	for(int i=0;i<NUM_DAC_WIDGETS;i++)
-		spinDacs[i]->setValue(myDet->setDAC(-1,getSLSIndex(i)));
-
+		spinDacs[i]->setValue((double)myDet->setDAC(-1,getSLSIndex(i)));
 	//adcs
 	RefreshAdcs();
 }

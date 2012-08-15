@@ -323,9 +323,6 @@ void qScanWidget::SetMode(int mode){
 	//set the group box widgets
 	EnableSizeWidgets();
 
-	//emit signal to enable scanbox in plot tab
-	emit EnableScanBox(mode,id);
-
 	//set the mode
 	SetScan(mode);
 }
@@ -366,15 +363,19 @@ int qScanWidget::SetScan(int mode){
 		break;
 	}
 
+	//custom script
+	int actualMode = myDet->getScanMode(id);
 	if((mode==CustomScript)&&((script=="")||(script=="none"))){
 		return qDefs::OK;
-	}else{
-		if((mode!=myDet->getScanMode(id))&&(actualNumSteps)){
+	}else{//mode NOT set
+		if((mode!=actualMode)&&(actualNumSteps)){
 			qDefs::WarningMessage("The mode could not be changed for an unknown reason.","ScanWidget");
-			comboScript->setCurrentIndex(myDet->getScanMode(id));
+			comboScript->setCurrentIndex(actualMode);
 			return qDefs::FAIL;
 		}
 	}
+
+	emit EnableScanBox(actualMode,id);
 
 	return qDefs::OK;
 }

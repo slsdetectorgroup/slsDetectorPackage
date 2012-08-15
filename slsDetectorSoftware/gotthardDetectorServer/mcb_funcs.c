@@ -37,8 +37,8 @@ const int noneSelected=-1;
 sls_detector_module *detectorModules=NULL;
 int *detectorChips=NULL;
 int *detectorChans=NULL;
-double *detectorDacs=NULL;
-double *detectorAdcs=NULL;
+int *detectorDacs=NULL;
+int *detectorAdcs=NULL;
 //int numberOfProbes;
 
 
@@ -56,8 +56,8 @@ int initDetector() {
   detectorModules=malloc(n*sizeof(sls_detector_module));
   detectorChips=malloc(n*NCHIP*sizeof(int));
   detectorChans=malloc(n*NCHIP*NCHAN*sizeof(int));
-  detectorDacs=malloc(n*NDAC*sizeof(double));
-  detectorAdcs=malloc(n*NADC*sizeof(double));
+  detectorDacs=malloc(n*NDAC*sizeof(int));
+  detectorAdcs=malloc(n*NADC*sizeof(int));
 #ifdef VERBOSE
   printf("modules from 0x%x to 0x%x\n",(unsigned int)(detectorModules), (unsigned int)(detectorModules+n));
   printf("chips from 0x%x to 0x%x\n",(unsigned int)(detectorChips), (unsigned int)(detectorChips+n*NCHIP));
@@ -540,15 +540,15 @@ int set_one_dac(int imod) {
   return OK;
 }
 
-double initDACbyIndex(int ind,double val, int imod) {
+int initDACbyIndex(int ind,int val, int imod) {
   int v;
-  const double partref[NDAC]=PARTREF;
-  const double partr1[NDAC]=PARTR1;
-  const double partr2[NDAC]=PARTR2;
+  const int partref[NDAC]=PARTREF;
+  const int partr1[NDAC]=PARTR1;
+  const int partr2[NDAC]=PARTR2;
  
-  double ref=partref[ind];
-  double r1=partr1[ind];
-  double r2=partr2[ind];
+  int ref=partref[ind];
+  int r1=partr1[ind];
+  int r2=partr2[ind];
   
 
   v=(val+(val-ref)*r1/r2)*DAC_DR/DAC_MAX;
@@ -557,7 +557,7 @@ double initDACbyIndex(int ind,double val, int imod) {
   return (v*DAC_MAX/DAC_DR+ref*r1/r2)/(1+r1/r2);
 }
 
-double initDACbyIndexDACU(int ind, int val, int imod) {
+int initDACbyIndexDACU(int ind, int val, int imod) {
  
   //  const double daccs[NDAC]=DACCS;
   //  const double dacaddr[NDAC]=DACADDR;
@@ -643,7 +643,7 @@ int getThresholdEnergy() {
       }
 #ifdef VERBOSE
       //printf("module=%d gain=%f, offset=%f, dacu=%f\n",imod, myg, myo, detectorDacs[VTHRESH+imod*NDAC]);
-      printf("module=%d gain=%f, offset=%f, dacu=%f\n",imod, myg, myo,(double)(setDACRegister(VREF_DS,-1,imod)));//edited by dhanya
+      printf("module=%d gain=%f, offset=%f, dacu=%d\n",imod, myg, myo,(int)(setDACRegister(VREF_DS,-1,imod)));//edited by dhanya
       printf("Threshold energy of module %d is %d eV\n", imod, ethr);
 #endif 
       
@@ -715,7 +715,7 @@ int setThresholdEnergy(int ethr) {
 
 
 
-double getDACbyIndexDACU(int ind,  int imod) {
+int getDACbyIndexDACU(int ind,  int imod) {
   /*
   if (detectorDacs) {
     if (imod<getNModBoard())
@@ -741,7 +741,7 @@ int initDAC(int dac_addr, int value, int imod) {
   return 0;
 }
 
-double getTemperatureByModule(int tempSensor, int imod)
+int getTemperatureByModule(int tempSensor, int imod)
 {
   int im;
   //for the particular module

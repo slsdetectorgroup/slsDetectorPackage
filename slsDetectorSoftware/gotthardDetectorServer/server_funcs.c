@@ -899,13 +899,13 @@ int read_register(int file_des) {
 
 int set_dac(int file_des) {
 	//default:all mods
-	double retval;
+	int retval;
 	int ret=OK;
 	int arg[2];
 	enum dacIndex ind;
 	int imod;
 	int n;
-	double val;
+	int val;
 	int idac=0;
 
 	sprintf(mess,"Can't set DAC\n");
@@ -925,7 +925,7 @@ int set_dac(int file_des) {
 	}
 
 #ifdef VERBOSE
-	printf("Setting DAC %d of module %d to %f V\n", ind, imod, val);
+	printf("Setting DAC %d of module %d to %d V\n", ind, imod, val);
 #endif 
 
 	if (imod>=getNModBoard())
@@ -997,11 +997,11 @@ int set_dac(int file_des) {
 #endif
 
 #ifdef VERBOSE
-	printf("DAC set to %f V\n",  retval);
+	printf("DAC set to %d V\n",  retval);
 #endif  
 
 	if(ret==FAIL)
-		printf("Setting dac %d of module %d: wrote %f but read %f\n", ind, imod, val, retval);
+		printf("Setting dac %d of module %d: wrote %d but read %d\n", ind, imod, val, retval);
 	else{
 		if (differentClients)
 			ret=FORCE_UPDATE;
@@ -1028,7 +1028,7 @@ int set_dac(int file_des) {
 
 int get_adc(int file_des) {
 	//default: mod 0
-	double retval;
+	int retval;
 	int ret=OK;
 	int arg[2];
 	enum dacIndex ind;
@@ -1074,7 +1074,7 @@ int get_adc(int file_des) {
 #endif
 
 #ifdef VERBOSE
-	printf("ADC is %f V\n",  retval);
+	printf("ADC is %d V\n",  retval);
 #endif  
 	if (ret==FAIL) {
 		printf("Getting adc %d of module %d failed\n", ind, imod);
@@ -1373,8 +1373,8 @@ int set_module(int file_des) {
   sls_detector_module myModule;
   int *myChip=malloc(NCHIP*sizeof(int));
   int *myChan=malloc(NCHIP*NCHAN*sizeof(int));
-  double *myDac=malloc(NDAC*sizeof(int));
-  double *myAdc=malloc(NADC*sizeof(int));
+  int *myDac=malloc(NDAC*sizeof(int));/**dhanya*/
+  int *myAdc=malloc(NADC*sizeof(int));/**dhanya*/
   int retval, n;
   int ret=OK;
   int dr;// ow;
@@ -1416,7 +1416,6 @@ int set_module(int file_des) {
   printf("Setting module\n");
 #endif 
   ret=receiveModule(file_des, &myModule);
-  printf("11vref_ds:%f\n",myModule.dacs[0]);printf("11vin_cm:%f\n",myModule.dacs[5]);
 
   if (ret>=0)
     ret=OK;
@@ -1492,8 +1491,8 @@ int get_module(int file_des) {
   sls_detector_module myModule;
   int *myChip=malloc(NCHIP*sizeof(int));
   int *myChan=malloc(NCHIP*NCHAN*sizeof(int));
-  double *myDac=malloc(NDAC*sizeof(int));
-  double *myAdc=malloc(NADC*sizeof(int));
+  int *myDac=malloc(NDAC*sizeof(int));/**dhanya*/
+  int *myAdc=malloc(NADC*sizeof(int));/**dhanya*/
 
 
   if (myDac)

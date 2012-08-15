@@ -1213,8 +1213,8 @@ int setDACRegister(int idac, int val, int imod) {
 }
 
 
-double getTemperature(int tempSensor, int imod){
-  double val;
+int getTemperature(int tempSensor, int imod){
+  int val;
   char cTempSensor[2][100]={"ADCs/ASICs","VRs/FPGAs"}; 
   imod=0;//ignoring more than 1 mod for now
   int i,j,repeats=6;
@@ -1241,7 +1241,7 @@ double getTemperature(int tempSensor, int imod){
   }
 
   bus_w(TEMP_IN_REG,(T1_CLK_BIT)|(T1_CS_BIT)|(T2_CLK_BIT)|(T2_CS_BIT));//standby
-  val=((double)tempVal)/4.0;
+  val=((int)tempVal)/4.0;
 
 #ifdef VERBOSE
    printf("Temperature of module:%d for the %s is %.2fC\n",imod,cTempSensor[tempSensor],val);

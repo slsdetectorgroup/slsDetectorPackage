@@ -191,7 +191,7 @@ class slsDetectorActions : public virtual slsDetectorBase
     \param imod module number (if -1 alla modules)
     \returns current DAC value
   */
-  virtual double setDAC(double val, dacIndex index , int imod=-1)=0;
+  virtual dacs_t setDAC(dacs_t val, dacIndex index , int imod=-1)=0;
 
 
   virtual int setThresholdEnergy(int, int im=-1, detectorSettings isettings=GET_SETTINGS)=0;

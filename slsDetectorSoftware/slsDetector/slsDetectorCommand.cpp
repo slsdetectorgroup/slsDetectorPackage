@@ -2638,7 +2638,7 @@ string slsDetectorCommand::cmdDAC(int narg, char *args[], int action) {
     return helpDAC(narg, args, action);
   
   dacIndex dac;
-  double val=-1;
+  dacs_t val=-1;
   char answer[1000];
   
   if (cmd=="vthreshold")
@@ -2691,15 +2691,22 @@ string slsDetectorCommand::cmdDAC(int narg, char *args[], int action) {
     return string("cannot decode dac ")+cmd;
   
   if (action==PUT_ACTION) {
-    if (sscanf(args[1],"%lf", &val))
+#ifdef DACS_INT
+    if (sscanf(args[1],"%d", &val))
+#else
+    if (sscanf(args[1],"%f", &val))
+#endif
       ;
     else
       return string("cannot scan DAC value ")+string(args[1]);
   }
   
   myDet->setOnline(ONLINE_FLAG);
-  
+#ifdef DACS_INT
+  sprintf(answer,"%d",myDet->setDAC(val,dac));
+#else
   sprintf(answer,"%f",myDet->setDAC(val,dac));
+#endif
   return string(answer);
 
 }
@@ -2804,8 +2811,11 @@ string slsDetectorCommand::cmdADC(int narg, char *args[], int action) {
     return string("cannot decode adc ")+cmd;
 
   myDet->setOnline(ONLINE_FLAG);
-
+#ifdef DACS_INT
+  sprintf(answer,"%d",myDet->getADC(adc));
+#else
   sprintf(answer,"%f",myDet->getADC(adc));
+#endif
   return string(answer);
 
 }

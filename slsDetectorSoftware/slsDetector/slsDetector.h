@@ -727,7 +727,7 @@ typedef  struct sharedSlsDetector {
     \param imod module number (if -1 alla modules)
     \returns current DAC value
   */
-  double setDAC(double val, dacIndex index, int imod=-1);
+  dacs_t setDAC(dacs_t val, dacIndex index, int imod=-1);
   
   /**
     set dacs value
@@ -735,7 +735,7 @@ typedef  struct sharedSlsDetector {
     \param imod module number
     \returns current ADC value
   */
-  double getADC(dacIndex index, int imod=0);
+  dacs_t getADC(dacIndex index, int imod=0);
  
   /**
     configure channel
@@ -1374,9 +1374,9 @@ typedef  struct sharedSlsDetector {
   /** pointer to detector module structures */
   sls_detector_module *detectorModules;
   /** pointer to dac valuse */
-  double *dacs;
+  dacs_t *dacs;
   /** pointer to adc valuse */
-  double *adcs;
+  dacs_t *adcs;
   /** pointer to chip registers */
   int *chipregs;
   /** pointer to channal registers */

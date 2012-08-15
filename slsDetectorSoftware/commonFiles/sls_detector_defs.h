@@ -17,6 +17,15 @@ typedef int int32_t;
 typedef char mystring[MAX_STR_LENGTH];
 typedef double mysteps[MAX_SCAN_STEPS];
 
+
+#ifdef DACS_INT
+typedef int dacs_t;
+//typedef uint32_t  dacs_t;
+//#elif DACS_INT_CSERVER
+//typedef u_int32_t dacs_t;
+#else
+typedef float dacs_t;
+#endif
 /** 
     \file sls_detector_defs.h
 This file contains all the basic definitions common to the slsDetector class 
@@ -102,8 +111,8 @@ typedef struct {
   int nadc; /**< is the number of adcs on the module */
   int reg; /**< is the module register (e.g. dynamic range?) 
 	      \see moduleRegisterBit */
-  double *dacs; /**< is the pointer to the array of the dac values (in V) */
-  double *adcs;  /**< is the pointer to the array of the adc values (in V) FLAT_FIELD_CORRECTION*/
+  dacs_t *dacs; /**< is the pointer to the array of the dac values (in V) */
+  dacs_t *adcs;  /**< is the pointer to the array of the adc values (in V) FLAT_FIELD_CORRECTION*/
   int *chipregs; /**< is the pointer to the array of the chip registers 
 		    \see ::chipRegisterBit */
   int *chanregs; /**< is the pointer to the array of the channel registers 

@@ -796,7 +796,7 @@ class multiSlsDetector  : public slsDetectorUtils {
     \param imod module number (if -1 alla modules)
     \returns current DAC value
   */
-  double setDAC(double val, dacIndex index, int imod=-1);
+  dacs_t setDAC(dacs_t val, dacIndex index, int imod=-1);
   /**
     set dacs value
     \param val value (in V)
@@ -804,7 +804,7 @@ class multiSlsDetector  : public slsDetectorUtils {
     \param imod module number (if -1 alla modules)
     \returns current DAC value
   */
-  double getADC(dacIndex index, int imod=0);
+  dacs_t getADC(dacIndex index, int imod=0);
     /**
     configure channel
     \param reg channel register

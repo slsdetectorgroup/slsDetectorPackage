@@ -500,7 +500,7 @@ class slsDetectorUtils :  public slsDetectorActions, public postProcessing {
     \param imod module number (if -1 alla modules)
     \returns current DAC value
   */
-  virtual double setDAC(double val, dacIndex index , int imod=-1)=0;
+  virtual dacs_t setDAC(dacs_t val, dacIndex index , int imod=-1)=0;
 
 
   /**
@@ -509,7 +509,7 @@ class slsDetectorUtils :  public slsDetectorActions, public postProcessing {
      \param imod module number
      \returns current ADC value
   */
-  virtual double getADC(dacIndex index, int imod=0)=0;
+  virtual dacs_t getADC(dacIndex index, int imod=0)=0;
 
   /**
       get the maximum size of the detector

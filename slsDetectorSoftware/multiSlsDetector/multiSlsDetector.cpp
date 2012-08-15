@@ -2157,8 +2157,8 @@ int  multiSlsDetector::getAngularConversion(int &direction,  angleConversionCons
 
 
 
-double multiSlsDetector::setDAC(double val, dacIndex idac, int imod) {
-  double ret, ret1=-100;
+dacs_t multiSlsDetector::setDAC(dacs_t val, dacIndex idac, int imod) {
+  dacs_t ret, ret1=-100;
   
   int id=-1, im=-1;
   int dmi=0, dma=thisMultiDetector->numberOfDetectors;
@@ -2180,8 +2180,8 @@ double multiSlsDetector::setDAC(double val, dacIndex idac, int imod) {
  return ret1;
 }
 
-double multiSlsDetector::getADC(dacIndex idac, int imod) {
-  double ret, ret1=-100;
+dacs_t multiSlsDetector::getADC(dacIndex idac, int imod) {
+  dacs_t ret, ret1=-100;
   
   int id=-1, im=-1;
   int dmi=0, dma=thisMultiDetector->numberOfDetectors;

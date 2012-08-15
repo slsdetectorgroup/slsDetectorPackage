@@ -599,8 +599,8 @@ int slsDetector::initializeDetectorSize(detectorType type) {
      thisDetector->fferroff=thisDetector->ffoff+sizeof(double)*thisDetector->nChans*thisDetector->nChips*thisDetector->nModsMax;
      thisDetector->modoff= thisDetector->fferroff+sizeof(double)*thisDetector->nChans*thisDetector->nChips*thisDetector->nModsMax;
      thisDetector->dacoff=thisDetector->modoff+sizeof(sls_detector_module)*thisDetector->nModsMax;
-     thisDetector->adcoff=thisDetector->dacoff+sizeof(double)*thisDetector->nDacs*thisDetector->nModsMax;
-     thisDetector->chipoff=thisDetector->adcoff+sizeof(double)*thisDetector->nAdcs*thisDetector->nModsMax;
+     thisDetector->adcoff=thisDetector->dacoff+sizeof(dacs_t)*thisDetector->nDacs*thisDetector->nModsMax;
+     thisDetector->chipoff=thisDetector->adcoff+sizeof(dacs_t)*thisDetector->nAdcs*thisDetector->nModsMax;
      thisDetector->chanoff=thisDetector->chipoff+sizeof(int)*thisDetector->nChips*thisDetector->nModsMax;
      
      
@@ -615,8 +615,8 @@ int slsDetector::initializeDetectorSize(detectorType type) {
    //   for (int imod=0; imod< thisDetector->nModsMax; imod++)
    //  std::cout<< hex << detectorModules+imod << dec <<std::endl;
 #endif
-   dacs=(double*)(goff+thisDetector->dacoff);
-   adcs=(double*)(goff+thisDetector->adcoff);
+   dacs=(dacs_t*)(goff+thisDetector->dacoff);
+   adcs=(dacs_t*)(goff+thisDetector->adcoff);
    chipregs=(int*)(goff+thisDetector->chipoff);
    chanregs=(int*)(goff+thisDetector->chanoff);
    if (thisDetector->alreadyExisting==0) {  
@@ -775,8 +775,8 @@ slsDetectorDefs::sls_detector_module*  slsDetector::createModule(detectorType t)
      na=0;
    }
 
-  double *dacs=new double[nd];
-  double *adcs=new double[na];
+  dacs_t *dacs=new dacs_t[nd];
+  dacs_t *adcs=new dacs_t[na];
   int *chipregs=new int[nc];
   int *chanregs=new int[nch*nc];
   myMod->ndac=nd;
@@ -825,8 +825,8 @@ int slsDetector::sendChip(sls_detector_chip *myChip) {
 int slsDetector::sendModule(sls_detector_module *myMod) {
   int ts=0;
   ts+=controlSocket->SendDataOnly(myMod,sizeof(sls_detector_module));
-  ts+=controlSocket->SendDataOnly(myMod->dacs,sizeof(double)*(myMod->ndac));
-  ts+=controlSocket->SendDataOnly(myMod->adcs,sizeof(double)*(myMod->nadc));
+  ts+=controlSocket->SendDataOnly(myMod->dacs,sizeof(dacs_t)*(myMod->ndac));
+  ts+=controlSocket->SendDataOnly(myMod->adcs,sizeof(dacs_t)*(myMod->nadc));
   ts+=controlSocket->SendDataOnly(myMod->chipregs,sizeof(int)*(myMod->nchip));
   ts+=controlSocket->SendDataOnly(myMod->chanregs,sizeof(int)*(myMod->nchan));
   return ts;
@@ -856,8 +856,8 @@ int slsDetector::receiveChip(sls_detector_chip* myChip) {
 
 int  slsDetector::receiveModule(sls_detector_module* myMod) {
 
-  double *dacptr=myMod->dacs;
-  double *adcptr=myMod->adcs;
+  dacs_t *dacptr=myMod->dacs;
+  dacs_t *adcptr=myMod->adcs;
   int *chipptr=myMod->chipregs;
   int *chanptr=myMod->chanregs;
   int ts=0;
@@ -870,11 +870,11 @@ int  slsDetector::receiveModule(sls_detector_module* myMod) {
 #ifdef VERBOSE
   std::cout<< "received module " << myMod->module << " of size "<< ts << " register " << myMod->reg << std::endl;
 #endif
-  ts+=controlSocket->ReceiveDataOnly(myMod->dacs,sizeof(double)*(myMod->ndac));
+  ts+=controlSocket->ReceiveDataOnly(myMod->dacs,sizeof(dacs_t)*(myMod->ndac));
 #ifdef VERBOSE
   std::cout<< "received dacs " << myMod->module << " of size "<< ts << std::endl;
 #endif
-  ts+=controlSocket->ReceiveDataOnly(myMod->adcs,sizeof(double)*(myMod->nadc));
+  ts+=controlSocket->ReceiveDataOnly(myMod->adcs,sizeof(dacs_t)*(myMod->nadc));
 #ifdef VERBOSE
   std::cout<< "received adcs " << myMod->module << " of size "<< ts << std::endl;
 #endif
@@ -1810,11 +1810,10 @@ int slsDetector::readRegister(int addr){
 }{};
   */
 
+dacs_t slsDetector::setDAC(dacs_t val, dacIndex index, int imod){
 
-double slsDetector::setDAC(double val, dacIndex index, int imod){
 
-
-  double retval;
+  dacs_t retval;
   int fnum=F_SET_DAC;
   int ret=FAIL;
   char mess[100];
@@ -1868,9 +1867,9 @@ double slsDetector::setDAC(double val, dacIndex index, int imod){
 };
 
 
-double slsDetector::getADC(dacIndex index, int imod){
+dacs_t slsDetector::getADC(dacIndex index, int imod){
 
-  double retval;
+  dacs_t retval;
   int fnum=F_GET_ADC;
   int ret=FAIL;
   char mess[100];
@@ -2272,7 +2271,7 @@ int slsDetector::setModule(int reg, int imod){
 #endif 
   int charegs[thisDetector->nChans*thisDetector->nChips];
   int chiregs[thisDetector->nChips];
-  double das[thisDetector->nDacs], ads[thisDetector->nAdcs];
+  dacs_t das[thisDetector->nDacs], ads[thisDetector->nAdcs];
   int mmin=imod, mmax=imod+1;
   int ret=FAIL;
   
@@ -2344,7 +2343,6 @@ int slsDetector::setModule(int reg, int imod){
 
 
 int slsDetector::setModule(sls_detector_module module){
-
 
   int fnum=F_SET_MODULE;
   int retval;

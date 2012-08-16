@@ -59,7 +59,7 @@ int slsDetector::initSharedMemory(detectorType type, int id) {
    */
 
 
-   sz=sizeof(sharedSlsDetector)+nm*(2*nch*nc*sizeof(double)+sizeof(sls_detector_module)+sizeof(int)*nc+sizeof(double)*nd+sizeof(int)*nch*nc);
+   sz=sizeof(sharedSlsDetector)+nm*(2*nch*nc*sizeof(double)+sizeof(sls_detector_module)+sizeof(int)*nc+sizeof(dacs_t)*nd+sizeof(int)*nch*nc);
 #ifdef VERBOSE
    std::cout<<"Size of shared memory is "<< sz << "(type " << type << " - id " << mem_key << ")"<< std::endl;
 #endif

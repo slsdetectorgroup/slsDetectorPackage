@@ -175,9 +175,9 @@ void qScanWidget::Initialization(){
 	//precision
 	connect(spinPrecision,	SIGNAL(valueChanged(int)), 				this, SLOT(SetPrecision(int)));
 	//range values
-	connect(spinFrom,		SIGNAL(valueChanged(double)), 			this, SLOT(SetRangeSteps()));
-	connect(spinTo,			SIGNAL(valueChanged(double)), 			this, SLOT(SetRangeSteps()));
-	connect(spinSize,		SIGNAL(valueChanged(double)), 			this, SLOT(SetRangeSteps()));
+	connect(spinFrom,		SIGNAL(editingFinished()), 				this, SLOT(SetRangeSteps()));
+	connect(spinTo,			SIGNAL(editingFinished()), 				this, SLOT(SetRangeSteps()));
+	connect(spinSize,		SIGNAL(editingFinished()), 				this, SLOT(SetRangeSteps()));
 	//custom values
 	connect(comboCustom,	SIGNAL(currentIndexChanged(int)), 		this, SLOT(SetCustomSteps()));
 	connect(btnCustom,		SIGNAL(clicked()),						this, SLOT(DeleteCustomSteps()));
@@ -510,15 +510,15 @@ void qScanWidget::SetNSteps(int num){
 	if(radioRange->isChecked()){
 		//calculate the step size and display it
 		if(num==1){
-			disconnect(spinTo,	SIGNAL(valueChanged(double)), this, SLOT(SetRangeSteps()));
+			disconnect(spinTo,	SIGNAL(editingFinished()), this, SLOT(SetRangeSteps()));
 			spinTo->setValue(spinFrom->value());
-			connect(spinTo,		SIGNAL(valueChanged(double)), this, SLOT(SetRangeSteps()));
+			connect(spinTo,		SIGNAL(editingFinished()), this, SLOT(SetRangeSteps()));
 		}else if(num>1)
 			num--;
 		double stepSize = (spinTo->value()-spinFrom->value())/num;
-		disconnect(spinSize,SIGNAL(valueChanged(double)), this, SLOT(SetRangeSteps()));
+		disconnect(spinSize,SIGNAL(editingFinished()), this, SLOT(SetRangeSteps()));
 		spinSize->setValue(stepSize);
-		connect(spinSize,	SIGNAL(valueChanged(double)), this, SLOT(SetRangeSteps()));
+		connect(spinSize,	SIGNAL(editingFinished()), this, SLOT(SetRangeSteps()));
 		//set these positions
 		SetRangeSteps();
 	}else if(radioCustom->isChecked()){
@@ -541,9 +541,9 @@ void qScanWidget::SetRangeSteps(){
 	double sizeVal = spinSize->value();
 	//if step size is 0, min and max should be same
 	if(!sizeVal){
-		disconnect(spinTo,	SIGNAL(valueChanged(double)), this, SLOT(SetRangeSteps()));
+		disconnect(spinTo,	SIGNAL(editingFinished()), this, SLOT(SetRangeSteps()));
 		spinTo->setValue(fromVal);
-		connect(spinTo,		SIGNAL(valueChanged(double)), this, SLOT(SetRangeSteps()));
+		connect(spinTo,		SIGNAL(editingFinished()), this, SLOT(SetRangeSteps()));
 		QString tip = rangeTip + QString("<br><br><font color=\"red\">"
 				"<nobr>Note: Increase the <b>step size</b> from zero to be able to change the range.</nobr></font>");
 		lblSize->setToolTip(tip);
@@ -563,9 +563,9 @@ void qScanWidget::SetRangeSteps(){
 	//actualNumSteps will be negative if from<to and size wasnt negative.so change it to positive
 	if(actualNumSteps<0){
 		actualNumSteps*=-1;
-		disconnect(spinSize,SIGNAL(valueChanged(double)), this, SLOT(SetRangeSteps()));
+		disconnect(spinSize,SIGNAL(editingFinished()), this, SLOT(SetRangeSteps()));
 		spinSize->setValue(-1*sizeVal);
-		connect(spinSize,	SIGNAL(valueChanged(double)), this, SLOT(SetRangeSteps()));
+		connect(spinSize,	SIGNAL(editingFinished()), this, SLOT(SetRangeSteps()));
 		sizeVal = spinSize->value();
 	}
 	//increment is required like vice versa in setNSteps

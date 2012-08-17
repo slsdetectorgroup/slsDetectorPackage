@@ -357,16 +357,6 @@ void qDetectorMain::ExecuteUtilities(QAction *action){
 			qDefs::InfoMessage("The configuration parameters have been successfully saved.","Main");
 		}
 	}
-	else if(action==actionEnergyCalibration){
-#ifdef VERBOSE
-		cout << "Executing Energy Calibration" << endl;
-#endif
-	}
-	else{
-#ifdef VERBOSE
-		cout << "Executing Angular Calibration" << endl;
-#endif
-	}
 
 	Refresh(tabs->currentIndex());
 }

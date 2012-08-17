@@ -232,8 +232,6 @@
     <addaction name="actionOpenConfiguration"/>
     <addaction name="actionSaveConfiguration"/>
     <addaction name="separator"/>
-    <addaction name="actionEnergyCalibration"/>
-    <addaction name="actionAngularCalibration"/>
    </widget>
    <widget class="QMenu" name="menuModes">
     <property name="title">

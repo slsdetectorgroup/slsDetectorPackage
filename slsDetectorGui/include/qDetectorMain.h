@@ -28,6 +28,8 @@ class multiSlsDetector;
 #include <QGridLayout>
 #include <QResizeEvent>
 
+#include <iostream>
+using namespace std;
 
 /** To Over-ride the QTabWidget class to get the tabBar */
 class MyTabWidget:public QTabWidget{
@@ -103,6 +105,7 @@ private:
 	qTabDeveloper 		*tab_developer;
 	/**Messages tab */
 	qTabMessages 		*tab_messages;
+
 	/**if the developer tab should be enabled,known from command line */
 	int isDeveloper;
 

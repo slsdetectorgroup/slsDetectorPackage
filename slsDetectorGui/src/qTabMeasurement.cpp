@@ -489,14 +489,15 @@ void qTabMeasurement::SetTimingMode(int mode){
 		if(myDet->setExternalCommunicationMode(slsDetectorDefs::AUTO_TIMING)==slsDetectorDefs::AUTO_TIMING)
 			success = true;
 		break;
-	case Auto://Number of Frames, Exposure Time, Acquisition Period
+	case Auto://#Frames, ExpTime, Period
+		setNumTriggers(1);
 		lblNumFrames->setEnabled(true);		spinNumFrames->setEnabled(true);
 		lblExpTime->setEnabled(true);		spinExpTime->setEnabled(true);			comboExpUnit->setEnabled(true);
 		lblPeriod->setEnabled(true);		spinPeriod->setEnabled(true);			comboPeriodUnit->setEnabled(true);
 		if(myDet->setExternalCommunicationMode(slsDetectorDefs::AUTO_TIMING)==slsDetectorDefs::AUTO_TIMING)
 			success = true;
 		break;
-	case Trigger_Exp_Series://Number of Frames, Exposure Time, Acquisition Period, Number of Triggers, Delay
+	case Trigger_Exp_Series://#Frames, #Triggers, ExpTime, Period, Delay
 		lblNumFrames->setEnabled(true);		spinNumFrames->setEnabled(true);
 		lblExpTime->setEnabled(true);		spinExpTime->setEnabled(true);			comboExpUnit->setEnabled(true);
 		lblPeriod->setEnabled(true);		spinPeriod->setEnabled(true);			comboPeriodUnit->setEnabled(true);
@@ -505,13 +506,15 @@ void qTabMeasurement::SetTimingMode(int mode){
 		if(myDet->setExternalCommunicationMode(slsDetectorDefs::TRIGGER_EXPOSURE)==slsDetectorDefs::TRIGGER_EXPOSURE)
 			success = true;
 		break;
-	case Trigger_Frame://Exposure Time, Number of Triggers
+	case Trigger_Frame://ExpTime, #Triggers
+		setNumFrames(1);
 		lblExpTime->setEnabled(true);		spinExpTime->setEnabled(true);			comboExpUnit->setEnabled(true);
 		lblNumTriggers->setEnabled(true);	spinNumTriggers->setEnabled(true);
 		if(myDet->setExternalCommunicationMode(slsDetectorDefs::TRIGGER_FRAME)==slsDetectorDefs::TRIGGER_FRAME)
 			success = true;
 		break;
-	case Trigger_Readout://Number of Frames, Exposure Time, Acquisition Period, Delay
+	case Trigger_Readout://#Frames, ExpTime, Period, Delay
+		setNumTriggers(1);
 		lblNumFrames->setEnabled(true);		spinNumFrames->setEnabled(true);
 		lblExpTime->setEnabled(true);		spinExpTime->setEnabled(true);			comboExpUnit->setEnabled(true);
 		lblPeriod->setEnabled(true);		spinPeriod->setEnabled(true);			comboPeriodUnit->setEnabled(true);
@@ -519,13 +522,14 @@ void qTabMeasurement::SetTimingMode(int mode){
 		if(myDet->setExternalCommunicationMode(slsDetectorDefs::TRIGGER_READOUT)==slsDetectorDefs::TRIGGER_READOUT)
 			success = true;
 		break;
-	case Gated://Number of Frames, Number of Gates
+	case Gated://#Frames, #Gates
+		setNumTriggers(1);
 		lblNumFrames->setEnabled(true);		spinNumFrames->setEnabled(true);
 		lblNumGates->setEnabled(true);		spinNumGates->setEnabled(true);
 		if(myDet->setExternalCommunicationMode(slsDetectorDefs::GATE_FIX_NUMBER)==slsDetectorDefs::GATE_FIX_NUMBER)
 			success = true;
 		break;
-	case Gated_Start://Number of Frames, Exposure Time, Acquisition Period, Number of Triggers, Number of Gates
+	case Gated_Start://#Frames, #Triggers, #Gates, ExpTime, Period
 		lblNumFrames->setEnabled(true);		spinNumFrames->setEnabled(true);
 		lblExpTime->setEnabled(true);		spinExpTime->setEnabled(true);			comboExpUnit->setEnabled(true);
 		lblPeriod->setEnabled(true);		spinPeriod->setEnabled(true);			comboPeriodUnit->setEnabled(true);
@@ -534,7 +538,8 @@ void qTabMeasurement::SetTimingMode(int mode){
 		if(myDet->setExternalCommunicationMode(slsDetectorDefs::GATE_WITH_START_TRIGGER)==slsDetectorDefs::GATE_WITH_START_TRIGGER)
 			success = true;
 		break;
-	case Trigger_Window://Number of Triggers
+	case Trigger_Window://#Triggers
+		setNumFrames(1);
 		lblNumTriggers->setEnabled(true);	spinNumTriggers->setEnabled(true);
 		if(myDet->setExternalCommunicationMode(slsDetectorDefs::TRIGGER_WINDOW)==slsDetectorDefs::TRIGGER_WINDOW)
 			success = true;

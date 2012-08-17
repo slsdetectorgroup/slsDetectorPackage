@@ -1,22 +1,22 @@
 /*
- * qTabAdvanced.h
+ * qEnergyCalibration.h
  *
  *  Created on: May 10, 2012
  *      Author: l_maliakal_d
  */
 
-#ifndef QTABADVANCED_H_
-#define QTABADVANCED_H_
+#ifndef QENERGY_CALIBRATION_H_
+#define QENERGY_CALIBRATION_H_
 
 /** Form Header */
-#include "ui_form_tab_advanced.h"
+#include "ui_form_energy_calibration.h"
 /** Project Class Headers */
 class multiSlsDetector;
 
 /**
  *@short sets up the advanced parameters
  */
-class qTabAdvanced:public QWidget, private Ui::TabAdvancedObject{
+class qEnergyCalibration:public QWizard, private Ui::EnergyCalibrationObject{
 	Q_OBJECT
 
 public:
@@ -24,11 +24,11 @@ public:
 	 *    @param parent is the parent tab widget
 	 *    @param detector is the detector returned from the detector tab
 	 */
-	qTabAdvanced(QWidget *parent,multiSlsDetector*& detector);
+	qEnergyCalibration(QWidget *parent,multiSlsDetector*& detector);
 
 	/** Destructor
 	 */
-	~qTabAdvanced();
+	~qEnergyCalibration();
 
 	/** To refresh and update widgets
 	 */
@@ -56,4 +56,4 @@ private slots:
 
 
 
-#endif /* QTABADVANCED_H_ */
+#endif /* QENERGY_CALIBRATION_H_ */

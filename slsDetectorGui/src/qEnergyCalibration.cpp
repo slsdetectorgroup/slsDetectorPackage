@@ -1,10 +1,10 @@
 /*
- * qTabAdvanced.cpp
+ * qEnergyCalibration.cpp
  *
  *  Created on: May 10, 2012
  *      Author: l_maliakal_d
  */
-#include "qTabAdvanced.h"
+#include "qEnergyCalibration.h"
 #include "qDefs.h"
 /** Project Class Headers */
 #include "slsDetector.h"
@@ -16,7 +16,7 @@ using namespace std;
 
 
 
-qTabAdvanced::qTabAdvanced(QWidget *parent,multiSlsDetector*& detector):QWidget(parent),myDet(detector){
+qEnergyCalibration::qEnergyCalibration(QWidget *parent,multiSlsDetector*& detector):QWizard(parent),myDet(detector){
 	setupUi(this);
 	SetupWidgetWindow();
 	Initialization();
@@ -25,28 +25,31 @@ qTabAdvanced::qTabAdvanced(QWidget *parent,multiSlsDetector*& detector):QWidget(
 
 
 
-qTabAdvanced::~qTabAdvanced(){
+qEnergyCalibration::~qEnergyCalibration(){
 	delete myDet;
 }
 
 
 
 
-void qTabAdvanced::SetupWidgetWindow(){
+void qEnergyCalibration::SetupWidgetWindow(){
 
 }
 
 
 
-void qTabAdvanced::Initialization(){
+void qEnergyCalibration::Initialization(){
 
 }
+
+
+
 
 
 //-------------------------------------------------------------------------------------------------------------------------------------------------
 
 
-void qTabAdvanced::Refresh(){
+void qEnergyCalibration::Refresh(){
 
 }
 

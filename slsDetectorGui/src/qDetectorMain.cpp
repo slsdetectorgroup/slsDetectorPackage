@@ -224,7 +224,6 @@ void qDetectorMain::Initialization(){
 		connect(tab_measurement,	SIGNAL(CheckPlotIntervalSignal()),	tab_plot,SLOT(SetFrequency()));
 		// Plot tab
 		connect(tab_plot,			SIGNAL(DisableZoomSignal(bool)),	this,SLOT(SetZoomToolTip(bool)));
-		connect(tab_plot,			SIGNAL(ThresholdScanSignal(int)),	tab_measurement,SLOT(SetTimingMode(int)));
 		// Actions tab
 		connect(tab_actions,		SIGNAL(EnableScanBox(int,int)),		tab_plot,SLOT(EnableScanBox(int,int)));
 // Plotting

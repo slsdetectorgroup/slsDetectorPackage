@@ -98,13 +98,13 @@ void UpdateFinished();
  */
 void SetCurrentMeasurement(int val);
 
+private slots:
 /** Sets the timing mode
  * @ param mode cane be None, Auto, Gated, Trigger Exposure Series,
  * Trigger Frame, Trigger Readout, External Trigger Window
  */
 void SetTimingMode(int mode);
 
-private slots:
 /** Set number of measurements
  *  @param num number of measurements to be set */
 void setNumMeasurements(int num);

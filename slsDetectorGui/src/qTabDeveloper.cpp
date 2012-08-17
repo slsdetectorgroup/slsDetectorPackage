@@ -47,7 +47,12 @@ void qTabDeveloper::SetupWidgetWindow(){
 	//Detector Type
 	detType=myDet->getDetectorsType();
 
-	//the nu
+	//palette
+	red = QPalette();
+	red.setColor(QPalette::Active,QPalette::WindowText,Qt::red);
+
+
+	//the number of dacs and adcs
 	switch(detType){
 	case slsDetectorDefs::MYTHEN:
 		NUM_DAC_WIDGETS = 6;
@@ -102,8 +107,31 @@ void qTabDeveloper::SetupWidgetWindow(){
 	//dacs
 	boxDacs = new QGroupBox("Dacs",this);
 	boxDacs->setFixedHeight(25+(NUM_DAC_WIDGETS/2)*35);
-	layout->addWidget(boxDacs,0,0);
 	CreateDACWidgets();
+
+	//HV for gotthard
+	if(detType==slsDetectorDefs::GOTTHARD){
+		boxDacs->setFixedHeight(boxDacs->height()+35);
+
+		lblHV	= new QLabel("High Voltage",boxDacs);
+		comboHV	= new QComboBox(boxDacs);
+		comboHV->addItem("0");
+		comboHV->addItem("90");
+		comboHV->addItem("110");
+		comboHV->addItem("120");
+		comboHV->addItem("150");
+		comboHV->addItem("180");
+		comboHV->addItem("200");
+		tipHV = "<nobr>Set high voltage to 0, 90, 110, 120, 150 or 200V.</nobr>";
+		lblHV->setToolTip(tipHV);
+		comboHV->setToolTip(tipHV);
+		dacLayout->addWidget(lblHV,(int)(NUM_DAC_WIDGETS/2),1);
+		dacLayout->addWidget(comboHV,(int)(NUM_DAC_WIDGETS/2),2);
+		connect(comboHV,	SIGNAL(currentIndexChanged(int)),	this, SLOT(SetHighVoltage()));
+	}
+	layout->addWidget(boxDacs,0,0);
+
+
 	//adcs
 	if((detType==slsDetectorDefs::GOTTHARD)||(detType==slsDetectorDefs::AGIPD)){
 	    setFixedHeight((50+(NUM_DAC_WIDGETS/2)*35)+(50+(NUM_ADC_WIDGETS/2)*35));
@@ -138,7 +166,7 @@ void qTabDeveloper::Initialization(){
 
 
 void qTabDeveloper::CreateDACWidgets(){
-	QGridLayout *dacLayout = new QGridLayout(boxDacs);
+	dacLayout = new QGridLayout(boxDacs);
 
 	for(int i=0;i<NUM_DAC_WIDGETS;i++){
 		lblDacs[i] 	= new QLabel(QString(dacNames[i].c_str()),boxDacs);
@@ -183,10 +211,36 @@ void qTabDeveloper::CreateADCWidgets(){
 
 void qTabDeveloper::SetDacValues(int id){
 #ifdef VERBOSE
-	cout << "Setting dac:" <<dacNames[id] << " : " << spinDacs[id]->value() << endl;
+	cout << "Setting dac:" << dacNames[id] << " : " << spinDacs[id]->value() << endl;
 #endif
+	spinDacs[id]->setValue((double)myDet->setDAC((dacs_t)spinDacs[id]->value(),getSLSIndex(id)));
+}
 
-	spinDacs[id]->setValue((double)myDet->setDAC(spinDacs[id]->value(),getSLSIndex(id)));
+
+//-------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+void qTabDeveloper::SetHighVoltage(){
+#ifdef VERBOSE
+	cout << "Setting high voltage:" << comboHV->currentText().toAscii().constData() << endl;
+#endif
+	int highvoltage = comboHV->currentText().toInt();
+	int ret = myDet->setDAC(highvoltage,slsDetectorDefs::HV_POT);
+	//error
+	if(ret != highvoltage){
+		qDefs::ErrorMessage("High Voltage could not be set to this value.","Developer");
+		lblHV->setPalette(red);
+		lblHV->setText("High Voltage:*");
+		QString errTip = tipHV+QString("<br><br><font color=\"red\"><nobr>High Voltage could not be set. The return value is ")+
+				QString::number(ret)+ QString("</nobr></font>");
+		lblHV->setToolTip(errTip);
+		comboHV->setToolTip(errTip);
+	}else{
+		lblHV->setPalette(lblDacs[0]->palette());
+		lblHV->setText("High Voltage:");
+		lblHV->setToolTip(tipHV);
+		comboHV->setToolTip(tipHV);
+	}
 }
 
 
@@ -223,7 +277,7 @@ slsDetectorDefs::dacIndex qTabDeveloper::getSLSIndex(int index){
 		case 6:	return slsDetectorDefs::G_VREF_COMP;
 		case 7:	return slsDetectorDefs::G_IB_TESTC;
 		case 8:	return slsDetectorDefs::TEMPERATURE_ADC;
-		case 9:	return slsDetectorDefs::TEMPERATURE_FPGA;
+		case 9:return slsDetectorDefs::TEMPERATURE_FPGA;
 		default:
 			qDefs::ErrorMessage("Unknown DAC/ADC Index. Weird Error","Developer");
 			Refresh();
@@ -263,6 +317,39 @@ void qTabDeveloper::Refresh(){
 		spinDacs[i]->setValue((double)myDet->setDAC(-1,getSLSIndex(i)));
 	//adcs
 	RefreshAdcs();
+
+	//gotthard -high voltage
+	if(detType == slsDetectorDefs::GOTTHARD){
+		disconnect(comboHV,	SIGNAL(currentIndexChanged(int)),	this, SLOT(SetHighVoltage()));
+
+		//default should be correct
+		lblHV->setPalette(lblDacs[0]->palette());
+		lblHV->setText("High Voltage:");
+		lblHV->setToolTip(tipHV);
+		comboHV->setToolTip(tipHV);
+		//getting hv value
+		int ret = myDet->setDAC(-1,slsDetectorDefs::HV_POT);
+		switch(ret){
+		case 0: 	comboHV->setCurrentIndex(0);break;
+		case 90:	comboHV->setCurrentIndex(1);break;
+		case 110:	comboHV->setCurrentIndex(2);break;
+		case 120:	comboHV->setCurrentIndex(3);break;
+		case 150:	comboHV->setCurrentIndex(4);break;
+		case 180:	comboHV->setCurrentIndex(5);break;
+		case 200:	comboHV->setCurrentIndex(6);break;
+		default:	comboHV->setCurrentIndex(0);//error
+					lblHV->setPalette(red);
+					lblHV->setText("High Voltage:*");
+					QString errTip = tipHV+QString("<br><br><font color=\"red\"><nobr>High Voltage could not be set. The return value is ")+
+							QString::number(ret)+ QString("</nobr></font>");
+					lblHV->setToolTip(errTip);
+					comboHV->setToolTip(errTip);
+					break;
+		}
+
+		connect(comboHV,	SIGNAL(currentIndexChanged(int)),	this, SLOT(SetHighVoltage()));
+	}
+
 }
 
 

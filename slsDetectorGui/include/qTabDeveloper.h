@@ -16,9 +16,12 @@ class multiSlsDetector;
 #include <QGridLayout>
 #include <QGroupBox>
 #include <QLabel>
+#include <QComboBox>
 #include <QDoubleSpinBox>
 #include <QScrollArea>
 #include <QTimer>
+#include <QString>
+#include <QPalette>
 /** C++ Include Headers */
 #include <string>
 #include <vector>
@@ -92,8 +95,12 @@ private:
 	QLabel			*lblAdcs[20];
 	MyDoubleSpinBox	*spinDacs[20];
 	QDoubleSpinBox	*spinAdcs[20];
+	QLabel			*lblHV;
+	QComboBox		*comboHV;
 	QTimer 			*adcTimer;
-
+	QGridLayout		*dacLayout;
+	QString 		tipHV;
+	QPalette		red;
 	/** Sets up the widget
 	 */
 	void SetupWidgetWindow();
@@ -128,6 +135,9 @@ void RefreshAdcs();
  */
 void SetDacValues(int id);
 
+/** Set High Voltage
+ */
+void SetHighVoltage();
 };
 
 

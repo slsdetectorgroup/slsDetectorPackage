@@ -228,9 +228,9 @@ int setPhaseShiftOnce(){
   //Checking if it is power on(negative number)
   if(((reg&0xFFFF0000)>>16)>0){
     bus_w(addr,0x0);   //clear the reg
-#ifdef VERBOSE
+//#ifdef VERBOSE
     printf("Implementing Phase Shift-Reg:%x\n",bus_r(addr));
-#endif
+//#endif
     //phase shift
     for (i=1;i<PHASE_SHIFT;i++) {
       bus_w(addr,(INT_RSTN_BIT|ENET_RESETN_BIT|SW1_BIT|PHASE_STEP_BIT));//0x2821

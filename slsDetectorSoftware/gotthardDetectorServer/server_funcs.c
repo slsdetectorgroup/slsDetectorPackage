@@ -71,7 +71,7 @@ int init_detector( int b) {
     testFpga();
     testRAM();
     //gotthard specific
-    setPhaseShiftOnce();
+    //setPhaseShiftOnce();
     setDAQRegister();
     setSettings(GET_SETTINGS,-1);
     //Initialization

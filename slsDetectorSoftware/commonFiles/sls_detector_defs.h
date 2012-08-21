@@ -12,17 +12,15 @@
 /** maxmimum number of detectors ina multidetector structure*/
 #define MAXDET 100
 
-typedef double double32_t;
-typedef int int32_t;   
+typedef  double double32_t;
+typedef  float float32_t;
+typedef  int int32_t;
 typedef char mystring[MAX_STR_LENGTH];
 typedef double mysteps[MAX_SCAN_STEPS];
 
 
 #ifdef DACS_INT
 typedef int dacs_t;
-//typedef uint32_t  dacs_t;
-//#elif DACS_INT_CSERVER
-//typedef u_int32_t dacs_t;
 #else
 typedef float dacs_t;
 #endif

@@ -21,6 +21,7 @@ using namespace std;
 
 //-------------------------------------------------------------------------------------------------------------------------------------------------
 
+const QString qTabPlot::modeNames[5]={"None","Energy Scan","Threshold Scan","Trimbits Scan","Custom Script Scan"};
 
 QString qTabPlot::defaultPlotTitle("Measurement");
 QString qTabPlot::defaultHistXAxisTitle("Channel Number");
@@ -76,8 +77,6 @@ void qTabPlot::SetupWidgetWindow(){
 	btnGroupScan->addButton(radioAllFrames,3);
 
 // Plot Axis
-	myPlot->SetPlotTitle(defaultPlotTitle);
-	dispTitle->setText(defaultPlotTitle);
 	dispTitle->setEnabled(false);
 	dispXAxis->setEnabled(false);
 	dispYAxis->setEnabled(false);
@@ -128,13 +127,18 @@ void qTabPlot::SetupWidgetWindow(){
 
 	// Depending on whether the detector is 1d or 2d
 	switch(myDet->getDetectorsType()){
-	case slsDetectorDefs::MYTHEN:	isOrginallyOneD = true; 	Select1DPlot(true);	break;
-	case slsDetectorDefs::EIGER:	isOrginallyOneD = false;	Select1DPlot(false);break;
-	case slsDetectorDefs::GOTTHARD:	isOrginallyOneD = true; 	Select1DPlot(true);break;
+	case slsDetectorDefs::MYTHEN:	isOrginallyOneD = true;		break;
+	case slsDetectorDefs::EIGER:	isOrginallyOneD = false;	break;
+	case slsDetectorDefs::GOTTHARD:	isOrginallyOneD = true; 	break;
 	default:
 		cout << "ERROR: Detector Type is Generic" << endl;
 		exit(-1);
 	}
+
+	Select1DPlot(isOrginallyOneD);
+
+	//to check if this should be enabled
+	EnableScanBox();
 }
 
 
@@ -143,6 +147,8 @@ void qTabPlot::SetupWidgetWindow(){
 
 void qTabPlot::Select1DPlot(bool b){
 	isOneD = b;
+	dispTitle->setText(defaultPlotTitle);
+	myPlot->SetPlotTitle(defaultPlotTitle);
 	if(b){
 		box1D->show();
 		box2D->hide();
@@ -169,7 +175,6 @@ void qTabPlot::Select1DPlot(bool b){
 		myPlot->Select2DPlot();
 	}
 
-	boxScan->setEnabled(false);
 }
 
 
@@ -386,11 +391,13 @@ void qTabPlot::SetPlot(){
 #endif
 	if(radioNoPlot->isChecked()){
 		cout << " - No Plot" << endl;
-		Select1DPlot(isOrginallyOneD);
+
+		//Select1DPlot(isOrginallyOneD);
+		//if(isOrginallyOneD) {box1D->show(); box2D->hide();}
+		//if(!isOrginallyOneD){box2D->show(); box1D->hide();}
 		myPlot->EnablePlot(false);
 		//if enable is true, disable everything
-		if(isOrginallyOneD) {box1D->show(); box1D->setEnabled(false); box2D->hide();}
-		if(!isOrginallyOneD){box2D->show(); box2D->setEnabled(false); box1D->hide();}
+
 		boxSnapshot->setEnabled(false);
 		boxSave->setEnabled(false);
 		boxFrequency->setEnabled(false);
@@ -398,10 +405,11 @@ void qTabPlot::SetPlot(){
 		boxScan->setEnabled(false);
 	}else if(radioDataGraph->isChecked()){
 		cout << " - DataGraph" << endl;
+
 		myPlot->EnablePlot(true);
 		//if enable is true, disable everything
-		if(isOrginallyOneD) {box1D->show();box1D->setEnabled(true);} else box1D->hide();
-		if(!isOrginallyOneD){box2D->show();box2D->setEnabled(true);} else box2D->hide();
+		if(isOrginallyOneD)  {box1D->show(); box2D->hide();}
+		if(!isOrginallyOneD) {box2D->show(); box1D->hide();}
 		Select1DPlot(isOrginallyOneD);
 		boxSnapshot->setEnabled(true);
 		boxSave->setEnabled(true);
@@ -504,6 +512,9 @@ void qTabPlot::EnableScanBox(int mode,int id){
 		radioLevel0->setEnabled(mode0);
 		radioLevel1->setEnabled(mode1);
 	}else EnablingNthFrameFunction(enableNFrame);
+
+	//sets the scan argument
+	SetScanArgument();
 }
 
 
@@ -533,27 +544,67 @@ void qTabPlot::EnablingNthFrameFunction(bool enable){
 //-------------------------------------------------------------------------------------------------------------------------------------------------
 
 void qTabPlot::SetScanArgument(){
-	switch(btnGroupScan->checkedId()){
 
-	//let qdrawplot know which scan argument
-	//myPlot->
+	//as default from histogram and default titles are set here if scanbox is disabled
+	Select1DPlot(isOrginallyOneD);
 
-	//level0
-	case 0:
-		break;
+	//this function is also called just to update, could be no scan
+	if(boxScan->isEnabled()){
 
-	//level1
-	case 1:
-		break;
+		//setting the title according to the scans
+		QString mainTitle = QString(" Level 0 : ") + modeNames[myDet->getScanMode(0)] +
+							QString("   |   Level 1 : ") + modeNames[myDet->getScanMode(1)] + QString("");
+		dispTitle->setText(mainTitle);
+		myPlot->SetPlotTitle(mainTitle);
 
-	//file index
-	case 2:
-		break;
 
-	//all frames
-	case 3:
-		break;
-	}
+		//let qdrawplot know which scan argument
+		myPlot->SetScanArgument(btnGroupScan->checkedId()+1);
+		/** What happens for 2d????*/
+		//settings the x and y titles
+		switch(btnGroupScan->checkedId()){
+		//level0
+		case 0:
+			dispXAxis->setText("Channel Number");
+			dispYAxis->setText("Scan Level 0");
+			myPlot->SetHistXAxisTitle("Channel Number");
+			myPlot->SetHistYAxisTitle("Scan Level 0");
+			myPlot->Select1DPlot();
+			break;
+
+			//level1
+		case 1:
+			dispXAxis->setText("Channel Number");
+			dispYAxis->setText("Scan Level 1");
+			myPlot->SetHistXAxisTitle("Channel Number");
+			myPlot->SetHistYAxisTitle("Scan Level 1");
+			myPlot->Select1DPlot();
+			break;
+
+			//file index
+		case 2:
+			dispXAxis->setText("Channel Number");
+			dispYAxis->setText("File Index");
+			myPlot->SetHistXAxisTitle("Channel Number");
+			myPlot->SetHistYAxisTitle("File Index");
+			myPlot->Select1DPlot();
+			break;
+
+		//all frames
+		case 3:
+			Select1DPlot(false);
+			dispXAxis->setText("Channel Number");
+			dispYAxis->setText("Threshold");
+			dispZAxis->setText("Intensity");
+			myPlot->SetImageXAxisTitle("Channel Number");
+			myPlot->SetImageYAxisTitle("Threshold");
+			myPlot->SetImageZAxisTitle("Intensity");
+			myPlot->Select2DPlot();
+			break;
+		}
+	}else //done here so that it isnt set by default each time
+		myPlot->SetScanArgument(0);
+
 
 }
 

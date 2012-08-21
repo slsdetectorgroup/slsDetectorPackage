@@ -126,6 +126,8 @@ void SavePlot();
 void SetPersistency(int val);
 /**	sets style of plot to dotted */
 void SetDottedPlot(bool enable){plotDotted = enable;};
+/** sets the scan argument to prepare the plot*/
+void SetScanArgument(int scanArg){scanArgument = scanArg;};
 
 
 
@@ -166,10 +168,7 @@ static void* DataStartAcquireThread(void *this_pointer);
 static int GetDataCallBack(detectorData *data, void *this_pointer);
 /**	This is called by the GetDataCallBack function to copy the data */
 int GetData(detectorData *data);
-/**	This is called by the detector class to copy the scan data it jus acquired */
-static int GetScanDataCallBack(detectorData *data, void *this_pointer);
-/**	This is called by the GetDataCallBack function to copy the scan data */
-int GetScanData(detectorData *data);
+
 
 
 
@@ -195,7 +194,7 @@ void UpdatePause(){data_pause_over=true;};
 
 
 
-
+private:
 /** The sls detector object */
 multiSlsDetector *myDet;
 
@@ -329,7 +328,8 @@ bool isFrameEnabled;
 bool isTriggerEnabled;
 
 /** scan arguments*/
-enum scanArguments{None,Level0,Level1,FileIndex,AllFrames};
+enum scanArgumentList{None,Level0,Level1,FileIndex,AllFrames};
+int scanArgument;
 
 
 

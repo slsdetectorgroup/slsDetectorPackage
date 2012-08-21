@@ -19,6 +19,7 @@ class qDrawPlot;
 #include <QButtonGroup>
 #include <QAbstractButton>
 
+
 /**
  *@short sets up the Plot parameters
  */
@@ -69,6 +70,11 @@ private:
 	static QString defaultImageXAxisTitle;
 	static QString defaultImageYAxisTitle;
 	static QString defaultImageZAxisTitle;
+
+	/** scans */
+	static const QString modeNames[5];
+
+
 
 /** methods */
 	/** Sets up the widget

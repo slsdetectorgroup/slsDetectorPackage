@@ -534,6 +534,10 @@ void qTabPlot::EnablingNthFrameFunction(bool enable){
 
 void qTabPlot::SetScanArgument(){
 	switch(btnGroupScan->checkedId()){
+
+	//let qdrawplot know which scan argument
+	//myPlot->
+
 	//level0
 	case 0:
 		break;

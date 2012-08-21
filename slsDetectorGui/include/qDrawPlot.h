@@ -36,6 +36,9 @@ class qCloneWidget;
 class qDrawPlot:public QWidget{
 	Q_OBJECT
 
+
+
+
 public:
 	/** \short The constructor	 */
 	qDrawPlot(QWidget *parent,multiSlsDetector*& detector);
@@ -100,176 +103,8 @@ public:
 	void setTriggerEnabled(bool enable){isTriggerEnabled = enable;};
 
 
-private:
-	/** The sls detector object */
-	multiSlsDetector *myDet;
 
 
-/** Widgets needed to plot the clone */
-	/**	Max Number of Clone Windows */
-	static const int MAXCloneWindows = 50;
-	/**	Array of clone window widget pointers */
-	qCloneWidget		*winClone[MAXCloneWindows];
-
-/** Widgets needed to set up plot*/
-	QGroupBox 			*boxPlot;
-	QGridLayout 		*layout;
-	QGridLayout 		*plotLayout;
-	/**	Timer to update plot */
-	QTimer* 			plot_update_timer;
-
-	/** Timer to pause getting data from client */
-	QTimer*				data_pause_timer;
-	bool 				data_pause_over;
-
-
-	/**	1D object */
-	SlsQt1DPlot* 		plot1D;
-	/**	2D object */
-	SlsQt2DPlotLayout* 	plot2D;
-	/**	vector of 1D hist values */
-	QVector<SlsQtH1D*> 	plot1D_hists;
-
-
-	/** Number of Measurements */
-	int number_of_measurements;
-	/** Current Measurement */
-	int currentMeasurement;
-	/** currentFrame */
-	int currentFrame;
-	/** current Index */
-	int currentIndex;
-	/**	 Number of Exposures */
-	int number_of_exposures;
-	/**	 Duration between Exposures */
-	double acquisitionPeriod;
-	/**	 Acquisition Time */
-	double exposureTime;
-
-
-/**variables for threads */
-	/**	 */
-	volatile bool   stop_signal;
-	/**	 */
-	pthread_mutex_t last_image_complete_mutex;
-
-/**variables for histograms */
-	/**	X Axis Title in 2D */
-	QString  imageXAxisTitle;
-	/** Y Axis Title in 2D */
-	QString  imageYAxisTitle;
-	/**	Z Axis Title in 2D */
-	QString  imageZAxisTitle;
-	/**	X Axis Title in 1D */
-	QString  histXAxisTitle;
-	/**	Y Axis Title in 1D */
-	QString  histYAxisTitle;
-	/**	Title for all the graphs in 1D */
-	std::string  histTitle[MAX_1DPLOTS];
-	/**	Title in 2D */
-	std::string  imageTitle;
-	/**	1D or 2D */
-	unsigned int plot_in_scope;
-	/**	Number of Pixels in X Axis */
-	unsigned int nPixelsX;
-	/**	Number of Pixels in Y Axis */
-	unsigned int nPixelsY;
-	/**	Current Image Number */
-	unsigned int lastImageNumber;
-	int last_plot_number;
-
-	/**	Number of graphs in 1D */
-	unsigned int nHists;
-	/**	Total Number of X axis values/channels in 1D */
-	int          histNBins;
-	/**	X Axis value in 1D */
-	double*      histXAxis;
-	/** Y Axis value in 1D  */
-	double*      histYAxis[MAX_1DPLOTS];
-	/**	Current Image Values in 2D */
-	double*      lastImageArray;
-	/**	temporary Y Axis value in 1D */
-	double* 	 yvalues[MAX_1DPLOTS];
-	/**	temporary Image Values in 2D */
-	double* 	 image_data;
-
-	/**persistency to be reached*/
-	int persistency;
-	/** persistency takes time to reach as it increases per frame
-	 * this is the current one */
-	int currentPersistency;
-	/** to update the progress for each getData() so that
-	 * measurement tab can request on a timer basis*/
-	int progress;
-	/**If plot is enabled from plot tab*/
-	bool plotEnable;
-	/**If plot is dotted */
-	bool plotDotted;
-
-
-	/**if an acquisition is running, so as not to refresh tab
-	 * and also to update plot only if running (while creating clones)*/
-	bool running;
-
-	/** if the min/max of x and y has been changed,
-	 * to notify while plotting */
-	bool XYRangeChanged;
-	/**the specific min/max of x/y*/
-	double XYRangeValues[4];
-	/**if the specific min/max of x/y is enabled */
-	bool IsXYRange[4];
-
-	/** Default timer between plots*/
-	static const double PLOT_TIMER_MS = 250;
-	/** Specific timer value between plots */
-	double timerValue;
-	/** every nth frame when to plot */
-	int frameFactor;
-	/** old data that did not get lock(for frame factor)**/
-	bool oldCopy;
-	int oldFrameNumber;
-	/**if frame is enabled in measurement tab */
-	bool isFrameEnabled;
-	/**if trigger is enabled in measurement tab */
-	bool isTriggerEnabled;
-
-
-	/** Initializes all its members and the thread */
-	void Initialization();
-	/** Sets up the widget */
-	void SetupWidgetWindow();
-
-
-	/** Gets the image title	 */
-	const char*  GetImageTitle()      	{return imageTitle.c_str();}
-	/**	Gets the hist title for a 1D plot */
-	const char*  GetHistTitle(int i)  	{return (i>=0&&i<MAX_1DPLOTS) ? histTitle[i].c_str():0;} //int for hist number
-	/**	Gets the y axis value for the hist in 1D plot */
-	double*      GetHistYAxis(int i)  	{return (i>=0&&i<MAX_1DPLOTS) ? histYAxis[i]:0;} //int for hist number
-
-
-	/**	Locks the image to update plot */
-	int    LockLastImageArray()			{return pthread_mutex_lock(&last_image_complete_mutex); }
-	/**	Unocks the image to update plot */
-	int    UnlockLastImageArray()		{return pthread_mutex_unlock(&last_image_complete_mutex);}
-	/**	Starts the acquisition */
-	int    StartDaqForGui() 		  	{return StartOrStopThread(1) ? 1:0;}
-	/**	Stops the acquisition  */
-	int    StopDaqForGui() 			  	{return StartOrStopThread(0) ? 0:1;}
-	/** Starts/stops Acquisition Thread */
-	bool   StartOrStopThread(bool start);
-	/**	Resets the acquisition parameter like lastimagenumber */
-	int    ResetDaqForGui();
-	/**	The function which is called when start acquisition thread is created */
-	static void* DataStartAcquireThread(void *this_pointer);
-	/**	This is called by the detector class to copy the data it jus acquired */
-	static int GetDataCallBack(detectorData *data, void *this_pointer);
-	/**	This is called by the GetDataCallBack function to copy the data */
-	int GetData(detectorData *data);
-	/**	This is called by the detector class to copy the scan data it jus acquired */
-	static int GetScanDataCallBack(detectorData *data, void *this_pointer);
-	/**	This is called by the GetDataCallBack function to copy the scan data */
-	int GetScanData(detectorData *data);
 
 public slots:
 /** To select 1D or 2D plot
@@ -293,6 +128,55 @@ void SetPersistency(int val);
 void SetDottedPlot(bool enable){plotDotted = enable;};
 
 
+
+
+
+
+
+private:
+/** Initializes all its members and the thread */
+void Initialization();
+/** Sets up the widget */
+void SetupWidgetWindow();
+
+
+/** Gets the image title	 */
+const char*  GetImageTitle()      	{return imageTitle.c_str();}
+/**	Gets the hist title for a 1D plot */
+const char*  GetHistTitle(int i)  	{return (i>=0&&i<MAX_1DPLOTS) ? histTitle[i].c_str():0;} //int for hist number
+/**	Gets the y axis value for the hist in 1D plot */
+double*      GetHistYAxis(int i)  	{return (i>=0&&i<MAX_1DPLOTS) ? histYAxis[i]:0;} //int for hist number
+
+
+/**	Locks the image to update plot */
+int    LockLastImageArray()			{return pthread_mutex_lock(&last_image_complete_mutex); }
+/**	Unocks the image to update plot */
+int    UnlockLastImageArray()		{return pthread_mutex_unlock(&last_image_complete_mutex);}
+/**	Starts the acquisition */
+int    StartDaqForGui() 		  	{return StartOrStopThread(1) ? 1:0;}
+/**	Stops the acquisition  */
+int    StopDaqForGui() 			  	{return StartOrStopThread(0) ? 0:1;}
+/** Starts/stops Acquisition Thread */
+bool   StartOrStopThread(bool start);
+/**	Resets the acquisition parameter like lastimagenumber */
+int    ResetDaqForGui();
+/**	The function which is called when start acquisition thread is created */
+static void* DataStartAcquireThread(void *this_pointer);
+/**	This is called by the detector class to copy the data it jus acquired */
+static int GetDataCallBack(detectorData *data, void *this_pointer);
+/**	This is called by the GetDataCallBack function to copy the data */
+int GetData(detectorData *data);
+/**	This is called by the detector class to copy the scan data it jus acquired */
+static int GetScanDataCallBack(detectorData *data, void *this_pointer);
+/**	This is called by the GetDataCallBack function to copy the scan data */
+int GetScanData(detectorData *data);
+
+
+
+
+
+
+
 private slots:
 /** To update plot */
 void UpdatePlot();
@@ -306,6 +190,148 @@ void StartDaq(bool start);
 void CloneCloseEvent(int id);
 
 void UpdatePause(){data_pause_over=true;};
+
+
+
+
+
+
+/** The sls detector object */
+multiSlsDetector *myDet;
+
+
+/** Widgets needed to plot the clone */
+/**	Max Number of Clone Windows */
+static const int MAXCloneWindows = 50;
+/**	Array of clone window widget pointers */
+qCloneWidget		*winClone[MAXCloneWindows];
+
+/** Widgets needed to set up plot*/
+QGroupBox 			*boxPlot;
+QGridLayout 		*layout;
+QGridLayout 		*plotLayout;
+/**	Timer to update plot */
+QTimer* 			plot_update_timer;
+
+/** Timer to pause getting data from client */
+QTimer*				data_pause_timer;
+bool 				data_pause_over;
+
+
+/**	1D object */
+SlsQt1DPlot* 		plot1D;
+/**	2D object */
+SlsQt2DPlotLayout* 	plot2D;
+/**	vector of 1D hist values */
+QVector<SlsQtH1D*> 	plot1D_hists;
+
+
+/** Number of Measurements */
+int number_of_measurements;
+/** Current Measurement */
+int currentMeasurement;
+/** currentFrame */
+int currentFrame;
+/** current Index */
+int currentIndex;
+/**	 Number of Exposures */
+int number_of_exposures;
+/**	 Duration between Exposures */
+double acquisitionPeriod;
+/**	 Acquisition Time */
+double exposureTime;
+
+
+/**variables for threads */
+/**	 */
+volatile bool   stop_signal;
+/**	 */
+pthread_mutex_t last_image_complete_mutex;
+
+/**variables for histograms */
+/**	X Axis Title in 2D */
+QString  imageXAxisTitle;
+/** Y Axis Title in 2D */
+QString  imageYAxisTitle;
+/**	Z Axis Title in 2D */
+QString  imageZAxisTitle;
+/**	X Axis Title in 1D */
+QString  histXAxisTitle;
+/**	Y Axis Title in 1D */
+QString  histYAxisTitle;
+/**	Title for all the graphs in 1D */
+std::string  histTitle[MAX_1DPLOTS];
+/**	Title in 2D */
+std::string  imageTitle;
+/**	1D or 2D */
+unsigned int plot_in_scope;
+/**	Number of Pixels in X Axis */
+unsigned int nPixelsX;
+/**	Number of Pixels in Y Axis */
+unsigned int nPixelsY;
+/**	Current Image Number */
+unsigned int lastImageNumber;
+int last_plot_number;
+
+/**	Number of graphs in 1D */
+unsigned int nHists;
+/**	Total Number of X axis values/channels in 1D */
+int          histNBins;
+/**	X Axis value in 1D */
+double*      histXAxis;
+/** Y Axis value in 1D  */
+double*      histYAxis[MAX_1DPLOTS];
+/**	Current Image Values in 2D */
+double*      lastImageArray;
+/**	temporary Y Axis value in 1D */
+double* 	 yvalues[MAX_1DPLOTS];
+/**	temporary Image Values in 2D */
+double* 	 image_data;
+
+/**persistency to be reached*/
+int persistency;
+/** persistency takes time to reach as it increases per frame
+ * this is the current one */
+int currentPersistency;
+/** to update the progress for each getData() so that
+ * measurement tab can request on a timer basis*/
+int progress;
+/**If plot is enabled from plot tab*/
+bool plotEnable;
+/**If plot is dotted */
+bool plotDotted;
+
+
+/**if an acquisition is running, so as not to refresh tab
+ * and also to update plot only if running (while creating clones)*/
+bool running;
+
+/** if the min/max of x and y has been changed,
+ * to notify while plotting */
+bool XYRangeChanged;
+/**the specific min/max of x/y*/
+double XYRangeValues[4];
+/**if the specific min/max of x/y is enabled */
+bool IsXYRange[4];
+
+/** Default timer between plots*/
+static const double PLOT_TIMER_MS = 250;
+/** Specific timer value between plots */
+double timerValue;
+/** every nth frame when to plot */
+int frameFactor;
+/** old data that did not get lock(for frame factor)**/
+bool oldCopy;
+int oldFrameNumber;
+/**if frame is enabled in measurement tab */
+bool isFrameEnabled;
+/**if trigger is enabled in measurement tab */
+bool isTriggerEnabled;
+
+/** scan arguments*/
+enum scanArguments{None,Level0,Level1,FileIndex,AllFrames};
+
+
 
 signals:
 void UpdatingPlotFinished();

@@ -137,6 +137,8 @@ private:
 	int currentMeasurement;
 	/** currentFrame */
 	int currentFrame;
+	/** current Index */
+	int currentIndex;
 	/**	 Number of Exposures */
 	int number_of_exposures;
 	/**	 Duration between Exposures */

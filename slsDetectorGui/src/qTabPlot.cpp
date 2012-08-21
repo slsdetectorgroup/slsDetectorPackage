@@ -12,6 +12,7 @@
 #include "slsDetector.h"
 #include "multiSlsDetector.h"
 // Qt Include Headers
+#include <QStandardItemModel>
 // C++ Include Headers
 #include <iostream>
 #include <string>
@@ -52,8 +53,27 @@ qTabPlot::~qTabPlot(){
 
 
 void qTabPlot::SetupWidgetWindow(){
-	scanLevel[0]=false;
-	scanLevel[1]=false;
+	//check if nth frame should be enabled
+	enableNFrame = true;
+	//according to timing mode
+	slsDetectorDefs::externalCommunicationMode mode = myDet->setExternalCommunicationMode();
+	if(	(mode==slsDetectorDefs::GATE_FIX_NUMBER)||
+			(mode==slsDetectorDefs::TRIGGER_FRAME) ||
+			(mode==slsDetectorDefs::TRIGGER_WINDOW) ||
+			((mode==slsDetectorDefs::AUTO_TIMING)&&((int)myDet->setTimer(slsDetectorDefs::FRAME_NUMBER,-1)==1)&&((int)myDet->setTimer(slsDetectorDefs::CYCLES_NUMBER,-1)==1)) )
+		enableNFrame = false;
+	//according to if exptime > acq period
+	if((myDet->setTimer(slsDetectorDefs::ACQUISITION_TIME,-1)*(1E-9))>(myDet->setTimer(slsDetectorDefs::FRAME_PERIOD,-1)*(1E-9)))
+		enableNFrame = false;
+
+
+
+//scan arguments
+	btnGroupScan = new QButtonGroup(this);
+	btnGroupScan->addButton(radioLevel0,0);
+	btnGroupScan->addButton(radioLevel1,1);
+	btnGroupScan->addButton(radioFileIndex,2);
+	btnGroupScan->addButton(radioAllFrames,3);
 
 // Plot Axis
 	myPlot->SetPlotTitle(defaultPlotTitle);
@@ -129,10 +149,10 @@ void qTabPlot::Select1DPlot(bool b){
 		chkZAxis->setEnabled(false);
 		chkZMin->setEnabled(false);
 		chkZMax->setEnabled(false);
-		myPlot->SetHistXAxisTitle(defaultHistXAxisTitle);
 		dispXAxis->setText(defaultHistXAxisTitle);
-		myPlot->SetHistYAxisTitle(defaultHistYAxisTitle);
 		dispYAxis->setText(defaultHistYAxisTitle);
+		myPlot->SetHistXAxisTitle(defaultHistXAxisTitle);
+		myPlot->SetHistYAxisTitle(defaultHistYAxisTitle);
 		myPlot->Select1DPlot();
 	}else{
 		box1D->hide();
@@ -140,22 +160,12 @@ void qTabPlot::Select1DPlot(bool b){
 		chkZAxis->setEnabled(true);
 		chkZMin->setEnabled(true);
 		chkZMax->setEnabled(true);
-
-		//threshold scan
-		if((scanLevel[0]==2)||(scanLevel[1]==2)){
-			myPlot->SetImageXAxisTitle("Channel Number");
-			dispXAxis->setText("Channel Number");
-			dispYAxis->setText("Threshold");
-			myPlot->SetImageYAxisTitle("Threshold");
-		}
-		else{
-			myPlot->SetImageXAxisTitle(defaultImageXAxisTitle);
-			dispXAxis->setText(defaultImageXAxisTitle);
-			dispYAxis->setText(defaultImageYAxisTitle);
-			myPlot->SetImageYAxisTitle(defaultImageYAxisTitle);
-		}
-		myPlot->SetImageZAxisTitle(defaultImageZAxisTitle);
+		dispXAxis->setText(defaultImageXAxisTitle);
+		dispYAxis->setText(defaultImageYAxisTitle);
 		dispZAxis->setText(defaultImageZAxisTitle);
+		myPlot->SetImageXAxisTitle(defaultImageXAxisTitle);
+		myPlot->SetImageYAxisTitle(defaultImageYAxisTitle);
+		myPlot->SetImageZAxisTitle(defaultImageZAxisTitle);
 		myPlot->Select2DPlot();
 	}
 
@@ -172,7 +182,7 @@ void qTabPlot::Initialization(){
 	connect(radioHistogram, SIGNAL(toggled(bool)),this, SLOT(SetPlot()));
 	connect(radioDataGraph, SIGNAL(toggled(bool)),this, SLOT(SetPlot()));
 // Scan box
-	//connect(scna, SIGNAL(toggled(bool)),this, SLOT(scanstuff(bool)));
+	connect(btnGroupScan, SIGNAL(buttonClicked(QAbstractButton *)),this, SLOT(SetScanArgument()));
 // Snapshot box
 	connect(btnClone, 		SIGNAL(clicked()),myPlot, 	SLOT(ClonePlot()));
 	connect(btnCloseClones, SIGNAL(clicked()),myPlot, 	SLOT(CloseClones()));
@@ -213,7 +223,8 @@ void qTabPlot::Initialization(){
 	connect(dispYMax, 		SIGNAL(returnPressed()), this, 	SLOT(SetAxesRange()));
 	connect(dispZMin, 		SIGNAL(returnPressed()), this, 	SLOT(SetZRange()));
 	connect(dispZMax, 		SIGNAL(returnPressed()), this, 	SLOT(SetZRange()));
-	connect(this,			SIGNAL(SetZRangeSignal(double,double)),myPlot, SIGNAL(SetZRangeSignal(double,double)));
+
+	connect(this,SIGNAL(SetZRangeSignal(double,double)),myPlot, SIGNAL(SetZRangeSignal(double,double)));
 
 // Common Buttons
 // Save
@@ -390,26 +401,16 @@ void qTabPlot::SetPlot(){
 		myPlot->EnablePlot(true);
 		//if enable is true, disable everything
 		if(isOrginallyOneD) {box1D->show();box1D->setEnabled(true);} else box1D->hide();
-		if(!isOrginallyOneD){box2D->show();box2D->setEnabled(true);}	else box2D->hide();
+		if(!isOrginallyOneD){box2D->show();box2D->setEnabled(true);} else box2D->hide();
 		Select1DPlot(isOrginallyOneD);
 		boxSnapshot->setEnabled(true);
 		boxSave->setEnabled(true);
 		boxFrequency->setEnabled(true);
 		boxPlotAxis->setEnabled(true);
+		EnableScanBox();
 	}else{
 		cout << " - Histogram" << endl;
-		myPlot->EnablePlot(true);
-		Select1DPlot(false);
-		box1D->hide();
-		box2D->show();
-		box2D->setEnabled(true);
-		boxSnapshot->setEnabled(true);
-		boxSave->setEnabled(true);
-		boxFrequency->setEnabled(false);
-		boxPlotAxis->setEnabled(true);
-		boxScan->setEnabled(false);
-		myPlot->SetPlotTimer(250);
-		emit ThresholdScanSignal(0);
+		//select(2d) will set oneD to false, but originallyoneD will remember
 	}
 }
 
@@ -452,7 +453,7 @@ void qTabPlot::SetFrequency(){
 		timeMS = (spinNthFrame->value())*acqPeriodMS;
 		// To make sure the period between plotting is not less than minimum plot timer in  ms
 		if(timeMS<minPlotTimer){
-			int minFrame = (ceil)(minPlotTimer/acqPeriodMS);
+			int minFrame = (int)(ceil)(minPlotTimer/acqPeriodMS);
 			qDefs::WarningMessage("<b>Plot Tab:</b> Interval between Plots - The nth Image must be larger.<br><br>"
 					"Condition to be satisfied:\n(Acquisition Period)*(nth Image) >= 250ms."
 					"<br><br>Nth image adjusted to minimum, "
@@ -477,57 +478,87 @@ void qTabPlot::SetFrequency(){
 
 
 void qTabPlot::EnableScanBox(int mode,int id){
-#ifdef VERBOSE
-	cout << "Entering Enable Scan Box()" << endl;
+#ifdef VERYVERBOSE
+	cout << "Entering Enable Scan Box() \t mode:" << mode << " \t id:" << id << endl;
 #endif
 
+	int mode0 = myDet->getScanMode(0);
+	int mode1 = myDet->getScanMode(1);
 
-	scanLevel[id]=mode;
-	//both are disabled
-	if((!scanLevel[0])&&(!scanLevel[1])){
-		boxScan->setEnabled(false);
-	}//both are enabled
-	else if((scanLevel[0])&&(scanLevel[1])){
-		//disable none and check the other
-		if(id) {radioLevel1->setEnabled(true);radioLevel1->setChecked(true);}
-		else	{radioLevel0->setEnabled(true);radioLevel0->setChecked(true);}
-	}//either 1 is enabled/disabled
-	else{
-		if(!boxScan->isEnabled()) {
-			boxScan->setEnabled(true);
-			radioFileIndex->setEnabled(false);/**???*/
-		}
-		//disable one and check the other
-		if(id) {
-			radioLevel0->setEnabled(!mode);
-			radioLevel0->setChecked(!mode);
-			radioLevel1->setEnabled(mode);
-			radioLevel1->setChecked(mode);
-		}else{
-			radioLevel0->setEnabled(mode);
-			radioLevel0->setChecked(mode);
-			radioLevel1->setEnabled(!mode);
-			radioLevel1->setChecked(!mode);
-		}
-	}
+	boxScan->setEnabled(mode0||mode1);
 
-	//check for threshold
-	if((scanLevel[0]==2)||(scanLevel[1]==2))
-		radioHistogram->setChecked(true);
-	else
-		radioDataGraph->setChecked(true);
-
-	/*
 	if(boxScan->isEnabled()){
-		myDet->setPlotType(i);
-	}*/
+		//make sure nth frame frequency plot is disabled
+		EnablingNthFrameFunction(false);
+
+		//if level0 or 1, check argument to find which scan enabled last from actions tab
+		if((btnGroupScan->checkedId()!=2)&&(btnGroupScan->checkedId()!=3)){
+			cout<<"mode:"<<mode<<" id:"<<id<<endl;
+			//if mode is not none(doesnt check them if called form refresh)
+			if(mode>0){
+				if(!id) radioLevel0->setChecked(true);
+				else radioLevel1->setChecked(true);
+			}
+		}
+
+		radioLevel0->setEnabled(mode0);
+		radioLevel1->setEnabled(mode1);
+	}else EnablingNthFrameFunction(enableNFrame);
 }
 
 
 //-------------------------------------------------------------------------------------------------------------------------------------------------
 
+void qTabPlot::EnablingNthFrameFunction(bool enable){
+#ifdef VERYVERBOSE
+	cout << "Enabling Nth Frame : " << enable << endl;
+#endif
+	QStandardItemModel* model = qobject_cast<QStandardItemModel*>(comboFrequency->model());
+	QStandardItem* item = model->itemFromIndex(model->index(1,	comboFrequency->modelColumn(), comboFrequency->rootModelIndex()));
+
+	//enabling/disabling is easy if it wasnt selected anyway
+	if(comboFrequency->currentIndex()!=1)
+		item->setEnabled(enable);
+	else{
+		//only when it was enabled before and now to disable is a problem
+		if(!enable){
+			spinTimeGap->setValue(myPlot->GetMinimumPlotTimer());
+			comboFrequency->setCurrentIndex(0);
+			item->setEnabled(false);
+		}
+	}
+
+}
+
+//-------------------------------------------------------------------------------------------------------------------------------------------------
+
+void qTabPlot::SetScanArgument(){
+	switch(btnGroupScan->checkedId()){
+	//level0
+	case 0:
+		break;
+
+	//level1
+	case 1:
+		break;
+
+	//file index
+	case 2:
+		break;
+
+	//all frames
+	case 3:
+		break;
+	}
+
+}
+
+//-------------------------------------------------------------------------------------------------------------------------------------------------
+
+
 void qTabPlot::Refresh(){
 	SetFrequency();
+	EnableScanBox();
 }
 
 

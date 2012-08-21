@@ -167,6 +167,7 @@ signals:
 void StartSignal();
 void StopSignal();
 void CheckPlotIntervalSignal();
+void EnableNthFrameSignal(bool);
 };
 
 

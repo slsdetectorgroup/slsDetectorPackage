@@ -51,7 +51,7 @@ qDrawPlot::~qDrawPlot(){
 
 void qDrawPlot::SetupWidgetWindow(){
 #ifdef VERBOSE
-	cout<<"Setting up plot variables"<<endl;
+	cout << "Setting up plot variables" << endl;
 #endif
 	number_of_measurements=1;
 	currentMeasurement = 0;
@@ -184,13 +184,16 @@ void qDrawPlot::StartStopDaqToggle(bool stop_if_running){
 		numTriggers = ((numTriggers==0)?1:numTriggers);
 
 		number_of_exposures= numFrames * numTriggers;
-		cout<<"\tNumber of Exposures:"<<number_of_exposures<<endl;
+		cout << "\tNumber of Exposures:" << number_of_exposures << endl;
 		// ExposureTime
 		exposureTime= ((double)(myDet->setTimer(slsDetectorDefs::ACQUISITION_TIME,-1))*1E-9);
-		cout<<"\tExposure Time:"<<setprecision (10)<<exposureTime<<endl;
+		cout << "\tExposure Time:" << setprecision (10) << exposureTime << endl;
 		// Acquisition Period
 		acquisitionPeriod= ((double)(myDet->setTimer(slsDetectorDefs::FRAME_PERIOD,-1))*1E-9);
-		cout<<"\tAcquisition Period:"<<setprecision (10)<<acquisitionPeriod<<endl;
+		cout << "\tAcquisition Period:" << setprecision (10) << acquisitionPeriod << endl;
+		// Current Index
+		currentIndex = myDet->getFileIndex();
+		cout << "\tCurrent Index:" << currentIndex << endl;
 
 		StartDaq(true);
 		running=!running;
@@ -202,14 +205,14 @@ void qDrawPlot::StartStopDaqToggle(bool stop_if_running){
 void qDrawPlot::StartDaq(bool start){
 	if(start){
 #ifdef VERBOSE
-		cout<<"Start Daq(true) function"<<endl;
+		cout << "Start Daq(true) function" << endl;
 #endif
 		ResetDaqForGui();
 		StartDaqForGui();
 		UpdatePlot();
 	}else{
 #ifdef VERBOSE
-		cout<<"Start Daq(false) function"<<endl;
+		cout << "Start Daq(false) function" << endl;
 #endif
 		StopDaqForGui();
 		StopUpdatePlot();
@@ -220,7 +223,7 @@ void qDrawPlot::StartDaq(bool start){
 
 int qDrawPlot::ResetDaqForGui(){
 	if(!StopDaqForGui()) return 0;
-	cout<<"Resetting image number"<<endl;
+	cout << "Resetting image number" << endl;
 	lastImageNumber = 0;
 	return 1;
 }
@@ -236,7 +239,7 @@ bool qDrawPlot::StartOrStopThread(bool start){
 	pthread_mutex_lock(&gui_acquisition_start_stop_mutex);
 	//stop part, before start or restart
 	if(gui_acquisition_thread_running){
-		cout<<"Stopping current acquisition thread ...."<<endl;
+		cout << "Stopping current acquisition thread ...." << endl;
 		stop_signal = 1;//sorta useless right now
 		gui_acquisition_thread_running = 0;
 	}
@@ -259,7 +262,7 @@ bool qDrawPlot::StartOrStopThread(bool start){
 
 
 		if(plot_in_scope==1) Clear1DPlot();
-		cout<<"Starting new acquisition threadddd ...."<<endl;
+		cout << "Starting new acquisition threadddd ...." << endl;
 		// Setting the callback function to get data from software client
 		myDet->registerDataCallback(&(GetDataCallBack),this);
 		// Start acquiring data from server
@@ -270,7 +273,7 @@ bool qDrawPlot::StartOrStopThread(bool start){
 		// This is manually done instead of keeping track of thread because
 		// this thread returns immediately after executing the acquire command
 		gui_acquisition_thread_running=1;
-		cout<<"Started acquiring threaddd:"<<endl;
+		cout << "Started acquiring threaddd:" << endl;
 	}
 	pthread_mutex_unlock(&gui_acquisition_start_stop_mutex);
 	return gui_acquisition_thread_running;
@@ -279,9 +282,9 @@ bool qDrawPlot::StartOrStopThread(bool start){
 //-------------------------------------------------------------------------------------------------------------------------------------------------
 
 void* qDrawPlot::DataStartAcquireThread(void *this_pointer){
-	cout<<"before acquire ...."<<endl;
+	cout << "before acquire ...." << endl;
 	((qDrawPlot*)this_pointer)->myDet->acquire(1);
-	cout<<"after acquire ...."<<endl;
+	cout << "after acquire ...." << endl;
 	return this_pointer;
 }
 
@@ -296,7 +299,7 @@ int qDrawPlot::GetDataCallBack(detectorData *data, void *this_pointer){
 
 int qDrawPlot::GetData(detectorData *data){
 #ifdef VERYVERBOSE
-	cout<<"Entering GetDatafunction"<<endl;
+	cout << "Entering GetDatafunction" << endl;
 #endif
 	if(!stop_signal){
 		//not frame factor
@@ -305,6 +308,7 @@ int qDrawPlot::GetData(detectorData *data){
 			if(!data_pause_over){
 				//lastImageNumber= currentFrame+1;
 				currentFrame++;
+				currentIndex++;
 				return 0;
 			}
 			data_pause_over=false;
@@ -317,11 +321,12 @@ int qDrawPlot::GetData(detectorData *data){
 			else{
 				//lastImageNumber= currentFrame+1;
 				currentFrame++;
+				currentIndex++;
 				progress=(int)data->progressIndex;
 				//if theres an old copy, try to get lock again
 				if(oldCopy){
 #ifdef VERBOSE
-					cout<<"Copying old data: "<<oldFrameNumber<<endl;
+					cout << "Copying old data: " << oldFrameNumber << endl;
 #endif
 					if(!pthread_mutex_trylock(&(last_image_complete_mutex))){
 						char temp_title[2000];
@@ -330,7 +335,7 @@ int qDrawPlot::GetData(detectorData *data){
 						//1d
 						if(plot_in_scope==1){
 							// Titles
-							sprintf(temp_title,"Frame %d",oldFrameNumber);    histTitle[0] = temp_title;
+							sprintf(temp_title,"Frame Index%d",oldFrameNumber);    histTitle[0] = temp_title;
 							// copy data//memcpy(histXAxis,    xvalues,nPixelsX*sizeof(double));
 							for(int i=currentPersistency;i>0;i--)
 								memcpy(histYAxis[i],yvalues[i-1],nPixelsX*sizeof(double));
@@ -338,7 +343,7 @@ int qDrawPlot::GetData(detectorData *data){
 						}//2d
 						else{
 							// Titles
-							sprintf(temp_title,"Image Number %d",oldFrameNumber);
+							sprintf(temp_title,"Image Index %d",oldFrameNumber);
 							imageTitle = temp_title;
 							// copy data
 							//memcpy(lastImageArray,image_data,nPixelsX*nPixelsY*sizeof(double));
@@ -354,6 +359,7 @@ int qDrawPlot::GetData(detectorData *data){
 			progress=(int)data->progressIndex;
 			//lastImageNumber= currentFrame+1;
 			currentFrame++;
+			currentIndex++;
 			return 0;
 		}
 		//what comes here has plot enabled AND (frame factor OR data pause over )
@@ -361,7 +367,7 @@ int qDrawPlot::GetData(detectorData *data){
 
 		if((currentFrame)<(number_of_exposures)){
 #ifdef VERYVERBOSE
-			cout<<"Reading in image: "<<currentFrame<<endl;
+			cout << "Reading in image: " << currentIndex << endl;
 #endif
 			if(!pthread_mutex_trylock(&(last_image_complete_mutex))){
 				char temp_title[2000];
@@ -371,7 +377,7 @@ int qDrawPlot::GetData(detectorData *data){
 				//1d
 				if(plot_in_scope==1){
 					// Titles
-					sprintf(temp_title,"Frame %d",currentFrame);    histTitle[0] = temp_title;
+					sprintf(temp_title,"Frame Index %d",currentIndex);    histTitle[0] = temp_title;
 					// Persistency
 					if(currentPersistency < persistency)currentPersistency++;
 					else currentPersistency=persistency;
@@ -386,7 +392,7 @@ int qDrawPlot::GetData(detectorData *data){
 				//2d
 				else{
 					// Titles
-					sprintf(temp_title,"Image Number %d",currentFrame);
+					sprintf(temp_title,"Image Index %d",currentIndex);
 					imageTitle = temp_title;
 					// manufacture data for now
 					for(unsigned int px=0;px<nPixelsX;px++)
@@ -400,7 +406,7 @@ int qDrawPlot::GetData(detectorData *data){
 			}//copies old data only if its frame factor
 			else if(frameFactor){
 				oldCopy = true;
-				oldFrameNumber = currentFrame;
+				oldFrameNumber = currentIndex;
 				//1D
 				if(plot_in_scope==1){
 					// Persistency
@@ -419,10 +425,11 @@ int qDrawPlot::GetData(detectorData *data){
 				}
 			}
 			currentFrame++;
+			currentIndex++;
 		}
 	}
 #ifdef VERYVERBOSE
-	cout<<"Exiting GetData function"<<endl;
+	cout << "Exiting GetData function" << endl;
 #endif
 	return 0;
 }
@@ -442,7 +449,7 @@ int qDrawPlot::GetScanDataCallBack(detectorData *data, void *this_pointer){
 
 int qDrawPlot::GetScanData(detectorData *data){/*
 #ifdef VERYVERBOSE
-	cout<<"Entering GetScanDatafunction"<<endl;
+	cout << "Entering GetScanDatafunction"<<endl;
 #endif
 	if(!stop_signal){
 		//if plot disabled, RETURN
@@ -516,7 +523,7 @@ void qDrawPlot::Clear1DPlot(){
 
 void qDrawPlot::UpdatePlot(){
 #ifdef VERYVERBOSE
-	cout<<"Entering UpdatePlot function"<<endl;
+	cout << "Entering UpdatePlot function" << endl;
 #endif
 
 	plot_update_timer->stop();
@@ -528,7 +535,7 @@ void qDrawPlot::UpdatePlot(){
 		if(lastImageNumber){
 			if(histNBins){
 #ifdef VERYVERBOSE
-				cout<<"Last Image Number: "<<lastImageNumber<<endl;
+				cout << "Last Image Number: " << lastImageNumber << endl;
 #endif
 				Clear1DPlot();
 				plot1D->SetXTitle(histXAxisTitle.toAscii().constData());
@@ -602,6 +609,7 @@ void qDrawPlot::UpdatePlot(){
 		}// To start the next measurement
 		else{
 			emit SetCurrentMeasurementSignal(currentMeasurement);
+			currentIndex++;
 			StopDaqForGui();
 			StartDaq(true);
 		}
@@ -626,7 +634,7 @@ void qDrawPlot::ClonePlot(){
 		}
 	// no space for more clone widget references
 	if(!found){
-		cout<<"Too many clones"<<endl;
+		cout << "Too many clones" << endl;
 		exit(-1);
 	}
 	// save height to keep maintain same height of plot
@@ -679,7 +687,7 @@ void qDrawPlot::CloseClones(){
 void qDrawPlot::CloneCloseEvent(int id){
 	winClone[id]=0;
 #ifdef VERBOSE
-	cout<<"Closing Clone Window id:"<<id<<endl;
+	cout << "Closing Clone Window id:" << id << endl;
 #endif
 }
 
@@ -718,7 +726,7 @@ void qDrawPlot::SetPersistency(int val){
 
 void qDrawPlot::EnablePlot(bool enable){
 #ifdef VERBOSE
-	cout<<"Plotting set to:"<<enable<<endl;
+	cout << "Plotting set to:" << enable << endl;
 #endif
 	plotEnable = enable;
 	//if no plot, cant do setting range.

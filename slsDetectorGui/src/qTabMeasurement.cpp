@@ -404,13 +404,16 @@ void qTabMeasurement::setAcquisitionPeriod(){
 		lblPeriod->setToolTip(errPeriodTip);
 		lblPeriod->setPalette(red);
 		lblPeriod->setText("Acquisition Period:*");
+		emit EnableNthFrameSignal(false);
 	}
 	else {
 		spinPeriod->setToolTip(acqPeriodTip);
 		lblPeriod->setToolTip(acqPeriodTip);
 		lblPeriod->setPalette(lblTimingMode->palette());
 		lblPeriod->setText("Acquisition Period:");
+		emit EnableNthFrameSignal(true);
 	}
+
 
 	//Check if the interval between plots is ok
 	emit CheckPlotIntervalSignal();
@@ -558,6 +561,7 @@ void qTabMeasurement::SetTimingMode(int mode){
 		return;
 	}
 
+
 	if(mode!=None){//Number of Probes
 		if(myDet->getDetectorsType()==slsDetectorDefs::MYTHEN){
 			lblNumProbes->setEnabled(true);		spinNumProbes->setEnabled(true);
@@ -668,8 +672,18 @@ void qTabMeasurement::SetTimingMode(int mode){
 	myPlot->setFrameEnabled(lblNumFrames->isEnabled());
 	myPlot->setTriggerEnabled(lblNumTriggers->isEnabled());
 
+
+	//check if period is enabled and alright, only then the nth frame frequency is enabled
+	if((lblPeriod->isEnabled())&&(lblPeriod->text()=="Acquisition Period:"))
+		emit EnableNthFrameSignal(true);
+	else emit EnableNthFrameSignal(false);
+
 	return;
 }
+
+
+//-------------------------------------------------------------------------------------------------------------------------------------------------
+
 
 void qTabMeasurement::EnableFileWrite(bool enable){
 #ifdef VERBOSE

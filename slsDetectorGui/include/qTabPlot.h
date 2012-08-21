@@ -16,6 +16,8 @@ class multiSlsDetector;
 class qDrawPlot;
 /** Qt Include Headers */
 #include <QStackedLayout>
+#include <QButtonGroup>
+#include <QAbstractButton>
 
 /**
  *@short sets up the Plot parameters
@@ -51,12 +53,14 @@ private:
 	bool isOneD;
 	bool isOrginallyOneD;
 
-	int scanLevel[2];
+	/**whether to enable nth frame according to timing mode*/
+	bool enableNFrame;
 
-	QStackedLayout* stackedLayout;
-	QSpinBox *spinNthFrame;
-	QDoubleSpinBox *spinTimeGap;
-	QComboBox *comboTimeGapUnit;
+	QStackedLayout	*stackedLayout;
+	QSpinBox 		*spinNthFrame;
+	QDoubleSpinBox 	*spinTimeGap;
+	QComboBox 		*comboTimeGapUnit;
+	QButtonGroup 	*btnGroupScan;
 
 	/** some Default Values */
 	static QString defaultPlotTitle;
@@ -75,6 +79,11 @@ private:
 	 */
 	void Initialization();
 
+	/** This enabled/disables the nth frame from frequency plot
+	 * @param enable enable/disable
+	 */
+	void EnablingNthFrameFunction(bool enable);
+
 
 
 
@@ -85,9 +94,18 @@ void SetFrequency();
  * @param enable to enable the scan group box
  * @param id is 0 if its scan level 0 or scan level 1
  */
-void EnableScanBox(int mode,int id);
+void EnableScanBox(int mode=-1,int id=-1);
 
+/** a variable is set when timing mode has been changed.
+ * This variable is also disabled if exptime>acq period to be on safe side
+ * Its to check whether to enabled nth frame for frequency plot
+ * @param enable enable/disable
+ */
+void EnableNthFrame(bool enable){enableNFrame = enable;};
 
+/** Sets the scan argument of the plot
+ */
+void SetScanArgument();
 
 
 private slots:
@@ -119,7 +137,6 @@ signals:
 void DisableZoomSignal(bool);
 void SetZRangeSignal(double,double);
 void EnableZRangeSignal(bool);
-void ThresholdScanSignal(int);
 };
 
 

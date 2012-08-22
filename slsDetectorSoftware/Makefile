@@ -1,6 +1,6 @@
 CFLAGS= -DC_ONLY 
 #FLAGS+=  #-DVERBOSE -DVERYVERBOSE
-#DFLAGS= -DDACS_INT
+DFLAGS= -DDACS_INT
 
 INCLUDES= -IcommonFiles -IslsDetector -IMySocketTCP -IusersFunctions -ImultiSlsDetector -IslsDetectorUtils -IslsDetectorCommand -IslsDetectorAnalysis
 

@@ -38,8 +38,8 @@ const int noneSelected=-1;
 sls_detector_module *detectorModules=NULL;
 int *detectorChips=NULL;
 int *detectorChans=NULL;
-float *detectorDacs=NULL;
-float *detectorAdcs=NULL;
+dacs_t *detectorDacs=NULL;
+dacs_t *detectorAdcs=NULL;
 //int numberOfProbes;
 
 
@@ -61,8 +61,8 @@ int initDetector() {
   detectorChips=malloc(n*NCHIP*sizeof(int));
 
   detectorChans=malloc(n*NCHIP*NCHAN*sizeof(int));
-  detectorDacs=malloc(n*NDAC*sizeof(float));
-  detectorAdcs=malloc(n*NADC*sizeof(float));
+  detectorDacs=malloc(n*NDAC*sizeof(dacs_t));
+  detectorAdcs=malloc(n*NADC*sizeof(dacs_t));
 #ifdef VERBOSE
   printf("modules from 0x%x to 0x%x\n",detectorModules, detectorModules+n);
   printf("chips from 0x%x to 0x%x\n",detectorChips, detectorChips+n*NCHIP);
@@ -440,6 +440,9 @@ int program_one_dac(int addr, int value, int imod) {
   //  sls_detector_module *myMod;
   control=9+addr; 
 
+  int ireg;
+
+
 
   printf("programming dac %d value %d module %d\n",addr, value,imod);
 #ifdef MAX5533
@@ -474,11 +477,15 @@ int program_one_dac(int addr, int value, int imod) {
 #endif
   idac=sDac*2+addr;
 
+
+  ireg=idac;
+
   if (idac==VCAL) {
     idac=RGPR;
   }  else if (idac==RGPR){
     idac=VCAL;
   }
+
 
   if (detectorDacs) {
     sMod=imod;
@@ -488,13 +495,13 @@ int program_one_dac(int addr, int value, int imod) {
     if (imod>=0 && imod<nModX) {
       //  myMod=detectorModules+imod;
       //(detectorModules+imod)->dacs[idac]=v;
-      detectorDacs[idac+NDAC*imod]=v;
+      detectorDacs[ireg+NDAC*imod]=v;
       //#ifdef VERBOSE  
 #ifdef VERBOSE
       printf("module=%d index=%d, val=%d addr=%x\n",imod, idac, v, detectorDacs+idac+NDAC*imod);
 #endif
 
-      setDACRegister(idac,v,imod);
+      setDACRegister(ireg,v,imod);
 
       /*
 
@@ -542,7 +549,7 @@ int program_one_dac(int addr, int value, int imod) {
       //#endif
     } else if (imod==ALLMOD) {
       for (im=0; im<nModX; im++) {
-	detectorDacs[idac+NDAC*im]=v;
+	detectorDacs[ireg+NDAC*im]=v;
 
 	/*
 #ifdef VERBOSE
@@ -592,7 +599,7 @@ int program_one_dac(int addr, int value, int imod) {
       printf("after setting dac %d module %d -- %x -- %x addr %d\n",idac, im, reg, bus_r(MOD_DACS2_REG+(im<<SHIFTMOD)));
 #endif
 	*/
-	setDACRegister(idac,v,im);
+	setDACRegister(ireg,v,im);
       }
     }
   }
@@ -640,12 +647,19 @@ int set_one_dac(int imod) {
   return OK;
 }
 
-float initDACbyIndex(int ind,float val, int imod) {
+dacs_t initDACbyIndex(int ind,dacs_t ival, int imod) {
   int v;
   const float partref[NDAC]=PARTREF;
   const float partr1[NDAC]=PARTR1;
   const float partr2[NDAC]=PARTR2;
  
+  float val;
+#ifdef DACS_INT  
+  val=((float)ival)*1E-3;
+#else
+  val=ival;
+#endif
+
   float ref=partref[ind];
   float r1=partr1[ind];
   float r2=partr2[ind];
@@ -657,10 +671,10 @@ float initDACbyIndex(int ind,float val, int imod) {
   return (v*DAC_MAX/DAC_DR+ref*r1/r2)/(1+r1/r2);
 }
 
-float initDACbyIndexDACU(int ind, int val, int imod) {
+dacs_t initDACbyIndexDACU(int ind, dacs_t val, int imod) {
  
-  const float daccs[NDAC]=DACCS;
-  const float dacaddr[NDAC]=DACADDR;
+  const int daccs[NDAC]=DACCS;
+  const int dacaddr[NDAC]=DACADDR;
  
   int cs=daccs[ind];
   int addr=dacaddr[ind];
@@ -820,7 +834,7 @@ int setThresholdEnergy(int ethr) {
 
 
 
-float getDACbyIndexDACU(int ind,  int imod) {
+dacs_t getDACbyIndexDACU(int ind,  int imod) {
   /*
   if (detectorDacs) {
     if (imod<getNModBoard())
@@ -923,7 +937,7 @@ int setSettings(int i) {
   irgsh2=detectorDacs[imod*NDAC+RGSH2];
 		  */
   
-  irgpr=setDACRegister(4,-1,imod);
+  irgpr=setDACRegister(RGPR,-1,imod);
   irgsh1=setDACRegister(RGSH1,-1,imod);
   irgsh2=setDACRegister(RGSH2,-1,imod);
   for (is=STANDARD; is<UNDEFINED; is++) {
@@ -936,7 +950,7 @@ int setSettings(int i) {
 #endif
   for (imod=1; imod<nModX; imod++) {
     if (isett!=UNDEFINED) {
-      irgpr=setDACRegister(4,-1,imod);
+      irgpr=setDACRegister(RGPR,-1,imod);
       irgsh1=setDACRegister(RGSH1,-1,imod);
       irgsh2=setDACRegister(RGSH2,-1,imod);
       /*

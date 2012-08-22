@@ -100,9 +100,9 @@ int set_one_dac(int imod);
 int initDAC(int dac_cs, int dac_addr, int value,int imod );
 int initDACs(int* v,int imod );
 int setSettings(int i);
-float initDACbyIndex(int ind,float val, int imod);
-float initDACbyIndexDACU(int ind,int val, int imod);
-float getDACbyIndexDACU(int ind,  int imod);
+dacs_t initDACbyIndex(int ind,dacs_t val, int imod);
+dacs_t initDACbyIndexDACU(int ind,dacs_t val, int imod);
+dacs_t getDACbyIndexDACU(int ind,  int imod);
 int getThresholdEnergy();
 int setThresholdEnergy(int ethr);
 /* Initialization*/

@@ -362,13 +362,13 @@ int sendModule(int file_des, sls_detector_module *myMod) {
 #ifdef VERBOSE
   printf("module %d of size %d sent\n",myMod->module, ts);
 #endif
-  ts+= sendDataOnly(file_des,myMod->dacs,sizeof(double)*nDacs);
+  ts+= sendDataOnly(file_des,myMod->dacs,sizeof(dacs_t)*nDacs);
 #ifdef VERBOSE
   printf("dacs %d of size %d sent\n",myMod->module, ts);
   for (idac=0; idac< nDacs; idac++) 
     printf("dac %d is %d\n",idac,myMod->dacs[idac]);
 #endif
-  ts+= sendDataOnly(file_des,myMod->adcs,sizeof(double)*nAdcs);
+  ts+= sendDataOnly(file_des,myMod->adcs,sizeof(dacs_t)*nAdcs);
 #ifdef VERBOSE
   printf("adcs %d of size %d sent\n",myMod->module, ts);
 #endif
@@ -432,15 +432,15 @@ int receiveChip(int file_des, sls_detector_chip* myChip) {
 int  receiveModule(int file_des, sls_detector_module* myMod) {
 
  
-  double *dacptr=myMod->dacs;
-  double *adcptr=myMod->adcs;
+  dacs_t *dacptr=myMod->dacs;
+  dacs_t *adcptr=myMod->adcs;
   int *chipptr=myMod->chipregs, *chanptr=myMod->chanregs;
   int ts=0;
   int nChips, nchipold=myMod->nchip, nchipdiff;
   int nChans, nchanold=myMod->nchan, nchandiff;
   int nDacs, ndold=myMod->ndac, ndacdiff;
   int nAdcs, naold=myMod->nadc, nadcdiff;
-
+  int id=0;
 
   ts+= receiveDataOnly(file_des,myMod,sizeof(sls_detector_module));
 
@@ -490,29 +490,33 @@ int  receiveModule(int file_des, sls_detector_module* myMod) {
     printf("received %d adcs\n",nAdcs);
 #endif
   if (ndacdiff<=0) {
-    ts+=receiveDataOnly(file_des,myMod->dacs, sizeof(double)*nDacs);
+    ts+=receiveDataOnly(file_des,myMod->dacs, sizeof(dacs_t)*nDacs);
 #ifdef VERBOSE 
     printf("dacs received\n");
+    for (id=0; id<nDacs; id++)
+      printf("dac %d val %d\n",id,  myMod->dacs[id]);
+
+
 #endif
   } else {
-    dacptr=malloc(ndacdiff*sizeof(double));
+    dacptr=malloc(ndacdiff*sizeof(dacs_t));
     myMod->ndac=ndold;
-    ts+=receiveDataOnly(file_des,myMod->dacs, sizeof(double)*ndold);
-    ts+=receiveDataOnly(file_des,dacptr, sizeof(double)*ndacdiff);
+    ts+=receiveDataOnly(file_des,myMod->dacs, sizeof(dacs_t)*ndold);
+    ts+=receiveDataOnly(file_des,dacptr, sizeof(dacs_t)*ndacdiff);
     free(dacptr);
     return FAIL;
   }
 
   if (nadcdiff<=0) {
-    ts+=receiveDataOnly(file_des,myMod->adcs, sizeof(double)*nAdcs);
+    ts+=receiveDataOnly(file_des,myMod->adcs, sizeof(dacs_t)*nAdcs);
 #ifdef VERBOSE 
     printf("adcs received\n");
 #endif
   } else {
-    adcptr=malloc(nadcdiff*sizeof(double));
+    adcptr=malloc(nadcdiff*sizeof(dacs_t));
     myMod->nadc=naold;
-    ts+=receiveDataOnly(file_des,myMod->adcs, sizeof(double)*naold);
-    ts+=receiveDataOnly(file_des,adcptr, sizeof(double)*nadcdiff);
+    ts+=receiveDataOnly(file_des,myMod->adcs, sizeof(dacs_t)*naold);
+    ts+=receiveDataOnly(file_des,adcptr, sizeof(dacs_t)*nadcdiff);
     free(adcptr);
     return FAIL;
   }

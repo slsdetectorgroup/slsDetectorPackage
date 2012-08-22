@@ -14,6 +14,7 @@ SRCS= 		 server.c server_funcs.c communication_funcs.c firmware_funcs.c mcb_func
 OBJS= 	$(SRCS:%.c=%.o) 
 
 CFLAGS+= 	-Wall -DC_ONLY -DMCB_FUNCS -DVERBOSE 
+#-DDACS_INT
 #-DVERYVERBOSE 
 #-Werror
 

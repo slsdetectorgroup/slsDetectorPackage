@@ -1,5 +1,7 @@
 CFLAGS= -DC_ONLY 
-FLAGS+= -DDACS_INT #-DVERBOSE -DVERYVERBOSE
+#FLAGS+=  #-DVERBOSE -DVERYVERBOSE
+#DFLAGS= -DDACS_INT
+
 INCLUDES= -IcommonFiles -IslsDetector -IMySocketTCP -IusersFunctions -ImultiSlsDetector -IslsDetectorUtils -IslsDetectorCommand -IslsDetectorAnalysis
 
 #EPICSFLAGS=-D EPICS -I/usr/local/epics/base/include/ -I /usr/local/epics/base/include/os/Linux/ -L /usr/local/epics/base/lib/SL5-x86/ -Wl,-R/usr/local/epics/base/lib/SL5-x86  -lca -lCom 
@@ -25,23 +27,23 @@ doc: $(SRC_H) $(SRC_CLNT)
 
 
 mythenServer:  $(SRC_MYTHEN_SVC) 
-	$(CC)  $(SRC_MYTHEN_SVC)  $(CFLAGS) $(FLAGS) $(INCLUDES) -ImythenDetectorServer -DVIRTUAL -lm -D MCB_FUNCS -DC_ONLY -DVERBOSE
+	$(CC)  $(SRC_MYTHEN_SVC)  $(CFLAGS) $(FLAGS) $(DFLAGS) $(INCLUDES) -ImythenDetectorServer -DVIRTUAL -lm -D MCB_FUNCS -DC_ONLY -DVERBOSE
 	mv a.out mythenServer
 
 
 picassoServer:  $(SRC_MYTHEN_SVC) 
-	$(CC)  $(SRC_MYTHEN_SVC)  $(CFLAGS) $(FLAGS) $(INCLUDES) -ImythenDetectorServer -D VIRTUAL -lm -DMCB_FUNCS -DPICASSOD -DC_ONLY
+	$(CC)  $(SRC_MYTHEN_SVC)  $(CFLAGS) $(FLAGS) $(DFLAGS) $(INCLUDES) -ImythenDetectorServer -D VIRTUAL -lm -DMCB_FUNCS -DPICASSOD -DC_ONLY
 	mv a.out  picassoServer
 
 
 
 
 %.o : %.cpp %.h
-	$(CXX) -Wall -o $@ -c $< $(INCLUDES) $(FLAGS)  $(EPICSFLAGS)
+	$(CXX) -Wall -o $@ -c $< $(INCLUDES) $(DFLAGS) $(FLAGS)  $(EPICSFLAGS)
 
 
 package: $(OBJS)
-	$(CXX) -shared -Wl,-soname,libSlsDetector.so -o libSlsDetector.so  $(OBJS)  -lc $(INCLUDES) $(FLAGS) $(EPICSFLAGS)
+	$(CXX) -shared -Wl,-soname,libSlsDetector.so -o libSlsDetector.so  $(OBJS)  -lc $(INCLUDES) $(DFLAGS) $(FLAGS) $(EPICSFLAGS)
 	ar  rcs libSlsDetector.a  $(OBJS)
 
 clean:

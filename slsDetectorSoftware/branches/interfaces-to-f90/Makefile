@@ -68,5 +68,5 @@ install_doc: doc
 	$(shell test -d $(DESTDIR) || mkdir -p $(DESTDIR))
 	cp -Pr docs/* $(DESTDIR)  
 
-dummy:    
-	echo dummy
+dummy1:    
+	echo dummy1

@@ -66,7 +66,7 @@ void qCloneWidget::SetupWidgetWindow(QString title,int numDim,SlsQt1DPlot*& plot
 	cloneBox->setContentsMargins(0,0,0,0);
 		cloneBox->setTitle(title);
 		cloneBox->setAlignment(Qt::AlignHCenter);
-		cloneBox->setFont(QFont("Sans Serif",11,QFont::Bold));
+		cloneBox->setFont(QFont("Sans Serif",11,QFont::Normal));
 	/** According to dimensions, create appropriate 1D or 2Dplot */
 	if(numDim==1){
 		cloneplot1D = plot1D;
@@ -81,49 +81,6 @@ void qCloneWidget::SetupWidgetWindow(QString title,int numDim,SlsQt1DPlot*& plot
 		cloneBox->setFlat(true);
 		cloneBox->setContentsMargins(0,5,0,0);
 	}
-
-	/** Save group box */
-/*
-	boxSave = new QGroupBox("Save Image",this);
-	boxSave->setFixedHeight(45);
-	boxSave->setContentsMargins(0,8,0,0);
-    layoutSave = new QHBoxLayout;
-    boxSave->setLayout(layoutSave);
-    	* Label file name
-        lblFName = new QLabel("File Name:",this);
-        layoutSave->addWidget(lblFName);
-        * To get 0 spacing between the next 2 widgets file name and file format
-        hLayoutSave = new QHBoxLayout();
-        layoutSave->addLayout(hLayoutSave);
-        	hLayoutSave->setSpacing(0);
-        	* file name
-        	dispFName = new QLineEdit(this);
-        	dispFName->setSizePolicy(QSizePolicy::Fixed,QSizePolicy::Fixed);
-        	hLayoutSave->addWidget(dispFName);
-        	* file format
-        	comboFormat = new QComboBox(this);
-        	comboFormat->setFrame(true);
-        	comboFormat->addItem(".gif");
-        	comboFormat->addItem(".pdf");
-	    	comboFormat->addItem(".png");
-	    	comboFormat->addItem(".gif+");
-	    	comboFormat->addItem(".jpg");
-	    	comboFormat->addItem(".ps");
-	    	comboFormat->addItem(".eps");
-	    	comboFormat->addItem(".xpm");
-	    	comboFormat->addItem(".C");
-	    	hLayoutSave->addWidget(comboFormat);
-	    * save button
-	    btnSave = new QPushButton("Save",this);
-	    btnSave->setFocusPolicy(Qt::NoFocus);
-	    layoutSave->addWidget(btnSave);
-	    * automatic file name check box
-	    chkAutoFName = new QCheckBox("Automatic File Name",this);
-	    layoutSave->addWidget(chkAutoFName);
-	    * automatic save all check box
-	    chkSaveAll = new QCheckBox("Save All",this);
-	    layoutSave->addWidget(chkSaveAll);
-*/
 
 	/** main window widgets */
 	//mainLayout->addWidget(boxSave,0,0);
@@ -192,6 +149,22 @@ void qCloneWidget::SavePlot(){
     				"Formats: .png, .jpg, .xpm.","Snapshot");
 }
 
+
+//-------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+int qCloneWidget::SavePlotAutomatic(){
+	char cID[10];
+	sprintf(cID,"%d",id);
+	QString fName = QString(filePath.c_str())+"/Snapshot_"+QString(cID)+".png";
+	QImage img(cloneBox->size().width(),cloneBox->size().height(),QImage::Format_RGB32);
+	QPainter painter(&img);
+	cloneBox->render(&painter);
+	if(img.save(fName))
+		return 0;
+	else return -1;
+
+}
 //-------------------------------------------------------------------------------------------------------------------------------------------------
 
 void qCloneWidget::closeEvent(QCloseEvent* event){

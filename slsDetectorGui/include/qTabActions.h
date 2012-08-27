@@ -12,9 +12,9 @@
 /* Qt Project Class Headers */
 #include "qActionsWidget.h"
 #include "qScanWidget.h"
-/** Project Class Headers */
+/** C++ Project Class Headers */
 class multiSlsDetector;
-class qActionsWidget;
+#include "sls_detector_defs.h"
 /** Qt Include Headers */
 #include <QWidget>
 #include <QPushButton>
@@ -48,10 +48,18 @@ public:
 	 */
 	void Refresh();
 
+public slots:
+/** Disable Positions
+ * @param enable true if to disable
+ * */
+void EnablePositions(bool enable);
+
 
 private:
 	/** The sls detector object */
 	multiSlsDetector *myDet;
+
+	slsDetectorDefs::detectorType detType;
 
 	enum actionIndex{Scan0=1, Scan1, NumPositions=4, NumTotalActions=9};
 
@@ -111,7 +119,7 @@ void SetPosition();
 void DeletePosition();
 
 signals:
-void EnableScanBox(int,int);
+void EnableScanBox();
 
 };
 

@@ -27,6 +27,7 @@ class qCloneWidget;
 
 /** C++ Include Headers */
 
+
 #define MAX_1DPLOTS 10
 
 
@@ -120,8 +121,12 @@ void Clear1DPlot();
 void ClonePlot();
 /** Closes all the clone plots */
 void CloseClones();
+/** Saves all the clone plots */
+void SaveClones();
 /** To Save plot */
 void SavePlot();
+/** Save all plots **/
+void SaveAll(bool enable);
 /**	Sets persistency from plot tab */
 void SetPersistency(int val);
 /**	sets style of plot to dotted */
@@ -168,9 +173,8 @@ static void* DataStartAcquireThread(void *this_pointer);
 static int GetDataCallBack(detectorData *data, void *this_pointer);
 /**	This is called by the GetDataCallBack function to copy the data */
 int GetData(detectorData *data);
-
-
-
+/** Saves all the plots. All sets saveError to true if not saved.*/
+void SavePlotAutomatic();
 
 
 
@@ -187,9 +191,12 @@ void StartDaq(bool start);
 /** To set the reference to zero after closing a clone
  * @param id is the id of the clone */
 void CloneCloseEvent(int id);
-
+/**After a pause, the gui is allowed to collect the data
+ * this is called when it is over */
 void UpdatePause(){data_pause_over=true;};
-
+/** Shows the first save error message while automatic saving
+ * @param fileName file name of the first file that it tried to save.*/
+void ShowSaveErrorMessage(QString fileName);
 
 
 
@@ -233,12 +240,19 @@ int currentMeasurement;
 int currentFrame;
 /** current Index */
 int currentIndex;
+/** current Scan Division Level */
+int currentScanDivLevel;
+/** current scan Value */
+double currentScanValue;
 /**	 Number of Exposures */
 int number_of_exposures;
+/** Number of Frames Per Measurement */
+int number_of_frames;
 /**	 Duration between Exposures */
 double acquisitionPeriod;
 /**	 Acquisition Time */
 double exposureTime;
+
 
 
 /**variables for threads */
@@ -266,8 +280,19 @@ std::string  imageTitle;
 unsigned int plot_in_scope;
 /**	Number of Pixels in X Axis */
 unsigned int nPixelsX;
-/**	Number of Pixels in Y Axis */
-unsigned int nPixelsY;
+/**	Number of pixel bins in Y Axis */
+int nPixelsY;
+/** Min Pixel number for Y Axis*/
+double minPixelsY;
+/** Max Pixel number for Y Axis*/
+double maxPixelsY;
+/** starting pixel */
+double startPixel;
+/** end Pixel*/
+double endPixel;
+/** pixel width */
+double pixelWidth;
+
 /**	Current Image Number */
 unsigned int lastImageNumber;
 int last_plot_number;
@@ -299,8 +324,14 @@ int progress;
 bool plotEnable;
 /**If plot is dotted */
 bool plotDotted;
-
-
+/** Save all plots */
+bool saveAll;
+/** If error, while automatically saving plots, checks this at the end of an acquistion */
+bool saveError;
+/** index of last saved image for automatic saving*/
+int lastSavedFrame;
+/** index of measurement number of last saved image for automatic saving*/
+int lastSavedMeasurement;
 /**if an acquisition is running, so as not to refresh tab
  * and also to update plot only if running (while creating clones)*/
 bool running;
@@ -319,9 +350,6 @@ static const double PLOT_TIMER_MS = 250;
 double timerValue;
 /** every nth frame when to plot */
 int frameFactor;
-/** old data that did not get lock(for frame factor)**/
-bool oldCopy;
-int oldFrameNumber;
 /**if frame is enabled in measurement tab */
 bool isFrameEnabled;
 /**if trigger is enabled in measurement tab */
@@ -341,6 +369,7 @@ void LogzSignal(bool);
 void SetZRangeSignal(double,double);
 void EnableZRangeSignal(bool);
 void SetCurrentMeasurementSignal(int);
+void saveErrorSignal(QString);
 };
 
 

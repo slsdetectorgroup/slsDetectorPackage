@@ -94,6 +94,20 @@ void qTabPlot::SetupWidgetWindow(){
 	dispYMax->setValidator(new QDoubleValidator(dispYMax));
 	dispZMax->setValidator(new QDoubleValidator(dispZMax));
 
+	//default titles
+	dispTitle->setText(defaultPlotTitle);
+	myPlot->SetPlotTitle(defaultPlotTitle);
+	dispXAxis->setText(defaultHistXAxisTitle);
+	dispYAxis->setText(defaultHistYAxisTitle);
+	myPlot->SetHistXAxisTitle(defaultHistXAxisTitle);
+	myPlot->SetHistYAxisTitle(defaultHistYAxisTitle);
+	dispXAxis->setText(defaultImageXAxisTitle);
+	dispYAxis->setText(defaultImageYAxisTitle);
+	dispZAxis->setText(defaultImageZAxisTitle);
+	myPlot->SetImageXAxisTitle(defaultImageXAxisTitle);
+	myPlot->SetImageYAxisTitle(defaultImageYAxisTitle);
+	myPlot->SetImageZAxisTitle(defaultImageZAxisTitle);
+
 	// Plotting Frequency
 
 	stackedLayout = new QStackedLayout;
@@ -147,18 +161,12 @@ void qTabPlot::SetupWidgetWindow(){
 
 void qTabPlot::Select1DPlot(bool b){
 	isOneD = b;
-	dispTitle->setText(defaultPlotTitle);
-	myPlot->SetPlotTitle(defaultPlotTitle);
 	if(b){
 		box1D->show();
 		box2D->hide();
 		chkZAxis->setEnabled(false);
 		chkZMin->setEnabled(false);
 		chkZMax->setEnabled(false);
-		dispXAxis->setText(defaultHistXAxisTitle);
-		dispYAxis->setText(defaultHistYAxisTitle);
-		myPlot->SetHistXAxisTitle(defaultHistXAxisTitle);
-		myPlot->SetHistYAxisTitle(defaultHistYAxisTitle);
 		myPlot->Select1DPlot();
 	}else{
 		box1D->hide();
@@ -166,15 +174,8 @@ void qTabPlot::Select1DPlot(bool b){
 		chkZAxis->setEnabled(true);
 		chkZMin->setEnabled(true);
 		chkZMax->setEnabled(true);
-		dispXAxis->setText(defaultImageXAxisTitle);
-		dispYAxis->setText(defaultImageYAxisTitle);
-		dispZAxis->setText(defaultImageZAxisTitle);
-		myPlot->SetImageXAxisTitle(defaultImageXAxisTitle);
-		myPlot->SetImageYAxisTitle(defaultImageYAxisTitle);
-		myPlot->SetImageZAxisTitle(defaultImageZAxisTitle);
 		myPlot->Select2DPlot();
 	}
-
 }
 
 
@@ -188,9 +189,11 @@ void qTabPlot::Initialization(){
 	connect(radioDataGraph, SIGNAL(toggled(bool)),this, SLOT(SetPlot()));
 // Scan box
 	connect(btnGroupScan, SIGNAL(buttonClicked(QAbstractButton *)),this, SLOT(SetScanArgument()));
+	connect(boxScan,	  SIGNAL(toggled(bool)),				   this, SLOT(EnableScanBox()));
 // Snapshot box
 	connect(btnClone, 		SIGNAL(clicked()),myPlot, 	SLOT(ClonePlot()));
 	connect(btnCloseClones, SIGNAL(clicked()),myPlot, 	SLOT(CloseClones()));
+	connect(btnSaveClones,	SIGNAL(clicked()),myPlot, 	SLOT(SaveClones()));
 // 1D Plot box
 	connect(chkSuperimpose, SIGNAL(toggled(bool)),		this, SLOT(EnablePersistency(bool)));
 	connect(spinPersistency,SIGNAL(valueChanged(int)),	myPlot,SLOT(SetPersistency(int)));
@@ -228,12 +231,14 @@ void qTabPlot::Initialization(){
 	connect(dispYMax, 		SIGNAL(returnPressed()), this, 	SLOT(SetAxesRange()));
 	connect(dispZMin, 		SIGNAL(returnPressed()), this, 	SLOT(SetZRange()));
 	connect(dispZMax, 		SIGNAL(returnPressed()), this, 	SLOT(SetZRange()));
+// Save
+	connect(btnSave, 		SIGNAL(clicked()),		myPlot,	SLOT(SavePlot()));
+	connect(chkSaveAll, 	SIGNAL(toggled(bool)),	myPlot,	SLOT(SaveAll(bool)));
 
 	connect(this,SIGNAL(SetZRangeSignal(double,double)),myPlot, SIGNAL(SetZRangeSignal(double,double)));
 
-// Common Buttons
-// Save
-	connect(btnSave, 		SIGNAL(clicked()),		myPlot,	SLOT(SavePlot()));
+
+
 }
 
 
@@ -485,7 +490,7 @@ void qTabPlot::SetFrequency(){
 //-------------------------------------------------------------------------------------------------------------------------------------------------
 
 
-void qTabPlot::EnableScanBox(int mode,int id){
+void qTabPlot::EnableScanBox(){
 #ifdef VERYVERBOSE
 	cout << "Entering Enable Scan Box() \t mode:" << mode << " \t id:" << id << endl;
 #endif
@@ -493,25 +498,42 @@ void qTabPlot::EnableScanBox(int mode,int id){
 	int mode0 = myDet->getScanMode(0);
 	int mode1 = myDet->getScanMode(1);
 
+	//if it was checked before or disabled before, it remembers to check it again
+	bool checkedBefore = (boxScan->isChecked()||(!boxScan->isEnabled()));
+	//only now enable/disable
 	boxScan->setEnabled(mode0||mode1);
 
+	//if there are scan
 	if(boxScan->isEnabled()){
 		//make sure nth frame frequency plot is disabled
 		EnablingNthFrameFunction(false);
 
-		//if level0 or 1, check argument to find which scan enabled last from actions tab
-		if((btnGroupScan->checkedId()!=2)&&(btnGroupScan->checkedId()!=3)){
-			cout<<"mode:"<<mode<<" id:"<<id<<endl;
-			//if mode is not none(doesnt check them if called form refresh)
-			if(mode>0){
-				if(!id) radioLevel0->setChecked(true);
-				else radioLevel1->setChecked(true);
+		//if 2d is chosen or not for scan
+		if(boxScan->isChecked()){
+
+			boxScan->setChecked(checkedBefore);
+			//make sure nth frame frequency plot is disabled
+			EnablingNthFrameFunction(false);
+
+			//
+			if(mode0 && mode1){
+				if(!radioFileIndex->isChecked())	radioAllFrames->setChecked(true);
+				radioLevel0->setEnabled(false);
+				radioLevel1->setEnabled(false);
+			}else{
+				radioLevel0->setEnabled(mode0);
+				radioLevel1->setEnabled(mode1);
+			}
+
+			//only if level0 or level1 is checked
+			if((radioLevel0->isChecked())||(radioLevel1->isChecked())){
+				if(mode0)	radioLevel0->setChecked(true);
+				if(mode1)	radioLevel1->setChecked(true);
 			}
 		}
+	}
+	else EnablingNthFrameFunction(enableNFrame);
 
-		radioLevel0->setEnabled(mode0);
-		radioLevel1->setEnabled(mode1);
-	}else EnablingNthFrameFunction(enableNFrame);
 
 	//sets the scan argument
 	SetScanArgument();
@@ -542,13 +564,13 @@ void qTabPlot::EnablingNthFrameFunction(bool enable){
 }
 
 //-------------------------------------------------------------------------------------------------------------------------------------------------
-
+/** What happens for 2d????*/
 void qTabPlot::SetScanArgument(){
 
 	//as default from histogram and default titles are set here if scanbox is disabled
 	Select1DPlot(isOrginallyOneD);
 
-	//this function is also called just to update, could be no scan
+	//if scans
 	if(boxScan->isEnabled()){
 
 		//setting the title according to the scans
@@ -556,52 +578,58 @@ void qTabPlot::SetScanArgument(){
 							QString("   |   Level 1 : ") + modeNames[myDet->getScanMode(1)] + QString("");
 		dispTitle->setText(mainTitle);
 		myPlot->SetPlotTitle(mainTitle);
+	}else{
+		dispTitle->setText(defaultPlotTitle);
+		myPlot->SetPlotTitle(defaultPlotTitle);
+		dispXAxis->setText(defaultHistXAxisTitle);
+		dispYAxis->setText(defaultHistYAxisTitle);
+		myPlot->SetHistXAxisTitle(defaultHistXAxisTitle);
+		myPlot->SetHistYAxisTitle(defaultHistYAxisTitle);
+		dispXAxis->setText(defaultImageXAxisTitle);
+		dispYAxis->setText(defaultImageYAxisTitle);
+		dispZAxis->setText(defaultImageZAxisTitle);
+		myPlot->SetImageXAxisTitle(defaultImageXAxisTitle);
+		myPlot->SetImageYAxisTitle(defaultImageYAxisTitle);
+		myPlot->SetImageZAxisTitle(defaultImageZAxisTitle);
+	}
 
+	//for 2d
+	if((boxScan->isEnabled())&&(boxScan->isChecked())){
 
 		//let qdrawplot know which scan argument
 		myPlot->SetScanArgument(btnGroupScan->checkedId()+1);
-		/** What happens for 2d????*/
-		//settings the x and y titles
+
+		//default titles  for 2d scan
+		dispXAxis->setText("Channel Number");
+		myPlot->SetImageXAxisTitle("Channel Number");
+		dispZAxis->setText("Counts");
+		myPlot->SetImageZAxisTitle("Counts");
+
+		//titles for y of 2d scan
 		switch(btnGroupScan->checkedId()){
-		//level0
-		case 0:
-			dispXAxis->setText("Channel Number");
+		case 0://level0
 			dispYAxis->setText("Scan Level 0");
-			myPlot->SetHistXAxisTitle("Channel Number");
-			myPlot->SetHistYAxisTitle("Scan Level 0");
-			myPlot->Select1DPlot();
+			myPlot->SetImageYAxisTitle("Scan Level 0");
 			break;
-
-			//level1
-		case 1:
-			dispXAxis->setText("Channel Number");
+		case 1://level1
 			dispYAxis->setText("Scan Level 1");
-			myPlot->SetHistXAxisTitle("Channel Number");
-			myPlot->SetHistYAxisTitle("Scan Level 1");
-			myPlot->Select1DPlot();
+			myPlot->SetImageYAxisTitle("Scan Level 1");
 			break;
-
-			//file index
-		case 2:
-			dispXAxis->setText("Channel Number");
+			break;
+		case 2://file index
 			dispYAxis->setText("File Index");
-			myPlot->SetHistXAxisTitle("Channel Number");
-			myPlot->SetHistYAxisTitle("File Index");
-			myPlot->Select1DPlot();
+			myPlot->SetImageYAxisTitle("File Index");
 			break;
-
-		//all frames
-		case 3:
-			Select1DPlot(false);
-			dispXAxis->setText("Channel Number");
-			dispYAxis->setText("Threshold");
-			dispZAxis->setText("Intensity");
-			myPlot->SetImageXAxisTitle("Channel Number");
-			myPlot->SetImageYAxisTitle("Threshold");
-			myPlot->SetImageZAxisTitle("Intensity");
-			myPlot->Select2DPlot();
+		case 3://all frames
+			dispYAxis->setText("All Frames");
+			myPlot->SetImageYAxisTitle("All Frames");
 			break;
 		}
+
+		//set plot to 2d
+		Select1DPlot(false);
+		myPlot->Select2DPlot();
+
 	}else //done here so that it isnt set by default each time
 		myPlot->SetScanArgument(0);
 

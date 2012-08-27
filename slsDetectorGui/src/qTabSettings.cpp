@@ -17,7 +17,7 @@ using namespace std;
 //-------------------------------------------------------------------------------------------------------------------------------------------------
 
 qTabSettings::qTabSettings(QWidget *parent,multiSlsDetector*& detector,int detID):
-		QWidget(parent),myDet(detector),detID(detID), expertMode(false){
+		QWidget(parent),myDet(detector),detID(detID){
 
 	setupUi(this);
 	SetupWidgetWindow();
@@ -172,9 +172,9 @@ void qTabSettings::setSettings(int index){
 			lblThreshold->setEnabled(false);
 			spinThreshold->setEnabled(false);
 		}else{
-			lblThreshold->setEnabled(expertMode);
-			spinThreshold->setEnabled(expertMode);
-			if(expertMode)  SetEnergy();
+			lblThreshold->setEnabled(true);
+			spinThreshold->setEnabled(true);
+			SetEnergy();
 		}
 	}
 }
@@ -273,9 +273,9 @@ void qTabSettings::Refresh(){
 			lblThreshold->setEnabled(false);
 			spinThreshold->setEnabled(false);
 		}else{
-			lblThreshold->setEnabled(expertMode);
-			spinThreshold->setEnabled(expertMode);
-			if(expertMode) SetEnergy();
+			lblThreshold->setEnabled(true);
+			spinThreshold->setEnabled(true);
+			SetEnergy();
 		}
 	}
 

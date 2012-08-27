@@ -65,6 +65,11 @@ public:
 	 * */
 	void SetCloneHists(int nHists,int histNBins,double* histXAxis,double* histYAxis[],string histTitle[]);
 
+public slots:
+/** Save Plots automatically by save all clones
+ * returns -1 if fail*/
+int SavePlotAutomatic();
+
 
 private:
 	/**	clone window id*/

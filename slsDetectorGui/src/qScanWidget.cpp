@@ -385,7 +385,7 @@ int qScanWidget::SetScan(int mode){
 		}
 	}
 
-	emit EnableScanBox(actualMode,id);
+	emit EnableScanBox();
 
 	return qDefs::OK;
 }

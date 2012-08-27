@@ -145,7 +145,7 @@ void BrowseFileStepsPath();
 
 
 signals:
-void EnableScanBox(int,int);
+void EnableScanBox();
 };
 
 

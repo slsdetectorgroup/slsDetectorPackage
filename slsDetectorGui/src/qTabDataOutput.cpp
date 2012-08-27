@@ -343,16 +343,21 @@ void qTabDataOutput::SetAngularCorrection(){
 	cout << "Entering Set Angular Correction function" << endl;
 #endif
 	if(chkAngular->isChecked()){
-		myDet->setAngularConversionFile("default");
+		if(myDet->setAngularConversionFile("default")){
 #ifdef VERBOSE
 		cout << "Setting angular conversion to default"  << endl;
 #endif
+		}else{
+			qDefs::WarningMessage("Angular Conversion could not be set.","Data Output");
+			chkAngular->setChecked(false);
+		}
 	}else{
 		myDet->setAngularConversionFile("");
 #ifdef VERBOSE
 		cout << "Unsetting angular correction" << endl;
 #endif
 	}
+	emit AngularConversionSignal(chkAngular->isChecked());
 }
 
 
@@ -393,6 +398,7 @@ void qTabDataOutput::Refresh(){
 		int ang;
 		if(myDet->getAngularConversion(ang))
 			chkAngular->setChecked(true);
+		emit AngularConversionSignal(chkAngular->isChecked());
 	}
 	//discard bad channels from server
 	if(myDet->getBadChannelCorrection()) chkDiscardBad->setChecked(true);

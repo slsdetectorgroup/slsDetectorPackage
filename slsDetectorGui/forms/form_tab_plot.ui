@@ -487,13 +487,13 @@
     </rect>
    </property>
    <property name="title">
-    <string>Scan  -  Y Axis Values</string>
+    <string>2D Scan  -  Y Axis Values</string>
    </property>
    <property name="checkable">
-    <bool>false</bool>
+    <bool>true</bool>
    </property>
    <property name="checked">
-    <bool>false</bool>
+    <bool>true</bool>
    </property>
    <widget class="QWidget" name="horizontalLayoutWidget_3">
     <property name="geometry">
@@ -1443,7 +1443,7 @@
       </spacer>
      </item>
      <item row="0" column="4">
-      <widget class="QPushButton" name="btnCloseClones_2">
+      <widget class="QPushButton" name="btnSaveClones">
        <property name="enabled">
         <bool>true</bool>
        </property>

@@ -92,6 +92,10 @@ void SetAngularCorrection();
 
 /**discard bad channels*/
 void DiscardBadChannels();
+
+signals:
+/**signal to enable/disable positions in Actions*/
+void AngularConversionSignal(bool);
 };
 
 

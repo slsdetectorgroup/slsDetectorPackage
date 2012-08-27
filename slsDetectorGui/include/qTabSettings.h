@@ -38,12 +38,6 @@ public:
 	 */
 	void Refresh();
 
-	/** enable expert mode
-	 *  @param enable true if expert mode is enabled
-	 */
-	void EnableExpertMode(bool enable){expertMode=enable;Refresh();};
-
-
 
 private:
 	/** The sls detector object */
@@ -55,7 +49,7 @@ private:
 	/** detector type */
 	slsDetectorDefs::detectorType detType;
 
-	bool expertMode;
+
 
 	enum{Standard,Fast,HighGain,DynamicGain,LowGain,MediumGain,VeryHighGain,Undefined,Uninitialized,NumSettings};
 

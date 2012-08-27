@@ -81,13 +81,6 @@ void qTabActions::SetupWidgetWindow(){
 		btnExpand[i]->setToolTip(tip);
 		group->addButton(btnExpand[i],i);
 
-		//Number of positions is only for mythen or gotthard
-		slsDetectorDefs::detectorType detType = myDet->getDetectorsType();
-		if((detType == slsDetectorDefs::EIGER) || (detType == slsDetectorDefs::AGIPD)) {
-			lblName[NumPositions]->setEnabled(false);
-			btnExpand[NumPositions]->setEnabled(false);
-		}
-
 		//add the widgets to the layout , depending on the type create the widgets
 		gridLayout->addWidget(btnExpand[i],(i*2),0);
 		gridLayout->addWidget(lblName[i],(i*2),1);
@@ -108,6 +101,21 @@ void qTabActions::SetupWidgetWindow(){
 		//gridLayout->addWidget(btnExpand[i],(i*2),i);
 		//gridLayout->addWidget(lblName[i],(i*2),i+1);
 		//gridLayout->addWidget(actionWidget[i],(i*2)+1,i+1,1,2);
+
+	}
+
+	//Number of positions is only for mythen or gotthard
+	detType = myDet->getDetectorsType();
+	if((detType == slsDetectorDefs::EIGER) || (detType == slsDetectorDefs::AGIPD)) {
+		lblName[NumPositions]->setEnabled(false);
+		btnExpand[NumPositions]->setEnabled(false);
+	}else{
+		//disable positions if angular conversion is enabled
+		int ang;
+		if(!myDet->getAngularConversion(ang)){
+			lblName[NumPositions]->setEnabled(false);
+			btnExpand[NumPositions]->setEnabled(false);
+		}
 
 	}
 
@@ -181,7 +189,7 @@ void qTabActions::Initialization(){
 	connect(group,				SIGNAL(buttonClicked(QAbstractButton*)),	this,SLOT(Expand(QAbstractButton*)));
 	//enable scan box in plot tab
 	for(int i=0;i<qScanWidget::NUM_SCAN_WIDGETS;i++)
-		connect(scanWidget[i],	SIGNAL(EnableScanBox(int,int)),	this,SIGNAL(EnableScanBox(int,int)));
+		connect(scanWidget[i],	SIGNAL(EnableScanBox()),			this,SIGNAL(EnableScanBox()));
 	//positions
 	connect(comboPos,		SIGNAL(currentIndexChanged(int)), 		this, SLOT(SetPosition()));
 	connect(spinNumPos,		SIGNAL(valueChanged(int)), 				this, SLOT(SetPosition()));
@@ -303,43 +311,69 @@ void qTabActions::DeletePosition(){
 
 //-------------------------------------------------------------------------------------------------------------------------------------------------
 
+void qTabActions::EnablePositions(bool enable){
+#ifdef VERBOSE
+	cout << "\nEnable Positions: " << enable << endl;
+#endif
+	if(enable){
+		lblName[NumPositions]->setEnabled(true);
+		btnExpand[NumPositions]->setEnabled(true);
+	}else{
+		//to collapse if it was expanded
+		if(btnExpand[NumPositions]->text()=="-")
+			Expand(group->button(NumPositions));
+		comboPos->clear();
+		lblName[NumPositions]->setPalette(lblName[NumPositions-1]->palette());
+		lblName[NumPositions]->setEnabled(false);
+		btnExpand[NumPositions]->setEnabled(false);
+	}
+}
+
+
+//-------------------------------------------------------------------------------------------------------------------------------------------------
+
 
 void qTabActions::Refresh(){
 #ifdef VERBOSE
 	cout << "\nUpdating all action widgets " << endl;
 #endif
-	if(lblName[NumPositions]->isEnabled()){
-		//delete existing positions
-		if (positions)  delete [] positions;
-		//get number of positions
-		int numPos=myDet->getPositions();
-		comboPos->setMaxCount(numPos);
+	if((detType == slsDetectorDefs::MYTHEN) || (detType == slsDetectorDefs::GOTTHARD)){
+		//positions is enabled only if angular conversion is enabled
+		int ang; if(!myDet->getAngularConversion(ang))	EnablePositions(false);
 
-		//set the number of positions in the gui
-		disconnect(spinNumPos,	SIGNAL(valueChanged(int)), 	this, SLOT(SetPosition()));
-		spinNumPos->setValue(numPos);
-		connect(spinNumPos,		SIGNAL(valueChanged(int)), 	this, SLOT(SetPosition()));
+		if(lblName[NumPositions]->isEnabled()){
+			//delete existing positions
+			if (positions)  delete [] positions;
+			//get number of positions
+			int numPos=myDet->getPositions();
+			comboPos->setMaxCount(numPos);
 
-		positions=new double[numPos];
-		//load the positions
-		myDet->getPositions(positions);
+			//set the number of positions in the gui
+			disconnect(spinNumPos,	SIGNAL(valueChanged(int)), 	this, SLOT(SetPosition()));
+			spinNumPos->setValue(numPos);
+			connect(spinNumPos,		SIGNAL(valueChanged(int)), 	this, SLOT(SetPosition()));
 
-		//delete the combolist and reload it
-		disconnect(comboPos,SIGNAL(currentIndexChanged(int)), this, SLOT(SetPosition()));
-		comboPos->setEnabled(numPos);
-		lblPosList->setEnabled(numPos);
-		lblPosList->setText("List of Positions: ");
-		lblPosList->setPalette(normal);
-		for(int i=0;i<comboPos->count();i++)
-			comboPos->removeItem(i);
-		for(int i=0;i<numPos;i++)
-			comboPos->insertItem(i,QString("%1").arg(positions[i]));
-		connect(comboPos,	SIGNAL(currentIndexChanged(int)), this, SLOT(SetPosition()));
+			positions=new double[numPos];
+			//load the positions
+			myDet->getPositions(positions);
+
+			//delete the combolist and reload it
+			disconnect(comboPos,SIGNAL(currentIndexChanged(int)), this, SLOT(SetPosition()));
+			comboPos->setEnabled(numPos);
+			lblPosList->setEnabled(numPos);
+			lblPosList->setText("List of Positions: ");
+			lblPosList->setPalette(normal);
+			for(int i=0;i<comboPos->count();i++)
+				comboPos->removeItem(i);
+			for(int i=0;i<numPos;i++)
+				comboPos->insertItem(i,QString("%1").arg(positions[i]));
+			connect(comboPos,	SIGNAL(currentIndexChanged(int)), this, SLOT(SetPosition()));
 
 
 #ifdef VERBOSE
-	cout << "Updated position widget\tnum:" << numPos << endl << endl;
+			cout << "Updated position widget\tnum:" << numPos << endl << endl;
 #endif
+		}
 	}
 	for(int i=0;i<qScanWidget::NUM_SCAN_WIDGETS;i++)
 		scanWidget[i]->Refresh();

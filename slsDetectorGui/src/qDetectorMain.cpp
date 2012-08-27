@@ -223,10 +223,12 @@ void qDetectorMain::Initialization(){
 		connect(tab_measurement,	SIGNAL(StopSignal()),				this,SLOT(EnableTabs()));
 		connect(tab_measurement,	SIGNAL(CheckPlotIntervalSignal()),	tab_plot,SLOT(SetFrequency()));
 		connect(tab_measurement,	SIGNAL(EnableNthFrameSignal(bool)),	tab_plot,SLOT(EnableNthFrame(bool)));
+		// Data Output Tab
+		connect(tab_dataoutput,	SIGNAL(AngularConversionSignal(bool)),	tab_actions,SLOT(EnablePositions(bool)));
 		// Plot tab
 		connect(tab_plot,			SIGNAL(DisableZoomSignal(bool)),	this,SLOT(SetZoomToolTip(bool)));
 		// Actions tab
-		connect(tab_actions,		SIGNAL(EnableScanBox(int,int)),		tab_plot,SLOT(EnableScanBox(int,int)));
+		connect(tab_actions,		SIGNAL(EnableScanBox()),			tab_plot,SLOT(EnableScanBox()));
 // Plotting
 	// When the acquisition is finished, must update the meas tab
 	connect(myPlot,	SIGNAL(UpdatingPlotFinished()),				this,				SLOT(EnableTabs()));
@@ -269,7 +271,6 @@ void qDetectorMain::EnableModes(QAction *action){
 	else if(action==actionExpert){
 		enable = actionExpert->isChecked();
 		tabs->setTabEnabled(Advanced,enable);
-		tab_settings->EnableExpertMode(enable);
 #ifdef VERBOSE
 		cout << "Setting Expert Mode to " << enable << endl;
 #endif

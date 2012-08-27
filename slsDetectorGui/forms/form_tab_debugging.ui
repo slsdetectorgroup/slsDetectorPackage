@@ -34,9 +34,9 @@
   <widget class="QWidget" name="horizontalLayoutWidget">
    <property name="geometry">
     <rect>
-     <x>265</x>
-     <y>30</y>
-     <width>251</width>
+     <x>30</x>
+     <y>50</y>
+     <width>321</width>
      <height>36</height>
     </rect>
    </property>
@@ -75,7 +75,7 @@
    <property name="geometry">
     <rect>
      <x>30</x>
-     <y>165</y>
+     <y>140</y>
      <width>321</width>
      <height>156</height>
     </rect>
@@ -126,9 +126,9 @@
   <widget class="QPushButton" name="btnGetInfo">
    <property name="geometry">
     <rect>
-     <x>265</x>
-     <y>95</y>
-     <width>251</width>
+     <x>425</x>
+     <y>55</y>
+     <width>316</width>
      <height>25</height>
     </rect>
    </property>
@@ -140,7 +140,7 @@
    <property name="geometry">
     <rect>
      <x>425</x>
-     <y>165</y>
+     <y>140</y>
      <width>321</width>
      <height>156</height>
     </rect>

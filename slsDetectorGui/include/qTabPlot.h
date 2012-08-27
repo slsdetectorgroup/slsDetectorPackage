@@ -97,10 +97,8 @@ public slots:
 /** Set frequency between plots*/
 void SetFrequency();
 /** Enable Scan box
- * @param enable to enable the scan group box
- * @param id is 0 if its scan level 0 or scan level 1
  */
-void EnableScanBox(int mode=-1,int id=-1);
+void EnableScanBox();
 
 /** a variable is set when timing mode has been changed.
  * This variable is also disabled if exptime>acq period to be on safe side

@@ -147,6 +147,10 @@ void qDetectorMain::SetUpWidgetWindow(){
 	tabs->setTabEnabled(Debugging,false);
 	//beamline mode to false
 	tabs->setTabEnabled(Advanced,false);
+	actionLoadTrimbits->hide();
+	actionSaveTrimbits->hide();
+	actionLoadCalibration->hide();
+	actionSaveCalibration->hide();
 	dockWidgetPlot->setFloating(false);
 	dockWidgetPlot->setFeatures(QDockWidget::NoDockWidgetFeatures);
 	tabs->setTabEnabled(Developer,isDeveloper);
@@ -271,6 +275,17 @@ void qDetectorMain::EnableModes(QAction *action){
 	else if(action==actionExpert){
 		enable = actionExpert->isChecked();
 		tabs->setTabEnabled(Advanced,enable);
+		if(enable){
+			actionLoadTrimbits->show();
+			actionSaveTrimbits->show();
+			actionLoadCalibration->show();
+			actionSaveCalibration->show();
+		}else{
+			actionLoadTrimbits->hide();
+			actionSaveTrimbits->hide();
+			actionLoadCalibration->hide();
+			actionSaveCalibration->hide();
+		}
 #ifdef VERBOSE
 		cout << "Setting Expert Mode to " << enable << endl;
 #endif
@@ -299,7 +314,7 @@ void qDetectorMain::ExecuteUtilities(QAction *action){
 
 	if(action==actionOpenSetup){
 #ifdef VERBOSE
-		cout << "Opening Setup" << endl;
+		cout << "Loading Setup" << endl;
 #endif
 		QString fName = QString(myDet->getFilePath().c_str());
 		fName = QFileDialog::getOpenFileName(this,
@@ -332,7 +347,7 @@ void qDetectorMain::ExecuteUtilities(QAction *action){
 	}
 	else if(action==actionOpenConfiguration){
 #ifdef VERBOSE
-		cout << "Opening Configuration" << endl;
+		cout << "Loading Configuration" << endl;
 #endif
 		QString fName = QString(myDet->getFilePath().c_str());
 		fName = QFileDialog::getOpenFileName(this,
@@ -477,14 +492,30 @@ void qDetectorMain::EnableTabs(){
 	if(enable==false){
 		tabs->setTabEnabled(Debugging,enable);
 		tabs->setTabEnabled(Advanced,enable);
+		actionLoadTrimbits->hide();
+		actionSaveTrimbits->hide();
+		actionLoadCalibration->hide();
+		actionSaveCalibration->hide();
 		tabs->setTabEnabled(Developer,enable);
 	}
 	else{
 	// enable these tabs only if they were enabled earlier
 		if(actionDebug->isChecked())
 			tabs->setTabEnabled(Debugging,enable);
-		if(actionExpert->isChecked())
+		if(actionExpert->isChecked()){
 			tabs->setTabEnabled(Advanced,enable);
+			if(enable){
+				actionLoadTrimbits->show();
+				actionSaveTrimbits->show();
+				actionLoadCalibration->show();
+				actionSaveCalibration->show();
+			}else{
+				actionLoadTrimbits->hide();
+				actionSaveTrimbits->hide();
+				actionLoadCalibration->hide();
+				actionSaveCalibration->hide();
+			}
+		}
 		if(isDeveloper)
 			tabs->setTabEnabled(Developer,enable);
 	}

@@ -55,7 +55,6 @@ class multiSlsDetectorClient  {
       };
       del=1;
     }									\
-    cout << "multislsdetector id "<< id << endl;			\
     iv=sscanf(argv[0],"%d:%s",&pos, cmd);				\
     if (iv==2 && pos>=0) {						\
       argv[0]=cmd;							\

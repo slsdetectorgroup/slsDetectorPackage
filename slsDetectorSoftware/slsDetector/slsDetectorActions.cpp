@@ -146,19 +146,21 @@ int slsDetectorActions::setScan(int iscan, string script, int nvalues, double *v
   if (iscan>=0 && iscan<MAX_SCAN_LEVELS) {
 
     if (script=="") {
-      scanMode[iscan]=0;
+      scanMode[iscan]=noScan;
     } else {
       strcpy(scanScript[iscan],script.c_str());
       if (script=="none") {
-	scanMode[iscan]=0;
+	scanMode[iscan]=noScan;
       } else if (script=="energy") {
-	scanMode[iscan]=1;
+	scanMode[iscan]=energyScan;
       }  else if (script=="threshold") {
-	scanMode[iscan]=2;
+	scanMode[iscan]=thresholdScan;
       } else if (script=="trimbits") {
-	scanMode[iscan]=3;
+	scanMode[iscan]=trimbitsScan;
+      } else if (script=="position") {
+	scanMode[iscan]=positionScan;
       } else {
-	scanMode[iscan]=4;
+	scanMode[iscan]=scriptScan;
       }  
     }
     
@@ -172,7 +174,7 @@ int slsDetectorActions::setScan(int iscan, string script, int nvalues, double *v
       
       if (nvalues>=0) {    
 	if (nvalues==0)
-	  scanMode[iscan]=0;
+	  scanMode[iscan]=noScan;
 	else {
 	  nScanSteps[iscan]=nvalues;
 	  if (nvalues>MAX_SCAN_STEPS)
@@ -217,19 +219,21 @@ int slsDetectorActions::setScan(int iscan, string script, int nvalues, double *v
 int slsDetectorActions::setScanScript(int iscan, string script) {
  if (iscan>=0 && iscan<MAX_SCAN_LEVELS) {
     if (script=="") {
-      scanMode[iscan]=0;
+      scanMode[iscan]=noScan;
     } else {
       strcpy(scanScript[iscan],script.c_str());
       if (script=="none") {
-	scanMode[iscan]=0;
+	scanMode[iscan]=noScan;
       } else if (script=="energy") {
-	scanMode[iscan]=1;
+	scanMode[iscan]=energyScan;
       }  else if (script=="threshold") {
-	scanMode[iscan]=2;
+	scanMode[iscan]=thresholdScan;
       } else if (script=="trimbits") {
-	scanMode[iscan]=3;
+	scanMode[iscan]=trimbitsScan;
+      } else if (script=="position") {
+	scanMode[iscan]=positionScan;
       } else {
-	scanMode[iscan]=4;
+	scanMode[iscan]=scriptScan;
       }  
     }
     
@@ -280,7 +284,7 @@ int slsDetectorActions::setScanSteps(int iscan, int nvalues, double *values) {
   
       if (nvalues>=0) {    
 	if (nvalues==0)
-	  scanMode[iscan]=0;
+	  scanMode[iscan]=noScan;
 	else {
 	  nScanSteps[iscan]=nvalues;
 	  if (nvalues>MAX_SCAN_STEPS)
@@ -414,26 +418,33 @@ int slsDetectorActions::executeScan(int level, int istep) {
   currentScanIndex[level]=istep;
 
   switch(scanMode[level]) {
-  case 1:
+  case energyScan:
     setThresholdEnergy((int)currentScanVariable[level]); //energy scan
     break;
-  case 2:
-    setDAC(currentScanVariable[level],THRESHOLD); // threshold scan
+  case thresholdScan:
+    setDAC((dacs_t)currentScanVariable[level],THRESHOLD); // threshold scan
     break;
-  case 3:
+  case trimbitsScan:
     trimbit=(int)currentScanVariable[level];
     setChannel((trimbit<<((int)TRIMBIT_OFF))|((int)COMPARATOR_ENABLE)); // trimbit scan
     break;
-  case 0:
+  case positionScan:
+    //check if channels are connected!
+      moveDetector(currentScanVariable[level]);
+    break;
+  case noScan:
     currentScanVariable[level]=0;
     break;
-  default:
+ case scriptScan:
     //Custom scan script level 1. The arguments are passed as nrun=n fn=filename var=v par=p"
-       sprintf(cmd,"%s nrun=%d fn=%s var=%f par=%s",getScanScript(level).c_str(),getFileIndex(),createFileName().c_str(),currentScanVariable[level],getScanParameter(level).c_str());
+   sprintf(cmd,"%s nrun=%d fn=%s var=%f par=%s",getScanScript(level).c_str(),getFileIndex(),createFileName().c_str(),currentScanVariable[level],getScanParameter(level).c_str());
 #ifdef VERBOSE
     cout << "Executing scan script "<< level << " "  << cmd << endl;
 #endif
     system(cmd);
+    break;
+  default: 
+     cout << "Scan mode unknown "<< level << " "  <<scanMode[level]  << endl;
   }
   return 0;
 
@@ -482,6 +493,12 @@ int slsDetectorActions::executeAction(int level) {
 		fName.c_str(),		    \
 		getActionParameter(level).c_str());
 	break;
+     case enCalLog:
+       return 0;
+       break;
+     case angCalLog:
+       return 0;
+       break;
      default:
        strcpy(cmd,"");
      }
@@ -495,3 +512,6 @@ int slsDetectorActions::executeAction(int level) {
 
 
 }
+
+
+

@@ -24,6 +24,10 @@ class slsDetectorActions : public virtual slsDetectorBase
 // : public virtual postProcessing 
 {
  public :
+
+  enum {noScan, energyScan, thresholdScan, trimbitsScan, scriptScan, positionScan};
+
+
   /** default constructor */
   slsDetectorActions(){};
   
@@ -202,6 +206,11 @@ class slsDetectorActions : public virtual slsDetectorBase
   int setLastIndex(int i=-1){if (i>=0 && i>lastIndex) lastIndex=i; return lastIndex;};
   
   
+  virtual double moveDetector(double)=0;
+  virtual double getDetectorPosition()=0;
+  
+
+
  protected:
 
 

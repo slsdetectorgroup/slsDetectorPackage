@@ -2,6 +2,8 @@
 #include "usersFunctions.h"
 #include "slsDetectorCommand.h"
 #include "postProcessing.h"
+#include "enCalLogClass.h"
+#include "angCalLogClass.h"
 
 #include  <cstdlib>
 #include  <sys/ipc.h>
@@ -37,7 +39,9 @@ slsDetectorUtils::slsDetectorUtils()   {
 void  slsDetectorUtils::acquire(int delflag){
 
 
-
+  angCalLogClass *aclog=NULL;
+  enCalLogClass *eclog=NULL;
+  
 #ifdef VERBOSE
   cout << "Acquire function "<< delflag << endl;
   cout << "Stopped flag is "<< stoppedFlag << delflag << endl;
@@ -47,13 +51,25 @@ void  slsDetectorUtils::acquire(int delflag){
 
 
   //  int lastindex=startindex, nowindex=startindex;
+  int connectChannels=0;
 
-
-  if ((*correctionMask&(1<< ANGULAR_CONVERSION)) || (*correctionMask&(1<< I0_NORMALIZATION))) {
-      connect_channels(NULL);
+  if ((*correctionMask&(1<< ANGULAR_CONVERSION)) || (*correctionMask&(1<< I0_NORMALIZATION)) || getActionMode(angCalLog) || (getScanMode(0)==positionScan)|| (getScanMode(0)==positionScan)) {
+    if (connectChannels==0)
+      if (connect_channels) {
+	connect_channels(CCarg);
+	connectChannels=1;
+      }      
   }
-       
+  
 
+
+  if (getActionMode(angCalLog))
+    aclog=new angCalLogClass(this);
+ 
+  if (getActionMode(enCalLog))
+    eclog=new enCalLogClass(this);
+  
+  
 
  // setTotalProgress();
   progressIndex=0;
@@ -137,8 +153,7 @@ void  slsDetectorUtils::acquire(int delflag){
        //   cout << "positions " << endl;
        if (*stoppedFlag==0) {
 	 if  (*numberOfPositions>0) {
-	   if (go_to_position)
-	     go_to_position (detPositions[ip],NULL);
+	   moveDetector(detPositions[ip]);
 	   currentPositionIndex=ip+1;
 #ifdef VERBOSE
 	   std::cout<< "moving to position" << std::endl;
@@ -160,26 +175,45 @@ void  slsDetectorUtils::acquire(int delflag){
 
        if (*stoppedFlag==0) {
 
+
+
+
+
 	 executeAction(headerBefore);
 	 
        if (*correctionMask&(1<< ANGULAR_CONVERSION)) {
 	 pthread_mutex_lock(&mp);
-	 if (get_position)
-	   currentPosition=get_position(NULL);  
+	 currentPosition=getDetectorPosition(); 
+	 posfinished=0;
+	 pthread_mutex_unlock(&mp);
+       }
+      
+       if (aclog) {
+	 if ((*correctionMask&(1<< ANGULAR_CONVERSION))==0) {
+	 pthread_mutex_lock(&mp);
+	 currentPosition=getDetectorPosition(); 
 	 posfinished=0;
 	 pthread_mutex_unlock(&mp);
        }
 
-    /*   if (*correctionMask&(1<< I0_NORMALIZATION)) {
+	 aclog->addStep(currentPosition, getCurrentFileName());
+       }
+       
+       if (eclog)
+	 eclog->addStep(setDAC(-1,THRESHOLD), getCurrentFileName());
+       
+
+
+       if (*correctionMask&(1<< I0_NORMALIZATION)) {
 	 if (get_i0)
-	   get_i0(0);
-       }*/
+	   get_i0(0, IOarg);
+       }
        
        startAndReadAll();
        
        if (*correctionMask&(1<< I0_NORMALIZATION)) {
 	 if (get_i0) 
-	   currentI0=get_i0(1,NULL); // this is the correct i0!!!!!
+	   currentI0=get_i0(1,IOarg); // this is the correct i0!!!!!
        }
        
        pthread_mutex_lock(&mp);
@@ -278,10 +312,17 @@ void  slsDetectorUtils::acquire(int delflag){
    }
 
    
-   if ((*correctionMask&(1<< ANGULAR_CONVERSION)) || (*correctionMask&(1<< I0_NORMALIZATION))) {
+   if (connectChannels) {
      if (disconnect_channels)
-       disconnect_channels(NULL);
+       disconnect_channels(DCarg);
    }
+
+   if (aclog)
+     delete aclog;
+
+   if (eclog)
+     delete eclog;
+
 }
 
 

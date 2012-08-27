@@ -234,6 +234,21 @@ slsDetectorCommand::slsDetectorCommand(slsDetectorUtils *det)  {
   descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdScripts;
   i++;
 
+  descrToFuncMap[i].m_pFuncName="encallog"; //
+  descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdScripts;
+  i++;
+
+  descrToFuncMap[i].m_pFuncName="angcallog"; //
+  descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdScripts;
+  i++;
+
+
+
+
+
+
+
+
   descrToFuncMap[i].m_pFuncName="headerbefore"; //
   descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdScripts;
   i++;
@@ -1306,15 +1321,20 @@ string slsDetectorCommand::cmdEnablefwrite(int narg, char *args[], int action){
 
   int i;
   char ans[100];
+  
   if (action==HELP_ACTION) {
     return helpFileName(narg, args, action);
   } 
   if (action==PUT_ACTION) {
     if (sscanf(args[1],"%d",&i))
       myDet->enableWriteToFile(i);
-  	return string("Write to File Enabled");
+    else
+      return string("could not decode enable file write");
+    
+
   }
-  else return string("Write to File 'Not' Enabled");
+  sprintf(ans,"%d",myDet->enableWriteToFile());
+  return string(ans);
 }
 
 
@@ -1805,7 +1825,7 @@ string slsDetectorCommand::helpPositions(int narg, char *args[], int action) {
 string slsDetectorCommand::cmdScripts(int narg, char *args[], int action) {
   
   int ia=-1;
-
+  char answer[100];
   if (action==HELP_ACTION)
     return helpScripts(narg,args,action);
 
@@ -1816,6 +1836,11 @@ string slsDetectorCommand::cmdScripts(int narg, char *args[], int action) {
   if (cmd.find("headerafter")!=string::npos) ia=headerAfter;
   if (cmd.find("headerbefore")!=string::npos) ia=headerBefore;
   
+  if (cmd.find("encallog")!=string::npos) ia=enCalLog;
+  if (cmd.find("angcallog")!=string::npos) ia=angCalLog;
+
+
+
   if (ia==-1) return string("cannot define action ")+cmd;
   
   if (cmd.find("par")!=string::npos) {
@@ -1826,6 +1851,29 @@ string slsDetectorCommand::cmdScripts(int narg, char *args[], int action) {
     return string(myDet->getActionParameter(ia));
 		  
   } else {
+
+    if (ia==enCalLog || ia==angCalLog) {
+      
+
+      if (action==PUT_ACTION) {
+
+	int arg=-1;
+
+
+	sscanf(args[1],"%d",&arg);
+
+	if (arg==0)
+	  myDet->setActionScript(ia,"none");
+	else
+	  myDet->setActionScript(ia,args[1]);
+	
+      }
+
+      sprintf(answer,"%d",myDet->getActionMode(ia));
+      return string(answer);
+
+    }
+
 
     if (action==PUT_ACTION) {
       myDet->setActionScript(ia, args[1]);

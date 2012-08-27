@@ -154,6 +154,8 @@ double defaultGetPosition(void *d) {
 	pos=value;
     } else
         printf(ca_message(status));
+#else
+    printf("\nmotor position is %f\n",pos);
 #endif
 
 
@@ -184,9 +186,12 @@ int defaultGoToPosition(double p,void *d) {
         printf(ca_message(status));
 #else
     pos=p;
+    printf("\nmoving motor to position %f\n",p);
 #endif
   //"caputq X04SA-ES2-TH2:RO p"
   //cawait -nounit  -timeout 3600 X04SA-ES2-TH2:RO.DMOV '==1'
+
+
 
     return (int)p;
 }

@@ -119,17 +119,17 @@ class postProcessing : public angularConversion, public fileIO {
    static int rateCorrect(double datain, double errin, double &dataout, double &errout, double tau, double t);
  
 
-  int enableWriteToFile(int i=-1) {if (i>0) ((*correctionMask)|=(1<<WRITE_FILE)); if(i==0)  ((*correctionMask)&=~(1<< WRITE_FILE)); return ((*correctionMask)&(1<< WRITE_FILE));};
+   int enableWriteToFile(int i=-1) {if (i>0) ((*correctionMask)|=(1<<WRITE_FILE)); else if (i==0) ((*correctionMask)&=~(1<< WRITE_FILE)); return (((*correctionMask)&(1<< WRITE_FILE ))>>WRITE_FILE) ;};
 
 
-  int setAngularCorrectionMask(int i=-1){if (i==0) (*correctionMask)&=~(1<< ANGULAR_CONVERSION); if (i>0) (*correctionMask)|=(1<< ANGULAR_CONVERSION); return ((*correctionMask)&(1<< ANGULAR_CONVERSION));};
+   int setAngularCorrectionMask(int i=-1){if (i==0) (*correctionMask)&=~(1<< ANGULAR_CONVERSION); if (i>0) (*correctionMask)|=(1<< ANGULAR_CONVERSION); return (((*correctionMask)&(1<< ANGULAR_CONVERSION))>>ANGULAR_CONVERSION);};
 
 
 
   int enableAngularConversion(int i=-1) {if (i>0) return setAngularConversionFile("default"); if (i==0) return setAngularConversionFile(""); return setAngularCorrectionMask();};
 
 
-  int enableBadChannelCorrection(int i=-1) {if (i>0) return setBadChannelCorrection("default"); if (i==0) return setBadChannelCorrection(""); return ((*correctionMask)&(1<< DISCARD_BAD_CHANNELS));};
+  int enableBadChannelCorrection(int i=-1) {if (i>0) return setBadChannelCorrection("default"); if (i==0) return setBadChannelCorrection(""); return (((*correctionMask)&(1<< DISCARD_BAD_CHANNELS))>>DISCARD_BAD_CHANNELS);};
 
 
   

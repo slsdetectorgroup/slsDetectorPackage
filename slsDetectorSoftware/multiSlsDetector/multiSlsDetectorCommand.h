@@ -30,7 +30,6 @@ class multiSlsDetectorCommand : public slsDetectorCommand {
     
     string executeLine(int narg, char *args[], int action, int id=-1) { \
       string s;								\
-      printf("mess %d of %d\n",id, myDet->getNumberOfDetectors());		\
       if (id>=0) {
 	slsDetector *d=myDet->getSlsDetector(id);			\
 	if (d) {							\

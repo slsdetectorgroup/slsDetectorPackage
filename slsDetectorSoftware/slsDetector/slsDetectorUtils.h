@@ -518,6 +518,8 @@ class slsDetectorUtils :  public slsDetectorActions, public postProcessing {
   */
   virtual int getMaxNumberOfModules(dimension d=X)=0;
  
+  double moveDetector(double pos){if (go_to_position) go_to_position (pos,GTarg); else cout << "no move detector callback registered" << endl; return getDetectorPosition();};
+  double getDetectorPosition(){double pos=-1; if (get_position) pos=get_position(POarg); else cout << "no get position callback registered" << endl; return pos;};
 
   /**
      Writes the configuration file -- will contain all the informations needed for the configuration (e.g. for a PSI detector caldir, settingsdir, angconv, badchannels etc.)

@@ -51,7 +51,7 @@ class slsDetectorDefs {
 #endif
 
 
-  enum {startScript, scriptBefore, headerBefore, headerAfter,scriptAfter, stopScript, MAX_ACTIONS};
+  enum {startScript, scriptBefore, headerBefore, headerAfter,scriptAfter, stopScript, enCalLog, angCalLog, MAX_ACTIONS};
 
 
 

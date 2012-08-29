@@ -79,7 +79,7 @@ void qCloneWidget::SetupWidgetWindow(QString title,int numDim,SlsQt1DPlot*& plot
 		//cloneplot2D->setContentsMargins(0,0,0,0);
 		gridClone->addWidget(cloneplot2D,0,0);
 		cloneBox->setFlat(true);
-		cloneBox->setContentsMargins(0,5,0,0);
+		cloneBox->setContentsMargins(0,20,0,0);
 	}
 
 	/** main window widgets */

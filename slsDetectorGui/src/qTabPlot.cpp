@@ -572,7 +572,6 @@ void qTabPlot::SetScanArgument(){
 
 	//if scans
 	if(boxScan->isEnabled()){
-
 		//setting the title according to the scans
 		QString mainTitle = QString(" Level 0 : ") + modeNames[myDet->getScanMode(0)] +
 							QString("   |   Level 1 : ") + modeNames[myDet->getScanMode(1)] + QString("");
@@ -641,7 +640,7 @@ void qTabPlot::SetScanArgument(){
 
 void qTabPlot::Refresh(){
 	SetFrequency();
-	EnableScanBox();
+	if(!myPlot->isRunning()) EnableScanBox();
 }
 
 

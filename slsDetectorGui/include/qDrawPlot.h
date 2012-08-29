@@ -206,6 +206,7 @@ private:
 multiSlsDetector *myDet;
 
 
+
 /** Widgets needed to plot the clone */
 /**	Max Number of Clone Windows */
 static const int MAXCloneWindows = 50;

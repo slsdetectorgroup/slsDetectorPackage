@@ -147,10 +147,10 @@ void qDetectorMain::SetUpWidgetWindow(){
 	tabs->setTabEnabled(Debugging,false);
 	//beamline mode to false
 	tabs->setTabEnabled(Advanced,false);
-	actionLoadTrimbits->hide();
-	actionSaveTrimbits->hide();
-	actionLoadCalibration->hide();
-	actionSaveCalibration->hide();
+	actionLoadTrimbits->setVisible(false);
+	actionSaveTrimbits->setVisible(false);
+	actionLoadCalibration->setVisible(false);
+	actionSaveCalibration->setVisible(false);
 	dockWidgetPlot->setFloating(false);
 	dockWidgetPlot->setFeatures(QDockWidget::NoDockWidgetFeatures);
 	tabs->setTabEnabled(Developer,isDeveloper);
@@ -193,10 +193,11 @@ void qDetectorMain::SetUpDetector(){
 	else{
 		slsDetectorDefs::detectorType detType = myDet->getDetectorsType();
 		// Check if type valid. If not, exit
-		switch(detType){
-				case slsDetectorDefs::MYTHEN:	break;
-				case slsDetectorDefs::EIGER:	break;
-				case slsDetectorDefs::GOTTHARD:	break;
+		switch(detType){//digitalDetector decides if trimbits should be shown
+				case slsDetectorDefs::MYTHEN:	digitalDetector = true;	break;
+				case slsDetectorDefs::EIGER:	digitalDetector = true;	break;
+				case slsDetectorDefs::GOTTHARD:	digitalDetector = false;break;
+				case slsDetectorDefs::AGIPD:	digitalDetector = false;break;
 				default:
 					string detName = myDet->slsDetectorBase::getDetectorType(detType);
 					string errorMess = host+string(" has unknown detector type \"")+
@@ -275,16 +276,16 @@ void qDetectorMain::EnableModes(QAction *action){
 	else if(action==actionExpert){
 		enable = actionExpert->isChecked();
 		tabs->setTabEnabled(Advanced,enable);
-		if(enable){
-			actionLoadTrimbits->show();
-			actionSaveTrimbits->show();
-			actionLoadCalibration->show();
-			actionSaveCalibration->show();
+		if((enable)&&(digitalDetector)){
+			actionLoadTrimbits->setVisible(true);
+			actionSaveTrimbits->setVisible(true);
+			actionLoadCalibration->setVisible(true);
+			actionSaveCalibration->setVisible(true);
 		}else{
-			actionLoadTrimbits->hide();
-			actionSaveTrimbits->hide();
-			actionLoadCalibration->hide();
-			actionSaveCalibration->hide();
+			actionLoadTrimbits->setVisible(false);
+			actionSaveTrimbits->setVisible(false);
+			actionLoadCalibration->setVisible(false);
+			actionSaveCalibration->setVisible(false);
 		}
 #ifdef VERBOSE
 		cout << "Setting Expert Mode to " << enable << endl;
@@ -371,6 +372,20 @@ void qDetectorMain::ExecuteUtilities(QAction *action){
 		if (!fName.isEmpty()){
 			myDet->writeConfigurationFile(string(fName.toAscii().constData()));
 			qDefs::InfoMessage("The configuration parameters have been successfully saved.","Main");
+		}
+	}
+	else if(action==actionLoadTrimbits){
+#ifdef VERBOSE
+		cout << "Loading Trimbits" << endl;
+#endif
+		QString fName = QString(myDet->getFilePath().c_str());
+		fName = QFileDialog::getOpenFileName(this,
+				tr("Load Detector Trimbits"),fName,
+				tr("Trimbit files (*.trim *.sn*)"));
+		// Gets called when cancelled as well
+		if (!fName.isEmpty()){
+			//myDet->readConfigurationFile(string(fName.toAscii().constData()));
+			qDefs::InfoMessage("The parameters have been successfully configured.","Main");
 		}
 	}
 
@@ -492,10 +507,10 @@ void qDetectorMain::EnableTabs(){
 	if(enable==false){
 		tabs->setTabEnabled(Debugging,enable);
 		tabs->setTabEnabled(Advanced,enable);
-		actionLoadTrimbits->hide();
-		actionSaveTrimbits->hide();
-		actionLoadCalibration->hide();
-		actionSaveCalibration->hide();
+		actionLoadTrimbits->setVisible(false);
+		actionSaveTrimbits->setVisible(false);
+		actionLoadCalibration->setVisible(false);
+		actionSaveCalibration->setVisible(false);
 		tabs->setTabEnabled(Developer,enable);
 	}
 	else{
@@ -504,16 +519,16 @@ void qDetectorMain::EnableTabs(){
 			tabs->setTabEnabled(Debugging,enable);
 		if(actionExpert->isChecked()){
 			tabs->setTabEnabled(Advanced,enable);
-			if(enable){
-				actionLoadTrimbits->show();
-				actionSaveTrimbits->show();
-				actionLoadCalibration->show();
-				actionSaveCalibration->show();
+			if((enable)&&(digitalDetector)){
+				actionLoadTrimbits->setVisible(true);
+				actionSaveTrimbits->setVisible(true);
+				actionLoadCalibration->setVisible(true);
+				actionSaveCalibration->setVisible(true);
 			}else{
-				actionLoadTrimbits->hide();
-				actionSaveTrimbits->hide();
-				actionLoadCalibration->hide();
-				actionSaveCalibration->hide();
+				actionLoadTrimbits->setVisible(false);
+				actionSaveTrimbits->setVisible(false);
+				actionLoadCalibration->setVisible(false);
+				actionSaveCalibration->setVisible(false);
 			}
 		}
 		if(isDeveloper)

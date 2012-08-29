@@ -45,7 +45,7 @@ private:
 	int id;
 	/**type of steps*/
 	enum sizeIndex{RangeValues, CustomValues, FileValues};
-	enum modes{None,EnergyScan,ThresholdScan,TrimbitsScan,CustomScript,NumModes};
+	enum modes{None,EnergyScan,ThresholdScan,TrimbitsScan,PositionScan,CustomScript,NumModes};
 	static const string modeNames[NumModes];
 
 	/**values*/

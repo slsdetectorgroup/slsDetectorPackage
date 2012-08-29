@@ -68,6 +68,8 @@ private:
 	multiSlsDetector *myDet;
 	/** sls detector id */
 	int detID;
+	/** true for mythen and eiger */
+	bool digitalDetector;
 	/** The Plot widget	 */
 	qDrawPlot *myPlot;
 	/**Tab Widget */

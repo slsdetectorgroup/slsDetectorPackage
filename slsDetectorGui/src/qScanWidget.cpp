@@ -25,7 +25,7 @@ using namespace std;
 
 
 int qScanWidget::NUM_SCAN_WIDGETS(0);
-const string qScanWidget::modeNames[NumModes]={"","energy","threshold","trimbits","custom script"};
+const string qScanWidget::modeNames[NumModes]={"","energy","threshold","trimbits","position","custom script"};
 //-------------------------------------------------------------------------------------------------------------------------------------------------
 
 qScanWidget::qScanWidget(QWidget *parent,multiSlsDetector*& detector):
@@ -331,7 +331,7 @@ void qScanWidget::SetMode(int mode){
 	EnableSizeWidgets();
 
 	//set the mode
-	SetScan(mode);
+	/*SetScan(mode);*/
 }
 
 
@@ -354,27 +354,15 @@ int qScanWidget::SetScan(int mode){
 	else		values = NULL;
 	for(int i=0;i<actualNumSteps;i++)	values[i] = positions[i];
 
+	cout<<"modeNames[mode]:"<<modeNames[mode]<<endl;cout<<"actualNumSteps:"<<actualNumSteps<<endl;
 	//setting the mode
-	switch(mode){
-	case None:
-		myDet->setScan(id,modeNames[mode],actualNumSteps,values,parameter);
-		break;
-	case EnergyScan:
-		myDet->setScan(id,modeNames[mode],actualNumSteps,values,parameter);
-		break;
-	case ThresholdScan:
-		myDet->setScan(id,modeNames[mode],actualNumSteps,values,parameter);
-		break;
-	case TrimbitsScan:
-		myDet->setScan(id,modeNames[mode],actualNumSteps,values,parameter);
-		break;
-	case CustomScript:
+	if(mode==CustomScript)
 		myDet->setScan(id,script,actualNumSteps,values,parameter);
-		break;
-	}
+	else
+		cout<<"return values:"<<myDet->setScan(id,modeNames[mode],actualNumSteps,values,parameter)<<endl;
 
 	//custom script
-	int actualMode = myDet->getScanMode(id);
+	int actualMode = myDet->getScanMode(id);cout<<"actualmode:"<<actualMode<<endl;
 	if((mode==CustomScript)&&((script=="")||(script=="none"))){
 		return qDefs::OK;
 	}else{//mode NOT set
@@ -429,13 +417,18 @@ void qScanWidget::SetScriptFile(){
 	//blank
 	if(fName.isEmpty())
 		set = true;
-	else if(  	(!fName.compare("none"))||
-				(!fName.compare("energy"))||
-				(!fName.compare("threshold"))||
-				(!fName.compare("trimbits"))  )
-		set = true;
-	//not blank
-	else{
+	//none isnt in the modeNames list, so check separately
+	else if(!fName.compare("none"))
+			set = true;
+	else{//if one of the other modes
+		for(int i=1;i<NumModes;i++)
+			if(!fName.compare(QString(modeNames[i].c_str()))){
+				set = true;
+				break;
+			}
+	}
+	//not blank and custom script mode
+	if(!set){
 		QString file = dispScript->text().section('/',-1);
 		//is a file
 		if(file.contains('.')){
@@ -468,12 +461,12 @@ void qScanWidget::SetScriptFile(){
 
 	//dont display if theres a none
 	fName = dispScript->text();
-	if(  	(!fName.compare("none"))||
-			(!fName.compare("energy"))||
-			(!fName.compare("threshold"))||
-			(!fName.compare("trimbits"))  )
-		  dispScript->setText("");
-
+	//none isnt in the modeNames list, so check separately
+	if(!fName.compare("none"))
+		dispScript->setText("");
+	for(int i=1;i<NumModes;i++)
+		if(!fName.compare(QString(modeNames[i].c_str())))
+			  dispScript->setText("");
 }
 
 
@@ -492,11 +485,12 @@ void qScanWidget::SetParameter(){
 	myDet->setScanParameter(id,parameter.toAscii().constData());
 	//dont display if theres a none
 	parameter = dispParameter->text();
-	if(  	(!parameter.compare("none"))||
-			(!parameter.compare("energy"))||
-			(!parameter.compare("threshold"))||
-			(!parameter.compare("trimbits"))  )
+	//none isnt in the modeNames list, so check separately
+	if(!parameter.compare("none"))
 		dispParameter->setText("");
+	for(int i=1;i<NumModes;i++)
+		if(!parameter.compare(QString(modeNames[i].c_str())))
+			dispParameter->setText("");
 }
 
 

@@ -264,6 +264,7 @@ bool qDrawPlot::StartOrStopThread(bool start){
 		progress = 0;
 		currentFrame = 0;
 		stop_signal = 0;
+		histTitle[0] = "";
 
 		//for 2d scans
 		int currentIndex = myDet->getFileIndex();
@@ -283,9 +284,19 @@ bool qDrawPlot::StartOrStopThread(bool start){
 			}else if(scanArgument==Level0){
 				//no need to check if numsteps=0,cuz otherwise this mode wont be set in plot tab
 				int numSteps = myDet->getScanSteps(0);
-				//if(values) delete [] values;
 				double *values = new double[numSteps];
 				myDet->getScanSteps(0,values);
+
+				maxPixelsY = values[numSteps-1];
+				minPixelsY = values[0];
+				nPixelsY = numSteps;
+				currentScanValue = values[0];
+			}
+			else {
+				//no need to check if numsteps=0,cuz otherwise this mode wont be set in plot tab
+				int numSteps = myDet->getScanSteps(1);
+				double *values = new double[numSteps];
+				myDet->getScanSteps(1,values);
 
 				maxPixelsY = values[numSteps-1];
 				minPixelsY = values[0];
@@ -375,6 +386,8 @@ int qDrawPlot::GetData(detectorData *data){
 	cout << "Entering GetDatafunction" << endl;
 #endif
 	if(!stop_signal){
+		//set title
+		SetPlotTitle(QString(data->fileName).section('/',-1));
 
 		//Plot Disabled
 		if(!plotEnable) {
@@ -432,7 +445,6 @@ int qDrawPlot::GetData(detectorData *data){
 			//if scan argument is 2d
 			if(scanArgument!=None){
 				if(scanArgument==AllFrames){
-					/*title should include which scan, also by measurement tab*/
 					if(!pthread_mutex_trylock(&(last_image_complete_mutex))){
 						lastImageNumber= currentFrame+1;
 						char temp_title[2000]; sprintf(temp_title,"Image Index %d",currentIndex); imageTitle = temp_title;
@@ -444,12 +456,10 @@ int qDrawPlot::GetData(detectorData *data){
 					return 0;
 				}
 				else if(scanArgument==FileIndex){
-					/*title should include which scan, also by measurement tab*/
 					if(!pthread_mutex_trylock(&(last_image_complete_mutex))){
 						if(currentIndex == minPixelsY) currentScanDivLevel = 0;
 						lastImageNumber= currentFrame+1;
 						char temp_title[2000]; sprintf(temp_title,"Image Index %d",currentIndex); imageTitle = temp_title;
-						//memcpy(lastImageArray+(currentIndex*nPixelsX),data->values,nPixelsX*sizeof(double));
 						for(unsigned int px=0;px<nPixelsX;px++)	lastImageArray[currentScanDivLevel*nPixelsX+px] += data->values[px];
 						pthread_mutex_unlock(&(last_image_complete_mutex));
 					}
@@ -458,28 +468,29 @@ int qDrawPlot::GetData(detectorData *data){
 					return 0;
 				}
 				else if(scanArgument==Level0){
-					/*title should include which scan, also by measurement tab*/
 					if(!pthread_mutex_trylock(&(last_image_complete_mutex))){
 						if(currentScanVariable0!=currentScanValue) currentScanDivLevel++;
 						currentScanValue = currentScanVariable0;
-
 						lastImageNumber= currentFrame+1;
 						char temp_title[2000]; sprintf(temp_title,"Image Index %d",currentIndex); imageTitle = temp_title;
-						//memcpy(lastImageArray+(currentIndex*nPixelsX),data->values,nPixelsX*sizeof(double));
-
-						//for(int i=values[currentScan];i<values[currentScan+1];i++)
-							//memcpy(lastImageArray+(currentScanVariable0-1*nPixelsX),data->values,nPixelsX*sizeof(double));
-
-						//memcpy(lastImageArray+(currentScanDivLevel*nPixelsX),data->values,nPixelsX*sizeof(double));
 						for(unsigned int px=0;px<nPixelsX;px++) lastImageArray[currentScanDivLevel*nPixelsX+px] += data->values[px];
-						cout<<"lastImageArray[0*1280+500]:"<<lastImageArray[currentScanDivLevel*nPixelsX+500]<<endl;
-							//lastImageArray +  ((pixelWidth/2) + currentScanDivLevel * pixelWidth) *	nPixelsX + px += data->values[px];
 						pthread_mutex_unlock(&(last_image_complete_mutex));
 					}
 					currentFrame++;
 					return 0;
 				}
-
+				else {
+					if(!pthread_mutex_trylock(&(last_image_complete_mutex))){
+						if(currentScanVariable1!=currentScanValue) currentScanDivLevel++;
+						currentScanValue = currentScanVariable1;
+						lastImageNumber= currentFrame+1;
+						char temp_title[2000]; sprintf(temp_title,"Image Index %d",currentIndex); imageTitle = temp_title;
+						for(unsigned int px=0;px<nPixelsX;px++) lastImageArray[currentScanDivLevel*nPixelsX+px] += data->values[px];
+						pthread_mutex_unlock(&(last_image_complete_mutex));
+					}
+					currentFrame++;
+					return 0;
+				}
 			}
 
 			//normal measurement or 1d scans
@@ -490,8 +501,9 @@ int qDrawPlot::GetData(detectorData *data){
 
 				//1d
 				if(plot_in_scope==1){
-					// Titles
-					sprintf(temp_title,"Frame Index %d",currentIndex);    histTitle[0] = temp_title;
+					// Titles changed to "" inside startstopthread
+					//sprintf(temp_title,"Frame Index %d",currentIndex);    histTitle[0] = temp_title;
+
 					// Persistency
 					if(currentPersistency < persistency)currentPersistency++;
 					else currentPersistency=persistency;

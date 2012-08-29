@@ -22,6 +22,8 @@ class angCalLogClass {
     sprintf(cmd,"_%d.angcal",det->getFileIndex());			\
     outfile.open(string(det->getFilePath()+string("/")+det->getFileName()+string(cmd)).c_str()); \
     myDet=new slsDetectorCommand(det);					\
+    strcpy(cmd,"type");						\
+    outfile << myDet->executeLine(1,argv,slsDetectorDefs::GET_ACTION) << endl;		\
     strcpy(cmd,"nmod");							\
     outfile << myDet->executeLine(1,argv,slsDetectorDefs::GET_ACTION) << endl; \
     strcpy(cmd,"angconv");							\

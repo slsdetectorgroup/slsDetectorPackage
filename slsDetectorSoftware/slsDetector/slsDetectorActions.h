@@ -82,7 +82,6 @@ class slsDetectorActions : public virtual slsDetectorBase
   */
   int getActionMode(int iaction);
   
-  
   /** 
       set scan 
       \param index of the scan (0,1)

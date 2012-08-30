@@ -18,6 +18,7 @@
 #include<iostream>
 #include <fstream>
 #include <sstream>
+#include <cmath>
 using namespace std;
 
 
@@ -72,6 +73,7 @@ void qScanWidget::SetupWidgetWindow(){
 	stackedLayout = new QStackedLayout;
 	stackedLayout->setSpacing(0);
 
+
 	//  Range Size Layout
 	QWidget *widgetRange = new QWidget;
 	QHBoxLayout *layoutRange = new QHBoxLayout(widgetRange);
@@ -88,12 +90,16 @@ void qScanWidget::SetupWidgetWindow(){
 	spinFrom->setToolTip(rangeTip);
 	spinFrom->setMaximum(1000000);
 	spinFrom->setKeyboardTracking(false);
+	spinFrom->setFixedWidth(80);
+	spinFrom->setDecimals(4);
 	lblTo->setSizePolicy(QSizePolicy::Fixed,QSizePolicy::Fixed);
 	lblTo->setToolTip(rangeTip);
 	spinTo->setValue(1);
 	spinTo->setToolTip(rangeTip);
 	spinTo->setMaximum(1000000);
 	spinTo->setKeyboardTracking(false);
+	spinTo->setFixedWidth(80);
+	spinTo->setDecimals(4);
 	lblSize->setSizePolicy(QSizePolicy::Fixed,QSizePolicy::Fixed);
 	lblSize->setToolTip(rangeTip);
 	lblSize->setSizePolicy(QSizePolicy::Fixed,QSizePolicy::Fixed);
@@ -102,6 +108,8 @@ void qScanWidget::SetupWidgetWindow(){
 	spinSize->setSingleStep(0.1);
 	spinSize->setToolTip(rangeTip);
 	spinSize->setKeyboardTracking(false);
+	spinSize->setDecimals(4);
+	spinSize->setMinimum(0.0001);
 	layoutRange->addItem(new QSpacerItem(40,20,QSizePolicy::Fixed,QSizePolicy::Fixed));
 	layoutRange->addWidget(lblFrom);
 	layoutRange->addItem(new QSpacerItem(5,20,QSizePolicy::Fixed,QSizePolicy::Fixed));
@@ -175,13 +183,13 @@ void qScanWidget::Initialization(){
 	//sizewidgets
 	connect(btnGroup,		SIGNAL(buttonClicked(QAbstractButton*)),this,SLOT(EnableSizeWidgets()));
 	//numsteps
-	connect(spinSteps,		SIGNAL(valueChanged(int)), 				this, SLOT(SetNSteps(int)));
+	connect(spinSteps,		SIGNAL(valueChanged(int)), 				this, SLOT(SetNSteps()));
 	//precision
 	connect(spinPrecision,	SIGNAL(valueChanged(int)), 				this, SLOT(SetPrecision(int)));
 	//range values
-	connect(spinFrom,		SIGNAL(valueChanged(double)), 				this, SLOT(SetRangeSteps()));
-	connect(spinTo,			SIGNAL(valueChanged(double)), 				this, SLOT(SetRangeSteps()));
-	connect(spinSize,		SIGNAL(valueChanged(double)), 				this, SLOT(SetRangeSteps()));
+	connect(spinFrom,		SIGNAL(valueChanged(double)), 				this, SLOT(RangeCalculateNumSteps()));
+	connect(spinTo,			SIGNAL(valueChanged(double)), 				this, SLOT(RangeCalculateNumSteps()));
+	connect(spinSize,		SIGNAL(valueChanged(double)), 				this, SLOT(RangeCalculateTo()));
 	//custom values
 	connect(comboCustom,	SIGNAL(currentIndexChanged(int)), 		this, SLOT(SetCustomSteps()));
 	connect(btnCustom,		SIGNAL(clicked()),						this, SLOT(DeleteCustomSteps()));
@@ -223,6 +231,7 @@ void qScanWidget::EnableSizeWidgets(){
 #ifdef VERBOSE
 		cout << "Constant Range Values" << endl;
 #endif
+		spinSteps->setMinimum(2);
 		radioCustom->setText("Specific Values");
 		radioCustom->setPalette(normal);
 		radioCustom->setToolTip(customTip);
@@ -235,13 +244,15 @@ void qScanWidget::EnableSizeWidgets(){
 		btnFile->setToolTip(fileTip);
 
 		stackedLayout->setCurrentIndex(RangeValues);
-			SetRangeSteps();
+
+		SetRangeSteps();
 		}
 		//custom values
 		else if(radioCustom->isChecked()){
 #ifdef VERBOSE
 			cout << "Custom Values" << endl;
 #endif
+			spinSteps->setMinimum(0);
 			//defaults for other mode
 			radioFile->setPalette(normal);
 			radioFile->setText("Values from File:");
@@ -251,19 +262,21 @@ void qScanWidget::EnableSizeWidgets(){
 
 			//change it back as this list is what will be loaded.
 			//also numstpes could have been changed in other modes too
-			disconnect(spinSteps,	SIGNAL(valueChanged(int)), this, SLOT(SetNSteps(int)));
+			disconnect(spinSteps,	SIGNAL(valueChanged(int)), this, SLOT(SetNSteps()));
 			spinSteps ->setValue(comboCustom->count());
-			connect(spinSteps,		SIGNAL(valueChanged(int)), this, SLOT(SetNSteps(int)));
+			connect(spinSteps,		SIGNAL(valueChanged(int)), this, SLOT(SetNSteps()));
 
 			stackedLayout->setCurrentIndex(CustomValues);
 			//only for custom steps out here because many signals go through
 			//custom steps and we want to give the info msg only when changig range types
 			if(SetCustomSteps()==qDefs::OK){
+#ifdef VERYVERBOSE
 				char cNum[200];sprintf(cNum,"%d",actualNumSteps);
 				char cId[5];sprintf(cId,"%d",id);
 				qDefs::InfoMessage(string("<nobr><font color=\"blue\">Scan Level ")+string(cId)+
 								string(": Specific Values</font></nobr><br><br><nobr>Number of positions added: ")+
 								string(cNum)+string("</nobr>"),"ScanWidget");
+#endif
 			}
 		}
 
@@ -272,6 +285,7 @@ void qScanWidget::EnableSizeWidgets(){
 #ifdef VERBOSE
 		cout << "File Values" << endl;
 #endif
+			spinSteps->setMinimum(0);
 			//defaults for other mode
 			radioCustom->setText("Specific Values");
 			radioCustom->setPalette(normal);
@@ -354,15 +368,15 @@ int qScanWidget::SetScan(int mode){
 	else		values = NULL;
 	for(int i=0;i<actualNumSteps;i++)	values[i] = positions[i];
 
-	cout<<"modeNames[mode]:"<<modeNames[mode]<<endl;cout<<"actualNumSteps:"<<actualNumSteps<<endl;
+
 	//setting the mode
 	if(mode==CustomScript)
 		myDet->setScan(id,script,actualNumSteps,values,parameter);
 	else
-		cout<<"return values:"<<myDet->setScan(id,modeNames[mode],actualNumSteps,values,parameter)<<endl;
+		myDet->setScan(id,modeNames[mode],actualNumSteps,values,parameter);
 
 	//custom script
-	int actualMode = myDet->getScanMode(id);cout<<"actualmode:"<<actualMode<<endl;
+	int actualMode = myDet->getScanMode(id);
 	if((mode==CustomScript)&&((script=="")||(script=="none"))){
 		return qDefs::OK;
 	}else{//mode NOT set
@@ -513,7 +527,7 @@ void qScanWidget::SetPrecision(int value){
 //-------------------------------------------------------------------------------------------------------------------------------------------------
 
 
-void qScanWidget::SetNSteps(int num){
+void qScanWidget::SetNSteps(){
 #ifdef VERYVERBOSE
 	cout << "Entering SetNSteps()" << endl;
 #endif
@@ -521,30 +535,60 @@ void qScanWidget::SetNSteps(int num){
 	cout << "Setting number of steps" << endl;
 #endif
 
-	int numSteps = spinSteps->value();
-	comboCustom->setMaxCount(numSteps);
-
 	//check if its ok
 	if(radioRange->isChecked()){
-		//calculate the step size and display it
-		if(num==1){
-			disconnect(spinTo,	SIGNAL(valueChanged(double)), this, SLOT(SetRangeSteps()));
-			spinTo->setValue(spinFrom->value());
-			connect(spinTo,		SIGNAL(valueChanged(double)), this, SLOT(SetRangeSteps()));
-		}else if(num>1)
-			num--;
-		double stepSize = (spinTo->value()-spinFrom->value())/num;
-		disconnect(spinSize,SIGNAL(valueChanged(double)), this, SLOT(SetRangeSteps()));
-		spinSize->setValue(stepSize);
-		connect(spinSize,	SIGNAL(valueChanged(double)), this, SLOT(SetRangeSteps()));
+		double oldSize = spinSize->value();
+		//calculate size = (to - from)/(num-1)
+		double size = (abs((spinTo->value())-(spinFrom->value()))) / (spinSteps->value()-1);
+		spinSize->setValue(size);
 		//set these positions
-		SetRangeSteps();
+		if(oldSize==size) SetRangeSteps();
 	}else if(radioCustom->isChecked()){
+		comboCustom->setMaxCount(spinSteps->value());
 		SetCustomSteps();
 	}else if(radioFile->isChecked()){
 		SetFileSteps();
 	}
 
+}
+
+
+//-------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+void qScanWidget::RangeCalculateNumSteps(){
+#ifdef VERYVERBOSE
+	cout << "Entering RangeCalculateNumSteps()" << endl;
+#endif
+	//check if to=from
+	if(spinTo->value()==spinFrom->value()){
+		spinTo->setValue(  ((spinSize->value())*(spinSteps->value())) - (spinSize->value()) + (spinFrom->value()) );
+		SetRangeSteps();
+	}else{
+		//num = ((to-from)/(size)) +1
+		double size = spinSize->value();
+		double numerator = abs((spinTo->value())-(spinFrom->value()));
+		//check if (to-from)/size is an int and that its =1 cuz numSteps minimum=2
+		bool valid = (fmod(numerator,size)==0) && ((numerator/size)>0);
+
+		if(valid) //calculate num steps
+			spinSteps->setValue( (int)(numerator / size) + 1);
+		else //change size instead
+			spinSize->setValue(numerator / (spinSteps->value()-1));
+	}
+}
+
+
+//-------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+void qScanWidget::RangeCalculateTo(){
+#ifdef VERYVERBOSE
+	cout << "Entering RangeCalculateTo()" << endl;
+#endif
+	//to = size*num - size + from
+	spinTo->setValue(  ((spinSize->value())*(spinSteps->value())) - (spinSize->value()) + (spinFrom->value()) );
+	SetRangeSteps();
 }
 
 
@@ -560,37 +604,9 @@ void qScanWidget::SetRangeSteps(){
 #endif
 	double fromVal = spinFrom->value();
 	double sizeVal = spinSize->value();
-	//if step size is 0, min and max should be same
-	if(!sizeVal){
-		disconnect(spinTo,	SIGNAL(valueChanged(double)), this, SLOT(SetRangeSteps()));
-		spinTo->setValue(fromVal);
-		connect(spinTo,		SIGNAL(valueChanged(double)), this, SLOT(SetRangeSteps()));
-		QString tip = rangeTip + QString("<br><br><font color=\"red\">"
-				"<nobr>Note: Increase the <b>step size</b> from zero to be able to change the range.</nobr></font>");
-		lblSize->setToolTip(tip);
-		spinSize->setToolTip(tip);
-		lblSize->setText("step size:*");
-		lblSize->setPalette(red);
-	}else{
-		lblSize->setToolTip(rangeTip);
-		spinSize->setToolTip(rangeTip);
-		lblSize->setText("step size:");
-		lblSize->setPalette(normal);
-	}
-	//if min and max is the same
-	if(fromVal==spinTo->value()) actualNumSteps = 0;
-	else actualNumSteps = (int)((spinTo->value()-fromVal)/sizeVal);
+	actualNumSteps = spinSteps->value();
 
-	//actualNumSteps will be negative if from<to and size wasnt negative.so change it to positive
-	if(actualNumSteps<0){
-		actualNumSteps*=-1;
-		disconnect(spinSize,SIGNAL(valueChanged(double)), this, SLOT(SetRangeSteps()));
-		spinSize->setValue(-1*sizeVal);
-		connect(spinSize,	SIGNAL(valueChanged(double)), this, SLOT(SetRangeSteps()));
-		sizeVal = spinSize->value();
-	}
-	//increment is required like vice versa in setNSteps
-	actualNumSteps++;
+
 #ifdef VERBOSE
 	cout << "num pos:" << actualNumSteps << endl;
 #endif
@@ -600,14 +616,9 @@ void qScanWidget::SetRangeSteps(){
 	for(int i=0;i<actualNumSteps;i++){
 		positions[i] = fromVal + i * sizeVal;
 #ifdef VERBOSE
-	cout << "positions[" << i << "]:\t" << positions[i] <<endl;
+	cout << "positions[" << i << "]:\t" << positions[i] << endl;
 #endif
 	}
-
-	//correcting the number of steps
-	disconnect(spinSteps,	SIGNAL(valueChanged(int)), this, SLOT(SetNSteps(int)));
-	spinSteps->setValue(actualNumSteps);
-	connect(spinSteps,		SIGNAL(valueChanged(int)), this, SLOT(SetNSteps(int)));
 
 
 	//sets the scan
@@ -615,9 +626,6 @@ void qScanWidget::SetRangeSteps(){
 		char cId[5];sprintf(cId,"%d",id);
 		QString script = dispScript->text();
 
-		disconnect(spinFrom,		SIGNAL(valueChanged(double)), 				this, SLOT(SetRangeSteps()));
-		disconnect(spinTo,			SIGNAL(valueChanged(double)), 				this, SLOT(SetRangeSteps()));
-		disconnect(spinSize,		SIGNAL(valueChanged(double)), 				this, SLOT(SetRangeSteps()));
 
 		//positions wont be loaded if its custom script
 		if((comboScript->currentIndex()==CustomScript)&&((script=="")||(script=="none"))){
@@ -629,25 +637,21 @@ void qScanWidget::SetRangeSteps(){
 			if(myDet->getScanSteps(id)!=actualNumSteps){
 				qDefs::WarningMessage(string("<nobr><font color=\"blue\">Scan Level ")+string(cId)+
 						string(": Values From File</font></nobr><br><br>"
-						"<nobr>The positions list was not set for an unknown reason.</nobr>"),"ScanWidget");
+								"<nobr>The positions list was not set for an unknown reason.</nobr>"),"ScanWidget");
 				/*LoadPositions();
 				comboScript->setCurrentIndex(myDet->getScanMode(id))*/
-			}else{//SUCCESS
+			}
+#ifdef VERYVERBOSE
+			else{//SUCCESS
 				char cNum[200];sprintf(cNum,"%d",actualNumSteps);
 				qDefs::InfoMessage(string("<nobr><font color=\"blue\">Scan Level ")+string(cId)+
 						string(": Constant Step Size</font></nobr><br><br><nobr>Number of positions added: ")+
 						string(cNum)+string("</nobr>"),"ScanWidget");
 			}
+#endif
 		}
-
-		connect(spinFrom,		SIGNAL(valueChanged(double)), 				this, SLOT(SetRangeSteps()));
-		connect(spinTo,			SIGNAL(valueChanged(double)), 				this, SLOT(SetRangeSteps()));
-		connect(spinSize,		SIGNAL(valueChanged(double)), 				this, SLOT(SetRangeSteps()));
-
 	}
-
 }
-
 //-------------------------------------------------------------------------------------------------------------------------------------------------
 
 
@@ -694,7 +698,7 @@ int qScanWidget::SetCustomSteps(){
 	for(int i=0;i<actualNumSteps;i++){
 		positions[i] = comboCustom->itemText(i).toDouble();
 #ifdef VERBOSE
-		cout<<"positions["<<i<<"]:"<<positions[i]<<endl;
+		cout << "positions[" << i << "]:" << positions[i] << endl;
 #endif
 	}
 
@@ -817,7 +821,7 @@ void qScanWidget::SetFileSteps(){
 			positions.resize(0);
 			actualNumSteps = 0;
 #ifdef VERBOSE
-			cout<< "Opening file "<< fName.toAscii().constData() << endl;
+			cout << "Opening file "<< fName.toAscii().constData() << endl;
 #endif
 			while(inFile.good()) {
 				getline(inFile,sLine);
@@ -833,13 +837,13 @@ void qScanWidget::SetFileSteps(){
 							actualNumSteps--;
 							positions.resize(actualNumSteps);
 						}
-						else cout<<"value["<<actualNumSteps-1<<"]:"<<positions[actualNumSteps-1]<<endl;
+						else cout << "value[" << actualNumSteps-1 << "]:" << positions[actualNumSteps-1] << endl;
 					}
 				}
 			}
-			disconnect(spinSteps,	SIGNAL(valueChanged(int)), 	this, SLOT(SetNSteps(int)));
+			disconnect(spinSteps,	SIGNAL(valueChanged(int)), 	this, SLOT(SetNSteps()));
 			spinSteps->setValue(actualNumSteps);
-			connect(spinSteps,		SIGNAL(valueChanged(int)), 	this, SLOT(SetNSteps(int)));
+			connect(spinSteps,		SIGNAL(valueChanged(int)), 	this, SLOT(SetNSteps()));
 			inFile.close();
 		}else {//could not open file
 #ifdef VERBOSE
@@ -871,12 +875,15 @@ void qScanWidget::SetFileSteps(){
 					qDefs::WarningMessage(string("<nobr><font color=\"blue\">Scan Level ")+string(cId)+
 					string(": Values From File</font></nobr><br><br>"
 					"<nobr>The positions list was not set for an unknown reason.</nobr>"),"ScanWidget");
-				}else{//SUCCESS
+				}
+#ifdef VERYVERBOSE
+				else{//SUCCESS
 					char cNum[200];sprintf(cNum,"%d",actualNumSteps);
 					qDefs::InfoMessage(string("<nobr><font color=\"blue\">Scan Level ")+string(cId)+
 							string(": Values From File</font></nobr><br><br><nobr>Number of positions added: ")+
 							string(cNum)+string("</nobr>"),"ScanWidget");
 				}
+#endif
 			}
 		}
 	}
@@ -917,7 +924,7 @@ void qScanWidget::LoadPositions(){
 	cout << "Entering LoadPositions()" << endl;
 #endif
 	disconnect(comboCustom,		SIGNAL(currentIndexChanged(int)), 		this, SLOT(SetCustomSteps()));
-	disconnect(spinSteps,		SIGNAL(valueChanged(int)), 				this, SLOT(SetNSteps(int)));
+	disconnect(spinSteps,		SIGNAL(valueChanged(int)), 				this, SLOT(SetNSteps()));
 	disconnect(btnGroup,		SIGNAL(buttonClicked(QAbstractButton*)),this,SLOT(EnableSizeWidgets()));
 
 
@@ -966,7 +973,7 @@ void qScanWidget::LoadPositions(){
 	btnCustom->setEnabled(numSteps&&mode);
 
 	connect(comboCustom,	SIGNAL(currentIndexChanged(int)), 	this, SLOT(SetCustomSteps()));
-	connect(spinSteps,		SIGNAL(valueChanged(int)), 			this, SLOT(SetNSteps(int)));
+	connect(spinSteps,		SIGNAL(valueChanged(int)), 			this, SLOT(SetNSteps()));
 	connect(btnGroup,		SIGNAL(buttonClicked(QAbstractButton*)),this,SLOT(EnableSizeWidgets()));
 
 
@@ -1002,7 +1009,7 @@ void qScanWidget::Refresh(){
 
 #ifdef VERBOSE
 	cout << "Updated\tscan:" << id << "\t"
-			"mode:"<<mode<<"\t"
+			"mode:" << mode << "\t"
 			"script:" << script << "\t"
 			"numSteps:" << actualNumSteps << "\t"
 			//"values:" << arrSteps << "\t"

@@ -117,9 +117,17 @@ void SetParameter();
 void SetPrecision(int value);
 
 /** Set number of steps
- * @param int num is the number of steps
  * */
-void SetNSteps(int num);
+void SetNSteps();
+
+/** Range type: If size is changed,
+ * the Number of steps is calculated
+ * */
+void RangeCalculateNumSteps();
+
+/** Range type: If size is changed, the To is calculated
+ * */
+void RangeCalculateTo();
 
 /** Set range for scan
  * */

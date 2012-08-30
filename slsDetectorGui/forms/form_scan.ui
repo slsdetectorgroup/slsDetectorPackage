@@ -101,7 +101,15 @@
         <item>
          <widget class="QRadioButton" name="radioRange">
           <property name="toolTip">
-           <string>&lt;nobr&gt;Defines scan range for a constant step size.&lt;/nobr&gt;</string>
+           <string>&lt;nobr&gt;
+Defines scan range for a &lt;b&gt;Constant Step Size&lt;/b&gt; with the following constraints:
+&lt;/nobr&gt;&lt;br&gt;&lt;nobr&gt;
+1. &lt;b&gt;Number of Steps&lt;/b&gt; &gt;=2.
+&lt;/nobr&gt;&lt;br&gt;&lt;nobr&gt;
+2. &lt;b&gt;Size&lt;/b&gt; not equal to 0.
+&lt;/nobr&gt;&lt;br&gt;&lt;nobr&gt;
+3. &lt;b&gt;From&lt;/b&gt; not equal to &lt;b&gt;To&lt;/b&gt;.
+&lt;/nobr&gt;&lt;br&gt;</string>
           </property>
           <property name="text">
            <string>Constant Step Size</string>
@@ -333,6 +341,9 @@
          <horstretch>0</horstretch>
          <verstretch>0</verstretch>
         </sizepolicy>
+       </property>
+       <property name="keyboardTracking">
+        <bool>false</bool>
        </property>
        <property name="minimum">
         <number>0</number>

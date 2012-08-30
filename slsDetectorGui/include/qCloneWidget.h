@@ -65,6 +65,15 @@ public:
 	 * */
 	void SetCloneHists(int nHists,int histNBins,double* histXAxis,double* histYAxis[],string histTitle[]);
 
+	/** Get the 1D hist values to plot for angle plotting
+	 * @param nHists Number of graphs in 1D
+	 * @param histNBins Total Number of X axis values/channels in 1D
+	 * @param histXAxis X Axis value in 1D
+	 * @param histYAxis Y Axis value in 1D
+	 * @param histTitle Title for all the graphs in 1D
+	 * */
+	void SetCloneHists(int nHists,int histNBins,double* histXAxis,double* histYAxis,string histTitle[]);
+
 public slots:
 /** Save Plots automatically by save all clones
  * returns -1 if fail*/

@@ -348,7 +348,7 @@ void qTabDataOutput::SetAngularCorrection(){
 		cout << "Setting angular conversion to default"  << endl;
 #endif
 		}else{
-			qDefs::WarningMessage("Angular Conversion could not be set.","Data Output");
+			qDefs::WarningMessage("Angular Conversion could not be set. Please set the default file name using the command line, if you haven't already.","Data Output");
 			chkAngular->setChecked(false);
 		}
 	}else{

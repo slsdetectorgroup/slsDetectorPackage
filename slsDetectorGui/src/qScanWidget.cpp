@@ -341,11 +341,11 @@ void qScanWidget::SetMode(int mode){
 
 	}
 
-	//set the group box widgets
+	//set the group box widgets and also calls setscan
 	EnableSizeWidgets();
 
-	//set the mode
-	/*SetScan(mode);*/
+	//set the mode if mode = none
+	if(!mode) SetScan(mode);
 }
 
 

@@ -197,7 +197,8 @@ void qTabPlot::Initialization(){
 // 1D Plot box
 	connect(chkSuperimpose, SIGNAL(toggled(bool)),		this, SLOT(EnablePersistency(bool)));
 	connect(spinPersistency,SIGNAL(valueChanged(int)),	myPlot,SLOT(SetPersistency(int)));
-	connect(chkPoints, 		SIGNAL(toggled(bool)),		myPlot, SLOT(SetDottedPlot(bool)));
+	connect(chkPoints, 		SIGNAL(toggled(bool)),		myPlot, SLOT(SetMarkers(bool)));
+	connect(chkLines, 		SIGNAL(toggled(bool)),		myPlot, SLOT(SetLines(bool)));
 // 2D Plot box
 	connect(chkInterpolate, SIGNAL(toggled(bool)),myPlot, SIGNAL(InterpolateSignal(bool)));
 	connect(chkContour, 	SIGNAL(toggled(bool)),myPlot, SIGNAL(ContourSignal(bool)));
@@ -500,8 +501,14 @@ void qTabPlot::EnableScanBox(){
 
 	//if it was checked before or disabled before, it remembers to check it again
 	bool checkedBefore = (boxScan->isChecked()||(!boxScan->isEnabled()));
+
+
+	//none of these scan plotting options make sense if positions>0
+	bool positionsExist = myDet->getPositions();
+
 	//only now enable/disable
-	boxScan->setEnabled(mode0||mode1);
+	boxScan->setEnabled((mode0||mode1)&&(!positionsExist));
+
 
 	//if there are scan
 	if(boxScan->isEnabled()){
@@ -533,6 +540,12 @@ void qTabPlot::EnableScanBox(){
 		}
 	}
 	else EnablingNthFrameFunction(enableNFrame);
+
+	//positions
+	if((positionsExist)&&(chkSuperimpose->isChecked())) chkSuperimpose->setChecked(false);
+	chkSuperimpose->setEnabled(!positionsExist);
+	boxFrequency->setEnabled(!positionsExist);
+	myPlot->EnableAnglePlot(positionsExist);
 
 
 	//sets the scan argument
@@ -568,22 +581,14 @@ void qTabPlot::EnablingNthFrameFunction(bool enable){
 void qTabPlot::SetScanArgument(){
 
 	//as default from histogram and default titles are set here if scanbox is disabled
-	Select1DPlot(isOrginallyOneD);
-
-	//if scans
-	if(boxScan->isEnabled()){
-		//setting the title according to the scans
-		QString mainTitle = QString(" Level 0 : ") + modeNames[myDet->getScanMode(0)] +
-							QString("   |   Level 1 : ") + modeNames[myDet->getScanMode(1)] + QString("");
-		dispTitle->setText(mainTitle);
-		myPlot->SetPlotTitle(mainTitle);
-	}else{
-		dispTitle->setText(defaultPlotTitle);
-		myPlot->SetPlotTitle(defaultPlotTitle);
+	dispTitle->setText(defaultPlotTitle);
+	myPlot->SetPlotTitle(defaultPlotTitle);
+	if(isOrginallyOneD){
 		dispXAxis->setText(defaultHistXAxisTitle);
 		dispYAxis->setText(defaultHistYAxisTitle);
 		myPlot->SetHistXAxisTitle(defaultHistXAxisTitle);
 		myPlot->SetHistYAxisTitle(defaultHistYAxisTitle);
+	}else{
 		dispXAxis->setText(defaultImageXAxisTitle);
 		dispYAxis->setText(defaultImageYAxisTitle);
 		dispZAxis->setText(defaultImageZAxisTitle);
@@ -591,6 +596,31 @@ void qTabPlot::SetScanArgument(){
 		myPlot->SetImageYAxisTitle(defaultImageYAxisTitle);
 		myPlot->SetImageZAxisTitle(defaultImageZAxisTitle);
 	}
+	Select1DPlot(isOrginallyOneD);
+
+	//if scans(1D or 2D)
+	if(boxScan->isEnabled()){
+		//setting the title according to the scans
+		QString mainTitle = QString(" Level 0 : ") + modeNames[myDet->getScanMode(0)] +
+							QString("   |   Level 1 : ") + modeNames[myDet->getScanMode(1)] + QString("");
+		dispTitle->setText(mainTitle);
+		myPlot->SetPlotTitle(mainTitle);
+		Select1DPlot(isOrginallyOneD);
+
+	}//angles (1D)
+	else if(myDet->getPositions()){
+		//if scan, change title
+		if((myDet->getScanMode(0))||(myDet->getScanMode(1))){
+			QString mainTitle = QString(" Level 0 : ") + modeNames[myDet->getScanMode(0)] +
+								QString("   |   Level 1 : ") + modeNames[myDet->getScanMode(1)] + QString("");
+			dispTitle->setText(mainTitle);
+			myPlot->SetPlotTitle(mainTitle);
+		}
+		dispXAxis->setText("Angles");
+		myPlot->SetHistXAxisTitle("Angles");
+		Select1DPlot(true);
+	}
+
 
 	//for 2d
 	if((boxScan->isEnabled())&&(boxScan->isChecked())){

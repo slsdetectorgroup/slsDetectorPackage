@@ -232,7 +232,7 @@ void qDetectorMain::Initialization(){
 		connect(tab_dataoutput,	SIGNAL(AngularConversionSignal(bool)),	tab_actions,SLOT(EnablePositions(bool)));
 		// Plot tab
 		connect(tab_plot,			SIGNAL(DisableZoomSignal(bool)),	this,SLOT(SetZoomToolTip(bool)));
-		// Actions tab
+		// Actions tab (also for angles)
 		connect(tab_actions,		SIGNAL(EnableScanBox()),			tab_plot,SLOT(EnableScanBox()));
 // Plotting
 	// When the acquisition is finished, must update the meas tab

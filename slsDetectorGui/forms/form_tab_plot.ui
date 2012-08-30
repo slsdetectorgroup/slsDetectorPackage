@@ -196,11 +196,14 @@
      <rect>
       <x>10</x>
       <y>20</y>
-      <width>350</width>
+      <width>361</width>
       <height>26</height>
      </rect>
     </property>
     <layout class="QGridLayout" name="gridLayout_3">
+     <property name="horizontalSpacing">
+      <number>0</number>
+     </property>
      <item row="0" column="0">
       <widget class="QCheckBox" name="chkSuperimpose">
        <property name="sizePolicy">
@@ -243,20 +246,39 @@
        </property>
        <property name="sizeHint" stdset="0">
         <size>
-         <width>170</width>
+         <width>140</width>
          <height>10</height>
         </size>
        </property>
       </spacer>
+     </item>
+     <item row="0" column="4">
+      <widget class="QCheckBox" name="chkLines">
+       <property name="enabled">
+        <bool>true</bool>
+       </property>
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+       <property name="text">
+        <string>Lines</string>
+       </property>
+       <property name="checked">
+        <bool>true</bool>
+       </property>
+      </widget>
      </item>
     </layout>
    </widget>
    <widget class="QWidget" name="horizontalLayoutWidget_2">
     <property name="geometry">
      <rect>
-      <x>145</x>
-      <y>20</y>
-      <width>126</width>
+      <x>120</x>
+      <y>21</y>
+      <width>121</width>
       <height>23</height>
      </rect>
     </property>

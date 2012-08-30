@@ -114,7 +114,28 @@ void qCloneWidget::SetCloneHists(int nHists,int histNBins,double* histXAxis,doub
 	}
 	//cloneplot1D->UnZoom();
 }
+
+
 //-------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+void qCloneWidget::SetCloneHists(int nHists,int histNBins,double* histXAxis,double* histYAxis,string histTitle[]){
+	/** for each plot*/cout<<"qclone nhists:"<<nHists<<endl;
+	for(int hist_num=0;hist_num<nHists;hist_num++){
+		/** create hists */
+		SlsQtH1D*  k;
+		if(hist_num+1>cloneplot1D_hists.size()){
+			cloneplot1D_hists.append(k=new SlsQtH1D("1d plot",histNBins,histXAxis,histYAxis));
+			k->SetLineColor(hist_num+1);
+		}else{
+			k=cloneplot1D_hists.at(hist_num);
+			k->SetData(histNBins,histXAxis,histYAxis);
+		}
+		k->setTitle(histTitle[hist_num].c_str());
+		k->Attach(cloneplot1D);
+	}
+	//cloneplot1D->UnZoom();
+}//-------------------------------------------------------------------------------------------------------------------------------------------------
 
 char* qCloneWidget::GetCurrentTimeStamp(){
 	char output[30];
@@ -128,6 +149,7 @@ char* qCloneWidget::GetCurrentTimeStamp(){
 	result = output + 0;
 	return result;
 }
+
 
 //-------------------------------------------------------------------------------------------------------------------------------------------------
 

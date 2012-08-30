@@ -24,6 +24,7 @@ class qCloneWidget;
 #include <QGroupBox>
 #include <QTimer>
 #include <QString>
+#include "qwt_symbol.h"
 
 /** C++ Include Headers */
 
@@ -68,6 +69,8 @@ public:
 	void DisableZoom(bool disable);
 	/**	Enables plot from the plot tab*/
 	void EnablePlot(bool enable);
+	/** Enable angle plot */
+	void EnableAnglePlot(bool enable){anglePlot = enable;};
 
 	/** Its a reminder to update plot to set the xy range
 	 * This is done only when there is a plot to update */
@@ -129,8 +132,10 @@ void SavePlot();
 void SaveAll(bool enable);
 /**	Sets persistency from plot tab */
 void SetPersistency(int val);
-/**	sets style of plot to dotted */
-void SetDottedPlot(bool enable){plotDotted = enable;};
+/**	sets style of plot to lines*/
+void SetLines(bool enable){lines = enable;};
+/**	sets markers */
+void SetMarkers(bool enable){markers = enable;};
 /** sets the scan argument to prepare the plot*/
 void SetScanArgument(int scanArg){scanArgument = scanArg;};
 
@@ -175,6 +180,10 @@ static int GetDataCallBack(detectorData *data, void *this_pointer);
 int GetData(detectorData *data);
 /** Saves all the plots. All sets saveError to true if not saved.*/
 void SavePlotAutomatic();
+
+void SetStyle(SlsQtH1D*  h){
+	if(lines) h->setStyle(QwtPlotCurve::Lines); else h->setStyle(QwtPlotCurve::Dots);
+	if(markers) h->setSymbol(*marker); 			else h->setSymbol(*noMarker);};
 
 
 
@@ -281,6 +290,8 @@ std::string  imageTitle;
 unsigned int plot_in_scope;
 /**	Number of Pixels in X Axis */
 unsigned int nPixelsX;
+/** Number of angle Pixels in X Axis */
+int nAnglePixelsX;
 /**	Number of pixel bins in Y Axis */
 int nPixelsY;
 /** Min Pixel number for Y Axis*/
@@ -306,6 +317,10 @@ int          histNBins;
 double*      histXAxis;
 /** Y Axis value in 1D  */
 double*      histYAxis[MAX_1DPLOTS];
+/** X Axis for angles in 1D */
+double*	     histXAngleAxis;
+/** Y Axis for angles in 1D (no persistency) */
+double*	     histYAngleAxis;
 /**	Current Image Values in 2D */
 double*      lastImageArray;
 /**	temporary Y Axis value in 1D */
@@ -324,7 +339,11 @@ int progress;
 /**If plot is enabled from plot tab*/
 bool plotEnable;
 /**If plot is dotted */
-bool plotDotted;
+bool lines;
+bool markers;
+/** Plot marker */
+QwtSymbol *marker;
+QwtSymbol *noMarker;
 /** Save all plots */
 bool saveAll;
 /** If error, while automatically saving plots, checks this at the end of an acquistion */
@@ -359,6 +378,9 @@ bool isTriggerEnabled;
 /** scan arguments*/
 enum scanArgumentList{None,Level0,Level1,FileIndex,AllFrames};
 int scanArgument;
+
+/** enable angle plot */
+bool anglePlot;
 
 
 

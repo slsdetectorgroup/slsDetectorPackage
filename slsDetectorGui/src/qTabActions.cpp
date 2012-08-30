@@ -273,17 +273,20 @@ void qTabActions::SetPosition(){
 		lblPosList->setPalette(normal);
 		lblPosList->setToolTip("<nobr>Enter the positions at which the detector should be moved.</nobr><br>"
 				"<nobr>Number of entries is restricted to <b>Number of Positions</b> field.</nobr>");
-		//delete existing positions
-		if (positions)  delete [] positions;
-		positions=new double[numPos];
-		//copying the list
-		for(int i=0;i<numPos;i++)
-			positions[i] = comboPos->itemText(i).toDouble();
-		//setting the list and catching error
-		if(myDet->setPositions(numPos,positions)!=numPos)
-			qDefs::WarningMessage("The positions list was not set for some reason.","Actions");
 	}
 
+	//delete existing positions
+	if (positions)  delete [] positions;
+	positions=new double[comboPos->count()];
+	//copying the list
+	for(int i=0;i<comboPos->count();i++)
+		positions[i] = comboPos->itemText(i).toDouble();
+	//setting the list and catching error
+	if(myDet->setPositions(comboPos->count(),positions)!=comboPos->count())
+		qDefs::WarningMessage("The positions list was not set for some reason.","Actions");
+
+
+	emit EnableScanBox();
 }
 
 
@@ -323,6 +326,7 @@ void qTabActions::EnablePositions(bool enable){
 		if(btnExpand[NumPositions]->text()=="-")
 			Expand(group->button(NumPositions));
 		comboPos->clear();
+		cout<<"Number of Positions set to :"<<myDet->getPositions()<<endl;
 		lblName[NumPositions]->setPalette(lblName[NumPositions-1]->palette());
 		lblName[NumPositions]->setEnabled(false);
 		btnExpand[NumPositions]->setEnabled(false);
@@ -345,7 +349,7 @@ void qTabActions::Refresh(){
 			//delete existing positions
 			if (positions)  delete [] positions;
 			//get number of positions
-			int numPos=myDet->getPositions();
+			int numPos=myDet->getPositions();cout<<"numPOs:"<<numPos<<endl;
 			comboPos->setMaxCount(numPos);
 
 			//set the number of positions in the gui

@@ -8,6 +8,7 @@
 #include "qDrawPlot.h"
 #include "qCloneWidget.h"
 #include "slsDetector.h"
+
 // Project Class Headers
 #include "slsDetector.h"
 #include "multiSlsDetector.h"
@@ -66,20 +67,27 @@ void qDrawPlot::SetupWidgetWindow(){
 
 	nPixelsX = myDet->getTotalNumberOfChannels();
 	nPixelsY = 100;
+	nAnglePixelsX = 1;
+
 	minPixelsY = 0;
+	//2d
 	lastImageArray = 0;
 	image_data = 0;
 	//1d
 	nHists    = 0;
 	histNBins = 0;
 	histXAxis = 0;
+	histXAngleAxis = 0;
+	histYAngleAxis = 0;
 	persistency = 0;
 	currentPersistency = 0;
+
 	progress = 0;
-	plotEnable=true;
+	plotEnable = true;
+	anglePlot = false;
 
 	saveAll = false;
-	plotDotted = false;
+
 	XYRangeChanged = false;
 	timerValue = PLOT_TIMER_MS;
 	frameFactor=0;
@@ -114,8 +122,9 @@ void qDrawPlot::SetupWidgetWindow(){
 
 	char temp_title[2000];
 	for(int i=0;i<MAX_1DPLOTS;i++){
-		sprintf(temp_title,"Frame -%d",i);
-		histTitle[i] = temp_title;
+		histTitle[i] = "";
+		//sprintf(temp_title,"Frame -%d",i);
+		//histTitle[i] = temp_title;
 	}
 	imageTitle.assign("Start Image");
 	imageXAxisTitle="Pixel";
@@ -144,6 +153,18 @@ void qDrawPlot::SetupWidgetWindow(){
 	plotLayout =  new QGridLayout(boxPlot);
 		plotLayout->addWidget(plot1D,1,1,1,1);
 		plotLayout->addWidget(plot2D,1,1,1,1);
+
+	//marker
+	lines = true;
+	markers = false;
+	marker = new QwtSymbol();
+	marker->setStyle(QwtSymbol::Cross);
+	marker->setSize(5,5);
+	noMarker = new QwtSymbol();
+
+
+
+
 }
 
 //-------------------------------------------------------------------------------------------------------------------------------------------------
@@ -190,8 +211,9 @@ void qDrawPlot::StartStopDaqToggle(bool stop_if_running){
 		//get #scansets for level 0 and level 1
 		int numScan0 = myDet->getScanSteps(0);	numScan0 = ((numScan0==0)?1:numScan0);
 		int numScan1 = myDet->getScanSteps(1);	numScan1 = ((numScan1==0)?1:numScan1);
+		int numPos 	 = myDet->getPositions();   numPos   = ((numPos==0)	 ?1:numPos);
 
-		number_of_exposures = number_of_frames * numScan0 * numScan1;
+		number_of_exposures = number_of_frames * numScan0 * numScan1 * numPos;
 		cout << "\tNumber of Exposures:" << number_of_exposures << endl;
 
 		// ExposureTime
@@ -260,6 +282,9 @@ bool qDrawPlot::StartOrStopThread(bool start){
 	//start part
 	if(start){
 
+		if(myDet->getRunStatus()==slsDetectorDefs::IDLE)
+			cout<<endl<<endl<<"IDLE"<<endl<<endl;
+		else cout<<endl<<endl<<"ERRORRRRRR: "<<myDet->getRunStatus()<<endl<<endl;
 		// Defaults
 		progress = 0;
 		currentFrame = 0;
@@ -321,9 +346,7 @@ bool qDrawPlot::StartOrStopThread(bool start){
 
 
 
-
 		//1d
-		histNBins = nPixelsX;
 		if(histXAxis)    delete [] histXAxis;	histXAxis    = new double [nPixelsX];
 		if(histYAxis[0]) delete [] histYAxis[0];histYAxis[0] = new double [nPixelsX];
 
@@ -335,8 +358,10 @@ bool qDrawPlot::StartOrStopThread(bool start){
 		if(image_data) delete [] image_data;	image_data = new double[nPixelsY*nPixelsX];
 
 		//initializing 1d xaxis
-		for(unsigned int px=0;px<nPixelsX;px++)
-			histXAxis[px]  = px+10;
+		for(unsigned int px=0;px<nPixelsX;px++)	histXAxis[px]  = px;/*+10;*/
+
+		histYAxis[0][4] = 190.56;
+
 		//initializing 2d array
 		for(int py=0;py<nPixelsY;py++)
 			for(int px=0;px<nPixelsX;px++)
@@ -415,14 +440,16 @@ int qDrawPlot::GetData(detectorData *data){
 
 		//Not Nth Frame, Not time out yet
 		else{
-			//if the time is not over, RETURN
-			if(!data_pause_over){
-				progress=(int)data->progressIndex;
-				currentFrame++;
-				return 0;
+			if((scanArgument==None)&&(!anglePlot)){
+				//if the time is not over, RETURN
+				if(!data_pause_over){
+					progress=(int)data->progressIndex;
+					currentFrame++;
+					return 0;
+				}
+				data_pause_over=false;
+				data_pause_timer->start((int)(PLOT_TIMER_MS/2));
 			}
-			data_pause_over=false;
-			data_pause_timer->start((int)(PLOT_TIMER_MS/2));
 		}
 
 
@@ -442,8 +469,25 @@ int qDrawPlot::GetData(detectorData *data){
 #ifdef VERYVERBOSE
 			cout << "Reading in image: " << currentIndex << endl;
 #endif
+			//angle plotting
+			if(anglePlot){
+				if(!pthread_mutex_trylock(&(last_image_complete_mutex))){
+					lastImageNumber= currentFrame+1;
+					nAnglePixelsX = data->npoints;
+					histNBins = nAnglePixelsX;
+					nHists=1;
+					if(histXAngleAxis) delete [] histXAngleAxis; histXAngleAxis = new double[nAnglePixelsX];
+					if(histYAngleAxis) delete [] histYAngleAxis; histYAngleAxis = new double[nAnglePixelsX];
+					memcpy(histXAngleAxis,data->angles,nAnglePixelsX*sizeof(double));
+					memcpy(histYAngleAxis,data->values,nAnglePixelsX*sizeof(double));
+					pthread_mutex_unlock(&(last_image_complete_mutex));
+				}
+				currentFrame++;
+				return 0;
+			}
 			//if scan argument is 2d
 			if(scanArgument!=None){
+				//alframes
 				if(scanArgument==AllFrames){
 					if(!pthread_mutex_trylock(&(last_image_complete_mutex))){
 						lastImageNumber= currentFrame+1;
@@ -455,7 +499,8 @@ int qDrawPlot::GetData(detectorData *data){
 					currentScanDivLevel++;
 					return 0;
 				}
-				else if(scanArgument==FileIndex){
+				//file index
+				if(scanArgument==FileIndex){
 					if(!pthread_mutex_trylock(&(last_image_complete_mutex))){
 						if(currentIndex == minPixelsY) currentScanDivLevel = 0;
 						lastImageNumber= currentFrame+1;
@@ -467,7 +512,8 @@ int qDrawPlot::GetData(detectorData *data){
 					currentScanDivLevel++;
 					return 0;
 				}
-				else if(scanArgument==Level0){
+				//level0
+				if(scanArgument==Level0){
 					if(!pthread_mutex_trylock(&(last_image_complete_mutex))){
 						if(currentScanVariable0!=currentScanValue) currentScanDivLevel++;
 						currentScanValue = currentScanVariable0;
@@ -479,18 +525,18 @@ int qDrawPlot::GetData(detectorData *data){
 					currentFrame++;
 					return 0;
 				}
-				else {
-					if(!pthread_mutex_trylock(&(last_image_complete_mutex))){
-						if(currentScanVariable1!=currentScanValue) currentScanDivLevel++;
-						currentScanValue = currentScanVariable1;
-						lastImageNumber= currentFrame+1;
-						char temp_title[2000]; sprintf(temp_title,"Image Index %d",currentIndex); imageTitle = temp_title;
-						for(unsigned int px=0;px<nPixelsX;px++) lastImageArray[currentScanDivLevel*nPixelsX+px] += data->values[px];
-						pthread_mutex_unlock(&(last_image_complete_mutex));
-					}
-					currentFrame++;
-					return 0;
+				//level1
+				if(!pthread_mutex_trylock(&(last_image_complete_mutex))){
+					if(currentScanVariable1!=currentScanValue) currentScanDivLevel++;
+					currentScanValue = currentScanVariable1;
+					lastImageNumber= currentFrame+1;
+					char temp_title[2000]; sprintf(temp_title,"Image Index %d",currentIndex); imageTitle = temp_title;
+					for(unsigned int px=0;px<nPixelsX;px++) lastImageArray[currentScanDivLevel*nPixelsX+px] += data->values[px];
+					pthread_mutex_unlock(&(last_image_complete_mutex));
 				}
+				currentFrame++;
+				return 0;
+
 			}
 
 			//normal measurement or 1d scans
@@ -502,18 +548,15 @@ int qDrawPlot::GetData(detectorData *data){
 				//1d
 				if(plot_in_scope==1){
 					// Titles changed to "" inside startstopthread
-					//sprintf(temp_title,"Frame Index %d",currentIndex);    histTitle[0] = temp_title;
-
 					// Persistency
 					if(currentPersistency < persistency)currentPersistency++;
 					else currentPersistency=persistency;
 					nHists = currentPersistency+1;
+					histNBins = nPixelsX;
 					// copy data
-					//memcpy(histXAxis,    xvalues,nPixelsX*sizeof(double));
 					for(int i=currentPersistency;i>0;i--)
 						memcpy(histYAxis[i],histYAxis[i-1],nPixelsX*sizeof(double));
 					memcpy(histYAxis[0],data->values,nPixelsX*sizeof(double));
-					//for(int i=0;i<(int)nPixelsX;i++)		*(yvalues[0]+i) = (double)*(data->values+i);
 				}
 				//2d
 				else{
@@ -593,13 +636,21 @@ void qDrawPlot::UpdatePlot(){
 				for(int hist_num=0;hist_num<(int)nHists;hist_num++){
 					SlsQtH1D*  h;
 					if(hist_num+1>plot1D_hists.size()){
-						plot1D_hists.append(h=new SlsQtH1D("1d plot",histNBins,histXAxis,GetHistYAxis(hist_num)));
+						if(anglePlot)
+							plot1D_hists.append(h=new SlsQtH1D("1d plot",histNBins,histXAngleAxis,histYAngleAxis));
+						else
+							plot1D_hists.append(h=new SlsQtH1D("1d plot",histNBins,histXAxis,GetHistYAxis(hist_num)));
 						h->SetLineColor(hist_num+1);
 					}else{
 						h=plot1D_hists.at(hist_num);
-						h->SetData(histNBins,histXAxis,GetHistYAxis(hist_num));
+						if(anglePlot)
+							h->SetData(histNBins,histXAngleAxis,histYAngleAxis);
+						else
+							h->SetData(histNBins,histXAxis,GetHistYAxis(hist_num));
 					}
-					h->SetDotStyle(plotDotted);
+					//h->setSymbol(*noSymbol);
+					//h->SetDotStyle(plotDotted);
+					SetStyle(h);
 					h->setTitle(GetHistTitle(hist_num));
 					h->Attach(plot1D);
 				}
@@ -701,7 +752,12 @@ void qDrawPlot::ClonePlot(){
 		plot1D->SetXTitle(histXAxisTitle.toAscii().constData());
 		plot1D->SetYTitle(histYAxisTitle.toAscii().constData());
 		plotLayout->addWidget(plot1D,1,1,1,1);
-		if(running) winClone[i]->SetCloneHists((int)nHists,histNBins,histXAxis,histYAxis,histTitle);
+		if(running){
+			if(anglePlot)
+				winClone[i]->SetCloneHists((int)nHists,histNBins,histXAxis,histYAxis,histTitle);
+			else
+				winClone[i]->SetCloneHists((int)nHists,histNBins,histXAngleAxis,histYAngleAxis,histTitle);
+		}
 	}
 	else{
 		plot2D = new SlsQt2DPlotLayout(boxPlot);

@@ -97,15 +97,15 @@ void qDetectorMain::SetUpWidgetWindow(){
 	tabs = new MyTabWidget(this);
 	layoutTabs->addWidget(tabs);
 	// creating all the tab widgets
-	tab_messages		=  new qTabMessages		(this,	myDet);
-	tab_measurement 	=  new qTabMeasurement	(this,	myDet,myPlot);
-	tab_dataoutput 		=  new qTabDataOutput	(this,	myDet, detID);
-	tab_plot 			=  new qTabPlot			(this,	myDet,myPlot);
-	tab_actions			=  new qTabActions		(this,	myDet);
-	tab_settings 		=  new qTabSettings		(this,	myDet, detID);
-	tab_advanced 		=  new qTabAdvanced		(this,	myDet);
-	tab_debugging 		=  new qTabDebugging	(this,	myDet);
-	tab_developer 		=  new qTabDeveloper	(this,	myDet);
+	tab_messages		=  new qTabMessages		(this,	myDet); 			cout<<"Messages ready"<<endl;
+	tab_measurement 	=  new qTabMeasurement	(this,	myDet,myPlot);		cout<<"Measurement ready"<<endl;
+	tab_dataoutput 		=  new qTabDataOutput	(this,	myDet, detID);		cout<<"DataOutput ready"<<endl;
+	tab_plot 			=  new qTabPlot			(this,	myDet,myPlot);		cout<<"Plot ready"<<endl;
+	tab_actions			=  new qTabActions		(this,	myDet);				cout<<"Actions ready"<<endl;
+	tab_settings 		=  new qTabSettings		(this,	myDet, detID);		cout<<"Settings ready"<<endl;
+	tab_advanced 		=  new qTabAdvanced		(this,	myDet);				cout<<"Advanced ready"<<endl;
+	tab_debugging 		=  new qTabDebugging	(this,	myDet);				cout<<"Debugging ready"<<endl;
+	tab_developer 		=  new qTabDeveloper	(this,	myDet);				cout<<"Developer ready"<<endl;
 	//	creating the scroll area widgets for the tabs
 	for(int i=0;i<NumberOfTabs;i++){
 		scroll[i] = new QScrollArea;
@@ -154,6 +154,8 @@ void qDetectorMain::SetUpWidgetWindow(){
 	dockWidgetPlot->setFloating(false);
 	dockWidgetPlot->setFeatures(QDockWidget::NoDockWidgetFeatures);
 	tabs->setTabEnabled(Developer,isDeveloper);
+	if(!digitalDetector) actionExpert->setEnabled(false);
+
 
 // Other setup
 	//Height of plot and central widget
@@ -323,8 +325,9 @@ void qDetectorMain::ExecuteUtilities(QAction *action){
 				tr("Detector Setup files (*.det)"));
 		// Gets called when cancelled as well
 		if (!fName.isEmpty()){
-			myDet->retrieveDetectorSetup(string(fName.toAscii().constData()));
-			qDefs::InfoMessage("The parameters have been successfully setup.","Main");
+			if(myDet->retrieveDetectorSetup(string(fName.toAscii().constData()))!=slsDetectorDefs::FAIL)
+				qDefs::InfoMessage("The Setup Parameters have been loaded successfully.","Main");
+			else qDefs::WarningMessage("The Loading of Setup Parameters has failed.","Main");
 		}
 	}
 	else if(action==actionSaveSetup){
@@ -337,8 +340,9 @@ void qDetectorMain::ExecuteUtilities(QAction *action){
 				tr("Detector Setup files (*.det) "));
 		// Gets called when cancelled as well
 		if (!fName.isEmpty()){
-			myDet->dumpDetectorSetup(string(fName.toAscii().constData()));
-			qDefs::InfoMessage("The setup parameters have been successfully saved.","Main");
+			if(myDet->dumpDetectorSetup(string(fName.toAscii().constData()))!=slsDetectorDefs::FAIL)
+				qDefs::InfoMessage("The Setup Parameters have been saved successfully.","Main");
+			else qDefs::WarningMessage("The Saving of Setup Parameters has failed.","Main");
 		}
 	}
 	else if(action==actionMeasurementWizard){
@@ -356,8 +360,9 @@ void qDetectorMain::ExecuteUtilities(QAction *action){
 				tr("Configuration files (*.config)"));
 		// Gets called when cancelled as well
 		if (!fName.isEmpty()){
-			myDet->readConfigurationFile(string(fName.toAscii().constData()));
-			qDefs::InfoMessage("The parameters have been successfully configured.","Main");
+			if(myDet->readConfigurationFile(string(fName.toAscii().constData()))!=slsDetectorDefs::FAIL)
+				qDefs::InfoMessage("The Configuration Parameters have been configured successfully.","Main");
+			else qDefs::WarningMessage("The Loading of Configuration Parameters has failed.","Main");
 		}
 	}
 	else if(action==actionSaveConfiguration){
@@ -370,8 +375,9 @@ void qDetectorMain::ExecuteUtilities(QAction *action){
 				tr("Configuration files (*.config) "));
 		// Gets called when cancelled as well
 		if (!fName.isEmpty()){
-			myDet->writeConfigurationFile(string(fName.toAscii().constData()));
-			qDefs::InfoMessage("The configuration parameters have been successfully saved.","Main");
+			if(myDet->writeConfigurationFile(string(fName.toAscii().constData()))!=slsDetectorDefs::FAIL)
+				qDefs::InfoMessage("The Configuration Parameters have been saved successfully.","Main");
+			else qDefs::WarningMessage("The Saving of Configuration Parameters has failed.","Main");
 		}
 	}
 	else if(action==actionLoadTrimbits){
@@ -384,8 +390,104 @@ void qDetectorMain::ExecuteUtilities(QAction *action){
 				tr("Trimbit files (*.trim *.sn*)"));
 		// Gets called when cancelled as well
 		if (!fName.isEmpty()){
-			//myDet->readConfigurationFile(string(fName.toAscii().constData()));
-			qDefs::InfoMessage("The parameters have been successfully configured.","Main");
+			if(myDet->loadSettingsFile(string(fName.toAscii().constData()),-1)!=slsDetectorDefs::FAIL)
+				qDefs::InfoMessage("The Trimbits have been loaded successfully.","Main");
+			else qDefs::WarningMessage("The Loading of Trimbits has failed.","Main");
+		}
+	}
+	else if(action==actionSaveTrimbits){
+#ifdef VERBOSE
+		cout << "Saving Trimbits" << endl;
+#endif
+		QString fName = QString(myDet->getFilePath().c_str());
+		fName = QFileDialog::getSaveFileName(this,
+				tr("Save Current Detector Trimbits"),fName,
+				tr("Trimbit files (*.trim *.sn*) "));
+		// Gets called when cancelled as well
+		if (!fName.isEmpty()){
+			if(myDet->saveSettingsFile(string(fName.toAscii().constData()),-1)!=slsDetectorDefs::FAIL)
+				qDefs::InfoMessage("The Trimbits have been saved successfully.","Main");
+			else qDefs::WarningMessage("The Saving of Trimbits has failed.","Main");
+		}
+	}
+	else if(action==actionLoadCalibration){
+#ifdef VERBOSE
+		cout << "Loading Calibration Data" << endl;
+#endif
+		QString fName = QString(myDet->getFilePath().c_str());
+		fName = QFileDialog::getOpenFileName(this,
+				tr("Load Detector Calibration Data"),fName,
+				tr("Calibration files (*.cal *.sn*)"));
+		// Gets called when cancelled as well
+		if (!fName.isEmpty()){
+			int nMod = myDet->setNumberOfModules();
+			slsDetector *detector;
+			slsDetectorDefs::sls_detector_module *myMod=NULL;
+			string sFname= fName.toAscii().constData();
+			double gain,offset;
+			for(int i=0;i<nMod;i++){
+				string fn = sFname;
+				detector = myDet->getSlsDetector(i);
+				if(detector){
+					if (sFname.find(".cal")==string::npos) {
+					if (sFname.find(".sn")==string::npos && sFname.find(".cal")) {
+						ostringstream ostfn;
+						ostfn << sFname << ".sn"  << setfill('0') << setw(3) << hex << myDet->getId(slsDetectorDefs::MODULE_SERIAL_NUMBER, i);
+						fn=ostfn.str();
+					}}
+					if(detector->readCalibrationFile(fn,gain,offset)==-1)
+						qDefs::WarningMessage(string("Could not open Calibration File.\n")+ fn,"Main");
+					else{
+						 if(myMod = detector->getModule(i)){
+							 myMod->gain = gain;
+							 myMod->offset = offset;
+							 detector->setModule(*myMod);
+							 detector->deleteModule(myMod);
+						 }
+					}
+				}
+				detector = NULL;
+			}
+
+			//if(energyConversion::readCalibrationFile(string(fName.toAscii().constData()),-1)!=slsDetectorDefs::FAIL)
+			//	qDefs::InfoMessage("The Calibration Data have been loaded successfully.","Main");
+			//else qDefs::WarningMessage("The Loading of Calibration Data has failed.","Main");
+		}
+	}
+	else if(action==actionSaveCalibration){
+#ifdef VERBOSE
+		cout << "Saving Calibration Data" << endl;
+#endif
+		QString fName = QString(myDet->getFilePath().c_str());
+		fName = QFileDialog::getSaveFileName(this,
+				tr("Save Current Detector Calibration Data"),fName,
+				tr("Calibration files (*.cal *.sn*) "));
+		// Gets called when cancelled as well
+		if (!fName.isEmpty()){
+			int nMod = myDet->setNumberOfModules();
+			cout<<"nmode:"<<nMod<<endl;
+			slsDetector *detector;
+			slsDetectorDefs::sls_detector_module *myMod=NULL;
+			string sFname= fName.toAscii().constData();
+			double gain,offset;
+			for(int i=0;i<nMod;i++){
+				string fn = sFname;
+				detector = myDet->getSlsDetector(i);
+				if(detector){
+					ostringstream ostfn;
+					ostfn << sFname << ".sn"  << setfill('0') << setw(3) << hex << myDet->getId(slsDetectorDefs::MODULE_SERIAL_NUMBER, i);
+					fn=ostfn.str();
+					if(myMod = detector->getModule(i)){
+						if(detector->writeCalibrationFile(fn,myMod->gain,myMod->offset)==-1)
+							qDefs::WarningMessage(string("Could not open Calibration File.\n")+ fn,"Main");
+						detector->deleteModule(myMod);
+					}
+				}
+				detector = NULL;
+			}
+			//if(energyConversion::writeCalibrationFile(string(fName.toAscii().constData()),-1)!=slsDetectorDefs::FAIL)
+			//	qDefs::InfoMessage("The Calibration Data have been saved successfully.","Main");
+			//else qDefs::WarningMessage("The Saving of Calibration Data has failed.","Main");
 		}
 	}
 

@@ -211,9 +211,14 @@ void qDrawPlot::StartStopDaqToggle(bool stop_if_running){
 		//get #scansets for level 0 and level 1
 		int numScan0 = myDet->getScanSteps(0);	numScan0 = ((numScan0==0)?1:numScan0);
 		int numScan1 = myDet->getScanSteps(1);	numScan1 = ((numScan1==0)?1:numScan1);
-		int numPos 	 = myDet->getPositions();   numPos   = ((numPos==0)	 ?1:numPos);
 
-		number_of_exposures = number_of_frames * numScan0 * numScan1 * numPos;
+
+		number_of_exposures = number_of_frames * numScan0 * numScan1;
+		if(anglePlot) {
+			int numPos = myDet->getPositions();   //numPos = ((numPos==0)	 ?1:numPos);
+			number_of_exposures = numScan0 * numScan1;/*number_of_exposures * numPos;*/
+
+		}
 		cout << "\tNumber of Exposures:" << number_of_exposures << endl;
 
 		// ExposureTime
@@ -616,7 +621,7 @@ void qDrawPlot::Clear1DPlot(){
 
 void qDrawPlot::UpdatePlot(){
 #ifdef VERYVERBOSE
-	cout << "Entering UpdatePlot function" << endl;
+	/*cout << "Entering UpdatePlot function" << endl;*/
 #endif
 
 	plot_update_timer->stop();
@@ -628,7 +633,7 @@ void qDrawPlot::UpdatePlot(){
 		if(lastImageNumber){
 			if(histNBins){
 #ifdef VERYVERBOSE
-				cout << "Last Image Number: " << lastImageNumber << endl;
+				/*cout << "Last Image Number: " << lastImageNumber << endl;*/
 #endif
 				Clear1DPlot();
 				plot1D->SetXTitle(histXAxisTitle.toAscii().constData());

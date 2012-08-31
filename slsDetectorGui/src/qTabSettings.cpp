@@ -41,6 +41,9 @@ void qTabSettings::SetupWidgetWindow(){
 	SetupDetectorSettings();
 	comboSettings->setCurrentIndex(myDet->getSettings(detID));
 
+	//threshold
+	spinThreshold->setValue(myDet->getThresholdEnergy());
+
 	//expert mode is not enabled initially
 	lblThreshold->setEnabled(false);
 	spinThreshold->setEnabled(false);

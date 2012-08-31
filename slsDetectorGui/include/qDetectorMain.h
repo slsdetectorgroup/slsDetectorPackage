@@ -111,7 +111,6 @@ private:
 	/**if the developer tab should be enabled,known from command line */
 	int isDeveloper;
 
-
 	/**Sets up the layout of the widget
 	 * */
 	void SetUpWidgetWindow();

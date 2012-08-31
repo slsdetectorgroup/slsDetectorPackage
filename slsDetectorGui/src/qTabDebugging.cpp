@@ -44,13 +44,14 @@ void qTabDebugging::SetupWidgetWindow(){
 	else lblModule->setText("Module Number:");
 
 	// loading combo box module numbers
-	int max = myDet->setNumberOfModules(GET_FLAG,slsDetectorDefs::X)*myDet->setNumberOfModules(GET_FLAG,slsDetectorDefs::Y);
-	for(int i=0;i<max;i++){
+	int max = myDet->setNumberOfModules();
+
+/*	for(int i=0;i<max;i++){
 		slsDetector *s = myDet->getSlsDetector(i);
 		if(s->setTCPSocket()!=slsDetectorDefs::FAIL){
 			comboModule->addItem(QString::number(i));
 		}
-	}
+	}*/
 }
 
 //-------------------------------------------------------------------------------------------------------------------------------------------------

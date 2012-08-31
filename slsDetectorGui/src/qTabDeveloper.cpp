@@ -154,7 +154,7 @@ void qTabDeveloper::SetupWidgetWindow(){
 
 
 void qTabDeveloper::Initialization(){
-	connect(adcTimer, 	SIGNAL(timeout()), 		this, SLOT(RefreshAdcs()));
+	if(NUM_ADC_WIDGETS) connect(adcTimer, 	SIGNAL(timeout()), 		this, SLOT(RefreshAdcs()));
 
 	for(int i=0;i<NUM_DAC_WIDGETS;i++)
 		connect(spinDacs[i],	SIGNAL(editingFinished(int)),	this, SLOT(SetDacValues(int)));
@@ -262,6 +262,7 @@ slsDetectorDefs::dacIndex qTabDeveloper::getSLSIndex(int index){
 			Refresh();
 			break;
 		}
+		break;
 	case slsDetectorDefs::EIGER:
 		return slsDetectorDefs::HUMIDITY;
 		/**fill in here*/
@@ -283,11 +284,13 @@ slsDetectorDefs::dacIndex qTabDeveloper::getSLSIndex(int index){
 			Refresh();
 			break;
 		}
+		break;
 	default:
 		qDefs::ErrorMessage(string("Unknown detector type:")+myDet->slsDetectorBase::getDetectorType(detType),"Developer");
 		exit(-1);
 		break;
 	}
+	return slsDetectorDefs::HUMIDITY;
 }
 
 
@@ -316,7 +319,7 @@ void qTabDeveloper::Refresh(){
 	for(int i=0;i<NUM_DAC_WIDGETS;i++)
 		spinDacs[i]->setValue((double)myDet->setDAC(-1,getSLSIndex(i)));
 	//adcs
-	RefreshAdcs();
+	if(NUM_ADC_WIDGETS) RefreshAdcs();
 
 	//gotthard -high voltage
 	if(detType == slsDetectorDefs::GOTTHARD){

@@ -493,7 +493,7 @@ void qTabPlot::SetFrequency(){
 
 void qTabPlot::EnableScanBox(){
 #ifdef VERYVERBOSE
-	cout << "Entering Enable Scan Box() \t mode:" << mode << " \t id:" << id << endl;
+	cout << "Entering Enable Scan Box()" << endl;
 #endif
 
 	int mode0 = myDet->getScanMode(0);

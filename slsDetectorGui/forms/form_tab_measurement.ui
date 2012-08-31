@@ -188,6 +188,10 @@
        <property name="enabled">
         <bool>false</bool>
        </property>
+       <property name="toolTip">
+        <string>Number of Triggers to be expected.
+ #cycles#</string>
+       </property>
        <property name="text">
         <string>Number of Triggers:</string>
        </property>
@@ -205,8 +209,8 @@
         </sizepolicy>
        </property>
        <property name="toolTip">
-        <string>Run index (automatically incremented) 
- #index#</string>
+        <string>Number of Triggers to be expected.
+ #cycles#</string>
        </property>
        <property name="statusTip">
         <string/>
@@ -221,7 +225,7 @@
         <string/>
        </property>
        <property name="minimum">
-        <number>1</number>
+        <number>0</number>
        </property>
        <property name="maximum">
         <number>2000000000</number>
@@ -235,6 +239,10 @@
       <widget class="QLabel" name="lblDelay">
        <property name="enabled">
         <bool>false</bool>
+       </property>
+       <property name="toolTip">
+        <string>The Delay between Trigger Edge and Start of Exposure ( or Readout). 
+#delay#</string>
        </property>
        <property name="text">
         <string>Delay After Trigger:</string>
@@ -253,8 +261,8 @@
         </sizepolicy>
        </property>
        <property name="toolTip">
-        <string>Frame period between exposures. 
- #period#</string>
+        <string>The Delay between Trigger Edge and Start of Exposure ( or Readout). 
+#delay#</string>
        </property>
        <property name="alignment">
         <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
@@ -280,6 +288,10 @@
          <horstretch>0</horstretch>
          <verstretch>0</verstretch>
         </sizepolicy>
+       </property>
+       <property name="toolTip">
+        <string>The Delay between Trigger Edge and Start of Exposure ( or Readout). 
+#delay#</string>
        </property>
        <property name="layoutDirection">
         <enum>Qt::LeftToRight</enum>
@@ -330,6 +342,10 @@
          <verstretch>0</verstretch>
         </sizepolicy>
        </property>
+       <property name="toolTip">
+        <string>Number of Gate Signals per Frame.
+ #gates#</string>
+       </property>
        <property name="text">
         <string>Number of Gates:</string>
        </property>
@@ -347,8 +363,8 @@
         </sizepolicy>
        </property>
        <property name="toolTip">
-        <string>Run index (automatically incremented) 
- #index#</string>
+        <string>Number of Gate Signals per Frame.
+ #gates#</string>
        </property>
        <property name="statusTip">
         <string/>
@@ -363,7 +379,7 @@
         <string/>
        </property>
        <property name="minimum">
-        <number>1</number>
+        <number>0</number>
        </property>
        <property name="maximum">
         <number>2000000000</number>
@@ -384,6 +400,10 @@
          <verstretch>0</verstretch>
         </sizepolicy>
        </property>
+       <property name="toolTip">
+        <string>The data are accumulated over several (frames) pump-cycles. Set cycles to 1.
+#probes#</string>
+       </property>
        <property name="text">
         <string>Number of Probes:</string>
        </property>
@@ -401,8 +421,8 @@
         </sizepolicy>
        </property>
        <property name="toolTip">
-        <string>Run index (automatically incremented) 
- #index#</string>
+        <string>The data are accumulated over several (frames) pump-cycles. Set cycles to 1.
+#probes#</string>
        </property>
        <property name="statusTip">
         <string/>
@@ -417,7 +437,7 @@
         <string/>
        </property>
        <property name="minimum">
-        <number>1</number>
+        <number>0</number>
        </property>
        <property name="maximum">
         <number>2000000000</number>
@@ -626,8 +646,15 @@
         <bool>false</bool>
        </property>
        <property name="toolTip">
-        <string>Frame period between exposures. 
- #period#</string>
+        <string>&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;&gt;
+&lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
+p, li { white-space: pre-wrap; }
+&lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:'Sans Serif'; font-size:9pt; font-weight:400; font-style:normal;&quot;&gt;
+&lt;table style=&quot;-qt-table-type: root; margin-top:4px; margin-bottom:4px; margin-left:4px; margin-right:4px;&quot;&gt;
+&lt;tr&gt;
+&lt;td style=&quot;border: none;&quot;&gt;
+&lt;p align=&quot;justify&quot; style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;Frame period between exposures. &lt;/p&gt;
+&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt; #period#&lt;/p&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/body&gt;&lt;/html&gt;</string>
        </property>
        <property name="text">
         <string>Acquisition Period:</string>
@@ -646,8 +673,15 @@
         </sizepolicy>
        </property>
        <property name="toolTip">
-        <string>Frame period between exposures. 
- #period#</string>
+        <string>&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;&gt;
+&lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
+p, li { white-space: pre-wrap; }
+&lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:'Sans Serif'; font-size:9pt; font-weight:400; font-style:normal;&quot;&gt;
+&lt;table style=&quot;-qt-table-type: root; margin-top:4px; margin-bottom:4px; margin-left:4px; margin-right:4px;&quot;&gt;
+&lt;tr&gt;
+&lt;td style=&quot;border: none;&quot;&gt;
+&lt;p align=&quot;justify&quot; style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;Frame period between exposures. &lt;/p&gt;
+&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt; #period#&lt;/p&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/body&gt;&lt;/html&gt;</string>
        </property>
        <property name="alignment">
         <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
@@ -673,6 +707,17 @@
          <horstretch>0</horstretch>
          <verstretch>0</verstretch>
         </sizepolicy>
+       </property>
+       <property name="toolTip">
+        <string>&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;&gt;
+&lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
+p, li { white-space: pre-wrap; }
+&lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:'Sans Serif'; font-size:9pt; font-weight:400; font-style:normal;&quot;&gt;
+&lt;table style=&quot;-qt-table-type: root; margin-top:4px; margin-bottom:4px; margin-left:4px; margin-right:4px;&quot;&gt;
+&lt;tr&gt;
+&lt;td style=&quot;border: none;&quot;&gt;
+&lt;p align=&quot;justify&quot; style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;Frame period between exposures. &lt;/p&gt;
+&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt; #period#&lt;/p&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/body&gt;&lt;/html&gt;</string>
        </property>
        <property name="layoutDirection">
         <enum>Qt::LeftToRight</enum>

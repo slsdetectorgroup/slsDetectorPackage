@@ -429,7 +429,7 @@ void qDetectorMain::ExecuteUtilities(QAction *action){
 #ifdef VERBOSE
 		cout << "Saving Calibration Data" << endl;
 #endif
-		QString fName = QString(myDet->getCalDir());
+		QString fName = QString(myDet->getCalDir())+QString("/newTrims");
 		fName = QFileDialog::getSaveFileName(this,
 				tr("Save Current Detector Calibration Data"),fName,
 				tr("Calibration files (*.cal *.sn*) "));

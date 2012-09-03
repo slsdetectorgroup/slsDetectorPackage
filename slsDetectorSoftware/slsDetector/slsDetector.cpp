@@ -5111,6 +5111,62 @@ int slsDetector::saveSettingsFile(string fname, int imod) {
 
 
 
+
+
+int slsDetector::loadCalibrationFile(string fname, int imod) {
+
+  sls_detector_module  *myMod=NULL;
+  string fn=fname;
+  fn=fname;
+  int mmin=0, mmax=setNumberOfModules();
+  if (imod>=0) {
+    mmin=imod;
+    mmax=imod+1;
+  }
+  for (int im=mmin; im<mmax; im++) {
+    if (fname.find(".sn")==string::npos && fname.find(".cal")) {
+      ostringstream ostfn;
+      ostfn << fname << ".sn"  << setfill('0') << setw(3) << hex << getId(MODULE_SERIAL_NUMBER, im);
+      fn=ostfn.str();
+    }
+    if(myMod=getModule(im)){
+      if(readCalibrationFile(fn, myMod->gain, myMod->offset)==FAIL)
+    	  return FAIL;
+      setModule(*myMod);
+      deleteModule(myMod);
+    } else
+      return FAIL;
+  }
+  return OK;
+}
+
+
+int slsDetector::saveCalibrationFile(string fname, int imod) {
+
+
+  sls_detector_module  *myMod=NULL;
+  int ret=FAIL;
+
+  int mmin=0,  mmax=setNumberOfModules();
+  if (imod>=0) {
+    mmin=imod;
+    mmax=imod+1;
+  }
+  for (int im=mmin; im<mmax; im++) {
+    ostringstream ostfn;
+    ostfn << fname << ".sn"  << setfill('0') << setw(3) << hex << getId(MODULE_SERIAL_NUMBER, im);
+    if ((myMod=getModule(im))) {
+      ret=writeCalibrationFile(ostfn.str(), myMod->gain, myMod->offset);
+      deleteModule(myMod);
+    }else
+     return FAIL;
+  }
+  return ret;
+}
+
+
+
+
   /* returns if the detector is Master, slave or nothing 
       \param flag can be GET_MASTER, NO_MASTER, IS_MASTER, IS_SLAVE
       \returns master flag of the detector

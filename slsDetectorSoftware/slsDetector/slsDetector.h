@@ -491,6 +491,22 @@ typedef  struct sharedSlsDetector {
   int saveSettingsFile(string fname, int imod=-1);
 
 
+  /** loads the modules calibration data  reading from a file
+      \param fname file name . If not specified, extension is automatically generated!
+      \param imod module number, -1 means all modules
+      \returns OK or FAIL
+ */
+  int loadCalibrationFile(string fname, int imod=-1);
+
+
+  /** saves the modules calibration data  writing to  a file
+      \param fname file name . Axtension is automatically generated!
+      \param imod module number, -1 means all modules
+      \returns OK or FAIL
+ */
+  int saveCalibrationFile(string fname, int imod=-1);
+
+
   /**
    
       reads an angular conversion file

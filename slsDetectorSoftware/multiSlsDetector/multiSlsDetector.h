@@ -441,6 +441,13 @@ class multiSlsDetector  : public slsDetectorUtils {
   int saveSettingsFile(string fname, int nmod=0);
 
 
+  /** loads the modules calibration data reading from a file -  file name extension is automatically generated! */
+  int loadCalibrationFile(string fname, int nmod=0);
+
+  /** gets the modules calibration data and writes them to file -  file name extension is automatically generated! */
+  int saveCalibrationFile(string fname, int nmod=0);
+
+
 
 
 

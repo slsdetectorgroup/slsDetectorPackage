@@ -3040,6 +3040,52 @@ int multiSlsDetector::saveSettingsFile(string fname, int imod) {
 
 }
 
+
+
+
+int multiSlsDetector::loadCalibrationFile(string fname, int imod) {
+  int id, im, ret;
+
+  if (decodeNMod(imod, id, im)>=0) {
+    if (detectors[id]) {
+      return detectors[id]->loadCalibrationFile(fname, im);
+    }
+  } else if (imod<0) {
+    for (int idet=0; idet<thisMultiDetector->numberOfDetectors; idet++) {
+      if (detectors[idet]) {
+	ret=detectors[idet]->loadCalibrationFile(fname, imod);
+      }
+    }
+    return ret;
+  }
+  return -1;
+
+}
+
+
+int multiSlsDetector::saveCalibrationFile(string fname, int imod) {
+  int id, im, ret;
+
+  if (decodeNMod(imod, id, im)>=0) {
+    if (detectors[id]) {
+      return detectors[id]->saveCalibrationFile(fname, im);
+    }
+  } else if (imod<0) {
+    for (int idet=0; idet<thisMultiDetector->numberOfDetectors; idet++) {
+      if (detectors[idet]) {
+	ret=detectors[idet]->saveCalibrationFile(fname, imod);
+      }
+    }
+    return ret;
+  }
+  return -1;
+
+}
+
+
+
+
+
 int multiSlsDetector::writeRegister(int addr, int val){
 
   int  i;//imi, ima,

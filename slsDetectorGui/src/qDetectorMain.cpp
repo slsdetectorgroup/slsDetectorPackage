@@ -327,7 +327,7 @@ void qDetectorMain::ExecuteUtilities(QAction *action){
 		if (!fName.isEmpty()){
 			if(myDet->retrieveDetectorSetup(string(fName.toAscii().constData()))!=slsDetectorDefs::FAIL)
 				qDefs::InfoMessage("The Setup Parameters have been loaded successfully.","Main");
-			else qDefs::WarningMessage("The Loading of Setup Parameters has failed.","Main");
+			else qDefs::WarningMessage(string("Could not load the Setup Parameters from file:\n")+fName.toAscii().constData(),"Main");
 		}
 	}
 	else if(action==actionSaveSetup){
@@ -342,7 +342,7 @@ void qDetectorMain::ExecuteUtilities(QAction *action){
 		if (!fName.isEmpty()){
 			if(myDet->dumpDetectorSetup(string(fName.toAscii().constData()))!=slsDetectorDefs::FAIL)
 				qDefs::InfoMessage("The Setup Parameters have been saved successfully.","Main");
-			else qDefs::WarningMessage("The Saving of Setup Parameters has failed.","Main");
+			else qDefs::WarningMessage(string("Could not save the Setup Parameters from file:\n")+fName.toAscii().constData(),"Main");
 		}
 	}
 	else if(action==actionMeasurementWizard){
@@ -362,7 +362,7 @@ void qDetectorMain::ExecuteUtilities(QAction *action){
 		if (!fName.isEmpty()){
 			if(myDet->readConfigurationFile(string(fName.toAscii().constData()))!=slsDetectorDefs::FAIL)
 				qDefs::InfoMessage("The Configuration Parameters have been configured successfully.","Main");
-			else qDefs::WarningMessage("The Loading of Configuration Parameters has failed.","Main");
+			else qDefs::WarningMessage(string("Could not load the Configuration Parameters from file:\n")+fName.toAscii().constData(),"Main");
 		}
 	}
 	else if(action==actionSaveConfiguration){
@@ -377,14 +377,14 @@ void qDetectorMain::ExecuteUtilities(QAction *action){
 		if (!fName.isEmpty()){
 			if(myDet->writeConfigurationFile(string(fName.toAscii().constData()))!=slsDetectorDefs::FAIL)
 				qDefs::InfoMessage("The Configuration Parameters have been saved successfully.","Main");
-			else qDefs::WarningMessage("The Saving of Configuration Parameters has failed.","Main");
+			else qDefs::WarningMessage(string("Could not save the Configuration Parameters from file:\n")+fName.toAscii().constData(),"Main");
 		}
 	}
 	else if(action==actionLoadTrimbits){
 #ifdef VERBOSE
 		cout << "Loading Trimbits" << endl;
 #endif
-		QString fName = QString(myDet->getFilePath().c_str());
+		QString fName = QString(myDet->getSettingsDir());
 		fName = QFileDialog::getOpenFileName(this,
 				tr("Load Detector Trimbits"),fName,
 				tr("Trimbit files (*.trim *.sn*)"));
@@ -392,14 +392,14 @@ void qDetectorMain::ExecuteUtilities(QAction *action){
 		if (!fName.isEmpty()){
 			if(myDet->loadSettingsFile(string(fName.toAscii().constData()),-1)!=slsDetectorDefs::FAIL)
 				qDefs::InfoMessage("The Trimbits have been loaded successfully.","Main");
-			else qDefs::WarningMessage("The Loading of Trimbits has failed.","Main");
+			else qDefs::WarningMessage(string("Could not load the Trimbits from file:\n")+fName.toAscii().constData(),"Main");
 		}
 	}
 	else if(action==actionSaveTrimbits){
 #ifdef VERBOSE
 		cout << "Saving Trimbits" << endl;
 #endif
-		QString fName = QString(myDet->getFilePath().c_str());
+		QString fName = QString(myDet->getSettingsDir());
 		fName = QFileDialog::getSaveFileName(this,
 				tr("Save Current Detector Trimbits"),fName,
 				tr("Trimbit files (*.trim *.sn*) "));
@@ -407,87 +407,38 @@ void qDetectorMain::ExecuteUtilities(QAction *action){
 		if (!fName.isEmpty()){
 			if(myDet->saveSettingsFile(string(fName.toAscii().constData()),-1)!=slsDetectorDefs::FAIL)
 				qDefs::InfoMessage("The Trimbits have been saved successfully.","Main");
-			else qDefs::WarningMessage("The Saving of Trimbits has failed.","Main");
+			else qDefs::WarningMessage(string("Could not save the Trimbits to file:\n")+fName.toAscii().constData(),"Main");
 		}
 	}
 	else if(action==actionLoadCalibration){
 #ifdef VERBOSE
 		cout << "Loading Calibration Data" << endl;
 #endif
-		QString fName = QString(myDet->getFilePath().c_str());
+		QString fName = QString(myDet->getCalDir());
 		fName = QFileDialog::getOpenFileName(this,
 				tr("Load Detector Calibration Data"),fName,
 				tr("Calibration files (*.cal *.sn*)"));
 		// Gets called when cancelled as well
 		if (!fName.isEmpty()){
-			int nMod = myDet->setNumberOfModules();
-			slsDetector *detector;
-			slsDetectorDefs::sls_detector_module *myMod=NULL;
-			string sFname= fName.toAscii().constData();
-			double gain,offset;
-			for(int i=0;i<nMod;i++){
-				string fn = sFname;
-				detector = myDet->getSlsDetector(i);
-				if(detector){
-					if (sFname.find(".cal")==string::npos) {
-					if (sFname.find(".sn")==string::npos && sFname.find(".cal")) {
-						ostringstream ostfn;
-						ostfn << sFname << ".sn"  << setfill('0') << setw(3) << hex << myDet->getId(slsDetectorDefs::MODULE_SERIAL_NUMBER, i);
-						fn=ostfn.str();
-					}}
-					if(detector->readCalibrationFile(fn,gain,offset)==-1)
-						qDefs::WarningMessage(string("Could not open Calibration File.\n")+ fn,"Main");
-					else{
-						 if(myMod = detector->getModule(i)){
-							 myMod->gain = gain;
-							 myMod->offset = offset;
-							 detector->setModule(*myMod);
-							 detector->deleteModule(myMod);
-						 }
-					}
-				}
-				detector = NULL;
-			}
-
-			//if(energyConversion::readCalibrationFile(string(fName.toAscii().constData()),-1)!=slsDetectorDefs::FAIL)
-			//	qDefs::InfoMessage("The Calibration Data have been loaded successfully.","Main");
-			//else qDefs::WarningMessage("The Loading of Calibration Data has failed.","Main");
+			if(myDet->loadCalibrationFile(string(fName.toAscii().constData()),-1)!=slsDetectorDefs::FAIL)
+				qDefs::InfoMessage("The Calibration Data have been loaded successfully.","Main");
+			else qDefs::WarningMessage(string("Could not load the Calibration data from file:\n")+ fName.toAscii().constData(),"Main");
 		}
 	}
 	else if(action==actionSaveCalibration){
 #ifdef VERBOSE
 		cout << "Saving Calibration Data" << endl;
 #endif
-		QString fName = QString(myDet->getFilePath().c_str());
+		QString fName = QString(myDet->getCalDir());
 		fName = QFileDialog::getSaveFileName(this,
 				tr("Save Current Detector Calibration Data"),fName,
 				tr("Calibration files (*.cal *.sn*) "));
 		// Gets called when cancelled as well
 		if (!fName.isEmpty()){
-			int nMod = myDet->setNumberOfModules();
-			cout<<"nmode:"<<nMod<<endl;
-			slsDetector *detector;
-			slsDetectorDefs::sls_detector_module *myMod=NULL;
-			string sFname= fName.toAscii().constData();
-			double gain,offset;
-			for(int i=0;i<nMod;i++){
-				string fn = sFname;
-				detector = myDet->getSlsDetector(i);
-				if(detector){
-					ostringstream ostfn;
-					ostfn << sFname << ".sn"  << setfill('0') << setw(3) << hex << myDet->getId(slsDetectorDefs::MODULE_SERIAL_NUMBER, i);
-					fn=ostfn.str();
-					if(myMod = detector->getModule(i)){
-						if(detector->writeCalibrationFile(fn,myMod->gain,myMod->offset)==-1)
-							qDefs::WarningMessage(string("Could not open Calibration File.\n")+ fn,"Main");
-						detector->deleteModule(myMod);
-					}
-				}
-				detector = NULL;
-			}
-			//if(energyConversion::writeCalibrationFile(string(fName.toAscii().constData()),-1)!=slsDetectorDefs::FAIL)
-			//	qDefs::InfoMessage("The Calibration Data have been saved successfully.","Main");
-			//else qDefs::WarningMessage("The Saving of Calibration Data has failed.","Main");
+			if(myDet->saveCalibrationFile(string(fName.toAscii().constData()),-1)!=slsDetectorDefs::FAIL)
+				qDefs::InfoMessage("The Calibration Data have been saved successfully.","Main");
+			else qDefs::WarningMessage(string("Could not save the Calibration data to file:\n")+fName.toAscii().constData(),"Main");
+
 		}
 	}
 

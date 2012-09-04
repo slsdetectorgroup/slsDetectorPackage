@@ -14,6 +14,7 @@ Functions depending on the experimental setup should be defined here
 #include <epicsEvent.h>
 #endif
 #include "detectorData.h"
+#include "angleFunction.h"
 
 #ifdef __cplusplus
 extern "C" {

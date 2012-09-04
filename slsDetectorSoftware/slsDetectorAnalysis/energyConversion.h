@@ -1,7 +1,14 @@
 #ifndef ENERGYCONVERSION_H
 #define ENERGYCONVERSION_H
 
+#ifdef __CINT
+#define MYROOT
+#endif
+
+#ifndef MYROOT
 #include "sls_detector_defs.h"
+#endif
+
 #include <string>
 
 using namespace std;
@@ -10,8 +17,11 @@ using namespace std;
 */
 
 
-class energyConversion: private virtual slsDetectorDefs {
-
+class energyConversion 
+#ifndef MYROOT
+: private virtual slsDetectorDefs
+#endif
+{
  public:
   /** default constrauctor */
   energyConversion(){};
@@ -37,6 +47,7 @@ class energyConversion: private virtual slsDetectorDefs {
   */
   static int writeCalibrationFile(string fname, double gain, double offset);
 
+#ifndef MYROOT
 
   /**
      reads a trim/settings file
@@ -76,6 +87,7 @@ class energyConversion: private virtual slsDetectorDefs {
   char *settingsFile;
   
 
+#endif
 
 };
 #endif

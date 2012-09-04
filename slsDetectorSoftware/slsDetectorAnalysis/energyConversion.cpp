@@ -56,6 +56,7 @@ int energyConversion::writeCalibrationFile(string fname, double gain, double off
 };
 
 
+#ifndef MYROOT
 
   /* I/O */
 
@@ -314,4 +315,4 @@ int energyConversion::writeSettingsFile(string fname, detectorType myDetectorTyp
 
 
 
-
+#endif

@@ -1,8 +1,14 @@
 #include "energyCalibration.h"
 
-#ifdef ROOT
+#ifdef __CINT
+#define MYROOT
+#endif
+
+
+#ifdef MYROOT
 #include <TMath.h>
 #include <TH1F.h>
+#include <TH2F.h>
 #include <TGraphErrors.h>
 #endif
 
@@ -15,7 +21,7 @@
 
 using namespace std;
 
-#ifdef ROOT
+#ifdef MYROOT
 Double_t energyCalibrationFunctions::gaussChargeSharing(Double_t *x, Double_t *par) { 
   Double_t f, arg=0;
   if (par[3]!=0) arg=(x[0]-par[2])/par[3];
@@ -144,7 +150,7 @@ int energyCalibrationFunctions::kth_smallest(int *a, int n, int k){
 
 
 
-#ifdef ROOT
+#ifdef MYROOT
 Double_t energyCalibrationFunctions::spectrum(Double_t *x, Double_t *par) {
   return gaussChargeSharing(x,par);	
 }
@@ -161,7 +167,7 @@ Double_t energyCalibrationFunctions::scurveFluo(Double_t *x, Double_t *par) {
 #endif
 
 energyCalibration::energyCalibration() : 
-#ifdef ROOT	
+#ifdef MYROOT	
 					 fit_min(-1),	
 					 fit_max(-1),	
 					 bg_offset(-1),	
@@ -178,7 +184,7 @@ energyCalibration::energyCalibration() :
 					 cs_flag(1)
 {
 
-#ifdef ROOT	
+#ifdef MYROOT	
   funcs=new energyCalibrationFunctions();
   
   fscurve=new TF1("fscurve",funcs,&energyCalibrationFunctions::scurve,0,1000,6,"energyCalibrationFunctions","scurve");	
@@ -193,15 +199,77 @@ energyCalibration::energyCalibration() :
 }
 
 
+
+void energyCalibration::fixParameter(int ip, Double_t val){
+  
+  fscurve->FixParameter(ip, val);
+  fspectrum->FixParameter(ip, val);
+}
+
+
+void energyCalibration::releaseParameter(int ip){
+
+  fscurve->ReleaseParameter(ip);
+  fspectrum->ReleaseParameter(ip);
+}
+
+
+
+
+
+
+
 energyCalibration::~energyCalibration(){ 
-#ifdef ROOT
+#ifdef MYROOT
   delete fscurve;
   delete fspectrum;
 #endif
   
 }
 
-#ifdef ROOT
+#ifdef MYROOT
+
+
+
+TH1F* energyCalibration::createMedianHistogram(TH2F* h2, int ch0, int nch) {
+
+  if (h2==NULL || nch==0)
+    return NULL;
+
+  double *x=new double[nch];
+  TH1F *h1=NULL;
+  
+  double val=-1;
+
+  h1=new TH1F("median","Median",h2->GetYaxis()->GetNbins(),h2->GetYaxis()->GetXmin(),h2->GetYaxis()->GetXmax());
+  
+
+  for (int ib=0; ib<h1->GetXaxis()->GetNbins(); ib++) {
+    for (int ich=0; ich<nch; ich++) {
+      x[ich]=h2->GetBinContent(ch0+ich+1,ib+1);
+    }
+    val=energyCalibrationFunctions::median(x, nch);
+    h1->SetBinContent(ib+1,val);
+  }
+  return h1;
+
+    
+
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 void energyCalibration::setStartParameters(Double_t *par){	
   bg_offset=par[0];						
   bg_slope=par[1];						
@@ -225,7 +293,7 @@ void energyCalibration::getStartParameters(Double_t *par){
 int energyCalibration::setChargeSharing(int p) {
   if (p>=0) {
     cs_flag=p; 
-#ifdef ROOT  
+#ifdef MYROOT  
     if (p) {
       fscurve->ReleaseParameter(5);
       fspectrum->ReleaseParameter(1);
@@ -240,7 +308,7 @@ int energyCalibration::setChargeSharing(int p) {
 }
 
  
-#ifdef ROOT  
+#ifdef MYROOT  
 void energyCalibration::initFitFunction(TF1 *fun, TH1 *h1) {
 
  Double_t min=fit_min, max=fit_max; 
@@ -291,7 +359,6 @@ void energyCalibration::initFitFunction(TF1 *fun, TH1 *h1) {
 
   fun->SetRange(min,max);
 
-  
 }
 
 
@@ -319,9 +386,6 @@ TF1* energyCalibration::fitFunction(TF1 *fun, TH1 *h1, Double_t *mypar, Double_t
 }
 
 TF1* energyCalibration::fitSCurve(TH1 *h1, Double_t *mypar, Double_t *emypar) {
-
-
- 
   initFitFunction(fscurve,h1);
   return fitFunction(fscurve, h1, mypar, emypar);
 }

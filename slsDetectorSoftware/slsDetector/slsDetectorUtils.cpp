@@ -17,6 +17,8 @@ slsDetectorUtils::slsDetectorUtils()   {
 #ifdef VERBOSE
   cout << "setting callbacks" << endl;
 #endif
+  acquisition_finished=NULL;
+  acqFinished_p=NULL;
   registerGetPositionCallback(&defaultGetPosition, NULL);
   registerConnectChannelsCallback(&defaultConnectChannels,NULL);
   registerDisconnectChannelsCallback(&defaultDisconnectChannels,NULL);
@@ -322,6 +324,11 @@ void  slsDetectorUtils::acquire(int delflag){
 
    if (eclog)
      delete eclog;
+
+
+   if (acquisition_finished) {
+     acquisition_finished(getCurrentProgress(),getDetectorStatus(),acqFinished_p);
+   }
 
 }
 

@@ -352,6 +352,13 @@ class slsDetectorUsers
   */
 
   virtual void registerDataCallback(int( *userCallback)(detectorData*, void*), void *pArg)=0;
+
+  /**
+     @short register calbback for accessing detector final data
+     \param func function to be called at the end of the acquisition. gets detector status and progress index as arguments
+  */
+
+  virtual void registerAcquisitionFinishedCallback(int( *func)(double,int, void*), void *pArg)=0;
   
   /**
      @short register calbback for reading detector position

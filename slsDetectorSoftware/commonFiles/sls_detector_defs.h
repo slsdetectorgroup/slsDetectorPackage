@@ -1,6 +1,11 @@
 #ifndef SLS_DETECTOR_DEFS_H
 #define SLS_DETECTOR_DEFS_H
 
+#ifdef __CINT__
+#define MYROOT
+#define __cplusplus
+#endif
+
 #include <stdint.h> 
 
 /** default maximum string length */
@@ -507,11 +512,15 @@ enum angleConversionParameter {
  protected:
 #endif
 
+
+
+#ifndef MYROOT
 #include "sls_detector_funcs.h"
-
-
+#endif
+ 
 #ifdef __cplusplus
-  };
+};
 #endif
-
+;
 #endif
+;

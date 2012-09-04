@@ -2,11 +2,16 @@
 #ifndef ENERGYCALIBRATION_H
 #define ENERGYCALIBRATION_H
 
+#ifdef __CINT
+#define MYROOT
+#endif
 
-#ifdef ROOT
+
+#ifdef MYROOT
 #include <TROOT.h>
 #include <TF1.h>
 class TH1F;
+class TH2F;
 class TGraphErrors;
 #endif
 
@@ -62,7 +67,7 @@ class energyCalibrationFunctions {
   int setScanSign(int s=0) {if (s==1 || s==-1) sign=s; return sign;};;
   
 
-#ifdef ROOT
+#ifdef MYROOT
   /** 
       Gaussian Function with charge sharing pedestal
       par[0] is the absolute height of the background pedestal
@@ -197,7 +202,16 @@ class energyCalibration  {
     */
   int setChargeSharing(int p=-1);
 
-#ifdef ROOT
+
+  void fixParameter(int ip, Double_t val);
+
+  void releaseParameter(int ip);
+
+#ifdef MYROOT
+
+  static TH1F* createMedianHistogram(TH2F* h2, int ch0, int nch);
+
+
   /** sets the s-curve fit range 
       \param mi  minimum of the fit range (-1 is histogram x-min)
       \param ma  maximum of the fit range (-1 is histogram x-max)
@@ -300,7 +314,7 @@ class energyCalibration  {
 #endif
  private:
 
-#ifdef ROOT
+#ifdef MYROOT
     /**
      calculates gain and offset for the set of energies
      \param nscan number of energy scans
@@ -328,7 +342,7 @@ class energyCalibration  {
 
 
   /**
-     Perfors the fit according to the flags specified and returns the fitted function
+     Performs the fit according to the flags specified and returns the fitted function
      \param fun function to fit
      \param h1 histogram to fit
      \param mypar pointer to fit parameters array 
@@ -339,7 +353,7 @@ class energyCalibration  {
 
 #endif
 
-#ifdef ROOT
+#ifdef MYROOT
   Double_t fit_min; /**< minimum of the s-curve fitting range, -1 is histogram x-min */
   Double_t fit_max; /**< maximum of the s-curve fitting range, -1 is histogram x-max */
   

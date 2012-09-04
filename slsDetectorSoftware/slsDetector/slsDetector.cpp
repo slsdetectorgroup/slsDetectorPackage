@@ -5070,9 +5070,10 @@ int slsDetector::loadSettingsFile(string fname, int imod) {
     mmax=imod+1;
   }
   for (int im=mmin; im<mmax; im++) {
-    if (fname.find(".sn")==string::npos && fname.find(".trim")) {
-      ostringstream ostfn;
-      ostfn << fname << ".sn"  << setfill('0') << setw(3) << hex << getId(MODULE_SERIAL_NUMBER, im); 
+    ostringstream ostfn;
+    ostfn << fname;
+    if (fname.find(".sn")==string::npos && fname.find(".trim")==string::npos) {
+      ostfn << ".sn"  << setfill('0') << setw(3) << hex << getId(MODULE_SERIAL_NUMBER, im); 
       fn=ostfn.str();
     }
     myMod=readSettingsFile(fn, thisDetector->myDetectorType);
@@ -5124,11 +5125,12 @@ int slsDetector::loadCalibrationFile(string fname, int imod) {
     mmax=imod+1;
   }
   for (int im=mmin; im<mmax; im++) {
-    if (fname.find(".sn")==string::npos && fname.find(".cal")) {
-      ostringstream ostfn;
-      ostfn << fname << ".sn"  << setfill('0') << setw(3) << hex << getId(MODULE_SERIAL_NUMBER, im);
-      fn=ostfn.str();
+    ostringstream ostfn;
+    ostfn << fname ;
+    if (fname.find(".sn")==string::npos && fname.find(".cal")==string::npos) {
+      ostfn << ".sn"  << setfill('0') << setw(3) << hex << getId(MODULE_SERIAL_NUMBER, im);
     }
+    fn=ostfn.str();
     if(myMod=getModule(im)){
       if(readCalibrationFile(fn, myMod->gain, myMod->offset)==FAIL)
     	  return FAIL;

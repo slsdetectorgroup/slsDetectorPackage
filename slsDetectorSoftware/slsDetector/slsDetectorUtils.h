@@ -537,7 +537,7 @@ class slsDetectorUtils :  public slsDetectorActions, public postProcessing {
   void registerGoToPositionNoWaitCallback(int (*func)(double, void*),void*arg){go_to_position_no_wait=func;GTNarg=arg;};
   void registerGetI0Callback( double (*func)(int, void*),void *arg){get_i0=func;IOarg=arg;};
   
-  virtual void registerAcquisitionFinishedCallback(int( *func)(double,int, void*), void *pArg){acquisition_finished=func; acqFinished_p=pArg;};
+  void registerAcquisitionFinishedCallback(int( *func)(double,int, void*), void *pArg){acquisition_finished=func; acqFinished_p=pArg;};
  
 
 

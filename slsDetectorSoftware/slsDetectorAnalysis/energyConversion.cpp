@@ -31,9 +31,15 @@ int energyConversion::readCalibrationFile(string fname, double &gain, double &of
     std::cout<< "Could not open calibration file "<< fname << std::endl;
     gain=0.;
     offset=0.;
+#ifndef MYROOT
     return FAIL;
+#endif
+    return -1;
   }
+#ifndef MYROOT
   return OK;
+#endif
+  return 0;
 };
 
 int energyConversion::writeCalibrationFile(string fname, double gain, double offset){
@@ -47,12 +53,18 @@ int energyConversion::writeCalibrationFile(string fname, double gain, double off
     outfile << offset << " " << gain << std::endl;
   } else {
     std::cout<< "Could not open calibration file "<< fname << " for writing" << std::endl;
+#ifndef MYROOT
     return FAIL;
+#endif
+    return -1;
   }
 
   outfile.close();
 
+#ifndef MYROOT
   return OK;
+#endif
+  return 0;
 };
 
 

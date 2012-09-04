@@ -109,8 +109,11 @@
     </item>
     <item row="1" column="2" colspan="2">
      <widget class="QSpinBox" name="spinThreshold">
+      <property name="keyboardTracking">
+       <bool>false</bool>
+      </property>
       <property name="suffix">
-       <string>eV</string>
+       <string> eV</string>
       </property>
       <property name="minimum">
        <number>-100000</number>

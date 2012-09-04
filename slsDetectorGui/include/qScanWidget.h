@@ -86,7 +86,7 @@ private:
 
 	/** Sets up the scan parameters
 	 * returns if it was set
-	  */
+	 */
 	int SetScan(int mode);
 
 private slots:

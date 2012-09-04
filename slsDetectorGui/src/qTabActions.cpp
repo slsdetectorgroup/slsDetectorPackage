@@ -211,14 +211,26 @@ void qTabActions::Expand(QAbstractButton *button ){
 		if(index==NumPositions)	{
 			positionWidget->hide();
 			setFixedHeight(height()-30);//-80 if the checkboxes are included
+			if(myDet->getPositions()) {
+				palette->setColor(QPalette::WindowText,Qt::darkGreen);
+				lblName[index]->setPalette(*palette);
+			}
 		}
 		else if((index==Scan0)||(index==Scan1)) {
 			scanWidget[GetActualIndex(index)]->hide();
 			setFixedHeight(height()-130);
+			if(myDet->getScanMode(GetActualIndex(index))){
+				palette->setColor(QPalette::WindowText,Qt::darkGreen);
+				lblName[index]->setPalette(*palette);
+			}
 		}
 		else {
 			actionWidget[GetActualIndex(index)]->hide();
 			setFixedHeight(height()-30);
+			if(myDet->getActionMode(GetActualIndex(index))){
+				palette->setColor(QPalette::WindowText,Qt::darkGreen);
+				lblName[index]->setPalette(*palette);
+			}
 		}
 	}else{
 		// Expand
@@ -349,7 +361,7 @@ void qTabActions::Refresh(){
 			//delete existing positions
 			if (positions)  delete [] positions;
 			//get number of positions
-			int numPos=myDet->getPositions();cout<<"numPOs:"<<numPos<<endl;
+			int numPos=myDet->getPositions();
 			comboPos->setMaxCount(numPos);
 
 			//set the number of positions in the gui
@@ -383,6 +395,8 @@ void qTabActions::Refresh(){
 		scanWidget[i]->Refresh();
 	for(int i=0;i<qActionsWidget::NUM_ACTION_WIDGETS;i++)
 		actionWidget[i]->Refresh();
+
+	UpdateCollapseColors();
 }
 
 
@@ -404,4 +418,36 @@ int qTabActions::GetActualIndex(int index){
 }
 
 
+//-------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+void qTabActions::UpdateCollapseColors(){
+#ifdef VERYVERBOSE
+	cout << "Updating Collapse Colors" << endl;
+#endif
+	for(int i=0;i<NumTotalActions;i++){
+		//num positions
+		if(i==NumPositions){
+			//if its disabled
+			if(lblName[i]->isEnabled()){
+				if(myDet->getPositions()) 	palette->setColor(QPalette::WindowText,Qt::darkGreen);
+				else						palette->setColor(QPalette::WindowText,Qt::black);
+				lblName[i]->setPalette(*palette);
+			}
+		}
+		//scans
+		else if((i==Scan0)||(i==Scan1)){
+			if(myDet->getScanMode(GetActualIndex(i)))		palette->setColor(QPalette::WindowText,Qt::darkGreen);
+			else											palette->setColor(QPalette::WindowText,Qt::black);
+			lblName[i]->setPalette(*palette);
+		}
+		//actions
+		else{
+			if(myDet->getActionMode(GetActualIndex(i)))		palette->setColor(QPalette::WindowText,Qt::darkGreen);
+			else											palette->setColor(QPalette::WindowText,Qt::black);
+			lblName[i]->setPalette(*palette);
+		}
+	}
+
+}
 //-------------------------------------------------------------------------------------------------------------------------------------------------

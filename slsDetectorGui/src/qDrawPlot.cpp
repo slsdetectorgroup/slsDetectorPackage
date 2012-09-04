@@ -214,11 +214,9 @@ void qDrawPlot::StartStopDaqToggle(bool stop_if_running){
 
 
 		number_of_exposures = number_of_frames * numScan0 * numScan1;
-		if(anglePlot) {
-			int numPos = myDet->getPositions();   //numPos = ((numPos==0)	 ?1:numPos);
-			number_of_exposures = numScan0 * numScan1;/*number_of_exposures * numPos;*/
+		if(anglePlot) number_of_exposures = numScan0 * numScan1;
 
-		}
+
 		cout << "\tNumber of Exposures:" << number_of_exposures << endl;
 
 		// ExposureTime

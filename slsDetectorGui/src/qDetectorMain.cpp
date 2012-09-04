@@ -398,7 +398,7 @@ void qDetectorMain::ExecuteUtilities(QAction *action){
 	else if(action==actionSaveTrimbits){
 #ifdef VERBOSE
 		cout << "Saving Trimbits" << endl;
-#endif
+#endif//different output directory so as not to overwrite
 		QString fName = QString(myDet->getSettingsDir());
 		fName = QFileDialog::getSaveFileName(this,
 				tr("Save Current Detector Trimbits"),fName,
@@ -428,8 +428,8 @@ void qDetectorMain::ExecuteUtilities(QAction *action){
 	else if(action==actionSaveCalibration){
 #ifdef VERBOSE
 		cout << "Saving Calibration Data" << endl;
-#endif
-		QString fName = QString(myDet->getCalDir())+QString("/newTrims");
+#endif//different output directory so as not to overwrite
+		QString fName = QString(myDet->getCalDir());
 		fName = QFileDialog::getSaveFileName(this,
 				tr("Save Current Detector Calibration Data"),fName,
 				tr("Calibration files (*.cal *.sn*) "));

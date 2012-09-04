@@ -12,6 +12,8 @@
 #include "ui_form_tab_advanced.h"
 /** Project Class Headers */
 class multiSlsDetector;
+/** Qt Include Header */
+#include <QStackedLayout>
 
 /**
  *@short sets up the advanced parameters
@@ -36,9 +38,6 @@ public:
 
 
 private:
-	/** The sls detector object */
-	multiSlsDetector *myDet;
-
 	/** Sets up the widget
 	 */
 	void SetupWidgetWindow();
@@ -48,9 +47,14 @@ private:
 	void Initialization();
 
 
+	/** The sls detector object */
+	multiSlsDetector *myDet;
+
 
 private slots:
-
+/** Enable/Disable Energy and Calibration Logs
+ */
+void SetLogs();
 
 };
 

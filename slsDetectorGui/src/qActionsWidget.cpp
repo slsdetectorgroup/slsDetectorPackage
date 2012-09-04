@@ -80,6 +80,7 @@ void qActionsWidget::SetMode(int mode){
 	if(mode)	myDet->setActionScript(id,fName.toAscii().constData());
 	else myDet->setActionScript(id,"");
 	//mode is not set when fname is blank
+
 	if(!fName.isEmpty()){
 		//check if mode didnt get set
 		if(mode!=myDet->getActionMode(id)){
@@ -95,6 +96,7 @@ void qActionsWidget::SetMode(int mode){
 			}
 		}
 	}
+
 }
 
 
@@ -189,9 +191,10 @@ void qActionsWidget::Refresh(){
 	string script = myDet->getActionScript(id);
 	string parameter = myDet->getActionParameter(id);
 
+
 	//settings values and checking for none
 	dispScript->setText(QString(script.c_str()));
-	SetScriptFile();
+	if(mode)SetScriptFile();
 	dispParameter->setText(QString(parameter.c_str()));
 	SetParameter();
 	//set mode which also checks everything

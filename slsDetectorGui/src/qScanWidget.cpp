@@ -231,7 +231,7 @@ void qScanWidget::EnableSizeWidgets(){
 #ifdef VERBOSE
 		cout << "Constant Range Values" << endl;
 #endif
-		spinSteps->setMinimum(2);
+
 		radioCustom->setText("Specific Values");
 		radioCustom->setPalette(normal);
 		radioCustom->setToolTip(customTip);
@@ -245,7 +245,11 @@ void qScanWidget::EnableSizeWidgets(){
 
 		stackedLayout->setCurrentIndex(RangeValues);
 
-		SetRangeSteps();
+		int oldNumSteps = spinSteps->value();
+		//if the steps change, it calls SetRangeSteps on its own.
+		RangeCalculateNumSteps();
+		if(oldNumSteps==spinSteps->value())	SetRangeSteps();
+		spinSteps->setMinimum(2);
 		}
 		//custom values
 		else if(radioCustom->isChecked()){
@@ -887,6 +891,15 @@ void qScanWidget::SetFileSteps(){
 			}
 		}
 	}
+	//ERROR IN WRITING FILENAME OR READING FILE
+	else{
+		actualNumSteps=0;
+		positions.resize(0);
+		SetScan(comboScript->currentIndex());
+		disconnect(spinSteps,	SIGNAL(valueChanged(int)), 	this, SLOT(SetNSteps()));
+		spinSteps->setValue(actualNumSteps);
+		connect(spinSteps,		SIGNAL(valueChanged(int)), 	this, SLOT(SetNSteps()));
+	}
 }
 
 
@@ -997,7 +1010,7 @@ void qScanWidget::Refresh(){
 
 	//settings values and checking for none
 	dispScript->setText(QString(script.c_str()));
-	SetScriptFile();
+	if(mode) SetScriptFile();
 	dispParameter->setText(QString(parameter.c_str()));
 	SetParameter();
 	spinPrecision->setValue(precision);

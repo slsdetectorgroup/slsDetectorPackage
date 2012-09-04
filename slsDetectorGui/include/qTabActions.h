@@ -56,6 +56,28 @@ void EnablePositions(bool enable);
 
 
 private:
+	/** Sets up the widget */
+	void SetupWidgetWindow();
+
+	/** Sets up all the slots and signals */
+	void Initialization();
+
+	/** creates the Num Positions object */
+	void CreatePositionsWidget();
+
+	/** Returns the index in each of the classes
+	 * of actionwidget and scanwidget
+	 * @param index the index in the list of all widgets
+	 * returns actual index of the class
+	 */
+	int GetActualIndex(int index);
+
+	/** Updates to green color if collapsed and mode not none
+	 */
+	void UpdateCollapseColors();
+
+
+
 	/** The sls detector object */
 	multiSlsDetector *myDet;
 
@@ -87,23 +109,6 @@ private:
 
 	double		*positions;
 	QPalette	normal;
-
-
-	/** Sets up the widget */
-	void SetupWidgetWindow();
-
-	/** Sets up all the slots and signals */
-	void Initialization();
-
-	/** creates the Num Positions object */
-	void CreatePositionsWidget();
-
-	/** Returns the index in each of the classes
-	 * of actionwidget and scanwidget
-	 * @param index the index in the list of all widgets
-	 * returns actual index of the class
-	 */
-	int GetActualIndex(int index);
 
 private slots:
 /** To Expand the Action Widget

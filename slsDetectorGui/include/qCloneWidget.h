@@ -62,8 +62,10 @@ public:
 	 * @param histXAxis X Axis value in 1D
 	 * @param histYAxis Y Axis value in 1D
 	 * @param histTitle Title for all the graphs in 1D
+	 * @param lines style of plot if lines or dots
+	 * @param markers style of plot markers or not
 	 * */
-	void SetCloneHists(int nHists,int histNBins,double* histXAxis,double* histYAxis[],string histTitle[]);
+	void SetCloneHists(int nHists,int histNBins,double* histXAxis,double* histYAxis[],string histTitle[],bool lines,bool markers);
 
 	/** Get the 1D hist values to plot for angle plotting
 	 * @param nHists Number of graphs in 1D
@@ -71,8 +73,10 @@ public:
 	 * @param histXAxis X Axis value in 1D
 	 * @param histYAxis Y Axis value in 1D
 	 * @param histTitle Title for all the graphs in 1D
+	 * @param lines style of plot if lines or dots
+	 * @param markers style of plot markers or not
 	 * */
-	void SetCloneHists(int nHists,int histNBins,double* histXAxis,double* histYAxis,string histTitle[]);
+	void SetCloneHists(int nHists,int histNBins,double* histXAxis,double* histYAxis,string histTitle[],bool lines,bool markers);
 
 public slots:
 /** Save Plots automatically by save all clones

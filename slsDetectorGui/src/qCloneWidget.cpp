@@ -14,6 +14,7 @@
 #include <QImage>
 #include <QPainter>
 #include <QFileDialog>
+#include "qwt_symbol.h"
 /** C++ Include Headers */
 #include <iostream>
 using namespace std;
@@ -97,7 +98,7 @@ void qCloneWidget::SetupWidgetWindow(QString title,int numDim,SlsQt1DPlot*& plot
 
 //-------------------------------------------------------------------------------------------------------------------------------------------------
 
-void qCloneWidget::SetCloneHists(int nHists,int histNBins,double* histXAxis,double* histYAxis[],string histTitle[]){
+void qCloneWidget::SetCloneHists(int nHists,int histNBins,double* histXAxis,double* histYAxis[],string histTitle[],bool lines,bool markers){
 	/** for each plot*/cout<<"qclone nhists:"<<nHists<<endl;
 	for(int hist_num=0;hist_num<nHists;hist_num++){
 		/** create hists */
@@ -109,6 +110,19 @@ void qCloneWidget::SetCloneHists(int nHists,int histNBins,double* histXAxis,doub
 			k=cloneplot1D_hists.at(hist_num);
 			k->SetData(histNBins,histXAxis,histYAxis[hist_num]);
 		}
+		//style of plot
+		if(lines) 	k->setStyle(QwtPlotCurve::Lines);
+		else 		k->setStyle(QwtPlotCurve::Dots);
+		if(markers) {
+			QwtSymbol *marker = new QwtSymbol();
+			marker->setStyle(QwtSymbol::Cross);
+			marker->setSize(5,5);
+			k->setSymbol(*marker);
+		}else {
+			QwtSymbol *noMarker = new QwtSymbol();
+			k->setSymbol(*noMarker);
+		}
+		//set title and attach plot
 		k->setTitle(histTitle[hist_num].c_str());
 		k->Attach(cloneplot1D);
 	}
@@ -119,7 +133,7 @@ void qCloneWidget::SetCloneHists(int nHists,int histNBins,double* histXAxis,doub
 //-------------------------------------------------------------------------------------------------------------------------------------------------
 
 
-void qCloneWidget::SetCloneHists(int nHists,int histNBins,double* histXAxis,double* histYAxis,string histTitle[]){
+void qCloneWidget::SetCloneHists(int nHists,int histNBins,double* histXAxis,double* histYAxis,string histTitle[],bool lines,bool markers){
 	/** for each plot*/cout<<"qclone nhists:"<<nHists<<endl;
 	for(int hist_num=0;hist_num<nHists;hist_num++){
 		/** create hists */
@@ -131,6 +145,19 @@ void qCloneWidget::SetCloneHists(int nHists,int histNBins,double* histXAxis,doub
 			k=cloneplot1D_hists.at(hist_num);
 			k->SetData(histNBins,histXAxis,histYAxis);
 		}
+		//style of plot
+		if(lines) 	k->setStyle(QwtPlotCurve::Lines);
+		else 		k->setStyle(QwtPlotCurve::Dots);
+		if(markers) {
+			QwtSymbol *marker = new QwtSymbol();
+			marker->setStyle(QwtSymbol::Cross);
+			marker->setSize(5,5);
+			k->setSymbol(*marker);
+		}else {
+			QwtSymbol *noMarker = new QwtSymbol();
+			k->setSymbol(*noMarker);
+		}
+		//set title and attach plot
 		k->setTitle(histTitle[hist_num].c_str());
 		k->Attach(cloneplot1D);
 	}

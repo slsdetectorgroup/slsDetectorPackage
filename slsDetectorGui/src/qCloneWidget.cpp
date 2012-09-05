@@ -157,7 +157,13 @@ void qCloneWidget::SavePlot(){
 	//QString fName = QString(filePath.c_str())+'/'+dispFName->text()+comboFormat->currentText();
 	char cID[10];
 	sprintf(cID,"%d",id);
-	QString fName = QString(filePath.c_str())+"/Snapshot_"+QString(cID)+".png";
+	//title
+	QString fName = QString(filePath.c_str());
+	if(cloneBox->title().contains('.')){
+		fName.append(QString('/')+cloneBox->title());
+		fName.replace(".dat",".png");
+	}else  fName.append(QString("/Snapshot_unknown_title.png"));
+	//save
 	QImage img(cloneBox->size().width(),cloneBox->size().height(),QImage::Format_RGB32);
 	QPainter painter(&img);
 	cloneBox->render(&painter);
@@ -178,7 +184,13 @@ void qCloneWidget::SavePlot(){
 int qCloneWidget::SavePlotAutomatic(){
 	char cID[10];
 	sprintf(cID,"%d",id);
-	QString fName = QString(filePath.c_str())+"/Snapshot_"+QString(cID)+".png";
+	//title
+	QString fName = QString(filePath.c_str());
+	if(cloneBox->title().contains('.')){
+		fName.append(QString('/')+cloneBox->title());
+		fName.replace(".dat",".png");
+	}else  fName.append(QString("/Snapshot_unknown_title.png"));
+	//save
 	QImage img(cloneBox->size().width(),cloneBox->size().height(),QImage::Format_RGB32);
 	QPainter painter(&img);
 	cloneBox->render(&painter);

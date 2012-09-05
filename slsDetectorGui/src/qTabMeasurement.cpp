@@ -26,7 +26,7 @@ using namespace std;
 
 
 qTabMeasurement::qTabMeasurement(QWidget *parent,multiSlsDetector*& detector, qDrawPlot*& plot):
-								QWidget(parent),myDet(detector),myPlot(plot){
+								QWidget(parent),myDet(detector),myPlot(plot),expertMode(false){
 	setupUi(this);
 	SetupWidgetWindow();
 	Initialization();
@@ -80,8 +80,7 @@ void qTabMeasurement::SetupWidgetWindow(){
 	SetupTimingMode();
 
 	//file write enabled/disabled
-	myDet->enableWriteToFile(true);
-	//check if file enabled
+	chkFile->setChecked(myDet->enableWriteToFile());
 }
 
 
@@ -292,6 +291,7 @@ void qTabMeasurement::startStopAcquisition(){
 		progressTimer->start(100);
 
 		emit StartSignal();
+		myPlot->StartStopDaqToggle();
 	}else{
 #ifdef VERBOSE
 		cout << "Stopping Acquisition" << endl<< endl;
@@ -304,7 +304,6 @@ void qTabMeasurement::startStopAcquisition(){
 		Enable(1);
 		emit StopSignal();
 	}
-	myPlot->StartStopDaqToggle();
 }
 
 
@@ -563,7 +562,7 @@ void qTabMeasurement::SetTimingMode(int mode){
 
 
 	if(mode!=None){//Number of Probes
-		if(myDet->getDetectorsType()==slsDetectorDefs::MYTHEN){
+		if((myDet->getDetectorsType()==slsDetectorDefs::MYTHEN)&&(expertMode)){
 			lblNumProbes->setEnabled(true);		spinNumProbes->setEnabled(true);
 		}
 	}

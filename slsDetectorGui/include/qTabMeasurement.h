@@ -40,27 +40,29 @@ public:
 	 */
 	void Refresh();
 
+	/** To enable expert mode
+	 * @param enable to enable if true
+	 */
+	void SetExpertMode(bool enable){expertMode = enable;SetupTimingMode();};
+
+
+
+public slots:
+
+	/** update plot is finished,
+	 * changes start/stop text and enables/disables all widgets
+	 */
+	void UpdateFinished();
+
+	/** updates the current measurement
+	 * @param val the value to be updated
+	 */
+	void SetCurrentMeasurement(int val);
+
+
+
 
 private:
-	/** The sls detector object */
-	multiSlsDetector *myDet;
-
-	/** The Plot widget	 */
-	qDrawPlot *myPlot;
-
-	enum{None, Auto, Trigger_Exp_Series, Trigger_Frame, Trigger_Readout, Gated, Gated_Start, Trigger_Window, NumTimingModes};
-
-	QTimer *progressTimer;
-
-	int numMeasurement;
-
-	int currentMeasurement;
-
-	QString 	acqPeriodTip;
-	QString 	errPeriodTip;
-	QPalette	red;
-
-/** methods */
 	/** Sets up the widget
 	 */
 	void SetupWidgetWindow();
@@ -86,88 +88,99 @@ private:
 	void Enable(bool enable);
 
 
-public slots:
-
-/** update plot is finished,
- * changes start/stop text and enables/disables all widgets
- */
-void UpdateFinished();
-
-/** updates the current measurement
- * @param val the value to be updated
- */
-void SetCurrentMeasurement(int val);
 
 private slots:
-/** Sets the timing mode
- * @ param mode cane be None, Auto, Gated, Trigger Exposure Series,
- * Trigger Frame, Trigger Readout, External Trigger Window
- */
-void SetTimingMode(int mode);
+	/** Sets the timing mode
+	 * @ param mode cane be None, Auto, Gated, Trigger Exposure Series,
+	 * Trigger Frame, Trigger Readout, External Trigger Window
+	 */
+	void SetTimingMode(int mode);
 
-/** Set number of measurements
- *  @param num number of measurements to be set */
-void setNumMeasurements(int num);
+	/** Set number of measurements
+	 *  @param num number of measurements to be set */
+	void setNumMeasurements(int num);
 
-/** Set file name
- * @param fName name of file
- */
-void setFileName(const QString& fName);
+	/** Set file name
+	 * @param fName name of file
+	 */
+	void setFileName(const QString& fName);
 
-/** Set index of file name
- * @param index index of selection
- */
-void setRunIndex(int index);
+	/** Set index of file name
+	 * @param index index of selection
+	 */
+	void setRunIndex(int index);
 
-/** starts/stops Acquisition
- */
-void startStopAcquisition();
+	/** starts/stops Acquisition
+	 */
+	void startStopAcquisition();
 
-/** Set number of frames
- *  @param val number of frames to be set
- */
-void setNumFrames(int val);
+	/** Set number of frames
+	 *  @param val number of frames to be set
+	 */
+	void setNumFrames(int val);
 
-/** Set acquisition time
- */
-void setExposureTime();
+	/** Set acquisition time
+	 */
+	void setExposureTime();
 
-/** Set frame period between exposures
- */
-void setAcquisitionPeriod();
+	/** Set frame period between exposures
+	 */
+	void setAcquisitionPeriod();
 
-/** Set number of triggers
- *  @param val number of triggers to be set
- */
-void setNumTriggers(int val);
+	/** Set number of triggers
+	 *  @param val number of triggers to be set
+	 */
+	void setNumTriggers(int val);
 
-/** Set delay
- */
-void setDelay();
+	/** Set delay
+	 */
+	void setDelay();
 
-/** Set number of gates
- *  @param val number of gates to be set
- */
-void setNumGates(int val);
+	/** Set number of gates
+	 *  @param val number of gates to be set
+	 */
+	void setNumGates(int val);
 
-/** Set number of probes
- *  @param val number of probes to be set
- */
-void setNumProbes(int val);
+	/** Set number of probes
+	 *  @param val number of probes to be set
+	 */
+	void setNumProbes(int val);
 
-/** Update progress*/
-void UpdateProgress();
+	/** Update progress*/
+	void UpdateProgress();
 
-/** Enable write to file */
-void EnableFileWrite(bool enable);
+	/** Enable write to file */
+	void EnableFileWrite(bool enable);
+
+
+
+private:
+	/** The sls detector object */
+	multiSlsDetector *myDet;
+	/** The Plot widget	 */
+	qDrawPlot *myPlot;
+	/** enum for the timing mode */
+	enum{None, Auto, Trigger_Exp_Series, Trigger_Frame, Trigger_Readout, Gated, Gated_Start, Trigger_Window, NumTimingModes};
+	/** timer to update the progress*/
+	QTimer *progressTimer;
+	/** number of measurements*/
+	int numMeasurement;
+	/** current measurement */
+	int currentMeasurement;
+	/** tool tip variables*/
+	QString 	acqPeriodTip;
+	QString 	errPeriodTip;
+	QPalette	red;
+	/** expert mode */
+	bool expertMode;
+
 
 
 signals:
-
-void StartSignal();
-void StopSignal();
-void CheckPlotIntervalSignal();
-void EnableNthFrameSignal(bool);
+	void StartSignal();
+	void StopSignal();
+	void CheckPlotIntervalSignal();
+	void EnableNthFrameSignal(bool);
 };
 
 

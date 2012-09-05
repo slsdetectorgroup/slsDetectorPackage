@@ -357,6 +357,7 @@ void qTabDataOutput::SetAngularCorrection(){
 		cout << "Unsetting angular correction" << endl;
 #endif
 	}
+
 	emit AngularConversionSignal(chkAngular->isChecked());
 }
 

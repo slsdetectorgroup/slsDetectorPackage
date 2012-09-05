@@ -227,6 +227,7 @@ void qDetectorMain::Initialization(){
 	connect(tabs,			SIGNAL(currentChanged(int)),	this, SLOT(Refresh(int)));//( QWidget*)));
 		//	Measurement tab
 		connect(tab_measurement,	SIGNAL(StartSignal()),				this,SLOT(EnableTabs()));
+		connect(tab_measurement,	SIGNAL(StopSignal()),				myPlot,SLOT(StopAcquisition()));
 		connect(tab_measurement,	SIGNAL(StopSignal()),				this,SLOT(EnableTabs()));
 		connect(tab_measurement,	SIGNAL(CheckPlotIntervalSignal()),	tab_plot,SLOT(SetFrequency()));
 		connect(tab_measurement,	SIGNAL(EnableNthFrameSignal(bool)),	tab_plot,SLOT(EnableNthFrame(bool)));
@@ -274,21 +275,20 @@ void qDetectorMain::EnableModes(QAction *action){
 #endif
 	}
 
-	//Set ExpertMode
+	//Set ExpertMode(comes here only if its a digital detector)
 	else if(action==actionExpert){
 		enable = actionExpert->isChecked();
+
 		tabs->setTabEnabled(Advanced,enable);
-		if((enable)&&(digitalDetector)){
-			actionLoadTrimbits->setVisible(true);
-			actionSaveTrimbits->setVisible(true);
-			actionLoadCalibration->setVisible(true);
-			actionSaveCalibration->setVisible(true);
-		}else{
-			actionLoadTrimbits->setVisible(false);
-			actionSaveTrimbits->setVisible(false);
-			actionLoadCalibration->setVisible(false);
-			actionSaveCalibration->setVisible(false);
-		}
+		actionLoadTrimbits->setVisible(enable);
+		actionSaveTrimbits->setVisible(enable);
+		actionLoadCalibration->setVisible(enable);
+		actionSaveCalibration->setVisible(enable);
+
+		if(myDet->getDetectorsType()==slsDetectorDefs::MYTHEN)
+			tab_measurement->SetExpertMode(enable);
+
+
 #ifdef VERBOSE
 		cout << "Setting Expert Mode to " << enable << endl;
 #endif
@@ -387,7 +387,7 @@ void qDetectorMain::ExecuteUtilities(QAction *action){
 		QString fName = QString(myDet->getSettingsDir());
 		fName = QFileDialog::getOpenFileName(this,
 				tr("Load Detector Trimbits"),fName,
-				tr("Trimbit files (*.trim *.sn*)"));
+				tr("Trimbit files (*.trim noise.sn*)"));
 		// Gets called when cancelled as well
 		if (!fName.isEmpty()){
 			if(myDet->loadSettingsFile(string(fName.toAscii().constData()),-1)!=slsDetectorDefs::FAIL)
@@ -402,7 +402,7 @@ void qDetectorMain::ExecuteUtilities(QAction *action){
 		QString fName = QString(myDet->getSettingsDir());
 		fName = QFileDialog::getSaveFileName(this,
 				tr("Save Current Detector Trimbits"),fName,
-				tr("Trimbit files (*.trim *.sn*) "));
+				tr("Trimbit files (*.trim noise.sn*) "));
 		// Gets called when cancelled as well
 		if (!fName.isEmpty()){
 			if(myDet->saveSettingsFile(string(fName.toAscii().constData()),-1)!=slsDetectorDefs::FAIL)
@@ -417,7 +417,7 @@ void qDetectorMain::ExecuteUtilities(QAction *action){
 		QString fName = QString(myDet->getCalDir());
 		fName = QFileDialog::getOpenFileName(this,
 				tr("Load Detector Calibration Data"),fName,
-				tr("Calibration files (*.cal *.sn*)"));
+				tr("Calibration files (*.cal calibration.sn*)"));
 		// Gets called when cancelled as well
 		if (!fName.isEmpty()){
 			if(myDet->loadCalibrationFile(string(fName.toAscii().constData()),-1)!=slsDetectorDefs::FAIL)
@@ -432,7 +432,7 @@ void qDetectorMain::ExecuteUtilities(QAction *action){
 		QString fName = QString(myDet->getCalDir());
 		fName = QFileDialog::getSaveFileName(this,
 				tr("Save Current Detector Calibration Data"),fName,
-				tr("Calibration files (*.cal *.sn*) "));
+				tr("Calibration files (*.cal calibration.sn*) "));
 		// Gets called when cancelled as well
 		if (!fName.isEmpty()){
 			if(myDet->saveCalibrationFile(string(fName.toAscii().constData()),-1)!=slsDetectorDefs::FAIL)

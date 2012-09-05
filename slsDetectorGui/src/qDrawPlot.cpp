@@ -184,6 +184,9 @@ void qDrawPlot::Initialization(){
 //-------------------------------------------------------------------------------------------------------------------------------------------------
 
 void qDrawPlot::StartStopDaqToggle(bool stop_if_running){
+#ifdef VERYVERBOSE
+	cout << "Entering StartStopDaqToggle(" << stop_if_running << ")" <<endl;
+#endif
 	//static bool running = 1;
 	if(running){ //stopping
 		StartDaq(false);
@@ -226,6 +229,8 @@ void qDrawPlot::StartStopDaqToggle(bool stop_if_running){
 		acquisitionPeriod= ((double)(myDet->setTimer(slsDetectorDefs::FRAME_PERIOD,-1))*1E-9);
 		cout << "\tAcquisition Period:" << setprecision (10) << acquisitionPeriod << endl;
 
+		//to take the first data if frameFactor
+		numFactor = 0;
 
 		//for save automatically,
 		saveError = false;
@@ -286,8 +291,8 @@ bool qDrawPlot::StartOrStopThread(bool start){
 	if(start){
 
 		if(myDet->getRunStatus()==slsDetectorDefs::IDLE)
-			cout<<endl<<endl<<"IDLE"<<endl<<endl;
-		else cout<<endl<<endl<<"ERRORRRRRR: "<<myDet->getRunStatus()<<endl<<endl;
+			cout<<endl<<endl<<"IDLE"<<endl;
+		else cout<<endl<<endl<<"ERRORRRRRR: "<<myDet->getRunStatus()<<endl;
 		// Defaults
 		progress = 0;
 		currentFrame = 0;
@@ -335,7 +340,7 @@ bool qDrawPlot::StartOrStopThread(bool start){
 			startPixel = minPixelsY -(pixelWidth/2);
 			endPixel = maxPixelsY + (pixelWidth/2);
 		}else{//no scan
-			nPixelsY = number_of_exposures;
+			nPixelsY = 100;//number_of_exposures;
 			maxPixelsY = 100;
 			minPixelsY = 0;
 			startPixel = -0.5;
@@ -372,11 +377,11 @@ bool qDrawPlot::StartOrStopThread(bool start){
 
 
 
-
-		if(plot_in_scope==1) Clear1DPlot();
 		cout << "Starting new acquisition threadddd ...." << endl;
-		// Setting the callback function to get data from software client
+		// Setting the callback function to get data from detector class
 		myDet->registerDataCallback(&(GetDataCallBack),this);
+		//Setting the callback function to alert when acquisition finished from detector class
+		myDet->registerAcquisitionFinishedCallback(&(GetAcquisitionFinishedCallBack),this);
 		// Start acquiring data from server
 		if(!firstTime) pthread_join(gui_acquisition_thread,NULL);//wait until he's finished, ie. exits
 		pthread_create(&gui_acquisition_thread, NULL,DataStartAcquireThread, (void*) this);
@@ -414,40 +419,36 @@ int qDrawPlot::GetData(detectorData *data){
 	cout << "Entering GetDatafunction" << endl;
 #endif
 	if(!stop_signal){
+
 		//set title
 		SetPlotTitle(QString(data->fileName).section('/',-1));
+		//set progress
+		progress=(int)data->progressIndex;
+
+
 
 		//Plot Disabled
-		if(!plotEnable) {
-			progress=(int)data->progressIndex;
-			currentFrame++;
-			return 0;
-		}
-
+		if(!plotEnable) 	return 0;
 
 
 		//Nth Frame
 		if(frameFactor){
-			//when to copy data
-			if(((currentFrame+1==number_of_exposures)&&(currentMeasurement+1==number_of_measurements))
-					||(!((currentFrame)%frameFactor)));
+			//plots if numfactor becomes 0
+			if(!numFactor) numFactor=frameFactor-1;
 			//return if not
 			else{
-				progress=(int)data->progressIndex;
-				currentFrame++;
+				numFactor--;
 				return 0;
 			}
 		}
 
 
 
-		//Not Nth Frame, Not time out yet
+		//Not Nth Frame, to check time out(NOT for 2dScans and angle plots)
 		else{
 			if((scanArgument==None)&&(!anglePlot)){
 				//if the time is not over, RETURN
 				if(!data_pause_over){
-					progress=(int)data->progressIndex;
-					currentFrame++;
 					return 0;
 				}
 				data_pause_over=false;
@@ -456,134 +457,196 @@ int qDrawPlot::GetData(detectorData *data){
 		}
 
 
-		//what comes here has plot enabled AND (frame factor OR data pause over )
-		progress=(int)data->progressIndex;
 
 
-		//current index
-		currentIndex = myDet->getFileIndexFromFileName(string(data->fileName));
+		//angle plotting
+		if(anglePlot){
+			if(!pthread_mutex_trylock(&(last_image_complete_mutex))){
+				lastImageNumber= currentFrame+1;
+				nAnglePixelsX = data->npoints;
+				histNBins = nAnglePixelsX;
+				nHists=1;
+				if(histXAngleAxis) delete [] histXAngleAxis; histXAngleAxis = new double[nAnglePixelsX];
+				if(histYAngleAxis) delete [] histYAngleAxis; histYAngleAxis = new double[nAnglePixelsX];
+				memcpy(histXAngleAxis,data->angles,nAnglePixelsX*sizeof(double));
+				memcpy(histYAngleAxis,data->values,nAnglePixelsX*sizeof(double));
+				pthread_mutex_unlock(&(last_image_complete_mutex));
+			}
+			currentFrame++;
+			return 0;
+		}
 
-		//scan variable
-		int currentScanVariable0 = myDet->getCurrentScanVariable(0);
-		int currentScanVariable1 = myDet->getCurrentScanVariable(1);
 
 
-		if((currentFrame)<(number_of_exposures)){
-#ifdef VERYVERBOSE
-			cout << "Reading in image: " << currentIndex << endl;
-#endif
-			//angle plotting
-			if(anglePlot){
+		//if scan argument is 2d
+		if(scanArgument!=None){
+			//alframes
+			if(scanArgument==AllFrames){
 				if(!pthread_mutex_trylock(&(last_image_complete_mutex))){
+					//variables
 					lastImageNumber= currentFrame+1;
-					nAnglePixelsX = data->npoints;
-					histNBins = nAnglePixelsX;
-					nHists=1;
-					if(histXAngleAxis) delete [] histXAngleAxis; histXAngleAxis = new double[nAnglePixelsX];
-					if(histYAngleAxis) delete [] histYAngleAxis; histYAngleAxis = new double[nAnglePixelsX];
-					memcpy(histXAngleAxis,data->angles,nAnglePixelsX*sizeof(double));
-					memcpy(histYAngleAxis,data->values,nAnglePixelsX*sizeof(double));
+					//title
+					char temp_title[2000];
+					sprintf(temp_title,"Image Index %d",myDet->getFileIndexFromFileName(string(data->fileName)));
+					imageTitle = temp_title;
+					//copy data
+					memcpy(lastImageArray+(currentScanDivLevel*nPixelsX),data->values,nPixelsX*sizeof(double));
 					pthread_mutex_unlock(&(last_image_complete_mutex));
 				}
 				currentFrame++;
+				currentScanDivLevel++;
 				return 0;
 			}
-			//if scan argument is 2d
-			if(scanArgument!=None){
-				//alframes
-				if(scanArgument==AllFrames){
-					if(!pthread_mutex_trylock(&(last_image_complete_mutex))){
-						lastImageNumber= currentFrame+1;
-						char temp_title[2000]; sprintf(temp_title,"Image Index %d",currentIndex); imageTitle = temp_title;
-						memcpy(lastImageArray+(currentScanDivLevel*nPixelsX),data->values,nPixelsX*sizeof(double));
-						pthread_mutex_unlock(&(last_image_complete_mutex));
-					}
-					currentFrame++;
-					currentScanDivLevel++;
-					return 0;
-				}
-				//file index
-				if(scanArgument==FileIndex){
-					if(!pthread_mutex_trylock(&(last_image_complete_mutex))){
-						if(currentIndex == minPixelsY) currentScanDivLevel = 0;
-						lastImageNumber= currentFrame+1;
-						char temp_title[2000]; sprintf(temp_title,"Image Index %d",currentIndex); imageTitle = temp_title;
-						for(unsigned int px=0;px<nPixelsX;px++)	lastImageArray[currentScanDivLevel*nPixelsX+px] += data->values[px];
-						pthread_mutex_unlock(&(last_image_complete_mutex));
-					}
-					currentFrame++;
-					currentScanDivLevel++;
-					return 0;
-				}
-				//level0
-				if(scanArgument==Level0){
-					if(!pthread_mutex_trylock(&(last_image_complete_mutex))){
-						if(currentScanVariable0!=currentScanValue) currentScanDivLevel++;
-						currentScanValue = currentScanVariable0;
-						lastImageNumber= currentFrame+1;
-						char temp_title[2000]; sprintf(temp_title,"Image Index %d",currentIndex); imageTitle = temp_title;
-						for(unsigned int px=0;px<nPixelsX;px++) lastImageArray[currentScanDivLevel*nPixelsX+px] += data->values[px];
-						pthread_mutex_unlock(&(last_image_complete_mutex));
-					}
-					currentFrame++;
-					return 0;
-				}
-				//level1
+			//file index
+			if(scanArgument==FileIndex){
 				if(!pthread_mutex_trylock(&(last_image_complete_mutex))){
-					if(currentScanVariable1!=currentScanValue) currentScanDivLevel++;
-					currentScanValue = currentScanVariable1;
+					//variables
+					int currentIndex = myDet->getFileIndexFromFileName(string(data->fileName));
+					if(currentIndex == minPixelsY) currentScanDivLevel = 0;
 					lastImageNumber= currentFrame+1;
-					char temp_title[2000]; sprintf(temp_title,"Image Index %d",currentIndex); imageTitle = temp_title;
+					//title
+					char temp_title[2000];
+					sprintf(temp_title,"Image Index %d",currentIndex);
+					imageTitle = temp_title;
+					//copy data
+					for(unsigned int px=0;px<nPixelsX;px++)	lastImageArray[currentScanDivLevel*nPixelsX+px] += data->values[px];
+					pthread_mutex_unlock(&(last_image_complete_mutex));
+				}
+				currentFrame++;
+				currentScanDivLevel++;
+				return 0;
+			}
+			//level0
+			if(scanArgument==Level0){
+				if(!pthread_mutex_trylock(&(last_image_complete_mutex))){
+					//get scanvariable0
+					int currentIndex = 0, p = 0; double cs0 = 0 , cs1 = 0;
+					myDet->getVariablesFromFileName(string(data->fileName), currentIndex, p, cs0, cs1);
+					int currentScanVariable0 = (int)cs0;
+					//variables
+					if(currentScanVariable0!=currentScanValue) currentScanDivLevel++;
+					currentScanValue = currentScanVariable0;
+					lastImageNumber= currentFrame+1;
+					//title
+					char temp_title[2000];
+					sprintf(temp_title,"Image Index %d",currentIndex);
+					imageTitle = temp_title;
+					//copy data
 					for(unsigned int px=0;px<nPixelsX;px++) lastImageArray[currentScanDivLevel*nPixelsX+px] += data->values[px];
 					pthread_mutex_unlock(&(last_image_complete_mutex));
 				}
 				currentFrame++;
 				return 0;
-
 			}
-
-			//normal measurement or 1d scans
+			//level1
 			if(!pthread_mutex_trylock(&(last_image_complete_mutex))){
-				char temp_title[2000];
-				// only if you got the lock, do u need to remember lastimagenumber to plot
+				//get scanvariable1
+				int currentIndex = 0, p = 0; double cs0 = 0 , cs1 = 0;
+				myDet->getVariablesFromFileName(string(data->fileName), currentIndex, p, cs0, cs1);
+				int currentScanVariable1 = (int)cs1;
+				//variables
+				if(currentScanVariable1!=currentScanValue) currentScanDivLevel++;
+				currentScanValue = currentScanVariable1;
 				lastImageNumber= currentFrame+1;
-
-				//1d
-				if(plot_in_scope==1){
-					// Titles changed to "" inside startstopthread
-					// Persistency
-					if(currentPersistency < persistency)currentPersistency++;
-					else currentPersistency=persistency;
-					nHists = currentPersistency+1;
-					histNBins = nPixelsX;
-					// copy data
-					for(int i=currentPersistency;i>0;i--)
-						memcpy(histYAxis[i],histYAxis[i-1],nPixelsX*sizeof(double));
-					memcpy(histYAxis[0],data->values,nPixelsX*sizeof(double));
-				}
-				//2d
-				else{
-					// Titles
-					sprintf(temp_title,"Image Index %d",currentIndex);
-					imageTitle = temp_title;
-					// manufacture data for now
-					for(unsigned int px=0;px<nPixelsX;px++)
-						for(unsigned int py=0;py<nPixelsY;py++)
-							image_data[py*nPixelsX+px] = sqrt(pow(currentFrame+1,2)*pow(double(px)-nPixelsX/2,2)/pow(nPixelsX/2,2)/pow(number_of_exposures+1,2) + pow(double(py)-nPixelsY/2,2)/pow(nPixelsY/2,2))/sqrt(2);
-					// copy data
-					memcpy(lastImageArray,image_data,nPixelsX*nPixelsY*sizeof(double));
-					//SHOULD BE memcpy(lastImageArray,data->values,nPixelsX*nPixelsY*sizeof(double));
-				}
+				//title
+				char temp_title[2000];
+				sprintf(temp_title,"Image Index %d",currentIndex);
+				imageTitle = temp_title;
+				//copy data
+				for(unsigned int px=0;px<nPixelsX;px++) lastImageArray[currentScanDivLevel*nPixelsX+px] += data->values[px];
 				pthread_mutex_unlock(&(last_image_complete_mutex));
 			}
 			currentFrame++;
+			return 0;
+
 		}
+
+		//normal measurement or 1d scans
+		if(!pthread_mutex_trylock(&(last_image_complete_mutex))){
+			char temp_title[2000];
+			// only if you got the lock, do u need to remember lastimagenumber to plot
+			lastImageNumber= currentFrame+1;
+
+			//1d
+			if(plot_in_scope==1){
+				// Titles changed to "" inside startstopthread
+				// Persistency
+				if(currentPersistency < persistency)currentPersistency++;
+				else currentPersistency=persistency;
+				nHists = currentPersistency+1;
+				histNBins = nPixelsX;
+				// copy data
+				for(int i=currentPersistency;i>0;i--)
+					memcpy(histYAxis[i],histYAxis[i-1],nPixelsX*sizeof(double));
+				memcpy(histYAxis[0],data->values,nPixelsX*sizeof(double));
+			}
+			//2d
+			else{
+				// Titles
+				sprintf(temp_title,"Image Index %d",myDet->getFileIndexFromFileName(string(data->fileName)));
+				imageTitle = temp_title;
+				// manufacture data for now
+				for(unsigned int px=0;px<nPixelsX;px++)
+					for(unsigned int py=0;py<nPixelsY;py++)
+						image_data[py*nPixelsX+px] = sqrt(pow(currentFrame+1,2)*pow(double(px)-nPixelsX/2,2)/pow(nPixelsX/2,2)/pow(number_of_exposures+1,2) + pow(double(py)-nPixelsY/2,2)/pow(nPixelsY/2,2))/sqrt(2);
+				// copy data
+				memcpy(lastImageArray,image_data,nPixelsX*nPixelsY*sizeof(double));
+				//SHOULD BE memcpy(lastImageArray,data->values,nPixelsX*nPixelsY*sizeof(double));
+			}
+			pthread_mutex_unlock(&(last_image_complete_mutex));
+		}
+		currentFrame++;
+
 	}
 #ifdef VERYVERBOSE
 	cout << "Exiting GetData function" << endl;
 #endif
 	return 0;
 }
+
+
+//-------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+int qDrawPlot::GetAcquisitionFinishedCallBack(double currentProgress,int detectorStatus, void *this_pointer){
+	((qDrawPlot*)this_pointer)->AcquisitionFinished(currentProgress,detectorStatus);
+	return 0;
+}
+
+
+//-------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+int qDrawPlot::AcquisitionFinished(double currentProgress,int detectorStatus){
+#ifdef VERBOSE
+	cout << "Entering Acquisition Finished with status " <<
+			slsDetectorBase::runStatusType((slsDetectorDefs::runStatus(detectorStatus))) << " and progress " << currentProgress << endl;
+#endif
+
+	//error
+	if((detectorStatus==slsDetectorDefs::IDLE) && (currentProgress!=100)){
+		cout<<"in here"<<endl;
+		StartStopDaqToggle(true);
+	}
+	else if(!stop_signal){
+		cout<<"COMMENCING"<<endl;
+		currentMeasurement++;
+		cout<<"currentMeasurement:"<<currentMeasurement<<endl;
+		// To start the next measurement
+		if(currentMeasurement!=number_of_measurements){
+			emit SetCurrentMeasurementSignal(currentMeasurement);
+			StopDaqForGui();
+			StartDaq(true);
+		}// if all the measurements are over
+		else{
+			StartStopDaqToggle(true);
+			emit UpdatingPlotFinished();
+		}
+	}
+
+	return 0;
+}
+
 
 //-------------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -619,7 +682,7 @@ void qDrawPlot::Clear1DPlot(){
 
 void qDrawPlot::UpdatePlot(){
 #ifdef VERYVERBOSE
-	/*cout << "Entering UpdatePlot function" << endl;*/
+	cout << "Entering UpdatePlot function" << endl;
 #endif
 
 	plot_update_timer->stop();
@@ -630,9 +693,6 @@ void qDrawPlot::UpdatePlot(){
 		//1-d plot stuff
 		if(lastImageNumber){
 			if(histNBins){
-#ifdef VERYVERBOSE
-				/*cout << "Last Image Number: " << lastImageNumber << endl;*/
-#endif
 				Clear1DPlot();
 				plot1D->SetXTitle(histXAxisTitle.toAscii().constData());
 				plot1D->SetYTitle(histYAxisTitle.toAscii().constData());
@@ -699,33 +759,21 @@ void qDrawPlot::UpdatePlot(){
 	last_plot_number=lastImageNumber;
 
 	if(plotEnable) UnlockLastImageArray();
-	// Measurement not over, continue
-	if(number_of_exposures!=currentFrame){//las plot number?
-		//if the interval is a timer and not nth frame *
-		if(!frameFactor)
-			plot_update_timer->start((int)timerValue);
-		else
-			plot_update_timer->start((int)PLOT_TIMER_MS);
-	}
-	// if a measurement is over
-	else{
-		currentMeasurement++;cout<<"currentMeasurement:"<<currentMeasurement<<endl;
-		// if all the measurements are over
-		if(currentMeasurement==number_of_measurements){
-			StartStopDaqToggle(true);
-			emit UpdatingPlotFinished();
-		}// To start the next measurement
-		else{
-			emit SetCurrentMeasurementSignal(currentMeasurement);
-			StopDaqForGui();
-			StartDaq(true);
-		}
-	}
+
+
+	if(!frameFactor)
+		plot_update_timer->start((int)timerValue);
+	else
+		plot_update_timer->start((int)PLOT_TIMER_MS);
+
 }
 
 //-------------------------------------------------------------------------------------------------------------------------------------------------
 
 void qDrawPlot::StopUpdatePlot(){
+#ifdef VERYVERBOSE
+	cout << "Entering StopUpdatePlot()" << endl;
+#endif
 	plot_update_timer->stop();
 }
 
@@ -832,8 +880,12 @@ void qDrawPlot::SavePlot(){
 	QPainter painter(&savedImage);
 	render(&painter);
 
-	// save image
-	QString fName = QString(myDet->getFilePath().c_str())+"/Image.png";
+	QString fName = QString(myDet->getFilePath().c_str());
+	if(boxPlot->title().contains('.')){
+		fName.append(QString('/')+boxPlot->title());
+		fName.replace(".dat",".png");
+	}else  fName.append(QString("/Image.png"));
+
 	fName = QFileDialog::getSaveFileName(0,tr("Save Image"),fName,tr("PNG Files (*.png);;XPM Files(*.xpm);;JPEG Files(*.jpg)"),0,QFileDialog::ShowDirsOnly);
 
 	if (!fName.isEmpty())
@@ -851,7 +903,7 @@ void qDrawPlot::SavePlot(){
 void qDrawPlot::SaveAll(bool enable){
 	string msg = string("The Files will be saved as:\n")+
 				string(myDet->getFilePath().c_str())+string("/")+
-				string(myDet->getFileName().c_str())+string("_[File Index].png");
+				string(myDet->getFileName().c_str())+string("[title].png");
 	qDefs::InfoMessage(msg,"Dock");
 	saveAll = enable;
 }
@@ -866,9 +918,13 @@ void qDrawPlot::SavePlotAutomatic(){
 		lastSavedMeasurement = currentMeasurement;
 		char cID[10];
 		sprintf(cID,"%d",lastSavedFrame);
-		QString fName = QString(myDet->getFilePath().c_str())+QString("/")+
-				QString(myDet->getFileName().c_str())+QString("_")+
-				QString(cID)+".png";
+		//title
+		QString fName = QString(myDet->getFilePath().c_str());
+		if(boxPlot->title().contains('.')){
+			fName.append(QString('/')+boxPlot->title());
+			fName.replace(".dat",".png");
+		}else  fName.append(QString("/Image_unknown_title.png"));
+		//save
 		QImage img(size().width(),size().height(),QImage::Format_RGB32);
 		QPainter painter(&img);
 		render(&painter);

@@ -138,8 +138,8 @@ void SetLines(bool enable){lines = enable;};
 void SetMarkers(bool enable){markers = enable;};
 /** sets the scan argument to prepare the plot*/
 void SetScanArgument(int scanArg){scanArgument = scanArg;};
-
-
+/** sets stop_signal to true */
+void StopAcquisition(){	stop_signal = true; };
 
 
 
@@ -178,12 +178,24 @@ static void* DataStartAcquireThread(void *this_pointer);
 static int GetDataCallBack(detectorData *data, void *this_pointer);
 /**	This is called by the GetDataCallBack function to copy the data */
 int GetData(detectorData *data);
+/** This is called by detector class when acquisition is finished
+ * @param currentProgress current progress of measurement
+ * @param detectorStatus current status of the detector
+ * @param this_pointer is the pointer pointing to this object
+ * */
+static int GetAcquisitionFinishedCallBack(double currentProgress,int detectorStatus, void *this_pointer);
+/** This is called by detector class when acquisition is finished
+ * @param currentProgress current progress of measurement
+ * @param detectorStatus current status of the detector
+ * */
+int AcquisitionFinished(double currentProgress,int detectorStatus);
 /** Saves all the plots. All sets saveError to true if not saved.*/
 void SavePlotAutomatic();
-
+/** Sets the style of the 1d plot */
 void SetStyle(SlsQtH1D*  h){
 	if(lines) h->setStyle(QwtPlotCurve::Lines); else h->setStyle(QwtPlotCurve::Dots);
-	if(markers) h->setSymbol(*marker); 			else h->setSymbol(*noMarker);};
+	if(markers) h->setSymbol(*marker); 			else h->setSymbol(*noMarker);
+};
 
 
 
@@ -248,8 +260,8 @@ int number_of_measurements;
 int currentMeasurement;
 /** currentFrame */
 int currentFrame;
-/** current Index */
-int currentIndex;
+/** variable to check if its the nth frame */
+int numFactor;
 /** current Scan Division Level */
 int currentScanDivLevel;
 /** current scan Value */

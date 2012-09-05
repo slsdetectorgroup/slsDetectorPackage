@@ -337,7 +337,8 @@ void qTabActions::EnablePositions(bool enable){
 		//to collapse if it was expanded
 		if(btnExpand[NumPositions]->text()=="-")
 			Expand(group->button(NumPositions));
-		comboPos->clear();
+		for(int i=0;i<comboPos->count();i++)
+			comboPos->removeItem(i);
 		cout<<"Number of Positions set to :"<<myDet->getPositions()<<endl;
 		lblName[NumPositions]->setPalette(lblName[NumPositions-1]->palette());
 		lblName[NumPositions]->setEnabled(false);

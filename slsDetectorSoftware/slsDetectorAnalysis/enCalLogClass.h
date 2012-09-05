@@ -123,7 +123,6 @@ class enCalLogClass {
   slsDetectorCommand *myDet;
 #endif
   ofstream outfile;
-  ifstream infile;
   char vars[4][100];
 
 };

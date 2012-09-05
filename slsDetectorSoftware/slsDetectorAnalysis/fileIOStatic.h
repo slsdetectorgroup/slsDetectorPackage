@@ -9,8 +9,12 @@
 #include <sstream>
 #include <queue>
 #include <math.h>
-#include "sls_detector_defs.h"
 
+#ifdef __CINT
+#define MYROOT
+#endif
+
+#include "sls_detector_defs.h"
 using namespace std;
 /**
    @short class handling the data file I/O flags

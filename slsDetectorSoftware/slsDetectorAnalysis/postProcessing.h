@@ -5,6 +5,7 @@
 #include "detectorData.h"
 #include "slsDetectorBase.h"
 #include "angularConversion.h"
+#include "badChannelCorrections.h"
 #include "fileIO.h"
 #include <string>
 
@@ -20,7 +21,7 @@
 
 using namespace std;
 
-#define MAX_BADCHANS 2000
+#define MAX_BADCHANS 20000
 
 
 #define defaultTDead {170,90,750} /**< should be changed in order to have it separate for the different detector types */
@@ -32,7 +33,7 @@ using namespace std;
    (including thread for writing data files and plotting in parallel with the acquisition) 
 */
 
-class postProcessing : public angularConversion, public fileIO {
+class postProcessing : public angularConversion, public fileIO, public badChannelCorrections {
 
 //public virtual angularConversion, public virtual fileIO  {
 
@@ -73,8 +74,9 @@ class postProcessing : public angularConversion, public fileIO {
       \returns 0 if bad channel disabled, >0 otherwise
   */
   virtual int setBadChannelCorrection(string fname="")=0;
-  
-  static int setBadChannelCorrection(ifstream &infile, int &nbad, int *badlist, int moff=0);
+
+  static int setBadChannelCorrection(ifstream &infile, int &nbad, int *badlist, int moff){int retval=readBadChannelCorrectionFile(infile,nbad,badlist); for (int ich=0; ich<nbad; ich++)    badlist[ich]=badlist[ich]+moff;	return retval;};
+ 
   /** 
       set bad channels correction
       \param fname file with bad channel list ("" disable)
@@ -244,40 +246,6 @@ s
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
  protected:
      
   int *threadedProcessing;
@@ -286,12 +254,6 @@ s
 
   char *flatFieldDir;
   char *flatFieldFile;
-
-  char *badChanFile;
-  int *nBadChans;
-  int *badChansList;
-  int *nBadFF;
-  int *badFFList;
 
 
   /** mutex to synchronize main and data processing threads */

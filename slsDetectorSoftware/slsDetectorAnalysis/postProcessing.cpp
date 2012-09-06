@@ -66,69 +66,6 @@ int postProcessing::flatFieldCorrect(double datain, double errin, double &dataou
 
 
 
-int postProcessing::setBadChannelCorrection(ifstream &infile, int &nbad, int *badlist, int moff){
-  
-  int interrupt=0;
-  int ich;
-  int chmin,chmax;
-  string str;
-
-
-  
-  nbad=0;
-  while (infile.good() and interrupt==0) {
-    getline(infile,str);
-#ifdef VERBOSE
-    std::cout << str << std::endl;
-#endif
-    istringstream ssstr;
-    ssstr.str(str);
-      if (ssstr.bad() || ssstr.fail() || infile.eof()) {
-	interrupt=1;
-	break;
-      }
-      if (str.find('-')!=string::npos) {
-	ssstr >> chmin ;
-	ssstr.str(str.substr(str.find('-')+1,str.size()));
-	ssstr >> chmax;
-#ifdef VERBOSE
-	std::cout << "channels between"<< chmin << " and " << chmax << std::endl;
-#endif
-	for (ich=chmin; ich<=chmax; ich++) {
-	  if (nbad<MAX_BADCHANS) {
-	    badlist[nbad]=ich;
-	    nbad++;
-#ifdef VERBOSE
-	    std::cout<< nbad << " Found bad channel "<< ich << std::endl;
-#endif
-	  } else
-	    interrupt=1;
-	}
-      } else {
-	ssstr >> ich;
-#ifdef VERBOSE
-	std::cout << "channel "<< ich << std::endl;
-#endif
-	if (nbad<MAX_BADCHANS) {
-	  badlist[nbad]=ich;
-	  nbad++;
-#ifdef VERBOSE
-	  std::cout << nbad << " Found bad channel "<< ich << std::endl;
-#endif
-	} else
-	  interrupt=1;
-      }
-  }
-
-  for (int ich=0; ich<nbad; ich++) {
-    badlist[ich]=badlist[ich]+moff;
-  }
-  return nbad;
-}
-
-
-
-
 
 
 

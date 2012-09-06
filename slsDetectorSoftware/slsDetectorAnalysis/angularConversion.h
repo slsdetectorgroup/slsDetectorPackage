@@ -49,7 +49,9 @@ class angularConversion : public virtual slsDetectorBase, public virtual angular
 
   //virtual int readAngularConversion(string fname)=0;
 
-
+  using angularConversionStatic::writeAngularConversion;
+  using angularConversionStatic::readAngularConversion;
+  
 
 
    /** 

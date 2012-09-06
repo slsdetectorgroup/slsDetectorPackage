@@ -14,6 +14,25 @@ class angleConversionConstant {
   double tilt; /**< ossible tilt in the orthogonal direction (unused)*/
   double etilt; /**< error in the tilt determination */
 //} angleConversionConstant;
+
+  double getCenter(){return center;};
+  double getConversion(){return r_conversion;};
+  double getOffset(){return offset;};
+  double getTilt(){return tilt;};
+  
+  int setAngConvConstant(angleConversionConstant *acc) {\
+    center=acc->center;					\
+    ecenter=acc->ecenter;				\
+    r_conversion=acc->r_conversion;			\
+    er_conversion=acc->er_conversion;			\
+    offset=acc->offset;					\
+    eoffset=acc->eoffset;				\
+    tilt=acc->tilt;					\
+    etilt=acc->etilt;					\
+  };
+
+
+
 };
 
 #endif

@@ -87,6 +87,9 @@ void qTabAdvanced::Initialization(){
 	//start Trimming
 	connect(btnStart,		SIGNAL(clicked()),	this, SLOT(StartTrimming()));
 
+	//refresh
+	connect(btnRefresh,		SIGNAL(clicked()),	this, SLOT(UpdatePlot()));
+
 }
 
 
@@ -319,9 +322,6 @@ void qTabAdvanced::StartTrimming(){
 		break;
 	}
 
-#ifdef VERBOSE
-
-#endif
 	//execute
 	int ret = myDet->executeTrimming(trimmingMode,parameter1,parameter2,-1);
 	if((ret!=slsDetectorDefs::FAIL)&&(ret!=-1)){
@@ -330,6 +330,8 @@ void qTabAdvanced::StartTrimming(){
 		if((ret!=slsDetectorDefs::FAIL)&&(ret!=-1))
 			qDefs::Message(qDefs::INFORMATION,"The Trimbits have been saved successfully.","Advanced");
 		else qDefs::Message(qDefs::WARNING,string("Could not Save the Trimbits to file:\n")+dispFile->text().toAscii().constData(),"Advanced");
+		//updates plots
+		UpdatePlot();
 	}
 	else
 		qDefs::Message(qDefs::WARNING,"Atleast 1 channel could not be trimmed.","Advanced");
@@ -338,6 +340,16 @@ void qTabAdvanced::StartTrimming(){
 
 //-------------------------------------------------------------------------------------------------------------------------------------------------
 
+
+void qTabAdvanced::UpdatePlot(){
+#ifdef VERBOSE
+	cout << "Updating Plot" << endl;
+#endif
+
+}
+
+
+//-------------------------------------------------------------------------------------------------------------------------------------------------
 
 void qTabAdvanced::Refresh(){
 	//disconnect

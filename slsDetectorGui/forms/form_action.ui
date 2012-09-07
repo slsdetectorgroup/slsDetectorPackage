@@ -109,6 +109,10 @@
      <property name="text">
       <string>Browse</string>
      </property>
+     <property name="icon">
+      <iconset resource="../include/icons.qrc">
+       <normaloff>:/icons/images/browse.png</normaloff>:/icons/images/browse.png</iconset>
+     </property>
     </widget>
    </item>
    <item row="0" column="3">
@@ -158,6 +162,8 @@
    </item>
   </layout>
  </widget>
- <resources/>
+ <resources>
+  <include location="../include/icons.qrc"/>
+ </resources>
  <connections/>
 </ui>

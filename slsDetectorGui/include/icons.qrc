@@ -1,5 +1,17 @@
 <RCC version="1.0">
     <qresource prefix="/icons">
 	<file>../images/mountain.png</file>
+	<file>../images/refresh.png</file>
+	<file>../images/save.png</file>
+	<file>../images/saveAll.png</file>
+	<file>../images/close.png</file>
+	<file>../images/add.png</file>
+	<file>../images/new.png</file>
+	<file>../images/download.png</file>
+	<file>../images/browse.png</file>
+	<file>../images/start.png</file>
+	<file>../images/erase.png</file>
+	<file>../images/remove.png</file>
+	<file>../images/stop.png</file>
     </qresource>
 </RCC>

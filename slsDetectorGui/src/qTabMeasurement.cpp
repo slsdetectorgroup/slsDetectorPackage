@@ -81,6 +81,11 @@ void qTabMeasurement::SetupWidgetWindow(){
 
 	//file write enabled/disabled
 	chkFile->setChecked(myDet->enableWriteToFile());
+
+	//creating the icons for the buttons
+	iconStart = new QIcon(":/icons/images/start.png");
+	iconStop = new QIcon(":/icons/images/stop.png");
+
 }
 
 
@@ -278,12 +283,13 @@ void qTabMeasurement::setRunIndex(int index){
 
 
 void qTabMeasurement::startStopAcquisition(){
-	if(!btnStartStop->text().compare("Start")){
+	if(btnStartStop->isChecked()){
 #ifdef VERBOSE
 		cout << endl << endl << "Starting Acquisition" << endl;
 #endif
 		//btnStartStop->setStyleSheet("color:red");
 		btnStartStop->setText("Stop");
+		btnStartStop->setIcon(*iconStop);
 		Enable(0);
 		progressBar->setValue(0);
 		//the progress which keeps adding up for all the measurements
@@ -301,6 +307,8 @@ void qTabMeasurement::startStopAcquisition(){
 		//btnStartStop->setStyleSheet("background:rgb(239,239,239)");
 		progressTimer->stop();
 		btnStartStop->setText("Start");
+		btnStartStop->setIcon(*iconStart);
+		btnStartStop->setChecked(false);
 		Enable(1);
 		emit StopSignal();
 	}
@@ -313,6 +321,8 @@ void qTabMeasurement::startStopAcquisition(){
 void qTabMeasurement::UpdateFinished(){
 	disconnect(btnStartStop,SIGNAL(clicked()),this,SLOT(startStopAcquisition()));
 	btnStartStop->setText("Start");
+	btnStartStop->setIcon(*iconStart);
+	btnStartStop->setChecked(false);
 	//btnStartStop->setStyleSheet("color:green");
 	//btnStartStop->setStyleSheet("background:rgb(239,239,239)");
 	Enable(1);

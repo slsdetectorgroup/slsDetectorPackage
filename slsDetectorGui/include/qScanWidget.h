@@ -35,6 +35,7 @@ public:
 	/**to update the widgets*/
 	void Refresh();
 
+
 	/**number of scan widgets*/
 	static int NUM_SCAN_WIDGETS;
 

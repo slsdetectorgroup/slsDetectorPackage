@@ -173,7 +173,8 @@ private:
 	QPalette	red;
 	/** expert mode */
 	bool expertMode;
-
+	QIcon	*iconStart;
+	QIcon	*iconStop;
 
 
 signals:

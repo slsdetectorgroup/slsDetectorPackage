@@ -87,6 +87,10 @@
     <property name="text">
      <string>Run</string>
     </property>
+    <property name="icon">
+     <iconset resource="../include/icons.qrc">
+      <normaloff>:/icons/images/start.png</normaloff>:/icons/images/start.png</iconset>
+    </property>
    </widget>
   </widget>
   <widget class="QGroupBox" name="groupBox_2">
@@ -144,6 +148,10 @@
     </property>
     <property name="text">
      <string>Run</string>
+    </property>
+    <property name="icon">
+     <iconset resource="../include/icons.qrc">
+      <normaloff>:/icons/images/start.png</normaloff>:/icons/images/start.png</iconset>
     </property>
    </widget>
   </widget>
@@ -234,11 +242,17 @@
       <property name="text">
        <string>Get  Information</string>
       </property>
+      <property name="icon">
+       <iconset resource="../include/icons.qrc">
+        <normaloff>:/icons/images/download.png</normaloff>:/icons/images/download.png</iconset>
+      </property>
      </widget>
     </item>
    </layout>
   </widget>
  </widget>
- <resources/>
+ <resources>
+  <include location="../include/icons.qrc"/>
+ </resources>
  <connections/>
 </ui>

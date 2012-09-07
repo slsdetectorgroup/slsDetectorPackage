@@ -17,8 +17,8 @@ using namespace std;
 
 //-------------------------------------------------------------------------------------------------------------------------------------------------
 
-qTabSettings::qTabSettings(QWidget *parent,multiSlsDetector*& detector,int detID):
-		QWidget(parent),myDet(detector),detID(detID){
+qTabSettings::qTabSettings(QWidget *parent,multiSlsDetector*& detector):
+		QWidget(parent),myDet(detector){
 
 	setupUi(this);
 	SetupWidgetWindow();
@@ -40,7 +40,7 @@ void qTabSettings::SetupWidgetWindow(){
 
 	// Settings
 	SetupDetectorSettings();
-	comboSettings->setCurrentIndex(myDet->getSettings(detID));
+	comboSettings->setCurrentIndex(myDet->getSettings());
 
 	//threshold
 	spinThreshold->setValue(myDet->getThresholdEnergy());
@@ -68,7 +68,7 @@ void qTabSettings::SetupWidgetWindow(){
 
 void qTabSettings::SetupDetectorSettings(){
 	// Get detector settings from detector
-	slsDetectorDefs::detectorSettings sett = myDet->getSettings(detID);
+	slsDetectorDefs::detectorSettings sett = myDet->getSettings();
 
 	// To be able to index items on a combo box
 	model = qobject_cast<QStandardItemModel*>(comboSettings->model());
@@ -163,7 +163,7 @@ void qTabSettings::setSettings(int index){
 		if(index!=(int)Uninitialized)
 			item[(int)Uninitialized]->setEnabled(false);
 	}
-	slsDetectorDefs::detectorSettings sett = myDet->setSettings((slsDetectorDefs::detectorSettings)index,detID);
+	slsDetectorDefs::detectorSettings sett = myDet->setSettings((slsDetectorDefs::detectorSettings)index);
 #ifdef VERBOSE
 	cout << "Settings have been set to " << myDet->slsDetectorBase::getDetectorSettings(sett) << endl;
 #endif
@@ -256,7 +256,7 @@ void qTabSettings::SetEnergy(){
 void qTabSettings::Refresh(){
 	// Settings
 	SetupDetectorSettings();
-	comboSettings->setCurrentIndex(myDet->getSettings(detID));
+	comboSettings->setCurrentIndex(myDet->getSettings());
 	// Number of Modules
 	spinNumModules->setValue(myDet->setNumberOfModules());
 

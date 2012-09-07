@@ -27,9 +27,8 @@ public:
 	/** \short The constructor
 	 *    @param parent is the parent tab widget
 	 *    @param detector is the detector returned from the detector tab
-	 *    @param detID is the id of the detector
 	 */
-	qTabDataOutput(QWidget *parent,multiSlsDetector*& detector,int detID);
+	qTabDataOutput(QWidget *parent,multiSlsDetector*& detector);
 
 	/** Destructor
 	 */
@@ -44,9 +43,6 @@ public:
 private:
 	/** The sls detector object */
 	multiSlsDetector *myDet;
-
-	/**detector id */
-	int detID;
 
 	/** detector type */
 	slsDetectorDefs::detectorType detType;

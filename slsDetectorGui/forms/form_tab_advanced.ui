@@ -31,6 +31,10 @@
   <property name="windowTitle">
    <string>Form</string>
   </property>
+  <property name="windowIcon">
+   <iconset resource="../include/icons.qrc">
+    <normaloff>:/icons/images/refresh.png</normaloff>:/icons/images/refresh.png</iconset>
+  </property>
   <widget class="QGroupBox" name="boxTrimming">
    <property name="enabled">
     <bool>true</bool>
@@ -38,8 +42,8 @@
    <property name="geometry">
     <rect>
      <x>25</x>
-     <y>90</y>
-     <width>721</width>
+     <y>100</y>
+     <width>726</width>
      <height>226</height>
     </rect>
    </property>
@@ -63,7 +67,7 @@
      <rect>
       <x>15</x>
       <y>25</y>
-      <width>691</width>
+      <width>696</width>
       <height>195</height>
      </rect>
     </property>
@@ -302,6 +306,10 @@ An extension given by the modules serial number will be attached.
        <property name="text">
         <string>Browse</string>
        </property>
+       <property name="icon">
+        <iconset resource="../include/icons.qrc">
+         <normaloff>:/icons/images/browse.png</normaloff>:/icons/images/browse.png</iconset>
+       </property>
       </widget>
      </item>
      <item row="5" column="4">
@@ -320,7 +328,11 @@ An extension given by the modules serial number will be attached.
         </sizepolicy>
        </property>
        <property name="text">
-        <string>Start Trimming</string>
+        <string>Start Trimming  </string>
+       </property>
+       <property name="icon">
+        <iconset resource="../include/icons.qrc">
+         <normaloff>:/icons/images/start.png</normaloff>:/icons/images/start.png</iconset>
        </property>
       </widget>
      </item>
@@ -540,70 +552,101 @@ An extension given by the modules serial number will be attached.
     </layout>
    </widget>
   </widget>
-  <widget class="QGroupBox" name="groupBox">
+  <widget class="QGroupBox" name="boxPlot">
    <property name="geometry">
     <rect>
      <x>25</x>
      <y>10</y>
      <width>341</width>
-     <height>61</height>
+     <height>76</height>
     </rect>
    </property>
    <property name="title">
-    <string>Trimbits Plot Mode</string>
+    <string>Trimbits Plot</string>
+   </property>
+   <property name="checkable">
+    <bool>true</bool>
    </property>
    <widget class="QWidget" name="horizontalLayoutWidget">
     <property name="geometry">
      <rect>
-      <x>15</x>
-      <y>20</y>
-      <width>311</width>
-      <height>31</height>
+      <x>120</x>
+      <y>22</y>
+      <width>211</width>
+      <height>44</height>
      </rect>
     </property>
     <layout class="QHBoxLayout" name="horizontalLayout">
      <property name="spacing">
-      <number>34</number>
+      <number>17</number>
      </property>
      <item>
-      <widget class="QRadioButton" name="radioNoPlot">
-       <property name="sizePolicy">
-        <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-         <horstretch>0</horstretch>
-         <verstretch>0</verstretch>
-        </sizepolicy>
+      <widget class="QPushButton" name="btnRefresh">
+       <property name="toolTip">
+        <string>&lt;nobr&gt;
+Updates plot with Trimbits from Shared Memory, not from Detector.
+&lt;/nobr&gt;</string>
+       </property>
+       <property name="autoFillBackground">
+        <bool>false</bool>
        </property>
        <property name="text">
-        <string>No Plot</string>
+        <string>Refresh  </string>
        </property>
-       <property name="checked">
-        <bool>true</bool>
+       <property name="icon">
+        <iconset resource="../include/icons.qrc">
+         <normaloff>:/icons/images/refresh.png</normaloff>:/icons/images/refresh.png</iconset>
+       </property>
+       <property name="iconSize">
+        <size>
+         <width>16</width>
+         <height>16</height>
+        </size>
        </property>
       </widget>
      </item>
      <item>
-      <widget class="QRadioButton" name="radioDataGraph">
-       <property name="sizePolicy">
-        <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-         <horstretch>0</horstretch>
-         <verstretch>0</verstretch>
-        </sizepolicy>
+      <widget class="QPushButton" name="btnGetTrimbits">
+       <property name="toolTip">
+        <string>&lt;nobr&gt;
+Plots Trimbits from Detector. This will take time.
+&lt;/nobr&gt;</string>
        </property>
+       <property name="text">
+        <string>Get Trimbits  </string>
+       </property>
+       <property name="icon">
+        <iconset resource="../include/icons.qrc">
+         <normaloff>:/icons/images/download.png</normaloff>:/icons/images/download.png</iconset>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </widget>
+   <widget class="QWidget" name="gridLayoutWidget">
+    <property name="geometry">
+     <rect>
+      <x>15</x>
+      <y>20</y>
+      <width>101</width>
+      <height>46</height>
+     </rect>
+    </property>
+    <layout class="QGridLayout" name="gridLayout">
+     <item row="1" column="0">
+      <widget class="QRadioButton" name="radioHistogram">
+       <property name="text">
+        <string>Histogram</string>
+       </property>
+      </widget>
+     </item>
+     <item row="0" column="0">
+      <widget class="QRadioButton" name="radioDataGraph">
        <property name="text">
         <string>Data Graph</string>
        </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="QRadioButton" name="radioHistogram">
-       <property name="sizePolicy">
-        <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-         <horstretch>0</horstretch>
-         <verstretch>0</verstretch>
-        </sizepolicy>
-       </property>
-       <property name="text">
-        <string>Histogram</string>
+       <property name="checked">
+        <bool>true</bool>
        </property>
       </widget>
      </item>
@@ -615,56 +658,58 @@ An extension given by the modules serial number will be attached.
     <rect>
      <x>405</x>
      <y>10</y>
-     <width>341</width>
-     <height>61</height>
+     <width>346</width>
+     <height>76</height>
     </rect>
    </property>
    <property name="title">
     <string>Calibration Logs</string>
    </property>
-   <widget class="QWidget" name="horizontalLayoutWidget_2">
-    <property name="geometry">
-     <rect>
-      <x>15</x>
-      <y>20</y>
-      <width>311</width>
-      <height>31</height>
-     </rect>
+  </widget>
+  <widget class="QWidget" name="horizontalLayoutWidget_2">
+   <property name="geometry">
+    <rect>
+     <x>420</x>
+     <y>37</y>
+     <width>313</width>
+     <height>31</height>
+    </rect>
+   </property>
+   <layout class="QHBoxLayout" name="horizontalLayout_2">
+    <property name="spacing">
+     <number>42</number>
     </property>
-    <layout class="QHBoxLayout" name="horizontalLayout_2">
-     <property name="spacing">
-      <number>42</number>
-     </property>
-     <item>
-      <widget class="QCheckBox" name="chkEnergyLog">
-       <property name="sizePolicy">
-        <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-         <horstretch>0</horstretch>
-         <verstretch>0</verstretch>
-        </sizepolicy>
-       </property>
-       <property name="text">
-        <string>Energy Calibration</string>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="QCheckBox" name="chkAngularLog">
-       <property name="sizePolicy">
-        <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-         <horstretch>0</horstretch>
-         <verstretch>0</verstretch>
-        </sizepolicy>
-       </property>
-       <property name="text">
-        <string>Angular Calibration</string>
-       </property>
-      </widget>
-     </item>
-    </layout>
-   </widget>
+    <item>
+     <widget class="QCheckBox" name="chkEnergyLog">
+      <property name="sizePolicy">
+       <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+        <horstretch>0</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
+      </property>
+      <property name="text">
+       <string>Energy Calibration</string>
+      </property>
+     </widget>
+    </item>
+    <item>
+     <widget class="QCheckBox" name="chkAngularLog">
+      <property name="sizePolicy">
+       <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+        <horstretch>0</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
+      </property>
+      <property name="text">
+       <string>Angular Calibration</string>
+      </property>
+     </widget>
+    </item>
+   </layout>
   </widget>
  </widget>
- <resources/>
+ <resources>
+  <include location="../include/icons.qrc"/>
+ </resources>
  <connections/>
 </ui>

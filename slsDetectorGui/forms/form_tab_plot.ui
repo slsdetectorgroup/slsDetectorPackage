@@ -377,7 +377,7 @@
        </property>
        <property name="sizeHint" stdset="0">
         <size>
-         <width>30</width>
+         <width>18</width>
          <height>20</height>
         </size>
        </property>
@@ -409,7 +409,7 @@
        </property>
        <property name="sizeHint" stdset="0">
         <size>
-         <width>18</width>
+         <width>15</width>
          <height>20</height>
         </size>
        </property>
@@ -495,7 +495,17 @@
      <enum>Qt::NoFocus</enum>
     </property>
     <property name="text">
-     <string>Save</string>
+     <string>Save  </string>
+    </property>
+    <property name="icon">
+     <iconset resource="../include/icons.qrc">
+      <normaloff>:/icons/images/save.png</normaloff>:/icons/images/save.png</iconset>
+    </property>
+    <property name="iconSize">
+     <size>
+      <width>16</width>
+      <height>16</height>
+     </size>
     </property>
    </widget>
   </widget>
@@ -1315,7 +1325,7 @@
      <rect>
       <x>10</x>
       <y>15</y>
-      <width>336</width>
+      <width>331</width>
       <height>31</height>
      </rect>
     </property>
@@ -1323,7 +1333,7 @@
      <item row="0" column="0">
       <widget class="QPushButton" name="btnClone">
        <property name="sizePolicy">
-        <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+        <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
          <horstretch>0</horstretch>
          <verstretch>0</verstretch>
         </sizepolicy>
@@ -1369,7 +1379,11 @@
         <enum>Qt::NoFocus</enum>
        </property>
        <property name="text">
-        <string>Create</string>
+        <string>Create  </string>
+       </property>
+       <property name="icon">
+        <iconset resource="../include/icons.qrc">
+         <normaloff>:/icons/images/new.png</normaloff>:/icons/images/new.png</iconset>
        </property>
        <property name="flat">
         <bool>false</bool>
@@ -1379,7 +1393,7 @@
      <item row="0" column="2">
       <widget class="QPushButton" name="btnCloseClones">
        <property name="sizePolicy">
-        <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+        <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
          <horstretch>0</horstretch>
          <verstretch>0</verstretch>
         </sizepolicy>
@@ -1425,7 +1439,11 @@
         <enum>Qt::NoFocus</enum>
        </property>
        <property name="text">
-        <string>Close All</string>
+        <string>Close All  </string>
+       </property>
+       <property name="icon">
+        <iconset resource="../include/icons.qrc">
+         <normaloff>:/icons/images/close.png</normaloff>:/icons/images/close.png</iconset>
        </property>
        <property name="flat">
         <bool>false</bool>
@@ -1442,7 +1460,7 @@
        </property>
        <property name="sizeHint" stdset="0">
         <size>
-         <width>40</width>
+         <width>20</width>
          <height>20</height>
         </size>
        </property>
@@ -1458,7 +1476,7 @@
        </property>
        <property name="sizeHint" stdset="0">
         <size>
-         <width>40</width>
+         <width>20</width>
          <height>20</height>
         </size>
        </property>
@@ -1470,7 +1488,7 @@
         <bool>true</bool>
        </property>
        <property name="sizePolicy">
-        <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+        <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
          <horstretch>0</horstretch>
          <verstretch>0</verstretch>
         </sizepolicy>
@@ -1516,7 +1534,11 @@
         <enum>Qt::NoFocus</enum>
        </property>
        <property name="text">
-        <string>Save All</string>
+        <string>Save All  </string>
+       </property>
+       <property name="icon">
+        <iconset resource="../include/icons.qrc">
+         <normaloff>:/icons/images/saveAll.png</normaloff>:/icons/images/saveAll.png</iconset>
        </property>
        <property name="flat">
         <bool>false</bool>
@@ -1527,6 +1549,8 @@
    </widget>
   </widget>
  </widget>
- <resources/>
+ <resources>
+  <include location="../include/icons.qrc"/>
+ </resources>
  <connections/>
 </ui>

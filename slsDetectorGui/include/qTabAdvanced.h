@@ -90,6 +90,10 @@ private slots:
 	 */
 	void StartTrimming();
 
+	/**Updates plot from shared memory
+	 */
+	void UpdatePlot();
+
 private:
 	/** The sls detector object */
 	multiSlsDetector *myDet;

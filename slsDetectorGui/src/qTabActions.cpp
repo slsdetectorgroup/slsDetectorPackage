@@ -56,7 +56,12 @@ void qTabActions::SetupWidgetWindow(){
 
 	// Buttongroup to know which +/- button was clicked
 	group 			= new QButtonGroup(this);
+	group->setExclusive(false);
 	palette 		= new QPalette();
+
+	QPalette p;
+	p.setColor(QPalette::Shadow,QColor(0,0,0,0));
+	p.setColor(QPalette::Button,QColor(0,0,0,0));
 
 	char names[NumTotalActions][200] = {
 			"Action at Start",
@@ -70,15 +75,30 @@ void qTabActions::SetupWidgetWindow(){
 			"Action at Stop"
 	};
 
+	//creating the icons for the buttons
+	iconPlus = new QIcon(":/icons/images/add.png");
+	iconMinus = new QIcon(":/icons/images/remove.png");
+
+	QString tip = "<nobr>Click on the \"+\" to Expand or \"-\" to Collapse.</nobr>";
+
 	// For each level of Actions
 	for(int i=0;i<NumTotalActions;i++){
 		//common widgets
 		lblName[i]	 	= new QLabel(QString(names[i]));
-		btnExpand[i] 	= new QPushButton("+");
-		btnExpand[i]->setFixedSize(20,20);
-		QString tip = "<nobr>Click on the \"+\" to Expand or \"-\" to Collapse.</nobr>";
+		btnExpand[i] 	= new QPushButton();
+
 		lblName[i]->setToolTip(tip);
+
+		btnExpand[i]->setCheckable(true);
+		btnExpand[i]->setChecked(false);
+		btnExpand[i]->setFixedSize(16,16);
 		btnExpand[i]->setToolTip(tip);
+		btnExpand[i]->setIcon(*iconPlus);
+		btnExpand[i]->setFocusPolicy(Qt::NoFocus);
+		btnExpand[i]->setFlat(true);
+		btnExpand[i]->setIconSize(QSize(16,16));
+		btnExpand[i]->setPalette(p);
+
 		group->addButton(btnExpand[i],i);
 
 		//add the widgets to the layout , depending on the type create the widgets
@@ -157,7 +177,9 @@ void qTabActions::CreatePositionsWidget(){
 	comboPos->setValidator(validate);
 	layout->addWidget(comboPos,0,5);
 	layout->addItem(new QSpacerItem(5,20,QSizePolicy::Fixed,QSizePolicy::Fixed),0,6);
-	btnDelete = new QPushButton("Delete");
+	btnDelete = new QPushButton("Delete  ");
+	btnDelete->setEnabled(false);
+	btnDelete->setIcon(QIcon( ":/icons/images/close.png" ));
 	btnDelete->setSizePolicy(QSizePolicy::Fixed,QSizePolicy::Fixed);
 	layout->addWidget(btnDelete,0,7);
 
@@ -202,11 +224,12 @@ void qTabActions::Initialization(){
 
 void qTabActions::Expand(QAbstractButton *button ){
 	int index = group->id(button);
+
 	// Collapse
-	if(!QString::compare(button->text(), "-")){
+	if(!button->isChecked()){
 		palette->setColor(QPalette::WindowText,Qt::black);
 		lblName[index]->setPalette(*palette);
-		button->setText("+");
+		button->setIcon(*iconPlus);
 
 		if(index==NumPositions)	{
 			positionWidget->hide();
@@ -234,9 +257,11 @@ void qTabActions::Expand(QAbstractButton *button ){
 		}
 	}else{
 		// Expand
+		//always set title color to blue for expan\d
 		palette->setColor(QPalette::WindowText,QColor(0,0,200,255));
 		lblName[index]->setPalette(*palette);
-		button->setText("-");
+		button->setIcon(*iconMinus);
+
 		if(index==NumPositions){
 			positionWidget->show();
 			setFixedHeight(height()+30);//+80 if the checkboxes are included
@@ -265,6 +290,7 @@ void qTabActions::SetPosition(){
 	comboPos->setMaxCount(numPos);
 	comboPos->setEnabled(numPos);
 	lblPosList->setEnabled(numPos);
+	btnDelete->setEnabled(numPos);
 
 	//deleting too many or not entering enough
 	if(numPos>comboPos->count()){
@@ -378,6 +404,7 @@ void qTabActions::Refresh(){
 			disconnect(comboPos,SIGNAL(currentIndexChanged(int)), this, SLOT(SetPosition()));
 			comboPos->setEnabled(numPos);
 			lblPosList->setEnabled(numPos);
+			btnDelete->setEnabled(numPos);
 			lblPosList->setText("List of Positions: ");
 			lblPosList->setPalette(normal);
 			for(int i=0;i<comboPos->count();i++)

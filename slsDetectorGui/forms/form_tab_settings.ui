@@ -200,6 +200,8 @@
    </layout>
   </widget>
  </widget>
- <resources/>
+ <resources>
+  <include location="../include/icons.qrc"/>
+ </resources>
  <connections/>
 </ui>

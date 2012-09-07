@@ -25,8 +25,9 @@ using namespace std;
 //-------------------------------------------------------------------------------------------------------------------------------------------------
 
 
-qTabDataOutput::qTabDataOutput(QWidget *parent,multiSlsDetector*& detector,int detID):
-						QWidget(parent),myDet(detector),detID(detID){
+
+qTabDataOutput::qTabDataOutput(QWidget *parent,multiSlsDetector*& detector):
+						QWidget(parent),myDet(detector){
 	setupUi(this);
 	SetupWidgetWindow();
 	Initialization();
@@ -241,7 +242,7 @@ void qTabDataOutput::SetRateCorrection(){
 #ifdef VERBOSE
 	cout << "Entering Set Rate Correction function" << endl;
 #endif
-	slsDetector *s = myDet->getSlsDetector(detID);
+
 	if(chkRate->isChecked()){
 		radioAuto->setEnabled(true);
 		radioDeadTime->setEnabled(true);
@@ -251,14 +252,14 @@ void qTabDataOutput::SetRateCorrection(){
 		//auto
 		if(radioAuto->isChecked()){
 			spinDeadTime->setEnabled(false);
-			s->setRateCorrection(-1);
+			myDet->setRateCorrection(-1);
 #ifdef VERBOSE
 			cout << "Setting rate corrections with default dead time"  << endl;
 #endif
 		}//custom dead time
 		else{
 			spinDeadTime->setEnabled(true);
-			s->setRateCorrection((double)spinDeadTime->value());
+			myDet->setRateCorrection((double)spinDeadTime->value());
 #ifdef VERBOSE
 			cout << "Setting rate corrections with dead time "<< spinDeadTime->value() << endl;
 #endif
@@ -270,7 +271,7 @@ void qTabDataOutput::SetRateCorrection(){
 		spinDeadTime->setEnabled(false);
 		//Unsetting rate correction
 
-		s->setRateCorrection(0);
+		myDet->setRateCorrection(0);
 #ifdef VERBOSE
 		cout << "Unsetting rate correction" << endl;
 #endif
@@ -291,8 +292,7 @@ void qTabDataOutput::UpdateRateCorrectionFromServer(){
 	disconnect(spinDeadTime,	SIGNAL(valueChanged(double)), 	this, 	SLOT(SetRateCorrection()));
 
 	double rate;
-	slsDetector *s = myDet->getSlsDetector(detID);
-	rate = (double)s->getRateCorrectionTau();
+	rate = (double)myDet->getRateCorrectionTau();
 #ifdef VERBOSE
 	cout << "Getting rate correction from server:" << rate << " : ";
 #endif

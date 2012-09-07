@@ -157,6 +157,16 @@
    <property name="text">
     <string>Start</string>
    </property>
+   <property name="icon">
+    <iconset resource="../include/icons.qrc">
+     <normaloff>:/icons/images/start.png</normaloff>:/icons/images/start.png</iconset>
+   </property>
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="flat">
+    <bool>false</bool>
+   </property>
   </widget>
   <widget class="QFrame" name="frameTimeResolved">
    <property name="geometry">
@@ -930,6 +940,8 @@ p, li { white-space: pre-wrap; }
    </widget>
   </widget>
  </widget>
- <resources/>
+ <resources>
+  <include location="../include/icons.qrc"/>
+ </resources>
  <connections/>
 </ui>

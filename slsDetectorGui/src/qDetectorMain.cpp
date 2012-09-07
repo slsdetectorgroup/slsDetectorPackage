@@ -99,10 +99,10 @@ void qDetectorMain::SetUpWidgetWindow(){
 	// creating all the tab widgets
 	tab_messages		=  new qTabMessages		(this,	myDet); 			cout<<"Messages ready"<<endl;
 	tab_measurement 	=  new qTabMeasurement	(this,	myDet,myPlot);		cout<<"Measurement ready"<<endl;
-	tab_dataoutput 		=  new qTabDataOutput	(this,	myDet, detID);		cout<<"DataOutput ready"<<endl;
+	tab_dataoutput 		=  new qTabDataOutput	(this,	myDet);			cout<<"DataOutput ready"<<endl;
 	tab_plot 			=  new qTabPlot			(this,	myDet,myPlot);		cout<<"Plot ready"<<endl;
 	tab_actions			=  new qTabActions		(this,	myDet);				cout<<"Actions ready"<<endl;
-	tab_settings 		=  new qTabSettings		(this,	myDet, detID);		cout<<"Settings ready"<<endl;
+	tab_settings 		=  new qTabSettings		(this,	myDet);				cout<<"Settings ready"<<endl;
 	tab_advanced 		=  new qTabAdvanced		(this,	myDet);				cout<<"Advanced ready"<<endl;
 	tab_debugging 		=  new qTabDebugging	(this,	myDet);				cout<<"Debugging ready"<<endl;
 	tab_developer 		=  new qTabDeveloper	(this,	myDet);				cout<<"Developer ready"<<endl;

@@ -45,6 +45,7 @@ void qActionsWidget::SetupWidgetWindow(){
 	NUM_ACTION_WIDGETS++;
 
 	setFixedHeight(25);
+
 }
 
 

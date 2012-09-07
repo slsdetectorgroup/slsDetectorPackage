@@ -48,6 +48,7 @@ public:
 	 */
 	void Refresh();
 
+
 public slots:
 /** Disable Positions
  * @param enable true if to disable
@@ -83,6 +84,7 @@ private:
 
 	slsDetectorDefs::detectorType detType;
 
+
 	enum actionIndex{Scan0=1, Scan1, NumPositions=4, NumTotalActions=9};
 
 	QGridLayout		*gridLayout;
@@ -109,6 +111,8 @@ private:
 
 	double		*positions;
 	QPalette	normal;
+	QIcon		*iconPlus;
+	QIcon		*iconMinus;
 
 private slots:
 /** To Expand the Action Widget

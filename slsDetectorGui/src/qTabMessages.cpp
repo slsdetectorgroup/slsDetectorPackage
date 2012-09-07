@@ -16,7 +16,6 @@
 #include <QFile>
 #include <QTextStream>
 #include <QFileDialog>
-#include <QSizePolicy>
 /** C++ Include Headers */
 #include <iostream>
 #include <string>
@@ -47,15 +46,16 @@ void qTabMessages::SetupWidgetWindow(){
 	dispLog->setFocusPolicy(Qt::NoFocus);
 	dispLog->setTextColor(Qt::darkBlue);
 
-	QSizePolicy sizePolicy(QSizePolicy::Fixed,QSizePolicy::Fixed);
 
-	btnSave = new QPushButton("Save Log",this);
+	btnSave = new QPushButton("Save Log  ",this);
 	btnSave->setFocusPolicy(Qt::NoFocus);
-	btnSave->setSizePolicy(sizePolicy);
+	btnSave->setFixedWidth(100);
+ 	btnSave->setIcon(QIcon( ":/icons/images/save.png" ));
 
-	btnClear = new QPushButton("Clear",this);
+	btnClear = new QPushButton("Clear  ",this);
 	btnClear->setFocusPolicy(Qt::NoFocus);
-	btnClear->setSizePolicy(sizePolicy);
+	btnClear->setFixedWidth(100);
+	btnClear->setIcon(QIcon( ":/icons/images/erase.png" ));
 
 	gridLayout->addWidget(btnSave,0,0,1,1);
 	gridLayout->addWidget(btnClear,0,4,1,1);

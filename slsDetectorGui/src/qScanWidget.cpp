@@ -129,7 +129,8 @@ void qScanWidget::SetupWidgetWindow(){
 	QHBoxLayout *layoutCustom = new QHBoxLayout(widgetCustom);
 	layoutCustom->setContentsMargins(0, 0, 0, 0);
 	comboCustom = new QComboBox(widgetCustom);
-	btnCustom = new QPushButton("Delete",widgetCustom);
+	btnCustom = new QPushButton("Delete  ",widgetCustom);
+	btnCustom->setIcon(QIcon( ":/icons/images/close.png" ));
 	comboCustom->setEditable(true);
 	comboCustom->setCompleter(false);
 	comboCustom->setValidator(new QDoubleValidator(comboCustom));

@@ -35,6 +35,7 @@ public:
 	/**to update the widgets*/
 	void Refresh();
 
+
 	/**number of action widgets*/
 	static int NUM_ACTION_WIDGETS;
 
@@ -45,7 +46,6 @@ private:
 	multiSlsDetector *myDet;
 	/**id of the action widget*/
 	int id;
-
 
 	/** Sets up the widget
 	 */

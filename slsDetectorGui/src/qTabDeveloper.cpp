@@ -85,7 +85,7 @@ void qTabDeveloper::SetupWidgetWindow(){
 
 		break;
 	default:
-		qDefs::ErrorMessage(string("Unknown detector type:")+myDet->slsDetectorBase::getDetectorType(detType),"Developer");
+		qDefs::Message(qDefs::CRITICAL,string("Unknown detector type:")+myDet->slsDetectorBase::getDetectorType(detType),"Developer");
 		exit(-1);
 		break;
 	}
@@ -228,7 +228,7 @@ void qTabDeveloper::SetHighVoltage(){
 	int ret = myDet->setDAC(highvoltage,slsDetectorDefs::HV_POT);
 	//error
 	if(ret != highvoltage){
-		qDefs::ErrorMessage("High Voltage could not be set to this value.","Developer");
+		qDefs::Message(qDefs::CRITICAL,"High Voltage could not be set to this value.","Developer");
 		lblHV->setPalette(red);
 		lblHV->setText("High Voltage:*");
 		QString errTip = tipHV+QString("<br><br><font color=\"red\"><nobr>High Voltage could not be set. The return value is ")+
@@ -258,7 +258,7 @@ slsDetectorDefs::dacIndex qTabDeveloper::getSLSIndex(int index){
 		case 4:	return slsDetectorDefs::CALIBRATION_PULSE;
 		case 5:	return slsDetectorDefs::PREAMP;
 		default:
-			qDefs::ErrorMessage("Unknown DAC/ADC Index. Weird Error","Developer");
+			qDefs::Message(qDefs::CRITICAL,"Unknown DAC/ADC Index. Weird Error","Developer");
 			Refresh();
 			break;
 		}
@@ -280,13 +280,13 @@ slsDetectorDefs::dacIndex qTabDeveloper::getSLSIndex(int index){
 		case 8:	return slsDetectorDefs::TEMPERATURE_ADC;
 		case 9:return slsDetectorDefs::TEMPERATURE_FPGA;
 		default:
-			qDefs::ErrorMessage("Unknown DAC/ADC Index. Weird Error","Developer");
+			qDefs::Message(qDefs::CRITICAL,"Unknown DAC/ADC Index. Weird Error","Developer");
 			Refresh();
 			break;
 		}
 		break;
 	default:
-		qDefs::ErrorMessage(string("Unknown detector type:")+myDet->slsDetectorBase::getDetectorType(detType),"Developer");
+		qDefs::Message(qDefs::CRITICAL,string("Unknown detector type:")+myDet->slsDetectorBase::getDetectorType(detType),"Developer");
 		exit(-1);
 		break;
 	}

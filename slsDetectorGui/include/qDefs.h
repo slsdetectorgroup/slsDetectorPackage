@@ -26,6 +26,16 @@ public:
 		OK,
 		FAIL
 	};
+
+//-------------------------------------------------------------------------------------------------------------------------------------------------
+
+	enum MessageIndex{
+		WARNING,
+		CRITICAL,
+		INFORMATION,
+		QUESTION
+	};
+
 //-------------------------------------------------------------------------------------------------------------------------------------------------
 	/** unit of time
 	 */
@@ -112,45 +122,34 @@ public:
 
 //-------------------------------------------------------------------------------------------------------------------------------------------------
 
-	/**displays an warning message
-	 * @param warningMessage the message to be displayed
-	 * @param source is the tab or the source of the warning
+	/**displays an warning,error,info message
+	 * @param message the message to be displayed
+	 * @param source is the tab or the source of the message
 	 * */
-	static void  WarningMessage(string warningMessage,string source)
-	{
-		static QMessageBox* warningBox;
-		source.append(": WARNING");
-		warningBox= new QMessageBox(QMessageBox::Warning,source.c_str(),tr(warningMessage.c_str()),QMessageBox::Ok, warningBox);
-		warningBox->exec();
-	}
-
-//-------------------------------------------------------------------------------------------------------------------------------------------------
-
-	/**displays an error message
-	 * @param errorMessage the message to be displayed
-	 * @param source is the tab or the source of the error
-	 * */
-	static void  ErrorMessage(string errorMessage,string source)
-	{
-		static QMessageBox* errorBox;
-		source.append(": ERROR");
-		errorBox= new QMessageBox(QMessageBox::Critical,source.c_str(),tr(errorMessage.c_str()),QMessageBox::Ok, errorBox);
-		errorBox->exec();
-	}
-
-//-------------------------------------------------------------------------------------------------------------------------------------------------
-
-	/**displays an information message
-	 * @param infoMessage the message to be displayed
-	 * @param source is the tab or the source of the information
-	 * */
-	static void  InfoMessage(string infoMessage,string source)
+	static int  Message(MessageIndex index, string message,string source)
 	{
 		static QMessageBox* msgBox;
-		source.append(": INFORMATION");
-		msgBox= new QMessageBox(QMessageBox::Information,source.c_str(),tr(infoMessage.c_str()),QMessageBox::Ok, msgBox);
-		msgBox->exec();
+		switch(index){
+		case WARNING:
+			source.append(": WARNING");
+			msgBox= new QMessageBox(QMessageBox::Warning,source.c_str(),tr(message.c_str()),QMessageBox::Ok, msgBox);
+			break;
+		case CRITICAL:
+			source.append(": CRITICAL");
+			msgBox= new QMessageBox(QMessageBox::Critical,source.c_str(),tr(message.c_str()),QMessageBox::Ok, msgBox);
+			break;
+		case INFORMATION:
+			source.append(": INFORMATION");
+			msgBox= new QMessageBox(QMessageBox::Information,source.c_str(),tr(message.c_str()),QMessageBox::Ok, msgBox);
+			break;
+		default:
+			source.append(": QUESTION");
+			msgBox= new QMessageBox(QMessageBox::Question,source.c_str(),tr(message.c_str()),QMessageBox::Ok| QMessageBox::Cancel, msgBox);
+			break;
+		}
+		if(msgBox->exec()==QMessageBox::Ok) return OK; else return FAIL;
 	}
+
 
 //-------------------------------------------------------------------------------------------------------------------------------------------------
 

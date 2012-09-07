@@ -12,6 +12,7 @@
 #include "multiSlsDetector.h"
 // C++ Include Headers
 #include<iostream>
+#include <cmath>
 using namespace std;
 
 //-------------------------------------------------------------------------------------------------------------------------------------------------
@@ -115,7 +116,7 @@ void qTabSettings::SetupDetectorSettings(){
 			item[(int)VeryHighGain]->setEnabled(true);
 			break;
 		default:
-			qDefs::ErrorMessage("Unknown detector type.","Settings");
+			qDefs::Message(qDefs::CRITICAL,"Unknown detector type.","Settings");
 			exit(-1);
 			break;
 		}
@@ -123,7 +124,7 @@ void qTabSettings::SetupDetectorSettings(){
 		// This should not happen -only if the server and gui has a mismatch
 		// on which all modes are allowed in detectors
 		if(!(item[(int)sett]->isEnabled())){
-			qDefs::ErrorMessage("Unknown Detector Settings retrieved from detector. "
+			qDefs::Message(qDefs::CRITICAL,"Unknown Detector Settings retrieved from detector. "
 					"Exiting GUI.","Settings");
 #ifdef VERBOSE
 			cout << "ERROR:  Unknown Detector Settings retrieved from detector." << endl;
@@ -190,7 +191,7 @@ void qTabSettings::SetNumberOfModules(int index){
 #endif
   int i = myDet->setNumberOfModules(index);
   if(index!=i)
-	  qDefs::WarningMessage("Number of modules cannot be set for this value.","Settings");
+	  qDefs::Message(qDefs::WARNING,"Number of modules cannot be set for this value.","Settings");
 #ifdef VERBOSE
 	  cout << "ERROR: Setting number of modules to "<< i << endl;
 #endif
@@ -214,7 +215,7 @@ void qTabSettings::SetDynamicRange(int index){
 #endif
   ret=myDet->setDynamicRange(dr);
   if(ret!=dr){
-	  qDefs::WarningMessage("Dynamic Range cannot be set to this value.","Settings");
+	  qDefs::Message(qDefs::WARNING,"Dynamic Range cannot be set to this value.","Settings");
 #ifdef VERBOSE
 	  cout << "ERROR: Setting dynamic range to "<< ret << endl;
 #endif
@@ -239,8 +240,8 @@ void qTabSettings::SetEnergy(){
 		int index = spinThreshold->value();
 		myDet->setThresholdEnergy(index);
 		int ret = (int)myDet->getThresholdEnergy();
-		if(ret!=index){
-			qDefs::WarningMessage("Threshold energy could not be set.","Settings");
+		if((ret-index)>200){
+			qDefs::Message(qDefs::WARNING,"Threshold energy could not be set. The difference is greater than 200.","Settings");
 			disconnect(spinThreshold,	SIGNAL(valueChanged(int)),	this, SLOT(SetEnergy()));
 			spinThreshold->setValue(ret);
 			connect(spinThreshold,		SIGNAL(valueChanged(int)),	this, SLOT(SetEnergy()));

@@ -31,46 +31,6 @@
   <property name="windowTitle">
    <string>Form</string>
   </property>
-  <widget class="QWidget" name="horizontalLayoutWidget">
-   <property name="geometry">
-    <rect>
-     <x>30</x>
-     <y>50</y>
-     <width>321</width>
-     <height>36</height>
-    </rect>
-   </property>
-   <layout class="QHBoxLayout" name="horizontalLayout_2">
-    <item>
-     <widget class="QLabel" name="lblModule">
-      <property name="text">
-       <string>Module Number:</string>
-      </property>
-     </widget>
-    </item>
-    <item>
-     <widget class="QComboBox" name="comboModule">
-      <property name="sizePolicy">
-       <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-        <horstretch>0</horstretch>
-        <verstretch>0</verstretch>
-       </sizepolicy>
-      </property>
-      <property name="maximumSize">
-       <size>
-        <width>16777215</width>
-        <height>16777215</height>
-       </size>
-      </property>
-      <item>
-       <property name="text">
-        <string>All Modules</string>
-       </property>
-      </item>
-     </widget>
-    </item>
-   </layout>
-  </widget>
   <widget class="QGroupBox" name="groupBox">
    <property name="geometry">
     <rect>
@@ -112,29 +72,22 @@
    <widget class="QPushButton" name="btnDigital">
     <property name="geometry">
      <rect>
-      <x>15</x>
+      <x>75</x>
       <y>115</y>
-      <width>291</width>
+      <width>150</width>
       <height>25</height>
      </rect>
+    </property>
+    <property name="sizePolicy">
+     <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+      <horstretch>0</horstretch>
+      <verstretch>0</verstretch>
+     </sizepolicy>
     </property>
     <property name="text">
      <string>Run</string>
     </property>
    </widget>
-  </widget>
-  <widget class="QPushButton" name="btnGetInfo">
-   <property name="geometry">
-    <rect>
-     <x>425</x>
-     <y>55</y>
-     <width>316</width>
-     <height>25</height>
-    </rect>
-   </property>
-   <property name="text">
-    <string>Get Detector Information</string>
-   </property>
   </widget>
   <widget class="QGroupBox" name="groupBox_2">
    <property name="geometry">
@@ -177,16 +130,113 @@
    <widget class="QPushButton" name="btnAnalog">
     <property name="geometry">
      <rect>
-      <x>15</x>
+      <x>85</x>
       <y>115</y>
-      <width>291</width>
+      <width>150</width>
       <height>25</height>
      </rect>
+    </property>
+    <property name="sizePolicy">
+     <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+      <horstretch>0</horstretch>
+      <verstretch>0</verstretch>
+     </sizepolicy>
     </property>
     <property name="text">
      <string>Run</string>
     </property>
    </widget>
+  </widget>
+  <widget class="QWidget" name="horizontalLayoutWidget_3">
+   <property name="geometry">
+    <rect>
+     <x>45</x>
+     <y>30</y>
+     <width>291</width>
+     <height>36</height>
+    </rect>
+   </property>
+   <layout class="QHBoxLayout" name="horizontalLayout_4">
+    <item>
+     <widget class="QLabel" name="lblModule_2">
+      <property name="text">
+       <string>Detector Status:</string>
+      </property>
+     </widget>
+    </item>
+    <item>
+     <widget class="QLabel" name="lblStatus">
+      <property name="text">
+       <string>Offline</string>
+      </property>
+     </widget>
+    </item>
+   </layout>
+  </widget>
+  <widget class="QWidget" name="gridLayoutWidget">
+   <property name="geometry">
+    <rect>
+     <x>440</x>
+     <y>29</y>
+     <width>291</width>
+     <height>76</height>
+    </rect>
+   </property>
+   <layout class="QGridLayout" name="gridLayout">
+    <item row="0" column="0">
+     <widget class="QLabel" name="lblModule">
+      <property name="text">
+       <string>Module Number:</string>
+      </property>
+     </widget>
+    </item>
+    <item row="0" column="1">
+     <widget class="QComboBox" name="comboModule">
+      <property name="sizePolicy">
+       <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+        <horstretch>0</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
+      </property>
+      <property name="maximumSize">
+       <size>
+        <width>16777215</width>
+        <height>16777215</height>
+       </size>
+      </property>
+      <item>
+       <property name="text">
+        <string>All Modules</string>
+       </property>
+      </item>
+     </widget>
+    </item>
+    <item row="2" column="1">
+     <widget class="QPushButton" name="btnGetInfo">
+      <property name="sizePolicy">
+       <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
+        <horstretch>0</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
+      </property>
+      <property name="minimumSize">
+       <size>
+        <width>0</width>
+        <height>0</height>
+       </size>
+      </property>
+      <property name="maximumSize">
+       <size>
+        <width>150</width>
+        <height>16777215</height>
+       </size>
+      </property>
+      <property name="text">
+       <string>Get  Information</string>
+      </property>
+     </widget>
+    </item>
+   </layout>
   </widget>
  </widget>
  <resources/>

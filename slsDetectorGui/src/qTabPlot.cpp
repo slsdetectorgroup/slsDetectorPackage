@@ -226,12 +226,12 @@ void qTabPlot::Initialization(){
 	connect(chkZMax, 		SIGNAL(toggled(bool)), this, 	SLOT(EnableZRange()));
 	connect(this, 			SIGNAL(EnableZRangeSignal(bool)), myPlot, 	SIGNAL(EnableZRangeSignal(bool)));
 
-	connect(dispXMin, 		SIGNAL(returnPressed()), this, 	SLOT(SetAxesRange()));
-	connect(dispXMax, 		SIGNAL(returnPressed()), this, 	SLOT(SetAxesRange()));
-	connect(dispYMin, 		SIGNAL(returnPressed()), this, 	SLOT(SetAxesRange()));
-	connect(dispYMax, 		SIGNAL(returnPressed()), this, 	SLOT(SetAxesRange()));
-	connect(dispZMin, 		SIGNAL(returnPressed()), this, 	SLOT(SetZRange()));
-	connect(dispZMax, 		SIGNAL(returnPressed()), this, 	SLOT(SetZRange()));
+	connect(dispXMin, 		SIGNAL(editingFinished()), this,	SLOT(SetAxesRange()));
+	connect(dispXMax, 		SIGNAL(editingFinished()), this, 	SLOT(SetAxesRange()));
+	connect(dispYMin, 		SIGNAL(editingFinished()), this, 	SLOT(SetAxesRange()));
+	connect(dispYMax, 		SIGNAL(editingFinished()), this, 	SLOT(SetAxesRange()));
+	connect(dispZMin, 		SIGNAL(editingFinished()), this, 	SLOT(SetZRange()));
+	connect(dispZMax, 		SIGNAL(editingFinished()), this, 	SLOT(SetZRange()));
 // Save
 	connect(btnSave, 		SIGNAL(clicked()),		myPlot,	SLOT(SavePlot()));
 	connect(chkSaveAll, 	SIGNAL(toggled(bool)),	myPlot,	SLOT(SaveAll(bool)));
@@ -344,6 +344,10 @@ void qTabPlot::EnableRange(){
 
 
 void qTabPlot::SetAxesRange(){
+#ifdef VERBOSE
+	cout << "Setting Range" << endl;
+#endif
+
 	bool changed = false;
 	// x min
 	changed = (dispXMin->isEnabled())&&(!dispXMin->text().isEmpty());
@@ -448,7 +452,7 @@ void qTabPlot::SetFrequency(){
 		// Get the time interval from gui in ms
 		timeMS = (qDefs::getNSTime((qDefs::timeUnit)comboTimeGapUnit->currentIndex(),spinTimeGap->value()))/(1e6);
 		if(timeMS<minPlotTimer){
-			qDefs::WarningMessage("Interval between Plots - The Time Interval between plots "
+			qDefs::Message(qDefs::WARNING,"Interval between Plots - The Time Interval between plots "
 					"must be atleast "+string(cplotms)+".","Plot");
 			spinTimeGap->setValue(minPlotTimer);
 			comboTimeGapUnit->setCurrentIndex(qDefs::MILLISECONDS);
@@ -468,7 +472,7 @@ void qTabPlot::SetFrequency(){
 		// To make sure the period between plotting is not less than minimum plot timer in  ms
 		if(timeMS<minPlotTimer){
 			int minFrame = (int)(ceil)(minPlotTimer/acqPeriodMS);
-			qDefs::WarningMessage("<b>Plot Tab:</b> Interval between Plots - The nth Image must be larger.<br><br>"
+			qDefs::Message(qDefs::WARNING,"<b>Plot Tab:</b> Interval between Plots - The nth Image must be larger.<br><br>"
 					"Condition to be satisfied:\n(Acquisition Period)*(nth Image) >= 250ms."
 					"<br><br>Nth image adjusted to minimum, "
 					"for the chosen Acquisition Period.","Plot");

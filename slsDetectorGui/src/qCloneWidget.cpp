@@ -8,16 +8,13 @@
 /** Qt Project Class Headers */
 #include "qCloneWidget.h"
 #include "qDefs.h"
-#include "SlsQt1DPlot.h"
-#include "SlsQt2DPlotLayout.h"
 /** Qt Include Headers */
 #include <QImage>
 #include <QPainter>
 #include <QFileDialog>
 #include "qwt_symbol.h"
 /** C++ Include Headers */
-#include <iostream>
-using namespace std;
+
 
 
 //-------------------------------------------------------------------------------------------------------------------------------------------------
@@ -99,7 +96,7 @@ void qCloneWidget::SetupWidgetWindow(QString title,int numDim,SlsQt1DPlot*& plot
 //-------------------------------------------------------------------------------------------------------------------------------------------------
 
 void qCloneWidget::SetCloneHists(int nHists,int histNBins,double* histXAxis,double* histYAxis[],string histTitle[],bool lines,bool markers){
-	/** for each plot*/cout<<"qclone nhists:"<<nHists<<endl;
+	/** for each plot*/cout<<"qclone histYAxis[0][500]:"<<histYAxis[0][500]<<endl;
 	for(int hist_num=0;hist_num<nHists;hist_num++){
 		/** create hists */
 		SlsQtH1D*  k;
@@ -134,7 +131,7 @@ void qCloneWidget::SetCloneHists(int nHists,int histNBins,double* histXAxis,doub
 
 
 void qCloneWidget::SetCloneHists(int nHists,int histNBins,double* histXAxis,double* histYAxis,string histTitle[],bool lines,bool markers){
-	/** for each plot*/cout<<"qclone nhists:"<<nHists<<endl;
+	/** for each plot*/cout<<"qclone angle nhists:"<<nHists<<endl;
 	for(int hist_num=0;hist_num<nHists;hist_num++){
 		/** create hists */
 		SlsQtH1D*  k;
@@ -162,7 +159,28 @@ void qCloneWidget::SetCloneHists(int nHists,int histNBins,double* histXAxis,doub
 		k->Attach(cloneplot1D);
 	}
 	//cloneplot1D->UnZoom();
-}//-------------------------------------------------------------------------------------------------------------------------------------------------
+}
+
+//-------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+void qCloneWidget::SetRange(bool IsXYRange[],double XYRangeValues[]){
+	double XYCloneRangeValues[4];
+	if(!IsXYRange[qDefs::XMINIMUM])		XYCloneRangeValues[qDefs::XMINIMUM]= cloneplot1D->GetXMinimum();
+	else 								XYCloneRangeValues[qDefs::XMINIMUM]= XYRangeValues[qDefs::XMINIMUM];
+	if(!IsXYRange[qDefs::XMAXIMUM])		XYCloneRangeValues[qDefs::XMAXIMUM]= cloneplot1D->GetXMaximum();
+	else 								XYCloneRangeValues[qDefs::XMAXIMUM]= XYRangeValues[qDefs::XMAXIMUM];
+	if(!IsXYRange[qDefs::YMINIMUM])		XYCloneRangeValues[qDefs::YMINIMUM]= cloneplot1D->GetYMinimum();
+	else 								XYCloneRangeValues[qDefs::YMINIMUM]= XYRangeValues[qDefs::YMINIMUM];
+	if(!IsXYRange[qDefs::YMAXIMUM])		XYCloneRangeValues[qDefs::YMAXIMUM]= cloneplot1D->GetYMaximum();
+	else 								XYCloneRangeValues[qDefs::YMAXIMUM]= XYRangeValues[qDefs::YMAXIMUM];
+	cloneplot1D->SetXMinMax(XYCloneRangeValues[qDefs::XMINIMUM],XYCloneRangeValues[qDefs::XMAXIMUM]);
+	cloneplot1D->SetYMinMax(XYCloneRangeValues[qDefs::YMINIMUM],XYCloneRangeValues[qDefs::YMAXIMUM]);
+}
+
+
+//-------------------------------------------------------------------------------------------------------------------------------------------------
+
 
 char* qCloneWidget::GetCurrentTimeStamp(){
 	char output[30];
@@ -198,9 +216,9 @@ void qCloneWidget::SavePlot(){
     fName = QFileDialog::getSaveFileName(this,tr("Save Snapshot "),fName,tr("PNG Files (*.png);;XPM Files(*.xpm);;JPEG Files(*.jpg)"),0,QFileDialog::ShowDirsOnly);
     if (!fName.isEmpty())
     	if((img.save(fName)))
-    		qDefs::InfoMessage("The SnapShot has been successfully saved","Snapshot");
+    		qDefs::Message(qDefs::INFORMATION,"The SnapShot has been successfully saved","Snapshot");
     	else
-    		qDefs::WarningMessage("Attempt to save snapshot failed.\n"
+    		qDefs::Message(qDefs::WARNING,"Attempt to save snapshot failed.\n"
     				"Formats: .png, .jpg, .xpm.","Snapshot");
 }
 

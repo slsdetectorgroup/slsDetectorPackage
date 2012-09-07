@@ -15,8 +15,6 @@ class multiSlsDetector;
 #include "SlsQt1DPlot.h"
 #include "SlsQt2DPlotLayout.h"
 #include "qDefs.h"
-class SlsQt1DPlot;
-class SlsQt2DPlotLayout;
 class qCloneWidget;
 /** Qt Include Headers */
 #include <QWidget>
@@ -218,8 +216,8 @@ void UpdatePause(){data_pause_over=true;};
 /** Shows the first save error message while automatic saving
  * @param fileName file name of the first file that it tried to save.*/
 void ShowSaveErrorMessage(QString fileName);
-
-
+/**Shows an error message when acquisition stopped unexpectedly*/
+void ShowAcquisitionErrorMessage();
 
 
 private:
@@ -405,6 +403,7 @@ void SetZRangeSignal(double,double);
 void EnableZRangeSignal(bool);
 void SetCurrentMeasurementSignal(int);
 void saveErrorSignal(QString);
+void AcquisitionErrorSignal();
 };
 
 

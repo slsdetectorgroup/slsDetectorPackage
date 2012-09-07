@@ -10,8 +10,8 @@
 
 /** Qt Project Class Headers */
 class SlsQtH1D;
-class SlsQt1DPlot;
-class SlsQt2DPlotLayout;
+#include "SlsQt1DPlot.h"
+#include "SlsQt2DPlotLayout.h"
 /** Qt Include Headers */
 #include <QMainWindow>
 #include <QMenu>
@@ -29,6 +29,7 @@ class SlsQt2DPlotLayout;
 #include <QCheckBox>
 /** C++ Include Headers */
 #include <string>
+#include <iostream>
 using namespace std;
 
 /**
@@ -77,6 +78,16 @@ public:
 	 * @param markers style of plot markers or not
 	 * */
 	void SetCloneHists(int nHists,int histNBins,double* histXAxis,double* histYAxis,string histTitle[],bool lines,bool markers);
+
+	/**Set the range of the 1d plot
+	 * @param IsXYRange array of x,y,min,max if these values are set
+	 * @param XYRangeValues array of set values of x,y, min, max
+	 */
+	void SetRange(bool IsXYRange[], double XYRangeValues[]);
+
+	/** Returns the 1d plot
+	 */
+	SlsQt1DPlot* Get1dPlot(){return cloneplot1D;};
 
 public slots:
 /** Save Plots automatically by save all clones

@@ -31,7 +31,7 @@
   <property name="windowTitle">
    <string>Form</string>
   </property>
-  <widget class="QGroupBox" name="groupBox_4">
+  <widget class="QGroupBox" name="boxTrimming">
    <property name="enabled">
     <bool>true</bool>
    </property>
@@ -53,6 +53,9 @@
     <bool>false</bool>
    </property>
    <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
     <bool>true</bool>
    </property>
    <widget class="QWidget" name="gridLayoutWidget_3">
@@ -98,7 +101,7 @@
       </spacer>
      </item>
      <item row="3" column="0">
-      <widget class="QLabel" name="label_14">
+      <widget class="QLabel" name="lblExpTime">
        <property name="sizePolicy">
         <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
          <horstretch>0</horstretch>
@@ -139,6 +142,9 @@
        </property>
        <property name="alignment">
         <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+       </property>
+       <property name="keyboardTracking">
+        <bool>false</bool>
        </property>
        <property name="decimals">
         <number>5</number>
@@ -248,28 +254,50 @@
       </spacer>
      </item>
      <item row="4" column="0">
-      <widget class="QLabel" name="label_16">
-       <property name="sizePolicy">
-        <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
-         <horstretch>0</horstretch>
-         <verstretch>0</verstretch>
-        </sizepolicy>
-       </property>
-       <property name="text">
-        <string>Output Directory:</string>
-       </property>
-      </widget>
-     </item>
-     <item row="4" column="2" colspan="6">
-      <widget class="QLineEdit" name="dispOutput"/>
-     </item>
-     <item row="4" column="8">
-      <widget class="QPushButton" name="btnBrowseOutput">
+      <widget class="QLabel" name="lblFile">
        <property name="sizePolicy">
         <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
          <horstretch>0</horstretch>
          <verstretch>0</verstretch>
         </sizepolicy>
+       </property>
+       <property name="toolTip">
+        <string>&lt;nobr&gt;
+Trimfile to which the resulting trimbits will be written. 
+&lt;/nobr&gt;&lt;br&gt;&lt;nobr&gt;
+An extension given by the modules serial number will be attached.
+&lt;/nobr&gt;</string>
+       </property>
+       <property name="text">
+        <string>Output Trim File: </string>
+       </property>
+      </widget>
+     </item>
+     <item row="4" column="2" colspan="6">
+      <widget class="QLineEdit" name="dispFile">
+       <property name="toolTip">
+        <string>&lt;nobr&gt;
+Trimfile to which the resulting trimbits will be written. 
+&lt;/nobr&gt;&lt;br&gt;&lt;nobr&gt;
+An extension given by the modules serial number will be attached.
+&lt;/nobr&gt;</string>
+       </property>
+      </widget>
+     </item>
+     <item row="4" column="8">
+      <widget class="QPushButton" name="btnFile">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+       <property name="toolTip">
+        <string>&lt;nobr&gt;
+Trimfile to which the resulting trimbits will be written. 
+&lt;/nobr&gt;&lt;br&gt;&lt;nobr&gt;
+An extension given by the modules serial number will be attached.
+&lt;/nobr&gt;</string>
        </property>
        <property name="text">
         <string>Browse</string>
@@ -284,7 +312,7 @@
       </layout>
      </item>
      <item row="5" column="2">
-      <widget class="QPushButton" name="btnStartTrimming">
+      <widget class="QPushButton" name="btnStart">
        <property name="sizePolicy">
         <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
          <horstretch>0</horstretch>
@@ -297,12 +325,12 @@
       </widget>
      </item>
      <item row="3" column="7" colspan="2">
-      <widget class="QDoubleSpinBox" name="spinExpTime_2">
+      <widget class="QDoubleSpinBox" name="spinThreshold">
        <property name="enabled">
         <bool>true</bool>
        </property>
        <property name="sizePolicy">
-        <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+        <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
          <horstretch>0</horstretch>
          <verstretch>0</verstretch>
         </sizepolicy>
@@ -326,14 +354,17 @@
        <property name="alignment">
         <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
        </property>
+       <property name="keyboardTracking">
+        <bool>false</bool>
+       </property>
        <property name="decimals">
-        <number>5</number>
+        <number>3</number>
        </property>
        <property name="minimum">
         <double>0.000000000000000</double>
        </property>
        <property name="maximum">
-        <double>2000000000.000000000000000</double>
+        <double>10000.000000000000000</double>
        </property>
        <property name="value">
         <double>560.000000000000000</double>
@@ -352,7 +383,7 @@
         <string>Sets the Threshold DAC</string>
        </property>
        <property name="text">
-        <string>Threshold:</string>
+        <string>Threshold (DACu):</string>
        </property>
       </widget>
      </item>
@@ -379,7 +410,7 @@
       </widget>
      </item>
      <item row="2" column="0">
-      <widget class="QLabel" name="label_17">
+      <widget class="QLabel" name="lblResolution">
        <property name="sizePolicy">
         <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
          <horstretch>0</horstretch>
@@ -392,7 +423,7 @@
       </widget>
      </item>
      <item row="2" column="2" colspan="2">
-      <widget class="QSpinBox" name="spinNumMeasurements">
+      <widget class="QSpinBox" name="spinResolution">
        <property name="sizePolicy">
         <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
          <horstretch>0</horstretch>
@@ -412,6 +443,9 @@
        <property name="alignment">
         <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
        </property>
+       <property name="keyboardTracking">
+        <bool>false</bool>
+       </property>
        <property name="suffix">
         <string/>
        </property>
@@ -419,7 +453,7 @@
         <number>1</number>
        </property>
        <property name="maximum">
-        <number>2000000000</number>
+        <number>9</number>
        </property>
        <property name="value">
         <number>4</number>
@@ -453,7 +487,7 @@
       </widget>
      </item>
      <item row="2" column="5">
-      <widget class="QLabel" name="label_18">
+      <widget class="QLabel" name="lblCounts">
        <property name="sizePolicy">
         <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
          <horstretch>0</horstretch>
@@ -466,7 +500,7 @@
       </widget>
      </item>
      <item row="2" column="7" colspan="2">
-      <widget class="QSpinBox" name="spinNumMeasurements_2">
+      <widget class="QSpinBox" name="spinCounts">
        <property name="sizePolicy">
         <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
          <horstretch>0</horstretch>
@@ -486,14 +520,17 @@
        <property name="alignment">
         <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
        </property>
+       <property name="keyboardTracking">
+        <bool>false</bool>
+       </property>
        <property name="suffix">
         <string/>
        </property>
        <property name="minimum">
-        <number>1</number>
+        <number>0</number>
        </property>
        <property name="maximum">
-        <number>2000000000</number>
+        <number>16000000</number>
        </property>
        <property name="value">
         <number>500</number>
@@ -529,7 +566,7 @@
       <number>34</number>
      </property>
      <item>
-      <widget class="QRadioButton" name="radioButton_4">
+      <widget class="QRadioButton" name="radioNoPlot">
        <property name="sizePolicy">
         <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
          <horstretch>0</horstretch>
@@ -539,10 +576,13 @@
        <property name="text">
         <string>No Plot</string>
        </property>
+       <property name="checked">
+        <bool>true</bool>
+       </property>
       </widget>
      </item>
      <item>
-      <widget class="QRadioButton" name="radioButton_5">
+      <widget class="QRadioButton" name="radioDataGraph">
        <property name="sizePolicy">
         <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
          <horstretch>0</horstretch>
@@ -555,7 +595,7 @@
       </widget>
      </item>
      <item>
-      <widget class="QRadioButton" name="radioButton_6">
+      <widget class="QRadioButton" name="radioHistogram">
        <property name="sizePolicy">
         <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
          <horstretch>0</horstretch>

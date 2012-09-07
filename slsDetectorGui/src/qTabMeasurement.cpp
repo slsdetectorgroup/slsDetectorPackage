@@ -127,7 +127,7 @@ void qTabMeasurement::SetupTimingMode(){
 			item[(int)Trigger_Window]->setEnabled(false);
 			break;
 		default:
-			qDefs::ErrorMessage("Unknown detector type.","Measurement");
+			qDefs::Message(qDefs::CRITICAL,"Unknown detector type.","Measurement");
 			exit(-1);
 			break;
 		}
@@ -157,7 +157,7 @@ void qTabMeasurement::SetupTimingMode(){
 		// This should not happen -only if the server and gui has a mismatch
 		// on which all modes are allowed in detectors
 		else{
-			qDefs::WarningMessage("Unknown Timing Mode detected from detector."
+			qDefs::Message(qDefs::WARNING,"Unknown Timing Mode detected from detector."
 					"\n\nSetting the following defaults:\nTiming Mode \t: None\n"
 					"Number of Frames \t: 1\nNumber of Triggers \t: 1","Measurement");
 			comboTimingMode->setCurrentIndex((int)None);
@@ -191,20 +191,20 @@ void qTabMeasurement::Initialization(int timingChange){
 	//Number of Frames
 	connect(spinNumFrames,SIGNAL(valueChanged(int)),			this,	SLOT(setNumFrames(int)));
 	//Exposure Time
-	connect(spinExpTime,SIGNAL(valueChanged(double)),			this,	SLOT(setExposureTime()));//..myplot
+	connect(spinExpTime,SIGNAL(valueChanged(double)),			this,	SLOT(setExposureTime()));
 	connect(comboExpUnit,SIGNAL(currentIndexChanged(int)),		this,	SLOT(setExposureTime()));
 	//Frame Period between exposures
-	connect(spinPeriod,SIGNAL(valueChanged(double)),			this,	SLOT(setAcquisitionPeriod()));//..myplot
+	connect(spinPeriod,SIGNAL(valueChanged(double)),			this,	SLOT(setAcquisitionPeriod()));
 	connect(comboPeriodUnit,SIGNAL(currentIndexChanged(int)),	this,	SLOT(setAcquisitionPeriod()));
 	//Number of Triggers
-	connect(spinNumTriggers,SIGNAL(valueChanged(int)),			this,	SLOT(setNumTriggers(int)));//
+	connect(spinNumTriggers,SIGNAL(valueChanged(int)),			this,	SLOT(setNumTriggers(int)));
 	//Delay After Trigger
-	connect(spinDelay,SIGNAL(valueChanged(double)),				this,	SLOT(setDelay()));//
+	connect(spinDelay,SIGNAL(valueChanged(double)),				this,	SLOT(setDelay()));
 	connect(comboDelayUnit,SIGNAL(currentIndexChanged(int)),	this,	SLOT(setDelay()));
 	//Number of Gates
-	connect(spinNumGates,SIGNAL(valueChanged(int)),				this,	SLOT(setNumGates(int)));//
+	connect(spinNumGates,SIGNAL(valueChanged(int)),				this,	SLOT(setNumGates(int)));
 	//Number of Probes
-	connect(spinNumProbes,SIGNAL(valueChanged(int)),			this,	SLOT(setNumProbes(int)));//
+	connect(spinNumProbes,SIGNAL(valueChanged(int)),			this,	SLOT(setNumProbes(int)));
 }
 
 
@@ -548,11 +548,11 @@ void qTabMeasurement::SetTimingMode(int mode){
 		break;
 	default:
 		//This should never happen
-		qDefs::ErrorMessage("Timing mode unknown to GUI","Measurement");
+		qDefs::Message(qDefs::CRITICAL,"Timing mode unknown to GUI","Measurement");
 		exit(-1);
 	}
 	if(!success){
-		qDefs::WarningMessage("The detector timing mode could not be set.\n"
+		qDefs::Message(qDefs::WARNING,"The detector timing mode could not be set.\n"
 				"Please check the external flags."
 				"\n\nSetting the following defaults:\nTiming Mode \t: None\n"
 				"Number of Frames \t: 1\nNumber of Triggers \t: 1","Measurement");

@@ -12,6 +12,7 @@
 #include "ui_form_tab_advanced.h"
 /** Project Class Headers */
 class multiSlsDetector;
+#include "sls_detector_defs.h"
 /** Qt Include Header */
 #include <QStackedLayout>
 
@@ -37,6 +38,7 @@ public:
 	void Refresh();
 
 
+
 private:
 	/** Sets up the widget
 	 */
@@ -47,14 +49,59 @@ private:
 	void Initialization();
 
 
+
+private slots:
+	/** Enable/Disable Energy and Calibration Logs
+	 */
+	void SetLogs();
+
+	/** Set acquisition time
+	 */
+	void SetExposureTime();
+
+	/** Set the Threshold dac value
+	 */
+	void SetThreshold();
+
+	/** Set output directory for trimming
+	 */
+	void SetOutputFile();
+
+	/** Browse output directory for trimming
+	 */
+	void BrowseOutputFile();
+
+	/** Enables trimming method and calls SetTrimmingMethod if enabled
+	 * @param enable to enable trimming
+	 */
+	void EnableTrimming(bool enable);
+
+	/** Enabling resolution and Counts if this is enabled
+	 * @param enable to enable
+	 */
+	void SetOptimize(bool enable);
+
+	/** Sets the trimming method
+	 * @param mode trimming method
+	 */
+	void SetTrimmingMethod(int mode);
+
+	/** Ensures the right trimming mode and Executes Trimming
+	 */
+	void StartTrimming();
+
+private:
 	/** The sls detector object */
 	multiSlsDetector *myDet;
 
+	/** Tool Tip for the output dir */
+	QString 	outputDirTip;
+	QString 	errOutputTip;
+	QPalette	red;
 
-private slots:
-/** Enable/Disable Energy and Calibration Logs
- */
-void SetLogs();
+	/** Trimming mode */
+	slsDetectorDefs::trimMode trimmingMode;
+
 
 };
 

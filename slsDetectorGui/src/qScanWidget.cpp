@@ -277,7 +277,7 @@ void qScanWidget::EnableSizeWidgets(){
 #ifdef VERYVERBOSE
 				char cNum[200];sprintf(cNum,"%d",actualNumSteps);
 				char cId[5];sprintf(cId,"%d",id);
-				qDefs::InfoMessage(string("<nobr><font color=\"blue\">Scan Level ")+string(cId)+
+				qDefs::Message(qDefs::INFORMATION,string("<nobr><font color=\"blue\">Scan Level ")+string(cId)+
 								string(": Specific Values</font></nobr><br><br><nobr>Number of positions added: ")+
 								string(cNum)+string("</nobr>"),"ScanWidget");
 #endif
@@ -385,7 +385,7 @@ int qScanWidget::SetScan(int mode){
 		return qDefs::OK;
 	}else{//mode NOT set
 		if((mode!=actualMode)&&(actualNumSteps)){
-			qDefs::WarningMessage("The mode could not be changed for an unknown reason.","ScanWidget");
+			qDefs::Message(qDefs::WARNING,"The mode could not be changed for an unknown reason.","ScanWidget");
 			comboScript->setCurrentIndex(actualMode);
 			return qDefs::FAIL;
 		}
@@ -455,12 +455,12 @@ void qScanWidget::SetScriptFile(){
 				set = true;
 			//if the file doesnt exist, set it to what it was before
 			else{
-				qDefs::WarningMessage("The script file entered does not exist","ScanWidget");
+				qDefs::Message(qDefs::WARNING,"The script file entered does not exist","ScanWidget");
 				dispScript->setText(QString(myDet->getScanScript(id).c_str()));
 			}
 		}//not a file, set it to what it was before
 		else {
-			qDefs::WarningMessage("The script file path entered is not a file","ScanWidget");
+			qDefs::Message(qDefs::WARNING,"The script file path entered is not a file","ScanWidget");
 			dispScript->setText(QString(myDet->getScanScript(id).c_str()));
 		}
 	}
@@ -471,7 +471,7 @@ void qScanWidget::SetScriptFile(){
 		if(fName.compare(QString(myDet->getScanScript(id).c_str()))){
 			//did not get set, write what is was before
 			if(!fName.isEmpty())
-				qDefs::WarningMessage("The script file could not be set. Reverting to previous file.","ScanWidget");
+				qDefs::Message(qDefs::WARNING,"The script file could not be set. Reverting to previous file.","ScanWidget");
 			dispScript->setText(QString(myDet->getScanScript(id).c_str()));
 		}
 
@@ -524,7 +524,7 @@ void qScanWidget::SetPrecision(int value){
 #endif
 	myDet->setScanPrecision(id,value);
 	if(myDet->getScanPrecision(id)!=value)
-		qDefs::WarningMessage("The precision was not set for an unknown reason.","ScanWidget");;
+		qDefs::Message(qDefs::WARNING,"The precision was not set for an unknown reason.","ScanWidget");;
 }
 
 
@@ -633,13 +633,13 @@ void qScanWidget::SetRangeSteps(){
 
 		//positions wont be loaded if its custom script
 		if((comboScript->currentIndex()==CustomScript)&&((script=="")||(script=="none"))){
-			qDefs::InfoMessage(string("<nobr><font color=\"blue\">Scan Level ")+string(cId)+
+			qDefs::Message(qDefs::INFORMATION,string("<nobr><font color=\"blue\">Scan Level ")+string(cId)+
 					string(": Constant Step Size</font></nobr><br><br>"
 							"<nobr>Positions could not be loaded as the script file path is empty.</nobr>"),"ScanWidget");
 		}else{
 			//error loading positions
 			if(myDet->getScanSteps(id)!=actualNumSteps){
-				qDefs::WarningMessage(string("<nobr><font color=\"blue\">Scan Level ")+string(cId)+
+				qDefs::Message(qDefs::WARNING,string("<nobr><font color=\"blue\">Scan Level ")+string(cId)+
 						string(": Values From File</font></nobr><br><br>"
 								"<nobr>The positions list was not set for an unknown reason.</nobr>"),"ScanWidget");
 				/*LoadPositions();
@@ -648,7 +648,7 @@ void qScanWidget::SetRangeSteps(){
 #ifdef VERYVERBOSE
 			else{//SUCCESS
 				char cNum[200];sprintf(cNum,"%d",actualNumSteps);
-				qDefs::InfoMessage(string("<nobr><font color=\"blue\">Scan Level ")+string(cId)+
+				qDefs::Message(qDefs::INFORMATION,string("<nobr><font color=\"blue\">Scan Level ")+string(cId)+
 						string(": Constant Step Size</font></nobr><br><br><nobr>Number of positions added: ")+
 						string(cNum)+string("</nobr>"),"ScanWidget");
 			}
@@ -712,13 +712,13 @@ int qScanWidget::SetCustomSteps(){
 		QString script = dispScript->text();
 		//positions wont be loaded if its custom script
 		if((comboScript->currentIndex()==CustomScript)&&((script=="")||(script=="none"))){
-			qDefs::InfoMessage(string("<nobr><font color=\"blue\">Scan Level ")+string(cId)+
+			qDefs::Message(qDefs::INFORMATION,string("<nobr><font color=\"blue\">Scan Level ")+string(cId)+
 				string(": Values From File</font></nobr><br><br>"
 				"<nobr>Positions could not be loaded as the script file path is empty.</nobr>"),"ScanWidget");
 			return qDefs::FAIL;
 		}else{
 			if(myDet->getScanSteps(id)!=actualNumSteps){
-				qDefs::WarningMessage("The positions list was not set for an unknown reason.","ScanWidget");
+				qDefs::Message(qDefs::WARNING,"The positions list was not set for an unknown reason.","ScanWidget");
 				LoadPositions();
 				comboScript->setCurrentIndex(myDet->getScanMode(id));
 				return qDefs::FAIL;
@@ -870,20 +870,20 @@ void qScanWidget::SetFileSteps(){
 			radioFile->setToolTip(fileTip);dispFile->setToolTip(fileTip);btnFile->setToolTip(fileTip);
 			//positions wont be loaded if its custom script
 			if((comboScript->currentIndex()==CustomScript)&&((script=="")||(script=="none"))){
-				qDefs::InfoMessage(string("<nobr><font color=\"blue\">Scan Level ")+string(cId)+
+				qDefs::Message(qDefs::INFORMATION,string("<nobr><font color=\"blue\">Scan Level ")+string(cId)+
 					string(": Values From File</font></nobr><br><br>"
 					"<nobr>Positions could not be loaded as the script file path is empty.</nobr>"),"ScanWidget");
 			}else{
 				//error loading positions
 				if(myDet->getScanSteps(id)!=actualNumSteps){
-					qDefs::WarningMessage(string("<nobr><font color=\"blue\">Scan Level ")+string(cId)+
+					qDefs::Message(qDefs::WARNING,string("<nobr><font color=\"blue\">Scan Level ")+string(cId)+
 					string(": Values From File</font></nobr><br><br>"
 					"<nobr>The positions list was not set for an unknown reason.</nobr>"),"ScanWidget");
 				}
 #ifdef VERYVERBOSE
 				else{//SUCCESS
 					char cNum[200];sprintf(cNum,"%d",actualNumSteps);
-					qDefs::InfoMessage(string("<nobr><font color=\"blue\">Scan Level ")+string(cId)+
+					qDefs::Message(qDefs::INFORMATION,string("<nobr><font color=\"blue\">Scan Level ")+string(cId)+
 							string(": Values From File</font></nobr><br><br><nobr>Number of positions added: ")+
 							string(cNum)+string("</nobr>"),"ScanWidget");
 				}

@@ -40,11 +40,17 @@ void qTabDebugging::SetupWidgetWindow(){
 	// Detector Type
 	detType=myDet->getDetectorsType();
 
+	//status
+	int detStatus = (int)myDet->getRunStatus();
+	string status = slsDetectorBase::runStatusType(slsDetectorDefs::runStatus(detStatus));
+	lblStatus->setText(QString(status.c_str()).toUpper());
+
 	if(detType==slsDetectorDefs::EIGER) lblModule->setText("Half Module Number:");
 	else lblModule->setText("Module Number:");
 
 	// loading combo box module numbers
 	int max = myDet->setNumberOfModules();
+
 
 /*	for(int i=0;i<max;i++){
 		slsDetector *s = myDet->getSlsDetector(i);

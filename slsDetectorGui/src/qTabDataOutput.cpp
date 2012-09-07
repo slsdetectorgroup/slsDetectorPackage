@@ -149,7 +149,7 @@ void qTabDataOutput::SetFlatField(){
 			if(myDet->setFlatFieldCorrectionFile(file.toAscii().constData())<0){
 				string sDir = dir.toAscii().constData(),sFile = file.toAscii().constData();
 				if(sDir.length()<1) {sDir = string(QDir::current().absolutePath().toAscii().constData()); /*"/home/";*/}
-				qDefs::WarningMessage("Invalid Flat Field file: "+sDir+"/"+sFile+
+				qDefs::Message(qDefs::WARNING,"Invalid Flat Field file: "+sDir+"/"+sFile+
 						".\nUnsetting Flat Field.","Data Output");
 
 				//Unsetting flat field
@@ -348,7 +348,7 @@ void qTabDataOutput::SetAngularCorrection(){
 		cout << "Setting angular conversion to default"  << endl;
 #endif
 		}else{
-			qDefs::WarningMessage("Angular Conversion could not be set. Please set the default file name using the command line, if you haven't already.","Data Output");
+			qDefs::Message(qDefs::WARNING,"Angular Conversion could not be set. Please set the default file name using the command line, if you haven't already.","Data Output");
 			chkAngular->setChecked(false);
 		}
 	}else{

@@ -84,13 +84,13 @@ void qActionsWidget::SetMode(int mode){
 	if(!fName.isEmpty()){
 		//check if mode didnt get set
 		if(mode!=myDet->getActionMode(id)){
-			qDefs::WarningMessage("The mode could not be changed.","ActionsWidget");
+			qDefs::Message(qDefs::WARNING,"The mode could not be changed.","ActionsWidget");
 			comboScript->setCurrentIndex(myDet->getActionMode(id));
 		}//if mode got set and its custom script
 		else if(mode){
 			//when the file name did not get set correctly
 			if(fName.compare(QString(myDet->getActionScript(id).c_str()))){
-				qDefs::WarningMessage("The file path could not be set.","ActionsWidget");
+				qDefs::Message(qDefs::WARNING,"The file path could not be set.","ActionsWidget");
 				dispScript->setText(QString(myDet->getActionScript(id).c_str()));
 				SetScriptFile();
 			}
@@ -141,12 +141,12 @@ void qActionsWidget::SetScriptFile(){
 			if(QFile::exists(fName)) set = true;
 			//if the file doesnt exist, set it to what it was before
 			else{
-				qDefs::WarningMessage("The script file entered does not exist","ActionsWidget");
+				qDefs::Message(qDefs::WARNING,"The script file entered does not exist","ActionsWidget");
 				dispScript->setText(QString(myDet->getActionScript(id).c_str()));
 			}
 		}//not a file, set it to what it was before
 		else {
-			qDefs::WarningMessage("The script file path entered is not a file","ActionsWidget");
+			qDefs::Message(qDefs::WARNING,"The script file path entered is not a file","ActionsWidget");
 			dispScript->setText(QString(myDet->getActionScript(id).c_str()));
 		}
 	}
@@ -158,7 +158,7 @@ void qActionsWidget::SetScriptFile(){
 		if(fName.compare(QString(myDet->getActionScript(id).c_str()))){
 			//did not get set, write what is was before
 			if(!fName.isEmpty())
-				qDefs::WarningMessage("The script file could not be set. Reverting to previous file.","ActionsWidget");
+				qDefs::Message(qDefs::WARNING,"The script file could not be set. Reverting to previous file.","ActionsWidget");
 			dispScript->setText(QString(myDet->getActionScript(id).c_str()));
 		}
 	}

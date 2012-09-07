@@ -295,7 +295,7 @@ void qTabActions::SetPosition(){
 		positions[i] = comboPos->itemText(i).toDouble();
 	//setting the list and catching error
 	if(myDet->setPositions(comboPos->count(),positions)!=comboPos->count())
-		qDefs::WarningMessage("The positions list was not set for some reason.","Actions");
+		qDefs::Message(qDefs::WARNING,"The positions list was not set for some reason.","Actions");
 
 
 	emit EnableScanBox();

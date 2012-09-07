@@ -303,8 +303,6 @@ void qTabMeasurement::startStopAcquisition(){
 		cout << "Stopping Acquisition" << endl<< endl;
 #endif
 		myDet->stopAcquisition();
-		//btnStartStop->setStyleSheet("color:green");
-		//btnStartStop->setStyleSheet("background:rgb(239,239,239)");
 		progressTimer->stop();
 		btnStartStop->setText("Start");
 		btnStartStop->setIcon(*iconStart);
@@ -323,8 +321,6 @@ void qTabMeasurement::UpdateFinished(){
 	btnStartStop->setText("Start");
 	btnStartStop->setIcon(*iconStart);
 	btnStartStop->setChecked(false);
-	//btnStartStop->setStyleSheet("color:green");
-	//btnStartStop->setStyleSheet("background:rgb(239,239,239)");
 	Enable(1);
 	connect(btnStartStop,SIGNAL(clicked()),this,SLOT(startStopAcquisition()));
 	UpdateProgress();

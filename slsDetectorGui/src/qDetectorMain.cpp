@@ -176,6 +176,7 @@ void qDetectorMain::SetUpDetector(){
 	//instantiate detector and set window title
 	myDet = new multiSlsDetector(detID);
 	string host = myDet->getHostname(detID);
+	cout<<"online:"<<myDet->setOnline();<<endl;
 	slsDetector *s = myDet->getSlsDetector(detID);
 	//if hostname doesnt exist even in shared memory
 	if(!host.length()){

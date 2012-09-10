@@ -555,7 +555,7 @@ slsDetectorCommand::slsDetectorCommand(slsDetectorUtils *det)  {
   i++;
 
 
-  descrToFuncMap[i].m_pFuncName="measurments"; //
+  descrToFuncMap[i].m_pFuncName="measurements"; //
   descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdTimer;
   i++;
 
@@ -2956,7 +2956,7 @@ string slsDetectorCommand::cmdTimer(int narg, char *args[], int action) {
     index=CYCLES_NUMBER;
   else if (cmd=="probes")
     index=PROBES_NUMBER;
-  else if (cmd=="measurments")
+  else if (cmd=="measurements")
     index=MEASUREMENTS_NUMBER;
   else
     return string("could not decode timer ")+cmd;

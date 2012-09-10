@@ -885,19 +885,18 @@ int multiSlsDetector::setOnline(int off) {
 
 
 
-int multiSlsDetector::checkOnline() {
-  int ret1=-100,ret;
+string multiSlsDetector::checkOnline() {
+  string retval1 = "",retval;
   for (int idet=0; idet<thisMultiDetector->numberOfDetectors; idet++) {
     if (detectors[idet]) {
-      ret=detectors[idet]->checkOnline();
-      cout<<"ret:"<<ret<<endl;
-      if (ret1==-100)
-	ret1=ret;
-      else if (ret!=ret1)
-	ret1=-1;
+      retval=detectors[idet]->checkOnline();
+      if(!retval.empty()){
+        retval1.append(retval);
+    	retval1.append("+");
+      }
     }
   }
-  return ret1;
+  return retval1;
 };
 
 

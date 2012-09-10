@@ -360,7 +360,7 @@ class multiSlsDetector  : public slsDetectorUtils {
   /** checks if each of the detectors are online
       \returns online/offline status and -1 if any of the detector's online status is different from the other
   */
-  int checkOnline();
+  string checkOnline();
 
 
   /**

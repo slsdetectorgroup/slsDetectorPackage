@@ -1,4 +1,3 @@
-
 #include "slsDetector.h"
 #include "usersFunctions.h"
 #include "slsDetectorCommand.h"
@@ -908,26 +907,35 @@ int slsDetector::setOnline(int off) {
 
 
 
-int slsDetector::checkOnline() {
-  int retval=ONLINE_FLAG;
-  if(!controlSocket)
-    controlSocket= new MySocketTCP(thisDetector->hostname, thisDetector->controlPort);
-  if (controlSocket->Connect()<0) {
-    controlSocket->SetTimeOut(5);
-    thisDetector->onlineFlag=OFFLINE_FLAG;
-    delete controlSocket;
-    controlSocket=NULL;
-    retval=OFFLINE_FLAG;
+string slsDetector::checkOnline() {
+  string retval = "";
+  if(!controlSocket){
+	//this already sets the online/offline flag
+    setTCPSocket();
+    if(thisDetector->onlineFlag==OFFLINE_FLAG)
+      return string(thisDetector->hostname);
+    else
+      return string("");
+  }
+  //still cannot connect to socket, controlSocket=0
+  if(controlSocket){
+    if (controlSocket->Connect()<0) {
+      controlSocket->SetTimeOut(5);
+      thisDetector->onlineFlag=OFFLINE_FLAG;
+      delete controlSocket;
+      controlSocket=NULL;
+      retval = thisDetector->hostname;
 #ifdef VERBOSE
-    std::cout<< "offline!" << std::endl;
+      std::cout<< "offline!" << std::endl;
 #endif
-  }  else {
-    thisDetector->onlineFlag=ONLINE_FLAG;
-    controlSocket->SetTimeOut(100);
-    controlSocket->Disconnect();
+    }  else {
+      thisDetector->onlineFlag=ONLINE_FLAG;
+      controlSocket->SetTimeOut(100);
+      controlSocket->Disconnect();
 #ifdef VERBOSE
-    std::cout<< "online!" << std::endl;
+      std::cout<< "online!" << std::endl;
 #endif
+    }
   }
   return retval;
 }
@@ -970,7 +978,7 @@ int slsDetector::setTCPSocket(string const name, int const control_port, int con
     }
   } else
     strcpy(thisName,thisDetector->hostname);
-    
+
   if (control_port>0) {
 #ifdef VERBOSE
     std::cout<< "setting control port" << std::endl;

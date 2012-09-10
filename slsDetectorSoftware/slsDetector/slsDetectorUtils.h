@@ -194,6 +194,12 @@ class slsDetectorUtils :  public slsDetectorActions, public postProcessing {
   virtual int64_t getId(idMode mode, int imod=0)=0;
 
   /**
+    checks if the detector(s) are online/offline
+    \returns hostname if offline
+ */
+ virtual string checkOnline()=0;
+
+ /**
     Digital test of the modules
     \param mode test mode
     \param imod module number for chip test or module firmware test

@@ -183,6 +183,10 @@ slsDetectorCommand::slsDetectorCommand(slsDetectorUtils *det)  {
   descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdOnline;
   i++;
 
+  descrToFuncMap[i].m_pFuncName="checkonline"; //
+  descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdOnline;
+  i++;
+
   descrToFuncMap[i].m_pFuncName="enablefwrite"; //
   descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdEnablefwrite;
   i++;
@@ -2233,13 +2237,23 @@ string slsDetectorCommand::cmdOnline(int narg, char *args[], int action) {
   }
   int ival;
   char ans[1000];
-  if (action==PUT_ACTION) {
-    if (sscanf(args[1],"%d",&ival))
-      myDet->setOnline(ival);
-    else
-      return string("Could not scan online mode ")+string(args[1]);
+
+  if(cmd=="online"){
+    if (action==PUT_ACTION) {
+      if (sscanf(args[1],"%d",&ival))
+	myDet->setOnline(ival);
+      else
+	return string("Could not scan online mode ")+string(args[1]);
+    }
+    sprintf(ans,"%d",myDet->setOnline());
+  }//"checkonline"
+  else{
+	  strcpy(ans,myDet->checkOnline().c_str());
+	  if(!strlen(ans))
+		strcpy(ans,"All online");
+	  else
+		strcat(ans," :not online");
   }
-  sprintf(ans,"%d",myDet->setOnline());
   return ans;
 }
 

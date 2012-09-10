@@ -284,7 +284,7 @@ typedef  struct sharedSlsDetector {
 
   int setOnline(int const online=GET_ONLINE_FLAG);
   
-  int checkOnline();
+  string checkOnline();
 
   /** returns if the detector already existed
       \returns 1 if the detector structure has already be initlialized, 0 otherwise */

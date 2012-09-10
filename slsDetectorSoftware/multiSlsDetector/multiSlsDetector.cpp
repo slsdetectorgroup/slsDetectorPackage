@@ -1927,21 +1927,30 @@ int multiSlsDetector::getRateCorrection(double &t){
 
 double multiSlsDetector::getRateCorrectionTau(){
 
+  int ret1=-100,ret;
   if (thisMultiDetector->correctionMask&(1<<RATE_CORRECTION)) {
 #ifdef VERBOSE
     std::cout<< "Rate correction is enabled with dead time "<< thisMultiDetector->tDead << std::endl;
 #endif
     //which t should we return if they are all different?
 
-
-
-
-    return 1;
-  } else
+    for (int idet=0; idet<thisMultiDetector->numberOfDetectors; idet++) {
+      if (detectors[idet]) {
+        ret=detectors[idet]->getRateCorrectionTau();
+    	if (ret1==-100)
+    	  ret1=ret;
+    	else if (ret!=ret1)
+    	  ret1=-1;
+     }
+   }
+  } else {
 #ifdef VERBOSE
     std::cout<< "Rate correction is disabled " << std::endl;
 #endif
-    return 0;
+    ret1=0;
+  }
+    return ret1;
+
 };
 
 

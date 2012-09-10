@@ -884,11 +884,29 @@ int multiSlsDetector::setOnline(int off) {
 };
 
 
+
+int multiSlsDetector::checkOnline() {
+  int ret1=-100,ret;
+  for (int idet=0; idet<thisMultiDetector->numberOfDetectors; idet++) {
+    if (detectors[idet]) {
+      ret=detectors[idet]->checkOnline();
+      cout<<"ret:"<<ret<<endl;
+      if (ret1==-100)
+	ret1=ret;
+      else if (ret!=ret1)
+	ret1=-1;
+    }
+  }
+  return ret1;
+};
+
+
+
+
+
 int multiSlsDetector::exists() {
   return thisMultiDetector->alreadyExisting;
 }
-
-
 
 
 
@@ -1941,15 +1959,15 @@ double multiSlsDetector::getRateCorrectionTau(){
     	  ret1=ret;
     	else if (ret!=ret1)
     	  ret1=-1;
-     }
-   }
+      }
+    }
   } else {
 #ifdef VERBOSE
     std::cout<< "Rate correction is disabled " << std::endl;
 #endif
     ret1=0;
   }
-    return ret1;
+  return ret1;
 
 };
 

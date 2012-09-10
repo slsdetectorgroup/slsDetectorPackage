@@ -356,6 +356,13 @@ class multiSlsDetector  : public slsDetectorUtils {
       \returns online/offline status
   */
   int setOnline(int const online=GET_ONLINE_FLAG);  
+
+  /** checks if each of the detectors are online
+      \returns online/offline status and -1 if any of the detector's online status is different from the other
+  */
+  int checkOnline();
+
+
   /**
       \returns 1 if the detector structure has already be initlialized with the given id and belongs to this multiDetector instance, 0 otherwise */
   int exists();

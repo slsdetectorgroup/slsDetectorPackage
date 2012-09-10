@@ -40,6 +40,14 @@ slsDetectorUtils::slsDetectorUtils()   {
 
 void  slsDetectorUtils::acquire(int delflag){
 
+  // setTotalProgress();
+  //moved these 2 here for measurement change
+  progressIndex=0;
+  *stoppedFlag=0;
+
+  int measurement = (int)setTimer(slsDetectorDefs::MEASUREMENTS_NUMBER,-1);
+
+  for(int im=0;im<measurement;im++) {
 
   angCalLogClass *aclog=NULL;
   enCalLogClass *eclog=NULL;
@@ -72,12 +80,6 @@ void  slsDetectorUtils::acquire(int delflag){
     eclog=new enCalLogClass(this);
   
   
-
- // setTotalProgress();
-  progressIndex=0;
-  *stoppedFlag=0;
-
-
 
   
   pthread_mutex_lock(&mp);
@@ -326,9 +328,13 @@ void  slsDetectorUtils::acquire(int delflag){
      delete eclog;
 
 
+
    if (acquisition_finished) {
      acquisition_finished(getCurrentProgress(),getDetectorStatus(),acqFinished_p);
    }
+
+  }
+
 
 }
 
@@ -349,7 +355,7 @@ int slsDetectorUtils::setTotalProgress() {
 	nc=timerValue[CYCLES_NUMBER];
 
   if (timerValue[MEASUREMENTS_NUMBER]>0)
-	nc=timerValue[MEASUREMENTS_NUMBER];
+	nm=timerValue[MEASUREMENTS_NUMBER];
 
   if (*numberOfPositions>0)
 	npos=*numberOfPositions;

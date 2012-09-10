@@ -2248,11 +2248,13 @@ string slsDetectorCommand::cmdOnline(int narg, char *args[], int action) {
     sprintf(ans,"%d",myDet->setOnline());
   }//"checkonline"
   else{
+	  if (action==PUT_ACTION)
+		  return string("cannot set");
 	  strcpy(ans,myDet->checkOnline().c_str());
 	  if(!strlen(ans))
 		strcpy(ans,"All online");
 	  else
-		strcat(ans," :not online");
+		strcat(ans," :Not online");
   }
   return ans;
 }
@@ -2266,6 +2268,7 @@ string slsDetectorCommand::helpOnline(int narg, char *args[], int action) {
   }
   if (action==GET_ACTION || action==HELP_ACTION) {
     os << "online \n gets the detector online (1) or offline (0) mode"<< std::endl;
+    os << "checkonline \n returns the hostnames of all detectors in offline mode"<< std::endl;
   } 
   return os.str();
 

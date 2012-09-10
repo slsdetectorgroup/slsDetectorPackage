@@ -26,10 +26,10 @@ slsDetectorUtils::slsDetectorUtils()   {
   registerGoToPositionNoWaitCallback(&defaultGoToPositionNoWait,NULL);
   registerGetI0Callback(&defaultGetI0,NULL);
 #ifdef VERBOSE
+
+  registerAcquisitionFinishedCallback(&dummyAcquisitionFinished,this);
   cout << "done " << endl;
 #endif
-
-  
 
 };
  

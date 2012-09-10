@@ -560,7 +560,7 @@ class slsDetectorUtils :  public slsDetectorActions, public postProcessing {
   */
   int retrieveDetectorSetup(string const fname, int level=0);
 
-
+  static int dummyAcquisitionFinished(double prog,int status,void* p){cout <<"Acquisition finished callback! " << prog << " " << status << endl; return 0;}
 
  protected:
 

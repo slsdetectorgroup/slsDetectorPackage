@@ -1062,32 +1062,13 @@ int slsDetector::setTCPSocket(string const name, int const control_port, int con
 #endif
   }
   if (retval!=FAIL) {
-    if (controlSocket->Connect()<0) {
-      controlSocket->SetTimeOut(5);
-      thisDetector->onlineFlag=OFFLINE_FLAG;
-      delete controlSocket; 
-      controlSocket=NULL;
-      retval=FAIL;
-#ifdef VERBOSE
-    std::cout<< "offline!" << std::endl;
-#endif
-    }  else {
-      thisDetector->onlineFlag=ONLINE_FLAG;
-      controlSocket->SetTimeOut(100);
-      controlSocket->Disconnect();
-#ifdef VERBOSE
-      std::cout<< "online!" << std::endl;
-#endif
-    }
+    checkOnline();
   } else {
       thisDetector->onlineFlag=OFFLINE_FLAG;
 #ifdef VERBOSE
     std::cout<< "offline!" << std::endl;
 #endif
-    
   }
-
-
   return retval;
 };
 

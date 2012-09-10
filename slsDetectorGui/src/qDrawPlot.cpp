@@ -28,6 +28,7 @@ using namespace std;
 
 //-------------------------------------------------------------------------------------------------------------------------------------------------
 
+
 qDrawPlot::qDrawPlot(QWidget *parent,multiSlsDetector*& detector):
 		QWidget(parent),myDet(detector){
 	SetupWidgetWindow();
@@ -35,7 +36,9 @@ qDrawPlot::qDrawPlot(QWidget *parent,multiSlsDetector*& detector):
 	StartStopDaqToggle(); //as default
 }
 
+
 //-------------------------------------------------------------------------------------------------------------------------------------------------
+
 
 qDrawPlot::~qDrawPlot(){
 	// Clear plot
@@ -48,13 +51,14 @@ qDrawPlot::~qDrawPlot(){
 	for(int i=0;i<MAXCloneWindows;i++) delete winClone[i];
 }
 
+
 //-------------------------------------------------------------------------------------------------------------------------------------------------
+
 
 void qDrawPlot::SetupWidgetWindow(){
 #ifdef VERBOSE
 	cout << "Setting up plot variables" << endl;
 #endif
-	number_of_measurements=1;
 	currentMeasurement = 0;
 	stop_signal = 0;
 	pthread_mutex_init(&last_image_complete_mutex,NULL);
@@ -95,6 +99,8 @@ void qDrawPlot::SetupWidgetWindow(){
 	isFrameEnabled = false;
 	isTriggerEnabled = false;
 	scanArgument = None;
+
+	alreadyDisplayed =  false;
 	// This is so that it initially stop and plots
 	running = 1;
 	for(int i=0;i<MAX_1DPLOTS;i++) {histYAxis[i]=0;yvalues[i]=0; }
@@ -168,7 +174,9 @@ void qDrawPlot::SetupWidgetWindow(){
 
 }
 
+
 //-------------------------------------------------------------------------------------------------------------------------------------------------
+
 
 void qDrawPlot::Initialization(){
 	connect(this, 		SIGNAL(InterpolateSignal(bool)),plot2D, 	SIGNAL(InterpolateSignal(bool)));
@@ -183,7 +191,9 @@ void qDrawPlot::Initialization(){
 
 }
 
+
 //-------------------------------------------------------------------------------------------------------------------------------------------------
+
 
 void qDrawPlot::StartStopDaqToggle(bool stop_if_running){
 #ifdef VERYVERBOSE
@@ -195,14 +205,17 @@ void qDrawPlot::StartStopDaqToggle(bool stop_if_running){
 		running=!running;
 	}else if(!stop_if_running){ //then start
 
-		//Do the following only once before each n measurements
+		//number of measurements
+		int numMeasurements =  (int)myDet->setTimer(slsDetectorDefs::MEASUREMENTS_NUMBER,-1);
 		// Reset Current Measurement
 		currentMeasurement = 0;
 		emit SetCurrentMeasurementSignal(currentMeasurement);
 
+
 		//to get the first image
 		data_pause_over = true;
-
+		//in case of error message
+		alreadyDisplayed = false;
 
 		// Number of Exposures
 		int numFrames = (isFrameEnabled)*((int)myDet->setTimer(slsDetectorDefs::FRAME_NUMBER,-1));
@@ -245,7 +258,9 @@ void qDrawPlot::StartStopDaqToggle(bool stop_if_running){
 	}
 }
 
+
 //-------------------------------------------------------------------------------------------------------------------------------------------------
+
 
 void qDrawPlot::StartDaq(bool start){
 	if(start){
@@ -264,7 +279,9 @@ void qDrawPlot::StartDaq(bool start){
 	}
 }
 
+
 //-------------------------------------------------------------------------------------------------------------------------------------------------
+
 
 int qDrawPlot::ResetDaqForGui(){
 	if(!StopDaqForGui()) return 0;
@@ -273,7 +290,9 @@ int qDrawPlot::ResetDaqForGui(){
 	return 1;
 }
 
+
 //-------------------------------------------------------------------------------------------------------------------------------------------------
+
 
 bool qDrawPlot::StartOrStopThread(bool start){
 	static bool firstTime = true;
@@ -291,92 +310,9 @@ bool qDrawPlot::StartOrStopThread(bool start){
 
 	//start part
 	if(start){
-		if(myDet->getRunStatus()==slsDetectorDefs::IDLE)
-			cout<<endl<<endl<<"IDLE"<<endl;
-		else cout<<endl<<endl<<"ERRORRRRRR: "<<myDet->getRunStatus()<<endl;
-		// Defaults
 		progress = 0;
-		currentFrame = 0;
-		stop_signal = 0;
-		histTitle[0] = "";
-
-		//for 2d scans
-		int currentIndex = myDet->getFileIndex();
-		currentScanValue = 0;
-		currentScanDivLevel = 0;
-
-
-		if(scanArgument!=None){
-			if(scanArgument==AllFrames){
-				maxPixelsY = currentIndex + number_of_exposures - 1;
-				minPixelsY = currentIndex;
-				nPixelsY = number_of_exposures;
-			}else if(scanArgument==FileIndex){
-				maxPixelsY = currentIndex + number_of_frames - 1;
-				minPixelsY = currentIndex;
-				nPixelsY = number_of_frames;
-			}else if(scanArgument==Level0){
-				//no need to check if numsteps=0,cuz otherwise this mode wont be set in plot tab
-				int numSteps = myDet->getScanSteps(0);
-				double *values = new double[numSteps];
-				myDet->getScanSteps(0,values);
-
-				maxPixelsY = values[numSteps-1];
-				minPixelsY = values[0];
-				nPixelsY = numSteps;
-				currentScanValue = values[0];
-			}
-			else {
-				//no need to check if numsteps=0,cuz otherwise this mode wont be set in plot tab
-				int numSteps = myDet->getScanSteps(1);
-				double *values = new double[numSteps];
-				myDet->getScanSteps(1,values);
-
-				maxPixelsY = values[numSteps-1];
-				minPixelsY = values[0];
-				nPixelsY = numSteps;
-				currentScanValue = values[0];
-			}
-			pixelWidth = (maxPixelsY -minPixelsY)/(nPixelsY-1);
-			startPixel = minPixelsY -(pixelWidth/2);
-			endPixel = maxPixelsY + (pixelWidth/2);
-		}else{//no scan
-			nPixelsY = 100;//number_of_exposures;
-			maxPixelsY = 100;
-			minPixelsY = 0;
-			startPixel = -0.5;
-			endPixel = nPixelsY-0.5;
-		}
-		cout<<"nPixelsY:"<<nPixelsY<<endl;
-		cout<<"minPixelsY:"<<minPixelsY<<endl;
-		cout<<"maxPixelsY:"<<maxPixelsY<<endl;
-		cout<<"startPixel:"<<startPixel<<endl;
-		cout<<"endPixel:"<<endPixel<<endl;
-
-
-
-		//1d
-		if(histXAxis)    delete [] histXAxis;	histXAxis    = new double [nPixelsX];
-		if(histYAxis[0]) delete [] histYAxis[0];histYAxis[0] = new double [nPixelsX];
-
-		//2d
-		if(lastImageArray) delete [] lastImageArray; lastImageArray = new double[nPixelsY*nPixelsX];
-
-		//sorta useless
-		if(yvalues[0]) delete [] yvalues[0];	yvalues[0] = new double [nPixelsX];
-		if(image_data) delete [] image_data;	image_data = new double[nPixelsY*nPixelsX];
-
-		//initializing 1d xaxis
-		for(unsigned int px=0;px<nPixelsX;px++)	histXAxis[px]  = px;/*+10;*/
-
-		histYAxis[0][4] = 190.56;
-
-		//initializing 2d array
-		for(int py=0;py<nPixelsY;py++)
-			for(int px=0;px<nPixelsX;px++)
-				lastImageArray[py*nPixelsX+px] = 0;
-
-
+		//sets up the measurement parameters
+		SetupMeasurement();
 
 		cout << "Starting new acquisition threadddd ...." << endl;
 		// Setting the callback function to get data from detector class
@@ -397,7 +333,100 @@ bool qDrawPlot::StartOrStopThread(bool start){
 	return gui_acquisition_thread_running;
 }
 
+
 //-------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+void qDrawPlot::SetupMeasurement(){
+	if(myDet->getRunStatus()==slsDetectorDefs::IDLE)
+		cout<<endl<<endl<<"IDLE"<<endl;
+	else cout<<endl<<endl<<"ERRORRRRRR: "<<myDet->getRunStatus()<<endl;
+	// Defaults
+	currentFrame = 0;
+	stop_signal = 0;
+	histTitle[0] = "";
+
+	//for 2d scans
+	int currentIndex = myDet->getFileIndex();
+	currentScanValue = 0;
+	currentScanDivLevel = 0;
+
+
+	if(scanArgument!=None){
+		if(scanArgument==AllFrames){
+			maxPixelsY = currentIndex + number_of_exposures - 1;
+			minPixelsY = currentIndex;
+			nPixelsY = number_of_exposures;
+		}else if(scanArgument==FileIndex){
+			maxPixelsY = currentIndex + number_of_frames - 1;
+			minPixelsY = currentIndex;
+			nPixelsY = number_of_frames;
+		}else if(scanArgument==Level0){
+			//no need to check if numsteps=0,cuz otherwise this mode wont be set in plot tab
+			int numSteps = myDet->getScanSteps(0);
+			double *values = new double[numSteps];
+			myDet->getScanSteps(0,values);
+
+			maxPixelsY = values[numSteps-1];
+			minPixelsY = values[0];
+			nPixelsY = numSteps;
+			currentScanValue = values[0];
+		}
+		else {
+			//no need to check if numsteps=0,cuz otherwise this mode wont be set in plot tab
+			int numSteps = myDet->getScanSteps(1);
+			double *values = new double[numSteps];
+			myDet->getScanSteps(1,values);
+
+			maxPixelsY = values[numSteps-1];
+			minPixelsY = values[0];
+			nPixelsY = numSteps;
+			currentScanValue = values[0];
+		}
+		pixelWidth = (maxPixelsY -minPixelsY)/(nPixelsY-1);
+		startPixel = minPixelsY -(pixelWidth/2);
+		endPixel = maxPixelsY + (pixelWidth/2);
+	}else{//no scan
+		nPixelsY = 100;//number_of_exposures;
+		maxPixelsY = 100;
+		minPixelsY = 0;
+		startPixel = -0.5;
+		endPixel = nPixelsY-0.5;
+	}
+	cout<<"nPixelsY:"<<nPixelsY<<endl;
+	cout<<"minPixelsY:"<<minPixelsY<<endl;
+	cout<<"maxPixelsY:"<<maxPixelsY<<endl;
+	cout<<"startPixel:"<<startPixel<<endl;
+	cout<<"endPixel:"<<endPixel<<endl;
+
+
+
+	//1d
+	if(histXAxis)    delete [] histXAxis;	histXAxis    = new double [nPixelsX];
+	if(histYAxis[0]) delete [] histYAxis[0];histYAxis[0] = new double [nPixelsX];
+
+	//2d
+	if(lastImageArray) delete [] lastImageArray; lastImageArray = new double[nPixelsY*nPixelsX];
+
+	//sorta useless
+	if(yvalues[0]) delete [] yvalues[0];	yvalues[0] = new double [nPixelsX];
+	if(image_data) delete [] image_data;	image_data = new double[nPixelsY*nPixelsX];
+
+	//initializing 1d xaxis
+	for(unsigned int px=0;px<nPixelsX;px++)	histXAxis[px]  = px;/*+10;*/
+
+	histYAxis[0][4] = 190.56;
+
+	//initializing 2d array
+	for(int py=0;py<nPixelsY;py++)
+		for(int px=0;px<nPixelsX;px++)
+			lastImageArray[py*nPixelsX+px] = 0;
+
+}
+
+
+//-------------------------------------------------------------------------------------------------------------------------------------------------
+
 
 void* qDrawPlot::DataStartAcquireThread(void *this_pointer){
 	cout << "before acquire ...." << endl;
@@ -406,19 +435,24 @@ void* qDrawPlot::DataStartAcquireThread(void *this_pointer){
 	return this_pointer;
 }
 
+
 //-------------------------------------------------------------------------------------------------------------------------------------------------
+
 
 int qDrawPlot::GetDataCallBack(detectorData *data, void *this_pointer){
 	((qDrawPlot*)this_pointer)->GetData(data);
 	return 0;
 }
 
+
 //-------------------------------------------------------------------------------------------------------------------------------------------------
+
 
 int qDrawPlot::GetData(detectorData *data){
 #ifdef VERYVERBOSE
 	cout << "Entering GetDatafunction" << endl;
 #endif
+	cout<<"progress:"<<(int)data->progressIndex<<endl;
 	if(!stop_signal){
 
 		//set title
@@ -618,42 +652,55 @@ int qDrawPlot::GetAcquisitionFinishedCallBack(double currentProgress,int detecto
 //-------------------------------------------------------------------------------------------------------------------------------------------------
 
 
-int qDrawPlot::AcquisitionFinished(double currentProgress,int detectorStatus){
+int qDrawPlot::AcquisitionFinished(double currentProgress, int detectorStatus){
 #ifdef VERBOSE
 	cout << "Entering Acquisition Finished with status " <<
 			slsDetectorBase::runStatusType((slsDetectorDefs::runStatus(detectorStatus))) << " and progress " << currentProgress << endl;
 #endif
-
-	//error
-	if(currentProgress!=100){
+	//error or stopped
+	if((stop_signal)||(detectorStatus==slsDetectorDefs::ERROR)){
+#ifdef VERBOSE
+		cout << "Error in Acquisition" << endl;
+#endif
 		//just to be sure
 		stop_signal = 1;
 		StartStopDaqToggle(true);
 		emit AcquisitionErrorSignal();
 	}
-	//normal stop
-	else if(!stop_signal){
-		currentMeasurement++;
-		cout<<"currentMeasurement:"<<currentMeasurement<<endl;
-		// To start the next measurement
-		if(currentMeasurement!=number_of_measurements){
-			emit SetCurrentMeasurementSignal(currentMeasurement);
-			StopDaqForGui();
-			StartDaq(true);
-		}// if all the measurements are over
-		else{
+	else{
+		//all measurements are over
+		if(currentProgress==100){
+#ifdef VERBOSE
+		cout << "Acquisition Finished" << endl;
+#endif
 			StartStopDaqToggle(true);
 			emit UpdatingPlotFinished();
+		}
+		else{//next measurement
+			currentMeasurement++;
+#ifdef VERBOSE
+			cout << "currentMeasurement:" << currentMeasurement << endl;
+#endif
+			emit SetCurrentMeasurementSignal(currentMeasurement);
+			SetupMeasurement();
 		}
 	}
 	return 0;
 }
 
+
+//-------------------------------------------------------------------------------------------------------------------------------------------------
+
+
 void qDrawPlot::ShowAcquisitionErrorMessage(){
-	int detStatus = (int)myDet->getRunStatus();
-	string status = slsDetectorBase::runStatusType(slsDetectorDefs::runStatus(detStatus));
-	qDefs::Message(qDefs::WARNING,string("<nobr>The acquisiton has ended abruptly. Current Detector Status: ")+status+string(".</nobr>"),"Dock");
+	if(!alreadyDisplayed){
+		alreadyDisplayed = true;
+		int detStatus = (int)myDet->getRunStatus();
+		string status = slsDetectorBase::runStatusType(slsDetectorDefs::runStatus(detStatus));
+		qDefs::Message(qDefs::WARNING,string("<nobr>The acquisiton has ended abruptly. Current Detector Status: ")+status+string(".</nobr>"),"Dock");
+	}
 }
+
 
 //-------------------------------------------------------------------------------------------------------------------------------------------------
 

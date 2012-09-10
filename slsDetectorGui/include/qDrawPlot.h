@@ -94,9 +94,6 @@ public:
 	 * @param stop_if_running is 0 to stop acquisition and 1 to start acquisition
 	 */
 	void StartStopDaqToggle(bool stop_if_running=0);
-	/** Set number of measurements
-	 *  @param num number of measurements to be set */
-	void setNumMeasurements(int num){number_of_measurements = num;};
 	/** Set frame enabled
 	 *  @param enable enable*/
 	void setFrameEnabled(bool enable){isFrameEnabled = enable;};
@@ -168,6 +165,8 @@ int    StartDaqForGui() 		  	{return StartOrStopThread(1) ? 1:0;}
 int    StopDaqForGui() 			  	{return StartOrStopThread(0) ? 0:1;}
 /** Starts/stops Acquisition Thread */
 bool   StartOrStopThread(bool start);
+/** Sets up measurement each time */
+void SetupMeasurement();
 /**	Resets the acquisition parameter like lastimagenumber */
 int    ResetDaqForGui();
 /**	The function which is called when start acquisition thread is created */
@@ -252,8 +251,6 @@ SlsQt2DPlotLayout* 	plot2D;
 QVector<SlsQtH1D*> 	plot1D_hists;
 
 
-/** Number of Measurements */
-int number_of_measurements;
 /** Current Measurement */
 int currentMeasurement;
 /** currentFrame */
@@ -391,6 +388,8 @@ int scanArgument;
 
 /** enable angle plot */
 bool anglePlot;
+/** prevents err msg displaying twice when detector stopped, "transmitting" */
+bool alreadyDisplayed;
 
 
 

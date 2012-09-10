@@ -48,7 +48,7 @@ qTabMeasurement::~qTabMeasurement(){
 
 void qTabMeasurement::SetupWidgetWindow(){
 	//Number of measurements
-	numMeasurement=1;
+	spinNumMeasurements->setValue((int)myDet->setTimer(slsDetectorDefs::MEASUREMENTS_NUMBER,-1));
 
 	//Timer to update the progress bar
 	progressTimer = new QTimer(this);
@@ -66,6 +66,7 @@ void qTabMeasurement::SetupWidgetWindow(){
 			"<nobr> #period#</nobr><br><br>")+
 			QString("<nobr><font color=\"red\"><b>Acquisition Period</b> should be"
 					" greater than or equal to <b>Exposure Time</b>.</font></nobr>");
+
 	//File Name
 	dispFileName->setText(QString(myDet->getFileName().c_str()));
 	//File Index
@@ -86,6 +87,24 @@ void qTabMeasurement::SetupWidgetWindow(){
 	iconStart = new QIcon(":/icons/images/start.png");
 	iconStop = new QIcon(":/icons/images/stop.png");
 
+}
+
+
+//-------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+void qTabMeasurement::SetExpertMode(bool enable){
+	expertMode = enable;
+	lblNumProbes->setEnabled(enable);
+	spinNumProbes->setEnabled(enable);
+	//Number of Probes
+	if((enable)&&(myDet->getDetectorsType()==slsDetectorDefs::MYTHEN)){
+		int val = (int)myDet->setTimer(slsDetectorDefs::PROBES_NUMBER,-1);
+		spinNumProbes->setValue(val);
+#ifdef VERBOSE
+		cout << "Getting number of probes : " << val << endl;
+#endif
+	}
 }
 
 
@@ -251,16 +270,6 @@ void qTabMeasurement::Enable(bool enable){
 //-------------------------------------------------------------------------------------------------------------------------------------------------
 
 
-void qTabMeasurement::setNumMeasurements(int val){
-#ifdef VERBOSE
-	cout << "Setting Number of Measurements to "  << val << endl;
-#endif
-	numMeasurement = val;
-	myPlot->setNumMeasurements(val);
-}
-//-------------------------------------------------------------------------------------------------------------------------------------------------
-
-
 void qTabMeasurement::setFileName(const QString& fName){
 	myDet->setFileName(fName.toAscii().data());
 #ifdef VERBOSE
@@ -302,13 +311,13 @@ void qTabMeasurement::startStopAcquisition(){
 #ifdef VERBOSE
 		cout << "Stopping Acquisition" << endl<< endl;
 #endif
+		emit StopSignal();
 		myDet->stopAcquisition();
 		progressTimer->stop();
 		btnStartStop->setText("Start");
 		btnStartStop->setIcon(*iconStart);
 		btnStartStop->setChecked(false);
 		Enable(1);
-		emit StopSignal();
 	}
 }
 
@@ -342,8 +351,20 @@ void qTabMeasurement::SetCurrentMeasurement(int val){
 
 
 void qTabMeasurement::UpdateProgress(){
-	progressBar->setValue((int)(((currentMeasurement*100)+(myPlot->GetProgress()))/numMeasurement));
+	//progressBar->setValue((int)(((currentMeasurement*100)+(myPlot->GetProgress()))/spinNumMeasurements->value()));
+	progressBar->setValue((int)myPlot->GetProgress());
 	lblProgressIndex->setText(QString::number(myDet->getFileIndex()));
+}
+
+
+//-------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+void qTabMeasurement::setNumMeasurements(int val){
+	myDet->setTimer(slsDetectorDefs::MEASUREMENTS_NUMBER,val);
+#ifdef VERBOSE
+	cout << "Setting Number of Measurements to "  << (int)myDet->setTimer(slsDetectorDefs::MEASUREMENTS_NUMBER,-1)  << endl;
+#endif
 }
 
 
@@ -355,7 +376,6 @@ void qTabMeasurement::setNumFrames(int val){
 #ifdef VERBOSE
 	cout << "Setting number of frames to " << (int)myDet->setTimer(slsDetectorDefs::FRAME_NUMBER,-1) << endl;
 #endif
-
 }
 
 
@@ -567,11 +587,11 @@ void qTabMeasurement::SetTimingMode(int mode){
 	}
 
 
-	if(mode!=None){//Number of Probes
-		if((myDet->getDetectorsType()==slsDetectorDefs::MYTHEN)&&(expertMode)){
-			lblNumProbes->setEnabled(true);		spinNumProbes->setEnabled(true);
-		}
+	//Number of Probes
+	if((expertMode)&&(myDet->getDetectorsType()==slsDetectorDefs::MYTHEN)){
+		lblNumProbes->setEnabled(true);		spinNumProbes->setEnabled(true);
 	}
+
 
 	//To disconnect all the signals before changing their values
 	DeInitialization();
@@ -703,6 +723,8 @@ void qTabMeasurement::EnableFileWrite(bool enable){
 
 
 void qTabMeasurement::Refresh(){
+	//Number of measurements
+	spinNumMeasurements->setValue((int)myDet->setTimer(slsDetectorDefs::MEASUREMENTS_NUMBER,-1));
 	//File Name
 	dispFileName->setText(QString(myDet->getFileName().c_str()));
 	//File Index

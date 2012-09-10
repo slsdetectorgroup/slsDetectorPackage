@@ -46,7 +46,7 @@ qTabDataOutput::~qTabDataOutput(){
 //-------------------------------------------------------------------------------------------------------------------------------------------------
 
 
-void qTabDataOutput::SetupWidgetWindow(){
+void qTabDataOutput::SetupWidgetWindow(){cout<<"in here"<<endl;
 	// Detector Type
 	detType=myDet->getDetectorsType();
 

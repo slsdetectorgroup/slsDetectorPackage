@@ -43,7 +43,7 @@ public:
 	/** To enable expert mode
 	 * @param enable to enable if true
 	 */
-	void SetExpertMode(bool enable){expertMode = enable;SetupTimingMode();};
+	void SetExpertMode(bool enable);
 
 
 
@@ -163,8 +163,6 @@ private:
 	enum{None, Auto, Trigger_Exp_Series, Trigger_Frame, Trigger_Readout, Gated, Gated_Start, Trigger_Window, NumTimingModes};
 	/** timer to update the progress*/
 	QTimer *progressTimer;
-	/** number of measurements*/
-	int numMeasurement;
 	/** current measurement */
 	int currentMeasurement;
 	/** tool tip variables*/

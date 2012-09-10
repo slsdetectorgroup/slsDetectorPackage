@@ -174,47 +174,48 @@ void qDetectorMain::SetUpDetector(){
 
 
 	//instantiate detector and set window title
-	myDet = new multiSlsDetector(detID);
-	string host = myDet->getHostname(detID);
-	cout<<"online:"<<myDet->setOnline();<<endl;
-	slsDetector *s = myDet->getSlsDetector(detID);
+	myDet = new multiSlsDetector();
+	string host = myDet->getHostname();
+
 	//if hostname doesnt exist even in shared memory
 	if(!host.length()){
 #ifdef VERBOSE
-		cout << endl << "No Detector Connected at id:" << detID << endl;
+		cout << endl << "No Detector Connected." << endl;
 #endif
-		char cIndex[10];
-		sprintf(cIndex,"%d",detID);
-		qDefs::Message(qDefs::CRITICAL,string("No Detector Connected at id : ")+string(cIndex),"Main");
-		exit(-1);
-	}//if the detector is not even connected
-	else if(s->setTCPSocket()==slsDetectorDefs::FAIL){
-		qDefs::Message(qDefs::CRITICAL,string("The detector ")+host+string(" is not connected. Exiting GUI."),"Main");
-		cout << "The detector " << host << "is not connected. Exiting GUI." << endl;
+		qDefs::Message(qDefs::CRITICAL,"No Detectors Connected. ","Main");
 		exit(-1);
 	}
-	else{
-		slsDetectorDefs::detectorType detType = myDet->getDetectorsType();
-		// Check if type valid. If not, exit
-		switch(detType){//digitalDetector decides if trimbits should be shown
-				case slsDetectorDefs::MYTHEN:	digitalDetector = true;	break;
-				case slsDetectorDefs::EIGER:	digitalDetector = true;	break;
-				case slsDetectorDefs::GOTTHARD:	digitalDetector = false;break;
-				case slsDetectorDefs::AGIPD:	digitalDetector = false;break;
-				default:
-					string detName = myDet->slsDetectorBase::getDetectorType(detType);
-					string errorMess = host+string(" has unknown detector type \"")+
-							detName+string("\". Exiting GUI.");
-					qDefs::Message(qDefs::CRITICAL,errorMess,"Main");
-					exit(-1);
-				}
-		setWindowTitle("SLS Detector GUI : "+
-				QString(slsDetectorBase::getDetectorType(detType).c_str())+	" - "+QString(host.c_str()));
+
+	//check if the detector is not even connected
+	string offline = myDet->checkOnline();
+	if(!offline.empty()){
+		qDefs::Message(qDefs::CRITICAL,string("<nobr>The detector(s)  <b>")+offline+string(" </b> is/are not connected.  Exiting GUI.</nobr>"),"Main");
+		cout << "The detector(s)  " << host << "  is/are not connected. Exiting GUI." << endl;
+		exit(-1);
+	}
+
+	// Check if type valid. If not, exit
+	slsDetectorDefs::detectorType detType = myDet->getDetectorsType();
+	switch(detType){
+	//digitalDetector decides if trimbits should be shown
+	case slsDetectorDefs::MYTHEN:	digitalDetector = true;	break;
+	case slsDetectorDefs::EIGER:	digitalDetector = true;	break;
+	case slsDetectorDefs::GOTTHARD:	digitalDetector = false;break;
+	case slsDetectorDefs::AGIPD:	digitalDetector = false;break;
+	default:
+		string detName = myDet->slsDetectorBase::getDetectorType(detType);
+		string errorMess = host+string(" has unknown detector type \"")+
+				detName+string("\". Exiting GUI.");
+		qDefs::Message(qDefs::CRITICAL,errorMess,"Main");
+		exit(-1);
+	}
+	setWindowTitle("SLS Detector GUI : "+
+			QString(slsDetectorBase::getDetectorType(detType).c_str())+	" - "+QString(host.c_str()));
 #ifdef VERBOSE
-		cout << endl << "Type : " << slsDetectorBase::getDetectorType(detType) << "\nDetector : " << host << endl;
+	cout << endl << "Type : " << slsDetectorBase::getDetectorType(detType) << "\nDetector : " << host << endl;
 #endif
-		myDet->setOnline(slsDetectorDefs::ONLINE_FLAG);
-	}
+	myDet->setOnline(slsDetectorDefs::ONLINE_FLAG);
+
 }
 
 

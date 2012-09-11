@@ -427,7 +427,12 @@ class multiSlsDetector  : public slsDetectorUtils {
   detectorSettings setSettings(detectorSettings isettings, int imod=-1);
 
 
-
+  /**
+   	Returns the trimbits from the detector's shared memmory
+   	\param retval is the array with the trimbits
+   	\returns the total number of channels for the detector
+   */
+  int getChanRegs(double* retval);
 
 
 

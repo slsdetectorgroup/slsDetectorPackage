@@ -882,6 +882,14 @@ typedef  struct sharedSlsDetector {
   //virtual detectorSettings setSettings(detectorSettings isettings, int imod=-1);
 
   /**
+   	gets the trimbits from shared memory *chanRegs
+   	\param retval is the array with the trimbits
+   	\returns the total number of channels for the detector
+   	\sa ::sls_detector_module
+   */
+  int getChanRegs(double* retval);
+
+  /**
 
   updates the shared memory receiving the data from the detector (without asking and closing the connection
   /returns OK

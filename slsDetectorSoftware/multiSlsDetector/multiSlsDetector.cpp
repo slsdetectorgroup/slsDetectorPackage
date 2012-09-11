@@ -1043,6 +1043,21 @@ slsDetectorDefs::detectorSettings multiSlsDetector::setSettings(detectorSettings
 
 
 
+int multiSlsDetector::getChanRegs(double* retval){
+  //nChansDet and currentNumChans is because of varying channel size per detector
+  int n = thisMultiDetector->numberOfChannels,nChansDet,currentNumChans=0;
+  double retval1[n];
+
+  for (int idet=0; idet<thisMultiDetector->numberOfDetectors; idet++) {
+    if (detectors[idet]) {
+      nChansDet = detectors[idet]->getChanRegs(retval1);
+
+      memcpy(retval + (currentNumChans * sizeof(double)), retval1 , nChansDet*sizeof(double));
+      currentNumChans += nChansDet;
+    }
+  }
+  return n;
+}
 
 
 

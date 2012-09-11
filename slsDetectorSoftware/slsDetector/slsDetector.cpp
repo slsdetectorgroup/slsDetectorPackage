@@ -2438,7 +2438,7 @@ int slsDetector::setModule(sls_detector_module module){
 };
 
 slsDetectorDefs::sls_detector_module  *slsDetector::getModule(int imod){
-
+cout<<"getModuke:"<<imod<<endl;
 #ifdef VERBOSE
   std::cout << "slsDetector get module " << std::endl;
 #endif 
@@ -2811,6 +2811,19 @@ slsDetectorDefs::detectorSettings slsDetector::setSettings( detectorSettings ise
   }
   return  getSettings(imod);
 };
+
+
+
+int slsDetector::getChanRegs(double* retval){
+  int n=getTotalNumberOfChannels();
+  //else the original array has 0 initialized
+  if(chanregs){
+    for (int i=0; i<n; i++)
+      retval[i] = (double) chanregs[i];
+  }
+  return n;
+}
+
 
 
 int slsDetector::updateDetectorNoWait() {

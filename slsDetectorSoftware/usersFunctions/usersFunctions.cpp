@@ -307,6 +307,9 @@ int defaultDisconnectChannels(void *d) {
 int defaultDataReadyFunc(detectorData* d,  void* p) {
 #ifdef VERBOSE
   printf("UUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUU Data received \n");
+  printf("Filename %s\n",d->fileName);
+  printf("Number of points %d (%d)\n",d->npoints,d->npy);
+  printf("UUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUU Finished \n");
 #endif
   return 0;
 }

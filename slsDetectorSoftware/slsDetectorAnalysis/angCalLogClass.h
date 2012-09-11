@@ -128,7 +128,7 @@ class angCalLogClass {
     strcpy(vars[2],"nmod");						\
     strcpy(vars[3],"angconv");						\
     strcpy(vars[4],"globaloff");					\
-    strcpy(vars[5],"fineoffoff");					\
+    strcpy(vars[5],"fineoff");						\
     strcpy(vars[6],"angdir");						\
     strcpy(vars[7],"ffdir");						\
     strcpy(vars[8],"flatfield");					\

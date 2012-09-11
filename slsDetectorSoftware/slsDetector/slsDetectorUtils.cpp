@@ -19,6 +19,8 @@ slsDetectorUtils::slsDetectorUtils()   {
 #endif
   acquisition_finished=NULL;
   acqFinished_p=NULL;
+  measurement_finished=NULL;
+  measFinished_p=NULL;
   registerGetPositionCallback(&defaultGetPosition, NULL);
   registerConnectChannelsCallback(&defaultConnectChannels,NULL);
   registerDisconnectChannelsCallback(&defaultDisconnectChannels,NULL);
@@ -28,6 +30,7 @@ slsDetectorUtils::slsDetectorUtils()   {
 #ifdef VERBOSE
 
   registerAcquisitionFinishedCallback(&dummyAcquisitionFinished,this);
+  registerMeasurementFinishedCallback(&dummyMeasurementFinished,this);
   cout << "done " << endl;
 #endif
 
@@ -47,11 +50,11 @@ void  slsDetectorUtils::acquire(int delflag){
 
   int measurement = (int)setTimer(slsDetectorDefs::MEASUREMENTS_NUMBER,-1);
 
-  for(int im=0;im<measurement;im++) {
-
   angCalLogClass *aclog=NULL;
   enCalLogClass *eclog=NULL;
-  
+    //  int lastindex=startindex, nowindex=startindex;
+  int connectChannels=0;
+
 #ifdef VERBOSE
   cout << "Acquire function "<< delflag << endl;
   cout << "Stopped flag is "<< stoppedFlag << delflag << endl;
@@ -60,8 +63,7 @@ void  slsDetectorUtils::acquire(int delflag){
   void *status;
 
 
-  //  int lastindex=startindex, nowindex=startindex;
-  int connectChannels=0;
+
 
   if ((*correctionMask&(1<< ANGULAR_CONVERSION)) || (*correctionMask&(1<< I0_NORMALIZATION)) || getActionMode(angCalLog) || (getScanMode(0)==positionScan)|| (getScanMode(0)==positionScan)) {
     if (connectChannels==0)
@@ -72,7 +74,6 @@ void  slsDetectorUtils::acquire(int delflag){
   }
   
 
-
   if (getActionMode(angCalLog))
     aclog=new angCalLogClass(this);
  
@@ -80,7 +81,6 @@ void  slsDetectorUtils::acquire(int delflag){
     eclog=new enCalLogClass(this);
   
   
-
   
   pthread_mutex_lock(&mp);
   resetFinalDataQueue();
@@ -89,6 +89,13 @@ void  slsDetectorUtils::acquire(int delflag){
   queuesize=0;
   posfinished=0;
   pthread_mutex_unlock(&mp);
+
+  for(int im=0;im<measurement;im++) {
+
+
+
+
+
 
 
 
@@ -314,7 +321,12 @@ void  slsDetectorUtils::acquire(int delflag){
      pthread_mutex_unlock(&mp);
      pthread_join(dataProcessingThread, &status);
    }
-
+   if (*stoppedFlag) {
+     break;
+   } 
+   if (measurement_finished)
+     measurement_finished(im,*fileIndex,measFinished_p);
+  }
    
    if (connectChannels) {
      if (disconnect_channels)
@@ -329,11 +341,9 @@ void  slsDetectorUtils::acquire(int delflag){
 
 
 
-   if (acquisition_finished) {
+   if (acquisition_finished)
      acquisition_finished(getCurrentProgress(),getDetectorStatus(),acqFinished_p);
-   }
 
-  }
 
 
 }

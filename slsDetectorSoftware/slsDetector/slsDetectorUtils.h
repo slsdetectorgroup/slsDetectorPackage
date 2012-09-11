@@ -544,6 +544,7 @@ class slsDetectorUtils :  public slsDetectorActions, public postProcessing {
   void registerGetI0Callback( double (*func)(int, void*),void *arg){get_i0=func;IOarg=arg;};
   
   void registerAcquisitionFinishedCallback(int( *func)(double,int, void*), void *pArg){acquisition_finished=func; acqFinished_p=pArg;};
+  void registerMeasurementFinishedCallback(int( *func)(int,int, void*), void *pArg){measurement_finished=func; measFinished_p=pArg;};
  
 
 
@@ -567,6 +568,7 @@ class slsDetectorUtils :  public slsDetectorActions, public postProcessing {
   int retrieveDetectorSetup(string const fname, int level=0);
 
   static int dummyAcquisitionFinished(double prog,int status,void* p){cout <<"Acquisition finished callback! " << prog << " " << status << endl; return 0;}
+  static int dummyMeasurementFinished(int im,int findex,void* p){cout <<"Measurement finished callback! " << im << " " << findex << endl; return 0;}
 
  protected:
 
@@ -594,7 +596,8 @@ class slsDetectorUtils :  public slsDetectorActions, public postProcessing {
   double (*get_i0)(int, void*);
   void *POarg,*CCarg,*DCarg,*GTarg,*GTNarg,*IOarg;
   int (*acquisition_finished)(double,int,void*);
-  void *acqFinished_p;
+  int (*measurement_finished)(int,int,void*);
+  void *acqFinished_p, *measFinished_p;
 
   
 };

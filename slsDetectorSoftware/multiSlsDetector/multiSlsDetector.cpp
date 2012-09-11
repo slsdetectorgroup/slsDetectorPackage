@@ -160,7 +160,7 @@ multiSlsDetector::multiSlsDetector(int id) :  slsDetectorUtils(), shmId(-1)
      /** sets angular conversion file to none */
      strcpy(thisMultiDetector->angConvFile,"none");
      /** set binsize*/
-     thisMultiDetector->binSize=0;
+     thisMultiDetector->binSize=0.001;
      thisMultiDetector->stoppedFlag=0;
      
      thisMultiDetector->threadedProcessing=1;

@@ -48,8 +48,6 @@ void  slsDetectorUtils::acquire(int delflag){
   progressIndex=0;
   *stoppedFlag=0;
 
-  int measurement = (int)setTimer(slsDetectorDefs::MEASUREMENTS_NUMBER,-1);
-
   angCalLogClass *aclog=NULL;
   enCalLogClass *eclog=NULL;
     //  int lastindex=startindex, nowindex=startindex;
@@ -90,7 +88,20 @@ void  slsDetectorUtils::acquire(int delflag){
   posfinished=0;
   pthread_mutex_unlock(&mp);
 
-  for(int im=0;im<measurement;im++) {
+  if (*threadedProcessing) {
+    startThread(delflag);
+  }
+#ifdef VERBOSE
+  cout << " starting thread " << endl;
+#endif
+
+
+  int nm=1;
+
+  if (timerValue[MEASUREMENTS_NUMBER]>0)
+	nm=timerValue[MEASUREMENTS_NUMBER];
+
+  for(int im=0;im<nm;im++) {
 
 
 
@@ -100,12 +111,9 @@ void  slsDetectorUtils::acquire(int delflag){
 
 
 #ifdef VERBOSE
-  cout << " starting thread " << endl;
+    cout << " starting measurement "<< im << " of " << nm << endl;
 #endif
 
-  if (*threadedProcessing) {
-    startThread(delflag);
-  }
  //cout << "data thread started " << endl;
   int np=1;
   if (*numberOfPositions>0) 
@@ -309,30 +317,36 @@ void  slsDetectorUtils::acquire(int delflag){
   *fileIndex=setLastIndex();
   if (*stoppedFlag==0) {
     executeAction(stopScript);
-  } 
+  } else
+    break;
 
 // loop measurements
 
 
-  // waiting for the data processing thread to finish!
-   if (*threadedProcessing) { 
-     pthread_mutex_lock(&mp);
-     jointhread=1;
-     pthread_mutex_unlock(&mp);
-     pthread_join(dataProcessingThread, &status);
-   }
+   if (measurement_finished)
+     measurement_finished(im,*fileIndex,measFinished_p);
+   
    if (*stoppedFlag) {
      break;
    } 
-   if (measurement_finished)
-     measurement_finished(im,*fileIndex,measFinished_p);
-  }
    
+
+  }
+
+  // waiting for the data processing thread to finish!
+  if (*threadedProcessing) { 
+    pthread_mutex_lock(&mp);
+    jointhread=1;
+    pthread_mutex_unlock(&mp);
+    pthread_join(dataProcessingThread, &status);
+  }
+ 
+  
    if (connectChannels) {
      if (disconnect_channels)
        disconnect_channels(DCarg);
    }
-
+   
    if (aclog)
      delete aclog;
 

@@ -569,7 +569,7 @@ int slsDetector::initializeDetectorSize(detectorType type) {
      /** sets angular conversion file to none */
      strcpy(thisDetector->angConvFile,"none");
      /** set binsize*/
-     thisDetector->binSize=0;
+     thisDetector->binSize=0.001;
      thisDetector->stoppedFlag=0;
      thisDetector->threadedProcessing=1;
 

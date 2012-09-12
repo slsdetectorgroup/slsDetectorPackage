@@ -430,9 +430,10 @@ class multiSlsDetector  : public slsDetectorUtils {
   /**
    	Returns the trimbits from the detector's shared memmory
    	\param retval is the array with the trimbits
+   	\param fromDetector is true if the trimbits shared memory have to be uploaded from detector
    	\returns the total number of channels for the detector
    */
-  int getChanRegs(double* retval);
+  int getChanRegs(double* retval,bool fromDetector);
 
 
 

@@ -2438,7 +2438,7 @@ int slsDetector::setModule(sls_detector_module module){
 };
 
 slsDetectorDefs::sls_detector_module  *slsDetector::getModule(int imod){
-cout<<"getModuke:"<<imod<<endl;
+
 #ifdef VERBOSE
   std::cout << "slsDetector get module " << std::endl;
 #endif 
@@ -2814,9 +2814,13 @@ slsDetectorDefs::detectorSettings slsDetector::setSettings( detectorSettings ise
 
 
 
-int slsDetector::getChanRegs(double* retval){
+int slsDetector::getChanRegs(double* retval,bool fromDetector){
   int n=getTotalNumberOfChannels();
-  //else the original array has 0 initialized
+  if(fromDetector){
+    for(int im=0;im<setNumberOfModules();im++)
+      getModule(im);
+  }
+  //the original array has 0 initialized
   if(chanregs){
     for (int i=0; i<n; i++)
       retval[i] = (double) chanregs[i];

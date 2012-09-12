@@ -884,10 +884,11 @@ typedef  struct sharedSlsDetector {
   /**
    	gets the trimbits from shared memory *chanRegs
    	\param retval is the array with the trimbits
+   	\param fromDetector is true if the trimbits shared memory have to be uploaded from detector
    	\returns the total number of channels for the detector
    	\sa ::sls_detector_module
    */
-  int getChanRegs(double* retval);
+  int getChanRegs(double* retval,bool fromDetector);
 
   /**
 

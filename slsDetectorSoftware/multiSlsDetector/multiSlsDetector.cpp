@@ -1131,6 +1131,7 @@ int multiSlsDetector::stopAcquisition(){
 	ret1=FAIL;
     }
   }
+  *stoppedFlag=1;
   return ret1;
 
 

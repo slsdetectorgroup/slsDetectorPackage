@@ -61,9 +61,8 @@ private:
 
 private slots:
 /** Sets the output directory
- * @param path output path to be set
  */
-void setOutputDir(const QString& path);
+void setOutputDir();
 
 /** Open dialog to choose the output directory */
 void browseOutputDir();

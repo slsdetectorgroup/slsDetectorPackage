@@ -504,7 +504,7 @@ void qTabPlot::EnableScanBox(){
 	int mode1 = myDet->getScanMode(1);
 
 	//if it was checked before or disabled before, it remembers to check it again
-	bool checkedBefore = (boxScan->isChecked()||(!boxScan->isEnabled()));
+	bool checkedBefore = boxScan->isChecked();//||(!boxScan->isEnabled()));
 
 
 	//none of these scan plotting options make sense if positions>0
@@ -548,7 +548,8 @@ void qTabPlot::EnableScanBox(){
 	//positions
 	if((positionsExist)&&(chkSuperimpose->isChecked())) chkSuperimpose->setChecked(false);
 	chkSuperimpose->setEnabled(!positionsExist);
-	boxFrequency->setEnabled(!positionsExist);
+	//box frequency should be enabled cuz its a normal 1d plot
+	boxFrequency->setEnabled(positionsExist);
 	myPlot->EnableAnglePlot(positionsExist);
 
 
@@ -673,8 +674,14 @@ void qTabPlot::SetScanArgument(){
 
 
 void qTabPlot::Refresh(){
-	SetFrequency();
-	if(!myPlot->isRunning()) EnableScanBox();
+	if(!myPlot->isRunning()){
+		connect(boxScan,	  SIGNAL(toggled(bool)),				   this, SLOT(EnableScanBox()));
+		SetFrequency();
+		EnableScanBox();
+	}else{
+		disconnect(boxScan,	  SIGNAL(toggled(bool)),				   this, SLOT(EnableScanBox()));
+		boxScan->setEnabled(false);
+	}
 }
 
 

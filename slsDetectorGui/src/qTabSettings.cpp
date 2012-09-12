@@ -18,7 +18,7 @@ using namespace std;
 //-------------------------------------------------------------------------------------------------------------------------------------------------
 
 qTabSettings::qTabSettings(QWidget *parent,multiSlsDetector*& detector):
-		QWidget(parent),myDet(detector){
+		QWidget(parent),myDet(detector),expertMode(false){
 
 	setupUi(this);
 	SetupWidgetWindow();
@@ -170,7 +170,7 @@ void qTabSettings::setSettings(int index){
 	if((detType==slsDetectorDefs::GOTTHARD)||(detType==slsDetectorDefs::AGIPD)){
 		lblThreshold->setEnabled(false);
 		spinThreshold->setEnabled(false);
-	}else{
+	}else{//mythen or eiger
 		if((index==Undefined)||(index==Uninitialized)){
 
 			lblThreshold->setEnabled(false);
@@ -179,8 +179,12 @@ void qTabSettings::setSettings(int index){
 			lblThreshold->setEnabled(true);
 			spinThreshold->setEnabled(true);
 			SetEnergy();
+			//also update trimbits plot
+			if(expertMode)	emit UpdateTrimbitSignal(0);
 		}
 	}
+
+
 }
 
 //-------------------------------------------------------------------------------------------------------------------------------------------------
@@ -234,10 +238,10 @@ void qTabSettings::SetDynamicRange(int index){
 
 
 void qTabSettings::SetEnergy(){
+	int index = spinThreshold->value();
 #ifdef VERBOSE
 		cout << "Settings threshold energy to "<< index << endl;
 #endif
-		int index = spinThreshold->value();
 		myDet->setThresholdEnergy(index);
 		int ret = (int)myDet->getThresholdEnergy();
 		if((ret-index)>200){
@@ -256,7 +260,11 @@ void qTabSettings::SetEnergy(){
 void qTabSettings::Refresh(){
 	// Settings
 	SetupDetectorSettings();
+	//changin the combo settings also plots the trimbits for mythen and eiger, so disconnect
+	disconnect(comboSettings, 		SIGNAL(currentIndexChanged(int)),	this, SLOT(setSettings(int)));
 	comboSettings->setCurrentIndex(myDet->getSettings());
+	connect(comboSettings, 		SIGNAL(currentIndexChanged(int)),	this, SLOT(setSettings(int)));
+
 	// Number of Modules
 	spinNumModules->setValue(myDet->setNumberOfModules());
 

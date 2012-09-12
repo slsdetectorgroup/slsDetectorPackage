@@ -6,6 +6,7 @@
  */
 #include "qTabAdvanced.h"
 #include "qDefs.h"
+#include "qDrawPlot.h"
 /** Project Class Headers */
 #include "slsDetector.h"
 #include "multiSlsDetector.h"
@@ -19,7 +20,8 @@ using namespace std;
 //-------------------------------------------------------------------------------------------------------------------------------------------------
 
 
-qTabAdvanced::qTabAdvanced(QWidget *parent,multiSlsDetector*& detector):QWidget(parent),myDet(detector){
+qTabAdvanced::qTabAdvanced(QWidget *parent,multiSlsDetector*& detector, qDrawPlot*& plot):
+		QWidget(parent),myDet(detector),myPlot(plot),btnGroup(NULL){
 	setupUi(this);
 	SetupWidgetWindow();
 	Initialization();
@@ -52,7 +54,12 @@ void qTabAdvanced::SetupWidgetWindow(){
 
 		boxTrimming->setChecked(false);
 		SetOptimize(false);
+
+		btnGroup = new QButtonGroup(this);
+		btnGroup->addButton(btnRefresh,0);
+		btnGroup->addButton(btnGetTrimbits,1);
 	}
+
 }
 
 
@@ -88,7 +95,8 @@ void qTabAdvanced::Initialization(){
 	connect(btnStart,		SIGNAL(clicked()),	this, SLOT(StartTrimming()));
 
 	//refresh
-	connect(btnRefresh,		SIGNAL(clicked()),	this, SLOT(UpdatePlot()));
+	connect(btnGroup,		SIGNAL(buttonClicked(int)),	this, SLOT(UpdateTrimbitPlot(int)));
+
 
 }
 
@@ -331,7 +339,7 @@ void qTabAdvanced::StartTrimming(){
 			qDefs::Message(qDefs::INFORMATION,"The Trimbits have been saved successfully.","Advanced");
 		else qDefs::Message(qDefs::WARNING,string("Could not Save the Trimbits to file:\n")+dispFile->text().toAscii().constData(),"Advanced");
 		//updates plots
-		UpdatePlot();
+		myPlot->UpdateTrimbitPlot(false,radioHistogram->isChecked());
 	}
 	else
 		qDefs::Message(qDefs::WARNING,"Atleast 1 channel could not be trimmed.","Advanced");
@@ -341,35 +349,16 @@ void qTabAdvanced::StartTrimming(){
 //-------------------------------------------------------------------------------------------------------------------------------------------------
 
 
-void qTabAdvanced::UpdatePlot(){
-#ifdef VERBOSE
-	cout << "Updating Plot" << endl;
-#endif
-
-	int nPixelsX = myDet->getTotalNumberOfChannels();
-
-	int *histXAxis = new int[nPixelsX];
-	int *histYAxis = new int[100];
-	for(int i=0;i<nPixelsX;i++) histXAxis[i] = i;
-
-	int channelsPerDetector;
-/*
-	for(int det=0;det<myDet->getNumberOfDetectors();det++){
-		slsDetector *s = myDet->getSlsDetector(det);
-		channelsPerDetector=s->getTotalNumberOfChannels();
-		if(s->chanregs){
-			for(int i=0;i<channelsPerDetector;i++){
-				memcpy(histYAxis + (det*channelsPerDetector*sizeof(int)),s->chanregs,channelsPerDetector*sizeof(int));
-			}
-		}
-	}
-*/
-	cout<<"histyaxis[500]:"<<histYAxis[500]<<endl;
-
+void qTabAdvanced::UpdateTrimbitPlot(int id){
+	//refresh
+	if(!id)	myPlot->UpdateTrimbitPlot(false,radioHistogram->isChecked());
+	//from detector
+	else	myPlot->UpdateTrimbitPlot(true,radioHistogram->isChecked());
 }
 
 
 //-------------------------------------------------------------------------------------------------------------------------------------------------
+
 
 void qTabAdvanced::Refresh(){
 	//disconnect

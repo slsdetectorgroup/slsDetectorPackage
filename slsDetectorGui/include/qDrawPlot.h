@@ -101,6 +101,12 @@ public:
 	 *  @param enable enable */
 	void setTriggerEnabled(bool enable){isTriggerEnabled = enable;};
 
+	/** Updates the trimbit plot
+	 * @param fromDetector is true if the trimbits should be loaded from detector
+	 * @param Histogram true if histogram, else data graph
+	 * returns ok/fail
+	 * */
+	int UpdateTrimbitPlot(bool fromDetector,bool Histogram);
 
 
 
@@ -110,7 +116,7 @@ public slots:
  @param i is 1 for 1D, else 2D plot */
 void SelectPlot(int i=2);
 /** To select 1D plot */
-void Select1DPlot() {SelectPlot(1);}
+void Select1DPlot() {Clear1DPlot();SelectPlot(1);}
 /** To select 2D plot */
 void Select2DPlot() {SelectPlot(2);}
 /** To clear plot */
@@ -124,7 +130,7 @@ void SaveClones();
 /** To Save plot */
 void SavePlot();
 /** Save all plots **/
-void SaveAll(bool enable);
+void SaveAll(bool enable){saveAll = enable;};
 /**	Sets persistency from plot tab */
 void SetPersistency(int val);
 /**	sets style of plot to lines*/
@@ -132,9 +138,10 @@ void SetLines(bool enable){lines = enable;};
 /**	sets markers */
 void SetMarkers(bool enable){markers = enable;};
 /** sets the scan argument to prepare the plot*/
-void SetScanArgument(int scanArg){scanArgument = scanArg;};
+void SetScanArgument(int scanArg);
 /** sets stop_signal to true */
 void StopAcquisition(){	stop_signal = true; };
+
 
 
 
@@ -163,29 +170,53 @@ int    UnlockLastImageArray()		{return pthread_mutex_unlock(&last_image_complete
 int    StartDaqForGui() 		  	{return StartOrStopThread(1) ? 1:0;}
 /**	Stops the acquisition  */
 int    StopDaqForGui() 			  	{return StartOrStopThread(0) ? 0:1;}
+
 /** Starts/stops Acquisition Thread */
 bool   StartOrStopThread(bool start);
-/** Sets up measurement each time */
-void SetupMeasurement();
+
+/** Sets up measurement each time
+ * @param currentIndex file index given by detector class
+ * */
+void SetupMeasurement(int currentIndex);
+
 /**	Resets the acquisition parameter like lastimagenumber */
 int    ResetDaqForGui();
+
 /**	The function which is called when start acquisition thread is created */
 static void* DataStartAcquireThread(void *this_pointer);
+
 /**	This is called by the detector class to copy the data it jus acquired */
 static int GetDataCallBack(detectorData *data, void *this_pointer);
+
 /**	This is called by the GetDataCallBack function to copy the data */
 int GetData(detectorData *data);
+
 /** This is called by detector class when acquisition is finished
  * @param currentProgress current progress of measurement
  * @param detectorStatus current status of the detector
  * @param this_pointer is the pointer pointing to this object
  * */
 static int GetAcquisitionFinishedCallBack(double currentProgress,int detectorStatus, void *this_pointer);
-/** This is called by detector class when acquisition is finished
+
+/** This is called by static function when acquisition is finished
  * @param currentProgress current progress of measurement
  * @param detectorStatus current status of the detector
  * */
 int AcquisitionFinished(double currentProgress,int detectorStatus);
+
+/** This is called by detector class when a measurement is finished
+ * @param currentMeasurementIndex current measurement index
+ * @param fileIndex current file index
+ * @param this_pointer is the pointer pointing to this object
+ * */
+static int GetMeasurementFinishedCallBack(int currentMeasurementIndex, int fileIndex, void *this_pointer);
+
+/** This is called by the static function when meausrement is finished
+ * @param currentMeasurementIndex current measurement index
+ * @param fileIndex current file index
+ * */
+int MeasurementFinished(int currentMeasurementIndex, int fileIndex);
+
 /** Saves all the plots. All sets saveError to true if not saved.*/
 void SavePlotAutomatic();
 /** Sets the style of the 1d plot */
@@ -199,24 +230,32 @@ void SetStyle(SlsQtH1D*  h){
 
 
 private slots:
-/** To update plot */
+/** To update plot
+ * */
 void UpdatePlot();
-/** To stop updating plot */
+/** To stop updating plot
+ * */
 void StopUpdatePlot();
 /** To start or stop acquisition
- * @param start is 1 to start and 0 to stop acquisition */
+ * @param start is 1 to start and 0 to stop acquisition
+ * */
 void StartDaq(bool start);
 /** To set the reference to zero after closing a clone
- * @param id is the id of the clone */
+ * @param id is the id of the clone
+ * */
 void CloneCloseEvent(int id);
 /**After a pause, the gui is allowed to collect the data
- * this is called when it is over */
+ * this is called when it is over
+ * */
 void UpdatePause(){data_pause_over=true;};
 /** Shows the first save error message while automatic saving
- * @param fileName file name of the first file that it tried to save.*/
+ * @param fileName file name of the first file that it tried to save.
+ * */
 void ShowSaveErrorMessage(QString fileName);
-/**Shows an error message when acquisition stopped unexpectedly*/
-void ShowAcquisitionErrorMessage();
+/**Shows an error message when acquisition stopped unexpectedly
+ * @param status is the status of the detector
+ * */
+void ShowAcquisitionErrorMessage(QString status);
 
 
 private:
@@ -330,10 +369,6 @@ double*	     histXAngleAxis;
 double*	     histYAngleAxis;
 /**	Current Image Values in 2D */
 double*      lastImageArray;
-/**	temporary Y Axis value in 1D */
-double* 	 yvalues[MAX_1DPLOTS];
-/**	temporary Image Values in 2D */
-double* 	 image_data;
 
 /**persistency to be reached*/
 int persistency;
@@ -391,6 +426,13 @@ bool anglePlot;
 /** prevents err msg displaying twice when detector stopped, "transmitting" */
 bool alreadyDisplayed;
 
+/**saves the file path and file name, not to access shared memory while running*/
+QString filePath;
+QString fileName;
+
+/**	Max Number of Clone Windows */
+static const int TRIM_HISTOGRAM_XMAX = 600;
+
 
 
 signals:
@@ -402,7 +444,7 @@ void SetZRangeSignal(double,double);
 void EnableZRangeSignal(bool);
 void SetCurrentMeasurementSignal(int);
 void saveErrorSignal(QString);
-void AcquisitionErrorSignal();
+void AcquisitionErrorSignal(QString);
 };
 
 

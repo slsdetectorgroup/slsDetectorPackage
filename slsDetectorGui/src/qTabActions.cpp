@@ -354,19 +354,24 @@ void qTabActions::DeletePosition(){
 
 void qTabActions::EnablePositions(bool enable){
 #ifdef VERBOSE
-	cout << "\nEnable Positions: " << enable << endl;
+	cout << "Enable Positions: " << enable << endl;
 #endif
 	if(enable){
 		lblName[NumPositions]->setEnabled(true);
 		btnExpand[NumPositions]->setEnabled(true);
 	}else{
-		//to collapse if it was expanded
-		if(btnExpand[NumPositions]->text()=="-")
-			Expand(group->button(NumPositions));
+		//deletes all positions
 		for(int i=0;i<comboPos->count();i++)
 			comboPos->removeItem(i);
 		cout<<"Number of Positions set to :"<<myDet->getPositions()<<endl;
 		lblName[NumPositions]->setPalette(lblName[NumPositions-1]->palette());
+		//to collapse if it was expanded
+		if(btnExpand[NumPositions]->isChecked()){
+			disconnect(group,				SIGNAL(buttonClicked(QAbstractButton*)),	this,SLOT(Expand(QAbstractButton*)));
+			btnExpand[NumPositions]->setChecked(false);
+			connect(group,				SIGNAL(buttonClicked(QAbstractButton*)),	this,SLOT(Expand(QAbstractButton*)));
+			Expand(group->button(NumPositions));
+		}
 		lblName[NumPositions]->setEnabled(false);
 		btnExpand[NumPositions]->setEnabled(false);
 	}
@@ -378,7 +383,7 @@ void qTabActions::EnablePositions(bool enable){
 
 void qTabActions::Refresh(){
 #ifdef VERBOSE
-	cout << "\nUpdating all action widgets " << endl;
+	cout << "\nUpdating all action widgets: " << endl;
 #endif
 	if((detType == slsDetectorDefs::MYTHEN) || (detType == slsDetectorDefs::GOTTHARD)){
 		//positions is enabled only if angular conversion is enabled
@@ -415,7 +420,7 @@ void qTabActions::Refresh(){
 
 
 #ifdef VERBOSE
-			cout << "Updated position widget\tnum:" << numPos << endl << endl;
+			cout << "Updated position widget\tnum:" << numPos << "\t***" << endl;
 #endif
 		}
 	}
@@ -423,7 +428,7 @@ void qTabActions::Refresh(){
 		scanWidget[i]->Refresh();
 	for(int i=0;i<qActionsWidget::NUM_ACTION_WIDGETS;i++)
 		actionWidget[i]->Refresh();
-
+	cout << endl;
 	UpdateCollapseColors();
 }
 

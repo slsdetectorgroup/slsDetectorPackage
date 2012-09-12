@@ -103,7 +103,7 @@ void qDetectorMain::SetUpWidgetWindow(){
 	tab_plot 			=  new qTabPlot			(this,	myDet,myPlot);		cout<<"Plot ready"<<endl;
 	tab_actions			=  new qTabActions		(this,	myDet);				cout<<"Actions ready"<<endl;
 	tab_settings 		=  new qTabSettings		(this,	myDet);				cout<<"Settings ready"<<endl;
-	tab_advanced 		=  new qTabAdvanced		(this,	myDet);				cout<<"Advanced ready"<<endl;
+	tab_advanced 		=  new qTabAdvanced		(this,	myDet,myPlot);				cout<<"Advanced ready"<<endl;
 	tab_debugging 		=  new qTabDebugging	(this,	myDet);				cout<<"Debugging ready"<<endl;
 	tab_developer 		=  new qTabDeveloper	(this,	myDet);				cout<<"Developer ready"<<endl;
 	//	creating the scroll area widgets for the tabs
@@ -229,8 +229,8 @@ void qDetectorMain::Initialization(){
 	connect(tabs,			SIGNAL(currentChanged(int)),	this, SLOT(Refresh(int)));//( QWidget*)));
 		//	Measurement tab
 		connect(tab_measurement,	SIGNAL(StartSignal()),				this,SLOT(EnableTabs()));
+		connect(tab_measurement,	SIGNAL(StartSignal()),				tab_plot,SLOT(Refresh()));
 		connect(tab_measurement,	SIGNAL(StopSignal()),				myPlot,SLOT(StopAcquisition()));
-		connect(tab_measurement,	SIGNAL(StopSignal()),				this,SLOT(EnableTabs()));
 		connect(tab_measurement,	SIGNAL(CheckPlotIntervalSignal()),	tab_plot,SLOT(SetFrequency()));
 		connect(tab_measurement,	SIGNAL(EnableNthFrameSignal(bool)),	tab_plot,SLOT(EnableNthFrame(bool)));
 		// Data Output Tab
@@ -239,10 +239,13 @@ void qDetectorMain::Initialization(){
 		connect(tab_plot,			SIGNAL(DisableZoomSignal(bool)),	this,SLOT(SetZoomToolTip(bool)));
 		// Actions tab (also for angles)
 		connect(tab_actions,		SIGNAL(EnableScanBox()),			tab_plot,SLOT(EnableScanBox()));
+		//settings to advanced tab(int=id is always 0 to only refresh)
+		connect(tab_settings,		SIGNAL(UpdateTrimbitSignal(int)),		tab_advanced,SLOT(UpdateTrimbitPlot(int)));
 // Plotting
 	// When the acquisition is finished, must update the meas tab
 	connect(myPlot,	SIGNAL(UpdatingPlotFinished()),				this,				SLOT(EnableTabs()));
 	connect(myPlot,	SIGNAL(UpdatingPlotFinished()),				tab_measurement,	SLOT(UpdateFinished()));
+	connect(myPlot,	SIGNAL(UpdatingPlotFinished()),				tab_plot,			SLOT(Refresh()));
 	connect(myPlot,	SIGNAL(SetCurrentMeasurementSignal(int)),	tab_measurement,	SLOT(SetCurrentMeasurement(int)));
 // menubar
 	// Modes Menu
@@ -287,8 +290,10 @@ void qDetectorMain::EnableModes(QAction *action){
 		actionLoadCalibration->setVisible(enable);
 		actionSaveCalibration->setVisible(enable);
 
-		if(myDet->getDetectorsType()==slsDetectorDefs::MYTHEN)
+		if(digitalDetector){
 			tab_measurement->SetExpertMode(enable);
+			tab_settings->SetExpertMode(enable);
+		}
 
 
 #ifdef VERBOSE
@@ -476,7 +481,14 @@ void qDetectorMain::Refresh(int index){
 		tabs->setCurrentIndex((index++)<(tabs->count()-1)?index:Measurement);
 	else{
 		switch(tabs->currentIndex()){
-		case Measurement:	if(!myPlot->isRunning()) tab_measurement->Refresh();	break;
+		case Measurement:
+			if(!myPlot->isRunning()) {
+				tab_measurement->Refresh();
+				//to recover from a trimbit plot mode
+				tab_plot->Refresh();
+			}
+			break;
+
 		case Settings:		tab_settings->Refresh();	break;
 		case DataOutput:	tab_dataoutput->Refresh();	break;
 		case Plot:			tab_plot->Refresh();		break;
@@ -558,6 +570,17 @@ void qDetectorMain::EnableTabs(){
 	tabs->setTabEnabled(Settings,enable);
 	tabs->setTabEnabled(Messages,enable);
 
+	//actions check
+	actionOpenSetup->setEnabled(enable);
+	actionSaveSetup->setEnabled(enable);
+	actionOpenConfiguration->setEnabled(enable);
+	actionSaveConfiguration->setEnabled(enable);
+	actionMeasurementWizard->setEnabled(enable);
+	actionDebug->setEnabled(enable);
+	actionBeamline->setEnabled(enable);
+	actionExpert->setEnabled(enable);
+
+
 	// special tabs
 	if(enable==false){
 		tabs->setTabEnabled(Debugging,enable);
@@ -589,6 +612,7 @@ void qDetectorMain::EnableTabs(){
 		if(isDeveloper)
 			tabs->setTabEnabled(Developer,enable);
 	}
+
 }
 
 

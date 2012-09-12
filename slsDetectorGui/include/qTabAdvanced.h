@@ -13,6 +13,8 @@
 /** Project Class Headers */
 class multiSlsDetector;
 #include "sls_detector_defs.h"
+/** Qt Project Class Headers */
+class qDrawPlot;
 /** Qt Include Header */
 #include <QStackedLayout>
 
@@ -26,8 +28,9 @@ public:
 	/** \short The constructor
 	 *    @param parent is the parent tab widget
 	 *    @param detector is the detector returned from the detector tab
+	 *    @param plot plot object reference
 	 */
-	qTabAdvanced(QWidget *parent,multiSlsDetector*& detector);
+	qTabAdvanced(QWidget *parent,multiSlsDetector*& detector, qDrawPlot*& plot);
 
 	/** Destructor
 	 */
@@ -90,13 +93,17 @@ private slots:
 	 */
 	void StartTrimming();
 
-	/**Updates plot from shared memory
+	/** Updates the plot with trimbits from detector/shared memory
 	 */
-	void UpdatePlot();
+	void UpdateTrimbitPlot(int id);
 
 private:
 	/** The sls detector object */
 	multiSlsDetector *myDet;
+	/** The Plot widget	 */
+	qDrawPlot *myPlot;
+
+	QButtonGroup 	*btnGroup;
 
 	/** Tool Tip for the output dir */
 	QString 	outputDirTip;

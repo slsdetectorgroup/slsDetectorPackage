@@ -38,9 +38,7 @@ public:
 	 */
 	~qTabPlot();
 
-	/** To refresh and update widgets
-	 */
-	void Refresh();
+
 
 
 private:
@@ -110,6 +108,11 @@ void EnableNthFrame(bool enable){enableNFrame = enable;};
 /** Sets the scan argument of the plot
  */
 void SetScanArgument();
+
+/** To refresh and update widgets
+ */
+void Refresh();
+
 
 
 private slots:

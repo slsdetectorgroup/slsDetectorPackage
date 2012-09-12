@@ -46,7 +46,7 @@ qTabDataOutput::~qTabDataOutput(){
 //-------------------------------------------------------------------------------------------------------------------------------------------------
 
 
-void qTabDataOutput::SetupWidgetWindow(){cout<<"in here"<<endl;
+void qTabDataOutput::SetupWidgetWindow(){
 	// Detector Type
 	detType=myDet->getDetectorsType();
 
@@ -74,7 +74,7 @@ void qTabDataOutput::SetupWidgetWindow(){cout<<"in here"<<endl;
 
 void qTabDataOutput::Initialization(){
 	//output dir
-	connect(dispOutputDir,		SIGNAL(textChanged(const QString&)), 	this, 	SLOT(setOutputDir(const QString&)));
+	connect(dispOutputDir,		SIGNAL(editingFinished()), 	this, 	SLOT(setOutputDir()));
 	connect(btnOutputBrowse,	SIGNAL(clicked()), 						this, 	SLOT(browseOutputDir()));
 	//flat field correction
 	connect(chkFlatField,		SIGNAL(toggled(bool)), 		this, 	SLOT(SetFlatField()));
@@ -93,11 +93,20 @@ void qTabDataOutput::Initialization(){
 //-------------------------------------------------------------------------------------------------------------------------------------------------
 
 
-void qTabDataOutput::setOutputDir(const QString& path){
+void qTabDataOutput::setOutputDir(){
+	QString path = dispOutputDir->text();
+
+	//gets rid of the end '/'s
+	disconnect(dispOutputDir,		SIGNAL(editingFinished()), 	this, 	SLOT(setOutputDir()));
+	while(path.endsWith('/')) path.chop(1);
+	dispOutputDir->setText(path);
+	connect(dispOutputDir,		SIGNAL(editingFinished()), 	this, 	SLOT(setOutputDir()));
+
 	myDet->setFilePath(string(path.toAscii().constData()));
 #ifdef VERBOSE
 	cout << "Output Directory changed to :"<<myDet->getFilePath() << endl;
 #endif
+
 }
 
 

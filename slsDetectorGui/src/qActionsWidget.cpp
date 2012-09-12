@@ -204,7 +204,7 @@ void qActionsWidget::Refresh(){
 	cout << "Updated\taction:" << id << "\t"
 			"mode:"<<mode<<"\t"
 			"script:" << script << "\t"
-			"parameter:" << parameter << endl << endl;
+			"parameter:" << parameter << "\t***" << endl;
 #endif
 }
 

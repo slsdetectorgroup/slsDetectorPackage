@@ -1028,7 +1028,7 @@ void qScanWidget::Refresh(){
 			"numSteps:" << actualNumSteps << "\t"
 			//"values:" << arrSteps << "\t"
 			"parameter:" << parameter << "\t"
-			"precision:" << precision << endl << endl;
+			"precision:" << precision << "\t***" << endl;
 #endif
 }
 

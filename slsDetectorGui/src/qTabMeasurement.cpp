@@ -306,6 +306,7 @@ void qTabMeasurement::startStopAcquisition(){
 		progressTimer->start(100);
 
 		emit StartSignal();
+
 		myPlot->StartStopDaqToggle();
 	}else{
 #ifdef VERBOSE
@@ -326,14 +327,16 @@ void qTabMeasurement::startStopAcquisition(){
 
 
 void qTabMeasurement::UpdateFinished(){
-	disconnect(btnStartStop,SIGNAL(clicked()),this,SLOT(startStopAcquisition()));
-	btnStartStop->setText("Start");
-	btnStartStop->setIcon(*iconStart);
-	btnStartStop->setChecked(false);
-	Enable(1);
-	connect(btnStartStop,SIGNAL(clicked()),this,SLOT(startStopAcquisition()));
-	UpdateProgress();
-	progressTimer->stop();
+	if(btnStartStop->isChecked()){
+		disconnect(btnStartStop,SIGNAL(clicked()),this,SLOT(startStopAcquisition()));
+		btnStartStop->setText("Start");
+		btnStartStop->setIcon(*iconStart);
+		btnStartStop->setChecked(false);
+		Enable(1);
+		connect(btnStartStop,SIGNAL(clicked()),this,SLOT(startStopAcquisition()));
+		UpdateProgress();
+		progressTimer->stop();
+	}
 }
 
 
@@ -723,20 +726,22 @@ void qTabMeasurement::EnableFileWrite(bool enable){
 
 
 void qTabMeasurement::Refresh(){
-	//Number of measurements
-	spinNumMeasurements->setValue((int)myDet->setTimer(slsDetectorDefs::MEASUREMENTS_NUMBER,-1));
-	//File Name
-	dispFileName->setText(QString(myDet->getFileName().c_str()));
-	//File Index
-	spinIndex->setValue(myDet->getFileIndex());
-	//progress label index
-	lblProgressIndex->setText(QString::number(myDet->getFileIndex()));
-	//Timing mode*
-	SetupTimingMode();
+	if(!myPlot->isRunning()){
+		//Number of measurements
+		spinNumMeasurements->setValue((int)myDet->setTimer(slsDetectorDefs::MEASUREMENTS_NUMBER,-1));
+		//File Name
+		dispFileName->setText(QString(myDet->getFileName().c_str()));
+		//File Index
+		spinIndex->setValue(myDet->getFileIndex());cout<<"file index:"<<myDet->getFileIndex()<<endl;
+		//progress label index
+		lblProgressIndex->setText(QString::number(myDet->getFileIndex()));
+		//Timing mode*
+		SetupTimingMode();
 
-	// to let qdrawplot know that triggers or frames are used
-	myPlot->setFrameEnabled(lblNumFrames->isEnabled());
-	myPlot->setTriggerEnabled(lblNumTriggers->isEnabled());
+		// to let qdrawplot know that triggers or frames are used
+		myPlot->setFrameEnabled(lblNumFrames->isEnabled());
+		myPlot->setTriggerEnabled(lblNumTriggers->isEnabled());
+	}
 
 }
 

@@ -37,6 +37,13 @@ public:
 	 */
 	void Refresh();
 
+	/** To enable expert mode
+	 * @param enable to enable if true
+	 */
+	void SetExpertMode(bool enable){expertMode =  enable;};
+
+
+
 
 private:
 	/** The sls detector object */
@@ -45,7 +52,8 @@ private:
 	/** detector type */
 	slsDetectorDefs::detectorType detType;
 
-
+	/** expert mode */
+	bool expertMode;
 
 	enum{Standard,Fast,HighGain,DynamicGain,LowGain,MediumGain,VeryHighGain,Undefined,Uninitialized,NumSettings};
 
@@ -89,6 +97,11 @@ void SetDynamicRange(int index);
 /** Set threshold energy
  */
 void SetEnergy();
+
+
+signals:
+/**Update Trimbits after Set Settings */
+void UpdateTrimbitSignal(int);
 };
 
 

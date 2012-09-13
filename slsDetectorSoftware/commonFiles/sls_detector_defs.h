@@ -349,6 +349,8 @@ enum channelRegisterBit {
   ANALOG_SIGNAL_ENABLE=0x200, /**< mask of the analogue output enable bit  */
   CALIBRATION_ENABLE=0x300, /**< mask of the calibration input enable bit  */
 };
+
+#define TRIMBITMASK 0x3f
 /** 
    meaning of the chip register bits
    \see ::sls_detector_chip

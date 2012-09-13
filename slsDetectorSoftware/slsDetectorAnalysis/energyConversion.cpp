@@ -153,7 +153,7 @@ slsDetectorDefs::sls_detector_module* energyConversion::readSettingsFile(string 
 #ifdef VERBOSE
 		//		 std::cout<< "trimbits " << ival ;
 #endif
-		 myMod->chanregs[ichip*nch+ichan]|=ival&0x3f;
+		 myMod->chanregs[ichip*nch+ichan]|=ival&TRIMBITMASK;
 		 break;
 	      case 1:
 #ifdef VERBOSE
@@ -297,7 +297,7 @@ int energyConversion::writeSettingsFile(string fname, detectorType myDetectorTyp
 	  outfile << names[idac] << " " << iv1 << std::endl;
 	  for (ichan=0; ichan<nch; ichan++) {
 	    iv=mod.chanregs[ichip*nch+ichan];
-	    iv1= (iv&0x3f);
+	    iv1= (iv&TRIMBITMASK);
 	    outfile <<iv1 << " ";
 	    nb=9;
 	    iv1=((iv&(1<<nb))>>nb);

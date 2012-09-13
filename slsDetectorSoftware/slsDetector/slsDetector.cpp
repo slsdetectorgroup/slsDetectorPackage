@@ -2823,7 +2823,7 @@ int slsDetector::getChanRegs(double* retval,bool fromDetector){
   //the original array has 0 initialized
   if(chanregs){
     for (int i=0; i<n; i++)
-      retval[i] = (double) chanregs[i];
+      retval[i] = (double) (chanregs[i] & TRIMBITMASK);
   }
   return n;
 }

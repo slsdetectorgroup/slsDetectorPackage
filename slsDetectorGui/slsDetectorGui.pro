@@ -6,7 +6,7 @@ UI_HEADERS_DIR		= 		forms/include
 RESOURCES   		+=  	icons.qrc
 
 
-DEFINES 			+= 		VERBOSE  #VERYVERBOSE #DACS_INT
+DEFINES 			+= 		VERBOSE  DACS_INT #VERYVERBOSE
 							
 
 target.path 		+= 		$(DESTDIR)

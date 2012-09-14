@@ -155,8 +155,9 @@ void qDetectorMain::SetUpWidgetWindow(){
 	dockWidgetPlot->setFeatures(QDockWidget::NoDockWidgetFeatures);
 	tabs->setTabEnabled(Developer,isDeveloper);
 	if(!digitalDetector) actionExpert->setEnabled(false);
-
-
+#ifdef VERBOSE
+	cout << "Advanced Enabled:" << digitalDetector << endl;
+#endif
 // Other setup
 	//Height of plot and central widget
 	heightPlotWindow = dockWidgetPlot->size().height();

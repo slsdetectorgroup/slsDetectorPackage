@@ -1220,7 +1220,7 @@ int qDrawPlot::UpdateTrimbitPlot(bool fromDetector,bool Histogram){
 			for(i=0;i<actualPixelsX;i++){
 				if((temp[i]<=TRIM_HISTOGRAM_XMAX))/**shouldnt be the case*/
 					histYAxis[0][(int)temp[i]]+=1;
-				//else cout<<"OUT OF BOUNDS:"<<i<<"-"<<temp[i]<<endl;
+				else cout<<"OUT OF BOUNDS:"<<i<<"-"<<temp[i]<<endl;
 			}
 
 /*			for(i=0;i<TRIM_HISTOGRAM_XMAX;i++)

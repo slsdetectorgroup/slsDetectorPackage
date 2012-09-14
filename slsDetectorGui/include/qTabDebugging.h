@@ -12,8 +12,9 @@
 #include "ui_form_tab_debugging.h"
 /** Project Class Headers */
 class multiSlsDetector;
+class slsDetector;
 /** Qt Include Headers */
-
+#include <QTreeWidget>
 /** C++ Include Headers */
 #include "sls_detector_defs.h"
 
@@ -39,12 +40,6 @@ public:
 	void Refresh();
 
 private:
-	/** The sls detector object */
-	multiSlsDetector *myDet;
-
-	/** detector type */
-	slsDetectorDefs::detectorType detType;
-
 	/** Sets up the widget
 	 */
 	void SetupWidgetWindow();
@@ -54,6 +49,50 @@ private:
 	void Initialization();
 
 
+
+private slots:
+	/** Updates the module list depending on current detector
+ 	*/
+	void UpdateModuleList();
+
+	/** Updates the status depending on current detector
+ 	*/
+	void UpdateStatus();
+
+	/** Gets id and versions etc
+ 	*/
+	void GetInfo();
+
+	/** Sets id and versions on the display widget
+ 	*/
+	void SetParameters(QTreeWidgetItem *item);
+
+	/** Test detector and module
+ 	*/
+	void TestDetector();
+
+private:
+	/** The multi sls detector object */
+	multiSlsDetector *myDet;
+
+	/** detector type */
+	slsDetectorDefs::detectorType detType;
+
+	/**sls detecctor object */
+	slsDetector *det;
+
+	/** Tree Widget displaying the detectors, modules */
+	QTreeWidget *treeDet;
+	/** Widget displaying the serial numbers, mac addresses etc */
+	QFrame *dispFrame;
+	QLabel *lblDetectorId;
+	QLabel *lblDetectorSerial;
+	QLabel *lblDetectorFirmware;
+	QLabel *lblDetectorSoftware;
+	QLabel *lblModuleId;
+	QLabel *lblModuleFirmware;
+	QLabel *lblModuleSerial;
+	QPalette *blue;
 };
 
 

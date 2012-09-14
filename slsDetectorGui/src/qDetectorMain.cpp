@@ -352,11 +352,6 @@ void qDetectorMain::ExecuteUtilities(QAction *action){
 			else qDefs::Message(qDefs::WARNING,string("Could not save the Setup Parameters from file:\n")+fName.toAscii().constData(),"Main");
 		}
 	}
-	else if(action==actionMeasurementWizard){
-#ifdef VERBOSE
-		cout << "Measurement Wizard" << endl;
-#endif
-	}
 	else if(action==actionOpenConfiguration){
 #ifdef VERBOSE
 		cout << "Loading Configuration" << endl;
@@ -461,13 +456,18 @@ void qDetectorMain::ExecuteHelp(QAction *action){
 #ifdef VERBOSE
 		cout << "About: Common GUI for Mythen, Eiger, Gotthard and Agipd detectors" << endl;
 #endif
+		char version[200];
+		sprintf(version,"%llx",myDet->getId(slsDetectorDefs::THIS_SOFTWARE_VERSION));
+		string thisClientVersion = string(version);
 		//<h1 style="font-family:verdana;">A heading</h1>
-		qDefs::Message(qDefs::INFORMATION,"<p style=\"font-family:verdana;\">SLS Detector GUI version:   1.0<br><br>"
+		qDefs::Message(qDefs::INFORMATION,"<p style=\"font-family:verdana;\">"
+				"SLS Detector GUI version:     1.0<br>"
+				"SLS Detector Client version:  "+thisClientVersion+"<br><br>"
 				"Common GUI to control the SLS Detectors: "
 				"Mythen, Eiger, Gotthard and Agipd.<br><br>"
 				"It can be operated in parallel with the command line interface:<br>"
 				"sls_detector_put,<br>sls_detector_get,<br>sls_detector_acquire and<br>sls_detector_help.<br><br>"
-				"The software is still in progress. "
+				"The GUI Software is still in progress. "
 				"Please report bugs to dhanya.maliakal@psi.ch.<\\p>","About SLS Detector GUI");
 	}
 }

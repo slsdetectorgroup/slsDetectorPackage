@@ -57,9 +57,11 @@ void qTabMessages::SetupWidgetWindow(){
 	btnClear->setFixedWidth(100);
 	btnClear->setIcon(QIcon( ":/icons/images/erase.png" ));
 
-	gridLayout->addWidget(btnSave,0,0,1,1);
-	gridLayout->addWidget(btnClear,0,4,1,1);
-	gridLayout->addWidget(dispLog,1,0,1,5);
+	gridLayout->addItem(new QSpacerItem(15,10,QSizePolicy::Fixed,QSizePolicy::Fixed),0,0);
+	gridLayout->addWidget(btnSave,1,0,1,1);
+	gridLayout->addWidget(btnClear,1,4,1,1);
+	gridLayout->addItem(new QSpacerItem(15,10,QSizePolicy::Fixed,QSizePolicy::Fixed),2,0);
+	gridLayout->addWidget(dispLog,3,0,1,5);
 
 	qout=new qDebugStream(std::cout,this);
 }

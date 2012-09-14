@@ -24,7 +24,6 @@ qTabAdvanced::qTabAdvanced(QWidget *parent,multiSlsDetector*& detector, qDrawPlo
 		QWidget(parent),myDet(detector),myPlot(plot),btnGroup(NULL){
 	setupUi(this);
 	SetupWidgetWindow();
-	Initialization();
 }
 
 
@@ -58,6 +57,10 @@ void qTabAdvanced::SetupWidgetWindow(){
 		btnGroup = new QButtonGroup(this);
 		btnGroup->addButton(btnRefresh,0);
 		btnGroup->addButton(btnGetTrimbits,1);
+
+
+
+		Initialization();
 	}
 
 }

@@ -431,7 +431,7 @@ QString filePath;
 QString fileName;
 
 /**	Max Number of Clone Windows */
-static const int TRIM_HISTOGRAM_XMAX = 600;
+static const int TRIM_HISTOGRAM_XMAX = 63;
 
 
 

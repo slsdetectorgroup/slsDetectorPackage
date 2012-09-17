@@ -127,6 +127,7 @@ void qDrawPlot::SetupWidgetWindow(){
 	// Default titles- only for the initial picture
 	histXAxisTitle="Channel Number";
 	histYAxisTitle="Counts";
+	plotTitle = "Measurement";
 
 
 	for(int i=0;i<MAX_1DPLOTS;i++){
@@ -175,6 +176,15 @@ void qDrawPlot::SetupWidgetWindow(){
 	//filepath and file name
 	filePath = QString(myDet->getFilePath().c_str());
 	fileName = QString(myDet->getFileName().c_str());
+
+
+
+	// Setting the callback function to get data from detector class
+	myDet->registerDataCallback(&(GetDataCallBack),this);
+	//Setting the callback function to alert when acquisition finished from detector class
+	myDet->registerAcquisitionFinishedCallback(&(GetAcquisitionFinishedCallBack),this);
+	//Setting the callback function to alert when each measurement finished from detector class
+	myDet->registerMeasurementFinishedCallback(&(GetMeasurementFinishedCallBack),this);
 
 }
 
@@ -261,6 +271,7 @@ void qDrawPlot::StartStopDaqToggle(bool stop_if_running){
 		fileName = QString(myDet->getFileName().c_str());
 
 
+
 		StartDaq(true);
 		running=!running;
 	}
@@ -323,12 +334,6 @@ bool qDrawPlot::StartOrStopThread(bool start){
 		SetupMeasurement(myDet->getFileIndex());
 
 		cout << "Starting new acquisition threadddd ...." << endl;
-		// Setting the callback function to get data from detector class
-		myDet->registerDataCallback(&(GetDataCallBack),this);
-		//Setting the callback function to alert when acquisition finished from detector class
-		myDet->registerAcquisitionFinishedCallback(&(GetAcquisitionFinishedCallBack),this);
-		//Setting the callback function to alert when each measurement finished from detector class
-		myDet->registerMeasurementFinishedCallback(&(GetMeasurementFinishedCallBack),this);
 		// Start acquiring data from server
 		if(!firstTime) pthread_join(gui_acquisition_thread,NULL);//wait until he's finished, ie. exits
 		pthread_create(&gui_acquisition_thread, NULL,DataStartAcquireThread, (void*) this);
@@ -353,7 +358,10 @@ void qDrawPlot::SetScanArgument(int scanArg){
 #endif
 	scanArgument = scanArg;
 
+	if(plot_in_scope==1) Clear1DPlot();
+
 	LockLastImageArray();
+
 
 	nPixelsX = myDet->getTotalNumberOfChannels();
 	nPixelsY = 100;//if number of exposures, this should be checked before acquisition
@@ -418,7 +426,8 @@ void qDrawPlot::SetupMeasurement(int currentIndex){
 	currentFrame = 0;
 	//for 2d scans
 	currentScanDivLevel = 0;
-	lastImageNumber = 0;
+	//if(plot_in_scope==2)
+		if(!running)	lastImageNumber = 0;/**Just now */
 
 	//initializing 2d array
 	for(int py=0;py<(int)nPixelsY;py++)
@@ -495,7 +504,7 @@ int qDrawPlot::GetDataCallBack(detectorData *data, void *this_pointer){
 
 int qDrawPlot::GetData(detectorData *data){
 #ifdef VERYVERBOSE
-	cout << "Entering GetDatafunction" << endl;
+	cout << "******Entering GetDatafunction********" << endl;
 #endif
 	if(!stop_signal){
 
@@ -774,7 +783,7 @@ int qDrawPlot::MeasurementFinished(int currentMeasurementIndex, int fileIndex){
 
 void qDrawPlot::SelectPlot(int i){ //1 for 1D otherwise 2D
 	if(i==1){
-		Clear1DPlot();
+		//Clear1DPlot(); it clears the last measurement
 		plot1D->SetXTitle(histXAxisTitle.toAscii().constData());
 		plot1D->SetYTitle(histYAxisTitle.toAscii().constData());
 		plot1D->show();
@@ -810,7 +819,8 @@ void qDrawPlot::UpdatePlot(){
 	cout << "Entering UpdatePlot function" << endl;
 #endif
 	plot_update_timer->stop();
-
+	//set plot title
+	boxPlot->setTitle(plotTitle);
 	// only if no plot isnt enabled
 	if(plotEnable){
 		LockLastImageArray();
@@ -1195,7 +1205,7 @@ int qDrawPlot::UpdateTrimbitPlot(bool fromDetector,bool Histogram){
 		if(histYAxis[0]) delete [] histYAxis[0];histYAxis[0] = new double [nPixelsX];
 		//initializing
 		for(unsigned int px=0;px<nPixelsX;px++)		histXAxis[px]  = px;
-		for(int i=0;i<nPixelsX;i++)					histYAxis[0][i] = 0;
+		for(i=0;i<nPixelsX;i++)					histYAxis[0][i] = 0;
 
 		//clear/select plot and set titles
 		Clear1DPlot();

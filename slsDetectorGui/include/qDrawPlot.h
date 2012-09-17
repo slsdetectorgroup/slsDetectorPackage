@@ -52,7 +52,7 @@ public:
 	int GetProgress(){return progress;};
 
 	/**	sets plot Title */
-	void SetPlotTitle(QString title)      	{boxPlot->setTitle(title);}
+	void SetPlotTitle(QString title)      	{plotTitle = title;}
 	/**	sets 1D X Axis Title */
 	void SetHistXAxisTitle(QString title)   	{histXAxisTitle = title;}
 	/**	sets 1D Y Axis Title */
@@ -116,7 +116,7 @@ public slots:
  @param i is 1 for 1D, else 2D plot */
 void SelectPlot(int i=2);
 /** To select 1D plot */
-void Select1DPlot() {Clear1DPlot();SelectPlot(1);}
+void Select1DPlot() {SelectPlot(1);}
 /** To select 2D plot */
 void Select2DPlot() {SelectPlot(2);}
 /** To clear plot */
@@ -332,6 +332,8 @@ QString  histYAxisTitle;
 std::string  histTitle[MAX_1DPLOTS];
 /**	Title in 2D */
 std::string  imageTitle;
+/** plot Title */
+QString plotTitle;
 /**	1D or 2D */
 unsigned int plot_in_scope;
 /**	Number of Pixels in X Axis */

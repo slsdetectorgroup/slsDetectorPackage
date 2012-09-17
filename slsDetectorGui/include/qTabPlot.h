@@ -42,37 +42,6 @@ public:
 
 
 private:
-	/** The sls detector object */
-	multiSlsDetector *myDet;
-
-	/** The Plot widget	 */
-	qDrawPlot *myPlot;
-
-	/** 1d/2d plot	 */
-	bool isOneD;
-	bool isOrginallyOneD;
-
-	/**whether to enable nth frame according to timing mode*/
-	bool enableNFrame;
-
-	QStackedLayout	*stackedLayout;
-	QSpinBox 		*spinNthFrame;
-	QDoubleSpinBox 	*spinTimeGap;
-	QComboBox 		*comboTimeGapUnit;
-	QButtonGroup 	*btnGroupScan;
-
-	/** some Default Values */
-	static QString defaultPlotTitle;
-	static QString defaultHistXAxisTitle;
-	static QString defaultHistYAxisTitle;
-	static QString defaultImageXAxisTitle;
-	static QString defaultImageYAxisTitle;
-	static QString defaultImageZAxisTitle;
-
-	/** scans */
-	static const QString modeNames[5];
-
-
 
 /** methods */
 	/** Sets up the widget
@@ -114,6 +83,12 @@ void SetScanArgument();
 void Refresh();
 
 
+/** Disables scanbox while running
+ * @param disable true to disable
+ */
+//void DisableScanBoxWhileRunning(bool disable);
+
+
 
 private slots:
 /** Selects the plot to display, enables/disables widgets
@@ -138,6 +113,38 @@ void SetZRange();
 void EnableZRange();
 /** Set Plot to none, data graph, histogram*/
 void SetPlot();
+
+
+private:
+/** The sls detector object */
+multiSlsDetector *myDet;
+
+/** The Plot widget	 */
+qDrawPlot *myPlot;
+
+/** 1d/2d plot	 */
+bool isOneD;
+bool isOrginallyOneD;
+
+/**whether to enable nth frame according to timing mode*/
+bool enableNFrame;
+
+QStackedLayout	*stackedLayout;
+QSpinBox 		*spinNthFrame;
+QDoubleSpinBox 	*spinTimeGap;
+QComboBox 		*comboTimeGapUnit;
+QButtonGroup 	*btnGroupScan;
+
+/** some Default Values */
+static QString defaultPlotTitle;
+static QString defaultHistXAxisTitle;
+static QString defaultHistYAxisTitle;
+static QString defaultImageXAxisTitle;
+static QString defaultImageYAxisTitle;
+static QString defaultImageZAxisTitle;
+
+/** scans */
+static const QString modeNames[5];
 
 
 signals:

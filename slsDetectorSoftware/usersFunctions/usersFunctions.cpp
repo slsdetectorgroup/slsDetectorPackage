@@ -309,6 +309,10 @@ int defaultDataReadyFunc(detectorData* d,  void* p) {
   printf("UUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUU Data received \n");
   printf("Filename %s\n",d->fileName);
   printf("Number of points %d (%d)\n",d->npoints,d->npy);
+  for(int i=0;i<d->npoints;i++){
+	  printf("%d-[%f]:%f\n",i,*(d->angles+(i*sizeof(double))),*(d->values+(i*sizeof(double))));
+	  fflush(stdout);
+  }
   printf("UUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUU Finished \n");
 #endif
   return 0;

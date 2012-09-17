@@ -184,7 +184,8 @@ void postProcessing::doProcessing(double *lfdata, int delflag, string fname) {
       writeDataFile (fname+ext,  ffcdata, ffcerr,ang);
     }
    
-    if (*correctionMask&(1<< ANGULAR_CONVERSION) && getNumberOfPositions()>0) {
+    //   if (*correctionMask&(1<< ANGULAR_CONVERSION) && getNumberOfPositions()>0) {
+    if (*correctionMask&(1<< ANGULAR_CONVERSION)) {
 #ifdef VERBOSE
       cout << "**************Current position index is " << getCurrentPositionIndex() << endl;
 #endif

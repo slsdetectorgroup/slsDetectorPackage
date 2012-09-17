@@ -3416,10 +3416,10 @@ int multiSlsDetector::writeDataFile(string fname, double *data, double *err, dou
        off+=n;
     
        if (pe)
-	 pe=pe+off;
+	 pe=err+off;
        
        if (pa)
-	 pa=pa+off;
+	 pa=ang+off;
      
      }
      

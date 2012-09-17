@@ -357,9 +357,9 @@
    <widget class="QWidget" name="horizontalLayoutWidget">
     <property name="geometry">
      <rect>
-      <x>80</x>
+      <x>10</x>
       <y>20</y>
-      <width>271</width>
+      <width>227</width>
       <height>26</height>
      </rect>
     </property>
@@ -367,54 +367,6 @@
      <property name="spacing">
       <number>0</number>
      </property>
-     <item>
-      <spacer name="horizontalSpacer_10">
-       <property name="orientation">
-        <enum>Qt::Horizontal</enum>
-       </property>
-       <property name="sizeType">
-        <enum>QSizePolicy::Fixed</enum>
-       </property>
-       <property name="sizeHint" stdset="0">
-        <size>
-         <width>18</width>
-         <height>20</height>
-        </size>
-       </property>
-      </spacer>
-     </item>
-     <item>
-      <widget class="QCheckBox" name="chkAutoFName">
-       <property name="enabled">
-        <bool>true</bool>
-       </property>
-       <property name="sizePolicy">
-        <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-         <horstretch>0</horstretch>
-         <verstretch>0</verstretch>
-        </sizepolicy>
-       </property>
-       <property name="text">
-        <string>Automatic File Name</string>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <spacer name="horizontalSpacer_11">
-       <property name="orientation">
-        <enum>Qt::Horizontal</enum>
-       </property>
-       <property name="sizeType">
-        <enum>QSizePolicy::Fixed</enum>
-       </property>
-       <property name="sizeHint" stdset="0">
-        <size>
-         <width>15</width>
-         <height>20</height>
-        </size>
-       </property>
-      </spacer>
-     </item>
      <item>
       <widget class="QCheckBox" name="chkSaveAll">
        <property name="enabled">
@@ -427,7 +379,7 @@
         </sizepolicy>
        </property>
        <property name="text">
-        <string>Save All</string>
+        <string>Save All with Automatic File Name</string>
        </property>
       </widget>
      </item>
@@ -436,21 +388,21 @@
    <widget class="QPushButton" name="btnSave">
     <property name="geometry">
      <rect>
-      <x>11</x>
+      <x>264</x>
       <y>19</y>
-      <width>70</width>
+      <width>76</width>
       <height>25</height>
      </rect>
     </property>
     <property name="sizePolicy">
-     <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+     <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
       <horstretch>0</horstretch>
       <verstretch>0</verstretch>
      </sizepolicy>
     </property>
     <property name="maximumSize">
      <size>
-      <width>70</width>
+      <width>16777215</width>
       <height>16777215</height>
      </size>
     </property>

@@ -1755,11 +1755,8 @@ int readOutChan(int *val) {
 }
 
 int getModuleNumber(int modnum) {
-  int val;
-  putout("0000000000000000", modnum);
-  putout("0000000001000000", modnum);
-  val=readin(modnum);
-  putout("0000000000000000", modnum);
+  int val = 0xfff;
+ // val=readin(modnum);
   return val;
 }
 

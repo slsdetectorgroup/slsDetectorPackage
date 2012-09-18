@@ -271,10 +271,6 @@ int energyConversion::writeSettingsFile(string fname, detectorType myDetectorTyp
     names[id++]="Vin";
     names[id++]="Vref_comp";
     names[id++]="Vib_test";
-    names[id++]="config";
-    names[id++]="HV"; 
-    names[id++]="macaddress";
-    names[id++]="ipaddress";
     break;
   default:
     cout << "Unknown detector type - unknown format for settings file" << endl;

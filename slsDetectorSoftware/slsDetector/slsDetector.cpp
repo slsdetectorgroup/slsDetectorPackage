@@ -5103,10 +5103,13 @@ int slsDetector::loadSettingsFile(string fname, int imod) {
   for (int im=mmin; im<mmax; im++) {
     ostringstream ostfn;
     ostfn << fname;
-    if (fname.find(".sn")==string::npos && fname.find(".trim")==string::npos) {
+    if (fname.find(".sn")==string::npos && fname.find(".trim")==string::npos && fname.find(".settings")==string::npos) {
       ostfn << ".sn"  << setfill('0') << setw(3) << hex << getId(MODULE_SERIAL_NUMBER, im); 
       fn=ostfn.str();
     }
+    //settings is saved in myMod.reg for gotthard
+    if(thisDetector->myDetectorType==GOTTHARD)
+	  myMod->reg=thisDetector->currentSettings;
     myMod=readSettingsFile(fn, thisDetector->myDetectorType);
     if (myMod) {
       myMod->module=im;

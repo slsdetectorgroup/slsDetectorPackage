@@ -280,44 +280,46 @@ int energyConversion::writeSettingsFile(string fname, detectorType myDetectorTyp
   int iv, ichan, ichip;
   int iv1, idac;
   int nb;
-    outfile.open(fname.c_str(), ios_base::out);
+  outfile.open(fname.c_str(), ios_base::out);
 
-    if (outfile.is_open()) {
-      for (idac=0; idac<mod.ndac; idac++) {
-	iv=(int)mod.dacs[idac];
-	outfile << names[idac] << " " << iv << std::endl;
-      }
-      
-	for (ichip=0; ichip<mod.nchip; ichip++) {
-	  iv1=mod.chipregs[ichip]&1;
-	  outfile << names[idac] << " " << iv1 << std::endl;
-	  for (ichan=0; ichan<nch; ichan++) {
-	    iv=mod.chanregs[ichip*nch+ichan];
-	    iv1= (iv&TRIMBITMASK);
-	    outfile <<iv1 << " ";
-	    nb=9;
-	    iv1=((iv&(1<<nb))>>nb);
-	    outfile << iv1 << " ";
-	    nb=8;
-	    iv1=((iv&(1<<nb))>>nb);
-	    outfile << iv1 << " ";
-	    nb=7;
-	    iv1=((iv&(1<<nb))>>nb);
-	    outfile <<iv1  << " ";
-	    nb=10;
-	    iv1=((iv&(1<<nb))>>nb);
-	    outfile << iv1 << " ";
-	    nb=11;
-	    iv1= ((iv&0xfffff800)>>nb);
-	    outfile << iv1  << std::endl;
-	  }
-	}
-      outfile.close();
-      return OK;
-    } else {
-      std::cout<< "could not open SETTINGS file " << fname << std::endl;
-      return FAIL;
+  if (outfile.is_open()) {
+    for (idac=0; idac<mod.ndac; idac++) {
+      iv=(int)mod.dacs[idac];
+      outfile << names[idac] << " " << iv << std::endl;
     }
+      
+    if(myDetectorType!=GOTTHARD){
+      for (ichip=0; ichip<mod.nchip; ichip++) {
+	iv1=mod.chipregs[ichip]&1;
+	outfile << names[idac] << " " << iv1 << std::endl;
+	for (ichan=0; ichan<nch; ichan++) {
+	  iv=mod.chanregs[ichip*nch+ichan];
+	  iv1= (iv&TRIMBITMASK);
+	  outfile <<iv1 << " ";
+	  nb=9;
+	  iv1=((iv&(1<<nb))>>nb);
+	  outfile << iv1 << " ";
+	  nb=8;
+	  iv1=((iv&(1<<nb))>>nb);
+	  outfile << iv1 << " ";
+	  nb=7;
+	  iv1=((iv&(1<<nb))>>nb);
+	  outfile <<iv1  << " ";
+	  nb=10;
+	  iv1=((iv&(1<<nb))>>nb);
+	  outfile << iv1 << " ";
+	  nb=11;
+	  iv1= ((iv&0xfffff800)>>nb);
+	  outfile << iv1  << std::endl;
+	}
+      }
+    }
+    outfile.close();
+    return OK;
+  } else {
+    std::cout<< "could not open SETTINGS file " << fname << std::endl;
+    return FAIL;
+  }
 
 };
 

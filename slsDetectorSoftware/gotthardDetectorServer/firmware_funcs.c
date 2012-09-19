@@ -706,35 +706,20 @@ int setContinousReadOut(int d) {
 
 
 u_int64_t  getDetectorNumber() {
-  
-  FILE *fp=NULL;
-  u_int64_t res;
-  char line[150];
-  int a[6];
-  
-  int n=0, i;
-  //u_int64_t a0,a1,a2,a3,a4,a5,n=0;
-  fp=fopen("/etc/conf.d/mac","r");
-  if (fp==NULL) {
-    printf("could not ope MAC file\n");;
-    return -1;
-  }
-  while (fgets(line,150,fp)) {
-    //MAC="00:40:8C:CD:00:00"
-    printf(line);
-    if (strstr(line,"MAC="))
-      n=sscanf(line,"MAC=\"%x:%x:%x:%x:%x:%x\"",a+5,a+4,a+3,a+2,a+1,a);
-  }
-  fclose(fp);
-  if (n!=6){ 
-    printf("could not scan MAC address\n");;
-    return -1;
-  } 
-  res=0;
-  for (i=0; i<n; i++) {
-    res=(res<<8)+a[n-1-i];
-  }
-  return res;
+	char output[255],mac[255]="";
+	u_int64_t res=0;
+	FILE* sysFile = popen("ifconfig eth0 | grep HWaddr | cut -d \" \" -f 11", "r");
+	fgets(output, sizeof(output), sysFile);
+	pclose(sysFile);
+	//getting rid of ":"
+	char * pch;
+	pch = strtok (output,":");
+	while (pch != NULL){
+		strcat(mac,pch);
+		pch = strtok (NULL, ":");
+	}
+	sscanf(mac,"%llx",&res);
+	return res;
 }
 
 u_int32_t  getFirmwareVersion() {

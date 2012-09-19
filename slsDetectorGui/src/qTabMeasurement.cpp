@@ -306,8 +306,6 @@ void qTabMeasurement::startStopAcquisition(){
 		progressTimer->start(100);
 
 		emit StartSignal();
-
-		myPlot->StartStopDaqToggle();
 	}else{
 #ifdef VERBOSE
 		cout << "Stopping Acquisition" << endl<< endl;

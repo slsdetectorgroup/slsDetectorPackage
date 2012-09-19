@@ -230,7 +230,6 @@ void qDetectorMain::Initialization(){
 	connect(tabs,			SIGNAL(currentChanged(int)),	this, SLOT(Refresh(int)));//( QWidget*)));
 		//	Measurement tab
 		connect(tab_measurement,	SIGNAL(StartSignal()),				this,SLOT(EnableTabs()));
-		connect(tab_measurement,	SIGNAL(StartSignal()),				tab_plot,SLOT(Refresh()));
 		connect(tab_measurement,	SIGNAL(StopSignal()),				myPlot,SLOT(StopAcquisition()));
 		connect(tab_measurement,	SIGNAL(CheckPlotIntervalSignal()),	tab_plot,SLOT(SetFrequency()));
 		connect(tab_measurement,	SIGNAL(EnableNthFrameSignal(bool)),	tab_plot,SLOT(EnableNthFrame(bool)));
@@ -637,6 +636,13 @@ void qDetectorMain::EnableTabs(){
 	actionLoadCalibration->setVisible(expertTab);
 	actionSaveCalibration->setVisible(expertTab);
 
+	//moved to here, so that its all in order, instead of signals and different threads
+	if(!enable) {
+		//set the plot type first(acccss shared memory)
+		tab_plot->Refresh();
+		//sets running to true
+		myPlot->StartStopDaqToggle();
+	}
 
 }
 

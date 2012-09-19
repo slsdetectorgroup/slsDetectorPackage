@@ -354,7 +354,7 @@ bool qDrawPlot::StartOrStopThread(bool start){
 
 void qDrawPlot::SetScanArgument(int scanArg){
 #ifdef VERBOSE
-	cout << "SetScanArgument function" << endl;
+	cout << "SetScanArgument function:" << running << endl;
 #endif
 	scanArgument = scanArg;
 
@@ -415,7 +415,7 @@ void qDrawPlot::SetScanArgument(int scanArg){
 
 void qDrawPlot::SetupMeasurement(int currentIndex){
 #ifdef VERBOSE
-	cout << "SetupMeasurement function" << endl;
+	cout << "SetupMeasurement function:" << running << endl;
 #endif
 
 	LockLastImageArray();

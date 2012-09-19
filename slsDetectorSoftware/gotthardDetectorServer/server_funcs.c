@@ -565,38 +565,17 @@ int get_id(int file_des) {
 #endif  
 
   switch (arg) {
-  case  MODULE_SERIAL_NUMBER:
-    n = receiveDataOnly(file_des,&imod,sizeof(imod));
-    if (n < 0) {
-      sprintf(mess,"Error reading from socket\n");
-      retval=FAIL;
-    } else {
-#ifdef VERBOSE
-      printf("of module %d\n", imod);
-#endif  
-      if (imod>=0 && imod<=getNModBoard()) {
-#ifdef MCB_FUNCS
-	retval=getModuleNumber(imod);
-#endif
-	;
-      }
-      else {
-	sprintf(mess,"Module number %d out of range\n",imod);
-	ret=FAIL;
-      }
-    }
-    break;
-  case MODULE_FIRMWARE_VERSION:
-    retval=0x1;
-    break;
   case DETECTOR_SERIAL_NUMBER:
-    retval=getMcsNumber();
+    retval=getDetectorNumber();
     break;
   case DETECTOR_FIRMWARE_VERSION:
-    retval=getMcsVersion();
+    retval=getFirmwareVersion();
     break;
   case DETECTOR_SOFTWARE_VERSION:
     retval=THIS_SOFTWARE_VERSION;
+    break;
+  case DETECTOR_FIRMWARE_SVN_VERSION:
+    retval=getFirmwareSVNVersion();
     break;
   default:
     printf("Required unknown id %d \n", arg);

@@ -273,7 +273,8 @@ enum idMode{
   DETECTOR_SERIAL_NUMBER,  /**<return detector system serial number */
   DETECTOR_FIRMWARE_VERSION,  /**<return detector system firmware version */
   DETECTOR_SOFTWARE_VERSION,   /**<return detector system software version */
-  THIS_SOFTWARE_VERSION  /**<return this software version */
+  THIS_SOFTWARE_VERSION,  /**<return this software version */
+  DETECTOR_FIRMWARE_SVN_VERSION /**<return detector system firmware svn version */
 };
 /** 
     detector digital test modes

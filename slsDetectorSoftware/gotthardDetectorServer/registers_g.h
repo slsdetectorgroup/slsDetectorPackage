@@ -10,9 +10,9 @@
 
 /* values defined for FPGA */
 #define MCSNUM            0x0
-#define MCSVERSION        0x101
 #define FIXED_PATT_VAL    0xacdc1980
-#define FPGA_VERSION_VAL  0x01110825  //0x00090514
+
+
 #define FPGA_INIT_PAT     0x60008
 #define FPGA_INIT_ADDR    0xb0000000
 
@@ -41,6 +41,8 @@
 //#define WRTSE_SHAD_REG        0x1f<<11
 //HV
 #define HV_REG                0x20<<11
+
+
 #define DUMMY_REG             0x21<<11
 #define FPGA_VERSION_REG      0x22<<11
 #define FIX_PATT_REG          0x23<<11
@@ -48,6 +50,7 @@
 #define STATUS_REG            0x25<<11
 #define CONFIG_REG            0x26<<11
 #define EXT_SIGNAL_REG   	  0x27<<11
+#define FPGA_SVN_REG    	  0x29<<11
 
 
 //FIFO

@@ -62,8 +62,8 @@ int initConfGain(int isettings,int val,int imod);
 
 int configureMAC(int ipad, long long int macad, long long int servermacad, int ival);
 
-u_int64_t getMcsNumber();
-u_int32_t getMcsVersion();
+u_int64_t getDetectorNumber();
+u_int32_t getFirmwareVersion();
 int testFifos(void);
 u_int32_t testFpga(void);
 u_int32_t testRAM(void);

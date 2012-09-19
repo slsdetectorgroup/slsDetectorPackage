@@ -705,7 +705,7 @@ int setContinousReadOut(int d) {
 }
 
 
-u_int64_t  getMcsNumber() {
+u_int64_t  getDetectorNumber() {
   
   FILE *fp=NULL;
   u_int64_t res;
@@ -737,10 +737,14 @@ u_int64_t  getMcsNumber() {
   return res;
 }
 
-u_int32_t  getMcsVersion() {
+u_int32_t  getFirmwareVersion() {
   return bus_r(FPGA_VERSION_REG);
-  //return MCSVERSION;
 }
+
+u_int32_t  getFirmwareSVNVersion(){
+  return bus_r(FPGA_SVN_REG);
+}
+
 
 // for fpga test 
 u_int32_t testFpga(void) {
@@ -755,15 +759,6 @@ u_int32_t testFpga(void) {
     printf("fixed pattern wrong!! %08x\n",val);
     result=FAIL;
   }
-  //FPGA code version
-  val=bus_r(FPGA_VERSION_REG)&0x00ffffff;
-  if (val>=(FPGA_VERSION_VAL&0x00ffffff)) {
-    printf("FPGA version ok!! %06x\n",val);
-  } else {
-    printf("FPGA version too old! %06x\n",val);
-    result= FAIL;
-  }
-
 
   //dummy register
   addr = DUMMY_REG;
@@ -821,129 +816,10 @@ u_int32_t testRAM(void) {
 }
 
 int getNModBoard() {
-  int nmodboard;
-  u_int32_t val;
-  val=bus_r(FPGA_VERSION_REG)&0xff000000;
-  nmodboard=val >> 24;
-#ifdef VERY_VERBOSE
-  printf("The board hosts %d modules\n",nmodboard); 
-#endif
-  nModBoard=nmodboard;
-  return nmodboard;
+  return nModX;
 }
 
 int setNMod(int n) {
-  
-
-	/* commented out by dhanya
- // int fifo;
-  // int ifsta, ifsto, ifste;
-  int imod;
-  int rval;
-  int reg;
-  int nf=0;
-  int shiftfifo=SHIFTFIFO;
-  int ntot=getNModBoard();
-  if (getProbes()==0) {
-    switch (dynamicRange) {
-    case 16:
-      shiftfifo=SHIFTFIFO-1;
-      break;
-    case 8:
-      shiftfifo=SHIFTFIFO-2;
-      break;
-    case 4:
-      shiftfifo=SHIFTFIFO-3;
-      break;
-    case 1:
-      shiftfifo=SHIFTFIFO-5;
-      break;
-    default:
-      shiftfifo=SHIFTFIFO;
-      break;
-    }
-  } else
-    shiftfifo=SHIFTFIFO;
-
-
-#ifdef VERBOSE
-  printf("SetNMod called arg %d -- dr %d shiftfifo %d\n",n,dynamicRange,shiftfifo);
-#endif
-  if (n>0 && n<=ntot) {
-    nModX=n;
- 
-  //d isable the fifos relative to the unused modules
-      for (ififo=0; ififo<ntot*NCHIP; ififo++) {
-	reg=bus_r(FIFO_COUNTR_REG_OFF+(ififo<<shiftfifo));
-      if (ififo<n*NCHIP) {
-	if (reg&FIFO_DISABLED_BIT) {
-	  bus_w(FIFO_CNTRL_REG_OFF+(ififo<<shiftfifo), FIFO_DISABLE_TOGGLE_BIT); 
-#ifdef VERBOSE
-	  if (bus_r(FIFO_COUNTR_REG_OFF+(ififo<<shiftfifo))&FIFO_DISABLED_BIT) {
-	    printf("Fifo %d is %x (nm %d nc %d addr %08x)",ififo,reg, (reg&FIFO_NM_MASK)>>FIFO_NM_OFF, (reg&FIFO_NC_MASK)>>FIFO_NC_OFF, FIFO_COUNTR_REG_OFF+(ififo<<shiftfifo));
-	    printf(" enabling  %08x\n",bus_r(FIFO_COUNTR_REG_OFF+(ififo<<shiftfifo)));
-	  }
-#endif
-	}
-	//#ifdef VERBOSE
-	//else printf(" unmodified ",ififo,reg);
-	//#endif
-
-      } else {
-	if ((reg&FIFO_ENABLED_BIT)) {
-	  bus_w(FIFO_CNTRL_REG_OFF+(ififo<<shiftfifo), FIFO_DISABLE_TOGGLE_BIT); 
-#ifdef VERBOSE
-	  if ((bus_r(FIFO_COUNTR_REG_OFF+(ififo<<shiftfifo))&FIFO_ENABLED_BIT))  { 
-	    printf("Fifo %d is %x (nm %d nc %d addr %08x)",ififo,reg, (reg&FIFO_NM_MASK)>>FIFO_NM_OFF, (reg&FIFO_NC_MASK)>>FIFO_NC_OFF, FIFO_COUNTR_REG_OFF+(ififo<<shiftfifo));
-	    printf(" disabling %08x\n",bus_r(FIFO_COUNTR_REG_OFF+(ififo<<shiftfifo)));
-	  }
-#endif
-	}
-	//#ifdef VERBOSE
-	//else printf(" unmodified ",ififo,reg);
-	//#endif   
-      } 
-      //#ifdef VERBOSE
-      //printf(" done %x\n",bus_r(FIFO_COUNTR_REG_OFF+(ififo<<shiftfifo)));
-      //#endif
-    } 
-  }
-  // ifste=dynamicRange/32; 
-  nModX=0;
-  nf=0;
-  for (imod=0; imod<ntot; imod++) {
-    rval=0;
-    for (ififo=imod*NCHIP; ififo<(imod+1)*NCHIP; ififo++) {
-      bus_w(FIFO_CNTRL_REG_OFF+(ififo<<shiftfifo), FIFO_RESET_BIT); 
-#ifdef VERBOSE
-      printf("%08x ",(bus_r(FIFO_COUNTR_REG_OFF+(ififo<<shiftfifo))));
-#endif
-      if ((bus_r(FIFO_COUNTR_REG_OFF+(ififo<<shiftfifo))&FIFO_ENABLED_BIT)){
-	rval=1; // checks if at least one fifo of the module is enabled
-#ifdef VERBOSE
-	printf("Fifo %d is enabled\n",ififo);
-#endif
-	nf++;
-      }
-#ifdef VERBOSE
-	else printf("Fifo %d is disabled\n",ififo);
-#endif
-    } 
-    if (rval) {
-      nModX++;
-#ifdef VERBOSE
-      printf("Module %d is enabled --total %d (%d fifos)\n",imod,nModX,nf );
-#endif
-    }
-#ifdef VERBOSE 
-    else printf("Module %d is disabled --total %d (%d fifos)\n",imod,nModX,nf );
-#endif
-  }
-#ifdef VERBOSE
-  printf("There are %d modules enabled (%d fifos)\n",nModX, nf);
-#endif
-  getDynamicRange();
-*/
   return nModX;
 }
 

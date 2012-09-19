@@ -313,7 +313,11 @@ void qTabDeveloper::RefreshAdcs(){
 
 void qTabDeveloper::Refresh(){
 #ifdef VERBOSE
-	cout << "Updating Dacs and Adcs" <<endl;
+	cout  << endl << "**Updating Developer Tab" << endl;
+#endif
+
+#ifdef VERBOSE
+	cout << "Gettings DACs"  << endl;
 #endif
 	//dacs
 	for(int i=0;i<NUM_DAC_WIDGETS;i++)
@@ -331,7 +335,7 @@ void qTabDeveloper::Refresh(){
 		lblHV->setToolTip(tipHV);
 		comboHV->setToolTip(tipHV);
 		//getting hv value
-		int ret = myDet->setDAC(-1,slsDetectorDefs::HV_POT);
+		int ret = (int)myDet->setDAC(-1,slsDetectorDefs::HV_POT);
 		switch(ret){
 		case 0: 	comboHV->setCurrentIndex(0);break;
 		case 90:	comboHV->setCurrentIndex(1);break;
@@ -353,6 +357,9 @@ void qTabDeveloper::Refresh(){
 		connect(comboHV,	SIGNAL(currentIndexChanged(int)),	this, SLOT(SetHighVoltage()));
 	}
 
+#ifdef VERBOSE
+		cout  << "**Updated Developer Tab" << endl << endl;
+#endif
 }
 
 

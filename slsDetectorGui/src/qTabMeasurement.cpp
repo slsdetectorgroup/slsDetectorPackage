@@ -726,16 +726,35 @@ void qTabMeasurement::EnableFileWrite(bool enable){
 
 
 void qTabMeasurement::Refresh(){
+#ifdef VERBOSE
+	cout  << endl << "**Updating Measurement Tab" << endl;
+#endif
+
 	if(!myPlot->isRunning()){
+
 		//Number of measurements
+#ifdef VERBOSE
+		cout  << "Getting number of measurements" << endl;
+#endif
 		spinNumMeasurements->setValue((int)myDet->setTimer(slsDetectorDefs::MEASUREMENTS_NUMBER,-1));
+
+
 		//File Name
+#ifdef VERBOSE
+		cout  << "Getting file name" << endl;
+#endif
 		dispFileName->setText(QString(myDet->getFileName().c_str()));
+
 		//File Index
+#ifdef VERBOSE
+		cout  << "Getting file index" << endl;
+#endif
 		spinIndex->setValue(myDet->getFileIndex());cout<<"file index:"<<myDet->getFileIndex()<<endl;
+
 		//progress label index
 		lblProgressIndex->setText(QString::number(myDet->getFileIndex()));
-		//Timing mode*
+
+		//Timing mode
 		SetupTimingMode();
 
 		// to let qdrawplot know that triggers or frames are used
@@ -743,6 +762,9 @@ void qTabMeasurement::Refresh(){
 		myPlot->setTriggerEnabled(lblNumTriggers->isEnabled());
 	}
 
+#ifdef VERBOSE
+		cout  << "**Updated Measurement Tab" << endl << endl;
+#endif
 }
 
 

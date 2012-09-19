@@ -112,6 +112,9 @@ void qTabDebugging::Initialization(){
 
 
 void qTabDebugging::UpdateModuleList(){
+#ifdef VERBOSE
+		cout  << "Getting Module List" << endl;
+#endif
 	det = myDet->getSlsDetector(comboDetector->currentIndex());
 	//deletes all modules except "all modules"
 	for(int i=0;i<comboModule->count()-1;i++)
@@ -127,6 +130,9 @@ void qTabDebugging::UpdateModuleList(){
 
 
 void qTabDebugging::UpdateStatus(){
+#ifdef VERBOSE
+		cout  << "Getting Status" << endl;
+#endif
 	det = myDet->getSlsDetector(comboDetector->currentIndex());
 	int detStatus = (int)det->getRunStatus();
 	string status = slsDetectorBase::runStatusType(slsDetectorDefs::runStatus(detStatus));
@@ -140,6 +146,9 @@ void qTabDebugging::UpdateStatus(){
 
 
 void qTabDebugging::GetInfo(){
+#ifdef VERBOSE
+		cout  << "Getting Info" << endl;
+#endif
 	//window
 	QFrame* popup1 = new QFrame(this, Qt::Popup | Qt::SubWindow );
 	QList<QTreeWidgetItem *> items;
@@ -477,8 +486,13 @@ void qTabDebugging::TestDetector(){
 
 
 void qTabDebugging::Refresh(){
+#ifdef VERBOSE
+		cout  << endl << "**Updating Debugging Tab" << endl;
+#endif
 	UpdateStatus();
-
+#ifdef VERBOSE
+		cout  << "**Updated Debugging Tab" << endl << endl;
+#endif
 }
 
 

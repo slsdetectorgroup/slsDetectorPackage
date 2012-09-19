@@ -30,8 +30,6 @@ qTabDataOutput::qTabDataOutput(QWidget *parent,multiSlsDetector*& detector):
 						QWidget(parent),myDet(detector){
 	setupUi(this);
 	SetupWidgetWindow();
-	Initialization();
-	Refresh();
 }
 
 
@@ -65,6 +63,52 @@ void qTabDataOutput::SetupWidgetWindow(){
 			"<nobr> #flatfield# filename</nobr><br><br>")+
 			QString("<nobr><font color=\"red\">"
 					"Enter a valid file to enable Flat Field.</font></nobr>");
+
+
+	Initialization();
+
+
+	// output dir
+#ifdef VERBOSE
+	cout  << "Getting output directory" << endl;
+#endif
+	dispOutputDir->setText(QString(myDet->getFilePath().c_str()));
+
+
+	//flat field correction from server
+#ifdef VERBOSE
+	cout  << "Getting flat field" << endl;
+#endif
+	UpdateFlatFieldFromServer();
+
+
+	//rate correction - not for charge integrating detectors
+	if((detType == slsDetectorDefs::MYTHEN)||(detType == slsDetectorDefs::EIGER)){
+#ifdef VERBOSE
+		cout  << "Getting rate correction" << endl;
+#endif
+		UpdateRateCorrectionFromServer();
+	}
+
+
+	//update angular conversion from server
+	if((detType == slsDetectorDefs::MYTHEN)||(detType == slsDetectorDefs::GOTTHARD)){
+#ifdef VERBOSE
+		cout  << "Getting angular conversion" << endl;
+#endif
+		int ang;
+		if(myDet->getAngularConversion(ang))
+			chkAngular->setChecked(true);
+		emit AngularConversionSignal(chkAngular->isChecked());
+	}
+
+
+	//discard bad channels from server
+#ifdef VERBOSE
+	cout  << "Getting bad channel correction" << endl;
+#endif
+	if(myDet->getBadChannelCorrection()) chkDiscardBad->setChecked(true);
+
 
 }
 
@@ -396,22 +440,56 @@ void qTabDataOutput::DiscardBadChannels(){
 
 
 void qTabDataOutput::Refresh(){
+#ifdef VERBOSE
+	cout  << endl << "**Updating DataOutput Tab" << endl;
+#endif
+
+
 	// output dir
+#ifdef VERBOSE
+	cout  << "Getting output directory" << endl;
+#endif
 	dispOutputDir->setText(QString(myDet->getFilePath().c_str()));
+
+
 	//flat field correction from server
+#ifdef VERBOSE
+	cout  << "Getting flat field" << endl;
+#endif
 	UpdateFlatFieldFromServer();
+
+
 	//rate correction - not for charge integrating detectors
-	if((detType == slsDetectorDefs::MYTHEN)||(detType == slsDetectorDefs::EIGER))
+	if((detType == slsDetectorDefs::MYTHEN)||(detType == slsDetectorDefs::EIGER)){
+#ifdef VERBOSE
+		cout  << "Getting rate correction" << endl;
+#endif
 		UpdateRateCorrectionFromServer();
+	}
+
+
 	//update angular conversion from server
 	if((detType == slsDetectorDefs::MYTHEN)||(detType == slsDetectorDefs::GOTTHARD)){
+#ifdef VERBOSE
+		cout  << "Getting angular conversion" << endl;
+#endif
 		int ang;
 		if(myDet->getAngularConversion(ang))
 			chkAngular->setChecked(true);
 		emit AngularConversionSignal(chkAngular->isChecked());
 	}
+
+
 	//discard bad channels from server
+#ifdef VERBOSE
+	cout  << "Getting bad channel correction" << endl;
+#endif
 	if(myDet->getBadChannelCorrection()) chkDiscardBad->setChecked(true);
+
+
+#ifdef VERBOSE
+	cout  << "**Updated DataOutput Tab" << endl << endl;
+#endif
 }
 
 

@@ -656,7 +656,7 @@ Plots Trimbits from Detector. This will take time.
     </layout>
    </widget>
   </widget>
-  <widget class="QGroupBox" name="groupBox_2">
+  <widget class="QGroupBox" name="boxLogs">
    <property name="geometry">
     <rect>
      <x>405</x>

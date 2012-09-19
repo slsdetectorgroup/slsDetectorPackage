@@ -113,6 +113,8 @@ private:
 	/** Trimming mode */
 	slsDetectorDefs::trimMode trimmingMode;
 
+	bool isEnergy;
+	bool isAngular;
 
 };
 

@@ -468,13 +468,14 @@ void qDrawPlot::SetupMeasurement(int currentIndex){
 			endPixel = maxPixelsY + (pixelWidth/2);
 		}
 	}
-
-	cout<<"\nnPixelsY:"<<nPixelsY<<endl;
-	cout<<"minPixelsY:"<<minPixelsY;
-	cout<<"\tmaxPixelsY:"<<maxPixelsY<<endl;
-	cout<<"startPixel:"<<startPixel;
-	cout<<"\tendPixel:"<<endPixel<<endl<<endl;
-
+/*
+	cout<<"nPixelsX:"<<nPixelsX<<endl;
+	cout<<"nPixelsY:"<<nPixelsY<<endl;
+	cout<<"minPixelsY:"<<minPixelsY<<endl;
+	cout<<"maxPixelsY:"<<maxPixelsY<<endl;
+	cout<<"startPixel:"<<startPixel<<endl;
+	cout<<"endPixel:"<<endPixel<<endl<<endl;
+*/
 	UnlockLastImageArray();
 }
 
@@ -520,6 +521,43 @@ int qDrawPlot::GetData(detectorData *data){
 		if(!plotEnable) 	return 0;
 
 
+
+
+		//angle plotting
+		if(anglePlot){
+			if(!pthread_mutex_trylock(&(last_image_complete_mutex))){
+				cout<<"angle plot"<<endl;
+				if(data->angles==NULL){
+					cout<<"\n\nWARNING:RETURNED NULL instead of angles."<<endl;
+					lastImageNumber= currentFrame+1;
+					nAnglePixelsX = nPixelsX;
+					histNBins = nAnglePixelsX;
+					nHists=1;
+					memcpy(histXAngleAxis,histXAxis,nAnglePixelsX*sizeof(double));
+					memcpy(histYAngleAxis,data->values,nAnglePixelsX*sizeof(double));
+					SetHistXAxisTitle("Channel Number");
+
+				}
+				else{
+
+					lastImageNumber= currentFrame+1;
+					nAnglePixelsX = data->npoints;
+					histNBins = nAnglePixelsX;
+					nHists=1;
+					if(histXAngleAxis) delete [] histXAngleAxis; histXAngleAxis = new double[nAnglePixelsX];
+					if(histYAngleAxis) delete [] histYAngleAxis; histYAngleAxis = new double[nAnglePixelsX];
+					memcpy(histXAngleAxis,data->angles,nAnglePixelsX*sizeof(double));
+					memcpy(histYAngleAxis,data->values,nAnglePixelsX*sizeof(double));
+					SetHistXAxisTitle("Angles");
+				}
+				pthread_mutex_unlock(&(last_image_complete_mutex));
+			}
+			currentFrame++;
+			return 0;
+		}
+
+
+
 		//Nth Frame
 		if(frameFactor){
 			//plots if numfactor becomes 0
@@ -535,7 +573,7 @@ int qDrawPlot::GetData(detectorData *data){
 
 		//Not Nth Frame, to check time out(NOT for 2dScans and angle plots)
 		else{
-			if((scanArgument==None)&&(!anglePlot)){
+			if(scanArgument==None){
 				//if the time is not over, RETURN
 				if(!data_pause_over){
 					return 0;
@@ -545,25 +583,6 @@ int qDrawPlot::GetData(detectorData *data){
 			}
 		}
 
-
-
-
-		//angle plotting
-		if(anglePlot){
-			if(!pthread_mutex_trylock(&(last_image_complete_mutex))){
-				lastImageNumber= currentFrame+1;
-				nAnglePixelsX = data->npoints;
-				histNBins = nAnglePixelsX;
-				nHists=1;
-				if(histXAngleAxis) delete [] histXAngleAxis; histXAngleAxis = new double[nAnglePixelsX];
-				if(histYAngleAxis) delete [] histYAngleAxis; histYAngleAxis = new double[nAnglePixelsX];
-				memcpy(histXAngleAxis,data->angles,nAnglePixelsX*sizeof(double));
-				memcpy(histYAngleAxis,data->values,nAnglePixelsX*sizeof(double));
-				pthread_mutex_unlock(&(last_image_complete_mutex));
-			}
-			currentFrame++;
-			return 0;
-		}
 
 
 
@@ -708,9 +727,12 @@ int qDrawPlot::GetAcquisitionFinishedCallBack(double currentProgress,int detecto
 
 
 int qDrawPlot::AcquisitionFinished(double currentProgress, int detectorStatus){
+#ifdef VERBOSE
+	cout << "\nEntering Acquisition Finished with status " ;
+#endif
 	QString status = QString(slsDetectorBase::runStatusType(slsDetectorDefs::runStatus(detectorStatus)).c_str());
 #ifdef VERBOSE
-	cout << "\nEntering Acquisition Finished with status " << status.toAscii().constData() << " and progress " << currentProgress << endl;
+	cout << status.toAscii().constData() << " and progress " << currentProgress << endl;
 #endif
 	//error or stopped
 	if((stop_signal)||(detectorStatus==slsDetectorDefs::ERROR)){
@@ -766,7 +788,8 @@ int qDrawPlot::MeasurementFinished(int currentMeasurementIndex, int fileIndex){
 	cout << "Entering Measurement Finished with currentMeasurement " << currentMeasurementIndex << " and fileIndex " << fileIndex << endl;
 #endif
 	//to make sure it plots the last frame before setting lastimagearray all to 0
-	if(plot_in_scope==2) usleep(500000);
+	//if(plot_in_scope==2)
+		usleep(500000);
 
 	currentMeasurement = currentMeasurementIndex + 1;
 #ifdef VERBOSE
@@ -827,6 +850,9 @@ void qDrawPlot::UpdatePlot(){
 		//1-d plot stuff
 		if(plot_in_scope==1){
 			if(lastImageNumber){
+#ifdef VERYVERBOSE
+				cout << "Last Image Number:" << lastImageNumber << endl;
+#endif
 				if(histNBins){
 					Clear1DPlot();
 					plot1D->SetXTitle(histXAxisTitle.toAscii().constData());
@@ -902,7 +928,9 @@ void qDrawPlot::UpdatePlot(){
 		else
 			plot_update_timer->start((int)PLOT_TIMER_MS);
 	}
-
+#ifdef VERYVERBOSE
+	cout << "Exiting UpdatePlot function" << endl;
+#endif
 }
 
 
@@ -1069,20 +1097,6 @@ void qDrawPlot::SavePlot(){
 			qDefs::Message(qDefs::WARNING,"Attempt to save image failed.\n"
     				"Formats: .png, .jpg, .xpm.","Dock");
 }
-
-
-//-------------------------------------------------------------------------------------------------------------------------------------------------
-
-/*
-
-void qDrawPlot::SaveAll(bool enable){
-	string msg = string("The Files will be saved as:\n")+
-				string(myDet->getFilePath().c_str())+string("/")+
-				string(myDet->getFileName().c_str())+string("[title].png");
-	qDefs::Message(qDefs::INFORMATION,msg,"Dock");
-	saveAll = enable;
-}
-*/
 
 
 //-------------------------------------------------------------------------------------------------------------------------------------------------

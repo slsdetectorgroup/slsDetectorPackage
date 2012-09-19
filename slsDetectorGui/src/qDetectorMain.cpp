@@ -48,11 +48,12 @@ int main (int argc, char **argv) {
 qDetectorMain::qDetectorMain(int argc, char **argv, QApplication *app, QWidget *parent) :
 		QMainWindow(parent), theApp(app),myDet(0),detID(0),myPlot(NULL),tabs(NULL),isDeveloper(0){
 
+	string configFName = "";
 	// Getting all the command line arguments
 	for(int iarg=1; iarg<argc; iarg++){
 		if(!strcasecmp(argv[iarg],"-developer"))	{isDeveloper=1;}
 		if(!strcasecmp(argv[iarg],"-id"))			{detID=atoi(argv[iarg+1]);}
-
+		if(!strcasecmp(argv[iarg],"-config"))		{configFName=string(argv[iarg+1]);}
 		if(!strcasecmp(argv[iarg],"-help")){
 			cout << "Possible Arguments are:" << endl;
 			cout << "-help \t\t : \t This help" << endl;
@@ -66,6 +67,8 @@ qDetectorMain::qDetectorMain(int argc, char **argv, QApplication *app, QWidget *
 	SetUpDetector();
 	SetUpWidgetWindow();
 	Initialization();
+	if(!configFName.empty()) LoadConfigFile(configFName);
+
 
 }
 
@@ -140,24 +143,22 @@ void qDetectorMain::SetUpWidgetWindow(){
 
 	// mode setup - to set up the tabs initially as disabled, not in form so done here
 #ifdef VERBOSE
-	cout << "Setting Debug Mode to 0\nSetting Beamline Mode to 0\n"
-			"Setting Expert Mode to 0\nSetting Dockable Mode to false\n"
-			"Setting Developer Mode to " << isDeveloper << endl;
+	cout << "Setting Debug Mode to 0\n"
+			"Setting Expert Mode to 0\n"
+			"Setting Developer Mode to " << isDeveloper << ""
+			"\nSetting Dockable Mode to false\n" << endl;
 #endif
 	tabs->setTabEnabled(Debugging,false);
-	//beamline mode to false
 	tabs->setTabEnabled(Advanced,false);
+	tabs->setTabEnabled(Developer,isDeveloper);
 	actionLoadTrimbits->setVisible(false);
 	actionSaveTrimbits->setVisible(false);
 	actionLoadCalibration->setVisible(false);
 	actionSaveCalibration->setVisible(false);
+
 	dockWidgetPlot->setFloating(false);
 	dockWidgetPlot->setFeatures(QDockWidget::NoDockWidgetFeatures);
-	tabs->setTabEnabled(Developer,isDeveloper);
-	if(!digitalDetector) actionExpert->setEnabled(false);
-#ifdef VERBOSE
-	cout << "Advanced Enabled:" << digitalDetector << endl;
-#endif
+
 // Other setup
 	//Height of plot and central widget
 	heightPlotWindow = dockWidgetPlot->size().height();
@@ -175,7 +176,7 @@ void qDetectorMain::SetUpDetector(){
 
 
 	//instantiate detector and set window title
-	myDet = new multiSlsDetector();
+	myDet = new multiSlsDetector(detID);
 	string host = myDet->getHostname();
 
 	//if hostname doesnt exist even in shared memory
@@ -198,11 +199,10 @@ void qDetectorMain::SetUpDetector(){
 	// Check if type valid. If not, exit
 	slsDetectorDefs::detectorType detType = myDet->getDetectorsType();
 	switch(detType){
-	//digitalDetector decides if trimbits should be shown
-	case slsDetectorDefs::MYTHEN:	digitalDetector = true;	break;
-	case slsDetectorDefs::EIGER:	digitalDetector = true;	break;
-	case slsDetectorDefs::GOTTHARD:	digitalDetector = false;break;
-	case slsDetectorDefs::AGIPD:	digitalDetector = false;break;
+	case slsDetectorDefs::MYTHEN:	break;
+	case slsDetectorDefs::EIGER:	break;
+	case slsDetectorDefs::GOTTHARD:	actionLoadTrimbits->setText("Load Settings");  actionSaveTrimbits->setText("Save Settings"); break;
+	case slsDetectorDefs::AGIPD:	actionLoadTrimbits->setText("Load Settings");  actionSaveTrimbits->setText("Save Settings"); break;
 	default:
 		string detName = myDet->slsDetectorBase::getDetectorType(detType);
 		string errorMess = host+string(" has unknown detector type \"")+
@@ -236,9 +236,11 @@ void qDetectorMain::Initialization(){
 		connect(tab_measurement,	SIGNAL(EnableNthFrameSignal(bool)),	tab_plot,SLOT(EnableNthFrame(bool)));
 		// Data Output Tab
 		connect(tab_dataoutput,	SIGNAL(AngularConversionSignal(bool)),	tab_actions,SLOT(EnablePositions(bool)));
+		//enable scanbox( for angles)
+		connect(tab_dataoutput,	SIGNAL(AngularConversionSignal(bool)),	tab_plot,SLOT(EnableScanBox()));
 		// Plot tab
 		connect(tab_plot,			SIGNAL(DisableZoomSignal(bool)),	this,SLOT(SetZoomToolTip(bool)));
-		// Actions tab (also for angles)
+		// Actions tab (only for scan)
 		connect(tab_actions,		SIGNAL(EnableScanBox()),			tab_plot,SLOT(EnableScanBox()));
 		//settings to advanced tab(int=id is always 0 to only refresh)
 		connect(tab_settings,		SIGNAL(UpdateTrimbitSignal(int)),		tab_advanced,SLOT(UpdateTrimbitPlot(int)));
@@ -259,6 +261,23 @@ void qDetectorMain::Initialization(){
 }
 
 
+
+//-------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+void qDetectorMain::LoadConfigFile(const string fName){
+#ifdef VERBOSe
+	cout << "Loading config file at start up:" << fName << endl;
+#endif
+	QString file = QString(fName.c_str());//.section('/',-1);
+	if((file.contains('.'))&&(QFile::exists(file))){
+		if(myDet->readConfigurationFile(fName)!=slsDetectorDefs::FAIL)
+			qDefs::Message(qDefs::INFORMATION,"The Configuration Parameters have been loaded successfully at start up.","Main");
+		else qDefs::Message(qDefs::WARNING,string("Could not load the Configuration Parameters at start up from file:\n")+fName,"Main");
+	}else qDefs::Message(qDefs::WARNING,string("Start up configuration failed to load. The following file does not exist:\n")+fName,"Main");
+}
+
+
 //-------------------------------------------------------------------------------------------------------------------------------------------------
 
 
@@ -274,14 +293,6 @@ void qDetectorMain::EnableModes(QAction *action){
 #endif
 	}
 
-	//Set BeamlineMode
-	else if(action==actionBeamline){
-		enable = actionBeamline->isChecked();
-#ifdef VERBOSE
-		cout << "Setting Beamline Mode to " << enable << endl;
-#endif
-	}
-
 	//Set ExpertMode(comes here only if its a digital detector)
 	else if(action==actionExpert){
 		enable = actionExpert->isChecked();
@@ -291,13 +302,8 @@ void qDetectorMain::EnableModes(QAction *action){
 		actionSaveTrimbits->setVisible(enable);
 		actionLoadCalibration->setVisible(enable);
 		actionSaveCalibration->setVisible(enable);
-
-		if(digitalDetector){
-			tab_measurement->SetExpertMode(enable);
-			tab_settings->SetExpertMode(enable);
-		}
-
-
+		tab_measurement->SetExpertMode(enable);
+		tab_settings->SetExpertMode(enable);
 #ifdef VERBOSE
 		cout << "Setting Expert Mode to " << enable << endl;
 #endif
@@ -385,33 +391,71 @@ void qDetectorMain::ExecuteUtilities(QAction *action){
 		}
 	}
 	else if(action==actionLoadTrimbits){
-#ifdef VERBOSE
-		cout << "Loading Trimbits" << endl;
-#endif
 		QString fName = QString(myDet->getSettingsDir());
-		fName = QFileDialog::getOpenFileName(this,
-				tr("Load Detector Trimbits"),fName,
-				tr("Trimbit files (*.trim noise.sn*)"));
-		// Gets called when cancelled as well
-		if (!fName.isEmpty()){
-			if(myDet->loadSettingsFile(string(fName.toAscii().constData()),-1)!=slsDetectorDefs::FAIL)
-				qDefs::Message(qDefs::INFORMATION,"The Trimbits have been loaded successfully.","Main");
-			else qDefs::Message(qDefs::WARNING,string("Could not load the Trimbits from file:\n")+fName.toAscii().constData(),"Main");
+		//gotthard
+		if(actionLoadTrimbits->text().contains("Settings")){
+#ifdef VERBOSE
+			cout << "Loading Settings" << endl;
+#endif
+			fName = QFileDialog::getOpenFileName(this,
+					tr("Load Detector Settings"),fName,
+					tr("Settings files (*.settings settings.sn*)"));
+			// Gets called when cancelled as well
+			if (!fName.isEmpty()){
+				if(myDet->loadSettingsFile(string(fName.toAscii().constData()),-1)!=slsDetectorDefs::FAIL)
+					qDefs::Message(qDefs::INFORMATION,"The Settings have been loaded successfully.","Main");
+				else qDefs::Message(qDefs::WARNING,string("Could not load the Settings from file:\n")+fName.toAscii().constData(),"Main");
+			}
+
+		}//mythen and eiger
+		else{
+#ifdef VERBOSE
+			cout << "Loading Trimbits" << endl;
+#endif
+
+			fName = QFileDialog::getOpenFileName(this,
+					tr("Load Detector Trimbits"),fName,
+					tr("Trimbit files (*.trim noise.sn*)"));
+			// Gets called when cancelled as well
+			if (!fName.isEmpty()){
+				if(myDet->loadSettingsFile(string(fName.toAscii().constData()),-1)!=slsDetectorDefs::FAIL)
+					qDefs::Message(qDefs::INFORMATION,"The Trimbits have been loaded successfully.","Main");
+				else qDefs::Message(qDefs::WARNING,string("Could not load the Trimbits from file:\n")+fName.toAscii().constData(),"Main");
+			}
 		}
 	}
 	else if(action==actionSaveTrimbits){
+		//gotthard
+		if(actionLoadTrimbits->text().contains("Settings")){
 #ifdef VERBOSE
-		cout << "Saving Trimbits" << endl;
+			cout << "Saving Settings" << endl;
+#endif
+			//different output directory so as not to overwrite
+			QString fName = QString(myDet->getSettingsDir());
+			fName = QFileDialog::getSaveFileName(this,
+					tr("Save Current Detector Settings"),fName,
+					tr("Settings files (*.settings settings.sn*) "));
+			// Gets called when cancelled as well
+			if (!fName.isEmpty()){
+				if(myDet->saveSettingsFile(string(fName.toAscii().constData()),-1)!=slsDetectorDefs::FAIL)
+					qDefs::Message(qDefs::INFORMATION,"The Settings have been saved successfully.","Main");
+				else qDefs::Message(qDefs::WARNING,string("Could not save the Settings to file:\n")+fName.toAscii().constData(),"Main");
+			}
+		}//mythen and eiger
+		else{
+#ifdef VERBOSE
+			cout << "Saving Trimbits" << endl;
 #endif//different output directory so as not to overwrite
-		QString fName = QString(myDet->getSettingsDir());
-		fName = QFileDialog::getSaveFileName(this,
-				tr("Save Current Detector Trimbits"),fName,
-				tr("Trimbit files (*.trim noise.sn*) "));
-		// Gets called when cancelled as well
-		if (!fName.isEmpty()){
-			if(myDet->saveSettingsFile(string(fName.toAscii().constData()),-1)!=slsDetectorDefs::FAIL)
-				qDefs::Message(qDefs::INFORMATION,"The Trimbits have been saved successfully.","Main");
-			else qDefs::Message(qDefs::WARNING,string("Could not save the Trimbits to file:\n")+fName.toAscii().constData(),"Main");
+			QString fName = QString(myDet->getSettingsDir());
+			fName = QFileDialog::getSaveFileName(this,
+					tr("Save Current Detector Trimbits"),fName,
+					tr("Trimbit files (*.trim noise.sn*) "));
+			// Gets called when cancelled as well
+			if (!fName.isEmpty()){
+				if(myDet->saveSettingsFile(string(fName.toAscii().constData()),-1)!=slsDetectorDefs::FAIL)
+					qDefs::Message(qDefs::INFORMATION,"The Trimbits have been saved successfully.","Main");
+				else qDefs::Message(qDefs::WARNING,string("Could not save the Trimbits to file:\n")+fName.toAscii().constData(),"Main");
+			}
 		}
 	}
 	else if(action==actionLoadCalibration){
@@ -579,41 +623,20 @@ void qDetectorMain::EnableTabs(){
 	actionSaveConfiguration->setEnabled(enable);
 	actionMeasurementWizard->setEnabled(enable);
 	actionDebug->setEnabled(enable);
-	actionBeamline->setEnabled(enable);
 	actionExpert->setEnabled(enable);
 
 
 	// special tabs
-	if(enable==false){
-		tabs->setTabEnabled(Debugging,enable);
-		tabs->setTabEnabled(Advanced,enable);
-		actionLoadTrimbits->setVisible(false);
-		actionSaveTrimbits->setVisible(false);
-		actionLoadCalibration->setVisible(false);
-		actionSaveCalibration->setVisible(false);
-		tabs->setTabEnabled(Developer,enable);
-	}
-	else{
-	// enable these tabs only if they were enabled earlier
-		if(actionDebug->isChecked())
-			tabs->setTabEnabled(Debugging,enable);
-		if(actionExpert->isChecked()){
-			tabs->setTabEnabled(Advanced,enable);
-			if((enable)&&(digitalDetector)){
-				actionLoadTrimbits->setVisible(true);
-				actionSaveTrimbits->setVisible(true);
-				actionLoadCalibration->setVisible(true);
-				actionSaveCalibration->setVisible(true);
-			}else{
-				actionLoadTrimbits->setVisible(false);
-				actionSaveTrimbits->setVisible(false);
-				actionLoadCalibration->setVisible(false);
-				actionSaveCalibration->setVisible(false);
-			}
-		}
-		if(isDeveloper)
-			tabs->setTabEnabled(Developer,enable);
-	}
+	tabs->setTabEnabled(Debugging,enable && (actionDebug->isChecked()));
+	tabs->setTabEnabled(Developer,enable && isDeveloper);
+	//expert
+	bool expertTab = enable && (actionExpert->isChecked());
+	tabs->setTabEnabled(Advanced,expertTab);
+	actionLoadTrimbits->setVisible(expertTab);
+	actionSaveTrimbits->setVisible(expertTab);
+	actionLoadCalibration->setVisible(expertTab);
+	actionSaveCalibration->setVisible(expertTab);
+
 
 }
 

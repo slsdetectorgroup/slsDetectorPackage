@@ -56,6 +56,7 @@ void qTabSettings::SetupWidgetWindow(){
 	// Dynamic Range
 	switch(myDet->setDynamicRange(-1)){
 	case 32:   	comboDynamicRange->setCurrentIndex(0);	break;
+	case 24:   	comboDynamicRange->setCurrentIndex(0);	break;
 	case 16:	comboDynamicRange->setCurrentIndex(1);  break;
 	case 8:	  	comboDynamicRange->setCurrentIndex(2);	break;
 	case 4:	  	comboDynamicRange->setCurrentIndex(3);	break;
@@ -214,10 +215,11 @@ void qTabSettings::SetDynamicRange(int index){
   case 3:    dr=4;   	break;
   default:   dr=32;  	break;
   }
+  ret=myDet->setDynamicRange(dr);
+  if((ret==24)&&(dr==32)) dr = ret;
 #ifdef VERBOSE
   cout << "Setting dynamic range to "<< dr << endl;
 #endif
-  ret=myDet->setDynamicRange(dr);
   if(ret!=dr){
 	  qDefs::Message(qDefs::WARNING,"Dynamic Range cannot be set to this value.","Settings");
 #ifdef VERBOSE
@@ -225,6 +227,7 @@ void qTabSettings::SetDynamicRange(int index){
 #endif
 	  switch(ret){
 	  case 32:  comboDynamicRange->setCurrentIndex(0);	break;
+	  case 24:  comboDynamicRange->setCurrentIndex(0);	break;
 	  case 16:	comboDynamicRange->setCurrentIndex(1);  break;
 	  case 8:	comboDynamicRange->setCurrentIndex(2);	break;
 	  case 4:	comboDynamicRange->setCurrentIndex(3);	break;
@@ -246,11 +249,10 @@ void qTabSettings::SetEnergy(){
 		int ret = (int)myDet->getThresholdEnergy();
 		if((ret-index)>200){
 			qDefs::Message(qDefs::WARNING,"Threshold energy could not be set. The difference is greater than 200.","Settings");
-			disconnect(spinThreshold,	SIGNAL(valueChanged(int)),	this, SLOT(SetEnergy()));
-			spinThreshold->setValue(ret);
-			connect(spinThreshold,		SIGNAL(valueChanged(int)),	this, SLOT(SetEnergy()));
 		}
-
+		disconnect(spinThreshold,	SIGNAL(valueChanged(int)),	this, SLOT(SetEnergy()));
+		spinThreshold->setValue(ret);
+		connect(spinThreshold,		SIGNAL(valueChanged(int)),	this, SLOT(SetEnergy()));
 }
 
 
@@ -258,19 +260,34 @@ void qTabSettings::SetEnergy(){
 
 
 void qTabSettings::Refresh(){
+#ifdef VERBOSE
+	cout  << endl << "**Updating Settings Tab" << endl;
+#endif
+
 	// Settings
+#ifdef VERBOSE
+	cout  << "Getting settings" << endl;
+#endif
 	SetupDetectorSettings();
 	//changin the combo settings also plots the trimbits for mythen and eiger, so disconnect
 	disconnect(comboSettings, 		SIGNAL(currentIndexChanged(int)),	this, SLOT(setSettings(int)));
 	comboSettings->setCurrentIndex(myDet->getSettings());
 	connect(comboSettings, 		SIGNAL(currentIndexChanged(int)),	this, SLOT(setSettings(int)));
 
+
 	// Number of Modules
+#ifdef VERBOSE
+	cout  << "Getting number of modules" << endl;
+#endif
 	spinNumModules->setValue(myDet->setNumberOfModules());
 
 	// Dynamic Range
+#ifdef VERBOSE
+	cout  << "Getting dynamic range" << endl;
+#endif
 	switch(myDet->setDynamicRange(-1)){
 	case 32:   	comboDynamicRange->setCurrentIndex(0);	break;
+	case 24:   	comboDynamicRange->setCurrentIndex(0);	break;
 	case 16:	comboDynamicRange->setCurrentIndex(1);  break;
 	case 8:	  	comboDynamicRange->setCurrentIndex(2);	break;
 	case 4:	  	comboDynamicRange->setCurrentIndex(3);	break;
@@ -287,11 +304,16 @@ void qTabSettings::Refresh(){
 		}else{
 			lblThreshold->setEnabled(true);
 			spinThreshold->setEnabled(true);
+#ifdef VERBOSE
+			cout  << "Getting threshold energy" << endl;
+#endif
 			SetEnergy();
 		}
 	}
 
-
+#ifdef VERBOSE
+	cout  << "**Updated Settings Tab" << endl << endl;
+#endif
 }
 
 

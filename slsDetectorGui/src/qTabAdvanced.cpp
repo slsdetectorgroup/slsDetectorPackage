@@ -21,7 +21,7 @@ using namespace std;
 
 
 qTabAdvanced::qTabAdvanced(QWidget *parent,multiSlsDetector*& detector, qDrawPlot*& plot):
-		QWidget(parent),myDet(detector),myPlot(plot),btnGroup(NULL){
+		QWidget(parent),myDet(detector),myPlot(plot),btnGroup(NULL),isEnergy(false),isAngular(false){
 	setupUi(this);
 	SetupWidgetWindow();
 }
@@ -42,27 +42,42 @@ qTabAdvanced::~qTabAdvanced(){
 void qTabAdvanced::SetupWidgetWindow(){
 //executed even for non digital, so make sure its necessary
 	slsDetectorDefs::detectorType detType = myDet->getDetectorsType();
-	if((detType==slsDetectorDefs::MYTHEN)||(detType==slsDetectorDefs::EIGER)){
-		outputDirTip = dispFile->toolTip();
-		errOutputTip = QString("<br><br><font color=\"red\"><nobr>"
-				"<b>Output Trim File</b> should contain both existing directory and a file name.</nobr><br>"
-				"<nobr>The extensions are automatically added.</nobr><br><br>"
-				"<nobr>Enter valid<b> Output Trim File</b> to enable <b>Start Trimming</b> button.</nobr></font>");
-		red = QPalette();
-		red.setColor(QPalette::Active,QPalette::WindowText,Qt::red);
-
-		boxTrimming->setChecked(false);
-		SetOptimize(false);
-
-		btnGroup = new QButtonGroup(this);
-		btnGroup->addButton(btnRefresh,0);
-		btnGroup->addButton(btnGetTrimbits,1);
+	switch(detType){
+	case slsDetectorDefs::MYTHEN: 	isEnergy = true; 	isAngular = true; 	break;
+	case slsDetectorDefs::EIGER:	isEnergy = true; 	isAngular = false;	break;
+	case slsDetectorDefs::GOTTHARD:	isEnergy = false; 	isAngular = true; 	break;
+	default: break;
+	}
 
 
+
+	if(!isAngular && !isEnergy) boxLogs->setEnabled(false);
+	else{
+		if(!isAngular) 	chkAngularLog->setEnabled(false);
+		if(!isEnergy){
+			chkEnergyLog->setEnabled(false);
+			boxPlot->setEnabled(false);
+			boxTrimming->setEnabled(false);
+		}
+		else{
+			outputDirTip = dispFile->toolTip();
+			errOutputTip = QString("<br><br><font color=\"red\"><nobr>"
+					"<b>Output Trim File</b> should contain both existing directory and a file name.</nobr><br>"
+					"<nobr>The extensions are automatically added.</nobr><br><br>"
+					"<nobr>Enter valid<b> Output Trim File</b> to enable <b>Start Trimming</b> button.</nobr></font>");
+			red = QPalette();
+			red.setColor(QPalette::Active,QPalette::WindowText,Qt::red);
+
+			boxTrimming->setChecked(false);
+			SetOptimize(false);
+
+			btnGroup = new QButtonGroup(this);
+			btnGroup->addButton(btnRefresh,0);
+			btnGroup->addButton(btnGetTrimbits,1);
+		}
 
 		Initialization();
 	}
-
 }
 
 
@@ -71,35 +86,38 @@ void qTabAdvanced::SetupWidgetWindow(){
 
 void qTabAdvanced::Initialization(){
 	//energy/angular logs
-	connect(chkEnergyLog,	SIGNAL(toggled(bool)),		this,	SLOT(SetLogs()));
-	connect(chkAngularLog,	SIGNAL(toggled(bool)),		this,	SLOT(SetLogs()));
+	if(isAngular)
+		connect(chkEnergyLog,	SIGNAL(toggled(bool)),		this,	SLOT(SetLogs()));
 
-	//exptime
-	connect(spinExpTime,	SIGNAL(valueChanged(double)),		this,	SLOT(SetExposureTime()));
-	connect(comboExpUnit,	SIGNAL(currentIndexChanged(int)),	this,	SLOT(SetExposureTime()));
+	if(isEnergy){
+		connect(chkAngularLog,	SIGNAL(toggled(bool)),		this,	SLOT(SetLogs()));
 
-	//threshold dac
-	connect(spinThreshold,	SIGNAL(valueChanged(double)),	this,	SLOT(SetThreshold()));
+		//exptime
+		connect(spinExpTime,	SIGNAL(valueChanged(double)),		this,	SLOT(SetExposureTime()));
+		connect(comboExpUnit,	SIGNAL(currentIndexChanged(int)),	this,	SLOT(SetExposureTime()));
 
-	//output directory
-	connect(dispFile,		SIGNAL(editingFinished()),		this, SLOT(SetOutputFile()));
-	connect(btnFile,		SIGNAL(clicked()), 				this, SLOT(BrowseOutputFile()));
+		//threshold dac
+		connect(spinThreshold,	SIGNAL(valueChanged(double)),	this,	SLOT(SetThreshold()));
 
-	//enable trimming method group box
-	connect(boxTrimming,	SIGNAL(toggled(bool)),	this, SLOT(EnableTrimming(bool)));
+		//output directory
+		connect(dispFile,		SIGNAL(editingFinished()),		this, SLOT(SetOutputFile()));
+		connect(btnFile,		SIGNAL(clicked()), 				this, SLOT(BrowseOutputFile()));
 
-	//trimming method combo
-	connect(comboMethod,	SIGNAL(currentIndexChanged(int)),	this, SLOT(SetTrimmingMethod(int)));
+		//enable trimming method group box
+		connect(boxTrimming,	SIGNAL(toggled(bool)),	this, SLOT(EnableTrimming(bool)));
 
-	//method options
-	connect(chkOptimize,	SIGNAL(toggled(bool)),	this, SLOT(SetOptimize(bool)));
+		//trimming method combo
+		connect(comboMethod,	SIGNAL(currentIndexChanged(int)),	this, SLOT(SetTrimmingMethod(int)));
 
-	//start Trimming
-	connect(btnStart,		SIGNAL(clicked()),	this, SLOT(StartTrimming()));
+		//method options
+		connect(chkOptimize,	SIGNAL(toggled(bool)),	this, SLOT(SetOptimize(bool)));
 
-	//refresh
-	connect(btnGroup,		SIGNAL(buttonClicked(int)),	this, SLOT(UpdateTrimbitPlot(int)));
+		//start Trimming
+		connect(btnStart,		SIGNAL(clicked()),	this, SLOT(StartTrimming()));
 
+		//refresh
+		connect(btnGroup,		SIGNAL(buttonClicked(int)),	this, SLOT(UpdateTrimbitPlot(int)));
+	}
 
 }
 
@@ -295,7 +313,7 @@ void qTabAdvanced::SetTrimmingMethod(int mode){
 
 void qTabAdvanced::StartTrimming(){
 
-	int parameter1, parameter2;
+	int parameter1=0, parameter2=0;
 	//optimize
 	bool optimize = chkOptimize->isChecked();
 
@@ -364,45 +382,66 @@ void qTabAdvanced::UpdateTrimbitPlot(int id){
 
 
 void qTabAdvanced::Refresh(){
-	//disconnect
-	disconnect(chkEnergyLog,	SIGNAL(toggled(bool)),				this,	SLOT(SetLogs()));
-	disconnect(chkAngularLog,	SIGNAL(toggled(bool)),				this,	SLOT(SetLogs()));
-	disconnect(spinExpTime,	SIGNAL(valueChanged(double)),		this,	SLOT(SetExposureTime()));
-	disconnect(comboExpUnit,	SIGNAL(currentIndexChanged(int)),	this,	SLOT(SetExposureTime()));
-	disconnect(spinThreshold,	SIGNAL(valueChanged(double)),		this,	SLOT(SetThreshold()));
-
-	//energy/angular logs
-	chkEnergyLog->setChecked(myDet->getActionMode(slsDetectorDefs::enCalLog));
-	chkAngularLog->setChecked(myDet->getActionMode(slsDetectorDefs::angCalLog));
 #ifdef VERBOSE
-	cout << "Energy Calibration Log set to " << chkEnergyLog->isChecked() << endl;
-	cout << "Angular Calibration Log set to " << chkAngularLog->isChecked() << endl;
+		cout  << endl << "**Updating Advanced Tab" << endl;
 #endif
 
-	//exptime
-	qDefs::timeUnit unit;
-	double time = qDefs::getCorrectTime(unit,((double)(myDet->setTimer(slsDetectorDefs::ACQUISITION_TIME,-1)*(1E-9))));
+	if(isAngular){
 #ifdef VERBOSE
-	cout << "Getting acquisition time : " << time << qDefs::getUnitString(unit) << endl;
+		cout << "Angular Calibration Log set to " << chkAngularLog->isChecked() << endl;
 #endif
-	spinExpTime->setValue(time);
-	comboExpUnit->setCurrentIndex((int)unit);
+
+		disconnect(chkAngularLog,	SIGNAL(toggled(bool)),				this,	SLOT(SetLogs()));
+
+		chkAngularLog->setChecked(myDet->getActionMode(slsDetectorDefs::angCalLog));
+
+		connect(chkAngularLog,	SIGNAL(toggled(bool)),				this,	SLOT(SetLogs()));
+	}
 
 
-	//threshold
-	double threshold = (double)myDet->setDAC(-1,slsDetectorDefs::THRESHOLD);
+	if(isEnergy){
+		//disconnect
+		disconnect(chkEnergyLog,	SIGNAL(toggled(bool)),				this,	SLOT(SetLogs()));
+		disconnect(spinExpTime,	SIGNAL(valueChanged(double)),		this,	SLOT(SetExposureTime()));
+		disconnect(comboExpUnit,	SIGNAL(currentIndexChanged(int)),	this,	SLOT(SetExposureTime()));
+		disconnect(spinThreshold,	SIGNAL(valueChanged(double)),		this,	SLOT(SetThreshold()));
+
+
+		//energy/angular logs
+		chkEnergyLog->setChecked(myDet->getActionMode(slsDetectorDefs::enCalLog));
+#ifdef VERBOSE
+		cout << "Energy Calibration Log set to " << chkEnergyLog->isChecked() << endl;
+#endif
+
+
+		//exptime
+		qDefs::timeUnit unit;
+		double time = qDefs::getCorrectTime(unit,((double)(myDet->setTimer(slsDetectorDefs::ACQUISITION_TIME,-1)*(1E-9))));
+#ifdef VERBOSE
+		cout << "Getting acquisition time : " << time << qDefs::getUnitString(unit) << endl;
+#endif
+		spinExpTime->setValue(time);
+		comboExpUnit->setCurrentIndex((int)unit);
+
+
+		//threshold
+		double threshold = (double)myDet->setDAC(-1,slsDetectorDefs::THRESHOLD);
 #ifdef VERBOSE
 		cout << "Getting Threshold DACu : " << threshold << endl;
 #endif
-	spinThreshold->setValue(threshold);
+		spinThreshold->setValue(threshold);
 
-	//connect
-	connect(chkEnergyLog,	SIGNAL(toggled(bool)),				this,	SLOT(SetLogs()));
-	connect(chkAngularLog,	SIGNAL(toggled(bool)),				this,	SLOT(SetLogs()));
-	connect(spinExpTime,	SIGNAL(valueChanged(double)),		this,	SLOT(SetExposureTime()));
-	connect(comboExpUnit,	SIGNAL(currentIndexChanged(int)),	this,	SLOT(SetExposureTime()));
-	connect(spinThreshold,	SIGNAL(valueChanged(double)),		this,	SLOT(SetThreshold()));
 
+		//connect
+		connect(chkEnergyLog,	SIGNAL(toggled(bool)),				this,	SLOT(SetLogs()));
+		connect(spinExpTime,	SIGNAL(valueChanged(double)),		this,	SLOT(SetExposureTime()));
+		connect(comboExpUnit,	SIGNAL(currentIndexChanged(int)),	this,	SLOT(SetExposureTime()));
+		connect(spinThreshold,	SIGNAL(valueChanged(double)),		this,	SLOT(SetThreshold()));
+	}
+
+#ifdef VERBOSE
+		cout  << "**Updated Advanced Tab" << endl << endl;
+#endif
 }
 
 

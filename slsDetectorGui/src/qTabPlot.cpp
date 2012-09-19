@@ -506,9 +506,9 @@ void qTabPlot::EnableScanBox(){
 	//if it was checked before or disabled before, it remembers to check it again
 	bool checkedBefore = boxScan->isChecked();//||(!boxScan->isEnabled()));
 
-
+	int ang;
 	//none of these scan plotting options make sense if positions>0
-	bool positionsExist = myDet->getPositions();
+	bool positionsExist = myDet->getAngularConversion(ang);//myDet->getPositions();
 
 	//only now enable/disable
 	boxScan->setEnabled((mode0||mode1)&&(!positionsExist));
@@ -603,6 +603,7 @@ void qTabPlot::SetScanArgument(){
 	}
 	Select1DPlot(isOrginallyOneD);
 
+	int ang;
 	//if scans(1D or 2D)
 	if(boxScan->isEnabled()){
 		//setting the title according to the scans
@@ -613,7 +614,8 @@ void qTabPlot::SetScanArgument(){
 		Select1DPlot(isOrginallyOneD);
 
 	}//angles (1D)
-	else if(myDet->getPositions()){
+	else if(myDet->getAngularConversion(ang)){
+	//else if(myDet->getPositions()){
 		//if scan, change title
 		if((myDet->getScanMode(0))||(myDet->getScanMode(1))){
 			QString mainTitle = QString(" Level 0 : ") + modeNames[myDet->getScanMode(0)] +
@@ -674,6 +676,9 @@ void qTabPlot::SetScanArgument(){
 
 
 void qTabPlot::Refresh(){
+#ifdef VERBOSE
+	cout  << endl << "**Updating Plot Tab" << endl;
+#endif
 	if(!myPlot->isRunning()){
 		connect(boxScan,	  SIGNAL(toggled(bool)),				   this, SLOT(EnableScanBox()));
 		SetFrequency();
@@ -682,6 +687,9 @@ void qTabPlot::Refresh(){
 		disconnect(boxScan,	  SIGNAL(toggled(bool)),				   this, SLOT(EnableScanBox()));
 		boxScan->setEnabled(false);
 	}
+#ifdef VERBOSE
+	cout  << "**Updated Plot Tab" << endl << endl;
+#endif
 }
 
 

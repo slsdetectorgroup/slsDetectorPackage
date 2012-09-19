@@ -123,9 +123,13 @@ private:
 	 * */
 	void Initialization();
 
+	/** Loads config file at start up
+	 * */
+	void LoadConfigFile(const string fName);
+
 
 private slots:
-/** Enables modes as selected -Debug, Beamline, Expert, Dockable(calls setdockablemode())
+/** Enables modes as selected -Debug, Expert, Dockable(calls setdockablemode())
  * */
 void EnableModes(QAction *action);
 

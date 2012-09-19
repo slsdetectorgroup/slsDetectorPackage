@@ -241,7 +241,6 @@
      <string>&amp;Modes</string>
     </property>
     <addaction name="actionDebug"/>
-    <addaction name="actionBeamline"/>
     <addaction name="actionExpert"/>
     <addaction name="actionDockable"/>
    </widget>

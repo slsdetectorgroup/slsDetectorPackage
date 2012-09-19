@@ -324,7 +324,6 @@ void qTabActions::SetPosition(){
 		qDefs::Message(qDefs::WARNING,"The positions list was not set for some reason.","Actions");
 
 
-	emit EnableScanBox();
 }
 
 
@@ -375,6 +374,7 @@ void qTabActions::EnablePositions(bool enable){
 		lblName[NumPositions]->setEnabled(false);
 		btnExpand[NumPositions]->setEnabled(false);
 	}
+
 }
 
 
@@ -383,7 +383,7 @@ void qTabActions::EnablePositions(bool enable){
 
 void qTabActions::Refresh(){
 #ifdef VERBOSE
-	cout << "\nUpdating all action widgets: " << endl;
+	cout << endl <<"**Updating all action widgets: " << endl;
 #endif
 	if((detType == slsDetectorDefs::MYTHEN) || (detType == slsDetectorDefs::GOTTHARD)){
 		//positions is enabled only if angular conversion is enabled
@@ -428,8 +428,10 @@ void qTabActions::Refresh(){
 		scanWidget[i]->Refresh();
 	for(int i=0;i<qActionsWidget::NUM_ACTION_WIDGETS;i++)
 		actionWidget[i]->Refresh();
-	cout << endl;
 	UpdateCollapseColors();
+#ifdef VERBOSE
+	cout << "**Updated all action widgets: " << endl << endl;
+#endif
 }
 
 

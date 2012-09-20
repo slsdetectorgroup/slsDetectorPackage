@@ -5,13 +5,16 @@
 #include <iostream>
 #include <fstream>
 #include <sstream>
+#include <string.h>
 
 using namespace std;
 class badChannelCorrections{
 
  public:
 
+  static int readBadChannelCorrectionFile(string fname, int &nbad, int *badlist){ ifstream infile(fname.c_str()); int nb=-1; if (infile.is_open()) {nb=readBadChannelCorrectionFile(infile,nbad,badlist); infile.close();}; return nb;};
   
+ 
 
   static int readBadChannelCorrectionFile(ifstream &infile, int &nbad, int *badlist, int moff=0){ \
     int interrupt=0;							\

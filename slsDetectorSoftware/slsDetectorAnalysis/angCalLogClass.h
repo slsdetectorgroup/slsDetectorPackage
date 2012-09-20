@@ -48,7 +48,7 @@ class angCalLogClass {
   
     // 
 
-  int readHeader(ifstream &infile, char *settings, int &maxmod, int &nmod, int &chanspermod, char *angconvfile, double &globaloff, double &fineoff, int &angdir, char *ffdir, char *fffile, char *badfile ) { \
+  int readHeader(ifstream &infile, int &maxmod, int &nmod, int &chanspermod, char *angconvfile, double &globaloff, double &fineoff, int &angdir, char *ffdir, char *fffile, char *badfile ) { \
     nmod=0; chanspermod=0; globaloff=0; fineoff=0; angdir=1;		\
     strcpy(angconvfile,"none");	 strcpy(ffdir,"none"); strcpy(fffile,"none"); strcpy(badfile,"none"); \
     char line[1000], myvar[100], myarg[100];				\
@@ -111,6 +111,7 @@ class angCalLogClass {
       float v;
       infile.getline(line,1000);					\
       if (sscanf(line,"%g %s",&v, datafname)<2)	return -1;		\
+      printf("scanned %s to %f %s",line,v,datafname);
       threshold=v;							\
       if  (infile.bad() || infile.eof())				\
 	return -1;							\

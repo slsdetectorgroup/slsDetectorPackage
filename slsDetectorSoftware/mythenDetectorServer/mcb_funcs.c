@@ -761,8 +761,11 @@ int getThresholdEnergy() {
       
       }
 #ifdef VERBOSE
-      //printf("module=%d gain=%f, offset=%f, dacu=%f\n",imod, myg, myo, detectorDacs[VTHRESH+imod*NDAC]);
+#ifdef DACS_INT
+      printf("module=%d gain=%f, offset=%f, dacu=%d\n",imod, myg, myo,setDACRegister(VTHRESH,-1,imod));
+#else
       printf("module=%d gain=%f, offset=%f, dacu=%f\n",imod, myg, myo,setDACRegister(VTHRESH,-1,imod));
+#endif
       printf("Threshold energy of module %d is %d eV\n", imod, ethr);
 #endif 
       

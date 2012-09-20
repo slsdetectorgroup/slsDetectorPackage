@@ -310,8 +310,7 @@ int defaultDataReadyFunc(detectorData* d,  void* p) {
   printf("Filename %s\n",d->fileName);
   printf("Number of points %d (%d)\n",d->npoints,d->npy);
   for(int i=0;i<d->npoints;i++){
-	  printf("%d-[%f]:%f\n",i,*(d->angles+(i*sizeof(double))),*(d->values+(i*sizeof(double))));
-	  fflush(stdout);
+    printf("%d-[%f]:%f\n",i,(d->angles)[i],(d->values)[i]);
   }
   printf("UUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUU Finished \n");
 #endif

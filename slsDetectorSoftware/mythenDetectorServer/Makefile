@@ -13,9 +13,9 @@ INSTMODE= 	0777
 SRCS= 		 server.c server_funcs.c communication_funcs.c firmware_funcs.c mcb_funcs.c trimming_funcs.c  sharedmemory.c
 OBJS= 	$(SRCS:%.c=%.o) 
 
-CFLAGS+= 	-Wall -DC_ONLY -DMCB_FUNCS -DVERBOSE -DDACS_INT
-#-DVERYVERBOSE 
-#-Werror
+#VFLAGS= -DVERBOSE -DVERYVERBOSE
+CFLAGS+= 	-Wall -DC_ONLY -DMCB_FUNCS -DDACS_INT $(VFLAGS)
+#-Werror 
 
 LDLIBS+= 	-lm
 
@@ -27,8 +27,6 @@ boot: $(OBJS)
 $(PROGS): $(OBJS)
 	echo $(OBJS)
 	$(CC) $(LDFLAGS) $^ $(LDLIBS) $(CFLAGS) -o $@
-
-
 
 install:	$(PROGS)
 	$(INSTALL) -d $(INSTDIR)

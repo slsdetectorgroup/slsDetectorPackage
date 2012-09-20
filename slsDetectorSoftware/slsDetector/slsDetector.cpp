@@ -1324,6 +1324,25 @@ int slsDetector::setNumberOfModules(int n, dimension d){
     }  else {
       thisDetector->nMod[d]=retval;
       thisDetector->nMods=thisDetector->nMod[X]*thisDetector->nMod[Y];
+
+
+	if (thisDetector->nModsMax<thisDetector->nMods) 
+	  thisDetector->nModsMax=thisDetector->nMods;
+	
+	if (thisDetector->nModMax[X]<thisDetector->nMod[X])
+	  thisDetector->nModMax[X]=thisDetector->nMod[X];
+
+	if (thisDetector->nModMax[Y]<thisDetector->nMod[Y])
+	  thisDetector->nModMax[Y]=thisDetector->nMod[Y];
+
+
+
+
+
+
+
+
+
       int dr=thisDetector->dynamicRange;
       if (dr==24)
 	dr=32;
@@ -2848,6 +2867,14 @@ int slsDetector::updateDetectorNoWait() {
 	n = 	controlSocket->ReceiveDataOnly( &nm,sizeof(nm));
 	thisDetector->nMod[Y]=nm;
 	thisDetector->nMods=thisDetector->nMod[Y]*thisDetector->nMod[X];
+	if (thisDetector->nModsMax<thisDetector->nMods) 
+	  thisDetector->nModsMax=thisDetector->nMods;
+	
+	if (thisDetector->nModMax[X]<thisDetector->nMod[X])
+	  thisDetector->nModMax[X]=thisDetector->nMod[X];
+
+	if (thisDetector->nModMax[Y]<thisDetector->nMod[Y])
+	  thisDetector->nModMax[Y]=thisDetector->nMod[Y];
 
 	n = 	controlSocket->ReceiveDataOnly( &nm,sizeof(nm));
 	thisDetector->dynamicRange=nm;

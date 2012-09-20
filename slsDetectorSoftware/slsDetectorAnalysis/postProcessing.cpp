@@ -94,10 +94,17 @@ fname=createFileName();
 if(*correctionMask&(1<<WRITE_FILE)) 
 {
 
+#ifdef VERBOSE
+  cout << "writing raw data " << endl;
 
+#endif
  //uses static function?!?!?!?
  writeDataFile (fname+string(".raw"),fdata, NULL, NULL, 'i'); 
 
+#ifdef VERBOSE
+  cout << "done " << endl;
+
+#endif
 } 
 
  doProcessing(fdata,delflag, fname);
@@ -146,10 +153,16 @@ void postProcessing::doProcessing(double *lfdata, int delflag, string fname) {
 
     /** rate correction */
     if (*correctionMask&(1<<RATE_CORRECTION)) {
+#ifdef VERBOSE
+  cout << "rate correcting " << endl;
+#endif
       rcdata=new double[getTotalNumberOfChannels()];
       rcerr=new double[getTotalNumberOfChannels()];
       rateCorrect(lfdata,NULL,rcdata,rcerr);
       delete [] lfdata;
+#ifdef VERBOSE
+  cout << "done " << endl;
+#endif
     } else {
       rcdata=lfdata;
     }
@@ -161,6 +174,9 @@ void postProcessing::doProcessing(double *lfdata, int delflag, string fname) {
     /** flat field correction */
     if (*correctionMask&(1<<FLAT_FIELD_CORRECTION)) {
       
+#ifdef VERBOSE
+  cout << "ff correcting " << endl;
+#endif
       ffcdata=new double[getTotalNumberOfChannels()];
       ffcerr=new double[getTotalNumberOfChannels()];
       flatFieldCorrect(rcdata,rcerr,ffcdata,ffcerr);
@@ -169,6 +185,10 @@ void postProcessing::doProcessing(double *lfdata, int delflag, string fname) {
       if (rcerr)	    
 	delete [] rcerr;
       rcerr=NULL;
+
+#ifdef VERBOSE
+  cout << "done " << endl;
+#endif
     } else {
       ffcdata=rcdata;
       ffcerr=rcerr;
@@ -179,9 +199,19 @@ void postProcessing::doProcessing(double *lfdata, int delflag, string fname) {
     // writes angualr converted files
 
     if (*correctionMask!=0) {
-      if (*correctionMask&(1<< ANGULAR_CONVERSION))
+      if (*correctionMask&(1<< ANGULAR_CONVERSION)) {
+#ifdef VERBOSE
+	cout << "ang conv " << endl;
+#endif
 	ang=convertAngles();
+#ifdef VERBOSE
+	cout << "done - write position data file " << endl;
+#endif
+      }
       writeDataFile (fname+ext,  ffcdata, ffcerr,ang);
+#ifdef VERBOSE
+  cout << "done " << endl;
+#endif
     }
    
     //   if (*correctionMask&(1<< ANGULAR_CONVERSION) && getNumberOfPositions()>0) {

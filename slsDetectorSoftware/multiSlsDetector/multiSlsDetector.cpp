@@ -2893,9 +2893,16 @@ int multiSlsDetector::getMaxMods() {
   for (int idet=0; idet<thisMultiDetector->numberOfDetectors; idet++) {
     if (detectors[idet]) {
       ret1=detectors[idet]->getMaxMods();
+#ifdef VERBOSE
+      cout << "detector " << idet << " maxmods " << ret1 << endl;
+#endif
       ret+=ret1;
     }
   }
+#ifdef VERBOSE
+  cout << "max mods is " << ret << endl;
+#endif
+
   return ret;
 
 }
@@ -2948,14 +2955,15 @@ int multiSlsDetector::setNumberOfModules(int p, dimension d) {
 
 int multiSlsDetector::decodeNMod(int i, int &id, int &im) {
 #ifdef VERBOSE
-  cout << " Module " << i << " belongs to detector " << id ;
+  cout << " Module " << i << " belongs to detector " << id << endl;;
+  cout << getMaxMods();
 #endif
 
   if (i<0 || i>=getMaxMods()) {
     id=-1;
     im=-1;
 #ifdef VERBOSE
-    cout  << "A---------" << id << " position " << im << endl;
+    cout  << " A---------" << id << " position " << im << endl;
 #endif
 
     return -1;
@@ -2968,7 +2976,7 @@ int multiSlsDetector::decodeNMod(int i, int &id, int &im) {
 	id=idet;
 	im=i;
 #ifdef VERBOSE
-    cout  << "B---------" <<id << " position " << im << endl;
+    cout  << " B---------" <<id << " position " << im << endl;
 #endif
 	return im;
       } else {
@@ -2979,7 +2987,7 @@ int multiSlsDetector::decodeNMod(int i, int &id, int &im) {
   id=-1;
   im=-1;
 #ifdef VERBOSE
-    cout  <<"C---------" << id << " position " << im << endl;
+    cout  <<" C---------" << id << " position " << im << endl;
 #endif
   return -1;
   

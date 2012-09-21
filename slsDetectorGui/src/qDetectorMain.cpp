@@ -64,11 +64,9 @@ qDetectorMain::qDetectorMain(int argc, char **argv, QApplication *app, QWidget *
 	}
 
 	setupUi(this);
-	SetUpDetector();
+	SetUpDetector(configFName);
 	SetUpWidgetWindow();
 	Initialization();
-	if(!configFName.empty()) LoadConfigFile(configFName);
-
 
 }
 
@@ -172,11 +170,16 @@ void qDetectorMain::SetUpWidgetWindow(){
 //-------------------------------------------------------------------------------------------------------------------------------------------------
 
 
-void qDetectorMain::SetUpDetector(){
+void qDetectorMain::SetUpDetector(const string fName){
 
 
 	//instantiate detector and set window title
 	myDet = new multiSlsDetector(detID);
+
+	//loads the config file at startup
+	if(!fName.empty()) LoadConfigFile(fName);
+
+	//gets the hostname if it worked
 	string host = myDet->getHostname();
 
 	//if hostname doesnt exist even in shared memory
@@ -271,9 +274,9 @@ void qDetectorMain::LoadConfigFile(const string fName){
 	QString file = QString(fName.c_str());//.section('/',-1);
 	if((file.contains('.'))&&(QFile::exists(file))){
 		if(myDet->readConfigurationFile(fName)!=slsDetectorDefs::FAIL)
-			qDefs::Message(qDefs::INFORMATION,"The Configuration Parameters have been loaded successfully at start up.","Main");
-		else qDefs::Message(qDefs::WARNING,string("Could not load the Configuration Parameters at start up from file:\n")+fName,"Main");
-	}else qDefs::Message(qDefs::WARNING,string("Start up configuration failed to load. The following file does not exist:\n")+fName,"Main");
+			qDefs::Message(qDefs::INFORMATION,"<nobr>The Configuration Parameters have been loaded successfully at start up.</nobr>","Main");
+		else qDefs::Message(qDefs::WARNING,string("<nobr>Could not load the Configuration Parameters at start up from file:</nobr><br><nobr>")+fName,"Main");
+	}else qDefs::Message(qDefs::WARNING,string("<nobr>Start up configuration failed to load. The following file does not exist:</nobr><br><nobr>")+fName,"Main");
 }
 
 
@@ -506,14 +509,14 @@ void qDetectorMain::ExecuteHelp(QAction *action){
 		string thisClientVersion = string(version);
 		//<h1 style="font-family:verdana;">A heading</h1>
 		qDefs::Message(qDefs::INFORMATION,"<p style=\"font-family:verdana;\">"
-				"SLS Detector GUI version:     1.0<br>"
+				"SLS Detector GUI version:     " + string(QString("%1").arg(GUI_VERSION).toAscii().constData())+"<br>"
 				"SLS Detector Client version:  "+thisClientVersion+"<br><br>"
 				"Common GUI to control the SLS Detectors: "
 				"Mythen, Eiger, Gotthard and Agipd.<br><br>"
 				"It can be operated in parallel with the command line interface:<br>"
 				"sls_detector_put,<br>sls_detector_get,<br>sls_detector_acquire and<br>sls_detector_help.<br><br>"
 				"The GUI Software is still in progress. "
-				"Please report bugs to dhanya.maliakal@psi.ch.<\\p>","About SLS Detector GUI");
+				"Please report bugs to dhanya.maliakal@psi.ch or anna.bergamaschi@psi.ch.<\\p>","About SLS Detector GUI");
 	}
 }
 

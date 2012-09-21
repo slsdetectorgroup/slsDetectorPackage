@@ -117,8 +117,9 @@ private:
 	void SetUpWidgetWindow();
 
 	/**Sets up detector
+	 * @param fName file name of the config file at start up
 	 * */
-	void SetUpDetector();
+	void SetUpDetector(const string fName);
 
 	/**Sets up the signals and the slots
 	 * */

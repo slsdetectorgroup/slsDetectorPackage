@@ -5,10 +5,11 @@ DIR= $(shell ls src/* slsDetectorPlotting/include/* slsDetectorPlotting/src/* in
 all: $(PROG)
 
 
-clean: Makefile.gui
+clean: 
+	if test -e Makefile.gui; then make -f Makefile.gui clean; make -f Makefile.gui mocclean; fi	
+
 
 Makefile.gui: slsDetectorGui.pro
-	if test -e Makefile.gui; then make -f Makefile.gui clean;fi	
 	qmake -o Makefile.gui
 
 $(PROG): Makefile.gui $(DIR)

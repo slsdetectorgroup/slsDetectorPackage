@@ -27,6 +27,7 @@ class multiSlsDetector;
 #include <QScrollArea>
 #include <QGridLayout>
 #include <QResizeEvent>
+#include <QTabWidget>
 
 #include <iostream>
 using namespace std;

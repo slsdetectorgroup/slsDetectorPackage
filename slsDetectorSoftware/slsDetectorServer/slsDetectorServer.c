@@ -1,7 +1,7 @@
 /* A simple server in the internet domain using TCP
    The port number is passed as an argument */
 #include "communication_funcs.h"
-#include "server_funcs.h"
+#include "slsDetectorServer_funcs.h"
 #include <stdlib.h>
 
 
@@ -39,7 +39,7 @@ int main(int argc, char *argv[])
 
 
   
-  init_detector(b); //defined in server_funcs
+  init_detector(b); //defined in slsDetectorServer_funcs
 
 
   sd=bindSocket(portno); //defined in communication_funcs
@@ -53,7 +53,7 @@ int main(int argc, char *argv[])
   }
 
   /* assign function table */
-  function_table();  //defined in server_funcs
+  function_table();  //defined in slsDetectorServer_funcs
 #ifdef VERBOSE
   printf("function table assigned \n");
 #endif
@@ -72,7 +72,7 @@ int main(int argc, char *argv[])
     printf("Conenction accepted\n");
 #endif
     if (fd>0) {
-      retval=decode_function(fd);   //defined in server_funcs
+      retval=decode_function(fd);   //defined in slsDetectorServer_funcs
 #ifdef VERY_VERBOSE
       printf("function executed\n");
 #endif

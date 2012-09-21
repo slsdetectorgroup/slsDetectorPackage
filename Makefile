@@ -5,7 +5,7 @@ WD=$(shell pwd)
 LIBRARYDIR=$(WD)/slsDetectorSoftware
 TLIBRARYDIR=$(WD)/TMythenDetector
 CLIENTDIR=$(WD)/slsDetectorClient
-GUIDIR=$(WD)/mythenGUI
+GUIDIR=$(WD)/slsDetectorGuiOriginal
 LIBDOCDIR=$(WD)/slsDetectorSoftware
 
 
@@ -15,8 +15,7 @@ LIBDOCDIR=$(WD)/slsDetectorSoftware
 
 
 
-all: lib  slsDetectorClient
-	
+all: lib  slsDetectorClient slsDetectorGUI
 
 lib:
 	cd $(LIBRARYDIR) && $(MAKE) lib FLAGS=$(FLAGS)
@@ -26,6 +25,10 @@ slsDetectorClient: lib
 	$(shell test -d bin || mkdir -p bin)
 	mv $(CLIENTDIR)/bin/* bin/
 
+slsDetectorGUI: lib
+	cd  $(GUIDIR) && $(MAKE)  FLAGS=$(FLAGS)
+	$(shell test -d bin || mkdir -p bin)
+	mv $(GUIDIR)/bin/* bin/
 
 clean:
 	rm -rf bin/sls_detector_*
@@ -55,7 +58,6 @@ install_doc: install_libdoc install_clientdoc
 
 
 install: conf install_lib install_client install_doc
-	
 
 
 conf:

@@ -34,6 +34,7 @@ clean:
 	rm -rf bin/sls_detector_*
 	cd $(LIBRARYDIR) && $(MAKE) clean
 	cd $(CLIENTDIR) && $(MAKE) clean
+	cd $(GUIDIR) && $(MAKE) clean
 
 install_lib:
 	cd $(LIBRARYDIR) && $(MAKE) install_lib DESTDIR=$(INSTALLROOT)/$(LIBDIR)

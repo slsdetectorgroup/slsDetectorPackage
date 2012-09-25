@@ -101,6 +101,8 @@ void qDrawPlot::SetupWidgetWindow(){
 	scanArgument = None;
 
 	alreadyDisplayed =  false;
+
+	backwardScanPlot = false;
 	// This is so that it initially stop and plots
 	running = 1;
 	for(int i=0;i<MAX_1DPLOTS;i++)
@@ -387,6 +389,15 @@ void qDrawPlot::SetScanArgument(int scanArg){
 		nPixelsY = numSteps;
 	}
 
+	if(minPixelsY>maxPixelsY){
+		double temp = minPixelsY;
+		minPixelsY = maxPixelsY;
+		maxPixelsY = temp;
+		backwardScanPlot = true;
+	}else backwardScanPlot = false;
+
+
+
 	//1d
 	if(histXAxis)    delete [] histXAxis;	histXAxis    = new double [nPixelsX];
 	if(histYAxis[0]) delete [] histYAxis[0];histYAxis[0] = new double [nPixelsX];
@@ -455,7 +466,13 @@ void qDrawPlot::SetupMeasurement(int currentIndex){
 			minPixelsY = currentIndex;
 			if(!running) nPixelsY = number_of_frames;
 		}//level0 or level1
-		else currentScanValue = minPixelsY;
+		else {
+			currentScanValue = minPixelsY;
+			if(backwardScanPlot){
+				currentScanValue = maxPixelsY;
+				currentScanDivLevel = nPixelsY-1;
+			}
+		}
 
 		//cannot divide by 0
 		if(nPixelsY==1){
@@ -468,14 +485,14 @@ void qDrawPlot::SetupMeasurement(int currentIndex){
 			endPixel = maxPixelsY + (pixelWidth/2);
 		}
 	}
-/*
+
 	cout<<"nPixelsX:"<<nPixelsX<<endl;
 	cout<<"nPixelsY:"<<nPixelsY<<endl;
 	cout<<"minPixelsY:"<<minPixelsY<<endl;
 	cout<<"maxPixelsY:"<<maxPixelsY<<endl;
 	cout<<"startPixel:"<<startPixel<<endl;
 	cout<<"endPixel:"<<endPixel<<endl<<endl;
-*/
+
 	UnlockLastImageArray();
 }
 
@@ -637,12 +654,14 @@ int qDrawPlot::GetData(detectorData *data){
 						//get scanvariable0
 						int currentIndex = 0, p = 0; double cs0 = 0 , cs1 = 0;
 						fileIOStatic::getVariablesFromFileName(string(data->fileName), currentIndex, p, cs0, cs1);
-						int currentScanVariable0 = (int)cs0;
 						cout<<"currentScanValue:"<<currentScanValue<<endl;
-						cout<<"currentScanVariable0:"<<currentScanVariable0<<endl;
+						cout<<"cs0:"<<cs0<<endl;
 						//variables
-						if(currentScanVariable0!=currentScanValue) currentScanDivLevel++;
-						currentScanValue = currentScanVariable0;
+						if(cs0!=currentScanValue) {
+							if(backwardScanPlot)	currentScanDivLevel--;
+							else					currentScanDivLevel++;
+						}
+						currentScanValue = cs0;
 						lastImageNumber= currentFrame+1;
 						//title
 						char temp_title[2000];
@@ -663,10 +682,12 @@ int qDrawPlot::GetData(detectorData *data){
 					//get scanvariable1
 					int currentIndex = 0, p = 0; double cs0 = 0 , cs1 = 0;
 					fileIOStatic::getVariablesFromFileName(string(data->fileName), currentIndex, p, cs0, cs1);
-					int currentScanVariable1 = (int)cs1;
 					//variables
-					if(currentScanVariable1!=currentScanValue) currentScanDivLevel++;
-					currentScanValue = currentScanVariable1;
+					if(cs1!=currentScanValue){
+						if(backwardScanPlot)	currentScanDivLevel--;
+						else					currentScanDivLevel++;
+					}
+					currentScanValue = cs1;
 					lastImageNumber= currentFrame+1;
 					//title
 					char temp_title[2000];
@@ -906,6 +927,8 @@ void qDrawPlot::UpdatePlot(){
 			if(lastImageArray){
 				if(lastImageNumber&&last_plot_number!=(int)lastImageNumber && //there is a new plot
 						nPixelsX>0&&nPixelsY>0){
+					cout<<"startpixel:"<<startPixel<<endl;
+					cout<<"endpixel:"<<endPixel<<endl;
 					//plot2D->GetPlot()->SetData(nPixelsX,-0.5,nPixelsX-0.5,nPixelsY,-0.5,nPixelsY-0.5,lastImageArray);
 					plot2D->GetPlot()->SetData(nPixelsX,-0.5,nPixelsX-0.5,nPixelsY,startPixel,endPixel,lastImageArray);
 					plot2D->setTitle(GetImageTitle());

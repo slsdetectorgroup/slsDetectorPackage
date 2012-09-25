@@ -439,6 +439,9 @@ QString fileName;
 /**	Max Number of Clone Windows */
 static const int TRIM_HISTOGRAM_XMAX = 63;
 
+/**if the values increment backwards*/
+bool backwardScanPlot;
+
 
 
 signals:

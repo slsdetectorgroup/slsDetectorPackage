@@ -130,6 +130,10 @@ int RangeCheckSizeZero();
  * */
 int RangeCheckNumValid(int &num);
 
+/**returns fail if to is not exact
+ * */
+int RangeCheckToValid();
+
 /** Sets number of steps if from changed
  * */
 void RangeFromChanged();

@@ -95,6 +95,7 @@ void qScanWidget::SetupWidgetWindow(){
 	spinFrom->setDecimals(4);
 	lblTo->setSizePolicy(QSizePolicy::Fixed,QSizePolicy::Fixed);
 	lblTo->setToolTip(rangeTip);
+	lblTo->setFixedWidth(18);
 	spinTo->setValue(1);
 	spinTo->setToolTip(rangeTip);
 	spinTo->setMaximum(1000000);
@@ -227,37 +228,40 @@ void qScanWidget::EnableSizeWidgets(){
 		radioFile->setToolTip(fileTip);
 		dispFile->setToolTip(fileTip);
 		btnFile->setToolTip(fileTip);
+
+		lblTo->setPalette(normal);
+		lblTo->setText("to");
+		lblTo->setToolTip(rangeTip);
+		spinTo->setToolTip(rangeTip);
 	}
 	else{
-		// Steps are enabled for all except Range step size
-		/**lblSteps->setEnabled(!radioRange->isChecked());
-		spinSteps->setEnabled(!radioRange->isChecked());*/
 		//range values
 		if(radioRange->isChecked()){
 #ifdef VERBOSE
-		cout << "Constant Range Values" << endl;
+			cout << "Constant Range Values" << endl;
 #endif
 
-		radioCustom->setText("Specific Values");
-		radioCustom->setPalette(normal);
-		radioCustom->setToolTip(customTip);
-		comboCustom->setToolTip(customTip);
+			radioCustom->setText("Specific Values");
+			radioCustom->setPalette(normal);
+			radioCustom->setToolTip(customTip);
+			comboCustom->setToolTip(customTip);
 
-		radioFile->setPalette(normal);
-		radioFile->setText("Values from File:");
-		radioFile->setToolTip(fileTip);
-		dispFile->setToolTip(fileTip);
-		btnFile->setToolTip(fileTip);
+			radioFile->setPalette(normal);
+			radioFile->setText("Values from File:");
+			radioFile->setToolTip(fileTip);
+			dispFile->setToolTip(fileTip);
+			btnFile->setToolTip(fileTip);
 
-		stackedLayout->setCurrentIndex(RangeValues);
+			stackedLayout->setCurrentIndex(RangeValues);
 
-		//recaluculate number of steps
-		disconnect(spinSteps,		SIGNAL(valueChanged(int)), 				this, SLOT(SetNSteps()));
-		spinSteps->setValue(1+(int)(abs((spinTo->value() - spinFrom->value()) / spinSize->value())));
-		connect(spinSteps,		SIGNAL(valueChanged(int)), 				this, SLOT(SetNSteps()));
+			//recaluculate number of steps
+			disconnect(spinSteps,		SIGNAL(valueChanged(int)), 				this, SLOT(SetNSteps()));
+			spinSteps->setValue(1+(int)(abs((spinTo->value() - spinFrom->value()) / spinSize->value())));
+			connect(spinSteps,		SIGNAL(valueChanged(int)), 				this, SLOT(SetNSteps()));
 
-		spinSteps->setMinimum(2);
-		SetRangeSteps();
+			spinSteps->setMinimum(2);
+			RangeCheckToValid();
+			SetRangeSteps();
 		}
 		//custom values
 		else if(radioCustom->isChecked()){
@@ -271,6 +275,11 @@ void qScanWidget::EnableSizeWidgets(){
 			radioFile->setToolTip(fileTip);
 			dispFile->setToolTip(fileTip);
 			btnFile->setToolTip(fileTip);
+
+			lblTo->setPalette(normal);
+			lblTo->setText("to");
+			lblTo->setToolTip(rangeTip);
+			spinTo->setToolTip(rangeTip);
 
 			//change it back as this list is what will be loaded.
 			//also numstpes could have been changed in other modes too
@@ -304,6 +313,11 @@ void qScanWidget::EnableSizeWidgets(){
 			radioCustom->setToolTip(customTip);
 			comboCustom->setToolTip(customTip);
 
+			lblTo->setPalette(normal);
+			lblTo->setText("to");
+			lblTo->setToolTip(rangeTip);
+			spinTo->setToolTip(rangeTip);
+
 			stackedLayout->setCurrentIndex(FileValues);
 			SetFileSteps();
 		}
@@ -335,9 +349,6 @@ void qScanWidget::SetMode(int mode){
 
 	// If anything other than None is selected
 	if(mode){
-		// Steps are enabled for all except Range step size
-		/**lblSteps->setEnabled(!radioRange->isChecked());
-		spinSteps->setEnabled(!radioRange->isChecked());*/
 		lblSteps->setEnabled(true);
 		spinSteps->setEnabled(true);
 		// Custom Script only enables the first layout with addnl parameters etc
@@ -552,7 +563,7 @@ void qScanWidget::SetNSteps(){
 		disconnect(spinSize,		SIGNAL(valueChanged(double)), 				this, SLOT(RangeSizeChanged()));
 		spinSize->setValue( (spinTo->value()-spinFrom->value()) / (spinSteps->value()-1));
 		connect(spinSize,		SIGNAL(valueChanged(double)), 				this, SLOT(RangeSizeChanged()));
-
+		RangeCheckToValid();
 		SetRangeSteps();
 	}else if(radioCustom->isChecked()){
 		comboCustom->setMaxCount(spinSteps->value());
@@ -586,15 +597,41 @@ int qScanWidget::RangeCheckNumValid(int &num){
 	cout << "Entering RangeCheckNumValid()" << endl;
 #endif
 	double div = abs(spinTo->value()-spinFrom->value())/(abs(spinSize->value()));
-	cout<<"div:"<<div<<endl;
 
-	//num = (to-from)/size   +1 , so (to-from)/size should be an integer and >=1
-	if((floor(div)==div) && (div>0)){
-		num = (int)(div) + 1;
-		return qDefs::OK;
-	}
+	//num = (to-from)/size  +1
+	num = (int)(div) + 1;
+
+	if(num>=2)	return qDefs::OK;
 
 	return qDefs::FAIL;
+}
+
+
+//-------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+int qScanWidget::RangeCheckToValid(){
+#ifdef VERYVERBOSE
+	cout << "Entering RangeCheckToValid()" << endl;
+#endif
+	double to = (spinSize->value() * spinSteps->value()) - spinSize->value() + spinFrom->value();
+
+	//not exact value
+	if (abs(to-spinTo->value())>0.01){
+		lblTo->setPalette(red);
+		lblTo->setText("to*");
+		QString tip = rangeTip + QString("<br><br><font color=\"red\"><nobr>"
+				"<b>To</b> is not exact. Entering <b>Size</b> should recalculate <b>To</b>.</nobr></font>");
+		lblTo->setToolTip(tip);
+		spinTo->setToolTip(tip);
+		return qDefs::FAIL;
+	}
+
+	lblTo->setPalette(normal);
+	lblTo->setText("to");
+	lblTo->setToolTip(rangeTip);
+	spinTo->setToolTip(rangeTip);
+	return qDefs::OK;
 }
 
 
@@ -618,7 +655,8 @@ void qScanWidget::RangeFromChanged(){
 		qDefs::Message(qDefs::WARNING,"<nobr><b>From</b> cannot be equal to <b>To</b>. Changing <b>From</b> back to previous value.</nobr>","Scan");
 	//check size validity
 	else if(RangeCheckNumValid(numSteps)==qDefs::FAIL)
-		qDefs::Message(qDefs::WARNING,"<nobr><b>Number of Steps</b> must be >= 2. Changing <b>From</b> back to previous value.</nobr>","Scan");
+		qDefs::Message(qDefs::WARNING,"<nobr><b>Number of Steps</b> = 1 + (<b> To </b> - <b> From </b>) / <b>Size</b>.</nobr><br>"
+				"<b>Number of Steps</b> must be >= 2. Changing <b>From</b> back to previous value.</nobr>","Scan");
 	else change = true;
 
 	//change it back from = to - size*num + size
@@ -640,6 +678,7 @@ void qScanWidget::RangeFromChanged(){
 			spinSize->setValue(-1*(spinSize->value()));
 	}
 
+	RangeCheckToValid();
 	SetRangeSteps();
 
 	connect(spinSteps,		SIGNAL(valueChanged(int)), 		this, SLOT(SetNSteps()));
@@ -667,7 +706,8 @@ void qScanWidget::RangeToChanged(){
 		qDefs::Message(qDefs::WARNING,"<nobr><b>From</b> cannot be equal to <b>To</b>. Changing <b>To</b> back to previous value.</nobr>","Scan");
 	//check size validity
 	else if(RangeCheckNumValid(numSteps)==qDefs::FAIL)
-		qDefs::Message(qDefs::WARNING,"<nobr><b>Number of Steps</b> must be >= 2. Changing <b>To</b> back to previous value.</nobr>","Scan");
+		qDefs::Message(qDefs::WARNING,"<nobr><b>Number of Steps</b> = 1 + (<b> To </b> - <b> From </b>) / <b>Size</b>.</nobr><br>"
+				"<b>Number of Steps</b> must be >= 2. Changing <b>To</b> back to previous value.</nobr>","Scan");
 	else change = true;
 
 	//change it back to = size*num - size + from
@@ -690,6 +730,7 @@ void qScanWidget::RangeToChanged(){
 
 	}
 
+	RangeCheckToValid();
 	SetRangeSteps();
 
 	connect(spinSteps,		SIGNAL(valueChanged(int)), 		this, SLOT(SetNSteps()));
@@ -717,7 +758,8 @@ void qScanWidget::RangeSizeChanged(){
 		qDefs::Message(qDefs::WARNING,"<nobr><b>Size</b> cannot be 0. Changing <b>Size</b> back to previous value.</nobr>","Scan");
 	//check size validity
 	else if(RangeCheckNumValid(numSteps)==qDefs::FAIL)
-		qDefs::Message(qDefs::WARNING,"<nobr><b>Number of Steps</b> must be >= 2.  Changing <b>To</b> back to previous value.</nobr>","Scan");
+		qDefs::Message(qDefs::WARNING,"<nobr><b>Number of Steps</b> = 1 + (<b> To </b> - <b> From </b>) / <b>Size</b>.</nobr><br>"
+				"<b>Number of Steps</b> must be >= 2.  Changing <b>Size</b> back to previous value.</nobr>","Scan");
 	else change = true;
 
 	//change it back size = (to-from)/(num-1)
@@ -732,8 +774,13 @@ void qScanWidget::RangeSizeChanged(){
 		spinSteps->setValue(numSteps);
 		//in case size changed to negative
 		spinTo->setValue((spinSize->value() * spinSteps->value()) - spinSize->value() + spinFrom->value());
+		lblTo->setPalette(normal);
+		lblTo->setText("to");
+		lblTo->setToolTip(rangeTip);
+		spinTo->setToolTip(rangeTip);
 	}
 
+	RangeCheckToValid();
 	SetRangeSteps();
 
 	connect(spinSteps,		SIGNAL(valueChanged(int)), 		this, SLOT(SetNSteps()));

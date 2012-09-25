@@ -121,18 +121,41 @@ void SetPrecision(int value);
  * */
 void SetNSteps();
 
-/** Range type: If size is changed,
- * the Number of steps is calculated
+/**Checks if size is zero and return FAIL if it does
  * */
-void RangeCalculateNumSteps();
+int RangeCheckSizeZero();
 
-/** Range type: If size is changed, the To is calculated
+/**returns ok and number of steps if valid
+ * @param number of steps
  * */
-void RangeCalculateTo();
+int RangeCheckNumValid(int &num);
+
+/** Sets number of steps if from changed
+ * */
+void RangeFromChanged();
+
+/** Sets number of steps if to changed
+ * */
+void RangeToChanged();
+
+/** Sets s of steps if size changed
+ * */
+void RangeSizeChanged();
 
 /** Set range for scan
  * */
 void SetRangeSteps();
+
+
+/** Range type: If size is changed,
+ * the Number of steps is calculated
+ * */
+//void RangeCalculateNumSteps();
+
+/** Range type: If size is changed, the To is calculated
+ * */
+//void RangeCalculateTo();
+
 
 /** Set custom steps
  * returns OK if set properly

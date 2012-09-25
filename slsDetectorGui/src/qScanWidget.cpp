@@ -89,6 +89,7 @@ void qScanWidget::SetupWidgetWindow(){
 	spinFrom->setValue(0);
 	spinFrom->setToolTip(rangeTip);
 	spinFrom->setMaximum(1000000);
+	spinFrom->setMinimum(-1000000);
 	spinFrom->setKeyboardTracking(false);
 	spinFrom->setFixedWidth(80);
 	spinFrom->setDecimals(4);
@@ -97,6 +98,7 @@ void qScanWidget::SetupWidgetWindow(){
 	spinTo->setValue(1);
 	spinTo->setToolTip(rangeTip);
 	spinTo->setMaximum(1000000);
+	spinTo->setMinimum(-1000000);
 	spinTo->setKeyboardTracking(false);
 	spinTo->setFixedWidth(80);
 	spinTo->setDecimals(4);
@@ -104,12 +106,15 @@ void qScanWidget::SetupWidgetWindow(){
 	lblSize->setToolTip(rangeTip);
 	lblSize->setSizePolicy(QSizePolicy::Fixed,QSizePolicy::Fixed);
 	lblSize->setFixedWidth(67);
+	spinSize->setMaximum(1000000);
+	spinSize->setMinimum(-1000000);
 	spinSize->setValue(1);
 	spinSize->setSingleStep(0.1);
 	spinSize->setToolTip(rangeTip);
 	spinSize->setKeyboardTracking(false);
 	spinSize->setDecimals(4);
-	spinSize->setMinimum(0.0001);
+
+	//spinSize->setMinimum(0.0001);
 	layoutRange->addItem(new QSpacerItem(40,20,QSizePolicy::Fixed,QSizePolicy::Fixed));
 	layoutRange->addWidget(lblFrom);
 	layoutRange->addItem(new QSpacerItem(5,20,QSizePolicy::Fixed,QSizePolicy::Fixed));
@@ -188,9 +193,9 @@ void qScanWidget::Initialization(){
 	//precision
 	connect(spinPrecision,	SIGNAL(valueChanged(int)), 				this, SLOT(SetPrecision(int)));
 	//range values
-	connect(spinFrom,		SIGNAL(valueChanged(double)), 				this, SLOT(RangeCalculateNumSteps()));
-	connect(spinTo,			SIGNAL(valueChanged(double)), 				this, SLOT(RangeCalculateNumSteps()));
-	connect(spinSize,		SIGNAL(valueChanged(double)), 				this, SLOT(RangeCalculateTo()));
+	connect(spinFrom,		SIGNAL(valueChanged(double)), 				this, SLOT(RangeFromChanged()));
+	connect(spinTo,			SIGNAL(valueChanged(double)), 				this, SLOT(RangeToChanged()));
+	connect(spinSize,		SIGNAL(valueChanged(double)), 				this, SLOT(RangeSizeChanged()));
 	//custom values
 	connect(comboCustom,	SIGNAL(currentIndexChanged(int)), 		this, SLOT(SetCustomSteps()));
 	connect(btnCustom,		SIGNAL(clicked()),						this, SLOT(DeleteCustomSteps()));
@@ -246,11 +251,13 @@ void qScanWidget::EnableSizeWidgets(){
 
 		stackedLayout->setCurrentIndex(RangeValues);
 
-		int oldNumSteps = spinSteps->value();
-		//if the steps change, it calls SetRangeSteps on its own.
-		RangeCalculateNumSteps();
-		if(oldNumSteps==spinSteps->value())	SetRangeSteps();
+		//recaluculate number of steps
+		disconnect(spinSteps,		SIGNAL(valueChanged(int)), 				this, SLOT(SetNSteps()));
+		spinSteps->setValue(1+(int)(abs((spinTo->value() - spinFrom->value()) / spinSize->value())));
+		connect(spinSteps,		SIGNAL(valueChanged(int)), 				this, SLOT(SetNSteps()));
+
 		spinSteps->setMinimum(2);
+		SetRangeSteps();
 		}
 		//custom values
 		else if(radioCustom->isChecked()){
@@ -542,12 +549,11 @@ void qScanWidget::SetNSteps(){
 
 	//check if its ok
 	if(radioRange->isChecked()){
-		double oldSize = spinSize->value();
-		//calculate size = (to - from)/(num-1)
-		double size = (abs((spinTo->value())-(spinFrom->value()))) / (spinSteps->value()-1);
-		spinSize->setValue(size);
-		//set these positions
-		if(oldSize==size) SetRangeSteps();
+		disconnect(spinSize,		SIGNAL(valueChanged(double)), 				this, SLOT(RangeSizeChanged()));
+		spinSize->setValue( (spinTo->value()-spinFrom->value()) / (spinSteps->value()-1));
+		connect(spinSize,		SIGNAL(valueChanged(double)), 				this, SLOT(RangeSizeChanged()));
+
+		SetRangeSteps();
 	}else if(radioCustom->isChecked()){
 		comboCustom->setMaxCount(spinSteps->value());
 		SetCustomSteps();
@@ -561,39 +567,178 @@ void qScanWidget::SetNSteps(){
 //-------------------------------------------------------------------------------------------------------------------------------------------------
 
 
-void qScanWidget::RangeCalculateNumSteps(){
+int qScanWidget::RangeCheckSizeZero(){
 #ifdef VERYVERBOSE
-	cout << "Entering RangeCalculateNumSteps()" << endl;
+	cout << "Entering RangeCheckSizeZero()" << endl;
 #endif
-	//check if to=from
-	if(spinTo->value()==spinFrom->value()){
-		spinTo->setValue(  ((spinSize->value())*(spinSteps->value())) - (spinSize->value()) + (spinFrom->value()) );
-		SetRangeSteps();
-	}else{
-		//num = ((to-from)/(size)) +1
-		double size = spinSize->value();
-		double numerator = abs((spinTo->value())-(spinFrom->value()));
-		//check if (to-from)/size is an int and that its =1 cuz numSteps minimum=2
-		bool valid = (fmod(numerator,size)==0) && ((numerator/size)>0);
+	if((spinTo->value()-spinFrom->value())/(spinSteps->value()-1))
+		return qDefs::OK;
 
-		if(valid) //calculate num steps
-			spinSteps->setValue( (int)(numerator / size) + 1);
-		else //change size instead
-			spinSize->setValue(numerator / (spinSteps->value()-1));
-	}
+	return qDefs::FAIL;
 }
 
 
 //-------------------------------------------------------------------------------------------------------------------------------------------------
 
 
-void qScanWidget::RangeCalculateTo(){
+int qScanWidget::RangeCheckNumValid(int &num){
 #ifdef VERYVERBOSE
-	cout << "Entering RangeCalculateTo()" << endl;
+	cout << "Entering RangeCheckNumValid()" << endl;
 #endif
-	//to = size*num - size + from
-	spinTo->setValue(  ((spinSize->value())*(spinSteps->value())) - (spinSize->value()) + (spinFrom->value()) );
+	double div = abs(spinTo->value()-spinFrom->value())/(abs(spinSize->value()));
+	cout<<"div:"<<div<<endl;
+
+	//num = (to-from)/size   +1 , so (to-from)/size should be an integer and >=1
+	if((floor(div)==div) && (div>0)){
+		num = (int)(div) + 1;
+		return qDefs::OK;
+	}
+
+	return qDefs::FAIL;
+}
+
+
+//-------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+void qScanWidget::RangeFromChanged(){
+#ifdef VERYVERBOSE
+	cout << "Entering RangeFromChanged()" << endl;
+#endif
+	bool change = false;
+	int numSteps;
+
+	disconnect(spinSteps,	SIGNAL(valueChanged(int)), 		this, SLOT(SetNSteps()));
+	disconnect(spinFrom,	SIGNAL(valueChanged(double)), 	this, SLOT(RangeFromChanged()));
+	disconnect(spinSize,	SIGNAL(valueChanged(double)), 	this, SLOT(RangeSizeChanged()));
+
+
+	//check size validity
+	if(RangeCheckSizeZero()==qDefs::FAIL)
+		qDefs::Message(qDefs::WARNING,"<nobr><b>From</b> cannot be equal to <b>To</b>. Changing <b>From</b> back to previous value.</nobr>","Scan");
+	//check size validity
+	else if(RangeCheckNumValid(numSteps)==qDefs::FAIL)
+		qDefs::Message(qDefs::WARNING,"<nobr><b>Number of Steps</b> must be >= 2. Changing <b>From</b> back to previous value.</nobr>","Scan");
+	else change = true;
+
+	//change it back from = to - size*num + size
+	if(!change)	{
+		spinFrom->setValue(spinTo->value() - (spinSize->value() * spinSteps->value()) + spinSize->value());
+#ifdef VERBOSE
+	cout << "Changing From back:"<< spinFrom->value() << endl;
+#endif
+	}
+	//change num steps
+	else{
+		spinSteps->setValue(numSteps);
+		//size will lnever be zero here
+		//size should be positive
+		if(spinTo->value()>spinFrom->value())
+			spinSize->setValue(abs(spinSize->value()));
+		//size should be negative
+		else if(spinSize->value()>0)
+			spinSize->setValue(-1*(spinSize->value()));
+	}
+
 	SetRangeSteps();
+
+	connect(spinSteps,		SIGNAL(valueChanged(int)), 		this, SLOT(SetNSteps()));
+	connect(spinFrom,		SIGNAL(valueChanged(double)), 	this, SLOT(RangeFromChanged()));
+	connect(spinSize,		SIGNAL(valueChanged(double)), 	this, SLOT(RangeSizeChanged()));
+}
+
+
+//-------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+void qScanWidget::RangeToChanged(){
+#ifdef VERYVERBOSE
+	cout << "Entering RangeToChanged()" << endl;
+#endif
+	bool change = false;
+	int numSteps;
+
+	disconnect(spinSteps,		SIGNAL(valueChanged(int)), 		this, SLOT(SetNSteps()));
+	disconnect(spinTo,			SIGNAL(valueChanged(double)), 	this, SLOT(RangeToChanged()));
+	disconnect(spinSize,		SIGNAL(valueChanged(double)), 	this, SLOT(RangeSizeChanged()));
+
+	//check size validity
+	if(RangeCheckSizeZero()==qDefs::FAIL)
+		qDefs::Message(qDefs::WARNING,"<nobr><b>From</b> cannot be equal to <b>To</b>. Changing <b>To</b> back to previous value.</nobr>","Scan");
+	//check size validity
+	else if(RangeCheckNumValid(numSteps)==qDefs::FAIL)
+		qDefs::Message(qDefs::WARNING,"<nobr><b>Number of Steps</b> must be >= 2. Changing <b>To</b> back to previous value.</nobr>","Scan");
+	else change = true;
+
+	//change it back to = size*num - size + from
+	if(!change)	{
+		spinTo->setValue((spinSize->value() * spinSteps->value()) - spinSize->value() + spinFrom->value());
+#ifdef VERBOSE
+	cout << "Changing To back:"<< spinTo->value() << endl;
+#endif
+	}
+	//change num steps
+	else{
+		spinSteps->setValue(numSteps);
+		//size will lnever be zero here
+		//size should be positive
+		if(spinTo->value()>spinFrom->value())
+			spinSize->setValue(abs(spinSize->value()));
+		//size should be negative
+		else if(spinSize->value()>0)
+			spinSize->setValue(-1*(spinSize->value()));
+
+	}
+
+	SetRangeSteps();
+
+	connect(spinSteps,		SIGNAL(valueChanged(int)), 		this, SLOT(SetNSteps()));
+	connect(spinTo,			SIGNAL(valueChanged(double)), 	this, SLOT(RangeToChanged()));
+	connect(spinSize,		SIGNAL(valueChanged(double)), 	this, SLOT(RangeSizeChanged()));
+}
+
+
+//-------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+void qScanWidget::RangeSizeChanged(){
+#ifdef VERYVERBOSE
+	cout << "Entering RangeSizeChanged()" << endl;
+#endif
+	bool change = false;
+	int numSteps;
+
+	disconnect(spinSteps,		SIGNAL(valueChanged(int)), 		this, SLOT(SetNSteps()));
+	disconnect(spinSize,		SIGNAL(valueChanged(double)), 	this, SLOT(RangeSizeChanged()));
+	disconnect(spinTo,			SIGNAL(valueChanged(double)), 	this, SLOT(RangeToChanged()));
+
+	//check size validity
+	if(!spinSize->value())
+		qDefs::Message(qDefs::WARNING,"<nobr><b>Size</b> cannot be 0. Changing <b>Size</b> back to previous value.</nobr>","Scan");
+	//check size validity
+	else if(RangeCheckNumValid(numSteps)==qDefs::FAIL)
+		qDefs::Message(qDefs::WARNING,"<nobr><b>Number of Steps</b> must be >= 2.  Changing <b>To</b> back to previous value.</nobr>","Scan");
+	else change = true;
+
+	//change it back size = (to-from)/(num-1)
+	if(!change)	{
+		spinSize->setValue((spinTo->value()-spinFrom->value())/(spinSteps->value()-1));
+#ifdef VERBOSE
+	cout << "Changing Size back:"<< spinSize->value() << endl;
+#endif
+	}
+	//change num steps
+	else{
+		spinSteps->setValue(numSteps);
+		//in case size changed to negative
+		spinTo->setValue((spinSize->value() * spinSteps->value()) - spinSize->value() + spinFrom->value());
+	}
+
+	SetRangeSteps();
+
+	connect(spinSteps,		SIGNAL(valueChanged(int)), 		this, SLOT(SetNSteps()));
+	connect(spinSize,		SIGNAL(valueChanged(double)), 	this, SLOT(RangeSizeChanged()));
+	connect(spinTo,			SIGNAL(valueChanged(double)), 	this, SLOT(RangeToChanged()));
 }
 
 

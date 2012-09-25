@@ -50,6 +50,8 @@ public:
 	bool isRunning(){return running;};
 	/** gets the progress of acquisition to the measurement tab*/
 	int GetProgress(){return progress;};
+	/** gets the file index to the measurement tab*/
+	int GetFileIndex(){return currentFileIndex;};
 
 	/**	sets plot Title */
 	void SetPlotTitle(QString title)      	{plotTitle = title;}
@@ -308,6 +310,8 @@ int number_of_frames;
 double acquisitionPeriod;
 /**	 Acquisition Time */
 double exposureTime;
+/** Current index*/
+int currentFileIndex;
 
 
 

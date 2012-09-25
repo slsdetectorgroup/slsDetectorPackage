@@ -103,6 +103,8 @@ void qDrawPlot::SetupWidgetWindow(){
 	alreadyDisplayed =  false;
 
 	backwardScanPlot = false;
+
+	currentFileIndex = 0;
 	// This is so that it initially stop and plots
 	running = 1;
 	for(int i=0;i<MAX_1DPLOTS;i++)
@@ -271,6 +273,8 @@ void qDrawPlot::StartStopDaqToggle(bool stop_if_running){
 		//update file path and file name
 		filePath = QString(myDet->getFilePath().c_str());
 		fileName = QString(myDet->getFileName().c_str());
+		//update index
+		currentFileIndex = myDet->getFileIndex();
 
 
 
@@ -530,6 +534,7 @@ int qDrawPlot::GetData(detectorData *data){
 		SetPlotTitle(QString(data->fileName).section('/',-1));
 		//set progress
 		progress=(int)data->progressIndex;
+		currentFileIndex = fileIOStatic::getFileIndexFromFileName(string(data->fileName));
 #ifdef VERBOSE
 		cout << "progress:" << progress << endl;
 #endif

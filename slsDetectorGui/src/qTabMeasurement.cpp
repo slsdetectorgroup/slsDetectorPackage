@@ -354,7 +354,7 @@ void qTabMeasurement::SetCurrentMeasurement(int val){
 void qTabMeasurement::UpdateProgress(){
 	//progressBar->setValue((int)(((currentMeasurement*100)+(myPlot->GetProgress()))/spinNumMeasurements->value()));
 	progressBar->setValue((int)myPlot->GetProgress());
-	lblProgressIndex->setText(QString::number(myDet->getFileIndex()));
+	lblProgressIndex->setText(QString::number(myPlot->GetFileIndex()));
 }
 
 

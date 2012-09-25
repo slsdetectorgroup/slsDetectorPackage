@@ -253,7 +253,9 @@ void qTabActions::Expand(QAbstractButton *button ){
 
 	// Collapse
 	if(!button->isChecked()){
-		palette->setColor(QPalette::WindowText,Qt::black);
+		palette->setColor(QPalette::Active,QPalette::WindowText,Qt::black);
+
+
 		lblName[index]->setPalette(*palette);
 		button->setIcon(*iconPlus);
 
@@ -261,7 +263,7 @@ void qTabActions::Expand(QAbstractButton *button ){
 			positionWidget->hide();
 			setFixedHeight(height()-30);//-80 if the checkboxes are included
 			if(myDet->getPositions()) {
-				palette->setColor(QPalette::WindowText,Qt::darkGreen);
+				palette->setColor(QPalette::Active,QPalette::WindowText,Qt::darkGreen);
 				lblName[index]->setPalette(*palette);
 			}
 		}
@@ -269,7 +271,7 @@ void qTabActions::Expand(QAbstractButton *button ){
 			scanWidget[GetActualIndex(index)]->hide();
 			setFixedHeight(height()-130);
 			if(myDet->getScanMode(GetActualIndex(index))){
-				palette->setColor(QPalette::WindowText,Qt::darkGreen);
+				palette->setColor(QPalette::Active,QPalette::WindowText,Qt::darkGreen);
 				lblName[index]->setPalette(*palette);
 			}
 		}
@@ -277,14 +279,17 @@ void qTabActions::Expand(QAbstractButton *button ){
 			actionWidget[GetActualIndex(index)]->hide();
 			setFixedHeight(height()-30);
 			if(myDet->getActionMode(GetActualIndex(index))){
-				palette->setColor(QPalette::WindowText,Qt::darkGreen);
+				palette->setColor(QPalette::Active,QPalette::WindowText,Qt::darkGreen);
 				lblName[index]->setPalette(*palette);
 			}
 		}
 	}else{
 		// Expand
 		//always set title color to blue for expan\d
-		palette->setColor(QPalette::WindowText,QColor(0,0,200,255));
+
+		palette->setColor(QPalette::Active,QPalette::WindowText,QColor(0,0,200,255));
+
+
 		lblName[index]->setPalette(*palette);
 		button->setIcon(*iconMinus);
 
@@ -389,7 +394,7 @@ void qTabActions::EnablePositions(bool enable){
 		for(int i=0;i<comboPos->count();i++)
 			comboPos->removeItem(i);
 		cout<<"Number of Positions set to :"<<myDet->getPositions()<<endl;
-		lblName[NumPositions]->setPalette(lblName[NumPositions-1]->palette());
+
 		//to collapse if it was expanded
 		if(btnExpand[NumPositions]->isChecked()){
 			disconnect(group,				SIGNAL(buttonClicked(QAbstractButton*)),	this,SLOT(Expand(QAbstractButton*)));
@@ -489,23 +494,20 @@ void qTabActions::UpdateCollapseColors(){
 	for(int i=0;i<NumTotalActions;i++){
 		//num positions
 		if(i==NumPositions){
-			//if its disabled
-			if(lblName[i]->isEnabled()){
-				if(myDet->getPositions()) 	palette->setColor(QPalette::WindowText,Qt::darkGreen);
-				else						palette->setColor(QPalette::WindowText,Qt::black);
-				lblName[i]->setPalette(*palette);
-			}
+			if(myDet->getPositions()) 	palette->setColor(QPalette::Active,QPalette::WindowText,Qt::darkGreen);
+			else						palette->setColor(QPalette::Active,QPalette::WindowText,Qt::black);
+			lblName[i]->setPalette(*palette);
 		}
 		//scans
 		else if((i==Scan0)||(i==Scan1)){
-			if(myDet->getScanMode(GetActualIndex(i)))		palette->setColor(QPalette::WindowText,Qt::darkGreen);
-			else											palette->setColor(QPalette::WindowText,Qt::black);
+			if(myDet->getScanMode(GetActualIndex(i)))		palette->setColor(QPalette::Active,QPalette::WindowText,Qt::darkGreen);
+			else											palette->setColor(QPalette::Active,QPalette::WindowText,Qt::black);
 			lblName[i]->setPalette(*palette);
 		}
 		//actions
 		else{
-			if(myDet->getActionMode(GetActualIndex(i)))		palette->setColor(QPalette::WindowText,Qt::darkGreen);
-			else											palette->setColor(QPalette::WindowText,Qt::black);
+			if(myDet->getActionMode(GetActualIndex(i)))		palette->setColor(QPalette::Active,QPalette::WindowText,Qt::darkGreen);
+			else											palette->setColor(QPalette::Active,QPalette::WindowText,Qt::black);
 			lblName[i]->setPalette(*palette);
 		}
 	}

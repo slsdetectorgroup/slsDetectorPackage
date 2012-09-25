@@ -1202,7 +1202,8 @@ void qScanWidget::Refresh(){
 
 
 	//settings values and checking for none
-	dispScript->setText(QString(script.c_str()));
+	if(QString(script.c_str()).compare("none"))
+		dispScript->setText(QString(script.c_str()));
 	if(mode) SetScriptFile();
 	dispParameter->setText(QString(parameter.c_str()));
 	SetParameter();

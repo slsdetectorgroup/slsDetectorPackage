@@ -58,8 +58,8 @@ qDetectorMain::qDetectorMain(int argc, char **argv, QApplication *app, QWidget *
 			cout << "Possible Arguments are:" << endl;
 			cout << "-help \t\t : \t This help" << endl;
 			cout << "-developer \t : \t Enables the developer tab" << endl;
-			cout << "-id i \t : \t Sets the detector to id i (the default is 0). "
-				"Required only when more than one detector is connected in parallel." << endl;
+			cout << "-id i \t\t : \t Sets the multi detector id to i (the default is 0). "
+				"Required only when more than one multi detector object is needed." << endl;
 		}
 	}
 

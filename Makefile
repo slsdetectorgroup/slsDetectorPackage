@@ -3,7 +3,6 @@
 
 WD=$(shell pwd)
 LIBRARYDIR=$(WD)/slsDetectorSoftware
-TLIBRARYDIR=$(WD)/TMythenDetector
 CLIENTDIR=$(WD)/slsDetectorClient
 GUIDIR=$(WD)/slsDetectorGuiOriginal
 LIBDOCDIR=$(WD)/slsDetectorSoftware
@@ -82,12 +81,14 @@ tar:
 
 help:
 	@echo "Targets:"
-	@echo "make all           	compile library, mythenClient and mythenGUI"
+	@echo "make all           	compile library, and text client"
 	@echo "make lib           	compile library"
 	@echo "make slsDetectorClient  	compile slsDetectorClient"
+	@echo "make slsDetectorGUI compile slsDetectorGUI - requires a working Qt4 and Qwt installation"
+	@echo "make calWiz compile the calibration wizards - requires a working root installation"
 	@echo "make install_client     install slsDetectorClient"
 	@echo "make install_lib        install detector library and include files"
-	@echo "make install            install library, include files, mythenClient and mythenGUI"
+	@echo "make install            install library, include files, slsDetectorClient"
 	@echo "make install_libdoc     install library documentaion"
 	@echo "make install_clientdoc  install mythenClient documentation"
 	@echo "make install_doc        install all documentation"

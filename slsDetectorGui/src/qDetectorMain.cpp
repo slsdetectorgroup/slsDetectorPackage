@@ -529,14 +529,7 @@ void qDetectorMain::Refresh(int index){
 		tabs->setCurrentIndex((index++)<(tabs->count()-1)?index:Measurement);
 	else{
 		switch(tabs->currentIndex()){
-		case Measurement:
-			if(!myPlot->isRunning()) {
-				tab_measurement->Refresh();
-				//to recover from a trimbit plot mode
-				tab_plot->Refresh();
-			}
-			break;
-
+		case Measurement:	tab_measurement->Refresh();	break;
 		case Settings:		tab_settings->Refresh();	break;
 		case DataOutput:	tab_dataoutput->Refresh();	break;
 		case Plot:			tab_plot->Refresh();		break;
@@ -642,7 +635,7 @@ void qDetectorMain::EnableTabs(){
 	//moved to here, so that its all in order, instead of signals and different threads
 	if(!enable) {
 		//set the plot type first(acccss shared memory)
-		tab_plot->Refresh();
+		tab_plot->SetScanArgument();
 		//sets running to true
 		myPlot->StartStopDaqToggle();
 	}

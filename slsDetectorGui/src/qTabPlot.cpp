@@ -150,6 +150,8 @@ void qTabPlot::SetupWidgetWindow(){
 	}
 
 	Select1DPlot(isOrginallyOneD);
+	if(isOrginallyOneD) myPlot->Select1DPlot();
+	else 				myPlot->Select2DPlot();
 
 	//to check if this should be enabled
 	EnableScanBox();
@@ -167,14 +169,12 @@ void qTabPlot::Select1DPlot(bool b){
 		chkZAxis->setEnabled(false);
 		chkZMin->setEnabled(false);
 		chkZMax->setEnabled(false);
-		myPlot->Select1DPlot();
 	}else{
 		box1D->hide();
 		box2D->show();
 		chkZAxis->setEnabled(true);
 		chkZMin->setEnabled(true);
 		chkZMax->setEnabled(true);
-		myPlot->Select2DPlot();
 	}
 }
 
@@ -188,7 +188,7 @@ void qTabPlot::Initialization(){
 	connect(radioHistogram, SIGNAL(toggled(bool)),this, SLOT(SetPlot()));
 	connect(radioDataGraph, SIGNAL(toggled(bool)),this, SLOT(SetPlot()));
 // Scan box
-	connect(btnGroupScan, SIGNAL(buttonClicked(QAbstractButton *)),this, SLOT(SetScanArgument()));
+	/*connect(btnGroupScan, SIGNAL(buttonClicked(QAbstractButton *)),this, SLOT(SetScanArgument()));*/
 	connect(boxScan,	  SIGNAL(toggled(bool)),				   this, SLOT(EnableScanBox()));
 // Snapshot box
 	connect(btnClone, 		SIGNAL(clicked()),myPlot, 	SLOT(ClonePlot()));
@@ -421,6 +421,8 @@ void qTabPlot::SetPlot(){
 		if(isOrginallyOneD)  {box1D->show(); box2D->hide();}
 		if(!isOrginallyOneD) {box2D->show(); box1D->hide();}
 		Select1DPlot(isOrginallyOneD);
+		if(isOrginallyOneD) myPlot->Select1DPlot();
+		else 				myPlot->Select2DPlot();
 		boxSnapshot->setEnabled(true);
 		boxSave->setEnabled(true);
 		boxFrequency->setEnabled(true);
@@ -554,7 +556,7 @@ void qTabPlot::EnableScanBox(){
 
 
 	//sets the scan argument
-	SetScanArgument();
+	/*SetScanArgument();*/
 }
 
 
@@ -602,30 +604,36 @@ void qTabPlot::SetScanArgument(){
 		myPlot->SetImageZAxisTitle(defaultImageZAxisTitle);
 	}
 	Select1DPlot(isOrginallyOneD);
+	if(isOrginallyOneD) myPlot->Select1DPlot();
+	else 				myPlot->Select2DPlot();
 
 	int ang;
 	//if scans(1D or 2D)
 	if(boxScan->isEnabled()){
 		//setting the title according to the scans
 		QString mainTitle = QString(" Level 0 : ") + modeNames[myDet->getScanMode(0)] +
-							QString("   |   Level 1 : ") + modeNames[myDet->getScanMode(1)] + QString("");
+				QString("   |   Level 1 : ") + modeNames[myDet->getScanMode(1)] + QString("");
 		dispTitle->setText(mainTitle);
 		myPlot->SetPlotTitle(mainTitle);
 		Select1DPlot(isOrginallyOneD);
+		if(isOrginallyOneD) myPlot->Select1DPlot();
+		else 				myPlot->Select2DPlot();
 
 	}//angles (1D)
 	else if(myDet->getAngularConversion(ang)){
-	//else if(myDet->getPositions()){
+		//else if(myDet->getPositions()){
 		//if scan, change title
 		if((myDet->getScanMode(0))||(myDet->getScanMode(1))){
 			QString mainTitle = QString(" Level 0 : ") + modeNames[myDet->getScanMode(0)] +
-								QString("   |   Level 1 : ") + modeNames[myDet->getScanMode(1)] + QString("");
+					QString("   |   Level 1 : ") + modeNames[myDet->getScanMode(1)] + QString("");
 			dispTitle->setText(mainTitle);
 			myPlot->SetPlotTitle(mainTitle);
 		}
 		dispXAxis->setText("Angles");
 		myPlot->SetHistXAxisTitle("Angles");
 		Select1DPlot(true);
+		myPlot->Select1DPlot();
+
 	}
 
 
@@ -669,11 +677,10 @@ void qTabPlot::SetScanArgument(){
 	}else //done here so that it isnt set by default each time
 		myPlot->SetScanArgument(0);
 
-
 }
 
-//-------------------------------------------------------------------------------------------------------------------------------------------------
 
+//-------------------------------------------------------------------------------------------------------------------------------------------------
 
 void qTabPlot::Refresh(){
 #ifdef VERBOSE

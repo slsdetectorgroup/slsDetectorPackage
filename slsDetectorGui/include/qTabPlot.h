@@ -38,7 +38,13 @@ public:
 	 */
 	~qTabPlot();
 
+	/** Sets the scan argument of the plot
+	 */
+	void SetScanArgument();
 
+	/** To refresh and update widgets
+	 */
+	void Refresh();
 
 
 private:
@@ -59,7 +65,6 @@ private:
 
 
 
-
 public slots:
 /** Set frequency between plots*/
 void SetFrequency();
@@ -74,13 +79,8 @@ void EnableScanBox();
  */
 void EnableNthFrame(bool enable){enableNFrame = enable;};
 
-/** Sets the scan argument of the plot
- */
-void SetScanArgument();
 
-/** To refresh and update widgets
- */
-void Refresh();
+
 
 
 /** Disables scanbox while running

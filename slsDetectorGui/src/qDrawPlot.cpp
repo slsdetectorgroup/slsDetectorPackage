@@ -530,8 +530,6 @@ int qDrawPlot::GetData(detectorData *data){
 #endif
 	if(!stop_signal){
 
-		//set title
-		SetPlotTitle(QString(data->fileName).section('/',-1));
 		//set progress
 		progress=(int)data->progressIndex;
 		currentFileIndex = fileIOStatic::getFileIndexFromFileName(string(data->fileName));
@@ -548,6 +546,9 @@ int qDrawPlot::GetData(detectorData *data){
 		//angle plotting
 		if(anglePlot){
 			if(!pthread_mutex_trylock(&(last_image_complete_mutex))){
+				//set title
+				SetPlotTitle(QString(data->fileName).section('/',-1));
+
 				cout<<"angle plot"<<endl;
 				if(data->angles==NULL){
 					cout<<"\n\nWARNING:RETURNED NULL instead of angles."<<endl;
@@ -614,6 +615,8 @@ int qDrawPlot::GetData(detectorData *data){
 			if(scanArgument==AllFrames){
 				while(1){
 					if(!pthread_mutex_trylock(&(last_image_complete_mutex))){
+						//set title
+						SetPlotTitle(QString(data->fileName).section('/',-1));
 						//variables
 						lastImageNumber= currentFrame+1;
 						//title
@@ -634,6 +637,8 @@ int qDrawPlot::GetData(detectorData *data){
 			if(scanArgument==FileIndex){
 				while(1){
 					if(!pthread_mutex_trylock(&(last_image_complete_mutex))){
+						//set title
+						SetPlotTitle(QString(data->fileName).section('/',-1));
 						//variables
 						if(currentFileIndex == minPixelsY) currentScanDivLevel = 0;
 						lastImageNumber= currentFrame+1;
@@ -655,6 +660,8 @@ int qDrawPlot::GetData(detectorData *data){
 			if(scanArgument==Level0){
 				while(1){
 					if(!pthread_mutex_trylock(&(last_image_complete_mutex))){
+						//set title
+						SetPlotTitle(QString(data->fileName).section('/',-1));
 						//get scanvariable0
 						int ci = 0, p = 0; double cs0 = 0 , cs1 = 0;
 						fileIOStatic::getVariablesFromFileName(string(data->fileName), ci, p, cs0, cs1);
@@ -683,6 +690,8 @@ int qDrawPlot::GetData(detectorData *data){
 			//level1
 			while(1){
 				if(!pthread_mutex_trylock(&(last_image_complete_mutex))){
+					//set title
+					SetPlotTitle(QString(data->fileName).section('/',-1));
 					//get scanvariable1
 					int ci = 0, p = 0; double cs0 = 0 , cs1 = 0;
 					fileIOStatic::getVariablesFromFileName(string(data->fileName), ci, p, cs0, cs1);
@@ -710,6 +719,8 @@ int qDrawPlot::GetData(detectorData *data){
 
 		//normal measurement or 1d scans
 		if(!pthread_mutex_trylock(&(last_image_complete_mutex))){
+			//set title
+			SetPlotTitle(QString(data->fileName).section('/',-1));
 			char temp_title[2000];
 			// only if you got the lock, do u need to remember lastimagenumber to plot
 			lastImageNumber= currentFrame+1;
@@ -879,8 +890,7 @@ void qDrawPlot::UpdatePlot(){
 	cout << "Entering UpdatePlot function" << endl;
 #endif
 	plot_update_timer->stop();
-	//set plot title
-	boxPlot->setTitle(plotTitle);
+
 	// only if no plot isnt enabled
 	if(plotEnable){
 		LockLastImageArray();
@@ -956,6 +966,9 @@ void qDrawPlot::UpdatePlot(){
 		}
 	}
 	last_plot_number=lastImageNumber;
+
+	//set plot title
+	boxPlot->setTitle(plotTitle);
 
 	if(plotEnable) UnlockLastImageArray();
 

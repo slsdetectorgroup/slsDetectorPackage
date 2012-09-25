@@ -163,8 +163,6 @@ private:
 	enum{None, Auto, Trigger_Exp_Series, Trigger_Frame, Trigger_Readout, Gated, Gated_Start, Trigger_Window, NumTimingModes};
 	/** timer to update the progress*/
 	QTimer *progressTimer;
-	/** current measurement */
-	int currentMeasurement;
 	/** tool tip variables*/
 	QString 	acqPeriodTip;
 	QString 	errPeriodTip;

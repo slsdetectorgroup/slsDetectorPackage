@@ -618,7 +618,7 @@ int qDrawPlot::GetData(detectorData *data){
 						lastImageNumber= currentFrame+1;
 						//title
 						char temp_title[2000];
-						sprintf(temp_title,"Image Index %d",fileIOStatic::getFileIndexFromFileName(string(data->fileName)));
+						sprintf(temp_title,"Image Index %d",currentFileIndex);
 						imageTitle = temp_title;
 						//copy data
 						memcpy(lastImageArray+(currentScanDivLevel*nPixelsX),data->values,nPixelsX*sizeof(double));
@@ -635,12 +635,11 @@ int qDrawPlot::GetData(detectorData *data){
 				while(1){
 					if(!pthread_mutex_trylock(&(last_image_complete_mutex))){
 						//variables
-						int currentIndex = fileIOStatic::getFileIndexFromFileName(string(data->fileName));
-						if(currentIndex == minPixelsY) currentScanDivLevel = 0;
+						if(currentFileIndex == minPixelsY) currentScanDivLevel = 0;
 						lastImageNumber= currentFrame+1;
 						//title
 						char temp_title[2000];
-						sprintf(temp_title,"Image Index %d",currentIndex);
+						sprintf(temp_title,"Image Index %d",currentFileIndex);
 						imageTitle = temp_title;
 						//copy data
 						for(unsigned int px=0;px<nPixelsX;px++)	lastImageArray[currentScanDivLevel*nPixelsX+px] += data->values[px];
@@ -657,8 +656,8 @@ int qDrawPlot::GetData(detectorData *data){
 				while(1){
 					if(!pthread_mutex_trylock(&(last_image_complete_mutex))){
 						//get scanvariable0
-						int currentIndex = 0, p = 0; double cs0 = 0 , cs1 = 0;
-						fileIOStatic::getVariablesFromFileName(string(data->fileName), currentIndex, p, cs0, cs1);
+						int ci = 0, p = 0; double cs0 = 0 , cs1 = 0;
+						fileIOStatic::getVariablesFromFileName(string(data->fileName), ci, p, cs0, cs1);
 						cout<<"currentScanValue:"<<currentScanValue<<endl;
 						cout<<"cs0:"<<cs0<<endl;
 						//variables
@@ -670,7 +669,7 @@ int qDrawPlot::GetData(detectorData *data){
 						lastImageNumber= currentFrame+1;
 						//title
 						char temp_title[2000];
-						sprintf(temp_title,"Image Index %d",currentIndex);
+						sprintf(temp_title,"Image Index %d",currentFileIndex);
 						imageTitle = temp_title;
 						//copy data
 						for(unsigned int px=0;px<nPixelsX;px++) lastImageArray[currentScanDivLevel*nPixelsX+px] += data->values[px];
@@ -685,8 +684,8 @@ int qDrawPlot::GetData(detectorData *data){
 			while(1){
 				if(!pthread_mutex_trylock(&(last_image_complete_mutex))){
 					//get scanvariable1
-					int currentIndex = 0, p = 0; double cs0 = 0 , cs1 = 0;
-					fileIOStatic::getVariablesFromFileName(string(data->fileName), currentIndex, p, cs0, cs1);
+					int ci = 0, p = 0; double cs0 = 0 , cs1 = 0;
+					fileIOStatic::getVariablesFromFileName(string(data->fileName), ci, p, cs0, cs1);
 					//variables
 					if(cs1!=currentScanValue){
 						if(backwardScanPlot)	currentScanDivLevel--;
@@ -696,7 +695,7 @@ int qDrawPlot::GetData(detectorData *data){
 					lastImageNumber= currentFrame+1;
 					//title
 					char temp_title[2000];
-					sprintf(temp_title,"Image Index %d",currentIndex);
+					sprintf(temp_title,"Image Index %d",currentFileIndex);
 					imageTitle = temp_title;
 					//copy data
 					for(unsigned int px=0;px<nPixelsX;px++) lastImageArray[currentScanDivLevel*nPixelsX+px] += data->values[px];
@@ -731,7 +730,7 @@ int qDrawPlot::GetData(detectorData *data){
 			//2d
 			else{
 				// Titles
-				sprintf(temp_title,"Image Index %d",fileIOStatic::getFileIndexFromFileName(string(data->fileName)));
+				sprintf(temp_title,"Image Index %d",currentFileIndex);
 				imageTitle = temp_title;
 				// manufacture data for now
 				for(unsigned int px=0;px<nPixelsX;px++)

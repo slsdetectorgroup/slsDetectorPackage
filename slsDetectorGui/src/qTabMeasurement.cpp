@@ -75,7 +75,6 @@ void qTabMeasurement::SetupWidgetWindow(){
 	lblProgressIndex->setText(QString::number(myDet->getFileIndex()));
 	//ly initially
 	progressBar->setValue(0);
-	currentMeasurement = 0;
 
 	//timing mode
 	SetupTimingMode();
@@ -301,8 +300,6 @@ void qTabMeasurement::startStopAcquisition(){
 		btnStartStop->setIcon(*iconStop);
 		Enable(0);
 		progressBar->setValue(0);
-		//the progress which keeps adding up for all the measurements
-		currentMeasurement = 0;
 		progressTimer->start(100);
 
 		emit StartSignal();
@@ -313,6 +310,7 @@ void qTabMeasurement::startStopAcquisition(){
 		emit StopSignal();
 		myDet->stopAcquisition();
 		progressTimer->stop();
+		spinIndex->setValue(myPlot->GetFileIndex());
 		btnStartStop->setText("Start");
 		btnStartStop->setIcon(*iconStart);
 		btnStartStop->setChecked(false);
@@ -333,6 +331,7 @@ void qTabMeasurement::UpdateFinished(){
 		Enable(1);
 		connect(btnStartStop,SIGNAL(clicked()),this,SLOT(startStopAcquisition()));
 		UpdateProgress();
+		spinIndex->setValue(myPlot->GetFileIndex());
 		progressTimer->stop();
 	}
 }
@@ -342,8 +341,8 @@ void qTabMeasurement::UpdateFinished(){
 
 
 void qTabMeasurement::SetCurrentMeasurement(int val){
-	currentMeasurement = val;
-	lblCurrentMeasurement->setText(QString::number(val+1));
+	if((val)<spinNumMeasurements->value())
+		lblCurrentMeasurement->setText(QString::number(val+1));
 
 }
 
@@ -352,7 +351,6 @@ void qTabMeasurement::SetCurrentMeasurement(int val){
 
 
 void qTabMeasurement::UpdateProgress(){
-	//progressBar->setValue((int)(((currentMeasurement*100)+(myPlot->GetProgress()))/spinNumMeasurements->value()));
 	progressBar->setValue((int)myPlot->GetProgress());
 	lblProgressIndex->setText(QString::number(myPlot->GetFileIndex()));
 }

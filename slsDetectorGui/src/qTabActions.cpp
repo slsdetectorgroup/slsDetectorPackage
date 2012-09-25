@@ -139,6 +139,32 @@ void qTabActions::SetupWidgetWindow(){
 
 	}
 
+	//load positions
+	if(lblName[NumPositions]->isEnabled()){
+		//delete existing positions
+		if (positions)  delete [] positions;
+		//get number of positions
+		int numPos=myDet->getPositions();
+		comboPos->setMaxCount(numPos);
+
+		//set the number of positions in the gui
+		spinNumPos->setValue(numPos);
+
+		positions=new double[numPos];
+		//load the positions
+		myDet->getPositions(positions);
+
+		//delete the combolist and reload it
+		comboPos->setEnabled(numPos);
+		lblPosList->setEnabled(numPos);
+		btnDelete->setEnabled(numPos);
+		lblPosList->setText("List of Positions: ");
+		lblPosList->setPalette(normal);
+		for(int i=0;i<comboPos->count();i++)		comboPos->removeItem(i);
+		for(int i=0;i<numPos;i++)			comboPos->insertItem(i,QString("%1").arg(positions[i]));
+	}
+
+
 }
 
 

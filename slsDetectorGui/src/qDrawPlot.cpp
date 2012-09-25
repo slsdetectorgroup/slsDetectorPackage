@@ -82,7 +82,7 @@ void qDrawPlot::SetupWidgetWindow(){
 	histNBins = 0;
 	histXAxis = 0;
 	histXAngleAxis = 0;
-	histYAngleAxis = 0;
+	histYAngleAxis = 0;histTrimbits=0;
 	persistency = 0;
 	currentPersistency = 0;
 
@@ -1190,90 +1190,98 @@ void qDrawPlot::DisableZoom(bool disable){
 
 int qDrawPlot::UpdateTrimbitPlot(bool fromDetector,bool Histogram){
 	int ret,i,actualPixelsX;
-	double *temp;
+	//double *temp=0,*trimXAxis=0,*trimYAxis=0;
 #ifdef VERBOSE
-	if(fromDetector)	cout << "Geting Trimbits from Detector: ";
-	else				cout << "Getting Trimbits from Shared Memory: ";
-	if(Histogram)		cout << "Histogram" << endl;
-	else				cout << "Data Graph" << endl;
+	if(fromDetector)	cout << "Geting Trimbits from Detector" << endl;
+	else				cout << "Getting Trimbits from Shared Memory" << endl;
 #endif
 
+	slsDetectorDefs::detectorType detType  = myDet->getDetectorsType();
+	if(detType == slsDetectorDefs::MYTHEN){
 
-	switch(myDet->getDetectorsType()){
-
-
-	case slsDetectorDefs::MYTHEN:
 		//get trimbits
 		actualPixelsX = myDet->getTotalNumberOfChannels();
-		temp = new double[actualPixelsX];
-		ret = myDet->getChanRegs(temp,fromDetector);
+		if(histTrimbits) delete [] histTrimbits; histTrimbits = new double[actualPixelsX];
+		ret = myDet->getChanRegs(histTrimbits,fromDetector);
 		if(!ret){
 			qDefs::Message(qDefs::WARNING,"No Trimbit data found in shared memory.","Dock");
 			return qDefs::FAIL;
 		}
-
+#ifdef VERBOSE
+		cout << "Got Trimbits" << endl;
+#endif
 		//defining axes
-		if(Histogram)	nPixelsX = TRIM_HISTOGRAM_XMAX;
+		if(Histogram)	nPixelsX = TRIM_HISTOGRAM_XMAX+1;
 		else			nPixelsX = actualPixelsX;
-		if(histXAxis)    delete [] histXAxis;	histXAxis    = new double [nPixelsX];
-		if(histYAxis[0]) delete [] histYAxis[0];histYAxis[0] = new double [nPixelsX];
+
+		if(histXAxis)		delete [] histXAxis;	histXAxis 	= new double [nPixelsX];
+		if(histYAxis[0])	delete [] histYAxis[0]; histYAxis[0]= new double [nPixelsX];
 		//initializing
-		for(unsigned int px=0;px<nPixelsX;px++)		histXAxis[px]  = px;
-		for(i=0;i<nPixelsX;i++)					histYAxis[0][i] = 0;
+		for(unsigned int px=0;px<(int)nPixelsX;px++)	histXAxis[px] = px;
+		for(i=0;i<nPixelsX;i++)							histYAxis[0][i]  = 0;
 
 		//clear/select plot and set titles
 		Clear1DPlot();
 		Select1DPlot();
 
+
 		if(!Histogram){
+			cout << "Data Graph:" << nPixelsX << endl;
 			//data
-			memcpy(histYAxis[0],temp,nPixelsX*sizeof(double));
+			memcpy(histYAxis[0],histTrimbits,nPixelsX*sizeof(double));
 			//title
-			SetPlotTitle("Trimbits Plot - Data Graph");
+			boxPlot->setTitle("Trimbits Plot - Data Graph");
 			plot1D->SetXTitle("Channel Number");
 			plot1D->SetYTitle("Trimbits");
 			//set plot parameters
 			SlsQtH1D*  h;
-			plot1D_hists.append(h=new SlsQtH1D("1d plot",nPixelsX,histXAxis,GetHistYAxis(0)));
+			plot1D_hists.append(h=new SlsQtH1D("1d plot",nPixelsX,histXAxis,histYAxis[0]));
 			h->SetLineColor(1);
 			h->setTitle(GetHistTitle(0));
 			//attach plot
 			h->Attach(plot1D);
-		}else{
-			//data
-			for(i=0;i<actualPixelsX;i++){
-				if((temp[i]<=TRIM_HISTOGRAM_XMAX))/**shouldnt be the case*/
-					histYAxis[0][(int)temp[i]]+=1;
-				else cout<<"OUT OF BOUNDS:"<<i<<"-"<<temp[i]<<endl;
-			}
+		}
 
-/*			for(i=0;i<TRIM_HISTOGRAM_XMAX;i++)
+		else{
+			cout << "Histogram: " << nPixelsX-1 << endl;
+			//data
+			int value =0;
+			for(i=0;i<actualPixelsX;i++){
+				if((histTrimbits[i]<nPixelsX)&&(histTrimbits[i]>=0)){
+					value = (int) histTrimbits[i];
+					histYAxis[0][value]++;
+				}
+				else cout<<"OUT OF BOUNDS:"<<i<<"-"<<histTrimbits[i]<<endl;
+			}
+			/*		for(i=0;i<TRIM_HISTOGRAM_XMAX;i++)
 				if((histYAxis[0][i]<=TRIM_HISTOGRAM_XMAX)&&(histYAxis[0][i]>0))
 					cout<<"HIsty["<<i<<"]:"<<histYAxis[0][i]<<endl;*/
 
+			//delete [] histTrimbits;
 			//title
-			SetPlotTitle("Trimbits Plot - Histogram");
+			boxPlot->setTitle("Trimbits Plot - Histogram");
 			plot1D->SetXTitle("Trimbits");
 			plot1D->SetYTitle("Frequency");
 			//set plot parameters
 			SlsQtH1D*  h;
-			plot1D_hists.append(h=new SlsQtH1D("1d plot",nPixelsX,histXAxis,GetHistYAxis(0)));
+			plot1D_hists.append(h=new SlsQtH1D("1d plot",nPixelsX,histXAxis,histYAxis[0]));
 			h->SetLineColor(1);
 			h->setTitle(GetHistTitle(0));
 			//attach plot
 			h->Attach(plot1D);
-
 		}
+
+
+
 #ifdef VERBOSE
 		cout << "Trimbits Plot updated" << endl;
 #endif
-		break;
+	}
 
 
 
+	else if(detType == slsDetectorDefs::EIGER){
 
-	//2d
-	case slsDetectorDefs::EIGER:
 		//defining axes
 		nPixelsX = 100;/**??*/
 		nPixelsY = 100;
@@ -1299,16 +1307,10 @@ int qDrawPlot::UpdateTrimbitPlot(bool fromDetector,bool Histogram){
 #ifdef VERBOSE
 		cout << "Trimbits Plot updated" << endl;
 #endif
-		break;
-
-
-
-
-
-	//shouldnt be here
-	default:
-		break;
 	}
+
+
+
 	return qDefs::OK;
 }
 

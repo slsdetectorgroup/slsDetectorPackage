@@ -369,6 +369,10 @@ double*      histYAxis[MAX_1DPLOTS];
 double*	     histXAngleAxis;
 /** Y Axis for angles in 1D (no persistency) */
 double*	     histYAngleAxis;
+/** X Axis for trimbits in 1D */
+double*	     histTrimbits;
+
+
 /**	Current Image Values in 2D */
 double*      lastImageArray;
 

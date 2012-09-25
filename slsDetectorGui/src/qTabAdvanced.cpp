@@ -353,17 +353,17 @@ void qTabAdvanced::StartTrimming(){
 
 	//execute
 	int ret = myDet->executeTrimming(trimmingMode,parameter1,parameter2,-1);
+	if((ret!=slsDetectorDefs::FAIL)&&(ret!=-1));
+	else
+		qDefs::Message(qDefs::WARNING,"Atleast 1 channel could not be trimmed.","Advanced");
+	//save trim file
+	ret = myDet->saveSettingsFile(string(dispFile->text().toAscii().constData()),-1);
 	if((ret!=slsDetectorDefs::FAIL)&&(ret!=-1)){
-		//save trim file
-		ret = myDet->saveSettingsFile(string(dispFile->text().toAscii().constData()),-1);
-		if((ret!=slsDetectorDefs::FAIL)&&(ret!=-1))
-			qDefs::Message(qDefs::INFORMATION,"The Trimbits have been saved successfully.","Advanced");
-		else qDefs::Message(qDefs::WARNING,string("Could not Save the Trimbits to file:\n")+dispFile->text().toAscii().constData(),"Advanced");
+		qDefs::Message(qDefs::INFORMATION,"The Trimbits have been saved successfully.","Advanced");
 		//updates plots
 		myPlot->UpdateTrimbitPlot(false,radioHistogram->isChecked());
 	}
-	else
-		qDefs::Message(qDefs::WARNING,"Atleast 1 channel could not be trimmed.","Advanced");
+	else qDefs::Message(qDefs::WARNING,string("Could not Save the Trimbits to file:\n")+dispFile->text().toAscii().constData(),"Advanced");
 }
 
 
@@ -371,10 +371,12 @@ void qTabAdvanced::StartTrimming(){
 
 
 void qTabAdvanced::UpdateTrimbitPlot(int id){
-	//refresh
-	if(!id)	myPlot->UpdateTrimbitPlot(false,radioHistogram->isChecked());
-	//from detector
-	else	myPlot->UpdateTrimbitPlot(true,radioHistogram->isChecked());
+	if(boxPlot->isChecked()){
+		//refresh
+		if(!id)	myPlot->UpdateTrimbitPlot(false,radioHistogram->isChecked());
+		//from detector
+		else	myPlot->UpdateTrimbitPlot(true,radioHistogram->isChecked());
+	}
 }
 
 

@@ -70,7 +70,6 @@ void qTabSettings::SetupWidgetWindow(){
 void qTabSettings::SetupDetectorSettings(){
 	// Get detector settings from detector
 	slsDetectorDefs::detectorSettings sett = myDet->getSettings();
-
 	// To be able to index items on a combo box
 	model = qobject_cast<QStandardItemModel*>(comboSettings->model());
 	if (model) {
@@ -268,10 +267,9 @@ void qTabSettings::Refresh(){
 #ifdef VERBOSE
 	cout  << "Getting settings" << endl;
 #endif
-	SetupDetectorSettings();
 	//changin the combo settings also plots the trimbits for mythen and eiger, so disconnect
 	disconnect(comboSettings, 		SIGNAL(currentIndexChanged(int)),	this, SLOT(setSettings(int)));
-	comboSettings->setCurrentIndex(myDet->getSettings());
+	SetupDetectorSettings();//comboSettings->setCurrentIndex(myDet->getSettings());
 	connect(comboSettings, 		SIGNAL(currentIndexChanged(int)),	this, SLOT(setSettings(int)));
 
 

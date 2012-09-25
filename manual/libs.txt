@@ -1,0 +1,59 @@
+The slsDetectorGUI is based on Qt4 with Qwt libraries.
+
+-Qt4.6 installation:
+
+Download the opend source version:
+ftp://ftp.qt.nokia.com/qt/source/qt-everywhere-opensource-src-4.6.2.tar.gz
+
+To install:
+gunzip qt-everywhere-opensource-src-4.6.2.tar.gz
+tar xvf qt-everywhere-opensource-src-4.6.2.tar
+./configure
+make
+make install
+
+By default Qt4 will be installed int /usr/local/Trolltech/Qt-4.6.2/
+Edit your .bashrc:
+export QTDIR=/usr/local/Trolltech/Qt-4.6.2
+export PATH=$QTDIR/bin:$PATH
+export LD_LIBRARY_PATH=$QTDIR/lib:$LD_LIBRARY_PATH
+
+If your system also have Qt3 installed, make sure that QTDIR, PATH and LD_LIBRARY_PATH point to Qt4 before installing Qwt (and of course compiling and running the GUI).
+
+
+
+- Qwt5.2 installation
+
+Download the sources:
+svn co https://qwt.svn.sourceforge.net/svnroot/qwt/branches/qwt-5.2
+
+To install:
+cd qwt-5.2
+qmake
+make
+make install
+
+By default Qwt will be installed in /usr/local/qwt-5.2.3-svn/
+Edit your .bashrc:
+export QWTDIR=/usr/local/qwt-5.2.3-svn/
+export LD_LIBRARY_PATH=$QWTDIR/lib:$LD_LIBRARY_PATH
+
+
+- The calibration wizards are based on the cern root software
+
+Download the sources
+svn co https://root.cern.ch/svn/root/trunk root
+
+To install:
+cd root
+./configure --enable-qt
+make
+make install
+
+edit your .bashrc:
+export ROOTSYS=/usr/local/root
+export PATH=$ROOTSYS/bin:$PATH
+export LD_LIBRARY_PATH=$ROOTSYS/lib:$LD_LIBRARY_PATH
+
+You can also download the binaries, assuming that your linuc and gcc versions match:
+http://root.cern.ch/drupal/content/production-version-534

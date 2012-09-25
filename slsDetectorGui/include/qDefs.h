@@ -99,6 +99,12 @@ public:
 	static double getCorrectTime(timeUnit& unit, double value){
 		int intUnit = (int)SECONDS;
 
+		/**0 ms*/
+		if(!value){
+			unit = MILLISECONDS;
+			return value;
+		}
+
 		/** hr, min, sec */
 		if(value>=1){
 			double newVal = value;

@@ -15,7 +15,7 @@ LIBDOCDIR=$(WD)/slsDetectorSoftware
 
 
 
-all: lib  slsDetectorClient slsDetectorGUI
+all: lib  slsDetectorClient 
 
 lib:
 	cd $(LIBRARYDIR) && $(MAKE) lib FLAGS=$(FLAGS)
@@ -30,11 +30,18 @@ slsDetectorGUI: lib
 	$(shell test -d bin || mkdir -p bin)
 	mv $(GUIDIR)/bin/* bin/
 
+calWiz: 
+	cd  calibrationWizards && $(MAKE)  FLAGS=$(FLAGS)
+	$(shell test -d bin || mkdir -p bin)
+	mv calibrationWizards/energyCalibrationWizard  calibrationWizards/angularCalibrationWizard  bin/
+	cp calibrationWizards/manual/*.pdf manual/
+
 clean:
 	rm -rf bin/sls_detector_*
 	cd $(LIBRARYDIR) && $(MAKE) clean
 	cd $(CLIENTDIR) && $(MAKE) clean
 	cd $(GUIDIR) && $(MAKE) clean
+	cd calibrationWizards && $(MAKE) clean
 
 install_lib:
 	cd $(LIBRARYDIR) && $(MAKE) install_lib DESTDIR=$(INSTALLROOT)/$(LIBDIR)

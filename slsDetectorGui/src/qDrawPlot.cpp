@@ -894,84 +894,86 @@ void qDrawPlot::UpdatePlot(){
 	// only if no plot isnt enabled
 	if(plotEnable){
 		LockLastImageArray();
-		//1-d plot stuff
-		if(plot_in_scope==1){
-			if(lastImageNumber){
+		//so that it doesnt plot every single thing
+		if(lastImageNumber!=last_plot_number){
+			//1-d plot stuff
+			if(plot_in_scope==1){
+				if(lastImageNumber){
 #ifdef VERYVERBOSE
-				cout << "Last Image Number:" << lastImageNumber << endl;
+					cout << "Last Image Number:" << lastImageNumber << endl;
 #endif
-				if(histNBins){
-					Clear1DPlot();
-					plot1D->SetXTitle(histXAxisTitle.toAscii().constData());
-					plot1D->SetYTitle(histYAxisTitle.toAscii().constData());
-					for(int hist_num=0;hist_num<(int)nHists;hist_num++){
-						SlsQtH1D*  h;
-						if(hist_num+1>plot1D_hists.size()){
-							if(anglePlot)
-								plot1D_hists.append(h=new SlsQtH1D("1d plot",histNBins,histXAngleAxis,histYAngleAxis));
-							else
-								plot1D_hists.append(h=new SlsQtH1D("1d plot",histNBins,histXAxis,GetHistYAxis(hist_num)));
-							h->SetLineColor(hist_num+1);
-						}else{
-							h=plot1D_hists.at(hist_num);
-							if(anglePlot)
-								h->SetData(histNBins,histXAngleAxis,histYAngleAxis);
-							else
-								h->SetData(histNBins,histXAxis,GetHistYAxis(hist_num));
+					if(histNBins){
+						Clear1DPlot();
+						plot1D->SetXTitle(histXAxisTitle.toAscii().constData());
+						plot1D->SetYTitle(histYAxisTitle.toAscii().constData());
+						for(int hist_num=0;hist_num<(int)nHists;hist_num++){
+							SlsQtH1D*  h;
+							if(hist_num+1>plot1D_hists.size()){
+								if(anglePlot)
+									plot1D_hists.append(h=new SlsQtH1D("1d plot",histNBins,histXAngleAxis,histYAngleAxis));
+								else
+									plot1D_hists.append(h=new SlsQtH1D("1d plot",histNBins,histXAxis,GetHistYAxis(hist_num)));
+								h->SetLineColor(hist_num+1);
+							}else{
+								h=plot1D_hists.at(hist_num);
+								if(anglePlot)
+									h->SetData(histNBins,histXAngleAxis,histYAngleAxis);
+								else
+									h->SetData(histNBins,histXAxis,GetHistYAxis(hist_num));
+							}
+							SetStyle(h);
+							h->setTitle(GetHistTitle(hist_num));
+							h->Attach(plot1D);
 						}
-						SetStyle(h);
-						h->setTitle(GetHistTitle(hist_num));
-						h->Attach(plot1D);
+						// update range if required
+						if(XYRangeChanged){
+							if(!IsXYRange[qDefs::XMINIMUM])		XYRangeValues[qDefs::XMINIMUM]= plot1D->GetXMinimum();
+							if(!IsXYRange[qDefs::XMAXIMUM])		XYRangeValues[qDefs::XMAXIMUM]= plot1D->GetXMaximum();
+							if(!IsXYRange[qDefs::YMINIMUM])		XYRangeValues[qDefs::YMINIMUM]= plot1D->GetYMinimum();
+							if(!IsXYRange[qDefs::YMAXIMUM])		XYRangeValues[qDefs::YMAXIMUM]= plot1D->GetYMaximum();
+							plot1D->SetXMinMax(XYRangeValues[qDefs::XMINIMUM],XYRangeValues[qDefs::XMAXIMUM]);
+							plot1D->SetYMinMax(XYRangeValues[qDefs::YMINIMUM],XYRangeValues[qDefs::YMAXIMUM]);
+							XYRangeChanged	= false;
+						}
+						if(saveAll) SavePlotAutomatic();
+					}
+				}
+			}//2-d plot stuff
+			else{
+				if(lastImageArray){
+					if(lastImageNumber&&last_plot_number!=(int)lastImageNumber && //there is a new plot
+							nPixelsX>0&&nPixelsY>0){
+						cout<<"startpixel:"<<startPixel<<endl;
+						cout<<"endpixel:"<<endPixel<<endl;
+						//plot2D->GetPlot()->SetData(nPixelsX,-0.5,nPixelsX-0.5,nPixelsY,-0.5,nPixelsY-0.5,lastImageArray);
+						plot2D->GetPlot()->SetData(nPixelsX,-0.5,nPixelsX-0.5,nPixelsY,startPixel,endPixel,lastImageArray);
+						plot2D->setTitle(GetImageTitle());
+						plot2D->SetXTitle(imageXAxisTitle);
+						plot2D->SetYTitle(imageYAxisTitle);
+						plot2D->SetZTitle(imageZAxisTitle);
+						plot2D->UpdateNKeepSetRangeIfSet(); //this will keep a "set" z range, and call Plot()->Update();
 					}
 					// update range if required
 					if(XYRangeChanged){
-						if(!IsXYRange[qDefs::XMINIMUM])		XYRangeValues[qDefs::XMINIMUM]= plot1D->GetXMinimum();
-						if(!IsXYRange[qDefs::XMAXIMUM])		XYRangeValues[qDefs::XMAXIMUM]= plot1D->GetXMaximum();
-						if(!IsXYRange[qDefs::YMINIMUM])		XYRangeValues[qDefs::YMINIMUM]= plot1D->GetYMinimum();
-						if(!IsXYRange[qDefs::YMAXIMUM])		XYRangeValues[qDefs::YMAXIMUM]= plot1D->GetYMaximum();
-						plot1D->SetXMinMax(XYRangeValues[qDefs::XMINIMUM],XYRangeValues[qDefs::XMAXIMUM]);
-						plot1D->SetYMinMax(XYRangeValues[qDefs::YMINIMUM],XYRangeValues[qDefs::YMAXIMUM]);
+						if(!IsXYRange[qDefs::XMINIMUM])			XYRangeValues[qDefs::XMINIMUM]= plot2D->GetPlot()->GetXMinimum();
+						if(!IsXYRange[qDefs::XMAXIMUM])			XYRangeValues[qDefs::XMAXIMUM]= plot2D->GetPlot()->GetXMaximum();
+						if(!IsXYRange[qDefs::YMINIMUM])			XYRangeValues[qDefs::YMINIMUM]= plot2D->GetPlot()->GetYMinimum();
+						if(!IsXYRange[qDefs::YMAXIMUM])			XYRangeValues[qDefs::YMAXIMUM]= plot2D->GetPlot()->GetYMaximum();
+						plot2D->GetPlot()->SetXMinMax(XYRangeValues[qDefs::XMINIMUM],XYRangeValues[qDefs::XMAXIMUM]);
+						plot2D->GetPlot()->SetYMinMax(XYRangeValues[qDefs::YMINIMUM],XYRangeValues[qDefs::YMAXIMUM]);
 						XYRangeChanged	= false;
 					}
 					if(saveAll) SavePlotAutomatic();
 				}
 			}
-		}//2-d plot stuff
-		else{
-			if(lastImageArray){
-				if(lastImageNumber&&last_plot_number!=(int)lastImageNumber && //there is a new plot
-						nPixelsX>0&&nPixelsY>0){
-					cout<<"startpixel:"<<startPixel<<endl;
-					cout<<"endpixel:"<<endPixel<<endl;
-					//plot2D->GetPlot()->SetData(nPixelsX,-0.5,nPixelsX-0.5,nPixelsY,-0.5,nPixelsY-0.5,lastImageArray);
-					plot2D->GetPlot()->SetData(nPixelsX,-0.5,nPixelsX-0.5,nPixelsY,startPixel,endPixel,lastImageArray);
-					plot2D->setTitle(GetImageTitle());
-					plot2D->SetXTitle(imageXAxisTitle);
-					plot2D->SetYTitle(imageYAxisTitle);
-					plot2D->SetZTitle(imageZAxisTitle);
-					plot2D->UpdateNKeepSetRangeIfSet(); //this will keep a "set" z range, and call Plot()->Update();
-				}
-				// update range if required
-				if(XYRangeChanged){
-					if(!IsXYRange[qDefs::XMINIMUM])			XYRangeValues[qDefs::XMINIMUM]= plot2D->GetPlot()->GetXMinimum();
-					if(!IsXYRange[qDefs::XMAXIMUM])			XYRangeValues[qDefs::XMAXIMUM]= plot2D->GetPlot()->GetXMaximum();
-					if(!IsXYRange[qDefs::YMINIMUM])			XYRangeValues[qDefs::YMINIMUM]= plot2D->GetPlot()->GetYMinimum();
-					if(!IsXYRange[qDefs::YMAXIMUM])			XYRangeValues[qDefs::YMAXIMUM]= plot2D->GetPlot()->GetYMaximum();
-					plot2D->GetPlot()->SetXMinMax(XYRangeValues[qDefs::XMINIMUM],XYRangeValues[qDefs::XMAXIMUM]);
-					plot2D->GetPlot()->SetYMinMax(XYRangeValues[qDefs::YMINIMUM],XYRangeValues[qDefs::YMAXIMUM]);
-					XYRangeChanged	= false;
-				}
-				if(saveAll) SavePlotAutomatic();
-			}
+			//}
+			last_plot_number=lastImageNumber;
+
+			//set plot title
+			boxPlot->setTitle(plotTitle);
 		}
+		UnlockLastImageArray();
 	}
-	last_plot_number=lastImageNumber;
-
-	//set plot title
-	boxPlot->setTitle(plotTitle);
-
-	if(plotEnable) UnlockLastImageArray();
-
 
 	//if acqq stopped before this line, it continues from here, shouldnt restart plotting timer
 	if(!stop_signal){
@@ -1042,15 +1044,16 @@ void qDrawPlot::ClonePlot(){
 				}
 			if(found) winClone[i]->SetRange(IsXYRange,XYRangeValues);
 			//copy data
-			LockLastImageArray();
+			//LockLastImageArray();
 			if(!anglePlot)
 				winClone[i]->SetCloneHists((int)nHists,histNBins,histXAxis,histYAxis,histTitle,lines,markers);
 			else
 				winClone[i]->SetCloneHists((int)nHists,histNBins,histXAngleAxis,histYAngleAxis,histTitle,lines,markers);
-			UnlockLastImageArray();
+			//UnlockLastImageArray();
 		}
 	}
 	else{
+
 		plot2D = new SlsQt2DPlotLayout(boxPlot);
 		plot2D->setFont(QFont("Sans Serif",9,QFont::Normal));
 		plot2D->setTitle(GetImageTitle());

@@ -310,7 +310,12 @@ void qTabMeasurement::startStopAcquisition(){
 		emit StopSignal();
 		myDet->stopAcquisition();
 		progressTimer->stop();
-		spinIndex->setValue(myPlot->GetFileIndex());
+		//spin index
+		disconnect(spinIndex,			SIGNAL(valueChanged(int)),			this,	SLOT(setRunIndex(int)));
+		spinIndex->setValue(myDet->getFileIndex());
+		lblProgressIndex->setText(QString::number(spinIndex->value()));
+		connect(spinIndex,			SIGNAL(valueChanged(int)),			this,	SLOT(setRunIndex(int)));
+
 		btnStartStop->setText("Start");
 		btnStartStop->setIcon(*iconStart);
 		btnStartStop->setChecked(false);
@@ -330,8 +335,14 @@ void qTabMeasurement::UpdateFinished(){
 		btnStartStop->setChecked(false);
 		Enable(1);
 		connect(btnStartStop,SIGNAL(clicked()),this,SLOT(startStopAcquisition()));
+
 		UpdateProgress();
-		spinIndex->setValue(myPlot->GetFileIndex());
+		//spin index
+		disconnect(spinIndex,			SIGNAL(valueChanged(int)),			this,	SLOT(setRunIndex(int)));
+		spinIndex->setValue(myDet->getFileIndex());
+		lblProgressIndex->setText(QString::number(spinIndex->value()));
+		connect(spinIndex,			SIGNAL(valueChanged(int)),			this,	SLOT(setRunIndex(int)));
+
 		progressTimer->stop();
 	}
 }
@@ -352,7 +363,7 @@ void qTabMeasurement::SetCurrentMeasurement(int val){
 
 void qTabMeasurement::UpdateProgress(){
 	progressBar->setValue((int)myPlot->GetProgress());
-	lblProgressIndex->setText(QString::number(myPlot->GetFileIndex()));
+	lblProgressIndex->setText(QString::number(myPlot->GetFileIndex()+1));
 }
 
 

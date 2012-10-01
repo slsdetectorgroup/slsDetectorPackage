@@ -96,7 +96,7 @@ void qCloneWidget::SetupWidgetWindow(QString title,int numDim,SlsQt1DPlot*& plot
 //-------------------------------------------------------------------------------------------------------------------------------------------------
 
 void qCloneWidget::SetCloneHists(int nHists,int histNBins,double* histXAxis,double* histYAxis[],string histTitle[],bool lines,bool markers){
-	/** for each plot*/cout<<"qclone histYAxis[0][500]:"<<histYAxis[0][500]<<endl;
+	/** for each plot*/
 	for(int hist_num=0;hist_num<nHists;hist_num++){
 		/** create hists */
 		SlsQtH1D*  k;
@@ -131,7 +131,7 @@ void qCloneWidget::SetCloneHists(int nHists,int histNBins,double* histXAxis,doub
 
 
 void qCloneWidget::SetCloneHists(int nHists,int histNBins,double* histXAxis,double* histYAxis,string histTitle[],bool lines,bool markers){
-	/** for each plot*/cout<<"qclone angle nhists:"<<nHists<<endl;
+	/** for each plot*/
 	for(int hist_num=0;hist_num<nHists;hist_num++){
 		/** create hists */
 		SlsQtH1D*  k;

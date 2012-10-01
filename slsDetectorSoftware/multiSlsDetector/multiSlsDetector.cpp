@@ -3551,3 +3551,40 @@ int multiSlsDetector::readDataFile(string fname, int *data) {
   return iline;
 }
 
+
+
+
+
+string multiSlsDetector::setupReceiver(string fileName) {
+	cout<<"File Name:"<<fileName<<endl;
+	string retval1 = "",retval;
+	for (int idet=0; idet<thisMultiDetector->numberOfDetectors; idet++) {
+		if (detectors[idet]) {
+			retval=detectors[idet]->setupReceiver(fileName);
+			if(!retval.empty()){
+				retval1.append(retval);
+				retval1.append("+");
+			}
+		}
+	}
+	return retval1;
+}
+
+
+slsDetectorDefs::runStatus multiSlsDetector::startReceiver(string status,int index) {
+	/**master receiver or writer?*/
+	runStatus s, s1;
+
+	if(detectors[0]) s1 = detectors[0]->startReceiver(status,index);
+
+	for (int idet=1; idet<thisMultiDetector->numberOfDetectors; idet++) {
+		if (detectors[idet]) {
+			s=detectors[idet]->startReceiver(status,index);
+			if(s==ERROR)
+				s1=ERROR;
+			if(s==IDLE && s1!=IDLE)
+				s1=ERROR;
+		}
+	}
+	return s1;
+}

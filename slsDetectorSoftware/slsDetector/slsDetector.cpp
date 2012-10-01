@@ -5317,3 +5317,97 @@ slsDetectorDefs::synchronizationMode slsDetector::setSynchronization(synchroniza
   return retval;
 
 }
+
+
+
+string slsDetector::setupReceiver(string fileName) {
+	int fnum=F_SETUP_RECEIVER;
+	int ret = FAIL;
+	char mess[100];
+	char arg[MAX_STR_LENGTH];
+	strcpy(arg,fileName.c_str());
+
+	MySocketTCP *receiverSocket = new MySocketTCP(thisDetector->clientIP,thisDetector->dataPort);
+
+	if (receiverSocket->getErrorStatus()){
+#ifdef VERBOSE
+		std::cout<< "Could not connect Control socket " << thisDetector->clientIP  << " " << thisDetector->dataPort << std::endl;
+#endif
+		delete receiverSocket;
+		receiverSocket=NULL;
+	}
+	else{
+		if(receiverSocket){
+			if (receiverSocket->Connect()>=0){
+				if (receiverSocket->SendDataOnly(&fnum,sizeof(fnum))>=0)
+					if (receiverSocket->SendDataOnly(arg,MAX_STR_LENGTH)>=0){
+						receiverSocket->ReceiveDataOnly(&ret,sizeof(ret));
+						if(ret==FAIL){
+							receiverSocket->ReceiveDataOnly(mess,sizeof(mess));
+							std::cout<< "Receiver returned error: " << mess << std::endl;
+						}
+					}
+				receiverSocket->Disconnect();
+			}
+			else strcpy(thisDetector->clientIP,"none");
+			delete receiverSocket;//should I include also for good connection? cuz setTCPSocket() still uses it?
+			receiverSocket=NULL;//should I include also for good connection? cuz setTCPSocket() still uses it?
+		}
+	}
+	/**if force update, updateReceiver?*/
+	if(ret==OK) return fileName;
+	return string("");
+}
+
+
+
+
+
+
+slsDetectorDefs::runStatus slsDetector::startReceiver(string status,int index){
+	int fnum=F_START_RECEIVER;
+	int ret = FAIL;
+	char mess[100];
+	runStatus retval=ERROR;
+	int arg[2];
+	arg[1] = index;
+
+	//start=1,stop=0,get=-1
+	arg[0] = -1;
+	if(status=="start") arg[0] = 1;
+	else if(status=="stop") arg[0] = 0;
+
+
+	MySocketTCP *receiverSocket = new MySocketTCP(thisDetector->clientIP,thisDetector->dataPort);
+
+	if (receiverSocket->getErrorStatus()){
+#ifdef VERBOSE
+		std::cout<< "Could not connect Control socket " << thisDetector->clientIP  << " " << thisDetector->dataPort << std::endl;
+#endif
+		delete receiverSocket;
+		receiverSocket=NULL;
+	}
+	else{
+		if(receiverSocket){
+			if (receiverSocket->Connect()>=0){
+				if (receiverSocket->SendDataOnly(&fnum,sizeof(fnum))>=0)
+					if (receiverSocket->SendDataOnly(arg,sizeof(arg))>=0){
+						receiverSocket->ReceiveDataOnly(&ret,sizeof(ret));
+						if(ret!=FAIL){
+							receiverSocket->ReceiveDataOnly(&retval,sizeof(retval));
+						}
+						else{
+							receiverSocket->ReceiveDataOnly(mess,sizeof(mess));
+							std::cout<< "Receiver returned error: " << mess << std::endl;
+						}
+					}
+				receiverSocket->Disconnect();
+			}
+			else strcpy(thisDetector->clientIP,"none");
+			delete receiverSocket;//should I include also for good connection? cuz setTCPSocket() still uses it?
+			receiverSocket=NULL;//should I include also for good connection? cuz setTCPSocket() still uses it?
+		}
+	}
+	/**if force update, updateReceiver?*/
+	return retval;
+}

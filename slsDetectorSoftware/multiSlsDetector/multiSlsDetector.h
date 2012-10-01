@@ -1002,6 +1002,21 @@ class multiSlsDetector  : public slsDetectorUtils {
 
    slsDetector *getSlsDetector(int pos) {if (pos>=0 && pos< MAXDET) return detectors[pos]; return NULL;};
 
+   /**   Sets up the receiver
+         @param fileName file name
+         \returns receiver ip or none
+    */
+   string setupReceiver(string fileName="");
+
+
+   /**   Starts/Stops the receiver
+         @param status status of receiver
+         @param index starting index of data file
+         \returns status
+    */
+   runStatus startReceiver(string status="",int index=0);
+
+
  protected:
  
 

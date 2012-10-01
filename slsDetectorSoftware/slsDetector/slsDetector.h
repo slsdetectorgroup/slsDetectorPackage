@@ -1354,6 +1354,21 @@ typedef  struct sharedSlsDetector {
   /** Frees the shared memory  -  should not be used*/
   int freeSharedMemory();
 
+  /**
+        Sets up the receiver
+        @param fileName file name
+        \returns receiver ip or none
+   */
+  string setupReceiver(string fileName="");
+
+
+  /**   Starts/Stops the receiver
+        @param status status of receiver
+        @param index starting index of data file
+        \returns status
+   */
+  runStatus startReceiver(string status="",int index=0);
+
  protected:
  
 

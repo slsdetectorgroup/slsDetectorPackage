@@ -637,6 +637,13 @@ slsDetectorCommand::slsDetectorCommand(slsDetectorUtils *det)  {
   descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdConfiguration;
   i++;
 
+
+  /* receiver functions */
+  descrToFuncMap[i].m_pFuncName="receiver";
+  descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdReceiver;
+  i++;
+
+
   numberOfCommands=i;
   
 // #ifdef VERBOSE
@@ -2075,6 +2082,8 @@ string slsDetectorCommand::cmdNetworkParameter(int narg, char *args[], int actio
 
   networkParameter t;
 
+  string fileName = myDet->getFilePath()+string("/")+myDet->getFileName()+string("_");
+
   if (action==HELP_ACTION)
     return helpNetworkParameter(narg,args,action);
 
@@ -2086,8 +2095,13 @@ string slsDetectorCommand::cmdNetworkParameter(int narg, char *args[], int actio
     t=SERVER_MAC;
   } else return ("unknown network parameter")+cmd;
   
-  if (action==PUT_ACTION)
-    myDet->setNetworkParameter(t, args[1]);
+  if (action==PUT_ACTION){
+    if(!strcmp(myDet->setNetworkParameter(t, args[1]),args[1])){
+      if(t==CLIENT_IP)
+     	if(myDet->setupReceiver(fileName).empty())
+          return string("could not set up receiver file name.");
+    }
+  }
   return myDet->getNetworkParameter(t);
 
 }
@@ -3378,3 +3392,39 @@ string slsDetectorCommand::helpConfiguration(int narg, char *args[], int action)
 }
 
 
+string slsDetectorCommand::cmdReceiver(int narg, char *args[], int action) {
+	runStatus s;
+	if (action==HELP_ACTION)
+		return helpReceiver(narg, args, action);
+
+	if (action==PUT_ACTION) {
+		if((strcasecmp(args[1],"start"))&&(strcasecmp(args[1],"stop")))
+				return helpReceiver(narg, args, action);
+		s = myDet->startReceiver(string(args[1]),myDet->getFileIndex());
+		//increment index by 1 if stopped successfully
+		if((!strcasecmp(args[1],"stop"))&&(s!=ERROR))
+			myDet->setFileIndex(myDet->getFileIndex()+1);
+	}
+
+	return myDet->runStatusType(myDet->startReceiver());
+}
+
+
+string slsDetectorCommand::helpReceiver(int narg, char *args[], int action) {
+
+  ostringstream os;
+  if (action==PUT_ACTION || action==HELP_ACTION)
+    os << "receiver [status] \t starts/stops the receiver to listen to detector packets. - can be start or stop" << std::endl;
+  if (action==GET_ACTION || action==HELP_ACTION)
+	os << "receiver \t returns the status of receiver - can be running or idle" << std::endl;
+
+  return os.str();
+
+
+
+
+
+
+
+
+}

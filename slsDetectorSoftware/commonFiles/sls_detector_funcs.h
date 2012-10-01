@@ -5,7 +5,8 @@
    All set functions with argument -1 work as get, when possible 
 
 */
- 
+ #ifndef SLS_DETECTOR_FUNCS_H
+#define SLS_DETECTOR_FUNCS_H
 
 enum {
 
@@ -102,11 +103,15 @@ enum {
 
   F_READ_COUNTER_BLOCK, /**< reads the counter block memory for gotthard */
 
-  F_RESET_COUNTER_BLOCK /**< resets the counter block memory for gotthard */
+  F_RESET_COUNTER_BLOCK, /**< resets the counter block memory for gotthard */
+
+  F_SETUP_RECEIVER, 	/**< sets up receiver with parameters */
+
+  F_START_RECEIVER/**< starts/stops the receiver and returns status */
 
   /* Always append functions hereafter!!! */
 
 };
 
-
+#endif SLS_DETECTOR_FUNCS_H
 /** @endinternal */

@@ -162,6 +162,7 @@ void qTabDataOutput::browseOutputDir()
 	QString directory = QFileDialog::getExistingDirectory(this,tr("Choose Output Directory "),dispOutputDir->text());
 	if (!directory.isEmpty())
 		dispOutputDir->setText(directory);
+	setOutputDir();
 }
 
 

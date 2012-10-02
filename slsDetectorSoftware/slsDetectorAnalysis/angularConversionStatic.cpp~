@@ -1,86 +1,68 @@
-#include "angularConversion.h"
+#include "angularConversionStatic.h"
 
 #include <iostream>
 #include <fstream>
 #include <sstream>
 #include <math.h>
-#ifndef MYROOT
-#include "usersFunctions.h"
 
-#endif
 #include "angleFunction.h"
 using namespace std;
 
-angularConversion::angularConversion():  currentPosition(0), 
-					  currentPositionIndex(0) 
+angularConversionStatic::angularConversionStatic()
 {
   //angleFunctionPointer=0;
   registerAngleFunctionCallback(&defaultAngleFunction);
 
 }
 
-angularConversion::~angularConversion(){
+angularConversionStatic::~angularConversionStatic(){
 
 }
 
-// int angularConversion::setAngularConversionPointer(angleConversionConstant *p, int *nm, int nch, int idet) {
-//   if (p) {
-//     angOff[idet]=p;
-//     nMods[idet]=nm;
-//     nCh[idet]=nch;
-//   } else {
-//     angOff[idet]=NULL;
-//     nMods[idet]=NULL;
-//   } 
-    
-//   return OK;
-// }
 
 
-
-
-double* angularConversion::convertAngles(double pos, int nch) {
+double* angularConversionStatic::convertAngles(double pos, int nch, int *chansPerMod, angleConversionConstant **angOff, int *mF, double fo, double go, int angdir) {
   int imod=0;
   double    *ang=new double[nch];
   double enc=pos;
   angleConversionConstant *p=NULL;
-
+  
   int ch0=0;
-  int chlast=getChansPerMod(0);
-  int nchmod=getChansPerMod(0);
-  p=getAngularConversionPointer(imod);      
-  if (getMoveFlag(imod)==0)
+  int chlast=chansPerMod[0];
+  int nchmod=chansPerMod[0];
+  p=angOff[imod];      
+  if (mF[imod]==0)
     enc=0;
   else
     enc=pos;
-  
+
   for (int ip=0; ip<nch; ip++) {
 #ifdef VERBOSE
     //  cout << "ip " << ip << " ch0 " << ch0 << " chlast " << chlast << " imod " << imod << endl;
 #endif
     if (ip>=chlast) {
       imod++; 
-      p=getAngularConversionPointer(imod);      
-      if (getMoveFlag(imod)==0)
+      p=angOff[imod];      
+      if (mF[imod]==0)
 	enc=0;
       else
 	enc=pos;
       
       ch0=chlast;
-      nchmod=getChansPerMod(imod);
+      nchmod=chansPerMod[imod];
       if (nchmod>0)
 	chlast+=nchmod;
     }
     
     if (p)
-      ang[ip]=angle(ip-ch0,		\
+      ang[ip]=angle(ip-ch0,				\
 		    enc,				\
-		    (*fineOffset)+(*globalOffset),	\
+		    fo+go,				\
 		    p->r_conversion,			\
 		    p->center,				\
 		    p->offset,				\
 		    p->tilt,				\
-		    *angDirection		  );
+		    angdir		  );
   }
   return ang;
 }
@@ -88,7 +70,7 @@ double* angularConversion::convertAngles(double pos, int nch) {
 
 
 //static!
-int angularConversion::readAngularConversion(string fname, int nmod, angleConversionConstant *angOff) {
+int angularConversionStatic::readAngularConversion(string fname, int nmod, angleConversionConstant *angOff) {
 
   ifstream infile;
   string ss;
@@ -109,7 +91,7 @@ int angularConversion::readAngularConversion(string fname, int nmod, angleConver
 
 
 //static
-int angularConversion::readAngularConversion( ifstream& infile, int nmod, angleConversionConstant *angOff) {
+int angularConversionStatic::readAngularConversion( ifstream& infile, int nmod, angleConversionConstant *angOff) {
   string str;
   int mod;
   double center, ecenter;
@@ -155,7 +137,7 @@ int angularConversion::readAngularConversion( ifstream& infile, int nmod, angleC
  }
 
 //static
-int angularConversion:: writeAngularConversion(string fname, int nmod, angleConversionConstant *angOff) {
+int angularConversionStatic:: writeAngularConversion(string fname, int nmod, angleConversionConstant *angOff) {
 
   ofstream outfile;
   outfile.open (fname.c_str(),ios_base::out);
@@ -174,7 +156,7 @@ int angularConversion:: writeAngularConversion(string fname, int nmod, angleConv
 
 
 //static 
-int angularConversion:: writeAngularConversion(ofstream& outfile, int nmod, angleConversionConstant *angOff) {
+int angularConversionStatic:: writeAngularConversion(ofstream& outfile, int nmod, angleConversionConstant *angOff) {
 
   for (int imod=0; imod<nmod; imod++) {
       outfile << " module " << imod << " center "<< angOff[imod].center<<"  +- "<< angOff[imod].ecenter<<" conversion "<< angOff[imod].r_conversion << " +- "<< angOff[imod].er_conversion <<  " offset "<< angOff[imod].offset << " +- "<< angOff[imod].eoffset << std::endl;
@@ -184,7 +166,7 @@ int angularConversion:: writeAngularConversion(ofstream& outfile, int nmod, angl
 
 
 //static
-int angularConversion::resetMerging(double *mp, double *mv, double *me, int *mm, int nb) {
+int angularConversionStatic::resetMerging(double *mp, double *mv, double *me, int *mm, int nb) {
   
 		
 #ifdef VERBOSE
@@ -203,7 +185,7 @@ int angularConversion::resetMerging(double *mp, double *mv, double *me, int *mm,
 
 
 //static
-int angularConversion::finalizeMerging(double *mp, double *mv, double *me, int *mm,int nb) {
+int angularConversionStatic::finalizeMerging(double *mp, double *mv, double *me, int *mm,int nb) {
    int np=0;
    for (int ibin=0; ibin<nb; ibin++) {
      if (mm[ibin]>0) {
@@ -223,7 +205,7 @@ int angularConversion::finalizeMerging(double *mp, double *mv, double *me, int *
 }
 
 //static
-int  angularConversion::addToMerging(double *p1, double *v1, double *e1, double *mp, double *mv,double *me, int *mm, int nchans, double binsize,int nbins, int *badChanMask ) {
+int  angularConversionStatic::addToMerging(double *p1, double *v1, double *e1, double *mp, double *mv,double *me, int *mm, int nchans, double binsize,int nbins, int *badChanMask ) {
 
 
   double binmi=-180.;
@@ -284,243 +266,3 @@ int  angularConversion::addToMerging(double *p1, double *v1, double *e1, double 
   return OK;
   
 }
-
-int angularConversion::deleteMerging() {
-
-  if (mergingBins)
-    delete [] mergingBins;
-
-  if (mergingCounts)
-    delete [] mergingCounts;
-
-  if (mergingErrors)
-    delete [] mergingErrors;
-
-}
-
-
-int angularConversion::resetMerging() {
-  getAngularConversionParameter(BIN_SIZE);
-
-  mergingBins=new double[nBins];
-  
-
-  mergingCounts=new double[nBins];
-
-
-  mergingErrors=new double[nBins];
-
-  
-  mergingMultiplicity=new int[nBins];
-
-  return resetMerging(mergingBins, mergingCounts, mergingErrors, mergingMultiplicity);
-
-}
-
-int angularConversion::resetMerging(double *mp, double *mv, double *me, int *mm) {
-  getAngularConversionParameter(BIN_SIZE);
-  if (nBins)
-    return resetMerging(mp, mv, me, mm,nBins);
-  else 
-    return FAIL;
-}
-
-
-
-
-int angularConversion::finalizeMerging() {
-  int np=finalizeMerging(mergingBins, mergingCounts, mergingErrors, mergingMultiplicity);
-
-  if (mergingMultiplicity)
-    delete [] mergingMultiplicity;
-
-  return np;
-
-}
-
-
-
-
-int angularConversion::finalizeMerging(double *mp, double *mv, double *me, int *mm) {
-  if (nBins)
-    return finalizeMerging(mp, mv, me, mm, nBins);
-  else
-    return FAIL;
-}
-
-int  angularConversion::addToMerging(double *p1, double *v1, double *e1, int *badChanMask ) {
-
-  return addToMerging(p1,v1,e1,mergingBins,mergingCounts, mergingErrors, mergingMultiplicity, badChanMask);
-
-
-}
-
-
-int  angularConversion::addToMerging(double *p1, double *v1, double *e1, double *mp, double *mv,double *me, int *mm, int *badChanMask ) {
-
-  int del=0;
-  
-  if (getAngularConversionParameter(BIN_SIZE)==0){
-    cout << "no bin size " << endl;
-    return FAIL;
-  }
-  
-  if (nBins==0) {
-    cout << "no bins " << endl;
-    return FAIL;
-  }
-  
-  if (p1==NULL) {
-    del=1;
-    p1=convertAngles();
-  }
-  
-
-  int ret=addToMerging(p1, v1, e1, mp, mv,me, mm,getTotalNumberOfChannels(), *binSize,nBins, badChanMask );
-  
-  
-  if (del) {
-    delete [] p1;
-    p1=NULL;
-  }
-  return ret;
-}
-
-
-
-   /**
-     sets the value of s angular conversion parameter
-     \param c can be ANGULAR_DIRECTION, GLOBAL_OFFSET, FINE_OFFSET, BIN_SIZE
-     \param v the value to be set
-     \returns the actual value
-  */
-
-double angularConversion::setAngularConversionParameter(angleConversionParameter c, double v){
-  
-
-  switch (c) {
-  case ANGULAR_DIRECTION:
-    if (v<0)
-      *angDirection=-1;
-    else
-      *angDirection=1;
-    return *angDirection;
-  case GLOBAL_OFFSET:
-    *globalOffset=v;
-    return *globalOffset;
-  case FINE_OFFSET:
-    *fineOffset=v;
-    return *fineOffset;
-  case BIN_SIZE:
-    if (v>0) {
-      *binSize=v;
-      nBins=360./(*binSize);
-    }
-    return *binSize;
-  case MOVE_FLAG:
-    if (moveFlag) {
-      if (v>0)
-	*moveFlag=1;
-      else if (v==0)
-	*moveFlag=0;
-      return *moveFlag;
-    }
-    return -1;
-  default:
-    return 0;
-  }
-}
-
-  /**
-     returns the value of an angular conversion parameter
-     \param c can be ANGULAR_DIRECTION, GLOBAL_OFFSET, FINE_OFFSET, BIN_SIZE
-     \returns the actual value
-
-  */
-
-double angularConversion::getAngularConversionParameter(angleConversionParameter c) {
-
-  switch (c) {
-  case ANGULAR_DIRECTION:
-    return *angDirection;
-  case GLOBAL_OFFSET:
-    return *globalOffset;
-  case FINE_OFFSET:
-    return *fineOffset;
-  case BIN_SIZE: 
-    if (*binSize>0)
-      nBins=360./(*binSize);
-    else 
-      nBins=0;
-    return *binSize;
-  case MOVE_FLAG:
-    if (moveFlag)
-      return *moveFlag;
-    else
-      return -1;
-  default:
-    return 0;
-  }
-}
-
-
-
-
-int angularConversion::setAngularConversionFile(string fname) {
-  if (fname=="") {
-    setAngularCorrectionMask(0);
-#ifdef VERBOSE
-    std::cout << "Unsetting angular conversion" <<  std::endl;
-#endif
-  } else {
-    if (fname=="default") {
-      fname=string(angConvFile);
-    }
-    
-#ifdef VERBOSE
-    std::cout << "Setting angular conversion to " << fname << std:: endl;
-#endif
-    if (readAngularConversionFile(fname)>=0) {
-      setAngularCorrectionMask(1);
-      strcpy(angConvFile,fname.c_str());
-    }
-  }
-  return setAngularCorrectionMask();
-}
-
-
-
-
-
-  /*
-      set  positions for the acquisition
-      \param nPos number of positions
-      \param pos array with the encoder positions
-      \returns number of positions
-  */
-int angularConversion::setPositions(int nPos, double *pos){
-  if (nPos>=0)
-    *numberOfPositions=nPos; 
-  for (int ip=0; ip<nPos; ip++) 
-    detPositions[ip]=pos[ip]; 
-
-  return *numberOfPositions;
-}
-/* 
-   get  positions for the acquisition
-   \param pos array which will contain the encoder positions
-   \returns number of positions
-*/
-int angularConversion::getPositions(double *pos){
-  if (pos) {
-    for (int ip=0; ip<(*numberOfPositions); ip++) 
-      pos[ip]=detPositions[ip];
-  } 
-
-  return  *numberOfPositions;
-}
-  
-
-
-
-

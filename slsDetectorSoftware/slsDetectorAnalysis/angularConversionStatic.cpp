@@ -4,7 +4,9 @@
 #include <fstream>
 #include <sstream>
 #include <math.h>
+#include "angleConversionConstant.h"
 
+#include "sls_detector_defs.h"
 #include "angleFunction.h"
 using namespace std;
 
@@ -180,7 +182,7 @@ int angularConversionStatic::resetMerging(double *mp, double *mv, double *me, in
     me[ibin]=0;
     mm[ibin]=0;
   }
-  return OK;
+  return slsDetectorDefs::OK;
 }
 
 
@@ -214,25 +216,25 @@ int  angularConversionStatic::addToMerging(double *p1, double *v1, double *e1, d
   if (p1==NULL)
     return 0;
   if (v1==NULL)
-    return FAIL;
+    return slsDetectorDefs::FAIL;
 
   if (mp==NULL) //can be changed if we want to use a fixed bin algorithm!
-    return FAIL;
+    return slsDetectorDefs::FAIL;
 
   if (mv==NULL)
-    return FAIL;
+    return slsDetectorDefs::FAIL;
   if (me==NULL)
-    return FAIL;
+    return slsDetectorDefs::FAIL;
   if (mm==NULL)
-    return FAIL;
+    return slsDetectorDefs::FAIL;
   if (nchans==0)
-    return FAIL;
+    return slsDetectorDefs::FAIL;
   
   if (binsize<=0)
-    return FAIL;
+    return slsDetectorDefs::FAIL;
 
   if (nbins<=0)
-    return FAIL;
+    return slsDetectorDefs::FAIL;
   
   for (int ip=0; ip<nchans; ip++) {
     if (badChanMask) {
@@ -259,10 +261,10 @@ int  angularConversionStatic::addToMerging(double *p1, double *v1, double *e1, d
       cout << "add " << ibin << "  "<< mm[ibin] << " " << mp[ibin]<< mv[ibin] << me[ibin] << endl;
 #endif
     } else
-      return FAIL;
+      return slsDetectorDefs::FAIL;
   }
   
 
-  return OK;
+  return slsDetectorDefs::OK;
   
 }

@@ -35,7 +35,7 @@ class containing the methods to set/unset the angular conversion and merge the d
 The angular conversion itself is defined by the angle() function defined in usersFunctions.cpp
    
 */
-class angularConversion : public virtual slsDetectorBase, public virtual angularConversionStatic 
+class angularConversion : public virtual slsDetectorBase, public angularConversionStatic 
 
 {
 

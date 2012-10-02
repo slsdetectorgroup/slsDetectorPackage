@@ -7,17 +7,17 @@
 #endif
 
 
-#include "sls_detector_defs.h"
 
 
 #include <string>
 #include <fstream>
 
-#include "angleConversionConstant.h"
+//#include "angleConversionConstant.h"
 
 
   //double angle(int ichan, double encoder, double totalOffset, double conv_r, double center, double offset, double tilt, int direction)
 
+class angleConversionConstant;
 
 using namespace std;
 
@@ -35,7 +35,8 @@ class containing the methods to set/unset the angular conversion and merge the d
 The angular conversion itself is defined by the angle() function defined in usersFunctions.cpp
    
 */
-class angularConversionStatic : public virtual slsDetectorDefs
+class angularConversionStatic
+// : public virtual slsDetectorDefs
 {
 
  public:

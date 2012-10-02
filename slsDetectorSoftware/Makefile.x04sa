@@ -1,20 +1,28 @@
-INCLUDES= -IcommonFiles -IslsDetector -IMySocketTCP -IusersFunctions -ImultiSlsDetector -IslsDetectorUtils -IslsDetectorCommand -IslsDetectorAnalysis
+INCLUDES= -IcommonFiles -IslsDetector -IMySocketTCP -IusersFunctions -ImultiSlsDetector -IslsDetectorUtils -IslsDetectorCommand -IslsDetectorAnalysis -If90Interface
 
 EPICSFLAGS=-D EPICS -I/usr/local/epics/base/include/ -I /usr/local/epics/base/include/os/Linux/ -L /usr/local/epics/base/lib/SL5-x86/ -Wl,-R/usr/local/epics/base/lib/SL5-x86  -lca -lCom 
 
 CFLAGS= -DC_ONLY 
 FLAGS= $(EPICSFLAGS)
 
+CC=gcc
+CXX=g++
 
-CC=g++
 
-
-SRC_CLNT= slsDetectorAnalysis/fileIO.cpp MySocketTCP/MySocketTCP.cpp usersFunctions/usersFunctions.cpp slsDetector/slsDetectorUtils.cpp slsDetector/slsDetectorCommand.cpp slsDetectorAnalysis/angularConversion.cpp slsDetectorAnalysis/energyConversion.cpp slsDetector/slsDetectorActions.cpp slsDetectorAnalysis/postProcessing.cpp slsDetector/slsDetector.cpp multiSlsDetector/multiSlsDetector.cpp  
+SRC_CLNT= slsDetectorAnalysis/fileIO.cpp MySocketTCP/MySocketTCP.cpp usersFunctions/usersFunctions.cpp slsDetector/slsDetectorUtils.cpp slsDetector/slsDetectorCommand.cpp slsDetectorAnalysis/angularConversion.cpp slsDetectorAnalysis/energyConversion.cpp slsDetector/slsDetectorActions.cpp slsDetectorAnalysis/postProcessing.cpp slsDetector/slsDetector.cpp multiSlsDetector/multiSlsDetector.cpp  f90Interface/externPostProcessing.cpp
 
 OBJS = $(SRC_CLNT:.cpp=.o) 
 
 HEADERS = $(SRC_CLNT:.cpp=.h) commonFiles/sls_detector_defs.h slsDetectorAnalysis/detectorData.h slsDetector/slsDetectorBase.h slsDetector/slsDetectorUsers.h multiSlsDetector/multiSlsDetectorCommand.h  
 
+
+LGF=/usr/lib/gcc/i386-redhat-linux/4.1.2
+GCC=/usr/bin//gcc
+FF=/opt/intel/intel-10.1/fc-10.1/bin/ifort
+
+SRC_F = f90Interface/sls_detector_analysis_f.f90
+
+OBJS_F = f90Interface/sls_detector_analysis_f.o
 
 
 SRC_MYTHEN_SVC = mythenDetectorServer/server.c mythenDetectorServer/server_funcs.c mythenDetectorServer/communication_funcs.c mythenDetectorServer/firmware_funcs.c mythenDetectorServer/mcb_funcs.c mythenDetectorServer/trimming_funcs.c 
@@ -43,12 +51,15 @@ picassoServer:  $(SRC_MYTHEN_SVC)
 	$(CXX) -Wall -o $@ -c $< $(INCLUDES) $(FLAGS)  $(EPICSFLAGS)
 
 
-package: $(OBJS)
-	$(CXX) -shared -Wl,-soname,libSlsDetector.so -o libSlsDetector.so  $(OBJS)  -lc $(INCLUDES) $(FLAGS) $(EPICSFLAGS)
-	ar  rcs libSlsDetector.a  $(OBJS)
+$(OBJS_F) :  $(SRC_F)
+	$(FF) -c  $(SRC_F)
+
+package: $(OBJS)  $(OBJS_F)
+	$(CXX) -shared -Wl,-soname,libSlsDetector.so -o libSlsDetector.so  $(OBJS)   $(OBJS_F) -lc $(INCLUDES) $(FLAGS) $(EPICSFLAGS) 
+	ar  rcs libSlsDetector.a  $(OBJS)  $(OBJS_F)
 
 clean:
-	rm -rf libSlsDetector.a  libSlsDetector.so core  docs/* $(OBJS)
+	rm -rf libSlsDetector.a  libSlsDetector.so core  docs/* $(OBJS)  $(OBJS_F)
 
 
 #-------------------------------------------------------------------------------

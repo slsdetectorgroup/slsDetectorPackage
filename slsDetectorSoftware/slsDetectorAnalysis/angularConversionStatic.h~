@@ -15,6 +15,7 @@
 
 #include "angleConversionConstant.h"
 
+
   //double angle(int ichan, double encoder, double totalOffset, double conv_r, double center, double offset, double tilt, int direction)
 
 
@@ -147,12 +148,12 @@ class angularConversionStatic : public virtual slsDetectorDefs
   int registerAngleFunctionCallback(double (*fun)(double, double, double, double, double, double, double, int)) {angle = fun; return 0;};
   
   
-
- private:
-
-  
   double (*angle)(double, double, double, double, double, double, double, int);
 
+
+  // private:
+
+  
 };
 
 #endif

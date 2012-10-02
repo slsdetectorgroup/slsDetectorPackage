@@ -1308,9 +1308,11 @@ string slsDetectorCommand::cmdOutDir(int narg, char *args[], int action){
 			receiver = true;
 
 	if (action==PUT_ACTION) {
-		myDet->setFilePath(string(args[1]));
-		if(receiver)
-			myDet->setReceiverFileDir(string(args[1]));
+		if(receiver){
+			if(myDet->setReceiverFileDir(string(args[1]))==string(args[1]))
+				myDet->setFilePath(string(args[1]));
+		}else
+			myDet->setFilePath(string(args[1]));
 	}
 
 	if(receiver)
@@ -1345,9 +1347,11 @@ string slsDetectorCommand::cmdFileName(int narg, char *args[], int action){
 			receiver = true;
 
 	if (action==PUT_ACTION) {
-		myDet->setFileName(string(args[1]));
-		if(receiver)
-			myDet->setReceiverFileName(string(args[1]));
+		if(receiver){
+			if(myDet->setReceiverFileName(string(args[1]))==string(args[1]))
+				myDet->setFileName(string(args[1]));
+		}else
+			myDet->setFileName(string(args[1]));
 	}
 
 	if(receiver)
@@ -1415,9 +1419,11 @@ string slsDetectorCommand::cmdFileIndex(int narg, char *args[], int action){
 
 	if (action==PUT_ACTION) {
 		if (sscanf(args[1],"%d",&i)){
-			myDet->setFileIndex(i);
-			if(receiver)
-				myDet->setReceiverFileIndex(i);
+			if(receiver){
+				if(myDet->setReceiverFileIndex(i)==i)
+					myDet->setFileIndex(i);
+			}else
+				myDet->setFileIndex(i);
 		}
 	}
 

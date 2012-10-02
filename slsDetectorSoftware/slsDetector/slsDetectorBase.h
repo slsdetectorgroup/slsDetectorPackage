@@ -428,6 +428,51 @@ int64_t setNumberOfCycles(int64_t t=-1){return setTimer(CYCLES_NUMBER,t);};
   */
   virtual int setFileIndex(int i)=0;
 
+
+  //receiver
+  /**
+   	 calls setReceiverTCPSocket if online and sets the flag
+   */
+  virtual int setReceiverOnline(int const online=GET_ONLINE_FLAG)=0;
+
+  /**
+        Sets up the receiver file name
+        @param fileName file name
+        \returns file name
+   */
+  virtual string setReceiverFileName(string fileName="")=0;
+
+  /**
+        Sets up the receiver file directory
+        @param fileName fileDir file directory
+        \returns file dir
+   */
+  virtual string setReceiverFileDir(string fileDir="")=0;
+
+  /**
+        Sets up the receiver file index
+        @param fileIndex file index
+        \returns file index
+   */
+  virtual int setReceiverFileIndex(int fileIndex=-1)=0;
+
+
+  /**   Starts the listening mode of receiver
+        \returns OK or FAIL
+   */
+  virtual int startReceiver()=0;
+
+  /**   Stops the listening mode of receiver
+        \returns OK or FAIL
+   */
+  virtual int stopReceiver()=0;
+
+  /**   gets the status of the listening mode of receiver
+        \returns status
+   */
+  virtual runStatus getReceiverStatus()=0;
+
+
   /** returns detector type string from detector type index
       \param t string can be Mythen, Pilatus, Eiger, Gotthard, Agipd, Unknown
       \returns MYTHEN, PILATUS, EIGER, GOTTHARD, AGIPD, GENERIC

@@ -570,19 +570,16 @@ class slsDetectorUtils :  public slsDetectorActions, public postProcessing {
   static int dummyAcquisitionFinished(double prog,int status,void* p){cout <<"Acquisition finished callback! " << prog << " " << status << endl; return 0;}
   static int dummyMeasurementFinished(int im,int findex,void* p){cout <<"Measurement finished callback! " << im << " " << findex << endl; return 0;}
 
-  /**
-        Sets up the receiver
-        @param fileName file name
-        \returns receiver ip or none
-   */
-  virtual string setupReceiver(string fileName="")=0;
 
-  /**   Starts/Stops the receiver
-        @param status status of receiver
-        @param index starting index of data file
-        \returns status
+
+
+//receiver
+
+
+  /**
+     Checks if the receiver is really online
    */
-  virtual runStatus startReceiver(string status="",int index=0)=0;
+  virtual string checkReceiverOnline()=0;
 
 
  protected:

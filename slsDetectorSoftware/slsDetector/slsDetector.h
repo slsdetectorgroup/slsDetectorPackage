@@ -66,7 +66,7 @@ typedef  struct sharedSlsDetector {
 
   /** online flag - is set if the detector is connected, unset if socket connection is not possible  */
   int onlineFlag;
- 
+
 
   /** stopped flag - is set if an acquisition error occurs or the detector is stopped manually. Is reset to 0 at the start of the acquisition */
   int stoppedFlag;
@@ -230,13 +230,18 @@ typedef  struct sharedSlsDetector {
     int chanoff;
 
 
-  /*extra gotthard members*/
-    /** is the ip address of the client for gotthard; read from configuration file **/
-    char clientIP[MAX_STR_LENGTH];
-    /** is the mac address of the client for gotthard; read from configuration file **/
-    char clientMAC[MAX_STR_LENGTH];
-    /** is the mac address of the server for gotthard; read from configuration file **/
+
+    /* receiver*/
+
+
+    /** ip address of the receiver **/
+    char receiverIP[MAX_STR_LENGTH];
+    /** mac address of the receiver **/
+    char receiverMAC[MAX_STR_LENGTH];
+    /**  mac address of the server **/
     char serverMAC[MAX_STR_LENGTH];
+    /** online flag - is set if the receiver is connected, unset if socket connection is not possible  */
+    int receiverOnlineFlag;
 
 } sharedSlsDetector;
 
@@ -335,12 +340,11 @@ typedef  struct sharedSlsDetector {
      \param name hostname - if "" the current hostname is used
      \param control_port port for control commands - if -1 the current is used
      \param stop_port port for stop command - if -1 the current is used
-     \param data_port port for receiving data - if -1 the current is used
 
      \returns OK is connection succeded, FAIL otherwise
      \sa sharedSlsDetector
   */
-  int setTCPSocket(string const name="", int const control_port=-1, int const stop_port=-1, int const data_port=-1);
+  int setTCPSocket(string const name="", int const control_port=-1, int const stop_port=-1);
 
   /**
      changes/gets the port number
@@ -389,7 +393,7 @@ typedef  struct sharedSlsDetector {
 
     /**
      sets the network parameters
-     \param i network parameter type can be CLIENT_IP, CLIENT_MAC, SERVER_MAC
+     \param i network parameter type can be RECEIVER_IP, RECEIVER_MAC, SERVER_MAC
      \param s value to be set
      \returns parameter
 
@@ -398,7 +402,7 @@ typedef  struct sharedSlsDetector {
 
   /**
      gets the network parameters
-     \param i network parameter type can be CLIENT_IP, CLIENT_MAC, SERVER_MAC
+     \param i network parameter type can be RECEIVER_IP, RECEIVER_MAC, SERVER_MAC
      \returns parameter
 
   */
@@ -1354,20 +1358,70 @@ typedef  struct sharedSlsDetector {
   /** Frees the shared memory  -  should not be used*/
   int freeSharedMemory();
 
+
+
+
+
+//receiver
+
+
   /**
-        Sets up the receiver
-        @param fileName file name
-        \returns receiver ip or none
+   	 calls setReceiverTCPSocket if online and sets the flag
    */
-  string setupReceiver(string fileName="");
+  int setReceiverOnline(int const online=GET_ONLINE_FLAG);
+
+  /**
+     Checks if the receiver is really online
+   */
+  string checkReceiverOnline();
+
+  /**
+     configure the socket communication and initializes the socket instances
+
+     \param name receiver ip - if "" the current receiver hostname is used
+     \param data_port port for receiving data - if -1 the current is used
+
+     \returns OK is connection succeded, FAIL otherwise
+     \sa sharedSlsDetector
+  */
+  int setReceiverTCPSocket(string const name="", int const data_port=-1);
+
+  /**
+        Sets up the receiver file name
+        @param fileName file name
+        \returns file name
+   */
+  string setReceiverFileName(string fileName="");
+
+  /**
+        Sets up the receiver file directory
+        @param fileName fileDir file directory
+        \returns file dir
+   */
+  string setReceiverFileDir(string fileDir="");
+
+  /**
+        Sets up the receiver file index
+        @param fileIndex file index
+        \returns file index
+   */
+  int setReceiverFileIndex(int fileIndex=-1);
 
 
-  /**   Starts/Stops the receiver
-        @param status status of receiver
-        @param index starting index of data file
+  /**   Starts the listening mode of receiver
+        \returns OK or FAIL
+   */
+  int startReceiver();
+
+  /**   Stops the listening mode of receiver
+        \returns OK or FAIL
+   */
+  int stopReceiver();
+
+  /**   gets the status of the listening mode of receiver
         \returns status
    */
-  runStatus startReceiver(string status="",int index=0);
+  runStatus getReceiverStatus();
 
  protected:
  
@@ -1471,17 +1525,17 @@ typedef  struct sharedSlsDetector {
 
 
 
-  /** returns the client IP address for gotthard \sa sharedSlsDetector  */
-  char* getClientIP() {return thisDetector->clientIP;};
-  /** returns the  client MAC address for gotthard \sa sharedSlsDetector  */
-  char* getClientMAC() {return thisDetector->clientMAC;};
-  /** returns the  server MAC address for gotthard \sa sharedSlsDetector  */
+  /** returns the receiver IP address \sa sharedSlsDetector  */
+  char* getReceiverIP() {return thisDetector->receiverIP;};
+  /** returns the  receiver MAC address  \sa sharedSlsDetector  */
+  char* getReceiverMAC() {return thisDetector->receiverMAC;};
+  /** returns the  server MAC address\sa sharedSlsDetector  */
   char* getServerMAC() {return thisDetector->serverMAC;};
-  /** validates and sets the client IP address for gotthard \sa sharedSlsDetector  */
-  char* setClientIP(string clientIP);
-  /** validates the format of client MAC address  and sets it for gotthard \sa sharedSlsDetector  */
-  char* setClientMAC(string clientMAC);
-  /** validates the format of server MAC address  and sets it for gotthard \sa sharedSlsDetector  */
+  /** validates and sets the receiver IP address \sa sharedSlsDetector  */
+  char* setReceiverIP(string receiverIP);
+  /** validates the format of receiver MAC address and sets it \sa sharedSlsDetector  */
+  char* setReceiverMAC(string receiverMAC);
+  /** validates the format of server MAC address and sets it \sa sharedSlsDetector  */
   char* setServerMAC(string serverMAC);
 
 

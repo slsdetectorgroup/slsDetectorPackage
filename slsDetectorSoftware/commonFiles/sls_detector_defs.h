@@ -171,8 +171,8 @@ enum communicationProtocol{
      Communication protocol (normally TCP)
 */
 enum networkParameter {
-  CLIENT_IP,  /**< client IP */
-  CLIENT_MAC, /**< client mac */
+  RECEIVER_IP,  /**< receiver IP */
+  RECEIVER_MAC, /**< receiver mac */
   SERVER_MAC /**< server MAC */
 };
 
@@ -227,6 +227,7 @@ enum {
   DISABLED, /**<flag disabled */
   ENABLED /**<flag enabled */
 };
+
 
 /** 
   use of the external signals

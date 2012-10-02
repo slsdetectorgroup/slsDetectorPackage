@@ -105,9 +105,17 @@ enum {
 
   F_RESET_COUNTER_BLOCK, /**< resets the counter block memory for gotthard */
 
-  F_SETUP_RECEIVER, 	/**< sets up receiver with parameters */
+  F_SET_RECEIVER_FILE_NAME, 	/**< sets receiver file name */
 
-  F_START_RECEIVER/**< starts/stops the receiver and returns status */
+  F_SET_RECEIVER_FILE_DIR, 		/**< sets receiver file directory */
+
+  F_SET_RECEIVER_FILE_INDEX, 	/**< sets receiver file index */
+
+  F_START_RECEIVER,			/**< starts the receiver listening mode */
+
+  F_STOP_RECEIVER,			/**< stops the receiver listening mode */
+
+  F_GET_RECEIVER_STATUS		/**< gets the status of receiver listening mode */
 
   /* Always append functions hereafter!!! */
 

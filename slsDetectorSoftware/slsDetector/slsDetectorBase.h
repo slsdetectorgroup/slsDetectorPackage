@@ -47,7 +47,6 @@ Most methods of interest for the user are implemented in the ::slsDetectorBase i
  */
 
 
-#include "slsDetectorUsers.h"
 #include "sls_detector_defs.h"
 
 #include <string>
@@ -64,7 +63,7 @@ using namespace std;
 */
 
 //public virtual slsDetectorUsers,
-class slsDetectorBase :  public slsDetectorUsers , public virtual slsDetectorDefs  { 
+class slsDetectorBase :  public virtual slsDetectorDefs  { 
 
  public:
 
@@ -282,7 +281,7 @@ class slsDetectorBase :  public slsDetectorUsers , public virtual slsDetectorDef
       \returns current dynamic range
   */
   virtual int setDynamicRange(int i=-1)=0;
-  int setBitDepth(int i=-1){return setDynamicRange(i);};
+  //  int setBitDepth(int i=-1){return setDynamicRange(i);};
 
   /** 
       set/get the size of the detector 
@@ -292,12 +291,12 @@ class slsDetectorBase :  public slsDetectorUsers , public virtual slsDetectorDef
   */
   virtual int setNumberOfModules(int i=-1, dimension d=X)=0;
 
-  int setDetectorSize(int x0=-1, int y0=-1, int nx=-1, int ny=-1){return setNumberOfModules(nx/getChansPerMod(0),X);};
+  //  int setDetectorSize(int x0=-1, int y0=-1, int nx=-1, int ny=-1){return setNumberOfModules(nx/getChansPerMod(0),X);};
 
-  int getDetectorSize(int &x0, int &y0, int &nx, int &ny){x0=0; nx=setNumberOfModules(-1,X)*getChansPerMod(0); return nx;};
+  // int getDetectorSize(int &x0, int &y0, int &nx, int &ny){x0=0; nx=setNumberOfModules(-1,X)*getChansPerMod(0); return nx;};
 
   virtual int getMaxNumberOfModules(dimension d=X)=0; //
-  int getMaximumDetectorSize(int &nx, int &ny){nx=getMaxNumberOfModules(X)*getChansPerMod(0); ny=1; return nx;};
+  //  int getMaximumDetectorSize(int &nx, int &ny){nx=getMaxNumberOfModules(X)*getChansPerMod(0); ny=1; return nx;};
 
 
   /** Locks/Unlocks the connection to the server
@@ -376,7 +375,8 @@ int64_t setNumberOfCycles(int64_t t=-1){return setTimer(CYCLES_NUMBER,t);};
   */
   virtual detectorSettings setSettings(detectorSettings isettings, int imod=-1)=0;
   int setSettings(int isettings){return (int)setSettings((detectorSettings)isettings,-1);};
-   virtual detectorSettings getSettings(int imod=-1)=0;  
+
+  virtual detectorSettings getSettings(int imod=-1)=0;  
   /**
     get threshold energy
     \param imod module number (-1 all)
@@ -400,8 +400,8 @@ int64_t setNumberOfCycles(int64_t t=-1){return setTimer(CYCLES_NUMBER,t);};
   int setThresholdEnergy(int e_eV){return setThresholdEnergy(e_eV,-1);};
 
 
-  int getBeamEnergy(){return 2*getThresholdEnergy();};
-  int setBeamEnergy(int e){return 2*setThresholdEnergy(e/2);};
+  //  int getBeamEnergy(){return 2*getThresholdEnergy();};
+  //int setBeamEnergy(int e){return 2*setThresholdEnergy(e/2);};
 
 
 

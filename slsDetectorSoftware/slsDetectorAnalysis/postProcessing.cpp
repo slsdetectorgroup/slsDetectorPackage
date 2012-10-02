@@ -14,6 +14,8 @@ postProcessing::postProcessing(){
   pCallbackArg = 0; 
   registerDataCallback(&defaultDataReadyFunc,  NULL);
   //cout << "done "<< endl;
+  rawDataReady = 0;
+  pRawDataArg = 0; 
 
 
 }

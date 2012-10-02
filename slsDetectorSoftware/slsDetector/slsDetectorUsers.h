@@ -12,7 +12,11 @@
  */
 
 
-#include "detectorData.h"
+
+class detectorData;
+class multiSlsDetector;
+
+
 
 #include <stdint.h>
 #include <string>
@@ -37,11 +41,11 @@ class slsDetectorUsers
  public:
 
   /** @short default constructor */
-   slsDetectorUsers(){};
+   slsDetectorUsers(int id=0);
 
-
+   
    /**  @short virtual destructor */
-   virtual ~slsDetectorUsers(){};
+   ~slsDetectorUsers();
 
 
 
@@ -49,7 +53,7 @@ class slsDetectorUsers
        @short useful to define subset of working functions
       \returns "PSI" or "Dectris"
    */
-   virtual string getDetectorDeveloper()=0;
+   string getDetectorDeveloper();
 
 
 
@@ -57,43 +61,43 @@ class slsDetectorUsers
       \param online can be: -1 returns wether the detector is in online (1) or offline (0) state; 0 detector in offline state; 1  detector in online state
       \returns 0 (offline) or 1 (online)
   */
-  virtual int setOnline(int const online=-1)=0;
+  int setOnline(int const online=-1);
 
   /**
       @short start measurement and acquires
     \returns OK/FAIL
   */
-  virtual int startMeasurement()=0;
+  void startMeasurement();
 
   /**
       @short stop measurement
     \returns OK/FAIL
   */
-  virtual int stopMeasurement()=0;
+   int stopMeasurement();
  
   /**
       @short get run status
     \returns status mask
   */
-  virtual int getDetectorStatus()=0;
+   int getDetectorStatus();
 
   /**
       @short returns the default output files path
   */
-  virtual string getFilePath()=0;
+   string getFilePath();
 
  /**
       @short sets the default output files path
      \param s file path
      \returns file path
   */
-  virtual string setFilePath(string s)=0;  
+   string setFilePath(string s);  
 
   /** 
       @short 
       \returns the default output files root name
   */
-  virtual string getFileName()=0;  
+   string getFileName();  
 
   /**
       @short sets the default output files path
@@ -101,46 +105,46 @@ class slsDetectorUsers
      \returns the default output files root name
      
   */
-  virtual string setFileName(string s)=0;  
+   string setFileName(string s);  
   
   /** 
       @short 
      \returns the default output file index
   */
-  virtual int getFileIndex()=0;
+   int getFileIndex();
   
   /**
           @short sets the default output file index
      \param i file index
      \returns the default output file index
   */
-  virtual int setFileIndex(int i)=0;
+   int setFileIndex(int i);
 
   /** 
          @short get flat field corrections file directory
     \returns flat field correction file directory
   */
-  virtual string getFlatFieldCorrectionDir()=0; 
+   string getFlatFieldCorrectionDir(); 
   
   /** 
            @short set flat field corrections file directory
       \param dir flat field correction file directory
       \returns flat field correction file directory
   */
-  virtual string setFlatFieldCorrectionDir(string dir)=0;
+   string setFlatFieldCorrectionDir(string dir);
   
   /** 
            @short get flat field corrections file name
       \returns flat field correction file name
   */
-  virtual string getFlatFieldCorrectionFile()=0;
+   string getFlatFieldCorrectionFile();
   
   /** 
            @short set flat field correction file
       \param fname name of the flat field file (or "" if disable)
       \returns 0 if disable (or file could not be read), >0 otherwise
   */
-  virtual int setFlatFieldCorrectionFile(string fname="")=0; 
+   int setFlatFieldCorrectionFile(string fname=""); 
 
   
 
@@ -149,32 +153,32 @@ class slsDetectorUsers
       \param i 0 disables, 1 enables, -1 gets
       \returns 0 if ff corrections disabled, 1 if enabled
   */
-  virtual int enableFlatFieldCorrection(int i=-1)=0;
+   int enableFlatFieldCorrection(int i=-1);
 
   /**
            @short enable/disable count rate corrections 
       \param i 0 disables, 1 enable, -1 gets
       \returns 0 if count corrections disabled, 1 if enabled
   */
-  virtual int enableCountRateCorrection(int i=-1)=0;
+   int enableCountRateCorrection(int i=-1);
 
   /**
            @short enable/disable bad channel corrections 
       \param i 0 disables, 1 enables, -1 gets
       \returns 0 if bad channels corrections disabled, 1 if enabled
   */
-  virtual int enablePixelMaskCorrection(int i=-1)=0;
+   int enablePixelMaskCorrection(int i=-1);
 
   /**
            @short enable/disable angular conversion 
       \param i 0 disables, 1 enables, -1 gets
       \returns 0 if angular conversion disabled, 1 if enabled
   */
-  virtual int enableAngularConversion(int i=-1)=0;
+   int enableAngularConversion(int i=-1);
 
   /**Enable write file function included*/
 
-  virtual int enableWriteToFile(int i=-1)=0;
+   int enableWriteToFile(int i=-1);
 
   /** 
            @short set  positions for the acquisition
@@ -182,14 +186,14 @@ class slsDetectorUsers
       \param pos array with the encoder positions
       \returns number of positions
   */
-  virtual int setPositions(int nPos, double *pos)=0;
+   int setPositions(int nPos, double *pos);
   
   /** 
            @short get  positions for the acquisition
       \param pos array which will contain the encoder positions
       \returns number of positions
   */
-  virtual int getPositions(double *pos=NULL)=0;
+   int getPositions(double *pos=NULL);
   
   /**
      @short sets the detector size
@@ -199,7 +203,7 @@ class slsDetectorUsers
      \param  ny number of channels in vertical  (-1 unchanged)
      \returns OK/FAIL
   */
-  virtual int setDetectorSize(int x0=-1, int y0=-1, int nx=-1, int ny=-1)=0;
+   int setDetectorSize(int x0=-1, int y0=-1, int nx=-1, int ny=-1);
 
 
   /**
@@ -210,7 +214,7 @@ class slsDetectorUsers
      \param  ny number of channels in vertical 
      \returns OK/FAIL
   */
-  virtual int getDetectorSize(int &x0, int &y0, int &nx, int &ny)=0;
+   int getDetectorSize(int &x0, int &y0, int &nx, int &ny);
   /**
      @short setsthe maximum detector size
      \param x0 horizontal position origin in channel number 
@@ -219,7 +223,7 @@ class slsDetectorUsers
      \param  ny number of channels in vertical 
      \returns OK/FAIL
   */
-  virtual int getMaximumDetectorSize(int &nx, int &ny)=0;
+   int getMaximumDetectorSize(int &nx, int &ny);
 
 
     /** 
@@ -227,7 +231,7 @@ class slsDetectorUsers
       \param i dynamic range (-1 get)
       \returns current dynamic range
   */
-  virtual int setBitDepth(int i=-1)=0;
+   int setBitDepth(int i=-1);
 
 
  
@@ -236,13 +240,13 @@ class slsDetectorUsers
     \param isettings  settings index (-1 gets)
     \returns current settings
   */
-  virtual int setSettings(int isettings=-1)=0;
-
+   int setSettings(int isettings=-1);
+   
   /**
          @short get threshold energy
     \returns current threshold value for imod in ev (-1 failed)
   */
-  virtual int getThresholdEnergy()=0;  
+   int getThresholdEnergy();  
 
 
   /**
@@ -250,13 +254,13 @@ class slsDetectorUsers
     \param e_eV threshold in eV
     \returns current threshold value for imod in ev (-1 failed)
   */
-  virtual int setThresholdEnergy(int e_eV)=0;
+   int setThresholdEnergy(int e_eV);
 
   /**
      @short get beam energy -- only for dectris!
     \returns current beam energy
   */
-  virtual int getBeamEnergy()=0;  
+   int getBeamEnergy();  
 
 
   /**
@@ -264,7 +268,7 @@ class slsDetectorUsers
     \param e_eV beam in eV
     \returns current beam energyin ev (-1 failed)
   */
-  virtual int setBeamEnergy(int e_eV)=0;
+   int setBeamEnergy(int e_eV);
 
   /** 
            @short set/get exposure time value
@@ -272,42 +276,42 @@ class slsDetectorUsers
       \returns timer set value in ns
   */
 
-  virtual int64_t setExposureTime(int64_t t=-1)=0;
+   int64_t setExposureTime(int64_t t=-1);
 
   /** 
        @short set/get exposure period
       \param t time in ns   (-1 gets)
       \returns timer set value in ns
   */
-  virtual int64_t setExposurePeriod(int64_t t=-1)=0;
+   int64_t setExposurePeriod(int64_t t=-1);
   
   /** 
        @short set/get delay after trigger
       \param t time in ns   (-1 gets)
       \returns timer set value in ns
   */
-  virtual int64_t setDelayAfterTrigger(int64_t t=-1)=0;
+   int64_t setDelayAfterTrigger(int64_t t=-1);
 
   /** 
        @short set/get number of gates
       \param t number of gates  (-1 gets)
       \returns number of gates
   */
-  virtual int64_t setNumberOfGates(int64_t t=-1)=0; 
+   int64_t setNumberOfGates(int64_t t=-1); 
   
   /** 
        @short set/get number of frames i.e. number of exposure per trigger
       \param t number of frames  (-1 gets) 
       \returns number of frames
   */
-  virtual int64_t setNumberOfFrames(int64_t t=-1)=0;
+   int64_t setNumberOfFrames(int64_t t=-1);
 
   /** 
        @short set/get number of cycles i.e. number of triggers
       \param t number of frames  (-1 gets) 
       \returns number of frames
   */
-  virtual int64_t setNumberOfCycles(int64_t t=-1)=0;
+   int64_t setNumberOfCycles(int64_t t=-1);
   
 
  /** 
@@ -315,14 +319,14 @@ class slsDetectorUsers
       \param pol value to be set \sa getTimingMode
       \returns current external communication mode
   */
-  virtual int setTimingMode(int pol=-1)=0;
+   int setTimingMode(int pol=-1);
 
   /**
       @short Reads the configuration file -- will contain all the informations needed for the configuration (e.g. for a PSI detector caldir, settingsdir, angconv, badchannels, hostname etc.)
      \param fname file name
      \returns OK or FAIL
   */  
-  virtual int readConfigurationFile(string const fname)=0;  
+   int readConfigurationFile(string const fname);  
 
 
   /** 
@@ -331,66 +335,73 @@ class slsDetectorUsers
       \returns OK or FAIL
   
   */
-  virtual int dumpDetectorSetup(string const fname)=0; 
+   int dumpDetectorSetup(string const fname); 
   /** 
       @short Loads the detector setup from file
       \param fname file to read from
       \returns OK or FAIL
   
   */
-  virtual int retrieveDetectorSetup(string const fname)=0;
+   int retrieveDetectorSetup(string const fname);
 
   /**
       @short useful for data plotting etc.
      \returns Mythen, Eiger, Gotthard etc.
   */
-  virtual string getDetectorType()=0;
+   string getDetectorType();
 
   /**
      @short register calbback for accessing detector final data
      \param userCallback function for plotting/analyzing the data
   */
 
-  virtual void registerDataCallback(int( *userCallback)(detectorData*, void*), void *pArg)=0;
+   void registerDataCallback(int( *userCallback)(detectorData*, void*), void *pArg);
 
+  /**
+     @short register calbback for accessing raw data
+     \param userCallback function for postprocessing and saving the data  
+  */
+  
+   void registerRawDataCallback(int( *userCallback)(float*, void*), void *pArg);
+  
   /**
      @short register calbback for accessing detector final data
      \param func function to be called at the end of the acquisition. gets detector status and progress index as arguments
   */
 
-  virtual void registerAcquisitionFinishedCallback(int( *func)(double,int, void*), void *pArg)=0;
+   void registerAcquisitionFinishedCallback(int( *func)(double,int, void*), void *pArg);
   
   /**
      @short register calbback for reading detector position
      \param func function for reading the detector position
   */
   
-  virtual void registerGetPositionCallback( double (*func)(void*),void *arg)=0;
+   void registerGetPositionCallback( double (*func)(void*),void *arg);
   /**
      @short register callback for connecting to the epics channels
      \param func function for connecting to the epics channels
   */
-  virtual void registerConnectChannelsCallback( int (*func)(void*),void *arg)=0;
+   void registerConnectChannelsCallback( int (*func)(void*),void *arg);
   /**
      @short register callback to disconnect the epics channels
      \param func function to disconnect the epics channels
   */
-  virtual void registerDisconnectChannelsCallback( int (*func)(void*),void *arg)=0;  
+   void registerDisconnectChannelsCallback( int (*func)(void*),void *arg);  
   /**
      @short register callback for moving the detector
      \param func function for moving the detector
   */
-  virtual void registerGoToPositionCallback( int (*func)(double,void*),void *arg)=0;
+   void registerGoToPositionCallback( int (*func)(double,void*),void *arg);
   /**
      @short register callback for moving the detector without waiting
      \param func function for moving the detector
   */
-  virtual void registerGoToPositionNoWaitCallback( int (*func)(double,void*),void *arg)=0;
+   void registerGoToPositionNoWaitCallback( int (*func)(double,void*),void *arg);
   /**
      @short register calbback reading to I0
      \param func function for reading the I0 (called with parameter 0 before the acquisition, 1 after and the return value used as I0)
   */
-  virtual void registerGetI0Callback( double (*func)(int,void*),void *arg)=0;
+   void registerGetI0Callback( double (*func)(int,void*),void *arg);
   
   /************************************************************************
 
@@ -478,6 +489,8 @@ class slsDetectorUsers
     if (s== "triggered_gating") return 4;				\
     return -1;							};
 
+ private:
+  multiSlsDetector *myDetector;
 
  };
 

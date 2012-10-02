@@ -182,6 +182,9 @@ class multiSlsDetector  : public slsDetectorUtils {
     int scanPrecision[MAX_SCAN_LEVELS];
     
     
+    //receiver
+    /** online receiver flag - is set if the receiver is connected, unset if socket connection is not possible  */
+    int receiverOnlineFlag;
 
   };
 
@@ -1002,19 +1005,58 @@ class multiSlsDetector  : public slsDetectorUtils {
 
    slsDetector *getSlsDetector(int pos) {if (pos>=0 && pos< MAXDET) return detectors[pos]; return NULL;};
 
-   /**   Sets up the receiver
-         @param fileName file name
-         \returns receiver ip or none
+
+
+
+
+//receiver
+
+   /**
+    	 calls setReceiverTCPSocket if online and sets the flag
     */
-   string setupReceiver(string fileName="");
+   int setReceiverOnline(int const online=GET_ONLINE_FLAG);
+
+   /**
+      Checks if the receiver is really online
+    */
+   string checkReceiverOnline();
+
+   /**
+         Sets up the receiver file name
+         @param fileName file name
+         \returns file name
+    */
+   string setReceiverFileName(string fileName="");
+
+   /**
+         Sets up the receiver file directory
+         @param fileName fileDir file directory
+         \returns file dir
+    */
+   string setReceiverFileDir(string fileDir="");
+
+   /**
+         Sets up the receiver file index
+         @param fileIndex file index
+         \returns file index
+    */
+   int setReceiverFileIndex(int fileIndex=-1);
 
 
-   /**   Starts/Stops the receiver
-         @param status status of receiver
-         @param index starting index of data file
+   /**   Starts the listening mode of receiver
+         \returns OK or FAIL
+    */
+   int startReceiver();
+
+   /**   Stops the listening mode of receiver
+         \returns OK or FAIL
+    */
+   int stopReceiver();
+
+   /**   gets the status of the listening mode of receiver
          \returns status
     */
-   runStatus startReceiver(string status="",int index=0);
+   runStatus getReceiverStatus();
 
 
  protected:

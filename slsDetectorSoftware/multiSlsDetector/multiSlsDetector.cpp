@@ -3555,12 +3555,27 @@ int multiSlsDetector::readDataFile(string fname, int *data) {
 
 
 
-string multiSlsDetector::setupReceiver(string fileName) {
-	cout<<"File Name:"<<fileName<<endl;
+//receiver
+
+
+int multiSlsDetector::setReceiverOnline(int off) {
+	  if (off!=GET_ONLINE_FLAG) {
+	    thisMultiDetector->receiverOnlineFlag=off;
+	    for (int i=0; i<thisMultiDetector->numberOfDetectors+1; i++) {
+	      if (detectors[i])
+		detectors[i]->setReceiverOnline(off);
+	    }
+	  }
+	  return thisMultiDetector->onlineFlag;
+}
+
+
+
+string multiSlsDetector::checkReceiverOnline() {
 	string retval1 = "",retval;
 	for (int idet=0; idet<thisMultiDetector->numberOfDetectors; idet++) {
 		if (detectors[idet]) {
-			retval=detectors[idet]->setupReceiver(fileName);
+			retval=detectors[idet]->checkReceiverOnline();
 			if(!retval.empty()){
 				retval1.append(retval);
 				retval1.append("+");
@@ -3571,20 +3586,129 @@ string multiSlsDetector::setupReceiver(string fileName) {
 }
 
 
-slsDetectorDefs::runStatus multiSlsDetector::startReceiver(string status,int index) {
-	/**master receiver or writer?*/
-	runStatus s, s1;
 
-	if(detectors[0]) s1 = detectors[0]->startReceiver(status,index);
 
-	for (int idet=1; idet<thisMultiDetector->numberOfDetectors; idet++) {
+
+string multiSlsDetector::setReceiverFileName(string fileName) {
+	string ret="error", ret1;
+
+	for (int idet=0; idet<thisMultiDetector->numberOfDetectors; idet++) {
 		if (detectors[idet]) {
-			s=detectors[idet]->startReceiver(status,index);
-			if(s==ERROR)
-				s1=ERROR;
-			if(s==IDLE && s1!=IDLE)
-				s1=ERROR;
+			ret1=detectors[idet]->setReceiverFileName(fileName);
+			if (ret1=="error")
+				ret=ret1;
+			else if (ret!=ret1)
+				ret="";
 		}
 	}
-	return s1;
+	return ret;
 }
+
+
+string multiSlsDetector::setReceiverFileDir(string fileDir) {
+	string ret="error", ret1;
+
+	for (int idet=0; idet<thisMultiDetector->numberOfDetectors; idet++) {
+		if (detectors[idet]) {
+			ret1=detectors[idet]->setReceiverFileDir(fileDir);
+			if (ret1=="error")
+				ret=ret1;
+			else if (ret!=ret1)
+				ret="";
+		}
+	}
+	return ret;
+}
+
+
+
+int multiSlsDetector::setReceiverFileIndex(int fileIndex) {
+	int ret=-100, ret1;
+
+	for (int idet=0; idet<thisMultiDetector->numberOfDetectors; idet++) {
+		if (detectors[idet]) {
+			ret1=detectors[idet]->setReceiverFileIndex(fileIndex);
+			if (ret1==-100)
+				ret=ret1;
+			else if (ret!=ret1)
+				ret=-1;
+		}
+	}
+	return ret;
+}
+
+
+
+int multiSlsDetector::startReceiver(){
+	int i=0;
+	int ret=OK, ret1=OK;
+	for (i=0; i<thisMultiDetector->numberOfDetectors; i++) {
+		if (i!=thisMultiDetector->masterPosition)
+			if (detectors[i]) {
+				ret=detectors[i]->startReceiver();
+				if (ret!=OK)
+					ret1=FAIL;
+			}
+	}
+	i=thisMultiDetector->masterPosition;
+	if (thisMultiDetector->masterPosition>=0) {
+		if (detectors[i]) {
+			ret=detectors[i]->startReceiver();
+			if (ret!=OK)
+				ret1=FAIL;
+		}
+	}
+	return ret1;
+}
+
+
+
+
+int multiSlsDetector::stopReceiver(){
+	int i=0;
+	int ret=OK, ret1=OK;
+
+	i=thisMultiDetector->masterPosition;
+	if (thisMultiDetector->masterPosition>=0) {
+		if (detectors[i]) {
+			ret=detectors[i]->stopReceiver();
+			if (ret!=OK)
+				ret1=FAIL;
+		}
+	}
+	for (i=0; i<thisMultiDetector->numberOfDetectors; i++) {
+		if (detectors[i]) {
+			ret=detectors[i]->stopReceiver();
+			if (ret!=OK)
+				ret1=FAIL;
+		}
+	}
+	return ret1;
+}
+
+
+
+
+slsDetectorDefs::runStatus multiSlsDetector::getReceiverStatus(){
+
+	runStatus s,s1;
+
+	if (thisMultiDetector->masterPosition>=0)
+		if (detectors[thisMultiDetector->masterPosition])
+			return detectors[thisMultiDetector->masterPosition]->getReceiverStatus();
+
+
+	if (detectors[0]) s=detectors[0]->getReceiverStatus();
+
+	for (int i=0; i<thisMultiDetector->numberOfDetectors; i++) {
+		s1=detectors[i]->getReceiverStatus();
+		if (s1==ERROR)
+			s=ERROR;
+		if (s1==IDLE && s!=IDLE)
+			s=ERROR;
+
+	}
+	return s;
+}
+
+

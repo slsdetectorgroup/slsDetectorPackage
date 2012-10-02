@@ -362,7 +362,7 @@ class slsDetectorUsers
      \param userCallback function for postprocessing and saving the data  
   */
   
-   void registerRawDataCallback(int( *userCallback)(float*, void*), void *pArg);
+   void registerRawDataCallback(int( *userCallback)(double*, void*), void *pArg);
   
   /**
      @short register calbback for accessing detector final data

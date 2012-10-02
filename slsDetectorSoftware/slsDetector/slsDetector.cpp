@@ -446,9 +446,9 @@ int slsDetector::initializeDetectorSize(detectorType type) {
      strcpy(thisDetector->hostname,DEFAULT_HOSTNAME);
 
      /** set client ip address */
-     strcpy(thisDetector->clientIP,"none");
+     strcpy(thisDetector->receiverIP,"none");
      /** set client mac address */
-     strcpy(thisDetector->clientMAC,"none");
+     strcpy(thisDetector->receiverMAC,"none");
      /** set server mac address */
      strcpy(thisDetector->serverMAC,"00:aa:bb:cc:dd:ee");
 
@@ -591,6 +591,9 @@ int slsDetector::initializeDetectorSize(detectorType type) {
        thisDetector->scanPrecision[iscan]=0;
      }
 
+     /* receiver*/
+     /** sets receiver onlineFlag to OFFLINE_FLAG */
+     thisDetector->receiverOnlineFlag=OFFLINE_FLAG;
 
      
      /** calculates the memory offsets for flat field coefficients and errors, module structures, dacs, adcs, chips and channels */ 
@@ -951,7 +954,7 @@ string slsDetector::checkOnline() {
 
   */
 
-int slsDetector::setTCPSocket(string const name, int const control_port, int const stop_port,  int const data_port){
+int slsDetector::setTCPSocket(string const name, int const control_port, int const stop_port){
 
 
   char thisName[MAX_STR_LENGTH];
@@ -1004,20 +1007,6 @@ int slsDetector::setTCPSocket(string const name, int const control_port, int con
     }
   } else
     thisSP=thisDetector->stopPort;
-
-
-  if (data_port>0) {
-#ifdef VERBOSE
-    std::cout<< "setting data port" << std::endl;
-#endif
-    thisDP=data_port;
-    thisDetector->dataPort=thisDP;
-    if (dataSocket){
-       delete dataSocket; 
-       dataSocket=NULL;
-    }
-  } else
-    thisDP=thisDetector->dataPort;
 
 
   if (!controlSocket) {
@@ -3467,13 +3456,13 @@ int slsDetector::setPort(portType index, int num){
     retval=thisDetector->controlPort;
 #ifdef VERBOSE
     cout << "s="<< s<< endl;
-      cout << thisDetector->controlPort<< " " << thisDetector->dataPort << " " << thisDetector->stopPort << endl;
+      cout << thisDetector->controlPort<< " " << " " << thisDetector->stopPort << endl;
 #endif 
     if (s==NULL) {
       
 #ifdef VERBOSE
       cout << "s=NULL"<< endl;
-      cout << thisDetector->controlPort<< " " << thisDetector->dataPort << " " << thisDetector->stopPort << endl;
+      cout << thisDetector->controlPort<< " " << " " << thisDetector->stopPort << endl;
 #endif 
       setTCPSocket("",DEFAULT_PORTNO);
     }
@@ -3482,7 +3471,7 @@ int slsDetector::setPort(portType index, int num){
     } else {
 #ifdef VERBOSE
       cout << "still cannot connect!"<< endl;
-      cout << thisDetector->controlPort<< " " << thisDetector->dataPort << " " << thisDetector->stopPort << endl;
+      cout << thisDetector->controlPort<< " " << " " << thisDetector->stopPort << endl;
 #endif 
   
 
@@ -3493,9 +3482,9 @@ int slsDetector::setPort(portType index, int num){
   case DATA_PORT:
     s=dataSocket;
     retval=thisDetector->dataPort;
-    if (s==NULL) setTCPSocket("",-1,-1,DEFAULT_PORTNO+2);
+    if (s==NULL) setReceiverTCPSocket("",DEFAULT_PORTNO+2);
     if (dataSocket) s=dataSocket;
-    else setTCPSocket("",-1,-1,retval);
+    else setReceiverTCPSocket("",retval);
     break;
   case STOP_PORT:
     s=stopSocket;
@@ -4432,11 +4421,11 @@ int slsDetector::exitServer(){
 char* slsDetector::setNetworkParameter(networkParameter index, string value) {
   
   switch (index) {
-  case CLIENT_IP:
-    return setClientIP(value);
+  case RECEIVER_IP:
+    return setReceiverIP(value);
     break;
-  case CLIENT_MAC:
-    return setClientMAC(value);
+  case RECEIVER_MAC:
+    return setReceiverMAC(value);
     break;
   case SERVER_MAC:
     return setServerMAC(value);
@@ -4450,11 +4439,11 @@ char* slsDetector::setNetworkParameter(networkParameter index, string value) {
 char* slsDetector::getNetworkParameter(networkParameter index) {
   
   switch (index) {
-  case CLIENT_IP:
-    return getClientIP();
+  case RECEIVER_IP:
+    return getReceiverIP();
     break;
-  case CLIENT_MAC:
-    return getClientMAC();
+  case RECEIVER_MAC:
+    return getReceiverMAC();
     break;
   case SERVER_MAC:
     return getServerMAC();
@@ -4470,38 +4459,43 @@ char* slsDetector::getNetworkParameter(networkParameter index) {
 
 
 
-char* slsDetector::setClientIP(string clientIP){
-  int wrongFormat=1;
+char* slsDetector::setReceiverIP(string receiverIP){
+	int wrongFormat=1;
 
-  struct sockaddr_in sa;
-  if(clientIP.length()<16){
-    if((clientIP[3]=='.')&&(clientIP[7]=='.')&&(clientIP[11]=='.')){
-      int result = inet_pton(AF_INET, clientIP.c_str(), &(sa.sin_addr));
-      if(result!=0){
-	sprintf(thisDetector->clientIP,clientIP.c_str()); 
-	wrongFormat=0;
-      }
-    }
-  }
-    if(!wrongFormat)
-      return thisDetector->clientIP;
-    else 
-      return ("IP Address should be VALID and in xxx.xxx.xxx.xxx format");
+	struct sockaddr_in sa;
+	if(receiverIP.length()<16){
+		if((receiverIP[3]=='.')&&(receiverIP[7]=='.')&&(receiverIP[11]=='.')){
+			int result = inet_pton(AF_INET, receiverIP.c_str(), &(sa.sin_addr));
+			if(result!=0){
+				sprintf(thisDetector->receiverIP,receiverIP.c_str());
+				wrongFormat=0;
+			}
+		}
+	}
+
+	if(wrongFormat)
+		return ("IP Address should be VALID and in xxx.xxx.xxx.xxx format");
+
+	if(setReceiverTCPSocket()==FAIL)
+		return("Connection to Receiver failed.");
+
+	return thisDetector->receiverIP;
+
 }
 
 
-char* slsDetector::setClientMAC(string clientMAC){
-  if(clientMAC.length()==17){
-    if((clientMAC[2]==':')&&(clientMAC[5]==':')&&(clientMAC[8]==':')&&
-       (clientMAC[11]==':')&&(clientMAC[14]==':'))
-      sprintf(thisDetector->clientMAC,clientMAC.c_str()); 
+char* slsDetector::setReceiverMAC(string receiverMAC){
+  if(receiverMAC.length()==17){
+    if((receiverMAC[2]==':')&&(receiverMAC[5]==':')&&(receiverMAC[8]==':')&&
+       (receiverMAC[11]==':')&&(receiverMAC[14]==':'))
+      sprintf(thisDetector->receiverMAC,receiverMAC.c_str());
     else
       return("MAC Address should be in xx:xx:xx:xx:xx:xx format");  
   }
   else
     return("MAC Address should be in xx:xx:xx:xx:xx:xx format");  
 
-  return thisDetector->clientMAC;
+  return thisDetector->receiverMAC;
 };
 
 
@@ -4528,8 +4522,8 @@ int slsDetector::configureMAC(){
   char arg[3][50];
   char cword[50]="", *pcword;
   string sword;
-  strcpy(arg[0],getClientIP());
-  strcpy(arg[1],getClientMAC());
+  strcpy(arg[0],getReceiverIP());
+  strcpy(arg[1],getReceiverMAC());
   strcpy(arg[2],getServerMAC());
 
 
@@ -5000,8 +4994,8 @@ int slsDetector::writeConfigurationFile(ofstream &outfile, int id){
 	
   switch (thisDetector->myDetectorType) {
   case GOTTHARD:
-    names[9]="clientip";
-    names[10]="clientmac";
+    names[9]="receiverip";
+    names[10]="receivermac";
     names[11]="servermac";
     nvar=12;
     break;
@@ -5320,94 +5314,332 @@ slsDetectorDefs::synchronizationMode slsDetector::setSynchronization(synchroniza
 
 
 
-string slsDetector::setupReceiver(string fileName) {
-	int fnum=F_SETUP_RECEIVER;
+
+
+
+
+
+
+
+/*receiver*/
+int slsDetector::setReceiverOnline(int off) {
+  if (off!=GET_ONLINE_FLAG) {
+    thisDetector->receiverOnlineFlag=off;
+    if (thisDetector->receiverOnlineFlag==ONLINE_FLAG)
+      setReceiverTCPSocket();
+  }
+  return thisDetector->receiverOnlineFlag;
+}
+
+
+
+string slsDetector::checkReceiverOnline() {
+  string retval = "";
+  //if it doesnt exits, create data socket
+  if(!dataSocket){
+	//this already sets the online/offline flag
+	  setReceiverTCPSocket();
+    if(thisDetector->receiverOnlineFlag==OFFLINE_FLAG)
+      return string(thisDetector->receiverIP);
+    else
+      return string("");
+  }
+  //still cannot connect to socket, dataSocket=0
+  if(dataSocket){
+    if (dataSocket->Connect()<0) {
+      dataSocket->SetTimeOut(5);
+      thisDetector->receiverOnlineFlag=OFFLINE_FLAG;
+      delete dataSocket;
+      dataSocket=NULL;
+      retval = thisDetector->receiverIP;
+#ifdef VERBOSE
+      std::cout<< "receiver offline!" << std::endl;
+#endif
+    }  else {
+      thisDetector->receiverOnlineFlag=ONLINE_FLAG;
+      dataSocket->SetTimeOut(100);
+      dataSocket->Disconnect();
+#ifdef VERBOSE
+      std::cout<< "receiver online!" << std::endl;
+#endif
+    }
+  }
+  return retval;
+}
+
+
+
+  /*
+     configure the socket communication and check that the receiver exists
+     enum communicationProtocol{
+     TCP,
+     UDP
+     }{};
+
+  */
+
+int slsDetector::setReceiverTCPSocket(string const name, int const data_port){
+
+	char thisName[MAX_STR_LENGTH];
+	int thisDP;
+	int retval=OK;
+
+	//if receiver ip given
+	if (strcmp(name.c_str(),"")!=0) {
+#ifdef VERBOSE
+		std::cout<< "setting receiver" << std::endl;
+#endif
+		strcpy(thisName,name.c_str());
+		strcpy(thisDetector->receiverIP,thisName);
+		if (dataSocket){
+			delete dataSocket;
+			dataSocket=NULL;
+		}
+	} else
+		strcpy(thisName,thisDetector->receiverIP);
+
+	//if dataport given
+	if (data_port>0) {
+#ifdef VERBOSE
+		std::cout<< "setting data port" << std::endl;
+#endif
+		thisDP=data_port;
+		thisDetector->dataPort=thisDP;
+		if (dataSocket){
+			delete dataSocket;
+			dataSocket=NULL;
+		}
+	} else
+		thisDP=thisDetector->dataPort;
+
+	//create data socket
+	if (!dataSocket) {
+		dataSocket=new MySocketTCP(thisName, thisDP);
+		if (dataSocket->getErrorStatus()){
+#ifdef VERBOSE
+			std::cout<< "Could not connect Data socket "<<thisName  << " " << thisDP << std::endl;
+#endif
+			delete dataSocket;
+			dataSocket=NULL;
+			retval=FAIL;
+		}
+#ifdef VERYVERBOSE
+		else
+			std::cout<< "Data socket connected "<< thisName << " " << thisDP << std::endl;
+#endif
+	}
+	//check if it connects
+	if (retval!=FAIL) {
+		if(checkReceiverOnline().empty())
+			retval=FAIL;
+	} else {
+		thisDetector->receiverOnlineFlag=OFFLINE_FLAG;
+#ifdef VERBOSE
+		std::cout<< "offline!" << std::endl;
+#endif
+	}
+	return retval;
+};
+
+
+
+
+
+string slsDetector::setReceiverFileName(string fileName) {
+	int fnum=F_SET_RECEIVER_FILE_NAME;
 	int ret = FAIL;
 	char mess[100];
-	char arg[MAX_STR_LENGTH];
+
+	char arg[MAX_STR_LENGTH],retval[MAX_STR_LENGTH]="";
 	strcpy(arg,fileName.c_str());
 
-	MySocketTCP *receiverSocket = new MySocketTCP(thisDetector->clientIP,thisDetector->dataPort);
-
-	if (receiverSocket->getErrorStatus()){
 #ifdef VERBOSE
-		std::cout<< "Could not connect Control socket " << thisDetector->clientIP  << " " << thisDetector->dataPort << std::endl;
+	std::cout << "Sending file name to receiver " << arg << std::endl;
 #endif
-		delete receiverSocket;
-		receiverSocket=NULL;
-	}
-	else{
-		if(receiverSocket){
-			if (receiverSocket->Connect()>=0){
-				if (receiverSocket->SendDataOnly(&fnum,sizeof(fnum))>=0)
-					if (receiverSocket->SendDataOnly(arg,MAX_STR_LENGTH)>=0){
-						receiverSocket->ReceiveDataOnly(&ret,sizeof(ret));
-						if(ret==FAIL){
-							receiverSocket->ReceiveDataOnly(mess,sizeof(mess));
-							std::cout<< "Receiver returned error: " << mess << std::endl;
-						}
-					}
-				receiverSocket->Disconnect();
+
+	if (thisDetector->receiverOnlineFlag==ONLINE_FLAG) {
+		if (dataSocket) {
+			if  (dataSocket->Connect()>=0) {
+				dataSocket->SendDataOnly(&fnum,sizeof(fnum));
+				dataSocket->SendDataOnly(arg,MAX_STR_LENGTH);
+				dataSocket->ReceiveDataOnly(&ret,sizeof(ret));
+				if (ret==FAIL){
+					dataSocket->ReceiveDataOnly(mess,sizeof(mess));
+					std::cout<< "Receiver returned error: " << mess << std::endl;
+				}else
+					dataSocket->ReceiveDataOnly(retval,MAX_STR_LENGTH);
 			}
-			else strcpy(thisDetector->clientIP,"none");
-			delete receiverSocket;//should I include also for good connection? cuz setTCPSocket() still uses it?
-			receiverSocket=NULL;//should I include also for good connection? cuz setTCPSocket() still uses it?
+			dataSocket->Disconnect();
+			/*if (ret==FORCE_UPDATE)
+				updateReceiver();*/
 		}
 	}
-	/**if force update, updateReceiver?*/
-	if(ret==OK) return fileName;
-	return string("");
+
+	return string(retval);
 }
 
 
 
 
 
+string slsDetector::setReceiverFileDir(string fileDir) {
+	int fnum=F_SET_RECEIVER_FILE_DIR;
+	int ret = FAIL;
+	char mess[100];
 
-slsDetectorDefs::runStatus slsDetector::startReceiver(string status,int index){
+	char arg[MAX_STR_LENGTH],retval[MAX_STR_LENGTH]="";
+	strcpy(arg,fileDir.c_str());
+
+#ifdef VERBOSE
+	std::cout << "Sending file dir to receiver " << arg << std::endl;
+#endif
+
+	if (thisDetector->receiverOnlineFlag==ONLINE_FLAG) {
+		if (dataSocket) {
+			if  (dataSocket->Connect()>=0) {
+				dataSocket->SendDataOnly(&fnum,sizeof(fnum));
+				dataSocket->SendDataOnly(arg,MAX_STR_LENGTH);
+				dataSocket->ReceiveDataOnly(&ret,sizeof(ret));
+				if (ret==FAIL){
+					dataSocket->ReceiveDataOnly(mess,sizeof(mess));
+					std::cout<< "Receiver returned error: " << mess << std::endl;
+				}else
+					dataSocket->ReceiveDataOnly(retval,MAX_STR_LENGTH);
+			}
+			dataSocket->Disconnect();
+			/*if (ret==FORCE_UPDATE)
+				updateReceiver();*/
+		}
+	}
+
+	return string(retval);
+}
+
+
+
+
+int slsDetector::setReceiverFileIndex(int fileIndex) {
+	int fnum=F_SET_RECEIVER_FILE_INDEX;
+	int ret = FAIL;
+	char mess[100];
+	int retval=-1;
+
+	int arg = fileIndex;
+
+#ifdef VERBOSE
+	std::cout << "Sending file dir to receiver " << arg << std::endl;
+#endif
+
+	if (thisDetector->receiverOnlineFlag==ONLINE_FLAG) {
+		if (dataSocket) {
+			if  (dataSocket->Connect()>=0) {
+				dataSocket->SendDataOnly(&fnum,sizeof(fnum));
+				dataSocket->SendDataOnly(&arg,sizeof(arg));
+				dataSocket->ReceiveDataOnly(&ret,sizeof(ret));
+				if (ret==FAIL){
+					dataSocket->ReceiveDataOnly(mess,sizeof(mess));
+					std::cout<< "Receiver returned error: " << mess << std::endl;
+				}else
+					dataSocket->ReceiveDataOnly(&retval,sizeof(retval));
+			}
+			dataSocket->Disconnect();
+			/*if (ret==FORCE_UPDATE)
+				updateReceiver();*/
+		}
+	}
+
+	return retval;
+}
+
+
+
+
+int slsDetector::startReceiver(){
 	int fnum=F_START_RECEIVER;
 	int ret = FAIL;
 	char mess[100];
-	runStatus retval=ERROR;
-	int arg[2];
-	arg[1] = index;
 
-	//start=1,stop=0,get=-1
-	arg[0] = -1;
-	if(status=="start") arg[0] = 1;
-	else if(status=="stop") arg[0] = 0;
-
-
-	MySocketTCP *receiverSocket = new MySocketTCP(thisDetector->clientIP,thisDetector->dataPort);
-
-	if (receiverSocket->getErrorStatus()){
 #ifdef VERBOSE
-		std::cout<< "Could not connect Control socket " << thisDetector->clientIP  << " " << thisDetector->dataPort << std::endl;
+	std::cout << "Starting Receiver " << std::endl;
 #endif
-		delete receiverSocket;
-		receiverSocket=NULL;
-	}
-	else{
-		if(receiverSocket){
-			if (receiverSocket->Connect()>=0){
-				if (receiverSocket->SendDataOnly(&fnum,sizeof(fnum))>=0)
-					if (receiverSocket->SendDataOnly(arg,sizeof(arg))>=0){
-						receiverSocket->ReceiveDataOnly(&ret,sizeof(ret));
-						if(ret!=FAIL){
-							receiverSocket->ReceiveDataOnly(&retval,sizeof(retval));
-						}
-						else{
-							receiverSocket->ReceiveDataOnly(mess,sizeof(mess));
-							std::cout<< "Receiver returned error: " << mess << std::endl;
-						}
-					}
-				receiverSocket->Disconnect();
+
+	if (thisDetector->receiverOnlineFlag==ONLINE_FLAG) {
+		if (dataSocket) {
+			if  (dataSocket->Connect()>=0) {
+				dataSocket->SendDataOnly(&fnum,sizeof(fnum));
+				dataSocket->ReceiveDataOnly(&ret,sizeof(ret));
+				if (ret==FAIL){
+					dataSocket->ReceiveDataOnly(mess,sizeof(mess));
+					std::cout<< "Receiver returned error: " << mess << std::endl;
+				}
+				dataSocket->Disconnect();
+				/*if (ret==FORCE_UPDATE)
+				updateReceiver();*/
 			}
-			else strcpy(thisDetector->clientIP,"none");
-			delete receiverSocket;//should I include also for good connection? cuz setTCPSocket() still uses it?
-			receiverSocket=NULL;//should I include also for good connection? cuz setTCPSocket() still uses it?
 		}
 	}
-	/**if force update, updateReceiver?*/
+	return ret;
+}
+
+
+
+
+int slsDetector::stopReceiver(){
+	int fnum=F_STOP_RECEIVER;
+	int ret = FAIL;
+	char mess[100];
+
+#ifdef VERBOSE
+	std::cout << "Stopping Receiver " << std::endl;
+#endif
+
+	if (thisDetector->receiverOnlineFlag==ONLINE_FLAG) {
+		if (dataSocket) {
+			if  (dataSocket->Connect()>=0) {
+				dataSocket->SendDataOnly(&fnum,sizeof(fnum));
+				dataSocket->ReceiveDataOnly(&ret,sizeof(ret));
+				if (ret==FAIL){
+					dataSocket->ReceiveDataOnly(mess,sizeof(mess));
+					std::cout<< "Receiver returned error: " << mess << std::endl;
+				}
+
+				dataSocket->Disconnect();
+				/*if (ret==FORCE_UPDATE)
+				updateReceiver();*/
+			}
+		}
+	}
+	return ret;
+}
+
+
+
+
+slsDetectorDefs::runStatus slsDetector::getReceiverStatus(){
+	int fnum=F_GET_RECEIVER_STATUS;
+	int ret = FAIL;
+	char mess[100];
+	runStatus retval=ERROR;
+
+#ifdef VERBOSE
+	std::cout << "Getting Receiver Status" << std::endl;
+#endif
+
+	if (thisDetector->receiverOnlineFlag==ONLINE_FLAG) {
+		if (dataSocket) {
+			if  (dataSocket->Connect()>=0) {
+				dataSocket->SendDataOnly(&fnum,sizeof(fnum));
+				dataSocket->ReceiveDataOnly(&ret,sizeof(ret));
+				if (ret==FAIL){
+					dataSocket->ReceiveDataOnly(mess,sizeof(mess));
+					std::cout<< "Receiver returned error: " << mess << std::endl;
+				}else
+					stopSocket->ReceiveDataOnly(&retval,sizeof(retval));
+
+				dataSocket->Disconnect();
+			}
+		}
+	}
 	return retval;
 }
+

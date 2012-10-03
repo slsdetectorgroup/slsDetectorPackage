@@ -874,7 +874,7 @@ int multiSlsDetector::setOnline(int off) {
   
   if (off!=GET_ONLINE_FLAG) {
     thisMultiDetector->onlineFlag=off;
-    for (int i=0; i<thisMultiDetector->numberOfDetectors+1; i++) {
+    for (int i=0; i<thisMultiDetector->numberOfDetectors; i++) {
       if (detectors[i])
 	detectors[i]->setOnline(off);
     }
@@ -3561,7 +3561,7 @@ int multiSlsDetector::readDataFile(string fname, int *data) {
 int multiSlsDetector::setReceiverOnline(int off) {
 	  if (off!=GET_ONLINE_FLAG) {
 	    int ret=-100,ret1;
-	    for (int i=0; i<thisMultiDetector->numberOfDetectors+1; i++)
+	    for (int i=0; i<thisMultiDetector->numberOfDetectors; i++)
 	      if (detectors[i]){
 	    	 ret1=detectors[i]->setReceiverOnline(off);
 	    	 if(ret==-100)
@@ -3715,5 +3715,24 @@ slsDetectorDefs::runStatus multiSlsDetector::getReceiverStatus(){
 	}
 	return s;
 }
+
+
+
+
+
+int multiSlsDetector::getFramesCaughtByReciver() {
+	int ret=-100,ret1;
+	for (int i=0; i<thisMultiDetector->numberOfDetectors; i++)
+		if (detectors[i]){
+			ret1=detectors[i]->getFramesCaughtByReciver();
+			if(ret==-100)
+				ret=ret1;
+			else if (ret!=ret1)
+				ret=-1;
+		}
+
+	return ret;
+}
+
 
 

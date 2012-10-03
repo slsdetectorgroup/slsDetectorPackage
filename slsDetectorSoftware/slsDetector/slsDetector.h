@@ -1423,6 +1423,12 @@ typedef  struct sharedSlsDetector {
    */
   runStatus getReceiverStatus();
 
+  /**   gets the number of frames caught by receiver
+        \returns number of frames caught by receiver
+   */
+  int getFramesCaughtByReciver();
+
+
  protected:
  
 

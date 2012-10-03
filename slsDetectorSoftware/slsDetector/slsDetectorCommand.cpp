@@ -651,6 +651,10 @@ slsDetectorCommand::slsDetectorCommand(slsDetectorUtils *det)  {
   descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdOnline;
   i++;
 
+  descrToFuncMap[i].m_pFuncName="framescaught";
+  descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdReceiver;
+  i++;
+
 
 
   numberOfCommands=i;
@@ -1433,8 +1437,11 @@ string slsDetectorCommand::cmdFileIndex(int narg, char *args[], int action){
 		}
 	}
 
-	if(receiver)
+	if(receiver){
+		//int ret=myDet->setReceiverFileIndex();
+		//myDet->setFileIndex(ret);
 		sprintf(ans,"%d", myDet->setReceiverFileIndex());
+	}
 	else
 		sprintf(ans,"%d", myDet->getFileIndex());
 
@@ -3481,33 +3488,48 @@ string slsDetectorCommand::helpConfiguration(int narg, char *args[], int action)
 
 
 string slsDetectorCommand::cmdReceiver(int narg, char *args[], int action) {
+	char answer[100];
+
 	if (action==HELP_ACTION)
 		return helpReceiver(narg, args, action);
 
 	if(myDet->setReceiverOnline(ONLINE_FLAG)!=ONLINE_FLAG)
 		return string("receiver not online");
 
-	if (action==PUT_ACTION) {
-		if(!strcasecmp(args[1],"start")){
-			//update receiver index
-			if(myDet->setReceiverFileIndex(myDet->getFileIndex())==-1)
-				return string("could not set receiver file index");
-			myDet->startReceiver();
-		}
-
-		else if(!strcasecmp(args[1],"stop")){
-			if(myDet->stopReceiver()!=FAIL){
-				//update index
-				int index = myDet->setReceiverFileIndex();
-				if(index==-1)
-					return string("could not get receiver file index");
-				myDet->setFileIndex(index);
+	if(cmd=="receiver"){
+		if (action==PUT_ACTION) {
+			if(!strcasecmp(args[1],"start")){
+				//update receiver index
+				if(myDet->setReceiverFileIndex(myDet->getFileIndex())==-1)
+					return string("could not set receiver file index");
+				myDet->startReceiver();
 			}
-		}else
-			return helpReceiver(narg, args, action);
+
+			else if(!strcasecmp(args[1],"stop")){
+				if(myDet->stopReceiver()!=FAIL){
+					//update index
+					int index = myDet->setReceiverFileIndex();
+					if(index==-1)
+						return string("could not get receiver file index");
+					myDet->setFileIndex(index);
+				}
+			}else
+				return helpReceiver(narg, args, action);
+		}
+		return myDet->runStatusType(myDet->getReceiverStatus());
 	}
 
-	return myDet->runStatusType(myDet->getReceiverStatus());
+	else if(cmd=="framescaught"){
+		if (action==PUT_ACTION)
+			return string("cannot put");
+		else{
+			sprintf(answer,"%d",myDet->getFramesCaughtByReciver());
+			return string(answer);
+		}
+	}
+	else
+		return string("could not decode command");
+
 }
 
 
@@ -3517,9 +3539,10 @@ string slsDetectorCommand::helpReceiver(int narg, char *args[], int action) {
   ostringstream os;
   if (action==PUT_ACTION || action==HELP_ACTION)
     os << "receiver [status] \t starts/stops the receiver to listen to detector packets. - can be start or stop" << std::endl;
-  if (action==GET_ACTION || action==HELP_ACTION)
+  if (action==GET_ACTION || action==HELP_ACTION){
 	os << "receiver \t returns the status of receiver - can be running or idle" << std::endl;
-
+    os << "framescaught \t returns the number of frames caught by receiver" << std::endl;
+  }
   return os.str();
 
 

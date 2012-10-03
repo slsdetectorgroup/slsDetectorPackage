@@ -115,7 +115,9 @@ enum {
 
   F_STOP_RECEIVER,			/**< stops the receiver listening mode */
 
-  F_GET_RECEIVER_STATUS		/**< gets the status of receiver listening mode */
+  F_GET_RECEIVER_STATUS,	/**< gets the status of receiver listening mode */
+
+  F_GET_FRAMES_CAUGHT		/**< gets the number of frames caught by receiver */
 
   /* Always append functions hereafter!!! */
 

@@ -5642,3 +5642,36 @@ slsDetectorDefs::runStatus slsDetector::getReceiverStatus(){
 	return retval;
 }
 
+
+
+
+int slsDetector::getFramesCaughtByReciver(){
+	int fnum=F_GET_FRAMES_CAUGHT;
+	int ret = FAIL;
+	char mess[100];
+	int retval=-1;
+
+#ifdef VERBOSE
+	std::cout << "Starting Receiver " << std::endl;
+#endif
+
+	if (thisDetector->receiverOnlineFlag==ONLINE_FLAG) {
+		if (dataSocket) {
+			if  (dataSocket->Connect()>=0) {
+				dataSocket->SendDataOnly(&fnum,sizeof(fnum));
+				dataSocket->ReceiveDataOnly(&ret,sizeof(ret));
+				if (ret!=FAIL)
+					dataSocket->ReceiveDataOnly(&retval,sizeof(retval));
+				else{
+					dataSocket->ReceiveDataOnly(mess,sizeof(mess));
+					std::cout<< "Receiver returned error: " << mess << std::endl;
+				}
+				dataSocket->Disconnect();
+				/*if (ret==FORCE_UPDATE)
+				updateReceiver();*/
+			}
+		}
+	}
+	return retval;
+}
+

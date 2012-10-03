@@ -5511,7 +5511,6 @@ string slsDetector::setReceiverFileDir(string fileDir) {
 				updateReceiver();*/
 		}
 	}
-
 	return string(retval);
 }
 
@@ -5634,7 +5633,7 @@ slsDetectorDefs::runStatus slsDetector::getReceiverStatus(){
 					dataSocket->ReceiveDataOnly(mess,sizeof(mess));
 					std::cout<< "Receiver returned error: " << mess << std::endl;
 				}else
-					stopSocket->ReceiveDataOnly(&retval,sizeof(retval));
+					dataSocket->ReceiveDataOnly(&retval,sizeof(retval));
 
 				dataSocket->Disconnect();
 			}

@@ -1303,8 +1303,7 @@ string slsDetectorCommand::cmdOutDir(int narg, char *args[], int action){
 		return helpOutDir(narg, args, action);
 	}
 
-	if(myDet->getNetworkParameter(RECEIVER_IP)!="none")
-		if(myDet->setReceiverOnline(ONLINE_FLAG)==ONLINE_FLAG)
+	if(myDet->setReceiverOnline(ONLINE_FLAG)==ONLINE_FLAG)
 			receiver = true;
 
 	if (action==PUT_ACTION) {
@@ -1342,8 +1341,7 @@ string slsDetectorCommand::cmdFileName(int narg, char *args[], int action){
 		return helpFileName(narg, args, action);
 	}
 
-	if(myDet->getNetworkParameter(RECEIVER_IP)!="none")
-		if(myDet->setReceiverOnline(ONLINE_FLAG)==ONLINE_FLAG)
+	if(myDet->setReceiverOnline(ONLINE_FLAG)==ONLINE_FLAG)
 			receiver = true;
 
 	if (action==PUT_ACTION) {
@@ -1413,8 +1411,7 @@ string slsDetectorCommand::cmdFileIndex(int narg, char *args[], int action){
 		return helpFileName(narg, args, action);
 	}
 
-	if(myDet->getNetworkParameter(RECEIVER_IP)!="none")
-		if(myDet->setReceiverOnline(ONLINE_FLAG)==ONLINE_FLAG)
+	if(myDet->setReceiverOnline(ONLINE_FLAG)==ONLINE_FLAG)
 			receiver = true;
 
 	if (action==PUT_ACTION) {
@@ -2152,10 +2149,10 @@ string slsDetectorCommand::cmdNetworkParameter(int narg, char *args[], int actio
     	if(myDet->setReceiverOnline(ONLINE_FLAG)!=ONLINE_FLAG)
     		return string("receiver not online");
     	//outdir
-     	if(myDet->setReceiverFileDir(myDet->getFilePath())!=myDet->getFilePath())
+     	if(myDet->setReceiverFileDir(myDet->getFilePath()).compare(myDet->getFilePath()))
           return string("could not set up receiver file outdir");
      	//fname
-     	if(myDet->setReceiverFileName(myDet->getFileName())!=myDet->getFileName())
+     	if(myDet->setReceiverFileName(myDet->getFileName()).compare(myDet->getFileName()))
           return string("could not set up receiver file name");
      	//index
      	if(myDet->setReceiverFileIndex(myDet->getFileIndex())!=myDet->getFileIndex())
@@ -3482,15 +3479,14 @@ string slsDetectorCommand::cmdReceiver(int narg, char *args[], int action) {
 		return string("receiver not online");
 
 	if (action==PUT_ACTION) {
-
-		if(strcasecmp(args[1],"start")){
+		if(!strcasecmp(args[1],"start")){
 			//update receiver index
 			if(myDet->setReceiverFileIndex(myDet->getFileIndex())==-1)
 				return string("could not set receiver file index");
 			myDet->startReceiver();
 		}
 
-		else if(strcasecmp(args[1],"stop")){
+		else if(!strcasecmp(args[1],"stop")){
 			if(myDet->stopReceiver()!=FAIL){
 				//update index
 				int index = myDet->setReceiverFileIndex();

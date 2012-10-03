@@ -3595,7 +3595,7 @@ string multiSlsDetector::setReceiverFileName(string fileName) {
 	for (int idet=0; idet<thisMultiDetector->numberOfDetectors; idet++) {
 		if (detectors[idet]) {
 			ret1=detectors[idet]->setReceiverFileName(fileName);
-			if (ret1=="error")
+			if (ret=="error")
 				ret=ret1;
 			else if (ret!=ret1)
 				ret="";
@@ -3611,7 +3611,7 @@ string multiSlsDetector::setReceiverFileDir(string fileDir) {
 	for (int idet=0; idet<thisMultiDetector->numberOfDetectors; idet++) {
 		if (detectors[idet]) {
 			ret1=detectors[idet]->setReceiverFileDir(fileDir);
-			if (ret1=="error")
+			if (ret=="error")
 				ret=ret1;
 			else if (ret!=ret1)
 				ret="";
@@ -3628,7 +3628,7 @@ int multiSlsDetector::setReceiverFileIndex(int fileIndex) {
 	for (int idet=0; idet<thisMultiDetector->numberOfDetectors; idet++) {
 		if (detectors[idet]) {
 			ret1=detectors[idet]->setReceiverFileIndex(fileIndex);
-			if (ret1==-100)
+			if (ret==-100)
 				ret=ret1;
 			else if (ret!=ret1)
 				ret=-1;

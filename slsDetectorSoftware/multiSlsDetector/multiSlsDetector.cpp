@@ -3566,7 +3566,7 @@ int multiSlsDetector::setReceiverOnline(int off) {
 		detectors[i]->setReceiverOnline(off);
 	    }
 	  }
-	  return thisMultiDetector->onlineFlag;
+	  return thisMultiDetector->receiverOnlineFlag;
 }
 
 

@@ -1303,15 +1303,22 @@ string slsDetectorCommand::cmdOutDir(int narg, char *args[], int action){
 		return helpOutDir(narg, args, action);
 	}
 
-	if(myDet->setReceiverOnline(ONLINE_FLAG)==ONLINE_FLAG)
+	if(myDet->setReceiverOnline()==ONLINE_FLAG)
+		if(myDet->setReceiverOnline(ONLINE_FLAG)==ONLINE_FLAG)
 			receiver = true;
 
 	if (action==PUT_ACTION) {
 		if(receiver){
 			if(myDet->setReceiverFileDir(string(args[1]))==string(args[1]))
 				myDet->setFilePath(string(args[1]));
-		}else
-			myDet->setFilePath(string(args[1]));
+		}else{
+			//check if the outdir really exists in localhost
+			struct stat st;
+			if(stat(args[1],&st))
+				return string("path does not exist");
+			else
+				myDet->setFilePath(string(args[1]));
+		}
 	}
 
 	if(receiver)
@@ -1341,7 +1348,8 @@ string slsDetectorCommand::cmdFileName(int narg, char *args[], int action){
 		return helpFileName(narg, args, action);
 	}
 
-	if(myDet->setReceiverOnline(ONLINE_FLAG)==ONLINE_FLAG)
+	if(myDet->setReceiverOnline()==ONLINE_FLAG)
+		if(myDet->setReceiverOnline(ONLINE_FLAG)==ONLINE_FLAG)
 			receiver = true;
 
 	if (action==PUT_ACTION) {
@@ -1411,7 +1419,8 @@ string slsDetectorCommand::cmdFileIndex(int narg, char *args[], int action){
 		return helpFileName(narg, args, action);
 	}
 
-	if(myDet->setReceiverOnline(ONLINE_FLAG)==ONLINE_FLAG)
+	if(myDet->setReceiverOnline()==ONLINE_FLAG)
+		if(myDet->setReceiverOnline(ONLINE_FLAG)==ONLINE_FLAG)
 			receiver = true;
 
 	if (action==PUT_ACTION) {

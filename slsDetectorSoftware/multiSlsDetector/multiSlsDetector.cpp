@@ -3560,11 +3560,16 @@ int multiSlsDetector::readDataFile(string fname, int *data) {
 
 int multiSlsDetector::setReceiverOnline(int off) {
 	  if (off!=GET_ONLINE_FLAG) {
-	    thisMultiDetector->receiverOnlineFlag=off;
-	    for (int i=0; i<thisMultiDetector->numberOfDetectors+1; i++) {
-	      if (detectors[i])
-		detectors[i]->setReceiverOnline(off);
-	    }
+	    int ret=-100,ret1;
+	    for (int i=0; i<thisMultiDetector->numberOfDetectors+1; i++)
+	      if (detectors[i]){
+	    	 ret1=detectors[i]->setReceiverOnline(off);
+	    	 if(ret==-100)
+	    		 ret=ret1;
+	    	 else if (ret!=ret1)
+	    		 ret=-1;
+	      }
+	    thisMultiDetector->receiverOnlineFlag=ret;
 	  }
 	  return thisMultiDetector->receiverOnlineFlag;
 }

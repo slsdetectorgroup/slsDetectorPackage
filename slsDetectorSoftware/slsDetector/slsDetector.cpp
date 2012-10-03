@@ -5326,7 +5326,8 @@ int slsDetector::setReceiverOnline(int off) {
   if (off!=GET_ONLINE_FLAG) {
     thisDetector->receiverOnlineFlag=off;
     if (thisDetector->receiverOnlineFlag==ONLINE_FLAG)
-      setReceiverTCPSocket();
+      if(setReceiverTCPSocket()==FAIL)
+    	  thisDetector->receiverOnlineFlag=OFFLINE_FLAG;
   }
   return thisDetector->receiverOnlineFlag;
 }

@@ -5326,8 +5326,7 @@ int slsDetector::setReceiverOnline(int off) {
   if (off!=GET_ONLINE_FLAG) {
     thisDetector->receiverOnlineFlag=off;
     if (thisDetector->receiverOnlineFlag==ONLINE_FLAG)
-      if(setReceiverTCPSocket()==FAIL)
-    	  thisDetector->receiverOnlineFlag=OFFLINE_FLAG;
+      setReceiverTCPSocket();
   }
   return thisDetector->receiverOnlineFlag;
 }
@@ -5352,7 +5351,7 @@ string slsDetector::checkReceiverOnline() {
       thisDetector->receiverOnlineFlag=OFFLINE_FLAG;
       delete dataSocket;
       dataSocket=NULL;
-      retval = thisDetector->receiverIP;
+      retval = FAIL;
 #ifdef VERBOSE
       std::cout<< "receiver offline!" << std::endl;
 #endif

@@ -1429,6 +1429,29 @@ typedef  struct sharedSlsDetector {
    */
   int getFramesCaughtByReciver();
 
+  /** Locks/Unlocks the connection to the receiver
+      /param lock sets (1), usets (0), gets (-1) the lock
+      /returns lock status of the receiver
+  */
+  int lockReceiver(int lock=-1);
+
+  /**
+      Returns the IP of the last client connecting to the receiver
+  */
+  string getReceiverLastClientIP();
+
+  /**
+ 	 updates the shared memory receiving the data from the detector (without asking and closing the connection
+  	  /returns OK
+  */
+  int updateReceiverNoWait();
+
+  /**
+  	  updates the shared memory receiving the data from the detector
+  	  /returns OK
+  */
+  int updateReceiver();
+
 
  protected:
  

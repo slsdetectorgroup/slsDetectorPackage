@@ -162,7 +162,7 @@ class slsDetectorUtils :  public slsDetectorActions, public postProcessing {
 
   /**
      gets the network parameters (implemented for gotthard)
-     \param i network parameter type can be CLIENT_IP, CLIENT_MAC, SERVER_MAC
+     \param i network parameter type can be RECEIVER_IP, RECEIVER_MAC, SERVER_MAC
      \returns parameter
 
   */
@@ -170,7 +170,7 @@ class slsDetectorUtils :  public slsDetectorActions, public postProcessing {
 
   /**
      sets the network parameters  (implemented for gotthard)
-     \param i network parameter type can be CLIENT_IP, CLIENT_MAC, SERVER_MAC
+     \param i network parameter type can be RECEIVER_IP, RECEIVER_MAC, SERVER_MAC
      \param s value to be set
      \returns parameter
 
@@ -581,6 +581,10 @@ class slsDetectorUtils :  public slsDetectorActions, public postProcessing {
    */
   virtual string checkReceiverOnline()=0;
 
+  /**
+      Returns the IP of the last client connecting to the receiver
+  */
+  virtual string getReceiverLastClientIP()=0;
 
  protected:
 

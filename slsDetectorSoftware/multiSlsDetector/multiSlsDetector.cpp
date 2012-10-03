@@ -3736,3 +3736,50 @@ int multiSlsDetector::getFramesCaughtByReciver() {
 
 
 
+
+int multiSlsDetector::lockReceiver(int lock) {
+
+  int ret=-100, ret1;
+
+  for (int idet=0; idet<thisMultiDetector->numberOfDetectors; idet++) {
+    if (detectors[idet]) {
+      ret1=detectors[idet]->lockReceiver(lock);
+      if (ret==-100)
+    	  ret=ret1;
+      else if (ret!=ret1)
+		ret=-1;
+    }
+  }
+
+  return ret;
+
+}
+
+
+
+
+
+string multiSlsDetector::getReceiverLastClientIP() {
+  string s0="", s1="",s ;
+
+  for (int idet=0; idet<thisMultiDetector->numberOfDetectors; idet++) {
+    if (detectors[idet]) {
+      s=detectors[idet]->getReceiverLastClientIP();
+
+      if (s0=="")
+	s0=s;
+      else
+	s0+=string("+")+s;
+      if (s1=="")
+	s1=s;
+      else if (s1!=s)
+	s1="bad";
+    }
+  }
+  if (s1=="bad")
+   return s0;
+  else
+    return s1;
+}
+
+

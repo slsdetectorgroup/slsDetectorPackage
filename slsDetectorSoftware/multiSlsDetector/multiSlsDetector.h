@@ -1063,6 +1063,18 @@ class multiSlsDetector  : public slsDetectorUtils {
     */
    int getFramesCaughtByReciver();
 
+   /** Locks/Unlocks the connection to the receiver
+       /param lock sets (1), usets (0), gets (-1) the lock
+       /returns lock status of the receiver
+   */
+   int lockReceiver(int lock=-1);
+
+   /**
+       Returns the IP of the last client connecting to the receiver
+   */
+   string getReceiverLastClientIP();
+
+
 
  protected:
  

@@ -477,6 +477,12 @@ int64_t setNumberOfCycles(int64_t t=-1){return setTimer(CYCLES_NUMBER,t);};
    */
   virtual int getFramesCaughtByReciver()=0;
 
+  /** Locks/Unlocks the connection to the receiver
+      /param lock sets (1), usets (0), gets (-1) the lock
+      /returns lock status of the receiver
+  */
+  virtual int lockReceiver(int lock=-1)=0;
+
 
   /** returns detector type string from detector type index
       \param t string can be Mythen, Pilatus, Eiger, Gotthard, Agipd, Unknown

@@ -5470,8 +5470,8 @@ string slsDetector::setReceiverFileName(string fileName) {
 					dataSocket->ReceiveDataOnly(retval,MAX_STR_LENGTH);
 			}
 			dataSocket->Disconnect();
-			/*if (ret==FORCE_UPDATE)
-				updateReceiver();*/
+			if (ret==FORCE_UPDATE)
+				updateReceiver();
 		}
 	}
 
@@ -5507,8 +5507,8 @@ string slsDetector::setReceiverFileDir(string fileDir) {
 					dataSocket->ReceiveDataOnly(retval,MAX_STR_LENGTH);
 			}
 			dataSocket->Disconnect();
-			/*if (ret==FORCE_UPDATE)
-				updateReceiver();*/
+			if (ret==FORCE_UPDATE)
+				updateReceiver();
 		}
 	}
 	return string(retval);
@@ -5542,8 +5542,8 @@ int slsDetector::setReceiverFileIndex(int fileIndex) {
 					dataSocket->ReceiveDataOnly(&retval,sizeof(retval));
 			}
 			dataSocket->Disconnect();
-			/*if (ret==FORCE_UPDATE)
-				updateReceiver();*/
+			if (ret==FORCE_UPDATE)
+				updateReceiver();
 		}
 	}
 
@@ -5572,8 +5572,8 @@ int slsDetector::startReceiver(){
 					std::cout<< "Receiver returned error: " << mess << std::endl;
 				}
 				dataSocket->Disconnect();
-				/*if (ret==FORCE_UPDATE)
-				updateReceiver();*/
+				if (ret==FORCE_UPDATE)
+					updateReceiver();
 			}
 		}
 	}
@@ -5603,8 +5603,8 @@ int slsDetector::stopReceiver(){
 				}
 
 				dataSocket->Disconnect();
-				/*if (ret==FORCE_UPDATE)
-				updateReceiver();*/
+				if (ret==FORCE_UPDATE)
+					updateReceiver();
 			}
 		}
 	}
@@ -5636,6 +5636,8 @@ slsDetectorDefs::runStatus slsDetector::getReceiverStatus(){
 					dataSocket->ReceiveDataOnly(&retval,sizeof(retval));
 
 				dataSocket->Disconnect();
+				if (ret==FORCE_UPDATE)
+					updateReceiver();
 			}
 		}
 	}
@@ -5652,7 +5654,7 @@ int slsDetector::getFramesCaughtByReciver(){
 	int retval=-1;
 
 #ifdef VERBOSE
-	std::cout << "Starting Receiver " << std::endl;
+	std::cout << "Getting Frames Caught by Receiver " << std::endl;
 #endif
 
 	if (thisDetector->receiverOnlineFlag==ONLINE_FLAG) {
@@ -5667,11 +5669,140 @@ int slsDetector::getFramesCaughtByReciver(){
 					std::cout<< "Receiver returned error: " << mess << std::endl;
 				}
 				dataSocket->Disconnect();
-				/*if (ret==FORCE_UPDATE)
-				updateReceiver();*/
+				if (ret==FORCE_UPDATE)
+					updateReceiver();
 			}
 		}
 	}
 	return retval;
 }
+
+
+
+
+int slsDetector::lockReceiver(int lock){
+	int fnum=F_LOCK_RECEIVER;
+	int ret = FAIL;
+	int retval=-1;
+	char mess[100];
+
+	int arg= lock;
+
+#ifdef VERBOSE
+	std::cout << "Locking or Unlocking Receiver " << std::endl;
+#endif
+
+	if (thisDetector->receiverOnlineFlag==ONLINE_FLAG) {
+		if (dataSocket) {
+			if  (dataSocket->Connect()>=0) {
+				dataSocket->SendDataOnly(&fnum,sizeof(fnum));
+				dataSocket->SendDataOnly(&arg,sizeof(arg));
+				dataSocket->ReceiveDataOnly(&ret,sizeof(ret));
+				if (ret!=FAIL)
+					dataSocket->ReceiveDataOnly(&retval,sizeof(retval));
+				else{
+					dataSocket->ReceiveDataOnly(mess,sizeof(mess));
+					std::cout<< "Receiver returned error: " << mess << std::endl;
+				}
+
+				dataSocket->Disconnect();
+				if (ret==FORCE_UPDATE)
+					updateReceiver();
+			}
+		}
+	}
+	return retval;
+}
+
+
+
+
+
+
+string slsDetector::getReceiverLastClientIP(){
+	int fnum=F_GET_LAST_CLIENT_IP;
+	int ret = FAIL;
+	char retval[INET_ADDRSTRLEN];
+	char mess[100];
+
+
+#ifdef VERBOSE
+	std::cout << "Geting Last Client IP connected to Receiver " << std::endl;
+#endif
+
+	if (thisDetector->receiverOnlineFlag==ONLINE_FLAG) {
+		if (dataSocket) {
+			if  (dataSocket->Connect()>=0) {
+				dataSocket->SendDataOnly(&fnum,sizeof(fnum));
+				dataSocket->ReceiveDataOnly(&ret,sizeof(ret));
+				if (ret!=FAIL)
+					dataSocket->ReceiveDataOnly(retval,sizeof(retval));
+				else{
+					dataSocket->ReceiveDataOnly(mess,sizeof(mess));
+					std::cout<< "Receiver returned error: " << mess << std::endl;
+				}
+
+				dataSocket->Disconnect();
+				if (ret==FORCE_UPDATE)
+					updateReceiver();
+			}
+		}
+	}
+	return string(retval);
+}
+
+
+
+
+
+int slsDetector::updateReceiverNoWait() {
+
+	int n,ind;
+	char path[MAX_STR_LENGTH];
+	char lastClientIP[INET_ADDRSTRLEN];
+
+	n = 	dataSocket->ReceiveDataOnly(lastClientIP,sizeof(lastClientIP));
+#ifdef VERBOSE
+	cout << "Updating receiver last modified by " << lastClientIP << std::endl;
+#endif
+
+	n = 	dataSocket->ReceiveDataOnly(&ind,sizeof(ind));		cout<<"index:"<<ind<<endl;
+	//thisDetector->xx=xx;update file index how?
+	n = 	dataSocket->ReceiveDataOnly(path,MAX_STR_LENGTH);	cout<<"path:"<<path<<endl;
+	//thisDetector->xx=xx;update file index how?
+	n = 	dataSocket->ReceiveDataOnly(path,MAX_STR_LENGTH);	cout<<"name:"<<path<<endl;
+	//thisDetector->xx=xx;update file index how?
+	return OK;
+
+}
+
+
+
+
+
+int slsDetector::updateReceiver() {
+	int fnum=F_UPDATE_CLIENT;
+	int ret=OK;
+	char mess[100];
+
+	if (thisDetector->receiverOnlineFlag==ONLINE_FLAG) {
+		if (dataSocket) {
+			if  (dataSocket->Connect()>=0) {
+				dataSocket->SendDataOnly(&fnum,sizeof(fnum));
+				dataSocket->ReceiveDataOnly(&ret,sizeof(ret));
+				if (ret!=FAIL)
+					updateReceiverNoWait();
+				else{
+					dataSocket->ReceiveDataOnly(mess,sizeof(mess));
+					std::cout<< "Receiver returned error: " << mess << std::endl;
+				}
+
+				dataSocket->Disconnect();
+			}
+		}
+	}
+
+  return ret;
+}
+
 

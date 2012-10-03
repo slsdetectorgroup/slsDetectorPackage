@@ -242,7 +242,7 @@ s
   void registerDataCallback(int( *userCallback)(detectorData*, void*),  void *pArg) {dataReady = userCallback; pCallbackArg = pArg;};
   
 
-  void registerRawDataCallback(int( *userCallback)(float*, void*),  void *pArg) {rawDataReady = userCallback; pRawDataArg = pArg;};
+  void registerRawDataCallback(int( *userCallback)(double*, void*),  void *pArg) {rawDataReady = userCallback; pRawDataArg = pArg;};
   
 
 
@@ -327,7 +327,7 @@ s
   int (*dataReady)(detectorData*,void*); 
   void *pCallbackArg; 
 
-  int (*rawDataReady)(float*,void*); 
+  int (*rawDataReady)(double*,void*);
   void *pRawDataArg; 
 
 };

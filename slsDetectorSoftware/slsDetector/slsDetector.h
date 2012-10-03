@@ -8,6 +8,7 @@
 
 #include "slsDetectorUtils.h"
 #include "energyConversion.h"
+#include "angleConversionConstant.h"
 #include "MySocketTCP.h"
 
 

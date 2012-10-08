@@ -119,7 +119,7 @@ void qDrawPlot::SetupWidgetWindow(){
 	setFont(QFont("Sans Serif",9));
 	layout = new QGridLayout;
 		this->setLayout(layout);
-	boxPlot = new QGroupBox("Measurement");
+	boxPlot = new QGroupBox("");
 		layout->addWidget(boxPlot,1,1);
 		boxPlot->setAlignment(Qt::AlignHCenter);
 		boxPlot->setFont(QFont("Sans Serif",11,QFont::Normal));
@@ -131,8 +131,8 @@ void qDrawPlot::SetupWidgetWindow(){
 	// Default titles- only for the initial picture
 	histXAxisTitle="Channel Number";
 	histYAxisTitle="Counts";
-	plotTitle = "Measurement";
-
+	plotTitle = "";
+	plotTitle_prefix = "";
 
 	for(int i=0;i<MAX_1DPLOTS;i++){
 		histTitle[i] = "";
@@ -489,14 +489,14 @@ void qDrawPlot::SetupMeasurement(int currentIndex){
 			endPixel = maxPixelsY + (pixelWidth/2);
 		}
 	}
-
+/*
 	cout<<"nPixelsX:"<<nPixelsX<<endl;
 	cout<<"nPixelsY:"<<nPixelsY<<endl;
 	cout<<"minPixelsY:"<<minPixelsY<<endl;
 	cout<<"maxPixelsY:"<<maxPixelsY<<endl;
 	cout<<"startPixel:"<<startPixel<<endl;
 	cout<<"endPixel:"<<endPixel<<endl<<endl;
-
+*/
 	UnlockLastImageArray();
 }
 
@@ -545,35 +545,38 @@ int qDrawPlot::GetData(detectorData *data){
 
 		//angle plotting
 		if(anglePlot){
-			if(!pthread_mutex_trylock(&(last_image_complete_mutex))){
-				//set title
-				SetPlotTitle(QString(data->fileName).section('/',-1));
+			while(1){
+				if(!pthread_mutex_trylock(&(last_image_complete_mutex))){
+					//set title
+					plotTitle=QString(plotTitle_prefix)+QString(data->fileName).section('/',-1);
 
-				cout<<"angle plot"<<endl;
-				if(data->angles==NULL){
-					cout<<"\n\nWARNING:RETURNED NULL instead of angles."<<endl;
-					lastImageNumber= currentFrame+1;
-					nAnglePixelsX = nPixelsX;
-					histNBins = nAnglePixelsX;
-					nHists=1;
-					memcpy(histXAngleAxis,histXAxis,nAnglePixelsX*sizeof(double));
-					memcpy(histYAngleAxis,data->values,nAnglePixelsX*sizeof(double));
-					SetHistXAxisTitle("Channel Number");
+					cout<<endl<<"angle plot"<<endl<<endl;
+					if(data->angles==NULL){
+						cout<<"\n\nWARNING:RETURNED NULL instead of angles."<<endl;
+						lastImageNumber= currentFrame+1;
+						nAnglePixelsX = nPixelsX;
+						histNBins = nAnglePixelsX;
+						nHists=1;
+						memcpy(histXAngleAxis,histXAxis,nAnglePixelsX*sizeof(double));
+						memcpy(histYAngleAxis,data->values,nAnglePixelsX*sizeof(double));
+						SetHistXAxisTitle("Channel Number");
 
+					}
+					else{
+
+						lastImageNumber= currentFrame+1;
+						nAnglePixelsX = data->npoints;
+						histNBins = nAnglePixelsX;
+						nHists=1;
+						if(histXAngleAxis) delete [] histXAngleAxis; histXAngleAxis = new double[nAnglePixelsX];
+						if(histYAngleAxis) delete [] histYAngleAxis; histYAngleAxis = new double[nAnglePixelsX];
+						memcpy(histXAngleAxis,data->angles,nAnglePixelsX*sizeof(double));
+						memcpy(histYAngleAxis,data->values,nAnglePixelsX*sizeof(double));
+						SetHistXAxisTitle("Angles");
+					}
+					pthread_mutex_unlock(&(last_image_complete_mutex));
+					break;
 				}
-				else{
-
-					lastImageNumber= currentFrame+1;
-					nAnglePixelsX = data->npoints;
-					histNBins = nAnglePixelsX;
-					nHists=1;
-					if(histXAngleAxis) delete [] histXAngleAxis; histXAngleAxis = new double[nAnglePixelsX];
-					if(histYAngleAxis) delete [] histYAngleAxis; histYAngleAxis = new double[nAnglePixelsX];
-					memcpy(histXAngleAxis,data->angles,nAnglePixelsX*sizeof(double));
-					memcpy(histYAngleAxis,data->values,nAnglePixelsX*sizeof(double));
-					SetHistXAxisTitle("Angles");
-				}
-				pthread_mutex_unlock(&(last_image_complete_mutex));
 			}
 			currentFrame++;
 			return 0;
@@ -616,7 +619,7 @@ int qDrawPlot::GetData(detectorData *data){
 				while(1){
 					if(!pthread_mutex_trylock(&(last_image_complete_mutex))){
 						//set title
-						SetPlotTitle(QString(data->fileName).section('/',-1));
+						plotTitle=QString(plotTitle_prefix)+QString(data->fileName).section('/',-1);
 						//variables
 						lastImageNumber= currentFrame+1;
 						//title
@@ -638,7 +641,7 @@ int qDrawPlot::GetData(detectorData *data){
 				while(1){
 					if(!pthread_mutex_trylock(&(last_image_complete_mutex))){
 						//set title
-						SetPlotTitle(QString(data->fileName).section('/',-1));
+						plotTitle=QString(plotTitle_prefix)+QString(data->fileName).section('/',-1);
 						//variables
 						if(currentFileIndex == minPixelsY) currentScanDivLevel = 0;
 						lastImageNumber= currentFrame+1;
@@ -661,7 +664,7 @@ int qDrawPlot::GetData(detectorData *data){
 				while(1){
 					if(!pthread_mutex_trylock(&(last_image_complete_mutex))){
 						//set title
-						SetPlotTitle(QString(data->fileName).section('/',-1));
+						plotTitle=QString(plotTitle_prefix)+QString(data->fileName).section('/',-1);
 						//get scanvariable0
 						int ci = 0, p = 0; double cs0 = 0 , cs1 = 0;
 						fileIOStatic::getVariablesFromFileName(string(data->fileName), ci, p, cs0, cs1);
@@ -691,7 +694,7 @@ int qDrawPlot::GetData(detectorData *data){
 			while(1){
 				if(!pthread_mutex_trylock(&(last_image_complete_mutex))){
 					//set title
-					SetPlotTitle(QString(data->fileName).section('/',-1));
+					plotTitle=QString(plotTitle_prefix)+QString(data->fileName).section('/',-1);
 					//get scanvariable1
 					int ci = 0, p = 0; double cs0 = 0 , cs1 = 0;
 					fileIOStatic::getVariablesFromFileName(string(data->fileName), ci, p, cs0, cs1);
@@ -720,7 +723,7 @@ int qDrawPlot::GetData(detectorData *data){
 		//normal measurement or 1d scans
 		if(!pthread_mutex_trylock(&(last_image_complete_mutex))){
 			//set title
-			SetPlotTitle(QString(data->fileName).section('/',-1));
+			plotTitle=QString(plotTitle_prefix)+QString(data->fileName).section('/',-1);
 			char temp_title[2000];
 			// only if you got the lock, do u need to remember lastimagenumber to plot
 			lastImageNumber= currentFrame+1;
@@ -1285,7 +1288,7 @@ int qDrawPlot::UpdateTrimbitPlot(bool fromDetector,bool Histogram){
 			//data
 			memcpy(histYAxis[0],histTrimbits,nPixelsX*sizeof(double));
 			//title
-			boxPlot->setTitle("Trimbits Plot - Data Graph");
+			boxPlot->setTitle("Trimbits_Plot_Data Graph");
 			plot1D->SetXTitle("Channel Number");
 			plot1D->SetYTitle("Trimbits");
 			//set plot parameters
@@ -1314,7 +1317,7 @@ int qDrawPlot::UpdateTrimbitPlot(bool fromDetector,bool Histogram){
 
 			//delete [] histTrimbits;
 			//title
-			boxPlot->setTitle("Trimbits Plot - Histogram");
+			boxPlot->setTitle("Trimbits_Plot_Histogram");
 			plot1D->SetXTitle("Trimbits");
 			plot1D->SetYTitle("Frequency");
 			//set plot parameters

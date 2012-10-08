@@ -53,8 +53,8 @@ public:
 	/** gets the file index to the measurement tab*/
 	int GetFileIndex(){return currentFileIndex;};
 
-	/**	sets plot Title */
-	void SetPlotTitle(QString title)      	{plotTitle = title;}
+	/**	sets plot Title prefix*/
+	void SetPlotTitlePrefix(QString title)      	{plotTitle_prefix = title;}
 	/**	sets 1D X Axis Title */
 	void SetHistXAxisTitle(QString title)   	{histXAxisTitle = title;}
 	/**	sets 1D Y Axis Title */
@@ -338,6 +338,8 @@ std::string  histTitle[MAX_1DPLOTS];
 std::string  imageTitle;
 /** plot Title */
 QString plotTitle;
+/** plot Title prefix */
+QString plotTitle_prefix;
 /**	1D or 2D */
 unsigned int plot_in_scope;
 /**	Number of Pixels in X Axis */

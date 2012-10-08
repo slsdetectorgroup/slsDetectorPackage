@@ -81,6 +81,7 @@ void qTabMeasurement::SetupWidgetWindow(){
 
 	//file write enabled/disabled
 	chkFile->setChecked(myDet->enableWriteToFile());
+	dispFileName->setEnabled(myDet->enableWriteToFile());
 
 	//creating the icons for the buttons
 	iconStart = new QIcon(":/icons/images/start.png");

@@ -91,7 +91,7 @@ void qDetectorMain::SetUpWidgetWindow(){
 	centralwidget->setLayout(layoutTabs);
 
 // plot setup
-	myPlot = new qDrawPlot(dockWidgetPlot,myDet);
+	myPlot = new qDrawPlot(dockWidgetPlot,myDet);cout<<"DockPlot ready"<<endl;
 	dockWidgetPlot->setWidget(myPlot);
 
 //tabs setup

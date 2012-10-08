@@ -23,7 +23,7 @@ using namespace std;
 
 const QString qTabPlot::modeNames[5]={"None","Energy Scan","Threshold Scan","Trimbits Scan","Custom Script Scan"};
 
-QString qTabPlot::defaultPlotTitle("Measurement");
+QString qTabPlot::defaultPlotTitle("");
 QString qTabPlot::defaultHistXAxisTitle("Channel Number");
 QString qTabPlot::defaultHistYAxisTitle("Counts");
 QString qTabPlot::defaultImageXAxisTitle("Pixel");
@@ -95,8 +95,8 @@ void qTabPlot::SetupWidgetWindow(){
 	dispZMax->setValidator(new QDoubleValidator(dispZMax));
 
 	//default titles
-	dispTitle->setText(defaultPlotTitle);
-	myPlot->SetPlotTitle(defaultPlotTitle);
+	dispTitle->setText("");
+	myPlot->SetPlotTitlePrefix("");
 	dispXAxis->setText(defaultHistXAxisTitle);
 	dispYAxis->setText(defaultHistYAxisTitle);
 	myPlot->SetHistXAxisTitle(defaultHistXAxisTitle);
@@ -261,7 +261,7 @@ void qTabPlot::EnablePersistency(bool enable){
 void qTabPlot::SetTitles(){
 	// Plot Title
 	if(dispTitle->isEnabled())
-		myPlot->SetPlotTitle(dispTitle->text());
+		myPlot->SetPlotTitlePrefix(dispTitle->text());
 	// X Axis
 	if(dispXAxis->isEnabled()){
 		if(isOneD)	myPlot->SetHistXAxisTitle(dispXAxis->text());
@@ -285,8 +285,8 @@ void qTabPlot::EnableTitles(){
 	// Plot Title
 	dispTitle->setEnabled(chkTitle->isChecked());
 	if(!chkTitle->isChecked()){
-		myPlot->SetPlotTitle(defaultPlotTitle);
-		dispTitle->setText(defaultPlotTitle);
+		myPlot->SetPlotTitlePrefix("");
+		dispTitle->setText("");
 	}
 	// X Axis
 	dispXAxis->setEnabled(chkXAxis->isChecked());
@@ -588,8 +588,6 @@ void qTabPlot::EnablingNthFrameFunction(bool enable){
 void qTabPlot::SetScanArgument(){
 
 	//as default from histogram and default titles are set here if scanbox is disabled
-	dispTitle->setText(defaultPlotTitle);
-	myPlot->SetPlotTitle(defaultPlotTitle);
 	if(isOrginallyOneD){
 		dispXAxis->setText(defaultHistXAxisTitle);
 		dispYAxis->setText(defaultHistYAxisTitle);
@@ -611,10 +609,6 @@ void qTabPlot::SetScanArgument(){
 	//if scans(1D or 2D)
 	if(boxScan->isEnabled()){
 		//setting the title according to the scans
-		QString mainTitle = QString(" Level 0 : ") + modeNames[myDet->getScanMode(0)] +
-				QString("   |   Level 1 : ") + modeNames[myDet->getScanMode(1)] + QString("");
-		dispTitle->setText(mainTitle);
-		myPlot->SetPlotTitle(mainTitle);
 		Select1DPlot(isOrginallyOneD);
 		if(isOrginallyOneD) myPlot->Select1DPlot();
 		else 				myPlot->Select2DPlot();
@@ -624,10 +618,6 @@ void qTabPlot::SetScanArgument(){
 		//else if(myDet->getPositions()){
 		//if scan, change title
 		if((myDet->getScanMode(0))||(myDet->getScanMode(1))){
-			QString mainTitle = QString(" Level 0 : ") + modeNames[myDet->getScanMode(0)] +
-					QString("   |   Level 1 : ") + modeNames[myDet->getScanMode(1)] + QString("");
-			dispTitle->setText(mainTitle);
-			myPlot->SetPlotTitle(mainTitle);
 		}
 		dispXAxis->setText("Angles");
 		myPlot->SetHistXAxisTitle("Angles");

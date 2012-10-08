@@ -119,7 +119,7 @@ void qTabDataOutput::SetupWidgetWindow(){
 void qTabDataOutput::Initialization(){
 	//output dir
 	connect(dispOutputDir,		SIGNAL(editingFinished()), 	this, 	SLOT(setOutputDir()));
-	connect(btnOutputBrowse,	SIGNAL(clicked()), 						this, 	SLOT(browseOutputDir()));
+	connect(btnOutputBrowse,	SIGNAL(clicked()), 			this, 	SLOT(browseOutputDir()));
 	//flat field correction
 	connect(chkFlatField,		SIGNAL(toggled(bool)), 		this, 	SLOT(SetFlatField()));
 	connect(btnFlatField,		SIGNAL(clicked()), 			this, 	SLOT(BrowseFlatFieldPath()));
@@ -138,19 +138,22 @@ void qTabDataOutput::Initialization(){
 
 
 void qTabDataOutput::setOutputDir(){
+	disconnect(dispOutputDir,		SIGNAL(editingFinished()), 	this, 	SLOT(setOutputDir()));
+
 	QString path = dispOutputDir->text();
 
 	//gets rid of the end '/'s
-	disconnect(dispOutputDir,		SIGNAL(editingFinished()), 	this, 	SLOT(setOutputDir()));
 	while(path.endsWith('/')) path.chop(1);
 	dispOutputDir->setText(path);
-	connect(dispOutputDir,		SIGNAL(editingFinished()), 	this, 	SLOT(setOutputDir()));
+
+	//if(QFile::exists(path))
+
 
 	myDet->setFilePath(string(path.toAscii().constData()));
 #ifdef VERBOSE
 	cout << "Output Directory changed to :"<<myDet->getFilePath() << endl;
 #endif
-
+	connect(dispOutputDir,		SIGNAL(editingFinished()), 	this, 	SLOT(setOutputDir()));
 }
 
 

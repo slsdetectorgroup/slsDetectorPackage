@@ -258,9 +258,9 @@ int angularConversionStatic::finalizeMerging(double *mp, double *mv, double *me,
    for (int ibin=0; ibin<nb; ibin++) {
      if (mm[ibin]>0) {
       	
-#ifdef VERBOSE 
-       cout << "finalize " << ibin << "  "<< mm[ibin] << " " << mp[ibin]<< mv[ibin] << me[ibin] << endl;
-#endif
+// #ifdef VERBOSE 
+//        cout << "finalize " << ibin << "  "<< mm[ibin] << " " << mp[ibin]<< mv[ibin] << me[ibin] << endl;
+// #endif
        mp[np]=mp[ibin]/mm[ibin];
        mv[np]=mv[ibin]/mm[ibin];
        me[np]=me[ibin]/mm[ibin];
@@ -323,9 +323,9 @@ int  angularConversionStatic::addToMerging(double *p1, double *v1, double *e1, d
 	me[ibin]+=v1[ip];
       mm[ibin]++;
 
-#ifdef VERBOSE
-      cout << "add " << ibin << "  "<< mm[ibin] << " " << mp[ibin]<< mv[ibin] << me[ibin] << endl;
-#endif
+// #ifdef VERBOSE
+//       cout << "add " << ibin << "  "<< mm[ibin] << " " << mp[ibin]<< mv[ibin] << me[ibin] << endl;
+// #endif
     } else
       return slsDetectorDefs::FAIL;
   }
@@ -371,9 +371,9 @@ int  angularConversionStatic::addPointToMerging(double p1, double v1, double e1,
 	me[ibin]+=v1;
       mm[ibin]++;
 
-#ifdef VERBOSE
-      cout << "add " << ibin << "  "<< mm[ibin] << " " << mp[ibin]<< mv[ibin] << me[ibin] << endl;
-#endif
+// #ifdef VERBOSE
+//       cout << "add " << ibin << "  "<< mm[ibin] << " " << mp[ibin]<< mv[ibin] << me[ibin] << endl;
+// #endif
     }  else
       return slsDetectorDefs::FAIL;
   

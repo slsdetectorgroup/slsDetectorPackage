@@ -7,7 +7,7 @@
 
 
 
-postProcessing::postProcessing(){							
+postProcessing::postProcessing(): expTime(NULL){							
   pthread_mutex_t mp1 = PTHREAD_MUTEX_INITIALIZER;
   mp=mp1;
   pthread_mutex_init(&mp, NULL);  
@@ -64,6 +64,9 @@ void postProcessing::processFrame(int *myData, int delflag) {
  
  
  fname=createFileName();
+ #ifdef VERBOSE
+ cout << "fname is " << fname << endl;
+#endif
  
  //Checking for write flag
  if(*correctionMask&(1<<WRITE_FILE)) {
@@ -80,9 +83,16 @@ void postProcessing::processFrame(int *myData, int delflag) {
    
 #endif
  } 
- if (rawDataReady)
+ if (rawDataReady) {
+#ifdef VERBOSE
+   cout << "raw data ready..." << endl;
+#endif
    rawDataReady(fdata,pRawDataArg);
- 
+#ifdef VERBOSE
+   cout << "done" << endl;
+#endif
+ }
+
  if (*correctionMask & ~(1<<WRITE_FILE))
    doProcessing(fdata,delflag, fname);
 
@@ -98,8 +108,18 @@ void postProcessing::processFrame(int *myData, int delflag) {
   if(*correctionMask&(1<<WRITE_FILE))
     IncrementFileIndex();
  
+#ifdef VERBOSE
+  cout << "findex incremented " << endl;
+#endif
   popDataQueue(); //remove the data from the queue
-  queuesize=dataQueueSize();
+#ifdef VERBOSE
+  cout << "Pop data queue " << *fileIndex << endl;
+#endif
+  
+  
+#ifdef VERBOSE
+  cout << "processing returning " << *fileIndex << endl;
+#endif
   
   
 }
@@ -108,6 +128,11 @@ void postProcessing::processFrame(int *myData, int delflag) {
 
 
 void postProcessing::doProcessing(double *lfdata, int delflag, string fname) {
+  
+#ifdef VERBOSE
+  cout << "do processing - data size is " << arraySize << endl;
+#endif
+
 
   double *ang=new double[arraySize];
   double *val=new double[arraySize];
@@ -115,12 +140,28 @@ void postProcessing::doProcessing(double *lfdata, int delflag, string fname) {
   int np;
   detectorData *thisData;
 
+#ifdef VERBOSE
+      cout << "arrays allocated " << endl;
+#endif
   int npos=getNumberOfPositions();
 
   string ext=".dat";
   
-    double t=(*expTime)*1E-9;
-    if (GetCurrentPositionIndex()<=1) {
+#ifdef VERBOSE
+  cout << "npos is "<< npos << endl;
+#endif
+
+  double t=0;
+
+  //  if (expTime)
+  //  t=(*expTime)*1E-9;
+  //else
+  //  cout << "no pointer to exptime" << endl;
+#ifdef VERBOSE
+  cout << "exptime is "<< t << endl;
+#endif
+
+  if (GetCurrentPositionIndex()<=1) {
 #ifdef VERBOSE
       cout << "init dataset" << endl;
 #endif
@@ -145,10 +186,12 @@ void postProcessing::doProcessing(double *lfdata, int delflag, string fname) {
 	pthread_mutex_lock(&mp);
 	fname=createFileName();
 	pthread_mutex_unlock(&mp);
-	
-	if(*correctionMask&(1<<WRITE_FILE))
-	  writeDataFile (fname+ext,np,ang, val, err,'f');
 
+
+	if(*correctionMask&(1<<WRITE_FILE)) {
+	  cout << "writing to file?!?!?" << endl;
+	  writeDataFile (fname+ext,np,ang, val, err,'f');
+	}
 	thisData=new detectorData(ang,val,err,getCurrentProgress(),(fname+ext).c_str(),np);
 
 	if (dataReady) {
@@ -310,21 +353,39 @@ int* postProcessing::dataQueueFront() {
 }
 int postProcessing::dataQueueSize() {
   int retval;
+  
+#ifdef VERBOSE
+  cout << "data queue size lock" << endl;
+#endif
+
+
   pthread_mutex_lock(&mp);
   retval=dataQueue.size();
   pthread_mutex_unlock(&mp);
+#ifdef VERBOSE
+  cout << "data queue size unlock" << endl;
+#endif
+
   return retval;
 }
 
 
 int* postProcessing::popDataQueue() {
   int *retval=NULL;
+#ifdef VERBOSE
+  cout << "Pop data queue lock" << endl;
+#endif
+
   pthread_mutex_lock(&mp);
   if( !dataQueue.empty() ) {
     retval=dataQueue.front();
     dataQueue.pop();
   }
+  queuesize=dataQueue.size();
   pthread_mutex_unlock(&mp);
+#ifdef VERBOSE
+  cout <<  "Pop data queue lock" << endl;
+#endif
   return retval;
 }
 

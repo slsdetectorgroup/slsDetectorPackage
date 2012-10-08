@@ -248,11 +248,18 @@ void  slsDetectorUtils::acquire(int delflag){
 
        // wait until data processing thread has finished the data
 
+#ifdef VERBOSE
+	   cout << "check data queue size " << endl;
+#endif
        while (dataQueueSize()){
+#ifdef VERBOSE
+	   cout << "AAAAAAAAA check data queue size " << endl;
+#endif
 	 usleep(100000);
        }
-       pthread_mutex_lock(&mp);
 
+
+       pthread_mutex_lock(&mp);
        if (*stoppedFlag==0) {
 	 executeAction(headerAfter);	 
 	 setLastIndex(*fileIndex);
@@ -489,8 +496,10 @@ double slsDetectorUtils::getCurrentProgress() {
 #ifdef VERBOSE
   cout << progressIndex << " / " << totalProgress << endl;
 #endif
-  return 100.*((double)progressIndex)/((double)totalProgress);
+  
+  double p=100.*((double)progressIndex)/((double)totalProgress);
   pthread_mutex_unlock(&mp);
+  return p;
 }
 
 

@@ -30,7 +30,7 @@ double* angularConversionStatic::convertAngles(double pos, int nch, int *chansPe
   angleConversionConstant *p=NULL;
   
   int ch0=0;
-  int chlast=chansPerMod[0];
+  int chlast=chansPerMod[0]-1;
   int nchmod=chansPerMod[0];
   p=angOff[imod];      
   if (mF[imod]==0)
@@ -42,7 +42,7 @@ double* angularConversionStatic::convertAngles(double pos, int nch, int *chansPe
 #ifdef VERBOSE
     //  cout << "ip " << ip << " ch0 " << ch0 << " chlast " << chlast << " imod " << imod << endl;
 #endif
-    if (ip>=chlast) {
+    if (ip>chlast) {
       imod++; 
       p=angOff[imod];      
       if (mF[imod]==0)
@@ -50,10 +50,10 @@ double* angularConversionStatic::convertAngles(double pos, int nch, int *chansPe
       else
 	enc=pos;
       
-      ch0=chlast;
+      ch0=chlast+1;
       nchmod=chansPerMod[imod];
       if (nchmod>0)
-	chlast+=nchmod;
+	chlast=ch0+nchmod-1;
     }
     
     if (p)
@@ -67,6 +67,72 @@ double* angularConversionStatic::convertAngles(double pos, int nch, int *chansPe
 		    angdir		  );
   }
   return ang;
+}
+
+double angularConversionStatic::convertAngle(double pos, int ich, int *chansPerMod, angleConversionConstant **angOff, int *mF, double fo, double go, int angdir) {
+
+  int imod=0;
+  double    ang;
+  double enc=0, trans=0;
+  angleConversionConstant *p=NULL;
+  
+  int ch0=0;
+  int chlast=chansPerMod[0]-1;
+  int nchmod=chansPerMod[0];
+
+  
+
+  while (ich>chlast) {
+    imod++;
+    ch0=chlast+1;
+    nchmod=chansPerMod[imod];
+    chlast=ch0+nchmod-1;
+  }
+  
+  p=angOff[imod];
+  
+
+
+  switch (mF[imod]) {
+  case 0:
+    enc=0;
+    trans=0;
+    break;
+  case 1:
+    enc=pos;
+    trans=0;
+    break;
+  case -1:
+    enc=-pos;
+    trans=0;
+    break;
+  case 2:
+    enc=0;
+    trans=pos;
+    break;
+  case -2:
+    enc=0;
+    trans=-pos;
+    break;
+  default:
+    enc=0;
+    trans=0;
+  }
+   
+
+    
+  if (p)
+    ang=angle(ich-ch0,				\
+	      enc,					\
+	      fo+go,					\
+	      p->r_conversion,				\
+	      p->center,				\
+	      p->offset,				\
+	      trans,					\
+	      angdir		  );
+  
+  return ang;
+  
 }
 
 
@@ -263,6 +329,53 @@ int  angularConversionStatic::addToMerging(double *p1, double *v1, double *e1, d
     } else
       return slsDetectorDefs::FAIL;
   }
+  
+
+  return slsDetectorDefs::OK;
+  
+}
+
+int  angularConversionStatic::addPointToMerging(double p1, double v1, double e1, double *mp, double *mv,double *me, int *mm,  double binsize,int nbins) {
+
+
+  double binmi=-180.;
+  int ibin=0;
+
+
+  if (mp==NULL) //can be changed if we want to use a fixed bin algorithm!
+    return slsDetectorDefs::FAIL;
+
+  if (mv==NULL)
+    return slsDetectorDefs::FAIL;
+  if (me==NULL)
+    return slsDetectorDefs::FAIL;
+  if (mm==NULL)
+    return slsDetectorDefs::FAIL;
+  
+  if (binsize<=0)
+    return slsDetectorDefs::FAIL;
+
+  if (nbins<=0)
+    return slsDetectorDefs::FAIL;
+  
+
+    ibin=(int)((p1-binmi)/binsize);
+   
+ 
+    if (ibin<nbins && ibin>=0) {
+      mp[ibin]+=p1;
+      mv[ibin]+=v1;
+      if (e1)
+	me[ibin]+=(e1*e1);
+      else
+	me[ibin]+=v1;
+      mm[ibin]++;
+
+#ifdef VERBOSE
+      cout << "add " << ibin << "  "<< mm[ibin] << " " << mp[ibin]<< mv[ibin] << me[ibin] << endl;
+#endif
+    }  else
+      return slsDetectorDefs::FAIL;
   
 
   return slsDetectorDefs::OK;

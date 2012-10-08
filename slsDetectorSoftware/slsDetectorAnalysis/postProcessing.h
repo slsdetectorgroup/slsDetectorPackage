@@ -226,7 +226,8 @@ s
 
   int GetCurrentPositionIndex(){ pthread_mutex_lock(&mp); int retval=getCurrentPositionIndex();  pthread_mutex_unlock(&mp); return retval;};
   void IncrementPositionIndex(){ pthread_mutex_lock(&mp); incrementPositionIndex();  pthread_mutex_unlock(&mp);};
-  void IncrementFileIndex(){ pthread_mutex_lock(&mp); incrementFileIndex();  pthread_mutex_unlock(&mp);};
+
+  void IncrementFileIndex(){ pthread_mutex_lock(&mp); incrementFileIndex();  pthread_mutex_unlock(&mp); cout << "findex unlock" << endl;};
   
   void ResetPositionIndex(){pthread_mutex_lock(&mp); resetPositionIndex();  pthread_mutex_unlock(&mp);};
 
@@ -243,8 +244,8 @@ s
 
   int positionFinished(int v=-1){pthread_mutex_lock(&mp); if (v>=0) posfinished=v; int retval=posfinished; pthread_mutex_unlock(&mp); return retval;};
 
-  double getCurrentPosition() {double p; pthread_mutex_lock(&mp); p=currentPosition; pthread_mutex_unlock(&mp); return p;}
-  int setCurrentPosition(double v) { pthread_mutex_lock(&mp); currentPosition=v; pthread_mutex_unlock(&mp); }
+  double getCurrentPosition() {double p; pthread_mutex_lock(&mp); p=currentPosition; pthread_mutex_unlock(&mp); return p;};
+  int setCurrentPosition(double v) { pthread_mutex_lock(&mp); currentPosition=v; pthread_mutex_unlock(&mp); return currentPosition;};
 
 
  protected:

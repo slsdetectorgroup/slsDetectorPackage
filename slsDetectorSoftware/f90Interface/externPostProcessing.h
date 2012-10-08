@@ -3,10 +3,6 @@
 
 
 #include "detectorData.h"
-#include "sls_detector_defs.h"
-#include "slsDetectorBase_Standalone.h"
-
-
 
 #include <string>
 
@@ -34,12 +30,9 @@ void calculate_flat_field(int *nMod, int *chPerMod, int *modMask,int *badChanMas
 
 
 
-class externPostProcessing :  public virtual slsDetectorBase1
+class externPostProcessing 
 
 {
-
-
-
 
  public:
   externPostProcessing(){};
@@ -50,11 +43,11 @@ class externPostProcessing :  public virtual slsDetectorBase1
  
 
 
- int finalizeDataset(double ang[], double val[], double err[]);
+ static int finalizeDataset(double ang[], double val[], double err[], int *np);
 
- int addFrame(double data[], double *pos, double *IO, double expTime, const char *filename, int *var=0);
+ static int addFrame(double data[], double *pos, double *IO, double expTime, const char *filename, int *var=0);
 
- int calculateFlatField(int* nModules, int badChannelMask[], double ffData[], double ffCoeff[], double ffErr[]);
+ static int calculateFlatField(int* nModules, int *chPerMod, int moduleMask[], int badChannelMask[], double ffData[], double ffCoeff[], double ffErr[]);
 
 
 

@@ -345,6 +345,8 @@ class angularConversion : public virtual slsDetectorBase, public angularConversi
    
    
 
+  double *sampleDisplacement;
+
   /**
      current position of the detector
   */
@@ -367,6 +369,8 @@ class angularConversion : public virtual slsDetectorBase, public angularConversi
   */
   int getCurrentPositionIndex() {return currentPositionIndex;};
   void incrementPositionIndex() {currentPositionIndex++;};
+  void resetPositionIndex() {currentPositionIndex=0;};
+
 
  
 
@@ -381,7 +385,6 @@ class angularConversion : public virtual slsDetectorBase, public angularConversi
   // int nMods;
   // int chansPerMod;
   // int moveFlag;
-
 
 
 

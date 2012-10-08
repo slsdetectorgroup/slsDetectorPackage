@@ -10,8 +10,7 @@
 #include  <sys/shm.h>
 
 using namespace std;
-
-slsDetectorUtils::slsDetectorUtils()   {
+slsDetectorUtils::slsDetectorUtils()  {
 
 
 #ifdef VERBOSE
@@ -34,9 +33,9 @@ slsDetectorUtils::slsDetectorUtils()   {
   cout << "done " << endl;
 #endif
 
+   expTime=timerValue+ACQUISITION_TIME;
 };
  
-
 
 
 
@@ -80,13 +79,36 @@ void  slsDetectorUtils::acquire(int delflag){
   
   
   
-  pthread_mutex_lock(&mp);
-  resetFinalDataQueue();
-  resetDataQueue();
-  jointhread=0;
-  queuesize=0;
-  posfinished=0;
-  pthread_mutex_unlock(&mp);
+  
+  setJoinThread(0);
+  positionFinished(0);
+
+
+
+
+  int nm=timerValue[MEASUREMENTS_NUMBER];
+  if (nm<1)
+    nm=1;
+
+  int  np=getNumberOfPositions();
+  if (np<1)
+    np=1;
+  
+  
+  int ns0=1;
+  if (*actionMask & (1 << MAX_ACTIONS)) {
+    ns0=getScanSteps(0);
+    if (ns0<1)
+      ns0=1;
+  }
+
+  int ns1=1;
+  if (*actionMask & (1 << (MAX_ACTIONS+1))) {
+    ns1=getScanSteps(1);
+    if (ns1<1)
+      ns1=1;
+  }
+
 
   if (*threadedProcessing) {
     startThread(delflag);
@@ -96,48 +118,21 @@ void  slsDetectorUtils::acquire(int delflag){
 #endif
 
 
-  int nm=1;
-
-  if (timerValue[MEASUREMENTS_NUMBER]>0)
-	nm=timerValue[MEASUREMENTS_NUMBER];
 
   for(int im=0;im<nm;im++) {
-
-
-
-
-
-
-
 
 #ifdef VERBOSE
     cout << " starting measurement "<< im << " of " << nm << endl;
 #endif
 
  //cout << "data thread started " << endl;
-  int np=1;
-  if (*numberOfPositions>0) 
-    np=*numberOfPositions;
-
-  int ns0=1;
-  if (*actionMask & (1 << MAX_ACTIONS)) {
-    ns0=nScanSteps[0];
-  }
-
-  if (ns0<1)
-    ns0=1;
-
-  int ns1=1;
-  if (*actionMask & (1 << (MAX_ACTIONS+1))) {
-    ns1=nScanSteps[1];
-  }
-
-  if (ns1<1)
-    ns1=1;
+ 
 
   //loop measurements
 
+  pthread_mutex_lock(&mp);
   setStartIndex(*fileIndex);
+  pthread_mutex_unlock(&mp);
  
   //cout << "action at start" << endl;
   if (*stoppedFlag==0) {
@@ -166,14 +161,14 @@ void  slsDetectorUtils::acquire(int delflag){
      } else
        break;
 
-     currentPositionIndex=0;
+     ResetPositionIndex();
      
      for (int ip=0; ip<np; ip++) {
        //   cout << "positions " << endl;
        if (*stoppedFlag==0) {
-	 if  (*numberOfPositions>0) {
+	 if  (getNumberOfPositions()>0) {
 	   moveDetector(detPositions[ip]);
-	   currentPositionIndex=ip+1;
+	   IncrementPositionIndex();
 #ifdef VERBOSE
 	   std::cout<< "moving to position" << std::endl;
 #endif
@@ -200,23 +195,15 @@ void  slsDetectorUtils::acquire(int delflag){
 
 	 executeAction(headerBefore);
 	 
-       if (*correctionMask&(1<< ANGULAR_CONVERSION)) {
-	 pthread_mutex_lock(&mp);
-	 currentPosition=getDetectorPosition(); 
-	 posfinished=0;
-	 pthread_mutex_unlock(&mp);
+       if (*correctionMask&(1<< ANGULAR_CONVERSION) || aclog || eclog) { 
+	 positionFinished(0);
+	 setCurrentPosition(getDetectorPosition());
        }
       
-       if (aclog) {
-	 if ((*correctionMask&(1<< ANGULAR_CONVERSION))==0) {
-	 pthread_mutex_lock(&mp);
-	 currentPosition=getDetectorPosition(); 
-	 posfinished=0;
-	 pthread_mutex_unlock(&mp);
-       }
-
-	 aclog->addStep(currentPosition, getCurrentFileName());
-       }
+      
+       if (aclog)
+	 aclog->addStep(getCurrentPosition(), getCurrentFileName());
+     
        
        if (eclog)
 	 eclog->addStep(setDAC(-1,THRESHOLD), getCurrentFileName());
@@ -229,16 +216,23 @@ void  slsDetectorUtils::acquire(int delflag){
        }
        
        startAndReadAll();
+#ifdef VERBOSE
+       cout << "returned! " << endl;
+#endif     
        
        if (*correctionMask&(1<< I0_NORMALIZATION)) {
 	 if (get_i0) 
 	   currentI0=get_i0(1,IOarg); // this is the correct i0!!!!!
        }
+#ifdef VERBOSE
+       cout << "pos finished? " << endl;
+#endif     
+
+       positionFinished(1);
        
-       pthread_mutex_lock(&mp);
-       posfinished=1;
-       pthread_mutex_unlock(&mp);
-       
+#ifdef VERBOSE
+       cout << "done! " << endl;
+#endif     
  
 	 
  	 if (*threadedProcessing==0){
@@ -254,15 +248,11 @@ void  slsDetectorUtils::acquire(int delflag){
 
        // wait until data processing thread has finished the data
 
-       pthread_mutex_lock(&mp);
-       while (queuesize){
-	 pthread_mutex_unlock(&mp);
+       while (dataQueueSize()){
 	 usleep(100000);
-	 pthread_mutex_lock(&mp);
-	 
        }
-       pthread_mutex_unlock(&mp);
-       
+       pthread_mutex_lock(&mp);
+
        if (*stoppedFlag==0) {
 	 executeAction(headerAfter);	 
 	 setLastIndex(*fileIndex);
@@ -270,7 +260,7 @@ void  slsDetectorUtils::acquire(int delflag){
 	 setLastIndex(*fileIndex);
 	 break;
        }
-     
+       pthread_mutex_unlock(&mp);
 
     
        if (*stoppedFlag) {
@@ -279,7 +269,9 @@ void  slsDetectorUtils::acquire(int delflag){
 #endif
 	 break;
        } else if (ip<(np-1)) {
+	 pthread_mutex_lock(&mp);
 	 *fileIndex=setStartIndex(); 
+	 pthread_mutex_unlock(&mp);
        }
      } // loop on position finished
      
@@ -296,7 +288,9 @@ void  slsDetectorUtils::acquire(int delflag){
 #endif
       break;
     } else if (is1<(ns1-1)) {
+      pthread_mutex_lock(&mp);
       *fileIndex=setStartIndex(); 
+      pthread_mutex_unlock(&mp);
     }
   } 
   
@@ -309,12 +303,16 @@ void  slsDetectorUtils::acquire(int delflag){
 #endif
     break;
   } else if (is0<(ns0-1)) {
-    *fileIndex=setStartIndex(); 
+    pthread_mutex_lock(&mp);
+    *fileIndex=setStartIndex();  
+    pthread_mutex_unlock(&mp);
   }
 
   } //end scan0 loop is0
 
-  *fileIndex=setLastIndex();
+  pthread_mutex_lock(&mp);
+  *fileIndex=setLastIndex();  
+  pthread_mutex_unlock(&mp);
   if (*stoppedFlag==0) {
     executeAction(stopScript);
   } else
@@ -335,9 +333,7 @@ void  slsDetectorUtils::acquire(int delflag){
 
   // waiting for the data processing thread to finish!
   if (*threadedProcessing) { 
-    pthread_mutex_lock(&mp);
-    jointhread=1;
-    pthread_mutex_unlock(&mp);
+    setJoinThread(1);
     pthread_join(dataProcessingThread, &status);
   }
  
@@ -349,16 +345,14 @@ void  slsDetectorUtils::acquire(int delflag){
    
    if (aclog)
      delete aclog;
-
+   
    if (eclog)
      delete eclog;
 
-
-
+   
+   
    if (acquisition_finished)
      acquisition_finished(getCurrentProgress(),getDetectorStatus(),acqFinished_p);
-
-
 
 }
 
@@ -491,17 +485,21 @@ int slsDetectorUtils::setBadChannelCorrection(string fname, int &nbadtot, int *b
 
 
 double slsDetectorUtils::getCurrentProgress() {
+  pthread_mutex_lock(&mp);
 #ifdef VERBOSE
   cout << progressIndex << " / " << totalProgress << endl;
 #endif
   return 100.*((double)progressIndex)/((double)totalProgress);
+  pthread_mutex_unlock(&mp);
 }
 
 
 
 void slsDetectorUtils::incrementProgress()  { 
+  pthread_mutex_lock(&mp);
   progressIndex++;							
-  cout << fixed << setprecision(2) << setw (6) << getCurrentProgress() << " \%";
+  cout << fixed << setprecision(2) << setw (6) << 100.*((double)progressIndex)/((double)totalProgress) << " \%";
+  pthread_mutex_unlock(&mp);
 #ifdef VERBOSE
     cout << endl;
 #else
@@ -838,115 +836,3 @@ int slsDetectorUtils::dumpDetectorSetup(string const fname, int level){
 } 
 
 
-// int slsDetectorUtils::setFlatFieldCorrectionFile(string fname){
-//   int tch=getTotalNumberOfChannels();
-
-
-
-//   double data[tch],  xmed[tch];
-//   double ffcoefficients[tch], fferrors[tch];
-//   int nmed=0;
-//   int idet=0, ichdet=-1;
-//   char ffffname[MAX_STR_LENGTH*2];
-//   int nbad=0, nch;
-//   int badlist[MAX_BADCHANS];
-//   int im=0;
-
-//  if (fname=="default") {
-//    fname=string(flatFieldFile);
-//  }
-//   if (fname=="") {
-// #ifdef VERBOSE
-//    std::cout<< "disabling flat field correction" << std::endl;
-// #endif
-//    (*correctionMask)&=~(1<<FLAT_FIELD_CORRECTION);
-//     //  strcpy(thisMultiDetector->flatFieldFile,"none");
-    
-//    setFlatFieldCorrection(NULL, NULL);
-//   } else { 
-
-// #ifdef VERBOSE
-//    std::cout<< "Setting flat field correction from file " << fname << std::endl;
-// #endif
-//    sprintf(ffffname,"%s/%s",flatFieldDir,fname.c_str());
-//    nch=readDataFile(string(ffffname),data);
-
-//    if (nch>tch)
-//      nch=tch;
-   
-//    if (nch>0) {
-//      strcpy(flatFieldFile,fname.c_str());
-     
-
-//      nbad=0;
-//      for (int ichan=0; ichan<nch; ichan++) {
-     
-//        if (data[ichan]>0) {
-// 	 /* add to median */
-// 	 im=0;
-// 	 while ((im<nmed) && (xmed[im]<data[ichan])) 
-// 	   im++;
-// 	  for (int i=nmed; i>im; i--) 
-// 	    xmed[i]=xmed[i-1];
-// 	  xmed[im]=data[ichan];
-// 	  nmed++;
-//        } else {
-// 	 if (nbad<MAX_BADCHANS) {
-// 	   badlist[nbad]=ichan;
-// 	   nbad++;
-// 	 }
-//        }
-//      }
-     
-	
-//      if (nmed>1 && xmed[nmed/2]>0) {
-// #ifdef VERBOSE
-//        std::cout<< "Flat field median is " << xmed[nmed/2] << " calculated using "<< nmed << " points" << std::endl;
-// #endif
-       
-//        thisMultiDetector->correctionMask|=(1<<FLAT_FIELD_CORRECTION);
-
-// 	// add to ff coefficients and errors of single detectors
-
-	  
-
-       
-//        for (int ichan=0; ichan<nch; ichan++) {
-	
-// 	 setFlatFieldCorrection(ffcoefficients, fferrors);
-	 
-// 	 if (data[ichan]>0) {
-// 	   ffcoefficients[ichan]=xmed[nmed/2]/data[ichan];
-// 	   fferrors[ichan]=ffcoefficients[ichan]*sqrt(data[ichan])/data[ichan];
-// 	  } else {
-// 	   ffcoefficients[ichan]=0.;
-// 	   fferrors[ichan]=1.;
-// 	 }
-	
-//        }
-       
-//        setFlatFieldCorrection(ffcoefficients, fferrors);
-       
-      
-//      } else {
-// 	std::cout<< "Flat field data from file " << fname << " are not valid (" << nmed << "///" << xmed[nmed/2] << std::endl;
-// 	thisMultiDetector->correctionMask&=~(1<<FLAT_FIELD_CORRECTION);
-// 	for (int i=0; i<thisMultiDetector->numberOfDetectors; i++) {
-// 	  if (detectors[i])
-// 	    detectors[i]->setFlatFieldCorrection(NULL, NULL);
-// 	}
-// 	return -1;
-//       }
-//    } else {
-//       std::cout<< "Flat field from file " << fname << " is not valid " << nch << std::endl;  
-//       thisMultiDetector->correctionMask&=~(1<<FLAT_FIELD_CORRECTION);
-//       for (int i=0; i<thisMultiDetector->numberOfDetectors; i++) {
-// 	if (detectors[i])
-// 	  detectors[i]->setFlatFieldCorrection(NULL, NULL);
-//       }
-//       return -1;
-//     } 
-//   }
-//   return thisMultiDetector->correctionMask&(1<<FLAT_FIELD_CORRECTION);
-// }
- 

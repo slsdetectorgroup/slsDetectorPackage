@@ -18,6 +18,9 @@
 #include <queue>
 #include <math.h>
 
+class postProcessingFuncs;
+
+
 
 using namespace std;
 
@@ -39,7 +42,7 @@ class postProcessing : public angularConversion, public fileIO, public badChanne
 
  public:
   postProcessing();
-  virtual ~postProcessing(){};
+  virtual ~postProcessing();
 
 
 
@@ -75,7 +78,6 @@ class postProcessing : public angularConversion, public fileIO, public badChanne
   */
   virtual int setBadChannelCorrection(string fname="")=0;
 
-  static int setBadChannelCorrection(ifstream &infile, int &nbad, int *badlist, int moff){int retval=readBadChannelCorrectionFile(infile,nbad,badlist); for (int ich=0; ich<nbad; ich++)    badlist[ich]=badlist[ich]+moff;	return retval;};
  
   /** 
       set bad channels correction
@@ -85,7 +87,7 @@ class postProcessing : public angularConversion, public fileIO, public badChanne
       \returns 0 if bad channel disabled, >0 otherwise
   */
   virtual int setBadChannelCorrection(string fname, int &nbad, int *badlist, int off=0)=0;
-
+  using badChannelCorrections::setBadChannelCorrection;
   
   /** 
       set bad channels correction
@@ -96,30 +98,7 @@ class postProcessing : public angularConversion, public fileIO, public badChanne
   */
   virtual int setBadChannelCorrection(int nch, int *chs, int ff=0)=0; 
   
-  /** 
-     flat field correct data
-     \param datain data
-     \param errin error on data (if<=0 will default to sqrt(datain)
-     \param dataout corrected data
-     \param errout error on corrected data
-     \param ffcoefficient flat field correction coefficient
-     \param fferr erro on ffcoefficient
-     \returns 0
-  */
-   static int flatFieldCorrect(double datain, double errin, double &dataout, double &errout, double ffcoefficient, double fferr);
 
-  /** 
-     rate correct data
-     \param datain data
-     \param errin error on data (if<=0 will default to sqrt(datain)
-     \param dataout corrected data
-     \param errout error on corrected data
-     \param tau dead time 9in ns)
-     \param t acquisition time (in ns)
-     \returns 0
-  */
-   static int rateCorrect(double datain, double errin, double &dataout, double &errout, double tau, double t);
- 
 
    int enableWriteToFile(int i=-1) {if (i>0) ((*correctionMask)|=(1<<WRITE_FILE)); else if (i==0) ((*correctionMask)&=~(1<< WRITE_FILE)); return (((*correctionMask)&(1<< WRITE_FILE ))>>WRITE_FILE) ;};
 
@@ -201,12 +180,20 @@ s
   */ 
   int* popDataQueue();
 
+  int* dataQueueFront();
+
+  int dataQueueSize();
+
   /**
    pops the data from thepostprocessed data queue
     \returns pointer to the popped data  or NULL if the queue is empty. 
     \sa  finalDataQueue
   */ 
   detectorData* popFinalDataQueue();
+
+
+  int checkJoinThread();
+  void setJoinThread(int v);
 
 
   /**
@@ -234,9 +221,14 @@ s
   virtual int flatFieldCorrect(double*, double*, double*, double*)=0;
 
 
+  virtual int getNMods()=0;
 
 
-
+  int GetCurrentPositionIndex(){ pthread_mutex_lock(&mp); int retval=getCurrentPositionIndex();  pthread_mutex_unlock(&mp); return retval;};
+  void IncrementPositionIndex(){ pthread_mutex_lock(&mp); incrementPositionIndex();  pthread_mutex_unlock(&mp);};
+  void IncrementFileIndex(){ pthread_mutex_lock(&mp); incrementFileIndex();  pthread_mutex_unlock(&mp);};
+  
+  void ResetPositionIndex(){pthread_mutex_lock(&mp); resetPositionIndex();  pthread_mutex_unlock(&mp);};
 
 
   void registerDataCallback(int( *userCallback)(detectorData*, void*),  void *pArg) {dataReady = userCallback; pCallbackArg = pArg;};
@@ -246,7 +238,13 @@ s
   
 
 
+  virtual double getRateCorrectionTau()=0;
 
+
+  int positionFinished(int v=-1){pthread_mutex_lock(&mp); if (v>=0) posfinished=v; int retval=posfinished; pthread_mutex_unlock(&mp); return retval;};
+
+  double getCurrentPosition() {double p; pthread_mutex_lock(&mp); p=currentPosition; pthread_mutex_unlock(&mp); return p;}
+  int setCurrentPosition(double v) { pthread_mutex_lock(&mp); currentPosition=v; pthread_mutex_unlock(&mp); }
 
 
  protected:
@@ -257,7 +255,8 @@ s
 
   char *flatFieldDir;
   char *flatFieldFile;
-
+  
+  int64_t *expTime;
 
   /** mutex to synchronize main and data processing threads */
   pthread_mutex_t mp;
@@ -309,26 +308,22 @@ s
   */
   double currentI0;
   
+
+  int arraySize;
+
+
+ private:
   double *fdata;
-
-  // private:
-
-
-/*    virtual void incrementProgress()=0; */
-/*    virtual double getCurrentProgress()=0; */
-/*    virtual void incrementFileIndex()=0; */
-/*    virtual int setTotalProgress()=0; */
-
-
-/*    virtual double* decodeData(int *datain, double *fdata=NULL)=0; */
-/*   virtual int getTotalNumberOfChannels()=0; */
-
   
   int (*dataReady)(detectorData*,void*); 
   void *pCallbackArg; 
-
-  int (*rawDataReady)(double*,void*);
+  
+  int (*rawDataReady)(double*,void*); 
   void *pRawDataArg; 
+  
+  
+  postProcessingFuncs *ppFun;
+
 
 };
 

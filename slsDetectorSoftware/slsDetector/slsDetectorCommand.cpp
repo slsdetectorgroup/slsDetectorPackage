@@ -123,6 +123,15 @@ slsDetectorCommand::slsDetectorCommand(slsDetectorUtils *det)  {
   descrToFuncMap[i].m_pFuncName="moveflag" ;//
   descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdAngConv;
   i++;
+ 
+  descrToFuncMap[i].m_pFuncName="samplex" ;//
+  descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdAngConv;
+  i++;
+
+
+  descrToFuncMap[i].m_pFuncName="sampley" ;//
+  descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdAngConv;
+  i++;
 
 
 
@@ -1682,7 +1691,14 @@ string slsDetectorCommand::cmdAngConv(int narg, char *args[], int action){
 
   } else if  (string(args[0])==string("moveflag")) {
     c=MOVE_FLAG;
-  } else
+  } else if  (string(args[0])==string("samplex")) {
+    c=SAMPLE_X;
+  } else if  (string(args[0])==string("sampley")) {
+    c=SAMPLE_Y;
+  } 
+
+
+  else
     return string("could not decode angular conversion parameter ")+cmd;
 
 
@@ -1712,6 +1728,10 @@ string slsDetectorCommand::helpAngConv(int narg, char *args[], int action){
     t=4;
   } else  if (string(args[0])==string("binsize")) {
     t=8;
+  } else  if (string(args[0])==string("samplex")) {
+    t=16;
+  } else  if (string(args[0])==string("sampley")) {
+    t=32;
   }
   if (t&1) {
     if (action==GET_ACTION || action==HELP_ACTION)
@@ -1739,11 +1759,19 @@ string slsDetectorCommand::helpAngConv(int narg, char *args[], int action){
     if (action==PUT_ACTION || action==HELP_ACTION)
       os << string("binsize f\t  sets the bin size used for the angular conversion \n");
 
-
-
-
   }
-
+  if (t&16) {
+    if (action==GET_ACTION || action==HELP_ACTION)
+      os << string("samplex \t   gets the sample displacement in th direction parallel to the beam  \n");
+    if (action==PUT_ACTION || action==HELP_ACTION)
+      os << string("samplex f\t  sets the sample displacement in th direction parallel to the beam \n");
+  }
+ if (t&32) {
+    if (action==GET_ACTION || action==HELP_ACTION)
+      os << string("sampley \t   gets the sample displacement in the direction orthogonal to the beam  \n");
+    if (action==PUT_ACTION || action==HELP_ACTION)
+      os << string("sampley f\t  sets the sample displacement in the direction orthogonal to the beam \n");
+  }
 
   return os.str();
 }

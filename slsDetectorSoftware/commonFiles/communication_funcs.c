@@ -225,19 +225,7 @@ int acceptConnection(int socketDescriptor) {
        }
      }
    }
-   /*       for (j=0; j<maxfd+1; j++) { */
-/*          if (FD_ISSET(j, &tempset)) { */
-   
-/* 	   printf("%d is set!\n",j); */
-/* 	   ///////////executes the function!!!! */
-
-
-
-/*          }      // end if (FD_ISSET(j, &tempset)) */
-/*       }      // end for (j=0;...) */
-/*    }      // end else if (result > 0) */
-
-
+ 
 
 
    return file_des;
@@ -312,8 +300,8 @@ void exitServer(int socketDescriptor) {
   if (total_received>0)
     strcpy(thisClientIP,dummyClientIP);
   
-  if (strcmp(lastClientIP,"none")==0)
-    strcpy(lastClientIP,thisClientIP);
+  //if (strcmp(lastClientIP,"none")==0)
+  //strcpy(lastClientIP,thisClientIP);
   
   if (strcmp(lastClientIP,thisClientIP))
     differentClients=1;

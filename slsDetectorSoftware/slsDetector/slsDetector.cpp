@@ -1,6 +1,7 @@
 #include "slsDetector.h"
 #include "usersFunctions.h"
 #include "slsDetectorCommand.h"
+#include "postProcessingFuncs.h"
 #include  <sys/types.h>
 #include  <sys/shm.h>
 #include <sys/socket.h>
@@ -662,8 +663,9 @@ int slsDetector::initializeDetectorSize(detectorType type) {
    fileName=thisDetector->fileName;
    fileIndex=&thisDetector->fileIndex;
    moveFlag=&thisDetector->moveFlag;
-
+   sampleDisplacement=NULL;
    settingsFile=thisDetector->settingsFile;
+
 
    //  setAngularConversionPointer(thisDetector->angOff,&thisDetector->nMods, thisDetector->nChans*thisDetector->nChips);
 
@@ -900,10 +902,16 @@ int  slsDetector::receiveModule(sls_detector_module* myMod) {
 
 
 int slsDetector::setOnline(int off) {
+  int old=thisDetector->onlineFlag;
   if (off!=GET_ONLINE_FLAG) {
     thisDetector->onlineFlag=off;
-    if (thisDetector->onlineFlag==ONLINE_FLAG)
+    if (thisDetector->onlineFlag==ONLINE_FLAG) {
       setTCPSocket();
+      if (thisDetector->onlineFlag==ONLINE_FLAG && old==OFFLINE_FLAG) {
+	cout << "Detector connecting for the first time - updating!" << endl;
+	updateDetector();
+      }
+    }
   }
   return thisDetector->onlineFlag;
 }
@@ -911,7 +919,7 @@ int slsDetector::setOnline(int off) {
 
 
 string slsDetector::checkOnline() {
-  string retval = "";
+  string retval = string("");
   if(!controlSocket){
 	//this already sets the online/offline flag
     setTCPSocket();
@@ -927,7 +935,7 @@ string slsDetector::checkOnline() {
       thisDetector->onlineFlag=OFFLINE_FLAG;
       delete controlSocket;
       controlSocket=NULL;
-      retval = thisDetector->hostname;
+      retval = string(thisDetector->hostname);
 #ifdef VERBOSE
       std::cout<< "offline!" << std::endl;
 #endif
@@ -2854,7 +2862,17 @@ int slsDetector::updateDetectorNoWait() {
 	n = 	controlSocket->ReceiveDataOnly(&nm,sizeof(nm));
 	thisDetector->nMod[X]=nm;
 	n = 	controlSocket->ReceiveDataOnly( &nm,sizeof(nm));
-	thisDetector->nMod[Y]=nm;
+	/// Should be overcome at a certain point!
+
+	if (thisDetector->myDetectorType==MYTHEN) {
+	  thisDetector->nModMax[X]=nm;
+	  thisDetector->nModMax[Y]=1;
+	  thisDetector->nModsMax=thisDetector->nModMax[Y]*thisDetector->nModMax[X];
+	  thisDetector->nMod[Y]=1;
+	} else {
+	  thisDetector->nMod[Y]=nm;
+	}
+
 	thisDetector->nMods=thisDetector->nMod[Y]*thisDetector->nMod[X];
 	if (thisDetector->nModsMax<thisDetector->nMods) 
 	  thisDetector->nModsMax=thisDetector->nMods;
@@ -3342,8 +3360,13 @@ int64_t slsDetector::setTimer(timerIndex index, int64_t t){
 	  thisDetector->timerValue[index]=retval; 
 	} 
 	controlSocket->Disconnect();
-	if (ret==FORCE_UPDATE)
+	if (ret==FORCE_UPDATE) {
 	  updateDetector();
+#ifdef VERBOSE
+  std::cout<< "Updated!" << std::endl;
+#endif
+	  
+	}
       }
     }
   } else {
@@ -4035,7 +4058,7 @@ int slsDetector::setFlatFieldCorrection(string fname)
 
    char ffffname[MAX_STR_LENGTH*2];
    if (fname=="default") {
-     fname=string("thisDetector->flatFieldFile");
+     fname=string(thisDetector->flatFieldFile);
    }
 
    if (fname=="") {
@@ -4043,73 +4066,46 @@ int slsDetector::setFlatFieldCorrection(string fname)
      std::cout<< "disabling flat field correction" << std::endl;
 #endif
      thisDetector->correctionMask&=~(1<<FLAT_FIELD_CORRECTION);
-     //strcpy(thisDetector->flatFieldFile,"none");
+
+
+
    } else { 
 #ifdef VERBOSE
-   std::cout<< "Setting flat field correction from file " << fname << std::endl;
+     std::cout<< "Setting flat field correction from file " << fname << std::endl;
 #endif
-   sprintf(ffffname,"%s/%s",thisDetector->flatFieldDir,fname.c_str());
-   nch=readDataFile(string(ffffname),data);
-    if (nch>0) {
-      strcpy(thisDetector->flatFieldFile,fname.c_str());
-      for (int ichan=0; ichan<nch; ichan++) {
-	if (data[ichan]>0) {
-	  /* add to median */
-	  im=0;
-	  while ((im<nmed) && (xmed[im]<data[ichan])) 
-	    im++;
-	  for (int i=nmed; i>im; i--) 
-	    xmed[i]=xmed[i-1];
-	  xmed[im]=data[ichan];
-	  nmed++;
-        } else {
-	  //add the channel to the ff bad channel list
-	  if (thisDetector->nBadFF<MAX_BADCHANS) {
-	    thisDetector->badFFList[thisDetector->nBadFF]=ichan;
-	    (thisDetector->nBadFF)++;
-#ifdef VERBOSE
-	    std::cout<< "Channel " << ichan << " added to the bad channel list" << std::endl;
-#endif
-	  } else
-	    std::cout<< "Too many bad channels " << std::endl;
-	    
-	  }
-	}
-    
-      if (nmed>1 && xmed[nmed/2]>0) {
-#ifdef VERBOSE
-	std::cout<< "Flat field median is " << xmed[nmed/2] << " calculated using "<< nmed << " points" << std::endl;
-#endif
+
+     
+     sprintf(ffffname,"%s/%s",thisDetector->flatFieldDir,fname.c_str());
+     nch=readDataFile(string(ffffname),data);
+     if (nch>0) {
+       
+     //???? bad ff chans?
+       int nm=getNMods();
+       int chpm[nm];
+       int mMask[nm];
+       for (int i=0; i<nm; i++) {
+	 chpm[im]=getChansPerMod(im);
+	 mMask[im]=im;
+       }
+      
+       if ((postProcessingFuncs::calculateFlatField(&nm, chpm, mMask, badChannelMask, data, ffcoefficients, fferrors))) {
+	 strcpy(thisDetector->flatFieldFile,fname.c_str());
+	 
 	
-	thisDetector->correctionMask|=(1<<FLAT_FIELD_CORRECTION);
-	for (int ichan=0; ichan<nch; ichan++) {
-	  if (data[ichan]>0) {
-	    ffcoefficients[ichan]=xmed[nmed/2]/data[ichan];
-	    fferrors[ichan]=ffcoefficients[ichan]*sqrt(data[ichan])/data[ichan];
-	  } else {
-	    ffcoefficients[ichan]=0.;
-	    fferrors[ichan]=1.;
-	  }
-	} 
-	for (int ichan=nch; ichan<thisDetector->nMod[X]*thisDetector->nMod[Y]*thisDetector->nChans*thisDetector->nChips; ichan++) {
-	    ffcoefficients[ichan]=1.;
-	    fferrors[ichan]=0.;
-	}
+	 thisDetector->correctionMask|=(1<<FLAT_FIELD_CORRECTION);
+	 
+	 setFlatFieldCorrection(ffcoefficients, fferrors);
+	 
+       } 
+     }  else {
+       std::cout<< "Flat field from file " << fname << " is not valid " << nch << std::endl;
+      
+     }
+   }
 
-	fillBadChannelMask();
+   return thisDetector->correctionMask&(1<<FLAT_FIELD_CORRECTION);
 
-      } else {
-	std::cout<< "Flat field data from file " << fname << " are not valid (" << nmed << "///" << xmed[nmed/2] << std::endl;
-	return -1;
-      }
-    } else {
-      std::cout<< "Flat field from file " << fname << " is not valid " << nch << std::endl;
-	return -1;
-    } 
-  }
-  return thisDetector->correctionMask&(1<<FLAT_FIELD_CORRECTION);
 }
-
 
 
 
@@ -4129,7 +4125,11 @@ int slsDetector::setFlatFieldCorrection(double *corr, double *ecorr) {
     thisDetector->correctionMask|=(1<<FLAT_FIELD_CORRECTION);
   } else
    thisDetector->correctionMask&=~(1<<FLAT_FIELD_CORRECTION);
-  
+#ifdef VERBOSE
+  cout << "set ff corrections " << ((thisDetector->correctionMask)&(1<<FLAT_FIELD_CORRECTION)) << endl;
+#endif  
+
+
   return thisDetector->correctionMask&(1<<FLAT_FIELD_CORRECTION);
 }
 
@@ -4184,7 +4184,7 @@ int slsDetector::flatFieldCorrect(double* datain, double *errin, double* dataout
       } else {
 	e=errin[ichan];
       }
-      flatFieldCorrect(datain[ichan],e,dataout[ichan],eo,ffcoefficients[ichan],fferrors[ichan]);
+      postProcessingFuncs::flatFieldCorrect(datain[ichan],e,dataout[ichan],eo,ffcoefficients[ichan],fferrors[ichan]);
       if (errout)
 	errout[ichan]=eo;
 // #ifdef VERBOSE
@@ -4257,8 +4257,6 @@ double slsDetector::getRateCorrectionTau(){
 
 
 
-
-
 int slsDetector::getRateCorrection(){
 
   if (thisDetector->correctionMask&(1<<RATE_CORRECTION)) {
@@ -4286,7 +4284,7 @@ int slsDetector::rateCorrect(double* datain, double *errin, double* dataout, dou
       } else
 	e=errin[ichan];
       
-      rateCorrect(datain[ichan], e, dataout[ichan], errout[ichan], tau, t);
+      postProcessingFuncs::rateCorrect(datain[ichan], e, dataout[ichan], errout[ichan], tau, t);
     }
   }
   
@@ -4638,38 +4636,6 @@ int slsDetector::getAngularConversion(int &direction,  angleConversionConstant *
  }
 
 
-
-
-
-
-
-
-
-
-
-
-// double* slsDetector::convertAngles(double pos) {
-//   int imod;
-//   double    *ang=new double[thisDetector->nChans*thisDetector->nChips*thisDetector->nMods];
-//   for (int ip=0; ip<thisDetector->nChans*thisDetector->nChips*thisDetector->nMods; ip++) {
-//     imod=ip/(thisDetector->nChans*thisDetector->nChips);
-//     ang[ip]=angle(ip%(thisDetector->nChans*thisDetector->nChips),\
-// 		  pos,							\
-// 		  thisDetector->fineOffset+thisDetector->globalOffset,	\
-// 		  thisDetector->angOff[imod].r_conversion,		\
-// 		  thisDetector->angOff[imod].center,			\
-// 		  thisDetector->angOff[imod].offset,			\
-// 		  thisDetector->angOff[imod].tilt,			\
-// 		  thisDetector->angDirection
-// 		  );
-//   }
-//   return ang;
-// }
-
-
-
-
-
 int slsDetector:: writeAngularConversion(string fname) {
 
   return writeAngularConversion(fname, thisDetector->nMods, thisDetector->angOff);
@@ -4843,12 +4809,7 @@ int slsDetector::readConfigurationFile(string const fname){
     string ans;
     string str;
     ifstream infile;
-    //    int iargval;
-    // int interrupt=0;
     char *args[1000];
-//     for (int ia=0; ia<100; ia++) {
-//       args[ia]=new char[1000];
-//     }
     
     string sargname, sargval;
     int iline=0;

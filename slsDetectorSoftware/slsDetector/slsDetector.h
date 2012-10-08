@@ -11,7 +11,7 @@
 #include "angleConversionConstant.h"
 #include "MySocketTCP.h"
 
-
+#include "angleConversionConstant.h";
 
 
 /**
@@ -243,6 +243,7 @@ typedef  struct sharedSlsDetector {
     char serverMAC[MAX_STR_LENGTH];
     /** online flag - is set if the receiver is connected, unset if socket connection is not possible  */
     int receiverOnlineFlag;
+
 
 } sharedSlsDetector;
 

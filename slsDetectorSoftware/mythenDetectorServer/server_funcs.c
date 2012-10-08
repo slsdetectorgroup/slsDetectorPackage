@@ -2640,7 +2640,12 @@ int send_update(int file_des) {
  
   n = sendDataOnly(file_des,lastClientIP,sizeof(lastClientIP));
   n = sendDataOnly(file_des,&nModX,sizeof(nModX));
-  n = sendDataOnly(file_des,&nModY,sizeof(nModY));
+  // n = sendDataOnly(file_des,&nModY,sizeof(nModY));
+  //sends back max modules instead of nmodulesY!
+
+  thr = getNModBoard();
+  sendDataOnly(file_des,&thr,sizeof(thr));
+
   n = sendDataOnly(file_des,&dynamicRange,sizeof(dynamicRange));
   n = sendDataOnly(file_des,&dataBytes,sizeof(dataBytes));
   t=setSettings(GET_SETTINGS);

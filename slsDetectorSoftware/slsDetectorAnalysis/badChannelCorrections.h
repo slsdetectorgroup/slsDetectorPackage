@@ -45,6 +45,13 @@ class badChannelCorrections{
       }									\
     }									\
     return nbad;  };
+
+
+  static int setBadChannelCorrection(ifstream &infile, int &nbad, int *badlist, int moff){ \
+    int retval=readBadChannelCorrectionFile(infile,nbad,badlist);	\
+    for (int ich=0; ich<nbad; ich++)    badlist[ich]=badlist[ich]+moff; \
+    return retval;							\
+  };
   
  protected:
   

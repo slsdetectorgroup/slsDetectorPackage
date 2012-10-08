@@ -23,26 +23,25 @@ int externPostProcessing::InitDataset(int *nModules,int *chPerMod,int moduleMask
  {
  
  init_dataset(nModules,chPerMod,moduleMask,badChans,ffcoeff,fferr,tDead,angRadius,angOffset,angCentre,totalOffset,binSize,sampleX,sampleY);
- 
  return 0;
  
  }
 
-int externPostProcessing::finalizeDataset(double ang[], double val[], double err[])
+int externPostProcessing::finalizeDataset(double ang[], double val[], double err[], int *np)
 {
-cout<<"Finalize Dataset"<<endl;
-return 0;
+  finalize_dataset(ang, val, err, np);
+  return 0;
 };
 
 
-int addFrame(double data[], double *pos, double *IO, double expTime, const char *filename, int *var=0)
+int addFrame(double data[], double *pos, double *IO, double *expTime, const char *filename, int *var)
 {
-cout<<"Do Processing"<<endl;
-return 0;
+  add_frame(data, pos, i0, expTime, filename, var);
+  return 0;
 };
 
-int calculateFlatField(int* nModules, int badChannelMask[], double ffData[], double ffCoeff[], double ffErr[])
+int calculateFlatField(int* nModules, int *chPerMod, int modMask[], int badChanMask[], double data[], double ffCoeff[], double ffErr[])
 {
-cout<<"Outputs Flat Field Coefficient and errors from the input data"<<endl;
-return 0;
+  calculate_flat_field(nModules, chPerMod, modMask, badChanMask, data, ffCoeff, ffErr); 
+  return 0;
 };

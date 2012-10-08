@@ -4,6 +4,10 @@
 class angleConversionConstant {
 
  public:
+  
+  angleConversionConstant(){};
+  angleConversionConstant(double c, double r, double o, double t){center=c; r_conversion=r; offset=o; tilt=t;};
+
 //typedef struct  {
   double center;  /**< center of the module (channel at which the radius is perpendicular to the module surface) */
   double ecenter; /**< error in the center determination */
@@ -20,7 +24,7 @@ class angleConversionConstant {
   double getOffset(){return offset;};
   double getTilt(){return tilt;};
   
-  int setAngConvConstant(angleConversionConstant *acc) {\
+  void setAngConvConstant(angleConversionConstant *acc) {\
     center=acc->center;					\
     ecenter=acc->ecenter;				\
     r_conversion=acc->r_conversion;			\

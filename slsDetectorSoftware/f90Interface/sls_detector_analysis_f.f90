@@ -106,10 +106,10 @@ end subroutine finalizedataset
 
 
 
-subroutine addframe(data, pos, i0, fname, var) bind(c, name='add_frame')
+subroutine addframe(data, pos, i0, exptime, fname, var) bind(c, name='add_frame')
 IMPLICIT NONE
 real(C_DOUBLE), intent(IN) :: data(totalnumberofchannels)
-real(C_DOUBLE), intent(IN) :: pos, i0, var
+real(C_DOUBLE), intent(IN) :: pos, i0, exptime, var
 character(kind=c_char), dimension(*), intent(IN) :: fname
 integer :: l
 integer :: i
@@ -131,6 +131,9 @@ print*,pos
 
 print*,'I0: '
 print*,i0
+
+print*,'Exposure time: '
+print*,exptime
 
 print*,'Var: '
 print*,var

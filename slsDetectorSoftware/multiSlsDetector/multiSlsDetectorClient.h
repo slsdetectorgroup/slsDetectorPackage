@@ -34,17 +34,20 @@ class multiSlsDetectorClient  {
     char *c;						      \
     char cmd[100];					      \
     if (action==slsDetectorDefs::PUT_ACTION && argc<2) {		\
-      cout << "Wrong usage - should be: "<< argv[0] << "[id-][pos:]channel arg" << endl; \
+      cout << "Wrong usage - should be: "<< argv[0] <<			\
+	"[id-][pos:]channel arg" << endl;				\
       cout << endl;							\
       return;								\
+      if (del) delete myDetector;					\
     };
     if (action==slsDetectorDefs::GET_ACTION && argc<1) {		\
-      cout << "Wrong usage - should be: "<< argv[0] << "[id-][pos:]channel arg" << endl; \
+      cout << "Wrong usage - should be: "<< argv[0] <<			\
+	"[id-][pos:]channel arg" << endl;				\
       cout << endl;							\
-
+      if (del) delete myDetector;					\
       return;								\
     };									\
-    if (myDetector==NULL) {
+    if (myDetector==NULL) {						\
       iv=sscanf(argv[0],"%d-%s",&id, cmd);				\
       if (iv==2 && id>=0) {						\
 	myDetector=new multiSlsDetector(id);				\
@@ -52,8 +55,8 @@ class multiSlsDetectorClient  {
 	cout << id << "-" ;						\
       } else {								\
 	myDetector=new multiSlsDetector();				\
-      };
-      del=1;
+      };								\
+      del=1;								\
     }									\
     iv=sscanf(argv[0],"%d:%s",&pos, cmd);				\
     if (iv==2 && pos>=0) {						\

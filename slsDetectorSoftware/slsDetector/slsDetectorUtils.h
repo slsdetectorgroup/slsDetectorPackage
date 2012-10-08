@@ -50,11 +50,9 @@ using namespace std;
    (used in the PSi command line interface)
 */
 
-//class postProcessing;
 
 class slsDetectorUtils :  public slsDetectorActions, public postProcessing {
 
-//public postProcessing
 
  public:
   
@@ -599,7 +597,7 @@ class slsDetectorUtils :  public slsDetectorActions, public postProcessing {
   detectorSettings *currentSettings;
   int *currentThresholdEV;
 
-  
+
   int totalProgress;
 	      		  
   int progressIndex;

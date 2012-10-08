@@ -116,7 +116,26 @@ class angularConversionStatic
       \returns OK or FAIL
   */
 
-   static int  addToMerging(double *p1, double *v1, double *e1, double *mp, double *mv,double *me, int *mm, int nchans, double binsize,int nb, int *badChanMask );
+   static int  addToMerging(double *p1, double *v1, double *e1, double *mp, double *mv,double *me, int *mm, int nchans, double binsize,int nb, int *badChanMask=NULL);
+  
+
+  /** 
+      merge dataset
+      \param p1 angular positions of dataset
+      \param v1 data
+      \param e1 errors
+      \param mp already merged postions
+      \param mv already merged data
+      \param me already merged errors (squared sum)
+      \param mm multiplicity of merged arrays
+      \param nchans number of channels
+      \param binsize size of angular bin
+      \param nb number of angular bins
+      \param badChanMask badchannelmask (if NULL does not correct for bad channels)
+      \returns OK or FAIL
+  */
+
+   static int  addPointToMerging(double p1, double v1, double e1, double *mp, double *mv,double *me, int *mm, double binsize, int nb);
    
 
    /**
@@ -138,6 +157,8 @@ class angularConversionStatic
   */
 
   double* convertAngles(double pos, int nch, int *chansPerMod, angleConversionConstant **angOff, int *mF, double fo, double go, int angdir);
+
+  double convertAngle(double pos, int ich, int *chansPerMod, angleConversionConstant **angOff, int *mF, double fo, double go, int angdir);
 
 
 

@@ -14,6 +14,7 @@ ID:         $Id$
 #include "slsDetector.h"
 #include "multiSlsDetectorCommand.h"
 #include "multiSlsDetectorClient.h"
+#include "postProcessingFuncs.h"
 #include "usersFunctions.h"
 #include  <sys/types.h>
 #include  <sys/ipc.h>
@@ -205,40 +206,12 @@ multiSlsDetector::multiSlsDetector(int id) :  slsDetectorUtils(), shmId(-1)
   for (int i=thisMultiDetector->numberOfDetectors; i<MAXDET; i++)
     detectors[i]=NULL;
 
-
+  
 
    /** modifies the last PID accessing the detector system*/
   thisMultiDetector->lastPID=getpid();
 
 
-//    getPointers(&thisMultiDetector->stoppedFlag,				\
-// 	       &thisMultiDetector->threadedProcessing,			\
-// 	       &thisMultiDetector->actionMask,				\
-// 	       thisMultiDetector->actionScript,				\
-// 	       thisMultiDetector->actionParameter,			\
-// 	       thisMultiDetector->nScanSteps,				\
-// 	       thisMultiDetector->scanMode,				\
-// 	       thisMultiDetector->scanScript,				\
-// 	       thisMultiDetector->scanParameter,			\
-// 	       thisMultiDetector->scanSteps,				\
-// 	       thisMultiDetector->scanPrecision,			\
-// 	       &thisMultiDetector->numberOfPositions,			\
-// 	       thisMultiDetector->detPositions,				\
-// 	       thisMultiDetector->angConvFile,				\
-// 	       &thisMultiDetector->correctionMask,			\
-// 	       &thisMultiDetector->binSize,				\
-// 	       &thisMultiDetector->fineOffset,				\
-// 	       &thisMultiDetector->globalOffset,			\
-// 	       &thisMultiDetector->angDirection,			\
-// 	       thisMultiDetector->flatFieldDir,				\
-// 	       thisMultiDetector->flatFieldFile,			\
-// 	       thisMultiDetector->badChanFile,				\
-// 	       thisMultiDetector->timerValue,				\
-// 	       &thisMultiDetector->currentSettings,			\
-// 	       &thisMultiDetector->currentThresholdEV,			\
-// 	       thisMultiDetector->filePath,				\
-// 	       thisMultiDetector->fileName,				\
-// 	       &thisMultiDetector->fileIndex);
 
   
 
@@ -272,6 +245,10 @@ multiSlsDetector::multiSlsDetector(int id) :  slsDetectorUtils(), shmId(-1)
    fileIndex=&thisMultiDetector->fileIndex;
    moveFlag=NULL;
 
+   sampleDisplacement=thisMultiDetector->sampleDisplacement;
+
+   getNMods();
+   getMaxMods();
 
 }
 
@@ -337,7 +314,9 @@ int multiSlsDetector::addSlsDetector(int id, int pos) {
  
   thisMultiDetector->numberOfChannels+=detectors[pos]->getTotalNumberOfChannels();
   thisMultiDetector->maxNumberOfChannels-=detectors[j]->getMaxNumberOfChannels();
- 
+  getMaxMods();
+  getNMods();
+
 #ifdef VERBOSE
   cout << "Detector added " << thisMultiDetector->numberOfDetectors<< endl;
 
@@ -376,6 +355,11 @@ string multiSlsDetector::setHostname(const char* name, int pos){
       }
     }
   }
+#ifdef VERBOSE
+  cout << "-----------------------------set online!" << endl;
+#endif
+  setOnline(ONLINE_FLAG);
+
   return getHostname(pos);
 }
 
@@ -583,8 +567,10 @@ int multiSlsDetector::addSlsDetector(const char *name, int pos) {
     cout << "Creating detector " << id << " of type "  << getDetectorType(t) << endl;
 #endif
     s=new slsDetector(t, id);
-    if (online)
+    if (online) {
       s->setTCPSocket(name);
+      setOnline(ONLINE_FLAG);
+    }
     delete s;
   }
 #ifdef VERBOSE
@@ -871,7 +857,8 @@ slsDetectorDefs::synchronizationMode multiSlsDetector::setSynchronization(synchr
 
 
 int multiSlsDetector::setOnline(int off) {
-  
+  int retdet;
+
   if (off!=GET_ONLINE_FLAG) {
     thisMultiDetector->onlineFlag=off;
     for (int i=0; i<thisMultiDetector->numberOfDetectors; i++) {
@@ -1182,11 +1169,6 @@ int* multiSlsDetector::getDataFromDetector() {
 #ifdef VERBOSE
 	cout << "Detector " << id << " returned " << n << " bytes " << endl;
 #endif
-	//	memcpy(p,retdet,n);
-	//#ifdef VERBOSE
-	//cout << "Copied to pointer "<< p  << endl;
-	//#endif
-	//	delete [] retdet;
       } else {
 	nodatadet=id;
 #ifdef VERBOSE
@@ -1296,7 +1278,7 @@ int* multiSlsDetector::readAll(){
   //#else
   // std::cout << std::endl; 
 #endif
-  return dataQueue.front(); // check what we return!
+  return dataQueueFront(); // check what we return!
 
 };
 
@@ -1337,7 +1319,7 @@ int* multiSlsDetector::startAndReadAll(){
   //#else
   // std::cout << std::endl; 
 #endif
-  return dataQueue.front(); // check what we return!
+  return dataQueueFront(); // check what we return!
 
   
 };
@@ -1637,6 +1619,13 @@ double* multiSlsDetector::decodeData(int *datain, double *fdata) {
 
 
 
+
+
+
+
+
+
+
 int multiSlsDetector::setFlatFieldCorrection(string fname){
   double data[thisMultiDetector->numberOfChannels],  xmed[thisMultiDetector->numberOfChannels];
   double ffcoefficients[thisMultiDetector->numberOfChannels], fferrors[thisMultiDetector->numberOfChannels];
@@ -1647,12 +1636,18 @@ int multiSlsDetector::setFlatFieldCorrection(string fname){
   int badlist[MAX_BADCHANS];
   int im=0;
 
- if (fname=="default") {
-   fname=string(thisMultiDetector->flatFieldFile);
- }
+  if (fname=="default") {
+    fname=string(thisMultiDetector->flatFieldFile);
+  }	
+  
+
+  thisMultiDetector->correctionMask&=~(1<<FLAT_FIELD_CORRECTION);
+  
+  
+  
   if (fname=="") {
 #ifdef VERBOSE
-   std::cout<< "disabling flat field correction" << std::endl;
+    std::cout<< "disabling flat field correction" << std::endl;
 #endif
     thisMultiDetector->correctionMask&=~(1<<FLAT_FIELD_CORRECTION);
     //  strcpy(thisMultiDetector->flatFieldFile,"none");
@@ -1662,118 +1657,41 @@ int multiSlsDetector::setFlatFieldCorrection(string fname){
     }
   } else { 
 #ifdef VERBOSE
-   std::cout<< "Setting flat field correction from file " << fname << std::endl;
+    std::cout<< "Setting flat field correction from file " << fname << std::endl;
 #endif
-   sprintf(ffffname,"%s/%s",thisMultiDetector->flatFieldDir,fname.c_str());
-   nch=readDataFile(string(ffffname),data);
-
-   if (nch>thisMultiDetector->numberOfChannels)
-     nch=thisMultiDetector->numberOfChannels;
-
-   if (nch>0) {
-      strcpy(thisMultiDetector->flatFieldFile,fname.c_str());
-     
-
-
-      for (int ichan=0; ichan<nch; ichan++) {
-	if (detectors[idet]) {
-	  if (ichdet>=detectors[idet]->getTotalNumberOfChannels()) {
-	    ichdet=0;
-	    detectors[idet]->setBadChannelCorrection(nbad,badlist,1);
-	    idet++;
-	    nbad=0;
-	  } else
-	    ichdet++;
-	}
-
-	if (data[ichan]>0) {
-	  /* add to median */
-	  im=0;
-	  while ((im<nmed) && (xmed[im]<data[ichan])) 
-	    im++;
-	  for (int i=nmed; i>im; i--) 
-	    xmed[i]=xmed[i-1];
-	  xmed[im]=data[ichan];
-	  nmed++;
-        } else {
-	  if (nbad<MAX_BADCHANS) {
-	    badlist[nbad]=ichdet;
-	    nbad++;
-	  }
-	}
+    sprintf(ffffname,"%s/%s",thisMultiDetector->flatFieldDir,fname.c_str());
+    nch=readDataFile(string(ffffname),data);
+    
+    if (nch>thisMultiDetector->numberOfChannels)
+      nch=thisMultiDetector->numberOfChannels;
+    
+    if (nch>0) {
+      
+      //???? bad ff chans?
+      int nm=getNMods();
+      int chpm[nm];
+      int mMask[nm];
+      for (int i=0; i<nm; i++) {
+	chpm[im]=getChansPerMod(im);
+	mMask[im]=im;
       }
-      if (detectors[idet]) 
-	detectors[idet]->setBadChannelCorrection(nbad,badlist,1);
+      
+      if ((postProcessingFuncs::calculateFlatField(&nm, chpm, mMask, badChannelMask, data, ffcoefficients, fferrors))) {
+	strcpy(thisMultiDetector->flatFieldFile,fname.c_str());
 	
-      if (nmed>1 && xmed[nmed/2]>0) {
-#ifdef VERBOSE
-	std::cout<< "Flat field median is " << xmed[nmed/2] << " calculated using "<< nmed << " points" << std::endl;
-#endif
 	
 	thisMultiDetector->correctionMask|=(1<<FLAT_FIELD_CORRECTION);
-
-	// add to ff coefficients and errors of single detectors
-
-	  
-
-	idet=0; 
-	ichdet=0;
-	int detoff=0;
-
-	for (int ichan=0; ichan<nch; ichan++) {
-
-	  if (detectors[idet]) {
-	    if (ichdet>=detectors[idet]->getTotalNumberOfChannels()) {
-#ifdef VERBOSE
-	      cout << "Set flat field detector " << idet << "(offset "<< detoff << ")" << endl; 
-#endif
-	      detectors[idet]->setFlatFieldCorrection(ffcoefficients+detoff, fferrors+detoff);
-	      ichdet=0;//ichan;
-	      detoff=ichan;
-	      idet++;
-	    } 
-	  }
-
-
-	  if (data[ichan]>0) {
-	    ffcoefficients[ichan]=xmed[nmed/2]/data[ichan];
-	    fferrors[ichan]=ffcoefficients[ichan]*sqrt(data[ichan])/data[ichan];
-	  } else {
-	    ffcoefficients[ichan]=0.;
-	    fferrors[ichan]=1.;
-	  }
-	  ichdet++;
-	}
-	if (detectors[idet]) {
-#ifdef VERBOSE
-	      cout << "**Set flat field detector " << idet << "(offset "<< detoff << ")" <<  endl; 
-#endif
-	  detectors[idet]->setFlatFieldCorrection(ffcoefficients+detoff, fferrors+detoff);
-	}
-      } else {
-	std::cout<< "Flat field data from file " << fname << " are not valid (" << nmed << "///" << xmed[nmed/2] << std::endl;
-	thisMultiDetector->correctionMask&=~(1<<FLAT_FIELD_CORRECTION);
-	for (int i=0; i<thisMultiDetector->numberOfDetectors; i++) {
-	  if (detectors[i])
-	    detectors[i]->setFlatFieldCorrection(NULL, NULL);
-	}
-	return -1;
-      }
-   } else {
-      std::cout<< "Flat field from file " << fname << " is not valid " << nch << std::endl;  
-      thisMultiDetector->correctionMask&=~(1<<FLAT_FIELD_CORRECTION);
-      for (int i=0; i<thisMultiDetector->numberOfDetectors; i++) {
-	if (detectors[i])
-	  detectors[i]->setFlatFieldCorrection(NULL, NULL);
-      }
-      return -1;
-    } 
+	
+	setFlatFieldCorrection(ffcoefficients, fferrors);
+	
+      } 
+    } else {
+      std::cout<< "Flat field from file " << fname << " is not valid " << nch << std::endl;
+    }
+    
   }
   return thisMultiDetector->correctionMask&(1<<FLAT_FIELD_CORRECTION);
 }
- 
-
-
 
 
 int multiSlsDetector::setFlatFieldCorrection(double *corr, double *ecorr) {
@@ -1807,6 +1725,7 @@ int multiSlsDetector::setFlatFieldCorrection(double *corr, double *ecorr) {
 int multiSlsDetector::getFlatFieldCorrection(double *corr, double *ecorr) {
   int ichdet=0;
   double *p, *ep;
+  int ff=1, dff;
   for (int idet=0; idet<thisMultiDetector->numberOfDetectors; idet++) {
     if (detectors[idet]) {
       if (corr!=NULL)
@@ -1817,11 +1736,13 @@ int multiSlsDetector::getFlatFieldCorrection(double *corr, double *ecorr) {
 	ep=ecorr+ichdet;
       else
 	ep=NULL;
-      detectors[idet]->getFlatFieldCorrection(p, ep);
+      dff=detectors[idet]->getFlatFieldCorrection(p, ep);
+      if (dff==0)
+	ff=0;
       ichdet+=detectors[idet]->getTotalNumberOfChannels();
     }
   }
-  return 0;
+  return ff;
 }
 
 
@@ -1845,6 +1766,10 @@ int multiSlsDetector::getNMods(){
       nm+=detectors[idet]->getNMods();
     }
   }
+#ifdef VERBOSE
+  cout << "total number of modules is " << nm << endl;
+#endif
+
   return nm;
 }
 

@@ -155,6 +155,10 @@ class multiSlsDetector  : public slsDetectorUtils {
     double binSize;
 
 
+
+    //X and Y displacement
+    double sampleDisplacement[2]; 
+
      /** number of positions at which the detector should acquire  */
     int numberOfPositions;
      /** list of encoder positions at which the detector should acquire */

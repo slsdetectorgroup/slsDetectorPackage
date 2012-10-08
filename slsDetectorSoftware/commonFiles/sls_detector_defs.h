@@ -497,7 +497,9 @@ enum angleConversionParameter {
   GLOBAL_OFFSET, /**< global offset of the diffractometer */
   FINE_OFFSET, /**< fine offset of the diffractometer */
   BIN_SIZE, /**< angular bin size */
-  MOVE_FLAG /**< wether the detector moves with the motor or not in a multi detector system */
+  MOVE_FLAG, /**< wether the detector moves with the motor or not in a multi detector system */
+  SAMPLE_X, /**< sample displacement in the beam direction */
+  SAMPLE_Y /**< sample displacement orthogonal to the beam */
 }; 
 
 //typedef struct  {

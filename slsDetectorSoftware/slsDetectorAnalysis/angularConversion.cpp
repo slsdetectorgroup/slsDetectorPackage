@@ -190,6 +190,18 @@ double angularConversion::setAngularConversionParameter(angleConversionParameter
       return *moveFlag;
     }
     return -1;
+  case SAMPLE_X:
+    if (sampleDisplacement) {
+      sampleDisplacement[X]=v;
+      return sampleDisplacement[X];
+    }
+    return 0;
+  case SAMPLE_Y:
+    if (sampleDisplacement) {
+      sampleDisplacement[Y]=v;
+      return sampleDisplacement[Y];
+    }
+    return 0;
   default:
     return 0;
   }

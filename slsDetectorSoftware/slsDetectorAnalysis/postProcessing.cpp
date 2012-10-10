@@ -99,7 +99,7 @@ void postProcessing::processFrame(int *myData, int delflag) {
    doProcessing(fdata,delflag, fname);
  } else 
    if (dataReady) {
-     thisData=new detectorData(NULL,fdata,NULL,getCurrentProgress(),(fname+string(".raw")).c_str(),getTotalNumberOfChannels()); 
+     thisData=new detectorData(fdata,NULL,NULL,getCurrentProgress(),(fname+string(".raw")).c_str(),getTotalNumberOfChannels()); 
      dataReady(thisData, pCallbackArg);
      delete thisData;
      fdata=NULL;
@@ -208,7 +208,7 @@ void postProcessing::doProcessing(double *lfdata, int delflag, string fname) {
 	  
 
 	if (dataReady) {
-	  thisData=new detectorData(ang,val,err,getCurrentProgress(),(fname+ext).c_str(),np);
+	  thisData=new detectorData(val,err,ang,getCurrentProgress(),(fname+ext).c_str(),np);
 	  dataReady(thisData, pCallbackArg);
 	  delete thisData;
 	  ang=NULL;

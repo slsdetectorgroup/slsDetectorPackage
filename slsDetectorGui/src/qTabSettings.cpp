@@ -77,16 +77,7 @@ void qTabSettings::SetupDetectorSettings(){
 			index[i] = model->index(i,	comboSettings->modelColumn(), comboSettings->rootModelIndex());
 			item[i] = model->itemFromIndex(index[i]);
 		}
-		// Enabling/Disabling depending on the detector type
-		//	Undefined and uninitialized are enabled for all detectors
-		if(sett==slsDetectorDefs::UNDEFINED)
-			item[(int)Uninitialized]->setEnabled(false);
-		else if(sett==slsDetectorDefs::UNINITIALIZED)
-			item[(int)Undefined]->setEnabled(false);
-		else{
-			item[(int)Uninitialized]->setEnabled(false);
-			item[(int)Undefined]->setEnabled(false);
-		}
+
 		switch(detType){
 		case slsDetectorDefs::MYTHEN:
 			item[(int)Standard]->setEnabled(true);
@@ -116,7 +107,7 @@ void qTabSettings::SetupDetectorSettings(){
 			item[(int)VeryHighGain]->setEnabled(true);
 			break;
 		default:
-			qDefs::Message(qDefs::CRITICAL,"Unknown detector type.","Settings");
+			qDefs::Message(qDefs::CRITICAL,"Unknown detector type. Exiting GUI.","Settings");
 			exit(-1);
 			break;
 		}
@@ -124,8 +115,7 @@ void qTabSettings::SetupDetectorSettings(){
 		// This should not happen -only if the server and gui has a mismatch
 		// on which all modes are allowed in detectors
 		if(!(item[(int)sett]->isEnabled())){
-			qDefs::Message(qDefs::CRITICAL,"Unknown Detector Settings retrieved from detector. "
-					"Exiting GUI.","Settings");
+			qDefs::Message(qDefs::CRITICAL,"Unknown Detector Settings retrieved from detector. Exiting GUI.","Settings");
 #ifdef VERBOSE
 			cout << "ERROR:  Unknown Detector Settings retrieved from detector." << endl;
 #endif
@@ -152,30 +142,22 @@ void qTabSettings::Initialization(){
 //-------------------------------------------------------------------------------------------------------------------------------------------------
 
 void qTabSettings::setSettings(int index){
-	// The first time settings is changed from undefined or uninitialized to a proper setting,
-	// then undefined/uninitialized should be disabled
-	if(item[(int)Undefined]->isEnabled()){
-		//Do not disable it if this wasnt selected again by mistake
-		if(index!=(int)Undefined)
-			item[(int)Undefined]->setEnabled(false);
-	}else if(item[(int)Uninitialized]->isEnabled()){
-		//Do not disable it if this wasnt selected again by mistake
-		if(index!=(int)Uninitialized)
-			item[(int)Uninitialized]->setEnabled(false);
+	//dont set it if settings is set to undefined or uninitialized
+	if((index==Undefined)||(index==Uninitialized)){
+		qDefs::Message(qDefs::WARNING,"Cannot change settings to Undefined or Uninitialized.","Settings");
+		disconnect(comboSettings, 		SIGNAL(currentIndexChanged(int)),	this, SLOT(setSettings(int)));
+		comboSettings->setCurrentIndex((int)myDet->getSettings());
+		connect(comboSettings, 		SIGNAL(currentIndexChanged(int)),	this, SLOT(setSettings(int)));
 	}
-	slsDetectorDefs::detectorSettings sett = myDet->setSettings((slsDetectorDefs::detectorSettings)index);
-#ifdef VERBOSE
-	cout << "Settings have been set to " << myDet->slsDetectorBase::getDetectorSettings(sett) << endl;
-#endif
-	if((detType==slsDetectorDefs::GOTTHARD)||(detType==slsDetectorDefs::AGIPD)){
-		lblThreshold->setEnabled(false);
-		spinThreshold->setEnabled(false);
-	}else{//mythen or eiger
-		if((index==Undefined)||(index==Uninitialized)){
 
-			lblThreshold->setEnabled(false);
-			spinThreshold->setEnabled(false);
-		}else{
+	else{
+		slsDetectorDefs::detectorSettings sett = myDet->setSettings((slsDetectorDefs::detectorSettings)index);
+	#ifdef VERBOSE
+		cout << "Settings have been set to " << myDet->slsDetectorBase::getDetectorSettings(sett) << endl;
+	#endif
+
+		//threshold
+		if((detType==slsDetectorDefs::MYTHEN)||(detType==slsDetectorDefs::EIGER)){
 			lblThreshold->setEnabled(true);
 			spinThreshold->setEnabled(true);
 			SetEnergy();
@@ -183,8 +165,6 @@ void qTabSettings::setSettings(int index){
 			if(expertMode)	emit UpdateTrimbitSignal(0);
 		}
 	}
-
-
 }
 
 //-------------------------------------------------------------------------------------------------------------------------------------------------
@@ -263,15 +243,6 @@ void qTabSettings::Refresh(){
 	cout  << endl << "**Updating Settings Tab" << endl;
 #endif
 
-	// Settings
-#ifdef VERBOSE
-	cout  << "Getting settings" << endl;
-#endif
-	//changin the combo settings also plots the trimbits for mythen and eiger, so disconnect
-	disconnect(comboSettings, 		SIGNAL(currentIndexChanged(int)),	this, SLOT(setSettings(int)));
-	SetupDetectorSettings();//comboSettings->setCurrentIndex(myDet->getSettings());
-	connect(comboSettings, 		SIGNAL(currentIndexChanged(int)),	this, SLOT(setSettings(int)));
-
 
 	// Number of Modules
 #ifdef VERBOSE
@@ -292,11 +263,20 @@ void qTabSettings::Refresh(){
 	default:	comboDynamicRange->setCurrentIndex(0);	break;
 	}
 
-	if((detType==slsDetectorDefs::GOTTHARD)||(detType==slsDetectorDefs::AGIPD)){
-		lblThreshold->setEnabled(false);
-		spinThreshold->setEnabled(false);
-	}else{
-		if((comboSettings->currentIndex()==Undefined)||(comboSettings->currentIndex()==Uninitialized)){
+
+	// Settings
+#ifdef VERBOSE
+	cout  << "Getting settings" << endl;
+#endif
+	disconnect(comboSettings, 		SIGNAL(currentIndexChanged(int)),	this, SLOT(setSettings(int)));
+	comboSettings->setCurrentIndex((int)myDet->getSettings());
+	connect(comboSettings, 		SIGNAL(currentIndexChanged(int)),	this, SLOT(setSettings(int)));
+
+
+	//threshold
+	int sett = comboSettings->currentIndex();
+	if((detType==slsDetectorDefs::MYTHEN)||(detType==slsDetectorDefs::EIGER)){
+		if((sett==Undefined)||(sett==Uninitialized)){
 			lblThreshold->setEnabled(false);
 			spinThreshold->setEnabled(false);
 		}else{
@@ -308,6 +288,7 @@ void qTabSettings::Refresh(){
 			SetEnergy();
 		}
 	}
+
 
 #ifdef VERBOSE
 	cout  << "**Updated Settings Tab" << endl << endl;

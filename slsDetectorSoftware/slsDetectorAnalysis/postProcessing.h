@@ -221,13 +221,16 @@ s
   virtual int flatFieldCorrect(double*, double*, double*, double*)=0;
 
 
+  virtual int fillModuleMask(int *mM)=0;
+
   virtual int getNMods()=0;
 
 
   int GetCurrentPositionIndex(){ pthread_mutex_lock(&mp); int retval=getCurrentPositionIndex();  pthread_mutex_unlock(&mp); return retval;};
   void IncrementPositionIndex(){ pthread_mutex_lock(&mp); incrementPositionIndex();  pthread_mutex_unlock(&mp);};
 
-  void IncrementFileIndex(){ pthread_mutex_lock(&mp); incrementFileIndex();  pthread_mutex_unlock(&mp); cout << "findex unlock" << endl;};
+  void IncrementFileIndex(){ pthread_mutex_lock(&mp);  incrementFileIndex();  pthread_mutex_unlock(&mp); };
+  int GetFileIndex(){ pthread_mutex_lock(&mp); int i=*fileIndex;  pthread_mutex_unlock(&mp); return i;};
   
   void ResetPositionIndex(){pthread_mutex_lock(&mp); resetPositionIndex();  pthread_mutex_unlock(&mp);};
 
@@ -324,6 +327,19 @@ s
   
   
   postProcessingFuncs *ppFun;
+  detectorData *thisData;
+  
+
+  double *ang;
+  double *val;
+  double *err;
+
+
+
+
+
+
+
 
 
 };

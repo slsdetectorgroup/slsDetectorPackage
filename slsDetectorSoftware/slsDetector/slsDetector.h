@@ -1452,8 +1452,7 @@ typedef  struct sharedSlsDetector {
   	  /returns OK
   */
   int updateReceiver();
-
-
+  int fillModuleMask(int *mM);
  protected:
  
 

@@ -42,8 +42,9 @@ int postProcessingFuncs::finalizeDataset(double *ang, double *val, double *err, 
 
   for (int ip=0; ip<(*np); ip++) {
 
-    if (mp)
-      ang[ip]=mp[ip];
+    if (ang) 
+      if (mp)
+	ang[ip]=mp[ip];
 
     if (mv)
       val[ip]=mv[ip]*totalI0;
@@ -89,9 +90,11 @@ int postProcessingFuncs::addFrame(double *data, double *pos, double *I0, double 
     else
       eout=0;
 
-    //ratecorrect
-    
+
     if (tDead) {
+#ifdef VERBOSE
+    cout << "ppFuncs ratecorrect" << endl;
+#endif
       rateCorrect(vin, ein, vout, eout, tDead, *expTime);
       vin=vout;
       ein=eout;
@@ -99,6 +102,9 @@ int postProcessingFuncs::addFrame(double *data, double *pos, double *I0, double 
       //ffcorrect
     
     if (ffCoeff) {
+#ifdef VERBOSE
+      cout << "ppFuncs ffcorrect" << endl;
+#endif
       if (ffErr)
 	e=ffErr[ich];
       else
@@ -109,23 +115,40 @@ int postProcessingFuncs::addFrame(double *data, double *pos, double *I0, double 
 
     //i0correct
     if (i0>0) {
+#ifdef VERBOSE
+      cout << "ppFuncs i0 norm" << endl;
+#endif
       vout/=i0;
       eout/=i0;
     }
       
-    if (badChannelMask)
+    if (badChannelMask) {
+#ifdef VERBOSE
+      cout << "ppFuncs badchans" << endl;
+#endif
       if (badChannelMask[ich])
 	continue;
+    }
     if (nBins) {
       //angconv
       
+#ifdef VERBOSE
+      cout << "ppFuncs angconv" << endl;
+#endif
       //check module mask?!?!?!?
       
 
       p1=convertAngle(*pos,ich,chansPerMod,angConv,moduleMask,totalOffset,0,angDir);
 
+#ifdef VERBOSE
+      cout << "ppFuncs merge" << endl;
+#endif
       addPointToMerging(p1,vout,eout,mp,mv,me,mm, binSize, nBins);
     } else {
+#ifdef VERBOSE
+      cout << "ppFuncs merge" << endl;
+#endif
+      //mp[ich]=ich;
       mv[ich]+=vout;
       me[ich]+=eout*eout;
     }

@@ -142,7 +142,10 @@ class fileIOStatic  {
 
    static  int  writeDataFile(string fname, int nch, double *data, double *err=NULL, double *ang=NULL, char dataformat='f'){ \
      ofstream outfile;							\
-     if (data==NULL)    return slsDetectorDefs::FAIL;			\
+     if (data==NULL)    {						\
+       cout << "No data to write!" << endl;				\
+       return slsDetectorDefs::FAIL;					\
+     }									\
      outfile.open (fname.c_str(),ios_base::out);			\
      if (outfile.is_open())   {						\
        writeDataFile(outfile, nch, data, err, ang, dataformat, 0);	\
@@ -167,8 +170,10 @@ class fileIOStatic  {
    */
    static  int writeDataFile(ofstream &outfile, int nch, double *data, double *err=NULL, double *ang=NULL, char dataformat='f', int offset=0){ \
      int idata;								\
-     if (data==NULL)							\
+     if (data==NULL) {							\
+       cout << "No data to write!" << endl;				\
        return slsDetectorDefs::FAIL;					\
+     }									\
      for (int ichan=0; ichan<nch; ichan++) {				\
        if (ang==NULL) {							\
 	 outfile << ichan+offset << " ";				\

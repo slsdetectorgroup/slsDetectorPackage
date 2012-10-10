@@ -238,6 +238,9 @@ multiSlsDetector::multiSlsDetector(int id) :  slsDetectorUtils(), shmId(-1)
    flatFieldFile=thisMultiDetector->flatFieldFile;
    badChanFile=thisMultiDetector->badChanFile;
    timerValue=thisMultiDetector->timerValue;
+
+   expTime=&timerValue[ACQUISITION_TIME];
+
    currentSettings=&thisMultiDetector->currentSettings;
    currentThresholdEV=&thisMultiDetector->currentThresholdEV;
    filePath=thisMultiDetector->filePath;
@@ -1675,8 +1678,9 @@ int multiSlsDetector::setFlatFieldCorrection(string fname){
 	chpm[im]=getChansPerMod(im);
 	mMask[im]=im;
       }
-      
-      if ((postProcessingFuncs::calculateFlatField(&nm, chpm, mMask, badChannelMask, data, ffcoefficients, fferrors))) {
+      fillModuleMask(mMask);
+
+      if ((postProcessingFuncs::calculateFlatField(&nm, chpm, mMask, badChannelMask, data, ffcoefficients, fferrors))>=0) {
 	strcpy(thisMultiDetector->flatFieldFile,fname.c_str());
 	
 	
@@ -1684,7 +1688,8 @@ int multiSlsDetector::setFlatFieldCorrection(string fname){
 	
 	setFlatFieldCorrection(ffcoefficients, fferrors);
 	
-      } 
+      } else
+	std::cout<< "Calculated flat field from file " << fname << " is not valid " << nch << std::endl;
     } else {
       std::cout<< "Flat field from file " << fname << " is not valid " << nch << std::endl;
     }
@@ -1692,6 +1697,25 @@ int multiSlsDetector::setFlatFieldCorrection(string fname){
   }
   return thisMultiDetector->correctionMask&(1<<FLAT_FIELD_CORRECTION);
 }
+
+int multiSlsDetector::fillModuleMask(int *mM) {
+  int imod=0, off=0;
+  if (mM) {
+    for (int i=0; i<thisMultiDetector->numberOfDetectors; i++) {
+      if (detectors[i]) {
+	for (int im=0; im<detectors[i]->getNMods(); im++) {
+	  mM[imod]=im+off;
+	  imod++;
+	}
+	off+=detectors[i]->getMaxMods();
+      }
+      
+      
+    }
+  }
+  return getNMods();
+}
+
 
 
 int multiSlsDetector::setFlatFieldCorrection(double *corr, double *ecorr) {

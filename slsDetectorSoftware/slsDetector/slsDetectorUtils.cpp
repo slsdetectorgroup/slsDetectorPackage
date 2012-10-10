@@ -33,7 +33,6 @@ slsDetectorUtils::slsDetectorUtils()  {
   cout << "done " << endl;
 #endif
 
-   expTime=timerValue+ACQUISITION_TIME;
 };
  
 
@@ -62,7 +61,7 @@ void  slsDetectorUtils::acquire(int delflag){
 
 
 
-  if ((*correctionMask&(1<< ANGULAR_CONVERSION)) || (*correctionMask&(1<< I0_NORMALIZATION)) || getActionMode(angCalLog) || (getScanMode(0)==positionScan)|| (getScanMode(0)==positionScan)) {
+  if ((*correctionMask&(1<< ANGULAR_CONVERSION)) || (*correctionMask&(1<< I0_NORMALIZATION)) || getActionMode(angCalLog) || (getScanMode(0)==positionScan)|| (getScanMode(1)==positionScan)) {
     if (connectChannels==0)
       if (connect_channels) {
 	connect_channels(CCarg);
@@ -176,8 +175,10 @@ void  slsDetectorUtils::acquire(int delflag){
        } else
 	 break;
        
-
+       
+       pthread_mutex_lock(&mp);
        createFileName();
+       pthread_mutex_unlock(&mp);
 
        if (*stoppedFlag==0) {
 	 executeAction(scriptBefore);

@@ -108,7 +108,7 @@ class fileIO :  public fileIOStatic, public virtual slsDetectorBase  {
   \returns OK or FAIL if it could not write the file or data=NULL
   
   */
-   int writeDataFile(ofstream &outfile, double *data, double *err=NULL, double *ang=NULL, char dataformat='f', int nch=-1, int offset=0);
+   virtual int writeDataFile(ofstream &outfile, double *data, double *err=NULL, double *ang=NULL, char dataformat='f', int nch=-1, int offset=0);
   
 
    /**
@@ -126,7 +126,7 @@ class fileIO :  public fileIOStatic, public virtual slsDetectorBase  {
       \param offset start channel number
       \returns OK or FAIL if it could not write the file or data=NULL  
   */
-  int writeDataFile(ofstream &outfile, int *data, int offset=0);
+  virtual int writeDataFile(ofstream &outfile, int *data, int offset=0);
   
 
 
@@ -145,7 +145,7 @@ class fileIO :  public fileIOStatic, public virtual slsDetectorBase  {
       \param offset start channel number
       \returns OK or FAIL if it could not write the file or data=NULL  
   */
-  int writeDataFile(ofstream &outfile, short int *data, int offset=0);
+  virtual int writeDataFile(ofstream &outfile, short int *data, int offset=0);
 
 
   /**
@@ -208,7 +208,7 @@ class fileIO :  public fileIOStatic, public virtual slsDetectorBase  {
  protected:
 
 
-    void incrementFileIndex() { (*fileIndex)++;};
+  void incrementFileIndex() { (*fileIndex)++; };
 
     string getCurrentFileName(){return currentFileName;};
 

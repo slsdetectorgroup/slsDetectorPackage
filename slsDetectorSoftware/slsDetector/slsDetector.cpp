@@ -657,6 +657,8 @@ int slsDetector::initializeDetectorSize(detectorType type) {
    flatFieldFile=thisDetector->flatFieldFile;
    badChanFile=thisDetector->badChanFile;
    timerValue=thisDetector->timerValue;
+   expTime=&timerValue[ACQUISITION_TIME];
+
    currentSettings=&thisDetector->currentSettings;
    currentThresholdEV=&thisDetector->currentThresholdEV;
    filePath=thisDetector->filePath;
@@ -4087,8 +4089,9 @@ int slsDetector::setFlatFieldCorrection(string fname)
 	 chpm[im]=getChansPerMod(im);
 	 mMask[im]=im;
        }
+      fillModuleMask(mMask);
       
-       if ((postProcessingFuncs::calculateFlatField(&nm, chpm, mMask, badChannelMask, data, ffcoefficients, fferrors))) {
+       if ((postProcessingFuncs::calculateFlatField(&nm, chpm, mMask, badChannelMask, data, ffcoefficients, fferrors))>=0) {
 	 strcpy(thisDetector->flatFieldFile,fname.c_str());
 	 
 	
@@ -4107,7 +4110,13 @@ int slsDetector::setFlatFieldCorrection(string fname)
 
 }
 
-
+int slsDetector::fillModuleMask(int *mM){
+  if (mM)
+    for (int i=0; i<getNMods(); i++)
+      mM[i]=i;
+  
+  return getNMods();
+}
 
 
 int slsDetector::setFlatFieldCorrection(double *corr, double *ecorr) {

@@ -1079,7 +1079,7 @@ class multiSlsDetector  : public slsDetectorUtils {
    string getReceiverLastClientIP();
 
 
-
+   int fillModuleMask(int *mM);
  protected:
  
 

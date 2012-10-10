@@ -48,8 +48,43 @@ public:
 
 
 private:
+	/** The sls detector object */
+	multiSlsDetector *myDet;
 
-/** methods */
+	/** The Plot widget	 */
+	qDrawPlot *myPlot;
+
+	/** 1d/2d plot	 */
+	bool isOneD;
+	bool isOrginallyOneD;
+
+	/**is set if its a possible wrong interval between plots*/
+	bool wrongInterval;
+
+	QStackedLayout	*stackedLayout;
+	QSpinBox 		*spinNthFrame;
+	QDoubleSpinBox 	*spinTimeGap;
+	QComboBox 		*comboTimeGapUnit;
+	QButtonGroup 	*btnGroupScan;
+
+	/** some Default Values */
+	static QString defaultPlotTitle;
+	static QString defaultHistXAxisTitle;
+	static QString defaultHistYAxisTitle;
+	static QString defaultImageXAxisTitle;
+	static QString defaultImageYAxisTitle;
+	static QString defaultImageZAxisTitle;
+
+	/** scans */
+	static const QString modeNames[5];
+
+	/** error palette*/
+	QPalette *red;
+	QString intervalTip;
+
+
+
+
 	/** Sets up the widget
 	 */
 	void SetupWidgetWindow();
@@ -66,91 +101,52 @@ private:
 
 
 public slots:
-/** Set frequency between plots*/
-void SetFrequency();
-/** Enable Scan box
- */
-void EnableScanBox();
+	/** Set frequency between plots*/
+	void SetFrequency();
 
-/** a variable is set when timing mode has been changed.
- * This variable is also disabled if exptime>acq period to be on safe side
- * Its to check whether to enabled nth frame for frequency plot
- * @param enable enable/disable
- */
-void EnableNthFrame(bool enable){enableNFrame = enable;};
-
-
-
-
-
-/** Disables scanbox while running
- * @param disable true to disable
- */
-//void DisableScanBoxWhileRunning(bool disable);
+	/** Enable Scan box
+	 */
+	void EnableScanBox();
 
 
 
 private slots:
-/** Selects the plot to display, enables/disables widgets
- * @param b true to select plot dimension 1, else false to select 2D
- */
-void Select1DPlot(bool b);
+	/** Selects the plot to display, enables/disables widgets
+	 * @param b true to select plot dimension 1, else false to select 2D
+	 */
+	void Select1DPlot(bool b);
 
-/**Enables Persistency depending on Superimpose checkbox */
-void EnablePersistency(bool enable);
+	/**Enables Persistency depending on Superimpose checkbox */
+	void EnablePersistency(bool enable);
 
-/**Sets the titles in plot axis */
-void SetTitles();
-/** Enables/Sets default Titles to default */
-void EnableTitles();
-/** Enables range of the axes */
-void EnableRange();
-/** Sets the range of the x and y axes */
-void SetAxesRange();
-/** Sets the range of the z axis */
-void SetZRange();
-/** Enables the range of the z axis */
-void EnableZRange();
-/** Set Plot to none, data graph, histogram*/
-void SetPlot();
+	/**Sets the titles in plot axis */
+	void SetTitles();
 
+	/** Enables/Sets default Titles to default */
+	void EnableTitles();
 
-private:
-/** The sls detector object */
-multiSlsDetector *myDet;
+	/** Enables range of the axes */
+	void EnableRange();
 
-/** The Plot widget	 */
-qDrawPlot *myPlot;
+	/** Sets the range of the x and y axes */
+	void SetAxesRange();
 
-/** 1d/2d plot	 */
-bool isOneD;
-bool isOrginallyOneD;
+	/** Sets the range of the z axis */
+	void SetZRange();
 
-/**whether to enable nth frame according to timing mode*/
-bool enableNFrame;
+	/** Enables the range of the z axis */
+	void EnableZRange();
 
-QStackedLayout	*stackedLayout;
-QSpinBox 		*spinNthFrame;
-QDoubleSpinBox 	*spinTimeGap;
-QComboBox 		*comboTimeGapUnit;
-QButtonGroup 	*btnGroupScan;
+	/** Set Plot to none, data graph, histogram*/
+	void SetPlot();
 
-/** some Default Values */
-static QString defaultPlotTitle;
-static QString defaultHistXAxisTitle;
-static QString defaultHistYAxisTitle;
-static QString defaultImageXAxisTitle;
-static QString defaultImageYAxisTitle;
-static QString defaultImageZAxisTitle;
-
-/** scans */
-static const QString modeNames[5];
 
 
 signals:
-void DisableZoomSignal(bool);
-void SetZRangeSignal(double,double);
-void EnableZRangeSignal(bool);
+	void DisableZoomSignal(bool);
+	void SetZRangeSignal(double,double);
+	void EnableZRangeSignal(bool);
+
 };
 
 

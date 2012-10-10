@@ -235,7 +235,6 @@ void qDetectorMain::Initialization(){
 		connect(tab_measurement,	SIGNAL(StartSignal()),				this,SLOT(EnableTabs()));
 		connect(tab_measurement,	SIGNAL(StopSignal()),				myPlot,SLOT(StopAcquisition()));
 		connect(tab_measurement,	SIGNAL(CheckPlotIntervalSignal()),	tab_plot,SLOT(SetFrequency()));
-		connect(tab_measurement,	SIGNAL(EnableNthFrameSignal(bool)),	tab_plot,SLOT(EnableNthFrame(bool)));
 		// Data Output Tab
 		connect(tab_dataoutput,	SIGNAL(AngularConversionSignal(bool)),	tab_actions,SLOT(EnablePositions(bool)));
 		//enable scanbox( for angles)

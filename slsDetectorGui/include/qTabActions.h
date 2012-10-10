@@ -50,35 +50,13 @@ public:
 
 
 public slots:
-/** Disable Positions
- * @param enable true if to disable
- * */
-void EnablePositions(bool enable);
+	/** Disable Positions
+	 * @param enable true if to disable
+	 * */
+	void EnablePositions(bool enable);
 
 
 private:
-	/** Sets up the widget */
-	void SetupWidgetWindow();
-
-	/** Sets up all the slots and signals */
-	void Initialization();
-
-	/** creates the Num Positions object */
-	void CreatePositionsWidget();
-
-	/** Returns the index in each of the classes
-	 * of actionwidget and scanwidget
-	 * @param index the index in the list of all widgets
-	 * returns actual index of the class
-	 */
-	int GetActualIndex(int index);
-
-	/** Updates to green color if collapsed and mode not none
-	 */
-	void UpdateCollapseColors();
-
-
-
 	/** The sls detector object */
 	multiSlsDetector *myDet;
 
@@ -124,21 +102,46 @@ private:
 	QIcon		*iconPlus;
 	QIcon		*iconMinus;
 
+
+	/** Sets up the widget */
+	void SetupWidgetWindow();
+
+	/** Sets up all the slots and signals */
+	void Initialization();
+
+	/** creates the Num Positions object */
+	void CreatePositionsWidget();
+
+	/** Returns the index in each of the classes
+	 * of actionwidget and scanwidget
+	 * @param index the index in the list of all widgets
+	 * returns actual index of the class
+	 */
+	int GetActualIndex(int index);
+
+	/** Updates to green color if collapsed and mode not none
+	 */
+	void UpdateCollapseColors();
+
+
+
+
 private slots:
-/** To Expand the Action Widget
- * */
-void Expand(QAbstractButton *button);
+	/** To Expand the Action Widget
+	 * */
+	void Expand(QAbstractButton *button);
 
-/** Sets the positions list and the number of positions
- * */
-void SetPosition();
+	/** Sets the positions list and the number of positions
+	 * */
+	void SetPosition();
 
-/** Deletes current position
- * */
-void DeletePosition();
+	/** Deletes current position
+	 * */
+	void DeletePosition();
+
 
 signals:
-void EnableScanBox();
+	void EnableScanBox();
 
 };
 

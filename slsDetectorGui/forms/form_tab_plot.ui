@@ -1095,6 +1095,15 @@
      <height>49</height>
     </rect>
    </property>
+   <property name="toolTip">
+    <string>&lt;nobr&gt;
+Interval between plots has 2 modes. A condition to be satisfied, in order to avoid losing images:
+&lt;/nobr&gt;&lt;br&gt;&lt;br&gt;&lt;nobr&gt;
+&lt;b&gt;Time Interval&lt;/b&gt;: (Acquisition Period) * (nth Image) &gt;= 250ms.
+&lt;/nobr&gt;&lt;br&gt;&lt;nobr&gt;
+&lt;b&gt;Every nth Image&lt;/b&gt;: minimum of 250ms.
+&lt;/nobr&gt;</string>
+   </property>
    <property name="title">
     <string>Interval between Plots</string>
    </property>

@@ -40,7 +40,8 @@ qTabActions::~qTabActions(){
 
 void qTabActions::SetupWidgetWindow(){
 	// Window Settings
-	setFixedSize(710,350);
+	setFixedHeight(350);
+	//setFixedSize(710,350);
 	setContentsMargins(0,0,0,0);
 
 	// Scroll Area Settings
@@ -62,7 +63,7 @@ void qTabActions::SetupWidgetWindow(){
 	QPalette p;
 	p.setColor(QPalette::Shadow,QColor(0,0,0,0));
 	p.setColor(QPalette::Button,QColor(0,0,0,0));
-
+/*get rid of this vector*/
 	char names[NumTotalActions][200] = {
 			"Action at Start",
 			"Scan Level 0",
@@ -81,6 +82,10 @@ void qTabActions::SetupWidgetWindow(){
 
 	QString tip = "<nobr>Click on the \"+\" to Expand or \"-\" to Collapse.</nobr>";
 
+
+
+	int hIndent=0, vIndent=0, colspan=6;
+	QLabel *lblReal;
 	// For each level of Actions
 	for(int i=0;i<NumTotalActions;i++){
 		//common widgets
@@ -88,7 +93,6 @@ void qTabActions::SetupWidgetWindow(){
 		btnExpand[i] 	= new QPushButton();
 
 		lblName[i]->setToolTip(tip);
-
 		btnExpand[i]->setCheckable(true);
 		btnExpand[i]->setChecked(false);
 		btnExpand[i]->setFixedSize(16,16);
@@ -98,31 +102,61 @@ void qTabActions::SetupWidgetWindow(){
 		btnExpand[i]->setFlat(true);
 		btnExpand[i]->setIconSize(QSize(16,16));
 		btnExpand[i]->setPalette(p);
-
 		group->addButton(btnExpand[i],i);
 
-		//add the widgets to the layout , depending on the type create the widgets
-		gridLayout->addWidget(btnExpand[i],(i*2),0);
-		gridLayout->addWidget(lblName[i],(i*2),1);
 
-		if(i==NumPositions){
+		//add label and button to expand or collapse
+		gridLayout->addWidget(btnExpand[i],vIndent,hIndent,1,1);
+		gridLayout->addWidget(lblName[i],vIndent,hIndent+1,1,colspan);
+
+		//creating the action/scan/position widgets and adding them
+		switch(i){
+		case NumPositions:
 			CreatePositionsWidget();
-			gridLayout->addWidget(positionWidget,(i*2)+1,1,1,2);
+			gridLayout->addWidget(positionWidget,vIndent+1,hIndent+1,1,colspan);
 			positionWidget->hide();
-		}else if((i==Scan0)||(i==Scan1)){
+			break;
+		case Scan0:
+		case Scan1:
 			scanWidget[qScanWidget::NUM_SCAN_WIDGETS] = new qScanWidget(this,myDet);
-			gridLayout->addWidget(scanWidget[qScanWidget::NUM_SCAN_WIDGETS-1],(i*2)+1,1,1,2);
+			gridLayout->addWidget(scanWidget[qScanWidget::NUM_SCAN_WIDGETS-1],vIndent+1,hIndent+1,1,colspan);
 			scanWidget[qScanWidget::NUM_SCAN_WIDGETS-1]->hide();
-		}else{
+			break;
+		default:
 			actionWidget[qActionsWidget::NUM_ACTION_WIDGETS] = new qActionsWidget(this,myDet);
-			gridLayout->addWidget(actionWidget[qActionsWidget::NUM_ACTION_WIDGETS-1],(i*2)+1,1,1,2);
+			gridLayout->addWidget(actionWidget[qActionsWidget::NUM_ACTION_WIDGETS-1],vIndent+1,hIndent+1,1,colspan);
 			actionWidget[qActionsWidget::NUM_ACTION_WIDGETS-1]->hide();
+			break;
 		}
-		//gridLayout->addWidget(btnExpand[i],(i*2),i);
-		//gridLayout->addWidget(lblName[i],(i*2),i+1);
-		//gridLayout->addWidget(actionWidget[i],(i*2)+1,i+1,1,2);
+
+		//incrementing the vertical and horizontal indent
+		vIndent+=2;
+		switch(i){
+		case HeaderBefore:
+			//real time acquisition
+			palette->setColor(QPalette::Active,QPalette::WindowText,QColor(0,0,200,255));
+			lblReal = new QLabel("      <b>Real Time Acquisition</b>");
+			lblReal->setFixedHeight(25);
+			//lblReal->setPalette(*palette);
+			gridLayout->addWidget(lblReal,vIndent,hIndent+1,1,colspan);
+			vIndent++;
+			break;
+		case HeaderAfter:
+			hIndent-=2;
+			colspan+=2;
+			break;
+		case ActionAfter:
+			hIndent=0;
+			colspan=6;
+			break;
+		default:
+			hIndent++;
+			colspan--;
+			break;
+		}
 
 	}
+
 
 	//Number of positions is only for mythen or gotthard
 	detType = myDet->getDetectorsType();
@@ -174,6 +208,7 @@ void qTabActions::SetupWidgetWindow(){
 void qTabActions::CreatePositionsWidget(){
 	positionWidget = new QWidget;
 	positionWidget->setFixedHeight(25);
+	positionWidget->setFixedWidth(680);
 
 	QGridLayout *layout = new QGridLayout(positionWidget);
 	layout->setContentsMargins(0,0,0,0);

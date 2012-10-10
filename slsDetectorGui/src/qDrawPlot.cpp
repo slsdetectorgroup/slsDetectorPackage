@@ -66,15 +66,17 @@ void qDrawPlot::SetupWidgetWindow(){
 	//gui_acquisition_thread_running = 0;
 	// Default Plotting
 	plot_in_scope   = 0;
-	//2d
 	lastImageNumber = 0;
 	last_plot_number = 0;
 
 	nPixelsX = myDet->getTotalNumberOfChannels();
 	nPixelsY = 100;
 	nAnglePixelsX = 1;
-
 	minPixelsY = 0;
+	maxPixelsY = 0;
+	startPixel=-0.5;
+	endPixel=nPixelsY-0.5;
+
 	//2d
 	lastImageArray = 0;
 	//1d
@@ -156,6 +158,7 @@ void qDrawPlot::SetupWidgetWindow(){
 
 	plot2D = new SlsQt2DPlotLayout(boxPlot);
 		plot2D->setFont(QFont("Sans Serif",9,QFont::Normal));
+		plot2D->GetPlot()->SetData(nPixelsX,-0.5,nPixelsX-0.5,nPixelsY,startPixel,endPixel,lastImageArray);
 		plot2D->setTitle(GetImageTitle());
 		plot2D->SetXTitle(imageXAxisTitle);
 		plot2D->SetYTitle(imageYAxisTitle);
@@ -181,6 +184,8 @@ void qDrawPlot::SetupWidgetWindow(){
 	filePath = QString(myDet->getFilePath().c_str());
 	fileName = QString(myDet->getFileName().c_str());
 
+
+	fileSaveEnable= myDet->enableWriteToFile();
 
 
 	// Setting the callback function to get data from detector class
@@ -540,7 +545,10 @@ int qDrawPlot::GetData(detectorData *data){
 		//Plot Disabled
 		if(!plotEnable) 	return 0;
 
-
+		// secondary title necessary to differentiate between frames when not saving data
+		char temp_title[2000];
+		if(fileSaveEnable)	strcpy(temp_title,"");
+		else		sprintf(temp_title,"#%d",currentFrame);
 
 
 		//angle plotting
@@ -549,8 +557,9 @@ int qDrawPlot::GetData(detectorData *data){
 				if(!pthread_mutex_trylock(&(last_image_complete_mutex))){
 					//set title
 					plotTitle=QString(plotTitle_prefix)+QString(data->fileName).section('/',-1);
+					// Title
+					histTitle[0] = temp_title;
 
-					cout<<endl<<"angle plot"<<endl<<endl;
 					if(data->angles==NULL){
 						cout<<"\n\nWARNING:RETURNED NULL instead of angles."<<endl;
 						lastImageNumber= currentFrame+1;
@@ -623,8 +632,6 @@ int qDrawPlot::GetData(detectorData *data){
 						//variables
 						lastImageNumber= currentFrame+1;
 						//title
-						char temp_title[2000];
-						sprintf(temp_title,"Image Index %d",currentFileIndex);
 						imageTitle = temp_title;
 						//copy data
 						memcpy(lastImageArray+(currentScanDivLevel*nPixelsX),data->values,nPixelsX*sizeof(double));
@@ -646,8 +653,6 @@ int qDrawPlot::GetData(detectorData *data){
 						if(currentFileIndex == minPixelsY) currentScanDivLevel = 0;
 						lastImageNumber= currentFrame+1;
 						//title
-						char temp_title[2000];
-						sprintf(temp_title,"Image Index %d",currentFileIndex);
 						imageTitle = temp_title;
 						//copy data
 						for(unsigned int px=0;px<nPixelsX;px++)	lastImageArray[currentScanDivLevel*nPixelsX+px] += data->values[px];
@@ -678,8 +683,6 @@ int qDrawPlot::GetData(detectorData *data){
 						currentScanValue = cs0;
 						lastImageNumber= currentFrame+1;
 						//title
-						char temp_title[2000];
-						sprintf(temp_title,"Image Index %d",currentFileIndex);
 						imageTitle = temp_title;
 						//copy data
 						for(unsigned int px=0;px<nPixelsX;px++) lastImageArray[currentScanDivLevel*nPixelsX+px] += data->values[px];
@@ -706,8 +709,6 @@ int qDrawPlot::GetData(detectorData *data){
 					currentScanValue = cs1;
 					lastImageNumber= currentFrame+1;
 					//title
-					char temp_title[2000];
-					sprintf(temp_title,"Image Index %d",currentFileIndex);
 					imageTitle = temp_title;
 					//copy data
 					for(unsigned int px=0;px<nPixelsX;px++) lastImageArray[currentScanDivLevel*nPixelsX+px] += data->values[px];
@@ -724,13 +725,13 @@ int qDrawPlot::GetData(detectorData *data){
 		if(!pthread_mutex_trylock(&(last_image_complete_mutex))){
 			//set title
 			plotTitle=QString(plotTitle_prefix)+QString(data->fileName).section('/',-1);
-			char temp_title[2000];
 			// only if you got the lock, do u need to remember lastimagenumber to plot
 			lastImageNumber= currentFrame+1;
 
 			//1d
 			if(plot_in_scope==1){
-				// Titles changed to "" inside startstopthread
+				// Titles
+				histTitle[0] = temp_title;
 				// Persistency
 				if(currentPersistency < persistency)currentPersistency++;
 				else currentPersistency=persistency;
@@ -742,9 +743,8 @@ int qDrawPlot::GetData(detectorData *data){
 				memcpy(histYAxis[0],data->values,nPixelsX*sizeof(double));
 			}
 			//2d
-			else{
+			else{cout<<endl<<"****************************IN HERE-2D*******************************************"<<endl<<endl;
 				// Titles
-				sprintf(temp_title,"Image Index %d",currentFileIndex);
 				imageTitle = temp_title;
 				// manufacture data for now
 				for(unsigned int px=0;px<nPixelsX;px++)
@@ -1058,6 +1058,7 @@ void qDrawPlot::ClonePlot(){
 	else{
 
 		plot2D = new SlsQt2DPlotLayout(boxPlot);
+		plot2D->GetPlot()->SetData(nPixelsX,-0.5,nPixelsX-0.5,nPixelsY,startPixel,endPixel,lastImageArray);
 		plot2D->setFont(QFont("Sans Serif",9,QFont::Normal));
 		plot2D->setTitle(GetImageTitle());
 		plot2D->SetXTitle(imageXAxisTitle);

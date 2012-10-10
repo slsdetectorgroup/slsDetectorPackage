@@ -364,7 +364,7 @@ void qTabMeasurement::SetCurrentMeasurement(int val){
 
 void qTabMeasurement::UpdateProgress(){
 	progressBar->setValue((int)myPlot->GetProgress());
-	lblProgressIndex->setText(QString::number(myPlot->GetFileIndex()+1));
+	lblProgressIndex->setText(QString::number(myPlot->GetFileIndex()));
 }
 
 
@@ -728,6 +728,7 @@ void qTabMeasurement::EnableFileWrite(bool enable){
 	myDet->enableWriteToFile(enable);
 	dispFileName->setEnabled(enable);
 	if(enable) setFileName(dispFileName->text());
+	myPlot->SetEnableFileWrite(enable);
 };
 
 //-------------------------------------------------------------------------------------------------------------------------------------------------

@@ -52,6 +52,9 @@ public:
 	int GetProgress(){return progress;};
 	/** gets the file index to the measurement tab*/
 	int GetFileIndex(){return currentFileIndex;};
+	/** sets file write enable , if not enabled,
+	 * file index wont increase and so you need secondary titles to differentitate between plots*/
+	void SetEnableFileWrite(bool enable){fileSaveEnable = enable;};
 
 	/**	sets plot Title prefix*/
 	void SetPlotTitlePrefix(QString title)      	{plotTitle_prefix = title;}
@@ -448,7 +451,8 @@ static const int TRIM_HISTOGRAM_XMAX = 63;
 /**if the values increment backwards*/
 bool backwardScanPlot;
 
-
+/**if files will be saved and index increased*/
+bool fileSaveEnable;
 
 signals:
 void UpdatingPlotFinished();

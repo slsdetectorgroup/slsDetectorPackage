@@ -85,7 +85,17 @@ private:
 	slsDetectorDefs::detectorType detType;
 
 
-	enum actionIndex{Scan0=1, Scan1, NumPositions=4, NumTotalActions=9};
+	enum actionIndex{
+		ActionStart,
+		Scan0,
+		Scan1,
+		ActionBefore,
+		NumPositions,
+		HeaderBefore,
+		HeaderAfter,
+		ActionAfter,
+		ActionStop,
+		NumTotalActions};
 
 	QGridLayout		*gridLayout;
 	QButtonGroup 	*group;

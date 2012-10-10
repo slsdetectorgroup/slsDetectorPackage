@@ -92,7 +92,7 @@ void qScanWidget::SetupWidgetWindow(){
 	spinFrom->setMinimum(-1000000);
 	spinFrom->setKeyboardTracking(false);
 	spinFrom->setFixedWidth(80);
-	spinFrom->setDecimals(4);
+	spinFrom->setDecimals(2);
 	lblTo->setSizePolicy(QSizePolicy::Fixed,QSizePolicy::Fixed);
 	lblTo->setToolTip(rangeTip);
 	lblTo->setFixedWidth(18);
@@ -102,7 +102,7 @@ void qScanWidget::SetupWidgetWindow(){
 	spinTo->setMinimum(-1000000);
 	spinTo->setKeyboardTracking(false);
 	spinTo->setFixedWidth(80);
-	spinTo->setDecimals(4);
+	spinTo->setDecimals(2);
 	lblSize->setSizePolicy(QSizePolicy::Fixed,QSizePolicy::Fixed);
 	lblSize->setToolTip(rangeTip);
 	lblSize->setSizePolicy(QSizePolicy::Fixed,QSizePolicy::Fixed);
@@ -113,7 +113,7 @@ void qScanWidget::SetupWidgetWindow(){
 	spinSize->setSingleStep(0.1);
 	spinSize->setToolTip(rangeTip);
 	spinSize->setKeyboardTracking(false);
-	spinSize->setDecimals(4);
+	spinSize->setDecimals(2);
 
 	//spinSize->setMinimum(0.0001);
 	layoutRange->addItem(new QSpacerItem(40,20,QSizePolicy::Fixed,QSizePolicy::Fixed));

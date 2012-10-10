@@ -71,14 +71,14 @@ void qTabDeveloper::SetupWidgetWindow(){
 	case slsDetectorDefs::GOTTHARD:
 		NUM_DAC_WIDGETS = 8;
 		NUM_ADC_WIDGETS = 2;
-		dacNames.push_back("Reference Voltage:");
-		dacNames.push_back("Cascade n Voltage:");
-		dacNames.push_back("Cascade p Voltage:");
-		dacNames.push_back("Comp. Output Voltage:");
-		dacNames.push_back("Cascade out Voltage:");
-		dacNames.push_back("Comp. Input Voltage:");
-		dacNames.push_back("Comp. Ref Voltage:");
-		dacNames.push_back("Base Test Current:");
+		dacNames.push_back("v Reference:");
+		dacNames.push_back("v Cascode n:");
+		dacNames.push_back("v Cascode p:");
+		dacNames.push_back("v Comp. Output:");
+		dacNames.push_back("v Cascode out");
+		dacNames.push_back("v Comp. Input:");
+		dacNames.push_back("v Comp. Ref:");
+		dacNames.push_back("i Base Test:");
 
 		adcNames.push_back("Temperature ADC:");
 		adcNames.push_back("Temperature FPGA:");
@@ -194,6 +194,7 @@ void qTabDeveloper::CreateADCWidgets(){
 		lblAdcs[i] 	= new QLabel(QString(adcNames[i].c_str()),boxAdcs);
 		spinAdcs[i]	= new QDoubleSpinBox(boxAdcs);
 		spinAdcs[i]->setMaximum(10000);
+		if(detType==slsDetectorDefs::GOTTHARD)	spinAdcs[i]->setSuffix(0x00b0+QString("C"));
 
 		adcLayout->addWidget(lblAdcs[i],(int)(i/2),((i%2)==0)?1:4);
 		adcLayout->addWidget(spinAdcs[i],(int)(i/2),((i%2)==0)?2:5);

@@ -367,7 +367,7 @@ Defines scan range for a &lt;b&gt;Constant Step Size&lt;/b&gt; with the followin
      </item>
      <item>
       <property name="text">
-       <string>Energy Scan</string>
+       <string>Energy Scan (eV)</string>
       </property>
      </item>
      <item>

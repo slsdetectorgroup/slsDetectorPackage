@@ -64,6 +64,7 @@ void qTabDataOutput::SetupWidgetWindow(){
 			QString("<nobr><font color=\"red\">"
 					"Enter a valid file to enable Flat Field.</font></nobr>");
 
+	outDirTip = dispOutputDir->toolTip();
 
 	Initialization();
 
@@ -146,13 +147,29 @@ void qTabDataOutput::setOutputDir(){
 	while(path.endsWith('/')) path.chop(1);
 	dispOutputDir->setText(path);
 
-	//if(QFile::exists(path))
+	if(QFile::exists(path)){
+		lblOutputDir->setText("Output Directory: ");
+		lblOutputDir->setPalette(chkRate->palette());
+		lblOutputDir->setToolTip(outDirTip);
+		dispOutputDir->setToolTip(outDirTip);
+		btnOutputBrowse->setToolTip(outDirTip);
 
+		myDet->setFilePath(string(path.toAscii().constData()));
+	#ifdef VERBOSE
+		cout << "Output Directory changed to :"<<myDet->getFilePath() << endl;
+	#endif
+	}
+	else{
+		lblOutputDir->setText("Output Directory:*");
+		lblOutputDir->setPalette(red);
+		QString errTip = outDirTip +
+				QString("<nobr><font color=\"red\">"
+								"Enter a valid path to change <b>Output Directory</b>.</font></nobr>");
+		lblOutputDir->setToolTip(errTip);
+		dispOutputDir->setToolTip(errTip);
+		btnOutputBrowse->setToolTip(errTip);
+	}
 
-	myDet->setFilePath(string(path.toAscii().constData()));
-#ifdef VERBOSE
-	cout << "Output Directory changed to :"<<myDet->getFilePath() << endl;
-#endif
 	connect(dispOutputDir,		SIGNAL(editingFinished()), 	this, 	SLOT(setOutputDir()));
 }
 
@@ -454,7 +471,11 @@ void qTabDataOutput::Refresh(){
 	cout  << "Getting output directory" << endl;
 #endif
 	dispOutputDir->setText(QString(myDet->getFilePath().c_str()));
-
+	lblOutputDir->setText("Output Directory: ");
+	lblOutputDir->setPalette(chkRate->palette());
+	lblOutputDir->setToolTip(outDirTip);
+	dispOutputDir->setToolTip(outDirTip);
+	btnOutputBrowse->setToolTip(outDirTip);
 
 	//flat field correction from server
 #ifdef VERBOSE

@@ -49,6 +49,7 @@ private:
 
 	QString 	flatFieldTip;
 	QString 	errFlatFieldTip;
+	QString 	outDirTip;
 	QPalette	red;
 
 /** methods */

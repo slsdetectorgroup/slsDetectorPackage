@@ -638,7 +638,7 @@
      <item row="0" column="0">
       <widget class="QCheckBox" name="chkTitle">
        <property name="text">
-        <string>Title:</string>
+        <string>Title Prefix:</string>
        </property>
       </widget>
      </item>

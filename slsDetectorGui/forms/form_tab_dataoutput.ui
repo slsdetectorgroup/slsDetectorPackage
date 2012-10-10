@@ -299,12 +299,20 @@
       <number>-1</number>
      </property>
      <item>
-      <widget class="QLabel" name="label">
+      <widget class="QLabel" name="lblOutputDir">
        <property name="sizePolicy">
         <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
          <horstretch>0</horstretch>
          <verstretch>0</verstretch>
         </sizepolicy>
+       </property>
+       <property name="toolTip">
+        <string>&lt;nobr&gt;
+Directory where one saves the data.
+&lt;/nobr&gt;&lt;br&gt;
+ #outdir#
+&lt;br&gt;
+</string>
        </property>
        <property name="text">
         <string>Output Directory :</string>
@@ -312,10 +320,27 @@
       </widget>
      </item>
      <item>
-      <widget class="QLineEdit" name="dispOutputDir"/>
+      <widget class="QLineEdit" name="dispOutputDir">
+       <property name="toolTip">
+        <string>&lt;nobr&gt;
+Directory where one saves the data.
+&lt;/nobr&gt;&lt;br&gt;
+ #outdir#
+&lt;br&gt;
+</string>
+       </property>
+      </widget>
      </item>
      <item>
       <widget class="QPushButton" name="btnOutputBrowse">
+       <property name="toolTip">
+        <string>&lt;nobr&gt;
+Directory where one saves the data.
+&lt;/nobr&gt;&lt;br&gt;
+ #outdir#
+&lt;br&gt;
+</string>
+       </property>
        <property name="text">
         <string>Browse</string>
        </property>

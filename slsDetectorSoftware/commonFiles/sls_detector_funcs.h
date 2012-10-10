@@ -5,7 +5,7 @@
    All set functions with argument -1 work as get, when possible 
 
 */
- #ifndef SLS_DETECTOR_FUNCS_H
+#ifndef SLS_DETECTOR_FUNCS_H
 #define SLS_DETECTOR_FUNCS_H
 
 enum {
@@ -128,5 +128,5 @@ enum {
 
 };
 
-#endif SLS_DETECTOR_FUNCS_H
+#endif
 /** @endinternal */

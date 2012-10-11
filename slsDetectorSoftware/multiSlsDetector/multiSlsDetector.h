@@ -28,17 +28,17 @@ class slsDetector;
 /**
  * 
  *
-@libdoc The multiSlsDetector class is used to operate several slsDetectors in parallel.
+ @libdoc The multiSlsDetector class is used to operate several slsDetectors in parallel.
  *
  * @short This is the base class for multi detector system functionalities
  * @author Anna Bergamaschi
  * @version 0.1alpha
 
- */
+*/
 
 class multiSlsDetector  : public slsDetectorUtils {
 
-//public virtual slsDetectorUtils {
+  //public virtual slsDetectorUtils {
 
   
   typedef  struct sharedMultiSlsDetector {
@@ -107,7 +107,7 @@ class multiSlsDetector  : public slsDetectorUtils {
  
 
 
-   /** current index of the output file */   
+    /** current index of the output file */   
     int fileIndex;
     /** path of the output files */  
     char filePath[MAX_STR_LENGTH];
@@ -143,13 +143,13 @@ class multiSlsDetector  : public slsDetectorUtils {
 
 
 
-     /** array of angular conversion constants for each module \see ::angleConversionConstant */
+    /** array of angular conversion constants for each module \see ::angleConversionConstant */
     //angleConversionConstant angOff[MAXMODS];
     /** angular direction (1 if it corresponds to the encoder direction i.e. channel 0 is 0, maxchan is positive high angle, 0 otherwise  */
     int angDirection;
-     /** beamline fine offset (of the order of mdeg, might be adjusted for each measurements)  */
+    /** beamline fine offset (of the order of mdeg, might be adjusted for each measurements)  */
     double fineOffset;
-     /** beamline offset (might be a few degrees beacuse of encoder offset - normally it is kept fixed for a long period of time)  */
+    /** beamline offset (might be a few degrees beacuse of encoder offset - normally it is kept fixed for a long period of time)  */
     double globalOffset;
     /** bin size for data merging */
     double binSize;
@@ -159,9 +159,9 @@ class multiSlsDetector  : public slsDetectorUtils {
     //X and Y displacement
     double sampleDisplacement[2]; 
 
-     /** number of positions at which the detector should acquire  */
+    /** number of positions at which the detector should acquire  */
     int numberOfPositions;
-     /** list of encoder positions at which the detector should acquire */
+    /** list of encoder positions at which the detector should acquire */
     double detPositions[MAXPOS];
 
 
@@ -211,23 +211,23 @@ class multiSlsDetector  : public slsDetectorUtils {
 
  
 
- using slsDetectorUtils::flatFieldCorrect;
- using slsDetectorUtils::rateCorrect;
- using slsDetectorUtils::setBadChannelCorrection;
- using slsDetectorUtils::readAngularConversion;
- using slsDetectorUtils::writeAngularConversion;
+  using slsDetectorUtils::flatFieldCorrect;
+  using slsDetectorUtils::rateCorrect;
+  using slsDetectorUtils::setBadChannelCorrection;
+  using slsDetectorUtils::readAngularConversion;
+  using slsDetectorUtils::writeAngularConversion;
 
-/* 
-      @short Structure allocated in shared memory to store detector settings and be accessed in parallel by several applications (take care of possible conflicts!)
+  /* 
+     @short Structure allocated in shared memory to store detector settings and be accessed in parallel by several applications (take care of possible conflicts!)
       
   */
 
 
-/** (default) constructor 
-    \param  id is the detector index which is needed to define the shared memory id. Different physical detectors should have different IDs in order to work independently
+  /** (default) constructor 
+      \param  id is the detector index which is needed to define the shared memory id. Different physical detectors should have different IDs in order to work independently
     
     
-*/
+  */
   multiSlsDetector(int id=0);
   //slsDetector(string  const fname);
   /** destructor */ 
@@ -241,15 +241,15 @@ class multiSlsDetector  : public slsDetectorUtils {
   int initSharedMemory(int) ;
   
   /** adds the detector with ID id in postion pos
-   \param id of the detector to be added (should already exist!)
-   \param pos position where it should be added (normally at the end of the list (default to -1)
-   \return the actual number of detectors or -1 if it failed*/
+      \param id of the detector to be added (should already exist!)
+      \param pos position where it should be added (normally at the end of the list (default to -1)
+      \return the actual number of detectors or -1 if it failed*/
   int addSlsDetector(int id, int pos=-1);
 
   /** adds the detector with ID id in postion pos
-   \param name of the detector to be added (should already exist in shared memory or at least be online) 
-   \param pos position where it should be added (normally at the end of the list (default to -1)
-   \return the actual number of detectors or -1 if it failed*/
+      \param name of the detector to be added (should already exist in shared memory or at least be online) 
+      \param pos position where it should be added (normally at the end of the list (default to -1)
+      \return the actual number of detectors or -1 if it failed*/
   int addSlsDetector(const char *name, int pos=-1);
 
   int addSlsDetector(detectorType type, int pos=-1);
@@ -286,17 +286,17 @@ class multiSlsDetector  : public slsDetectorUtils {
 
 
   /** adds a detector by id in position pos
-   \param ival detector id to be added
-   \param pos position to add it (-1 fails)
-   \returns detector ID or -1 if detector in position i is empty
+      \param ival detector id to be added
+      \param pos position to add it (-1 fails)
+      \returns detector ID or -1 if detector in position i is empty
   */
   int setDetectorId(int ival, int pos=-1);
 
 
 
   /** returns the id of the detector in position i
-   \param i position of the detector
-  \returns detector ID or -1 if detector in position i is empty*/
+      \param i position of the detector
+      \returns detector ID or -1 if detector in position i is empty*/
   int getDetectorId(int i);
 
 
@@ -307,10 +307,10 @@ class multiSlsDetector  : public slsDetectorUtils {
   
 
   int getMaxMods();
- int getNMods();
- int getChansPerMod(int imod=0);
+  int getNMods();
+  int getChansPerMod(int imod=0);
 
- angleConversionConstant *getAngularConversionPointer(int imod=0);
+  angleConversionConstant *getAngularConversionPointer(int imod=0);
   
 
   int getTotalNumberOfChannels(){return thisMultiDetector->numberOfChannels;};
@@ -326,7 +326,7 @@ class multiSlsDetector  : public slsDetectorUtils {
   */
   int getDetectorOffset(int pos, int &ox, int &oy);
 
-    /** sets the detector offset (in number of channels)
+  /** sets the detector offset (in number of channels)
       \param pos position of the detector
       \param ox offset in x (-1 does not change)
       \param oy offset in y (-1 does not change)
@@ -347,13 +347,13 @@ class multiSlsDetector  : public slsDetectorUtils {
       \param sync syncronization mode
       \returns current syncronization mode   
   */   
-/*   enum synchronizationMode { */
-/*     GET_SYNCHRONIZATION_MODE=-1, /\**< the multidetector will return its synchronization mode *\/ */
-/*     NONE, /\**< all detectors are independent (no cabling) *\/ */
-/*     MASTER_GATES, /\**< the master gates the other detectors *\/ */
-/*     MASTER_TRIGGERS, /\**< the master triggers the other detectors *\/ */
-/*     SLAVE_STARTS_WHEN_MASTER_STOPS /\**< the slave acquires when the master finishes, to avoid deadtime *\/ */
-/*   }; */
+  /*   enum synchronizationMode { */
+  /*     GET_SYNCHRONIZATION_MODE=-1, /\**< the multidetector will return its synchronization mode *\/ */
+  /*     NONE, /\**< all detectors are independent (no cabling) *\/ */
+  /*     MASTER_GATES, /\**< the master gates the other detectors *\/ */
+  /*     MASTER_TRIGGERS, /\**< the master triggers the other detectors *\/ */
+  /*     SLAVE_STARTS_WHEN_MASTER_STOPS /\**< the slave acquires when the master finishes, to avoid deadtime *\/ */
+  /*   }; */
 
   synchronizationMode setSynchronization(synchronizationMode sync=GET_SYNCHRONIZATION_MODE);
 
@@ -371,22 +371,22 @@ class multiSlsDetector  : public slsDetectorUtils {
 
 
   /**
-      \returns 1 if the detector structure has already be initlialized with the given id and belongs to this multiDetector instance, 0 otherwise */
+     \returns 1 if the detector structure has already be initlialized with the given id and belongs to this multiDetector instance, 0 otherwise */
   int exists();
 
 
 
   /**
-    Purely virtual function
-    Should be implemented in the specific detector class
-    /sa mythenDetector::readConfigurationFile
+     Purely virtual function
+     Should be implemented in the specific detector class
+     /sa mythenDetector::readConfigurationFile
   */
 
   int readConfigurationFile(string const fname);  
   /**  
-    Purely virtual function
-    Should be implemented in the specific detector class
-    /sa mythenDetector::writeConfigurationFile
+       Purely virtual function
+       Should be implemented in the specific detector class
+       /sa mythenDetector::writeConfigurationFile
   */
   int writeConfigurationFile(string const fname);
 
@@ -401,45 +401,45 @@ class multiSlsDetector  : public slsDetectorUtils {
   // Expert Initialization functions
   
   /**
-    get threshold energy
-    \param imod module number (-1 all)
-    \returns current threshold value for imod in ev (-1 failed)
+     get threshold energy
+     \param imod module number (-1 all)
+     \returns current threshold value for imod in ev (-1 failed)
   */
   int getThresholdEnergy(int imod=-1);  
 
   /**
-    set threshold energy
-    \param e_eV threshold in eV
-    \param imod module number (-1 all)
-    \param isettings ev. change settings
-    \returns current threshold value for imod in ev (-1 failed)
+     set threshold energy
+     \param e_eV threshold in eV
+     \param imod module number (-1 all)
+     \param isettings ev. change settings
+     \returns current threshold value for imod in ev (-1 failed)
   */
   int setThresholdEnergy(int e_eV, int imod=-1, detectorSettings isettings=GET_SETTINGS); 
  
   /**
-    get detector settings
-    \param imod module number (-1 all)
-    \returns current settings
+     get detector settings
+     \param imod module number (-1 all)
+     \returns current settings
   */
   detectorSettings getSettings(int imod=-1);  
 
   /**
-    set detector settings
-    \param isettings  settings
-    \param imod module number (-1 all)
-    \returns current settings
+     set detector settings
+     \param isettings  settings
+     \param imod module number (-1 all)
+     \returns current settings
 
-    in this function trimbits and calibration files are searched in the trimDir and calDir directories and the detector is initialized
+     in this function trimbits and calibration files are searched in the trimDir and calDir directories and the detector is initialized
   */
   detectorSettings setSettings(detectorSettings isettings, int imod=-1);
 
 
   /**
-   	Returns the trimbits from the detector's shared memmory
-   	\param retval is the array with the trimbits
-   	\param fromDetector is true if the trimbits shared memory have to be uploaded from detector
-   	\returns the total number of channels for the detector
-   */
+     Returns the trimbits from the detector's shared memmory
+     \param retval is the array with the trimbits
+     \param fromDetector is true if the trimbits shared memory have to be uploaded from detector
+     \returns the total number of channels for the detector
+  */
   int getChanRegs(double* retval,bool fromDetector);
 
 
@@ -485,81 +485,81 @@ class multiSlsDetector  : public slsDetectorUtils {
 
 
 
-// Acquisition functions
+  // Acquisition functions
 
 
   /**
-    start detector acquisition (master is started as last)
-    \returns OK if all detectors are properly started, FAIL otherwise
+     start detector acquisition (master is started as last)
+     \returns OK if all detectors are properly started, FAIL otherwise
   */
   int startAcquisition();
 
   /**
-    stop detector acquisition (master firtst)
-    \returns OK/FAIL
+     stop detector acquisition (master firtst)
+     \returns OK/FAIL
   */
   int stopAcquisition();
   
   /**
-    start readout (without exposure or interrupting exposure) (master first)
-    \returns OK/FAIL
+     start readout (without exposure or interrupting exposure) (master first)
+     \returns OK/FAIL
   */
   int startReadOut();
 
 
 
   /**
-    start detector acquisition and read all data putting them a data queue
-    \returns pointer to the front of the data queue
-    \sa startAndReadAllNoWait getDataFromDetector dataQueue
+     start detector acquisition and read all data putting them a data queue
+     \returns pointer to the front of the data queue
+     \sa startAndReadAllNoWait getDataFromDetector dataQueue
   */ 
   int* startAndReadAll();
   
   /**
-    start detector acquisition and read out, but does not read data from socket 
+     start detector acquisition and read out, but does not read data from socket 
    
   */ 
   int startAndReadAllNoWait(); 
 
   /**
-    receives a data frame from the detector socket
-    \returns pointer to the data or NULL. If NULL disconnects the socket
-    \sa getDataFromDetector
+     receives a data frame from the detector socket
+     \returns pointer to the data or NULL. If NULL disconnects the socket
+     \sa getDataFromDetector
   */ 
   //int* getDataFromDetectorNoWait(); 
   /**
-    receives a data frame from the detector socket
-    \returns pointer to the data or NULL. If NULL disconnects the socket
-    \sa getDataFromDetector
+     receives a data frame from the detector socket
+     \returns pointer to the data or NULL. If NULL disconnects the socket
+     \sa getDataFromDetector
   */ 
   int* getDataFromDetector();
 
   /**
-   asks and  receives a data frame from the detector and puts it in the data queue
-    \returns pointer to the data or NULL. 
-    \sa getDataFromDetector
+     asks and  receives a data frame from the detector and puts it in the data queue
+     \returns pointer to the data or NULL. 
+     \sa getDataFromDetector
   */ 
   int* readFrame(); 
 
   /**
-   asks and  receives all data  from the detector  and puts them in a data queue
-    \returns pointer to the front of the queue  or NULL. 
-    \sa getDataFromDetector  dataQueue
+     asks and  receives all data  from the detector  and puts them in a data queue
+     \returns pointer to the front of the queue  or NULL. 
+     \sa getDataFromDetector  dataQueue
   */ 
   int* readAll();
 
   
   /**
-   pops the data from the data queue
-    \returns pointer to the popped data  or NULL if the queue is empty. 
-    \sa  dataQueue
+     pops the data from the data queue
+     \returns pointer to the popped data  or NULL if the queue is empty. 
+     \sa  dataQueue
   */ 
   int* popDataQueue();
 
   /**
-   pops the data from thepostprocessed data queue
-    \returns pointer to the popped data  or NULL if the queue is empty. 
-    \sa  finalDataQueue
+     pops the data from thepostprocessed data queue
+     \returns pointer to the popped data  or NULL if the queue is empty. 
+     \sa  finalDataQueue
   */ 
   detectorData* popFinalDataQueue();
 
@@ -567,14 +567,14 @@ class multiSlsDetector  : public slsDetectorUtils {
 
 
   /**
-  resets the raw data queue
-    \sa  dataQueue
+     resets the raw data queue
+     \sa  dataQueue
   */ 
   void resetDataQueue();
 
   /**
-  resets the postprocessed  data queue
-    \sa  finalDataQueue
+     resets the postprocessed  data queue
+     \sa  finalDataQueue
   */ 
   void resetFinalDataQueue();
 
@@ -602,12 +602,12 @@ class multiSlsDetector  : public slsDetectorUtils {
   */
   int64_t getTimeLeft(timerIndex index);
 
-/*   /\**  */
-/*       get current timer value */
-/*       \param index timer index */
-/*       \returns elapsed time value in ns or number of...(e.g. frames, gates, probes) */
-/*   *\/ */
-/*   int64_t getTimeLeft(timerIndex index); */
+  /*   /\**  */
+  /*       get current timer value */
+  /*       \param index timer index */
+  /*       \returns elapsed time value in ns or number of...(e.g. frames, gates, probes) */
+  /*   *\/ */
+  /*   int64_t getTimeLeft(timerIndex index); */
 
 
 
@@ -737,9 +737,9 @@ class multiSlsDetector  : public slsDetectorUtils {
 
 
   /** 
-     decode data from the detector converting them to an array of doubles, one for each channle
-     \param datain data from the detector
-     \returns pointer to a double array with a data per channel
+      decode data from the detector converting them to an array of doubles, one for each channle
+      \param datain data from the detector
+      \returns pointer to a double array with a data per channel
   */
   double* decodeData(int *datain, double *fdata=NULL);
 
@@ -747,48 +747,48 @@ class multiSlsDetector  : public slsDetectorUtils {
   
   
   /** 
-     flat field correct data
-     \param datain data
-     \param errin error on data (if<=0 will default to sqrt(datain)
-     \param dataout corrected data
-     \param errout error on corrected data
-     \param ffcoefficient flat field correction coefficient
-     \param fferr erro on ffcoefficient
-     \returns 0
+      flat field correct data
+      \param datain data
+      \param errin error on data (if<=0 will default to sqrt(datain)
+      \param dataout corrected data
+      \param errout error on corrected data
+      \param ffcoefficient flat field correction coefficient
+      \param fferr erro on ffcoefficient
+      \returns 0
   */
   // int flatFieldCorrect(double datain, double errin, double &dataout, double &errout, double ffcoefficient, double fferr);
   
   /** 
-     flat field correct data
-     \param datain data array
-     \param errin error array on data (if NULL will default to sqrt(datain)
-     \param dataout array of corrected data
-     \param errout error on corrected data (if not NULL)
-     \returns 0
+      flat field correct data
+      \param datain data array
+      \param errin error array on data (if NULL will default to sqrt(datain)
+      \param dataout array of corrected data
+      \param errout error on corrected data (if not NULL)
+      \returns 0
   */
   int flatFieldCorrect(double* datain, double *errin, double* dataout, double *errout);
  
 
   
   /** 
-     rate correct data
-     \param datain data
-     \param errin error on data (if<=0 will default to sqrt(datain)
-     \param dataout corrected data
-     \param errout error on corrected data
-     \param tau dead time 9in ns)
-     \param t acquisition time (in ns)
-     \returns 0
+      rate correct data
+      \param datain data
+      \param errin error on data (if<=0 will default to sqrt(datain)
+      \param dataout corrected data
+      \param errout error on corrected data
+      \param tau dead time 9in ns)
+      \param t acquisition time (in ns)
+      \returns 0
   */
   //  int rateCorrect(double datain, double errin, double &dataout, double &errout, double tau, double t);
   
   /** 
-     rate correct data
-     \param datain data array
-     \param errin error array on data (if NULL will default to sqrt(datain)
-     \param dataout array of corrected data
-     \param errout error on corrected data (if not NULL)
-     \returns 0
+      rate correct data
+      \param datain data array
+      \param errin error array on data (if NULL will default to sqrt(datain)
+      \param dataout array of corrected data
+      \param errout error on corrected data (if not NULL)
+      \returns 0
   */
   int rateCorrect(double* datain, double *errin, double* dataout, double *errout);
 
@@ -798,9 +798,9 @@ class multiSlsDetector  : public slsDetectorUtils {
   int exitServer();
 
   /** pure /////////////////////////////////////////////////// virtual function
-     function for processing data
-     /param delflag if 1 the data are processed, written to file and then deleted. If 0 they are added to the finalDataQueue
-     \sa mythenDetector::processData
+      function for processing data
+      /param delflag if 1 the data are processed, written to file and then deleted. If 0 they are added to the finalDataQueue
+      \sa mythenDetector::processData
   */
   ///////////////////////////////////////////////////  virtual void* processData(int delflag=1); // thread function
 
@@ -817,29 +817,29 @@ class multiSlsDetector  : public slsDetectorUtils {
   
 
   /**
-    set dacs value
-    \param val value (in V)
-    \param index DAC index
-    \param imod module number (if -1 alla modules)
-    \returns current DAC value
+     set dacs value
+     \param val value (in V)
+     \param index DAC index
+     \param imod module number (if -1 alla modules)
+     \returns current DAC value
   */
   dacs_t setDAC(dacs_t val, dacIndex index, int imod=-1);
   /**
-    set dacs value
-    \param val value (in V)
-    \param index DAC index
-    \param imod module number (if -1 alla modules)
-    \returns current DAC value
+     set dacs value
+     \param val value (in V)
+     \param index DAC index
+     \param imod module number (if -1 alla modules)
+     \returns current DAC value
   */
   dacs_t getADC(dacIndex index, int imod=0);
-    /**
-    configure channel
-    \param reg channel register
-    \param ichan channel number (-1 all)
-    \param ichip chip number (-1 all)
-    \param imod module number (-1 all)
-    \returns current register value
-    \sa ::sls_detector_channel
+  /**
+     configure channel
+     \param reg channel register
+     \param ichan channel number (-1 all)
+     \param ichip chip number (-1 all)
+     \param imod module number (-1 all)
+     \returns current register value
+     \sa ::sls_detector_channel
   */
   int setChannel(int64_t reg, int ichan=-1, int ichip=-1, int imod=-1);  
   /** 
@@ -856,7 +856,7 @@ class multiSlsDetector  : public slsDetectorUtils {
 
   /**
      get run status
-    \returns status mask
+     \returns status mask
   */
   //virtual runStatus  getRunStatus()=0;
   runStatus  getRunStatus();
@@ -869,14 +869,14 @@ class multiSlsDetector  : public slsDetectorUtils {
   char* getSettingsDir();
   /** sets the detector trimbit/settings directory  \sa sharedSlsDetector */
   char* setSettingsDir(string s);
- /**
+  /**
      returns the location of the calibration files
-  \sa  sharedSlsDetector
+     \sa  sharedSlsDetector
   */
   char* getCalDir();
-   /**
-      sets the location of the calibration files
-  \sa  sharedSlsDetector
+  /**
+     sets the location of the calibration files
+     \sa  sharedSlsDetector
   */
   char* setCalDir(string s); 
 
@@ -906,25 +906,25 @@ class multiSlsDetector  : public slsDetectorUtils {
 
 
 
- int setTrimEn(int nen, int *en=NULL);
- int getTrimEn(int *en=NULL);
+  int setTrimEn(int nen, int *en=NULL);
+  int getTrimEn(int *en=NULL);
 
 
- externalSignalFlag setExternalSignalFlags(externalSignalFlag pol=GET_EXTERNAL_SIGNAL_FLAG , int signalindex=0);
- int setReadOutFlags(readOutFlags flag=GET_READOUT_FLAGS);
+  externalSignalFlag setExternalSignalFlags(externalSignalFlag pol=GET_EXTERNAL_SIGNAL_FLAG , int signalindex=0);
+  int setReadOutFlags(readOutFlags flag=GET_READOUT_FLAGS);
 
 
- externalCommunicationMode setExternalCommunicationMode(externalCommunicationMode pol=GET_EXTERNAL_COMMUNICATION_MODE);
+  externalCommunicationMode setExternalCommunicationMode(externalCommunicationMode pol=GET_EXTERNAL_COMMUNICATION_MODE);
 
- /**
-      Loads dark image or gain image to the detector
-      \param index can be DARK_IMAGE or GAIN_IMAGE
-      \fname file name to load data from
-      \returns OK or FAIL
- */
+  /**
+     Loads dark image or gain image to the detector
+     \param index can be DARK_IMAGE or GAIN_IMAGE
+     \fname file name to load data from
+     \returns OK or FAIL
+  */
   int loadImageToDetector(imageType index,string const fname);
 
-   /**
+  /**
      sets the value of s angular conversion parameter
      \param c can be ANGULAR_DIRECTION, GLOBAL_OFFSET, FINE_OFFSET, BIN_SIZE
      \param v the value to be set
@@ -933,153 +933,153 @@ class multiSlsDetector  : public slsDetectorUtils {
 
   double setAngularConversionParameter(angleConversionParameter c, double v);
 
-    /**
+  /**
      
-       writes a data file
-       \param name of the file to be written
-       \param data array of data values
-       \param err array of arrors on the data. If NULL no errors will be written
+  writes a data file
+  \param name of the file to be written
+  \param data array of data values
+  \param err array of arrors on the data. If NULL no errors will be written
        
-       \param ang array of angular values. If NULL data will be in the form chan-val(-err) otherwise ang-val(-err)
-       \param dataformat format of the data: can be 'i' integer or 'f' double (default)
-       \param nch number of channels to be written to file. if -1 defaults to the number of installed channels of the detector
-       \returns OK or FAIL if it could not write the file or data=NULL
-       \sa mythenDetector::writeDataFile
+  \param ang array of angular values. If NULL data will be in the form chan-val(-err) otherwise ang-val(-err)
+  \param dataformat format of the data: can be 'i' integer or 'f' double (default)
+  \param nch number of channels to be written to file. if -1 defaults to the number of installed channels of the detector
+  \returns OK or FAIL if it could not write the file or data=NULL
+  \sa mythenDetector::writeDataFile
  
   */
-   int writeDataFile(string fname, double *data, double *err=NULL, double *ang=NULL, char dataformat='f', int nch=-1);
+  int writeDataFile(string fname, double *data, double *err=NULL, double *ang=NULL, char dataformat='f', int nch=-1);
   
 
   /**
    
-       writes a data file
-       \param name of the file to be written
-       \param data array of data values
-       \returns OK or FAIL if it could not write the file or data=NULL  
-       \sa mythenDetector::writeDataFile
+  writes a data file
+  \param name of the file to be written
+  \param data array of data values
+  \returns OK or FAIL if it could not write the file or data=NULL  
+  \sa mythenDetector::writeDataFile
   */
-   int writeDataFile(string fname, int *data);
+  int writeDataFile(string fname, int *data);
   
   /**
    
-       reads a data file
-       \param name of the file to be read
-       \param data array of data values to be filled
-       \param err array of arrors on the data. If NULL no errors are expected on the file
+  reads a data file
+  \param name of the file to be read
+  \param data array of data values to be filled
+  \param err array of arrors on the data. If NULL no errors are expected on the file
        
-       \param ang array of angular values. If NULL data are expected in the form chan-val(-err) otherwise ang-val(-err)
-       \param dataformat format of the data: can be 'i' integer or 'f' double (default)
-       \param nch number of channels to be written to file. if <=0 defaults to the number of installed channels of the detector
-       \returns OK or FAIL if it could not read the file or data=NULL
+  \param ang array of angular values. If NULL data are expected in the form chan-val(-err) otherwise ang-val(-err)
+  \param dataformat format of the data: can be 'i' integer or 'f' double (default)
+  \param nch number of channels to be written to file. if <=0 defaults to the number of installed channels of the detector
+  \returns OK or FAIL if it could not read the file or data=NULL
        
-       \sa mythenDetector::readDataFile
+  \sa mythenDetector::readDataFile
   */
-   int readDataFile(string fname, double *data, double *err=NULL, double *ang=NULL, char dataformat='f');
+  int readDataFile(string fname, double *data, double *err=NULL, double *ang=NULL, char dataformat='f');
 
 
   /**
    
-       reads a data file
-       \param name of the file to be read
-       \param data array of data values
-       \returns OK or FAIL if it could not read the file or data=NULL
-       \sa mythenDetector::readDataFile
+  reads a data file
+  \param name of the file to be read
+  \param data array of data values
+  \returns OK or FAIL if it could not read the file or data=NULL
+  \sa mythenDetector::readDataFile
   */
-   int readDataFile(string fname, int *data);
+  int readDataFile(string fname, int *data);
 
 
-   /**
-        writes the counter memory block from the detector
-        \param startACQ is 1 to start acquisition after reading counter
-        \param fname file name to load data from
-        \returns OK or FAIL
-   */
-   int writeCounterBlockFile(string const fname,int startACQ=0);
+  /**
+     writes the counter memory block from the detector
+     \param startACQ is 1 to start acquisition after reading counter
+     \param fname file name to load data from
+     \returns OK or FAIL
+  */
+  int writeCounterBlockFile(string const fname,int startACQ=0);
  
 
   /**
-        Resets counter in detector
-        \param startACQ is 1 to start acquisition after resetting counter
-        \returns OK or FAIL
-   */
-   int resetCounterBlock(int startACQ=0);
+     Resets counter in detector
+     \param startACQ is 1 to start acquisition after resetting counter
+     \returns OK or FAIL
+  */
+  int resetCounterBlock(int startACQ=0);
 
-   int getMoveFlag(int imod);
-
-
-   slsDetector *getSlsDetector(int pos) {if (pos>=0 && pos< MAXDET) return detectors[pos]; return NULL;};
+  int getMoveFlag(int imod);
 
 
+  slsDetector *getSlsDetector(int pos) {if (pos>=0 && pos< MAXDET) return detectors[pos]; return NULL;};
 
 
 
-//receiver
-
-   /**
-    	 calls setReceiverTCPSocket if online and sets the flag
-    */
-   int setReceiverOnline(int const online=GET_ONLINE_FLAG);
-
-   /**
-      Checks if the receiver is really online
-    */
-   string checkReceiverOnline();
-
-   /**
-         Sets up the receiver file name
-         @param fileName file name
-         \returns file name
-    */
-   string setReceiverFileName(string fileName="");
-
-   /**
-         Sets up the receiver file directory
-         @param fileName fileDir file directory
-         \returns file dir
-    */
-   string setReceiverFileDir(string fileDir="");
-
-   /**
-         Sets up the receiver file index
-         @param fileIndex file index
-         \returns file index
-    */
-   int setReceiverFileIndex(int fileIndex=-1);
 
 
-   /**   Starts the listening mode of receiver
-         \returns OK or FAIL
-    */
-   int startReceiver();
+  //receiver
 
-   /**   Stops the listening mode of receiver
-         \returns OK or FAIL
-    */
-   int stopReceiver();
+  /**
+     calls setReceiverTCPSocket if online and sets the flag
+  */
+  int setReceiverOnline(int const online=GET_ONLINE_FLAG);
 
-   /**   gets the status of the listening mode of receiver
-         \returns status
-    */
-   runStatus getReceiverStatus();
+  /**
+     Checks if the receiver is really online
+  */
+  string checkReceiverOnline();
 
-   /**   gets the number of frames caught by receiver
-         \returns number of frames caught by receiver
-    */
-   int getFramesCaughtByReciver();
+  /**
+     Sets up the receiver file name
+     @param fileName file name
+     \returns file name
+  */
+  string setReceiverFileName(string fileName="");
 
-   /** Locks/Unlocks the connection to the receiver
-       /param lock sets (1), usets (0), gets (-1) the lock
-       /returns lock status of the receiver
-   */
-   int lockReceiver(int lock=-1);
+  /**
+     Sets up the receiver file directory
+     @param fileName fileDir file directory
+     \returns file dir
+  */
+  string setReceiverFileDir(string fileDir="");
 
-   /**
-       Returns the IP of the last client connecting to the receiver
-   */
-   string getReceiverLastClientIP();
+  /**
+     Sets up the receiver file index
+     @param fileIndex file index
+     \returns file index
+  */
+  int setReceiverFileIndex(int fileIndex=-1);
 
 
-   int fillModuleMask(int *mM);
+  /**   Starts the listening mode of receiver
+	\returns OK or FAIL
+  */
+  int startReceiver();
+
+  /**   Stops the listening mode of receiver
+	\returns OK or FAIL
+  */
+  int stopReceiver();
+
+  /**   gets the status of the listening mode of receiver
+	\returns status
+  */
+  runStatus getReceiverStatus();
+
+  /**   gets the number of frames caught by receiver
+	\returns number of frames caught by receiver
+  */
+  int getFramesCaughtByReciver();
+
+  /** Locks/Unlocks the connection to the receiver
+      /param lock sets (1), usets (0), gets (-1) the lock
+      /returns lock status of the receiver
+  */
+  int lockReceiver(int lock=-1);
+
+  /**
+     Returns the IP of the last client connecting to the receiver
+  */
+  string getReceiverLastClientIP();
+
+
+  int fillModuleMask(int *mM);
  protected:
  
 

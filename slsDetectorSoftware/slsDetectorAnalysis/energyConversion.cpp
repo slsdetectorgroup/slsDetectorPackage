@@ -70,20 +70,20 @@ int energyConversion::writeCalibrationFile(string fname, double gain, double off
 
 #ifndef MYROOT
 
-  /* I/O */
+/* I/O */
 
 
 slsDetectorDefs::sls_detector_module* energyConversion::readSettingsFile(string fname,  detectorType myDetectorType, sls_detector_module *myMod){
   
-   int nflag=0;
+  int nflag=0;
 
       
-   if (myMod==NULL) {
-     myMod=createModule(myDetectorType);
-     nflag=1;
-   }
+  if (myMod==NULL) {
+    myMod=createModule(myDetectorType);
+    nflag=1;
+  }
 
-   string myfname;
+  string myfname;
   string str;
   ifstream infile;
   ostringstream oss;
@@ -97,101 +97,101 @@ slsDetectorDefs::sls_detector_module* energyConversion::readSettingsFile(string 
 #ifdef VERBOSE
   std::cout<<   "reading settings file for module number "<< myMod->module << std::endl;
 #endif
-      myfname=fname;
+  myfname=fname;
 #ifdef VERBOSE
-    std::cout<< "file name is "<< myfname <<   std::endl;
+  std::cout<< "file name is "<< myfname <<   std::endl;
 #endif
-    infile.open(myfname.c_str(), ios_base::in);
-    if (infile.is_open()) {
+  infile.open(myfname.c_str(), ios_base::in);
+  if (infile.is_open()) {
 
 
-      switch (myDetectorType) {
+    switch (myDetectorType) {
 
-      case MYTHEN:
+    case MYTHEN:
 	
-	for (int iarg=0; iarg<myMod->ndac; iarg++) {
-	  getline(infile,str);
-	  iline++;
-	  istringstream ssstr(str);
-	  ssstr >> sargname >> ival;
+      for (int iarg=0; iarg<myMod->ndac; iarg++) {
+	getline(infile,str);
+	iline++;
+	istringstream ssstr(str);
+	ssstr >> sargname >> ival;
 #ifdef VERBOSE
-	  std::cout<< sargname << " dac nr. " << idac << " is " << ival << std::endl;
+	std::cout<< sargname << " dac nr. " << idac << " is " << ival << std::endl;
 #endif
-	  myMod->dacs[idac]=ival;
-	  idac++;
-	}
-	for (ichip=0; ichip<myMod->nchip; ichip++) { 
-	  getline(infile,str); 
-	  iline++;
+	myMod->dacs[idac]=ival;
+	idac++;
+      }
+      for (ichip=0; ichip<myMod->nchip; ichip++) { 
+	getline(infile,str); 
+	iline++;
 #ifdef VERBOSE
-	  //	  std::cout<< str << std::endl;
+	//	  std::cout<< str << std::endl;
 #endif
-	  istringstream ssstr(str);
-	  ssstr >> sargname >> ival;
+	istringstream ssstr(str);
+	ssstr >> sargname >> ival;
 #ifdef VERBOSE
-	  //	  std::cout<< "chip " << ichip << " " << sargname << " is " << ival << std::endl;
+	//	  std::cout<< "chip " << ichip << " " << sargname << " is " << ival << std::endl;
 #endif
 	  
-	  myMod->chipregs[ichip]=ival;
-	  for (ichan=0; ichan<nch; ichan++) {
-	    getline(infile,str); 
+	myMod->chipregs[ichip]=ival;
+	for (ichan=0; ichan<nch; ichan++) {
+	  getline(infile,str); 
 #ifdef VERBOSE
-	    // std::cout<< str << std::endl;
+	  // std::cout<< str << std::endl;
 #endif
-	    istringstream ssstr(str);
+	  istringstream ssstr(str);
 	    
 #ifdef VERBOSE
-	    //   std::cout<< "channel " << ichan+ichip*thisDetector->nChans <<" iline " << iline<< std::endl;
+	  //   std::cout<< "channel " << ichan+ichip*thisDetector->nChans <<" iline " << iline<< std::endl;
 #endif
-	    iline++;
-	    myMod->chanregs[ichip*nch+ichan]=0;
-	    for (int iarg=0; iarg<6 ; iarg++) {
-	      ssstr >>  ival; 
-	      //if (ssstr.good()) {
-	      switch (iarg) {
-	      case 0:
+	  iline++;
+	  myMod->chanregs[ichip*nch+ichan]=0;
+	  for (int iarg=0; iarg<6 ; iarg++) {
+	    ssstr >>  ival; 
+	    //if (ssstr.good()) {
+	    switch (iarg) {
+	    case 0:
 #ifdef VERBOSE
-		//		 std::cout<< "trimbits " << ival ;
+	      //		 std::cout<< "trimbits " << ival ;
 #endif
-		 myMod->chanregs[ichip*nch+ichan]|=ival&TRIMBITMASK;
-		 break;
-	      case 1:
+	      myMod->chanregs[ichip*nch+ichan]|=ival&TRIMBITMASK;
+	      break;
+	    case 1:
 #ifdef VERBOSE
-		//std::cout<< " compen " << ival ;
+	      //std::cout<< " compen " << ival ;
 #endif
-		myMod->chanregs[ichip*nch+ichan]|=ival<<9;
-		break;
-	      case 2:
+	      myMod->chanregs[ichip*nch+ichan]|=ival<<9;
+	      break;
+	    case 2:
 #ifdef VERBOSE
-		//std::cout<< " anen " << ival ;
+	      //std::cout<< " anen " << ival ;
 #endif
-		myMod->chanregs[ichip*nch+ichan]|=ival<<8;
-		break;
-	      case 3:
+	      myMod->chanregs[ichip*nch+ichan]|=ival<<8;
+	      break;
+	    case 3:
 #ifdef VERBOSE
-		//std::cout<< " calen " << ival  ;
+	      //std::cout<< " calen " << ival  ;
 #endif
-		myMod->chanregs[ichip*nch+ichan]|=ival<<7;
-		break;
-	      case 4:
+	      myMod->chanregs[ichip*nch+ichan]|=ival<<7;
+	      break;
+	    case 4:
 #ifdef VERBOSE
-		//std::cout<< " outcomp " << ival  ;
+	      //std::cout<< " outcomp " << ival  ;
 #endif
-		myMod->chanregs[ichip*nch+ichan]|=ival<<10;
-		break;
-	      case 5:
+	      myMod->chanregs[ichip*nch+ichan]|=ival<<10;
+	      break;
+	    case 5:
 #ifdef VERBOSE
-		//std::cout<< " counts " << ival  << std::endl;
+	      //std::cout<< " counts " << ival  << std::endl;
 #endif
-		 myMod->chanregs[ichip*nch+ichan]|=ival<<11;
-		 break;
-	      default:
-		std::cout<< " too many columns" << std::endl; 
-		break;
-	      }
+	      myMod->chanregs[ichip*nch+ichan]|=ival<<11;
+	      break;
+	    default:
+	      std::cout<< " too many columns" << std::endl; 
+	      break;
 	    }
 	  }
-	  //	}
+	}
+	//	}
       }
 #ifdef VERBOSE
       std::cout<< "read " << ichan*ichip << " channels" <<std::endl; 
@@ -201,45 +201,45 @@ slsDetectorDefs::sls_detector_module* energyConversion::readSettingsFile(string 
       break;
 
 
-      case GOTTHARD:
-	     //---------------dacs---------------
-	for (int iarg=0; iarg<myMod->ndac; iarg++) {
-	  getline(infile,str);
-	  iline++;
+    case GOTTHARD:
+      //---------------dacs---------------
+      for (int iarg=0; iarg<myMod->ndac; iarg++) {
+	getline(infile,str);
+	iline++;
 #ifdef VERBOSE
-	  std::cout<< str << std::endl;
+	std::cout<< str << std::endl;
 #endif
-	  istringstream ssstr(str);
-	  ssstr >> sargname >> ival;
+	istringstream ssstr(str);
+	ssstr >> sargname >> ival;
 #ifdef VERBOSE
-	  std::cout<< sargname << " dac nr. " << idac << " is " << ival << std::endl;
+	std::cout<< sargname << " dac nr. " << idac << " is " << ival << std::endl;
 #endif
-	  myMod->dacs[idac]=ival;
-	  idac++;
-	}
-	break;
+	myMod->dacs[idac]=ival;
+	idac++;
+      }
+      break;
 	
 
-      default:
-	std::cout<< "Unknown detector type - don't know how to read file" <<  myfname << std::endl;
-	infile.close();
-	deleteModule(myMod);
-	return NULL;
-
-      }
-
+    default:
+      std::cout<< "Unknown detector type - don't know how to read file" <<  myfname << std::endl;
       infile.close();
-      strcpy(settingsFile,fname.c_str());
-      return myMod;
-
-    } else {
-      std::cout<< "could not open settings file " <<  myfname << std::endl;
-      
-      if (nflag)
-	deleteModule(myMod);
-
+      deleteModule(myMod);
       return NULL;
+
     }
+
+    infile.close();
+    strcpy(settingsFile,fname.c_str());
+    return myMod;
+
+  } else {
+    std::cout<< "could not open settings file " <<  myfname << std::endl;
+      
+    if (nflag)
+      deleteModule(myMod);
+
+    return NULL;
+  }
  
 };
 

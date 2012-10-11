@@ -598,9 +598,9 @@ slsDetectorCommand::slsDetectorCommand(slsDetectorUtils *det)  {
   descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdTimeLeft;
   i++;
 
-//   descrToFuncMap[i].m_pFuncName="progress";
-//   descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdTimer;
-//   i++;
+  //   descrToFuncMap[i].m_pFuncName="progress";
+  //   descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdTimer;
+  //   i++;
 
   descrToFuncMap[i].m_pFuncName="now"; //
   descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdTimeLeft;
@@ -675,9 +675,9 @@ slsDetectorCommand::slsDetectorCommand(slsDetectorUtils *det)  {
 
   numberOfCommands=i;
   
-// #ifdef VERBOSE
-//   cout << "Number of commands is " << numberOfCommands << endl;
-// #endif
+  // #ifdef VERBOSE
+  //   cout << "Number of commands is " << numberOfCommands << endl;
+  // #endif
 }
 
 
@@ -706,12 +706,12 @@ string slsDetectorCommand::executeLine(int narg, char *args[], int action) {
     /* otherwise one could try if truncated key is unique */
 
 
-   // size_t p=(descrToFuncMap[i].m_pFuncName).find();
-  //  if (p==0) {
+    // size_t p=(descrToFuncMap[i].m_pFuncName).find();
+    //  if (p==0) {
 
-    	if(key==descrToFuncMap[i].m_pFuncName){
+    if(key==descrToFuncMap[i].m_pFuncName){
 #ifdef VERBOSE  
-	  std::cout<<i << " command="<< descrToFuncMap[i].m_pFuncName<<" key="<<key <<std::endl;
+      std::cout<<i << " command="<< descrToFuncMap[i].m_pFuncName<<" key="<<key <<std::endl;
 #endif      
       cmd=descrToFuncMap[i].m_pFuncName;
 
@@ -719,7 +719,7 @@ string slsDetectorCommand::executeLine(int narg, char *args[], int action) {
       string dResult=(this->*memFunc)(narg, args, action);  
       
       return dResult;
-	}
+    }
   }
   return cmdUnknown(narg,args,action);
   
@@ -771,7 +771,26 @@ string slsDetectorCommand::cmdAcquire(int narg, char *args[], int action) {
 #ifdef VERBOSE
   cout << string("Executing command ")+string(args[0])+string(" ( ")+cmd+string(" )\n");
 #endif
+
   myDet->setOnline(ONLINE_FLAG);
+
+  //receiver
+  if(myDet->setReceiverOnline()==ONLINE_FLAG){
+    if(myDet->setReceiverOnline(ONLINE_FLAG)!=ONLINE_FLAG)
+      return string("can not connect to receiver");
+    if(myDet->getReceiverStatus()!=RUNNING){
+      //update receiver index
+      if(myDet->setReceiverFileIndex(myDet->getFileIndex())==-1)
+	return string("could not set receiver file index");
+      //start receiver
+      myDet->startReceiver();
+      usleep(2000000);
+      if(myDet->getReceiverStatus()!=RUNNING)
+	return string("could not start receiver");
+    }
+  }
+
+
   myDet->acquire();
   return string("");
 
@@ -822,7 +841,7 @@ string slsDetectorCommand::helpData(int narg, char *args[], int action){
   if (action==PUT_ACTION)
     return string("");
   else
-   return string("data \t gets all data from the detector (if any) processes them and writes them to file according to the preferences already setup\n");
+    return string("data \t gets all data from the detector (if any) processes them and writes them to file according to the preferences already setup\n");
 
 }
 
@@ -832,19 +851,19 @@ string slsDetectorCommand::cmdFrame(int narg, char *args[], int action) {
 #ifdef VERBOSE
   cout << string("Executing command ")+string(args[0])+string(" ( ")+cmd+string(" )\n");
 #endif
-    if (action==PUT_ACTION) {
-      return  string("cannot set");
-    } else if (action==HELP_ACTION) {
-      return helpFrame(narg,args,HELP_ACTION);
-    } else {
-       b=myDet->setThreadedProcessing(-1);
-       myDet->setThreadedProcessing(0);
-       myDet->setOnline(ONLINE_FLAG);
-       myDet->readFrame();
-       myDet->processData(1);
-       myDet->setThreadedProcessing(b);
-       return string("ok");
-    } 
+  if (action==PUT_ACTION) {
+    return  string("cannot set");
+  } else if (action==HELP_ACTION) {
+    return helpFrame(narg,args,HELP_ACTION);
+  } else {
+    b=myDet->setThreadedProcessing(-1);
+    myDet->setThreadedProcessing(0);
+    myDet->setOnline(ONLINE_FLAG);
+    myDet->readFrame();
+    myDet->processData(1);
+    myDet->setThreadedProcessing(b);
+    return string("ok");
+  } 
 
 }
 
@@ -864,8 +883,24 @@ string slsDetectorCommand::cmdStatus(int narg, char *args[], int action) {
   myDet->setOnline(ONLINE_FLAG);
   if (action==PUT_ACTION) {
     //myDet->setThreadedProcessing(0);
-    if (string(args[1])=="start")
+    if (string(args[1])=="start"){
+      //receiver
+      if(myDet->setReceiverOnline()==ONLINE_FLAG){
+	if(myDet->setReceiverOnline(ONLINE_FLAG)!=ONLINE_FLAG)
+	  return string("can not connect to receiver");
+	if(myDet->getReceiverStatus()!=RUNNING){
+	  //update receiver index
+	  if(myDet->setReceiverFileIndex(myDet->getFileIndex())==-1)
+	    return string("could not set receiver file index");
+	  //start receiver
+	  myDet->startReceiver();
+	  usleep(2000000);
+	  if(myDet->getReceiverStatus()!=RUNNING)
+	    return string("could not start receiver");
+	}
+      }
       myDet->startAcquisition();
+    }
     else if (string(args[1])=="stop")
       myDet->stopAcquisition();
     else
@@ -891,17 +926,17 @@ string slsDetectorCommand::helpStatus(int narg, char *args[], int action) {
 }
 
 
- string slsDetectorCommand::cmdFree(int narg, char *args[], int action) {
+string slsDetectorCommand::cmdFree(int narg, char *args[], int action) {
   
 #ifdef VERBOSE
-   cout << string("Executing command ")+string(args[0])+string(" ( ")+cmd+string(" )\n");
+  cout << string("Executing command ")+string(args[0])+string(" ( ")+cmd+string(" )\n");
 #endif
   if (action==HELP_ACTION) {
     return helpFree(narg,args,HELP_ACTION);
   } 
   myDet->freeSharedMemory();
   return("freed");
- }
+}
 
 
 string slsDetectorCommand::helpFree(int narg, char *args[], int action) {
@@ -1317,34 +1352,34 @@ string slsDetectorCommand::helpTrimEn(int narg, char *args[], int action) {
 
 
 string slsDetectorCommand::cmdOutDir(int narg, char *args[], int action){
-	bool receiver = false;
+  bool receiver = false;
 
-	if (action==HELP_ACTION) {
-		return helpOutDir(narg, args, action);
-	}
+  if (action==HELP_ACTION) {
+    return helpOutDir(narg, args, action);
+  }
 
-	if(myDet->setReceiverOnline()==ONLINE_FLAG)
-		if(myDet->setReceiverOnline(ONLINE_FLAG)==ONLINE_FLAG)
-			receiver = true;
+  if(myDet->setReceiverOnline()==ONLINE_FLAG)
+    if(myDet->setReceiverOnline(ONLINE_FLAG)==ONLINE_FLAG)
+      receiver = true;
 
-	if (action==PUT_ACTION) {
-		if(receiver){
-			if(myDet->setReceiverFileDir(string(args[1]))==string(args[1]))
-				myDet->setFilePath(string(args[1]));
-		}else{
-			//check if the outdir really exists in localhost
-			struct stat st;
-			if(stat(args[1],&st))
-				return string("path does not exist");
-			else
-				myDet->setFilePath(string(args[1]));
-		}
-	}
+  if (action==PUT_ACTION) {
+    if(receiver){
+      if(myDet->setReceiverFileDir(string(args[1]))==string(args[1]))
+	myDet->setFilePath(string(args[1]));
+    }else{
+      //check if the outdir really exists in localhost
+      struct stat st;
+      if(stat(args[1],&st))
+	return string("path does not exist");
+      else
+	myDet->setFilePath(string(args[1]));
+    }
+  }
 
-	if(receiver)
-		return myDet->setReceiverFileDir();
-	else
-		return string(myDet->getFilePath());
+  if(receiver)
+    return myDet->setReceiverFileDir();
+  else
+    return string(myDet->getFilePath());
 }
 
 
@@ -1362,28 +1397,28 @@ string slsDetectorCommand::helpOutDir(int narg, char *args[], int action){
 
 
 string slsDetectorCommand::cmdFileName(int narg, char *args[], int action){
-	bool receiver = false;
+  bool receiver = false;
 
-	if (action==HELP_ACTION) {
-		return helpFileName(narg, args, action);
-	}
+  if (action==HELP_ACTION) {
+    return helpFileName(narg, args, action);
+  }
 
-	if(myDet->setReceiverOnline()==ONLINE_FLAG)
-		if(myDet->setReceiverOnline(ONLINE_FLAG)==ONLINE_FLAG)
-			receiver = true;
+  if(myDet->setReceiverOnline()==ONLINE_FLAG)
+    if(myDet->setReceiverOnline(ONLINE_FLAG)==ONLINE_FLAG)
+      receiver = true;
 
-	if (action==PUT_ACTION) {
-		if(receiver){
-			if(myDet->setReceiverFileName(string(args[1]))==string(args[1]))
-				myDet->setFileName(string(args[1]));
-		}else
-			myDet->setFileName(string(args[1]));
-	}
+  if (action==PUT_ACTION) {
+    if(receiver){
+      if(myDet->setReceiverFileName(string(args[1]))==string(args[1]))
+	myDet->setFileName(string(args[1]));
+    }else
+      myDet->setFileName(string(args[1]));
+  }
 
-	if(receiver)
-		return myDet->setReceiverFileName();
-	else
-		return string(myDet->getFileName());
+  if(receiver)
+    return myDet->setReceiverFileName();
+  else
+    return string(myDet->getFileName());
 }
 
 
@@ -1431,37 +1466,37 @@ string slsDetectorCommand::helpEnablefwrite(int narg, char *args[], int action){
 }
 
 string slsDetectorCommand::cmdFileIndex(int narg, char *args[], int action){
-	bool receiver = false;
-	int i;
-	char ans[100];
+  bool receiver = false;
+  int i;
+  char ans[100];
 
-	if (action==HELP_ACTION) {
-		return helpFileName(narg, args, action);
-	}
+  if (action==HELP_ACTION) {
+    return helpFileName(narg, args, action);
+  }
 
-	if(myDet->setReceiverOnline()==ONLINE_FLAG)
-		if(myDet->setReceiverOnline(ONLINE_FLAG)==ONLINE_FLAG)
-			receiver = true;
+  if(myDet->setReceiverOnline()==ONLINE_FLAG)
+    if(myDet->setReceiverOnline(ONLINE_FLAG)==ONLINE_FLAG)
+      receiver = true;
 
-	if (action==PUT_ACTION) {
-		if (sscanf(args[1],"%d",&i)){
-			if(receiver){
-				if(myDet->setReceiverFileIndex(i)==i)
-					myDet->setFileIndex(i);
-			}else
-				myDet->setFileIndex(i);
-		}
-	}
+  if (action==PUT_ACTION) {
+    if (sscanf(args[1],"%d",&i)){
+      if(receiver){
+	if(myDet->setReceiverFileIndex(i)==i)
+	  myDet->setFileIndex(i);
+      }else
+	myDet->setFileIndex(i);
+    }
+  }
 
-	if(receiver){
-		//int ret=myDet->setReceiverFileIndex();
-		//myDet->setFileIndex(ret);
-		sprintf(ans,"%d", myDet->setReceiverFileIndex());
-	}
-	else
-		sprintf(ans,"%d", myDet->getFileIndex());
+  if(receiver){
+    //int ret=myDet->setReceiverFileIndex();
+    //myDet->setFileIndex(ret);
+    sprintf(ans,"%d", myDet->setReceiverFileIndex());
+  }
+  else
+    sprintf(ans,"%d", myDet->getFileIndex());
 
-	return string(ans);
+  return string(ans);
 }
 
 
@@ -1537,14 +1572,14 @@ string slsDetectorCommand::helpFlatField(int narg, char *args[], int action){
     if (action==GET_ACTION || action==HELP_ACTION) {
       os << string("flatfield [fn]\t  gets the flat field file name. the coorection values and errors can be dumped to fn if specified. \n");
     } if (action==PUT_ACTION || action==HELP_ACTION)
-      os << string("flatfield s \t  sets the flat field file name\n");
+	os << string("flatfield s \t  sets the flat field file name\n");
   }  
   if (t!=2) {
     
     if (action==GET_ACTION || action==HELP_ACTION)
       os << string("ffdir \t  gets the path for the flat field files \n");
     if (action==PUT_ACTION || action==HELP_ACTION)
-    os << string("ffdir s \t  sets the path for flat field files\n");
+      os << string("ffdir s \t  sets the path for flat field files\n");
   }  
   return os.str();
 
@@ -1597,41 +1632,41 @@ string slsDetectorCommand::cmdBadChannels(int narg, char *args[], int action){
     return helpBadChannels(narg, args, action);
   } 
   if (action==PUT_ACTION) {
+    sval=string(args[1]);
+    if (sval=="none")
+      sval="";
+    myDet->setBadChannelCorrection(sval);
+  } else if (action==GET_ACTION) {
+    if (narg>1)
       sval=string(args[1]);
-      if (sval=="none")
-	sval="";
-      myDet->setBadChannelCorrection(sval);
-    } else if (action==GET_ACTION) {
-      if (narg>1)
-	sval=string(args[1]);
-      else
-	sval="none";
-      int bch[24*1280], nbch;
-      if ((nbch=myDet->getBadChannelCorrection(bch))) {
-	if (sval!="none") {  
-	  ofstream outfile;
-	  outfile.open (sval.c_str(),ios_base::out);
-	  if (outfile.is_open()) {
-	    for (int ich=0; ich<nbch; ich++) {
-	      outfile << bch[ich] << std::endl;
-	    }
-	    outfile.close();	
-	    return sval;
-	  } else 
-	    std::cout<< "Could not open file " << sval << " for writing " << std::endl;
-	}
-      } 
-    }
-    return string(myDet->getBadChannelCorrectionFile());
+    else
+      sval="none";
+    int bch[24*1280], nbch;
+    if ((nbch=myDet->getBadChannelCorrection(bch))) {
+      if (sval!="none") {  
+	ofstream outfile;
+	outfile.open (sval.c_str(),ios_base::out);
+	if (outfile.is_open()) {
+	  for (int ich=0; ich<nbch; ich++) {
+	    outfile << bch[ich] << std::endl;
+	  }
+	  outfile.close();	
+	  return sval;
+	} else 
+	  std::cout<< "Could not open file " << sval << " for writing " << std::endl;
+      }
+    } 
+  }
+  return string(myDet->getBadChannelCorrectionFile());
 
 }
  
 
 string slsDetectorCommand::helpBadChannels(int narg, char *args[], int action){
- ostringstream os;  
-    if (action==GET_ACTION || action==HELP_ACTION)
-      os << string("badchannels [fn]\t  returns the badchannels file. Prints the list of bad channels in fn, if specified. \n");
-    if (action==PUT_ACTION || action==HELP_ACTION)
+  ostringstream os;  
+  if (action==GET_ACTION || action==HELP_ACTION)
+    os << string("badchannels [fn]\t  returns the badchannels file. Prints the list of bad channels in fn, if specified. \n");
+  if (action==PUT_ACTION || action==HELP_ACTION)
     os << string("badchannels \t  sets the bad channels list\n");
    
   return os.str();
@@ -1703,12 +1738,12 @@ string slsDetectorCommand::cmdAngConv(int narg, char *args[], int action){
 
 
 
-    if (action==PUT_ACTION) {
-      if (sscanf(args[1],"%lf",&fval))
-	myDet->setAngularConversionParameter(c,fval);
-    } 
-    sprintf(answer,"%f",myDet->getAngularConversionParameter(c));
-    return string(answer); 
+  if (action==PUT_ACTION) {
+    if (sscanf(args[1],"%lf",&fval))
+      myDet->setAngularConversionParameter(c,fval);
+  } 
+  sprintf(answer,"%f",myDet->getAngularConversionParameter(c));
+  return string(answer); 
 
 
 }
@@ -1766,7 +1801,7 @@ string slsDetectorCommand::helpAngConv(int narg, char *args[], int action){
     if (action==PUT_ACTION || action==HELP_ACTION)
       os << string("samplex f\t  sets the sample displacement in th direction parallel to the beam \n");
   }
- if (t&32) {
+  if (t&32) {
     if (action==GET_ACTION || action==HELP_ACTION)
       os << string("sampley \t   gets the sample displacement in the direction orthogonal to the beam  \n");
     if (action==PUT_ACTION || action==HELP_ACTION)
@@ -1795,10 +1830,10 @@ string slsDetectorCommand::cmdThreaded(int narg, char *args[], int action){
    
 
 string slsDetectorCommand::helpThreaded(int narg, char *args[], int action){
-   ostringstream os;  
-    if (action==GET_ACTION || action==HELP_ACTION)
-      os << string("threaded \t  returns wether the data processing is threaded. \n");
-    if (action==PUT_ACTION || action==HELP_ACTION)
+  ostringstream os;  
+  if (action==GET_ACTION || action==HELP_ACTION)
+    os << string("threaded \t  returns wether the data processing is threaded. \n");
+  if (action==PUT_ACTION || action==HELP_ACTION)
     os << string("threaded t \t  sets the threading flag ( 1sets, 0 unsets).\n");
    
   return os.str();
@@ -1812,16 +1847,16 @@ string slsDetectorCommand::cmdImage(int narg, char *args[], int action){
   if (action==HELP_ACTION)
     return helpImage(narg,args,HELP_ACTION);
   else if (action==GET_ACTION)
-	  return string("Cannot get");
+    return string("Cannot get");
 
   sval=string(args[1]);
   myDet->setOnline(ONLINE_FLAG);
 
 
   if (string(args[0])==string("darkimage"))
-	  retval=myDet->loadImageToDetector(DARK_IMAGE,sval);
+    retval=myDet->loadImageToDetector(DARK_IMAGE,sval);
   else if (string(args[0])==string("gainimage"))
-	  retval=myDet->loadImageToDetector(GAIN_IMAGE,sval);
+    retval=myDet->loadImageToDetector(GAIN_IMAGE,sval);
 
   
   if(retval==OK)
@@ -1832,16 +1867,16 @@ string slsDetectorCommand::cmdImage(int narg, char *args[], int action){
 
 
 string slsDetectorCommand::helpImage(int narg, char *args[], int action){
-	ostringstream os;
-	if (action==PUT_ACTION || action==HELP_ACTION){
-		os << "darkimage f \t  loads the image to detector from file f"<< std::endl;
-		os << "gainimage f \t  loads the image to detector from file f"<< std::endl;
-	}
-	if (action==GET_ACTION || action==HELP_ACTION){
-		os << "darkimage \t  Cannot get"<< std::endl;
-		os << "gainimage \t  Cannot get"<< std::endl;
-	}
-	return os.str();
+  ostringstream os;
+  if (action==PUT_ACTION || action==HELP_ACTION){
+    os << "darkimage f \t  loads the image to detector from file f"<< std::endl;
+    os << "gainimage f \t  loads the image to detector from file f"<< std::endl;
+  }
+  if (action==GET_ACTION || action==HELP_ACTION){
+    os << "darkimage \t  Cannot get"<< std::endl;
+    os << "gainimage \t  Cannot get"<< std::endl;
+  }
+  return os.str();
 }
 
 
@@ -1852,25 +1887,25 @@ string slsDetectorCommand::cmdCounter(int narg, char *args[], int action){
   if (action==HELP_ACTION)
     return helpCounter(narg,args,HELP_ACTION);
   else if (action==PUT_ACTION)
-	  ival=atoi(args[1]);
+    ival=atoi(args[1]);
 
   myDet->setOnline(ONLINE_FLAG);
 
- if (string(args[0])==string("readctr")){
-	  if (action==PUT_ACTION)
-		  return string("Cannot put");
-	  else{
-		  if (narg<3)
-		    return string("should specify I/O file");
-		  sval=string(args[2]);
-		  retval=myDet->writeCounterBlockFile(sval,ival);
-	  }
+  if (string(args[0])==string("readctr")){
+    if (action==PUT_ACTION)
+      return string("Cannot put");
+    else{
+      if (narg<3)
+	return string("should specify I/O file");
+      sval=string(args[2]);
+      retval=myDet->writeCounterBlockFile(sval,ival);
+    }
   }
   else if (string(args[0])==string("resetctr")){
-	  if (action==GET_ACTION)
-		  return string("Cannot get");
-	  else
-		  retval=myDet->resetCounterBlock(ival);
+    if (action==GET_ACTION)
+      return string("Cannot get");
+    else
+      retval=myDet->resetCounterBlock(ival);
   }
 
 
@@ -1882,16 +1917,16 @@ string slsDetectorCommand::cmdCounter(int narg, char *args[], int action){
 
 
 string slsDetectorCommand::helpCounter(int narg, char *args[], int action){
-	ostringstream os;
-	os << std::endl;
-	if (action==PUT_ACTION || action==HELP_ACTION){
-		os << "readctr \t  Cannot put"<< std::endl;
-		os << "resetctr i \t  resets counter in detector, restarts acquisition if i=1"<< std::endl;
-	}
-	if (action==GET_ACTION || action==HELP_ACTION)
-		os << "readctr i fname\t  reads counter in detector to file fname, restarts acquisition if i=1"<< std::endl;
-		os << "resetctr \t  Cannot get"<< std::endl;
-	return os.str();
+  ostringstream os;
+  os << std::endl;
+  if (action==PUT_ACTION || action==HELP_ACTION){
+    os << "readctr \t  Cannot put"<< std::endl;
+    os << "resetctr i \t  resets counter in detector, restarts acquisition if i=1"<< std::endl;
+  }
+  if (action==GET_ACTION || action==HELP_ACTION)
+    os << "readctr i fname\t  reads counter in detector to file fname, restarts acquisition if i=1"<< std::endl;
+  os << "resetctr \t  Cannot get"<< std::endl;
+  return os.str();
 }
 
 
@@ -2198,7 +2233,7 @@ string slsDetectorCommand::cmdNetworkParameter(int narg, char *args[], int actio
     if(!strcmp(myDet->setNetworkParameter(t, args[1]),args[1])){
       if(t==RECEIVER_IP){
     	if(myDet->setReceiverOnline(ONLINE_FLAG)!=ONLINE_FLAG)
-    		return string("receiver not online");
+	  return string("receiver not online");
     	//outdir
      	if(myDet->setReceiverFileDir(myDet->getFilePath()).compare(myDet->getFilePath()))
           return string("could not set up receiver file outdir");
@@ -2301,35 +2336,35 @@ string slsDetectorCommand::cmdLock(int narg, char *args[], int action) {
   char ans[1000];
   
   if(cmd=="lock"){
-	  myDet->setOnline(ONLINE_FLAG);
-	  if (action==PUT_ACTION) {
-		  if (sscanf(args[1],"%d",&val))
-			  myDet->lockServer(val);
-		  else
-			  return string("could not lock status")+string(args[1]);
-	  }
+    myDet->setOnline(ONLINE_FLAG);
+    if (action==PUT_ACTION) {
+      if (sscanf(args[1],"%d",&val))
+	myDet->lockServer(val);
+      else
+	return string("could not lock status")+string(args[1]);
+    }
 
-	  sprintf(ans,"%d",myDet->lockServer());
+    sprintf(ans,"%d",myDet->lockServer());
   }
 
 
   else  if(cmd=="r_lock"){
-	  if(myDet->setReceiverOnline(ONLINE_FLAG)!=ONLINE_FLAG)
-		  return string("could not connect to receiver");
+    if(myDet->setReceiverOnline(ONLINE_FLAG)!=ONLINE_FLAG)
+      return string("could not connect to receiver");
 
-	  if (action==PUT_ACTION) {
-		  if (!sscanf(args[1],"%d",&val))
-			  return string("could not decode lock status")+string(args[1]);
+    if (action==PUT_ACTION) {
+      if (!sscanf(args[1],"%d",&val))
+	return string("could not decode lock status")+string(args[1]);
 
-		  if(myDet->lockReceiver(val)!=val)
-			  return string("could not lock/unlock receiver");
-	  }
-	  sprintf(ans,"%d",myDet->lockReceiver());
+      if(myDet->lockReceiver(val)!=val)
+	return string("could not lock/unlock receiver");
+    }
+    sprintf(ans,"%d",myDet->lockReceiver());
   }
 
 
   else
-	  return string("could not decode command");
+    return string("could not decode command");
 
   return string(ans);
 }
@@ -2360,19 +2395,19 @@ string slsDetectorCommand::cmdLastClient(int narg, char *args[], int action) {
     return helpLastClient(narg,args,action);
   
   if (action==PUT_ACTION)
-	  return string("cannot set");
+    return string("cannot set");
 
   if(cmd=="lastclient"){
-	  myDet->setOnline(ONLINE_FLAG);
+    myDet->setOnline(ONLINE_FLAG);
 
-	  return myDet->getLastClientIP();
+    return myDet->getLastClientIP();
   }
 
   else if(cmd=="r_lastclient"){
-	  if(myDet->setReceiverOnline(ONLINE_FLAG)!=ONLINE_FLAG)
-		  return string("could not connect to receiver");
+    if(myDet->setReceiverOnline(ONLINE_FLAG)!=ONLINE_FLAG)
+      return string("could not connect to receiver");
 
-	  return myDet->getReceiverLastClientIP();
+    return myDet->getReceiverLastClientIP();
   }
 }
 
@@ -2391,50 +2426,50 @@ string slsDetectorCommand::helpLastClient(int narg, char *args[], int action) {
 
 string slsDetectorCommand::cmdOnline(int narg, char *args[], int action) {
 
-	if (action==HELP_ACTION) {
-		return helpOnline(narg,args,action);
-	}
-	int ival;
-	char ans[1000];
+  if (action==HELP_ACTION) {
+    return helpOnline(narg,args,action);
+  }
+  int ival;
+  char ans[1000];
 
-	if(cmd=="online"){
-		if (action==PUT_ACTION) {
-			if (sscanf(args[1],"%d",&ival))
-				myDet->setOnline(ival);
-			else
-				return string("Could not scan online mode ")+string(args[1]);
-		}
-		sprintf(ans,"%d",myDet->setOnline());
-	}
-	else if(cmd=="checkonline"){
-		if (action==PUT_ACTION)
-			return string("cannot set");
-		strcpy(ans,myDet->checkOnline().c_str());
-		if(!strlen(ans))
-			strcpy(ans,"All online");
-		else
-			strcat(ans," :Not online");
-	}
-	else if(cmd=="r_online"){
-		if (action==PUT_ACTION) {
-			if (sscanf(args[1],"%d",&ival))
-				myDet->setReceiverOnline(ival);
-			else
-				return string("Could not scan online mode ")+string(args[1]);
-		}
-		sprintf(ans,"%d",myDet->setReceiverOnline());
-	}
-	else{
-		if (action==PUT_ACTION)
-			return string("cannot set");
-		strcpy(ans,myDet->checkReceiverOnline().c_str());
-		if(!strlen(ans))
-			strcpy(ans,"All receiver online");
-		else
-			strcat(ans," :Not receiver online");
-	}
+  if(cmd=="online"){
+    if (action==PUT_ACTION) {
+      if (sscanf(args[1],"%d",&ival))
+	myDet->setOnline(ival);
+      else
+	return string("Could not scan online mode ")+string(args[1]);
+    }
+    sprintf(ans,"%d",myDet->setOnline());
+  }
+  else if(cmd=="checkonline"){
+    if (action==PUT_ACTION)
+      return string("cannot set");
+    strcpy(ans,myDet->checkOnline().c_str());
+    if(!strlen(ans))
+      strcpy(ans,"All online");
+    else
+      strcat(ans," :Not online");
+  }
+  else if(cmd=="r_online"){
+    if (action==PUT_ACTION) {
+      if (sscanf(args[1],"%d",&ival))
+	myDet->setReceiverOnline(ival);
+      else
+	return string("Could not scan online mode ")+string(args[1]);
+    }
+    sprintf(ans,"%d",myDet->setReceiverOnline());
+  }
+  else{
+    if (action==PUT_ACTION)
+      return string("cannot set");
+    strcpy(ans,myDet->checkReceiverOnline().c_str());
+    if(!strlen(ans))
+      strcpy(ans,"All receiver online");
+    else
+      strcat(ans," :Not receiver online");
+  }
 
-	return ans;
+  return ans;
 }
 
 string slsDetectorCommand::helpOnline(int narg, char *args[], int action) {
@@ -2562,11 +2597,11 @@ string slsDetectorCommand::cmdSettings(int narg, char *args[], int action) {
  
 
 
-//     if (sscanf(args[1],"%d",&val))
-//       ;
-//     else
-//       return string("could not scan port number")+string(args[1]);
-//   } 
+  //     if (sscanf(args[1],"%d",&val))
+  //       ;
+  //     else
+  //       return string("could not scan port number")+string(args[1]);
+  //   } 
 
   myDet->setOnline(ONLINE_FLAG);
 
@@ -2601,39 +2636,39 @@ string slsDetectorCommand::cmdSettings(int narg, char *args[], int action) {
     if (action==GET_ACTION) 
       return string("cannot get!");
 
-      trimMode mode=NOISE_TRIMMING;
-      int par1=0, par2=0;
-      if (string(args[0]).find("trim:")==string::npos)
-	return helpSettings(narg,args,action);
-      else if  (string(args[0]).find("noise")!=string::npos) {
-	// par1 is countlim; par2 is nsigma
-	mode=NOISE_TRIMMING;
-	par1=500;
-	par2=4;
-      } else if  (string(args[0]).find("beam")!=string::npos){
-	// par1 is countlim; par2 is nsigma
-	mode=BEAM_TRIMMING;
-	par1=1000;
-	par2=4;
-      } else if  (string(args[0]).find("improve")!=string::npos) {
-	// par1 is maxit; if par2!=0 vthresh will be optimized
-	mode=IMPROVE_TRIMMING;
-	par1=5;
-	par2=0;
-      } else if  (string(args[0]).find("fix")!=string::npos)  {
-	// par1 is countlim; if par2<0 then trimwithlevel else trim with median 
-	mode=FIXEDSETTINGS_TRIMMING;
-	par1=1000;
-	par2=1;
-	// }else if  (string(args[0]).find("fix")!=string::npos) {
-	//mode=OFFLINE_TRIMMING;
-      } else {
-	return string("Unknown trim mode ")+cmd;
-      } 
-      myDet->executeTrimming(mode, par1, par2);
-      string sval=string(args[1]);
-      myDet->saveSettingsFile(sval, -1);
-      return string("done");
+    trimMode mode=NOISE_TRIMMING;
+    int par1=0, par2=0;
+    if (string(args[0]).find("trim:")==string::npos)
+      return helpSettings(narg,args,action);
+    else if  (string(args[0]).find("noise")!=string::npos) {
+      // par1 is countlim; par2 is nsigma
+      mode=NOISE_TRIMMING;
+      par1=500;
+      par2=4;
+    } else if  (string(args[0]).find("beam")!=string::npos){
+      // par1 is countlim; par2 is nsigma
+      mode=BEAM_TRIMMING;
+      par1=1000;
+      par2=4;
+    } else if  (string(args[0]).find("improve")!=string::npos) {
+      // par1 is maxit; if par2!=0 vthresh will be optimized
+      mode=IMPROVE_TRIMMING;
+      par1=5;
+      par2=0;
+    } else if  (string(args[0]).find("fix")!=string::npos)  {
+      // par1 is countlim; if par2<0 then trimwithlevel else trim with median 
+      mode=FIXEDSETTINGS_TRIMMING;
+      par1=1000;
+      par2=1;
+      // }else if  (string(args[0]).find("fix")!=string::npos) {
+      //mode=OFFLINE_TRIMMING;
+    } else {
+      return string("Unknown trim mode ")+cmd;
+    } 
+    myDet->executeTrimming(mode, par1, par2);
+    string sval=string(args[1]);
+    myDet->saveSettingsFile(sval, -1);
+    return string("done");
     
   }
   return string("unknown settings command ")+cmd;
@@ -2752,7 +2787,7 @@ string slsDetectorCommand::cmdDigiTest(int narg, char *args[], int action) {
   char answer[1000];
 
   if (action==HELP_ACTION)
-	  return helpSN(narg, args, action);
+    return helpSN(narg, args, action);
 
 
   myDet->setOnline(ONLINE_FLAG);
@@ -2852,15 +2887,15 @@ string slsDetectorCommand::cmdRegister(int narg, char *args[], int action) {
     sprintf(answer,"%x",myDet->writeRegister(addr,val));
     
   } else {
-      if (narg<2) 
-	return string("wrong usage: should specify address  (hexadecimal fomat) ");
-      if (sscanf(args[1],"%x",&addr))
-	;
-      else
-	return string("Could not scan address  (hexadecimal fomat) ")+string(args[1]);
+    if (narg<2) 
+      return string("wrong usage: should specify address  (hexadecimal fomat) ");
+    if (sscanf(args[1],"%x",&addr))
+      ;
+    else
+      return string("Could not scan address  (hexadecimal fomat) ")+string(args[1]);
 	
 	
-      sprintf(answer,"%x",myDet->readRegister(addr));
+    sprintf(answer,"%x",myDet->readRegister(addr));
       
   }
 
@@ -2947,11 +2982,11 @@ string slsDetectorCommand::cmdDAC(int narg, char *args[], int action) {
 #ifdef DACS_INT
     if (sscanf(args[1],"%d", &val))
 #else
-    if (sscanf(args[1],"%f", &val))
+      if (sscanf(args[1],"%f", &val))
 #endif
-      ;
-    else
-      return string("cannot scan DAC value ")+string(args[1]);
+	;
+      else
+	return string("cannot scan DAC value ")+string(args[1]);
   }
   
   myDet->setOnline(ONLINE_FLAG);
@@ -2967,80 +3002,80 @@ string slsDetectorCommand::cmdDAC(int narg, char *args[], int action) {
 
 string slsDetectorCommand::helpDAC(int narg, char *args[], int action) {
 
-	ostringstream os;
-	if (action==PUT_ACTION || action==HELP_ACTION) {
-		os << "vthreshold dacu\t sets the detector threshold in dac units (0-1024). The energy is approx 800-15*keV" << std::endl;
-		os << std::endl;
+  ostringstream os;
+  if (action==PUT_ACTION || action==HELP_ACTION) {
+    os << "vthreshold dacu\t sets the detector threshold in dac units (0-1024). The energy is approx 800-15*keV" << std::endl;
+    os << std::endl;
 
-		os << "vcalibration " << "dacu\t sets the calibration pulse amplitude in dac units (0-1024)." << std::endl;
-		os << std::endl;
-		os << "vtrimbit " << "dacu\t sets the trimbit amplitude in dac units (0-1024)." << std::endl;
-		os << std::endl;
-		os << "vpreamp " << "dacu\t sets the preamp feedback voltage in dac units (0-1024)." << std::endl;
-		os << std::endl;
-		os << "vshaper1 " << "dacu\t sets the shaper1 feedback voltage in dac units (0-1024)." << std::endl;
-		os << std::endl;
-		os << "vshaper2 " << "dacu\t sets the  shaper2 feedback voltage in dac units (0-1024)." << std::endl;
-		os << std::endl;
-		os << "vhighvoltage " << "dacu\t CHIPTEST BOARD ONLY - sets the detector HV in dac units (0-1024)." << std::endl;
-		os << std::endl;
-		os << "vapower " << "dacu\t CHIPTEST BOARD ONLY - sets the analog power supply in dac units (0-1024)." << std::endl;
-		os << std::endl;
-		os << "vddpower " << "dacu\t CHIPTEST BOARD ONLY - sets the digital power supply in dac units (0-1024)." << std::endl;
-		os << std::endl;
-		os << "vshpower " << "dacu\t CHIPTEST BOARD ONLY - sets the comparator power supply in dac units (0-1024)." << std::endl;
-		os << std::endl;
-		os << "viopower " << "dacu\t CHIPTEST BOARD ONLY - sets the FPGA I/O power supply in dac units (0-1024)." << std::endl;
-
-
-
-		os << "vrefds " << "dacu\t sets vrefds" << std::endl;
-		os << "vcascn_pb " << "dacu\t sets vcascn_pb" << std::endl;
-		os << "vcascp_pb " << "dacu\t sets vcascp_pb" << std::endl;
-		os << "vout_cm " << "dacu\t sets vout_cm" << std::endl;
-		os << "vin_cm " << "dacu\t sets vin_cm" << std::endl;
-		os << "vcasc_out " << "dacu\t sets vcasc_out" << std::endl;
-		os << "vref_comp " << "dacu\t sets vref_comp" << std::endl;
-		os << "ib_test_c " << "dacu\t sets ib_test_c" << std::endl;
-
-	}
-	if (action==GET_ACTION || action==HELP_ACTION) {
-
-		os << "vthreshold \t Gets the detector threshold in dac units (0-1024). The energy is approx 800-15*keV" << std::endl;
-		os << std::endl;
-
-		os << "vcalibration " << "dacu\t gets the calibration pulse amplitude in dac units (0-1024)." << std::endl;
-		os << std::endl;
-		os << "vtrimbit " << "dacu\t gets the trimbit amplitude in dac units (0-1024)." << std::endl;
-		os << std::endl;
-		os << "vpreamp " << "dacu\t gets the preamp feedback voltage in dac units (0-1024)." << std::endl;
-		os << std::endl;
-		os << "vshaper1 " << "dacu\t gets the shaper1 feedback voltage in dac units (0-1024)." << std::endl;
-		os << std::endl;
-		os << "vshaper2 " << "dacu\t gets the  shaper2 feedback voltage in dac units (0-1024)." << std::endl;
-		os << std::endl;
-		os << "vhighvoltage " << "dacu\t CHIPTEST BOARD ONLY - gets the detector HV in dac units (0-1024)." << std::endl;
-		os << std::endl;
-		os << "vapower " << "dacu\t CHIPTEST BOARD ONLY - gets the analog power supply in dac units (0-1024)." << std::endl;
-		os << std::endl;
-		os << "vddpower " << "dacu\t CHIPTEST BOARD ONLY - gets the digital power supply in dac units (0-1024)." << std::endl;
-		os << std::endl;
-		os << "vshpower " << "dacu\t CHIPTEST BOARD ONLY - gets the comparator power supply in dac units (0-1024)." << std::endl;
-		os << std::endl;
-		os << "viopower " << "dacu\t CHIPTEST BOARD ONLY - gets the FPGA I/O power supply in dac units (0-1024)." << std::endl;
-		os << std::endl;
+    os << "vcalibration " << "dacu\t sets the calibration pulse amplitude in dac units (0-1024)." << std::endl;
+    os << std::endl;
+    os << "vtrimbit " << "dacu\t sets the trimbit amplitude in dac units (0-1024)." << std::endl;
+    os << std::endl;
+    os << "vpreamp " << "dacu\t sets the preamp feedback voltage in dac units (0-1024)." << std::endl;
+    os << std::endl;
+    os << "vshaper1 " << "dacu\t sets the shaper1 feedback voltage in dac units (0-1024)." << std::endl;
+    os << std::endl;
+    os << "vshaper2 " << "dacu\t sets the  shaper2 feedback voltage in dac units (0-1024)." << std::endl;
+    os << std::endl;
+    os << "vhighvoltage " << "dacu\t CHIPTEST BOARD ONLY - sets the detector HV in dac units (0-1024)." << std::endl;
+    os << std::endl;
+    os << "vapower " << "dacu\t CHIPTEST BOARD ONLY - sets the analog power supply in dac units (0-1024)." << std::endl;
+    os << std::endl;
+    os << "vddpower " << "dacu\t CHIPTEST BOARD ONLY - sets the digital power supply in dac units (0-1024)." << std::endl;
+    os << std::endl;
+    os << "vshpower " << "dacu\t CHIPTEST BOARD ONLY - sets the comparator power supply in dac units (0-1024)." << std::endl;
+    os << std::endl;
+    os << "viopower " << "dacu\t CHIPTEST BOARD ONLY - sets the FPGA I/O power supply in dac units (0-1024)." << std::endl;
 
 
-		os << "vrefds " << "\t gets vrefds" << std::endl;
-		os << "vcascn_pb " << "\t gets vcascn_pb" << std::endl;
-		os << "vcascp_pb " << "\t gets vcascp_pb" << std::endl;
-		os << "vout_cm " << "\t gets vout_cm" << std::endl;
-		os << "vin_cm " << "\t gets vin_cm" << std::endl;
-		os << "vcasc_out " << "\t gets vcasc_out" << std::endl;
-		os << "vref_comp " << "\t gets vref_comp" << std::endl;
-		os << "ib_test_c " << "\t gets ib_test_c" << std::endl;
-	}
-	return os.str();
+
+    os << "vrefds " << "dacu\t sets vrefds" << std::endl;
+    os << "vcascn_pb " << "dacu\t sets vcascn_pb" << std::endl;
+    os << "vcascp_pb " << "dacu\t sets vcascp_pb" << std::endl;
+    os << "vout_cm " << "dacu\t sets vout_cm" << std::endl;
+    os << "vin_cm " << "dacu\t sets vin_cm" << std::endl;
+    os << "vcasc_out " << "dacu\t sets vcasc_out" << std::endl;
+    os << "vref_comp " << "dacu\t sets vref_comp" << std::endl;
+    os << "ib_test_c " << "dacu\t sets ib_test_c" << std::endl;
+
+  }
+  if (action==GET_ACTION || action==HELP_ACTION) {
+
+    os << "vthreshold \t Gets the detector threshold in dac units (0-1024). The energy is approx 800-15*keV" << std::endl;
+    os << std::endl;
+
+    os << "vcalibration " << "dacu\t gets the calibration pulse amplitude in dac units (0-1024)." << std::endl;
+    os << std::endl;
+    os << "vtrimbit " << "dacu\t gets the trimbit amplitude in dac units (0-1024)." << std::endl;
+    os << std::endl;
+    os << "vpreamp " << "dacu\t gets the preamp feedback voltage in dac units (0-1024)." << std::endl;
+    os << std::endl;
+    os << "vshaper1 " << "dacu\t gets the shaper1 feedback voltage in dac units (0-1024)." << std::endl;
+    os << std::endl;
+    os << "vshaper2 " << "dacu\t gets the  shaper2 feedback voltage in dac units (0-1024)." << std::endl;
+    os << std::endl;
+    os << "vhighvoltage " << "dacu\t CHIPTEST BOARD ONLY - gets the detector HV in dac units (0-1024)." << std::endl;
+    os << std::endl;
+    os << "vapower " << "dacu\t CHIPTEST BOARD ONLY - gets the analog power supply in dac units (0-1024)." << std::endl;
+    os << std::endl;
+    os << "vddpower " << "dacu\t CHIPTEST BOARD ONLY - gets the digital power supply in dac units (0-1024)." << std::endl;
+    os << std::endl;
+    os << "vshpower " << "dacu\t CHIPTEST BOARD ONLY - gets the comparator power supply in dac units (0-1024)." << std::endl;
+    os << std::endl;
+    os << "viopower " << "dacu\t CHIPTEST BOARD ONLY - gets the FPGA I/O power supply in dac units (0-1024)." << std::endl;
+    os << std::endl;
+
+
+    os << "vrefds " << "\t gets vrefds" << std::endl;
+    os << "vcascn_pb " << "\t gets vcascn_pb" << std::endl;
+    os << "vcascp_pb " << "\t gets vcascp_pb" << std::endl;
+    os << "vout_cm " << "\t gets vout_cm" << std::endl;
+    os << "vin_cm " << "\t gets vin_cm" << std::endl;
+    os << "vcasc_out " << "\t gets vcasc_out" << std::endl;
+    os << "vref_comp " << "\t gets vref_comp" << std::endl;
+    os << "ib_test_c " << "\t gets ib_test_c" << std::endl;
+  }
+  return os.str();
 }
 
 
@@ -3245,7 +3280,7 @@ string slsDetectorCommand::cmdTimeLeft(int narg, char *args[], int action) {
 
   
   if (action==PUT_ACTION) {
-      return string("cannot set ")+string(args[1]);
+    return string("cannot set ")+string(args[1]);
   }
   
   
@@ -3492,8 +3527,8 @@ string slsDetectorCommand::cmdConfiguration(int narg, char *args[], int action) 
 
   if (cmd=="config") {
     if (action==PUT_ACTION) {
-     sval=string(args[1]);
-     myDet->readConfigurationFile(sval);
+      sval=string(args[1]);
+      myDet->readConfigurationFile(sval);
     } else if (action==GET_ACTION) {
       sval=string(args[1]);
       myDet->writeConfigurationFile(sval);
@@ -3501,20 +3536,20 @@ string slsDetectorCommand::cmdConfiguration(int narg, char *args[], int action) 
     return sval;
   } else if (cmd=="parameters") {
     if (action==PUT_ACTION) {
-     sval=string(args[1]);
-     myDet->retrieveDetectorSetup(sval);
+      sval=string(args[1]);
+      myDet->retrieveDetectorSetup(sval);
     } else if (action==GET_ACTION) {
-     sval=string(args[1]);
-     myDet->dumpDetectorSetup(sval);
+      sval=string(args[1]);
+      myDet->dumpDetectorSetup(sval);
     }  
     return sval;
   } else if (cmd=="setup") {
     if (action==PUT_ACTION) {
-     sval=string(args[1]);
-     myDet->retrieveDetectorSetup(sval,2);
+      sval=string(args[1]);
+      myDet->retrieveDetectorSetup(sval,2);
     } else if (action==GET_ACTION) {
-     sval=string(args[1]);
-     myDet->dumpDetectorSetup(sval,2);
+      sval=string(args[1]);
+      myDet->dumpDetectorSetup(sval,2);
     }  
     return sval;
   }
@@ -3555,54 +3590,54 @@ string slsDetectorCommand::helpConfiguration(int narg, char *args[], int action)
 
 
 string slsDetectorCommand::cmdReceiver(int narg, char *args[], int action) {
-	char answer[100];
+  char answer[100];
 
-	if (action==HELP_ACTION)
-		return helpReceiver(narg, args, action);
+  if (action==HELP_ACTION)
+    return helpReceiver(narg, args, action);
 
-	if(myDet->setReceiverOnline(ONLINE_FLAG)!=ONLINE_FLAG)
-		return string("receiver not online");
+  if(myDet->setReceiverOnline(ONLINE_FLAG)!=ONLINE_FLAG)
+    return string("receiver not online");
 
-	if(cmd=="receiver"){
-		if (action==PUT_ACTION) {
-			if(!strcasecmp(args[1],"start")){
-				if(myDet->getReceiverStatus()==IDLE){
-					//update receiver index
-					if(myDet->setReceiverFileIndex(myDet->getFileIndex())==-1)
-						return string("could not set receiver file index");
-					//to configure the server
-					myDet->setOnline(ONLINE_FLAG);
-					myDet->startReceiver();
-				}
-			}
-
-			else if(!strcasecmp(args[1],"stop")){
-				if(myDet->getReceiverStatus()==RUNNING){
-					myDet->setOnline(ONLINE_FLAG);
-					if(myDet->stopReceiver()!=FAIL){
-						//update index
-						int index = myDet->setReceiverFileIndex();
-						if(index==-1)
-							return string("could not get receiver file index");
-						myDet->setFileIndex(index);
-					}
-				}
-			}else
-				return helpReceiver(narg, args, action);
-		}
-		return myDet->runStatusType(myDet->getReceiverStatus());
+  if(cmd=="receiver"){
+    if (action==PUT_ACTION) {
+      if(!strcasecmp(args[1],"start")){
+	if(myDet->getReceiverStatus()==IDLE){
+	  //update receiver index
+	  if(myDet->setReceiverFileIndex(myDet->getFileIndex())==-1)
+	    return string("could not set receiver file index");
+	  //to configure the server
+	  myDet->setOnline(ONLINE_FLAG);
+	  myDet->startReceiver();
 	}
+      }
 
-	else if(cmd=="framescaught"){
-		if (action==PUT_ACTION)
-			return string("cannot put");
-		else{
-			sprintf(answer,"%d",myDet->getFramesCaughtByReciver());
-			return string(answer);
-		}
+      else if(!strcasecmp(args[1],"stop")){
+	if(myDet->getReceiverStatus()==RUNNING){
+	  myDet->setOnline(ONLINE_FLAG);
+	  if(myDet->stopReceiver()!=FAIL){
+	    //update index
+	    int index = myDet->setReceiverFileIndex();
+	    if(index==-1)
+	      return string("could not get receiver file index");
+	    myDet->setFileIndex(index);
+	  }
 	}
-	else
-		return string("could not decode command");
+      }else
+	return helpReceiver(narg, args, action);
+    }
+    return myDet->runStatusType(myDet->getReceiverStatus());
+  }
+
+  else if(cmd=="framescaught"){
+    if (action==PUT_ACTION)
+      return string("cannot put");
+    else{
+      sprintf(answer,"%d",myDet->getFramesCaughtByReciver());
+      return string(answer);
+    }
+  }
+  else
+    return string("could not decode command");
 
 }
 
@@ -3614,7 +3649,7 @@ string slsDetectorCommand::helpReceiver(int narg, char *args[], int action) {
   if (action==PUT_ACTION || action==HELP_ACTION)
     os << "receiver [status] \t starts/stops the receiver to listen to detector packets. - can be start or stop" << std::endl;
   if (action==GET_ACTION || action==HELP_ACTION){
-	os << "receiver \t returns the status of receiver - can be running or idle" << std::endl;
+    os << "receiver \t returns the status of receiver - can be running or idle" << std::endl;
     os << "framescaught \t returns the number of frames caught by receiver" << std::endl;
   }
   return os.str();

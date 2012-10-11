@@ -56,7 +56,7 @@ class slsDetectorUtils :  public slsDetectorActions, public postProcessing {
 
  public:
   
-   slsDetectorUtils();
+  slsDetectorUtils();
     
   virtual ~slsDetectorUtils(){};
 
@@ -84,14 +84,14 @@ class slsDetectorUtils :  public slsDetectorActions, public postProcessing {
   // int getFileIndex(){return fileIO::getFileIndex();};
   // int setFileIndex(int s){return fileIO::setFileIndex(s);};
 
-/*
-   int getScanPrecision(int i){return slsDetectorActions::getScanPrecision(i);};
+  /*
+    int getScanPrecision(int i){return slsDetectorActions::getScanPrecision(i);};
 
-   int getActionMask() {return slsDetectorActions::getActionMask();};
-   float getCurrentScanVariable(int i) {return slsDetectorActions::getCurrentScanVariable(i);};
-   int getCurrentPositionIndex(){return angularConversion::getCurrentPositionIndex();}; 
-   int getNumberOfPositions(){return angularConversion::getNumberOfPositions();};
-*/
+    int getActionMask() {return slsDetectorActions::getActionMask();};
+    float getCurrentScanVariable(int i) {return slsDetectorActions::getCurrentScanVariable(i);};
+    int getCurrentPositionIndex(){return angularConversion::getCurrentPositionIndex();}; 
+    int getNumberOfPositions(){return angularConversion::getNumberOfPositions();};
+  */
 
   // int getActionMask() {return slsDetectorActions::getActionMask();};
   // double getCurrentScanVariable(int i) {return slsDetectorActions::getCurrentScanVariable(i);};
@@ -175,7 +175,7 @@ class slsDetectorUtils :  public slsDetectorActions, public postProcessing {
   */
   virtual char *setNetworkParameter(networkParameter i, string s)=0; 
 
-/**
+  /**
      changes/gets the port number
      \param t type port type can be CONTROL_PORT, DATA_PORT, STOP_PORT
      \param i new port number (<1024 gets)
@@ -183,7 +183,7 @@ class slsDetectorUtils :  public slsDetectorActions, public postProcessing {
   */
   virtual int setPort(portType t, int i=-1)=0; 
 
-   /**
+  /**
      get detector ids/versions for module=0
      \param mode which id/version has to be read
      \param imod module number for module serial number
@@ -192,21 +192,21 @@ class slsDetectorUtils :  public slsDetectorActions, public postProcessing {
   virtual int64_t getId(idMode mode, int imod=0)=0;
 
   /**
-    checks if the detector(s) are online/offline
-    \returns hostname if offline
- */
- virtual string checkOnline()=0;
+     checks if the detector(s) are online/offline
+     \returns hostname if offline
+  */
+  virtual string checkOnline()=0;
 
- /**
-    Digital test of the modules
-    \param mode test mode
-    \param imod module number for chip test or module firmware test
-    \returns OK or error mask
+  /**
+     Digital test of the modules
+     \param mode test mode
+     \param imod module number for chip test or module firmware test
+     \returns OK or error mask
   */
   virtual int digitalTest(digitalTestMode mode, int imod=0)=0;
 
- /**
-       execute trimming
+  /**
+     execute trimming
      \param mode trim mode
      \param par1 if noise, beam or fixed setting trimming it is count limit, if improve maximum number of iterations
      \param par2 if noise or beam nsigma, if improve par2!=means vthreshold will be optimized, if fixed settings par2<0 trimwith median, par2>=0 trim with level
@@ -222,7 +222,7 @@ class slsDetectorUtils :  public slsDetectorActions, public postProcessing {
   virtual const char *getSettingsFile()=0;
 
   
- /** 
+  /** 
       get current timer value
       \param index timer index
       \returns elapsed time value in ns or number of...(e.g. frames, gates, probes)
@@ -232,11 +232,11 @@ class slsDetectorUtils :  public slsDetectorActions, public postProcessing {
 
 
   /** sets the number of trim energies and their value  \sa sharedSlsDetector 
-   \param nen number of energies
-   \param en array of energies
-   \returns number of trim energies
+      \param nen number of energies
+      \param en array of energies
+      \returns number of trim energies
 
-   unused!
+      unused!
 
   */
   virtual int setTrimEn(int nen, int *en=NULL)=0;
@@ -252,7 +252,7 @@ class slsDetectorUtils :  public slsDetectorActions, public postProcessing {
 
 
   /** 
-     set/get the use of an external signal 
+      set/get the use of an external signal 
       \param pol meaning of the signal \sa externalSignalFlag
       \param signalindex index of the signal
       \returns current meaning of signal signalIndex
@@ -267,7 +267,7 @@ class slsDetectorUtils :  public slsDetectorActions, public postProcessing {
       \param value is the value to be set, if -1 get value
       \returns current value for the specified parameter
       \sa speedVariable
-   */
+  */
   virtual int setSpeed(speedVariable sp, int value=-1)=0;
 
 
@@ -292,7 +292,7 @@ class slsDetectorUtils :  public slsDetectorActions, public postProcessing {
 
 
 
- /** sets/gets position of the master in a multi detector structure
+  /** sets/gets position of the master in a multi detector structure
       \param i position of the detector in the multidetector structure
       \returns position of the master in a multi detector structure (-1 no master or always in slsDetector)
   */
@@ -320,7 +320,7 @@ class slsDetectorUtils :  public slsDetectorActions, public postProcessing {
   virtual char* getCalDir()=0; 
 
   /**
-      sets the location of the calibration files
+     sets the location of the calibration files
   */
   virtual char* setCalDir(string s)=0;
 
@@ -329,17 +329,17 @@ class slsDetectorUtils :  public slsDetectorActions, public postProcessing {
 
 
   /** adds the detector with ID id in postion pos
-   \param id of the detector to be added (should already exist!)
-   \param pos position where it should be added (normally at the end of the list (default to -1)
-   \returns the actual number of detectors or -1 if it failed (always for slsDetector)
+      \param id of the detector to be added (should already exist!)
+      \param pos position where it should be added (normally at the end of the list (default to -1)
+      \returns the actual number of detectors or -1 if it failed (always for slsDetector)
   */
   virtual int addSlsDetector(int id, int pos=-1){return -1;};
 
 
   /** adds the detector name in position pos
-   \param name of the detector to be added (should already exist in shared memory or at least be online) 
-   \param pos position where it should be added (normally at the end of the list (default to -1)
-   \return the actual number of detectors or -1 if it failed (always for slsDetector)
+      \param name of the detector to be added (should already exist in shared memory or at least be online) 
+      \param pos position where it should be added (normally at the end of the list (default to -1)
+      \return the actual number of detectors or -1 if it failed (always for slsDetector)
   */
   virtual int addSlsDetector(char* name, int pos=-1){return -1;};
 
@@ -351,13 +351,13 @@ class slsDetectorUtils :  public slsDetectorActions, public postProcessing {
   */
   virtual int removeSlsDetector(int pos=-1){return -1;};
 
- /**removes the detector in position pos from the multidetector
-    \param name is the name of the detector
-    \returns the actual number of detectors or -1 if it failed  (always for slsDetector)
- */
+  /**removes the detector in position pos from the multidetector
+     \param name is the name of the detector
+     \returns the actual number of detectors or -1 if it failed  (always for slsDetector)
+  */
   virtual int removeSlsDetector(char* name){return -1;};
 
-    /** 
+  /** 
       Turns off the server -  do not use except for debugging!
   */   
   virtual int exitServer()=0;
@@ -365,28 +365,28 @@ class slsDetectorUtils :  public slsDetectorActions, public postProcessing {
 
 
 
-/**
-      Loads dark image or gain image to the detector
-      \param index can be DARK_IMAGE or GAIN_IMAGE
-      \fname file name to load data from
-      \returns OK or FAIL
- */
+  /**
+     Loads dark image or gain image to the detector
+     \param index can be DARK_IMAGE or GAIN_IMAGE
+     \fname file name to load data from
+     \returns OK or FAIL
+  */
   virtual int loadImageToDetector(imageType index,string const fname)=0;
   
 
   /**
-       writes the counter memory block from the detector
-       \param startACQ is 1 to start acquisition after reading counter
-       \fname file fname to load data from
-       \returns OK or FAIL
+     writes the counter memory block from the detector
+     \param startACQ is 1 to start acquisition after reading counter
+     \fname file fname to load data from
+     \returns OK or FAIL
   */
   virtual int writeCounterBlockFile(string const fname,int startACQ=0)=0;
 
 
   /**
-       Resets counter memory block in detector
-       \param startACQ is 1 to start acquisition after resetting counter
-       \returns OK or FAIL
+     Resets counter memory block in detector
+     \param startACQ is 1 to start acquisition after resetting counter
+     \returns OK or FAIL
   */
   virtual int resetCounterBlock(int startACQ=0)=0;
 
@@ -395,8 +395,8 @@ class slsDetectorUtils :  public slsDetectorActions, public postProcessing {
 
 
   /**
-   asks and  receives all data  from the detector  and puts them in a data queue
-    \returns pointer to the front of the queue  or NULL.
+     asks and  receives all data  from the detector  and puts them in a data queue
+     \returns pointer to the front of the queue  or NULL.
   */
   virtual int* readAll()=0;
 
@@ -404,11 +404,11 @@ class slsDetectorUtils :  public slsDetectorActions, public postProcessing {
 
 
   /** performs a complete acquisition including scansand data processing 
-     moves the detector to next position <br>
-     starts and reads the detector <br>
-     reads the IC (if required) <br>
-     reads the encoder (iof required for angualr conversion) <br>
-     processes the data (flat field, rate, angular conversion and merging ::processData())
+      moves the detector to next position <br>
+      starts and reads the detector <br>
+      reads the IC (if required) <br>
+      reads the encoder (iof required for angualr conversion) <br>
+      processes the data (flat field, rate, angular conversion and merging ::processData())
       \param delflag 0 leaves the data in the final data queue
       \returns nothing
   */
@@ -420,7 +420,7 @@ class slsDetectorUtils :  public slsDetectorActions, public postProcessing {
   // virtual double* convertAngles(double pos)=0;
 
   virtual int setThresholdEnergy(int, int im=-1, detectorSettings isettings=GET_SETTINGS)=0;
-   virtual int setChannel(int64_t, int ich=-1, int ichip=-1, int imod=-1)=0;
+  virtual int setChannel(int64_t, int ich=-1, int ichip=-1, int imod=-1)=0;
 
   virtual double getRateCorrectionTau()=0;
   virtual int* startAndReadAll()=0;
@@ -465,7 +465,7 @@ class slsDetectorUtils :  public slsDetectorActions, public postProcessing {
   */
   virtual int readRegister(int addr)=0;
   /**
-      Returns the IP of the last client connecting to the detector
+     Returns the IP of the last client connecting to the detector
   */
   virtual string getLastClientIP()=0;
 
@@ -483,7 +483,7 @@ class slsDetectorUtils :  public slsDetectorActions, public postProcessing {
       \param fname file name . If not specified, extension is automatically generated!
       \param imod module number, -1 means all modules
       \returns OK or FAIL
- */
+  */
   virtual int loadSettingsFile(string fname, int imod=-1)=0;
 
 
@@ -492,17 +492,17 @@ class slsDetectorUtils :  public slsDetectorActions, public postProcessing {
       \param fname file name . Axtension is automatically generated!
       \param imod module number, -1 means all modules
       \returns OK or FAIL
- */
+  */
   virtual int saveSettingsFile(string fname, int imod=-1)=0;
 
 
 
   /**
-    set dacs value
-    \param val value (in V)
-    \param index DAC index
-    \param imod module number (if -1 alla modules)
-    \returns current DAC value
+     set dacs value
+     \param val value (in V)
+     \param index DAC index
+     \param imod module number (if -1 alla modules)
+     \returns current DAC value
   */
   virtual dacs_t setDAC(dacs_t val, dacIndex index , int imod=-1)=0;
 
@@ -516,9 +516,9 @@ class slsDetectorUtils :  public slsDetectorActions, public postProcessing {
   virtual dacs_t getADC(dacIndex index, int imod=0)=0;
 
   /**
-      get the maximum size of the detector
-      \param d dimension
-      \returns maximum number of modules that can be installed in direction d
+     get the maximum size of the detector
+     \param d dimension
+     \returns maximum number of modules that can be installed in direction d
   */
   virtual int getMaxNumberOfModules(dimension d=X)=0;
  
@@ -547,7 +547,7 @@ class slsDetectorUtils :  public slsDetectorActions, public postProcessing {
 
 
   /** 
-     Saves the detector setup to file
+      Saves the detector setup to file
       \param fname file to write to
       \param level if 2 reads also trimbits, flat field, angular correction etc. and writes them to files with automatically added extension
       \returns OK or FAIL
@@ -557,7 +557,7 @@ class slsDetectorUtils :  public slsDetectorActions, public postProcessing {
 
 
   /** 
-     Loads the detector setup from file
+      Loads the detector setup from file
       \param fname file to read from
       \param level if 2 reads also reads trimbits, angular conversion coefficients etc. from files with default extensions as generated by dumpDetectorSetup
       \returns OK or FAIL
@@ -571,26 +571,26 @@ class slsDetectorUtils :  public slsDetectorActions, public postProcessing {
 
 
 
-//receiver
+  //receiver
 
 
   /**
      Checks if the receiver is really online
-   */
+  */
   virtual string checkReceiverOnline()=0;
 
   /**
-      Returns the IP of the last client connecting to the receiver
+     Returns the IP of the last client connecting to the receiver
   */
   virtual string getReceiverLastClientIP()=0;
 
  protected:
 
-   static const int64_t thisSoftwareVersion=0x20120124;
+  static const int64_t thisSoftwareVersion=0x20120124;
 
  
  
-   //protected:
+  //protected:
   int *stoppedFlag;	 
 
   int64_t *timerValue;

@@ -48,7 +48,7 @@ void  slsDetectorUtils::acquire(int delflag){
 
   angCalLogClass *aclog=NULL;
   enCalLogClass *eclog=NULL;
-    //  int lastindex=startindex, nowindex=startindex;
+  //  int lastindex=startindex, nowindex=startindex;
   int connectChannels=0;
 
 #ifdef VERBOSE
@@ -124,217 +124,217 @@ void  slsDetectorUtils::acquire(int delflag){
     cout << " starting measurement "<< im << " of " << nm << endl;
 #endif
 
- //cout << "data thread started " << endl;
+    //cout << "data thread started " << endl;
  
 
-  //loop measurements
+    //loop measurements
 
-  pthread_mutex_lock(&mp);
-  setStartIndex(*fileIndex);
-  pthread_mutex_unlock(&mp);
+    pthread_mutex_lock(&mp);
+    setStartIndex(*fileIndex);
+    pthread_mutex_unlock(&mp);
  
-  //cout << "action at start" << endl;
-  if (*stoppedFlag==0) {
-    executeAction(startScript);
-  }
+    //cout << "action at start" << endl;
+    if (*stoppedFlag==0) {
+      executeAction(startScript);
+    }
 
-  for (int is0=0; is0<ns0; is0++) {
-    //  cout << "scan0 loop" << endl;
+    for (int is0=0; is0<ns0; is0++) {
+      //  cout << "scan0 loop" << endl;
 
-  if (*stoppedFlag==0) {
-    executeScan(0,is0);
-  } else
-    break;
+      if (*stoppedFlag==0) {
+	executeScan(0,is0);
+      } else
+	break;
   
 
-  for (int is1=0; is1<ns1; is1++) {
-    // cout << "scan1 loop" << endl;
+      for (int is1=0; is1<ns1; is1++) {
+	// cout << "scan1 loop" << endl;
 
-     if (*stoppedFlag==0) {
-       executeScan(1,is1);
-     } else
-       break;
+	if (*stoppedFlag==0) {
+	  executeScan(1,is1);
+	} else
+	  break;
 
-     if (*stoppedFlag==0) {
-       executeAction(scriptBefore);
-     } else
-       break;
+	if (*stoppedFlag==0) {
+	  executeAction(scriptBefore);
+	} else
+	  break;
 
-     ResetPositionIndex();
+	ResetPositionIndex();
      
-     for (int ip=0; ip<np; ip++) {
-       //   cout << "positions " << endl;
-       if (*stoppedFlag==0) {
-	 if  (getNumberOfPositions()>0) {
-	   moveDetector(detPositions[ip]);
-	   IncrementPositionIndex();
+	for (int ip=0; ip<np; ip++) {
+	  //   cout << "positions " << endl;
+	  if (*stoppedFlag==0) {
+	    if  (getNumberOfPositions()>0) {
+	      moveDetector(detPositions[ip]);
+	      IncrementPositionIndex();
 #ifdef VERBOSE
-	   std::cout<< "moving to position" << std::endl;
+	      std::cout<< "moving to position" << std::endl;
 #endif
-	 } 
-       } else
-	 break;
+	    } 
+	  } else
+	    break;
        
        
-       pthread_mutex_lock(&mp);
-       createFileName();
-       pthread_mutex_unlock(&mp);
+	  pthread_mutex_lock(&mp);
+	  createFileName();
+	  pthread_mutex_unlock(&mp);
 
-       if (*stoppedFlag==0) {
-	 executeAction(scriptBefore);
-       } else
-	 break;
+	  if (*stoppedFlag==0) {
+	    executeAction(scriptBefore);
+	  } else
+	    break;
        
        
        
 
-       if (*stoppedFlag==0) {
+	  if (*stoppedFlag==0) {
 
 
 
 
 
-	 executeAction(headerBefore);
+	    executeAction(headerBefore);
 	 
-       if (*correctionMask&(1<< ANGULAR_CONVERSION) || aclog || eclog) { 
-	 positionFinished(0);
-	 setCurrentPosition(getDetectorPosition());
-       }
+	    if (*correctionMask&(1<< ANGULAR_CONVERSION) || aclog || eclog) { 
+	      positionFinished(0);
+	      setCurrentPosition(getDetectorPosition());
+	    }
       
       
-       if (aclog)
-	 aclog->addStep(getCurrentPosition(), getCurrentFileName());
+	    if (aclog)
+	      aclog->addStep(getCurrentPosition(), getCurrentFileName());
      
        
-       if (eclog)
-	 eclog->addStep(setDAC(-1,THRESHOLD), getCurrentFileName());
+	    if (eclog)
+	      eclog->addStep(setDAC(-1,THRESHOLD), getCurrentFileName());
        
 
 
-       if (*correctionMask&(1<< I0_NORMALIZATION)) {
-	 if (get_i0)
-	   get_i0(0, IOarg);
-       }
+	    if (*correctionMask&(1<< I0_NORMALIZATION)) {
+	      if (get_i0)
+		get_i0(0, IOarg);
+	    }
        
-       startAndReadAll();
+	    startAndReadAll();
 #ifdef VERBOSE
-       cout << "returned! " << endl;
+	    cout << "returned! " << endl;
 #endif     
        
-       if (*correctionMask&(1<< I0_NORMALIZATION)) {
-	 if (get_i0) 
-	   currentI0=get_i0(1,IOarg); // this is the correct i0!!!!!
-       }
+	    if (*correctionMask&(1<< I0_NORMALIZATION)) {
+	      if (get_i0) 
+		currentI0=get_i0(1,IOarg); // this is the correct i0!!!!!
+	    }
 #ifdef VERBOSE
-       cout << "pos finished? " << endl;
+	    cout << "pos finished? " << endl;
 #endif     
 
-       positionFinished(1);
+	    positionFinished(1);
        
 #ifdef VERBOSE
-       cout << "done! " << endl;
+	    cout << "done! " << endl;
 #endif     
  
 	 
- 	 if (*threadedProcessing==0){
+	    if (*threadedProcessing==0){
 #ifdef VERBOSE
-	   cout << "start unthreaded process data " << endl;
+	      cout << "start unthreaded process data " << endl;
 #endif
- 	   processData(delflag); 
-	 } 
+	      processData(delflag); 
+	    } 
 
-       } else
-	 break;
+	  } else
+	    break;
        
 
-       // wait until data processing thread has finished the data
+	  // wait until data processing thread has finished the data
 
 #ifdef VERBOSE
-	   cout << "check data queue size " << endl;
+	  cout << "check data queue size " << endl;
 #endif
-       while (dataQueueSize()){
+	  while (dataQueueSize()){
 #ifdef VERBOSE
-	   cout << "AAAAAAAAA check data queue size " << endl;
+	    cout << "AAAAAAAAA check data queue size " << endl;
 #endif
-	 usleep(100000);
-       }
+	    usleep(100000);
+	  }
 
 
-       pthread_mutex_lock(&mp);
-       if (*stoppedFlag==0) {
-	 executeAction(headerAfter);	 
-	 setLastIndex(*fileIndex);
-       } else {
-	 setLastIndex(*fileIndex);
-	 break;
-       }
-       pthread_mutex_unlock(&mp);
+	  pthread_mutex_lock(&mp);
+	  if (*stoppedFlag==0) {
+	    executeAction(headerAfter);	 
+	    setLastIndex(*fileIndex);
+	  } else {
+	    setLastIndex(*fileIndex);
+	    break;
+	  }
+	  pthread_mutex_unlock(&mp);
 
     
-       if (*stoppedFlag) {
+	  if (*stoppedFlag) {
 #ifdef VERBOSE
-	 std::cout<< "exiting since the detector has been stopped" << std::endl;
+	    std::cout<< "exiting since the detector has been stopped" << std::endl;
 #endif
-	 break;
-       } else if (ip<(np-1)) {
-	 pthread_mutex_lock(&mp);
-	 *fileIndex=setStartIndex(); 
-	 pthread_mutex_unlock(&mp);
-       }
-     } // loop on position finished
+	    break;
+	  } else if (ip<(np-1)) {
+	    pthread_mutex_lock(&mp);
+	    *fileIndex=setStartIndex(); 
+	    pthread_mutex_unlock(&mp);
+	  }
+	} // loop on position finished
      
-     //script after
-     if (*stoppedFlag==0) {
-       executeAction(scriptAfter);
-     } else
-       break;
+	//script after
+	if (*stoppedFlag==0) {
+	  executeAction(scriptAfter);
+	} else
+	  break;
      
      
-    if (*stoppedFlag) {
+	if (*stoppedFlag) {
 #ifdef VERBOSE
-      std::cout<< "exiting since the detector has been stopped" << std::endl;
+	  std::cout<< "exiting since the detector has been stopped" << std::endl;
 #endif
-      break;
-    } else if (is1<(ns1-1)) {
-      pthread_mutex_lock(&mp);
-      *fileIndex=setStartIndex(); 
-      pthread_mutex_unlock(&mp);
-    }
-  } 
+	  break;
+	} else if (is1<(ns1-1)) {
+	  pthread_mutex_lock(&mp);
+	  *fileIndex=setStartIndex(); 
+	  pthread_mutex_unlock(&mp);
+	}
+      } 
   
-  //end scan1 loop is1
+      //end scan1 loop is1
   
 
-  if (*stoppedFlag) {
+      if (*stoppedFlag) {
 #ifdef VERBOSE
-    std::cout<< "exiting since the detector has been stopped" << std::endl;
+	std::cout<< "exiting since the detector has been stopped" << std::endl;
 #endif
-    break;
-  } else if (is0<(ns0-1)) {
+	break;
+      } else if (is0<(ns0-1)) {
+	pthread_mutex_lock(&mp);
+	*fileIndex=setStartIndex();  
+	pthread_mutex_unlock(&mp);
+      }
+
+    } //end scan0 loop is0
+
     pthread_mutex_lock(&mp);
-    *fileIndex=setStartIndex();  
+    *fileIndex=setLastIndex();  
     pthread_mutex_unlock(&mp);
-  }
+    if (*stoppedFlag==0) {
+      executeAction(stopScript);
+    } else
+      break;
 
-  } //end scan0 loop is0
-
-  pthread_mutex_lock(&mp);
-  *fileIndex=setLastIndex();  
-  pthread_mutex_unlock(&mp);
-  if (*stoppedFlag==0) {
-    executeAction(stopScript);
-  } else
-    break;
-
-// loop measurements
+    // loop measurements
 
 
-   if (measurement_finished)
-     measurement_finished(im,*fileIndex,measFinished_p);
+    if (measurement_finished)
+      measurement_finished(im,*fileIndex,measFinished_p);
    
-   if (*stoppedFlag) {
-     break;
-   } 
+    if (*stoppedFlag) {
+      break;
+    } 
    
 
   }
@@ -346,21 +346,21 @@ void  slsDetectorUtils::acquire(int delflag){
   }
  
   
-   if (connectChannels) {
-     if (disconnect_channels)
-       disconnect_channels(DCarg);
-   }
+  if (connectChannels) {
+    if (disconnect_channels)
+      disconnect_channels(DCarg);
+  }
    
-   if (aclog)
-     delete aclog;
+  if (aclog)
+    delete aclog;
    
-   if (eclog)
-     delete eclog;
+  if (eclog)
+    delete eclog;
 
    
    
-   if (acquisition_finished)
-     acquisition_finished(getCurrentProgress(),getDetectorStatus(),acqFinished_p);
+  if (acquisition_finished)
+    acquisition_finished(getCurrentProgress(),getDetectorStatus(),acqFinished_p);
 
 }
 
@@ -378,33 +378,33 @@ int slsDetectorUtils::setTotalProgress() {
     nf=timerValue[FRAME_NUMBER];
   
   if (timerValue[CYCLES_NUMBER]>0)
-	nc=timerValue[CYCLES_NUMBER];
+    nc=timerValue[CYCLES_NUMBER];
 
   if (timerValue[MEASUREMENTS_NUMBER]>0)
-	nm=timerValue[MEASUREMENTS_NUMBER];
+    nm=timerValue[MEASUREMENTS_NUMBER];
 
   if (*numberOfPositions>0)
-	npos=*numberOfPositions;
+    npos=*numberOfPositions;
 
   if ((nScanSteps[0]>0) && (*actionMask & (1 << MAX_ACTIONS)))
-        nscan[0]=nScanSteps[0];
+    nscan[0]=nScanSteps[0];
 
-      if ((nScanSteps[1]>0) && (*actionMask & (1 << (MAX_ACTIONS+1))))
-	nscan[1]=nScanSteps[1];
+  if ((nScanSteps[1]>0) && (*actionMask & (1 << (MAX_ACTIONS+1))))
+    nscan[1]=nScanSteps[1];
       
-      totalProgress=nm*nf*nc*npos*nscan[0]*nscan[1];
+  totalProgress=nm*nf*nc*npos*nscan[0]*nscan[1];
 
 #ifdef VERBOSE
-      cout << "nc " << nc << endl;
-      cout << "nm " << nm << endl;
-      cout << "nf " << nf << endl;
-      cout << "npos " << npos << endl;
-      cout << "nscan[0] " << nscan[0] << endl;
-      cout << "nscan[1] " << nscan[1] << endl;
+  cout << "nc " << nc << endl;
+  cout << "nm " << nm << endl;
+  cout << "nf " << nf << endl;
+  cout << "npos " << npos << endl;
+  cout << "nscan[0] " << nscan[0] << endl;
+  cout << "nscan[1] " << nscan[1] << endl;
 
-      cout << "Set total progress " << totalProgress << endl;
+  cout << "Set total progress " << totalProgress << endl;
 #endif
-      return totalProgress;
+  return totalProgress;
 }
 
 
@@ -460,26 +460,26 @@ int slsDetectorUtils::setBadChannelCorrection(string fname, int &nbadtot, int *b
       
 
 
-    infile.open(fn.c_str(), ios_base::in);
-    if (infile.is_open()==0) {
-      std::cout << "could not open file " << fname <<std::endl;
-      return -1;
-    }
-
-
-    nbad=setBadChannelCorrection(infile, nbad, badlist, offset);
-    infile.close();
-    
-    for (int ich=0; ich<nbad; ich++) {
-      if (nbadtot<MAX_BADCHANS) {
-	badchanlist[nbadtot]=badlist[ich];
-	nbadtot++;
+      infile.open(fn.c_str(), ios_base::in);
+      if (infile.is_open()==0) {
+	std::cout << "could not open file " << fname <<std::endl;
+	return -1;
       }
+
+
+      nbad=setBadChannelCorrection(infile, nbad, badlist, offset);
+      infile.close();
+    
+      for (int ich=0; ich<nbad; ich++) {
+	if (nbadtot<MAX_BADCHANS) {
+	  badchanlist[nbadtot]=badlist[ich];
+	  nbadtot++;
+	}
+      }
+    
+      offset+=getChansPerMod(im); 
+    
     }
-    
-    offset+=getChansPerMod(im); 
-    
-  }
   
   }
   if (nbadtot>0 && nbadtot<MAX_BADCHANS) {
@@ -511,7 +511,7 @@ void slsDetectorUtils::incrementProgress()  {
   cout << fixed << setprecision(2) << setw (6) << 100.*((double)progressIndex)/((double)totalProgress) << " \%";
   pthread_mutex_unlock(&mp);
 #ifdef VERBOSE
-    cout << endl;
+  cout << endl;
 #else
   cout << "\r" << flush;
 #endif
@@ -521,88 +521,88 @@ void slsDetectorUtils::incrementProgress()  {
 
 
 int slsDetectorUtils::testFunction(int times) {
-	int i,count=0;
-	runStatus s;
-	char controlval[1000];
-	char statusval[1000];
+  int i,count=0;
+  runStatus s;
+  char controlval[1000];
+  char statusval[1000];
 
-	int nchans = getTotalNumberOfChannels();
-	short int dataVals[nchans];
+  int nchans = getTotalNumberOfChannels();
+  short int dataVals[nchans];
 
-	for(i=0;i<times;i++){
+  for(i=0;i<times;i++){
+    sprintf(statusval,"%x",readRegister(0x25));
+    std::cout<<std::endl<<dec<<i+1<<": stat:\t"<<statusval<<"\t";
+    sprintf(controlval,"%x",readRegister(0x24));
+    std::cout<<"cont:"<<controlval<<"\t"<<std::endl;
+
+    startAcquisition();
+
+    sprintf(controlval,"%x",readRegister(0x24));
+    std::cout<<"cont:"<<controlval<<"\t"<<std::endl;
+    //sprintf(statusval,"%x",readRegister(0x25));
+    //std::cout<<statusval<<std::endl;
+    s = getRunStatus();
+    if(s==IDLE){
+      std::cout<<"IDLE\t"<<std::endl;
+      s = getRunStatus();
+      if(s==IDLE){
+	std::cout<<"IDLE"<<std::endl;
+	exit(-1);
+      }
+      ;
+    }
+    else {
+      if (s==RUNNING){
+	count=0;
+	while(s==RUNNING){
+	  count++;//std::cout<<"count:"<<count<<std::endl;
+	  if(count==4){
 	    sprintf(statusval,"%x",readRegister(0x25));
-		std::cout<<std::endl<<dec<<i+1<<": stat:\t"<<statusval<<"\t";
-		sprintf(controlval,"%x",readRegister(0x24));
-		std::cout<<"cont:"<<controlval<<"\t"<<std::endl;
-
-		startAcquisition();
-
-		sprintf(controlval,"%x",readRegister(0x24));
-		std::cout<<"cont:"<<controlval<<"\t"<<std::endl;
-	    //sprintf(statusval,"%x",readRegister(0x25));
-	    //std::cout<<statusval<<std::endl;
-		s = getRunStatus();
-		if(s==IDLE){
-			std::cout<<"IDLE\t"<<std::endl;
-			s = getRunStatus();
-			if(s==IDLE){
-				std::cout<<"IDLE"<<std::endl;
-				exit(-1);
-			}
-			;
-		}
-		else {
-			if (s==RUNNING){
-			count=0;
-			while(s==RUNNING){
-				count++;//std::cout<<"count:"<<count<<std::endl;
-				if(count==4){
-					sprintf(statusval,"%x",readRegister(0x25));
 
 
-					std::cout<<"STUCK: stat"<<statusval<<std::endl;
-					exit(-1);
-				}
-				usleep(50000);
-				//val=readRegister(0x25);
-				s = getRunStatus();
-			}
-		}
-		}
-/*		else{
-			std::cout<<"\nWeird Status. "<<runStatusType(s)<<" Exit\n";
-			exit(-1);
-		}*/
-		system("rm ~/wORKSPACE/scratch/run*  ");
-		//system("more ~/wORKSPACE/scratch/run*  ");
-		usleep(1000000);
-
-		setFileIndex(0);
-		int b;
-
-		b=setThreadedProcessing(-1);
-		setThreadedProcessing(0);
-	    readAll();
-	    processData(1);
-	    setThreadedProcessing(b);
-
-
-		if(!readDataFile("/home/l_maliakal_d/wORKSPACE/scratch/run_1.raw",dataVals)){
-			std::cout<< "Could not open file "<< std::endl;
-			exit(-1);
-		}
-
-		std::cout<<std::endl;
-		for(int j=1277;j< (nchans);j++)
-			std::cout<<"\t"<<j<<":"<<dataVals[j];
-
-		if(dataVals[1278]!=2558){
-			std::cout<< "DATA ERROR!! "<< std::endl;
-			exit(-1);
-		}
+	    std::cout<<"STUCK: stat"<<statusval<<std::endl;
+	    exit(-1);
+	  }
+	  usleep(50000);
+	  //val=readRegister(0x25);
+	  s = getRunStatus();
 	}
-	std::cout<<std::endl;
-	return 0;
+      }
+    }
+    /*		else{
+      std::cout<<"\nWeird Status. "<<runStatusType(s)<<" Exit\n";
+      exit(-1);
+      }*/
+    system("rm ~/wORKSPACE/scratch/run*  ");
+    //system("more ~/wORKSPACE/scratch/run*  ");
+    usleep(1000000);
+
+    setFileIndex(0);
+    int b;
+
+    b=setThreadedProcessing(-1);
+    setThreadedProcessing(0);
+    readAll();
+    processData(1);
+    setThreadedProcessing(b);
+
+
+    if(!readDataFile("/home/l_maliakal_d/wORKSPACE/scratch/run_1.raw",dataVals)){
+      std::cout<< "Could not open file "<< std::endl;
+      exit(-1);
+    }
+
+    std::cout<<std::endl;
+    for(int j=1277;j< (nchans);j++)
+      std::cout<<"\t"<<j<<":"<<dataVals[j];
+
+    if(dataVals[1278]!=2558){
+      std::cout<< "DATA ERROR!! "<< std::endl;
+      exit(-1);
+    }
+  }
+  std::cout<<std::endl;
+  return 0;
 }
 
 
@@ -615,13 +615,13 @@ int slsDetectorUtils::retrieveDetectorSetup(string const fname1, int level){
   slsDetectorCommand *cmd;
 
 
-    char ext[100];
-    int skip=0;
-   string fname;
-   string str;
-   ifstream infile;
-   int iargval;
-   int interrupt=0;
+  char ext[100];
+  int skip=0;
+  string fname;
+  string str;
+  ifstream infile;
+  int iargval;
+  int interrupt=0;
   char *args[10];
 
   char myargs[10][1000];
@@ -633,8 +633,8 @@ int slsDetectorUtils::retrieveDetectorSetup(string const fname1, int level){
   int iline=0;
   
   if (level==2) {
-//     fname=fname1+string(".config");
-//     readConfigurationFile(fname);
+    //     fname=fname1+string(".config");
+    //     readConfigurationFile(fname);
 #ifdef VERBOSE
     cout << "config file read" << endl;
 #endif
@@ -665,14 +665,14 @@ int slsDetectorUtils::retrieveDetectorSetup(string const fname1, int level){
 	while (ssstr.good()) {
 	  ssstr >> sargname;
 	  //  if (ssstr.good()) {
-	    strcpy(myargs[iargval],sargname.c_str());
-	    args[iargval]=myargs[iargval];
+	  strcpy(myargs[iargval],sargname.c_str());
+	  args[iargval]=myargs[iargval];
 #ifdef VERBOSE
-      std::cout<< args[iargval]  << std::endl;
+	  std::cout<< args[iargval]  << std::endl;
 #endif
-	    iargval++;
-	    // }
-	    skip=0;
+	  iargval++;
+	  // }
+	  skip=0;
 	}
 
 	if (level!=2) {
@@ -749,7 +749,7 @@ int slsDetectorUtils::dumpDetectorSetup(string const fname, int level){
 
 
 
-    char ext[100];
+  char ext[100];
 
   int iv=0;
   string fname1;
@@ -809,26 +809,26 @@ int slsDetectorUtils::dumpDetectorSetup(string const fname, int level){
 
 
 
-  if (level==2) {
-    strcpy(args[0],names[iv].c_str());
-    size_t c=fname.rfind('/');
-    if (c<string::npos) {
-      fname1=fname.substr(0,c+1)+string("trim_")+fname.substr(c+1);
-    } else {
-      fname1=string("trim_")+fname;
-    }
-    strcpy(args[1],fname1.c_str());
+    if (level==2) {
+      strcpy(args[0],names[iv].c_str());
+      size_t c=fname.rfind('/');
+      if (c<string::npos) {
+	fname1=fname.substr(0,c+1)+string("trim_")+fname.substr(c+1);
+      } else {
+	fname1=string("trim_")+fname;
+      }
+      strcpy(args[1],fname1.c_str());
 #ifdef VERBOSE
-    std::cout<< "writing to file " << fname1 << std::endl;
+      std::cout<< "writing to file " << fname1 << std::endl;
 #endif
-  outfile << names[iv] << " " << cmd->executeLine(nargs,args,GET_ACTION) << std::endl;
-  iv++;
+      outfile << names[iv] << " " << cmd->executeLine(nargs,args,GET_ACTION) << std::endl;
+      iv++;
   
 
-  }
+    }
 
  
-  delete cmd;
+    delete cmd;
 
     outfile.close();
   }

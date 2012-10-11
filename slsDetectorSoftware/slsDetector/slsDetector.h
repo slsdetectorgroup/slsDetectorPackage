@@ -37,22 +37,22 @@ class slsDetector : public slsDetectorUtils, public energyConversion {
 
  public:
   
-/*   /\** online flags enum \sa setOnline*\/ */
-/*   enum {GET_ONLINE_FLAG=-1, /\**< returns wether the detector is in online or offline state *\/ */
-/* 	OFFLINE_FLAG=0, /\**< detector in offline state (i.e. no communication to the detector - using only local structure - no data acquisition possible!) *\/ */
-/* 	ONLINE_FLAG =1/\**< detector in online state (i.e. communication to the detector updating the local structure) *\/ */
-/*   }; */
+  /*   /\** online flags enum \sa setOnline*\/ */
+  /*   enum {GET_ONLINE_FLAG=-1, /\**< returns wether the detector is in online or offline state *\/ */
+  /* 	OFFLINE_FLAG=0, /\**< detector in offline state (i.e. no communication to the detector - using only local structure - no data acquisition possible!) *\/ */
+  /* 	ONLINE_FLAG =1/\**< detector in online state (i.e. communication to the detector updating the local structure) *\/ */
+  /*   }; */
 
 
 
   /** 
       @short Structure allocated in shared memory to store detector settings.
 
-Structure allocated in shared memory to store detector settings and be accessed in parallel by several applications on the same machine (take care of possible conflicts, particularly if things are run on different machines!)
+      Structure allocated in shared memory to store detector settings and be accessed in parallel by several applications on the same machine (take care of possible conflicts, particularly if things are run on different machines!)
       
   */
-typedef  struct sharedSlsDetector {
-  /** already existing flag. If the detector does not yet exist (alreadyExisting=0) the sharedMemory will be created, otherwise it will simly be linked */
+  typedef  struct sharedSlsDetector {
+    /** already existing flag. If the detector does not yet exist (alreadyExisting=0) the sharedMemory will be created, otherwise it will simly be linked */
     int alreadyExisting;
 
 
@@ -60,54 +60,54 @@ typedef  struct sharedSlsDetector {
 
     /** last process id accessing the shared memory */
    
-  pid_t  lastPID;
+    pid_t  lastPID;
 
 
 
 
-  /** online flag - is set if the detector is connected, unset if socket connection is not possible  */
-  int onlineFlag;
+    /** online flag - is set if the detector is connected, unset if socket connection is not possible  */
+    int onlineFlag;
 
 
-  /** stopped flag - is set if an acquisition error occurs or the detector is stopped manually. Is reset to 0 at the start of the acquisition */
-  int stoppedFlag;
+    /** stopped flag - is set if an acquisition error occurs or the detector is stopped manually. Is reset to 0 at the start of the acquisition */
+    int stoppedFlag;
 
     /** is the hostname (or IP address) of the detector. needs to be set before startin the communication */
     char hostname[MAX_STR_LENGTH];
 
     /** is the port used for control functions normally it should not be changed*/
     int controlPort;
-  /** is the port used to stop the acquisition normally it should not be changed*/
+    /** is the port used to stop the acquisition normally it should not be changed*/
     int stopPort;
-  /** is the port used to acquire the data normally it should not be changed*/
+    /** is the port used to acquire the data normally it should not be changed*/
     int dataPort;
 
-  /** detector type  \ see :: detectorType*/
+    /** detector type  \ see :: detectorType*/
     detectorType myDetectorType;
 
 
-  /** path of the trimbits/settings files */
+    /** path of the trimbits/settings files */
     char settingsDir[MAX_STR_LENGTH];
-  /** path of the calibration files */
+    /** path of the calibration files */
     char calDir[MAX_STR_LENGTH];
-  /** number of energies at which the detector has been trimmed (unused) */
+    /** number of energies at which the detector has been trimmed (unused) */
     int nTrimEn;
-  /** list of the energies at which the detector has been trimmed (unused) */
+    /** list of the energies at which the detector has been trimmed (unused) */
     int trimEnergies[100];
 
 
-  /** indicator for the acquisition progress - set to 0 at the beginning of the acquisition and incremented every time that the data are written to file */   
+    /** indicator for the acquisition progress - set to 0 at the beginning of the acquisition and incremented every time that the data are written to file */   
     int progressIndex;	
-  /** total number of frames to be acquired */   
+    /** total number of frames to be acquired */   
     int totalProgress;	   
-  /** current index of the output file */   
+    /** current index of the output file */   
     int fileIndex;
-  /** path of the output files */  
+    /** path of the output files */  
     char filePath[MAX_STR_LENGTH];
-  /** name root of the output files */  
+    /** name root of the output files */  
     char fileName[MAX_STR_LENGTH];
 
-  /* size of the detector */
+    /* size of the detector */
     
     /** number of installed modules of the detector (x and y directions) */  
     int nMod[2];
@@ -132,89 +132,89 @@ typedef  struct sharedSlsDetector {
     
     /** corrections  to be applied to the data \see ::correctionFlags */
     int correctionMask;
-  /** threaded processing flag (i.e. if data are processed and written to file in a separate thread)  */
-  int threadedProcessing;
+    /** threaded processing flag (i.e. if data are processed and written to file in a separate thread)  */
+    int threadedProcessing;
     /** dead time (in ns) for rate corrections */
     double tDead;
-  /** directory where the flat field files are stored */
-  char flatFieldDir[MAX_STR_LENGTH];
-  /** file used for flat field corrections */
-  char flatFieldFile[MAX_STR_LENGTH];
+    /** directory where the flat field files are stored */
+    char flatFieldDir[MAX_STR_LENGTH];
+    /** file used for flat field corrections */
+    char flatFieldFile[MAX_STR_LENGTH];
     /** number of bad channels from bad channel list */
     int nBadChans;
-  /** file with the bad channels */
-  char badChanFile[MAX_STR_LENGTH];
+    /** file with the bad channels */
+    char badChanFile[MAX_STR_LENGTH];
     /** list of bad channels */
     int badChansList[MAX_BADCHANS];
     /** number of bad channels from flat field i.e. channels which read 0 in the flat field file */
     int nBadFF;
     /** list of bad channels from flat field i.e. channels which read 0 in the flat field file */
-  int badFFList[MAX_BADCHANS];
+    int badFFList[MAX_BADCHANS];
     
-  /** file with the angular conversion factors */
-  char angConvFile[MAX_STR_LENGTH];
+    /** file with the angular conversion factors */
+    char angConvFile[MAX_STR_LENGTH];
     /** array of angular conversion constants for each module \see ::angleConversionConstant */
-  angleConversionConstant angOff[MAXMODS];
+    angleConversionConstant angOff[MAXMODS];
     /** angular direction (1 if it corresponds to the encoder direction i.e. channel 0 is 0, maxchan is positive high angle, 0 otherwise  */
-  int angDirection;
-  /** beamline fine offset (of the order of mdeg, might be adjusted for each measurements)  */
-  double fineOffset;
-     /** beamline offset (might be a few degrees beacuse of encoder offset - normally it is kept fixed for a long period of time)  */
-  double globalOffset;
-     /** number of positions at which the detector should acquire  */
-  int numberOfPositions;
-     /** list of encoder positions at which the detector should acquire */
-  double detPositions[MAXPOS];
-  /** bin size for data merging */
-  double binSize;
-  /** add encoder value flag (i.e. wether the detector is moving - 1 - or stationary - 0) */ 
-  int moveFlag;
+    int angDirection;
+    /** beamline fine offset (of the order of mdeg, might be adjusted for each measurements)  */
+    double fineOffset;
+    /** beamline offset (might be a few degrees beacuse of encoder offset - normally it is kept fixed for a long period of time)  */
+    double globalOffset;
+    /** number of positions at which the detector should acquire  */
+    int numberOfPositions;
+    /** list of encoder positions at which the detector should acquire */
+    double detPositions[MAXPOS];
+    /** bin size for data merging */
+    double binSize;
+    /** add encoder value flag (i.e. wether the detector is moving - 1 - or stationary - 0) */ 
+    int moveFlag;
 
 
-  /* infos necessary for the readout to determine the size of the data */
+    /* infos necessary for the readout to determine the size of the data */
 
-  /** number of rois defined */
-  int nROI;
-  /** list of rois */
-  ROI roiLimits[MAX_ROIS];
+    /** number of rois defined */
+    int nROI;
+    /** list of rois */
+    ROI roiLimits[MAX_ROIS];
   
-  /** readout flags */
-  readOutFlags roFlags;
+    /** readout flags */
+    readOutFlags roFlags;
 
 
- /* detector setup - not needed */
-  /** name root of the output files */  
-  char settingsFile[MAX_STR_LENGTH];
-  /** detector settings (standard, fast, etc.) */
-  detectorSettings currentSettings;
-  /** detector threshold (eV) */
-  int currentThresholdEV;
-  /** timer values */
-  int64_t timerValue[MAX_TIMERS];
-  /** clock divider */
-  //int clkDiv;
+    /* detector setup - not needed */
+    /** name root of the output files */  
+    char settingsFile[MAX_STR_LENGTH];
+    /** detector settings (standard, fast, etc.) */
+    detectorSettings currentSettings;
+    /** detector threshold (eV) */
+    int currentThresholdEV;
+    /** timer values */
+    int64_t timerValue[MAX_TIMERS];
+    /** clock divider */
+    //int clkDiv;
 
 
-  /** Scans and scripts */
-  ////////////////////////// only in the multi detector class?!?!?!? additional shared memory class?!?!?!?
-  int actionMask;
+    /** Scans and scripts */
+    ////////////////////////// only in the multi detector class?!?!?!? additional shared memory class?!?!?!?
+    int actionMask;
   
-  mystring actionScript[MAX_ACTIONS];
+    mystring actionScript[MAX_ACTIONS];
 
-  mystring actionParameter[MAX_ACTIONS];
+    mystring actionParameter[MAX_ACTIONS];
 
 
-  int scanMode[MAX_SCAN_LEVELS];
-  mystring scanScript[MAX_SCAN_LEVELS];
-  mystring scanParameter[MAX_SCAN_LEVELS];
-  int nScanSteps[MAX_SCAN_LEVELS];
-  mysteps scanSteps[MAX_SCAN_LEVELS];
-  int scanPrecision[MAX_SCAN_LEVELS];
+    int scanMode[MAX_SCAN_LEVELS];
+    mystring scanScript[MAX_SCAN_LEVELS];
+    mystring scanParameter[MAX_SCAN_LEVELS];
+    int nScanSteps[MAX_SCAN_LEVELS];
+    mysteps scanSteps[MAX_SCAN_LEVELS];
+    int scanPrecision[MAX_SCAN_LEVELS];
   
-  ////////////////////////////////////////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////////////////////////////////
 
     
-  /*offsets*/
+    /*offsets*/
     /** memory offsets for the flat field coefficients */
     int ffoff;
     /** memory offsets for the flat filed coefficient errors */
@@ -245,7 +245,7 @@ typedef  struct sharedSlsDetector {
     int receiverOnlineFlag;
 
 
-} sharedSlsDetector;
+  } sharedSlsDetector;
 
 
 
@@ -253,33 +253,33 @@ typedef  struct sharedSlsDetector {
 
 
 
- using slsDetectorUtils::getDetectorType;
+  using slsDetectorUtils::getDetectorType;
 
- using postProcessing::flatFieldCorrect;
- using postProcessing::rateCorrect;
- using postProcessing::setBadChannelCorrection;
+  using postProcessing::flatFieldCorrect;
+  using postProcessing::rateCorrect;
+  using postProcessing::setBadChannelCorrection;
 
- using angularConversion::readAngularConversion;
- using angularConversion::writeAngularConversion;
+  using angularConversion::readAngularConversion;
+  using angularConversion::writeAngularConversion;
 
- using slsDetectorUtils::getAngularConversion;
-
-
- string getDetectorType(){return sgetDetectorsType();};
+  using slsDetectorUtils::getAngularConversion;
 
 
+  string getDetectorType(){return sgetDetectorsType();};
 
-/** (default) constructor 
- \param  type is needed to define the size of the detector shared memory 9defaults to GENERIC i.e. the largest shared memory needed by any slsDetector is allocated
- \param  id is the detector index which is needed to define the shared memory id. Different physical detectors should have different IDs in order to work independently
 
-*/
+
+  /** (default) constructor 
+      \param  type is needed to define the size of the detector shared memory 9defaults to GENERIC i.e. the largest shared memory needed by any slsDetector is allocated
+      \param  id is the detector index which is needed to define the shared memory id. Different physical detectors should have different IDs in order to work independently
+
+  */
 
   slsDetector(detectorType type=GENERIC, int id=0);
 
-/** constructor
- \param  id is the detector index which is needed to define the shared memory id. Different physical detectors should have different IDs in order to work independently
-*/
+  /** constructor
+      \param  id is the detector index which is needed to define the shared memory id. Different physical detectors should have different IDs in order to work independently
+  */
   slsDetector(int id);
 
 
@@ -303,7 +303,7 @@ typedef  struct sharedSlsDetector {
   static int exists(int id);
 
   /**  
-     configures mac for gotthard readout
+       configures mac for gotthard readout
   */
   int configureMAC();
 
@@ -321,9 +321,9 @@ typedef  struct sharedSlsDetector {
  
   /**  
 
-     Writes the configuration file fname
-     \param fname file name
-     \returns OK or FAIL
+  Writes the configuration file fname
+  \param fname file name
+  \returns OK or FAIL
 
   */
   int writeConfigurationFile(string const fname);
@@ -337,14 +337,14 @@ typedef  struct sharedSlsDetector {
 
 
   /** 
-     configure the socket communication and initializes the socket instances
+      configure the socket communication and initializes the socket instances
 
-     \param name hostname - if "" the current hostname is used
-     \param control_port port for control commands - if -1 the current is used
-     \param stop_port port for stop command - if -1 the current is used
+      \param name hostname - if "" the current hostname is used
+      \param control_port port for control commands - if -1 the current is used
+      \param stop_port port for stop command - if -1 the current is used
 
-     \returns OK is connection succeded, FAIL otherwise
-     \sa sharedSlsDetector
+      \returns OK is connection succeded, FAIL otherwise
+      \sa sharedSlsDetector
   */
   int setTCPSocket(string const name="", int const control_port=-1, int const stop_port=-1);
 
@@ -393,7 +393,7 @@ typedef  struct sharedSlsDetector {
   /** disconnect from the stop port */
   int disconnectStop();
 
-    /**
+  /**
      sets the network parameters
      \param i network parameter type can be RECEIVER_IP, RECEIVER_MAC, SERVER_MAC
      \param s value to be set
@@ -419,39 +419,39 @@ typedef  struct sharedSlsDetector {
 
 
 
- /**
+  /**
      returns the location of the calibration files
-  \sa  sharedSlsDetector
+     \sa  sharedSlsDetector
   */
   char* getCalDir() {return thisDetector->calDir;};
-   /**
-      sets the location of the calibration files
-  \sa  sharedSlsDetector
+  /**
+     sets the location of the calibration files
+     \sa  sharedSlsDetector
   */
   char* setCalDir(string s) {sprintf(thisDetector->calDir, s.c_str()); return thisDetector->calDir;}; 
 
 
 
   /** returns the number of trim energies and their value  \sa sharedSlsDetector 
-   \param point to the array that will contain the trim energies (in ev)
-  \returns number of trim energies
+      \param point to the array that will contain the trim energies (in ev)
+      \returns number of trim energies
 
 
-  unused!
+      unused!
 
-  \sa  sharedSlsDetector
+      \sa  sharedSlsDetector
   */
   int getTrimEn(int *en=NULL) {if (en) {for (int ien=0; ien<thisDetector->nTrimEn; ien++) en[ien]=thisDetector->trimEnergies[ien];} return (thisDetector->nTrimEn);};
 
 
   /** sets the number of trim energies and their value  \sa sharedSlsDetector 
-   \param nen number of energies
-   \param en array of energies
-   \returns number of trim energies
+      \param nen number of energies
+      \param en array of energies
+      \returns number of trim energies
 
-   unused!
+      unused!
 
-  \sa  sharedSlsDetector
+      \sa  sharedSlsDetector
   */
   int setTrimEn(int nen, int *en=NULL) {if (en) {for (int ien=0; ien<nen; ien++) thisDetector->trimEnergies[ien]=en[ien]; thisDetector->nTrimEn=nen;} return (thisDetector->nTrimEn);};
 
@@ -466,7 +466,7 @@ typedef  struct sharedSlsDetector {
      \sa ::sls_detector_module sharedSlsDetector mythenDetector::writeSettingsFile(string, int)
   */
   using energyConversion::writeSettingsFile;
-   int writeSettingsFile(string fname, int imod);
+  int writeSettingsFile(string fname, int imod);
 
 
   /**
@@ -487,7 +487,7 @@ typedef  struct sharedSlsDetector {
       \param fname file name . If not specified, extension is automatically generated!
       \param imod module number, -1 means all modules
       \returns OK or FAIL
- */ 
+  */ 
   int loadSettingsFile(string fname, int imod=-1);
 
 
@@ -495,7 +495,7 @@ typedef  struct sharedSlsDetector {
       \param fname file name . Axtension is automatically generated!
       \param imod module number, -1 means all modules
       \returns OK or FAIL
- */
+  */
   int saveSettingsFile(string fname, int imod=-1);
 
 
@@ -503,7 +503,7 @@ typedef  struct sharedSlsDetector {
       \param fname file name . If not specified, extension is automatically generated!
       \param imod module number, -1 means all modules
       \returns OK or FAIL
- */
+  */
   int loadCalibrationFile(string fname, int imod=-1);
 
 
@@ -511,14 +511,14 @@ typedef  struct sharedSlsDetector {
       \param fname file name . Axtension is automatically generated!
       \param imod module number, -1 means all modules
       \returns OK or FAIL
- */
+  */
   int saveCalibrationFile(string fname, int imod=-1);
 
 
   /**
    
-      reads an angular conversion file
-      \param fname file to be read
+  reads an angular conversion file
+  \param fname file to be read
   \sa  angleConversionConstant mythenDetector::readAngularConversion
   */
   int readAngularConversionFile(string fname="");
@@ -526,8 +526,8 @@ typedef  struct sharedSlsDetector {
 
   /**
    
-      reads an angular conversion file
-      \param fname file to be read
+  reads an angular conversion file
+  \param fname file to be read
   \sa  angleConversionConstant mythenDetector::readAngularConversion
   */
   int readAngularConversion(ifstream& ifs);
@@ -537,8 +537,8 @@ typedef  struct sharedSlsDetector {
   /**
      Pure virtual function
      writes an angular conversion file
-      \param fname file to be written
-  \sa  angleConversionConstant mythenDetector::writeAngularConversion
+     \param fname file to be written
+     \sa  angleConversionConstant mythenDetector::writeAngularConversion
   */
   int writeAngularConversion(string fname="");
 
@@ -547,8 +547,8 @@ typedef  struct sharedSlsDetector {
   /**
      Pure virtual function
      writes an angular conversion file
-      \param fname file to be written
-  \sa  angleConversionConstant mythenDetector::writeAngularConversion
+     \param fname file to be written
+     \sa  angleConversionConstant mythenDetector::writeAngularConversion
   */
   int writeAngularConversion(ofstream &ofs);
 
@@ -597,17 +597,17 @@ typedef  struct sharedSlsDetector {
   int setDetectorType(detectorType type=GET_DETECTOR_TYPE);  
 
   /** 
-     sets/gets detector type
-     normally  the detector knows what type of detector it is
-     \param type is the detector type ("Mythen", "Pilatus", "XFS", "Gotthard", Agipd")
-     \returns returns detector type index (1 GENERIC, 2 MYTHEN, 3 PILATUS, 4 XFS, 5 GOTTHARD, 6 AGIPD, -1 command failed)
+      sets/gets detector type
+      normally  the detector knows what type of detector it is
+      \param type is the detector type ("Mythen", "Pilatus", "XFS", "Gotthard", Agipd")
+      \returns returns detector type index (1 GENERIC, 2 MYTHEN, 3 PILATUS, 4 XFS, 5 GOTTHARD, 6 AGIPD, -1 command failed)
   */
   int setDetectorType(string type);  
 
   /** 
-     gets detector type
-     normally  the detector knows what type of detector it is
-     \returns returns detector type index (1 GENERIC, 2 MYTHEN, 3 PILATUS, 4 XFS, 5 GOTTHARD, 6 AGIPD, -1 command failed)
+      gets detector type
+      normally  the detector knows what type of detector it is
+      \returns returns detector type index (1 GENERIC, 2 MYTHEN, 3 PILATUS, 4 XFS, 5 GOTTHARD, 6 AGIPD, -1 command failed)
   */
   detectorType getDetectorsType(int pos=-1);
 
@@ -656,7 +656,7 @@ typedef  struct sharedSlsDetector {
  
  
   /** 
-     set/get the use of an external signal 
+      set/get the use of an external signal 
       \param pol meaning of the signal \sa externalSignalFlag
       \param signalIndex index of the signal
       \returns current meaning of signal signalIndex
@@ -665,9 +665,9 @@ typedef  struct sharedSlsDetector {
 
  
   /** 
-     set/get the external communication mode
+      set/get the external communication mode
      
-     obsolete \sa setExternalSignalFlags
+      obsolete \sa setExternalSignalFlags
       \param pol value to be set \sa externalCommunicationMode
       \returns current external communication mode
   */
@@ -684,10 +684,10 @@ typedef  struct sharedSlsDetector {
   */
   int64_t getId(idMode mode, int imod=0);
   /**
-    Digital test of the modules
-    \param mode test mode
-    \param imod module number for chip test or module firmware test
-    \returns OK or error mask
+     Digital test of the modules
+     \param mode test mode
+     \param imod module number for chip test or module firmware test
+     \returns OK or error mask
   */
   int digitalTest(digitalTestMode mode, int imod=0);
   /**
@@ -701,16 +701,16 @@ typedef  struct sharedSlsDetector {
   int* analogTest(analogTestMode mode);
   
   /** 
-     enable analog output of channel ichan
+      enable analog output of channel ichan
  
-     not yet implemented
+      not yet implemented
   */
   int enableAnalogOutput(int ichan);
   
   /** 
-     enable analog output of channel ichan, chip ichip, module imod
+      enable analog output of channel ichan, chip ichip, module imod
  
-     not yet implemented
+      not yet implemented
   */
   int enableAnalogOutput(int imod, int ichip, int ichan);
 
@@ -745,102 +745,102 @@ typedef  struct sharedSlsDetector {
   int readRegister(int addr);
 
   /**
-    set dacs value
-    \param val value (in V)
-    \param index DAC index
-    \param imod module number (if -1 alla modules)
-    \returns current DAC value
+     set dacs value
+     \param val value (in V)
+     \param index DAC index
+     \param imod module number (if -1 alla modules)
+     \returns current DAC value
   */
   dacs_t setDAC(dacs_t val, dacIndex index, int imod=-1);
   
   /**
-    set dacs value
-    \param index ADC index
-    \param imod module number
-    \returns current ADC value
+     set dacs value
+     \param index ADC index
+     \param imod module number
+     \returns current ADC value
   */
   dacs_t getADC(dacIndex index, int imod=0);
  
   /**
-    configure channel
-    \param reg channel register
-    \param ichan channel number (-1 all)
-    \param ichip chip number (-1 all)
-    \param imod module number (-1 all)
-    \returns current register value
-    \sa ::sls_detector_channel
+     configure channel
+     \param reg channel register
+     \param ichan channel number (-1 all)
+     \param ichip chip number (-1 all)
+     \param imod module number (-1 all)
+     \returns current register value
+     \sa ::sls_detector_channel
   */
   int setChannel(int64_t reg, int ichan=-1, int ichip=-1, int imod=-1);  
 
   /**
-    configure channel
-    \param chan channel to be set - must contain correct channel, module and chip number
-    \returns current register value
+     configure channel
+     \param chan channel to be set - must contain correct channel, module and chip number
+     \returns current register value
   */
   int setChannel(sls_detector_channel chan);
 
   /**
-    get channel
-    \param ichan channel number 
-    \param ichip chip number
-    \param imod module number
-    \returns current channel structure for channel
+     get channel
+     \param ichan channel number 
+     \param ichip chip number
+     \param imod module number
+     \returns current channel structure for channel
   */
   sls_detector_channel getChannel(int ichan, int ichip, int imod);
   
 
 
   /** 
-       configure chip
-       \param reg chip register
-       \param ichip chip number (-1 all)
-       \param imod module number (-1 all)
-       \returns current register value
-       \sa ::sls_detector_chip
+      configure chip
+      \param reg chip register
+      \param ichip chip number (-1 all)
+      \param imod module number (-1 all)
+      \returns current register value
+      \sa ::sls_detector_chip
   */
   int setChip(int reg, int ichip=-1, int imod=-1);
   
   /** 
-       configure chip
-       \param chip chip to be set - must contain correct module and chip number and also channel registers
-       \returns current register value
-       \sa ::sls_detector_chip
+      configure chip
+      \param chip chip to be set - must contain correct module and chip number and also channel registers
+      \returns current register value
+      \sa ::sls_detector_chip
   */
   int setChip(sls_detector_chip chip); 
 
   /**
-    get chip
-    \param ichip chip number
-    \param imod module number
-    \returns current chip structure for channel
+     get chip
+     \param ichip chip number
+     \param imod module number
+     \returns current chip structure for channel
 
-    \bug probably does not return corretly!
+     \bug probably does not return corretly!
   */
   sls_detector_chip getChip(int ichip, int imod);
 
 
   /** 
-     configure module
-       \param imod module number (-1 all)
-       \returns current register value
-       \sa ::sls_detector_module
+      configure module
+      \param imod module number (-1 all)
+      \returns current register value
+      \sa ::sls_detector_module
   */
   int setModule(int reg, int imod=-1); 
   //virtual int setModule(int reg, int imod=-1); 
 
   /** 
-       configure chip
-       \param module module to be set - must contain correct module number and also channel and chip registers
-       \returns current register value
-       \sa ::sls_detector_module
+      configure chip
+      \param module module to be set - must contain correct module number and also channel and chip registers
+      \returns current register value
+      \sa ::sls_detector_module
   */
   int setModule(sls_detector_module module);
   //virtual int setModule(sls_detector_module module);
 
   /**
-    get module
-    \param imod module number
-    \returns pointer to module structure (which has bee created and must then be deleted)
+     get module
+     \param imod module number
+     \returns pointer to module structure (which has bee created and must then be deleted)
   */
   sls_detector_module *getModule(int imod);
   //virtual sls_detector_module *getModule(int imod);
@@ -854,46 +854,46 @@ typedef  struct sharedSlsDetector {
     calibrated setup of the threshold
   */  
   /**
-    get threshold energy
-    \param imod module number (-1 all)
-    \returns current threshold value for imod in ev (-1 failed)
+     get threshold energy
+     \param imod module number (-1 all)
+     \returns current threshold value for imod in ev (-1 failed)
   */
   int getThresholdEnergy(int imod=-1);  
 
   /**
-    set threshold energy
-    \param e_eV threshold in eV
-    \param imod module number (-1 all)
-    \param isettings ev. change settings
-    \returns current threshold value for imod in ev (-1 failed)
+     set threshold energy
+     \param e_eV threshold in eV
+     \param imod module number (-1 all)
+     \param isettings ev. change settings
+     \returns current threshold value for imod in ev (-1 failed)
   */
   int setThresholdEnergy(int e_eV, int imod=-1, detectorSettings isettings=GET_SETTINGS); 
  
   /**
-    get detector settings
-    \param imod module number (-1 all)
-    \returns current settings
+     get detector settings
+     \param imod module number (-1 all)
+     \returns current settings
   */
   detectorSettings getSettings(int imod=-1);  
 
   /**
-    set detector settings
-    \param isettings  settings
-    \param imod module number (-1 all)
-    \returns current settings
+     set detector settings
+     \param isettings  settings
+     \param imod module number (-1 all)
+     \returns current settings
 
-    in this function trimbits/settings and calibration files are searched in the settingsDir and calDir directories and the detector is initialized
+     in this function trimbits/settings and calibration files are searched in the settingsDir and calDir directories and the detector is initialized
   */
   detectorSettings setSettings(detectorSettings isettings, int imod=-1);
   //virtual detectorSettings setSettings(detectorSettings isettings, int imod=-1);
 
   /**
-   	gets the trimbits from shared memory *chanRegs
-   	\param retval is the array with the trimbits
-   	\param fromDetector is true if the trimbits shared memory have to be uploaded from detector
-   	\returns the total number of channels for the detector
-   	\sa ::sls_detector_module
-   */
+     gets the trimbits from shared memory *chanRegs
+     \param retval is the array with the trimbits
+     \param fromDetector is true if the trimbits shared memory have to be uploaded from detector
+     \returns the total number of channels for the detector
+     \sa ::sls_detector_module
+  */
   int getChanRegs(double* retval,bool fromDetector);
 
   /**
@@ -915,72 +915,72 @@ typedef  struct sharedSlsDetector {
 
   int updateDetector();
 
-// Acquisition functions
+  // Acquisition functions
 
 
   /**
-    start detector acquisition
-    \returns OK/FAIL
+     start detector acquisition
+     \returns OK/FAIL
   */
   int startAcquisition();
 
   /**
-    stop detector acquisition
-    \returns OK/FAIL
+     stop detector acquisition
+     \returns OK/FAIL
   */
   int stopAcquisition();
   
   /**
-    start readout (without exposure or interrupting exposure)
-    \returns OK/FAIL
+     start readout (without exposure or interrupting exposure)
+     \returns OK/FAIL
   */
   int startReadOut();
 
   /**
      get run status
-    \returns status mask
+     \returns status mask
   */
   //virtual runStatus  getRunStatus()=0;
   runStatus  getRunStatus();
 
   /**
-    start detector acquisition and read all data putting them a data queue
-    \returns pointer to the front of the data queue
-    \sa startAndReadAllNoWait getDataFromDetector dataQueue
+     start detector acquisition and read all data putting them a data queue
+     \returns pointer to the front of the data queue
+     \sa startAndReadAllNoWait getDataFromDetector dataQueue
   */ 
   int* startAndReadAll();
   
   /**
-    start detector acquisition and read out, but does not read data from socket  leaving socket opened
-    \returns OK or FAIL
+     start detector acquisition and read out, but does not read data from socket  leaving socket opened
+     \returns OK or FAIL
    
   */ 
   int startAndReadAllNoWait(); 
 
-/*   /\** */
-/*     receives a data frame from the detector socket */
-/*     \returns pointer to the data or NULL. If NULL disconnects the socket */
-/*     \sa getDataFromDetector */
-/*   *\/  */
-/*   int* getDataFromDetectorNoWait();  */
+  /*   /\** */
+  /*     receives a data frame from the detector socket */
+  /*     \returns pointer to the data or NULL. If NULL disconnects the socket */
+  /*     \sa getDataFromDetector */
+  /*   *\/  */
+  /*   int* getDataFromDetectorNoWait();  */
 
   /**
-   asks and  receives a data frame from the detector and puts it in the data queue
-    \returns pointer to the data or NULL. 
-    \sa getDataFromDetector
+     asks and  receives a data frame from the detector and puts it in the data queue
+     \returns pointer to the data or NULL. 
+     \sa getDataFromDetector
   */ 
   int* readFrame(); 
 
   /**
-   asks and  receives all data  from the detector  and puts them in a data queue
-    \returns pointer to the front of the queue  or NULL. 
-    \sa getDataFromDetector  dataQueue
+     asks and  receives all data  from the detector  and puts them in a data queue
+     \returns pointer to the front of the queue  or NULL. 
+     \sa getDataFromDetector  dataQueue
   */ 
   int* readAll();
 
   /**
-   asks and  receives all data  from the detector  and leaves the socket opened
-    \returns OK or FAIL
+     asks and  receives all data  from the detector  and leaves the socket opened
+     \returns OK or FAIL
   */ 
   int readAllNoWait();
 
@@ -1011,7 +1011,7 @@ typedef  struct sharedSlsDetector {
       \param value is the value to be set, if -1 get value
       \returns current value for the specified parameter
       \sa speedVariable
-   */
+  */
   int setSpeed(speedVariable sp, int value=-1);
 
   // Flags
@@ -1050,8 +1050,8 @@ typedef  struct sharedSlsDetector {
   */
   int setReadOutFlags(readOutFlags flag=GET_READOUT_FLAGS);
 
-    /**
-       execute trimming
+  /**
+     execute trimming
      \param mode trim mode
      \param par1 if noise, beam or fixed setting trimming it is count limit, if improve maximum number of iterations
      \param par2 if noise or beam nsigma, if improve par2!=means vthreshold will be optimized, if fixed settings par2<0 trimwith median, par2>=0 trim with level
@@ -1155,9 +1155,9 @@ typedef  struct sharedSlsDetector {
 
 
   /** 
-     decode data from the detector converting them to an array of doubles, one for each channle
-     \param datain data from the detector
-     \returns pointer to a double array with a data per channel
+      decode data from the detector converting them to an array of doubles, one for each channle
+      \param datain data from the detector
+      \returns pointer to a double array with a data per channel
   */
   double* decodeData(int *datain, double *fdata=NULL);
 
@@ -1166,12 +1166,12 @@ typedef  struct sharedSlsDetector {
   
   
   /** 
-     flat field correct data
-     \param datain data array
-     \param errin error array on data (if NULL will default to sqrt(datain)
-     \param dataout array of corrected data
-     \param errout error on corrected data (if not NULL)
-     \returns 0
+      flat field correct data
+      \param datain data array
+      \param errin error array on data (if NULL will default to sqrt(datain)
+      \param dataout array of corrected data
+      \param errout error on corrected data (if not NULL)
+      \returns 0
   */
   int flatFieldCorrect(double* datain, double *errin, double* dataout, double *errout);
  
@@ -1179,53 +1179,53 @@ typedef  struct sharedSlsDetector {
   
 
   /** 
-     rate correct data
-     \param datain data array
-     \param errin error array on data (if NULL will default to sqrt(datain)
-     \param dataout array of corrected data
-     \param errout error on corrected data (if not NULL)
-     \returns 0
+      rate correct data
+      \param datain data array
+      \param errin error array on data (if NULL will default to sqrt(datain)
+      \param dataout array of corrected data
+      \param errout error on corrected data (if not NULL)
+      \returns 0
   */
   int rateCorrect(double* datain, double *errin, double* dataout, double *errout);
 
   
-/*   /\**  */
-/*       pure virtual function */
-/*   sets the arrays of the merged data to 0. NB The array should be created with size >= 360./getBinSize();  */
-/*       \param mp already merged postions */
-/*       \param mv already merged data */
-/*       \param me already merged errors (squared sum) */
-/*       \param mm multiplicity of merged arrays */
-/*       \returns OK or FAIL */
-/*       \sa mythenDetector::resetMerging */
-/*   *\/ */
+  /*   /\**  */
+  /*       pure virtual function */
+  /*   sets the arrays of the merged data to 0. NB The array should be created with size >= 360./getBinSize();  */
+  /*       \param mp already merged postions */
+  /*       \param mv already merged data */
+  /*       \param me already merged errors (squared sum) */
+  /*       \param mm multiplicity of merged arrays */
+  /*       \returns OK or FAIL */
+  /*       \sa mythenDetector::resetMerging */
+  /*   *\/ */
   
-/*   int resetMerging(double *mp, double *mv,double *me, int *mm); */
+  /*   int resetMerging(double *mp, double *mv,double *me, int *mm); */
   
-/*   /\**  */
-/*       pure virtual function */
-/*   merge dataset */
-/*       \param p1 angular positions of dataset */
-/*       \param v1 data */
-/*       \param e1 errors */
-/*       \param mp already merged postions */
-/*       \param mv already merged data */
-/*       \param me already merged errors (squared sum) */
-/*       \param mm multiplicity of merged arrays */
-/*       \sa mythenDetector::addToMerging */
-/*   *\/ */
-/*   int addToMerging(double *p1, double *v1, double *e1, double *mp, double *mv,double *me, int *mm); */
+  /*   /\**  */
+  /*       pure virtual function */
+  /*   merge dataset */
+  /*       \param p1 angular positions of dataset */
+  /*       \param v1 data */
+  /*       \param e1 errors */
+  /*       \param mp already merged postions */
+  /*       \param mv already merged data */
+  /*       \param me already merged errors (squared sum) */
+  /*       \param mm multiplicity of merged arrays */
+  /*       \sa mythenDetector::addToMerging */
+  /*   *\/ */
+  /*   int addToMerging(double *p1, double *v1, double *e1, double *mp, double *mv,double *me, int *mm); */
 
-/*   /\** pure virtual function */
-/*       calculates the "final" positions, data value and errors for the emrged data */
-/*       \param mp already merged postions */
-/*       \param mv already merged data */
-/*       \param me already merged errors (squared sum) */
-/*       \param mm multiplicity of merged arrays */
-/*       \returns FAIL or the number of non empty bins (i.e. points belonging to the pattern) */
-/*       \sa mythenDetector::finalizeMerging */
-/*   *\/ */
-/*   int finalizeMerging(double *mp, double *mv,double *me, int *mm); */
+  /*   /\** pure virtual function */
+  /*       calculates the "final" positions, data value and errors for the emrged data */
+  /*       \param mp already merged postions */
+  /*       \param mv already merged data */
+  /*       \param me already merged errors (squared sum) */
+  /*       \param mm multiplicity of merged arrays */
+  /*       \returns FAIL or the number of non empty bins (i.e. points belonging to the pattern) */
+  /*       \sa mythenDetector::finalizeMerging */
+  /*   *\/ */
+  /*   int finalizeMerging(double *mp, double *mv,double *me, int *mm); */
 
   /** 
       turns off server
@@ -1274,22 +1274,22 @@ typedef  struct sharedSlsDetector {
      \param 
      \param action can be PUT_ACTION or GET_ACTION (from text client even READOUT_ACTION for acquisition) 
   */
-   static detectorType getDetectorType(const char *name, int cport=DEFAULT_PORTNO);
+  static detectorType getDetectorType(const char *name, int cport=DEFAULT_PORTNO);
  
   /**
      returns the detector type from hostname and controlport
      \param 
      \param action can be PUT_ACTION or GET_ACTION (from text client even READOUT_ACTION for acquisition) 
   */
-   static detectorType getDetectorType(int id);
+  static detectorType getDetectorType(int id);
  
 
-   /** 
+  /** 
       Returns detector id
       \returns detector id
   */
 
-   int getDetectorId(int i=-1) {return detId;};
+  int getDetectorId(int i=-1) {return detId;};
   /** 
       Receives a data frame from the detector socket
       \returns pointer to the data (or NULL if failed)
@@ -1307,17 +1307,17 @@ typedef  struct sharedSlsDetector {
   masterFlags  setMaster(masterFlags flag);
 
   /**
-      Loads dark image or gain image from a file and sends it to the detector
-      \param index is 0 for dark image and 1 for gain image
-      \param fname file name to load data from
+     Loads dark image or gain image from a file and sends it to the detector
+     \param index is 0 for dark image and 1 for gain image
+     \param fname file name to load data from
 
   */
   int loadImageToDetector(imageType index,string const fname);
 
   /**
-      Called from loadImageToDetector to send the image to detector
-      \param index is 0 for dark image and 1 for gain image
-      \param arg image
+     Called from loadImageToDetector to send the image to detector
+     \param index is 0 for dark image and 1 for gain image
+     \param arg image
 
   */
   int sendImageToDetector(imageType index,short int imageVals[]);
@@ -1330,27 +1330,27 @@ typedef  struct sharedSlsDetector {
   synchronizationMode setSynchronization(synchronizationMode sync=GET_SYNCHRONIZATION_MODE);
   
   /**
-       writes the counter memory block from the detector
-       \param startACQ is 1 to start acquisition after reading counter
-       \param fname file name to load data from
-       \returns OK or FAIL
+     writes the counter memory block from the detector
+     \param startACQ is 1 to start acquisition after reading counter
+     \param fname file name to load data from
+     \returns OK or FAIL
   */
   int writeCounterBlockFile(string const fname,int startACQ=0);
 
 
   /**
-       gets counter memory block in detector
-       \param startACQ is 1 to start acquisition after reading counter
-       \param arg counter memory block from detector
-       \returns OK or FAIL
+     gets counter memory block in detector
+     \param startACQ is 1 to start acquisition after reading counter
+     \param arg counter memory block from detector
+     \returns OK or FAIL
   */
   int getCounterBlock(short int arg[],int startACQ=0);
 
 
   /**
-       Resets counter in detector
-       \param startACQ is 1 to start acquisition after resetting counter
-       \returns OK or FAIL
+     Resets counter in detector
+     \param startACQ is 1 to start acquisition after resetting counter
+     \returns OK or FAIL
   */
   int resetCounterBlock(int startACQ=0);
 
@@ -1364,17 +1364,17 @@ typedef  struct sharedSlsDetector {
 
 
 
-//receiver
+  //receiver
 
 
   /**
-   	 calls setReceiverTCPSocket if online and sets the flag
-   */
+     calls setReceiverTCPSocket if online and sets the flag
+  */
   int setReceiverOnline(int const online=GET_ONLINE_FLAG);
 
   /**
      Checks if the receiver is really online
-   */
+  */
   string checkReceiverOnline();
 
   /**
@@ -1389,45 +1389,45 @@ typedef  struct sharedSlsDetector {
   int setReceiverTCPSocket(string const name="", int const data_port=-1);
 
   /**
-        Sets up the receiver file name
-        @param fileName file name
-        \returns file name
-   */
+     Sets up the receiver file name
+     @param fileName file name
+     \returns file name
+  */
   string setReceiverFileName(string fileName="");
 
   /**
-        Sets up the receiver file directory
-        @param fileName fileDir file directory
-        \returns file dir
-   */
+     Sets up the receiver file directory
+     @param fileName fileDir file directory
+     \returns file dir
+  */
   string setReceiverFileDir(string fileDir="");
 
   /**
-        Sets up the receiver file index
-        @param fileIndex file index
-        \returns file index
-   */
+     Sets up the receiver file index
+     @param fileIndex file index
+     \returns file index
+  */
   int setReceiverFileIndex(int fileIndex=-1);
 
 
   /**   Starts the listening mode of receiver
         \returns OK or FAIL
-   */
+  */
   int startReceiver();
 
   /**   Stops the listening mode of receiver
         \returns OK or FAIL
-   */
+  */
   int stopReceiver();
 
   /**   gets the status of the listening mode of receiver
         \returns status
-   */
+  */
   runStatus getReceiverStatus();
 
   /**   gets the number of frames caught by receiver
         \returns number of frames caught by receiver
-   */
+  */
   int getFramesCaughtByReciver();
 
   /** Locks/Unlocks the connection to the receiver
@@ -1437,19 +1437,19 @@ typedef  struct sharedSlsDetector {
   int lockReceiver(int lock=-1);
 
   /**
-      Returns the IP of the last client connecting to the receiver
+     Returns the IP of the last client connecting to the receiver
   */
   string getReceiverLastClientIP();
 
   /**
- 	 updates the shared memory receiving the data from the detector (without asking and closing the connection
-  	  /returns OK
+     updates the shared memory receiving the data from the detector (without asking and closing the connection
+     /returns OK
   */
   int updateReceiverNoWait();
 
   /**
-  	  updates the shared memory receiving the data from the detector
-  	  /returns OK
+     updates the shared memory receiving the data from the detector
+     /returns OK
   */
   int updateReceiver();
   int fillModuleMask(int *mM);
@@ -1457,7 +1457,7 @@ typedef  struct sharedSlsDetector {
  
 
   /**
-    address of the detector structure in shared memory
+     address of the detector structure in shared memory
   */
   sharedSlsDetector *thisDetector;
 

@@ -705,6 +705,33 @@ int setContinousReadOut(int d) {
 }
 
 
+int startReceiver(int start) {
+	u_int32_t addr=CONFIG_REG;
+#ifdef VERBOSE
+	if(start)
+		printf("Setting up detector to send to Receiver\n");
+	else
+		printf("Setting up detector to send to CPU\n");
+#endif
+	int reg=bus_r(addr);
+	//for start recever, write 0 and for stop, write 1
+	if (!start)
+		bus_w(CONFIG_REG,reg|CPU_OR_RECEIVER_BIT);
+	else
+		bus_w(CONFIG_REG,reg&(~CPU_OR_RECEIVER_BIT));
+
+	reg=bus_r(addr);
+#ifdef VERBOSE
+	printf("Config Reg %x\n", reg);
+#endif
+	if (start && (!(reg&CPU_OR_RECEIVER_BIT)))
+		return OK;
+	if(!start && (reg&CPU_OR_RECEIVER_BIT))
+		return OK;
+	return FAIL;
+}
+
+
 u_int64_t  getDetectorNumber() {
 	char output[255],mac[255]="";
 	u_int64_t res=0;

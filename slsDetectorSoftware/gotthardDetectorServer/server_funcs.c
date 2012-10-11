@@ -175,6 +175,8 @@ int function_table() {
   flist[F_SET_SYNCHRONIZATION_MODE]=&set_synchronization;
   flist[F_READ_COUNTER_BLOCK]=&read_counter_block;
   flist[F_RESET_COUNTER_BLOCK]=&reset_counter_block;
+  flist[F_START_RECEIVER]=&start_receiver;
+  flist[F_STOP_RECEIVER]=&stop_receiver;
   return OK;
 }
 
@@ -2788,18 +2790,19 @@ int configure_mac(int file_des) {
   if (imod<0)
     imod=ALLMOD;
 
-#ifdef VERBOSE
+//#ifdef VERBOSE
   printf("Configuring MAC of module %d\n", imod);
-#endif
+//#endif
 #ifdef MCB_FUNCS
   if (ret==OK) {
     retval=configureMAC(ipad,imacadd,iservermacadd,digitalTestBit);
-    if(retval==-1) ret=FAIL;
+    if(retval==-1)
+    	ret=FAIL;
   }
 #endif
-#ifdef VERBOSE
+//#ifdef VERBOSE
   printf("Configured MAC with retval %d\n",  retval);
-#endif  
+//#endif
   if (ret==FAIL) {
     printf("configuring MAC of mod %d failed\n", imod);
   }
@@ -3075,6 +3078,75 @@ int reset_counter_block(int file_des) {
 	if (ret==FAIL)
 		n += sendDataOnly(file_des,mess,sizeof(mess));
 
+	/*return ok/fail*/
+	return ret;
+}
+
+
+
+
+
+
+int start_receiver(int file_des) {
+	int ret=OK;
+	int n=0;
+	strcpy(mess,"Could not start receiver\n");
+
+	/* execute action if the arguments correctly arrived*/
+#ifdef MCB_FUNCS
+	if (lockStatus==1 && differentClients==1){//necessary???
+		sprintf(mess,"Receiver locked by %s\n", lastClientIP);
+		ret=FAIL;
+	}
+	else
+		ret = startReceiver(1);
+#endif
+
+
+	if(ret==OK && differentClients){
+		printf("Force update\n");
+		ret=FORCE_UPDATE;
+	}
+
+	/* send answer */
+	n = sendDataOnly(file_des,&ret,sizeof(ret));
+	if(ret==FAIL)
+		n = sendDataOnly(file_des,mess,sizeof(mess));
+	/*return ok/fail*/
+	return ret;
+}
+
+
+
+
+
+
+int stop_receiver(int file_des) {
+	int ret=OK;
+	int n=0;
+
+	strcpy(mess,"Could not stop receiver\n");
+
+	/* execute action if the arguments correctly arrived*/
+#ifdef MCB_FUNCS
+	if (lockStatus==1 && differentClients==1){//necessary???
+		sprintf(mess,"Receiver locked by %s\n", lastClientIP);
+		ret=FAIL;
+	}
+	else
+		ret=startReceiver(0);
+#endif
+
+
+	if(ret==OK && differentClients){
+		printf("Force update\n");
+		ret=FORCE_UPDATE;
+	}
+
+	/* send answer */
+	n = sendDataOnly(file_des,&ret,sizeof(ret));
+	if(ret==FAIL)
+		n = sendDataOnly(file_des,mess,sizeof(mess));
 	/*return ok/fail*/
 	return ret;
 }

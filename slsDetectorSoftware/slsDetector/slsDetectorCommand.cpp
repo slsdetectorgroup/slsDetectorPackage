@@ -3566,19 +3566,26 @@ string slsDetectorCommand::cmdReceiver(int narg, char *args[], int action) {
 	if(cmd=="receiver"){
 		if (action==PUT_ACTION) {
 			if(!strcasecmp(args[1],"start")){
-				//update receiver index
-				if(myDet->setReceiverFileIndex(myDet->getFileIndex())==-1)
-					return string("could not set receiver file index");
-				myDet->startReceiver();
+				if(myDet->getReceiverStatus()==IDLE){
+					//update receiver index
+					if(myDet->setReceiverFileIndex(myDet->getFileIndex())==-1)
+						return string("could not set receiver file index");
+					//to configure the server
+					myDet->setOnline(ONLINE_FLAG);
+					myDet->startReceiver();
+				}
 			}
 
 			else if(!strcasecmp(args[1],"stop")){
-				if(myDet->stopReceiver()!=FAIL){
-					//update index
-					int index = myDet->setReceiverFileIndex();
-					if(index==-1)
-						return string("could not get receiver file index");
-					myDet->setFileIndex(index);
+				if(myDet->getReceiverStatus()==RUNNING){
+					myDet->setOnline(ONLINE_FLAG);
+					if(myDet->stopReceiver()!=FAIL){
+						//update index
+						int index = myDet->setReceiverFileIndex();
+						if(index==-1)
+							return string("could not get receiver file index");
+						myDet->setFileIndex(index);
+					}
 				}
 			}else
 				return helpReceiver(narg, args, action);

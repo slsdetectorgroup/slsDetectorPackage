@@ -53,6 +53,7 @@ int setTiming(int t);
 int setConfigurationRegister(int d);
 int setToT(int d);
 int setContinousReadOut(int d);
+int startReceiver(int d);
 
 int setDACRegister(int idac, int val, int imod);
 

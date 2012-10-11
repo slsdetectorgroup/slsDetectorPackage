@@ -5543,10 +5543,35 @@ int slsDetector::startReceiver(){
 				}
 				dataSocket->Disconnect();
 				if (ret==FORCE_UPDATE)
-					updateReceiver();
+					ret=updateReceiver();
 			}
 		}
 	}
+
+	//configuremac for gotthard
+	if(ret==OK)
+		if(thisDetector->myDetectorType==GOTTHARD)
+			ret=configureMAC();
+
+	//tell the server to send to receiver and not CPU
+	if(ret==OK){
+		if (thisDetector->onlineFlag==ONLINE_FLAG) {
+			if (controlSocket) {
+				if  (controlSocket->Connect()>=0) {
+					controlSocket->SendDataOnly(&fnum,sizeof(fnum));
+					controlSocket->ReceiveDataOnly(&ret,sizeof(ret));
+					if (ret==FAIL){
+						controlSocket->ReceiveDataOnly(mess,sizeof(mess));
+						std::cout<< "Detector returned error: " << mess << std::endl;
+					}
+					controlSocket->Disconnect();
+					if (ret==FORCE_UPDATE)
+						ret=updateDetector();
+				}
+			}
+		}
+	}
+
 	return ret;
 }
 
@@ -5574,10 +5599,30 @@ int slsDetector::stopReceiver(){
 
 				dataSocket->Disconnect();
 				if (ret==FORCE_UPDATE)
-					updateReceiver();
+					ret=updateReceiver();
 			}
 		}
 	}
+
+	//tell the server to NOT send to receiver and instead to CPU
+	if(ret==OK){
+		if (thisDetector->onlineFlag==ONLINE_FLAG) {
+			if (controlSocket) {
+				if  (controlSocket->Connect()>=0) {
+					controlSocket->SendDataOnly(&fnum,sizeof(fnum));
+					controlSocket->ReceiveDataOnly(&ret,sizeof(ret));
+					if (ret==FAIL){
+						controlSocket->ReceiveDataOnly(mess,sizeof(mess));
+						std::cout<< "Detector returned error: " << mess << std::endl;
+					}
+					controlSocket->Disconnect();
+					if (ret==FORCE_UPDATE)
+						ret=updateDetector();
+				}
+			}
+		}
+	}
+
 	return ret;
 }
 

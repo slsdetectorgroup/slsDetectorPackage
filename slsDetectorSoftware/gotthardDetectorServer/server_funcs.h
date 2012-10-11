@@ -81,4 +81,7 @@ int load_image(int);
 int read_counter_block(int);
 int reset_counter_block(int);
 
+int start_receiver(int);
+int stop_receiver(int);
+
 #endif

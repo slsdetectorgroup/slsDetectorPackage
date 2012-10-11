@@ -497,7 +497,8 @@ void qTabPlot::SetFrequency(){
 			boxFrequency->setToolTip(errTip);
 		}
 		//show red if acqPeriod<minInterval
-		else if(acqPeriodMS<timeMS){
+		else if((acqPeriodMS+1)<timeMS){
+			cout<<"\nacqPeriodMS:"<<acqPeriodMS<<"\ttimeMS:"<<timeMS<<endl;
 			//qDefs::Message(qDefs::WARNING,"<nobr>Interval between Plots: You might be losing Images!</nobr>","Plot");
 			boxFrequency->setPalette(*red);
 			boxFrequency->setTitle("Interval between Plots*");

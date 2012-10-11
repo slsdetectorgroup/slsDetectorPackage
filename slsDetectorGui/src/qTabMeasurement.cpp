@@ -30,7 +30,7 @@ qTabMeasurement::qTabMeasurement(QWidget *parent,multiSlsDetector*& detector, qD
 	setupUi(this);
 	SetupWidgetWindow();
 	Initialization();
-
+	SetupTimingMode();
 }
 
 
@@ -75,9 +75,6 @@ void qTabMeasurement::SetupWidgetWindow(){
 	lblProgressIndex->setText(QString::number(myDet->getFileIndex()));
 	//ly initially
 	progressBar->setValue(0);
-
-	//timing mode
-	SetupTimingMode();
 
 	//file write enabled/disabled
 	chkFile->setChecked(myDet->enableWriteToFile());

@@ -538,7 +538,7 @@ int qDrawPlot::GetData(detectorData *data){
 		//set progress
 		progress=(int)data->progressIndex;
 		currentFileIndex = fileIOStatic::getFileIndexFromFileName(string(data->fileName));
-#ifdef VERBOSE
+#ifdef VERYVERBOSE
 		cout << "progress:" << progress << endl;
 #endif
 
@@ -673,8 +673,6 @@ int qDrawPlot::GetData(detectorData *data){
 						//get scanvariable0
 						int ci = 0, p = 0; double cs0 = 0 , cs1 = 0;
 						fileIOStatic::getVariablesFromFileName(string(data->fileName), ci, p, cs0, cs1);
-						cout<<"currentScanValue:"<<currentScanValue<<endl;
-						cout<<"cs0:"<<cs0<<endl;
 						//variables
 						if(cs0!=currentScanValue) {
 							if(backwardScanPlot)	currentScanDivLevel--;
@@ -946,8 +944,6 @@ void qDrawPlot::UpdatePlot(){
 				if(lastImageArray){
 					if(lastImageNumber&&last_plot_number!=(int)lastImageNumber && //there is a new plot
 							nPixelsX>0&&nPixelsY>0){
-						cout<<"startpixel:"<<startPixel<<endl;
-						cout<<"endpixel:"<<endPixel<<endl;
 						//plot2D->GetPlot()->SetData(nPixelsX,-0.5,nPixelsX-0.5,nPixelsY,-0.5,nPixelsY-0.5,lastImageArray);
 						plot2D->GetPlot()->SetData(nPixelsX,-0.5,nPixelsX-0.5,nPixelsY,startPixel,endPixel,lastImageArray);
 						plot2D->setTitle(GetImageTitle());

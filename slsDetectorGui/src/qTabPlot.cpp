@@ -443,6 +443,34 @@ void qTabPlot::SetFrequency(){
 	char cMin[200];
 	sprintf(cMin,"%f ms",minPlotTimer);
 
+
+	acqPeriodMS = (myDet->setTimer(slsDetectorDefs::FRAME_PERIOD,-1)*(1E-6));
+	//if period is 0, check exptime, if that is also 0, give warning and set to min timer
+	if(acqPeriodMS==0){
+		acqPeriodMS = (myDet->setTimer(slsDetectorDefs::ACQUISITION_TIME,-1)*(1E-6));
+		if(acqPeriodMS==0){
+			qDefs::Message(qDefs::WARNING,"<nobr>Interval between Plots:</nobr><br><nobr>"
+					"<b>Every Nth Image</b>: Period betwen Frames and Exposure Time cannot both be 0 ms.</nobr><br><nobr>"
+					"Resetting to minimum plotting time interval","Plot");
+			comboFrequency->setCurrentIndex(0);
+			stackedLayout->setCurrentIndex(comboFrequency->currentIndex());
+			spinTimeGap->setValue(minPlotTimer);
+			comboTimeGapUnit->setCurrentIndex(qDefs::MILLISECONDS);
+			timeMS=minPlotTimer;
+			//This is done so that its known which one was selected
+			myPlot->SetFrameFactor(0);
+			// Setting the timer value(ms) between plots
+			myPlot->SetPlotTimer(timeMS);
+
+			connect(comboTimeGapUnit,SIGNAL(currentIndexChanged(int)),	this, SLOT(SetFrequency()));
+			connect(spinTimeGap,	SIGNAL(editingFinished()),			this, SLOT(SetFrequency()));
+			connect(spinNthFrame,	SIGNAL(editingFinished()),			this, SLOT(SetFrequency()));
+			connect(comboFrequency, SIGNAL(currentIndexChanged(int)),	this, SLOT(SetFrequency()));
+			return;
+		}
+	}
+
+
 	stackedLayout->setCurrentIndex(comboFrequency->currentIndex());
 	switch(comboFrequency->currentIndex()){
 	case 0:
@@ -457,16 +485,29 @@ void qTabPlot::SetFrequency(){
 			timeMS=minPlotTimer;
 		}
 
-		//show red for warning
+
+		//show red if min interval<minplottimer
 		if(timeMS<minPlotTimer){
-			qDefs::Message(qDefs::WARNING,"<nobr>Interval between Plots: You might be losing Images!</nobr>","Plot");
+			//qDefs::Message(qDefs::WARNING,"<nobr>Interval between Plots: You might be losing Images!</nobr>","Plot");
 			boxFrequency->setPalette(*red);
 			boxFrequency->setTitle("Interval between Plots*");
 			QString errTip = intervalTip + QString("<br><br><font color=\"red\"><nobr>"
 					"<b>Time Interval</b> Condition: min of ")+QString("%1").arg(minPlotTimer)+
 							QString("ms.</nobr><br><nobr>You might be losing images!</nobr></font>");
 			boxFrequency->setToolTip(errTip);
-		}else{
+		}
+		//show red if acqPeriod<minInterval
+		else if(acqPeriodMS<timeMS){
+			//qDefs::Message(qDefs::WARNING,"<nobr>Interval between Plots: You might be losing Images!</nobr>","Plot");
+			boxFrequency->setPalette(*red);
+			boxFrequency->setTitle("Interval between Plots*");
+			QString errTip = intervalTip + QString("<br><br><font color=\"red\"><nobr>"
+					"<b>Time Interval</b> Acquisition Period should be >= Time Interval between plots.</nobr><br><nobr>"
+					"You might be losing images!</nobr></font>");
+			boxFrequency->setToolTip(errTip);
+		}
+		//correct
+		else{
 			boxFrequency->setPalette(boxSnapshot->palette());
 			boxFrequency->setTitle("Interval between Plots");
 			boxFrequency->setToolTip(intervalTip);
@@ -480,28 +521,11 @@ void qTabPlot::SetFrequency(){
 	cout << "Plotting Frequency: Time Gap - " << spinTimeGap->value() << qDefs::getUnitString((qDefs::timeUnit)comboTimeGapUnit->currentIndex()) << endl;
 #endif
 		break;
-	case 1:
-		acqPeriodMS = (myDet->setTimer(slsDetectorDefs::FRAME_PERIOD,-1)*(1E-6));
 
-		//if period is 0, check exptime, if that is also 0, give warning and set to min timer
-		if(acqPeriodMS==0){
-			acqPeriodMS = (myDet->setTimer(slsDetectorDefs::ACQUISITION_TIME,-1)*(1E-6));
-			if(acqPeriodMS==0){
-				qDefs::Message(qDefs::WARNING,"<nobr>Interval between Plots:</nobr><br><nobr>"
-						"<b>Every Nth Image</b>: Period betwen Frames and Exposure Time cannot both be 0 ms.</nobr><br><nobr>"
-						"Resetting to minimum plotting time interval","Plot");
-				comboFrequency->setCurrentIndex(0);
-				stackedLayout->setCurrentIndex(comboFrequency->currentIndex());
-				spinTimeGap->setValue(minPlotTimer);
-				comboTimeGapUnit->setCurrentIndex(qDefs::MILLISECONDS);
-				timeMS=minPlotTimer;
-				//This is done so that its known which one was selected
-				myPlot->SetFrameFactor(0);
-				// Setting the timer value(ms) between plots
-				myPlot->SetPlotTimer(timeMS);
-				break;
-			}
-		}
+
+
+
+	case 1:
 
 		// gets the acq period * number of nth frames
 		timeMS = (spinNthFrame->value())*acqPeriodMS;
@@ -509,7 +533,7 @@ void qTabPlot::SetFrequency(){
 		//Show red to make sure the period between plotting is not less than minimum plot timer in  ms
 		if(timeMS<minPlotTimer){
 			int minFrame = (int)(ceil)(minPlotTimer/acqPeriodMS);
-			qDefs::Message(qDefs::WARNING,"<nobr>Interval between Plots: You might be losing Images!</nobr>","Plot");
+			//qDefs::Message(qDefs::WARNING,"<nobr>Interval between Plots: You might be losing Images!</nobr>","Plot");
 			boxFrequency->setPalette(*red);
 			boxFrequency->setTitle("Interval between Plots*");
 			QString errTip = intervalTip + QString("<br><br><font color=\"red\"><nobr>"

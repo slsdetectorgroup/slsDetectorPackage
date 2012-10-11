@@ -755,8 +755,8 @@ int qDrawPlot::GetData(detectorData *data){
 			}
 			pthread_mutex_unlock(&(last_image_complete_mutex));
 		}
+		cout<<"currentframe:"<<currentFrame<<"\tcurrentfileIndex:"<<currentFileIndex<<endl;
 		currentFrame++;
-
 	}
 #ifdef VERYVERBOSE
 	cout << "Exiting GetData function" << endl;

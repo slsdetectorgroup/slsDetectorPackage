@@ -2816,7 +2816,7 @@ int configure_mac(int file_des) {
   n = sendDataOnly(file_des,&ret,sizeof(ret));
   if (ret!=FAIL) {
     /* send return argument */
-    n += sendDataOnly(file_des,&retval,sizeof(retval));
+    n += sendDataOnly(file_des,&retval,sizeof(retval));printf("retval:%d\n",retval);
   } else {
     n += sendDataOnly(file_des,mess,sizeof(mess));
   }

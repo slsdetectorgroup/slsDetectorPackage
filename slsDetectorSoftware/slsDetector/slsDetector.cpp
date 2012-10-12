@@ -4512,13 +4512,15 @@ int slsDetector::configureMAC(){
   strcpy(arg[2],getServerMAC());
 
 
-  //#ifdef VERBOSE
+#ifdef VERBOSE
   std::cout<< "slsDetector configureMAC "<< std::endl;
-  //#endif
+#endif
 
   for(i=0;i<3;i++){
-    if(!strcmp(arg[i],"none"))
-      return -1;
+    if(!strcmp(arg[i],"none")){
+      std::cout<< "Configure MAC Error. IP/MAC Addresses has INVALID format"<< std::endl;
+      return FAIL;
+    }
   }
 
 #ifdef VERBOSE
@@ -5275,9 +5277,11 @@ slsDetectorDefs::synchronizationMode slsDetector::setSynchronization(synchroniza
 /*receiver*/
 int slsDetector::setReceiverOnline(int off) {
   if (off!=GET_ONLINE_FLAG) {
-    thisDetector->receiverOnlineFlag=off;
-    if (thisDetector->receiverOnlineFlag==ONLINE_FLAG)
-      setReceiverTCPSocket();
+    if(strcmp(thisDetector->receiverIP,"none")){
+      thisDetector->receiverOnlineFlag=off;
+      if (thisDetector->receiverOnlineFlag==ONLINE_FLAG)
+        setReceiverTCPSocket();
+    }
   }
   return thisDetector->receiverOnlineFlag;
 }
@@ -5561,7 +5565,8 @@ int slsDetector::startReceiver(){
 
 int slsDetector::stopReceiver(){
   int fnum=F_STOP_RECEIVER;
-  int ret = FAIL;
+  //different iret for server, should not return ok if receiver didnt connect
+  int ret = FAIL,iret;
   char mess[100];
 
 #ifdef VERBOSE
@@ -5586,20 +5591,18 @@ int slsDetector::stopReceiver(){
   }
 
   //tell the server to NOT send to receiver and instead to CPU
-  if(ret==OK){
-    if (thisDetector->onlineFlag==ONLINE_FLAG) {
-      if (controlSocket) {
-	if  (controlSocket->Connect()>=0) {
-	  controlSocket->SendDataOnly(&fnum,sizeof(fnum));
-	  controlSocket->ReceiveDataOnly(&ret,sizeof(ret));
-	  if (ret==FAIL){
-	    controlSocket->ReceiveDataOnly(mess,sizeof(mess));
-	    std::cout<< "Detector returned error: " << mess << std::endl;
-	  }
-	  controlSocket->Disconnect();
-	  if (ret==FORCE_UPDATE)
-	    ret=updateDetector();
+  if (thisDetector->onlineFlag==ONLINE_FLAG) {
+    if (controlSocket) {
+      if  (controlSocket->Connect()>=0) {
+	controlSocket->SendDataOnly(&fnum,sizeof(fnum));
+	controlSocket->ReceiveDataOnly(&iret,sizeof(iret));
+	if (iret==FAIL){
+	  controlSocket->ReceiveDataOnly(mess,sizeof(mess));
+	  std::cout<< "Detector returned error: " << mess << std::endl;
 	}
+	controlSocket->Disconnect();
+	if (iret==FORCE_UPDATE)
+	  updateDetector();
       }
     }
   }

@@ -3595,38 +3595,47 @@ string slsDetectorCommand::cmdReceiver(int narg, char *args[], int action) {
   if (action==HELP_ACTION)
     return helpReceiver(narg, args, action);
 
-  if(myDet->setReceiverOnline(ONLINE_FLAG)!=ONLINE_FLAG)
-    return string("receiver not online");
+
+  myDet->setOnline(ONLINE_FLAG);
+  myDet->setReceiverOnline(ONLINE_FLAG);
+
 
   if(cmd=="receiver"){
     if (action==PUT_ACTION) {
       if(!strcasecmp(args[1],"start")){
+
+	if(myDet->setReceiverOnline()!=ONLINE_FLAG)
+    	  return string("cannot connect to receiver");
+
 	if(myDet->getReceiverStatus()==IDLE){
 	  //update receiver index
 	  if(myDet->setReceiverFileIndex(myDet->getFileIndex())==-1)
 	    return string("could not set receiver file index");
+
 	  //to configure the server
-	  myDet->setOnline(ONLINE_FLAG);
 	  myDet->startReceiver();
 	}
       }
 
       else if(!strcasecmp(args[1],"stop")){
-	if(myDet->getReceiverStatus()==RUNNING){
-	  myDet->setOnline(ONLINE_FLAG);
-	  if(myDet->stopReceiver()!=FAIL){
-	    //update index
-	    int index = myDet->setReceiverFileIndex();
-	    if(index==-1)
-	      return string("could not get receiver file index");
-	    myDet->setFileIndex(index);
-	  }
+
+	if(myDet->stopReceiver()!=FAIL){
+	  //update index
+	  int index = myDet->setReceiverFileIndex();
+	  if(index==-1)
+	    return string("could not get receiver file index");
+	  myDet->setFileIndex(index);
 	}
-      }else
+	else if(myDet->setReceiverOnline()!=ONLINE_FLAG)
+	  return string("cannot connect to receiver");
+      }
+
+      else
 	return helpReceiver(narg, args, action);
     }
     return myDet->runStatusType(myDet->getReceiverStatus());
   }
+
 
   else if(cmd=="framescaught"){
     if (action==PUT_ACTION)

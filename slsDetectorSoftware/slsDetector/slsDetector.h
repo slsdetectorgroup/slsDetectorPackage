@@ -5,7 +5,7 @@
 #define SLS_DETECTOR_H
 
 
-
+#include "multiSlsDetector.h"
 #include "slsDetectorUtils.h"
 #include "energyConversion.h"
 #include "angleConversionConstant.h"

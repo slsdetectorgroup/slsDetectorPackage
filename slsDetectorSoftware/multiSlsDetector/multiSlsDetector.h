@@ -1011,8 +1011,6 @@ class multiSlsDetector  : public slsDetectorUtils {
 
 
 
-
-
   //receiver
 
   /**

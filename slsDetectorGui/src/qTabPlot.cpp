@@ -133,16 +133,16 @@ void qTabPlot::SetupWidgetWindow(){
 
 	// Depending on whether the detector is 1d or 2d
 	switch(myDet->getDetectorsType()){
-	case slsDetectorDefs::MYTHEN:	isOrginallyOneD = true;		break;
-	case slsDetectorDefs::EIGER:	isOrginallyOneD = false;	break;
-	case slsDetectorDefs::GOTTHARD:	isOrginallyOneD = true; 	break;
+	case slsDetectorDefs::MYTHEN:	isOriginallyOneD = true;		break;
+	case slsDetectorDefs::EIGER:	isOriginallyOneD = false;	break;
+	case slsDetectorDefs::GOTTHARD:	isOriginallyOneD = true; 	break;
 	default:
 		cout << "ERROR: Detector Type is Generic" << endl;
 		exit(-1);
 	}
 
-	Select1DPlot(isOrginallyOneD);
-	if(isOrginallyOneD) myPlot->Select1DPlot();
+	Select1DPlot(isOriginallyOneD);
+	if(isOriginallyOneD) myPlot->Select1DPlot();
 	else 				myPlot->Select2DPlot();
 
 	//to check if this should be enabled
@@ -395,9 +395,9 @@ void qTabPlot::SetPlot(){
 	if(radioNoPlot->isChecked()){
 		cout << " - No Plot" << endl;
 
-		//Select1DPlot(isOrginallyOneD);
-		//if(isOrginallyOneD) {box1D->show(); box2D->hide();}
-		//if(!isOrginallyOneD){box2D->show(); box1D->hide();}
+		//Select1DPlot(isOriginallyOneD);
+		//if(isOriginallyOneD) {box1D->show(); box2D->hide();}
+		//if(!isOriginallyOneD){box2D->show(); box1D->hide();}
 		myPlot->EnablePlot(false);
 		//if enable is true, disable everything
 
@@ -406,25 +406,25 @@ void qTabPlot::SetPlot(){
 		boxFrequency->setEnabled(false);
 		boxPlotAxis->setEnabled(false);
 		boxScan->setEnabled(false);
-	}else if(radioDataGraph->isChecked()){
+	}else {//if(radioDataGraph->isChecked()){
 		cout << " - DataGraph" << endl;
 
 		myPlot->EnablePlot(true);
 		//if enable is true, disable everything
-		if(isOrginallyOneD)  {box1D->show(); box2D->hide();}
-		if(!isOrginallyOneD) {box2D->show(); box1D->hide();}
-		Select1DPlot(isOrginallyOneD);
-		if(isOrginallyOneD) myPlot->Select1DPlot();
+		if(isOriginallyOneD)  {box1D->show(); box2D->hide();}
+		if(!isOriginallyOneD) {box2D->show(); box1D->hide();}
+		Select1DPlot(isOriginallyOneD);
+		if(isOriginallyOneD) myPlot->Select1DPlot();
 		else 				myPlot->Select2DPlot();
 		boxSnapshot->setEnabled(true);
 		boxSave->setEnabled(true);
 		boxFrequency->setEnabled(true);
 		boxPlotAxis->setEnabled(true);
-		EnableScanBox();
-	}else{
+		if(!myPlot->isRunning()) EnableScanBox();
+	}/*else{
 		cout << " - Histogram" << endl;
 		//select(2d) will set oneD to false, but originallyoneD will remember
-	}
+	}*/
 }
 
 
@@ -583,9 +583,17 @@ void qTabPlot::EnableScanBox(){
 	//only now enable/disable
 	boxScan->setEnabled((mode0||mode1)&&(!positionsExist));
 
+	//after plotting, enable datagraph if it was disabled while plotting(refresh)
+	radioDataGraph->setEnabled(true);
+
 
 	//if there are scan
 	if(boxScan->isEnabled()){
+		//disable histogram
+		if(radioHistogram->isChecked())
+			radioDataGraph->setChecked(true);
+		radioHistogram->setEnabled(false);
+
 		//make sure nth frame frequency plot is disabled
 		EnablingNthFrameFunction(false);
 
@@ -613,7 +621,17 @@ void qTabPlot::EnableScanBox(){
 			}
 		}
 	}
-	else EnablingNthFrameFunction(true);
+	else{
+		//histogram for 1d
+		if(isOriginallyOneD){
+			radioHistogram->setEnabled(true);
+			if(radioHistogram->isChecked())
+				EnablingNthFrameFunction(false);
+			else
+				EnablingNthFrameFunction(true);
+		}
+	}
+
 
 	//positions
 	if((positionsExist)&&(chkSuperimpose->isChecked())) chkSuperimpose->setChecked(false);
@@ -654,9 +672,10 @@ void qTabPlot::EnablingNthFrameFunction(bool enable){
 //-------------------------------------------------------------------------------------------------------------------------------------------------
 /** What happens for 2d????*/
 void qTabPlot::SetScanArgument(){
+	bool histogram = radioHistogram->isChecked();
 
 	//as default from histogram and default titles are set here if scanbox is disabled
-	if(isOrginallyOneD){
+	if(isOriginallyOneD){
 		dispXAxis->setText(defaultHistXAxisTitle);
 		dispYAxis->setText(defaultHistYAxisTitle);
 		myPlot->SetHistXAxisTitle(defaultHistXAxisTitle);
@@ -669,24 +688,21 @@ void qTabPlot::SetScanArgument(){
 		myPlot->SetImageYAxisTitle(defaultImageYAxisTitle);
 		myPlot->SetImageZAxisTitle(defaultImageZAxisTitle);
 	}
-	Select1DPlot(isOrginallyOneD);
-	if(isOrginallyOneD) myPlot->Select1DPlot();
+	Select1DPlot(isOriginallyOneD);
+	if(isOriginallyOneD) myPlot->Select1DPlot();
 	else 				myPlot->Select2DPlot();
+
 
 	int ang;
 	//if scans(1D or 2D)
-	if(boxScan->isEnabled()){
+	if((boxScan->isEnabled())||(histogram)){
 		//setting the title according to the scans
-		Select1DPlot(isOrginallyOneD);
-		if(isOrginallyOneD) myPlot->Select1DPlot();
+		Select1DPlot(isOriginallyOneD);
+		if(isOriginallyOneD) myPlot->Select1DPlot();
 		else 				myPlot->Select2DPlot();
 
 	}//angles (1D)
 	else if(myDet->getAngularConversion(ang)){
-		//else if(myDet->getPositions()){
-		//if scan, change title
-		if((myDet->getScanMode(0))||(myDet->getScanMode(1))){
-		}
 		dispXAxis->setText("Angles");
 		myPlot->SetHistXAxisTitle("Angles");
 		Select1DPlot(true);
@@ -694,9 +710,25 @@ void qTabPlot::SetScanArgument(){
 
 	}
 
+	//histogram
+	if(histogram){
+		//allFrames
+		myPlot->SetScanArgument(4);
 
-	//for 2d
-	if((boxScan->isEnabled())&&(boxScan->isChecked())){
+		//default titles  for 2d scan
+		dispXAxis->setText("Channel Number");
+		myPlot->SetImageXAxisTitle("Channel Number");
+		dispZAxis->setText("Counts");
+		myPlot->SetImageZAxisTitle("Counts");
+		dispYAxis->setText("All Frames");
+		myPlot->SetImageYAxisTitle("All Frames");
+
+		//set plot to 2d
+		Select1DPlot(false);
+		myPlot->Select2DPlot();
+	}
+	//2d
+	else if((boxScan->isEnabled())&&(boxScan->isChecked())){
 
 		//let qdrawplot know which scan argument
 		myPlot->SetScanArgument(btnGroupScan->checkedId()+1);
@@ -751,6 +783,10 @@ void qTabPlot::Refresh(){
 	}else{
 		disconnect(boxScan,	  SIGNAL(toggled(bool)),				   this, SLOT(EnableScanBox()));
 		boxScan->setEnabled(false);
+		//to toggle between no plot and the plot mode chosen while pltting
+		if(radioHistogram->isChecked())
+			radioDataGraph->setEnabled(false);
+		radioHistogram->setEnabled(false);
 	}
 #ifdef VERBOSE
 	cout  << "**Updated Plot Tab" << endl << endl;

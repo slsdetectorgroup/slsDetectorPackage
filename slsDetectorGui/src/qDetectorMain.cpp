@@ -638,6 +638,8 @@ void qDetectorMain::EnableTabs(){
 		//sets running to true
 		myPlot->StartStopDaqToggle();
 	}
+	else//to enable scan box
+		tab_plot->Refresh();
 
 }
 

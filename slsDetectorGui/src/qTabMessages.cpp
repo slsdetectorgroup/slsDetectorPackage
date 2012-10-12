@@ -45,8 +45,6 @@ void qTabMessages::SetupWidgetWindow(){
 	dispLog->setReadOnly(true);
 	dispLog->setFocusPolicy(Qt::NoFocus);
 	dispLog->setTextColor(Qt::darkBlue);
-	dispLog->setTextFormat( Qt::LogText );
-	dispLog->setMaxLogLines(1000);
 
 	btnSave = new QPushButton("Save Log  ",this);
 	btnSave->setFocusPolicy(Qt::NoFocus);

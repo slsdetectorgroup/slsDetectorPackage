@@ -56,7 +56,7 @@ private:
 
 	/** 1d/2d plot	 */
 	bool isOneD;
-	bool isOrginallyOneD;
+	bool isOriginallyOneD;
 
 	/**is set if its a possible wrong interval between plots*/
 	bool wrongInterval;

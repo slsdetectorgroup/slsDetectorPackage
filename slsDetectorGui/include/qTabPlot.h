@@ -140,6 +140,8 @@ private slots:
 	/** Set Plot to none, data graph, histogram*/
 	void SetPlot();
 
+	/** Change pages in 1D box*/
+	void Set1DPage();
 
 
 signals:

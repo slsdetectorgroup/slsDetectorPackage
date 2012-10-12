@@ -158,7 +158,7 @@ class SlsQt1DPlot:public QwtPlot{
   void Update();
 
   void SetLogX(bool yes=1);  
-  void SetLogY(bool yes=1);  
+  void SetLogY(bool yes=1);
 
  protected:
 

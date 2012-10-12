@@ -13,5 +13,7 @@
 	<file>../images/erase.png</file>
 	<file>../images/remove.png</file>
 	<file>../images/stop.png</file>
+	<file>../images/leftArrow.png</file>
+	<file>../images/rightArrow.png</file>
     </qresource>
 </RCC>

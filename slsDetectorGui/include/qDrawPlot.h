@@ -459,6 +459,7 @@ void UpdatingPlotFinished();
 void InterpolateSignal(bool);
 void ContourSignal(bool);
 void LogzSignal(bool);
+void LogySignal(bool);
 void SetZRangeSignal(double,double);
 void EnableZRangeSignal(bool);
 void SetCurrentMeasurementSignal(int);

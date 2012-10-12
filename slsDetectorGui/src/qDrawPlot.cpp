@@ -205,6 +205,7 @@ void qDrawPlot::Initialization(){
 	connect(this, 		SIGNAL(InterpolateSignal(bool)),plot2D, 	SIGNAL(InterpolateSignal(bool)));
 	connect(this, 		SIGNAL(ContourSignal(bool)),	plot2D, 	SIGNAL(ContourSignal(bool)));
 	connect(this, 		SIGNAL(LogzSignal(bool)),		plot2D, 	SLOT(SetZScaleToLog(bool)));
+	connect(this, 		SIGNAL(LogySignal(bool)),		plot1D, 	SLOT(SetLogY(bool)));
 	connect(this, 		SIGNAL(EnableZRangeSignal(bool)),plot2D, 	SLOT(EnableZRange(bool)));
 
 	connect(this, 		SIGNAL(SetZRangeSignal(double,double)),	plot2D, 	SLOT(SetZRange(double,double)));
@@ -753,7 +754,9 @@ int qDrawPlot::GetData(detectorData *data){
 			}
 			pthread_mutex_unlock(&(last_image_complete_mutex));
 		}
+#ifdef VERYVERBOSE
 		cout<<"currentframe:"<<currentFrame<<"\tcurrentfileIndex:"<<currentFileIndex<<endl;
+#endif
 		currentFrame++;
 	}
 #ifdef VERYVERBOSE
@@ -1074,6 +1077,7 @@ void qDrawPlot::ClonePlot(){
 	connect(this, 		SIGNAL(InterpolateSignal(bool)),	plot2D, 	SIGNAL(InterpolateSignal(bool)));
 	connect(this, 		SIGNAL(ContourSignal(bool)),		plot2D, 	SIGNAL(ContourSignal(bool)));
 	connect(this, 		SIGNAL(LogzSignal(bool)),			plot2D, 	SLOT(SetZScaleToLog(bool)));
+	connect(this, 		SIGNAL(LogySignal(bool)),			plot1D, 	SLOT(SetLogY(bool)));
 	winClone[i]->show();
 
 	// to remember which all clone widgets were closed

@@ -154,6 +154,18 @@ void qTabPlot::SetupWidgetWindow(){
 //-------------------------------------------------------------------------------------------------------------------------------------------------
 
 
+void qTabPlot::Set1DPage(){
+	QPushButton *clickedButton = qobject_cast<QPushButton *>(sender());
+	if(clickedButton->icon().pixmap(QSize(16,16)).toImage()==btnLeft->icon().pixmap(QSize(16,16)).toImage())
+		stackedWidget->setCurrentIndex(0);
+	else
+		stackedWidget->setCurrentIndex(1);
+}
+
+
+//-------------------------------------------------------------------------------------------------------------------------------------------------
+
+
 void qTabPlot::Select1DPlot(bool b){
 	isOneD = b;
 	if(b){
@@ -192,6 +204,10 @@ void qTabPlot::Initialization(){
 	connect(spinPersistency,SIGNAL(valueChanged(int)),	myPlot,SLOT(SetPersistency(int)));
 	connect(chkPoints, 		SIGNAL(toggled(bool)),		myPlot, SLOT(SetMarkers(bool)));
 	connect(chkLines, 		SIGNAL(toggled(bool)),		myPlot, SLOT(SetLines(bool)));
+	connect(chk1DLog, 		SIGNAL(toggled(bool)),		myPlot, SIGNAL(LogySignal(bool)));
+	//to change pages
+	connect(btnLeft, 		SIGNAL(clicked()),		this, SLOT(Set1DPage()));
+	connect(btnRight, 		SIGNAL(clicked()),		this, SLOT(Set1DPage()));
 // 2D Plot box
 	connect(chkInterpolate, SIGNAL(toggled(bool)),myPlot, SIGNAL(InterpolateSignal(bool)));
 	connect(chkContour, 	SIGNAL(toggled(bool)),myPlot, SIGNAL(ContourSignal(bool)));

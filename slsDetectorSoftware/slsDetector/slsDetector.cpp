@@ -109,7 +109,7 @@ int slsDetector::freeSharedMemory() {
 
 
 
-slsDetector::slsDetector(int id) :slsDetectorUtils(),
+slsDetector::slsDetector(int id,multiSlsDetector *p) :slsDetectorUtils(),
 				  thisDetector(NULL),  
 				  detId(id),
 				  shmId(-1), 
@@ -122,7 +122,8 @@ slsDetector::slsDetector(int id) :slsDetectorUtils(),
 				  dacs(NULL),
 				  adcs(NULL),
 				  chipregs(NULL),
-				  chanregs(NULL)
+				  chanregs(NULL),
+				  parentDet(p)
 
 
 {
@@ -157,7 +158,7 @@ slsDetector::slsDetector(int id) :slsDetectorUtils(),
 
 
 
-slsDetector::slsDetector(detectorType type, int id): slsDetectorUtils(),
+slsDetector::slsDetector(detectorType type, int id,multiSlsDetector *p): slsDetectorUtils(),
 						     thisDetector(NULL),  
 						     detId(id),
 						     shmId(-1), 
@@ -170,7 +171,8 @@ slsDetector::slsDetector(detectorType type, int id): slsDetectorUtils(),
 						     dacs(NULL),
 						     adcs(NULL),
 						     chipregs(NULL),
-						     chanregs(NULL)
+						     chanregs(NULL),
+							 parentDet(p)
 {
   while (shmId<0) {
     /**Initlializes shared memory \sa initSharedMemory
@@ -208,7 +210,7 @@ slsDetector::~slsDetector(){
 
 };
 
-slsDetector::slsDetector(char *name, int id, int cport) : slsDetectorUtils(),
+slsDetector::slsDetector(char *name, int id, int cport,multiSlsDetector *p) : slsDetectorUtils(),
 							  thisDetector(NULL),  
 							  detId(id),
 							  shmId(-1), 
@@ -221,7 +223,8 @@ slsDetector::slsDetector(char *name, int id, int cport) : slsDetectorUtils(),
 							  dacs(NULL),
 							  adcs(NULL),
 							  chipregs(NULL),
-							  chanregs(NULL)
+							  chanregs(NULL),
+							  parentDet(p)
 {
   detectorType type=(detectorType)getDetectorType(name, cport);
   

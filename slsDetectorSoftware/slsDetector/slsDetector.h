@@ -272,18 +272,20 @@ class slsDetector : public slsDetectorUtils, public energyConversion {
   /** (default) constructor 
       \param  type is needed to define the size of the detector shared memory 9defaults to GENERIC i.e. the largest shared memory needed by any slsDetector is allocated
       \param  id is the detector index which is needed to define the shared memory id. Different physical detectors should have different IDs in order to work independently
+      \param  p is the parent multislsdet to access filename ,path etc
 
   */
 
-  slsDetector(detectorType type=GENERIC, int id=0);
+  slsDetector(detectorType type=GENERIC, int id=0, multiSlsDetector *p=NULL);
 
   /** constructor
       \param  id is the detector index which is needed to define the shared memory id. Different physical detectors should have different IDs in order to work independently
+      \param  p is the parent multislsdet to access filename ,path etc
   */
-  slsDetector(int id);
+  slsDetector(int id, multiSlsDetector *p=NULL);
 
 
-  slsDetector(char *name, int id=0,  int cport=DEFAULT_PORTNO);
+  slsDetector(char *name, int id=0,  int cport=DEFAULT_PORTNO, multiSlsDetector *p=NULL);
   //slsDetector(string  const fname);
   //  ~slsDetector(){while(dataQueue.size()>0){}};
   /** destructor */ 
@@ -1467,6 +1469,13 @@ class slsDetector : public slsDetectorUtils, public energyConversion {
   */
   int detId;
   
+
+  /**
+   *
+   * */
+
+  multiSlsDetector *parentDet;
+
   /**
      shared memeory ID
   */

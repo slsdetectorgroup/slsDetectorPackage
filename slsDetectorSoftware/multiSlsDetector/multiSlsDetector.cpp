@@ -197,7 +197,7 @@ multiSlsDetector::multiSlsDetector(int id) :  slsDetectorUtils(), shmId(-1)
 #ifdef VERBOSE
     cout << thisMultiDetector->detectorIds[i] << endl;
 #endif
-    detectors[i]=new slsDetector(thisMultiDetector->detectorIds[i]);
+    detectors[i]=new slsDetector(thisMultiDetector->detectorIds[i], this);
     
 
     //  setAngularConversionPointer(detectors[i]->getAngularConversionPointer(),detectors[i]->getNModsPointer(),detectors[i]->getNChans()*detectors[i]->getNChips(), i);
@@ -307,7 +307,7 @@ int multiSlsDetector::addSlsDetector(int id, int pos) {
   cout << "Creating new detector " << pos << endl;
 #endif
 
-  detectors[pos]=new slsDetector(id);
+  detectors[pos]=new slsDetector(id, this);
   thisMultiDetector->detectorIds[pos]=detectors[pos]->getDetectorId();
   thisMultiDetector->numberOfDetectors++;
 
@@ -530,7 +530,7 @@ int multiSlsDetector::addSlsDetector(const char *name, int pos) {
 #ifdef VERBOSE
 	cout << "Detector " << id << " already exists" << endl;
 #endif
-	s=new slsDetector(id);
+	s=new slsDetector(id, this);
 	if (s->getHostname()==string(name))
 	  break;
 	delete s;
@@ -569,7 +569,7 @@ int multiSlsDetector::addSlsDetector(const char *name, int pos) {
 #ifdef VERBOSE
     cout << "Creating detector " << id << " of type "  << getDetectorType(t) << endl;
 #endif
-    s=new slsDetector(t, id);
+    s=new slsDetector(t, id, this);
     if (online) {
       s->setTCPSocket(name);
       setOnline(ONLINE_FLAG);
@@ -602,7 +602,7 @@ int multiSlsDetector::addSlsDetector(detectorType t, int pos) {
 #ifdef VERBOSE
   cout << "Creating detector " << id << " of type "  << getDetectorType(t) << endl;
 #endif
-  slsDetector *s=new slsDetector(t, id);
+  slsDetector *s=new slsDetector(t, id, this);
 #ifdef VERBOSE
   cout << "Adding it to the multi detector structure" << endl;
 #endif

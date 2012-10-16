@@ -161,6 +161,9 @@ class angularConversionStatic
   double convertAngle(double pos, int ich, int *chansPerMod, angleConversionConstant **angOff, int *mF, double fo, double go, int angdir);
 
 
+  double convertAngle(double pos, int ich, angleConversionConstant *angOff, int mF, double fo, double go, int angdir);
+
+
 
  protected:
     

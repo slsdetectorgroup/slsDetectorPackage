@@ -70,18 +70,30 @@ int postProcessingFuncs::finalizeDataset(double *ang, double *val, double *err, 
 
 }
 
-int postProcessingFuncs::addFrame(double *data, double *pos, double *I0, double *expTime, const char *filename, int *var) {
+int postProcessingFuncs::addFrame(double *data, double *pos, double *I0, double *expTime, const char *filename, double *var) {
 
 
   double p1, vin, ein, vout, eout;
   double  e=0.;
   double i0=*I0;
+  int imod=0, ch0=0;
+
+  int chlast=chansPerMod[0]-1;
+  int nchmod=chansPerMod[0];
 
   if (i0>0)
     totalI0+=i0;
 
   for (int ich=0; ich<totalChans; ich++) {
     
+
+    if (ich>chlast) {
+      imod++;
+      ch0=chlast+1;
+      nchmod=chansPerMod[imod];
+      chlast=ch0+nchmod-1;
+    }
+  
     vin=data[ich];
     ein=0;
     vout=data[ich];
@@ -138,12 +150,14 @@ int postProcessingFuncs::addFrame(double *data, double *pos, double *I0, double 
       //check module mask?!?!?!?
       
 
-      p1=convertAngle(*pos,ich,chansPerMod,angConv,moduleMask,totalOffset,0,angDir);
+      p1=convertAngle(*pos,ich-ch0,angConv[imod],moduleMask[imod],totalOffset,0,angDir);
 
 #ifdef VERBOSE
       cout << "ppFuncs merge" << endl;
 #endif
       addPointToMerging(p1,vout,eout,mp,mv,me,mm, binSize, nBins);
+
+   
     } else {
 #ifdef VERBOSE
       cout << "ppFuncs merge" << endl;

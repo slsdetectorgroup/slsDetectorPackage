@@ -1,6 +1,7 @@
 #include "slsDetectorActions.h"
 #include <iostream>
 #include <cstdlib>
+#include <cstring>
 using namespace std;
 
 

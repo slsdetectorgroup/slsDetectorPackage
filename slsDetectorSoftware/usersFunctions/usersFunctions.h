@@ -38,7 +38,7 @@ extern "C" {
   double defaultGetI0(int t,void *d);
   
   int defaultDataReadyFunc(detectorData* d,  void* p);
- 
+  int defaultRawDataReadyFunc(double* d, int np,  void* p);
 
 
 #ifdef __cplusplus

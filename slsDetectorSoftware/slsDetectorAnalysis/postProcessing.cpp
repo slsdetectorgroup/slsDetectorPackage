@@ -3,26 +3,30 @@
 #include "angleConversionConstant.h"
 #ifdef VERBOSE
 #include "usersFunctions.h"
+#elif EXTPP
+#include "usersFunctions.h"
 #endif
 
 
 
-postProcessing::postProcessing(): expTime(NULL), ang(NULL), val(NULL), err(NULL){							
+postProcessing::postProcessing(): expTime(NULL), ang(NULL), val(NULL), err(NULL), numberOfChannels(0){							
   pthread_mutex_t mp1 = PTHREAD_MUTEX_INITIALIZER;
   mp=mp1;
   pthread_mutex_init(&mp, NULL);  
-  mg=mp1;
-  pthread_mutex_init(&mg, NULL);  
+  //  mg=mp1;
+  // pthread_mutex_init(&mg, NULL);  
   //cout << "reg callback "<< endl;
   dataReady = 0;
   pCallbackArg = 0; 
-#ifdef VERBOSE
-  registerDataCallback(&defaultDataReadyFunc,  NULL);
-#endif
   //cout << "done "<< endl;
   rawDataReady = 0;
   pRawDataArg = 0; 
-
+#ifdef VERBOSE
+  registerDataCallback(&defaultDataReadyFunc,  NULL);
+#endif
+#ifdef EXTPP
+  registerRawDataCallback(&defaultRawDataReadyFunc,  NULL);
+#endif
   ppFun=new postProcessingFuncs();
 }
 
@@ -30,7 +34,9 @@ postProcessing::postProcessing(): expTime(NULL), ang(NULL), val(NULL), err(NULL)
 
 
 
-postProcessing::~postProcessing(){delete ppFun;};
+postProcessing::~postProcessing(){
+  delete ppFun;
+};
 
 
 
@@ -62,49 +68,59 @@ void postProcessing::processFrame(int *myData, int delflag) {
   cout << "decode"<< endl;
 #endif
  
+ if (rawDataReady) {
+   //#ifdef VERBOSE
+   cout << "raw data ready..." << endl;
+   //#endif
+     rawDataReady(fdata,numberOfChannels, pRawDataArg);
+   //#ifdef VERBOSE
+   cout << "done" << endl;
+   cout << "NO FILE WRITING AND/OR DATA PROCESSING DONE BY SLS DETECTOR SOFTWARE!!!" << endl;   
+   //#endif
+
+ } else {
+ 
   
-  pthread_mutex_lock(&mp);
-  fname=createFileName();
-  pthread_mutex_unlock(&mp);
+   pthread_mutex_lock(&mp);
+   fname=createFileName();
+   pthread_mutex_unlock(&mp);
 #ifdef VERBOSE
- cout << "fname is " << fname << endl;
+   cout << "fname is " << fname << endl;
 #endif
  
- //Checking for write flag
- if((*correctionMask)&(1<<WRITE_FILE)) {
-   
+   //Checking for write flag
+   if((*correctionMask)&(1<<WRITE_FILE)) {
+     
 #ifdef VERBOSE
-   cout << "writing raw data " << endl;
-   
+     cout << "writing raw data " << endl;
+     
 #endif
      //uses static function?!?!?!?
-   writeDataFile (fname+string(".raw"),fdata, NULL, NULL, 'i'); 
-   
+     writeDataFile (fname+string(".raw"),fdata, NULL, NULL, 'i'); 
+     
 #ifdef VERBOSE
-   cout << "done " << endl;
-   
-#endif
- } 
- if (rawDataReady) {
-#ifdef VERBOSE
-   cout << "raw data ready..." << endl;
-#endif
-   rawDataReady(fdata,pRawDataArg);
-#ifdef VERBOSE
-   cout << "done" << endl;
-#endif
- }
- 
- if ((*correctionMask) & ~(1<<WRITE_FILE)) {
-   doProcessing(fdata,delflag, fname);
- } else 
-   if (dataReady) {
-     thisData=new detectorData(fdata,NULL,NULL,getCurrentProgress(),(fname+string(".raw")).c_str(),getTotalNumberOfChannels()); 
-     dataReady(thisData, pCallbackArg);
-     delete thisData;
-     fdata=NULL;
-   }
+     cout << "done " << endl;
 
+
+
+     
+#endif
+   } 
+   if ((*correctionMask) & ~(1<<WRITE_FILE)) {
+     doProcessing(fdata,delflag, fname);
+   } else 
+     if (dataReady) {
+       thisData=new detectorData(fdata,NULL,NULL,getCurrentProgress(),(fname+string(".raw")).c_str(),getTotalNumberOfChannels()); 
+       dataReady(thisData, pCallbackArg);
+       delete thisData;
+       fdata=NULL;
+     }
+#ifdef VERBOSE
+  cout << "findex incremented " << endl;
+#endif
+  if(*correctionMask&(1<<WRITE_FILE))
+    IncrementFileIndex();
+ }
 
  delete [] myData;
  if (fdata)
@@ -116,20 +132,15 @@ void postProcessing::processFrame(int *myData, int delflag) {
   cout << "Pop data queue " << *fileIndex << endl;
 #endif
   
-  if(*correctionMask&(1<<WRITE_FILE))
-    IncrementFileIndex();
- 
-#ifdef VERBOSE
-  cout << "findex incremented " << endl;
-#endif
   popDataQueue(); //remove the data from the queue
+
 #ifdef VERBOSE
- cout << "Pop data queue " << *fileIndex << endl;
+  cout << "Data queue popped"  << endl;
 #endif
   
   
 #ifdef VERBOSE
-  cout << "processing returning " << *fileIndex << endl;
+  cout << "process frame returning "  << endl;
 #endif
   
   
@@ -144,13 +155,7 @@ void postProcessing::doProcessing(double *lfdata, int delflag, string fname) {
   cout << "do processing - data size is " << arraySize << endl;
 #endif
 
-  if (*correctionMask&(1<< ANGULAR_CONVERSION))
-    ang=new double[arraySize];
-  else
-    ang=NULL;
 
-  val=new double[arraySize];
-  err=new double[arraySize];
   int np;
 
 #ifdef VERBOSE
@@ -177,36 +182,44 @@ void postProcessing::doProcessing(double *lfdata, int delflag, string fname) {
   if (GetCurrentPositionIndex()<=1) {
 #ifdef VERBOSE
       cout << "init dataset" << endl;
-#endif
-      ppFun->initDataset();
-    }
+#endif 
+
+
+  if (*correctionMask&(1<< ANGULAR_CONVERSION))
+    ang=new double[arraySize];
+  else
+    ang=NULL;
+  
+  val=new double[arraySize];
+  err=new double[arraySize];
+  initDataset(0);
+  }
     
 #ifdef VERBOSE
       cout << "add frame" << endl;
 #endif
       
-    ppFun->addFrame(lfdata, &currentPosition, &currentI0, &t, (fname).c_str(), NULL);      
+      addFrame(lfdata,currentPosition, currentI0, t, fname, 0);      
   
-    if ((GetCurrentPositionIndex()>=npos && positionFinished() && dataQueueSize()) || npos==0) {
-      
+      if ((GetCurrentPositionIndex()>=npos && positionFinished() && dataQueueSize()) || npos==0) {
+	
 #ifdef VERBOSE
-      cout << "finalize dataset" << endl;
+	cout << "finalize dataset" << endl;
 #endif
-      
-	ppFun->finalizeDataset(ang, val, err, &np);
+	
+	finalizeDataset(ang, val, err, np);
 	IncrementPositionIndex();
 	
 	pthread_mutex_lock(&mp);
 	fname=createFileName();
 	pthread_mutex_unlock(&mp);
 
-
+	
 	if((*correctionMask)&(1<<WRITE_FILE)) {  
-	  //cout << "write to file  " << fname+ext << " " << np << " " << ang<< " " << val << " " << err << endl;
 	  writeDataFile (fname+ext,np,val, err,ang,'f');
 	} 
-	  
-
+	
+	
 	if (dataReady) {
 	  thisData=new detectorData(val,err,ang,getCurrentProgress(),(fname+ext).c_str(),np);
 	  dataReady(thisData, pCallbackArg);
@@ -215,6 +228,7 @@ void postProcessing::doProcessing(double *lfdata, int delflag, string fname) {
 	  val=NULL;
 	  err=NULL;
 	}
+
 	if (ang)
 	  delete [] ang;
 	if (val)
@@ -222,7 +236,11 @@ void postProcessing::doProcessing(double *lfdata, int delflag, string fname) {
 	if (err)
 	  delete [] err;
 	
-    }
+
+
+
+	
+      }
 }
 
 
@@ -414,16 +432,16 @@ int* postProcessing::popDataQueue() {
   return retval;
 }
 
-detectorData* postProcessing::popFinalDataQueue() {
-  detectorData *retval=NULL;
-  pthread_mutex_unlock(&mg);
-  if( !finalDataQueue.empty() ) {
-    retval=finalDataQueue.front();
-    finalDataQueue.pop();
-  }
-  pthread_mutex_unlock(&mg);
-  return retval;
-}
+// detectorData* postProcessing::popFinalDataQueue() {
+//   detectorData *retval=NULL;
+//   pthread_mutex_unlock(&mg);
+//   if( !finalDataQueue.empty() ) {
+//     retval=finalDataQueue.front();
+//     finalDataQueue.pop();
+//   }
+//   pthread_mutex_unlock(&mg);
+//   return retval;
+// }
 
 void postProcessing::resetDataQueue() {
   int *retval=NULL;
@@ -437,30 +455,24 @@ void postProcessing::resetDataQueue() {
  
 }
 
-void postProcessing::resetFinalDataQueue() {
-  detectorData *retval=NULL;
-  pthread_mutex_lock(&mg);
-  while( !finalDataQueue.empty() ) {
-    retval=finalDataQueue.front();
-    finalDataQueue.pop();
-    delete retval;
-  }
-  pthread_mutex_unlock(&mg);
-}
+// void postProcessing::resetFinalDataQueue() {
+//   detectorData *retval=NULL;
+//   pthread_mutex_lock(&mg);
+//   while( !finalDataQueue.empty() ) {
+//     retval=finalDataQueue.front();
+//     finalDataQueue.pop();
+//     delete retval;
+//   }
+//   pthread_mutex_unlock(&mg);
+// }
+void postProcessing::initDataset(int r) {
 
-
-void postProcessing::startThread(int delflag) {
-
-  /////////////////////////////////// Initialize dataset
-
-  //resetDataQueue();
-
-  setTotalProgress();
-
-  int nmod=getNMods();
-  int *chPM=new int[nmod];
-  int *mM=new int[nmod];
-  int totch=0;
+  if (r) {
+    
+    int nmod=getNMods();
+    int *chPM=new int[nmod];
+    int *mM=new int[nmod];
+    int totch=0;
 #ifdef VERBOSE
   cout << "init dataset stuff" << endl;
 #endif
@@ -484,14 +496,14 @@ void postProcessing::startThread(int delflag) {
   cout << "total channels is " << totch << endl;
 #endif
   double *ffcoeff=NULL, *fferr=NULL;
-
+  
   if (*correctionMask&(1<<FLAT_FIELD_CORRECTION)) {
 #ifdef VERBOSE
-  cout << "get ff "  << endl;
+    cout << "get ff "  << endl;
 #endif
     ffcoeff=new double[totch];
     fferr=new double[totch];
-
+    
     getFlatFieldCorrection(ffcoeff,fferr);
   }
 
@@ -554,16 +566,69 @@ void postProcessing::startThread(int delflag) {
     arraySize=totch;
   }
 
+  numberOfChannels=totch;
+
   queuesize=dataQueueSize();
 
-  resetFinalDataQueue();
+  //  resetFinalDataQueue();
   resetDataQueue();
 
+
+  } else {
+    ppFun->initDataset();
+
+
+  }
+
+}
+
+
+
+
+
+
+void postProcessing::addFrame(double *data, double pos, double i0, double t, string fname, double var) {
+  ppFun->addFrame(data, &pos, &i0, &t, fname.c_str(), &var);    
+
+}
+
+void postProcessing::finalizeDataset(double *a, double *v, double *e, int &np) {
+
+  ppFun->finalizeDataset(a, v, e, &np);
+
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+void postProcessing::startThread(int delflag) {
+
+  /////////////////////////////////// Initialize dataset
+
+  //resetDataQueue();
+
+  setTotalProgress();
+
+  initDataset(1);
 
   /////////////////////////////////// Start thread ////////////////////////////////////////////////////////
 #ifdef VERBOSE
   cout << "start thread stuff"  << endl;
 #endif
+
   pthread_attr_t tattr;
   int ret;
   sched_param param, mparam;

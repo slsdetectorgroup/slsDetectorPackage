@@ -184,12 +184,12 @@ s
 
   int dataQueueSize();
 
-  /**
-   pops the data from thepostprocessed data queue
-    \returns pointer to the popped data  or NULL if the queue is empty. 
-    \sa  finalDataQueue
-  */ 
-  detectorData* popFinalDataQueue();
+/*   /\** */
+/*    pops the data from thepostprocessed data queue */
+/*     \returns pointer to the popped data  or NULL if the queue is empty.  */
+/*     \sa  finalDataQueue */
+/*   *\/  */
+/*   detectorData* popFinalDataQueue(); */
 
 
   int checkJoinThread();
@@ -202,11 +202,11 @@ s
   */ 
   void resetDataQueue();
 
-  /**
-  resets the postprocessed  data queue
-    \sa  finalDataQueue
-  */ 
-  void resetFinalDataQueue();
+/*   /\** */
+/*   resets the postprocessed  data queue */
+/*     \sa  finalDataQueue */
+/*   *\/  */
+/*   void resetFinalDataQueue(); */
 
 
 
@@ -238,7 +238,7 @@ s
   void registerDataCallback(int( *userCallback)(detectorData*, void*),  void *pArg) {dataReady = userCallback; pCallbackArg = pArg;};
   
 
-  void registerRawDataCallback(int( *userCallback)(double*, void*),  void *pArg) {rawDataReady = userCallback; pRawDataArg = pArg;};
+  void registerRawDataCallback(int( *userCallback)(double*, int, void*),  void *pArg) {rawDataReady = userCallback; pRawDataArg = pArg;};
   
 
 
@@ -249,6 +249,15 @@ s
 
   double getCurrentPosition() {double p; pthread_mutex_lock(&mp); p=currentPosition; pthread_mutex_unlock(&mp); return p;};
   int setCurrentPosition(double v) { pthread_mutex_lock(&mp); currentPosition=v; pthread_mutex_unlock(&mp); return currentPosition;};
+
+
+
+
+  void initDataset(int refresh);
+  void addFrame(double *data, double pos, double i0, double t, string fname, double var);
+  void finalizeDataset(double *a, double *v, double *e, int &np); 
+
+
 
 
  protected:
@@ -322,7 +331,7 @@ s
   int (*dataReady)(detectorData*,void*); 
   void *pCallbackArg; 
   
-  int (*rawDataReady)(double*,void*); 
+  int (*rawDataReady)(double*,int,void*); 
   void *pRawDataArg; 
   
   
@@ -334,6 +343,7 @@ s
   double *val;
   double *err;
 
+  int numberOfChannels;
 
 
 

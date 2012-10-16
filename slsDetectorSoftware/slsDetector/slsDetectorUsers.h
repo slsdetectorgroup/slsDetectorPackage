@@ -358,12 +358,46 @@ class slsDetectorUsers
    void registerDataCallback(int( *userCallback)(detectorData*, void*), void *pArg);
 
   /**
-     @short register calbback for accessing raw data
-     \param userCallback function for postprocessing and saving the data  
+     @short register callback for accessing raw data - if the rawDataCallback is registered, no filewriting/postprocessing will be carried on automatically by the software - the raw data are deleted by the software
+     \param userCallback function for postprocessing and saving the data -  p is the pointer to the data, n is the number of channels  
   */
   
-   void registerRawDataCallback(int( *userCallback)(double*, void*), void *pArg);
+   void registerRawDataCallback(int( *userCallback)(double* p, int n, void*), void *pArg);
+
   
+
+  /** 
+     @short function to initalize a set of measurements (reset binning if angular conversion, reset summing otherwise)  - can be overcome by the user's functions thanks to the virtual property
+     \param refresh if 1, all parameters like ffcoefficients, badchannels, ratecorrections etc. are reset (should be called at least onece with this option), if 0 simply reset merging/ summation
+  */
+  
+  virtual void initDataset(int refresh);
+
+
+  /**
+     @short adds frame to merging/summation  - can be overcome by the user's functions thanks to the virtual property
+     \param data pointer to the raw data
+     \param pos encoder position
+     \param i0 beam monitor readout for intensity normalization (if 0 not performed)
+     \param t exposure time in seconds, required only if rate corrections
+     \param fname file name (unused since filewriting would be performed by the user)
+     \param var optional parameter - unused.
+  */
+  
+  virtual void addFrame(double *data, double pos, double i0, double t, string fname, double var);
+
+  /**
+     @short finalizes the data set returning the array of angles, values and errors to be used as final data - can be overcome by the user's functions thanks to the virtual property
+     \param a pointer to the array of angles - can be null if no angular coversion is required
+     \param v pointer to the array of values
+     \param e pointer to the array of errors
+     \param np reference returning the number of points
+  */
+  
+  virtual void finalizeDataset(double *a, double *v, double *e, int &np); 
+
+
+
   /**
      @short register calbback for accessing detector final data
      \param func function to be called at the end of the acquisition. gets detector status and progress index as arguments

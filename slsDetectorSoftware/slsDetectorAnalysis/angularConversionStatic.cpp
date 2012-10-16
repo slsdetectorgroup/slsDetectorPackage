@@ -69,31 +69,18 @@ double* angularConversionStatic::convertAngles(double pos, int nch, int *chansPe
   return ang;
 }
 
-double angularConversionStatic::convertAngle(double pos, int ich, int *chansPerMod, angleConversionConstant **angOff, int *mF, double fo, double go, int angdir) {
 
-  int imod=0;
-  double    ang;
+
+
+
+
+double angularConversionStatic::convertAngle(double pos, int ich, angleConversionConstant *p, int mF, double fo, double go, int angdir) {
+
+
   double enc=0, trans=0;
-  angleConversionConstant *p=NULL;
-  
-  int ch0=0;
-  int chlast=chansPerMod[0]-1;
-  int nchmod=chansPerMod[0];
+  double  ang;
 
-  
-
-  while (ich>chlast) {
-    imod++;
-    ch0=chlast+1;
-    nchmod=chansPerMod[imod];
-    chlast=ch0+nchmod-1;
-  }
-  
-  p=angOff[imod];
-  
-
-
-  switch (mF[imod]) {
+  switch (mF) {
   case 0:
     enc=0;
     trans=0;
@@ -118,11 +105,9 @@ double angularConversionStatic::convertAngle(double pos, int ich, int *chansPerM
     enc=0;
     trans=0;
   }
-   
 
-    
   if (p)
-    ang=angle(ich-ch0,				\
+    ang=angle(ich,				\
 	      enc,					\
 	      fo+go,					\
 	      p->r_conversion,				\
@@ -133,6 +118,47 @@ double angularConversionStatic::convertAngle(double pos, int ich, int *chansPerM
   
   return ang;
   
+
+
+}
+
+
+
+
+
+
+
+
+
+
+
+double angularConversionStatic::convertAngle(double pos, int ich, int *chansPerMod, angleConversionConstant **angOff, int *mF, double fo, double go, int angdir) {
+
+  int imod=0;
+  double    ang;
+  double enc=0, trans=0;
+  angleConversionConstant *p=NULL;
+  
+  int ch0=0;
+  int chlast=chansPerMod[0]-1;
+  int nchmod=chansPerMod[0];
+
+  
+
+  while (ich>chlast) {
+    imod++;
+    ch0=chlast+1;
+    nchmod=chansPerMod[imod];
+    chlast=ch0+nchmod-1;
+  }
+  
+  p=angOff[imod];
+  
+
+  ang=convertAngle(pos, ich-ch0, p, mF[imod], fo, go, angdir);
+
+  return ang;
+
 }
 
 
@@ -162,12 +188,13 @@ int angularConversionStatic::readAngularConversion(string fname, int nmod, angle
 int angularConversionStatic::readAngularConversion( ifstream& infile, int nmod, angleConversionConstant *angOff) {
   string str;
   int mod;
-  double center, ecenter;
+  double center, ecenter, pitch, epitch;
   double r_conv, er_conv;
   double off, eoff;
   string ss;
   int interrupt=0;
   int nm=0;
+  int newangconv=0;
   //" module %i center %E +- %E conversion %E +- %E offset %f +- %f \n"
   while (infile.good() and interrupt==0) {
     getline(infile,str);
@@ -178,18 +205,31 @@ int angularConversionStatic::readAngularConversion( ifstream& infile, int nmod, 
     istringstream ssstr(str);
     ssstr >> ss >> mod;
     ssstr >> ss >> center;
+    if (ss==string("center")) 
+      newangconv=1;
     ssstr >> ss >> ecenter;
+    if (newangconv) {
+      ssstr >> ss >> pitch;
+      ssstr >> ss >> epitch;
+    }
     ssstr >> ss >> r_conv;
     ssstr >> ss >> er_conv;
     ssstr >> ss >> off;
     ssstr >> ss >> eoff;
     if (nm<nmod && nm>=0 ) {
-      angOff[nm].center=center;
-      angOff[nm].r_conversion=r_conv;
-      angOff[nm].offset=off;
-      angOff[nm].ecenter=ecenter;
-      angOff[nm].er_conversion=er_conv;
-      angOff[nm].eoffset=eoff;
+      if (newangconv==0) {
+	angOff[nm].center=center;
+	angOff[nm].r_conversion=r_conv;
+	angOff[nm].offset=off;
+	angOff[nm].ecenter=ecenter;
+	angOff[nm].er_conversion=er_conv;
+	angOff[nm].eoffset=eoff;
+      } else {
+
+	angOff[nm].tilt=pitch;
+	angOff[nm].etilt=epitch;
+
+      }
     } else
       break;
     //cout << nm<<"  " << angOff[nm].offset << endl;

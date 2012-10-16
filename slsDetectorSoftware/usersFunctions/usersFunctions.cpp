@@ -321,5 +321,19 @@ int defaultDataReadyFunc(detectorData* d,  void* p) {
 }
 
 
+int defaultRawDataReadyFunc(double* d, int np,  void* p) {
+  //#ifdef VERBOSE
+  printf("UUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUU Raw Data received \n");
+  if (d==NULL)
+    printf("no data received\n");
+  else
+    printf("received %d channels\n",np);
+    
+  printf("UUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUU Finished \n");
+  //#endif
+  return 0;
+}
+
+
 
 

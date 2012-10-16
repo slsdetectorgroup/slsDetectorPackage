@@ -2194,7 +2194,7 @@ dacs_t multiSlsDetector::getADC(dacIndex idac, int imod) {
   return ret1;
 }
 
-int multiSlsDetector::setChannel(long long reg, int ichan, int ichip, int imod) {
+int multiSlsDetector::setChannel(int64_t reg, int ichan, int ichip, int imod) {
   int ret, ret1=-100;
   int id=-1, im=-1;
   int dmi=0, dma=thisMultiDetector->numberOfDetectors;

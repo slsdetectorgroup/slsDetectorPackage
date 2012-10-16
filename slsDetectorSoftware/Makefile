@@ -1,4 +1,4 @@
-CFLAGS= -DC_ONLY 
+CFLAGS= -DC_ONLY -fPIC
 #FLAGS+=  #-DVERBOSE -DVERYVERBOSE
 
 DFLAGS= -DDACS_INT
@@ -40,11 +40,11 @@ picassoServer:  $(SRC_MYTHEN_SVC)
 
 
 %.o : %.cpp %.h
-	$(CXX) -Wall -o $@ -c $< $(INCLUDES) $(DFLAGS) $(FLAGS)  $(EPICSFLAGS)
+	$(CXX) -Wall -o $@ -c $< $(INCLUDES) $(DFLAGS) $(FLAGS) -fPIC  $(EPICSFLAGS)
 
 
 package: $(OBJS)
-	$(CXX) -shared -Wl,-soname,libSlsDetector.so -o libSlsDetector.so  $(OBJS)  -lc $(INCLUDES) $(DFLAGS) $(FLAGS) $(EPICSFLAGS)
+	$(CXX)  -shared -Wl,-soname,libSlsDetector.so -o libSlsDetector.so  $(OBJS)  -lc $(INCLUDES) $(DFLAGS) $(FLAGS) $(EPICSFLAGS)
 	ar  rcs libSlsDetector.a  $(OBJS)
 
 clean:

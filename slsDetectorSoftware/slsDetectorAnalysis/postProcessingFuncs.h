@@ -38,7 +38,7 @@ class postProcessingFuncs : public virtual angularConversionStatic
   
   int finalizeDataset(double ang[], double val[], double err[], int *np);
   
-  int addFrame(double data[], double *pos, double *IO, double *expTime, const char *filename, int *var=0);
+  int addFrame(double data[], double *pos, double *IO, double *expTime, const char *filename, double *var=0);
   
   static int calculateFlatField(int* nModules, int *chPerMod, int moduleMask[], int badChannelMask[], double ffData[], double ffCoeff[], double ffErr[]);
   

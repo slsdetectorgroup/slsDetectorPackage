@@ -194,11 +194,37 @@ string slsDetectorUsers::getDetectorType(){
 }
 
 
+  
+void slsDetectorUsers::initDataset(int refresh){
+  myDetector->initDataset(refresh);
+}
+
+
+
+
+void slsDetectorUsers::addFrame(double *data, double pos, double i0, double t, string fname, double var){
+  myDetector->addFrame(data,pos,i0,t,fname,var);
+}
+
+
+void slsDetectorUsers::finalizeDataset(double *a, double *v, double *e, int &np){
+  myDetector->finalizeDataset(a, v, e, np);
+}
+
+
+
+
+
+
+
+
+
+
 void slsDetectorUsers::registerDataCallback(int( *userCallback)(detectorData*, void*), void *pArg){
   myDetector->registerDataCallback(userCallback,pArg);
 }
 
-void slsDetectorUsers::registerRawDataCallback(int( *userCallback)(double*, void*), void *pArg){
+void slsDetectorUsers::registerRawDataCallback(int( *userCallback)(double*, int, void*), void *pArg){
   myDetector->registerRawDataCallback(userCallback,pArg);
 }
 

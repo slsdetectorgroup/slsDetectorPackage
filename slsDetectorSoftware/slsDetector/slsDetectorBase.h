@@ -444,6 +444,7 @@ class slsDetectorBase :  public virtual slsDetectorDefs  {
 
   /**
      Sets up the receiver file directory
+     @param fileName fileDir file directory
      \returns file dir
   */
   virtual string setReceiverFileDir(string fileDir="")=0;

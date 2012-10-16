@@ -883,24 +883,8 @@ string slsDetectorCommand::cmdStatus(int narg, char *args[], int action) {
   myDet->setOnline(ONLINE_FLAG);
   if (action==PUT_ACTION) {
     //myDet->setThreadedProcessing(0);
-    if (string(args[1])=="start"){
-      //receiver
-      if(myDet->setReceiverOnline()==ONLINE_FLAG){
-	if(myDet->setReceiverOnline(ONLINE_FLAG)!=ONLINE_FLAG)
-	  return string("can not connect to receiver");
-	if(myDet->getReceiverStatus()!=RUNNING){
-	  //update receiver index
-	  if(myDet->setReceiverFileIndex(myDet->getFileIndex())==-1)
-	    return string("could not set receiver file index");
-	  //start receiver
-	  myDet->startReceiver();
-	  usleep(2000000);
-	  if(myDet->getReceiverStatus()!=RUNNING)
-	    return string("could not start receiver");
-	}
-      }
+    if (string(args[1])=="start")
       myDet->startAcquisition();
-    }
     else if (string(args[1])=="stop")
       myDet->stopAcquisition();
     else

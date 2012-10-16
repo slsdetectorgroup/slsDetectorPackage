@@ -208,7 +208,7 @@
       <property name="geometry">
        <rect>
         <x>5</x>
-        <y>4</y>
+        <y>5</y>
         <width>107</width>
         <height>26</height>
        </rect>
@@ -238,7 +238,7 @@
         <x>210</x>
         <y>5</y>
         <width>128</width>
-        <height>23</height>
+        <height>26</height>
        </rect>
       </property>
       <layout class="QHBoxLayout" name="horizontalLayout">

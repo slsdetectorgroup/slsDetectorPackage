@@ -16,6 +16,8 @@
 #include <QFile>
 #include <QTextStream>
 #include <QFileDialog>
+
+
 /** C++ Include Headers */
 #include <iostream>
 #include <string>
@@ -23,7 +25,7 @@ using namespace std;
 
 //-------------------------------------------------------------------------------------------------------------------------------------------------
 
-qTabMessages::qTabMessages(QWidget *parent,multiSlsDetector*& detector):QWidget(parent),myDet(detector){
+qTabMessages::qTabMessages(QWidget *parent):QWidget(parent),myDet(0){
 	SetupWidgetWindow();
 	Initialization();
 }
@@ -33,6 +35,7 @@ qTabMessages::qTabMessages(QWidget *parent,multiSlsDetector*& detector):QWidget(
 qTabMessages::~qTabMessages(){
 	delete myDet;
 	delete dispLog;
+	delete qout;
 }
 
 //-------------------------------------------------------------------------------------------------------------------------------------------------
@@ -62,7 +65,11 @@ void qTabMessages::SetupWidgetWindow(){
 	gridLayout->addItem(new QSpacerItem(15,10,QSizePolicy::Fixed,QSizePolicy::Fixed),2,0);
 	gridLayout->addWidget(dispLog,3,0,1,5);
 
-	qout=new qDebugStream(std::cout,this);
+	qout=new qDebugStream(cout,cerr, this);cout<<"working!"<<endl;
+	//qerr=new qDebugStream(cerr,this);
+
+	//qerr=NULL;
+	//qerr=new qDebugStream(std::cerr,this);cout<<"worked!"<<endl;
 }
 
 //-------------------------------------------------------------------------------------------------------------------------------------------------
@@ -82,6 +89,7 @@ void qTabMessages::customEvent(QEvent *e) {
 //-------------------------------------------------------------------------------------------------------------------------------------------------
 
 void qTabMessages::SaveLog() {
+	//cerr<<endl<<"ERRRORRRR"<<endl<<endl;
 	QString fName = QString(myDet->getFilePath().c_str());
 	fName = fName+"/LogFile.txt";
     fName = QFileDialog::getSaveFileName(this,tr("Save Snapshot "),

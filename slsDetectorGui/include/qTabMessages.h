@@ -28,13 +28,17 @@ class qTabMessages:public QWidget{
 public:
 	/** \short The constructor
 	 *    @param parent is the parent tab widget
-	 *    @param detector is the detector returned from the detector tab
 	 */
-	qTabMessages(QWidget *parent,multiSlsDetector*& detector);
+	qTabMessages(QWidget *parent);
 
 	/** Destructor
 	 */
 	~qTabMessages();
+
+	/** Set the detetor reference
+	 * @param det the detector reference
+	 */
+	void SetDetectorReference(multiSlsDetector*& detector){myDet = detector;};
 
 
 private:
@@ -52,6 +56,7 @@ private:
 
 	/** This class creates the log */
 	qDebugStream *qout;
+	//qDebugStream *qerr;
 
 /** methods */
 	/** Sets up the widget */

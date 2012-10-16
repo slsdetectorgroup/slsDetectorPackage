@@ -40,9 +40,12 @@ private:
 class qDebugStream : public basic_streambuf<char> {
 
 public:
-	qDebugStream(ostream &stream, QWidget* w) : m_stream(stream), log_window(w) {
+	qDebugStream(ostream &stream, ostream &estream, QWidget* w) : m_stream(stream), e_stream(estream), log_window(w) {
 		m_old_buf = stream.rdbuf();
 		stream.rdbuf(this);
+		//e_old_buf = stream.rdbuf();
+		//estream.rdbuf(this);
+
 	};
 
 //-------------------------------------------------------------------------------------------------------------------------------------------------
@@ -57,6 +60,7 @@ public:
 #endif
 		}
 		m_stream.rdbuf(m_old_buf);
+		e_stream.rdbuf(e_old_buf);
 	}
 
 //-------------------------------------------------------------------------------------------------------------------------------------------------
@@ -104,6 +108,8 @@ protected:
 private:
 	ostream &m_stream;
 	streambuf *m_old_buf;
+	ostream &e_stream;
+	streambuf *e_old_buf;
 	string m_string;
 	QWidget* log_window;
 };

@@ -64,8 +64,7 @@ qDetectorMain::qDetectorMain(int argc, char **argv, QApplication *app, QWidget *
 	}
 
 	setupUi(this);
-	SetUpDetector(configFName);
-	SetUpWidgetWindow();
+	SetUpWidgetWindow(configFName);
 	Initialization();
 
 }
@@ -84,21 +83,29 @@ qDetectorMain::~qDetectorMain(){
 //-------------------------------------------------------------------------------------------------------------------------------------------------
 
 
-void qDetectorMain::SetUpWidgetWindow(){
+void qDetectorMain::SetUpWidgetWindow(const string fName){
 
 // Layout
 	layoutTabs= new QGridLayout;
 	centralwidget->setLayout(layoutTabs);
 
-// plot setup
-	myPlot = new qDrawPlot(dockWidgetPlot,myDet);cout<<"DockPlot ready"<<endl;
-	dockWidgetPlot->setWidget(myPlot);
 
 //tabs setup
 	tabs = new MyTabWidget(this);
 	layoutTabs->addWidget(tabs);
-	// creating all the tab widgets
-	tab_messages		=  new qTabMessages		(this,	myDet); 			cout<<"Messages ready"<<endl;
+
+
+	// creating the messages tab before the plots and detector to catch config stdout
+	tab_messages		=  new qTabMessages		(this); 			cout<<"Messages ready"<<endl;
+// settings up detector
+	SetUpDetector(fName);
+// plot setup
+	myPlot = new qDrawPlot(dockWidgetPlot,myDet);cout<<"DockPlot ready"<<endl;
+	dockWidgetPlot->setWidget(myPlot);
+
+	//settings messages to have the det reference
+	tab_messages->SetDetectorReference(myDet);
+	// creating all the other tab widgets
 	tab_measurement 	=  new qTabMeasurement	(this,	myDet,myPlot);		cout<<"Measurement ready"<<endl;
 	tab_dataoutput 		=  new qTabDataOutput	(this,	myDet);			cout<<"DataOutput ready"<<endl;
 	tab_plot 			=  new qTabPlot			(this,	myDet,myPlot);		cout<<"Plot ready"<<endl;
@@ -132,6 +139,7 @@ void qDetectorMain::SetUpWidgetWindow(){
 	tabs->insertTab(Developer,		scroll[Developer],		"Developer");
 	// Prefer this to expand and not have scroll buttons
 	tabs->insertTab(Messages,		tab_messages,		"Messages");
+
 	// Default tab color
 	defaultTabColor = tabs->tabBar()->tabTextColor(DataOutput);
 	//Set the current tab(measurement) to blue as it is the current one
@@ -267,7 +275,7 @@ void qDetectorMain::Initialization(){
 
 
 void qDetectorMain::LoadConfigFile(const string fName){
-#ifdef VERBOSe
+#ifdef VERBOSE
 	cout << "Loading config file at start up:" << fName << endl;
 #endif
 	QString file = QString(fName.c_str());//.section('/',-1);

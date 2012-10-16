@@ -61,7 +61,7 @@ int getTemperature(int tempSensor,int imod);
 int initHighVoltage(int val,int imod);
 int initConfGain(int isettings,int val,int imod);
 
-int configureMAC(int ipad, long long int macad, long long int servermacad, int ival);
+int configureMAC(int ipad, long long int macad, long long int servermacad, int ival, int adc);
 
 u_int64_t getDetectorNumber();
 u_int32_t getFirmwareVersion();

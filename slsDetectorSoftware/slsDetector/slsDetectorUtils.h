@@ -473,10 +473,11 @@ class slsDetectorUtils :  public slsDetectorActions, public postProcessing {
 
   /**
      configures mac for gotthard readout
+     \param adc adc number
      \returns OK or FAIL
   */
 
-  virtual int configureMAC()=0;
+  virtual int configureMAC(int adc=-1)=0;
 
 
   /** loads the modules settings/trimbits reading from a file

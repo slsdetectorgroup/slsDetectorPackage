@@ -2705,13 +2705,13 @@ const char * multiSlsDetector::getSettingsFile() {
 }
 
 
-int multiSlsDetector::configureMAC() {
+int multiSlsDetector::configureMAC(int adc) {
 
   int ret=-100, ret1;
 
   for (int idet=0; idet<thisMultiDetector->numberOfDetectors; idet++) {
     if (detectors[idet]) {
-      ret1=detectors[idet]->configureMAC();
+      ret1=detectors[idet]->configureMAC(adc);
       if (ret==-100)
 	ret=ret1;
       else if (ret!=ret1)

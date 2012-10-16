@@ -1224,7 +1224,47 @@ int initConfGain(int isettings,int val,int imod){
 }
 
 
-int configureMAC(int ipad,long long int macad,long long int servermacad,int ival){
+int configureMAC(int ipad,long long int macad,long long int servermacad,int ival, int adc){
+	//setting adc mask
+	int reg;
+	int udpPacketSize=0x050E;
+	int ipPacketSize=0x0522;
+	switch(adc){
+	case 0:
+	case 1:
+	case 2:
+	case 3:
+	case 4:
+		reg = (NCHAN*2)<<CHANNEL_OFFSET;
+		reg&=CHANNEL_MASK;
+		int mask =1<<adc;
+		reg|=(ACTIVE_ADC_MASK & mask);
+		bus_w(CHIP_OF_INTRST_REG,reg);
+		reg=bus_r(CHIP_OF_INTRST_REG);
+#ifdef VERBOSE
+		printf("Chip of Intrst Reg:%x\n",reg);
+#endif
+		ipPacketSize= 256*2+14+20;
+		udpPacketSize=256*2+4+8+2;
+		break;
+	//for all adcs
+	default:
+		reg = (NCHAN*NCHIP)<<CHANNEL_OFFSET;
+		reg&=CHANNEL_MASK;
+		reg|=ACTIVE_ADC_MASK;
+		bus_w(CHIP_OF_INTRST_REG,reg);
+		reg=bus_r(CHIP_OF_INTRST_REG);
+#ifdef VERBOSE
+		printf("Chip of Intrst Reg:%x\n",reg);
+#endif
+		break;
+	}
+#ifdef VERBOSE
+		printf("IP Packet Size:%d\n",ipPacketSize);
+		printf("UDP Packet Size:%d\n",udpPacketSize);
+#endif
+
+	//configuring mac
   u_int32_t addrr=MULTI_PURPOSE_REG;
   u_int32_t offset=ENET_CONF_REG, offset2=TSE_CONF_REG;
   mac_conf *mac_conf_regs;
@@ -1300,7 +1340,7 @@ int configureMAC(int ipad,long long int macad,long long int servermacad,int ival
   mac_conf_regs->ip.ip_ver            = 0x4;
   mac_conf_regs->ip.ip_ihl            = 0x5;
   mac_conf_regs->ip.ip_tos            = 0x0;
-  mac_conf_regs->ip.ip_len            = 0x0522;   // was 0x0526; 
+  mac_conf_regs->ip.ip_len            = ipPacketSize;//0x0522;   // was 0x0526;
   mac_conf_regs->ip.ip_ident          = 0x0000;
   mac_conf_regs->ip.ip_flag           = 0x2;
   mac_conf_regs->ip.ip_offset         = 0x00;
@@ -1347,7 +1387,7 @@ int configureMAC(int ipad,long long int macad,long long int servermacad,int ival
 
   mac_conf_regs->udp.udp_srcport      = 0xE185;
   mac_conf_regs->udp.udp_destport     = 0xC351;
-  mac_conf_regs->udp.udp_len          = 0x050E;    //was  0x0512;
+  mac_conf_regs->udp.udp_len          = udpPacketSize;//0x050E;    //was  0x0512;
   mac_conf_regs->udp.udp_chksum       = 0x0000;
 
 #ifdef VERBOSE

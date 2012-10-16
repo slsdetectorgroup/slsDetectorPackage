@@ -2759,6 +2759,7 @@ int configure_mac(int file_des) {
   int ipad;
   long long int imacadd;
   long long int iservermacadd;
+  int adc=-1;
   
   sprintf(mess,"Can't configure MAC\n");
 
@@ -2785,6 +2786,13 @@ int configure_mac(int file_des) {
   printf("\n");
 #endif 
 
+  n = receiveDataOnly(file_des,&adc,sizeof(adc));
+  if (n < 0) {
+    sprintf(mess,"Error reading from socket\n");
+    ret=FAIL;
+  }
+
+
   if (imod>=getNModBoard())
     ret=FAIL;
   if (imod<0)
@@ -2795,7 +2803,7 @@ int configure_mac(int file_des) {
 //#endif
 #ifdef MCB_FUNCS
   if (ret==OK) {
-    retval=configureMAC(ipad,imacadd,iservermacadd,digitalTestBit);
+    retval=configureMAC(ipad,imacadd,iservermacadd,digitalTestBit,adc);
     if(retval==-1)
     	ret=FAIL;
   }

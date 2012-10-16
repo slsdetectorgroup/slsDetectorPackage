@@ -53,6 +53,8 @@
 #define FPGA_SVN_REG    	  0x29<<11
 
 
+#define CHIP_OF_INTRST_REG    0x2A<<11
+
 //FIFO
 #define LOOK_AT_ME_REG   	  0x28<<11
 
@@ -268,6 +270,11 @@
 #define SETTINGS_MASK                0x000000f0
 #define SETTINGS_OFFSET              4 
 
+
+/* CHIP_OF_INTRST_REG */
+#define CHANNEL_MASK 			    0xffff0000
+#define CHANNEL_OFFSET				16
+#define ACTIVE_ADC_MASK 		    0x0000001f
 
 #endif
 

@@ -4502,7 +4502,7 @@ char* slsDetector::setServerMAC(string serverMAC){
 };
 
 
-int slsDetector::configureMAC(){
+int slsDetector::configureMAC(int adc){
   int retval,i;
   int ret=FAIL;
   int fnum=F_CONFIGURE_MAC;
@@ -4565,6 +4565,7 @@ int slsDetector::configureMAC(){
       if  (controlSocket->Connect()>=0) {
 	controlSocket->SendDataOnly(&fnum,sizeof(fnum));
 	controlSocket->SendDataOnly(arg,sizeof(arg));
+	controlSocket->SendDataOnly(&adc,sizeof(adc));
 	controlSocket->ReceiveDataOnly(&ret,sizeof(ret));
 	if (ret!=FAIL)
 	  controlSocket->ReceiveDataOnly(&retval,sizeof(retval));

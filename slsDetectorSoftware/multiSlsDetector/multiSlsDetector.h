@@ -888,8 +888,12 @@ class multiSlsDetector  : public slsDetectorUtils {
     
   string getLastClientIP();
 
-
-  int configureMAC();
+  /**
+     configures mac for gotthard readout
+     \param adc adc number
+     \returns OK or FAIL
+  */
+  int configureMAC(int adc=-1);
 
   int setNumberOfModules(int i=-1, dimension d=X);
   int getMaxNumberOfModules(dimension d=X);

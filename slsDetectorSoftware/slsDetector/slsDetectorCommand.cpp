@@ -2487,13 +2487,10 @@ string slsDetectorCommand::cmdConfigureMac(int narg, char *args[], int action) {
   char ans[1000];
   
   if (action==PUT_ACTION){
-    if (sscanf(args[1],"%d",&ival))
-      if(ival==1){
+    if (sscanf(args[1],"%d",&ival)){
 	myDet->setOnline(ONLINE_FLAG);
-	ret=myDet->configureMAC();
-      }
-      else
-	return string("Not yet implemented with arguments other than 1");
+	ret=myDet->configureMAC(ival);
+    }
   }
   else
     return string("Cannot get ")+cmd;
@@ -2506,7 +2503,7 @@ string slsDetectorCommand::helpConfigureMac(int narg, char *args[], int action) 
 
   ostringstream os;  
   if (action==PUT_ACTION || action==HELP_ACTION)
-    os << "configuremac i \n configures the MAC of the detector. i=1 for configure; i=0 for unconfigure(not implemented yet)"<< std::endl;
+    os << "configuremac i \n configures the MAC of the detector. i is adc number. -1 for all adcs"<< std::endl;
   if (action==GET_ACTION || action==HELP_ACTION)
     os << "configuremac " << "Cannot get " << std::endl;
   

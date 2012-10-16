@@ -306,8 +306,10 @@ class slsDetector : public slsDetectorUtils, public energyConversion {
 
   /**  
        configures mac for gotthard readout
+     \param adc adc number
+     \returns OK or FAIL
   */
-  int configureMAC();
+  int configureMAC(int adc=-1);
 
   /**
      Reads the configuration file fname

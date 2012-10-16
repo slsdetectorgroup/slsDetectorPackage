@@ -25,7 +25,7 @@ using namespace std;
 
 //-------------------------------------------------------------------------------------------------------------------------------------------------
 
-qTabMessages::qTabMessages(QWidget *parent):QWidget(parent),myDet(0){
+qTabMessages::qTabMessages(QWidget *parent):QWidget(parent),myDet(0),qout(NULL){
 	SetupWidgetWindow();
 	Initialization();
 }
@@ -65,7 +65,7 @@ void qTabMessages::SetupWidgetWindow(){
 	gridLayout->addItem(new QSpacerItem(15,10,QSizePolicy::Fixed,QSizePolicy::Fixed),2,0);
 	gridLayout->addWidget(dispLog,3,0,1,5);
 
-	qout=new qDebugStream(cout,cerr, this);cout<<"working!"<<endl;
+	qout=new qDebugStream(cout,cerr, this);
 	//qerr=new qDebugStream(cerr,this);
 
 	//qerr=NULL;

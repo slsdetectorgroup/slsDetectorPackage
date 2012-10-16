@@ -95,23 +95,27 @@ void qDetectorMain::SetUpWidgetWindow(const string fName){
 	layoutTabs->addWidget(tabs);
 
 
-	// creating the messages tab before the plots and detector to catch config stdout
-	tab_messages		=  new qTabMessages		(this); 			cout<<"Messages ready"<<endl;
+// creating the messages tab before the plots and detector to catch config stdout
+	tab_messages		=  new qTabMessages		(this); 					cout<<"Messages ready"<<endl;
+	//no scroll buttons this way
+	tabs->insertTab(Messages,		tab_messages,		"Messages");
+
 // settings up detector
 	SetUpDetector(fName);
+
 // plot setup
-	myPlot = new qDrawPlot(dockWidgetPlot,myDet);cout<<"DockPlot ready"<<endl;
+	myPlot = new qDrawPlot(dockWidgetPlot,myDet);							cout<<"DockPlot ready"<<endl;
 	dockWidgetPlot->setWidget(myPlot);
 
 	//settings messages to have the det reference
 	tab_messages->SetDetectorReference(myDet);
 	// creating all the other tab widgets
 	tab_measurement 	=  new qTabMeasurement	(this,	myDet,myPlot);		cout<<"Measurement ready"<<endl;
-	tab_dataoutput 		=  new qTabDataOutput	(this,	myDet);			cout<<"DataOutput ready"<<endl;
+	tab_dataoutput 		=  new qTabDataOutput	(this,	myDet);				cout<<"DataOutput ready"<<endl;
 	tab_plot 			=  new qTabPlot			(this,	myDet,myPlot);		cout<<"Plot ready"<<endl;
 	tab_actions			=  new qTabActions		(this,	myDet);				cout<<"Actions ready"<<endl;
 	tab_settings 		=  new qTabSettings		(this,	myDet);				cout<<"Settings ready"<<endl;
-	tab_advanced 		=  new qTabAdvanced		(this,	myDet,myPlot);				cout<<"Advanced ready"<<endl;
+	tab_advanced 		=  new qTabAdvanced		(this,	myDet,myPlot);		cout<<"Advanced ready"<<endl;
 	tab_debugging 		=  new qTabDebugging	(this,	myDet);				cout<<"Debugging ready"<<endl;
 	tab_developer 		=  new qTabDeveloper	(this,	myDet);				cout<<"Developer ready"<<endl;
 	//	creating the scroll area widgets for the tabs
@@ -137,9 +141,12 @@ void qDetectorMain::SetUpWidgetWindow(const string fName){
 	tabs->insertTab(Advanced,		scroll[Advanced],		"Advanced");
 	tabs->insertTab(Debugging,		scroll[Debugging],		"Debugging");
 	tabs->insertTab(Developer,		scroll[Developer],		"Developer");
-	// Prefer this to expand and not have scroll buttons
-	tabs->insertTab(Messages,		tab_messages,		"Messages");
 
+//swap tabs so that messages is last tab
+	tabs->tabBar()->moveTab(tabs->indexOf(tab_messages),Messages);
+	tabs->setCurrentIndex(Measurement);
+
+//other tab properties
 	// Default tab color
 	defaultTabColor = tabs->tabBar()->tabTextColor(DataOutput);
 	//Set the current tab(measurement) to blue as it is the current one

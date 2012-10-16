@@ -4452,13 +4452,13 @@ char* slsDetector::setReceiverIP(string receiverIP){
 
   struct sockaddr_in sa;
   if(receiverIP.length()<16){
-    if((receiverIP[3]=='.')&&(receiverIP[7]=='.')&&(receiverIP[11]=='.')){
+ //   if((receiverIP[3]=='.')&&(receiverIP[7]=='.')&&(receiverIP[11]=='.')){
       int result = inet_pton(AF_INET, receiverIP.c_str(), &(sa.sin_addr));
       if(result!=0){
 	sprintf(thisDetector->receiverIP,receiverIP.c_str());
 	wrongFormat=0;
       }
-    }
+ //   }
   }
 
   if(wrongFormat)
@@ -5764,16 +5764,16 @@ int slsDetector::updateReceiverNoWait() {
   char lastClientIP[INET_ADDRSTRLEN];
 
   n = 	dataSocket->ReceiveDataOnly(lastClientIP,sizeof(lastClientIP));
-  //#ifdef VERBOSE
+#ifdef VERBOSE
   cout << "Updating receiver last modified by " << lastClientIP << std::endl;
-  //#endif
+#endif
 
-  n = 	dataSocket->ReceiveDataOnly(&ind,sizeof(ind));		cout<<"index:"<<ind<<endl;
-  //thisDetector->xx=xx;update file index how?
-  n = 	dataSocket->ReceiveDataOnly(path,MAX_STR_LENGTH);	cout<<"path:"<<path<<endl;
-  //thisDetector->xx=xx;update file index how?
-  n = 	dataSocket->ReceiveDataOnly(path,MAX_STR_LENGTH);	cout<<"name:"<<path<<endl;
-  //thisDetector->xx=xx;update file index how?
+  n = 	dataSocket->ReceiveDataOnly(&ind,sizeof(ind));
+  parentDet->setFileIndex(ind);
+  n = 	dataSocket->ReceiveDataOnly(path,MAX_STR_LENGTH);
+  parentDet->setFilePath(path);
+  n = 	dataSocket->ReceiveDataOnly(path,MAX_STR_LENGTH);
+  parentDet->setFileName(path);
   return OK;
 
 }

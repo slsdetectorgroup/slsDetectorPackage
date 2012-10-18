@@ -120,7 +120,7 @@ class slsDetectorUsers
   */
    int setFileIndex(int i);
 
-  /** 
+   /**
          @short get flat field corrections file directory
     \returns flat field correction file directory
   */

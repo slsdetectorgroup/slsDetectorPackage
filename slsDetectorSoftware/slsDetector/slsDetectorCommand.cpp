@@ -1336,34 +1336,27 @@ string slsDetectorCommand::helpTrimEn(int narg, char *args[], int action) {
 
 
 string slsDetectorCommand::cmdOutDir(int narg, char *args[], int action){
-  bool receiver = false;
-
   if (action==HELP_ACTION) {
     return helpOutDir(narg, args, action);
   }
 
-  if(myDet->setReceiverOnline()==ONLINE_FLAG)
-    if(myDet->setReceiverOnline(ONLINE_FLAG)==ONLINE_FLAG)
-      receiver = true;
-
-  if (action==PUT_ACTION) {
-    if(receiver){
-      if(myDet->setReceiverFileDir(string(args[1]))==string(args[1]))
-	myDet->setFilePath(string(args[1]));
-    }else{
-      //check if the outdir really exists in localhost
-      struct stat st;
-      if(stat(args[1],&st))
-	return string("path does not exist");
-      else
-	myDet->setFilePath(string(args[1]));
-    }
+  if(myDet->setReceiverOnline()==ONLINE_FLAG){
+    if(myDet->setReceiverOnline(ONLINE_FLAG)!=ONLINE_FLAG)
+      return string("cannot connect to receiver");
+    if(action==PUT_ACTION)
+      myDet->setReceiverFileDir(string(args[1]));
+    return myDet->setReceiverFileDir();
   }
 
-  if(receiver)
-    return myDet->setReceiverFileDir();
-  else
-    return string(myDet->getFilePath());
+  if (action==PUT_ACTION) {
+    struct stat st;
+    if(stat(args[1],&st))
+      return string("path does not exist");
+    else
+      myDet->setFilePath(string(args[1]));
+  }
+
+  return string(myDet->getFilePath());
 }
 
 
@@ -1381,28 +1374,22 @@ string slsDetectorCommand::helpOutDir(int narg, char *args[], int action){
 
 
 string slsDetectorCommand::cmdFileName(int narg, char *args[], int action){
-  bool receiver = false;
-
   if (action==HELP_ACTION) {
     return helpFileName(narg, args, action);
   }
 
-  if(myDet->setReceiverOnline()==ONLINE_FLAG)
-    if(myDet->setReceiverOnline(ONLINE_FLAG)==ONLINE_FLAG)
-      receiver = true;
-
-  if (action==PUT_ACTION) {
-    if(receiver){
-      if(myDet->setReceiverFileName(string(args[1]))==string(args[1]))
-	myDet->setFileName(string(args[1]));
-    }else
-      myDet->setFileName(string(args[1]));
+  if(myDet->setReceiverOnline()==ONLINE_FLAG){
+    if(myDet->setReceiverOnline(ONLINE_FLAG)!=ONLINE_FLAG)
+      return string("cannot connect to receiver");
+    if(action==PUT_ACTION)
+      myDet->setReceiverFileName(string(args[1]));
+    return myDet->setReceiverFileName();
   }
 
-  if(receiver)
-    return myDet->setReceiverFileName();
-  else
-    return string(myDet->getFileName());
+  if (action==PUT_ACTION)
+    myDet->setFileName(string(args[1]));
+
+  return string(myDet->getFileName());
 }
 
 
@@ -1450,36 +1437,29 @@ string slsDetectorCommand::helpEnablefwrite(int narg, char *args[], int action){
 }
 
 string slsDetectorCommand::cmdFileIndex(int narg, char *args[], int action){
-  bool receiver = false;
-  int i;
   char ans[100];
+  int i;
 
   if (action==HELP_ACTION) {
     return helpFileName(narg, args, action);
   }
+  else if (action==PUT_ACTION)
+    if(!sscanf(args[1],"%d",&i))
+      return string("cannot parse file index");
 
-  if(myDet->setReceiverOnline()==ONLINE_FLAG)
-    if(myDet->setReceiverOnline(ONLINE_FLAG)==ONLINE_FLAG)
-      receiver = true;
-
-  if (action==PUT_ACTION) {
-    if (sscanf(args[1],"%d",&i)){
-      if(receiver){
-	if(myDet->setReceiverFileIndex(i)==i)
-	  myDet->setFileIndex(i);
-      }else
-	myDet->setFileIndex(i);
-    }
-  }
-
-  if(receiver){
-    //int ret=myDet->setReceiverFileIndex();
-    //myDet->setFileIndex(ret);
+  if(myDet->setReceiverOnline()==ONLINE_FLAG){
+    if(myDet->setReceiverOnline(ONLINE_FLAG)!=ONLINE_FLAG)
+      return string("cannot connect to receiver");
+    if(action==PUT_ACTION)
+      myDet->setReceiverFileIndex(i);
     sprintf(ans,"%d", myDet->setReceiverFileIndex());
+    return string(ans);
   }
-  else
-    sprintf(ans,"%d", myDet->getFileIndex());
 
+  if (action==PUT_ACTION)
+    myDet->setFileIndex(i);
+
+  sprintf(ans,"%d", myDet->getFileIndex());
   return string(ans);
 }
 
@@ -2217,7 +2197,7 @@ string slsDetectorCommand::cmdNetworkParameter(int narg, char *args[], int actio
     if(!strcmp(myDet->setNetworkParameter(t, args[1]),args[1])){
       if(t==RECEIVER_IP){
     	if(myDet->setReceiverOnline(ONLINE_FLAG)!=ONLINE_FLAG)
-	  return string("receiver not online");
+	  return string("cannot connect to receiver");
     	//outdir
      	if(myDet->setReceiverFileDir(myDet->getFilePath()).compare(myDet->getFilePath()))
           return string("could not set up receiver file outdir");
@@ -2488,8 +2468,8 @@ string slsDetectorCommand::cmdConfigureMac(int narg, char *args[], int action) {
   
   if (action==PUT_ACTION){
     if (sscanf(args[1],"%d",&ival)){
-	myDet->setOnline(ONLINE_FLAG);
-	ret=myDet->configureMAC(ival);
+      myDet->setOnline(ONLINE_FLAG);
+      ret=myDet->configureMAC(ival);
     }
   }
   else
@@ -3602,10 +3582,8 @@ string slsDetectorCommand::cmdReceiver(int narg, char *args[], int action) {
 
 	if(myDet->stopReceiver()!=FAIL){
 	  //update index
-	  int index = myDet->setReceiverFileIndex();
-	  if(index==-1)
-	    return string("could not get receiver file index");
-	  myDet->setFileIndex(index);
+	  myDet->setFileIndex(myDet->getFileIndex()+1);
+	  myDet->setReceiverFileIndex(myDet->getFileIndex());
 	}
 	else if(myDet->setReceiverOnline()!=ONLINE_FLAG)
 	  return string("cannot connect to receiver");

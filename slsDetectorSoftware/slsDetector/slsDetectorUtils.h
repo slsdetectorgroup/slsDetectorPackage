@@ -77,7 +77,7 @@ class slsDetectorUtils :  public slsDetectorActions, public postProcessing {
   int enableCountRateCorrection(int i=-1){if (i>0) setRateCorrection(-1); else if (i==0) setRateCorrection(0); return getRateCorrection();};
   // string getFilePath(){return fileIO::getFilePath();};;
   // string setFilePath(string s){return fileIO::setFilePath(s);};
-  
+
   // string getFileName(){return fileIO::getFileName();};
   // string setFileName(string s){return fileIO::setFileName(s);};
 

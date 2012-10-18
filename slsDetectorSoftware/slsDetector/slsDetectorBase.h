@@ -231,10 +231,6 @@ class slsDetectorBase :  public virtual slsDetectorDefs  {
   virtual string createFileName()=0;
 
 
-
-
-
-
   virtual void incrementProgress()=0;
   virtual double getCurrentProgress()=0;
   virtual void incrementFileIndex()=0;
@@ -245,7 +241,6 @@ class slsDetectorBase :  public virtual slsDetectorDefs  {
 
 
   virtual string getCurrentFileName()=0;
-
 
 
   virtual int getFileIndexFromFileName(string fname)=0;
@@ -429,7 +424,7 @@ class slsDetectorBase :  public virtual slsDetectorDefs  {
   virtual int setFileIndex(int i)=0;
 
 
-  //receiver
+ //receiver
   /**
      calls setReceiverTCPSocket if online and sets the flag
   */

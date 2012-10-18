@@ -3,27 +3,46 @@
 			   
 				   
 
-
-  /* I/O */
+/* I/O */
 
 /* generates file name without extension*/
 
 string fileIO::createFileName() {
   currentFileName=fileIOStatic::createFileName(filePath,	\
-			fileName, \
-			getActionMask(),	\
-			getCurrentScanVariable(0),	\
-			getScanPrecision(0),		\
-			getCurrentScanVariable(1),	\
-			getScanPrecision(1),		\
-			getCurrentPositionIndex(),	\
-			getNumberOfPositions(),		\
-			*fileIndex	      \
-			);
+					       fileName, \
+					       getActionMask(),	\
+					       getCurrentScanVariable(0),	\
+					       getScanPrecision(0),		\
+					       getCurrentScanVariable(1),	\
+					       getScanPrecision(1),		\
+					       getCurrentPositionIndex(),	\
+					       getNumberOfPositions(),		\
+					       *fileIndex,	      \
+					       frameIndex,		  \
+					       detIndex			  \
+					       );
   return currentFileName;
   
 }
 
+
+
+/* generates file prefix for receivers */
+
+string fileIO::createReceiverFilePrefix() {
+  currentReceiverFilePrefix=fileIOStatic::createReceiverFilePrefix(fileName, \
+								   getActionMask(),	\
+								   getCurrentScanVariable(0),	\
+								   getScanPrecision(0),		\
+								   getCurrentScanVariable(1),	\
+								   getScanPrecision(1),		\
+								   getCurrentPositionIndex(),	\
+								   getNumberOfPositions(),		\
+								   detIndex			  \
+								   );
+  return currentReceiverFilePrefix;
+
+}
 
 
 

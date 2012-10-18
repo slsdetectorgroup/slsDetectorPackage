@@ -7,7 +7,7 @@
 #ifndef SLSQT1DZOOMER_H
 #define SLSQT1DZOOMER_H
 
-
+#include <qwt_compat.h>
 #include <qwt_plot_zoomer.h>
 #include <qwt_plot_panner.h>
 class SlsQtH1D;

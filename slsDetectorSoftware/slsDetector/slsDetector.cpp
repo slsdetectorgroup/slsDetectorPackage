@@ -110,20 +110,20 @@ int slsDetector::freeSharedMemory() {
 
 
 slsDetector::slsDetector(int id,multiSlsDetector *p) :slsDetectorUtils(),
-				  thisDetector(NULL),  
-				  detId(id),
-				  shmId(-1), 
-				  controlSocket(NULL),
-				  stopSocket(NULL),
-				  dataSocket(NULL),
-				  ffcoefficients(NULL),
-				  fferrors(NULL),
-				  detectorModules(NULL),
-				  dacs(NULL),
-				  adcs(NULL),
-				  chipregs(NULL),
-				  chanregs(NULL),
-				  parentDet(p)
+						      thisDetector(NULL),  
+						      detId(id),
+						      shmId(-1), 
+						      controlSocket(NULL),
+						      stopSocket(NULL),
+						      dataSocket(NULL),
+						      ffcoefficients(NULL),
+						      fferrors(NULL),
+						      detectorModules(NULL),
+						      dacs(NULL),
+						      adcs(NULL),
+						      chipregs(NULL),
+						      chanregs(NULL),
+						      parentDet(p)
 
 
 {
@@ -159,20 +159,20 @@ slsDetector::slsDetector(int id,multiSlsDetector *p) :slsDetectorUtils(),
 
 
 slsDetector::slsDetector(detectorType type, int id,multiSlsDetector *p): slsDetectorUtils(),
-						     thisDetector(NULL),  
-						     detId(id),
-						     shmId(-1), 
-						     controlSocket(NULL),
-						     stopSocket(NULL),
-						     dataSocket(NULL),
-						     ffcoefficients(NULL),
-						     fferrors(NULL),
-						     detectorModules(NULL),
-						     dacs(NULL),
-						     adcs(NULL),
-						     chipregs(NULL),
-						     chanregs(NULL),
-							 parentDet(p)
+									 thisDetector(NULL),  
+									 detId(id),
+									 shmId(-1), 
+									 controlSocket(NULL),
+									 stopSocket(NULL),
+									 dataSocket(NULL),
+									 ffcoefficients(NULL),
+									 fferrors(NULL),
+									 detectorModules(NULL),
+									 dacs(NULL),
+									 adcs(NULL),
+									 chipregs(NULL),
+									 chanregs(NULL),
+									 parentDet(p)
 {
   while (shmId<0) {
     /**Initlializes shared memory \sa initSharedMemory
@@ -211,20 +211,20 @@ slsDetector::~slsDetector(){
 };
 
 slsDetector::slsDetector(char *name, int id, int cport,multiSlsDetector *p) : slsDetectorUtils(),
-							  thisDetector(NULL),  
-							  detId(id),
-							  shmId(-1), 
-							  controlSocket(NULL),
-							  stopSocket(NULL),
-							  dataSocket(NULL),
-							  ffcoefficients(NULL),
-							  fferrors(NULL),
-							  detectorModules(NULL),
-							  dacs(NULL),
-							  adcs(NULL),
-							  chipregs(NULL),
-							  chanregs(NULL),
-							  parentDet(p)
+									      thisDetector(NULL),  
+									      detId(id),
+									      shmId(-1), 
+									      controlSocket(NULL),
+									      stopSocket(NULL),
+									      dataSocket(NULL),
+									      ffcoefficients(NULL),
+									      fferrors(NULL),
+									      detectorModules(NULL),
+									      dacs(NULL),
+									      adcs(NULL),
+									      chipregs(NULL),
+									      chanregs(NULL),
+									      parentDet(p)
 {
   detectorType type=(detectorType)getDetectorType(name, cport);
   
@@ -4452,13 +4452,11 @@ char* slsDetector::setReceiverIP(string receiverIP){
 
   struct sockaddr_in sa;
   if(receiverIP.length()<16){
- //   if((receiverIP[3]=='.')&&(receiverIP[7]=='.')&&(receiverIP[11]=='.')){
-      int result = inet_pton(AF_INET, receiverIP.c_str(), &(sa.sin_addr));
-      if(result!=0){
-	sprintf(thisDetector->receiverIP,receiverIP.c_str());
-	wrongFormat=0;
-      }
- //   }
+    int result = inet_pton(AF_INET, receiverIP.c_str(), &(sa.sin_addr));
+    if(result!=0){
+      sprintf(thisDetector->receiverIP,receiverIP.c_str());
+      wrongFormat=0;
+    }
   }
 
   if(wrongFormat)
@@ -5286,6 +5284,10 @@ int slsDetector::setReceiverOnline(int off) {
       if (thisDetector->receiverOnlineFlag==ONLINE_FLAG)
         setReceiverTCPSocket();
     }
+    //Since flag becomes offline if receiver not online.
+    //This ensures server to NOT send to receiver in the next command line comment
+    if((off==ONLINE_FLAG)&&(thisDetector->receiverOnlineFlag!=ONLINE_FLAG))
+      stopReceiver();
   }
   return thisDetector->receiverOnlineFlag;
 }
@@ -5410,6 +5412,12 @@ string slsDetector::setReceiverFileName(string fileName) {
   char mess[100];
 
   char arg[MAX_STR_LENGTH],retval[MAX_STR_LENGTH]="";
+
+
+  if(!fileName.empty()){
+    parentDet->setFileName(fileName);
+    fileName=parentDet->createReceiverFilePrefix();
+  }
   strcpy(arg,fileName.c_str());
 
 #ifdef VERBOSE
@@ -5433,8 +5441,12 @@ string slsDetector::setReceiverFileName(string fileName) {
 	updateReceiver();
     }
   }
-
-  return string(retval);
+#ifdef VERBOSE
+  std::cout << "retval: " << retval << std::endl;
+#endif
+  string ans = parentDet->getNameFromReceiverFilePrefix(string(retval));
+  parentDet->setFileName(ans);
+  return ans;
 }
 
 
@@ -5462,14 +5474,17 @@ string slsDetector::setReceiverFileDir(string fileDir) {
 	if (ret==FAIL){
 	  dataSocket->ReceiveDataOnly(mess,sizeof(mess));
 	  std::cout<< "Receiver returned error: " << mess << std::endl;
-	}else
+	}else{
 	  dataSocket->ReceiveDataOnly(retval,MAX_STR_LENGTH);
+	  parentDet->setFilePath(string(retval));
+	}
       }
       dataSocket->Disconnect();
       if (ret==FORCE_UPDATE)
 	updateReceiver();
     }
   }
+
   return string(retval);
 }
 
@@ -5497,15 +5512,17 @@ int slsDetector::setReceiverFileIndex(int fileIndex) {
 	if (ret==FAIL){
 	  dataSocket->ReceiveDataOnly(mess,sizeof(mess));
 	  std::cout<< "Receiver returned error: " << mess << std::endl;
-	}else
+	}else{
 	  dataSocket->ReceiveDataOnly(&retval,sizeof(retval));
+	  if(fileIndex!=-1)
+	    parentDet->setFileIndex(retval);
+	}
       }
       dataSocket->Disconnect();
       if (ret==FORCE_UPDATE)
 	updateReceiver();
     }
   }
-
   return retval;
 }
 
@@ -5570,12 +5587,30 @@ int slsDetector::startReceiver(){
 int slsDetector::stopReceiver(){
   int fnum=F_STOP_RECEIVER;
   //different iret for server, should not return ok if receiver didnt connect
-  int ret = FAIL,iret;
+  int ret = FAIL;
   char mess[100];
 
 #ifdef VERBOSE
   std::cout << "Stopping Receiver " << std::endl;
 #endif
+
+  //tell the server to NOT send to receiver and instead to CPU
+  if (thisDetector->onlineFlag==ONLINE_FLAG) {
+    if (controlSocket) {
+      if  (controlSocket->Connect()>=0) {
+	controlSocket->SendDataOnly(&fnum,sizeof(fnum));
+	controlSocket->ReceiveDataOnly(&ret,sizeof(ret));
+	if (ret==FAIL){
+	  controlSocket->ReceiveDataOnly(mess,sizeof(mess));
+	  std::cout<< "Detector returned error: " << mess << std::endl;
+	}
+	controlSocket->Disconnect();
+	if (ret==FORCE_UPDATE)
+	  updateDetector();
+      }
+    }
+  }
+
 
   if (thisDetector->receiverOnlineFlag==ONLINE_FLAG) {
     if (dataSocket) {
@@ -5594,22 +5629,6 @@ int slsDetector::stopReceiver(){
     }
   }
 
-  //tell the server to NOT send to receiver and instead to CPU
-  if (thisDetector->onlineFlag==ONLINE_FLAG) {
-    if (controlSocket) {
-      if  (controlSocket->Connect()>=0) {
-	controlSocket->SendDataOnly(&fnum,sizeof(fnum));
-	controlSocket->ReceiveDataOnly(&iret,sizeof(iret));
-	if (iret==FAIL){
-	  controlSocket->ReceiveDataOnly(mess,sizeof(mess));
-	  std::cout<< "Detector returned error: " << mess << std::endl;
-	}
-	controlSocket->Disconnect();
-	if (iret==FORCE_UPDATE)
-	  updateDetector();
-      }
-    }
-  }
 
   return ret;
 }

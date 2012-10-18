@@ -1225,7 +1225,7 @@ int initConfGain(int isettings,int val,int imod){
 
 
 int configureMAC(int ipad,long long int macad,long long int servermacad,int ival, int adc){
-	//setting adc mask
+	//setting adc mask and DAQ_REG
 	int reg;
 	int udpPacketSize=0x050E;
 	int ipPacketSize=0x0522;
@@ -1235,34 +1235,30 @@ int configureMAC(int ipad,long long int macad,long long int servermacad,int ival
 	case 2:
 	case 3:
 	case 4:
+		bus_w(DAQ_REG,0x7f2a22);
 		reg = (NCHAN*2)<<CHANNEL_OFFSET;
 		reg&=CHANNEL_MASK;
 		int mask =1<<adc;
 		reg|=(ACTIVE_ADC_MASK & mask);
 		bus_w(CHIP_OF_INTRST_REG,reg);
-		reg=bus_r(CHIP_OF_INTRST_REG);
-#ifdef VERBOSE
-		printf("Chip of Intrst Reg:%x\n",reg);
-#endif
 		ipPacketSize= 256*2+14+20;
 		udpPacketSize=256*2+4+8+2;
 		break;
 	//for all adcs
 	default:
+		bus_w(DAQ_REG,0x13f2a22);
 		reg = (NCHAN*NCHIP)<<CHANNEL_OFFSET;
 		reg&=CHANNEL_MASK;
 		reg|=ACTIVE_ADC_MASK;
 		bus_w(CHIP_OF_INTRST_REG,reg);
-		reg=bus_r(CHIP_OF_INTRST_REG);
-#ifdef VERBOSE
-		printf("Chip of Intrst Reg:%x\n",reg);
-#endif
 		break;
 	}
-#ifdef VERBOSE
-		printf("IP Packet Size:%d\n",ipPacketSize);
-		printf("UDP Packet Size:%d\n",udpPacketSize);
-#endif
+//#ifdef VERBOSE
+	printf("DAQ Reg:%x\n",bus_r(DAQ_REG));
+	printf("Chip of Intrst Reg:%x\n",bus_r(CHIP_OF_INTRST_REG));
+	printf("IP Packet Size:%d\n",ipPacketSize);
+	printf("UDP Packet Size:%d\n",udpPacketSize);
+//#endif
 
 	//configuring mac
   u_int32_t addrr=MULTI_PURPOSE_REG;

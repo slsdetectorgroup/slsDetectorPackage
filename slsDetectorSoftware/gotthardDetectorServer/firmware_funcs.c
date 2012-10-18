@@ -257,7 +257,7 @@ int setDAQRegister(int adcval)
   bus_w(addr,val);
   reg=bus_r(addr);
 //#ifdef VERBOSE
-  printf("DAQ reg:%x",reg);
+  printf("DAQ reg:%x\n",reg);
 //#endif
 
 
@@ -266,7 +266,7 @@ int setDAQRegister(int adcval)
   bus_w(addr,val);
   reg=bus_r(addr);
 #ifdef VERBOSE
-  printf("\nADC SYNC reg:%d",reg);
+  printf("\nADC SYNC reg:%d\n",reg);
 #endif
   return OK;
 }

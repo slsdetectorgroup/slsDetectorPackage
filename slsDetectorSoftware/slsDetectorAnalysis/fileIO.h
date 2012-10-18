@@ -23,7 +23,7 @@ class fileIO :  public fileIOStatic, public virtual slsDetectorBase  {
 
  public:
   /** default constructor */
-  fileIO(): fileIOStatic() {};
+  fileIO(): fileIOStatic() {frameIndex=-1;detIndex=-1;};
   /** virtual destructor */
   virtual ~fileIO(){};
 
@@ -33,6 +33,7 @@ class fileIO :  public fileIOStatic, public virtual slsDetectorBase  {
 
   int getFileIndexFromFileName(string fname){return fileIOStatic::getFileIndexFromFileName(fname);};
   int getVariablesFromFileName(string fname, int &index, int &p_index, double &sv0, double &sv1){return fileIOStatic::getVariablesFromFileName(fname, index, p_index, sv0, sv1);};
+  int getVariablesFromFileName(string fname, int &index, int &f_index, int &p_index, double &sv0, double &sv1, int &detindex){return fileIOStatic::getVariablesFromFileName(fname, f_index, index, p_index, sv0, sv1, detindex);};
   /**
      sets the default output files path
      \param s file path
@@ -54,7 +55,19 @@ class fileIO :  public fileIOStatic, public virtual slsDetectorBase  {
   */
   int setFileIndex(int i) {*fileIndex=i; return *fileIndex;}; 
   
+  /**
+     sets the default output file index
+     \param i frame index to be set
+     \returns actual frame index
+  */
+  int setFrameIndex(int i) {frameIndex=i; return frameIndex;};
 
+  /**
+     sets the default output file index
+     \param i detector index to be set
+     \returns actual detector index
+  */
+  int setDetectorIndex(int i) {detIndex=i; return detIndex;};
 
   /**
      \returns the  output files path
@@ -72,10 +85,20 @@ class fileIO :  public fileIOStatic, public virtual slsDetectorBase  {
   */
   int getFileIndex() {return *fileIndex;};
   
+  /**
+     \returns the output frame index
+  */
+  int getFrameIndex() {return frameIndex;};
+
+  /**
+     \returns the detector index
+  */
+  int getDetectorIndex() {return detIndex;};
+
 
   string createFileName();
 
-
+  string createReceiverFilePrefix();
 
 
   /**
@@ -210,9 +233,17 @@ class fileIO :  public fileIOStatic, public virtual slsDetectorBase  {
 
   void incrementFileIndex() { (*fileIndex)++; };
 
+  void incrementFrameIndex() { (frameIndex)++; };
+
+  void incrementDetectorIndex() { (detIndex)++; };
+
     string getCurrentFileName(){return currentFileName;};
 
+    string getCurrentReceiverFilePrefix(){return currentReceiverFilePrefix;};
+
     string currentFileName;
+
+    string currentReceiverFilePrefix;
 
     
     /** output directory */
@@ -221,7 +252,10 @@ class fileIO :  public fileIOStatic, public virtual slsDetectorBase  {
     char *fileName;
     /** file index */
     int *fileIndex; 
-
+    /** frame index */
+    int frameIndex;
+    /** detector id */
+    int detIndex;
 
 };
 

@@ -245,23 +245,22 @@ int setPhaseShiftOnce(){
 }
 
 
-int setDAQRegister()
+int setDAQRegister(int adcval)
 {
   u_int32_t addr, reg, val;
-  int result=OK;
+
   addr=DAQ_REG;
-  val=34+(42<<8)+(319<<16);
+  int value=0x7f;
+  if(adcval==-1) value=0x13f;
+  val=34+(42<<8)+(value<<16);
   reg=bus_r(addr);
-  //write to daqreg if not valid
-  if(reg!=val){
-    bus_w(addr,val);
-    reg=bus_r(addr);
-    if(reg!=val)
-      result=FAIL;
-  }
-#ifdef VERBOSE
-  printf("DAQ reg:20916770:%d",reg);
-#endif
+  bus_w(addr,val);
+  reg=bus_r(addr);
+//#ifdef VERBOSE
+  printf("DAQ reg:%x",reg);
+//#endif
+
+
   addr=ADC_SYNC_REG;
   val=12;
   bus_w(addr,val);
@@ -269,7 +268,7 @@ int setDAQRegister()
 #ifdef VERBOSE
   printf("\nADC SYNC reg:%d",reg);
 #endif
-  return result;
+  return OK;
 }
 
 
@@ -1225,7 +1224,9 @@ int initConfGain(int isettings,int val,int imod){
 
 
 int configureMAC(int ipad,long long int macad,long long int servermacad,int ival, int adc){
-	//setting adc mask and DAQ_REG
+	//setting daqregister
+	setDAQRegister(adc);
+	//setting adc mask
 	int reg;
 	int udpPacketSize=0x050E;
 	int ipPacketSize=0x0522;
@@ -1235,7 +1236,6 @@ int configureMAC(int ipad,long long int macad,long long int servermacad,int ival
 	case 2:
 	case 3:
 	case 4:
-		bus_w(DAQ_REG,0x7f2a22);
 		reg = (NCHAN*2)<<CHANNEL_OFFSET;
 		reg&=CHANNEL_MASK;
 		int mask =1<<adc;
@@ -1254,7 +1254,6 @@ int configureMAC(int ipad,long long int macad,long long int servermacad,int ival
 		break;
 	}
 //#ifdef VERBOSE
-	printf("DAQ Reg:%x\n",bus_r(DAQ_REG));
 	printf("Chip of Intrst Reg:%x\n",bus_r(CHIP_OF_INTRST_REG));
 	printf("IP Packet Size:%d\n",ipPacketSize);
 	printf("UDP Packet Size:%d\n",udpPacketSize);

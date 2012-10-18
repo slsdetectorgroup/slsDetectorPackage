@@ -72,7 +72,7 @@ int init_detector( int b) {
     testRAM();
     //gotthard specific
     //setPhaseShiftOnce();
-    setDAQRegister();
+    setDAQRegister(-1);
     setSettings(GET_SETTINGS,-1);
     //Initialization
     setFrames(1);

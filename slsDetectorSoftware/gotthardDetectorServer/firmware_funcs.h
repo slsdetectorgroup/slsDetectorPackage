@@ -26,7 +26,7 @@ u_int32_t bus_w(u_int32_t offset, u_int32_t data);
 u_int32_t bus_r(u_int32_t offset);
 
 int setPhaseShiftOnce();
-int setDAQRegister();
+int setDAQRegister(int adcval);
 
 u_int32_t putout(char *s, int modnum);
 u_int32_t readin(int modnum);

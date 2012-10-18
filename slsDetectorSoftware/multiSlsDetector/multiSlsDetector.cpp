@@ -3548,6 +3548,8 @@ string multiSlsDetector::setReceiverFileName(string fileName) {
 
   for (int idet=0; idet<thisMultiDetector->numberOfDetectors; idet++) {
     if (detectors[idet]) {
+      if(getNumberOfDetectors()>1)
+        setDetectorIndex(idet);
       ret1=detectors[idet]->setReceiverFileName(fileName);
       if (ret=="error")
 	ret=ret1;

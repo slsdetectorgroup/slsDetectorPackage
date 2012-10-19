@@ -64,7 +64,8 @@ qDetectorMain::qDetectorMain(int argc, char **argv, QApplication *app, QWidget *
 	}
 
 	setupUi(this);
-	SetUpWidgetWindow(configFName);
+	SetUpDetector(configFName);
+	SetUpWidgetWindow();
 	Initialization();
 
 }
@@ -83,33 +84,21 @@ qDetectorMain::~qDetectorMain(){
 //-------------------------------------------------------------------------------------------------------------------------------------------------
 
 
-void qDetectorMain::SetUpWidgetWindow(const string fName){
+void qDetectorMain::SetUpWidgetWindow(){
 
 // Layout
 	layoutTabs= new QGridLayout;
 	centralwidget->setLayout(layoutTabs);
 
-
-//tabs setup
-	tabs = new MyTabWidget(this);
-	layoutTabs->addWidget(tabs);
-
-
-// creating the messages tab before the plots and detector to catch config stdout
-	tab_messages		=  new qTabMessages		(this); 					cout<<"Messages ready"<<endl;
-	//no scroll buttons this way
-	tabs->insertTab(Messages,		tab_messages,		"Messages");
-
-// settings up detector
-	SetUpDetector(fName);
-
-// plot setup
+//plot setup
 	myPlot = new qDrawPlot(dockWidgetPlot,myDet);							cout<<"DockPlot ready"<<endl;
 	dockWidgetPlot->setWidget(myPlot);
 
-	//settings messages to have the det reference
-	tab_messages->SetDetectorReference(myDet);
-	// creating all the other tab widgets
+//tabs setup
+	tabs = new MyTabWidget(this);
+	layoutTabs->addWidget(tabs);	cout<<"DockPlot ready"<<endl;
+
+// creating all the other tab widgets
 	tab_measurement 	=  new qTabMeasurement	(this,	myDet,myPlot);		cout<<"Measurement ready"<<endl;
 	tab_dataoutput 		=  new qTabDataOutput	(this,	myDet);				cout<<"DataOutput ready"<<endl;
 	tab_plot 			=  new qTabPlot			(this,	myDet,myPlot);		cout<<"Plot ready"<<endl;
@@ -118,6 +107,7 @@ void qDetectorMain::SetUpWidgetWindow(const string fName){
 	tab_advanced 		=  new qTabAdvanced		(this,	myDet,myPlot);		cout<<"Advanced ready"<<endl;
 	tab_debugging 		=  new qTabDebugging	(this,	myDet);				cout<<"Debugging ready"<<endl;
 	tab_developer 		=  new qTabDeveloper	(this,	myDet);				cout<<"Developer ready"<<endl;
+
 	//	creating the scroll area widgets for the tabs
 	for(int i=0;i<NumberOfTabs;i++){
 		scroll[i] = new QScrollArea;
@@ -141,9 +131,19 @@ void qDetectorMain::SetUpWidgetWindow(const string fName){
 	tabs->insertTab(Advanced,		scroll[Advanced],		"Advanced");
 	tabs->insertTab(Debugging,		scroll[Debugging],		"Debugging");
 	tabs->insertTab(Developer,		scroll[Developer],		"Developer");
+	//no scroll buttons this way
+	tabs->insertTab(Messages,		tab_messages,		"Messages");
 
 //swap tabs so that messages is last tab
-	tabs->tabBar()->moveTab(tabs->indexOf(tab_messages),Messages);
+	tabs->tabBar()->moveTab(tabs->indexOf(tab_measurement),	Measurement);
+	tabs->tabBar()->moveTab(tabs->indexOf(tab_settings),	Settings);
+	tabs->tabBar()->moveTab(tabs->indexOf(tab_dataoutput),	DataOutput);
+	tabs->tabBar()->moveTab(tabs->indexOf(tab_plot),		Plot);
+	tabs->tabBar()->moveTab(tabs->indexOf(tab_actions),		Actions);
+	tabs->tabBar()->moveTab(tabs->indexOf(tab_advanced),	Advanced);
+	tabs->tabBar()->moveTab(tabs->indexOf(tab_debugging),	Debugging);
+	tabs->tabBar()->moveTab(tabs->indexOf(tab_developer),	Developer);
+	tabs->tabBar()->moveTab(tabs->indexOf(tab_messages),	Messages);
 	tabs->setCurrentIndex(Measurement);
 
 //other tab properties
@@ -156,10 +156,7 @@ void qDetectorMain::SetUpWidgetWindow(const string fName){
 
 	// mode setup - to set up the tabs initially as disabled, not in form so done here
 #ifdef VERBOSE
-	cout << "Setting Debug Mode to 0\n"
-			"Setting Expert Mode to 0\n"
-			"Setting Developer Mode to " << isDeveloper << ""
-			"\nSetting Dockable Mode to false\n" << endl;
+	cout << "Setting Debug Mode to 0\nSetting Expert Mode to 0\nSetting Developer Mode to " << isDeveloper << "\nSetting Dockable Mode to false\n" << endl;
 #endif
 	tabs->setTabEnabled(Debugging,false);
 	tabs->setTabEnabled(Advanced,false);
@@ -190,6 +187,9 @@ void qDetectorMain::SetUpDetector(const string fName){
 
 	//instantiate detector and set window title
 	myDet = new multiSlsDetector(detID);
+
+	//create messages tab to capture config file loading logs
+	tab_messages		=  new qTabMessages		(this,myDet); 					cout<<"Messages ready"<<endl;
 
 	//loads the config file at startup
 	if(!fName.empty()) LoadConfigFile(fName);

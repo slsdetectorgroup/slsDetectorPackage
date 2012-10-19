@@ -113,9 +113,8 @@ private:
 	int isDeveloper;
 
 	/**Sets up the layout of the widget
-	 * @param fName file name of the config file at start up
 	 * */
-	void SetUpWidgetWindow(const string fName);
+	void SetUpWidgetWindow();
 
 	/**Sets up detector
 	 * @param fName file name of the config file at start up

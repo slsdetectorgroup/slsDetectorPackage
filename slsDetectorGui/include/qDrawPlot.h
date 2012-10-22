@@ -227,7 +227,11 @@ void SavePlotAutomatic();
 /** Sets the style of the 1d plot */
 void SetStyle(SlsQtH1D*  h){
 	if(lines) h->setStyle(QwtPlotCurve::Lines); else h->setStyle(QwtPlotCurve::Dots);
+#if QWT_VERSION<0x060000
 	if(markers) h->setSymbol(*marker); 			else h->setSymbol(*noMarker);
+#else
+	if(markers) h->setSymbol(marker); 			else h->setSymbol(noMarker);
+#endif
 };
 
 

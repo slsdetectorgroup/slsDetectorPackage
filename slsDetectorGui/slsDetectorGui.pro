@@ -20,7 +20,7 @@ QMAKE_CLEAN 		+= 		docs/*/* \
 							
 
 LIBS				+=		-Wl,-Bstatic -L../slsDetectorSoftware -lSlsDetector  -Wl,-Bdynamic\
-							-L$(QWTDIR)/lib  -lqwt
+							-L$(QWTDIR)/lib  -lqwt -L$(QWT3D)/lib  
 
 DEPENDPATH  		+=		\
 							slsDetectorPlotting/include\
@@ -31,6 +31,7 @@ DEPENDPATH  		+=		\
 INCLUDEPATH 		+= 		\
 							$(QWTDIR)/include\
                                                         $(QWTDIR)/src\
+                                                          	$(QWT3D)/include\
 							slsDetectorPlotting/include\
 							include\
 							forms/include\

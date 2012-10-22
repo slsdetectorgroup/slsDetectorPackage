@@ -119,8 +119,11 @@ void SlsQtH1D::SetData(int n, double xmin, double xmax, double *data){
 
   //  if(firstXgt0<0)firstXgt0=0.001;
   //  if(firstYgt0<0)firstYgt0=0.001;
-
-  setRawData(x,y,ndata);
+#if QWT_VERSION<0x060000
+ setRawData(x,y,ndata);
+#else
+  setRawSamples(x,y,ndata);
+#endif
 }
 
 void SlsQtH1D::SetData(int n, double* data_x, double *data_y){
@@ -146,7 +149,11 @@ void SlsQtH1D::SetData(int n, double* data_x, double *data_y){
     if(y[b]>0&&(firstYgt0<0||firstYgt0>y[b])) firstYgt0=y[b];
   }
 
+#if QWT_VERSION<0x060000
   setRawData(x,y,ndata);
+#else
+  setRawSamples(x,y,ndata);
+#endif
 }
 
 int SlsQtH1D::SetUpArrays(int n){
@@ -441,11 +448,19 @@ void SlsQt1DPlot::alignScales(){
 }
 
 void SlsQt1DPlot::UnknownStuff(){
+#if QWT_VERSION<0x060000
   // Disable polygon clipping
-    QwtPainter::setDeviceClipping(false);
+  //not supported for version 6
+  QwtPainter::setDeviceClipping(false);
+  canvas()->setPaintAttribute(QwtPlotCanvas::PaintCached, false);    
+  canvas()->setPaintAttribute(QwtPlotCanvas::PaintPacked, false);
+#else
   // We don't need the cache here
-    canvas()->setPaintAttribute(QwtPlotCanvas::PaintCached, false);
-    canvas()->setPaintAttribute(QwtPlotCanvas::PaintPacked, false);
+   canvas()->setPaintAttribute(QwtPlotCanvas::BackingStore, false);
+
+#endif
+
+  
 
 #if QT_VERSION >= 0x040000
 #ifdef Q_WS_X11

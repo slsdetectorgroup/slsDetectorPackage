@@ -6,10 +6,10 @@
 
 #ifndef SLSQT1DZOOMER_H
 #define SLSQT1DZOOMER_H
-
-#include <qwt_compat.h>
 #include <qwt_plot_zoomer.h>
 #include <qwt_plot_panner.h>
+#include <qwt_global.h>
+
 class SlsQtH1D;
 
 class SlsQt1DZoomer:public QwtPlotZoomer{
@@ -42,14 +42,24 @@ class SlsQt1DZoomer:public QwtPlotZoomer{
   bool SetLogX(bool yes) { return xIsLog=yes;}
   bool SetLogY(bool yes) { return yIsLog=yes;}
 
-  virtual QwtText trackerText(const QwtDoublePoint &pos) const{
+ 
+#if QWT_VERSION<0x060000
+    virtual QwtText trackerText(const QwtDoublePoint &pos) const{
+#else
+  virtual QwtText trackerText(const QPointF &pos) const{
+#endif
     QColor bg(Qt::white);
+
 #if QT_VERSION >= 0x040300
     bg.setAlpha(200);
 #endif
 
+#if QWT_VERSION<0x060000
     QwtText text = QwtPlotZoomer::trackerText(pos);
-
+#else
+    QPoint p=pos.toPoint();
+    QwtText text = QwtPlotZoomer::trackerText(p);
+#endif
     text.setBackgroundBrush( QBrush( bg ));
     return text;
   }

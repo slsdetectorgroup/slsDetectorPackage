@@ -77,7 +77,14 @@ class SlsQt2DHist: public QwtRasterData{
     //just passes a pointer so that data is common to both the copy and the original instance
     return (QwtRasterData*) this;
   }
-  virtual QwtDoubleInterval range() const{ return QwtDoubleInterval(z_min,z_max);}
+
+#if QWT_VERSION<0x060000
+   virtual QwtDoubleInterval range() const{ return QwtDoubleInterval(z_min,z_max);}
+#else
+  virtual QwtInterval range() const{ return QwtInterval(z_min,z_max);}
+#endif
+
+
 
   virtual double value(double x, double y) const{
     //if(!interp){ //default is box like plot

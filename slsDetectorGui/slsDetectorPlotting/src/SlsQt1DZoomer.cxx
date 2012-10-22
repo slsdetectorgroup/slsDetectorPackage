@@ -61,7 +61,11 @@ void SlsQt1DZoomer::SetZoomBase(double xmin,double ymin,double x_width, double y
     plot()->replot();
   }
 
+#if QWT_VERSION<0x060000
   setZoomBase(QwtDoubleRect(xmin,ymin,x_width,y_width));
+#else
+  setZoomBase(QRectF(xmin,ymin,x_width,y_width));
+#endif
 }
 
 void SlsQt1DZoomer::SetZoomBase(SlsQtH1D* h){

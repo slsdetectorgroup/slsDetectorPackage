@@ -54,7 +54,14 @@ void SlsQt2DHist::SetData(int nbinsx, double xmin, double xmax, int nbinsy,doubl
   if(x_min!=xmin||x_max!=xmax||y_min!=ymin||y_max!=ymax){
     x_min=xmin;x_max=xmax;
     y_min=ymin;y_max=ymax;
-    setBoundingRect(QwtDoubleRect(xmin,ymin,x_max-x_min,y_max-y_min));
+   
+#if QWT_VERSION<0x060000	  
+    setBoundingRect(QRectF(xmin,ymin,x_max-x_min,y_max-y_min));
+#else
+    setInterval( Qt::XAxis,QwtInterval(xmin,xmax));
+    setInterval( Qt::YAxis,QwtInterval(ymin,ymax));
+#endif
+
   }
 
   if(nbinsx*nbinsy<1){

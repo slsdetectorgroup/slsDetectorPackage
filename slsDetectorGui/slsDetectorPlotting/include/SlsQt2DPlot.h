@@ -16,6 +16,7 @@
 
 
 #include <qwt_plot.h>
+#include <qlist.h>
 #include <qwt_plot_spectrogram.h>
 
 #include  "SlsQt2DZoomer.h"
@@ -39,8 +40,14 @@ private:
 
     QwtLinearColorMap* colorMapLinearScale;
     QwtLinearColorMap* colorMapLogScale;
+    QwtLinearColorMap* currentColorMap;
+#if QWT_VERSION<0x060000
     QwtValueList*    contourLevelsLinear;
     QwtValueList*    contourLevelsLog;
+#else 
+    QList<double>     contourLevelsLinear;
+    QList<double>   contourLevelsLog;
+#endif
 
     void  SetupZoom();
     void  SetupColorMap();

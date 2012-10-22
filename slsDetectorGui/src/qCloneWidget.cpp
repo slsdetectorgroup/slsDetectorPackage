@@ -114,10 +114,18 @@ void qCloneWidget::SetCloneHists(int nHists,int histNBins,double* histXAxis,doub
 			QwtSymbol *marker = new QwtSymbol();
 			marker->setStyle(QwtSymbol::Cross);
 			marker->setSize(5,5);
+#if QWT_VERSION<0x060000
 			k->setSymbol(*marker);
+#else
+			k->setSymbol(marker);
+#endif
 		}else {
 			QwtSymbol *noMarker = new QwtSymbol();
+#if QWT_VERSION<0x060000
 			k->setSymbol(*noMarker);
+#else
+			k->setSymbol(noMarker);
+#endif
 		}
 		//set title and attach plot
 		k->setTitle(histTitle[hist_num].c_str());
@@ -149,10 +157,18 @@ void qCloneWidget::SetCloneHists(int nHists,int histNBins,double* histXAxis,doub
 			QwtSymbol *marker = new QwtSymbol();
 			marker->setStyle(QwtSymbol::Cross);
 			marker->setSize(5,5);
+#if QWT_VERSION<0x060000
 			k->setSymbol(*marker);
+#else
+			k->setSymbol(marker);
+#endif
 		}else {
 			QwtSymbol *noMarker = new QwtSymbol();
+#if QWT_VERSION<0x060000
 			k->setSymbol(*noMarker);
+#else
+			k->setSymbol(noMarker);
+#endif
 		}
 		//set title and attach plot
 		k->setTitle(histTitle[hist_num].c_str());

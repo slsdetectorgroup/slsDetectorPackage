@@ -34,7 +34,6 @@ SlsQt2DPlot::SlsQt2DPlot(QWidget *parent):QwtPlot(parent){
   d_spectrogram = new QwtPlotSpectrogram();
 
   hist = new SlsQt2DHist();
-  currentColorMap=NULL;
   SetupZoom();
   SetupColorMap();
 
@@ -57,27 +56,33 @@ SlsQt2DPlot::SlsQt2DPlot(QWidget *parent):QwtPlot(parent){
 
 
 void SlsQt2DPlot::SetupColorMap(){
+  QVector<double> cs(0);
 
-  colorMapLinearScale = new   QwtLinearColorMap(Qt::darkCyan, Qt::red);
-    colorMapLinearScale->addColorStop(0.1, Qt::cyan);
-    colorMapLinearScale->addColorStop(0.4, Qt::blue);
-    colorMapLinearScale->addColorStop(0.6, Qt::green);
-    colorMapLinearScale->addColorStop(0.95, Qt::yellow);
+
+  cs.append(0);
+  cs.append(0.1);
+  cs.append(0.4);
+  cs.append(0.6);
+  cs.append(0.95);
+  cs.append(1.);
+
+  colorMapLinearScale = myColourMap(cs);
 #if QWT_VERSION<0x060000 
   d_spectrogram->setColorMap(*colorMapLinearScale);
 #else
   d_spectrogram->setColorMap(colorMapLinearScale);
-  currentColorMap=colorMapLinearScale;
-  cout << "current color map is linear" << endl;
 #endif
-
+ QVector<double> cs1(0);
+ 
   
-  colorMapLogScale = new QwtLinearColorMap(Qt::darkCyan, Qt::red);
-    colorMapLogScale->addColorStop((pow(10,2*0.10)-1)/99.0, Qt::cyan);  //linear scale goes from 0 to 2 and log scale goes from 1 to 100
-    colorMapLogScale->addColorStop((pow(10,2*0.40)-1)/99.0,Qt::blue);
-    colorMapLogScale->addColorStop((pow(10,2*0.60)-1)/99.0,Qt::green);
-    colorMapLogScale->addColorStop((pow(10,2*0.95)-1)/99.0,Qt::yellow);
+  cs.append(0);
+  cs.append((pow(10,2*0.10)-1)/99.0);
+  cs.append((pow(10,2*0.40)-1)/99.0);
+  cs.append((pow(10,2*0.60)-1)/99.0);
+  cs.append((pow(10,2*0.95)-1)/99.0);
+  cs.append(1.);
 
+  colorMapLogScale = myColourMap(cs1);
 #if QWT_VERSION<0x060000 
     contourLevelsLinear = new QwtValueList();
     for(double level=0.5;level<10.0;level+=1.0 ) (*contourLevelsLinear) += level;
@@ -103,8 +108,9 @@ void SlsQt2DPlot::SetupColorMap(){
 
 
   // A color bar on the right axis
-  rightAxis = axisWidget(QwtPlot::yRight);
-    rightAxis->setTitle("Intensity");
+    rightAxis = axisWidget(QwtPlot::yRight);
+  
+  rightAxis->setTitle("Intensity");
     rightAxis->setColorBarEnabled(true);
     enableAxis(QwtPlot::yRight);
 }
@@ -192,31 +198,47 @@ void SlsQt2DPlot::SetZMinMax(double zmin,double zmax){
 }
 
 
+QwtLinearColorMap* SlsQt2DPlot::myColourMap(QVector<double> colourStops) {
+  QwtLinearColorMap* copyMap = new QwtLinearColorMap();
+
+   
+  copyMap->addColorStop(colourStops.value(0), Qt::white); 
+  // copyMap->addColorStop(colourStops.value(0), Qt::darkCyan); 
+  copyMap->addColorStop(colourStops.value(1), Qt::cyan);
+  copyMap->addColorStop(colourStops.value(2), Qt::blue);
+  copyMap->addColorStop(colourStops.value(3), Qt::green);
+  copyMap->addColorStop(colourStops.value(4), Qt::yellow);
+  copyMap->addColorStop(colourStops.value(5), Qt::red);
+
+  return copyMap;
+    
+}
+
+
 void SlsQt2DPlot::Update(){
 #if QWT_VERSION<0x060000
   rightAxis->setColorMap(d_spectrogram->data().range(),d_spectrogram->colorMap());
 #else
-  ;
-  rightAxis->setColorMap(d_spectrogram->data()->interval(Qt::ZAxis),currentColorMap);
-  
 
-  cout << "Should reset the color map? " << currentColorMap << endl;
- // QwtColorMap *c=d_spectrogram->colorMap();
- // rightAxis->setColorMap(d_spectrogram->data()->interval(Qt::ZAxis),c);
+  QVector<double> colourStops =((QwtLinearColorMap*)d_spectrogram->colorMap())->colorStops();
+  QwtLinearColorMap* copyMap = myColourMap(colourStops);
 
+    //  rightAxis->setColorMap(d_spectrogram->data()->interval(Qt::ZAxis),copyMap);
+  rightAxis->setColorMap(hist->range(),copyMap);
+ 
 #endif
 
   if(!zoomer->zoomRectIndex()) UnZoom();
-
+  
 #if QWT_VERSION<0x060000
   setAxisScale(QwtPlot::yRight,d_spectrogram->data().range().minValue(),
 	       d_spectrogram->data().range().maxValue());
 #else
-  setAxisScale(QwtPlot::yRight,d_spectrogram->data()->interval(Qt::ZAxis).minValue(),
-	                       d_spectrogram->data()->interval(Qt::ZAxis).maxValue());
-
-  cout << "min is " << d_spectrogram->data()->interval(Qt::YAxis).minValue() << endl;
-cout << "max is " << d_spectrogram->data()->interval(Qt::YAxis).maxValue() << endl;
+  //  setAxisScale(QwtPlot::yRight,d_spectrogram->data()->interval(Qt::ZAxis).minValue(), d_spectrogram->data()->interval(Qt::ZAxis).maxValue());
+  setAxisScale(QwtPlot::yRight,hist->range().minValue(), hist->range().maxValue());
+  
+  cout << "min is " << d_spectrogram->data()->interval(Qt::ZAxis).minValue() << " " << hist->range().minValue() << endl;
+  cout << "max is " << d_spectrogram->data()->interval(Qt::ZAxis).maxValue() << " " << hist->range().maxValue() <<  endl;
 
 #endif
   replot();
@@ -250,7 +272,6 @@ void SlsQt2DPlot::LogZ(bool on){
     d_spectrogram->setColorMap(*colorMapLogScale);
 #else
     d_spectrogram->setColorMap(colorMapLogScale);
-    currentColorMap=colorMapLogScale;
 #endif
     setAxisScaleEngine(QwtPlot::yRight,new QwtLog10ScaleEngine);
 #if QWT_VERSION<0x060000
@@ -263,7 +284,6 @@ void SlsQt2DPlot::LogZ(bool on){
     d_spectrogram->setColorMap(*colorMapLinearScale);
 #else
     d_spectrogram->setColorMap(colorMapLinearScale);
-    currentColorMap=colorMapLinearScale;
 #endif
     setAxisScaleEngine(QwtPlot::yRight,new QwtLinearScaleEngine);
 #if QWT_VERSION<0x060000

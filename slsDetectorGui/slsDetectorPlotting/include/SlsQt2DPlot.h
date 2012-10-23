@@ -40,7 +40,6 @@ private:
 
     QwtLinearColorMap* colorMapLinearScale;
     QwtLinearColorMap* colorMapLogScale;
-    QwtLinearColorMap* currentColorMap;
 #if QWT_VERSION<0x060000
     QwtValueList*    contourLevelsLinear;
     QwtValueList*    contourLevelsLog;
@@ -51,6 +50,11 @@ private:
 
     void  SetupZoom();
     void  SetupColorMap();
+
+    QwtLinearColorMap* myColourMap(QVector<double> colourStops);
+
+    
+
 
 public:
     SlsQt2DPlot(QWidget * = NULL);
@@ -80,12 +84,20 @@ public:
 
     void   SetData(int nbinsx, double xmin, double xmax, int nbinsy,double ymin, double ymax,double *d,double zmin=0, double zmax=-1){
       hist->SetData(nbinsx,xmin,xmax,nbinsy,ymin,ymax,d,zmin,zmax);
+      
+#if QWT_VERSION<0x060000 
+      ;
+#else
+  d_spectrogram->setData(hist);
+#endif
+
+
     }
 
     double* GetDataPtr()                        {return hist->GetDataPtr();}
     int     GetBinIndex(int bx,int by)          {return hist->GetBinIndex(bx,by);}
     int     FindBinIndex(double x,double y)     {return hist->FindBinIndex(x,y);}
-    void    SetBinValue(int bx,int by,double v) {hist->SetBinValue(bx,by,v);}
+    void    SetBinValue(int bx,int by,double v) { hist->SetBinValue(bx,by,v);}
     double  GetBinValue(int bx,int by)          {return hist->GetBinValue(bx,by);} 
 
 

@@ -54,7 +54,7 @@ private:
     QwtLinearColorMap* myColourMap(QVector<double> colourStops);
     QwtLinearColorMap* myColourMap(int log=0);
 
-    
+    int isLog;
 
 
 public:

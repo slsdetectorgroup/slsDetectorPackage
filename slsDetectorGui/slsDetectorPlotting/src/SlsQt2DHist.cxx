@@ -105,7 +105,12 @@ void SlsQt2DHist::SetMinMax(double zmin,double zmax){
     if(z_min>0) z_min/=1.02; else z_min*=1.02;
     if(z_max>0) z_max*=1.02; else z_max/=1.02;
   }
-  setInterval( Qt::ZAxis,QwtInterval(z_min,z_max));
+#if QWT_VERSION<0x060000	  
+    ;
+#else
+	setInterval( Qt::ZAxis,QwtInterval(z_min,z_max));
+#endif
+ 
 }
 
 double SlsQt2DHist::GetMean(){
@@ -122,8 +127,14 @@ double SlsQt2DHist::GetMean(){
 double SlsQt2DHist::SetMinimumToFirstGreaterThanZero(){
   z_min=abs(z_max)+1;
   for(int i=0;i<nb;i++){
-    if(data[i]>0&&data[i]<z_min) z_min=data[i];
+    if(data[i]>0 && data[i]<z_min) z_min=data[i];
   }
+#if QWT_VERSION<0x060000	  
+    ;
+#else
+	setInterval( Qt::ZAxis,QwtInterval(z_min,z_max));
+#endif
+ 
   return z_min;
 }
 

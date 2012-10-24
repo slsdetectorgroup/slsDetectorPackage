@@ -27,6 +27,7 @@
 using namespace std;
 
 SlsQt2DPlot::SlsQt2DPlot(QWidget *parent):QwtPlot(parent){
+  isLog=0;
 
   axisScaleEngine(QwtPlot::yLeft)->setAttribute(QwtScaleEngine::Floating);
   axisScaleEngine(QwtPlot::xBottom)->setAttribute(QwtScaleEngine::Floating);
@@ -62,11 +63,10 @@ void SlsQt2DPlot::SetupColorMap(){
 
   colorMapLinearScale = myColourMap(0);
 #if QWT_VERSION<0x060000 
-  d_spectrogram->setColorMap(*colorMapLinearScale);
+	d_spectrogram->setColorMap(*colorMapLinearScale );
 #else
-  d_spectrogram->setColorMap(colorMapLinearScale);
+  d_spectrogram->setColorMap(colorMapLinearScale );
 #endif
- 
 
   colorMapLogScale = myColourMap(1);
 #if QWT_VERSION<0x060000 
@@ -75,7 +75,7 @@ void SlsQt2DPlot::SetupColorMap(){
     d_spectrogram->setContourLevels(*contourLevelsLinear);
 #else
     ;
-    // contourLevelsLinear = new QList();
+   
     for(double level=0.5;level<10.0;level+=1.0 ) (contourLevelsLinear) += level;
   d_spectrogram->setContourLevels(contourLevelsLinear);
 #endif
@@ -88,7 +88,7 @@ void SlsQt2DPlot::SetupColorMap(){
   
 #else
     ;
-    //  contourLevelsLog = new QList();
+   
     for(double level=0.5;level<10.0;level+=1.0 ) (contourLevelsLog) += (pow(10,2*level/10.0)-1)/99.0 * 10;
 #endif
 
@@ -235,15 +235,13 @@ void SlsQt2DPlot::Update(){
 #if QWT_VERSION<0x060000
   rightAxis->setColorMap(d_spectrogram->data().range(),d_spectrogram->colorMap());
 #else
+  if (isLog)
+    hist->SetMinimumToFirstGreaterThanZero();
 
-  //  const QwtInterval zInterval = d_spectrogram->data()->interval( Qt::ZAxis );
-  const QwtInterval zInterval = hist->range();
-
-  QVector<double> colourStops =((QwtLinearColorMap*)d_spectrogram->colorMap())->colorStops();
-  QwtLinearColorMap* copyMap = myColourMap(colourStops);
-
-     rightAxis->setColorMap(zInterval,copyMap);
+  const QwtInterval zInterval = d_spectrogram->data()->interval( Qt::ZAxis );
  
+  rightAxis->setColorMap(zInterval,myColourMap(isLog));
+
 #endif
 
   if(!zoomer->zoomRectIndex()) UnZoom();
@@ -257,10 +255,14 @@ void SlsQt2DPlot::Update(){
 
 
   setAxisScale(QwtPlot::yRight,zInterval.minValue(), zInterval.maxValue());
+   cout << "axis scale set" << endl;
   
   plotLayout()->setAlignCanvasToScales(true);
+   cout << "layout" << endl;
 #endif
+   cout << "going to replot" << endl;
   replot();
+   cout << "done" << endl;
 }
 
 
@@ -286,11 +288,12 @@ void SlsQt2DPlot::InterpolatedPlot(bool on){
 
 void SlsQt2DPlot::LogZ(bool on){
   if(on){
+isLog=1;
     //if(hist->GetMinimum()<=0) hist->SetMinimumToFirstGreaterThanZero();
 #if QWT_VERSION<0x060000
     d_spectrogram->setColorMap(*colorMapLogScale);
 #else
-    d_spectrogram->setColorMap(colorMapLogScale);
+    d_spectrogram->setColorMap(myColorMap(isLog));
 #endif
     setAxisScaleEngine(QwtPlot::yRight,new QwtLog10ScaleEngine);
 #if QWT_VERSION<0x060000
@@ -299,17 +302,24 @@ void SlsQt2DPlot::LogZ(bool on){
     d_spectrogram->setContourLevels(contourLevelsLog);
 #endif
   }else{
+isLog=0;
+
 #if QWT_VERSION<0x060000
     d_spectrogram->setColorMap(*colorMapLinearScale);
 #else
-    d_spectrogram->setColorMap(colorMapLinearScale);
+   d_spectrogram->setColorMap(myColorMap(isLog));
 #endif
+
+	
+
     setAxisScaleEngine(QwtPlot::yRight,new QwtLinearScaleEngine);
+	
 #if QWT_VERSION<0x060000
     d_spectrogram->setContourLevels(*contourLevelsLinear);
 #else
     d_spectrogram->setContourLevels(contourLevelsLinear);
 #endif
+	
   }
   Update();
 

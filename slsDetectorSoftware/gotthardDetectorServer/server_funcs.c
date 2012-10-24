@@ -8,6 +8,7 @@
 #include "firmware_funcs.h"
 #include "mcb_funcs.h"
 #include "trimming_funcs.h"
+#include "registers_g.h"
 
 #define FIFO_DATA_REG_OFF     0x50<<11
 #define CONTROL_REG           0x24<<11
@@ -2617,67 +2618,67 @@ int lock_server(int file_des) {
 }
 
 int set_port(int file_des) {
-  int n;
-  int ret=OK;
-  int sd=-1;
+	int n;
+	int ret=OK;
+	int sd=-1;
 
-  enum portType p_type; /** data? control? stop? Unused! */
-  int p_number; /** new port number */
+	enum portType p_type; /** data? control? stop? Unused! */
+	int p_number; /** new port number */
 
-  n = receiveDataOnly(file_des,&p_type,sizeof(p_type));
-  if (n < 0) {
-    sprintf(mess,"Error reading from socket\n");
-    printf("Error reading from socket (ptype)\n");
-    ret=FAIL;
-  }
-  
-  n = receiveDataOnly(file_des,&p_number,sizeof(p_number));
-  if (n < 0) {
-    sprintf(mess,"Error reading from socket\n");
-    printf("Error reading from socket (pnum)\n");
-    ret=FAIL;
-  }
-  if (differentClients==1 && lockStatus==1 ) {
-    ret=FAIL;
-    sprintf(mess,"Detector locked by %s\n",lastClientIP);
-  }  else {
-    if (p_number<1024) {
-      sprintf(mess,"Too low port number %d\n", p_number);
-      printf("\n");
-      ret=FAIL;
-    }
-    
-    printf("set port %d to %d\n",p_type, p_number);
-    
-    sd=bindSocket(p_number);
-  }
-    if (sd>=0) {
-      ret=OK;
-      if (differentClients )
-	ret=FORCE_UPDATE;
-    } else {
-      ret=FAIL;
-      sprintf(mess,"Could not bind port %d\n", p_number);
-      printf("Could not bind port %d\n", p_number); 
-      if (sd==-10) {
-      sprintf(mess,"Port %d already set\n", p_number);
-      printf("Port %d already set\n", p_number);
+	n = receiveDataOnly(file_des,&p_type,sizeof(p_type));
+	if (n < 0) {
+		sprintf(mess,"Error reading from socket\n");
+		printf("Error reading from socket (ptype)\n");
+		ret=FAIL;
+	}
 
-      }
-    }
+	n = receiveDataOnly(file_des,&p_number,sizeof(p_number));
+	if (n < 0) {
+		sprintf(mess,"Error reading from socket\n");
+		printf("Error reading from socket (pnum)\n");
+		ret=FAIL;
+	}
+	if (differentClients==1 && lockStatus==1 ) {
+		ret=FAIL;
+		sprintf(mess,"Detector locked by %s\n",lastClientIP);
+	}  else {
+		if (p_number<1024) {
+			sprintf(mess,"Too low port number %d\n", p_number);
+			printf("\n");
+			ret=FAIL;
+		}
 
-    n = sendDataOnly(file_des,&ret,sizeof(ret));
-    if (ret==FAIL) {
-      n = sendDataOnly(file_des,mess,sizeof(mess));
-    } else {
-      n = sendDataOnly(file_des,&p_number,sizeof(p_number));
-      closeConnection(file_des);
-      exitServer(sockfd);
-      sockfd=sd;
-      
-    }
+		printf("set port %d to %d\n",p_type, p_number);
 
-  return ret;
+		sd=bindSocket(p_number);
+	}
+	if (sd>=0) {
+		ret=OK;
+		if (differentClients )
+			ret=FORCE_UPDATE;
+	} else {
+		ret=FAIL;
+		sprintf(mess,"Could not bind port %d\n", p_number);
+		printf("Could not bind port %d\n", p_number);
+		if (sd==-10) {
+			sprintf(mess,"Port %d already set\n", p_number);
+			printf("Port %d already set\n", p_number);
+
+		}
+	}
+
+	n = sendDataOnly(file_des,&ret,sizeof(ret));
+	if (ret==FAIL) {
+		n = sendDataOnly(file_des,mess,sizeof(mess));
+	} else {
+		n = sendDataOnly(file_des,&p_number,sizeof(p_number));
+		closeConnection(file_des);
+		exitServer(sockfd);
+		sockfd=sd;
+
+	}
+
+	return ret;
 
 }
 

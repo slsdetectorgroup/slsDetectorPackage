@@ -30,8 +30,8 @@ DEPENDPATH  		+=		\
 
 INCLUDEPATH 		+= 		\
 							$(QWTDIR)/include\
-#                            $(QWTDIR)/src\
-                                                          	$(QWT3D)/include\
+                            $(QWTDIR)/src\
+                            $(QWT3D)/include\
 							slsDetectorPlotting/include\
 							include\
 							forms/include\

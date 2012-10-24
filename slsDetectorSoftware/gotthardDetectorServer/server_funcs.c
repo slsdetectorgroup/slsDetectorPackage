@@ -1843,27 +1843,41 @@ int get_run_status(int file_des) {
   printf("\n\nSTATUS=%08x\n",retval);
 
   //error
-  if(retval&0x8000){
+  if(retval&SOME_FIFO_FULL_BIT){
 	  printf("-----------------------------------ERROR--------------------------------------x%0x\n",retval);
 	  s=ERROR;
   }
   //runbusy=0
-  else if(!(retval&0x20000)){
+  // else if(!(retval&RUNMACHINE_BUSY_BIT)){ //commented by Anna 24.10.2012
+    else if(!(retval&RUN_BUSY_BIT)){ // by Anna 24.10.2012
+    
+
+
 	  //and readbusy=1, its last frame read
-	  if(retval&0x40000){
-		  printf("-----------------------------------LAST FRAME READ--------------------------\n");
+      if((retval&READMACHINE_BUSY_BIT)  ){ //
+
+
+		  printf("-----------------------------------READ MACHINE BUSY--------------------------\n");
 		  s=TRANSMITTING;
-	  }
+      } else if (retval&ALL_FIFO_EMPTY_BIT) {
+		  printf("-----------------------------------DATA IN FIFO--------------------------\n");
+		  s=TRANSMITTING;
+	
+      }
 	  //and readbusy=0,idle
-	  else if(!(retval&0xFFFFF)){
+	  else if(retval==0){
 		  //if(!(retval&0x00000001)){
 		  printf("-----------------------------------IDLE--------------------------------------\n");
 		  s=IDLE;
+	  } else {
+	    printf("-----------------------------------Unknown status %04x--------------------------------------\n", retval);
+	    s=ERROR;
+
 	  }
   }
   //if runbusy=1
-  else {
-	  if (retval&0x8){
+    else {
+	  if (retval&WAITING_FOR_TRIGGER_BIT){
 		  printf("-----------------------------------WAITING-----------------------------------\n");
 		  s=WAITING;
 	  }

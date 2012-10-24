@@ -14,13 +14,21 @@ LIBDOCDIR=$(WD)/slsDetectorSoftware
 
 
 
-all: lib  slsDetectorClient 
+all: lib  slsDetectorClient_static #slsDetectorGUI
+
+nonstatic: lib  slsDetectorClient slsDetectorGUI
 
 lib:
 	cd $(LIBRARYDIR) && $(MAKE) lib FLAGS=$(FLAGS)
 
-slsDetectorClient: lib
+slsDetectorClient_static: lib
 	cd  $(CLIENTDIR) && $(MAKE)  FLAGS=$(FLAGS)
+	$(shell test -d bin || mkdir -p bin)
+	mv $(CLIENTDIR)/bin/* bin/
+
+
+slsDetectorClient: lib
+	cd  $(CLIENTDIR) && $(MAKE) nonstatic  FLAGS=$(FLAGS)
 	$(shell test -d bin || mkdir -p bin)
 	mv $(CLIENTDIR)/bin/* bin/
 

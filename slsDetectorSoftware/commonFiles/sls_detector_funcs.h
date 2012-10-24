@@ -108,11 +108,11 @@ enum {
 
   //receiver
 
-  F_SET_RECEIVER_FILE_NAME, 	/**< sets receiver file name */
+  F_SET_FILE_PATH, 			/**< sets receiver file directory */
 
-  F_SET_RECEIVER_FILE_DIR, 		/**< sets receiver file directory */
+  F_SET_FILE_NAME, 			/**< sets receiver file name */
 
-  F_SET_RECEIVER_FILE_INDEX, 	/**< sets receiver file index */
+  F_SET_FILE_INDEX, 		/**< sets receiver file index */
 
   F_START_RECEIVER,			/**< starts the receiver listening mode */
 

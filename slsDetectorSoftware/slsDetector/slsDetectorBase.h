@@ -430,28 +430,6 @@ class slsDetectorBase :  public virtual slsDetectorDefs  {
   */
   virtual int setReceiverOnline(int const online=GET_ONLINE_FLAG)=0;
 
-  /**
-     Sets up the receiver file name
-     @param fileName file name
-     \returns file name
-  */
-  virtual string setReceiverFileName(string fileName="")=0;
-
-  /**
-     Sets up the receiver file directory
-     @param fileName fileDir file directory
-     \returns file dir
-  */
-  virtual string setReceiverFileDir(string fileDir="")=0;
-
-  /**
-     Sets up the receiver file index
-     @param fileIndex file index
-     \returns file index
-  */
-  virtual int setReceiverFileIndex(int fileIndex=-1)=0;
-
-
   /**   Starts the listening mode of receiver
         \returns OK or FAIL
   */

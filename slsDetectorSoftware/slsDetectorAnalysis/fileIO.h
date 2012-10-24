@@ -23,7 +23,7 @@ class fileIO :  public fileIOStatic, public virtual slsDetectorBase  {
 
  public:
   /** default constructor */
-  fileIO(): fileIOStatic() {frameIndex=-1;detIndex=-1;};
+  fileIO(): fileIOStatic(){frameIndex=-1;detIndex=-1;};
   /** virtual destructor */
   virtual ~fileIO(){};
 
@@ -39,61 +39,61 @@ class fileIO :  public fileIOStatic, public virtual slsDetectorBase  {
      \param s file path
      \return actual file path
   */
-  string setFilePath(string s) {sprintf(filePath, s.c_str()); return string(filePath);};
+  virtual string setFilePath(string s) {sprintf(filePath, s.c_str()); return string(filePath);};
 
   /**
      sets the default output files root name
      \param s file name to be set
      \returns actual file name
   */
-  string setFileName(string s) {sprintf(fileName, s.c_str()); return string(fileName);}; 
+  virtual  string setFileName(string s) {sprintf(fileName, s.c_str()); return string(fileName);};
 
   /**
      sets the default output file index
      \param i start file index to be set
      \returns actual file index
   */
-  int setFileIndex(int i) {*fileIndex=i; return *fileIndex;}; 
+  virtual int setFileIndex(int i) {*fileIndex=i; return *fileIndex;};
   
   /**
      sets the default output file index
      \param i frame index to be set
      \returns actual frame index
   */
-  int setFrameIndex(int i) {frameIndex=i; return frameIndex;};
+  virtual int setFrameIndex(int i) {frameIndex=i; return frameIndex;};
 
   /**
      sets the default output file index
      \param i detector index to be set
      \returns actual detector index
   */
-  int setDetectorIndex(int i) {detIndex=i; return detIndex;};
+  virtual  int setDetectorIndex(int i) {detIndex=i;return detIndex;};
 
   /**
      \returns the  output files path
      
   */
-  string getFilePath() {return string(filePath);};
+  virtual string getFilePath() {return string(filePath);};
   
   /**
     \returns the  output files root name
   */
-  string getFileName() {return string(fileName);};
+  virtual string getFileName() {return string(fileName);};
 
   /**
      \returns the output file index
   */
-  int getFileIndex() {return *fileIndex;};
+  virtual int getFileIndex() {return *fileIndex;};
   
   /**
      \returns the output frame index
   */
-  int getFrameIndex() {return frameIndex;};
+  virtual int getFrameIndex() {return frameIndex;};
 
   /**
      \returns the detector index
   */
-  int getDetectorIndex() {return detIndex;};
+  virtual int getDetectorIndex() {return detIndex;};
 
 
   string createFileName();
@@ -227,6 +227,7 @@ class fileIO :  public fileIOStatic, public virtual slsDetectorBase  {
   */
   int readDataFile(ifstream &infile, short int *data, int offset=0);
 
+  friend class slsDetector;
 
  protected:
 
@@ -241,6 +242,9 @@ class fileIO :  public fileIOStatic, public virtual slsDetectorBase  {
 
     string getCurrentReceiverFilePrefix(){return currentReceiverFilePrefix;};
 
+
+
+
     string currentFileName;
 
     string currentReceiverFilePrefix;
@@ -251,7 +255,7 @@ class fileIO :  public fileIOStatic, public virtual slsDetectorBase  {
     /** file root name */
     char *fileName;
     /** file index */
-    int *fileIndex; 
+    int *fileIndex;
     /** frame index */
     int frameIndex;
     /** detector id */

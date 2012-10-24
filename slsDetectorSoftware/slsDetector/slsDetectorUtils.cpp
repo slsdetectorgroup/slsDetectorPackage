@@ -422,13 +422,14 @@ int slsDetectorUtils::setBadChannelCorrection(string fname, int &nbadtot, int *b
 
   ifstream infile;
   string str;
-  int interrupt=0;
-  int ich;
-  int chmin,chmax;
+  //int interrupt=0;
+  //int ich;
+  //int chmin,chmax;
 #ifdef VERBOSE
   std::cout << "Setting bad channel correction to " << fname << std::endl;
 #endif
-  int modmi=0, modma=1;
+ // int modmi=0;
+  int modma=1;
   int singlefile=0;
 
   string fn;
@@ -615,7 +616,7 @@ int slsDetectorUtils::retrieveDetectorSetup(string const fname1, int level){
   slsDetectorCommand *cmd;
 
 
-  char ext[100];
+ // char ext[100];
   int skip=0;
   string fname;
   string str;
@@ -749,7 +750,7 @@ int slsDetectorUtils::dumpDetectorSetup(string const fname, int level){
 
 
 
-  char ext[100];
+ // char ext[100];
 
   int iv=0;
   string fname1;

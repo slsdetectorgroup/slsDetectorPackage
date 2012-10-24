@@ -117,14 +117,14 @@ multiSlsDetector::multiSlsDetector(int id) :  slsDetectorUtils(), shmId(-1)
 
     thisMultiDetector->maxNumberOfChannels=0;
 
-    
-
     /** set trimDsdir, calDir and filePath to default to home directory*/
     strcpy(thisMultiDetector->filePath,getenv("HOME"));
     /** set fileName to default to run*/
     strcpy(thisMultiDetector->fileName,"run");
     /** set fileIndex to default to 0*/
     thisMultiDetector->fileIndex=0;
+
+
     /** set progress Index to default to 0*/
     thisMultiDetector->progressIndex=0;
     /** set total number of frames to be acquired to default to 1*/
@@ -192,29 +192,8 @@ multiSlsDetector::multiSlsDetector(int id) :  slsDetectorUtils(), shmId(-1)
     thisMultiDetector->alreadyExisting=1;
   }
 
-
-  for (int i=0; i<thisMultiDetector->numberOfDetectors; i++) {
-#ifdef VERBOSE
-    cout << thisMultiDetector->detectorIds[i] << endl;
-#endif
-    detectors[i]=new slsDetector(thisMultiDetector->detectorIds[i], this);
-    
-
-    //  setAngularConversionPointer(detectors[i]->getAngularConversionPointer(),detectors[i]->getNModsPointer(),detectors[i]->getNChans()*detectors[i]->getNChips(), i);
-
-  }
-  for (int i=thisMultiDetector->numberOfDetectors; i<MAXDET; i++)
-    detectors[i]=NULL;
-
   
-
-  /** modifies the last PID accessing the detector system*/
-  thisMultiDetector->lastPID=getpid();
-
-
-
-  
-
+  //assigned before creating detector
   stoppedFlag=&thisMultiDetector->stoppedFlag;
   threadedProcessing=&thisMultiDetector->threadedProcessing;
   actionMask=&thisMultiDetector->actionMask;
@@ -243,12 +222,34 @@ multiSlsDetector::multiSlsDetector(int id) :  slsDetectorUtils(), shmId(-1)
 
   currentSettings=&thisMultiDetector->currentSettings;
   currentThresholdEV=&thisMultiDetector->currentThresholdEV;
-  filePath=thisMultiDetector->filePath;
-  fileName=thisMultiDetector->fileName;
-  fileIndex=&thisMultiDetector->fileIndex;
   moveFlag=NULL;
 
   sampleDisplacement=thisMultiDetector->sampleDisplacement;
+
+  filePath=thisMultiDetector->filePath;
+  fileName=thisMultiDetector->fileName;
+  fileIndex=&thisMultiDetector->fileIndex;
+
+
+
+  for (int i=0; i<thisMultiDetector->numberOfDetectors; i++) {
+#ifdef VERBOSE
+    cout << thisMultiDetector->detectorIds[i] << endl;
+#endif
+    detectors[i]=new slsDetector(thisMultiDetector->detectorIds[i], this);
+
+
+    //  setAngularConversionPointer(detectors[i]->getAngularConversionPointer(),detectors[i]->getNModsPointer(),detectors[i]->getNChans()*detectors[i]->getNChips(), i);
+
+  }
+  for (int i=thisMultiDetector->numberOfDetectors; i<MAXDET; i++)
+    detectors[i]=NULL;
+
+
+
+  /** modifies the last PID accessing the detector system*/
+  thisMultiDetector->lastPID=getpid();
+
 
   getNMods();
   getMaxMods();
@@ -3508,19 +3509,16 @@ int multiSlsDetector::readDataFile(string fname, int *data) {
 
 
 int multiSlsDetector::setReceiverOnline(int off) {
-  if (off!=GET_ONLINE_FLAG) {
-    int ret=-100,ret1;
-    for (int i=0; i<thisMultiDetector->numberOfDetectors; i++)
-      if (detectors[i]){
-	ret1=detectors[i]->setReceiverOnline(off);
-	if(ret==-100)
-	  ret=ret1;
-	else if (ret!=ret1)
-	  ret=-1;
-      }
-    thisMultiDetector->receiverOnlineFlag=ret;
-  }
-  return thisMultiDetector->receiverOnlineFlag;
+	int ret=-100,ret1;
+	for (int i=0; i<thisMultiDetector->numberOfDetectors; i++)
+		if (detectors[i]){
+			ret1=detectors[i]->setReceiverOnline(off);
+			if(ret==-100)
+				ret=ret1;
+			else if (ret!=ret1)
+				ret=-1;
+		}
+	return ret;
 }
 
 
@@ -3542,31 +3540,34 @@ string multiSlsDetector::checkReceiverOnline() {
 
 
 
+string multiSlsDetector::setFilePath(string s) {
+	if(!s.empty())
+		fileIO::setFilePath(s);
+	/*
+  string ret="error", ret1;
+  for (int idet=0; idet<thisMultiDetector->numberOfDetectors; idet++) {
+    if (detectors[idet]) {
+      ret1=detectors[idet]->setFilePath(s);
+      if (ret=="error")
+	ret=ret1;
+      else if (ret!=ret1)
+	ret="";
+    }
+  }
+  return ret;*/
+	return fileIO::getFilePath();
+}
 
-string multiSlsDetector::setReceiverFileName(string fileName) {
+
+
+string multiSlsDetector::setFileName(string s) {
   string ret="error", ret1;
 
   for (int idet=0; idet<thisMultiDetector->numberOfDetectors; idet++) {
     if (detectors[idet]) {
       if(getNumberOfDetectors()>1)
         setDetectorIndex(idet);
-      ret1=detectors[idet]->setReceiverFileName(fileName);
-      if (ret=="error")
-	ret=ret1;
-      else if (ret!=ret1)
-	ret="";
-    }
-  }
-  return ret;
-}
-
-
-string multiSlsDetector::setReceiverFileDir(string fileDir) {
-  string ret="error", ret1;
-
-  for (int idet=0; idet<thisMultiDetector->numberOfDetectors; idet++) {
-    if (detectors[idet]) {
-      ret1=detectors[idet]->setReceiverFileDir(fileDir);
+      ret1=detectors[idet]->setFileName(s);
       if (ret=="error")
 	ret=ret1;
       else if (ret!=ret1)
@@ -3578,12 +3579,12 @@ string multiSlsDetector::setReceiverFileDir(string fileDir) {
 
 
 
-int multiSlsDetector::setReceiverFileIndex(int fileIndex) {
+int multiSlsDetector::setFileIndex(int i) {
   int ret=-100, ret1;
 
   for (int idet=0; idet<thisMultiDetector->numberOfDetectors; idet++) {
     if (detectors[idet]) {
-      ret1=detectors[idet]->setReceiverFileIndex(fileIndex);
+      ret1=detectors[idet]->setFileIndex(i);
       if (ret==-100)
 	ret=ret1;
       else if (ret!=ret1)

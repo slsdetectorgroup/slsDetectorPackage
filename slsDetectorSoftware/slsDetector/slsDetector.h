@@ -100,12 +100,9 @@ class slsDetector : public slsDetectorUtils, public energyConversion {
     int progressIndex;	
     /** total number of frames to be acquired */   
     int totalProgress;	   
-    /** current index of the output file */   
-    int fileIndex;
-    /** path of the output files */  
+
+    /** path of the output files */
     char filePath[MAX_STR_LENGTH];
-    /** name root of the output files */  
-    char fileName[MAX_STR_LENGTH];
 
     /* size of the detector */
     
@@ -1392,26 +1389,42 @@ class slsDetector : public slsDetectorUtils, public energyConversion {
   */
   int setReceiverTCPSocket(string const name="", int const data_port=-1);
 
-  /**
-     Sets up the receiver file name
-     @param fileName file name
-     \returns file name
-  */
-  string setReceiverFileName(string fileName="");
 
   /**
-     Sets up the receiver file directory
-     @param fileName fileDir file directory
+     Sets up the file directory
+     @param s fileDir file directory
      \returns file dir
   */
-  string setReceiverFileDir(string fileDir="");
+  string setFilePath(string s="");
 
   /**
-     Sets up the receiver file index
-     @param fileIndex file index
+     Sets up the file name
+     @param s file name
+     \returns file name
+  */
+  string setFileName(string s="");
+
+  /**
+     Sets up the file index
+     @param i file index
      \returns file index
   */
-  int setReceiverFileIndex(int fileIndex=-1);
+  int setFileIndex(int i=-1);
+
+  /**
+     \returns file dir
+  */
+  string getFilePath(){return setFilePath();};
+
+  /**
+     \returns file name
+  */
+  string getFileName(){return setFileName();};
+
+  /**
+     \returns file index
+  */
+  int getFileIndex(){return setFileIndex();};
 
 
   /**   Starts the listening mode of receiver
@@ -1423,6 +1436,8 @@ class slsDetector : public slsDetectorUtils, public energyConversion {
         \returns OK or FAIL
   */
   int stopReceiver();
+
+  int DetectorStopReceiver();
 
   /**   gets the status of the listening mode of receiver
         \returns status

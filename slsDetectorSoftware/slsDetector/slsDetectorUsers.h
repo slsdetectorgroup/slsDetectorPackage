@@ -91,7 +91,7 @@ class slsDetectorUsers
      \param s file path
      \returns file path
   */
-   string setFilePath(string s);  
+   string setFilePath(string s);
 
   /** 
       @short 

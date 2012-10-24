@@ -112,6 +112,7 @@ int slsDetector::freeSharedMemory() {
 slsDetector::slsDetector(int id,multiSlsDetector *p) :slsDetectorUtils(),
 						      thisDetector(NULL),  
 						      detId(id),
+							  parentDet(p),
 						      shmId(-1), 
 						      controlSocket(NULL),
 						      stopSocket(NULL),
@@ -122,8 +123,7 @@ slsDetector::slsDetector(int id,multiSlsDetector *p) :slsDetectorUtils(),
 						      dacs(NULL),
 						      adcs(NULL),
 						      chipregs(NULL),
-						      chanregs(NULL),
-						      parentDet(p)
+						      chanregs(NULL)
 
 
 {
@@ -161,6 +161,7 @@ slsDetector::slsDetector(int id,multiSlsDetector *p) :slsDetectorUtils(),
 slsDetector::slsDetector(detectorType type, int id,multiSlsDetector *p): slsDetectorUtils(),
 									 thisDetector(NULL),  
 									 detId(id),
+								     parentDet(p),
 									 shmId(-1), 
 									 controlSocket(NULL),
 									 stopSocket(NULL),
@@ -171,8 +172,7 @@ slsDetector::slsDetector(detectorType type, int id,multiSlsDetector *p): slsDete
 									 dacs(NULL),
 									 adcs(NULL),
 									 chipregs(NULL),
-									 chanregs(NULL),
-									 parentDet(p)
+									 chanregs(NULL)
 {
   while (shmId<0) {
     /**Initlializes shared memory \sa initSharedMemory
@@ -213,6 +213,7 @@ slsDetector::~slsDetector(){
 slsDetector::slsDetector(char *name, int id, int cport,multiSlsDetector *p) : slsDetectorUtils(),
 									      thisDetector(NULL),  
 									      detId(id),
+									      parentDet(p),
 									      shmId(-1), 
 									      controlSocket(NULL),
 									      stopSocket(NULL),
@@ -223,8 +224,8 @@ slsDetector::slsDetector(char *name, int id, int cport,multiSlsDetector *p) : sl
 									      dacs(NULL),
 									      adcs(NULL),
 									      chipregs(NULL),
-									      chanregs(NULL),
-									      parentDet(p)
+									      chanregs(NULL)
+
 {
   detectorType type=(detectorType)getDetectorType(name, cport);
   
@@ -521,20 +522,19 @@ int slsDetector::initializeDetectorSize(detectorType type) {
       thisDetector->dataBytes=thisDetector->nMod[X]*thisDetector->nMod[Y]*thisDetector->nChips*thisDetector->nChans*4;
     else
       thisDetector->dataBytes=thisDetector->nMod[X]*thisDetector->nMod[Y]*thisDetector->nChips*thisDetector->nChans*thisDetector->dynamicRange/8;
-    /** set trimDsdir, calDir and filePath to default to home directory*/
+    /** set trimDsdir, calDir to default to home directory*/
     strcpy(thisDetector->settingsDir,getenv("HOME"));
     strcpy(thisDetector->calDir,getenv("HOME"));
-    strcpy(thisDetector->filePath,getenv("HOME"));
+
     /** sets trimbit file */
     strcpy(thisDetector->settingsFile,"none");
-    /** set fileName to default to run*/
-    strcpy(thisDetector->fileName,"run");
-    /** set fileIndex to default to 0*/
-    thisDetector->fileIndex=0;
     /** set progress Index to default to 0*/
     thisDetector->progressIndex=0;
     /** set total number of frames to be acquired to default to 1*/
     thisDetector->totalProgress=1;
+
+    /** set trimDsdir, calDir and filePath to default to home directory*/
+    strcpy(thisDetector->filePath,getenv("HOME"));
 
     /** set number of trim energies to 0*/
     thisDetector->nTrimEn=0;
@@ -664,12 +664,13 @@ int slsDetector::initializeDetectorSize(detectorType type) {
 
   currentSettings=&thisDetector->currentSettings;
   currentThresholdEV=&thisDetector->currentThresholdEV;
-  filePath=thisDetector->filePath;
-  fileName=thisDetector->fileName;
-  fileIndex=&thisDetector->fileIndex;
   moveFlag=&thisDetector->moveFlag;
   sampleDisplacement=NULL;
   settingsFile=thisDetector->settingsFile;
+
+  filePath=thisDetector->filePath;
+  fileName=parentDet->fileName;
+  fileIndex=parentDet->fileIndex;
 
 
   //  setAngularConversionPointer(thisDetector->angOff,&thisDetector->nMods, thisDetector->nChans*thisDetector->nChips);
@@ -971,7 +972,7 @@ int slsDetector::setTCPSocket(string const name, int const control_port, int con
 
 
   char thisName[MAX_STR_LENGTH];
-  int thisCP, thisSP, thisDP;
+  int thisCP, thisSP;
   int retval=OK;
 
   if (strcmp(name.c_str(),"")!=0) {
@@ -3463,13 +3464,13 @@ int slsDetector::setPort(portType index, int num){
 #ifdef VERBOSE
       cout << "s="<< s<< endl;
       cout << thisDetector->controlPort<< " " << " " << thisDetector->stopPort << endl;
-#endif 
+#endif
       if (s==NULL) {
       
 #ifdef VERBOSE
 	cout << "s=NULL"<< endl;
 	cout << thisDetector->controlPort<< " " << " " << thisDetector->stopPort << endl;
-#endif 
+#endif
 	setTCPSocket("",DEFAULT_PORTNO);
       }
       if (controlSocket) {
@@ -3478,7 +3479,7 @@ int slsDetector::setPort(portType index, int num){
 #ifdef VERBOSE
 	cout << "still cannot connect!"<< endl;
 	cout << thisDetector->controlPort<< " " << " " << thisDetector->stopPort << endl;
-#endif 
+#endif
   
 
 
@@ -3612,7 +3613,7 @@ int slsDetector::setTotalProgress() {
     npos=thisDetector->numberOfPositions;
 
   if (timerValue[MEASUREMENTS_NUMBER]>0)
-    nc=timerValue[MEASUREMENTS_NUMBER];
+    nm=timerValue[MEASUREMENTS_NUMBER];
 
 
   if ((thisDetector->nScanSteps[0]>0) && (thisDetector->actionMask & (1 << MAX_ACTIONS)))
@@ -3621,7 +3622,7 @@ int slsDetector::setTotalProgress() {
   if ((thisDetector->nScanSteps[1]>0) && (thisDetector->actionMask & (1 << (MAX_ACTIONS+1))))
     nscan[1]=thisDetector->nScanSteps[1];
       
-  thisDetector->totalProgress=nf*nc*npos*nscan[0]*nscan[1];
+  thisDetector->totalProgress=nf*nc*npos*nm*nscan[0]*nscan[1];
 
 #ifdef VERBOSE
   cout << "nc " << nc << endl;
@@ -4033,8 +4034,8 @@ int slsDetector::setFlatFieldCorrection(string fname)
 {
   double data[thisDetector->nModMax[X]*thisDetector->nModMax[Y]*thisDetector->nChans*thisDetector->nChips];
   //double err[thisDetector->nModMax[X]*thisDetector->nModMax[Y]*thisDetector->nChans*thisDetector->nChips];
-  double xmed[thisDetector->nModMax[X]*thisDetector->nModMax[Y]*thisDetector->nChans*thisDetector->nChips];
-  int nmed=0;
+  //double xmed[thisDetector->nModMax[X]*thisDetector->nModMax[Y]*thisDetector->nChans*thisDetector->nChips];
+ // int nmed=0;
   int im=0;
   int nch;
   thisDetector->nBadFF=0;
@@ -4289,10 +4290,10 @@ int slsDetector::rateCorrect(double* datain, double *errin, double* dataout, dou
 
 int slsDetector::setBadChannelCorrection(string fname){
   
-
-  int nbadmod,ret=0;
-  int badchanlist[MAX_BADCHANS];
-  int off;
+ // int nbadmod;
+  int ret=0;
+  //int badchanlist[MAX_BADCHANS];
+  //int off;
 
   string fn=fname;
   
@@ -4460,13 +4461,17 @@ char* slsDetector::setReceiverIP(string receiverIP){
   }
 
   if(wrongFormat)
-    return ("IP Address should be VALID and in xxx.xxx.xxx.xxx format");
-
-  if(setReceiverTCPSocket()==FAIL)
-    return("Connection to Receiver failed.");
+    std::cout<< "IP Address should be VALID and in xxx.xxx.xxx.xxx format" << endl;
+  else{
+		if(setReceiverOnline(ONLINE_FLAG)==ONLINE_FLAG){
+			setFilePath(fileIO::getFilePath());
+			setFileName(fileIO::getFileName());
+			setFileIndex(fileIO::getFileIndex());
+		}else
+			std::cout << "cannot connect to receiver" << endl;
+  }
 
   return thisDetector->receiverIP;
-
 }
 
 
@@ -4576,7 +4581,8 @@ int slsDetector::configureMAC(int adc){
 	  updateDetector();
       }	
     }
-  }
+  }else
+	std::cout << "cannot connect to detector" << endl;
 #ifdef VERBOSE
   std::cout<< "Configuring MAC - returned "<< retval << std::endl;
 #endif
@@ -4803,7 +4809,7 @@ int slsDetector::readConfigurationFile(string const fname){
   string ans;
   string str;
   ifstream infile;
-  char *args[1000];
+  //char *args[1000];
     
   string sargname, sargval;
   int iline=0;
@@ -5141,7 +5147,7 @@ int slsDetector::loadCalibrationFile(string fname, int imod) {
       ostfn << ".sn"  << setfill('0') << setw(3) << hex << getId(MODULE_SERIAL_NUMBER, im);
     }
     fn=ostfn.str();
-    if(myMod=getModule(im)){
+    if((myMod=getModule(im))){
       if(readCalibrationFile(fn, myMod->gain, myMod->offset)==FAIL)
 	return FAIL;
       setModule(*myMod);
@@ -5287,7 +5293,7 @@ int slsDetector::setReceiverOnline(int off) {
     //Since flag becomes offline if receiver not online.
     //This ensures server to NOT send to receiver in the next command line comment
     if((off==ONLINE_FLAG)&&(thisDetector->receiverOnlineFlag!=ONLINE_FLAG))
-      stopReceiver();
+    	DetectorStopReceiver();
   }
   return thisDetector->receiverOnlineFlag;
 }
@@ -5406,334 +5412,378 @@ int slsDetector::setReceiverTCPSocket(string const name, int const data_port){
 
 
 
-string slsDetector::setReceiverFileName(string fileName) {
-  int fnum=F_SET_RECEIVER_FILE_NAME;
-  int ret = FAIL;
-  char mess[100];
 
-  char arg[MAX_STR_LENGTH],retval[MAX_STR_LENGTH]="";
+string slsDetector::setFilePath(string s) {
+	int fnum=F_SET_FILE_PATH;
+	int ret = FAIL;
+	char mess[100];
+	char arg[MAX_STR_LENGTH];
+	char retval[MAX_STR_LENGTH]="";
+	struct stat st;
+
+	if(thisDetector->receiverOnlineFlag==OFFLINE_FLAG){
+		if(!s.empty()){
+			if(stat(s.c_str(),&st))
+				std::cout << "path does not exist" << endl;
+			else
+				fileIO::setFilePath(s);
+		}
+	}
 
 
-  if(!fileName.empty()){
-    parentDet->setFileName(fileName);
-    fileName=parentDet->createReceiverFilePrefix();
-  }
-  strcpy(arg,fileName.c_str());
-
+	else if(setReceiverOnline(ONLINE_FLAG)==ONLINE_FLAG){
+		strcpy(arg,s.c_str());
 #ifdef VERBOSE
-  std::cout << "Sending file name to receiver " << arg << std::endl;
+		std::cout << "Sending file path to receiver " << arg << std::endl;
 #endif
-
-  if (thisDetector->receiverOnlineFlag==ONLINE_FLAG) {
-    if (dataSocket) {
-      if  (dataSocket->Connect()>=0) {
-	dataSocket->SendDataOnly(&fnum,sizeof(fnum));
-	dataSocket->SendDataOnly(arg,MAX_STR_LENGTH);
-	dataSocket->ReceiveDataOnly(&ret,sizeof(ret));
-	if (ret==FAIL){
-	  dataSocket->ReceiveDataOnly(mess,sizeof(mess));
-	  std::cout<< "Receiver returned error: " << mess << std::endl;
+		if (dataSocket) {
+			if  (dataSocket->Connect()>=0) {
+				dataSocket->SendDataOnly(&fnum,sizeof(fnum));
+				dataSocket->SendDataOnly(arg,MAX_STR_LENGTH);
+				dataSocket->ReceiveDataOnly(&ret,sizeof(ret));
+				if (ret==FAIL){
+					dataSocket->ReceiveDataOnly(mess,sizeof(mess));
+					std::cout<< "Receiver returned error: " << mess << std::endl;
+				}
+				dataSocket->ReceiveDataOnly(retval,MAX_STR_LENGTH);
+				fileIO::setFilePath(s);
+			}
+			dataSocket->Disconnect();
+			if (ret==FORCE_UPDATE)
+				updateReceiver();
+		}
 	}else
-	  dataSocket->ReceiveDataOnly(retval,MAX_STR_LENGTH);
-      }
-      dataSocket->Disconnect();
-      if (ret==FORCE_UPDATE)
-	updateReceiver();
-    }
-  }
+		std::cout << "cannot connect to receiver" << endl;
+
+	return fileIO::getFilePath();
+}
+
+
+
+string slsDetector::setFileName(string s) {
+	int fnum=F_SET_FILE_NAME;
+	int ret = FAIL;
+	char mess[100];
+	char arg[MAX_STR_LENGTH];
+	char retval[MAX_STR_LENGTH]="";
+
+
+	if(!s.empty()){
+		fileIO::setFileName(s);
+		s=parentDet->createReceiverFilePrefix();
+	}
+
+	if(thisDetector->receiverOnlineFlag==ONLINE_FLAG){
+		if(setReceiverOnline(ONLINE_FLAG)!=ONLINE_FLAG){
+			strcpy(arg,s.c_str());
 #ifdef VERBOSE
-  std::cout << "retval: " << retval << std::endl;
+			std::cout << "Sending file name to receiver " << arg << std::endl;
 #endif
-  string ans = parentDet->getNameFromReceiverFilePrefix(string(retval));
-  parentDet->setFileName(ans);
-  return ans;
+			if (dataSocket) {
+				if  (dataSocket->Connect()>=0) {
+					dataSocket->SendDataOnly(&fnum,sizeof(fnum));
+					dataSocket->SendDataOnly(arg,MAX_STR_LENGTH);
+					dataSocket->ReceiveDataOnly(&ret,sizeof(ret));
+					if (ret==FAIL){
+						dataSocket->ReceiveDataOnly(mess,sizeof(mess));
+						std::cout<< "Receiver returned error: " << mess << std::endl;
+					}
+					dataSocket->ReceiveDataOnly(retval,MAX_STR_LENGTH);
+#ifdef VERBOSE
+					std::cout << "Complete file prefix from receiver: " << retval << std::endl;
+#endif
+					fileIO::setFileName(parentDet->getNameFromReceiverFilePrefix(string(retval)));
+				}
+				dataSocket->Disconnect();
+				if (ret==FORCE_UPDATE)
+					updateReceiver();
+			}
+
+		}else
+			std::cout << "cannot connect to receiver" << endl;
+	}
+
+	return fileIO::getFileName();
 }
 
 
 
 
 
-string slsDetector::setReceiverFileDir(string fileDir) {
-  int fnum=F_SET_RECEIVER_FILE_DIR;
-  int ret = FAIL;
-  char mess[100];
 
-  char arg[MAX_STR_LENGTH],retval[MAX_STR_LENGTH]="";
-  strcpy(arg,fileDir.c_str());
 
-#ifdef VERBOSE
-  std::cout << "Sending file dir to receiver " << arg << std::endl;
-#endif
 
-  if (thisDetector->receiverOnlineFlag==ONLINE_FLAG) {
-    if (dataSocket) {
-      if  (dataSocket->Connect()>=0) {
-	dataSocket->SendDataOnly(&fnum,sizeof(fnum));
-	dataSocket->SendDataOnly(arg,MAX_STR_LENGTH);
-	dataSocket->ReceiveDataOnly(&ret,sizeof(ret));
-	if (ret==FAIL){
-	  dataSocket->ReceiveDataOnly(mess,sizeof(mess));
-	  std::cout<< "Receiver returned error: " << mess << std::endl;
-	}else{
-	  dataSocket->ReceiveDataOnly(retval,MAX_STR_LENGTH);
-	  parentDet->setFilePath(string(retval));
+
+int slsDetector::setFileIndex(int i) {
+	int fnum=F_SET_FILE_INDEX;
+	int ret = FAIL;
+	int retval=-1;
+	int arg = i;
+	char mess[100];
+
+	if(thisDetector->receiverOnlineFlag==OFFLINE_FLAG){
+		if(i>=0)
+			fileIO::setFileIndex(i);
 	}
-      }
-      dataSocket->Disconnect();
-      if (ret==FORCE_UPDATE)
-	updateReceiver();
-    }
-  }
-
-  return string(retval);
-}
 
 
-
-
-int slsDetector::setReceiverFileIndex(int fileIndex) {
-  int fnum=F_SET_RECEIVER_FILE_INDEX;
-  int ret = FAIL;
-  char mess[100];
-  int retval=-1;
-
-  int arg = fileIndex;
-
+	else if(setReceiverOnline(ONLINE_FLAG)==ONLINE_FLAG){
 #ifdef VERBOSE
-  std::cout << "Sending file dir to receiver " << arg << std::endl;
+		std::cout << "Sending file dir to receiver " << arg << std::endl;
 #endif
+		if (dataSocket) {
+			if  (dataSocket->Connect()>=0) {
+				dataSocket->SendDataOnly(&fnum,sizeof(fnum));
+				dataSocket->SendDataOnly(&arg,sizeof(arg));
+				dataSocket->ReceiveDataOnly(&ret,sizeof(ret));
+				if (ret==FAIL){
+					dataSocket->ReceiveDataOnly(mess,sizeof(mess));
+					std::cout<< "Receiver returned error: " << mess << std::endl;
+				}
+				dataSocket->ReceiveDataOnly(&retval,sizeof(retval));
+				fileIO::setFileIndex(retval);
+			}
+			dataSocket->Disconnect();
+			if (ret==FORCE_UPDATE)
+				updateReceiver();
+		}
 
-  if (thisDetector->receiverOnlineFlag==ONLINE_FLAG) {
-    if (dataSocket) {
-      if  (dataSocket->Connect()>=0) {
-	dataSocket->SendDataOnly(&fnum,sizeof(fnum));
-	dataSocket->SendDataOnly(&arg,sizeof(arg));
-	dataSocket->ReceiveDataOnly(&ret,sizeof(ret));
-	if (ret==FAIL){
-	  dataSocket->ReceiveDataOnly(mess,sizeof(mess));
-	  std::cout<< "Receiver returned error: " << mess << std::endl;
-	}else{
-	  dataSocket->ReceiveDataOnly(&retval,sizeof(retval));
-	  if(fileIndex!=-1)
-	    parentDet->setFileIndex(retval);
-	}
-      }
-      dataSocket->Disconnect();
-      if (ret==FORCE_UPDATE)
-	updateReceiver();
-    }
-  }
-  return retval;
+	}else
+		std::cout << "cannot connect to receiver" << endl;
+
+	return fileIO::getFileIndex();
 }
 
 
 
 
 int slsDetector::startReceiver(){
-  int fnum=F_START_RECEIVER;
-  int ret = FAIL;
-  char mess[100];
+	int fnum=F_START_RECEIVER;
+	int ret = FAIL;
+	char mess[100];
 
+
+	if (setReceiverOnline(ONLINE_FLAG)==ONLINE_FLAG) {
 #ifdef VERBOSE
-  std::cout << "Starting Receiver " << std::endl;
+		std::cout << "Starting Receiver " << std::endl;
 #endif
+		if (dataSocket) {
+			if  (dataSocket->Connect()>=0) {
+				dataSocket->SendDataOnly(&fnum,sizeof(fnum));
+				dataSocket->ReceiveDataOnly(&ret,sizeof(ret));
+				if (ret==FAIL){
+					dataSocket->ReceiveDataOnly(mess,sizeof(mess));
+					std::cout<< "Receiver returned error: " << mess << std::endl;
+				}
+				dataSocket->Disconnect();
+				if (ret==FORCE_UPDATE)
+					ret=updateReceiver();
+			}
+		}
+	}else
+		std::cout << "cannot connect to receiver" << endl;
 
-  if (thisDetector->receiverOnlineFlag==ONLINE_FLAG) {
-    if (dataSocket) {
-      if  (dataSocket->Connect()>=0) {
-	dataSocket->SendDataOnly(&fnum,sizeof(fnum));
-	dataSocket->ReceiveDataOnly(&ret,sizeof(ret));
-	if (ret==FAIL){
-	  dataSocket->ReceiveDataOnly(mess,sizeof(mess));
-	  std::cout<< "Receiver returned error: " << mess << std::endl;
+
+	//configuremac for gotthard
+	if(ret==OK)
+		if(thisDetector->myDetectorType==GOTTHARD)
+			ret=configureMAC();
+
+	if(ret==OK){
+		if (thisDetector->onlineFlag==ONLINE_FLAG) {
+#ifdef VERBOSE
+		std::cout << "Setting detector to send packets via receiver " << std::endl;
+#endif
+			if (controlSocket) {
+				if  (controlSocket->Connect()>=0) {
+					controlSocket->SendDataOnly(&fnum,sizeof(fnum));
+					controlSocket->ReceiveDataOnly(&ret,sizeof(ret));
+					if (ret==FAIL){
+						controlSocket->ReceiveDataOnly(mess,sizeof(mess));
+						std::cout<< "Detector returned error: " << mess << std::endl;
+					}
+					controlSocket->Disconnect();
+					if (ret==FORCE_UPDATE)
+						ret=updateDetector();
+				}
+			}
+		}else
+			std::cout << "cannot connect to detector" << endl;
 	}
-	dataSocket->Disconnect();
-	if (ret==FORCE_UPDATE)
-	  ret=updateReceiver();
-      }
-    }
-  }
 
-  //configuremac for gotthard
-  if(ret==OK)
-    if(thisDetector->myDetectorType==GOTTHARD)
-      ret=configureMAC();
-
-  //tell the server to send to receiver and not CPU
-  if(ret==OK){
-    if (thisDetector->onlineFlag==ONLINE_FLAG) {
-      if (controlSocket) {
-	if  (controlSocket->Connect()>=0) {
-	  controlSocket->SendDataOnly(&fnum,sizeof(fnum));
-	  controlSocket->ReceiveDataOnly(&ret,sizeof(ret));
-	  if (ret==FAIL){
-	    controlSocket->ReceiveDataOnly(mess,sizeof(mess));
-	    std::cout<< "Detector returned error: " << mess << std::endl;
-	  }
-	  controlSocket->Disconnect();
-	  if (ret==FORCE_UPDATE)
-	    ret=updateDetector();
-	}
-      }
-    }
-  }
-
-  return ret;
+	return ret;
 }
 
 
 
+int slsDetector::DetectorStopReceiver(){
+	int fnum=F_STOP_RECEIVER;
+	int ret = FAIL;
+	char mess[100];
+	if (thisDetector->onlineFlag==ONLINE_FLAG) {
+#ifdef VERBOSE
+		std::cout << "Setting detector to send packets via client " << std::endl;
+#endif
+		if (controlSocket) {
+			if  (controlSocket->Connect()>=0) {
+				controlSocket->SendDataOnly(&fnum,sizeof(fnum));
+				controlSocket->ReceiveDataOnly(&ret,sizeof(ret));
+				if (ret==FAIL){
+					controlSocket->ReceiveDataOnly(mess,sizeof(mess));
+					std::cout<< "Detector returned error: " << mess << std::endl;
+				}
+				controlSocket->Disconnect();
+				if (ret==FORCE_UPDATE)
+					updateDetector();
+			}
+		}
+	}else
+		std::cout << "cannot connect to detector" << endl;
+
+	return ret;
+}
+
+
 
 int slsDetector::stopReceiver(){
-  int fnum=F_STOP_RECEIVER;
-  //different iret for server, should not return ok if receiver didnt connect
-  int ret = FAIL;
-  char mess[100];
+	int fnum=F_STOP_RECEIVER;
+	int ret = FAIL;
+	char mess[100];
 
+	DetectorStopReceiver();
+
+	if (setReceiverOnline(ONLINE_FLAG)==ONLINE_FLAG) {
 #ifdef VERBOSE
-  std::cout << "Stopping Receiver " << std::endl;
+		std::cout << "Stopping Receiver " << std::endl;
 #endif
+		if (dataSocket) {
+			if  (dataSocket->Connect()>=0) {
+				dataSocket->SendDataOnly(&fnum,sizeof(fnum));
+				dataSocket->ReceiveDataOnly(&ret,sizeof(ret));
+				if (ret==FAIL){
+					dataSocket->ReceiveDataOnly(mess,sizeof(mess));
+					std::cout<< "Receiver returned error: " << mess << std::endl;
+				}
 
-  //tell the server to NOT send to receiver and instead to CPU
-  if (thisDetector->onlineFlag==ONLINE_FLAG) {
-    if (controlSocket) {
-      if  (controlSocket->Connect()>=0) {
-	controlSocket->SendDataOnly(&fnum,sizeof(fnum));
-	controlSocket->ReceiveDataOnly(&ret,sizeof(ret));
-	if (ret==FAIL){
-	  controlSocket->ReceiveDataOnly(mess,sizeof(mess));
-	  std::cout<< "Detector returned error: " << mess << std::endl;
-	}
-	controlSocket->Disconnect();
-	if (ret==FORCE_UPDATE)
-	  updateDetector();
-      }
-    }
-  }
+				dataSocket->Disconnect();
+				if (ret==FORCE_UPDATE)
+					ret=updateReceiver();
+			}
+		}
+	}else
+		std::cout << "cannot connect to receiver" << endl;
 
-
-  if (thisDetector->receiverOnlineFlag==ONLINE_FLAG) {
-    if (dataSocket) {
-      if  (dataSocket->Connect()>=0) {
-	dataSocket->SendDataOnly(&fnum,sizeof(fnum));
-	dataSocket->ReceiveDataOnly(&ret,sizeof(ret));
-	if (ret==FAIL){
-	  dataSocket->ReceiveDataOnly(mess,sizeof(mess));
-	  std::cout<< "Receiver returned error: " << mess << std::endl;
+	//increment file index
+	if(ret==OK){
+		fileIO::setFileIndex(fileIO::getFileIndex()+1);
+		setFileIndex(fileIO::getFileIndex());
 	}
 
-	dataSocket->Disconnect();
-	if (ret==FORCE_UPDATE)
-	  ret=updateReceiver();
-      }
-    }
-  }
-
-
-  return ret;
+	return ret;
 }
 
 
 
 
 slsDetectorDefs::runStatus slsDetector::getReceiverStatus(){
-  int fnum=F_GET_RECEIVER_STATUS;
-  int ret = FAIL;
-  char mess[100];
-  runStatus retval=ERROR;
+	int fnum=F_GET_RECEIVER_STATUS;
+	int ret = FAIL;
+	char mess[100];
+	runStatus retval=ERROR;
 
+	if (setReceiverOnline(ONLINE_FLAG)==ONLINE_FLAG) {
 #ifdef VERBOSE
-  std::cout << "Getting Receiver Status" << std::endl;
+		std::cout << "Getting Receiver Status" << std::endl;
 #endif
+		if (dataSocket) {
+			if  (dataSocket->Connect()>=0) {
+				dataSocket->SendDataOnly(&fnum,sizeof(fnum));
+				dataSocket->ReceiveDataOnly(&ret,sizeof(ret));
+				if (ret==FAIL){
+					dataSocket->ReceiveDataOnly(mess,sizeof(mess));
+					std::cout<< "Receiver returned error: " << mess << std::endl;
+				}else
+					dataSocket->ReceiveDataOnly(&retval,sizeof(retval));
 
-  if (thisDetector->receiverOnlineFlag==ONLINE_FLAG) {
-    if (dataSocket) {
-      if  (dataSocket->Connect()>=0) {
-	dataSocket->SendDataOnly(&fnum,sizeof(fnum));
-	dataSocket->ReceiveDataOnly(&ret,sizeof(ret));
-	if (ret==FAIL){
-	  dataSocket->ReceiveDataOnly(mess,sizeof(mess));
-	  std::cout<< "Receiver returned error: " << mess << std::endl;
+				dataSocket->Disconnect();
+				if (ret==FORCE_UPDATE)
+					updateReceiver();
+			}
+		}
 	}else
-	  dataSocket->ReceiveDataOnly(&retval,sizeof(retval));
-
-	dataSocket->Disconnect();
-	if (ret==FORCE_UPDATE)
-	  updateReceiver();
-      }
-    }
-  }
-  return retval;
+		std::cout << "cannot connect to receiver" << endl;
+	return retval;
 }
 
 
 
 
 int slsDetector::getFramesCaughtByReciver(){
-  int fnum=F_GET_FRAMES_CAUGHT;
-  int ret = FAIL;
-  char mess[100];
-  int retval=-1;
+	int fnum=F_GET_FRAMES_CAUGHT;
+	int ret = FAIL;
+	char mess[100];
+	int retval=-1;
 
+	if (setReceiverOnline(ONLINE_FLAG)==ONLINE_FLAG) {
 #ifdef VERBOSE
-  std::cout << "Getting Frames Caught by Receiver " << std::endl;
+		std::cout << "Getting Frames Caught by Receiver " << std::endl;
 #endif
-
-  if (thisDetector->receiverOnlineFlag==ONLINE_FLAG) {
-    if (dataSocket) {
-      if  (dataSocket->Connect()>=0) {
-	dataSocket->SendDataOnly(&fnum,sizeof(fnum));
-	dataSocket->ReceiveDataOnly(&ret,sizeof(ret));
-	if (ret!=FAIL)
-	  dataSocket->ReceiveDataOnly(&retval,sizeof(retval));
-	else{
-	  dataSocket->ReceiveDataOnly(mess,sizeof(mess));
-	  std::cout<< "Receiver returned error: " << mess << std::endl;
-	}
-	dataSocket->Disconnect();
-	if (ret==FORCE_UPDATE)
-	  updateReceiver();
-      }
-    }
-  }
-  return retval;
+		if (dataSocket) {
+			if  (dataSocket->Connect()>=0) {
+				dataSocket->SendDataOnly(&fnum,sizeof(fnum));
+				dataSocket->ReceiveDataOnly(&ret,sizeof(ret));
+				if (ret!=FAIL)
+					dataSocket->ReceiveDataOnly(&retval,sizeof(retval));
+				else{
+					dataSocket->ReceiveDataOnly(mess,sizeof(mess));
+					std::cout<< "Receiver returned error: " << mess << std::endl;
+				}
+				dataSocket->Disconnect();
+				if (ret==FORCE_UPDATE)
+					updateReceiver();
+			}
+		}
+	}else
+		std::cout << "cannot connect to receiver" << endl;
+	return retval;
 }
 
 
 
 
 int slsDetector::lockReceiver(int lock){
-  int fnum=F_LOCK_RECEIVER;
-  int ret = FAIL;
-  int retval=-1;
-  char mess[100];
+	int fnum=F_LOCK_RECEIVER;
+	int ret = FAIL;
+	int retval=-1;
+	char mess[100];
+	int arg= lock;
 
-  int arg= lock;
 
+	if(setReceiverOnline(ONLINE_FLAG)!=ONLINE_FLAG){
 #ifdef VERBOSE
-  std::cout << "Locking or Unlocking Receiver " << std::endl;
+		std::cout << "Locking or Unlocking Receiver " << std::endl;
 #endif
+		if (dataSocket) {
+			if  (dataSocket->Connect()>=0) {
+				dataSocket->SendDataOnly(&fnum,sizeof(fnum));
+				dataSocket->SendDataOnly(&arg,sizeof(arg));
+				dataSocket->ReceiveDataOnly(&ret,sizeof(ret));
+				if (ret!=FAIL)
+					dataSocket->ReceiveDataOnly(&retval,sizeof(retval));
+				else{
+					dataSocket->ReceiveDataOnly(mess,sizeof(mess));
+					std::cout<< "Receiver returned error: " << mess << std::endl;
+				}
 
-  if (thisDetector->receiverOnlineFlag==ONLINE_FLAG) {
-    if (dataSocket) {
-      if  (dataSocket->Connect()>=0) {
-	dataSocket->SendDataOnly(&fnum,sizeof(fnum));
-	dataSocket->SendDataOnly(&arg,sizeof(arg));
-	dataSocket->ReceiveDataOnly(&ret,sizeof(ret));
-	if (ret!=FAIL)
-	  dataSocket->ReceiveDataOnly(&retval,sizeof(retval));
-	else{
-	  dataSocket->ReceiveDataOnly(mess,sizeof(mess));
-	  std::cout<< "Receiver returned error: " << mess << std::endl;
-	}
+				dataSocket->Disconnect();
+				if (ret==FORCE_UPDATE)
+					updateReceiver();
+			}
+		}
+	}else
+		std::cout << "cannot connect to receiver" << endl;
 
-	dataSocket->Disconnect();
-	if (ret==FORCE_UPDATE)
-	  updateReceiver();
-      }
-    }
-  }
-  return retval;
+	return retval;
 }
 
 
@@ -5742,35 +5792,35 @@ int slsDetector::lockReceiver(int lock){
 
 
 string slsDetector::getReceiverLastClientIP(){
-  int fnum=F_GET_LAST_CLIENT_IP;
-  int ret = FAIL;
-  char retval[INET_ADDRSTRLEN];
-  char mess[100];
+	int fnum=F_GET_LAST_CLIENT_IP;
+	int ret = FAIL;
+	char retval[INET_ADDRSTRLEN]="";
+	char mess[100];
 
-
+	if(setReceiverOnline(ONLINE_FLAG)!=ONLINE_FLAG){
 #ifdef VERBOSE
-  std::cout << "Geting Last Client IP connected to Receiver " << std::endl;
+		std::cout << "Geting Last Client IP connected to Receiver " << std::endl;
 #endif
+		if (dataSocket) {
+			if  (dataSocket->Connect()>=0) {
+				dataSocket->SendDataOnly(&fnum,sizeof(fnum));
+				dataSocket->ReceiveDataOnly(&ret,sizeof(ret));
+				if (ret!=FAIL)
+					dataSocket->ReceiveDataOnly(retval,sizeof(retval));
+				else{
+					dataSocket->ReceiveDataOnly(mess,sizeof(mess));
+					std::cout<< "Receiver returned error: " << mess << std::endl;
+				}
 
-  if (thisDetector->receiverOnlineFlag==ONLINE_FLAG) {
-    if (dataSocket) {
-      if  (dataSocket->Connect()>=0) {
-	dataSocket->SendDataOnly(&fnum,sizeof(fnum));
-	dataSocket->ReceiveDataOnly(&ret,sizeof(ret));
-	if (ret!=FAIL)
-	  dataSocket->ReceiveDataOnly(retval,sizeof(retval));
-	else{
-	  dataSocket->ReceiveDataOnly(mess,sizeof(mess));
-	  std::cout<< "Receiver returned error: " << mess << std::endl;
-	}
+				dataSocket->Disconnect();
+				if (ret==FORCE_UPDATE)
+					updateReceiver();
+			}
+		}
+	}else
+		std::cout << "cannot connect to receiver" << endl;
 
-	dataSocket->Disconnect();
-	if (ret==FORCE_UPDATE)
-	  updateReceiver();
-      }
-    }
-  }
-  return string(retval);
+	return string(retval);
 }
 
 
@@ -5789,11 +5839,11 @@ int slsDetector::updateReceiverNoWait() {
 #endif
 
   n = 	dataSocket->ReceiveDataOnly(&ind,sizeof(ind));
-  parentDet->setFileIndex(ind);
+  fileIO::setFileIndex(ind);
   n = 	dataSocket->ReceiveDataOnly(path,MAX_STR_LENGTH);
-  parentDet->setFilePath(path);
+  fileIO::setFilePath(path);
   n = 	dataSocket->ReceiveDataOnly(path,MAX_STR_LENGTH);
-  parentDet->setFileName(path);
+  fileIO::setFileName(path);
   return OK;
 
 }
@@ -5807,7 +5857,7 @@ int slsDetector::updateReceiver() {
   int ret=OK;
   char mess[100];
 
-  if (thisDetector->receiverOnlineFlag==ONLINE_FLAG) {
+  if (setReceiverOnline(ONLINE_FLAG)==ONLINE_FLAG) {
     if (dataSocket) {
       if  (dataSocket->Connect()>=0) {
 	dataSocket->SendDataOnly(&fnum,sizeof(fnum));

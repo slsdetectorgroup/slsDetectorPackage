@@ -585,7 +585,34 @@ class slsDetectorUtils :  public slsDetectorActions, public postProcessing {
   */
   virtual string getReceiverLastClientIP()=0;
 
- protected:
+
+  /**
+     Sets up the file directory
+     @param fileName fileDir file directory
+     \returns file dir
+  */
+  virtual string setFilePath(string s="")=0;
+
+  /**
+     Sets up the file name
+     @param fileName file name
+     \returns file name
+  */
+  virtual string setFileName(string s="")=0;
+
+  /**
+     \returns file dir
+  */
+  virtual string getFilePath()=0;
+
+  /**
+     \returns file name
+  */
+  virtual string getFileName()=0;
+
+
+
+  protected:
 
   static const int64_t thisSoftwareVersion=0x20120124;
 

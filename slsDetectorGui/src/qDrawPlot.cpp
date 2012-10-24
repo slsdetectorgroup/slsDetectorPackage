@@ -158,7 +158,7 @@ void qDrawPlot::SetupWidgetWindow(){
 
 	plot2D = new SlsQt2DPlotLayout(boxPlot);
 		plot2D->setFont(QFont("Sans Serif",9,QFont::Normal));
-		plot2D->GetPlot()->SetData(nPixelsX,-0.5,nPixelsX-0.5,nPixelsY,startPixel,endPixel,lastImageArray);
+		//plot2D->GetPlot()->SetData(nPixelsX,-0.5,nPixelsX-0.5,nPixelsY,startPixel,endPixel,lastImageArray);
 		plot2D->setTitle(GetImageTitle());
 		plot2D->SetXTitle(imageXAxisTitle);
 		plot2D->SetYTitle(imageYAxisTitle);
@@ -1057,7 +1057,7 @@ void qDrawPlot::ClonePlot(){
 	else{
 
 		plot2D = new SlsQt2DPlotLayout(boxPlot);
-		plot2D->GetPlot()->SetData(nPixelsX,-0.5,nPixelsX-0.5,nPixelsY,startPixel,endPixel,lastImageArray);
+		//plot2D->GetPlot()->SetData(nPixelsX,-0.5,nPixelsX-0.5,nPixelsY,startPixel,endPixel,lastImageArray);
 		plot2D->setFont(QFont("Sans Serif",9,QFont::Normal));
 		plot2D->setTitle(GetImageTitle());
 		plot2D->SetXTitle(imageXAxisTitle);

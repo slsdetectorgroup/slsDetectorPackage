@@ -60,6 +60,8 @@ void SlsQt2DHist::SetData(int nbinsx, double xmin, double xmax, int nbinsy,doubl
 #else
     setInterval( Qt::XAxis,QwtInterval(xmin,xmax));
     setInterval( Qt::YAxis,QwtInterval(ymin,ymax));
+    	//  setInterval( Qt::ZAxis,QwtInterval(zmin,zmax));
+    //setInterval( Qt::ZAxis,QwtInterval(0.,1.));
 #endif
 
   }
@@ -103,6 +105,7 @@ void SlsQt2DHist::SetMinMax(double zmin,double zmax){
     if(z_min>0) z_min/=1.02; else z_min*=1.02;
     if(z_max>0) z_max*=1.02; else z_max/=1.02;
   }
+  setInterval( Qt::ZAxis,QwtInterval(z_min,z_max));
 }
 
 double SlsQt2DHist::GetMean(){

@@ -82,6 +82,18 @@ class SlsQt2DHist: public QwtRasterData{
    virtual QwtDoubleInterval range() const{ return QwtDoubleInterval(z_min,z_max);}
 #else
   virtual QwtInterval range() const{ return QwtInterval(z_min,z_max);}
+  virtual QwtInterval interval(Qt::Axis axis) const { 
+    switch (axis){
+    case Qt::ZAxis:
+      return QwtInterval(z_min,z_max);
+    case Qt::XAxis:
+      return QwtInterval(x_min,x_max);
+    case Qt::YAxis:
+      return QwtInterval(y_min,y_max);
+    default:
+      return QwtInterval(z_min,z_max);
+    };
+  };
 #endif
 
 
@@ -110,6 +122,12 @@ class SlsQt2DHist: public QwtRasterData{
       double left_v   = value_between_points(y0,data[b00],y1,data[b01],y);
       double right_v  = value_between_points(y0,data[b10],y1,data[b11],y);
     //horazontal extrap
+
+
+
+      return 0.5;
+
+
 	return value_between_points(x_min+(x_int+0.5)*x_width,left_v,
 				    x_min+(x_int+1.5)*x_width,right_v,x);
   }

@@ -52,6 +52,7 @@ private:
     void  SetupColorMap();
 
     QwtLinearColorMap* myColourMap(QVector<double> colourStops);
+    QwtLinearColorMap* myColourMap(int log=0);
 
     
 
@@ -85,13 +86,6 @@ public:
     void   SetData(int nbinsx, double xmin, double xmax, int nbinsy,double ymin, double ymax,double *d,double zmin=0, double zmax=-1){
       hist->SetData(nbinsx,xmin,xmax,nbinsy,ymin,ymax,d,zmin,zmax);
       
-#if QWT_VERSION<0x060000 
-      ;
-#else
-  d_spectrogram->setData(hist);
-#endif
-
-
     }
 
     double* GetDataPtr()                        {return hist->GetDataPtr();}

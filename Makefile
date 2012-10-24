@@ -6,7 +6,7 @@ LIBRARYDIR=$(WD)/slsDetectorSoftware
 CLIENTDIR=$(WD)/slsDetectorClient
 GUIDIR=$(WD)/slsDetectorGuiOriginal
 LIBDOCDIR=$(WD)/slsDetectorSoftware
-RECEIVERDIR=$(LIBRARYDIR)/slsDetectorReceiver
+RECEIVERDIR=$(LIBRARYDIR)/slsReceiver
 
 
 
@@ -15,9 +15,9 @@ RECEIVERDIR=$(LIBRARYDIR)/slsDetectorReceiver
 
 
 
-all: lib  slsDetectorClient_static slsDetectorReceiver #slsDetectorGUI
+all: lib  slsDetectorClient_static slsReceiver #slsDetectorGUI
 
-nonstatic: lib  slsDetectorClient slsDetectorReceiver slsDetectorGUI
+nonstatic: lib  slsDetectorClient slsReceiver slsDetectorGUI
 
 lib:
 	cd $(LIBRARYDIR) && $(MAKE) lib FLAGS=$(FLAGS)
@@ -33,7 +33,7 @@ slsDetectorClient: lib
 	$(shell test -d bin || mkdir -p bin)
 	mv $(CLIENTDIR)/bin/* bin/
 
-slsDetectorReceiver: lib
+slsReceiver: lib
 	cd  $(RECEIVERDIR) && $(MAKE)  FLAGS=$(FLAGS)
 	$(shell test -d bin || mkdir -p bin)
 	mv $(RECEIVERDIR)/bin/* bin/
@@ -51,7 +51,7 @@ calWiz:
 	cp calibrationWizards/manual/*.pdf manual/
 
 clean:
-	rm -rf bin/sls_detector_*
+	rm -rf bin/sls_detector_* bin/slsDetectorGui bin/slsReceiver
 	cd $(LIBRARYDIR) && $(MAKE) clean
 	cd $(CLIENTDIR) && $(MAKE) clean
 	cd $(GUIDIR) && $(MAKE) clean

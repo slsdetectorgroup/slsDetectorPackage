@@ -1865,14 +1865,14 @@ int get_run_status(int file_des) {
 	
       }
 	  //and readbusy=0,idle
-	  else if(retval==0){
+      else if(!(retval&0xffff)){
 		  //if(!(retval&0x00000001)){
 		  printf("-----------------------------------IDLE--------------------------------------\n");
 		  s=IDLE;
 	  } else {
-	    printf("-----------------------------------Unknown status %04x--------------------------------------\n", retval);
+	    printf("-----------------------------------Unknown status %08x--------------------------------------\n", retval);
 	    s=ERROR;
-
+	    ret=FAIL;
 	  }
   }
   //if runbusy=1
@@ -1890,27 +1890,10 @@ int get_run_status(int file_des) {
 
 
 
-/*
-  if (retval&0x8000)
-	  s=ERROR;
-  else if (retval&0x00000001)
-	  //if (retval&0x00010000)
-	  if (retval&0x00000002)
-		  s=TRANSMITTING;
-	  else
-		  s=RUNNING;
-  else if (retval&0x00010000)
-	  s=RUN_FINISHED;
-  else if (retval&0x00000008)
-	  s=WAITING;
-  else
-	  s=IDLE;
-*/
-
-
-
   if (ret!=OK) {
-    printf("get status failed\n");
+    printf("get status failed %04x\n");
+    sprintf(mess, "get status failed %08x\n", retval);
+    
   } else if (differentClients)
     ret=FORCE_UPDATE;
 

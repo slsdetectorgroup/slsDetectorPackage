@@ -195,9 +195,9 @@ double g[]={0.00, 0.81, 1.00, 0.20, 0.00};
  QColor c1,c2,c;
 	c1.setRgbF(r[0],g[0],b[0]);
 	c2.setRgbF(r[ns-1],g[ns-1],b[ns-1]);
-	  QwtLinearColorMap* copyMap = new QwtLinearColorMap(c1, c2);
+	QwtLinearColorMap* copyMap = new QwtLinearColorMap(Qt::lightGray, c2);
 
-	for (int is=1; is<ns-1; is++) {
+	for (int is=0; is<ns-1; is++) {
 	c.setRgbF(r[is],g[is],b[is]);
   	copyMap->addColorStop(colourStops.value(is),c );
 	}
@@ -293,7 +293,7 @@ isLog=1;
 #if QWT_VERSION<0x060000
     d_spectrogram->setColorMap(*colorMapLogScale);
 #else
-    d_spectrogram->setColorMap(myColorMap(isLog));
+    d_spectrogram->setColorMap(myColourMap(isLog));
 #endif
     setAxisScaleEngine(QwtPlot::yRight,new QwtLog10ScaleEngine);
 #if QWT_VERSION<0x060000
@@ -307,7 +307,7 @@ isLog=0;
 #if QWT_VERSION<0x060000
     d_spectrogram->setColorMap(*colorMapLinearScale);
 #else
-   d_spectrogram->setColorMap(myColorMap(isLog));
+   d_spectrogram->setColorMap(myColourMap(isLog));
 #endif
 
 	

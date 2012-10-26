@@ -354,7 +354,7 @@ int sendModule(int file_des, sls_detector_module *myMod) {
 #ifdef VERBOSE
   printf("dacs %d of size %d sent\n",myMod->module, ts);
   for (idac=0; idac< nDacs; idac++) 
-    printf("dac %d is %d\n",idac,myMod->dacs[idac]);
+    printf("dac %d is %d\n",idac,(int)myMod->dacs[idac]);
 #endif
   ts+= sendDataOnly(file_des,myMod->adcs,sizeof(dacs_t)*nAdcs);
 #ifdef VERBOSE
@@ -482,7 +482,7 @@ int  receiveModule(int file_des, sls_detector_module* myMod) {
 #ifdef VERBOSE 
     printf("dacs received\n");
     for (id=0; id<nDacs; id++)
-      printf("dac %d val %d\n",id,  myMod->dacs[id]);
+      printf("dac %d val %d\n",id,  (int)myMod->dacs[id]);
 
 
 #endif

@@ -774,7 +774,7 @@ string slsDetectorCommand::cmdAcquire(int narg, char *args[], int action) {
 
 
 	myDet->setOnline(ONLINE_FLAG);
-	bool receiver=myDet->setReceiverOnline();
+	bool receiver=(myDet->setReceiverOnline()==ONLINE_FLAG);
 
 	if(receiver)
 		if(myDet->startReceiver()==OK)

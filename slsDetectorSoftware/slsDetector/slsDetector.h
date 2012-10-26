@@ -13,6 +13,8 @@
 
 #include "angleConversionConstant.h";
 
+#include "receiverInterface.h"
+
 
 /**
  * 
@@ -1437,7 +1439,10 @@ class slsDetector : public slsDetectorUtils, public energyConversion {
   */
   int stopReceiver();
 
-  int DetectorStopReceiver();
+  /**   Sets(false) or Resets(true) the CPU bit in detector
+        \returns OK or FAIL
+  */
+  int detectorSendToReceiver(bool set);
 
   /**   gets the status of the listening mode of receiver
         \returns status
@@ -1488,7 +1493,7 @@ class slsDetector : public slsDetectorUtils, public energyConversion {
   
 
   /**
-   *
+   * parent multi detector
    * */
 
   multiSlsDetector *parentDet;
@@ -1533,6 +1538,8 @@ class slsDetector : public slsDetectorUtils, public energyConversion {
   int *chipregs;
   /** pointer to channal registers */
   int *chanregs;
+
+  receiverInterface *thisReceiver;
 
   /** Initializes the shared memory 
       \param type is needed to define the size of the shared memory

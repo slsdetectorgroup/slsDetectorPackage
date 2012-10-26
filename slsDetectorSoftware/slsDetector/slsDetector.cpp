@@ -5624,7 +5624,7 @@ slsDetectorDefs::runStatus slsDetector::getReceiverStatus(){
 
 
 
-int slsDetector::getFramesCaughtByReciver(){
+int slsDetector::getFramesCaughtByReceiver(){
 	int fnum=F_GET_FRAMES_CAUGHT;
 	int ret = FAIL;
 	int retval=-1;

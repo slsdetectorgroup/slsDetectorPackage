@@ -17,7 +17,7 @@
 
 
 /**
-   @short interface between sls detector and sls receiver
+   @short
  */
 class receiverInterface{
 
@@ -35,7 +35,10 @@ public:
 	 */
 	virtual ~receiverInterface();
 
-
+	/**
+	 * Set the datasocket
+	 * @param socket the data socket
+	 */
 	void setSocket(MySocketTCP *socket){dataSocket=socket;};
 
 

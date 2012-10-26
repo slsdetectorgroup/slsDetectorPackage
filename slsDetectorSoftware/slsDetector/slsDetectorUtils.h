@@ -610,7 +610,10 @@ class slsDetectorUtils :  public slsDetectorActions, public postProcessing {
   */
   virtual string getFileName()=0;
 
-
+  /**
+     \returns frames caught by receiver(average for multi)
+  */
+  virtual int getFramesCaughtByReceiver()=0;
 
   protected:
 

@@ -1076,7 +1076,7 @@ class multiSlsDetector  : public slsDetectorUtils {
   /**   gets the number of frames caught by receiver
 	\returns number of frames caught by receiver
   */
-  int getFramesCaughtByReciver();
+  int getFramesCaughtByReceiver();
 
   /** Locks/Unlocks the connection to the receiver
       /param lock sets (1), usets (0), gets (-1) the lock

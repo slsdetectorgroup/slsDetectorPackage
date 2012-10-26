@@ -3517,7 +3517,7 @@ string slsDetectorCommand::cmdReceiver(int narg, char *args[], int action) {
     if (action==PUT_ACTION)
       return string("cannot put");
     else{
-      sprintf(answer,"%d",myDet->getFramesCaughtByReciver());
+      sprintf(answer,"%d",myDet->getFramesCaughtByReceiver());
       return string(answer);
     }
   }
@@ -3535,7 +3535,7 @@ string slsDetectorCommand::helpReceiver(int narg, char *args[], int action) {
     os << "receiver [status] \t starts/stops the receiver to listen to detector packets. - can be start or stop" << std::endl;
   if (action==GET_ACTION || action==HELP_ACTION){
     os << "receiver \t returns the status of receiver - can be running or idle" << std::endl;
-    os << "framescaught \t returns the number of frames caught by receiver" << std::endl;
+    os << "framescaught \t returns the number of frames caught by receiver(average for multi)" << std::endl;
   }
   return os.str();
 

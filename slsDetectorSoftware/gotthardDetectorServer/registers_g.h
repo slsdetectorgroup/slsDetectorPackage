@@ -276,5 +276,9 @@
 #define CHANNEL_OFFSET				16
 #define ACTIVE_ADC_MASK 		    0x0000001f
 
+
+/**ADC SYNC CLEAN FIFO*/
+#define ADCSYNC_CLEAN_FIFO_BITS     0x300000
+
 #endif
 

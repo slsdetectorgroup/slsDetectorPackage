@@ -256,13 +256,17 @@ int setDAQRegister(int adcval)
   reg=bus_r(addr);
   bus_w(addr,val);
   reg=bus_r(addr);
-//#ifdef VERBOSE
+#ifdef VERBOSE
   printf("DAQ reg:%x\n",reg);
-//#endif
+#endif
 
 
+  //clean fifo
   addr=ADC_SYNC_REG;
-  val=12;
+  val=ADCSYNC_VAL | ADCSYNC_CLEAN_FIFO_BITS;
+  bus_w(addr,val);
+
+  val=ADCSYNC_VAL;
   bus_w(addr,val);
   reg=bus_r(addr);
 #ifdef VERBOSE

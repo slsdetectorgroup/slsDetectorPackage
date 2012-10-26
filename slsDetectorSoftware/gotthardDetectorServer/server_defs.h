@@ -33,6 +33,11 @@
 #define ALLMOD 0xffff
 #define ALLFIFO 0xffff
 
+
+
+#define ADCSYNC_VAL 0x32213
+
+
 #ifdef VIRTUAL
 #define DEBUGOUT
 #endif

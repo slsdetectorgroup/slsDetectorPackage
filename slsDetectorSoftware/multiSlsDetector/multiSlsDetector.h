@@ -1078,6 +1078,12 @@ class multiSlsDetector  : public slsDetectorUtils {
   */
   int getFramesCaughtByReceiver();
 
+  /**  gets the current frame index of receiver
+     \returns current frame index of receiver
+  */
+ int getCurrentFrameIndex();
+
+
   /** Locks/Unlocks the connection to the receiver
       /param lock sets (1), usets (0), gets (-1) the lock
       /returns lock status of the receiver

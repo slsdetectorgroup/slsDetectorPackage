@@ -231,7 +231,7 @@ class slsDetectorBase :  public virtual slsDetectorDefs  {
   virtual string createFileName()=0;
 
 
-  virtual void incrementProgress()=0;
+  virtual void incrementProgress(int i=-1)=0;
   virtual double getCurrentProgress()=0;
   virtual void incrementFileIndex()=0;
   virtual int setTotalProgress()=0;
@@ -448,7 +448,12 @@ class slsDetectorBase :  public virtual slsDetectorDefs  {
   /**   gets the number of frames caught by receiver
         \returns number of frames caught by receiver
   */
-  virtual int getFramesCaughtByReciver()=0;
+  virtual int getFramesCaughtByReceiver()=0;
+
+  /**
+     \returns current frame index of receiver
+  */
+ virtual int getCurrentFrameIndex()=0;
 
   /** Locks/Unlocks the connection to the receiver
       /param lock sets (1), usets (0), gets (-1) the lock

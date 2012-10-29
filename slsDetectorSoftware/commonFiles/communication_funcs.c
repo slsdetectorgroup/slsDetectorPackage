@@ -150,11 +150,14 @@ int acceptConnection(int socketDescriptor) {
    }  else if (result < 0 && errno != EINTR) {
       printf("Error in select(): %s\n", strerror(errno));
    } else if (result > 0) {
+#ifdef VERBOSE
      printf("select returned!\n");
+#endif
      for (j=0; j<maxfd+1; j++) {
        if (FD_ISSET(j, &tempset)) {
-	
+#ifdef VERBOSE
 	 printf("fd %d is set\n",j);
+#endif
 	 FD_CLR(j, &tempset);
 
 
@@ -216,8 +219,9 @@ int acceptConnection(int socketDescriptor) {
 	 }  else {
 	   
 	   inet_ntop(AF_INET, &(addressC.sin_addr), dummyClientIP, INET_ADDRSTRLEN);
-	   
+#ifdef VERBOSE
 	   printf("connection accepted %d\n",file_des);
+#endif
 	   FD_SET(file_des, &readset);
 	   maxfd = (maxfd < file_des)?file_des:maxfd;
 	 }

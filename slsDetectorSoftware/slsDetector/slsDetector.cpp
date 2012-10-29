@@ -1062,6 +1062,9 @@ int slsDetector::setTCPSocket(string const name, int const control_port, int con
     std::cout<< "offline!" << std::endl;
 #endif
   }
+  //default receiver off. if it was on by default, client doesnt know
+  if(thisDetector->onlineFlag==ONLINE_FLAG)
+	  detectorSendToReceiver(false);
   return retval;
 };
 
@@ -5641,6 +5644,24 @@ int slsDetector::getFramesCaughtByReceiver(){
 	return retval;
 }
 
+
+
+int slsDetector::getCurrentFrameIndex(){
+	int fnum=F_GET_FRAME_INDEX;
+	int ret = FAIL;
+	int retval=-1;
+
+	if (setReceiverOnline(ONLINE_FLAG)==ONLINE_FLAG) {
+#ifdef VERBOSE
+		std::cout << "Getting Current Frame Index of Receiver " << std::endl;
+#endif
+		ret=thisReceiver->getInt(fnum,retval);
+		if(ret==FORCE_UPDATE)
+			ret=updateReceiver();
+	}
+
+	return retval;
+}
 
 
 

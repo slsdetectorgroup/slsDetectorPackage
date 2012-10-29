@@ -664,6 +664,10 @@ slsDetectorCommand::slsDetectorCommand(slsDetectorUtils *det)  {
   descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdReceiver;
   i++;
 
+  descrToFuncMap[i].m_pFuncName="frameindex";
+  descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdReceiver;
+  i++;
+
   descrToFuncMap[i].m_pFuncName="r_lock"; //
   descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdLock;
   i++;
@@ -3521,6 +3525,17 @@ string slsDetectorCommand::cmdReceiver(int narg, char *args[], int action) {
       return string(answer);
     }
   }
+
+  else if(cmd=="frameindex"){
+    if (action==PUT_ACTION)
+      return string("cannot put");
+    else{
+      sprintf(answer,"%d",myDet->getCurrentFrameIndex());
+      return string(answer);
+    }
+  }
+
+
   else
     return string("could not decode command");
 
@@ -3536,6 +3551,7 @@ string slsDetectorCommand::helpReceiver(int narg, char *args[], int action) {
   if (action==GET_ACTION || action==HELP_ACTION){
     os << "receiver \t returns the status of receiver - can be running or idle" << std::endl;
     os << "framescaught \t returns the number of frames caught by receiver(average for multi)" << std::endl;
+    os << "frameindex \t returns the current frame index of receiver(average for multi)" << std::endl;
   }
   return os.str();
 

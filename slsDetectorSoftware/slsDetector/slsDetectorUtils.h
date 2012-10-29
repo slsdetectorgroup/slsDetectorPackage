@@ -439,7 +439,7 @@ class slsDetectorUtils :  public slsDetectorActions, public postProcessing {
   double getCurrentProgress();
 
 
-  void incrementProgress();
+  void incrementProgress(int i=-1);
 
 
 
@@ -611,9 +611,14 @@ class slsDetectorUtils :  public slsDetectorActions, public postProcessing {
   virtual string getFileName()=0;
 
   /**
-     \returns frames caught by receiver(average for multi)
+     \returns frames caught by receiver
   */
-  virtual int getFramesCaughtByReceiver()=0;
+ virtual int getFramesCaughtByReceiver()=0;
+
+ /**
+    \returns current frame index of receiver
+ */
+virtual int getCurrentFrameIndex()=0;
 
   protected:
 

@@ -371,9 +371,8 @@ void* postProcessing::processData(int delflag) {
 		int prevCaught=getCurrentFrameIndex();
 		int caught=0;
 		while(getRunStatus()!=IDLE){
-		//while((getCurrentProgress()<100)&&(getReceiverStatus()==RUNNING)){
 			caught=getCurrentFrameIndex();
-			incrementProgress(caught-prevCaught);cout<<endl;
+			incrementProgress(caught-prevCaught);
 			prevCaught=caught;
 			usleep(1000000);
 		}

@@ -1062,9 +1062,6 @@ int slsDetector::setTCPSocket(string const name, int const control_port, int con
     std::cout<< "offline!" << std::endl;
 #endif
   }
-  //default receiver off. if it was on by default, client doesnt know
-  if(thisDetector->onlineFlag==ONLINE_FLAG)
-	  detectorSendToReceiver(false);
   return retval;
 };
 
@@ -5302,9 +5299,6 @@ int slsDetector::setReceiverOnline(int off) {
 			}
 		}
 	}
-	//To ensure detector knows, if receiver suddenly went down
-	if((prev==ONLINE_FLAG)&&(thisDetector->receiverOnlineFlag==OFFLINE_FLAG))
-		detectorSendToReceiver(false);
 	return thisDetector->receiverOnlineFlag;
 }
 

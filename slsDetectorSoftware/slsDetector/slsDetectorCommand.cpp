@@ -790,6 +790,7 @@ string slsDetectorCommand::cmdAcquire(int narg, char *args[], int action) {
 	if(receiver)
 		myDet->stopReceiver();
 
+
 	return string("");
 
 }

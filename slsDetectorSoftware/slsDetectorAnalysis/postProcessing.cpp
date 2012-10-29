@@ -320,52 +320,65 @@ int postProcessing::fillBadChannelMask() {
 
 
 void* postProcessing::processData(int delflag) {
-
+	if(setReceiverOnline()==OFFLINE_FLAG){
 
 #ifdef VERBOSE
-  std::cout<< " processing data - threaded mode " << *threadedProcessing << endl;
+		std::cout<< " processing data - threaded mode " << *threadedProcessing << endl;
 #endif
 
 
- 
-  queuesize=dataQueueSize();
 
-  int *myData;
-  int dum=1;
+		queuesize=dataQueueSize();
 
-  fdata=NULL;
+		int *myData;
+		int dum=1;
 
-  while(dum | *threadedProcessing) { // ????????????????????????
-    /* IF THERE ARE DATA PROCESS THEM*/
-    while((queuesize=dataQueueSize())>0) {
-      /** Pop data queue */
+		fdata=NULL;
+
+		while(dum | *threadedProcessing) { // ????????????????????????
+			/* IF THERE ARE DATA PROCESS THEM*/
+			while((queuesize=dataQueueSize())>0) {
+				/** Pop data queue */
 #ifdef VERBOSE
-      cout << "data found"<< endl;
+				cout << "data found"<< endl;
 #endif
 
-      myData=dataQueueFront(); // get the data from the queue 
+				myData=dataQueueFront(); // get the data from the queue
 #ifdef VERBOSE
-      cout << "got them"<< endl;
+				cout << "got them"<< endl;
 #endif
 
-      if (myData) {
-	processFrame(myData,delflag);
-      }
-    }
-   
-    /* IF THERE ARE NO DATA look if acquisition is finished */
-    if (checkJoinThread()) {
-      if (dataQueueSize()==0) {
-	break;
-      }
-    } 
-    dum=0;
-  }
+				if (myData) {
+					processFrame(myData,delflag);
+				}
+			}
 
-  if (fdata) {
-    delete [] fdata;
-  }
-  return 0;
+			/* IF THERE ARE NO DATA look if acquisition is finished */
+			if (checkJoinThread()) {
+				if (dataQueueSize()==0) {
+					break;
+				}
+			}
+			dum=0;
+		}
+
+		if (fdata) {
+			delete [] fdata;
+		}
+	}
+	//receiver
+	else{
+		int prevCaught=getCurrentFrameIndex();
+		int caught=0;
+		while(getRunStatus()!=IDLE){
+		//while((getCurrentProgress()<100)&&(getReceiverStatus()==RUNNING)){
+			caught=getCurrentFrameIndex();
+			incrementProgress(caught-prevCaught);cout<<endl;
+			prevCaught=caught;
+			usleep(1000000);
+		}
+	}
+	return 0;
 }
 
 

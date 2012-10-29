@@ -1445,8 +1445,12 @@ int configureMAC(int ipad,long long int macad,long long int servermacad,int ival
 
 
 u_int32_t runBusy(void) {
-
-  return (bus_r(STATUS_REG)&RUN_BUSY_BIT);
+	u_int32_t s = bus_r(STATUS_REG);
+	//s=((s & RUN_BUSY_BIT) | (s & READMACHINE_BUSY_BIT));
+	//s=(s & RUN_BUSY_BIT);
+	//if(s!=0x62721)
+	//	printf("status=%x\n",s);
+  return s;
 }
 
 u_int32_t dataPresent(void) {
@@ -1618,8 +1622,10 @@ u_int32_t* fifo_read_event()
    while ((t&0x1)==0)  
      {
        t = bus_r(LOOK_AT_ME_REG);
-       if (!runBusy())
-	 return NULL;
+       if (!runBusy()){
+    	   printf("\n\ngonna return null  STATUS=%08x\n",runState());
+    	   return NULL;
+       }
      }
 
 

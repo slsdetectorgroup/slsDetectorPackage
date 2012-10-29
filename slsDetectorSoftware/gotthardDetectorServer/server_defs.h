@@ -35,7 +35,8 @@
 
 
 
-#define ADCSYNC_VAL 0x32213
+#define ADCSYNC_VAL   0x32113
+//#define ADCSYNC_VAL 0x22113
 
 
 #ifdef VIRTUAL

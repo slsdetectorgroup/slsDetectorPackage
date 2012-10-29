@@ -124,6 +124,8 @@ enum {
 
   F_LOCK_RECEIVER,			/**< locks receiver */
 
+  F_GET_FRAME_INDEX				/**< gets the frame index */
+
   /* Always append functions hereafter!!! */
 
 };

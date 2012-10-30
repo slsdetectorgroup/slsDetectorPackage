@@ -89,6 +89,7 @@ void  slsDetectorUtils::acquire(int delflag){
   if (nm<1)
     nm=1;
 
+ 
   int  np=getNumberOfPositions();
   if (np<1)
     np=1;
@@ -129,9 +130,9 @@ void  slsDetectorUtils::acquire(int delflag){
 
     //loop measurements
 
-    pthread_mutex_lock(&mp);
-    setStartIndex(*fileIndex);
-    pthread_mutex_unlock(&mp);
+//     pthread_mutex_lock(&mp);
+//     setStartIndex(*fileIndex);
+//     pthread_mutex_unlock(&mp);
  
     //cout << "action at start" << endl;
     if (*stoppedFlag==0) {
@@ -216,11 +217,19 @@ void  slsDetectorUtils::acquire(int delflag){
 		get_i0(0, IOarg);
 	    }
        
+	    if ((timerValue[FRAME_NUMBER]*timerValue[CYCLES_NUMBER])>1) {
+	      setFrameIndex(0);
+	    } else {
+	      setFrameIndex(-1);
+	    }
+
 	    startAndReadAll();
 #ifdef VERBOSE
 	    cout << "returned! " << endl;
 #endif     
        
+
+
 	    if (*correctionMask&(1<< I0_NORMALIZATION)) {
 	      if (get_i0) 
 		currentI0=get_i0(1,IOarg); // this is the correct i0!!!!!
@@ -259,13 +268,14 @@ void  slsDetectorUtils::acquire(int delflag){
 	    usleep(100000);
 	  }
 
+	  closeDataFile();
 
 	  pthread_mutex_lock(&mp);
 	  if (*stoppedFlag==0) {
 	    executeAction(headerAfter);	 
-	    setLastIndex(*fileIndex);
+	    // setLastIndex(*fileIndex);
 	  } else {
-	    setLastIndex(*fileIndex);
+	    //   setLastIndex(*fileIndex);
 	    break;
 	  }
 	  pthread_mutex_unlock(&mp);
@@ -277,9 +287,9 @@ void  slsDetectorUtils::acquire(int delflag){
 #endif
 	    break;
 	  } else if (ip<(np-1)) {
-	    pthread_mutex_lock(&mp);
-	    *fileIndex=setStartIndex(); 
-	    pthread_mutex_unlock(&mp);
+// 	    pthread_mutex_lock(&mp);
+// 	    *fileIndex=setStartIndex(); 
+// 	    pthread_mutex_unlock(&mp);
 	  }
 	} // loop on position finished
      
@@ -296,9 +306,9 @@ void  slsDetectorUtils::acquire(int delflag){
 #endif
 	  break;
 	} else if (is1<(ns1-1)) {
-	  pthread_mutex_lock(&mp);
-	  *fileIndex=setStartIndex(); 
-	  pthread_mutex_unlock(&mp);
+// 	  pthread_mutex_lock(&mp);
+// 	  *fileIndex=setStartIndex(); 
+// 	  pthread_mutex_unlock(&mp);
 	}
       } 
   
@@ -311,22 +321,32 @@ void  slsDetectorUtils::acquire(int delflag){
 #endif
 	break;
       } else if (is0<(ns0-1)) {
-	pthread_mutex_lock(&mp);
-	*fileIndex=setStartIndex();  
-	pthread_mutex_unlock(&mp);
+// 	pthread_mutex_lock(&mp);
+// 	*fileIndex=setStartIndex();  
+// 	pthread_mutex_unlock(&mp);
       }
 
     } //end scan0 loop is0
 
-    pthread_mutex_lock(&mp);
-    *fileIndex=setLastIndex();  
-    pthread_mutex_unlock(&mp);
+//     pthread_mutex_lock(&mp);
+//     *fileIndex=setLastIndex();  
+//     pthread_mutex_unlock(&mp);
+
     if (*stoppedFlag==0) {
       executeAction(stopScript);
     } else
       break;
 
-    // loop measurements
+
+
+
+#ifdef VERBOSE
+  cout << "findex incremented " << endl;
+#endif
+  if(*correctionMask&(1<<WRITE_FILE))
+    IncrementFileIndex();
+
+
 
 
     if (measurement_finished)
@@ -337,6 +357,7 @@ void  slsDetectorUtils::acquire(int delflag){
     } 
    
 
+    // loop measurements
   }
 
   // waiting for the data processing thread to finish!
@@ -357,7 +378,6 @@ void  slsDetectorUtils::acquire(int delflag){
   if (eclog)
     delete eclog;
 
-   
    
   if (acquisition_finished)
     acquisition_finished(getCurrentProgress(),getDetectorStatus(),acqFinished_p);

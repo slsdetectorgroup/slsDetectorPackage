@@ -15,17 +15,21 @@ boot: $(OBJS)
 #doc: $(SRC_CLNT)
 #	doxygen doxy.config
 
+#%.o : %.c %.h
+#	$(CXX) -Wall -o $@ -c $< $(INCLUDES) $(CFLAGS) $(FLAGS) $(LDLIBS)  -fPIC 
 
-$(PROGS): $(OBJS)
+
+
+$(PROGS): 
 	echo $(OBJS)
-	mkdir -p $(INSTDIR)
-	$(CC) $(LDFLAGS) $^ $(LDLIBS) $(CFLAGS) -o $@   
+	mkdir -p $(INSTDIR) 
+	$(CC) $(SRC_CLNT) $(LDFLAGS) $(LDLIBS) $(CFLAGS) -o $@   
 	mv $(PROGS) $(INSTDIR)
 
 
 clean:
 	rm -rf $(PROGS)  *.o  $(INSTDIR)/*
-	
+
 
 
 

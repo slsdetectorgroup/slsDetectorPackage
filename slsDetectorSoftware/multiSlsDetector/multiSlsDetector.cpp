@@ -1518,6 +1518,15 @@ int multiSlsDetector::setSpeed(speedVariable index, int value){
 
 
 
+int  multiSlsDetector::getDataBytes(){
+  int ret=0;   
+  for (int ip=0; ip<thisMultiDetector->numberOfDetectors; ip++) {
+    if (detectors[ip]) 
+      ret+=detectors[ip]->getDataBytes();
+  }
+  return ret;
+}
+
 
 
 
@@ -2881,11 +2890,14 @@ int multiSlsDetector::setNumberOfModules(int p, dimension d) {
   thisMultiDetector->numberOfChannels=0;
 
   for (int idet=0; idet<thisMultiDetector->numberOfDetectors; idet++) {
+
+    cout << "detector " << idet << endl;
     if (detectors[idet]) {
       if (p<0)
 	nm=p;
       else {
 	mm=detectors[idet]->getMaxNumberOfModules();
+	//mm=detectors[idet]->getMaxMods();
 	if (nt>mm) {
 	  nm=mm;
 	  nt-=nm;

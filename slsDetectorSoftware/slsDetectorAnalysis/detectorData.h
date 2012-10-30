@@ -10,7 +10,7 @@
  */
 class detectorData {
  public:
-  /** The constructor
+  /** @short The constructor
       \param val pointer to the data
       \param err pointer to errors
       \param ang pointer to the angles
@@ -21,18 +21,18 @@ class detectorData {
   */
   detectorData(double *val=NULL, double *err=NULL, double *ang=NULL,  double p_ind=-1, const char *fname="", int np=-1, int ny=1) : values(val), errors(err), angles(ang),  progressIndex(p_ind), npoints(np), npy(ny){strcpy(fileName,fname);};
     /** 
-	the destructor
+	@short The destructor
 	deletes also the arrays pointing to data/errors/angles if not NULL
     */
     ~detectorData() {if (values) delete [] values; if (errors) delete [] errors; if (angles) delete [] angles;};
     //private:
-    double *values; /**< pointer to the data */
-    double *errors; /**< pointer to the errors */
-    double *angles;/**< pointer to the angles */
-    double progressIndex;/**< file index */
-    char fileName[1000];/**< file name */
-    int npoints;/**< number of points */
-    int npy;/**< dimensions in y coordinate*/
+    double *values; /**< @short pointer to the data */
+    double *errors; /**< @short pointer to the errors */
+    double *angles;/**< @short pointer to the angles (NULL if no angular conversion) */
+    double progressIndex;/**< @short file index */
+    char fileName[1000];/**< @short file name */
+    int npoints;/**< @short number of points */
+    int npy;/**< @short dimensions in y coordinate*/
 };
 
 

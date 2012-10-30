@@ -69,9 +69,47 @@ int fileIO::writeDataFile(string fname, int *data){
   return fileIOStatic::writeDataFile(fname, getTotalNumberOfChannels(), data);
 }
 
+
+
+
 int fileIO::writeDataFile(ofstream &outfile, int *data, int offset){
   
   return fileIOStatic::writeDataFile(outfile, getTotalNumberOfChannels(), data, offset);
+}
+
+
+
+int fileIO::writeDataFile(void *data, int iframe) {
+  if (iframe>=0)
+    frameIndex=iframe;
+
+  if (*framesPerFile<2)
+    frameIndex=-1;
+
+  if ((frameIndex%(*framesPerFile))==0 || (frameIndex<0)) { 
+    createFileName();
+    filefd = fopen(currentFileName.c_str(), "w");
+  }
+  if (filefd){
+    if (iframe%(*framesPerFile)) {
+      fileIOStatic::writeBinaryDataFile(filefd,getDataBytes() ,  data);
+      frameIndex++;
+    }
+  }
+  if ((frameIndex%(*framesPerFile)==0) || (frameIndex<0)) {
+    if (filefd)
+      fclose(filefd);
+    filefd=NULL;
+  }
+  
+}
+
+
+
+int fileIO::closeDataFile() {
+  if (filefd)
+      fclose(filefd);
+    filefd=NULL;
 }
 
 
@@ -83,10 +121,24 @@ int fileIO::writeDataFile(string fname, short int *data){
   return fileIOStatic::writeDataFile(fname, getTotalNumberOfChannels(), data);
 }
 
+
+
+
+
+
+
+
+
 int fileIO::writeDataFile(ofstream &outfile, short int *data, int offset){
 
   return fileIOStatic::writeDataFile(outfile, getTotalNumberOfChannels(), data, offset);
 }
+
+
+
+
+
+
 
 
 

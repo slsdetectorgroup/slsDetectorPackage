@@ -615,6 +615,7 @@ class multiSlsDetector  : public slsDetectorUtils {
   */
   int setDynamicRange(int n, int pos);
 
+  int getDataBytes();
 
  
   /** 

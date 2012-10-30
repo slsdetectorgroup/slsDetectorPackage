@@ -62,65 +62,71 @@ void postProcessing::processFrame(int *myData, int delflag) {
  
  /** decode data */
  
-  fdata=decodeData(myData, fdata);
-  
+  if (getDetectorsType()==MYTHEN) {
+    fdata=decodeData(myData, fdata);
+    
 #ifdef VERBOSE
-  cout << "decode"<< endl;
+    cout << "decode"<< endl;
 #endif
- 
- if (rawDataReady) {
-   //#ifdef VERBOSE
-   cout << "raw data ready..." << endl;
-   //#endif
-     rawDataReady(fdata,numberOfChannels, pRawDataArg);
-   //#ifdef VERBOSE
-   cout << "done" << endl;
-   cout << "NO FILE WRITING AND/OR DATA PROCESSING DONE BY SLS DETECTOR SOFTWARE!!!" << endl;   
-   //#endif
+  } else
+    fdata=NULL;
 
- } else {
+  if (rawDataReady) {
+    //#ifdef VERBOSE
+    cout << "raw data ready..." << endl;
+    //#endif
+    rawDataReady(fdata,numberOfChannels, pRawDataArg);
+    //#ifdef VERBOSE
+    cout << "done" << endl;
+    cout << "NO FILE WRITING AND/OR DATA PROCESSING DONE BY SLS DETECTOR SOFTWARE!!!" << endl;   
+    //#endif
+  } else {
  
   
-   pthread_mutex_lock(&mp);
-   fname=createFileName();
-   pthread_mutex_unlock(&mp);
+    pthread_mutex_lock(&mp);
+    fname=createFileName();
+    pthread_mutex_unlock(&mp);
 #ifdef VERBOSE
-   cout << "fname is " << fname << endl;
+    cout << "fname is " << fname << endl;
 #endif
- 
-   //Checking for write flag
-   if((*correctionMask)&(1<<WRITE_FILE)) {
-     
+    
+    //Checking for write flag
+    if((*correctionMask)&(1<<WRITE_FILE)) {
 #ifdef VERBOSE
      cout << "writing raw data " << endl;
      
 #endif
-     //uses static function?!?!?!?
-     writeDataFile (fname+string(".raw"),fdata, NULL, NULL, 'i'); 
-     
-#ifdef VERBOSE
-     cout << "done " << endl;
-
-
-
-     
-#endif
-   } 
-   if ((*correctionMask) & ~(1<<WRITE_FILE)) {
-     doProcessing(fdata,delflag, fname);
-   } else 
-     if (dataReady) {
-       thisData=new detectorData(fdata,NULL,NULL,getCurrentProgress(),(fname+string(".raw")).c_str(),getTotalNumberOfChannels()); 
-       dataReady(thisData, pCallbackArg);
-       delete thisData;
-       fdata=NULL;
+     if (fdata) {
+       //uses static function?!?!?!?
+       writeDataFile (fname+string(".raw"),fdata, NULL, NULL, 'i'); 
+     } else {
+       writeDataFile ((void*)myData); 
      }
+
 #ifdef VERBOSE
-  cout << "findex incremented " << endl;
+     cout << "done " << endl;    
 #endif
-  if(*correctionMask&(1<<WRITE_FILE))
-    IncrementFileIndex();
- }
+
+    } 
+    if ((*correctionMask) & ~(1<<WRITE_FILE)) {
+      doProcessing(fdata,delflag, fname);
+    } else 
+      if (dataReady) {
+	thisData=new detectorData(fdata,NULL,NULL,getCurrentProgress(),(fname+string(".raw")).c_str(),getTotalNumberOfChannels()); 
+	dataReady(thisData, pCallbackArg);
+	delete thisData;
+	fdata=NULL;
+      }
+    // #ifdef VERBOSE
+//   cout << "findex incremented " << endl;
+// #endif
+//   if(*correctionMask&(1<<WRITE_FILE))
+//     IncrementFileIndex();
+  }
+   
+  if (getFrameIndex()>=0)
+     incrementFrameIndex();
+
 
  delete [] myData;
  if (fdata)
@@ -179,7 +185,7 @@ void postProcessing::doProcessing(double *lfdata, int delflag, string fname) {
   cout << "exptime is "<< t << endl;
 #endif
 
-  if (GetCurrentPositionIndex()<=1) {
+  if (GetCurrentPositionIndex()<=1 || npos<2) {
 #ifdef VERBOSE
       cout << "init dataset" << endl;
 #endif 
@@ -199,25 +205,26 @@ void postProcessing::doProcessing(double *lfdata, int delflag, string fname) {
       cout << "add frame" << endl;
 #endif
       
-      addFrame(lfdata,currentPosition, currentI0, t, fname, 0);      
-  
-      if ((GetCurrentPositionIndex()>=npos && positionFinished() && dataQueueSize()) || npos==0) {
+      addFrame(lfdata,currentPosition, currentI0, t, fname, 0);    
+
+      if ((GetCurrentPositionIndex()>=npos && positionFinished() && dataQueueSize()) || npos<2) {
 	
 #ifdef VERBOSE
 	cout << "finalize dataset" << endl;
 #endif
 	
 	finalizeDataset(ang, val, err, np);
+	//if (npos<2) {
 	IncrementPositionIndex();
 	
 	pthread_mutex_lock(&mp);
 	fname=createFileName();
 	pthread_mutex_unlock(&mp);
-
+	  //}
 	
 	if((*correctionMask)&(1<<WRITE_FILE)) {  
 	  writeDataFile (fname+ext,np,val, err,ang,'f');
-	} 
+	}   
 	
 	
 	if (dataReady) {
@@ -235,10 +242,6 @@ void postProcessing::doProcessing(double *lfdata, int delflag, string fname) {
 	  delete [] val;
 	if (err)
 	  delete [] err;
-	
-
-
-
 	
       }
 }

@@ -25,12 +25,39 @@ class multiSlsDetector;
 using namespace std;
 /** 
 
-@libdoc The slsDetectorUsers class is a minimal purely virtual interface class which should be instantiated by the users in their acquisition software (EPICS, spec etc.). More advanced configuration functions are not implemented and can be written in a configuration file tha can be read/written.
 
 
-This class contains the functions accessible by the users to control the slsDetectors (both multiSlsDetector and slsDetector)
+   \mainpage 
+ <img  src="psi_logo_150.gif" alt="Paul Scherrer Institut"> 
+<CENTER><H1>API for SLS detectors data acquisition</H1></CENTER>
+<HR>
+   Although the SLS detectors group delvelops several types of detectors (1/2D, counting/integrating etc.) it is common interest of the group to use a common platfor for data acquisition
+ 
+   The architecture of the acquisitions system is intended as follows:
+   \li A socket server running on the detector (or more than one in some special cases)
+   \li C++ classes common to all detectors for client-server communication. These can be supplied to users as libraries and embedded also in acquisition systems which are not developed by the SLS
+   \li the possibility of using a Qt-based graphical user interface (with eventually root analisys capabilities)
+   \li the possibility of running all commands from command line. In order to ensure a fast operation of this so called "text client" the detector parameters should not be re-initialized everytime. For this reason a shared memory block is allocated where the main detector flags and parameters are stored 
+   \li a Root library for data postprocessing and detector calibration (energy, angle).
 
- * @short This is the base class for detector functionalities of interest for the users.
+
+The slsDetectorUsers class is a minimal purely virtual interface class which should be instantiated by the users in their acquisition software (EPICS, spec etc.). More advanced configuration functions are not implemented and can be written in a configuration file tha can be read/written.
+
+
+   \authors <a href="mailto:anna.bergamaschi@psi.ch">Anna Bergamaschi</a>, <a href="mailto:dhanya.maliakal@psi.ch">Dhanya Maliakal</a>
+   @version 0.2
+<H2>Currently supported detectors</H2>
+\li MYTHEN
+\li GOTTHARD controls
+<H3>Coming soon</H3>
+\li GOTTHARD data receiver
+\li EIGER
+
+@libdoc The slsDetectorUsers class is a minimal purely virtual interface class which should be instantiated by the users in their acquisition software (EPICS, spec etc.). More advanced configuration functions are not implemented and can be written in a configuration or parameters file that can be read/written.
+
+*/
+/**
+  @short This is the base class for detector functionalities of interest for the users. Can be emebedded in the users custom interface e.g. EPICS, Lima etc.
 
 */
 

@@ -109,7 +109,9 @@ int slsDetectorUsers::getPositions(double *pos){
 }
 
 int slsDetectorUsers::setDetectorSize(int x0, int y0, int nx, int ny){
-  return myDetector->setNumberOfModules(nx/myDetector->getChansPerMod(0))*myDetector->getChansPerMod(0);}
+  int nmod=nx/(myDetector->getChansPerMod(0));
+  cout << myDetector->getChansPerMod(0) << " " << nx << " " << nmod << endl;
+  return myDetector->setNumberOfModules(nmod)*myDetector->getChansPerMod(0);}
 
 int slsDetectorUsers::getDetectorSize(int &x0, int &y0, int &nx, int &ny){ 
   y0=0; 

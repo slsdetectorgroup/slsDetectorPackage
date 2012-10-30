@@ -257,8 +257,7 @@ s
   void addFrame(double *data, double pos, double i0, double t, string fname, double var);
   void finalizeDataset(double *a, double *v, double *e, int &np); 
 
-
-
+ virtual detectorType getDetectorsType(int pos=-1)=0;
 
  protected:
      

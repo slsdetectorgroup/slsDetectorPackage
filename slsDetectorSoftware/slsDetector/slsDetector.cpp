@@ -1273,6 +1273,7 @@ int slsDetector::setNumberOfModules(int n, dimension d){
 #endif
   if (thisDetector->onlineFlag==ONLINE_FLAG) {
     if (controlSocket) {
+      cout << "connected" << endl;
       if  (controlSocket->Connect()>=0) {
 	controlSocket->SendDataOnly(&fnum,sizeof(fnum));
 	controlSocket->SendDataOnly(&arg,sizeof(arg));
@@ -1287,8 +1288,10 @@ int slsDetector::setNumberOfModules(int n, dimension d){
 	if (ret==FORCE_UPDATE)
 	  updateDetector();
       }
-    }
+    } else
+      cout << "no control socket?!??!?" << endl;
   } else {
+      cout << "offline" << endl;
     ret=OK;
     if (n==GET_FLAG)
       ;
@@ -1389,7 +1392,7 @@ int slsDetector::getMaxNumberOfModules(dimension d){
   std::cout<< "Max number of modules in dimension "<< d <<" is " << retval << std::endl;
 #endif
   if (ret==FAIL) {
-    std::cout<< "Get max number of modules failed " << std::endl;
+    std::cout<< "Get max number of modules failed " << retval << std::endl;
     return retval;
   }  else {
     thisDetector->nModMax[d]=retval;

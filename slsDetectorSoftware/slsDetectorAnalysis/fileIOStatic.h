@@ -59,11 +59,11 @@ class fileIOStatic  {
   static string  createFileName(char *filepath, char *filename, int aMask, double sv0, int prec0, double sv1, int prec1, int pindex, int npos, int findex, int frameindex=-1, int detindex=-1){ \
     ostringstream osfn;							\
     osfn << filepath << "/" << filename;		\
-    if(detindex!=-1) osfn << "_d"<< detindex;	\
+    if(detindex>=0) osfn << "_d"<< detindex;	\
     if ( aMask& (1 << (slsDetectorDefs::MAX_ACTIONS)))  osfn << "_S" << fixed << setprecision(prec0) << sv0;		\
     if (aMask & (1 << (slsDetectorDefs::MAX_ACTIONS+1)))  osfn << "_s" << fixed << setprecision(prec1) << sv1;		\
     if (pindex>0 && pindex<=npos)  osfn << "_p" << pindex;		\
-    if(frameindex!=-1) osfn << "_f" << frameindex;	\
+    if(frameindex>=0) osfn << "_f" << frameindex;	\
     osfn << "_" << findex;						\
     return osfn.str();							\
   };
@@ -278,6 +278,9 @@ class fileIOStatic  {
     }									\
   };
 
+
+
+
   /**  
        writes a data file
        \param outfile output file stream
@@ -340,7 +343,30 @@ class fileIOStatic  {
     }									\
   };
   
+  /**
+     writes a raw data file in binary format
+     \param  fname of the file to be written
+     \param number of bytes to write
+     \param data array of data values
+     \returns OK or FAIL if it could not write the file or data=NULL  
+  */
+  static int writeBinaryDataFile(string fname, size_t nbytes, void *data){ \
+    FILE *sfilefd;							\
+    if (data==NULL) return slsDetectorDefs::FAIL;			\
+    sfilefd = fopen(fname.c_str(), "w");				\
+    if (sfilefd) {							\
+      writeBinaryDataFile(sfilefd, nbytes,  data);			\
+      fclose(sfilefd);							\
+      return slsDetectorDefs::OK;					\
+    }									\
+    return slsDetectorDefs::FAIL;					\
+  };
 
+  static int writeBinaryDataFile(FILE *sfilefd, size_t nbytes,  void *data){ \
+    fwrite(data,  1,  nbytes, sfilefd);					\
+    return slsDetectorDefs::OK;						\
+  };
+							
   /**
      writes a raw data file
      \param outfile output file stream
@@ -395,8 +421,6 @@ class fileIOStatic  {
     for (int ichan=0; ichan<nch; ichan++)      outfile << ichan+offset << " " << *(data+ichan) << std::endl; \
     return slsDetectorDefs::OK;					\
   };
-
-
 
   /**
      reads a data file

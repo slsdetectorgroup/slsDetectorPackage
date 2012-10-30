@@ -22,8 +22,16 @@ class fileIO :  public fileIOStatic, public virtual slsDetectorBase  {
 
 
  public:
+
+  /* enum rawFileFormat { */
+/*     ASCII, */
+/*     BINARY */
+/*   } */
+
+
   /** default constructor */
-  fileIO(): fileIOStatic(){frameIndex=-1;detIndex=-1;};
+  fileIO(): fileIOStatic(){frameIndex=-1;detIndex=-1; framesPerFile=&nframes; nframes=1; };
+
   /** virtual destructor */
   virtual ~fileIO(){};
 
@@ -64,6 +72,13 @@ class fileIO :  public fileIOStatic, public virtual slsDetectorBase  {
 
   /**
      sets the default output file index
+     \param i frame index to be set
+     \returns actual frame index
+  */
+  virtual int setFramesPerFile(int i) {if (i>0) *framesPerFile=i; return *framesPerFile;};
+
+  /**
+     sets the default output file index
      \param i detector index to be set
      \returns actual detector index
   */
@@ -74,7 +89,6 @@ class fileIO :  public fileIOStatic, public virtual slsDetectorBase  {
      
   */
   virtual string getFilePath() {return string(filePath);};
-  
   /**
     \returns the  output files root name
   */
@@ -102,17 +116,14 @@ class fileIO :  public fileIOStatic, public virtual slsDetectorBase  {
 
 
   /**
-     
   writes a data file
   \param fname of the file to be written
   \param data array of data values
   \param err array of arrors on the data. If NULL no errors will be written
-  
   \param ang array of angular values. If NULL data will be in the form chan-val(-err) otherwise ang-val(-err)
   \param dataformat format of the data: can be 'i' integer or 'f' double (default)
   \param nch number of channels to be written to file. if -1 defaults to the number of installed channels of the detector
   \returns OK or FAIL if it could not write the file or data=NULL
-  
   */
    virtual int writeDataFile(string fname, double *data, double *err=NULL, double *ang=NULL, char dataformat='f', int nch=-1);
   
@@ -120,7 +131,7 @@ class fileIO :  public fileIOStatic, public virtual slsDetectorBase  {
   /**
      
   writes a data file
-  \paramoutfile output file stream
+  \param outfile output file stream
   \param data array of data values
   \param err array of arrors on the data. If NULL no errors will be written
   
@@ -142,6 +153,10 @@ class fileIO :  public fileIOStatic, public virtual slsDetectorBase  {
   */
   virtual int writeDataFile(string fname, int *data);
 
+  
+  virtual int writeDataFile(void *data, int iframe=-1);
+    
+  int closeDataFile();
      /**
       writes a data file
       \param outfile output file stream
@@ -161,6 +176,12 @@ class fileIO :  public fileIOStatic, public virtual slsDetectorBase  {
   */
   virtual int writeDataFile(string fname, short int *data);    
   
+
+
+   
+
+
+
   /**
       writes a data file of short ints
       \param outfile output file stream
@@ -200,8 +221,10 @@ class fileIO :  public fileIOStatic, public virtual slsDetectorBase  {
        \param fname of the file to be read
        \param data array of data values
        \returns OK or FAIL if it could not read the file or data=NULL
-  */
-  virtual int readDataFile(string fname, int *data);  /**
+yes  */
+  virtual int readDataFile(string fname, int *data);  
+
+/**
        reads a raw data file
        \param infile input file stream
        \param data array of data values
@@ -227,6 +250,7 @@ class fileIO :  public fileIOStatic, public virtual slsDetectorBase  {
   */
   int readDataFile(ifstream &infile, short int *data, int offset=0);
 
+  virtual int getDataBytes   (   )=0;
   friend class slsDetector;
 
  protected:
@@ -238,28 +262,40 @@ class fileIO :  public fileIOStatic, public virtual slsDetectorBase  {
 
   void incrementDetectorIndex() { (detIndex)++; };
 
-    string getCurrentFileName(){return currentFileName;};
+  string getCurrentFileName(){return currentFileName;};
 
-    string getCurrentReceiverFilePrefix(){return currentReceiverFilePrefix;};
-
-
+  string getCurrentReceiverFilePrefix(){return currentReceiverFilePrefix;};
 
 
-    string currentFileName;
+  string currentFileName;
 
-    string currentReceiverFilePrefix;
+  string currentReceiverFilePrefix;
 
     
-    /** output directory */
-    char *filePath;
-    /** file root name */
-    char *fileName;
-    /** file index */
-    int *fileIndex;
-    /** frame index */
-    int frameIndex;
-    /** detector id */
-    int detIndex;
+  /** output directory */
+  char *filePath;
+  /** file root name */
+  char *fileName;
+  /** file index */
+  int *fileIndex;
+  /** frame index */
+  int frameIndex;
+  /** detector id */
+  int detIndex;
+  /** frames per file */
+  int *framesPerFile;
+
+  //  int *fileFormat;
+
+ private:
+
+
+  FILE *filefd;
+  ofstream fstream;
+
+  int nframes;
+  // int fformat;
+
 
 };
 

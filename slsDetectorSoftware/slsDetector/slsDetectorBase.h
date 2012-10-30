@@ -231,7 +231,7 @@ class slsDetectorBase :  public virtual slsDetectorDefs  {
   virtual string createFileName()=0;
 
 
-  virtual void incrementProgress(int i=-1)=0;
+  virtual void incrementProgress(int i=1)=0;
   virtual double getCurrentProgress()=0;
   virtual void incrementFileIndex()=0;
   virtual int setTotalProgress()=0;

@@ -439,7 +439,7 @@ class slsDetectorUtils :  public slsDetectorActions, public postProcessing {
   double getCurrentProgress();
 
 
-  void incrementProgress(int i=-1);
+  void incrementProgress(int i=1);
 
 
 

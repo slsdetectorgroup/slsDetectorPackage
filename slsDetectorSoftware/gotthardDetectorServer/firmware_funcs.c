@@ -87,7 +87,7 @@ typedef struct mac_header_struct{
 
 typedef struct ip_header_struct {
   u_int16_t     ip_len;
-  u_int8_t      ip_tos; 
+  u_int8_t      ip_tos;
   u_int8_t      ip_ihl:4 ,ip_ver:4;
   u_int16_t     ip_offset:13,ip_flag:3;
   u_int16_t     ip_ident;
@@ -109,15 +109,15 @@ typedef struct mac_conf_struct{
   mac_header  mac;
   ip_header   ip;
   udp_header  udp;
-  u_int32_t   npack;   
-  u_int32_t   lpack;   
-  u_int32_t   npad;   
-  u_int32_t   cdone;   
+  u_int32_t   npack;
+  u_int32_t   lpack;
+  u_int32_t   npad;
+  u_int32_t   cdone;
 } mac_conf;
 
 typedef struct tse_conf_struct{
   u_int32_t   rev;                    //0x0
-  u_int32_t   scratch;                
+  u_int32_t   scratch;
   u_int32_t   command_config;
   u_int32_t   mac_0;                  //0x3
   u_int32_t   mac_1;
@@ -152,7 +152,7 @@ int mapCSP0(void) {
   if (CSP0BASE == (u_int32_t)MAP_FAILED) {
     printf("\nCan't map memmory area!!\n");
     return FAIL;
-  } 
+  }
   printf("CSP0 mapped\n");
 
 #endif
@@ -168,7 +168,7 @@ int mapCSP0(void) {
 #endif
   printf("CSPObase is 0x%x \n",CSP0BASE);
   printf("CSPOBASE=from %08x to %x\n",CSP0BASE,CSP0BASE+MEM_SIZE);
-  
+
   u_int32_t address;
   address = FIFO_DATA_REG_OFF;
   values=(u_int16_t*)(CSP0BASE+address*2);
@@ -210,7 +210,7 @@ u_int32_t bus_w(u_int32_t offset, u_int32_t data) {
 
 u_int32_t bus_r(u_int32_t offset) {
   volatile u_int32_t *ptr1;
-  
+
   ptr1=(u_int32_t*)(CSP0BASE+offset*2);
   return *ptr1;
 }
@@ -314,27 +314,27 @@ u_int32_t readin(int modnum) {
 u_int32_t setClockDivider(int d) {
   u_int32_t c;
   c=bus_r(SPEED_REG);
-  bus_w(SPEED_REG,(d<<CLK_DIVIDER_OFFSET)|(c&~(CLK_DIVIDER_MASK))); 
-  return ((bus_r(SPEED_REG)& CLK_DIVIDER_MASK)>>CLK_DIVIDER_OFFSET);    
+  bus_w(SPEED_REG,(d<<CLK_DIVIDER_OFFSET)|(c&~(CLK_DIVIDER_MASK)));
+  return ((bus_r(SPEED_REG)& CLK_DIVIDER_MASK)>>CLK_DIVIDER_OFFSET);
 }
 
 u_int32_t getClockDivider() {
   u_int32_t clk_div;
   clk_div=((bus_r(SPEED_REG)&CLK_DIVIDER_MASK)>>CLK_DIVIDER_OFFSET);
-  return clk_div;    
+  return clk_div;
 }
 
 u_int32_t setSetLength(int d) {
   u_int32_t c;
   c=bus_r(SPEED_REG);
-  bus_w(SPEED_REG,(d<<SET_LENGTH_OFFSET)|(c&~(SET_LENGTH_MASK))); 
-  return ((bus_r(SPEED_REG)& SET_LENGTH_MASK)>>SET_LENGTH_OFFSET);    
+  bus_w(SPEED_REG,(d<<SET_LENGTH_OFFSET)|(c&~(SET_LENGTH_MASK)));
+  return ((bus_r(SPEED_REG)& SET_LENGTH_MASK)>>SET_LENGTH_OFFSET);
 }
 
 u_int32_t getSetLength() {
   u_int32_t clk_div;
-  clk_div=((bus_r(SPEED_REG)& SET_LENGTH_MASK)>>SET_LENGTH_OFFSET);   
-  return clk_div;    
+  clk_div=((bus_r(SPEED_REG)& SET_LENGTH_MASK)>>SET_LENGTH_OFFSET);
+  return clk_div;
 }
 
 
@@ -346,49 +346,49 @@ u_int32_t setWaitStates(int d1) {
   if (d1<=0xf) {
     sprintf(cmd,"bus -a 0xb0000000 -w 0x%x0008",d1);
     c=bus_r(SPEED_REG);
-    bus_w(SPEED_REG,(d<<WAIT_STATES_OFFSET)|(c&~(WAIT_STATES_MASK))); 
+    bus_w(SPEED_REG,(d<<WAIT_STATES_OFFSET)|(c&~(WAIT_STATES_MASK)));
     system(cmd);
   }
-  return ((bus_r(SPEED_REG)& WAIT_STATES_MASK)>>WAIT_STATES_OFFSET)+2;    
+  return ((bus_r(SPEED_REG)& WAIT_STATES_MASK)>>WAIT_STATES_OFFSET)+2;
 }
 
 u_int32_t getWaitStates() {
   u_int32_t clk_div;
   clk_div=((bus_r(SPEED_REG)& WAIT_STATES_MASK)>>WAIT_STATES_OFFSET);
-  return clk_div+2;    
+  return clk_div+2;
 }
 
 
 u_int32_t setTotClockDivider(int d) {
   u_int32_t c;
   c=bus_r(SPEED_REG);
-  bus_w(SPEED_REG,(d<<TOTCLK_DIVIDER_OFFSET)|(c&~(TOTCLK_DIVIDER_MASK))); 
-  return ((bus_r(SPEED_REG)& TOTCLK_DIVIDER_MASK)>>TOTCLK_DIVIDER_OFFSET);    
+  bus_w(SPEED_REG,(d<<TOTCLK_DIVIDER_OFFSET)|(c&~(TOTCLK_DIVIDER_MASK)));
+  return ((bus_r(SPEED_REG)& TOTCLK_DIVIDER_MASK)>>TOTCLK_DIVIDER_OFFSET);
 }
 
 u_int32_t getTotClockDivider() {
   u_int32_t clk_div;
   clk_div=((bus_r(SPEED_REG)&TOTCLK_DIVIDER_MASK)>>TOTCLK_DIVIDER_OFFSET);
-  return clk_div;    
+  return clk_div;
 }
 
 
 u_int32_t setTotDutyCycle(int d) {
   u_int32_t c;
   c=bus_r(SPEED_REG);
-  bus_w(SPEED_REG,(d<<TOTCLK_DUTYCYCLE_OFFSET)|(c&~(TOTCLK_DUTYCYCLE_MASK))); 
-  return ((bus_r(SPEED_REG)& TOTCLK_DUTYCYCLE_MASK)>>TOTCLK_DUTYCYCLE_OFFSET);    
+  bus_w(SPEED_REG,(d<<TOTCLK_DUTYCYCLE_OFFSET)|(c&~(TOTCLK_DUTYCYCLE_MASK)));
+  return ((bus_r(SPEED_REG)& TOTCLK_DUTYCYCLE_MASK)>>TOTCLK_DUTYCYCLE_OFFSET);
 }
 
 u_int32_t getTotDutyCycle() {
   u_int32_t clk_div;
   clk_div=((bus_r(SPEED_REG)&TOTCLK_DUTYCYCLE_MASK)>>TOTCLK_DUTYCYCLE_OFFSET);
-  return clk_div;    
+  return clk_div;
 }
 
 
 u_int32_t setExtSignal(int d, enum externalSignalFlag  mode) {
-  
+
 	//int modes[]={EXT_SIG_OFF, EXT_GATE_IN_ACTIVEHIGH, EXT_GATE_IN_ACTIVELOW,EXT_TRIG_IN_RISING,EXT_TRIG_IN_FALLING,EXT_RO_TRIG_IN_RISING, EXT_RO_TRIG_IN_FALLING,EXT_GATE_OUT_ACTIVEHIGH, EXT_GATE_OUT_ACTIVELOW, EXT_TRIG_OUT_RISING, EXT_TRIG_OUT_FALLING, EXT_RO_TRIG_OUT_RISING, EXT_RO_TRIG_OUT_FALLING};
 	// int off=d*SIGNAL_OFFSET;
 
@@ -470,7 +470,7 @@ u_int32_t setFPGASignal(int d, enum externalSignalFlag  mode) {
 int getExtSignal(int d) {
 
 /*  int modes[]={SIGNAL_OFF, GATE_IN_ACTIVE_HIGH, GATE_IN_ACTIVE_LOW,TRIGGER_IN_RISING_EDGE, TRIGGER_IN_FALLING_EDGE,RO_TRIGGER_IN_RISING_EDGE, RO_TRIGGER_IN_FALLING_EDGE, GATE_OUT_ACTIVE_HIGH,   GATE_OUT_ACTIVE_LOW, TRIGGER_OUT_RISING_EDGE, TRIGGER_OUT_FALLING_EDGE, RO_TRIGGER_OUT_RISING_EDGE,RO_TRIGGER_OUT_FALLING_EDGE};
-    
+
     int off=d*SIGNAL_OFFSET;
     int mode=((bus_r(EXT_SIGNAL_REG)&(SIGNAL_MASK<<off))>>off);
 
@@ -671,7 +671,7 @@ int setToT(int d) {
     bus_w(CONFIG_REG,reg|TOT_ENABLE_BIT);
   } else if (d==0) {
     bus_w(CONFIG_REG,reg&(~TOT_ENABLE_BIT));
-  } 
+  }
   reg=bus_r(CONFIG_REG);
 #ifdef VERBOSE
   printf("ToT is %x\n", reg);
@@ -696,7 +696,7 @@ int setContinousReadOut(int d) {
     bus_w(CONFIG_REG,reg|CONT_RO_ENABLE_BIT);
   } else if (d==0) {
     bus_w(CONFIG_REG,reg&(~CONT_RO_ENABLE_BIT));
-  } 
+  }
   reg=bus_r(CONFIG_REG);
 #ifdef VERBOSE
   printf("Continous readout is %x\n", reg);
@@ -874,7 +874,7 @@ int64_t get64BitReg(int aLSB, int aMSB){
   v64=(v64<<32) | vLSB;
   return v64;
 }
-  
+
 int64_t setFrames(int64_t value){
   return set64BitReg(value,  SET_FRAMES_LSB_REG, SET_FRAMES_MSB_REG);
 }
@@ -885,13 +885,13 @@ int64_t getFrames(){
 
 int64_t setExposureTime(int64_t value){
   /* time is in ns */
-  if (value!=-1) 
+  if (value!=-1)
     value*=(1E-9*CLK_FREQ);
     return set64BitReg(value,SET_EXPTIME_LSB_REG, SET_EXPTIME_MSB_REG)/(1E-9*CLK_FREQ);
 }
 
 int64_t getExposureTime(){
-  return get64BitReg(GET_EXPTIME_LSB_REG, GET_EXPTIME_MSB_REG)/(1E-9*CLK_FREQ);   
+  return get64BitReg(GET_EXPTIME_LSB_REG, GET_EXPTIME_MSB_REG)/(1E-9*CLK_FREQ);
 }
 
 int64_t setGates(int64_t value){
@@ -914,7 +914,7 @@ int64_t setPeriod(int64_t value){
 }
 
 int64_t getPeriod(){
-  return get64BitReg(GET_PERIOD_LSB_REG, GET_PERIOD_MSB_REG)/(1E-9*CLK_FREQ);   
+  return get64BitReg(GET_PERIOD_LSB_REG, GET_PERIOD_MSB_REG)/(1E-9*CLK_FREQ);
 }
 
 int64_t setDelay(int64_t value){
@@ -926,7 +926,7 @@ int64_t setDelay(int64_t value){
 }
 
 int64_t getDelay(){
-  return get64BitReg(GET_DELAY_LSB_REG, GET_DELAY_MSB_REG)/(1E-9*CLK_FREQ);   
+  return get64BitReg(GET_DELAY_LSB_REG, GET_DELAY_MSB_REG)/(1E-9*CLK_FREQ);
 }
 
 int64_t setTrains(int64_t value){
@@ -966,7 +966,7 @@ int64_t setProbes(int64_t value){
     initChipWithProbes(0, ow,value, ALLMOD);
     putout("0000000000000000",ALLMOD);
     setNMod(nm);
-    getDynamicRange(); // needed to change dataBytes 
+    getDynamicRange(); // needed to change dataBytes
   }
   return getProbes();
 }
@@ -985,13 +985,13 @@ int64_t getProgress() {
 
 
   //should be done in firmware!!!!
-  
+
 	return 0;
 
 }
 
 int64_t getActualTime(){
-  return get64BitReg(GET_ACTUAL_TIME_LSB_REG, GET_ACTUAL_TIME_MSB_REG)/(1E-9*CLK_FREQ);  
+  return get64BitReg(GET_ACTUAL_TIME_LSB_REG, GET_ACTUAL_TIME_MSB_REG)/(1E-9*CLK_FREQ);
 }
 
 int64_t getMeasurementTime(){
@@ -1042,9 +1042,9 @@ int64_t getProbes(){
   printf("%08x ",shiftin);
   printf("probes==%01x\n",np);
 #endif
-  
+
   return np;
-    
+
 }
 
 
@@ -1053,7 +1053,7 @@ int setDACRegister(int idac, int val, int imod) {
   int off;
 #ifdef VERBOSE
   if(val==-1)
-    printf("Getting dac register%d module %d\n",idac,imod);    
+    printf("Getting dac register%d module %d\n",idac,imod);
   else
     printf("Setting dac register %d module %d to %d\n",idac,imod,val);
 #endif
@@ -1071,7 +1071,7 @@ int setDACRegister(int idac, int val, int imod) {
     break;
   case 6:
   case 7:
-    addr=MOD_DACS3_REG; 
+    addr=MOD_DACS3_REG;
     break;
   default:
     printf("weird idac value %d\n",idac);
@@ -1095,7 +1095,7 @@ int setDACRegister(int idac, int val, int imod) {
   val=val<<2;
 
   //val=(bus_r(addr)>>off)&0x3ff;
-  
+
 
 #ifdef VERBOSE
   printf("Dac %d module %d register is %d\n\n",idac,imod,val);
@@ -1106,7 +1106,7 @@ int setDACRegister(int idac, int val, int imod) {
 
 int getTemperature(int tempSensor, int imod){
   int val;
-  char cTempSensor[2][100]={"ADCs/ASICs","VRs/FPGAs"}; 
+  char cTempSensor[2][100]={"ADCs/ASICs","VRs/FPGAs"};
   imod=0;//ignoring more than 1 mod for now
   int i,j,repeats=6;
   u_int32_t tempVal=0;
@@ -1151,12 +1151,12 @@ int initHighVoltage(int val, int imod){
   switch(val){
   case -1: break;
   case 0:  writeVal=0x0; writeVal2=0x0; break;
-  case 90: writeVal=0x0; writeVal2=0x1; break; 
+  case 90: writeVal=0x0; writeVal2=0x1; break;
   case 110:writeVal=0x2; writeVal2=0x3; break;
-  case 120:writeVal=0x4; writeVal2=0x5; break;  
-  case 150:writeVal=0x6; writeVal2=0x7; break;  
-  case 180:writeVal=0x8; writeVal2=0x9; break;  
-  case 200:writeVal=0xA; writeVal2=0xB; break;  
+  case 120:writeVal=0x4; writeVal2=0x5; break;
+  case 150:writeVal=0x6; writeVal2=0x7; break;
+  case 180:writeVal=0x8; writeVal2=0x9; break;
+  case 200:writeVal=0xA; writeVal2=0xB; break;
   default :printf("Invalid voltage\n");return -2;break;
   }
   //to set value
@@ -1281,9 +1281,9 @@ int configureMAC(int ipad,long long int macad,long long int servermacad,int ival
 #endif
 
   if(ival)
-    bus_w(addrr,(RESET_BIT|DIGITAL_TEST_BIT)); //0x080,reset mac (reset) 
+    bus_w(addrr,(RESET_BIT|DIGITAL_TEST_BIT)); //0x080,reset mac (reset)
   else
-    bus_w(addrr,RESET_BIT); //0x080,reset mac (reset) 
+    bus_w(addrr,RESET_BIT); //0x080,reset mac (reset)
   val=bus_r(addrr);
 #ifdef VERBOSE
     printf("Value read from Multi-purpose Reg:%x\n",val);
@@ -1291,7 +1291,7 @@ int configureMAC(int ipad,long long int macad,long long int servermacad,int ival
     //  if(val!=0x080) return -1;
 
   usleep(500000);
-  
+
   if(ival)
     bus_w(addrr,(ENET_RESETN_BIT|WRITE_BACK_BIT|DIGITAL_TEST_BIT)); //0x840,write shadow regs(enet reset,write bak)
   else
@@ -1313,12 +1313,12 @@ int configureMAC(int ipad,long long int macad,long long int servermacad,int ival
     //  if(val!=0x800) return -1;
 
 
-  mac_conf_regs->mac.mac_dest_mac1  =((macad>>(8*5))&0xFF);// 0x00; //pc7060  
-  mac_conf_regs->mac.mac_dest_mac2  =((macad>>(8*4))&0xFF);// 0x19; //pc7060    
-  mac_conf_regs->mac.mac_dest_mac3  =((macad>>(8*3))&0xFF);// 0x99; //pc7060  
-  mac_conf_regs->mac.mac_dest_mac4  =((macad>>(8*2))&0xFF);// 0x24; //pc7060  
-  mac_conf_regs->mac.mac_dest_mac5  =((macad>>(8*1))&0xFF);// 0xEB; //pc7060  
-  mac_conf_regs->mac.mac_dest_mac6  =((macad>>(8*0))&0xFF);// 0xEE; //pc7060  
+  mac_conf_regs->mac.mac_dest_mac1  =((macad>>(8*5))&0xFF);// 0x00; //pc7060
+  mac_conf_regs->mac.mac_dest_mac2  =((macad>>(8*4))&0xFF);// 0x19; //pc7060
+  mac_conf_regs->mac.mac_dest_mac3  =((macad>>(8*3))&0xFF);// 0x99; //pc7060
+  mac_conf_regs->mac.mac_dest_mac4  =((macad>>(8*2))&0xFF);// 0x24; //pc7060
+  mac_conf_regs->mac.mac_dest_mac5  =((macad>>(8*1))&0xFF);// 0xEB; //pc7060
+  mac_conf_regs->mac.mac_dest_mac6  =((macad>>(8*0))&0xFF);// 0xEE; //pc7060
   /*
   mac_conf_regs->mac.mac_src_mac1   = 0x00;     
   mac_conf_regs->mac.mac_src_mac2   = 0xAA;     
@@ -1334,7 +1334,7 @@ int configureMAC(int ipad,long long int macad,long long int servermacad,int ival
   mac_conf_regs->mac.mac_src_mac5  =((servermacad>>(8*1))&0xFF);
   mac_conf_regs->mac.mac_src_mac6  =((servermacad>>(8*0))&0xFF);
   mac_conf_regs->mac.mac_ether_type   = 0x0800;   //ipv4
-  
+
 
   mac_conf_regs->ip.ip_ver            = 0x4;
   mac_conf_regs->ip.ip_ihl            = 0x5;
@@ -1345,7 +1345,7 @@ int configureMAC(int ipad,long long int macad,long long int servermacad,int ival
   mac_conf_regs->ip.ip_offset         = 0x00;
   mac_conf_regs->ip.ip_ttl            = 0x70;
   mac_conf_regs->ip.ip_protocol       = 0x11;
-  mac_conf_regs->ip.ip_chksum         = 0x0000 ; //6E42 now is automatically computed 
+  mac_conf_regs->ip.ip_chksum         = 0x0000 ; //6E42 now is automatically computed
   mac_conf_regs->ip.ip_sourceip       = 0x8181CA2E;
   mac_conf_regs->ip.ip_destip         = ipad; //CA57
 
@@ -1376,8 +1376,8 @@ int configureMAC(int ipad,long long int macad,long long int servermacad,int ival
     sum += *addr++;
     count -= 2;
   }
-  if( count > 0 )  sum += *addr;                     // Add left-over byte, if any 
-  while (sum>>16) sum = (sum & 0xffff) + (sum >> 16);// Fold 32-bit sum to 16 bits 
+  if( count > 0 )  sum += *addr;                     // Add left-over byte, if any
+  while (sum>>16) sum = (sum & 0xffff) + (sum >> 16);// Fold 32-bit sum to 16 bits
   checksum = (~sum)&0xffff;
   mac_conf_regs->ip.ip_chksum   =  checksum;
   //#ifdef VERBOSE
@@ -1394,7 +1394,7 @@ int configureMAC(int ipad,long long int macad,long long int servermacad,int ival
 #endif
   tse_conf_regs->rev                 = 0xA00;
   tse_conf_regs->scratch             = 0xCCCCCCCC;
-  tse_conf_regs->command_config      = 0xB;    
+  tse_conf_regs->command_config      = 0xB;
   tse_conf_regs->mac_0               = 0x17231C00;
   tse_conf_regs->mac_1               = 0xCB4A;
   tse_conf_regs->frm_length          = 0x5DC;      //max frame length (1500 bytes) (was 0x41C)
@@ -1413,10 +1413,10 @@ int configureMAC(int ipad,long long int macad,long long int servermacad,int ival
 
 
   if(ival)
-    bus_w(addrr,(INT_RSTN_BIT|ENET_RESETN_BIT|WRITE_BACK_BIT|DIGITAL_TEST_BIT)); //0x2840,write shadow regs..  
+    bus_w(addrr,(INT_RSTN_BIT|ENET_RESETN_BIT|WRITE_BACK_BIT|DIGITAL_TEST_BIT)); //0x2840,write shadow regs..
   else
-    bus_w(addrr,(INT_RSTN_BIT|ENET_RESETN_BIT|WRITE_BACK_BIT)); //0x2840,write shadow regs..  
-    
+    bus_w(addrr,(INT_RSTN_BIT|ENET_RESETN_BIT|WRITE_BACK_BIT)); //0x2840,write shadow regs..
+
   val=bus_r(addrr);
 #ifdef VERBOSE
     printf("Value read from Multi-purpose Reg:%x\n",val);
@@ -1426,9 +1426,9 @@ int configureMAC(int ipad,long long int macad,long long int servermacad,int ival
   usleep(100000);
 
   if(ival)
-    bus_w(addrr,(INT_RSTN_BIT|ENET_RESETN_BIT|SW1_BIT|DIGITAL_TEST_BIT)); //0x2820,write shadow regs..  
+    bus_w(addrr,(INT_RSTN_BIT|ENET_RESETN_BIT|SW1_BIT|DIGITAL_TEST_BIT)); //0x2820,write shadow regs..
   else
-    bus_w(addrr,(INT_RSTN_BIT|ENET_RESETN_BIT|SW1_BIT)); //0x2820,write shadow regs..  
+    bus_w(addrr,(INT_RSTN_BIT|ENET_RESETN_BIT|SW1_BIT)); //0x2820,write shadow regs..
 
   val=bus_r(addrr);
 #ifdef VERBOSE
@@ -1446,10 +1446,6 @@ int configureMAC(int ipad,long long int macad,long long int servermacad,int ival
 
 u_int32_t runBusy(void) {
 	u_int32_t s = bus_r(STATUS_REG);
-	//s=((s & RUN_BUSY_BIT) | (s & READMACHINE_BUSY_BIT));
-	//s=(s & RUN_BUSY_BIT);
-	//if(s!=0x62721)
-	//	printf("status=%x\n",s);
   return s;
 }
 
@@ -1463,7 +1459,7 @@ u_int32_t runState(void) {
   if (s&RUN_BUSY_BIT)
     write_status_sm("Running");
   else
-    write_status_sm("Stopped");  
+    write_status_sm("Stopped");
 #endif
 #ifdef VERBOSE
   printf("status %04x\n",s);
@@ -1518,8 +1514,8 @@ int stopStateMachine(){
  // if (!runBusy())
   if(!(bus_r(STATUS_REG)&RUNMACHINE_BUSY_BIT))
     return OK;
-  else 
-    return FAIL; 
+  else
+    return FAIL;
 }
 
 
@@ -1544,7 +1540,7 @@ u_int32_t fifoReset(void) {
 #ifdef DEBUG
   printf("resetting fifo\n");
 #endif
-  bus_w(FIFO_CNTRL_REG_OFF+(ALLFIFO<<SHIFTMOD), FIFO_RESET_BIT); 
+  bus_w(FIFO_CNTRL_REG_OFF+(ALLFIFO<<SHIFTMOD), FIFO_RESET_BIT);
   return OK;
 }
 
@@ -1563,7 +1559,7 @@ u_int32_t getNBits()
 
 u_int32_t fifoReadCounter(int fifonum)
 {
-  int rval=0;  
+  int rval=0;
   int shiftfifo;
   switch (dynamicRange) {
   case 16:
@@ -1593,7 +1589,7 @@ u_int32_t fifoReadCounter(int fifonum)
 u_int32_t  fifoReadStatus()
 {
   // reads from the global status register
-  
+
    return bus_r(STATUS_REG)&(SOME_FIFO_FULL_BIT | ALL_FIFO_EMPTY_BIT);
 }
 
@@ -1619,11 +1615,10 @@ u_int32_t* fifo_read_event()
 #ifdef VERBOSE
   printf("lookatmereg=x%x\n",t);
 #endif
-   while ((t&0x1)==0)  
+   while ((t&0x1)==0)
      {
        t = bus_r(LOOK_AT_ME_REG);
        if (!runBusy()){
-    	   printf("\n\ngonna return null  STATUS=%08x\n",runState());
     	   return NULL;
        }
      }
@@ -1670,7 +1665,7 @@ u_int32_t* fifo_read_event()
 #endif
 #ifdef VERBOSE
   printf("Copying to ptr %08x %d\n",(unsigned int)(now_ptr), dataBytes);
-  printf("after readout %08x %08x\n", runState(), bus_r(LOOK_AT_ME_REG)); 
+  printf("after readout %08x %08x\n", runState(), bus_r(LOOK_AT_ME_REG));
 #endif
 
   if (storeInRAM>0) {
@@ -1731,12 +1726,12 @@ u_int32_t* decode_data(int *datain)
       }
     }
     break;
-  default:    
+  default:
     for (ichan=0; ichan<nChans*nChips*nModX; ichan++)
       dataout[ichan]=datain[ichan]&0xffffff;
     break;
   }
-  
+
 #ifdef VERBOSE
   printf("decoded %d  channels\n",ichan);
 #endif
@@ -1797,7 +1792,7 @@ int getDynamicRange() {
   printf("%08x ",shiftin);
   printf("outmux=%02x probes=%d\n",outmux,probes);
 #endif
-  
+
   switch (outmux) {
   case 2:
     dr=16;
@@ -1888,7 +1883,7 @@ int allocateRAM() {
     size=dataBytes*nf*nt;
     if (size<dataBytes)
       size=dataBytes;
-  }  else 
+  }  else
     size=dataBytes;
 
 #ifdef VERBOSE
@@ -1896,14 +1891,14 @@ int allocateRAM() {
 #endif
 
     if (size==ram_size) {
-     
+
 #ifdef VERBOSE
       printf("RAM of size %d already allocated: nothing to be done\n",(int) size);
 #endif
       return OK;
     }
-    
-  
+
+
 
 #ifdef VERBOSE
     printf("reallocating ram %x\n",(unsigned int)ram_values);
@@ -1943,7 +1938,7 @@ int allocateRAM() {
   }
 
 
-    
+
 }
 
 

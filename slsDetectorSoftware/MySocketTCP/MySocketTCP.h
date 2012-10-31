@@ -2,11 +2,6 @@
 #ifndef MY_SOCKET_TCP_H
 #define MY_SOCKET_TCP_H 
 
-#define SEND_REC_MAX_SIZE 4096
-#define DEFAULT_PORTNO    1952
-using namespace std;
-
-
 
 
 
@@ -41,50 +36,26 @@ using namespace std;
   replaced the argument of send/receive data with void (to avoid too much casting or compiler errors/warnings)
 
   added a function which really does not close the socket between send/receive (senddataonly, receivedataonly)
+
 */
 
-#ifdef __CINT__
-//class  sockaddr_in;
-class socklen_t;
-class uint32_t;
-class uint32_t_ss; 
-// CINT view of types:
-class sockaddr_in;
-// {
-//     unsigned short int sa_family;
-//    unsigned char sa_data[14];
-//   };
-#else
 
-#include <arpa/inet.h>
-#include <netdb.h>
-#include <netinet/in.h>
-#endif
+/* Modified by Anna on 31.10.2012
+
+developed and 
+
+*/
 
 
+#include "genericSocket.h"
 
-#include <unistd.h>
 
-
-#include <math.h>
-
-class MySocketTCP{
+class MySocketTCP: public genericSocket {
 
  public:
-  MySocketTCP(const char* const host_ip_or_name, unsigned short int const port_number); // sender (client): where to? ip 
-  MySocketTCP(unsigned short int const port_number); // receiver (server) local no need for ip 
-  ~MySocketTCP();
+  MySocketTCP(const char* const host_ip_or_name, unsigned short int const port_number):  genericSocket(host_ip_or_name, port_number,TCP), send_rec_max_size(SEND_REC_MAX_SIZE), last_keep_connection_open_action_was_a_send(0){}; // sender (client): where to? ip 
+  MySocketTCP(unsigned short int const port_number):genericSocket(port_number,TCP), send_rec_max_size(SEND_REC_MAX_SIZE), last_keep_connection_open_action_was_a_send(0) {}; // receiver (server) local no need for ip 
 
-  int getHostname(char *name);
-  int getPortNumber(){return portno;};
-  int getErrorStatus(){if (socketDescriptor<0) return 1; else return 0;};
-
-
-
-  int  Connect(); //establish connection a Disconnect should always follow
-  void Disconnect(); //free connection
-  /** Set the socket timeout ts is in seconds */
-  int SetTimeOut(int ts);
 
   //The following two functions will connectioned->send/receive->disconnect
   int  SendData(void* buf,int length);//length in characters
@@ -105,15 +76,6 @@ class MySocketTCP{
 
  private:
 
-  char hostname[1000];
-  int portno;
-
-  int is_a_server;
-  int socketDescriptor;
-  struct sockaddr_in clientAddress, serverAddress;
-  socklen_t clientAddress_length;
-
-  int file_des;
 
   int send_rec_max_size;
   bool last_keep_connection_open_action_was_a_send;

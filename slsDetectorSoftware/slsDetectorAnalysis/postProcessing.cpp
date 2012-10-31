@@ -371,14 +371,23 @@ void* postProcessing::processData(int delflag) {
 	}
 	//receiver
 	else{
-		int prevCaught=getCurrentFrameIndex();
-		int caught=0;
-		while(getRunStatus()!=IDLE){
-			caught=getCurrentFrameIndex();
-			incrementProgress(caught-prevCaught);
-			prevCaught=caught;
-			usleep(1000000);
-		}
+	  int prevCaught=getCurrentFrameIndex();
+	  int caught=0;
+	  while(getRunStatus()!=IDLE){
+	    caught=getCurrentFrameIndex();
+	    incrementProgress(caught-prevCaught);
+	    prevCaught=caught;
+	    usleep(1000000);
+	  }
+	  /*
+	    if (dataReady) {
+	    // can add get frame from receiver and  send it to GUI
+	    thisData=new detectorData(val,err,ang,getCurrentProgress(),(fname+ext).c_str(),np);
+	    dataReady(thisData, pCallbackArg);
+	    delete thisData;
+	}
+	  */
+
 	}
 	return 0;
 }

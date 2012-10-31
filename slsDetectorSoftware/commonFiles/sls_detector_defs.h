@@ -159,17 +159,18 @@ enum detectorType {
   AGIPD /**< agipd */
 };
 
-/** 
-     Communication protocol (normally TCP)
-*/
-enum communicationProtocol{
-  TCP,  /**< TCP/IP */
-  UDP /**< UDP */
-};
+/* /\**  */
+/*      Communication protocol (normally TCP) */
+/* *\/ */
+/* enum communicationProtocol{ */
+/*   TCP,  /\**< TCP/IP *\/ */
+/*   UDP /\**< UDP *\/ */
+/* }; */
 
 /** 
-     Communication protocol (normally TCP)
+     network parameters
 */
+
 enum networkParameter {
   RECEIVER_IP,  /**< receiver IP */
   RECEIVER_MAC, /**< receiver mac */

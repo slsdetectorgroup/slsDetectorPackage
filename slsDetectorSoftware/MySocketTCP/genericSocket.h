@@ -2,10 +2,6 @@
 #ifndef GENERIC_SOCKET_H
 #define GENERIC_SOCKET_H
 
-#define SEND_REC_MAX_SIZE 4096
-#define DEFAULT_PORTNO    1952
-#define DEFAULT_BACKLOG 5
-
 
 
 
@@ -59,9 +55,11 @@ class sockaddr_in;
 #include <arpa/inet.h>
 #include <netdb.h>
 #include <netinet/in.h>
+#include <sys/ioctl.h>
+#include <net/if.h>
+#include <ifaddrs.h>
+
 #endif
-
-
 
 #include <unistd.h>
 #include <string.h>
@@ -70,6 +68,10 @@ class sockaddr_in;
 #include <math.h>
 #include <errno.h>
 using namespace std;
+
+#define DEFAULT_PACKET_SIZE 1286
+#define DEFAULT_PORTNO    1952
+#define DEFAULT_BACKLOG 5
 
 class genericSocket{
 
@@ -85,9 +87,8 @@ enum communicationProtocol{
 
 
  genericSocket(const char* const host_ip_or_name, unsigned short int const port_number, communicationProtocol p) : 
-   portno(port_number), protocol(p), is_a_server(0), socketDescriptor(-1),file_des(-1)// sender (client): where to? ip 
-   { // sender (client): where to? ip 
-     // SetupParameters();
+   portno(port_number), protocol(p), is_a_server(0), socketDescriptor(-1),file_des(-1), packet_size(DEFAULT_PACKET_SIZE)// sender (client): where to? ip 
+   { 
      strcpy(hostname,host_ip_or_name);
      struct hostent *hostInfo = gethostbyname(host_ip_or_name);
      if (hostInfo == NULL){
@@ -100,6 +101,7 @@ enum communicationProtocol{
        serverAddress.sin_port = htons(port_number);   
        socketDescriptor=0; //You can use send and recv, //would it work?????
      } 
+     clientAddress_length=sizeof(clientAddress);
    }
 
    
@@ -125,11 +127,31 @@ enum communicationProtocol{
   /** 
       The constructor for a server
       @short the contructor for a server
-      \param protocol 
+      \param port_number port number to listen to
+      \param p TCP or UDP
+      \param eth interface name or IP address to listen to (if NULL, listen to all interfaces)
 
   */
   
-   genericSocket(unsigned short int const port_number, communicationProtocol p): portno(port_number),protocol(p), is_a_server(1),socketDescriptor(-1), file_des(-1){
+   genericSocket(unsigned short int const port_number, communicationProtocol p, const char *eth=NULL): portno(port_number),protocol(p), is_a_server(1),socketDescriptor(-1), file_des(-1), packet_size(DEFAULT_PACKET_SIZE){
+
+/* // you can specify an IP address: */
+/*  */
+
+/* // or you can let it automatically select one: */
+/* myaddr.sin_addr.s_addr = INADDR_ANY; */
+
+     char ip[20];
+
+     strcpy(ip,"0.0.0.0");
+     clientAddress_length=sizeof(clientAddress);
+     
+     if (eth) {
+       strcpy(ip,nameToIp(string(eth)).c_str());
+       if (string(ip)==string("0.0.0.0"))
+	 strcpy(ip,eth);
+     }
+    
      strcpy(hostname,"localhost"); //needed?!?!?!?
     
 
@@ -145,6 +167,15 @@ enum communicationProtocol{
      serverAddress.sin_port = htons(portno);
      serverAddress.sin_addr.s_addr = htonl(INADDR_ANY);
      
+
+     if (string(ip)!=string("0.0.0.0")) {
+       if (inet_pton(AF_INET, ip, &(serverAddress.sin_addr)))
+	 ;
+       else
+	 serverAddress.sin_addr.s_addr = htonl(INADDR_ANY);
+     }
+
+
      if(bind(socketDescriptor,(struct sockaddr *) &serverAddress,sizeof(serverAddress))<0){
        cerr << "Can not bind socket "<<endl;
        socketDescriptor=-1;
@@ -152,8 +183,7 @@ enum communicationProtocol{
      }
      if (getProtocol()==SOCK_STREAM)
        listen(socketDescriptor, DEFAULT_BACKLOG); 
-     
-    
+
    }
   
      /** 
@@ -341,7 +371,10 @@ enum communicationProtocol{
 
      };
 
-     
+   
+     int setPacketSize(int i=-1) { if (i>=0) packet_size=i; return packet_size;};
+
+  
 /*      //The following two functions will connectioned->send/receive->disconnect */
 /*   int  SendData(void* buf,int length);//length in characters */
 /*   int  ReceiveData(void* buf,int length); */
@@ -359,12 +392,187 @@ enum communicationProtocol{
 /*   int  SendDataOnly(void* buf,int length); */
 /*   int  ReceiveDataOnly(void* buf,int length); */
 
+     static string ipToName(string ip) {
+       struct ifaddrs *addrs, *iap;
+       struct sockaddr_in *sa;
+       char buf[32];
+
+       strcpy(buf,"none");
+
+       getifaddrs(&addrs);
+       for (iap = addrs; iap != NULL; iap = iap->ifa_next) {
+	 if (iap->ifa_addr && (iap->ifa_flags & IFF_UP) && iap->ifa_addr->sa_family == AF_INET) {
+	   sa = (struct sockaddr_in *)(iap->ifa_addr);
+	   inet_ntop(iap->ifa_addr->sa_family, (void *)&(sa->sin_addr), buf, sizeof(buf));
+	   if (ip==string(buf)) {
+	     printf("%s\n", iap->ifa_name);
+	   }
+	 }
+       }
+       freeifaddrs(addrs);
+       return string(buf);
+     };
+     
+     static string nameToMac(string inf) {
+       struct ifreq ifr;
+       int sock, j, k;
+       char *p, addr[32], mask[32], mac[32];
+       
+       sock=getSock(inf,&ifr);
+       
+       if (-1==ioctl(sock, SIOCGIFHWADDR, &ifr)) {
+	 perror("ioctl(SIOCGIFHWADDR) ");
+	 return string("00:00:00:00:00:00");
+       }
+       for (j=0, k=0; j<6; j++) {
+	 k+=snprintf(mac+k, sizeof(mac)-k-1, j ? ":%02X" : "%02X",
+		     (int)(unsigned int)(unsigned char)ifr.ifr_hwaddr.sa_data[j]);
+       }
+       mac[sizeof(mac)-1]='\0';
+       
+       return string(mac);
+       
+     };
+    
+
+     
+     static string nameToIp(string inf){
+       struct ifreq ifr;
+       int sock, j, k;
+       char *p, addr[32], mask[32], mac[32];
+       
+       sock=getSock(inf,&ifr);
+       
+       if (-1==ioctl(sock, SIOCGIFADDR, &ifr)) {
+	 perror("ioctl(SIOCGIFADDR) ");
+	 return string("0.0.0.0");
+       }
+       p=inet_ntoa(((struct sockaddr_in *)(&ifr.ifr_addr))->sin_addr);
+       strncpy(addr,p,sizeof(addr)-1);
+       addr[sizeof(addr)-1]='\0';
+       
+       return string(addr);
+       
+     };
+     
+     static int getSock(string inf, struct ifreq *ifr) {
+   
+       int sock, j, k;
+       char *p, addr[32], mask[32], mac[32];
+       sock=socket(PF_INET, SOCK_STREAM, 0);
+       if (-1==sock) {
+        perror("socket() ");
+        return 1;
+       }
+       strncpy(ifr->ifr_name,inf.c_str(),sizeof(ifr->ifr_name)-1);
+       ifr->ifr_name[sizeof(ifr->ifr_name)-1]='\0';
+       
+       return sock;
+
+     };
+
+    
+     int ReceiveDataOnly(void* buf,int length){
+   
+
+       if (buf==NULL) return -1;
+       
+       int nsending;
+       int nsent;
+       int total_sent=0;
+       
+       
+
+       switch(protocol) {
+       case TCP:
+	 if (file_des<0) return -1;
+	 while(length>0){
+	   nsending = (length>packet_size) ? packet_size:length;
+	   nsent = read(file_des,(char*)buf+total_sent,nsending); 
+	   if(!nsent) break;
+	   length-=nsent;
+	   total_sent+=nsent;
+	 }
+	 break;
+       case UDP:
+	 if (socketDescriptor<0) return -1;
+	 while(length>0){
+	   nsending = (length>packet_size) ? packet_size:length;
+	   nsent = recvfrom(socketDescriptor,(char*)buf+total_sent,nsending, 0, (struct sockaddr *) &clientAddress, &clientAddress_length); 
+	   if(!nsent) break;
+	   length-=nsent;
+	   total_sent+=nsent;
+	 }
+	 
+	 break;
+       default:
+	 ;
+       }
+#ifdef VERY_VERBOSE
+       cout << "sent "<< total_sent << " Bytes" << endl; 
+#endif
+       return total_sent;
+       
+
+
+     }
+
+
+     int SendDataOnly(void *buf, int length) {
+#ifdef VERY_VERBOSE
+       cout << "want to send "<< length << " Bytes" << endl; 
+#endif
+       if (buf==NULL) return -1;
+       
+       int nsending;
+       int nsent;
+       int total_sent=0;
+       
+
+       switch(protocol) {
+       case TCP:
+	 if (file_des<0) return -1;
+	 while(length>0){
+	   nsending = (length>packet_size) ? packet_size:length;
+	   nsent = write(file_des,(char*)buf+total_sent,nsending); 
+	   if(!nsent) break;
+	   length-=nsent;
+	   total_sent+=nsent;
+	 }
+	 break;
+       case UDP:
+	 if (socketDescriptor<0) return -1;
+	 while(length>0){
+	   nsending = (length>packet_size) ? packet_size:length;
+	   nsent = sendto(socketDescriptor,(char*)buf+total_sent,nsending, 0, (struct sockaddr *) &clientAddress, clientAddress_length); 
+	   if(!nsent) break;
+	   length-=nsent;
+	   total_sent+=nsent;
+	 }
+	 
+	 break;
+       default:
+	 ;
+       }
+#ifdef VERY_VERBOSE
+       cout << "sent "<< total_sent << " Bytes" << endl; 
+#endif
+       return total_sent;
+       
+
+     }
+
+
+
  protected:
 
   char hostname[1000];
   int portno;
   communicationProtocol protocol; 
 
+  int packet_size;
+
+  
   int is_a_server;
   int socketDescriptor;
   struct sockaddr_in clientAddress, serverAddress;

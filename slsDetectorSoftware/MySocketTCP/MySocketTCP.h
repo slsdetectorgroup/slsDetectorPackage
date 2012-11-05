@@ -48,13 +48,13 @@ developed and
 
 
 #include "genericSocket.h"
-
+#define TCP_PACKET_SIZE 4096
 
 class MySocketTCP: public genericSocket {
 
  public:
-  MySocketTCP(const char* const host_ip_or_name, unsigned short int const port_number):  genericSocket(host_ip_or_name, port_number,TCP), send_rec_max_size(SEND_REC_MAX_SIZE), last_keep_connection_open_action_was_a_send(0){}; // sender (client): where to? ip 
-  MySocketTCP(unsigned short int const port_number):genericSocket(port_number,TCP), send_rec_max_size(SEND_REC_MAX_SIZE), last_keep_connection_open_action_was_a_send(0) {}; // receiver (server) local no need for ip 
+  MySocketTCP(const char* const host_ip_or_name, unsigned short int const port_number):  genericSocket(host_ip_or_name, port_number,TCP), last_keep_connection_open_action_was_a_send(0){setPacketSize(TCP_PACKET_SIZE);}; // sender (client): where to? ip 
+    MySocketTCP(unsigned short int const port_number):genericSocket(port_number,TCP), last_keep_connection_open_action_was_a_send(0) {setPacketSize(TCP_PACKET_SIZE);}; // receiver (server) local no need for ip 
 
 
   //The following two functions will connectioned->send/receive->disconnect
@@ -69,15 +69,9 @@ class MySocketTCP: public genericSocket {
   int  SendDataAndKeepConnection(void* buf,int length);
   int  ReceiveDataAndKeepConnection(void* buf,int length);
 
-
-  // Danger! These functions do not connect nor disconnect nor flush the data! be sure that send-receive match perfectly on both server and client side!
-  int  SendDataOnly(void* buf,int length);
-  int  ReceiveDataOnly(void* buf,int length);
-
  private:
 
 
-  int send_rec_max_size;
   bool last_keep_connection_open_action_was_a_send;
 
 

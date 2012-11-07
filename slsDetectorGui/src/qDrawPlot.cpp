@@ -194,7 +194,8 @@ void qDrawPlot::SetupWidgetWindow(){
 	myDet->registerAcquisitionFinishedCallback(&(GetAcquisitionFinishedCallBack),this);
 	//Setting the callback function to alert when each measurement finished from detector class
 	myDet->registerMeasurementFinishedCallback(&(GetMeasurementFinishedCallBack),this);
-
+	//Setting the callback function to get progress from detector class(using receivers)
+	myDet->registerProgressCallback(&(GetProgressCallBack),this);
 }
 
 
@@ -511,9 +512,20 @@ void qDrawPlot::SetupMeasurement(int currentIndex){
 
 
 void* qDrawPlot::DataStartAcquireThread(void *this_pointer){
-	cout << "before acquire ...." << endl;
+	bool receiver=(((qDrawPlot*)this_pointer)->myDet->setReceiverOnline()==slsDetectorDefs::ONLINE_FLAG);
+	if(receiver){
+		if(((qDrawPlot*)this_pointer)->myDet->startReceiver()==slsDetectorDefs::OK)
+			usleep(2000000);
+		else{
+			qDefs::Message(qDefs::CRITICAL,"could not start receiver","Plot");
+			return this_pointer;
+		}
+	}
 	((qDrawPlot*)this_pointer)->myDet->acquire(1);
-	cout << "after acquire ...." << endl;
+	if(receiver){
+		usleep(0);
+		((qDrawPlot*)this_pointer)->myDet->stopReceiver();
+	}
 	return this_pointer;
 }
 
@@ -806,6 +818,15 @@ int qDrawPlot::AcquisitionFinished(double currentProgress, int detectorStatus){
 	//this lets the measurement tab know its over, and to enable tabs
 	emit UpdatingPlotFinished();
 
+	return 0;
+}
+
+
+//-------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+int qDrawPlot::GetProgressCallBack(double currentProgress, void *this_pointer){
+	((qDrawPlot*)this_pointer)->progress= currentProgress;
 	return 0;
 }
 

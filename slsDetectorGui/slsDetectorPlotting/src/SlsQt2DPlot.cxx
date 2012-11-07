@@ -193,7 +193,7 @@ double g[]={0.00, 0.81, 1.00, 0.20, 0.00};
  double b[]  = { 0.51, 1.00, 0.12, 0.00, 0.00 };
 
  QColor c1,c2,c;
-	c1.setRgbF(r[0],g[0],b[0]);
+	c1.setRgbF(r[0],g[0],b[0],0);
 	c2.setRgbF(r[ns-1],g[ns-1],b[ns-1]);
 	QwtLinearColorMap* copyMap = new QwtLinearColorMap(Qt::lightGray, c2);
 

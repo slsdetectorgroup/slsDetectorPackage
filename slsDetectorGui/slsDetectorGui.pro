@@ -37,6 +37,7 @@ INCLUDEPATH 		+= 		\
 							forms/include\
 							../slsDetectorSoftware/commonFiles\
 							../slsDetectorSoftware/MySocketTCP\
+							../slsDetectorSoftware/slsReceiverInterface\
 							../slsDetectorSoftware/slsDetector\
 							../slsDetectorSoftware/slsDetectorAnalysis\
 							../slsDetectorSoftware/multiSlsDetector\

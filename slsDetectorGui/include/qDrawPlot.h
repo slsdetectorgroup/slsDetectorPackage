@@ -222,6 +222,10 @@ static int GetMeasurementFinishedCallBack(int currentMeasurementIndex, int fileI
  * */
 int MeasurementFinished(int currentMeasurementIndex, int fileIndex);
 
+/**	This is called by the detector class to send progress if receiver is online */
+static int GetProgressCallBack(double currentProgress, void *this_pointer);
+
+
 /** Saves all the plots. All sets saveError to true if not saved.*/
 void SavePlotAutomatic();
 /** Sets the style of the 1d plot */

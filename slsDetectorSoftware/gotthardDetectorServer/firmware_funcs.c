@@ -245,34 +245,42 @@ int setPhaseShiftOnce(){
 }
 
 
+
+int cleanFifo(){
+	u_int32_t addr, reg, val;
+	printf("\nCleaning FIFO\n");
+	addr=ADC_SYNC_REG;
+	val=ADCSYNC_VAL | ADCSYNC_CLEAN_FIFO_BITS;
+	bus_w(addr,val);
+
+	val=ADCSYNC_VAL;
+	bus_w(addr,val);
+	reg=bus_r(addr);
+#ifdef VERBOSE
+	printf("\nADC SYNC reg:%d\n",reg);
+#endif
+	return OK;
+}
+
+
 int setDAQRegister(int adcval)
 {
-  u_int32_t addr, reg, val;
+	u_int32_t addr, reg, val;
 
-  addr=DAQ_REG;
-  int value=0x7f;
-  if(adcval==-1) value=0x13f;
-  val=34+(42<<8)+(value<<16);
-  reg=bus_r(addr);
-  bus_w(addr,val);
-  reg=bus_r(addr);
+	addr=DAQ_REG;
+	int value=0x7f;
+	if(adcval==-1) value=0x13f;
+	val=34+(42<<8)+(value<<16);
+	reg=bus_r(addr);
+	bus_w(addr,val);
+	reg=bus_r(addr);
 #ifdef VERBOSE
-  printf("DAQ reg:%x\n",reg);
+	printf("DAQ reg:%x\n",reg);
 #endif
 
+	cleanFifo();
 
-  //clean fifo
-  addr=ADC_SYNC_REG;
-  val=ADCSYNC_VAL | ADCSYNC_CLEAN_FIFO_BITS;
-  bus_w(addr,val);
-
-  val=ADCSYNC_VAL;
-  bus_w(addr,val);
-  reg=bus_r(addr);
-#ifdef VERBOSE
-  printf("\nADC SYNC reg:%d\n",reg);
-#endif
-  return OK;
+	return OK;
 }
 
 
@@ -727,11 +735,12 @@ int startReceiver(int start) {
 #ifdef VERBOSE
 	printf("Config Reg %x\n", reg);
 #endif
-	if (start && (!(reg&CPU_OR_RECEIVER_BIT)))
+	int d =reg&CPU_OR_RECEIVER_BIT;
+	if(d!=0) d=1;
+	if(d!=start)
 		return OK;
-	if(!start && (reg&CPU_OR_RECEIVER_BIT))
-		return OK;
-	return FAIL;
+	else
+		return FAIL;
 }
 
 
@@ -1276,9 +1285,9 @@ int configureMAC(int ipad,long long int macad,long long int servermacad,int ival
   mac_conf_regs=(mac_conf*)(CSP0BASE+offset*2);
   tse_conf_regs=(tse_conf*)(CSP0BASE+offset2*2);
 
-#ifdef VERBOSE
-  printf("Configuring MAC\n");
-#endif
+//#ifdef VERBOSE
+  printf("***Configuring MAC***\n");
+//#endif
 
   if(ival)
     bus_w(addrr,(RESET_BIT|DIGITAL_TEST_BIT)); //0x080,reset mac (reset)
@@ -1474,6 +1483,7 @@ u_int32_t runState(void) {
 // State Machine 
 
 int startStateMachine(){
+	cleanFifo();
 //#ifdef VERBOSE
   printf("Starting State Machine\n");
 //#endif

@@ -80,8 +80,8 @@ int init_detector( int b) {
     setTrains(1);
     setExposureTime(1e9);
     setPeriod(1e9);
-    setDelay(1e9);
-    setGates(1);
+    setDelay(0);
+    setGates(0);
 #endif
     setTiming(GET_EXTERNAL_COMMUNICATION_MODE);
     setMaster(GET_MASTER);
@@ -451,7 +451,7 @@ int set_external_signal_flag(int file_des) {
 					sprintf(mess,"Detector locked by %s\n", lastClientIP);
 				}
 			}
-			break;
+
 		}
 
 #ifdef VERBOSE
@@ -2748,7 +2748,6 @@ int update_client(int file_des) {
 
 int configure_mac(int file_des) {
 
-  int retval;
   int ret=OK;
   char arg[3][50];
   int n,i;
@@ -2797,21 +2796,15 @@ int configure_mac(int file_des) {
     imod=ALLMOD;
 
 //#ifdef VERBOSE
-  printf("Configuring MAC of module %d\n", imod);
+  printf("Configuring MAC of module %d and adc %d\n", imod, adc);
 //#endif
 #ifdef MCB_FUNCS
-  if (ret==OK) {
-    retval=configureMAC(ipad,imacadd,iservermacadd,digitalTestBit,adc);
-    if(retval==-1)
-    	ret=FAIL;
-  }
+  if (ret==OK)
+    configureMAC(ipad,imacadd,iservermacadd,digitalTestBit,adc);
 #endif
-//#ifdef VERBOSE
-  printf("Configured MAC with retval %d\n",  retval);
-//#endif
-  if (ret==FAIL) {
+  if (ret==FAIL)
     printf("configuring MAC of mod %d failed\n", imod);
-  }
+
 
 
   if (differentClients)
@@ -2820,10 +2813,7 @@ int configure_mac(int file_des) {
   /* send answer */
   /* send OK/failed */
   n = sendDataOnly(file_des,&ret,sizeof(ret));
-  if (ret!=FAIL) {
-    /* send return argument */
-    n += sendDataOnly(file_des,&retval,sizeof(retval));printf("retval:%d\n",retval);
-  } else {
+  if (ret==FAIL) {
     n += sendDataOnly(file_des,mess,sizeof(mess));
   }
 
@@ -3106,6 +3096,7 @@ int start_receiver(int file_des) {
 	}
 	else
 		ret = startReceiver(1);
+
 #endif
 
 
@@ -3141,6 +3132,7 @@ int stop_receiver(int file_des) {
 	}
 	else
 		ret=startReceiver(0);
+
 #endif
 
 

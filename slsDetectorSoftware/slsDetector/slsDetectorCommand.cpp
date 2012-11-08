@@ -2152,6 +2152,7 @@ string slsDetectorCommand::cmdNetworkParameter(int narg, char *args[], int actio
     return helpNetworkParameter(narg,args,action);
 
   if (cmd=="receiverip") {
+	  myDet->setOnline(ONLINE_FLAG);
     t=RECEIVER_IP;
   } else if (cmd=="receivermac") {
     t=RECEIVER_MAC;

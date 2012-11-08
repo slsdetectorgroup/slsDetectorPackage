@@ -547,6 +547,7 @@ class slsDetectorUtils :  public slsDetectorActions, public postProcessing {
  
 
 
+
   /** 
       Saves the detector setup to file
       \param fname file to write to

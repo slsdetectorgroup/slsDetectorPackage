@@ -4474,6 +4474,12 @@ char* slsDetector::setReceiverIP(string receiverIP){
 			setFilePath(fileIO::getFilePath());
 			setFileName(fileIO::getFileName());
 			setFileIndex(fileIO::getFileIndex());
+			if(thisDetector->myDetectorType==GOTTHARD){
+				if(configureMAC()!=OK){
+					setReceiverOnline(OFFLINE_FLAG);
+					std::cout << "could not configure mac" << endl;
+				}
+			}
 		}else
 			std::cout << "cannot connect to receiver" << endl;
   }
@@ -4513,7 +4519,7 @@ char* slsDetector::setServerMAC(string serverMAC){
 
 
 int slsDetector::configureMAC(int adc){
-  int retval,i;
+  int i;
   int ret=FAIL;
   int fnum=F_CONFIGURE_MAC;
   char mess[100];
@@ -4526,7 +4532,7 @@ int slsDetector::configureMAC(int adc){
 
 
 #ifdef VERBOSE
-  std::cout<< "slsDetector configureMAC "<< std::endl;
+  std::cout<< "Configuring MAC with adc:"<< adc << std::endl;
 #endif
 
   for(i=0;i<3;i++){
@@ -4577,9 +4583,7 @@ int slsDetector::configureMAC(int adc){
 	controlSocket->SendDataOnly(arg,sizeof(arg));
 	controlSocket->SendDataOnly(&adc,sizeof(adc));
 	controlSocket->ReceiveDataOnly(&ret,sizeof(ret));
-	if (ret!=FAIL)
-	  controlSocket->ReceiveDataOnly(&retval,sizeof(retval));
-	else {
+	if (ret==FAIL){
 	  controlSocket->ReceiveDataOnly(mess,sizeof(mess));
 	  std::cout<< "Detector returned error: " << mess << std::endl;
 	}
@@ -4590,13 +4594,11 @@ int slsDetector::configureMAC(int adc){
     }
   }else
 	std::cout << "cannot connect to detector" << endl;
-#ifdef VERBOSE
-  std::cout<< "Configuring MAC - returned "<< retval << std::endl;
-#endif
+
   if (ret==FAIL) {
     std::cout<< "Configuring MAC failed " << std::endl;
   }
-  return retval;
+  return ret;
 }
 
 
@@ -4962,10 +4964,17 @@ int slsDetector::writeConfigurationFile(ofstream &outfile, int id){
 	
   switch (thisDetector->myDetectorType) {
   case GOTTHARD:
-    names[9]="receiverip";
+	names[4]= "angdir";
+	names[5]= "moveflag";
+	names[6]= "lock";
+	names[7]= "caldir";
+	names[8]= "ffdir";
+	names[9]= "extsig";
     names[10]="receivermac";
     names[11]="servermac";
-    nvar=12;
+    names[12]="receiverip";
+    names[13]="outdir";
+    nvar=14;
     break;
   case MYTHEN:
     nsig=4;
@@ -5524,12 +5533,6 @@ int slsDetector::startReceiver(){
 		if(ret==FORCE_UPDATE)
 			ret=updateReceiver();
 	}
-
-	//configuremac for gotthard
-	if(ret==OK)
-		if(thisDetector->myDetectorType==GOTTHARD)
-			ret=configureMAC();
-
 	if(ret==OK)
 		ret=detectorSendToReceiver(true);
 
@@ -5574,7 +5577,7 @@ int slsDetector::detectorSendToReceiver(bool set){
 
 	if (thisDetector->onlineFlag==ONLINE_FLAG) {
 #ifdef VERBOSE
-		std::cout << "Setting detector to send packets via client " << std::endl;
+		std::cout << "Setting detector to send packets via client to: " << set << std::endl;
 #endif
 		if (controlSocket) {
 			if  (controlSocket->Connect()>=0) {

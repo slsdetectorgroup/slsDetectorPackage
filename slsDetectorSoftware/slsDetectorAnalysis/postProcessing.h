@@ -240,7 +240,7 @@ s
 
   void registerRawDataCallback(int( *userCallback)(double*, int, void*),  void *pArg) {rawDataReady = userCallback; pRawDataArg = pArg;};
   
-
+  void registerProgressCallback(int( *func)(double,void*), void *pArg){progress_call=func; pProgressCallArg=pArg;};
 
   virtual double getRateCorrectionTau()=0;
 
@@ -333,6 +333,9 @@ s
   int (*rawDataReady)(double*,int,void*); 
   void *pRawDataArg; 
   
+  int (*progress_call)(double,void*);
+  void *pProgressCallArg;
+
   
   postProcessingFuncs *ppFun;
   detectorData *thisData;

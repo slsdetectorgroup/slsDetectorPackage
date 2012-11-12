@@ -14,7 +14,7 @@ postProcessing::postProcessing(): expTime(NULL), ang(NULL), val(NULL), err(NULL)
   mp=mp1;
   pthread_mutex_init(&mp, NULL);  
   //  mg=mp1;
-  // pthread_mutex_init(&mg, NULL);  
+  // pthread_mutex_init(&mg, NULL);
   //cout << "reg callback "<< endl;
   dataReady = 0;
   pCallbackArg = 0; 
@@ -65,14 +65,14 @@ void postProcessing::processFrame(int *myData, int delflag) {
  
  /** decode data */
  
-  if (getDetectorsType()==MYTHEN) {
+ // if (getDetectorsType()==MYTHEN) {
     fdata=decodeData(myData, fdata);
     
 #ifdef VERBOSE
     cout << "decode"<< endl;
 #endif
-  } else
-    fdata=NULL;
+  //} else
+  //  fdata=NULL;
 
   if (rawDataReady) {
     //#ifdef VERBOSE
@@ -85,36 +85,36 @@ void postProcessing::processFrame(int *myData, int delflag) {
     //#endif
   } else {
  
-  
+
     pthread_mutex_lock(&mp);
     fname=createFileName();
     pthread_mutex_unlock(&mp);
 #ifdef VERBOSE
     cout << "fname is " << fname << endl;
 #endif
-    
+
     //Checking for write flag
     if((*correctionMask)&(1<<WRITE_FILE)) {
 #ifdef VERBOSE
      cout << "writing raw data " << endl;
      
 #endif
-     if (fdata) {
+     if (getDetectorsType()==MYTHEN){
+    // if (fdata) {
        //uses static function?!?!?!?
-       writeDataFile (fname+string(".raw"),fdata, NULL, NULL, 'i'); 
+       writeDataFile (fname+string(".raw"),fdata, NULL, NULL, 'i');
      } else {
-       writeDataFile ((void*)myData); 
+       writeDataFile ((void*)myData, frameIndex);
      }
-
 #ifdef VERBOSE
      cout << "done " << endl;    
 #endif
+    }
 
-    } 
     if ((*correctionMask) & ~(1<<WRITE_FILE)) {
       doProcessing(fdata,delflag, fname);
-    } else 
-      if (dataReady) {
+    } else
+      if (dataReady){
 	thisData=new detectorData(fdata,NULL,NULL,getCurrentProgress(),(fname+string(".raw")).c_str(),getTotalNumberOfChannels()); 
 	dataReady(thisData, pCallbackArg);
 	delete thisData;
@@ -129,6 +129,7 @@ void postProcessing::processFrame(int *myData, int delflag) {
    
   if (getFrameIndex()>=0)
      incrementFrameIndex();
+
 
 
  delete [] myData;
@@ -151,7 +152,7 @@ void postProcessing::processFrame(int *myData, int delflag) {
 #ifdef VERBOSE
   cout << "process frame returning "  << endl;
 #endif
-  
+
   
 }
 
@@ -374,26 +375,35 @@ void* postProcessing::processData(int delflag) {
 	}
 	//receiver
 	else{
-	  int prevCaught=getCurrentFrameIndex();
-	  int caught=0;
-	  while(getRunStatus()!=IDLE){
-	    caught=getCurrentFrameIndex();
-	    incrementProgress(caught-prevCaught);
-	    prevCaught=caught;
-	    usleep(1000000);
-	    if(progress_call)
-	    	progress_call(getCurrentProgress(),pProgressCallArg);
-	  }
-	  /*
-	    if (dataReady) {
-	    // can add get frame from receiver and  send it to GUI
-	    thisData=new detectorData(val,err,ang,getCurrentProgress(),(fname+ext).c_str(),np);
-	    dataReady(thisData, pCallbackArg);
-	    delete thisData;
-	}
-	  */
+		int prevCaught=getCurrentFrameIndex();
+		int caught=0;
+		while(1){
+			if (checkJoinThread()) break;
+			usleep(200000);
+			caught=getCurrentFrameIndex();
+			incrementProgress(caught-prevCaught);
+			prevCaught=caught;
+			if (checkJoinThread()) break;
+			//if(progress_call)
+			//	progress_call(getCurrentProgress(),pProgressCallArg);
 
+			int* receiverData =  readFrameFromReceiver();
+			if(!receiverData)
+				return 0;
+			fdata=decodeData(receiverData);
+			delete [] receiverData;
+			if(fdata){
+				if (dataReady) {
+					thisData=new detectorData(fdata,NULL,NULL,getCurrentProgress(),(getCurrentFileName()+string(".raw")).c_str(),getTotalNumberOfChannels());
+					dataReady(thisData, pCallbackArg);
+					delete thisData;
+					fdata=NULL;
+				}
+			}
+
+		}
 	}
+
 	return 0;
 }
 

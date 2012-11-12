@@ -442,7 +442,7 @@ slsDetectorDefs::detectorType slsDetector::getDetectorType(int id) {
 int slsDetector::initializeDetectorSize(detectorType type) {
   char  *goff;
   goff=(char*)thisDetector;
-  
+
   //  cout << "init detector size" << endl;
 
   /** if the shared memory has newly be created, initialize the detector variables */
@@ -674,6 +674,9 @@ int slsDetector::initializeDetectorSize(detectorType type) {
   filePath=thisDetector->filePath;
   fileName=parentDet->fileName;
   fileIndex=parentDet->fileIndex;
+  framesPerFile=parentDet->framesPerFile;
+  if(thisDetector->myDetectorType==GOTTHARD)
+	  setFramesPerFile(20000);
 
   thisReceiver = new receiverInterface(dataSocket);
 
@@ -3946,7 +3949,7 @@ int slsDetector::executeTrimming(trimMode mode, int par1, int par2, int imod){
 };
 
 double* slsDetector::decodeData(int *datain, double *fdata) {
-  
+
   double *dataout;
   if (fdata)
     dataout=fdata;
@@ -5557,12 +5560,6 @@ int slsDetector::stopReceiver(){
 			ret=updateReceiver();
 	}
 
-	//increment file index
-	if(ret==OK){
-		fileIO::setFileIndex(fileIO::getFileIndex()+1);
-		setFileIndex(fileIO::getFileIndex());
-	}
-
 	return ret;
 }
 
@@ -5662,6 +5659,81 @@ int slsDetector::getCurrentFrameIndex(){
 
 	return retval;
 }
+
+
+
+
+int slsDetector::resetFramesCaught(int index){
+	int fnum=F_RESET_FRAMES_CAUGHT;
+	int ret = FAIL;
+	int retval=-1;
+	int arg=index;
+
+	if (setReceiverOnline(ONLINE_FLAG)==ONLINE_FLAG) {
+#ifdef VERBOSE
+		std::cout << "Reset Frames Caught by Receiver:" << arg << std::endl;
+#endif
+		ret=thisReceiver->sendInt(fnum,retval,arg);
+		if(ret==FORCE_UPDATE)
+			ret=updateReceiver();
+	}
+
+	return ret;
+}
+
+
+
+
+int* slsDetector::readFrameFromReceiver(){
+	int fnum=F_READ_FRAME;
+	int nel=(thisDetector->dataBytes+HEADERLENGTH)/sizeof(int);//2572/
+	int* retval=new int[nel];
+	int* origVal=new int[nel];
+	int ret=FAIL;
+	int n;
+	char mess[100]="Nothing";
+
+
+	if (setReceiverOnline(ONLINE_FLAG)==ONLINE_FLAG) {
+#ifdef VERBOSE
+		std::cout<< "slsDetector: Reading frame from receiver "<< thisDetector->dataBytes+HEADERLENGTH << " " <<nel <<std::endl;
+#endif
+		if (dataSocket) {
+			if  (dataSocket->Connect()>=0) {
+				dataSocket->SendDataOnly(&fnum,sizeof(fnum));
+				dataSocket->ReceiveDataOnly(&ret,sizeof(ret));
+
+				if (ret==FAIL) {
+					n= dataSocket->ReceiveDataOnly(mess,sizeof(mess));
+					std::cout<< "Detector returned: " << mess << " " << n << std::endl;
+					delete [] origVal;
+					delete [] retval;
+					return NULL;
+				} else {
+					n=dataSocket->ReceiveDataOnly(origVal,thisDetector->dataBytes+HEADERLENGTH);
+#ifdef VERBOSE
+					std::cout<< "Received "<< n << " data bytes" << std::endl;
+#endif
+					if (n!=thisDetector->dataBytes+HEADERLENGTH) {
+						std::cout<<endl<< "wrong data size received: received " << n << " but expected " << thisDetector->dataBytes+HEADERLENGTH << std::endl;
+						ret=FAIL;
+						delete [] origVal;
+						delete [] retval;
+						return NULL;
+					}//worked
+					else{
+						memcpy(retval,((char*) origVal)+2, getDataBytes()/2);
+						memcpy((((char*)retval)+getDataBytes()/2), ((char*) origVal)+8+getDataBytes()/2, getDataBytes()/2);
+					}
+				}
+				dataSocket->Disconnect();
+			}
+		}
+	}
+	delete [] origVal;
+	return retval;//(retval+HEADERLENGTH/sizeof(int));
+};
+
 
 
 

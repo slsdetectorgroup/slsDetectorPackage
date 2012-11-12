@@ -340,7 +340,7 @@ enum communicationProtocol{
       socketDescriptor=-1;
 	 } 
 	 file_des=-1;
-       }  
+       }
      }; 
 
 

@@ -36,6 +36,9 @@ int stop_receiver(int);
 int get_receiver_status(int);
 int get_frames_caught(int);
 int get_frame_index(int);
+int reset_frame_index(int);
+int reset_frames_caught(int);
+int read_frame(int);
 
 
 

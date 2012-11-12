@@ -462,6 +462,11 @@ class slsDetectorBase :  public virtual slsDetectorDefs  {
   virtual int lockReceiver(int lock=-1)=0;
 
 
+  /**
+   /returns a frame read from recever
+  */
+  virtual int* readFrameFromReceiver()=0;
+
   /** returns detector type string from detector type index
       \param t string can be Mythen, Pilatus, Eiger, Gotthard, Agipd, Unknown
       \returns MYTHEN, PILATUS, EIGER, GOTTHARD, AGIPD, GENERIC

@@ -621,6 +621,19 @@ class slsDetectorUtils :  public slsDetectorActions, public postProcessing {
  */
 virtual int getCurrentFrameIndex()=0;
 
+/**
+ * resets framescaught
+ * @param index frames caught by receiver
+ * @param index if frame index is needed
+*/
+virtual int resetFramesCaught(int index=-1)=0;
+
+/**
+ /returns a frame read from recever
+*/
+virtual int* readFrameFromReceiver()=0;
+
+
   protected:
 
   static const int64_t thisSoftwareVersion=0x20120124;

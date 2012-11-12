@@ -16,6 +16,8 @@
 #define MAXMODS 24
 /** maxmimum number of detectors ina multidetector structure*/
 #define MAXDET 100
+/** header length for data :gotthard*/
+#define HEADERLENGTH 12
 
 typedef  double double32_t;
 typedef  float float32_t;
@@ -502,6 +504,8 @@ enum angleConversionParameter {
   SAMPLE_X, /**< sample displacement in the beam direction */
   SAMPLE_Y /**< sample displacement orthogonal to the beam */
 }; 
+
+
 
 //typedef struct  {
   //float center;  /**< center of the module (channel at which the radius is perpendicular to the module surface) */

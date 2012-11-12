@@ -1939,7 +1939,7 @@ int read_frame(int file_des) {
       return OK;
     }  else {
       //might add delay????
-      if(getFrames()>-2) {printf("in hereeee: frames:%d\n",getFrames());
+      if(getFrames()>-2) {
 	dataret=FAIL;
 	sprintf(mess,"no data and run stopped: %d frames left\n",(int)(getFrames()+2));
 	printf("%s\n",mess);

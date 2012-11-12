@@ -124,7 +124,9 @@ enum {
 
   F_LOCK_RECEIVER,			/**< locks receiver */
 
-  F_GET_FRAME_INDEX				/**< gets the frame index */
+  F_GET_FRAME_INDEX,		/**< gets the frame index */
+
+  F_RESET_FRAMES_CAUGHT     /**< resets the frames caught */
 
   /* Always append functions hereafter!!! */
 

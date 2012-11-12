@@ -53,7 +53,7 @@ public:
 
 
 	/**
-	 * Send a string to receiver
+	 * Send an integer to receiver
 	 * @param fnum function enum to determine what parameter
 	 * @param retval return value
 	 * @param arg value to send
@@ -63,7 +63,7 @@ public:
 
 
 	/**
-	 * Send a string to receiver
+	 * Get an integer value from receiver
 	 * @param fnum function enum to determine what parameter
 	 * @param retval return value
 	 * \returns success of operation
@@ -72,7 +72,7 @@ public:
 
 
 	/**
-	 * Send a string to receiver
+	 * Get last client ip connected to receiver
 	 * @param fnum function enum to get last client up
 	 * @param retval return value
 	 * \returns success of operation
@@ -81,7 +81,7 @@ public:
 
 
 	/**
-	 * Send a string to receiver
+	 * Send a function number to execute function
 	 * @param fnum function enum to determine which function to execute
 	 * \returns success of operation
 	 */

@@ -111,6 +111,8 @@ class multiSlsDetector  : public slsDetectorUtils {
     char fileName[MAX_STR_LENGTH];
     /** path of the output files */
     char filePath[MAX_STR_LENGTH];
+    /** max frames per file */
+    int framesPerFile;
 
     /** corrections  to be applied to the data \see ::correctionFlags */
     int correctionMask;
@@ -1084,6 +1086,17 @@ class multiSlsDetector  : public slsDetectorUtils {
   */
  int getCurrentFrameIndex();
 
+ /**
+  * resets framescaught
+  * @param index frames caught by receiver
+  * @param index if frame index is needed
+ */
+ int resetFramesCaught(int index=-1);
+
+ /**
+  /returns a frame read from recever
+ */
+ int* readFrameFromReceiver();
 
   /** Locks/Unlocks the connection to the receiver
       /param lock sets (1), usets (0), gets (-1) the lock

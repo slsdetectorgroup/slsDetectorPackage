@@ -13,13 +13,17 @@ char*	getFilePath();
 char*	setFilePath(char fName[]);
 int		getFileIndex();
 int 	setFileIndex(int index);
-int		getFramesCaught();
 int 	getFrameIndex();
+int 	getAcquisitionIndex();
+int		getFramesCaught();
+int		getTotalFramesCaught();
+int 	resetTotalFramesCaught(int index);
 
 void* 	startListening(void *arg);
 
 int startReceiver();
 int stopReceiver();
 
+char* readFrame();
 
 #endif

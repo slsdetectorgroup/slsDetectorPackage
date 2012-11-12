@@ -105,6 +105,8 @@ int function_table() {
 	flist[F_GET_RECEIVER_STATUS]=&get_receiver_status;
 	flist[F_GET_FRAMES_CAUGHT]=&get_frames_caught;
 	flist[F_GET_FRAME_INDEX]=&get_frame_index;
+	flist[F_RESET_FRAMES_CAUGHT]=&reset_frames_caught;
+	flist[F_READ_FRAME]=&read_frame;
 
 	flist[F_LOCK_RECEIVER]=&lock_receiver;
 	flist[F_SET_PORT]=&set_port;
@@ -148,11 +150,11 @@ int set_file_name(int file_des) {
 			sprintf(mess,"Receiver locked by %s\n", lastClientIP);
 			ret=FAIL;
 		}
-		else if((strlen(fName))&&(getReceiverStatus()==RUNNING)){
+/*		else if((strlen(fName))&&(getReceiverStatus()==RUNNING)){
 			strcpy(mess,"Can not set file name while receiver running");
 			ret = FAIL;
 		}
-		else
+*/		else
 			strcpy(retval,setFileName(fName));
 	}
 
@@ -275,11 +277,11 @@ int set_file_index(int file_des) {
 			sprintf(mess,"Receiver locked by %s\n", lastClientIP);
 			ret=FAIL;
 		}
-		else if((index>=0)&&(getReceiverStatus()==RUNNING)){
+/*		else if((index>=0)&&(getReceiverStatus()==RUNNING)){
 			strcpy(mess,"Can not set file index while receiver running\n");
 			ret = FAIL;
 		}
-		else
+*/		else
 			retval=setFileIndex(index);
 	}
 
@@ -423,7 +425,7 @@ int get_frames_caught(int file_des) {
 
 	/* execute action if the arguments correctly arrived*/
 #ifdef SLS_RECEIVER_FUNCTION_LIST
-	retval=getFramesCaught();
+	retval=getTotalFramesCaught();
 #endif
 
 	if(ret==OK && differentClients){
@@ -447,14 +449,14 @@ int get_frames_caught(int file_des) {
 
 
 
-int get_frame_index(int file_des) {
+int get_frame_index(int file_des) {printf("Getting frame Index\n");fflush(stdout);
 	int ret=OK;
 	int n=0;
 	int retval=-1;
 
 	/* execute action if the arguments correctly arrived*/
 #ifdef SLS_RECEIVER_FUNCTION_LIST
-	retval=getFrameIndex();
+	retval=getAcquisitionIndex();
 #endif
 
 	if(ret==OK && differentClients){
@@ -464,6 +466,55 @@ int get_frame_index(int file_des) {
 
 	/* send answer */
 	n = sendDataOnly(file_des,&ret,sizeof(ret));
+	n = sendDataOnly(file_des,&retval,sizeof(retval));
+	printf("returnrdf:%d\n",retval);
+	/*return ok/fail*/
+	return ret;
+}
+
+
+
+
+
+
+
+int reset_frames_caught(int file_des) {
+	int ret=OK;
+	int n=0;
+	int retval=-1;
+	int index=-1;
+
+	strcpy(mess,"Could not reset frames caught\n");
+
+
+	/* receive arguments */
+	n = receiveDataOnly(file_des,&index,sizeof(index));
+	if (n < 0) {
+		sprintf(mess,"Error reading from socket\n");
+		ret=FAIL;
+	}
+
+	if (ret==OK) {
+		/* execute action if the arguments correctly arrived*/
+#ifdef SLS_RECEIVER_FUNCTION_LIST
+		if (lockStatus==1 && differentClients==1){//necessary???
+			sprintf(mess,"Receiver locked by %s\n", lastClientIP);
+			ret=FAIL;
+		}
+		else
+			retval=resetTotalFramesCaught(index);
+#endif
+	}
+
+	if(ret==OK && differentClients){
+		printf("Force update\n");
+		ret=FORCE_UPDATE;
+	}
+
+	/* send answer */
+	n = sendDataOnly(file_des,&ret,sizeof(ret));
+	if(ret==FAIL)
+		n = sendDataOnly(file_des,mess,sizeof(mess));
 	n = sendDataOnly(file_des,&retval,sizeof(retval));
 	/*return ok/fail*/
 	return ret;
@@ -475,6 +526,37 @@ int get_frame_index(int file_des) {
 
 
 
+int read_frame(int file_des) {
+	int ret=OK;
+	int n=0;
+	char* retval=NULL;
+	char buffer[1286*2];
+
+	strcpy(mess,"Could not read frame\n");
+
+
+	/* execute action if the arguments correctly arrived*/
+#ifdef SLS_RECEIVER_FUNCTION_LIST
+		retval=readFrame();
+#endif
+
+
+	if(ret==OK && differentClients){
+		printf("Force update\n");
+		ret=FORCE_UPDATE;
+	}
+	if(getReceiverStatus==IDLE){
+		ret=FAIL;
+printf("*************STOPPPED***\n");
+	}
+	/* send answer */
+	n = sendDataOnly(file_des,&ret,sizeof(ret));
+	if(ret==FAIL)
+		n = sendDataOnly(file_des,mess,sizeof(mess));
+	n = sendDataOnly(file_des,retval,sizeof(buffer));
+	/*return ok/fail*/
+	return ret;
+}
 
 
 

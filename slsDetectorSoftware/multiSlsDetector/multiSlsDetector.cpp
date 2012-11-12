@@ -123,7 +123,8 @@ multiSlsDetector::multiSlsDetector(int id) :  slsDetectorUtils(), shmId(-1)
     strcpy(thisMultiDetector->fileName,"run");
     /** set fileIndex to default to 0*/
     thisMultiDetector->fileIndex=0;
-
+    /** set frames per file to default to 1*/
+    thisMultiDetector->framesPerFile=1;
 
     /** set progress Index to default to 0*/
     thisMultiDetector->progressIndex=0;
@@ -229,7 +230,7 @@ multiSlsDetector::multiSlsDetector(int id) :  slsDetectorUtils(), shmId(-1)
   filePath=thisMultiDetector->filePath;
   fileName=thisMultiDetector->fileName;
   fileIndex=&thisMultiDetector->fileIndex;
-
+  framesPerFile=&thisMultiDetector->framesPerFile;
 
 
   for (int i=0; i<thisMultiDetector->numberOfDetectors; i++) {
@@ -3711,6 +3712,52 @@ int multiSlsDetector::getCurrentFrameIndex() {
 
   return ret;
 }
+
+
+
+int multiSlsDetector::resetFramesCaught(int index) {
+	int ret=-100, ret1;
+	for (int i=0; i<thisMultiDetector->numberOfDetectors; i++){
+		if (detectors[i]){
+			ret1=detectors[i]->resetFramesCaught(index);
+		      if (ret==-100)
+			ret=ret1;
+		      else if (ret!=ret1)
+			ret=-1;
+		}
+	}
+
+	return ret;
+}
+
+
+
+int* multiSlsDetector::readFrameFromReceiver(){
+	int nel=(thisMultiDetector->dataBytes)/sizeof(int);
+	int n;
+	int* retval=new int[nel];
+	int *retdet, *p=retval;
+
+	for (int id=0; id<thisMultiDetector->numberOfDetectors; id++) {
+		if (detectors[id]) {
+			retdet=detectors[id]->readFrameFromReceiver();
+			if (retdet) {
+				n=detectors[id]->getDataBytes();
+				memcpy(p,retdet,n);
+				delete [] retdet;
+				p+=n/sizeof(int);
+			}else {
+#ifdef VERBOSE
+				cout << "Receiver for detector " << id << " does not have data left " << endl;
+#endif
+				delete [] retval;
+				return NULL;
+			}
+		}
+	}
+	return retval;
+};
+
 
 
 

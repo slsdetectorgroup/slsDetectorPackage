@@ -41,6 +41,8 @@ slsDetectorUtils::slsDetectorUtils()  {
 
 void  slsDetectorUtils::acquire(int delflag){
 
+	bool receiver = (setReceiverOnline()==ONLINE_FLAG);
+
   // setTotalProgress();
   //moved these 2 here for measurement change
   progressIndex=0;
@@ -107,6 +109,25 @@ void  slsDetectorUtils::acquire(int delflag){
     ns1=getScanSteps(1);
     if (ns1<1)
       ns1=1;
+  }
+
+  if(receiver){
+	  if(getReceiverStatus()!=IDLE)
+		  stopReceiver();
+	  if(setReceiverOnline()==OFFLINE_FLAG)
+		  *stoppedFlag=1;
+
+
+	  //resets frames caught in receiver
+	  if ((timerValue[FRAME_NUMBER]*timerValue[CYCLES_NUMBER])>1)
+		  resetFramesCaught(1);
+	  else
+		  resetFramesCaught(0);
+
+	  if(setReceiverOnline()==OFFLINE_FLAG)
+		  *stoppedFlag=1;
+	 else
+		 setReceiverAcquiring(1);
   }
 
 
@@ -178,7 +199,7 @@ void  slsDetectorUtils::acquire(int delflag){
        
        
 	  pthread_mutex_lock(&mp);
-	  createFileName();
+	  	  createFileName();
 	  pthread_mutex_unlock(&mp);
 
 	  if (*stoppedFlag==0) {
@@ -192,9 +213,6 @@ void  slsDetectorUtils::acquire(int delflag){
 	  if (*stoppedFlag==0) {
 
 
-
-
-
 	    executeAction(headerBefore);
 	 
 	    if (*correctionMask&(1<< ANGULAR_CONVERSION) || aclog || eclog) { 
@@ -202,25 +220,41 @@ void  slsDetectorUtils::acquire(int delflag){
 	      setCurrentPosition(getDetectorPosition());
 	    }
       
-      
+
 	    if (aclog)
-	      aclog->addStep(getCurrentPosition(), getCurrentFileName());
-     
-       
+	    	aclog->addStep(getCurrentPosition(), getCurrentFileName());
+
 	    if (eclog)
-	      eclog->addStep(setDAC(-1,THRESHOLD), getCurrentFileName());
-       
+			eclog->addStep(setDAC(-1,THRESHOLD), getCurrentFileName());
 
 
 	    if (*correctionMask&(1<< I0_NORMALIZATION)) {
 	      if (get_i0)
 		get_i0(0, IOarg);
 	    }
-       
+
 	    if ((timerValue[FRAME_NUMBER]*timerValue[CYCLES_NUMBER])>1) {
 	      setFrameIndex(0);
 	    } else {
 	      setFrameIndex(-1);
+	    }
+
+	    if(receiver){
+	    	 //send receiver file name
+	    	 pthread_mutex_lock(&mp);
+	    	 createFileName();
+	    	  pthread_mutex_unlock(&mp);
+	    	 setFileName(fileIO::getFileName());
+	    	 if(setReceiverOnline()==OFFLINE_FLAG){
+	    		 stopReceiver();
+	    		 break;
+	    	 }
+	    	 //start receiver
+	    	 startReceiver();
+	    	 if(setReceiverOnline()==OFFLINE_FLAG){
+	    		 stopReceiver();
+	    		 break;
+	    	 }
 	    }
 
 	    startAndReadAll();
@@ -244,18 +278,19 @@ void  slsDetectorUtils::acquire(int delflag){
 	    cout << "done! " << endl;
 #endif     
  
-	 
+
 	    if (*threadedProcessing==0){
 #ifdef VERBOSE
 	      cout << "start unthreaded process data " << endl;
 #endif
+
 	      processData(delflag); 
 	    } 
 
 	  } else
 	    break;
-       
 
+	  if(setReceiverOnline()==OFFLINE_FLAG){
 	  // wait until data processing thread has finished the data
 
 #ifdef VERBOSE
@@ -268,19 +303,27 @@ void  slsDetectorUtils::acquire(int delflag){
 	    usleep(100000);
 	  }
 
-	  closeDataFile();
+	  if((*correctionMask)&(1<<WRITE_FILE))
+		  closeDataFile();
+
+	  }else{
+		 while(stopReceiver()!=OK);
+	  }
 
 	  pthread_mutex_lock(&mp);
 	  if (*stoppedFlag==0) {
-	    executeAction(headerAfter);	 
+	    executeAction(headerAfter);
+
+		  pthread_mutex_unlock(&mp);
 	    // setLastIndex(*fileIndex);
 	  } else {
 	    //   setLastIndex(*fileIndex);
+
+		pthread_mutex_unlock(&mp);
 	    break;
 	  }
-	  pthread_mutex_unlock(&mp);
 
-    
+
 	  if (*stoppedFlag) {
 #ifdef VERBOSE
 	    std::cout<< "exiting since the detector has been stopped" << std::endl;
@@ -292,7 +335,7 @@ void  slsDetectorUtils::acquire(int delflag){
 // 	    pthread_mutex_unlock(&mp);
 	  }
 	} // loop on position finished
-     
+
 	//script after
 	if (*stoppedFlag==0) {
 	  executeAction(scriptAfter);
@@ -311,7 +354,7 @@ void  slsDetectorUtils::acquire(int delflag){
 // 	  pthread_mutex_unlock(&mp);
 	}
       } 
-  
+
       //end scan1 loop is1
   
 
@@ -345,27 +388,29 @@ void  slsDetectorUtils::acquire(int delflag){
 #endif
   if(*correctionMask&(1<<WRITE_FILE))
     IncrementFileIndex();
-
+  setFileIndex(fileIO::getFileIndex());
 
 
 
     if (measurement_finished)
       measurement_finished(im,*fileIndex,measFinished_p);
-   
+
     if (*stoppedFlag) {
       break;
     } 
-   
+
 
     // loop measurements
   }
 
+  setReceiverAcquiring(0);
+
   // waiting for the data processing thread to finish!
-  if (*threadedProcessing) { 
+  if (*threadedProcessing) {
     setJoinThread(1);
     pthread_join(dataProcessingThread, &status);
   }
- 
+
   
   if (connectChannels) {
     if (disconnect_channels)
@@ -378,7 +423,6 @@ void  slsDetectorUtils::acquire(int delflag){
   if (eclog)
     delete eclog;
 
-   
   if (acquisition_finished)
     acquisition_finished(getCurrentProgress(),getDetectorStatus(),acqFinished_p);
 
@@ -542,87 +586,6 @@ void slsDetectorUtils::incrementProgress(int i)  {
 
 
 int slsDetectorUtils::testFunction(int times) {
-  int i,count=0;
-  runStatus s;
-  char controlval[1000];
-  char statusval[1000];
-
-  int nchans = getTotalNumberOfChannels();
-  short int dataVals[nchans];
-
-  for(i=0;i<times;i++){
-    sprintf(statusval,"%x",readRegister(0x25));
-    std::cout<<std::endl<<dec<<i+1<<": stat:\t"<<statusval<<"\t";
-    sprintf(controlval,"%x",readRegister(0x24));
-    std::cout<<"cont:"<<controlval<<"\t"<<std::endl;
-
-    startAcquisition();
-
-    sprintf(controlval,"%x",readRegister(0x24));
-    std::cout<<"cont:"<<controlval<<"\t"<<std::endl;
-    //sprintf(statusval,"%x",readRegister(0x25));
-    //std::cout<<statusval<<std::endl;
-    s = getRunStatus();
-    if(s==IDLE){
-      std::cout<<"IDLE\t"<<std::endl;
-      s = getRunStatus();
-      if(s==IDLE){
-	std::cout<<"IDLE"<<std::endl;
-	exit(-1);
-      }
-      ;
-    }
-    else {
-      if (s==RUNNING){
-	count=0;
-	while(s==RUNNING){
-	  count++;//std::cout<<"count:"<<count<<std::endl;
-	  if(count==4){
-	    sprintf(statusval,"%x",readRegister(0x25));
-
-
-	    std::cout<<"STUCK: stat"<<statusval<<std::endl;
-	    exit(-1);
-	  }
-	  usleep(50000);
-	  //val=readRegister(0x25);
-	  s = getRunStatus();
-	}
-      }
-    }
-    /*		else{
-      std::cout<<"\nWeird Status. "<<runStatusType(s)<<" Exit\n";
-      exit(-1);
-      }*/
-    system("rm ~/wORKSPACE/scratch/run*  ");
-    //system("more ~/wORKSPACE/scratch/run*  ");
-    usleep(1000000);
-
-    setFileIndex(0);
-    int b;
-
-    b=setThreadedProcessing(-1);
-    setThreadedProcessing(0);
-    readAll();
-    processData(1);
-    setThreadedProcessing(b);
-
-
-    if(!readDataFile("/home/l_maliakal_d/wORKSPACE/scratch/run_1.raw",dataVals)){
-      std::cout<< "Could not open file "<< std::endl;
-      exit(-1);
-    }
-
-    std::cout<<std::endl;
-    for(int j=1277;j< (nchans);j++)
-      std::cout<<"\t"<<j<<":"<<dataVals[j];
-
-    if(dataVals[1278]!=2558){
-      std::cout<< "DATA ERROR!! "<< std::endl;
-      exit(-1);
-    }
-  }
-  std::cout<<std::endl;
   return 0;
 }
 

@@ -1459,6 +1459,18 @@ class slsDetector : public slsDetectorUtils, public energyConversion {
   */
  int getCurrentFrameIndex();
 
+ /**
+  * resets framescaught
+  * @param index frames caught by receiver
+  * @param index if frame index is needed
+ */
+ int resetFramesCaught(int index=-1);
+
+ /**
+  /returns a frame read from recever
+ */
+ int* readFrameFromReceiver();
+
   /** Locks/Unlocks the connection to the receiver
       /param lock sets (1), usets (0), gets (-1) the lock
       /returns lock status of the receiver

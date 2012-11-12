@@ -778,18 +778,7 @@ string slsDetectorCommand::cmdAcquire(int narg, char *args[], int action) {
 
 
 	myDet->setOnline(ONLINE_FLAG);
-	bool receiver=(myDet->setReceiverOnline()==ONLINE_FLAG);
-
-	if(receiver)
-		if(myDet->startReceiver()==OK)
-			usleep(2000000);
-		else return string("could not start receiver");
-
 	myDet->acquire();
-
-	if(receiver)
-		myDet->stopReceiver();
-
 
 	return string("");
 

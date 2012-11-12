@@ -646,6 +646,7 @@ void qDetectorMain::EnableTabs(){
 	actionLoadCalibration->setVisible(expertTab);
 	actionSaveCalibration->setVisible(expertTab);
 
+
 	//moved to here, so that its all in order, instead of signals and different threads
 	if(!enable) {
 		//set the plot type first(acccss shared memory)

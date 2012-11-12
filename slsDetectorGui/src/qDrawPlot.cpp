@@ -221,9 +221,9 @@ void qDrawPlot::Initialization(){
 
 
 void qDrawPlot::StartStopDaqToggle(bool stop_if_running){
-#ifdef VERYVERBOSE
+//#ifdef VERYVERBOSE
 	cout << "Entering StartStopDaqToggle(" << stop_if_running << ")" <<endl;
-#endif
+//#endif
 	//static bool running = 1;
 	if(running){ //stopping
 		StartDaq(false);
@@ -512,20 +512,8 @@ void qDrawPlot::SetupMeasurement(int currentIndex){
 
 
 void* qDrawPlot::DataStartAcquireThread(void *this_pointer){
-	bool receiver=(((qDrawPlot*)this_pointer)->myDet->setReceiverOnline()==slsDetectorDefs::ONLINE_FLAG);
-	if(receiver){
-		if(((qDrawPlot*)this_pointer)->myDet->startReceiver()==slsDetectorDefs::OK)
-			usleep(2000000);
-		else{
-			qDefs::Message(qDefs::CRITICAL,"could not start receiver","Plot");
-			return this_pointer;
-		}
-	}
 	((qDrawPlot*)this_pointer)->myDet->acquire(1);
-	if(receiver){
-		usleep(0);
-		((qDrawPlot*)this_pointer)->myDet->stopReceiver();
-	}
+
 	return this_pointer;
 }
 
@@ -791,9 +779,9 @@ int qDrawPlot::GetAcquisitionFinishedCallBack(double currentProgress,int detecto
 
 
 int qDrawPlot::AcquisitionFinished(double currentProgress, int detectorStatus){
-#ifdef VERBOSE
+//#ifdef VERBOSE
 	cout << "\nEntering Acquisition Finished with status " ;
-#endif
+//#endif
 	QString status = QString(slsDetectorBase::runStatusType(slsDetectorDefs::runStatus(detectorStatus)).c_str());
 #ifdef VERBOSE
 	cout << status.toAscii().constData() << " and progress " << currentProgress << endl;
@@ -857,9 +845,9 @@ int qDrawPlot::GetMeasurementFinishedCallBack(int currentMeasurementIndex, int f
 
 
 int qDrawPlot::MeasurementFinished(int currentMeasurementIndex, int fileIndex){
-#ifdef VERBOSE
+//#ifdef VERBOSE
 	cout << "Entering Measurement Finished with currentMeasurement " << currentMeasurementIndex << " and fileIndex " << fileIndex << endl;
-#endif
+//#endif
 	//to make sure it plots the last frame before setting lastimagearray all to 0
 	//if(plot_in_scope==2)
 		usleep(500000);

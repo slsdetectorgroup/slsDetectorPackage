@@ -318,11 +318,6 @@ void qTabMeasurement::startStopAcquisition(){
 		btnStartStop->setIcon(*iconStart);
 		btnStartStop->setChecked(false);
 		Enable(1);
-
-		if(myDet->setReceiverOnline()==slsDetectorDefs::ONLINE_FLAG){
-			usleep(0);
-			myDet->stopReceiver();
-		}
 	}
 }
 

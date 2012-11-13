@@ -389,19 +389,13 @@ int stopReceiver(){
 
 
 char* readFrame(){
-//	volatile char* now_ptr=NULL;
-	//u_int32_t* ram_values=NULL;
-
-	//  now_ptr=(char*)ram_values;
-
-	//memcpy(now_ptr,buffer ,sizeof(buffer));
-
-	// memcpy(sendbuffer,buffer ,sizeof(buffer));
-
-	while (((int)*((int*)buffer))%2==0) {printf("checking\n");fflush(stdout);}//usleep(20000);
-
-		// memcpy(sendbuffer,buffer ,sizeof(buffer));
-
+	int i;
+	for(i=0;i<10;i++){
+		if ((((int)*((int*)buffer))%2)!=0)
+			break;
+		else
+			usleep(20000);
+	}
 	//printf("freamenum%d\n",*((int*) sendbuffer));
 	return buffer;
 }

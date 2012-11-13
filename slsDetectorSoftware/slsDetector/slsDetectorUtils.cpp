@@ -126,8 +126,6 @@ void  slsDetectorUtils::acquire(int delflag){
 
 	  if(setReceiverOnline()==OFFLINE_FLAG)
 		  *stoppedFlag=1;
-	 else
-		 setReceiverAcquiring(1);
   }
 
 
@@ -414,7 +412,6 @@ void  slsDetectorUtils::acquire(int delflag){
     // loop measurements
   }
 
-  setReceiverAcquiring(0);
 
   // waiting for the data processing thread to finish!
   if (*threadedProcessing) {

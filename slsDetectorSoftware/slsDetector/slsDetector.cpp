@@ -4941,8 +4941,6 @@ int slsDetector::writeConfigurationFile(string const fname){
 int slsDetector::writeConfigurationFile(ofstream &outfile, int id){
   
   slsDetectorCommand *cmd=new slsDetectorCommand(this);
-  int nvar;
-  int nsig=-1;
 
   string names[]={				\
     "hostname",					\
@@ -4965,8 +4963,7 @@ int slsDetector::writeConfigurationFile(ofstream &outfile, int id){
   //    "trimen",
   //   "dataport",						
 	
-  switch (thisDetector->myDetectorType) {
-  case GOTTHARD:
+  if (thisDetector->myDetectorType==GOTTHARD) {
 	names[4]= "angdir";
 	names[5]= "moveflag";
 	names[6]= "lock";
@@ -4977,15 +4974,12 @@ int slsDetector::writeConfigurationFile(ofstream &outfile, int id){
     names[11]="servermac";
     names[12]="receiverip";
     names[13]="outdir";
-    nvar=14;
-    break;
-  case MYTHEN:
-    nsig=4;
-  default:
-    nvar=15;
-    
+    names[14]="vhighvoltage";
   }
 
+
+  int nvar=15;
+  int nsig=4;//-1;
   int iv=0;
   char *args[100];
   char myargs[100][1000];
@@ -5685,6 +5679,7 @@ int slsDetector::resetFramesCaught(int index){
 
 
 int* slsDetector::readFrameFromReceiver(){
+	//cout<<"databytes:"<<thisDetector->dataBytes<<" headerlength:"<<HEADERLENGTH<<endl;
 	int fnum=F_READ_FRAME;
 	int nel=(thisDetector->dataBytes+HEADERLENGTH)/sizeof(int);//2572/
 	int* retval=new int[nel];

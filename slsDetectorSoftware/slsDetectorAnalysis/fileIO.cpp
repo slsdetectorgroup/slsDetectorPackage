@@ -80,49 +80,37 @@ int fileIO::writeDataFile(ofstream &outfile, int *data, int offset){
 
 
 int fileIO::writeDataFile(void *data, int iframe) {
-	cout <<"iframe " << iframe << endl;
 
 	if (iframe<0)
 		iframe=frameIndex;
-	//if (iframe>=0)
-	//	frameIndex=iframe;
 
 	if ((*framesPerFile)<2)
 		iframe=-1;
-		//frameIndex=-1;
+
 	if ((iframe%(*framesPerFile))==0 || (iframe<0)) {
-	//if ((frameIndex%(*framesPerFile))==0 || (frameIndex<0)) {
 		createFileName();
 		filefd = fopen((currentFileName+string(".raw")).c_str(), "w");
 	}
+
 	if (filefd){
-		//if (iframe%(*framesPerFile)) {
-			/*if(setDynamicRange(-1)==16){
-				fileIOStatic::writeBinaryDataFile(filefd,getDataBytes()*2,  data);
-				frameIndex+=2;
-			}
-			else{*/
-				fileIOStatic::writeBinaryDataFile(filefd,getDataBytes(),  data);cout<<"write frameIndex:"<<iframe<<endl;
-				//}
-			iframe++;
-			//frameIndex++;
-		//}
+		fileIOStatic::writeBinaryDataFile(filefd,getDataBytes(),  data);
+		iframe++;
 	}
+
 	if ((iframe%(*framesPerFile)==0) || (iframe<0)) {
-	//if ((frameIndex%(*framesPerFile)==0) || (frameIndex<0)) {
-	if (filefd)
-		fclose(filefd);
-	filefd=NULL;
+		if (filefd)
+			fclose(filefd);
+		filefd=NULL;
 	}
-return 0;
+	return 0;
 }
 
 
 
-int fileIO::closeDataFile() {cout<<"closing datafile: filfd:"<<filefd<<endl;
+int fileIO::closeDataFile() {
   if (filefd)
       fclose(filefd);
-    filefd=NULL; cout<<"closed data file"<<endl;
+    filefd=NULL;
     return 0;
 }
 

@@ -323,7 +323,7 @@ s
 
   int arraySize;
 
-  void setReceiverAcquiring(int acq){receiverAcquiring=acq;};
+
 
  private:
   double *fdata;
@@ -347,11 +347,6 @@ s
   double *err;
 
   int numberOfChannels;
-
-
-  int receiverAcquiring;
-
-
 
 
 

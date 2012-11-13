@@ -38,6 +38,7 @@ int ram_size=0;
 int64_t totalTime=1;
 u_int32_t progressMask=0;
 
+int phase_shift=120;
 
 
 int ififostart, ififostop, ififostep, ififo;
@@ -217,31 +218,30 @@ u_int32_t bus_r(u_int32_t offset) {
 
 
 int setPhaseShiftOnce(){
-  u_int32_t addr, reg;
-  int result=OK, i;
-  addr=MULTI_PURPOSE_REG;
-  reg=bus_r(addr);
+	u_int32_t addr, reg;
+	int i;
+	addr=MULTI_PURPOSE_REG;
+	reg=bus_r(addr);
 #ifdef VERBOSE
-  printf("Multipurpose reg:%x\n",reg);
+	printf("Multipurpose reg:%x\n",reg);
 #endif
 
-  //Checking if it is power on(negative number)
-  if(((reg&0xFFFF0000)>>16)>0){
-    bus_w(addr,0x0);   //clear the reg
-//#ifdef VERBOSE
-    printf("Implementing Phase Shift-Reg:%x\n",bus_r(addr));
-//#endif
-    //phase shift
-    for (i=1;i<PHASE_SHIFT;i++) {
-      bus_w(addr,(INT_RSTN_BIT|ENET_RESETN_BIT|SW1_BIT|PHASE_STEP_BIT));//0x2821
-      bus_w(addr,(INT_RSTN_BIT|ENET_RESETN_BIT|(SW1_BIT&~PHASE_STEP_BIT)));//0x2820
-     }
-  }
-  reg=bus_r(addr);
+	//Checking if it is power on(negative number)
+	// if(((reg&0xFFFF0000)>>16)>0){
+	//bus_w(addr,0x0);   //clear the reg
+
+	if(reg==0){
+		printf("\nImplementing phase shift of %d\n",phase_shift);
+		for (i=1;i<phase_shift;i++) {
+			bus_w(addr,(INT_RSTN_BIT|ENET_RESETN_BIT|SW1_BIT|PHASE_STEP_BIT));//0x2821
+			bus_w(addr,(INT_RSTN_BIT|ENET_RESETN_BIT|(SW1_BIT&~PHASE_STEP_BIT)));//0x2820
+		}
 #ifdef VERBOSE
-  printf("Multipupose reg now:%x\n",reg);
+		printf("Multipupose reg now:%x\n",bus_r(addr));
 #endif
-  return result;
+	}
+
+	return OK;
 }
 
 

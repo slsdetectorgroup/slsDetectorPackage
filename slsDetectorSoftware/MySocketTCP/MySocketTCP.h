@@ -75,7 +75,5 @@ class MySocketTCP: public genericSocket {
   bool last_keep_connection_open_action_was_a_send;
 
 
-  //  void SetupParameters();
-
 };
 #endif

@@ -87,13 +87,14 @@ enum communicationProtocol{
 
 
  genericSocket(const char* const host_ip_or_name, unsigned short int const port_number, communicationProtocol p) : 
-   portno(port_number), protocol(p), is_a_server(0), socketDescriptor(-1),file_des(-1), packet_size(DEFAULT_PACKET_SIZE)// sender (client): where to? ip 
+   //   portno(port_number), 
+protocol(p), is_a_server(0), socketDescriptor(-1),file_des(-1), packet_size(DEFAULT_PACKET_SIZE)// sender (client): where to? ip 
    { 
-	  pthread_mutex_t mp1 = PTHREAD_MUTEX_INITIALIZER;
-	  mp=mp1;
-	  pthread_mutex_init(&mp, NULL);
+/* 	  pthread_mutex_t mp1 = PTHREAD_MUTEX_INITIALIZER; */
+/* 	  mp=mp1; */
+/* 	  pthread_mutex_init(&mp, NULL); */
 
-     strcpy(hostname,host_ip_or_name);
+	  //   strcpy(hostname,host_ip_or_name);
      struct hostent *hostInfo = gethostbyname(host_ip_or_name);
      if (hostInfo == NULL){
        cerr << "Exiting: Problem interpreting host: " << host_ip_or_name << "\n";
@@ -137,13 +138,16 @@ enum communicationProtocol{
 
   */
   
-   genericSocket(unsigned short int const port_number, communicationProtocol p, const char *eth=NULL): portno(port_number),protocol(p), is_a_server(1),socketDescriptor(-1), file_des(-1), packet_size(DEFAULT_PACKET_SIZE){
+   genericSocket(unsigned short int const port_number, communicationProtocol p, const char *eth=NULL): 
+     //portno(port_number),
+     protocol(p), is_a_server(1),socketDescriptor(-1), file_des(-1), packet_size(DEFAULT_PACKET_SIZE){
 
 /* // you can specify an IP address: */
 /*  */
 
 /* // or you can let it automatically select one: */
 /* myaddr.sin_addr.s_addr = INADDR_ANY; */
+
 
      char ip[20];
 
@@ -156,7 +160,7 @@ enum communicationProtocol{
 	 strcpy(ip,eth);
      }
     
-     strcpy(hostname,"localhost"); //needed?!?!?!?
+     // strcpy(hostname,"localhost"); //needed?!?!?!?
     
 
      socketDescriptor = socket(AF_INET, getProtocol(),0); //tcp
@@ -168,7 +172,7 @@ enum communicationProtocol{
      
      // Set some fields in the serverAddress structure.  
      serverAddress.sin_family = AF_INET;
-     serverAddress.sin_port = htons(portno);
+     serverAddress.sin_port = htons(port_number);
      serverAddress.sin_addr.s_addr = htonl(INADDR_ANY);
      
 
@@ -190,6 +194,18 @@ enum communicationProtocol{
 
    }
   
+
+
+
+
+
+
+
+
+
+
+
+
      /** 
 	 The destructor: disconnects and close the socket
 	 @short the destructor 
@@ -204,27 +220,27 @@ enum communicationProtocol{
      };
      
 
-     /** @short if client returns hostname for connection
-	 \param name string to write the hostname to
-	 \returns 0 if client, 1 if server (in this case ignore name return value)
+/*      /\** @short if client returns hostname for connection */
+/* 	 \param name string to write the hostname to */
+/* 	 \returns 0 if client, 1 if server (in this case ignore name return value) */
 
-     */
-     int getHostname(char *name){
-       if (is_a_server==0) {
-	 strcpy(name,getHostname().c_str());
-       }
-       return is_a_server;
-     };
-      /** @short if client returns hostname for connection
-	 \returns hostname
+/*      *\/ */
+/*      int getHostname(char *name){ */
+/*        if (is_a_server==0) { */
+/* 	 strcpy(name,getHostname().c_str()); */
+/*        } */
+/*        return is_a_server; */
+/*      }; */
+/*       /\** @short if client returns hostname for connection */
+/* 	 \returns hostname */
 
-      */
-     string getHostname(){return string(hostname);};
+/*       *\/ */
+/*      string getHostname(){return string(hostname);}; */
 
-     /** @short returns port number for connection
-	 \returns port number
-     */
-     int getPortNumber(){return portno;};
+/*      /\** @short returns port number for connection */
+/* 	 \returns port number */
+/*      *\/ */
+/*      int getPortNumber(){return portno;}; */
 
     /** @short returns communication protocol
 	 \returns TCP or UDP
@@ -244,6 +260,7 @@ enum communicationProtocol{
      int  Connect(){//cout<<"connect"<<endl;
 
      if(file_des>0) return file_des;
+       if (protocol==UDP) return -1;
 
      if(is_a_server && protocol==TCP){ //server tcp; the server will wait for the clients connection
     	 if (socketDescriptor>0) {
@@ -386,22 +403,6 @@ enum communicationProtocol{
      int setPacketSize(int i=-1) { if (i>=0) packet_size=i; return packet_size;};
 
   
-/*      //The following two functions will connectioned->send/receive->disconnect */
-/*   int  SendData(void* buf,int length);//length in characters */
-/*   int  ReceiveData(void* buf,int length); */
-  
-
-/*   //The following two functions stay connected, blocking other connections, and must be manually disconnected, */
-/*   //          when the last call is a SendData() or ReceiveData() the disconnection will be done automatically */
-/*   //These function will also automatically disconnect->reconnect if */
-/*   //          two reads (or two writes) are called in a row to preserve the data send/receive structure  */
-/*   int  SendDataAndKeepConnection(void* buf,int length); */
-/*   int  ReceiveDataAndKeepConnection(void* buf,int length); */
-
-
-/*   // Danger! These functions do not connect nor disconnect nor flush the data! be sure that send-receive match perfectly on both server and client side! */
-/*   int  SendDataOnly(void* buf,int length); */
-/*   int  ReceiveDataOnly(void* buf,int length); */
 
      static string ipToName(string ip) {
        struct ifaddrs *addrs, *iap;
@@ -488,12 +489,9 @@ enum communicationProtocol{
 
        if (buf==NULL) return -1;
        
-       int nsending;
-       int nsent;
-       int total_sent=0;
-       
-       
 
+       total_sent=0;
+       
        switch(protocol) {
        case TCP:
 	 if (file_des<0) return -1;
@@ -535,9 +533,7 @@ enum communicationProtocol{
 #endif
        if (buf==NULL) return -1;
        
-       int nsending;
-       int nsent;
-       int total_sent=0;
+       total_sent=0;
        
 
        switch(protocol) {
@@ -577,20 +573,29 @@ enum communicationProtocol{
 
  protected:
 
-  char hostname[1000];
-  int portno;
   communicationProtocol protocol; 
 
-  int packet_size;
 
   
   int is_a_server;
+
+
   int socketDescriptor;
+  int file_des;
+
+  int packet_size;
+
   struct sockaddr_in clientAddress, serverAddress;
   socklen_t clientAddress_length;
 
-  int file_des;
+ private:
+  
+  int nsending;
+  int nsent;
+  int total_sent;
+  
+       
 
-  pthread_mutex_t mp;
+  // pthread_mutex_t mp;
 };
 #endif

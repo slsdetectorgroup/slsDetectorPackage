@@ -15,7 +15,7 @@ RECEIVERDIR=$(LIBRARYDIR)/slsReceiver
 
 
 
-all: lib  slsDetectorClient_static slsReceiver #slsDetectorGUI
+all: lib  slsDetectorClient_static slsReceiver slsDetectorGUI
 
 nonstatic: lib  slsDetectorClient slsReceiver slsDetectorGUI
 

@@ -449,7 +449,7 @@ int get_frames_caught(int file_des) {
 
 
 
-int get_frame_index(int file_des) {printf("Getting frame Index\n");fflush(stdout);
+int get_frame_index(int file_des) {
 	int ret=OK;
 	int n=0;
 	int retval=-1;
@@ -467,7 +467,6 @@ int get_frame_index(int file_des) {printf("Getting frame Index\n");fflush(stdout
 	/* send answer */
 	n = sendDataOnly(file_des,&ret,sizeof(ret));
 	n = sendDataOnly(file_des,&retval,sizeof(retval));
-	printf("returnrdf:%d\n",retval);
 	/*return ok/fail*/
 	return ret;
 }

@@ -13,8 +13,8 @@ postProcessing::postProcessing(): expTime(NULL), ang(NULL), val(NULL), err(NULL)
   pthread_mutex_t mp1 = PTHREAD_MUTEX_INITIALIZER;
   mp=mp1;
   pthread_mutex_init(&mp, NULL);  
-  //  mg=mp1;
-  // pthread_mutex_init(&mg, NULL);
+  mg=mp1;
+  pthread_mutex_init(&mg, NULL);
   //cout << "reg callback "<< endl;
   dataReady = 0;
   pCallbackArg = 0; 
@@ -99,10 +99,10 @@ void postProcessing::processFrame(int *myData, int delflag) {
      cout << "writing raw data " << endl;
      
 #endif
-     if (getDetectorsType()==MYTHEN){
+     if (getDetectorsType()==MYTHEN){cout<<"gonna write datafile"<<endl;
     // if (fdata) {
        //uses static function?!?!?!?
-       writeDataFile (fname+string(".raw"),fdata, NULL, NULL, 'i');
+       writeDataFile (fname+string(".raw"),fdata, NULL, NULL, 'i');cout<<"finished writing datafile"<<endl;
      } else {
        writeDataFile ((void*)myData, frameIndex);
      }
@@ -375,19 +375,28 @@ void* postProcessing::processData(int delflag) {
 	}
 	//receiver
 	else{
+		  pthread_mutex_lock(&mg);
 		int prevCaught=getCurrentFrameIndex();
+		 pthread_mutex_unlock(&mg);
+
 		int caught=0;
 		while(1){
 			if (checkJoinThread()) break;
 			usleep(200000);
+
+			  pthread_mutex_lock(&mg);
 			caught=getCurrentFrameIndex();
+			 pthread_mutex_unlock(&mg);
+
 			incrementProgress(caught-prevCaught);
 			prevCaught=caught;
 			if (checkJoinThread()) break;
 			//if(progress_call)
 			//	progress_call(getCurrentProgress(),pProgressCallArg);
-
+			  pthread_mutex_lock(&mg);
 			int* receiverData =  readFrameFromReceiver();
+			 pthread_mutex_unlock(&mg);
+
 			if(!receiverData)
 				return 0;
 			fdata=decodeData(receiverData);

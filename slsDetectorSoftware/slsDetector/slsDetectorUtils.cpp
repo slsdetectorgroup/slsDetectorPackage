@@ -240,21 +240,26 @@ void  slsDetectorUtils::acquire(int delflag){
 	    }
 
 	    if(receiver){
-	    	 //send receiver file name
-	    	 pthread_mutex_lock(&mp);
-	    	 createFileName();
-	    	  pthread_mutex_unlock(&mp);
-	    	 setFileName(fileIO::getFileName());
-	    	 if(setReceiverOnline()==OFFLINE_FLAG){
-	    		 stopReceiver();
-	    		 break;
-	    	 }
-	    	 //start receiver
-	    	 startReceiver();
-	    	 if(setReceiverOnline()==OFFLINE_FLAG){
-	    		 stopReceiver();
-	    		 break;
-	    	 }
+	    	//send receiver file name
+	    	pthread_mutex_lock(&mp);
+	    	createFileName();
+	    	pthread_mutex_unlock(&mp);
+
+	    	pthread_mutex_lock(&mg);
+	    	setFileName(fileIO::getFileName());
+	    	if(setReceiverOnline()==OFFLINE_FLAG){
+	    		stopReceiver();
+	    		pthread_mutex_unlock(&mg);
+	    		break;
+	    	}
+	    	//start receiver
+	    	startReceiver();
+	    	if(setReceiverOnline()==OFFLINE_FLAG){
+	    		stopReceiver();
+	    		pthread_mutex_unlock(&mg);
+	    		break;
+	    	}
+	    	pthread_mutex_unlock(&mg);
 	    }
 
 	    startAndReadAll();
@@ -290,6 +295,8 @@ void  slsDetectorUtils::acquire(int delflag){
 	  } else
 	    break;
 
+
+	  pthread_mutex_lock(&mg);
 	  if(setReceiverOnline()==OFFLINE_FLAG){
 	  // wait until data processing thread has finished the data
 
@@ -303,12 +310,16 @@ void  slsDetectorUtils::acquire(int delflag){
 	    usleep(100000);
 	  }
 
-	  if((*correctionMask)&(1<<WRITE_FILE))
-		  closeDataFile();
+	  if (getDetectorsType()==GOTTHARD)
+		  if((*correctionMask)&(1<<WRITE_FILE))
+			  closeDataFile();
 
 	  }else{
 		 while(stopReceiver()!=OK);
 	  }
+	  pthread_mutex_unlock(&mg);
+
+
 
 	  pthread_mutex_lock(&mp);
 	  if (*stoppedFlag==0) {
@@ -382,14 +393,14 @@ void  slsDetectorUtils::acquire(int delflag){
 
 
 
-
+	  pthread_mutex_lock(&mg);
 #ifdef VERBOSE
   cout << "findex incremented " << endl;
 #endif
   if(*correctionMask&(1<<WRITE_FILE))
     IncrementFileIndex();
   setFileIndex(fileIO::getFileIndex());
-
+  pthread_mutex_unlock(&mg);
 
 
     if (measurement_finished)

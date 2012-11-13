@@ -119,10 +119,10 @@ return 0;
 
 
 
-int fileIO::closeDataFile() {fflush(stdout);
+int fileIO::closeDataFile() {cout<<"closing datafile: filfd:"<<filefd<<endl;
   if (filefd)
       fclose(filefd);
-    filefd=NULL;
+    filefd=NULL; cout<<"closed data file"<<endl;
     return 0;
 }
 

@@ -5715,7 +5715,7 @@ int* slsDetector::readFrameFromReceiver(){
 					std::cout<< "Received "<< n << " data bytes" << std::endl;
 #endif
 					if (n!=thisDetector->dataBytes+HEADERLENGTH) {
-						std::cout<<endl<< "wrong data size received: received " << n << " but expected " << thisDetector->dataBytes+HEADERLENGTH << std::endl;
+						std::cout<<endl<< "wrong data size received: received " << n << " but expected from receiver " << thisDetector->dataBytes+HEADERLENGTH << std::endl;
 						ret=FAIL;
 						delete [] origVal;
 						delete [] retval;

@@ -398,7 +398,7 @@ char* readFrame(){
 
 	// memcpy(sendbuffer,buffer ,sizeof(buffer));
 
-	while (((int)*((int*)buffer))%2==0) ;//usleep(20000);
+	while (((int)*((int*)buffer))%2==0) {printf("checking\n");fflush(stdout);}//usleep(20000);
 
 		// memcpy(sendbuffer,buffer ,sizeof(buffer));
 

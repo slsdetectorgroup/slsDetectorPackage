@@ -89,6 +89,10 @@ enum communicationProtocol{
  genericSocket(const char* const host_ip_or_name, unsigned short int const port_number, communicationProtocol p) : 
    portno(port_number), protocol(p), is_a_server(0), socketDescriptor(-1),file_des(-1), packet_size(DEFAULT_PACKET_SIZE)// sender (client): where to? ip 
    { 
+	  pthread_mutex_t mp1 = PTHREAD_MUTEX_INITIALIZER;
+	  mp=mp1;
+	  pthread_mutex_init(&mp, NULL);
+
      strcpy(hostname,host_ip_or_name);
      struct hostent *hostInfo = gethostbyname(host_ip_or_name);
      if (hostInfo == NULL){
@@ -237,92 +241,96 @@ enum communicationProtocol{
  /** @short etablishes connection; disconnect should always follow
 	 \returns 1 if error
      */
-     int  Connect(){
+     int  Connect(){//cout<<"connect"<<endl;
 
-       if(file_des>0) return file_des;
+     if(file_des>0) return file_des;
 
-       if(is_a_server && protocol==TCP){ //server tcp; the server will wait for the clients connection
-	 if (socketDescriptor>0) {
-	   if ((file_des = accept(socketDescriptor,(struct sockaddr *) &clientAddress, &clientAddress_length)) < 0) {
-	     cerr << "Error: with server accept, connection refused"<<endl;
-	     switch(errno) {
-	     case EWOULDBLOCK:
-	       printf("ewouldblock eagain\n");
-	       break;
-	     case EBADF:
-	       printf("ebadf\n");
-	       break;
-	     case ECONNABORTED:
-	       printf("econnaborted\n");
-	       break;
-	     case EFAULT:
-	       printf("efault\n");
-	       break;
-	     case EINTR:
-	       printf("eintr\n");
-	       break;
-	     case EINVAL:
-	       printf("einval\n");
-	       break;
-	     case EMFILE: 
-	       printf("emfile\n");
-	       break;
-	     case ENFILE:
-	       printf("enfile\n");
-	       break;
-	     case ENOTSOCK:
-	       printf("enotsock\n");
-	       break;
-	     case EOPNOTSUPP:
-	       printf("eOPNOTSUPP\n");
-	       break;
-	     case ENOBUFS:
-	       printf("ENOBUFS\n");
-	       break;
-	     case ENOMEM:
-	       printf("ENOMEM\n");
-	       break;
-	     case ENOSR:
-	       printf("ENOSR\n");
-	       break;
-	     case EPROTO:
-	       printf("EPROTO\n");
-	       break;
-	     default:
-	       printf("unknown error\n");
-	     }
-	     socketDescriptor=-1;
-	   } 
+     if(is_a_server && protocol==TCP){ //server tcp; the server will wait for the clients connection
+    	 if (socketDescriptor>0) {
+    		 if ((file_des = accept(socketDescriptor,(struct sockaddr *) &clientAddress, &clientAddress_length)) < 0) {
+    			 cerr << "Error: with server accept, connection refused"<<endl;
+    			 switch(errno) {
+    			 case EWOULDBLOCK:
+    				 printf("ewouldblock eagain\n");
+    				 break;
+    			 case EBADF:
+    				 printf("ebadf\n");
+    				 break;
+    			 case ECONNABORTED:
+    				 printf("econnaborted\n");
+    				 break;
+    			 case EFAULT:
+    				 printf("efault\n");
+    				 break;
+    			 case EINTR:
+    				 printf("eintr\n");
+    				 break;
+    			 case EINVAL:
+    				 printf("einval\n");
+    				 break;
+    			 case EMFILE:
+    				 printf("emfile\n");
+    				 break;
+    			 case ENFILE:
+    				 printf("enfile\n");
+    				 break;
+    			 case ENOTSOCK:
+    				 printf("enotsock\n");
+    				 break;
+    			 case EOPNOTSUPP:
+    				 printf("eOPNOTSUPP\n");
+    				 break;
+    			 case ENOBUFS:
+    				 printf("ENOBUFS\n");
+    				 break;
+    			 case ENOMEM:
+    				 printf("ENOMEM\n");
+    				 break;
+    			 case ENOSR:
+    				 printf("ENOSR\n");
+    				 break;
+    			 case EPROTO:
+    				 printf("EPROTO\n");
+    				 break;
+    			 default:
+    				 printf("unknown error\n");
+    			 }
+    			 socketDescriptor=-1;
+    		 }
 #ifdef VERY_VERBOSE
-	   else 
-	     cout << "client connected "<< file_des << endl;
+    		 else
+    			 cout << "client connected "<< file_des << endl;
 #endif
-	   
-	 }
-	 // file_des = socketDescriptor;
-	 
-#ifdef VERY_VERBOSE
-	 cout << "fd " << file_des  << endl; 
-#endif
-       } else {  
-	 if (socketDescriptor<=0)
-	   socketDescriptor = socket(AF_INET, getProtocol(),0);  
-	 //    SetTimeOut(10);
-	 if (socketDescriptor < 0){
-	   cerr << "Can not create socket "<<endl;
-	   file_des = socketDescriptor;
-	 } else {
-	   
-	   if(connect(socketDescriptor,(struct sockaddr *) &serverAddress,sizeof(serverAddress))<0){
-	     cerr << "Can not connect to socket "<<endl;
-	     file_des = -1;
-	   } else
-	     file_des = socketDescriptor;
-	 }
-	 
-       }
 
-       return file_des;
+    	 }
+    	 // file_des = socketDescriptor;
+
+#ifdef VERY_VERBOSE
+    	 cout << "fd " << file_des  << endl;
+#endif
+     } else {
+    	 if (socketDescriptor<=0)
+    		 socketDescriptor = socket(AF_INET, getProtocol(),0);
+    	 //    SetTimeOut(10);
+    	 if (socketDescriptor < 0){
+    		 cerr << "Can not create socket "<<endl;
+    		 file_des = socketDescriptor;
+    	 } else {
+
+    		 if(connect(socketDescriptor,(struct sockaddr *) &serverAddress,sizeof(serverAddress))<0){
+    			 cerr << "Can not connect to socket "<<endl;
+    			 file_des = -1;
+    		 } else{
+    			 file_des = socketDescriptor;
+    			 /*cout<<"locking"<<endl;
+    			 pthread_mutex_lock(&mp);
+    			 cout<<"locked"<<endl;*/
+    		 }
+    	 }
+
+     }
+
+     return file_des;
      }
 
 
@@ -330,17 +338,20 @@ enum communicationProtocol{
 
      /** @short free connection */
      void Disconnect(){
-       
-       if(file_des>=0){ //then was open
-	 if(is_a_server){ 
-	   close(file_des);
-	 }
-	 else { 
-      close(socketDescriptor);
-      socketDescriptor=-1;
-	 } 
-	 file_des=-1;
-       }
+
+    	 if(file_des>=0){ //then was open
+    		 if(is_a_server){
+    			 close(file_des);
+    		 }
+    		 else {
+    			 close(socketDescriptor);
+    			 socketDescriptor=-1;
+    		 }
+    		 file_des=-1;
+    		 /*cout<<"unlocking"<<endl;
+    		 pthread_mutex_unlock(&mp);
+    		 cout<<"unlocked"<<endl;*/
+    	 }
      }; 
 
 
@@ -580,6 +591,6 @@ enum communicationProtocol{
 
   int file_des;
 
-
+  pthread_mutex_t mp;
 };
 #endif

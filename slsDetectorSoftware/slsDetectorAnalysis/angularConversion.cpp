@@ -60,7 +60,7 @@ int angularConversion::deleteMerging() {
 
   if (mergingErrors)
     delete [] mergingErrors;
-
+  return 0;
 }
 
 
@@ -179,7 +179,7 @@ double angularConversion::setAngularConversionParameter(angleConversionParameter
   case BIN_SIZE:
     if (v>0) {
       *binSize=v;
-      nBins=360./(*binSize);
+      nBins=(int)(360./(*binSize))+1;
     }
     return *binSize;
   case MOVE_FLAG:
@@ -226,7 +226,7 @@ double angularConversion::getAngularConversionParameter(angleConversionParameter
     return *fineOffset;
   case BIN_SIZE: 
     if (*binSize>0)
-      nBins=360./(*binSize);
+      nBins=(int)(360./(*binSize))+1;
     else 
       nBins=0;
     return *binSize;

@@ -605,6 +605,7 @@ int multiSlsDetector::addSlsDetector(detectorType t, int pos) {
   cout << "Creating detector " << id << " of type "  << getDetectorType(t) << endl;
 #endif
   slsDetector *s=new slsDetector(t, id, this);
+  s=NULL;
 #ifdef VERBOSE
   cout << "Adding it to the multi detector structure" << endl;
 #endif
@@ -862,7 +863,7 @@ slsDetectorDefs::synchronizationMode multiSlsDetector::setSynchronization(synchr
 
 
 int multiSlsDetector::setOnline(int off) {
-  int retdet;
+  // int retdet;
 
   if (off!=GET_ONLINE_FLAG) {
     thisMultiDetector->onlineFlag=off;
@@ -1641,13 +1642,13 @@ double* multiSlsDetector::decodeData(int *datain, double *fdata) {
 
 
 int multiSlsDetector::setFlatFieldCorrection(string fname){
-  double data[thisMultiDetector->numberOfChannels],  xmed[thisMultiDetector->numberOfChannels];
+  double data[thisMultiDetector->numberOfChannels];//,  xmed[thisMultiDetector->numberOfChannels];
   double ffcoefficients[thisMultiDetector->numberOfChannels], fferrors[thisMultiDetector->numberOfChannels];
-  int nmed=0;
-  int idet=0, ichdet=-1;
+  // int nmed=0;
+  // int idet=0, ichdet=-1;
   char ffffname[MAX_STR_LENGTH*2];
-  int nbad=0, nch;
-  int badlist[MAX_BADCHANS];
+  int  nch;//nbad=0,
+  //int badlist[MAX_BADCHANS];
   int im=0;
 
   if (fname=="default") {
@@ -1920,7 +1921,7 @@ int multiSlsDetector::getRateCorrection(double &t){
 
 double multiSlsDetector::getRateCorrectionTau(){
 
-  int ret1=-100,ret;
+  double ret1=-100,ret;
   if (thisMultiDetector->correctionMask&(1<<RATE_CORRECTION)) {
 #ifdef VERBOSE
     std::cout<< "Rate correction is enabled with dead time "<< thisMultiDetector->tDead << std::endl;
@@ -2892,7 +2893,7 @@ int multiSlsDetector::setNumberOfModules(int p, dimension d) {
 
   for (int idet=0; idet<thisMultiDetector->numberOfDetectors; idet++) {
 
-    cout << "detector " << idet << endl;
+    //   cout << "detector " << idet << endl;
     if (detectors[idet]) {
       if (p<0)
 	nm=p;
@@ -3152,7 +3153,7 @@ int multiSlsDetector::readConfigurationFile(string const fname){
   thisMultiDetector->numberOfDetectors=0;
 
   multiSlsDetectorClient *cmd;
-  char ext[100];
+  // char ext[100];
 
 
 
@@ -3272,7 +3273,7 @@ int multiSlsDetector::writeConfigurationFile(string const fname){
 
   int nvar=14;
  
-  char ext[100];
+  //  char ext[100];
   
   int iv=0;
   char *args[100];
@@ -3355,7 +3356,7 @@ int multiSlsDetector::writeDataFile(string fname, double *data, double *err, dou
   ofstream outfile;
   int choff=0, off=0; //idata, 
   double *pe=err, *pa=ang;
-  int nch_left=nch, n, nd;
+  int nch_left=nch, n;//, nd;
 
   if (nch_left<=0)
     nch_left=getTotalNumberOfChannels();

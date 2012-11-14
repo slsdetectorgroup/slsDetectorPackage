@@ -72,7 +72,7 @@ class slsDetectorUsers
 
    
    /**  @short virtual destructor */
-   ~slsDetectorUsers();
+   virtual ~slsDetectorUsers();
 
 
 

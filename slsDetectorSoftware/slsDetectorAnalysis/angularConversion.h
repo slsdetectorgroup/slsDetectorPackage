@@ -152,7 +152,7 @@ class angularConversion : public virtual slsDetectorBase, public angularConversi
       \param bs bin size to be set
       \returns actual bin size
   */
-  double setBinSize(double bs){if (bs>0) nBins=360/bs; return setAngularConversionParameter(BIN_SIZE,bs);};
+  double setBinSize(double bs){if (bs>0) nBins=(int)(360./bs); return setAngularConversionParameter(BIN_SIZE,bs);};
 
   /** 
       get detector bin size

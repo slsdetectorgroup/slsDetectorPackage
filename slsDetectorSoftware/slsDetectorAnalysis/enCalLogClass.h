@@ -65,7 +65,7 @@ class enCalLogClass {
 
   int readHeader(ifstream &infile, char *settings, int &nmod, int &chanspermod, int *mods ) {				\
     nmod=0; strcpy(settings,"unknown"); chanspermod=0;			\
-    char line[1000], myvar[100], myarg[100];				\
+    char line[1000],myarg[100];						\
     int dum;								\
     for (int iv=0; iv<3; iv++) {					\
       infile.getline(line,1000);					\

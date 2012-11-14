@@ -470,22 +470,7 @@ int slsDetectorActions::executeAction(int level) {
        fName=getCurrentFileName();
        nowIndex=getFileIndexFromFileName(getCurrentFileName());
      case headerAfter:
-// 	sprintf(cmd,"%s nrun=%d fn=%s acqtime=%f gainmode=%d threshold=%d badfile=%s angfile=%s bloffset=%f fineoffset=%f fffile=%s/%s tau=%f par=%s", \
-// 		getActionScript(level).c_str(),		\
-// 		getFileIndexFromFileName(currentFileName),  \
-// 		currentFileName.c_str(),		    \
-// 		((double)timerValue[ACQUISITION_TIME])*1E-9, \
-// 		*currentSettings,			\
-// 		*currentThresholdEV,			\
-// 		getBadChannelCorrectionFile().c_str(),	\
-// 		angularConversion::getAngularConversionFile().c_str(),	\
-// 		*globalOffset,				\
-// 		*fineOffset,				\
-// 		getFlatFieldCorrectionDir().c_str(),		\
-// 		getFlatFieldCorrectionFile().c_str(),		\
-// 		getRateCorrectionTau(),			\
-// 		getActionParameter(level).c_str());
-       
+
 // all other parameters should be taken using text client calls in the header scripts!
 
 	sprintf(cmd,"%s nrun=%d fn=%s par=%s", \

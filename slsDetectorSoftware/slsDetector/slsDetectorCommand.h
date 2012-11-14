@@ -17,7 +17,7 @@ class slsDetectorCommand : public virtual slsDetectorDefs {
 
 
   slsDetectorCommand(slsDetectorUtils *det);
-
+  virtual ~slsDetectorCommand(){};
 
   /*   /\** */
   /*      executes a set of string arguments according to a given format. It is used to read/write configuration file, dump and retrieve detector settings and for the command line interface command parsing */
@@ -171,8 +171,6 @@ class slsDetectorCommand : public virtual slsDetectorDefs {
 
 
   FuncTable descrToFuncMap[1000];
-
-
 
 
 

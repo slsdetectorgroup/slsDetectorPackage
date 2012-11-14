@@ -248,7 +248,7 @@ s
   int positionFinished(int v=-1){pthread_mutex_lock(&mp); if (v>=0) posfinished=v; int retval=posfinished; pthread_mutex_unlock(&mp); return retval;};
 
   double getCurrentPosition() {double p; pthread_mutex_lock(&mp); p=currentPosition; pthread_mutex_unlock(&mp); return p;};
-  int setCurrentPosition(double v) { pthread_mutex_lock(&mp); currentPosition=v; pthread_mutex_unlock(&mp); return currentPosition;};
+  double setCurrentPosition(double v) { pthread_mutex_lock(&mp); currentPosition=v; pthread_mutex_unlock(&mp); return currentPosition;};
 
 
 
@@ -353,19 +353,19 @@ s
 };
 
 
-static void* startProcessData(void *n){\
-   postProcessing *myDet=(postProcessing*)n;\
-   myDet->processData(1);\
-   pthread_exit(NULL);\
+/* static void* startProcessData(void *n){\ */
+/*    postProcessing *myDet=(postProcessing*)n;\ */
+/*    myDet->processData(1);\ */
+/*    pthread_exit(NULL);\ */
    
-};
+/* }; */
 
-static void* startProcessDataNoDelete(void *n){\
-  postProcessing *myDet=(postProcessing*)n;\
-  myDet->processData(0);\
-  pthread_exit(NULL);\
+/* static void* startProcessDataNoDelete(void *n){\ */
+/*   postProcessing *myDet=(postProcessing*)n;\ */
+/*   myDet->processData(0);\ */
+/*   pthread_exit(NULL);\ */
 
-};
+/* }; */
 
 
 

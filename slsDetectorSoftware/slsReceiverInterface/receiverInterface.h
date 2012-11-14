@@ -16,9 +16,6 @@
  */
 
 
-/**
-   @short
- */
 class receiverInterface{
 
 public:
@@ -87,7 +84,7 @@ public:
 	 */
 	int executeFunction(int fnum);
 
-
+	//here one should implement the funcs listed in 
 
 private:
 

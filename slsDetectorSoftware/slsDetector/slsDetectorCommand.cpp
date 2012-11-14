@@ -40,6 +40,7 @@ slsDetectorCommand::slsDetectorCommand(slsDetectorUtils *det)  {
 
   /* Detector structure configuration and debugging commands */
 
+
   descrToFuncMap[i].m_pFuncName="free";//OK
   descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdFree;
   i++;
@@ -83,6 +84,8 @@ slsDetectorCommand::slsDetectorCommand(slsDetectorUtils *det)  {
   i++;
 
   /* data processing commands */
+
+  
   descrToFuncMap[i].m_pFuncName="flatfield"; //
   descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdFlatField;
   i++;
@@ -1964,11 +1967,31 @@ string slsDetectorCommand::cmdScripts(int narg, char *args[], int action) {
 
 string slsDetectorCommand::helpScripts(int narg, char *args[], int action) {
   
-  ostringstream os;  
-  if (action==PUT_ACTION || action==HELP_ACTION) 
-    os << "positions np [pos0 pos1...posnp] \t sets the number of positions at which the detector is moved during the acquisition and their values"<< std::endl;
-  if (action==GET_ACTION || action==HELP_ACTION) 
-    os << "positions  \t returns the number of positions at which the detector is moved during the acquisition and their values"<< std::endl;
+  ostringstream os;
+  
+  if (narg>0) {
+    if ((string(args[0]).find("start")!=string::npos) || (string(args[0]).find("stop")!=string::npos) || (string(args[0]).find("scriptbefore")!=string::npos) || \
+	(string(args[0]).find("scriptafter")!=string::npos)  ||  (string(args[0]).find("headerafter")!=string::npos) ||  (string(args[0]).find("headerbefore")!=string::npos)) {
+      
+
+      if (action==PUT_ACTION || action==HELP_ACTION) 
+	os << args[0] << " script \t sets the script to execute for the corresponding action"<< std::endl;
+      if (action==GET_ACTION || action==HELP_ACTION) 
+	os << args[0] << " \t returns the script to execute for the corresponding action"<< std::endl;
+      
+    }
+      
+      
+    if ((string(args[0]).find("encallog")!=string::npos) ||  (string(args[0]).find("angcallog")!=string::npos)) {
+      
+
+
+      if (action==PUT_ACTION || action==HELP_ACTION) 
+	os << args[0] << " i \t enables (1) or disables (0) the logging for the calibration"<< std::endl;
+      if (action==GET_ACTION || action==HELP_ACTION) 
+	os << args[0] << " \t returns the calibration log mode"<< std::endl;
+    }
+  }
   return os.str();
 
 }
@@ -2119,10 +2142,46 @@ string slsDetectorCommand::cmdScans(int narg, char *args[], int action) {
 string slsDetectorCommand::helpScans(int narg, char *args[], int action) {
 
   ostringstream os;  
-  if (action==PUT_ACTION || action==HELP_ACTION) 
-    os << "positions np [pos0 pos1...posnp] \t sets the number of positions at which the detector is moved during the acquisition and their values"<< std::endl;
-  if (action==GET_ACTION || action==HELP_ACTION) 
-    os << "positions  \t returns the number of positions at which the detector is moved during the acquisition and their values"<< std::endl;
+
+  if ((string(args[0])).find("script")!=string::npos) {
+
+
+      if (action==PUT_ACTION || action==HELP_ACTION) 
+	os << args[0] << " script \t sets the script to execute for the corresponding scan level (threshold, energy, trimbits or positions are internally defined)"<< std::endl;
+      if (action==GET_ACTION || action==HELP_ACTION) 
+	os << args[0] << " \t returns the script to execute for the corresponding scan level (threshold, energy, trimbits or positions are internally defined)"<< std::endl;
+      
+    }
+      
+
+  if ((string(args[0])).find("prec")!=string::npos) {
+      if (action==PUT_ACTION || action==HELP_ACTION) 
+	os << args[0] << " i \t sets the number of decimals for the scan variable in the file name"<< std::endl;
+      if (action==GET_ACTION || action==HELP_ACTION) 
+	os << args[0] << " \t returns the number of decimals for the scan variable in the file name"<< std::endl;
+      
+    }
+      
+  if ((string(args[0])).find("steps")!=string::npos) {
+      if (action==PUT_ACTION || action==HELP_ACTION) 
+	os << args[0] << " n [st0...stn] \t sets the number of steps and steps value for the corresponding scan level"<< std::endl;
+      if (action==GET_ACTION || action==HELP_ACTION) 
+	os << args[0] << " \t returns the the number of steps and steps value for the corresponding scan level"<< std::endl;
+      
+    }
+      
+  if ((string(args[0])).find("range")!=string::npos) {
+      if (action==PUT_ACTION || action==HELP_ACTION) 
+	os << args[0] << " min max step \t sets the minimum, maximum and step size for the corresponding scan level"<< std::endl;
+      if (action==GET_ACTION || action==HELP_ACTION) 
+	os << args[0] << " \t  returns the the number of steps and steps value for the corresponding scan level"<< std::endl;
+      
+    }
+      
+
+
+
+
   return os.str();
 
 

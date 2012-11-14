@@ -723,13 +723,13 @@ int slsDetector::initializeDetectorStructure() {
 
     /** initializes the dacs values to 0 */
     for (int idac=0; idac<thisDetector->nDacs; idac++) {
-      *(dacs+idac+thisDetector->nDacs*imod)=0.;
+      *(dacs+idac+thisDetector->nDacs*imod)=0;
     }
     
 
     /** initializes the adc values to 0 */
     for (int iadc=0; iadc<thisDetector->nAdcs; iadc++) {
-      *(adcs+iadc+thisDetector->nAdcs*imod)=0.;
+      *(adcs+iadc+thisDetector->nAdcs*imod)=0;
     }
 
 
@@ -1276,7 +1276,7 @@ int slsDetector::setNumberOfModules(int n, dimension d){
 #endif
   if (thisDetector->onlineFlag==ONLINE_FLAG) {
     if (controlSocket) {
-      cout << "connected" << endl;
+      // cout << "connected" << endl;
       if  (controlSocket->Connect()>=0) {
 	controlSocket->SendDataOnly(&fnum,sizeof(fnum));
 	controlSocket->SendDataOnly(&arg,sizeof(arg));
@@ -1292,7 +1292,7 @@ int slsDetector::setNumberOfModules(int n, dimension d){
 	  updateDetector();
       }
     } else
-      cout << "no control socket?!??!?" << endl;
+      cout << "no control socket?" << endl;
   } else {
       cout << "offline" << endl;
     ret=OK;
@@ -5297,7 +5297,7 @@ slsDetectorDefs::synchronizationMode slsDetector::setSynchronization(synchroniza
 
 /*receiver*/
 int slsDetector::setReceiverOnline(int off) {
-	int prev = thisDetector->receiverOnlineFlag;
+  //	int prev = thisDetector->receiverOnlineFlag;
 	if (off!=GET_ONLINE_FLAG) {
 		if(strcmp(thisDetector->receiverIP,"none")){
 			thisDetector->receiverOnlineFlag=off;

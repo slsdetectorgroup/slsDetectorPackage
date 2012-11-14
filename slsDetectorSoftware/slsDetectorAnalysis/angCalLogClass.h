@@ -52,7 +52,6 @@ class angCalLogClass {
     nmod=0; chanspermod=0; globaloff=0; fineoff=0; angdir=1;		\
     strcpy(angconvfile,"none");	 strcpy(ffdir,"none"); strcpy(fffile,"none"); strcpy(badfile,"none"); \
     char line[1000], myvar[100], myarg[100];				\
-    int dum;								\
     float v;								\
     for (int iv=0; iv<nvars; iv++) {					\
       infile.getline(line,1000);					\

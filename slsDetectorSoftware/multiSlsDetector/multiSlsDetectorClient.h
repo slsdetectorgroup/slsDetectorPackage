@@ -31,7 +31,6 @@ class multiSlsDetectorClient  {
       return;						      \
     };							      \
     int    id=-1, iv=0, pos=-1;				      \
-    char *c;						      \
     char cmd[100];					      \
     if (action==slsDetectorDefs::PUT_ACTION && argc<2) {		\
       cout << "Wrong usage - should be: "<< argv[0] <<			\

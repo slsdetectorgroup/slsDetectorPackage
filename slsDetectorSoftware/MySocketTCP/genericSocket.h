@@ -428,7 +428,7 @@ protocol(p), is_a_server(0), socketDescriptor(-1),file_des(-1), packet_size(DEFA
      static string nameToMac(string inf) {
        struct ifreq ifr;
        int sock, j, k;
-       char *p, addr[32], mask[32], mac[32];
+       char mac[32];
        
        sock=getSock(inf,&ifr);
        
@@ -450,8 +450,8 @@ protocol(p), is_a_server(0), socketDescriptor(-1),file_des(-1), packet_size(DEFA
      
      static string nameToIp(string inf){
        struct ifreq ifr;
-       int sock, j, k;
-       char *p, addr[32], mask[32], mac[32];
+       int sock;
+       char *p, addr[32];
        
        sock=getSock(inf,&ifr);
        
@@ -469,8 +469,7 @@ protocol(p), is_a_server(0), socketDescriptor(-1),file_des(-1), packet_size(DEFA
      
      static int getSock(string inf, struct ifreq *ifr) {
    
-       int sock, j, k;
-       char *p, addr[32], mask[32], mac[32];
+       int sock;
        sock=socket(PF_INET, SOCK_STREAM, 0);
        if (-1==sock) {
         perror("socket() ");

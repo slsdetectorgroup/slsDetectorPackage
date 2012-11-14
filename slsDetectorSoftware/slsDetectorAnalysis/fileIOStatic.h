@@ -621,11 +621,11 @@ class fileIOStatic  {
       } else {								\
 	interrupt=1;							\
 	break;								\
-      }								\
+      }									\
       return iline;							\
     };									\
-  };
-
+    return iline;							\
+  };								
 };
 
 #endif

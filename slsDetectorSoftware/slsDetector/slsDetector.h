@@ -11,7 +11,7 @@
 #include "angleConversionConstant.h"
 #include "MySocketTCP.h"
 
-#include "angleConversionConstant.h";
+#include "angleConversionConstant.h"
 
 #include "receiverInterface.h"
 

@@ -8,6 +8,21 @@
 #endif
 
 
+static void* startProcessData(void *n){\
+   postProcessing *myDet=(postProcessing*)n;\
+   myDet->processData(1);\
+   pthread_exit(NULL);\
+   
+};
+
+static void* startProcessDataNoDelete(void *n){\
+  postProcessing *myDet=(postProcessing*)n;\
+  myDet->processData(0);\
+  pthread_exit(NULL);\
+
+};
+
+
 
 postProcessing::postProcessing(): expTime(NULL), ang(NULL), val(NULL), err(NULL), numberOfChannels(0){							
   pthread_mutex_t mp1 = PTHREAD_MUTEX_INITIALIZER;
@@ -120,11 +135,6 @@ void postProcessing::processFrame(int *myData, int delflag) {
 	delete thisData;
 	fdata=NULL;
       }
-    // #ifdef VERBOSE
-//   cout << "findex incremented " << endl;
-// #endif
-//   if(*correctionMask&(1<<WRITE_FILE))
-//     IncrementFileIndex();
   }
    
   if (getFrameIndex()>=0)

@@ -45,7 +45,9 @@ char sendbuffer[BUFFER_LENGTH*2];
 
 char onebuffer[BUFFER_LENGTH];
 int sd = -1;
-int sockfd, sfilefd;
+int sockfd;
+
+FILE *sfilefd;
 
 
 
@@ -195,7 +197,7 @@ void* startListening(void *arg){
 	struct sockaddr_in serveraddr;
 	struct sockaddr_in clientaddr;
 
-	int clientaddrlen = sizeof(clientaddr);
+	socklen_t clientaddrlen = sizeof(clientaddr);
 	framesInFile=0;
 	frameIndex=0;
 	startFrameIndex=-1;
@@ -272,7 +274,7 @@ void* startListening(void *arg){
 				else
 					sprintf(savefilename, "%s/%s_f%012d_%d.dat", filePath,fileName,framesCaught,fileIndex);
 
-				printf("saving to %s\t\tpacket loss %f \%\t\tframenum %d\n", savefilename,((currframenum-prevframenum-(2*framesInFile))/(double)(2*framesInFile))*100.000,currframenum);
+				printf("saving to %s\t\tpacket loss %f %%\t\tframenum %d\n", savefilename,((currframenum-prevframenum-(2*framesInFile))/(double)(2*framesInFile))*100.000,currframenum);
 				sfilefd = fopen((const char *) (savefilename), "w");
 				prevframenum=currframenum;
 				framesInFile = 0;
@@ -326,7 +328,7 @@ void* startListening(void *arg){
 
 	//close file
 	fclose(sfilefd);
-	printf("sfield:%d\n",sfilefd);
+	printf("sfield:%d\n",(int)sfilefd);
 
 
 	return NULL;

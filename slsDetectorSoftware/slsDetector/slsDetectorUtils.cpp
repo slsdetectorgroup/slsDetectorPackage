@@ -213,7 +213,7 @@ void  slsDetectorUtils::acquire(int delflag){
 
 	    executeAction(headerBefore);
 	 
-	    if (*correctionMask&(1<< ANGULAR_CONVERSION) || aclog || eclog) { 
+	    if (*correctionMask&(1<< ANGULAR_CONVERSION) || aclog){// || eclog) { 
 	      positionFinished(0);
 	      setCurrentPosition(getDetectorPosition());
 	    }
@@ -431,9 +431,11 @@ void  slsDetectorUtils::acquire(int delflag){
   if (eclog)
     delete eclog;
 
-  if (acquisition_finished)
+  if (acquisition_finished) {
+    cout << "Acquisition " << endl;
     acquisition_finished(getCurrentProgress(),getDetectorStatus(),acqFinished_p);
-
+    cout << "finished " << endl;
+  }
 }
 
 

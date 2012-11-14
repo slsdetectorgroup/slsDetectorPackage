@@ -136,7 +136,7 @@ double angularConversionStatic::convertAngle(double pos, int ich, int *chansPerM
 
   int imod=0;
   double    ang;
-  double enc=0, trans=0;
+  // double enc=0, trans=0;
   angleConversionConstant *p=NULL;
   
   int ch0=0;

@@ -167,7 +167,7 @@ int postProcessingFuncs::addFrame(double *data, double *pos, double *I0, double 
       me[ich]+=eout*eout;
     }
   }
-  
+  return 0;
 }
 
 
@@ -254,7 +254,7 @@ int postProcessingFuncs::initDataset(int *nModules,int *chPerMod,int modMask[],i
   nBins=0;
   if (angRadius && angOffset && angCenter && (binSize>0)) {
     angConv=new angleConversionConstant*[nMods];
-    nBins=360./binSize+1;
+    nBins=(int)(360./binSize)+1;
   }
 
   for (int im=0; im<nMods; im++) {

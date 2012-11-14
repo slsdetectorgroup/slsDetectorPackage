@@ -5,7 +5,9 @@ UI_HEADERS_DIR		= 		forms/include
 
 RESOURCES   		+=  	icons.qrc
 
-
+CONFIG+=debug 
+QMAKE_CXXFLAGS_WARN_ON = -w 
+QMAKE_CFLAGS_WARN_ON = -w
 DEFINES 			+= 		VERBOSE DACS_INT  #VERYVERBOSE 
 							
 
@@ -15,11 +17,10 @@ documentation.files = 		docs/*
 INSTALLS			+= 		target
 INSTALLS 			+= 		documentation
 QMAKE_CLEAN 		+= 		docs/*/* \
-							$(DESTDIR)* \
-							forms/include/*
+							$(DESTDIR)* 
 							
 
-LIBS				+=		-Wl,-Bstatic -L../slsDetectorSoftware -lSlsDetector  -Wl,-Bdynamic\
+LIBS				+= 	-Wl,-Bstatic -L../slsDetectorSoftware -lSlsDetector  -Wl,-Bdynamic\
 							-L$(QWTDIR)/lib  -lqwt -L$(QWT3D)/lib  
 
 DEPENDPATH  		+=		\
@@ -28,10 +29,13 @@ DEPENDPATH  		+=		\
 							forms/include
 
 
+
 INCLUDEPATH 		+= 		\
+                                                        $(shell echo "/lib/modules/`uname -r`/build/include") \
 							$(QWTDIR)/include\
-                            $(QWTDIR)/src\
-                            $(QWT3D)/include\
+							$(QWTDIR) \
+                                                        $(QWTDIR)/src\
+                                                        $(QWT3D)/include\
 							slsDetectorPlotting/include\
 							include\
 							forms/include\

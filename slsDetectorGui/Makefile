@@ -6,7 +6,8 @@ all: $(PROG)
 
 
 clean: 
-	if test -e Makefile.gui; then make -f Makefile.gui clean; make -f Makefile.gui mocclean; fi	
+	if test -e Makefile.gui; then make -f Makefile.gui clean; make -f Makefile.gui mocclean; rm Makefile.gui; else 	make Makefile.gui; make -f Makefile.gui clean; make -f Makefile.gui mocclean;  fi
+
 
 
 Makefile.gui: slsDetectorGui.pro

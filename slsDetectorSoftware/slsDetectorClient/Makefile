@@ -1,8 +1,17 @@
 CFLAGS= -DC_ONLY 
 #FLAGS=-DVERBOSE 
-INCLUDES= -I../slsDetectorSoftware/commonFiles -I../slsDetectorSoftware/slsDetector -I ../slsDetectorSoftware/MySocketTCP  -I../slsDetectorSoftware/usersFunctions -I../slsDetectorSoftware/multiSlsDetector -I../slsDetectorSoftware/slsDetectorAnalysis -I../slsDetectorSoftware/slsReceiverInterface
+ASM=$(shell echo "/lib/modules/`uname -r`/build/include")
+
+INCLUDES= -I../slsDetectorSoftware/commonFiles -I../slsDetectorSoftware/slsDetector -I ../slsDetectorSoftware/MySocketTCP  -I../slsDetectorSoftware/usersFunctions -I../slsDetectorSoftware/multiSlsDetector -I../slsDetectorSoftware/slsDetectorAnalysis -I../slsDetectorSoftware/slsReceiverInterface  -I$(ASM)
 LIBS= -L../slsDetectorSoftware/ -lSlsDetector  -L/usr/lib64/ -lpthread
 #LDFLAG= 
+
+
+
+INCLUDES= -I../slsDetectorSoftware/commonFiles -I../slsDetectorSoftware/slsDetector -I ../slsDetectorSoftware/MySocketTCP  -I../slsDetectorSoftware/usersFunctions -I../slsDetectorSoftware/multiSlsDetector -I../slsDetectorSoftware/slsDetectorAnalysis -I../slsDetectorSoftware/slsReceiverInterface -I$(shell echo "/lib/modules/`uname -r`/build/include")
+
+LIBS= -L../slsDetectorSoftware/ -lSlsDetector -lpthread
+
 
 BIN=bin
 
@@ -28,7 +37,7 @@ static_sls_detector_put: $(SRC_CLNT) lib
 static_sls_detector_get: $(SRC_CLNT) lib
 	mkdir -p $(BIN)
 	$(CXX) -static -o $(BIN)/sls_detector_get $(SRC_CLNT)   $(FLAGS)  $(INCLUDES) -DGET  $(LIBS) $(LDFLAG)
-	
+
 static_sls_detector_acquire: $(SRC_CLNT) lib
 	mkdir -p $(BIN)
 	$(CXX) -static -o $(BIN)/sls_detector_acquire $(SRC_CLNT)   $(FLAGS)  $(INCLUDES) -DREADOUT  $(LIBS) $(LDFLAG)
@@ -46,7 +55,7 @@ sls_detector_put: $(SRC_CLNT) lib
 sls_detector_get: $(SRC_CLNT) lib
 	mkdir -p $(BIN)
 	$(CXX) -o $(BIN)/sls_detector_get $(SRC_CLNT)   $(FLAGS)  $(INCLUDES) -DGET  $(LIBS) $(LDFLAG)
-	
+
 sls_detector_acquire: $(SRC_CLNT) lib
 	mkdir -p $(BIN)
 	$(CXX) -o $(BIN)/sls_detector_acquire $(SRC_CLNT)   $(FLAGS)  $(INCLUDES) -DREADOUT  $(LIBS) $(LDFLAG)
@@ -56,13 +65,9 @@ sls_detector_help: $(SRC_CLNT) lib
 	$(CXX) -o $(BIN)/sls_detector_help $(SRC_CLNT)   $(FLAGS)  $(INCLUDES) -DHELP  $(LIBS) $(LDFLAG)
 
 
-
 clean:
 	rm  -rf $(BIN)/sls_detector_put sls_detector_get sls_detector_acquire  sls_detector_help
 
-
-install_doc:
-	
 
 
 

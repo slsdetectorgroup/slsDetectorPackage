@@ -75,13 +75,13 @@
      </rect>
     </property>
     <property name="text">
-     <string>Current Index: </string>
+     <string>Current Frame: </string>
     </property>
    </widget>
    <widget class="QLabel" name="lblProgressIndex">
     <property name="geometry">
      <rect>
-      <x>100</x>
+      <x>101</x>
       <y>25</y>
       <width>101</width>
       <height>16</height>
@@ -912,7 +912,7 @@ Frame period between exposures.
      <item row="2" column="0">
       <widget class="QLabel" name="label_8">
        <property name="text">
-        <string>Start Run Index:</string>
+        <string>Run Index:</string>
        </property>
       </widget>
      </item>

@@ -72,7 +72,7 @@ void qTabMeasurement::SetupWidgetWindow(){
 	//File Index
 	spinIndex->setValue(myDet->getFileIndex());
 	//only initially
-	lblProgressIndex->setText(QString::number(myDet->getFileIndex()));
+	lblProgressIndex->setText(QString::number(0));
 	//ly initially
 	progressBar->setValue(0);
 
@@ -279,7 +279,6 @@ void qTabMeasurement::setFileName(const QString& fName){
 
 void qTabMeasurement::setRunIndex(int index){
 	myDet->setFileIndex(index);
-	lblProgressIndex->setText(QString::number(index));
 #ifdef VERBOSE
 	cout << "Setting File Index to " << myDet->getFileIndex() << endl;
 #endif
@@ -296,6 +295,7 @@ void qTabMeasurement::startStopAcquisition(){
 		//btnStartStop->setStyleSheet("color:red");
 		btnStartStop->setText("Stop");
 		btnStartStop->setIcon(*iconStop);
+		lblProgressIndex->setText(QString::number(0));
 		Enable(0);
 		progressBar->setValue(0);
 		progressTimer->start(100);
@@ -307,12 +307,13 @@ void qTabMeasurement::startStopAcquisition(){
 #endif
 		emit StopSignal();
 		myDet->stopAcquisition();
-		progressTimer->stop();
+
+		UpdateProgress();
 		//spin index
 		disconnect(spinIndex,			SIGNAL(valueChanged(int)),			this,	SLOT(setRunIndex(int)));
 		spinIndex->setValue(myDet->getFileIndex());
-		lblProgressIndex->setText(QString::number(spinIndex->value()));
 		connect(spinIndex,			SIGNAL(valueChanged(int)),			this,	SLOT(setRunIndex(int)));
+		progressTimer->stop();
 
 		btnStartStop->setText("Start");
 		btnStartStop->setIcon(*iconStart);
@@ -327,6 +328,13 @@ void qTabMeasurement::startStopAcquisition(){
 
 void qTabMeasurement::UpdateFinished(){
 	if(btnStartStop->isChecked()){
+
+		UpdateProgress();
+		disconnect(spinIndex,			SIGNAL(valueChanged(int)),			this,	SLOT(setRunIndex(int)));
+		spinIndex->setValue(myDet->getFileIndex());
+		connect(spinIndex,			SIGNAL(valueChanged(int)),			this,	SLOT(setRunIndex(int)));
+		progressTimer->stop();
+
 		disconnect(btnStartStop,SIGNAL(clicked()),this,SLOT(startStopAcquisition()));
 		btnStartStop->setText("Start");
 		btnStartStop->setIcon(*iconStart);
@@ -334,14 +342,7 @@ void qTabMeasurement::UpdateFinished(){
 		Enable(1);
 		connect(btnStartStop,SIGNAL(clicked()),this,SLOT(startStopAcquisition()));
 
-		UpdateProgress();
-		//spin index
-		disconnect(spinIndex,			SIGNAL(valueChanged(int)),			this,	SLOT(setRunIndex(int)));
-		spinIndex->setValue(myDet->getFileIndex());
-		lblProgressIndex->setText(QString::number(spinIndex->value()));
-		connect(spinIndex,			SIGNAL(valueChanged(int)),			this,	SLOT(setRunIndex(int)));
 
-		progressTimer->stop();
 	}
 }
 
@@ -351,7 +352,7 @@ void qTabMeasurement::UpdateFinished(){
 
 void qTabMeasurement::SetCurrentMeasurement(int val){
 	if((val)<spinNumMeasurements->value())
-		lblCurrentMeasurement->setText(QString::number(val+1));
+		lblCurrentMeasurement->setText(QString::number(val));
 
 }
 
@@ -361,7 +362,7 @@ void qTabMeasurement::SetCurrentMeasurement(int val){
 
 void qTabMeasurement::UpdateProgress(){
 	progressBar->setValue((int)myPlot->GetProgress());
-	lblProgressIndex->setText(QString::number(myPlot->GetFileIndex()));
+	lblProgressIndex->setText(QString::number(myPlot->GetFrameIndex()));
 }
 
 
@@ -749,10 +750,13 @@ void qTabMeasurement::Refresh(){
 #ifdef VERBOSE
 		cout  << "Getting file index" << endl;
 #endif
-		spinIndex->setValue(myDet->getFileIndex());cout<<"file index:"<<myDet->getFileIndex()<<endl;
+		spinIndex->setValue(myDet->getFileIndex());
 
 		//progress label index
-		lblProgressIndex->setText(QString::number(myDet->getFileIndex()));
+		if(myDet->getFrameIndex()==-1)
+			lblProgressIndex->setText("0");
+		else
+			lblProgressIndex->setText(QString::number(myDet->getFrameIndex()));
 
 		//Timing mode
 		SetupTimingMode();

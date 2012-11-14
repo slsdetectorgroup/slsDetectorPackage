@@ -223,6 +223,7 @@ void qCloneWidget::SavePlot(){
 	if(cloneBox->title().contains('.')){
 		fName.append(QString('/')+cloneBox->title());
 		fName.replace(".dat",".png");
+		fName.replace(".raw",".png");
 	}else  fName.append(QString("/Snapshot_unknown_title.png"));
 	//save
 	QImage img(cloneBox->size().width(),cloneBox->size().height(),QImage::Format_RGB32);
@@ -250,7 +251,9 @@ int qCloneWidget::SavePlotAutomatic(){
 	if(cloneBox->title().contains('.')){
 		fName.append(QString('/')+cloneBox->title());
 		fName.replace(".dat",".png");
+		fName.replace(".raw",".png");
 	}else  fName.append(QString("/Snapshot_unknown_title.png"));
+	cout<<"fname:"<<fName.toAscii().constData()<<endl;
 	//save
 	QImage img(cloneBox->size().width(),cloneBox->size().height(),QImage::Format_RGB32);
 	QPainter painter(&img);

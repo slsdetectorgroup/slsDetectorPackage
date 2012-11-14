@@ -260,9 +260,13 @@ void SlsQt2DPlot::Update(){
   plotLayout()->setAlignCanvasToScales(true);
    cout << "layout" << endl;
 #endif
+#ifdef VERYVERBOSE
    cout << "going to replot" << endl;
+#endif
   replot();
+#ifdef VERYVERBOSE
    cout << "done" << endl;
+#endif
 }
 
 

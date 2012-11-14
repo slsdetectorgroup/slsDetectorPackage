@@ -52,6 +52,8 @@ public:
 	int GetProgress(){return progress;};
 	/** gets the file index to the measurement tab*/
 	int GetFileIndex(){return currentFileIndex;};
+	/** gets the frame index to the measurement tab*/
+	int GetFrameIndex(){return currentFrameIndex;};
 	/** sets file write enable , if not enabled,
 	 * file index wont increase and so you need secondary titles to differentitate between plots*/
 	void SetEnableFileWrite(bool enable){fileSaveEnable = enable;};
@@ -180,9 +182,8 @@ int    StopDaqForGui() 			  	{return StartOrStopThread(0) ? 0:1;}
 bool   StartOrStopThread(bool start);
 
 /** Sets up measurement each time
- * @param currentIndex file index given by detector class
  * */
-void SetupMeasurement(int currentIndex);
+void SetupMeasurement();
 
 /**	Resets the acquisition parameter like lastimagenumber */
 int    ResetDaqForGui();
@@ -321,10 +322,10 @@ int number_of_frames;
 double acquisitionPeriod;
 /**	 Acquisition Time */
 double exposureTime;
-/** Current index*/
+/** Current file index*/
 int currentFileIndex;
-
-
+/** Current frame index*/
+int currentFrameIndex;
 
 /**variables for threads */
 /**	 */

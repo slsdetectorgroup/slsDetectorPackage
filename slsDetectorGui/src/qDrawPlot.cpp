@@ -107,6 +107,7 @@ void qDrawPlot::SetupWidgetWindow(){
 	backwardScanPlot = false;
 
 	currentFileIndex = 0;
+	currentFrameIndex = 0;
 	// This is so that it initially stop and plots
 	running = 1;
 	for(int i=0;i<MAX_1DPLOTS;i++)
@@ -142,7 +143,8 @@ void qDrawPlot::SetupWidgetWindow(){
 		//sprintf(temp_title,"Frame -%d",i);
 		//histTitle[i] = temp_title;
 	}
-	imageTitle.assign("Start Image");
+	imageTitle="";
+	/*imageTitle.assign("Start Image");*/
 	imageXAxisTitle="Pixel";
 	imageYAxisTitle="Pixel";
 	imageZAxisTitle="Intensity";
@@ -282,6 +284,7 @@ void qDrawPlot::StartStopDaqToggle(bool stop_if_running){
 		fileName = QString(myDet->getFileName().c_str());
 		//update index
 		currentFileIndex = myDet->getFileIndex();
+		currentFrameIndex = 0;
 
 
 
@@ -344,7 +347,7 @@ bool qDrawPlot::StartOrStopThread(bool start){
 	if(start){
 		progress = 0;
 		//sets up the measurement parameters
-		SetupMeasurement(myDet->getFileIndex());
+		SetupMeasurement();
 
 		cout << "Starting new acquisition threadddd ...." << endl;
 		// Start acquiring data from server
@@ -435,7 +438,7 @@ void qDrawPlot::SetScanArgument(int scanArg){
 //-------------------------------------------------------------------------------------------------------------------------------------------------
 
 
-void qDrawPlot::SetupMeasurement(int currentIndex){
+void qDrawPlot::SetupMeasurement(){
 #ifdef VERBOSE
 	cout << "SetupMeasurement function:" << running << endl;
 #endif
@@ -468,13 +471,13 @@ void qDrawPlot::SetupMeasurement(int currentIndex){
 	}
 	else {//all frames
 		if(scanArgument==AllFrames){
-			maxPixelsY = currentIndex + number_of_exposures - 1;
-			minPixelsY = currentIndex;
+			maxPixelsY = number_of_exposures - 1;
+			minPixelsY = 0;
 			if(!running) nPixelsY = number_of_exposures;
 		}//file index
 		else if(scanArgument==FileIndex){
-			maxPixelsY = currentIndex + number_of_frames - 1;
-			minPixelsY = currentIndex;
+			maxPixelsY = number_of_frames - 1;
+			minPixelsY = 0;
 			if(!running) nPixelsY = number_of_frames;
 		}//level0 or level1
 		else {
@@ -538,7 +541,8 @@ int qDrawPlot::GetData(detectorData *data){
 
 		//set progress
 		progress=(int)data->progressIndex;
-		currentFileIndex = fileIOStatic::getFileIndexFromFileName(string(data->fileName));
+		currentFrameIndex = fileIOStatic::getIndicesFromFileName(string(data->fileName),currentFileIndex);
+
 #ifdef VERYVERBOSE
 		cout << "progress:" << progress << endl;
 #endif
@@ -547,10 +551,10 @@ int qDrawPlot::GetData(detectorData *data){
 		if(!plotEnable) 	return 0;
 
 		// secondary title necessary to differentiate between frames when not saving data
-		char temp_title[2000];
+		/*char temp_title[2000];
 		if(fileSaveEnable)	strcpy(temp_title,"");
 		else		sprintf(temp_title,"#%d",currentFrame);
-
+		 */
 
 		//angle plotting
 		if(anglePlot){
@@ -559,7 +563,7 @@ int qDrawPlot::GetData(detectorData *data){
 					//set title
 					plotTitle=QString(plotTitle_prefix)+QString(data->fileName).section('/',-1);
 					// Title
-					histTitle[0] = temp_title;
+					/*histTitle[0] = temp_title;*/
 
 					if(data->angles==NULL){
 						cout<<"\n\nWARNING:RETURNED NULL instead of angles."<<endl;
@@ -633,7 +637,7 @@ int qDrawPlot::GetData(detectorData *data){
 						//variables
 						lastImageNumber= currentFrame+1;
 						//title
-						imageTitle = temp_title;
+						/*imageTitle = temp_title;*/
 						//copy data
 						memcpy(lastImageArray+(currentScanDivLevel*nPixelsX),data->values,nPixelsX*sizeof(double));
 						pthread_mutex_unlock(&(last_image_complete_mutex));
@@ -651,10 +655,10 @@ int qDrawPlot::GetData(detectorData *data){
 						//set title
 						plotTitle=QString(plotTitle_prefix)+QString(data->fileName).section('/',-1);
 						//variables
-						if(currentFileIndex == minPixelsY) currentScanDivLevel = 0;
+						if(currentFrameIndex == 0) currentScanDivLevel = 0;
 						lastImageNumber= currentFrame+1;
 						//title
-						imageTitle = temp_title;
+						/*imageTitle = temp_title;*/
 						//copy data
 						for(unsigned int px=0;px<nPixelsX;px++)	lastImageArray[currentScanDivLevel*nPixelsX+px] += data->values[px];
 						pthread_mutex_unlock(&(last_image_complete_mutex));
@@ -672,8 +676,8 @@ int qDrawPlot::GetData(detectorData *data){
 						//set title
 						plotTitle=QString(plotTitle_prefix)+QString(data->fileName).section('/',-1);
 						//get scanvariable0
-						int ci = 0, p = 0; double cs0 = 0 , cs1 = 0;
-						fileIOStatic::getVariablesFromFileName(string(data->fileName), ci, p, cs0, cs1);
+						int ci = 0, fi = 0, p = 0, di = 0; double cs0 = 0 , cs1 = 0;
+						fileIOStatic::getVariablesFromFileName(string(data->fileName), ci, fi, p, cs0, cs1, di);
 						//variables
 						if(cs0!=currentScanValue) {
 							if(backwardScanPlot)	currentScanDivLevel--;
@@ -682,7 +686,7 @@ int qDrawPlot::GetData(detectorData *data){
 						currentScanValue = cs0;
 						lastImageNumber= currentFrame+1;
 						//title
-						imageTitle = temp_title;
+						/*imageTitle = temp_title;*/
 						//copy data
 						for(unsigned int px=0;px<nPixelsX;px++) lastImageArray[currentScanDivLevel*nPixelsX+px] += data->values[px];
 						pthread_mutex_unlock(&(last_image_complete_mutex));
@@ -698,8 +702,8 @@ int qDrawPlot::GetData(detectorData *data){
 					//set title
 					plotTitle=QString(plotTitle_prefix)+QString(data->fileName).section('/',-1);
 					//get scanvariable1
-					int ci = 0, p = 0; double cs0 = 0 , cs1 = 0;
-					fileIOStatic::getVariablesFromFileName(string(data->fileName), ci, p, cs0, cs1);
+					int ci = 0, fi = 0, p = 0, di = 0; double cs0 = 0 , cs1 = 0;
+					fileIOStatic::getVariablesFromFileName(string(data->fileName), ci, fi, p, cs0, cs1, di);
 					//variables
 					if(cs1!=currentScanValue){
 						if(backwardScanPlot)	currentScanDivLevel--;
@@ -708,7 +712,7 @@ int qDrawPlot::GetData(detectorData *data){
 					currentScanValue = cs1;
 					lastImageNumber= currentFrame+1;
 					//title
-					imageTitle = temp_title;
+					/*imageTitle = temp_title;*/
 					//copy data
 					for(unsigned int px=0;px<nPixelsX;px++) lastImageArray[currentScanDivLevel*nPixelsX+px] += data->values[px];
 					pthread_mutex_unlock(&(last_image_complete_mutex));
@@ -730,7 +734,7 @@ int qDrawPlot::GetData(detectorData *data){
 			//1d
 			if(plot_in_scope==1){
 				// Titles
-				histTitle[0] = temp_title;
+				/*histTitle[0] = temp_title;*/
 				// Persistency
 				if(currentPersistency < persistency)currentPersistency++;
 				else currentPersistency=persistency;
@@ -744,7 +748,7 @@ int qDrawPlot::GetData(detectorData *data){
 			//2d
 			else{cout<<endl<<"****************************IN HERE-2D*******************************************"<<endl<<endl;
 				// Titles
-				imageTitle = temp_title;
+				/*imageTitle = temp_title;*/
 				// manufacture data for now
 				for(unsigned int px=0;px<nPixelsX;px++)
 					for(unsigned int py=0;py<nPixelsY;py++)
@@ -755,7 +759,7 @@ int qDrawPlot::GetData(detectorData *data){
 			pthread_mutex_unlock(&(last_image_complete_mutex));
 		}
 #ifdef VERYVERBOSE
-		cout<<"currentframe:"<<currentFrame<<"\tcurrentfileIndex:"<<currentFileIndex<<endl;
+		cout<<"currentframe:"<<currentFrame<<"\tcurrentframeindex:"<<currentFrameIndex<<endl;
 #endif
 		currentFrame++;
 	}
@@ -852,12 +856,13 @@ int qDrawPlot::MeasurementFinished(int currentMeasurementIndex, int fileIndex){
 	//if(plot_in_scope==2)
 		usleep(500000);
 
-	currentMeasurement = currentMeasurementIndex + 1;
+	currentMeasurement = currentMeasurementIndex+1;
+	currentFileIndex = fileIndex;
 #ifdef VERBOSE
 	cout << "currentMeasurement:" << currentMeasurement << endl;
 #endif
 	emit SetCurrentMeasurementSignal(currentMeasurement);
-	SetupMeasurement(fileIndex);
+	SetupMeasurement();
 	return 0;
 }
 
@@ -1154,6 +1159,7 @@ void qDrawPlot::SavePlot(){
 	if(boxPlot->title().contains('.')){
 		fName.append(QString('/')+boxPlot->title());
 		fName.replace(".dat",".png");
+		fName.replace(".raw",".png");
 	}else  fName.append(QString("/Image.png"));
 
 	fName = QFileDialog::getSaveFileName(0,tr("Save Image"),fName,tr("PNG Files (*.png);;XPM Files(*.xpm);;JPEG Files(*.jpg)"),0,QFileDialog::ShowDirsOnly);
@@ -1188,6 +1194,7 @@ void qDrawPlot::SavePlotAutomatic(){
 		if(boxPlot->title().contains('.')){
 			fName.append(QString('/')+boxPlot->title());
 			fName.replace(".dat",".png");
+			fName.replace(".raw",".png");
 		}else  fName.append(QString("/Image_unknown_title.png"));
 		//save
 		QImage img(size().width(),size().height(),QImage::Format_RGB32);

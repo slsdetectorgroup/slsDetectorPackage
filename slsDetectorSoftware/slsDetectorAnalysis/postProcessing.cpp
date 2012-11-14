@@ -114,10 +114,10 @@ void postProcessing::processFrame(int *myData, int delflag) {
      cout << "writing raw data " << endl;
      
 #endif
-     if (getDetectorsType()==MYTHEN){cout<<"gonna write datafile"<<endl;
+     if (getDetectorsType()==MYTHEN){
     // if (fdata) {
        //uses static function?!?!?!?
-       writeDataFile (fname+string(".raw"),fdata, NULL, NULL, 'i');cout<<"finished writing datafile"<<endl;
+       writeDataFile (fname+string(".raw"),fdata, NULL, NULL, 'i');
      } else {
        writeDataFile ((void*)myData, frameIndex);
      }

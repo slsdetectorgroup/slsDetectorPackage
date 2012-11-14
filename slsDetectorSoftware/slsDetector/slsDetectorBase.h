@@ -245,6 +245,8 @@ class slsDetectorBase :  public virtual slsDetectorDefs  {
 
   virtual int getFileIndexFromFileName(string fname)=0;
 
+  virtual int getIndicesFromFileName(string fname,int &index)=0;
+
   virtual double *convertAngles()=0;
   /** 
       set rate correction

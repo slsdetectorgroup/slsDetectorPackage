@@ -40,6 +40,7 @@ class fileIO :  public fileIOStatic, public virtual slsDetectorBase  {
   using fileIOStatic::createFileName;
 
   int getFileIndexFromFileName(string fname){return fileIOStatic::getFileIndexFromFileName(fname);};
+  int getIndicesFromFileName(string fname, int &index){return fileIOStatic::getIndicesFromFileName(fname,index);};
   int getVariablesFromFileName(string fname, int &index, int &p_index, double &sv0, double &sv1){return fileIOStatic::getVariablesFromFileName(fname, index, p_index, sv0, sv1);};
   int getVariablesFromFileName(string fname, int &index, int &f_index, int &p_index, double &sv0, double &sv1, int &detindex){return fileIOStatic::getVariablesFromFileName(fname, f_index, index, p_index, sv0, sv1, detindex);};
   /**

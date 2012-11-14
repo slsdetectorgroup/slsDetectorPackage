@@ -113,7 +113,30 @@ class fileIOStatic  {
     return 0;								\
   };
   
-  
+  /** static function that returns the frame index and file index from the file name
+      \param fname file name
+      \param index reference to index
+      \returns frame index
+  */
+  static int getIndicesFromFileName(string fname,int &index){										\
+	  int i;																				\
+	  string s;  																			\
+	  size_t uscore=fname.rfind("_");														\
+	  if (uscore==string::npos)       return -1;											\
+	  s=fname;																				\
+	  if (sscanf(s.substr(uscore+1,s.size()-uscore-1).c_str(),"%d",&i)){ 					\
+		  index=i;																			\
+	  	  s=fname.substr(0,uscore);															\
+	  }																						\
+	  else      cout << "******************************** cannot parse file index" << endl; \
+	  uscore=s.rfind("_");																	\
+	  if (sscanf( s.substr(uscore+1,s.size()-uscore-1).c_str(),"f%d",&i)) 					\
+		  if(i==-1)return 0;																\
+		  else return i; 																	\
+	  cout << "******************************** cannot parse frame index" << endl;			\
+	  return 0;																				\
+  };
+
   
   /** static function that returns the variables from the file name 
       \param fname file name

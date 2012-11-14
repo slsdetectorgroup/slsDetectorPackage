@@ -392,7 +392,7 @@ int stopReceiver(){
 
 char* readFrame(){
 	int i;
-	for(i=0;i<10;i++){
+	for(i=0;i<20;i++){
 		if ((((int)*((int*)buffer))%2)!=0)
 			break;
 		else

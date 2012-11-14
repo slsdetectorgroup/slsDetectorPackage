@@ -3,7 +3,10 @@ CFLAGS= -DC_ONLY -fPIC
 
 DFLAGS= -DDACS_INT
 
-INCLUDES= -IcommonFiles -IslsDetector -IMySocketTCP -IusersFunctions -ImultiSlsDetector -IslsDetectorUtils -IslsDetectorCommand -IslsDetectorAnalysis -IslsReceiverInterface
+ASM=$(shell echo "/lib/modules/`uname -r`/build/include")
+
+INCLUDES= -IcommonFiles -IslsDetector -IMySocketTCP -IusersFunctions -ImultiSlsDetector -IslsDetectorUtils -IslsDetectorCommand -IslsDetectorAnalysis -IslsReceiverInterface -I$(ASM)
+
 #EPICSFLAGS=-D EPICS -I/usr/local/epics/base/include/ -I /usr/local/epics/base/include/os/Linux/ -L /usr/local/epics/base/lib/SL5-x86/ -Wl,-R/usr/local/epics/base/lib/SL5-x86  -lca -lCom 
 CC=g++
 
@@ -17,6 +20,13 @@ HEADERS = $(SRC_CLNT:.cpp=.h) commonFiles/sls_detector_defs.h slsDetectorAnalysi
 
 
 SRC_MYTHEN_SVC = mythenDetectorServer/server.c mythenDetectorServer/server_funcs.c mythenDetectorServer/communication_funcs.c mythenDetectorServer/firmware_funcs.c mythenDetectorServer/mcb_funcs.c mythenDetectorServer/trimming_funcs.c 
+
+
+
+
+
+
+
 
 all: package $(SRC_CLNT)
 	echo "compiling all"
@@ -38,7 +48,7 @@ picassoServer:  $(SRC_MYTHEN_SVC)
 
 
 
-%.o : %.cpp %.h
+%.o : %.cpp %.h Makefile
 	$(CXX) -Wall -o $@ -c $< $(INCLUDES) $(DFLAGS) $(FLAGS)  -fPIC  $(EPICSFLAGS) -L/usr/lib64/
 
 

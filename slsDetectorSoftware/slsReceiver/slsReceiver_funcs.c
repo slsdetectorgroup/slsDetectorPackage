@@ -570,7 +570,7 @@ int read_frame(int file_des) {
 		}while((index%2)==(index2%2));
 
 		fIndex=((int)(*((int*)retval)) - startIndex)/2;
-		arg[0]=fIndex;
+		arg[0]=fIndex-1;
 		arg[1]=(index%2);
 
 #ifdef VERBOSE

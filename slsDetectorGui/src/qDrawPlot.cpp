@@ -108,6 +108,8 @@ void qDrawPlot::SetupWidgetWindow(){
 
 	currentFileIndex = 0;
 	currentFrameIndex = 0;
+
+	receiver=false;
 	// This is so that it initially stop and plots
 	running = 1;
 	for(int i=0;i<MAX_1DPLOTS;i++)
@@ -349,6 +351,9 @@ bool qDrawPlot::StartOrStopThread(bool start){
 		//sets up the measurement parameters
 		SetupMeasurement();
 
+		if(myDet->setReceiverOnline()==slsDetectorDefs::ONLINE_FLAG)
+			receiver=true;
+
 		cout << "Starting new acquisition threadddd ...." << endl;
 		// Start acquiring data from server
 		if(!firstTime) pthread_join(gui_acquisition_thread,NULL);//wait until he's finished, ie. exits
@@ -524,8 +529,8 @@ void* qDrawPlot::DataStartAcquireThread(void *this_pointer){
 //-------------------------------------------------------------------------------------------------------------------------------------------------
 
 
-int qDrawPlot::GetDataCallBack(detectorData *data, void *this_pointer){
-	((qDrawPlot*)this_pointer)->GetData(data);
+int qDrawPlot::GetDataCallBack(detectorData *data, int fIndex, void *this_pointer){
+	((qDrawPlot*)this_pointer)->GetData(data,fIndex);
 	return 0;
 }
 
@@ -533,7 +538,7 @@ int qDrawPlot::GetDataCallBack(detectorData *data, void *this_pointer){
 //-------------------------------------------------------------------------------------------------------------------------------------------------
 
 
-int qDrawPlot::GetData(detectorData *data){
+int qDrawPlot::GetData(detectorData *data,int fIndex){
 #ifdef VERYVERBOSE
 	cout << "******Entering GetDatafunction********" << endl;
 #endif
@@ -551,10 +556,16 @@ int qDrawPlot::GetData(detectorData *data){
 		if(!plotEnable) 	return 0;
 
 		// secondary title necessary to differentiate between frames when not saving data
-		/*char temp_title[2000];
-		if(fileSaveEnable)	strcpy(temp_title,"");
-		else		sprintf(temp_title,"#%d",currentFrame);
-		 */
+		char temp_title[2000];
+		if(receiver){
+			//findex is used because in the receiver, you cannot know the frame index as many frames are in 1 file.
+			if(fIndex==-1) fIndex=currentFrame;
+			sprintf(temp_title,"#%d",fIndex);
+		}else{
+			if(fileSaveEnable)	strcpy(temp_title,"");
+			else		sprintf(temp_title,"#%d",currentFrame);
+		}
+
 
 		//angle plotting
 		if(anglePlot){
@@ -563,7 +574,7 @@ int qDrawPlot::GetData(detectorData *data){
 					//set title
 					plotTitle=QString(plotTitle_prefix)+QString(data->fileName).section('/',-1);
 					// Title
-					/*histTitle[0] = temp_title;*/
+					histTitle[0] = temp_title;
 
 					if(data->angles==NULL){
 						cout<<"\n\nWARNING:RETURNED NULL instead of angles."<<endl;
@@ -637,7 +648,7 @@ int qDrawPlot::GetData(detectorData *data){
 						//variables
 						lastImageNumber= currentFrame+1;
 						//title
-						/*imageTitle = temp_title;*/
+						imageTitle = temp_title;
 						//copy data
 						memcpy(lastImageArray+(currentScanDivLevel*nPixelsX),data->values,nPixelsX*sizeof(double));
 						pthread_mutex_unlock(&(last_image_complete_mutex));
@@ -658,7 +669,7 @@ int qDrawPlot::GetData(detectorData *data){
 						if(currentFrameIndex == 0) currentScanDivLevel = 0;
 						lastImageNumber= currentFrame+1;
 						//title
-						/*imageTitle = temp_title;*/
+						imageTitle = temp_title;
 						//copy data
 						for(unsigned int px=0;px<nPixelsX;px++)	lastImageArray[currentScanDivLevel*nPixelsX+px] += data->values[px];
 						pthread_mutex_unlock(&(last_image_complete_mutex));
@@ -686,7 +697,7 @@ int qDrawPlot::GetData(detectorData *data){
 						currentScanValue = cs0;
 						lastImageNumber= currentFrame+1;
 						//title
-						/*imageTitle = temp_title;*/
+						imageTitle = temp_title;
 						//copy data
 						for(unsigned int px=0;px<nPixelsX;px++) lastImageArray[currentScanDivLevel*nPixelsX+px] += data->values[px];
 						pthread_mutex_unlock(&(last_image_complete_mutex));
@@ -712,7 +723,7 @@ int qDrawPlot::GetData(detectorData *data){
 					currentScanValue = cs1;
 					lastImageNumber= currentFrame+1;
 					//title
-					/*imageTitle = temp_title;*/
+					imageTitle = temp_title;
 					//copy data
 					for(unsigned int px=0;px<nPixelsX;px++) lastImageArray[currentScanDivLevel*nPixelsX+px] += data->values[px];
 					pthread_mutex_unlock(&(last_image_complete_mutex));
@@ -734,7 +745,7 @@ int qDrawPlot::GetData(detectorData *data){
 			//1d
 			if(plot_in_scope==1){
 				// Titles
-				/*histTitle[0] = temp_title;*/
+				histTitle[0] = temp_title;
 				// Persistency
 				if(currentPersistency < persistency)currentPersistency++;
 				else currentPersistency=persistency;
@@ -748,7 +759,7 @@ int qDrawPlot::GetData(detectorData *data){
 			//2d
 			else{cout<<endl<<"****************************IN HERE-2D*******************************************"<<endl<<endl;
 				// Titles
-				/*imageTitle = temp_title;*/
+				imageTitle = temp_title;
 				// manufacture data for now
 				for(unsigned int px=0;px<nPixelsX;px++)
 					for(unsigned int py=0;py<nPixelsY;py++)

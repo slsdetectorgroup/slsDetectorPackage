@@ -463,8 +463,6 @@ bool backwardScanPlot;
 /**if files will be saved and index increased*/
 bool fileSaveEnable;
 
-/** true if receiver online*/
-bool receiver;
 
 signals:
 void UpdatingPlotFinished();

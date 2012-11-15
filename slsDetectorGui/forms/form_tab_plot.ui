@@ -593,7 +593,7 @@
      <rect>
       <x>10</x>
       <y>20</y>
-      <width>337</width>
+      <width>341</width>
       <height>26</height>
      </rect>
     </property>
@@ -627,7 +627,7 @@
        </property>
        <property name="sizeHint" stdset="0">
         <size>
-         <width>11</width>
+         <width>9</width>
          <height>10</height>
         </size>
        </property>
@@ -656,7 +656,7 @@
        </property>
        <property name="sizeHint" stdset="0">
         <size>
-         <width>11</width>
+         <width>9</width>
          <height>10</height>
         </size>
        </property>
@@ -671,7 +671,7 @@
         </sizepolicy>
        </property>
        <property name="text">
-        <string>File Index</string>
+        <string>Frame Index</string>
        </property>
       </widget>
      </item>
@@ -685,7 +685,7 @@
        </property>
        <property name="sizeHint" stdset="0">
         <size>
-         <width>11</width>
+         <width>9</width>
          <height>10</height>
         </size>
        </property>

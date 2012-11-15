@@ -767,8 +767,8 @@ void qTabPlot::SetScanArgument(){
 			break;
 			break;
 		case 2://file index
-			dispYAxis->setText("File Index");
-			myPlot->SetImageYAxisTitle("File Index");
+			dispYAxis->setText("Frame Index");
+			myPlot->SetImageYAxisTitle("Frame Index");
 			break;
 		case 3://all frames
 			dispYAxis->setText("All Frames");

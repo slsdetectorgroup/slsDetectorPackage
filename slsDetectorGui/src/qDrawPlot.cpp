@@ -109,7 +109,6 @@ void qDrawPlot::SetupWidgetWindow(){
 	currentFileIndex = 0;
 	currentFrameIndex = 0;
 
-	receiver=false;
 	// This is so that it initially stop and plots
 	running = 1;
 	for(int i=0;i<MAX_1DPLOTS;i++)
@@ -351,8 +350,6 @@ bool qDrawPlot::StartOrStopThread(bool start){
 		//sets up the measurement parameters
 		SetupMeasurement();
 
-		if(myDet->setReceiverOnline()==slsDetectorDefs::ONLINE_FLAG)
-			receiver=true;
 
 		cout << "Starting new acquisition threadddd ...." << endl;
 		// Start acquiring data from server
@@ -547,24 +544,24 @@ int qDrawPlot::GetData(detectorData *data,int fIndex){
 		//set progress
 		progress=(int)data->progressIndex;
 		currentFrameIndex = fileIOStatic::getIndicesFromFileName(string(data->fileName),currentFileIndex);
-
 #ifdef VERYVERBOSE
 		cout << "progress:" << progress << endl;
 #endif
 
-		//Plot Disabled
-		if(!plotEnable) 	return 0;
-
 		// secondary title necessary to differentiate between frames when not saving data
 		char temp_title[2000];
-		if(receiver){
-			//findex is used because in the receiver, you cannot know the frame index as many frames are in 1 file.
-			if(fIndex==-1) fIndex=currentFrame;
+		//findex is used because in the receiver, you cannot know the frame index as many frames are in 1 file.
+		if(fIndex!=-1){
+			currentFrameIndex=fIndex;
 			sprintf(temp_title,"#%d",fIndex);
 		}else{
 			if(fileSaveEnable)	strcpy(temp_title,"");
 			else		sprintf(temp_title,"#%d",currentFrame);
 		}
+
+
+		//Plot Disabled
+		if(!plotEnable) 	return 0;
 
 
 		//angle plotting

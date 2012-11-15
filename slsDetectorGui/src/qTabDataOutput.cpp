@@ -143,11 +143,40 @@ void qTabDataOutput::setOutputDir(){
 
 	QString path = dispOutputDir->text();
 
+	string oldPath = myDet->getFilePath();
+	bool error=false;
+
 	//gets rid of the end '/'s
 	while(path.endsWith('/')) path.chop(1);
 	dispOutputDir->setText(path);
 
-	if(QFile::exists(path)){
+	if(myDet->setReceiverOnline()==slsDetectorDefs::ONLINE_FLAG){
+		for(int i=0;i<myDet->getNumberOfDetectors();i++){
+			slsDetector *det = 	myDet->getSlsDetector(i);
+			det->setFilePath(string(path.toAscii().constData()));
+			if(det->getFilePath()!=(string(path.toAscii().constData()))){
+				error=true;
+				break;
+			}
+		}
+		if(error){
+			//set it back for the ones which got set
+			for(int i=0;i<myDet->getNumberOfDetectors();i++){
+				slsDetector *det = 	myDet->getSlsDetector(i);
+				det->setFilePath(oldPath);
+			}
+		}//set it in multi as well if it worked so that they reflect the same
+		else
+			myDet->setFilePath(string(path.toAscii().constData()));
+	}
+	else	{
+		myDet->setFilePath(string(path.toAscii().constData()));
+		if(myDet->getFilePath()!=(string(path.toAscii().constData())))
+			error=true;
+	}
+
+	if(!error){
+	//if(QFile::exists(path)){
 		lblOutputDir->setText("Output Directory: ");
 		lblOutputDir->setPalette(chkRate->palette());
 		lblOutputDir->setToolTip(outDirTip);
@@ -510,6 +539,12 @@ void qTabDataOutput::Refresh(){
 	cout  << "Getting bad channel correction" << endl;
 #endif
 	if(myDet->getBadChannelCorrection()) chkDiscardBad->setChecked(true);
+
+
+	if(myDet->setReceiverOnline()==slsDetectorDefs::ONLINE_FLAG)
+		btnOutputBrowse->setEnabled(false);
+	else
+		btnOutputBrowse->setEnabled(true);
 
 
 #ifdef VERBOSE

@@ -527,32 +527,82 @@ int reset_frames_caught(int file_des) {
 
 int read_frame(int file_des) {
 	int ret=OK;
-	int n=0;
+	int n=0,i,startIndex=-1;
+
 	char* retval=NULL;
 	char buffer[1286*2];
+	char fName[MAX_STR_LENGTH];
+	int arg[2];
+	arg[1]=1;//do not flip
+	int index=-1,index2=-1,fIndex=-1;;
+
 
 	strcpy(mess,"Could not read frame\n");
 
 
 	/* execute action if the arguments correctly arrived*/
 #ifdef SLS_RECEIVER_FUNCTION_LIST
-		retval=readFrame();
-#endif
+	//wait till you get first frame 1. to get index(from startindex 2. filename corresponds to buffer value
+	if(startIndex==-1){
+		ret=FAIL;
+		strcpy(mess,"did not start index\n");
+		for(i=0;i<10;i++){
+			startIndex=getStartFrameIndex();
+			if(startIndex==-1)
+				usleep(1000000);
+			else {
+				ret=OK;
+				break;
+			}
+		}
+	}
+	//got atleast first frame, read buffer
+	if(ret==OK){
+		int count=0;
+		do{
+			if(count>0){ printf("\nunmatching: index:%d index2:%d\n",index,index2);fflush(stdout);}
+			retval=readFrame(fName);
+			index=(int)(*((int*)retval));
+			char* retval2= retval+1286;
+			index2= (int)(*((int*)retval2));
+			count++;
 
+		}while((index%2)==(index2%2));
+
+		fIndex=((int)(*((int*)retval)) - startIndex)/2;
+		arg[0]=fIndex;
+		arg[1]=(index%2);
+
+#ifdef VERBOSE
+		printf("\nstartIndex:%d\n",startIndex);
+		printf("fName:%s\n",fName);
+		if((index%2)==0){
+			printf("\nEven Index, must flip:%d\n",index);
+			fflush(stdout);
+		}
+#endif
+	}
+
+
+#endif
 
 	if(ret==OK && differentClients){
 		printf("Force update\n");
 		ret=FORCE_UPDATE;
 	}
-	if(getReceiverStatus==IDLE){
+	/*if(getReceiverStatus()==IDLE){
 		ret=FAIL;
 printf("*************STOPPPED***\n");
-	}
+	}*/
 	/* send answer */
 	n = sendDataOnly(file_des,&ret,sizeof(ret));
 	if(ret==FAIL)
 		n = sendDataOnly(file_des,mess,sizeof(mess));
-	n = sendDataOnly(file_des,retval,sizeof(buffer));
+	else{
+		n = sendDataOnly(file_des,fName,MAX_STR_LENGTH);
+		n = sendDataOnly(file_des,arg,sizeof(arg));
+		n = sendDataOnly(file_des,retval,sizeof(buffer));
+	}
 	/*return ok/fail*/
 	return ret;
 }

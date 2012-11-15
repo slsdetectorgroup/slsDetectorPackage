@@ -465,9 +465,12 @@ class slsDetectorBase :  public virtual slsDetectorDefs  {
 
 
   /**
+   * Reads a frame from receiver
+   * @param fName file name of current frame()
+   * @param fIndex current frame index
    /returns a frame read from recever
   */
-  virtual int* readFrameFromReceiver()=0;
+  virtual int* readFrameFromReceiver(char* fName, int &fIndex)=0;
 
   /** returns detector type string from detector type index
       \param t string can be Mythen, Pilatus, Eiger, Gotthard, Agipd, Unknown

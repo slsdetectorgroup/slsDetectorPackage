@@ -304,7 +304,7 @@ int defaultDisconnectChannels(void *d) {
 
 
 
-int defaultDataReadyFunc(detectorData* d,  void* p) {
+int defaultDataReadyFunc(detectorData* d,  int i, void* p) {
 #ifdef VERBOSE
   printf("UUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUU Data received \n");
   printf("Filename %s\n",d->fileName);

@@ -222,7 +222,7 @@ void slsDetectorUsers::finalizeDataset(double *a, double *v, double *e, int &np)
 
 
 
-void slsDetectorUsers::registerDataCallback(int( *userCallback)(detectorData*, void*), void *pArg){
+void slsDetectorUsers::registerDataCallback(int( *userCallback)(detectorData*, int, void*), void *pArg){
   myDetector->registerDataCallback(userCallback,pArg);
 }
 

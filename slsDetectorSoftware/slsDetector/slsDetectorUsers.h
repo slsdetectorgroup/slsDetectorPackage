@@ -382,7 +382,7 @@ class slsDetectorUsers
      \param userCallback function for plotting/analyzing the data
   */
 
-   void registerDataCallback(int( *userCallback)(detectorData*, void*), void *pArg);
+   void registerDataCallback(int( *userCallback)(detectorData*, int, void*), void *pArg);
 
   /**
      @short register callback for accessing raw data - if the rawDataCallback is registered, no filewriting/postprocessing will be carried on automatically by the software - the raw data are deleted by the software

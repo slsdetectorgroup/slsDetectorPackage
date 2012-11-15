@@ -3733,7 +3733,7 @@ int multiSlsDetector::resetFramesCaught(int index) {
 
 
 
-int* multiSlsDetector::readFrameFromReceiver(){
+int* multiSlsDetector::readFrameFromReceiver(char* fName, int &fIndex){
 	int nel=(thisMultiDetector->dataBytes)/sizeof(int);
 	int n;
 	int* retval=new int[nel];
@@ -3741,7 +3741,7 @@ int* multiSlsDetector::readFrameFromReceiver(){
 
 	for (int id=0; id<thisMultiDetector->numberOfDetectors; id++) {
 		if (detectors[id]) {
-			retdet=detectors[id]->readFrameFromReceiver();
+			retdet=detectors[id]->readFrameFromReceiver(fName,fIndex);
 			if (retdet) {
 				n=detectors[id]->getDataBytes();
 				memcpy(p,retdet,n);

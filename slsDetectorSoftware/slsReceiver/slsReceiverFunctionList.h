@@ -24,7 +24,9 @@ void* 	startListening(void *arg);
 int startReceiver();
 int stopReceiver();
 
-char* readFrame();
+char* readFrame(char *fName);
+
+int getStartFrameIndex();
 
 //int setUDPPortNumber(int p=-1); //sets/gets port number to listen to for data from the detector
 //int setTCPPortNumber(int p=-1); //sets/get port number for communication to client

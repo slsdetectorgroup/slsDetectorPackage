@@ -235,7 +235,7 @@ s
   void ResetPositionIndex(){pthread_mutex_lock(&mp); resetPositionIndex();  pthread_mutex_unlock(&mp);};
 
 
-  void registerDataCallback(int( *userCallback)(detectorData*, void*),  void *pArg) {dataReady = userCallback; pCallbackArg = pArg;};
+  void registerDataCallback(int( *userCallback)(detectorData*, int, void*),  void *pArg) {dataReady = userCallback; pCallbackArg = pArg;};
   
 
   void registerRawDataCallback(int( *userCallback)(double*, int, void*),  void *pArg) {rawDataReady = userCallback; pRawDataArg = pArg;};
@@ -328,7 +328,7 @@ s
  private:
   double *fdata;
   
-  int (*dataReady)(detectorData*,void*); 
+  int (*dataReady)(detectorData*,int, void*);
   void *pCallbackArg; 
   
   int (*rawDataReady)(double*,int,void*); 

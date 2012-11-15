@@ -50,7 +50,7 @@ int sockfd;
 FILE *sfilefd;
 
 
-
+char savefilename[128];
 char filePath[MAX_STR_LENGTH]="";
 char fileName[MAX_STR_LENGTH]="run";
 int fileIndex=0;
@@ -140,7 +140,9 @@ int setFileIndex(int index){
 
 
 
-
+int getStartFrameIndex(){
+	return startFrameIndex;
+}
 
 
 
@@ -192,8 +194,6 @@ void* startListening(void *arg){
 	sd = -1;
 	int rc1, rc2, rc;
 	int currframenum, prevframenum;
-//	char buffer2[BUFFER_LENGTH];
-	char savefilename[128];
 	struct sockaddr_in serveraddr;
 	struct sockaddr_in clientaddr;
 
@@ -212,9 +212,9 @@ void* startListening(void *arg){
 
 	//create file name
 	if(!frameIndexNeeded)
-		sprintf(savefilename, "%s/%s_%d.dat", filePath,fileName,fileIndex);
+		sprintf(savefilename, "%s/%s_%d.raw", filePath,fileName,fileIndex);
 	else
-		sprintf(savefilename, "%s/%s_f%012d_%d.dat", filePath,fileName,framesCaught,fileIndex);
+		sprintf(savefilename, "%s/%s_f%012d_%d.raw", filePath,fileName,framesCaught,fileIndex);
 
 	/***********************************************************************/
 	/* A do/while(FALSE) loop is used to make error cleanup easier.  The   */
@@ -270,9 +270,9 @@ void* startListening(void *arg){
 				getFrameIndex();
 				//create file name
 				if(!frameIndexNeeded)
-					sprintf(savefilename, "%s/%s_%d.dat", filePath,fileName,fileIndex);
+					sprintf(savefilename, "%s/%s_%d.raw", filePath,fileName,fileIndex);
 				else
-					sprintf(savefilename, "%s/%s_f%012d_%d.dat", filePath,fileName,framesCaught,fileIndex);
+					sprintf(savefilename, "%s/%s_f%012d_%d.raw", filePath,fileName,framesCaught,fileIndex);
 
 				printf("saving to %s\t\tpacket loss %f %%\t\tframenum %d\n", savefilename,((currframenum-prevframenum-(2*framesInFile))/(double)(2*framesInFile))*100.000,currframenum);
 				sfilefd = fopen((const char *) (savefilename), "w");
@@ -390,15 +390,8 @@ int stopReceiver(){
 }
 
 
-char* readFrame(){
-	int i;
-	for(i=0;i<20;i++){
-		if ((((int)*((int*)buffer))%2)!=0)
-			break;
-		else
-			usleep(20000);
-	}
-	//printf("freamenum%d\n",*((int*) sendbuffer));
+char* readFrame(char* fName){
+	strcpy(fName,savefilename);
 	return buffer;
 }
 

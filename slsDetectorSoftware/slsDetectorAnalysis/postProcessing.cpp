@@ -131,7 +131,7 @@ void postProcessing::processFrame(int *myData, int delflag) {
     } else
       if (dataReady){
 	thisData=new detectorData(fdata,NULL,NULL,getCurrentProgress(),(fname+string(".raw")).c_str(),getTotalNumberOfChannels()); 
-	dataReady(thisData, pCallbackArg);
+	dataReady(thisData, -1, pCallbackArg);
 	delete thisData;
 	fdata=NULL;
       }
@@ -243,7 +243,7 @@ void postProcessing::doProcessing(double *lfdata, int delflag, string fname) {
 	
 	if (dataReady) {
 	  thisData=new detectorData(val,err,ang,getCurrentProgress(),(fname+ext).c_str(),np);
-	  dataReady(thisData, pCallbackArg);
+	  dataReady(thisData, -1, pCallbackArg);
 	  delete thisData;
 	  ang=NULL;
 	  val=NULL;
@@ -390,36 +390,43 @@ void* postProcessing::processData(int delflag) {
 		 pthread_mutex_unlock(&mg);
 
 		int caught=0;
+		bool newData=false;
+		char currentfName[MAX_STR_LENGTH];
+		int currentfIndex=0;
+
 		while(1){
 			if (checkJoinThread()) break;
 			usleep(200000);
 
-			  pthread_mutex_lock(&mg);
+			pthread_mutex_lock(&mg);
 			caught=getCurrentFrameIndex();
-			 pthread_mutex_unlock(&mg);
+			pthread_mutex_unlock(&mg);
 
 			incrementProgress(caught-prevCaught);
+			if(caught-prevCaught) newData=true;
+			else newData=false;
 			prevCaught=caught;
 			if (checkJoinThread()) break;
 			//if(progress_call)
 			//	progress_call(getCurrentProgress(),pProgressCallArg);
-			  pthread_mutex_lock(&mg);
-			int* receiverData =  readFrameFromReceiver();
-			 pthread_mutex_unlock(&mg);
+			if(newData){
+				pthread_mutex_lock(&mg);
+				int* receiverData =  readFrameFromReceiver(currentfName,currentfIndex);
+				pthread_mutex_unlock(&mg);
 
-			if(!receiverData)
-				return 0;
-			fdata=decodeData(receiverData);
-			delete [] receiverData;
-			if(fdata){
-				if (dataReady) {
-					thisData=new detectorData(fdata,NULL,NULL,getCurrentProgress(),(getCurrentFileName()+string(".raw")).c_str(),getTotalNumberOfChannels());
-					dataReady(thisData, pCallbackArg);
-					delete thisData;
-					fdata=NULL;
+				if(!receiverData)
+					return 0;
+				fdata=decodeData(receiverData);
+				delete [] receiverData;
+				if(fdata){
+					if (dataReady) {
+						thisData=new detectorData(fdata,NULL,NULL,getCurrentProgress(),currentfName,getTotalNumberOfChannels());
+						dataReady(thisData, currentfIndex, pCallbackArg);
+						delete thisData;
+						fdata=NULL;
+					}
 				}
 			}
-
 		}
 	}
 

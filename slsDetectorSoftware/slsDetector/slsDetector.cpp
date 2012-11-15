@@ -5678,12 +5678,13 @@ int slsDetector::resetFramesCaught(int index){
 
 
 
-int* slsDetector::readFrameFromReceiver(){
+int* slsDetector::readFrameFromReceiver(char* fName, int &fIndex){
 	//cout<<"databytes:"<<thisDetector->dataBytes<<" headerlength:"<<HEADERLENGTH<<endl;
 	int fnum=F_READ_FRAME;
 	int nel=(thisDetector->dataBytes+HEADERLENGTH)/sizeof(int);//2572/
 	int* retval=new int[nel];
 	int* origVal=new int[nel];
+	int arg[2];
 	int ret=FAIL;
 	int n;
 	char mess[100]="Nothing";
@@ -5705,6 +5706,8 @@ int* slsDetector::readFrameFromReceiver(){
 					delete [] retval;
 					return NULL;
 				} else {
+					n=dataSocket->ReceiveDataOnly(fName,MAX_STR_LENGTH);
+					n=dataSocket->ReceiveDataOnly(arg,sizeof(arg));
 					n=dataSocket->ReceiveDataOnly(origVal,thisDetector->dataBytes+HEADERLENGTH);
 #ifdef VERBOSE
 					std::cout<< "Received "<< n << " data bytes" << std::endl;
@@ -5717,8 +5720,15 @@ int* slsDetector::readFrameFromReceiver(){
 						return NULL;
 					}//worked
 					else{
-						memcpy(retval,((char*) origVal)+2, getDataBytes()/2);
-						memcpy((((char*)retval)+getDataBytes()/2), ((char*) origVal)+8+getDataBytes()/2, getDataBytes()/2);
+						fIndex=arg[0];
+						if(arg[1]){
+							memcpy(retval,((char*) origVal)+2, getDataBytes()/2);
+							memcpy((((char*)retval)+getDataBytes()/2), ((char*) origVal)+8+getDataBytes()/2, getDataBytes()/2);
+						}
+						else{
+							memcpy((((char*)retval)+getDataBytes()/2),((char*) origVal)+2, getDataBytes()/2);
+							memcpy(retval, ((char*) origVal)+8+getDataBytes()/2, getDataBytes()/2);
+						}
 					}
 				}
 				dataSocket->Disconnect();

@@ -1,45 +1,119 @@
+  /********************************************//**
+ * @file slsReceiver_funcs.h
+ * @short interface between receiver and client
+ ***********************************************/
 #ifndef RECEIVER_H
 #define RECEIVER_H
-#include <stdio.h>
-#include "communication_funcs.h"
+
+#include "sls_detector_defs.h"
+#include "receiver_defs.h"
+#include "MySocketTCP.h"
+
+class slsReceiverFunctionList;
 
 
+/**
+  *@short interface between receiver and client
+  */
+
+class slsReceiverFuncs : private virtual slsDetectorDefs {
+
+public:
+	/**
+	 * Constructor
+	 * @param socket tcp socket connecting receiver and client
+	 */
+	slsReceiverFuncs(MySocketTCP *socket);
+
+	/** Destructor */
+	virtual ~slsReceiverFuncs(){};
+
+	/** assigns functions to the fnum enum */
+	int function_table();
+
+	/** Decodes Function */
+	int decode_function();
+
+	/** Unrecognized Function */
+	int M_nofunc();
+
+	/** Set File name without frame index, file index and extension */
+	int set_file_name();
+
+	/** Set File path */
+	int set_file_dir();
+
+	/** Set File index */
+	int set_file_index();
+
+	/** Start Receiver - starts listening to udp packets from detector */
+	int start_receiver();
+
+	/** Stop Receiver - stops listening to udp packets from detector*/
+	int stop_receiver();
+
+	/** Gets receiver status */
+	int	get_status();
+
+	/** Gets Total Frames Caught */
+	int	get_frames_caught();
+
+	/** Gets frame index for each acquisition */
+	int	get_frame_index();
+
+	/** Resets Total Frames Caught */
+	int	reset_frames_caught();
+
+	/** Reads Frame/ buffer */
+	int	read_frame();
+
+	//General Functions
+	/** Locks Receiver */
+	int	lock_receiver();
+
+	/** Set port */
+	int set_port();
+
+	/** Get Last Client IP*/
+	int	get_last_client_ip();
+
+	/** Updates Client if different clients connect */
+	int	update_client();
+
+	/** Sends the updated parameters to client */
+	int send_update();
+
+	/** Exit Receiver Server */
+	int	exit_server();
+
+	/** Execute command */
+	int	exec_command();
 
 
-#define GOODBYE -200
+private:
 
-int sockfd;
+	/** Socket */
+	MySocketTCP *socket;
 
-int function_table();
-int decode_function(int);
-int M_nofunc(int);
-int exit_server(int);
-int exec_command(int);
+	/** slsReceiverFunctionList object */
+	slsReceiverFunctionList *slsReceiverList;
 
+	/** Number of functions */
+	static const int numberOfFunctions = 256;
 
-int lock_receiver(int);
-int set_port(int);
-int get_last_client_ip(int);
-int update_client(int);
-int send_update(int);
-//int set_master(int);
-//int set_synchronization(int);
+	/** Function List */
+	int (slsReceiverFuncs::*flist[numberOfFunctions])();
 
-// General purpose functions
+	/** Message */
+	char mess[MAX_STR_LENGTH];
 
-//int init_receiver();
-int set_file_name(int);
-int set_file_dir(int);
-int set_file_index(int);
-int start_receiver(int);
-int stop_receiver(int);
-int get_receiver_status(int);
-int get_frames_caught(int);
-int get_frame_index(int);
-int reset_frame_index(int);
-int reset_frames_caught(int);
-int read_frame(int);
+	/** success/failure */
+	int ret;
 
+	/** Lock Status if server locked to a client */
+	int lockStatus;
+
+};
 
 
 #endif

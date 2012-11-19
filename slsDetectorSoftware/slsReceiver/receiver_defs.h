@@ -6,7 +6,7 @@
 #include <stdint.h> 
 
 #define GOODBYE 			-200
-#define HALF_BUFFER_SIZE 	1286
+#define BUFFER_SIZE 		1286*2
 #define DEFAULT_UDP_PORT	50001
 
 

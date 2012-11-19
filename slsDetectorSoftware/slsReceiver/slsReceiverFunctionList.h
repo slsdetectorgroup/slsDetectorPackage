@@ -7,6 +7,7 @@
 
 #include "sls_detector_defs.h"
 #include "receiver_defs.h"
+#include "genericSocket.h"
 
 #include <pthread.h>
 #include <stdio.h>
@@ -186,33 +187,17 @@ private:
 	/** File Descriptor */
 	static FILE *sfilefd;
 
-	/** UDP Socket - with server */
-	int udpSocket;
-
 	/** Receiver buffer */
-	char buffer[HALF_BUFFER_SIZE*2];
+	char buffer[BUFFER_SIZE];
+
+	/** UDP Socket between Receiver and Detector */
+	genericSocket* udpSocket;
 
 	/** Server UDP Port*/
 	int server_port;
 
 };
 /*
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-int getStartFrameIndex();
 
 //int setUDPPortNumber(int p=-1); //sets/gets port number to listen to for data from the detector
 //int setTCPPortNumber(int p=-1); //sets/get port number for communication to client

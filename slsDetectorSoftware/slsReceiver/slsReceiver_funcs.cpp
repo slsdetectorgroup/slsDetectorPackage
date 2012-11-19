@@ -496,7 +496,14 @@ int	slsReceiverFuncs::read_frame(){
 	if(ret==OK){
 		int count=0;
 		do{
-			if(count>0){ cout << endl << "unmatching: index:" << index <<" index2:" << index2 << endl;}
+			if(count>0){
+				cout << endl << "unmatching: index:" << index <<" index2:" << index2 << endl;
+				if(count>10){
+					strcpy(mess,"unmatching index. could not read frame.\n");
+					ret=FAIL;
+					break;
+				}
+			}
 			retval=slsReceiverList->readFrame(fName);
 			index=(int)(*((int*)retval));
 			char* retval2= retval+1286;

@@ -90,9 +90,6 @@ enum communicationProtocol{
    //   portno(port_number), 
 protocol(p), is_a_server(0), socketDescriptor(-1),file_des(-1), packet_size(DEFAULT_PACKET_SIZE)// sender (client): where to? ip 
    { 
-/* 	  pthread_mutex_t mp1 = PTHREAD_MUTEX_INITIALIZER; */
-/* 	  mp=mp1; */
-/* 	  pthread_mutex_init(&mp, NULL); */
 
 	  //   strcpy(hostname,host_ip_or_name);
      struct hostent *hostInfo = gethostbyname(host_ip_or_name);
@@ -346,9 +343,6 @@ protocol(p), is_a_server(0), socketDescriptor(-1),file_des(-1), packet_size(DEFA
     			 file_des = -1;
     		 } else{
     			 file_des = socketDescriptor;
-    			 /*cout<<"locking"<<endl;
-    			 pthread_mutex_lock(&mp);
-    			 cout<<"locked"<<endl;*/
     		 }
     	 }
 
@@ -362,21 +356,29 @@ protocol(p), is_a_server(0), socketDescriptor(-1),file_des(-1), packet_size(DEFA
 
      /** @short free connection */
      void Disconnect(){
-
-    	 if(file_des>=0){ //then was open
-    		 if(is_a_server){
-    			 close(file_des);
+    	 if (protocol==UDP){
+    		 close(socketDescriptor);
+    		 socketDescriptor=-1;
+    	 }
+    	 else{
+    		 if(file_des>=0){ //then was open
+    			 if(is_a_server){
+    				 close(file_des);
+    			 }
+    			 else {
+    				 close(socketDescriptor);
+    				 socketDescriptor=-1;
+    			 }
+    			 file_des=-1;
     		 }
-    		 else {
-    			 close(socketDescriptor);
-    			 socketDescriptor=-1;
-    		 }
-    		 file_des=-1;
-    		 /*cout<<"unlocking"<<endl;
-    		 pthread_mutex_unlock(&mp);
-    		 cout<<"unlocked"<<endl;*/
     	 }
      }; 
+
+
+     void ShutDownSocket(){
+    	 if (socketDescriptor != -1)
+    	 	shutdown(socketDescriptor, SHUT_RDWR);
+     };
 
 
 

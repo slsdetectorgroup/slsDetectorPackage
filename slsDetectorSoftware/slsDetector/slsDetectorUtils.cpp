@@ -386,8 +386,19 @@ void  slsDetectorUtils::acquire(int delflag){
 
     if (*stoppedFlag==0) {
       executeAction(stopScript);
-    } else
+    } else{
+
+  	  pthread_mutex_lock(&mg);
+#ifdef VERBOSE
+    cout << "findex incremented " << endl;
+ #endif
+    if(*correctionMask&(1<<WRITE_FILE))
+      IncrementFileIndex();
+    setFileIndex(fileIO::getFileIndex());
+    pthread_mutex_unlock(&mg);
+
       break;
+    }
 
 
 
@@ -419,7 +430,7 @@ void  slsDetectorUtils::acquire(int delflag){
     pthread_join(dataProcessingThread, &status);
   }
 
-  
+
   if (connectChannels) {
     if (disconnect_channels)
       disconnect_channels(DCarg);

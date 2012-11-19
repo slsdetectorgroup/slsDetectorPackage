@@ -33,15 +33,14 @@ slsReceiverFunctionList::slsReceiverFunctionList():
 				startAcquisitionIndex(-1),
 				acquisitionIndex(0),
 				framesInFile(0),
-				udpSocket(-1),
 				status(IDLE),
+				udpSocket(NULL),
 				server_port(DEFAULT_UDP_PORT)
 {
 	strcpy(savefilename,"");
 	strcpy(filePath,"");
 	strcpy(fileName,"run");
 	strcpy(buffer,"");
-
 }
 
 
@@ -90,7 +89,6 @@ char* slsReceiverFunctionList::setFilePath(char c[]){
 int slsReceiverFunctionList::setFileIndex(int i){
 	if(i>=0)
 		fileIndex = i;
-
 	return getFileIndex();
 }
 
@@ -153,8 +151,7 @@ int slsReceiverFunctionList::stopReceiver(){
 		cout << "Stopping new acquisition threadddd ...." << endl;
 		//stop thread
 		listening_thread_running=0;
-		if (udpSocket != -1)
-			shutdown(udpSocket, SHUT_RDWR);
+		udpSocket->ShutDownSocket();
 		pthread_join(listening_thread,NULL);
 		status = IDLE;
 	}
@@ -179,12 +176,7 @@ int slsReceiverFunctionList::startListening(){
 #endif
 
 	// Variable and structure definitions
-	/*udpSocket = -1;*/
-	int rc1, rc2, rc;
-	int currframenum, prevframenum;
-	struct sockaddr_in serveraddr;
-	struct sockaddr_in clientaddr;
-	socklen_t clientaddrlen = sizeof(clientaddr);
+	int rc, currframenum, prevframenum;
 
 	//reset variables for each acquisition
 	framesInFile=0;
@@ -208,42 +200,17 @@ int slsReceiverFunctionList::startListening(){
 	//  close() of each of the socket descriptors is only done once at the
 	//  very end of the program.
 	do {
-		// The socket() function returns a socket descriptor, which represents
-		// an endpoint.  The statement also identifies that the INET
-		// (Internet Protocol) address family with the UDP transport
-		// (SOCK_DGRAM) will be used for this socket.
-		udpSocket = socket(AF_INET, SOCK_DGRAM, 0);
-		if (udpSocket < 0) {
-			cerr << "socket() failed" << endl;
+
+		udpSocket = new genericSocket(server_port,genericSocket::UDP);
+		if (udpSocket->getErrorStatus()){
 			break;
 		}
-
-
-		// After the socket descriptor is created, a bind() function gets a
-		// unique name for the socket.  In this example, the user sets the
-		// s_addr to zero, which means that the UDP port of 3555 will be
-		// bound to all IP addresses on the system.
-
-		memset(&serveraddr, 0, sizeof(serveraddr));
-		serveraddr.sin_family = AF_INET;
-		serveraddr.sin_port = htons(server_port);
-		//serveraddr.sin_addr.s_addr = inet_addr(server_ip);
-		serveraddr.sin_addr.s_addr = htonl(INADDR_ANY);
-
-		rc = bind(udpSocket, (struct sockaddr *) &serveraddr, sizeof(serveraddr));
-		if (rc < 0) {
-			cerr << "bind() failed" << endl;
-			break;
-		}
-
 
 		sfilefd = fopen((const char *) (savefilename), "w");
 		cout << "Saving to " << savefilename << ". Ready! " << endl;
 
 		while (listening_thread_running) {
 
-			// The server uses the recvfrom() function to receive that data.
-			// The recvfrom() function waits indefinitely for data to arrive.
 			if (framesInFile == 20000) {
 				fclose(sfilefd);
 
@@ -263,12 +230,11 @@ int slsReceiverFunctionList::startListening(){
 			}
 			status = RUNNING;
 
-			rc1 = recvfrom(udpSocket, buffer, HALF_BUFFER_SIZE, 0,
-					(struct sockaddr *) &clientaddr, &clientaddrlen);
-			//cout << "rc1 done" << endl;
-			rc2 = recvfrom(udpSocket, buffer+HALF_BUFFER_SIZE, HALF_BUFFER_SIZE, 0,
-					(struct sockaddr *) &clientaddr, &clientaddrlen);
 
+			//receiver 2 half frames
+			rc = udpSocket->ReceiveDataOnly(buffer,sizeof(buffer));
+			if( rc < 0)
+				cerr << "recvfrom() failed" << endl;
 
 			//for each scan
 			if(startFrameIndex==-1){
@@ -279,40 +245,32 @@ int slsReceiverFunctionList::startListening(){
 			if(startAcquisitionIndex==-1)
 				startAcquisitionIndex=startFrameIndex;
 
-			//cout << "rc2 done" << endl;
-			if ((rc1 < 0) || (rc2 < 0)) {
-				perror("recvfrom() failed");
-				break;
-			}
+
 
 			//so that it doesnt write the last frame twice
 			if(listening_thread_running){
-				fwrite(buffer, 1, rc1, sfilefd);
-				fwrite(buffer+HALF_BUFFER_SIZE, 1, rc2, sfilefd);
+				fwrite(buffer, 1, rc, sfilefd);
 				framesInFile++;
 				framesCaught++;
 				totalFramesCaught++;
-				//cout << "saving" << endl;
 			}
+
 		}
 	} while (listening_thread_running);
 	listening_thread_running=0;
 	status = IDLE;
 
 	//Close down any open socket descriptors
-	if (udpSocket != -1){
-		cout << "Closing udpSocket" << endl;
-		close(udpSocket);
-	}
+	udpSocket->Disconnect();
 
 	//close file
 	fclose(sfilefd);
+#ifdef VERBOSE
 	cout << "sfield:" << (int)sfilefd << endl;
+#endif
 
 	return 0;
 }
-
-
 
 
 

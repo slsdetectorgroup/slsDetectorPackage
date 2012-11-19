@@ -22,9 +22,10 @@ int main(int argc, char *argv[])
 	//assign function table
 	slsReceiverFuncs *receiver = new slsReceiverFuncs(socket);
 #ifdef VERBOSE
-	cout << "Function table assigned.\n Ready..." << endl;
+	cout << "Function table assigned." << endl;
 #endif
 
+	cout << " Ready..." << endl;
 	//waits for connection
 	while(retval!=GOODBYE) {
 #ifdef VERBOSE

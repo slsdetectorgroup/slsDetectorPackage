@@ -122,8 +122,6 @@ enum {
 
   F_GET_FRAMES_CAUGHT,		/**< gets the number of frames caught by receiver */
 
-  F_LOCK_RECEIVER,			/**< locks receiver */
-
   F_GET_FRAME_INDEX,		/**< gets the frame index */
 
   F_RESET_FRAMES_CAUGHT     /**< resets the frames caught */

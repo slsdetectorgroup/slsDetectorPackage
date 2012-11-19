@@ -5743,7 +5743,7 @@ int* slsDetector::readFrameFromReceiver(char* fName, int &fIndex){
 
 
 int slsDetector::lockReceiver(int lock){
-	int fnum=F_LOCK_RECEIVER;
+	int fnum=F_LOCK_SERVER;
 	int ret = FAIL;
 	int retval=-1;
 	int arg=lock;

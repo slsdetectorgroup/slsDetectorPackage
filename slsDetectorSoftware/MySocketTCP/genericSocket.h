@@ -149,6 +149,11 @@ protocol(p), is_a_server(0), socketDescriptor(-1),file_des(-1), packet_size(DEFA
 /* myaddr.sin_addr.s_addr = INADDR_ANY; */
 
 
+	 if(serverAddress.sin_port == htons(port_number)){
+		 socketDescriptor = -10;
+		 return;
+	 }
+
      char ip[20];
 
      strcpy(ip,"0.0.0.0");
@@ -251,7 +256,7 @@ protocol(p), is_a_server(0), socketDescriptor(-1),file_des(-1), packet_size(DEFA
     /** @short returns error status
 	 \returns 1 if error
      */
-     int getErrorStatus(){if (socketDescriptor<0) return 1; else return 0;};
+     int getErrorStatus(){if (socketDescriptor==-10) return -10; else if (socketDescriptor<0) return 1; else return 0;};
      
 
  /** @short etablishes connection; disconnect should always follow
@@ -314,10 +319,12 @@ protocol(p), is_a_server(0), socketDescriptor(-1),file_des(-1), packet_size(DEFA
     			 }
     			 socketDescriptor=-1;
     		 }
+    		 else{
+    			 inet_ntop(AF_INET, &(clientAddress.sin_addr), dummyClientIP, INET_ADDRSTRLEN);
 #ifdef VERY_VERBOSE
-    		 else
     			 cout << "client connected "<< file_des << endl;
 #endif
+    		 }
 
     	 }
     	 // file_des = socketDescriptor;
@@ -519,6 +526,14 @@ protocol(p), is_a_server(0), socketDescriptor(-1),file_des(-1), packet_size(DEFA
 #ifdef VERY_VERBOSE
        cout << "sent "<< total_sent << " Bytes" << endl; 
 #endif
+       if (total_sent>0)
+         strcpy(thisClientIP,dummyClientIP);
+
+       if (strcmp(lastClientIP,thisClientIP))
+         differentClients=1;
+       else
+         differentClients=0;
+
        return total_sent;
        
 
@@ -568,6 +583,9 @@ protocol(p), is_a_server(0), socketDescriptor(-1),file_des(-1), packet_size(DEFA
 
      }
 
+     char lastClientIP[INET_ADDRSTRLEN];
+     char thisClientIP[INET_ADDRSTRLEN];
+     int differentClients;
 
 
  protected:
@@ -586,6 +604,10 @@ protocol(p), is_a_server(0), socketDescriptor(-1),file_des(-1), packet_size(DEFA
 
   struct sockaddr_in clientAddress, serverAddress;
   socklen_t clientAddress_length;
+
+
+  char dummyClientIP[INET_ADDRSTRLEN];
+
 
  private:
   

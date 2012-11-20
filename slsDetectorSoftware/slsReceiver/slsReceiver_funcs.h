@@ -21,9 +21,12 @@ class slsReceiverFuncs : private virtual slsDetectorDefs {
 public:
 	/**
 	 * Constructor
-	 * @param socket tcp socket connecting receiver and client
+	 * reads config file, creates socket, assigns function table
+	 * @param mySocket tcp socket connecting receiver and client
+	 * @param fname name of config file
+	 * @param success if socket creation was successfull
 	 */
-	slsReceiverFuncs(MySocketTCP *socket);
+	slsReceiverFuncs(MySocketTCP *&mySocket,string const fname,int &success);
 
 	/** Destructor */
 	virtual ~slsReceiverFuncs(){};
@@ -89,11 +92,10 @@ public:
 	/** Execute command */
 	int	exec_command();
 
-
 private:
 
 	/** Socket */
-	MySocketTCP *socket;
+	MySocketTCP*& socket;
 
 	/** slsReceiverFunctionList object */
 	slsReceiverFunctionList *slsReceiverList;

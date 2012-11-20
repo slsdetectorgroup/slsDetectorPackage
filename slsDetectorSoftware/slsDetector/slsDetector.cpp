@@ -3461,8 +3461,7 @@ int slsDetector::setPort(portType index, int num){
   //  uint64_t ut;
   char mess[100];
   int ret=FAIL;
-  int n=0;
-  
+  bool online=false;
   MySocketTCP *s;
 
   if (num>1024) {
@@ -3495,13 +3494,17 @@ int slsDetector::setPort(portType index, int num){
 
 	setTCPSocket("",retval);
       }
+      online =  (thisDetector->onlineFlag==ONLINE_FLAG);
       break;
     case DATA_PORT:
       s=dataSocket;
       retval=thisDetector->dataPort;
-      if (s==NULL) setReceiverTCPSocket("",DEFAULT_PORTNO+2);
-      if (dataSocket) s=dataSocket;
-      else setReceiverTCPSocket("",retval);
+      if(strcmp(thisDetector->receiverIP,"none")){
+    	  if (s==NULL) setReceiverTCPSocket("",DEFAULT_PORTNO+2);
+    	  if (dataSocket) s=dataSocket;
+    	  else setReceiverTCPSocket("",retval);
+    	  online =  (thisDetector->receiverOnlineFlag==ONLINE_FLAG);
+      }
       break;
     case STOP_PORT:
       s=stopSocket;
@@ -3509,17 +3512,18 @@ int slsDetector::setPort(portType index, int num){
       if (s==NULL) setTCPSocket("",-1,DEFAULT_PORTNO+1);
       if (stopSocket) s=stopSocket;
       else setTCPSocket("",-1,retval);
+      online =  (thisDetector->onlineFlag==ONLINE_FLAG);
       break;
     default:
       s=NULL;
     }
 
-    if (thisDetector->onlineFlag==ONLINE_FLAG) {
+    if (online) {
       if (s) {
 	if  (s->Connect()>=0) {
 	  s->SendDataOnly(&fnum,sizeof(fnum));
 	  s->SendDataOnly(&index,sizeof(index));
-	  n=s->SendDataOnly(&num,sizeof(num));
+	  s->SendDataOnly(&num,sizeof(num));
 	  s->ReceiveDataOnly(&ret,sizeof(ret));
 	  if (ret==FAIL) {
 	    s->ReceiveDataOnly(mess,sizeof(mess));
@@ -3530,7 +3534,6 @@ int slsDetector::setPort(portType index, int num){
 	  s->Disconnect();
 	}
       } 
-      
     }
     if (ret!=FAIL) {
       
@@ -3559,7 +3562,11 @@ int slsDetector::setPort(portType index, int num){
 	thisDetector->controlPort=num;
 	break;
       case DATA_PORT:
-	thisDetector->dataPort=num;
+    	 if(thisDetector->receiverOnlineFlag==ONLINE_FLAG)
+    	 	 thisDetector->dataPort=retval;
+    	 else
+    		 thisDetector->dataPort=num;
+
 	break;
       case STOP_PORT:
 	thisDetector->stopPort=num;
@@ -5012,55 +5019,6 @@ int slsDetector::writeConfigurationFile(ofstream &outfile, int id){
   delete cmd;
   return iv;
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 

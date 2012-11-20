@@ -7,21 +7,96 @@
 #include "slsReceiverFunctionList.h"
 
 #include <iostream>
+#include <string>
+#include <sstream>
+#include <fstream>
 using namespace std;
 
 
-slsReceiverFuncs::slsReceiverFuncs(MySocketTCP *socket):
-		socket(socket),
+slsReceiverFuncs::slsReceiverFuncs(MySocketTCP *&mySocket,string const fname,int &success):
+		socket(mySocket),
 		ret(OK),
 		lockStatus(0){
-	//initialize variables
-	strcpy(mess,"dummy message");
-	strcpy(socket->lastClientIP,"none");
-	strcpy(socket->thisClientIP,"none1");
 
-	function_table();
-	slsReceiverList =  new slsReceiverFunctionList();
+	int port_no = DEFAULT_PORTNO+2;
+	ifstream infile;
+	string sLine,sargname;
+	int iline = 0;
+
+
+	if(!fname.empty()){
+#ifdef VERBOSE
+		std::cout<< "config file name "<< fname << std::endl;
+#endif
+		infile.open(fname.c_str(), ios_base::in);
+		if (infile.is_open()) {
+			 while(infile.good()){
+				 getline(infile,sLine);
+				 iline++;
+#ifdef VERBOSE
+				 cout <<  str << endl;
+#endif
+				 if(sLine.find('#')!=string::npos){
+#ifdef VERBOSE
+					 cout << "Line is a comment " << endl;
+#endif
+					 continue;
+				 }else if(sLine.length()<2){
+#ifdef VERBOSE
+					 cout << "Empty line " << endl;
+#endif
+					 continue;
+				 }else{
+					 istringstream sstr(sLine);
+
+					 //parameter name
+					 if(sstr.good())
+						 sstr >> sargname;
+
+					 //value
+					 if(sargname=="dataport"){
+						 if(sstr.good()) {
+							 sstr >> sargname;
+							 sscanf(sargname.c_str(),"%d",&port_no);
+						 }
+					 }
+				 }
+			 }
+			infile.close();
+		}else {
+			cout << "Error opening configuration file " << fname << endl;
+			success = FAIL;
+		}
+//#ifdef VERBOSE
+		cout << "Read configuration file of " << iline << " lines" << endl;
+//#endif
+
+	}
+
+	if(success == OK){
+		//create socket
+		MySocketTCP* mySocket = new MySocketTCP(port_no);
+		if (mySocket->getErrorStatus())
+			success = FAIL;
+		else{
+
+			delete socket;
+			socket = mySocket;
+
+			//initialize variables
+			strcpy(socket->lastClientIP,"none");
+			strcpy(socket->thisClientIP,"none1");
+			strcpy(mess,"dummy message");
+
+			function_table();
+			slsReceiverList =  new slsReceiverFunctionList();
+
+			success = OK;
+		}
+	}
 }
+
+
 
 
 int slsReceiverFuncs::function_table(){
@@ -89,6 +164,7 @@ int slsReceiverFuncs::decode_function(){
 	(this->*flist[fnum])();
 	if (ret==FAIL)
 		cout <<  "Error executing the function = " << fnum << endl;
+
 
 	return ret;
 }
@@ -598,20 +674,21 @@ int slsReceiverFuncs::lock_receiver() {
 
 int slsReceiverFuncs::set_port() {
 	ret=OK;
+	MySocketTCP* mySocket=NULL;
 	int sd=-1;
 	enum portType p_type; /** data? control? stop? Unused! */
 	int p_number; /** new port number */
 
 	// receive arguments
 	if(socket->ReceiveDataOnly(&p_type,sizeof(p_type)) < 0 ){
-		sprintf(mess,"Error reading from socket\n");
-		printf("Error reading from socket (ptype)\n");
+		strcpy(mess,"Error reading from socket\n");
+		cout << mess << endl;
 		ret=FAIL;
 	}
 
 	if(socket->ReceiveDataOnly(&p_number,sizeof(p_number)) < 0 ){
-		sprintf(mess,"Error reading from socket\n");
-		printf("Error reading from socket (pnum)\n");
+		strcpy(mess,"Error reading from socket\n");
+		cout << mess << endl;
 		ret=FAIL;
 	}
 
@@ -620,26 +697,30 @@ int slsReceiverFuncs::set_port() {
 		if (socket->differentClients==1 && lockStatus==1 ) {
 			ret=FAIL;
 			sprintf(mess,"Detector locked by %s\n",socket->lastClientIP);
-		}  else {
+		}
+		else {
 			if (p_number<1024) {
 				sprintf(mess,"Too low port number %d\n", p_number);
-				cout << endl;
+				cout << mess << endl;
 				ret=FAIL;
 			}
 			cout << "set port " << p_type << " to " << p_number <<endl;
-			socket = new MySocketTCP(p_number);
+			mySocket = new MySocketTCP(p_number);
 		}
-		if (!socket->getErrorStatus()){
-			ret=OK;
-			if (socket->differentClients)
-				ret=FORCE_UPDATE;
-		} else {
-			ret=FAIL;
-			sprintf(mess,"Could not bind port %d\n", p_number);
-			cout << "Could not bind port " << p_number << endl;
-			if (socket->getErrorStatus()==-10) {
-				sprintf(mess,"Port %d already set\n", p_number);
-				cout << "Port " << p_number << " already set" << endl;
+		if(mySocket){
+			sd = mySocket->getErrorStatus();
+			if (!sd){
+				ret=OK;
+				if (mySocket->differentClients)
+					ret=FORCE_UPDATE;
+			} else {
+				ret=FAIL;
+				sprintf(mess,"Could not bind port %d\n", p_number);
+				cout << mess << endl;
+				if (sd==-10) {
+					sprintf(mess,"Port %d already set\n", p_number);
+					cout << mess << endl;
+				}
 			}
 		}
 	}
@@ -650,8 +731,11 @@ int slsReceiverFuncs::set_port() {
 		socket->SendDataOnly(mess,sizeof(mess));
 	} else {
 		socket->SendDataOnly(&p_number,sizeof(p_number));
-		socket->Disconnect();
-		delete socket;
+		if(sd>=0){
+			socket->Disconnect();
+			delete socket;
+			socket = mySocket;
+		}
 	}
 
 	//return ok/fail

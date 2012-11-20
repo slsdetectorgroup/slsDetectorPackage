@@ -351,7 +351,9 @@ protocol(p), is_a_server(0), socketDescriptor(-1),file_des(-1), packet_size(DEFA
      return file_des;
      }
 
-
+     uint16_t getPortNumber(){
+    	 return ntohs(serverAddress.sin_port);
+     }
 
 
      /** @short free connection */

@@ -12,22 +12,29 @@ using namespace std;
 
 int main(int argc, char *argv[])
 {
-	int  portno = DEFAULT_PORTNO+2;
-	int retval = slsDetectorDefs::OK;
+	int ret = slsDetectorDefs::OK;
+	MySocketTCP *socket = NULL;
+	string fname = "";
 
-	MySocketTCP *socket = new MySocketTCP(portno);
-	if (socket->getErrorStatus())
+	//parse command line for config
+	for(int iarg=2;iarg<argc;iarg++)
+		if(!strcasecmp(argv[iarg-1],"-config"))
+			fname.assign(argv[iarg]);
+
+
+
+	//reads config file, creates socket, assigns function table
+	slsReceiverFuncs *receiver = new slsReceiverFuncs(socket,fname,ret);
+	if(ret==slsDetectorDefs::FAIL)
 		return -1;
 
-	//assign function table
-	slsReceiverFuncs *receiver = new slsReceiverFuncs(socket);
 #ifdef VERBOSE
 	cout << "Function table assigned." << endl;
 #endif
 
 	cout << " Ready..." << endl;
 	//waits for connection
-	while(retval!=GOODBYE) {
+	while(ret!=GOODBYE) {
 #ifdef VERBOSE
 		cout<< endl;
 #endif
@@ -38,7 +45,7 @@ int main(int argc, char *argv[])
 #ifdef VERY_VERBOSE
 		cout << "Conenction accepted" << endl;
 #endif
-		retval = receiver->decode_function();
+		ret = receiver->decode_function();
 #ifdef VERY_VERBOSE
 		cout << "function executed" << endl;
 #endif

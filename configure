@@ -33,7 +33,7 @@ fi
 echo "LIBDIR will be  \"$LIBDIR\""	
 export LIBDIR
 
-:  ${INCDIR="include/slsDetector"}
+:  ${INCDIR="include"}
 read -p "Includes directory [default:\"$INCDIR\"]:" -e t6
 if [ -z "$t6" ]
 then
@@ -44,7 +44,7 @@ fi
 echo "INCDIR will be  \"$INCDIR\""	
 export INCDIR
 
-:  ${DOCDIR="share/doc"}
+:  ${DOCDIR="doc"}
 read -p "Documentation directory [default:\"$DOCDIR\"]:" -e t7
 if [ -z "$t7" ]
 then

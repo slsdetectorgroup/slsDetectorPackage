@@ -3,9 +3,9 @@ CFLAGS= -DC_ONLY -fPIC
 
 DFLAGS= -DDACS_INT
 
-ASM=$(shell echo "/lib/modules/`uname -r`/build/include")
+#ASM=$(shell echo "/lib/modules/`uname -r`/build/include")
 
-INCLUDES= -IcommonFiles -IslsDetector -IMySocketTCP -IusersFunctions -ImultiSlsDetector -IslsDetectorUtils -IslsDetectorCommand -IslsDetectorAnalysis -IslsReceiverInterface -I$(ASM)
+#INCLUDES= -IcommonFiles -IslsDetector -IMySocketTCP -IusersFunctions -ImultiSlsDetector -IslsDetectorUtils -IslsDetectorCommand -IslsDetectorAnalysis -IslsReceiverInterface -I$(ASM)
 
 #EPICSFLAGS=-D EPICS -I/usr/local/epics/base/include/ -I /usr/local/epics/base/include/os/Linux/ -L /usr/local/epics/base/lib/SL5-x86/ -Wl,-R/usr/local/epics/base/lib/SL5-x86  -lca -lCom 
 CC=g++
@@ -23,7 +23,8 @@ SRC_MYTHEN_SVC = mythenDetectorServer/server.c mythenDetectorServer/server_funcs
 
 
 
-
+DESTDIR ?= bin
+DOCDIR ?= docs
 
 
 
@@ -31,9 +32,29 @@ SRC_MYTHEN_SVC = mythenDetectorServer/server.c mythenDetectorServer/server_funcs
 all: package $(SRC_CLNT)
 	echo "compiling all"
 
-doc: $(SRC_H) $(SRC_CLNT) 
+intdoc: $(SRC_H) $(SRC_CLNT) 
 	doxygen doxy.config
 
+doc: $(DOCDIR)/pdf/slsDetectorUsersDocs.pdf
+	mv slsDetectorUsersDocs/latex/refman.pdf $(DOCDIR)/pdf/slsDetectorUsersDocs.pdf
+
+$(DOCDIR)/pdf/slsDetectorUsersDocs.pdf: slsDetectorUsersDocs
+	cd slsDetectorUsersDocs/latex && make 
+	$(shell test -d $(DOCDIR) || mkdir -p $(DOCDIR))
+	$(shell test -d $(DOCDIR)/pdf || mkdir -p $(DOCDIR)/pdf)
+	cp slsDetectorUsersDocs/latex/refman.pdf $(DOCDIR)/pdf/slsDetectorUsersDocs.pdf
+
+
+htmldoc: $(DOCDIR)/html/slsDetectorUsersDocs
+
+$(DOCDIR)/html/slsDetectorUsersDocs: slsDetectorUsersDocs
+	$(shell test -d $(DOCDIR) || mkdir -p $(DOCDIR))
+	$(shell test -d $(DOCDIR)/html || mkdir -p $(DOCDIR)/html)
+	$(shell test -d $(DOCDIR)/html/slsDetectorUsersDocs && rm -r $(DOCDIR)/html/slsDetectorUsersDocs)
+	cp -r slsDetectorUsersDocs/html $(DOCDIR)/html/slsDetectorUsersDocs
+
+slsDetectorUsersDocs: slsDetectorUsers.doxy slsDetector/slsDetectorUsers.h slsDetector/slsDetectorUsers.cpp slsDetectorAnalysis/detectorData.h
+	doxygen slsDetectorUsers.doxy
 
 
 mythenServer:  $(SRC_MYTHEN_SVC) 
@@ -52,28 +73,29 @@ picassoServer:  $(SRC_MYTHEN_SVC)
 	$(CXX) -Wall -o $@ -c $< $(INCLUDES) $(DFLAGS) $(FLAGS)  -fPIC  $(EPICSFLAGS) -L/usr/lib64/
 
 
-package: $(OBJS)
+
+
+package: $(OBJS) $(DESTDIR)/libSlsDetector.so $(DESTDIR)/libSlsDetector.a 
+
+$(DESTDIR)/libSlsDetector.so: $(OBJS) 
 	$(CXX)  -shared -Wl,-soname,libSlsDetector.so -o libSlsDetector.so  $(OBJS)  -lc $(INCLUDES) $(DFLAGS) $(FLAGS) $(EPICSFLAGS)  -L/usr/lib64/
+	$(shell test -d $(DESTDIR) || mkdir -p $(DESTDIR))
+	mv libSlsDetector.so $(DESTDIR)
+
+$(DESTDIR)/libSlsDetector.a: $(OBJS) 
 	ar  rcs libSlsDetector.a  $(OBJS) 
+	mv libSlsDetector.a $(DESTDIR)
 
 clean:
-	rm -rf libSlsDetector.a  libSlsDetector.so core  docs/* $(OBJS)
+	rm -rf libSlsDetector.a  libSlsDetector.so core  docs/* slsDetectorUsersDocs $(OBJS)
 
 
 #-------------------------------------------------------------------------------
-lib:    package
 
-
-# added install target, HBl
-install_lib: lib
-	$(shell test -d $(DESTDIR) || mkdir -p $(DESTDIR))
-	cp -P libSlsDetector.so $(DESTDIR)
+install: package
 
 install_inc:
 	$(shell test -d $(DESTDIR) || mkdir -p $(DESTDIR))
-	cp -P $(HEADERS) $(DESTDIR)
+	cp -P slsDetector/slsDetectorUsers.h slsDetectorAnalysis/detectorData.h  $(DESTDIR)
 
 
-install_doc: doc
-	$(shell test -d $(DESTDIR) || mkdir -p $(DESTDIR))
-	cp -Pr docs/* $(DESTDIR)  

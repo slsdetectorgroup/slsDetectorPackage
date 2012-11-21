@@ -23,14 +23,22 @@ class multiSlsDetector;
 
 
 using namespace std;
-/** 
 
 
 
+/*
    \mainpage 
- <img  src="psi_logo_150.gif" alt="Paul Scherrer Institut"> 
 <CENTER><H1>API for SLS detectors data acquisition</H1></CENTER>
 <HR>
+*/
+/** 
+    \mainpage 
+     <img  src="psi_logo_150.gif" alt="Paul Scherrer Institut"> 
+
+<H1>API for SLS detectors data acquisition</H1>
+
+<HR>
+
    Although the SLS detectors group delvelops several types of detectors (1/2D, counting/integrating etc.) it is common interest of the group to use a common platfor for data acquisition
  
    The architecture of the acquisitions system is intended as follows:

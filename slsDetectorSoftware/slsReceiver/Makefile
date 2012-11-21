@@ -6,7 +6,7 @@ INCLUDES	= 	-I ../MySocketTCP -I ../commonFiles -I .
 SRC_CLNT	= 	slsReceiver.cpp ../MySocketTCP/MySocketTCP.cpp slsReceiver_funcs.cpp slsReceiverFunctionList.cpp
 
 PROGS		= 	slsReceiver 
-INSTDIR		= 	bin
+DESTDIR		?= 	bin
 INSTMODE	= 	0777
 
 OBJS 		= 	$(SRC_CLNT:.cpp=.o) 
@@ -18,11 +18,11 @@ boot: $(OBJS)
 
 $(PROGS): 
 	echo $(OBJS)
-	mkdir -p $(INSTDIR) 
+	mkdir -p $(DESTDIR) 
 	gcc $(SRC_CLNT) $(INCLUDES) $(CLAGS) $(LDLIBS) -o $@   
-	mv $(PROGS) $(INSTDIR)
-	
-	
+	mv $(PROGS) $(DESTDIR)
+
+
 clean:
-	rm -rf $(PROGS)  *.o  $(INSTDIR)/*
+	rm -rf $(PROGS)  *.o  
 

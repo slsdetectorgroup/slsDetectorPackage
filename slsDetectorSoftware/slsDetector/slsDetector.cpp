@@ -465,7 +465,7 @@ int slsDetector::initializeDetectorSize(detectorType type) {
     /** set ports to defaults */
     thisDetector->controlPort=DEFAULT_PORTNO;
     thisDetector->stopPort=DEFAULT_PORTNO+1;
-    thisDetector->dataPort=DEFAULT_PORTNO+2;
+    thisDetector->receiverPort=DEFAULT_PORTNO+2;
     /** set thisDetector->myDetectorType to type and according to this set nChans, nChips, nDacs, nAdcs, nModMax, dynamicRange, nMod*/
     thisDetector->myDetectorType=type;
     switch(thisDetector->myDetectorType) {
@@ -3498,7 +3498,7 @@ int slsDetector::setPort(portType index, int num){
       break;
     case DATA_PORT:
       s=dataSocket;
-      retval=thisDetector->dataPort;
+      retval=thisDetector->receiverPort;
       if(strcmp(thisDetector->receiverIP,"none")){
     	  if (s==NULL) setReceiverTCPSocket("",DEFAULT_PORTNO+2);
     	  if (dataSocket) s=dataSocket;
@@ -3542,7 +3542,7 @@ int slsDetector::setPort(portType index, int num){
 	thisDetector->controlPort=retval;
 	break;
       case DATA_PORT:
-	thisDetector->dataPort=retval;
+	thisDetector->receiverPort=retval;
 	break;
       case STOP_PORT:
 	thisDetector->stopPort=retval;
@@ -3563,9 +3563,9 @@ int slsDetector::setPort(portType index, int num){
 	break;
       case DATA_PORT:
     	 if(thisDetector->receiverOnlineFlag==ONLINE_FLAG)
-    	 	 thisDetector->dataPort=retval;
+    	 	 thisDetector->receiverPort=retval;
     	 else
-    		 thisDetector->dataPort=num;
+    		 thisDetector->receiverPort=num;
 
 	break;
       case STOP_PORT:
@@ -3581,7 +3581,7 @@ int slsDetector::setPort(portType index, int num){
     retval=thisDetector->controlPort;
     break;
   case DATA_PORT:
-    retval=thisDetector->dataPort;
+    retval=thisDetector->receiverPort;
     break;
   case STOP_PORT:
     retval=thisDetector->stopPort;
@@ -3594,7 +3594,7 @@ int slsDetector::setPort(portType index, int num){
     
     
 #ifdef VERBOSE
-  cout << thisDetector->controlPort<< " " << thisDetector->dataPort << " " << thisDetector->stopPort << endl;
+  cout << thisDetector->controlPort<< " " << thisDetector->receiverPort << " " << thisDetector->stopPort << endl;
 #endif 
   
 
@@ -4948,6 +4948,7 @@ int slsDetector::writeConfigurationFile(string const fname){
 int slsDetector::writeConfigurationFile(ofstream &outfile, int id){
   
   slsDetectorCommand *cmd=new slsDetectorCommand(this);
+  int nvar=15;
 
   string names[]={				\
     "hostname",					\
@@ -4968,24 +4969,29 @@ int slsDetector::writeConfigurationFile(ofstream &outfile, int id){
 
   // to be added in the future
   //    "trimen",
-  //   "dataport",						
+  //   "receiverPort",
 	
   if (thisDetector->myDetectorType==GOTTHARD) {
-	names[4]= "angdir";
-	names[5]= "moveflag";
-	names[6]= "lock";
-	names[7]= "caldir";
-	names[8]= "ffdir";
-	names[9]= "extsig";
-    names[10]="receivermac";
-    names[11]="servermac";
-    names[12]="receiverip";
-    names[13]="outdir";
-    names[14]="vhighvoltage";
+	names[0]= "hostname";
+	names[1]= "port";
+	names[2]= "stopport";
+	names[3]= "receiverport";
+	names[4]= "settingsdir";
+	names[5]= "angdir";
+	names[6]= "moveflag";
+	names[7]= "lock";
+	names[8]= "caldir";
+	names[9]= "ffdir";
+	names[10]= "extsig";
+    names[11]="receivermac";
+    names[12]="servermac";
+    names[13]="receiverip";
+    names[14]="outdir";
+    names[15]="vhighvoltage";
+    nvar=16;
   }
 
 
-  int nvar=15;
   int nsig=4;//-1;
   int iv=0;
   char *args[100];
@@ -5309,10 +5315,10 @@ string slsDetector::checkReceiverOnline() {
 
 
 
-int slsDetector::setReceiverTCPSocket(string const name, int const data_port){
+int slsDetector::setReceiverTCPSocket(string const name, int const receiver_port){
 
   char thisName[MAX_STR_LENGTH];
-  int thisDP;
+  int thisRP;
   int retval=OK;
 
   //if receiver ip given
@@ -5329,26 +5335,26 @@ int slsDetector::setReceiverTCPSocket(string const name, int const data_port){
   } else
     strcpy(thisName,thisDetector->receiverIP);
 
-  //if dataport given
-  if (data_port>0) {
+  //if receiverPort given
+  if (receiver_port>0) {
 #ifdef VERBOSE
     std::cout<< "setting data port" << std::endl;
 #endif
-    thisDP=data_port;
-    thisDetector->dataPort=thisDP;
+    thisRP=receiver_port;
+    thisDetector->receiverPort=thisRP;
     if (dataSocket){
       delete dataSocket;
       dataSocket=NULL;
     }
   } else
-    thisDP=thisDetector->dataPort;
+    thisRP=thisDetector->receiverPort;
 
   //create data socket
   if (!dataSocket) {
-    dataSocket=new MySocketTCP(thisName, thisDP);
+    dataSocket=new MySocketTCP(thisName, thisRP);
     if (dataSocket->getErrorStatus()){
 #ifdef VERBOSE
-      std::cout<< "Could not connect Data socket "<<thisName  << " " << thisDP << std::endl;
+      std::cout<< "Could not connect Data socket "<<thisName  << " " << thisRP << std::endl;
 #endif
       delete dataSocket;
       dataSocket=NULL;
@@ -5356,7 +5362,7 @@ int slsDetector::setReceiverTCPSocket(string const name, int const data_port){
     }
 #ifdef VERYVERBOSE
     else
-      std::cout<< "Data socket connected "<< thisName << " " << thisDP << std::endl;
+      std::cout<< "Data socket connected "<< thisName << " " << thisRP << std::endl;
 #endif
   }
   //check if it connects

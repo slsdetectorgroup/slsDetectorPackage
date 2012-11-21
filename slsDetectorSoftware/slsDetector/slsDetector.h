@@ -81,8 +81,8 @@ class slsDetector : public slsDetectorUtils, public energyConversion {
     int controlPort;
     /** is the port used to stop the acquisition normally it should not be changed*/
     int stopPort;
-    /** is the port used to acquire the data normally it should not be changed*/
-    int dataPort;
+    /** is the port used to communicate with the receiver*/
+    int receiverPort;
 
     /** detector type  \ see :: detectorType*/
     detectorType myDetectorType;
@@ -363,8 +363,8 @@ class slsDetector : public slsDetectorUtils, public energyConversion {
   int getControlPort() {return  thisDetector->controlPort;};
   /** returns the detector stop  port  \sa sharedSlsDetector */
   int getStopPort() {return thisDetector->stopPort;};
-  /** returns the detector data port  \sa sharedSlsDetector */
-  int getDataPort() {return thisDetector->dataPort;};
+  /** returns the receiver port  \sa sharedSlsDetector */
+  int getReceiverPort() {return thisDetector->receiverPort;};
  
   /** Locks/Unlocks the connection to the server
       /param lock sets (1), usets (0), gets (-1) the lock
@@ -386,9 +386,9 @@ class slsDetector : public slsDetectorUtils, public energyConversion {
   /** disconnect from the control port */
   int disconnectControl();
 
-  /** connect to the data port */
+  /** connect to the receiver port */
   int connectData();
-  /** disconnect from the data port */
+  /** disconnect from the receiver port */
   int disconnectData();
 
   /** connect to the stop port */
@@ -1384,12 +1384,12 @@ class slsDetector : public slsDetectorUtils, public energyConversion {
      configure the socket communication and initializes the socket instances
 
      \param name receiver ip - if "" the current receiver hostname is used
-     \param data_port port for receiving data - if -1 the current is used
+     \param receiver_port port for receiving data - if -1 the current is used
 
      \returns OK is connection succeded, FAIL otherwise
      \sa sharedSlsDetector
   */
-  int setReceiverTCPSocket(string const name="", int const data_port=-1);
+  int setReceiverTCPSocket(string const name="", int const receiver_port=-1);
 
 
   /**

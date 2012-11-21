@@ -340,7 +340,7 @@ slsDetectorCommand::slsDetectorCommand(slsDetectorUtils *det)  {
   descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdPort;
   i++;
 
-  descrToFuncMap[i].m_pFuncName="dataport"; //
+  descrToFuncMap[i].m_pFuncName="receiverport"; //
   descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdPort;
   i++;
 
@@ -2253,7 +2253,7 @@ string slsDetectorCommand::cmdPort(int narg, char *args[], int action) {
 
   if (cmd=="port") {
     index=CONTROL_PORT;
-  } else if (cmd=="dataport") {
+  } else if (cmd=="receiverport") {
     index=DATA_PORT;
   } else if (cmd=="stopport") {
     index=STOP_PORT;
@@ -2277,13 +2277,13 @@ string slsDetectorCommand::helpPort(int narg, char *args[], int action) {
   ostringstream os;  
   if (action==PUT_ACTION || action==HELP_ACTION) {
     os << "port i \n sets the communication control port"<< std::endl;
-    os << "dataport i \n sets the communication data port"<< std::endl;
+    os << "receiverport i \n sets the communication receiver port"<< std::endl;
     os << "stopport i \n sets the communication stop port "<< std::endl;
   
   }
   if (action==GET_ACTION || action==HELP_ACTION) {
     os << "port  \n gets the communication control port"<< std::endl;
-    os << "dataport  \n gets the communication data port"<< std::endl;
+    os << "receiverport  \n gets the communication receiver port"<< std::endl;
     os << "stopport \n gets the communication stop port "<< std::endl;
   } 
   return os.str();

@@ -1,18 +1,29 @@
-PROG= bin/slsDetectorGui
+
+PROG= $(DESTDIR)/slsDetectorGui
 DIR= $(shell ls src/* slsDetectorPlotting/include/* slsDetectorPlotting/src/* include/* forms/include/*)
+DESTDIR?=bin
+DOCDIR?=docs
+LIBDIR?=../slsDetectorSoftware
 
 
-all: $(PROG)
-
+all: $(PROG) Makefile.gui
 
 clean: 
 	if test -e Makefile.gui; then make -f Makefile.gui clean; make -f Makefile.gui mocclean; rm Makefile.gui; else 	make Makefile.gui; make -f Makefile.gui clean; make -f Makefile.gui mocclean;  fi
+	cd manual && make clean
 
 
 
 Makefile.gui: slsDetectorGui.pro
-	qmake -o Makefile.gui
+	qmake -o Makefile.gui INCLUDES='$(INCLUDES)' DESTDIR=$(DESTDIR)
+
+doc:
+	cd manual && make DESTDIR=$(DOCDIR)
+
+htmldoc:
+	cd manual && make html DESTDIR=$(DOCDIR)
 
 $(PROG): Makefile.gui $(DIR)
-	make -f Makefile.gui
+	echo $(LDFLAG)
+	make -f Makefile.gui SLSDETLIB=$(LIBDIR) DESTDIR=$(DESTDIR) SUBLIBS='$(LDFLAG)' INCLUDES='$(INCLUDES)'
 

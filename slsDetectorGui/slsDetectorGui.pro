@@ -1,8 +1,10 @@
-DESTDIR  			= 		bin
+
+
+DESTDIR  			?= 		bin
 MOC_DIR   			= 		mocs
 OBJECTS_DIR 		= 		objs
 UI_HEADERS_DIR		= 		forms/include
-
+SLSDETLIB ?=../slsDetectorSoftware               
 RESOURCES   		+=  	icons.qrc
 
 CONFIG				+=		debug 
@@ -18,12 +20,13 @@ documentation.path 	= 		/$(DOCPATH)
 documentation.files = 		docs/*
 INSTALLS			+= 		target
 INSTALLS 			+= 		documentation
-QMAKE_CLEAN 		+= 		docs/*/* \
-							$(DESTDIR)* 
+QMAKE_CLEAN 		+= 		docs/*/* 
 							
 
-LIBS				+=		-Wl,-Bstatic -L../slsDetectorSoftware -lSlsDetector  -Wl,-Bdynamic\
-							-L$(QWTDIR)/lib  -lqwt -L$(QWT3D)/lib  
+#LIBS				+=		-Wl,-Bstatic -L../slsDetectorSoftware -lSlsDetector  -Wl,-Bdynamic\
+#							-L$(QWTDIR)/lib  -lqwt -L$(QWT3D)/lib 
+ 
+LIBS				+=		-L$(QWTDIR)/lib  -lqwt -L$(QWT3D)/lib  
 
 DEPENDPATH  		+=		\
 							slsDetectorPlotting/include\
@@ -33,21 +36,23 @@ DEPENDPATH  		+=		\
 
 
 INCLUDEPATH 		+= 		\
-                            $(shell echo "/lib/modules/`uname -r`/build/include") \
 							$(QWTDIR)/include\
 							$(QWTDIR) \
-                            $(QWTDIR)/src\
-                            $(QWT3D)/include\
+                              $(QWTDIR)/src\
+                              $(QWT3D)/include\
 							slsDetectorPlotting/include\
 							include\
 							forms/include\
-							../slsDetectorSoftware/commonFiles\
-							../slsDetectorSoftware/MySocketTCP\
-							../slsDetectorSoftware/slsReceiverInterface\
-							../slsDetectorSoftware/slsDetector\
-							../slsDetectorSoftware/slsDetectorAnalysis\
-							../slsDetectorSoftware/multiSlsDetector\
-							../slsDetectorSoftware/usersFunctions  
+                                                        $(INCLUDES)
+
+#                                                        $(shell echo "/lib/modules/`uname -r`/build/include") \
+#							../slsDetectorSoftware/commonFiles\
+#							../slsDetectorSoftware/MySocketTCP\
+#							../slsDetectorSoftware/slsReceiverInterface\
+#							../slsDetectorSoftware/slsDetector\
+#							../slsDetectorSoftware/slsDetectorAnalysis\
+#							../slsDetectorSoftware/multiSlsDetector\
+#							../slsDetectorSoftware/usersFunctions  
 
 SOURCES 			= 		\
 							slsDetectorPlotting/src/SlsQt1DPlot.cxx\

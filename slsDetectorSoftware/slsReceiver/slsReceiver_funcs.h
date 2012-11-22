@@ -41,6 +41,9 @@ public:
 	/** Unrecognized Function */
 	int M_nofunc();
 
+	/** Close File */
+	//static void closeFile(int p);
+
 	/** Set File name without frame index, file index and extension */
 	int set_file_name();
 

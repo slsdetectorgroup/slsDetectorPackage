@@ -6,6 +6,8 @@
 #include "slsReceiver_funcs.h"
 #include "slsReceiverFunctionList.h"
 
+#include <signal.h>  		// SIGINT
+
 #include <iostream>
 #include <string>
 #include <sstream>
@@ -90,6 +92,9 @@ slsReceiverFuncs::slsReceiverFuncs(MySocketTCP *&mySocket,string const fname,int
 
 			function_table();
 			slsReceiverList =  new slsReceiverFunctionList(shortfname);
+
+			//Catch signal SIGINT to close files properly
+			//signal(SIGINT,closeFile);
 
 			success = OK;
 		}
@@ -189,6 +194,15 @@ int slsReceiverFuncs::M_nofunc(){
 
 
 
+/*
+void slsReceiverFuncs::closeFile(int p){
+	//if(socket)
+	slsReceiverFunctionList::closeFile(0);
+	socket->Disconnect();//non static
+	delete socket;
+	exit(0);
+}
+*/
 
 
 int slsReceiverFuncs::set_file_name() {

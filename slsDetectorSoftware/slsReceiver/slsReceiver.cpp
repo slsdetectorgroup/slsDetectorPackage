@@ -31,6 +31,7 @@ int main(int argc, char *argv[])
 	}
 
 
+
 	//reads config file, creates socket, assigns function table
 	slsReceiverFuncs *receiver = new slsReceiverFuncs(socket,fname,ret, shortfname);
 	if(ret==slsDetectorDefs::FAIL)

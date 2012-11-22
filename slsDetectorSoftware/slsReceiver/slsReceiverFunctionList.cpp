@@ -25,6 +25,7 @@ int slsReceiverFunctionList::listening_thread_running(0);
 
 slsReceiverFunctionList::slsReceiverFunctionList(bool shortfname):
 				shortFileName(shortfname),
+				shortFileNameIndex(0),
 				fileIndex(0),
 				frameIndexNeeded(true),
 				framesCaught(0),
@@ -185,7 +186,7 @@ int slsReceiverFunctionList::startListening(){
 	framesCaught=0;
 	startFrameIndex=-1;
 	frameIndex=0;
-
+	shortFileNameIndex=1;
 
 	//Catch signal SIGINT to close files properly
 	signal(SIGINT,closeFile);
@@ -200,7 +201,7 @@ int slsReceiverFunctionList::startListening(){
 	if(!shortFileName)
 		strcpy(actualfilename,savefilename);
 	else
-		sprintf(actualfilename, "%s/%s_%d_%012d.raw", filePath,fileName,fileIndex, framesCaught);
+		sprintf(actualfilename, "%s/%s_%d_%09d.raw", filePath,fileName,fileIndex, 0);
 
 	// A do/while(FALSE) loop is used to make error cleanup easier.  The
 	//  close() of each of the socket descriptors is only done once at the
@@ -230,7 +231,9 @@ int slsReceiverFunctionList::startListening(){
 				if(!shortFileName)
 					strcpy(actualfilename,savefilename);
 				else
-					sprintf(actualfilename, "%s/%s_%d_%012d.raw", filePath,fileName,fileIndex, framesCaught);
+					sprintf(actualfilename, "%s/%s_%d_%09d.raw", filePath,fileName,fileIndex, shortFileNameIndex);
+
+				shortFileNameIndex++;
 
 				cout << "saving to " << actualfilename << "\t\t"
 						"packet loss " << ((currframenum-prevframenum-(2*framesInFile))/(double)(2*framesInFile))*100.000 << "%\t\t"

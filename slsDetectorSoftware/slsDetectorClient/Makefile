@@ -1,82 +1,97 @@
 CFLAGS= -DC_ONLY 
 #FLAGS=-DVERBOSE 
-ASM=$(shell echo "/lib/modules/`uname -r`/build/include")
+#ASM=$(shell echo "/lib/modules/`uname -r`/build/include")
 
-INCLUDES= -I../slsDetectorSoftware/commonFiles -I../slsDetectorSoftware/slsDetector -I ../slsDetectorSoftware/MySocketTCP  -I../slsDetectorSoftware/usersFunctions -I../slsDetectorSoftware/multiSlsDetector -I../slsDetectorSoftware/slsDetectorAnalysis -I../slsDetectorSoftware/slsReceiverInterface  -I$(ASM)
-LIBS= -L../slsDetectorSoftware/ -lSlsDetector  -L/usr/lib64/ -lpthread
+#INCLUDES= -I../slsDetectorSoftware/commonFiles -I../slsDetectorSoftware/slsDetector -I ../slsDetectorSoftware/MySocketTCP  -I../slsDetectorSoftware/usersFunctions -I../slsDetectorSoftware/multiSlsDetector -I../slsDetectorSoftware/slsDetectorAnalysis -I../slsDetectorSoftware/slsReceiverInterface  -I$(ASM)
 #LDFLAG= 
 
 
 
-INCLUDES= -I../slsDetectorSoftware/commonFiles -I../slsDetectorSoftware/slsDetector -I ../slsDetectorSoftware/MySocketTCP  -I../slsDetectorSoftware/usersFunctions -I../slsDetectorSoftware/multiSlsDetector -I../slsDetectorSoftware/slsDetectorAnalysis -I../slsDetectorSoftware/slsReceiverInterface -I$(shell echo "/lib/modules/`uname -r`/build/include")
-
-LIBS= -L../slsDetectorSoftware/ -lSlsDetector -lpthread
+INCLUDES?= -I../slsDetectorSoftware/commonFiles -I../slsDetectorSoftware/slsDetector -I ../slsDetectorSoftware/MySocketTCP  -I../slsDetectorSoftware/usersFunctions -I../slsDetectorSoftware/multiSlsDetector -I../slsDetectorSoftware/slsDetectorAnalysis -I../slsDetectorSoftware/slsReceiverInterface -I$(shell echo "/lib/modules/`uname -r`/build/include")
 
 
-BIN=bin
+LIBDIR?=../slsDetectorSoftware/
+LIBS?= -L$(LIBDIR) -lSlsDetector 
+
+LDFLAG=   -L/usr/lib64/ -lpthread
+
+
+DESTDIR ?= bin
+DOCDIR ?= $(PWD)/docs
+
+BIN=$(DESTDIR)
 
 SRC_CLNT=sls_detector_client.cpp
 
-static_clients: static_sls_detector_put static_sls_detector_get static_sls_detector_acquire static_sls_detector_help
+clients: $(DESTDIR)/sls_detector_put $(DESTDIR)/sls_detector_get $(DESTDIR)/sls_detector_acquire $(DESTDIR)/sls_detector_help
+	echo $(LIBS)
 
-clients: sls_detector_put sls_detector_get sls_detector_acquire sls_detector_help
+static_clients: $(DESTDIR)/ssls_detector_put $(DESTDIR)/ssls_detector_get $(DESTDIR)/ssls_detector_acquire $(DESTDIR)/ssls_detector_help
 
-all:  lib static_clients
+all: clients
+	echo $(LIBS)
 
-nonstatic: lib clients
+nonstatic: clients
+
+
 
 lib:
-	cd ../slsDetectorSoftware && $(MAKE) lib
+	cd ../slsDetectorSoftware && $(MAKE) DESTDIR=$(LIBDIR) 
 
 
 
-static_sls_detector_put: $(SRC_CLNT) lib
+$(DESTDIR)/ssls_detector_put: $(SRC_CLNT) lib
+	echo $(LIBS)
 	mkdir -p $(BIN)
-	$(CXX) -static -o $(BIN)/sls_detector_put $(SRC_CLNT)   $(FLAGS)    $(INCLUDES) -DPUT $(LIBS) $(LDFLAG) 
+	$(CXX) -static -o $(BIN)/ssls_detector_put $(SRC_CLNT)   $(FLAGS)    $(INCLUDES) -DPUT $(LIBS) $(LDFLAG) 
 
-static_sls_detector_get: $(SRC_CLNT) lib
+$(DESTDIR)/ssls_detector_get: $(SRC_CLNT) lib
 	mkdir -p $(BIN)
-	$(CXX) -static -o $(BIN)/sls_detector_get $(SRC_CLNT)   $(FLAGS)  $(INCLUDES) -DGET  $(LIBS) $(LDFLAG)
+	$(CXX) -static -o $(BIN)/ssls_detector_get $(SRC_CLNT)   $(FLAGS)  $(INCLUDES) -DGET  $(LIBS) $(LDFLAG)
 
-static_sls_detector_acquire: $(SRC_CLNT) lib
+$(DESTDIR)/ssls_detector_acquire: $(SRC_CLNT) lib
 	mkdir -p $(BIN)
-	$(CXX) -static -o $(BIN)/sls_detector_acquire $(SRC_CLNT)   $(FLAGS)  $(INCLUDES) -DREADOUT  $(LIBS) $(LDFLAG)
+	$(CXX) -static -o $(BIN)/ssls_detector_acquire $(SRC_CLNT)   $(FLAGS)  $(INCLUDES) -DREADOUT  $(LIBS) $(LDFLAG)
 
-static_sls_detector_help: $(SRC_CLNT) lib
+$(DESTDIR)/ssls_detector_help: $(SRC_CLNT) lib
 	mkdir -p $(BIN)
-	$(CXX) -static -o $(BIN)/sls_detector_help $(SRC_CLNT)   $(FLAGS)  $(INCLUDES) -DHELP  $(LIBS) $(LDFLAG)
+	$(CXX) -static -o $(BIN)/ssls_detector_help $(SRC_CLNT)   $(FLAGS)  $(INCLUDES) -DHELP  $(LIBS) $(LDFLAG)
 
 
 
-sls_detector_put: $(SRC_CLNT) lib
+$(DESTDIR)/sls_detector_put: $(SRC_CLNT) lib
 	mkdir -p $(BIN)
 	$(CXX) -o $(BIN)/sls_detector_put $(SRC_CLNT)   $(FLAGS)    $(INCLUDES) -DPUT $(LIBS) $(LDFLAG) 
+	$(shell test -d $(DESTDIR) || mkdir -p $(DESTDIR))
 
-sls_detector_get: $(SRC_CLNT) lib
+$(DESTDIR)/sls_detector_get: $(SRC_CLNT) lib
 	mkdir -p $(BIN)
 	$(CXX) -o $(BIN)/sls_detector_get $(SRC_CLNT)   $(FLAGS)  $(INCLUDES) -DGET  $(LIBS) $(LDFLAG)
+	$(shell test -d $(DESTDIR) || mkdir -p $(DESTDIR))
 
-sls_detector_acquire: $(SRC_CLNT) lib
+$(DESTDIR)/sls_detector_acquire: $(SRC_CLNT) lib
 	mkdir -p $(BIN)
 	$(CXX) -o $(BIN)/sls_detector_acquire $(SRC_CLNT)   $(FLAGS)  $(INCLUDES) -DREADOUT  $(LIBS) $(LDFLAG)
+	$(shell test -d $(DESTDIR) || mkdir -p $(DESTDIR))
 
-sls_detector_help: $(SRC_CLNT) lib
+$(DESTDIR)/sls_detector_help: $(SRC_CLNT) lib
 	mkdir -p $(BIN)
 	$(CXX) -o $(BIN)/sls_detector_help $(SRC_CLNT)   $(FLAGS)  $(INCLUDES) -DHELP  $(LIBS) $(LDFLAG)
+	$(shell test -d $(DESTDIR) || mkdir -p $(DESTDIR))
 
+
+doc: 
+	cd manual && make DESTDIR=$(DOCDIR)
+
+htmldoc: 
+	cd manual && make html DESTDIR=$(DOCDIR)
 
 clean:
-	rm  -rf $(BIN)/sls_detector_put sls_detector_get sls_detector_acquire  sls_detector_help
+	cd manual && make clean
+	rm  -rf $(BIN)/sls_detector_put $(BIN)/sls_detector_get $(BIN)/sls_detector_acquire  $(BIN)/sls_detector_help 
 
+install: clients
 
-
-
-install: all
-	$(shell test -d $(DESTDIR) || mkdir -p $(DESTDIR))
-	cp -P $(BIN)/sls_detector_put $(DESTDIR)
-	cp -P $(BIN)/sls_detector_get $(DESTDIR)
-	cp -P $(BIN)/sls_detector_acquire $(DESTDIR)
-	cp -P $(BIN)/sls_detector_help $(DESTDIR)
 
 
 

@@ -1,6 +1,6 @@
 
 PROG= $(DESTDIR)/slsDetectorGui
-DIR= $(shell ls src/* slsDetectorPlotting/include/* slsDetectorPlotting/src/* include/* forms/include/*)
+#DIR= $(shell ls src/* slsDetectorPlotting/include/* slsDetectorPlotting/src/* include/ forms/*)
 DESTDIR?=bin
 DOCDIR?=docs
 LIBDIR?=../slsDetectorSoftware
@@ -17,7 +17,7 @@ clean:
 Makefile.gui: mm
 
 mm:
-	qmake -o Makefile.gui INCLUDES='$(INCLUDES)' DESTDIR=$(DESTDIR) SLSDETLIB=$(LIBDIR) SUBLIBS='$(LDFLAG)' INCLUDES='$(INCLUDES)'
+	qmake -set QT_INSTALL_PREFIX $(QTDIR) && qmake -o Makefile.gui INCLUDES='$(INCLUDES)' DESTDIR=$(DESTDIR) SLSDETLIB=$(LIBDIR) SUBLIBS='$(LDFLAG)' INCLUDES='$(INCLUDES)' 
 
 doc:
 	cd manual && make DESTDIR=$(DOCDIR)

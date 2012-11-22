@@ -7,7 +7,17 @@ UI_HEADERS_DIR		= 		forms/include
 SLSDETLIB ?=../slsDetectorSoftware               
 RESOURCES   		+=  	icons.qrc
 
-CONFIG				+=		debug 
+CONFIG				+=		debug no_include_pwd
+
+QMAKE_INCDIR_QT = $(QTDIR)/include/
+
+QMAKE_LIBS_QT = 	-L$(QTDIR)/lib 
+QMAKE_LIBS = 	-L$(QTDIR)/lib 
+
+QMAKE_UIC = $(QTDIR)/bin/uic
+
+QMAKE_MOC =  $(QTDIR)/bin/moc
+QMAKE_RCC =  $(QTDIR)/bin/rcc
 
 QMAKE_CXXFLAGS_WARN_ON = 	-w 
 QMAKE_CFLAGS_WARN_ON   = 	-w
@@ -26,16 +36,14 @@ QMAKE_CLEAN 		+= 		docs/*/*
 #LIBS				+=		-Wl,-Bstatic -L../slsDetectorSoftware -lSlsDetector  -Wl,-Bdynamic\
 #							-L$(QWTDIR)/lib  -lqwt -L$(QWT3D)/lib 
  
-LIBS				+=		-L$(QWTDIR)/lib  -lqwt -L$(QWT3D)/lib  
+LIBS				=	-L$(QWTDIR)/lib	  -lqwt -L$(QWT3D)/lib  
 
 DEPENDPATH  		+=		\
 							slsDetectorPlotting/include\
 							include\
 							forms/include
 
-
-
-INCLUDEPATH 		+= 		\
+INCLUDEPATH 		= 	\	 
 							$(QWTDIR)/include\
 							$(QWTDIR) \
                               $(QWTDIR)/src\

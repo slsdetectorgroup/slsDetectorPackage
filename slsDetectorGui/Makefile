@@ -14,8 +14,10 @@ clean:
 
 
 
-Makefile.gui: slsDetectorGui.pro
-	qmake -o Makefile.gui INCLUDES='$(INCLUDES)' DESTDIR=$(DESTDIR)
+Makefile.gui: mm
+
+mm:
+	qmake -o Makefile.gui INCLUDES='$(INCLUDES)' DESTDIR=$(DESTDIR) SLSDETLIB=$(LIBDIR) SUBLIBS='$(LDFLAG)' INCLUDES='$(INCLUDES)'
 
 doc:
 	cd manual && make DESTDIR=$(DOCDIR)

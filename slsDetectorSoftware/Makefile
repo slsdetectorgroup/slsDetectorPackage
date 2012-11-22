@@ -36,7 +36,6 @@ intdoc: $(SRC_H) $(SRC_CLNT)
 	doxygen doxy.config
 
 doc: $(DOCDIR)/pdf/slsDetectorUsersDocs.pdf
-	mv slsDetectorUsersDocs/latex/refman.pdf $(DOCDIR)/pdf/slsDetectorUsersDocs.pdf
 
 $(DOCDIR)/pdf/slsDetectorUsersDocs.pdf: slsDetectorUsersDocs
 	cd slsDetectorUsersDocs/latex && make 

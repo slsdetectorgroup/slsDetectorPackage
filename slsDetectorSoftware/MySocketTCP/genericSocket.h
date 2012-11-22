@@ -515,8 +515,10 @@ protocol(p), is_a_server(0), socketDescriptor(-1),file_des(-1), packet_size(DEFA
 	 break;
        case UDP:
 	 if (socketDescriptor<0) return -1;
-	 while(length>0){
-	   nsending = (length>packet_size) ? packet_size:length;
+	// while(length>0){
+	for(int i=0;i<2;i++){
+		nsending=packet_size;
+	   //nsending = (length>packet_size) ? packet_size:length;
 	   nsent = recvfrom(socketDescriptor,(char*)buf+total_sent,nsending, 0, (struct sockaddr *) &clientAddress, &clientAddress_length); 
 	   if(!nsent) break;
 	   length-=nsent;

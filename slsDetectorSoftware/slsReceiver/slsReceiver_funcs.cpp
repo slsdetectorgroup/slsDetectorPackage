@@ -6,13 +6,16 @@
 #include "slsReceiver_funcs.h"
 #include "slsReceiverFunctionList.h"
 
-#include <signal.h>  		// SIGINT
+//#include <signal.h>	//SIGINT
 
 #include <iostream>
 #include <string>
 #include <sstream>
 #include <fstream>
 using namespace std;
+
+
+
 
 
 slsReceiverFuncs::slsReceiverFuncs(MySocketTCP *&mySocket,string const fname,int &success, bool shortfname):
@@ -197,10 +200,7 @@ int slsReceiverFuncs::M_nofunc(){
 /*
 void slsReceiverFuncs::closeFile(int p){
 	//if(socket)
-	slsReceiverFunctionList::closeFile(0);
-	socket->Disconnect();//non static
-	delete socket;
-	exit(0);
+	slsReceiverFunctionList::closeFile();
 }
 */
 

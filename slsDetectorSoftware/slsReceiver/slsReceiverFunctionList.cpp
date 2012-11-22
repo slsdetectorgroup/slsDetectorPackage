@@ -111,7 +111,7 @@ void slsReceiverFunctionList::closeFile(int p){
 		cout << "Closing file and Exiting." << endl;
 		fclose(sfilefd);
 	}
-	exit(0);
+	//exit(0);
 }
 
 

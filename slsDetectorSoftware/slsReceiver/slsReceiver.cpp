@@ -37,6 +37,7 @@ int main(int argc, char *argv[])
 	if(ret==slsDetectorDefs::FAIL)
 		return -1;
 
+
 #ifdef VERBOSE
 	cout << "Function table assigned." << endl;
 #endif

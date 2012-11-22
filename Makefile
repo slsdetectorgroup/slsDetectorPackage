@@ -1,5 +1,6 @@
 # do not change below this line
 
+INCS='-I$(LIBRARYDIR)/commonFiles -I$(LIBRARYDIR)/slsDetector -I$(LIBRARYDIR)/MySocketTCP -I$(LIBRARYDIR)/usersFunctions -I$(LIBRARYDIR)/multiSlsDetector -I$(LIBRARYDIR)/slsDetectorUtils -I$(LIBRARYDIR)/slsDetectorCommand -I$(LIBRARYDIR)/slsDetectorAnalysis -I$(LIBRARYDIR)/slsReceiverInterface -I$(ASM)'
 
 WD=$(shell pwd)
 LIBRARYDIR=$(WD)/slsDetectorSoftware
@@ -16,7 +17,7 @@ LIBDIR?=$(INSTALLROOT)/bin
 INCDIR?=$(INSTALLROOT)/include
 
 
-LDFLAG='-L$(LIBDIR) -lSlsDetector'
+LDFLAG:='-L$(LIBDIR) -lSlsDetector'
 
 #FLAGS=-DVERBOSE
 ASM=$(shell echo "/lib/modules/`uname -r`/build/include")
@@ -27,30 +28,31 @@ INCLUDES='-I. -I$(LIBRARYDIR)/commonFiles -I$(LIBRARYDIR)/slsDetector -I$(LIBRAR
 
 
 
-all: lib  slsDetectorClient slsReceiver gui 
+all: lib  textclient slsReceiver gui 
 
 nonstatic: lib  slsDetectorClient slsReceiver slsDetectorGUI
 
 lib:
-	echo "compile lib"
-	cd $(LIBRARYDIR) && $(MAKE) FLAGS=$(FLAGS) DESTDIR=$(LIBDIR) INCLUDES='-I$(LIBRARYDIR)/commonFiles -I$(LIBRARYDIR)/slsDetector -I$(LIBRARYDIR)/MySocketTCP -I$(LIBRARYDIR)/usersFunctions -I$(LIBRARYDIR)/multiSlsDetector -I$(LIBRARYDIR)/slsDetectorUtils -I$(LIBRARYDIR)/slsDetectorCommand -I$(LIBRARYDIR)/slsDetectorAnalysis -I$(LIBRARYDIR)/slsReceiverInterface -I$(ASM)'
+	cd $(LIBRARYDIR) && $(MAKE) FLAGS=$(FLAGS) DESTDIR=$(LIBDIR) INCLUDES=$(INCLUDES)
+
+stextclient: slsDetectorClient_static
 
 slsDetectorClient_static: lib
-	cd  $(CLIENTDIR) && $(MAKE)  FLAGS=$(FLAGS) LDFLAG=$(LDFLAG) DESTDIR=$(DESTDIR) LIBDIR=$(LIBDIR) INCLUDES=$(INCLUDES)
+	cd  $(CLIENTDIR) && $(MAKE) static_clients FLAGS=$(FLAGS) LDFLAG=$(LDFLAG) DESTDIR=$(BINDIR) LIBDIR=$(LIBDIR) INCLUDES=$(INCLUDES)
 
 
-slsDetectorClient: lib
-	echo "compile client"
+textclient:
 	cd  $(CLIENTDIR) && $(MAKE) FLAGS=$(FLAGS) DESTDIR=$(BINDIR)  LIBDIR=$(LIBDIR) LIBS=$(LDFLAG) INCLUDES=$(INCLUDES)
 
 slsReceiver: lib
-	echo "compile receiver"
 	cd  $(RECEIVERDIR) && $(MAKE)  FLAGS=$(FLAGS) DESTDIR=$(BINDIR) LIBDIR=$(LIBDIR)  LIBS=$(LDFLAG) INCLUDES=$(INCLUDES)
 
 
+receiver: slsReceiver
+
 slsDetectorGUI: lib
 	echo $(LDFLAG)
-	cd  $(GUIDIR) && $(MAKE)  FLAGS=$(FLAGS) LDFLAG=$(LDFLAG) DESTDIR=$(BINDIR) LIBDIR=$(LIBDIR) INCLUDES=$(INCLUDES)
+	cd  $(GUIDIR) && $(MAKE)  FLAGS=$(FLAGS) LDFLAG='-L$(LIBDIR) -lSlsDetector' DESTDIR=$(BINDIR) LIBDIR=$(LIBDIR) INCLUDES=$(INCLUDES)
 
 calWiz: 
 	cd  $(CALWIZDIR) && $(MAKE)  FLAGS=$(FLAGS)  LDFLAG=$(LDFLAG) DESTDIR=$(BINDIR) INCLUDES=$(INCLUDES)
@@ -58,11 +60,6 @@ calWiz:
 
 
 gui: slsDetectorGUI
-
-
-
-
-
 
 
 doc:
@@ -95,30 +92,38 @@ clean:
 	cd $(MANDIR) && $(MAKE) clean
 	cd $(DOCDIR) && rm -rf * 
 
-install_lib:
-	cd $(LIBRARYDIR) && $(MAKE) install DESTDIR=$(LIBDIR)
+install_lib: 
+	cd $(LIBRARYDIR) && $(MAKE) install DESTDIR=$(LIBDIR) INCLUDES=$(INCLUDES)
 	cd $(LIBRARYDIR) && $(MAKE) install_inc DESTDIR=$(INCDIR)
 
 
 
-install_client:
-	cd $(CLIENTDIR) && $(MAKE) install DESTDIR=$(BINDIR)
+install_client: textclient slsReceiver
 
+install_gui: gui
 
-
-install:
-	set -e; \
-	. ./configure; \
+confinstall:
 	make conf;\
-	make install_lib;\
-	make install_client ; \
-	make install_gui; \
-	make install_calwiz; \
-	make install_doc; \
-	make install_htmldoc; \
+	make install
+
+install_lib: 
+	make lib;\
+	make textclient; \
+	make slsReceiver; \
+	make doc; \
+	make htmldoc; \
+	cd $(LIBRARYDIR) && $(MAKE) install_inc DESTDIR=$(INCDIR);
+
+install: 
+	make install_lib; \
+	make gui; \
+	make calWiz; \
+	cd $(LIBRARYDIR) && $(MAKE) install_inc DESTDIR=$(INCDIR);
 
 
 conf:
+	set -e; \
+	. ./configure; \
 	@echo "INSTALLROOT is $(INSTALLROOT)"
 	@echo "BINDIR is $(BINDIR)"
 	@echo "LIBDIR is $(LIBDIR)"
@@ -131,28 +136,26 @@ tar:
 
 help:
 	@echo "Targets:"
-	@echo "make all 		compile library, and text client"
+	@echo "make all 		compile library,  text clients, data reciever"
 	@echo "make lib 		compile library"
-	@echo "make slsDetectorClient 	compile slsDetectorClient"
-	@echo "make nonstatic		compile the slsDetectorClient dynamically linking the libraries"
-	@echo "make slsDetectorGUI 	compile slsDetectorGUI - requires a working Qt4 and Qwt installation"
-	@echo "make calWiz 		compile the calibration wizards - requires a working root installation"
+	@echo "make client		compile the slsDetectorClient dynamically linking the libraries"
+	@echo "make sclient 		compile slsDetectorClient statically linking the libraries"
+	@echo "make receiver		compile the slsReciever dynamically linking the libraries"
+	@echo "make gui			compile slsDetectorGUI - requires a working Qt4 and Qwt installation"
+	@echo "make calWiz 		compile the calibration wizards - requires a working Root installation"
 	@echo "make doc			compile pdf documentation"
-	@echo "make htmldoc			compile html documentation"
-	@echo ""
-	@echo "conf 			list the install variables"
-	@echo "make install_client     	install slsDetectorClient"
-	@echo "make install_lib       	install detector library and include files"
-	@echo "make install            	install library, include files, slsDetectorClient"
-	@echo "make install_libdoc    	install library documentaion"
-	@echo "make install_clientdoc  	install mythenClient documentation"
-	@echo "make install_doc        	install all documentation"
+	@echo "make htmldoc		compile html (and pdf) documentation"
+	@echo "make install_lib         installs the libraries, the text clients, the documentation and the includes for the API"
+	@echo "make install             installs all software, including the gui, the cal wizards and the includes for the API"
+	@echo "make confinstall         installs all software, including the gui, the cal wizards and the includes for the API, prompting for the install paths"
 	@echo "make clean              	remove object files and executables"
 	@echo "make help               	lists possible targets"
+	@echo "make tar                 makes a compressed tar of the software package"
+	@echo ""
 	@echo ""
 	@echo "Variables -  to change them run <source configure> :"
-	@echo "INSTALLROOT=<yourdir>:    installation root dir, default /usr/local"
-	@echo "BINDIR=<yourbin>:          binary installation dir below INSTALLROOT, default bin"
-	@echo "LIBDIR=<yourlib>:          library installation dir below INSTALLROOT, default lib"
-	@echo "INCDIR=<yourincludes>:     header installation dir below INSTALLROOT, default include/slsdetector"
-	@echo "DOCDIR=<yourdoc>:          documentation installation dir below INSTALLROOT, default share/doc"
+	@echo "INSTALLROOT=<yourdir>:    installation root di	r, default $PWD"
+	@echo "BINDIR=<yourbin>:         binary installation dir below INSTALLROOT, default bin"
+	@echo "LIBDIR=<yourlib>:         library installation dir below INSTALLROOT, default lib"
+	@echo "INCDIR=<yourincludes>:    header installation dir below INSTALLROOT, default include"
+	@echo "DOCDIR=<yourdoc>:         documentation installation dir below INSTALLROOT, default doc"

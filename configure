@@ -1,6 +1,6 @@
 ##!/bin/bash
 
-: ${INSTALLROOT="/usr/local/"}
+: ${INSTALLROOT=$PWD}
 read -p "Installation directory [default:\"$INSTALLROOT\"]:" -e t3
 if [ -z "$t3" ]
 then
@@ -15,20 +15,20 @@ export INSTALLROOT
 read -p "Binaries directory [default:\"$BINDIR\"]:" -e t4
 if [ -z "$t4" ]
 then
-echo
+	BINDIR=$INSTALLROOT/$BINDIR
 else
-	BINDIR=$t4
+	BINDIR=$INSTALLROOT/$t4
 fi
 echo "BINDIR will be  \"$BINDIR\""	
 export BINDIR
 
-: ${LIBDIR="lib"}
+: ${LIBDIR="bin"}
 read -p "Libraries directory [default:\"$LIBDIR\"]:" -e t5
 if [ -z "$t5" ]
 then
-echo
+	LIBDIR=$INSTALLROOT/$LIBDIR
 else
-	LIBDIR=$t5
+	LIBDIR=$INSTALLROOT/$t5
 fi	
 echo "LIBDIR will be  \"$LIBDIR\""	
 export LIBDIR
@@ -37,9 +37,9 @@ export LIBDIR
 read -p "Includes directory [default:\"$INCDIR\"]:" -e t6
 if [ -z "$t6" ]
 then
-echo
+	INCDIR=$INSTALLROOT/$INCDIR
 else
-	INCDIR=$t6
+	INCDIR=$INSTALLROOT/$t6
 fi	
 echo "INCDIR will be  \"$INCDIR\""	
 export INCDIR
@@ -48,9 +48,9 @@ export INCDIR
 read -p "Documentation directory [default:\"$DOCDIR\"]:" -e t7
 if [ -z "$t7" ]
 then
-echo
+	DOCDIR=$INSTALLROOT/$DOCDIR
 else	
-	DOCDIR=$t7
+	DOCDIR=$INSTALLROOT/$t7
 fi
 echo "DOCDIR will be  \"$DOCDIR\""
 export DOCDIR

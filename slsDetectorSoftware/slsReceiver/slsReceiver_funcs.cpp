@@ -13,7 +13,7 @@
 using namespace std;
 
 
-slsReceiverFuncs::slsReceiverFuncs(MySocketTCP *&mySocket,string const fname,int &success):
+slsReceiverFuncs::slsReceiverFuncs(MySocketTCP *&mySocket,string const fname,int &success, bool shortfname):
 		socket(mySocket),
 		ret(OK),
 		lockStatus(0){
@@ -89,7 +89,7 @@ slsReceiverFuncs::slsReceiverFuncs(MySocketTCP *&mySocket,string const fname,int
 			strcpy(mess,"dummy message");
 
 			function_table();
-			slsReceiverList =  new slsReceiverFunctionList();
+			slsReceiverList =  new slsReceiverFunctionList(shortfname);
 
 			success = OK;
 		}

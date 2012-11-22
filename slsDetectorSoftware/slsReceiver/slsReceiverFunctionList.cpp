@@ -23,7 +23,8 @@ using namespace std;
 FILE* slsReceiverFunctionList::sfilefd(NULL);
 int slsReceiverFunctionList::listening_thread_running(0);
 
-slsReceiverFunctionList::slsReceiverFunctionList():
+slsReceiverFunctionList::slsReceiverFunctionList(bool shortfname):
+				shortFileName(shortfname),
 				fileIndex(0),
 				frameIndexNeeded(true),
 				framesCaught(0),
@@ -38,6 +39,7 @@ slsReceiverFunctionList::slsReceiverFunctionList():
 				server_port(DEFAULT_UDP_PORT)
 {
 	strcpy(savefilename,"");
+	strcpy(actualfilename,"");
 	strcpy(filePath,"");
 	strcpy(fileName,"run");
 	strcpy(buffer,"");
@@ -195,6 +197,10 @@ int slsReceiverFunctionList::startListening(){
 	else
 		sprintf(savefilename, "%s/%s_f%012d_%d.raw", filePath,fileName,framesCaught,fileIndex);
 
+	if(!shortFileName)
+		strcpy(actualfilename,savefilename);
+	else
+		sprintf(actualfilename, "%s/%s_%d_%012d.raw", filePath,fileName,fileIndex, framesCaught);
 
 	// A do/while(FALSE) loop is used to make error cleanup easier.  The
 	//  close() of each of the socket descriptors is only done once at the
@@ -206,8 +212,8 @@ int slsReceiverFunctionList::startListening(){
 			break;
 		}
 
-		sfilefd = fopen((const char *) (savefilename), "w");
-		cout << "Saving to " << savefilename << ". Ready! " << endl;
+		sfilefd = fopen((const char *) (actualfilename), "w");
+		cout << "Saving to " << actualfilename << ". Ready! " << endl;
 
 		while (listening_thread_running) {
 
@@ -221,10 +227,15 @@ int slsReceiverFunctionList::startListening(){
 				else
 					sprintf(savefilename, "%s/%s_f%012d_%d.raw", filePath,fileName,framesCaught,fileIndex);
 
-				cout << "saving to " << savefilename << "\t\t"
+				if(!shortFileName)
+					strcpy(actualfilename,savefilename);
+				else
+					sprintf(actualfilename, "%s/%s_%d_%012d.raw", filePath,fileName,fileIndex, framesCaught);
+
+				cout << "saving to " << actualfilename << "\t\t"
 						"packet loss " << ((currframenum-prevframenum-(2*framesInFile))/(double)(2*framesInFile))*100.000 << "%\t\t"
 						"framenum " << currframenum << endl;
-				sfilefd = fopen((const char *) (savefilename), "w");
+				sfilefd = fopen((const char *) (actualfilename), "w");
 				prevframenum=currframenum;
 				framesInFile = 0;
 			}

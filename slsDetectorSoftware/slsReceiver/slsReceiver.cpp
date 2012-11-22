@@ -15,16 +15,24 @@ int main(int argc, char *argv[])
 	int ret = slsDetectorDefs::OK;
 	MySocketTCP *socket = NULL;
 	string fname = "";
+	bool shortfname = false;
 
 	//parse command line for config
-	for(int iarg=2;iarg<argc;iarg++)
-		if(!strcasecmp(argv[iarg-1],"-config"))
+	for(int iarg=1;iarg<argc;iarg++){
+		if(!strcasecmp(argv[iarg],"-config")){
+			if(iarg+1==argc){
+				cout << "no config file name given. Exiting." << endl;
+				return -1;
+			}
 			fname.assign(argv[iarg]);
-
+		}
+		if(!strcasecmp(argv[iarg],"-shortfname"))
+			shortfname = true;
+	}
 
 
 	//reads config file, creates socket, assigns function table
-	slsReceiverFuncs *receiver = new slsReceiverFuncs(socket,fname,ret);
+	slsReceiverFuncs *receiver = new slsReceiverFuncs(socket,fname,ret, shortfname);
 	if(ret==slsDetectorDefs::FAIL)
 		return -1;
 

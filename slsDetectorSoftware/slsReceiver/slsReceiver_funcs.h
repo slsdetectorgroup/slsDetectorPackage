@@ -25,8 +25,9 @@ public:
 	 * @param mySocket tcp socket connecting receiver and client
 	 * @param fname name of config file
 	 * @param success if socket creation was successfull
+	 * @param shortfname true if short file name required
 	 */
-	slsReceiverFuncs(MySocketTCP *&mySocket,string const fname,int &success);
+	slsReceiverFuncs(MySocketTCP *&mySocket,string const fname,int &success, bool shortfname);
 
 	/** Destructor */
 	virtual ~slsReceiverFuncs(){};

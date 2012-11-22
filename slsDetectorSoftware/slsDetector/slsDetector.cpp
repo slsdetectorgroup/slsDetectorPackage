@@ -3454,153 +3454,164 @@ string slsDetector::getLastClientIP() {
 
 
 int slsDetector::setPort(portType index, int num){
-  
 
-  int fnum=F_SET_PORT;
-  int retval;
-  //  uint64_t ut;
-  char mess[100];
-  int ret=FAIL;
-  bool online=false;
-  MySocketTCP *s;
 
-  if (num>1024) {
+	int fnum=F_SET_PORT;
+	int retval;
+	//  uint64_t ut;
+	char mess[100];
+	int ret=FAIL;
+	bool online=false;
+	MySocketTCP *s;
 
-    switch(index) {
-    case CONTROL_PORT:
-      s=controlSocket;
-      retval=thisDetector->controlPort;
+	if (num>1024) {
+
+		switch(index) {
+		case CONTROL_PORT:
+			s=controlSocket;
+			retval=thisDetector->controlPort;
 #ifdef VERBOSE
-      cout << "s="<< s<< endl;
-      cout << thisDetector->controlPort<< " " << " " << thisDetector->stopPort << endl;
+			cout << "s="<< s<< endl;
+			cout << thisDetector->controlPort<< " " << " " << thisDetector->stopPort << endl;
 #endif
-      if (s==NULL) {
-      
+			if (s==NULL) {
+
 #ifdef VERBOSE
-	cout << "s=NULL"<< endl;
-	cout << thisDetector->controlPort<< " " << " " << thisDetector->stopPort << endl;
+				cout << "s=NULL"<< endl;
+				cout << thisDetector->controlPort<< " " << " " << thisDetector->stopPort << endl;
 #endif
-	setTCPSocket("",DEFAULT_PORTNO);
-      }
-      if (controlSocket) {
-	s=controlSocket;
-      } else {
+				setTCPSocket("",DEFAULT_PORTNO);
+			}
+			if (controlSocket) {
+				s=controlSocket;
+			} else {
 #ifdef VERBOSE
-	cout << "still cannot connect!"<< endl;
-	cout << thisDetector->controlPort<< " " << " " << thisDetector->stopPort << endl;
+				cout << "still cannot connect!"<< endl;
+				cout << thisDetector->controlPort<< " " << " " << thisDetector->stopPort << endl;
 #endif
-  
 
+				setTCPSocket("",retval);
+			}
+			online =  (thisDetector->onlineFlag==ONLINE_FLAG);
+			break;
+		case DATA_PORT:
+			s=dataSocket;
+			retval=thisDetector->receiverPort;
+			if(strcmp(thisDetector->receiverIP,"none")){
+				if (s==NULL) {cout<<"s is null"<<endl;setReceiverTCPSocket("",retval);}
+				if (dataSocket){cout<<"datasocket now has value"<<endl; s=dataSocket;}
+				//else {cout<<"datasocket has no value"<<endl; setReceiverTCPSocket("",retval);}
+			}
+			online =  (thisDetector->receiverOnlineFlag==ONLINE_FLAG);
+			cout<<"online:"<<online<<endl;
+			break;
+		case STOP_PORT:
+			s=stopSocket;
+			retval=thisDetector->stopPort;
+			if (s==NULL) setTCPSocket("",-1,DEFAULT_PORTNO+1);
+			if (stopSocket) s=stopSocket;
+			else setTCPSocket("",-1,retval);
+			online =  (thisDetector->onlineFlag==ONLINE_FLAG);
+			break;
+		default:
+			s=NULL;
+			break;
+		}
 
-	setTCPSocket("",retval);
-      }
-      online =  (thisDetector->onlineFlag==ONLINE_FLAG);
-      break;
-    case DATA_PORT:
-      s=dataSocket;
-      retval=thisDetector->receiverPort;
-      if(strcmp(thisDetector->receiverIP,"none")){
-    	  if (s==NULL) setReceiverTCPSocket("",DEFAULT_PORTNO+2);
-    	  if (dataSocket) s=dataSocket;
-    	  else setReceiverTCPSocket("",retval);
-    	  online =  (thisDetector->receiverOnlineFlag==ONLINE_FLAG);
-      }
-      break;
-    case STOP_PORT:
-      s=stopSocket;
-      retval=thisDetector->stopPort;
-      if (s==NULL) setTCPSocket("",-1,DEFAULT_PORTNO+1);
-      if (stopSocket) s=stopSocket;
-      else setTCPSocket("",-1,retval);
-      online =  (thisDetector->onlineFlag==ONLINE_FLAG);
-      break;
-    default:
-      s=NULL;
-    }
+		//send to current port to change port
+		if (online) {
+			if (s) {
+				if  (s->Connect()>=0) {
+					s->SendDataOnly(&fnum,sizeof(fnum));
+					s->SendDataOnly(&index,sizeof(index));
+					s->SendDataOnly(&num,sizeof(num));
+					s->ReceiveDataOnly(&ret,sizeof(ret));
+					if (ret==FAIL) {
+						s->ReceiveDataOnly(mess,sizeof(mess));
+						std::cout<< "Detector returned error: " << mess << std::endl;
+					} else {
+						s->ReceiveDataOnly(&retval,sizeof(retval));
+					}
+					s->Disconnect();
+				}
+			}
+		}
 
-    if (online) {
-      if (s) {
-	if  (s->Connect()>=0) {
-	  s->SendDataOnly(&fnum,sizeof(fnum));
-	  s->SendDataOnly(&index,sizeof(index));
-	  s->SendDataOnly(&num,sizeof(num));
-	  s->ReceiveDataOnly(&ret,sizeof(ret));
-	  if (ret==FAIL) {
-	    s->ReceiveDataOnly(mess,sizeof(mess));
-	    std::cout<< "Detector returned error: " << mess << std::endl;
-	  } else {
-	    s->ReceiveDataOnly(&retval,sizeof(retval)); 
-	  } 
-	  s->Disconnect();
+		if (ret!=FAIL) {
+			switch(index) {
+			case CONTROL_PORT:
+				thisDetector->controlPort=retval;
+				break;
+			case DATA_PORT:
+				if(thisDetector->receiverOnlineFlag==ONLINE_FLAG){
+					cout<<"online,ret=ok"<<endl;
+					thisDetector->receiverPort=retval;
+					cout<<"first trying to set online:"<<setReceiverOnline(ONLINE_FLAG)<<endl;
+					cout<<"Setting up Receiver"<<endl;
+					setReceiverIP(thisDetector->receiverIP);
+				}
+				break;
+			case STOP_PORT:
+				thisDetector->stopPort=retval;
+				break;
+			default:
+				break;
+			}
+#ifdef VERBOSE
+			cout << "ret is ok" << endl;
+#endif
+
+		} else {
+			switch(index) {
+			case CONTROL_PORT:
+				thisDetector->controlPort=num;
+				break;
+			case DATA_PORT:
+				if(thisDetector->receiverOnlineFlag==ONLINE_FLAG){
+					cout<<"online,ret=fail"<<endl;
+					thisDetector->receiverPort=retval;
+				}else{
+					cout<<"not online,ret=fail"<<endl;
+					thisDetector->receiverPort=num;
+					if(strcmp(thisDetector->receiverIP,"none")){
+						cout<<"ip not none, Setting up Receiver"<<endl;
+						setReceiverIP(thisDetector->receiverIP);
+					}
+				}
+				break;
+			case STOP_PORT:
+				thisDetector->stopPort=num;
+				break;
+			default:
+				break;
+			}
+		}
 	}
-      } 
-    }
-    if (ret!=FAIL) {
-      
-      switch(index) {
-      case CONTROL_PORT:
-	thisDetector->controlPort=retval;
-	break;
-      case DATA_PORT:
-	thisDetector->receiverPort=retval;
-	break;
-      case STOP_PORT:
-	thisDetector->stopPort=retval;
-	break;
-      default:
-	;
-      }
-    
-      
+	switch(index) {
+	case CONTROL_PORT:
+		retval=thisDetector->controlPort;
+		break;
+	case DATA_PORT:
+		retval=thisDetector->receiverPort;
+		break;
+	case STOP_PORT:
+		retval=thisDetector->stopPort;
+		break;
+	default:
+		retval=-1;
+		break;
+	}
+
+
+
 #ifdef VERBOSE
-      cout << "ret is ok" << endl;
+	cout << thisDetector->controlPort<< " " << thisDetector->receiverPort << " " << thisDetector->stopPort << endl;
 #endif 
-      
-    } else {
-      switch(index) {
-      case CONTROL_PORT:
-	thisDetector->controlPort=num;
-	break;
-      case DATA_PORT:
-    	 if(thisDetector->receiverOnlineFlag==ONLINE_FLAG)
-    	 	 thisDetector->receiverPort=retval;
-    	 else
-    		 thisDetector->receiverPort=num;
-
-	break;
-      case STOP_PORT:
-	thisDetector->stopPort=num;
-	break;
-      default:
-	;
-      }
-    }
-  }
-  switch(index) {
-  case CONTROL_PORT:
-    retval=thisDetector->controlPort;
-    break;
-  case DATA_PORT:
-    retval=thisDetector->receiverPort;
-    break;
-  case STOP_PORT:
-    retval=thisDetector->stopPort;
-    break;
-  default:
-    retval=-1;
-  }
-    
-  // setTCPSocket();
-    
-    
-#ifdef VERBOSE
-  cout << thisDetector->controlPort<< " " << thisDetector->receiverPort << " " << thisDetector->stopPort << endl;
-#endif 
-  
 
 
-  return retval;
-  
+
+	return retval;
+
 };
 
 

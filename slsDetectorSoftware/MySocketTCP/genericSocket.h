@@ -67,6 +67,8 @@ class sockaddr_in;
 
 #include <math.h>
 #include <errno.h>
+#include <stdio.h>
+
 using namespace std;
 
 #define DEFAULT_PACKET_SIZE 1286

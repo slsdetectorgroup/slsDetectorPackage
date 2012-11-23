@@ -42,7 +42,7 @@ public:
 	int M_nofunc();
 
 	/** Close File */
-	//static void closeFile(int p);
+	static void closeFile(int p);
 
 	/** Set File name without frame index, file index and extension */
 	int set_file_name();
@@ -96,11 +96,11 @@ public:
 	/** Execute command */
 	int	exec_command();
 
-private:
+//private:
 
 	/** Socket */
 	MySocketTCP*& socket;
-
+private:
 	/** slsReceiverFunctionList object */
 	slsReceiverFunctionList *slsReceiverList;
 
@@ -118,6 +118,9 @@ private:
 
 	/** Lock Status if server locked to a client */
 	int lockStatus;
+
+	static int file_des;
+	static int socketDescriptor;
 
 };
 

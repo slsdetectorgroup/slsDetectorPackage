@@ -5,15 +5,24 @@
 #include "MySocketTCP.h"
 #include "slsReceiver_funcs.h"
 
+
+#include <signal.h>	//SIGINT
+
 #include <iostream>
 using namespace std;
 
+//static MySocketTCP *mysocket = NULL;
 
+void closeFile(int p){cout<<"in closefile in receiver"<<endl;
+	slsReceiverFuncs::closeFile(p);
+	//mysocket->Disconnect();
+	exit(0);
+}
 
 int main(int argc, char *argv[])
 {
 	int ret = slsDetectorDefs::OK;
-	MySocketTCP *socket = NULL;
+	MySocketTCP *mysocket = NULL;
 	string fname = "";
 	bool shortfname = false;
 
@@ -33,9 +42,13 @@ int main(int argc, char *argv[])
 
 
 	//reads config file, creates socket, assigns function table
-	slsReceiverFuncs *receiver = new slsReceiverFuncs(socket,fname,ret, shortfname);
+	slsReceiverFuncs *receiver = new slsReceiverFuncs(mysocket,fname,ret, shortfname);
 	if(ret==slsDetectorDefs::FAIL)
 		return -1;
+
+
+	//Catch signal SIGINT to close files properly
+	signal(SIGINT,closeFile);
 
 
 #ifdef VERBOSE
@@ -51,7 +64,7 @@ int main(int argc, char *argv[])
 #ifdef VERY_VERBOSE
 		cout << "Waiting for client call" << endl;
 #endif
-		if(socket->Connect()>=0){
+		if(mysocket->Connect()>=0){
 #ifdef VERY_VERBOSE
 		cout << "Conenction accepted" << endl;
 #endif
@@ -59,14 +72,14 @@ int main(int argc, char *argv[])
 #ifdef VERY_VERBOSE
 		cout << "function executed" << endl;
 #endif
-		socket->Disconnect();
+		mysocket->Disconnect();
 #ifdef VERY_VERBOSE
 			cout << "connection closed" << endl;
 #endif
 		}
 	}
 
-	delete socket;
+	delete mysocket;
 	cout << "Goodbye!" << endl;
 
 	return 0;

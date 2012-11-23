@@ -106,18 +106,6 @@ bool slsReceiverFunctionList::resetTotalFramesCaught(bool i){
 
 
 
-void slsReceiverFunctionList::closeFile(int p){
-	if(listening_thread_running){
-		cout << "Closing file and Exiting." << endl;
-		fclose(sfilefd);
-	}
-	//exit(0);
-}
-
-
-
-
-
 int slsReceiverFunctionList::startReceiver(){
 #ifdef VERBOSE
 	cout << "Starting Receiver" << endl;
@@ -187,9 +175,6 @@ int slsReceiverFunctionList::startListening(){
 	startFrameIndex=-1;
 	frameIndex=0;
 	shortFileNameIndex=1;
-
-	//Catch signal SIGINT to close files properly
-	signal(SIGINT,closeFile);
 
 
 	//create file name
@@ -280,6 +265,7 @@ int slsReceiverFunctionList::startListening(){
 	//close file
 	fclose(sfilefd);
 #ifdef VERBOSE
+	cout << "listening_thread_running:" << listening_thread_running << endl;
 	cout << "sfield:" << (int)sfilefd << endl;
 #endif
 

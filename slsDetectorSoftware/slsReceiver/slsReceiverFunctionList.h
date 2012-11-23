@@ -104,7 +104,7 @@ public:
 	/**
 	 * Close File
 	 */
-	static void closeFile(int p);
+	//static void closeFile(int p);
 
 	/**
 	 * Starts Receiver - starts to listen for packets
@@ -186,7 +186,7 @@ private:
 	int framesInFile;
 
 	/** if the listening thread is running*/
-	static int listening_thread_running;
+	//static int listening_thread_running;
 
 	/** thread listening to packets */
 	pthread_t   listening_thread;
@@ -195,7 +195,7 @@ private:
 	runStatus status;
 
 	/** File Descriptor */
-	static FILE *sfilefd;
+	//static FILE *sfilefd;
 
 	/** Receiver buffer */
 	char buffer[BUFFER_SIZE];
@@ -206,6 +206,12 @@ private:
 	/** Server UDP Port*/
 	int server_port;
 
+public:
+	/** File Descriptor */
+	static FILE *sfilefd;
+
+	/** if the listening thread is running*/
+	static int listening_thread_running;
 };
 /*
 

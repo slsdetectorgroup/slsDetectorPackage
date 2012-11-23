@@ -189,7 +189,7 @@ protocol(p), is_a_server(0), socketDescriptor(-1),file_des(-1), packet_size(DEFA
 
 
      if(bind(socketDescriptor,(struct sockaddr *) &serverAddress,sizeof(serverAddress))<0){
-       cerr << "Can not bind socket "<<endl;
+       cerr << "Can not bind socket "<< endl;
        socketDescriptor=-1;
        return;
      }
@@ -349,7 +349,6 @@ protocol(p), is_a_server(0), socketDescriptor(-1),file_des(-1), packet_size(DEFA
     	 }
 
      }
-
      return file_des;
      }
 
@@ -357,6 +356,9 @@ protocol(p), is_a_server(0), socketDescriptor(-1),file_des(-1), packet_size(DEFA
     	 return ntohs(serverAddress.sin_port);
      }
 
+     int getFileDes(){return file_des;};
+
+     int getsocketDescriptor(){return socketDescriptor;};
 
      /** @short free connection */
      void Disconnect(){

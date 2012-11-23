@@ -6,7 +6,6 @@
 #include "slsReceiver_funcs.h"
 #include "slsReceiverFunctionList.h"
 
-//#include <signal.h>	//SIGINT
 
 #include <iostream>
 #include <string>
@@ -17,7 +16,8 @@ using namespace std;
 
 
 
-
+int slsReceiverFuncs::file_des(-1);
+int slsReceiverFuncs::socketDescriptor(-1);
 
 slsReceiverFuncs::slsReceiverFuncs(MySocketTCP *&mySocket,string const fname,int &success, bool shortfname):
 		socket(mySocket),
@@ -97,8 +97,9 @@ slsReceiverFuncs::slsReceiverFuncs(MySocketTCP *&mySocket,string const fname,int
 			function_table();
 			slsReceiverList =  new slsReceiverFunctionList(shortfname);
 
-			//Catch signal SIGINT to close files properly
-			//signal(SIGINT,closeFile);
+
+			file_des=socket->getFileDes();
+			socketDescriptor=socket->getsocketDescriptor();
 
 			success = OK;
 		}
@@ -174,7 +175,6 @@ int slsReceiverFuncs::decode_function(){
 	if (ret==FAIL)
 		cout <<  "Error executing the function = " << fnum << endl;
 
-
 	return ret;
 }
 
@@ -198,12 +198,22 @@ int slsReceiverFuncs::M_nofunc(){
 
 
 
-/*
 void slsReceiverFuncs::closeFile(int p){
-	//if(socket)
-	slsReceiverFunctionList::closeFile();
+	char *buf;
+	char buffer[1];
+
+
+	if(slsReceiverFunctionList::listening_thread_running)
+		fclose(slsReceiverFunctionList::sfilefd);
+
+
+	close(file_des);
+	shutdown(socketDescriptor,SHUT_RDWR);
+	close(socketDescriptor);
+
 }
-*/
+
+
 
 
 int slsReceiverFuncs::set_file_name() {
@@ -588,9 +598,9 @@ int	slsReceiverFuncs::read_frame(){
 		int count=0;
 		do{
 			if(count>0){
-				cout << endl << "unmatching: index:" << index <<" index2:" << index2 << endl;
+				cout << endl << "unmatching/wrong order: index:" << index <<" index2:" << index2 << endl;
 				if(count>10){
-					strcpy(mess,"unmatching index. could not read frame.\n");
+					strcpy(mess,"unmatching index/wrong order. could not read frame.\n");
 					ret=FAIL;
 					break;
 				}
@@ -601,7 +611,7 @@ int	slsReceiverFuncs::read_frame(){
 			index2= (int)(*((int*)retval2));
 			count++;
 
-		}while((index%2)==(index2%2));
+		}while(((index%2)==(index2%2))||(index+1!=index2));
 
 		fIndex=((int)(*((int*)retval)) - startIndex)/2;
 		arg[0]=fIndex-1;
@@ -750,6 +760,7 @@ int slsReceiverFuncs::set_port() {
 			socket->Disconnect();
 			delete socket;
 			socket = mySocket;
+			file_des=socket->getFileDes();
 		}
 	}
 

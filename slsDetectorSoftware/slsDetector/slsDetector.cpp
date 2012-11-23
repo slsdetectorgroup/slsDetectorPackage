@@ -520,11 +520,13 @@ int slsDetector::initializeDetectorSize(detectorType type) {
     thisDetector->timerValue[MEASUREMENTS_NUMBER]=1;
     thisDetector->timerValue[CYCLES_NUMBER]=1;
      
+    thisDetector->dataBytes=thisDetector->nMod[X]*thisDetector->nMod[Y]*thisDetector->nChips*thisDetector->nChans*thisDetector->dynamicRange/8;
 
-    if (thisDetector->dynamicRange==24 || thisDetector->timerValue[PROBES_NUMBER]>0)
-      thisDetector->dataBytes=thisDetector->nMod[X]*thisDetector->nMod[Y]*thisDetector->nChips*thisDetector->nChans*4;
-    else
-      thisDetector->dataBytes=thisDetector->nMod[X]*thisDetector->nMod[Y]*thisDetector->nChips*thisDetector->nChans*thisDetector->dynamicRange/8;
+    if(thisDetector->myDetectorType==MYTHEN){
+    	if (thisDetector->dynamicRange==24 || thisDetector->timerValue[PROBES_NUMBER]>0)
+    		thisDetector->dataBytes=thisDetector->nMod[X]*thisDetector->nMod[Y]*thisDetector->nChips*thisDetector->nChans*4;
+    }
+
     /** set trimDsdir, calDir to default to home directory*/
     strcpy(thisDetector->settingsDir,getenv("HOME"));
     strcpy(thisDetector->calDir,getenv("HOME"));
@@ -1338,11 +1340,13 @@ int slsDetector::setNumberOfModules(int n, dimension d){
     if (dr==24)
       dr=32;
       
-    if (thisDetector->timerValue[PROBES_NUMBER]==0) {
-      thisDetector->dataBytes=thisDetector->nMod[X]*thisDetector->nMod[Y]*thisDetector->nChips*thisDetector->nChans*dr/8;
-    } else {
-      thisDetector->dataBytes=thisDetector->nMod[X]*thisDetector->nMod[Y]*thisDetector->nChips*thisDetector->nChans*4;
-    }
+    thisDetector->dataBytes=thisDetector->nMod[X]*thisDetector->nMod[Y]*thisDetector->nChips*thisDetector->nChans*dr/8;
+
+     if(thisDetector->myDetectorType==MYTHEN){
+    	    if (thisDetector->timerValue[PROBES_NUMBER]!=0)
+     		thisDetector->dataBytes=thisDetector->nMod[X]*thisDetector->nMod[Y]*thisDetector->nChips*thisDetector->nChans*4;
+     }
+
       
 #ifdef VERBOSE
     std::cout<< "Data size is " << thisDetector->dataBytes << std::endl;
@@ -3824,12 +3828,15 @@ int slsDetector::setDynamicRange(int n){
     
   if (ret!=FAIL && retval>0) {
     /* checking the number of probes to chose the data size */
-    if (thisDetector->timerValue[PROBES_NUMBER]==0) {
-      thisDetector->dataBytes=thisDetector->nMod[X]*thisDetector->nMod[Y]*thisDetector->nChips*thisDetector->nChans*retval/8;
-    } else {
-      thisDetector->dataBytes=thisDetector->nMod[X]*thisDetector->nMod[Y]*thisDetector->nChips*thisDetector->nChans*4;
-    }
-      
+
+	  thisDetector->dataBytes=thisDetector->nMod[X]*thisDetector->nMod[Y]*thisDetector->nChips*thisDetector->nChans*retval/8;
+
+	  if(thisDetector->myDetectorType==MYTHEN){
+		  if (thisDetector->timerValue[PROBES_NUMBER]!=0)
+			  thisDetector->dataBytes=thisDetector->nMod[X]*thisDetector->nMod[Y]*thisDetector->nChips*thisDetector->nChans*4;
+	  }
+
+
     if (retval==32)
       thisDetector->dynamicRange=24;
     else 
@@ -5654,7 +5661,6 @@ int slsDetector::resetFramesCaught(int index){
 
 
 int* slsDetector::readFrameFromReceiver(char* fName, int &fIndex){
-	//cout<<"databytes:"<<thisDetector->dataBytes<<" headerlength:"<<HEADERLENGTH<<endl;
 	int fnum=F_READ_FRAME;
 	int nel=(thisDetector->dataBytes+HEADERLENGTH)/sizeof(int);//2572/
 	int* retval=new int[nel];

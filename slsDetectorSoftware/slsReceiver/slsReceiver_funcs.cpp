@@ -611,7 +611,7 @@ int	slsReceiverFuncs::read_frame(){
 			index2= (int)(*((int*)retval2));
 			count++;
 
-		}while(((index%2)==(index2%2))||(index+1!=index2));
+		}while(((index%2)==(index2%2))||(index+1==index2));
 
 		fIndex=((int)(*((int*)retval)) - startIndex)/2;
 		arg[0]=fIndex-1;

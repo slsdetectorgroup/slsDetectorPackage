@@ -129,28 +129,29 @@ void qActionsWidget::SetScriptFile(){
 	cout << "Setting\taction:" << id << "\tscript:" << fName.toAscii().constData() << endl;
 #endif
 	bool set = false;
+	struct stat st_buf;
 
 	//blank
-	if(fName.isEmpty())		set = true;
-	else if(!fName.compare("none"))	set = true;
+	if(fName.isEmpty())
+		set = true;
+	else if(!fName.compare("none"))
+		set = true;
 	//not blank
 	else{
-		QString file = dispScript->text().section('/',-1);
-		//is a file
-		if(file.contains('.')){
-			//check if it exists and set the script file
-			if(QFile::exists(fName)) set = true;
-			//if the file doesnt exist, set it to what it was before
-			else{
-				qDefs::Message(qDefs::WARNING,"The script file entered does not exist","ActionsWidget");
-				dispScript->setText(QString(myDet->getActionScript(id).c_str()));
-			}
-		}//not a file, set it to what it was before
-		else {
+		//path doesnt exist
+		if(stat(fName.toAscii().constData(),&st_buf)){
+			qDefs::Message(qDefs::WARNING,"The script file entered does not exist","ActionsWidget");
+			dispScript->setText(QString(myDet->getActionScript(id).c_str()));
+		}
+		//if its not a file
+		else if (!S_ISREG (st_buf.st_mode)) {
 			qDefs::Message(qDefs::WARNING,"The script file path entered is not a file","ActionsWidget");
 			dispScript->setText(QString(myDet->getActionScript(id).c_str()));
 		}
+		else
+			set=true;
 	}
+
 
 	//if blank or valid file
 	if(set){

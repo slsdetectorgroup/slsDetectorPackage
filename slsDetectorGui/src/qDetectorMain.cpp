@@ -285,12 +285,24 @@ void qDetectorMain::LoadConfigFile(const string fName){
 #ifdef VERBOSE
 	cout << "Loading config file at start up:" << fName << endl;
 #endif
-	QString file = QString(fName.c_str());//.section('/',-1);
-	if((file.contains('.'))&&(QFile::exists(file))){
-		if(myDet->readConfigurationFile(fName)!=slsDetectorDefs::FAIL)
-			qDefs::Message(qDefs::INFORMATION,"<nobr>The Configuration Parameters have been loaded successfully at start up.</nobr>","Main");
-		else qDefs::Message(qDefs::WARNING,string("<nobr>Could not load the Configuration Parameters at start up from file:</nobr><br><nobr>")+fName,"Main");
-	}else qDefs::Message(qDefs::WARNING,string("<nobr>Start up configuration failed to load. The following file does not exist:</nobr><br><nobr>")+fName,"Main");
+	struct stat st_buf;
+	QString file = QString(fName.c_str());
+
+	//path doesnt exist
+	if(stat(fName.c_str(),&st_buf))
+		qDefs::Message(qDefs::WARNING,string("<nobr>Start up configuration failed to load. The following file does not exist:</nobr><br><nobr>")+fName,"Main");
+
+	//not a file
+	else if (!S_ISREG (st_buf.st_mode))
+		qDefs::Message(qDefs::WARNING,string("<nobr>Start up configuration failed to load. The following file is not a recognized file format:</nobr><br><nobr>")+fName,"Main");
+
+	//could not load config file
+	else if(myDet->readConfigurationFile(fName)==slsDetectorDefs::FAIL)
+		qDefs::Message(qDefs::INFORMATION,"<nobr>The Configuration Parameters have been loaded successfully at start up.</nobr>","Main");
+
+	//successful
+	else
+		qDefs::Message(qDefs::INFORMATION,"<nobr>The Configuration Parameters have been loaded successfully at start up.</nobr>","Main");
 }
 
 

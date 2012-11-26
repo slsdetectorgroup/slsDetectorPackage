@@ -445,11 +445,12 @@ void qScanWidget::SetScriptFile(){
 #ifdef VERYVERBOSE
 	cout << "Entering SetScriptFile()" << endl;
 #endif
-	QString fName = dispScript->text();bool set = false;
+	QString fName = dispScript->text();
 #ifdef VERBOSE
 	cout << "Setting\tscan:" << id << "\tscript:" << fName.toAscii().constData() << endl;
 #endif
-
+	bool set = false;
+	struct stat st_buf;
 
 	//blank
 	if(fName.isEmpty())
@@ -466,22 +467,18 @@ void qScanWidget::SetScriptFile(){
 	}
 	//not blank and custom script mode
 	if(!set){
-		QString file = dispScript->text().section('/',-1);
-		//is a file
-		if(file.contains('.')){
-			//check if it exists and set the script file
-			if(QFile::exists(fName))
-				set = true;
-			//if the file doesnt exist, set it to what it was before
-			else{
-				qDefs::Message(qDefs::WARNING,"The script file entered does not exist","ScanWidget");
-				dispScript->setText(QString(myDet->getScanScript(id).c_str()));
-			}
-		}//not a file, set it to what it was before
-		else {
+		//path doesnt exist
+		if(stat(fName.toAscii().constData(),&st_buf)){
+			qDefs::Message(qDefs::WARNING,"The script file entered does not exist","ScanWidget");
+			dispScript->setText(QString(myDet->getScanScript(id).c_str()));
+		}
+		//if its not a file
+		else if (!S_ISREG (st_buf.st_mode)) {
 			qDefs::Message(qDefs::WARNING,"The script file path entered is not a file","ScanWidget");
 			dispScript->setText(QString(myDet->getScanScript(id).c_str()));
 		}
+		else
+			set=true;
 	}
 
 	//if blank or valid file
@@ -974,8 +971,10 @@ void qScanWidget::SetFileSteps(){
 	cout << "Setting\tscan:" << id << "\tfile\t:" << fName.toAscii().constData() << endl;
 #endif
 	bool set = false;
+	struct stat st_buf;
 
-	if(fName.isEmpty()){	//blank
+	//blank
+	if(fName.isEmpty()){
 #ifdef VERBOSE
 		cout << "Empty file" << endl;
 #endif
@@ -983,21 +982,23 @@ void qScanWidget::SetFileSteps(){
 		radioFile->setText("Values from File:*");
 		QString errTip = fileTip + QString("<br><br><nobr><font color=\"red\">The file path is empty.</font></nobr>");;
 		radioFile->setToolTip(errTip);dispFile->setToolTip(errTip);btnFile->setToolTip(errTip);
-	}else{
+	}
+	//not a blank
+	else{
 		QString file = dispFile->text().section('/',-1);
-		if(file.contains('.')){	//is a file
-			//check if it exists and set the script file
-			if(QFile::exists(fName)) set = true;
-			else{//if the file doesnt exist, set it to what it was before
+
+		//path doesnt exist
+		if(stat(file.toAscii().constData(),&st_buf)){
 #ifdef VERBOSE
-				cout << "The file entered does not exist." << endl;
+			cout << "The file entered does not exist." << endl;
 #endif
-				radioFile->setPalette(red);
-				radioFile->setText("Values from File:*");
-				QString errTip = fileTip + QString("<br><br><nobr><font color=\"red\">The file entered does not exist.</font></nobr>");
-				radioFile->setToolTip(errTip);dispFile->setToolTip(errTip);btnFile->setToolTip(errTip);
-			}
-		} else {//not a file, set it to what it was before
+			radioFile->setPalette(red);
+			radioFile->setText("Values from File:*");
+			QString errTip = fileTip + QString("<br><br><nobr><font color=\"red\">The file entered does not exist.</font></nobr>");
+			radioFile->setToolTip(errTip);dispFile->setToolTip(errTip);btnFile->setToolTip(errTip);
+		}
+		//if its not a file
+		else if (!S_ISREG (st_buf.st_mode)) {
 #ifdef VERBOSE
 			cout << "The file path entered is not a file." << endl;
 #endif
@@ -1006,6 +1007,8 @@ void qScanWidget::SetFileSteps(){
 			QString errTip = fileTip + QString("<br><br><nobr><font color=\"red\">The file path entered is not a file.</font></nobr>");
 			radioFile->setToolTip(errTip);	dispFile->setToolTip(errTip);btnFile->setToolTip(errTip);
 		}
+		else
+			set = true;
 	}
 
 	//if valid file

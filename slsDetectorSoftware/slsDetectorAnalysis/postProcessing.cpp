@@ -414,8 +414,10 @@ void* postProcessing::processData(int delflag) {
 				int* receiverData =  readFrameFromReceiver(currentfName,currentfIndex);
 				pthread_mutex_unlock(&mg);
 
-				if(!receiverData)
+				if(!receiverData){
+					cout<<"****Detector returned NULL***"<<endl;
 					return 0;
+				}
 				fdata=decodeData(receiverData);
 				delete [] receiverData;
 				if(fdata){

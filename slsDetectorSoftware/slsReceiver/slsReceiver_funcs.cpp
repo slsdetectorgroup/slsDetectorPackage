@@ -564,15 +564,21 @@ int	slsReceiverFuncs::reset_frames_caught(){
 
 int	slsReceiverFuncs::read_frame(){
 	ret=OK;
-	int i,startIndex=-1;
-
-	char* retval=NULL;
-	char buffer[1286*2];
+	int nel = BUFFER_SIZE/(sizeof(int));
 	char fName[MAX_STR_LENGTH];
-	int arg[2];
-	arg[1]=1;//do not flip
-	int index=-1,index2=-1,fIndex=-1;;
 
+	int arg = -1;
+
+	int onebuffersize = BUFFER_SIZE/2;
+	int onedatasize = DATABYTES/2;
+
+	char* raw=NULL;
+	char* retval2=NULL;
+	int* origVal=new int[nel];
+	int* retval=new int[nel];
+
+	int index=-1,index2=-1;
+	int i,startIndex=-1;
 
 	strcpy(mess,"Could not read frame\n");
 
@@ -596,32 +602,45 @@ int	slsReceiverFuncs::read_frame(){
 	//got atleast first frame, read buffer
 	if(ret==OK){
 		int count=0;
-		do{
-			if(count>0){
-				cout << endl << "unmatching/wrong order: index:" << index <<" index2:" << index2 << endl;
-				if(count>10){
-					strcpy(mess,"unmatching index/wrong order. could not read frame.\n");
-					ret=FAIL;
+		ret=FAIL;
+		while(count<20){
+			//get frame
+			raw=slsReceiverList->readFrame(fName);
+			index=(int)(*((int*)raw));
+			index2= (int)(*((int*)((char*)(raw+onebuffersize))));
+			memcpy(origVal,raw,BUFFER_SIZE);
+
+			if((index%2)!=index2%2){
+				//ideal situation (should be odd, even(index+1))
+				if(index%2){
+					memcpy(retval,((char*) origVal)+2, onedatasize);
+					memcpy((((char*)retval)+onedatasize), ((char*) origVal)+8+onedatasize, onedatasize);
+					ret=OK;
+					break;
+				}
+
+				//swap to even,odd
+				if(index2%2){
+					memcpy((((char*)retval)+onedatasize),((char*) origVal)+2, onedatasize);
+					memcpy(retval, ((char*) origVal)+8+onedatasize, onedatasize);
+					index=index2;
+					ret=OK;
 					break;
 				}
 			}
-			retval=slsReceiverList->readFrame(fName);
-			index=(int)(*((int*)retval));
-			char* retval2= retval+1286;
-			index2= (int)(*((int*)retval2));
+			strcpy(mess,"could not read frame due to more than 20 mismatched indices\n");
+			cout<<"same type: index:"<<index<<"\tindex2:"<<index2<<endl<<endl;
+			usleep(1000);
 			count++;
+		}
 
-		}while(((index%2)==(index2%2))||(index+1==index2));
 
-		fIndex=((int)(*((int*)retval)) - startIndex)/2;
-		arg[0]=fIndex-1;
-		arg[1]=(index%2);
+		arg=((index - startIndex)/2)-1;
+
 
 #ifdef VERBOSE
 		cout << "\nstartIndex:" << startIndex << endl;
 		cout << "fName:" << fName << endl;
-		if((index%2)==0)
-			cout << "\nEven Index, must flip:" << index << endl;
 #endif
 	}
 
@@ -636,13 +655,13 @@ int	slsReceiverFuncs::read_frame(){
 	// send answer
 	socket->SendDataOnly(&ret,sizeof(ret));
 	if(ret==FAIL){
-		cout<<"mess:"<<mess<<endl;
+		cout << "mess:" << mess << endl;
 		socket->SendDataOnly(mess,sizeof(mess));
 	}
 	else{
 		socket->SendDataOnly(fName,MAX_STR_LENGTH);
-		socket->SendDataOnly(arg,sizeof(arg));
-		socket->SendDataOnly(retval,sizeof(buffer));
+		socket->SendDataOnly(&arg,sizeof(arg));
+		socket->SendDataOnly(retval,DATABYTES);
 	}
 	//return ok/fail
 	return ret;

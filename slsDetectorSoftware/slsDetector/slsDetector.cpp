@@ -5660,12 +5660,11 @@ int slsDetector::resetFramesCaught(int index){
 
 
 
+
 int* slsDetector::readFrameFromReceiver(char* fName, int &fIndex){
 	int fnum=F_READ_FRAME;
-	int nel=(thisDetector->dataBytes+HEADERLENGTH)/sizeof(int);//2572/
+	int nel=thisDetector->dataBytes/sizeof(int);
 	int* retval=new int[nel];
-	int* origVal=new int[nel];
-	int arg[2];
 	int ret=FAIL;
 	int n;
 	char mess[100]="Nothing";
@@ -5673,7 +5672,7 @@ int* slsDetector::readFrameFromReceiver(char* fName, int &fIndex){
 
 	if (setReceiverOnline(ONLINE_FLAG)==ONLINE_FLAG) {
 #ifdef VERBOSE
-		std::cout<< "slsDetector: Reading frame from receiver "<< thisDetector->dataBytes+HEADERLENGTH << " " <<nel <<std::endl;
+		std::cout<< "slsDetector: Reading frame from receiver "<< thisDetector->dataBytes << " " <<nel <<std::endl;
 #endif
 		if (dataSocket) {
 			if  (dataSocket->Connect()>=0) {
@@ -5683,42 +5682,30 @@ int* slsDetector::readFrameFromReceiver(char* fName, int &fIndex){
 				if (ret==FAIL) {
 					n= dataSocket->ReceiveDataOnly(mess,sizeof(mess));
 					std::cout<< "Detector returned: " << mess << " " << n << std::endl;
-					delete [] origVal;
 					delete [] retval;
 					return NULL;
 				} else {
 					n=dataSocket->ReceiveDataOnly(fName,MAX_STR_LENGTH);
-					n=dataSocket->ReceiveDataOnly(arg,sizeof(arg));
-					n=dataSocket->ReceiveDataOnly(origVal,thisDetector->dataBytes+HEADERLENGTH);
+					n=dataSocket->ReceiveDataOnly(&fIndex,sizeof(fIndex));
+					n=dataSocket->ReceiveDataOnly(retval,thisDetector->dataBytes);
 #ifdef VERBOSE
 					std::cout<< "Received "<< n << " data bytes" << std::endl;
 #endif
-					if (n!=thisDetector->dataBytes+HEADERLENGTH) {
-						std::cout<<endl<< "wrong data size received: received " << n << " but expected from receiver " << thisDetector->dataBytes+HEADERLENGTH << std::endl;
+					if (n!=thisDetector->dataBytes) {
+						std::cout<<endl<< "wrong data size received: received " << n << " but expected from receiver " << thisDetector->dataBytes << std::endl;
 						ret=FAIL;
-						delete [] origVal;
 						delete [] retval;
 						return NULL;
-					}//worked
-					else{
-						fIndex=arg[0];
-						if(arg[1]){
-							memcpy(retval,((char*) origVal)+2, getDataBytes()/2);
-							memcpy((((char*)retval)+getDataBytes()/2), ((char*) origVal)+8+getDataBytes()/2, getDataBytes()/2);
-						}
-						else{
-							memcpy((((char*)retval)+getDataBytes()/2),((char*) origVal)+2, getDataBytes()/2);
-							memcpy(retval, ((char*) origVal)+8+getDataBytes()/2, getDataBytes()/2);
-						}
 					}
 				}
 				dataSocket->Disconnect();
 			}
 		}
 	}
-	delete [] origVal;
-	return retval;//(retval+HEADERLENGTH/sizeof(int));
+	return retval;
 };
+
+
 
 
 

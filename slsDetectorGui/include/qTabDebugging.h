@@ -13,10 +13,11 @@
 /** Project Class Headers */
 class multiSlsDetector;
 class slsDetector;
+#include "sls_detector_defs.h"
 /** Qt Include Headers */
 #include <QTreeWidget>
-/** C++ Include Headers */
-#include "sls_detector_defs.h"
+
+
 
 /**
  *@short sets up the Debugging parameters

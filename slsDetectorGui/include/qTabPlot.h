@@ -12,6 +12,7 @@
 #include "ui_form_tab_plot.h"
 /** Project Class Headers */
 class multiSlsDetector;
+#include "sls_detector_defs.h"
 /** Qt Project Class Headers */
 class qDrawPlot;
 /** Qt Include Headers */
@@ -53,6 +54,7 @@ private:
 
 	/** The Plot widget	 */
 	qDrawPlot *myPlot;
+
 
 	/** 1d/2d plot	 */
 	bool isOneD;

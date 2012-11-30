@@ -258,7 +258,7 @@ void qDetectorMain::Initialization(){
 		connect(tab_plot,			SIGNAL(DisableZoomSignal(bool)),	this,SLOT(SetZoomToolTip(bool)));
 		// Actions tab (only for scan)
 		connect(tab_actions,		SIGNAL(EnableScanBox()),			tab_plot,SLOT(EnableScanBox()));
-		//settings to advanced tab(int=id is always 0 to only refresh)
+		//settings to advanced tab(int is always 0 to only refresh)
 		connect(tab_settings,		SIGNAL(UpdateTrimbitSignal(int)),		tab_advanced,SLOT(UpdateTrimbitPlot(int)));
 // Plotting
 	// When the acquisition is finished, must update the meas tab

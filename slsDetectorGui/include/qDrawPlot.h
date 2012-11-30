@@ -149,8 +149,11 @@ void SetScanArgument(int scanArg);
 /** sets stop_signal to true */
 void StopAcquisition(){	stop_signal = true; };
 
-
-
+//pedestal
+/** reset pedestal */
+void ResetPedestal();
+/** Calculate Pedestal */
+void CalculatePedestal();
 
 
 
@@ -302,6 +305,10 @@ SlsQt1DPlot* 		plot1D;
 SlsQt2DPlotLayout* 	plot2D;
 /**	vector of 1D hist values */
 QVector<SlsQtH1D*> 	plot1D_hists;
+
+
+/**label with frame index for those with many frames per file*/
+QLabel *histFrameIndexTitle;
 
 
 /** Current Measurement */
@@ -462,6 +469,17 @@ bool backwardScanPlot;
 
 /**if files will be saved and index increased*/
 bool fileSaveEnable;
+
+
+//pedstal
+/** Number of pedestal frames*/
+static const int NUM_PEDESTAL_FRAMES = 20;
+/**reset pedestal*/
+bool resetPedestal;
+/** pedestal values */
+double*   pedestalVals;
+/** count for 20 frames to calculate the pedestal */
+int pedestalCount;
 
 
 signals:

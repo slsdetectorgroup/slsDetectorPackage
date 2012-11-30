@@ -183,7 +183,7 @@
     </rect>
    </property>
    <property name="title">
-    <string>1D Plot Options</string>
+    <string>1D Plot Options 1</string>
    </property>
    <property name="alignment">
     <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
@@ -201,7 +201,7 @@
      </rect>
     </property>
     <property name="currentIndex">
-     <number>0</number>
+     <number>2</number>
     </property>
     <widget class="QWidget" name="page">
      <widget class="QWidget" name="gridLayoutWidget_2">
@@ -407,7 +407,7 @@
        </item>
       </layout>
      </widget>
-     <widget class="QPushButton" name="btnLeft">
+     <widget class="QPushButton" name="btnRight2">
       <property name="geometry">
        <rect>
         <x>345</x>
@@ -430,7 +430,194 @@
       </property>
       <property name="icon">
        <iconset resource="../include/icons.qrc">
-        <normaloff>:/icons/images/leftArrow.png</normaloff>:/icons/images/leftArrow.png</iconset>
+        <normaloff>:/icons/images/rightArrow.png</normaloff>:/icons/images/rightArrow.png</iconset>
+      </property>
+      <property name="iconSize">
+       <size>
+        <width>16</width>
+        <height>16</height>
+       </size>
+      </property>
+      <property name="flat">
+       <bool>true</bool>
+      </property>
+     </widget>
+    </widget>
+    <widget class="QWidget" name="page_3">
+     <widget class="QPushButton" name="btnResetPedestal">
+      <property name="geometry">
+       <rect>
+        <x>5</x>
+        <y>5</y>
+        <width>141</width>
+        <height>25</height>
+       </rect>
+      </property>
+      <property name="sizePolicy">
+       <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+        <horstretch>0</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
+      </property>
+      <property name="maximumSize">
+       <size>
+        <width>16777215</width>
+        <height>16777215</height>
+       </size>
+      </property>
+      <property name="palette">
+       <palette>
+        <active>
+         <colorrole role="Shadow">
+          <brush brushstyle="SolidPattern">
+           <color alpha="255">
+            <red>20</red>
+            <green>20</green>
+            <blue>20</blue>
+           </color>
+          </brush>
+         </colorrole>
+        </active>
+        <inactive>
+         <colorrole role="Shadow">
+          <brush brushstyle="SolidPattern">
+           <color alpha="255">
+            <red>20</red>
+            <green>20</green>
+            <blue>20</blue>
+           </color>
+          </brush>
+         </colorrole>
+        </inactive>
+        <disabled>
+         <colorrole role="Shadow">
+          <brush brushstyle="SolidPattern">
+           <color alpha="255">
+            <red>20</red>
+            <green>20</green>
+            <blue>20</blue>
+           </color>
+          </brush>
+         </colorrole>
+        </disabled>
+       </palette>
+      </property>
+      <property name="focusPolicy">
+       <enum>Qt::NoFocus</enum>
+      </property>
+      <property name="text">
+       <string>Reset Pedestal</string>
+      </property>
+      <property name="icon">
+       <iconset resource="../include/icons.qrc">
+        <normaloff>:/icons/images/remove.png</normaloff>:/icons/images/remove.png</iconset>
+      </property>
+      <property name="iconSize">
+       <size>
+        <width>16</width>
+        <height>16</height>
+       </size>
+      </property>
+     </widget>
+     <widget class="QPushButton" name="btnCalPedestal">
+      <property name="geometry">
+       <rect>
+        <x>200</x>
+        <y>5</y>
+        <width>141</width>
+        <height>25</height>
+       </rect>
+      </property>
+      <property name="sizePolicy">
+       <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+        <horstretch>0</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
+      </property>
+      <property name="maximumSize">
+       <size>
+        <width>16777215</width>
+        <height>16777215</height>
+       </size>
+      </property>
+      <property name="palette">
+       <palette>
+        <active>
+         <colorrole role="Shadow">
+          <brush brushstyle="SolidPattern">
+           <color alpha="255">
+            <red>20</red>
+            <green>20</green>
+            <blue>20</blue>
+           </color>
+          </brush>
+         </colorrole>
+        </active>
+        <inactive>
+         <colorrole role="Shadow">
+          <brush brushstyle="SolidPattern">
+           <color alpha="255">
+            <red>20</red>
+            <green>20</green>
+            <blue>20</blue>
+           </color>
+          </brush>
+         </colorrole>
+        </inactive>
+        <disabled>
+         <colorrole role="Shadow">
+          <brush brushstyle="SolidPattern">
+           <color alpha="255">
+            <red>20</red>
+            <green>20</green>
+            <blue>20</blue>
+           </color>
+          </brush>
+         </colorrole>
+        </disabled>
+       </palette>
+      </property>
+      <property name="focusPolicy">
+       <enum>Qt::NoFocus</enum>
+      </property>
+      <property name="text">
+       <string>Calculate Pedestal</string>
+      </property>
+      <property name="icon">
+       <iconset resource="../include/icons.qrc">
+        <normaloff>:/icons/images/add.png</normaloff>:/icons/images/add.png</iconset>
+      </property>
+      <property name="iconSize">
+       <size>
+        <width>16</width>
+        <height>16</height>
+       </size>
+      </property>
+     </widget>
+     <widget class="QPushButton" name="btnRight3">
+      <property name="geometry">
+       <rect>
+        <x>345</x>
+        <y>0</y>
+        <width>16</width>
+        <height>16</height>
+       </rect>
+      </property>
+      <property name="sizePolicy">
+       <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+        <horstretch>0</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
+      </property>
+      <property name="focusPolicy">
+       <enum>Qt::NoFocus</enum>
+      </property>
+      <property name="text">
+       <string/>
+      </property>
+      <property name="icon">
+       <iconset resource="../include/icons.qrc">
+        <normaloff>:/icons/images/rightArrow.png</normaloff>:/icons/images/rightArrow.png</iconset>
       </property>
       <property name="iconSize">
        <size>
@@ -593,7 +780,7 @@
      <rect>
       <x>10</x>
       <y>20</y>
-      <width>341</width>
+      <width>348</width>
       <height>26</height>
      </rect>
     </property>

@@ -123,10 +123,14 @@ void qDrawPlot::SetupWidgetWindow(){
 	setFont(QFont("Sans Serif",9));
 	layout = new QGridLayout;
 		this->setLayout(layout);
+
+	histFrameIndexTitle= histFrameIndexTitle = new QLabel("");
+
 	boxPlot = new QGroupBox("");
 		layout->addWidget(boxPlot,1,1);
 		boxPlot->setAlignment(Qt::AlignHCenter);
 		boxPlot->setFont(QFont("Sans Serif",11,QFont::Normal));
+
 	plot_update_timer = new QTimer(this);
 	connect(plot_update_timer, SIGNAL(timeout()), this, SLOT(UpdatePlot()));
 	data_pause_timer = new QTimer(this);
@@ -189,6 +193,14 @@ void qDrawPlot::SetupWidgetWindow(){
 
 
 	fileSaveEnable= myDet->enableWriteToFile();
+
+	//pedestal
+	resetPedestal = true;
+	pedestalVals = 0;
+	pedestalCount = -1;
+
+	if(myDet->getDetectorsType()==slsDetectorDefs::GOTTHARD)
+		pedestalCount = 0;
 
 
 	// Setting the callback function to get data from detector class
@@ -555,8 +567,8 @@ int qDrawPlot::GetData(detectorData *data,int fIndex){
 			currentFrameIndex=fIndex;
 			sprintf(temp_title,"#%d",fIndex);
 		}else{
-			if(fileSaveEnable)	strcpy(temp_title,"");
-			else		sprintf(temp_title,"#%d",currentFrame);
+			if(fileSaveEnable)	strcpy(temp_title,"#%d");
+			else		sprintf(temp_title,"",currentFrame);
 		}
 
 
@@ -748,10 +760,37 @@ int qDrawPlot::GetData(detectorData *data,int fIndex){
 				else currentPersistency=persistency;
 				nHists = currentPersistency+1;
 				histNBins = nPixelsX;
+
 				// copy data
 				for(int i=currentPersistency;i>0;i--)
 					memcpy(histYAxis[i],histYAxis[i-1],nPixelsX*sizeof(double));
-				memcpy(histYAxis[0],data->values,nPixelsX*sizeof(double));
+
+				//normal data
+				if(resetPedestal)
+					memcpy(histYAxis[0],data->values,nPixelsX*sizeof(double));
+				else{
+					//start adding frames to get to the pedestal value
+					if(pedestalCount<NUM_PEDESTAL_FRAMES){
+						for(unsigned int px=0;px<nPixelsX;px++)
+							pedestalVals[px] += data->values[px];
+						memcpy(histYAxis[0],data->values,nPixelsX*sizeof(double));
+					}
+					//calculate the pedestal value
+					else if(pedestalCount==NUM_PEDESTAL_FRAMES){
+						cout << "Pedestal Calculated" << endl;
+						for(unsigned int px=0;px<nPixelsX;px++)
+							pedestalVals[px] = pedestalVals[px]/(double)NUM_PEDESTAL_FRAMES;
+						memcpy(histYAxis[0],data->values,nPixelsX*sizeof(double));
+					}
+					//use this pedestal value henceforth
+					else{
+						for(unsigned int px=0;px<nPixelsX;px++)
+							histYAxis[0][px] = data->values[px] - (pedestalVals[px]);
+					}
+					pedestalCount++;
+
+				}
+
 			}
 			//2d
 			else{cout<<endl<<"****************************IN HERE-2D*******************************************"<<endl<<endl;
@@ -887,6 +926,7 @@ void qDrawPlot::SelectPlot(int i){ //1 for 1D otherwise 2D
 		plot2D->hide();
 		boxPlot->setFlat(false);
 		plot_in_scope=1;
+		layout->addWidget(histFrameIndexTitle,0,0);
 	}else{
 		plot2D->SetXTitle(imageXAxisTitle);
 		plot2D->SetYTitle(imageYAxisTitle);
@@ -895,6 +935,9 @@ void qDrawPlot::SelectPlot(int i){ //1 for 1D otherwise 2D
 		plot2D->show();
 		boxPlot->setFlat(true);
 		plot_in_scope=2;
+		histFrameIndexTitle->setText("");
+		layout->removeWidget(histFrameIndexTitle);
+
 	}
 }
 
@@ -936,9 +979,9 @@ void qDrawPlot::UpdatePlot(){
 							SlsQtH1D*  h;
 							if(hist_num+1>plot1D_hists.size()){
 								if(anglePlot)
-									plot1D_hists.append(h=new SlsQtH1D("1d plot",histNBins,histXAngleAxis,histYAngleAxis));
+									plot1D_hists.append(h=new SlsQtH1D("",histNBins,histXAngleAxis,histYAngleAxis));
 								else
-									plot1D_hists.append(h=new SlsQtH1D("1d plot",histNBins,histXAxis,GetHistYAxis(hist_num)));
+									plot1D_hists.append(h=new SlsQtH1D("",histNBins,histXAxis,GetHistYAxis(hist_num)));
 								h->SetLineColor(hist_num+1);
 							}else{
 								h=plot1D_hists.at(hist_num);
@@ -948,7 +991,8 @@ void qDrawPlot::UpdatePlot(){
 									h->SetData(histNBins,histXAxis,GetHistYAxis(hist_num));
 							}
 							SetStyle(h);
-							h->setTitle(GetHistTitle(hist_num));
+							histFrameIndexTitle->setText(GetHistTitle(0));
+							//h->setTitle(GetHistTitle(hist_num));
 							h->Attach(plot1D);
 						}
 						// update range if required
@@ -1318,7 +1362,7 @@ int qDrawPlot::UpdateTrimbitPlot(bool fromDetector,bool Histogram){
 			plot1D->SetYTitle("Trimbits");
 			//set plot parameters
 			SlsQtH1D*  h;
-			plot1D_hists.append(h=new SlsQtH1D("1d plot",nPixelsX,histXAxis,histYAxis[0]));
+			plot1D_hists.append(h=new SlsQtH1D("",nPixelsX,histXAxis,histYAxis[0]));
 			h->SetLineColor(1);
 			h->setTitle(GetHistTitle(0));
 			//attach plot
@@ -1347,7 +1391,7 @@ int qDrawPlot::UpdateTrimbitPlot(bool fromDetector,bool Histogram){
 			plot1D->SetYTitle("Frequency");
 			//set plot parameters
 			SlsQtH1D*  h;
-			plot1D_hists.append(h=new SlsQtH1D("1d plot",nPixelsX,histXAxis,histYAxis[0]));
+			plot1D_hists.append(h=new SlsQtH1D("",nPixelsX,histXAxis,histYAxis[0]));
 			h->SetLineColor(1);
 			h->setTitle(GetHistTitle(0));
 			//attach plot
@@ -1395,6 +1439,49 @@ int qDrawPlot::UpdateTrimbitPlot(bool fromDetector,bool Histogram){
 
 
 	return qDefs::OK;
+}
+
+
+//-------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+void qDrawPlot::ResetPedestal(){
+#ifdef VERBOSE
+	cout << "Resetting Pedestal" <<  endl;
+#endif
+	while(1){
+		if(!pthread_mutex_trylock(&(last_image_complete_mutex))){
+			pedestalVals = 0;
+			pedestalCount = 0;
+			resetPedestal = true;
+			pthread_mutex_unlock(&(last_image_complete_mutex));
+			break;
+		}
+	}
+}
+
+
+//-------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+void qDrawPlot::CalculatePedestal(){
+#ifdef VERBOSE
+	cout << "Calculating Pedestal" <<  endl;
+#endif
+	while(1){
+		if(!pthread_mutex_trylock(&(last_image_complete_mutex))){
+			//create array
+			if(pedestalVals) delete [] pedestalVals; pedestalVals = new double[nPixelsX];
+			//reset all values
+			for(unsigned int px=0;px<nPixelsX;px++)
+				pedestalVals[px] = 0;
+
+			pedestalCount = 0;
+			resetPedestal = false;
+			pthread_mutex_unlock(&(last_image_complete_mutex));
+			break;
+		}
+	}
 }
 
 

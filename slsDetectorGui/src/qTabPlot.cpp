@@ -60,7 +60,6 @@ void qTabPlot::SetupWidgetWindow(){
 	intervalTip = boxFrequency->toolTip();
 
 
-
 //scan arguments
 	btnGroupScan = new QButtonGroup(this);
 	btnGroupScan->addButton(radioLevel0,0);
@@ -148,6 +147,13 @@ void qTabPlot::SetupWidgetWindow(){
 	//to check if this should be enabled
 	EnableScanBox();
 
+	stackedWidget->setCurrentIndex(0);
+
+	if(myDet->getDetectorsType()!=slsDetectorDefs::GOTTHARD){
+		btnCalPedestal->setEnabled(false);
+		btnResetPedestal->setEnabled(false);
+	}
+
 }
 
 
@@ -156,10 +162,19 @@ void qTabPlot::SetupWidgetWindow(){
 
 void qTabPlot::Set1DPage(){
 	QPushButton *clickedButton = qobject_cast<QPushButton *>(sender());
-	if(clickedButton->icon().pixmap(QSize(16,16)).toImage()==btnLeft->icon().pixmap(QSize(16,16)).toImage())
-		stackedWidget->setCurrentIndex(0);
-	else
+	if(stackedWidget->currentIndex()==0){
+	//if(clickedButton->icon().pixmap(QSize(16,16)).toImage()==btnLeft->icon().pixmap(QSize(16,16)).toImage())
 		stackedWidget->setCurrentIndex(1);
+		box1D->setTitle("1D Plot Options 2");
+	}
+	else if(stackedWidget->currentIndex()==1){
+		stackedWidget->setCurrentIndex(2);
+		box1D->setTitle("1D Plot Options 3");
+	}
+	else{
+		stackedWidget->setCurrentIndex(0);
+		box1D->setTitle("1D Plot Options 1");
+	}
 }
 
 
@@ -206,8 +221,9 @@ void qTabPlot::Initialization(){
 	connect(chkLines, 		SIGNAL(toggled(bool)),		myPlot, SLOT(SetLines(bool)));
 	connect(chk1DLog, 		SIGNAL(toggled(bool)),		myPlot, SIGNAL(LogySignal(bool)));
 	//to change pages
-	connect(btnLeft, 		SIGNAL(clicked()),		this, SLOT(Set1DPage()));
 	connect(btnRight, 		SIGNAL(clicked()),		this, SLOT(Set1DPage()));
+	connect(btnRight2, 		SIGNAL(clicked()),		this, SLOT(Set1DPage()));
+	connect(btnRight3, 		SIGNAL(clicked()),		this, SLOT(Set1DPage()));
 // 2D Plot box
 	connect(chkInterpolate, SIGNAL(toggled(bool)),myPlot, SIGNAL(InterpolateSignal(bool)));
 	connect(chkContour, 	SIGNAL(toggled(bool)),myPlot, SIGNAL(ContourSignal(bool)));
@@ -247,6 +263,9 @@ void qTabPlot::Initialization(){
 
 	connect(this,SIGNAL(SetZRangeSignal(double,double)),myPlot, SIGNAL(SetZRangeSignal(double,double)));
 
+//pedstal
+	connect(btnResetPedestal, 		SIGNAL(clicked()),myPlot, 	SLOT(ResetPedestal()));
+	connect(btnCalPedestal, 		SIGNAL(clicked()),myPlot, 	SLOT(CalculatePedestal()));
 
 
 }
@@ -796,6 +815,7 @@ void qTabPlot::Refresh(){
 		connect(boxScan,	  SIGNAL(toggled(bool)),				   this, SLOT(EnableScanBox()));
 		EnableScanBox();
 		SetFrequency();
+
 	}else{
 		disconnect(boxScan,	  SIGNAL(toggled(bool)),				   this, SLOT(EnableScanBox()));
 		boxScan->setEnabled(false);
@@ -803,6 +823,7 @@ void qTabPlot::Refresh(){
 		if(radioHistogram->isChecked())
 			radioDataGraph->setEnabled(false);
 		radioHistogram->setEnabled(false);
+
 	}
 #ifdef VERBOSE
 	cout  << "**Updated Plot Tab" << endl << endl;

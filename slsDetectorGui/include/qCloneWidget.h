@@ -126,6 +126,8 @@ private:
     QCheckBox 	*chkAutoFName;
     QCheckBox 	*chkSaveAll;
 
+    QLabel		*lblHistTitle;
+
     /** Gets the current time stamp for the window title*/
     char* GetCurrentTimeStamp();
 

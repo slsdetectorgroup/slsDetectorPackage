@@ -261,7 +261,7 @@ void qTabMeasurement::Enable(bool enable){
 	frameNotTimeResolved->setEnabled(enable);
 	//Enable this always
 	if(!enable) btnStartStop->setEnabled(true);
-	 btnStartStop->setShortcut(QApplication::translate("TabMeasurementObject", "Space", 0, QApplication::UnicodeUTF8));
+	 btnStartStop->setShortcut(QApplication::translate("TabMeasurementObject", "Shift+Space", 0, QApplication::UnicodeUTF8));
 }
 
 

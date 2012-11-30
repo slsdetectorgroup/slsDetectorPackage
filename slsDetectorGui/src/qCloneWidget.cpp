@@ -71,6 +71,8 @@ void qCloneWidget::SetupWidgetWindow(QString title,int numDim,SlsQt1DPlot*& plot
 		gridClone->addWidget(cloneplot1D,0,0);
 		cloneBox->setFlat(false);
 		cloneBox->setContentsMargins(0,30,0,0);
+		lblHistTitle = new QLabel("");
+		mainLayout->addWidget(lblHistTitle,0,0);
 
 	}else{
 		cloneplot2D = plot2D;
@@ -128,7 +130,8 @@ void qCloneWidget::SetCloneHists(int nHists,int histNBins,double* histXAxis,doub
 #endif
 		}
 		//set title and attach plot
-		k->setTitle(histTitle[hist_num].c_str());
+		lblHistTitle->setText(QString(histTitle[0].c_str()));
+		//k->setTitle(histTitle[hist_num].c_str());
 		k->Attach(cloneplot1D);
 	}
 	//cloneplot1D->UnZoom();
@@ -171,7 +174,8 @@ void qCloneWidget::SetCloneHists(int nHists,int histNBins,double* histXAxis,doub
 #endif
 		}
 		//set title and attach plot
-		k->setTitle(histTitle[hist_num].c_str());
+		lblHistTitle->setText(QString(histTitle[0].c_str()));
+		//k->setTitle(histTitle[hist_num].c_str());
 		k->Attach(cloneplot1D);
 	}
 	//cloneplot1D->UnZoom();

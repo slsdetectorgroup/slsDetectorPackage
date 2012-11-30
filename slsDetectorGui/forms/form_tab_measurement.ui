@@ -161,6 +161,9 @@
     <iconset resource="../include/icons.qrc">
      <normaloff>:/icons/images/start.png</normaloff>:/icons/images/start.png</iconset>
    </property>
+   <property name="shortcut">
+    <string>Space</string>
+   </property>
    <property name="checkable">
     <bool>true</bool>
    </property>

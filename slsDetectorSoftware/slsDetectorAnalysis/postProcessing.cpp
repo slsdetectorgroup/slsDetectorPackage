@@ -37,8 +37,6 @@ postProcessing::postProcessing(): expTime(NULL), ang(NULL), val(NULL), err(NULL)
   rawDataReady = 0;
   pRawDataArg = 0; 
 
-  progress_call=0;
-  pProgressCallArg=0;
 #ifdef VERBOSE
   registerDataCallback(&defaultDataReadyFunc,  NULL);
 #endif
@@ -407,8 +405,6 @@ void* postProcessing::processData(int delflag) {
 			else newData=false;
 			prevCaught=caught;
 			if (checkJoinThread()) break;
-			//if(progress_call)
-			//	progress_call(getCurrentProgress(),pProgressCallArg);
 			if(newData){
 				pthread_mutex_lock(&mg);
 				int* receiverData =  readFrameFromReceiver(currentfName,currentfIndex);

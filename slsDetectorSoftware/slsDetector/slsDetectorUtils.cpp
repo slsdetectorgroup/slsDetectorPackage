@@ -20,6 +20,8 @@ slsDetectorUtils::slsDetectorUtils()  {
   acqFinished_p=NULL;
   measurement_finished=NULL;
   measFinished_p=NULL;
+  progress_call=0;
+  pProgressCallArg=0;
   registerGetPositionCallback(&defaultGetPosition, NULL);
   registerConnectChannelsCallback(&defaultConnectChannels,NULL);
   registerDisconnectChannelsCallback(&defaultDisconnectChannels,NULL);
@@ -429,6 +431,10 @@ void  slsDetectorUtils::acquire(int delflag){
     setJoinThread(1);
     pthread_join(dataProcessingThread, &status);
   }
+
+
+  if(progress_call)
+	progress_call(getCurrentProgress(),pProgressCallArg);
 
 
   if (connectChannels) {

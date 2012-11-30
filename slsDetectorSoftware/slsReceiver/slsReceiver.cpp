@@ -79,8 +79,10 @@ int main(int argc, char *argv[])
 		}
 	}
 
-	delete mysocket;
+
+	slsReceiverFuncs::closeFile(0);
 	cout << "Goodbye!" << endl;
+	delete mysocket;
 
 	return 0;
 }

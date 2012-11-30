@@ -637,6 +637,11 @@ virtual int resetFramesCaught(int index=-1)=0;
 virtual int* readFrameFromReceiver(char* fName, int &fIndex)=0;
 
 
+/**
+    Turns off the receiver server!
+*/
+virtual int exitReceiver()=0;
+
   protected:
 
   static const int64_t thisSoftwareVersion=0x20120124;

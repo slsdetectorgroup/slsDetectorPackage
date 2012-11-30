@@ -10,7 +10,7 @@
 * Code & platform dependent issues with it was originally 
 * published at http://www.kjellkod.cc/threadsafecircularqueue
 * 2009-11-02
-* @author Kjell Hedström, hedstrom@kjellkod.cc */
+* @author Kjell Hedstrï¿½m, hedstrom@kjellkod.cc */
 
 #ifndef CIRCULARFIFO_H_
 #define CIRCULARFIFO_H_
@@ -25,15 +25,15 @@ public:
    CircularFifo() : tail(0), head(0){}
    virtual ~CircularFifo() {}
 
-   bool push(Element& item_);
-   bool pop(Element& item_);
+   bool push(Element*& item_);
+   bool pop(Element*& item_);
    
    bool isEmpty() const;
    bool isFull() const;
    
 private:
    volatile unsigned int tail; // input index
-   Element array[Capacity];
+   Element* array[Capacity];
    volatile unsigned int head; // output index
 
    unsigned int increment(unsigned int idx_) const;
@@ -49,7 +49,7 @@ private:
 * \param item_ copy by reference the input item
 * \return whether operation was successful or not */
 template<typename Element, unsigned int Size>
-bool CircularFifo<Element, Size>::push(Element& item_)
+bool CircularFifo<Element, Size>::push(Element*& item_)
 {
    int nextTail = increment(tail);
    if(nextTail != head)
@@ -70,7 +70,7 @@ bool CircularFifo<Element, Size>::push(Element& item_)
 * \param item_ return by reference the wanted item
 * \return whether operation was successful or not */
 template<typename Element, unsigned int Size>
-bool CircularFifo<Element, Size>::pop(Element& item_)
+bool CircularFifo<Element, Size>::pop(Element*& item_)
 {
    if(head == tail)
       return false;  // empty queue

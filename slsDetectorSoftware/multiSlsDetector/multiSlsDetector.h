@@ -1112,6 +1112,11 @@ class multiSlsDetector  : public slsDetectorUtils {
   */
   string getReceiverLastClientIP();
 
+  /**
+      Turns off the receiver server!
+  */
+  int exitReceiver();
+
 
   int fillModuleMask(int *mM);
  protected:

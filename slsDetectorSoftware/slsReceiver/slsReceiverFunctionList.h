@@ -8,7 +8,9 @@
 #include "sls_detector_defs.h"
 #include "receiver_defs.h"
 #include "genericSocket.h"
+#include "circularFifo.h"
 
+#include <string.h>
 #include <pthread.h>
 #include <stdio.h>
 
@@ -28,7 +30,7 @@ public:
 	/**
 	 * Destructor
 	 */
-	virtual ~slsReceiverFunctionList(){};
+	virtual ~slsReceiverFunctionList(){ if(latestData) delete latestData;};
 
 	/**
 	 * Returns status of receiver: idle, running or error
@@ -133,6 +135,20 @@ public:
 	int startListening();
 
 	/**
+	 * Static function - Thread started which writes packets to file.
+	 * Called by startReceiver()
+	 * @param this_pointer pointer to this object
+	 */
+	static void* startWritingThread(void *this_pointer);
+
+	/**
+	 * Thread started which writes packets to file.
+	 * Called by startReceiver()
+	 *
+	 */
+	int startWriting();
+
+	/**
 	 * Returns the buffer-current frame read by receiver
 	 */
 	char* readFrame(char* c);
@@ -185,26 +201,40 @@ private:
 	/** Frames currently in current file, starts new file when it reaches max */
 	int framesInFile;
 
-	/** if the listening thread is running*/
-	//static int listening_thread_running;
+	/** Previous Frame number from buffer */
+	int prevframenum;
 
 	/** thread listening to packets */
 	pthread_t   listening_thread;
 
+	/** thread writing packets */
+	pthread_t   writing_thread;
+
 	/** status of receiver */
 	runStatus status;
 
-	/** File Descriptor */
-	//static FILE *sfilefd;
-
 	/** Receiver buffer */
-	char buffer[BUFFER_SIZE];
+	char* buffer;
+
+	/** latest data */
+	char* latestData;
 
 	/** UDP Socket between Receiver and Detector */
 	genericSocket* udpSocket;
 
 	/** Server UDP Port*/
 	int server_port;
+
+	/** Element structure to put inside a fifo */
+	struct dataStruct {
+	char* buffer;
+	int rc;
+	};
+
+
+	//dataStruct* dataReadFrame;
+	/** circular fifo to read and write data*/
+	CircularFifo<dataStruct,FIFO_SIZE>* fifo;
 
 public:
 	/** File Descriptor */

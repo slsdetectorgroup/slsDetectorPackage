@@ -9,6 +9,7 @@
 #define BUFFER_SIZE 		1286*2
 #define DATABYTES	 		2560
 #define DEFAULT_UDP_PORT	50001
+#define FIFO_SIZE			25000
 
 
 

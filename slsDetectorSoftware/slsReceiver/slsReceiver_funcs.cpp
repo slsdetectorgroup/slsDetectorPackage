@@ -208,7 +208,7 @@ void slsReceiverFuncs::closeFile(int p){
 
 
 	close(file_des);
-	shutdown(socketDescriptor,SHUT_RDWR);
+	//shutdown(socketDescriptor,SHUT_RDWR);
 	close(socketDescriptor);
 
 }
@@ -479,7 +479,6 @@ int	slsReceiverFuncs::get_frames_caught(){
 #ifdef SLS_RECEIVER_FUNCTION_LIST
 	retval=slsReceiverList->getTotalFramesCaught();
 #endif
-
 	if(ret==OK && socket->differentClients){
 		cout << "Force update" << endl;
 		ret=FORCE_UPDATE;
@@ -564,32 +563,31 @@ int	slsReceiverFuncs::reset_frames_caught(){
 
 int	slsReceiverFuncs::read_frame(){
 	ret=OK;
-	int nel = BUFFER_SIZE/(sizeof(int));
 	char fName[MAX_STR_LENGTH];
-
 	int arg = -1;
 
+	int nel = BUFFER_SIZE/(sizeof(int));
 	int onebuffersize = BUFFER_SIZE/2;
 	int onedatasize = DATABYTES/2;
 
-	char* raw=NULL;
-	char* retval2=NULL;
-	int* origVal=new int[nel];
-	int* retval=new int[nel];
+	char* raw 		= new char[BUFFER_SIZE];
+	int* origVal 	= new int[nel];
+	int* retval 	= new int[nel];
 
 	int index=-1,index2=-1;
-	int i,startIndex=-1;
+	int startIndex=-1;
 
 	strcpy(mess,"Could not read frame\n");
 
 
 	// execute action if the arguments correctly arrived
 #ifdef SLS_RECEIVER_FUNCTION_LIST
+
 	//wait till you get first frame 1. to get index(from startindex 2. filename corresponds to buffer value
 	if(startIndex==-1){
 		ret=FAIL;
 		strcpy(mess,"did not start index\n");
-		for(i=0;i<10;i++){
+		for(int i=0;i<10;i++){
 			startIndex=slsReceiverList->getStartFrameIndex();
 			if(startIndex==-1)
 				usleep(1000000);
@@ -599,6 +597,7 @@ int	slsReceiverFuncs::read_frame(){
 			}
 		}
 	}
+
 	//got atleast first frame, read buffer
 	if(ret==OK){
 		int count=0;
@@ -606,10 +605,14 @@ int	slsReceiverFuncs::read_frame(){
 		while(count<20){
 			//get frame
 			raw=slsReceiverList->readFrame(fName);
-			index=(int)(*((int*)raw));
+			//(int)(*(int*)buffer)
+			index=(int)(*(int*)raw);
 			index2= (int)(*((int*)((char*)(raw+onebuffersize))));
 			memcpy(origVal,raw,BUFFER_SIZE);
+			//cout<<"index:"<<index<<"\tindex2:"<<index2<<endl;
 
+
+			//1 odd, 1 even
 			if((index%2)!=index2%2){
 				//ideal situation (should be odd, even(index+1))
 				if(index%2){
@@ -627,13 +630,18 @@ int	slsReceiverFuncs::read_frame(){
 					ret=OK;
 					break;
 				}
+
 			}
+#ifdef VERBOSE
 			strcpy(mess,"could not read frame due to more than 20 mismatched indices\n");
-			cout<<"same type: index:"<<index<<"\tindex2:"<<index2<<endl<<endl;
-			usleep(1000);
+			cout << "same type: index:" << index << "\tindex2:" << index2 << endl;;
+#endif
+			usleep(100000);
 			count++;
 		}
 
+		if(count==20)
+			cout << "same type: index:" << index << "\tindex2:" << index2 << endl;
 
 		arg=((index - startIndex)/2)-1;
 
@@ -641,6 +649,7 @@ int	slsReceiverFuncs::read_frame(){
 #ifdef VERBOSE
 		cout << "\nstartIndex:" << startIndex << endl;
 		cout << "fName:" << fName << endl;
+		cout << "index:" << arg << endl;
 #endif
 	}
 
@@ -866,12 +875,12 @@ int slsReceiverFuncs::update_client() {
 
 
 int slsReceiverFuncs::exit_server() {
-	ret=FAIL;
+	ret=GOODBYE;
 	socket->SendDataOnly(&ret,sizeof(ret));
 	strcpy(mess,"closing server");
-	cout << mess << endl;
 	socket->SendDataOnly(mess,sizeof(mess));
-	return GOODBYE;
+	cout << mess << endl;
+	return ret;
 }
 
 

@@ -5805,3 +5805,30 @@ int slsDetector::updateReceiver() {
 }
 
 
+
+
+
+
+int slsDetector::exitReceiver(){
+
+  int retval;
+  int fnum=F_EXIT_SERVER;
+
+  if (setReceiverOnline(ONLINE_FLAG)==ONLINE_FLAG) {
+    if (dataSocket) {
+    	dataSocket->Connect();
+    	dataSocket->SendDataOnly(&fnum,sizeof(fnum));
+    	dataSocket->ReceiveDataOnly(&retval,sizeof(retval));
+    	dataSocket->Disconnect();
+    }
+  }
+  if (retval!=OK) {
+    std::cout<< std::endl;
+    std::cout<< "Shutting down the receiver" << std::endl;
+    std::cout<< std::endl;
+  }
+  return retval;
+
+};
+
+

@@ -83,6 +83,11 @@ slsDetectorCommand::slsDetectorCommand(slsDetectorUtils *det)  {
   descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdExitServer;
   i++;
 
+  descrToFuncMap[i].m_pFuncName="exitreceiver";//OK
+  descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdExitServer;
+  i++;
+
+
   /* data processing commands */
 
   
@@ -782,6 +787,11 @@ string slsDetectorCommand::cmdAcquire(int narg, char *args[], int action) {
 
 	myDet->setOnline(ONLINE_FLAG);
 	myDet->acquire();
+	if(myDet->setReceiverOnline()==ONLINE_FLAG){
+		char answer[100];
+	      sprintf(answer,"\n%d",myDet->getFramesCaughtByReceiver());
+	      return string(answer);
+	}
 
 	return string("");
 
@@ -1209,19 +1219,32 @@ string slsDetectorCommand::cmdExitServer(int narg, char *args[], int action){
   if (action==HELP_ACTION) {
     return helpExitServer(narg, args, action);
   } 
-  myDet->setOnline(ONLINE_FLAG);
+
   if (action==PUT_ACTION) {
-    if (myDet->exitServer()!=OK)
-      return string("Server shut down.");
-    else 
-      return string("Error closing server\n");
+	  if (cmd=="exitserver"){
+		  myDet->setOnline(ONLINE_FLAG);
+		  if (myDet->exitServer()!=OK)
+			  return string("Server shut down.");
+		  else
+			  return string("Error closing server\n");
+	  }
+	  else if (cmd=="exitreceiver"){
+		  if(myDet->exitReceiver()!=OK)
+			  return string("Receiver shut down\n");
+		  else
+			  return string("Error closing receiver\n");
+	  }
+	  else return("cannot decode command\n");
   } else
     return ("cannot get");
 
 }
 
 string slsDetectorCommand::helpExitServer(int narg, char *args[], int action){
-  return string("exitserver \t shuts down all the detector servers. Don't use it!!!!");
+	 ostringstream os;
+	 os << string("exitserver \t shuts down all the detector servers. Don't use it!!!!\n");
+	 os << string("exitreceiver \t shuts down all the receiver servers.\n");
+	 return os.str();
 }
 
 

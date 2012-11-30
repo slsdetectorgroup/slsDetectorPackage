@@ -1496,6 +1496,13 @@ class slsDetector : public slsDetectorUtils, public energyConversion {
      /returns OK
   */
   int updateReceiver();
+
+  /**
+      Turns off the receiver server!
+  */
+  int exitReceiver();
+
+
   int fillModuleMask(int *mM);
  protected:
  

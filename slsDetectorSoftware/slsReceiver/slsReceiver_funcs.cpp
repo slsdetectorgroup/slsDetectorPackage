@@ -576,6 +576,7 @@ int	slsReceiverFuncs::read_frame(){
 
 	int index=-1,index2=-1;
 	int startIndex=-1;
+	int count=0;
 
 	strcpy(mess,"Could not read frame\n");
 
@@ -584,31 +585,28 @@ int	slsReceiverFuncs::read_frame(){
 #ifdef SLS_RECEIVER_FUNCTION_LIST
 
 	//wait till you get first frame 1. to get index(from startindex 2. filename corresponds to buffer value
-	if(startIndex==-1){
-		ret=FAIL;
-		strcpy(mess,"did not start index\n");
-		for(int i=0;i<10;i++){
-			startIndex=slsReceiverList->getStartFrameIndex();
-			if(startIndex==-1)
-				usleep(1000000);
-			else {
-				ret=OK;
-				break;
-			}
-		}
+	ret=FAIL;
+	strcpy(mess,"did not start index\n");
+	for(int i=0;i<10;i++){
+		startIndex=slsReceiverList->getStartFrameIndex();
+		if(startIndex!=-1){
+			ret=OK;
+			break;
+		}else
+			usleep(1000000);
 	}
+
 
 	//got atleast first frame, read buffer
 	if(ret==OK){
-		int count=0;
 		ret=FAIL;
 		while(count<20){
 			//get frame
 			raw=slsReceiverList->readFrame(fName);
-			//(int)(*(int*)buffer)
 			index=(int)(*(int*)raw);
 			index2= (int)(*((int*)((char*)(raw+onebuffersize))));
 			memcpy(origVal,raw,BUFFER_SIZE);
+			raw=NULL;
 			//cout<<"index:"<<index<<"\tindex2:"<<index2<<endl;
 
 

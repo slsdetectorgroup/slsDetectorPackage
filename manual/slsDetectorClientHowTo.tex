@@ -1,0 +1,674 @@
+\documentclass{article}
+\usepackage{amssymb}
+\usepackage[dvips]{graphicx}
+\usepackage{verbatim}
+\begin{document}
+
+\title{SLS Detector text clients manual}
+\date{\today}
+\maketitle
+
+
+
+\section{Introduction}
+
+This program is intended to control the SLS detectors via command line interface.\\
+This is the only way to access all possible functionalities of the detectors, however it is often reccomendable to avoid changing the most dvanced settings, rather leaving the task to configuration files, as when using the GUI or the API provided.
+
+The command line interface consists in four main funtions:
+\begin{description}
+\item[sls\_detector\_acquire] to acquire data from the detector
+\item[sls\_detector\_put] to set detector parameters
+\item[sls\_detector\_get] to retrieve detector parameters
+\item[sls\_detector\_help] to get help concerning the text commands
+\end{description}
+Additionally the program \textbf{slsReciever} should be started on the machine expected to receive the data from the detector.
+
+
+If you need control a single detector, the use of the command line interface does not need any additional arguments.
+
+For commands addressing a single controller of your detector, the command  \verb=cmd= should be called with the index \verb=i= of the controller:\\
+\verb=sls_detector_clnt i:cmd=\\
+where \verb=sls_detector_clnt= is the text client (put, get, acquire, help).
+
+In case more than one detector is configured on the control PC, the command  \verb=cmd= should be called with their respectived index  \verb=j=:
+\verb=sls_detector_clnt j-cmd=\\
+where \verb=sls_detector_clnt= is the text client (put, get, acquire, help).
+
+To address a specific controller \verb=i= of detector \verb=j= use:\\
+\verb=sls_detector_clnt j-i:cmd=
+
+For additional questions concerning the indexing of the detector, please refere to the \textit{SLS Detectors FAQ} documentation.
+
+
+\section{Acquisition}
+
+
+
+
+
+By calling:\\
+\verb=sls\_detector\_acquire [j-]=\\
+the detector \verb=j= is started and the data are acquired, postprocessed and written to file according to the configuration and setup of the measurements.\\
+A progress index of the acquisition in percentage is shown on the command line.
+
+For additional questions concerning the acquisition flow, please refere to the \textit{SLS Detectors FAQ} documentation.
+
+\section{Detector setup}
+
+\verb=sls\_detector\_put [j-][i:]var arg=\\
+
+is used to configure the detector parameters \verb=var= with the value \verb=arg=.\\
+It returns the actual value of the variable, as when calling \verb=sls\_detector\_get= with the same command.
+
+\subsection{Standard commands}
+
+
+\begin{description}
+\item[config fname] 
+Load the configuration file fname. \\
+Examples of configuration files are available in the directory \verb=examples=. This should be done every time the configuration of the detectors(s) changes or the control PC is rebooted. Must be executed on all the control PCs, before executing other commands.
+\item[parameters fname] 
+Load the parameter file fname. \\
+The syntax of the commands in the parameter file is exactly the same as for the command line interface. Can be used to load a standard mode of acquisition and/or to hide advanced parameters from the final user. Examples of parameter files are available in the directory \verb=examples=.     
+\item[settings sett] 
+Configures the settings of the detector. Refere to detailed detector documentation for more details:   \\
+for MYTHEN sett can be: standard, fast, highgain;\\
+for GOTTHARD sett can be: veryhighgain, highgain, mediumgain, lowgain, dynamicgain.
+\item[threshold ev] 
+For photon counting detectors, sets the detector threshold in eV. The detector should be properly calibrated, otherwise standard calibration coefficents are used, which can give an uncertainty up to a few keVs.  
+\item[timing sync]   
+Sets the timing mode of the detector. Can be auto, gating (works only if at least one of the signals is configured as gate\_in), trigger (works only if at least one of the signals is configured as trigger\_in), ro\_trigger (works only if at least one of the signals is configured as ro\_trigger\_in), triggered\_gating (works only if one ofthe signals is configured as gate\_in and one as trigger\_in). \\
+Refere to the detailed documentation to understand how the different timing modes work.
+\item[outdir path] 
+Defines the path where the output files will be saved to.
+\item[fname prefix]
+Defines the prefix of the file name for the data output. \\
+The final file name will be: \\
+\verb=prefix[_d=\textit{d}\verb=][_S=\textit{v0}\verb=][_s=\textit{v1}\verb=][_p=\textit{p}\verb=][_f=\textit{f}\verb=]_=\textit{i}\verb=.=\textit{ext}\\
+where: \\
+\textit{d} is the controller index, in case of data receiver and more than one controller;\\
+\textit{v0} is the scan0 variable with the desired precision, if scan0 is enabled;\\
+\textit{v1} is the scan1 variable with the desired precision, if scan1 is enabled;\\
+\textit{p} is the position index, if different positions are configured;\\
+\textit{f} is the frame index of the first frame stored in the file, if many frames and cycles are configured;\\
+\textit{i} is the file index;\\
+\textit{ext} is the file extension e.g. \textit{.raw} for MYTHEN raw data, \textit{.dat} for MYTHEN processed data.
+\item[index i] Sets the starting index of the file i at the beginning of the acquisition (automatically incremented for each measurement).    
+\item[enablefwrite b] Enables (1) or disables (0) file writing. 
+\item[exptime ts] 
+Sets the exposure time of a single acquisition to ts (in s). It is overridden in case the detector is in gating mode.  \\
+Refere to detailed documentation to understand how the different timing modes work.
+\item[period ts]  
+Sets the frames period (in s). It is overridden in case the detector is in gating mode. \\
+Refere to detailed documentation to understand how the different timing modes work. 
+\item[delay ts] 
+Sets the delay after trigger in triggered mode (in s).\\
+Refere to the detailed documentation to understand how the different timing modes work.
+\item[gates n] 
+Sets the number of gates per frame in gated (stroboscopic) mode.\\
+Refere to the detailed documentation to understand how the different timing modes work.
+\item[frames n]  
+Sets the number of frames acquired sequentially per cycle (e.g. after each trigger), with the exposure time defined by exptime and the period defined by period (unless in gated mode). The frame index in the output file name will automatically be incremented.\\
+Note that the total number of images will be  frames times cycles.  Refere to detailed documentation to understand how the different timing modes work. 
+\item[cycles n] 
+Sets the number of cycles (e.g. number of triggers). The frame index in the output file name will automatically be incremented. \\ 
+Note that the total number of images will be by frames times cycles.   Refere to the detailed documentation to understand how the different timing modes work.
+\item[probes]  Sets the number of probes to accumulate for stroboscopic measurements. \\
+Refere to detailed documentation to understand how the different timing modes work.
+\item[measurements] Sets the number of repetitions of the acquisitions (non real time!). The file index in the file name will be automotically incremented.\\
+Refere to detailed documentation to understand how the different timing modes work.
+\item[dr n] Sets the dynamic range n (in bits) of the data for a photon counting detector. 
+\item[flags s] Sets some particular flags for your detector. For MYTHEN s can be \textit{none}, \textit{storeinram} (for buffered readout) or \textit{tot} (for time over threshold). 
+%\item[timestamp] 
+\item[help cmd]  Returns the help for command cmd.
+\item[lock] Locks (1) or unlocks (0) the detector to this particular control PC. CAn be unlocked again only from the same PC or by rebooting the detector.
+%\item[lastclient]
+\item[nmod n] Sets the number of modules for the detector to n for partial readout. Will be replaced by ROI.
+%\item[maxmod]  
+\end{description}
+
+
+
+
+
+
+
+
+\subsection{Postprocessing commands}
+\begin{description}      
+\item[flatfield fname] Sets the flat field file name. File ffdir/fname will be used to calculate the flat field coefficients. \textit{none} to unset flat field corrections. 
+\item[ratecorr ns] Sets the deadtime to be used for rate corrections in ns. 0 to unset, -1 to use default dead time for the actual settings.
+\end{description}
+
+
+\subsubsection{Angular conversion}
+
+\begin{description}
+\item[fineoff deg] Sets the fine offset for the experiment.
+\item[samplex mm] Sets the sample displacement from the center of the diffractometer in the X-ray direction, to improve angular conversion (unused).
+\item[sampley mm] Sets the sample displacement from the center of the diffractometer in the ortogonal direction, to improve angular conversion (unused)
+\end{description}
+
+
+
+
+
+
+\subsection{Acquisition}
+See SLS Detectors Documentation for a detailed description of the acquisition flow.
+\begin{description}
+\item[positions n p1 p2...pn] Sets the number of positions n and their value.
+ \item[startscript s] Sets the script to be executed at the beginning of each measurement.  \textit{none} unsets.
+  \item[startscriptpar p] Sets the parameter to be passed to the start script
+ \item[stopscript s] Sets the script to be executed at the end of each measurement.  \textit{none} unsets.    
+ \item[stopscriptpar p] Sets the parameter to be passed to the stop script.
+ \item[scriptbefore s] Sets the script to be executed before each acquisition.  \textit{none} unsets.    
+ \item[scriptbeforepar p]  Sets the parameter to be passed to the script before.
+ \item[scriptafter s]   Sets the script to be executed after each acquisition.  \textit{none} unsets.       
+ \item[scriptafterpar p]    Sets the parameter to be passed to the script after.    
+ \item[headerbefore s]   Sets the script to be executed to acquire the header of the acquisition.  \textit{none} unsets.     
+ \item[headerbeforepar p]   Sets the parameter to be passed to the header before.
+ \item[headerafter s]       Sets the script to be executed to append to the header of the acquisition.  \textit{none} unsets.   
+ \item[headerafterpar p]   Sets the parameter to be passed to the header after.
+ \item[scan0scripts s]   Sets the script to execute at scan 0 level.   \textit{none} unsets,  \textit{threshold, energy, trimbits, position} perform the corresponding scans without need of a custom script.    
+ \item[scan0par p] Sets a parameter to be passed to the scan 0 level script.      
+ \item[scan0prec i]   Sets the number of decimal digits for the scan0 level parameter in the file name (default is 0).
+ \item[scan0steps n s1 s2..sn]  Sets the number of scan 0 level steps n and their value.      
+ \item[scan0range min max step] Sets the minimum, the maximum and the step for the scan 0 level steps (easier to use than scan0steps if equally spaced steps in a range)      
+ \item[scan1script s]      Sets the script to execute at scan 1 level.   \textit{none} unsets,  \textit{threshold, energy, trimbits, position} perform the corresponding scans without need of a custom script.    
+ \item[scan1par p]     Sets a parameter to be passed to the scan 1 level script.          
+ \item[scan1prec i]        Sets the number of decimal digits for the scan1 level parameter in the file name (default is 0).
+ \item[scan1steps n s1 s2...sn]     Sets the number of scan 0 level steps n and their value.       
+ \item[scan1range min max step]       Sets the minimum, the maximum and the step for the scan 0 level steps (easier to use than scan0steps if equally spaced steps in a range)      
+\end{description}
+
+\begin{comment}
+\subsection{Debug}
+
+\begin{description}
+\item[moduleversion]   
+\item[detectornumber]  
+\item[modulenumber]    
+\item[detectorversion] 
+\item[softwareversion] 
+\item[thisversion]  
+\item[detectorsvnversion]       
+\item[digitest]        
+\item[bustest] 
+\item[digibittest]     
+\item[acqtest]
+\end{description}
+\end{comment}
+
+
+\subsection{Advanced commands}
+
+
+\subsubsection{Calibration}
+This operations should be performed only rarely to configure the detector
+
+\begin{description}
+   \item[trim:mode fname]  Trims the detector according to mode (can be noise, beam, improve, fix) and saves the resulting trimbits to file fname. Take care to set a proper exptime and vthreshold before trimming. 
+   \item[encallog b] Sets (1) or unsets (0) the logging for energy calibration.
+    \item[angcallog b]       Sets (1) or unsets (0) the logging for angular calibration.
+\end{description}
+
+
+
+
+\subsubsection{Acquisition}
+
+It is normally reccomended to use \verb=sls\_detector\_acquire [j-]=, which takes care of everything
+\begin{description}
+%\item[acquire] It is normally reccomended to use \verb=sls\_detector\_acquire [j-]=, which takes care of everything
+%\item[data] 
+%\item[frame]   
+\item[status s] Starts (start) or stops (stop) the detector acquisition.   
+\item[online b] Sets the detector in online (1) or offline (0) mode.  
+%\item[checkonline] 
+%\item[readctr i fname] GOTTHARD related - reads counter in detector to file fname, restarts acquisition if i=1
+\item[resetctr i] GOTTHARD- ADVANCED- resets counter in detector, restarts acquisition if i=1
+%\item[exptimel]        
+%\item[periodl] 
+%\item[delayl]  
+%\item[gatesl]  
+%\item[framesl] 
+%\item[cyclesl]   
+%\item[frameindex]  
+%\item[now]   
+\end{description}
+
+
+
+\subsubsection{Configuration}
+Advanced commands to configure the detector system. Should be left to the configuration file
+\begin{description}
+\item[type s] Sets the types of detector controlelrs in the system. Can be Mythen, Gotthard, Eiger and multiple controllers should be catenated with a + (e.g. Mythen+Mythen for 2 Mythen controllers).
+\item[d:hostname s] Sets the hostname or IP address for the controller d, where d is the controller index within the detector structure.    
+\item[d:extsig:i s] Configures the usage of the external IO signals to synchronize the detectors. s can be:  off, gate\_in\_active\_high, gate\_in\_active\_low, trigger\_in\_rising\_edge,
+                         trigger\_in\_falling\_edge,
+                         ro\_trigger\_in\_rising\_edge,
+                         ro\_trigger\_in\_falling\_edge,
+                         gate\_out\_active\_high,
+                         gate\_out\_active\_low,
+                         trigger\_out\_rising\_edge,
+                         trigger\_out\_falling\_edge,
+                         ro\_trigger\_out\_rising\_edge,
+                         ro\_trigger\_out\_falling\_edge, sync. \\Usually left to the configuration file. Gating, trigegring etc. are enabled only by calling the timing command. \\
+Please refer to SLS Detectors FAQ documentation for more detailed informations about the usage.
+      
+\item[master i] Sets the master of a multi-controller detector to the controller with index i. -1 removes master. Setting a master is useful only if the controllers are synchronized via harware using the external IO signals. Usually left to the configuration file. Please refer to SLS Detectors FAQ documentation for more detailed informations about the usage.  
+\item[sync s] Sets the synchronization mode of the various controller within a detector structure. s acn be none, gating, trigger, complementary. Check that the detectors are correctly connected to avoid freezing of the acquisition. Usually left to the configuration file. Please refer to SLS Detectors FAQ documentation for more detailed informations about the usage.
+\item[trimdir s] Obsolete. Same ad settingsdir.
+\item[settingsdir s] Sets the path of the drectory where the trim/settings files are stored. Usually left to the configuration file.
+\item[caldir s]    Sets the path of the drectory where the calibration files are stored. Can be the same as settingsdir. Usually left to the configuration file. 
+\item[trimen n e1 e2 ...en] Unused. Sets the list of energies for which trimfiles exist.
+\item[port p] Sets the port used by the sockets to control the detector. Do not change! Usually left to the configuration file.
+\item[stopport p] Sets the port used by the sockets to stop/get the status of the detector. Do not change! Usually left to the configuration file.
+\item[add s] Avoid using it. Adds the controller s to the detector structure.  
+\item[remove i] Avoid using it. Removes the controller in position i from the detector structure.  
+\item[id:i l]  Avoid using it. configures the id of the detector structure. i is the detector position in a multi detector system and l is the id of the detector to be added. 
+\item[free i]  Avoid using it. Frees the shared memory. 
+\item[exitserver]   Avoid using it. Turns off the communication server on the detector.
+\end{description}
+
+
+\subsubsection{Receiver -  GOTTHARD only}
+\begin{description}
+ \item[receiverip ip] sets receiver ip to ip. Should be left to the configuration file. 
+\item[receivermac] sets receiver mac to mac. Should be left to the configuration file. 
+\item[servermac mac] sets server mac to mac. Should be left to the configuration file. 
+\item[configuremac i] configures the MAC of the detector. i is adc number. -1 for all adcs.  Should be left to the configuration file. 
+\item[dataport i]   sets the communication port to the receiver. Should be left to the configuration file. 
+\item[r\_online b] sets the receiver in online (1) or offline (0) mode.           
+%\item[r\_checkonline]      
+%\item[framescaught]         
+\item[r\_lock b] Locks (1) or unlocks (0) the receiver to this PC.   
+%\item[r\_lastclient]     
+\item[receiver s ] starts/stops the receiver to listen to detector packets. - can be start or stop   
+\end{description} 
+
+\subsubsection{Postprocessing}
+Some advanced commands to configure data postprocessing.
+\begin{description}      
+\item[ffdir dir] Sets the directory where the flat field files are stored. Normally left to the configuration file.
+\item[darkimage fname] GOTTHARD- ADVANCED- Sets fname as dark image file for the detector.       
+\item[gainimage fname] GOTTHARD- ADVANCED- Sets fname as gain image file for the detector. 
+\item[badchannels fname] Sets the bad channel file to fname. Bad channels will be omitted in the .dat file.  \textit{none} to unset.  Normally left to the configuration file.   
+\item[threaded b] Avoid changing it. Sets if the data are written to disk in parallel with the acquisition (1) or after the acquistion (0).    Normally left to the configuration file.      
+\end{description}
+
+
+\textbf{Angular conversion}
+
+\begin{description}
+\item[globaloff deg]   Sets the  offset  of the beamline i.e. angular position of channel 0 when angular encoder at 0. Normally left to the configuration file.
+\item[angconv fname]  Sets the file with the coefficients for angular conversion. \textit{none} disables angular conversion.   Normally left to the configuration file. 
+\item[binsize deg] Sets the size of the angular bins for angular coversion.  Normally left to the configuration file. 
+\item[angdir i] Sets the angular direction of the detector (1 means channel number in the same direction as the angular encoder, -1 different direction).  Normally left to the configuration file.
+\item[d:moveflag i]  Related to a single controller d. 1 if the detector modules move with the angular encoder, 0 if they are static (useful for multidetector systems). Normally left to the configuration file.
+\end{description}
+
+
+
+\subsection{Detector settings}
+Advanced settings changing the analog or digital performance of the acquisition. Use them only if you are sure of what you are doing!
+
+\begin{description}
+\item[vthreshold n]  Sets the DAC value of the detector threshold to n.   
+\item[vcalibration n]      Sets the DAC value of the calibration pulse amplitude to n.   
+\item[vtrimbit n]  Sets the DAC value defining the trimbits LSB size to n.
+\item[vpreamp n]  Sets the DAC value of the preamp feedback  to n.
+\item[vshaper1 n]  Sets the DAC value of the shaper1 feedback  to n.  
+\item[vshaper2 n]   Sets the DAC value of the shaper2 feedback  to n.      
+\item[vhighvoltage n]   CHIPTEST BOARD ONLY - Sets the DAC value of the high voltage to n.           
+\item[vapower n]   CHIPTEST BOARD ONLY - Sets the DAC value of the analog voltage to n. 
+\item[vddpower n]     CHIPTEST BOARD ONLY - Sets the DAC value of the analog voltage to n.      
+\item[vshpower n]     CHIPTEST BOARD ONLY - Sets the comparator power supply in dac units (0-1024).   
+\item[viopower n]     CHIPTEST BOARD ONLY - Sets the FPGA I/O power supply in dac units (0-1024).   
+\item[vref\_ds n]  Sets vrefds
+\item[vcascn\_pb n]       Sets vcascn\_pb
+\item[vcascp\_pb n]       Sets vcascp\_pb
+\item[vout\_cm n]   Sets vout\_cm
+\item[vcasc\_out n]  Sets  vcasc\_out    
+\item[vin\_cm n]  Sets vin\_cm
+\item[vref\_comp n]  Sets vref\_comp     
+\item[ib\_test\_c n]   Sets ib\_test\_c    
+%\item[temp\_adc n]    Sets     
+%\item[temp\_fpga n]
+\item[reg a d]   Write to register of address a the data d  
+\item[clkdivider n]  Sets the clock divider for the readout. Can be increased for longer cables. 
+\item[setlength n]  Changes the length of the set/reset signals in the acquisition. Never reduce it!     
+\item[waitstates n] Sets the wait states for CPU/FPGA communication. Do not change it!
+\item[totdivider n]  Sets the tot clock divider.
+\item[totdutycycle n] Sets the tot duty cycle.
+\item[setup s] Loads the setup files to the detector (config, parameters, trimbits etc.).
+\item[trimbits fn] Loads the trimbit files fn.snxxx to the detector
+\end{description}
+ 
+ 
+
+\section{Retrieving detector parameters}
+
+
+\verb=sls\_detector\_get [j-][i:]var [arg]=\\
+
+is used to retrieve the detector parameters \verb=var=.\\
+For some commands, an additional argument \verb=arg= is needed.
+
+
+
+\subsection{Standard commands}
+
+
+\begin{description}
+\item[config fname] 
+Dumps the current configuration of the detector to the file fname.
+\item[parameters fname]
+ Dumps the current acquistion parameters of the detector to the file fname.
+\item[settings] 
+Returns the current settings of the detector.
+\item[threshold] 
+For photon counting detectors, returns the detector threshold in eV, -1 if undefined.
+\item[timing]   
+Returns the acquistion timing mode of the detector.
+Refere to the detailed documentation to understand how the different timing modes work.
+\item[outdir] 
+Returns the path where the output files are saved to.
+\item[fname]
+Returns the prefix of the file name for the data output.
+\item[enablefwrite] Returns if data are written to file (1) or not (0).
+\item[exptime] 
+Returns the exposure time of a single acquisition in seconds. 
+Refere to detailed documentation to understand how the different timing modes work. 
+\item[period]  
+Returns the frames period (in s). 
+Refere to detailed documentation to understand how the different timing modes work.
+\item[delay] 
+Returns the delay after trigger in triggered mode (in s). 
+Refere to detailed documentation to understand how the different timing modes work.
+\item[gates] 
+Returns the number of gates per frame in gated (stroboscopic) mode. 
+Refere to detailed documentation to understand how the different timing modes work.
+\item[frames]  
+Returns the number of frames acquired sequentially per cycle (e.g. after each trigger), with the exposure time defined by exptime and the period defined by period (unless in gated mode).
+Note that the total number of images is  frames times cycles.  
+Refere to detailed documentation to understand how the different timing modes work. 
+\item[cycles n] 
+Returns the number of cycles (e.g. number of triggers). 
+Note that the total number of images is  frames times cycles. 
+Refere to detailed documentation to understand how the different timing modes work.  
+\item[probes]  Returns the number of probes to accumulate for stroboscopic measurements.  
+Refere to detailed documentation to understand how the different timing modes work.
+\item[measurements] Returns the number of repetitions of the acquisitions (non real time!). 
+Refere to detailed documentation to understand how the different timing modes work.
+\item[dr] Returns the dynamic range n (in bits) of the data for a photon counting detector. 
+\item[flags s] Returns the flags set for your detector. 
+\item[help cmd]  Returns the help for command cmd.
+\item[lock] Returns if the detector is locked to a single PC.
+\item[lastclient] Returns the last client which has connected to the detector.
+\item[nmod n] Returns the number of modules which are read out. Will be replaced by ROI.
+\item[maxmod] Returns the maximum number of modules (size) of the detector.  Will be replaced by size.
+\end{description}
+
+
+
+
+
+
+
+
+\subsection{Postprocessing commands}
+\begin{description}      
+\item[flatfield] Returns the flat field file name. 
+\item[ratecorr] Returns the dead time used for rate corrections.
+\end{description}
+
+
+\subsubsection{Angular conversion}
+
+\begin{description}
+\item[fineoff] Returns the fine offset used to convert channel number to angles
+\item[samplex] Returns the sample displacement from the center of the diffractometerin the X-ray direction, to improve angular conversion (unused).
+\item[sampley] Returns the sample displacement from the center of the diffractometer in the ortogonal direction, to improve angular conversion (unused)
+\end{description}
+
+\subsection{Acquisition}
+See SLS Detectors Documentation for a detailed description of the acquisition flow.
+\begin{description}
+\item[positions] Returns the number of positions n and their value.
+ \item[startscript] Returns the script to be executed at the beginning of each measurement. 
+  \item[startscriptpar] Returns the parameter to be passed to the start script
+ \item[stopscript] Returns the script to be executed at the end of each measurement.  
+ \item[stopscriptpar] Returns the parameter to be passed to the stop script.
+ \item[scriptbefore] Returns the script to be executed before each acquisition. 
+ \item[scriptbeforepar]  Returns the parameter to be passed to the script before.
+ \item[scriptafter]   Returns the script to be executed after each acquisition.        
+ \item[scriptafterpar]    Returns the parameter to be passed to the script after.    
+ \item[headerbefore]   Returns the script to be executed to acquire the header of the acquisition.    
+ \item[headerbeforepar]   Returns the parameter to be passed to the header before.
+ \item[headerafter]       Returns the script to be executed to append to the header of the acquisition. 
+ \item[headerafterpar]   Returns the parameter to be passed to the header after.
+ \item[scan0scripts]   Returns the script to execute at scan 0 level.  
+ \item[scan0par] Returns a parameter to be passed to the scan 0 level script.      
+ \item[scan0prec]   Returns the number of decimal digits for the scan0 level parameter in the file name (default is 0).
+ \item[scan0steps]  Returns the number of scan 0 level steps n and their value.      
+ \item[scan0range] Same as   scan0steps.  
+ \item[scan1script]      Returns the script to execute at scan 1 level.  
+ \item[scan1par]     Returns a parameter to be passed to the scan 1 level script.          
+ \item[scan1prec]        Returns the number of decimal digits for the scan1 level parameter in the file name (default is 0).
+ \item[scan1steps]     Returns the number of scan 0 level steps n and their value.       
+ \item[scan1range]       Same as scan1steps.   
+\end{description}
+
+\subsection{Debug}
+Commands to be used to retrieve informations about the detector version or perform tests.
+\subsubsection{Version}
+\begin{description}
+\item[moduleversion[:i]]   Returns the version of the module firmware.
+\item[detectornumber]  Returns the serial number of the module (normally the MAC address).
+\item[modulenumber[:i]]    Returns the serial number of the module i.
+\item[detectorversion]  Returns the version of the controller firmware.
+\item[softwareversion] Returns the version of the software running on the detector.
+\item[thisversion]  Returns the version of the control software which is being used.
+\item[detectorsvnversion] Returns the SVN version of the software on the detector.
+\end{description}
+
+\subsubsection{Tests}
+
+\begin{description}  
+\item[digitest[:i]] Makes a digital test of module i.  Afterwards the detector must be reconfigured for the acquisition (settings, threshold, exptime, dr, frames etc.). Returns 0 if succeeded, otherwise an error mask.
+\item[bustest] Makes a digital test of the communication between CPU and FPGA. Returns 0 if succeeded, otherwise the number of errors.
+\item[digibittest]  GOTTHARD?!?!??!
+\item[acqtest]  GOTTHARD?!?!??!
+\item[test]  GOTTHARD?!?!??!
+\end{description}
+
+
+
+\subsection{Advanced commands}
+
+
+\subsubsection{Calibration}
+This operations should be performed only rarely to configure the detector
+
+\begin{description}
+   \item[encallog] returns whether the logging for energy calibration is enabled.
+    \item[angcallog] returns whether the logging for angular calibration is enabled.  
+\end{description}
+
+
+
+
+\subsubsection{Acquisition commands}
+
+It is normally reccomended to use \verb=sls\_detector\_acquire [j-]=, which takes care of everything
+\begin{description}
+\item[acquire] Same as \verb=sls\_detector\_acquire=
+\item[data] Gets, saves and processes all data stored on the detector, if any.
+\item[frame]  Gets, saves and processes one frame stored on the detector, if any in a Firt-In/First-Out mode.
+\item[status] Returns the detector status - can be: running, error, transmitting, finished, waiting or idle
+\item[online] Returns whether the detector is in online or offline mode.  
+\item[checkonline] Returns whether the detector is in online or offline mode. 
+\item[readctr i fname] GOTTHARD related - reads counter in detector to file fname, restarts acquisition if i=1
+%\item[resetctr i] GOTTHARD- ADVANCED- resets counter in detector, restarts acquisition if i=1
+\item[exptimel]  Returns the exposure time left for the current frame.      
+\item[periodl]  Returns the period left for the current frame.  
+\item[delayl]    Returns the delay after trigger left for the current frame.  
+\item[gatesl]     Returns the number of gates left for the current frame.  
+\item[framesl]   Returns the number of frames left for the current cycle.  
+\item[cyclesl]      Returns the number of cycles left for the current acquisition. 
+\item[now]  Returns the current timestamp of the detector clock.
+\item[timestamp]  Returns the timestamp of the acquisitions in a First-In/First-Out mode i.e. every time it is called it returns the timestamp of the first acquisition start of readout. The FIFO is reset everytime the acquisition is started. 
+\end{description}
+
+
+
+\subsubsection{Configuration}
+Advanced commands to configure the detector system. Should be left to the configuration file
+\begin{description}
+\item[type] Returns the types of detector controlelrs in the system. 
+\item[hostname] Returns the hostnames or IP addresses for the detector
+\item[d:extsig:i] Returns the usage of the external IO signal i of the controller d.
+\item[master] Returns the master of the acquisition in a multicontroller detector. -1 is none.
+\item[sync] Returns the synchronization mode of the various controller within a detector structure. 
+\item[trimdir] Same ad settingsdir.
+\item[settingsdir] Returns the path of the drectory where the trim/settings files are stored.
+\item[caldir]   Returns the path of the drectory where the calibration files are stored. 
+\item[trimen n e1 e2 ...en] Unused. Returns the list of energies for which trimfiles exist.
+\item[port] Returns the port used by the sockets to control the detector. 
+\item[stopport]Returns the port used by the sockets to stop/get the status of the detector.
+%\item[add s] Avoid using it. Adds the controller s to the detector structure.  
+%\item[remove i] Avoid using it. Removes the controller in position i from the detector structure.  
+\item[id[:i]]        returns the id of the detector structure. i is the detector position in a multi detector system
+\item[free]  Avoid using it. Frees the shared memory. 
+\end{description}
+
+
+\subsubsection{Receiver -  GOTTHARD only}
+\begin{description}
+\item[receiverip] Returns receiver ip. 
+\item[receivermac]Returns the receiver mac. 
+\item[servermac] Returns the server mac. 
+\item[dataport]  Returns the communication port to the receiver.  
+\item[r\_online b] Returns whether the receiver in online (1) or offline (0) mode.           
+\item[r\_checkonline]       Returns whether the receiver in online (1) or offline (0) mode.   
+\item[framescaught]       Returns the number of frames received.      
+\item[frameindex]     Returns the index of the last frame received.      
+\item[r\_lock] Returns whether the reciever is locked (1) or unlocked (0).   
+\item[r\_lastclient]    Returns the IP of the last client which connected to the receiver. 
+%\item[receiver s ] starts/stops the receiver to listen to detector packets. - can be start or stop
+\end{description} 
+
+\subsubsection{Postprocessing}
+Some advanced commands to configure data postprocessing.
+\begin{description}      
+\item[ffdir] Returns the directory where the flat field files are stored.
+\item[darkimage fname] GOTTHARD- ADVANCED- Returns the dark image file for the detector.       
+\item[gainimage fname] GOTTHARD- ADVANCED- Returns gain image file for the detector. 
+\item[badchannels fname] Returns bad channel file to fname.    
+\item[threaded b] Returns whether the data are written to disk in parallel with the acquisition (1) or after the acquistion (0).      
+\end{description}
+
+
+\textbf{Angular conversion}
+
+\begin{description}
+\item[globaloff]   Returns the  offset  of the beamline i.e. angular position of channel 0 when angular encoder at 0. 
+\item[angconv] Returns the file used for the coefficients for angular conversion.
+\item[binsize] Returns the size of the angular bins for angular coversion. 
+\item[angdir] Returns the angular direction of the detector (1 means channel number in the same direction as the angular encoder, -1 different direction). 
+\item[d:moveflag]  Related to a single controller d. Returns 1 if the detector modules move with the angular encoder, 0 if they are static (useful for multidetector systems).
+\end{description}
+
+
+
+\subsection{Detector settings}
+Advanced settings changing the analog or digital performance of the acquisition. Use them only if you are sure of what you are doing!
+
+\begin{description}
+\item[vthreshold]  Returns the DAC value of the detector threshold to n.   
+\item[vcalibration]      Returns the DAC value of the calibration pulse amplitude to n.   
+\item[vtrimbit]  Returns the DAC value defining the trimbits LSB size to n.
+\item[vpreamp]  Returns the DAC value of the preamp feedback  to n.
+\item[vshaper1]  Returns the DAC value of the shaper1 feedback  to n.  
+\item[vshaper2]  Returns the DAC value of the shaper2 feedback  to n.      
+\item[vhighvoltage]   CHIPTEST BOARD ONLY - Returns the DAC value of the high voltage to n.           
+\item[vapower]   CHIPTEST BOARD ONLY - Returns the DAC value of the analog voltage to n. 
+\item[vddpower]     CHIPTEST BOARD ONLY - Returns the DAC value of the analog voltage to n.      
+\item[vshpower]     CHIPTEST BOARD ONLY - Returns the comparator power supply in dac units (0-1024).   
+\item[viopower]     CHIPTEST BOARD ONLY - Returns the FPGA I/O power supply in dac units (0-1024).   
+\item[vref\_ds]  Returns vrefds
+\item[vcascn\_pb]       Returns vcascn\_pb
+\item[vcascp\_pb]       Returns vcascp\_pb
+\item[vout\_cm]   Returns vout\_cm
+\item[vcasc\_out]  Returns  vcasc\_out    
+\item[vin\_cm]  Returns vin\_cm
+\item[vref\_comp]  Returns vref\_comp     
+\item[ib\_test\_c]   Returns ib\_test\_c    
+\item[temp\_adc]    Returns the temperature of the ADCs     
+\item[temp\_fpga] Returns the temperature of the FPGA.
+\item[reg a]   Write to register of address a the data d  
+\item[clkdivider]  Returns the clock divider for the readout.
+\item[setlength]  Returns the length of the set/reset signals in the acquisition.    
+\item[waitstates] Returns the wait states for CPU/FPGA communication. 
+\item[totdivider]  Returns the tot clock divider.
+\item[totdutycycle] Returns the tot duty cycle.
+\item[setup] Dumps all settings to file (config, parameters, trimbits etc.).
+\item[trimbits fn] Dumps the trimbits to the file files fn.snxxx 
+\end{description}
+
+
+\section{Usage}
+
+\subsection{Mandatory setup}
+First, your detector should always be configured for each PC that you might want to use for controlling the detector.
+To do that:
+\begin{verbatim}
+sls_detector_put config mydetector.config
+\end{verbatim}
+Refere to sample configuration files to produce the appropiate one for your detector.
+
+\subsection{Standard acquisition}
+
+You will then need to setup the detector threshold and settings, the exposure time, the number of real time frames and eventually how many real time frames should be acquired:
+\begin{verbatim}
+sls_detector_put settings standard
+sls_detector_put threshold 6000
+sls_detector_put exptime 1.
+sls_detector_put frames 10
+\end{verbatim}
+In this case 10 consecutive 1s frames will be acquired.
+
+You need to setup where the files will be written to
+\begin{verbatim}
+sls_detector_put outdir /scratch
+sls_detector_put fname run
+sls_detector_put index 0
+\end{verbatim}
+this way your files will al be named /scratch/run\_fj\_i.dat where j goes between 0 and 9 and is relative to the frame number, i starts from 0 and is automatically incremented. The next acquistion it will be 1.
+
+
+To acquire simply type
+\begin{verbatim}
+sls_detector_acquire
+\end{verbatim}
+
+
+You can poll the detector status using
+\begin{verbatim}
+sls_detector_get status 
+\end{verbatim}
+
+
+\subsection{Data processing}
+Flat field and rate corrections can be applied direcly by simply selecting:
+\begin{verbatim}
+sls_detector_put flatield myflatfield.raw
+sls_detector_put ratecorr -1
+\end{verbatim}
+
+
+\end{document}
+

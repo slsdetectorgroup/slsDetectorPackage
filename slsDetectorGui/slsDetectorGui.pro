@@ -1,4 +1,14 @@
 
+QT_INSTALL_PREFIX=$(QTDIR)
+QMAKE_UIC = $(QTDIR)/bin/uic
+QMAKE_MOC =  $(QTDIR)/bin/moc
+QMAKE_RCC =  $(QTDIR)/bin/rcc
+QMAKE_INCDIR_QT = $(QTDIR)/include/
+
+QMAKE_LIBS_QT = 	-L$(QTDIR)/lib 
+QMAKE_LIBS = 	-L$(QTDIR)/lib 
+
+
 
 DESTDIR  			?= 		bin
 MOC_DIR   			= 		mocs
@@ -8,16 +18,6 @@ SLSDETLIB ?=../slsDetectorSoftware
 RESOURCES   		+=  	icons.qrc
 
 CONFIG				+=		debug no_include_pwd
-
-QMAKE_INCDIR_QT = $(QTDIR)/include/
-
-QMAKE_LIBS_QT = 	-L$(QTDIR)/lib 
-QMAKE_LIBS = 	-L$(QTDIR)/lib 
-
-QMAKE_UIC = $(QTDIR)/bin/uic
-
-QMAKE_MOC =  $(QTDIR)/bin/moc
-QMAKE_RCC =  $(QTDIR)/bin/rcc
 
 QMAKE_CXXFLAGS_WARN_ON = 	-w 
 QMAKE_CFLAGS_WARN_ON   = 	-w

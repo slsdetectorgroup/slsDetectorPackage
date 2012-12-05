@@ -84,7 +84,7 @@ void qTabActions::SetupWidgetWindow(){
 
 
 
-	int hIndent=0, vIndent=0, colspan=6;
+	int hIndent=0, vIndent=0, colspan=6, posVal=0;
 	QLabel *lblReal;
 	// For each level of Actions
 	for(int i=0;i<NumTotalActions;i++){
@@ -118,14 +118,16 @@ void qTabActions::SetupWidgetWindow(){
 			break;
 		case Scan0:
 		case Scan1:
-			scanWidget[qScanWidget::NUM_SCAN_WIDGETS] = new qScanWidget(this,myDet);
-			gridLayout->addWidget(scanWidget[qScanWidget::NUM_SCAN_WIDGETS-1],vIndent+1,hIndent+1,1,colspan);
-			scanWidget[qScanWidget::NUM_SCAN_WIDGETS-1]->hide();
+		        posVal = qScanWidget::NUM_SCAN_WIDGETS;
+			scanWidget[posVal] = new qScanWidget(this,myDet);
+			gridLayout->addWidget(scanWidget[posVal],vIndent+1,hIndent+1,1,colspan);
+			scanWidget[posVal]->hide();
 			break;
 		default:
-			actionWidget[qActionsWidget::NUM_ACTION_WIDGETS] = new qActionsWidget(this,myDet);
-			gridLayout->addWidget(actionWidget[qActionsWidget::NUM_ACTION_WIDGETS-1],vIndent+1,hIndent+1,1,colspan);
-			actionWidget[qActionsWidget::NUM_ACTION_WIDGETS-1]->hide();
+		        posVal = qActionsWidget::NUM_ACTION_WIDGETS;
+			actionWidget[posVal] = new qActionsWidget(this,myDet);
+			gridLayout->addWidget(actionWidget[posVal],vIndent+1,hIndent+1,1,colspan);
+			actionWidget[posVal]->hide();
 			break;
 		}
 

@@ -34,7 +34,7 @@ int main(int argc, char *argv[])
 				cout << "no config file name given. Exiting." << endl;
 				return -1;
 			}
-			fname.assign(argv[iarg]);
+			fname.assign(argv[iarg+1]);
 		}
 		if(!strcasecmp(argv[iarg],"-shortfname"))
 			shortfname = true;

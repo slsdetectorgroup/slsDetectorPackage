@@ -156,6 +156,9 @@ public:
 
 
 private:
+
+	static const int MAX_FRAMES_PER_FILE = 20000;
+
 	/** Complete File name */
 	char savefilename[MAX_STR_LENGTH];
 

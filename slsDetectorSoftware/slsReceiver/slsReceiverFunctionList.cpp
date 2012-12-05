@@ -251,6 +251,7 @@ int slsReceiverFunctionList::startListening(){
 				if(fifo->isFull())
 					cout<<"**********************FIFO FULLLLLLLL************************"<<endl;
 				else{
+					cout<<"read index:"<<(int)(*(int*)buffer)<<endl;
 					dataReadFrame = new dataStruct;
 					dataReadFrame->buffer=buffer;
 					dataReadFrame->rc=rc;
@@ -320,8 +321,8 @@ int slsReceiverFunctionList::startWriting(){
 
 	while(listening_thread_running){
 
-		//when it reaches 20000,start writing new file
-		if (framesInFile == 20000) {
+		//when it reaches MAX_FRAMES_PER_FILE,start writing new file
+		if (framesInFile == MAX_FRAMES_PER_FILE) {
 			fclose(sfilefd);
 
 			//create file name
@@ -354,6 +355,7 @@ int slsReceiverFunctionList::startWriting(){
 				framesCaught++;
 				totalFramesCaught++;
 				memcpy(latestData,dataWriteFrame->buffer,BUFFER_SIZE);
+				//cout<<"list write \t index:"<<(int)(*(int*)latestData)<<endl;
 				fwrite(dataWriteFrame->buffer, 1, dataWriteFrame->rc, sfilefd);
 				framesInFile++;
 				delete dataWriteFrame->buffer;

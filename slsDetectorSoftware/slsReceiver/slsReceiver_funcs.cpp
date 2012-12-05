@@ -607,7 +607,7 @@ int	slsReceiverFuncs::read_frame(){
 			index2= (int)(*((int*)((char*)(raw+onebuffersize))));
 			memcpy(origVal,raw,BUFFER_SIZE);
 			raw=NULL;
-			//cout<<"index:"<<index<<"\tindex2:"<<index2<<endl;
+			//cout<<"funcs\tindex:"<<index<<"\tindex2:"<<index2<<endl;
 
 
 			//1 odd, 1 even

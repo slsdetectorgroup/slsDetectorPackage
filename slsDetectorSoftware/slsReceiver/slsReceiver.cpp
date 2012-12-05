@@ -7,6 +7,7 @@
 
 
 #include <signal.h>	//SIGINT
+#include <cstdlib>	//EXIT
 
 #include <iostream>
 using namespace std;

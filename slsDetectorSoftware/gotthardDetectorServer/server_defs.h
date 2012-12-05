@@ -33,8 +33,9 @@
 
 
 
-#define ADCSYNC_VAL   0x32113
-//#define ADCSYNC_VAL 0x22113
+#define ADCSYNC_VAL   			0x22114
+#define TOKEN_RESTART_DELAY		0x88000000
+
 
 
 #ifdef VIRTUAL

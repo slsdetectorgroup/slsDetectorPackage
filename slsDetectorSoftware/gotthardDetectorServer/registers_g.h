@@ -20,6 +20,7 @@
 
 
 /* registers defined in FPGA */
+#define PCB_REV_REG			  0x2c<<11
 #define GAIN_REG              0x10<<11
 //#define FLOW_CONTROL_REG      0x11<<11
 //#define FLOW_STATUS_REG       0x12<<11

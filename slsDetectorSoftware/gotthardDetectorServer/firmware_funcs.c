@@ -250,13 +250,17 @@ int cleanFifo(){
 	u_int32_t addr, reg, val;
 	printf("\nCleaning FIFO\n");
 	addr=ADC_SYNC_REG;
-	val=ADCSYNC_VAL | ADCSYNC_CLEAN_FIFO_BITS;
+
+	//88322114
+	val=ADCSYNC_VAL | ADCSYNC_CLEAN_FIFO_BITS | TOKEN_RESTART_DELAY;
 	bus_w(addr,val);
 
-	val=ADCSYNC_VAL;
+	//88022114
+	val=ADCSYNC_VAL | TOKEN_RESTART_DELAY;
 	bus_w(addr,val);
+
 	reg=bus_r(addr);
-#ifdef VERBOSE
+#ifdef DDEBUG
 	printf("\nADC SYNC reg:%d\n",reg);
 #endif
 	return OK;
@@ -266,11 +270,21 @@ int cleanFifo(){
 int setDAQRegister(int adcval)
 {
 	u_int32_t addr, reg, val;
-
 	addr=DAQ_REG;
-	int value=0x7f;
-	if(adcval==-1) value=0x13f;
-	val=34+(42<<8)+(value<<16);
+
+	//depended on adcval
+	int packetlength=0x7f;
+	if(adcval==-1) packetlength=0x13f;
+
+	//depended on pcb rev
+	int tokenTiming = 0x2010;
+	if(bus_r(PCB_REV_REG)==1)
+		tokenTiming=0x2018;
+
+
+	val = (packetlength<<16) + tokenTiming;
+	//val=34+(42<<8)+(packetlength<<16);
+
 	reg=bus_r(addr);
 	bus_w(addr,val);
 	reg=bus_r(addr);
@@ -1259,18 +1273,19 @@ int configureMAC(int ipad,long long int macad,long long int servermacad,int ival
 		break;
 	//for all adcs
 	default:
-		bus_w(DAQ_REG,0x13f2a22);
 		reg = (NCHAN*NCHIP)<<CHANNEL_OFFSET;
 		reg&=CHANNEL_MASK;
 		reg|=ACTIVE_ADC_MASK;
 		bus_w(CHIP_OF_INTRST_REG,reg);
 		break;
 	}
-//#ifdef VERBOSE
+
+
+#ifdef DDEBUG
 	printf("Chip of Intrst Reg:%x\n",bus_r(CHIP_OF_INTRST_REG));
 	printf("IP Packet Size:%d\n",ipPacketSize);
 	printf("UDP Packet Size:%d\n",udpPacketSize);
-//#endif
+#endif
 
 	//configuring mac
   u_int32_t addrr=MULTI_PURPOSE_REG;
@@ -1285,9 +1300,9 @@ int configureMAC(int ipad,long long int macad,long long int servermacad,int ival
   mac_conf_regs=(mac_conf*)(CSP0BASE+offset*2);
   tse_conf_regs=(tse_conf*)(CSP0BASE+offset2*2);
 
-//#ifdef VERBOSE
+#ifdef DDEBUG
   printf("***Configuring MAC***\n");
-//#endif
+#endif
 
   if(ival)
     bus_w(addrr,(RESET_BIT|DIGITAL_TEST_BIT)); //0x080,reset mac (reset)

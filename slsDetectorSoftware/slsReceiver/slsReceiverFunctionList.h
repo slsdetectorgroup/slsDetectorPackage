@@ -33,6 +33,16 @@ public:
 	virtual ~slsReceiverFunctionList(){ if(latestData) delete latestData;};
 
 	/**
+	 * Set UDP Port Number
+	 */
+	void setUDPPortNo(int p){server_port = p;};
+
+	/**
+	 * Set Ethernet Interface or IP to listen to
+	 */
+	void setEthernetInterface(char* c);
+
+	/**
 	 * Returns status of receiver: idle, running or error
 	 */
 	runStatus getStatus(){return status;};
@@ -228,14 +238,15 @@ private:
 	/** Server UDP Port*/
 	int server_port;
 
+	/** ethernet interface or IP to listen to */
+	char *eth;
+
 	/** Element structure to put inside a fifo */
 	struct dataStruct {
 	char* buffer;
 	int rc;
 	};
 
-
-	//dataStruct* dataReadFrame;
 	/** circular fifo to read and write data*/
 	CircularFifo<dataStruct,FIFO_SIZE>* fifo;
 

@@ -114,24 +114,25 @@ int slsReceiverFuncs::function_table(){
 	for (int i=0;i<numberOfFunctions;i++)
 		flist[i]=&slsReceiverFuncs::M_nofunc;
 
-	flist[F_SET_FILE_NAME]		=	&slsReceiverFuncs::set_file_name;
-	flist[F_SET_FILE_PATH]		=	&slsReceiverFuncs::set_file_dir;
-	flist[F_SET_FILE_INDEX]		=	&slsReceiverFuncs::set_file_index;
-	flist[F_START_RECEIVER]		=	&slsReceiverFuncs::start_receiver;
-	flist[F_STOP_RECEIVER]		=	&slsReceiverFuncs::stop_receiver;
-	flist[F_GET_RECEIVER_STATUS]=	&slsReceiverFuncs::get_status;
-	flist[F_GET_FRAMES_CAUGHT]	=	&slsReceiverFuncs::get_frames_caught;
-	flist[F_GET_FRAME_INDEX]	=	&slsReceiverFuncs::get_frame_index;
-	flist[F_RESET_FRAMES_CAUGHT]=	&slsReceiverFuncs::reset_frames_caught;
-	flist[F_READ_FRAME]			=	&slsReceiverFuncs::read_frame;
+	flist[F_SET_FILE_NAME]			=	&slsReceiverFuncs::set_file_name;
+	flist[F_SET_FILE_PATH]			=	&slsReceiverFuncs::set_file_dir;
+	flist[F_SET_FILE_INDEX]		 	=	&slsReceiverFuncs::set_file_index;
+	flist[F_SETUP_UDP]				=	&slsReceiverFuncs::setup_udp;
+	flist[F_START_RECEIVER]			=	&slsReceiverFuncs::start_receiver;
+	flist[F_STOP_RECEIVER]			=	&slsReceiverFuncs::stop_receiver;
+	flist[F_GET_RECEIVER_STATUS]	=	&slsReceiverFuncs::get_status;
+	flist[F_GET_FRAMES_CAUGHT]		=	&slsReceiverFuncs::get_frames_caught;
+	flist[F_GET_FRAME_INDEX]		=	&slsReceiverFuncs::get_frame_index;
+	flist[F_RESET_FRAMES_CAUGHT]	=	&slsReceiverFuncs::reset_frames_caught;
+	flist[F_READ_FRAME]				=	&slsReceiverFuncs::read_frame;
 
 	//General Functions
-	flist[F_LOCK_SERVER]		=	&slsReceiverFuncs::lock_receiver;
-	flist[F_SET_PORT]			=	&slsReceiverFuncs::set_port;
-	flist[F_GET_LAST_CLIENT_IP]	=	&slsReceiverFuncs::get_last_client_ip;
-	flist[F_UPDATE_CLIENT]		=	&slsReceiverFuncs::update_client;
-	flist[F_EXIT_SERVER]		=	&slsReceiverFuncs::exit_server;		//not implemented in client
-	flist[F_EXEC_COMMAND]		=	&slsReceiverFuncs::exec_command;	//not implemented in client
+	flist[F_LOCK_SERVER]			=	&slsReceiverFuncs::lock_receiver;
+	flist[F_SET_PORT]				=	&slsReceiverFuncs::set_port;
+	flist[F_GET_LAST_CLIENT_IP]		=	&slsReceiverFuncs::get_last_client_ip;
+	flist[F_UPDATE_CLIENT]			=	&slsReceiverFuncs::update_client;
+	flist[F_EXIT_SERVER]			=	&slsReceiverFuncs::exit_server;		//not implemented in client
+	flist[F_EXEC_COMMAND]			=	&slsReceiverFuncs::exec_command;	//not implemented in client
 
 
 #ifdef VERBOSE
@@ -329,8 +330,6 @@ int slsReceiverFuncs::set_file_dir() {
 
 
 
-
-
 int slsReceiverFuncs::set_file_index() {
 	ret=OK;
 	int retval=-1;
@@ -376,6 +375,88 @@ int slsReceiverFuncs::set_file_index() {
 	//return ok/fail
 	return ret;
 }
+
+
+
+
+
+
+int slsReceiverFuncs::setup_udp(){
+	ret=OK;
+	strcpy(mess,"could not set up udp connection");
+	char retval[MAX_STR_LENGTH]="";
+	char args[2][MAX_STR_LENGTH];
+
+	string temp;
+	int udpport;
+	char eth[MAX_STR_LENGTH];
+
+
+	// receive arguments
+
+	if(socket->ReceiveDataOnly(args,sizeof(args)) < 0 ){
+		strcpy(mess,"Error reading from socket\n");
+		ret = FAIL;
+	}
+cout<<"args[0]:"<<args[0]<<endl;
+cout<<"args[1]:"<<args[1]<<endl;
+	// execute action if the arguments correctly arrived
+#ifdef SLS_RECEIVER_FUNCTION_LIST
+	if (ret==OK) {
+		if (lockStatus==1 && socket->differentClients==1){//necessary???
+			sprintf(mess,"Receiver locked by %s\n", socket->lastClientIP);
+			ret=FAIL;
+		}
+		else if(slsReceiverList->getStatus()==RUNNING){
+			ret = FAIL;
+			strcpy(mess,"cannot set up udp when receiver is running\n");
+		}
+		else{
+			//set up udp port
+			 sscanf(args[1],"%d",&udpport);
+			 slsReceiverList->setUDPPortNo(udpport);
+
+			 //setup udpip
+			 //get ethernet interface or IP to listen to
+			 temp = genericSocket::ipToName(args[0]);
+			 if(temp=="none"){
+				 ret = FAIL;
+				 strcpy(mess, "failed to get ethernet interface or IP to listen to\n");
+			 }
+			 else{
+				 strcpy(eth,temp.c_str());
+				 cout<<"eth:"<<eth<<endl;
+				 slsReceiverList->setEthernetInterface(eth);
+				 //get mac address from ethernet interface
+				 temp = genericSocket::nameToMac(eth);
+				 if(temp=="00:00:00:00:00:00"){
+					 ret = FAIL;
+					 strcpy(mess,"failed to get mac adddress to listen to\n");
+				 }
+				 else{
+					 strcpy(retval,temp.c_str());
+					 cout<<"mac:"<<retval<<endl;
+				 }
+			 }
+		}
+	}
+#endif
+
+	if(ret==OK && socket->differentClients){
+		cout << "Force update" << endl;
+		ret=FORCE_UPDATE;
+	}
+
+	// send answer
+	socket->SendDataOnly(&ret,sizeof(ret));
+	if(ret==FAIL)
+		socket->SendDataOnly(mess,sizeof(mess));
+	socket->SendDataOnly(retval,MAX_STR_LENGTH);
+
+	//return ok/fail
+	return ret;
+}
+
 
 
 
@@ -630,16 +711,15 @@ int	slsReceiverFuncs::read_frame(){
 				}
 
 			}
-#ifdef VERBOSE
 			strcpy(mess,"could not read frame due to more than 20 mismatched indices\n");
-			cout << "same type: index:" << index << "\tindex2:" << index2 << endl;;
-#endif
 			usleep(100000);
 			count++;
 		}
 
-		if(count==20)
+		if(count==20){
 			cout << "same type: index:" << index << "\tindex2:" << index2 << endl;
+			/**send garbage with -1 index to try again*/
+		}
 
 		arg=((index - startIndex)/2)-1;
 
@@ -649,7 +729,7 @@ int	slsReceiverFuncs::read_frame(){
 		cout << "fName:" << fName << endl;
 		cout << "index:" << arg << endl;
 #endif
-	}
+	}else cout<<"failed to start"<<endl;
 
 
 #endif

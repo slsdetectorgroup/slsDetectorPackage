@@ -50,6 +50,9 @@ public:
 	/** Set File path */
 	int set_file_dir();
 
+	/** Set up UDP Details */
+	int setup_udp();
+
 	/** Set File index */
 	int set_file_index();
 

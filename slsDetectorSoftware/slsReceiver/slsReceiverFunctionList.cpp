@@ -41,14 +41,22 @@ slsReceiverFunctionList::slsReceiverFunctionList(bool shortfname):
 				status(IDLE),
 				latestData(NULL),
 				udpSocket(NULL),
-				server_port(DEFAULT_UDP_PORT),
+				server_port(DEFAULT_UDP_PORTNO),
 				fifo(NULL)
 {
 	strcpy(savefilename,"");
 	strcpy(actualfilename,"");
 	strcpy(filePath,"");
 	strcpy(fileName,"run");
+	eth = new char[MAX_STR_LENGTH];
+	strcpy(eth,"");
 
+}
+
+
+
+void slsReceiverFunctionList::setEthernetInterface(char* c){
+	strcpy(eth,c);
 }
 
 
@@ -216,7 +224,11 @@ int slsReceiverFunctionList::startListening(){
 	//  very end of the program.
 	do {
 
-		udpSocket = new genericSocket(server_port,genericSocket::UDP);
+		if(!strlen(eth)){
+			cout<<"error:eth is empty:"<<eth<<endl;
+			break;
+		}
+		udpSocket = new genericSocket(server_port,genericSocket::UDP,eth);
 		if (udpSocket->getErrorStatus()){
 			break;
 		}
@@ -251,7 +263,7 @@ int slsReceiverFunctionList::startListening(){
 				if(fifo->isFull())
 					;//cout<<"**********************FIFO FULLLLLLLL************************"<<endl;
 				else{
-					cout<<"read index:"<<(int)(*(int*)buffer)<<endl;
+					//cout<<"read index:"<<(int)(*(int*)buffer)<<endl;
 					dataReadFrame = new dataStruct;
 					dataReadFrame->buffer=buffer;
 					dataReadFrame->rc=rc;

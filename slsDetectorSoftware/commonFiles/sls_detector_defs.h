@@ -174,9 +174,10 @@ enum detectorType {
 */
 
 enum networkParameter {
-  RECEIVER_IP,  /**< receiver IP */
-  RECEIVER_MAC, /**< receiver mac */
-  SERVER_MAC /**< server MAC */
+  DETECTOR_MAC, 	    /**< detector MAC */
+  RECEIVER_HOSTNAME,  	/**< receiver IP/hostname */
+  RECEIVER_UDP_IP,		/**< receiever UDP IP */
+  RECEIVER_UDP_PORT		/**< receiever UDP Port */
 };
 
 /**
@@ -453,7 +454,7 @@ enum correctionFlags {
 enum portType {
   CONTROL_PORT, /**< control port */ 
   STOP_PORT, /**<stop port */
-  DATA_PORT /**< data port */
+  DATA_PORT /**< receiver tcp port with client*/
 }; 
 
 /** hierarchy in multi-detector structure, if any */

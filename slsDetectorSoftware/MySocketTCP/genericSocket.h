@@ -74,6 +74,7 @@ using namespace std;
 #define DEFAULT_PACKET_SIZE 1286
 #define DEFAULT_PORTNO    1952
 #define DEFAULT_BACKLOG 5
+#define DEFAULT_UDP_PORTNO 50001
 
 class genericSocket{
 
@@ -157,7 +158,6 @@ protocol(p), is_a_server(0), socketDescriptor(-1),file_des(-1), packet_size(DEFA
 
      strcpy(ip,"0.0.0.0");
      clientAddress_length=sizeof(clientAddress);
-     
      if (eth) {
        strcpy(ip,nameToIp(string(eth)).c_str());
        if (string(ip)==string("0.0.0.0"))
@@ -432,7 +432,8 @@ protocol(p), is_a_server(0), socketDescriptor(-1),file_des(-1), packet_size(DEFA
 	   sa = (struct sockaddr_in *)(iap->ifa_addr);
 	   inet_ntop(iap->ifa_addr->sa_family, (void *)&(sa->sin_addr), buf, sizeof(buf));
 	   if (ip==string(buf)) {
-	     printf("%s\n", iap->ifa_name);
+	     //printf("%s\n", iap->ifa_name);
+	     strcpy(buf,iap->ifa_name);
 	   }
 	 }
        }

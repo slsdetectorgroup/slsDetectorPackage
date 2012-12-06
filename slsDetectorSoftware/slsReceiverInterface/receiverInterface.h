@@ -4,6 +4,7 @@
 #ifndef SLS_RECEIVER_INTERFACE_H
 #define SLS_RECEIVER_INTERFACE_H
 
+#include "sls_detector_defs.h"
 #include "MySocketTCP.h"
 
 
@@ -47,6 +48,15 @@ public:
 	 * \returns success of operation
 	 */
 	int sendString(int fnum, char retval[], char arg[]);
+
+	/**
+	 * Send a string to receiver
+	 * @param fnum function enum to send udp ip and udp port
+	 * @param retval return value receiver mac
+	 * @param arg value to send
+	 * \returns success of operation
+	 */
+	int sendUDPDetails(int fnum, char retval[], char arg[2][MAX_STR_LENGTH]);
 
 
 	/**

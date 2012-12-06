@@ -1129,11 +1129,11 @@ int setDACRegister(int idac, int val, int imod) {
 
 int getTemperature(int tempSensor, int imod){
   int val;
-  char cTempSensor[2][100]={"ADCs/ASICs","VRs/FPGAs"};
   imod=0;//ignoring more than 1 mod for now
   int i,j,repeats=6;
   u_int32_t tempVal=0;
 #ifdef VERBOSE
+  char cTempSensor[2][100]={"ADCs/ASICs","VRs/FPGAs"};
   printf("Getting Temperature of module:%d for the %s for tempsensor:%d\n",imod,cTempSensor[tempSensor],tempSensor);
 #endif
   bus_w(TEMP_IN_REG,(T1_CLK_BIT)|(T1_CS_BIT)|(T2_CLK_BIT)|(T2_CS_BIT));//standby
@@ -1250,7 +1250,7 @@ int initConfGain(int isettings,int val,int imod){
 }
 
 
-int configureMAC(int ipad,long long int macad,long long int servermacad,int ival, int adc){
+int configureMAC(int ipad,long long int macad,long long int servermacad,int ival, int adc,int udpport){
 	//setting daqregister
 	setDAQRegister(adc);
 	//setting adc mask
@@ -1409,7 +1409,7 @@ int configureMAC(int ipad,long long int macad,long long int servermacad,int ival
   //#endif
 
   mac_conf_regs->udp.udp_srcport      = 0xE185;
-  mac_conf_regs->udp.udp_destport     = 0xC351;
+  mac_conf_regs->udp.udp_destport     = udpport;//0xC351;
   mac_conf_regs->udp.udp_len          = udpPacketSize;//0x050E;    //was  0x0512;
   mac_conf_regs->udp.udp_chksum       = 0x0000;
 
@@ -2231,7 +2231,6 @@ int readCounterBlock(int startACQ, short int CounterVals[]){
 
 	u_int32_t val;
 	volatile u_int16_t *ptr;
-	int i;
 
 	u_int32_t address = COUNTER_MEMORY_REG;
 	ptr=(u_int16_t*)(CSP0BASE+address*2);
@@ -2254,6 +2253,7 @@ int readCounterBlock(int startACQ, short int CounterVals[]){
 
 		memcpy(CounterVals,ptr,dataBytes);
 #ifdef VERBOSE
+		int i;
 		printf("Copied counter memory block with size of %d bytes..\n",dataBytes);
 		for(i=0;i<6;i++)
 			printf("%d: %d\t",i,CounterVals[i]);
@@ -2293,7 +2293,6 @@ int resetCounterBlock(int startACQ){
 	int ret = OK;
 	u_int32_t val;
 	volatile u_int16_t *ptr;
-	int i;
 
 
 	u_int32_t address = COUNTER_MEMORY_REG;
@@ -2324,6 +2323,7 @@ int resetCounterBlock(int startACQ){
 
 		memcpy(counterVals,ptr,dataBytes);
 #ifdef VERBOSE
+		int i;
 		printf("Copied counter memory block with size of %d bytes..\n",(int)sizeof(counterVals));
 		for(i=0;i<6;i=i+2)
 			printf("%d: %d\t",i,*(counterVals+i));

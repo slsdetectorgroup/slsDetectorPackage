@@ -81,8 +81,6 @@ class slsDetector : public slsDetectorUtils, public energyConversion {
     int controlPort;
     /** is the port used to stop the acquisition normally it should not be changed*/
     int stopPort;
-    /** is the port used to communicate with the receiver*/
-    int receiverPort;
 
     /** detector type  \ see :: detectorType*/
     detectorType myDetectorType;
@@ -232,14 +230,18 @@ class slsDetector : public slsDetectorUtils, public energyConversion {
 
 
     /* receiver*/
-
-
-    /** ip address of the receiver **/
-    char receiverIP[MAX_STR_LENGTH];
-    /** mac address of the receiver **/
-    char receiverMAC[MAX_STR_LENGTH];
-    /**  mac address of the server **/
-    char serverMAC[MAX_STR_LENGTH];
+    /** ip address/hostname of the receiver for the client to connect to**/
+    char receiver_hostname[MAX_STR_LENGTH];
+    /** is the port used to communicate between client and the receiver*/
+    int receiverTCPPort;
+    /** is the port used to communicate between detector and the receiver*/
+    int receiverUDPPort;
+    /** ip address of the receiver for the detector to send packets to**/
+    char receiverUDPIP[MAX_STR_LENGTH];
+    /** mac address of receiver for the detector to send packets to **/
+    char receiverUDPMAC[MAX_STR_LENGTH];
+    /**  mac address of the detector **/
+    char detectorMAC[MAX_STR_LENGTH];
     /** online flag - is set if the receiver is connected, unset if socket connection is not possible  */
     int receiverOnlineFlag;
 
@@ -364,7 +366,7 @@ class slsDetector : public slsDetectorUtils, public energyConversion {
   /** returns the detector stop  port  \sa sharedSlsDetector */
   int getStopPort() {return thisDetector->stopPort;};
   /** returns the receiver port  \sa sharedSlsDetector */
-  int getReceiverPort() {return thisDetector->receiverPort;};
+  int getReceiverPort() {return thisDetector->receiverTCPPort;};
  
   /** Locks/Unlocks the connection to the server
       /param lock sets (1), usets (0), gets (-1) the lock
@@ -1614,19 +1616,22 @@ class slsDetector : public slsDetectorUtils, public energyConversion {
 
 
 
-
+  /** returns the  detector MAC address\sa sharedSlsDetector  */
+  char* getDetectorMAC() {return thisDetector->detectorMAC;};
   /** returns the receiver IP address \sa sharedSlsDetector  */
-  char* getReceiverIP() {return thisDetector->receiverIP;};
-  /** returns the  receiver MAC address  \sa sharedSlsDetector  */
-  char* getReceiverMAC() {return thisDetector->receiverMAC;};
-  /** returns the  server MAC address\sa sharedSlsDetector  */
-  char* getServerMAC() {return thisDetector->serverMAC;};
-  /** validates and sets the receiver IP address \sa sharedSlsDetector  */
-  char* setReceiverIP(string receiverIP);
-  /** validates the format of receiver MAC address and sets it \sa sharedSlsDetector  */
-  char* setReceiverMAC(string receiverMAC);
-  /** validates the format of server MAC address and sets it \sa sharedSlsDetector  */
-  char* setServerMAC(string serverMAC);
+  char* getReceiver() {return thisDetector->receiver_hostname;};
+  /** returns the receiver UDP IP address \sa sharedSlsDetector  */
+  char* getReceiverUDPIP() {return thisDetector->receiverUDPIP;};
+  /** returns the receiver UDP IP address \sa sharedSlsDetector  */
+  char* getReceiverUDPPort() {char *c= new char[MAX_STR_LENGTH];sprintf(c,"%d",thisDetector->receiverUDPPort); return c;};
+
+  /** validates the format of detector MAC address and sets it \sa sharedSlsDetector  */
+  char* setDetectorMAC(string serverMAC);
+  /** validates and sets the receiver IP address/hostname \sa sharedSlsDetector  */
+  char* setReceiver(string receiver);
+
+  /** Gets MAC from receiver and sets up UDP Connection */
+  int setUDPConnection(string udpip, string udpport);
 
 
 };

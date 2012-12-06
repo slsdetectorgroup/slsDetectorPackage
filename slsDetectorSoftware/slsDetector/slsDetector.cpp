@@ -453,19 +453,23 @@ int slsDetector::initializeDetectorSize(detectorType type) {
     /** set hostname to default */
     strcpy(thisDetector->hostname,DEFAULT_HOSTNAME);
 
-    /** set client ip address */
-    strcpy(thisDetector->receiverIP,"none");
-    /** set client mac address */
-    strcpy(thisDetector->receiverMAC,"none");
+    /** set receiver tcp port */
+    thisDetector->receiverTCPPort=DEFAULT_PORTNO+2;
+    /** set receiver udp port */
+    thisDetector->receiverUDPPort=DEFAULT_UDP_PORTNO;
+    /** set receiver ip address/hostname */
+    strcpy(thisDetector->receiver_hostname,"none");
+    /** set receiver udp ip address */
+    strcpy(thisDetector->receiverUDPIP,"none");
     /** set server mac address */
-    strcpy(thisDetector->serverMAC,"00:aa:bb:cc:dd:ee");
+    strcpy(thisDetector->detectorMAC,"00:aa:bb:cc:dd:ee");
 
     /** sets onlineFlag to OFFLINE_FLAG */
     thisDetector->onlineFlag=OFFLINE_FLAG;
     /** set ports to defaults */
     thisDetector->controlPort=DEFAULT_PORTNO;
     thisDetector->stopPort=DEFAULT_PORTNO+1;
-    thisDetector->receiverPort=DEFAULT_PORTNO+2;
+
     /** set thisDetector->myDetectorType to type and according to this set nChans, nChips, nDacs, nAdcs, nModMax, dynamicRange, nMod*/
     thisDetector->myDetectorType=type;
     switch(thisDetector->myDetectorType) {
@@ -3459,7 +3463,6 @@ string slsDetector::getLastClientIP() {
 
 int slsDetector::setPort(portType index, int num){
 
-
 	int fnum=F_SET_PORT;
 	int retval;
 	//  uint64_t ut;
@@ -3500,14 +3503,13 @@ int slsDetector::setPort(portType index, int num){
 			break;
 		case DATA_PORT:
 			s=dataSocket;
-			retval=thisDetector->receiverPort;
-			if(strcmp(thisDetector->receiverIP,"none")){
-				if (s==NULL) {cout<<"s is null"<<endl;setReceiverTCPSocket("",retval);}
-				if (dataSocket){cout<<"datasocket now has value"<<endl; s=dataSocket;}
+			retval=thisDetector->receiverTCPPort;
+			if(strcmp(thisDetector->receiver_hostname,"none")){
+				if (s==NULL) setReceiverTCPSocket("",retval);
+				if (dataSocket)s=dataSocket;
 				//else {cout<<"datasocket has no value"<<endl; setReceiverTCPSocket("",retval);}
 			}
 			online =  (thisDetector->receiverOnlineFlag==ONLINE_FLAG);
-			cout<<"online:"<<online<<endl;
 			break;
 		case STOP_PORT:
 			s=stopSocket;
@@ -3548,11 +3550,9 @@ int slsDetector::setPort(portType index, int num){
 				break;
 			case DATA_PORT:
 				if(thisDetector->receiverOnlineFlag==ONLINE_FLAG){
-					cout<<"online,ret=ok"<<endl;
-					thisDetector->receiverPort=retval;
-					cout<<"first trying to set online:"<<setReceiverOnline(ONLINE_FLAG)<<endl;
-					cout<<"Setting up Receiver"<<endl;
-					setReceiverIP(thisDetector->receiverIP);
+					thisDetector->receiverTCPPort=retval;
+					setReceiverOnline(ONLINE_FLAG);
+					setReceiver(thisDetector->receiver_hostname);
 				}
 				break;
 			case STOP_PORT:
@@ -3571,16 +3571,12 @@ int slsDetector::setPort(portType index, int num){
 				thisDetector->controlPort=num;
 				break;
 			case DATA_PORT:
-				if(thisDetector->receiverOnlineFlag==ONLINE_FLAG){
-					cout<<"online,ret=fail"<<endl;
-					thisDetector->receiverPort=retval;
-				}else{
-					cout<<"not online,ret=fail"<<endl;
-					thisDetector->receiverPort=num;
-					if(strcmp(thisDetector->receiverIP,"none")){
-						cout<<"ip not none, Setting up Receiver"<<endl;
-						setReceiverIP(thisDetector->receiverIP);
-					}
+				if(thisDetector->receiverOnlineFlag==ONLINE_FLAG)
+					thisDetector->receiverTCPPort=retval;
+				else{
+					thisDetector->receiverTCPPort=num;
+					if(strcmp(thisDetector->receiver_hostname,"none"))
+						setReceiver(thisDetector->receiver_hostname);
 				}
 				break;
 			case STOP_PORT:
@@ -3596,7 +3592,7 @@ int slsDetector::setPort(portType index, int num){
 		retval=thisDetector->controlPort;
 		break;
 	case DATA_PORT:
-		retval=thisDetector->receiverPort;
+		retval=thisDetector->receiverTCPPort;
 		break;
 	case STOP_PORT:
 		retval=thisDetector->stopPort;
@@ -3609,7 +3605,7 @@ int slsDetector::setPort(portType index, int num){
 
 
 #ifdef VERBOSE
-	cout << thisDetector->controlPort<< " " << thisDetector->receiverPort << " " << thisDetector->stopPort << endl;
+	cout << thisDetector->controlPort<< " " << thisDetector->receiverTCPPort << " " << thisDetector->stopPort << endl;
 #endif 
 
 
@@ -4445,15 +4441,16 @@ int slsDetector::exitServer(){
 char* slsDetector::setNetworkParameter(networkParameter index, string value) {
   
   switch (index) {
-  case RECEIVER_IP:
-    return setReceiverIP(value);
-    break;
-  case RECEIVER_MAC:
-    return setReceiverMAC(value);
-    break;
-  case SERVER_MAC:
-    return setServerMAC(value);
-    break;
+  case DETECTOR_MAC:
+    return setDetectorMAC(value);
+  case RECEIVER_HOSTNAME:
+    return setReceiver(value);
+  case RECEIVER_UDP_IP:
+    setUDPConnection(value,"");
+    return getReceiverUDPIP();
+  case RECEIVER_UDP_PORT:
+    setUDPConnection("",value);
+    return getReceiverUDPPort();
   default:
     return ("unknown network parameter");
   }
@@ -4463,14 +4460,17 @@ char* slsDetector::setNetworkParameter(networkParameter index, string value) {
 char* slsDetector::getNetworkParameter(networkParameter index) {
   
   switch (index) {
-  case RECEIVER_IP:
-    return getReceiverIP();
+  case DETECTOR_MAC:
+    return getDetectorMAC();
     break;
-  case RECEIVER_MAC:
-    return getReceiverMAC();
+  case RECEIVER_HOSTNAME:
+    return getReceiver();
     break;
-  case SERVER_MAC:
-    return getServerMAC();
+  case RECEIVER_UDP_IP:
+    return getReceiverUDPIP();
+    break;
+  case RECEIVER_UDP_PORT:
+    return getReceiverUDPPort();
     break;
   default:
     return ("unknown network parameter");
@@ -4483,14 +4483,16 @@ char* slsDetector::getNetworkParameter(networkParameter index) {
 
 
 
-char* slsDetector::setReceiverIP(string receiverIP){
+char* slsDetector::setReceiver(string receiverIP){
+
+
   int wrongFormat=1;
 
   struct sockaddr_in sa;
   if(receiverIP.length()<16){
     int result = inet_pton(AF_INET, receiverIP.c_str(), &(sa.sin_addr));
     if(result!=0){
-      sprintf(thisDetector->receiverIP,receiverIP.c_str());
+      strcpy(thisDetector->receiver_hostname,receiverIP.c_str());
       wrongFormat=0;
     }
   }
@@ -4499,51 +4501,106 @@ char* slsDetector::setReceiverIP(string receiverIP){
     std::cout<< "IP Address should be VALID and in xxx.xxx.xxx.xxx format" << endl;
   else{
 		if(setReceiverOnline(ONLINE_FLAG)==ONLINE_FLAG){
+
 			setFilePath(fileIO::getFilePath());
 			setFileName(fileIO::getFileName());
 			setFileIndex(fileIO::getFileIndex());
-			if(thisDetector->myDetectorType==GOTTHARD){
-				if(configureMAC()!=OK){
-					setReceiverOnline(OFFLINE_FLAG);
-					std::cout << "could not configure mac" << endl;
-				}
-			}
+			setUDPConnection("","");
 		}else
 			std::cout << "cannot connect to receiver" << endl;
   }
 
-  return thisDetector->receiverIP;
+  return thisDetector->receiver_hostname;
 }
 
 
-char* slsDetector::setReceiverMAC(string receiverMAC){
-  if(receiverMAC.length()==17){
-    if((receiverMAC[2]==':')&&(receiverMAC[5]==':')&&(receiverMAC[8]==':')&&
-       (receiverMAC[11]==':')&&(receiverMAC[14]==':'))
-      sprintf(thisDetector->receiverMAC,receiverMAC.c_str());
-    else
-      return("MAC Address should be in xx:xx:xx:xx:xx:xx format");  
-  }
-  else
-    return("MAC Address should be in xx:xx:xx:xx:xx:xx format");  
-
-  return thisDetector->receiverMAC;
-};
-
-
-char* slsDetector::setServerMAC(string serverMAC){
-  if(serverMAC.length()==17){
-    if((serverMAC[2]==':')&&(serverMAC[5]==':')&&(serverMAC[8]==':')&&
-       (serverMAC[11]==':')&&(serverMAC[14]==':'))
-      sprintf(thisDetector->serverMAC,serverMAC.c_str()); 
+char* slsDetector::setDetectorMAC(string detectorMAC){
+  if(detectorMAC.length()==17){
+    if((detectorMAC[2]==':')&&(detectorMAC[5]==':')&&(detectorMAC[8]==':')&&
+       (detectorMAC[11]==':')&&(detectorMAC[14]==':'))
+      strcpy(thisDetector->detectorMAC,detectorMAC.c_str());
     else
       return("server MAC Address should be in xx:xx:xx:xx:xx:xx format");  
   }
   else
     return("server MAC Address should be in xx:xx:xx:xx:xx:xx format");  
 
-  return thisDetector->serverMAC;
+  return thisDetector->detectorMAC;
 };
+
+
+
+int slsDetector::setUDPConnection(string udpip, string udpport){
+
+	int ret = FAIL;
+	int fnum = F_SETUP_UDP;
+	char args[2][MAX_STR_LENGTH];
+	char retval[MAX_STR_LENGTH]="";
+	struct sockaddr_in sa;
+
+
+
+	//if no udp ip given
+	/*convert to IP if its only a hostname**/
+	if(!strcmp(thisDetector->receiverUDPIP,"none"))
+		strcpy(thisDetector->receiverUDPIP,thisDetector->receiver_hostname);
+
+	//copy to member if given in argument
+	if(udpip.length()){
+		if(udpip.length()<16){
+			int result = inet_pton(AF_INET, udpip.c_str(), &(sa.sin_addr));
+			if(result!=0)
+				strcpy(thisDetector->receiverUDPIP,udpip.c_str());
+			else{
+				std::cout<< "Receiver UDP IP Address should be VALID and in xxx.xxx.xxx.xxx format" << endl;
+				return FAIL;
+			}
+		}
+	}
+	if(udpport.length())
+		sscanf(udpport.c_str(),"%d",&thisDetector->receiverUDPPort);
+
+
+	//copy arguments to args[][]
+	strcpy(args[0],thisDetector->receiverUDPIP);
+	sprintf(args[1],"%d",thisDetector->receiverUDPPort);
+
+
+
+
+	//set up receiver for UDP Connection and get receivermac address
+	if(setReceiverOnline(ONLINE_FLAG)==ONLINE_FLAG){
+#ifdef VERBOSE
+			std::cout << "Setting up UDP Connection for Receiver " << arg[0] << "\t" << arg[1] << std::endl;
+#endif
+			ret=thisReceiver->sendUDPDetails(fnum,retval,args);
+
+			if(ret!=FAIL){
+#ifdef VERBOSE
+				std::cout << "Receiver mac address: " << retval << std::endl;
+#endif
+				strcpy(thisDetector->receiverUDPMAC,retval);
+				strcpy(thisDetector->receiverUDPIP,args[0]);
+				sscanf(args[1],"%d",&thisDetector->receiverUDPPort);
+
+
+				//configure detector with udp details
+				if(configureMAC()!=OK){
+					setReceiverOnline(OFFLINE_FLAG);
+					std::cout << "could not configure mac" << endl;
+				}
+			}
+
+			if(ret==FORCE_UPDATE)
+				updateReceiver();
+	}else{
+		ret=FAIL;
+		std::cout << "cannot connect to receiver" << endl;
+	}
+
+	return ret;
+}
+
 
 
 int slsDetector::configureMAC(int adc){
@@ -4551,27 +4608,32 @@ int slsDetector::configureMAC(int adc){
   int ret=FAIL;
   int fnum=F_CONFIGURE_MAC;
   char mess[100];
-  char arg[3][50];
+  char arg[4][50];
   char cword[50]="", *pcword;
   string sword;
-  strcpy(arg[0],getReceiverIP());
-  strcpy(arg[1],getReceiverMAC());
-  strcpy(arg[2],getServerMAC());
+  //if udpip wasnt initialized in config file
+  if(!(strcmp(thisDetector->receiverUDPIP,"none")))
+	  strcpy(thisDetector->receiverUDPIP,thisDetector->receiver_hostname);
+  strcpy(arg[0],thisDetector->receiverUDPIP);
+  strcpy(arg[1],thisDetector->receiverUDPMAC);
+  strcpy(arg[2],thisDetector->detectorMAC);
+  sprintf(arg[3],"%x",thisDetector->receiverUDPPort);
 
 
 #ifdef VERBOSE
   std::cout<< "Configuring MAC with adc:"<< adc << std::endl;
 #endif
 
+
   for(i=0;i<3;i++){
     if(!strcmp(arg[i],"none")){
-      std::cout<< "Configure MAC Error. IP/MAC Addresses has INVALID format"<< std::endl;
+      std::cout<< "Configure MAC Error. IP/MAC Addresses not set"<< std::endl;
       return FAIL;
     }
   }
 
 #ifdef VERBOSE
-  std::cout<< "IP/MAC Addresses in valid format "<< std::endl;
+  std::cout<< "IP/MAC Addresses valid "<< std::endl;
 #endif
 
   //converting IPaddress to hex. 
@@ -4583,7 +4645,7 @@ int slsDetector::configureMAC(int adc){
   }
   strcpy(arg[0],cword);
 #ifdef VERBOSE
-  std::cout<<"receiver ip:"<<arg[0]<<"."<<std::endl;
+  std::cout<<"receiver udp ip:"<<arg[0]<<"."<<std::endl;
 #endif
   //converting MACaddress to hex.
   sword.assign(arg[1]);
@@ -4601,8 +4663,12 @@ int slsDetector::configureMAC(int adc){
   while(getline(ssstr,sword,':'))
     strcat(arg[2],sword.c_str());
 #ifdef VERBOSE
-  std::cout<<"server mac:"<<arg[2]<<"."<<std::endl;
+  std::cout<<"detecotor mac:"<<arg[2]<<"."<<std::endl;
 #endif
+#ifdef VERBOSE
+  std::cout<<"receiver udp port:"<<arg[3]<<"."<<std::endl;
+#endif
+
   //send to server
   if (thisDetector->onlineFlag==ONLINE_FLAG) {
     if (controlSocket) {
@@ -4968,7 +5034,7 @@ int slsDetector::writeConfigurationFile(ofstream &outfile, int id){
   slsDetectorCommand *cmd=new slsDetectorCommand(this);
   int nvar=15;
 
-  string names[]={				\
+  string names[20]={				\
     "hostname",					\
     "port",					\
     "stopport",					\
@@ -4987,26 +5053,27 @@ int slsDetector::writeConfigurationFile(ofstream &outfile, int id){
 
   // to be added in the future
   //    "trimen",
-  //   "receiverPort",
+  //   "receiverTCPPort",
 	
   if (thisDetector->myDetectorType==GOTTHARD) {
 	names[0]= "hostname";
 	names[1]= "port";
 	names[2]= "stopport";
-	names[3]= "receiverport";
-	names[4]= "settingsdir";
-	names[5]= "angdir";
-	names[6]= "moveflag";
-	names[7]= "lock";
-	names[8]= "caldir";
-	names[9]= "ffdir";
-	names[10]= "extsig";
-    names[11]="receivermac";
-    names[12]="servermac";
-    names[13]="receiverip";
-    names[14]="outdir";
-    names[15]="vhighvoltage";
-    nvar=16;
+	names[3]= "settingsdir";
+	names[4]= "angdir";
+	names[5]= "moveflag";
+	names[6]= "lock";
+	names[7]= "caldir";
+	names[8]= "ffdir";
+	names[9]= "extsig";
+    names[10]="detectormac";
+	names[11]= "rx_tcpport";
+	names[12]= "rx_udpport";
+    names[13]="rx_hostname";
+    names[14]="rx_udpip";
+    names[15]="outdir";
+    names[16]="vhighvoltage";
+    nvar=17;
   }
 
 
@@ -5281,7 +5348,7 @@ slsDetectorDefs::synchronizationMode slsDetector::setSynchronization(synchroniza
 int slsDetector::setReceiverOnline(int off) {
   //	int prev = thisDetector->receiverOnlineFlag;
 	if (off!=GET_ONLINE_FLAG) {
-		if(strcmp(thisDetector->receiverIP,"none")){
+		if(strcmp(thisDetector->receiver_hostname,"none")){
 			thisDetector->receiverOnlineFlag=off;
 			if (thisDetector->receiverOnlineFlag==ONLINE_FLAG){
 				setReceiverTCPSocket();
@@ -5302,7 +5369,7 @@ string slsDetector::checkReceiverOnline() {
     //this already sets the online/offline flag
     setReceiverTCPSocket();
     if(thisDetector->receiverOnlineFlag==OFFLINE_FLAG)
-      return string(thisDetector->receiverIP);
+      return string(thisDetector->receiver_hostname);
     else
       return string("");
   }
@@ -5345,27 +5412,27 @@ int slsDetector::setReceiverTCPSocket(string const name, int const receiver_port
     std::cout<< "setting receiver" << std::endl;
 #endif
     strcpy(thisName,name.c_str());
-    strcpy(thisDetector->receiverIP,thisName);
+    strcpy(thisDetector->receiver_hostname,thisName);
     if (dataSocket){
       delete dataSocket;
       dataSocket=NULL;
     }
   } else
-    strcpy(thisName,thisDetector->receiverIP);
+    strcpy(thisName,thisDetector->receiver_hostname);
 
-  //if receiverPort given
+  //if receiverTCPPort given
   if (receiver_port>0) {
 #ifdef VERBOSE
     std::cout<< "setting data port" << std::endl;
 #endif
     thisRP=receiver_port;
-    thisDetector->receiverPort=thisRP;
+    thisDetector->receiverTCPPort=thisRP;
     if (dataSocket){
       delete dataSocket;
       dataSocket=NULL;
     }
   } else
-    thisRP=thisDetector->receiverPort;
+    thisRP=thisDetector->receiverTCPPort;
 
   //create data socket
   if (!dataSocket) {

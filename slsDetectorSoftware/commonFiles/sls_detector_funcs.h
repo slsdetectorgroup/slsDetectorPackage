@@ -124,7 +124,9 @@ enum {
 
   F_GET_FRAME_INDEX,		/**< gets the frame index */
 
-  F_RESET_FRAMES_CAUGHT     /**< resets the frames caught */
+  F_RESET_FRAMES_CAUGHT,    /**< resets the frames caught */
+
+  F_SETUP_UDP				/**< sets the receiver udp connection and returns receiver mac address */
 
   /* Always append functions hereafter!!! */
 

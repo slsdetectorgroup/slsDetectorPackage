@@ -321,15 +321,19 @@ slsDetectorCommand::slsDetectorCommand(slsDetectorUtils *det)  {
 
   /* communication configuration */
 
-  descrToFuncMap[i].m_pFuncName="receiverip"; //
+  descrToFuncMap[i].m_pFuncName="rx_hostname"; //
   descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdNetworkParameter;
   i++;
 
-  descrToFuncMap[i].m_pFuncName="receivermac"; //
+  descrToFuncMap[i].m_pFuncName="rx_udpip"; //
   descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdNetworkParameter;
   i++;
 
-  descrToFuncMap[i].m_pFuncName="servermac"; //
+  descrToFuncMap[i].m_pFuncName="rx_udpport"; //
+  descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdNetworkParameter;
+  i++;
+
+  descrToFuncMap[i].m_pFuncName="detectormac"; //
   descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdNetworkParameter;
   i++;
 
@@ -337,15 +341,15 @@ slsDetectorCommand::slsDetectorCommand(slsDetectorUtils *det)  {
   descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdConfigureMac;
   i++;
 
+  descrToFuncMap[i].m_pFuncName="rx_tcpport"; //
+  descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdPort;
+  i++;
+
   descrToFuncMap[i].m_pFuncName="port"; //
   descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdPort;
   i++;
 
   descrToFuncMap[i].m_pFuncName="stopport"; //
-  descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdPort;
-  i++;
-
-  descrToFuncMap[i].m_pFuncName="receiverport"; //
   descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdPort;
   i++;
 
@@ -2218,17 +2222,22 @@ string slsDetectorCommand::helpScans(int narg, char *args[], int action) {
 string slsDetectorCommand::cmdNetworkParameter(int narg, char *args[], int action) {
 
   networkParameter t;
-
+  int i;
   if (action==HELP_ACTION)
     return helpNetworkParameter(narg,args,action);
 
-  if (cmd=="receiverip") {
-	  myDet->setOnline(ONLINE_FLAG);
-    t=RECEIVER_IP;
-  } else if (cmd=="receivermac") {
-    t=RECEIVER_MAC;
-  } else if (cmd=="servermac") {
-    t=SERVER_MAC;
+  myDet->setOnline(ONLINE_FLAG);
+
+  if (cmd=="detectormac") {
+	t=DETECTOR_MAC;
+  } else if (cmd=="rx_hostname") {
+    t=RECEIVER_HOSTNAME;
+  } else if (cmd=="rx_udpport") {
+    t=RECEIVER_UDP_PORT;
+  } else if (cmd=="rx_udpip") {
+    t=RECEIVER_UDP_IP;
+    if (!(sscanf(args[1],"%d",&i)))
+      return ("cannot parse argument") + string(args[1]);
   } else return ("unknown network parameter")+cmd;
   
   if (action==PUT_ACTION)
@@ -2244,15 +2253,16 @@ string slsDetectorCommand::helpNetworkParameter(int narg, char *args[], int acti
 
   ostringstream os;  
   if (action==PUT_ACTION || action==HELP_ACTION) {
-    os << "receiverip ip \n sets receiver ip to ip"<< std::endl;
-    os << "receivermac mac \n sets receiver mac to mac"<< std::endl;
-    os << "servermac mac \n sets server mac to mac"<< std::endl;
-  
+	os << "detectormac mac \n sets detector mac to mac"<< std::endl;
+    os << "rx_hostname name \n sets receiver ip/hostname to name"<< std::endl;
+    os << "rx_udpip ip \n sets receiver udp ip to ip"<< std::endl;
+    os << "rx_udpport port \n sets receiver udp port to port"<< std::endl;
   }
   if (action==GET_ACTION || action==HELP_ACTION) {
-    os << "receiverip \n gets receiver ip "<< std::endl;
-    os << "receivermac \n gets receiver mac "<< std::endl;
-    os << "servermac \n gets server mac "<< std::endl;
+	os << "detectormac \n gets detector mac "<< std::endl;
+    os << "rx_hostname \n gets receiver ip "<< std::endl;
+    os << "rx_udpip \n gets receiver udp ip "<< std::endl;
+    os << "rx_udpport \n gets receiver udp port "<< std::endl;
   } 
   return os.str();
 
@@ -2276,7 +2286,7 @@ string slsDetectorCommand::cmdPort(int narg, char *args[], int action) {
 
   if (cmd=="port") {
     index=CONTROL_PORT;
-  } else if (cmd=="receiverport") {
+  } else if (cmd=="rx_tcpport") {
     index=DATA_PORT;
   } else if (cmd=="stopport") {
     index=STOP_PORT;
@@ -2300,13 +2310,13 @@ string slsDetectorCommand::helpPort(int narg, char *args[], int action) {
   ostringstream os;  
   if (action==PUT_ACTION || action==HELP_ACTION) {
     os << "port i \n sets the communication control port"<< std::endl;
-    os << "receiverport i \n sets the communication receiver port"<< std::endl;
+    os << "rx_tcpport i \n sets the communication receiver port"<< std::endl;
     os << "stopport i \n sets the communication stop port "<< std::endl;
   
   }
   if (action==GET_ACTION || action==HELP_ACTION) {
     os << "port  \n gets the communication control port"<< std::endl;
-    os << "receiverport  \n gets the communication receiver port"<< std::endl;
+    os << "rx_tcpport  \n gets the communication receiver port"<< std::endl;
     os << "stopport \n gets the communication stop port "<< std::endl;
   } 
   return os.str();

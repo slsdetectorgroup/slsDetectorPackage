@@ -550,7 +550,6 @@ int get_id(int file_des) {
   // sends back 64 bits!
   int64_t retval;
   int ret=OK;
-  int imod=-1;
   int n=0;
   enum idMode arg;
   
@@ -1892,7 +1891,7 @@ int get_run_status(int file_des) {
 
 
   if (ret!=OK) {
-    printf("get status failed %04x\n");
+    printf("get status failed %04x\n",retval);
     sprintf(mess, "get status failed %08x\n", retval);
     
   } else if (differentClients)
@@ -2749,13 +2748,14 @@ int update_client(int file_des) {
 int configure_mac(int file_des) {
 
   int ret=OK;
-  char arg[3][50];
-  int n,i;
+  char arg[4][50];
+  int n;
 
   int imod=0;//should be in future sent from client as -1, arg[2]
   int ipad;
   long long int imacadd;
   long long int iservermacadd;
+  int udpport;
   int adc=-1;
   
   sprintf(mess,"Can't configure MAC\n");
@@ -2770,7 +2770,9 @@ int configure_mac(int file_des) {
   sscanf(arg[0], "%x", &ipad); 
   sscanf(arg[1], "%llx", &imacadd);
   sscanf(arg[2], "%llx", &iservermacadd);
+  sscanf(arg[3], "%x", &udpport);
 #ifdef VERBOSE
+  int i;
   printf("\ndigital_test_bit in server %d\t",digitalTestBit);
   printf("\nipadd %x\t",ipad); 
   printf("destination ip is %d.%d.%d.%d = 0x%x \n",(ipad>>24)&0xff,(ipad>>16)&0xff,(ipad>>8)&0xff,(ipad)&0xff,ipad);
@@ -2780,6 +2782,7 @@ int configure_mac(int file_des) {
   printf("server macad:%llx\n",iservermacadd);
   for (i=0;i<6;i++) 
     printf("server mac adress %d is 0x%x \n",6-i,(unsigned int)(((iservermacadd>>(8*i))&0xFF)));
+  printf("udp port:0x%x\n",udpport);
   printf("\n");
 #endif 
 
@@ -2796,11 +2799,11 @@ int configure_mac(int file_des) {
     imod=ALLMOD;
 
 //#ifdef VERBOSE
-  printf("Configuring MAC of module %d and adc %d\n", imod, adc);
+  printf("Configuring MAC of module %d and adc %d at port %x\n", imod, adc,udpport);
 //#endif
 #ifdef MCB_FUNCS
   if (ret==OK)
-    configureMAC(ipad,imacadd,iservermacadd,digitalTestBit,adc);
+    configureMAC(ipad,imacadd,iservermacadd,digitalTestBit,adc,udpport);
 #endif
   if (ret==FAIL)
     printf("configuring MAC of mod %d failed\n", imod);

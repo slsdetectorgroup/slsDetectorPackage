@@ -1,5 +1,4 @@
 #include "receiverInterface.h"
-#include "sls_detector_defs.h"
 
 
 #include  <sys/types.h>
@@ -42,6 +41,29 @@ int receiverInterface::sendString(int fnum, char retval[], char arg[]){
 	return ret;
 }
 
+
+
+int receiverInterface::sendUDPDetails(int fnum, char retval[], char arg[2][MAX_STR_LENGTH]){
+	char args[2][MAX_STR_LENGTH];
+	int ret = slsDetectorDefs::FAIL;
+	char mess[100] = "";
+
+	if (dataSocket) {
+		if  (dataSocket->Connect()>=0) {
+			dataSocket->SendDataOnly(&fnum,sizeof(fnum));
+			dataSocket->SendDataOnly(arg,sizeof(args));
+			dataSocket->ReceiveDataOnly(&ret,sizeof(ret));
+			if (ret==slsDetectorDefs::FAIL){
+				dataSocket->ReceiveDataOnly(mess,sizeof(mess));
+				std::cout<< "Receiver returned error: " << mess << std::endl;
+			}
+			else
+				dataSocket->ReceiveDataOnly(retval,MAX_STR_LENGTH);
+		}
+		dataSocket->Disconnect();
+	}
+	return ret;
+}
 
 
 int receiverInterface::sendInt(int fnum, int &retval, int arg){

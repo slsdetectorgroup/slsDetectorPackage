@@ -249,7 +249,7 @@ int slsReceiverFunctionList::startListening(){
 			if(listening_thread_running){
 				//s.assign(buffer);
 				if(fifo->isFull())
-					cout<<"**********************FIFO FULLLLLLLL************************"<<endl;
+					;//cout<<"**********************FIFO FULLLLLLLL************************"<<endl;
 				else{
 					cout<<"read index:"<<(int)(*(int*)buffer)<<endl;
 					dataReadFrame = new dataStruct;

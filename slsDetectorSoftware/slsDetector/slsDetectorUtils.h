@@ -443,8 +443,6 @@ class slsDetectorUtils :  public slsDetectorActions, public postProcessing {
 
 
 
-  /** temporary test fucntion  */
-  int testFunction(int times=0);
   /** 
       write  register 
       \param addr address

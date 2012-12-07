@@ -4439,23 +4439,27 @@ int slsDetector::exitServer(){
 
 
 char* slsDetector::setNetworkParameter(networkParameter index, string value) {
-  
-  switch (index) {
-  case DETECTOR_MAC:
-    return setDetectorMAC(value);
-  case RECEIVER_HOSTNAME:
-    return setReceiver(value);
-  case RECEIVER_UDP_IP:
-    setUDPConnection(value,"");
-    return getReceiverUDPIP();
-  case RECEIVER_UDP_PORT:
-    setUDPConnection("",value);
-    return getReceiverUDPPort();
+	char* answer;
+	int i;
+
+	switch (index) {
+	case DETECTOR_MAC:
+		return setDetectorMAC(value);
+	case RECEIVER_HOSTNAME:
+		return setReceiver(value);
+	case RECEIVER_UDP_IP:
+		return setReceiverUDPIP(value);
+	case RECEIVER_UDP_PORT:
+		sscanf(value.c_str(),"%d",&i);
+		sprintf(answer,"%d",setReceiverUDPPort(i));
+		return answer;
   default:
     return ("unknown network parameter");
   }
 
 }
+
+
 
 char* slsDetector::getNetworkParameter(networkParameter index) {
   
@@ -4481,90 +4485,98 @@ char* slsDetector::getNetworkParameter(networkParameter index) {
 
 
 
-
-
-char* slsDetector::setReceiver(string receiverIP){
-
-
-  int wrongFormat=1;
-
-  struct sockaddr_in sa;
-  if(receiverIP.length()<16){
-    int result = inet_pton(AF_INET, receiverIP.c_str(), &(sa.sin_addr));
-    if(result!=0){
-      strcpy(thisDetector->receiver_hostname,receiverIP.c_str());
-      wrongFormat=0;
-    }
-  }
-
-  if(wrongFormat)
-    std::cout<< "IP Address should be VALID and in xxx.xxx.xxx.xxx format" << endl;
-  else{
-		if(setReceiverOnline(ONLINE_FLAG)==ONLINE_FLAG){
-
-			setFilePath(fileIO::getFilePath());
-			setFileName(fileIO::getFileName());
-			setFileIndex(fileIO::getFileIndex());
-			setUDPConnection("","");
-		}else
-			std::cout << "cannot connect to receiver" << endl;
-  }
-
-  return thisDetector->receiver_hostname;
-}
-
-
 char* slsDetector::setDetectorMAC(string detectorMAC){
   if(detectorMAC.length()==17){
     if((detectorMAC[2]==':')&&(detectorMAC[5]==':')&&(detectorMAC[8]==':')&&
        (detectorMAC[11]==':')&&(detectorMAC[14]==':'))
       strcpy(thisDetector->detectorMAC,detectorMAC.c_str());
     else
-      return("server MAC Address should be in xx:xx:xx:xx:xx:xx format");  
+      return("server MAC Address should be in xx:xx:xx:xx:xx:xx format");
   }
   else
-    return("server MAC Address should be in xx:xx:xx:xx:xx:xx format");  
+    return("server MAC Address should be in xx:xx:xx:xx:xx:xx format");
 
   return thisDetector->detectorMAC;
 };
 
 
 
-int slsDetector::setUDPConnection(string udpip, string udpport){
 
-	int ret = FAIL;
-	int fnum = F_SETUP_UDP;
-	char args[2][MAX_STR_LENGTH];
-	char retval[MAX_STR_LENGTH]="";
+
+char* slsDetector::setReceiver(string receiverIP){
+
+	strcpy(thisDetector->receiver_hostname,receiverIP.c_str());
+
+	if(setReceiverOnline(ONLINE_FLAG)==ONLINE_FLAG){
+		setFilePath(fileIO::getFilePath());
+		setFileName(fileIO::getFileName());
+		setFileIndex(fileIO::getFileIndex());
+		setUDPConnection();
+	}else
+		std::cout << "cannot connect to receiver" << endl;
+
+
+  return thisDetector->receiver_hostname;
+}
+
+
+
+
+char* slsDetector::setReceiverUDPIP(string udpip){
 	struct sockaddr_in sa;
-
-
-
-	//if no udp ip given
-	/*convert to IP if its only a hostname**/
-	if(!strcmp(thisDetector->receiverUDPIP,"none"))
-		strcpy(thisDetector->receiverUDPIP,thisDetector->receiver_hostname);
-
-	//copy to member if given in argument
+	//taking function arguments into consideration
 	if(udpip.length()){
 		if(udpip.length()<16){
 			int result = inet_pton(AF_INET, udpip.c_str(), &(sa.sin_addr));
 			if(result!=0)
 				strcpy(thisDetector->receiverUDPIP,udpip.c_str());
-			else{
-				std::cout<< "Receiver UDP IP Address should be VALID and in xxx.xxx.xxx.xxx format" << endl;
-				return FAIL;
-			}
+			else
+				return ("Receiver UDP IP Address should be VALID and in xxx.xxx.xxx.xxx format");
 		}
 	}
-	if(udpport.length())
-		sscanf(udpport.c_str(),"%d",&thisDetector->receiverUDPPort);
+	return thisDetector->receiverUDPIP;
+}
+
+
+
+
+
+int slsDetector::setReceiverUDPPort(int udpport){
+	thisDetector->receiverUDPPort = udpport;
+	return thisDetector->receiverUDPPort;
+}
+
+
+
+
+int slsDetector::setUDPConnection(){
+
+	int ret = FAIL;
+	int fnum = F_SETUP_UDP;
+	char args[2][MAX_STR_LENGTH];
+	char retval[MAX_STR_LENGTH]="";
+
+
+	//if no udp ip given, use hostname
+	if(!strcmp(thisDetector->receiverUDPIP,"none")){
+		//hostname is an ip address
+		if(strchr(thisDetector->receiver_hostname,'.')!=NULL)
+			strcpy(thisDetector->receiverUDPIP,thisDetector->receiver_hostname);
+		//if hostname not ip, convert it to ip
+		else{
+			struct hostent *he = gethostbyname(thisDetector->receiver_hostname);
+			if (he == NULL){
+				std::cout << "no rx_udpip given and could not convert receiver hostname to ip" << endl;
+				return FAIL;
+			}else
+				strcpy(thisDetector->receiverUDPIP,inet_ntoa(*(struct in_addr*)he->h_addr));
+		}
+	}
 
 
 	//copy arguments to args[][]
 	strcpy(args[0],thisDetector->receiverUDPIP);
 	sprintf(args[1],"%d",thisDetector->receiverUDPPort);
-
 
 
 
@@ -4580,9 +4592,6 @@ int slsDetector::setUDPConnection(string udpip, string udpport){
 				std::cout << "Receiver mac address: " << retval << std::endl;
 #endif
 				strcpy(thisDetector->receiverUDPMAC,retval);
-				strcpy(thisDetector->receiverUDPIP,args[0]);
-				sscanf(args[1],"%d",&thisDetector->receiverUDPPort);
-
 
 				//configure detector with udp details
 				if(configureMAC()!=OK){
@@ -4611,9 +4620,23 @@ int slsDetector::configureMAC(int adc){
   char arg[4][50];
   char cword[50]="", *pcword;
   string sword;
+
   //if udpip wasnt initialized in config file
-  if(!(strcmp(thisDetector->receiverUDPIP,"none")))
-	  strcpy(thisDetector->receiverUDPIP,thisDetector->receiver_hostname);
+  if(!(strcmp(thisDetector->receiverUDPIP,"none"))){
+		//hostname is an ip address
+		if(strchr(thisDetector->receiver_hostname,'.')!=NULL)
+			strcpy(thisDetector->receiverUDPIP,thisDetector->receiver_hostname);
+		//if hostname not ip, convert it to ip
+		else{
+			struct hostent *he = gethostbyname(thisDetector->receiver_hostname);
+			if (he != NULL)
+				strcpy(thisDetector->receiverUDPIP,inet_ntoa(*(struct in_addr*)he->h_addr));
+			else{
+				std::cout << "no rx_udpip given and invalid receiver hostname" << endl;
+				return FAIL;
+			}
+		}
+  }
   strcpy(arg[0],thisDetector->receiverUDPIP);
   strcpy(arg[1],thisDetector->receiverUDPMAC);
   strcpy(arg[2],thisDetector->detectorMAC);

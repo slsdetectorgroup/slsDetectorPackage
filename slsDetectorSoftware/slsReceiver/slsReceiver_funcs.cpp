@@ -398,8 +398,7 @@ int slsReceiverFuncs::setup_udp(){
 		strcpy(mess,"Error reading from socket\n");
 		ret = FAIL;
 	}
-cout<<"args[0]:"<<args[0]<<endl;
-cout<<"args[1]:"<<args[1]<<endl;
+
 	// execute action if the arguments correctly arrived
 #ifdef SLS_RECEIVER_FUNCTION_LIST
 	if (ret==OK) {
@@ -692,14 +691,14 @@ int	slsReceiverFuncs::read_frame(){
 
 
 			//1 odd, 1 even
-			if((index%2)!=index2%2){
+			/*if((index%2)!=index2%2){
 				//ideal situation (should be odd, even(index+1))
-				if(index%2){
+				if(index%2){*/
 					memcpy(retval,((char*) origVal)+2, onedatasize);
 					memcpy((((char*)retval)+onedatasize), ((char*) origVal)+8+onedatasize, onedatasize);
 					ret=OK;
 					break;
-				}
+				/*}
 
 				//swap to even,odd
 				if(index2%2){
@@ -710,7 +709,7 @@ int	slsReceiverFuncs::read_frame(){
 					break;
 				}
 
-			}
+			}*/
 			strcpy(mess,"could not read frame due to more than 20 mismatched indices\n");
 			usleep(100000);
 			count++;

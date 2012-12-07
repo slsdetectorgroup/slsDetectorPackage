@@ -1629,9 +1629,13 @@ class slsDetector : public slsDetectorUtils, public energyConversion {
   char* setDetectorMAC(string serverMAC);
   /** validates and sets the receiver IP address/hostname \sa sharedSlsDetector  */
   char* setReceiver(string receiver);
+  /** validates the format of receiver udp ip and sets it \sa sharedSlsDetector  */
+  char* setReceiverUDPIP(string udpip);
+  /** sets the receiver udp port \sa sharedSlsDetector  */
+  int setReceiverUDPPort(int udpport);
 
   /** Gets MAC from receiver and sets up UDP Connection */
-  int setUDPConnection(string udpip, string udpport);
+  int setUDPConnection();
 
 
 };

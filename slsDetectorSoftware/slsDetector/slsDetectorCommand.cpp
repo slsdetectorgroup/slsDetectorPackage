@@ -431,10 +431,6 @@ slsDetectorCommand::slsDetectorCommand(slsDetectorUtils *det)  {
   descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdDigiTest;
   i++;
 
-  descrToFuncMap[i].m_pFuncName="acqtest"; //
-  descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdDigiTest;
-  i++;
-
   descrToFuncMap[i].m_pFuncName="reg"; //
   descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdRegister;
   i++;
@@ -2232,10 +2228,10 @@ string slsDetectorCommand::cmdNetworkParameter(int narg, char *args[], int actio
 	t=DETECTOR_MAC;
   } else if (cmd=="rx_hostname") {
     t=RECEIVER_HOSTNAME;
-  } else if (cmd=="rx_udpport") {
-    t=RECEIVER_UDP_PORT;
   } else if (cmd=="rx_udpip") {
     t=RECEIVER_UDP_IP;
+  } else if (cmd=="rx_udpport") {
+    t=RECEIVER_UDP_PORT;
     if (!(sscanf(args[1],"%d",&i)))
       return ("cannot parse argument") + string(args[1]);
   } else return ("unknown network parameter")+cmd;
@@ -2814,20 +2810,6 @@ string slsDetectorCommand::cmdDigiTest(int narg, char *args[], int action) {
       return string("undefined number");
   }
 
-  if (cmd=="acqtest") {
-    if (action==GET_ACTION)
-      return string("cannot get ")+cmd;
-    int ival=-1;
-    if (sscanf(args[1],"%d",&ival)) {
-      if(ival<1)
-	return helpDigiTest(narg, args, action);
-      else {
-	sprintf(answer,"%x",myDet->testFunction(ival));
-	return string(answer);
-      }
-    } else
-      return string("undefined number");
-  }
   
   return string("unknown digital test mode ")+cmd;
 
@@ -2842,8 +2824,7 @@ string slsDetectorCommand::helpDigiTest(int narg, char *args[], int action) {
     os << "bustest \t performs test of the bus interface between FPGA and embedded Linux system. Can last up to a few minutes."<< std::endl;
   }
   if (action==PUT_ACTION || action==HELP_ACTION) {
-    os << "digibittest i\t sets a variable in the server to be used in configuremac function. i sets/clears the digital test bit."<< std::endl;
-    os << "acqtest i\t runs start acquisition i number of times."<< std::endl;
+    os << "digibittest i\t will perform test which will plot the unique channel identifier, instead of data."<< std::endl;
   } 
   return os.str();
 }

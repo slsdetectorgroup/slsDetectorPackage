@@ -612,11 +612,6 @@ void slsDetectorUtils::incrementProgress(int i)  {
 
 
 
-int slsDetectorUtils::testFunction(int times) {
-  return 0;
-}
-
-
 
 
 int slsDetectorUtils::retrieveDetectorSetup(string const fname1, int level){

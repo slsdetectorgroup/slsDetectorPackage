@@ -33,10 +33,11 @@
 
 
 
-#define ADCSYNC_VAL   			0x22114
+#define ADCSYNC_VAL   			0x32214
 #define TOKEN_RESTART_DELAY		0x88000000
-
-
+#define TOKEN_RESTART_DELAY_ROI         0x1b000000
+#define TOKEN_TIMING_REV1               0x1f16
+#define TOKEN_TIMING_REV2               0x1f0f
 
 #ifdef VIRTUAL
 #define DEBUGOUT
@@ -45,5 +46,5 @@
 #define CLK_FREQ 32.1E+6
 
 
-#define THIS_SOFTWARE_VERSION 0x20120919
+#define THIS_SOFTWARE_VERSION 0x20121210
 #endif

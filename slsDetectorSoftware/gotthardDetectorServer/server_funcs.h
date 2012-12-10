@@ -65,6 +65,7 @@ int set_dynamic_range(int);
 int set_roi(int);
 int get_roi(int);
 int set_speed(int);
+void prepareADC(void);
 int set_readout_flags(int);
 int execute_trimming(int);
 int lock_server(int);

@@ -29,7 +29,7 @@ int nModX=NMAXMOD;
 int dynamicRange=16;//32;
 int dataBytes=NMAXMOD*NCHIP*NCHAN*2;
 int storeInRAM=0;
-
+int ROI_flag=0;
 u_int32_t *ram_values=NULL;
 volatile char *now_ptr=NULL;
 volatile  u_int16_t *values;
@@ -252,13 +252,21 @@ int cleanFifo(){
 	addr=ADC_SYNC_REG;
 
 	//88322114
+	if (ROI_flag==0) {
 	val=ADCSYNC_VAL | ADCSYNC_CLEAN_FIFO_BITS | TOKEN_RESTART_DELAY;
 	bus_w(addr,val);
-
 	//88022114
 	val=ADCSYNC_VAL | TOKEN_RESTART_DELAY;
 	bus_w(addr,val);
+	}
+	else {
+	  val=ADCSYNC_VAL | ADCSYNC_CLEAN_FIFO_BITS | TOKEN_RESTART_DELAY_ROI;
+	  bus_w(addr,val);
+	  //88022114
+	  val=ADCSYNC_VAL | TOKEN_RESTART_DELAY_ROI;
 
+
+	}
 	reg=bus_r(addr);
 #ifdef DDEBUG
 	printf("\nADC SYNC reg:%d\n",reg);
@@ -277,9 +285,9 @@ int setDAQRegister(int adcval)
 	if(adcval==-1) packetlength=0x13f;
 
 	//depended on pcb rev
-	int tokenTiming = 0x2010;
+	int tokenTiming = TOKEN_TIMING_REV2;
 	if(bus_r(PCB_REV_REG)==1)
-		tokenTiming=0x2018;
+		tokenTiming= TOKEN_TIMING_REV1;
 
 
 	val = (packetlength<<16) + tokenTiming;
@@ -1263,6 +1271,7 @@ int configureMAC(int ipad,long long int macad,long long int servermacad,int ival
 	case 2:
 	case 3:
 	case 4:
+	  ROI_flag=1;
 		reg = (NCHAN*2)<<CHANNEL_OFFSET;
 		reg&=CHANNEL_MASK;
 		int mask =1<<adc;
@@ -1272,8 +1281,9 @@ int configureMAC(int ipad,long long int macad,long long int servermacad,int ival
 		udpPacketSize=256*2+4+8+2;
 		break;
 	//for all adcs
-	default:
-		reg = (NCHAN*NCHIP)<<CHANNEL_OFFSET;
+	default: 
+	  ROI_flag=0;
+	  	reg = (NCHAN*NCHIP)<<CHANNEL_OFFSET;
 		reg&=CHANNEL_MASK;
 		reg|=ACTIVE_ADC_MASK;
 		bus_w(CHIP_OF_INTRST_REG,reg);
@@ -1965,7 +1975,30 @@ int allocateRAM() {
 
 
 }
+int prepareADC(){
+  u_int32_t valw,codata,csmask;              
+  int i,cdx,ddx;
+   cdx=0; ddx=1;
+   csmask=0x7c; //  1111100
+   
+    codata=0;           
+    codata=(0x14<<8)+(0x0);  //command and value;
+    valw=0xff; bus_w(ADC_WRITE_REG,(valw)); // start point
+     valw=((0xffffffff&(~csmask)));bus_w(ADC_WRITE_REG,valw); //chip sel bar down
+    for (i=0;i<24;i++) {
+      valw=valw&(~(0x1<<cdx));bus_w(ADC_WRITE_REG,valw);usleep(0); //cldwn  
+      printf("DOWN 0x%x \n",valw);
+      valw=(valw&(~(0x1<<ddx)))+(((codata>>(23-i))&0x1)<<ddx); bus_w(ADC_WRITE_REG,valw); usleep(0); //write data (i)
+      printf("LOW 0x%x \n",valw);
+      valw=valw+(0x1<<cdx);bus_w(ADC_WRITE_REG,valw); usleep(0); //clkup
+ printf("up  0x%x \n",valw);
+    } 
 
+ valw=valw&(~(0x1<<cdx));usleep(0);
+    valw=0xff; bus_w(ADC_WRITE_REG,(valw)); // stop point =start point */
+
+       return;
+}
 
 
 int clearRAM() {

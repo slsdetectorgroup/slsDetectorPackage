@@ -32,7 +32,6 @@
 #define ALLFIFO 0xffff
 
 
-
 #define ADCSYNC_VAL   			0x32214
 #define TOKEN_RESTART_DELAY		0x88000000
 #define TOKEN_RESTART_DELAY_ROI         0x1b000000

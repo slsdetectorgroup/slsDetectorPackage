@@ -242,6 +242,8 @@ class slsDetector : public slsDetectorUtils, public energyConversion {
     char receiverUDPMAC[MAX_STR_LENGTH];
     /**  mac address of the detector **/
     char detectorMAC[MAX_STR_LENGTH];
+    /**  ip address of the detector **/
+    char detectorIP[MAX_STR_LENGTH];
     /** online flag - is set if the receiver is connected, unset if socket connection is not possible  */
     int receiverOnlineFlag;
 
@@ -1618,6 +1620,8 @@ class slsDetector : public slsDetectorUtils, public energyConversion {
 
   /** returns the  detector MAC address\sa sharedSlsDetector  */
   char* getDetectorMAC() {return thisDetector->detectorMAC;};
+  /** returns the  detector IP address\sa sharedSlsDetector  */
+  char* getDetectorIP() {return thisDetector->detectorIP;};
   /** returns the receiver IP address \sa sharedSlsDetector  */
   char* getReceiver() {return thisDetector->receiver_hostname;};
   /** returns the receiver UDP IP address \sa sharedSlsDetector  */
@@ -1626,7 +1630,9 @@ class slsDetector : public slsDetectorUtils, public energyConversion {
   char* getReceiverUDPPort() {char *c= new char[MAX_STR_LENGTH];sprintf(c,"%d",thisDetector->receiverUDPPort); return c;};
 
   /** validates the format of detector MAC address and sets it \sa sharedSlsDetector  */
-  char* setDetectorMAC(string serverMAC);
+  char* setDetectorMAC(string detectorMAC);
+  /** validates the format of detector IP address and sets it \sa sharedSlsDetector  */
+  char* setDetectorIP(string detectorIP);
   /** validates and sets the receiver IP address/hostname \sa sharedSlsDetector  */
   char* setReceiver(string receiver);
   /** validates the format of receiver udp ip and sets it \sa sharedSlsDetector  */

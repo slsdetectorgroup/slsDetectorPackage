@@ -2750,14 +2750,15 @@ int update_client(int file_des) {
 int configure_mac(int file_des) {
 
   int ret=OK;
-  char arg[4][50];
+  char arg[5][50];
   int n;
 
   int imod=0;//should be in future sent from client as -1, arg[2]
   int ipad;
   long long int imacadd;
-  long long int iservermacadd;
+  long long int idetectormacadd;
   int udpport;
+  int detipad;
   int adc=-1;
   
   sprintf(mess,"Can't configure MAC\n");
@@ -2769,10 +2770,12 @@ int configure_mac(int file_des) {
     ret=FAIL;
   }
 
-  sscanf(arg[0], "%x", &ipad); 
-  sscanf(arg[1], "%llx", &imacadd);
-  sscanf(arg[2], "%llx", &iservermacadd);
-  sscanf(arg[3], "%x", &udpport);
+  sscanf(arg[0], "%x", 		&ipad);
+  sscanf(arg[1], "%llx", 	&imacadd);
+  sscanf(arg[2], "%x", 		&udpport);
+  sscanf(arg[3], "%llx",	&idetectormacadd);
+  sscanf(arg[4], "%x",		&detipad);
+
 #ifdef VERBOSE
   int i;
   printf("\ndigital_test_bit in server %d\t",digitalTestBit);
@@ -2781,12 +2784,13 @@ int configure_mac(int file_des) {
   printf("macad:%llx\n",imacadd);
   for (i=0;i<6;i++) 
     printf("mac adress %d is 0x%x \n",6-i,(unsigned int)(((imacadd>>(8*i))&0xFF)));
-  printf("server macad:%llx\n",iservermacadd);
-  for (i=0;i<6;i++) 
-    printf("server mac adress %d is 0x%x \n",6-i,(unsigned int)(((iservermacadd>>(8*i))&0xFF)));
   printf("udp port:0x%x\n",udpport);
+  printf("detector macad:%llx\n",idetectormacadd);
+  for (i=0;i<6;i++) 
+    printf("detector mac adress %d is 0x%x \n",6-i,(unsigned int)(((idetectormacadd>>(8*i))&0xFF)));
+  printf("detipad %x\n",detipad);
   printf("\n");
-#endif 
+#endif
 
   n = receiveDataOnly(file_des,&adc,sizeof(adc));
   if (n < 0) {
@@ -2805,7 +2809,7 @@ int configure_mac(int file_des) {
 //#endif
 #ifdef MCB_FUNCS
   if (ret==OK)
-    configureMAC(ipad,imacadd,iservermacadd,digitalTestBit,adc,udpport);
+    configureMAC(ipad,imacadd,idetectormacadd,detipad,digitalTestBit,adc,udpport);
 #endif
   if (ret==FAIL)
     printf("configuring MAC of mod %d failed\n", imod);

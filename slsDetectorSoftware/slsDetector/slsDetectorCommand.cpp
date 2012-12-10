@@ -337,6 +337,10 @@ slsDetectorCommand::slsDetectorCommand(slsDetectorUtils *det)  {
   descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdNetworkParameter;
   i++;
 
+  descrToFuncMap[i].m_pFuncName="detectorip"; //
+  descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdNetworkParameter;
+  i++;
+
   descrToFuncMap[i].m_pFuncName="configuremac"; //
   descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdConfigureMac;
   i++;
@@ -2226,6 +2230,8 @@ string slsDetectorCommand::cmdNetworkParameter(int narg, char *args[], int actio
 
   if (cmd=="detectormac") {
 	t=DETECTOR_MAC;
+  }	else if (cmd=="detectorip") {
+	t=DETECTOR_IP;
   } else if (cmd=="rx_hostname") {
     t=RECEIVER_HOSTNAME;
   } else if (cmd=="rx_udpip") {
@@ -2235,7 +2241,7 @@ string slsDetectorCommand::cmdNetworkParameter(int narg, char *args[], int actio
     if (!(sscanf(args[1],"%d",&i)))
       return ("cannot parse argument") + string(args[1]);
   } else return ("unknown network parameter")+cmd;
-  
+
   if (action==PUT_ACTION)
 	  myDet->setNetworkParameter(t, args[1]);
 
@@ -2250,12 +2256,14 @@ string slsDetectorCommand::helpNetworkParameter(int narg, char *args[], int acti
   ostringstream os;  
   if (action==PUT_ACTION || action==HELP_ACTION) {
 	os << "detectormac mac \n sets detector mac to mac"<< std::endl;
+	os << "detectorip ip \n sets detector ip to ip"<< std::endl;
     os << "rx_hostname name \n sets receiver ip/hostname to name"<< std::endl;
     os << "rx_udpip ip \n sets receiver udp ip to ip"<< std::endl;
     os << "rx_udpport port \n sets receiver udp port to port"<< std::endl;
   }
   if (action==GET_ACTION || action==HELP_ACTION) {
 	os << "detectormac \n gets detector mac "<< std::endl;
+	os << "detectorip \n gets detector ip "<< std::endl;
     os << "rx_hostname \n gets receiver ip "<< std::endl;
     os << "rx_udpip \n gets receiver udp ip "<< std::endl;
     os << "rx_udpport \n gets receiver udp port "<< std::endl;

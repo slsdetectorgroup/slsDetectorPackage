@@ -461,8 +461,10 @@ int slsDetector::initializeDetectorSize(detectorType type) {
     strcpy(thisDetector->receiver_hostname,"none");
     /** set receiver udp ip address */
     strcpy(thisDetector->receiverUDPIP,"none");
-    /** set server mac address */
-    strcpy(thisDetector->detectorMAC,"00:aa:bb:cc:dd:ee");
+    /** set detector mac address */
+    strcpy(thisDetector->detectorMAC,DEFAULT_DET_MAC);
+    /** set detector ip address */
+    strcpy(thisDetector->detectorIP,DEFAULT_DET_IP);
 
     /** sets onlineFlag to OFFLINE_FLAG */
     thisDetector->onlineFlag=OFFLINE_FLAG;
@@ -4445,6 +4447,8 @@ char* slsDetector::setNetworkParameter(networkParameter index, string value) {
 	switch (index) {
 	case DETECTOR_MAC:
 		return setDetectorMAC(value);
+	case DETECTOR_IP:
+		return setDetectorIP(value);
 	case RECEIVER_HOSTNAME:
 		return setReceiver(value);
 	case RECEIVER_UDP_IP:
@@ -4466,6 +4470,9 @@ char* slsDetector::getNetworkParameter(networkParameter index) {
   switch (index) {
   case DETECTOR_MAC:
     return getDetectorMAC();
+    break;
+  case DETECTOR_IP:
+    return getDetectorIP();
     break;
   case RECEIVER_HOSTNAME:
     return getReceiver();
@@ -4500,6 +4507,21 @@ char* slsDetector::setDetectorMAC(string detectorMAC){
 };
 
 
+
+char* slsDetector::setDetectorIP(string detectorIP){
+	struct sockaddr_in sa;
+	//taking function arguments into consideration
+	if(detectorIP.length()){
+		if(detectorIP.length()<16){
+			int result = inet_pton(AF_INET, detectorIP.c_str(), &(sa.sin_addr));
+			if(result!=0)
+				strcpy(thisDetector->detectorIP,detectorIP.c_str());
+			else
+				return ("Detector IP Address should be VALID and in xxx.xxx.xxx.xxx format");
+		}
+	}
+	return thisDetector->detectorIP;
+}
 
 
 
@@ -4617,7 +4639,7 @@ int slsDetector::configureMAC(int adc){
   int ret=FAIL;
   int fnum=F_CONFIGURE_MAC;
   char mess[100];
-  char arg[4][50];
+  char arg[5][50];
   char cword[50]="", *pcword;
   string sword;
 
@@ -4639,16 +4661,16 @@ int slsDetector::configureMAC(int adc){
   }
   strcpy(arg[0],thisDetector->receiverUDPIP);
   strcpy(arg[1],thisDetector->receiverUDPMAC);
-  strcpy(arg[2],thisDetector->detectorMAC);
-  sprintf(arg[3],"%x",thisDetector->receiverUDPPort);
-
+  sprintf(arg[2],"%x",thisDetector->receiverUDPPort);
+  strcpy(arg[3],thisDetector->detectorMAC);
+  strcpy(arg[4],thisDetector->detectorIP);
 
 #ifdef VERBOSE
   std::cout<< "Configuring MAC with adc:"<< adc << std::endl;
 #endif
 
 
-  for(i=0;i<3;i++){
+  for(i=0;i<2;i++){
     if(!strcmp(arg[i],"none")){
       std::cout<< "Configure MAC Error. IP/MAC Addresses not set"<< std::endl;
       return FAIL;
@@ -4679,17 +4701,29 @@ int slsDetector::configureMAC(int adc){
 #ifdef VERBOSE
   std::cout<<"receiver mac:"<<arg[1]<<"."<<std::endl;
 #endif
+#ifdef VERBOSE
+  std::cout<<"receiver udp port:"<<arg[2]<<"."<<std::endl;
+#endif
   //converting server MACaddress to hex.
-  sword.assign(arg[2]);
-  strcpy(arg[2],"");
+  sword.assign(arg[3]);
+  strcpy(arg[3],"");
   stringstream ssstr(sword);
   while(getline(ssstr,sword,':'))
-    strcat(arg[2],sword.c_str());
+    strcat(arg[3],sword.c_str());
 #ifdef VERBOSE
-  std::cout<<"detecotor mac:"<<arg[2]<<"."<<std::endl;
+  std::cout<<"detecotor mac:"<<arg[3]<<"."<<std::endl;
 #endif
+  //converting IPaddress to hex.
+  strcpy(cword,"");
+  pcword = strtok (arg[4],".");
+  while (pcword != NULL) {
+    sprintf(arg[4],"%02x",atoi(pcword));
+    strcat(cword,arg[4]);
+    pcword = strtok (NULL, ".");
+  }
+  strcpy(arg[4],cword);
 #ifdef VERBOSE
-  std::cout<<"receiver udp port:"<<arg[3]<<"."<<std::endl;
+  std::cout<<"detector ip:"<<arg[4]<<"."<<std::endl;
 #endif
 
   //send to server
@@ -5090,13 +5124,14 @@ int slsDetector::writeConfigurationFile(ofstream &outfile, int id){
 	names[8]= "ffdir";
 	names[9]= "extsig";
     names[10]="detectormac";
-	names[11]= "rx_tcpport";
-	names[12]= "rx_udpport";
-    names[13]="rx_hostname";
-    names[14]="rx_udpip";
-    names[15]="outdir";
-    names[16]="vhighvoltage";
-    nvar=17;
+    names[11]="detectorip";
+	names[12]= "rx_tcpport";
+	names[13]= "rx_udpport";
+    names[14]="rx_hostname";
+    names[15]="rx_udpip";
+    names[16]="outdir";
+    names[17]="vhighvoltage";
+    nvar=18;
   }
 
 

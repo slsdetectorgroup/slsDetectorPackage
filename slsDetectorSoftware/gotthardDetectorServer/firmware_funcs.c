@@ -1258,7 +1258,7 @@ int initConfGain(int isettings,int val,int imod){
 }
 
 
-int configureMAC(int ipad,long long int macad,long long int servermacad,int ival, int adc,int udpport){
+int configureMAC(int ipad,long long int macad,long long int detectormacad, int detipad, int ival, int adc,int udpport){
 	//setting daqregister
 	setDAQRegister(adc);
 	//setting adc mask
@@ -1361,12 +1361,12 @@ int configureMAC(int ipad,long long int macad,long long int servermacad,int ival
   mac_conf_regs->mac.mac_src_mac5   = 0xDD;     
   mac_conf_regs->mac.mac_src_mac6   = 0xEE;     
   */
-  mac_conf_regs->mac.mac_src_mac1  =((servermacad>>(8*5))&0xFF);
-  mac_conf_regs->mac.mac_src_mac2  =((servermacad>>(8*4))&0xFF);
-  mac_conf_regs->mac.mac_src_mac3  =((servermacad>>(8*3))&0xFF);
-  mac_conf_regs->mac.mac_src_mac4  =((servermacad>>(8*2))&0xFF);
-  mac_conf_regs->mac.mac_src_mac5  =((servermacad>>(8*1))&0xFF);
-  mac_conf_regs->mac.mac_src_mac6  =((servermacad>>(8*0))&0xFF);
+  mac_conf_regs->mac.mac_src_mac1  =((detectormacad>>(8*5))&0xFF);
+  mac_conf_regs->mac.mac_src_mac2  =((detectormacad>>(8*4))&0xFF);
+  mac_conf_regs->mac.mac_src_mac3  =((detectormacad>>(8*3))&0xFF);
+  mac_conf_regs->mac.mac_src_mac4  =((detectormacad>>(8*2))&0xFF);
+  mac_conf_regs->mac.mac_src_mac5  =((detectormacad>>(8*1))&0xFF);
+  mac_conf_regs->mac.mac_src_mac6  =((detectormacad>>(8*0))&0xFF);
   mac_conf_regs->mac.mac_ether_type   = 0x0800;   //ipv4
 
 
@@ -1380,7 +1380,7 @@ int configureMAC(int ipad,long long int macad,long long int servermacad,int ival
   mac_conf_regs->ip.ip_ttl            = 0x70;
   mac_conf_regs->ip.ip_protocol       = 0x11;
   mac_conf_regs->ip.ip_chksum         = 0x0000 ; //6E42 now is automatically computed
-  mac_conf_regs->ip.ip_sourceip       = 0x8181CA2E;
+  mac_conf_regs->ip.ip_sourceip       = detipad; //0x8181CA2E;129.129.202.46
   mac_conf_regs->ip.ip_destip         = ipad; //CA57
 
 #ifdef VERBOSE
@@ -1393,7 +1393,7 @@ int configureMAC(int ipad,long long int macad,long long int servermacad,int ival
 	 mac_conf_regs->mac.mac_dest_mac5,
 	 mac_conf_regs->mac.mac_dest_mac6);
   printf("mac_src:%llx %x:%x:%x:%x:%x:%x\n",
-	 servermacad,
+	 detectormacad,
 	 mac_conf_regs->mac.mac_src_mac1,
 	 mac_conf_regs->mac.mac_src_mac2,
 	 mac_conf_regs->mac.mac_src_mac3,

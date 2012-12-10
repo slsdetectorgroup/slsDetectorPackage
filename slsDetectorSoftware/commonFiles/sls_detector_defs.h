@@ -31,6 +31,10 @@ typedef int dacs_t;
 #else
 typedef float dacs_t;
 #endif
+
+#define DEFAULT_DET_MAC         "00:aa:bb:cc:dd:ee"
+#define DEFAULT_DET_IP          "129.129.202.46"
+
 /** 
     \file sls_detector_defs.h
 This file contains all the basic definitions common to the slsDetector class 
@@ -175,6 +179,7 @@ enum detectorType {
 
 enum networkParameter {
   DETECTOR_MAC, 	    /**< detector MAC */
+  DETECTOR_IP,	 	    /**< detector IP */
   RECEIVER_HOSTNAME,  	/**< receiver IP/hostname */
   RECEIVER_UDP_IP,		/**< receiever UDP IP */
   RECEIVER_UDP_PORT		/**< receiever UDP Port */

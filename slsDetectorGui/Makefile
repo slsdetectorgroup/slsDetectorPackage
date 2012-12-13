@@ -10,7 +10,7 @@ all: $(PROG) Makefile.gui
 
 clean: 
 	if test -e Makefile.gui; then make -f Makefile.gui clean; make -f Makefile.gui mocclean; rm Makefile.gui; else 	make Makefile.gui; make -f Makefile.gui clean; make -f Makefile.gui mocclean;  fi
-	cd manual && make clean
+#	cd manual && make clean
 
 
 

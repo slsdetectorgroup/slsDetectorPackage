@@ -328,7 +328,7 @@ int slsReceiverFunctionList::startWriting(){
 
 	//start writing
 	sfilefd = fopen((const char *) (actualfilename), "w");
-	cout << "Saving to " << actualfilename << ". Ready! " << endl;
+	cout << "Ready! " << endl << "Saving to " << actualfilename << endl;
 
 
 	while(listening_thread_running){

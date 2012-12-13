@@ -391,15 +391,13 @@ void* postProcessing::processData(int delflag) {
 		bool newData=false;
 		char currentfName[MAX_STR_LENGTH];
 		int currentfIndex=0;
-
-		while(1){
+		while(1){cout<<"\t"<<flush;
 			if (checkJoinThread()) break;
 			usleep(200000);
 
 			pthread_mutex_lock(&mg);
 			caught=getCurrentFrameIndex();
 			pthread_mutex_unlock(&mg);
-
 			incrementProgress(caught-prevCaught);
 			if(caught-prevCaught) newData=true;
 			else newData=false;
@@ -414,15 +412,21 @@ void* postProcessing::processData(int delflag) {
 					cout<<"****Detector returned NULL***"<<endl;
 					return 0;
 				}
-				fdata=decodeData(receiverData);
-				delete [] receiverData;
-				if(fdata){
-					if (dataReady) {
-						thisData=new detectorData(fdata,NULL,NULL,getCurrentProgress(),currentfName,getTotalNumberOfChannels());
-						dataReady(thisData, currentfIndex, pCallbackArg);
-						delete thisData;
-						fdata=NULL;
+
+				if(currentfIndex>=0){
+					fdata=decodeData(receiverData);
+					delete [] receiverData;
+					if(fdata){
+						if (dataReady) {
+							thisData=new detectorData(fdata,NULL,NULL,getCurrentProgress(),currentfName,getTotalNumberOfChannels());
+							dataReady(thisData, currentfIndex, pCallbackArg);
+							delete thisData;
+							fdata=NULL;
+						}
 					}
+				}
+				else{
+					cout<<"****Detector returned mismatched indeices***"<<endl;
 				}
 			}
 		}

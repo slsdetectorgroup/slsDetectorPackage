@@ -391,7 +391,9 @@ void* postProcessing::processData(int delflag) {
 		bool newData=false;
 		char currentfName[MAX_STR_LENGTH];
 		int currentfIndex=0;
-		while(1){cout<<"\t"<<flush;
+		while(1){
+			cout.flush();
+			cout<<flush;
 			if (checkJoinThread()) break;
 			usleep(200000);
 

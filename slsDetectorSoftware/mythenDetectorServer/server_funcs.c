@@ -528,7 +528,7 @@ enum externalCommunicationMode{
 
 int get_id(int file_des) {
   // sends back 64 bits!
-  int64_t retval, rev;
+  int64_t retval, rev, dat;
   int ret=OK;
   int imod=-1;
   int n=0;
@@ -584,8 +584,8 @@ int get_id(int file_des) {
 
     sscanf(THIS_REVISION,"$Rev : %x",&rev1);
     rev=((int64_t)rev1);
-    
-    retval=(THIS_SOFTWARE_VERSION<<32) | rev;
+    dat=THIS_SOFTWARE_VERSION;
+    retval=(dat<<32) | rev;
 
     break;
   default:

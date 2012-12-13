@@ -642,7 +642,7 @@ virtual int exitReceiver()=0;
 
   protected:
 
-  static const int64_t thisSoftwareVersion=0x20120124;
+  static const int64_t thisSoftwareVersion=0x$Rev$20120124;
 
  
  

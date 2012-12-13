@@ -87,7 +87,7 @@ htmldoc:
 	cd manual && make html DESTDIR=$(DOCDIR)
 
 clean:
-	cd manual && make clean
+#	cd manual && make clean
 	rm  -rf $(BIN)/sls_detector_put $(BIN)/sls_detector_get $(BIN)/sls_detector_acquire  $(BIN)/sls_detector_help 
 
 install: clients

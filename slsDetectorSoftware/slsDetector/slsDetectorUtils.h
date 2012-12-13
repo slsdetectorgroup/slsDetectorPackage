@@ -61,7 +61,7 @@ class slsDetectorUtils :  public slsDetectorActions, public postProcessing {
   virtual ~slsDetectorUtils(){};
 
 
-  virtual int getNumberOfDetectors(){return 1;};
+  virtual int getNumberOfDetectors(){return 1; };
   
 
 

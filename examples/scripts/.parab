@@ -1,0 +1,36 @@
+header before
+Thu May 31 11:28:55 CEST 2012
+run=-1 
+acquisition time =    1.000000 second(s)
+mythen gain mode = standard
+threshold energy = 6255 eV
+bad channel list = /sls/X04SA/data/x04sa/newMythenSoftware/cal/bad_both.chans
+angle calibration conversion = /sls/X04SA/data/x04sa/newMythenSoftware/cal/ang_both_20120422_good2.off
+beamline offset = 5.088000 deg
+fine offset = 0.000000 deg
+Flat field corrections = 0.000000
+Dead time corrections tau = 0 ns
+X04SA-ES2-TH2:RO.RBV 11.99985 deg
+X04SA-OP-MOX2:ROX.RBV 9.17041130 deg
+X04SA-OP-MOX1:ROX.RBV 9.17683938 deg
+X04SA-DCM:E2 12.4054 keV
+X04SA-ID-GAP:READ 5.015 mm
+ARIDI-PCT:CURRENT 401 mA
+X04SA-ES2-OVEN:TEMP_RBV 1768.00 C
+X04SA-ES2-SAM:TR3 0.00000 mm
+X04SA-ES2-SAM:TR2 0.00000 mm
+X04SA-ES2-SAM:TR1 0.00000 mm
+X04SA-ES2-LT1:TR2.RBV 1213.25000 mm
+X04SA-ES2-SV1:t2.D 0.090
+X04SA-ES2-SV1:t2.C 1.800
+X04SA-ES2-SH1:t2.D 0.150
+X04SA-ES2-SH1:t2.C 8.300
+X04SA-ES2-FI8:SET "Out" (SEVR:INVALID STAT:UDF)
+X04SA-ES2-SC:CH6 46071870
+Thu May 31 11:29:01 CEST 2012
+header after
+X04SA-ES2-SC:CH6 46177281
+X04SA-ES2-TH2:RO.RBV 11.99985 deg
+X04SA-ID-GAP:READ 5.015 mm
+ARIDI-PCT:CURRENT 401 mA
+X04SA-ES2-OVEN:TEMP_RBV 1768.00 C

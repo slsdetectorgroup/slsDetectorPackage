@@ -44,6 +44,9 @@ using namespace std;
 #define DEFAULT_HOSTNAME  "localhost"
 #define DEFAULT_SHM_KEY  5678
 #define THIS_REVISION "$Rev$"
+
+//test
+
 /**
    @short class containing all the possible detector functionalities 
 

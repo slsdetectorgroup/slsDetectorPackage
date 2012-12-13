@@ -43,7 +43,7 @@ using namespace std;
 
 #define DEFAULT_HOSTNAME  "localhost"
 #define DEFAULT_SHM_KEY  5678
-
+#define THIS_REVISION "$Rev$"
 /**
    @short class containing all the possible detector functionalities 
 
@@ -642,7 +642,8 @@ virtual int exitReceiver()=0;
 
   protected:
 
-  static const int64_t thisSoftwareVersion=0x$Rev$20120124;
+
+  static const int64_t thisSoftwareVersion=0x20120124;
 
  
  

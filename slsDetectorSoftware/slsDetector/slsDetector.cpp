@@ -1576,6 +1576,8 @@ int64_t slsDetector::getId( idMode mode, int imod){
   int64_t retval=-1;
   int fnum=F_GET_ID;
   int ret=FAIL;
+  int64_t rev=0;
+
 
   char mess[100];
 
@@ -1588,7 +1590,8 @@ int64_t slsDetector::getId( idMode mode, int imod){
 #endif
   if (mode==THIS_SOFTWARE_VERSION) {
     ret=OK;
-    retval=thisSoftwareVersion;
+    sscanf(THIS_REVISION,"$Rev : %x",&rev);
+    retval=thisSoftwareVersion & rev << 32;
   } else {
     if (thisDetector->onlineFlag==ONLINE_FLAG) {
       if (controlSocket) {

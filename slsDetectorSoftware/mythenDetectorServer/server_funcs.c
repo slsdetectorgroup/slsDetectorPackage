@@ -528,10 +528,11 @@ enum externalCommunicationMode{
 
 int get_id(int file_des) {
   // sends back 64 bits!
-  int64_t retval;
+  int64_t retval, rev;
   int ret=OK;
   int imod=-1;
   int n=0;
+  int rev1;
   enum idMode arg;
   
   sprintf(mess,"Can't return id\n");
@@ -579,7 +580,13 @@ int get_id(int file_des) {
     retval=getMcsVersion();
     break;
   case DETECTOR_SOFTWARE_VERSION:
-    retval=THIS_SOFTWARE_VERSION;
+
+
+    sscanf(THIS_REVISION,"$Rev : %x",&rev1);
+    rev=((int64_t)rev1);
+    
+    retval=(THIS_SOFTWARE_VERSION<<32) | rev;
+
     break;
   default:
     printf("Required unknown id %d \n", arg);

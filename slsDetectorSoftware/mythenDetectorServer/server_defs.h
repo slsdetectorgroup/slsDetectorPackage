@@ -39,4 +39,5 @@
 
 
 #define THIS_SOFTWARE_VERSION 0x20120419
+#define THIS_REVISION "$Rev$"
 #endif

@@ -89,8 +89,8 @@ clean:
 	cd $(GUIDIR) && $(MAKE) clean
 	cd $(RECEIVERDIR) && $(MAKE) clean	
 	cd  $(CALWIZDIR) && $(MAKE) clean	
-	cd $(MANDIR) && $(MAKE) clean
-	cd $(DOCDIR) && rm -rf * 
+#	cd $(MANDIR) && $(MAKE) clean
+#	cd $(DOCDIR) && rm -rf * 
 
 install_lib: 
 	cd $(LIBRARYDIR) && $(MAKE) install DESTDIR=$(LIBDIR) INCLUDES=$(INCLUDES)

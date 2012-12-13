@@ -44,6 +44,9 @@ and to the server programs running on the detector
  * @author Anna Bergamaschi
  * @version 0.1alpha (any string)
  * @see slsDetector
+
+$Revision$
+
 */
 
 

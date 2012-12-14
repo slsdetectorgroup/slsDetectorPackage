@@ -20,6 +20,7 @@ public:
 		char fName[100];
 		strcpy(fName,path.c_str());
 		strcat(fName,"/svnInfo.txt");
+		cout<<"filepath:"<<fName<<endl;
 		//read from file and populate class
 		string sLine,sArgName;
 		ifstream inFile;

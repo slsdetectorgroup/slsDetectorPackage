@@ -24,5 +24,7 @@ svn export $GUIDIRSVN
 #create svnInfo.txt
 cd $LIBDIR
 svn info $LIBDIRSVN > svnInfo.txt
+cd ../$GUIDIR
+svn info $GUIDIRSVN > svnInfo.txt
 
 exit 0

@@ -22,7 +22,7 @@ CONFIG				+=		debug no_include_pwd
 QMAKE_CXXFLAGS_WARN_ON = 	-w 
 QMAKE_CFLAGS_WARN_ON   = 	-w
 
-DEFINES 			+= 		VERBOSE DACS_INT  #VERYVERBOSE 
+DEFINES 			+= 		VERBOSE DACS_INT  THIS_PATH=\\\"$$PWD\\\" #VERYVERBOSE 
 							
 
 target.path 		+= 		$(DESTDIR)

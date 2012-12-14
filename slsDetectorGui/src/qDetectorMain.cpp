@@ -19,6 +19,7 @@
 #include "slsDetector.h"
 #include "multiSlsDetector.h"
 #include "sls_detector_defs.h"
+#include "svnInfo.h"
 // Qt Include Headers
 #include <QSizePolicy>
 #include <QFileDialog>
@@ -531,11 +532,16 @@ void qDetectorMain::ExecuteHelp(QAction *action){
 		cout << "About: Common GUI for Mythen, Eiger, Gotthard and Agipd detectors" << endl;
 #endif
 		char version[200];
+		svnInfo* s = new svnInfo(string(THIS_PATH));
+		sprintf(version,"%llx",(qDefs::GUI_VERSION<<32) | (s->getRevision()));
+		string thisGUIVersion = string(version);
+
 		sprintf(version,"%llx",myDet->getId(slsDetectorDefs::THIS_SOFTWARE_VERSION));
 		string thisClientVersion = string(version);
+
 		//<h1 style="font-family:verdana;">A heading</h1>
 		qDefs::Message(qDefs::INFORMATION,"<p style=\"font-family:verdana;\">"
-				"SLS Detector GUI version:     " + string(QString("%1").arg(GUI_VERSION).toAscii().constData())+"<br>"
+				"SLS Detector GUI version:&nbsp;&nbsp;&nbsp;" + thisGUIVersion+"<br>"
 				"SLS Detector Client version:  "+thisClientVersion+"<br><br>"
 				"Common GUI to control the SLS Detectors: "
 				"Mythen, Eiger, Gotthard and Agipd.<br><br>"

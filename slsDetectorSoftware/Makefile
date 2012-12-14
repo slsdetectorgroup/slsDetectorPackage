@@ -1,7 +1,7 @@
 CFLAGS= -DC_ONLY -fPIC
 #FLAGS+=  #-DVERBOSE -DVERYVERBOSE
 
-DFLAGS= -DDACS_INT
+DFLAGS= -DDACS_INT -DTHIS_PATH='"$(shell pwd)"'
 
 #ASM=$(shell echo "/lib/modules/`uname -r`/build/include")
 
@@ -25,7 +25,6 @@ SRC_MYTHEN_SVC = mythenDetectorServer/server.c mythenDetectorServer/server_funcs
 
 DESTDIR ?= bin
 DOCDIR ?= docs
-
 
 
 

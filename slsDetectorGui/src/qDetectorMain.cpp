@@ -19,7 +19,7 @@
 #include "slsDetector.h"
 #include "multiSlsDetector.h"
 #include "sls_detector_defs.h"
-#include "svnInfo.h"
+#include "svnInfoGui.h"
 // Qt Include Headers
 #include <QSizePolicy>
 #include <QFileDialog>
@@ -97,7 +97,7 @@ void qDetectorMain::SetUpWidgetWindow(){
 
 //tabs setup
 	tabs = new MyTabWidget(this);
-	layoutTabs->addWidget(tabs);	cout<<"DockPlot ready"<<endl;
+	layoutTabs->addWidget(tabs);
 
 // creating all the other tab widgets
 	tab_measurement 	=  new qTabMeasurement	(this,	myDet,myPlot);		cout<<"Measurement ready"<<endl;
@@ -532,8 +532,9 @@ void qDetectorMain::ExecuteHelp(QAction *action){
 		cout << "About: Common GUI for Mythen, Eiger, Gotthard and Agipd detectors" << endl;
 #endif
 		char version[200];
-		svnInfo* s = new svnInfo(string(THIS_PATH));
-		sprintf(version,"%llx",(qDefs::GUI_VERSION<<32) | (s->getRevision()));
+		int64_t retval= SVNREV;
+		retval= (retval <<32) | SVNDATE;
+		sprintf(version,"%llx",retval);
 		string thisGUIVersion = string(version);
 
 		sprintf(version,"%llx",myDet->getId(slsDetectorDefs::THIS_SOFTWARE_VERSION));

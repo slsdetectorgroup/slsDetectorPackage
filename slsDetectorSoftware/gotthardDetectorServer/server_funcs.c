@@ -9,6 +9,7 @@
 #include "mcb_funcs.h"
 #include "trimming_funcs.h"
 #include "registers_g.h"
+#include "svnInfoGotthard.h"
 
 #define FIFO_DATA_REG_OFF     0x50<<11
 #define CONTROL_REG           0x24<<11
@@ -550,7 +551,7 @@ int set_external_communication_mode(int file_des) {
 
 int get_id(int file_des) {
   // sends back 64 bits!
-  int64_t retval;
+  int64_t retval=-1;
   int ret=OK;
   int n=0;
   enum idMode arg;
@@ -573,10 +574,12 @@ int get_id(int file_des) {
     retval=getDetectorNumber();
     break;
   case DETECTOR_FIRMWARE_VERSION:
-    retval=getFirmwareVersion();
+    retval=getFirmwareSVNVersion();
+    retval=(retval <<32) | getFirmwareVersion();
     break;
   case DETECTOR_SOFTWARE_VERSION:
-    retval=THIS_SOFTWARE_VERSION;
+	retval= SVNREV;
+	retval= (retval <<32) | SVNDATE;
     break;
   case DETECTOR_FIRMWARE_SVN_VERSION:
     retval=getFirmwareSVNVersion();

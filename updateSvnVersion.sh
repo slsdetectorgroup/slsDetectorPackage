@@ -3,7 +3,7 @@
 #folders
 MAINDIR=slsDetectorsPackage
 LIBDIR=slsDetectorSoftware
-GUIDIR=slsDetectorGuiOriginal
+GUIDIR=slsDetectorGui
 CALWIZDIR=calibrationWizards
 
 SVNPATH=file:///afs/psi.ch/project/sls_det_software/svn

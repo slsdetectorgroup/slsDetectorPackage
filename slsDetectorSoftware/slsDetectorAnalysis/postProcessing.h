@@ -100,7 +100,7 @@ class postProcessing : public angularConversion, public fileIO, public badChanne
   
 
 
-   int enableWriteToFile(int i=-1) {if (i>0) ((*correctionMask)|=(1<<WRITE_FILE)); else if (i==0) ((*correctionMask)&=~(1<< WRITE_FILE)); return (((*correctionMask)&(1<< WRITE_FILE ))>>WRITE_FILE) ;};
+   int enableWriteToFileMask(int i=-1) {if (i>0) ((*correctionMask)|=(1<<WRITE_FILE)); else if (i==0) ((*correctionMask)&=~(1<< WRITE_FILE)); return (((*correctionMask)&(1<< WRITE_FILE ))>>WRITE_FILE) ;};
 
 
    int setAngularCorrectionMask(int i=-1){if (i==0) (*correctionMask)&=~(1<< ANGULAR_CONVERSION); if (i>0) (*correctionMask)|=(1<< ANGULAR_CONVERSION); return (((*correctionMask)&(1<< ANGULAR_CONVERSION))>>ANGULAR_CONVERSION);};

@@ -1413,7 +1413,7 @@ string slsDetectorCommand::cmdEnablefwrite(int narg, char *args[], int action){
       myDet->enableWriteToFile(i);
     else
       return string("could not decode enable file write");
-    
+
 
   }
   sprintf(ans,"%d",myDet->enableWriteToFile());

@@ -126,7 +126,9 @@ enum {
 
   F_RESET_FRAMES_CAUGHT,    /**< resets the frames caught */
 
-  F_SETUP_UDP				/**< sets the receiver udp connection and returns receiver mac address */
+  F_SETUP_UDP,				/**< sets the receiver udp connection and returns receiver mac address */
+
+  F_ENABLE_FILE_WRITE		/**< sets the receiver file write */
 
   /* Always append functions hereafter!!! */
 

@@ -3825,4 +3825,18 @@ int multiSlsDetector::exitReceiver() {
 
 
 
+int multiSlsDetector::enableWriteToFile(int enable){
+	int ret=-100, ret1;
 
+	for (int idet=0; idet<thisMultiDetector->numberOfDetectors; idet++) {
+		if (detectors[idet]) {
+			ret1=detectors[idet]->enableWriteToFile(enable);
+			if (ret==-100)
+				ret=ret1;
+			else if (ret!=ret1)
+				ret=-1;
+		}
+	}
+
+	return ret;
+}

@@ -4534,6 +4534,7 @@ char* slsDetector::setReceiver(string receiverIP){
 		setFilePath(fileIO::getFilePath());
 		setFileName(fileIO::getFileName());
 		setFileIndex(fileIO::getFileIndex());
+		enableWriteToFile(parentDet->enableWriteToFileMask());
 		setUDPConnection();
 	}else
 		std::cout << "cannot connect to receiver" << endl;
@@ -5955,6 +5956,34 @@ int slsDetector::exitReceiver(){
   }
   return retval;
 
-};
+}
 
 
+
+
+
+int slsDetector::enableWriteToFile(int enable){
+	int fnum=F_ENABLE_FILE_WRITE;
+	int ret = FAIL;
+	int retval=-1;
+	int arg = enable;
+
+
+	if(thisDetector->receiverOnlineFlag==OFFLINE_FLAG){
+		if(enable>=0)
+			parentDet->enableWriteToFileMask(enable);
+	}
+
+	else if(setReceiverOnline(ONLINE_FLAG)==ONLINE_FLAG){
+#ifdef VERBOSE
+		std::cout << "Sending enable file write to receiver " << arg << std::endl;
+#endif
+		ret=thisReceiver->sendInt(fnum,retval,arg);
+		if(ret!=FAIL)
+			parentDet->enableWriteToFileMask(retval);
+		if(ret==FORCE_UPDATE)
+			updateReceiver();
+	}
+
+	return parentDet->enableWriteToFileMask();
+}

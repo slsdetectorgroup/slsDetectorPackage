@@ -1506,6 +1506,13 @@ class slsDetector : public slsDetectorUtils, public energyConversion {
   */
   int exitReceiver();
 
+  /**
+     Sets/Gets receiver file write enable
+     @param enable 1 or 0 to set/reset file write enable
+     /returns file write enable
+  */
+  int enableWriteToFile(int enable=-1);
+
 
   int fillModuleMask(int *mM);
  protected:

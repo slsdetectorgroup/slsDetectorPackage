@@ -14,11 +14,11 @@ GUIDIRSVN=$SVNPATH/$GUIDIR
 
 
 #export
-svn export $MAINDIRSVN
+svn export --force $MAINDIRSVN
 cd $MAINDIR
-svn export $LIBDIRSVN
-svn export $CLIENTDIRSVN
-svn export $GUIDIRSVN
+svn export --force  $LIBDIRSVN
+svn export --force  $CLIENTDIRSVN
+svn export --force  $GUIDIRSVN
 
 
 #create svnInfo.txt

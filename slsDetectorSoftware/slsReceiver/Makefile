@@ -24,5 +24,4 @@ $(PROGS):
 
 
 clean:
-	rm -rf $(PROGS)  *.o  
-
+	rm -rf $(DESTDIR)/$(PROGS)  *.o 

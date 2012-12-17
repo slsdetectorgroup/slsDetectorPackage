@@ -106,6 +106,13 @@ public:
 	int setFileIndex(int i);
 
 	/**
+	 * Set enable file write
+	 * @param i file write enable
+	 * Returns file write enable
+	 */
+	int setEnableFileWrite(int i);
+
+	/**
 	 * Resets the Total Frames Caught
 	 * This is how the receiver differentiates between entire acquisitions
 	 * @param i true if frame index in file name is required, else false
@@ -168,6 +175,9 @@ public:
 private:
 
 	static const int MAX_FRAMES_PER_FILE = 20000;
+
+	/** File write enable */
+	int enableFileWrite;
 
 	/** Complete File name */
 	char savefilename[MAX_STR_LENGTH];

@@ -77,6 +77,9 @@ public:
 	/** Reads Frame/ buffer */
 	int	read_frame();
 
+	/** Enable File Write*/
+	int enable_file_write();
+
 	//General Functions
 	/** Locks Receiver */
 	int	lock_receiver();
@@ -98,6 +101,8 @@ public:
 
 	/** Execute command */
 	int	exec_command();
+
+
 
 //private:
 

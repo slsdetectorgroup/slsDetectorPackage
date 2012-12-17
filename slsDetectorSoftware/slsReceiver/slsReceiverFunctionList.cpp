@@ -26,6 +26,7 @@ FILE* slsReceiverFunctionList::sfilefd(NULL);
 int slsReceiverFunctionList::listening_thread_running(0);
 
 slsReceiverFunctionList::slsReceiverFunctionList(bool shortfname):
+				enableFileWrite(1),
 				shortFileName(shortfname),
 				shortFileNameIndex(0),
 				fileIndex(0),
@@ -53,6 +54,13 @@ slsReceiverFunctionList::slsReceiverFunctionList(bool shortfname):
 
 }
 
+
+
+int slsReceiverFunctionList::setEnableFileWrite(int i){
+	if(i!=-1)
+		enableFileWrite=i;
+	return enableFileWrite;
+}
 
 
 void slsReceiverFunctionList::setEthernetInterface(char* c){
@@ -315,45 +323,54 @@ int slsReceiverFunctionList::startWriting(){
 	framesCaught=0;
 	frameIndex=0;
 
-
 	latestData = new char[BUFFER_SIZE];
+	if(sfilefd) sfilefd=0;
 
-	//create file name
-	if(!frameIndexNeeded)	sprintf(savefilename, "%s/%s_%d.raw", filePath,fileName,fileIndex);
-	else					sprintf(savefilename, "%s/%s_f%012d_%d.raw", filePath,fileName,framesCaught,fileIndex);
+	strcpy(savefilename,"");
+	strcpy(actualfilename,"");
 
-	//for sebastian
-	if(!shortFileName)	strcpy(actualfilename,savefilename);
-	else				sprintf(actualfilename, "%s/%s_%d_%09d.raw", filePath,fileName,fileIndex, 0);
 
-	//start writing
-	sfilefd = fopen((const char *) (actualfilename), "w");
-	cout << "Ready! " << endl << "Saving to " << actualfilename << endl;
+	cout << "Ready!" << endl;
+
+	if(enableFileWrite){
+		//create file name
+		if(!frameIndexNeeded)	sprintf(savefilename, "%s/%s_%d.raw", filePath,fileName,fileIndex);
+		else					sprintf(savefilename, "%s/%s_f%012d_%d.raw", filePath,fileName,framesCaught,fileIndex);
+
+		//for sebastian
+		if(!shortFileName)	strcpy(actualfilename,savefilename);
+		else				sprintf(actualfilename, "%s/%s_%d_%09d.raw", filePath,fileName,fileIndex, 0);
+
+		//start writing
+		sfilefd = fopen((const char *) (actualfilename), "w");
+		cout << "Saving to " << actualfilename << endl;
+	}
 
 
 	while(listening_thread_running){
 
 		//when it reaches MAX_FRAMES_PER_FILE,start writing new file
 		if (framesInFile == MAX_FRAMES_PER_FILE) {
-			fclose(sfilefd);
 
-			//create file name
-			if(!frameIndexNeeded)	sprintf(savefilename, "%s/%s_%d.raw", filePath,fileName,fileIndex);
-			else					sprintf(savefilename, "%s/%s_f%012d_%d.raw", filePath,fileName,framesCaught,fileIndex);
-			//for sebastian
-			if(!shortFileName)		strcpy(actualfilename,savefilename);
-			else					sprintf(actualfilename, "%s/%s_%d_%09d.raw", filePath,fileName,fileIndex, shortFileNameIndex);
-			shortFileNameIndex++;
-
+			if(enableFileWrite){
+				fclose(sfilefd);
+				//create file name
+				if(!frameIndexNeeded)	sprintf(savefilename, "%s/%s_%d.raw", filePath,fileName,fileIndex);
+				else					sprintf(savefilename, "%s/%s_f%012d_%d.raw", filePath,fileName,framesCaught,fileIndex);
+				//for sebastian
+				if(!shortFileName)		strcpy(actualfilename,savefilename);
+				else					sprintf(actualfilename, "%s/%s_%d_%09d.raw", filePath,fileName,fileIndex, shortFileNameIndex);
+				shortFileNameIndex++;
+				//start writing in new file
+				sfilefd = fopen((const char *) (actualfilename), "w");
+				cout << "saving to " << actualfilename << "\t";
+			}
 
 			currframenum=(int)(*((int*)latestData));
-			cout << "saving to " << actualfilename << "\t"
-					"packet loss " << fixed << setprecision(4) << ((currframenum-prevframenum-(2*framesInFile))/(double)(2*framesInFile))*100.000 << "%\t\t"
+			cout << "packet loss " << fixed << setprecision(4) << ((currframenum-prevframenum-(2*framesInFile))/(double)(2*framesInFile))*100.000 << "%\t\t"
 					"framenum " << currframenum << "\t\t"
 					"p " << prevframenum << endl;
 
-			//start writing in new file
-			sfilefd = fopen((const char *) (actualfilename), "w");
 			prevframenum=currframenum;
 			framesInFile = 0;
 		}
@@ -368,7 +385,8 @@ int slsReceiverFunctionList::startWriting(){
 				totalFramesCaught++;
 				memcpy(latestData,dataWriteFrame->buffer,BUFFER_SIZE);
 				//cout<<"list write \t index:"<<(int)(*(int*)latestData)<<endl;
-				fwrite(dataWriteFrame->buffer, 1, dataWriteFrame->rc, sfilefd);
+				if(enableFileWrite)
+					fwrite(dataWriteFrame->buffer, 1, dataWriteFrame->rc, sfilefd);
 				framesInFile++;
 				delete dataWriteFrame->buffer;
 				delete dataWriteFrame;
@@ -378,9 +396,9 @@ int slsReceiverFunctionList::startWriting(){
 	}
 
 	cout << "Total Frames Caught:"<< totalFramesCaught << endl;
-	//delete latestData;
 	//close file
-	fclose(sfilefd);
+	if(sfilefd)
+		fclose(sfilefd);
 
 #ifdef VERBOSE
 	cout << "sfield:" << (int)sfilefd << endl;

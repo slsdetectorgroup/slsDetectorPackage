@@ -7,10 +7,10 @@ CFLAGS= -DC_ONLY
 
 
 
-INCLUDES?= -I../slsDetectorSoftware/commonFiles -I../slsDetectorSoftware/slsDetector -I ../slsDetectorSoftware/MySocketTCP  -I../slsDetectorSoftware/usersFunctions -I../slsDetectorSoftware/multiSlsDetector -I../slsDetectorSoftware/slsDetectorAnalysis -I../slsDetectorSoftware/slsReceiverInterface -I$(shell echo "/lib/modules/`uname -r`/build/include")
+INCLUDES?= -I../commonFiles -I../slsDetector -I ../MySocketTCP  -I../usersFunctions -I../multiSlsDetector -I../slsDetectorAnalysis -I../slsReceiverInterface -I$(shell echo "/lib/modules/`uname -r`/build/include")
 
 
-LIBDIR?=../slsDetectorSoftware/
+LIBDIR?=../
 LIBS?= -L$(LIBDIR) -lSlsDetector 
 
 LDFLAG=   -L/usr/lib64/ -lpthread
@@ -36,7 +36,7 @@ nonstatic: clients
 
 
 lib:
-	cd ../slsDetectorSoftware && $(MAKE) DESTDIR=$(LIBDIR) 
+	cd ../ && $(MAKE) DESTDIR=$(LIBDIR) 
 
 
 

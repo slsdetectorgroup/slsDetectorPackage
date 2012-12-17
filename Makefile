@@ -92,6 +92,8 @@ clean:
 #	cd $(MANDIR) && $(MAKE) clean
 #	cd $(DOCDIR) && rm -rf * 
 
+
+
 install_lib: 
 	cd $(LIBRARYDIR) && $(MAKE) install DESTDIR=$(LIBDIR) INCLUDES=$(INCLUDES)
 	cd $(LIBRARYDIR) && $(MAKE) install_inc DESTDIR=$(INCDIR)

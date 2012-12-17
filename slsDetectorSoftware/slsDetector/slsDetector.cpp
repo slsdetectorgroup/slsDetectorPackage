@@ -1588,7 +1588,6 @@ int64_t slsDetector::getId( idMode mode, int imod){
 #endif
   if (mode==THIS_SOFTWARE_VERSION) {
     ret=OK;
-    // svnInfo* s = new svnInfo(THIS_PATH);
     retval=SVNREVLIB;
     retval=(retval<<32) | SVNDATELIB;
   } else {

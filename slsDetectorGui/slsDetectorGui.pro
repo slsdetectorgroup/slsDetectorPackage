@@ -109,6 +109,7 @@ HEADERS 			=  		\
 							include/qTabDebugging.h\
 							include/qTabDeveloper.h\
 							include/qTabMessages.h\
+							include/svnInfoGui.h\
 							../slsDetectorSoftware/commonFiles/sls_detector_defs.h
 
 

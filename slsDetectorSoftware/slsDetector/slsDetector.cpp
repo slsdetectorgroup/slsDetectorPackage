@@ -8,7 +8,7 @@
 #include <arpa/inet.h>
 #include <bitset>
 #include <cstdlib>
-#include "svnInfo.h"
+#include "svnInfoLib.h"
 
 
 int slsDetector::initSharedMemory(detectorType type, int id) {
@@ -1588,8 +1588,9 @@ int64_t slsDetector::getId( idMode mode, int imod){
 #endif
   if (mode==THIS_SOFTWARE_VERSION) {
     ret=OK;
-    svnInfo* s = new svnInfo(THIS_PATH);
-    retval=(thisSoftwareVersion<<32) | (s->getRevision());
+    // svnInfo* s = new svnInfo(THIS_PATH);
+    retval=SVNREVLIB;
+    retval=(retval<<32) | SVNDATELIB;
   } else {
     if (thisDetector->onlineFlag==ONLINE_FLAG) {
       if (controlSocket) {

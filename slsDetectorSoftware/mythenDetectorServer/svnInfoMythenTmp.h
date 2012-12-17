@@ -1,0 +1,11 @@
+//#define SVNPATH ""
+#define MYTHENSVNURL ""
+//#define SVNREPPATH ""
+#define MYTHENSVNREPUUID ""
+//#define SVNREV ""
+//#define SVNKIND ""
+//#define SVNSCHED ""
+#define MYTHENSVNAUTH ""
+#define MYTHENSVNREV ""
+#define MYTHENSVNDATE ""
+//

@@ -397,8 +397,7 @@ int slsReceiverFunctionList::startWriting(){
 
 	cout << "Total Frames Caught:"<< totalFramesCaught << endl;
 	//close file
-	if(sfilefd)
-		fclose(sfilefd);
+	if(sfilefd)		fclose(sfilefd);
 
 #ifdef VERBOSE
 	cout << "sfield:" << (int)sfilefd << endl;

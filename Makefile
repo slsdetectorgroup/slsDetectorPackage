@@ -4,7 +4,7 @@ INCS='-I$(LIBRARYDIR)/commonFiles -I$(LIBRARYDIR)/slsDetector -I$(LIBRARYDIR)/My
 
 WD=$(shell pwd)
 LIBRARYDIR=$(WD)/slsDetectorSoftware
-CLIENTDIR=$(WD)/slsDetectorClient
+CLIENTDIR=$(LIBRARYDIR)/slsDetectorClient
 GUIDIR=$(WD)/slsDetectorGuiOriginal
 RECEIVERDIR=$(LIBRARYDIR)/slsReceiver
 CALWIZDIR=$(WD)/calibrationWizards

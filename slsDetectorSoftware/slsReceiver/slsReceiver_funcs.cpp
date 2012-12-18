@@ -5,7 +5,7 @@
 
 #include "slsReceiver_funcs.h"
 #include "slsReceiverFunctionList.h"
-
+#include "svnInfoReceiver.h"
 
 #include <iostream>
 #include <string>
@@ -126,6 +126,7 @@ int slsReceiverFuncs::function_table(){
 	flist[F_RESET_FRAMES_CAUGHT]	=	&slsReceiverFuncs::reset_frames_caught;
 	flist[F_READ_FRAME]				=	&slsReceiverFuncs::read_frame;
 	flist[F_ENABLE_FILE_WRITE]		=	&slsReceiverFuncs::enable_file_write;
+	flist[F_GET_ID]					=	&slsReceiverFuncs::get_version;
 
 	//General Functions
 	flist[F_LOCK_SERVER]			=	&slsReceiverFuncs::lock_receiver;
@@ -537,7 +538,7 @@ int	slsReceiverFuncs::get_status(){
 	retval=slsReceiverList->getStatus();
 #endif
 
-	if(ret==OK && socket->differentClients){
+	if(socket->differentClients){
 		cout << "Force update" << endl;
 		ret=FORCE_UPDATE;
 	}
@@ -560,7 +561,7 @@ int	slsReceiverFuncs::get_frames_caught(){
 #ifdef SLS_RECEIVER_FUNCTION_LIST
 	retval=slsReceiverList->getTotalFramesCaught();
 #endif
-	if(ret==OK && socket->differentClients){
+	if(socket->differentClients){
 		cout << "Force update" << endl;
 		ret=FORCE_UPDATE;
 	}
@@ -584,7 +585,7 @@ int	slsReceiverFuncs::get_frame_index(){
 	retval=slsReceiverList->getAcquisitionIndex();
 #endif
 
-	if(ret==OK && socket->differentClients){
+	if(socket->differentClients){
 		cout << "Force update" << endl;
 		ret=FORCE_UPDATE;
 	}
@@ -801,6 +802,58 @@ int slsReceiverFuncs::enable_file_write(){
 	//return ok/fail
 	return ret;
 }
+
+
+
+int slsReceiverFuncs::get_version(){
+	ret=OK;
+	int64_t retval=-1;
+
+	// execute action if the arguments correctly arrived
+#ifdef SLS_RECEIVER_FUNCTION_LIST
+	retval= SVNREV;
+	retval= (retval <<32) | SVNDATE;
+#endif
+
+	if(socket->differentClients){
+		cout << "Force update" << endl;
+		ret=FORCE_UPDATE;
+	}
+
+	// send answer
+	socket->SendDataOnly(&ret,sizeof(ret));
+	socket->SendDataOnly(&retval,sizeof(retval));
+
+	//return ok/fail
+	return ret;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

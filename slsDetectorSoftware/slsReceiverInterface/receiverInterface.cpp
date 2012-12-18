@@ -104,6 +104,21 @@ int receiverInterface::getInt(int fnum, int &retval){
 
 
 
+int receiverInterface::getInt(int fnum, int64_t &retval){
+	int ret = slsDetectorDefs::FAIL;
+
+	if (dataSocket) {
+		if  (dataSocket->Connect()>=0) {
+			dataSocket->SendDataOnly(&fnum,sizeof(fnum));
+			dataSocket->ReceiveDataOnly(&ret,sizeof(ret));
+			dataSocket->ReceiveDataOnly(&retval,sizeof(retval));
+		}
+		dataSocket->Disconnect();
+	}
+	return ret;
+}
+
+
 int receiverInterface::getLastClientIP(int fnum, char retval[]){
 	int ret = slsDetectorDefs::FAIL;
 

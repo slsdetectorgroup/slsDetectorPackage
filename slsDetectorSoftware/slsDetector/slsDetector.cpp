@@ -1563,9 +1563,10 @@ slsDetectorDefs::externalCommunicationMode slsDetector::setExternalCommunication
    MODULE_FIRMWARE_VERSION,
    DETECTOR_SERIAL_NUMBER,
    DETECTOR_FIRMWARE_VERSION,
-   DETECTOR_SOFTWARE_VERSION 
+   DETECTOR_SOFTWARE_VERSION,
+   THIS_SOFTWARE_VERSION,
+   RECEIVER_VERSION
    }{};
-
 */
 
 
@@ -1590,6 +1591,12 @@ int64_t slsDetector::getId( idMode mode, int imod){
     ret=OK;
     retval=SVNREVLIB;
     retval=(retval<<32) | SVNDATELIB;
+  } else if (mode==RECEIVER_VERSION) {
+	if (setReceiverOnline(ONLINE_FLAG)==ONLINE_FLAG) {
+	  ret=thisReceiver->getInt(fnum,retval);
+	  if(ret==FORCE_UPDATE)
+		ret=updateReceiver();
+	}
   } else {
     if (thisDetector->onlineFlag==ONLINE_FLAG) {
       if (controlSocket) {

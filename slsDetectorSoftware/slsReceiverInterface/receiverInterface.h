@@ -77,6 +77,13 @@ public:
 	 */
 	int getInt(int fnum, int &retval);
 
+	/**
+	 * Get an integer value from receiver
+	 * @param fnum function enum to determine what parameter
+	 * @param retval return value
+	 * \returns success of operation
+	 */
+	int getInt(int fnum, int64_t &retval);
 
 	/**
 	 * Get last client ip connected to receiver

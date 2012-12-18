@@ -416,7 +416,7 @@ slsDetectorCommand::slsDetectorCommand(slsDetectorUtils *det)  {
   descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdSN;
   i++;
 
-  descrToFuncMap[i].m_pFuncName="detectorsvnversion"; //
+  descrToFuncMap[i].m_pFuncName="receiverversion"; //
   descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdSN;
   i++;
 
@@ -2749,8 +2749,8 @@ string slsDetectorCommand::cmdSN(int narg, char *args[], int action) {
     return string(answer);
   }
 
-  if (cmd=="detectorsvnversion") {
-    sprintf(answer,"%llx",myDet->getId(DETECTOR_FIRMWARE_SVN_VERSION));
+  if (cmd=="receiverversion") {
+    sprintf(answer,"%llx",myDet->getId(RECEIVER_VERSION));
     return string(answer);
   }
   return string("unknown id mode ")+cmd;

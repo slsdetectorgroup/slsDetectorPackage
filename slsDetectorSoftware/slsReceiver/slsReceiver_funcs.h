@@ -80,6 +80,9 @@ public:
 	/** Enable File Write*/
 	int enable_file_write();
 
+	/** Get Version */
+	int get_version();
+
 	//General Functions
 	/** Locks Receiver */
 	int	lock_receiver();

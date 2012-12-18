@@ -28,9 +28,11 @@ svn info $LIBDIRSVN > $LIBDIR/svnInfo.txt
 svn info $LIBDIRSVN/mythenDetectorServer > $LIBDIR/mythenDetectorServer/svnInfo.txt
 ./genVersionHeader.sh $LIBDIR/mythenDetectorServer/svnInfo.txt $LIBDIR/mythenDetectorServer/svnInfoMythenTmp.h $LIBDIR/mythenDetectorServer/svnInfoMythen.h 
 
-
 svn info $LIBDIRSVN/gotthardDetectorServer > $LIBDIR/gotthardDetectorServer/svnInfo.txt
 ./genVersionHeader.sh $LIBDIR/gotthardDetectorServer/svnInfo.txt $LIBDIR/gotthardDetectorServer/svnInfoGotthardTmp.h $LIBDIR/gotthardDetectorServer/svnInfoGotthard.h 
+
+svn info $LIBDIRSVN/slsReceiver > $LIBDIR/slsReceiver/svnInfo.txt
+./genVersionHeader.sh $LIBDIR/slsReceiver/svnInfo.txt $LIBDIR/slsReceiver/svnInfoReceiverTmp.h $LIBDIR/slsReceiver/svnInfoReceiver.h 
 
 svn info $GUIDIRSVN > $GUIDIR/svnInfo.txt
 ./genVersionHeader.sh $GUIDIR/svnInfo.txt $GUIDIR/include/svnInfoGuiTmp.h $GUIDIR/include/svnInfoGui.h 

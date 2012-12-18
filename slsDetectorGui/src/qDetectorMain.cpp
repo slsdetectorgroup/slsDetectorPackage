@@ -55,6 +55,7 @@ qDetectorMain::qDetectorMain(int argc, char **argv, QApplication *app, QWidget *
 		if(!strcasecmp(argv[iarg],"-developer"))	{isDeveloper=1;}
 		if(!strcasecmp(argv[iarg],"-id"))			{detID=atoi(argv[iarg+1]);}
 		if(!strcasecmp(argv[iarg],"-config"))		{configFName=string(argv[iarg+1]);}
+		if(!strcasecmp(argv[iarg],"-f"))			{configFName=string(argv[iarg+1]);}
 		if(!strcasecmp(argv[iarg],"-help")){
 			cout << "Possible Arguments are:" << endl;
 			cout << "-help \t\t : \t This help" << endl;

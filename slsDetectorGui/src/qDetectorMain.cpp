@@ -358,7 +358,7 @@ void qDetectorMain::EnableModes(QAction *action){
 
 
 void qDetectorMain::ExecuteUtilities(QAction *action){
-
+	bool refreshTabs = false;
 	if(action==actionOpenSetup){
 #ifdef VERBOSE
 		cout << "Loading Setup" << endl;
@@ -369,9 +369,10 @@ void qDetectorMain::ExecuteUtilities(QAction *action){
 				tr("Detector Setup files (*.det)"));
 		// Gets called when cancelled as well
 		if (!fName.isEmpty()){
-			if(myDet->retrieveDetectorSetup(string(fName.toAscii().constData()))!=slsDetectorDefs::FAIL)
+			if(myDet->retrieveDetectorSetup(string(fName.toAscii().constData()))!=slsDetectorDefs::FAIL){
 				qDefs::Message(qDefs::INFORMATION,"The Setup Parameters have been loaded successfully.","Main");
-			else qDefs::Message(qDefs::WARNING,string("Could not load the Setup Parameters from file:\n")+fName.toAscii().constData(),"Main");
+				refreshTabs=true;
+			}else qDefs::Message(qDefs::WARNING,string("Could not load the Setup Parameters from file:\n")+fName.toAscii().constData(),"Main");
 		}
 	}
 	else if(action==actionSaveSetup){
@@ -399,9 +400,10 @@ void qDetectorMain::ExecuteUtilities(QAction *action){
 				tr("Configuration files (*.config)"));
 		// Gets called when cancelled as well
 		if (!fName.isEmpty()){
-			if(myDet->readConfigurationFile(string(fName.toAscii().constData()))!=slsDetectorDefs::FAIL)
+			if(myDet->readConfigurationFile(string(fName.toAscii().constData()))!=slsDetectorDefs::FAIL){
 				qDefs::Message(qDefs::INFORMATION,"The Configuration Parameters have been configured successfully.","Main");
-			else qDefs::Message(qDefs::WARNING,string("Could not load the Configuration Parameters from file:\n")+fName.toAscii().constData(),"Main");
+				refreshTabs=true;
+			}else qDefs::Message(qDefs::WARNING,string("Could not load the Configuration Parameters from file:\n")+fName.toAscii().constData(),"Main");
 		}
 	}
 	else if(action==actionSaveConfiguration){
@@ -520,6 +522,17 @@ void qDetectorMain::ExecuteUtilities(QAction *action){
 	}
 
 	Refresh(tabs->currentIndex());
+	if(refreshTabs){
+		tab_actions->Refresh();
+		tab_measurement->Refresh();
+		//tab_settings->Refresh();
+		//tab_dataoutput->Refresh();
+		//tab_advanced->Refresh();
+		//tab_debugging->Refresh();
+		//tab_developer->Refresh();
+		tab_plot->Refresh();
+	}
+
 }
 
 

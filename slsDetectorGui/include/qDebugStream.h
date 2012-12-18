@@ -84,7 +84,8 @@ protected:
 
 	virtual streamsize xsputn(const char *p, streamsize n)	{
 		m_string.append(p, p + n);
-		uint pos = 0;
+		//changed from uint because of 64 bit
+		int pos = 0;
 
 		while (pos != string::npos)
 		{

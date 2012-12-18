@@ -30,7 +30,7 @@ public:
 	 *  @param parent is the parent tab widget
 	 *  @param det the detector reference
 	 */
-	qTabMessages(QWidget *parent,multiSlsDetector*& detector);
+	qTabMessages(QWidget *parent,multiSlsDetector* detector);
 
 	/** Destructor
 	 */

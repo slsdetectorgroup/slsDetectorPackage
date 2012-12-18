@@ -25,15 +25,16 @@ using namespace std;
 
 //-------------------------------------------------------------------------------------------------------------------------------------------------
 
-qTabMessages::qTabMessages(QWidget *parent,multiSlsDetector*& detector):QWidget(parent),myDet(detector),qout(0){
-	SetupWidgetWindow();
-	Initialization();
+qTabMessages::qTabMessages(QWidget *parent,multiSlsDetector* detector):QWidget(parent),qout(0){//myDet(detector),
+  myDet=detector;
+  SetupWidgetWindow();
+  Initialization();
 }
 
 //-------------------------------------------------------------------------------------------------------------------------------------------------
 
 qTabMessages::~qTabMessages(){
-	delete myDet;
+  //	delete myDet;
 	delete dispLog;
 	delete qout;
 }

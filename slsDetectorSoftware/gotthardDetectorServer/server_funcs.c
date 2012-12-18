@@ -581,9 +581,9 @@ int get_id(int file_des) {
 	retval= SVNREV;
 	retval= (retval <<32) | SVNDATE;
     break;
-  case DETECTOR_FIRMWARE_SVN_VERSION:
+/*  case DETECTOR_FIRMWARE_SVN_VERSION:
     retval=getFirmwareSVNVersion();
-    break;
+    break;*/
   default:
     printf("Required unknown id %d \n", arg);
     ret=FAIL;

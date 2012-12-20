@@ -1633,6 +1633,8 @@ class slsDetector : public slsDetectorUtils, public energyConversion {
   char* getReceiver() {return thisDetector->receiver_hostname;};
   /** returns the receiver UDP IP address \sa sharedSlsDetector  */
   char* getReceiverUDPIP() {return thisDetector->receiverUDPIP;};
+  /** returns the receiver UDP MAC address \sa sharedSlsDetector  */
+  char* getReceiverUDPMAC() {return thisDetector->receiverUDPMAC;};
   /** returns the receiver UDP IP address \sa sharedSlsDetector  */
   char* getReceiverUDPPort() {char *c= new char[MAX_STR_LENGTH];sprintf(c,"%d",thisDetector->receiverUDPPort); return c;};
 
@@ -1644,6 +1646,8 @@ class slsDetector : public slsDetectorUtils, public energyConversion {
   char* setReceiver(string receiver);
   /** validates the format of receiver udp ip and sets it \sa sharedSlsDetector  */
   char* setReceiverUDPIP(string udpip);
+  /** validates the format of receiver udp mac and sets it \sa sharedSlsDetector  */
+  char* setReceiverUDPMAC(string udpmac);
   /** sets the receiver udp port \sa sharedSlsDetector  */
   int setReceiverUDPPort(int udpport);
 

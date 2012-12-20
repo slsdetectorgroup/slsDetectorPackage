@@ -4461,6 +4461,8 @@ char* slsDetector::setNetworkParameter(networkParameter index, string value) {
 		return setReceiver(value);
 	case RECEIVER_UDP_IP:
 		return setReceiverUDPIP(value);
+	case RECEIVER_UDP_MAC:
+		return setReceiverUDPMAC(value);
 	case RECEIVER_UDP_PORT:
 		sscanf(value.c_str(),"%d",&i);
 		sprintf(answer,"%d",setReceiverUDPPort(i));
@@ -4487,6 +4489,9 @@ char* slsDetector::getNetworkParameter(networkParameter index) {
     break;
   case RECEIVER_UDP_IP:
     return getReceiverUDPIP();
+    break;
+  case RECEIVER_UDP_MAC:
+    return getReceiverUDPMAC();
     break;
   case RECEIVER_UDP_PORT:
     return getReceiverUDPPort();
@@ -4569,6 +4574,21 @@ char* slsDetector::setReceiverUDPIP(string udpip){
 }
 
 
+
+
+char* slsDetector::setReceiverUDPMAC(string udpmac){
+  if(udpmac.length()==17){
+    if((udpmac[2]==':')&&(udpmac[5]==':')&&(udpmac[8]==':')&&
+       (udpmac[11]==':')&&(udpmac[14]==':'))
+      strcpy(thisDetector->receiverUDPMAC,udpmac.c_str());
+    else
+      return("receiver udp mac address should be in xx:xx:xx:xx:xx:xx format");
+  }
+  else
+    return("receiver udp mac address should be in xx:xx:xx:xx:xx:xx format");
+
+  return thisDetector->receiverUDPMAC;
+}
 
 
 

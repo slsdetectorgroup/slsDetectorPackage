@@ -185,7 +185,8 @@ enum networkParameter {
   DETECTOR_IP,	 	    /**< detector IP */
   RECEIVER_HOSTNAME,  	/**< receiver IP/hostname */
   RECEIVER_UDP_IP,		/**< receiever UDP IP */
-  RECEIVER_UDP_PORT		/**< receiever UDP Port */
+  RECEIVER_UDP_PORT,	/**< receiever UDP Port */
+  RECEIVER_UDP_MAC		/**< receiever UDP MAC */
 };
 
 /**

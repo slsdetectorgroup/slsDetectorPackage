@@ -15,6 +15,8 @@
 #ifndef CIRCULARFIFO_H_
 #define CIRCULARFIFO_H_
 
+#include "sls_detector_defs.h"
+
 /** Circular Fifo (a.k.a. Circular Buffer) 
 * Thread safe for one reader, and one writer */
 template<typename Element, unsigned int Size>

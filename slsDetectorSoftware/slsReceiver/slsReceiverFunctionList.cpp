@@ -257,6 +257,7 @@ int slsReceiverFunctionList::startListening(){
 				//cout<<"startFrameIndex:"<<startFrameIndex<<endl;
 				prevframenum=startFrameIndex;
 			}
+
 			//start of acquisition
 			if(startAcquisitionIndex==-1){
 				startAcquisitionIndex=startFrameIndex;

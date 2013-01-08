@@ -4,7 +4,7 @@
 #include "receiver_defs.h"
 #include "MySocketTCP.h"
 #include "slsReceiver_funcs.h"
-
+#include "sls_detector_defs.h"
 
 #include <signal.h>	//SIGINT
 #include <cstdlib>	//EXIT

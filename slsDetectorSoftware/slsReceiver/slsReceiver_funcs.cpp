@@ -695,15 +695,15 @@ int	slsReceiverFuncs::read_frame(){
 			if((index%2)!=index2%2){
 				//ideal situation (should be odd, even(index+1))
 				if(index%2){
-					memcpy(retval,((char*) origVal)+2, onedatasize);
-					memcpy((((char*)retval)+onedatasize), ((char*) origVal)+8+onedatasize, onedatasize);
+					memcpy(retval,((char*) origVal)+4, onedatasize);
+					memcpy((((char*)retval)+onedatasize), ((char*) origVal)+10+onedatasize, onedatasize);
 					break;
 				}
 
 				//swap to even,odd
 				if(index2%2){
-					memcpy((((char*)retval)+onedatasize),((char*) origVal)+2, onedatasize);
-					memcpy(retval, ((char*) origVal)+8+onedatasize, onedatasize);
+					memcpy((((char*)retval)+onedatasize),((char*) origVal)+4, onedatasize);
+					memcpy(retval, ((char*) origVal)+10+onedatasize, onedatasize);
 					index=index2;
 					break;
 				}
@@ -717,12 +717,11 @@ int	slsReceiverFuncs::read_frame(){
 		if(count==20){
 			cout << "same type: index:" << index << "\tindex2:" << index2 << endl;
 			/**send garbage with -1 index to try again*/
-			memcpy(retval,((char*) origVal)+2, onedatasize);
-			memcpy((((char*)retval)+onedatasize), ((char*) origVal)+8+onedatasize, onedatasize);
+			memcpy(retval,((char*) origVal)+4, onedatasize);
+			memcpy((((char*)retval)+onedatasize), ((char*) origVal)+10+onedatasize, onedatasize);
 		}
 
 		arg=((index - startIndex)/2)-1;
-
 
 #ifdef VERBOSE
 		cout << "\nstartIndex:" << startIndex << endl;

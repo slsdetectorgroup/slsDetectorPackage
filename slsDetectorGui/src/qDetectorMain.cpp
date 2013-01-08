@@ -23,6 +23,7 @@
 // Qt Include Headers
 #include <QSizePolicy>
 #include <QFileDialog>
+#include <QPlastiqueStyle>
 // C++ Include Headers
 #include<iostream>
 #include <string>
@@ -35,6 +36,7 @@ using namespace std;
 int main (int argc, char **argv) {
 
 	QApplication *theApp = new QApplication(argc, argv);
+	theApp->setStyle(new QPlastiqueStyle);
 	theApp->setWindowIcon(QIcon( ":/icons/images/mountain.png" ));
 	qDetectorMain *det=new qDetectorMain(argc, argv, theApp,0);
 	det->show();

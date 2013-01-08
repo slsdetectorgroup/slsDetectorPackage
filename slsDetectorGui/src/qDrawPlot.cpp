@@ -766,9 +766,9 @@ int qDrawPlot::GetData(detectorData *data,int fIndex){
 					memcpy(histYAxis[i],histYAxis[i-1],nPixelsX*sizeof(double));
 
 				//normal data
-				if(resetPedestal)
+				if(resetPedestal){
 					memcpy(histYAxis[0],data->values,nPixelsX*sizeof(double));
-				else{
+				}else{cout<<"SHOULD NOT BE HERE!!!!!!!!!!!!!"<<endl;
 					//start adding frames to get to the pedestal value
 					if(pedestalCount<NUM_PEDESTAL_FRAMES){
 						for(unsigned int px=0;px<nPixelsX;px++)

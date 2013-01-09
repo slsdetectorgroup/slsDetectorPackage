@@ -2317,87 +2317,18 @@ int get_roi(int file_des) {
 int set_speed(int file_des) {
 
   enum speedVariable arg;
-  int val, n;
-  int ret=OK;
-  int retval;
+  int val;
+  int ret=FAIL;
   
-  sprintf(mess,"can't set speed variable\n");
+  receiveDataOnly(file_des,&arg,sizeof(arg));
+  receiveDataOnly(file_des,&val,sizeof(val));
   
+  sprintf(mess,"can't set speed variable for gotthard\n");
 
-  n = receiveDataOnly(file_des,&arg,sizeof(arg));
-  if (n < 0) {
-    sprintf(mess,"Error reading from socket\n");
-    ret=FAIL;
-  }
-   n = receiveDataOnly(file_des,&val,sizeof(val));
-   if (n < 0) {
-     sprintf(mess,"Error reading from socket\n");
-     ret=FAIL;
-   }
-  
-#ifdef VERBOSE
-   printf("setting speed variable %d  to %d\n",arg,val);
-#endif 
-  if (ret==OK) {
 
-    if (val>=0) {
-      if (differentClients==1 && lockStatus==1 && val>=0) {
-	ret=FAIL;
-	sprintf(mess,"Detector locked by %s\n",lastClientIP);
-      }  else {
-	switch (arg) {
-	case CLOCK_DIVIDER:
-	  retval=setClockDivider(val);
-	  break;
-	case WAIT_STATES:
-	  retval=setWaitStates(val);
-	  break;
-	case SET_SIGNAL_LENGTH:
-	  retval=setSetLength(val);
-	  break;
-	case TOT_CLOCK_DIVIDER:
-	  retval=setTotClockDivider(val);
-	  break;
-	case TOT_DUTY_CYCLE:
-	  retval=setTotDutyCycle(val);
-	  break;
-	default:
-	  ret=FAIL;
-	    break;
-	}
-      }
-    } else {
+  sendDataOnly(file_des,&ret,sizeof(ret));
+  sendDataOnly(file_des,mess,sizeof(mess));
 
-      switch (arg) {
-      case CLOCK_DIVIDER:
-	retval=getClockDivider();
-	break;
-      case WAIT_STATES:
-	retval=getWaitStates();
-	break;
-      case SET_SIGNAL_LENGTH:
-	retval=getSetLength();
-	break;
-      case TOT_CLOCK_DIVIDER:
-	retval=getTotClockDivider();
-	break;
-      case TOT_DUTY_CYCLE:
-	retval=getTotDutyCycle();
-	break;
-      default:
-	ret=FAIL;
-    break;
-      }
-    }
-  }
-  
-
-  n = sendDataOnly(file_des,&ret,sizeof(ret));
-  if (ret==FAIL) {
-    n = sendDataOnly(file_des,mess,sizeof(mess));
-  } else {
-    n = sendDataOnly(file_des,&retval,sizeof(retval));
-  }
   return ret; 
 }
 
@@ -2405,88 +2336,18 @@ int set_speed(int file_des) {
 
 int set_readout_flags(int file_des) {
 
-  enum readOutFlags retval;
   enum readOutFlags arg;
   int n;
-  int ret=OK;
-  int regret=OK;
+  int ret=FAIL;
   
 
-  sprintf(mess,"can't set readout flags\n");
-  
+  receiveDataOnly(file_des,&arg,sizeof(arg));
 
-  n = receiveDataOnly(file_des,&arg,sizeof(arg));
-  if (n < 0) {
-    sprintf(mess,"Error reading from socket\n");
-    ret=FAIL;
-  }
+  sprintf(mess,"can't set readout flags for gotthard\n");
   
+  sendDataOnly(file_des,&ret,sizeof(ret));
+  sendDataOnly(file_des,mess,sizeof(mess));
 
-#ifdef VERBOSE
-  printf("setting readout flags  to %d\n",arg);
-#endif 
-
-  if (differentClients==1 && lockStatus==1 && arg!=GET_READOUT_FLAGS) {
-    ret=FAIL;
-    sprintf(mess,"Detector locked by %s\n",lastClientIP);
-  }  else {
-    //ret=setStoreInRAM(0);
-    // initChipWithProbes(0,0,0, ALLMOD);
-    switch(arg) {
-    case  GET_READOUT_FLAGS:
-      break;
-    case STORE_IN_RAM:
-      if (setStoreInRAM(1)==OK)
-	ret=OK;
-      else 
-	ret=FAIL;
-      break;
-    case TOT_MODE:
-      if(setToT(1))
-	ret=OK;
-      else 
-	ret=FAIL;
-      break;
-    case CONTINOUS_RO:
-      if (setContinousReadOut(1))
-	ret=OK;
-      else 
-	ret=FAIL;
-      break;
-      // case PUMP_PROBE_MODE:
-      //set number of probes
-      //initChipWithProbes(0,0,2, ALLMOD);
-      //break;
-    default:
-      ret=setStoreInRAM(0);
-      regret=setConfigurationRegister(0);
-      ret=OK;
-      break;
-    } 
-  }
-  retval=NORMAL_READOUT;
-  
-  if (storeInRAM)
-    retval=STORE_IN_RAM;
-  //else if (getProbes())
-  //  retval=PUMP_PROBE_MODE;
-  //else
-  if (setToT(-1))
-    retval|=TOT_MODE;
-  if (setContinousReadOut(-1))
-    retval|=CONTINOUS_RO;
-  if (ret!=OK) {
-    printf("set readout flags failed\n");
-    sprintf(mess,"Could not allocate RAM\n");
-  } else if (differentClients)
-    ret=FORCE_UPDATE;
-    
-  n = sendDataOnly(file_des,&ret,sizeof(ret));
-  if (ret==FAIL) {
-    n = sendDataOnly(file_des,mess,sizeof(mess));
-  } else {
-    n = sendDataOnly(file_des,&retval,sizeof(retval));
-  }
   return ret; 
 }
 
@@ -2497,92 +2358,18 @@ int set_readout_flags(int file_des) {
 int execute_trimming(int file_des) {
  
   int arg[3];
-  int n;
-  int ret=OK;
-  int imod, par1,par2;
+  int ret=FAIL;
   enum trimMode mode;
   
-  sprintf(mess,"can't set execute trimming\n");
+  sprintf(mess,"can't set execute trimming for gotthard\n");
   
-  n = receiveDataOnly(file_des,&mode,sizeof(mode));
-  if (n < 0) {
-    sprintf(mess,"Error reading from socket\n");
-    printf("Error reading from socket (mode)\n");
-    ret=FAIL;
-  }
-  
-  n = receiveDataOnly(file_des,arg,sizeof(arg));
-  if (n < 0) {
-    sprintf(mess,"Error reading from socket\n");
-    printf("Error reading from socket (args)\n");
-    ret=FAIL;
-  }
+  receiveDataOnly(file_des,&mode,sizeof(mode));
+  receiveDataOnly(file_des,arg,sizeof(arg));
 
-  imod=arg[0];
 
-  if (imod>=getNModBoard())
-    ret=FAIL;
+  sendDataOnly(file_des,&ret,sizeof(ret));
+  sendDataOnly(file_des,mess,sizeof(mess));
 
-  if (imod<0)
-    imod=ALLMOD;
-
-  par1=arg[1];
-  par2=arg[2];
-
-#ifdef VERBOSE
-  printf("trimming module %d mode %d, parameters %d %d \n",imod,mode, par1, par2);
-#endif  
-
-  if (differentClients==1 && lockStatus==1 ) {
-    ret=FAIL;
-    sprintf(mess,"Detector locked by %s\n",lastClientIP);
-  }  else {
-
-    if (ret==OK) {
-      switch(mode) {
-      case NOISE_TRIMMING:
-	// par1 is countlim; par2 is nsigma
-	ret=trim_with_noise(par1, par2, imod);
-	break;
-      case BEAM_TRIMMING:
-	// par1 is countlim; par2 is nsigma
-	ret=trim_with_beam(par1,par2,imod);
-	break;
-      case IMPROVE_TRIMMING:
-	// par1 is maxit; if par2!=0 vthresh will be optimized
-	ret=trim_improve(par1, par2,imod);
-	break;
-      case FIXEDSETTINGS_TRIMMING:
-	// par1 is countlim; if par2<0 then trimwithlevel else trim with median 
-	ret=trim_fixed_settings(par1,par2,imod);
-	break;
-	// case OFFLINE_TRIMMING:
-	
-	//break;
-      default:
-	printf("Unknown trimming mode\n");
-	sprintf(mess,"Unknown trimming mode\n");
-	ret=FAIL;
-    break;
-      }
-    } 
-  }
-
-  
-  if (ret<0) {
-    sprintf(mess,"can't set execute trimming\n");
-    ret=FAIL;
-  } else if (ret>0) {
-    sprintf(mess,"Could not trim %d channels\n", ret);
-    ret=FAIL;
-  } else if (differentClients)
-    ret=FORCE_UPDATE;
-  
-  n = sendDataOnly(file_des,&ret,sizeof(ret));
-  if (ret==FAIL) {
-    n = sendDataOnly(file_des,mess,sizeof(mess));
-  } 
-    
   return ret; 
 }
 

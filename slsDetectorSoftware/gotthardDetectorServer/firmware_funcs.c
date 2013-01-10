@@ -260,9 +260,10 @@ int cleanFifo(){
 	bus_w(addr,val);
 	}
 	else {
+		//1b322114
 	  val=ADCSYNC_VAL | ADCSYNC_CLEAN_FIFO_BITS | TOKEN_RESTART_DELAY_ROI;
 	  bus_w(addr,val);
-	  //88022114
+	  //1b022114
 	  val=ADCSYNC_VAL | TOKEN_RESTART_DELAY_ROI;
 
 
@@ -1645,11 +1646,12 @@ u_int32_t* fifo_read_event()
 #ifdef VERBOSE
   printf("before looping\n");
 #endif
-
   volatile u_int32_t t = bus_r(LOOK_AT_ME_REG);
+
 #ifdef VERBOSE
   printf("lookatmereg=x%x\n",t);
 #endif
+/*
    while ((t&0x1)==0)
      {
        t = bus_r(LOOK_AT_ME_REG);
@@ -1657,36 +1659,29 @@ u_int32_t* fifo_read_event()
     	   return NULL;
        }
      }
+*/
+
+   while((t&0x1)==0) {
+	   if (runBusy()==0) {
+		   t = bus_r(LOOK_AT_ME_REG);
+		   if ((t&0x1)==0) {
+			   printf("no frame found - exiting ");
+			   printf("%08x %08x\n", runState(), bus_r(LOOK_AT_ME_REG));
+			   return NULL;
+		   } else {
+			   printf("no frame found %x status %x\n", bus_r(LOOK_AT_ME_REG),runState());
+			   break;
+		   }
+	   }
+	   t = bus_r(LOOK_AT_ME_REG);
+   }
 
 
-/*   while(bus_r(LOOK_AT_ME_REG)==0) { */
-/* #ifdef VERBOSE */
-/*     printf("Waiting for data status %x\n",runState()); */
-/* #endif */
-/*     // if (runBusy()==0) { */
-/*        if (bus_r(LOOK_AT_ME_REG)==0) { */
-/* #ifdef VERBOSE */
-/* 	 printf("no frame found - exiting "); */
-/* 	 printf("%08x %08x\n", runState(), bus_r(LOOK_AT_ME_REG)); */
-
-/* #endif */
-/* 	 return NULL; */
-/*        } else { */
-/* #ifdef VERBOSE */
-/* 	 printf("no frame found %x status %x\n", bus_r(LOOK_AT_ME_REG),runState()); */
-/* #endif */
-/* 	 break; */
-/*        } */
-/*        //} */
-/*    } */
-#ifdef VERBOSE
+//#ifdef VERBOSE
   printf("before readout %08x %08x\n", runState(), bus_r(LOOK_AT_ME_REG));
-#endif
-  //added+2 for creating ram_values memory
+//#endif
+
   dma_memcpy(now_ptr,values ,dataBytes);
-
-  //memcpy(now_ptr,values ,dataBytes);
-
 
 
 #ifdef VERYVERBOSE
@@ -1698,10 +1693,10 @@ u_int32_t* fifo_read_event()
   printf("********\n");
   //memcpy(now_ptr, values, dataBytes);
 #endif
-#ifdef VERBOSE
+//#ifdef VERBOSE
   printf("Copying to ptr %08x %d\n",(unsigned int)(now_ptr), dataBytes);
   printf("after readout %08x %08x\n", runState(), bus_r(LOOK_AT_ME_REG));
-#endif
+//#endif
 
   if (storeInRAM>0) {
     now_ptr+=dataBytes;

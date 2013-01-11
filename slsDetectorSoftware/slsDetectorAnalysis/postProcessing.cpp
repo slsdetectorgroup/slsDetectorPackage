@@ -24,7 +24,7 @@ static void* startProcessDataNoDelete(void *n){\
 
 
 
-postProcessing::postProcessing(): expTime(NULL), ang(NULL), val(NULL), err(NULL), numberOfChannels(0){							
+postProcessing::postProcessing(): expTime(NULL), ang(NULL), val(NULL), err(NULL), numberOfChannels(0){
   pthread_mutex_t mp1 = PTHREAD_MUTEX_INITIALIZER;
   mp=mp1;
   pthread_mutex_init(&mp, NULL);  
@@ -43,7 +43,9 @@ postProcessing::postProcessing(): expTime(NULL), ang(NULL), val(NULL), err(NULL)
 #ifdef EXTPP
   registerRawDataCallback(&defaultRawDataReadyFunc,  NULL);
 #endif
+
   ppFun=new postProcessingFuncs();
+
 }
 
 
@@ -354,14 +356,14 @@ void* postProcessing::processData(int delflag) {
 			/* IF THERE ARE DATA PROCESS THEM*/
 			while((queuesize=dataQueueSize())>0) {
 				/** Pop data queue */
-//#ifdef VERBOSE
-				cout << "data found"<< endl;
-//#endif
+#ifdef VERBOSE
+				cout << "data found"<< endl<<endl;;
+#endif
 
 				myData=dataQueueFront(); // get the data from the queue
-//#ifdef VERBOSE
+#ifdef VERBOSE
 				cout << "got them"<< endl;
-//#endif
+#endif
 
 				if (myData) {
 					processFrame(myData,delflag);

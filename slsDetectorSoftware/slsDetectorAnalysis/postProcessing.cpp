@@ -354,14 +354,14 @@ void* postProcessing::processData(int delflag) {
 			/* IF THERE ARE DATA PROCESS THEM*/
 			while((queuesize=dataQueueSize())>0) {
 				/** Pop data queue */
-#ifdef VERBOSE
+//#ifdef VERBOSE
 				cout << "data found"<< endl;
-#endif
+//#endif
 
 				myData=dataQueueFront(); // get the data from the queue
-#ifdef VERBOSE
+//#ifdef VERBOSE
 				cout << "got them"<< endl;
-#endif
+//#endif
 
 				if (myData) {
 					processFrame(myData,delflag);

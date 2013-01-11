@@ -1293,7 +1293,7 @@ int* multiSlsDetector::startAndReadAll(){
   /** Thread for each detector?!?!?! */
 #ifdef VERBOSE
   cout << "Start and read all " << endl;
-#endif 
+#endif
 
 
   int* retval;

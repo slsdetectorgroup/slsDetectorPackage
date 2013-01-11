@@ -3146,7 +3146,7 @@ int* slsDetector::getDataFromDetector(int *retval){
       ;
 #ifdef VERBOSE
       std::cout<< "Detector successfully returned: " << mess << " " << n << std::endl;
-#endif	
+#endif
     }
     if (r==NULL) {
       delete [] retval;

@@ -310,9 +310,10 @@ void  slsDetectorUtils::acquire(int delflag){
 	    usleep(100000);
 	  }
 
-	  if (getDetectorsType()==GOTTHARD)
+	  if (getDetectorsType()==GOTTHARD){
 		  if((*correctionMask)&(1<<WRITE_FILE))
 			  closeDataFile();
+	  }
 
 	  }else{
 		 while(stopReceiver()!=OK);
@@ -448,11 +449,9 @@ void  slsDetectorUtils::acquire(int delflag){
   if (eclog)
     delete eclog;
 
-  if (acquisition_finished) {
-    cout << "Acquisition " << endl;
+  if (acquisition_finished)
     acquisition_finished(getCurrentProgress(),getDetectorStatus(),acqFinished_p);
-    cout << "finished " << endl;
-  }
+
 }
 
 

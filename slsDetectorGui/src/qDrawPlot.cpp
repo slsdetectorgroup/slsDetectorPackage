@@ -60,15 +60,41 @@ void qDrawPlot::SetupWidgetWindow(){
 #ifdef VERBOSE
 	cout << "Setting up plot variables" << endl;
 #endif
+	data_pause_over = true;//to get the first image
+
 	currentMeasurement = 0;
+	currentFrame = 0;
+	numFactor = 0;
+	currentScanDivLevel = 0;
+	currentScanValue = 0;
+	number_of_exposures = 0;
+	number_of_frames = 0;
+	acquisitionPeriod = 0;
+	exposureTime = 0;
+	currentFileIndex = 0;
+	currentFrameIndex = 0;
+
 	stop_signal = 0;
 	pthread_mutex_init(&last_image_complete_mutex,NULL);
-	//gui_acquisition_thread_running = 0;
-	// Default Plotting
-	plot_in_scope   = 0;
-	lastImageNumber = 0;
-	last_plot_number = 0;
 
+	// Default titles- only for the initial picture
+
+	imageXAxisTitle="Pixel";
+	imageYAxisTitle="Pixel";
+	imageZAxisTitle="Intensity";
+	histXAxisTitle="Channel Number";
+	histYAxisTitle="Counts";
+	for(int i=0;i<MAX_1DPLOTS;i++){
+		histTitle[i] = "";
+		//char temp_title[2000];
+		//sprintf(temp_title,"Frame -%d",i);
+		//histTitle[i] = temp_title;
+	}
+	imageTitle="";
+	/*imageTitle.assign("Start Image");*/
+	plotTitle = "";
+	plotTitle_prefix = "";
+	plot_in_scope   = 0;
 	nPixelsX = myDet->getTotalNumberOfChannels();
 	nPixelsY = 100;
 	nAnglePixelsX = 1;
@@ -76,48 +102,85 @@ void qDrawPlot::SetupWidgetWindow(){
 	maxPixelsY = 0;
 	startPixel=-0.5;
 	endPixel=nPixelsY-0.5;
+	pixelWidth = 0;
 
-	//2d
-	lastImageArray = 0;
-	//1d
+	lastImageNumber = 0;
+	last_plot_number = 0;
+
 	nHists    = 0;
 	histNBins = 0;
 	histXAxis = 0;
+	for(int i=0;i<MAX_1DPLOTS;i++)
+		histYAxis[i]=0;
 	histXAngleAxis = 0;
-	histYAngleAxis = 0;histTrimbits=0;
+	histYAngleAxis = 0;
+	histTrimbits=0;
+	lastImageArray = 0;
+
 	persistency = 0;
 	currentPersistency = 0;
-
 	progress = 0;
 	plotEnable = true;
-	anglePlot = false;
 
+	//marker
+	lines = true;
+	markers = false;
+	marker = new QwtSymbol();
+	marker->setStyle(QwtSymbol::Cross);
+	marker->setSize(5,5);
+	noMarker = new QwtSymbol();
+
+	//for save automatically,
 	saveAll = false;
-
-	XYRangeChanged = false;
-	timerValue = PLOT_TIMER_MS;
-	frameFactor=0;
-	data_pause_over = true;//to get the first image
-	isFrameEnabled = false;
-	isTriggerEnabled = false;
-	scanArgument = None;
-
-	alreadyDisplayed =  false;
-
-	backwardScanPlot = false;
-
-	currentFileIndex = 0;
-	currentFrameIndex = 0;
+	saveError = false;
+	lastSavedFrame = -1;
+	lastSavedMeasurement = -1;
 
 	// This is so that it initially stop and plots
 	running = 1;
-	for(int i=0;i<MAX_1DPLOTS;i++)
-		histYAxis[i]=0;
 
+	XYRangeChanged = false;
+	XYRangeValues[0] = 0;
+	XYRangeValues[1] = 0;
+	XYRangeValues[2] = 0;
+	XYRangeValues[3] = 0;
+	IsXYRange[0] = false;
+	IsXYRange[1] = false;
+	IsXYRange[2] = false;
+	IsXYRange[3] = false;
+
+	timerValue = PLOT_TIMER_MS;
+	frameFactor=0;
+	isFrameEnabled = false;
+	isTriggerEnabled = false;
+
+	scanArgument = None;
+	anglePlot = false;
+	alreadyDisplayed =  false;
+
+	//filepath and file name
+	filePath = QString(myDet->getFilePath().c_str());
+	fileName = QString(myDet->getFileName().c_str());
+
+	backwardScanPlot = false;
+	fileSaveEnable= myDet->enableWriteToFile();
+
+	//pedestal
+	resetPedestal = true;
+	pedestalVals = 0;
+	pedestalCount = -1;
+
+	if(myDet->getDetectorsType()==slsDetectorDefs::GOTTHARD)
+		pedestalCount = 0;
+
+
+
+
+
+	//widget related initialization
 
 	// clone
 	for(int i=0;i<MAXCloneWindows;i++) winClone[i]=0;
-
 
 	// Setting up window
 	setFont(QFont("Sans Serif",9));
@@ -136,32 +199,23 @@ void qDrawPlot::SetupWidgetWindow(){
 	data_pause_timer = new QTimer(this);
 	connect(data_pause_timer, SIGNAL(timeout()), this, SLOT(UpdatePause()));
 
-	// Default titles- only for the initial picture
-	histXAxisTitle="Channel Number";
-	histYAxisTitle="Counts";
-	plotTitle = "";
-	plotTitle_prefix = "";
-
-	for(int i=0;i<MAX_1DPLOTS;i++){
-		histTitle[i] = "";
-		//char temp_title[2000];
-		//sprintf(temp_title,"Frame -%d",i);
-		//histTitle[i] = temp_title;
-	}
-	imageTitle="";
-	/*imageTitle.assign("Start Image");*/
-	imageXAxisTitle="Pixel";
-	imageYAxisTitle="Pixel";
-	imageZAxisTitle="Intensity";
-
-
 
 	// setting default plot titles and settings
 	plot1D = new SlsQt1DPlot(boxPlot);
+
 		plot1D->setFont(QFont("Sans Serif",9,QFont::Normal));
 		plot1D->SetXTitle(histXAxisTitle.toAscii().constData());
 		plot1D->SetYTitle(histYAxisTitle.toAscii().constData());
 		plot1D->hide();
+/*
+		SlsQtH1D*  h;
+		histNBins = nPixelsX;
+		nHists = 1;
+		if(histXAxis)    delete [] histXAxis;	histXAxis    = new double [nPixelsX];
+		if(histYAxis[0]) delete [] histYAxis[0];histYAxis[0] = new double [nPixelsX];
+		for(unsigned int px=0;px<(int)nPixelsX;px++)	{histXAxis[px]  = px;histYAxis[0] = 0;}
+		plot1D_hists.append(h=new SlsQtH1D("",histNBins,histXAxis,GetHistYAxis(0)));
+		h->Attach(plot1D);*/
 
 	plot2D = new SlsQt2DPlotLayout(boxPlot);
 		plot2D->setFont(QFont("Sans Serif",9,QFont::Normal));
@@ -174,34 +228,22 @@ void qDrawPlot::SetupWidgetWindow(){
 	boxPlot->setFlat(true);
 	boxPlot->setContentsMargins(0,15,0,0);
 
+	//plot1D_hists = NULL;
+
 	plotLayout =  new QGridLayout(boxPlot);
 		plotLayout->addWidget(plot1D,1,1,1,1);
 		plotLayout->addWidget(plot2D,1,1,1,1);
 
-	//marker
-	lines = true;
-	markers = false;
-	marker = new QwtSymbol();
-	marker->setStyle(QwtSymbol::Cross);
-	marker->setSize(5,5);
-	noMarker = new QwtSymbol();
-
-
-	//filepath and file name
-	filePath = QString(myDet->getFilePath().c_str());
-	fileName = QString(myDet->getFileName().c_str());
-
-
-	fileSaveEnable= myDet->enableWriteToFile();
-
-	//pedestal
-	resetPedestal = true;
-	pedestalVals = 0;
-	pedestalCount = -1;
-
-	if(myDet->getDetectorsType()==slsDetectorDefs::GOTTHARD)
-		pedestalCount = 0;
-
+		/*
+	//clear eveything again
+	nHists=0;
+	histXAxis=0;
+	histYAxis[0]=0;
+	Clear1DPlot();
+	for(QVector<SlsQtH1D*>::iterator h = plot1D_hists.begin();h!=plot1D_hists.end();h++)	delete *h;
+	plot1D_hists.clear();
+*/
+	//callbacks
 
 	// Setting the callback function to get data from detector class
 	myDet->registerDataCallback(&(GetDataCallBack),this);

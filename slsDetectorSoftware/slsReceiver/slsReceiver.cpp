@@ -1,10 +1,11 @@
 /* A simple server in the internet domain using TCP
    The port number is passed as an argument */
 
+#include "sls_detector_defs.h"
 #include "receiver_defs.h"
 #include "MySocketTCP.h"
 #include "slsReceiver_funcs.h"
-#include "sls_detector_defs.h"
+
 
 #include <signal.h>	//SIGINT
 #include <cstdlib>	//EXIT

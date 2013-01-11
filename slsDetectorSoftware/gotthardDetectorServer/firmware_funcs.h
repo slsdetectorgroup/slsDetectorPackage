@@ -2,6 +2,9 @@
 #define FIRMWARE_FUNCS_H
 
 
+#include "sls_detector_defs.h"
+
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>

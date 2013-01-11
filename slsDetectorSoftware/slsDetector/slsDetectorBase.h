@@ -455,7 +455,7 @@ class slsDetectorBase :  public virtual slsDetectorDefs  {
   /**
      \returns current frame index of receiver
   */
- virtual int getCurrentFrameIndex()=0;
+ virtual int getReceiverCurrentFrameIndex()=0;
 
   /** Locks/Unlocks the connection to the receiver
       /param lock sets (1), usets (0), gets (-1) the lock

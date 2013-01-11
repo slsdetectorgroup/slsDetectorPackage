@@ -1,6 +1,7 @@
 #ifndef SM
 #define SM
 
+#include "sls_detector_defs.h"
 
 #include <stdio.h>
 #include <stdlib.h>

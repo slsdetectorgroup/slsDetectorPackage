@@ -119,7 +119,7 @@ void postProcessing::processFrame(int *myData, int delflag) {
        //uses static function?!?!?!?
        writeDataFile (fname+string(".raw"),fdata, NULL, NULL, 'i');
      } else {
-       writeDataFile ((void*)myData, frameIndex);
+       writeDataFile ((void*)myData, currentFrameIndex);
      }
 #ifdef VERBOSE
      cout << "done " << endl;    
@@ -131,14 +131,22 @@ void postProcessing::processFrame(int *myData, int delflag) {
     } else
       if (dataReady){
 	thisData=new detectorData(fdata,NULL,NULL,getCurrentProgress(),(fname+string(".raw")).c_str(),getTotalNumberOfChannels()); 
-	dataReady(thisData, -1, pCallbackArg);
+	dataReady(thisData, currentFrameIndex, pCallbackArg);
 	delete thisData;
 	fdata=NULL;
       }
   }
-   
-  if (getFrameIndex()>=0)
-     incrementFrameIndex();
+
+  incrementCurrentFrameIndex();
+  if (getFrameIndex()>=0){
+	  if (getDetectorsType()==MYTHEN)
+		  incrementFrameIndex(1);
+	  else if((currentFrameIndex%getFramesPerFile())==0)
+		  incrementFrameIndex(getFramesPerFile());
+  }
+
+
+
 
 
 
@@ -243,7 +251,7 @@ void postProcessing::doProcessing(double *lfdata, int delflag, string fname) {
 	
 	if (dataReady) {
 	  thisData=new detectorData(val,err,ang,getCurrentProgress(),(fname+ext).c_str(),np);
-	  dataReady(thisData, -1, pCallbackArg);
+	  dataReady(thisData, currentFrameIndex, pCallbackArg);
 	  delete thisData;
 	  ang=NULL;
 	  val=NULL;
@@ -386,7 +394,7 @@ void* postProcessing::processData(int delflag) {
 	//receiver
 	else{
 		  pthread_mutex_lock(&mg);
-		int prevCaught=getCurrentFrameIndex();
+		int prevCaught=getReceiverCurrentFrameIndex();
 		 pthread_mutex_unlock(&mg);
 
 		int caught=0;
@@ -400,7 +408,7 @@ void* postProcessing::processData(int delflag) {
 			usleep(200000);
 
 			pthread_mutex_lock(&mg);
-			caught=getCurrentFrameIndex();
+			caught=getReceiverCurrentFrameIndex();
 			pthread_mutex_unlock(&mg);
 			incrementProgress(caught-prevCaught);
 			if(caught-prevCaught) newData=true;

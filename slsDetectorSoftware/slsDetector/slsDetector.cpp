@@ -5773,7 +5773,7 @@ int slsDetector::getFramesCaughtByReceiver(){
 
 
 
-int slsDetector::getCurrentFrameIndex(){
+int slsDetector::getReceiverCurrentFrameIndex(){
 	int fnum=F_GET_FRAME_INDEX;
 	int ret = FAIL;
 	int retval=-1;

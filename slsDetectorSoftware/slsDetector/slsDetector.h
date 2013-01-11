@@ -1461,7 +1461,7 @@ class slsDetector : public slsDetectorUtils, public energyConversion {
   /**  gets the current frame index of receiver
      \returns current frame index of receiver
   */
- int getCurrentFrameIndex();
+ int getReceiverCurrentFrameIndex();
 
  /**
   * resets framescaught

@@ -1084,7 +1084,7 @@ class multiSlsDetector  : public slsDetectorUtils {
   /**  gets the current frame index of receiver
      \returns current frame index of receiver
   */
- int getCurrentFrameIndex();
+ int getReceiverCurrentFrameIndex();
 
  /**
   * resets framescaught

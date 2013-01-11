@@ -1,5 +1,8 @@
 #ifndef TRIMMING_FUNCS_H
 #define TRIMMING_FUNCS_H
+
+#include "sls_detector_defs.h"
+
 int trim_fixed_settings(int countlim, int par2, int imod);
 int trim_with_noise(int countlim, int nsigma, int imod);
 int trim_with_beam(int countlim, int nsigma, int imod);

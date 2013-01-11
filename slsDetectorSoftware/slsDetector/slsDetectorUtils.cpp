@@ -233,6 +233,7 @@ void  slsDetectorUtils::acquire(int delflag){
 		get_i0(0, IOarg);
 	    }
 
+	    setCurrentFrameIndex(0);
 	    if ((timerValue[FRAME_NUMBER]*timerValue[CYCLES_NUMBER])>1) {
 	      setFrameIndex(0);
 	    } else {

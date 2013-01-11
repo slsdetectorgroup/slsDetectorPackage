@@ -30,7 +30,7 @@ class fileIO :  public fileIOStatic, public virtual slsDetectorBase  {
 
 
   /** default constructor */
-  fileIO(): fileIOStatic(){frameIndex=-1;detIndex=-1; framesPerFile=&nframes; nframes=1; };
+  fileIO(): fileIOStatic(){currentFrameIndex=-1;frameIndex=-1;detIndex=-1; framesPerFile=&nframes; nframes=1; };
 
   /** virtual destructor */
   virtual ~fileIO(){};
@@ -65,11 +65,18 @@ class fileIO :  public fileIOStatic, public virtual slsDetectorBase  {
   virtual int setFileIndex(int i) {*fileIndex=i; return *fileIndex;};
   
   /**
-     sets the default output file index
-     \param i frame index to be set
-     \returns actual frame index
+     sets the default output file frame index
+     \param i file frame index to be set
+     \returns actual file frame index
   */
   virtual int setFrameIndex(int i) {frameIndex=i; return frameIndex;};
+
+  /**
+     sets the default output current frame index
+     \param i current frame index to be set
+     \returns actual current frame index
+  */
+  virtual int setCurrentFrameIndex(int i) {currentFrameIndex=i; return currentFrameIndex;};
 
   /**
      sets the default output file index
@@ -101,14 +108,24 @@ class fileIO :  public fileIOStatic, public virtual slsDetectorBase  {
   virtual int getFileIndex() {return *fileIndex;};
   
   /**
-     \returns the output frame index
+     \returns the output file frame index
   */
   virtual int getFrameIndex() {return frameIndex;};
+
+  /**
+     \returns the output current frame index
+  */
+  virtual int getCurrentFrameIndex() {return currentFrameIndex;};
 
   /**
      \returns the detector index
   */
   virtual int getDetectorIndex() {return detIndex;};
+
+  /**
+     \returns the max frames per file
+  */
+  virtual int getFramesPerFile() {return *framesPerFile;};
 
 
   string createFileName();
@@ -259,7 +276,9 @@ yes  */
 
   void incrementFileIndex() { (*fileIndex)++; };
 
-  void incrementFrameIndex() { (frameIndex)++; };
+  void incrementFrameIndex(int i) { frameIndex=frameIndex+i; };
+
+  void incrementCurrentFrameIndex() { (currentFrameIndex)++; };
 
   void incrementDetectorIndex() { (detIndex)++; };
 
@@ -279,8 +298,10 @@ yes  */
   char *fileName;
   /** file index */
   int *fileIndex;
-  /** frame index */
+  /** file frame index */
   int frameIndex;
+  /** current frame index */
+  int currentFrameIndex;
   /** detector id */
   int detIndex;
   /** frames per file */

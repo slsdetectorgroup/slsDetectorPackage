@@ -620,7 +620,7 @@ class slsDetectorUtils :  public slsDetectorActions, public postProcessing {
  /**
     \returns current frame index of receiver
  */
-virtual int getCurrentFrameIndex()=0;
+virtual int getReceiverCurrentFrameIndex()=0;
 
 /**
  * resets framescaught

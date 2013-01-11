@@ -2,6 +2,9 @@
 #define REGISTERS_G_H
 
 
+#include "sls_detector_defs.h"
+
+
 /* Definitions for FPGA*/
 #define CSP0 0x20200000
 #define MEM_SIZE 0x100000 

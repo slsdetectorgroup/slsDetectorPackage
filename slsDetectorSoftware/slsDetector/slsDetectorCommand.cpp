@@ -3609,7 +3609,7 @@ string slsDetectorCommand::cmdReceiver(int narg, char *args[], int action) {
     if (action==PUT_ACTION)
       return string("cannot put");
     else{
-      sprintf(answer,"%d",myDet->getCurrentFrameIndex());
+      sprintf(answer,"%d",myDet->getReceiverCurrentFrameIndex());
       return string(answer);
     }
   }

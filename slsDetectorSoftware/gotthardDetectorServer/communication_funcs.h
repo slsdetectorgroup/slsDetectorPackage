@@ -1,6 +1,9 @@
 #ifndef COMMUNICATION_FUNCS_H
 #define COMMUNICATION_FUNCS_H
 
+#include "sls_detector_defs.h"
+
+
 #define SEND_REC_MAX_SIZE 4096
 #define DEFAULT_PORTNO    1952
 #include <sys/types.h>

@@ -1,5 +1,10 @@
 #ifndef SERVER_FUNCS_H
 #define SERVER_FUNCS_H
+
+
+#include "sls_detector_defs.h"
+
+
 #include <stdio.h>
 /*
 #include <sys/types.h> 

@@ -3701,11 +3701,11 @@ int multiSlsDetector::getFramesCaughtByReceiver() {
 
 
 
-int multiSlsDetector::getCurrentFrameIndex() {
+int multiSlsDetector::getReceiverCurrentFrameIndex() {
   int ret=0,ret1=0;
   for (int i=0; i<thisMultiDetector->numberOfDetectors; i++)
     if (detectors[i])
-      ret1+=detectors[i]->getCurrentFrameIndex();
+      ret1+=detectors[i]->getReceiverCurrentFrameIndex();
 
   if(!thisMultiDetector->numberOfDetectors)
 	  return ret;

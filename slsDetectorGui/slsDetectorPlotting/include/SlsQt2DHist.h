@@ -9,6 +9,13 @@
 #define SLSQT2DHIST_H
 
 
+#ifndef IAN
+typedef  double double32_t;
+typedef  float float32_t;
+typedef  int int32_t;
+#endif
+
+
 
 #if QT_VERSION >= 0x040000
 #include <qprintdialog.h>

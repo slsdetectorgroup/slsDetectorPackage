@@ -6,7 +6,6 @@
  */
 
 #include "qTabSettings.h"
-#include "qDefs.h"
 // Project Class Headers
 #include "slsDetector.h"
 #include "multiSlsDetector.h"

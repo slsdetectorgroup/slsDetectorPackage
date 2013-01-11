@@ -7,6 +7,8 @@
 #ifndef QDETECTORMAIN_H
 #define QDETECTORMAIN_H
 
+#include "qDefs.h"
+
 /** Form Header */
 #include "ui_form_detectormain.h"
 /** Qt Project Class Headers */
@@ -22,7 +24,6 @@ class qTabDeveloper;
 class qTabMessages;
 /** Project Class Headers */
 class multiSlsDetector;
-#include "sls_detector_defs.h"
 /** Qt Include Headers */
 #include <QScrollArea>
 #include <QGridLayout>

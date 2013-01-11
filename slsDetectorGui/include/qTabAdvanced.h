@@ -8,11 +8,13 @@
 #ifndef QTABADVANCED_H_
 #define QTABADVANCED_H_
 
+#include "qDefs.h"
+
+
 /** Form Header */
 #include "ui_form_tab_advanced.h"
 /** Project Class Headers */
 class multiSlsDetector;
-#include "sls_detector_defs.h"
 /** Qt Project Class Headers */
 class qDrawPlot;
 /** Qt Include Header */

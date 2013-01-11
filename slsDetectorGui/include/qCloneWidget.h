@@ -8,6 +8,9 @@
 #ifndef QCLONEWIDGET_H_
 #define QCLONEWIDGET_H_
 
+#include "qDefs.h"
+
+
 /** Qt Project Class Headers */
 class SlsQtH1D;
 #include "SlsQt1DPlot.h"

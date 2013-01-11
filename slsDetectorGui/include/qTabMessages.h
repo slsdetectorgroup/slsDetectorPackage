@@ -9,6 +9,9 @@
 #define QTABMESSAGES_H_
 
 
+#include "qDefs.h"
+
+
 
 /** Project Class Headers */
 class multiSlsDetector;

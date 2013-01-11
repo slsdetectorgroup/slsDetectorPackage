@@ -8,13 +8,14 @@
 #ifndef QTABACTIONS_H_
 #define QTABACTIONS_H_
 
+#include "qDefs.h"
+
 
 /* Qt Project Class Headers */
 #include "qActionsWidget.h"
 #include "qScanWidget.h"
 /** C++ Project Class Headers */
 class multiSlsDetector;
-#include "sls_detector_defs.h"
 /** Qt Include Headers */
 #include <QWidget>
 #include <QPushButton>

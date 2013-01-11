@@ -8,11 +8,13 @@
 #ifndef QTABSETTINGS_H_
 #define QTABSETTINGS_H_
 
+#include "qDefs.h"
+
+
 /** Form Header */
 #include "ui_form_tab_settings.h"
 /** Project Class Headers */
 class multiSlsDetector;
-#include "sls_detector_defs.h"
 /** Qt Include Headers */
 #include <QStandardItemModel>
 

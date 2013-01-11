@@ -7,7 +7,6 @@
 
 /** Qt Project Class Headers */
 #include "qCloneWidget.h"
-#include "qDefs.h"
 /** Qt Include Headers */
 #include <QImage>
 #include <QPainter>

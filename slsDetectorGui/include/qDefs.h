@@ -8,6 +8,7 @@
 #ifndef QDEFS_H
 #define QDEFS_H
 
+#include "sls_detector_defs.h"
 #include <iostream>
 #include <QMessageBox>
 using namespace std;

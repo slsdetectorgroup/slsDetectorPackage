@@ -8,6 +8,8 @@
 #ifndef QACTIONSWIDGET_H_
 #define QACTIONSWIDGET_H_
 
+#include "qDefs.h"
+
 /** Form Header */
 #include "ui_form_action.h"
 /** Project Class Headers */

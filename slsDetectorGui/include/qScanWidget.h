@@ -8,6 +8,8 @@
 #ifndef QSCANWIDGET_H_
 #define QSCANWIDGET_H_
 
+#include "qDefs.h"
+
 /** Form Header */
 #include "ui_form_scan.h"
 /** Project Class Headers */

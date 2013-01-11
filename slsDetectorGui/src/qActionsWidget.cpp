@@ -9,7 +9,6 @@
 #include "multiSlsDetector.h"
 // Qt Project Class Headers
 #include "qActionsWidget.h"
-#include "qDefs.h"
 // Qt Include Headers
 #include <QFileDialog>
 // C++ Include Headers

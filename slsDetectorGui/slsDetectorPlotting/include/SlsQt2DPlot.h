@@ -14,6 +14,13 @@
 #ifndef SLSQT2DPLOT_H
 #define SLSQT2DPLOT_H
 
+#ifndef IAN
+typedef  double double32_t;
+typedef  float float32_t;
+typedef  int int32_t;
+#endif
+
+
 
 #include <qwt_plot.h>
 #include <qlist.h>

@@ -5,7 +5,6 @@
  *      Author: l_maliakal_d
  */
 #include "qTabAdvanced.h"
-#include "qDefs.h"
 #include "qDrawPlot.h"
 /** Project Class Headers */
 #include "slsDetector.h"

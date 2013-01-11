@@ -8,9 +8,11 @@
 #ifndef QTABDEVELOPER_H_
 #define QTABDEVELOPER_H_
 
+#include "qDefs.h"
+
+
 /** Project Class Headers */
 class multiSlsDetector;
-#include "sls_detector_defs.h"
 /** Qt Include Headers */
 #include <QWidget>
 #include <QGridLayout>

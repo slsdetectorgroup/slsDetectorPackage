@@ -7,7 +7,6 @@
 
 /** Qt Project Class Headers */
 #include "qTabMessages.h"
-#include "qDefs.h"
 /** Project Class Headers */
 #include "slsDetector.h"
 #include "multiSlsDetector.h"

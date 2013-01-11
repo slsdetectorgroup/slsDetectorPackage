@@ -8,12 +8,14 @@
 #ifndef QTABDEBUGGING_H_
 #define QTABDEBUGGING_H_
 
+#include "qDefs.h"
+
+
 /** Form Header */
 #include "ui_form_tab_debugging.h"
 /** Project Class Headers */
 class multiSlsDetector;
 class slsDetector;
-#include "sls_detector_defs.h"
 /** Qt Include Headers */
 #include <QTreeWidget>
 

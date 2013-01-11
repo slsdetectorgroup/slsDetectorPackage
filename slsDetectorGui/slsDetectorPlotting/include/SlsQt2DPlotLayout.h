@@ -11,6 +11,13 @@
 #ifndef SLSQT2DPLOTLAYOUT_H
 #define SLSQT2DPLOTLAYOUT_H
 
+#ifndef IAN
+typedef  double double32_t;
+typedef  float float32_t;
+typedef  int int32_t;
+#endif
+
+
 #include <qwidget.h>
 #include <qgroupbox.h>
 

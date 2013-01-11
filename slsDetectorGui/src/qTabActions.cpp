@@ -6,7 +6,6 @@
  */
 // Qt Project Class Headers
 #include "qTabActions.h"
-#include "qDefs.h"
 // Project Class Headers
 #include "slsDetector.h"
 #include "multiSlsDetector.h"

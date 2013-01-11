@@ -7,6 +7,9 @@
 #ifndef QTABMEASUREMENT
 #define QTABMEASUREMENT
 
+#include "qDefs.h"
+
+
 /** Form Header */
 #include "ui_form_tab_measurement.h"
 /** Project Class Headers */

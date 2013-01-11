@@ -6,7 +6,6 @@
  */
 
 #include "qTabPlot.h"
-#include "qDefs.h"
 #include "qDrawPlot.h"
 // Project Class Headers
 #include "slsDetector.h"

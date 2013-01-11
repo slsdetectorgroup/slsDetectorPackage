@@ -8,13 +8,14 @@
 #define QDRAWPLOT_H
 
 
+#include "qDefs.h"
+
 /** Project Class Headers */
 class multiSlsDetector;
 #include "detectorData.h"
 /** Qt Project Class Headers */
 #include "SlsQt1DPlot.h"
 #include "SlsQt2DPlotLayout.h"
-#include "qDefs.h"
 class qCloneWidget;
 /** Qt Include Headers */
 #include <QWidget>

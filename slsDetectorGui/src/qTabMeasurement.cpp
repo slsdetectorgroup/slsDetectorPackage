@@ -7,7 +7,6 @@
 
 //Qt Project Class Headers
 #include "qTabMeasurement.h"
-#include "qDefs.h"
 #include "qDrawPlot.h"
 //Project Class Headers
 #include "slsDetector.h"

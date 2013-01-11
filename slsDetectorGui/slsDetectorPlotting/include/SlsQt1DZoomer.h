@@ -6,6 +6,14 @@
 
 #ifndef SLSQT1DZOOMER_H
 #define SLSQT1DZOOMER_H
+
+#ifndef IAN
+typedef  double double32_t;
+typedef  float float32_t;
+typedef  int int32_t;
+#endif
+
+
 #include <qwt_plot_zoomer.h>
 #include <qwt_plot_panner.h>
 #include <qwt_global.h>

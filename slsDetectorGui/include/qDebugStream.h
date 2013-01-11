@@ -9,6 +9,9 @@
 #define QDEBUGSTREAM_H_
 
 
+#include "qDefs.h"
+
+
 #include <QApplication>
 #include <QWidget>
 #include <QString>

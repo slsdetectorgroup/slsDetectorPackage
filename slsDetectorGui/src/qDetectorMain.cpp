@@ -4,7 +4,6 @@
  * ********************************************************************/
 // Qt Project Class Headers
 #include "qDetectorMain.h"
-#include "qDefs.h"
 #include "qDrawPlot.h"
 #include "qTabMeasurement.h"
 #include "qTabDataOutput.h"
@@ -36,7 +35,7 @@ using namespace std;
 int main (int argc, char **argv) {
 
 	QApplication *theApp = new QApplication(argc, argv);
-	theApp->setStyle(new QPlastiqueStyle);
+	theApp->setStyle(new QPlastiqueStyle);//not default when desktop is windows
 	theApp->setWindowIcon(QIcon( ":/icons/images/mountain.png" ));
 	qDetectorMain *det=new qDetectorMain(argc, argv, theApp,0);
 	det->show();

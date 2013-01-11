@@ -5,7 +5,6 @@
  *      Author: l_maliakal_d
  */
 #include "qTabDeveloper.h"
-#include "qDefs.h"
 //Project Class Headers
 #include "slsDetector.h"
 #include "multiSlsDetector.h"

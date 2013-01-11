@@ -9,6 +9,13 @@
 #ifndef SLSQT2DZOOMER_H
 #define SLSQT2DZOOMER_H
 
+#ifndef IAN
+typedef  double double32_t;
+typedef  float float32_t;
+typedef  int int32_t;
+#endif
+
+
 /**included by Dhanya on 05.12.2012 to avoid compile time errors with the latest gcc*/
 #include <cstdio>
 /**end of Change by Dhanya*/

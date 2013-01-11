@@ -69,7 +69,8 @@ int init_detector( int b) {
   if (b) {
 #ifdef MCB_FUNCS
     initDetector();
-    printf("\n----initdetector done! new serverRdRR\n\n");
+    printf("\n***initdetector done*** \n\n");
+#endif
     testFpga();
     testRAM();
     //gotthard specific
@@ -85,10 +86,11 @@ int init_detector( int b) {
     setPeriod(1e9);
     setDelay(0);
     setGates(0);
-#endif
+
     setTiming(GET_EXTERNAL_COMMUNICATION_MODE);
     setMaster(GET_MASTER);
     setSynchronization(GET_SYNCHRONIZATION_MODE);
+    startReceiver(0);
   }
   strcpy(mess,"dummy message");
   strcpy(lastClientIP,"none");

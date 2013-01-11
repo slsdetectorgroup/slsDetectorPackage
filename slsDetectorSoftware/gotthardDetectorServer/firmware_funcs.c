@@ -1665,11 +1665,15 @@ u_int32_t* fifo_read_event()
 	   if (runBusy()==0) {
 		   t = bus_r(LOOK_AT_ME_REG);
 		   if ((t&0x1)==0) {
+#ifdef VERBOSE
 			   printf("no frame found - exiting ");
 			   printf("%08x %08x\n", runState(), bus_r(LOOK_AT_ME_REG));
+#endif
 			   return NULL;
 		   } else {
+#ifdef VERBOSE
 			   printf("no frame found %x status %x\n", bus_r(LOOK_AT_ME_REG),runState());
+#endif
 			   break;
 		   }
 	   }
@@ -1677,9 +1681,9 @@ u_int32_t* fifo_read_event()
    }
 
 
-//#ifdef VERBOSE
+#ifdef VERBOSE
   printf("before readout %08x %08x\n", runState(), bus_r(LOOK_AT_ME_REG));
-//#endif
+#endif
 
   dma_memcpy(now_ptr,values ,dataBytes);
 
@@ -1693,10 +1697,10 @@ u_int32_t* fifo_read_event()
   printf("********\n");
   //memcpy(now_ptr, values, dataBytes);
 #endif
-//#ifdef VERBOSE
+#ifdef VERBOSE
   printf("Copying to ptr %08x %d\n",(unsigned int)(now_ptr), dataBytes);
   printf("after readout %08x %08x\n", runState(), bus_r(LOOK_AT_ME_REG));
-//#endif
+#endif
 
   if (storeInRAM>0) {
     now_ptr+=dataBytes;

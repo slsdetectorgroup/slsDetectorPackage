@@ -4610,17 +4610,24 @@ int slsDetector::setUDPConnection(){
 
 	//if no udp ip given, use hostname
 	if(!strcmp(thisDetector->receiverUDPIP,"none")){
-		//hostname is an ip address
-		if(strchr(thisDetector->receiver_hostname,'.')!=NULL)
-			strcpy(thisDetector->receiverUDPIP,thisDetector->receiver_hostname);
-		//if hostname not ip, convert it to ip
-		else{
-			struct hostent *he = gethostbyname(thisDetector->receiver_hostname);
-			if (he == NULL){
-				std::cout << "no rx_udpip given and could not convert receiver hostname to ip" << endl;
-				return FAIL;
-			}else
-				strcpy(thisDetector->receiverUDPIP,inet_ntoa(*(struct in_addr*)he->h_addr));
+		if(!strcmp(thisDetector->receiver_hostname,"localhost")){
+			string temp = genericSocket::ipToName("localhost");
+			strcpy(thisDetector->receiverUDPIP,temp.c_str());
+			temp = genericSocket::nameToMac(genericSocket::ipToName(temp));
+			strcpy(thisDetector->receiverUDPMAC,temp.c_str());
+		}else{
+			//hostname is an ip address
+			if(strchr(thisDetector->receiver_hostname,'.')!=NULL)
+				strcpy(thisDetector->receiverUDPIP,thisDetector->receiver_hostname);
+			//if hostname not ip, convert it to ip
+			else{
+				struct hostent *he = gethostbyname(thisDetector->receiver_hostname);
+				if (he == NULL){
+					std::cout << "no rx_udpip given and could not convert receiver hostname to ip" << endl;
+					return FAIL;
+				}else
+					strcpy(thisDetector->receiverUDPIP,inet_ntoa(*(struct in_addr*)he->h_addr));
+			}
 		}
 	}
 
@@ -4630,29 +4637,37 @@ int slsDetector::setUDPConnection(){
 	sprintf(args[1],"%d",thisDetector->receiverUDPPort);
 
 
-
 	//set up receiver for UDP Connection and get receivermac address
 	if(setReceiverOnline(ONLINE_FLAG)==ONLINE_FLAG){
 #ifdef VERBOSE
-			std::cout << "Setting up UDP Connection for Receiver " << arg[0] << "\t" << arg[1] << std::endl;
+			std::cout << "Setting up UDP Connection for Receiver " << args[0] << "\t" << args[1] << std::endl;
 #endif
-			ret=thisReceiver->sendUDPDetails(fnum,retval,args);
 
-			if(ret!=FAIL){
+			//already have mac address if localhost
+			if(!strcmp(thisDetector->receiver_hostname,"localhost"))
+				ret=OK;
+
+			//get mac address from receiver
+			else{
+				ret=thisReceiver->sendUDPDetails(fnum,retval,args);
+				if(ret!=FAIL){
+					strcpy(thisDetector->receiverUDPMAC,retval);
+				}
+				if(ret==FORCE_UPDATE)
+					updateReceiver();
+			}
+
 #ifdef VERBOSE
-				std::cout << "Receiver mac address: " << retval << std::endl;
+					std::cout << "Receiver mac address: " << thisDetector->receiverUDPMAC << std::endl;
 #endif
-				strcpy(thisDetector->receiverUDPMAC,retval);
 
-				//configure detector with udp details
+			//configure detector with udp details
+			if(ret!=FAIL){
 				if(configureMAC()!=OK){
 					setReceiverOnline(OFFLINE_FLAG);
 					std::cout << "could not configure mac" << endl;
 				}
 			}
-
-			if(ret==FORCE_UPDATE)
-				updateReceiver();
 	}else{
 		ret=FAIL;
 		std::cout << "cannot connect to receiver" << endl;
@@ -4674,17 +4689,25 @@ int slsDetector::configureMAC(int adc){
 
   //if udpip wasnt initialized in config file
   if(!(strcmp(thisDetector->receiverUDPIP,"none"))){
-		//hostname is an ip address
-		if(strchr(thisDetector->receiver_hostname,'.')!=NULL)
-			strcpy(thisDetector->receiverUDPIP,thisDetector->receiver_hostname);
-		//if hostname not ip, convert it to ip
-		else{
-			struct hostent *he = gethostbyname(thisDetector->receiver_hostname);
-			if (he != NULL)
-				strcpy(thisDetector->receiverUDPIP,inet_ntoa(*(struct in_addr*)he->h_addr));
+	  //if localhost
+		if(!strcmp(thisDetector->receiver_hostname,"localhost")){
+			string temp = genericSocket::ipToName("localhost");
+			strcpy(thisDetector->receiverUDPIP,temp.c_str());
+			temp = genericSocket::nameToMac(genericSocket::ipToName(temp));
+			strcpy(thisDetector->receiverUDPMAC,temp.c_str());
+		}else{
+			//hostname is an ip address
+			if(strchr(thisDetector->receiver_hostname,'.')!=NULL)
+				strcpy(thisDetector->receiverUDPIP,thisDetector->receiver_hostname);
+			//if hostname not ip, convert it to ip
 			else{
-				std::cout << "no rx_udpip given and invalid receiver hostname" << endl;
-				return FAIL;
+				struct hostent *he = gethostbyname(thisDetector->receiver_hostname);
+				if (he != NULL)
+					strcpy(thisDetector->receiverUDPIP,inet_ntoa(*(struct in_addr*)he->h_addr));
+				else{
+					std::cout << "no rx_udpip given and invalid receiver hostname" << endl;
+					return FAIL;
+				}
 			}
 		}
   }

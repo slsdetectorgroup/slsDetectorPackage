@@ -233,10 +233,11 @@ int slsReceiverFunctionList::startListening(){
 	do {
 
 		if(!strlen(eth)){
-			cout<<"error:eth is empty:"<<eth<<endl;
-			break;
-		}
-		udpSocket = new genericSocket(server_port,genericSocket::UDP,eth);
+			cout<<"warning:eth is empty.listening to all"<<endl;
+			udpSocket = new genericSocket(server_port,genericSocket::UDP);
+		}else
+			udpSocket = new genericSocket(server_port,genericSocket::UDP,eth);
+
 		if (udpSocket->getErrorStatus()){
 			break;
 		}

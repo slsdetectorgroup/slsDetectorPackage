@@ -755,9 +755,9 @@ int startReceiver(int start) {
 		bus_w(CONFIG_REG,reg&(~CPU_OR_RECEIVER_BIT));
 
 	reg=bus_r(addr);
-#ifdef VERBOSE
+//#ifdef VERBOSE
 	printf("Config Reg %x\n", reg);
-#endif
+//#endif
 	int d =reg&CPU_OR_RECEIVER_BIT;
 	if(d!=0) d=1;
 	if(d!=start)

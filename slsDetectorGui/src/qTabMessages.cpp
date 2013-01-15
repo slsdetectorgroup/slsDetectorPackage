@@ -66,7 +66,7 @@ void qTabMessages::SetupWidgetWindow(){
 	gridLayout->addItem(new QSpacerItem(15,10,QSizePolicy::Fixed,QSizePolicy::Fixed),2,0);
 	gridLayout->addWidget(dispLog,3,0,1,5);
 
-	errMsg = "<nobr> Please check Messages Tab. Following message was caught:</nobr><br><br>";
+	errMsg = "<nobr> Please check Messages Tab. Following message was caught:</nobr><br><br><nobr><font color=\"darkBlue\">";
 	qout=new qDebugStream(std::cout,this);
 	qerr=new qDebugStream(std::cerr,this);
 
@@ -89,9 +89,9 @@ void qTabMessages::customEvent(QEvent *e) {
 
 
 	  if(t.find("not connect")!=string::npos)
-		  qDefs::Message(qDefs::WARNING,errMsg+t,"Messages");
+		  qDefs::Message(qDefs::WARNING,errMsg+t+string("</font></nobr>"),"Messages");
 	  else if(t.find("ould not")!=string::npos)
-		  qDefs::Message(qDefs::WARNING,errMsg+t,"Messages");
+		  qDefs::Message(qDefs::WARNING,errMsg+t+string("</font></nobr>"),"Messages");
 
 	 // dispLog->append(((qStreamEvent*)e)->getString());
   }

@@ -24,7 +24,7 @@ using namespace std;
 
 //-------------------------------------------------------------------------------------------------------------------------------------------------
 
-qTabMessages::qTabMessages(QWidget *parent,multiSlsDetector* detector):QWidget(parent),qout(0){//myDet(detector),
+qTabMessages::qTabMessages(QWidget *parent,multiSlsDetector* detector):QWidget(parent),qout(0),qerr(0){//myDet(detector),
   myDet=detector;
   SetupWidgetWindow();
   Initialization();
@@ -36,6 +36,7 @@ qTabMessages::~qTabMessages(){
   //	delete myDet;
 	delete dispLog;
 	delete qout;
+	delete qerr;
 }
 
 //-------------------------------------------------------------------------------------------------------------------------------------------------
@@ -65,11 +66,9 @@ void qTabMessages::SetupWidgetWindow(){
 	gridLayout->addItem(new QSpacerItem(15,10,QSizePolicy::Fixed,QSizePolicy::Fixed),2,0);
 	gridLayout->addWidget(dispLog,3,0,1,5);
 
-	qout=new qDebugStream(cout,cerr, this);
-	//qerr=new qDebugStream(cerr,this);
+	qout=new qDebugStream(std::cout,this);
+	qerr=new qDebugStream(std::cerr,this);
 
-	//qerr=NULL;
-	//qerr=new qDebugStream(std::cerr,this);cout<<"worked!"<<endl;
 }
 
 //-------------------------------------------------------------------------------------------------------------------------------------------------
@@ -82,8 +81,17 @@ void qTabMessages::Initialization(){
 //-------------------------------------------------------------------------------------------------------------------------------------------------
 
 void qTabMessages::customEvent(QEvent *e) {
-  if (e->type() == STREAMEVENT)
-	  dispLog->append(((qStreamEvent*)e)->getString());
+  if (e->type() == (STREAMEVENT)){
+	  QString temp = ((qStreamEvent*)e)->getString();
+	  dispLog->append(temp);
+	  string t=string(temp.toAscii().constData());
+	  if(t.find("not connect")!=string::npos)
+		  qDefs::Message(qDefs::WARNING,string("Caught following message:\n\n")+t,"Messages");
+	  else if(t.find("ould not")!=string::npos)
+		  qDefs::Message(qDefs::WARNING,string("Caught following message:\n\n")+t,"Messages");
+
+	 // dispLog->append(((qStreamEvent*)e)->getString());
+  }
 }
 
 //-------------------------------------------------------------------------------------------------------------------------------------------------

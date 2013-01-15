@@ -55,7 +55,7 @@ private:
 
 	/** This class creates the log */
 	qDebugStream *qout;
-	//qDebugStream *qerr;
+	qDebugStream *qerr;
 
 /** methods */
 	/** Sets up the widget */

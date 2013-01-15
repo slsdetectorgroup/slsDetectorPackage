@@ -15,7 +15,6 @@
 #include <QApplication>
 #include <QWidget>
 #include <QString>
-#include <QEvent>
 #include <QCustomEvent>
 
 #include <iostream>
@@ -30,9 +29,9 @@ using namespace std;
 
 class qStreamEvent:public QEvent{
 public:
-	qStreamEvent(QString s):QEvent(static_cast<QEvent::Type>(STREAMEVENT)) {str=s;};
+	qStreamEvent(QString s):QEvent(static_cast<QEvent::Type>(STREAMEVENT)),str(s){}
 	/** \returns the progress index */
-	QString getString() {return str;};
+	QString getString() {return str;}
 private:
 	QString str;
 
@@ -43,27 +42,18 @@ private:
 class qDebugStream : public basic_streambuf<char> {
 
 public:
-	qDebugStream(ostream &stream, ostream &estream, QWidget* w) : m_stream(stream), e_stream(estream), log_window(w) {
+	qDebugStream(ostream &stream, QWidget* w) : m_stream(stream), log_window(w) {
 		m_old_buf = stream.rdbuf();
 		stream.rdbuf(this);
-		//e_old_buf = stream.rdbuf();
-		//estream.rdbuf(this);
-
-	};
+	}
 
 //-------------------------------------------------------------------------------------------------------------------------------------------------
 
 	~qDebugStream(){
 		// output anything that is left
-		if (!m_string.empty()) {
-			qStreamEvent *ce=new qStreamEvent(m_string.c_str());
-			QApplication::postEvent(log_window, ce);
-#ifdef VERBOSE
-			cerr << m_string << endl;
-#endif
-		}
+		if (!m_string.empty())
+			QApplication::postEvent(log_window, new qStreamEvent(m_string.c_str()));
 		m_stream.rdbuf(m_old_buf);
-		e_stream.rdbuf(e_old_buf);
 	}
 
 //-------------------------------------------------------------------------------------------------------------------------------------------------
@@ -71,11 +61,7 @@ public:
 protected:
 	virtual int_type overflow(int_type v){
 		if (v == '\n'){
-			qStreamEvent *ce=new qStreamEvent(m_string.c_str());
-			QApplication::postEvent(log_window, ce);
-#ifdef VERBOSE
-			cerr << m_string << endl;
-#endif
+			QApplication::postEvent(log_window, new qStreamEvent(m_string.c_str()));
 			m_string.erase(m_string.begin(), m_string.end());
 		}
 		else
@@ -90,17 +76,11 @@ protected:
 		//changed from uint because of 64 bit
 		int pos = 0;
 
-		while (pos != string::npos)
-		{
+		while (pos != string::npos){
 			pos = m_string.find('\n');
-			if (pos != string::npos)
-			{
+			if (pos != string::npos){
 				string tmp(m_string.begin(), m_string.begin() + pos);
-				qStreamEvent *ce=new qStreamEvent(tmp.c_str());
-				QApplication::postEvent(log_window, ce);
-#ifdef VERBOSE
-				cerr << tmp << endl;
-#endif
+				QApplication::postEvent(log_window, new qStreamEvent(tmp.c_str()));
 				m_string.erase(m_string.begin(), m_string.begin() + pos + 1);
 			}
 		}
@@ -112,8 +92,6 @@ protected:
 private:
 	ostream &m_stream;
 	streambuf *m_old_buf;
-	ostream &e_stream;
-	streambuf *e_old_buf;
 	string m_string;
 	QWidget* log_window;
 };

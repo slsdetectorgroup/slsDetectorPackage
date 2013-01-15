@@ -60,10 +60,11 @@ slsReceiverFuncs::slsReceiverFuncs(MySocketTCP *&mySocket,string const fname,int
 						 sstr >> sargname;
 
 					 //value
-					 if(sargname=="dataport"){
+					 if(sargname=="rx_tcpport"){
 						 if(sstr.good()) {
 							 sstr >> sargname;
 							 sscanf(sargname.c_str(),"%d",&port_no);
+							 cout<<"dataport:"<<port_no<<endl;
 						 }
 					 }
 				 }
@@ -73,9 +74,9 @@ slsReceiverFuncs::slsReceiverFuncs(MySocketTCP *&mySocket,string const fname,int
 			cout << "Error opening configuration file " << fname << endl;
 			success = FAIL;
 		}
-//#ifdef VERBOSE
+#ifdef VERBOSE
 		cout << "Read configuration file of " << iline << " lines" << endl;
-//#endif
+#endif
 
 	}
 

@@ -4629,7 +4629,8 @@ int slsDetector::setUDPConnection(){
 	strcpy(args[0],thisDetector->receiverUDPIP);
 	sprintf(args[1],"%d",thisDetector->receiverUDPPort);
 #ifdef VERBOSE
-	std::cout << "Receiver ip address: " << thisDetector->receiverUDPIP << std::endl;
+	std::cout << "Receiver udp ip address: " << thisDetector->receiverUDPIP << std::endl;
+	std::cout << "Receiver udp port: " << thisDetector->receiverUDPPort << std::endl;
 #endif
 
 	//set up receiver for UDP Connection and get receivermac address

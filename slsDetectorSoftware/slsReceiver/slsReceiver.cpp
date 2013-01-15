@@ -30,7 +30,7 @@ int main(int argc, char *argv[])
 
 	//parse command line for config
 	for(int iarg=1;iarg<argc;iarg++){
-		if(!strcasecmp(argv[iarg],"-config")){
+		if((!strcasecmp(argv[iarg],"-config"))||(!strcasecmp(argv[iarg],"-f"))){
 			if(iarg+1==argc){
 				cout << "no config file name given. Exiting." << endl;
 				return -1;

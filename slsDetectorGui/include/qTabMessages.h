@@ -57,6 +57,8 @@ private:
 	qDebugStream *qout;
 	qDebugStream *qerr;
 
+	string errMsg;
+
 /** methods */
 	/** Sets up the widget */
 	void SetupWidgetWindow();

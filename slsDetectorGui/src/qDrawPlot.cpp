@@ -207,15 +207,21 @@ void qDrawPlot::SetupWidgetWindow(){
 		plot1D->SetXTitle(histXAxisTitle.toAscii().constData());
 		plot1D->SetYTitle(histYAxisTitle.toAscii().constData());
 		plot1D->hide();
-/*
+
 		SlsQtH1D*  h;
 		histNBins = nPixelsX;
 		nHists = 1;
 		if(histXAxis)    delete [] histXAxis;	histXAxis    = new double [nPixelsX];
 		if(histYAxis[0]) delete [] histYAxis[0];histYAxis[0] = new double [nPixelsX];
-		for(unsigned int px=0;px<(int)nPixelsX;px++)	{histXAxis[px]  = px;histYAxis[0] = 0;}
-		plot1D_hists.append(h=new SlsQtH1D("",histNBins,histXAxis,GetHistYAxis(0)));
-		h->Attach(plot1D);*/
+		for(unsigned int px=0;px<(int)nPixelsX;px++)	{histXAxis[px]  = px;histYAxis[0][px] = 0;}
+		Clear1DPlot();
+		plot1D->SetXTitle("X Axis");
+		plot1D->SetYTitle("Y Axis");
+		plot1D_hists.append(h=new SlsQtH1D("",histNBins,histXAxis,histYAxis[0]));
+		h->SetLineColor(1);
+		SetStyle(h);
+		h->Attach(plot1D);
+		Clear1DPlot();
 
 	plot2D = new SlsQt2DPlotLayout(boxPlot);
 		plot2D->setFont(QFont("Sans Serif",9,QFont::Normal));
@@ -810,7 +816,7 @@ int qDrawPlot::GetData(detectorData *data,int fIndex){
 				//normal data
 				if(resetPedestal){
 					memcpy(histYAxis[0],data->values,nPixelsX*sizeof(double));
-				}else{cout<<"SHOULD NOT BE HERE!!!!!!!!!!!!!"<<endl;
+				}else{
 					//start adding frames to get to the pedestal value
 					if(pedestalCount<NUM_PEDESTAL_FRAMES){
 						for(unsigned int px=0;px<nPixelsX;px++)

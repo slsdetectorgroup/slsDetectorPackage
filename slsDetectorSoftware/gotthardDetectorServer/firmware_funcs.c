@@ -173,12 +173,6 @@ int mapCSP0(void) {
   u_int32_t address;
   address = FIFO_DATA_REG_OFF;
   values=(u_int16_t*)(CSP0BASE+address*2);
-  /* must b uncommentedlater////////////////////////////////////////////////////////
-  values=(u_int32_t*)(CSP0BASE+FIFO_DATA_REG_OFF);
-  printf("values=%08x\n",values);
-  fifocntrl=(u_int32_t*)(CSP0BASE+FIFO_CNTRL_REG_OFF);
-  printf("fifcntrl=%08x\n",fifocntrl);
-  */
   printf("statusreg=%08x\n",bus_r(STATUS_REG));
   return OK;
 }
@@ -188,12 +182,10 @@ u_int16_t bus_r16(u_int32_t offset){
   ptr1=(u_int16_t*)(CSP0BASE+offset*2);
   return *ptr1;
 }
-//aldos function volatile (not needed) 
+
 u_int16_t bus_w16(u_int32_t offset, u_int16_t data) {
   volatile u_int16_t *ptr1;
   ptr1=(u_int16_t*)(CSP0BASE+offset*2);
-  // printf("writing at 0x%x data 0x%x %d%d%d\n",CSP0BASE+offset*2,data, (data>>2)&0x1,(data>>1)&0x1 ,(data>>0)&0x1);
-
   *ptr1=data;
   return OK;
 }
@@ -333,88 +325,50 @@ u_int32_t putout(char *s, int modnum) {
 
 // read direct input 
 u_int32_t readin(int modnum) {
-  int addr;
-  u_int32_t val;
-  //addr=MCB_DOUT_REG_OFF+(modnum<<4);
-  addr=MCB_DOUT_REG_OFF+(modnum<<SHIFTMOD);
-  val=bus_r(addr) & 0x3ff;
-  //  printf("reading 0x%08x, value 0x%08x\n",addr,val);
-  return val;
+	return 0;
 }
 
 u_int32_t setClockDivider(int d) {
-  u_int32_t c;
-  c=bus_r(SPEED_REG);
-  bus_w(SPEED_REG,(d<<CLK_DIVIDER_OFFSET)|(c&~(CLK_DIVIDER_MASK)));
-  return ((bus_r(SPEED_REG)& CLK_DIVIDER_MASK)>>CLK_DIVIDER_OFFSET);
+ return 0;
 }
 
 u_int32_t getClockDivider() {
-  u_int32_t clk_div;
-  clk_div=((bus_r(SPEED_REG)&CLK_DIVIDER_MASK)>>CLK_DIVIDER_OFFSET);
-  return clk_div;
+	 return 0;
 }
 
 u_int32_t setSetLength(int d) {
-  u_int32_t c;
-  c=bus_r(SPEED_REG);
-  bus_w(SPEED_REG,(d<<SET_LENGTH_OFFSET)|(c&~(SET_LENGTH_MASK)));
-  return ((bus_r(SPEED_REG)& SET_LENGTH_MASK)>>SET_LENGTH_OFFSET);
+	 return 0;
 }
 
 u_int32_t getSetLength() {
-  u_int32_t clk_div;
-  clk_div=((bus_r(SPEED_REG)& SET_LENGTH_MASK)>>SET_LENGTH_OFFSET);
-  return clk_div;
+	 return 0;
 }
 
 
 u_int32_t setWaitStates(int d1) {
-  u_int32_t c;
-  int d=d1-2;
-  //int d=d1-3;
-  char cmd[100];
-  if (d1<=0xf) {
-    sprintf(cmd,"bus -a 0xb0000000 -w 0x%x0008",d1);
-    c=bus_r(SPEED_REG);
-    bus_w(SPEED_REG,(d<<WAIT_STATES_OFFSET)|(c&~(WAIT_STATES_MASK)));
-    system(cmd);
-  }
-  return ((bus_r(SPEED_REG)& WAIT_STATES_MASK)>>WAIT_STATES_OFFSET)+2;
+	 return 0;
 }
 
 u_int32_t getWaitStates() {
-  u_int32_t clk_div;
-  clk_div=((bus_r(SPEED_REG)& WAIT_STATES_MASK)>>WAIT_STATES_OFFSET);
-  return clk_div+2;
+	 return 0;
 }
 
 
 u_int32_t setTotClockDivider(int d) {
-  u_int32_t c;
-  c=bus_r(SPEED_REG);
-  bus_w(SPEED_REG,(d<<TOTCLK_DIVIDER_OFFSET)|(c&~(TOTCLK_DIVIDER_MASK)));
-  return ((bus_r(SPEED_REG)& TOTCLK_DIVIDER_MASK)>>TOTCLK_DIVIDER_OFFSET);
+	 return 0;
 }
 
 u_int32_t getTotClockDivider() {
-  u_int32_t clk_div;
-  clk_div=((bus_r(SPEED_REG)&TOTCLK_DIVIDER_MASK)>>TOTCLK_DIVIDER_OFFSET);
-  return clk_div;
+	 return 0;
 }
 
 
 u_int32_t setTotDutyCycle(int d) {
-  u_int32_t c;
-  c=bus_r(SPEED_REG);
-  bus_w(SPEED_REG,(d<<TOTCLK_DUTYCYCLE_OFFSET)|(c&~(TOTCLK_DUTYCYCLE_MASK)));
-  return ((bus_r(SPEED_REG)& TOTCLK_DUTYCYCLE_MASK)>>TOTCLK_DUTYCYCLE_OFFSET);
+	 return 0;
 }
 
 u_int32_t getTotDutyCycle() {
-  u_int32_t clk_div;
-  clk_div=((bus_r(SPEED_REG)&TOTCLK_DUTYCYCLE_MASK)>>TOTCLK_DUTYCYCLE_OFFSET);
-  return clk_div;
+	 return 0;
 }
 
 
@@ -1536,53 +1490,21 @@ int startReadOut(){
 // fifo routines 
 
 u_int32_t fifoReset(void) {
-#ifdef DEBUG
-  printf("resetting fifo\n");
-#endif
-  bus_w(FIFO_CNTRL_REG_OFF+(ALLFIFO<<SHIFTMOD), FIFO_RESET_BIT);
-  return OK;
+	return -1;
 }
 
 
 u_int32_t setNBits(u_int32_t n) {
-  u_int32_t rval=0;
-  rval=bus_w(SET_NBITS_REG, n);
-  return bus_r(SET_NBITS_REG);
+	return -1;
 }
 
-u_int32_t getNBits()
-{
-  return bus_r(SET_NBITS_REG);
+u_int32_t getNBits(){
+	return -1;
 }
 
 
-u_int32_t fifoReadCounter(int fifonum)
-{
-  int rval=0;
-  int shiftfifo;
-  switch (dynamicRange) {
-  case 16:
-    shiftfifo=SHIFTFIFO-1;
-    break;
-  case 8:
-    shiftfifo=SHIFTFIFO-2;
-    break;
-  case 4:
-    shiftfifo=SHIFTFIFO-3;
-    break;
-  case 1:
-    shiftfifo=SHIFTFIFO-5;
-    break;
-  default:
-    shiftfifo=SHIFTFIFO;
-    break;
-  }
-
-  rval=bus_r(FIFO_COUNTR_REG_OFF+(fifonum<<shiftfifo));
-#ifdef VERBOSE
-  //printf("FIFO %d contains %x words\n",fifonum, rval);
-#endif
-  return rval;
+u_int32_t fifoReadCounter(int fifonum){
+	return -1;
 }
 
 u_int32_t  fifoReadStatus()

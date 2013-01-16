@@ -3385,6 +3385,8 @@ int64_t slsDetector::setTimer(timerIndex index, int64_t t){
       //std::cout<< "offline " << std::endl;
       if (t>=0)
 	thisDetector->timerValue[index]=t;
+      if(thisDetector->myDetectorType==GOTTHARD)
+    	  thisDetector->timerValue[PROBES_NUMBER]=0;
     }
   } else {
     if (t>=0)
@@ -3393,17 +3395,15 @@ int64_t slsDetector::setTimer(timerIndex index, int64_t t){
 #ifdef VERBOSE
   std::cout<< "Timer " << index << " set to  "<< thisDetector->timerValue[index] << "ns"  << std::endl;
 #endif
-  if (index==PROBES_NUMBER) {
+
+  if ((thisDetector->myDetectorType==MYTHEN)&&(index==PROBES_NUMBER)) {
     setDynamicRange();
     //cout << "Changing probes: data size = " << thisDetector->dataBytes <<endl;
   }
   
   /* set progress */
   if ((index==FRAME_NUMBER) || (index==CYCLES_NUMBER)) {
-
     setTotalProgress();
-
-
   }
 
   return thisDetector->timerValue[index];
@@ -3826,7 +3826,7 @@ int slsDetector::setDynamicRange(int n){
 	  updateDetector();
       }
     }
-  } else {
+  } else if(thisDetector->myDetectorType==MYTHEN){
     if (n>0)
       thisDetector->dynamicRange=n;
     retval=thisDetector->dynamicRange;

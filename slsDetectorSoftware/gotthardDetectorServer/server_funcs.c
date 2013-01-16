@@ -2121,7 +2121,8 @@ int set_timer(int file_des) {
 	retval=setGates(tns);
 	break;
       case PROBES_NUMBER: 
-	retval=setProbes(tns);
+    sprintf(mess,"can't set timer for gotthard\n");
+    ret=FAIL;
 	break;
       case CYCLES_NUMBER: 
 	retval=setTrains(tns);
@@ -2142,7 +2143,6 @@ int set_timer(int file_des) {
   if (ret!=OK) {
     printf(mess);
     printf("set timer failed\n");
-    sprintf(mess, "set timer %d failed\n", ind);
   } else if (ind==FRAME_NUMBER) {
     ret=allocateRAM();
     if (ret!=OK) 

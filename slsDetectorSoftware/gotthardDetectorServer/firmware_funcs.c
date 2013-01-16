@@ -971,36 +971,7 @@ int64_t getTrains(){
 
 
 int64_t setProbes(int64_t value){
-  int ow;
-  int nm=setNMod(-1);
-  switch (getDynamicRange()) {
-  case 32:
-    ow=1;
-    break;
-  case 16:
-    ow=2;
-    break;
-  case 8:
-    ow=3;
-    break;
-  case 4:
-    ow=4;
-    break;
-  case 1:
-    ow=5;
-    break;
-  default:
-    ow=1;
-    break;
-  }
-  if (value>=0) {
-    setCSregister(ALLMOD);
-    initChipWithProbes(0, ow,value, ALLMOD);
-    putout("0000000000000000",ALLMOD);
-    setNMod(nm);
-    getDynamicRange(); // needed to change dataBytes
-  }
-  return getProbes();
+  return 0;
 }
 
 
@@ -1068,15 +1039,7 @@ int loadImage(int index, short int ImageVals[]){
 
 
 int64_t getProbes(){
-  u_int32_t shiftin=bus_r(GET_SHIFT_IN_REG);
-  u_int32_t np=(shiftin >>PROBES_OFF) & PROBES_MASK;
-#ifdef VERYVERBOSE
-  printf("%08x ",shiftin);
-  printf("probes==%01x\n",np);
-#endif
-
-  return np;
-
+  return 0;
 }
 
 

@@ -89,7 +89,7 @@ enum communicationProtocol{
 };
 
 
- genericSocket(const char* const host_ip_or_name, unsigned short int const port_number, communicationProtocol p) : 
+ genericSocket(const char* const host_ip_or_name, unsigned short int const port_number, communicationProtocol p) :
    //   portno(port_number), 
 protocol(p), is_a_server(0), socketDescriptor(-1),file_des(-1), packet_size(DEFAULT_PACKET_SIZE)// sender (client): where to? ip 
    { 
@@ -138,7 +138,7 @@ protocol(p), is_a_server(0), socketDescriptor(-1),file_des(-1), packet_size(DEFA
 
   */
   
-   genericSocket(unsigned short int const port_number, communicationProtocol p, const char *eth=NULL): 
+   genericSocket(unsigned short int const port_number, communicationProtocol p, const char *eth=NULL):
      //portno(port_number),
      protocol(p), is_a_server(1),socketDescriptor(-1), file_des(-1), packet_size(DEFAULT_PACKET_SIZE){
 

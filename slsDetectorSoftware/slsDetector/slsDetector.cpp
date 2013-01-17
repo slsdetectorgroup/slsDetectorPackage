@@ -4449,7 +4449,6 @@ int slsDetector::exitServer(){
 
 
 char* slsDetector::setNetworkParameter(networkParameter index, string value) {
-	char* answer;
 	int i;
 
 	switch (index) {
@@ -4465,8 +4464,8 @@ char* slsDetector::setNetworkParameter(networkParameter index, string value) {
 		return setReceiverUDPMAC(value);
 	case RECEIVER_UDP_PORT:
 		sscanf(value.c_str(),"%d",&i);
-		sprintf(answer,"%d",setReceiverUDPPort(i));
-		return answer;
+		setReceiverUDPPort(i);
+		return getReceiverUDPPort();
   default:
     return ("unknown network parameter");
   }

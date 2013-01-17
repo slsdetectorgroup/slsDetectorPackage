@@ -2244,8 +2244,10 @@ string slsDetectorCommand::cmdNetworkParameter(int narg, char *args[], int actio
     t=RECEIVER_UDP_MAC;
   } else if (cmd=="rx_udpport") {
     t=RECEIVER_UDP_PORT;
-    if (!(sscanf(args[1],"%d",&i)))
-      return ("cannot parse argument") + string(args[1]);
+    if (action==PUT_ACTION){
+      if (!(sscanf(args[1],"%d",&i)))
+        return ("cannot parse argument") + string(args[1]);
+    }
   } else return ("unknown network parameter")+cmd;
 
   if (action==PUT_ACTION)

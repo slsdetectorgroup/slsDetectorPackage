@@ -53,8 +53,8 @@ developed and
 class MySocketTCP: public genericSocket {
 
  public:
-  MySocketTCP(const char* const host_ip_or_name, unsigned short int const port_number):  genericSocket(host_ip_or_name, port_number,TCP), last_keep_connection_open_action_was_a_send(0){setPacketSize(TCP_PACKET_SIZE);}; // sender (client): where to? ip 
-    MySocketTCP(unsigned short int const port_number):genericSocket(port_number,TCP), last_keep_connection_open_action_was_a_send(0) {setPacketSize(TCP_PACKET_SIZE);}; // receiver (server) local no need for ip 
+  MySocketTCP(const char* const host_ip_or_name, unsigned short int const port_number):  genericSocket(host_ip_or_name, port_number,TCP), last_keep_connection_open_action_was_a_send(0){setPacketSize(TCP_PACKET_SIZE);}; // sender (client): where to? ip
+    MySocketTCP(unsigned short int const port_number):genericSocket(port_number,TCP), last_keep_connection_open_action_was_a_send(0) {setPacketSize(TCP_PACKET_SIZE);}; // receiver (server) local no need for ip
 
 
   //The following two functions will connectioned->send/receive->disconnect

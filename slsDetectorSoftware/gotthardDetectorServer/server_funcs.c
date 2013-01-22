@@ -2600,8 +2600,11 @@ int configure_mac(int file_des) {
   printf("Configuring MAC of module %d and adc %d at port %x\n", imod, adc,udpport);
 //#endif
 #ifdef MCB_FUNCS
-  if (ret==OK)
-    configureMAC(ipad,imacadd,idetectormacadd,detipad,digitalTestBit,adc,udpport);
+  if (ret==OK){
+    ret=configureMAC(ipad,imacadd,idetectormacadd,detipad,digitalTestBit,adc,udpport);
+    if(ret==FAIL)
+    	strcpy(mess,"could not stop detector acquisition to configure mac");
+  }
 #endif
   if (ret==FAIL)
     printf("configuring MAC of mod %d failed\n", imod);

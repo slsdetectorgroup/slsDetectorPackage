@@ -262,7 +262,7 @@ int cleanFifo(){
 	}
 	reg=bus_r(addr);
 #ifdef DDEBUG
-	printf("\nADC SYNC reg:%d\n",reg);
+	printf("\nADC SYNC reg:%x\n",reg);
 #endif
 	return OK;
 }
@@ -1177,8 +1177,12 @@ int initConfGain(int isettings,int val,int imod){
 
 
 int configureMAC(int ipad,long long int macad,long long int detectormacad, int detipad, int ival, int adc,int udpport){
-	//setting daqregister
-	setDAQRegister(adc);
+
+	if(runBusy())
+		if(stopStateMachine()==FAIL)
+			return FAIL;
+
+
 	//setting adc mask
 	int reg;
 	int udpPacketSize=0x050E;
@@ -1208,6 +1212,9 @@ int configureMAC(int ipad,long long int macad,long long int detectormacad, int d
 		break;
 	}
 
+
+	//setting daqregister
+	setDAQRegister(adc);
 
 #ifdef DDEBUG
 	printf("Chip of Intrst Reg:%x\n",bus_r(CHIP_OF_INTRST_REG));

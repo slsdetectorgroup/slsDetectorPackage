@@ -472,6 +472,25 @@ class slsDetectorBase :  public virtual slsDetectorDefs  {
   */
   virtual int* readFrameFromReceiver(char* fName, int &fIndex)=0;
 
+
+  /** Gets error mask
+   /returns error mask
+  */
+  virtual int getErrorMask()=0;
+
+  /**
+     Sets error mask
+     @param error mask to be set to
+     /returns error mask
+  */
+  virtual int setErrorMask(int i=-1)=0;
+
+  /**
+     clears error mask
+     /returns error mask
+  */
+  virtual int clearErrorMask()=0;
+
   /** returns detector type string from detector type index
       \param t string can be Mythen, Pilatus, Eiger, Gotthard, Agipd, Unknown
       \returns MYTHEN, PILATUS, EIGER, GOTTHARD, AGIPD, GENERIC
@@ -663,5 +682,9 @@ class slsDetectorBase :  public virtual slsDetectorDefs  {
     default:       return string("idle");		\
     }};
 
+
+
 };
+
+
 #endif

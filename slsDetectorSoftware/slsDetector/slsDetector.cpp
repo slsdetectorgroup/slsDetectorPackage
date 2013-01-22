@@ -126,7 +126,8 @@ slsDetector::slsDetector(int id,multiSlsDetector *p) :slsDetectorUtils(),
 						      adcs(NULL),
 						      chipregs(NULL),
 						      chanregs(NULL),
-						      thisReceiver(NULL)
+						      thisReceiver(NULL),
+						      errorMask(0)
 
 
 {
@@ -176,7 +177,9 @@ slsDetector::slsDetector(detectorType type, int id,multiSlsDetector *p): slsDete
 									 adcs(NULL),
 									 chipregs(NULL),
 									 chanregs(NULL),
-								     thisReceiver(NULL)
+								     thisReceiver(NULL),
+								     errorMask(0)
+
 {
   while (shmId<0) {
     /**Initlializes shared memory \sa initSharedMemory
@@ -229,7 +232,9 @@ slsDetector::slsDetector(char *name, int id, int cport,multiSlsDetector *p) : sl
 									      adcs(NULL),
 									      chipregs(NULL),
 									      chanregs(NULL),
-									      thisReceiver(NULL)
+									      thisReceiver(NULL),
+									      errorMask(0)
+
 
 {
   detectorType type=(detectorType)getDetectorType(name, cport);
@@ -934,6 +939,10 @@ int slsDetector::setOnline(int off) {
 	cout << "Detector connecting for the first time - updating!" << endl;
 	updateDetector();
       }
+      else if(thisDetector->onlineFlag==OFFLINE_FLAG){
+		std::cout << "cannot connect to detector" << endl;
+		setErrorMask((getErrorMask())|(CANNOT_CONNECT_TO_DETECTOR));
+		}
     }
   }
   return thisDetector->onlineFlag;
@@ -4547,9 +4556,7 @@ char* slsDetector::setReceiver(string receiverIP){
 		setFileIndex(fileIO::getFileIndex());
 		enableWriteToFile(parentDet->enableWriteToFileMask());
 		setUDPConnection();
-	}else
-		std::cout << "cannot connect to receiver" << endl;
-
+	}
 
   return thisDetector->receiver_hostname;
 }
@@ -4649,15 +4656,14 @@ int slsDetector::setUDPConnection(){
 				updateReceiver();
 
 			//configure detector with udp details
-			if(configureMAC()!=OK){
+			if(configureMAC()==FAIL){
 				setReceiverOnline(OFFLINE_FLAG);
 				std::cout << "could not configure mac" << endl;
 			}
 		}
-	}else{
+	}else
 		ret=FAIL;
-		std::cout << "cannot connect to receiver" << endl;
-	}
+
 
 	return ret;
 }
@@ -4685,6 +4691,7 @@ int slsDetector::configureMAC(int adc){
 			  strcpy(thisDetector->receiverUDPIP,inet_ntoa(*(struct in_addr*)he->h_addr));
 		  else{
 			  std::cout << "no rx_udpip given and invalid receiver hostname" << endl;
+		      setErrorMask((getErrorMask())|(COULD_NOT_CONFIGURE_MAC));
 			  return FAIL;
 		  }
 	  }
@@ -4703,6 +4710,7 @@ int slsDetector::configureMAC(int adc){
   for(i=0;i<2;i++){
     if(!strcmp(arg[i],"none")){
       std::cout<< "Configure MAC Error. IP/MAC Addresses not set"<< std::endl;
+      setErrorMask((getErrorMask())|(COULD_NOT_CONFIGURE_MAC));
       return FAIL;
     }
   }
@@ -4767,17 +4775,18 @@ int slsDetector::configureMAC(int adc){
 	if (ret==FAIL){
 	  controlSocket->ReceiveDataOnly(mess,sizeof(mess));
 	  std::cout<< "Detector returned error: " << mess << std::endl;
+      setErrorMask((getErrorMask())|(COULD_NOT_CONFIGURE_MAC));
 	}
 	controlSocket->Disconnect();
 	if (ret==FORCE_UPDATE)
 	  updateDetector();
       }	
     }
-  }else
-	std::cout << "cannot connect to detector" << endl;
+  }
 
   if (ret==FAIL) {
     std::cout<< "Configuring MAC failed " << std::endl;
+    setErrorMask((getErrorMask())|(COULD_NOT_CONFIGURE_MAC));
   }
   return ret;
 }
@@ -5440,8 +5449,10 @@ int slsDetector::setReceiverOnline(int off) {
 			thisDetector->receiverOnlineFlag=off;
 			if (thisDetector->receiverOnlineFlag==ONLINE_FLAG){
 				setReceiverTCPSocket();
-				if(thisDetector->receiverOnlineFlag==OFFLINE_FLAG)
+				if(thisDetector->receiverOnlineFlag==OFFLINE_FLAG){
 					std::cout << "cannot connect to receiver" << endl;
+					setErrorMask((getErrorMask())|(CANNOT_CONNECT_TO_RECEIVER));
+				}
 			}
 		}
 	}

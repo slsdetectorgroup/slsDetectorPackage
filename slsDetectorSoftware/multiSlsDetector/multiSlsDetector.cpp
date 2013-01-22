@@ -93,7 +93,7 @@ int multiSlsDetector::initSharedMemory(int id=0) {
 
 
 
-multiSlsDetector::multiSlsDetector(int id) :  slsDetectorUtils(), shmId(-1) 
+multiSlsDetector::multiSlsDetector(int id) :  slsDetectorUtils(), shmId(-1),errorMask(0)
 {
   while (shmId<0) {
     shmId=initSharedMemory(id);
@@ -868,8 +868,11 @@ int multiSlsDetector::setOnline(int off) {
   if (off!=GET_ONLINE_FLAG) {
     thisMultiDetector->onlineFlag=off;
     for (int i=0; i<thisMultiDetector->numberOfDetectors; i++) {
-      if (detectors[i])
-	detectors[i]->setOnline(off);
+      if (detectors[i]){
+        detectors[i]->setOnline(off);
+	    if(detectors[i]->getErrorMask())
+		  setErrorMask(getErrorMask()|(1<<i));
+      }
     }
   }
   return thisMultiDetector->onlineFlag;
@@ -2527,7 +2530,9 @@ char* multiSlsDetector::setNetworkParameter(networkParameter p, string s){
   if (s.find('+')==string::npos) {
     for (int idet=0; idet<thisMultiDetector->numberOfDetectors; idet++) {
       if (detectors[idet]) {
-	detectors[idet]->setNetworkParameter(p,s);
+	    detectors[idet]->setNetworkParameter(p,s);
+	    if(detectors[idet]->getErrorMask())
+		  setErrorMask(getErrorMask()|(1<<idet));
       }
     }
   } else {
@@ -2724,6 +2729,8 @@ int multiSlsDetector::configureMAC(int adc) {
   for (int idet=0; idet<thisMultiDetector->numberOfDetectors; idet++) {
     if (detectors[idet]) {
       ret1=detectors[idet]->configureMAC(adc);
+	  if(detectors[idet]->getErrorMask())
+		setErrorMask(getErrorMask()|(1<<idet));
       if (ret==-100)
 	ret=ret1;
       else if (ret!=ret1)
@@ -3527,6 +3534,8 @@ int multiSlsDetector::setReceiverOnline(int off) {
 	for (int i=0; i<thisMultiDetector->numberOfDetectors; i++)
 		if (detectors[i]){
 			ret1=detectors[i]->setReceiverOnline(off);
+		    if(detectors[i]->getErrorMask())
+			  setErrorMask(getErrorMask()|(1<<i));
 			if(ret==-100)
 				ret=ret1;
 			else if (ret!=ret1)

@@ -651,6 +651,7 @@ virtual int exitReceiver()=0;
 virtual int enableWriteToFile(int enable=-1)=0;
 
 
+
   protected:
 
 

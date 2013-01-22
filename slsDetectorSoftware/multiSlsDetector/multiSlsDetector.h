@@ -1128,6 +1128,24 @@ class multiSlsDetector  : public slsDetectorUtils {
 
 
   int fillModuleMask(int *mM);
+
+
+  /**
+     Sets multi error mask
+     @param multi error mask to be set to
+     /returns multi error mask
+  */
+  int setErrorMask(int i=-1){errorMask=i;return getErrorMask();}
+
+  /**returns multi error mask  */
+   int getErrorMask(){return errorMask;}
+
+   /**
+      clears error mask
+      /returns error mask
+   */
+   int clearErrorMask(){errorMask=0;return errorMask;}
+
  protected:
  
 
@@ -1140,7 +1158,8 @@ class multiSlsDetector  : public slsDetectorUtils {
   /** Shared memory structure */
   sharedMultiSlsDetector *thisMultiDetector;
 
-
+  /** Error Mask for each detector*/
+  int errorMask;
 
 
 

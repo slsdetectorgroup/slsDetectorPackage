@@ -35,6 +35,8 @@ class multiSlsDetectorCommand : public slsDetectorCommand {
 	if (d) {							\
 	  slsDetectorCommand *cmd=new slsDetectorCommand(d);		\
 	  s=cmd->executeLine(narg, args, action);			\
+	  if(d->getErrorMask())					\
+		  myDet->setErrorMask((myDet->getErrorMask())|(1<<id));		\
 	  delete cmd;	
 	} else
 	  s=string("detector does no exist");			\

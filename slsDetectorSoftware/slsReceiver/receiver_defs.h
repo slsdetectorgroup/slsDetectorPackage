@@ -7,6 +7,7 @@
 
 #define GOODBYE 			-200
 #define BUFFER_SIZE 		1286*2
+#define SHORT_BUFFER_SIZE	518
 #define DATABYTES	 		2560
 #define FIFO_SIZE			25000
 

@@ -540,11 +540,14 @@ void qTabDataOutput::Refresh(){
 	if(myDet->getBadChannelCorrection()) chkDiscardBad->setChecked(true);
 
 
-	if(myDet->setReceiverOnline()==slsDetectorDefs::ONLINE_FLAG)
+	if(myDet->setReceiverOnline()==slsDetectorDefs::ONLINE_FLAG){
 		btnOutputBrowse->setEnabled(false);
-	else
+		btnOutputBrowse->setToolTip("<font color=\"red\">This button is disabled as receiver PC is different from "
+				"client PC and hence different directory structures.</font><br><br>" + dispOutputDir->toolTip());
+	}else{
 		btnOutputBrowse->setEnabled(true);
-
+		btnOutputBrowse->setToolTip(dispOutputDir->toolTip());
+	}
 
 #ifdef VERBOSE
 	cout  << "**Updated DataOutput Tab" << endl << endl;

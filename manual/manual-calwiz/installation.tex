@@ -1,0 +1,18 @@
+The calibration wizards are based on the \textit{Root} software developed at CERN.\\
+To install it, simply download it from the url \textit{http://root.cern.ch}.\\
+You can either download the binaries for your system or install from source (which is time consuming, but possibly more stable).\\
+The development and debugging of the wizards have been done using the root version 5.20, but it should be working also with newer versions.
+
+After installing the root software, edit your .bashrc file to define the ROOTSYS enviroment variable, and add the binaries and libraries to your path, e.g.:
+\begin{verbatim}
+export ROOTSYS=/usr/local/root_sl5_32bit
+export LD_LIBRARY_PATH=$ROOTSYS/lib:$LD_LIBRARY_PATH
+export PATH=$ROOTSYS/bin:$PATH
+\end{verbatim} 
+
+Then enter the calibrationWizards directory and compile:
+\begin{verbatim}
+make clean && make
+\end{verbatim}
+
+The two executables \textit{energyCalibrationWizard} and \textit{angularCalibrationWizard} should be generated, together with some documentation in pdf format inside the \textit{manual} directory.

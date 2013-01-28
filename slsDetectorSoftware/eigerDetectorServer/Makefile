@@ -2,7 +2,7 @@ CC			=	powerpc-4xx-softfloat-gcc
 CLAGS		+=  -Wall -DVIRTUAL  -DDACS_INT  -DSLS_DETECTOR_FUNCTION_LIST -DEIGERD
 LDLIBS		+= 	-lm  
 
-PROGS		= 	slsDetectorServer 
+PROGS		= 	eigerDetectorServer 
 DESTDIR		?= 	bin
 INSTMODE	= 	0777
 

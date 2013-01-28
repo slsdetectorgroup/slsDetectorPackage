@@ -1,18 +1,80 @@
-//#ifdef SLS_DETECTOR_FUNCTION_LIST
+#ifdef SLS_DETECTOR_FUNCTION_LIST
+
+#include "slsDetectorFunctionList.h"
+#include "slsDetectorServer_defs.h"
+
+#include <stdio.h>
+#include <string.h>
 
 
-int initializeDetector(int b){
-	//template initDetector from mcb_funcs.c   and   init_detector from server_funcs.c
 
-	//mapCSP0();  //from firmware_funcs.c
-	//call testFpga();  //from firmware_funcs.c
-	//memory allocation for detectorModules, chips, chans, dacs etc   //from firmware_funcs.c
-	//set dr, nmod  //from firmware_funcs.c
-	//set settings(GET_SETTINGS); //from mcb_funcs.c
-	//call testRAM()  //from firmware_funcs.c
-	//call setTiming(GET_EXTERNAL_COMMUNICATION_MODE);
-	//call setMaster(GET_MASTER);
-	//call setSynchronization(GET_SYNCHRONIZATION_MODE);
+
+extern int nModX;
+extern int nModBoard;
+extern int dataBytes;
+extern int dynamicRange;
+const int nChans=NCHAN;
+const int nChips=NCHIP;
+const int nDacs=NDAC;
+const int nAdcs=NADC;
+enum detectorSettings thisSettings;
+
+int sChan, sChip, sMod, sDac, sAdc;
+const int allSelected=-2;
+const int noneSelected=-1;
+
+
+sls_detector_module *detectorModules=NULL;
+int *detectorChips=NULL;
+int *detectorChans=NULL;
+dacs_t *detectorDacs=NULL;
+dacs_t *detectorAdcs=NULL;
+
+
+int initializeDetector(){
+
+	int imod;
+
+	int n=getNModBoard(X)*getNModBoard(Y);
+	/*nModX=n;*/
+
+#ifdef VERBOSE
+	printf("Board is for %d modules\n",n);
+#endif
+	detectorModules=malloc(n*sizeof(sls_detector_module));
+	detectorChips=malloc(n*NCHIP*sizeof(int));
+	detectorChans=malloc(n*NCHIP*NCHAN*sizeof(int));
+	detectorDacs=malloc(n*NDAC*sizeof(int));
+	detectorAdcs=malloc(n*NADC*sizeof(int));
+#ifdef VERBOSE
+	printf("modules from 0x%x to 0x%x\n",(unsigned int)(detectorModules), (unsigned int)(detectorModules+n));
+	printf("chips from 0x%x to 0x%x\n",(unsigned int)(detectorChips), (unsigned int)(detectorChips+n*NCHIP));
+	printf("chans from 0x%x to 0x%x\n",(unsigned int)(detectorChans), (unsigned int)(detectorChans+n*NCHIP*NCHAN));
+	printf("dacs from 0x%x to 0x%x\n",(unsigned int)(detectorDacs), (unsigned int)(detectorDacs+n*NDAC));
+	printf("adcs from 0x%x to 0x%x\n",(unsigned int)(detectorAdcs), (unsigned int)(detectorAdcs+n*NADC));
+#endif
+	for (imod=0; imod<n; imod++) {
+		(detectorModules+imod)->dacs=detectorDacs+imod*NDAC;
+		(detectorModules+imod)->adcs=detectorAdcs+imod*NADC;
+		(detectorModules+imod)->chipregs=detectorChips+imod*NCHIP;
+		(detectorModules+imod)->chanregs=detectorChans+imod*NCHIP*NCHAN;
+		(detectorModules+imod)->ndac=NDAC;
+		(detectorModules+imod)->nadc=NADC;
+		(detectorModules+imod)->nchip=NCHIP;
+		(detectorModules+imod)->nchan=NCHIP*NCHAN;
+		(detectorModules+imod)->module=imod;
+		(detectorModules+imod)->gain=0;
+		(detectorModules+imod)->offset=0;
+		(detectorModules+imod)->reg=0;
+		/* initialize registers, dacs, retrieve sn, adc values etc */
+	}
+	thisSettings=UNINITIALIZED;
+	sChan=noneSelected;
+	sChip=noneSelected;
+	sMod=noneSelected;
+	sDac=noneSelected;
+	sAdc=noneSelected;
+
 	return OK;
 }
 
@@ -29,183 +91,6 @@ int getNModBoard(enum dimension arg){
 }
 
 
-
-enum externalSignalFlag getExtSignal(int signalindex){
-	//template getExtSignal from firmware_funcs.c
-	//return signals[signalindex];
-	return -1;
-}
-
-
-
-
-
-enum externalSignalFlag setExtSignal(int signalindex,  enum externalSignalFlag flag){
-	//template setExtSignal from firmware_funcs.c
-
-	//in short..sets signals array, checks if agrees with timing mode, writes to fpga reg, calls synchronization and then settiming
-/*
-	if (signalindex>=0 && signalindex<4) {
-		signals[signalindex]=flag;
-#ifdef VERBOSE
-		printf("settings signal variable number %d to value %04x\n", signalindex, signals[signalindex]);
-#endif
-		// if output signal, set it!
-		switch (flag) {
-		case GATE_IN_ACTIVE_HIGH:
-		case GATE_IN_ACTIVE_LOW:
-			if (timingMode==GATE_FIX_NUMBER || timingMode==GATE_WITH_START_TRIGGER)//timingMode = AUTO_TIMING by default and is set in setTiming()
-				setFPGASignal(signalindex,flag);	//not implemented here, checks if flag within limits and writes to fpga reg
-			else
-				setFPGASignal(signalindex,SIGNAL_OFF);
-			break;
-		case TRIGGER_IN_RISING_EDGE:
-		case TRIGGER_IN_FALLING_EDGE:
-			if (timingMode==TRIGGER_EXPOSURE || timingMode==GATE_WITH_START_TRIGGER)
-				setFPGASignal(signalindex,flag);
-			else
-				setFPGASignal(signalindex,SIGNAL_OFF);
-			break;
-		case RO_TRIGGER_IN_RISING_EDGE:
-		case RO_TRIGGER_IN_FALLING_EDGE:
-			if (timingMode==TRIGGER_READOUT)
-				setFPGASignal(signalindex,flag);
-			else
-				setFPGASignal(signalindex,SIGNAL_OFF);
-			break;
-		case MASTER_SLAVE_SYNCHRONIZATION:
-			setSynchronization(syncMode);//syncmode = NO_SYNCHRONIZATION by default and set with this function
-			break;
-		default:
-			setFPGASignal(signalindex,mode);
-		}
-
-		setTiming(GET_EXTERNAL_COMMUNICATION_MODE);
-	}
-*/
-	return getExtSignal(signalindex);
-}
-
-
-
-
-
-
-enum externalCommunicationMode setTiming( enum externalCommunicationMode arg){
-	//template setTiming from firmware_funcs.c
-	//template getFPGASignal from firmware_funcs.c
-
-
-	//getFPGASignal(signalindex) used later on in this fucntion
-	//gets flag from fpga reg, checks if flag within limits,
-	//if( flag=SIGNAL_OFF and signals[signalindex]==MASTER_SLAVE_SYNCHRONIZATION), return -1, (ensures masterslaveflag !=off now)
-	//else return flag
-
-	int ret=GET_EXTERNAL_COMMUNICATION_MODE;
-	//sets timingmode variable
-	//ensures that the signals are in acceptance with timing mode and according sets the timing mode
-/*
-	int g=-1, t=-1, rot=-1;
-
-	int i;
-
-	switch (ti) {
-	case AUTO_TIMING:
-		timingMode=ti;
-		// disable all gates/triggers in except if used for master/slave synchronization
-		for (i=0; i<4; i++) {
-			if (getFPGASignal(i)>0 && getFPGASignal(i)<GATE_OUT_ACTIVE_HIGH && signals[i]!=MASTER_SLAVE_SYNCHRONIZATION)
-				setFPGASignal(i,SIGNAL_OFF);
-		}
-		break;
-
-	case   TRIGGER_EXPOSURE:
-		timingMode=ti;
-		// if one of the signals is configured to be trigger, set it and unset possible gates
-		for (i=0; i<4; i++) {
-			if (signals[i]==TRIGGER_IN_RISING_EDGE ||  signals[i]==TRIGGER_IN_FALLING_EDGE)
-				setFPGASignal(i,signals[i]);
-			else if (signals[i]==GATE_IN_ACTIVE_HIGH || signals[i]==GATE_IN_ACTIVE_LOW)
-				setFPGASignal(i,SIGNAL_OFF);
-			else if (signals[i]==RO_TRIGGER_IN_RISING_EDGE ||  signals[i]==RO_TRIGGER_IN_FALLING_EDGE)
-				setFPGASignal(i,SIGNAL_OFF);
-		}
-		break;
-
-
-
-	case  TRIGGER_READOUT:
-		timingMode=ti;
-		// if one of the signals is configured to be trigger, set it and unset possible gates
-		for (i=0; i<4; i++) {
-			if (signals[i]==RO_TRIGGER_IN_RISING_EDGE ||  signals[i]==RO_TRIGGER_IN_FALLING_EDGE)
-				setFPGASignal(i,signals[i]);
-			else if (signals[i]==GATE_IN_ACTIVE_HIGH || signals[i]==GATE_IN_ACTIVE_LOW)
-				setFPGASignal(i,SIGNAL_OFF);
-			else if (signals[i]==TRIGGER_IN_RISING_EDGE ||  signals[i]==TRIGGER_IN_FALLING_EDGE)
-				setFPGASignal(i,SIGNAL_OFF);
-		}
-		break;
-
-	case GATE_FIX_NUMBER:
-		timingMode=ti;
-		// if one of the signals is configured to be trigger, set it and unset possible gates
-		for (i=0; i<4; i++) {
-			if (signals[i]==RO_TRIGGER_IN_RISING_EDGE ||  signals[i]==RO_TRIGGER_IN_FALLING_EDGE)
-				setFPGASignal(i,SIGNAL_OFF);
-			else if (signals[i]==GATE_IN_ACTIVE_HIGH || signals[i]==GATE_IN_ACTIVE_LOW)
-				setFPGASignal(i,signals[i]);
-			else if (signals[i]==TRIGGER_IN_RISING_EDGE ||  signals[i]==TRIGGER_IN_FALLING_EDGE)
-				setFPGASignal(i,SIGNAL_OFF);
-		}
-		break;
-
-
-	case GATE_WITH_START_TRIGGER:
-		timingMode=ti;
-		for (i=0; i<4; i++) {
-			if (signals[i]==RO_TRIGGER_IN_RISING_EDGE ||  signals[i]==RO_TRIGGER_IN_FALLING_EDGE)
-				setFPGASignal(i,SIGNAL_OFF);
-			else if (signals[i]==GATE_IN_ACTIVE_HIGH || signals[i]==GATE_IN_ACTIVE_LOW)
-				setFPGASignal(i,signals[i]);
-			else if (signals[i]==TRIGGER_IN_RISING_EDGE ||  signals[i]==TRIGGER_IN_FALLING_EDGE)
-				setFPGASignal(i,signals[i]);
-		}
-		break;
-
-	default:
-		;
-
-	}
-
-
-	for (i=0; i<4; i++) {
-		if (signals[i]!=MASTER_SLAVE_SYNCHRONIZATION) {
-			if (getFPGASignal(i)==RO_TRIGGER_IN_RISING_EDGE ||  getFPGASignal(i)==RO_TRIGGER_IN_FALLING_EDGE)
-				rot=i;
-			else if (getFPGASignal(i)==GATE_IN_ACTIVE_HIGH || getFPGASignal(i)==GATE_IN_ACTIVE_LOW)
-				g=i;
-			else if (getFPGASignal(i)==TRIGGER_IN_RISING_EDGE ||  getFPGASignal(i)==TRIGGER_IN_FALLING_EDGE)
-				t=i;
-		}
-	}
-
-
-	if (g>=0 && t>=0 && rot<0) {
-		ret=GATE_WITH_START_TRIGGER;
-	} else if (g<0 && t>=0 && rot<0) {
-		ret=TRIGGER_EXPOSURE;
-	} else if (g>=0 && t<0 && rot<0) {
-		ret=GATE_FIX_NUMBER;
-	} else if (g<0 && t<0 && rot>0) {
-		ret=TRIGGER_READOUT;
-	} else if (g<0 && t<0 && rot<0) {
-		ret=AUTO_TIMING;
-	}
-
-*/
-	return ret;
-}
 
 
 
@@ -262,20 +147,6 @@ int detectorTest( enum digitalTestMode arg){
 
 
 
-int bus_w(int addr,int val){
-	//template bus_w from firmware_funcs.c
-	//writes to reg
-	return Ok;
-}
-
-
-int bus_r(int addr){
-	//template bus_r from firmware_funcs.c
-	//reads reg
-	return 0;
-
-}
-
 
 
 double setDAC(enum dacIndex ind, double val, int imod){
@@ -323,7 +194,7 @@ int getChip(sls_detector_chip *myChip){
 
 int setModule(sls_detector_module myChan){
 	//template initModulebyNumber() from mcb_funcs.c
-	return myMod.reg;
+	return OK;
 }
 
 int getModule(sls_detector_module *myChan){
@@ -350,21 +221,21 @@ enum detectorSettings setSettings(enum detectorSettings sett, int imod){
 	//template setSettings() from mcb_funcs.c
 	//reads the dac registers from fpga to confirm which settings, if weird, undefined
 
-
+	return OK;
 }
 
-int startAcquisition(){
+int startStateMachine(){
 	//template startStateMachine() from firmware_funcs.c
 	/*
 	fifoReset();
 	now_ptr=(char*)ram_values;
 	//send start acquisition to fpga
-	*/
+	 */
 	return FAIL;
 }
 
 
-int stopAcquisition(){
+int stopStateMachine(){
 	//template stopStateMachine() from firmware_funcs.c
 	// send stop to fpga
 	//if status = busy after 500us, return FAIL
@@ -463,9 +334,231 @@ int executeTrimming(enum trimMode mode, int par1, int par2, int imod){
 }
 
 
+
+
+int configureMAC(int ipad, long long int imacadd, long long int iservermacadd, int dtb){
+	//detector specific.
+	return FAIL;
+}
+
+
+int loadImage(enum imageType index, char *imageVals){
+	//detector specific.
+	return FAIL;
+}
+
+
+int readCounterBlock(int startACQ, char *counterVals){
+	//detector specific.
+	return FAIL;
+}
+
+int resetCounterBlock(int startACQ){
+	//detector specific.
+	return FAIL;
+}
+
+int calculateDataBytes(){
+	return 0;
+}
+
+int getTotalNumberOfChannels(){return 0;}
+int getTotalNumberOfChips(){return 0;}
+int getTotalNumberOfModules(){return 0;}
+int getNumberOfChannelsPerChip(){return 0;}
+int getNumberOfChannelsPerModule(){return 0;}
+int getNumberOfChipsPerModule(){return 0;}
+int getNumberOfDACsPerModule(){return 0;}
+int getNumberOfADCsPerModule(){return 0;}
+
+
+
+
+
+
+
+enum externalSignalFlag getExtSignal(int signalindex){
+	//template getExtSignal from firmware_funcs.c
+	//return signals[signalindex];
+	return -1;
+}
+
+
+
+
+
+enum externalSignalFlag setExtSignal(int signalindex,  enum externalSignalFlag flag){
+	//template setExtSignal from firmware_funcs.c
+
+	//in short..sets signals array, checks if agrees with timing mode, writes to fpga reg, calls synchronization and then settiming
+	/*
+	if (signalindex>=0 && signalindex<4) {
+		signals[signalindex]=flag;
+#ifdef VERBOSE
+		printf("settings signal variable number %d to value %04x\n", signalindex, signals[signalindex]);
+#endif
+		// if output signal, set it!
+		switch (flag) {
+		case GATE_IN_ACTIVE_HIGH:
+		case GATE_IN_ACTIVE_LOW:
+			if (timingMode==GATE_FIX_NUMBER || timingMode==GATE_WITH_START_TRIGGER)//timingMode = AUTO_TIMING by default and is set in setTiming()
+				setFPGASignal(signalindex,flag);	//not implemented here, checks if flag within limits and writes to fpga reg
+			else
+				setFPGASignal(signalindex,SIGNAL_OFF);
+			break;
+		case TRIGGER_IN_RISING_EDGE:
+		case TRIGGER_IN_FALLING_EDGE:
+			if (timingMode==TRIGGER_EXPOSURE || timingMode==GATE_WITH_START_TRIGGER)
+				setFPGASignal(signalindex,flag);
+			else
+				setFPGASignal(signalindex,SIGNAL_OFF);
+			break;
+		case RO_TRIGGER_IN_RISING_EDGE:
+		case RO_TRIGGER_IN_FALLING_EDGE:
+			if (timingMode==TRIGGER_READOUT)
+				setFPGASignal(signalindex,flag);
+			else
+				setFPGASignal(signalindex,SIGNAL_OFF);
+			break;
+		case MASTER_SLAVE_SYNCHRONIZATION:
+			setSynchronization(syncMode);//syncmode = NO_SYNCHRONIZATION by default and set with this function
+			break;
+		default:
+			setFPGASignal(signalindex,mode);
+		}
+
+		setTiming(GET_EXTERNAL_COMMUNICATION_MODE);
+	}
+	 */
+	return getExtSignal(signalindex);
+}
+
+
+
+
+
+
+enum externalCommunicationMode setTiming( enum externalCommunicationMode arg){
+	//template setTiming from firmware_funcs.c
+	//template getFPGASignal from firmware_funcs.c
+
+
+	//getFPGASignal(signalindex) used later on in this fucntion
+	//gets flag from fpga reg, checks if flag within limits,
+	//if( flag=SIGNAL_OFF and signals[signalindex]==MASTER_SLAVE_SYNCHRONIZATION), return -1, (ensures masterslaveflag !=off now)
+	//else return flag
+
+	int ret=GET_EXTERNAL_COMMUNICATION_MODE;
+	//sets timingmode variable
+	//ensures that the signals are in acceptance with timing mode and according sets the timing mode
+	/*
+	int g=-1, t=-1, rot=-1;
+
+	int i;
+
+	switch (ti) {
+	case AUTO_TIMING:
+		timingMode=ti;
+		// disable all gates/triggers in except if used for master/slave synchronization
+		for (i=0; i<4; i++) {
+			if (getFPGASignal(i)>0 && getFPGASignal(i)<GATE_OUT_ACTIVE_HIGH && signals[i]!=MASTER_SLAVE_SYNCHRONIZATION)
+				setFPGASignal(i,SIGNAL_OFF);
+		}
+		break;
+
+	case   TRIGGER_EXPOSURE:
+		timingMode=ti;
+		// if one of the signals is configured to be trigger, set it and unset possible gates
+		for (i=0; i<4; i++) {
+			if (signals[i]==TRIGGER_IN_RISING_EDGE ||  signals[i]==TRIGGER_IN_FALLING_EDGE)
+				setFPGASignal(i,signals[i]);
+			else if (signals[i]==GATE_IN_ACTIVE_HIGH || signals[i]==GATE_IN_ACTIVE_LOW)
+				setFPGASignal(i,SIGNAL_OFF);
+			else if (signals[i]==RO_TRIGGER_IN_RISING_EDGE ||  signals[i]==RO_TRIGGER_IN_FALLING_EDGE)
+				setFPGASignal(i,SIGNAL_OFF);
+		}
+		break;
+
+
+
+	case  TRIGGER_READOUT:
+		timingMode=ti;
+		// if one of the signals is configured to be trigger, set it and unset possible gates
+		for (i=0; i<4; i++) {
+			if (signals[i]==RO_TRIGGER_IN_RISING_EDGE ||  signals[i]==RO_TRIGGER_IN_FALLING_EDGE)
+				setFPGASignal(i,signals[i]);
+			else if (signals[i]==GATE_IN_ACTIVE_HIGH || signals[i]==GATE_IN_ACTIVE_LOW)
+				setFPGASignal(i,SIGNAL_OFF);
+			else if (signals[i]==TRIGGER_IN_RISING_EDGE ||  signals[i]==TRIGGER_IN_FALLING_EDGE)
+				setFPGASignal(i,SIGNAL_OFF);
+		}
+		break;
+
+	case GATE_FIX_NUMBER:
+		timingMode=ti;
+		// if one of the signals is configured to be trigger, set it and unset possible gates
+		for (i=0; i<4; i++) {
+			if (signals[i]==RO_TRIGGER_IN_RISING_EDGE ||  signals[i]==RO_TRIGGER_IN_FALLING_EDGE)
+				setFPGASignal(i,SIGNAL_OFF);
+			else if (signals[i]==GATE_IN_ACTIVE_HIGH || signals[i]==GATE_IN_ACTIVE_LOW)
+				setFPGASignal(i,signals[i]);
+			else if (signals[i]==TRIGGER_IN_RISING_EDGE ||  signals[i]==TRIGGER_IN_FALLING_EDGE)
+				setFPGASignal(i,SIGNAL_OFF);
+		}
+		break;
+
+
+	case GATE_WITH_START_TRIGGER:
+		timingMode=ti;
+		for (i=0; i<4; i++) {
+			if (signals[i]==RO_TRIGGER_IN_RISING_EDGE ||  signals[i]==RO_TRIGGER_IN_FALLING_EDGE)
+				setFPGASignal(i,SIGNAL_OFF);
+			else if (signals[i]==GATE_IN_ACTIVE_HIGH || signals[i]==GATE_IN_ACTIVE_LOW)
+				setFPGASignal(i,signals[i]);
+			else if (signals[i]==TRIGGER_IN_RISING_EDGE ||  signals[i]==TRIGGER_IN_FALLING_EDGE)
+				setFPGASignal(i,signals[i]);
+		}
+		break;
+
+	default:
+		;
+
+	}
+
+
+	for (i=0; i<4; i++) {
+		if (signals[i]!=MASTER_SLAVE_SYNCHRONIZATION) {
+			if (getFPGASignal(i)==RO_TRIGGER_IN_RISING_EDGE ||  getFPGASignal(i)==RO_TRIGGER_IN_FALLING_EDGE)
+				rot=i;
+			else if (getFPGASignal(i)==GATE_IN_ACTIVE_HIGH || getFPGASignal(i)==GATE_IN_ACTIVE_LOW)
+				g=i;
+			else if (getFPGASignal(i)==TRIGGER_IN_RISING_EDGE ||  getFPGASignal(i)==TRIGGER_IN_FALLING_EDGE)
+				t=i;
+		}
+	}
+
+
+	if (g>=0 && t>=0 && rot<0) {
+		ret=GATE_WITH_START_TRIGGER;
+	} else if (g<0 && t>=0 && rot<0) {
+		ret=TRIGGER_EXPOSURE;
+	} else if (g>=0 && t<0 && rot<0) {
+		ret=GATE_FIX_NUMBER;
+	} else if (g<0 && t<0 && rot>0) {
+		ret=TRIGGER_READOUT;
+	} else if (g<0 && t<0 && rot<0) {
+		ret=AUTO_TIMING;
+	}
+
+	 */
+	return ret;
+}
+
+
+
 enum masterFlags setMaster(enum masterFlags arg){
 	//template setMaster from firmware_funcs.c
-/*
+	/*
 	int i;
 	switch(f) {
 	case NO_MASTER:
@@ -588,7 +681,7 @@ enum masterFlags setMaster(enum masterFlags arg){
 		}
 
 	}
-*/
+	 */
 
 	return NO_MASTER;
 }
@@ -596,7 +689,7 @@ enum masterFlags setMaster(enum masterFlags arg){
 
 
 enum synchronizationMode setSynchronization(enum synchronizationMode arg){
-/*
+	/*
 	int i;
 
 	switch(s) {
@@ -700,47 +793,10 @@ enum synchronizationMode setSynchronization(enum synchronizationMode arg){
 	}
 
 
-*/
+	 */
 	return NO_SYNCHRONIZATION;
 }
 
-
-
-int configureMAC(int ipad, long long int imacadd, long long int iservermacadd, int dtb){
-	//detector specific.
-	return FAIL;
-}
-
-
-int loadImage(enum imageType index, char *imageVals){
-	//detector specific.
-	return FAIL;
-}
-
-
-int readCounterBlock(int startACQ, char *counterVals){
-	//detector specific.
-	return FAIL;
-}
-
-int resetCounterBlock(int startACQ){
-	//detector specific.
-	return FAIL;
-}
-
-int calculateDataBytes(){
-	return 0;
-}
-
-int getTotalNumberOfChannels(){return 0;}
-int getTotalNumberOfChips(){return 0;}
-int getTotalNumberOfModules(){return 0;}
-int getNumberOfChannelsPerChip(){return 0;}
-int getNumberOfChannelsPerChip(){return 0;}
-int getNumberOfChannelsPerModule(){return 0;}
-int getNumberOfChipsPerModule(){return 0;}
-int getNumberOfDACsPerModule(){return 0;}
-int getNumberOfADCsPerModule(){return 0;}
 
 
 #endif

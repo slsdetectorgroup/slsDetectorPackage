@@ -1,17 +1,13 @@
 #ifndef SERVER_FUNCS_H
 #define SERVER_FUNCS_H
-#include <stdio.h>
-/*
-#include <sys/types.h> 
-#include <sys/socket.h>
-#include <netinet/in.h>
-*/
-#include "communication_funcs.h"
+
+
+#include "sls_detector_defs.h"
+
+#include <stdlib.h>
 
 
 
-
-#define GOODBYE -200
 
 int sockfd;
 
@@ -19,6 +15,7 @@ int function_table();
 
 int decode_function(int);
 
+//if b>0 all the detector must be initialized, otherwise it is just the stop server
 int init_detector(int);
 
 int M_nofunc(int);

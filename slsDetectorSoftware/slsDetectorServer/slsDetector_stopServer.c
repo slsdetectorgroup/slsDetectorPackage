@@ -1,8 +1,12 @@
 /* A simple server in the internet domain using TCP
    The port number is passed as an argument */
 #include "communication_funcs.h"
-#include "slsDetectorFirmare_funcs.h"
 
+#include "slsDetectorFunctionList.h"/*#include "slsDetector_firmware.h" for the time being*/
+#include "slsDetectorServer_defs.h"
+
+#include <stdio.h>
+#include <stdlib.h>
 
 int sockfd;
 
@@ -10,12 +14,13 @@ int main(int argc, char *argv[])
 {
   int  portno;
   int retval=0;
+  int sd,fd;
 
   portno = DEFAULT_PORTNO;
 
 
-  bindSocket(portno); //defined in communication_funcs
-  if (getServerError()) //defined in communication_funcs
+ sd=bindSocket(portno); //defined in communication_funcs
+  if (getServerError(sd)) //defined in communication_funcs
     return -1;
 
 
@@ -28,12 +33,12 @@ int main(int argc, char *argv[])
 #ifdef VERY_VERBOSE
     printf("Stop server: waiting for client call\n");
 #endif
-    acceptConnection();  //defined in communication_funcs
+    fd=acceptConnection(sd);  //defined in communication_funcs
     retval=stopStateMachine();//defined in slsDetectorFirmare_funcs
-    closeConnection();	//defined in communication_funcs
+    closeConnection(fd);	//defined in communication_funcs
   }
 
-  exitServer(); //defined in communication_funcs
+  exitServer(sd); //defined in communication_funcs
   printf("Goodbye!\n");
 
   return 0; 

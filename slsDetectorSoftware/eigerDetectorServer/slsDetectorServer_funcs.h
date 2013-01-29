@@ -13,6 +13,9 @@ int sockfd;
 
 int function_table();
 
+int swap_int32(int val);
+int64_t swap_int64(int64_t val);
+
 int decode_function(int);
 
 //if b>0 all the detector must be initialized, otherwise it is just the stop server

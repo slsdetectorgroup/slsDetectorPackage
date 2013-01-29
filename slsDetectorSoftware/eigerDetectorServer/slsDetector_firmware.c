@@ -10,7 +10,9 @@
 #include <stdio.h>
 #include <string.h>
 
-
+#include <unistd.h>
+#include <sys/mman.h>		//PROT_READ,PROT_WRITE,MAP_FILE,MAP_SHARED,MAP_FAILED
+#include <fcntl.h>			//O_RDWR
 
 u_int32_t CSP0BASE;
 
@@ -40,13 +42,47 @@ const int nAdcs		=	NADC;
 
 
 
+int64_t dummy=0;
+
+/* Gerd example
+	if ((fd=open("/dev/mem", O_RDWR)) < 0){
+		printf("Cant find /dev/mem!\n");
+		return FAIL;
+	}
+	printf("/dev/mem opened\n");
+
+	void *plb_ll_fifo_ptr;
+	plb_ll_fifo_ptr =  mmap(0, MEM_SIZE, PROT_READ | PROT_WRITE, MAP_FILE | MAP_SHARED, fd, CSP0);
+	if (plb_ll_fifo_ptr == MAP_FAILED){
+		printf("\nCan't map memmory area!!\n");
+		return FAIL;
+	}
+	CSP0BASE = (u_int32_t) plb_ll_fifo_ptr;
+	//plb_ll_fifo_ctrl_reg = 0;
+*/
 
 int mapCSP0(void) {
+	int fd;
 	printf("Mapping memory\n");
+
 #ifdef VIRTUAL
 	CSP0BASE = (u_int32_t)malloc(MEM_SIZE);
 	printf("memory allocated\n");
+#else
+
+	if ((fd=open("/dev/mem", O_RDWR | O_SYNC)) < 0){
+		printf("Cant find /dev/mem!\n");
+		return FAIL;
+	}
+	printf("/dev/mem opened\n");
+
+	CSP0BASE = (u_int32_t)mmap(0, MEM_SIZE, PROT_READ|PROT_WRITE, MAP_FILE|MAP_SHARED, fd, CSP0);
+	if (CSP0BASE == (u_int32_t)MAP_FAILED) {
+		printf("\nCan't map memmory area!!\n");
+		return FAIL;
+	}
 #endif
+	printf("CSPOBASE is 0x%x \n",CSP0BASE);
 	printf("CSPOBASE=from %08x to %x\n",CSP0BASE,CSP0BASE+MEM_SIZE);
 
 	return OK;
@@ -54,19 +90,31 @@ int mapCSP0(void) {
 
 
 
-u_int32_t bus_w(u_int32_t offset, u_int32_t data) {
-	volatile u_int32_t *ptr1;
+//u_int32_t bus_w(u_int32_t offset, u_int32_t data) {
+u_int32_t bus_w(u_int32_t offset, u_int8_t data) {
+
+    __asm__ volatile ("stw %0,0(%1); eieio"::"r" (data), "b"(CSP0BASE+4*offset));
+
+/*	volatile u_int32_t *ptr1;
 	ptr1=(u_int32_t*)(CSP0BASE+offset);
 	*ptr1=data;
+	*ptr1=data;*/
 	return OK;
 }
 
 
 
-u_int32_t bus_r(u_int32_t offset) {
+u_int32_t bus_r(u_int32_t offset) {//plb_ll_fifo_base+4*REG,val
+
+	u_int32_t ptr1;
+    __asm__ volatile ("eieio; lwz %0,0(%1)":"=r" (ptr1):"b"
+              (CSP0BASE+4*offset));
+    return ptr1;
+	/*
 	volatile u_int32_t *ptr1;
 	ptr1=(u_int32_t*)(CSP0BASE+offset);
 	return *ptr1;
+	*/
 }
 
 
@@ -101,10 +149,10 @@ int64_t get64BitReg(int aLSB, int aMSB){
 }
 
 
-int64_t setFrames(int64_t value){
+int64_t setFrames(int64_t value){//dummy = value;return dummy;
 	return set64BitReg(value,  SET_FRAMES_LSB_REG, SET_FRAMES_MSB_REG);
 }
-int64_t getFrames(){
+int64_t getFrames(){//return dummy;
 	return get64BitReg(GET_FRAMES_LSB_REG, GET_FRAMES_MSB_REG);
 }
 
@@ -164,7 +212,7 @@ int64_t setProbes(int64_t value){
 	return 0;
 }
 int64_t getProbes(){
-  return 0;
+	return 0;
 }
 
 

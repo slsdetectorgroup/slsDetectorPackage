@@ -81,26 +81,41 @@ int init_detector(int b) {
 	return OK;
 }
 
+int swap_int32(int val)
+{
+    val = ((val << 8) & 0xFF00FF00) | ((val >> 8) & 0xFF00FF );
+    return (val << 16) | ((val >> 16) & 0xFFFF);
+}
+
+
+int64_t swap_int64(int64_t val)
+{
+    val = ((val << 8) & 0xFF00FF00FF00FF00ULL ) | ((val >> 8) & 0x00FF00FF00FF00FFULL );
+    val = ((val << 16) & 0xFFFF0000FFFF0000ULL ) | ((val >> 16) & 0x0000FFFF0000FFFFULL );
+    return (val << 32) | ((val >> 32) & 0xFFFFFFFFULL);
+}
 
 int decode_function(int file_des) {
 	int fnum,n;
 	int retval=FAIL;
-#ifdef VERBOSE
+//#ifdef VERBOSE
 	printf( "receive data\n");
-#endif 
+//#endif
 	n = receiveDataOnly(file_des,&fnum,sizeof(fnum));
+	fnum=swap_int32(fnum);
 	if (n <= 0) {
-		printf("ERROR reading from socket %d, %d %d\n", n, fnum, file_des);
+#ifdef VERBOSE
+		printf("ERROR reading from socket %d, %x %d\n", n, fnum, file_des);
+#endif
 		return FAIL;
 	}
 #ifdef VERBOSE
 	else
 		printf("size of data received %d\n",n);
 #endif
-
-#ifdef VERBOSE
+//#ifdef VERBOSE
 	printf( "calling function fnum = %d %x\n",fnum,flist[fnum]);
-#endif
+//#endif
 	if (fnum<0 || fnum>255)
 		fnum=255;
 	retval=(*flist[fnum])(file_des);
@@ -268,6 +283,7 @@ int get_detector_type(int file_des) {
 	n += sendDataOnly(file_des,&retval,sizeof(retval));
 	if (retval!=FAIL) {
 		/* send return argument */
+		ret=swap_int32(ret);
 		n += sendDataOnly(file_des,&ret,sizeof(ret));
 	} else {
 		n += sendDataOnly(file_des,mess,sizeof(mess));
@@ -703,6 +719,8 @@ int write_register(int file_des) {
 	sprintf(mess,"Can't write to register\n");
 
 	n = receiveDataOnly(file_des,arg,sizeof(arg));
+	arg[0]=swap_int32(arg[0]);
+	arg[1]=swap_int32(arg[1]);
 	if (n < 0) {
 		sprintf(mess,"Error reading from socket\n");
 		ret=FAIL;
@@ -712,19 +730,21 @@ int write_register(int file_des) {
 
 #ifdef VERBOSE
 	printf("writing to register 0x%x data 0x%x\n", addr, val);
-#endif  
+#endif
 
 	if (differentClients==1 && lockStatus==1) {
 		ret=FAIL;
 		sprintf(mess,"Detector locked by %s\n",lastClientIP);
-	} else
-		retval=bus_w(addr,val);
-
+	} else{
+		ret=bus_w(addr,val);
+		if(ret==OK)
+			retval=bus_r(addr);
+	}
 
 
 #ifdef VERBOSE
 	printf("Data set to 0x%x\n",  retval);
-#endif  
+#endif
 	if (retval==val) {
 		ret=OK;
 		if (differentClients)
@@ -739,6 +759,7 @@ int write_register(int file_des) {
 	n = sendDataOnly(file_des,&ret,sizeof(ret));
 	if (ret!=FAIL) {
 		/* send return argument */
+		retval=swap_int32(retval);
 		n += sendDataOnly(file_des,&retval,sizeof(retval));
 	} else {
 		n += sendDataOnly(file_des,mess,sizeof(mess));
@@ -761,6 +782,7 @@ int read_register(int file_des) {
 	sprintf(mess,"Can't read register\n");
 
 	n = receiveDataOnly(file_des,&arg,sizeof(arg));
+	arg=swap_int32(arg);
 	if (n < 0) {
 		sprintf(mess,"Error reading from socket\n");
 		ret=FAIL;
@@ -768,17 +790,15 @@ int read_register(int file_des) {
 	addr=arg;
 
 
-
 #ifdef VERBOSE
 	printf("reading  register 0x%x\n", addr);
-#endif  
+#endif
 
 	retval=bus_r(addr);
 
-
 #ifdef VERBOSE
 	printf("Returned value 0x%x\n",  retval);
-#endif  
+#endif
 	if (ret==FAIL) {
 		ret=FAIL;
 		printf("Reading register 0x%x failed\n", addr);
@@ -791,6 +811,7 @@ int read_register(int file_des) {
 	n = sendDataOnly(file_des,&ret,sizeof(ret));
 	if (ret!=FAIL) {
 		/* send return argument */
+		retval=swap_int32(retval);
 		n += sendDataOnly(file_des,&retval,sizeof(retval));
 	} else {
 		n += sendDataOnly(file_des,mess,sizeof(mess));
@@ -1858,12 +1879,14 @@ int set_timer(int file_des) {
 	  sprintf(mess,"can't set timer\n");
 
 	  n = receiveDataOnly(file_des,&ind,sizeof(ind));
+	  ind=swap_int32(ind);
 	  if (n < 0) {
 	    sprintf(mess,"Error reading from socket\n");
 	    ret=FAIL;
 	  }
 
 	  n = receiveDataOnly(file_des,&tns,sizeof(tns));
+	  tns=swap_int64(tns);
 	  if (n < 0) {
 	    sprintf(mess,"Error reading from socket\n");
 	    ret=FAIL;
@@ -1873,9 +1896,9 @@ int set_timer(int file_des) {
 	    printf(mess);
 	  }
 
-	#ifdef VERBOSE
+	//#ifdef VERBOSE
 	  printf("setting timer %d to %lld ns\n",ind,tns);
-	#endif
+	//#endif
 	  if (ret==OK) {
 
 	    if (differentClients==1 && lockStatus==1 && tns!=-1) {
@@ -1884,7 +1907,7 @@ int set_timer(int file_des) {
 	    }  else {
 	      switch(ind) {
 	      case FRAME_NUMBER:
-		retval=setFrames(tns);
+		retval=setFrames(tns);retval=swap_int64(retval);
 		break;
 	      case ACQUISITION_TIME:
 		retval=setExposureTime(tns);

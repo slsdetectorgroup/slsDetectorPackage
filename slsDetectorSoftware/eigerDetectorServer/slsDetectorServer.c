@@ -30,7 +30,7 @@ int main(int argc, char *argv[])
     portno = DEFAULT_PORTNO;
     sprintf(cmd,"%s %d &",argv[0],DEFAULT_PORTNO+1);
     printf("opening control server on port %d\n",portno );
-    system(cmd);
+   /* system(cmd);*/
     b=1;
   } else {
     portno = DEFAULT_PORTNO+1;

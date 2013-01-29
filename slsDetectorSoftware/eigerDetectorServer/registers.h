@@ -10,7 +10,7 @@
 
 #include "sls_detector_defs.h"
 
-#define CSP0 		0x90000000
+#define CSP0 		0xC4100000
 #define MEM_SIZE 	0xFFFFFFF
 
 

@@ -691,7 +691,7 @@ int slsDetector::initializeDetectorSize(detectorType type) {
   fileIndex=parentDet->fileIndex;
   framesPerFile=parentDet->framesPerFile;
   if(thisDetector->myDetectorType==GOTTHARD)
-	  setFramesPerFile(20000);
+	  setFramesPerFile(MAX_FRAMES_PER_FILE);
 
   thisReceiver = new receiverInterface(dataSocket);
 
@@ -4548,6 +4548,9 @@ char* slsDetector::setDetectorIP(string detectorIP){
 
 char* slsDetector::setReceiver(string receiverIP){
 
+	if(getRunStatus()==RUNNING)
+		stopAcquisition();
+
 	strcpy(thisDetector->receiver_hostname,receiverIP.c_str());
 
 	if(setReceiverOnline(ONLINE_FLAG)==ONLINE_FLAG){
@@ -4655,8 +4658,8 @@ int slsDetector::setUDPConnection(){
 			if(ret==FORCE_UPDATE)
 				updateReceiver();
 
-			//configure detector with udp details
-			if(configureMAC()==FAIL){
+			//configure detector with udp details, -100 is so it doesnt overwrite the previous value
+			if(configureMAC(-1)==FAIL){
 				setReceiverOnline(OFFLINE_FLAG);
 				std::cout << "could not configure mac" << endl;
 			}
@@ -4671,124 +4674,155 @@ int slsDetector::setUDPConnection(){
 
 
 int slsDetector::configureMAC(int adc){
-  int i;
-  int ret=FAIL;
-  int fnum=F_CONFIGURE_MAC;
-  char mess[100];
-  char arg[5][50];
-  char cword[50]="", *pcword;
-  string sword;
+	int i;
+	int ret=FAIL;
+	int fnum=F_CONFIGURE_MAC;
+	char mess[100];
+	char arg[5][50];
+	char cword[50]="", *pcword;
+	string sword;
+	int shortframe=1;
+	int retval=-100;
 
-  //if udpip wasnt initialized in config file
-  if(!(strcmp(thisDetector->receiverUDPIP,"none"))){
-	  //hostname is an ip address
-	  if(strchr(thisDetector->receiver_hostname,'.')!=NULL)
-		  strcpy(thisDetector->receiverUDPIP,thisDetector->receiver_hostname);
-	  //if hostname not ip, convert it to ip
-	  else{
-		  struct hostent *he = gethostbyname(thisDetector->receiver_hostname);
-		  if (he != NULL)
-			  strcpy(thisDetector->receiverUDPIP,inet_ntoa(*(struct in_addr*)he->h_addr));
-		  else{
-			  std::cout << "no rx_udpip given and invalid receiver hostname" << endl;
-		      setErrorMask((getErrorMask())|(COULD_NOT_CONFIGURE_MAC));
-			  return FAIL;
-		  }
-	  }
-  }
-  strcpy(arg[0],thisDetector->receiverUDPIP);
-  strcpy(arg[1],thisDetector->receiverUDPMAC);
-  sprintf(arg[2],"%x",thisDetector->receiverUDPPort);
-  strcpy(arg[3],thisDetector->detectorMAC);
-  strcpy(arg[4],thisDetector->detectorIP);
-
-#ifdef VERBOSE
-  std::cout<< "Configuring MAC with adc:"<< adc << std::endl;
-#endif
-
-
-  for(i=0;i<2;i++){
-    if(!strcmp(arg[i],"none")){
-      std::cout<< "Configure MAC Error. IP/MAC Addresses not set"<< std::endl;
-      setErrorMask((getErrorMask())|(COULD_NOT_CONFIGURE_MAC));
-      return FAIL;
-    }
-  }
-
-#ifdef VERBOSE
-  std::cout<< "IP/MAC Addresses valid "<< std::endl;
-#endif
-
-  //converting IPaddress to hex. 
-  pcword = strtok (arg[0],".");
-  while (pcword != NULL) {
-    sprintf(arg[0],"%02x",atoi(pcword));
-    strcat(cword,arg[0]);
-    pcword = strtok (NULL, ".");
-  }
-  strcpy(arg[0],cword);
-#ifdef VERBOSE
-  std::cout<<"receiver udp ip:"<<arg[0]<<"."<<std::endl;
-#endif
-  //converting MACaddress to hex.
-  sword.assign(arg[1]);
-  strcpy(arg[1],"");
-  stringstream sstr(sword);
-  while(getline(sstr,sword,':'))
-    strcat(arg[1],sword.c_str());
-#ifdef VERBOSE
-  std::cout<<"receiver mac:"<<arg[1]<<"."<<std::endl;
-#endif
-#ifdef VERBOSE
-  std::cout<<"receiver udp port:"<<arg[2]<<"."<<std::endl;
-#endif
-  //converting server MACaddress to hex.
-  sword.assign(arg[3]);
-  strcpy(arg[3],"");
-  stringstream ssstr(sword);
-  while(getline(ssstr,sword,':'))
-    strcat(arg[3],sword.c_str());
-#ifdef VERBOSE
-  std::cout<<"detecotor mac:"<<arg[3]<<"."<<std::endl;
-#endif
-  //converting IPaddress to hex.
-  strcpy(cword,"");
-  pcword = strtok (arg[4],".");
-  while (pcword != NULL) {
-    sprintf(arg[4],"%02x",atoi(pcword));
-    strcat(cword,arg[4]);
-    pcword = strtok (NULL, ".");
-  }
-  strcpy(arg[4],cword);
-#ifdef VERBOSE
-  std::cout<<"detector ip:"<<arg[4]<<"."<<std::endl;
-#endif
-
-  //send to server
-  if (thisDetector->onlineFlag==ONLINE_FLAG) {
-    if (controlSocket) {
-      if  (controlSocket->Connect()>=0) {
-	controlSocket->SendDataOnly(&fnum,sizeof(fnum));
-	controlSocket->SendDataOnly(arg,sizeof(arg));
-	controlSocket->SendDataOnly(&adc,sizeof(adc));
-	controlSocket->ReceiveDataOnly(&ret,sizeof(ret));
-	if (ret==FAIL){
-	  controlSocket->ReceiveDataOnly(mess,sizeof(mess));
-	  std::cout<< "Detector returned error: " << mess << std::endl;
-      setErrorMask((getErrorMask())|(COULD_NOT_CONFIGURE_MAC));
+	if(((adc>=-1)&&(adc<=4))||(adc==-100));
+	else{
+		std::cout << "configure mac failed.\nConfigure [adc]; adc should be -1, 0, 1, 2, 3 or 4" << endl;
+		setErrorMask((getErrorMask())|(COULD_NOT_CONFIGURE_MAC));
+		return FAIL;
 	}
-	controlSocket->Disconnect();
-	if (ret==FORCE_UPDATE)
-	  updateDetector();
-      }	
-    }
-  }
 
-  if (ret==FAIL) {
-    std::cout<< "Configuring MAC failed " << std::endl;
-    setErrorMask((getErrorMask())|(COULD_NOT_CONFIGURE_MAC));
-  }
-  return ret;
+	//if udpip wasnt initialized in config file
+	if(!(strcmp(thisDetector->receiverUDPIP,"none"))){
+		//hostname is an ip address
+		if(strchr(thisDetector->receiver_hostname,'.')!=NULL)
+			strcpy(thisDetector->receiverUDPIP,thisDetector->receiver_hostname);
+		//if hostname not ip, convert it to ip
+		else{
+			struct hostent *he = gethostbyname(thisDetector->receiver_hostname);
+			if (he != NULL)
+				strcpy(thisDetector->receiverUDPIP,inet_ntoa(*(struct in_addr*)he->h_addr));
+			else{
+				std::cout << "configure mac failed. no rx_udpip given and invalid receiver hostname" << endl;
+				setErrorMask((getErrorMask())|(COULD_NOT_CONFIGURE_MAC));
+				return FAIL;
+			}
+		}
+	}
+	strcpy(arg[0],thisDetector->receiverUDPIP);
+	strcpy(arg[1],thisDetector->receiverUDPMAC);
+	sprintf(arg[2],"%x",thisDetector->receiverUDPPort);
+	strcpy(arg[3],thisDetector->detectorMAC);
+	strcpy(arg[4],thisDetector->detectorIP);
+
+#ifdef VERBOSE
+	std::cout<< "Configuring MAC with adc:"<< adc << std::endl;
+#endif
+
+
+	for(i=0;i<2;i++){
+		if(!strcmp(arg[i],"none")){
+			std::cout<< "Configure MAC Error. IP/MAC Addresses not set"<< std::endl;
+			setErrorMask((getErrorMask())|(COULD_NOT_CONFIGURE_MAC));
+			return FAIL;
+		}
+	}
+
+#ifdef VERBOSE
+	std::cout<< "IP/MAC Addresses valid "<< std::endl;
+#endif
+
+	//converting IPaddress to hex.
+	pcword = strtok (arg[0],".");
+	while (pcword != NULL) {
+		sprintf(arg[0],"%02x",atoi(pcword));
+		strcat(cword,arg[0]);
+		pcword = strtok (NULL, ".");
+	}
+	strcpy(arg[0],cword);
+#ifdef VERBOSE
+	std::cout<<"receiver udp ip:"<<arg[0]<<"."<<std::endl;
+#endif
+	//converting MACaddress to hex.
+	sword.assign(arg[1]);
+	strcpy(arg[1],"");
+	stringstream sstr(sword);
+	while(getline(sstr,sword,':'))
+		strcat(arg[1],sword.c_str());
+#ifdef VERBOSE
+	std::cout<<"receiver mac:"<<arg[1]<<"."<<std::endl;
+#endif
+#ifdef VERBOSE
+	std::cout<<"receiver udp port:"<<arg[2]<<"."<<std::endl;
+#endif
+	//converting server MACaddress to hex.
+	sword.assign(arg[3]);
+	strcpy(arg[3],"");
+	stringstream ssstr(sword);
+	while(getline(ssstr,sword,':'))
+		strcat(arg[3],sword.c_str());
+#ifdef VERBOSE
+	std::cout<<"detecotor mac:"<<arg[3]<<"."<<std::endl;
+#endif
+	//converting IPaddress to hex.
+	strcpy(cword,"");
+	pcword = strtok (arg[4],".");
+	while (pcword != NULL) {
+		sprintf(arg[4],"%02x",atoi(pcword));
+		strcat(cword,arg[4]);
+		pcword = strtok (NULL, ".");
+	}
+	strcpy(arg[4],cword);
+#ifdef VERBOSE
+	std::cout<<"detector ip:"<<arg[4]<<"."<<std::endl;
+#endif
+
+	//send to server
+	if (thisDetector->onlineFlag==ONLINE_FLAG) {
+		if (controlSocket) {
+			if  (controlSocket->Connect()>=0) {
+				controlSocket->SendDataOnly(&fnum,sizeof(fnum));
+				controlSocket->SendDataOnly(arg,sizeof(arg));
+				controlSocket->SendDataOnly(&adc,sizeof(adc));
+				controlSocket->ReceiveDataOnly(&ret,sizeof(ret));
+				if (ret==FAIL){
+					controlSocket->ReceiveDataOnly(mess,sizeof(mess));
+					std::cout<< "Detector returned error: " << mess << std::endl;
+					setErrorMask((getErrorMask())|(COULD_NOT_CONFIGURE_MAC));
+				}
+				else
+					controlSocket->ReceiveDataOnly(&retval,sizeof(retval));
+				controlSocket->Disconnect();
+				if (ret==FORCE_UPDATE)
+					updateDetector();
+			}
+		}
+	}
+	if (ret==FAIL) {
+		ret=FAIL;
+		std::cout<< "Configuring MAC failed " << std::endl;
+		setErrorMask((getErrorMask())|(COULD_NOT_CONFIGURE_MAC));
+	}
+	else{
+		//set frames per file
+		if(retval==-1)
+			setFramesPerFile(MAX_FRAMES_PER_FILE);
+		else
+			setFramesPerFile(SHORT_MAX_FRAMES_PER_FILE);
+		//connect to receiver
+		if(thisDetector->receiverOnlineFlag==ONLINE_FLAG){
+			if(setReceiverOnline(ONLINE_FLAG)==ONLINE_FLAG){
+				if(retval==-1)	shortframe=0;
+#ifdef VERBOSE
+				std::cout << "Sending shortframe to receiver " << shortframe << std::endl;
+#endif
+				ret=thisReceiver->sendInt(fnum,retval,shortframe);
+				if(ret==FAIL)
+					setErrorMask((getErrorMask())|(COULD_NOT_CONFIGURE_MAC));
+			}
+		}
+	}
+
+	return ret;
 }
 
 

@@ -83,6 +83,9 @@ public:
 	/** Get Version */
 	int get_version();
 
+	/** set short frame */
+	int set_short_frame();
+
 	//General Functions
 	/** Locks Receiver */
 	int	lock_receiver();
@@ -129,6 +132,9 @@ private:
 
 	/** Lock Status if server locked to a client */
 	int lockStatus;
+
+	/** Short frame */
+	int shortFrame;
 
 	static int file_des;
 	static int socketDescriptor;

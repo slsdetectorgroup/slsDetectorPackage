@@ -78,6 +78,7 @@ int init_detector( int b) {
     
     prepareADC();
     setDAQRegister(-1);
+    cleanFifo();
     setSettings(GET_SETTINGS,-1);
     //Initialization
     setFrames(1);
@@ -2604,7 +2605,8 @@ int configure_mac(int file_des) {
 	if (ret==OK){
 		if(runBusy()){
 			ret=stopStateMachine();
-			strcpy(mess,"could not stop detector acquisition to configure mac");
+			if(ret==FAIL)
+				strcpy(mess,"could not stop detector acquisition to configure mac");
 		}
 
 		if(ret==OK)
@@ -2614,6 +2616,8 @@ int configure_mac(int file_des) {
 #endif
 	if (ret==FAIL)
 		printf("configuring MAC of mod %d failed\n", imod);
+	else
+		printf("Configuremac successful of mod %d and adc %d\n",imod,retval);
 
 	if (differentClients)
 		ret=FORCE_UPDATE;

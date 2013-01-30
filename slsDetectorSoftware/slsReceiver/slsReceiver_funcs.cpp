@@ -22,7 +22,8 @@ int slsReceiverFuncs::socketDescriptor(-1);
 slsReceiverFuncs::slsReceiverFuncs(MySocketTCP *&mySocket,string const fname,int &success, bool shortfname):
 		socket(mySocket),
 		ret(OK),
-		lockStatus(0){
+		lockStatus(0),
+		shortFrame(0){
 
 	int port_no = DEFAULT_PORTNO+2;
 	ifstream infile;
@@ -128,6 +129,7 @@ int slsReceiverFuncs::function_table(){
 	flist[F_READ_FRAME]				=	&slsReceiverFuncs::read_frame;
 	flist[F_ENABLE_FILE_WRITE]		=	&slsReceiverFuncs::enable_file_write;
 	flist[F_GET_ID]					=	&slsReceiverFuncs::get_version;
+	flist[F_CONFIGURE_MAC]			=	&slsReceiverFuncs::set_short_frame;
 
 	//General Functions
 	flist[F_LOCK_SERVER]			=	&slsReceiverFuncs::lock_receiver;
@@ -475,7 +477,7 @@ int slsReceiverFuncs::start_receiver(){
 		sprintf(mess,"Receiver locked by %s\n", socket->lastClientIP);
 		ret=FAIL;
 	}
-	else if(!strlen(slsReceiverList->setFilePath(""))){
+	else if(!strlen(slsReceiverList->getFilePath())){
 		strcpy(mess,"receiver not set up. set receiver ip again.\n");
 		ret = FAIL;
 	}
@@ -649,11 +651,22 @@ int	slsReceiverFuncs::read_frame(){
 	char fName[MAX_STR_LENGTH];
 	int arg = -1;
 
-	int nel = BUFFER_SIZE/(sizeof(int));
-	int onebuffersize = BUFFER_SIZE/2;
-	int onedatasize = DATABYTES/2;
+	int bufferSize = BUFFER_SIZE;
+	int databytes = DATA_BYTES;
+	int packetsPerFrame = PACKETS_PER_FRAME;
 
-	char* raw 		= new char[BUFFER_SIZE];
+	if(shortFrame){
+		bufferSize 		= SHORT_BUFFER_SIZE;
+		databytes 		= SHORT_BUFFER_SIZE;
+		packetsPerFrame = SHORT_PACKETS_PER_FRAME;
+	}
+
+	int nel = bufferSize/(sizeof(int));
+	int onebuffersize = bufferSize/packetsPerFrame;
+	int onedatasize = databytes/packetsPerFrame;
+
+
+	char* raw 		= new char[bufferSize];
 	int* origVal 	= new int[nel];
 	int* retval 	= new int[nel];
 
@@ -676,7 +689,7 @@ int	slsReceiverFuncs::read_frame(){
 			ret=OK;
 			break;
 		}else
-			usleep(1000000);
+			usleep(500000);
 	}
 
 
@@ -687,7 +700,7 @@ int	slsReceiverFuncs::read_frame(){
 			raw=slsReceiverList->readFrame(fName);
 			index=(int)(*(int*)raw);
 			index2= (int)(*((int*)((char*)(raw+onebuffersize))));
-			memcpy(origVal,raw,BUFFER_SIZE);
+			memcpy(origVal,raw,bufferSize);
 			raw=NULL;
 			//cout<<"funcs\tindex:"<<index<<"\tindex2:"<<index2<<endl;
 
@@ -748,7 +761,7 @@ int	slsReceiverFuncs::read_frame(){
 	else{
 		socket->SendDataOnly(fName,MAX_STR_LENGTH);
 		socket->SendDataOnly(&arg,sizeof(arg));
-		socket->SendDataOnly(retval,DATABYTES);
+		socket->SendDataOnly(retval,DATA_BYTES);
 	}
 	//return ok/fail
 	return ret;
@@ -832,6 +845,55 @@ int slsReceiverFuncs::get_version(){
 
 
 
+
+
+
+
+int slsReceiverFuncs::set_short_frame() {
+	ret=OK;
+	int index=0;
+	int retval=-100;
+	strcpy(mess,"Could not set/reset short frame for receiver\n");
+
+
+	// receive arguments
+	if(socket->ReceiveDataOnly(&index,sizeof(index)) < 0 ){
+		strcpy(mess,"Error reading from socket\n");
+		ret = FAIL;
+	}
+
+	// execute action if the arguments correctly arrived
+#ifdef SLS_RECEIVER_FUNCTION_LIST
+	if (ret==OK) {
+		if (lockStatus==1 && socket->differentClients==1){//necessary???
+			sprintf(mess,"Receiver locked by %s\n", socket->lastClientIP);
+			ret=FAIL;
+		}
+		else if(slsReceiverList->getStatus()==RUNNING){
+			strcpy(mess,"Cannot set short frame while status is running\n");
+			ret=FAIL;
+		}
+		else{
+			retval=slsReceiverList->setShortFrame(index);
+			shortFrame = retval;
+		}
+	}
+#endif
+
+	if(ret==OK && socket->differentClients){
+		cout << "Force update" << endl;
+		ret=FORCE_UPDATE;
+	}
+
+	// send answer
+	socket->SendDataOnly(&ret,sizeof(ret));
+	if(ret==FAIL)
+		socket->SendDataOnly(mess,sizeof(mess));
+	socket->SendDataOnly(&retval,sizeof(retval));
+
+	//return ok/fail
+	return ret;
+}
 
 
 

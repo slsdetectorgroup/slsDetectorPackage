@@ -72,6 +72,7 @@ class sockaddr_in;
 using namespace std;
 
 #define DEFAULT_PACKET_SIZE 1286
+#define DEFAULT_PACKETS_PER_FRAME 2
 #define DEFAULT_PORTNO    1952
 #define DEFAULT_BACKLOG 5
 #define DEFAULT_UDP_PORTNO 50001
@@ -89,9 +90,9 @@ enum communicationProtocol{
 };
 
 
- genericSocket(const char* const host_ip_or_name, unsigned short int const port_number, communicationProtocol p) :
+ genericSocket(const char* const host_ip_or_name, unsigned short int const port_number, communicationProtocol p, int ps = DEFAULT_PACKET_SIZE, int t = DEFAULT_PACKETS_PER_FRAME) :
    //   portno(port_number), 
-protocol(p), is_a_server(0), socketDescriptor(-1),file_des(-1), packet_size(DEFAULT_PACKET_SIZE)// sender (client): where to? ip 
+protocol(p), is_a_server(0), socketDescriptor(-1),file_des(-1), packet_size(ps),packets_per_frame(t)// sender (client): where to? ip
    { 
 
 	  //   strcpy(hostname,host_ip_or_name);
@@ -138,9 +139,9 @@ protocol(p), is_a_server(0), socketDescriptor(-1),file_des(-1), packet_size(DEFA
 
   */
   
-   genericSocket(unsigned short int const port_number, communicationProtocol p, const char *eth=NULL):
+   genericSocket(unsigned short int const port_number, communicationProtocol p, int ps = DEFAULT_PACKET_SIZE, int t = DEFAULT_PACKETS_PER_FRAME, const char *eth=NULL):
      //portno(port_number),
-     protocol(p), is_a_server(1),socketDescriptor(-1), file_des(-1), packet_size(DEFAULT_PACKET_SIZE){
+     protocol(p), is_a_server(1),socketDescriptor(-1), file_des(-1), packet_size(ps), packets_per_frame(t){
 
 /* // you can specify an IP address: */
 /*  */
@@ -521,7 +522,7 @@ protocol(p), is_a_server(0), socketDescriptor(-1),file_des(-1), packet_size(DEFA
        case UDP:
 	 if (socketDescriptor<0) return -1;
 	// while(length>0){
-	for(int i=0;i<2;i++){
+	for(int i=0;i<packets_per_frame;i++){
 		nsending=packet_size;
 	   //nsending = (length>packet_size) ? packet_size:length;
 	   nsent = recvfrom(socketDescriptor,(char*)buf+total_sent,nsending, 0, (struct sockaddr *) &clientAddress, &clientAddress_length); 
@@ -625,6 +626,7 @@ protocol(p), is_a_server(0), socketDescriptor(-1),file_des(-1), packet_size(DEFA
   int nsending;
   int nsent;
   int total_sent;
+  int packets_per_frame;
   
        
 

@@ -35,6 +35,9 @@ typedef float dacs_t;
 #define DEFAULT_DET_MAC         "00:aa:bb:cc:dd:ee"
 #define DEFAULT_DET_IP          "129.129.202.46"
 
+#define MAX_FRAMES_PER_FILE			20000
+#define SHORT_MAX_FRAMES_PER_FILE	100000
+
 /** 
     \file sls_detector_defs.h
 This file contains all the basic definitions common to the slsDetector class 
@@ -518,10 +521,10 @@ enum angleConversionParameter {
 
 
 /** Error flags */
-#define NUM_ERROR_FLAGS=32
+#define NUM_ERROR_FLAGS 32
 #define CANNOT_CONNECT_TO_DETECTOR  0x80000000
 #define CANNOT_CONNECT_TO_RECEIVER  0x40000000
-#define COULD_NOT_CONFIGURE_MAC		0x00008000 //cant seem to get this error
+#define COULD_NOT_CONFIGURE_MAC		0x00008000
 
 
 //typedef struct  {

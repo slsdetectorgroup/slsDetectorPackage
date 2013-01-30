@@ -26,6 +26,7 @@ FILE* slsReceiverFunctionList::sfilefd(NULL);
 int slsReceiverFunctionList::listening_thread_running(0);
 
 slsReceiverFunctionList::slsReceiverFunctionList(bool shortfname):
+				maxFramesPerFile(MAX_FRAMES),
 				enableFileWrite(1),
 				shortFileName(shortfname),
 				shortFileNameIndex(0),
@@ -43,7 +44,10 @@ slsReceiverFunctionList::slsReceiverFunctionList(bool shortfname):
 				latestData(NULL),
 				udpSocket(NULL),
 				server_port(DEFAULT_UDP_PORTNO),
-				fifo(NULL)
+				fifo(NULL),
+				shortFrame(0),
+				bufferSize(BUFFER_SIZE),
+				packetsPerFrame(2)
 {
 	strcpy(savefilename,"");
 	strcpy(actualfilename,"");
@@ -73,7 +77,7 @@ int slsReceiverFunctionList::getFrameIndex(){
 	if(startFrameIndex==-1)
 		frameIndex=0;
 	else
-		frameIndex=((int)(*((int*)latestData)) - startFrameIndex)/2;
+		frameIndex=((int)(*((int*)latestData)) - startFrameIndex)/packetsPerFrame;
 	return frameIndex;
 }
 
@@ -83,7 +87,7 @@ int slsReceiverFunctionList::getAcquisitionIndex(){
 	if(startAcquisitionIndex==-1)
 		acquisitionIndex=0;
 	else
-		acquisitionIndex=((int)(*((int*)latestData)) - startAcquisitionIndex)/2;
+		acquisitionIndex=((int)(*((int*)latestData)) - startAcquisitionIndex)/packetsPerFrame;
 	return acquisitionIndex;
 }
 
@@ -104,6 +108,10 @@ char* slsReceiverFunctionList::setFilePath(char c[]){
 		struct stat st;
 		if(stat(c,&st) == 0)
 			strcpy(filePath,c);
+		else{
+			strcpy(filePath,"");
+			cout<<"FilePath does not exist:"<<filePath<<endl;
+		}
 	}
 	return getFilePath();
 }
@@ -131,6 +139,8 @@ int slsReceiverFunctionList::startReceiver(){
 #ifdef VERBOSE
 	cout << "Starting Receiver" << endl;
 #endif
+
+
 	int err = 0;
 	if(!listening_thread_running){
 		cout << "Starting new acquisition threadddd ...." << endl;
@@ -232,21 +242,29 @@ int slsReceiverFunctionList::startListening(){
 	//  very end of the program.
 	do {
 
+
+
 		if(!strlen(eth)){
 			cout<<"warning:eth is empty.listening to all"<<endl;
-			udpSocket = new genericSocket(server_port,genericSocket::UDP);
-		}else
-			udpSocket = new genericSocket(server_port,genericSocket::UDP,eth);
+			udpSocket = new genericSocket(server_port,genericSocket::UDP,bufferSize/packetsPerFrame,packetsPerFrame);
+		}else{
+			cout<<"eth:"<<eth<<endl;
+			udpSocket = new genericSocket(server_port,genericSocket::UDP,bufferSize/packetsPerFrame,packetsPerFrame,eth);
+		}
 
 		if (udpSocket->getErrorStatus()){
+#ifdef VERBOSE
+      std::cout<< "Could not create UDP socket "<< server_port  << std::endl;
+#endif
 			break;
 		}
+
 
 
 		while (listening_thread_running) {
 			status = RUNNING;
 
-			buffer = new char[BUFFER_SIZE];
+			buffer = new char[bufferSize];
 			//receiver 2 half frames
 			rc = udpSocket->ReceiveDataOnly(buffer,sizeof(buffer));
 			if( rc < 0)
@@ -254,7 +272,7 @@ int slsReceiverFunctionList::startListening(){
 
 			//start for each scan
 			if(startFrameIndex==-1){
-				startFrameIndex=(int)(*((int*)buffer))-2;
+				startFrameIndex=(int)(*((int*)buffer))-packetsPerFrame;
 				//cout<<"startFrameIndex:"<<startFrameIndex<<endl;
 				prevframenum=startFrameIndex;
 			}
@@ -325,7 +343,7 @@ int slsReceiverFunctionList::startWriting(){
 	framesCaught=0;
 	frameIndex=0;
 
-	latestData = new char[BUFFER_SIZE];
+	latestData = new char[bufferSize];
 	if(sfilefd) sfilefd=0;
 
 	strcpy(savefilename,"");
@@ -351,8 +369,8 @@ int slsReceiverFunctionList::startWriting(){
 
 	while(listening_thread_running){
 
-		//when it reaches MAX_FRAMES_PER_FILE,start writing new file
-		if (framesInFile == MAX_FRAMES_PER_FILE) {
+		//when it reaches maxFramesPerFile,start writing new file
+		if (framesInFile == maxFramesPerFile) {
 
 			if(enableFileWrite){
 				fclose(sfilefd);
@@ -369,7 +387,7 @@ int slsReceiverFunctionList::startWriting(){
 			}
 
 			currframenum=(int)(*((int*)latestData));
-			cout << "packet loss " << fixed << setprecision(4) << ((currframenum-prevframenum-(2*framesInFile))/(double)(2*framesInFile))*100.000 << "%\t\t"
+			cout << "packet loss " << fixed << setprecision(4) << ((currframenum-prevframenum-(packetsPerFrame*framesInFile))/(double)(packetsPerFrame*framesInFile))*100.000 << "%\t\t"
 					"framenum " << currframenum << "\t\t"
 					"p " << prevframenum << endl;
 
@@ -385,7 +403,7 @@ int slsReceiverFunctionList::startWriting(){
 				//cout<<"write buffer:"<<dataWriteFrame<<endl<<endl;
 				framesCaught++;
 				totalFramesCaught++;
-				memcpy(latestData,dataWriteFrame->buffer,BUFFER_SIZE);
+				memcpy(latestData,dataWriteFrame->buffer,bufferSize);
 				//cout<<"list write \t index:"<<(int)(*(int*)latestData)<<endl;
 				if(enableFileWrite)
 					fwrite(dataWriteFrame->buffer, 1, dataWriteFrame->rc, sfilefd);
@@ -420,6 +438,24 @@ char* slsReceiverFunctionList::readFrame(char* c){
 	strcpy(c,savefilename);
 	return latestData;
 
+}
+
+
+int slsReceiverFunctionList::setShortFrame(int i){
+	shortFrame=i;
+
+	if(shortFrame){
+		bufferSize = SHORT_BUFFER_SIZE;
+		maxFramesPerFile = SHORT_MAX_FRAMES;
+		packetsPerFrame = 1;
+
+	}else{
+		bufferSize = BUFFER_SIZE;
+		maxFramesPerFile = MAX_FRAMES;
+		packetsPerFrame = 2;
+	}
+
+	return shortFrame;
 }
 
 

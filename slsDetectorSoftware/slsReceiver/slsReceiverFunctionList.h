@@ -170,11 +170,18 @@ public:
 	 */
 	char* readFrame(char* c);
 
+	/**
+	 * Set short frame
+	 * @param i if shortframe i=1
+	 */
+	int setShortFrame(int i);
+
 
 
 private:
 
-	static const int MAX_FRAMES_PER_FILE = 20000;
+	/** max frames per file **/
+	int maxFramesPerFile;
 
 	/** File write enable */
 	int enableFileWrite;
@@ -259,6 +266,15 @@ private:
 
 	/** circular fifo to read and write data*/
 	CircularFifo<dataStruct,FIFO_SIZE>* fifo;
+
+	/** short frames */
+	int shortFrame;
+
+	/** buffer size can be 1286*2 or 518 */
+	int bufferSize;
+
+	/** number of packets per frame*/
+	int packetsPerFrame;
 
 public:
 	/** File Descriptor */

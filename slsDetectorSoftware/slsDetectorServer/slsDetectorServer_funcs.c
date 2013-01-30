@@ -93,14 +93,14 @@ int decode_function(int file_des) {
 		printf("ERROR reading from socket %d, %d %d\n", n, fnum, file_des);
 		return FAIL;
 	}
-#ifdef VERBOSE
+//#ifdef VERBOSE
 	else
 		printf("size of data received %d\n",n);
-#endif
+//#endif
 
-#ifdef VERBOSE
+//#ifdef VERBOSE
 	printf( "calling function fnum = %d %x\n",fnum,flist[fnum]);
-#endif
+//#endif
 	if (fnum<0 || fnum>255)
 		fnum=255;
 	retval=(*flist[fnum])(file_des);

@@ -244,26 +244,26 @@ int cleanFifo(){
 	printf("\nCleaning FIFO\n");
 	addr=ADC_SYNC_REG;
 
-	//88322114
+	//88332214
 	if (ROI_flag==0) {
 	val=ADCSYNC_VAL | ADCSYNC_CLEAN_FIFO_BITS | TOKEN_RESTART_DELAY;
 	bus_w(addr,val);
-	//88022114
+	//88032214
 	val=ADCSYNC_VAL | TOKEN_RESTART_DELAY;
 	bus_w(addr,val);
 	}
 	else {
-		//1b322114
+		//1b332214
 	  val=ADCSYNC_VAL | ADCSYNC_CLEAN_FIFO_BITS | TOKEN_RESTART_DELAY_ROI;
 	  bus_w(addr,val);
-	  //1b022114
+	  //1b032214
 	  val=ADCSYNC_VAL | TOKEN_RESTART_DELAY_ROI;
-
+	  bus_w(addr,val);
 
 	}
 	reg=bus_r(addr);
 //#ifdef DDEBUG
-	printf("\n***ADC SYNC reg:%x****\n",reg);
+	printf("ADC SYNC reg 0x19:%x\n",reg);
 //#endif
 	return OK;
 }
@@ -290,11 +290,9 @@ int setDAQRegister(int adcval)
 	reg=bus_r(addr);
 	bus_w(addr,val);
 	reg=bus_r(addr);
-#ifdef VERBOSE
-	printf("DAQ reg:%x\n",reg);
-#endif
-
-	cleanFifo();
+//#ifdef VERBOSE
+	printf("DAQ reg 0x15:%x\n",reg);
+//#endif
 
 	return OK;
 }
@@ -1182,11 +1180,11 @@ int configureMAC(int ipad,long long int macad,long long int detectormacad, int d
 	//update adc configured
 	adcConfigured = adc;
 
-	printf("configuring with adc:%d\n",adc);
 	//setting adc mask
 	int reg;
 	int udpPacketSize=0x050E;
 	int ipPacketSize=0x0522;
+
 	switch(adc){
 	case 0:
 	case 1:
@@ -1196,6 +1194,7 @@ int configureMAC(int ipad,long long int macad,long long int detectormacad, int d
 	  ROI_flag=1;
 		//setting daqregister
 		setDAQRegister(adc);
+		cleanFifo();
 		reg = (NCHAN*2)<<CHANNEL_OFFSET;
 		reg&=CHANNEL_MASK;
 		int mask =1<<adc;
@@ -1206,10 +1205,12 @@ int configureMAC(int ipad,long long int macad,long long int detectormacad, int d
 		break;
 	//for all adcs
 	default: 
+	  adc=-1;
 	  adcConfigured=-1;
 	  ROI_flag=0;
 		//setting daqregister
 		setDAQRegister(adc);
+		cleanFifo();
 	  	reg = (NCHAN*NCHIP)<<CHANNEL_OFFSET;
 		reg&=CHANNEL_MASK;
 		reg|=ACTIVE_ADC_MASK;
@@ -1440,10 +1441,11 @@ u_int32_t runState(void) {
 // State Machine 
 
 int startStateMachine(){
-	cleanFifo();
+
 //#ifdef VERBOSE
-  printf("Starting State Machine\n");
+  printf("*******Starting State Machine***************\n");
 //#endif
+	cleanFifo();
   // fifoReset();   printf("Starting State Machine\n");
   now_ptr=(char*)ram_values;
 #ifdef SHAREDMEMORY

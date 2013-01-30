@@ -14,7 +14,9 @@
 #include <sys/mman.h>		//PROT_READ,PROT_WRITE,MAP_FILE,MAP_SHARED,MAP_FAILED
 #include <fcntl.h>			//O_RDWR
 
+
 u_int32_t CSP0BASE;
+u_int32_t fifo_control_reg;
 
 
 int nModBoard;
@@ -85,39 +87,190 @@ int mapCSP0(void) {
 	printf("CSPOBASE is 0x%x \n",CSP0BASE);
 	printf("CSPOBASE=from %08x to %x\n",CSP0BASE,CSP0BASE+MEM_SIZE);
 
+	fifo_control_reg = 0;
+
 	return OK;
 }
 
 
 
-//u_int32_t bus_w(u_int32_t offset, u_int32_t data) {
-u_int32_t bus_w(u_int32_t offset, u_int8_t data) {
 
-    __asm__ volatile ("stw %0,0(%1); eieio"::"r" (data), "b"(CSP0BASE+4*offset));
 
-/*	volatile u_int32_t *ptr1;
-	ptr1=(u_int32_t*)(CSP0BASE+offset);
-	*ptr1=data;
-	*ptr1=data;*/
+u_int32_t bus_w(u_int32_t offset, u_int32_t data) {
+	__asm__ volatile ("stw %0,0(%1); eieio"::"r" (data), "b"(CSP0BASE+4*offset));
 	return OK;
 }
 
 
 
-u_int32_t bus_r(u_int32_t offset) {//plb_ll_fifo_base+4*REG,val
-
+u_int32_t bus_r(u_int32_t offset) {
 	u_int32_t ptr1;
-    __asm__ volatile ("eieio; lwz %0,0(%1)":"=r" (ptr1):"b"
-              (CSP0BASE+4*offset));
+    __asm__ volatile ("eieio; lwz %0,0(%1)":"=r" (ptr1):"b"(CSP0BASE+4*offset));
     return ptr1;
-	/*
-	volatile u_int32_t *ptr1;
-	ptr1=(u_int32_t*)(CSP0BASE+offset);
-	return *ptr1;
-	*/
 }
 
 
+
+
+
+int fifoReset(){
+
+	u_int32_t mask = FIFOCNTRL_RESET_MASK;
+
+	fifo_control_reg	|= mask;
+	printf("CTRL Register bits: 0x%08x\n",fifo_control_reg);
+
+	bus_w(FIFO_CNTRL_REG,fifo_control_reg);
+	bus_w(FIFO_CNTRL_REG,fifo_control_reg);
+	bus_w(FIFO_CNTRL_REG,fifo_control_reg);
+	bus_w(FIFO_CNTRL_REG,fifo_control_reg);
+
+	fifo_control_reg &= (~mask);
+	bus_w(FIFO_CNTRL_REG,fifo_control_reg);
+
+	return OK;
+}
+
+
+
+
+int fifoTest(void){
+
+	int buffer_length = 256;
+	int rec_buffer_length = 4096;
+	char cmd[] = "help";
+	unsigned int buffer[buffer_length];
+	unsigned int rec_buffer[rec_buffer_length];
+	unsigned int send_len;
+	int rec_len;
+	char *char_ptr;
+	char_ptr = (char *)buffer;
+
+	//fill the buffer with numbers    for(i=0; i < BUFF_LEN; i++){char_ptr[i]=i+1;}
+
+	//sending command
+	strcpy(char_ptr,cmd);
+	send_len = strlen(cmd);
+	fifoSend(char_ptr,send_len);
+
+	//  printf("status : 0x%08x \n",PLB_LL_fifo_get_status_vector());
+	usleep(10000);
+
+	do{
+		rec_len = fifoReceive(rec_buffer,rec_buffer_length);
+		if (rec_len > 0){
+			// printf("receive buffer 0x%08x length: %i\n",rec_buffer,len);
+			char_ptr = (char*) &rec_buffer[0];
+			char_ptr[rec_len]=0;
+			printf(char_ptr);
+		}
+	} while(rec_len > 0);
+
+	return OK;
+}
+
+
+// note: buffer must be word (4 byte) aligned, frameLength in byte
+int fifoSend(void *buffer, unsigned int frameLength){
+
+	int vacancy=0;
+	int i;
+	int words_send = 0;
+	int last_word;
+	unsigned int *word_ptr;
+	unsigned int val,mask;
+	u_int32_t status;
+
+	if (frameLength < 1)
+		return -1;
+
+	last_word = (frameLength-1)/4;
+	word_ptr = (unsigned int *)buffer;
+
+	while (words_send <= last_word){
+		//wait for Fifo to be empty again
+		while (!vacancy){
+			status = bus_r(FIFO_STATUS_REG);
+			if((status & FIFOSTATUS_ALMOST_FULL_BIT) == 0)
+				vacancy = 1;
+		}
+
+		for (i=0; ((i<FIFO_THRESHOLD_WORDS) && (words_send <= last_word)); i++){
+			val = 0;
+
+			//announce the start of file
+			if (words_send == 0)
+				val = FIFOCNTRL_SOF_BIT;
+
+			if (words_send == last_word)
+				val |= (FIFOCNTRL_EOF_BIT | (( (frameLength-1)<<FIFOCNTRL_REM_OFFSET) & FIFOCNTRL_REM_MASK)  );
+
+
+			//control reg write mask
+			mask = FIFOCNTRL_MASK;
+			fifo_control_reg &= (~mask);
+			fifo_control_reg |= ( mask & val);
+			bus_w(FIFO_CNTRL_REG,fifo_control_reg);
+
+			bus_w(FIFO_FIFO_REG,word_ptr[words_send++]);
+		}
+	}
+
+	return frameLength;
+}
+
+
+
+
+int fifoReceive(void *buffer, unsigned int bufflen){
+
+	static unsigned int buffer_ptr = 0;
+	int len;
+	unsigned int *word_ptr;
+	unsigned int status;
+	volatile unsigned int fifo_val;
+	int sof = 0;
+
+	word_ptr = (unsigned int *)buffer;
+	do{
+		status = bus_r(FIFO_STATUS_REG);
+
+		if (!(status & FIFOSTATUS_EMPTY_BIT)){
+			if (status & FIFOSTATUS_SOF_BIT){
+				if (buffer_ptr){
+					buffer_ptr = 0;
+					return -1; // buffer overflow
+				}
+				//		printf(">>>>  SOF\n\r");
+				buffer_ptr = 0;
+				sof = 1;
+			}
+
+			fifo_val = bus_r(FIFO_FIFO_REG);  //read from fifo
+
+			if ((buffer_ptr > 0) || sof){
+				if ( (bufflen >> 2) > buffer_ptr)
+					word_ptr[buffer_ptr++] = fifo_val; //write to buffer
+				else{
+					buffer_ptr = 0;
+					return -2; // buffer overflow
+				}
+
+				if (status & FIFOSTATUS_EOF_BIT){
+					len = (buffer_ptr << 2) -3 + ( (status & FIFOSTATUS_REM_MASK)>>FIFOSTATUS_REM_OFFSET );
+					//  printf(">>>>status=0x%08x  EOF  len = %d \n\r\n\r",status, len);
+					buffer_ptr = 0;
+					return len;
+				}
+
+			}
+		}
+	}
+	while(!(status & FIFOSTATUS_EMPTY_BIT));
+
+
+	return OK;
+}
 
 
 

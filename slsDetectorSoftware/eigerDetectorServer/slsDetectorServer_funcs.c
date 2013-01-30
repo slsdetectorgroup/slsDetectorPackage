@@ -52,11 +52,17 @@ int dataBytes;
 int init_detector(int b) {
 #ifdef VIRTUAL
 	printf("This is a VIRTUAL detector\n");
-#endif
-
+#else
 	mapCSP0();
+
 	//only for control server
 	if(b){
+		//PLB_LL_fifo
+		fifoReset();
+		fifoTest();
+		//Aurora-Links
+
+#endif
 #ifdef SLS_DETECTOR_FUNCTION_LIST
 		initializeDetector();
 		//testFpga();
@@ -98,9 +104,9 @@ int64_t swap_int64(int64_t val)
 int decode_function(int file_des) {
 	int fnum,n;
 	int retval=FAIL;
-//#ifdef VERBOSE
+#ifdef VERBOSE
 	printf( "receive data\n");
-//#endif
+#endif
 	n = receiveDataOnly(file_des,&fnum,sizeof(fnum));
 	fnum=swap_int32(fnum);
 	if (n <= 0) {

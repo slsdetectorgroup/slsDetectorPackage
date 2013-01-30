@@ -30,6 +30,7 @@ int dynamicRange=16;//32;
 int dataBytes=NMAXMOD*NCHIP*NCHAN*2;
 int storeInRAM=0;
 int ROI_flag=0;
+int adcConfigured=-1;
 u_int32_t *ram_values=NULL;
 volatile char *now_ptr=NULL;
 volatile  u_int16_t *values;
@@ -261,9 +262,9 @@ int cleanFifo(){
 
 	}
 	reg=bus_r(addr);
-#ifdef DDEBUG
-	printf("\nADC SYNC reg:%x\n",reg);
-#endif
+//#ifdef DDEBUG
+	printf("\n***ADC SYNC reg:%x****\n",reg);
+//#endif
 	return OK;
 }
 
@@ -1178,11 +1179,10 @@ int initConfGain(int isettings,int val,int imod){
 
 int configureMAC(int ipad,long long int macad,long long int detectormacad, int detipad, int ival, int adc,int udpport){
 
-	if(runBusy())
-		if(stopStateMachine()==FAIL)
-			return FAIL;
+	//update adc configured
+	adcConfigured = adc;
 
-
+	printf("configuring with adc:%d\n",adc);
 	//setting adc mask
 	int reg;
 	int udpPacketSize=0x050E;
@@ -1194,6 +1194,8 @@ int configureMAC(int ipad,long long int macad,long long int detectormacad, int d
 	case 3:
 	case 4:
 	  ROI_flag=1;
+		//setting daqregister
+		setDAQRegister(adc);
 		reg = (NCHAN*2)<<CHANNEL_OFFSET;
 		reg&=CHANNEL_MASK;
 		int mask =1<<adc;
@@ -1204,7 +1206,10 @@ int configureMAC(int ipad,long long int macad,long long int detectormacad, int d
 		break;
 	//for all adcs
 	default: 
+	  adcConfigured=-1;
 	  ROI_flag=0;
+		//setting daqregister
+		setDAQRegister(adc);
 	  	reg = (NCHAN*NCHIP)<<CHANNEL_OFFSET;
 		reg&=CHANNEL_MASK;
 		reg|=ACTIVE_ADC_MASK;
@@ -1214,7 +1219,7 @@ int configureMAC(int ipad,long long int macad,long long int detectormacad, int d
 
 
 	//setting daqregister
-	setDAQRegister(adc);
+	//setDAQRegister(adc);
 
 #ifdef DDEBUG
 	printf("Chip of Intrst Reg:%x\n",bus_r(CHIP_OF_INTRST_REG));
@@ -1236,7 +1241,7 @@ int configureMAC(int ipad,long long int macad,long long int detectormacad, int d
   tse_conf_regs=(tse_conf*)(CSP0BASE+offset2*2);
 
 #ifdef DDEBUG
-  printf("***Configuring MAC***\n");
+  printf("***Configuring MAC*** adc=%d\n",adc);
 #endif
 
   if(ival)
@@ -1397,11 +1402,13 @@ int configureMAC(int ipad,long long int macad,long long int detectormacad, int d
 
 
 
-  return OK;
+  return adcConfigured;
 }
 
 
-
+int getAdcConfigured(){
+	return adcConfigured;
+}
 
 u_int32_t runBusy(void) {
 	u_int32_t s = bus_r(STATUS_REG);

@@ -2541,88 +2541,92 @@ int update_client(int file_des) {
 
 int configure_mac(int file_des) {
 
-  int ret=OK;
-  char arg[5][50];
-  int n;
+	int ret=OK;
+	char arg[5][50];
+	int n;
 
-  int imod=0;//should be in future sent from client as -1, arg[2]
-  int ipad;
-  long long int imacadd;
-  long long int idetectormacadd;
-  int udpport;
-  int detipad;
-  int adc=-1;
-  
-  sprintf(mess,"Can't configure MAC\n");
+	int imod=0;//should be in future sent from client as -1, arg[2]
+	int ipad;
+	long long int imacadd;
+	long long int idetectormacadd;
+	int udpport;
+	int detipad;
+	int adc=-1;
+	int retval=-100;
+
+	sprintf(mess,"Can't configure MAC\n");
 
 
-  n = receiveDataOnly(file_des,arg,sizeof(arg));
-  if (n < 0) {
-    sprintf(mess,"Error reading from socket\n");
-    ret=FAIL;
-  }
+	n = receiveDataOnly(file_des,arg,sizeof(arg));
+	if (n < 0) {
+		sprintf(mess,"Error reading from socket\n");
+		ret=FAIL;
+	}
 
-  sscanf(arg[0], "%x", 		&ipad);
-  sscanf(arg[1], "%llx", 	&imacadd);
-  sscanf(arg[2], "%x", 		&udpport);
-  sscanf(arg[3], "%llx",	&idetectormacadd);
-  sscanf(arg[4], "%x",		&detipad);
+	sscanf(arg[0], "%x", 		&ipad);
+	sscanf(arg[1], "%llx", 	&imacadd);
+	sscanf(arg[2], "%x", 		&udpport);
+	sscanf(arg[3], "%llx",	&idetectormacadd);
+	sscanf(arg[4], "%x",		&detipad);
 
 #ifdef VERBOSE
-  int i;
-  printf("\ndigital_test_bit in server %d\t",digitalTestBit);
-  printf("\nipadd %x\t",ipad); 
-  printf("destination ip is %d.%d.%d.%d = 0x%x \n",(ipad>>24)&0xff,(ipad>>16)&0xff,(ipad>>8)&0xff,(ipad)&0xff,ipad);
-  printf("macad:%llx\n",imacadd);
-  for (i=0;i<6;i++) 
-    printf("mac adress %d is 0x%x \n",6-i,(unsigned int)(((imacadd>>(8*i))&0xFF)));
-  printf("udp port:0x%x\n",udpport);
-  printf("detector macad:%llx\n",idetectormacadd);
-  for (i=0;i<6;i++) 
-    printf("detector mac adress %d is 0x%x \n",6-i,(unsigned int)(((idetectormacadd>>(8*i))&0xFF)));
-  printf("detipad %x\n",detipad);
-  printf("\n");
+	int i;
+	printf("\ndigital_test_bit in server %d\t",digitalTestBit);
+	printf("\nipadd %x\t",ipad);
+	printf("destination ip is %d.%d.%d.%d = 0x%x \n",(ipad>>24)&0xff,(ipad>>16)&0xff,(ipad>>8)&0xff,(ipad)&0xff,ipad);
+	printf("macad:%llx\n",imacadd);
+	for (i=0;i<6;i++)
+		printf("mac adress %d is 0x%x \n",6-i,(unsigned int)(((imacadd>>(8*i))&0xFF)));
+	printf("udp port:0x%x\n",udpport);
+	printf("detector macad:%llx\n",idetectormacadd);
+	for (i=0;i<6;i++)
+		printf("detector mac adress %d is 0x%x \n",6-i,(unsigned int)(((idetectormacadd>>(8*i))&0xFF)));
+	printf("detipad %x\n",detipad);
+	printf("\n");
 #endif
 
-  n = receiveDataOnly(file_des,&adc,sizeof(adc));
-  if (n < 0) {
-    sprintf(mess,"Error reading from socket\n");
-    ret=FAIL;
-  }
+	n = receiveDataOnly(file_des,&adc,sizeof(adc));
+	if (n < 0) {
+		sprintf(mess,"Error reading from socket\n");
+		ret=FAIL;
+	}
 
 
-  if (imod>=getNModBoard())
-    ret=FAIL;
-  if (imod<0)
-    imod=ALLMOD;
+	if (imod>=getNModBoard())
+		ret=FAIL;
+	if (imod<0)
+		imod=ALLMOD;
 
-//#ifdef VERBOSE
-  printf("Configuring MAC of module %d and adc %d at port %x\n", imod, adc,udpport);
-//#endif
+	//#ifdef VERBOSE
+	printf("Configuring MAC of module %d and adc %d at port %x\n", imod, adc,udpport);
+	//#endif
 #ifdef MCB_FUNCS
-  if (ret==OK){
-    ret=configureMAC(ipad,imacadd,idetectormacadd,detipad,digitalTestBit,adc,udpport);
-    if(ret==FAIL)
-    	strcpy(mess,"could not stop detector acquisition to configure mac");
-  }
+	if (ret==OK){
+		if(runBusy()){
+			ret=stopStateMachine();
+			strcpy(mess,"could not stop detector acquisition to configure mac");
+		}
+
+		if(ret==OK)
+			configureMAC(ipad,imacadd,idetectormacadd,detipad,digitalTestBit,adc,udpport);
+		retval=getAdcConfigured();
+	}
 #endif
-  if (ret==FAIL)
-    printf("configuring MAC of mod %d failed\n", imod);
+	if (ret==FAIL)
+		printf("configuring MAC of mod %d failed\n", imod);
 
+	if (differentClients)
+		ret=FORCE_UPDATE;
 
-
-  if (differentClients)
-    ret=FORCE_UPDATE;
-
-  /* send answer */
-  /* send OK/failed */
-  n = sendDataOnly(file_des,&ret,sizeof(ret));
-  if (ret==FAIL) {
-    n += sendDataOnly(file_des,mess,sizeof(mess));
-  }
-
-  /*return ok/fail*/
-  return ret; 
+	/* send answer */
+	/* send OK/failed */
+	n = sendDataOnly(file_des,&ret,sizeof(ret));
+	if (ret==FAIL)
+		n += sendDataOnly(file_des,mess,sizeof(mess));
+	else
+		n += sendDataOnly(file_des,&retval,sizeof(retval));
+	/*return ok/fail*/
+	return ret;
 
 }
 

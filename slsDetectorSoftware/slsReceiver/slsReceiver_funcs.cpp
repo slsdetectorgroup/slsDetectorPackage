@@ -23,7 +23,8 @@ slsReceiverFuncs::slsReceiverFuncs(MySocketTCP *&mySocket,string const fname,int
 		socket(mySocket),
 		ret(OK),
 		lockStatus(0),
-		shortFrame(0){
+		shortFrame(-1),
+		packetsPerFrame(2){
 
 	int port_no = DEFAULT_PORTNO+2;
 	ifstream infile;
@@ -171,7 +172,7 @@ int slsReceiverFuncs::decode_function(){
 #endif
 
 #ifdef VERBOSE
-	cout <<  "calling function fnum = "<< fnum << hex << flist[fnum] << endl;
+	cout <<  "calling function fnum = "<< fnum << hex << ":"<< flist[fnum] << endl;
 #endif
 
 	if (fnum<0 || fnum>numberOfFunctions-1)
@@ -649,26 +650,28 @@ int	slsReceiverFuncs::reset_frames_caught(){
 int	slsReceiverFuncs::read_frame(){
 	ret=OK;
 	char fName[MAX_STR_LENGTH];
-	int arg = -1;
+	int arg = -1,i;
 
+	//retval is a full frame
+	int rnel 		= BUFFER_SIZE/(sizeof(int));
+	int* retval 	= new int[rnel];
+	//all initialized to 0
+	for(i=0;i<rnel;i++)	retval[i]=0;
+
+	//only for full frames
+	int onebuffersize = BUFFER_SIZE/PACKETS_PER_FRAME;
+	int onedatasize = DATA_BYTES/PACKETS_PER_FRAME;
+
+
+	//depending on shortframe or not
 	int bufferSize = BUFFER_SIZE;
-	int databytes = DATA_BYTES;
-	int packetsPerFrame = PACKETS_PER_FRAME;
-
-	if(shortFrame){
-		bufferSize 		= SHORT_BUFFER_SIZE;
-		databytes 		= SHORT_BUFFER_SIZE;
-		packetsPerFrame = SHORT_PACKETS_PER_FRAME;
-	}
-
-	int nel = bufferSize/(sizeof(int));
-	int onebuffersize = bufferSize/packetsPerFrame;
-	int onedatasize = databytes/packetsPerFrame;
-
-
+	if(shortFrame!=-1)
+		bufferSize=SHORT_BUFFER_SIZE;
+	int nel 		= bufferSize/(sizeof(int));
 	char* raw 		= new char[bufferSize];
-	int* origVal 	= new int[nel];
-	int* retval 	= new int[nel];
+	int* origVal 	= new int[rnel];
+
+	//int* emptys 	= new int[rnel]();
 
 	int index=-1,index2=-1;
 	int startIndex=-1;
@@ -695,53 +698,67 @@ int	slsReceiverFuncs::read_frame(){
 
 	//got atleast first frame, read buffer
 	if(ret==OK){
-		while(count<20){
+		if(shortFrame!=-1){;
 			//get frame
 			raw=slsReceiverList->readFrame(fName);
 			index=(int)(*(int*)raw);
-			index2= (int)(*((int*)((char*)(raw+onebuffersize))));
 			memcpy(origVal,raw,bufferSize);
 			raw=NULL;
-			//cout<<"funcs\tindex:"<<index<<"\tindex2:"<<index2<<endl;
+
+			//copy only the adc part
+			memcpy((((char*)retval)+(SHORT_DATABYTES*shortFrame)),((char*) origVal)+4, SHORT_DATABYTES);
+
+		}else{
+			//for full frames
+			while(count<20){
+				//get frame
+				raw=slsReceiverList->readFrame(fName);
+				index=(int)(*(int*)raw);
+				index2= (int)(*((int*)((char*)(raw+onebuffersize))));
+				memcpy(origVal,raw,bufferSize);
+				raw=NULL;
+				//cout<<"funcs\tindex:"<<index<<"\tindex2:"<<index2<<endl;
 
 
-			//1 odd, 1 even
-			if((index%2)!=index2%2){
-				//ideal situation (should be odd, even(index+1))
-				if(index%2){
-					memcpy(retval,((char*) origVal)+4, onedatasize);
-					memcpy((((char*)retval)+onedatasize), ((char*) origVal)+10+onedatasize, onedatasize);
-					break;
+				//1 odd, 1 even
+				if((index%2)!=index2%2){
+					//ideal situation (should be odd, even(index+1))
+					if(index%2){
+						memcpy(retval,((char*) origVal)+4, onedatasize);
+						memcpy((((char*)retval)+onedatasize), ((char*) origVal)+10+onedatasize, onedatasize);
+						break;
+					}
+
+					//swap to even,odd
+					if(index2%2){
+						memcpy((((char*)retval)+onedatasize),((char*) origVal)+4, onedatasize);
+						memcpy(retval, ((char*) origVal)+10+onedatasize, onedatasize);
+						index=index2;
+						break;
+					}
+
 				}
-
-				//swap to even,odd
-				if(index2%2){
-					memcpy((((char*)retval)+onedatasize),((char*) origVal)+4, onedatasize);
-					memcpy(retval, ((char*) origVal)+10+onedatasize, onedatasize);
-					index=index2;
-					break;
-				}
-
+				strcpy(mess,"could not read frame due to more than 20 mismatched indices\n");
+				usleep(100000);
+				count++;
 			}
-			strcpy(mess,"could not read frame due to more than 20 mismatched indices\n");
-			usleep(100000);
-			count++;
+
+			if(count==20){
+				cout << "same type: index:" << index << "\tindex2:" << index2 << endl;
+				/**send garbage with -1 index to try again*/
+				memcpy(retval,((char*) origVal)+4, onedatasize);
+				memcpy((((char*)retval)+onedatasize), ((char*) origVal)+10+onedatasize, onedatasize);
+			}
 		}
 
-		if(count==20){
-			cout << "same type: index:" << index << "\tindex2:" << index2 << endl;
-			/**send garbage with -1 index to try again*/
-			memcpy(retval,((char*) origVal)+4, onedatasize);
-			memcpy((((char*)retval)+onedatasize), ((char*) origVal)+10+onedatasize, onedatasize);
-		}
-
-		arg=((index - startIndex)/2)-1;
+		arg=((index - startIndex)/packetsPerFrame)-1;
 
 #ifdef VERBOSE
 		cout << "\nstartIndex:" << startIndex << endl;
 		cout << "fName:" << fName << endl;
 		cout << "index:" << arg << endl;
 #endif
+
 	}else cout<<"failed to start"<<endl;
 
 
@@ -876,6 +893,10 @@ int slsReceiverFuncs::set_short_frame() {
 		else{
 			retval=slsReceiverList->setShortFrame(index);
 			shortFrame = retval;
+			if(shortFrame==-1)
+				packetsPerFrame=PACKETS_PER_FRAME;
+			else
+				packetsPerFrame=SHORT_PACKETS_PER_FRAME;
 		}
 	}
 #endif

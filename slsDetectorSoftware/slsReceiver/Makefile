@@ -1,4 +1,4 @@
-CC			=	g++
+CC			=	g++ 
 CLAGS		+=  -DSLS_RECEIVER_FUNCTION_LIST -DGOTTHARDD 
 LDLIBS		+= 	-lm  -lstdc++ -lpthread
 

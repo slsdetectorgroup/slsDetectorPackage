@@ -283,10 +283,6 @@ public:
 	/** if the listening thread is running*/
 	static int listening_thread_running;
 };
-/*
 
-//int setUDPPortNumber(int p=-1); //sets/gets port number to listen to for data from the detector
-//int setTCPPortNumber(int p=-1); //sets/get port number for communication to client
-*/
 
 #endif

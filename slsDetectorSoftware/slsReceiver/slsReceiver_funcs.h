@@ -136,6 +136,9 @@ private:
 	/** Short frame */
 	int shortFrame;
 
+	/** Packets per frame */
+	int packetsPerFrame;
+
 	static int file_des;
 	static int socketDescriptor;
 

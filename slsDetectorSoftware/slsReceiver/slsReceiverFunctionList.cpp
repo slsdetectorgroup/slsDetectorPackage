@@ -41,11 +41,11 @@ slsReceiverFunctionList::slsReceiverFunctionList(bool shortfname):
 				framesInFile(0),
 				prevframenum(0),
 				status(IDLE),
-				latestData(NULL),
+				latestData(NULL),/**?*/
 				udpSocket(NULL),
 				server_port(DEFAULT_UDP_PORTNO),
 				fifo(NULL),
-				shortFrame(0),
+				shortFrame(-1),
 				bufferSize(BUFFER_SIZE),
 				packetsPerFrame(2)
 {
@@ -76,7 +76,7 @@ void slsReceiverFunctionList::setEthernetInterface(char* c){
 int slsReceiverFunctionList::getFrameIndex(){
 	if(startFrameIndex==-1)
 		frameIndex=0;
-	else
+	else if(framesCaught)
 		frameIndex=((int)(*((int*)latestData)) - startFrameIndex)/packetsPerFrame;
 	return frameIndex;
 }
@@ -86,8 +86,9 @@ int slsReceiverFunctionList::getFrameIndex(){
 int slsReceiverFunctionList::getAcquisitionIndex(){
 	if(startAcquisitionIndex==-1)
 		acquisitionIndex=0;
-	else
-		acquisitionIndex=((int)(*((int*)latestData)) - startAcquisitionIndex)/packetsPerFrame;
+	else if(framesCaught)
+			acquisitionIndex=((int)(*((int*)latestData)) - startAcquisitionIndex)/packetsPerFrame;
+
 	return acquisitionIndex;
 }
 
@@ -185,9 +186,9 @@ int slsReceiverFunctionList::startReceiver(){
 
 
 int slsReceiverFunctionList::stopReceiver(){
-#ifdef VERBOSE
+//#ifdef VERBOSE
 	cout << "Stopping Receiver" << endl;
-#endif
+//#endif
 
 	if(listening_thread_running){
 		cout << "Stopping new acquisition threadddd ...." << endl;
@@ -200,6 +201,7 @@ int slsReceiverFunctionList::stopReceiver(){
 		//stop writing thread
 		pthread_join(writing_thread,NULL);
 		if(fifo)	delete fifo;
+		//if(latestData)	delete latestData;/**new*/
 	}
 	cout << "Status:" << status << endl;
 
@@ -280,7 +282,7 @@ int slsReceiverFunctionList::startListening(){
 			//start of acquisition
 			if(startAcquisitionIndex==-1){
 				startAcquisitionIndex=startFrameIndex;
-				//cout<<"startAcquisitionIndex:"<<startAcquisitionIndex<<endl;
+				cout<<"startAcquisitionIndex:"<<startAcquisitionIndex<<endl;
 			}
 
 
@@ -291,7 +293,7 @@ int slsReceiverFunctionList::startListening(){
 				if(fifo->isFull())
 					;//cout<<"**********************FIFO FULLLLLLLL************************"<<endl;
 				else{
-					//cout<<"read index:"<<(int)(*(int*)buffer)<<endl;
+					//cout<<"read index:"<<dec<<(int)(*(int*)buffer)<<endl;
 					dataReadFrame = new dataStruct;
 					dataReadFrame->buffer=buffer;
 					dataReadFrame->rc=rc;
@@ -404,7 +406,7 @@ int slsReceiverFunctionList::startWriting(){
 				framesCaught++;
 				totalFramesCaught++;
 				memcpy(latestData,dataWriteFrame->buffer,bufferSize);
-				//cout<<"list write \t index:"<<(int)(*(int*)latestData)<<endl;
+				//cout<<"write index:"<<(int)(*(int*)latestData)<<endl;
 				if(enableFileWrite)
 					fwrite(dataWriteFrame->buffer, 1, dataWriteFrame->rc, sfilefd);
 				framesInFile++;
@@ -444,7 +446,7 @@ char* slsReceiverFunctionList::readFrame(char* c){
 int slsReceiverFunctionList::setShortFrame(int i){
 	shortFrame=i;
 
-	if(shortFrame){
+	if(shortFrame!=-1){
 		bufferSize = SHORT_BUFFER_SIZE;
 		maxFramesPerFile = SHORT_MAX_FRAMES;
 		packetsPerFrame = 1;

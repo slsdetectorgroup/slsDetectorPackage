@@ -4681,8 +4681,7 @@ int slsDetector::configureMAC(int adc){
 	char arg[5][50];
 	char cword[50]="", *pcword;
 	string sword;
-	int shortframe=1;
-	int retval=-100;
+	int retval=-1;
 
 	if(((adc>=-1)&&(adc<=4))||(adc==-100));
 	else{
@@ -4811,11 +4810,10 @@ int slsDetector::configureMAC(int adc){
 		//connect to receiver
 		if(thisDetector->receiverOnlineFlag==ONLINE_FLAG){
 			if(setReceiverOnline(ONLINE_FLAG)==ONLINE_FLAG){
-				if(retval==-1)	shortframe=0;
 #ifdef VERBOSE
-				std::cout << "Sending shortframe to receiver " << shortframe << std::endl;
+				std::cout << "Sending adc val to receiver " << retval << std::endl;
 #endif
-				ret=thisReceiver->sendInt(fnum,retval,shortframe);
+				ret=thisReceiver->sendInt(fnum,retval,retval);
 				if(ret==FAIL)
 					setErrorMask((getErrorMask())|(COULD_NOT_CONFIGURE_MAC));
 			}

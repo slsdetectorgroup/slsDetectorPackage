@@ -393,11 +393,13 @@ void* postProcessing::processData(int delflag) {
 	}
 	//receiver
 	else{
+		/*
 		while(1){
 		if (checkJoinThread()) break;
 		usleep(200000);
 		}
-		/*
+		*/
+
 		  pthread_mutex_lock(&mg);
 		int prevCaught=getReceiverCurrentFrameIndex();
 		 pthread_mutex_unlock(&mg);
@@ -446,7 +448,7 @@ void* postProcessing::processData(int delflag) {
 					cout<<"****Detector returned mismatched indeices***"<<endl;
 				}
 			}
-		}*/
+		}
 	}
 
 	return 0;

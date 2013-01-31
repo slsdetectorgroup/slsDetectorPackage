@@ -139,7 +139,7 @@ void qTabAdvanced::Initialization(){
 
 void qTabAdvanced::SetADCReadout(int i){
 
-	if(i==6) i=-1;
+	if(i==5) i=-1;
 	if(myDet->configureMAC(i)==slsDetectorDefs::FAIL)
 		qDefs::Message(qDefs::WARNING,"Could not configure mac","Advanced");
 	else

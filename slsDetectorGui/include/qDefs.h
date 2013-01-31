@@ -9,6 +9,11 @@
 #define QDEFS_H
 
 #include "sls_detector_defs.h"
+#include "error_defs.h"
+#include "slsDetector.h"
+#include "multiSlsDetector.h"
+#include <string>
+#include <ostream>
 #include <iostream>
 #include <QMessageBox>
 using namespace std;
@@ -171,6 +176,61 @@ static const int64_t GUI_VERSION=0x20121213;
 		YMINIMUM,
 		YMAXIMUM
 	};
+
+//-------------------------------------------------------------------------------------------------------------------------------------------------
+
+	/**checks error mask and displays the message if it exists
+	 * @param myDet is the multidetector object
+	 /returns error message else an empty string
+	 * */
+	static string checkErrorMessage(multiSlsDetector*& myDet){
+
+		int multiMask,slsMask=0;
+		MessageIndex errorLevel= WARNING;
+		slsDetector *det;
+		string retval="";
+		char sNumber[100];
+		size_t pos;
+
+		//multidetector error mask
+		multiMask = myDet->getErrorMask();
+		if(multiMask){
+			retval.append("<nobr>");
+			//check every sls detector
+			for(int i=0;i<myDet->getNumberOfDetectors();i++){
+				slsMask=0;
+				//if the detector has error
+				if(multiMask&(1<<i)){
+					//append detector id
+					sprintf(sNumber,"%d",i);
+					retval.append("Detector " + string(sNumber)+string(":<br>"));
+					//get sls det error mask
+					det = myDet->getSlsDetector(i);
+					slsMask=det->getErrorMask();
+#ifdef VERYVERBOSE
+					//append sls det error mask
+					sprintf(sNumber,"0x%x",slsMask);
+					retval.append("Error Mask " + string(sNumber)+string("\n"));
+#endif
+					//get the error critical level
+					if((slsMask>0xFFFF)|errorLevel)
+						errorLevel = CRITICAL;
+					//append error message
+					retval.append(string("<font color=\"darkBlue\">") + errorDefs::getErrorMessage(slsMask)+string("</font>"));
+					//replace all \n with <br>
+					pos = 0;
+					while((pos = retval.find("\n", pos)) != string::npos){
+						retval.replace(pos, 1, "<br>");
+						pos += 1;
+					}
+				}
+			}
+				retval.append("</nobr>");
+				qDefs::Message(errorLevel,retval,"Main");
+		}
+		return retval;
+	};
+
 
 //-------------------------------------------------------------------------------------------------------------------------------------------------
 

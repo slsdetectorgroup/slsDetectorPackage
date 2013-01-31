@@ -19,6 +19,7 @@
 #include "multiSlsDetector.h"
 #include "sls_detector_defs.h"
 #include "svnInfoGui.h"
+#include "error_defs.h"
 // Qt Include Headers
 #include <QSizePolicy>
 #include <QFileDialog>
@@ -299,14 +300,19 @@ void qDetectorMain::LoadConfigFile(const string fName){
 	else if (!S_ISREG (st_buf.st_mode))
 		qDefs::Message(qDefs::WARNING,string("<nobr>Start up configuration failed to load. The following file is not a recognized file format:</nobr><br><nobr>")+fName,"Main");
 
-	//could not load config file
-	else if(myDet->readConfigurationFile(fName)==slsDetectorDefs::FAIL)
-		qDefs::Message(qDefs::INFORMATION,"<nobr>The Configuration Parameters have been loaded successfully at start up.</nobr>","Main");
+	else{
+		//could not load config file
+		if(myDet->readConfigurationFile(fName)==slsDetectorDefs::FAIL)
+			qDefs::Message(qDefs::WARNING,string("Could not load the Configuration Parameters from file:\n")+fName,"Main");
+		//successful
+		else
+			qDefs::Message(qDefs::INFORMATION,"<nobr>The Configuration Parameters have been loaded successfully at start up.</nobr>","Main");
 
-	//successful
-	else
-		qDefs::Message(qDefs::INFORMATION,"<nobr>The Configuration Parameters have been loaded successfully at start up.</nobr>","Main");
+		qDefs::checkErrorMessage(myDet);
+		myDet->clearErrorMask();
+	}
 }
+
 
 
 //-------------------------------------------------------------------------------------------------------------------------------------------------
@@ -534,7 +540,8 @@ void qDetectorMain::ExecuteUtilities(QAction *action){
 		//tab_developer->Refresh();
 		tab_plot->Refresh();
 	}
-
+	qDefs::checkErrorMessage(myDet);
+	myDet->clearErrorMask();
 }
 
 

@@ -82,19 +82,17 @@ void qTabMessages::Initialization(){
 //-------------------------------------------------------------------------------------------------------------------------------------------------
 
 void qTabMessages::customEvent(QEvent *e) {
-  if (e->type() == (STREAMEVENT)){
-	  QString temp = ((qStreamEvent*)e)->getString();
+  if (e->type() == (STREAMEVENT))
+	  dispLog->append(((qStreamEvent*)e)->getString());
+
+/*	  QString temp = ((qStreamEvent*)e)->getString();
 	  dispLog->append(temp);
-	  string t=string(temp.toAscii().constData());
-
-
+  	  string t=string(temp.toAscii().constData());
 	  if(t.find("not connect")!=string::npos)
 		  qDefs::Message(qDefs::WARNING,errMsg+t+string("</font></nobr>"),"Messages");
 	  else if(t.find("ould not")!=string::npos)
 		  qDefs::Message(qDefs::WARNING,errMsg+t+string("</font></nobr>"),"Messages");
-
-	 // dispLog->append(((qStreamEvent*)e)->getString());
-  }
+*/
 }
 
 //-------------------------------------------------------------------------------------------------------------------------------------------------

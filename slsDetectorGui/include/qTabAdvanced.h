@@ -56,6 +56,11 @@ private:
 
 
 private slots:
+
+	/** Set ADC Readout
+	 */
+	void SetADCReadout(int i);
+
 	/** Enable/Disable Energy and Calibration Logs
 	 */
 	void SetLogs();
@@ -102,6 +107,10 @@ private slots:
 private:
 	/** The sls detector object */
 	multiSlsDetector *myDet;
+
+	/** detector type */
+	slsDetectorDefs::detectorType detType;
+
 	/** The Plot widget	 */
 	qDrawPlot *myPlot;
 

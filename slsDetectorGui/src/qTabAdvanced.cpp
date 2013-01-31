@@ -40,11 +40,22 @@ qTabAdvanced::~qTabAdvanced(){
 
 void qTabAdvanced::SetupWidgetWindow(){
 //executed even for non digital, so make sure its necessary
-	slsDetectorDefs::detectorType detType = myDet->getDetectorsType();
+
+	//readout adc
+	lblADC->setEnabled(false);
+	comboADC->setEnabled(false);
+
+	detType = myDet->getDetectorsType();
 	switch(detType){
 	case slsDetectorDefs::MYTHEN: 	isEnergy = true; 	isAngular = true; 	break;
 	case slsDetectorDefs::EIGER:	isEnergy = true; 	isAngular = false;	break;
-	case slsDetectorDefs::GOTTHARD:	isEnergy = false; 	isAngular = true; 	break;
+
+	case slsDetectorDefs::GOTTHARD:
+		isEnergy = false;
+		isAngular = true;
+		lblADC->setEnabled(true);
+		comboADC->setEnabled(true);
+		break;
 	default: break;
 	}
 
@@ -118,6 +129,21 @@ void qTabAdvanced::Initialization(){
 		connect(btnGroup,		SIGNAL(buttonClicked(int)),	this, SLOT(UpdateTrimbitPlot(int)));
 	}
 
+	if(detType==slsDetectorDefs::GOTTHARD)
+		connect(comboADC,	SIGNAL(currentIndexChanged(int)),	this, SLOT(SetADCReadout(int)));
+
+}
+
+//-------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+void qTabAdvanced::SetADCReadout(int i){
+
+	if(i==6) i=-1;
+	if(myDet->configureMAC(i)==slsDetectorDefs::FAIL)
+		qDefs::Message(qDefs::WARNING,"Could not configure mac","Advanced");
+	else
+		qDefs::Message(qDefs::WARNING,"ADC Readout successfully set up","Advanced");
 }
 
 

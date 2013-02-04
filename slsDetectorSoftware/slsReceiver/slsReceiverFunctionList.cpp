@@ -102,7 +102,7 @@ void slsReceiverFunctionList::setEthernetInterface(char* c){
 int slsReceiverFunctionList::getFrameIndex(){
 	if(startFrameIndex==-1)
 		frameIndex=0;
-	else if(framesCaught)
+	else
 		frameIndex=(currframenum - startFrameIndex)/packetsPerFrame;
 	return frameIndex;
 }
@@ -112,8 +112,8 @@ int slsReceiverFunctionList::getFrameIndex(){
 int slsReceiverFunctionList::getAcquisitionIndex(){
 	if(startAcquisitionIndex==-1)
 		acquisitionIndex=0;
-	else if(framesCaught)
-			acquisitionIndex=(currframenum - startAcquisitionIndex)/packetsPerFrame;
+	else
+		acquisitionIndex=(currframenum - startAcquisitionIndex)/packetsPerFrame;
 
 	return acquisitionIndex;
 }

@@ -781,6 +781,12 @@ int	slsReceiverFuncs::read_frame(){
 		socket->SendDataOnly(retval,DATA_BYTES);
 	}
 	//return ok/fail
+
+	///ADDED BY ANNA?!?!?!?
+	delete [] retval;
+	delete [] origVal;
+
+
 	return ret;
 }
 

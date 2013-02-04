@@ -246,6 +246,12 @@ private:
 	/** Receiver buffer */
 	char* buffer;
 
+	/** Receiver buffer */
+	char *mem0, *memfull;
+
+
+
+
 	/** latest data */
 	char* latestData;
 
@@ -266,6 +272,8 @@ private:
 
 	/** circular fifo to read and write data*/
 	CircularFifo<dataStruct,FIFO_SIZE>* fifo;
+	/** circular fifo to read and write data*/
+	CircularFifo<char,FIFO_SIZE>* fifofree;
 
 	/** short frames */
 	int shortFrame;
@@ -275,13 +283,21 @@ private:
 
 	/** number of packets per frame*/
 	int packetsPerFrame;
+	
+	/** gui wants data */
+	int guiRequiresData;
 
+	/** current frame number */
+	int currframenum;
 public:
 	/** File Descriptor */
 	static FILE *sfilefd;
 
 	/** if the listening thread is running*/
 	static int listening_thread_running;
+
+
+	dataStruct *dataWriteFrame;
 };
 
 

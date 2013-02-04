@@ -1,6 +1,6 @@
 CC			=	g++ 
-CLAGS		+=  -DSLS_RECEIVER_FUNCTION_LIST -DGOTTHARDD 
-LDLIBS		+= 	-lm  -lstdc++ -lpthread
+	CLAGS		+=  -DSLS_RECEIVER_FUNCTION_LIST -DGOTTHARDD  
+LDLIBS		+= 	-lm  -lstdc++ -lpthread 
 
 INCLUDES	= 	-I ../MySocketTCP -I ../commonFiles -I .
 SRC_CLNT	= 	slsReceiver.cpp ../MySocketTCP/MySocketTCP.cpp slsReceiver_funcs.cpp slsReceiverFunctionList.cpp

@@ -113,6 +113,10 @@ u_int32_t bus_r(u_int32_t offset) {
 
 
 
+
+
+
+
 int fifoReset(){
 
 	u_int32_t mask = FIFOCNTRL_RESET_MASK;
@@ -138,7 +142,7 @@ int fifoTest(void){
 
 	int buffer_length = 256;
 	int rec_buffer_length = 4096;
-	char cmd[] = "help";
+	char cmd[] = "fpgatfemp";
 	unsigned int buffer[buffer_length];
 	unsigned int rec_buffer[rec_buffer_length];
 	unsigned int send_len;
@@ -146,7 +150,7 @@ int fifoTest(void){
 	char *char_ptr;
 	char_ptr = (char *)buffer;
 
-	//fill the buffer with numbers    for(i=0; i < BUFF_LEN; i++){char_ptr[i]=i+1;}
+	//fill the buffer with numbers 	for(i=0; i < BUFF_LEN; i++)	{char_ptr[i]=i+1;}
 
 	//sending command
 	strcpy(char_ptr,cmd);
@@ -159,7 +163,7 @@ int fifoTest(void){
 	do{
 		rec_len = fifoReceive(rec_buffer,rec_buffer_length);
 		if (rec_len > 0){
-			// printf("receive buffer 0x%08x length: %i\n",rec_buffer,len);
+			//printf("receive buffer 0x%08x length: %i\n",rec_buffer,rec_len);
 			char_ptr = (char*) &rec_buffer[0];
 			char_ptr[rec_len]=0;
 			printf(char_ptr);
@@ -184,17 +188,21 @@ int fifoSend(void *buffer, unsigned int frameLength){
 	if (frameLength < 1)
 		return -1;
 
+	/**4?*/
 	last_word = (frameLength-1)/4;
 	word_ptr = (unsigned int *)buffer;
 
+	/*what does this do*/
 	while (words_send <= last_word){
+
 		//wait for Fifo to be empty again
 		while (!vacancy){
 			status = bus_r(FIFO_STATUS_REG);
-			if((status & FIFOSTATUS_ALMOST_FULL_BIT) == 0)
+			if(!(status & FIFOSTATUS_ALMOST_FULL_BIT))
 				vacancy = 1;
 		}
 
+		/**fifo threshold words?*/
 		for (i=0; ((i<FIFO_THRESHOLD_WORDS) && (words_send <= last_word)); i++){
 			val = 0;
 
@@ -202,7 +210,7 @@ int fifoSend(void *buffer, unsigned int frameLength){
 			if (words_send == 0)
 				val = FIFOCNTRL_SOF_BIT;
 
-			if (words_send == last_word)
+			if (words_send == last_word) /**rem_offset??*/
 				val |= (FIFOCNTRL_EOF_BIT | (( (frameLength-1)<<FIFOCNTRL_REM_OFFSET) & FIFOCNTRL_REM_MASK)  );
 
 
@@ -232,21 +240,27 @@ int fifoReceive(void *buffer, unsigned int bufflen){
 	int sof = 0;
 
 	word_ptr = (unsigned int *)buffer;
+
+	//repeat while fifo status not empty
 	do{
 		status = bus_r(FIFO_STATUS_REG);
-
 		if (!(status & FIFOSTATUS_EMPTY_BIT)){
+
 			if (status & FIFOSTATUS_SOF_BIT){
+				//if SOF, buffer_ptr should be zero, else buffer overflow
 				if (buffer_ptr){
 					buffer_ptr = 0;
-					return -1; // buffer overflow
+					return -1;
 				}
 				//		printf(">>>>  SOF\n\r");
-				buffer_ptr = 0;
+				buffer_ptr = 0;/**not needed */
 				sof = 1;
 			}
 
-			fifo_val = bus_r(FIFO_FIFO_REG);  //read from fifo
+
+			//read from fifo
+			fifo_val = bus_r(FIFO_FIFO_REG);
+
 
 			if ((buffer_ptr > 0) || sof){
 				if ( (bufflen >> 2) > buffer_ptr)

@@ -57,9 +57,12 @@ int init_detector(int b) {
 
 	//only for control server
 	if(b){
-		//PLB_LL_fifo
+
+		printf("fifo reset\n");
 		fifoReset();
+		printf("fifo test\n");
 		fifoTest();
+		printf("\ninitializing detector\n");
 		//Aurora-Links
 
 #endif

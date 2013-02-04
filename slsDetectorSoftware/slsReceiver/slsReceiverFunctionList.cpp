@@ -271,13 +271,13 @@ i	cout << "In startListening()\n");
 
 
 
-		//if(!strlen(eth)){
+		if(!strlen(eth)){
 			cout<<"warning:eth is empty.listening to all"<<endl;
 			udpSocket = new genericSocket(server_port,genericSocket::UDP,bufferSize/packetsPerFrame,packetsPerFrame);
-		//}else{
-		//	cout<<"eth:"<<eth<<endl;
-		//	udpSocket = new genericSocket(server_port,genericSocket::UDP,bufferSize/packetsPerFrame,packetsPerFrame,eth);
-		//}
+		}else{
+			cout<<"eth:"<<eth<<endl;
+			udpSocket = new genericSocket(server_port,genericSocket::UDP,bufferSize/packetsPerFrame,packetsPerFrame,eth);
+		}
 
 		if (udpSocket->getErrorStatus()){
 #ifdef VERBOSE

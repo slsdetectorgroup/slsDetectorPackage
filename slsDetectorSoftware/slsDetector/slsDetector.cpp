@@ -4557,6 +4557,10 @@ char* slsDetector::setReceiver(string receiverIP){
 		setFilePath(fileIO::getFilePath());
 		setFileName(fileIO::getFileName());
 		setFileIndex(fileIO::getFileIndex());
+		  if ((setTimer(FRAME_NUMBER,-1)*setTimer(CYCLES_NUMBER,-1))>1)
+			  setFrameIndex(0);
+		  else
+			  setFrameIndex(-1);
 		enableWriteToFile(parentDet->enableWriteToFileMask());
 		setUDPConnection();
 	}
@@ -5837,17 +5841,15 @@ int slsDetector::getReceiverCurrentFrameIndex(){
 
 
 
-int slsDetector::resetFramesCaught(int index){
+int slsDetector::resetFramesCaught(){
 	int fnum=F_RESET_FRAMES_CAUGHT;
 	int ret = FAIL;
-	int retval=-1;
-	int arg=index;
 
 	if (setReceiverOnline(ONLINE_FLAG)==ONLINE_FLAG) {
 #ifdef VERBOSE
-		std::cout << "Reset Frames Caught by Receiver:" << arg << std::endl;
+		std::cout << "Reset Frames Caught by Receiver" << std::endl;
 #endif
-		ret=thisReceiver->sendInt(fnum,retval,arg);
+		ret=thisReceiver->executeFunction(fnum);
 		if(ret==FORCE_UPDATE)
 			ret=updateReceiver();
 	}
@@ -6058,3 +6060,34 @@ int slsDetector::enableWriteToFile(int enable){
 
 	return parentDet->enableWriteToFileMask();
 }
+
+
+
+
+
+int slsDetector::setFrameIndex(int index){
+	int fnum=F_SET_FRAME_INDEX;
+	int ret = FAIL;
+	int retval=-1;
+	int arg = index;
+
+	if(thisDetector->receiverOnlineFlag==OFFLINE_FLAG){
+			fileIO::setFrameIndex(index);
+	}
+
+	else if(setReceiverOnline(ONLINE_FLAG)==ONLINE_FLAG){
+#ifdef VERBOSE
+		std::cout << "Sending frame index to receiver " << arg << std::endl;
+#endif
+		ret=thisReceiver->sendInt(fnum,retval,arg);
+		if(ret!=FAIL)
+			fileIO::setFrameIndex(retval);
+		if(ret==FORCE_UPDATE)
+			updateReceiver();
+	}
+
+	return fileIO::getFrameIndex();
+}
+
+
+

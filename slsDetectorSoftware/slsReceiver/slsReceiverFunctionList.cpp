@@ -31,7 +31,7 @@ slsReceiverFunctionList::slsReceiverFunctionList(bool shortfname):
 				shortFileName(shortfname),
 				shortFileNameIndex(0),
 				fileIndex(0),
-				frameIndexNeeded(true),
+				frameIndexNeeded(0),
 				framesCaught(0),
 				startFrameIndex(-1),
 				frameIndex(0),
@@ -152,12 +152,10 @@ int slsReceiverFunctionList::setFileIndex(int i){
 }
 
 
-bool slsReceiverFunctionList::resetTotalFramesCaught(bool i){
-	frameIndexNeeded = i;
+void slsReceiverFunctionList::resetTotalFramesCaught(){
 	startAcquisitionIndex = -1;
 	totalFramesCaught = 0;
 
-	return frameIndexNeeded;
 }
 
 
@@ -170,7 +168,9 @@ int slsReceiverFunctionList::startReceiver(){
 
 	int err = 0;
 	if(!listening_thread_running){
+#ifdef VERBOSE
 		cout << "Starting new acquisition threadddd ...." << endl;
+#endif
 		listening_thread_running=1;
 
 
@@ -183,8 +183,9 @@ int slsReceiverFunctionList::startReceiver(){
 			cout << "Cant create writing thread. Status:" << status << endl << endl;
 			return FAIL;
 		}
+#ifdef VERBOSE
 		cout << "Writing thread created successfully." << endl;
-
+#endif
 
 		//error creating listenign thread
 		err = 0;
@@ -200,8 +201,13 @@ int slsReceiverFunctionList::startReceiver(){
 		}
 
 		while(status!=RUNNING);
+#ifdef VERBOSE
 		cout << "Listening thread created successfully." << endl;
+#endif
+
+		cout << "Threads created successfully." << endl;
 	}
+
 
 	return OK;
 }
@@ -211,12 +217,14 @@ int slsReceiverFunctionList::startReceiver(){
 
 
 int slsReceiverFunctionList::stopReceiver(){
-//#ifdef VERBOSE
+#ifdef VERBOSE
 	cout << "Stopping Receiver" << endl;
-//#endif
+#endif
 
 	if(listening_thread_running){
+#ifdef VERBOSE
 		cout << "Stopping new acquisition threadddd ...." << endl;
+#endif
 		//stop listening thread
 		listening_thread_running=0;
 		udpSocket->ShutDownSocket();
@@ -228,7 +236,7 @@ int slsReceiverFunctionList::stopReceiver(){
 		//	if(fifo)	delete fifo;
 		//if(latestData)	delete latestData;/**new*/
 	}
-	cout << "Status:" << status << endl;
+	cout << "Receiver Stoppped.\nStatus:" << status << endl;
 
 
 	return OK;
@@ -374,18 +382,17 @@ int slsReceiverFunctionList::startWriting(){
 	framesInFile=0;
 	framesCaught=0;
 	frameIndex=0;
-
 	if(sfilefd) sfilefd=0;
-
 	strcpy(savefilename,"");
 	strcpy(actualfilename,"");
 
 	cout << "Max Frames Per File:" << maxFramesPerFile << endl;
 	cout << "Ready!" << endl;
 
+
 	if(enableFileWrite){
 		//create file name
-		if(!frameIndexNeeded)	sprintf(savefilename, "%s/%s_%d.raw", filePath,fileName,fileIndex);
+		if(frameIndexNeeded==-1)	sprintf(savefilename, "%s/%s_%d.raw", filePath,fileName,fileIndex);
 		else					sprintf(savefilename, "%s/%s_f%012d_%d.raw", filePath,fileName,framesCaught,fileIndex);
 
 		//for sebastian
@@ -398,6 +405,7 @@ int slsReceiverFunctionList::startWriting(){
 	}
 
 
+
 	while(listening_thread_running){
 
 		//when it reaches maxFramesPerFile,start writing new file
@@ -406,7 +414,7 @@ int slsReceiverFunctionList::startWriting(){
 			if(enableFileWrite){
 				fclose(sfilefd);
 				//create file name
-				if(!frameIndexNeeded)	sprintf(savefilename, "%s/%s_%d.raw", filePath,fileName,fileIndex);
+				if(frameIndexNeeded==-1)	sprintf(savefilename, "%s/%s_%d.raw", filePath,fileName,fileIndex);
 				else					sprintf(savefilename, "%s/%s_f%012d_%d.raw", filePath,fileName,framesCaught,fileIndex);
 				//for sebastian
 				if(!shortFileName)		strcpy(actualfilename,savefilename);
@@ -425,6 +433,8 @@ int slsReceiverFunctionList::startWriting(){
 			prevframenum=currframenum;
 			framesInFile = 0;
 		}
+
+
 
 		//actual writing from fifo
 		if(!fifo->isEmpty()){
@@ -487,12 +497,12 @@ char* slsReceiverFunctionList::readFrame(char* c){
   guiRequiresData=0;
 
   //if no more data //if(guiRequiresData)  //  retun NULL;
-
 	//cout<<"latestdata:"<<(int)(*(int*)latestData)<<endl;
 	strcpy(c,savefilename);
 	return latestData;
-
 }
+
+
 
 
 int slsReceiverFunctionList::setShortFrame(int i){

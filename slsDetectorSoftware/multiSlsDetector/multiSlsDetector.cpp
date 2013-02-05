@@ -3725,11 +3725,11 @@ int multiSlsDetector::getReceiverCurrentFrameIndex() {
 
 
 
-int multiSlsDetector::resetFramesCaught(int index) {
+int multiSlsDetector::resetFramesCaught() {
 	int ret=-100, ret1;
 	for (int i=0; i<thisMultiDetector->numberOfDetectors; i++){
 		if (detectors[i]){
-			ret1=detectors[i]->resetFramesCaught(index);
+			ret1=detectors[i]->resetFramesCaught();
 		      if (ret==-100)
 			ret=ret1;
 		      else if (ret!=ret1)
@@ -3849,3 +3849,23 @@ int multiSlsDetector::enableWriteToFile(int enable){
 
 	return ret;
 }
+
+
+
+
+int multiSlsDetector::setFrameIndex(int index){
+	int ret=-100, ret1;
+
+	for (int idet=0; idet<thisMultiDetector->numberOfDetectors; idet++) {
+		if (detectors[idet]) {
+			ret1=detectors[idet]->setFrameIndex(index);
+			if (ret==-100)
+				ret=ret1;
+			else if (ret!=ret1)
+				ret=-1;
+		}
+	}
+
+	return ret;
+}
+

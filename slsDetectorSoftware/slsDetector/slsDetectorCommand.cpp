@@ -3187,6 +3187,15 @@ string slsDetectorCommand::cmdTimer(int narg, char *args[], int action) {
   else rval=ret;
   
 
+  //set frame index
+  if (index==FRAME_NUMBER || index==CYCLES_NUMBER ){
+	  if ((myDet->setTimer(FRAME_NUMBER,-1)*myDet->setTimer(CYCLES_NUMBER,-1))>1)
+		  myDet->setFrameIndex(0);
+	  else
+		  myDet->setFrameIndex(-1);
+  }
+
+
   sprintf(answer,"%0.9f",rval);
   return string(answer);
   

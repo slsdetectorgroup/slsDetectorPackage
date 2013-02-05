@@ -106,6 +106,12 @@ public:
 	int setFileIndex(int i);
 
 	/**
+	 * Set Frame Index Needed
+	 * @param i frame index needed
+	 */
+	int setFrameIndexNeeded(int i){frameIndexNeeded = i;};
+
+	/**
 	 * Set enable file write
 	 * @param i file write enable
 	 * Returns file write enable
@@ -115,10 +121,9 @@ public:
 	/**
 	 * Resets the Total Frames Caught
 	 * This is how the receiver differentiates between entire acquisitions
-	 * @param i true if frame index in file name is required, else false
-	 * Returns frames needed in file name
+	 * Returns 0
 	 */
-	bool resetTotalFramesCaught(bool i);
+	void resetTotalFramesCaught();
 
 	/**
 	 * Close File
@@ -208,7 +213,7 @@ private:
 	int fileIndex;
 
 	/** if frame index required in file name */
-	bool frameIndexNeeded;
+	int frameIndexNeeded;
 
 	/** Frames Caught for each real time acquisition (eg. for each scan) */
 	int framesCaught;

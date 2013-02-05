@@ -121,10 +121,8 @@ void  slsDetectorUtils::acquire(int delflag){
 
 
 	  //resets frames caught in receiver
-	  if ((timerValue[FRAME_NUMBER]*timerValue[CYCLES_NUMBER])>1)
-		  resetFramesCaught(1);
-	  else
-		  resetFramesCaught(0);
+	  resetFramesCaught();
+
 
 	  if(setReceiverOnline()==OFFLINE_FLAG)
 		  *stoppedFlag=1;
@@ -234,7 +232,8 @@ void  slsDetectorUtils::acquire(int delflag){
 	    }
 
 	    setCurrentFrameIndex(0);
-	    if ((timerValue[FRAME_NUMBER]*timerValue[CYCLES_NUMBER])>1) {
+		//if ((timerValue[FRAME_NUMBER]*timerValue[CYCLES_NUMBER])>1) {
+	    if ((setTimer(FRAME_NUMBER,-1)*setTimer(CYCLES_NUMBER,-1))>1){
 	      setFrameIndex(0);
 	    } else {
 	      setFrameIndex(-1);

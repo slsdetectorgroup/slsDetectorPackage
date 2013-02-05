@@ -128,7 +128,9 @@ enum {
 
   F_SETUP_UDP,				/**< sets the receiver udp connection and returns receiver mac address */
 
-  F_ENABLE_FILE_WRITE		/**< sets the receiver file write */
+  F_ENABLE_FILE_WRITE,		/**< sets the receiver file write */
+
+  F_SET_FRAME_INDEX			/**< sets the receiver frame index */
 
   /* Always append functions hereafter!!! */
 

@@ -56,6 +56,9 @@ public:
 	/** Set File index */
 	int set_file_index();
 
+	/** Set Frame index */
+	int set_frame_index();
+
 	/** Start Receiver - starts listening to udp packets from detector */
 	int start_receiver();
 

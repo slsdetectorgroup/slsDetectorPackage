@@ -54,20 +54,17 @@ int init_detector(int b) {
 	printf("This is a VIRTUAL detector\n");
 #else
 	mapCSP0();
-
 	//only for control server
 	if(b){
-
-		printf("fifo reset\n");
-		fifoReset();
-		printf("fifo test\n");
-		fifoTest();
-		printf("\ninitializing detector\n");
-		//Aurora-Links
-
+			printf("\ninitializing detector\n");
 #endif
 #ifdef SLS_DETECTOR_FUNCTION_LIST
 		initializeDetector();
+
+
+		fifoReset();
+		fifoTest();
+
 		//testFpga();
 		//testRAM();
 		//setSettings(GET_SETTINGS,-1);

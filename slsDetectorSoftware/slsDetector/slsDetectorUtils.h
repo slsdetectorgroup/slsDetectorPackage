@@ -625,9 +625,8 @@ virtual int getReceiverCurrentFrameIndex()=0;
 /**
  * resets framescaught
  * @param index frames caught by receiver
- * @param index if frame index is needed
 */
-virtual int resetFramesCaught(int index=-1)=0;
+virtual int resetFramesCaught()=0;
 
 /**
  * Reads a frame from receiver

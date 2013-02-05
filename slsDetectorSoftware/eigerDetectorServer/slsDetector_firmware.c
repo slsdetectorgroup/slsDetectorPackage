@@ -122,7 +122,7 @@ int fifoReset(){
 	u_int32_t mask = FIFOCNTRL_RESET_MASK;
 
 	fifo_control_reg	|= mask;
-	printf("CTRL Register bits: 0x%08x\n",fifo_control_reg);
+	//printf("CTRL Register bits: 0x%08x\n",fifo_control_reg);
 
 	bus_w(FIFO_CNTRL_REG,fifo_control_reg);
 	bus_w(FIFO_CNTRL_REG,fifo_control_reg);
@@ -131,6 +131,8 @@ int fifoReset(){
 
 	fifo_control_reg &= (~mask);
 	bus_w(FIFO_CNTRL_REG,fifo_control_reg);
+
+	printf("fifo has been reset\n\n");
 
 	return OK;
 }
@@ -142,7 +144,7 @@ int fifoTest(void){
 
 	int buffer_length = 256;
 	int rec_buffer_length = 4096;
-	char cmd[] = "fpgatfemp";
+	char cmd[] = "help";
 	unsigned int buffer[buffer_length];
 	unsigned int rec_buffer[rec_buffer_length];
 	unsigned int send_len;

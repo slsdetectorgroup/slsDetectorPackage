@@ -120,6 +120,7 @@ int slsReceiverFuncs::function_table(){
 	flist[F_SET_FILE_NAME]			=	&slsReceiverFuncs::set_file_name;
 	flist[F_SET_FILE_PATH]			=	&slsReceiverFuncs::set_file_dir;
 	flist[F_SET_FILE_INDEX]		 	=	&slsReceiverFuncs::set_file_index;
+	flist[F_SET_FRAME_INDEX]	 	=	&slsReceiverFuncs::set_frame_index;
 	flist[F_SETUP_UDP]				=	&slsReceiverFuncs::setup_udp;
 	flist[F_START_RECEIVER]			=	&slsReceiverFuncs::start_receiver;
 	flist[F_STOP_RECEIVER]			=	&slsReceiverFuncs::stop_receiver;
@@ -387,6 +388,60 @@ int slsReceiverFuncs::set_file_index() {
 
 
 
+
+
+int slsReceiverFuncs::set_frame_index() {
+	ret=OK;
+	int retval=-1;
+	int index;
+	strcpy(mess,"Could not set frame index\n");
+
+
+	// receive arguments
+	if(socket->ReceiveDataOnly(&index,sizeof(index)) < 0 ){
+		strcpy(mess,"Error reading from socket\n");
+		ret = FAIL;
+	}
+
+	// execute action if the arguments correctly arrived
+#ifdef SLS_RECEIVER_FUNCTION_LIST
+	if (ret==OK) {
+		if (lockStatus==1 && socket->differentClients==1){//necessary???
+			sprintf(mess,"Receiver locked by %s\n", socket->lastClientIP);
+			ret=FAIL;
+		}
+		else
+			retval=slsReceiverList->setFrameIndexNeeded(index);
+	}
+#ifdef VERBOSE
+	if(ret!=FAIL)
+		cout << "frame index:" << retval << endl;
+	else
+		cout << mess << endl;
+#endif
+#endif
+
+	if(ret==OK && socket->differentClients){
+		cout << "Force update" << endl;
+		ret=FORCE_UPDATE;
+	}
+
+	// send answer
+	socket->SendDataOnly(&ret,sizeof(ret));
+	if(ret==FAIL)
+		socket->SendDataOnly(mess,sizeof(mess));
+	socket->SendDataOnly(&retval,sizeof(retval));
+
+	//return ok/fail
+	return ret;
+}
+
+
+
+
+
+
+
 int slsReceiverFuncs::setup_udp(){
 	ret=OK;
 	strcpy(mess,"could not set up udp connection");
@@ -606,17 +661,10 @@ int	slsReceiverFuncs::get_frame_index(){
 
 int	slsReceiverFuncs::reset_frames_caught(){
 	ret=OK;
-	int retval=-1;
 	int index=-1;
 
 	strcpy(mess,"Could not reset frames caught\n");
 
-
-	// receive arguments
-	if(socket->ReceiveDataOnly(&index,sizeof(index)) < 0) {;
-		sprintf(mess,"Error reading from socket\n");
-		ret=FAIL;
-	}
 
 	// execute action if the arguments correctly arrived
 #ifdef SLS_RECEIVER_FUNCTION_LIST
@@ -626,7 +674,7 @@ int	slsReceiverFuncs::reset_frames_caught(){
 			ret=FAIL;
 		}
 		else
-			retval=slsReceiverList->resetTotalFramesCaught(index);
+			slsReceiverList->resetTotalFramesCaught();
 	}
 #endif
 
@@ -639,7 +687,7 @@ int	slsReceiverFuncs::reset_frames_caught(){
 	socket->SendDataOnly(&ret,sizeof(ret));
 	if(ret==FAIL)
 		socket->SendDataOnly(mess,sizeof(mess));
-	socket->SendDataOnly(&retval,sizeof(retval));
+
 	//return ok/fail
 	return ret;
 

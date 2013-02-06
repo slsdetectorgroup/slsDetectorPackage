@@ -19,7 +19,6 @@
 #include "multiSlsDetector.h"
 #include "sls_detector_defs.h"
 #include "svnInfoGui.h"
-#include "error_defs.h"
 // Qt Include Headers
 #include <QSizePolicy>
 #include <QFileDialog>
@@ -234,9 +233,9 @@ void qDetectorMain::SetUpDetector(const string fName){
 	}
 	setWindowTitle("SLS Detector GUI : "+
 			QString(slsDetectorBase::getDetectorType(detType).c_str())+	" - "+QString(host.c_str()));
-#ifdef VERBOSE
+//#ifdef VERBOSE
 	cout << endl << "Type : " << slsDetectorBase::getDetectorType(detType) << "\nDetector : " << host << endl;
-#endif
+//#endif
 	myDet->setOnline(slsDetectorDefs::ONLINE_FLAG);
 
 }

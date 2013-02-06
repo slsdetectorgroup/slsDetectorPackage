@@ -1523,23 +1523,6 @@ class slsDetector : public slsDetectorUtils, public energyConversion {
   int fillModuleMask(int *mM);
 
 
-
-  /**
-     Sets error mask
-     @param error mask to be set to
-     /returns error mask
-  */
-  int setErrorMask(int i=-1){errorMask=i;return errorMask;}
-
-  /**returns error mask  */
-   int getErrorMask(){return errorMask;}
-
-   /**
-      clears error mask
-      /returns error mask
-   */
-   int clearErrorMask(){errorMask=0;return errorMask;}
-
  protected:
  
 
@@ -1600,9 +1583,6 @@ class slsDetector : public slsDetectorUtils, public energyConversion {
   int *chanregs;
 
   receiverInterface *thisReceiver;
-
-  /** Error Mask*/
-  int errorMask;
 
 
   /** Initializes the shared memory 

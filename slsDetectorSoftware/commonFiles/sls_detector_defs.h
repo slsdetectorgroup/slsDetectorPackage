@@ -520,13 +520,6 @@ enum angleConversionParameter {
 
 
 
-/** Error flags */
-#define NUM_ERROR_FLAGS 32
-#define CANNOT_CONNECT_TO_DETECTOR  0x80000000
-#define CANNOT_CONNECT_TO_RECEIVER  0x40000000
-#define COULD_NOT_CONFIGURE_MAC		0x00008000
-
-
 //typedef struct  {
   //float center;  /**< center of the module (channel at which the radius is perpendicular to the module surface) */
   //float ecenter; /**< error in the center determination */

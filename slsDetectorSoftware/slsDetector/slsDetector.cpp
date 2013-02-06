@@ -126,8 +126,7 @@ slsDetector::slsDetector(int id,multiSlsDetector *p) :slsDetectorUtils(),
 						      adcs(NULL),
 						      chipregs(NULL),
 						      chanregs(NULL),
-						      thisReceiver(NULL),
-						      errorMask(0)
+						      thisReceiver(NULL)
 
 
 {
@@ -177,8 +176,7 @@ slsDetector::slsDetector(detectorType type, int id,multiSlsDetector *p): slsDete
 									 adcs(NULL),
 									 chipregs(NULL),
 									 chanregs(NULL),
-								     thisReceiver(NULL),
-								     errorMask(0)
+								     thisReceiver(NULL)
 
 {
   while (shmId<0) {
@@ -232,8 +230,7 @@ slsDetector::slsDetector(char *name, int id, int cport,multiSlsDetector *p) : sl
 									      adcs(NULL),
 									      chipregs(NULL),
 									      chanregs(NULL),
-									      thisReceiver(NULL),
-									      errorMask(0)
+									      thisReceiver(NULL)
 
 
 {

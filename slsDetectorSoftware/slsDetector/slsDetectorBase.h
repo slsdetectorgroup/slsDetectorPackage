@@ -48,6 +48,7 @@
 
 
 #include "sls_detector_defs.h"
+#include "error_defs.h"
 
 #include <string>
 
@@ -63,7 +64,7 @@ using namespace std;
 */
 
 //public virtual slsDetectorUsers,
-class slsDetectorBase :  public virtual slsDetectorDefs  { 
+class slsDetectorBase :  public virtual slsDetectorDefs, public virtual errorDefs  {
 
  public:
 
@@ -473,23 +474,6 @@ class slsDetectorBase :  public virtual slsDetectorDefs  {
   virtual int* readFrameFromReceiver(char* fName, int &fIndex)=0;
 
 
-  /** Gets error mask
-   /returns error mask
-  */
-  virtual int getErrorMask()=0;
-
-  /**
-     Sets error mask
-     @param error mask to be set to
-     /returns error mask
-  */
-  virtual int setErrorMask(int i=-1)=0;
-
-  /**
-     clears error mask
-     /returns error mask
-  */
-  virtual int clearErrorMask()=0;
 
   /** returns detector type string from detector type index
       \param t string can be Mythen, Pilatus, Eiger, Gotthard, Agipd, Unknown

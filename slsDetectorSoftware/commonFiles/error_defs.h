@@ -17,6 +17,16 @@ using namespace std;
 
 
 
+/** Error flags */
+#define NUM_ERROR_FLAGS 32
+#define CRITICAL_ERROR_MASK 0xFFFFFFFF
+
+#define CANNOT_CONNECT_TO_DETECTOR  0x8000000000000000ULL
+#define CANNOT_CONNECT_TO_RECEIVER  0x4000000000000000ULL
+#define COULD_NOT_CONFIGURE_MAC		0x0000000000000001ULL
+
+
+
 /** @short class returning all error messages for error mask */
 class errorDefs {
 
@@ -24,13 +34,13 @@ class errorDefs {
 public:
 
 	/** Constructor */
-	errorDefs(){};
+	errorDefs():errorMask(0){};
 
 	/** Gets the error message
 	 * param errorMask error mask
 	 /returns error message from error mask
 	*/
-	static string getErrorMessage(int slsErrorMask){
+	static string getErrorMessage(int64_t slsErrorMask){
 
 		string retval = "";
 
@@ -47,6 +57,26 @@ public:
 
 	}
 
+
+	  /** Sets multi error mask
+	     @param multi error mask to be set to
+	     /returns multi error mask
+	  */
+	  int64_t  setErrorMask(int64_t i){errorMask=i;return getErrorMask();};
+
+	  /**returns multi error mask  */
+	   int64_t  getErrorMask(){return errorMask;};
+
+	   /** Clears error mask
+	      /returns error mask
+	   */
+	   int64_t clearErrorMask(){errorMask=0;return errorMask;};
+
+
+protected:
+
+	  /** Error Mask */
+	  int64_t errorMask;
 
 };
 

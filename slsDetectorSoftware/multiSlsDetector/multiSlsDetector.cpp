@@ -93,7 +93,7 @@ int multiSlsDetector::initSharedMemory(int id=0) {
 
 
 
-multiSlsDetector::multiSlsDetector(int id) :  slsDetectorUtils(), shmId(-1),errorMask(0)
+multiSlsDetector::multiSlsDetector(int id) :  slsDetectorUtils(), shmId(-1)
 {
   while (shmId<0) {
     shmId=initSharedMemory(id);
@@ -3869,3 +3869,41 @@ int multiSlsDetector::setFrameIndex(int index){
 	return ret;
 }
 
+
+
+
+string multiSlsDetector::getErrorMessage(int &critical){
+
+	int64_t multiMask,slsMask=0;
+	string retval="";
+	char sNumber[100];
+	critical=0;
+
+	multiMask = getErrorMask();
+	if(multiMask){
+		  for (int idet=0; idet<thisMultiDetector->numberOfDetectors; idet++) {
+		    if (detectors[idet]) {
+		    	//if the detector has error
+		    	if(multiMask&(1<<idet)){
+					//append detector id
+					sprintf(sNumber,"%d",idet);
+					retval.append("Detector " + string(sNumber)+string(":\n"));
+					//get sls det error mask
+					slsMask=detectors[idet]->getErrorMask();
+#ifdef VERYVERBOSE
+					//append sls det error mask
+					sprintf(sNumber,"0x%x",slsMask);
+					retval.append("Error Mask " + string(sNumber)+string("\n"));
+#endif
+					//get the error critical level
+					if((slsMask>0xFFFFFFFF)|critical)
+						critical = 1;
+					//append error message
+					retval.append(errorDefs::getErrorMessage(slsMask));
+
+		    	}
+		    }
+		  }
+	}
+	return retval;
+}

@@ -1134,22 +1134,13 @@ class multiSlsDetector  : public slsDetectorUtils {
 
   int fillModuleMask(int *mM);
 
-
-  /**
-     Sets multi error mask
-     @param multi error mask to be set to
-     /returns multi error mask
-  */
-  int setErrorMask(int i=-1){errorMask=i;return getErrorMask();}
-
-  /**returns multi error mask  */
-   int getErrorMask(){return errorMask;}
-
-   /**
-      clears error mask
-      /returns error mask
+  /**checks error mask and returns error message if it exists
+   * @param myDet is the multidetector object
+   * @param critical is 1 if any of the messages is critical
+	 /returns error message else an empty string
    */
-   int clearErrorMask(){errorMask=0;return errorMask;}
+  string getErrorMessage(int &critical);
+
 
  protected:
  
@@ -1162,9 +1153,6 @@ class multiSlsDetector  : public slsDetectorUtils {
 
   /** Shared memory structure */
   sharedMultiSlsDetector *thisMultiDetector;
-
-  /** Error Mask for each detector*/
-  int errorMask;
 
 
 

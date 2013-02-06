@@ -189,6 +189,15 @@ protocol(p), is_a_server(0), socketDescriptor(-1),file_des(-1), packet_size(ps),
      }
 
 
+     // reuse port
+     int yes=1;
+     if (setsockopt(socketDescriptor,SOL_SOCKET,SO_REUSEADDR,&yes,sizeof(int)) == -1) {
+    	 cerr << "setsockopt" << endl;
+    	 socketDescriptor=-1;
+         return;
+     }
+
+
      if(bind(socketDescriptor,(struct sockaddr *) &serverAddress,sizeof(serverAddress))<0){
        cerr << "Can not bind socket "<< endl;
        socketDescriptor=-1;

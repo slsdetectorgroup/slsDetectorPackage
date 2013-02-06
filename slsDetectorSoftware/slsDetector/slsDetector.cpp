@@ -3488,7 +3488,6 @@ int slsDetector::setPort(portType index, int num){
 	MySocketTCP *s;
 
 	if (num>1024) {
-
 		switch(index) {
 		case CONTROL_PORT:
 			s=controlSocket;
@@ -3516,17 +3515,40 @@ int slsDetector::setPort(portType index, int num){
 				setTCPSocket("",retval);
 			}
 			online =  (thisDetector->onlineFlag==ONLINE_FLAG);
+
+			//not an error.could be from config file
+			if(num==thisDetector->controlPort)
+				return thisDetector->controlPort;
+			//reusable port, so print error
+			else if((num==thisDetector->stopPort)||(num==thisDetector->receiverTCPPort)){
+				std::cout<< "Can not connect to port in use " << std::endl;
+				setErrorMask((getErrorMask())|(COULDNOT_SET_CONTROL_PORT));
+				return thisDetector->controlPort;
+			}
 			break;
+
+
 		case DATA_PORT:
 			s=dataSocket;
 			retval=thisDetector->receiverTCPPort;
 			if(strcmp(thisDetector->receiver_hostname,"none")){
 				if (s==NULL) setReceiverTCPSocket("",retval);
 				if (dataSocket)s=dataSocket;
-				//else {cout<<"datasocket has no value"<<endl; setReceiverTCPSocket("",retval);}
 			}
 			online =  (thisDetector->receiverOnlineFlag==ONLINE_FLAG);
+
+			//not an error. could be from config file
+			if(num==thisDetector->receiverTCPPort)
+				return thisDetector->receiverTCPPort;
+			//reusable port, so print error
+			else if((num==thisDetector->stopPort)||(num==thisDetector->controlPort)){
+				std::cout<< "Can not connect to port in use " << std::endl;
+				setErrorMask((getErrorMask())|(COULDNOT_SET_DATA_PORT));
+				return thisDetector->receiverTCPPort;
+			}
 			break;
+
+
 		case STOP_PORT:
 			s=stopSocket;
 			retval=thisDetector->stopPort;
@@ -3534,11 +3556,25 @@ int slsDetector::setPort(portType index, int num){
 			if (stopSocket) s=stopSocket;
 			else setTCPSocket("",-1,retval);
 			online =  (thisDetector->onlineFlag==ONLINE_FLAG);
+
+			//not an error. could be from config file
+			if(num==thisDetector->stopPort)
+				return thisDetector->stopPort;
+			//reusable port, so print error
+			else if((num==thisDetector->receiverTCPPort)||(num==thisDetector->controlPort)){
+				std::cout<< "Can not connect to port in use " << std::endl;
+				setErrorMask((getErrorMask())|(COULDNOT_SET_STOP_PORT));
+				return thisDetector->stopPort;
+			}
 			break;
+
 		default:
 			s=NULL;
 			break;
 		}
+
+
+
 
 		//send to current port to change port
 		if (online) {
@@ -3558,6 +3594,8 @@ int slsDetector::setPort(portType index, int num){
 				}
 			}
 		}
+
+
 
 		if (ret!=FAIL) {
 			switch(index) {
@@ -3585,11 +3623,13 @@ int slsDetector::setPort(portType index, int num){
 			switch(index) {
 			case CONTROL_PORT:
 				thisDetector->controlPort=num;
+				setErrorMask((getErrorMask())|(COULDNOT_SET_CONTROL_PORT));
 				break;
 			case DATA_PORT:
-				if(thisDetector->receiverOnlineFlag==ONLINE_FLAG)
+				if(thisDetector->receiverOnlineFlag==ONLINE_FLAG){
 					thisDetector->receiverTCPPort=retval;
-				else{
+					setErrorMask((getErrorMask())|(COULDNOT_SET_DATA_PORT));
+				}else{
 					thisDetector->receiverTCPPort=num;
 					if(strcmp(thisDetector->receiver_hostname,"none"))
 						setReceiver(thisDetector->receiver_hostname);
@@ -3597,12 +3637,17 @@ int slsDetector::setPort(portType index, int num){
 				break;
 			case STOP_PORT:
 				thisDetector->stopPort=num;
+				setErrorMask((getErrorMask())|(COULDNOT_SET_STOP_PORT));
 				break;
 			default:
 				break;
 			}
 		}
 	}
+
+
+
+
 	switch(index) {
 	case CONTROL_PORT:
 		retval=thisDetector->controlPort;

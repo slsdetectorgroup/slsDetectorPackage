@@ -23,6 +23,11 @@ using namespace std;
 
 #define CANNOT_CONNECT_TO_DETECTOR  0x8000000000000000ULL
 #define CANNOT_CONNECT_TO_RECEIVER  0x4000000000000000ULL
+#define COULDNOT_SET_CONTROL_PORT	0x2000000000000000ULL
+#define COULDNOT_SET_STOP_PORT		0x1000000000000000ULL
+#define COULDNOT_SET_DATA_PORT		0x0800000000000000ULL
+
+
 #define COULD_NOT_CONFIGURE_MAC		0x0000000000000001ULL
 
 
@@ -50,8 +55,20 @@ public:
 		if(slsErrorMask&CANNOT_CONNECT_TO_RECEIVER)
 			retval.append("Cannot connect to Receiver\n");
 
+		if(slsErrorMask&COULDNOT_SET_CONTROL_PORT)
+			retval.append("Could not set control port\n");
+
+		if(slsErrorMask&COULDNOT_SET_STOP_PORT)
+			retval.append("Could not set stop port\n");
+
+		if(slsErrorMask&COULDNOT_SET_DATA_PORT)
+			retval.append("Could not set receiver port\n");
+
+
 		if(slsErrorMask&COULD_NOT_CONFIGURE_MAC)
 			retval.append("Could not configure mac\n");
+
+
 
 		return retval;
 

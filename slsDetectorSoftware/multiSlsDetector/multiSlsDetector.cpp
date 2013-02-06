@@ -2563,6 +2563,8 @@ int multiSlsDetector::setPort(portType t, int p) {
   for (int idet=0; idet<thisMultiDetector->numberOfDetectors; idet++) {
     if (detectors[idet]) {
       ret1=detectors[idet]->setPort(t,p);
+      if(detectors[idet]->getErrorMask())
+    	  setErrorMask(getErrorMask()|(1<<idet));
       if (ret==-100)
 	ret=ret1;
       else if (ret!=ret1)

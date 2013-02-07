@@ -2542,7 +2542,9 @@ char* multiSlsDetector::setNetworkParameter(networkParameter p, string s){
     while (p2!=string::npos) {
 
       if (detectors[id]) {
-	detectors[id]->setCalDir(s.substr(p1,p2-p1));
+    	  detectors[id]->setNetworkParameter(p,s.substr(p1,p2-p1));
+    	  if(detectors[id]->getErrorMask())
+    		  setErrorMask(getErrorMask()|(1<<id));
       }
       id++;
       s=s.substr(p2+1);
@@ -3908,4 +3910,14 @@ string multiSlsDetector::getErrorMessage(int &critical){
 		  }
 	}
 	return retval;
+}
+
+
+int64_t multiSlsDetector::clearAllErrorMask(){
+	clearErrorMask();
+	for (int idet=0; idet<thisMultiDetector->numberOfDetectors; idet++)
+		if (detectors[idet])
+			detectors[idet]->clearErrorMask();
+
+	return getErrorMask();
 }

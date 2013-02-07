@@ -465,6 +465,8 @@ int slsDetector::initializeDetectorSize(detectorType type) {
     strcpy(thisDetector->receiver_hostname,"none");
     /** set receiver udp ip address */
     strcpy(thisDetector->receiverUDPIP,"none");
+    /** set receiver udp mac address */
+    strcpy(thisDetector->receiverUDPMAC,"none");
     /** set detector mac address */
     strcpy(thisDetector->detectorMAC,DEFAULT_DET_MAC);
     /** set detector ip address */
@@ -4560,11 +4562,15 @@ char* slsDetector::setDetectorMAC(string detectorMAC){
     if((detectorMAC[2]==':')&&(detectorMAC[5]==':')&&(detectorMAC[8]==':')&&
        (detectorMAC[11]==':')&&(detectorMAC[14]==':'))
       strcpy(thisDetector->detectorMAC,detectorMAC.c_str());
-    else
+    else{
+      setErrorMask((getErrorMask())|(COULDNOT_SET_NETWORK_PARAMETER));
       return("server MAC Address should be in xx:xx:xx:xx:xx:xx format");
+    }
   }
-  else
-    return("server MAC Address should be in xx:xx:xx:xx:xx:xx format");
+  else{
+	  setErrorMask((getErrorMask())|(COULDNOT_SET_NETWORK_PARAMETER));
+	  return("server MAC Address should be in xx:xx:xx:xx:xx:xx format");
+  }
 
   return thisDetector->detectorMAC;
 };
@@ -4579,8 +4585,10 @@ char* slsDetector::setDetectorIP(string detectorIP){
 			int result = inet_pton(AF_INET, detectorIP.c_str(), &(sa.sin_addr));
 			if(result!=0)
 				strcpy(thisDetector->detectorIP,detectorIP.c_str());
-			else
+			else{
+				 setErrorMask((getErrorMask())|(COULDNOT_SET_NETWORK_PARAMETER));
 				return ("Detector IP Address should be VALID and in xxx.xxx.xxx.xxx format");
+			}
 		}
 	}
 	return thisDetector->detectorIP;
@@ -4621,8 +4629,10 @@ char* slsDetector::setReceiverUDPIP(string udpip){
 			int result = inet_pton(AF_INET, udpip.c_str(), &(sa.sin_addr));
 			if(result!=0)
 				strcpy(thisDetector->receiverUDPIP,udpip.c_str());
-			else
+			else{
+				 setErrorMask((getErrorMask())|(COULDNOT_SET_NETWORK_PARAMETER));
 				return ("Receiver UDP IP Address should be VALID and in xxx.xxx.xxx.xxx format");
+			}
 		}
 	}
 	return thisDetector->receiverUDPIP;
@@ -4636,11 +4646,15 @@ char* slsDetector::setReceiverUDPMAC(string udpmac){
     if((udpmac[2]==':')&&(udpmac[5]==':')&&(udpmac[8]==':')&&
        (udpmac[11]==':')&&(udpmac[14]==':'))
       strcpy(thisDetector->receiverUDPMAC,udpmac.c_str());
-    else
+    else{
+    	setErrorMask((getErrorMask())|(COULDNOT_SET_NETWORK_PARAMETER));
       return("receiver udp mac address should be in xx:xx:xx:xx:xx:xx format");
+    }
   }
-  else
+  else{
+	  setErrorMask((getErrorMask())|(COULDNOT_SET_NETWORK_PARAMETER));
     return("receiver udp mac address should be in xx:xx:xx:xx:xx:xx format");
+  }
 
   return thisDetector->receiverUDPMAC;
 }

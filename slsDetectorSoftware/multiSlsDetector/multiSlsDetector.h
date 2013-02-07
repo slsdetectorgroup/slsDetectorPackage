@@ -1141,6 +1141,10 @@ class multiSlsDetector  : public slsDetectorUtils {
    */
   string getErrorMessage(int &critical);
 
+  /** Clears error mask of both multi and sls
+     /returns error mask
+  */
+  int64_t clearAllErrorMask();
 
  protected:
  

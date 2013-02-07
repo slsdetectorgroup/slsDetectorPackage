@@ -28,8 +28,9 @@ using namespace std;
 #define COULDNOT_SET_DATA_PORT		0x0800000000000000ULL
 
 
-#define COULD_NOT_CONFIGURE_MAC		0x0000000000000001ULL
 
+#define COULD_NOT_CONFIGURE_MAC				0x0000000000000001ULL
+#define COULDNOT_SET_NETWORK_PARAMETER		0x0000000000000002ULL
 
 
 /** @short class returning all error messages for error mask */
@@ -65,10 +66,12 @@ public:
 			retval.append("Could not set receiver port\n");
 
 
+
 		if(slsErrorMask&COULD_NOT_CONFIGURE_MAC)
 			retval.append("Could not configure mac\n");
 
-
+		if(slsErrorMask&COULDNOT_SET_NETWORK_PARAMETER)
+			retval.append("Could not set network parameter. Should be valid and in proper format.\n");
 
 		return retval;
 

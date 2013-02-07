@@ -308,7 +308,6 @@ void qDetectorMain::LoadConfigFile(const string fName){
 			qDefs::Message(qDefs::INFORMATION,"<nobr>The Configuration Parameters have been loaded successfully at start up.</nobr>","Main");
 
 		qDefs::checkErrorMessage(myDet);
-		myDet->clearErrorMask();
 	}
 }
 
@@ -540,7 +539,6 @@ void qDetectorMain::ExecuteUtilities(QAction *action){
 		tab_plot->Refresh();
 	}
 	qDefs::checkErrorMessage(myDet);
-	myDet->clearErrorMask();
 }
 
 

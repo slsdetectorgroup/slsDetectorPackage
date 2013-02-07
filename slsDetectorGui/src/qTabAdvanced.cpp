@@ -39,11 +39,33 @@ qTabAdvanced::~qTabAdvanced(){
 
 
 void qTabAdvanced::SetupWidgetWindow(){
+
 //executed even for non digital, so make sure its necessary
 
 	//readout adc
 	lblADC->setEnabled(false);
 	comboADC->setEnabled(false);
+	//Network
+	lblIP->setEnabled(false);
+	lblMAC->setEnabled(false);
+	dispIP->setEnabled(false);
+	dispMAC->setEnabled(false);
+	boxRxrPorts->setEnabled(false);
+	boxRxr->setEnabled(false);
+	btnRxr->setEnabled(false);
+	btnConfigure->setEnabled(false);
+
+
+	red = QPalette();
+	red.setColor(QPalette::Active,QPalette::WindowText,Qt::red);
+	outputDirTip = dispFile->toolTip();
+	errOutputTip = QString("<br><br><font color=\"red\"><nobr>"
+			"<b>Output Trim File</b> should contain both existing directory and a file name.</nobr><br>"
+			"<nobr>The extensions are automatically added.</nobr><br><br>"
+			"<nobr>Enter valid<b> Output Trim File</b> to enable <b>Start Trimming</b> button.</nobr></font>");
+	detOnlineTip = comboOnline->toolTip();
+	rxrOnlineTip = comboRxrOnline->toolTip();
+	errOnlineTip = QString("<nobr><br><br><font color=\"red\"><nobr>It is offline!</nobr></font>");
 
 	detType = myDet->getDetectorsType();
 	switch(detType){
@@ -55,12 +77,20 @@ void qTabAdvanced::SetupWidgetWindow(){
 		isAngular = true;
 		lblADC->setEnabled(true);
 		comboADC->setEnabled(true);
+		lblIP->setEnabled(true);
+		lblMAC->setEnabled(true);
+		dispIP->setEnabled(true);
+		dispMAC->setEnabled(true);
+		boxRxrPorts->setEnabled(true);
+		boxRxr->setEnabled(true);
+		btnRxr->setEnabled(true);
+		btnConfigure->setEnabled(true);
 		break;
 	default: break;
 	}
 
 
-
+	//logs
 	if(!isAngular && !isEnergy) boxLogs->setEnabled(false);
 	else{
 		if(!isAngular) 	chkAngularLog->setEnabled(false);
@@ -68,16 +98,7 @@ void qTabAdvanced::SetupWidgetWindow(){
 			chkEnergyLog->setEnabled(false);
 			boxPlot->setEnabled(false);
 			boxTrimming->setEnabled(false);
-		}
-		else{
-			outputDirTip = dispFile->toolTip();
-			errOutputTip = QString("<br><br><font color=\"red\"><nobr>"
-					"<b>Output Trim File</b> should contain both existing directory and a file name.</nobr><br>"
-					"<nobr>The extensions are automatically added.</nobr><br><br>"
-					"<nobr>Enter valid<b> Output Trim File</b> to enable <b>Start Trimming</b> button.</nobr></font>");
-			red = QPalette();
-			red.setColor(QPalette::Active,QPalette::WindowText,Qt::red);
-
+		}else{
 			boxTrimming->setChecked(false);
 			SetOptimize(false);
 
@@ -85,9 +106,44 @@ void qTabAdvanced::SetupWidgetWindow(){
 			btnGroup->addButton(btnRefresh,0);
 			btnGroup->addButton(btnGetTrimbits,1);
 		}
-
-		Initialization();
 	}
+
+
+	//network
+	spinControlPort->setValue(myDet->setPort(slsDetectorDefs::CONTROL_PORT,-1));
+	spinStopPort->setValue(myDet->setPort(slsDetectorDefs::STOP_PORT,-1));
+	spinTCPPort->setValue(myDet->setPort(slsDetectorDefs::DATA_PORT,-1));
+	spinUDPPort->setValue(atoi(myDet->getNetworkParameter(slsDetectorDefs::RECEIVER_UDP_PORT)));
+
+	dispHostname->setText(QString(myDet->getHostname().c_str()));
+	dispIP->setText(QString(myDet->getNetworkParameter(slsDetectorDefs::DETECTOR_IP)));
+	dispMAC->setText(QString(myDet->getNetworkParameter(slsDetectorDefs::DETECTOR_MAC)));
+	dispRxrHostname->setText(QString(myDet->getNetworkParameter(slsDetectorDefs::RECEIVER_HOSTNAME)));
+	dispUDPIP->setText(QString(myDet->getNetworkParameter(slsDetectorDefs::RECEIVER_UDP_IP)));
+	dispUDPMAC->setText(QString(myDet->getNetworkParameter(slsDetectorDefs::RECEIVER_UDP_MAC)));
+
+
+	//check if its online and set it to red if offline
+	myDet->checkOnline();
+	myDet->checkReceiverOnline();
+	comboOnline->setCurrentIndex(myDet->setOnline());
+	comboRxrOnline->setCurrentIndex(myDet->setReceiverOnline());
+	if(!comboOnline->currentIndex()){
+		comboOnline->setToolTip(detOnlineTip + errOnlineTip);
+		lblOnline->setToolTip(detOnlineTip + errOnlineTip);
+		lblOnline->setPalette(red);
+		lblOnline->setText("Online:*");
+	}
+	if((comboRxrOnline->isEnabled())&&(!comboRxrOnline->currentIndex())){
+		comboRxrOnline->setToolTip(rxrOnlineTip + errOnlineTip);
+		lblRxrOnline->setToolTip(rxrOnlineTip + errOnlineTip);
+		lblRxrOnline->setPalette(red);
+		lblRxrOnline->setText("Online:*");
+	}
+
+
+	Initialization();
+
 }
 
 
@@ -95,6 +151,9 @@ void qTabAdvanced::SetupWidgetWindow(){
 
 
 void qTabAdvanced::Initialization(){
+
+	connect(tabAdvancedSettings,SIGNAL(currentChanged(int)),	this, SLOT(Refresh()));
+
 	//energy/angular logs
 	if(isAngular)
 		connect(chkEnergyLog,	SIGNAL(toggled(bool)),		this,	SLOT(SetLogs()));
@@ -129,8 +188,29 @@ void qTabAdvanced::Initialization(){
 		connect(btnGroup,		SIGNAL(buttonClicked(int)),	this, SLOT(UpdateTrimbitPlot(int)));
 	}
 
-	if(detType==slsDetectorDefs::GOTTHARD)
-		connect(comboADC,	SIGNAL(currentIndexChanged(int)),	this, SLOT(SetADCReadout(int)));
+	//network
+	connect(spinControlPort,	SIGNAL(valueChanged(int)),	this,	SLOT(SetControlPort(int)));
+	connect(spinStopPort,		SIGNAL(valueChanged(int)),	this,	SLOT(SetStopPort(int)));
+	connect(comboOnline,		SIGNAL(currentIndexChanged(int)),	this,	SLOT(SetOnline(int)));
+
+	if(detType==slsDetectorDefs::GOTTHARD){
+		//readout
+		connect(comboADC,			SIGNAL(currentIndexChanged(int)),	this, SLOT(SetADCReadout(int)));
+
+		//network
+		connect(spinTCPPort,		SIGNAL(valueChanged(int)),	this,	SLOT(SetRxrTCPPort(int)));
+		connect(spinUDPPort,		SIGNAL(valueChanged(int)),	this,	SLOT(SetRxrUDPPort(int)));
+		connect(comboRxrOnline,		SIGNAL(currentIndexChanged(int)),	this,	SLOT(SetReceiverOnline(int)));
+
+		connect(dispIP,				SIGNAL(editingFinished()),	this, SLOT(SetNetworkParameters()));
+		connect(dispMAC,			SIGNAL(editingFinished()),	this, SLOT(SetNetworkParameters()));
+		connect(dispUDPIP,			SIGNAL(editingFinished()),	this, SLOT(SetNetworkParameters()));
+		connect(dispUDPMAC,			SIGNAL(editingFinished()),	this, SLOT(SetNetworkParameters()));
+
+		connect(btnRxr,				SIGNAL(clicked()),			this, SLOT(SetReceiver()));
+		connect(btnConfigure,		SIGNAL(clicked()),			this, SLOT(Configuremac()));
+
+	}
 
 }
 
@@ -408,10 +488,186 @@ void qTabAdvanced::UpdateTrimbitPlot(int id){
 //-------------------------------------------------------------------------------------------------------------------------------------------------
 
 
+void qTabAdvanced::SetControlPort(int port){
+#ifdef VERBOSE
+	cout << "Setting Control Port:" << port << endl;
+#endif
+	disconnect(spinControlPort,	SIGNAL(valueChanged(int)),	this,	SLOT(SetControlPort(int)));
+	spinStopPort->setValue(myDet->setPort(slsDetectorDefs::CONTROL_PORT,port));
+	qDefs::checkErrorMessage(myDet);
+	connect(spinControlPort,	SIGNAL(valueChanged(int)),	this,	SLOT(SetControlPort(int)));
+}
+
+
+//-------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+void qTabAdvanced::SetStopPort(int port){
+#ifdef VERBOSE
+	cout << "Setting Stop Port:" << port << endl;
+#endif
+	disconnect(spinStopPort,	SIGNAL(valueChanged(int)),	this,	SLOT(SetStopPort(int)));
+	spinControlPort->setValue(myDet->setPort(slsDetectorDefs::STOP_PORT,port));
+	qDefs::checkErrorMessage(myDet);
+	connect(spinStopPort,	SIGNAL(valueChanged(int)),	this,	SLOT(SetStopPort(int)));
+
+}
+
+
+//-------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+void qTabAdvanced::SetRxrTCPPort(int port){
+#ifdef VERBOSE
+	cout << "Setting Receiver TCP Port:" << port << endl;
+#endif
+	disconnect(spinTCPPort,		SIGNAL(valueChanged(int)),	this,	SLOT(SetRxrTCPPort(int)));
+	spinTCPPort->setValue(myDet->setPort(slsDetectorDefs::DATA_PORT,port));
+	qDefs::checkErrorMessage(myDet);
+	connect(spinTCPPort,		SIGNAL(valueChanged(int)),	this,	SLOT(SetRxrTCPPort(int)));
+}
+
+
+//-------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+void qTabAdvanced::SetRxrUDPPort(int port){
+#ifdef VERBOSE
+	cout << "Setting Receiver UDP Port:" << port << endl;
+#endif
+	char sNumber[100];
+	sprintf(sNumber,"%d",port);
+
+	disconnect(spinUDPPort,		SIGNAL(valueChanged(int)),	this,	SLOT(SetRxrUDPPort(int)));
+	spinUDPPort->setValue(atoi(myDet->setNetworkParameter(slsDetectorDefs::RECEIVER_UDP_PORT,sNumber)));
+	qDefs::checkErrorMessage(myDet);
+	connect(spinUDPPort,		SIGNAL(valueChanged(int)),	this,	SLOT(SetRxrUDPPort(int)));
+}
+
+
+//-------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+void qTabAdvanced::SetReceiverOnline(int index){
+#ifdef VERBOSE
+	cout << "Setting Reciever Online to :" << index << endl;
+#endif
+	disconnect(comboRxrOnline,		SIGNAL(currentIndexChanged(int)),	this,	SLOT(SetReceiverOnline(int)));
+	comboRxrOnline->setCurrentIndex(myDet->setReceiverOnline(index));
+	qDefs::checkErrorMessage(myDet);
+	connect(comboRxrOnline,		SIGNAL(currentIndexChanged(int)),	this,	SLOT(SetReceiverOnline(int)));
+	//highlight in red if offline
+	if(!comboRxrOnline->currentIndex()){
+		comboRxrOnline->setToolTip(rxrOnlineTip + errOnlineTip);
+		lblRxrOnline->setToolTip(rxrOnlineTip + errOnlineTip);
+		lblRxrOnline->setPalette(red);
+		lblRxrOnline->setText("Online:*");
+	}else{
+		comboRxrOnline->setToolTip(rxrOnlineTip);
+		lblRxrOnline->setToolTip(rxrOnlineTip);
+		lblRxrOnline->setPalette(lblHostname->palette());
+		lblRxrOnline->setText("Online:");
+	}
+}
+
+
+//-------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+void qTabAdvanced::SetOnline(int index){
+#ifdef VERBOSE
+	cout << "Setting Detector Online to " << index << endl;
+#endif
+	disconnect(comboOnline,		SIGNAL(currentIndexChanged(int)),	this,	SLOT(SetOnline(int)));
+	comboOnline->setCurrentIndex(myDet->setOnline(index));
+	qDefs::checkErrorMessage(myDet);
+	connect(comboOnline,		SIGNAL(currentIndexChanged(int)),	this,	SLOT(SetOnline(int)));
+	//highlight in red if offline
+	if(!comboOnline->currentIndex()){
+		comboOnline->setToolTip(detOnlineTip + errOnlineTip);
+		lblOnline->setToolTip(detOnlineTip + errOnlineTip);
+		lblOnline->setPalette(red);
+		lblOnline->setText("Online:*");
+	}else{
+		comboOnline->setToolTip(detOnlineTip);
+		lblOnline->setToolTip(detOnlineTip);
+		lblOnline->setPalette(lblHostname->palette());
+		lblOnline->setText("Online:");
+	}
+
+}
+
+
+//-------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+void qTabAdvanced::SetNetworkParameters(){
+#ifdef VERBOSE
+	cout << "Setting Network Parametrs" << endl;
+#endif
+	disconnect(dispIP,			SIGNAL(editingFinished()),	this, SLOT(SetNetworkParameters()));
+	disconnect(dispMAC,			SIGNAL(editingFinished()),	this, SLOT(SetNetworkParameters()));
+	disconnect(dispUDPIP,		SIGNAL(editingFinished()),	this, SLOT(SetNetworkParameters()));
+	disconnect(dispUDPMAC,		SIGNAL(editingFinished()),	this, SLOT(SetNetworkParameters()));
+
+	dispIP->setText(QString(myDet->setNetworkParameter(slsDetectorDefs::DETECTOR_IP,dispIP->text().toAscii().constData())));
+	dispMAC->setText(QString(myDet->setNetworkParameter(slsDetectorDefs::DETECTOR_MAC,dispMAC->text().toAscii().constData())));
+	dispUDPIP->setText(QString(myDet->setNetworkParameter(slsDetectorDefs::RECEIVER_UDP_IP,dispUDPIP->text().toAscii().constData())));
+	dispUDPMAC->setText(QString(myDet->setNetworkParameter(slsDetectorDefs::RECEIVER_UDP_MAC,dispUDPMAC->text().toAscii().constData())));
+	qDefs::checkErrorMessage(myDet);
+
+	connect(dispIP,				SIGNAL(editingFinished()),	this, SLOT(SetNetworkParameters()));
+	connect(dispMAC,			SIGNAL(editingFinished()),	this, SLOT(SetNetworkParameters()));
+	connect(dispUDPIP,			SIGNAL(editingFinished()),	this, SLOT(SetNetworkParameters()));
+	connect(dispUDPMAC,			SIGNAL(editingFinished()),	this, SLOT(SetNetworkParameters()));
+}
+
+
+//-------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+void qTabAdvanced::SetReceiver(){
+#ifdef VERBOSE
+	cout << "Setting Receiver" << endl;
+#endif
+	dispRxrHostname->setText(QString(myDet->setNetworkParameter(slsDetectorDefs::RECEIVER_HOSTNAME,dispRxrHostname->text().toAscii().constData())));
+	qDefs::checkErrorMessage(myDet);
+	Refresh();
+}
+
+
+//-------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+void qTabAdvanced::Configuremac(){
+#ifdef VERBOSE
+	cout << "Configuring Mac:" << endl;
+#endif
+	int adc = comboADC->currentIndex();
+	if(adc==5) adc=-1;
+	myDet->configureMAC(adc);
+	//	qDefs::Message(qDefs::WARNING,"Could not configure mac","Advanced");
+	//else
+	//	qDefs::Message(qDefs::WARNING,"ADC Readout successfully set up","Advanced");
+	qDefs::checkErrorMessage(myDet);
+}
+
+
+//-------------------------------------------------------------------------------------------------------------------------------------------------
+
+
 void qTabAdvanced::Refresh(){
 #ifdef VERBOSE
 		cout  << endl << "**Updating Advanced Tab" << endl;
 #endif
+	//setting color of tab
+		//void 	setTabBar ( QTabBar * tb )
+		//QTabBar * 	tabBar () const
+		/*
+		for(int i=0;i<NumberOfTabs;i++)
+			tabAdvancedSettings->tabBar()->setTabTextColor(i,defaultTabColor);
+		tabAdvancedSettings->tabBar()->setTabTextColor(index,QColor(0,0,200,255));
+		*/
 
 	if(isAngular){
 #ifdef VERBOSE
@@ -465,6 +721,96 @@ void qTabAdvanced::Refresh(){
 		connect(comboExpUnit,	SIGNAL(currentIndexChanged(int)),	this,	SLOT(SetExposureTime()));
 		connect(spinThreshold,	SIGNAL(valueChanged(double)),		this,	SLOT(SetThreshold()));
 	}
+
+
+	//network
+	//so that updated status
+	myDet->checkOnline();
+	dispHostname->setText(QString(myDet->getHostname().c_str()));
+	//disconnect
+	disconnect(spinControlPort,	SIGNAL(valueChanged(int)),			this,	SLOT(SetControlPort(int)));
+	disconnect(spinStopPort,		SIGNAL(valueChanged(int)),		this,	SLOT(SetStopPort(int)));
+	disconnect(comboOnline,		SIGNAL(currentIndexChanged(int)),	this,	SLOT(SetOnline(int)));
+
+	spinControlPort->setValue(myDet->setPort(slsDetectorDefs::CONTROL_PORT,-1));
+	spinStopPort->setValue(myDet->setPort(slsDetectorDefs::STOP_PORT,-1));
+	comboOnline->setCurrentIndex(myDet->setOnline());
+	//connect
+	connect(spinControlPort,	SIGNAL(valueChanged(int)),			this,	SLOT(SetControlPort(int)));
+	connect(spinStopPort,		SIGNAL(valueChanged(int)),			this,	SLOT(SetStopPort(int)));
+	connect(comboOnline,		SIGNAL(currentIndexChanged(int)),	this,	SLOT(SetOnline(int)));
+
+
+
+	if(detType==slsDetectorDefs::GOTTHARD){
+		//disconnect
+		disconnect(comboADC,			SIGNAL(currentIndexChanged(int)),	this, SLOT(SetADCReadout(int)));
+		disconnect(spinTCPPort,			SIGNAL(valueChanged(int)),	this,	SLOT(SetRxrTCPPort(int)));
+		disconnect(spinUDPPort,			SIGNAL(valueChanged(int)),	this,	SLOT(SetRxrUDPPort(int)));
+		disconnect(comboRxrOnline,		SIGNAL(currentIndexChanged(int)),	this,	SLOT(SetReceiverOnline(int)));
+		disconnect(dispIP,				SIGNAL(editingFinished()),	this, SLOT(SetNetworkParameters()));
+		disconnect(dispMAC,				SIGNAL(editingFinished()),	this, SLOT(SetNetworkParameters()));
+		disconnect(dispUDPIP,			SIGNAL(editingFinished()),	this, SLOT(SetNetworkParameters()));
+		disconnect(dispUDPMAC,			SIGNAL(editingFinished()),	this, SLOT(SetNetworkParameters()));
+		disconnect(btnRxr,				SIGNAL(clicked()),			this, SLOT(SetReceiver()));
+		disconnect(btnConfigure,		SIGNAL(clicked()),			this, SLOT(Configuremac()));
+
+		//so that updated status
+		myDet->checkReceiverOnline();
+		dispRxrHostname->setText(QString(myDet->getNetworkParameter(slsDetectorDefs::RECEIVER_HOSTNAME)));
+
+		spinTCPPort->setValue(myDet->setPort(slsDetectorDefs::DATA_PORT,-1));
+		spinUDPPort->setValue(atoi(myDet->getNetworkParameter(slsDetectorDefs::RECEIVER_UDP_PORT)));
+
+		dispIP->setText(QString(myDet->getNetworkParameter(slsDetectorDefs::DETECTOR_IP)));
+		dispMAC->setText(QString(myDet->getNetworkParameter(slsDetectorDefs::DETECTOR_MAC)));
+
+		comboRxrOnline->setCurrentIndex(myDet->setReceiverOnline());
+		dispUDPIP->setText(QString(myDet->getNetworkParameter(slsDetectorDefs::RECEIVER_UDP_IP)));
+		dispUDPMAC->setText(QString(myDet->getNetworkParameter(slsDetectorDefs::RECEIVER_UDP_MAC)));
+
+		//connect
+		connect(comboADC,			SIGNAL(currentIndexChanged(int)),	this, SLOT(SetADCReadout(int)));
+		connect(spinTCPPort,		SIGNAL(valueChanged(int)),	this,	SLOT(SetRxrTCPPort(int)));
+		connect(spinUDPPort,		SIGNAL(valueChanged(int)),	this,	SLOT(SetRxrUDPPort(int)));
+		connect(comboRxrOnline,		SIGNAL(currentIndexChanged(int)),	this,	SLOT(SetReceiverOnline(int)));
+		connect(dispIP,				SIGNAL(editingFinished()),	this, SLOT(SetNetworkParameters()));
+		connect(dispMAC,			SIGNAL(editingFinished()),	this, SLOT(SetNetworkParameters()));
+		connect(dispUDPIP,			SIGNAL(editingFinished()),	this, SLOT(SetNetworkParameters()));
+		connect(dispUDPMAC,			SIGNAL(editingFinished()),	this, SLOT(SetNetworkParameters()));
+		connect(btnRxr,				SIGNAL(clicked()),			this, SLOT(SetReceiver()));
+		connect(btnConfigure,		SIGNAL(clicked()),			this, SLOT(Configuremac()));
+
+	}
+
+	//highlight in red if detector or receiver is offline
+	if(!comboOnline->currentIndex()){
+		comboOnline->setToolTip(detOnlineTip + errOnlineTip);
+		lblOnline->setToolTip(detOnlineTip + errOnlineTip);
+		lblOnline->setPalette(red);
+		lblOnline->setText("Online:*");
+	}else{
+		comboOnline->setToolTip(detOnlineTip);
+		lblOnline->setToolTip(detOnlineTip);
+		lblOnline->setPalette(lblHostname->palette());
+		lblOnline->setText("Online:");
+	}
+	if(comboRxrOnline->isEnabled()){
+		if(!comboRxrOnline->currentIndex()){
+			comboRxrOnline->setToolTip(rxrOnlineTip + errOnlineTip);
+			lblRxrOnline->setToolTip(rxrOnlineTip + errOnlineTip);
+			lblRxrOnline->setPalette(red);
+			lblRxrOnline->setText("Online:*");
+		}else{
+			comboRxrOnline->setToolTip(rxrOnlineTip);
+			lblRxrOnline->setToolTip(rxrOnlineTip);
+			lblRxrOnline->setPalette(lblHostname->palette());
+			lblRxrOnline->setText("Online:");
+		}
+	}
+
+
+
 
 #ifdef VERBOSE
 		cout  << "**Updated Advanced Tab" << endl << endl;

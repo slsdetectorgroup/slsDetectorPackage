@@ -38,11 +38,10 @@ public:
 	 */
 	~qTabAdvanced();
 
+public slots:
 	/** To refresh and update widgets
 	 */
 	void Refresh();
-
-
 
 private:
 	/** Sets up the widget
@@ -104,6 +103,49 @@ private slots:
 	 */
 	void UpdateTrimbitPlot(int id);
 
+	/** Sets control port
+	 * @param port control port
+	 */
+	void SetControlPort(int port);
+
+	/** Sets stop port
+	 * @param port stop port
+	 */
+	void SetStopPort(int port);
+
+	/** Sets receiver tcp port
+	 * @param port receiver tcp port
+	 */
+	void SetRxrTCPPort(int port);
+
+	/** Sets receiver udp port
+	 * @param port receiver udp port
+	 */
+	void SetRxrUDPPort(int port);
+
+	/** Sets receiver online
+	 * @param index 1 for online and 0 for offline
+	 */
+	void SetReceiverOnline(int index);
+
+	/** Sets detector online
+	 * @param index 1 for online and 0 for offline
+	 */
+	void SetOnline(int index);
+
+	/** Sets network parameters like receiver udp ip,
+	 * receiver udp mac, detector ip and detector mac
+	 */
+	void SetNetworkParameters();
+
+	/** Sets the receiver. which also sets the receiver parameters
+	 */
+	void SetReceiver();
+
+	/** Configures mac
+	 */
+	void Configuremac();
+
 private:
 	/** The sls detector object */
 	multiSlsDetector *myDet;
@@ -119,6 +161,9 @@ private:
 	/** Tool Tip for the output dir */
 	QString 	outputDirTip;
 	QString 	errOutputTip;
+	QString		errOnlineTip;
+	QString		detOnlineTip;
+	QString 	rxrOnlineTip;
 	QPalette	red;
 
 	/** Trimming mode */
@@ -126,6 +171,7 @@ private:
 
 	bool isEnergy;
 	bool isAngular;
+
 
 };
 

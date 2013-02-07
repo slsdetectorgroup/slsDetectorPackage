@@ -481,8 +481,8 @@
         </sizepolicy>
        </property>
        <property name="toolTip">
-        <string>Settings of the detector. 
- #settings#</string>
+        <string>Timing Mode of the detector. 
+ #timing#</string>
        </property>
        <item>
         <property name="text">

@@ -67,8 +67,8 @@ void qTabMessages::SetupWidgetWindow(){
 	gridLayout->addWidget(dispLog,3,0,1,5);
 
 	errMsg = "<nobr> Please check Messages Tab. Following message was caught:</nobr><br><br><nobr><font color=\"darkBlue\">";
-	qout=new qDebugStream(std::cout,this);
-	qerr=new qDebugStream(std::cerr,this);
+	//qout=new qDebugStream(std::cout,this);
+	//qerr=new qDebugStream(std::cerr,this);
 
 }
 

@@ -208,6 +208,7 @@ static const int64_t GUI_VERSION=0x20121213;
 			qDefs::Message((MessageIndex)errorLevel,retval,"Main");
 		}
 
+		myDet->clearAllErrorMask();
 		return retval;
 	};
 

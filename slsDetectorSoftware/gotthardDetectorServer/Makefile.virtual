@@ -3,10 +3,8 @@
 # make cris-axis-linux-gnu
 
 
-CROSS  = bfin-uclinux-
-CC    = $(CROSS)gcc
-
-CFLAGS += -Wall  -DMCB_FUNCS -DDACS_INT  -DDEBUG #-DVERBOSE -DVERYVERBOSE  #-DVIRTUAL  #-DDACS_INT_CSERVER
+CC    = gcc
+CFLAGS += -Wall  -DMCB_FUNCS -DDACS_INT  -DDEBUG -DVIRTUAL #-DVERBOSE -DVERYVERBOSE  #-DVIRTUAL  #-DDACS_INT_CSERVER
 
 
 PROGS= 		gotthardDetectorServer 

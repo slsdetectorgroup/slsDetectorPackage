@@ -130,8 +130,9 @@ enum {
 
   F_ENABLE_FILE_WRITE,		/**< sets the receiver file write */
 
-  F_SET_FRAME_INDEX			/**< sets the receiver frame index */
+  F_SET_FRAME_INDEX,		/**< sets the receiver frame index */
 
+  F_CALIBRATE_PEDESTAL		/**< starts acquistion, calibrates pedestal and write back to fpga */
   /* Always append functions hereafter!!! */
 
 };

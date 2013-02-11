@@ -142,6 +142,11 @@ int setSynchronization(int s);
 int loadImage(int index, short int ImageVals[]);
 int readCounterBlock(int startACQ, short int CounterVals[]);
 int resetCounterBlock(int startACQ);
+
+int calibratePedestal(int frames);
+
+
+
 /*
 
 u_int32_t setNBits(u_int32_t);

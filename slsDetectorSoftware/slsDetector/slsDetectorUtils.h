@@ -650,6 +650,11 @@ virtual int exitReceiver()=0;
 virtual int enableWriteToFile(int enable=-1)=0;
 
 
+/** Starts acquisition, calibrates pedestal and writes to fpga
+   /returns number of frames
+*/
+virtual int calibratePedestal(int frames = 0)=0;
+
 
   protected:
 

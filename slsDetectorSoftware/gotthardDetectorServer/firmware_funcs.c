@@ -2286,6 +2286,11 @@ int resetCounterBlock(int startACQ){
 	}
 
 
+int calibratePedestal(int frames){
 
+	printf("In Calibrate Pedestal\n");
+
+	return 0;
+}
 
 

@@ -1038,16 +1038,18 @@ class slsDetector : public slsDetectorUtils, public energyConversion {
   int getDataBytes(){return thisDetector->dataBytes;};
  
 
-
   
-
   /** 
       set roi
-
-      not yet implemented
+       \param nroi number of rois
+       \param xmin x minimum of roi
+       \param xmax x maximum of roi
+       \param ymin y minimum of roi
+       \param ymax y maximum of roi
+       \returns number of rois added
   */
-  int setROI(int nroi=-1, int *xmin=NULL, int *xmax=NULL, int *ymin=NULL, int *ymax=NULL);
-  
+  //int setROI(int nroi=-1, int *xmin=NULL, int *xmax=NULL, int *ymin=NULL, int *ymax=NULL);
+
 
   /**
      set/get readout flags
@@ -1522,6 +1524,11 @@ class slsDetector : public slsDetectorUtils, public energyConversion {
 
   int fillModuleMask(int *mM);
 
+
+  /** Starts acquisition, calibrates pedestal and writes to fpga
+     /returns number of frames
+  */
+  int calibratePedestal(int frames = 0);
 
  protected:
  

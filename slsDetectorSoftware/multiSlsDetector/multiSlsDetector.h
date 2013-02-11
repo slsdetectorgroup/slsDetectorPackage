@@ -622,12 +622,25 @@ class multiSlsDetector  : public slsDetectorUtils {
  
   /** 
       set roi
-
-      not yet implemented
+       \param nroi number of rois
+       \param xmin x minimum of roi
+       \param xmax x maximum of roi
+       \param ymin y minimum of roi
+       \param ymax y maximum of roi
+       \returns number of rois added
   */
-  int setROI(int nroi=-1, int *xmin=NULL, int *xmax=NULL, int *ymin=NULL, int *ymax=NULL);
+  //int setROI(int nroi=-1, int *xmin=NULL, int *xmax=NULL, int *ymin=NULL, int *ymax=NULL);
   
-
+  /**
+      get roi
+       \param nroi number of rois
+       \param xmin x minimum of roi
+       \param xmax x maximum of roi
+       \param ymin y minimum of roi
+       \param ymax y maximum of roi
+       \returns number of rois
+  */
+  //int getROI(int &xmin, int &xmax, int &ymin, int &ymax);
 
  
   //Corrections  
@@ -1145,6 +1158,11 @@ class multiSlsDetector  : public slsDetectorUtils {
      /returns error mask
   */
   int64_t clearAllErrorMask();
+
+  /** Starts acquisition, calibrates pedestal and writes to fpga
+     /returns number of frames
+  */
+  int calibratePedestal(int frames = 0);
 
  protected:
  

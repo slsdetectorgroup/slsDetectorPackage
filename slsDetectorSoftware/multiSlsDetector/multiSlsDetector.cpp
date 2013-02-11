@@ -1575,8 +1575,12 @@ int multiSlsDetector::setROI(int nroi, int *xmin, int *xmax, int *ymin, int *yma
 
 
 };
-*/
 
+int multiSlsDetector::getROI(int nroi, int *xmin, int *xmax, int *ymin, int *ymax){
+
+
+};
+*/
 
 double* multiSlsDetector::decodeData(int *datain, double *fdata) {
   double *dataout;
@@ -3921,3 +3925,23 @@ int64_t multiSlsDetector::clearAllErrorMask(){
 
 	return getErrorMask();
 }
+
+
+
+
+int multiSlsDetector::calibratePedestal(int frames){
+	int ret=-100, ret1;
+
+	for (int idet=0; idet<thisMultiDetector->numberOfDetectors; idet++) {
+		if (detectors[idet]) {
+			ret1=detectors[idet]->calibratePedestal(frames);
+			if (ret==-100)
+				ret=ret1;
+			else if (ret!=ret1)
+				ret=-1;
+		}
+	}
+
+	return ret;
+}
+

@@ -184,6 +184,7 @@ int function_table() {
   flist[F_RESET_COUNTER_BLOCK]=&reset_counter_block;
   flist[F_START_RECEIVER]=&start_receiver;
   flist[F_STOP_RECEIVER]=&stop_receiver;
+  flist[F_CALIBRATE_PEDESTAL]=&calibrate_pedestal;
   return OK;
 }
 
@@ -2963,3 +2964,44 @@ int stop_receiver(int file_des) {
 
 
 
+
+
+int calibrate_pedestal(int file_des){
+
+	int ret=OK;
+	int retval=-1;
+	int n;
+	int frames;
+
+	sprintf(mess,"Could not calibrate pedestal\n");
+
+	n = receiveDataOnly(file_des,&frames,sizeof(frames));
+	if (n < 0) {
+		sprintf(mess,"Error reading from socket\n");
+		ret=FAIL;
+	}
+
+	if (ret==OK) {
+		if (differentClients==1 && lockStatus==1) {
+			ret=FAIL;
+			sprintf(mess,"Detector locked by %s\n",lastClientIP);
+		} else
+			ret=calibratePedestal(frames);
+	}
+
+	if(ret==OK){
+		if (differentClients)
+			ret=FORCE_UPDATE;
+	}
+
+	/* send answer */
+	/* send OK/failed */
+	n = sendDataOnly(file_des,&ret,sizeof(ret));
+	if (ret==FAIL)
+		n += sendDataOnly(file_des,mess,sizeof(mess));
+	else
+		n += sendDataOnly(file_des,&retval,sizeof(retval));
+
+	/*return ok/fail*/
+	return ret;
+}

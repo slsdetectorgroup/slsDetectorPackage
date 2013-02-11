@@ -3911,11 +3911,19 @@ int slsDetector::setDynamicRange(int n){
   return thisDetector->dynamicRange;
 };
 
-/*
 
+/*
 int slsDetector::setROI(int nroi, int *xmin, int *xmax, int *ymin, int *ymax){
 
 
+	return thisDetector->nROI;
+};
+
+
+int slsDetector::getROI(int nroi, int *xmin, int *xmax, int *ymin, int *ymax){
+
+
+	return thisDetector->nROI;
 };
 */
 
@@ -6143,6 +6151,39 @@ int slsDetector::setFrameIndex(int index){
 	}
 
 	return fileIO::getFrameIndex();
+}
+
+
+int slsDetector::calibratePedestal(int frames){
+	int ret=FAIL;
+	int retval=-1;
+	int fnum=F_CALIBRATE_PEDESTAL;
+	char mess[100];
+
+#ifdef VERBOSE
+	std::cout<<"Calibrating Pedestal " <<std::endl;
+#endif
+
+	if (thisDetector->onlineFlag==ONLINE_FLAG) {
+		if (controlSocket) {
+			if  (controlSocket->Connect()>=0) {
+				controlSocket->SendDataOnly(&fnum,sizeof(fnum));
+				controlSocket->SendDataOnly(&frames,sizeof(frames));
+				controlSocket->ReceiveDataOnly(&ret,sizeof(ret));
+				if (ret!=FAIL)
+					controlSocket->ReceiveDataOnly(&retval,sizeof(retval));
+				else {
+					controlSocket->ReceiveDataOnly(mess,sizeof(mess));
+					std::cout<< "Detector returned error: " << mess << std::endl;
+				}
+				controlSocket->Disconnect();
+				if (ret==FORCE_UPDATE)
+					updateDetector();
+			}
+		}
+	}
+
+	return retval;
 }
 
 

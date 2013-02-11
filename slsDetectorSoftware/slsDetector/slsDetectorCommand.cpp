@@ -383,6 +383,9 @@ slsDetectorCommand::slsDetectorCommand(slsDetectorUtils *det)  {
   descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdDetectorSize;
   i++;
 
+  //descrToFuncMap[i].m_pFuncName="roi"; //
+  //descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdDetectorSize;
+  //i++;
 
   /* flags */
 
@@ -460,6 +463,13 @@ slsDetectorCommand::slsDetectorCommand(slsDetectorUtils *det)  {
   descrToFuncMap[i].m_pFuncName="trim"; //
   descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdSettings;
   i++;
+
+
+  descrToFuncMap[i].m_pFuncName="pedestal"; //
+  descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdSettings;
+  i++;
+
+
 
   /* pots */
 
@@ -2543,7 +2553,9 @@ string slsDetectorCommand::cmdDetectorSize(int narg, char *args[], int action) {
   if (action==PUT_ACTION) {
     if (cmd=="maxmod")
       return string("cannot put!");
+   // else if (cmd=="roi"){
 
+   // } else
     if (sscanf(args[1],"%d",&val))
       ;
     else
@@ -2594,11 +2606,9 @@ string slsDetectorCommand::cmdSettings(int narg, char *args[], int action) {
     return helpSettings(narg,args,action);
   int val=-1;//ret, 
   char ans[1000];
+
+
   //  portType index;
-
- 
-
-
   //     if (sscanf(args[1],"%d",&val))
   //       ;
   //     else
@@ -2672,6 +2682,15 @@ string slsDetectorCommand::cmdSettings(int narg, char *args[], int action) {
     myDet->saveSettingsFile(sval, -1);
     return string("done");
     
+  } else if (cmd=="pedestal") {
+	  if (action==GET_ACTION)
+		  return string("cannot get");
+	  if (sscanf(args[1],"%d",&val)){
+		  sprintf(ans,"%d",myDet->calibratePedestal(val));
+		  return string(ans);
+	  }else
+    	  return string("cannot parse frame number")+cmd;
+
   }
   return string("unknown settings command ")+cmd;
   
@@ -2686,6 +2705,8 @@ string slsDetectorCommand::helpSettings(int narg, char *args[], int action) {
     os << "threshold eV\n sets the detector threshold in eV"<< std::endl;
     os << "trimbits fname\n loads the trimfile fname to the detector. If no extension is specified, the serial number of each module will be attached."<< std::endl;
     os << "trim:mode fname\n trims the detector according to mode (can be noise, beam, improve, fix) and saves the resulting trimbits to file fname."<< std::endl;
+    os << "pedestal i \n starts acquisition for i frames, calculates pedestal and writes back to fpga."<< std::endl;
+
   }
   if (action==GET_ACTION || action==HELP_ACTION) {
     os << "settings \n gets the settings of the detector"<< std::endl;

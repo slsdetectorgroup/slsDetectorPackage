@@ -1981,7 +1981,7 @@ int start_and_read_all(int file_des) {
 
   }
 
- 
+  startStateMachine();
 
   /*  ret=startStateMachine();  
       if (ret!=OK) {

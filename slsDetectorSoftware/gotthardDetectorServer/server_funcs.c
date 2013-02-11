@@ -1562,121 +1562,55 @@ int get_module(int file_des) {
   free(myAdc);
 
 
-
-
-
-
-
-
   /*return ok/fail*/
   return ret; 
 
 }
+
+
 int get_threshold_energy(int file_des) { 
-  int retval;
-  int ret=OK;
+  int ret=FAIL;
   int n;
   int  imod;
 
+  strcpy(mess,"cannot set threshold for gotthard");
 
   n = receiveDataOnly(file_des,&imod,sizeof(imod));
-  if (n < 0) {
+  if (n < 0)
     sprintf(mess,"Error reading from socket\n");
-    ret=FAIL;
-  }
-  
-
-#ifdef VERBOSE
-  printf("Getting threshold energy of module %d\n", imod);
-#endif 
-
-#ifdef MCB_FUNCS
-  retval=getThresholdEnergy();
-#endif
 
 
-#ifdef VERBOSE
-  printf("Threshold is %d eV\n",  retval);
-#endif  
-
-
-  if (differentClients==1 && ret==OK)
-    ret=FORCE_UPDATE;
- 
   /* send answer */
   n = sendDataOnly(file_des,&ret,sizeof(ret));
-  if (ret==FAIL) {
-    n += sendDataOnly(file_des,mess,sizeof(mess));
-  } else
-    n += sendDataOnly(file_des,&retval,sizeof(retval));
-  
-  
-  /* Maybe this is done inside the initialization funcs */
-  //detectorDacs[imod][ind]=val;
+  n += sendDataOnly(file_des,mess,sizeof(mess));
+
   /*return ok/fail*/
   return ret; 
 
 }
  
 int set_threshold_energy(int file_des) { 
-  int retval;
-  int ret=OK;
+  int ret=FAIL;
   int arg[3];
   int n;
-  int ethr, imod;
-  enum detectorSettings isett;
 
+  strcpy(mess,"cannot set threshold for gotthard");
 
   n = receiveDataOnly(file_des,&arg,sizeof(arg));
-  if (n < 0) {
+  if (n < 0)
     sprintf(mess,"Error reading from socket\n");
-    ret=FAIL;
-  }
-  ethr=arg[0];
-  imod=arg[1];
-  isett=arg[2];
-  
 
-#ifdef VERBOSE
-  printf("Setting threshold energy of module %d to %d eV with settings %d\n", imod, ethr, isett);
-#endif 
 
-  if (differentClients==1 && lockStatus==1) {
-    ret=FAIL;
-    sprintf(mess,"Detector locked by %s\n",lastClientIP);  
-  } else {
-#ifdef MCB_FUNCS
-    retval=setThresholdEnergy(ethr);
-#endif
-  }
-
-#ifdef VERBOSE
-  printf("Threshold set to %d eV\n",  retval);
-#endif  
-  if (retval==ethr)
-    ret=OK;
-  else {
-    ret=FAIL;
-    printf("Setting threshold of module %d: wrote %d but read %d\n", imod, ethr, retval);
-    sprintf(mess,"Setting threshold of module %d: wrote %d but read %d\n", imod, ethr, retval);
-  }
-  if (ret==OK && differentClients==1)
-    ret=FORCE_UPDATE;
- 
   /* send answer */
   n = sendDataOnly(file_des,&ret,sizeof(ret));
-  if (ret==FAIL) {
-    n += sendDataOnly(file_des,mess,sizeof(mess));
-  } else
-    n += sendDataOnly(file_des,&retval,sizeof(retval));
-  
-  
-  /* Maybe this is done inside the initialization funcs */
-  //detectorDacs[imod][ind]=val;
+  n += sendDataOnly(file_des,mess,sizeof(mess));
+
   /*return ok/fail*/
   return ret; 
 
 }
+
+
  
 int set_settings(int file_des) {
 

@@ -2048,7 +2048,7 @@ int start_and_read_all(int file_des) {
   }
 
  
-  startStateMachine();
+
   /*  ret=startStateMachine();  
       if (ret!=OK) {
       sprintf(mess,"could not start state machine\n");

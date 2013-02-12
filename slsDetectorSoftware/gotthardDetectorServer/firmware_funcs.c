@@ -1175,15 +1175,36 @@ int initConfGain(int isettings,int val,int imod){
 }
 
 
+
+int setADC(int adc){
+	int reg;
+
+	if(adc==-1){
+	  	reg = (NCHAN*NCHIP)<<CHANNEL_OFFSET;
+		reg&=CHANNEL_MASK;
+		reg|=ACTIVE_ADC_MASK;
+		bus_w(CHIP_OF_INTRST_REG,reg);
+	}else{
+		reg = (NCHAN*2)<<CHANNEL_OFFSET;
+		reg&=CHANNEL_MASK;
+		int mask =1<<adc;
+		reg|=(ACTIVE_ADC_MASK & mask);
+		bus_w(CHIP_OF_INTRST_REG,reg);
+	}
+#ifdef DDEBUG
+	printf("Chip of Intrst Reg:%x\n",bus_r(CHIP_OF_INTRST_REG));
+#endif
+}
+
+
+
 int configureMAC(int ipad,long long int macad,long long int detectormacad, int detipad, int ival, int adc,int udpport){
+
+	int udpPacketSize=0x050E;
+	int ipPacketSize=0x0522;
 
 	//update adc configured
 	adcConfigured = adc;
-
-	//setting adc mask
-	int reg;
-	int udpPacketSize=0x050E;
-	int ipPacketSize=0x0522;
 
 	switch(adc){
 	case 0:
@@ -1191,36 +1212,23 @@ int configureMAC(int ipad,long long int macad,long long int detectormacad, int d
 	case 2:
 	case 3:
 	case 4:
-	  ROI_flag=1;
-		//setting daqregister
-		setDAQRegister(adc);
-		cleanFifo();
-		reg = (NCHAN*2)<<CHANNEL_OFFSET;
-		reg&=CHANNEL_MASK;
-		int mask =1<<adc;
-		reg|=(ACTIVE_ADC_MASK & mask);
-		bus_w(CHIP_OF_INTRST_REG,reg);
+		ROI_flag=1;
 		ipPacketSize= 256*2+14+20;
 		udpPacketSize=256*2+4+8+2;
 		break;
 	//for all adcs
 	default: 
-	  adc=-1;
-	  adcConfigured=-1;
-	  ROI_flag=0;
-		//setting daqregister
-		setDAQRegister(adc);
-		cleanFifo();
-	  	reg = (NCHAN*NCHIP)<<CHANNEL_OFFSET;
-		reg&=CHANNEL_MASK;
-		reg|=ACTIVE_ADC_MASK;
-		bus_w(CHIP_OF_INTRST_REG,reg);
+		adc=-1;
+		adcConfigured=-1;
+		ROI_flag=0;
 		break;
 	}
 
 
-	//setting daqregister
-	//setDAQRegister(adc);
+	setDAQRegister(adc);//token timing
+	cleanFifo();//adc sync
+	setADC(adc);//chip of interest
+
 
 #ifdef DDEBUG
 	printf("Chip of Intrst Reg:%x\n",bus_r(CHIP_OF_INTRST_REG));
@@ -1229,181 +1237,181 @@ int configureMAC(int ipad,long long int macad,long long int detectormacad, int d
 #endif
 
 	//configuring mac
-  u_int32_t addrr=MULTI_PURPOSE_REG;
-  u_int32_t offset=ENET_CONF_REG, offset2=TSE_CONF_REG;
-  mac_conf *mac_conf_regs;
-  tse_conf *tse_conf_regs;
-  long int sum = 0;
-  long int checksum;
-  int count,val;
-  unsigned short *addr;
+	u_int32_t addrr=MULTI_PURPOSE_REG;
+	u_int32_t offset=ENET_CONF_REG, offset2=TSE_CONF_REG;
+	mac_conf *mac_conf_regs;
+	tse_conf *tse_conf_regs;
+	long int sum = 0;
+	long int checksum;
+	int count,val;
+	unsigned short *addr;
 
-  mac_conf_regs=(mac_conf*)(CSP0BASE+offset*2);
-  tse_conf_regs=(tse_conf*)(CSP0BASE+offset2*2);
+	mac_conf_regs=(mac_conf*)(CSP0BASE+offset*2);
+	tse_conf_regs=(tse_conf*)(CSP0BASE+offset2*2);
 
 #ifdef DDEBUG
-  printf("***Configuring MAC*** adc=%d\n",adc);
+	printf("***Configuring MAC*** adc=%d\n",adc);
 #endif
 
-  if(ival)
-    bus_w(addrr,(RESET_BIT|DIGITAL_TEST_BIT)); //0x080,reset mac (reset)
-  else
-    bus_w(addrr,RESET_BIT); //0x080,reset mac (reset)
-  val=bus_r(addrr);
+	if(ival)
+		bus_w(addrr,(RESET_BIT|DIGITAL_TEST_BIT)); //0x080,reset mac (reset)
+	else
+		bus_w(addrr,RESET_BIT); //0x080,reset mac (reset)
+	val=bus_r(addrr);
 #ifdef VERBOSE
-    printf("Value read from Multi-purpose Reg:%x\n",val);
+	printf("Value read from Multi-purpose Reg:%x\n",val);
 #endif 
-    //  if(val!=0x080) return -1;
+	//  if(val!=0x080) return -1;
 
-  usleep(500000);
+	usleep(500000);
 
-  if(ival)
-    bus_w(addrr,(ENET_RESETN_BIT|WRITE_BACK_BIT|DIGITAL_TEST_BIT)); //0x840,write shadow regs(enet reset,write bak)
-  else
-    bus_w(addrr,(ENET_RESETN_BIT|WRITE_BACK_BIT)); //0x840,write shadow regs(enet reset,write bak)
-  val=bus_r(addrr);
+	if(ival)
+		bus_w(addrr,(ENET_RESETN_BIT|WRITE_BACK_BIT|DIGITAL_TEST_BIT)); //0x840,write shadow regs(enet reset,write bak)
+	else
+		bus_w(addrr,(ENET_RESETN_BIT|WRITE_BACK_BIT)); //0x840,write shadow regs(enet reset,write bak)
+	val=bus_r(addrr);
 #ifdef VERBOSE
-  printf("Value read from Multi-purpose Reg:%x\n",val);
+	printf("Value read from Multi-purpose Reg:%x\n",val);
 #endif 
-    //  if(val!=0x840) return -1;
+	//  if(val!=0x840) return -1;
 
-  if(ival)
-    bus_w(addrr,(ENET_RESETN_BIT|DIGITAL_TEST_BIT)); //0x800,nreset phy(enet reset)
-  else
-    bus_w(addrr,ENET_RESETN_BIT); //0x800,nreset phy(enet reset)
-  val=bus_r(addrr);
+	if(ival)
+		bus_w(addrr,(ENET_RESETN_BIT|DIGITAL_TEST_BIT)); //0x800,nreset phy(enet reset)
+	else
+		bus_w(addrr,ENET_RESETN_BIT); //0x800,nreset phy(enet reset)
+	val=bus_r(addrr);
 #ifdef VERBOSE
-    printf("Value read from Multi-purpose Reg:%x\n",val);
+	printf("Value read from Multi-purpose Reg:%x\n",val);
 #endif 
-    //  if(val!=0x800) return -1;
+	//  if(val!=0x800) return -1;
 
 
-  mac_conf_regs->mac.mac_dest_mac1  =((macad>>(8*5))&0xFF);// 0x00; //pc7060
-  mac_conf_regs->mac.mac_dest_mac2  =((macad>>(8*4))&0xFF);// 0x19; //pc7060
-  mac_conf_regs->mac.mac_dest_mac3  =((macad>>(8*3))&0xFF);// 0x99; //pc7060
-  mac_conf_regs->mac.mac_dest_mac4  =((macad>>(8*2))&0xFF);// 0x24; //pc7060
-  mac_conf_regs->mac.mac_dest_mac5  =((macad>>(8*1))&0xFF);// 0xEB; //pc7060
-  mac_conf_regs->mac.mac_dest_mac6  =((macad>>(8*0))&0xFF);// 0xEE; //pc7060
-  /*
+	mac_conf_regs->mac.mac_dest_mac1  =((macad>>(8*5))&0xFF);// 0x00; //pc7060
+	mac_conf_regs->mac.mac_dest_mac2  =((macad>>(8*4))&0xFF);// 0x19; //pc7060
+	mac_conf_regs->mac.mac_dest_mac3  =((macad>>(8*3))&0xFF);// 0x99; //pc7060
+	mac_conf_regs->mac.mac_dest_mac4  =((macad>>(8*2))&0xFF);// 0x24; //pc7060
+	mac_conf_regs->mac.mac_dest_mac5  =((macad>>(8*1))&0xFF);// 0xEB; //pc7060
+	mac_conf_regs->mac.mac_dest_mac6  =((macad>>(8*0))&0xFF);// 0xEE; //pc7060
+	/*
   mac_conf_regs->mac.mac_src_mac1   = 0x00;     
   mac_conf_regs->mac.mac_src_mac2   = 0xAA;     
   mac_conf_regs->mac.mac_src_mac3   = 0xBB;     
   mac_conf_regs->mac.mac_src_mac4   = 0xCC;     
   mac_conf_regs->mac.mac_src_mac5   = 0xDD;     
   mac_conf_regs->mac.mac_src_mac6   = 0xEE;     
-  */
-  mac_conf_regs->mac.mac_src_mac1  =((detectormacad>>(8*5))&0xFF);
-  mac_conf_regs->mac.mac_src_mac2  =((detectormacad>>(8*4))&0xFF);
-  mac_conf_regs->mac.mac_src_mac3  =((detectormacad>>(8*3))&0xFF);
-  mac_conf_regs->mac.mac_src_mac4  =((detectormacad>>(8*2))&0xFF);
-  mac_conf_regs->mac.mac_src_mac5  =((detectormacad>>(8*1))&0xFF);
-  mac_conf_regs->mac.mac_src_mac6  =((detectormacad>>(8*0))&0xFF);
-  mac_conf_regs->mac.mac_ether_type   = 0x0800;   //ipv4
+	 */
+	mac_conf_regs->mac.mac_src_mac1  =((detectormacad>>(8*5))&0xFF);
+	mac_conf_regs->mac.mac_src_mac2  =((detectormacad>>(8*4))&0xFF);
+	mac_conf_regs->mac.mac_src_mac3  =((detectormacad>>(8*3))&0xFF);
+	mac_conf_regs->mac.mac_src_mac4  =((detectormacad>>(8*2))&0xFF);
+	mac_conf_regs->mac.mac_src_mac5  =((detectormacad>>(8*1))&0xFF);
+	mac_conf_regs->mac.mac_src_mac6  =((detectormacad>>(8*0))&0xFF);
+	mac_conf_regs->mac.mac_ether_type   = 0x0800;   //ipv4
 
 
-  mac_conf_regs->ip.ip_ver            = 0x4;
-  mac_conf_regs->ip.ip_ihl            = 0x5;
-  mac_conf_regs->ip.ip_tos            = 0x0;
-  mac_conf_regs->ip.ip_len            = ipPacketSize;//0x0522;   // was 0x0526;
-  mac_conf_regs->ip.ip_ident          = 0x0000;
-  mac_conf_regs->ip.ip_flag           = 0x2;
-  mac_conf_regs->ip.ip_offset         = 0x00;
-  mac_conf_regs->ip.ip_ttl            = 0x70;
-  mac_conf_regs->ip.ip_protocol       = 0x11;
-  mac_conf_regs->ip.ip_chksum         = 0x0000 ; //6E42 now is automatically computed
-  mac_conf_regs->ip.ip_sourceip       = detipad; //0x8181CA2E;129.129.202.46
-  mac_conf_regs->ip.ip_destip         = ipad; //CA57
+	mac_conf_regs->ip.ip_ver            = 0x4;
+	mac_conf_regs->ip.ip_ihl            = 0x5;
+	mac_conf_regs->ip.ip_tos            = 0x0;
+	mac_conf_regs->ip.ip_len            = ipPacketSize;//0x0522;   // was 0x0526;
+	mac_conf_regs->ip.ip_ident          = 0x0000;
+	mac_conf_regs->ip.ip_flag           = 0x2;
+	mac_conf_regs->ip.ip_offset         = 0x00;
+	mac_conf_regs->ip.ip_ttl            = 0x70;
+	mac_conf_regs->ip.ip_protocol       = 0x11;
+	mac_conf_regs->ip.ip_chksum         = 0x0000 ; //6E42 now is automatically computed
+	mac_conf_regs->ip.ip_sourceip       = detipad; //0x8181CA2E;129.129.202.46
+	mac_conf_regs->ip.ip_destip         = ipad; //CA57
 
 #ifdef VERBOSE
-  printf("mac_dest:%llx %x:%x:%x:%x:%x:%x\n",
-	 macad,
-	 mac_conf_regs->mac.mac_dest_mac1,
-	 mac_conf_regs->mac.mac_dest_mac2,
-	 mac_conf_regs->mac.mac_dest_mac3,
-	 mac_conf_regs->mac.mac_dest_mac4,
-	 mac_conf_regs->mac.mac_dest_mac5,
-	 mac_conf_regs->mac.mac_dest_mac6);
-  printf("mac_src:%llx %x:%x:%x:%x:%x:%x\n",
-	 detectormacad,
-	 mac_conf_regs->mac.mac_src_mac1,
-	 mac_conf_regs->mac.mac_src_mac2,
-	 mac_conf_regs->mac.mac_src_mac3,
-	 mac_conf_regs->mac.mac_src_mac4,
-	 mac_conf_regs->mac.mac_src_mac5,
-	 mac_conf_regs->mac.mac_src_mac6);
-  printf("ip_ttl:%x\n",mac_conf_regs->ip.ip_ttl);
+	printf("mac_dest:%llx %x:%x:%x:%x:%x:%x\n",
+			macad,
+			mac_conf_regs->mac.mac_dest_mac1,
+			mac_conf_regs->mac.mac_dest_mac2,
+			mac_conf_regs->mac.mac_dest_mac3,
+			mac_conf_regs->mac.mac_dest_mac4,
+			mac_conf_regs->mac.mac_dest_mac5,
+			mac_conf_regs->mac.mac_dest_mac6);
+	printf("mac_src:%llx %x:%x:%x:%x:%x:%x\n",
+			detectormacad,
+			mac_conf_regs->mac.mac_src_mac1,
+			mac_conf_regs->mac.mac_src_mac2,
+			mac_conf_regs->mac.mac_src_mac3,
+			mac_conf_regs->mac.mac_src_mac4,
+			mac_conf_regs->mac.mac_src_mac5,
+			mac_conf_regs->mac.mac_src_mac6);
+	printf("ip_ttl:%x\n",mac_conf_regs->ip.ip_ttl);
 #endif
 
-  //checksum
-  count=sizeof(mac_conf_regs->ip);
-  addr=&(mac_conf_regs->ip);
-  while( count > 1 )  {
-    sum += *addr++;
-    count -= 2;
-  }
-  if( count > 0 )  sum += *addr;                     // Add left-over byte, if any
-  while (sum>>16) sum = (sum & 0xffff) + (sum >> 16);// Fold 32-bit sum to 16 bits
-  checksum = (~sum)&0xffff;
-  mac_conf_regs->ip.ip_chksum   =  checksum;
-  //#ifdef VERBOSE
-  printf("IP header checksum is 0x%x s\n",(unsigned int)(checksum));
-  //#endif
+	//checksum
+	count=sizeof(mac_conf_regs->ip);
+	addr=&(mac_conf_regs->ip);
+	while( count > 1 )  {
+		sum += *addr++;
+		count -= 2;
+	}
+	if( count > 0 )  sum += *addr;                     // Add left-over byte, if any
+	while (sum>>16) sum = (sum & 0xffff) + (sum >> 16);// Fold 32-bit sum to 16 bits
+	checksum = (~sum)&0xffff;
+	mac_conf_regs->ip.ip_chksum   =  checksum;
+	//#ifdef VERBOSE
+	printf("IP header checksum is 0x%x s\n",(unsigned int)(checksum));
+	//#endif
 
-  mac_conf_regs->udp.udp_srcport      = 0xE185;
-  mac_conf_regs->udp.udp_destport     = udpport;//0xC351;
-  mac_conf_regs->udp.udp_len          = udpPacketSize;//0x050E;    //was  0x0512;
-  mac_conf_regs->udp.udp_chksum       = 0x0000;
+	mac_conf_regs->udp.udp_srcport      = 0xE185;
+	mac_conf_regs->udp.udp_destport     = udpport;//0xC351;
+	mac_conf_regs->udp.udp_len          = udpPacketSize;//0x050E;    //was  0x0512;
+	mac_conf_regs->udp.udp_chksum       = 0x0000;
 
 #ifdef VERBOSE
-  printf("Configuring TSE\n");
+	printf("Configuring TSE\n");
 #endif
-  tse_conf_regs->rev                 = 0xA00;
-  tse_conf_regs->scratch             = 0xCCCCCCCC;
-  tse_conf_regs->command_config      = 0xB;
-  tse_conf_regs->mac_0               = 0x17231C00;
-  tse_conf_regs->mac_1               = 0xCB4A;
-  tse_conf_regs->frm_length          = 0x5DC;      //max frame length (1500 bytes) (was 0x41C)
-  tse_conf_regs->pause_quant         = 0x0;
-  tse_conf_regs->rx_section_empty    = 0x7F0;
-  tse_conf_regs->rx_section_full     = 0x10;
-  tse_conf_regs->tx_section_empty    = 0x3F8;      //was 0x7F0;
-  tse_conf_regs->tx_section_full     = 0x16;
-  tse_conf_regs->rx_almost_empty     = 0x8;
-  tse_conf_regs->rx_almost_full      = 0x8;
-  tse_conf_regs->tx_almost_empty     = 0x8;
-  tse_conf_regs->tx_almost_full      = 0x3;
-  tse_conf_regs->mdio_addr0          = 0x12;
-  tse_conf_regs->mdio_addr1          = 0x0;
-  mac_conf_regs->cdone               = 0xFFFFFFFF;
+	tse_conf_regs->rev                 = 0xA00;
+	tse_conf_regs->scratch             = 0xCCCCCCCC;
+	tse_conf_regs->command_config      = 0xB;
+	tse_conf_regs->mac_0               = 0x17231C00;
+	tse_conf_regs->mac_1               = 0xCB4A;
+	tse_conf_regs->frm_length          = 0x5DC;      //max frame length (1500 bytes) (was 0x41C)
+	tse_conf_regs->pause_quant         = 0x0;
+	tse_conf_regs->rx_section_empty    = 0x7F0;
+	tse_conf_regs->rx_section_full     = 0x10;
+	tse_conf_regs->tx_section_empty    = 0x3F8;      //was 0x7F0;
+	tse_conf_regs->tx_section_full     = 0x16;
+	tse_conf_regs->rx_almost_empty     = 0x8;
+	tse_conf_regs->rx_almost_full      = 0x8;
+	tse_conf_regs->tx_almost_empty     = 0x8;
+	tse_conf_regs->tx_almost_full      = 0x3;
+	tse_conf_regs->mdio_addr0          = 0x12;
+	tse_conf_regs->mdio_addr1          = 0x0;
+	mac_conf_regs->cdone               = 0xFFFFFFFF;
 
 
-  if(ival)
-    bus_w(addrr,(INT_RSTN_BIT|ENET_RESETN_BIT|WRITE_BACK_BIT|DIGITAL_TEST_BIT)); //0x2840,write shadow regs..
-  else
-    bus_w(addrr,(INT_RSTN_BIT|ENET_RESETN_BIT|WRITE_BACK_BIT)); //0x2840,write shadow regs..
+	if(ival)
+		bus_w(addrr,(INT_RSTN_BIT|ENET_RESETN_BIT|WRITE_BACK_BIT|DIGITAL_TEST_BIT)); //0x2840,write shadow regs..
+	else
+		bus_w(addrr,(INT_RSTN_BIT|ENET_RESETN_BIT|WRITE_BACK_BIT)); //0x2840,write shadow regs..
 
-  val=bus_r(addrr);
+	val=bus_r(addrr);
 #ifdef VERBOSE
-    printf("Value read from Multi-purpose Reg:%x\n",val);
+	printf("Value read from Multi-purpose Reg:%x\n",val);
 #endif 
-    //  if(val!=0x2840) return -1;
+	//  if(val!=0x2840) return -1;
 
-  usleep(100000);
+	usleep(100000);
 
-  if(ival)
-    bus_w(addrr,(INT_RSTN_BIT|ENET_RESETN_BIT|SW1_BIT|DIGITAL_TEST_BIT)); //0x2820,write shadow regs..
-  else
-    bus_w(addrr,(INT_RSTN_BIT|ENET_RESETN_BIT|SW1_BIT)); //0x2820,write shadow regs..
+	if(ival)
+		bus_w(addrr,(INT_RSTN_BIT|ENET_RESETN_BIT|SW1_BIT|DIGITAL_TEST_BIT)); //0x2820,write shadow regs..
+	else
+		bus_w(addrr,(INT_RSTN_BIT|ENET_RESETN_BIT|SW1_BIT)); //0x2820,write shadow regs..
 
-  val=bus_r(addrr);
+	val=bus_r(addrr);
 #ifdef VERBOSE
-    printf("Value read from Multi-purpose Reg:%x\n",val);
+	printf("Value read from Multi-purpose Reg:%x\n",val);
 #endif 
-    //  if(val!=0x2820) return -1;
+	//  if(val!=0x2820) return -1;
 
 
 
-  return adcConfigured;
+	return adcConfigured;
 }
 
 

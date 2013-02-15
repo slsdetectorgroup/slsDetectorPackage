@@ -191,6 +191,19 @@ u_int16_t bus_w16(u_int32_t offset, u_int16_t data) {
   return OK;
 }
 
+/** ramType is DARK_IMAGE_REG or GAIN_IMAGE_REG */
+u_int16_t ram_w16(u_int32_t ramType, int adc, int adcCh, int Ch, u_int16_t data) { 
+  unsigned int adr = (ramType | adc << 8 | adcCh << 5 | Ch );
+  // printf("Writing to addr:%x\n",adr);
+  return bus_w16(adr,data);
+}
+
+/** ramType is DARK_IMAGE_REG or GAIN_IMAGE_REG */
+u_int16_t ram_r16(u_int32_t ramType, int adc, int adcCh, int Ch){
+  unsigned int adr = (ramType | adc << 8 | adcCh << 5 | Ch );
+  //  printf("Reading from addr:%x\n",adr);
+  return bus_r16(adr);
+}
 
 u_int32_t bus_w(u_int32_t offset, u_int32_t data) {
  volatile u_int32_t *ptr1;
@@ -2294,11 +2307,116 @@ int resetCounterBlock(int startACQ){
 	}
 
 
+
 int calibratePedestal(int frames){
+  printf("---------------------------\n");
+  printf("In Calibrate Pedestal\n");
+  int64_t framesBefore = getFrames();
+  int64_t periodBefore = getPeriod();
+  setFrames(frames);
+  setPeriod(1000000);
+  int dataret = OK;
 
-	printf("In Calibrate Pedestal\n");
+  double avg[1280];
+  int numberFrames = 0;
 
-	return 0;
+  int adc = 3;
+  int adcCh = 3;
+  int Ch = 3;
+ 
+
+  int i = 0;
+  for(i =0; i < 1280; i++){
+    
+    avg[i] = 0.0;
+  }
+
+  startReceiver(0);
+	
+  startStateMachine();
+
+  while(dataret==OK){
+    //got data
+    if (fifo_read_event()) {
+      dataret=OK;
+      //sendDataOnly(file_des,&dataret,sizeof(dataret));
+      //sendDataOnly(file_des,dataretval,dataBytes);
+      printf("received frame\n");
+	
+      unsigned short *frame = (unsigned short *)now_ptr;
+
+      int a;
+      for (a=0;a<1280; a++){
+	unsigned short v = (frame[a] << 8) + (frame[a] >> 8);
+	//	  printf("%i: %i %i\n",a, frame[a],v);
+	avg[a] += ((double)frame[a])/(double)frames;
+	//if(frame[a] == 8191)
+	//  printf("ch %i: %u\n",a,frame[a]);
+      }
+      //      printf("********\n");
+      numberFrames++;
+    }  
+
+    //no more data or no data
+    else {
+      if(getFrames()>-2) {
+	dataret=FAIL;
+	printf("no data and run stopped: %d frames left\n",(int)(getFrames()+2));
+	     
+      } else {
+	dataret=FINISHED;
+	printf("acquisition successfully finished\n");
+
+      }
+      printf("dataret %d\n",dataret);
+    }
+  }
+
+  
+
+  double nf = (double)numberFrames;
+  for(i =0; i < 1280; i++){
+    adc = i / 256;
+    adcCh = (i - adc * 256) / 32;
+    Ch = i - adc * 256 - adcCh * 32;
+    adc--;
+    double v2 = avg[i];
+    avg[i] = avg[i]/ ((double)numberFrames/(double)frames);
+    unsigned short v = (unsigned short)avg[i];
+    printf("setting avg for channel %i(%i,%i,%i): %i (double= %f (%f))\t", i,adc,adcCh,Ch, v,avg[i],v2);
+    v=i*100;
+    ram_w16(DARK_IMAGE_REG,adc,adcCh,Ch,v-4096);
+    if(ram_r16(DARK_IMAGE_REG,adc,adcCh,Ch) !=  v-4096){
+        printf("value is wrong (%i,%i,%i): %i \n",adc,adcCh,Ch,  ram_r16(DARK_IMAGE_REG,adc,adcCh,Ch));
+    }
+  }
+
+      /*for(adc = 1; adc < 5; adc++){
+    for(adcCh = 0; adcCh < 8; adcCh++){
+      for(Ch=0 ; Ch < 32; Ch++){
+	int channel = (adc+1) * 32 * 8  + adcCh * 32 + Ch;
+	double v2 = avg[channel];
+	avg[channel] = avg[channel]/ ((double)numberFrames/(double)frames);
+	unsigned short v = (unsigned short)avg[channel];
+	printf("setting avg for channel %i: %i (double= %f (%f))\t", channel, v,avg[channel],v2);
+	ram_w16(DARK_IMAGE_REG,adc,adcCh,Ch,v-4096);
+	if(ram_r16(DARK_IMAGE_REG,adc,adcCh,Ch) !=  v-4096){
+	  printf("value is wrong (%i,%i,%i): %i \n",adc,adcCh,Ch,  ram_r16(DARK_IMAGE_REG,adc,adcCh,Ch));
+	}
+      }
+    }
+    }*/
+
+
+
+  printf("frames: %i\n",numberFrames);	
+  printf("corrected avg by: %f\n",(double)numberFrames/(double)frames);
+  
+  printf("restoring previous condition\n");
+  setFrames(framesBefore);
+  setPeriod(periodBefore); 
+  
+  printf("---------------------------\n");
+  return 0;
 }
-
 

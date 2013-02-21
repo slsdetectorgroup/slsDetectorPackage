@@ -86,10 +86,17 @@ class multiSlsDetector  : public slsDetectorUtils {
     /**  total number of channels for all detectors */
     int numberOfChannels;
   
+    /**  total number of channels for all detectors  in one dimension*/
+    int numberOfChannel[2];
+
     /**  total number of channels for all detectors */
     int maxNumberOfChannels;
   
+    /**  max number of channels for all detectors  in one dimension*/
+    int maxNumberOfChannel[2];
 
+    /** max number of channels allowed for the complete set of detectors in one dimension */
+    int maxNumberOfChannelsPerDetector[2];
 
     /** timer values */
     int64_t timerValue[MAX_TIMERS]; // needed?!?!?!?
@@ -299,10 +306,11 @@ class multiSlsDetector  : public slsDetectorUtils {
       \returns number of detectors */
   int getNumberOfDetectors() {return thisMultiDetector->numberOfDetectors;};
 
-  
-
   int getMaxMods();
   int getNMods();
+  int getMaxMod(dimension d);
+  int getNMod(dimension d);
+
   int getChansPerMod(int imod=0);
 
   angleConversionConstant *getAngularConversionPointer(int imod=0);
@@ -310,7 +318,15 @@ class multiSlsDetector  : public slsDetectorUtils {
 
   int getTotalNumberOfChannels(){return thisMultiDetector->numberOfChannels;};
 
+  int getTotalNumberOfChannels(dimension d){return thisMultiDetector->numberOfChannel[d];};
+
   int getMaxNumberOfChannels(){return thisMultiDetector->maxNumberOfChannels;};
+
+  int getMaxNumberOfChannels(dimension d){return thisMultiDetector->maxNumberOfChannel[d];};
+
+  int getMaxNumberOfChannelsPerDetector(dimension d){return thisMultiDetector->maxNumberOfChannelsPerDetector[d];};
+
+  int setMaxNumberOfChannelsPerDetector(dimension d,int i){thisMultiDetector->maxNumberOfChannelsPerDetector[d]=i; return thisMultiDetector->maxNumberOfChannelsPerDetector[d];};
 
   double getScanStep(int index, int istep){return thisMultiDetector->scanSteps[index][istep];};
   /** returns the detector offset (in number of channels)
@@ -619,30 +635,39 @@ class multiSlsDetector  : public slsDetectorUtils {
 
   int getDataBytes();
 
- 
-  /** 
-      set roi
-       \param nroi number of rois
-       \param xmin x minimum of roi
-       \param xmax x maximum of roi
-       \param ymin y minimum of roi
-       \param ymax y maximum of roi
-       \returns number of rois added
-  */
-  //int setROI(int nroi=-1, int *xmin=NULL, int *xmax=NULL, int *ymin=NULL, int *ymax=NULL);
-  
   /**
-      get roi
-       \param nroi number of rois
-       \param xmin x minimum of roi
-       \param xmax x maximum of roi
-       \param ymin y minimum of roi
-       \param ymax y maximum of roi
-       \returns number of rois
+       decodes which detector and the corresponding channel numbers for it
+       \param offsetX channel number or total channel offset in x direction
+       \param offsetY channel number or total channel offset in y direction
+       \param channelX channel number from detector offset in x direction
+       \param channelY channel number from detector offset in x direction
+       \returns detector id or -1 if channel number out of range
   */
-  //int getROI(int &xmin, int &xmax, int &ymin, int &ymax);
+  int decodeNChannel(int offsetX, int offsetY, int &channelX, int &channelY);
 
- 
+/**
+ 	 verifies that min is less than max
+ 	 \param n number of rois
+ 	 \param r array of rois
+ */
+  void verifyMinMaxROI(int n, ROI r[]);
+
+  /**
+      set roi
+       \param n number of rois
+       \param roiLimits array of roi
+       \returns success or failure
+  */
+  int setROI(int n=-1,ROI roiLimits[]=NULL);
+
+  /**
+   	get roi from each detector and convert it to the multi detector scale
+   	\param n number of rois
+   	\returns an array of multidetector's rois
+  */
+  ROI* getROI(int &n);
+
+
   //Corrections  
 
 
@@ -899,10 +924,9 @@ class multiSlsDetector  : public slsDetectorUtils {
 
   /**
      configures mac for gotthard readout
-     \param adc adc number
      \returns OK or FAIL
   */
-  int configureMAC(int adc=-1);
+  int configureMAC();
 
   int setNumberOfModules(int i=-1, dimension d=X);
   int getMaxNumberOfModules(dimension d=X);

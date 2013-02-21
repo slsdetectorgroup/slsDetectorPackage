@@ -114,8 +114,15 @@ multiSlsDetector::multiSlsDetector(int id) :  slsDetectorUtils(), shmId(-1)
     thisMultiDetector->masterPosition=-1;
     thisMultiDetector->dataBytes=0;
     thisMultiDetector->numberOfChannels=0;
+    thisMultiDetector->numberOfChannel[X]=0;
+    thisMultiDetector->numberOfChannel[Y]=0;
 
     thisMultiDetector->maxNumberOfChannels=0;
+    thisMultiDetector->maxNumberOfChannel[X]=0;
+    thisMultiDetector->maxNumberOfChannel[Y]=0;
+
+    thisMultiDetector->maxNumberOfChannelsPerDetector[X]=-1;
+    thisMultiDetector->maxNumberOfChannelsPerDetector[Y]=-1;
 
     /** set trimDsdir, calDir and filePath to default to home directory*/
     strcpy(thisMultiDetector->filePath,getenv("HOME"));
@@ -318,9 +325,16 @@ int multiSlsDetector::addSlsDetector(int id, int pos) {
   thisMultiDetector->dataBytes+=detectors[pos]->getDataBytes();
  
   thisMultiDetector->numberOfChannels+=detectors[pos]->getTotalNumberOfChannels();
-  thisMultiDetector->maxNumberOfChannels-=detectors[j]->getMaxNumberOfChannels();
+  thisMultiDetector->maxNumberOfChannels+=detectors[j]->getMaxNumberOfChannels();
+
+
+
   getMaxMods();
   getNMods();
+  getMaxMod(X);
+  getNMod(X);
+  getMaxMod(Y);
+  getNMod(Y);
 
 #ifdef VERBOSE
   cout << "Detector added " << thisMultiDetector->numberOfDetectors<< endl;
@@ -329,6 +343,43 @@ int multiSlsDetector::addSlsDetector(int id, int pos) {
     cout << "Detector " << thisMultiDetector->detectorIds[ip] << " position " << ip << " "  << detectors[ip]->getHostname() << endl;
   }
 #endif
+
+  //set offsets
+  int offsetX=0,offsetY=0,numX,numY;
+  int maxChanX = thisMultiDetector->maxNumberOfChannelsPerDetector[X];
+  int maxChanY = thisMultiDetector->maxNumberOfChannelsPerDetector[Y];
+
+  for (int i=0; i<thisMultiDetector->numberOfDetectors; i++) {
+    if (detectors[i]) {
+    	thisMultiDetector->offsetX[i] = offsetX;
+    	thisMultiDetector->offsetY[i] = offsetY;
+
+    	cout << "Detector pos: " << i << " offset X:" << offsetX << " offset Y:" << offsetY << endl;
+
+    	numX = detectors[i]->getMaxNumberOfChannels(X);
+    	numY = detectors[i]->getMaxNumberOfChannels(Y);
+
+    	offsetX += numX;
+    	if ((maxChanX == -1) || ((maxChanX > 0) && (offsetX < maxChanX))){
+    		thisMultiDetector->numberOfChannel[X] += detectors[i]->getTotalNumberOfChannels(X);
+    		thisMultiDetector->maxNumberOfChannel[X] += numX;
+    	}else{
+    		offsetX = 0;
+    		thisMultiDetector->numberOfChannel[X] = 0;
+    		thisMultiDetector->maxNumberOfChannel[X] = 0;
+    		offsetY += numY;
+    		if ((maxChanY == -1) || ((maxChanY > 0) && (offsetY < maxChanY))){
+    			thisMultiDetector->numberOfChannel[Y] += detectors[i]->getTotalNumberOfChannels(Y);
+    			thisMultiDetector->maxNumberOfChannel[Y] += numY;
+    		}else{
+    			cout<<"Detector " << id << "exceeds maximum channels allowed for complete detector set in y dimension also!" << endl;
+    			thisMultiDetector->numberOfChannel[Y] += detectors[i]->getTotalNumberOfChannels(Y);
+    			thisMultiDetector->maxNumberOfChannel[Y] += numY;
+    		}
+    	}
+    }
+  }
+
 
   return thisMultiDetector->numberOfDetectors;
 
@@ -1569,18 +1620,334 @@ int multiSlsDetector::setDynamicRange(int n, int pos){
   return thisMultiDetector->dataBytes;
 };
 
-/*
-
-int multiSlsDetector::setROI(int nroi, int *xmin, int *xmax, int *ymin, int *ymax){
 
 
-};
 
-int multiSlsDetector::getROI(int nroi, int *xmin, int *xmax, int *ymin, int *ymax){
+void multiSlsDetector::verifyMinMaxROI(int n, ROI r[]){
+	int temp;
+	for(int i=0;i<n;i++){
+		if ((r[i].xmax) < (r[i].xmin)){
+			temp=r[i].xmax;
+			r[i].xmax=r[i].xmin;
+			r[i].xmin=temp;
+
+		}
+		if ((r[i].ymax) < (r[i].ymin)){
+			temp=r[i].ymax;
+			r[i].ymax=r[i].ymin;
+			r[i].ymin=temp;
+		}
+	}
+}
 
 
-};
-*/
+
+int multiSlsDetector::decodeNChannel(int offsetX, int offsetY, int &channelX, int &channelY){
+	channelX=-1;
+	channelY=-1;
+	//loop over
+	for(int i=0;i<thisMultiDetector->numberOfDetectors;i++){
+		if (detectors[i]) {
+			//check x offset range
+			if ((offsetX >= thisMultiDetector->offsetX[i]) && (offsetX < (thisMultiDetector->offsetX[i]+detectors[i]->getMaxNumberOfChannels(X)))){
+				if(offsetY==-1){
+					channelX = offsetX - thisMultiDetector->offsetX[i];
+					return i;
+				}else{
+					//check y offset range
+					if((offsetY >= thisMultiDetector->offsetY[i]) && (offsetY< (thisMultiDetector->offsetY[i]+detectors[i]->getMaxNumberOfChannels(Y)))){
+						channelX = offsetX - thisMultiDetector->offsetX[i];
+						channelY = offsetY - thisMultiDetector->offsetY[i];
+						return i;
+					}
+				}
+			}
+		}
+	}
+	return -1;
+}
+
+
+int multiSlsDetector::setROI(int n,ROI roiLimits[]){
+	int ret1=-100,ret;
+	int i,xmin,xmax,ymin,ymax,channelX,channelY,idet,lastChannelX,lastChannelY,index,offsetX,offsetY;
+	bool invalidroi=false;
+	int ndet = thisMultiDetector->numberOfDetectors;
+	ROI allroi[ndet][n];
+	int nroi[ndet];
+	for(i=0;i<ndet;i++) nroi[i]=0;
+
+
+	if ((n < 0) || (roiLimits == NULL))
+		return FAIL;
+
+	//ensures min < max
+	verifyMinMaxROI(n,roiLimits);
+#ifdef VERBOSE
+	cout<<"Setting ROI for "<< n << "rois:"<<endl;
+	for(i=0;i<n;i++)
+		cout<<i<<":"<<roiLimits[i].xmin<<"\t"<<roiLimits[i].xmax<<"\t"<<roiLimits[i].ymin<<"\t"<<roiLimits[i].ymax<<endl;
+#endif
+	//for each roi
+	for(i=0;i<n;i++){
+		xmin = roiLimits[i].xmin;
+		xmax = roiLimits[i].xmax;
+		ymin = roiLimits[i].ymin;
+		ymax = roiLimits[i].ymax;
+
+		//check roi max values
+		idet = decodeNChannel(xmax,ymax,channelX,channelY);
+#ifdef VERBOSE
+		cout<<"Decoded Channel max vals: "<<endl;
+		cout<<"det:"<<idet<<"\t"<<xmax<<"\t"<<ymax<<"\t"<<channelX<<"\t"<<channelY<<endl;
+#endif
+		if (idet == -1){
+			cout << "invalid roi" << endl;
+			continue;
+		}
+
+		//split in x dir
+		while (xmin <= xmax){
+			invalidroi=false;
+			ymin = roiLimits[i].ymin;
+			//split in y dir
+			while (ymin <= ymax){
+				//get offset for each detector
+				idet = decodeNChannel(xmin,ymin,channelX,channelY);
+#ifdef VERBOSE
+				cout<<"Decoded Channel min vals: "<<endl;
+				cout<<"det:"<<idet<<"\t"<<xmin<<"\t"<<ymin<<"\t"<<channelX<<"\t"<<channelY<<endl;
+#endif
+				if (idet == -1){
+					cout << "invalid roi" << endl;
+					invalidroi = true;
+					break;
+				}
+				if(detectors[idet]){
+					//get last channel for each det in x and y dir
+					lastChannelX = (detectors[idet]->getMaxNumberOfChannels(X))-1;
+					lastChannelY = (detectors[idet]->getMaxNumberOfChannels(Y))-1;
+
+					offsetX = thisMultiDetector->offsetX[idet];
+					offsetY = thisMultiDetector->offsetY[idet];
+					//at the end in x dir
+					if ((offsetX + lastChannelX) >= xmax)
+						lastChannelX = xmax - offsetX;
+					//at the end in y dir
+					if ((offsetY + lastChannelY) >= ymax)
+						lastChannelY = ymax - offsetY;
+
+#ifdef VERBOSE
+					cout<<"lastChannelX:"<<lastChannelX<<"\t"<<"lastChannelY:"<<lastChannelY<<endl;
+#endif
+
+					//creating the list of roi for corresponding detector
+					index = nroi[idet];
+					allroi[idet][index].xmin = channelX;
+					allroi[idet][index].xmax = lastChannelX;
+					allroi[idet][index].ymin = channelY;
+					allroi[idet][index].ymax = lastChannelY;
+					nroi[idet] = nroi[idet]+1;
+
+					ymin = lastChannelY + offsetY + 1;
+					if ((lastChannelY + offsetY) == ymax)
+						ymin = ymax + 1;
+
+#ifdef VERBOSE
+					cout<<"nroi[idet]:"<<nroi[idet]<<"\tymin:"<<ymin<<endl;
+#endif
+
+				}
+			}
+			if(invalidroi) break;
+
+			xmin = lastChannelX + offsetX + 1;
+			if ((lastChannelX + offsetX) == xmax)
+				xmin = xmax + 1;
+		}
+	}
+
+#ifdef VERBOSE
+		cout<<"Setting ROI :"<<endl;
+		for(i=0;i<thisMultiDetector->numberOfDetectors;i++){
+			cout<<"detector "<<i<<endl;
+			for(int j=0;j<nroi[i];j++){
+				cout<<allroi[i][j].xmin<<"\t"<<allroi[i][j].xmax<<"\t"<<allroi[i][j].ymin<<"\t"<<allroi[i][j].ymax<<endl;
+			}
+		}
+#endif
+
+	//settings the rois for each detector
+	for (i=0; i<thisMultiDetector->numberOfDetectors; i++) {
+		if (detectors[i]){
+#ifdef VERBOSE
+			cout << "detector " << i << ":" << endl;
+#endif
+			ret = detectors[i]->setROI(nroi[i],allroi[i]);
+		    if(detectors[i]->getErrorMask())
+			  setErrorMask(getErrorMask()|(1<<i));
+			if(ret1==-100)
+				ret1=ret;
+			else
+				ret1=FAIL;
+		}
+	}
+
+	return ret1;
+}
+
+
+
+slsDetectorDefs::ROI* multiSlsDetector::getROI(int &n){
+
+	n = 0;
+	int num = 0,i,j;
+	int ndet = thisMultiDetector->numberOfDetectors;
+	int nroi[ndet];
+	int maxroi = ndet*MAX_ROIS;
+	ROI temproi;
+	ROI roiLimits[maxroi];
+	ROI retval[maxroi];
+	ROI* temp=0;
+	int index=0;
+
+	//get each detector's roi array
+	for (i=0; i<thisMultiDetector->numberOfDetectors; i++){
+		if (detectors[i]){
+			temp = detectors[i]->getROI(index);
+			nroi[i] =  index;
+			if(temp){
+//#ifdef VERBOSE
+				if(index)
+					cout << "detector " << i << ":" << endl;
+//#endif
+				for(j=0;j<index;j++){
+//#ifdef VERBOSE
+					cout<<temp[j].xmin<<"\t"<<temp[j].xmax<<"\t"<<temp[j].ymin<<"\t"<<temp[j].ymax<<endl;
+//#endif
+					roiLimits[n].xmin = temp[j].xmin + thisMultiDetector->offsetX[i];
+					roiLimits[n].xmax = temp[j].xmax + thisMultiDetector->offsetX[i];
+					roiLimits[n].ymin = temp[j].ymin + thisMultiDetector->offsetY[i];
+					roiLimits[n].ymax = temp[j].ymin + thisMultiDetector->offsetY[i];
+					n++;
+				}
+			}
+		}
+	}
+
+
+
+	//empty roi
+	if (!n)	return NULL;
+
+
+
+#ifdef VERBOSE
+	cout<<"Getting ROI :"<<endl;
+		for(int j=0;j<n;j++){
+			cout<<roiLimits[j].xmin<<"\t"<<roiLimits[j].xmax<<"\t"<<roiLimits[j].ymin<<"\t"<<roiLimits[j].ymax<<endl;
+		}
+#endif
+
+
+
+
+	//combine all the adjacent rois in x direction
+	for(i=0;i<n;i++){
+		//since the ones combined are replaced by -1
+		if ((roiLimits[i].xmin) == -1)
+			continue;
+		for(j=i+1;j<n;j++){
+			//since the ones combined are replaced by -1
+			if ((roiLimits[j].xmin) == -1)
+				continue;
+			//if y values are same
+			if (((roiLimits[i].ymin) == (roiLimits[j].ymin)) && ((roiLimits[i].ymax) == (roiLimits[j].ymax))){
+				//if adjacent, increase [i] range and replace all [j] with -1
+				if ((roiLimits[i].xmax)+1 == roiLimits[j].xmin){
+					roiLimits[i].xmax = roiLimits[j].xmax;
+					roiLimits[j].xmin = -1;
+					roiLimits[j].xmax = -1;
+					roiLimits[j].ymin = -1;
+					roiLimits[j].ymax = -1;
+				}
+				//if adjacent, increase [i] range and replace all [j] with -1
+				else if ((roiLimits[i].xmin)-1 == roiLimits[j].xmax){
+					roiLimits[i].xmin = roiLimits[j].xmin;
+					roiLimits[j].xmin = -1;
+					roiLimits[j].xmax = -1;
+					roiLimits[j].ymin = -1;
+					roiLimits[j].ymax = -1;
+				}
+			}
+		}
+	}
+
+#ifdef VERBOSE
+	cout<<"Combined along x axis Getting ROI :"<<endl;
+		cout<<"detector "<<i<<endl;
+		for(int j=0;j<n;j++){
+			cout<<roiLimits[j].xmin<<"\t"<<roiLimits[j].xmax<<"\t"<<roiLimits[j].ymin<<"\t"<<roiLimits[j].ymax<<endl;
+		}
+#endif
+
+	//combine all the adjacent rois in y direction
+	for(i=0;i<n;i++){
+		//since the ones combined are replaced by -1
+		if ((roiLimits[i].ymin) == -1)
+			continue;
+		for(j=i+1;j<n;j++){
+			//since the ones combined are replaced by -1
+			if ((roiLimits[j].ymin) == -1)
+				continue;
+			//if x values are same
+			if (((roiLimits[i].xmin) == (roiLimits[j].xmin)) && ((roiLimits[i].xmax) == (roiLimits[j].xmax))){
+				//if adjacent, increase [i] range and replace all [j] with -1
+				if ((roiLimits[i].ymax)+1 == roiLimits[j].ymin){
+					roiLimits[i].ymax = roiLimits[j].ymax;
+					roiLimits[j].xmin = -1;
+					roiLimits[j].xmax = -1;
+					roiLimits[j].ymin = -1;
+					roiLimits[j].ymax = -1;
+				}
+				//if adjacent, increase [i] range and replace all [j] with -1
+				else if ((roiLimits[i].ymin)-1 == roiLimits[j].ymax){
+					roiLimits[i].ymin = roiLimits[j].ymin;
+					roiLimits[j].xmin = -1;
+					roiLimits[j].xmax = -1;
+					roiLimits[j].ymin = -1;
+					roiLimits[j].ymax = -1;
+				}
+			}
+		}
+	}
+
+	// get rid of -1s
+	for(i=0;i<n;i++){
+		if((roiLimits[i].xmin)!=-1){
+			retval[num] = roiLimits[i];
+			num++;
+		}
+	}
+	//sort final roi
+	for(i=0;i<num;i++){
+		for(j=i+1;j<num;j++){
+			if(retval[j].xmin<retval[i].xmin){
+				temproi = retval[i];
+				retval[i] = retval[j];
+				retval[j] = temproi;
+			}
+		}
+	}
+	n = num;
+
+	cout<<"\nxmin\txmax\tymin\tymax"<<endl;
+	for(i=0;i<n;i++)
+		cout<<retval[i].xmin<<"\t"<<retval[i].xmax<<"\t"<<retval[i].ymin<<"\t"<<retval[i].ymax<<endl;
+	return retval;
+}
+
+
 
 double* multiSlsDetector::decodeData(int *datain, double *fdata) {
   double *dataout;
@@ -1815,6 +2182,22 @@ int multiSlsDetector::getNMods(){
 
   return nm;
 }
+
+
+int multiSlsDetector::getNMod(dimension d){
+  int nm=0;
+  for (int idet=0; idet<thisMultiDetector->numberOfDetectors; idet++) {
+    if (detectors[idet]) {
+      nm+=detectors[idet]->getNMod(d);
+    }
+  }
+#ifdef VERBOSE
+  cout << "total number of modules in dimension " << d << " is " << nm << endl;
+#endif
+
+  return nm;
+}
+
 
 
 int multiSlsDetector::getChansPerMod(int imod){
@@ -2730,13 +3113,13 @@ const char * multiSlsDetector::getSettingsFile() {
 }
 
 
-int multiSlsDetector::configureMAC(int adc) {
+int multiSlsDetector::configureMAC() {
 
   int ret=-100, ret1;
 
   for (int idet=0; idet<thisMultiDetector->numberOfDetectors; idet++) {
     if (detectors[idet]) {
-      ret1=detectors[idet]->configureMAC(adc);
+      ret1=detectors[idet]->configureMAC();
 	  if(detectors[idet]->getErrorMask())
 		setErrorMask(getErrorMask()|(1<<idet));
       if (ret==-100)
@@ -2877,6 +3260,28 @@ int multiSlsDetector::getMaxMods() {
   }
 #ifdef VERBOSE
   cout << "max mods is " << ret << endl;
+#endif
+
+  return ret;
+
+}
+
+
+int multiSlsDetector::getMaxMod(dimension d){
+
+  int ret=0, ret1;
+
+  for (int idet=0; idet<thisMultiDetector->numberOfDetectors; idet++) {
+    if (detectors[idet]) {
+      ret1=detectors[idet]->getNMaxMod(d);
+#ifdef VERBOSE
+      cout << "detector " << idet << " maxmods " << ret1 << " in direction " << d << endl;
+#endif
+      ret+=ret1;
+    }
+  }
+#ifdef VERBOSE
+  cout << "max mods in direction "<< d << " is " << ret << endl;
 #endif
 
   return ret;

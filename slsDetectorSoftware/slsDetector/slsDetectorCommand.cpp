@@ -2616,13 +2616,15 @@ string slsDetectorCommand::helpDetectorSize(int narg, char *args[], int action) 
     os << "nmod i \n sets the number of modules of the detector"<< std::endl;
     os << "dr i \n sets the dynamic range of the detector"<< std::endl;
     os << "roi i xmin xmax ymin ymax \n sets region of interest where i is number of rois;i=0 to clear rois"<< std::endl;
-  
+    os << "detsizechan x y \n sets the maximum number of channels for complete detector set in both directions; -1 is no limit"<< std::endl;
   }
   if (action==GET_ACTION || action==HELP_ACTION) {
     os << "nmod \n gets the number of modules of the detector"<< std::endl;
     os << "maxmod \n gets the maximum number of modules of the detector"<< std::endl;
     os << "dr \n gets the dynamic range of the detector"<< std::endl;
     os << "roi \n gets region of interest"<< std::endl;
+    os << "detsizechan \n gets the maximum number of channels for complete detector set in both directions; -1 is no limit"<< std::endl;
+
   } 
   return os.str();
 

@@ -19,6 +19,9 @@
 /** header length for data :gotthard*/
 #define HEADERLENGTH 12
 
+/** maximum rois */
+#define MAX_ROIS 100
+
 typedef  double double32_t;
 typedef  float float32_t;
 typedef  int int32_t;

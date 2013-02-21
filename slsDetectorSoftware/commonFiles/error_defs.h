@@ -31,6 +31,7 @@ using namespace std;
 
 #define COULD_NOT_CONFIGURE_MAC				0x0000000000000001ULL
 #define COULDNOT_SET_NETWORK_PARAMETER		0x0000000000000002ULL
+#define COULDNOT_SET_ROI					0x0000000000000004ULL
 
 
 /** @short class returning all error messages for error mask */
@@ -71,7 +72,10 @@ public:
 			retval.append("Could not configure mac\n");
 
 		if(slsErrorMask&COULDNOT_SET_NETWORK_PARAMETER)
-			retval.append("Could not set network parameter. Should be valid and in proper format.\n");
+			retval.append("Could not set network parameter. Should be valid and in proper format\n");
+
+		if(slsErrorMask&COULDNOT_SET_ROI)
+			retval.append("Could not set the exact region of interest. Verify ROI set by detector.\n");
 
 		return retval;
 

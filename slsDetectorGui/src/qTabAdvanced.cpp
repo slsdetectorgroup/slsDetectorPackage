@@ -42,9 +42,6 @@ void qTabAdvanced::SetupWidgetWindow(){
 
 //executed even for non digital, so make sure its necessary
 
-	//readout adc
-	lblADC->setEnabled(false);
-	comboADC->setEnabled(false);
 	//Network
 	lblIP->setEnabled(false);
 	lblMAC->setEnabled(false);
@@ -75,8 +72,6 @@ void qTabAdvanced::SetupWidgetWindow(){
 	case slsDetectorDefs::GOTTHARD:
 		isEnergy = false;
 		isAngular = true;
-		lblADC->setEnabled(true);
-		comboADC->setEnabled(true);
 		lblIP->setEnabled(true);
 		lblMAC->setEnabled(true);
 		dispIP->setEnabled(true);
@@ -142,6 +137,9 @@ void qTabAdvanced::SetupWidgetWindow(){
 	}
 
 
+	//updates roi
+	updateROIList();
+
 	Initialization();
 
 }
@@ -194,8 +192,6 @@ void qTabAdvanced::Initialization(){
 	connect(comboOnline,		SIGNAL(currentIndexChanged(int)),	this,	SLOT(SetOnline(int)));
 
 	if(detType==slsDetectorDefs::GOTTHARD){
-		//readout
-		connect(comboADC,			SIGNAL(currentIndexChanged(int)),	this, SLOT(SetADCReadout(int)));
 
 		//network
 		connect(spinTCPPort,		SIGNAL(valueChanged(int)),	this,	SLOT(SetRxrTCPPort(int)));
@@ -212,18 +208,11 @@ void qTabAdvanced::Initialization(){
 
 	}
 
-}
 
-//-------------------------------------------------------------------------------------------------------------------------------------------------
-
-
-void qTabAdvanced::SetADCReadout(int i){
-
-	if(i==5) i=-1;
-	if(myDet->configureMAC(i)==slsDetectorDefs::FAIL)
-		qDefs::Message(qDefs::WARNING,"Could not configure mac","Advanced");
-	else
-		qDefs::Message(qDefs::WARNING,"ADC Readout successfully set up","Advanced");
+	//roi
+	connect(btnClearRoi,		SIGNAL(clicked()),			this, SLOT(clearROIinDetector()));
+	connect(btnGetRoi,			SIGNAL(clicked()),			this, SLOT(updateROIList()));
+	connect(btnSetRoi,			SIGNAL(clicked()),			this, SLOT(setROI()));
 }
 
 
@@ -643,12 +632,7 @@ void qTabAdvanced::Configuremac(){
 #ifdef VERBOSE
 	cout << "Configuring Mac:" << endl;
 #endif
-	int adc = comboADC->currentIndex();
-	if(adc==5) adc=-1;
-	myDet->configureMAC(adc);
-	//	qDefs::Message(qDefs::WARNING,"Could not configure mac","Advanced");
-	//else
-	//	qDefs::Message(qDefs::WARNING,"ADC Readout successfully set up","Advanced");
+	myDet->configureMAC();
 	qDefs::checkErrorMessage(myDet);
 }
 
@@ -656,7 +640,234 @@ void qTabAdvanced::Configuremac(){
 //-------------------------------------------------------------------------------------------------------------------------------------------------
 
 
+void qTabAdvanced::updateROIList(){
+#ifdef VERYVERBOSE
+	cout<<"in updateROIList() " << endl;
+#endif
+	clearROI();
+
+	int n,i;
+	slsDetectorDefs::ROI* temp = myDet->getROI(n);
+
+	if((temp!=NULL)&&(n>0)){
+		//assign into array, else it loses values cuz of memory
+		slsDetectorDefs::ROI allroi[n];
+		for(i=0;i<n;i++)
+			allroi[i] =  temp[i];
+
+		//add roi inputs
+		AddROIInput(n);
+		//populating roi list
+		for (i=0;i<n;i++){
+			spinFromX[i]->setValue(allroi[i].xmin);
+			spinFromY[i]->setValue(allroi[i].ymin);
+			spinToX[i]->setValue(allroi[i].xmax);
+			spinToY[i]->setValue(allroi[i].ymax);
+		}
+		cout << "ROIs populated: " << n << endl;
+	}
+}
+
+
+//-------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+void qTabAdvanced::AddROIInput(int num){
+#ifdef VERVERBOSE
+	cout<<"in AddROIInput() " << num << endl;
+#endif
+	if((int)lblFromX.size()){
+		disconnect(spinFromX[numRois],	SIGNAL(valueChanged(int)),		this,	SLOT(AddROIInputSlot()));
+		disconnect(spinFromY[numRois],	SIGNAL(valueChanged(int)),		this,	SLOT(AddROIInputSlot()));
+		disconnect(spinToX[numRois],	SIGNAL(valueChanged(int)),		this,	SLOT(AddROIInputSlot()));
+		disconnect(spinToY[numRois],	SIGNAL(valueChanged(int)),		this,	SLOT(AddROIInputSlot()));
+	}
+
+	int exists = numRois+1;
+	int total = exists+num;
+	//if cleared, addding just one
+	if ((num==0) && (numRois==0)){
+		exists = 0;
+		total = 1;
+	}/*else{
+		gridRoi->removeWidget
+	}*/
+
+	for (int i=exists;i<total;i++){
+
+		if(i >= ((int)lblFromX.size())){
+			lblFromX.resize(i+1);	spinFromX.resize(i+1);
+			lblFromY.resize(i+1);	spinFromY.resize(i+1);
+			lblToX.resize(i+1);	spinToX.resize(i+1);
+			lblToY.resize(i+1);	spinToY.resize(i+1);
+
+			lblFromX[i] 	= new QLabel("x min:");
+			lblFromY[i] 	= new QLabel("y min:");
+			lblToX[i] 		= new QLabel("x max:");
+			lblToY[i] 		= new QLabel("y max:");
+			spinFromX[i] 	= new QSpinBox();
+			spinFromY[i] 	= new QSpinBox();
+			spinToX[i] 		= new QSpinBox();
+			spinToY[i] 		= new QSpinBox();
+
+
+			lblFromX[i]->setSizePolicy(QSizePolicy::Fixed,QSizePolicy::Fixed);			lblFromX[i]->setFixedWidth(50);
+			lblFromY[i]->setSizePolicy(QSizePolicy::Fixed,QSizePolicy::Fixed);			lblFromY[i]->setFixedWidth(50);
+			lblToX[i]->setSizePolicy(QSizePolicy::Fixed,QSizePolicy::Fixed);			lblToX[i]->setFixedWidth(50);
+			lblToY[i]->setSizePolicy(QSizePolicy::Fixed,QSizePolicy::Fixed);			lblToY[i]->setFixedWidth(50);
+			spinFromX[i]->setSizePolicy(QSizePolicy::Fixed,QSizePolicy::Fixed);			spinFromX[i]->setFixedWidth(80);
+			spinFromY[i]->setSizePolicy(QSizePolicy::Fixed,QSizePolicy::Fixed);			spinFromY[i]->setFixedWidth(80);
+			spinToX[i]->setSizePolicy(QSizePolicy::Fixed,QSizePolicy::Fixed);			spinToX[i]->setFixedWidth(80);
+			spinToY[i]->setSizePolicy(QSizePolicy::Fixed,QSizePolicy::Fixed);			spinToY[i]->setFixedWidth(80);
+			spinFromX[i]->setFixedHeight(19);
+			spinFromY[i]->setFixedHeight(19);
+			spinToX[i]->setFixedHeight(19);
+			spinToY[i]->setFixedHeight(19);
+
+			spinFromX[i]->setMaximum(myDet->getMaxNumberOfChannels(slsDetectorDefs::X)-1);
+			spinToX[i]->setMaximum(myDet->getMaxNumberOfChannels(slsDetectorDefs::X)-1);
+			spinFromY[i]->setMaximum(myDet->getMaxNumberOfChannels(slsDetectorDefs::Y)-1);
+			spinToY[i]->setMaximum(myDet->getMaxNumberOfChannels(slsDetectorDefs::Y)-1);
+			spinFromX[i]->setMinimum(-1);
+			spinToX[i]->setMinimum(-1);
+			spinFromY[i]->setMinimum(-1);
+			spinToY[i]->setMinimum(-1);
+			spinFromX[i]->setValue(-1);
+			spinFromY[i]->setValue(-1);
+			spinToX[i]->setValue(-1);
+			spinToY[i]->setValue(-1);
+		}
+
+		gridRoi->addWidget(lblFromX[i],	i,0,Qt::AlignTop);
+		gridRoi->addWidget(spinFromX[i],i,1,Qt::AlignTop);
+		gridRoi->addItem(new QSpacerItem(40,20,QSizePolicy::Expanding,QSizePolicy::Fixed),		i,2,Qt::AlignTop);
+		gridRoi->addWidget(lblToX[i],	i,3,Qt::AlignTop);
+		gridRoi->addWidget(spinToX[i],	i,4,Qt::AlignTop);
+		gridRoi->addItem(new QSpacerItem(40,20,QSizePolicy::Expanding,QSizePolicy::Fixed),		i,5,Qt::AlignTop);
+		gridRoi->addWidget(lblFromY[i],	i,6,Qt::AlignTop);
+		gridRoi->addWidget(spinFromY[i],i,7,Qt::AlignTop);
+		gridRoi->addItem(new QSpacerItem(40,20,QSizePolicy::Expanding,QSizePolicy::Fixed),		i,8,Qt::AlignTop);
+		gridRoi->addWidget(lblToY[i],	i,9,Qt::AlignTop);
+		gridRoi->addWidget(spinToY[i],	i,10,Qt::AlignTop);
+
+		lblFromX[i]->show();
+		spinFromX[i]->show();
+		lblToX[i]->show();
+		spinToX[i]->show();
+		lblFromY[i]->show();
+		spinFromY[i]->show();
+		lblToY[i]->show();
+		spinToY[i]->show();
+	}
+
+	numRois += num;
+
+	connect(spinFromX[numRois],	SIGNAL(valueChanged(int)),		this,	SLOT(AddROIInputSlot()));
+	connect(spinFromY[numRois],	SIGNAL(valueChanged(int)),		this,	SLOT(AddROIInputSlot()));
+	connect(spinToX[numRois],	SIGNAL(valueChanged(int)),		this,	SLOT(AddROIInputSlot()));
+	connect(spinToY[numRois],	SIGNAL(valueChanged(int)),		this,	SLOT(AddROIInputSlot()));
+
+#ifdef VERYVERBOSE
+	cout<<"ROI Inputs added " << num << endl;
+#endif
+}
+
+
+//-------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+void qTabAdvanced::clearROI(){
+#ifdef VERYVERBOSE
+	cout<<"in clearROI() " << endl;
+#endif
+	if((int)lblFromX.size()){
+		disconnect(spinFromX[numRois],	SIGNAL(valueChanged(int)),		this,	SLOT(AddROIInputSlot()));
+		disconnect(spinFromY[numRois],	SIGNAL(valueChanged(int)),		this,	SLOT(AddROIInputSlot()));
+		disconnect(spinToX[numRois],	SIGNAL(valueChanged(int)),		this,	SLOT(AddROIInputSlot()));
+		disconnect(spinToY[numRois],	SIGNAL(valueChanged(int)),		this,	SLOT(AddROIInputSlot()));
+
+	}
+
+
+	for (int i=0;i<numRois;i++){
+		spinFromX[i]->setValue(-1);
+		spinFromY[i]->setValue(-1);
+		spinToX[i]->setValue(-1);
+		spinToY[i]->setValue(-1);
+	}
+
+
+	//hide widget because they are still visible even when removed and layout deleted
+	QLayoutItem *item;
+	while((item = gridRoi->takeAt(0))) {
+		if (item->widget()){
+			item->widget()->hide();
+			gridRoi->removeWidget(item->widget());
+		}
+		//if (item->spacerItem())
+	}
+
+	numRois = 0;
+	AddROIInput(0);
+
+}
+
+
+//-------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+void qTabAdvanced::setROI(){
+#ifdef VERYVERBOSE
+	cout<<"in setROI() " << endl;
+#endif
+
+	slsDetectorDefs::ROI allroi[MAX_ROIS];
+
+	for (int i=0;i<numRois;i++){
+		allroi[i].xmin = spinFromX[i]->value();
+		allroi[i].ymin = spinFromY[i]->value();
+		allroi[i].xmax = spinToX[i]->value();
+		allroi[i].ymax = spinToY[i]->value();
+	}
+
+	myDet->setROI(numRois,allroi);
+	//qDefs::checkErrorMessage(myDet);
+	cout<<"ROIs set" << endl;
+	//get the correct list back
+	updateROIList();
+	//configuremac
+	myDet->configureMAC();
+	qDefs::checkErrorMessage(myDet);
+}
+
+
+//-------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+void qTabAdvanced::clearROIinDetector(){
+#ifdef VERYVERBOSE
+	cout<<"in clearROIinDetector() " << endl;
+#endif
+
+	if (QMessageBox::warning(this, "Clear ROI",
+			"Are you sure you want to clear all the ROI in detector?",
+			QMessageBox::Yes | QMessageBox::No, QMessageBox::No) == QMessageBox::Yes){
+
+		clearROI();
+		setROI();
+#ifdef VERBOSE
+		cout << "ROIs cleared" << endl;
+#endif
+	}
+}
+
+
+//-------------------------------------------------------------------------------------------------------------------------------------------------
+
+
 void qTabAdvanced::Refresh(){
+
+
 #ifdef VERBOSE
 		cout  << endl << "**Updating Advanced Tab" << endl;
 #endif
@@ -744,7 +955,6 @@ void qTabAdvanced::Refresh(){
 
 	if(detType==slsDetectorDefs::GOTTHARD){
 		//disconnect
-		disconnect(comboADC,			SIGNAL(currentIndexChanged(int)),	this, SLOT(SetADCReadout(int)));
 		disconnect(spinTCPPort,			SIGNAL(valueChanged(int)),	this,	SLOT(SetRxrTCPPort(int)));
 		disconnect(spinUDPPort,			SIGNAL(valueChanged(int)),	this,	SLOT(SetRxrUDPPort(int)));
 		disconnect(comboRxrOnline,		SIGNAL(currentIndexChanged(int)),	this,	SLOT(SetReceiverOnline(int)));
@@ -770,7 +980,6 @@ void qTabAdvanced::Refresh(){
 		dispUDPMAC->setText(QString(myDet->getNetworkParameter(slsDetectorDefs::RECEIVER_UDP_MAC)));
 
 		//connect
-		connect(comboADC,			SIGNAL(currentIndexChanged(int)),	this, SLOT(SetADCReadout(int)));
 		connect(spinTCPPort,		SIGNAL(valueChanged(int)),	this,	SLOT(SetRxrTCPPort(int)));
 		connect(spinUDPPort,		SIGNAL(valueChanged(int)),	this,	SLOT(SetRxrUDPPort(int)));
 		connect(comboRxrOnline,		SIGNAL(currentIndexChanged(int)),	this,	SLOT(SetReceiverOnline(int)));
@@ -810,6 +1019,8 @@ void qTabAdvanced::Refresh(){
 	}
 
 
+	//roi
+	updateROIList();
 
 
 #ifdef VERBOSE

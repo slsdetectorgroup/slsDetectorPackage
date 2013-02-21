@@ -15,5 +15,6 @@
 	<file>../images/stop.png</file>
 	<file>../images/leftArrow.png</file>
 	<file>../images/rightArrow.png</file>
+	<file>../images/upload.png</file>
     </qresource>
 </RCC>

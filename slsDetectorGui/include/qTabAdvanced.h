@@ -9,17 +9,18 @@
 #define QTABADVANCED_H_
 
 #include "qDefs.h"
-
+#include "sls_detector_defs.h"
 
 /** Form Header */
 #include "ui_form_tab_advanced.h"
 /** Project Class Headers */
 class multiSlsDetector;
+class slsDetector;
 /** Qt Project Class Headers */
 class qDrawPlot;
 /** Qt Include Header */
 #include <QStackedLayout>
-
+#include <QSpacerItem>
 /**
  *@short sets up the advanced parameters
  */
@@ -52,13 +53,12 @@ private:
 	 */
 	void Initialization();
 
-
+	/** Add ROI Input
+	 * @param num number of inputs to add
+	 */
+	void AddROIInput(int num);
 
 private slots:
-
-	/** Set ADC Readout
-	 */
-	void SetADCReadout(int i);
 
 	/** Enable/Disable Energy and Calibration Logs
 	 */
@@ -146,6 +146,26 @@ private slots:
 	 */
 	void Configuremac();
 
+	/** Add ROI Input if the value changed in the last slot
+	 */
+	void AddROIInputSlot(){AddROIInput(1);};
+
+	/** Clears all the ROI inputs
+	 */
+	void clearROI();
+
+	/** Gets ROIs from detector and updates it
+	 */
+	void updateROIList();
+
+	/** Sets ROI in detector
+	 */
+	void setROI();
+
+	/** Clears ROI in detector
+	 */
+	void clearROIinDetector();
+
 private:
 	/** The sls detector object */
 	multiSlsDetector *myDet;
@@ -171,6 +191,23 @@ private:
 
 	bool isEnergy;
 	bool isAngular;
+
+	/**sls detector obejct*/
+	slsDetector *det;
+
+
+	/** ROI */
+	vector <QLabel*> 	lblFromX;
+	vector <QSpinBox*> 	spinFromX;
+	vector <QLabel*> 	lblFromY;
+	vector <QSpinBox*> 	spinFromY;
+	vector <QLabel*> 	lblToX;
+	vector <QSpinBox*> 	spinToX;
+	vector <QLabel*> 	lblToY;
+	vector <QSpinBox*> 	spinToY;
+	int numRois;
+
+
 
 
 };

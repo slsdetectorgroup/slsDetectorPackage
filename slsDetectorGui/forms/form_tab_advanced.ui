@@ -51,11 +51,70 @@
     <enum>QTabWidget::North</enum>
    </property>
    <property name="currentIndex">
-    <number>3</number>
+    <number>2</number>
    </property>
    <property name="elideMode">
     <enum>Qt::ElideLeft</enum>
    </property>
+   <widget class="QWidget" name="tab_4">
+    <attribute name="title">
+     <string>Logs</string>
+    </attribute>
+    <widget class="QGroupBox" name="boxLogs">
+     <property name="geometry">
+      <rect>
+       <x>5</x>
+       <y>10</y>
+       <width>746</width>
+       <height>66</height>
+      </rect>
+     </property>
+     <property name="title">
+      <string>Calibration Logs</string>
+     </property>
+     <widget class="QWidget" name="horizontalLayoutWidget_2">
+      <property name="geometry">
+       <rect>
+        <x>25</x>
+        <y>20</y>
+        <width>313</width>
+        <height>31</height>
+       </rect>
+      </property>
+      <layout class="QHBoxLayout" name="horizontalLayout_2">
+       <property name="spacing">
+        <number>42</number>
+       </property>
+       <item>
+        <widget class="QCheckBox" name="chkEnergyLog">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+         <property name="text">
+          <string>Energy Calibration</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QCheckBox" name="chkAngularLog">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+         <property name="text">
+          <string>Angular Calibration</string>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </widget>
+    </widget>
+   </widget>
    <widget class="QWidget" name="tab_3">
     <attribute name="title">
      <string>Trimming</string>
@@ -682,130 +741,129 @@ An extension given by the modules serial number will be attached.
      </widget>
     </widget>
    </widget>
-   <widget class="QWidget" name="tab_4">
-    <attribute name="title">
-     <string>Logs</string>
-    </attribute>
-    <widget class="QGroupBox" name="boxLogs">
-     <property name="geometry">
-      <rect>
-       <x>5</x>
-       <y>10</y>
-       <width>746</width>
-       <height>66</height>
-      </rect>
-     </property>
-     <property name="title">
-      <string>Calibration Logs</string>
-     </property>
-     <widget class="QWidget" name="horizontalLayoutWidget_2">
-      <property name="geometry">
-       <rect>
-        <x>25</x>
-        <y>20</y>
-        <width>313</width>
-        <height>31</height>
-       </rect>
-      </property>
-      <layout class="QHBoxLayout" name="horizontalLayout_2">
-       <property name="spacing">
-        <number>42</number>
-       </property>
-       <item>
-        <widget class="QCheckBox" name="chkEnergyLog">
-         <property name="sizePolicy">
-          <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-           <horstretch>0</horstretch>
-           <verstretch>0</verstretch>
-          </sizepolicy>
-         </property>
-         <property name="text">
-          <string>Energy Calibration</string>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QCheckBox" name="chkAngularLog">
-         <property name="sizePolicy">
-          <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-           <horstretch>0</horstretch>
-           <verstretch>0</verstretch>
-          </sizepolicy>
-         </property>
-         <property name="text">
-          <string>Angular Calibration</string>
-         </property>
-        </widget>
-       </item>
-      </layout>
-     </widget>
-    </widget>
-   </widget>
    <widget class="QWidget" name="tab_5">
     <attribute name="title">
-     <string>Readout</string>
+     <string>Region of Interest</string>
     </attribute>
-    <widget class="QWidget" name="horizontalLayoutWidget_3">
+    <widget class="QScrollArea" name="scrollArea">
      <property name="geometry">
       <rect>
        <x>10</x>
-       <y>10</y>
-       <width>136</width>
-       <height>31</height>
+       <y>50</y>
+       <width>736</width>
+       <height>246</height>
       </rect>
      </property>
-     <layout class="QHBoxLayout" name="horizontalLayout_3">
-      <property name="spacing">
-       <number>42</number>
+     <property name="frameShape">
+      <enum>QFrame::NoFrame</enum>
+     </property>
+     <property name="widgetResizable">
+      <bool>true</bool>
+     </property>
+     <widget class="QWidget" name="roiWidget">
+      <property name="geometry">
+       <rect>
+        <x>0</x>
+        <y>0</y>
+        <width>736</width>
+        <height>246</height>
+       </rect>
       </property>
+      <layout class="QGridLayout" name="gridRoi">
+       <property name="horizontalSpacing">
+        <number>1</number>
+       </property>
+       <property name="verticalSpacing">
+        <number>15</number>
+       </property>
+      </layout>
+     </widget>
+    </widget>
+    <widget class="QWidget" name="horizontalLayoutWidget_4">
+     <property name="geometry">
+      <rect>
+       <x>10</x>
+       <y>5</y>
+       <width>736</width>
+       <height>41</height>
+      </rect>
+     </property>
+     <layout class="QHBoxLayout" name="horizontalLayout_5">
       <item>
-       <widget class="QLabel" name="lblADC">
-        <property name="text">
-         <string>ADC:</string>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QComboBox" name="comboADC">
+       <widget class="QPushButton" name="btnGetRoi">
         <property name="sizePolicy">
-         <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+         <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
           <horstretch>0</horstretch>
           <verstretch>0</verstretch>
          </sizepolicy>
         </property>
-        <property name="currentIndex">
-         <number>5</number>
+        <property name="text">
+         <string>  Get ROI  </string>
         </property>
-        <item>
-         <property name="text">
-          <string>0</string>
-         </property>
-        </item>
-        <item>
-         <property name="text">
-          <string>1</string>
-         </property>
-        </item>
-        <item>
-         <property name="text">
-          <string>2</string>
-         </property>
-        </item>
-        <item>
-         <property name="text">
-          <string>3</string>
-         </property>
-        </item>
-        <item>
-         <property name="text">
-          <string>4</string>
-         </property>
-        </item>
-        <item>
-         <property name="text">
-          <string>All</string>
-         </property>
-        </item>
+        <property name="icon">
+         <iconset resource="../include/icons.qrc">
+          <normaloff>:/icons/images/download.png</normaloff>:/icons/images/download.png</iconset>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <spacer name="horizontalSpacer_6">
+        <property name="orientation">
+         <enum>Qt::Horizontal</enum>
+        </property>
+        <property name="sizeHint" stdset="0">
+         <size>
+          <width>40</width>
+          <height>20</height>
+         </size>
+        </property>
+       </spacer>
+      </item>
+      <item>
+       <widget class="QPushButton" name="btnSetRoi">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="text">
+         <string>  Set ROI  </string>
+        </property>
+        <property name="icon">
+         <iconset resource="../include/icons.qrc">
+          <normaloff>:/icons/images/upload.png</normaloff>:/icons/images/upload.png</iconset>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <spacer name="horizontalSpacer_5">
+        <property name="orientation">
+         <enum>Qt::Horizontal</enum>
+        </property>
+        <property name="sizeHint" stdset="0">
+         <size>
+          <width>40</width>
+          <height>20</height>
+         </size>
+        </property>
+       </spacer>
+      </item>
+      <item>
+       <widget class="QPushButton" name="btnClearRoi">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="text">
+         <string>  Clear ROI  </string>
+        </property>
+        <property name="icon">
+         <iconset resource="../include/icons.qrc">
+          <normaloff>:/icons/images/close.png</normaloff>:/icons/images/close.png</iconset>
+        </property>
        </widget>
       </item>
      </layout>
@@ -962,9 +1020,6 @@ An extension given by the modules serial number will be attached.
        </item>
       </layout>
      </widget>
-     <zorder>gridLayoutWidget_5</zorder>
-     <zorder>dispFileName</zorder>
-     <zorder>gridLayoutWidget_7</zorder>
     </widget>
     <widget class="QGroupBox" name="boxRxrPorts">
      <property name="geometry">
@@ -1470,7 +1525,11 @@ An extension given by the modules serial number will be attached.
       </rect>
      </property>
      <property name="text">
-      <string>Set Receiver</string>
+      <string> Set Receiver</string>
+     </property>
+     <property name="icon">
+      <iconset resource="../include/icons.qrc">
+       <normaloff>:/icons/images/start.png</normaloff>:/icons/images/start.png</iconset>
      </property>
     </widget>
     <widget class="QPushButton" name="btnConfigure">
@@ -1483,7 +1542,11 @@ An extension given by the modules serial number will be attached.
       </rect>
      </property>
      <property name="text">
-      <string>Configure MAC</string>
+      <string> Configure MAC</string>
+     </property>
+     <property name="icon">
+      <iconset resource="../include/icons.qrc">
+       <normaloff>:/icons/images/start.png</normaloff>:/icons/images/start.png</iconset>
      </property>
     </widget>
    </widget>

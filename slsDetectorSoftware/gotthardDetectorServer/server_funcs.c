@@ -50,18 +50,8 @@ int init_detector( int b) {
 #else
   printf("This is a PICASSO detector with %d chips per module\n", NCHIP);
 #endif
-  int res =mapCSP0();
-  /*
-#ifndef VIRTUAL  
-  system("bus -a 0xb0000000 -w 0xd0008");
-#ifdef VERBOSE
-  printf("setting wait states \n");
-  system("bus -a 0xb0000000");
-#endif
-#endif
-  
-  */  
-  if (res<0) { printf("Could not map memory\n");
+
+  if (mapCSP0()==FAIL) { printf("Could not map memory\n");
     exit(1);  
   }
 
@@ -77,9 +67,7 @@ int init_detector( int b) {
     setPhaseShiftOnce();
     
     prepareADC();
-    setDAQRegister(-1);
-    cleanFifo();
-    setADC(-1);
+    setADC(-1); //already does setdaqreg and clean fifo
     printf("in chip of interes reg:%d\n",bus_r(CHIP_OF_INTRST_REG));
 	int reg = (NCHAN*NCHIP)<<CHANNEL_OFFSET;
 	reg&=CHANNEL_MASK;
@@ -198,10 +186,11 @@ int function_table() {
 
 int  M_nofunc(int file_des){
   
-  int retval=FAIL;
+  int ret=FAIL;
   sprintf(mess,"Unrecognized Function\n");
   printf(mess);
-  sendDataOnly(file_des,&retval,sizeof(retval));
+
+  sendDataOnly(file_des,&ret,sizeof(ret));
   sendDataOnly(file_des,mess,sizeof(mess));
   return GOODBYE;
 }
@@ -2249,8 +2238,68 @@ int set_dynamic_range(int file_des) {
 
 int set_roi(int file_des) {
 
-  return FAIL;
+	int i;
+	int ret=OK;
+	int nroi=-1;
+	int n=0;
+	int retvalsize=0;
+	ROI arg[MAX_ROIS];
+	ROI* retval=0;
 
+	strcpy(mess,"Could not set/get roi\n");
+
+
+	n = receiveDataOnly(file_des,&nroi,sizeof(nroi));
+	if (n < 0) {
+		sprintf(mess,"Error reading from socket\n");
+		ret=FAIL;
+	}
+
+	if(nroi!=-1){
+		n = receiveDataOnly(file_des,arg,nroi*sizeof(ROI));
+		if (n != (nroi*sizeof(ROI))) {
+			sprintf(mess,"Received wrong number of bytes for ROI\n");
+			ret=FAIL;
+		}
+//#ifdef VERBOSE
+		printf("Setting ROI to:");
+		for( i=0;i<nroi;i++)
+			printf("%d\t%d\t%d\t%d\n",arg[i].xmin,arg[i].xmax,arg[i].ymin,arg[i].ymax);
+//#endif
+	}
+	/* execute action if the arguments correctly arrived*/
+#ifdef MCB_FUNCS
+	if (lockStatus==1 && differentClients==1){//necessary???
+		sprintf(mess,"Detector locked by %s\n", lastClientIP);
+		ret=FAIL;
+	}
+	else{
+		retval=setROI(nroi,arg,&retvalsize,&ret);
+
+		if (ret==FAIL){
+			printf("mess:%s\n",mess);
+			sprintf(mess,"Could not set all roi, should have set %d rois, but only set %d rois\n",nroi,retvalsize);
+		}
+	}
+
+#endif
+
+
+	if(ret==OK && differentClients){
+		printf("Force update\n");
+		ret=FORCE_UPDATE;
+	}
+
+	/* send answer */
+	n = sendDataOnly(file_des,&ret,sizeof(ret));
+	if(ret==FAIL)
+		n = sendDataOnly(file_des,mess,sizeof(mess));
+	else{
+		sendDataOnly(file_des,&retvalsize,sizeof(retvalsize));
+		sendDataOnly(file_des,retval,retvalsize*sizeof(ROI));
+	}
+	/*return ok/fail*/
+	return ret;
 }
 
 int get_roi(int file_des) {
@@ -2494,7 +2543,6 @@ int configure_mac(int file_des) {
 	long long int idetectormacadd;
 	int udpport;
 	int detipad;
-	int adc=-1;
 	int retval=-100;
 
 	sprintf(mess,"Can't configure MAC\n");
@@ -2528,11 +2576,6 @@ int configure_mac(int file_des) {
 	printf("\n");
 #endif
 
-	n = receiveDataOnly(file_des,&adc,sizeof(adc));
-	if (n < 0) {
-		sprintf(mess,"Error reading from socket\n");
-		ret=FAIL;
-	}
 
 
 	if (imod>=getNModBoard())
@@ -2541,7 +2584,7 @@ int configure_mac(int file_des) {
 		imod=ALLMOD;
 
 	//#ifdef VERBOSE
-	printf("Configuring MAC of module %d and adc %d at port %x\n", imod, adc,udpport);
+	printf("Configuring MAC of module %d at port %x\n", imod, udpport);
 	//#endif
 #ifdef MCB_FUNCS
 	if (ret==OK){
@@ -2552,7 +2595,7 @@ int configure_mac(int file_des) {
 		}
 
 		if(ret==OK)
-			configureMAC(ipad,imacadd,idetectormacadd,detipad,digitalTestBit,adc,udpport);
+			configureMAC(ipad,imacadd,idetectormacadd,detipad,digitalTestBit,udpport);
 		retval=getAdcConfigured();
 	}
 #endif
@@ -2845,7 +2888,7 @@ int start_receiver(int file_des) {
 	/* execute action if the arguments correctly arrived*/
 #ifdef MCB_FUNCS
 	if (lockStatus==1 && differentClients==1){//necessary???
-		sprintf(mess,"Receiver locked by %s\n", lastClientIP);
+		sprintf(mess,"Detector locked by %s\n", lastClientIP);
 		ret=FAIL;
 	}
 	else
@@ -2881,7 +2924,7 @@ int stop_receiver(int file_des) {
 	/* execute action if the arguments correctly arrived*/
 #ifdef MCB_FUNCS
 	if (lockStatus==1 && differentClients==1){//necessary???
-		sprintf(mess,"Receiver locked by %s\n", lastClientIP);
+		sprintf(mess,"Detector locked by %s\n", lastClientIP);
 		ret=FAIL;
 	}
 	else
@@ -2946,3 +2989,5 @@ int calibrate_pedestal(int file_des){
 	/*return ok/fail*/
 	return ret;
 }
+
+

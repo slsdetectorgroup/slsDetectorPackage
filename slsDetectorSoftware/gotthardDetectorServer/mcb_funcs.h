@@ -166,6 +166,9 @@ int calibration_sensor(int num, int *values, int *dacs) ;
 int calibration_chip(int num, int *values, int *dacs);
 
 
+
+ROI* setROI(int n, ROI arg[], int *retvalsize, int *ret);
+
 #endif
 
 #endif

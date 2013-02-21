@@ -93,4 +93,6 @@ int stop_receiver(int);
 
 int calibrate_pedestal(int);
 
+int set_roi(int);
+
 #endif

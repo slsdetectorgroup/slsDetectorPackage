@@ -30,7 +30,7 @@ u_int32_t bus_r(u_int32_t offset);
 
 int setPhaseShiftOnce();
 int cleanFifo();
-int setDAQRegister(int adcval);
+int setDAQRegister();
 
 u_int32_t putout(char *s, int modnum);
 u_int32_t readin(int modnum);
@@ -66,7 +66,7 @@ int initHighVoltage(int val,int imod);
 int initConfGain(int isettings,int val,int imod);
 
 int setADC(int adc);
-int configureMAC(int ipad, long long int macad, long long int detectormacadd, int detipad, int ival, int adc,int udpport);
+int configureMAC(int ipad, long long int macad, long long int detectormacadd, int detipad, int ival, int udpport);
 int getAdcConfigured();
 
 

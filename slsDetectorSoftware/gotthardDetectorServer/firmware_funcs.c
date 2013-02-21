@@ -39,7 +39,9 @@ int ram_size=0;
 int64_t totalTime=1;
 u_int32_t progressMask=0;
 
-int phase_shift=120;
+int phase_shift=DEFAULT_PHASE_SHIFT;
+int ipPacketSize=DEFAULT_IP_PACKETSIZE;
+int udpPacketSize=DEFAULT_UDP_PACKETSIZE;
 
 
 int ififostart, ififostop, ififostep, ififo;
@@ -282,14 +284,14 @@ int cleanFifo(){
 }
 
 
-int setDAQRegister(int adcval)
+int setDAQRegister()
 {
 	u_int32_t addr, reg, val;
 	addr=DAQ_REG;
 
 	//depended on adcval
 	int packetlength=0x7f;
-	if(adcval==-1) packetlength=0x13f;
+	if(!ROI_flag) packetlength=0x13f;
 
 	//depended on pcb rev
 	int tokenTiming = TOKEN_TIMING_REV2;
@@ -1190,57 +1192,50 @@ int initConfGain(int isettings,int val,int imod){
 
 
 int setADC(int adc){
-	int reg;
+	int reg,nchips,mask;
 
+	if(adc==-1)	ROI_flag=0;
+	else		ROI_flag=1;
+
+	setDAQRegister();//token timing
+	cleanFifo();//adc sync
+
+	//all adc
 	if(adc==-1){
-	  	reg = (NCHAN*NCHIP)<<CHANNEL_OFFSET;
-		reg&=CHANNEL_MASK;
-		reg|=ACTIVE_ADC_MASK;
-		bus_w(CHIP_OF_INTRST_REG,reg);
-	}else{
-		reg = (NCHAN*2)<<CHANNEL_OFFSET;
-		reg&=CHANNEL_MASK;
-		int mask =1<<adc;
-		reg|=(ACTIVE_ADC_MASK & mask);
-		bus_w(CHIP_OF_INTRST_REG,reg);
+		//set packet size
+		ipPacketSize= DEFAULT_IP_PACKETSIZE;
+		udpPacketSize=DEFAULT_UDP_PACKETSIZE;
+		//set channel mask
+		nchips = NCHIP;
+		mask = ACTIVE_ADC_MASK;
 	}
+	//1 adc
+	else{
+		ipPacketSize= ADC1_IP_PACKETSIZE;
+		udpPacketSize=ADC1_UDP_PACKETSIZE;
+		//set channel mask
+		nchips = NCHIPS_PER_ADC;
+		mask = 1<<adc;
+	}
+
+	//set channel mask
+	reg = (NCHAN*nchips)<<CHANNEL_OFFSET;
+	reg&=CHANNEL_MASK;
+	reg|=(ACTIVE_ADC_MASK & mask);
+	bus_w(CHIP_OF_INTRST_REG,reg);
+
 #ifdef DDEBUG
 	printf("Chip of Intrst Reg:%x\n",bus_r(CHIP_OF_INTRST_REG));
 #endif
+
+	adcConfigured = adc;
+
+	return adcConfigured;
 }
 
 
 
-int configureMAC(int ipad,long long int macad,long long int detectormacad, int detipad, int ival, int adc,int udpport){
-
-	int udpPacketSize=0x050E;
-	int ipPacketSize=0x0522;
-
-	//update adc configured
-	adcConfigured = adc;
-
-	switch(adc){
-	case 0:
-	case 1:
-	case 2:
-	case 3:
-	case 4:
-		ROI_flag=1;
-		ipPacketSize= 256*2+14+20;
-		udpPacketSize=256*2+4+8+2;
-		break;
-	//for all adcs
-	default: 
-		adc=-1;
-		adcConfigured=-1;
-		ROI_flag=0;
-		break;
-	}
-
-
-	setDAQRegister(adc);//token timing
-	cleanFifo();//adc sync
-	setADC(adc);//chip of interest
+int configureMAC(int ipad,long long int macad,long long int detectormacad, int detipad, int ival, int udpport){
 
 
 #ifdef DDEBUG
@@ -1263,7 +1258,7 @@ int configureMAC(int ipad,long long int macad,long long int detectormacad, int d
 	tse_conf_regs=(tse_conf*)(CSP0BASE+offset2*2);
 
 #ifdef DDEBUG
-	printf("***Configuring MAC*** adc=%d\n",adc);
+	printf("***Configuring MAC*** \n");
 #endif
 
 	if(ival)
@@ -1421,7 +1416,6 @@ int configureMAC(int ipad,long long int macad,long long int detectormacad, int d
 	printf("Value read from Multi-purpose Reg:%x\n",val);
 #endif 
 	//  if(val!=0x2820) return -1;
-
 
 
 	return adcConfigured;

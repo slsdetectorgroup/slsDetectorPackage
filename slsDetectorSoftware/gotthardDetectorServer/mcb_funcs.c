@@ -2619,7 +2619,7 @@ ROI* setROI(int n, ROI arg[], int *retvalsize, int *ret){
 		//set rois for just 1 adc - take only 1st roi
 		if(adc!=-1){
 			rois[0].xmin=adc*(NCHAN*NCHIPS_PER_ADC);
-			rois[0].xmax=(adc+1)*(NCHAN*NCHIPS_PER_ADC);
+			rois[0].xmax=(adc+1)*(NCHAN*NCHIPS_PER_ADC)-1;
 			rois[0].ymin=-1;
 			rois[0].ymax=-1;
 			nROI = 1;

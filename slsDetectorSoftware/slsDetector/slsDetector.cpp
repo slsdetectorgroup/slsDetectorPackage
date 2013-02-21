@@ -3912,20 +3912,99 @@ int slsDetector::setDynamicRange(int n){
 };
 
 
-/*
-int slsDetector::setROI(int nroi, int *xmin, int *xmax, int *ymin, int *ymax){
 
 
-	return thisDetector->nROI;
-};
+int slsDetector::setROI(int n,ROI roiLimits[]){
+	int ret = FAIL;
+	//sort ascending order
+	int temp;
+	for(int i=0;i<n;i++){
+		for(int j=i+1;j<n;j++){
+			if(roiLimits[j].xmin<roiLimits[i].xmin){
+				temp=roiLimits[i].xmin;roiLimits[i].xmin=roiLimits[j].xmin;roiLimits[j].xmin=temp;
+				temp=roiLimits[i].xmax;roiLimits[i].xmax=roiLimits[j].xmax;roiLimits[j].xmax=temp;
+				temp=roiLimits[i].ymin;roiLimits[i].ymin=roiLimits[j].ymin;roiLimits[j].ymin=temp;
+				temp=roiLimits[i].ymax;roiLimits[i].ymax=roiLimits[j].ymax;roiLimits[j].ymax=temp;
+			}
+		}
+	}
+
+	ret = sendROI(n,roiLimits);
+	if(ret==FAIL)
+		setErrorMask((getErrorMask())|(COULDNOT_SET_ROI));
+
+	return ret;
+}
 
 
-int slsDetector::getROI(int nroi, int *xmin, int *xmax, int *ymin, int *ymax){
+slsDetectorDefs::ROI* slsDetector::getROI(int &n){
+	sendROI();
+	n=thisDetector->nROI;
+	return thisDetector->roiLimits;
+}
 
 
-	return thisDetector->nROI;
-};
-*/
+int slsDetector::sendROI(int n,ROI roiLimits[]){
+	int ret=FAIL;
+	int fnum=F_SET_ROI;
+	char mess[100];
+	int arg = n;
+	int retvalsize=0;
+	ROI retval[MAX_ROIS];
+	int nrec=-1;
+
+
+	if (thisDetector->onlineFlag==ONLINE_FLAG) {
+		if (controlSocket) {
+			if  (controlSocket->Connect()>=0) {
+				controlSocket->SendDataOnly(&fnum,sizeof(fnum));
+				controlSocket->SendDataOnly(&arg,sizeof(arg));
+				if(arg==-1){;
+#ifdef VERBOSE
+					cout << "Getting ROI from detector" << endl;
+#endif
+				}else{
+#ifdef VERBOSE
+					cout << "Sending ROI of size " << arg << " to detector" << endl;
+#endif
+					controlSocket->SendDataOnly(roiLimits,arg*sizeof(ROI));
+				}
+				controlSocket->ReceiveDataOnly(&ret,sizeof(ret));
+
+				if (ret!=FAIL){
+					controlSocket->ReceiveDataOnly(&retvalsize,sizeof(retvalsize));
+					nrec = controlSocket->ReceiveDataOnly(retval,retvalsize*sizeof(ROI));
+					if(nrec!=(retvalsize*sizeof(ROI))){
+						ret=FAIL;
+						std::cout << " wrong size received: received " << nrec << "but expected " << retvalsize*sizeof(ROI) << endl;
+					}
+				}else {
+					controlSocket->ReceiveDataOnly(mess,sizeof(mess));
+					std::cout<< "Detector returned error: " << mess << std::endl;
+				}
+				controlSocket->Disconnect();
+				if (ret==FORCE_UPDATE)
+					updateDetector();
+			}
+		}
+	}
+
+	//update client
+	if(ret!=FAIL){
+		for(int i=0;i<retvalsize;i++)
+			thisDetector->roiLimits[i]=retval[i];
+		thisDetector->nROI = retvalsize;
+	}
+
+#ifdef VERBOSE
+	for(int j=0;j<thisDetector->nROI;j++)
+		cout<<roiLimits[j].xmin<<"\t"<<roiLimits[j].xmax<<"\t"<<roiLimits[j].ymin<<"\t"<<roiLimits[j].ymax<<endl;
+#endif
+
+	return ret;
+}
+
+
 
 /*
    
@@ -4727,7 +4806,7 @@ int slsDetector::setUDPConnection(){
 				updateReceiver();
 
 			//configure detector with udp details, -100 is so it doesnt overwrite the previous value
-			if(configureMAC(-1)==FAIL){
+			if(configureMAC()==FAIL){
 				setReceiverOnline(OFFLINE_FLAG);
 				std::cout << "could not configure mac" << endl;
 			}
@@ -4741,7 +4820,7 @@ int slsDetector::setUDPConnection(){
 
 
 
-int slsDetector::configureMAC(int adc){
+int slsDetector::configureMAC(){
 	int i;
 	int ret=FAIL;
 	int fnum=F_CONFIGURE_MAC;
@@ -4751,12 +4830,6 @@ int slsDetector::configureMAC(int adc){
 	string sword;
 	int retval=-1;
 
-	if(((adc>=-1)&&(adc<=4))||(adc==-100));
-	else{
-		std::cout << "configure mac failed.\nConfigure [adc]; adc should be -1, 0, 1, 2, 3 or 4" << endl;
-		setErrorMask((getErrorMask())|(COULD_NOT_CONFIGURE_MAC));
-		return FAIL;
-	}
 
 	//if udpip wasnt initialized in config file
 	if(!(strcmp(thisDetector->receiverUDPIP,"none"))){
@@ -4782,7 +4855,7 @@ int slsDetector::configureMAC(int adc){
 	strcpy(arg[4],thisDetector->detectorIP);
 
 #ifdef VERBOSE
-	std::cout<< "Configuring MAC with adc:"<< adc << std::endl;
+	std::cout<< "Configuring MAC"<< std::endl;
 #endif
 
 
@@ -4849,7 +4922,6 @@ int slsDetector::configureMAC(int adc){
 			if  (controlSocket->Connect()>=0) {
 				controlSocket->SendDataOnly(&fnum,sizeof(fnum));
 				controlSocket->SendDataOnly(arg,sizeof(arg));
-				controlSocket->SendDataOnly(&adc,sizeof(adc));
 				controlSocket->ReceiveDataOnly(&ret,sizeof(ret));
 				if (ret==FAIL){
 					controlSocket->ReceiveDataOnly(mess,sizeof(mess));

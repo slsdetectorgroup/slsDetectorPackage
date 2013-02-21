@@ -308,10 +308,9 @@ class slsDetector : public slsDetectorUtils, public energyConversion {
 
   /**  
        configures mac for gotthard readout
-     \param adc adc number
      \returns OK or FAIL
   */
-  int configureMAC(int adc=-1);
+  int configureMAC();
 
   /**
      Reads the configuration file fname
@@ -571,7 +570,13 @@ class slsDetector : public slsDetectorUtils, public energyConversion {
   /** Returns the number of  modules (without connecting to the detector) */
   int getNMods(){return thisDetector->nMods;}; //
   
+  /** Returns the number of  modules in direction d (without connecting to the detector) */
+  int getNMod(dimension d){return thisDetector->nMod[d];}; //
+
   int getChansPerMod(int imod=0){return thisDetector->nChans*thisDetector->nChips;};
+
+  /** Returns the max number of  modules in direction d (without connecting to the detector) */
+  int getNMaxMod(dimension d){return thisDetector->nModMax[d];}; //
 
   /** Returns the number of  modules (without connecting to the detector) */
   int getMaxMods(){return thisDetector->nModsMax;}; //
@@ -579,7 +584,15 @@ class slsDetector : public slsDetectorUtils, public energyConversion {
 
   int getTotalNumberOfChannels(){return thisDetector->nChans*thisDetector->nChips*thisDetector->nMods;};
 
+  int getTotalNumberOfChannels(dimension d){return thisDetector->nChans*thisDetector->nChips*thisDetector->nMod[X];};
+
   int getMaxNumberOfChannels(){return thisDetector->nChans*thisDetector->nChips*thisDetector->nModsMax;};
+
+  int getMaxNumberOfChannels(dimension d){return thisDetector->nChans*thisDetector->nChips*thisDetector->nModMax[d];};
+
+  /** Returns number of rois */
+  int getNRoi(){return thisDetector->nROI;};
+
 
 
   /* Communication to server */
@@ -1038,18 +1051,23 @@ class slsDetector : public slsDetectorUtils, public energyConversion {
   int getDataBytes(){return thisDetector->dataBytes;};
  
 
-  
-  /** 
+  /**
       set roi
-       \param nroi number of rois
-       \param xmin x minimum of roi
-       \param xmax x maximum of roi
-       \param ymin y minimum of roi
-       \param ymax y maximum of roi
-       \returns number of rois added
+       \param n number of rois
+       \param roiLimits array of roi
+       \returns success or failure
   */
-  //int setROI(int nroi=-1, int *xmin=NULL, int *xmax=NULL, int *ymin=NULL, int *ymax=NULL);
+   int setROI(int n=-1,ROI roiLimits[]=NULL);
 
+   /**
+    	  get roi from each detector and convert it to the multi detector scale
+    	  \param n number of roi
+    	  \returns an array of multidetector's rois
+    */
+   slsDetectorDefs::ROI* getROI(int &n);
+
+
+   int sendROI(int n=-1,ROI roiLimits[]=NULL);
 
   /**
      set/get readout flags

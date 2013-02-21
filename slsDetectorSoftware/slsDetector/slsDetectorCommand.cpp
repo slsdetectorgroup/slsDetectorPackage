@@ -383,9 +383,14 @@ slsDetectorCommand::slsDetectorCommand(slsDetectorUtils *det)  {
   descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdDetectorSize;
   i++;
 
-  //descrToFuncMap[i].m_pFuncName="roi"; //
-  //descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdDetectorSize;
-  //i++;
+  descrToFuncMap[i].m_pFuncName="roi"; //
+  descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdDetectorSize;
+  i++;
+
+  descrToFuncMap[i].m_pFuncName="detsizechan"; //
+  descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdDetectorSize;
+  i++;
+
 
   /* flags */
 
@@ -2513,15 +2518,12 @@ string slsDetectorCommand::cmdConfigureMac(int narg, char *args[], int action) {
   if (action==HELP_ACTION) {
     return helpConfigureMac(narg,args,action);
   }
-  int ival;
   int ret;
   char ans[1000];
   
   if (action==PUT_ACTION){
-    if (sscanf(args[1],"%d",&ival)){
-      myDet->setOnline(ONLINE_FLAG);
-      ret=myDet->configureMAC(ival);
-    }
+    myDet->setOnline(ONLINE_FLAG);
+    ret=myDet->configureMAC();
   }
   else
     return string("Cannot get ")+cmd;
@@ -2534,7 +2536,7 @@ string slsDetectorCommand::helpConfigureMac(int narg, char *args[], int action) 
 
   ostringstream os;  
   if (action==PUT_ACTION || action==HELP_ACTION)
-    os << "configuremac i \n configures the MAC of the detector. i is adc number. -1 for all adcs"<< std::endl;
+    os << "configuremac i \n configures the MAC of the detector."<< std::endl;
   if (action==GET_ACTION || action==HELP_ACTION)
     os << "configuremac " << "Cannot get " << std::endl;
   
@@ -2544,38 +2546,65 @@ string slsDetectorCommand::helpConfigureMac(int narg, char *args[], int action) 
 
 string slsDetectorCommand::cmdDetectorSize(int narg, char *args[], int action) {
 
-  if (action==HELP_ACTION)
-    return helpDetectorSize(narg,args,action);
-  int ret, val=-1;
-  char ans[1000];
-  //  portType index;
+	if (action==HELP_ACTION)
+		return helpDetectorSize(narg,args,action);
+	int ret, val=-1, pos=-1,i;
+	char ans[1000], temp[100];
 
-  if (action==PUT_ACTION) {
-    if (cmd=="maxmod")
-      return string("cannot put!");
-   // else if (cmd=="roi"){
 
-   // } else
-    if (sscanf(args[1],"%d",&val))
-      ;
-    else
-      return string("could not scan ")+string(args[0])+string(" ")+string(args[1]);
-  } 
+	if (action==PUT_ACTION) {
+		if (cmd=="maxmod")
+			return string("cannot put!");
+		else if (!sscanf(args[1],"%d",&val))
+			return string("could not scan ")+string(args[0])+string(" ")+string(args[1]);
 
-  myDet->setOnline(ONLINE_FLAG);
+		myDet->setOnline(ONLINE_FLAG);
 
-  if (cmd=="nmod") {
-    ret=myDet->setNumberOfModules(val);
-  } else if (cmd=="maxmod") {
-    ret=myDet->getMaxNumberOfModules();
-  } else if (cmd=="dr") {
-    ret=myDet->setDynamicRange(val);
-  } else
-    return string("unknown detector size ")+cmd;
-  
+		if (cmd=="roi"){
+			//debug number of arguments
+			if ((val<0)	|| (narg!=((val*4)+2)) )
+				return helpDetectorSize(narg,args,action);
+			ROI allroi[val];
+			pos=2;
+			for(int i=0;i<val;i++){
+				if ((!sscanf(args[pos++],"%d",&allroi[i].xmin)) ||
+					(!sscanf(args[pos++],"%d",&allroi[i].xmax)) ||
+					(!sscanf(args[pos++],"%d",&allroi[i].ymin)) ||
+					(!sscanf(args[pos++],"%d",&allroi[i].ymax)) )
+					return string("cannot parse arguments for roi");
+			}
+			myDet->setROI(val,allroi);
+		}
 
-  sprintf(ans,"%d",ret);
-  return string(ans);
+		if(cmd=="detsizechan"){
+			if ((sscanf(args[1],"%d",&val)) && (val>0))
+				myDet->setMaxNumberOfChannelsPerDetector(X,val);
+			if ((narg > 2) && (sscanf(args[2],"%d",&val)) && (val>0))
+				myDet->setMaxNumberOfChannelsPerDetector(Y,val);
+		}
+	}
+
+	if (cmd=="nmod") {
+		ret=myDet->setNumberOfModules(val);
+	} else if (cmd=="maxmod") {
+		ret=myDet->getMaxNumberOfModules();
+	} else if (cmd=="dr") {
+		ret=myDet->setDynamicRange(val);
+	} else if (cmd=="roi") {
+		myDet->getROI(ret);
+	} else if (cmd=="detsizechan") {
+		sprintf(ans,"%d",myDet->getMaxNumberOfChannelsPerDetector(X));
+		sprintf(temp,"%d",myDet->getMaxNumberOfChannelsPerDetector(Y));
+		strcat(ans," ");
+		strcat(ans,temp);
+		return string(ans);
+	}
+	else
+		return string("unknown detector size ")+cmd;
+
+
+	sprintf(ans,"%d",ret);
+	return string(ans);
 
 }
 
@@ -2586,12 +2615,14 @@ string slsDetectorCommand::helpDetectorSize(int narg, char *args[], int action) 
   if (action==PUT_ACTION || action==HELP_ACTION) {
     os << "nmod i \n sets the number of modules of the detector"<< std::endl;
     os << "dr i \n sets the dynamic range of the detector"<< std::endl;
+    os << "roi i xmin xmax ymin ymax \n sets region of interest where i is number of rois;i=0 to clear rois"<< std::endl;
   
   }
   if (action==GET_ACTION || action==HELP_ACTION) {
     os << "nmod \n gets the number of modules of the detector"<< std::endl;
     os << "maxmod \n gets the maximum number of modules of the detector"<< std::endl;
     os << "dr \n gets the dynamic range of the detector"<< std::endl;
+    os << "roi \n gets region of interest"<< std::endl;
   } 
   return os.str();
 

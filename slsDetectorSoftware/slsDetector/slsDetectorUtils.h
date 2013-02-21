@@ -38,7 +38,6 @@ using namespace std;
 #include "postProcessing.h"
 
 #define MAX_TIMERS 11
-#define MAX_ROIS 100
 #define MAXPOS 50
 
 #define DEFAULT_HOSTNAME  "localhost"
@@ -67,6 +66,9 @@ class slsDetectorUtils :  public slsDetectorActions, public postProcessing {
   virtual int getNumberOfDetectors(){return 1; };
   
 
+  virtual int getMaxNumberOfChannelsPerDetector(dimension d){return -1;};
+
+  virtual int setMaxNumberOfChannelsPerDetector(dimension d,int i){return -1;};
 
   //int setPositions(int nPos, double *pos){return angularConversion::setPositions(nPos, pos);};
 
@@ -430,7 +432,7 @@ class slsDetectorUtils :  public slsDetectorActions, public postProcessing {
 
   virtual int getTotalNumberOfChannels()=0;
   virtual int getMaxNumberOfChannels()=0;
-
+  virtual int getMaxNumberOfChannels(dimension d)=0;
 
   //  virtual int getParameters();
   
@@ -474,11 +476,10 @@ class slsDetectorUtils :  public slsDetectorActions, public postProcessing {
 
   /**
      configures mac for gotthard readout
-     \param adc adc number
      \returns OK or FAIL
   */
 
-  virtual int configureMAC(int adc=-1)=0;
+  virtual int configureMAC()=0;
 
 
   /** loads the modules settings/trimbits reading from a file
@@ -654,6 +655,22 @@ virtual int enableWriteToFile(int enable=-1)=0;
    /returns number of frames
 */
 virtual int calibratePedestal(int frames = 0)=0;
+
+
+/**
+    set roi
+     \param n number of rois
+     \param roiLimits array of roi
+     \returns success or failure
+*/
+virtual int setROI(int n=-1,ROI roiLimits[]=NULL)=0;
+
+/**
+ 	get roi from each detector and convert it to the multi detector scale
+ 	\param n number of rois
+ 	\returns an array of multidetector's rois
+*/
+virtual ROI* getROI(int &n)=0;
 
 
   protected:

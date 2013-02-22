@@ -101,7 +101,6 @@ void qDetectorMain::SetUpWidgetWindow(){
 	tabs = new MyTabWidget(this);
 	layoutTabs->addWidget(tabs);
 
-	int numDet = myDet->getNumberOfDetectors();
 
 // creating all the other tab widgets
 	tab_measurement 	=  new qTabMeasurement	(this,	myDet,myPlot);		cout<<"Measurement ready"<<endl;
@@ -109,7 +108,7 @@ void qDetectorMain::SetUpWidgetWindow(){
 	tab_plot 			=  new qTabPlot			(this,	myDet,myPlot);		cout<<"Plot ready"<<endl;
 	tab_actions			=  new qTabActions		(this,	myDet);				cout<<"Actions ready"<<endl;
 	tab_settings 		=  new qTabSettings		(this,	myDet);				cout<<"Settings ready"<<endl;
-	tab_advanced 		=  new qTabAdvanced		(this,	myDet,myPlot,numDet);cout<<"Advanced ready"<<endl;
+	tab_advanced 		=  new qTabAdvanced		(this,	myDet,myPlot);cout<<"Advanced ready"<<endl;
 	tab_debugging 		=  new qTabDebugging	(this,	myDet);				cout<<"Debugging ready"<<endl;
 	tab_developer 		=  new qTabDeveloper	(this,	myDet);				cout<<"Developer ready"<<endl;
 

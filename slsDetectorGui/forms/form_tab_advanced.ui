@@ -32,7 +32,7 @@
    <string>Form</string>
   </property>
   <property name="windowIcon">
-   <iconset resource="../include/icons.qrc">
+   <iconset>
     <normaloff>:/icons/images/refresh.png</normaloff>:/icons/images/refresh.png</iconset>
   </property>
   <widget class="QTabWidget" name="tabAdvancedSettings">
@@ -51,7 +51,7 @@
     <enum>QTabWidget::North</enum>
    </property>
    <property name="currentIndex">
-    <number>2</number>
+    <number>0</number>
    </property>
    <property name="elideMode">
     <enum>Qt::ElideLeft</enum>
@@ -164,7 +164,7 @@ Updates plot with Trimbits from Shared Memory, not from Detector.
           <string>Refresh  </string>
          </property>
          <property name="icon">
-          <iconset resource="../include/icons.qrc">
+          <iconset>
            <normaloff>:/icons/images/refresh.png</normaloff>:/icons/images/refresh.png</iconset>
          </property>
          <property name="iconSize">
@@ -186,7 +186,7 @@ Plots Trimbits from Detector. This will take time.
           <string>Get Trimbits  </string>
          </property>
          <property name="icon">
-          <iconset resource="../include/icons.qrc">
+          <iconset>
            <normaloff>:/icons/images/download.png</normaloff>:/icons/images/download.png</iconset>
          </property>
         </widget>
@@ -495,7 +495,7 @@ An extension given by the modules serial number will be attached.
           <string>Browse</string>
          </property>
          <property name="icon">
-          <iconset resource="../include/icons.qrc">
+          <iconset>
            <normaloff>:/icons/images/browse.png</normaloff>:/icons/images/browse.png</iconset>
          </property>
         </widget>
@@ -519,7 +519,7 @@ An extension given by the modules serial number will be attached.
           <string>Start Trimming  </string>
          </property>
          <property name="icon">
-          <iconset resource="../include/icons.qrc">
+          <iconset>
            <normaloff>:/icons/images/start.png</normaloff>:/icons/images/start.png</iconset>
          </property>
         </widget>
@@ -801,7 +801,7 @@ An extension given by the modules serial number will be attached.
          <string>  Get ROI  </string>
         </property>
         <property name="icon">
-         <iconset resource="../include/icons.qrc">
+         <iconset>
           <normaloff>:/icons/images/download.png</normaloff>:/icons/images/download.png</iconset>
         </property>
        </widget>
@@ -831,7 +831,7 @@ An extension given by the modules serial number will be attached.
          <string>  Set ROI  </string>
         </property>
         <property name="icon">
-         <iconset resource="../include/icons.qrc">
+         <iconset>
           <normaloff>:/icons/images/upload.png</normaloff>:/icons/images/upload.png</iconset>
         </property>
        </widget>
@@ -861,7 +861,7 @@ An extension given by the modules serial number will be attached.
          <string>  Clear ROI  </string>
         </property>
         <property name="icon">
-         <iconset resource="../include/icons.qrc">
+         <iconset>
           <normaloff>:/icons/images/close.png</normaloff>:/icons/images/close.png</iconset>
         </property>
        </widget>
@@ -1528,7 +1528,7 @@ An extension given by the modules serial number will be attached.
       <string> Set Receiver</string>
      </property>
      <property name="icon">
-      <iconset resource="../include/icons.qrc">
+      <iconset>
        <normaloff>:/icons/images/start.png</normaloff>:/icons/images/start.png</iconset>
      </property>
     </widget>
@@ -1545,7 +1545,7 @@ An extension given by the modules serial number will be attached.
       <string> Configure MAC</string>
      </property>
      <property name="icon">
-      <iconset resource="../include/icons.qrc">
+      <iconset>
        <normaloff>:/icons/images/start.png</normaloff>:/icons/images/start.png</iconset>
      </property>
     </widget>

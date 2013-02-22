@@ -4160,6 +4160,10 @@ int* multiSlsDetector::readFrameFromReceiver(char* fName, int &fIndex){
 	int n;
 	int* retval=new int[nel];
 	int *retdet, *p=retval;
+	string fullFName="";
+	string ext="";
+
+
 
 	for (int id=0; id<thisMultiDetector->numberOfDetectors; id++) {
 		if (detectors[id]) {
@@ -4169,6 +4173,14 @@ int* multiSlsDetector::readFrameFromReceiver(char* fName, int &fIndex){
 				memcpy(p,retdet,n);
 				delete [] retdet;
 				p+=n/sizeof(int);
+				//concatenate filenames
+				if(!fullFName.length()){
+					fullFName.assign(fileIO::getFileName());
+					size_t dot = fullFName.rfind(".");
+					if(dot != string::npos)
+						ext = fullFName.substr(dot,fullFName.size()-dot);
+				}
+				fullFName.append(getReceiverFileNameToConcatenate(fName));
 			}else {
 #ifdef VERBOSE
 				cout << "Receiver for detector " << id << " does not have data left " << endl;
@@ -4178,6 +4190,8 @@ int* multiSlsDetector::readFrameFromReceiver(char* fName, int &fIndex){
 			}
 		}
 	}
+	fullFName.append(ext);
+	strcpy(fName,fullFName.c_str());
 	return retval;
 };
 

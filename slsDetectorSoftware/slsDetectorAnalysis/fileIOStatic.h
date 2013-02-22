@@ -271,6 +271,31 @@ class fileIOStatic  {
 
 
 
+
+  /** static function that returns the entire filename ithout file name prefix, detector index  or extension
+   	  This will be concatenated with all the other detector file names for the gui
+      \param fname complete file name
+      \returns file name without file name prefix, detector index  or extension
+  */
+  static string getReceiverFileNameToConcatenate(string fname) { \
+	  int i;													\
+	  string s;													\
+	  s=fname;													\
+	  size_t slash=s.rfind("/");								\
+	  if (slash!= string::npos)									\
+	  s=s.substr(slash,s.size()-slash); 						\
+	  size_t dot=s.find(".");									\
+	  size_t uscore=s.find("_");								\
+	  s=s.substr(uscore,dot-uscore);							\
+	  uscore=s.find("_",1);										\
+	  if ((uscore!= string::npos) && (sscanf( s.substr(1,uscore-1).c_str(),"d%d",&i))) \
+	  s=s.substr(uscore,s.size()-uscore);						\
+	  return s;													\
+  };
+
+
+
+
   /**
      
   writes a data file

@@ -423,6 +423,7 @@ void* postProcessing::processData(int delflag) {
 			prevCaught=caught;
 			if (checkJoinThread()) break;
 			if(newData){
+				strcpy(currentfName,"");
 				pthread_mutex_lock(&mg);
 				int* receiverData =  readFrameFromReceiver(currentfName,currentfIndex);
 				pthread_mutex_unlock(&mg);

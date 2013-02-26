@@ -32,7 +32,7 @@
    <string>Form</string>
   </property>
   <property name="windowIcon">
-   <iconset>
+   <iconset resource="../include/icons.qrc">
     <normaloff>:/icons/images/refresh.png</normaloff>:/icons/images/refresh.png</iconset>
   </property>
   <widget class="QTabWidget" name="tabAdvancedSettings">
@@ -51,7 +51,7 @@
     <enum>QTabWidget::North</enum>
    </property>
    <property name="currentIndex">
-    <number>0</number>
+    <number>3</number>
    </property>
    <property name="elideMode">
     <enum>Qt::ElideLeft</enum>
@@ -164,7 +164,7 @@ Updates plot with Trimbits from Shared Memory, not from Detector.
           <string>Refresh  </string>
          </property>
          <property name="icon">
-          <iconset>
+          <iconset resource="../include/icons.qrc">
            <normaloff>:/icons/images/refresh.png</normaloff>:/icons/images/refresh.png</iconset>
          </property>
          <property name="iconSize">
@@ -186,7 +186,7 @@ Plots Trimbits from Detector. This will take time.
           <string>Get Trimbits  </string>
          </property>
          <property name="icon">
-          <iconset>
+          <iconset resource="../include/icons.qrc">
            <normaloff>:/icons/images/download.png</normaloff>:/icons/images/download.png</iconset>
          </property>
         </widget>
@@ -495,7 +495,7 @@ An extension given by the modules serial number will be attached.
           <string>Browse</string>
          </property>
          <property name="icon">
-          <iconset>
+          <iconset resource="../include/icons.qrc">
            <normaloff>:/icons/images/browse.png</normaloff>:/icons/images/browse.png</iconset>
          </property>
         </widget>
@@ -519,7 +519,7 @@ An extension given by the modules serial number will be attached.
           <string>Start Trimming  </string>
          </property>
          <property name="icon">
-          <iconset>
+          <iconset resource="../include/icons.qrc">
            <normaloff>:/icons/images/start.png</normaloff>:/icons/images/start.png</iconset>
          </property>
         </widget>
@@ -792,16 +792,22 @@ An extension given by the modules serial number will be attached.
       <item>
        <widget class="QPushButton" name="btnGetRoi">
         <property name="sizePolicy">
-         <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+         <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
           <horstretch>0</horstretch>
           <verstretch>0</verstretch>
          </sizepolicy>
+        </property>
+        <property name="minimumSize">
+         <size>
+          <width>150</width>
+          <height>0</height>
+         </size>
         </property>
         <property name="text">
          <string>  Get ROI  </string>
         </property>
         <property name="icon">
-         <iconset>
+         <iconset resource="../include/icons.qrc">
           <normaloff>:/icons/images/download.png</normaloff>:/icons/images/download.png</iconset>
         </property>
        </widget>
@@ -822,16 +828,22 @@ An extension given by the modules serial number will be attached.
       <item>
        <widget class="QPushButton" name="btnSetRoi">
         <property name="sizePolicy">
-         <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+         <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
           <horstretch>0</horstretch>
           <verstretch>0</verstretch>
          </sizepolicy>
+        </property>
+        <property name="minimumSize">
+         <size>
+          <width>150</width>
+          <height>0</height>
+         </size>
         </property>
         <property name="text">
          <string>  Set ROI  </string>
         </property>
         <property name="icon">
-         <iconset>
+         <iconset resource="../include/icons.qrc">
           <normaloff>:/icons/images/upload.png</normaloff>:/icons/images/upload.png</iconset>
         </property>
        </widget>
@@ -852,17 +864,23 @@ An extension given by the modules serial number will be attached.
       <item>
        <widget class="QPushButton" name="btnClearRoi">
         <property name="sizePolicy">
-         <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+         <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
           <horstretch>0</horstretch>
           <verstretch>0</verstretch>
          </sizepolicy>
+        </property>
+        <property name="minimumSize">
+         <size>
+          <width>150</width>
+          <height>0</height>
+         </size>
         </property>
         <property name="text">
          <string>  Clear ROI  </string>
         </property>
         <property name="icon">
-         <iconset>
-          <normaloff>:/icons/images/close.png</normaloff>:/icons/images/close.png</iconset>
+         <iconset resource="../include/icons.qrc">
+          <normaloff>:/icons/images/erase.png</normaloff>:/icons/images/erase.png</iconset>
         </property>
        </widget>
       </item>
@@ -873,193 +891,49 @@ An extension given by the modules serial number will be attached.
     <attribute name="title">
      <string>Network</string>
     </attribute>
-    <widget class="QGroupBox" name="boxDetectorPorts">
+    <widget class="QGroupBox" name="boxRxr">
      <property name="geometry">
       <rect>
        <x>10</x>
-       <y>10</y>
-       <width>336</width>
-       <height>96</height>
+       <y>135</y>
+       <width>736</width>
+       <height>171</height>
       </rect>
      </property>
      <property name="title">
-      <string>Detector Ports</string>
+      <string>Receiver Parameters</string>
      </property>
-     <widget class="QWidget" name="gridLayoutWidget_5">
+     <widget class="QPushButton" name="btnRxr">
       <property name="geometry">
        <rect>
-        <x>20</x>
-        <y>25</y>
-        <width>296</width>
-        <height>56</height>
+        <x>25</x>
+        <y>135</y>
+        <width>291</width>
+        <height>25</height>
        </rect>
       </property>
-      <layout class="QGridLayout" name="gridLayout_4">
-       <property name="verticalSpacing">
-        <number>-1</number>
-       </property>
-       <item row="0" column="1" colspan="2">
-        <widget class="QSpinBox" name="spinControlPort">
-         <property name="sizePolicy">
-          <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
-           <horstretch>0</horstretch>
-           <verstretch>0</verstretch>
-          </sizepolicy>
-         </property>
-         <property name="minimumSize">
-          <size>
-           <width>180</width>
-           <height>0</height>
-          </size>
-         </property>
-         <property name="maximumSize">
-          <size>
-           <width>127</width>
-           <height>16777215</height>
-          </size>
-         </property>
-         <property name="toolTip">
-          <string>Sets Control Port
-#port#</string>
-         </property>
-         <property name="statusTip">
-          <string/>
-         </property>
-         <property name="whatsThis">
-          <string/>
-         </property>
-         <property name="alignment">
-          <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
-         </property>
-         <property name="keyboardTracking">
-          <bool>false</bool>
-         </property>
-         <property name="suffix">
-          <string/>
-         </property>
-         <property name="minimum">
-          <number>0</number>
-         </property>
-         <property name="maximum">
-          <number>2000000000</number>
-         </property>
-         <property name="value">
-          <number>0</number>
-         </property>
-        </widget>
-       </item>
-       <item row="0" column="0">
-        <widget class="QLabel" name="label_7">
-         <property name="sizePolicy">
-          <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
-           <horstretch>0</horstretch>
-           <verstretch>0</verstretch>
-          </sizepolicy>
-         </property>
-         <property name="text">
-          <string>Control Port:</string>
-         </property>
-        </widget>
-       </item>
-       <item row="1" column="0">
-        <widget class="QLabel" name="label_9">
-         <property name="sizePolicy">
-          <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
-           <horstretch>0</horstretch>
-           <verstretch>0</verstretch>
-          </sizepolicy>
-         </property>
-         <property name="text">
-          <string>Stop Port:</string>
-         </property>
-        </widget>
-       </item>
-       <item row="1" column="1" colspan="2">
-        <widget class="QSpinBox" name="spinStopPort">
-         <property name="sizePolicy">
-          <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
-           <horstretch>0</horstretch>
-           <verstretch>0</verstretch>
-          </sizepolicy>
-         </property>
-         <property name="minimumSize">
-          <size>
-           <width>180</width>
-           <height>0</height>
-          </size>
-         </property>
-         <property name="toolTip">
-          <string>Sets Stop Port 
-#stopport#</string>
-         </property>
-         <property name="statusTip">
-          <string/>
-         </property>
-         <property name="whatsThis">
-          <string/>
-         </property>
-         <property name="alignment">
-          <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
-         </property>
-         <property name="keyboardTracking">
-          <bool>false</bool>
-         </property>
-         <property name="suffix">
-          <string/>
-         </property>
-         <property name="minimum">
-          <number>0</number>
-         </property>
-         <property name="maximum">
-          <number>2000000000</number>
-         </property>
-         <property name="value">
-          <number>0</number>
-         </property>
-        </widget>
-       </item>
-      </layout>
+      <property name="text">
+       <string> Setup Receiver</string>
+      </property>
+      <property name="icon">
+       <iconset resource="../include/icons.qrc">
+        <normaloff>:/icons/images/setup.png</normaloff>:/icons/images/setup.png</iconset>
+      </property>
      </widget>
-    </widget>
-    <widget class="QGroupBox" name="boxRxrPorts">
-     <property name="geometry">
-      <rect>
-       <x>410</x>
-       <y>10</y>
-       <width>336</width>
-       <height>96</height>
-      </rect>
-     </property>
-     <property name="title">
-      <string>Receiver Ports</string>
-     </property>
-     <widget class="QWidget" name="gridLayoutWidget_6">
+     <widget class="QWidget" name="gridLayoutWidget_9">
       <property name="geometry">
        <rect>
-        <x>20</x>
+        <x>25</x>
         <y>25</y>
-        <width>296</width>
-        <height>56</height>
+        <width>686</width>
+        <height>96</height>
        </rect>
       </property>
-      <layout class="QGridLayout" name="gridLayout_5">
+      <layout class="QGridLayout" name="gridLayout_8">
        <property name="verticalSpacing">
         <number>-1</number>
        </property>
        <item row="1" column="0">
-        <widget class="QLabel" name="label_10">
-         <property name="sizePolicy">
-          <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
-           <horstretch>0</horstretch>
-           <verstretch>0</verstretch>
-          </sizepolicy>
-         </property>
-         <property name="text">
-          <string>UDP Port:</string>
-         </property>
-        </widget>
-       </item>
-       <item row="0" column="0">
         <widget class="QLabel" name="label_8">
          <property name="sizePolicy">
           <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
@@ -1072,8 +946,8 @@ An extension given by the modules serial number will be attached.
          </property>
         </widget>
        </item>
-       <item row="0" column="1" colspan="2">
-        <widget class="QSpinBox" name="spinTCPPort">
+       <item row="1" column="4">
+        <widget class="QLineEdit" name="dispUDPIP">
          <property name="sizePolicy">
           <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
            <horstretch>0</horstretch>
@@ -1082,41 +956,33 @@ An extension given by the modules serial number will be attached.
          </property>
          <property name="minimumSize">
           <size>
-           <width>127</width>
+           <width>180</width>
            <height>0</height>
           </size>
          </property>
          <property name="toolTip">
-          <string notr="true">Sets Receiver TCP Port
-#rx_tcpport#</string>
+          <string>Sets the Receiver UDP IP
+#rx_udpip#</string>
          </property>
-         <property name="statusTip">
-          <string/>
-         </property>
-         <property name="whatsThis">
-          <string/>
-         </property>
-         <property name="alignment">
-          <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
-         </property>
-         <property name="keyboardTracking">
-          <bool>false</bool>
-         </property>
-         <property name="suffix">
-          <string/>
-         </property>
-         <property name="minimum">
-          <number>0</number>
-         </property>
-         <property name="maximum">
-          <number>2000000000</number>
-         </property>
-         <property name="value">
-          <number>0</number>
+         <property name="text">
+          <string>none</string>
          </property>
         </widget>
        </item>
-       <item row="1" column="1" colspan="2">
+       <item row="0" column="2">
+        <spacer name="horizontalSpacer_7">
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>40</width>
+           <height>20</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+       <item row="2" column="1">
         <widget class="QSpinBox" name="spinUDPPort">
          <property name="sizePolicy">
           <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
@@ -1160,94 +1026,7 @@ An extension given by the modules serial number will be attached.
          </property>
         </widget>
        </item>
-      </layout>
-     </widget>
-    </widget>
-    <widget class="QGroupBox" name="boxRxr">
-     <property name="geometry">
-      <rect>
-       <x>410</x>
-       <y>120</y>
-       <width>336</width>
-       <height>156</height>
-      </rect>
-     </property>
-     <property name="title">
-      <string>Receiver Parameters</string>
-     </property>
-     <widget class="QWidget" name="gridLayoutWidget_8">
-      <property name="geometry">
-       <rect>
-        <x>20</x>
-        <y>25</y>
-        <width>296</width>
-        <height>116</height>
-       </rect>
-      </property>
-      <layout class="QGridLayout" name="gridLayout_7">
-       <property name="verticalSpacing">
-        <number>-1</number>
-       </property>
-       <item row="0" column="1" colspan="2">
-        <widget class="QLineEdit" name="dispRxrHostname">
-         <property name="sizePolicy">
-          <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
-           <horstretch>0</horstretch>
-           <verstretch>0</verstretch>
-          </sizepolicy>
-         </property>
-         <property name="minimumSize">
-          <size>
-           <width>180</width>
-           <height>0</height>
-          </size>
-         </property>
-         <property name="toolTip">
-          <string>Sets the Receiver Hostname, connects to it and gets the receiver mac address and eth. Sets some receiver parameters like file name, file dir, file index in receiver. 
-#rx_hostname#</string>
-         </property>
-         <property name="text">
-          <string>none</string>
-         </property>
-        </widget>
-       </item>
-       <item row="3" column="0">
-        <widget class="QLabel" name="label_18">
-         <property name="sizePolicy">
-          <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
-           <horstretch>0</horstretch>
-           <verstretch>0</verstretch>
-          </sizepolicy>
-         </property>
-         <property name="text">
-          <string>UDP MAC:</string>
-         </property>
-        </widget>
-       </item>
-       <item row="3" column="1" colspan="2">
-        <widget class="QLineEdit" name="dispUDPMAC">
-         <property name="sizePolicy">
-          <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
-           <horstretch>0</horstretch>
-           <verstretch>0</verstretch>
-          </sizepolicy>
-         </property>
-         <property name="minimumSize">
-          <size>
-           <width>180</width>
-           <height>0</height>
-          </size>
-         </property>
-         <property name="toolTip">
-          <string>Sets the Receiver UDP MAC
-#rx_udpmac#</string>
-         </property>
-         <property name="text">
-          <string>none</string>
-         </property>
-        </widget>
-       </item>
-       <item row="2" column="0">
+       <item row="1" column="3">
         <widget class="QLabel" name="label_14">
          <property name="sizePolicy">
           <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
@@ -1257,19 +1036,6 @@ An extension given by the modules serial number will be attached.
          </property>
          <property name="text">
           <string>UDP IP:</string>
-         </property>
-        </widget>
-       </item>
-       <item row="1" column="0">
-        <widget class="QLabel" name="lblRxrOnline">
-         <property name="sizePolicy">
-          <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
-           <horstretch>0</horstretch>
-           <verstretch>0</verstretch>
-          </sizepolicy>
-         </property>
-         <property name="text">
-          <string>Online:</string>
          </property>
         </widget>
        </item>
@@ -1286,30 +1052,7 @@ An extension given by the modules serial number will be attached.
          </property>
         </widget>
        </item>
-       <item row="2" column="1" colspan="2">
-        <widget class="QLineEdit" name="dispUDPIP">
-         <property name="sizePolicy">
-          <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
-           <horstretch>0</horstretch>
-           <verstretch>0</verstretch>
-          </sizepolicy>
-         </property>
-         <property name="minimumSize">
-          <size>
-           <width>180</width>
-           <height>0</height>
-          </size>
-         </property>
-         <property name="toolTip">
-          <string>Sets the Receiver UDP IP
-#rx_udpip#</string>
-         </property>
-         <property name="text">
-          <string>none</string>
-         </property>
-        </widget>
-       </item>
-       <item row="1" column="1" colspan="2">
+       <item row="0" column="4">
         <widget class="QComboBox" name="comboRxrOnline">
          <property name="sizePolicy">
           <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
@@ -1332,49 +1075,8 @@ An extension given by the modules serial number will be attached.
          </item>
         </widget>
        </item>
-      </layout>
-     </widget>
-    </widget>
-    <widget class="QGroupBox" name="boxDetector">
-     <property name="geometry">
-      <rect>
-       <x>10</x>
-       <y>120</y>
-       <width>336</width>
-       <height>156</height>
-      </rect>
-     </property>
-     <property name="title">
-      <string>Detector Parameters</string>
-     </property>
-     <widget class="QWidget" name="gridLayoutWidget_9">
-      <property name="geometry">
-       <rect>
-        <x>20</x>
-        <y>25</y>
-        <width>296</width>
-        <height>116</height>
-       </rect>
-      </property>
-      <layout class="QGridLayout" name="gridLayout_8">
-       <property name="verticalSpacing">
-        <number>-1</number>
-       </property>
-       <item row="0" column="0">
-        <widget class="QLabel" name="lblHostname">
-         <property name="sizePolicy">
-          <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
-           <horstretch>0</horstretch>
-           <verstretch>0</verstretch>
-          </sizepolicy>
-         </property>
-         <property name="text">
-          <string>Hostname / IP:</string>
-         </property>
-        </widget>
-       </item>
-       <item row="3" column="1" colspan="2">
-        <widget class="QLineEdit" name="dispMAC">
+       <item row="2" column="4">
+        <widget class="QLineEdit" name="dispUDPMAC">
          <property name="sizePolicy">
           <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
            <horstretch>0</horstretch>
@@ -1388,29 +1090,16 @@ An extension given by the modules serial number will be attached.
           </size>
          </property>
          <property name="toolTip">
-          <string>Sets the detector MAC to send packets to receiver
-#detectormac#</string>
+          <string>Sets the Receiver UDP MAC
+#rx_udpmac#</string>
          </property>
          <property name="text">
-          <string/>
+          <string>none</string>
          </property>
         </widget>
        </item>
-       <item row="3" column="0">
-        <widget class="QLabel" name="lblMAC">
-         <property name="sizePolicy">
-          <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
-           <horstretch>0</horstretch>
-           <verstretch>0</verstretch>
-          </sizepolicy>
-         </property>
-         <property name="text">
-          <string>MAC:</string>
-         </property>
-        </widget>
-       </item>
-       <item row="0" column="1" colspan="2">
-        <widget class="QLineEdit" name="dispHostname">
+       <item row="1" column="1">
+        <widget class="QSpinBox" name="spinTCPPort">
          <property name="sizePolicy">
           <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
            <horstretch>0</horstretch>
@@ -1419,29 +1108,42 @@ An extension given by the modules serial number will be attached.
          </property>
          <property name="minimumSize">
           <size>
-           <width>180</width>
+           <width>127</width>
            <height>0</height>
           </size>
          </property>
          <property name="toolTip">
-          <string>Detector Hostname #hostname#</string>
+          <string notr="true">Sets Receiver TCP Port
+#rx_tcpport#</string>
          </property>
-         <property name="text">
+         <property name="statusTip">
           <string/>
          </property>
-         <property name="frame">
+         <property name="whatsThis">
+          <string/>
+         </property>
+         <property name="alignment">
+          <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+         </property>
+         <property name="keyboardTracking">
           <bool>false</bool>
          </property>
-         <property name="cursorPosition">
+         <property name="suffix">
+          <string/>
+         </property>
+         <property name="minimum">
           <number>0</number>
          </property>
-         <property name="readOnly">
-          <bool>true</bool>
+         <property name="maximum">
+          <number>2000000000</number>
+         </property>
+         <property name="value">
+          <number>0</number>
          </property>
         </widget>
        </item>
-       <item row="1" column="0">
-        <widget class="QLabel" name="lblOnline">
+       <item row="0" column="3">
+        <widget class="QLabel" name="lblRxrOnline">
          <property name="sizePolicy">
           <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
            <horstretch>0</horstretch>
@@ -1454,7 +1156,7 @@ An extension given by the modules serial number will be attached.
         </widget>
        </item>
        <item row="2" column="0">
-        <widget class="QLabel" name="lblIP">
+        <widget class="QLabel" name="label_10">
          <property name="sizePolicy">
           <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
            <horstretch>0</horstretch>
@@ -1462,12 +1164,12 @@ An extension given by the modules serial number will be attached.
           </sizepolicy>
          </property>
          <property name="text">
-          <string>IP:</string>
+          <string>UDP Port:</string>
          </property>
         </widget>
        </item>
-       <item row="2" column="1" colspan="2">
-        <widget class="QLineEdit" name="dispIP">
+       <item row="0" column="1">
+        <widget class="QLineEdit" name="dispRxrHostname">
          <property name="sizePolicy">
           <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
            <horstretch>0</horstretch>
@@ -1481,74 +1183,336 @@ An extension given by the modules serial number will be attached.
           </size>
          </property>
          <property name="toolTip">
-          <string>Sets the detector IP to send packets to receiver
-#detectorip#</string>
+          <string>Sets the Receiver Hostname, connects to it and gets the receiver mac address and eth. Sets some receiver parameters like file name, file dir, file index in receiver. 
+#rx_hostname#</string>
          </property>
          <property name="text">
-          <string/>
+          <string>none</string>
          </property>
         </widget>
        </item>
-       <item row="1" column="1" colspan="2">
-        <widget class="QComboBox" name="comboOnline">
+       <item row="2" column="3">
+        <widget class="QLabel" name="label_18">
          <property name="sizePolicy">
-          <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+          <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
            <horstretch>0</horstretch>
            <verstretch>0</verstretch>
           </sizepolicy>
          </property>
-         <property name="toolTip">
-          <string>&lt;nobr&gt;If the detector is online&lt;br&gt;#online#&lt;/nobr&gt;&lt;</string>
+         <property name="text">
+          <string>UDP MAC:</string>
          </property>
-         <item>
-          <property name="text">
-           <string>Offline</string>
-          </property>
-         </item>
-         <item>
-          <property name="text">
-           <string>Online</string>
-          </property>
-         </item>
         </widget>
        </item>
       </layout>
      </widget>
     </widget>
-    <widget class="QPushButton" name="btnRxr">
+    <widget class="QWidget" name="gridLayoutWidget_7">
      <property name="geometry">
       <rect>
-       <x>410</x>
-       <y>285</y>
-       <width>336</width>
-       <height>25</height>
+       <x>35</x>
+       <y>15</y>
+       <width>686</width>
+       <height>101</height>
       </rect>
      </property>
-     <property name="text">
-      <string> Set Receiver</string>
-     </property>
-     <property name="icon">
-      <iconset>
-       <normaloff>:/icons/images/start.png</normaloff>:/icons/images/start.png</iconset>
-     </property>
+     <layout class="QGridLayout" name="gridLayout_6">
+      <property name="verticalSpacing">
+       <number>-1</number>
+      </property>
+      <item row="0" column="4">
+       <widget class="QComboBox" name="comboOnline">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="minimumSize">
+         <size>
+          <width>180</width>
+          <height>0</height>
+         </size>
+        </property>
+        <property name="toolTip">
+         <string>&lt;nobr&gt;If the detector is online&lt;br&gt;#online#&lt;/nobr&gt;&lt;</string>
+        </property>
+        <item>
+         <property name="text">
+          <string>Offline</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>Online</string>
+         </property>
+        </item>
+       </widget>
+      </item>
+      <item row="2" column="0">
+       <widget class="QLabel" name="label_9">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="text">
+         <string>Stop Port:</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="0">
+       <widget class="QLabel" name="label_7">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="text">
+         <string>Control Port:</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="4">
+       <widget class="QLineEdit" name="dispIP">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="minimumSize">
+         <size>
+          <width>180</width>
+          <height>0</height>
+         </size>
+        </property>
+        <property name="toolTip">
+         <string>Sets the detector IP to send packets to receiver
+#detectorip#</string>
+        </property>
+        <property name="text">
+         <string/>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="4">
+       <widget class="QLineEdit" name="dispMAC">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="minimumSize">
+         <size>
+          <width>180</width>
+          <height>0</height>
+         </size>
+        </property>
+        <property name="toolTip">
+         <string>Sets the detector MAC to send packets to receiver
+#detectormac#</string>
+        </property>
+        <property name="text">
+         <string/>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="3">
+       <widget class="QLabel" name="lblMAC">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="text">
+         <string>MAC:</string>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="3">
+       <widget class="QLabel" name="lblOnline">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="minimumSize">
+         <size>
+          <width>108</width>
+          <height>0</height>
+         </size>
+        </property>
+        <property name="text">
+         <string>Online:</string>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="0">
+       <widget class="QLabel" name="lblHostname">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="minimumSize">
+         <size>
+          <width>108</width>
+          <height>0</height>
+         </size>
+        </property>
+        <property name="text">
+         <string>Detector:</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="3">
+       <widget class="QLabel" name="lblIP">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="text">
+         <string>IP:</string>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="1">
+       <widget class="QComboBox" name="comboDetector">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="minimumSize">
+         <size>
+          <width>180</width>
+          <height>0</height>
+         </size>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="2">
+       <spacer name="horizontalSpacer">
+        <property name="orientation">
+         <enum>Qt::Horizontal</enum>
+        </property>
+        <property name="sizeHint" stdset="0">
+         <size>
+          <width>40</width>
+          <height>20</height>
+         </size>
+        </property>
+       </spacer>
+      </item>
+      <item row="1" column="1">
+       <widget class="QSpinBox" name="spinControlPort">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="minimumSize">
+         <size>
+          <width>180</width>
+          <height>0</height>
+         </size>
+        </property>
+        <property name="maximumSize">
+         <size>
+          <width>16777215</width>
+          <height>16777215</height>
+         </size>
+        </property>
+        <property name="toolTip">
+         <string>Sets Control Port
+#port#</string>
+        </property>
+        <property name="statusTip">
+         <string/>
+        </property>
+        <property name="whatsThis">
+         <string/>
+        </property>
+        <property name="alignment">
+         <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+        </property>
+        <property name="keyboardTracking">
+         <bool>false</bool>
+        </property>
+        <property name="suffix">
+         <string/>
+        </property>
+        <property name="minimum">
+         <number>0</number>
+        </property>
+        <property name="maximum">
+         <number>2000000000</number>
+        </property>
+        <property name="value">
+         <number>0</number>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="1">
+       <widget class="QSpinBox" name="spinStopPort">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="minimumSize">
+         <size>
+          <width>180</width>
+          <height>0</height>
+         </size>
+        </property>
+        <property name="toolTip">
+         <string>Sets Stop Port 
+#stopport#</string>
+        </property>
+        <property name="statusTip">
+         <string/>
+        </property>
+        <property name="whatsThis">
+         <string/>
+        </property>
+        <property name="alignment">
+         <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+        </property>
+        <property name="keyboardTracking">
+         <bool>false</bool>
+        </property>
+        <property name="suffix">
+         <string/>
+        </property>
+        <property name="minimum">
+         <number>0</number>
+        </property>
+        <property name="maximum">
+         <number>2000000000</number>
+        </property>
+        <property name="value">
+         <number>0</number>
+        </property>
+       </widget>
+      </item>
+     </layout>
     </widget>
-    <widget class="QPushButton" name="btnConfigure">
-     <property name="geometry">
-      <rect>
-       <x>10</x>
-       <y>285</y>
-       <width>336</width>
-       <height>25</height>
-      </rect>
-     </property>
-     <property name="text">
-      <string> Configure MAC</string>
-     </property>
-     <property name="icon">
-      <iconset>
-       <normaloff>:/icons/images/start.png</normaloff>:/icons/images/start.png</iconset>
-     </property>
-    </widget>
+    <zorder>boxRxr</zorder>
+    <zorder>gridLayoutWidget_7</zorder>
+    <zorder>label_9</zorder>
    </widget>
   </widget>
  </widget>

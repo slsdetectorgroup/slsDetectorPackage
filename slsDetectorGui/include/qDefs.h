@@ -215,6 +215,44 @@ static const int64_t GUI_VERSION=0x20121213;
 
 //-------------------------------------------------------------------------------------------------------------------------------------------------
 
+	/**gets error mask and displays the message if it exists
+	 * @param myDet is the slsdetector object
+		 /returns error message else an empty string
+	 * */
+	static string checkErrorMessage(slsDetector*& myDet){
+
+
+		int errorLevel= (int)WARNING;
+		string retval="";
+		size_t pos;
+
+
+		retval = myDet->getErrorMessage(errorLevel);
+
+		if(!retval.empty()){
+
+			//replace all \n with <br>
+			pos = 0;
+			while((pos = retval.find("\n", pos)) != string::npos){
+				retval.replace(pos, 1, "<br>");
+				pos += 1;
+			}
+
+			retval.insert(0,"<font color=\"darkBlue\">");
+			retval.append("</font></nobr>");
+
+			//display message
+			qDefs::Message((MessageIndex)errorLevel,retval,"Main");
+		}
+
+		myDet->clearErrorMask();
+
+		return retval;
+	};
+
+
+//-------------------------------------------------------------------------------------------------------------------------------------------------
+
 };
 
 

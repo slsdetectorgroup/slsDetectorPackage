@@ -58,6 +58,7 @@ private:
 	 */
 	void AddROIInput(int num);
 
+
 private slots:
 
 	/** Enable/Disable Energy and Calibration Logs
@@ -142,10 +143,6 @@ private slots:
 	 */
 	void SetReceiver();
 
-	/** Configures mac
-	 */
-	void Configuremac();
-
 	/** Add ROI Input if the value changed in the last slot
 	 */
 	void AddROIInputSlot(){AddROIInput(1);};
@@ -166,9 +163,16 @@ private slots:
 	 */
 	void clearROIinDetector();
 
+	/** Clears ROI in detector
+	 */
+	void SetDetector(int index);
+
 private:
-	/** The sls detector object */
+	/** The multi detector object */
 	multiSlsDetector *myDet;
+
+	/** The sls detector object */
+	slsDetector *det;
 
 	/** detector type */
 	slsDetectorDefs::detectorType detType;
@@ -191,10 +195,6 @@ private:
 
 	bool isEnergy;
 	bool isAngular;
-
-	/**sls detector obejct*/
-	slsDetector *det;
-
 
 	/** ROI */
 	vector <QLabel*> 	lblFromX;

@@ -16,5 +16,7 @@
 	<file>../images/leftArrow.png</file>
 	<file>../images/rightArrow.png</file>
 	<file>../images/upload.png</file>
+	<file>../images/setup.png</file>
+	<file>../images/calculate.png</file>
     </qresource>
 </RCC>

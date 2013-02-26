@@ -510,7 +510,7 @@
       </property>
       <property name="icon">
        <iconset resource="../include/icons.qrc">
-        <normaloff>:/icons/images/remove.png</normaloff>:/icons/images/remove.png</iconset>
+        <normaloff>:/icons/images/erase.png</normaloff>:/icons/images/erase.png</iconset>
       </property>
       <property name="iconSize">
        <size>
@@ -585,7 +585,7 @@
       </property>
       <property name="icon">
        <iconset resource="../include/icons.qrc">
-        <normaloff>:/icons/images/add.png</normaloff>:/icons/images/add.png</iconset>
+        <normaloff>:/icons/images/calculate.png</normaloff>:/icons/images/calculate.png</iconset>
       </property>
       <property name="iconSize">
        <size>
@@ -780,7 +780,7 @@
      <rect>
       <x>10</x>
       <y>20</y>
-      <width>348</width>
+      <width>341</width>
       <height>26</height>
      </rect>
     </property>

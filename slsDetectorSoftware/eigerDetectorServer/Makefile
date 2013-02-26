@@ -1,13 +1,14 @@
-CC			=	powerpc-4xx-softfloat-gcc
+CC			=	powerpc-4xx-softfloat-g++
 CLAGS		+=  -Wall  -DDACS_INT  -DSLS_DETECTOR_FUNCTION_LIST -DEIGERD #-DVIRTUAL  
-LDLIBS		+= 	-lm  
+LDLIBS		+= 	-lm  -lstdc++ 
 
 PROGS		= 	eigerDetectorServer 
 DESTDIR		?= 	bin
 INSTMODE	= 	0777
 
-SRC_CLNT	=	slsDetectorServer.c slsDetectorServer_funcs.c communication_funcs.c slsDetector_firmware.c slsDetectorFunctionList.c 
-OBJS 		= 	$(SRC_CLNT:.cpp=.o) 
+SRC_CLNT	=	slsDetectorServer.cpp
+SRC_CLNTC	=   slsDetectorServer_funcs.c communication_funcs.c slsDetector_firmware.c slsDetectorFunctionList.c 
+OBJS 		= 	$(SRC_CLNT:.cpp=.o) $(SRC_CLNTC:%.c=%.o) 
 
 
 
@@ -18,7 +19,7 @@ boot: $(OBJS)
 $(PROGS): 
 	echo $(OBJS)
 	mkdir -p $(DESTDIR) 
-	$(CC) $(SRC_CLNT) $(CLAGS) $(LDLIBS) -o $@   
+	$(CC) $(CLAGS) $(SRC_CLNT) $(SRC_CLNTC) $(LDLIBS) -o $@   
 	mv $(PROGS) $(DESTDIR)
 
 

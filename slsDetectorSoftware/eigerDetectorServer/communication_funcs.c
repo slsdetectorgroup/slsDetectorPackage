@@ -407,7 +407,7 @@ int receiveChip(int file_des, sls_detector_chip* myChip) {
   if (chdiff<=0)
     ts+=receiveDataOnly(file_des,myChip->chanregs, sizeof(int)*nChans);
   else {
-    ptr=malloc(chdiff*sizeof(int));
+    ptr=(int *)malloc(chdiff*sizeof(int));
     myChip->nchan=nchanold;
     ts+=receiveDataOnly(file_des,myChip->chanregs, sizeof(int)*nchanold);
     ts+=receiveDataOnly(file_des,ptr, sizeof(int)*chdiff);
@@ -491,7 +491,7 @@ int  receiveModule(int file_des, sls_detector_module* myMod) {
 
 #endif
   } else {
-    dacptr=malloc(ndacdiff*sizeof(dacs_t));
+    dacptr=(dacs_t *)malloc(ndacdiff*sizeof(dacs_t));
     myMod->ndac=ndold;
     ts+=receiveDataOnly(file_des,myMod->dacs, sizeof(dacs_t)*ndold);
     ts+=receiveDataOnly(file_des,dacptr, sizeof(dacs_t)*ndacdiff);
@@ -505,7 +505,7 @@ int  receiveModule(int file_des, sls_detector_module* myMod) {
     printf("adcs received\n");
 #endif
   } else {
-    adcptr=malloc(nadcdiff*sizeof(dacs_t));
+    adcptr=(dacs_t *)malloc(nadcdiff*sizeof(dacs_t));
     myMod->nadc=naold;
     ts+=receiveDataOnly(file_des,myMod->adcs, sizeof(dacs_t)*naold);
     ts+=receiveDataOnly(file_des,adcptr, sizeof(dacs_t)*nadcdiff);
@@ -519,7 +519,7 @@ int  receiveModule(int file_des, sls_detector_module* myMod) {
     printf("chips received\n");
 #endif
   } else {
-    chipptr=malloc(nchipdiff*sizeof(int));
+    chipptr=(int *)malloc(nchipdiff*sizeof(int));
     myMod->nchip=nchipold;
     ts+=receiveDataOnly(file_des,myMod->chipregs, sizeof(int)*nchipold);
     ts+=receiveDataOnly(file_des,chipptr, sizeof(int)*nchipdiff);
@@ -533,7 +533,7 @@ int  receiveModule(int file_des, sls_detector_module* myMod) {
     printf("chans received\n");
 #endif
   } else {
-    chanptr=malloc(nchandiff*sizeof(int));
+    chanptr=(int *)malloc(nchandiff*sizeof(int));
     myMod->nchan=nchanold;
     ts+=receiveDataOnly(file_des,myMod->chanregs, sizeof(int)*nchanold);
     ts+=receiveDataOnly(file_des,chanptr, sizeof(int)*nchandiff);

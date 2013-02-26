@@ -329,11 +329,11 @@ int64_t getFrames(){//return dummy;
 int64_t setExposureTime(int64_t value){
 	/* time is in ns */
 	if (value!=-1)
-		value*=(1E-9*CLK_FREQ);
-	return set64BitReg(value,SET_EXPTIME_LSB_REG, SET_EXPTIME_MSB_REG)/(1E-9*CLK_FREQ);
+		value*=(int64_t)(1E-9*CLK_FREQ);
+	return (int64_t)(set64BitReg(value,SET_EXPTIME_LSB_REG, SET_EXPTIME_MSB_REG)/(1E-9*CLK_FREQ));
 }
 int64_t getExposureTime(){
-	return get64BitReg(GET_EXPTIME_LSB_REG, GET_EXPTIME_MSB_REG)/(1E-9*CLK_FREQ);
+	return (int64_t)(get64BitReg(GET_EXPTIME_LSB_REG, GET_EXPTIME_MSB_REG)/(1E-9*CLK_FREQ));
 }
 
 
@@ -348,23 +348,23 @@ int64_t getGates(){
 int64_t setPeriod(int64_t value){
 	/* time is in ns */
 	if (value!=-1)
-		value*=(1E-9*CLK_FREQ);
-	return set64BitReg(value,SET_PERIOD_LSB_REG, SET_PERIOD_MSB_REG)/(1E-9*CLK_FREQ);
+		value*=(int64_t)(1E-9*CLK_FREQ);
+	return (int64_t)(set64BitReg(value,SET_PERIOD_LSB_REG, SET_PERIOD_MSB_REG)/(1E-9*CLK_FREQ));
 }
 int64_t getPeriod(){
-	return get64BitReg(GET_PERIOD_LSB_REG, GET_PERIOD_MSB_REG)/(1E-9*CLK_FREQ);
+	return (int64_t)(get64BitReg(GET_PERIOD_LSB_REG, GET_PERIOD_MSB_REG)/(1E-9*CLK_FREQ));
 }
 
 
 int64_t setDelay(int64_t value){
 	/* time is in ns */
 	if (value!=-1) {
-		value*=(1E-9*CLK_FREQ);
+		value*=(int64_t)(1E-9*CLK_FREQ);
 	}
-	return set64BitReg(value,SET_DELAY_LSB_REG, SET_DELAY_MSB_REG)/(1E-9*CLK_FREQ);
+	return (int64_t)(set64BitReg(value,SET_DELAY_LSB_REG, SET_DELAY_MSB_REG)/(1E-9*CLK_FREQ));
 }
 int64_t getDelay(){
-	return get64BitReg(GET_DELAY_LSB_REG, GET_DELAY_MSB_REG)/(1E-9*CLK_FREQ);
+	return (int64_t)(get64BitReg(GET_DELAY_LSB_REG, GET_DELAY_MSB_REG)/(1E-9*CLK_FREQ));
 }
 
 

@@ -41,11 +41,11 @@ int initializeDetector(){
 #ifdef VERBOSE
 	printf("Board is for %d modules\n",n);
 #endif
-	detectorModules=malloc(n*sizeof(sls_detector_module));
-	detectorChips=malloc(n*NCHIP*sizeof(int));
-	detectorChans=malloc(n*NCHIP*NCHAN*sizeof(int));
-	detectorDacs=malloc(n*NDAC*sizeof(int));
-	detectorAdcs=malloc(n*NADC*sizeof(int));
+	detectorModules=(sls_detector_module *)malloc(n*sizeof(sls_detector_module));
+	detectorChips=(int *)malloc(n*NCHIP*sizeof(int));
+	detectorChans=(int *)malloc(n*NCHIP*NCHAN*sizeof(int));
+	detectorDacs=(dacs_t *)malloc(n*NDAC*sizeof(int));
+	detectorAdcs=(dacs_t *)malloc(n*NADC*sizeof(int));
 #ifdef VERBOSE
 	printf("modules from 0x%x to 0x%x\n",(unsigned int)(detectorModules), (unsigned int)(detectorModules+n));
 	printf("chips from 0x%x to 0x%x\n",(unsigned int)(detectorChips), (unsigned int)(detectorChips+n*NCHIP));
@@ -221,7 +221,7 @@ enum detectorSettings setSettings(enum detectorSettings sett, int imod){
 	//template setSettings() from mcb_funcs.c
 	//reads the dac registers from fpga to confirm which settings, if weird, undefined
 
-	return OK;
+	return GET_SETTINGS;
 }
 
 int startStateMachine(){
@@ -324,7 +324,7 @@ int setSpeed(enum speedVariable arg, int val){
 
 enum readOutFlags setReadOutFlags(enum readOutFlags val){
 	//template setStoreInRAM from firmware_funcs.c
-	return -1;
+	return GET_READOUT_FLAGS;
 }
 
 
@@ -380,7 +380,7 @@ int getNumberOfADCsPerModule(){return 0;}
 enum externalSignalFlag getExtSignal(int signalindex){
 	//template getExtSignal from firmware_funcs.c
 	//return signals[signalindex];
-	return -1;
+	return GET_EXTERNAL_SIGNAL_FLAG;
 }
 
 
@@ -448,7 +448,7 @@ enum externalCommunicationMode setTiming( enum externalCommunicationMode arg){
 	//if( flag=SIGNAL_OFF and signals[signalindex]==MASTER_SLAVE_SYNCHRONIZATION), return -1, (ensures masterslaveflag !=off now)
 	//else return flag
 
-	int ret=GET_EXTERNAL_COMMUNICATION_MODE;
+	//int ret=(externalCommunicationMode)GET_EXTERNAL_COMMUNICATION_MODE;
 	//sets timingmode variable
 	//ensures that the signals are in acceptance with timing mode and according sets the timing mode
 	/*
@@ -551,7 +551,7 @@ enum externalCommunicationMode setTiming( enum externalCommunicationMode arg){
 	}
 
 	 */
-	return ret;
+	return GET_EXTERNAL_COMMUNICATION_MODE;
 }
 
 

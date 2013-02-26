@@ -1,6 +1,7 @@
 #ifndef SLS_DETECTOR_DEFS_H
 #define SLS_DETECTOR_DEFS_H
 
+
 #ifdef __CINT__
 #define MYROOT
 #define __cplusplus
@@ -19,6 +20,9 @@
 /** header length for data :gotthard*/
 #define HEADERLENGTH 12
 
+/** maximum rois */
+#define MAX_ROIS 100
+
 typedef  double double32_t;
 typedef  float float32_t;
 typedef  int int32_t;
@@ -35,6 +39,9 @@ typedef float dacs_t;
 #define DEFAULT_DET_MAC         "00:aa:bb:cc:dd:ee"
 #define DEFAULT_DET_IP          "129.129.202.46"
 
+#define MAX_FRAMES_PER_FILE			20000
+#define SHORT_MAX_FRAMES_PER_FILE	100000
+
 /** 
     \file sls_detector_defs.h
 This file contains all the basic definitions common to the slsDetector class 
@@ -45,7 +52,7 @@ and to the server programs running on the detector
  * @version 0.1alpha (any string)
  * @see slsDetector
 
-$Revision: 434 $
+$Revision: 464 $
 
 */
 
@@ -53,16 +60,6 @@ $Revision: 434 $
 /** get flag form most functions */
 #define GET_FLAG -1
 
-#ifdef __cplusplus
-
-/** @short class containing all the structures, constants and enum definitions */
-class slsDetectorDefs {
-
- public:
-
-  slsDetectorDefs(){};
-  
-#endif
 
 
   enum {startScript, scriptBefore, headerBefore, headerAfter,scriptAfter, stopScript, enCalLog, angCalLog, MAX_ACTIONS};
@@ -517,13 +514,6 @@ enum angleConversionParameter {
 
 
 
-/** Error flags */
-#define NUM_ERROR_FLAGS=32
-#define CANNOT_CONNECT_TO_DETECTOR  0x80000000
-#define CANNOT_CONNECT_TO_RECEIVER  0x40000000
-#define COULD_NOT_CONFIGURE_MAC		0x00008000 //cant seem to get this error
-
-
 //typedef struct  {
   //float center;  /**< center of the module (channel at which the radius is perpendicular to the module surface) */
   //float ecenter; /**< error in the center determination */
@@ -536,19 +526,11 @@ enum angleConversionParameter {
 //} angleConversionConstant;
 
 
-#ifdef __cplusplus
- protected:
-#endif
-
-
 
 #ifndef MYROOT
 #include "sls_detector_funcs.h"
 #endif
- 
-#ifdef __cplusplus
-};
-#endif
+
 ;
 #endif
 ;

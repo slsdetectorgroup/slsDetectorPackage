@@ -120,7 +120,7 @@ int decode_function(int file_des) {
 		printf("size of data received %d\n",n);
 #endif
 //#ifdef VERBOSE
-	printf( "calling function fnum = %d %x\n",fnum,flist[fnum]);
+	printf( "calling function fnum = %d %x\n",fnum,(unsigned int)flist[fnum]);
 //#endif
 	if (fnum<0 || fnum>255)
 		fnum=255;
@@ -289,7 +289,7 @@ int get_detector_type(int file_des) {
 	n += sendDataOnly(file_des,&retval,sizeof(retval));
 	if (retval!=FAIL) {
 		/* send return argument */
-		ret=swap_int32(ret);
+		ret=(detectorType)swap_int32(ret);
 		n += sendDataOnly(file_des,&ret,sizeof(ret));
 	} else {
 		n += sendDataOnly(file_des,mess,sizeof(mess));
@@ -317,7 +317,7 @@ int set_number_of_modules(int file_des) {
 		retval=GOODBYE;
 	}
 	if (retval==OK) {
-		dim=arg[0];
+		dim=(dimension)arg[0];
 		nm=arg[1];
 
 		/* execute action */
@@ -428,7 +428,7 @@ int set_external_signal_flag(int file_des) {
 	retval=SIGNAL_OFF;
 	if (ret==OK) {
 		signalindex=arg[0];
-		flag=arg[1];
+		flag=(externalSignalFlag)arg[1];
 		/* execute action */
 		switch (flag) {
 		case GET_EXTERNAL_SIGNAL_FLAG:
@@ -527,7 +527,7 @@ enum externalCommunicationMode{
 		printf("Setting external communication mode to %d\n", arg);
 #endif
 	} else
-		ret=FAIL;
+		ret=(externalCommunicationMode)FAIL;
 
 	/* send answer */
 	/* send OK/failed */
@@ -846,7 +846,7 @@ int set_dac(int file_des) {
 		sprintf(mess,"Error reading from socket\n");
 		ret=FAIL;
 	}
-	ind=arg[0];
+	ind=(dacIndex)arg[0];
 	imod=arg[1];
 
 	n = receiveDataOnly(file_des,&val,sizeof(val));
@@ -949,7 +949,7 @@ int get_adc(int file_des) {
 		sprintf(mess,"Error reading from socket\n");
 		ret=FAIL;
 	}
-	ind=arg[0];
+	ind=(dacIndex)arg[0];
 	imod=arg[1];
 
 
@@ -1166,7 +1166,7 @@ int set_chip(int file_des) {
 
 
 	myChip.nchan=getNumberOfChannelsPerChip();
-	ch=malloc((myChip.nchan)*sizeof(int));
+	ch=(int *)malloc((myChip.nchan)*sizeof(int));
 	myChip.chanregs=ch;
 
 
@@ -1236,7 +1236,7 @@ int get_chip(int file_des) {
 
 
 	retval.nchan=getNumberOfChannelsPerChip();
-	ch=malloc((retval.nchan)*sizeof(int));
+	ch=(int *)malloc((retval.nchan)*sizeof(int));
 	retval.chanregs=ch;
 
 
@@ -1291,10 +1291,10 @@ int get_chip(int file_des) {
 }
 int set_module(int file_des) {
 	sls_detector_module myModule;
-	int *myChip=malloc(getNumberOfChipsPerModule()*sizeof(int));
-	int *myChan=malloc(getNumberOfChannelsPerModule()*sizeof(int));
-	int *myDac=malloc(getNumberOfDACsPerModule()*sizeof(int));
-	int *myAdc=malloc(getNumberOfADCsPerModule()*sizeof(int));
+	int *myChip=(int *)malloc(getNumberOfChipsPerModule()*sizeof(int));
+	int *myChan=(int *)malloc(getNumberOfChannelsPerModule()*sizeof(int));
+	int *myDac=(int *)malloc(getNumberOfDACsPerModule()*sizeof(int));
+	int *myAdc=(int *)malloc(getNumberOfADCsPerModule()*sizeof(int));
 	int retval, n;
 	int ret=OK;
 
@@ -1395,10 +1395,10 @@ int get_module(int file_des) {
 
 
 	sls_detector_module myModule;
-	int *myChip=malloc(getNumberOfChipsPerModule()*sizeof(int));
-	int *myChan=malloc(getNumberOfChannelsPerModule()*sizeof(int));
-	int *myDac=malloc(getNumberOfDACsPerModule()*sizeof(int));
-	int *myAdc=malloc(getNumberOfADCsPerModule()*sizeof(int));
+	int *myChip=(int *)malloc(getNumberOfChipsPerModule()*sizeof(int));
+	int *myChan=(int *)malloc(getNumberOfChannelsPerModule()*sizeof(int));
+	int *myDac=(int *)malloc(getNumberOfDACsPerModule()*sizeof(int));
+	int *myAdc=(int *)malloc(getNumberOfADCsPerModule()*sizeof(int));
 
 
 	if (myDac)
@@ -1551,7 +1551,7 @@ int set_threshold_energy(int file_des) {
 	}
 	ethr=arg[0];
 	imod=arg[1];
-	isett=arg[2];
+	isett=(detectorSettings)arg[2];
 
 	if (imod>=getTotalNumberOfModules()) {
 		ret=FAIL;
@@ -1614,7 +1614,7 @@ int set_settings(int file_des) {
 		ret=FAIL;
 	}
 	imod=arg[1];
-	isett=arg[0];
+	isett=(detectorSettings)arg[0];
 
 
 	if (imod>=getTotalNumberOfModules()) {
@@ -1630,7 +1630,7 @@ int set_settings(int file_des) {
 		ret=FAIL;
 		sprintf(mess,"Detector locked by %s\n",lastClientIP);
 	} else {
-		retval=setSettings(arg[0], imod);
+		retval=setSettings((detectorSettings)arg[0], imod);
 #ifdef VERBOSE
 		printf("Settings changed to %d\n",  isett);
 #endif  
@@ -1885,7 +1885,7 @@ int set_timer(int file_des) {
 	  sprintf(mess,"can't set timer\n");
 
 	  n = receiveDataOnly(file_des,&ind,sizeof(ind));
-	  ind=swap_int32(ind);
+	  ind=(timerIndex)swap_int32(ind);
 	  if (n < 0) {
 	    sprintf(mess,"Error reading from socket\n");
 	    ret=FAIL;
@@ -2430,11 +2430,10 @@ int set_port(int file_des) {
 
 int get_last_client_ip(int file_des) {
 	int ret=OK;
-	int n;
 	if (differentClients )
 		ret=FORCE_UPDATE;
-	n = sendDataOnly(file_des,&ret,sizeof(ret));
-	n = sendDataOnly(file_des,lastClientIP,sizeof(lastClientIP));
+	sendDataOnly(file_des,&ret,sizeof(ret));
+	sendDataOnly(file_des,lastClientIP,sizeof(lastClientIP));
 
 	return ret;
 
@@ -2451,34 +2450,34 @@ int send_update(int file_des) {
 	int nm;
 
 
-	n = sendDataOnly(file_des,lastClientIP,sizeof(lastClientIP));
+	sendDataOnly(file_des,lastClientIP,sizeof(lastClientIP));
 	nm=setNMod(-1,X);
-	n = sendDataOnly(file_des,&nm,sizeof(nm));
+	sendDataOnly(file_des,&nm,sizeof(nm));
 	nm=setNMod(-1,Y);
-	n = sendDataOnly(file_des,&nm,sizeof(nm));
+	sendDataOnly(file_des,&nm,sizeof(nm));
 	nm=setDynamicRange(-1);
-	n = sendDataOnly(file_des,&nm,sizeof(nm));
+	sendDataOnly(file_des,&nm,sizeof(nm));
 
-	n = sendDataOnly(file_des,&dataBytes,sizeof(dataBytes));
+	sendDataOnly(file_des,&dataBytes,sizeof(dataBytes));
 
 	t=setSettings(GET_SETTINGS, -1);
-	n = sendDataOnly(file_des,&t,sizeof(t));
+	sendDataOnly(file_des,&t,sizeof(t));
 	thr=getThresholdEnergy(-1);
-	n = sendDataOnly(file_des,&thr,sizeof(thr));
+	sendDataOnly(file_des,&thr,sizeof(thr));
 	/*retval=setFrames(tns);*/
-	n = sendDataOnly(file_des,&retval,sizeof(int64_t));
+	sendDataOnly(file_des,&retval,sizeof(int64_t));
 	/*retval=setExposureTime(tns);*/
-	n = sendDataOnly(file_des,&retval,sizeof(int64_t));
+	sendDataOnly(file_des,&retval,sizeof(int64_t));
 	/*retval=setPeriod(tns);*/
-	n = sendDataOnly(file_des,&retval,sizeof(int64_t));
+	sendDataOnly(file_des,&retval,sizeof(int64_t));
 	/*retval=setDelay(tns);*/
-	n = sendDataOnly(file_des,&retval,sizeof(int64_t));
+	sendDataOnly(file_des,&retval,sizeof(int64_t));
 	/*retval=setGates(tns);*/
-	n = sendDataOnly(file_des,&retval,sizeof(int64_t));
+	sendDataOnly(file_des,&retval,sizeof(int64_t));
 	/*retval=setProbes(tns);*/
-	n = sendDataOnly(file_des,&retval,sizeof(int64_t));
+	sendDataOnly(file_des,&retval,sizeof(int64_t));
 	/*retval=setTrains(tns);*/
-	n = sendDataOnly(file_des,&retval,sizeof(int64_t));
+	sendDataOnly(file_des,&retval,sizeof(int64_t));
 
 	if (lockStatus==0) {
 		strcpy(lastClientIP,thisClientIP);
@@ -2524,7 +2523,7 @@ int set_master(int file_des) {
 	printf("setting master flags  to %d\n",arg);
 #endif 
 
-	if (differentClients==1 && lockStatus==1 && arg!=GET_READOUT_FLAGS) {
+	if (differentClients==1 && lockStatus==1 && (int)arg!=(int)GET_READOUT_FLAGS) {
 		ret=FAIL;
 		sprintf(mess,"Detector locked by %s\n",lastClientIP);
 	}  else {
@@ -2550,7 +2549,7 @@ int set_master(int file_des) {
 
 int set_synchronization(int file_des) {
 
-	enum synchronizationMode retval=GET_MASTER;
+	enum synchronizationMode retval=GET_SYNCHRONIZATION_MODE;
 	enum synchronizationMode arg;
 	int n;
 	int ret=OK;
@@ -2569,7 +2568,7 @@ int set_synchronization(int file_des) {
 	printf("setting master flags  to %d\n",arg);
 #endif 
 
-	if (differentClients==1 && lockStatus==1 && arg!=GET_READOUT_FLAGS) {
+	if (differentClients==1 && lockStatus==1 && (int)arg!=(int)GET_READOUT_FLAGS) {
 		ret=FAIL;
 		sprintf(mess,"Detector locked by %s\n",lastClientIP);
 	}  else {

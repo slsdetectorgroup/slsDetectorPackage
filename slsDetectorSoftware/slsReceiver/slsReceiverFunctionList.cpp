@@ -7,7 +7,9 @@
 
 #include "slsReceiverFunctionList.h"
 
-
+#ifdef TESTWRITE
+#include "usersFunctions.h"
+#endif
 
 #include <signal.h>  		// SIGINT
 #include <sys/stat.h> 		// stat
@@ -49,7 +51,9 @@ slsReceiverFunctionList::slsReceiverFunctionList(bool shortfname):
 				bufferSize(BUFFER_SIZE),
 				packetsPerFrame(2),
 				guiRequiresData(0),
-				currframenum(0)
+				currframenum(0),
+				writeReceiverData(0),
+				pwriteReceiverDataArg(0)
 {
 	strcpy(savefilename,"");
 	strcpy(actualfilename,"");
@@ -67,21 +71,19 @@ slsReceiverFunctionList::slsReceiverFunctionList(bool shortfname):
 
 	mem0=(char*)malloc(4096*FIFO_SIZE);
 	if (mem0==NULL) {
-	  cout<<"++++++++++++++++++++++ COULD NON ALLOCATE MEMORY!!!!!!!+++++++++++++++++++++" << endl;
+	  cout<<"++++++++++++++++++++++ COULD NOT ALLOCATE MEMORY!!!!!!!+++++++++++++++++++++" << endl;
 	}
 	buffer=mem0;
 	while (buffer<(mem0+4096*(FIFO_SIZE-1))) {
 	  fifofree->push(buffer);
 	  buffer+=4096;
 	}
-	//	cout<<"DEFAULT BUFFER SIZE IS "<< BUFFER_SIZE << endl;
+
 	
-
-	//	buffer=mem0;
-
-
-
-
+#ifdef TESTWRITE
+	//to test write receiver data call back
+	registerWriteReceiverDataCallback(&defaultWriteReceiverDataFunc, NULL);
+#endif
 }
 
 
@@ -386,7 +388,11 @@ int slsReceiverFunctionList::startWriting(){
 	strcpy(savefilename,"");
 	strcpy(actualfilename,"");
 
-	cout << "Max Frames Per File:" << maxFramesPerFile << endl;
+	if (!writeReceiverData)
+		cout << "Max Frames Per File:" << maxFramesPerFile << endl;
+	else
+		cout << "Note: Writing Data has been defined exernally" << endl;
+
 	cout << "Ready!" << endl;
 
 
@@ -400,8 +406,10 @@ int slsReceiverFunctionList::startWriting(){
 		else				sprintf(actualfilename, "%s/%s_%d_%09d.raw", filePath,fileName,fileIndex, 0);
 
 		//start writing
-		sfilefd = fopen((const char *) (actualfilename), "w");
-		cout << "Saving to " << actualfilename << endl;
+		if (!writeReceiverData){
+			sfilefd = fopen((const char *) (actualfilename), "w");
+			cout << "Saving to " << actualfilename << endl;
+		}
 	}
 
 
@@ -409,7 +417,7 @@ int slsReceiverFunctionList::startWriting(){
 	while(listening_thread_running){
 
 		//when it reaches maxFramesPerFile,start writing new file
-		if (framesInFile == maxFramesPerFile) {
+		if ((!writeReceiverData)&& (framesInFile == maxFramesPerFile)) {
 
 			if(enableFileWrite){
 				fclose(sfilefd);
@@ -428,7 +436,7 @@ int slsReceiverFunctionList::startWriting(){
 			//currframenum=(int)(*((int*)latestData));
 			cout << "packet loss " << fixed << setprecision(4) << ((currframenum-prevframenum-(packetsPerFrame*framesInFile))/(double)(packetsPerFrame*framesInFile))*100.000 << "%\t\t"
 					"framenum " << currframenum << "\t\t"
-					"p " << prevframenum << " sleep:" << sleepnumber << endl;
+					"p " << prevframenum << endl;
 
 			prevframenum=currframenum;
 			framesInFile = 0;
@@ -449,8 +457,12 @@ int slsReceiverFunctionList::startWriting(){
 				  guiRequiresData=0;
 				}
 				//cout<<"write index:"<<(int)(*(int*)latestData)<<endl;
-				if(enableFileWrite)
-					fwrite(dataWriteFrame->buffer, 1, dataWriteFrame->rc, sfilefd);
+				if(enableFileWrite){
+					if (writeReceiverData)
+						writeReceiverData(dataWriteFrame->buffer,dataWriteFrame->rc, pwriteReceiverDataArg);
+					else
+						fwrite(dataWriteFrame->buffer, 1, dataWriteFrame->rc, sfilefd);
+				}
 				framesInFile++;
 				///ANNA?!?!??!
 				//	delete [] dataWriteFrame->buffer;
@@ -458,9 +470,10 @@ int slsReceiverFunctionList::startWriting(){
 			}
 			delete dataWriteFrame;
 		}
-		else{sleepnumber++;sleepnumber++;sleepnumber++;//cout<<"fifo empty, usleep"<<endl;
+		else{
+			sleepnumber++;
 			usleep(50000);
-			}
+		}
 	}
 
 	cout << "Total Frames Caught:"<< totalFramesCaught << endl;

@@ -60,6 +60,16 @@ $Revision: 464 $
 /** get flag form most functions */
 #define GET_FLAG -1
 
+#ifdef MYROOT
+
+/** @short class containing all the structures, constants and enum definitions */
+class slsDetectorDefs {
+
+ public:
+
+  slsDetectorDefs(){};
+
+#endif
 
 
   enum {startScript, scriptBefore, headerBefore, headerAfter,scriptAfter, stopScript, enCalLog, angCalLog, MAX_ACTIONS};
@@ -526,11 +536,19 @@ enum angleConversionParameter {
 //} angleConversionConstant;
 
 
+#ifdef __cplusplus
+ protected:
+#endif
+
+
 
 #ifndef MYROOT
 #include "sls_detector_funcs.h"
 #endif
 
+#ifdef __cplusplus
+};
+#endif
 ;
 #endif
 ;

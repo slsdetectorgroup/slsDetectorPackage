@@ -40,6 +40,8 @@ extern "C" {
   int defaultDataReadyFunc(detectorData* d,  int i, void* p);
   int defaultRawDataReadyFunc(double* d, int np,  void* p);
 
+  int defaultWriteReceiverDataFunc(char* d, int np,  void* p);
+
 
 #ifdef __cplusplus
 };

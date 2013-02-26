@@ -181,7 +181,10 @@ public:
 	 */
 	int setShortFrame(int i);
 
-
+	/**
+	 * Register call back function to write receiver data
+	 */
+	void registerWriteReceiverDataCallback(int( *userCallback)(char*, int, void*), void *pArg) {writeReceiverData = userCallback; pwriteReceiverDataArg = pArg;};
 
 private:
 
@@ -294,6 +297,11 @@ private:
 
 	/** current frame number */
 	int currframenum;
+
+	/** register for call back to get data */
+	int (*writeReceiverData)(char*,int,void*);
+	void *pwriteReceiverDataArg;
+
 public:
 	/** File Descriptor */
 	static FILE *sfilefd;

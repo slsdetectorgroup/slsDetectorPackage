@@ -399,7 +399,12 @@ class slsDetectorUsers
   
    void registerRawDataCallback(int( *userCallback)(double* p, int n, void*), void *pArg);
 
-  
+   /**
+      @short register callback for writing receiver data - if the rawDataCallback is registered, no receiver data writing will be carried on automatically by the software - the receiver data are deleted by the software
+      \param userCallback function for writing the receiver data -  p is the pointer to the data, n is the number of bytes to write
+   */
+
+   void registerWriteReceiverDataCallback(int( *userCallback)(char* p, int n, void*), void *pArg);
 
   /** 
      @short function to initalize a set of measurements (reset binning if angular conversion, reset summing otherwise)  - can be overcome by the user's functions thanks to the virtual property

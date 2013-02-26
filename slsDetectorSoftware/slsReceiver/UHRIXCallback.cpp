@@ -1,4 +1,6 @@
 
+#include "UHRIXCallback.h"
+
 
 int UHRIXCallbackDataFunc(char* d, int np, FILE* fd,  void* p){
 	//#ifdef VERBOSE

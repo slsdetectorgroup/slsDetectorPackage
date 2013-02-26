@@ -11,6 +11,10 @@
 #include "usersFunctions.h"
 #endif
 
+#ifdef UHRIXCALLBACK
+#include "UHRIXCallback.h"
+#endif
+
 #include <signal.h>  		// SIGINT
 #include <sys/stat.h> 		// stat
 #include <sys/socket.h>		// socket(), bind(), listen(), accept(), shut down
@@ -83,6 +87,10 @@ slsReceiverFunctionList::slsReceiverFunctionList(bool shortfname):
 #ifdef TESTWRITE
 	//to test write receiver data call back
 	registerWriteReceiverDataCallback(&defaultWriteReceiverDataFunc, NULL);
+#endif
+
+#ifdef UHRIXCALLBACK
+	registerWriteReceiverDataCallback(&UHRIXCallbackDataFunc, latestData);
 #endif
 }
 

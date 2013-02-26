@@ -184,7 +184,7 @@ public:
 	/**
 	 * Register call back function to write receiver data
 	 */
-	void registerWriteReceiverDataCallback(int( *userCallback)(char*, int, void*), void *pArg) {writeReceiverData = userCallback; pwriteReceiverDataArg = pArg;};
+	void registerWriteReceiverDataCallback(int( *userCallback)(char*, int, FILE*, void*), void *pArg) {writeReceiverData = userCallback; pwriteReceiverDataArg = pArg;};
 
 private:
 
@@ -299,7 +299,7 @@ private:
 	int currframenum;
 
 	/** register for call back to get data */
-	int (*writeReceiverData)(char*,int,void*);
+	int (*writeReceiverData)(char*,int,FILE*,void*);
 	void *pwriteReceiverDataArg;
 
 public:

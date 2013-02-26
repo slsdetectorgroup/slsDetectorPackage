@@ -230,7 +230,6 @@ void slsDetectorUsers::registerRawDataCallback(int( *userCallback)(double*, int,
   myDetector->registerRawDataCallback(userCallback,pArg);
 }
 
-
 void slsDetectorUsers::registerAcquisitionFinishedCallback(int( *func)(double,int, void*), void *pArg){
   myDetector->registerAcquisitionFinishedCallback(func,pArg);
 }

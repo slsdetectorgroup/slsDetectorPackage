@@ -7,7 +7,9 @@ Functions depending on the experimental setup should be defined here
 ******************************************************************/
 
 //#define PI 3.14159265358979323846
-
+#ifdef __cplusplus
+#include <iostream>
+#endif
 
 #ifdef EPICS
 #include <cadef.h>
@@ -40,8 +42,9 @@ extern "C" {
   int defaultDataReadyFunc(detectorData* d,  int i, void* p);
   int defaultRawDataReadyFunc(double* d, int np,  void* p);
 
-  int defaultWriteReceiverDataFunc(char* d, int np,  void* p);
-
+#ifdef __cplusplus
+  int defaultWriteReceiverDataFunc(char* d, int np,  FILE* f, void* p);
+#endif
 
 #ifdef __cplusplus
 };

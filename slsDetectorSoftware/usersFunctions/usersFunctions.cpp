@@ -336,7 +336,7 @@ int defaultRawDataReadyFunc(double* d, int np,  void* p) {
 
 
 
-int defaultWriteReceiverDataFunc(char* d, int np,  void* p){
+int defaultWriteReceiverDataFunc(char* d, int np,  FILE* f, void* p){
 	//#ifdef VERBOSE
 	printf("UUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUU Receiver Data received \n");
 	if (d==NULL)

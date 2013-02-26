@@ -6260,3 +6260,14 @@ int slsDetector::calibratePedestal(int frames){
 
 
 
+int64_t slsDetector::clearAllErrorMask(){
+	clearErrorMask();
+	for(int i=0;i<parentDet->getNumberOfDetectors();i++){
+		if(parentDet->getDetectorId(i) == getDetectorId())
+			parentDet->setErrorMask(parentDet->getErrorMask()|(0<<i));
+	}
+	return getErrorMask();
+}
+
+
+

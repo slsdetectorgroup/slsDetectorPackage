@@ -4162,7 +4162,7 @@ int* multiSlsDetector::readFrameFromReceiver(char* fName, int &fIndex){
 	int *retdet, *p=retval;
 	string fullFName="";
 	string ext="";
-
+	char * pch;
 
 
 	for (int id=0; id<thisMultiDetector->numberOfDetectors; id++) {
@@ -4176,9 +4176,11 @@ int* multiSlsDetector::readFrameFromReceiver(char* fName, int &fIndex){
 				//concatenate filenames
 				if(!fullFName.length()){
 					fullFName.assign(fileIO::getFileName());
-					size_t dot = fullFName.rfind(".");
-					if(dot != string::npos)
-						ext = fullFName.substr(dot,fullFName.size()-dot);
+					if (strrchr(fName,'.')!=NULL){
+						ext.assign(fName);
+						size_t dot = ext.rfind(".");
+						ext = ext.erase(0,dot);
+					}
 				}
 				fullFName.append(getReceiverFileNameToConcatenate(fName));
 			}else {
@@ -4344,7 +4346,6 @@ int64_t multiSlsDetector::clearAllErrorMask(){
 
 	return getErrorMask();
 }
-
 
 
 

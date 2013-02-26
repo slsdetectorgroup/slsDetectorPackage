@@ -1548,6 +1548,38 @@ class slsDetector : public slsDetectorUtils, public energyConversion {
   */
   int calibratePedestal(int frames = 0);
 
+
+  /** Clears error mask and also the bit in parent det multi error mask
+     /returns error mask
+  */
+  int64_t clearAllErrorMask();
+
+  /** returns the  detector MAC address\sa sharedSlsDetector  */
+  char* getDetectorMAC() {return thisDetector->detectorMAC;};
+  /** returns the  detector IP address\sa sharedSlsDetector  */
+  char* getDetectorIP() {return thisDetector->detectorIP;};
+  /** returns the receiver IP address \sa sharedSlsDetector  */
+  char* getReceiver() {return thisDetector->receiver_hostname;};
+  /** returns the receiver UDP IP address \sa sharedSlsDetector  */
+  char* getReceiverUDPIP() {return thisDetector->receiverUDPIP;};
+  /** returns the receiver UDP MAC address \sa sharedSlsDetector  */
+  char* getReceiverUDPMAC() {return thisDetector->receiverUDPMAC;};
+  /** returns the receiver UDP IP address \sa sharedSlsDetector  */
+  char* getReceiverUDPPort() {char *c= new char[MAX_STR_LENGTH];sprintf(c,"%d",thisDetector->receiverUDPPort); return c;};
+
+  /** validates the format of detector MAC address and sets it \sa sharedSlsDetector  */
+  char* setDetectorMAC(string detectorMAC);
+  /** validates the format of detector IP address and sets it \sa sharedSlsDetector  */
+  char* setDetectorIP(string detectorIP);
+  /** validates and sets the receiver IP address/hostname \sa sharedSlsDetector  */
+  char* setReceiver(string receiver);
+  /** validates the format of receiver udp ip and sets it \sa sharedSlsDetector  */
+  char* setReceiverUDPIP(string udpip);
+  /** validates the format of receiver udp mac and sets it \sa sharedSlsDetector  */
+  char* setReceiverUDPMAC(string udpmac);
+  /** sets the receiver udp port \sa sharedSlsDetector  */
+  int setReceiverUDPPort(int udpport);
+
  protected:
  
 
@@ -1652,36 +1684,6 @@ class slsDetector : public slsDetectorUtils, public energyConversion {
   */
   int receiveModule(sls_detector_module*);
   
-
-
-
-
-  /** returns the  detector MAC address\sa sharedSlsDetector  */
-  char* getDetectorMAC() {return thisDetector->detectorMAC;};
-  /** returns the  detector IP address\sa sharedSlsDetector  */
-  char* getDetectorIP() {return thisDetector->detectorIP;};
-  /** returns the receiver IP address \sa sharedSlsDetector  */
-  char* getReceiver() {return thisDetector->receiver_hostname;};
-  /** returns the receiver UDP IP address \sa sharedSlsDetector  */
-  char* getReceiverUDPIP() {return thisDetector->receiverUDPIP;};
-  /** returns the receiver UDP MAC address \sa sharedSlsDetector  */
-  char* getReceiverUDPMAC() {return thisDetector->receiverUDPMAC;};
-  /** returns the receiver UDP IP address \sa sharedSlsDetector  */
-  char* getReceiverUDPPort() {char *c= new char[MAX_STR_LENGTH];sprintf(c,"%d",thisDetector->receiverUDPPort); return c;};
-
-  /** validates the format of detector MAC address and sets it \sa sharedSlsDetector  */
-  char* setDetectorMAC(string detectorMAC);
-  /** validates the format of detector IP address and sets it \sa sharedSlsDetector  */
-  char* setDetectorIP(string detectorIP);
-  /** validates and sets the receiver IP address/hostname \sa sharedSlsDetector  */
-  char* setReceiver(string receiver);
-  /** validates the format of receiver udp ip and sets it \sa sharedSlsDetector  */
-  char* setReceiverUDPIP(string udpip);
-  /** validates the format of receiver udp mac and sets it \sa sharedSlsDetector  */
-  char* setReceiverUDPMAC(string udpmac);
-  /** sets the receiver udp port \sa sharedSlsDetector  */
-  int setReceiverUDPPort(int udpport);
-
   /** Gets MAC from receiver and sets up UDP Connection */
   int setUDPConnection();
 

@@ -288,8 +288,8 @@ class fileIOStatic  {
 	  size_t uscore=s.find("_");								\
 	  s=s.substr(uscore,dot-uscore);							\
 	  uscore=s.find("_",1);										\
-	  if ((uscore!= string::npos) && (sscanf( s.substr(1,uscore-1).c_str(),"d%d",&i))) \
-	  s=s.substr(uscore,s.size()-uscore);						\
+	  //if ((uscore!= string::npos) && (sscanf( s.substr(1,uscore-1).c_str(),"d%d",&i)))
+	  //s=s.substr(uscore,s.size()-uscore);
 	  return s;													\
   };
 

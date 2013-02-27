@@ -287,7 +287,7 @@ int slsReceiverFunctionList::startListening(){
 	//  very end of the program.
 	do {
 
-
+	    if (strchr(eth,'.')!=NULL) strcpy(eth,"");
 
 		if(!strlen(eth)){
 			cout<<"warning:eth is empty.listening to all"<<endl;
@@ -420,7 +420,7 @@ int slsReceiverFunctionList::startWriting(){
 
 
 
-	while(listening_thread_running){
+	while(listening_thread_running || (!fifo->isEmpty())){
 
 		//when it reaches maxFramesPerFile,start writing new file
 		if (framesInFile == maxFramesPerFile) {

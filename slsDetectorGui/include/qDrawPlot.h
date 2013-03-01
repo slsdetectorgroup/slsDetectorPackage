@@ -2,7 +2,7 @@
  * qDrawPlot.h
  *
  *  Created on: May 7, 2012
- *      Author: Ian Johnson
+ *      Author: Dhanya Maliakal
  */
 #ifndef QDRAWPLOT_H
 #define QDRAWPLOT_H
@@ -115,8 +115,6 @@ public:
 	 * returns ok/fail
 	 * */
 	int UpdateTrimbitPlot(bool fromDetector,bool Histogram);
-
-
 
 
 public slots:

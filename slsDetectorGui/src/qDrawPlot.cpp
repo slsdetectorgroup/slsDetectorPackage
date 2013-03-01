@@ -2,7 +2,7 @@
  * qDrawPlot.cpp
  *
  *  Created on: May 7, 2012
- *      Author:  Ian Johnson
+ *      Author:  Dhanya Maliakal
  */
 // Qt Project Class Headers
 #include "qDrawPlot.h"
@@ -172,9 +172,6 @@ void qDrawPlot::SetupWidgetWindow(){
 
 	if(myDet->getDetectorsType()==slsDetectorDefs::GOTTHARD)
 		pedestalCount = 0;
-
-
-
 
 
 	//widget related initialization
@@ -578,7 +575,6 @@ void qDrawPlot::SetupMeasurement(){
 
 void* qDrawPlot::DataStartAcquireThread(void *this_pointer){
 	((qDrawPlot*)this_pointer)->myDet->acquire(1);
-
 	return this_pointer;
 }
 

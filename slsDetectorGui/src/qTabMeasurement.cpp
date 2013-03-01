@@ -83,6 +83,7 @@ void qTabMeasurement::SetupWidgetWindow(){
 	iconStart = new QIcon(":/icons/images/start.png");
 	iconStop = new QIcon(":/icons/images/stop.png");
 
+
 }
 
 
@@ -322,6 +323,25 @@ void qTabMeasurement::startStopAcquisition(){
 	}
 }
 
+
+//-------------------------------------------------------------------------------------------------------------------------------------------------
+
+/*
+int qTabMeasurement::GetAcquisitionStarted(){
+
+	cout<<" acquisition started call back"<<endl;
+	//if the acquisition started from client, the button wont be checked
+	if(!btnStartStop->isChecked()){cout<<" hasnt started, so from client"<<endl;
+		myPlot->SetAcqFromClient();
+		btnStartStop->click();
+		//wait till the gui is ready to execute the acquire(), but doesnt execute it
+		//acqFromClient is reset when it is ready
+		while(myPlot->GetAcqFromClient());
+	}else
+		cout<<" has started, so from gui"<<endl;
+	return 0;
+}
+*/
 
 //-------------------------------------------------------------------------------------------------------------------------------------------------
 

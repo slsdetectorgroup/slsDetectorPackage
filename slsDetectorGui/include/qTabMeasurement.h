@@ -91,7 +91,6 @@ private:
 	void Enable(bool enable);
 
 
-
 private slots:
 	/** Sets the timing mode
 	 * @ param mode cane be None, Auto, Gated, Trigger Exposure Series,
@@ -154,7 +153,6 @@ private slots:
 
 	/** Enable write to file */
 	void EnableFileWrite(bool enable);
-
 
 
 private:

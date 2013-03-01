@@ -22,6 +22,7 @@ class qTabSettings;
 class qTabDebugging;
 class qTabDeveloper;
 class qTabMessages;
+class qServer;
 /** Project Class Headers */
 class multiSlsDetector;
 /** Qt Include Headers */
@@ -109,6 +110,9 @@ private:
 	qTabDeveloper 		*tab_developer;
 	/**Messages tab */
 	qTabMessages 		*tab_messages;
+
+	/** server object*/
+	qServer				*myServer;
 
 	/**if the developer tab should be enabled,known from command line */
 	int isDeveloper;

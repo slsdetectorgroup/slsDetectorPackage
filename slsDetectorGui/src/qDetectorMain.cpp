@@ -14,6 +14,7 @@
 #include "qTabDebugging.h"
 #include "qTabDeveloper.h"
 #include "qTabMessages.h"
+#include "qServer.h"
 // Project Class Headers
 #include "slsDetector.h"
 #include "multiSlsDetector.h"
@@ -111,6 +112,8 @@ void qDetectorMain::SetUpWidgetWindow(){
 	tab_advanced 		=  new qTabAdvanced		(this,	myDet,myPlot);cout<<"Advanced ready"<<endl;
 	tab_debugging 		=  new qTabDebugging	(this,	myDet);				cout<<"Debugging ready"<<endl;
 	tab_developer 		=  new qTabDeveloper	(this,	myDet);				cout<<"Developer ready"<<endl;
+
+	myServer = new qServer(myDet, tab_measurement, myPlot);
 
 	//	creating the scroll area widgets for the tabs
 	for(int i=0;i<NumberOfTabs;i++){
@@ -320,8 +323,14 @@ void qDetectorMain::LoadConfigFile(const string fName){
 void qDetectorMain::EnableModes(QAction *action){
 	bool enable;
 
+	//listen to gui client
+	if(action==actionListenGuiClient){
+		disconnect(menuModes,		SIGNAL(triggered(QAction*)),	this,SLOT(EnableModes(QAction*)));
+		actionListenGuiClient->setChecked(myServer->StartStopServer(actionListenGuiClient->isChecked()));
+		connect(menuModes,		SIGNAL(triggered(QAction*)),	this,SLOT(EnableModes(QAction*)));
+	}
 	//Set DebugMode
-	if(action==actionDebug){
+	else if(action==actionDebug){
 		enable = actionDebug->isChecked();
 		tabs->setTabEnabled(Debugging,enable);
 #ifdef VERBOSE

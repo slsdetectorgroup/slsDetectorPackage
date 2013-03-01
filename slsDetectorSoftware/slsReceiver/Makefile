@@ -1,5 +1,5 @@
 CC			=	g++ 
-	CLAGS		+=  -DSLS_RECEIVER_FUNCTION_LIST -DGOTTHARDD -UHRIXCALLBACK  #-DTESTWRITE
+	CLAGS		+=  -DSLS_RECEIVER_FUNCTION_LIST -DGOTTHARDD -DUHRIXCALLBACK  #-DTESTWRITE
 LDLIBS		+= 	-lm  -lstdc++ -lpthread 
 
 INCLUDES	= 	-I ../MySocketTCP -I ../commonFiles -I ../usersFunctions -I ../slsDetectorAnalysis -I .

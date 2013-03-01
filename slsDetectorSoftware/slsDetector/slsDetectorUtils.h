@@ -546,7 +546,7 @@ class slsDetectorUtils :  public slsDetectorActions, public postProcessing {
   
   void registerAcquisitionFinishedCallback(int( *func)(double,int, void*), void *pArg){acquisition_finished=func; acqFinished_p=pArg;};
   void registerMeasurementFinishedCallback(int( *func)(int,int, void*), void *pArg){measurement_finished=func; measFinished_p=pArg;};
- 
+
   void registerProgressCallback(int( *func)(double,void*), void *pArg){progress_call=func; pProgressCallArg=pArg;};
 
 
@@ -702,6 +702,8 @@ virtual ROI* getROI(int &n)=0;
   int (*acquisition_finished)(double,int,void*);
   int (*measurement_finished)(int,int,void*);
   void *acqFinished_p, *measFinished_p;
+
+
 
   int (*progress_call)(double,void*);
   void *pProgressCallArg;

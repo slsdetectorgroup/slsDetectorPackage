@@ -257,9 +257,6 @@ private:
 	/** Receiver buffer */
 	char *mem0, *memfull;
 
-
-
-
 	/** latest data */
 	char* latestData;
 

@@ -76,6 +76,7 @@ using namespace std;
 #define DEFAULT_PORTNO    1952
 #define DEFAULT_BACKLOG 5
 #define DEFAULT_UDP_PORTNO 50001
+#define DEFAULT_GUI_PORTNO 65000
 
 class genericSocket{
 

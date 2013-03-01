@@ -194,9 +194,6 @@ multiSlsDetector::multiSlsDetector(int id) :  slsDetectorUtils(), shmId(-1)
     }
 
 
-
-
-
     thisMultiDetector->alreadyExisting=1;
   }
 

@@ -191,7 +191,6 @@ class multiSlsDetector  : public slsDetectorUtils {
     mysteps scanSteps[MAX_SCAN_LEVELS];
     int scanPrecision[MAX_SCAN_LEVELS];
     
-    
   };
 
 
@@ -1187,6 +1186,7 @@ class multiSlsDetector  : public slsDetectorUtils {
      /returns number of frames
   */
   int calibratePedestal(int frames = 0);
+
 
  protected:
  

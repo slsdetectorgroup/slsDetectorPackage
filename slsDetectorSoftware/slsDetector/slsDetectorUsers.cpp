@@ -233,7 +233,7 @@ void slsDetectorUsers::registerRawDataCallback(int( *userCallback)(double*, int,
 void slsDetectorUsers::registerAcquisitionFinishedCallback(int( *func)(double,int, void*), void *pArg){
   myDetector->registerAcquisitionFinishedCallback(func,pArg);
 }
-  
+
 void slsDetectorUsers::registerGetPositionCallback( double (*func)(void*),void *arg){
   myDetector->registerGetPositionCallback(func,arg);
 }

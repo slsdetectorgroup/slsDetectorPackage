@@ -43,7 +43,7 @@ slsDetectorUtils::slsDetectorUtils()  {
 
 void  slsDetectorUtils::acquire(int delflag){
 
-	bool receiver = (setReceiverOnline()==ONLINE_FLAG);
+  bool receiver = (setReceiverOnline()==ONLINE_FLAG);
 
   // setTotalProgress();
   //moved these 2 here for measurement change

@@ -4,8 +4,6 @@
  * ********************************************************************/
 // Qt Project Class Headers
 #include "qDetectorMain.h"
-#include "qDrawPlot.h"
-#include "qTabMeasurement.h"
 #include "qTabDataOutput.h"
 #include "qTabPlot.h"
 #include "qTabActions.h"
@@ -113,7 +111,7 @@ void qDetectorMain::SetUpWidgetWindow(){
 	tab_debugging 		=  new qTabDebugging	(this,	myDet);				cout<<"Debugging ready"<<endl;
 	tab_developer 		=  new qTabDeveloper	(this,	myDet);				cout<<"Developer ready"<<endl;
 
-	myServer = new qServer(myDet, tab_measurement, myPlot);
+	myServer = new qServer(myDet, this);
 
 	//	creating the scroll area widgets for the tabs
 	for(int i=0;i<NumberOfTabs;i++){
@@ -716,6 +714,33 @@ void qDetectorMain::SetZoomToolTip(bool disable){
 		dockWidgetPlot->setToolTip("<span style=\" color:#00007f;\">To Enable mouse-controlled zooming capabilities,\ndisable min and max for all axes.<span> ");
 	else
 		dockWidgetPlot->setToolTip(zoomToolTip);
+}
+
+
+//-------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+int qDetectorMain::StartStopAcquisitionFromClient(bool start){
+#ifdef VERBOSE
+	cout << "Start/Stop Acquisition From Client:" << start << endl;
+#endif
+	int ret = slsDetectorDefs::FAIL;
+
+	if (tab_measurement->GetStartStatus() != start){
+		if(start){
+			//refresh all the required tabs
+			tab_actions->Refresh();
+			tab_measurement->Refresh();
+			tab_plot->Refresh();
+		}
+		//click start/stop
+		tab_measurement->ClickStartStop();
+	}
+
+	if (myPlot->isRunning() == start)
+		ret = slsDetectorDefs::OK;
+
+	return ret;
 }
 
 

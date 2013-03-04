@@ -48,6 +48,17 @@ public:
 	 */
 	void SetExpertMode(bool enable);
 
+	/** Returns the status of the Start/Stop Acquisition button
+	 */
+	bool GetStartStatus(){return btnStartStop->isChecked();};
+
+	/** Click the Start/Stop Acquisition button
+	 *  This is used if this command came from gui client
+	 */
+	void ClickStartStop(){btnStartStop->click();};
+
+	/** Returns progress bar value */
+	int GetProgress(){return progressBar->value();};
 
 
 public slots:

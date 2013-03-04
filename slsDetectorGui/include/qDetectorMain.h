@@ -12,8 +12,8 @@
 /** Form Header */
 #include "ui_form_detectormain.h"
 /** Qt Project Class Headers */
-class qDrawPlot;
-class qTabMeasurement;
+#include "qDrawPlot.h"
+#include "qTabMeasurement.h"
 class qTabDataOutput;
 class qTabPlot;
 class qTabActions;
@@ -63,6 +63,22 @@ public:
 	/**Destructor
 	 * */
 	~qDetectorMain();
+
+	/** Starts or stops Acquisition From gui client
+	 * @param start 1 for start and 0 to stop
+	 /returns success or fail
+	 */
+	int StartStopAcquisitionFromClient(bool start);
+
+	/** Returns if plot is running
+	 */
+	bool isPlotRunning(){return myPlot->isRunning();};
+
+	/** Returns progress bar value */
+	int GetProgress(){return tab_measurement->GetProgress();};
+
+	/** Uncheck the Listen to Gui Client mode when server has exited using exit command */
+	void GuiServerExited(){actionListenGuiClient->setChecked(false);};
 
 private:
 	/** The Qt Application */

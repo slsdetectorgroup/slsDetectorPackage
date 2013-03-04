@@ -6,8 +6,7 @@
  */
 // Qt Project Class Headers
 #include "qServer.h"
-#include "qTabMeasurement.h"
-#include "qDrawPlot.h"
+#include "qDetectorMain.h"
 // Project Class Headers
 #include "slsDetector.h"
 #include "multiSlsDetector.h"
@@ -27,10 +26,10 @@ int qServer::gui_server_thread_running(0);
 //-------------------------------------------------------------------------------------------------------------------------------------------------
 
 
-qServer::qServer(multiSlsDetector*& detector, qTabMeasurement* m, qDrawPlot *d):
-		myDet(detector),tab_measurement(m),myPlot(d),mySocket(NULL),port_no(DEFAULT_GUI_PORTNO),lockStatus(0){
+qServer::qServer(multiSlsDetector*& detector, qDetectorMain *t):
+		myDet(detector), myMainTab(t), mySocket(NULL),port_no(DEFAULT_GUI_PORTNO),lockStatus(0){
 
-	function_table();
+	FunctionTable();
 
 }
 
@@ -40,8 +39,7 @@ qServer::qServer(multiSlsDetector*& detector, qTabMeasurement* m, qDrawPlot *d):
 
 qServer::~qServer(){
 	delete myDet;
-	delete tab_measurement;
-	delete myPlot;
+	delete myMainTab;
 	if(mySocket) delete mySocket;
 }
 
@@ -49,16 +47,16 @@ qServer::~qServer(){
 //-------------------------------------------------------------------------------------------------------------------------------------------------
 
 
-int qServer::function_table(){
+int qServer::FunctionTable(){
 
 	for (int i=0;i<NUMBER_OF_FUNCTIONS;i++)
 			flist[i]=&qServer::M_nofunc;
 
-	flist[F_GET_RUN_STATUS]		=	&qServer::get_status;
-	flist[F_START_ACQUISITION]	=	&qServer::get_status;
-	flist[F_STOP_ACQUISITION]	=	&qServer::get_status;
-	flist[F_START_AND_READ_ALL]	=	&qServer::get_status;
-	flist[F_EXIT_SERVER]		=	&qServer::get_status;
+	flist[F_GET_RUN_STATUS]		=	&qServer::GetStatus;
+	flist[F_START_ACQUISITION]	=	&qServer::StartAcquisition;
+	flist[F_STOP_ACQUISITION]	=	&qServer::StopsAcquisition;
+	flist[F_START_AND_READ_ALL]	=	&qServer::Acquire;
+	flist[F_EXIT_SERVER]		=	&qServer::ExitServer;
 
 	return qDefs::OK;
 }
@@ -67,7 +65,7 @@ int qServer::function_table(){
 //------------------------------------------------------------------------------------------------------------------------------------------
 
 
-int qServer::decode_function(){
+int qServer::DecodeFunction(){
 	int ret = qDefs::FAIL;
 	int n,fnum;
 #ifdef VERYVERBOSE
@@ -92,7 +90,7 @@ int qServer::decode_function(){
 	if (fnum<0 || fnum>NUMBER_OF_FUNCTIONS-1)
 		fnum = NUMBER_OF_FUNCTIONS-1;
 	//calling function
-	(this->*flist[fnum])();
+	ret = (this->*flist[fnum])();
 	if (ret==qDefs::FAIL)
 		cout <<  "Error executing the function = " << fnum << endl;
 
@@ -159,11 +157,13 @@ int qServer::StartStopServer(int start){
 			cout << "Stopping gui server thread ...." << endl;
 #endif
 			gui_server_thread_running=0;
-			mySocket->Disconnect();
-			mySocket->ShutDownSocket();
+			if(mySocket)
+				mySocket->ShutDownSocket();
 			pthread_join(gui_server_thread,NULL);
-			delete mySocket;
-			mySocket = NULL;
+			if(mySocket){
+				delete mySocket;
+				mySocket = NULL;
+			}
 		}
 #ifdef VERBOSE
 		cout << "Server stopped successfully." << endl;
@@ -212,7 +212,7 @@ int qServer::StartServer(){
 #ifdef VERYVERBOSE
 			cout << "Conenction accepted" << endl;
 #endif
-			ret = decode_function();
+			ret = DecodeFunction();
 #ifdef VERYVERBOSE
 			cout << "function executed" << endl;
 #endif
@@ -226,6 +226,13 @@ int qServer::StartServer(){
 	cout << "Stopped gui server thread" << endl;
 #endif
 	gui_server_thread_running = 0;
+	//delete socket(via exit server)
+	if(mySocket){
+		delete mySocket;
+		mySocket = NULL;
+	}
+	//uncheck the server in modes(via exit server)
+	myMainTab->GuiServerExited();
 	return qDefs::OK;
 }
 
@@ -233,20 +240,24 @@ int qServer::StartServer(){
 //-------------------------------------------------------------------------------------------------------------------------------------------------
 
 
-int qServer::get_status(){
+int qServer::GetStatus(){
 
 	int ret = qDefs::OK;
 	enum slsDetectorDefs::runStatus retval;
+	int progress = 0;
 
 	// execute action if the arguments correctly arrived
-	if(myPlot->isRunning())
+	if(myMainTab->isPlotRunning())
 		retval = slsDetectorDefs::RUNNING;
 	else
 		retval = slsDetectorDefs::IDLE;
 
+	progress = myMainTab->GetProgress();
+
 	// send answer
 	mySocket->SendDataOnly(&ret,sizeof(ret));
 	mySocket->SendDataOnly(&retval,sizeof(retval));
+	mySocket->SendDataOnly(&progress,sizeof(progress));
 	//return ok/fail
 	return ret;
 }
@@ -254,3 +265,70 @@ int qServer::get_status(){
 
 //------------------------------------------------------------------------------------------------------------------------------------------
 
+
+int qServer::StartAcquisition(){
+
+	strcpy(mess,"Could not start acquisition in gui. \n");
+
+	int ret = myMainTab->StartStopAcquisitionFromClient(true);
+	mySocket->SendDataOnly(&ret,sizeof(ret));
+	if(ret==FAIL)
+		mySocket->SendDataOnly(mess,sizeof(mess));
+
+	return ret;
+}
+
+
+//------------------------------------------------------------------------------------------------------------------------------------------
+
+
+int qServer::StopsAcquisition(){
+
+	strcpy(mess,"Could not stop acquisition in gui. \n");
+
+	int ret = myMainTab->StartStopAcquisitionFromClient(false);
+	mySocket->SendDataOnly(&ret,sizeof(ret));
+	if(ret==FAIL)
+		mySocket->SendDataOnly(mess,sizeof(mess));
+
+	return ret;
+}
+
+
+//------------------------------------------------------------------------------------------------------------------------------------------
+
+
+int qServer::Acquire(){
+
+	strcpy(mess,"Could not start blocking acquisition in gui. \n");
+
+	int ret = myMainTab->StartStopAcquisitionFromClient(true);
+
+	if(ret == OK)
+		while(myMainTab->isPlotRunning());
+
+	mySocket->SendDataOnly(&ret,sizeof(ret));
+	if(ret==FAIL)
+		mySocket->SendDataOnly(mess,sizeof(mess));
+
+	return ret;
+}
+
+
+//------------------------------------------------------------------------------------------------------------------------------------------
+
+
+int qServer::ExitServer(){
+
+	int ret = OK;
+	strcpy(mess,"closing gui server");
+
+	mySocket->SendDataOnly(&ret,sizeof(ret));
+	mySocket->SendDataOnly(mess,sizeof(mess));
+	cout << mess << endl;
+
+	return GOODBYE;
+}
+
+
+//------------------------------------------------------------------------------------------------------------------------------------------

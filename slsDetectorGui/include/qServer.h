@@ -11,8 +11,7 @@
 /** Qt Project Class Headers */
 #include "sls_detector_defs.h"
 #include "qDefs.h"
-class qDrawPlot;
-class qTabMeasurement;
+class qDetectorMain;
 
 /** Project Class Headers */
 class multiSlsDetector;
@@ -28,7 +27,7 @@ class qServer: public virtual slsDetectorDefs{
 
 public:
 	/** \short The constructor	 */
-	qServer(multiSlsDetector*& detector, qTabMeasurement* m, qDrawPlot *d);
+	qServer(multiSlsDetector*& detector, qDetectorMain *t);
 	/** Destructor	 */
 	~qServer();
 
@@ -39,10 +38,10 @@ public:
 
 private:
 	/** assigns functions to the fnum enum */
-	int function_table();
+	int FunctionTable();
 
 	/** Decodes Function */
-	int decode_function();
+	int DecodeFunction();
 
 	/** Unrecognized Function */
 	int M_nofunc();
@@ -62,19 +61,27 @@ private:
 	 */
 	int StartServer();
 
-	/** Get Detector Status */
-	int get_status();
+	/** Exit Server */
+	int ExitServer();
 
+	/** Get Detector Status */
+	int GetStatus();
+
+	/** Starts Acquisition */
+	int StartAcquisition();
+
+	/** Stops Acquisition */
+	int StopsAcquisition();
+
+	/** Acquire - blocking */
+	int Acquire();
 
 
 
 	/** The multi detector object */
 	multiSlsDetector *myDet;
 	/**The measurement tab object*/
-	qTabMeasurement *tab_measurement;
-	/**The plot widget object*/
-	qDrawPlot 		*myPlot;
-
+	qDetectorMain *myMainTab;
 
 	/** tcp socket to gui client */
 	MySocketTCP 	*mySocket;

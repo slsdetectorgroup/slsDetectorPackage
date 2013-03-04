@@ -9,7 +9,6 @@
 
 
 /** Qt Project Class Headers */
-//#include "qDefs.h"
 /** Project Class Headers */
 class MySocketTCP;
 #include "sls_detector_defs.h"
@@ -34,6 +33,12 @@ public:
 	int executeLine(int narg, char *args[]);
 
 private:
+	/** Print list of commands */
+	string printCommands();
+
+	/** Send to Gui Server */
+	int sendToGuiServer(int fnum);
+
 	/** Gets run status */
 	string getStatus();
 

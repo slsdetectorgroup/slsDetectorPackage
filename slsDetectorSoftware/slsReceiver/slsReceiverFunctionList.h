@@ -278,7 +278,9 @@ private:
 	};
 
 	/** circular fifo to read and write data*/
-	CircularFifo<dataStruct,FIFO_SIZE>* fifo;
+	//CircularFifo<dataStruct,FIFO_SIZE>* fifo;
+	CircularFifo<char,FIFO_SIZE>* fifo;
+
 	/** circular fifo to read and write data*/
 	CircularFifo<char,FIFO_SIZE>* fifofree;
 
@@ -353,7 +355,7 @@ public:
 	static int listening_thread_running;
 
 
-	dataStruct *dataWriteFrame;
+	//	dataStruct *dataWriteFrame;
 
 
 

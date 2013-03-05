@@ -78,7 +78,9 @@ slsReceiverFunctionList::slsReceiverFunctionList(bool shortfname):
 
 	fifofree = new CircularFifo<char,FIFO_SIZE>();
 
-	fifo = new CircularFifo<dataStruct,FIFO_SIZE>();
+	//	fifo = new CircularFifo<dataStruct,FIFO_SIZE>();
+	fifo = new CircularFifo<char,FIFO_SIZE>();
+	
 
 	mem0=(char*)malloc(4096*FIFO_SIZE);
 	if (mem0==NULL) {
@@ -282,7 +284,7 @@ int slsReceiverFunctionList::startListening(){
 #endif
 	// Variable and structure definitions
 	int rc;
-	dataStruct *dataReadFrame;
+//	dataStruct *dataReadFrame;
 
 	//reset variables for each acquisition
 	startFrameIndex=-1;
@@ -346,11 +348,13 @@ int slsReceiverFunctionList::startListening(){
 					;//cout<<"**********************FIFO FULLLLLLLL************************"<<endl;
 				else{
 					//cout<<"read index:"<<dec<<(int)(*(int*)buffer)<<endl;
-					dataReadFrame = new dataStruct;
+				  /**	dataReadFrame = new dataStruct;
 					dataReadFrame->buffer=buffer;
 					dataReadFrame->rc=rc;
 					//cout<<"read buffer:"<<dataReadFrame<<endl;
 					fifo->push(dataReadFrame);
+				  */
+				  fifo->push(buffer);
 				}
 			
 
@@ -391,6 +395,9 @@ int slsReceiverFunctionList::startWriting(){
 #ifdef VERYVERBOSE
 	cout << "In startWriting()" <<endl;
 #endif
+
+	char *wbuf;
+
 	// Variable and structure definitions
 	int ret,sleepnumber=0;//currframenum,ret;
 	//	dataStruct *dataWriteFrame;
@@ -479,12 +486,13 @@ int slsReceiverFunctionList::startWriting(){
 		//actual writing from fifo
 		if(!fifo->isEmpty()){
 		  //	dataWriteFrame = new dataStruct;
-			if(fifo->pop(dataWriteFrame)){
+		  //if(fifo->pop(dataWriteFrame)){
+		  if(fifo->pop(wbuf)){
 				//cout<<"write buffer:"<<dataWriteFrame<<endl<<endl;
 				framesCaught++;
 				totalFramesCaught++;
-				currframenum = (int)(*((int*)dataWriteFrame->buffer));
-
+				//currframenum = (int)(*((int*)dataWriteFrame->buffer));
+				currframenum = (int)(*((int*)wbuf));
 				if(guiRequiresData)
 				  guiData=latestData;
 				else
@@ -492,25 +500,25 @@ int slsReceiverFunctionList::startWriting(){
 
 				if(enableFileWrite){
 				  if (writeReceiverData)
-				    writeReceiverData(dataWriteFrame->buffer,dataWriteFrame->rc, sfilefd, pwriteReceiverDataArg);
+				    writeReceiverData(wbuf,bufferSize, sfilefd, pwriteReceiverDataArg);
 				  if (cbAction<2) {
-				    rawDataReadyCallBack(currframenum, dataWriteFrame->buffer,sfilefd, guiData,pRawDataReady);
+				    rawDataReadyCallBack(currframenum, wbuf,sfilefd, guiData,pRawDataReady);
 				  } else {
-				    fwrite(dataWriteFrame->buffer, 1, dataWriteFrame->rc, sfilefd);
+				    fwrite(wbuf, 1, bufferSize, sfilefd);
 				  }
 				}
 
 				if(guiRequiresData){
-				  memcpy(latestData,dataWriteFrame->buffer,bufferSize);
+				  memcpy(latestData,wbuf,bufferSize);
 				  guiRequiresData=0;
 				}
 				//cout<<"write index:"<<(int)(*(int*)latestData)<<endl;
 				framesInFile++;
 				///ANNA?!?!??!
 				//	delete [] dataWriteFrame->buffer;
-				fifofree->push(dataWriteFrame->buffer);
+				fifofree->push(wbuf);
 			}
-			delete dataWriteFrame;
+		  //	delete dataWriteFrame;
 		}
 		else{
 			sleepnumber++;

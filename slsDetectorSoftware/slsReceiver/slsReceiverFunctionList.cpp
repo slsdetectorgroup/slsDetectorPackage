@@ -57,7 +57,14 @@ slsReceiverFunctionList::slsReceiverFunctionList(bool shortfname):
 				guiRequiresData(0),
 				currframenum(0),
 				writeReceiverData(0),
-				pwriteReceiverDataArg(0)
+				pwriteReceiverDataArg(0),
+				startAcquisitionCallBack(NULL),
+				pStartAcquisition(NULL),
+				acquisitionFinishedCallBack(NULL),
+				pAcquisitionFinished(NULL),
+				rawDataReadyCallBack(NULL),
+				pRawDataReady(NULL)
+
 {
 	strcpy(savefilename,"");
 	strcpy(actualfilename,"");
@@ -387,7 +394,7 @@ int slsReceiverFunctionList::startWriting(){
 	// Variable and structure definitions
 	int ret,sleepnumber=0;//currframenum,ret;
 	//	dataStruct *dataWriteFrame;
-
+	char *guiData;
 	//reset variables for each acquisition
 	framesInFile=0;
 	framesCaught=0;
@@ -401,19 +408,38 @@ int slsReceiverFunctionList::startWriting(){
 		cout << "Note: Data Write has been defined exernally" << endl;
 	cout << "Ready!" << endl;
 
-	if(!enableFileWrite)
+	cbAction=2;
+
+	if (startAcquisitionCallBack)
+	  cbAction=startAcquisitionCallBack(filePath,fileName,fileIndex,bufferSize,pStartAcquisition);
+
+
+
+
+
+
+
+
+
+
+
+	if(enableFileWrite==0 || cbAction==0)
 		cout << endl << "Note: Data will not be saved" << endl;
 
 		//create file name
-		if(frameIndexNeeded==-1)	sprintf(savefilename, "%s/%s_%d.raw", filePath,fileName,fileIndex);
-		else					sprintf(savefilename, "%s/%s_f%012d_%d.raw", filePath,fileName,framesCaught,fileIndex);
+	if(frameIndexNeeded==-1)	
+	  sprintf(savefilename, "%s/%s_%d.raw", filePath,fileName,fileIndex);
+	else	
+	  sprintf(savefilename, "%s/%s_f%012d_%d.raw", filePath,fileName,framesCaught,fileIndex);
 
 		//for sebastian
-		if(!shortFileName)	strcpy(actualfilename,savefilename);
-		else				sprintf(actualfilename, "%s/%s_%d_%09d.raw", filePath,fileName,fileIndex, 0);
+	if(!shortFileName)	
+	  strcpy(actualfilename,savefilename);
+	else				
+	  sprintf(actualfilename, "%s/%s_%d_%09d.raw", filePath,fileName,fileIndex, 0);
 
 		//start writing
-	if(enableFileWrite){
+	if(enableFileWrite || cbAction>0){
 		sfilefd = fopen((const char *) (actualfilename), "w");
 		cout << actualfilename << endl;
 	}
@@ -426,26 +452,26 @@ int slsReceiverFunctionList::startWriting(){
 		if (framesInFile == maxFramesPerFile) {
 
 				//create file name
-				if(frameIndexNeeded==-1)	sprintf(savefilename, "%s/%s_%d.raw", filePath,fileName,fileIndex);
-				else					sprintf(savefilename, "%s/%s_f%012d_%d.raw", filePath,fileName,framesCaught,fileIndex);
+		  if(frameIndexNeeded==-1)	sprintf(savefilename, "%s/%s_%d.raw", filePath,fileName,fileIndex);
+		  else					sprintf(savefilename, "%s/%s_f%012d_%d.raw", filePath,fileName,framesCaught,fileIndex);
 				//for sebastian
-				if(!shortFileName)		strcpy(actualfilename,savefilename);
-				else					sprintf(actualfilename, "%s/%s_%d_%09d.raw", filePath,fileName,fileIndex, shortFileNameIndex);
-				shortFileNameIndex++;
+		  if(!shortFileName)		strcpy(actualfilename,savefilename);
+		  else					sprintf(actualfilename, "%s/%s_%d_%09d.raw", filePath,fileName,fileIndex, shortFileNameIndex);
+		  shortFileNameIndex++;
 
 			//start writing in new file
-			if(enableFileWrite){
-				fclose(sfilefd);
-				sfilefd = fopen((const char *) (actualfilename), "w");
-			}
+		  if(enableFileWrite || cbAction>0){
+		    fclose(sfilefd);
+		    sfilefd = fopen((const char *) (actualfilename), "w");
+		  }
 
 			//currframenum=(int)(*((int*)latestData));
-			cout << actualfilename << "\tpacket loss " << fixed << setprecision(4) << ((currframenum-prevframenum-(packetsPerFrame*framesInFile))/(double)(packetsPerFrame*framesInFile))*100.000 << "%\t\t"
-					"framenum " << currframenum << "\t\t"
-					"p " << prevframenum << endl;
+		  cout << actualfilename << "\tpacket loss " << fixed << setprecision(4) << ((currframenum-prevframenum-(packetsPerFrame*framesInFile))/(double)(packetsPerFrame*framesInFile))*100.000 << "%\t\t"
+		    "framenum " << currframenum << "\t\t"
+		    "p " << prevframenum << endl;
 
-			prevframenum=currframenum;
-			framesInFile = 0;
+		  prevframenum=currframenum;
+		  framesInFile = 0;
 		}
 
 
@@ -459,12 +485,21 @@ int slsReceiverFunctionList::startWriting(){
 				totalFramesCaught++;
 				currframenum = (int)(*((int*)dataWriteFrame->buffer));
 
+				if(guiRequiresData)
+				  guiData=latestData;
+				else
+				  guiData=NULL;
+
 				if(enableFileWrite){
-					if (writeReceiverData)
-						writeReceiverData(dataWriteFrame->buffer,dataWriteFrame->rc, sfilefd, pwriteReceiverDataArg);
-					else
-						fwrite(dataWriteFrame->buffer, 1, dataWriteFrame->rc, sfilefd);
+				  if (writeReceiverData)
+				    writeReceiverData(dataWriteFrame->buffer,dataWriteFrame->rc, sfilefd, pwriteReceiverDataArg);
+				  if (cbAction<2) {
+				    rawDataReadyCallBack(currframenum, dataWriteFrame->buffer,sfilefd, guiData,pRawDataReady);
+				  } else {
+				    fwrite(dataWriteFrame->buffer, 1, dataWriteFrame->rc, sfilefd);
+				  }
 				}
+
 				if(guiRequiresData){
 				  memcpy(latestData,dataWriteFrame->buffer,bufferSize);
 				  guiRequiresData=0;
@@ -485,11 +520,17 @@ int slsReceiverFunctionList::startWriting(){
 
 	cout << "Total Frames Caught:"<< totalFramesCaught << endl;
 	//close file
+
+	
 	if(sfilefd)		fclose(sfilefd);
 
 #ifdef VERBOSE
 	cout << "sfield:" << (int)sfilefd << endl;
 #endif
+
+	if (acquisitionFinishedCallBack)
+	  acquisitionFinishedCallBack(totalFramesCaught, pAcquisitionFinished);
+
 	return 0;
 }
 

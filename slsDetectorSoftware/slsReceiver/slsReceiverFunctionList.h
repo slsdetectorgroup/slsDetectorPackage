@@ -1,4 +1,6 @@
 #ifdef SLS_RECEIVER_FUNCTION_LIST
+#ifndef SLS_RECEIVER_FUNCTION_LIST_H
+#define SLS_RECEIVER_FUNCTION_LIST_H
 /********************************************//**
  * @file slsReceiverFunctionList.h
  * @short does all the functions for a receiver, set/get parameters, start/stop etc.
@@ -299,6 +301,50 @@ private:
 	int (*writeReceiverData)(char*,int,FILE*,void*);
 	void *pwriteReceiverDataArg;
 
+	/**
+	   callback arguments are
+	   filepath
+	   filename
+	   fileindex
+	   data size
+	   
+	   return value is 
+	   0 callback takes care of open,close,write file
+	   1 callback writes file, we have to open, close it
+	   2 we open, close, write file, callback does not do anything
+
+	*/
+	
+
+	int (*startAcquisitionCallBack)(char*, char*,int, int, void*);
+	void *pStartAcquisition;
+
+	/**
+	   args to acquisition finished callback
+	   total frames caught
+	   
+	*/
+	
+	
+	void (*acquisitionFinishedCallBack)(int, void*);
+	void *pAcquisitionFinished;
+
+
+	/**
+	  args to raw data ready callback are
+	  framenum
+	  datapointer
+	  file descriptor
+	  guidatapointer (NULL, no data required)
+	*/
+	
+
+	void (*rawDataReadyCallBack)(int, char*, FILE*, char*, void*);
+	void *pRawDataReady;
+
+
+	int cbAction;
+
 public:
 	/** File Descriptor */
 	static FILE *sfilefd;
@@ -308,7 +354,59 @@ public:
 
 
 	dataStruct *dataWriteFrame;
+
+
+
+	/**
+	   callback arguments are
+	   filepath
+	   filename
+	   fileindex
+	   datasize
+	   
+	   return value is 
+	   0 callback takes care of open,close,wrie file
+	   1 callback writes file, we have to open, close it
+	   2 we open, close, write file, callback does not do anything
+
+	*/
+	
+	void registerCallBackStartAcquisition(int (*func)(char*, char*,int, int, void*),void *arg){startAcquisitionCallBack=func; pStartAcquisition=arg;};
+
+
+	/**
+	   callback argument is
+	   toatal frames caught
+
+	*/
+	
+	
+	int registerCallBackAcquisitionFinished(void (*func)(int, void*),void *arg){acquisitionFinishedCallBack=func; pAcquisitionFinished=arg;};
+	
+
+
+	/**
+	  args to raw data ready callback are
+	  framenum
+	  datapointer
+	  file descriptor
+	  guidatapointer (NULL, no data required)
+	*/
+	
+	int registerCallBackRawDataReady(void (*func)(int, char*, FILE*, char*, void*),void *arg){rawDataReadyCallBack=func; pRawDataReady=arg;};
+
+
+
+
+
+
+
+
+
+
 };
 
+
+#endif
 
 #endif

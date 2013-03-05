@@ -8,6 +8,7 @@
 #include "sls_detector_defs.h"
 #include "receiver_defs.h"
 #include "MySocketTCP.h"
+#include "slsReceiverFunctionList.h"
 
 class slsReceiverFunctionList;
 
@@ -22,16 +23,63 @@ public:
 	/**
 	 * Constructor
 	 * reads config file, creates socket, assigns function table
-	 * @param mySocket tcp socket connecting receiver and client
-	 * @param fname name of config file
-	 * @param success if socket creation was successfull
-	 * @param shortfname true if short file name required
+	 * @param argc from command line
+	 * @param argv from command line
+	 * @param succecc socket creation was successfull
 	 */
-	slsReceiverFuncs(MySocketTCP *&mySocket,string const fname,int &success, bool shortfname);
+  slsReceiverFuncs(int argc, char *argv[], int &success);
+
+  /** starts listening on the TCP port for client comminication */
+  
+	void start();
 
 	/** Destructor */
-	virtual ~slsReceiverFuncs(){};
+	virtual ~slsReceiverFuncs();
 
+	/** Close File */
+	static void closeFile(int p);
+
+
+	/**
+	   callback arguments are
+	   filepath
+	   filename
+	   fileindex
+	   data size
+	   
+	   return value is 
+	   0 callback takes care of open,close,wrie file
+	   1 callback writes file, we have to open, close it
+	   2 we open, close, write file, callback does not do anything
+
+	*/
+	
+	void registerCallBackStartAcquisition(int (*func)(char*, char*,int, int, void*),void *arg){slsReceiverList->registerCallBackStartAcquisition(func,arg);};;
+
+
+	/**
+	  callback argument is
+	  toatal farmes caught
+
+	*/
+	
+	
+	int registerCallBackAcquisitionFinished(void (*func)(int, void*),void *arg){slsReceiverList->registerCallBackAcquisitionFinished(func,arg);};
+	
+
+
+	/**
+	  args to raw data ready callback are
+	  framenum
+	  datapointer
+	  file descriptor
+	  guidatapointer (NULL, no data required)
+	*/
+	
+	int registerCallBackRawDataReady(void (*func)(int, char*, FILE*, char*, void*),void *arg){slsReceiverList->registerCallBackRawDataReady(func,arg);};
+
+
+ private:
 	/** assigns functions to the fnum enum */
 	int function_table();
 
@@ -40,9 +88,6 @@ public:
 
 	/** Unrecognized Function */
 	int M_nofunc();
-
-	/** Close File */
-	static void closeFile(int p);
 
 	/** Set File name without frame index, file index and extension */
 	int set_file_name();
@@ -111,13 +156,7 @@ public:
 	/** Execute command */
 	int	exec_command();
 
-
-
-//private:
-
-	/** Socket */
-	MySocketTCP*& socket;
-private:
+	//private:
 	/** slsReceiverFunctionList object */
 	slsReceiverFunctionList *slsReceiverList;
 
@@ -145,6 +184,10 @@ private:
 	static int file_des;
 	static int socketDescriptor;
 
+//private:
+ protected:
+	/** Socket */
+	MySocketTCP* socket;
 };
 
 

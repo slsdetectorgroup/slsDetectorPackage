@@ -2,8 +2,6 @@
    The port number is passed as an argument */
 
 #include "sls_detector_defs.h"
-#include "receiver_defs.h"
-#include "MySocketTCP.h"
 #include "slsReceiver_funcs.h"
 
 
@@ -13,79 +11,80 @@
 #include <iostream>
 using namespace std;
 
-//static MySocketTCP *mysocket = NULL;
 
-void closeFile(int p){cout<<"in closefile in receiver"<<endl;
-	slsReceiverFuncs::closeFile(p);
-	//mysocket->Disconnect();
-	exit(0);
+void closeFile(int p){
+  cout<<"close file in receiver"<<endl;
+  slsReceiverFuncs::closeFile(p);
+  exit(0);
 }
 
-int main(int argc, char *argv[])
-{
-	int ret = slsDetectorDefs::OK;
-	MySocketTCP *mysocket = NULL;
-	string fname = "";
-	bool shortfname = false;
-
-	//parse command line for config
-	for(int iarg=1;iarg<argc;iarg++){
-		if((!strcasecmp(argv[iarg],"-config"))||(!strcasecmp(argv[iarg],"-f"))){
-			if(iarg+1==argc){
-				cout << "no config file name given. Exiting." << endl;
-				return -1;
-			}
-			fname.assign(argv[iarg+1]);
-		}
-		if(!strcasecmp(argv[iarg],"-shortfname"))
-			shortfname = true;
-	}
+int main(int argc, char *argv[]) {
+  int ret = slsDetectorDefs::OK;
+  
+  slsReceiverFuncs *receiver = new slsReceiverFuncs(argc, argv, ret);
+  
+  if(ret==slsDetectorDefs::FAIL)
+    return -1;
+  
+  
+  //Catch signal SIGINT to close files properly
+  signal(SIGINT,closeFile);
+  
+  //register callbacks 
 
 
-
-	//reads config file, creates socket, assigns function table
-	slsReceiverFuncs *receiver = new slsReceiverFuncs(mysocket,fname,ret, shortfname);
-	if(ret==slsDetectorDefs::FAIL)
-		return -1;
-
-
-	//Catch signal SIGINT to close files properly
-	signal(SIGINT,closeFile);
-
-
-#ifdef VERBOSE
-	cout << "Function table assigned." << endl;
-#endif
-
-	cout << " Ready..." << endl;
-	//waits for connection
-	while(ret!=GOODBYE) {
-#ifdef VERBOSE
-		cout<< endl;
-#endif
-#ifdef VERY_VERBOSE
-		cout << "Waiting for client call" << endl;
-#endif
-		if(mysocket->Connect()>=0){
-#ifdef VERY_VERBOSE
-		cout << "Conenction accepted" << endl;
-#endif
-		ret = receiver->decode_function();
-#ifdef VERY_VERBOSE
-		cout << "function executed" << endl;
-#endif
-		mysocket->Disconnect();
-#ifdef VERY_VERBOSE
-			cout << "connection closed" << endl;
-#endif
-		}
-	}
+	/**
+	   callback arguments are
+	   filepath
+	   filename
+	   fileindex
+	   datasize
+	   
+	   return value is 
+	   0 raw data ready callback takes care of open,close,write file
+	   1 callback writes file, we have to open, close it
+	   2 we open, close, write file, callback does not do anything
 
 
-	slsReceiverFuncs::closeFile(0);
-	cout << "Goodbye!" << endl;
-	delete mysocket;
+	   registerCallBackStartAcquisition(int (*func)(char*, char*,int, int, void*),void *arg);
+	*/
+	
+	//receiver->registerCallBackStartAcquisition(func,arg);
 
-	return 0;
+
+	/**
+	  callback argument is
+	  total farmes caught
+	  registerCallBackAcquisitionFinished(void (*func)(int, void*),void *arg);
+	*/
+	
+	
+	//receiver->registerCallBackAcquisitionFinished(func,arg);
+	
+
+
+	/**
+	  args to raw data ready callback are
+	  framenum
+	  datapointer
+	  file descriptor
+	  guidatapointer (NULL, no data required)
+	  
+	  NEVER DELETE THE DATA POINTER
+	  REMEMBER THAT THE CALLBACK IS BLOCKING
+
+	  registerCallBackRawDataReady(void (*func)(int, char*, FILE*, char*, void*),void *arg);
+
+	*/
+	
+	//receiver->registerCallBackRawDataReady(func,arg);
+
+
+
+
+  receiver->start();
+  
+  
+  return 0;
 }
 

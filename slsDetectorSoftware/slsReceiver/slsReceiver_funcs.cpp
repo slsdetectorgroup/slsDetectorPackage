@@ -19,8 +19,18 @@ using namespace std;
 int slsReceiverFuncs::file_des(-1);
 int slsReceiverFuncs::socketDescriptor(-1);
 
-slsReceiverFuncs::slsReceiverFuncs(MySocketTCP *&mySocket,string const fname,int &success, bool shortfname):
-		socket(mySocket),
+
+slsReceiverFuncs::~slsReceiverFuncs() {
+
+	slsReceiverFuncs::closeFile(0);
+	cout << "Goodbye!" << endl;
+	delete socket;
+
+}
+
+
+slsReceiverFuncs::slsReceiverFuncs(int argc, char *argv[], int &success):
+		socket(NULL),
 		ret(OK),
 		lockStatus(0),
 		shortFrame(-1),
@@ -31,6 +41,23 @@ slsReceiverFuncs::slsReceiverFuncs(MySocketTCP *&mySocket,string const fname,int
 	string sLine,sargname;
 	int iline = 0;
 
+	success=slsDetectorDefs::OK;
+
+	string fname = "";
+	bool shortfname = false;
+
+	//parse command line for config
+	for(int iarg=1;iarg<argc;iarg++){
+		if((!strcasecmp(argv[iarg],"-config"))||(!strcasecmp(argv[iarg],"-f"))){
+			if(iarg+1==argc){
+				cout << "no config file name given. Exiting." << endl;
+				success=slsDetectorDefs::FAIL;
+			}
+			fname.assign(argv[iarg+1]);
+		}
+		if(!strcasecmp(argv[iarg],"-shortfname"))
+			shortfname = true;
+	}
 
 	if(!fname.empty()){
 #ifdef VERBOSE
@@ -84,14 +111,12 @@ slsReceiverFuncs::slsReceiverFuncs(MySocketTCP *&mySocket,string const fname,int
 
 	if(success == OK){
 		//create socket
-		MySocketTCP* mySocket = new MySocketTCP(port_no);
-		if (mySocket->getErrorStatus())
+		socket = new MySocketTCP(port_no);
+		if (socket->getErrorStatus()) {
 			success = FAIL;
-		else{
-
 			delete socket;
-			socket = mySocket;
-
+			socket=NULL;
+		}	else {
 			//initialize variables
 			strcpy(socket->lastClientIP,"none");
 			strcpy(socket->thisClientIP,"none1");
@@ -100,16 +125,47 @@ slsReceiverFuncs::slsReceiverFuncs(MySocketTCP *&mySocket,string const fname,int
 			function_table();
 			slsReceiverList =  new slsReceiverFunctionList(shortfname);
 
+#ifdef VERBOSE
+	cout << "Function table assigned." << endl;
+#endif
 
 			file_des=socket->getFileDes();
 			socketDescriptor=socket->getsocketDescriptor();
 
-			success = OK;
+			//success = OK;
 		}
 	}
 }
 
+void slsReceiverFuncs::start(){
 
+  int v=slsDetectorDefs::OK;
+
+	while(v!=GOODBYE) {
+#ifdef VERBOSE
+		cout<< endl;
+#endif
+#ifdef VERY_VERBOSE
+		cout << "Waiting for client call" << endl;
+#endif
+		if(socket->Connect()>=0){
+#ifdef VERY_VERBOSE
+		cout << "Conenction accepted" << endl;
+#endif
+		v = decode_function();
+#ifdef VERY_VERBOSE
+		cout << "function executed" << endl;
+#endif
+		socket->Disconnect();
+#ifdef VERY_VERBOSE
+		cout << "connection closed" << endl;
+#endif
+		}
+	}
+	
+
+
+}
 
 
 int slsReceiverFuncs::function_table(){

@@ -23,7 +23,6 @@ $(PROGS):
 	echo $(OBJS)
 	mkdir -p $(DESTDIR) 
 	gcc $(SRC_CLNT) $(INCLUDES) $(FLAGS) $(LDLIBS) -o $@   
-	#mv $(PROGS) $(DESTDIR)
 	mv $(PROGS) $(FINALDIR)
 
 clean:

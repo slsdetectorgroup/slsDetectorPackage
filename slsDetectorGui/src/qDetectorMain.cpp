@@ -724,7 +724,6 @@ int qDetectorMain::StartStopAcquisitionFromClient(bool start){
 #ifdef VERBOSE
 	cout << "Start/Stop Acquisition From Client:" << start << endl;
 #endif
-	int ret = slsDetectorDefs::FAIL;
 
 	if (tab_measurement->GetStartStatus() != start){
 		if(start){
@@ -735,12 +734,10 @@ int qDetectorMain::StartStopAcquisitionFromClient(bool start){
 		}
 		//click start/stop
 		tab_measurement->ClickStartStop();
+		while(myPlot->GetClientInitiated());
 	}
 
-	if (myPlot->isRunning() == start)
-		ret = slsDetectorDefs::OK;
-
-	return ret;
+	return slsDetectorDefs::OK;
 }
 
 

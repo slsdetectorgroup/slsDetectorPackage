@@ -304,8 +304,8 @@ int qServer::Acquire(){
 
 	int ret = myMainTab->StartStopAcquisitionFromClient(true);
 
-	if(ret == OK)
-		while(myMainTab->isPlotRunning());
+	usleep(5000);
+	while(myMainTab->isPlotRunning());
 
 	mySocket->SendDataOnly(&ret,sizeof(ret));
 	if(ret==FAIL)

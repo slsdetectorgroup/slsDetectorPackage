@@ -173,6 +173,7 @@ void qDrawPlot::SetupWidgetWindow(){
 	if(myDet->getDetectorsType()==slsDetectorDefs::GOTTHARD)
 		pedestalCount = 0;
 
+	clientInitiated = false;
 
 	//widget related initialization
 
@@ -349,6 +350,9 @@ void qDrawPlot::StartStopDaqToggle(bool stop_if_running){
 		StartDaq(true);
 		running=!running;
 	}
+
+	/** if this is set during client initation */
+	clientInitiated = false;
 }
 
 

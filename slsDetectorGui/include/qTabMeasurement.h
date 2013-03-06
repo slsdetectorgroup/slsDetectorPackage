@@ -15,7 +15,7 @@
 /** Project Class Headers */
 class multiSlsDetector;
 /** Qt Project Class Headers */
-class qDrawPlot;
+#include "qDrawPlot.h"
 
 /**
  *@short sets up the measurement parameters
@@ -55,7 +55,7 @@ public:
 	/** Click the Start/Stop Acquisition button
 	 *  This is used if this command came from gui client
 	 */
-	void ClickStartStop(){btnStartStop->click();};
+	void ClickStartStop(){btnStartStop->click();myPlot->SetClientInitiated();};
 
 	/** Returns progress bar value */
 	int GetProgress(){return progressBar->value();};

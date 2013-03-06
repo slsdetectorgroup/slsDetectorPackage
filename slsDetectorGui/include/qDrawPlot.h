@@ -116,6 +116,15 @@ public:
 	 * */
 	int UpdateTrimbitPlot(bool fromDetector,bool Histogram);
 
+	/** This is set once client initiates start/stop acquisition
+	 * and this is reset when the gui really starts/stops- to know when to return
+	 */
+	void SetClientInitiated(){clientInitiated =  true;};
+
+	/** Get client intiated variable. This is set once client initiates start/stop acquisition
+	 * and this is reset when the gui really starts/stops- to know when to return
+	 */
+	bool GetClientInitiated(){return clientInitiated;};
 
 public slots:
 /** To select 1D or 2D plot
@@ -479,6 +488,10 @@ bool resetPedestal;
 double*   pedestalVals;
 /** count for 20 frames to calculate the pedestal */
 int pedestalCount;
+
+/** this is set when client starts/stops acquisition
+ * and is reset once the gui really starts/stops */
+bool clientInitiated;
 
 
 signals:

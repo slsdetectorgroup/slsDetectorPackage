@@ -9,7 +9,8 @@ LIBDIR?=../slsDetectorSoftware
 all: $(PROG) Makefile.gui client
 
 clean: 
-	if test -e Makefile.gui; then make -f Makefile.gui clean; make -f Makefile.gui mocclean; rm Makefile.gui; else 	make Makefile.gui; make -f Makefile.gui clean; make -f Makefile.gui mocclean;  fi
+	if test -e Makefile.gui; then make -f Makefile.gui clean; make -f Makefile.gui mocclean; 	rm Makefile.gui; else 	make Makefile.gui; 	make -f Makefile.gui clean; make -f Makefile.gui mocclean;  fi
+	cd client &&  $(MAKE) clean
 #	cd manual && make clean
 
 
@@ -28,3 +29,6 @@ $(PROG): Makefile.gui $(DIR)
 	echo $(LDFLAG)
 	make -f Makefile.gui SLSDETLIB=$(LIBDIR) DESTDIR=$(DESTDIR) SUBLIBS='$(LDFLAG)' INCLUDES='$(INCLUDES)'
 
+
+client:
+	cd slsDetectorGui/client && $(MAKE) DESTDIR=$(DESTDIR)

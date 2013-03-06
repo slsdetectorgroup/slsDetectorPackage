@@ -493,23 +493,28 @@ int slsReceiverFunctionList::startWriting(){
 				totalFramesCaught++;
 				//currframenum = (int)(*((int*)dataWriteFrame->buffer));
 				currframenum = (int)(*((int*)wbuf));
-				if(guiRequiresData)
+				if(guiRequiresData) {
 				  guiData=latestData;
-				else
+				}  else {
 				  guiData=NULL;
+				}
 
 				if(enableFileWrite){
-				  if (writeReceiverData)
+				  if (writeReceiverData) {
 				    writeReceiverData(wbuf,bufferSize, sfilefd, pwriteReceiverDataArg);
+				  }
 				  if (cbAction<2) {
 				    rawDataReadyCallBack(currframenum, wbuf,sfilefd, guiData,pRawDataReady);
 				  } else {
 				    fwrite(wbuf, 1, bufferSize, sfilefd);
 				  }
+				  
 				}
 
 				if(guiRequiresData){
-				  memcpy(latestData,wbuf,bufferSize);
+				  if (cbAction>=2)
+				    memcpy(latestData,wbuf,bufferSize);
+				  //memcpy(latestData,wbuf,bufferSize);
 				  guiRequiresData=0;
 				}
 				//cout<<"write index:"<<(int)(*(int*)latestData)<<endl;

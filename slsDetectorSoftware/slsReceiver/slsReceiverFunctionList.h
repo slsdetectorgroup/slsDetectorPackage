@@ -25,9 +25,8 @@ class slsReceiverFunctionList : private virtual slsDetectorDefs  {
 public:
 	/**
 	 * Constructor
-	 * @param shortfname true if short file name required
 	 */
-	slsReceiverFunctionList(bool shortfname);
+	slsReceiverFunctionList();
 
 	/**
 	 * Destructor
@@ -198,15 +197,6 @@ private:
 
 	/** Complete File name */
 	char savefilename[MAX_STR_LENGTH];
-
-	/** Actual Complete File name. This is used if you need a simple filename */
-	char actualfilename[MAX_STR_LENGTH];
-
-	/** if short file name is needed, filename= filepath/filename_fileindex_shortFileNameIndex.raw */
-	bool shortFileName;
-
-	/** If short file name is used, different index used instead of frame index */
-	int shortFileNameIndex;
 
 	/** File Name without frame index, file index and extension*/
 	char fileName[MAX_STR_LENGTH];

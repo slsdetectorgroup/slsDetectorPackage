@@ -44,7 +44,6 @@ slsReceiverFuncs::slsReceiverFuncs(int argc, char *argv[], int &success):
 	success=slsDetectorDefs::OK;
 
 	string fname = "";
-	bool shortfname = false;
 
 	//parse command line for config
 	for(int iarg=1;iarg<argc;iarg++){
@@ -55,8 +54,6 @@ slsReceiverFuncs::slsReceiverFuncs(int argc, char *argv[], int &success):
 			}
 			fname.assign(argv[iarg+1]);
 		}
-		if(!strcasecmp(argv[iarg],"-shortfname"))
-			shortfname = true;
 	}
 
 	if(!fname.empty()){
@@ -123,7 +120,7 @@ slsReceiverFuncs::slsReceiverFuncs(int argc, char *argv[], int &success):
 			strcpy(mess,"dummy message");
 
 			function_table();
-			slsReceiverList =  new slsReceiverFunctionList(shortfname);
+			slsReceiverList =  new slsReceiverFunctionList();
 
 #ifdef VERBOSE
 	cout << "Function table assigned." << endl;

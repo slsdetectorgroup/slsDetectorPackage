@@ -31,43 +31,40 @@ using namespace std;
 FILE* slsReceiverFunctionList::sfilefd(NULL);
 int slsReceiverFunctionList::listening_thread_running(0);
 
-slsReceiverFunctionList::slsReceiverFunctionList(bool shortfname):
-				maxFramesPerFile(MAX_FRAMES),
-				enableFileWrite(1),
-				shortFileName(shortfname),
-				shortFileNameIndex(0),
-				fileIndex(0),
-				frameIndexNeeded(0),
-				framesCaught(0),
-				startFrameIndex(-1),
-				frameIndex(0),
-				totalFramesCaught(0),
-				startAcquisitionIndex(-1),
-				acquisitionIndex(0),
-				framesInFile(0),
-				prevframenum(0),
-				status(IDLE),
-				latestData(NULL),/**?*/
-				udpSocket(NULL),
-				server_port(DEFAULT_UDP_PORTNO),
-				fifo(NULL),
-				shortFrame(-1),
-				bufferSize(BUFFER_SIZE),
-				packetsPerFrame(2),
-				guiRequiresData(0),
-				currframenum(0),
-				writeReceiverData(0),
-				pwriteReceiverDataArg(0),
-				startAcquisitionCallBack(NULL),
-				pStartAcquisition(NULL),
-				acquisitionFinishedCallBack(NULL),
-				pAcquisitionFinished(NULL),
-				rawDataReadyCallBack(NULL),
-				pRawDataReady(NULL)
+slsReceiverFunctionList::slsReceiverFunctionList():
+						maxFramesPerFile(MAX_FRAMES),
+						enableFileWrite(1),
+						fileIndex(0),
+						frameIndexNeeded(0),
+						framesCaught(0),
+						startFrameIndex(-1),
+						frameIndex(0),
+						totalFramesCaught(0),
+						startAcquisitionIndex(-1),
+						acquisitionIndex(0),
+						framesInFile(0),
+						prevframenum(0),
+						status(IDLE),
+						latestData(NULL),/**?*/
+						udpSocket(NULL),
+						server_port(DEFAULT_UDP_PORTNO),
+						fifo(NULL),
+						shortFrame(-1),
+						bufferSize(BUFFER_SIZE),
+						packetsPerFrame(2),
+						guiRequiresData(0),
+						currframenum(0),
+						writeReceiverData(0),
+						pwriteReceiverDataArg(0),
+						startAcquisitionCallBack(NULL),
+						pStartAcquisition(NULL),
+						acquisitionFinishedCallBack(NULL),
+						pAcquisitionFinished(NULL),
+						rawDataReadyCallBack(NULL),
+						pRawDataReady(NULL)
 
 {
 	strcpy(savefilename,"");
-	strcpy(actualfilename,"");
 	strcpy(filePath,"");
 	strcpy(fileName,"run");
 	eth = new char[MAX_STR_LENGTH];
@@ -80,19 +77,19 @@ slsReceiverFunctionList::slsReceiverFunctionList(bool shortfname):
 
 	//	fifo = new CircularFifo<dataStruct,FIFO_SIZE>();
 	fifo = new CircularFifo<char,FIFO_SIZE>();
-	
+
 
 	mem0=(char*)malloc(4096*FIFO_SIZE);
 	if (mem0==NULL) {
-	  cout<<"++++++++++++++++++++++ COULD NOT ALLOCATE MEMORY!!!!!!!+++++++++++++++++++++" << endl;
+		cout<<"++++++++++++++++++++++ COULD NOT ALLOCATE MEMORY!!!!!!!+++++++++++++++++++++" << endl;
 	}
 	buffer=mem0;
 	while (buffer<(mem0+4096*(FIFO_SIZE-1))) {
-	  fifofree->push(buffer);
-	  buffer+=4096;
+		fifofree->push(buffer);
+		buffer+=4096;
 	}
 
-	
+
 #ifdef TESTWRITE
 	//to test write receiver data call back
 	registerWriteReceiverDataCallback(&defaultWriteReceiverDataFunc, NULL);
@@ -284,11 +281,10 @@ int slsReceiverFunctionList::startListening(){
 #endif
 	// Variable and structure definitions
 	int rc;
-//	dataStruct *dataReadFrame;
+	//	dataStruct *dataReadFrame;
 
 	//reset variables for each acquisition
 	startFrameIndex=-1;
-	shortFileNameIndex=1;
 
 
 	// A do/while(FALSE) loop is used to make error cleanup easier.  The
@@ -296,7 +292,7 @@ int slsReceiverFunctionList::startListening(){
 	//  very end of the program.
 	do {
 
-	    if (strchr(eth,'.')!=NULL) strcpy(eth,"");
+		if (strchr(eth,'.')!=NULL) strcpy(eth,"");
 
 		if(!strlen(eth)){
 			cout<<"warning:eth is empty.listening to all"<<endl;
@@ -308,7 +304,7 @@ int slsReceiverFunctionList::startListening(){
 
 		if (udpSocket->getErrorStatus()){
 #ifdef VERBOSE
-      std::cout<< "Could not create UDP socket "<< server_port  << std::endl;
+			std::cout<< "Could not create UDP socket "<< server_port  << std::endl;
 #endif
 			break;
 		}
@@ -318,48 +314,48 @@ int slsReceiverFunctionList::startListening(){
 		while (listening_thread_running) {
 			status = RUNNING;
 			if (!fifofree->isEmpty()) {
-			  fifofree->pop(buffer);
+				fifofree->pop(buffer);
 
-			//receiver 2 half frames
-			  rc = udpSocket->ReceiveDataOnly(buffer,bufferSize);//sizeof(buffer));
-			if( rc < 0)
-				cerr << "recvfrom() failed" << endl;
+				//receiver 2 half frames
+				rc = udpSocket->ReceiveDataOnly(buffer,bufferSize);//sizeof(buffer));
+				if( rc < 0)
+					cerr << "recvfrom() failed" << endl;
 
-			//start for each scan
-			if(startFrameIndex==-1){
-				startFrameIndex=(int)(*((int*)buffer))-packetsPerFrame;
-				//cout<<"startFrameIndex:"<<startFrameIndex<<endl;
-				prevframenum=startFrameIndex;
-			}
+				//start for each scan
+				if(startFrameIndex==-1){
+					startFrameIndex=(int)(*((int*)buffer))-packetsPerFrame;
+					//cout<<"startFrameIndex:"<<startFrameIndex<<endl;
+					prevframenum=startFrameIndex;
+				}
 
-			//start of acquisition
-			if(startAcquisitionIndex==-1){
-				startAcquisitionIndex=startFrameIndex;
-				currframenum =startAcquisitionIndex;
-				cout<<"startAcquisitionIndex:"<<startAcquisitionIndex<<endl;
-			}
+				//start of acquisition
+				if(startAcquisitionIndex==-1){
+					startAcquisitionIndex=startFrameIndex;
+					currframenum =startAcquisitionIndex;
+					cout<<"startAcquisitionIndex:"<<startAcquisitionIndex<<endl;
+				}
 
 
 
-			//so that it doesnt write the last frame twice
-			if(listening_thread_running){
-				//s.assign(buffer);
-				if(fifo->isFull())
-					;//cout<<"**********************FIFO FULLLLLLLL************************"<<endl;
-				else{
-					//cout<<"read index:"<<dec<<(int)(*(int*)buffer)<<endl;
-				  /**	dataReadFrame = new dataStruct;
+				//so that it doesnt write the last frame twice
+				if(listening_thread_running){
+					//s.assign(buffer);
+					if(fifo->isFull())
+						;//cout<<"**********************FIFO FULLLLLLLL************************"<<endl;
+					else{
+						//cout<<"read index:"<<dec<<(int)(*(int*)buffer)<<endl;
+						/**	dataReadFrame = new dataStruct;
 					dataReadFrame->buffer=buffer;
 					dataReadFrame->rc=rc;
 					//cout<<"read buffer:"<<dataReadFrame<<endl;
 					fifo->push(dataReadFrame);
-				  */
-				  fifo->push(buffer);
+						 */
+						fifo->push(buffer);
+					}
+
+
+
 				}
-			
-
-
-			}
 			}
 		}
 	} while (listening_thread_running);
@@ -399,8 +395,7 @@ int slsReceiverFunctionList::startWriting(){
 	char *wbuf;
 
 	// Variable and structure definitions
-	int ret,sleepnumber=0;//currframenum,ret;
-	//	dataStruct *dataWriteFrame;
+	int ret,sleepnumber=0;
 	char *guiData;
 	//reset variables for each acquisition
 	framesInFile=0;
@@ -408,21 +403,18 @@ int slsReceiverFunctionList::startWriting(){
 	frameIndex=0;
 	if(sfilefd) sfilefd=0;
 	strcpy(savefilename,"");
-	strcpy(actualfilename,"");
 
 	cout << "Max Frames Per File:" << maxFramesPerFile << endl;
 	if (writeReceiverData)
 		cout << "Note: Data Write has been defined exernally" << endl;
 	cout << "Ready!" << endl;
 
+	//by default, we read/write everything
 	cbAction=2;
 
+	//acquisition start
 	if (startAcquisitionCallBack)
-	  cbAction=startAcquisitionCallBack(filePath,fileName,fileIndex,bufferSize,pStartAcquisition);
-
-
-
-
+		cbAction=startAcquisitionCallBack(filePath,fileName,fileIndex,bufferSize,pStartAcquisition);
 
 
 
@@ -433,22 +425,15 @@ int slsReceiverFunctionList::startWriting(){
 	if(enableFileWrite==0 || cbAction==0)
 		cout << endl << "Note: Data will not be saved" << endl;
 
-		//create file name
-	if(frameIndexNeeded==-1)	
-	  sprintf(savefilename, "%s/%s_%d.raw", filePath,fileName,fileIndex);
-	else	
-	  sprintf(savefilename, "%s/%s_f%012d_%d.raw", filePath,fileName,framesCaught,fileIndex);
+	//create file name
+	if(frameIndexNeeded==-1)		sprintf(savefilename, "%s/%s_%d.raw", filePath,fileName,fileIndex);
+	else							sprintf(savefilename, "%s/%s_f%012d_%d.raw", filePath,fileName,framesCaught,fileIndex);
 
-		//for sebastian
-	if(!shortFileName)	
-	  strcpy(actualfilename,savefilename);
-	else				
-	  sprintf(actualfilename, "%s/%s_%d_%09d.raw", filePath,fileName,fileIndex, 0);
 
-		//start writing
+	//start writing
 	if(enableFileWrite || cbAction>0){
-		sfilefd = fopen((const char *) (actualfilename), "w");
-		cout << actualfilename << endl;
+		sfilefd = fopen((const char *) (savefilename), "w");
+		cout << savefilename << endl;
 	}
 
 
@@ -458,72 +443,65 @@ int slsReceiverFunctionList::startWriting(){
 		//when it reaches maxFramesPerFile,start writing new file
 		if (framesInFile == maxFramesPerFile) {
 
-				//create file name
-		  if(frameIndexNeeded==-1)	sprintf(savefilename, "%s/%s_%d.raw", filePath,fileName,fileIndex);
-		  else					sprintf(savefilename, "%s/%s_f%012d_%d.raw", filePath,fileName,framesCaught,fileIndex);
-				//for sebastian
-		  if(!shortFileName)		strcpy(actualfilename,savefilename);
-		  else					sprintf(actualfilename, "%s/%s_%d_%09d.raw", filePath,fileName,fileIndex, shortFileNameIndex);
-		  shortFileNameIndex++;
+			//create file name
+			if(frameIndexNeeded==-1)	sprintf(savefilename, "%s/%s_%d.raw", filePath,fileName,fileIndex);
+			else						sprintf(savefilename, "%s/%s_f%012d_%d.raw", filePath,fileName,framesCaught,fileIndex);
 
 			//start writing in new file
-		  if(enableFileWrite || cbAction>0){
-		    fclose(sfilefd);
-		    sfilefd = fopen((const char *) (actualfilename), "w");
-		  }
+			if(enableFileWrite || cbAction>0){
+				fclose(sfilefd);
+				sfilefd = fopen((const char *) (savefilename), "w");
+			}
 
 			//currframenum=(int)(*((int*)latestData));
-		  cout << actualfilename << "\tpacket loss " << fixed << setprecision(4) << ((currframenum-prevframenum-(packetsPerFrame*framesInFile))/(double)(packetsPerFrame*framesInFile))*100.000 << "%\t\t"
-		    "framenum " << currframenum << "\t\t"
-		    "p " << prevframenum << endl;
+			cout << savefilename << "\tpacket loss " << fixed << setprecision(4) << ((currframenum-prevframenum-(packetsPerFrame*framesInFile))/(double)(packetsPerFrame*framesInFile))*100.000 << "%\t\t"
+					"framenum " << currframenum << "\t\t"
+					"p " << prevframenum << endl;
 
-		  prevframenum=currframenum;
-		  framesInFile = 0;
+			prevframenum=currframenum;
+			framesInFile = 0;
 		}
 
 
 
 		//actual writing from fifo
 		if(!fifo->isEmpty()){
-		  //	dataWriteFrame = new dataStruct;
-		  //if(fifo->pop(dataWriteFrame)){
-		  if(fifo->pop(wbuf)){
-				//cout<<"write buffer:"<<dataWriteFrame<<endl<<endl;
+
+			if(fifo->pop(wbuf)){
 				framesCaught++;
 				totalFramesCaught++;
-				//currframenum = (int)(*((int*)dataWriteFrame->buffer));
 				currframenum = (int)(*((int*)wbuf));
 				if(guiRequiresData) {
-				  guiData=latestData;
+					guiData=latestData;
 				}  else {
-				  guiData=NULL;
+					guiData=NULL;
 				}
 
+				//write data
 				if(enableFileWrite){
-				  if (writeReceiverData) {
-				    writeReceiverData(wbuf,bufferSize, sfilefd, pwriteReceiverDataArg);
-				  }
-				  if (cbAction<2) {
-				    rawDataReadyCallBack(currframenum, wbuf,sfilefd, guiData,pRawDataReady);
-				  } else {
-				    fwrite(wbuf, 1, bufferSize, sfilefd);
-				  }
-				  
+					if (writeReceiverData) {
+						writeReceiverData(wbuf,bufferSize, sfilefd, pwriteReceiverDataArg);
+					}
+					if (cbAction<2) {
+						rawDataReadyCallBack(currframenum, wbuf,sfilefd, guiData,pRawDataReady);
+					} else {
+						fwrite(wbuf, 1, bufferSize, sfilefd);
+					}
+
 				}
 
 				if(guiRequiresData){
-				  if (cbAction>=2)
-				    memcpy(latestData,wbuf,bufferSize);
-				  //memcpy(latestData,wbuf,bufferSize);
-				  guiRequiresData=0;
+					if (cbAction>=2)
+						memcpy(latestData,wbuf,bufferSize);
+					//memcpy(latestData,wbuf,bufferSize);
+					guiRequiresData=0;
 				}
-				//cout<<"write index:"<<(int)(*(int*)latestData)<<endl;
+
 				framesInFile++;
-				///ANNA?!?!??!
 				//	delete [] dataWriteFrame->buffer;
 				fifofree->push(wbuf);
 			}
-		  //	delete dataWriteFrame;
+			//	delete dataWriteFrame;
 		}
 		else{
 			sleepnumber++;
@@ -533,16 +511,16 @@ int slsReceiverFunctionList::startWriting(){
 
 	cout << "Total Frames Caught:"<< totalFramesCaught << endl;
 	//close file
-
-	
 	if(sfilefd)		fclose(sfilefd);
-
 #ifdef VERBOSE
 	cout << "sfield:" << (int)sfilefd << endl;
 #endif
 
+
+
+	//acquistion over
 	if (acquisitionFinishedCallBack)
-	  acquisitionFinishedCallBack(totalFramesCaught, pAcquisitionFinished);
+		acquisitionFinishedCallBack(totalFramesCaught, pAcquisitionFinished);
 
 	return 0;
 }
@@ -555,22 +533,22 @@ int slsReceiverFunctionList::startWriting(){
 
 
 char* slsReceiverFunctionList::readFrame(char* c){
-  //ask for data
-  guiRequiresData=1;
+	//ask for data
+	guiRequiresData=1;
 
-  //wait for it to be ready, not indefinitely
-  int i=0;
-  for(i=0;i<10;i++){
-    if(guiRequiresData)
-      usleep(100000);
-    else
-      break;
-  }
- 
-  //reset it back if not already reset
-  guiRequiresData=0;
+	//wait for it to be ready, not indefinitely
+	int i=0;
+	for(i=0;i<10;i++){
+		if(guiRequiresData)
+			usleep(100000);
+		else
+			break;
+	}
 
-  //if no more data //if(guiRequiresData)  //  retun NULL;
+	//reset it back if not already reset
+	guiRequiresData=0;
+
+	//if no more data //if(guiRequiresData)  //  retun NULL;
 	//cout<<"latestdata:"<<(int)(*(int*)latestData)<<endl;
 	strcpy(c,savefilename);
 	return latestData;

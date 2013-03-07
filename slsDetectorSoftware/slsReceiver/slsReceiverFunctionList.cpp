@@ -546,7 +546,10 @@ void slsReceiverFunctionList::readFrame(char* c,char** raw){
 		guiData = NULL;
 
 	//copy data and filename
-	strcpy(c,guiFileName);
+	if(guiFileName)
+		strcpy(c,guiFileName);
+	else
+		strcpy(c,"");
 	*raw = guiData;
 
 	guiData = NULL;

@@ -52,7 +52,9 @@ slsReceiverFunctionList::slsReceiverFunctionList():
 						shortFrame(-1),
 						bufferSize(BUFFER_SIZE),
 						packetsPerFrame(2),
-						guiRequiresData(0),
+						guiDataReady(0),
+						guiData(NULL),
+						guiFileName(NULL),
 						currframenum(0),
 						writeReceiverData(0),
 						pwriteReceiverDataArg(0),
@@ -67,15 +69,12 @@ slsReceiverFunctionList::slsReceiverFunctionList():
 	strcpy(savefilename,"");
 	strcpy(filePath,"");
 	strcpy(fileName,"run");
+	guiFileName = new char[MAX_STR_LENGTH];
 	eth = new char[MAX_STR_LENGTH];
 	strcpy(eth,"");
-	//	dataWriteFrame = new dataStruct;
+
 	latestData = new char[bufferSize];
-
-
 	fifofree = new CircularFifo<char,FIFO_SIZE>();
-
-	//	fifo = new CircularFifo<dataStruct,FIFO_SIZE>();
 	fifo = new CircularFifo<char,FIFO_SIZE>();
 
 
@@ -195,7 +194,6 @@ int slsReceiverFunctionList::startReceiver(){
 		if(err){
 			listening_thread_running=0;
 			status = IDLE;
-			//	if(fifo) delete fifo;
 			cout << "Cant create writing thread. Status:" << status << endl << endl;
 			return FAIL;
 		}
@@ -211,7 +209,6 @@ int slsReceiverFunctionList::startReceiver(){
 			status = IDLE;
 			//stop writing thread
 			pthread_join(writing_thread,NULL);
-			//	if(fifo) delete fifo;
 			cout << endl << "Cant create listening thread. Status:" << status << endl << endl;
 			return FAIL;
 		}
@@ -249,8 +246,6 @@ int slsReceiverFunctionList::stopReceiver(){
 
 		//stop writing thread
 		pthread_join(writing_thread,NULL);
-		//	if(fifo)	delete fifo;
-		//if(latestData)	delete latestData;/**new*/
 	}
 	cout << "Receiver Stoppped.\nStatus:" << status << endl;
 
@@ -396,7 +391,7 @@ int slsReceiverFunctionList::startWriting(){
 
 	// Variable and structure definitions
 	int ret,sleepnumber=0;
-	char *guiData;
+	//char *guiData;
 	//reset variables for each acquisition
 	framesInFile=0;
 	framesCaught=0;
@@ -471,11 +466,6 @@ int slsReceiverFunctionList::startWriting(){
 				framesCaught++;
 				totalFramesCaught++;
 				currframenum = (int)(*((int*)wbuf));
-				if(guiRequiresData) {
-					guiData=latestData;
-				}  else {
-					guiData=NULL;
-				}
 
 				//write data
 				if(enableFileWrite){
@@ -490,12 +480,15 @@ int slsReceiverFunctionList::startWriting(){
 
 				}
 
-				if(guiRequiresData){
-					if (cbAction>=2)
-						memcpy(latestData,wbuf,bufferSize);
-					//memcpy(latestData,wbuf,bufferSize);
-					guiRequiresData=0;
-				}
+				//copies gui data and sets/resets guiDataReady
+				if(guiData){
+					//if (cbAction>=2)
+					memcpy(latestData,wbuf,bufferSize);
+					strcpy(guiFileName,savefilename);
+					guiDataReady=1;
+				}else
+					guiDataReady=0;
+
 
 				framesInFile++;
 				//	delete [] dataWriteFrame->buffer;
@@ -532,26 +525,31 @@ int slsReceiverFunctionList::startWriting(){
 
 
 
-char* slsReceiverFunctionList::readFrame(char* c){
-	//ask for data
-	guiRequiresData=1;
+void slsReceiverFunctionList::readFrame(char* c,char** raw){
 
-	//wait for it to be ready, not indefinitely
-	int i=0;
-	for(i=0;i<10;i++){
-		if(guiRequiresData)
+	//point to gui data
+	if (guiData == NULL){
+		guiData = latestData;
+	}else
+		cout<<"gui data was not null" << endl;
+
+	//wait for gui data to be ready, not indefinitely
+	for(int i=0;i<10;i++){
+		if(!guiDataReady)
 			usleep(100000);
 		else
 			break;
 	}
 
-	//reset it back if not already reset
-	guiRequiresData=0;
+	//could not get gui data
+	if(!guiDataReady)
+		guiData = NULL;
 
-	//if no more data //if(guiRequiresData)  //  retun NULL;
-	//cout<<"latestdata:"<<(int)(*(int*)latestData)<<endl;
-	strcpy(c,savefilename);
-	return latestData;
+	//copy data and filename
+	strcpy(c,guiFileName);
+	*raw = guiData;
+
+	guiData = NULL;
 }
 
 

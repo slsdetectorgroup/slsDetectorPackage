@@ -536,7 +536,7 @@ enum angleConversionParameter {
 //} angleConversionConstant;
 
 
-#ifdef __cplusplus
+#ifdef MYROOT
  protected:
 #endif
 
@@ -546,7 +546,7 @@ enum angleConversionParameter {
 #include "sls_detector_funcs.h"
 #endif
 
-#ifdef __cplusplus
+#ifdef MYROOT
 };
 #endif
 ;

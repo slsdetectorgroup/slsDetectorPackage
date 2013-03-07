@@ -173,8 +173,10 @@ public:
 
 	/**
 	 * Returns the buffer-current frame read by receiver
+	 * @param c pointer to current file name
+	 * @param raw address of pointer, pointing to current frame to send to gui
 	 */
-	char* readFrame(char* c);
+	void readFrame(char* c,char** raw);
 
 	/**
 	 * Set short frame
@@ -283,8 +285,14 @@ private:
 	/** number of packets per frame*/
 	int packetsPerFrame;
 	
-	/** gui wants data */
-	int guiRequiresData;
+	/** gui data ready */
+	int guiDataReady;
+
+	/** points to the data to send to gui */
+	char* guiData;
+
+	/** points to the filename to send to gui */
+	char* guiFileName;
 
 	/** current frame number */
 	int currframenum;
@@ -306,8 +314,6 @@ private:
 	   2 we open, close, write file, callback does not do anything
 
 	*/
-	
-
 	int (*startAcquisitionCallBack)(char*, char*,int, int, void*);
 	void *pStartAcquisition;
 
@@ -316,8 +322,6 @@ private:
 	   total frames caught
 	   
 	*/
-	
-	
 	void (*acquisitionFinishedCallBack)(int, void*);
 	void *pAcquisitionFinished;
 
@@ -329,12 +333,13 @@ private:
 	  file descriptor
 	  guidatapointer (NULL, no data required)
 	*/
-	
-
 	void (*rawDataReadyCallBack)(int, char*, FILE*, char*, void*);
 	void *pRawDataReady;
 
-
+	/** The action which decides what the user and default responsibilites to save data are
+	 * 0 raw data ready callback takes care of open,close,write file
+	 * 1 callback writes file, we have to open, close it
+	 * 2 we open, close, write file, callback does not do anything */
 	int cbAction;
 
 public:
@@ -343,11 +348,6 @@ public:
 
 	/** if the listening thread is running*/
 	static int listening_thread_running;
-
-
-	//	dataStruct *dataWriteFrame;
-
-
 
 	/**
 	   callback arguments are
@@ -362,7 +362,6 @@ public:
 	   2 we open, close, write file, callback does not do anything
 
 	*/
-	
 	void registerCallBackStartAcquisition(int (*func)(char*, char*,int, int, void*),void *arg){startAcquisitionCallBack=func; pStartAcquisition=arg;};
 
 
@@ -371,8 +370,6 @@ public:
 	   toatal frames caught
 
 	*/
-	
-	
 	int registerCallBackAcquisitionFinished(void (*func)(int, void*),void *arg){acquisitionFinishedCallBack=func; pAcquisitionFinished=arg;};
 	
 
@@ -384,14 +381,7 @@ public:
 	  file descriptor
 	  guidatapointer (NULL, no data required)
 	*/
-	
 	int registerCallBackRawDataReady(void (*func)(int, char*, FILE*, char*, void*),void *arg){rawDataReadyCallBack=func; pRawDataReady=arg;};
-
-
-
-
-
-
 
 
 

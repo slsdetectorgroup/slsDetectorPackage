@@ -33,11 +33,12 @@ const enum detectorType myDetectorType=GENERIC;
 
 
 //define in communication_funcs
+/*
 extern int lockStatus;
 extern char lastClientIP[INET_ADDRSTRLEN];
 extern char thisClientIP[INET_ADDRSTRLEN];
 extern int differentClients;
-
+*/
 
 
 /* global variables for optimized readout */

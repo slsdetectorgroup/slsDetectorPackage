@@ -799,47 +799,55 @@ int	slsReceiverFuncs::read_frame(){
 
 	//got atleast first frame, read buffer
 	if(ret==OK){
-		if(shortFrame!=-1){;
+		if(shortFrame!=-1){
 			//get frame
-			raw=slsReceiverList->readFrame(fName);
-			index=(int)(*(int*)raw);
-			memcpy(origVal,raw,bufferSize);
-			raw=NULL;
+			slsReceiverList->readFrame(fName,&raw);
+			//sending garbage values with index = -1 to try again
+			if (raw == NULL){
+				index = startIndex;
+				memcpy((((char*)retval)+(SHORT_DATABYTES*shortFrame)),((char*) origVal)+4, SHORT_DATABYTES);
+			}else{
+				index=(int)(*(int*)raw);
+				memcpy(origVal,raw,bufferSize);
+				raw=NULL;
 
-			//copy only the adc part
-			memcpy((((char*)retval)+(SHORT_DATABYTES*shortFrame)),((char*) origVal)+4, SHORT_DATABYTES);
+				//copy only the adc part
+				memcpy((((char*)retval)+(SHORT_DATABYTES*shortFrame)),((char*) origVal)+4, SHORT_DATABYTES);
+			}
 
 		}else{
 			//for full frames
 			while(count<20){
 				//get frame
-				raw=slsReceiverList->readFrame(fName);
-				index=(int)(*(int*)raw);
-				index2= (int)(*((int*)((char*)(raw+onebuffersize))));
-				memcpy(origVal,raw,bufferSize);
-				raw=NULL;
-				//cout<<"funcs\tindex:"<<index<<"\tindex2:"<<index2<<endl;
+				slsReceiverList->readFrame(fName,&raw);
+				if (raw != NULL){
+					index=(int)(*(int*)raw);
+					index2= (int)(*((int*)((char*)(raw+onebuffersize))));
+					memcpy(origVal,raw,bufferSize);
+					raw=NULL;
+					//cout<<"funcs\tindex:"<<index<<"\tindex2:"<<index2<<endl;
 
 
-				//1 odd, 1 even
-				if((index%2)!=index2%2){
-					//ideal situation (should be odd, even(index+1))
-					if(index%2){
-						memcpy(retval,((char*) origVal)+4, onedatasize);
-						memcpy((((char*)retval)+onedatasize), ((char*) origVal)+10+onedatasize, onedatasize);
-						break;
+					//1 odd, 1 even
+					if((index%2)!=index2%2){
+						//ideal situation (should be odd, even(index+1))
+						if(index%2){
+							memcpy(retval,((char*) origVal)+4, onedatasize);
+							memcpy((((char*)retval)+onedatasize), ((char*) origVal)+10+onedatasize, onedatasize);
+							break;
+						}
+
+						//swap to even,odd
+						if(index2%2){
+							memcpy((((char*)retval)+onedatasize),((char*) origVal)+4, onedatasize);
+							memcpy(retval, ((char*) origVal)+10+onedatasize, onedatasize);
+							index=index2;
+							break;
+						}
+
 					}
-
-					//swap to even,odd
-					if(index2%2){
-						memcpy((((char*)retval)+onedatasize),((char*) origVal)+4, onedatasize);
-						memcpy(retval, ((char*) origVal)+10+onedatasize, onedatasize);
-						index=index2;
-						break;
-					}
-
+					strcpy(mess,"could not read frame due to more than 20 mismatched indices\n");
 				}
-				strcpy(mess,"could not read frame due to more than 20 mismatched indices\n");
 				usleep(100000);
 				count++;
 			}
@@ -847,6 +855,7 @@ int	slsReceiverFuncs::read_frame(){
 			if(count==20){
 				cout << "same type: index:" << index << "\tindex2:" << index2 << endl;
 				/**send garbage with -1 index to try again*/
+				index = startIndex;
 				memcpy(retval,((char*) origVal)+4, onedatasize);
 				memcpy((((char*)retval)+onedatasize), ((char*) origVal)+10+onedatasize, onedatasize);
 			}

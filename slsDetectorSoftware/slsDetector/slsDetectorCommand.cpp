@@ -2551,14 +2551,13 @@ string slsDetectorCommand::cmdDetectorSize(int narg, char *args[], int action) {
 	int ret, val=-1, pos=-1,i;
 	char ans[1000], temp[100];
 
+	myDet->setOnline(ONLINE_FLAG);
 
 	if (action==PUT_ACTION) {
 		if (cmd=="maxmod")
 			return string("cannot put!");
 		else if (!sscanf(args[1],"%d",&val))
 			return string("could not scan ")+string(args[0])+string(" ")+string(args[1]);
-
-		myDet->setOnline(ONLINE_FLAG);
 
 		if (cmd=="roi"){
 			//debug number of arguments

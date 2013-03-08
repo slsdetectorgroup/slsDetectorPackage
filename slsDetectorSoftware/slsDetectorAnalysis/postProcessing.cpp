@@ -736,6 +736,7 @@ void postProcessing::startThread(int delflag) {
   // param.sched_priority = 5;
   // scheduling parameters of main thread 
   ret = pthread_setschedparam(pthread_self(), policy, &mparam);
+
   //#ifdef VERBOSE
     // printf("current priority is %d\n",param.sched_priority);
   //#endif

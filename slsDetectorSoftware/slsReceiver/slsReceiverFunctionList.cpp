@@ -189,7 +189,7 @@ int slsReceiverFunctionList::startReceiver(){
 		listening_thread_running=1;
 
 
-		//error creating writing thread
+		// creating writing thread
 		err = pthread_create(&writing_thread, NULL,startWritingThread, (void*) this);
 		if(err){
 			listening_thread_running=0;
@@ -201,7 +201,7 @@ int slsReceiverFunctionList::startReceiver(){
 		cout << "Writing thread created successfully." << endl;
 #endif
 
-		//error creating listenign thread
+		// creating listenign thread
 		err = 0;
 		err = pthread_create(&listening_thread, NULL,startListeningThread, (void*) this);
 		if(err){
@@ -219,6 +219,27 @@ int slsReceiverFunctionList::startReceiver(){
 #endif
 
 		cout << "Threads created successfully." << endl;
+
+
+		struct sched_param tcp_param, listen_param, write_param;
+		int policy= SCHED_RR;
+
+		tcp_param.sched_priority = 50;
+		listen_param.sched_priority = 99;
+		write_param.sched_priority = 90;
+
+
+		if (pthread_setschedparam(listening_thread, policy, &listen_param) == EPERM)
+			cout << "ERROR: Could not prioritize threads. You need to be super user for that." << endl;
+		if (pthread_setschedparam(writing_thread, policy, &write_param) == EPERM)
+			cout << "ERROR: Could not prioritize threads. You need to be super user for that." << endl;
+		if (pthread_setschedparam(pthread_self(), policy, &tcp_param) == EPERM)
+			cout << "ERROR: Could not prioritize threads. You need to be super user for that." << endl;
+
+
+		pthread_getschedparam(listening_thread,&policy,&tcp_param);
+		cout << "current priority of main tcp thread is " << tcp_param.sched_priority << endl;
+
 	}
 
 
@@ -274,13 +295,9 @@ int slsReceiverFunctionList::startListening(){
 #ifdef VERYVERBOSE
 	cout << "In startListening()\n");
 #endif
-	// Variable and structure definitions
+
 	int rc;
-	//	dataStruct *dataReadFrame;
-
-	//reset variables for each acquisition
 	startFrameIndex=-1;
-
 
 	// A do/while(FALSE) loop is used to make error cleanup easier.  The
 	//  close() of each of the socket descriptors is only done once at the
@@ -339,12 +356,6 @@ int slsReceiverFunctionList::startListening(){
 						;//cout<<"**********************FIFO FULLLLLLLL************************"<<endl;
 					else{
 						//cout<<"read index:"<<dec<<(int)(*(int*)buffer)<<endl;
-						/**	dataReadFrame = new dataStruct;
-					dataReadFrame->buffer=buffer;
-					dataReadFrame->rc=rc;
-					//cout<<"read buffer:"<<dataReadFrame<<endl;
-					fifo->push(dataReadFrame);
-						 */
 						fifo->push(buffer);
 					}
 
@@ -388,11 +399,8 @@ int slsReceiverFunctionList::startWriting(){
 #endif
 
 	char *wbuf;
-
-	// Variable and structure definitions
 	int ret,sleepnumber=0;
-	//char *guiData;
-	//reset variables for each acquisition
+
 	framesInFile=0;
 	framesCaught=0;
 	frameIndex=0;

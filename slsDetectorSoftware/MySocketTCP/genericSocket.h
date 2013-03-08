@@ -445,6 +445,7 @@ protocol(p), is_a_server(0), socketDescriptor(-1),file_des(-1), packet_size(ps),
 	   if (ip==string(buf)) {
 	     //printf("%s\n", iap->ifa_name);
 	     strcpy(buf,iap->ifa_name);
+	     break;
 	   }
 	 }
        }

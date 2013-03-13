@@ -26,8 +26,8 @@ int qServer::gui_server_thread_running(0);
 //-------------------------------------------------------------------------------------------------------------------------------------------------
 
 
-qServer::qServer(multiSlsDetector*& detector, qDetectorMain *t):
-		myDet(detector), myMainTab(t), mySocket(NULL),port_no(DEFAULT_GUI_PORTNO),lockStatus(0){
+qServer::qServer(qDetectorMain *t):
+		 myMainTab(t), mySocket(NULL),port_no(DEFAULT_GUI_PORTNO),lockStatus(0){
 
 	FunctionTable();
 
@@ -38,7 +38,6 @@ qServer::qServer(multiSlsDetector*& detector, qDetectorMain *t):
 
 
 qServer::~qServer(){
-	delete myDet;
 	delete myMainTab;
 	if(mySocket) delete mySocket;
 }

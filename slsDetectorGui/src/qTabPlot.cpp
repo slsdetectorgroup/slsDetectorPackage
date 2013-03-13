@@ -153,6 +153,7 @@ void qTabPlot::SetupWidgetWindow(){
 		btnResetPedestal->setEnabled(false);
 	}
 
+	qDefs::checkErrorMessage(myDet);
 }
 
 
@@ -482,6 +483,7 @@ void qTabPlot::SetFrequency(){
 	//if period is 0, check exptime, if that is also 0, give warning and set to min timer
 	if(acqPeriodMS==0){
 		acqPeriodMS = (myDet->setTimer(slsDetectorDefs::ACQUISITION_TIME,-1)*(1E-6));
+
 		if(acqPeriodMS==0){
 			qDefs::Message(qDefs::WARNING,"<nobr>Interval between Plots:</nobr><br><nobr>"
 					"<b>Every Nth Image</b>: Period betwen Frames and Exposure Time cannot both be 0 ms.</nobr><br><nobr>"
@@ -500,6 +502,7 @@ void qTabPlot::SetFrequency(){
 			connect(spinTimeGap,	SIGNAL(editingFinished()),			this, SLOT(SetFrequency()));
 			connect(spinNthFrame,	SIGNAL(editingFinished()),			this, SLOT(SetFrequency()));
 			connect(comboFrequency, SIGNAL(currentIndexChanged(int)),	this, SLOT(SetFrequency()));
+			qDefs::checkErrorMessage(myDet);
 			return;
 		}
 	}
@@ -594,6 +597,8 @@ void qTabPlot::SetFrequency(){
 	connect(spinTimeGap,	SIGNAL(editingFinished()),			this, SLOT(SetFrequency()));
 	connect(spinNthFrame,	SIGNAL(editingFinished()),			this, SLOT(SetFrequency()));
 	connect(comboFrequency, SIGNAL(currentIndexChanged(int)),	this, SLOT(SetFrequency()));
+
+	qDefs::checkErrorMessage(myDet);
 }
 
 
@@ -613,6 +618,8 @@ void qTabPlot::EnableScanBox(){
 	int ang;
 	//none of these scan plotting options make sense if positions exists
 	bool positionsExist = myDet->getAngularConversion(ang);//myDet->getPositions();
+
+	qDefs::checkErrorMessage(myDet);
 
 	//only now enable/disable
 	boxScan->setEnabled((mode0||mode1)&&(!positionsExist));
@@ -800,6 +807,8 @@ void qTabPlot::SetScanArgument(){
 
 	}else //done here so that it isnt set by default each time
 		myPlot->SetScanArgument(0);
+
+	qDefs::checkErrorMessage(myDet);
 
 }
 

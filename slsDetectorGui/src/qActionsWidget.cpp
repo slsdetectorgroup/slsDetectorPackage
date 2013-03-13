@@ -96,7 +96,7 @@ void qActionsWidget::SetMode(int mode){
 			}
 		}
 	}
-
+	qDefs::checkErrorMessage(myDet);
 }
 
 
@@ -167,6 +167,8 @@ void qActionsWidget::SetScriptFile(){
 	//dont display if theres a none
 	if(!dispScript->text().compare("none")) dispScript->setText("");
 
+	qDefs::checkErrorMessage(myDet);
+
 }
 
 
@@ -181,6 +183,8 @@ void qActionsWidget::SetParameter(){
 	myDet->setActionParameter(id,parameter.toAscii().constData());
 	//dont display if theres a none
 	if(!dispParameter->text().compare("none")) dispParameter->setText("");
+
+	qDefs::checkErrorMessage(myDet);
 }
 
 
@@ -207,6 +211,8 @@ void qActionsWidget::Refresh(){
 			"script:" << script << "\t"
 			"parameter:" << parameter << "\t***" << endl;
 #endif
+
+	qDefs::checkErrorMessage(myDet);
 }
 
 

@@ -110,6 +110,7 @@ void qTabDataOutput::SetupWidgetWindow(){
 	if(myDet->getBadChannelCorrection()) chkDiscardBad->setChecked(true);
 
 
+	qDefs::checkErrorMessage(myDet);
 }
 
 
@@ -152,9 +153,12 @@ void qTabDataOutput::setOutputDir(){
 	if(myDet->setReceiverOnline()==slsDetectorDefs::ONLINE_FLAG){
 		for(int i=0;i<myDet->getNumberOfDetectors();i++){
 			slsDetector *det = 	myDet->getSlsDetector(i);
+			qDefs::checkErrorMessage(myDet);
 			det->setFilePath(string(path.toAscii().constData()));
+			qDefs::checkErrorMessage(det);
 			if(det->getFilePath()!=(string(path.toAscii().constData()))){
 				error=true;
+				qDefs::checkErrorMessage(det);
 				break;
 			}
 		}
@@ -162,7 +166,9 @@ void qTabDataOutput::setOutputDir(){
 			//set it back for the ones which got set
 			for(int i=0;i<myDet->getNumberOfDetectors();i++){
 				slsDetector *det = 	myDet->getSlsDetector(i);
+				qDefs::checkErrorMessage(myDet);
 				det->setFilePath(oldPath);
+				qDefs::checkErrorMessage(det);
 			}
 		}//set it in multi as well if it worked so that they reflect the same
 		else
@@ -199,6 +205,8 @@ void qTabDataOutput::setOutputDir(){
 	}
 
 	connect(dispOutputDir,		SIGNAL(editingFinished()), 	this, 	SLOT(setOutputDir()));
+
+	qDefs::checkErrorMessage(myDet);
 }
 
 
@@ -286,6 +294,8 @@ void qTabDataOutput::SetFlatField(){
 	}
 
 	connect(dispFlatField,SIGNAL(editingFinished()),this,SLOT(SetFlatField()));
+
+	qDefs::checkErrorMessage(myDet);
 }
 
 //-------------------------------------------------------------------------------------------------------------------------------------------------
@@ -314,12 +324,13 @@ void qTabDataOutput::UpdateFlatFieldFromServer(){
 	chkFlatField->setText("Flat Field File:");
 
 	connect(dispFlatField,		SIGNAL(editingFinished()),	this,	SLOT(SetFlatField()));
+
+	qDefs::checkErrorMessage(myDet);
 }
 
 //-------------------------------------------------------------------------------------------------------------------------------------------------
 
-void qTabDataOutput::BrowseFlatFieldPath()
-{
+void qTabDataOutput::BrowseFlatFieldPath(){
 	QString fName = dispFlatField->text();
 	QString dir = fName.section('/',0,-2,QString::SectionIncludeLeadingSep);
 	if(dir.isEmpty()) dir =  QString(myDet->getFlatFieldCorrectionDir().c_str());/*"/home/";*/
@@ -330,6 +341,8 @@ void qTabDataOutput::BrowseFlatFieldPath()
 		dispFlatField->setText(fName);
 		SetFlatField();
 	}
+
+	qDefs::checkErrorMessage(myDet);
 }
 
 
@@ -381,6 +394,8 @@ void qTabDataOutput::SetRateCorrection(){
 	connect(radioAuto,		SIGNAL(toggled(bool)), 			this, 	SLOT(SetRateCorrection()));
 	connect(radioDeadTime,	SIGNAL(toggled(bool)), 			this, 	SLOT(SetRateCorrection()));
 	connect(spinDeadTime,	SIGNAL(valueChanged(double)), 	this, 	SLOT(SetRateCorrection()));
+
+	qDefs::checkErrorMessage(myDet);
 }
 
 
@@ -395,6 +410,7 @@ void qTabDataOutput::UpdateRateCorrectionFromServer(){
 
 	double rate;
 	rate = (double)myDet->getRateCorrectionTau();
+	qDefs::checkErrorMessage(myDet);
 #ifdef VERBOSE
 	cout << "Getting rate correction from server:" << rate << " : ";
 #endif
@@ -461,6 +477,8 @@ void qTabDataOutput::SetAngularCorrection(){
 	}
 
 	emit AngularConversionSignal(chkAngular->isChecked());
+
+	qDefs::checkErrorMessage(myDet);
 }
 
 
@@ -482,6 +500,8 @@ void qTabDataOutput::DiscardBadChannels(){
 		cout << "Unsetting bad channel correction" << endl;
 #endif
 	}
+
+	qDefs::checkErrorMessage(myDet);
 }
 
 
@@ -552,6 +572,8 @@ void qTabDataOutput::Refresh(){
 #ifdef VERBOSE
 	cout  << "**Updated DataOutput Tab" << endl << endl;
 #endif
+
+	qDefs::checkErrorMessage(myDet);
 }
 
 

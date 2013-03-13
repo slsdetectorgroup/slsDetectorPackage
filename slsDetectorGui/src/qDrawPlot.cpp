@@ -232,21 +232,11 @@ void qDrawPlot::SetupWidgetWindow(){
 	boxPlot->setFlat(true);
 	boxPlot->setContentsMargins(0,15,0,0);
 
-	//plot1D_hists = NULL;
-
 	plotLayout =  new QGridLayout(boxPlot);
 		plotLayout->addWidget(plot1D,1,1,1,1);
 		plotLayout->addWidget(plot2D,1,1,1,1);
 
-		/*
-	//clear eveything again
-	nHists=0;
-	histXAxis=0;
-	histYAxis[0]=0;
-	Clear1DPlot();
-	for(QVector<SlsQtH1D*>::iterator h = plot1D_hists.begin();h!=plot1D_hists.end();h++)	delete *h;
-	plot1D_hists.clear();
-*/
+
 	//callbacks
 
 	// Setting the callback function to get data from detector class
@@ -257,6 +247,8 @@ void qDrawPlot::SetupWidgetWindow(){
 	myDet->registerMeasurementFinishedCallback(&(GetMeasurementFinishedCallBack),this);
 	//Setting the callback function to get progress from detector class(using receivers)
 	myDet->registerProgressCallback(&(GetProgressCallBack),this);
+
+	qDefs::checkErrorMessage(myDet);
 }
 
 
@@ -349,10 +341,13 @@ void qDrawPlot::StartStopDaqToggle(bool stop_if_running){
 
 		StartDaq(true);
 		running=!running;
+
+		qDefs::checkErrorMessage(myDet);
 	}
 
 	/** if this is set during client initation */
 	clientInitiated = false;
+
 }
 
 
@@ -491,9 +486,9 @@ void qDrawPlot::SetScanArgument(int scanArg){
 			lastImageArray[py*nPixelsX+px] = 0;
 
 
-
-
 	UnlockLastImageArray();
+
+	qDefs::checkErrorMessage(myDet);
 
 }
 
@@ -1136,7 +1131,10 @@ void qDrawPlot::ClonePlot(){
 
 	string sFilePath;
 	if(running) sFilePath = filePath.toAscii().constData();
-	else sFilePath = myDet->getFilePath();
+	else {
+		sFilePath = myDet->getFilePath();
+		qDefs::checkErrorMessage(myDet);
+	}
 
 
 
@@ -1254,7 +1252,10 @@ void qDrawPlot::SavePlot(){
 
 	QString fName;
 	if(running) fName = filePath;
-	else fName = QString(myDet->getFilePath().c_str());
+	else {
+		fName = QString(myDet->getFilePath().c_str());
+		qDefs::checkErrorMessage(myDet);
+	}
 
 	if(boxPlot->title().contains('.')){
 		fName.append(QString('/')+boxPlot->title());
@@ -1282,7 +1283,10 @@ void qDrawPlot::SavePlotAutomatic(){
 
 		QString qFilePath;
 		if(running) qFilePath = filePath;
-		else qFilePath = QString(myDet->getFilePath().c_str());
+		else {
+			qFilePath = QString(myDet->getFilePath().c_str());
+			qDefs::checkErrorMessage(myDet);
+		}
 
 
 		lastSavedFrame = currentFrame;
@@ -1385,6 +1389,9 @@ int qDrawPlot::UpdateTrimbitPlot(bool fromDetector,bool Histogram){
 #ifdef VERBOSE
 		cout << "Got Trimbits" << endl;
 #endif
+
+		qDefs::checkErrorMessage(myDet);
+
 		//defining axes
 		if(Histogram)	nPixelsX = TRIM_HISTOGRAM_XMAX+1;
 		else			nPixelsX = actualPixelsX;

@@ -82,6 +82,7 @@ void qTabMeasurement::SetupWidgetWindow(){
 	iconStart = new QIcon(":/icons/images/start.png");
 	iconStop = new QIcon(":/icons/images/stop.png");
 
+	qDefs::checkErrorMessage(myDet);
 
 }
 
@@ -101,6 +102,7 @@ void qTabMeasurement::SetExpertMode(bool enable){
 		cout << "Getting number of probes : " << val << endl;
 #endif
 	}
+	qDefs::checkErrorMessage(myDet);
 }
 
 
@@ -177,6 +179,16 @@ void qTabMeasurement::SetupTimingMode(){
 		// This should not happen -only if the server and gui has a mismatch
 		// on which all modes are allowed in detectors
 		else{
+			//check if the detector is not even connected
+			string offline = myDet->checkOnline();
+			qDefs::checkErrorMessage(myDet);
+
+			if(!offline.empty()){
+				qDefs::Message(qDefs::CRITICAL,string("<nobr>The detector(s)  <b>")+offline+string(" </b> is/are not connected.  Exiting GUI.</nobr>"),"Main");
+				cout << "The detector(s)  " << offline << "  is/are not connected. Exiting GUI." << endl;
+				exit(-1);
+			}
+
 			qDefs::Message(qDefs::WARNING,"Unknown Timing Mode detected from detector."
 					"\n\nSetting the following defaults:\nTiming Mode \t: None\n"
 					"Number of Frames \t: 1\nNumber of Triggers \t: 1","Measurement");
@@ -184,6 +196,7 @@ void qTabMeasurement::SetupTimingMode(){
 			SetTimingMode((int)None);
 		}
 	}
+	qDefs::checkErrorMessage(myDet);
 }
 
 
@@ -272,6 +285,7 @@ void qTabMeasurement::setFileName(const QString& fName){
 #ifdef VERBOSE
 	cout << "Setting File name to "  <<  myDet->getFileName() << endl;
 #endif
+	qDefs::checkErrorMessage(myDet);
 }
 
 
@@ -282,6 +296,7 @@ void qTabMeasurement::setRunIndex(int index){
 #ifdef VERBOSE
 	cout << "Setting File Index to " << myDet->getFileIndex() << endl;
 #endif
+	qDefs::checkErrorMessage(myDet);
 }
 
 //-------------------------------------------------------------------------------------------------------------------------------------------------
@@ -320,6 +335,7 @@ void qTabMeasurement::startStopAcquisition(){
 		btnStartStop->setChecked(false);
 		Enable(1);
 	}
+	qDefs::checkErrorMessage(myDet);
 }
 
 
@@ -344,6 +360,7 @@ void qTabMeasurement::UpdateFinished(){
 
 
 	}
+	qDefs::checkErrorMessage(myDet);
 }
 
 
@@ -374,6 +391,7 @@ void qTabMeasurement::setNumMeasurements(int val){
 #ifdef VERBOSE
 	cout << "Setting Number of Measurements to "  << (int)myDet->setTimer(slsDetectorDefs::MEASUREMENTS_NUMBER,-1)  << endl;
 #endif
+	qDefs::checkErrorMessage(myDet);
 }
 
 
@@ -385,6 +403,7 @@ void qTabMeasurement::setNumFrames(int val){
 #ifdef VERBOSE
 	cout << "Setting number of frames to " << (int)myDet->setTimer(slsDetectorDefs::FRAME_NUMBER,-1) << endl;
 #endif
+	qDefs::checkErrorMessage(myDet);
 }
 
 
@@ -416,6 +435,7 @@ void qTabMeasurement::setExposureTime(){
 			lblPeriod->setText("Acquisition Period:");
 		}
 	}
+	qDefs::checkErrorMessage(myDet);
 }
 
 
@@ -446,6 +466,7 @@ void qTabMeasurement::setAcquisitionPeriod(){
 		lblPeriod->setText("Acquisition Period:");
 	}
 
+	qDefs::checkErrorMessage(myDet);
 	//Check if the interval between plots is ok
 	emit CheckPlotIntervalSignal();
 }
@@ -459,6 +480,7 @@ void qTabMeasurement::setNumTriggers(int val){
 #ifdef VERBOSE
 	cout << "Setting number of triggers to " << (int)myDet->setTimer(slsDetectorDefs::CYCLES_NUMBER,-1) << endl;
 #endif
+	qDefs::checkErrorMessage(myDet);
 }
 
 
@@ -473,6 +495,7 @@ void qTabMeasurement::setDelay(){
 	cout << "Setting delay after trigger to " << exptimeNS << " clocks" <<  "/" << spinDelay->value() << qDefs::getUnitString((qDefs::timeUnit)comboDelayUnit->currentIndex()) << endl;
 #endif
 	myDet->setTimer(slsDetectorDefs::DELAY_AFTER_TRIGGER,(int64_t)exptimeNS);
+	qDefs::checkErrorMessage(myDet);
 }
 
 
@@ -484,6 +507,7 @@ void qTabMeasurement::setNumGates(int val){
 #ifdef VERBOSE
 	cout << "Setting number of gates to " << (int)myDet->setTimer(slsDetectorDefs::GATES_NUMBER,-1) << endl;
 #endif
+	qDefs::checkErrorMessage(myDet);
 }
 
 
@@ -495,6 +519,7 @@ void qTabMeasurement::setNumProbes(int val){
 #ifdef VERBOSE
 	cout << "Setting number of frames to " << (int)myDet->setTimer(slsDetectorDefs::PROBES_NUMBER,-1) << endl;
 #endif
+	qDefs::checkErrorMessage(myDet);
 }
 
 
@@ -581,8 +606,10 @@ void qTabMeasurement::SetTimingMode(int mode){
 	default:
 		//This should never happen
 		qDefs::Message(qDefs::CRITICAL,"Timing mode unknown to GUI","Measurement");
+		qDefs::checkErrorMessage(myDet);
 		exit(-1);
 	}
+	qDefs::checkErrorMessage(myDet);
 	if(!success){
 		qDefs::Message(qDefs::WARNING,"The detector timing mode could not be set.\n"
 				"Please check the external flags."
@@ -703,6 +730,7 @@ void qTabMeasurement::SetTimingMode(int mode){
 	myPlot->setFrameEnabled(lblNumFrames->isEnabled());
 	myPlot->setTriggerEnabled(lblNumTriggers->isEnabled());
 
+	qDefs::checkErrorMessage(myDet);
 
 	emit CheckPlotIntervalSignal();
 
@@ -721,6 +749,7 @@ void qTabMeasurement::EnableFileWrite(bool enable){
 	dispFileName->setEnabled(enable);
 	if(enable) setFileName(dispFileName->text());
 	myPlot->SetEnableFileWrite(enable);
+	qDefs::checkErrorMessage(myDet);
 };
 
 //-------------------------------------------------------------------------------------------------------------------------------------------------
@@ -764,6 +793,8 @@ void qTabMeasurement::Refresh(){
 		// to let qdrawplot know that triggers or frames are used
 		myPlot->setFrameEnabled(lblNumFrames->isEnabled());
 		myPlot->setTriggerEnabled(lblNumTriggers->isEnabled());
+
+		qDefs::checkErrorMessage(myDet);
 	}
 
 #ifdef VERBOSE

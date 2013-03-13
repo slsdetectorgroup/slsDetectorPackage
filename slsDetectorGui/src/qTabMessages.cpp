@@ -50,6 +50,7 @@ void qTabMessages::SetupWidgetWindow(){
 	dispLog->setFocusPolicy(Qt::NoFocus);
 	dispLog->setTextColor(Qt::darkBlue);
 
+
 	btnSave = new QPushButton("Save Log  ",this);
 	btnSave->setFocusPolicy(Qt::NoFocus);
 	btnSave->setFixedWidth(100);
@@ -67,8 +68,8 @@ void qTabMessages::SetupWidgetWindow(){
 	gridLayout->addWidget(dispLog,3,0,1,5);
 
 	errMsg = "<nobr> Please check Messages Tab. Following message was caught:</nobr><br><br><nobr><font color=\"darkBlue\">";
-	//qout=new qDebugStream(std::cout,this);
-	//qerr=new qDebugStream(std::cerr,this);
+	qout=new qDebugStream(std::cout,this);
+	qerr=new qDebugStream(std::cerr,this);
 
 }
 
@@ -82,17 +83,11 @@ void qTabMessages::Initialization(){
 //-------------------------------------------------------------------------------------------------------------------------------------------------
 
 void qTabMessages::customEvent(QEvent *e) {
-  if (e->type() == (STREAMEVENT))
-	  dispLog->append(((qStreamEvent*)e)->getString());
-
-/*	  QString temp = ((qStreamEvent*)e)->getString();
+  if (e->type() == (STREAMEVENT)){
+	  QString temp = ((qStreamEvent*)e)->getString();
 	  dispLog->append(temp);
-  	  string t=string(temp.toAscii().constData());
-	  if(t.find("not connect")!=string::npos)
-		  qDefs::Message(qDefs::WARNING,errMsg+t+string("</font></nobr>"),"Messages");
-	  else if(t.find("ould not")!=string::npos)
-		  qDefs::Message(qDefs::WARNING,errMsg+t+string("</font></nobr>"),"Messages");
-*/
+  }
+
 }
 
 //-------------------------------------------------------------------------------------------------------------------------------------------------
@@ -114,6 +109,8 @@ void qTabMessages::SaveLog() {
     	}
     	else qDefs::Message(qDefs::WARNING,"Attempt to save log file failed.","Messages");
      }
+
+	qDefs::checkErrorMessage(myDet);
 }
 
 

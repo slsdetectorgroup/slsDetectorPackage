@@ -2584,6 +2584,8 @@ dacs_t multiSlsDetector::getADC(dacIndex idac, int imod) {
   for (int idet=dmi; idet<dma; idet++) {
     if (detectors[idet]) {
       ret=detectors[idet]->getADC(idac, im);
+	  if(detectors[idet]->getErrorMask())
+		 setErrorMask(getErrorMask()|(1<<idet));
       if (ret1==-100)
 	ret1=ret;
       else if (ret!=ret1)

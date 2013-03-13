@@ -538,13 +538,22 @@ int slsReceiverFuncs::setup_udp(){
 			 }
 			 else{
 				 strcpy(eth,temp.c_str());
+				 if (strchr(eth,'.')!=NULL) {
+					 strcpy(eth,"");
+					 ret = FAIL;
+				 }
 				 cout<<"eth:"<<eth<<endl;
 				 slsReceiverList->setEthernetInterface(eth);
+
 				 //get mac address from ethernet interface
-				 temp = genericSocket::nameToMac(eth);
-				 if(temp=="00:00:00:00:00:00"){
+				 if (ret != FAIL)
+					temp = genericSocket::nameToMac(eth);
+
+
+				 if ((temp=="00:00:00:00:00:00") || (ret == FAIL)){
 					 ret = FAIL;
 					 strcpy(mess,"failed to get mac adddress to listen to\n");
+					 cout << "mess:" << mess << endl;
 				 }
 				 else{
 					 strcpy(retval,temp.c_str());
@@ -817,43 +826,50 @@ int	slsReceiverFuncs::read_frame(){
 
 		}else{
 			//for full frames
-			while(count<20){
+			while(count<10){
 				//get frame
 				slsReceiverList->readFrame(fName,&raw);
-				if (raw != NULL){
-					index=(int)(*(int*)raw);
-					index2= (int)(*((int*)((char*)(raw+onebuffersize))));
-					memcpy(origVal,raw,bufferSize);
-					raw=NULL;
-					//cout<<"funcs\tindex:"<<index<<"\tindex2:"<<index2<<endl;
-
-
-					//1 odd, 1 even
-					if((index%2)!=index2%2){
-						//ideal situation (should be odd, even(index+1))
-						if(index%2){
-							memcpy(retval,((char*) origVal)+4, onedatasize);
-							memcpy((((char*)retval)+onedatasize), ((char*) origVal)+10+onedatasize, onedatasize);
-							break;
-						}
-
-						//swap to even,odd
-						if(index2%2){
-							memcpy((((char*)retval)+onedatasize),((char*) origVal)+4, onedatasize);
-							memcpy(retval, ((char*) origVal)+10+onedatasize, onedatasize);
-							index=index2;
-							break;
-						}
-
-					}
-					strcpy(mess,"could not read frame due to more than 20 mismatched indices\n");
+				if (raw == NULL){
+					count = -1;
+					break;
 				}
+
+				index=(int)(*(int*)raw);
+				index2= (int)(*((int*)((char*)(raw+onebuffersize))));
+				memcpy(origVal,raw,bufferSize);
+				raw=NULL;
+				//cout<<"funcs\tindex:"<<index<<"\tindex2:"<<index2<<endl;
+
+
+				//1 odd, 1 even
+				if((index%2)!=index2%2){
+					//ideal situation (should be odd, even(index+1))
+					if(index%2){
+						memcpy(retval,((char*) origVal)+4, onedatasize);
+						memcpy((((char*)retval)+onedatasize), ((char*) origVal)+10+onedatasize, onedatasize);
+						break;
+					}
+
+					//swap to even,odd
+					if(index2%2){
+						memcpy((((char*)retval)+onedatasize),((char*) origVal)+4, onedatasize);
+						memcpy(retval, ((char*) origVal)+10+onedatasize, onedatasize);
+						index=index2;
+						break;
+					}
+
+				}
+				strcpy(mess,"could not read frame due to more than 20 mismatched indices\n");
+
 				usleep(100000);
 				count++;
 			}
 
-			if(count==20){
-				cout << "same type: index:" << index << "\tindex2:" << index2 << endl;
+			if ((count==20) || (count == -1)){
+				if (count == -20)
+					cout << "same type: index:" << index << "\tindex2:" << index2 << endl;
+				else
+					cout << "no data to read for gui" << endl;
 				/**send garbage with -1 index to try again*/
 				index = startIndex;
 				memcpy(retval,((char*) origVal)+4, onedatasize);

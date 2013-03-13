@@ -1554,6 +1554,14 @@ class slsDetector : public slsDetectorUtils, public energyConversion {
   */
   int64_t clearAllErrorMask();
 
+  /** Sets Cannot connect to Detector error mask and prints it
+   */
+  void setCannotConnectToDetector();
+
+  /** Sets Cannot connect to Detector error mask and prints it
+   */
+  void setCannotConnectToReceiver();
+
   /** returns the  detector MAC address\sa sharedSlsDetector  */
   char* getDetectorMAC() {return thisDetector->detectorMAC;};
   /** returns the  detector IP address\sa sharedSlsDetector  */

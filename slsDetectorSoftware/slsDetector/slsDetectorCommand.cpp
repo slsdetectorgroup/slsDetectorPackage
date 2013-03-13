@@ -2968,7 +2968,6 @@ string slsDetectorCommand::cmdDAC(int narg, char *args[], int action) {
   dacIndex dac;
   dacs_t val=-1;
   char answer[1000];
-  
   if (cmd=="vthreshold")
     dac=THRESHOLD;
   else if (cmd=="vcalibration")
@@ -3007,15 +3006,7 @@ string slsDetectorCommand::cmdDAC(int narg, char *args[], int action) {
     dac=G_VREF_COMP;
   else if (cmd=="ib_test_c")
     dac=G_IB_TESTC;
-  else if (cmd=="temp_adc") {
-    dac=TEMPERATURE_ADC;
-    if (action==PUT_ACTION)
-      return string("cannot set ")+cmd;
-  } else if (cmd=="temp_fpga") {
-    dac=TEMPERATURE_FPGA;
-    if (action==PUT_ACTION)
-      return string("cannot set ")+cmd;
-  } else
+  else
     return string("cannot decode dac ")+cmd;
   
   if (action==PUT_ACTION) {
@@ -3144,6 +3135,8 @@ string slsDetectorCommand::cmdADC(int narg, char *args[], int action) {
 #else
   sprintf(answer,"%f",myDet->getADC(adc));
 #endif
+  if ((adc == TEMPERATURE_ADC) || (adc == TEMPERATURE_FPGA))
+	  strcat(answer,"°C");
   return string(answer);
 
 }

@@ -1952,7 +1952,7 @@ dacs_t slsDetector::getADC(dacIndex index, int imod){
 	controlSocket->Disconnect();
 	if (ret==FORCE_UPDATE)
 	  updateDetector();
-      }
+      }else setCannotConnectToDetector();
     }
   } 
 #ifdef VERBOSE
@@ -5338,8 +5338,8 @@ int slsDetector::writeConfigurationFile(ofstream &outfile, int id){
     names[11]="detectorip";
 	names[12]= "rx_tcpport";
 	names[13]= "rx_udpport";
-    names[14]="rx_hostname";
-    names[15]="rx_udpip";
+    names[14]="rx_udpip";
+    names[15]="rx_hostname";
     names[16]="outdir";
     names[17]="vhighvoltage";
     nvar=18;
@@ -6270,4 +6270,14 @@ int64_t slsDetector::clearAllErrorMask(){
 }
 
 
+void slsDetector::setCannotConnectToDetector(){
+	std::cout << "cannot connect to detector" << endl;
+	setErrorMask((getErrorMask())|(CANNOT_CONNECT_TO_DETECTOR));
+}
+
+
+void slsDetector::setCannotConnectToReceiver(){
+	std::cout << "cannot connect to Receiver" << endl;
+	setErrorMask((getErrorMask())|(CANNOT_CONNECT_TO_RECEIVER));
+}
 

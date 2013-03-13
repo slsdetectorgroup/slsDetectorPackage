@@ -111,7 +111,7 @@ void qDetectorMain::SetUpWidgetWindow(){
 	tab_debugging 		=  new qTabDebugging	(this,	myDet);				cout<<"Debugging ready"<<endl;
 	tab_developer 		=  new qTabDeveloper	(this,	myDet);				cout<<"Developer ready"<<endl;
 
-	myServer = new qServer(myDet, this);
+	myServer = new qServer(this);
 
 	//	creating the scroll area widgets for the tabs
 	for(int i=0;i<NumberOfTabs;i++){
@@ -201,6 +201,7 @@ void qDetectorMain::SetUpDetector(const string fName){
 
 	//gets the hostname if it worked
 	string host = myDet->getHostname();
+	qDefs::checkErrorMessage(myDet);
 
 	//if hostname doesnt exist even in shared memory
 	if(!host.length()){
@@ -213,6 +214,8 @@ void qDetectorMain::SetUpDetector(const string fName){
 
 	//check if the detector is not even connected
 	string offline = myDet->checkOnline();
+	qDefs::checkErrorMessage(myDet);
+
 	if(!offline.empty()){
 		qDefs::Message(qDefs::CRITICAL,string("<nobr>The detector(s)  <b>")+offline+string(" </b> is/are not connected.  Exiting GUI.</nobr>"),"Main");
 		cout << "The detector(s)  " << host << "  is/are not connected. Exiting GUI." << endl;
@@ -221,6 +224,8 @@ void qDetectorMain::SetUpDetector(const string fName){
 
 	// Check if type valid. If not, exit
 	slsDetectorDefs::detectorType detType = myDet->getDetectorsType();
+	qDefs::checkErrorMessage(myDet);
+
 	switch(detType){
 	case slsDetectorDefs::MYTHEN:	break;
 	case slsDetectorDefs::EIGER:	break;
@@ -228,6 +233,7 @@ void qDetectorMain::SetUpDetector(const string fName){
 	case slsDetectorDefs::AGIPD:	actionLoadTrimbits->setText("Load Settings");  actionSaveTrimbits->setText("Save Settings"); break;
 	default:
 		string detName = myDet->slsDetectorBase::getDetectorType(detType);
+		qDefs::checkErrorMessage(myDet);
 		string errorMess = host+string(" has unknown detector type \"")+
 				detName+string("\". Exiting GUI.");
 		qDefs::Message(qDefs::CRITICAL,errorMess,"Main");
@@ -239,7 +245,7 @@ void qDetectorMain::SetUpDetector(const string fName){
 	cout << endl << "Type : " << slsDetectorBase::getDetectorType(detType) << "\nDetector : " << host << endl;
 //#endif
 	myDet->setOnline(slsDetectorDefs::ONLINE_FLAG);
-
+	qDefs::checkErrorMessage(myDet);
 }
 
 
@@ -378,6 +384,7 @@ void qDetectorMain::ExecuteUtilities(QAction *action){
 		cout << "Loading Setup" << endl;
 #endif
 		QString fName = QString(myDet->getFilePath().c_str());
+		qDefs::checkErrorMessage(myDet);
 		fName = QFileDialog::getOpenFileName(this,
 				tr("Load Detector Setup"),fName,
 				tr("Detector Setup files (*.det)"));
@@ -387,6 +394,7 @@ void qDetectorMain::ExecuteUtilities(QAction *action){
 				qDefs::Message(qDefs::INFORMATION,"The Setup Parameters have been loaded successfully.","Main");
 				refreshTabs=true;
 			}else qDefs::Message(qDefs::WARNING,string("Could not load the Setup Parameters from file:\n")+fName.toAscii().constData(),"Main");
+			qDefs::checkErrorMessage(myDet);
 		}
 	}
 	else if(action==actionSaveSetup){
@@ -394,6 +402,7 @@ void qDetectorMain::ExecuteUtilities(QAction *action){
 		cout << "Saving Setup" << endl;
 #endif
 		QString fName = QString(myDet->getFilePath().c_str());
+		qDefs::checkErrorMessage(myDet);
 		fName = QFileDialog::getSaveFileName(this,
 				tr("Save Current Detector Setup"),fName,
 				tr("Detector Setup files (*.det) "));
@@ -402,6 +411,7 @@ void qDetectorMain::ExecuteUtilities(QAction *action){
 			if(myDet->dumpDetectorSetup(string(fName.toAscii().constData()))!=slsDetectorDefs::FAIL)
 				qDefs::Message(qDefs::INFORMATION,"The Setup Parameters have been saved successfully.","Main");
 			else qDefs::Message(qDefs::WARNING,string("Could not save the Setup Parameters from file:\n")+fName.toAscii().constData(),"Main");
+			qDefs::checkErrorMessage(myDet);
 		}
 	}
 	else if(action==actionOpenConfiguration){
@@ -409,6 +419,7 @@ void qDetectorMain::ExecuteUtilities(QAction *action){
 		cout << "Loading Configuration" << endl;
 #endif
 		QString fName = QString(myDet->getFilePath().c_str());
+		qDefs::checkErrorMessage(myDet);
 		fName = QFileDialog::getOpenFileName(this,
 				tr("Load Detector Configuration"),fName,
 				tr("Configuration files (*.config)"));
@@ -418,6 +429,7 @@ void qDetectorMain::ExecuteUtilities(QAction *action){
 				qDefs::Message(qDefs::INFORMATION,"The Configuration Parameters have been configured successfully.","Main");
 				refreshTabs=true;
 			}else qDefs::Message(qDefs::WARNING,string("Could not load the Configuration Parameters from file:\n")+fName.toAscii().constData(),"Main");
+			qDefs::checkErrorMessage(myDet);
 		}
 	}
 	else if(action==actionSaveConfiguration){
@@ -425,6 +437,7 @@ void qDetectorMain::ExecuteUtilities(QAction *action){
 		cout << "Saving Configuration" << endl;
 #endif
 		QString fName = QString(myDet->getFilePath().c_str());
+		qDefs::checkErrorMessage(myDet);
 		fName = QFileDialog::getSaveFileName(this,
 				tr("Save Current Detector Configuration"),fName,
 				tr("Configuration files (*.config) "));
@@ -433,10 +446,12 @@ void qDetectorMain::ExecuteUtilities(QAction *action){
 			if(myDet->writeConfigurationFile(string(fName.toAscii().constData()))!=slsDetectorDefs::FAIL)
 				qDefs::Message(qDefs::INFORMATION,"The Configuration Parameters have been saved successfully.","Main");
 			else qDefs::Message(qDefs::WARNING,string("Could not save the Configuration Parameters from file:\n")+fName.toAscii().constData(),"Main");
+			qDefs::checkErrorMessage(myDet);
 		}
 	}
 	else if(action==actionLoadTrimbits){
 		QString fName = QString(myDet->getSettingsDir());
+		qDefs::checkErrorMessage(myDet);
 		//gotthard
 		if(actionLoadTrimbits->text().contains("Settings")){
 #ifdef VERBOSE
@@ -450,6 +465,7 @@ void qDetectorMain::ExecuteUtilities(QAction *action){
 				if(myDet->loadSettingsFile(string(fName.toAscii().constData()),-1)!=slsDetectorDefs::FAIL)
 					qDefs::Message(qDefs::INFORMATION,"The Settings have been loaded successfully.","Main");
 				else qDefs::Message(qDefs::WARNING,string("Could not load the Settings from file:\n")+fName.toAscii().constData(),"Main");
+				qDefs::checkErrorMessage(myDet);
 			}
 
 		}//mythen and eiger
@@ -466,6 +482,7 @@ void qDetectorMain::ExecuteUtilities(QAction *action){
 				if(myDet->loadSettingsFile(string(fName.toAscii().constData()),-1)!=slsDetectorDefs::FAIL)
 					qDefs::Message(qDefs::INFORMATION,"The Trimbits have been loaded successfully.","Main");
 				else qDefs::Message(qDefs::WARNING,string("Could not load the Trimbits from file:\n")+fName.toAscii().constData(),"Main");
+				qDefs::checkErrorMessage(myDet);
 			}
 		}
 	}
@@ -477,6 +494,7 @@ void qDetectorMain::ExecuteUtilities(QAction *action){
 #endif
 			//different output directory so as not to overwrite
 			QString fName = QString(myDet->getSettingsDir());
+			qDefs::checkErrorMessage(myDet);
 			fName = QFileDialog::getSaveFileName(this,
 					tr("Save Current Detector Settings"),fName,
 					tr("Settings files (*.settings settings.sn*) "));
@@ -485,6 +503,7 @@ void qDetectorMain::ExecuteUtilities(QAction *action){
 				if(myDet->saveSettingsFile(string(fName.toAscii().constData()),-1)!=slsDetectorDefs::FAIL)
 					qDefs::Message(qDefs::INFORMATION,"The Settings have been saved successfully.","Main");
 				else qDefs::Message(qDefs::WARNING,string("Could not save the Settings to file:\n")+fName.toAscii().constData(),"Main");
+				qDefs::checkErrorMessage(myDet);
 			}
 		}//mythen and eiger
 		else{
@@ -492,6 +511,7 @@ void qDetectorMain::ExecuteUtilities(QAction *action){
 			cout << "Saving Trimbits" << endl;
 #endif//different output directory so as not to overwrite
 			QString fName = QString(myDet->getSettingsDir());
+			qDefs::checkErrorMessage(myDet);
 			fName = QFileDialog::getSaveFileName(this,
 					tr("Save Current Detector Trimbits"),fName,
 					tr("Trimbit files (*.trim noise.sn*) "));
@@ -500,6 +520,7 @@ void qDetectorMain::ExecuteUtilities(QAction *action){
 				if(myDet->saveSettingsFile(string(fName.toAscii().constData()),-1)!=slsDetectorDefs::FAIL)
 					qDefs::Message(qDefs::INFORMATION,"The Trimbits have been saved successfully.","Main");
 				else qDefs::Message(qDefs::WARNING,string("Could not save the Trimbits to file:\n")+fName.toAscii().constData(),"Main");
+				qDefs::checkErrorMessage(myDet);
 			}
 		}
 	}
@@ -508,6 +529,7 @@ void qDetectorMain::ExecuteUtilities(QAction *action){
 		cout << "Loading Calibration Data" << endl;
 #endif
 		QString fName = QString(myDet->getCalDir());
+		qDefs::checkErrorMessage(myDet);
 		fName = QFileDialog::getOpenFileName(this,
 				tr("Load Detector Calibration Data"),fName,
 				tr("Calibration files (*.cal calibration.sn*)"));
@@ -516,6 +538,7 @@ void qDetectorMain::ExecuteUtilities(QAction *action){
 			if(myDet->loadCalibrationFile(string(fName.toAscii().constData()),-1)!=slsDetectorDefs::FAIL)
 				qDefs::Message(qDefs::INFORMATION,"The Calibration Data have been loaded successfully.","Main");
 			else qDefs::Message(qDefs::WARNING,string("Could not load the Calibration data from file:\n")+ fName.toAscii().constData(),"Main");
+			qDefs::checkErrorMessage(myDet);
 		}
 	}
 	else if(action==actionSaveCalibration){
@@ -523,6 +546,7 @@ void qDetectorMain::ExecuteUtilities(QAction *action){
 		cout << "Saving Calibration Data" << endl;
 #endif//different output directory so as not to overwrite
 		QString fName = QString(myDet->getCalDir());
+		qDefs::checkErrorMessage(myDet);
 		fName = QFileDialog::getSaveFileName(this,
 				tr("Save Current Detector Calibration Data"),fName,
 				tr("Calibration files (*.cal calibration.sn*) "));
@@ -531,7 +555,7 @@ void qDetectorMain::ExecuteUtilities(QAction *action){
 			if(myDet->saveCalibrationFile(string(fName.toAscii().constData()),-1)!=slsDetectorDefs::FAIL)
 				qDefs::Message(qDefs::INFORMATION,"The Calibration Data have been saved successfully.","Main");
 			else qDefs::Message(qDefs::WARNING,string("Could not save the Calibration data to file:\n")+fName.toAscii().constData(),"Main");
-
+			qDefs::checkErrorMessage(myDet);
 		}
 	}
 
@@ -539,14 +563,15 @@ void qDetectorMain::ExecuteUtilities(QAction *action){
 	if(refreshTabs){
 		tab_actions->Refresh();
 		tab_measurement->Refresh();
-		//tab_settings->Refresh();
-		//tab_dataoutput->Refresh();
-		//tab_advanced->Refresh();
-		//tab_debugging->Refresh();
-		//tab_developer->Refresh();
+
+		tab_settings->Refresh();
+		tab_dataoutput->Refresh();
+		if(tab_advanced->isEnabled())	tab_advanced->Refresh();
+		if(tab_debugging->isEnabled())	tab_debugging->Refresh();
+		if(tab_developer->isEnabled())	tab_developer->Refresh();
+
 		tab_plot->Refresh();
 	}
-	qDefs::checkErrorMessage(myDet);
 }
 
 
@@ -565,6 +590,7 @@ void qDetectorMain::ExecuteHelp(QAction *action){
 		string thisGUIVersion = string(version);
 
 		sprintf(version,"%llx",myDet->getId(slsDetectorDefs::THIS_SOFTWARE_VERSION));
+		qDefs::checkErrorMessage(myDet);
 		string thisClientVersion = string(version);
 
 		//<h1 style="font-family:verdana;">A heading</h1>
@@ -727,10 +753,19 @@ int qDetectorMain::StartStopAcquisitionFromClient(bool start){
 
 	if (tab_measurement->GetStartStatus() != start){
 		if(start){
-			//refresh all the required tabs
-			tab_actions->Refresh();
-			tab_measurement->Refresh();
-			tab_plot->Refresh();
+			if(!myPlot->isRunning()){
+				//refresh all the required tabs
+				tab_actions->Refresh();
+				tab_measurement->Refresh();
+
+				tab_settings->Refresh();
+				tab_dataoutput->Refresh();
+				if(tab_advanced->isEnabled())	tab_advanced->Refresh();
+				if(tab_debugging->isEnabled())	tab_debugging->Refresh();
+				if(tab_developer->isEnabled())	tab_developer->Refresh();
+
+				tab_plot->Refresh();
+			}
 		}
 		//click start/stop
 		tab_measurement->ClickStartStop();

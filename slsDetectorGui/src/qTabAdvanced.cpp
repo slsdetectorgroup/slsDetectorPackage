@@ -107,6 +107,7 @@ void qTabAdvanced::SetupWidgetWindow(){
 	comboDetector->setCurrentIndex(0);
 	det = myDet->getSlsDetector(comboDetector->currentIndex());
 
+	qDefs::checkErrorMessage(myDet);
 
 	spinControlPort->setValue(det->getControlPort());
 	spinStopPort->setValue(det->getStopPort());
@@ -144,6 +145,8 @@ void qTabAdvanced::SetupWidgetWindow(){
 	updateROIList();
 
 	Initialization();
+
+	qDefs::checkErrorMessage(det);
 
 }
 
@@ -243,6 +246,7 @@ void qTabAdvanced::SetLogs(){
 		checkedBox->setChecked(!enable);
 	}
 
+	qDefs::checkErrorMessage(myDet);
 }
 
 
@@ -257,6 +261,7 @@ void qTabAdvanced::SetExposureTime(){
 #endif
 	myDet->setTimer(slsDetectorDefs::ACQUISITION_TIME,(int64_t)exptimeNS);
 
+	qDefs::checkErrorMessage(myDet);
 }
 
 
@@ -268,6 +273,7 @@ void qTabAdvanced::SetThreshold(){
 	cout << "Setting Threshold DACu:" << spinThreshold->value() << endl;
 #endif
 	spinThreshold->setValue((double)myDet->setDAC((dacs_t)spinThreshold->value(),slsDetectorDefs::THRESHOLD));
+	qDefs::checkErrorMessage(myDet);
 }
 
 
@@ -323,6 +329,8 @@ void qTabAdvanced::SetOutputFile(){
 		lblFile->setText("Output Trim File:*");
 		btnStart->setEnabled(false);
 	}
+
+	qDefs::checkErrorMessage(myDet);
 }
 
 
@@ -461,6 +469,8 @@ void qTabAdvanced::StartTrimming(){
 		myPlot->UpdateTrimbitPlot(false,radioHistogram->isChecked());
 	}
 	else qDefs::Message(qDefs::WARNING,string("Could not Save the Trimbits to file:\n")+dispFile->text().toAscii().constData(),"Advanced");
+
+	qDefs::checkErrorMessage(myDet);
 }
 
 
@@ -485,7 +495,7 @@ void qTabAdvanced::SetControlPort(int port){
 	cout << "Setting Control Port:" << port << endl;
 #endif
 	disconnect(spinControlPort,	SIGNAL(valueChanged(int)),	this,	SLOT(SetControlPort(int)));
-	spinStopPort->setValue(det->setPort(slsDetectorDefs::CONTROL_PORT,port));
+	spinControlPort->setValue(det->setPort(slsDetectorDefs::CONTROL_PORT,port));
 	qDefs::checkErrorMessage(det);
 	connect(spinControlPort,	SIGNAL(valueChanged(int)),	this,	SLOT(SetControlPort(int)));
 }
@@ -499,7 +509,7 @@ void qTabAdvanced::SetStopPort(int port){
 	cout << "Setting Stop Port:" << port << endl;
 #endif
 	disconnect(spinStopPort,	SIGNAL(valueChanged(int)),	this,	SLOT(SetStopPort(int)));
-	spinControlPort->setValue(det->setPort(slsDetectorDefs::STOP_PORT,port));
+	spinStopPort->setValue(det->setPort(slsDetectorDefs::STOP_PORT,port));
 	qDefs::checkErrorMessage(det);
 	connect(spinStopPort,	SIGNAL(valueChanged(int)),	this,	SLOT(SetStopPort(int)));
 
@@ -638,6 +648,7 @@ void qTabAdvanced::updateROIList(){
 
 	int n,i;
 	slsDetectorDefs::ROI* temp = myDet->getROI(n);
+	qDefs::checkErrorMessage(myDet);
 
 	if((temp!=NULL)&&(n>0)){
 		//assign into array, else it loses values cuz of memory
@@ -656,6 +667,8 @@ void qTabAdvanced::updateROIList(){
 		}
 		cout << "ROIs populated: " << n << endl;
 	}
+
+
 }
 
 
@@ -760,6 +773,8 @@ void qTabAdvanced::AddROIInput(int num){
 #ifdef VERYVERBOSE
 	cout<<"ROI Inputs added " << num << endl;
 #endif
+
+	qDefs::checkErrorMessage(myDet);
 }
 
 
@@ -827,6 +842,7 @@ void qTabAdvanced::setROI(){
 	updateROIList();
 	//configuremac
 	myDet->configureMAC();
+
 	qDefs::checkErrorMessage(myDet);
 }
 
@@ -904,6 +920,8 @@ void qTabAdvanced::SetDetector(int index){
 			lblRxrOnline->setText("Online:");
 		}
 	}
+
+	qDefs::checkErrorMessage(det);
 }
 
 
@@ -981,6 +999,8 @@ void qTabAdvanced::Refresh(){
 
 	//network
 	det = myDet->getSlsDetector(comboDetector->currentIndex());
+
+	qDefs::checkErrorMessage(myDet);
 
 	//disconnect
 	disconnect(spinControlPort,	SIGNAL(valueChanged(int)),			this,	SLOT(SetControlPort(int)));
@@ -1063,7 +1083,6 @@ void qTabAdvanced::Refresh(){
 		}
 	}
 
-
 	//roi
 	updateROIList();
 
@@ -1071,6 +1090,8 @@ void qTabAdvanced::Refresh(){
 #ifdef VERBOSE
 		cout  << "**Updated Advanced Tab" << endl << endl;
 #endif
+
+	qDefs::checkErrorMessage(det);
 }
 
 

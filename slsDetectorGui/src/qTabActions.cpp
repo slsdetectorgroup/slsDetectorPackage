@@ -200,6 +200,7 @@ void qTabActions::SetupWidgetWindow(){
 	}
 
 
+	qDefs::checkErrorMessage(myDet);
 }
 
 
@@ -342,6 +343,8 @@ void qTabActions::Expand(QAbstractButton *button ){
 			setFixedHeight(height()+30);
 		}
 	}
+
+	qDefs::checkErrorMessage(myDet);
 }
 
 
@@ -391,6 +394,7 @@ void qTabActions::SetPosition(){
 		qDefs::Message(qDefs::WARNING,"The positions list was not set for some reason.","Actions");
 
 
+	qDefs::checkErrorMessage(myDet);
 }
 
 
@@ -442,6 +446,7 @@ void qTabActions::EnablePositions(bool enable){
 		btnExpand[NumPositions]->setEnabled(false);
 	}
 
+	qDefs::checkErrorMessage(myDet);
 }
 
 
@@ -499,6 +504,7 @@ void qTabActions::Refresh(){
 #ifdef VERBOSE
 	cout << "**Updated all action widgets: " << endl << endl;
 #endif
+	qDefs::checkErrorMessage(myDet);
 }
 
 

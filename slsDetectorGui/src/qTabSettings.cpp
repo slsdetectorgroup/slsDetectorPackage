@@ -64,6 +64,7 @@ void qTabSettings::SetupWidgetWindow(){
 	default:	comboDynamicRange->setCurrentIndex(0);	break;
 	}
 
+	qDefs::checkErrorMessage(myDet);
 }
 
 //-------------------------------------------------------------------------------------------------------------------------------------------------
@@ -71,6 +72,7 @@ void qTabSettings::SetupWidgetWindow(){
 void qTabSettings::SetupDetectorSettings(){
 	// Get detector settings from detector
 	slsDetectorDefs::detectorSettings sett = myDet->getSettings();
+	qDefs::checkErrorMessage(myDet);
 	if(sett==-1) sett = slsDetectorDefs::UNDEFINED;
 	// To be able to index items on a combo box
 	model = qobject_cast<QStandardItemModel*>(comboSettings->model());
@@ -169,55 +171,61 @@ void qTabSettings::setSettings(int index){
 			if(expertMode)	emit UpdateTrimbitSignal(0);
 		}
 	}
+
+	qDefs::checkErrorMessage(myDet);
 }
 
 //-------------------------------------------------------------------------------------------------------------------------------------------------
 
 void qTabSettings::SetNumberOfModules(int index){
 #ifdef VERBOSE
-  cout << "Setting number of modules to "<< index << endl;
+	cout << "Setting number of modules to "<< index << endl;
 #endif
-  int i = myDet->setNumberOfModules(index);
-  if(index!=i)
-	  qDefs::Message(qDefs::WARNING,"Number of modules cannot be set for this value.","Settings");
+	int i = myDet->setNumberOfModules(index);
+	if(index!=i)
+		qDefs::Message(qDefs::WARNING,"Number of modules cannot be set for this value.","Settings");
 #ifdef VERBOSE
-	  cout << "ERROR: Setting number of modules to "<< i << endl;
+	cout << "ERROR: Setting number of modules to "<< i << endl;
 #endif
-	  spinNumModules->setValue(i);
+	spinNumModules->setValue(i);
+
+	qDefs::checkErrorMessage(myDet);
 }
 
 //-------------------------------------------------------------------------------------------------------------------------------------------------
 
 
 void qTabSettings::SetDynamicRange(int index){
-  int ret,dr;
-  switch (index) {
-  case 0:    dr=32;		break;
-  case 1:    dr=16;  	break;
-  case 2:    dr=8;   	break;
-  case 3:    dr=4;   	break;
-  default:   dr=32;  	break;
-  }
-  ret=myDet->setDynamicRange(dr);
-  if((ret==24)&&(dr==32)) dr = ret;
+	int ret,dr;
+	switch (index) {
+	case 0:    dr=32;		break;
+	case 1:    dr=16;  	break;
+	case 2:    dr=8;   	break;
+	case 3:    dr=4;   	break;
+	default:   dr=32;  	break;
+	}
+	ret=myDet->setDynamicRange(dr);
+	if((ret==24)&&(dr==32)) dr = ret;
 #ifdef VERBOSE
-  cout << "Setting dynamic range to "<< dr << endl;
+	cout << "Setting dynamic range to "<< dr << endl;
 #endif
-  if(ret!=dr){
-	  qDefs::Message(qDefs::WARNING,"Dynamic Range cannot be set to this value.","Settings");
+	if(ret!=dr){
+		qDefs::Message(qDefs::WARNING,"Dynamic Range cannot be set to this value.","Settings");
 #ifdef VERBOSE
-	  cout << "ERROR: Setting dynamic range to "<< ret << endl;
+		cout << "ERROR: Setting dynamic range to "<< ret << endl;
 #endif
-	  switch(ret){
-	  case 32:  comboDynamicRange->setCurrentIndex(0);	break;
-	  case 24:  comboDynamicRange->setCurrentIndex(0);	break;
-	  case 16:	comboDynamicRange->setCurrentIndex(1);  break;
-	  case 8:	comboDynamicRange->setCurrentIndex(2);	break;
-	  case 4:	comboDynamicRange->setCurrentIndex(3);	break;
-	  default:	comboDynamicRange->setCurrentIndex(0);	break;
-	  }
-  }
-};
+		switch(ret){
+		case 32:  comboDynamicRange->setCurrentIndex(0);	break;
+		case 24:  comboDynamicRange->setCurrentIndex(0);	break;
+		case 16:	comboDynamicRange->setCurrentIndex(1);  break;
+		case 8:	comboDynamicRange->setCurrentIndex(2);	break;
+		case 4:	comboDynamicRange->setCurrentIndex(3);	break;
+		default:	comboDynamicRange->setCurrentIndex(0);	break;
+		}
+	}
+
+	qDefs::checkErrorMessage(myDet);
+}
 
 
 //-------------------------------------------------------------------------------------------------------------------------------------------------
@@ -226,16 +234,18 @@ void qTabSettings::SetDynamicRange(int index){
 void qTabSettings::SetEnergy(){
 	int index = spinThreshold->value();
 #ifdef VERBOSE
-		cout << "Settings threshold energy to "<< index << endl;
+	cout << "Settings threshold energy to "<< index << endl;
 #endif
-		myDet->setThresholdEnergy(index);
-		int ret = (int)myDet->getThresholdEnergy();
-		if((ret-index)>200){
-			qDefs::Message(qDefs::WARNING,"Threshold energy could not be set. The difference is greater than 200.","Settings");
-		}
-		disconnect(spinThreshold,	SIGNAL(valueChanged(int)),	this, SLOT(SetEnergy()));
-		spinThreshold->setValue(ret);
-		connect(spinThreshold,		SIGNAL(valueChanged(int)),	this, SLOT(SetEnergy()));
+	myDet->setThresholdEnergy(index);
+	int ret = (int)myDet->getThresholdEnergy();
+	if((ret-index)>200){
+		qDefs::Message(qDefs::WARNING,"Threshold energy could not be set. The difference is greater than 200.","Settings");
+	}
+	disconnect(spinThreshold,	SIGNAL(valueChanged(int)),	this, SLOT(SetEnergy()));
+	spinThreshold->setValue(ret);
+	connect(spinThreshold,		SIGNAL(valueChanged(int)),	this, SLOT(SetEnergy()));
+
+	qDefs::checkErrorMessage(myDet);
 }
 
 
@@ -299,6 +309,8 @@ void qTabSettings::Refresh(){
 #ifdef VERBOSE
 	cout  << "**Updated Settings Tab" << endl << endl;
 #endif
+
+	qDefs::checkErrorMessage(myDet);
 }
 
 

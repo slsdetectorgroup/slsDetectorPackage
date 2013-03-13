@@ -27,7 +27,7 @@ class qServer: public virtual slsDetectorDefs{
 
 public:
 	/** \short The constructor	 */
-	qServer(multiSlsDetector*& detector, qDetectorMain *t);
+	qServer(qDetectorMain *t);
 	/** Destructor	 */
 	~qServer();
 
@@ -78,8 +78,6 @@ private:
 
 
 
-	/** The multi detector object */
-	multiSlsDetector *myDet;
 	/**The measurement tab object*/
 	qDetectorMain *myMainTab;
 

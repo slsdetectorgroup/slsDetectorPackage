@@ -29,7 +29,9 @@ using namespace std;
 
 class qStreamEvent:public QEvent{
 public:
-	qStreamEvent(QString s):QEvent(static_cast<QEvent::Type>(STREAMEVENT)),str(s){}
+	qStreamEvent(QString s):QEvent(static_cast<QEvent::Type>(STREAMEVENT)),str(s){
+		printf("%s\n",str.toAscii().constData());
+	}
 	/** \returns the progress index */
 	QString getString() {return str;}
 private:

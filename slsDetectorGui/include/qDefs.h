@@ -226,9 +226,10 @@ static const int64_t GUI_VERSION=0x20121213;
 		int errorLevel= (int)WARNING;
 		string retval="";
 		size_t pos;
+		int64_t emask=0;
 
-
-		retval = myDet->getErrorMessage(errorLevel);
+		emask = myDet->getErrorMask();
+		retval = myDet->getErrorMessage(emask);
 
 		if(!retval.empty()){
 

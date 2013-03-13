@@ -411,6 +411,8 @@ int qScanWidget::SetScan(int mode){
 
 	emit EnableScanBox();
 
+	qDefs::checkErrorMessage(myDet);
+
 	return qDefs::OK;
 }
 
@@ -500,6 +502,8 @@ void qScanWidget::SetScriptFile(){
 	for(int i=1;i<NumModes;i++)
 		if(!fName.compare(QString(modeNames[i].c_str())))
 			  dispScript->setText("");
+
+	qDefs::checkErrorMessage(myDet);
 }
 
 
@@ -524,6 +528,8 @@ void qScanWidget::SetParameter(){
 	for(int i=1;i<NumModes;i++)
 		if(!parameter.compare(QString(modeNames[i].c_str())))
 			dispParameter->setText("");
+
+	qDefs::checkErrorMessage(myDet);
 }
 
 
@@ -540,6 +546,8 @@ void qScanWidget::SetPrecision(int value){
 	myDet->setScanPrecision(id,value);
 	if(myDet->getScanPrecision(id)!=value)
 		qDefs::Message(qDefs::WARNING,"The precision was not set for an unknown reason.","ScanWidget");;
+
+	qDefs::checkErrorMessage(myDet);
 }
 
 
@@ -844,6 +852,8 @@ void qScanWidget::SetRangeSteps(){
 #endif
 		}
 	}
+
+	qDefs::checkErrorMessage(myDet);
 }
 //-------------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -910,6 +920,7 @@ int qScanWidget::SetCustomSteps(){
 				qDefs::Message(qDefs::WARNING,"The positions list was not set for an unknown reason.","ScanWidget");
 				LoadPositions();
 				comboScript->setCurrentIndex(myDet->getScanMode(id));
+				qDefs::checkErrorMessage(myDet);
 				return qDefs::FAIL;
 			}
 			//else success is checked in enabledsizewidgets , else it does this for every add, delete etc
@@ -1095,6 +1106,8 @@ void qScanWidget::SetFileSteps(){
 		spinSteps->setValue(actualNumSteps);
 		connect(spinSteps,		SIGNAL(valueChanged(int)), 	this, SLOT(SetNSteps()));
 	}
+
+	qDefs::checkErrorMessage(myDet);
 }
 
 
@@ -1184,7 +1197,7 @@ void qScanWidget::LoadPositions(){
 	connect(spinSteps,		SIGNAL(valueChanged(int)), 			this, SLOT(SetNSteps()));
 	connect(btnGroup,		SIGNAL(buttonClicked(QAbstractButton*)),this,SLOT(EnableSizeWidgets()));
 
-
+	qDefs::checkErrorMessage(myDet);
 	//do not set the range variables because if the stepsize is by any chance 0..
 	//then the number of steps should change to 1. so only set custom steps
 }
@@ -1225,6 +1238,8 @@ void qScanWidget::Refresh(){
 			"parameter:" << parameter << "\t"
 			"precision:" << precision << "\t***" << endl;
 #endif
+
+	qDefs::checkErrorMessage(myDet);
 }
 
 

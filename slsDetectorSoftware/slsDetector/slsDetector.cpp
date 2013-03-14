@@ -293,7 +293,6 @@ slsDetectorDefs::detectorType slsDetector::getDetectorType(const char *name, int
     s->Disconnect();
   } else {
     cout << "Cannot connect to server " << name << " over port " << cport << endl;
-    setErrorMask((getErrorMask())|(CANNOT_CONNECT_TO_DETECTOR));
   }
 
   delete s;

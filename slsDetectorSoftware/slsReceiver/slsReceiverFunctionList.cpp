@@ -483,7 +483,10 @@ int slsReceiverFunctionList::startWriting(){
 					if (cbAction<2) {
 						rawDataReadyCallBack(currframenum, wbuf,sfilefd, guiData,pRawDataReady);
 					} else {
-						fwrite(wbuf, 1, bufferSize, sfilefd);
+						if(sfilefd)
+							fwrite(wbuf, 1, bufferSize, sfilefd);
+						else
+							cout << "You do not have permissions to overwrite: " << savefilename << endl;
 					}
 
 				}

@@ -834,12 +834,22 @@ void  slsDetector::deleteModule(sls_detector_module *myMod) {
 
 
 int slsDetector::sendChannel(sls_detector_channel *myChan) {
-  return  controlSocket->SendDataOnly(myChan, sizeof(sls_detector_channel));
+	int ts=0;
+	if(thisDetector->myDetectorType == MYTHEN)
+		return  controlSocket->SendDataOnly(myChan, sizeof(sls_detector_channel));
+	else{
+		ts+=controlSocket->SendDataOnly(myChan, 12 );
+		ts+=controlSocket->SendDataOnly(&(myChan->reg), 8 );
+		return(ts);
+	}
 }
 
 int slsDetector::sendChip(sls_detector_chip *myChip) {
   int ts=0;
-  ts+=controlSocket->SendDataOnly(myChip,sizeof(sls_detector_chip));
+  if(thisDetector->myDetectorType == MYTHEN)
+	  ts+=controlSocket->SendDataOnly(myChip,sizeof(sls_detector_chip));
+  else
+	  ts+=controlSocket->SendDataOnly(myChip,20); // 4 ints + pointless pointer
 #ifdef VERY_VERBOSE
   std::cout<< "chip structure sent" << std::endl;
   std::cout<< "now sending " << myChip->nchan << " channles" << std::endl;
@@ -855,7 +865,14 @@ int slsDetector::sendChip(sls_detector_chip *myChip) {
 
 int slsDetector::sendModule(sls_detector_module *myMod) {
   int ts=0;
-  ts+=controlSocket->SendDataOnly(myMod,sizeof(sls_detector_module));
+  if(thisDetector->myDetectorType == MYTHEN)
+	  ts+=controlSocket->SendDataOnly(myMod,sizeof(sls_detector_module));
+  else{
+	  ts+=controlSocket->SendDataOnly(myMod, 7*sizeof(int) + 16); // 7 ints + 4 useless pointers, considering 32bit os
+	  ts+=controlSocket->SendDataOnly(&(myMod->gain), sizeof(double));
+	  ts+=controlSocket->SendDataOnly(&(myMod->offset), sizeof(double));
+  }
+
   ts+=controlSocket->SendDataOnly(myMod->dacs,sizeof(dacs_t)*(myMod->ndac));
   ts+=controlSocket->SendDataOnly(myMod->adcs,sizeof(dacs_t)*(myMod->nadc));
   ts+=controlSocket->SendDataOnly(myMod->chipregs,sizeof(int)*(myMod->nchip));

@@ -30,7 +30,9 @@ using namespace std;
 class qStreamEvent:public QEvent{
 public:
 	qStreamEvent(QString s):QEvent(static_cast<QEvent::Type>(STREAMEVENT)),str(s){
+#ifdef PRINT_LOG
 		printf("%s\n",str.toAscii().constData());
+#endif
 	}
 	/** \returns the progress index */
 	QString getString() {return str;}

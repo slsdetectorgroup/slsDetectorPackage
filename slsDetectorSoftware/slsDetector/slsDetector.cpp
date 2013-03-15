@@ -1605,7 +1605,8 @@ int64_t slsDetector::getId( idMode mode, int imod){
     retval=(retval<<32) | SVNDATELIB;
   } else if (mode==RECEIVER_VERSION) {
     if (setReceiverOnline(ONLINE_FLAG)==ONLINE_FLAG) {
-      ret=thisReceiver->getInt(fnum,retval);
+      if (connectData() == OK)
+    	  ret=thisReceiver->getInt(fnum,retval);
       if(ret==FORCE_UPDATE)
 	ret=updateReceiver();
     }
@@ -4745,8 +4746,8 @@ int slsDetector::setUDPConnection(){
 #ifdef VERBOSE
 		std::cout << "Setting up UDP Connection for Receiver " << args[0] << "\t" << args[1] << std::endl;
 #endif
-
-		ret=thisReceiver->sendUDPDetails(fnum,retval,args);
+		if (connectData() == OK)
+			ret=thisReceiver->sendUDPDetails(fnum,retval,args);
 		if(ret!=FAIL){
 			strcpy(thisDetector->receiverUDPMAC,retval);
 
@@ -4902,7 +4903,8 @@ int slsDetector::configureMAC(){
 #ifdef VERBOSE
 	std::cout << "Sending adc val to receiver " << retval << std::endl;
 #endif
-	ret=thisReceiver->sendInt(fnum,retval,retval);
+	if (connectData() == OK)
+		ret=thisReceiver->sendInt(fnum,retval,retval);
 	if(ret==FAIL)
 	  setErrorMask((getErrorMask())|(COULD_NOT_CONFIGURE_MAC));
       }
@@ -5699,7 +5701,8 @@ string slsDetector::setFilePath(string s) {
 #ifdef VERBOSE
 		std::cout << "Sending file path to receiver " << arg << std::endl;
 #endif
-		ret=thisReceiver->sendString(fnum,retval,arg);
+		if (connectData() == OK)
+			ret=thisReceiver->sendString(fnum,retval,arg);
 		if(ret!=FAIL)
 			fileIO::setFilePath(string(retval));
 		if(ret==FORCE_UPDATE)
@@ -5729,7 +5732,8 @@ string slsDetector::setFileName(string s) {
 #ifdef VERBOSE
 			std::cout << "Sending file name to receiver " << arg << std::endl;
 #endif
-			ret=thisReceiver->sendString(fnum,retval,arg);
+			if (connectData() == OK)
+				ret=thisReceiver->sendString(fnum,retval,arg);
 			if(ret!=FAIL){
 #ifdef VERBOSE
 				std::cout << "Complete file prefix from receiver: " << retval << std::endl;
@@ -5763,7 +5767,8 @@ int slsDetector::setFileIndex(int i) {
 #ifdef VERBOSE
 		std::cout << "Sending file index to receiver " << arg << std::endl;
 #endif
-		ret=thisReceiver->sendInt(fnum,retval,arg);
+		if (connectData() == OK)
+			ret=thisReceiver->sendInt(fnum,retval,arg);
 		if(ret!=FAIL)
 			fileIO::setFileIndex(retval);
 		if(ret==FORCE_UPDATE)
@@ -5784,7 +5789,8 @@ int slsDetector::startReceiver(){
 #ifdef VERBOSE
 		std::cout << "Starting Receiver " << std::endl;
 #endif
-		ret=thisReceiver->executeFunction(fnum);
+		if (connectData() == OK)
+			ret=thisReceiver->executeFunction(fnum);
 		if(ret==FORCE_UPDATE)
 			ret=updateReceiver();
 	}
@@ -5807,7 +5813,8 @@ int slsDetector::stopReceiver(){
 #ifdef VERBOSE
 		std::cout << "Stopping Receiver " << std::endl;
 #endif
-		ret=thisReceiver->executeFunction(fnum);
+		if (connectData() == OK)
+			ret=thisReceiver->executeFunction(fnum);
 		if(ret==FORCE_UPDATE)
 			ret=updateReceiver();
 	}

@@ -835,71 +835,89 @@ void  slsDetector::deleteModule(sls_detector_module *myMod) {
 
 int slsDetector::sendChannel(sls_detector_channel *myChan) {
 	int ts=0;
-	if(thisDetector->myDetectorType == MYTHEN)
-		return  controlSocket->SendDataOnly(myChan, sizeof(sls_detector_channel));
-	else{
-		ts+=controlSocket->SendDataOnly(myChan, 12 );
-		ts+=controlSocket->SendDataOnly(&(myChan->reg), 8 );
-		return(ts);
-	}
+	ts+=controlSocket->SendDataOnly(&(myChan->chan),sizeof(myChan->chan));
+	ts+=controlSocket->SendDataOnly(&(myChan->chip),sizeof(myChan->chip));
+	ts+=controlSocket->SendDataOnly(&(myChan->module),sizeof(myChan->module));
+	ts=controlSocket->SendDataOnly(&(myChan->reg),sizeof(myChan->reg));
+	return ts;
 }
 
 int slsDetector::sendChip(sls_detector_chip *myChip) {
-  int ts=0;
-  if(thisDetector->myDetectorType == MYTHEN)
-	  ts+=controlSocket->SendDataOnly(myChip,sizeof(sls_detector_chip));
-  else
-	  ts+=controlSocket->SendDataOnly(myChip,20); // 4 ints + pointless pointer
+	int ts=0;
+	//send chip structure
+	ts+=controlSocket->SendDataOnly(&(myChip->chip),sizeof(myChip->chip));
+	ts+=controlSocket->SendDataOnly(&(myChip->module),sizeof(myChip->module));
+	ts+=controlSocket->SendDataOnly(&(myChip->nchan),sizeof(myChip->nchan));
+	ts+=controlSocket->SendDataOnly(&(myChip->reg),sizeof(myChip->reg));
+	ts+=controlSocket->SendDataOnly(myChip->chanregs,sizeof(myChip->chanregs));
 #ifdef VERY_VERBOSE
-  std::cout<< "chip structure sent" << std::endl;
-  std::cout<< "now sending " << myChip->nchan << " channles" << std::endl;
+	std::cout<< "chip structure sent" << std::endl;
+	std::cout<< "now sending " << myChip->nchan << " channles" << std::endl;
 #endif
-
-  ts=controlSocket->SendDataOnly(myChip->chanregs,sizeof(int)*myChip->nchan );
-
+	ts=controlSocket->SendDataOnly(myChip->chanregs,sizeof(int)*myChip->nchan );
 #ifdef VERBOSE
-  std::cout<< "chip's channels sent " <<ts  << std::endl;
+	std::cout<< "chip's channels sent " <<ts<< std::endl;
 #endif
-  return ts;			  
+	return ts;
 }
 
 int slsDetector::sendModule(sls_detector_module *myMod) {
-  int ts=0;
-  if(thisDetector->myDetectorType == MYTHEN)
-	  ts+=controlSocket->SendDataOnly(myMod,sizeof(sls_detector_module));
-  else{
-	  ts+=controlSocket->SendDataOnly(myMod, 7*sizeof(int) + 16); // 7 ints + 4 useless pointers, considering 32bit os
-	  ts+=controlSocket->SendDataOnly(&(myMod->gain), sizeof(double));
-	  ts+=controlSocket->SendDataOnly(&(myMod->offset), sizeof(double));
-  }
+	int ts=0;
+	//send module structure
+	ts+=controlSocket->SendDataOnly(&(myMod->module),sizeof(myMod->module));
+	ts+=controlSocket->SendDataOnly(&(myMod->serialnumber),sizeof(myMod->serialnumber));
+	ts+=controlSocket->SendDataOnly(&(myMod->nchan),sizeof(myMod->nchan));
+	ts+=controlSocket->SendDataOnly(&(myMod->nchip),sizeof(myMod->nchip));
+	ts+=controlSocket->SendDataOnly(&(myMod->ndac),sizeof(myMod->ndac));
+	ts+=controlSocket->SendDataOnly(&(myMod->nadc),sizeof(myMod->nadc));
+	ts+=controlSocket->SendDataOnly(&(myMod->reg),sizeof(myMod->reg));
+	ts+=controlSocket->SendDataOnly(myMod->dacs,sizeof(myMod->ndac));
+	ts+=controlSocket->SendDataOnly(myMod->adcs,sizeof(myMod->nadc));
+	ts+=controlSocket->SendDataOnly(myMod->chipregs,sizeof(myMod->nchip));
+	ts+=controlSocket->SendDataOnly(myMod->chanregs,sizeof(myMod->nchan));
+	ts+=controlSocket->SendDataOnly(&(myMod->gain), sizeof(myMod->gain));
+	ts+=controlSocket->SendDataOnly(&(myMod->offset), sizeof(myMod->offset));
 
-  ts+=controlSocket->SendDataOnly(myMod->dacs,sizeof(dacs_t)*(myMod->ndac));
-  ts+=controlSocket->SendDataOnly(myMod->adcs,sizeof(dacs_t)*(myMod->nadc));
-  ts+=controlSocket->SendDataOnly(myMod->chipregs,sizeof(int)*(myMod->nchip));
-  ts+=controlSocket->SendDataOnly(myMod->chanregs,sizeof(int)*(myMod->nchan));
-  return ts;
+	ts+=controlSocket->SendDataOnly(myMod->dacs,sizeof(dacs_t)*(myMod->ndac));
+	ts+=controlSocket->SendDataOnly(myMod->adcs,sizeof(dacs_t)*(myMod->nadc));
+	ts+=controlSocket->SendDataOnly(myMod->chipregs,sizeof(int)*(myMod->nchip));
+	ts+=controlSocket->SendDataOnly(myMod->chanregs,sizeof(int)*(myMod->nchan));
+
+	return ts;
 }
 
 int slsDetector::receiveChannel(sls_detector_channel *myChan) {
-  return controlSocket->ReceiveDataOnly(myChan,sizeof(sls_detector_channel));
+	int ts=0;
+	ts+=controlSocket->ReceiveDataOnly(&(myChan->chan),sizeof(myChan->chan));
+	ts+=controlSocket->ReceiveDataOnly(&(myChan->chip),sizeof(myChan->chip));
+	ts+=controlSocket->ReceiveDataOnly(&(myChan->module),sizeof(myChan->module));
+	ts=controlSocket->ReceiveDataOnly(&(myChan->reg),sizeof(myChan->reg));
+	return ts;
 }
 
 int slsDetector::receiveChip(sls_detector_chip* myChip) {
-  int *ptr=myChip->chanregs;
-  int nchanold=myChip->nchan;
-  int ts=0;
-  int nch;
-  ts+=controlSocket->ReceiveDataOnly(myChip,sizeof(sls_detector_chip));
-  myChip->chanregs=ptr;
-  if (nchanold<(myChip->nchan)) {
-    nch=nchanold;
-    printf("number of channels received is too large!\n");
-  } else
-    nch=myChip->nchan;
+	int *ptr=myChip->chanregs;
+	int nchanold=myChip->nchan;
+	int ts=0;
+	int nch;
 
-  ts+=controlSocket->ReceiveDataOnly(myChip->chanregs,sizeof(int)*nch);
- 
-  return ts;
+	//receive chip structure
+	ts+=controlSocket->ReceiveDataOnly(&(myChip->chip),sizeof(myChip->chip));
+	ts+=controlSocket->ReceiveDataOnly(&(myChip->module),sizeof(myChip->module));
+	ts+=controlSocket->ReceiveDataOnly(&(myChip->nchan),sizeof(myChip->nchan));
+	ts+=controlSocket->ReceiveDataOnly(&(myChip->reg),sizeof(myChip->reg));
+	ts+=controlSocket->ReceiveDataOnly(myChip->chanregs,sizeof(myChip->chanregs));
+
+	myChip->chanregs=ptr;
+	if (nchanold<(myChip->nchan)) {
+		nch=nchanold;
+		printf("number of channels received is too large!\n");
+	} else
+		nch=myChip->nchan;
+
+	ts+=controlSocket->ReceiveDataOnly(myChip->chanregs,sizeof(int)*nch);
+
+	return ts;
 }
 
 int  slsDetector::receiveModule(sls_detector_module* myMod) {
@@ -909,7 +927,22 @@ int  slsDetector::receiveModule(sls_detector_module* myMod) {
   int *chipptr=myMod->chipregs;
   int *chanptr=myMod->chanregs;
   int ts=0;
-  ts+=controlSocket->ReceiveDataOnly(myMod,sizeof(sls_detector_module));
+	//send module structure
+	ts+=controlSocket->ReceiveDataOnly(&(myMod->module),sizeof(myMod->module));
+	ts+=controlSocket->ReceiveDataOnly(&(myMod->serialnumber),sizeof(myMod->serialnumber));
+	ts+=controlSocket->ReceiveDataOnly(&(myMod->nchan),sizeof(myMod->nchan));
+	ts+=controlSocket->ReceiveDataOnly(&(myMod->nchip),sizeof(myMod->nchip));
+	ts+=controlSocket->ReceiveDataOnly(&(myMod->ndac),sizeof(myMod->ndac));
+	ts+=controlSocket->ReceiveDataOnly(&(myMod->nadc),sizeof(myMod->nadc));
+	ts+=controlSocket->ReceiveDataOnly(&(myMod->reg),sizeof(myMod->reg));
+	ts+=controlSocket->ReceiveDataOnly(myMod->dacs,sizeof(myMod->ndac));
+	ts+=controlSocket->ReceiveDataOnly(myMod->adcs,sizeof(myMod->nadc));
+	ts+=controlSocket->ReceiveDataOnly(myMod->chipregs,sizeof(myMod->nchip));
+	ts+=controlSocket->ReceiveDataOnly(myMod->chanregs,sizeof(myMod->nchan));
+	ts+=controlSocket->ReceiveDataOnly(&(myMod->gain), sizeof(myMod->gain));
+	ts+=controlSocket->ReceiveDataOnly(&(myMod->offset), sizeof(myMod->offset));
+
+
   myMod->dacs=dacptr;
   myMod->adcs=adcptr;
   myMod->chipregs=chipptr;

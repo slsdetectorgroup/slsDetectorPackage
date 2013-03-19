@@ -1332,12 +1332,12 @@ slsDetectorDefs::detectorType slsDetector::getDetectorsType(int pos){
 // if n=GET_FLAG returns the number of installed modules,
 int slsDetector::setNumberOfModules(int n, dimension d){
 
-  int arg[2], retval;
+  int arg[2], retval=1;
   int fnum=F_SET_NUMBER_OF_MODULES;
   int ret=FAIL;
-  char mess[100];
+  char mess[100]="dummy";
   int connect;
-
+  int num;
 
   arg[0]=d;
   arg[1]=n;
@@ -1358,11 +1358,11 @@ int slsDetector::setNumberOfModules(int n, dimension d){
     if (connect == UNDEFINED)
       cout << "no control socket?" << endl;
     else if (connect == OK){
-      controlSocket->SendDataOnly(&fnum,sizeof(fnum));
-      controlSocket->SendDataOnly(&arg,sizeof(arg));
-      controlSocket->ReceiveDataOnly(&ret,sizeof(ret));
+      num = controlSocket->SendDataOnly(&fnum,sizeof(fnum));
+      num = controlSocket->SendDataOnly(&arg,sizeof(arg));
+      num = controlSocket->ReceiveDataOnly(&ret,sizeof(ret));
       if (ret!=FAIL) {
-	controlSocket->ReceiveDataOnly(&retval,sizeof(retval));
+	num = controlSocket->ReceiveDataOnly(&retval,sizeof(retval));
       }	else {
 	controlSocket->ReceiveDataOnly(mess,sizeof(mess));
 	std::cout<< "Detector returned error: " << mess << std::endl;

@@ -3493,7 +3493,7 @@ int multiSlsDetector::setNumberOfModules(int p, dimension d) {
       thisMultiDetector->dataBytes+=detectors[idet]->getDataBytes();
       thisMultiDetector->numberOfChannels+=detectors[idet]->getTotalNumberOfChannels();
     }
-  }  
+  }
   return ret;
 
 }

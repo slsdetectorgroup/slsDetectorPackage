@@ -27,7 +27,7 @@ public:
 	/** \short The constructor*/
 	qClient(char* hostname);
 	/** Destructor	 */
-	virtual ~qClient(){};
+	virtual ~qClient();
 
 	/**Execute command*/
 	int executeLine(int narg, char *args[]);
@@ -44,6 +44,7 @@ private:
 
 	/** client socket */
 	MySocketTCP *mySocket;
+
 };
 
 

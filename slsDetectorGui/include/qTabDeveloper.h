@@ -72,6 +72,10 @@ public:
 	 */
 	void Refresh();
 
+	/** To stop ADC Timer when starting acquisition
+	 */
+	void StopADCTimer(){adcTimer->stop();};
+
 private:
 	/** The sls detector object */
 	multiSlsDetector *myDet;

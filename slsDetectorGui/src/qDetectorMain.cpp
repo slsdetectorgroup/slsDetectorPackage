@@ -721,14 +721,20 @@ void qDetectorMain::EnableTabs(){
 
 	//moved to here, so that its all in order, instead of signals and different threads
 	if(!enable) {
+		//stop the adc timer in gotthard
+		if(tab_developer->isEnabled())
+			tab_developer->StopADCTimer();
 		//set the plot type first(acccss shared memory)
 		tab_plot->SetScanArgument();
 		//sets running to true
 		myPlot->StartStopDaqToggle();
 	}
-	else//to enable scan box
+	else{//to enable scan box
 		tab_plot->Refresh();
-
+		//to start adc timer
+		if(tab_developer->isEnabled())
+			tab_developer->Refresh();
+	}
 }
 
 

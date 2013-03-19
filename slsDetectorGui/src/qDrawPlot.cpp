@@ -46,10 +46,10 @@ qDrawPlot::~qDrawPlot(){
 	Clear1DPlot();
 	for(QVector<SlsQtH1D*>::iterator h = plot1D_hists.begin();h!=plot1D_hists.end();h++)	delete *h;
 	plot1D_hists.clear();
-	delete[] lastImageArray; lastImageArray=0;
+	if(lastImageArray) delete[] lastImageArray; lastImageArray=0;
 	StartOrStopThread(0);
 	delete myDet;
-	for(int i=0;i<MAXCloneWindows;i++) delete winClone[i];
+	for(int i=0;i<MAXCloneWindows;i++) if(winClone[i]) delete winClone[i];
 }
 
 
@@ -469,10 +469,10 @@ void qDrawPlot::SetScanArgument(int scanArg){
 	}else backwardScanPlot = false;
 
 
-
 	//1d
 	if(histXAxis)    delete [] histXAxis;	histXAxis    = new double [nPixelsX];
-	if(histYAxis[0]) delete [] histYAxis[0];histYAxis[0] = new double [nPixelsX];
+
+	if(histYAxis[0]) delete [] histYAxis[0]; histYAxis[0] = new double [nPixelsX];
 
 	//2d
 	if(lastImageArray) delete [] lastImageArray; lastImageArray = new double[nPixelsY*nPixelsX];

@@ -9,6 +9,7 @@
 // Project Class Headers
 #include "MySocketTCP.h"
 #include "slsDetectorBase.h"
+
 // C++ Include Headers
 #include <iostream>
 #include <sstream>
@@ -16,14 +17,15 @@ using namespace std;
 
 
 
+//-------------------------------------------------------------------------------------------------------------------------------------------------
 
-int main(int argc, char *argv[])
 
-{
+int main(int argc, char *argv[]){
+
 	qClient *cl =new qClient(argv[1]);
 	cl->executeLine(argc-2, argv+2);
 
-  delete cl;
+	delete cl;
 }
 
 
@@ -42,6 +44,14 @@ qClient::qClient(char* hostname){
 
 
 //-------------------------------------------------------------------------------------------------------------------------------------------------
+
+qClient::~qClient() {
+	if(mySocket) delete mySocket;
+}
+
+
+//-------------------------------------------------------------------------------------------------------------------------------------------------
+
 
 int qClient::executeLine(int narg, char *args[]){
 

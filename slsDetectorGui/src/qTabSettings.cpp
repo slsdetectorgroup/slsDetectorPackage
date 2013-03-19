@@ -259,10 +259,11 @@ void qTabSettings::Refresh(){
 
 
 	// Number of Modules
+	int numMod = myDet->setNumberOfModules();
 #ifdef VERBOSE
-	cout  << "Getting number of modules" << endl;
+	cout  << "Getting number of modules:" << numMod << endl;
 #endif
-	spinNumModules->setValue(myDet->setNumberOfModules());
+	spinNumModules->setValue(numMod);
 
 	// Dynamic Range
 #ifdef VERBOSE

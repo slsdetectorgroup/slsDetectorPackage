@@ -77,8 +77,6 @@ public:
 	/** Returns progress bar value */
 	int GetProgress(){return tab_measurement->GetProgress();};
 
-	/** Uncheck the Listen to Gui Client mode when server has exited using exit command */
-	void GuiServerExited(){actionListenGuiClient->setChecked(false);};
 
 private:
 	/** The Qt Application */
@@ -180,6 +178,10 @@ void EnableTabs();
 /** Set the tool tip of mouse controlled zooming depening on if its enabled/disabled
  * */
 void SetZoomToolTip(bool disable);
+
+/** Uncheck the Listen to gui client mode when the server has exited
+ */
+void UncheckServer();
 
 protected:
 /** Adjust the resizing to resize plot, except for actions tab

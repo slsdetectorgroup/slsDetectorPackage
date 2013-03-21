@@ -285,6 +285,10 @@ void qDetectorMain::Initialization(){
 	connect(menuUtilities,	SIGNAL(triggered(QAction*)),	this,SLOT(ExecuteUtilities(QAction*)));
 	// Help Menu
 	connect(menuHelp,		SIGNAL(triggered(QAction*)),	this,SLOT(ExecuteHelp(QAction*)));
+
+
+//server
+	connect(myServer,		SIGNAL(ServerStoppedSignal()),		this,SLOT(UncheckServer()));
 }
 
 
@@ -329,9 +333,12 @@ void qDetectorMain::EnableModes(QAction *action){
 
 	//listen to gui client
 	if(action==actionListenGuiClient){
-		disconnect(menuModes,		SIGNAL(triggered(QAction*)),	this,SLOT(EnableModes(QAction*)));
-		actionListenGuiClient->setChecked(myServer->StartStopServer(actionListenGuiClient->isChecked()));
-		connect(menuModes,		SIGNAL(triggered(QAction*)),	this,SLOT(EnableModes(QAction*)));
+
+		myServer->StartStopServer(actionListenGuiClient->isChecked());
+
+		//disconnect(menuModes,		SIGNAL(triggered(QAction*)),	this,SLOT(EnableModes(QAction*)));
+		//actionListenGuiClient->setChecked(myServer->StartStopServer(actionListenGuiClient->isChecked()));
+		//connect(menuModes,		SIGNAL(triggered(QAction*)),	this,SLOT(EnableModes(QAction*)));
 	}
 	//Set DebugMode
 	else if(action==actionDebug){
@@ -779,6 +786,19 @@ int qDetectorMain::StartStopAcquisitionFromClient(bool start){
 	}
 
 	return slsDetectorDefs::OK;
+}
+
+
+//-------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+void qDetectorMain::UncheckServer(){
+#ifdef VERBOSE
+	cout << "Unchecking Mode : Listen to Gui Client" << endl;
+#endif
+	disconnect(menuModes,		SIGNAL(triggered(QAction*)),	this,SLOT(EnableModes(QAction*)));
+	actionListenGuiClient->setChecked(false);
+	connect(menuModes,		SIGNAL(triggered(QAction*)),	this,SLOT(EnableModes(QAction*)));
 }
 
 

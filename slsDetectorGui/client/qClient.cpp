@@ -40,6 +40,15 @@ qClient::qClient(char* hostname){
 		delete mySocket;
 		exit(-1);
 	}
+
+	//create socket to connect to stop server
+	myStopSocket = new MySocketTCP(hostname, DEFAULT_GUI_PORTNO+1);
+	if (myStopSocket->getErrorStatus()){
+		cout << "Error: could not connect to host:" << hostname << " with port " << DEFAULT_GUI_PORTNO + 1 << endl;
+		delete myStopSocket;
+		exit(-1);
+	}
+
 }
 
 
@@ -47,6 +56,7 @@ qClient::qClient(char* hostname){
 
 qClient::~qClient() {
 	if(mySocket) delete mySocket;
+	if(myStopSocket) delete myStopSocket;
 }
 
 
@@ -82,9 +92,9 @@ int qClient::executeLine(int narg, char *args[]){
 			argument = args[1];
 			//start acquisition
 			if(argument == "start")
-				sendToGuiServer(F_START_ACQUISITION);
+				startAcquisition();
 			else if (argument == "stop")
-				sendToGuiServer(F_STOP_ACQUISITION);
+				stopAcquisition();
 			else{
 				cout << "Error: could not parse arguments: " << argument << endl;
 				printCommands();
@@ -96,16 +106,13 @@ int qClient::executeLine(int narg, char *args[]){
 
 
 	else if (cmd == "acquire"){
-		sendToGuiServer(F_START_AND_READ_ALL);
+		startAcquisition(true);
 		retval = getStatus();
 	}
 
 
 	else if (cmd == "exit"){
-		if (sendToGuiServer(F_EXIT_SERVER) == OK)
-			retval = "Gui Server Exited successfully.";
-		else
-			retval = "Gui Server could not exit successfully";
+		return exitServer();
 	}
 
 
@@ -127,7 +134,7 @@ int qClient::executeLine(int narg, char *args[]){
 
 string qClient::printCommands(){
 	ostringstream os;
-	os << "\nexit \t exits server in gui" << std::endl;
+	os << "\nexit \t exits servers in gui" << std::endl;
 	os << "status \t gets status of acquisition in gui. - can be running or idle" << std::endl;
 	os << "status i  starts/stops acquistion in gui-non blocking. i is start or stop" << std::endl;
 	os << "acquire  starts acquistion in gui-blocking" << std::endl;
@@ -145,12 +152,12 @@ string qClient::getStatus(){
 	int progress = 0;
 	char answer[100];
 
-	if  (mySocket->Connect() >= 0) {
-		mySocket->SendDataOnly(&fnum,sizeof(fnum));
-		mySocket->ReceiveDataOnly(&ret,sizeof(ret));
-		mySocket->ReceiveDataOnly(&retval,sizeof(retval));
-		mySocket->ReceiveDataOnly(&progress,sizeof(progress));
-		mySocket->Disconnect();
+	if  (myStopSocket->Connect() >= 0) {
+		myStopSocket->SendDataOnly(&fnum,sizeof(fnum));
+		myStopSocket->ReceiveDataOnly(&ret,sizeof(ret));
+		myStopSocket->ReceiveDataOnly(&retval,sizeof(retval));
+		myStopSocket->ReceiveDataOnly(&progress,sizeof(progress));
+		myStopSocket->Disconnect();
 	}else
 		exit(-1);
 
@@ -165,9 +172,10 @@ string qClient::getStatus(){
 //-------------------------------------------------------------------------------------------------------------------------------------------------
 
 
-int qClient::sendToGuiServer(int fnum){
+int qClient::startAcquisition(bool blocking){
+	int fnum = F_START_ACQUISITION;
+	if(blocking) fnum = F_START_AND_READ_ALL;
 	int ret = FAIL;
-	char mess[100] = "";
 
 	if  (mySocket->Connect() >= 0) {
 		mySocket->SendDataOnly(&fnum,sizeof(fnum));
@@ -186,3 +194,41 @@ int qClient::sendToGuiServer(int fnum){
 
 //-------------------------------------------------------------------------------------------------------------------------------------------------
 
+
+int qClient::stopAcquisition(){
+	int fnum = F_STOP_ACQUISITION;
+	int ret = FAIL;
+
+	if  (myStopSocket->Connect() >= 0) {
+		myStopSocket->SendDataOnly(&fnum,sizeof(fnum));
+		myStopSocket->ReceiveDataOnly(&ret,sizeof(ret));
+		if (ret == FAIL){
+			myStopSocket->ReceiveDataOnly(mess,sizeof(mess));
+			std::cout<< "Gui returned error: " << mess << std::endl;
+		}
+		myStopSocket->Disconnect();
+	}else
+		exit(-1);
+
+	return ret;
+}
+
+
+//-------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+int qClient::exitServer(){
+	int fnum = F_EXIT_SERVER;
+	int ret = FAIL;
+
+	if  (myStopSocket->Connect() >= 0) {
+		myStopSocket->SendDataOnly(&fnum,sizeof(fnum));
+		myStopSocket->ReceiveDataOnly(&ret,sizeof(ret));
+		myStopSocket->ReceiveDataOnly(mess,sizeof(mess));
+		cout << mess << endl;
+		myStopSocket->Disconnect();
+	}else
+		exit(-1);
+
+	return ret;
+}

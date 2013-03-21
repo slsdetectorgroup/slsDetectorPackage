@@ -12,17 +12,19 @@
 #include "sls_detector_defs.h"
 #include "qDefs.h"
 class qDetectorMain;
-
 /** Project Class Headers */
 class multiSlsDetector;
 class MySocketTCP;
+/** Qt Include Headers */
+#include <QWidget>
 /** C++ Include Headers */
 
 
 /**
  *@short Sets up the gui server
  */
-class qServer: public virtual slsDetectorDefs{
+class qServer: public QWidget, public virtual slsDetectorDefs{
+		Q_OBJECT
 
 
 public:
@@ -41,10 +43,10 @@ private:
 	int FunctionTable();
 
 	/** Decodes Function */
-	int DecodeFunction();
+	int DecodeFunction(MySocketTCP* sock);
 
-	/** Unrecognized Function */
-	int M_nofunc();
+	/** Exit Server */
+	int ExitServer();
 
 
 	/**
@@ -61,8 +63,21 @@ private:
 	 */
 	int StartServer();
 
-	/** Exit Server */
-	int ExitServer();
+	/**
+	 * Static function - Thread started which listens to client gui to stop acquisition
+	 * Called by StartStopServer()
+	 * @param this_pointer pointer to this object
+	 */
+	static void* StopServerThread(void *this_pointer);
+
+	/**
+	 * Thread started which listens to client gui to stop acquisition.
+	 * Called by startServerThread()
+	 *
+	 */
+	int StopServer();
+
+
 
 	/** Get Detector Status */
 	int GetStatus();
@@ -83,8 +98,12 @@ private:
 
 	/** tcp socket to gui client */
 	MySocketTCP 	*mySocket;
+	/** tcp socket to gui client to stop or get status */
+	MySocketTCP 	*myStopSocket;
+
 	/** server port number*/
 	int port_no;
+
 	/** Lock Status if server locked to a client */
 	int lockStatus;
 
@@ -97,12 +116,19 @@ private:
 	static int gui_server_thread_running;
 	/** thread listening to gui client*/
 	pthread_t   gui_server_thread;
+	/** thread also listening to gui client to stop acquisition*/
+	pthread_t   gui_stop_server_thread;
 
 	/** server started */
 	int checkStarted;
+	int checkStopStarted;
 
 	/** Message */
 	char mess[MAX_STR_LENGTH];
+
+
+signals:
+	void ServerStoppedSignal();
 
 };
 

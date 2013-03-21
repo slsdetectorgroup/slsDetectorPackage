@@ -36,14 +36,27 @@ private:
 	/** Print list of commands */
 	string printCommands();
 
-	/** Send to Gui Server */
-	int sendToGuiServer(int fnum);
+	/** Start Acquisition
+	 * @param blocking true if its a blocking acquistion
+	 */
+	int startAcquisition(bool blocking = false);
+
+	/** Stops Acquisition */
+	int stopAcquisition();
 
 	/** Gets run status */
 	string getStatus();
 
+	/** Exits Server */
+	int exitServer();
+
 	/** client socket */
 	MySocketTCP *mySocket;
+
+	/** client socket */
+	MySocketTCP *myStopSocket;
+
+	char mess[MAX_STR_LENGTH];
 
 };
 

@@ -432,8 +432,9 @@ int  receiveModule(int file_des, sls_detector_module* myMod) {
   int nChans, nchanold=myMod->nchan, nchandiff;
   int nDacs, ndold=myMod->ndac, ndacdiff;
   int nAdcs, naold=myMod->nadc, nadcdiff;
-  //  int id=0;
-
+#ifdef VERBOSE 
+    int id=0;
+#endif
   ts+= receiveDataOnly(file_des,myMod,sizeof(sls_detector_module));
 
   myMod->dacs=dacptr;

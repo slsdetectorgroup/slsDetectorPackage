@@ -2,7 +2,7 @@
    The port number is passed as an argument */
 
 #include "sls_detector_defs.h"
-#include "slsReceiver_funcs.h"
+#include "slsReceiverUsers.h"
 
 
 #include <signal.h>	//SIGINT
@@ -14,14 +14,14 @@ using namespace std;
 
 void closeFile(int p){
   cout<<"close file in receiver"<<endl;
-  slsReceiverFuncs::closeFile(p);
+  slsReceiverUsers::closeFile(p);
   exit(0);
 }
 
 int main(int argc, char *argv[]) {
   int ret = slsDetectorDefs::OK;
   
-  slsReceiverFuncs *receiver = new slsReceiverFuncs(argc, argv, ret);
+  slsReceiverUsers *receiver = new slsReceiverUsers(argc, argv, ret);
   
   if(ret==slsDetectorDefs::FAIL)
     return -1;

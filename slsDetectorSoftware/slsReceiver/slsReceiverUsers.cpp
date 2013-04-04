@@ -19,12 +19,14 @@ void slsReceiverUsers::closeFile(int p) {
 }
 
 
-  void slsReceiverUsers::registerCallBackStartAcquisition(int (*func)(char*, char*,int, int, void*),void *arg){slsReceiverList->registerCallBackStartAcquisition(func,arg);};;
+void slsReceiverUsers::registerCallBackStartAcquisition(int (*func)(char*, char*,int, int, void*),void *arg){
+  receiver->registerCallBackStartAcquisition(func,arg);
+}
 
   
 
 int slsReceiverUsers::registerCallBackAcquisitionFinished(void (*func)(int, void*),void *arg){
-    receiver->registerCallBackAcquisitionFinished(func,arg);
+  receiver->registerCallBackAcquisitionFinished(func,arg);
 }
 	
 
@@ -33,6 +35,3 @@ int slsReceiverUsers::registerCallBackRawDataReady(void (*func)(int, char*, FILE
 };
 
 
-
-
-#endif

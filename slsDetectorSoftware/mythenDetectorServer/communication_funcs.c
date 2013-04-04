@@ -1,1 +1,1 @@
-/afs/psi.ch/project/mythen/newMythenSoftware/slsDetectorSoftware/commonFiles/communication_funcs.c
+../commonFiles/communication_funcs.c

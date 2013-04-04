@@ -95,6 +95,8 @@ int multiSlsDetector::initSharedMemory(int id=0) {
 
 multiSlsDetector::multiSlsDetector(int id) :  slsDetectorUtils(), shmId(-1)
 {
+
+  cout << "Contrustor" << endl;
   while (shmId<0) {
     shmId=initSharedMemory(id);
     id++;

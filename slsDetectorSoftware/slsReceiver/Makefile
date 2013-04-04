@@ -3,7 +3,7 @@ CLAGS		+=  -DSLS_RECEIVER_FUNCTION_LIST -DGOTTHARDD  #-DUHRIXCALLBACK  #-DTESTWR
 LDLIBS		+= 	-lm  -lstdc++ -lpthread 
 
 INCLUDES	= 	-I ../MySocketTCP -I ../commonFiles -I ../usersFunctions -I ../slsDetectorAnalysis -I .
-SRC_CLNT	= 	slsReceiver.cpp ../MySocketTCP/MySocketTCP.cpp slsReceiver_funcs.cpp UHRIXCallback.cpp slsReceiverFunctionList.cpp ../usersFunctions/usersFunctions.cpp
+SRC_CLNT	= 	slsReceiver.cpp ../MySocketTCP/MySocketTCP.cpp slsReceiver_funcs.cpp UHRIXCallback.cpp slsReceiverFunctionList.cpp ../usersFunctions/usersFunctions.cpp slsReceiverUsers.cpp 
 
 PROGS		= 	slsReceiver 
 DESTDIR		?= 	bin

@@ -1,10 +1,12 @@
 
 PROG= $(DESTDIR)/slsDetectorGui
-#DIR= $(shell ls src/* slsDetectorPlotting/include/* slsDetectorPlotting/src/* include/ forms/*)
 DESTDIR?=bin
 DOCDIR?=docs
-LIBDIR?=../slsDetectorSoftware
 
+LIBDIR?=../bin
+LIBRARYDIR?=../slsDetectorSoftware
+INCLUDES?= $(LIBRARYDIR)/commonFiles -I$(LIBRARYDIR)/MySocketTCP  -I$(LIBRARYDIR)/slsReceiverInterface   -I$(LIBRARYDIR)/slsDetector  -I$(LIBRARYDIR)/slsDetectorAnalysis  -I$(LIBRARYDIR)/multiSlsDetector   -I$(LIBRARYDIR)/usersFunctions  
+LDFLAG?=-L$(LIBRARYDIR)/bin -lSlsDetector 
 
 all: $(PROG) Makefile.gui guiclient
 

@@ -46,14 +46,14 @@ DEPENDPATH  		+=		\
 INCLUDEPATH 		= 	\	 
 							$(QWTDIR)/include\
 							$(QWTDIR) \
-                              $(QWTDIR)/src\
-                              $(QWT3D)/include\
+                            $(QWTDIR)/src\
+                            $(QWT3D)/include\
 							slsDetectorPlotting/include\
 							include\
 							forms/include\
-                                                        $(INCLUDES)
+                            $(INCLUDES)
 
-#                                                        $(shell echo "/lib/modules/`uname -r`/build/include") \
+#                           $(shell echo "/lib/modules/`uname -r`/build/include") \
 #							../slsDetectorSoftware/commonFiles\
 #							../slsDetectorSoftware/MySocketTCP\
 #							../slsDetectorSoftware/slsReceiverInterface\

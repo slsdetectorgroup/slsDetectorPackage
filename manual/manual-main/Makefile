@@ -1,8 +1,4 @@
-DESTDIR?=../docs
-
-
-#manual-api manual-calwiz manual-client manual-gui manual-main
-
+DESTDIR=../
 
 
 TEX=latex
@@ -27,12 +23,20 @@ all: $(PDFS) $(HTMLS)
 	echo $(HTMLS)
 
 pdf: $(PDFS)
+	$(shell test -d $(DESTDIR) || mkdir -p $(DESTDIR))
+	$(shell test -d $(DESTDIR)/pdf || mkdir -p $(DESTDIR)/pdf)
+	mv $(PDFS) $(DESTDIR)/pdf	
 
 html: $(HTMLS)
 
+
 $(HTMLS): $(TEXS) $(MAINTEXS)
+	$(shell test -d $(DESTDIR) || mkdir -p $(DESTDIR))
+	$(shell test -d $(DESTDIR)/html || mkdir -p $(DESTDIR)/html)
+	$(shell test -d $(DESTDIR)/html/$@ && rm -fr $(DESTDIR)/html/$@)
 	latex $@.tex
-	latex2html -split 4 $@.tex
+	latex2html -split 4 $@.tex	
+	mv $(HTMLS) $(DESTDIR)/html
 
 
 %.dvi : %.tex $(TEXS)

@@ -24,7 +24,7 @@ ASM=$(shell echo "/lib/modules/`uname -r`/build/include")
 
 
 
-INCLUDES='-I. -I$(LIBRARYDIR)/commonFiles -I$(LIBRARYDIR)/slsDetector -I$(LIBRARYDIR)/MySocketTCP -I$(LIBRARYDIR)/usersFunctions -I$(LIBRARYDIR)/multiSlsDetector -I$(LIBRARYDIR)/slsDetectorUtils -I$(LIBRARYDIR)/slsDetectorCommand -I$(LIBRARYDIR)/slsDetectorAnalysis -I$(LIBRARYDIR)/slsReceiverInterface -I$(ASM)'
+INCLUDES='-I. -I$(LIBRARYDIR)/commonFiles -I$(LIBRARYDIR)/slsDetector -I$(LIBRARYDIR)/MySocketTCP -I$(LIBRARYDIR)/usersFunctions -I$(LIBRARYDIR)/multiSlsDetector -I$(LIBRARYDIR)/slsDetectorUtils -I$(LIBRARYDIR)/slsDetectorCommand -I$(LIBRARYDIR)/slsDetectorAnalysis -I$(LIBRARYDIR)/slsReceiverInterface -I$(LIBRARYDIR)/slsReceiver -I$(ASM)'
 
 
 
@@ -64,22 +64,13 @@ gui: slsDetectorGUI
 
 doc:
 	$(shell test -d $(DOCDIR) || mkdir -p $(DOCDIR))
-	$(shell test -d $(DOCDIR)/pdf || mkdir -p $(DOCDIR)/pdf)
-	cd $(LIBRARYDIR) && make doc DOCDIR=$(DOCDIR)
-	cd $(CLIENTDIR) && make doc DOCDIR=$(DOCDIR)
-	cd $(GUIDIR)  && make doc DOCDIR=$(DOCDIR)
-	cd $(CALWIZDIR) && make doc DESTDIR=$(DOCDIR)
-	cd $(MANDIR) && make DESTDIR=$(DOCDIR)
+	cd manual && make all DESTDIR=$(DOCDIR)
 
 htmldoc:
 	make doc
 	$(shell test -d $(DOCDIR) || mkdir -p $(DOCDIR))
-	$(shell test -d $(DOCDIR)/html || mkdir -p $(DOCDIR)/html)
-	cd $(LIBRARYDIR) && make htmldoc DOCDIR=$(DOCDIR)
-	cd $(CLIENTDIR) && make htmldoc DOCDIR=$(DOCDIR)
-	cd $(GUIDIR)  && make htmldoc DOCDIR=$(DOCDIR)
-	cd $(CALWIZDIR) && make htmldoc DESTDIR=$(DOCDIR)
-	cd $(MANDIR) && make html DESTDIR=$(DOCDIR)
+	cd manual && make html DESTDIR=$(DOCDIR)
+
 
 clean:
 	cd $(BINDIR) && rm -rf sls_detector_* slsDetectorGui slsReceiver angularCalibrationWizard energyCalibrationWizard 
@@ -89,8 +80,8 @@ clean:
 	cd $(GUIDIR) && $(MAKE) clean
 	cd $(RECEIVERDIR) && $(MAKE) clean	
 	cd  $(CALWIZDIR) && $(MAKE) clean	
-#	cd $(MANDIR) && $(MAKE) clean
-#	cd $(DOCDIR) && rm -rf * 
+	cd manual && $(MAKE) clean
+	cd $(DOCDIR) && rm -rf * 
 
 
 

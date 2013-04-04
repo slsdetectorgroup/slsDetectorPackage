@@ -5,7 +5,8 @@ DESTDIR?=../docs
 
 
 
-MAINDIRS= manual-main manual-calwiz manual-calwiz manual-gui manual-client manual-api
+MAINDIRS= manual-main 
+#manual-calwiz manual-calwiz manual-gui manual-client manual-api
 CLEANDIRS=$(MAINDIRS:manual-%=clean-%)
 PDFDIRS=$(MAINDIRS:manual-%=pdf-%)
 HTMLDIRS=$(MAINDIRS:manual-%=html-%)
@@ -13,13 +14,22 @@ ALLDIRS=$(MAINDIRS:manual-%=all-%)
 
 
 all: $(ALLDIRS)
+	$(shell test -d $(DESTDIR)/pdf && rm -fr $(DESTDIR)/pdf)
+	mv pdf $(DESTDIR)
+	$(shell test -d $(DESTDIR)/html && rm -fr $(DESTDIR)/html)
+	mv html $(DESTDIR)
 
 pdf: $(PDFDIRS)
+	$(shell test -d $(DESTDIR)/pdf && rm -fr $(DESTDIR)/pdf)
+	mv pdf $(DESTDIR)
 
 html: $(HTMLDIRS)
+	$(shell test -d $(DESTDIR)/html && rm -fr $(DESTDIR)/html)
+	mv html $(DESTDIR)
 
 clean: $(CLEANDIRS)
-
+	rm -fr $(DESTDIR)/pdf
+	rm -fr $(DESTDIR)/html	
 
 all-%:
 	echo 

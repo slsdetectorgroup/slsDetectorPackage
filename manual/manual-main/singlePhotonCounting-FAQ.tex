@@ -2,8 +2,16 @@
 
 \section{Which detector settings should I choose?}
 
-The choice of the operation settings is very important in order to obtain good quality data. 
+The choice of the operation settings is very important in order to obtain good quality data. \\
+Normally slower settings will reduce the electronics noise and therefore it is possible to work at lower energies, but will saturate for high photon fluxes.\\
+On the other hand, faster settings will allow to work with higher photon intensities without pileup, but not to access lower energies because of an higher electronics noise.\\
+Therefore it is extremely important to chose adequate settings for the detector depending on the X-ray energy and expected maximum count rate.
+In the following is a description of the energy and intensity range coverd by the different settings for each detector.
 
+
+
+
+\subsection{MYTHEN}
 
 Normally the user can follow these rules:
 \begin{enumerate}
@@ -12,8 +20,6 @@ Normally the user can follow these rules:
 
 \item In case a larger count rate is required in order to keep the acquisition time shorter, the \textit{Fast} setting must be selected. However the maximum count rate should never exceed 1~Mcounts/s   for all channels.
 \end{enumerate}
-
-\subsection{MYTHEN}
 
 
 \begin{figure}
@@ -81,8 +87,9 @@ If the range where both requirements are satisfied is large, try to increase the
 \caption{Example of data from a sample emitting fluorescent light and detector threshold set at a value close to the emission line. The background data cannot be properly flat field corrected.}\label{fig:samplefluo}
 \end{figure}
 
+\section{How does the flat field correction work?}
 
-\section{Why isn't my flat-field flat?}
+\subsection{Why isn't my flat-field flat?}
 
 The main reasons of a non flat flat-field can be:
 \begin{itemize}
@@ -91,7 +98,7 @@ The main reasons of a non flat flat-field can be:
 \begin{center}
 \includegraphics[width=\textwidth]{images/bad_ff_col}
 \end{center}
-\caption{Example of a very bad flat field data set with highlights of some of the reasons which can cause the non-flat behavior.}\label{fig:badff}
+\caption{Example of a very bad flat field data set with highlights of some of the reasons which can cause the non-flat behavior for the MYTHEN detector. Similar effects can be visible also in 2D.}\label{fig:badff}
 \end{figure}
 
 \item The entrance window for the X-rays is deformed (we also have this problem at the SLS). In this case when you move the detector the "mountain" moves with it in angle (And remains still in channel number). However this should correct without problems with the flat field correction, even in case of fluorescent emission. Should appear at all energies.
@@ -112,10 +119,18 @@ These differences get much worse in presence of fluorescent emission, but normal
 \begin{center}
 \includegraphics[width=\textwidth]{images/ff_calibration}
 \end{center}
-\caption{Variations in the flat field due to a non precise energy calibration or trimming of the detector modules.}\label{fig:ffcal}
+\caption{Variations in the flat field due to a non precise energy calibration or trimming of the detector modules for the MYTHEN detector. Similar effects can be visible also in 2D.}\label{fig:ffcal}
 \end{figure}
 \end{comment}
+
 \subsection{Dynamic acquisition of the flat field}
+
+In case it is not possible to uniformely illuminate the detector due to its large dimensions, one of the solutions is to scan it in front of an illuminated are with a uniform speed such that the integrated number of counts during the exposure time is the same for all channels.\\
+
+To do that, at the SLS we have optimized the dynamic acquisition of the flat fiel with the MYTHEN detector using a setup similar to the one sketched in figure~\ref{fig:ffsetup}.
+It is important that the scanning range of the detector is chose such that the detector is not illuminated both at the beginning and at the end of the acquisition. Moreover the movement of the detector should be as uniform as possible. To avoid this kind of systematic errors we normally sum two flat field images taken in the two opposite directions of translation.\\
+
+Also take care that your sample does not emit fluorescent light at the chosen energy (e.g. a glass rod works at all energies, but heavier materials can be chosen to increase the efficiency at higher energies taking care that the fluorescence emission is negligible).
 
 \begin{figure}
 \begin{center}

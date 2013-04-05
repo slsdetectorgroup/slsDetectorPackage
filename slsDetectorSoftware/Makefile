@@ -1,7 +1,7 @@
 CFLAGS= -DC_ONLY -fPIC
 #FLAGS+=  #-DVERBOSE -DVERYVERBOSE
 
-DFLAGS= -DDACS_INT -DTHIS_PATH='"$(shell pwd)"'
+DFLAGS= -DDACS_INT -DTHIS_PATH='"$(shell pwd)"' -DSLS_RECEIVER_FUNCTION_LIST
 
 #ASM=$(shell echo "/lib/modules/`uname -r`/build/include")
 

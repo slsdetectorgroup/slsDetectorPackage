@@ -1,4 +1,5 @@
-#ifdef SLS_RECEIVER_FUNCTION_LIST
+//#ifdef SLS_RECEIVER_FUNCTION_LIST
+
 #ifndef SLS_RECEIVER_FUNCTION_LIST_H
 #define SLS_RECEIVER_FUNCTION_LIST_H
 /********************************************//**
@@ -391,4 +392,4 @@ public:
 
 #endif
 
-#endif
+//#endif

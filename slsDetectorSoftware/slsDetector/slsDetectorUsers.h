@@ -33,7 +33,7 @@ using namespace std;
 */
 /** 
     \mainpage 
-     <img  src="psi_logo_150.gif" alt="Paul Scherrer Institut"> 
+  
 
 <H1>API for SLS detectors data acquisition</H1>
 
@@ -49,23 +49,31 @@ using namespace std;
    \li a Root library for data postprocessing and detector calibration (energy, angle).
 
 
-The slsDetectorUsers class is a minimal purely virtual interface class which should be instantiated by the users in their acquisition software (EPICS, spec etc.). More advanced configuration functions are not implemented and can be written in a configuration file tha can be read/written.
+slsDetectorUsers is a class to control the detector which should be instantiated by the users in their acquisition software (EPICS, spec etc.). A callback for dislaying the data can be registered.
+More advanced configuration functions are not implemented and can be written in a configuration file tha can be read/written.
 
+slsReceiverUsers is a class to receive the data for detectors with external data receiver (e.g. GOTTHARD). Callbacks can be registered to process the data or save them in specific formats.
 
+detectorData is a structure containing the data and additional information which is used to return the data e.g. to the  GUi for displaying them.
+
+ 
    \authors <a href="mailto:anna.bergamaschi@psi.ch">Anna Bergamaschi</a>, <a href="mailto:dhanya.maliakal@psi.ch">Dhanya Maliakal</a>
    @version 0.2
 <H2>Currently supported detectors</H2>
 \li MYTHEN
 \li GOTTHARD controls
-<H3>Coming soon</H3>
 \li GOTTHARD data receiver
+<H3>Coming soon</H3>
 \li EIGER
 
-@libdoc The slsDetectorUsers class is a minimal purely virtual interface class which should be instantiated by the users in their acquisition software (EPICS, spec etc.). More advanced configuration functions are not implemented and can be written in a configuration or parameters file that can be read/written.
 
 */
 /**
-  @short This is the base class for detector functionalities of interest for the users. Can be emebedded in the users custom interface e.g. EPICS, Lima etc.
+
+@libdoc The slsDetectorUsers class is a minimal interface class which should be instantiated by the users in their acquisition software (EPICS, spec etc.). More advanced configuration functions are not implemented and can be written in a configuration or parameters file that can be read/written.
+*/
+/**
+  @short Class for detector functionalitiesto embed the detector controls in the users custom interface e.g. EPICS, Lima etc.
 
 */
 
@@ -387,10 +395,10 @@ class slsDetectorUsers
 
   /**
      @short register calbback for accessing detector final data
-     \param userCallback function for plotting/analyzing the data
+     \param userCallback function for plotting/analyzing the data. Its arguments are  the data structure d and the frame number f.
   */
 
-   void registerDataCallback(int( *userCallback)(detectorData*, int, void*), void *pArg);
+   void registerDataCallback(int( *userCallback)(detectorData* d, int f, void*), void *pArg);
 
   /**
      @short register callback for accessing raw data - if the rawDataCallback is registered, no filewriting/postprocessing will be carried on automatically by the software - the raw data are deleted by the software

@@ -1,8 +1,4 @@
-  /********************************************//**
- * @file slsReceiverUsers.h
- * @short API for implementing the SLS data receiver in the users application. Callbacks can be defined for processing and/or saving data
- * 
- ***********************************************/
+
 #ifndef SLS_RECEIVER_USERS_H
 #define SLS_RECEIVER_USERS_H
 
@@ -10,7 +6,16 @@
 
 class slsReceiverFuncs;
 
+  /** 
+@short Class for implementing the SLS data receiver in the users application. Callbacks can be defined for processing and/or saving data
+  */
+/** 
 
+
+ @libdoc slsReceiverUsers is a class that can be instantiated in the users software to receive the data from the detectors. Callbacks can be defined for processing and/or saving data
+
+
+ ***********************************************/
 
 class slsReceiverUsers {
 
@@ -35,42 +40,35 @@ public:
 	void start();
 
 	/**
-	   callback arguments are
-	   filepath
-	   filename
-	   fileindex
-	   data size
+
+	@sort register calbback for starting the acquisition 
+	 \param func  callback to be called when starting the acquisition. Its arguments are filepath filename fileindex data size
 	   
-	   return value is 
-	   0 callback takes care of open,close,wrie file
-	   1 callback writes file, we have to open, close it
-	   2 we open, close, write file, callback does not do anything
+	  \returns	   0 callback takes care of open,close,write file; 	   1 callback writes file, we have to open, close it; 2 we open, close, write file, callback does not do anything
 
 	*/
 	
-	void registerCallBackStartAcquisition(int (*func)(char*, char*,int, int, void*),void *arg);
+	void registerCallBackStartAcquisition(int (*func)(char* filepath, char* filename,int fileindex, int datasize, void*),void *arg);
 
 
-	/**
-	  callback argument is
-	  total frames caught
-
+	/**	
+	   @sort register callback for end of acquisition 
+	  \param func end of acquisition callback. Argument nf is total frames caught
+	  \returns nothing
 	*/
 	
 	
-	int registerCallBackAcquisitionFinished(void (*func)(int, void*),void *arg);
+	int registerCallBackAcquisitionFinished(void (*func)(int nf, void*),void *arg);
 	
 
 
 	/**
-	  args to raw data ready callback are
-	  framenum
-	  datapointer
-	  file descriptor
-	  guidatapointer (NULL, no data required)
+	   @sort register callback to be called when data are available (to process and/or save the data).
+	   \param func raw data ready callback. arguments are framenum datapointer  file descriptor guidatapointer (NULL, no data required)
+	  \returns nothing
 	*/
 	
-	int registerCallBackRawDataReady(void (*func)(int, char*, FILE*, char*, void*),void *arg);
+	int registerCallBackRawDataReady(void (*func)(int framenumber, char* datapointer, FILE* filedescriptor, char* guidatapointer, void*),void *arg);
 
 
  private:

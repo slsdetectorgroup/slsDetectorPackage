@@ -32,6 +32,6 @@ int slsReceiverUsers::registerCallBackAcquisitionFinished(void (*func)(int, void
 
 int slsReceiverUsers::registerCallBackRawDataReady(void (*func)(int, char*, FILE*, char*, void*),void *arg){
   receiver->registerCallBackRawDataReady(func,arg);
-};
+}
 
 

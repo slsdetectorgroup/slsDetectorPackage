@@ -10,7 +10,6 @@
 #include "MySocketTCP.h"
 #include "slsReceiverFunctionList.h"
 
-class slsReceiverFunctionList;
 
 
 /**

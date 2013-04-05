@@ -28,9 +28,11 @@ INCLUDES='-I. -I$(LIBRARYDIR)/commonFiles -I$(LIBRARYDIR)/slsDetector -I$(LIBRAR
 
 
 
-all: lib  textclient slsReceiver gui 
+all: lib  textclient receiver gui 
 
-nonstatic: lib  slsDetectorClient slsReceiver slsDetectorGUI
+nonstatic: lib  textclient receiver gui 
+
+static: lib  stextclient sreceiver gui 
 
 lib:
 	cd $(LIBRARYDIR) && $(MAKE) FLAGS=$(FLAGS) DESTDIR=$(LIBDIR) INCLUDES=$(INCLUDES)
@@ -38,17 +40,21 @@ lib:
 stextclient: slsDetectorClient_static
 
 slsDetectorClient_static: lib
-	cd  $(CLIENTDIR) && $(MAKE) static_clients FLAGS=$(FLAGS) LDFLAG=$(LDFLAG) DESTDIR=$(BINDIR) LIBDIR=$(LIBDIR) INCLUDES=$(INCLUDES)
+	cd  $(CLIENTDIR) && $(MAKE) static_clients FLAGS=$(FLAGS) LIBS=$(LDFLAG) DESTDIR=$(BINDIR) LIBDIR=$(LIBDIR) INCLUDES=$(INCLUDES)
 
 
-textclient:
+textclient: lib
 	cd  $(CLIENTDIR) && $(MAKE) FLAGS=$(FLAGS) DESTDIR=$(BINDIR)  LIBDIR=$(LIBDIR) LIBS=$(LDFLAG) INCLUDES=$(INCLUDES)
 
-slsReceiver: lib
-	cd  $(RECEIVERDIR) && $(MAKE)  FLAGS=$(FLAGS) DESTDIR=$(BINDIR) LIBDIR=$(LIBDIR)  LIBS=$(LDFLAG) INCLUDES=$(INCLUDES)
+slsReceiver: receiver
 
 
-receiver: slsReceiver
+receiver: lib
+	cd  $(RECEIVERDIR) && $(MAKE)  receiver FLAGS=$(FLAGS) DESTDIR=$(BINDIR) LIBDIR=$(LIBDIR)  LIBS=$(LDFLAG) INCLUDES=$(INCLUDES)
+
+sreceiver: lib
+	cd  $(RECEIVERDIR) && $(MAKE)  static_receiver FLAGS=$(FLAGS) DESTDIR=$(BINDIR) LIBDIR=$(LIBDIR)  LIBS=$(LDFLAG) INCLUDES=$(INCLUDES)
+
 
 slsDetectorGUI: lib
 	echo $(LDFLAG)

@@ -42,39 +42,54 @@ lib:
 
 $(DESTDIR)/ssls_detector_put: $(SRC_CLNT) lib
 	echo $(LIBS)
+	echo  $(LDFLAG) 
 	mkdir -p $(BIN)
 	$(CXX) -static -o $(BIN)/ssls_detector_put $(SRC_CLNT)   $(FLAGS)    $(INCLUDES) -DPUT $(LIBS) $(LDFLAG) 
 
 $(DESTDIR)/ssls_detector_get: $(SRC_CLNT) lib
+	echo $(LIBS)
+	echo  $(LDFLAG) 
 	mkdir -p $(BIN)
 	$(CXX) -static -o $(BIN)/ssls_detector_get $(SRC_CLNT)   $(FLAGS)  $(INCLUDES) -DGET  $(LIBS) $(LDFLAG)
 
 $(DESTDIR)/ssls_detector_acquire: $(SRC_CLNT) lib
+	echo $(LIBS)
+	echo  $(LDFLAG) 
 	mkdir -p $(BIN)
 	$(CXX) -static -o $(BIN)/ssls_detector_acquire $(SRC_CLNT)   $(FLAGS)  $(INCLUDES) -DREADOUT  $(LIBS) $(LDFLAG)
 
 $(DESTDIR)/ssls_detector_help: $(SRC_CLNT) lib
+	echo $(LIBS)
+	echo  $(LDFLAG) 
 	mkdir -p $(BIN)
 	$(CXX) -static -o $(BIN)/ssls_detector_help $(SRC_CLNT)   $(FLAGS)  $(INCLUDES) -DHELP  $(LIBS) $(LDFLAG)
 
 
 
 $(DESTDIR)/sls_detector_put: $(SRC_CLNT) lib
+	echo $(LIBS)
+	echo  $(LDFLAG) 
 	mkdir -p $(BIN)
 	$(CXX) -o $(BIN)/sls_detector_put $(SRC_CLNT)   $(FLAGS)    $(INCLUDES) -DPUT $(LIBS) $(LDFLAG) 
 	$(shell test -d $(DESTDIR) || mkdir -p $(DESTDIR))
 
 $(DESTDIR)/sls_detector_get: $(SRC_CLNT) lib
+	echo $(LIBS)
+	echo  $(LDFLAG) 
 	mkdir -p $(BIN)
 	$(CXX) -o $(BIN)/sls_detector_get $(SRC_CLNT)   $(FLAGS)  $(INCLUDES) -DGET  $(LIBS) $(LDFLAG)
 	$(shell test -d $(DESTDIR) || mkdir -p $(DESTDIR))
 
 $(DESTDIR)/sls_detector_acquire: $(SRC_CLNT) lib
+	echo $(LIBS)
+	echo  $(LDFLAG) 
 	mkdir -p $(BIN)
 	$(CXX) -o $(BIN)/sls_detector_acquire $(SRC_CLNT)   $(FLAGS)  $(INCLUDES) -DREADOUT  $(LIBS) $(LDFLAG)
 	$(shell test -d $(DESTDIR) || mkdir -p $(DESTDIR))
 
 $(DESTDIR)/sls_detector_help: $(SRC_CLNT) lib
+	echo $(LIBS)
+	echo  $(LDFLAG) 
 	mkdir -p $(BIN)
 	$(CXX) -o $(BIN)/sls_detector_help $(SRC_CLNT)   $(FLAGS)  $(INCLUDES) -DHELP  $(LIBS) $(LDFLAG)
 	$(shell test -d $(DESTDIR) || mkdir -p $(DESTDIR))

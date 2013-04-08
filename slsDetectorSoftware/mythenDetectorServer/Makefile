@@ -19,7 +19,7 @@ CFLAGS+= 	-Wall -DC_ONLY -DMCB_FUNCS -DDACS_INT $(VFLAGS)
 
 LDLIBS+= 	-lm
 
-mythen:	$(PROGS)
+mythen:	clean $(PROGS)
 all:	$(PROGS) 
 
 boot: $(OBJS)

@@ -19,13 +19,8 @@ HEADERS = $(SRC_CLNT:.cpp=.h) commonFiles/sls_detector_defs.h slsDetectorAnalysi
 
 
 
-SRC_MYTHEN_SVC = mythenDetectorServer/server.c mythenDetectorServer/server_funcs.c mythenDetectorServer/communication_funcs.c mythenDetectorServer/firmware_funcs.c mythenDetectorServer/mcb_funcs.c mythenDetectorServer/trimming_funcs.c 
-
-
-
 DESTDIR ?= bin
 DOCDIR ?= docs
-
 
 
 all: package $(SRC_CLNT)
@@ -55,23 +50,16 @@ slsDetectorUsersDocs: slsDetectorUsers.doxy slsDetector/slsDetectorUsers.h slsDe
 	doxygen slsDetectorUsers.doxy
 
 
-mythenServer:  $(SRC_MYTHEN_SVC) 
-	$(CC)  $(SRC_MYTHEN_SVC)  $(CFLAGS) $(FLAGS) $(DFLAGS) $(INCLUDES) -ImythenDetectorServer -DVIRTUAL -lm -D MCB_FUNCS -DC_ONLY -DVERBOSE
-	mv a.out mythenServer
+mythenVirtualServer:  $(SRC_MYTHEN_SVC) 
+	cd mythenDetectorServer && make -f Makefile.virtual DESTDIR=$(DESTDIR) 
 
-
-picassoServer:  $(SRC_MYTHEN_SVC) 
-	$(CC)  $(SRC_MYTHEN_SVC)  $(CFLAGS) $(FLAGS) $(DFLAGS) $(INCLUDES) -ImythenDetectorServer -D VIRTUAL -lm -DMCB_FUNCS -DPICASSOD -DC_ONLY
-	mv a.out  picassoServer
-
+gotthardVirtualServer:  $(SRC_MYTHEN_SVC) 
+	cd gotthardDetectorServer && make -f Makefile.virtual DESTDIR=$(DESTDIR) 
 
 
 
 %.o : %.cpp %.h Makefile
 	$(CXX) -Wall -o $@ -c $< $(INCLUDES) $(DFLAGS) $(FLAGS)  -fPIC  $(EPICSFLAGS) -L/usr/lib64/
-
-
-
 
 package: $(OBJS) $(DESTDIR)/libSlsDetector.so $(DESTDIR)/libSlsDetector.a 
 
@@ -94,6 +82,6 @@ install: package
 
 install_inc:
 	$(shell test -d $(DESTDIR) || mkdir -p $(DESTDIR))
-	cp -P slsDetector/slsDetectorUsers.h slsDetectorAnalysis/detectorData.h  $(DESTDIR)
+	cp -P slsDetector/slsDetectorUsers.h slsDetectorAnalysis/detectorData.h  $(DESTDIR) slsReceiver/slsReceiverUsers.h 
 
 

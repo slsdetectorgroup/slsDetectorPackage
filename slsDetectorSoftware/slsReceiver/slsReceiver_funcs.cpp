@@ -24,7 +24,7 @@ slsReceiverFuncs::~slsReceiverFuncs() {
 
 	slsReceiverFuncs::closeFile(0);
 	cout << "Goodbye!" << endl;
-	delete socket;
+	if(socket) delete socket;
 
 }
 
@@ -34,15 +34,14 @@ slsReceiverFuncs::slsReceiverFuncs(int argc, char *argv[], int &success):
 		ret(OK),
 		lockStatus(0),
 		shortFrame(-1),
-		packetsPerFrame(2){
+		packetsPerFrame(PACKETS_PER_FRAME){
 
 	int port_no = DEFAULT_PORTNO+2;
 	ifstream infile;
 	string sLine,sargname;
 	int iline = 0;
 
-	success=slsDetectorDefs::OK;
-
+	success=OK;
 	string fname = "";
 
 	//parse command line for config
@@ -260,8 +259,6 @@ int slsReceiverFuncs::M_nofunc(){
 
 
 void slsReceiverFuncs::closeFile(int p){
-	char *buf;
-	char buffer[1];
 
 
 	if(slsReceiverFunctionList::listening_thread_running)
@@ -723,7 +720,6 @@ int	slsReceiverFuncs::get_frame_index(){
 
 int	slsReceiverFuncs::reset_frames_caught(){
 	ret=OK;
-	int index=-1;
 
 	strcpy(mess,"Could not reset frames caught\n");
 
@@ -759,7 +755,7 @@ int	slsReceiverFuncs::reset_frames_caught(){
 
 int	slsReceiverFuncs::read_frame(){
 	ret=OK;
-	char fName[MAX_STR_LENGTH];
+	char fName[MAX_STR_LENGTH]="";
 	int arg = -1,i;
 
 	//retval is a full frame
@@ -777,7 +773,6 @@ int	slsReceiverFuncs::read_frame(){
 	int bufferSize = BUFFER_SIZE;
 	if(shortFrame!=-1)
 		bufferSize=SHORT_BUFFER_SIZE;
-	int nel 		= bufferSize/(sizeof(int));
 	char* raw 		= new char[bufferSize];
 	int* origVal 	= new int[rnel];
 

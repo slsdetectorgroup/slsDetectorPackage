@@ -58,7 +58,7 @@ public:
 	*/
 	
 	
-	int registerCallBackAcquisitionFinished(void (*func)(int nf, void*),void *arg);
+	void registerCallBackAcquisitionFinished(void (*func)(int nf, void*),void *arg);
 	
 
 
@@ -68,7 +68,7 @@ public:
 	  \returns nothing
 	*/
 	
-	int registerCallBackRawDataReady(void (*func)(int framenumber, char* datapointer, FILE* filedescriptor, char* guidatapointer, void*),void *arg);
+	void registerCallBackRawDataReady(void (*func)(int framenumber, char* datapointer, FILE* filedescriptor, char* guidatapointer, void*),void *arg);
 
 
  private:

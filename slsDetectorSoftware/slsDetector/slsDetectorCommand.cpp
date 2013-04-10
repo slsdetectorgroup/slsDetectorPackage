@@ -2565,7 +2565,7 @@ string slsDetectorCommand::cmdDetectorSize(int narg, char *args[], int action) {
 				return helpDetectorSize(narg,args,action);
 			ROI allroi[val];
 			pos=2;
-			for(int i=0;i<val;i++){
+			for(i=0;i<val;i++){
 				if ((!sscanf(args[pos++],"%d",&allroi[i].xmin)) ||
 					(!sscanf(args[pos++],"%d",&allroi[i].xmax)) ||
 					(!sscanf(args[pos++],"%d",&allroi[i].ymin)) ||
@@ -2829,6 +2829,7 @@ string slsDetectorCommand::helpSN(int narg, char *args[], int action) {
     os << "detectorversion \n gets the firmware version of the detector"<< std::endl;
     os << "softwareversion \n gets the software version of the detector"<< std::endl;
     os << "thisversion \n gets the version of this software"<< std::endl;
+    os << "receiverversion \n gets the version of the receiver"<< std::endl;
   } 
   return os.str();
 

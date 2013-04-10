@@ -399,7 +399,7 @@ int slsReceiverFunctionList::startWriting(){
 #endif
 
 	char *wbuf;
-	int ret,sleepnumber=0;
+	int sleepnumber=0;
 
 	framesInFile=0;
 	framesCaught=0;

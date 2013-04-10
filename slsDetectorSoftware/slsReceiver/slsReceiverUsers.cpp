@@ -25,12 +25,12 @@ void slsReceiverUsers::registerCallBackStartAcquisition(int (*func)(char*, char*
 
   
 
-int slsReceiverUsers::registerCallBackAcquisitionFinished(void (*func)(int, void*),void *arg){
+void slsReceiverUsers::registerCallBackAcquisitionFinished(void (*func)(int, void*),void *arg){
   receiver->registerCallBackAcquisitionFinished(func,arg);
 }
 	
 
-int slsReceiverUsers::registerCallBackRawDataReady(void (*func)(int, char*, FILE*, char*, void*),void *arg){
+void slsReceiverUsers::registerCallBackRawDataReady(void (*func)(int, char*, FILE*, char*, void*),void *arg){
   receiver->registerCallBackRawDataReady(func,arg);
 }
 

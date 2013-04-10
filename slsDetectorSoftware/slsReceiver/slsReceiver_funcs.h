@@ -63,7 +63,7 @@ public:
 	*/
 	
 	
-	int registerCallBackAcquisitionFinished(void (*func)(int, void*),void *arg){slsReceiverList->registerCallBackAcquisitionFinished(func,arg);};
+	void registerCallBackAcquisitionFinished(void (*func)(int, void*),void *arg){slsReceiverList->registerCallBackAcquisitionFinished(func,arg);};
 	
 
 
@@ -75,7 +75,7 @@ public:
 	  guidatapointer (NULL, no data required)
 	*/
 	
-	int registerCallBackRawDataReady(void (*func)(int, char*, FILE*, char*, void*),void *arg){slsReceiverList->registerCallBackRawDataReady(func,arg);};
+	void registerCallBackRawDataReady(void (*func)(int, char*, FILE*, char*, void*),void *arg){slsReceiverList->registerCallBackRawDataReady(func,arg);};
 
 
  private:

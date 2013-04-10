@@ -96,7 +96,6 @@ int multiSlsDetector::initSharedMemory(int id=0) {
 multiSlsDetector::multiSlsDetector(int id) :  slsDetectorUtils(), shmId(-1)
 {
 
-  cout << "Contrustor" << endl;
   while (shmId<0) {
     shmId=initSharedMemory(id);
     id++;
@@ -4394,7 +4393,6 @@ int* multiSlsDetector::readFrameFromReceiver(char* fName, int &fIndex){
 	int *retdet, *p=retval;
 	string fullFName="";
 	string ext="";
-	char * pch;
 
 
 	for (int id=0; id<thisMultiDetector->numberOfDetectors; id++) {
@@ -4413,7 +4411,10 @@ int* multiSlsDetector::readFrameFromReceiver(char* fName, int &fIndex){
 					if (strrchr(fName,'.')!=NULL){
 						ext.assign(fName);
 						size_t dot = ext.rfind(".");
-						ext = ext.erase(0,dot);
+						if(dot != string::npos)
+							ext = ext.erase(0,dot);
+						else
+							ext = "";
 					}
 				}
 				fullFName.append(getReceiverFileNameToConcatenate(fName));

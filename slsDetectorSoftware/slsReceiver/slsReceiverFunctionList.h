@@ -1,4 +1,4 @@
-//#ifdef SLS_RECEIVER_FUNCTION_LIST
+#ifdef SLS_RECEIVER_FUNCTION_LIST
 
 #ifndef SLS_RECEIVER_FUNCTION_LIST_H
 #define SLS_RECEIVER_FUNCTION_LIST_H
@@ -111,7 +111,7 @@ public:
 	 * Set Frame Index Needed
 	 * @param i frame index needed
 	 */
-	int setFrameIndexNeeded(int i){frameIndexNeeded = i;};
+	int setFrameIndexNeeded(int i){frameIndexNeeded = i; return frameIndexNeeded;};
 
 	/**
 	 * Set enable file write
@@ -371,7 +371,7 @@ public:
 	   toatal frames caught
 
 	*/
-	int registerCallBackAcquisitionFinished(void (*func)(int, void*),void *arg){acquisitionFinishedCallBack=func; pAcquisitionFinished=arg;};
+	void registerCallBackAcquisitionFinished(void (*func)(int, void*),void *arg){acquisitionFinishedCallBack=func; pAcquisitionFinished=arg;};
 	
 
 
@@ -382,7 +382,7 @@ public:
 	  file descriptor
 	  guidatapointer (NULL, no data required)
 	*/
-	int registerCallBackRawDataReady(void (*func)(int, char*, FILE*, char*, void*),void *arg){rawDataReadyCallBack=func; pRawDataReady=arg;};
+	void registerCallBackRawDataReady(void (*func)(int, char*, FILE*, char*, void*),void *arg){rawDataReadyCallBack=func; pRawDataReady=arg;};
 
 
 
@@ -392,4 +392,4 @@ public:
 
 #endif
 
-//#endif
+#endif

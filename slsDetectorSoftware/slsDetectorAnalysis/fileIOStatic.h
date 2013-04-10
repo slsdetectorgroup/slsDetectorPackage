@@ -278,16 +278,17 @@ class fileIOStatic  {
       \returns file name without file name prefix, detector index  or extension
   */
   static string getReceiverFileNameToConcatenate(string fname) { \
-	  int i;													\
-	  string s;													\
-	  s=fname;													\
+	  //int i;
+	  string s=fname;											\
+	  if(fname.empty()) return fname;							\
 	  size_t slash=s.rfind("/");								\
 	  if (slash!= string::npos)									\
 	  s=s.substr(slash,s.size()-slash); 						\
 	  size_t dot=s.find(".");									\
 	  size_t uscore=s.find("_");								\
-	  s=s.substr(uscore,dot-uscore);							\
-	  uscore=s.find("_",1);										\
+	  if ((dot!= string::npos)&&(uscore!= string::npos))		\
+		  s=s.substr(uscore,dot-uscore);						\
+	  // uscore=s.find("_",1);
 	  //if ((uscore!= string::npos) && (sscanf( s.substr(1,uscore-1).c_str(),"d%d",&i)))
 	  //s=s.substr(uscore,s.size()-uscore);
 	  return s;													\

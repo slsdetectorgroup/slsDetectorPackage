@@ -7,9 +7,8 @@
 
 /** Qt Project Class Headers */
 #include "qTabMessages.h"
+#include "qDetectorMain.h"
 /** Project Class Headers */
-#include "slsDetector.h"
-#include "multiSlsDetector.h"
 /** Qt Include Headers */
 #include <QGridLayout>
 #include <QFile>
@@ -24,8 +23,7 @@ using namespace std;
 
 //-------------------------------------------------------------------------------------------------------------------------------------------------
 
-qTabMessages::qTabMessages(QWidget *parent,multiSlsDetector* detector):QWidget(parent),qout(0),qerr(0){//myDet(detector),
-  myDet=detector;
+qTabMessages::qTabMessages(qDetectorMain* m):myMainTab(m),qout(0),qerr(0){
   SetupWidgetWindow();
   Initialization();
 }
@@ -33,7 +31,7 @@ qTabMessages::qTabMessages(QWidget *parent,multiSlsDetector* detector):QWidget(p
 //-------------------------------------------------------------------------------------------------------------------------------------------------
 
 qTabMessages::~qTabMessages(){
-  //	delete myDet;
+    delete myMainTab;
 	delete dispLog;
 	delete qout;
 	delete qerr;
@@ -94,7 +92,7 @@ void qTabMessages::customEvent(QEvent *e) {
 
 void qTabMessages::SaveLog() {
 	//cerr<<endl<<"ERRRORRRR"<<endl<<endl;
-	QString fName = QString(myDet->getFilePath().c_str());
+	QString fName = QString(myMainTab->GetFilePath());
 	fName = fName+"/LogFile.txt";
     fName = QFileDialog::getSaveFileName(this,tr("Save Snapshot "),
     		fName,tr("Text files (*.txt)"));
@@ -109,8 +107,6 @@ void qTabMessages::SaveLog() {
     	}
     	else qDefs::Message(qDefs::WARNING,"Attempt to save log file failed.","Messages");
      }
-
-	qDefs::checkErrorMessage(myDet);
 }
 
 

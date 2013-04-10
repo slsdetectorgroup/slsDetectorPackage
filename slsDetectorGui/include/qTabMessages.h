@@ -14,7 +14,7 @@
 
 
 /** Project Class Headers */
-class multiSlsDetector;
+class qDetectorMain;
 /** Qt Include Headers */
 #include <QWidget>
 #include <QTextEdit>
@@ -30,10 +30,9 @@ class qTabMessages:public QWidget{
 
 public:
 	/** \short The constructor
-	 *  @param parent is the parent tab widget
-	 *  @param det the detector reference
+	 *  @param det the qDetectorMain class  reference
 	 */
-	qTabMessages(QWidget *parent,multiSlsDetector* detector);
+	qTabMessages(qDetectorMain* m);
 
 	/** Destructor
 	 */
@@ -41,8 +40,8 @@ public:
 
 
 private:
-	/** The sls detector object */
-	multiSlsDetector *myDet;
+	/** The qDetectorMain object */
+	qDetectorMain *myMainTab;
 
 	/** Log of executed commands */
 	QTextEdit *dispLog;

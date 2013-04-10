@@ -24,10 +24,23 @@ int qTabDeveloper::NUM_ADC_WIDGETS(0);
 //-------------------------------------------------------------------------------------------------------------------------------------------------
 
 
-qTabDeveloper::qTabDeveloper(QWidget *parent,multiSlsDetector*& detector):QWidget(parent),myDet(detector){
+qTabDeveloper::qTabDeveloper(QWidget *parent,multiSlsDetector*& detector):
+						QWidget(parent),
+						myDet(detector),
+						boxDacs(0),
+						boxAdcs(0),
+						lblHV(0),
+						comboHV(0),
+						adcTimer(0),
+						dacLayout(0){
+	for(int i=0;i<20;i++){
+		lblDacs[i]=0;
+		lblAdcs[i]=0;
+		spinDacs[i]=0;
+		spinAdcs[i]=0;
+	}
 	SetupWidgetWindow();
 	Initialization();
-
 }
 
 

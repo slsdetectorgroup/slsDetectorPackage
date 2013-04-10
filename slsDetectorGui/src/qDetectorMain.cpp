@@ -47,7 +47,7 @@ int main (int argc, char **argv) {
 
 
 qDetectorMain::qDetectorMain(int argc, char **argv, QApplication *app, QWidget *parent) :
-		QMainWindow(parent), theApp(app),myDet(0),detID(0),myPlot(NULL),tabs(NULL),isDeveloper(0){
+				QMainWindow(parent), theApp(app),myDet(0),detID(0),myPlot(0),tabs(0),isDeveloper(0){
 
 	string configFName = "";
 	// Getting all the command line arguments
@@ -77,7 +77,7 @@ qDetectorMain::qDetectorMain(int argc, char **argv, QApplication *app, QWidget *
 
 
 qDetectorMain::~qDetectorMain(){
-	delete myDet;
+    if(myDet) delete myDet;
 	if (menubar) delete menubar;
 	if (centralwidget) delete centralwidget;
 }
@@ -194,7 +194,7 @@ void qDetectorMain::SetUpDetector(const string fName){
 	myDet = new multiSlsDetector(detID);
 
 	//create messages tab to capture config file loading logs
-	tab_messages		=  new qTabMessages		(this,myDet); 					cout<<"Messages ready"<<endl;
+	tab_messages		=  new qTabMessages		(this); 				cout<<"Messages ready"<<endl;
 
 	//loads the config file at startup
 	if(!fName.empty()) LoadConfigFile(fName);

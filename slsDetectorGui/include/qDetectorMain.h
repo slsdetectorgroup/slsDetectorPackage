@@ -77,6 +77,8 @@ public:
 	/** Returns progress bar value */
 	int GetProgress(){return tab_measurement->GetProgress();};
 
+	/** Returns file path */
+	QString GetFilePath(){QString s = QString(myDet->getFilePath().c_str());qDefs::checkErrorMessage(myDet); return s;};
 
 private:
 	/** The Qt Application */

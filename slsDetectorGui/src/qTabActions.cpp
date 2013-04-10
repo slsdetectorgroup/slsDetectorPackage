@@ -20,7 +20,27 @@ using namespace std;
 
 
 qTabActions::qTabActions(QWidget *parent,multiSlsDetector*& detector):
-		QWidget(parent),myDet(detector),positions(NULL){
+				  QWidget(parent),myDet(detector),
+				  positionWidget(0),
+				  lblNumPos(0),
+				  lblPosList(0),
+				  spinNumPos(0),
+				  comboPos(0),
+				  btnDelete(0),
+				  chkInvert(0),
+				  chkSeparate(0),
+				  chkReturn(0),
+				  positions(0),
+				  iconPlus(0),
+				  iconMinus(0){
+	for(int i=0;i<6;i++)
+		actionWidget[i]=0;
+	for(int i=0;i<2;i++)
+		scanWidget[i]=0;
+	for(int i=0;i<NumTotalActions;i++){
+		btnExpand[i]=0;
+		lblName[i]=0;
+	}
 	SetupWidgetWindow();
 	Initialization();
 }

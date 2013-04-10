@@ -31,6 +31,7 @@ const string qScanWidget::modeNames[NumModes]={"","energy","threshold","trimbits
 qScanWidget::qScanWidget(QWidget *parent,multiSlsDetector*& detector):
 		QWidget(parent),myDet(detector),actualNumSteps(0){
 	setupUi(this);
+	positions.resize(0);
 	SetupWidgetWindow();
 	Initialization();
 	LoadPositions();

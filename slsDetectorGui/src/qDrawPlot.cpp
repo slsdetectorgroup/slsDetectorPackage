@@ -31,7 +31,7 @@ using namespace std;
 
 
 qDrawPlot::qDrawPlot(QWidget *parent,multiSlsDetector*& detector):
-		QWidget(parent),myDet(detector){
+		 QWidget(parent),myDet(detector),plot1D_hists(0){
 	SetupWidgetWindow();
 	Initialization();
 	StartStopDaqToggle(); //as default
@@ -406,6 +406,10 @@ bool qDrawPlot::StartOrStopThread(bool start){
 		//sets up the measurement parameters
 		SetupMeasurement();
 
+		//refixing all the min and max for 2ds if zoomed in
+		if (scanArgument != None)
+			plot2D->GetPlot()->SetZoom(-0.5,startPixel,nPixelsX,endPixel-startPixel);
+
 
 		cout << "Starting new acquisition threadddd ...." << endl;
 		// Start acquiring data from server
@@ -433,6 +437,7 @@ void qDrawPlot::SetScanArgument(int scanArg){
 	scanArgument = scanArg;
 
 	if(plot_in_scope==1) Clear1DPlot();
+
 
 	LockLastImageArray();
 
@@ -557,14 +562,14 @@ void qDrawPlot::SetupMeasurement(){
 			endPixel = maxPixelsY + (pixelWidth/2);
 		}
 	}
-/*
+
 	cout<<"nPixelsX:"<<nPixelsX<<endl;
 	cout<<"nPixelsY:"<<nPixelsY<<endl;
 	cout<<"minPixelsY:"<<minPixelsY<<endl;
 	cout<<"maxPixelsY:"<<maxPixelsY<<endl;
 	cout<<"startPixel:"<<startPixel<<endl;
 	cout<<"endPixel:"<<endPixel<<endl<<endl;
-*/
+
 	UnlockLastImageArray();
 }
 
@@ -599,6 +604,11 @@ int qDrawPlot::GetData(detectorData *data,int fIndex){
 		//set progress
 		progress=(int)data->progressIndex;
 		currentFrameIndex = fileIOStatic::getIndicesFromFileName(string(data->fileName),currentFileIndex);
+		//happens if receiver sends a null and empty file name
+		if(string(data->fileName).empty()){
+			cout << "Received empty file name. Exiting function without updating data for plot." << endl;
+			return -1;
+		}
 #ifdef VERYVERBOSE
 		cout << "progress:" << progress << endl;
 #endif
@@ -1075,6 +1085,7 @@ void qDrawPlot::UpdatePlot(){
 						XYRangeChanged	= false;
 					}
 					if(saveAll) SavePlotAutomatic();
+					cout<<"updated 2d plot: ymin:"<<plot2D->GetPlot()->GetYMinimum()<< "\tymax:"<<plot2D->GetPlot()->GetYMaximum()<<endl;
 				}
 			}
 			//}
@@ -1537,6 +1548,18 @@ void qDrawPlot::CalculatePedestal(){
 			break;
 		}
 	}
+}
+
+
+//-------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+void qDrawPlot::plot2DUnzoom(){
+	plot2D->GetPlot()->SetXMinMax(plot2D->GetPlot()->GetXMinimum(),plot2D->GetPlot()->GetXMaximum());
+	plot2D->GetPlot()->SetYMinMax(plot2D->GetPlot()->GetYMinimum(),plot2D->GetPlot()->GetYMaximum());
+
+	//if(scanArgument!=None)/*if(plot_in_scope==2)*/
+	//	plot2D->GetPlot()->UnZoom();
 }
 
 

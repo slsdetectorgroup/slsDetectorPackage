@@ -19,6 +19,8 @@ using namespace std;
 qTabSettings::qTabSettings(QWidget *parent,multiSlsDetector*& detector):
 		QWidget(parent),myDet(detector),expertMode(false){
 
+	for(int i=0;i<NumSettings;i++)
+		item[i]=0;
 	setupUi(this);
 	SetupWidgetWindow();
 	Initialization();

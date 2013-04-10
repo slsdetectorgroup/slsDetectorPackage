@@ -19,7 +19,7 @@
 //-------------------------------------------------------------------------------------------------------------------------------------------------
 
 qCloneWidget::qCloneWidget(QWidget *parent,int id,QString title,int numDim,SlsQt1DPlot*& plot1D,SlsQt2DPlotLayout*& plot2D,string FilePath):
-		QMainWindow(parent),id(id),filePath(FilePath){
+	QMainWindow(parent),id(id),cloneplot2D(0),cloneplot1D(0),filePath(FilePath){
 	/** Window title*/
 	char winTitle[300],currTime[50];
 	strcpy(currTime,GetCurrentTimeStamp());
@@ -36,7 +36,6 @@ qCloneWidget::~qCloneWidget(){
 	delete cloneplot1D;
 	delete cloneplot2D;
 	delete cloneBox;
-	delete boxSave;
 }
 
 //-------------------------------------------------------------------------------------------------------------------------------------------------
@@ -82,13 +81,11 @@ void qCloneWidget::SetupWidgetWindow(QString title,int numDim,SlsQt1DPlot*& plot
 	}
 
 	/** main window widgets */
-	//mainLayout->addWidget(boxSave,0,0);
 	mainLayout->addWidget(cloneBox,1,0);
 	setCentralWidget(centralWidget);
 
 	/** Save */
 	connect(actionSave,SIGNAL(triggered()),this,SLOT(SavePlot()));
-		//connect(btnSave, SIGNAL(clicked()),	this, SLOT(SavePlot()));
 
 	setMinimumHeight(300);
 	resize(500,350);
@@ -218,7 +215,6 @@ char* qCloneWidget::GetCurrentTimeStamp(){
 //-------------------------------------------------------------------------------------------------------------------------------------------------
 
 void qCloneWidget::SavePlot(){
-	//QString fName = QString(filePath.c_str())+'/'+dispFName->text()+comboFormat->currentText();
 	char cID[10];
 	sprintf(cID,"%d",id);
 	//title

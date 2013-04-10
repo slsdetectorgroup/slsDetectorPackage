@@ -27,8 +27,8 @@ int qServer::gui_server_thread_running(0);
 
 
 qServer::qServer(qDetectorMain *t):
-		 myMainTab(t), mySocket(NULL),myStopSocket(NULL),port_no(DEFAULT_GUI_PORTNO),lockStatus(0){
-
+		  myMainTab(t), mySocket(NULL),myStopSocket(NULL),port_no(DEFAULT_GUI_PORTNO),lockStatus(0),checkStarted(0),checkStopStarted(0){
+	strcpy(mess,"");
 	FunctionTable();
 
 }

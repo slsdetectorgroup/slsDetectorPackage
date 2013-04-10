@@ -119,15 +119,6 @@ private:
 	QGridLayout *mainLayout;
 	QGroupBox 	*cloneBox;
 	QGridLayout *gridClone;
-    QGroupBox 	*boxSave;
-    QHBoxLayout *layoutSave;
-    QLabel 		*lblFName;
-    QHBoxLayout *hLayoutSave;
-    QLineEdit	*dispFName;
-    QComboBox 	*comboFormat;
-    QPushButton *btnSave;
-    QCheckBox 	*chkAutoFName;
-    QCheckBox 	*chkSaveAll;
 
     QLabel		*lblHistTitle;
 

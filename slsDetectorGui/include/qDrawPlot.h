@@ -125,6 +125,8 @@ public:
 	 * and this is reset when the gui really starts/stops- to know when to return
 	 */
 	bool GetClientInitiated(){return clientInitiated;};
+	/** Unzoom plot 2d as it will affect scans */
+	void plot2DUnzoom();
 
 public slots:
 /** To select 1D or 2D plot
@@ -156,6 +158,7 @@ void SetMarkers(bool enable){markers = enable;};
 void SetScanArgument(int scanArg);
 /** sets stop_signal to true */
 void StopAcquisition(){	stop_signal = true; };
+
 
 //pedestal
 /** reset pedestal */

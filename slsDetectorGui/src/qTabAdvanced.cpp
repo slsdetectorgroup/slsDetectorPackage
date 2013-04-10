@@ -20,7 +20,16 @@ using namespace std;
 
 
 qTabAdvanced::qTabAdvanced(QWidget *parent,multiSlsDetector*& detector, qDrawPlot*& plot):
-		QWidget(parent),myDet(detector),myPlot(plot),btnGroup(NULL),isEnergy(false),isAngular(false){
+				  QWidget(parent),myDet(detector),det(0),myPlot(plot),btnGroup(NULL),isEnergy(false),isAngular(false),
+				  lblFromX(0),
+				  spinFromX(0),
+				  lblFromY(0),
+				  spinFromY(0),
+				  lblToX(0),
+				  spinToX(0),
+				  lblToY(0),
+				  spinToY(0),
+				  numRois(0){
 	setupUi(this);
 	SetupWidgetWindow();
 }
@@ -32,6 +41,7 @@ qTabAdvanced::qTabAdvanced(QWidget *parent,multiSlsDetector*& detector, qDrawPlo
 
 qTabAdvanced::~qTabAdvanced(){
 	delete myDet;
+	if(det) delete det;
 }
 
 

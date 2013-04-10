@@ -33,7 +33,18 @@ QString qTabPlot::defaultImageZAxisTitle("Intensity");
 //-------------------------------------------------------------------------------------------------------------------------------------------------
 
 
-qTabPlot::qTabPlot(QWidget *parent,multiSlsDetector*& detector, qDrawPlot*& plot):QWidget(parent),myDet(detector),myPlot(plot){
+qTabPlot::qTabPlot(QWidget *parent,multiSlsDetector*& detector, qDrawPlot*& plot):
+				QWidget(parent),
+				myDet(detector),
+				myPlot(plot),
+				isOneD(false),
+				isOriginallyOneD(false),
+				wrongInterval(0),
+				stackedLayout(0),
+				spinNthFrame(0),
+				spinTimeGap(0),
+				comboTimeGapUnit(0),
+				btnGroupScan(0){
 	setupUi(this);
 	SetupWidgetWindow();
 	Initialization();

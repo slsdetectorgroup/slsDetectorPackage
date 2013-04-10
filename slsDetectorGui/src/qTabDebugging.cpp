@@ -21,7 +21,18 @@ using namespace std;
 
 
 qTabDebugging::qTabDebugging(QWidget *parent,multiSlsDetector*& detector):
-		QWidget(parent),myDet(detector),treeDet(NULL){
+				  QWidget(parent),
+				  myDet(detector),
+				  det(0),
+				  treeDet(0),
+				  dispFrame(0),
+				  lblDetectorId(0),
+				  lblDetectorSerial(0),
+				  lblDetectorFirmware(0),
+				  lblDetectorSoftware(0),
+				  lblModuleId(0),
+				  lblModuleFirmware(0),
+				  lblModuleSerial(0){
 	setupUi(this);
 	SetupWidgetWindow();
 	Initialization();
@@ -33,6 +44,7 @@ qTabDebugging::qTabDebugging(QWidget *parent,multiSlsDetector*& detector):
 
 qTabDebugging::~qTabDebugging(){
 	delete myDet;
+	if(det) delete det;
 }
 
 

@@ -8,7 +8,7 @@
 #include "firmware_funcs.h"
 #include "mcb_funcs.h"
 #include "trimming_funcs.h"
-#include "registers_g.h"
+#include "registers_m.h"
 #include "svnInfoMoench.h"
 
 #define FIFO_DATA_REG_OFF     0x50<<11

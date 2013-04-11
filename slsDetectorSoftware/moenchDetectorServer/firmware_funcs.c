@@ -2,7 +2,7 @@
 #include "server_defs.h"
 #include "firmware_funcs.h"
 #include "mcb_funcs.h"
-#include "registers_g.h"
+#include "registers_m.h"
 
 #ifdef SHAREDMEMORY
 #include "sharedmemory.h"

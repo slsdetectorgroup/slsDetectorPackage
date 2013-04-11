@@ -5,7 +5,7 @@
 #include <string.h>
 #include <unistd.h>
 #include <math.h>
-#include "registers_g.h"
+#include "registers_m.h"
 
 #ifndef PICASSOD
 #include "server_defs.h"

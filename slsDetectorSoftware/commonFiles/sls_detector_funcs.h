@@ -132,7 +132,9 @@ enum {
 
   F_SET_FRAME_INDEX,		/**< sets the receiver frame index */
 
-  F_CALIBRATE_PEDESTAL		/**< starts acquistion, calibrates pedestal and write back to fpga */
+  F_CALIBRATE_PEDESTAL,		/**< starts acquistion, calibrates pedestal and write back to fpga */
+
+  F_READ_RECEIVER_FREQUENCY /**< sets the frequency of receiver sending frames to gui */
   /* Always append functions hereafter!!! */
 
 };

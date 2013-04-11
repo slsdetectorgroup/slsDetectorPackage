@@ -1187,6 +1187,12 @@ class multiSlsDetector  : public slsDetectorUtils {
   */
   int calibratePedestal(int frames = 0);
 
+  /** Sets the read receiver frequency
+   	  if Receiver read upon gui request, readRxrFrequency=0,
+   	   else every nth frame to be sent to gui
+   	   /returns read receiver frequency
+   */
+  int setReadReceiverFrequency(int i=-1);
 
  protected:
  

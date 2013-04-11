@@ -13,9 +13,11 @@
 #include "genericSocket.h"
 #include "circularFifo.h"
 
+
 #include <string.h>
 #include <pthread.h>
 #include <stdio.h>
+
 
 /**
  * @short does all the functions for a receiver, set/get parameters, start/stop etc.
@@ -186,6 +188,12 @@ public:
 	int setShortFrame(int i);
 
 	/**
+	 * Set the variable to send every nth frame to gui
+	 * or if 0,send frame only upon gui request
+	 */
+	int setNFrameToGui(int i){if(i>=0) nFrameToGui = i; return nFrameToGui;};
+
+	/**
 	 * Register call back function to write receiver data
 	 */
 	void registerWriteReceiverDataCallback(int( *userCallback)(char*, int, FILE*, void*), void *pArg) {writeReceiverData = userCallback; pwriteReceiverDataArg = pArg;};
@@ -298,6 +306,11 @@ private:
 	/** current frame number */
 	int currframenum;
 
+	/** send every nth frame to gui or only upon gui request*/
+	int nFrameToGui;
+
+
+
 	/** register for call back to get data */
 	int (*writeReceiverData)(char*,int,FILE*,void*);
 	void *pwriteReceiverDataArg;
@@ -343,12 +356,16 @@ private:
 	 * 2 we open, close, write file, callback does not do anything */
 	int cbAction;
 
+
+
+
 public:
 	/** File Descriptor */
 	static FILE *sfilefd;
 
 	/** if the listening thread is running*/
 	static int listening_thread_running;
+
 
 	/**
 	   callback arguments are
@@ -365,7 +382,6 @@ public:
 	*/
 	void registerCallBackStartAcquisition(int (*func)(char*, char*,int, int, void*),void *arg){startAcquisitionCallBack=func; pStartAcquisition=arg;};
 
-
 	/**
 	   callback argument is
 	   toatal frames caught
@@ -373,8 +389,6 @@ public:
 	*/
 	void registerCallBackAcquisitionFinished(void (*func)(int, void*),void *arg){acquisitionFinishedCallBack=func; pAcquisitionFinished=arg;};
 	
-
-
 	/**
 	  args to raw data ready callback are
 	  framenum
@@ -383,10 +397,6 @@ public:
 	  guidatapointer (NULL, no data required)
 	*/
 	void registerCallBackRawDataReady(void (*func)(int, char*, FILE*, char*, void*),void *arg){rawDataReadyCallBack=func; pRawDataReady=arg;};
-
-
-
-
 };
 
 

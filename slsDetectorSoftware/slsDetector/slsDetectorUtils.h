@@ -672,6 +672,14 @@ virtual int setROI(int n=-1,ROI roiLimits[]=NULL)=0;
 */
 virtual ROI* getROI(int &n)=0;
 
+/** Sets the variable readRxrFrequency.
+ 	  if Receiver read upon gui request, readRxrFrequency=0,
+ 	   else every nth frame to be sent to gui
+ 	   /returns read receiver frequency
+ */
+virtual int setReadReceiverFrequency(int i=-1)=0;
+
+
 
   protected:
 

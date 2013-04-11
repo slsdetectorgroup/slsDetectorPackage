@@ -398,11 +398,14 @@ void* postProcessing::processData(int delflag) {
 		if (checkJoinThread()) break;
 		usleep(200000);
 		}
-		*/
+		 */
+		/*if(setReadReceiverFrequency()>0)) ******Not implemented yet ********
+		 * else
+		 */
 
-		  pthread_mutex_lock(&mg);
+		pthread_mutex_lock(&mg);
 		int prevCaught=getReceiverCurrentFrameIndex();
-		 pthread_mutex_unlock(&mg);
+		pthread_mutex_unlock(&mg);
 
 		int caught=0;
 		bool newData=false;
@@ -446,10 +449,11 @@ void* postProcessing::processData(int delflag) {
 					}
 				}
 				else{
-					cout<<"****Detector returned mismatched indeices***"<<endl;
+					cout<<"****Detector returned mismatched indices/garbage. Trying again.***"<<endl;
 				}
 			}
 		}
+
 	}
 
 	return 0;

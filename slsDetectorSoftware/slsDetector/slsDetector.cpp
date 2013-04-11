@@ -6015,6 +6015,7 @@ int* slsDetector::readFrameFromReceiver(char* fName, int &fIndex){
 				n= dataSocket->ReceiveDataOnly(mess,sizeof(mess));
 				std::cout<< "Detector returned: " << mess << " " << n << std::endl;
 				delete [] retval;
+				dataSocket->Disconnect();
 				return NULL;
 			} else {
 				n=dataSocket->ReceiveDataOnly(fName,MAX_STR_LENGTH);
@@ -6027,6 +6028,7 @@ int* slsDetector::readFrameFromReceiver(char* fName, int &fIndex){
 					std::cout<<endl<< "wrong data size received: received " << n << " but expected from receiver " << thisDetector->dataBytes << std::endl;
 					ret=FAIL;
 					delete [] retval;
+					dataSocket->Disconnect();
 					return NULL;
 				}
 			}
@@ -6264,3 +6266,23 @@ int64_t slsDetector::clearAllErrorMask(){
 }
 
 
+
+int slsDetector::setReadReceiverFrequency(int i){
+	int fnum=F_READ_RECEIVER_FREQUENCY;
+	int ret = FAIL;
+	int retval=-1;
+	int arg = i;
+
+	if(setReceiverOnline(ONLINE_FLAG)==ONLINE_FLAG){
+#ifdef VERBOSE
+		std::cout << "Sending read frequency to receiver " << arg << std::endl;
+#endif
+		if (connectData() == OK)
+			ret=thisReceiver->sendInt(fnum,retval,arg);
+		if(ret==FAIL)
+			retval = -1;
+		if(ret==FORCE_UPDATE)
+			updateReceiver();
+	}
+	return retval;
+}

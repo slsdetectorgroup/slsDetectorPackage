@@ -56,6 +56,7 @@ slsReceiverFunctionList::slsReceiverFunctionList():
 						guiData(NULL),
 						guiFileName(NULL),
 						currframenum(0),
+						nFrameToGui(0),
 						writeReceiverData(0),
 						pwriteReceiverDataArg(0),
 						startAcquisitionCallBack(NULL),
@@ -410,6 +411,9 @@ int slsReceiverFunctionList::startWriting(){
 	cout << "Max Frames Per File:" << maxFramesPerFile << endl;
 	if (writeReceiverData)
 		cout << "Note: Data Write has been defined exernally" << endl;
+	if(nFrameToGui)
+		cout << " Not implemented yet: Sending every " << nFrameToGui << "th frame to gui" <<  endl;
+
 	cout << "Ready!" << endl;
 
 	//by default, we read/write everything
@@ -485,11 +489,14 @@ int slsReceiverFunctionList::startWriting(){
 					} else {
 						if(sfilefd)
 							fwrite(wbuf, 1, bufferSize, sfilefd);
-						else
+						else{
 							cout << "You do not have permissions to overwrite: " << savefilename << endl;
+							usleep(50000);
+						}
 					}
 
 				}
+
 
 				//copies gui data and sets/resets guiDataReady
 				if(guiData){
@@ -499,6 +506,7 @@ int slsReceiverFunctionList::startWriting(){
 					guiDataReady=1;
 				}else
 					guiDataReady=0;
+
 
 
 				framesInFile++;

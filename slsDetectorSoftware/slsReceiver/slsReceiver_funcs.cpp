@@ -181,6 +181,8 @@ int slsReceiverFuncs::function_table(){
 	flist[F_GET_FRAME_INDEX]		=	&slsReceiverFuncs::get_frame_index;
 	flist[F_RESET_FRAMES_CAUGHT]	=	&slsReceiverFuncs::reset_frames_caught;
 	flist[F_READ_FRAME]				=	&slsReceiverFuncs::read_frame;
+	flist[F_READ_ALL]				=  	&slsReceiverFuncs::read_all;
+	flist[F_READ_RECEIVER_FREQUENCY]= 	&slsReceiverFuncs::set_read_frequency;
 	flist[F_ENABLE_FILE_WRITE]		=	&slsReceiverFuncs::enable_file_write;
 	flist[F_GET_ID]					=	&slsReceiverFuncs::get_version;
 	flist[F_CONFIGURE_MAC]			=	&slsReceiverFuncs::set_short_frame;
@@ -860,8 +862,8 @@ int	slsReceiverFuncs::read_frame(){
 				count++;
 			}
 
-			if ((count==20) || (count == -1)){
-				if (count == -20)
+			if ((count==10) || (count == -1)){
+				if (count == -10)
 					cout << "same type: index:" << index << "\tindex2:" << index2 << endl;
 				else
 					cout << "no data to read for gui" << endl;
@@ -912,6 +914,56 @@ int	slsReceiverFuncs::read_frame(){
 }
 
 
+
+
+int slsReceiverFuncs::set_read_frequency(){
+	ret=OK;
+	int retval=-1;
+	int index;
+	strcpy(mess,"Could not set receiver read frequency\n");
+
+
+	// receive arguments
+	if(socket->ReceiveDataOnly(&index,sizeof(index)) < 0 ){
+		strcpy(mess,"Error reading from socket\n");
+		ret = FAIL;
+	}
+
+	// execute action if the arguments correctly arrived
+#ifdef SLS_RECEIVER_FUNCTION_LIST
+	if (ret==OK) {
+		if (lockStatus==1 && socket->differentClients==1){//necessary???
+			sprintf(mess,"Receiver locked by %s\n", socket->lastClientIP);
+			ret=FAIL;
+		}
+		else
+			retval=slsReceiverList->setNFrameToGui(index);
+	}
+
+#endif
+
+	if(ret==OK && socket->differentClients){
+		cout << "Force update" << endl;
+		ret=FORCE_UPDATE;
+	}
+
+	// send answer
+	socket->SendDataOnly(&ret,sizeof(ret));
+	if(ret==FAIL)
+		socket->SendDataOnly(mess,sizeof(mess));
+	socket->SendDataOnly(&retval,sizeof(retval));
+
+	//return ok/fail
+	return ret;
+}
+
+
+
+
+/**needs to be implemented */
+int slsReceiverFuncs::read_all(){
+	return ret;
+}
 
 
 

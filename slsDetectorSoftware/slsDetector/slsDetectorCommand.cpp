@@ -707,6 +707,9 @@ slsDetectorCommand::slsDetectorCommand(slsDetectorUtils *det)  {
   descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdLastClient;
   i++;
 
+  descrToFuncMap[i].m_pFuncName="r_readfreq"; //
+  descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdReceiver;
+  i++;
 
   numberOfCommands=i;
   
@@ -3634,6 +3637,7 @@ string slsDetectorCommand::helpConfiguration(int narg, char *args[], int action)
 
 string slsDetectorCommand::cmdReceiver(int narg, char *args[], int action) {
   char answer[100];
+  int ival = -1;
 
   if (action==HELP_ACTION)
     return helpReceiver(narg, args, action);
@@ -3671,9 +3675,19 @@ string slsDetectorCommand::cmdReceiver(int narg, char *args[], int action) {
       return string(answer);
     }
   }
+  else if(cmd=="r_readfreq"){
+	  if (action==PUT_ACTION){
+		  if (!sscanf(args[1],"%d",&ival))
+			  return string("Could not scan read frequency mode ")+string(args[1]);
+		  if(ival>=0)
+			  myDet->setReadReceiverFrequency(ival);
+	  }
+	  sprintf(answer,"%d",myDet->setReadReceiverFrequency());
+	  return string(answer);
+
+  }
 
 
-  else
     return string("could not decode command");
 
 }
@@ -3685,10 +3699,12 @@ string slsDetectorCommand::helpReceiver(int narg, char *args[], int action) {
   ostringstream os;
   if (action==PUT_ACTION || action==HELP_ACTION)
     os << "receiver [status] \t starts/stops the receiver to listen to detector packets. - can be start or stop" << std::endl;
+  	os << "r_readfreq \t sets the gui read frequency of the receiver, 0 if gui requests frame, >0 if receiver sends every nth frame to gui" << std::endl;
   if (action==GET_ACTION || action==HELP_ACTION){
     os << "receiver \t returns the status of receiver - can be running or idle" << std::endl;
     os << "framescaught \t returns the number of frames caught by receiver(average for multi)" << std::endl;
     os << "frameindex \t returns the current frame index of receiver(average for multi)" << std::endl;
+    os << "r_readfreq \t returns the gui read frequency of the receiver" << std::endl;
   }
   return os.str();
 

@@ -26,10 +26,11 @@ const enum detectorType myDetectorType=GOTTHARD;
 const enum detectorType myDetectorType=EIGER;
 #elif PICASSOD
 const enum detectorType myDetectorType=PICASSO;
+#elif MOENCHD
+const enum detectorType myDetectorType=MOENCH;
 #else
 const enum detectorType myDetectorType=GENERIC;
 #endif
-
 
 
 extern int nModX;

@@ -9,7 +9,7 @@
 #include "mcb_funcs.h"
 #include "trimming_funcs.h"
 #include "registers_g.h"
-#include "svnInfoGotthard.h"
+#include "svnInfoMoench.h"
 
 #define FIFO_DATA_REG_OFF     0x50<<11
 #define CONTROL_REG           0x24<<11
@@ -17,12 +17,23 @@
 
 int (*flist[256])(int);
 
-#ifdef MCB_FUNCS
-extern const enum detectorType myDetectorType;
-#endif
-#ifndef MCB_FUNCS
+
+//defined in the detector specific file
+#ifdef MYTHEND
+const enum detectorType myDetectorType=MYTHEN;
+#elif GOTTHARDD
 const enum detectorType myDetectorType=GOTTHARD;
+#elif EIGERD
+const enum detectorType myDetectorType=EIGER;
+#elif PICASSOD
+const enum detectorType myDetectorType=PICASSO;
+#elif MOENCHD
+const enum detectorType myDetectorType=MOENCH;
+#else
+const enum detectorType myDetectorType=GENERIC;
 #endif
+
+
 extern int nModX;
 extern int nModY;
 extern int dataBytes;
@@ -46,7 +57,7 @@ int digitalTestBit = 0;
 
 int init_detector( int b) {
 #ifndef PICASSOD
-  printf("This is a GOTTHARD detector with %d chips per module\n", NCHIP);
+  printf("This is a MOENCH detector with %d chips per module\n", NCHIP);
 #else
   printf("This is a PICASSO detector with %d chips per module\n", NCHIP);
 #endif
@@ -63,7 +74,7 @@ int init_detector( int b) {
 #endif
     testFpga();
     testRAM();
-    //gotthard specific
+    //moench specific
     setPhaseShiftOnce();
     
     prepareADC();
@@ -1569,7 +1580,7 @@ int get_threshold_energy(int file_des) {
   int n;
   int  imod;
 
-  strcpy(mess,"cannot set threshold for gotthard");
+  strcpy(mess,"cannot set threshold for moench");
 
   n = receiveDataOnly(file_des,&imod,sizeof(imod));
   if (n < 0)
@@ -1590,7 +1601,7 @@ int set_threshold_energy(int file_des) {
   int arg[3];
   int n;
 
-  strcpy(mess,"cannot set threshold for gotthard");
+  strcpy(mess,"cannot set threshold for moench");
 
   n = receiveDataOnly(file_des,&arg,sizeof(arg));
   if (n < 0)
@@ -2053,7 +2064,7 @@ int set_timer(int file_des) {
 	retval=setGates(tns);
 	break;
       case PROBES_NUMBER: 
-    sprintf(mess,"can't set timer for gotthard\n");
+    sprintf(mess,"can't set timer for moench\n");
     ret=FAIL;
 	break;
       case CYCLES_NUMBER: 
@@ -2317,7 +2328,7 @@ int set_speed(int file_des) {
   receiveDataOnly(file_des,&arg,sizeof(arg));
   receiveDataOnly(file_des,&val,sizeof(val));
   
-  sprintf(mess,"can't set speed variable for gotthard\n");
+  sprintf(mess,"can't set speed variable for moench\n");
 
 
   sendDataOnly(file_des,&ret,sizeof(ret));
@@ -2337,7 +2348,7 @@ int set_readout_flags(int file_des) {
 
   receiveDataOnly(file_des,&arg,sizeof(arg));
 
-  sprintf(mess,"can't set readout flags for gotthard\n");
+  sprintf(mess,"can't set readout flags for moench\n");
   
   sendDataOnly(file_des,&ret,sizeof(ret));
   sendDataOnly(file_des,mess,sizeof(mess));
@@ -2355,7 +2366,7 @@ int execute_trimming(int file_des) {
   int ret=FAIL;
   enum trimMode mode;
   
-  sprintf(mess,"can't set execute trimming for gotthard\n");
+  sprintf(mess,"can't set execute trimming for moench\n");
   
   receiveDataOnly(file_des,&mode,sizeof(mode));
   receiveDataOnly(file_des,arg,sizeof(arg));

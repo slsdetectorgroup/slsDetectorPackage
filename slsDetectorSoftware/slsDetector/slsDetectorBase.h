@@ -477,7 +477,7 @@ class slsDetectorBase :  public virtual slsDetectorDefs, public virtual errorDef
 
   /** returns detector type string from detector type index
       \param t string can be Mythen, Pilatus, Eiger, Gotthard, Agipd, Unknown
-      \returns MYTHEN, PILATUS, EIGER, GOTTHARD, AGIPD, GENERIC
+      \returns MYTHEN, PILATUS, EIGER, GOTTHARD, AGIPD, MÖNCH, GENERIC
   */
   static string getDetectorType(detectorType t){\
     switch (t) {\
@@ -486,12 +486,13 @@ class slsDetectorBase :  public virtual slsDetectorDefs, public virtual errorDef
     case EIGER:    return string("Eiger");	\
     case GOTTHARD:    return string("Gotthard");	\
     case AGIPD:    return string("Agipd");		\
+    case MOENCH:    return string("Mönch");		\
     default:    return string("Unknown");		\
     }};
 
   /** returns detector type index from detector type string
       \param type can be MYTHEN, PILATUS, EIGER, GOTTHARD, AGIPD, GENERIC
-      \returns Mythen, Pilatus, Eiger, Gotthard, Agipd, Unknown
+      \returns Mythen, Pilatus, Eiger, Gotthard, Agipd, Mönch, Unknown
   */
   static detectorType getDetectorType(string const type){\
     if (type=="Mythen")      return MYTHEN;\
@@ -499,6 +500,7 @@ class slsDetectorBase :  public virtual slsDetectorDefs, public virtual errorDef
     if  (type=="Eiger")    return EIGER;		\
     if  (type=="Gotthard")    return GOTTHARD;	\
     if  (type=="Agipd")    return AGIPD;		\
+    if  (type=="Mönch")    return MOENCH;		\
     return GENERIC;};
 
 

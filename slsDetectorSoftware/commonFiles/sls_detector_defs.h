@@ -172,7 +172,8 @@ enum detectorType {
   EIGER, /**< eiger */
   GOTTHARD, /**< gotthard */
   PICASSO, /**< picasso */
-  AGIPD /**< agipd */
+  AGIPD, /**< agipd */
+  MOENCH /**< moench */
 };
 
 /* /\**  */

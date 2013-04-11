@@ -8,13 +8,13 @@
 
 // Hardware definitions
 
-#define NCHAN 128
-#define NCHIP 10
+#define NCHAN 160*160
+#define NCHIP 1
 #define NMAXMODX  1
 #define NMAXMODY 1
 #define NMAXMOD NMAXMODX*NMAXMODY
 #define NDAC 8
-#define NADC 5
+#define NADC 1
 
 #define NCHANS NCHAN*NCHIP*NMAXMOD
 #define NDACS NDAC*NMAXMOD

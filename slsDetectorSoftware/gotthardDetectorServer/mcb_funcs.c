@@ -26,7 +26,6 @@ const int nChans=NCHAN;
 const int nChips=NCHIP;
 const int nDacs=NDAC;
 const int nAdcs=NADC;
-const enum detectorType myDetectorType=GOTTHARD;
 enum detectorSettings thisSettings;
 
 int sChan, sChip, sMod, sDac, sAdc;

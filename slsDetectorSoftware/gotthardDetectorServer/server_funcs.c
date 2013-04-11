@@ -17,12 +17,21 @@
 
 int (*flist[256])(int);
 
-#ifdef MCB_FUNCS
-extern const enum detectorType myDetectorType;
-#endif
-#ifndef MCB_FUNCS
+//defined in the detector specific file
+#ifdef MYTHEND
+const enum detectorType myDetectorType=MYTHEN;
+#elif GOTTHARDD
 const enum detectorType myDetectorType=GOTTHARD;
+#elif EIGERD
+const enum detectorType myDetectorType=EIGER;
+#elif PICASSOD
+const enum detectorType myDetectorType=PICASSO;
+#else
+const enum detectorType myDetectorType=GENERIC;
 #endif
+
+
+
 extern int nModX;
 extern int nModY;
 extern int dataBytes;

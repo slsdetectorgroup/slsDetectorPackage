@@ -2,7 +2,7 @@
 DESTDIR ?= ./
 
 CC    = gcc
-CFLAGS += -Wall  -DMCB_FUNCS -DDACS_INT  -DDEBUG -DVIRTUAL 
+CFLAGS += -Wall  -DGOTTHARDD -DMCB_FUNCS -DDACS_INT  -DDEBUG -DVIRTUAL 
 
 
 PROGS= 		$(DESTDIR)/gotthardVirtualServer 

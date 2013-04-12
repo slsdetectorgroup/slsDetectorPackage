@@ -16,6 +16,13 @@
 #define NDAC 8
 #define NADC 1
 
+/**change this for the real moench chip*/
+#define GOTTHARDNCHAN 128
+#define GOTTHARDNCHIP 10
+
+
+
+
 #define NCHANS NCHAN*NCHIP*NMAXMOD
 #define NDACS NDAC*NMAXMOD
 

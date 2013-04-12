@@ -307,7 +307,7 @@ class slsDetector : public slsDetectorUtils, public energyConversion {
   static int exists(int id);
 
   /**  
-       configures mac for gotthard readout
+       configures mac for gotthard, moench readout
      \returns OK or FAIL
   */
   int configureMAC();
@@ -611,22 +611,22 @@ class slsDetector : public slsDetectorUtils, public energyConversion {
      sets/gets detector type
      normally  the detector knows what type of detector it is
      \param type is the detector type (defaults to GET_DETECTOR_TYPE)
-     \returns returns detector type index (1 GENERIC, 2 MYTHEN, 3 PILATUS, 4 XFS, 5 GOTTHARD, 6 AGIPD, -1 command failed)
+     \returns returns detector type index (1 GENERIC, 2 MYTHEN, 3 PILATUS, 4 XFS, 5 GOTTHARD, 6 AGIPD, 7 MOENCH, -1 command failed)
   */
   int setDetectorType(detectorType type=GET_DETECTOR_TYPE);  
 
   /** 
       sets/gets detector type
       normally  the detector knows what type of detector it is
-      \param type is the detector type ("Mythen", "Pilatus", "XFS", "Gotthard", Agipd")
-      \returns returns detector type index (1 GENERIC, 2 MYTHEN, 3 PILATUS, 4 XFS, 5 GOTTHARD, 6 AGIPD, -1 command failed)
+      \param type is the detector type ("Mythen", "Pilatus", "XFS", "Gotthard", Agipd", "Mönch")
+      \returns returns detector type index (1 GENERIC, 2 MYTHEN, 3 PILATUS, 4 XFS, 5 GOTTHARD, 6 AGIPD, 7 MOENCH, -1 command failed)
   */
   int setDetectorType(string type);  
 
   /** 
       gets detector type
       normally  the detector knows what type of detector it is
-      \returns returns detector type index (1 GENERIC, 2 MYTHEN, 3 PILATUS, 4 XFS, 5 GOTTHARD, 6 AGIPD, -1 command failed)
+      \returns returns detector type index (1 GENERIC, 2 MYTHEN, 3 PILATUS, 4 XFS, 5 GOTTHARD, 6 AGIPD, 7 MOENCH,-1 command failed)
   */
   detectorType getDetectorsType(int pos=-1);
 

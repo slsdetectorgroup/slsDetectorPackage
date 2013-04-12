@@ -486,7 +486,7 @@ class slsDetectorBase :  public virtual slsDetectorDefs, public virtual errorDef
     case EIGER:    return string("Eiger");	\
     case GOTTHARD:    return string("Gotthard");	\
     case AGIPD:    return string("Agipd");		\
-    case MOENCH:    return string("Mönch");		\
+    case MOENCH:    return string("Moench");		\
     default:    return string("Unknown");		\
     }};
 
@@ -500,7 +500,7 @@ class slsDetectorBase :  public virtual slsDetectorDefs, public virtual errorDef
     if  (type=="Eiger")    return EIGER;		\
     if  (type=="Gotthard")    return GOTTHARD;	\
     if  (type=="Agipd")    return AGIPD;		\
-    if  (type=="Mönch")    return MOENCH;		\
+    if  (type=="Moench")    return MOENCH;		\
     return GENERIC;};
 
 

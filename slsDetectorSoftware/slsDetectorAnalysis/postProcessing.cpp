@@ -393,12 +393,13 @@ void* postProcessing::processData(int delflag) {
 	}
 	//receiver
 	else{
-		/*
+/*
+		//without gui loop
 		while(1){
 		if (checkJoinThread()) break;
 		usleep(200000);
 		}
-		 */
+*/
 		/*if(setReadReceiverFrequency()>0)) ******Not implemented yet ********
 		 * else
 		 */
@@ -409,7 +410,7 @@ void* postProcessing::processData(int delflag) {
 
 		int caught=0;
 		bool newData=false;
-		char currentfName[MAX_STR_LENGTH];
+		char currentfName[MAX_STR_LENGTH]="";
 		int currentfIndex=0;
 		while(1){
 			cout.flush();

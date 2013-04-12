@@ -31,8 +31,9 @@ using namespace std;
 FILE* slsReceiverFunctionList::sfilefd(NULL);
 int slsReceiverFunctionList::listening_thread_running(0);
 
-slsReceiverFunctionList::slsReceiverFunctionList():
-						maxFramesPerFile(MAX_FRAMES),
+slsReceiverFunctionList::slsReceiverFunctionList(detectorType det):
+						myDetectorType(det),
+						maxFramesPerFile(MAX_FRAMES_PER_FILE),
 						enableFileWrite(1),
 						fileIndex(0),
 						frameIndexNeeded(0),
@@ -45,13 +46,13 @@ slsReceiverFunctionList::slsReceiverFunctionList():
 						framesInFile(0),
 						prevframenum(0),
 						status(IDLE),
-						latestData(NULL),/**?*/
+						latestData(NULL),
 						udpSocket(NULL),
 						server_port(DEFAULT_UDP_PORTNO),
 						fifo(NULL),
 						shortFrame(-1),
-						bufferSize(BUFFER_SIZE),
-						packetsPerFrame(2),
+						bufferSize(GOTTHARD_BUFFER_SIZE),
+						packetsPerFrame(GOTTHARD_PACKETS_PER_FRAME),
 						guiDataReady(0),
 						guiData(NULL),
 						guiFileName(NULL),
@@ -67,6 +68,12 @@ slsReceiverFunctionList::slsReceiverFunctionList():
 						pRawDataReady(NULL)
 
 {
+	if(myDetectorType == MOENCH){
+		maxFramesPerFile = MOENCH_MAX_FRAMES_PER_FILE;
+		bufferSize = MOENCH_BUFFER_SIZE;
+		packetsPerFrame = MOENCH_PACKETS_PER_FRAME;
+	}
+
 	strcpy(savefilename,"");
 	strcpy(filePath,"");
 	strcpy(fileName,"run");
@@ -75,16 +82,16 @@ slsReceiverFunctionList::slsReceiverFunctionList():
 	strcpy(eth,"");
 
 	latestData = new char[bufferSize];
-	fifofree = new CircularFifo<char,FIFO_SIZE>();
-	fifo = new CircularFifo<char,FIFO_SIZE>();
+	fifofree = new CircularFifo<char,GOTTHARD_FIFO_SIZE>();/**MOENCH SAME FIFO SIZE FOR NOW,ELSE MEMBER DECLARATION ERROR*/
+	fifo = new CircularFifo<char,GOTTHARD_FIFO_SIZE>();
 
 
-	mem0=(char*)malloc(4096*FIFO_SIZE);
+	mem0=(char*)malloc(4096*GOTTHARD_FIFO_SIZE);
 	if (mem0==NULL) {
 		cout<<"++++++++++++++++++++++ COULD NOT ALLOCATE MEMORY!!!!!!!+++++++++++++++++++++" << endl;
 	}
 	buffer=mem0;
-	while (buffer<(mem0+4096*(FIFO_SIZE-1))) {
+	while (buffer<(mem0+4096*(GOTTHARD_FIFO_SIZE-1))) {
 		fifofree->push(buffer);
 		buffer+=4096;
 	}
@@ -329,7 +336,7 @@ int slsReceiverFunctionList::startListening(){
 			if (!fifofree->isEmpty()) {
 				fifofree->pop(buffer);
 
-				//receiver 2 half frames
+				//receiver 2 half frames / 1 short frame / 40 moench frames
 				rc = udpSocket->ReceiveDataOnly(buffer,bufferSize);//sizeof(buffer));
 				if( rc < 0)
 					cerr << "recvfrom() failed" << endl;
@@ -477,7 +484,7 @@ int slsReceiverFunctionList::startWriting(){
 			if(fifo->pop(wbuf)){
 				framesCaught++;
 				totalFramesCaught++;
-				currframenum = (int)(*((int*)wbuf));
+				currframenum = (int)(*((int*)wbuf));//cout<<"curreframenm:"<<currframenum<<endl;
 
 				//write data
 				if(enableFileWrite){
@@ -515,7 +522,7 @@ int slsReceiverFunctionList::startWriting(){
 			}
 			//	delete dataWriteFrame;
 		}
-		else{
+		else{//cout<<"************************fifo empty**********************************"<<endl;
 			sleepnumber++;
 			usleep(50000);
 		}
@@ -581,14 +588,14 @@ int slsReceiverFunctionList::setShortFrame(int i){
 	shortFrame=i;
 
 	if(shortFrame!=-1){
-		bufferSize = SHORT_BUFFER_SIZE;
-		maxFramesPerFile = SHORT_MAX_FRAMES;
-		packetsPerFrame = 1;
+		bufferSize = GOTTHARD_SHORT_BUFFER_SIZE;
+		maxFramesPerFile = SHORT_MAX_FRAMES_PER_FILE;
+		packetsPerFrame = GOTTHARD_SHORT_PACKETS_PER_FRAME;
 
 	}else{
-		bufferSize = BUFFER_SIZE;
-		maxFramesPerFile = MAX_FRAMES;
-		packetsPerFrame = 2;
+		bufferSize = GOTTHARD_BUFFER_SIZE;
+		maxFramesPerFile = MAX_FRAMES_PER_FILE;
+		packetsPerFrame = GOTTHARD_PACKETS_PER_FRAME;
 	}
 
 	return shortFrame;

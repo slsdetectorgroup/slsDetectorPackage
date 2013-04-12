@@ -48,12 +48,19 @@ int slsDetector::initSharedMemory(detectorType type, int id) {
     nm=1; //modules/detector
     nc=4; //chips
     nd=16; //dacs+adcs
+    break;
+  case MOENCH:
+    nch=160*160;
+    nm=1; //modules/detector
+    nc=1; //chips
+    nd=9; //dacs+adcs
+    break;
   default:
     nch=0; // dum!
     nm=0; //modules/detector
     nc=0; //chips
     nd=0; //dacs+adcs
-     
+     break;
   }
   /**
      The size of the shared memory is:
@@ -148,7 +155,7 @@ slsDetector::slsDetector(int id,multiSlsDetector *p) :slsDetectorUtils(),
 #endif
   detId=id;
   
-  
+
   /**Initializes the detector stucture \sa initializeDetectorSize
    */
   initializeDetectorSize(type);
@@ -512,6 +519,15 @@ int slsDetector::initializeDetectorSize(detectorType type) {
       thisDetector->nModMax[Y]=1;
       thisDetector->dynamicRange=16;
       break;
+    case MOENCH:
+      thisDetector->nChans=160*160;
+      thisDetector->nChips=1;
+      thisDetector->nDacs=8;
+      thisDetector->nAdcs=1;
+      thisDetector->nModMax[X]=1;
+      thisDetector->nModMax[Y]=1;
+      thisDetector->dynamicRange=16;
+      break;
     default:
       thisDetector->nChans=0;
       thisDetector->nChips=0;
@@ -642,9 +658,9 @@ int slsDetector::initializeDetectorSize(detectorType type) {
   adcs=(dacs_t*)(goff+thisDetector->adcoff);
   chipregs=(int*)(goff+thisDetector->chipoff);
   chanregs=(int*)(goff+thisDetector->chanoff);
-  if (thisDetector->alreadyExisting==0) {  
+  if (thisDetector->alreadyExisting==0) {
     /** if thisDetector is new, initialize its structures \sa initializeDetectorStructure();   */ 
-    initializeDetectorStructure();   
+    initializeDetectorStructure();
     /** set  thisDetector->alreadyExisting=1  */   
     thisDetector->alreadyExisting=1;
   } 
@@ -691,7 +707,8 @@ int slsDetector::initializeDetectorSize(detectorType type) {
   framesPerFile=parentDet->framesPerFile;
   if(thisDetector->myDetectorType==GOTTHARD)
 	  setFramesPerFile(MAX_FRAMES_PER_FILE);
-
+  if (thisDetector->myDetectorType==MOENCH)
+	  setFramesPerFile(MOENCH_MAX_FRAMES_PER_FILE);
   thisReceiver = new receiverInterface(dataSocket);
 
   //  setAngularConversionPointer(thisDetector->angOff,&thisDetector->nMods, thisDetector->nChans*thisDetector->nChips);
@@ -723,14 +740,14 @@ int slsDetector::initializeDetectorStructure() {
 
     thisMod=detectorModules+imod;
     thisMod->module=imod;
-   
+
     /** sets the size of the module to nChans, nChips etc. */
     thisMod->nchan=thisDetector->nChans*thisDetector->nChips;
     thisMod->nchip=thisDetector->nChips;
     thisMod->ndac=thisDetector->nDacs;
     thisMod->nadc=thisDetector->nAdcs;
     
-    
+
     /** initializes the serial number and register to 0 */
     thisMod->serialnumber=0;
     thisMod->reg=0;
@@ -753,7 +770,7 @@ int slsDetector::initializeDetectorStructure() {
       *(chipregs+ichip+thisDetector->nChips*imod)=-1;
     }
     
-    
+
     /** initializes the channel registers to 0 */
     for (int ichan=0; ichan<thisDetector->nChans*thisDetector->nChips; ichan++) {
       *(chanregs+ichan+thisDetector->nChips*thisDetector->nChans*imod)=-1;
@@ -797,7 +814,15 @@ slsDetectorDefs::sls_detector_module*  slsDetector::createModule(detectorType t)
     nm=1; //modules/detector
     nc=4; //chips
     nd=16; //dacs
-    na=16; 
+    na=16;
+    break;
+  case MOENCH:
+    nch=160*160;
+    nm=1; //modules/detector
+    nc=1; //chips
+    nd=8; //dacs
+    na=1;
+    break;
   default:
     nch=0; // dum!
     nm=0; //modules/detector
@@ -1262,7 +1287,8 @@ int slsDetector::execCommand(string cmd, string answer){
    PILATUS,
    EIGER,
    GOTTHARD,
-   AGIPD
+   AGIPD,
+   MOENCH
    };
 
 */
@@ -2757,6 +2783,7 @@ slsDetectorDefs::detectorSettings slsDetector::setSettings( detectorSettings ise
   detectorSettings minsettings, maxsettings;
 
   switch(thisDetector->myDetectorType){
+  case MOENCH:
   case GOTTHARD:
     minsettings = HIGHGAIN;
     maxsettings = VERYHIGHGAIN;
@@ -2811,6 +2838,7 @@ slsDetectorDefs::detectorSettings slsDetector::setSettings( detectorSettings ise
       myMod->module=im;
       //create file names
       switch(thisDetector->myDetectorType){
+      case MOENCH:
       case GOTTHARD:
 	//settings is saved in myMod.reg for gotthard
 	myMod->reg=thisDetector->currentSettings;
@@ -2838,6 +2866,7 @@ slsDetectorDefs::detectorSettings slsDetector::setSettings( detectorSettings ise
       } else {
 	ostringstream ostfn,oscfn;
 	switch(thisDetector->myDetectorType){
+	case MOENCH:
 	case GOTTHARD:
 	  ostfn << thisDetector->settingsDir << ssettings << ssettings << ".settings";
 	  break;
@@ -2936,7 +2965,7 @@ int slsDetector::updateDetectorNoWait() {
   n = 	controlSocket->ReceiveDataOnly( &t,sizeof(t));
   thisDetector->currentSettings=t;
 
-  if(thisDetector->myDetectorType!= GOTTHARD){
+  if((thisDetector->myDetectorType!= GOTTHARD)&&(thisDetector->myDetectorType!= MOENCH)){
     //thr=getThresholdEnergy();
     n = 	controlSocket->ReceiveDataOnly( &thr,sizeof(thr));
     thisDetector->currentThresholdEV=thr;
@@ -2960,7 +2989,7 @@ int slsDetector::updateDetectorNoWait() {
   thisDetector->timerValue[GATES_NUMBER]=retval;
 
   //retval=setProbes(tns);
-  if(thisDetector->myDetectorType!= GOTTHARD){
+  if((thisDetector->myDetectorType!= GOTTHARD)&&(thisDetector->myDetectorType!= MOENCH)){
     n = 	controlSocket->ReceiveDataOnly( &retval,sizeof(int64_t));
     thisDetector->timerValue[PROBES_NUMBER]=retval;
   }
@@ -3401,7 +3430,7 @@ int64_t slsDetector::setTimer(timerIndex index, int64_t t){
       //std::cout<< "offline " << std::endl;
       if (t>=0)
 	thisDetector->timerValue[index]=t;
-      if(thisDetector->myDetectorType==GOTTHARD)
+      if((thisDetector->myDetectorType==GOTTHARD)||(thisDetector->myDetectorType==MOENCH))
     	  thisDetector->timerValue[PROBES_NUMBER]=0;
     }
   } else {
@@ -4941,8 +4970,8 @@ int slsDetector::configureMAC(){
     std::cout<< "Configuring MAC failed " << std::endl;
     setErrorMask((getErrorMask())|(COULD_NOT_CONFIGURE_MAC));
   }
-  else{
-    //set frames per file
+  else if (thisDetector->myDetectorType==GOTTHARD){
+    //set frames per file - only for gotthard
     if(retval==-1)
       setFramesPerFile(MAX_FRAMES_PER_FILE);
     else
@@ -5317,7 +5346,7 @@ int slsDetector::writeConfigurationFile(ofstream &outfile, int id){
   //    "trimen",
   //   "receiverTCPPort",
 	
-  if (thisDetector->myDetectorType==GOTTHARD) {
+  if ((thisDetector->myDetectorType==GOTTHARD)||(thisDetector->myDetectorType==MOENCH)) {
 	names[0]= "hostname";
 	names[1]= "port";
 	names[2]= "stopport";
@@ -5417,8 +5446,8 @@ int slsDetector::loadSettingsFile(string fname, int imod) {
     myMod=readSettingsFile(fn, thisDetector->myDetectorType);
     if (myMod) {
       myMod->module=im;
-      //settings is saved in myMod.reg for gotthard
-      if(thisDetector->myDetectorType==GOTTHARD)
+      //settings is saved in myMod.reg for gotthard or moench
+      if((thisDetector->myDetectorType==GOTTHARD)||(thisDetector->myDetectorType==MOENCH))
 	myMod->reg=thisDetector->currentSettings;
       setModule(*myMod);
       deleteModule(myMod);

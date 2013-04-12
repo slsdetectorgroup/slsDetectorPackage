@@ -41,6 +41,8 @@ typedef float dacs_t;
 
 #define MAX_FRAMES_PER_FILE			20000
 #define SHORT_MAX_FRAMES_PER_FILE	100000
+#define MOENCH_MAX_FRAMES_PER_FILE	1000
+
 
 /** 
     \file sls_detector_defs.h

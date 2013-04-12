@@ -200,7 +200,7 @@ slsDetectorDefs::sls_detector_module* energyConversion::readSettingsFile(string 
 
       break;
 
-
+    case MOENCH:
     case GOTTHARD:
       //---------------dacs---------------
       for (int iarg=0; iarg<myMod->ndac; iarg++) {
@@ -262,6 +262,7 @@ int energyConversion::writeSettingsFile(string fname, detectorType myDetectorTyp
     names[id++]="Vcal";
     names[id++]="outBuffEnable";
     break;
+  case MOENCH:
   case GOTTHARD:
     names[id++]="Vref";
     names[id++]="VcascN";
@@ -288,7 +289,7 @@ int energyConversion::writeSettingsFile(string fname, detectorType myDetectorTyp
       outfile << names[idac] << " " << iv << std::endl;
     }
       
-    if(myDetectorType!=GOTTHARD){
+    if((myDetectorType!=GOTTHARD)&&(myDetectorType!=MOENCH)){
       for (ichip=0; ichip<mod.nchip; ichip++) {
 	iv1=mod.chipregs[ichip]&1;
 	outfile << names[idac] << " " << iv1 << std::endl;

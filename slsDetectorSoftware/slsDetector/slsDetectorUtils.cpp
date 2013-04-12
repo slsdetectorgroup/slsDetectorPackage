@@ -310,7 +310,7 @@ void  slsDetectorUtils::acquire(int delflag){
 	    usleep(100000);
 	  }
 
-	  if (getDetectorsType()==GOTTHARD){
+	  if ((getDetectorsType()==GOTTHARD) || (getDetectorsType()==MOENCH)){
 		  if((*correctionMask)&(1<<WRITE_FILE))
 			  closeDataFile();
 	  }
@@ -466,7 +466,7 @@ int slsDetectorUtils::setTotalProgress() {
 
   if (timerValue[FRAME_NUMBER])
     nf=timerValue[FRAME_NUMBER];
-  
+  if(getDetectorsType() == MOENCH) nf/=20;/**TEMP SOLUTION:need to be removed when the proper moench is used*/
   if (timerValue[CYCLES_NUMBER]>0)
     nc=timerValue[CYCLES_NUMBER];
 

@@ -121,8 +121,17 @@ public:
 	/** Resets Total Frames Caught */
 	int	reset_frames_caught();
 
+	/** set short frame */
+	int set_short_frame();
+
 	/** Reads Frame/ buffer */
 	int	read_frame();
+
+	/** gotthard specific read frame */
+	int gotthard_read_frame();
+
+	/** moench specific read frame */
+	int moench_read_frame();
 
 	/** Sets the receiver to send every nth frame to gui, or only upon gui request */
 	int set_read_frequency();
@@ -136,8 +145,6 @@ public:
 	/** Get Version */
 	int get_version();
 
-	/** set short frame */
-	int set_short_frame();
 
 	//General Functions
 	/** Locks Receiver */
@@ -161,7 +168,12 @@ public:
 	/** Execute command */
 	int	exec_command();
 
+
+
 	//private:
+	/** detector type */
+	detectorType myDetectorType;
+
 	/** slsReceiverFunctionList object */
 	slsReceiverFunctionList *slsReceiverList;
 

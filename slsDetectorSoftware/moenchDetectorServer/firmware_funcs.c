@@ -1206,7 +1206,7 @@ int setADC(int adc){
 		ipPacketSize= DEFAULT_IP_PACKETSIZE;
 		udpPacketSize=DEFAULT_UDP_PACKETSIZE;
 		//set channel mask
-		nchips = NCHIP;
+		nchips = GOTTHARDNCHIP;
 		mask = ACTIVE_ADC_MASK;
 	}
 	//1 adc
@@ -1219,7 +1219,7 @@ int setADC(int adc){
 	}
 
 	//set channel mask
-	reg = (NCHAN*nchips)<<CHANNEL_OFFSET;
+	reg = (GOTTHARDNCHAN*nchips)<<CHANNEL_OFFSET;
 	reg&=CHANNEL_MASK;
 	reg|=(ACTIVE_ADC_MASK & mask);
 	bus_w(CHIP_OF_INTRST_REG,reg);

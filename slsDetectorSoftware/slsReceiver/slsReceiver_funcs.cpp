@@ -15,7 +15,6 @@
 using namespace std;
 
 
-
 int slsReceiverFuncs::file_des(-1);
 int slsReceiverFuncs::socketDescriptor(-1);
 
@@ -30,11 +29,12 @@ slsReceiverFuncs::~slsReceiverFuncs() {
 
 
 slsReceiverFuncs::slsReceiverFuncs(int argc, char *argv[], int &success):
+		myDetectorType(GOTTHARD),
 		socket(NULL),
 		ret(OK),
 		lockStatus(0),
 		shortFrame(-1),
-		packetsPerFrame(PACKETS_PER_FRAME){
+		packetsPerFrame(GOTTHARD_PACKETS_PER_FRAME){
 
 	int port_no = DEFAULT_PORTNO+2;
 	ifstream infile;
@@ -49,51 +49,88 @@ slsReceiverFuncs::slsReceiverFuncs(int argc, char *argv[], int &success):
 		if((!strcasecmp(argv[iarg],"-config"))||(!strcasecmp(argv[iarg],"-f"))){
 			if(iarg+1==argc){
 				cout << "no config file name given. Exiting." << endl;
-				success=slsDetectorDefs::FAIL;
+				success=FAIL;
+			}else
+				fname.assign(argv[iarg+1]);
+		}
+		if(!strcasecmp(argv[iarg],"-type")){
+			if(iarg+1==argc){
+				cout << "no detector type given after -type in command line. Exiting." << endl;
+				success=FAIL;
+			}else{
+				if(!strcasecmp(argv[iarg+1],"gotthard"));
+				else if(!strcasecmp(argv[iarg+1],"moench"))
+					slsReceiverFuncs::myDetectorType = MOENCH;
+				else{
+					cout << "could not decode detector type in command line. Exiting." << endl;
+					success=FAIL;
+				}
 			}
-			fname.assign(argv[iarg+1]);
 		}
 	}
 
-	if(!fname.empty()){
+	if((!fname.empty()) && (success == OK)){
 #ifdef VERBOSE
 		std::cout<< "config file name "<< fname << std::endl;
 #endif
 		infile.open(fname.c_str(), ios_base::in);
 		if (infile.is_open()) {
-			 while(infile.good()){
-				 getline(infile,sLine);
-				 iline++;
+			while(infile.good()){
+				getline(infile,sLine);
+				iline++;
 #ifdef VERBOSE
-				 cout <<  str << endl;
+				cout <<  str << endl;
 #endif
-				 if(sLine.find('#')!=string::npos){
+				if(sLine.find('#')!=string::npos){
 #ifdef VERBOSE
-					 cout << "Line is a comment " << endl;
+					cout << "Line is a comment " << endl;
 #endif
-					 continue;
-				 }else if(sLine.length()<2){
+					continue;
+				}else if(sLine.length()<2){
 #ifdef VERBOSE
-					 cout << "Empty line " << endl;
+					cout << "Empty line " << endl;
 #endif
-					 continue;
-				 }else{
-					 istringstream sstr(sLine);
+					continue;
+				}else{
+					istringstream sstr(sLine);
 
-					 //parameter name
-					 if(sstr.good())
-						 sstr >> sargname;
+					//parameter name
+					if(sstr.good())
+						sstr >> sargname;
 
-					 //value
-					 if(sargname=="rx_tcpport"){
-						 if(sstr.good()) {
-							 sstr >> sargname;
-							 sscanf(sargname.c_str(),"%d",&port_no);
-							 cout<<"dataport:"<<port_no<<endl;
-						 }
-					 }
-				 }
-			 }
+
+
+					//value
+					if(sargname=="rx_tcpport"){
+						if(sstr.good()) {
+							sstr >> sargname;
+							if(sscanf(sargname.c_str(),"%d",&port_no))
+								cout<<"dataport:"<<port_no<<endl;
+							else{
+								cout << "could not decode port in config file. Exiting." << endl;
+								success=FAIL;
+							}
+						}
+					}
+
+					else if(sargname=="type"){
+						if(sstr.good()) {
+							sstr >> sargname;
+							if(!strcasecmp(sargname.c_str(),"gotthard"))
+								slsReceiverFuncs::myDetectorType = GOTTHARD;
+							else if(!strcasecmp(sargname.c_str(),"moench"))
+								slsReceiverFuncs::myDetectorType = MOENCH;
+							else{
+								cout << "could not decode detector type in config file. Exiting." << endl;
+								success=FAIL;
+							}
+						}
+					}
+
+
+
+				}
+			}
 			infile.close();
 		}else {
 			cout << "Error opening configuration file " << fname << endl;
@@ -119,7 +156,7 @@ slsReceiverFuncs::slsReceiverFuncs(int argc, char *argv[], int &success):
 			strcpy(mess,"dummy message");
 
 			function_table();
-			slsReceiverList =  new slsReceiverFunctionList();
+			slsReceiverList =  new slsReceiverFunctionList(myDetectorType);
 
 #ifdef VERBOSE
 	cout << "Function table assigned." << endl;
@@ -130,6 +167,12 @@ slsReceiverFuncs::slsReceiverFuncs(int argc, char *argv[], int &success):
 
 			//success = OK;
 		}
+	}
+
+	switch(myDetectorType){
+	case GOTTHARD: 	cout << "This is a GOTTHARD Receiver" << endl; 	break;
+	case MOENCH:	cout << "This is a MOENCH Receiver" << endl; 	break;
+	default:		cout << "Unknown Receiver" << endl;success=FAIL;break;
 	}
 }
 
@@ -755,26 +798,210 @@ int	slsReceiverFuncs::reset_frames_caught(){
 }
 
 
+
+
+
+
+int slsReceiverFuncs::set_short_frame() {
+	ret=OK;
+	int index=0;
+	int retval=-100;
+	strcpy(mess,"Could not set/reset short frame for receiver\n");
+
+	//does not exist for moench
+	if(myDetectorType==MOENCH){
+		strcpy(mess,"can not set short frame for moench\n");
+		ret = FAIL;
+	}
+
+	// receive arguments
+	if(socket->ReceiveDataOnly(&index,sizeof(index)) < 0 ){
+		strcpy(mess,"Error reading from socket\n");
+		ret = FAIL;
+	}
+
+
+	// execute action if the arguments correctly arrived
+#ifdef SLS_RECEIVER_FUNCTION_LIST
+	if (ret==OK) {
+		if (lockStatus==1 && socket->differentClients==1){//necessary???
+			sprintf(mess,"Receiver locked by %s\n", socket->lastClientIP);
+			ret=FAIL;
+		}
+		else if(slsReceiverList->getStatus()==RUNNING){
+			strcpy(mess,"Cannot set short frame while status is running\n");
+			ret=FAIL;
+		}
+		else{
+			retval=slsReceiverList->setShortFrame(index);
+			shortFrame = retval;
+			if(shortFrame==-1)
+				packetsPerFrame=GOTTHARD_PACKETS_PER_FRAME;
+			else
+				packetsPerFrame=GOTTHARD_SHORT_PACKETS_PER_FRAME;
+		}
+	}
+#endif
+
+	if(ret==OK && socket->differentClients){
+		cout << "Force update" << endl;
+		ret=FORCE_UPDATE;
+	}
+
+	// send answer
+	socket->SendDataOnly(&ret,sizeof(ret));
+	if(ret==FAIL)
+		socket->SendDataOnly(mess,sizeof(mess));
+	socket->SendDataOnly(&retval,sizeof(retval));
+
+	//return ok/fail
+	return ret;
+}
+
+
+
+
 int	slsReceiverFuncs::read_frame(){
+	switch(myDetectorType){
+	case MOENCH:
+		return moench_read_frame();
+	default:
+		return gotthard_read_frame();
+	}
+}
+
+
+
+int	slsReceiverFuncs::moench_read_frame(){
 	ret=OK;
 	char fName[MAX_STR_LENGTH]="";
 	int arg = -1,i;
 
+
+	int bufferSize = MOENCH_BUFFER_SIZE;
+	char* raw 		= new char[bufferSize];
+
+	int rnel 		= bufferSize/(sizeof(int));
+	int* retval 	= new int[rnel];
+	int* origVal 	= new int[rnel];
+
+	//all initialized to 0
+	for(i=0;i<rnel;i++)	retval[i]=0;
+
+
+	int onebuffersize = bufferSize/MOENCH_PACKETS_PER_FRAME;
+	int onedatasize = MOENCH_DATA_BYTES/MOENCH_PACKETS_PER_FRAME;
+
+	int index=-1;//,index2=-1;
+	int startIndex=-1;
+	int count=0;
+
+	strcpy(mess,"Could not read frame\n");
+
+
+	// execute action if the arguments correctly arrived
+#ifdef SLS_RECEIVER_FUNCTION_LIST
+	ret=FAIL;
+	strcpy(mess,"did not start index\n");
+	for(i=0;i<10;i++){
+		startIndex=slsReceiverList->getStartFrameIndex();
+		if(startIndex!=-1){
+			ret=OK;
+			break;
+		}else
+			usleep(500000);
+	}
+
+
+	if(ret==FAIL)
+		cout<<"failed to start"<<endl;
+	else{
+		//get frame
+		slsReceiverList->readFrame(fName,&raw);
+		if (raw == NULL){
+			index = startIndex;
+			cout << "didnt get data. Gui will try again" << endl;
+
+			for(i=0;i<MOENCH_PACKETS_PER_FRAME/2;i++){
+				memcpy(retval + onedatasize*i,		  		((char*) origVal)+4+    onedatasize*i , 	onedatasize);
+				memcpy((((char*)retval)+onedatasize*(i+1)), ((char*) origVal)+10+   onedatasize*(i+1), 	onedatasize);
+			}
+		}else{
+			//upto 40 indices, look at just index1 and index2 for now
+			index=(int)(*(int*)raw);
+			//index2= (int)(*((int*)((char*)(raw+onebuffersize))));
+			memcpy(origVal,raw,bufferSize);
+			delete [] raw;/****?????????FOR GOTTHARD AS WELL?????**/
+			raw=NULL;
+
+			for(i=0;i<MOENCH_PACKETS_PER_FRAME/2;i++){
+				memcpy(retval + onedatasize*i,		  		((char*) origVal)+4+    onedatasize*i , 	onedatasize);
+				memcpy((((char*)retval)+onedatasize*(i+1)), ((char*) origVal)+10+   onedatasize*(i+1), 	onedatasize);
+			}
+		}
+
+
+		arg=((index - startIndex)/MOENCH_PACKETS_PER_FRAME)-1;
+#ifdef VERBOSE
+		cout << "\nstartIndex:" << startIndex << endl;
+		cout << "fName:" << fName << endl;
+		cout << "index:" << arg << endl;
+#endif
+
+	}
+
+#endif
+
+	if(ret==OK && socket->differentClients){
+		cout << "Force update" << endl;
+		ret=FORCE_UPDATE;
+	}
+
+	// send answer
+	socket->SendDataOnly(&ret,sizeof(ret));
+	if(ret==FAIL){
+		cout << "mess:" << mess << endl;
+		socket->SendDataOnly(mess,sizeof(mess));
+	}
+	else{
+		socket->SendDataOnly(fName,MAX_STR_LENGTH);
+		socket->SendDataOnly(&arg,sizeof(arg));
+		socket->SendDataOnly(retval,MOENCH_DATA_BYTES);
+	}
+	//return ok/fail
+
+/*  ///ADDED BY ANNA?!?!?!?   //?????????FOR GOTTHARD AS WELL?????
+ 	if(retval)  delete [] retval;
+	if(origVal) delete [] origVal;
+*/
+	return ret;
+
+}
+
+
+
+
+int	slsReceiverFuncs::gotthard_read_frame(){
+	ret=OK;
+	char fName[MAX_STR_LENGTH]="";
+	int arg = -1,i;
+
+
 	//retval is a full frame
-	int rnel 		= BUFFER_SIZE/(sizeof(int));
+	int rnel 		= GOTTHARD_BUFFER_SIZE/(sizeof(int));
 	int* retval 	= new int[rnel];
 	//all initialized to 0
 	for(i=0;i<rnel;i++)	retval[i]=0;
 
 	//only for full frames
-	int onebuffersize = BUFFER_SIZE/PACKETS_PER_FRAME;
-	int onedatasize = DATA_BYTES/PACKETS_PER_FRAME;
+	int onebuffersize = GOTTHARD_BUFFER_SIZE/GOTTHARD_PACKETS_PER_FRAME;
+	int onedatasize = GOTTHARD_DATA_BYTES/GOTTHARD_PACKETS_PER_FRAME;
 
 
 	//depending on shortframe or not
-	int bufferSize = BUFFER_SIZE;
+	int bufferSize = GOTTHARD_BUFFER_SIZE;
 	if(shortFrame!=-1)
-		bufferSize=SHORT_BUFFER_SIZE;
+		bufferSize=GOTTHARD_SHORT_BUFFER_SIZE;
 	char* raw 		= new char[bufferSize];
 	int* origVal 	= new int[rnel];
 
@@ -811,14 +1038,14 @@ int	slsReceiverFuncs::read_frame(){
 			//sending garbage values with index = -1 to try again
 			if (raw == NULL){
 				index = startIndex;
-				memcpy((((char*)retval)+(SHORT_DATABYTES*shortFrame)),((char*) origVal)+4, SHORT_DATABYTES);
+				memcpy((((char*)retval)+(GOTTHARD_SHORT_DATABYTES*shortFrame)),((char*) origVal)+4, GOTTHARD_SHORT_DATABYTES);
 			}else{
 				index=(int)(*(int*)raw);
 				memcpy(origVal,raw,bufferSize);
 				raw=NULL;
 
 				//copy only the adc part
-				memcpy((((char*)retval)+(SHORT_DATABYTES*shortFrame)),((char*) origVal)+4, SHORT_DATABYTES);
+				memcpy((((char*)retval)+(GOTTHARD_SHORT_DATABYTES*shortFrame)),((char*) origVal)+4, GOTTHARD_SHORT_DATABYTES);
 			}
 
 		}else{
@@ -901,7 +1128,7 @@ int	slsReceiverFuncs::read_frame(){
 	else{
 		socket->SendDataOnly(fName,MAX_STR_LENGTH);
 		socket->SendDataOnly(&arg,sizeof(arg));
-		socket->SendDataOnly(retval,DATA_BYTES);
+		socket->SendDataOnly(retval,GOTTHARD_DATA_BYTES);
 	}
 	//return ok/fail
 
@@ -1041,59 +1268,6 @@ int slsReceiverFuncs::get_version(){
 
 
 
-
-
-
-
-int slsReceiverFuncs::set_short_frame() {
-	ret=OK;
-	int index=0;
-	int retval=-100;
-	strcpy(mess,"Could not set/reset short frame for receiver\n");
-
-
-	// receive arguments
-	if(socket->ReceiveDataOnly(&index,sizeof(index)) < 0 ){
-		strcpy(mess,"Error reading from socket\n");
-		ret = FAIL;
-	}
-
-	// execute action if the arguments correctly arrived
-#ifdef SLS_RECEIVER_FUNCTION_LIST
-	if (ret==OK) {
-		if (lockStatus==1 && socket->differentClients==1){//necessary???
-			sprintf(mess,"Receiver locked by %s\n", socket->lastClientIP);
-			ret=FAIL;
-		}
-		else if(slsReceiverList->getStatus()==RUNNING){
-			strcpy(mess,"Cannot set short frame while status is running\n");
-			ret=FAIL;
-		}
-		else{
-			retval=slsReceiverList->setShortFrame(index);
-			shortFrame = retval;
-			if(shortFrame==-1)
-				packetsPerFrame=PACKETS_PER_FRAME;
-			else
-				packetsPerFrame=SHORT_PACKETS_PER_FRAME;
-		}
-	}
-#endif
-
-	if(ret==OK && socket->differentClients){
-		cout << "Force update" << endl;
-		ret=FORCE_UPDATE;
-	}
-
-	// send answer
-	socket->SendDataOnly(&ret,sizeof(ret));
-	if(ret==FAIL)
-		socket->SendDataOnly(mess,sizeof(mess));
-	socket->SendDataOnly(&retval,sizeof(retval));
-
-	//return ok/fail
-	return ret;
-}
 
 
 

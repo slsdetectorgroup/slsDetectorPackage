@@ -80,7 +80,7 @@ int init_detector( int b) {
     prepareADC();
     setADC(-1); //already does setdaqreg and clean fifo
     printf("in chip of interes reg:%d\n",bus_r(CHIP_OF_INTRST_REG));
-	int reg = (NCHAN*NCHIP)<<CHANNEL_OFFSET;
+	int reg = (GOTTHARDNCHAN*GOTTHARDNCHIP)<<CHANNEL_OFFSET;
 	reg&=CHANNEL_MASK;
 	reg|=ACTIVE_ADC_MASK;
 	bus_w(CHIP_OF_INTRST_REG,reg);
@@ -277,7 +277,7 @@ int get_detector_type(int file_des) {
 
   /* receive arguments */
   /* execute action */
-  ret=myDetectorType;
+  ret=myDetectorType;printf("det type:%d\n",myDetectorType);
 
 #ifdef VERBOSE
     printf("Returning detector type %d\n",ret);
@@ -1592,7 +1592,7 @@ int get_threshold_energy(int file_des) {
   n += sendDataOnly(file_des,mess,sizeof(mess));
 
   /*return ok/fail*/
-  return ret; 
+  return OK;
 
 }
  
@@ -1613,7 +1613,7 @@ int set_threshold_energy(int file_des) {
   n += sendDataOnly(file_des,mess,sizeof(mess));
 
   /*return ok/fail*/
-  return ret; 
+  return OK;
 
 }
 

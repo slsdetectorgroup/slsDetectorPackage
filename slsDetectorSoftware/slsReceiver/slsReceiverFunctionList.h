@@ -29,7 +29,7 @@ public:
 	/**
 	 * Constructor
 	 */
-	slsReceiverFunctionList();
+	slsReceiverFunctionList(detectorType det);
 
 	/**
 	 * Destructor
@@ -200,6 +200,9 @@ public:
 
 private:
 
+	/** detector type */
+	detectorType myDetectorType;
+
 	/** max frames per file **/
 	int maxFramesPerFile;
 
@@ -280,10 +283,10 @@ private:
 
 	/** circular fifo to read and write data*/
 	//CircularFifo<dataStruct,FIFO_SIZE>* fifo;
-	CircularFifo<char,FIFO_SIZE>* fifo;
+	CircularFifo<char,GOTTHARD_FIFO_SIZE>* fifo;
 
 	/** circular fifo to read and write data*/
-	CircularFifo<char,FIFO_SIZE>* fifofree;
+	CircularFifo<char,GOTTHARD_FIFO_SIZE>* fifofree;
 
 	/** short frames */
 	int shortFrame;

@@ -198,7 +198,7 @@ multiSlsDetector::multiSlsDetector(int id) :  slsDetectorUtils(), shmId(-1)
     thisMultiDetector->alreadyExisting=1;
   }
 
-  
+
   //assigned before creating detector
   stoppedFlag=&thisMultiDetector->stoppedFlag;
   threadedProcessing=&thisMultiDetector->threadedProcessing;
@@ -597,14 +597,14 @@ int multiSlsDetector::addSlsDetector(const char *name, int pos) {
 #ifdef VERBOSE
       else
 	cout << "Detector type is " << t << endl;
-#endif  
+#endif
       online=1;
     }
   } 
 #ifdef VERBOSE
   else
     cout << "Adding detector by type " << getDetectorType(t) << endl;
-#endif  
+#endif
 
 
 
@@ -635,7 +635,7 @@ int multiSlsDetector::addSlsDetector(const char *name, int pos) {
 
 
 int multiSlsDetector::addSlsDetector(detectorType t, int pos) {
-  
+
   int id;
 
   if (t==GENERIC) {

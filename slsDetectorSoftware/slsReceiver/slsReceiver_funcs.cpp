@@ -884,10 +884,9 @@ int	slsReceiverFuncs::moench_read_frame(){
 	int rnel 		= bufferSize/(sizeof(int));
 	int* retval 	= new int[rnel];
 	int* origVal 	= new int[rnel];
-
 	//all initialized to 0
 	for(i=0;i<rnel;i++)	retval[i]=0;
-
+	for(i=0;i<rnel;i++)	origVal[i]=0;
 
 	int onebuffersize = bufferSize/MOENCH_PACKETS_PER_FRAME;
 	int onedatasize = MOENCH_DATA_BYTES/MOENCH_PACKETS_PER_FRAME;
@@ -922,21 +921,20 @@ int	slsReceiverFuncs::moench_read_frame(){
 			index = startIndex;
 			cout << "didnt get data. Gui will try again" << endl;
 
-			for(i=0;i<MOENCH_PACKETS_PER_FRAME/2;i++){
-				memcpy(retval + onedatasize*i,		  		((char*) origVal)+4+    onedatasize*i , 	onedatasize);
-				memcpy((((char*)retval)+onedatasize*(i+1)), ((char*) origVal)+10+   onedatasize*(i+1), 	onedatasize);
+			for(i=0;i<MOENCH_PACKETS_PER_FRAME;i=i+2){
+				memcpy((((char*)retval)+ onedatasize*i),		(((char*) origVal)+4+    			onebuffersize*i) , 	 onedatasize);
+				memcpy((((char*)retval)+ onedatasize*(i+1)), 	(((char*) origVal)+10+onedatasize+	onebuffersize*i),onedatasize);
 			}
 		}else{
 			//upto 40 indices, look at just index1 and index2 for now
 			index=(int)(*(int*)raw);
 			//index2= (int)(*((int*)((char*)(raw+onebuffersize))));
 			memcpy(origVal,raw,bufferSize);
-			delete [] raw;/****?????????FOR GOTTHARD AS WELL?????**/
 			raw=NULL;
 
-			for(i=0;i<MOENCH_PACKETS_PER_FRAME/2;i++){
-				memcpy(retval + onedatasize*i,		  		((char*) origVal)+4+    onedatasize*i , 	onedatasize);
-				memcpy((((char*)retval)+onedatasize*(i+1)), ((char*) origVal)+10+   onedatasize*(i+1), 	onedatasize);
+			for(i=0;i<MOENCH_PACKETS_PER_FRAME;i=i+2){
+				memcpy((((char*)retval)+ onedatasize*i),		(((char*) origVal)+4+    			onebuffersize*i) , 	 onedatasize);
+				memcpy((((char*)retval)+ onedatasize*(i+1)), 	(((char*) origVal)+10+onedatasize+	onebuffersize*i),onedatasize);
 			}
 		}
 
@@ -970,10 +968,11 @@ int	slsReceiverFuncs::moench_read_frame(){
 	}
 	//return ok/fail
 
-/*  ///ADDED BY ANNA?!?!?!?   //?????????FOR GOTTHARD AS WELL?????
- 	if(retval)  delete [] retval;
-	if(origVal) delete [] origVal;
-*/
+    ///ADDED BY ANNA?!?!?!?   //?????????FOR GOTTHARD AS WELL?????
+	delete [] origVal;
+ 	delete [] retval;
+
+
 	return ret;
 
 }

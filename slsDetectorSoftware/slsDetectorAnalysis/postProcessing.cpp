@@ -415,7 +415,7 @@ void* postProcessing::processData(int delflag) {
 		while(1){
 			cout.flush();
 			cout<<flush;
-			if (checkJoinThread()) break;
+			//if (checkJoinThread()) break;
 			usleep(200000);
 
 			pthread_mutex_lock(&mg);
@@ -432,8 +432,8 @@ void* postProcessing::processData(int delflag) {
 				int* receiverData =  readFrameFromReceiver(currentfName,currentfIndex);
 				pthread_mutex_unlock(&mg);
 
-				if(!receiverData){
-					cout<<"****Detector returned NULL***"<<endl;
+				if(receiverData == NULL){
+					cout<<"****Detector Data returned is NULL***"<<endl;
 					return 0;
 				}
 

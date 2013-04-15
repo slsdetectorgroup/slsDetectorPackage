@@ -969,6 +969,7 @@ int	slsReceiverFuncs::moench_read_frame(){
 	//return ok/fail
 
     ///ADDED BY ANNA?!?!?!?   //?????????FOR GOTTHARD AS WELL?????
+
 	delete [] origVal;
  	delete [] retval;
 

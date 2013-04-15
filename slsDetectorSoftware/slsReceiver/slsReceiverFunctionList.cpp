@@ -24,6 +24,8 @@
 #include <iomanip>			//set precision
 
 
+#include <sched.h>
+
 #include <string.h>
 #include <iostream>
 using namespace std;
@@ -82,18 +84,21 @@ slsReceiverFunctionList::slsReceiverFunctionList(detectorType det):
 	strcpy(eth,"");
 
 	latestData = new char[bufferSize];
-	fifofree = new CircularFifo<char,GOTTHARD_FIFO_SIZE>();/**MOENCH SAME FIFO SIZE FOR NOW,ELSE MEMBER DECLARATION ERROR*/
-	fifo = new CircularFifo<char,GOTTHARD_FIFO_SIZE>();
+	fifofree = new CircularFifo<char,FIFO_SIZE>();
+	fifo = new CircularFifo<char,FIFO_SIZE>();
 
+	int aligned_frame_size = GOTTHARD_ALIGNED_FRAME_SIZE;
+	if (det == MOENCH)
+		aligned_frame_size = MOENCH_ALIGNED_FRAME_SIZE;
 
-	mem0=(char*)malloc(4096*GOTTHARD_FIFO_SIZE);
+	mem0=(char*)malloc(aligned_frame_size*FIFO_SIZE);
 	if (mem0==NULL) {
 		cout<<"++++++++++++++++++++++ COULD NOT ALLOCATE MEMORY!!!!!!!+++++++++++++++++++++" << endl;
 	}
 	buffer=mem0;
-	while (buffer<(mem0+4096*(GOTTHARD_FIFO_SIZE-1))) {
+	while (buffer<(mem0+aligned_frame_size*(FIFO_SIZE-1))) {
 		fifofree->push(buffer);
-		buffer+=4096;
+		buffer+=aligned_frame_size;
 	}
 
 
@@ -241,11 +246,11 @@ int slsReceiverFunctionList::startReceiver(){
 			cout << "ERROR: Could not prioritize threads. You need to be super user for that." << endl;
 		if (pthread_setschedparam(writing_thread, policy, &write_param) == EPERM)
 			cout << "ERROR: Could not prioritize threads. You need to be super user for that." << endl;
-		if (pthread_setschedparam(pthread_self(), policy, &tcp_param) == EPERM)
+		if (pthread_setschedparam(pthread_self(), 5, &tcp_param) == EPERM)
 			cout << "ERROR: Could not prioritize threads. You need to be super user for that." << endl;
 
 
-		pthread_getschedparam(listening_thread,&policy,&tcp_param);
+		pthread_getschedparam(pthread_self(),&policy,&tcp_param);
 		cout << "current priority of main tcp thread is " << tcp_param.sched_priority << endl;
 
 	}

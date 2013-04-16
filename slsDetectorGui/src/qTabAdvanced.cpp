@@ -75,7 +75,15 @@ void qTabAdvanced::SetupWidgetWindow(){
 	switch(detType){
 	case slsDetectorDefs::MYTHEN: 	isEnergy = true; 	isAngular = true; 	break;
 	case slsDetectorDefs::EIGER:	isEnergy = true; 	isAngular = false;	break;
-
+	case slsDetectorDefs::MOENCH:
+		isEnergy = false;
+		isAngular = false;
+		lblIP->setEnabled(true);
+		lblMAC->setEnabled(true);
+		dispIP->setEnabled(true);
+		dispMAC->setEnabled(true);
+		boxRxr->setEnabled(true);
+		break;
 	case slsDetectorDefs::GOTTHARD:
 		isEnergy = false;
 		isAngular = true;
@@ -208,7 +216,7 @@ void qTabAdvanced::Initialization(){
 	connect(spinStopPort,		SIGNAL(valueChanged(int)),	this,	SLOT(SetStopPort(int)));
 	connect(comboOnline,		SIGNAL(currentIndexChanged(int)),	this,	SLOT(SetOnline(int)));
 
-	if(detType==slsDetectorDefs::GOTTHARD){
+	if((detType==slsDetectorDefs::GOTTHARD) || (detType==slsDetectorDefs::MOENCH)){
 
 		//network
 		connect(spinTCPPort,		SIGNAL(valueChanged(int)),	this,	SLOT(SetRxrTCPPort(int)));
@@ -1030,7 +1038,7 @@ void qTabAdvanced::Refresh(){
 
 
 
-	if(detType==slsDetectorDefs::GOTTHARD){
+	if ((detType==slsDetectorDefs::GOTTHARD) || (detType==slsDetectorDefs::MOENCH)){
 		//disconnect
 		disconnect(spinTCPPort,			SIGNAL(valueChanged(int)),	this,	SLOT(SetRxrTCPPort(int)));
 		disconnect(spinUDPPort,			SIGNAL(valueChanged(int)),	this,	SLOT(SetRxrUDPPort(int)));

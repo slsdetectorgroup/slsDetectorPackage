@@ -125,8 +125,7 @@ public:
 	 * and this is reset when the gui really starts/stops- to know when to return
 	 */
 	bool GetClientInitiated(){return clientInitiated;};
-	/** Unzoom plot 2d as it will affect scans */
-	void plot2DUnzoom();
+
 
 public slots:
 /** To select 1D or 2D plot
@@ -460,7 +459,6 @@ bool isFrameEnabled;
 bool isTriggerEnabled;
 
 /** scan arguments*/
-enum scanArgumentList{None,Level0,Level1,FileIndex,AllFrames};
 int scanArgument;
 
 /** enable angle plot */
@@ -480,6 +478,10 @@ bool backwardScanPlot;
 
 /**if files will be saved and index increased*/
 bool fileSaveEnable;
+
+
+/** true of originally 2d */
+bool originally2D;
 
 
 //pedstal

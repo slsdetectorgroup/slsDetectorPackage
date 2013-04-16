@@ -231,6 +231,7 @@ void qDetectorMain::SetUpDetector(const string fName){
 	case slsDetectorDefs::EIGER:	break;
 	case slsDetectorDefs::GOTTHARD:	actionLoadTrimbits->setText("Load Settings");  actionSaveTrimbits->setText("Save Settings"); break;
 	case slsDetectorDefs::AGIPD:	actionLoadTrimbits->setText("Load Settings");  actionSaveTrimbits->setText("Save Settings"); break;
+	case slsDetectorDefs::MOENCH:	actionLoadTrimbits->setText("Load Settings");  actionSaveTrimbits->setText("Save Settings"); break;
 	default:
 		string detName = myDet->slsDetectorBase::getDetectorType(detType);
 		qDefs::checkErrorMessage(myDet);

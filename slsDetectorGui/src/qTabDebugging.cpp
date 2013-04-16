@@ -85,6 +85,18 @@ void qTabDebugging::SetupWidgetWindow(){
 		chkChip->setEnabled(false);
 		chkModuleFirmware->setEnabled(false);
 		break;
+	case slsDetectorDefs::MOENCH:
+		lblDetector->setText("Module:");
+		chkDetectorFirmware->setText("Module Firmware:");
+		chkDetectorSoftware->setText("Module Software:");
+		chkDetectorMemory->setText("Module Memory:");
+		chkDetectorBus->setText("Module Bus:");
+		lblModule->hide();
+		comboModule->hide();
+		chkModuleFirmware->hide();
+		chkChip->setEnabled(false);
+		chkModuleFirmware->setEnabled(false);
+		break;
 	case slsDetectorDefs::MYTHEN:
 		break;
 	default:
@@ -191,7 +203,7 @@ void qTabDebugging::GetInfo(){
 
 	switch(detType){
 
-	case slsDetectorDefs::MYTHEN:{
+	case slsDetectorDefs::MYTHEN:
 		//display widget
 		formLayout->addWidget(new QLabel("Readout:"),0,0);
 		formLayout->addItem(new QSpacerItem(15,20,QSizePolicy::Fixed,QSizePolicy::Fixed),0,1);
@@ -228,11 +240,11 @@ void qTabDebugging::GetInfo(){
 		}
 
 		break;
-	}
 
 
 
-	case slsDetectorDefs::EIGER:{
+
+	case slsDetectorDefs::EIGER:
 		//display widget
 		formLayout->addWidget(new QLabel("Half Module:"),0,0);
 		formLayout->addItem(new QSpacerItem(15,20,QSizePolicy::Fixed,QSizePolicy::Fixed),0,1);
@@ -257,11 +269,33 @@ void qTabDebugging::GetInfo(){
 			treeDet->topLevelItem(i*2)->insertChildren(0,childItems);
 		}
 		break;
-	}
 
 
 
-	case slsDetectorDefs::GOTTHARD:{
+	case slsDetectorDefs::MOENCH:
+
+		//display widget
+		formLayout->addWidget(new QLabel("Module:"),0,0);
+		formLayout->addItem(new QSpacerItem(15,20,QSizePolicy::Fixed,QSizePolicy::Fixed),0,1);
+		formLayout->addWidget(lblDetectorId,0,2);
+		formLayout->addWidget(new QLabel("Module MAC Address:"),1,0);
+		formLayout->addWidget(lblDetectorSerial,1,2);
+		formLayout->addWidget(new QLabel("Module Firmware Version:"),2,0);
+		formLayout->addWidget(lblDetectorFirmware,2,2);
+		formLayout->addWidget(new QLabel("Module Software Version:"),3,0);
+		formLayout->addWidget(lblDetectorSoftware,3,2);
+		//tree widget
+		treeDet->setHeaderLabel("Moench Detector");
+		//gets det names
+		for (int i=0;i<comboDetector->count();i++)
+			items.append(new QTreeWidgetItem((QTreeWidget*)0, QStringList(QString("Module (%1)").arg(comboDetector->itemText(i)))));
+		treeDet->insertTopLevelItems(0, items);
+
+		break;
+
+
+
+	case slsDetectorDefs::GOTTHARD:
 
 		//display widget
 		formLayout->addWidget(new QLabel("Module:"),0,0);
@@ -281,7 +315,7 @@ void qTabDebugging::GetInfo(){
 		treeDet->insertTopLevelItems(0, items);
 
 		break;
-	}
+
 
 
 
@@ -315,7 +349,7 @@ void qTabDebugging::SetParameters(QTreeWidgetItem *item){
 
 	switch(detType){
 
-	case slsDetectorDefs::MYTHEN:{
+	case slsDetectorDefs::MYTHEN:
 		if(item->text(0).contains("Readout")){
 			//find index
 			for(i=0;i<comboDetector->count();i++)
@@ -362,12 +396,12 @@ void qTabDebugging::SetParameters(QTreeWidgetItem *item){
 			qDefs::checkErrorMessage(det);
 		}
 		break;
-	}
 
 
 
 
-	case slsDetectorDefs::EIGER:{
+
+	case slsDetectorDefs::EIGER:
 		//only if half module clicked
 		if(item->text(0).contains("Half Module")){
 			//find index
@@ -388,12 +422,12 @@ void qTabDebugging::SetParameters(QTreeWidgetItem *item){
 			qDefs::checkErrorMessage(det);
 		}
 		break;
-	}
 
 
 
 
-	case slsDetectorDefs::GOTTHARD:{
+	case slsDetectorDefs::MOENCH:
+	case slsDetectorDefs::GOTTHARD:
 		//find index
 		for(i=0;i<comboDetector->count();i++)
 			if(item== treeDet->topLevelItem(i))
@@ -411,7 +445,7 @@ void qTabDebugging::SetParameters(QTreeWidgetItem *item){
 
 		qDefs::checkErrorMessage(det);
 		break;
-	}
+
 
 
 
@@ -439,6 +473,7 @@ void qTabDebugging::TestDetector(){
 		message = QString("<nobr>Test Results for %1 and %2:</nobr><br><br>").arg(comboDetector->currentText(),comboModule->currentText());
 		break;
 	case slsDetectorDefs::EIGER:	 Detector =  "Half Module";	break;
+	case slsDetectorDefs::MOENCH:
 	case slsDetectorDefs::GOTTHARD:	 Detector =  "Module";	break;
 	default: break;
 	}

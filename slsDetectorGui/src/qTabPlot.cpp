@@ -142,9 +142,10 @@ void qTabPlot::SetupWidgetWindow(){
 
 	// Depending on whether the detector is 1d or 2d
 	switch(myDet->getDetectorsType()){
-	case slsDetectorDefs::MYTHEN:	isOriginallyOneD = true;		break;
+	case slsDetectorDefs::MYTHEN:	isOriginallyOneD = true;	break;
 	case slsDetectorDefs::EIGER:	isOriginallyOneD = false;	break;
 	case slsDetectorDefs::GOTTHARD:	isOriginallyOneD = true; 	break;
+	case slsDetectorDefs::MOENCH:	isOriginallyOneD = false; 	break;
 	default:
 		cout << "ERROR: Detector Type is Generic" << endl;
 		exit(-1);
@@ -765,7 +766,7 @@ void qTabPlot::SetScanArgument(){
 	//histogram
 	if(histogram){
 		//allFrames
-		myPlot->SetScanArgument(4);
+		myPlot->SetScanArgument(qDefs::AllFrames);
 
 		//default titles  for 2d scan
 		dispXAxis->setText("Channel Number");
@@ -817,7 +818,7 @@ void qTabPlot::SetScanArgument(){
 		myPlot->Select2DPlot();
 
 	}else //done here so that it isnt set by default each time
-		myPlot->SetScanArgument(0);
+		myPlot->SetScanArgument(qDefs::None);
 
 	qDefs::checkErrorMessage(myDet);
 

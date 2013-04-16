@@ -181,7 +181,7 @@ void qTabActions::SetupWidgetWindow(){
 
 	//Number of positions is only for mythen or gotthard
 	detType = myDet->getDetectorsType();
-	if((detType == slsDetectorDefs::EIGER) || (detType == slsDetectorDefs::AGIPD)) {
+	if((detType == slsDetectorDefs::EIGER) || (detType == slsDetectorDefs::AGIPD) || (detType == slsDetectorDefs::MOENCH)) {
 		lblName[NumPositions]->setEnabled(false);
 		btnExpand[NumPositions]->setEnabled(false);
 	}else{

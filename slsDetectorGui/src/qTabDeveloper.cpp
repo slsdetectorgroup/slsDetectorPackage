@@ -96,6 +96,22 @@ void qTabDeveloper::SetupWidgetWindow(){
 		adcNames.push_back("Temperature FPGA:");
 
 		break;
+	case slsDetectorDefs::MOENCH:
+		NUM_DAC_WIDGETS = 8;
+		NUM_ADC_WIDGETS = 2;
+		dacNames.push_back("v Reference:");
+		dacNames.push_back("v Cascode n:");
+		dacNames.push_back("v Cascode p:");
+		dacNames.push_back("v Comp. Output:");
+		dacNames.push_back("v Cascode out");
+		dacNames.push_back("v Comp. Input:");
+		dacNames.push_back("v Comp. Ref:");
+		dacNames.push_back("i Base Test:");
+
+		adcNames.push_back("Temperature ADC:");
+		adcNames.push_back("Temperature FPGA:");
+
+		break;
 	default:
 		qDefs::Message(qDefs::CRITICAL,string("Unknown detector type:")+myDet->slsDetectorBase::getDetectorType(detType),"Developer");
 		exit(-1);
@@ -122,7 +138,7 @@ void qTabDeveloper::SetupWidgetWindow(){
 	CreateDACWidgets();
 
 	//HV for gotthard
-	if(detType==slsDetectorDefs::GOTTHARD){
+	if ((detType==slsDetectorDefs::GOTTHARD) || (detType==slsDetectorDefs::MOENCH)){
 		boxDacs->setFixedHeight(boxDacs->height()+35);
 
 		lblHV	= new QLabel("High Voltage",boxDacs);
@@ -145,7 +161,7 @@ void qTabDeveloper::SetupWidgetWindow(){
 
 
 	//adcs
-	if((detType==slsDetectorDefs::GOTTHARD)||(detType==slsDetectorDefs::AGIPD)){
+	if((detType==slsDetectorDefs::GOTTHARD) || (detType==slsDetectorDefs::MOENCH)){
 	    setFixedHeight((50+(NUM_DAC_WIDGETS/2)*35)+(50+(NUM_ADC_WIDGETS/2)*35));
 		boxAdcs = new QGroupBox("ADCs",this);
 		boxAdcs->setFixedHeight(25+(NUM_ADC_WIDGETS/2)*35);
@@ -206,7 +222,7 @@ void qTabDeveloper::CreateADCWidgets(){
 		lblAdcs[i] 	= new QLabel(QString(adcNames[i].c_str()),boxAdcs);
 		spinAdcs[i]	= new QDoubleSpinBox(boxAdcs);
 		spinAdcs[i]->setMaximum(10000);
-		if(detType==slsDetectorDefs::GOTTHARD)	spinAdcs[i]->setSuffix(0x00b0+QString("C"));
+		if((detType==slsDetectorDefs::GOTTHARD) || (detType==slsDetectorDefs::MOENCH))	spinAdcs[i]->setSuffix(0x00b0+QString("C"));
 
 		adcLayout->addWidget(lblAdcs[i],(int)(i/2),((i%2)==0)?1:4);
 		adcLayout->addWidget(spinAdcs[i],(int)(i/2),((i%2)==0)?2:5);
@@ -283,6 +299,7 @@ slsDetectorDefs::dacIndex qTabDeveloper::getSLSIndex(int index){
 		return slsDetectorDefs::HUMIDITY;
 		/**fill in here*/
 		break;
+	case slsDetectorDefs::MOENCH:
 	case slsDetectorDefs::GOTTHARD:
 		switch(index){
 		case 0:	return slsDetectorDefs::G_VREF_DS;
@@ -344,7 +361,7 @@ void qTabDeveloper::Refresh(){
 	if(NUM_ADC_WIDGETS) RefreshAdcs();
 
 	//gotthard -high voltage
-	if(detType == slsDetectorDefs::GOTTHARD){
+	if((detType == slsDetectorDefs::GOTTHARD) || (detType == slsDetectorDefs::MOENCH)){
 		disconnect(comboHV,	SIGNAL(currentIndexChanged(int)),	this, SLOT(SetHighVoltage()));
 
 		//default should be correct

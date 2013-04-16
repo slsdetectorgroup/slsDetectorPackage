@@ -255,10 +255,13 @@ void SlsQt2DPlot::Update(){
 
 
   setAxisScale(QwtPlot::yRight,zInterval.minValue(), zInterval.maxValue());
+#ifdef VERYVERBOSE
    cout << "axis scale set" << endl;
-  
+#endif
   plotLayout()->setAlignCanvasToScales(true);
+#ifdef VERYVERBOSE
    cout << "layout" << endl;
+#endif
 #endif
 #ifdef VERYVERBOSE
    cout << "going to replot" << endl;

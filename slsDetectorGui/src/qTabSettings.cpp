@@ -103,6 +103,7 @@ void qTabSettings::SetupDetectorSettings(){
 			item[(int)MediumGain]->setEnabled(false);
 			item[(int)VeryHighGain]->setEnabled(false);
 			break;
+		case slsDetectorDefs::MOENCH:
 		case slsDetectorDefs::GOTTHARD:
 			item[(int)Standard]->setEnabled(false);
 			item[(int)Fast]->setEnabled(false);

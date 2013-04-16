@@ -60,6 +60,19 @@ void qDrawPlot::SetupWidgetWindow(){
 #ifdef VERBOSE
 	cout << "Setting up plot variables" << endl;
 #endif
+
+	// Depending on whether the detector is 1d or 2d
+	switch(myDet->getDetectorsType()){
+	case slsDetectorDefs::MYTHEN:	originally2D = false;	break;
+	case slsDetectorDefs::EIGER:	originally2D = true;	break;
+	case slsDetectorDefs::GOTTHARD:	originally2D = false; 	break;
+	case slsDetectorDefs::MOENCH:	originally2D = true; 	break;
+	default:
+		cout << "ERROR: Detector Type is Generic" << endl;
+		exit(-1);
+	}
+
+
 	data_pause_over = true;//to get the first image
 
 	currentMeasurement = 0;
@@ -95,8 +108,8 @@ void qDrawPlot::SetupWidgetWindow(){
 	plotTitle = "";
 	plotTitle_prefix = "";
 	plot_in_scope   = 0;
-	nPixelsX = myDet->getTotalNumberOfChannels();
-	nPixelsY = 100;
+	nPixelsX = myDet->getTotalNumberOfChannels(slsDetectorDefs::X);		cout<<"nPixelsX:"<<nPixelsX<<endl;
+	nPixelsY = myDet->getTotalNumberOfChannels(slsDetectorDefs::Y);		cout<<"nPixelsY:"<<nPixelsY<<endl;
 	nAnglePixelsX = 1;
 	minPixelsY = 0;
 	maxPixelsY = 0;
@@ -154,7 +167,7 @@ void qDrawPlot::SetupWidgetWindow(){
 	isFrameEnabled = false;
 	isTriggerEnabled = false;
 
-	scanArgument = None;
+	scanArgument = qDefs::None;
 	anglePlot = false;
 	alreadyDisplayed =  false;
 
@@ -406,8 +419,9 @@ bool qDrawPlot::StartOrStopThread(bool start){
 		//sets up the measurement parameters
 		SetupMeasurement();
 
-		//refixing all the min and max for 2ds if zoomed in
-		if (scanArgument != None)
+		//refixing all the min and max for all scans
+		if (scanArgument == qDefs::None);
+		else
 			plot2D->GetPlot()->SetZoom(-0.5,startPixel,nPixelsX,endPixel-startPixel);
 
 
@@ -432,7 +446,7 @@ bool qDrawPlot::StartOrStopThread(bool start){
 
 void qDrawPlot::SetScanArgument(int scanArg){
 #ifdef VERBOSE
-	cout << "SetScanArgument function:" << running << endl;
+	cout << "SetScanArgument function:" << scanArg << " running:" << running << endl;
 #endif
 	scanArgument = scanArg;
 
@@ -442,11 +456,11 @@ void qDrawPlot::SetScanArgument(int scanArg){
 	LockLastImageArray();
 
 
-	nPixelsX = myDet->getTotalNumberOfChannels();
-	nPixelsY = 100;//if number of exposures, this should be checked before acquisition
+	nPixelsX = myDet->getTotalNumberOfChannels(slsDetectorDefs::X);
+	nPixelsY = myDet->getTotalNumberOfChannels(slsDetectorDefs::Y);
 
 	//cannot do this in between measurements , so update instantly
-	if(scanArgument==Level0){
+	if(scanArgument==qDefs::Level0){
 		//no need to check if numsteps=0,cuz otherwise this mode wont be set in plot tab
 		int numSteps = myDet->getScanSteps(0);
 		double *values = new double[numSteps];
@@ -455,7 +469,7 @@ void qDrawPlot::SetScanArgument(int scanArg){
 		maxPixelsY = values[numSteps-1];
 		minPixelsY = values[0];
 		nPixelsY = numSteps;
-	}else if(scanArgument==Level1) {
+	}else if(scanArgument==qDefs::Level1) {
 		//no need to check if numsteps=0,cuz otherwise this mode wont be set in plot tab
 		int numSteps = myDet->getScanSteps(1);
 		double *values = new double[numSteps];
@@ -522,9 +536,8 @@ void qDrawPlot::SetupMeasurement(){
 		for(int px=0;px<(int)nPixelsX;px++)
 			lastImageArray[py*nPixelsX+px] = 0;
 
-
-	//no scan
-	if(scanArgument==None){
+	//1d with no scan
+	if ((!originally2D) && (scanArgument==qDefs::None)){
 		if(!running){
 			maxPixelsY = 100;
 			minPixelsY = 0;
@@ -532,13 +545,20 @@ void qDrawPlot::SetupMeasurement(){
 			endPixel = nPixelsY-0.5;
 		}
 	}
-	else {//all frames
-		if(scanArgument==AllFrames){
+	else {
+		//2d with no scan
+		if ((originally2D) && (scanArgument==qDefs::None)){
+			maxPixelsY = nPixelsY;
+			minPixelsY = 0;
+		}
+
+		//all frames
+		else if(scanArgument==qDefs::AllFrames){
 			maxPixelsY = number_of_exposures - 1;
 			minPixelsY = 0;
 			if(!running) nPixelsY = number_of_exposures;
 		}//file index
-		else if(scanArgument==FileIndex){
+		else if(scanArgument==qDefs::FileIndex){
 			maxPixelsY = number_of_frames - 1;
 			minPixelsY = 0;
 			if(!running) nPixelsY = number_of_frames;
@@ -563,13 +583,14 @@ void qDrawPlot::SetupMeasurement(){
 		}
 	}
 
+/*
 	cout<<"nPixelsX:"<<nPixelsX<<endl;
 	cout<<"nPixelsY:"<<nPixelsY<<endl;
 	cout<<"minPixelsY:"<<minPixelsY<<endl;
 	cout<<"maxPixelsY:"<<maxPixelsY<<endl;
 	cout<<"startPixel:"<<startPixel<<endl;
 	cout<<"endPixel:"<<endPixel<<endl<<endl;
-
+*/
 	UnlockLastImageArray();
 }
 
@@ -684,9 +705,9 @@ int qDrawPlot::GetData(detectorData *data,int fIndex){
 
 
 
-		//Not Nth Frame, to check time out(NOT for 2dScans and angle plots)
+		//Not Nth Frame, to check time out(NOT for Scans and angle plots)
 		else{
-			if(scanArgument==None){
+			if (scanArgument == qDefs::None) {
 				//if the time is not over, RETURN
 				if(!data_pause_over){
 					return 0;
@@ -699,77 +720,77 @@ int qDrawPlot::GetData(detectorData *data,int fIndex){
 
 
 
-		//if scan argument is 2d
-		if(scanArgument!=None){
-			//alframes
-			if(scanArgument==AllFrames){
-				while(1){
-					if(!pthread_mutex_trylock(&(last_image_complete_mutex))){
-						//set title
-						plotTitle=QString(plotTitle_prefix)+QString(data->fileName).section('/',-1);
-						//variables
-						lastImageNumber= currentFrame+1;
-						//title
-						imageTitle = temp_title;
-						//copy data
-						memcpy(lastImageArray+(currentScanDivLevel*nPixelsX),data->values,nPixelsX*sizeof(double));
-						pthread_mutex_unlock(&(last_image_complete_mutex));
-						break;
-					}
+//if scan
+		//alframes
+		if(scanArgument==qDefs::AllFrames){
+			while(1){
+				if(!pthread_mutex_trylock(&(last_image_complete_mutex))){
+					//set title
+					plotTitle=QString(plotTitle_prefix)+QString(data->fileName).section('/',-1);
+					//variables
+					lastImageNumber= currentFrame+1;
+					//title
+					imageTitle = temp_title;
+					//copy data
+					memcpy(lastImageArray+(currentScanDivLevel*nPixelsX),data->values,nPixelsX*sizeof(double));
+					pthread_mutex_unlock(&(last_image_complete_mutex));
+					break;
 				}
-				currentFrame++;
-				currentScanDivLevel++;
-				return 0;
 			}
-			//file index
-			if(scanArgument==FileIndex){
-				while(1){
-					if(!pthread_mutex_trylock(&(last_image_complete_mutex))){
-						//set title
-						plotTitle=QString(plotTitle_prefix)+QString(data->fileName).section('/',-1);
-						//variables
-						if(currentFrameIndex == 0) currentScanDivLevel = 0;
-						lastImageNumber= currentFrame+1;
-						//title
-						imageTitle = temp_title;
-						//copy data
-						for(unsigned int px=0;px<nPixelsX;px++)	lastImageArray[currentScanDivLevel*nPixelsX+px] += data->values[px];
-						pthread_mutex_unlock(&(last_image_complete_mutex));
-						break;
-					}
+			currentFrame++;
+			currentScanDivLevel++;
+			return 0;
+		}
+		//file index
+		if(scanArgument==qDefs::FileIndex){
+			while(1){
+				if(!pthread_mutex_trylock(&(last_image_complete_mutex))){
+					//set title
+					plotTitle=QString(plotTitle_prefix)+QString(data->fileName).section('/',-1);
+					//variables
+					if(currentFrameIndex == 0) currentScanDivLevel = 0;
+					lastImageNumber= currentFrame+1;
+					//title
+					imageTitle = temp_title;
+					//copy data
+					for(unsigned int px=0;px<nPixelsX;px++)	lastImageArray[currentScanDivLevel*nPixelsX+px] += data->values[px];
+					pthread_mutex_unlock(&(last_image_complete_mutex));
+					break;
 				}
-				currentFrame++;
-				currentScanDivLevel++;
-				return 0;
 			}
-			//level0
-			if(scanArgument==Level0){
-				while(1){
-					if(!pthread_mutex_trylock(&(last_image_complete_mutex))){
-						//set title
-						plotTitle=QString(plotTitle_prefix)+QString(data->fileName).section('/',-1);
-						//get scanvariable0
-						int ci = 0, fi = 0, p = 0, di = 0; double cs0 = 0 , cs1 = 0;
-						fileIOStatic::getVariablesFromFileName(string(data->fileName), ci, fi, p, cs0, cs1, di);
-						//variables
-						if(cs0!=currentScanValue) {
-							if(backwardScanPlot)	currentScanDivLevel--;
-							else					currentScanDivLevel++;
-						}
-						currentScanValue = cs0;
-						lastImageNumber= currentFrame+1;
-						//title
-						imageTitle = temp_title;
-						//copy data
-						for(unsigned int px=0;px<nPixelsX;px++) lastImageArray[currentScanDivLevel*nPixelsX+px] += data->values[px];
-						pthread_mutex_unlock(&(last_image_complete_mutex));
-						break;
+			currentFrame++;
+			currentScanDivLevel++;
+			return 0;
+		}
+		//level0
+		if(scanArgument==qDefs::Level0){
+			while(1){
+				if(!pthread_mutex_trylock(&(last_image_complete_mutex))){
+					//set title
+					plotTitle=QString(plotTitle_prefix)+QString(data->fileName).section('/',-1);
+					//get scanvariable0
+					int ci = 0, fi = 0, p = 0, di = 0; double cs0 = 0 , cs1 = 0;
+					fileIOStatic::getVariablesFromFileName(string(data->fileName), ci, fi, p, cs0, cs1, di);
+					//variables
+					if(cs0!=currentScanValue) {
+						if(backwardScanPlot)	currentScanDivLevel--;
+						else					currentScanDivLevel++;
 					}
+					currentScanValue = cs0;
+					lastImageNumber= currentFrame+1;
+					//title
+					imageTitle = temp_title;
+					//copy data
+					for(unsigned int px=0;px<nPixelsX;px++) lastImageArray[currentScanDivLevel*nPixelsX+px] += data->values[px];
+					pthread_mutex_unlock(&(last_image_complete_mutex));
+					break;
 				}
-				currentFrame++;
-				return 0;
 			}
-			//level1
+			currentFrame++;
+			return 0;
+		}
+		//level1
+		if(scanArgument==qDefs::Level1){
 			while(1){
 				if(!pthread_mutex_trylock(&(last_image_complete_mutex))){
 					//set title
@@ -794,8 +815,9 @@ int qDrawPlot::GetData(detectorData *data,int fIndex){
 			}
 			currentFrame++;
 			return 0;
-
 		}
+
+
 
 		//normal measurement or 1d scans
 		if(!pthread_mutex_trylock(&(last_image_complete_mutex))){
@@ -846,15 +868,17 @@ int qDrawPlot::GetData(detectorData *data,int fIndex){
 
 			}
 			//2d
-			else{cout<<endl<<"****************************IN HERE-2D*******************************************"<<endl<<endl;
+			else{
 				// Titles
 				imageTitle = temp_title;
 				// manufacture data for now
+				/*
 				for(unsigned int px=0;px<nPixelsX;px++)
 					for(unsigned int py=0;py<nPixelsY;py++)
 						lastImageArray[py*nPixelsX+px] = sqrt(pow(currentFrame+1,2)*pow(double(px)-nPixelsX/2,2)/pow(nPixelsX/2,2)/pow(number_of_exposures+1,2) + pow(double(py)-nPixelsY/2,2)/pow(nPixelsY/2,2))/sqrt(2);
+						*/
 				// copy data
-				//SHOULD BE memcpy(lastImageArray,data->values,nPixelsX*nPixelsY*sizeof(double));
+				memcpy(lastImageArray,data->values,nPixelsX*nPixelsY*sizeof(double));
 			}
 			pthread_mutex_unlock(&(last_image_complete_mutex));
 		}
@@ -1085,7 +1109,6 @@ void qDrawPlot::UpdatePlot(){
 						XYRangeChanged	= false;
 					}
 					if(saveAll) SavePlotAutomatic();
-					cout<<"updated 2d plot: ymin:"<<plot2D->GetPlot()->GetYMinimum()<< "\tymax:"<<plot2D->GetPlot()->GetYMaximum()<<endl;
 				}
 			}
 			//}
@@ -1390,7 +1413,7 @@ int qDrawPlot::UpdateTrimbitPlot(bool fromDetector,bool Histogram){
 	if(detType == slsDetectorDefs::MYTHEN){
 
 		//get trimbits
-		actualPixelsX = myDet->getTotalNumberOfChannels();
+		actualPixelsX = myDet->getTotalNumberOfChannels(slsDetectorDefs::X);
 		if(histTrimbits) delete [] histTrimbits; histTrimbits = new double[actualPixelsX];
 		ret = myDet->getChanRegs(histTrimbits,fromDetector);
 		if(!ret){
@@ -1548,18 +1571,6 @@ void qDrawPlot::CalculatePedestal(){
 			break;
 		}
 	}
-}
-
-
-//-------------------------------------------------------------------------------------------------------------------------------------------------
-
-
-void qDrawPlot::plot2DUnzoom(){
-	plot2D->GetPlot()->SetXMinMax(plot2D->GetPlot()->GetXMinimum(),plot2D->GetPlot()->GetXMaximum());
-	plot2D->GetPlot()->SetYMinMax(plot2D->GetPlot()->GetYMinimum(),plot2D->GetPlot()->GetYMaximum());
-
-	//if(scanArgument!=None)/*if(plot_in_scope==2)*/
-	//	plot2D->GetPlot()->UnZoom();
 }
 
 

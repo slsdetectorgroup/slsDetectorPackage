@@ -204,7 +204,7 @@ void qDrawPlot::SetupWidgetWindow(){
 		layout->addWidget(boxPlot,1,1);
 		boxPlot->setAlignment(Qt::AlignHCenter);
 		boxPlot->setFont(QFont("Sans Serif",11,QFont::Normal));
-
+		boxPlot->setTitle("Sample Plot");
 	plot_update_timer = new QTimer(this);
 	connect(plot_update_timer, SIGNAL(timeout()), this, SLOT(UpdatePlot()));
 	data_pause_timer = new QTimer(this);
@@ -235,6 +235,11 @@ void qDrawPlot::SetupWidgetWindow(){
 		Clear1DPlot();
 
 	plot2D = new SlsQt2DPlotLayout(boxPlot);
+	//default plot
+	lastImageArray = new double[nPixelsY*nPixelsX];
+	for(unsigned int px=0;px<nPixelsX;px++)
+		for(unsigned int py=0;py<nPixelsY;py++)
+			lastImageArray[py*nPixelsX+px] = sqrt(pow(0+1,2)*pow(double(px)-nPixelsX/2,2)/pow(nPixelsX/2,2)/pow(1+1,2) + pow(double(py)-nPixelsY/2,2)/pow(nPixelsY/2,2))/sqrt(2);
 		plot2D->setFont(QFont("Sans Serif",9,QFont::Normal));
 		plot2D->GetPlot()->SetData(nPixelsX,-0.5,nPixelsX-0.5,nPixelsY,startPixel,endPixel,lastImageArray);
 		plot2D->setTitle(GetImageTitle());

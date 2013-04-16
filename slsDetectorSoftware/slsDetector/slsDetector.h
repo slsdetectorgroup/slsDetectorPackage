@@ -116,6 +116,8 @@ class slsDetector : public slsDetectorUtils, public energyConversion {
     int nModsMax;
     /**  number of channels per chip */
     int nChans;
+    /**  number of channels per chip in one direction */
+    int nChan[2];
     /**  number of chips per module*/
     int nChips;
     /**  number of dacs per module*/
@@ -564,6 +566,9 @@ class slsDetector : public slsDetectorUtils, public energyConversion {
   /** Returns the number of channels per chip (without connecting to the detector) */
   int getNChans(){return thisDetector->nChans;}; //
 
+  /** Returns the number of channels per chip (without connecting to the detector) in one direction */
+  int getNChans(dimension d){return thisDetector->nChan[d];}; //
+
   /** Returns the number of chips per module (without connecting to the detector) */
   int getNChips(){return thisDetector->nChips;}; //
 
@@ -575,6 +580,8 @@ class slsDetector : public slsDetectorUtils, public energyConversion {
 
   int getChansPerMod(int imod=0){return thisDetector->nChans*thisDetector->nChips;};
 
+  int getChansPerMod( dimension d,int imod=0){return thisDetector->nChan[d]*thisDetector->nChips;};
+
   /** Returns the max number of  modules in direction d (without connecting to the detector) */
   int getNMaxMod(dimension d){return thisDetector->nModMax[d];}; //
 
@@ -584,11 +591,11 @@ class slsDetector : public slsDetectorUtils, public energyConversion {
 
   int getTotalNumberOfChannels(){return thisDetector->nChans*thisDetector->nChips*thisDetector->nMods;};
 
-  int getTotalNumberOfChannels(dimension d){return thisDetector->nChans*thisDetector->nChips*thisDetector->nMod[X];};
+  int getTotalNumberOfChannels(dimension d){return thisDetector->nChan[d]*thisDetector->nChips*thisDetector->nMod[X];};
 
   int getMaxNumberOfChannels(){return thisDetector->nChans*thisDetector->nChips*thisDetector->nModsMax;};
 
-  int getMaxNumberOfChannels(dimension d){return thisDetector->nChans*thisDetector->nChips*thisDetector->nModMax[d];};
+  int getMaxNumberOfChannels(dimension d){return thisDetector->nChan[d]*thisDetector->nChips*thisDetector->nModMax[d];};
 
   /** Returns number of rois */
   int getNRoi(){return thisDetector->nROI;};

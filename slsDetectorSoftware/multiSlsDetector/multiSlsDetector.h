@@ -1194,6 +1194,9 @@ class multiSlsDetector  : public slsDetectorUtils {
    */
   int setReadReceiverFrequency(int i=-1);
 
+  /** updates the multidetector offsets */
+  void updateOffsets();
+
  protected:
  
 

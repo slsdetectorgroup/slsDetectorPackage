@@ -490,6 +490,8 @@ int slsDetector::initializeDetectorSize(detectorType type) {
     switch(thisDetector->myDetectorType) {
     case MYTHEN:
       thisDetector->nChans=128;
+      thisDetector->nChan[X]=128;
+      thisDetector->nChan[Y]=1;
       thisDetector->nChips=10;
       thisDetector->nDacs=6;
       thisDetector->nAdcs=0;
@@ -503,6 +505,8 @@ int slsDetector::initializeDetectorSize(detectorType type) {
       break;
     case PICASSO:
       thisDetector->nChans=128;
+      thisDetector->nChan[X]=128;
+      thisDetector->nChan[Y]=1;
       thisDetector->nChips=12;
       thisDetector->nDacs=6;
       thisDetector->nAdcs=0;
@@ -512,6 +516,8 @@ int slsDetector::initializeDetectorSize(detectorType type) {
       break;
     case GOTTHARD:
       thisDetector->nChans=128;
+      thisDetector->nChan[X]=128;
+      thisDetector->nChan[Y]=1;
       thisDetector->nChips=10;
       thisDetector->nDacs=8;
       thisDetector->nAdcs=5;
@@ -521,6 +527,8 @@ int slsDetector::initializeDetectorSize(detectorType type) {
       break;
     case MOENCH:
       thisDetector->nChans=160*160;
+      thisDetector->nChan[X]=160;
+      thisDetector->nChan[Y]=160;
       thisDetector->nChips=1;
       thisDetector->nDacs=8;
       thisDetector->nAdcs=1;
@@ -530,7 +538,9 @@ int slsDetector::initializeDetectorSize(detectorType type) {
       break;
     default:
       thisDetector->nChans=0;
-      thisDetector->nChips=0;
+      thisDetector->nChan[X]=0;
+      thisDetector->nChan[Y]=0;
+     thisDetector->nChips=0;
       thisDetector->nDacs=0;
       thisDetector->nAdcs=0;
       thisDetector->nModMax[X]=0;

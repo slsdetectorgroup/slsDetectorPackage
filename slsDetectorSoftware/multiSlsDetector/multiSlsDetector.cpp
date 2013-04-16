@@ -341,46 +341,65 @@ int multiSlsDetector::addSlsDetector(int id, int pos) {
 #endif
 
   //set offsets
-  int offsetX=0,offsetY=0,numX,numY;
-  int maxChanX = thisMultiDetector->maxNumberOfChannelsPerDetector[X];
-  int maxChanY = thisMultiDetector->maxNumberOfChannelsPerDetector[Y];
-
-  for (int i=0; i<thisMultiDetector->numberOfDetectors; i++) {
-    if (detectors[i]) {
-    	thisMultiDetector->offsetX[i] = offsetX;
-    	thisMultiDetector->offsetY[i] = offsetY;
-
-    	cout << "Detector pos: " << i << " offset X:" << offsetX << " offset Y:" << offsetY << endl;
-
-    	numX = detectors[i]->getMaxNumberOfChannels(X);
-    	numY = detectors[i]->getMaxNumberOfChannels(Y);
-
-    	offsetX += numX;
-    	if ((maxChanX == -1) || ((maxChanX > 0) && (offsetX < maxChanX))){
-    		thisMultiDetector->numberOfChannel[X] += detectors[i]->getTotalNumberOfChannels(X);
-    		thisMultiDetector->maxNumberOfChannel[X] += numX;
-    	}else{
-    		offsetX = 0;
-    		thisMultiDetector->numberOfChannel[X] = 0;
-    		thisMultiDetector->maxNumberOfChannel[X] = 0;
-    		offsetY += numY;
-    		if ((maxChanY == -1) || ((maxChanY > 0) && (offsetY < maxChanY))){
-    			thisMultiDetector->numberOfChannel[Y] += detectors[i]->getTotalNumberOfChannels(Y);
-    			thisMultiDetector->maxNumberOfChannel[Y] += numY;
-    		}else{
-    			cout<<"Detector " << id << "exceeds maximum channels allowed for complete detector set in y dimension also!" << endl;
-    			thisMultiDetector->numberOfChannel[Y] += detectors[i]->getTotalNumberOfChannels(Y);
-    			thisMultiDetector->maxNumberOfChannel[Y] += numY;
-    		}
-    	}
-    }
-  }
-
+  updateOffsets();
 
   return thisMultiDetector->numberOfDetectors;
 
 }
 
+
+void multiSlsDetector::updateOffsets(){
+	  int offsetX=0,offsetY=0,numX,numY;
+	  int maxChanX = thisMultiDetector->maxNumberOfChannelsPerDetector[X];
+	  int maxChanY = thisMultiDetector->maxNumberOfChannelsPerDetector[Y];
+
+		thisMultiDetector->numberOfChannel[X] = 0;
+		thisMultiDetector->maxNumberOfChannel[X] = 0;
+		thisMultiDetector->numberOfChannel[Y] = 0;
+		thisMultiDetector->maxNumberOfChannel[Y] = 0;
+
+	  for (int i=0; i<thisMultiDetector->numberOfDetectors; i++) {
+	    if (detectors[i]) {
+	    	thisMultiDetector->offsetX[i] = offsetX;
+	    	thisMultiDetector->offsetY[i] = offsetY;
+
+	    	cout << "Detector pos: " << i << " offset X:" << offsetX << " offset Y:" << offsetY << endl;
+
+	    	numX = detectors[i]->getMaxNumberOfChannels(X);
+	    	numY = detectors[i]->getMaxNumberOfChannels(Y);
+
+	    	offsetX += numX;
+	    	if ((maxChanX == -1) || ((maxChanX > 0) && (offsetX < maxChanX))){
+	    		thisMultiDetector->numberOfChannel[X] += detectors[i]->getTotalNumberOfChannels(X);
+	    		thisMultiDetector->maxNumberOfChannel[X] += numX;
+	    		//the first time y should be added but offset not increased
+	    		if (thisMultiDetector->numberOfChannel[Y] == 0){
+		    		if ((maxChanY == -1) || ((maxChanY > 0) && (numY < maxChanY))){
+		    			thisMultiDetector->numberOfChannel[Y] += detectors[i]->getTotalNumberOfChannels(Y);
+		    			thisMultiDetector->maxNumberOfChannel[Y] += numY;
+		    		}else{
+		    			cout<<"Detector at position " << i << "exceeds maximum channels allowed for complete detector set in y dimension also!" << endl;
+		    			thisMultiDetector->numberOfChannel[Y] += detectors[i]->getTotalNumberOfChannels(Y);
+		    			thisMultiDetector->maxNumberOfChannel[Y] += numY;
+		    		}
+	    		}
+	    	}else{
+	    		offsetX = 0;
+	    		thisMultiDetector->numberOfChannel[X] = 0;
+	    		thisMultiDetector->maxNumberOfChannel[X] = 0;
+	    		offsetY += numY;
+	    		if ((maxChanY == -1) || ((maxChanY > 0) && (offsetY < maxChanY))){
+	    			thisMultiDetector->numberOfChannel[Y] += detectors[i]->getTotalNumberOfChannels(Y);
+	    			thisMultiDetector->maxNumberOfChannel[Y] += numY;
+	    		}else{
+	    			cout<<"Detector at position " << i << "exceeds maximum channels allowed for complete detector set in y dimension also!" << endl;
+	    			thisMultiDetector->numberOfChannel[Y] += detectors[i]->getTotalNumberOfChannels(Y);
+	    			thisMultiDetector->maxNumberOfChannel[Y] += numY;
+	    		}
+	    	}
+	    }
+	  }
+}
 
 string multiSlsDetector::setHostname(const char* name, int pos){
 
@@ -761,6 +780,8 @@ int multiSlsDetector::removeSlsDetector(int pos) {
       }
     }
   }
+
+  updateOffsets();
 
   return thisMultiDetector->numberOfDetectors;
 }

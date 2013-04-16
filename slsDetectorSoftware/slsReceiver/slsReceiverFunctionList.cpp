@@ -24,7 +24,8 @@
 #include <iomanip>			//set precision
 
 
-#include <sched.h>
+//#include <sched.h>			//sched_idle
+//#include <fcntl.h>			//posix_fadvice
 
 #include <string.h>
 #include <iostream>
@@ -90,6 +91,7 @@ slsReceiverFunctionList::slsReceiverFunctionList(detectorType det):
 	int aligned_frame_size = GOTTHARD_ALIGNED_FRAME_SIZE;
 	if (det == MOENCH)
 		aligned_frame_size = MOENCH_ALIGNED_FRAME_SIZE;
+
 
 	mem0=(char*)malloc(aligned_frame_size*FIFO_SIZE);
 	if (mem0==NULL) {
@@ -246,12 +248,12 @@ int slsReceiverFunctionList::startReceiver(){
 			cout << "ERROR: Could not prioritize threads. You need to be super user for that." << endl;
 		if (pthread_setschedparam(writing_thread, policy, &write_param) == EPERM)
 			cout << "ERROR: Could not prioritize threads. You need to be super user for that." << endl;
-		if (pthread_setschedparam(pthread_self(), 5, &tcp_param) == EPERM)
+		if (pthread_setschedparam(pthread_self(),policy , &tcp_param) == EPERM)
 			cout << "ERROR: Could not prioritize threads. You need to be super user for that." << endl;
 
 
-		pthread_getschedparam(pthread_self(),&policy,&tcp_param);
-		cout << "current priority of main tcp thread is " << tcp_param.sched_priority << endl;
+		//pthread_getschedparam(pthread_self(),&policy,&tcp_param);
+		//cout << "current priority of main tcp thread is " << tcp_param.sched_priority << endl;
 
 	}
 
@@ -453,6 +455,7 @@ int slsReceiverFunctionList::startWriting(){
 	if(enableFileWrite || cbAction>0){
 		sfilefd = fopen((const char *) (savefilename), "w");
 		cout << savefilename << endl;
+		//posix_fadvise(fileno(sfilefd),0,0,POSIX_FADV_DONTNEED|POSIX_FADV_SEQUENTIAL);
 	}
 
 
@@ -468,8 +471,10 @@ int slsReceiverFunctionList::startWriting(){
 
 			//start writing in new file
 			if(enableFileWrite || cbAction>0){
+				//fsync(fileno(sfilefd));
 				fclose(sfilefd);
 				sfilefd = fopen((const char *) (savefilename), "w");
+				//posix_fadvise(fileno(sfilefd),0,0,POSIX_FADV_DONTNEED|POSIX_FADV_SEQUENTIAL);
 			}
 
 			//currframenum=(int)(*((int*)latestData));
@@ -535,7 +540,9 @@ int slsReceiverFunctionList::startWriting(){
 
 	cout << "Total Frames Caught:"<< totalFramesCaught << endl;
 	//close file
-	if(sfilefd)		fclose(sfilefd);
+	if(sfilefd)
+		fclose(sfilefd);
+	//{ fsync(fileno(sfilefd));fclose(sfilefd);}
 #ifdef VERBOSE
 	cout << "sfield:" << (int)sfilefd << endl;
 #endif

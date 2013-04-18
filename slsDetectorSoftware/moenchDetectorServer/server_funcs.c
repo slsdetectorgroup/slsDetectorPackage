@@ -277,7 +277,7 @@ int get_detector_type(int file_des) {
 
   /* receive arguments */
   /* execute action */
-  ret=myDetectorType;printf("det type:%d\n",myDetectorType);
+  ret=myDetectorType;
 
 #ifdef VERBOSE
     printf("Returning detector type %d\n",ret);

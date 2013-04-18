@@ -344,6 +344,8 @@ int slsReceiverFunctionList::startListening(){
 				rc = udpSocket->ReceiveDataOnly(buffer,bufferSize);
 				if( rc < 0)
 					cerr << "recvfrom() failed" << endl;
+				if(rc<bufferSize)
+					cerr << "LESS than buffersize received" << rc << endl;
 
 				//start for each scan
 				if(startFrameIndex==-1){
@@ -507,7 +509,7 @@ int slsReceiverFunctionList::startWriting(){
 					//default writing to file
 					else {
 						if(sfilefd)
-							memcpy(address,wbuf, bufferSize);
+							memcpy((((char*)address)+bufferSize*framesInFile),wbuf, bufferSize);
 						else{
 							cout << "You do not have permissions to overwrite: " << savefilename << endl;
 							usleep(50000);

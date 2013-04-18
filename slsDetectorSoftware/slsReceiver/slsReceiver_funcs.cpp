@@ -875,7 +875,7 @@ int	slsReceiverFuncs::read_frame(){
 int	slsReceiverFuncs::moench_read_frame(){
 	ret=OK;
 	char fName[MAX_STR_LENGTH]="";
-	int arg = -1,i;
+	int arg = -1,i,j,y;
 
 
 	int bufferSize = MOENCH_BUFFER_SIZE;
@@ -894,6 +894,7 @@ int	slsReceiverFuncs::moench_read_frame(){
 	int index=-1;//,index2=-1;
 	int startIndex=-1;
 	int count=0;
+	int offset=0;
 
 	strcpy(mess,"Could not read frame\n");
 
@@ -921,10 +922,28 @@ int	slsReceiverFuncs::moench_read_frame(){
 			index = startIndex;
 			cout << "didnt get data. Gui will try again" << endl;
 
+			/*
+			//copy data 80 bytes, then in y direction
+			offset = 4;y=0;
+			for(i=0;i<MOENCH_PACKETS_PER_FRAME;i++){
+
+				for(j=0;j<onedatasize/MOENCH_BYTES_PER_ADC;j++){
+					memcpy((((char*)retval) + y*MOENCH_BYTES_PER_X_DIMENSION + j*MOENCH_BYTES_PER_ADC),
+							(((char*) origVal) + offset + j*MOENCH_BYTES_PER_ADC) ,
+							MOENCH_BYTES_PER_ADC);
+					if (offset == 4)		offset = 10;
+					else 					offset = 4;
+					if (y == MOENCH_PIXELS_IN_X_DIMENSION-1)		y=0;
+					else											y++;
+				}
+			}
+*/
+
 			for(i=0;i<MOENCH_PACKETS_PER_FRAME;i=i+2){
 				memcpy((((char*)retval)+ onedatasize*i),		(((char*) origVal)+4+    			onebuffersize*i) , 	 onedatasize);
 				memcpy((((char*)retval)+ onedatasize*(i+1)), 	(((char*) origVal)+10+onedatasize+	onebuffersize*i),onedatasize);
 			}
+
 		}else{
 			//upto 40 indices, look at just index1 and index2 for now
 			index=(int)(*(int*)raw);

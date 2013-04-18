@@ -291,7 +291,7 @@ private:
 	/** short frames */
 	int shortFrame;
 
-	/** buffer size can be 1286*2 or 518 */
+	/** buffer size can be 1286*2 or 518 or 1286*40 */
 	int bufferSize;
 
 	/** number of packets per frame*/

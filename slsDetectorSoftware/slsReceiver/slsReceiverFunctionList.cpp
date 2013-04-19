@@ -344,8 +344,6 @@ int slsReceiverFunctionList::startListening(){
 				rc = udpSocket->ReceiveDataOnly(buffer,bufferSize);
 				if( rc < 0)
 					cerr << "recvfrom() failed" << endl;
-				if(rc<bufferSize)
-					cerr << "LESS than buffersize received" << rc << endl;
 
 				//start for each scan
 				if(startFrameIndex==-1){

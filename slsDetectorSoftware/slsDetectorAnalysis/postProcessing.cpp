@@ -450,7 +450,7 @@ void* postProcessing::processData(int delflag) {
 					}
 				}
 				else{
-					cout<<"****Detector returned mismatched indices/garbage. Trying again.***"<<endl;
+					;//cout<<"****Detector returned mismatched indices/garbage  or acquisition is over. Trying again.***"<<endl;
 				}
 			}
 		}

@@ -875,7 +875,7 @@ int	slsReceiverFuncs::read_frame(){
 int	slsReceiverFuncs::moench_read_frame(){
 	ret=OK;
 	char fName[MAX_STR_LENGTH]="";
-	int arg = -1,i,j,y;
+	int arg = -1,i,j,x,y;
 
 
 	int bufferSize = MOENCH_BUFFER_SIZE;
@@ -894,7 +894,9 @@ int	slsReceiverFuncs::moench_read_frame(){
 	int index=-1;//,index2=-1;
 	int startIndex=-1;
 	int count=0;
+
 	int offset=0;
+	int partsPerFrame;
 
 	strcpy(mess,"Could not read frame\n");
 
@@ -921,40 +923,35 @@ int	slsReceiverFuncs::moench_read_frame(){
 		if (raw == NULL){
 			index = startIndex;
 			cout << "didnt get data. Gui will try again" << endl;
+		}else{
+			//upto 40 indices, look at just index1 and index2 for now
+			index=(int)(*(int*)raw);
+			memcpy(origVal,raw,bufferSize);
+			raw=NULL;
+		}
 
-			/*
-			//copy data 80 bytes, then in y direction
-			offset = 4;y=0;
-			for(i=0;i<MOENCH_PACKETS_PER_FRAME;i++){
+/*
+			offset = 4;j=0;
+			partsPerFrame = onedatasize/MOENCH_BYTES_PER_ADC;
+			//filling up in y direction and then in x direcction
+			for(x=0;x<MOENCH_BYTES_IN_ONE_DIMENSION/MOENCH_BYTES_PER_ADC;x++){
+				for(y=0;j<MOENCH_PIXELS_IN_ONE_DIMENSION;j++){
 
-				for(j=0;j<onedatasize/MOENCH_BYTES_PER_ADC;j++){
-					memcpy((((char*)retval) + y*MOENCH_BYTES_PER_X_DIMENSION + j*MOENCH_BYTES_PER_ADC),
+					memcpy((((char*)retval) + y*MOENCH_BYTES_IN_ONE_DIMENSION + x*MOENCH_BYTES_PER_ADC),
 							(((char*) origVal) + offset + j*MOENCH_BYTES_PER_ADC) ,
 							MOENCH_BYTES_PER_ADC);
-					if (offset == 4)		offset = 10;
-					else 					offset = 4;
-					if (y == MOENCH_PIXELS_IN_X_DIMENSION-1)		y=0;
-					else											y++;
+
+					j++;
+					//after 1280 bytes(16 parts of 80 bytes), add 6 bytes to offset
+					if (!(j%partsPerFrame))
+						offset+=6;
 				}
 			}
 */
 
-			for(i=0;i<MOENCH_PACKETS_PER_FRAME;i=i+2){
-				memcpy((((char*)retval)+ onedatasize*i),		(((char*) origVal)+4+    			onebuffersize*i) , 	 onedatasize);
-				memcpy((((char*)retval)+ onedatasize*(i+1)), 	(((char*) origVal)+10+onedatasize+	onebuffersize*i),onedatasize);
-			}
-
-		}else{
-			//upto 40 indices, look at just index1 and index2 for now
-			index=(int)(*(int*)raw);
-			//index2= (int)(*((int*)((char*)(raw+onebuffersize))));
-			memcpy(origVal,raw,bufferSize);
-			raw=NULL;
-
-			for(i=0;i<MOENCH_PACKETS_PER_FRAME;i=i+2){
-				memcpy((((char*)retval)+ onedatasize*i),		(((char*) origVal)+4+    			onebuffersize*i) , 	 onedatasize);
-				memcpy((((char*)retval)+ onedatasize*(i+1)), 	(((char*) origVal)+10+onedatasize+	onebuffersize*i),onedatasize);
-			}
+		for(i=0;i<MOENCH_PACKETS_PER_FRAME;i=i+2){
+			memcpy((((char*)retval)+ onedatasize*i),		(((char*) origVal)+4+    			onebuffersize*i) , 	 onedatasize);
+			memcpy((((char*)retval)+ onedatasize*(i+1)), 	(((char*) origVal)+10+onedatasize+	onebuffersize*i),onedatasize);
 		}
 
 

@@ -80,7 +80,7 @@ int init_detector( int b) {
     prepareADC();
     setADC(-1); //already does setdaqreg and clean fifo
     printf("in chip of interes reg:%d\n",bus_r(CHIP_OF_INTRST_REG));
-	int reg = (GOTTHARDNCHAN*GOTTHARDNCHIP)<<CHANNEL_OFFSET;
+	int reg = /*NCHAN*40;*/(GOTTHARDNCHAN*GOTTHARDNCHIP)<<CHANNEL_OFFSET;
 	reg&=CHANNEL_MASK;
 	reg|=ACTIVE_ADC_MASK;
 	bus_w(CHIP_OF_INTRST_REG,reg);

@@ -888,15 +888,14 @@ int	slsReceiverFuncs::moench_read_frame(){
 	for(i=0;i<rnel;i++)	retval[i]=0;
 	for(i=0;i<rnel;i++)	origVal[i]=0;
 
-	int onebuffersize = bufferSize/MOENCH_PACKETS_PER_FRAME;
-	int onedatasize = MOENCH_DATA_BYTES/MOENCH_PACKETS_PER_FRAME;
+	/*int onebuffersize = bufferSize/MOENCH_PACKETS_PER_FRAME;
+	int onedatasize = MOENCH_DATA_BYTES/MOENCH_PACKETS_PER_FRAME;*/
 
-	int index=-1;//,index2=-1;
+	int index=-1;
 	int startIndex=-1;
 	int count=0;
-
 	int offset=0;
-	int partsPerFrame;
+
 
 	strcpy(mess,"Could not read frame\n");
 
@@ -930,31 +929,35 @@ int	slsReceiverFuncs::moench_read_frame(){
 			raw=NULL;
 		}
 
-/*
-			offset = 4;j=0;
-			partsPerFrame = onedatasize/MOENCH_BYTES_PER_ADC;
+			offset = 4;
+			j=0;
 			//filling up in y direction and then in x direcction
-			for(x=0;x<MOENCH_BYTES_IN_ONE_DIMENSION/MOENCH_BYTES_PER_ADC;x++){
-				for(y=0;j<MOENCH_PIXELS_IN_ONE_DIMENSION;j++){
+			for(x=0;x<(MOENCH_BYTES_IN_ONE_DIMENSION/MOENCH_BYTES_PER_ADC);x++){
+				for(y=0;y<MOENCH_PIXELS_IN_ONE_DIMENSION;y++){
 
-					memcpy((((char*)retval) + y*MOENCH_BYTES_IN_ONE_DIMENSION + x*MOENCH_BYTES_PER_ADC),
-							(((char*) origVal) + offset + j*MOENCH_BYTES_PER_ADC) ,
+					memcpy((((char*)retval) +
+									y * MOENCH_BYTES_IN_ONE_DIMENSION +
+									x * MOENCH_BYTES_PER_ADC),
+							(((char*) origVal) +
+									offset +
+									j * MOENCH_BYTES_PER_ADC) ,
 							MOENCH_BYTES_PER_ADC);
-
 					j++;
-					//after 1280 bytes(16 parts of 80 bytes), add 6 bytes to offset
-					if (!(j%partsPerFrame))
+					count++;
+					if(count==15){
+						count=0;
 						offset+=6;
+					}
+
 				}
 			}
-*/
-
+/*
 		for(i=0;i<MOENCH_PACKETS_PER_FRAME;i=i+2){
 			memcpy((((char*)retval)+ onedatasize*i),		(((char*) origVal)+4+    			onebuffersize*i) , 	 onedatasize);
 			memcpy((((char*)retval)+ onedatasize*(i+1)), 	(((char*) origVal)+10+onedatasize+	onebuffersize*i),onedatasize);
 		}
 
-
+*/
 		arg=((index - startIndex)/MOENCH_PACKETS_PER_FRAME)-1;
 #ifdef VERBOSE
 		cout << "\nstartIndex:" << startIndex << endl;

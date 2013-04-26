@@ -34,13 +34,14 @@ slsReceiverFuncs::slsReceiverFuncs(int argc, char *argv[], int &success):
 		ret(OK),
 		lockStatus(0),
 		shortFrame(-1),
-		packetsPerFrame(GOTTHARD_PACKETS_PER_FRAME){
+		packetsPerFrame(GOTTHARD_PACKETS_PER_FRAME),
+		withGotthard(0){
 
 	int port_no = DEFAULT_PORTNO+2;
 	ifstream infile;
 	string sLine,sargname;
 	int iline = 0;
-	int withGotthard = 0;
+
 
 	success=OK;
 	string fname = "";
@@ -930,8 +931,6 @@ int	slsReceiverFuncs::moench_read_frame(){
 	for(i=0;i<rnel;i++)	retval[i]=0;
 	for(i=0;i<rnel;i++)	origVal[i]=0;
 
-	/*int onebuffersize = bufferSize/MOENCH_PACKETS_PER_FRAME;
-	int onedatasize = MOENCH_DATA_BYTES/MOENCH_PACKETS_PER_FRAME;*/
 
 	int index=-1;
 	int startIndex=-1;
@@ -971,35 +970,95 @@ int	slsReceiverFuncs::moench_read_frame(){
 			raw=NULL;
 		}
 
+
+		//************** default order*****************************
+		//filling up in y direction and then in x direcction
+		if(withGotthard){
+			count = 0;
 			offset = 4;
 			j=0;
-			//filling up in y direction and then in x direcction
 			for(x=0;x<(MOENCH_BYTES_IN_ONE_DIMENSION/MOENCH_BYTES_PER_ADC);x++){
 				for(y=0;y<MOENCH_PIXELS_IN_ONE_DIMENSION;y++){
 
 					memcpy((((char*)retval) +
-									y * MOENCH_BYTES_IN_ONE_DIMENSION +
-									x * MOENCH_BYTES_PER_ADC),
+							y * MOENCH_BYTES_IN_ONE_DIMENSION +
+							x * MOENCH_BYTES_PER_ADC),
 							(((char*) origVal) +
 									offset +
 									j * MOENCH_BYTES_PER_ADC) ,
-							MOENCH_BYTES_PER_ADC);
+									MOENCH_BYTES_PER_ADC);
 					j++;
 					count++;
-					if(count==15){
+					if(count==16){
 						count=0;
 						offset+=6;
 					}
 
 				}
 			}
-/*
-		for(i=0;i<MOENCH_PACKETS_PER_FRAME;i=i+2){
-			memcpy((((char*)retval)+ onedatasize*i),		(((char*) origVal)+4+    			onebuffersize*i) , 	 onedatasize);
-			memcpy((((char*)retval)+ onedatasize*(i+1)), 	(((char*) origVal)+10+onedatasize+	onebuffersize*i),onedatasize);
 		}
+		//********************************************************
 
-*/
+
+		//************** packet number order**********************
+		else{
+			int numPackets = MOENCH_PACKETS_PER_FRAME; //40
+			int onePacketSize = MOENCH_DATA_BYTES / MOENCH_PACKETS_PER_FRAME; //1280*40 / 40 = 1280
+			int partsPerFrame = onePacketSize / MOENCH_BYTES_PER_ADC; // 1280 / 80 = 16
+			int origvalHeader = origVal;
+			int thisFrameNumber = (index & (MOENCH_FRAME_INDEX_MASK)) >> MOENCH_FRAME_INDEX_OFFSET;
+			cout<<"this frame number:"<<thisFrameNumber<<endl;
+			int packetIndex,x,y;
+			int iPacket = 0;
+			offset = 4;
+
+
+			while (iPacket < numPackets){
+				//read packet index
+				packetIndex = (*origvalHeader) & MOENCH_PACKET_INDEX_MASK;cout<<"packet index:"<<packetIndex<<endl;
+				//if its valid
+				if ((packetIndex < 40) || (packetIndex >= 0)){
+					x = packetIndex / 10;
+					y = packetIndex % 10;cout<<"x:"<<x<<"\t y:"<<y<<endl;
+					//copy 16 times 80 bytes
+					for (i = 0; i < partsPerFrame; i++) {
+						memcpy((((char*)retval) +
+													y * MOENCH_BYTES_IN_ONE_DIMENSION +
+													x * MOENCH_BYTES_PER_ADC),
+													(((char*) origVal) +
+															offset +
+															iPacket * onePacketSize +
+															i * MOENCH_BYTES_PER_ADC)  ,
+															MOENCH_BYTES_PER_ADC);
+						y++;
+					}
+				}else
+					cout << "cannot decode packet index:" << packetIndex << endl;
+
+				//increment
+				offset+=6;
+				origvalHeader = origvalHeader + offset + onePacketSize;
+				iPacket++;
+
+				cout <<" checking next frame number:"<<(((*origvalHeader) & (MOENCH_FRAME_INDEX_MASK)) >> MOENCH_FRAME_INDEX_OFFSET)<<endl;
+				//check if same frame number
+				while ((((*origvalHeader) & (MOENCH_FRAME_INDEX_MASK)) >> MOENCH_FRAME_INDEX_OFFSET) != thisFrameNumber){cout<<"did not match"<<endl;
+					if(iPacket >= numPackets)
+						break;
+					//increment
+					offset+=6;
+					origvalHeader = origvalHeader + offset + onePacketSize;
+					iPacket++;
+				}
+				cout<<"found or exited"<<endl;
+			}
+cout<<"exited loop"<<endl;
+		}
+		//********************************************************
+
+
+
+
 		arg=((index - startIndex)/MOENCH_PACKETS_PER_FRAME)-1;
 #ifdef VERBOSE
 		cout << "\nstartIndex:" << startIndex << endl;
@@ -1029,10 +1088,10 @@ int	slsReceiverFuncs::moench_read_frame(){
 	}
 	//return ok/fail
 
-    ///ADDED BY ANNA?!?!?!?   //?????????FOR GOTTHARD AS WELL?????
+	///ADDED BY ANNA?!?!?!?   //?????????FOR GOTTHARD AS WELL?????
 
 	delete [] origVal;
- 	delete [] retval;
+	delete [] retval;
 
 
 	return ret;

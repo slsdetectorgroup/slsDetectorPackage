@@ -66,13 +66,20 @@ slsReceiverFunctionList::slsReceiverFunctionList(detectorType det,bool moenchwit
 						pAcquisitionFinished(NULL),
 						rawDataReadyCallBack(NULL),
 						pRawDataReady(NULL),
-						withGotthard(moenchwithGotthardTest)
+						withGotthard(moenchwithGotthardTest),
+						frameIndexMask(GOTTHARD_FRAME_INDEX_MASK),
+						frameIndexOffset(GOTTHARD_FRAME_INDEX_OFFSET)
 
 {
 	if(myDetectorType == MOENCH){
 		maxFramesPerFile = MOENCH_MAX_FRAMES_PER_FILE;
 		bufferSize = MOENCH_BUFFER_SIZE;
 		packetsPerFrame = MOENCH_PACKETS_PER_FRAME;
+		if(!withGotthard){
+			frameIndexMask = MOENCH_FRAME_INDEX_MASK;
+			frameIndexOffset = MOENCH_FRAME_INDEX_OFFSET;
+		}
+
 	}
 
 	strcpy(savefilename,"");
@@ -349,7 +356,12 @@ int slsReceiverFunctionList::startListening(){
 
 				//start for each scan
 				if(startFrameIndex==-1){
-					startFrameIndex=(int)(*((int*)buffer))-packetsPerFrame;
+					if(!frameIndexOffset)
+						startFrameIndex = (int)(*((int*)buffer));
+					else
+						startFrameIndex = (((int)(*((int*)buffer))) & (frameIndexMask)) >> frameIndexOffset;
+
+					startFrameIndex -= packetsPerFrame;
 					//cout<<"startFrameIndex:"<<startFrameIndex<<endl;
 					prevframenum=startFrameIndex;
 				}
@@ -369,7 +381,7 @@ int slsReceiverFunctionList::startListening(){
 					if(fifo->isFull())
 						;//cout<<"**********************FIFO FULLLLLLLL************************"<<endl;
 					else{
-						//cout<<"read index:"<<dec<<(int)(*(int*)buffer)<<endl;
+						//cout<<"read index:"<<dec<<(int)(*(int*)buffer)<<endl;& (frameIndexMask)) >> frameIndexOffset;
 						fifo->push(buffer);
 					}
 
@@ -494,7 +506,12 @@ int slsReceiverFunctionList::startWriting(){
 			if(fifo->pop(wbuf)){
 				framesCaught++;
 				totalFramesCaught++;
-				currframenum = (int)(*((int*)wbuf));//cout<<"**************curreframenm:"<<currframenum<<endl;
+				if(!frameIndexOffset)
+					currframenum = (int)(*((int*)wbuf));
+				else
+					currframenum = (((int)(*((int*)wbuf))) & (frameIndexMask)) >> frameIndexOffset;
+				//currframenum = (int)(*((int*)wbuf));
+				//cout<<"**************curreframenm:"<<currframenum<<endl;
 
 				//write data
 				if(enableFileWrite){

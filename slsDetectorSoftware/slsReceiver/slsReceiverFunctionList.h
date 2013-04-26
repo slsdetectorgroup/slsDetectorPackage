@@ -198,6 +198,10 @@ public:
 	 */
 	void registerWriteReceiverDataCallback(int( *userCallback)(char*, int, FILE*, void*), void *pArg) {writeReceiverData = userCallback; pwriteReceiverDataArg = pArg;};
 
+	int getFrameIndex(int index){return index & MOENCH_FRAME_INDEX_MASK}
+
+	int get
+
 private:
 
 	/** detector type */
@@ -361,6 +365,13 @@ private:
 
 	/**temporary variable to test moench with gotthard module*/
 	bool withGotthard;
+
+	/** frame index mask */
+	int frameIndexMask;
+
+	/** frame index offset */
+	int frameIndexOffset;
+
 
 
 

@@ -1005,7 +1005,8 @@ int	slsReceiverFuncs::moench_read_frame(){
 			int numPackets = MOENCH_PACKETS_PER_FRAME; //40
 			int onePacketSize = MOENCH_DATA_BYTES / MOENCH_PACKETS_PER_FRAME; //1280*40 / 40 = 1280
 			int partsPerFrame = onePacketSize / MOENCH_BYTES_PER_ADC; // 1280 / 80 = 16
-			int origvalHeader = origVal;
+			offset = 4;
+			int packetOffset = 0;
 			int thisFrameNumber = (index & (MOENCH_FRAME_INDEX_MASK)) >> MOENCH_FRAME_INDEX_OFFSET;
 			cout<<"this frame number:"<<thisFrameNumber<<endl;
 			int packetIndex,x,y;
@@ -1015,7 +1016,7 @@ int	slsReceiverFuncs::moench_read_frame(){
 
 			while (iPacket < numPackets){
 				//read packet index
-				packetIndex = (*origvalHeader) & MOENCH_PACKET_INDEX_MASK;cout<<"packet index:"<<packetIndex<<endl;
+				packetIndex = (*((int*)((char*)(origVal+packetOffset)))) & MOENCH_PACKET_INDEX_MASK;cout<<"packet index:"<<packetIndex<<endl;
 				//if its valid
 				if ((packetIndex < 40) || (packetIndex >= 0)){
 					x = packetIndex / 10;
@@ -1037,18 +1038,18 @@ int	slsReceiverFuncs::moench_read_frame(){
 
 				//increment
 				offset+=6;
-				origvalHeader = origvalHeader + offset + onePacketSize;
 				iPacket++;
+				packetOffset = packetOffset + offset + onePacketSize;
 
-				cout <<" checking next frame number:"<<(((*origvalHeader) & (MOENCH_FRAME_INDEX_MASK)) >> MOENCH_FRAME_INDEX_OFFSET)<<endl;
+				cout <<" checking next frame number:"<<(((*((int*)((char*)(origVal+packetOffset)))) & (MOENCH_FRAME_INDEX_MASK)) >> MOENCH_FRAME_INDEX_OFFSET)<<endl;
 				//check if same frame number
-				while ((((*origvalHeader) & (MOENCH_FRAME_INDEX_MASK)) >> MOENCH_FRAME_INDEX_OFFSET) != thisFrameNumber){cout<<"did not match"<<endl;
+				while ((((*((int*)((char*)(origVal+packetOffset)))) & (MOENCH_FRAME_INDEX_MASK)) >> MOENCH_FRAME_INDEX_OFFSET) != thisFrameNumber){cout<<"did not match"<<endl;
 					if(iPacket >= numPackets)
 						break;
 					//increment
 					offset+=6;
-					origvalHeader = origvalHeader + offset + onePacketSize;
 					iPacket++;
+					packetOffset = packetOffset + offset + onePacketSize;
 				}
 				cout<<"found or exited"<<endl;
 			}

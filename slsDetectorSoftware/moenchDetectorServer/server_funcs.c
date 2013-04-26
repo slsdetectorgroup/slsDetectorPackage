@@ -73,6 +73,8 @@ int init_detector(int b, int checkType) {
 		  printf("***Assuming this to be a MOENCH detector***\n");
 	  }
 	  withGotthard = 1;
+  }	  else if(b){
+	  printf("***This is a MOENCH detector with %d chips per module***\n",NCHIP);
   }
 
   if (b) {

@@ -23,7 +23,6 @@ int sockfd;
 int function_table();
 
 int decode_function(int);
-void check_detector_type(int);
 int init_detector(int);
 
 int M_nofunc(int);

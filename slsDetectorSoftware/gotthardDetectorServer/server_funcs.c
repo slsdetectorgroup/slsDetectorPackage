@@ -53,18 +53,6 @@ char mess[1000];
 int digitalTestBit = 0;
 
 
-
-void check_detector_type(int b){
-	if (((bus_r(PCB_REV_REG)  & DETECTOR_TYPE_MASK)>> DETECTOR_TYPE_OFFSET) == MOENCH_MODULE){
-		printf("This is a MOENCH detector. Exiting Gotthard Server.\n");
-		exit(-1);
-	}
-	if(b)
-		printf("***This is a GOTTHARD detector with %d chips per module***\n", NCHIP);
-}
-
-
-
 int init_detector( int b) {
 
   if (mapCSP0()==FAIL) {
@@ -72,12 +60,17 @@ int init_detector( int b) {
 	  exit(-1);
   }
 
-  check_detector_type(b);
+  //confirm if it is really gotthard
+  if (((bus_r(PCB_REV_REG)  & DETECTOR_TYPE_MASK)>> DETECTOR_TYPE_OFFSET) == MOENCH_MODULE){
+	  printf("This is a MOENCH detector. Exiting Gotthard Server.\n");
+	  exit(-1);
+  }
 
   if (b) {
+    printf("***This is a GOTTHARD detector with %d chips per module***\n", NCHIP);
 #ifdef MCB_FUNCS
-    initDetector();
-    printf("Initializing Detector\n");
+	initDetector();
+	printf("Initializing Detector\n");
 #endif
     testFpga();
     testRAM();

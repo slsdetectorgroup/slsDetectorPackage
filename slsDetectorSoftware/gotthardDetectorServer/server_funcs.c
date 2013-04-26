@@ -54,11 +54,13 @@ int digitalTestBit = 0;
 
 
 
-void check_detector_type(){
+void check_detector_type(int b){
 	if (((bus_r(PCB_REV_REG)  & DETECTOR_TYPE_MASK)>> DETECTOR_TYPE_OFFSET) == MOENCH_MODULE){
 		printf("This is a MOENCH detector. Exiting Gotthard Server.\n");
 		exit(-1);
 	}
+	if(b)
+		printf("***This is a GOTTHARD detector with %d chips per module***\n", NCHIP);
 }
 
 
@@ -70,12 +72,9 @@ int init_detector( int b) {
 	  exit(-1);
   }
 
-  check_detector_type();
-  if(b)
-	  printf("***This is a GOTTHARD detector with %d chips per module***\n", NCHIP);
+  check_detector_type(b);
 
   if (b) {
-
 #ifdef MCB_FUNCS
     initDetector();
     printf("Initializing Detector\n");

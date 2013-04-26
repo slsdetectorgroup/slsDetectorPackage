@@ -40,7 +40,7 @@ int main(int argc, char *argv[])
 	if (argc==1) {
 		portno = DEFAULT_PORTNO;
 		sprintf(cmd,"%s %d &",argv[0],DEFAULT_PORTNO+1);
-		printf("opening control server on port %d\n",portno );
+		printf("\n\nControl Server\nOpening control server on port %d\n",portno );
 		system(cmd);
 		b=1;
 	} else {
@@ -50,7 +50,7 @@ int main(int argc, char *argv[])
 			return 1;
 		}
 		b=0;
-		printf("opening stop server on port %d\n",portno);
+		printf("\n\nStop Server\nOpening stop server on port %d\n",portno);
 	}
 	init_detector(b);
 

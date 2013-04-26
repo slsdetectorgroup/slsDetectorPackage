@@ -177,6 +177,7 @@ int mapCSP0(void) {
   address = FIFO_DATA_REG_OFF;
   values=(u_int16_t*)(CSP0BASE+address*2);
   printf("statusreg=%08x\n",bus_r(STATUS_REG));
+  printf("\n\n");
   return OK;
 }
 
@@ -256,7 +257,7 @@ int setPhaseShiftOnce(){
 
 int cleanFifo(){
 	u_int32_t addr, reg, val;
-	printf("\nCleaning FIFO\n");
+	printf("Cleaning FIFO\n");
 	addr=ADC_SYNC_REG;
 
 	//88332214
@@ -763,7 +764,7 @@ u_int32_t  getFirmwareSVNVersion(){
 
 // for fpga test 
 u_int32_t testFpga(void) {
-  printf("Test FPGA:\n");
+  printf("Testing FPGA:\n");
   volatile u_int32_t val,addr,val2;
   int result=OK,i;
   //fixed pattern
@@ -812,8 +813,9 @@ u_int32_t testFpga(void) {
     {
       printf("----------------------------------------------------------------------------------------------");
       printf("\nATTEMPT 1000000: FPGA DUMMY REGISTER OK!!!\n");
-      printf("----------------------------------------------------------------------------------------------\n");
+      printf("----------------------------------------------------------------------------------------------");
     }
+  printf("\n");
   return result;
 }
 
@@ -825,7 +827,7 @@ u_int32_t testRAM(void) {
   allocateRAM();
   //  while(i<100000) {
     memcpy(ram_values, values, dataBytes);
-    printf ("Test RAM:\t%d: copied fifo %x to memory %x size %d\n",i++, (unsigned int)(values), (unsigned int)(ram_values), dataBytes);
+    printf ("Testing RAM:\t%d: copied fifo %x to memory %x size %d\n",i++, (unsigned int)(values), (unsigned int)(ram_values), dataBytes);
     // }
   return result;
 }
@@ -1891,6 +1893,7 @@ int allocateRAM() {
 
 }
 int prepareADC(){
+  printf("Preparing ADC\n");
   u_int32_t valw,codata,csmask;              
   int i,cdx,ddx;
    cdx=0; ddx=1;
@@ -1902,11 +1905,17 @@ int prepareADC(){
      valw=((0xffffffff&(~csmask)));bus_w(ADC_WRITE_REG,valw); //chip sel bar down
     for (i=0;i<24;i++) {
       valw=valw&(~(0x1<<cdx));bus_w(ADC_WRITE_REG,valw);usleep(0); //cldwn  
+#ifdef VERBOSE
       printf("DOWN 0x%x \n",valw);
+#endif
       valw=(valw&(~(0x1<<ddx)))+(((codata>>(23-i))&0x1)<<ddx); bus_w(ADC_WRITE_REG,valw); usleep(0); //write data (i)
+#ifdef VERBOSE
       printf("LOW 0x%x \n",valw);
+#endif
       valw=valw+(0x1<<cdx);bus_w(ADC_WRITE_REG,valw); usleep(0); //clkup
- printf("up  0x%x \n",valw);
+#ifdef VERBOSE
+      printf("up  0x%x \n",valw);
+#endif
     } 
 
  valw=valw&(~(0x1<<cdx));usleep(0);

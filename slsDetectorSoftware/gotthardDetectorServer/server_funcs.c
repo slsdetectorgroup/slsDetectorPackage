@@ -70,16 +70,15 @@ int init_detector( int b) {
 	  exit(-1);
   }
 
-  //check if it is really gotthard
   check_detector_type();
-  printf("\n***This is a GOTTHARD detector with %d chips per module***\n", NCHIP);
+  if(b)
+	  printf("***This is a GOTTHARD detector with %d chips per module***\n", NCHIP);
 
-
-  //testFpga();
   if (b) {
+
 #ifdef MCB_FUNCS
     initDetector();
-    printf("Initializing Detector completed.\n\n");
+    printf("Initializing Detector\n");
 #endif
     testFpga();
     testRAM();

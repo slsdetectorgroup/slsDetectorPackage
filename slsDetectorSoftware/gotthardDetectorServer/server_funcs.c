@@ -65,34 +65,34 @@ void check_detector_type(){
 
 int init_detector( int b) {
 
-  printf("This is a GOTTHARD detector with %d chips per module\n", NCHIP);
-
-  if (mapCSP0()==FAIL) { printf("Could not map memory\n");
-    exit(-1);
+  if (mapCSP0()==FAIL) {
+	  printf("Could not map memory\n");
+	  exit(-1);
   }
 
   //check if it is really gotthard
   check_detector_type();
+  printf("\n***This is a GOTTHARD detector with %d chips per module***\n", NCHIP);
+
 
   //testFpga();
   if (b) {
 #ifdef MCB_FUNCS
     initDetector();
-    printf("\n***initdetector done*** \n\n");
+    printf("Initializing Detector completed.\n\n");
 #endif
     testFpga();
     testRAM();
     //gotthard specific
     setPhaseShiftOnce();
-    
     prepareADC();
     setADC(-1); //already does setdaqreg and clean fifo
-    printf("in chip of interes reg:%d\n",bus_r(CHIP_OF_INTRST_REG));
+    printf("in chip of interest reg:0x%x\n",bus_r(CHIP_OF_INTRST_REG));
 	int reg = (NCHAN*NCHIP)<<CHANNEL_OFFSET;
 	reg&=CHANNEL_MASK;
 	reg|=ACTIVE_ADC_MASK;
 	bus_w(CHIP_OF_INTRST_REG,reg);
-    printf("in chip of interes reg:%d\n",bus_r(CHIP_OF_INTRST_REG));
+    printf("in chip of interest reg:0x%x\n",bus_r(CHIP_OF_INTRST_REG));
     setSettings(GET_SETTINGS,-1);
     //Initialization
     setFrames(1);

@@ -62,29 +62,26 @@ int init_detector( int b) {
 
   //confirm if it is really gotthard
   if (((bus_r(PCB_REV_REG)  & DETECTOR_TYPE_MASK)>> DETECTOR_TYPE_OFFSET) == MOENCH_MODULE){
-	  printf("This is a MOENCH detector. Exiting Gotthard Server.\n");
+	  printf("This is a MOENCH detector. Exiting Gotthard Server.\n\n");
 	  exit(-1);
   }
 
   if (b) {
     printf("***This is a GOTTHARD detector with %d chips per module***\n", NCHIP);
+    printf("\nBoard Revision:0x%x\n",(bus_r(PCB_REV_REG)&BOARD_REVISION_MASK));
 #ifdef MCB_FUNCS
 	initDetector();
 	printf("Initializing Detector\n");
 #endif
     testFpga();
     testRAM();
+
     //gotthard specific
     setPhaseShiftOnce();
     prepareADC();
     setADC(-1); //already does setdaqreg and clean fifo
-    printf("Chip of interest:0x%x\n",bus_r(CHIP_OF_INTRST_REG));
-	int reg = (NCHAN*NCHIP)<<CHANNEL_OFFSET;
-	reg&=CHANNEL_MASK;
-	reg|=ACTIVE_ADC_MASK;
-	bus_w(CHIP_OF_INTRST_REG,reg);
-    printf("Chip of interest:0x%x\n",bus_r(CHIP_OF_INTRST_REG));
     setSettings(GET_SETTINGS,-1);
+
     //Initialization
     setFrames(1);
     setTrains(1);
@@ -92,7 +89,6 @@ int init_detector( int b) {
     setPeriod(1e9);
     setDelay(0);
     setGates(0);
-
     setTiming(GET_EXTERNAL_COMMUNICATION_MODE);
     setMaster(GET_MASTER);
     setSynchronization(GET_SYNCHRONIZATION_MODE);

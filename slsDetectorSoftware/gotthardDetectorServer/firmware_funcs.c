@@ -1226,9 +1226,9 @@ int setADC(int adc){
 	reg|=(ACTIVE_ADC_MASK & mask);
 	bus_w(CHIP_OF_INTRST_REG,reg);
 
-#ifdef DDEBUG
-	printf("Chip of Intrst Reg:%x\n",bus_r(CHIP_OF_INTRST_REG));
-#endif
+//#ifdef DDEBUG
+	printf("Chip of Interest:%x\n",bus_r(CHIP_OF_INTRST_REG));
+//#endif
 
 	adcConfigured = adc;
 
@@ -1460,22 +1460,15 @@ u_int32_t runState(void) {
 int startStateMachine(){
 
 //#ifdef VERBOSE
-  printf("*******Starting State Machine***************\n");
+	  printf("*******Starting State Machine*******\n");
 //#endif
 	cleanFifo();
-  // fifoReset();   printf("Starting State Machine\n");
+  // fifoReset();
   now_ptr=(char*)ram_values;
 #ifdef SHAREDMEMORY
   write_stop_sm(0);
   write_status_sm("Started");
 #endif
-/*
-#ifdef MCB_FUNCS
-  setCSregister(ALLMOD);
-  clearSSregister(ALLMOD);
-#endif
-*/
-  //putout("0000000000000000",ALLMOD);
   bus_w16(CONTROL_REG, START_ACQ_BIT |  START_EXPOSURE_BIT);
   bus_w16(CONTROL_REG, 0x0);
   printf("statusreg=%08x\n",bus_r(STATUS_REG));
@@ -1487,9 +1480,9 @@ int startStateMachine(){
 
 int stopStateMachine(){
 
-#ifdef VERBOSE
-  printf("Stopping State Machine\n");
-#endif
+//#ifdef VERBOSE
+	  printf("*******Stopping State Machine*******\n");
+//#endif
 #ifdef SHAREDMEMORY
   write_stop_sm(1);
   write_status_sm("Stopped");
@@ -1693,39 +1686,6 @@ u_int32_t* decode_data(int *datain)
 
 
 int setDynamicRange(int dr) {
-	/*
-  int ow;
-  int nm;
-
-  u_int32_t np=getProbes();
-#ifdef VERYVERBOSE
-  printf("probes==%02x\n",np);
-#endif
-  if (dr>0) {
-    nm=setNMod(-1);
-    if (dr==1) {
-      dynamicRange=1;
-      ow=5;
-    } else if (dr<=4) {
-      dynamicRange=4;
-      ow=4;
-    }    else if (dr<=8) {
-      dynamicRange=8;
-      ow=3;
-    } else if (dr<=16) {
-      dynamicRange=16;
-      ow=2;
-    }    else {
-      dynamicRange=32;
-      ow=0; //or 1?
-    }
-    setCSregister(ALLMOD);
-    initChipWithProbes(0, ow,np, ALLMOD);
-    putout("0000000000000000",ALLMOD);
-    setNMod(nm);
-  }
-  */
-
   return   getDynamicRange();
 }
 
@@ -1735,46 +1695,6 @@ int setDynamicRange(int dr) {
 
 
 int getDynamicRange() {
-	/*
-  int dr;
-  u_int32_t shiftin=bus_r(GET_SHIFT_IN_REG);
-  u_int32_t outmux=(shiftin >> OUTMUX_OFF) & OUTMUX_MASK;
-  u_int32_t probes=(shiftin >> PROBES_OFF) & PROBES_MASK;
-#ifdef VERYVERBOSE
-  printf("%08x ",shiftin);
-  printf("outmux=%02x probes=%d\n",outmux,probes);
-#endif
-
-  switch (outmux) {
-  case 2:
-    dr=16;
-    break;
-  case 4:
-    dr=8;
-    break;
-  case 8:
-    dr=4;
-    break;
-  case 16:
-    dr=1;
-    break;
-  default:
-    dr=32;
-  }
-  dynamicRange=dr;
-  if (probes==0) {
-    dataBytes=nModX*nModY*NCHIP*NCHAN*dynamicRange/8;
-  }  else {
-    dataBytes=nModX*nModY*NCHIP*NCHAN*4;///
-  }
-#ifdef VERBOSE
-  printf("Number of data bytes %d - probes %d dr %d\n", dataBytes, probes, dr);
-#endif
-  if (allocateRAM()==OK) {
-      ;
-  } else
-    printf("ram not allocated\n");
-*/
 	dynamicRange=16;
   return dynamicRange;
 

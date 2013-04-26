@@ -295,7 +295,7 @@ int setDAQRegister()
 
 	//depended on pcb rev
 	int tokenTiming = TOKEN_TIMING_REV2;
-	if(bus_r(PCB_REV_REG)==1)
+	if((bus_r(PCB_REV_REG)&BOARD_REVISION_MASK)==1)
 		tokenTiming= TOKEN_TIMING_REV1;
 
 

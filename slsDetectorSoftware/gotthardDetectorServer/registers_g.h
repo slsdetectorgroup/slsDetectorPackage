@@ -134,6 +134,14 @@
 #define SHIFTMOD 2
 #define SHIFTFIFO 9
 
+/** for PCB_REV_REG */
+#define DETECTOR_TYPE_MASK   	0xF0000
+#define DETECTOR_TYPE_OFFSET   	16
+#define BOARD_REVISION_MASK		0xFFFF
+#define MOENCH_MODULE			2
+
+
+
 
 /* for control register */
 #define START_ACQ_BIT      0x00000001

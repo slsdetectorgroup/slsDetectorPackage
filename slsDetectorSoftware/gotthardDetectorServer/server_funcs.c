@@ -78,12 +78,12 @@ int init_detector( int b) {
     setPhaseShiftOnce();
     prepareADC();
     setADC(-1); //already does setdaqreg and clean fifo
-    printf("in chip of interest reg:0x%x\n",bus_r(CHIP_OF_INTRST_REG));
+    printf("Chip of interest:0x%x\n",bus_r(CHIP_OF_INTRST_REG));
 	int reg = (NCHAN*NCHIP)<<CHANNEL_OFFSET;
 	reg&=CHANNEL_MASK;
 	reg|=ACTIVE_ADC_MASK;
 	bus_w(CHIP_OF_INTRST_REG,reg);
-    printf("in chip of interest reg:0x%x\n",bus_r(CHIP_OF_INTRST_REG));
+    printf("Chip of interest:0x%x\n",bus_r(CHIP_OF_INTRST_REG));
     setSettings(GET_SETTINGS,-1);
     //Initialization
     setFrames(1);

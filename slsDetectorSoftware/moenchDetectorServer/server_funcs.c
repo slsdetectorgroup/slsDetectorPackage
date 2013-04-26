@@ -53,39 +53,44 @@ char mess[1000];
 
 int digitalTestBit = 0;
 
-   
+extern int withGotthard;
 
-int init_detector( int b) {
-#ifndef PICASSOD
-  printf("This is a MOENCH detector with %d chips per module\n", NCHIP);
-#else
-  printf("This is a PICASSO detector with %d chips per module\n", NCHIP);
-#endif
 
+int init_detector(int b, int checkType) {
   if (mapCSP0()==FAIL) { printf("Could not map memory\n");
     exit(1);  
   }
 
-  //testFpga();
+  //confirm if it is really moench
+  if(((bus_r(PCB_REV_REG) & DETECTOR_TYPE_MASK)>>DETECTOR_TYPE_OFFSET) != MOENCH_MODULE ){
+	  if(checkType){
+		  printf("This is a Gotthard detector. Exiting Moench Server.\n\n");
+	  	  exit(-1);
+	  }
+	  //no check required as specified in command line arguments
+	  else if(b){
+		  printf("***This is a GOTTHARD detector with %d chips per module***\n",GOTTHARDNCHIP);
+		  printf("***Assuming this to be a MOENCH detector***\n");
+	  }
+	  withGotthard = 1;
+  }
+
   if (b) {
+	int reg;
 #ifdef MCB_FUNCS
+	 printf("\nBoard Revision:0x%x\n",(bus_r(PCB_REV_REG)&BOARD_REVISION_MASK));
     initDetector();
-    printf("\n***initdetector done*** \n\n");
+    printf("Initializing Detector\n");
 #endif
     testFpga();
     testRAM();
+
     //moench specific
     setPhaseShiftOnce();
-    
     prepareADC();
     setADC(-1); //already does setdaqreg and clean fifo
-    printf("in chip of interes reg:%d\n",bus_r(CHIP_OF_INTRST_REG));
-	int reg = /*NCHAN*40;*/(GOTTHARDNCHAN*GOTTHARDNCHIP)<<CHANNEL_OFFSET;
-	reg&=CHANNEL_MASK;
-	reg|=ACTIVE_ADC_MASK;
-	bus_w(CHIP_OF_INTRST_REG,reg);
-    printf("in chip of interes reg:%d\n",bus_r(CHIP_OF_INTRST_REG));
     setSettings(GET_SETTINGS,-1);
+
     //Initialization
     setFrames(1);
     setTrains(1);
@@ -2279,6 +2284,10 @@ int set_roi(int file_des) {
 //#endif
 	}
 	/* execute action if the arguments correctly arrived*/
+
+
+	ret = FAIL;
+	/* NOT IMPLEMENTED
 #ifdef MCB_FUNCS
 	if (lockStatus==1 && differentClients==1){//necessary???
 		sprintf(mess,"Detector locked by %s\n", lastClientIP);
@@ -2294,8 +2303,7 @@ int set_roi(int file_des) {
 	}
 
 #endif
-
-
+*/
 	if(ret==OK && differentClients){
 		printf("Force update\n");
 		ret=FORCE_UPDATE;

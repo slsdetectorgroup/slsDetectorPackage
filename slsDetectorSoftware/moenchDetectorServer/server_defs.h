@@ -8,23 +8,23 @@
 
 // Hardware definitions
 
-#define NCHAN 160*160
+#define NCHAN (160*160)
 #define NCHIP 1
 #define NMAXMODX  1
 #define NMAXMODY 1
-#define NMAXMOD NMAXMODX*NMAXMODY
+#define NMAXMOD (NMAXMODX*NMAXMODY)
 #define NDAC 8
 #define NADC 1
 
-/**change this for the real moench chip*/
+/**when moench readout tested with gotthard module*/
 #define GOTTHARDNCHAN 128
 #define GOTTHARDNCHIP 10
 
 
 
 
-#define NCHANS NCHAN*NCHIP*NMAXMOD
-#define NDACS NDAC*NMAXMOD
+#define NCHANS (NCHAN*NCHIP*NMAXMOD)
+#define NDACS (NDAC*NMAXMOD)
 
 #define NTRIMBITS 6
 #define NCOUNTBITS 24

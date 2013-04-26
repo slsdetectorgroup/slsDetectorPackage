@@ -23,8 +23,7 @@ int sockfd;
 int function_table();
 
 int decode_function(int);
- 
-int init_detector(int);
+int init_detector(int,int);
 
 int M_nofunc(int);
 int exit_server(int);

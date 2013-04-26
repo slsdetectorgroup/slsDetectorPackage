@@ -21,43 +21,73 @@ void error(char *msg)
 int main(int argc, char *argv[])
 {
 	int  portno, b;
-	char cmd[100];
+	char cmd[500];
 	int retval=OK;
 	int sd, fd;
 	int iarg;
+	int checkType = 1;
+
+
 	for(iarg=1; iarg<argc; iarg++){
+
 		if(!strcasecmp(argv[iarg],"-phaseshift")){
+			if(argc==iarg+1){
+				printf("No phaseshift given. Exiting.\n");
+				return 1;
+			}
 			if ( sscanf(argv[iarg+1],"%d",&phase_shift)==0) {
 				printf("could not decode phase shift\n");
 				return 1;
 			}
-			argc=1;
+		}
+
+		else if(!strcasecmp(argv[iarg],"-test")){
+			if(argc==iarg+1){
+				printf("No test condition given. Exiting.\n");
+				return 1;
+			}
+			if(!strcasecmp(argv[iarg+1],"with_gotthard")){
+				checkType = 0;
+			}else{
+				printf("could not decode test condition. Possible arguments: with_gotthard. Exiting\n");
+				return 1;
+			}
+
 		}
 	}
 
-	if (argc==1) {
-		portno = DEFAULT_PORTNO;
-		sprintf(cmd,"%s %d &",argv[0],DEFAULT_PORTNO+1);
-		printf("opening control server on port %d\n",portno );
-		system(cmd);
-		b=1;
-	} else {
+
+	//stop server
+	if ((argc > 2) && (!strcasecmp(argv[2],"stopserver"))){
 		portno = DEFAULT_PORTNO+1;
 		if ( sscanf(argv[1],"%d",&portno) ==0) {
 			printf("could not open stop server: unknown port\n");
 			return 1;
 		}
 		b=0;
-		printf("opening stop server on port %d\n",portno);
+		printf("\n\nStop Server\nOpening stop server on port %d\n",portno);
 	}
-	init_detector(b);
+
+	//control server
+	else {
+		portno = DEFAULT_PORTNO;
+		if(checkType)
+			sprintf(cmd,"%s %d stopserver &",argv[0],DEFAULT_PORTNO+1);
+		else
+			sprintf(cmd,"%s %d stopserver -test with_gotthard &",argv[0],DEFAULT_PORTNO+1);
+		printf("\n\nControl Server\nOpening control server on port %d\n",portno );
+
+		//printf("\n\ncmd:%s\n",cmd);
+		system(cmd);
+		b=1;
+	}
+
+
+	init_detector(b, checkType);
 
 
 	sd=bindSocket(portno);
-
 	sockfd=sd;
-
-
 	if (getServerError(sd)) {
 		printf("server error!\n");
 		return -1;

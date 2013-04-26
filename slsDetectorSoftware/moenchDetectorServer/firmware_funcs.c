@@ -50,6 +50,7 @@ int masterMode=NO_MASTER, syncMode=NO_SYNCHRONIZATION, timingMode=AUTO_TIMING;
 
 enum externalSignalFlag  signals[4]={EXT_SIG_OFF, EXT_SIG_OFF, EXT_SIG_OFF, EXT_SIG_OFF};
 
+int withGotthard = 0;
 
 #ifdef MCB_FUNCS
 extern const int nChans;
@@ -177,6 +178,7 @@ int mapCSP0(void) {
   address = FIFO_DATA_REG_OFF;
   values=(u_int16_t*)(CSP0BASE+address*2);
   printf("statusreg=%08x\n",bus_r(STATUS_REG));
+  printf("\n\n");
   return OK;
 }
 
@@ -256,7 +258,7 @@ int setPhaseShiftOnce(){
 
 int cleanFifo(){
 	u_int32_t addr, reg, val;
-	printf("\nCleaning FIFO\n");
+	printf("Cleaning FIFO\n");
 	addr=ADC_SYNC_REG;
 
 	//88332214
@@ -295,7 +297,7 @@ int setDAQRegister()
 
 	//depended on pcb rev
 	int tokenTiming = TOKEN_TIMING_REV2;
-	if(bus_r(PCB_REV_REG)==1)
+	if((bus_r(PCB_REV_REG)&BOARD_REVISION_MASK)==1)
 		tokenTiming= TOKEN_TIMING_REV1;
 
 
@@ -763,7 +765,7 @@ u_int32_t  getFirmwareSVNVersion(){
 
 // for fpga test 
 u_int32_t testFpga(void) {
-  printf("Test FPGA:\n");
+	  printf("Testing FPGA:\n");
   volatile u_int32_t val,addr,val2;
   int result=OK,i;
   //fixed pattern
@@ -812,8 +814,9 @@ u_int32_t testFpga(void) {
     {
       printf("----------------------------------------------------------------------------------------------");
       printf("\nATTEMPT 1000000: FPGA DUMMY REGISTER OK!!!\n");
-      printf("----------------------------------------------------------------------------------------------\n");
+      printf("----------------------------------------------------------------------------------------------");
     }
+  printf("\n");
   return result;
 }
 
@@ -825,7 +828,7 @@ u_int32_t testRAM(void) {
   allocateRAM();
   //  while(i<100000) {
     memcpy(ram_values, values, dataBytes);
-    printf ("Test RAM:\t%d: copied fifo %x to memory %x size %d\n",i++, (unsigned int)(values), (unsigned int)(ram_values), dataBytes);
+    printf ("Testing RAM:\t%d: copied fifo %x to memory %x size %d\n",i++, (unsigned int)(values), (unsigned int)(ram_values), dataBytes);
     // }
   return result;
 }
@@ -1192,7 +1195,7 @@ int initConfGain(int isettings,int val,int imod){
 
 
 int setADC(int adc){
-	int reg,nchips,mask;
+	int reg,nchips,mask,nchans;
 
 	if(adc==-1)	ROI_flag=0;
 	else		ROI_flag=1;
@@ -1200,33 +1203,46 @@ int setADC(int adc){
 	setDAQRegister();//token timing
 	cleanFifo();//adc sync
 
-	//all adc
-	if(adc==-1){
+	//with gotthard module
+	if(withGotthard){
 		//set packet size
 		ipPacketSize= DEFAULT_IP_PACKETSIZE;
 		udpPacketSize=DEFAULT_UDP_PACKETSIZE;
 		//set channel mask
 		nchips = GOTTHARDNCHIP;
+		nchans = GOTTHARDNCHAN;
 		mask = ACTIVE_ADC_MASK;
 	}
-	//1 adc
+
+	//with moench module all adc
+	else{/* if(adc==-1){*/
+		//set packet size
+		ipPacketSize= DEFAULT_IP_PACKETSIZE;
+		udpPacketSize=DEFAULT_UDP_PACKETSIZE;
+		//set channel mask
+		nchips = NCHIP;
+		nchans = NCHANS;
+		mask = ACTIVE_ADC_MASK;
+	}/*
+	//with moench module 1 adc -- NOT IMPLEMENTED
 	else{
 		ipPacketSize= ADC1_IP_PACKETSIZE;
 		udpPacketSize=ADC1_UDP_PACKETSIZE;
 		//set channel mask
 		nchips = NCHIPS_PER_ADC;
+		nchans = GOTTHARDNCHAN;
 		mask = 1<<adc;
-	}
+	}*/
 
 	//set channel mask
-	reg = (GOTTHARDNCHAN*nchips)<<CHANNEL_OFFSET;
+	reg = (nchans*nchips)<<CHANNEL_OFFSET;
 	reg&=CHANNEL_MASK;
 	reg|=(ACTIVE_ADC_MASK & mask);
 	bus_w(CHIP_OF_INTRST_REG,reg);
 
-#ifdef DDEBUG
-	printf("Chip of Intrst Reg:%x\n",bus_r(CHIP_OF_INTRST_REG));
-#endif
+//#ifdef DDEBUG
+	printf("Chip of Interest Reg:%x\n",bus_r(CHIP_OF_INTRST_REG));
+//#endif
 
 	adcConfigured = adc;
 
@@ -1458,22 +1474,15 @@ u_int32_t runState(void) {
 int startStateMachine(){
 
 //#ifdef VERBOSE
-  printf("*******Starting State Machine***************\n");
+  printf("*******Starting State Machine*******\n");
 //#endif
 	cleanFifo();
-  // fifoReset();   printf("Starting State Machine\n");
+  // fifoReset();
   now_ptr=(char*)ram_values;
 #ifdef SHAREDMEMORY
   write_stop_sm(0);
   write_status_sm("Started");
 #endif
-/*
-#ifdef MCB_FUNCS
-  setCSregister(ALLMOD);
-  clearSSregister(ALLMOD);
-#endif
-*/
-  //putout("0000000000000000",ALLMOD);
   bus_w16(CONTROL_REG, START_ACQ_BIT |  START_EXPOSURE_BIT);
   bus_w16(CONTROL_REG, 0x0);
   printf("statusreg=%08x\n",bus_r(STATUS_REG));
@@ -1485,9 +1494,9 @@ int startStateMachine(){
 
 int stopStateMachine(){
 
-#ifdef VERBOSE
-  printf("Stopping State Machine\n");
-#endif
+//#ifdef VERBOSE
+  printf("*******Stopping State Machine*******\n");
+//#endif
 #ifdef SHAREDMEMORY
   write_stop_sm(1);
   write_status_sm("Stopped");
@@ -1691,39 +1700,6 @@ u_int32_t* decode_data(int *datain)
 
 
 int setDynamicRange(int dr) {
-	/*
-  int ow;
-  int nm;
-
-  u_int32_t np=getProbes();
-#ifdef VERYVERBOSE
-  printf("probes==%02x\n",np);
-#endif
-  if (dr>0) {
-    nm=setNMod(-1);
-    if (dr==1) {
-      dynamicRange=1;
-      ow=5;
-    } else if (dr<=4) {
-      dynamicRange=4;
-      ow=4;
-    }    else if (dr<=8) {
-      dynamicRange=8;
-      ow=3;
-    } else if (dr<=16) {
-      dynamicRange=16;
-      ow=2;
-    }    else {
-      dynamicRange=32;
-      ow=0; //or 1?
-    }
-    setCSregister(ALLMOD);
-    initChipWithProbes(0, ow,np, ALLMOD);
-    putout("0000000000000000",ALLMOD);
-    setNMod(nm);
-  }
-  */
-
   return   getDynamicRange();
 }
 
@@ -1733,46 +1709,6 @@ int setDynamicRange(int dr) {
 
 
 int getDynamicRange() {
-	/*
-  int dr;
-  u_int32_t shiftin=bus_r(GET_SHIFT_IN_REG);
-  u_int32_t outmux=(shiftin >> OUTMUX_OFF) & OUTMUX_MASK;
-  u_int32_t probes=(shiftin >> PROBES_OFF) & PROBES_MASK;
-#ifdef VERYVERBOSE
-  printf("%08x ",shiftin);
-  printf("outmux=%02x probes=%d\n",outmux,probes);
-#endif
-
-  switch (outmux) {
-  case 2:
-    dr=16;
-    break;
-  case 4:
-    dr=8;
-    break;
-  case 8:
-    dr=4;
-    break;
-  case 16:
-    dr=1;
-    break;
-  default:
-    dr=32;
-  }
-  dynamicRange=dr;
-  if (probes==0) {
-    dataBytes=nModX*nModY*NCHIP*NCHAN*dynamicRange/8;
-  }  else {
-    dataBytes=nModX*nModY*NCHIP*NCHAN*4;///
-  }
-#ifdef VERBOSE
-  printf("Number of data bytes %d - probes %d dr %d\n", dataBytes, probes, dr);
-#endif
-  if (allocateRAM()==OK) {
-      ;
-  } else
-    printf("ram not allocated\n");
-*/
 	dynamicRange=16;
   return dynamicRange;
 
@@ -1891,6 +1827,7 @@ int allocateRAM() {
 
 }
 int prepareADC(){
+  printf("Preparing ADC\n");
   u_int32_t valw,codata,csmask;              
   int i,cdx,ddx;
    cdx=0; ddx=1;
@@ -1901,12 +1838,18 @@ int prepareADC(){
     valw=0xff; bus_w(ADC_WRITE_REG,(valw)); // start point
      valw=((0xffffffff&(~csmask)));bus_w(ADC_WRITE_REG,valw); //chip sel bar down
     for (i=0;i<24;i++) {
-      valw=valw&(~(0x1<<cdx));bus_w(ADC_WRITE_REG,valw);usleep(0); //cldwn  
+      valw=valw&(~(0x1<<cdx));bus_w(ADC_WRITE_REG,valw);usleep(0); //cldwn
+#ifdef VERBOSE
       printf("DOWN 0x%x \n",valw);
+#endif
       valw=(valw&(~(0x1<<ddx)))+(((codata>>(23-i))&0x1)<<ddx); bus_w(ADC_WRITE_REG,valw); usleep(0); //write data (i)
+#ifdef VERBOSE
       printf("LOW 0x%x \n",valw);
+#endif
       valw=valw+(0x1<<cdx);bus_w(ADC_WRITE_REG,valw); usleep(0); //clkup
- printf("up  0x%x \n",valw);
+#ifdef VERBOSE
+      printf("up  0x%x \n",valw);
+#endif
     } 
 
  valw=valw&(~(0x1<<cdx));usleep(0);

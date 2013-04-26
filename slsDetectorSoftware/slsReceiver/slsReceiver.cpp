@@ -58,7 +58,7 @@ int main(int argc, char *argv[]) {
 	  registerCallBackAcquisitionFinished(void (*func)(int, void*),void *arg);
 	*/
 	
-	
+
 	//receiver->registerCallBackAcquisitionFinished(func,arg);
 	
 
@@ -76,7 +76,7 @@ int main(int argc, char *argv[]) {
 	  registerCallBackRawDataReady(void (*func)(int, char*, FILE*, char*, void*),void *arg);
 
 	*/
-	
+
 	//receiver->registerCallBackRawDataReady(func,arg);
 
 

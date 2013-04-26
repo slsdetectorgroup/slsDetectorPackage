@@ -40,6 +40,7 @@ slsReceiverFuncs::slsReceiverFuncs(int argc, char *argv[], int &success):
 	ifstream infile;
 	string sLine,sargname;
 	int iline = 0;
+	int withGotthard = 0;
 
 	success=OK;
 	string fname = "";
@@ -53,22 +54,7 @@ slsReceiverFuncs::slsReceiverFuncs(int argc, char *argv[], int &success):
 			}else
 				fname.assign(argv[iarg+1]);
 		}
-		if(!strcasecmp(argv[iarg],"-type")){
-			if(iarg+1==argc){
-				cout << "no detector type given after -type in command line. Exiting." << endl;
-				success=FAIL;
-			}else{
-				if(!strcasecmp(argv[iarg+1],"gotthard"));
-				else if(!strcasecmp(argv[iarg+1],"moench"))
-					slsReceiverFuncs::myDetectorType = MOENCH;
-				else{
-					cout << "could not decode detector type in command line. Exiting." << endl;
-					success=FAIL;
-				}
-			}
-		}
 	}
-
 	if((!fname.empty()) && (success == OK)){
 #ifdef VERBOSE
 		std::cout<< "config file name "<< fname << std::endl;
@@ -93,14 +79,11 @@ slsReceiverFuncs::slsReceiverFuncs(int argc, char *argv[], int &success):
 					continue;
 				}else{
 					istringstream sstr(sLine);
-
 					//parameter name
 					if(sstr.good())
 						sstr >> sargname;
 
-
-
-					//value
+					//tcp port
 					if(sargname=="rx_tcpport"){
 						if(sstr.good()) {
 							sstr >> sargname;
@@ -112,7 +95,7 @@ slsReceiverFuncs::slsReceiverFuncs(int argc, char *argv[], int &success):
 							}
 						}
 					}
-
+					//type
 					else if(sargname=="type"){
 						if(sstr.good()) {
 							sstr >> sargname;
@@ -121,7 +104,7 @@ slsReceiverFuncs::slsReceiverFuncs(int argc, char *argv[], int &success):
 							else if(!strcasecmp(sargname.c_str(),"moench"))
 								slsReceiverFuncs::myDetectorType = MOENCH;
 							else{
-								cout << "could not decode detector type in config file. Exiting." << endl;
+								cout << "could not decode detector type in config file.\nOptions are:\ngotthard\nmoench.\n\nExiting." << endl;
 								success=FAIL;
 							}
 						}
@@ -142,8 +125,72 @@ slsReceiverFuncs::slsReceiverFuncs(int argc, char *argv[], int &success):
 
 	}
 
+
+
+	//parse command line for type etc.. more priority
 	if(success == OK){
-		//create socket
+		for(int iarg=1;iarg<argc;iarg++){
+			//type
+			if(!strcasecmp(argv[iarg],"-type")){
+				if(iarg+1==argc){
+					cout << "no detector type given after -type in command line. Exiting." << endl;
+					success=FAIL;
+				}else{
+					if(!strcasecmp(argv[iarg+1],"gotthard"))
+						slsReceiverFuncs::myDetectorType = GOTTHARD;
+					else if(!strcasecmp(argv[iarg+1],"moench"))
+						slsReceiverFuncs::myDetectorType = MOENCH;
+					else{
+						cout << "could not decode detector type in command line. \nOptions are:\ngotthard\nmoench.\n\nExiting." << endl;
+						success=FAIL;
+					}
+				}
+			}
+			//test with gotthard module
+			else if(!strcasecmp(argv[iarg],"-test")){
+				if(iarg+1==argc){
+					cout << "no test condition given after -test in command line. Exiting." << endl;
+					success=FAIL;
+				}else{
+					if(!strcasecmp(argv[iarg+1],"with_gotthard"))
+						withGotthard = 1;
+					else{
+						cout << "could not decode test condition in command line. \nOptions are:\nwith_gotthard.\n\nExiting." << endl;
+						success=FAIL;
+					}
+				}
+			}
+		}
+	}
+
+
+	if(success == OK){
+
+		//display detector message
+		switch(myDetectorType){
+		case GOTTHARD:
+			if(withGotthard){
+				cout << "Option -test with_gotthard exists only for MOENCH detectors. Exiting" << endl;
+				exit(-1);
+			}else
+				cout << "This is a GOTTHARD Receiver" << endl;
+			break;
+		case MOENCH:
+			if(withGotthard)
+				cout << "This is a MOENCH Receiver using a GOTTHARD Detector."
+				"\nNote:Packet numbers are not matched for its corresponding frames." << endl;
+			else
+				cout << "This is a MOENCH Receiver" << endl;
+			break;
+		default:
+			cout << "Unknown Receiver" << endl;
+			success=FAIL;
+			break;
+		}
+	}
+
+	//create socket
+	if(success == OK){
 		socket = new MySocketTCP(port_no);
 		if (socket->getErrorStatus()) {
 			success = FAIL;
@@ -156,10 +203,10 @@ slsReceiverFuncs::slsReceiverFuncs(int argc, char *argv[], int &success):
 			strcpy(mess,"dummy message");
 
 			function_table();
-			slsReceiverList =  new slsReceiverFunctionList(myDetectorType);
+			slsReceiverList =  new slsReceiverFunctionList(myDetectorType,withGotthard);
 
 #ifdef VERBOSE
-	cout << "Function table assigned." << endl;
+			cout << "Function table assigned." << endl;
 #endif
 
 			file_des=socket->getFileDes();
@@ -169,11 +216,6 @@ slsReceiverFuncs::slsReceiverFuncs(int argc, char *argv[], int &success):
 		}
 	}
 
-	switch(myDetectorType){
-	case GOTTHARD: 	cout << "This is a GOTTHARD Receiver" << endl; 	break;
-	case MOENCH:	cout << "This is a MOENCH Receiver" << endl; 	break;
-	default:		cout << "Unknown Receiver" << endl;success=FAIL;break;
-	}
 }
 
 void slsReceiverFuncs::start(){

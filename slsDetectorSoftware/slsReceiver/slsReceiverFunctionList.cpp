@@ -31,7 +31,7 @@ using namespace std;
 FILE* slsReceiverFunctionList::sfilefd(NULL);
 int slsReceiverFunctionList::listening_thread_running(0);
 
-slsReceiverFunctionList::slsReceiverFunctionList(detectorType det):
+slsReceiverFunctionList::slsReceiverFunctionList(detectorType det,bool moenchwithGotthardTest):
 						myDetectorType(det),
 						maxFramesPerFile(MAX_FRAMES_PER_FILE),
 						enableFileWrite(1),
@@ -65,7 +65,8 @@ slsReceiverFunctionList::slsReceiverFunctionList(detectorType det):
 						acquisitionFinishedCallBack(NULL),
 						pAcquisitionFinished(NULL),
 						rawDataReadyCallBack(NULL),
-						pRawDataReady(NULL)
+						pRawDataReady(NULL),
+						withGotthard(moenchwithGotthardTest)
 
 {
 	if(myDetectorType == MOENCH){
@@ -100,7 +101,8 @@ slsReceiverFunctionList::slsReceiverFunctionList(detectorType det):
 		buffer+=aligned_frame_size;
 	}
 
-
+	if(withGotthard)
+		cout << "Testing MOENCH Receiver with GOTTHARD Detector" << endl;
 #ifdef TESTWRITE
 	//to test write receiver data call back
 	registerWriteReceiverDataCallback(&defaultWriteReceiverDataFunc, NULL);

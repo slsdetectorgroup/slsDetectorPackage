@@ -29,7 +29,7 @@ public:
 	/**
 	 * Constructor
 	 */
-	slsReceiverFunctionList(detectorType det);
+	slsReceiverFunctionList(detectorType det, bool moenchwithGotthardTest);
 
 	/**
 	 * Destructor
@@ -358,6 +358,9 @@ private:
 	 * 1 callback writes file, we have to open, close it
 	 * 2 we open, close, write file, callback does not do anything */
 	int cbAction;
+
+	/**temporary variable to test moench with gotthard module*/
+	bool withGotthard;
 
 
 

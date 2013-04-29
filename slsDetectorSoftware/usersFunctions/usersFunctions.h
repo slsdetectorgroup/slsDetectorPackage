@@ -6,10 +6,8 @@ Functions depending on the experimental setup should be defined here
 
 ******************************************************************/
 
-//#define PI 3.14159265358979323846
-#ifdef __cplusplus
-#include <iostream>
-#endif
+#define PI 3.14159265358979323846
+
 
 #ifdef EPICS
 #include <cadef.h>
@@ -31,20 +29,17 @@ extern "C" {
 #endif
 
 
-  // double defaultAngleFunction(double ichan, double encoder, double totalOffset, double conv_r, double center, double offset, double tilt, int direction);
-  double defaultGetPosition(void *d);
-  int defaultGoToPosition(double p,void *d);
-  int defaultGoToPositionNoWait(double p,void *d);
-  int defaultConnectChannels(void *d);
-  int defaultDisconnectChannels(void *d);
-  double defaultGetI0(int t,void *d);
+  //  double defaultAngleFunction(double ichan, double encoder, double totalOffset, double conv_r, double center, double offset, double tilt, int direction);
+  double defaultGetPosition(void*);
+  int defaultGoToPosition(double p, void*);
+  int defaultGoToPositionNoWait(double p, void*);
+  int defaultConnectChannels(void*);
+  int defaultDisconnectChannels(void*);
+  double defaultGetI0(int t, void*);
   
-  int defaultDataReadyFunc(detectorData* d,  int i, void* p);
-  int defaultRawDataReadyFunc(double* d, int np,  void* p);
+  int defaultDataReadyFunc(detectorData* d, void*);
 
-#ifdef __cplusplus
-  int defaultWriteReceiverDataFunc(char* d, int np,  FILE* f, void* p);
-#endif
+
 
 #ifdef __cplusplus
 };

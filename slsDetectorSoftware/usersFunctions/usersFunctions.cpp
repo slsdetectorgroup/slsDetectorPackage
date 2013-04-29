@@ -3,8 +3,8 @@
 #include <stdio.h>
 
 
-double pos;
-double i0=0;
+float pos;
+float i0=0;
 #ifdef EPICS
 
 #include <cadef.h>
@@ -99,6 +99,11 @@ int caput(chid ch_id,  double value) {
 
 
 
+
+
+
+
+
 #endif
 
 
@@ -106,9 +111,33 @@ int caput(chid ch_id,  double value) {
 
 
 
+
+// /* 
+//    contains the conversion channel-angle for a module channel
+//    conv_r=pitch/radius
+// */
+
+
+// double defaultAngleFunction(double ichan, double encoder, double totalOffset, double conv_r, double center, double offset, double tilt, int direction) {
+ 
+  
+//   (void) tilt; /* to avoid warning: unused parameter */
+//   double ang;
+
+//   ang=180./PI*(center*conv_r+direction*atan((double)(ichan-center)*conv_r))+encoder+totalOffset+offset; 
+
+  
+//   //#ifdef VERBOSE
+//   printf("%d %f \n", ichan, ang);
+//   //#endif
+
+//   return ang;
+
+// }
+
 /* reads the encoder and returns the position */
 
-double defaultGetPosition(void *d) {
+double defaultGetPosition(void*) {
 #ifdef VERBOSE
   printf("Getting motor position \n");
 #endif
@@ -128,8 +157,6 @@ double defaultGetPosition(void *d) {
 	pos=value;
     } else
         printf(ca_message(status));
-#else
-    printf("\nmotor position is %f\n",pos);
 #endif
 
 
@@ -137,11 +164,10 @@ double defaultGetPosition(void *d) {
   return pos;
 }
 
-
 /* moves the encoder to position p */
 
 
-int defaultGoToPosition(double p,void *d) {
+int defaultGoToPosition(double p, void*) {
 #ifdef VERBOSE
   printf("Setting  motor position \n");
 #endif
@@ -153,26 +179,22 @@ int defaultGoToPosition(double p,void *d) {
     if ((status = caput(ch_pos, p)) == ECA_NORMAL) {
       ;
 #ifdef VERBOSE
-        printf("caput: success\n");
+      printf("caput %f: success\n", p);
 #endif
-
     } else
         printf(ca_message(status));
 #else
     pos=p;
-    printf("\nmoving motor to position %f\n",p);
 #endif
   //"caputq X04SA-ES2-TH2:RO p"
   //cawait -nounit  -timeout 3600 X04SA-ES2-TH2:RO.DMOV '==1'
-
-
 
     return (int)p;
 }
 
 /* moves the encoder to position p without waiting */
 
-int defaultGoToPositionNoWait(double p,void *d) {
+int defaultGoToPositionNoWait(double p, void*) {
 #ifdef VERBOSE
   printf("Setting  motor position no wait \n");
 #endif
@@ -203,7 +225,7 @@ int defaultGoToPositionNoWait(double p,void *d) {
 
 /* reads I0 and returns the intensity */
 
-double defaultGetI0(int t,void *d) {
+double defaultGetI0(int t, void*) {
 #ifdef VERBOSE
   printf("Getting I0 readout \n");
 #endif
@@ -239,7 +261,7 @@ double defaultGetI0(int t,void *d) {
 }
   
 
-int defaultConnectChannels(void*d) {
+int defaultConnectChannels(void *) {
 #ifdef EPICS
   //double value = 256;
     /* channel name */
@@ -289,7 +311,7 @@ int defaultConnectChannels(void*d) {
     return 0;
 }
 
-int defaultDisconnectChannels(void *d) {  
+int defaultDisconnectChannels(void*) {  
 #ifdef EPICS
     /* close channel connect */
     disconnect_channel(ch_i0);
@@ -304,49 +326,11 @@ int defaultDisconnectChannels(void *d) {
 
 
 
-int defaultDataReadyFunc(detectorData* d,  int i, void* p) {
+int defaultDataReadyFunc(detectorData* d) {
 #ifdef VERBOSE
   printf("UUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUU Data received \n");
-  printf("Filename %s\n",d->fileName);
-  printf("Number of points %d (%d)\n",d->npoints,d->npy);
-  /*  for(int i=0;i<d->npoints;i++){
-    if ((d->angles))
-      printf("%d-[%f]:%f\n",i,(d->angles)[i],(d->values)[i]);
-    else
-      printf("%d-%f\n",i,(d->values)[i]);
-      }*/
-  printf("UUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUU Finished \n");
 #endif
   return 0;
 }
 
 
-int defaultRawDataReadyFunc(double* d, int np,  void* p) {
-  //#ifdef VERBOSE
-  printf("UUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUU Raw Data received \n");
-  if (d==NULL)
-    printf("no data received\n");
-  else
-    printf("received %d channels\n",np);
-    
-  printf("UUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUU Finished \n");
-  //#endif
-  return 0;
-}
-
-
-
-int defaultWriteReceiverDataFunc(char* d, int np,  FILE* f, void* p){
-	//#ifdef VERBOSE
-	printf("UUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUU Receiver Data received \n");
-	if (d==NULL)
-		printf("no data received\n");
-	else{
-		printf("received %d bytes of data\n",np);
-		printf("index:%d\n",(int)(*(int*)d));
-	}
-
-	printf("UUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUU Finished \n");
-	//#endif
-	return 0;
-}

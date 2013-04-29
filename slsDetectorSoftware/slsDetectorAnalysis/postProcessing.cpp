@@ -633,6 +633,12 @@ void postProcessing::initDataset(int r) {
       angRad[im]=p->r_conversion;
       angOff[im]=p->offset;
       angCenter[im]=p->center;
+
+      
+      cout << im << " " << angCenter[im] << " "   << angRad[im] << " " << angOff[im] << endl;
+
+
+
     }
     sx=getAngularConversionParameter(SAMPLE_X);
     sy=getAngularConversionParameter(SAMPLE_Y);

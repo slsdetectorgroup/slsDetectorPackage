@@ -1,6 +1,7 @@
 #include "postProcessingFuncs.h"
 #include "angleConversionConstant.h"
 
+#define VERBOSE
 
 postProcessingFuncs::postProcessingFuncs(int *nModules,int *chPerMod,int modMask[],int badCh[], double ffcoeff[], double fferr[], double* t, int *dir, double angRadius[], double angOffset[], double angCentre[], double* to, double* bs, double *sX, double *sY):
   nMods(0), chansPerMod(NULL), moduleMask(NULL), badChannelMask(NULL), ffCoeff(NULL), ffErr(NULL), tDead(0), angDir(1), angConv(NULL), totalOffset(0), binSize(0), sampleX(0), sampleY(0), totalChans(0), nBins(0), mp(NULL), mv(NULL), me(NULL), mm(NULL)
@@ -144,17 +145,17 @@ int postProcessingFuncs::addFrame(double *data, double *pos, double *I0, double 
     if (nBins) {
       //angconv
       
-#ifdef VERBOSE
-      cout << "ppFuncs angconv" << endl;
-#endif
-      //check module mask?!?!?!?
+// #ifdef VERBOSE
+//       cout << "ppFuncs angconv" << endl;
+// #endif
+//       //check module mask?!?!?!?
       
 
       p1=convertAngle(*pos,ich-ch0,angConv[imod],moduleMask[imod],totalOffset,0,angDir);
 
-#ifdef VERBOSE
-      cout << "ppFuncs merge" << endl;
-#endif
+// #ifdef VERBOSE
+//       cout << "ppFuncs merge" << endl;
+// #endif
       addPointToMerging(p1,vout,eout,mp,mv,me,mm, binSize, nBins);
 
    
@@ -191,6 +192,11 @@ int postProcessingFuncs::initDataset(int *nModules,int *chPerMod,int modMask[],i
     nMods=*nModules;
   else
     nMods=0;
+
+
+#ifdef VERBOSE
+  cout << nMods << endl;
+#endif
 #ifdef VERBOSE
   cout << "tdead " << endl;
 #endif
@@ -198,8 +204,11 @@ int postProcessingFuncs::initDataset(int *nModules,int *chPerMod,int modMask[],i
   if (t)
     tDead=*t;
   else
-    t=0;
+    tDead=0;
 
+#ifdef VERBOSE
+  cout << tDead << endl;
+#endif
 #ifdef VERBOSE
   cout << "toffset " << endl;
 #endif
@@ -207,7 +216,10 @@ int postProcessingFuncs::initDataset(int *nModules,int *chPerMod,int modMask[],i
   if (to)
     totalOffset=*to;
   else
-    to=0;
+    totalOffset=0;
+#ifdef VERBOSE
+  cout << totalOffset << endl;
+#endif
 
 
 #ifdef VERBOSE
@@ -218,6 +230,10 @@ int postProcessingFuncs::initDataset(int *nModules,int *chPerMod,int modMask[],i
   else
     binSize=0;
 
+
+#ifdef VERBOSE
+  cout << binSize << endl;
+#endif
 #ifdef VERBOSE
   cout << "samplex " << endl;
 #endif
@@ -227,13 +243,19 @@ int postProcessingFuncs::initDataset(int *nModules,int *chPerMod,int modMask[],i
     sampleX=0;
 
 #ifdef VERBOSE
+  cout << sampleX  << endl;
+#endif
+#ifdef VERBOSE
   cout << "sampley " << endl;
 #endif
   if (sY)
     sampleY=*sY;
   else 
     sampleY=0;
-  
+
+#ifdef VERBOSE
+  cout << sampleY  << endl;
+#endif
 #ifdef VERBOSE
   cout << "angdir " << endl;
 #endif
@@ -242,6 +264,9 @@ int postProcessingFuncs::initDataset(int *nModules,int *chPerMod,int modMask[],i
   else
     angDir=1;
 
+#ifdef VERBOSE
+  cout << angDir  << endl;
+#endif
   totalChans=0;
 
 
@@ -256,19 +281,19 @@ int postProcessingFuncs::initDataset(int *nModules,int *chPerMod,int modMask[],i
     angConv=new angleConversionConstant*[nMods];
     nBins=(int)(360./binSize)+1;
   }
-
+  cout << "nBins " << nBins << endl;
   for (int im=0; im<nMods; im++) {
-#ifdef VERBOSE
-    cout << "MODULE "<< im << endl;
-#endif
+    //#ifdef VERBOSE
+    // cout << "MODULE "<< im << endl;
+    //#endif
     chansPerMod[im]=chPerMod[im];
     moduleMask[im]=modMask[im];
     totalChans+=chansPerMod[im];
-
     if (angConv) {
       angConv[im]=new angleConversionConstant(angCenter[im], angRadius[im], angOffset[im], 0);
+      
     }
-
+    //   cout << angCenter[im] << " " << chansPerMod[im] << " " << angRadius[im] << " " << angOffset[im] << " " << moduleMask[im] << endl;
   }
 
   

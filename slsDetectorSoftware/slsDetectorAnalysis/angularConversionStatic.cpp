@@ -39,9 +39,9 @@ double* angularConversionStatic::convertAngles(double pos, int nch, int *chansPe
     enc=pos;
 
   for (int ip=0; ip<nch; ip++) {
-    //#ifdef VERBOSE
+#ifdef VERBOSE
     cout << "ip " << ip << " ch0 " << ch0 << " chlast " << chlast << " imod " << imod << endl;
-    //#endif
+#endif
     if (ip>chlast) {
       imod++; 
       p=angOff[imod];      
@@ -50,10 +50,12 @@ double* angularConversionStatic::convertAngles(double pos, int nch, int *chansPe
       else
 	enc=pos;
       
-    if (p)
+#ifdef VERBOSE
+    if (p) 
       cout <<  enc			<< endl <<     fo+go << endl << 		    p->r_conversion << endl 	<<	    p->center				<< endl <<	    p->offset << endl << 		    p->tilt << 		    angdir	<< endl;
     else
       cout << "no ang conv " << endl;
+#endif
 
       ch0=chlast+1;
       nchmod=chansPerMod[imod];
@@ -70,7 +72,9 @@ double* angularConversionStatic::convertAngles(double pos, int nch, int *chansPe
 		    p->offset,				\
 		    p->tilt,				\
 		    angdir		  );
+#ifdef VERBOSE
     cout << "ip " << ip << " ch0 " << ch0 << " chlast " << chlast << " imod " << imod << endl;
+#endif
   }
   return ang;
 }
@@ -208,10 +212,10 @@ int angularConversionStatic::readAngularConversion( ifstream& infile, int nmod, 
   //" module %i center %E +- %E conversion %E +- %E offset %f +- %f \n"
   while (infile.good() and interrupt==0) {
     getline(infile,str);
-    //#ifdef VERBOSE
+#ifdef VERBOSE
     cout << "** mod " << nm << " " ;
     std::cout<< str << std::endl;
-    //#endif
+#endif
     istringstream ssstr(str);
     ssstr >> ss >> mod;
     ssstr >> ss >> center;
@@ -228,7 +232,9 @@ int angularConversionStatic::readAngularConversion( ifstream& infile, int nmod, 
     ssstr >> ss >> er_conv;
     ssstr >> ss >> off;
     ssstr >> ss >> eoff;
+#ifdef VERBOSE
     cout << nm << " " << nmod << endl;
+#endif
     if (nm<nmod && nm>=0 ) {
 	angOff[nm].center=center;
 	angOff[nm].r_conversion=r_conv;
@@ -250,7 +256,9 @@ int angularConversionStatic::readAngularConversion( ifstream& infile, int nmod, 
 
     } else
       break;
+#ifdef VERBOSE
     cout << nm<<"  " << angOff[nm].offset << endl;
+#endif
     nm++;
     if (nm>=nmod)
       break;

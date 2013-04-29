@@ -2164,11 +2164,12 @@ int multiSlsDetector::setFlatFieldCorrection(string fname){
       int chpm[nm];
       int mMask[nm];
       for (int i=0; i<nm; i++) {
-	chpm[im]=getChansPerMod(im);
-	mMask[im]=im;
+	chpm[i]=getChansPerMod(i);
+	mMask[i]=i;
+	//	cout << "multi chpm " << im << " " << chpm[im] << endl;
       }
       fillModuleMask(mMask);
-
+      // cout << "multi chpm0 " << chpm[0] << endl;
       if ((postProcessingFuncs::calculateFlatField(&nm, chpm, mMask, badChannelMask, data, ffcoefficients, fferrors))>=0) {
 	strcpy(thisMultiDetector->flatFieldFile,fname.c_str());
 	
@@ -2494,9 +2495,9 @@ int multiSlsDetector::setBadChannelCorrection(string fname){
 
 
   ret=setBadChannelCorrection(fname, nbad, badlist);
-#ifdef VERBOSE
+  //#ifdef VERBOSE
   cout << "file contained " << ret << " badchans" << endl; 
-#endif
+  //#endif
   if (ret==0) {
     thisMultiDetector->correctionMask&=~(1<<DISCARD_BAD_CHANNELS);
     nbad=0;

@@ -90,14 +90,14 @@ void postProcessing::processFrame(int *myData, int delflag) {
   //  fdata=NULL;
 
   if (rawDataReady) {
-    //#ifdef VERBOSE
+#ifdef VERBOSE
     cout << "raw data ready..." << endl;
-    //#endif
+#endif
     rawDataReady(fdata,numberOfChannels, pRawDataArg);
-    //#ifdef VERBOSE
+#ifdef VERBOSE
     cout << "done" << endl;
     cout << "NO FILE WRITING AND/OR DATA PROCESSING DONE BY SLS DETECTOR SOFTWARE!!!" << endl;   
-    //#endif
+#endif
   } else {
  
 
@@ -577,13 +577,19 @@ void postProcessing::initDataset(int r) {
 #ifdef VERBOSE
     cout << "chanspermod"  << endl;
 #endif
-    // mM[im]=getMoveFlag(im);
+    mM[im]=getMoveFlag(im);
 #ifdef VERBOSE
-    cout << "moveflag"  << endl;
+    cout << "moveflag"  << im << " " <<  mM[im] << endl;
 #endif
     totch+=chPM[im];
   }
-  fillModuleMask(mM);
+ 
+
+  // uncomment if to be used with antonio's funcs!!!
+  //fillModuleMask(mM);
+
+
+
 #ifdef VERBOSE
   cout << "total channels is " << totch << endl;
 #endif
@@ -634,9 +640,9 @@ void postProcessing::initDataset(int r) {
       angOff[im]=p->offset;
       angCenter[im]=p->center;
 
-      
+#ifdef VERBOSE
       cout << im << " " << angCenter[im] << " "   << angRad[im] << " " << angOff[im] << endl;
-
+#endif
 
 
     }

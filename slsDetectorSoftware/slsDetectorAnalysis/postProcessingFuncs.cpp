@@ -1,7 +1,7 @@
 #include "postProcessingFuncs.h"
 #include "angleConversionConstant.h"
 
-#define VERBOSE
+//#define VERBOSE
 
 postProcessingFuncs::postProcessingFuncs(int *nModules,int *chPerMod,int modMask[],int badCh[], double ffcoeff[], double fferr[], double* t, int *dir, double angRadius[], double angOffset[], double angCentre[], double* to, double* bs, double *sX, double *sY):
   nMods(0), chansPerMod(NULL), moduleMask(NULL), badChannelMask(NULL), ffCoeff(NULL), ffErr(NULL), tDead(0), angDir(1), angConv(NULL), totalOffset(0), binSize(0), sampleX(0), sampleY(0), totalChans(0), nBins(0), mp(NULL), mv(NULL), me(NULL), mm(NULL)
@@ -89,6 +89,7 @@ int postProcessingFuncs::addFrame(double *data, double *pos, double *I0, double 
     
 
     if (ich>chlast) {
+      //  cout << *pos << " " << moduleMask[imod] << endl;
       imod++;
       ch0=chlast+1;
       nchmod=chansPerMod[imod];
@@ -281,7 +282,9 @@ int postProcessingFuncs::initDataset(int *nModules,int *chPerMod,int modMask[],i
     angConv=new angleConversionConstant*[nMods];
     nBins=(int)(360./binSize)+1;
   }
+#ifdef VERBOSE
   cout << "nBins " << nBins << endl;
+#endif
   for (int im=0; im<nMods; im++) {
     //#ifdef VERBOSE
     // cout << "MODULE "<< im << endl;
@@ -325,6 +328,9 @@ int postProcessingFuncs::initDataset(int *nModules,int *chPerMod,int modMask[],i
       ffCoeff[ich]=ffcoeff[ich];
     if (ffErr)
       ffErr[ich]=fferr[ich];
+
+    // cout << " init ff " << ich <<  " " << ffCoeff[ich] << ffcoeff[ich] << endl;
+
   }
 
   return 0;
@@ -375,9 +381,9 @@ postProcessingFuncs::~postProcessingFuncs(){
 
 int postProcessingFuncs::flatFieldCorrect(double datain, double errin, double &dataout, double &errout, double ffcoefficient, double fferr){
   double e;
-
   dataout=datain*ffcoefficient;
 
+  //  cout << datain << " " << ffcoefficient << " " << dataout << endl;
   if (errin==0 && datain>=0) 
     e=sqrt(datain);
   else
@@ -417,6 +423,8 @@ int postProcessingFuncs::calculateFlatField(int* nModules, int *chPerMod, int *m
   int nmed=0, im=0;
   double *xmed;
 
+  // cout << "Claculate flat field " << endl;
+
   if (chPerMod==NULL)
     return -1;
   // if (moduleMask==NULL)
@@ -428,15 +436,18 @@ int postProcessingFuncs::calculateFlatField(int* nModules, int *chPerMod, int *m
     return -1;
 
 
+  //  cout << *nModules << " pp chpm0 " << chPerMod[0] << endl;
   int totch=0;
-  for (int im=0; im<*nModules; im++) {
+  int nm= *nModules;
+  for (int im=0; im<nm; im++) {
     totch+=chPerMod[im];
+    //  cout << im << " " << totch << endl;
   }
-
+  //  cout << "tot ch " << totch << endl;
   xmed=new double[totch];
 
   for (int ich=0; ich<totch; ich++) {
-
+    //   cout << ich << " " << totch << endl;
     if (badChannelMask)
 	if (badChannelMask[ich])
 	  continue;
@@ -455,17 +466,17 @@ int postProcessingFuncs::calculateFlatField(int* nModules, int *chPerMod, int *m
     }
     
     
-
+    
   }
   
   
   if (nmed>1 && xmed[nmed/2]>0) {
-#ifdef VERBOSE
-    std::cout<< "Flat field median is " << xmed[nmed/2] << " calculated using "<< nmed << " points" << std::endl;
-#endif
+    //#ifdef VERBOSE
+    //   std::cout<< "Flat field median is " << xmed[nmed/2] << " calculated using "<< nmed << " points" << std::endl;
+    //#endif
 
     
-    
+    //    cout << "checking bad channel mask " << endl;
     for (int ich=0; ich<totch; ich++) {
       if (badChannelMask)
 	if (badChannelMask[ich]) {
@@ -482,10 +493,11 @@ int postProcessingFuncs::calculateFlatField(int* nModules, int *chPerMod, int *m
 	ffCoeff[ich]=0.;
 	ffErr[ich]=1.;
       }
-
+      cout << 	ich << " " << ffData[ich] << " " << ffCoeff[ich] << endl;
     }
 
   }
+      cout << "done " << endl;
 
   delete [] xmed;
 

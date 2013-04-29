@@ -36,6 +36,7 @@ class badChannelCorrections{
 	ssstr >> chmax;						\
 	for (ich=chmin; ich<=chmax; ich++) {			\
 	  badlist[nbad]=ich;					\
+	  cout << badlist[nbad] << " " << moff << endl;			\
 	  nbad++;							\
 	}								\
       } else {								\
@@ -49,7 +50,7 @@ class badChannelCorrections{
 
   static int setBadChannelCorrection(ifstream &infile, int &nbad, int *badlist, int moff){ \
     int retval=readBadChannelCorrectionFile(infile,nbad,badlist);	\
-    for (int ich=0; ich<nbad; ich++)    badlist[ich]=badlist[ich]+moff; \
+    for (int ich=0; ich<nbad; ich++)    { badlist[ich]=badlist[ich]+moff; cout << badlist[ich] << " " << moff << endl; }; \
     return retval;							\
   };
   

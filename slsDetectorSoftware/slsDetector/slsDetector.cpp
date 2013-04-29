@@ -4334,6 +4334,8 @@ int slsDetector::setFlatFieldCorrection(double *corr, double *ecorr) {
 	fferrors[ichan]=ecorr[ichan];
       else
 	fferrors[ichan]=1;
+
+      cout << ichan << " " <<  ffcoefficients[ichan] << endl;
     }
     thisDetector->correctionMask|=(1<<FLAT_FIELD_CORRECTION);
   } else
@@ -4362,9 +4364,11 @@ int slsDetector::getFlatFieldCorrection(double *corr, double *ecorr) {
 #endif
     if (corr) {
       for (int ichan=0; ichan<thisDetector->nMod[X]*thisDetector->nMod[Y]*thisDetector->nChans*thisDetector->nChips; ichan++) {
-	corr[ichan]=(ffcoefficients[ichan]*ffcoefficients[ichan])/(fferrors[ichan]*fferrors[ichan]);
+	//	corr[ichan]=(ffcoefficients[ichan]*ffcoefficients[ichan])/(fferrors[ichan]*fferrors[ichan]);
+	corr[ichan]=ffcoefficients[ichan];
 	if (ecorr) {
-	  ecorr[ichan]=ffcoefficients[ichan]/fferrors[ichan];
+	  //ecorr[ichan]=ffcoefficients[ichan]/fferrors[ichan];
+	  ecorr[ichan]=fferrors[ichan];
 	}
       }
     }

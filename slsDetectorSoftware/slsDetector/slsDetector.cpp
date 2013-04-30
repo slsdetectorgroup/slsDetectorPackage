@@ -4546,7 +4546,7 @@ int slsDetector::setBadChannelCorrection(string fname){
 
 
 int slsDetector::setBadChannelCorrection(int nch, int *chs, int ff) {
-#ifdef VERBOSE
+ #ifdef VERBOSE
   cout << "setting " << nch << " bad chans " << endl;
 #endif
   if (ff==0) {
@@ -4554,9 +4554,10 @@ int slsDetector::setBadChannelCorrection(int nch, int *chs, int ff) {
       thisDetector->correctionMask|=(1<<DISCARD_BAD_CHANNELS);
       thisDetector->nBadChans=0;
       for (int ich=0 ;ich<nch; ich++) {
-	if (chs[ich]<getMaxNumberOfChannels()) {
+	if (chs[ich]>=0 && chs[ich]<getMaxNumberOfChannels()) {
 	  thisDetector->badChansList[ich]=chs[ich];
 	  thisDetector->nBadChans++;
+	  //  cout << "det : " << thisDetector->nBadChans << " " << thisDetector->badChansList[ich] << endl;
 	}
       }
     } else
@@ -4572,7 +4573,7 @@ int slsDetector::setBadChannelCorrection(int nch, int *chs, int ff) {
 #ifdef VERBOSE
   cout << "badchans flag is "<< (thisDetector->correctionMask&(1<< DISCARD_BAD_CHANNELS)) << endl;
 #endif
-  fillBadChannelMask();
+  // fillBadChannelMask();
   if (thisDetector->correctionMask&(1<< DISCARD_BAD_CHANNELS)) {
     return thisDetector->nBadChans+thisDetector->nBadFF;
   } else

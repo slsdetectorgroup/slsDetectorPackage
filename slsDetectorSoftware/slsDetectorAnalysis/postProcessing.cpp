@@ -24,7 +24,7 @@ static void* startProcessDataNoDelete(void *n){\
 
 
 
-postProcessing::postProcessing(): expTime(NULL), ang(NULL), val(NULL), err(NULL), numberOfChannels(0){
+postProcessing::postProcessing(): expTime(NULL), ang(NULL), val(NULL), err(NULL), numberOfChannels(0), badChannelMask(NULL){
   pthread_mutex_t mp1 = PTHREAD_MUTEX_INITIALIZER;
   mp=mp1;
   pthread_mutex_init(&mp, NULL);  
@@ -273,21 +273,34 @@ void postProcessing::doProcessing(double *lfdata, int delflag, string fname) {
 
 
 int postProcessing::fillBadChannelMask() {
-
-  int nbad=0;
-
+  cout << "pp fill bad channel mask " << endl;
+  int nbad=0, nb;
+  //#define VERBOSE
   if (*correctionMask&(1<< DISCARD_BAD_CHANNELS)) {
     nbad=getBadChannelCorrection();
 #ifdef VERBOSE
     cout << "number of bad channels is " << nbad << endl;
 #endif
+    nb=nbad;
     if (nbad>0) {
       
       int *badChansList=new int[nbad];
+ #ifdef VERBOSE
+    cout << "get badch array " << nbad << endl;
+ #endif
       getBadChannelCorrection(badChansList);
+ #ifdef VERBOSE
+    cout << "done " << nbad << endl;
+ #endif
 
       if (badChannelMask) 
 	delete [] badChannelMask;
+
+
+      //#ifdef VERBOSE
+      cout << " nchans " << getTotalNumberOfChannels()  << endl;
+      //#endif
+
       badChannelMask=new int[getTotalNumberOfChannels()];
 
 #ifdef VERBOSE
@@ -298,12 +311,13 @@ int postProcessing::fillBadChannelMask() {
 #ifdef VERBOSE
       cout << " badChanMask has be reset" << badChannelMask << endl;
 #endif
-      for (int ichan=0; ichan<nbad; ichan++) {
+      for (int ichan=0; ichan<nb; ichan++) {
 	if (badChansList[ichan]<getTotalNumberOfChannels() && badChansList[ichan]>=0 ) {
-	  if (badChannelMask[badChansList[ichan]]==0)
-	    nbad++;
-	  badChannelMask[badChansList[ichan]]=1;
-	  
+	  if (badChannelMask[badChansList[ichan]]==0) {
+	    badChannelMask[badChansList[ichan]]=1;
+	    //	    cout << "bad: " << ichan << " " << badChansList[ichan] << endl;
+	  } else
+	    nbad--;
 	}
       }
       delete [] badChansList;
@@ -655,6 +669,10 @@ void postProcessing::initDataset(int r) {
 #ifdef VERBOSE
   cout << "init dataset"  << endl;
 #endif
+  // cout << "pp bad channel mask " << badChannelMask << endl;
+  fillBadChannelMask();
+  // cout << "pp bad channel mask " << badChannelMask << endl;
+  
   ppFun->initDataset(&nmod,chPM,mM,badChannelMask, ffcoeff, fferr, &tdead, &angdir, angRad, angOff, angCenter, &to, &bs, &sx, &sy);
   
 #ifdef VERBOSE

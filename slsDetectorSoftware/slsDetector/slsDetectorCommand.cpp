@@ -1512,7 +1512,7 @@ string slsDetectorCommand::cmdFlatField(int narg, char *args[], int action){
 	sval=string(args[1]);
       else
 	sval="none";
-      double corr[24*1280], ecorr[24*1280];
+      double corr[ myDet->getMaxNumberOfChannels()], ecorr[myDet->getMaxNumberOfChannels()];
       if (myDet->getFlatFieldCorrection(corr,ecorr)) {
 	if (sval!="none") {
 	  myDet->writeDataFile(sval,corr,ecorr,NULL,'i');
@@ -1612,7 +1612,7 @@ string slsDetectorCommand::cmdBadChannels(int narg, char *args[], int action){
       sval=string(args[1]);
     else
       sval="none";
-    int bch[24*1280], nbch;
+    int bch[myDet->getMaxNumberOfChannels()], nbch;
     if ((nbch=myDet->getBadChannelCorrection(bch))) {
       if (sval!="none") {  
 	ofstream outfile;
@@ -2105,16 +2105,18 @@ string slsDetectorCommand::cmdScans(int narg, char *args[], int action) {
       }
     }
     ns=myDet->getScanSteps(is);
-    values=new double[ns];
-    ns=myDet->getScanSteps(is, values);
-    int p=myDet->getScanPrecision(is);
-    char format[1000];
-    sprintf(format, "%%s %%0.%df",p);
     sprintf(answer,"%d ",ns);
-    for (int i=0; i<ns; i++) {
-      sprintf(answer,format,answer,values[i]);
+    if (ns>0) {
+      values=new double[ns];
+      ns=myDet->getScanSteps(is, values);
+      int p=myDet->getScanPrecision(is);
+      char format[1000];
+      sprintf(format, "%%s %%0.%df",p);
+      for (int i=0; i<ns; i++) {
+	sprintf(answer,format,answer,values[i]);
+      }
+      delete [] values;
     }
-    delete [] values;
     return string(answer);
   }
   if (cmd.find("range")!=string::npos) {

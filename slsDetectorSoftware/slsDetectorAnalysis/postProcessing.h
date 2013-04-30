@@ -135,7 +135,7 @@ class postProcessing : public angularConversion, public fileIO, public badChanne
       get flat field corrections file name
       \returns flat field correction file name
   */
-  string getFlatFieldCorrectionFile(){  if ((*correctionMask)&(1<<FLAT_FIELD_CORRECTION)) return string(flatFieldFile); else return string("none");};
+  string getFlatFieldCorrectionFile(){ if ((*correctionMask)&(1<<FLAT_FIELD_CORRECTION)) return string(flatFieldFile); else return string("none");};
 
 
 

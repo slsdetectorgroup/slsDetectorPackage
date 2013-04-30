@@ -519,7 +519,7 @@ int slsDetectorUtils::setBadChannelCorrection(string fname, int &nbadtot, int *b
   //int ich;
   //int chmin,chmax;
 #ifdef VERBOSE
-  std::cout << "Setting bad channel correction to " << fname << std::endl;
+  std::cout << "utils: Setting bad channel correction to " << fname << std::endl;
 #endif
  // int modmi=0;
   int modma=1;

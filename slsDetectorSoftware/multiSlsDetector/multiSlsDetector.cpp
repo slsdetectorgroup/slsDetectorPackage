@@ -2170,6 +2170,7 @@ int multiSlsDetector::setFlatFieldCorrection(string fname){
       }
       fillModuleMask(mMask);
       // cout << "multi chpm0 " << chpm[0] << endl;
+      fillBadChannelMask();
       if ((postProcessingFuncs::calculateFlatField(&nm, chpm, mMask, badChannelMask, data, ffcoefficients, fferrors))>=0) {
 	strcpy(thisMultiDetector->flatFieldFile,fname.c_str());
 	
@@ -2486,6 +2487,7 @@ int multiSlsDetector::setBadChannelCorrection(string fname){
   int nbad=0;//, nbaddet=0, choff=0, idet=0;
   int ret=0;
 
+  cout << thisMultiDetector->badChanFile << endl;
 
   if (fname=="default")
     fname=string(thisMultiDetector->badChanFile);
@@ -2496,7 +2498,7 @@ int multiSlsDetector::setBadChannelCorrection(string fname){
 
   ret=setBadChannelCorrection(fname, nbad, badlist);
   //#ifdef VERBOSE
-  cout << "file contained " << ret << " badchans" << endl; 
+  cout << "multi: file contained " << ret << " badchans" << endl; 
   //#endif
   if (ret==0) {
     thisMultiDetector->correctionMask&=~(1<<DISCARD_BAD_CHANNELS);
@@ -2513,10 +2515,15 @@ int multiSlsDetector::setBadChannelCorrection(string fname){
 
 
 int multiSlsDetector::setBadChannelCorrection(int nbad, int *badlist, int ff) {
-  
 
+  //#define VERBOSE
+  
   int  badlistdet[MAX_BADCHANS];
   int nbaddet=0, choff=0, idet=0;
+  if (nbad<1)
+    badlistdet[0]=0;
+  else
+    badlistdet[0]=badlist[0];
 
   if (nbad>0) {
     thisMultiDetector->correctionMask|=(1<<DISCARD_BAD_CHANNELS);
@@ -2524,10 +2531,10 @@ int multiSlsDetector::setBadChannelCorrection(int nbad, int *badlist, int ff) {
     for (int ich=0; ich<nbad; ich++) {
       if (detectors[idet]) {
 	if ((badlist[ich]-choff)>=detectors[idet]->getMaxNumberOfChannels()) {
-#ifdef VERBOSE
+	  //#ifdef VERBOSE
 	  cout << "setting " << nbaddet << " badchans to detector " << idet << endl;
-#endif
-	  detectors[idet]->setBadChannelCorrection(nbaddet,badlist,0);
+	  //#endif
+	  detectors[idet]->setBadChannelCorrection(nbaddet,badlistdet,0);
 	  if(detectors[idet]->getErrorMask())
 	    setErrorMask(getErrorMask()|(1<<idet));
 	  choff+=detectors[idet]->getMaxNumberOfChannels();
@@ -2549,7 +2556,7 @@ int multiSlsDetector::setBadChannelCorrection(int nbad, int *badlist, int ff) {
 #ifdef VERBOSE
 	cout << "setting " << nbaddet << " badchans to detector " << idet << endl;
 #endif
-	detectors[idet]->setBadChannelCorrection(nbaddet,badlist,0);
+	detectors[idet]->setBadChannelCorrection(nbaddet,badlistdet,0);
 	if(detectors[idet]->getErrorMask())
 	  setErrorMask(getErrorMask()|(1<<idet));
 	choff+=detectors[idet]->getMaxNumberOfChannels();
@@ -2559,11 +2566,11 @@ int multiSlsDetector::setBadChannelCorrection(int nbad, int *badlist, int ff) {
     }
     nbaddet=0;
     for (int i=idet; i<thisMultiDetector->numberOfDetectors; i++) {
-#ifdef VERBOSE
+ #ifdef VERBOSE
       cout << "setting " << 0 << " badchans to detector " << i << endl;
-#endif
+ #endif
       if (detectors[i]) {
-	detectors[i]->setBadChannelCorrection(nbaddet,badlist,0);
+	detectors[i]->setBadChannelCorrection(nbaddet,badlistdet,0);
 	if(detectors[i]->getErrorMask())
 	  setErrorMask(getErrorMask()|(1<<i));
        }
@@ -2576,7 +2583,7 @@ int multiSlsDetector::setBadChannelCorrection(int nbad, int *badlist, int ff) {
 #ifdef VERBOSE
 	cout << "setting " << 0 << " badchans to detector " << idet << endl;
 #endif
-	detectors[idet]->setBadChannelCorrection(nbaddet,badlist,0);
+	detectors[idet]->setBadChannelCorrection(nbaddet,badlistdet,0);
 	if(detectors[idet]->getErrorMask())
 	  setErrorMask(getErrorMask()|(1<<idet));
        }
@@ -2810,24 +2817,33 @@ double multiSlsDetector::setAngularConversionParameter(angleConversionParameter 
 int multiSlsDetector::getBadChannelCorrection(int *bad) {
   //int ichan;
   int *bd, nd, ntot=0, choff=0;;
-
   
+  if (((thisMultiDetector->correctionMask)&(1<< DISCARD_BAD_CHANNELS))==0)
+    return 0;
+  else
+    cout << "bad chans corr enabled "<< thisMultiDetector->correctionMask << endl;
+
   for (int idet=0; idet<thisMultiDetector->numberOfDetectors; idet++) {
     if (detectors[idet]) {
       nd=detectors[idet]->getBadChannelCorrection();
-      bd = new int[nd];
-      nd=detectors[idet]->getBadChannelCorrection(bd);
-      if(detectors[idet]->getErrorMask())
-	setErrorMask(getErrorMask()|(1<<idet));
+      cout << "det " << idet << " nbad " << nd << endl;
+      if (nd>0) {
+	bd = new int[nd];
+	nd=detectors[idet]->getBadChannelCorrection(bd);
+	if(detectors[idet]->getErrorMask())
+	  setErrorMask(getErrorMask()|(1<<idet));
 
-      for (int id=0; id<nd; id++) {
-	if (bd[id]<detectors[idet]->getTotalNumberOfChannels()) {
-	  if (bad) bad[ntot]=choff+bd[id];
-	  ntot++;
+	for (int id=0; id<nd; id++) {
+	  if (bd[id]<detectors[idet]->getTotalNumberOfChannels()) {
+	    if (bad) bad[ntot]=choff+bd[id];
+	    ntot++;
+	  }
 	}
-      }
-      choff+=detectors[idet]->getTotalNumberOfChannels();
-      delete [] bd;
+	choff+=detectors[idet]->getTotalNumberOfChannels();
+	delete [] bd;
+      } else
+	ntot+=nd;
+      
     }
   }
   return ntot;

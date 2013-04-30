@@ -8,8 +8,6 @@ QMAKE_INCDIR_QT = $(QTDIR)/include/
 QMAKE_LIBS_QT = 	-L$(QTDIR)/lib 
 QMAKE_LIBS = 	-L$(QTDIR)/lib 
 
-
-
 DESTDIR  			?= 		bin
 MOC_DIR   			= 		mocs
 OBJECTS_DIR 		= 		objs
@@ -22,7 +20,7 @@ CONFIG				+=		debug no_include_pwd
 QMAKE_CXXFLAGS_WARN_ON = 	-w 
 QMAKE_CFLAGS_WARN_ON   = 	-w
 
-DEFINES 			+= 		VERBOSE DACS_INT PRINT_LOG THIS_PATH=\\\"$$PWD\\\" #VERYVERBOSE 
+DEFINES 			+= 	 EPICS	VERBOSE DACS_INT PRINT_LOG THIS_PATH=\\\"$$PWD\\\" #VERYVERBOSE 
 							
 
 target.path 		+= 		$(DESTDIR)
@@ -36,7 +34,8 @@ QMAKE_CLEAN 		+= 		docs/*/*
 #LIBS				+=		-Wl,-Bstatic -L../slsDetectorSoftware -lSlsDetector  -Wl,-Bdynamic\
 #							-L$(QWTDIR)/lib  -lqwt -L$(QWT3D)/lib 
  
-LIBS				=	-L$(QWTDIR)/lib	  -lqwt -L$(QWT3D)/lib  
+LIBS				=	-L$(QWTDIR)/lib	  -lqwt -L$(QWT3D)/lib -Wl,-R$(QWTDIR)/lib  -L /usr/local/epics/base/lib/$(EPICS_HOST_ARCH)/ -Wl,-R/usr/local/epics/base/lib/$(EPICS_HOST_ARCH)  -lca -lCom 
+
 
 DEPENDPATH  		+=		\
 							slsDetectorPlotting/include\
@@ -51,8 +50,7 @@ INCLUDEPATH 		= 	\
 							slsDetectorPlotting/include\
 							include\
 							forms/include\
-                            $(INCLUDES)
-
+                            $(INCLUDES) /usr/local/epics/base/include/ -I /usr/local/epics/base/include/os/Linux/
 #                           $(shell echo "/lib/modules/`uname -r`/build/include") \
 #							../slsDetectorSoftware/commonFiles\
 #							../slsDetectorSoftware/MySocketTCP\

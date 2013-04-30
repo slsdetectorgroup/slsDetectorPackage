@@ -106,9 +106,21 @@ void qTabDataOutput::SetupWidgetWindow(){
 	//discard bad channels from server
 #ifdef VERBOSE
 	cout  << "Getting bad channel correction" << endl;
+	cout << "func " << myDet->getBadChannelCorrection() << endl;
 #endif
-	if(myDet->getBadChannelCorrection()) chkDiscardBad->setChecked(true);
 
+
+	int nb=myDet->getBadChannelCorrection();
+	disconnect(chkDiscardBad,		SIGNAL(toggled(bool)));
+
+	if(nb) chkDiscardBad->setChecked(true);
+
+
+	connect(chkDiscardBad,		SIGNAL(toggled(bool)), 	this, 	SLOT(DiscardBadChannels()));
+
+#ifdef VERBOSE
+	cout  << "done" << endl;
+#endif
 
 	qDefs::checkErrorMessage(myDet);
 }
@@ -486,19 +498,19 @@ void qTabDataOutput::SetAngularCorrection(){
 
 
 void qTabDataOutput::DiscardBadChannels(){
-#ifdef VERYVERBOSE
+  //#ifdef VERYVERBOSE
 	cout << "Entering Discard bad channels function" << endl;
-#endif
+	//#endif
 	if(chkDiscardBad->isChecked()){
-		myDet->setBadChannelCorrection("default");
 #ifdef VERBOSE
 		cout << "Setting bad channel correction to default"  << endl;
 #endif
+		myDet->setBadChannelCorrection("default");
 	}else{
-		myDet->setBadChannelCorrection("");
 #ifdef VERBOSE
 		cout << "Unsetting bad channel correction" << endl;
 #endif
+		myDet->setBadChannelCorrection("");
 	}
 
 	qDefs::checkErrorMessage(myDet);
@@ -556,9 +568,15 @@ void qTabDataOutput::Refresh(){
 	//discard bad channels from server
 #ifdef VERBOSE
 	cout  << "Getting bad channel correction" << endl;
+	//	cout << "ff " << myDet->getBadChannelCorrection() << endl;
 #endif
+	
+	//	disconnect(chkDiscardBad,		SIGNAL(toggled(bool)));
+
 	if(myDet->getBadChannelCorrection()) chkDiscardBad->setChecked(true);
 
+
+	//	connect(chkDiscardBad,		SIGNAL(toggled(bool)), 	this, 	SLOT(DiscardBadChannels()));
 
 	if(myDet->setReceiverOnline()==slsDetectorDefs::ONLINE_FLAG){
 		btnOutputBrowse->setEnabled(false);

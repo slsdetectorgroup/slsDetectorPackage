@@ -622,8 +622,16 @@ int qDrawPlot::GetDataCallBack(detectorData *data, int fIndex, void *this_pointe
 
 
 int qDrawPlot::GetData(detectorData *data,int fIndex){
-#ifdef VERYVERBOSE
+#ifdef VERBOSE
 	cout << "******Entering GetDatafunction********" << endl;
+	cout << "fname " << data->fileName << endl;
+	cout << "npoints " << data->npoints << endl;
+	cout << "npy " << data->npy << endl;
+	cout << "npy " << data->progressIndex << endl;
+	cout << "values " << data->values << endl;
+	cout << "errors " << data->errors << endl;
+	cout << "angle " << data->angles << endl;
+	
 #endif
 	if(!stop_signal){
 

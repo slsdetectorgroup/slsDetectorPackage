@@ -110,12 +110,12 @@ void qTabDataOutput::SetupWidgetWindow(){
 #endif
 
 
-	int nb=myDet->getBadChannelCorrection();
+
 	disconnect(chkDiscardBad,		SIGNAL(toggled(bool)));
-
-	if(nb) chkDiscardBad->setChecked(true);
-
-
+	if(myDet->getBadChannelCorrection())
+		chkDiscardBad->setChecked(true);
+	else
+		chkDiscardBad->setChecked(false);
 	connect(chkDiscardBad,		SIGNAL(toggled(bool)), 	this, 	SLOT(DiscardBadChannels()));
 
 #ifdef VERBOSE
@@ -571,12 +571,13 @@ void qTabDataOutput::Refresh(){
 	//	cout << "ff " << myDet->getBadChannelCorrection() << endl;
 #endif
 	
-	//	disconnect(chkDiscardBad,		SIGNAL(toggled(bool)));
 
-	if(myDet->getBadChannelCorrection()) chkDiscardBad->setChecked(true);
-
-
-	//	connect(chkDiscardBad,		SIGNAL(toggled(bool)), 	this, 	SLOT(DiscardBadChannels()));
+	disconnect(chkDiscardBad,		SIGNAL(toggled(bool)));
+	if(myDet->getBadChannelCorrection())
+		chkDiscardBad->setChecked(true);
+	else
+		chkDiscardBad->setChecked(false);
+	connect(chkDiscardBad,		SIGNAL(toggled(bool)), 	this, 	SLOT(DiscardBadChannels()));
 
 	if(myDet->setReceiverOnline()==slsDetectorDefs::ONLINE_FLAG){
 		btnOutputBrowse->setEnabled(false);

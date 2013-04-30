@@ -20,7 +20,8 @@ CONFIG				+=		debug no_include_pwd
 QMAKE_CXXFLAGS_WARN_ON = 	-w 
 QMAKE_CFLAGS_WARN_ON   = 	-w
 
-DEFINES 			+= 	 EPICS	VERBOSE DACS_INT PRINT_LOG THIS_PATH=\\\"$$PWD\\\" #VERYVERBOSE 
+DEFINES 			+= 	 VERBOSE DACS_INT PRINT_LOG THIS_PATH=\\\"$$PWD\\\" #VERYVERBOSE 
+#DEFINES 			+= 	 EPICS	VERBOSE DACS_INT PRINT_LOG THIS_PATH=\\\"$$PWD\\\" #VERYVERBOSE 
 							
 
 target.path 		+= 		$(DESTDIR)
@@ -31,10 +32,13 @@ INSTALLS 			+= 		documentation
 QMAKE_CLEAN 		+= 		docs/*/* 
 							
 
+
 #LIBS				+=		-Wl,-Bstatic -L../slsDetectorSoftware -lSlsDetector  -Wl,-Bdynamic\
 #							-L$(QWTDIR)/lib  -lqwt -L$(QWT3D)/lib 
  
-LIBS				=	-L$(QWTDIR)/lib	  -lqwt -L$(QWT3D)/lib -Wl,-R$(QWTDIR)/lib  -L /usr/local/epics/base/lib/$(EPICS_HOST_ARCH)/ -Wl,-R/usr/local/epics/base/lib/$(EPICS_HOST_ARCH)  -lca -lCom 
+ 
+LIBS				=	-L$(QWTDIR)/lib	  -lqwt -L$(QWT3D)/lib 
+#LIBS				=	-L$(QWTDIR)/lib	  -lqwt -L$(QWT3D)/lib -Wl,-R$(QWTDIR)/lib  -L /usr/local/epics/base/lib/$(EPICS_HOST_ARCH)/ -Wl,-R/usr/local/epics/base/lib/$(EPICS_HOST_ARCH)  -lca -lCom 
 
 
 DEPENDPATH  		+=		\
@@ -50,15 +54,9 @@ INCLUDEPATH 		= 	\
 							slsDetectorPlotting/include\
 							include\
 							forms/include\
-                            $(INCLUDES) /usr/local/epics/base/include/ -I /usr/local/epics/base/include/os/Linux/
-#                           $(shell echo "/lib/modules/`uname -r`/build/include") \
-#							../slsDetectorSoftware/commonFiles\
-#							../slsDetectorSoftware/MySocketTCP\
-#							../slsDetectorSoftware/slsReceiverInterface\
-#							../slsDetectorSoftware/slsDetector\
-#							../slsDetectorSoftware/slsDetectorAnalysis\
-#							../slsDetectorSoftware/multiSlsDetector\
-#							../slsDetectorSoftware/usersFunctions  
+							$(INCLUDES)
+#                            $(INCLUDES) /usr/local/epics/base/include/ -I /usr/local/epics/base/include/os/Linux/
+
 
 SOURCES 			= 		\
 							slsDetectorPlotting/src/SlsQt1DPlot.cxx\

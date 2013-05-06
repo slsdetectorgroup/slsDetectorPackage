@@ -42,7 +42,7 @@ class SlsQt2DZoomer:public QwtPlotZoomer{
 #if QWT_VERSION<0x060000
     virtual QwtText trackerText(const QwtDoublePoint &pos) const{
 #else
-  virtual QwtText trackerText(const QPointF &pos) const{
+  virtual QwtText trackerTextF(const QPointF &pos) const{
 #endif
     QColor bg(Qt::white);
 #if QT_VERSION >= 0x040300

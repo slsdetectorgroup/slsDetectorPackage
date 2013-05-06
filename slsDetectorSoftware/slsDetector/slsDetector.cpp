@@ -493,6 +493,8 @@ int slsDetector::initializeDetectorSize(detectorType type) {
       thisDetector->nChan[X]=128;
       thisDetector->nChan[Y]=1;
       thisDetector->nChips=10;
+      thisDetector->nChip[X]=10;
+      thisDetector->nChip[Y]=1;
       thisDetector->nDacs=6;
       thisDetector->nAdcs=0;
       thisDetector->nModMax[X]=24;
@@ -508,6 +510,8 @@ int slsDetector::initializeDetectorSize(detectorType type) {
       thisDetector->nChan[X]=128;
       thisDetector->nChan[Y]=1;
       thisDetector->nChips=12;
+      thisDetector->nChip[X]=12;
+      thisDetector->nChip[Y]=1;
       thisDetector->nDacs=6;
       thisDetector->nAdcs=0;
       thisDetector->nModMax[X]=6;
@@ -519,6 +523,8 @@ int slsDetector::initializeDetectorSize(detectorType type) {
       thisDetector->nChan[X]=128;
       thisDetector->nChan[Y]=1;
       thisDetector->nChips=10;
+      thisDetector->nChip[X]=10;
+      thisDetector->nChip[Y]=1;
       thisDetector->nDacs=8;
       thisDetector->nAdcs=5;
       thisDetector->nModMax[X]=1;
@@ -530,6 +536,8 @@ int slsDetector::initializeDetectorSize(detectorType type) {
       thisDetector->nChan[X]=160;
       thisDetector->nChan[Y]=160;
       thisDetector->nChips=1;
+      thisDetector->nChip[X]=1;
+      thisDetector->nChip[Y]=1;
       thisDetector->nDacs=8;
       thisDetector->nAdcs=1;
       thisDetector->nModMax[X]=1;
@@ -541,6 +549,8 @@ int slsDetector::initializeDetectorSize(detectorType type) {
       thisDetector->nChan[X]=0;
       thisDetector->nChan[Y]=0;
      thisDetector->nChips=0;
+     thisDetector->nChip[X]=0;
+     thisDetector->nChip[Y]=0;
       thisDetector->nDacs=0;
       thisDetector->nAdcs=0;
       thisDetector->nModMax[X]=0;

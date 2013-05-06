@@ -148,9 +148,12 @@ int slsReceiverFunctionList::getFrameIndex(){
 int slsReceiverFunctionList::getAcquisitionIndex(){
 	if(startAcquisitionIndex==-1)
 		acquisitionIndex=0;
-	else
+	else{
+	  if(myDetectorType == MOENCH)
+	    acquisitionIndex=(currframenum - startAcquisitionIndex);
+else
 		acquisitionIndex=(currframenum - startAcquisitionIndex)/packetsPerFrame;
-
+	}
 	return acquisitionIndex;
 }
 
@@ -357,11 +360,12 @@ int slsReceiverFunctionList::startListening(){
 				//start for each scan
 				if(startFrameIndex==-1){
 					if(!frameIndexOffset)
-						startFrameIndex = (int)(*((int*)buffer));
+					  startFrameIndex = ((int)(*((int*)buffer)))- packetsPerFrame;
 					else
-						startFrameIndex = (((int)(*((int*)buffer))) & (frameIndexMask)) >> frameIndexOffset;
+					  startFrameIndex = ((((int)(*((int*)buffer))) & (frameIndexMask)) >> frameIndexOffset)-1;
 
-					startFrameIndex -= packetsPerFrame;
+					//startFrameIndex -= packetsPerFrame;
+					//	startFrameIndex -=1;
 					//cout<<"startFrameIndex:"<<startFrameIndex<<endl;
 					prevframenum=startFrameIndex;
 				}
@@ -511,7 +515,7 @@ int slsReceiverFunctionList::startWriting(){
 				else
 					currframenum = (((int)(*((int*)wbuf))) & (frameIndexMask)) >> frameIndexOffset;
 				//currframenum = (int)(*((int*)wbuf));
-				//cout<<"**************curreframenm:"<<currframenum<<endl;
+				cout<<"**************curreframenm:"<<currframenum<<endl;
 
 				//write data
 				if(enableFileWrite){

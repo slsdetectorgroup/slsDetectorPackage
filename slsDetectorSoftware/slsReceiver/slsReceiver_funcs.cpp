@@ -1008,7 +1008,7 @@ int	slsReceiverFuncs::moench_read_frame(){
 			offset = 4;
 			int packetOffset = 0;
 			int thisFrameNumber = (index & (MOENCH_FRAME_INDEX_MASK)) >> MOENCH_FRAME_INDEX_OFFSET;
-			cout<<"this frame number:"<<thisFrameNumber<<endl;
+			//cout<<"this frame number:"<<thisFrameNumber<<endl;
 			int packetIndex,x,y;
 			int iPacket = 0;
 			offset = 4;
@@ -1017,13 +1017,13 @@ int	slsReceiverFuncs::moench_read_frame(){
 			while (iPacket < numPackets){printf("iPacketr:%d\n",iPacket);
 				//read packet index
 			  cout << endl;
-			  cout <<"buffer:"<<hex<<(*((int*)(((char*)origVal)+packetOffset)))<<endl;
+			  //cout <<"buffer:"<<hex<<(*((int*)(((char*)origVal)+packetOffset)))<<endl;
 			packetIndex = (*((int*)(((char*)origVal)+packetOffset))) & MOENCH_PACKET_INDEX_MASK;
 			
 			packetIndex--;
 			if(packetIndex ==-1)  packetIndex = 39;
-			  cout<<"packet index:"<<hex<<packetIndex<<endl<<dec;
-			  cout << "buffer size: " << bufferSize << " packetOffset: " << packetOffset << endl;
+			//cout<<"packet index:"<<hex<<packetIndex<<endl<<dec;
+			// cout << "buffer size: " << bufferSize << " packetOffset: " << packetOffset << endl;
 				//if its valid
 			  	if ((packetIndex < 40) && (packetIndex >= 0)){
 			  //			  if(packetIndex == 1){
@@ -1061,9 +1061,9 @@ int	slsReceiverFuncs::moench_read_frame(){
 					iPacket++;
 					packetOffset = packetOffset + offset + onePacketSize;
 					}*/
-				cout<<"found or exited"<<endl;
+				//cout<<"found or exited"<<endl;
 			}
-cout<<"exited loop"<<endl;
+cout<<"******************* exited loop"<<endl;
 		}
 		//********************************************************
 

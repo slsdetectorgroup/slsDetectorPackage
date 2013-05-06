@@ -591,7 +591,7 @@ class slsDetector : public slsDetectorUtils, public energyConversion {
 
   int getTotalNumberOfChannels(){return thisDetector->nChans*thisDetector->nChips*thisDetector->nMods;};
 
-  int getTotalNumberOfChannels(dimension d){return thisDetector->nChan[d]*thisDetector->nChips*thisDetector->nMod[X];};
+  int getTotalNumberOfChannels(dimension d){return thisDetector->nChan[d]*thisDetector->nChips*thisDetector->nMod[d];};
 
   int getMaxNumberOfChannels(){return thisDetector->nChans*thisDetector->nChips*thisDetector->nModsMax;};
 

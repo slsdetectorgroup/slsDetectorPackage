@@ -1957,12 +1957,12 @@ while(read_frame(file_des)==OK) {
 
 #ifdef VERBOSE
   printf("frame read\n");
-#endif   
+#endif
     ;
   }
 #ifdef VERBOSE
   printf("Frames finished\n");
-#endif   
+#endif
   return OK; 
 
 

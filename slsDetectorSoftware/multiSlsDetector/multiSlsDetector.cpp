@@ -3533,6 +3533,8 @@ int multiSlsDetector::setNumberOfModules(int p, dimension d) {
       thisMultiDetector->numberOfChannels+=detectors[idet]->getTotalNumberOfChannels();
     }
   }
+
+  updateOffsets();
   return ret;
 
 }

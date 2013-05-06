@@ -1037,9 +1037,9 @@ int	slsReceiverFuncs::moench_read_frame(){
 							x * MOENCH_BYTES_PER_ADC),
 						//						       &i,4);
 			   	(((char*) origVal) +
-			   	offset +
+			   	iPacket * offset +
 				iPacket * onePacketSize +
-			   	i * MOENCH_BYTES_PER_ADC)  ,
+			   	i * MOENCH_BYTES_PER_ADC + 4)  ,
 			   	MOENCH_BYTES_PER_ADC);
 						   //y++;
 						}

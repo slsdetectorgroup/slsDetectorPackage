@@ -1014,43 +1014,53 @@ int	slsReceiverFuncs::moench_read_frame(){
 			offset = 4;
 
 
-			while (iPacket < numPackets){
+			while (iPacket < numPackets){printf("iPacketr:%d\n",iPacket);
 				//read packet index
-				packetIndex = (*((int*)((char*)(origVal+packetOffset)))) & MOENCH_PACKET_INDEX_MASK;cout<<"packet index:"<<packetIndex<<endl;
+			  cout << endl;
+			  cout <<"buffer:"<<hex<<(*((int*)(((char*)origVal)+packetOffset)))<<endl;
+			packetIndex = (*((int*)(((char*)origVal)+packetOffset))) & MOENCH_PACKET_INDEX_MASK;
+			
+			packetIndex--;
+			if(packetIndex ==-1)  packetIndex = 39;
+			  cout<<"packet index:"<<hex<<packetIndex<<endl<<dec;
+			  cout << "buffer size: " << bufferSize << " packetOffset: " << packetOffset << endl;
 				//if its valid
-				if ((packetIndex < 40) || (packetIndex >= 0)){
+			  	if ((packetIndex < 40) && (packetIndex >= 0)){
+			  //			  if(packetIndex == 1){
 					x = packetIndex / 10;
 					y = packetIndex % 10;cout<<"x:"<<x<<"\t y:"<<y<<endl;
 					//copy 16 times 80 bytes
-					for (i = 0; i < partsPerFrame; i++) {
-						memcpy((((char*)retval) +
-													y * MOENCH_BYTES_IN_ONE_DIMENSION +
-													x * MOENCH_BYTES_PER_ADC),
-													(((char*) origVal) +
-															offset +
-															iPacket * onePacketSize +
-															i * MOENCH_BYTES_PER_ADC)  ,
-															MOENCH_BYTES_PER_ADC);
-						y++;
-					}
+						for (i = 0; i < partsPerFrame; i++) {
+						   memcpy((((char*)retval) +
+							   y * 16 * MOENCH_BYTES_IN_ONE_DIMENSION + 
+							i * MOENCH_BYTES_IN_ONE_DIMENSION +
+							x * MOENCH_BYTES_PER_ADC),
+						//						       &i,4);
+			   	(((char*) origVal) +
+			   	offset +
+				iPacket * onePacketSize +
+			   	i * MOENCH_BYTES_PER_ADC)  ,
+			   	MOENCH_BYTES_PER_ADC);
+						   //y++;
+						}
 				}else
 					cout << "cannot decode packet index:" << packetIndex << endl;
 
 				//increment
-				offset+=6;
+				offset=6;
 				iPacket++;
 				packetOffset = packetOffset + offset + onePacketSize;
 
-				cout <<" checking next frame number:"<<(((*((int*)((char*)(origVal+packetOffset)))) & (MOENCH_FRAME_INDEX_MASK)) >> MOENCH_FRAME_INDEX_OFFSET)<<endl;
+				//	cout <<" checking next frame number:"<<hex<<(((*((int*)((char*)(origVal+packetOffset)))) & (MOENCH_FRAME_INDEX_MASK)) >> MOENCH_FRAME_INDEX_OFFSET)<<endl;
 				//check if same frame number
-				while ((((*((int*)((char*)(origVal+packetOffset)))) & (MOENCH_FRAME_INDEX_MASK)) >> MOENCH_FRAME_INDEX_OFFSET) != thisFrameNumber){cout<<"did not match"<<endl;
+				/*	while ((((*((int*)((char*)(origVal+packetOffset)))) & (MOENCH_FRAME_INDEX_MASK)) >> MOENCH_FRAME_INDEX_OFFSET) != thisFrameNumber){cout<<"did not match"<<endl;
 					if(iPacket >= numPackets)
 						break;
 					//increment
 					offset+=6;
 					iPacket++;
 					packetOffset = packetOffset + offset + onePacketSize;
-				}
+					}*/
 				cout<<"found or exited"<<endl;
 			}
 cout<<"exited loop"<<endl;

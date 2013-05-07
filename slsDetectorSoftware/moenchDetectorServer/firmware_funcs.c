@@ -261,20 +261,25 @@ int cleanFifo(){
 	printf("Cleaning FIFO\n");
 	addr=ADC_SYNC_REG;
 
-	//88332214
+	reg = bus_r(addr) &	CLEAN_FIFO_MASK;
+
+	//only for start up
+	if(!reg) reg = ADCSYNC_VAL;
+
+	//88 3 32214
 	if (ROI_flag==0) {
-	val=ADCSYNC_VAL | ADCSYNC_CLEAN_FIFO_BITS | TOKEN_RESTART_DELAY;
+	val=reg | ADCSYNC_CLEAN_FIFO_BITS | TOKEN_RESTART_DELAY;
 	bus_w(addr,val);
 	//88032214
-	val=ADCSYNC_VAL | TOKEN_RESTART_DELAY;
+	val=reg | TOKEN_RESTART_DELAY;
 	bus_w(addr,val);
 	}
 	else {
 		//1b332214
-	  val=ADCSYNC_VAL | ADCSYNC_CLEAN_FIFO_BITS | TOKEN_RESTART_DELAY_ROI;
+	  val=reg | ADCSYNC_CLEAN_FIFO_BITS | TOKEN_RESTART_DELAY_ROI;
 	  bus_w(addr,val);
 	  //1b032214
-	  val=ADCSYNC_VAL | TOKEN_RESTART_DELAY_ROI;
+	  val=reg | TOKEN_RESTART_DELAY_ROI;
 	  bus_w(addr,val);
 
 	}

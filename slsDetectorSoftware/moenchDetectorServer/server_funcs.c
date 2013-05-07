@@ -86,7 +86,7 @@ int init_detector(int b, int checkType) {
 #endif
     testFpga();
     testRAM();
-
+    printf("ADC_SYNC_REG:%x\n",bus_r(ADC_SYNC_REG));
     //moench specific
     setPhaseShiftOnce();
     prepareADC();

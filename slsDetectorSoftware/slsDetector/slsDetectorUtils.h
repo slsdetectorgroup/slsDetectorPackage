@@ -680,6 +680,12 @@ virtual ROI* getROI(int &n)=0;
 virtual int setReadReceiverFrequency(int i=-1)=0;
 
 
+/**
+ * Waits for receiver read to finish after stopping acquisition
+*/
+virtual void waitForReceiverReadToFinish()=0;
+
+
 
   protected:
 

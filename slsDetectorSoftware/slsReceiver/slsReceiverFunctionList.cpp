@@ -138,6 +138,8 @@ void slsReceiverFunctionList::setEthernetInterface(char* c){
 int slsReceiverFunctionList::getFrameIndex(){
 	if(startFrameIndex==-1)
 		frameIndex=0;
+	else if(myDetectorType == MOENCH)
+		frameIndex=currframenum - startFrameIndex;
 	else
 		frameIndex=(currframenum - startFrameIndex)/packetsPerFrame;
 	return frameIndex;
@@ -148,12 +150,11 @@ int slsReceiverFunctionList::getFrameIndex(){
 int slsReceiverFunctionList::getAcquisitionIndex(){
 	if(startAcquisitionIndex==-1)
 		acquisitionIndex=0;
-	else{
-	  if(myDetectorType == MOENCH)
-	    acquisitionIndex=(currframenum - startAcquisitionIndex);
-else
+	else if(myDetectorType == MOENCH)
+		acquisitionIndex=currframenum - startAcquisitionIndex;
+	else
 		acquisitionIndex=(currframenum - startAcquisitionIndex)/packetsPerFrame;
-	}
+
 	return acquisitionIndex;
 }
 
@@ -364,8 +365,6 @@ int slsReceiverFunctionList::startListening(){
 					else
 					  startFrameIndex = ((((int)(*((int*)buffer))) & (frameIndexMask)) >> frameIndexOffset)-1;
 
-					//startFrameIndex -= packetsPerFrame;
-					//	startFrameIndex -=1;
 					//cout<<"startFrameIndex:"<<startFrameIndex<<endl;
 					prevframenum=startFrameIndex;
 				}
@@ -373,7 +372,7 @@ int slsReceiverFunctionList::startListening(){
 				//start of acquisition
 				if(startAcquisitionIndex==-1){
 					startAcquisitionIndex=startFrameIndex;
-					currframenum =startAcquisitionIndex;
+					currframenum = startAcquisitionIndex;
 					cout<<"startAcquisitionIndex:"<<startAcquisitionIndex<<endl;
 				}
 
@@ -515,7 +514,7 @@ int slsReceiverFunctionList::startWriting(){
 				else
 					currframenum = (((int)(*((int*)wbuf))) & (frameIndexMask)) >> frameIndexOffset;
 				//currframenum = (int)(*((int*)wbuf));
-				cout<<"**************curreframenm:"<<currframenum<<endl;
+				//cout<<"**************curreframenm:"<<currframenum<<endl;
 
 				//write data
 				if(enableFileWrite){

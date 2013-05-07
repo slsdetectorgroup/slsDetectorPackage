@@ -210,7 +210,7 @@ void postProcessing::doProcessing(double *lfdata, int delflag, string fname) {
   if (GetCurrentPositionIndex()<=1 || npos<2) {
 #ifdef VERBOSE
       cout << "init dataset" << endl;
-#endif 
+#endif
 
 
   if (*correctionMask&(1<< ANGULAR_CONVERSION))
@@ -243,12 +243,12 @@ void postProcessing::doProcessing(double *lfdata, int delflag, string fname) {
 	fname=createFileName();
 	pthread_mutex_unlock(&mp);
 	  //}
-	
+
 	if((*correctionMask)&(1<<WRITE_FILE)) {  
 	  writeDataFile (fname+ext,np,val, err,ang,'f');
 	}   
-	
-	
+
+
 	if (dataReady) {
 	  thisData=new detectorData(val,err,ang,getCurrentProgress(),(fname+ext).c_str(),np);
 	  dataReady(thisData, currentFrameIndex, pCallbackArg);
@@ -426,31 +426,38 @@ void* postProcessing::processData(int delflag) {
 		bool newData=false;
 		char currentfName[MAX_STR_LENGTH]="";
 		int currentfIndex=0;
+
 		while(1){
 			cout.flush();
 			cout<<flush;
-			//if (checkJoinThread()) break;
 			usleep(200000);
 
+			//get progress
 			pthread_mutex_lock(&mg);
 			caught=getReceiverCurrentFrameIndex();
 			pthread_mutex_unlock(&mg);
+			if(setReceiverOnline()==OFFLINE_FLAG)
+				caught=prevCaught;
 			incrementProgress(caught-prevCaught);
 			if(caught-prevCaught) newData=true;
 			else newData=false;
 			prevCaught=caught;
+
 			if (checkJoinThread()) break;
+
+			//read frame if new data
 			if(newData){
 				strcpy(currentfName,"");
 				pthread_mutex_lock(&mg);
 				int* receiverData =  readFrameFromReceiver(currentfName,currentfIndex);
 				pthread_mutex_unlock(&mg);
-
+				if(setReceiverOnline()==OFFLINE_FLAG)
+					receiverData = NULL;
 				if(receiverData == NULL){
+					currentfIndex = -1;
 					cout<<"****Detector Data returned is NULL***"<<endl;
-					return 0;
 				}
-
+				//not garbage frame
 				if(currentfIndex>=0){
 					fdata=decodeData(receiverData);
 					delete [] receiverData;

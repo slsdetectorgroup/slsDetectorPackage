@@ -318,9 +318,9 @@ void  slsDetectorUtils::acquire(int delflag){
 			  closeDataFile();
 	  }
 
-	  }else{
-		 while(stopReceiver()!=OK);
-	  }
+	  }else
+		  stopReceiver();
+
 	  pthread_mutex_unlock(&mg);
 
 

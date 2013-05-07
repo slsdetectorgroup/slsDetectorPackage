@@ -5862,6 +5862,7 @@ int slsDetector::setFileIndex(int i) {
 	int retval=-1;
 	int arg = i;
 
+
 	if(thisDetector->receiverOnlineFlag==OFFLINE_FLAG){
 		if(i>=0)
 			fileIO::setFileIndex(i);
@@ -6339,4 +6340,11 @@ int slsDetector::setReadReceiverFrequency(int i){
 			updateReceiver();
 	}
 	return retval;
+}
+
+
+void slsDetector::waitForReceiverReadToFinish(){
+	if(dataSocket)
+		while(dataSocket->getsocketDescriptor() >= 0)
+			usleep(1000);
 }

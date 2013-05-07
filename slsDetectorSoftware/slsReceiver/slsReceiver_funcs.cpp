@@ -961,7 +961,7 @@ int	slsReceiverFuncs::moench_read_frame(){
 		//get frame
 		slsReceiverList->readFrame(fName,&raw);
 		if (raw == NULL){
-			index = startIndex;
+			index = startIndex-1;
 			cout << "didnt get data. Gui will try again" << endl;
 		}else{
 			//upto 40 indices, look at just index1 and index2 for now
@@ -977,11 +977,11 @@ int	slsReceiverFuncs::moench_read_frame(){
 			count = 0;
 			offset = 4;
 			j=0;
-			for(x=0;x<(MOENCH_BYTES_IN_ONE_DIMENSION/MOENCH_BYTES_PER_ADC);x++){
-				for(y=0;y<MOENCH_PIXELS_IN_ONE_DIMENSION;y++){
+			for(x=0;x<(MOENCH_BYTES_IN_ONE_ROW/MOENCH_BYTES_PER_ADC);x++){
+				for(y=0;y<MOENCH_PIXELS_IN_ONE_ROW;y++){
 
 					memcpy((((char*)retval) +
-							y * MOENCH_BYTES_IN_ONE_DIMENSION +
+							y * MOENCH_BYTES_IN_ONE_ROW +
 							x * MOENCH_BYTES_PER_ADC),
 							(((char*) origVal) +
 									offset +
@@ -1004,47 +1004,48 @@ int	slsReceiverFuncs::moench_read_frame(){
 		else{
 			int numPackets = MOENCH_PACKETS_PER_FRAME; //40
 			int onePacketSize = MOENCH_DATA_BYTES / MOENCH_PACKETS_PER_FRAME; //1280*40 / 40 = 1280
+			int packetDatabytes_row = onePacketSize * (MOENCH_BYTES_IN_ONE_ROW / MOENCH_BYTES_PER_ADC); //1280 * 4 = 5120
 			int partsPerFrame = onePacketSize / MOENCH_BYTES_PER_ADC; // 1280 / 80 = 16
-			offset = 4;
 			int packetOffset = 0;
 			int thisFrameNumber = (index & (MOENCH_FRAME_INDEX_MASK)) >> MOENCH_FRAME_INDEX_OFFSET;
-			//cout<<"this frame number:"<<thisFrameNumber<<endl;
 			int packetIndex,x,y;
 			int iPacket = 0;
 			offset = 4;
 
+			//cout<<"this frame number:"<<thisFrameNumber<<endl;
 
-			while (iPacket < numPackets){printf("iPacketr:%d\n",iPacket);
-				//read packet index
-			  cout << endl;
-			  //cout <<"buffer:"<<hex<<(*((int*)(((char*)origVal)+packetOffset)))<<endl;
-			packetIndex = (*((int*)(((char*)origVal)+packetOffset))) & MOENCH_PACKET_INDEX_MASK;
-			
-			packetIndex--;
-			if(packetIndex ==-1)  packetIndex = 39;
-			//cout<<"packet index:"<<hex<<packetIndex<<endl<<dec;
-			// cout << "buffer size: " << bufferSize << " packetOffset: " << packetOffset << endl;
-				//if its valid
-			  	if ((packetIndex < 40) && (packetIndex >= 0)){
-			  //			  if(packetIndex == 1){
-					x = packetIndex / 10;
-					y = packetIndex % 10;cout<<"x:"<<x<<"\t y:"<<y<<endl;
-					//copy 16 times 80 bytes
-						for (i = 0; i < partsPerFrame; i++) {
-						   memcpy((((char*)retval) +
-							   y * 16 * MOENCH_BYTES_IN_ONE_DIMENSION + 
-							i * MOENCH_BYTES_IN_ONE_DIMENSION +
-							x * MOENCH_BYTES_PER_ADC),
-						//						       &i,4);
-			   	(((char*) origVal) +
-			   	iPacket * offset +
-				iPacket * onePacketSize +
-			   	i * MOENCH_BYTES_PER_ADC + 4)  ,
-			   	MOENCH_BYTES_PER_ADC);
-						   //y++;
-						}
-				}else
+			while (iPacket < numPackets){
+				printf("iPacket:%d\n",iPacket);cout << endl;
+
+				packetIndex = (*((int*)(((char*)origVal)+packetOffset))) & MOENCH_PACKET_INDEX_MASK;
+				//the first packet is placed in the end
+				packetIndex--;
+				if(packetIndex ==-1)
+					packetIndex = 39;
+
+				//check validity
+				if ((packetIndex >= 40) && (packetIndex < 0))
 					cout << "cannot decode packet index:" << packetIndex << endl;
+				else{
+
+					x = packetIndex / 10;
+					y = packetIndex % 10;
+					cout<<"x:"<<x<<" y:"<<y<<endl;
+
+					//copy 16 times 80 bytes
+					for (i = 0; i < partsPerFrame; i++) {
+						memcpy((((char*)retval) +
+								y * packetDatabytes_row +
+								i * MOENCH_BYTES_IN_ONE_ROW +
+								x * MOENCH_BYTES_PER_ADC),
+
+								(((char*) origVal) +
+										iPacket * offset +
+										iPacket * onePacketSize +
+										i * MOENCH_BYTES_PER_ADC + 4)  ,
+										MOENCH_BYTES_PER_ADC);
+					}
+				}
 
 				//increment
 				offset=6;
@@ -1061,16 +1062,16 @@ int	slsReceiverFuncs::moench_read_frame(){
 					iPacket++;
 					packetOffset = packetOffset + offset + onePacketSize;
 					}*/
-				//cout<<"found or exited"<<endl;
+
 			}
-cout<<"******************* exited loop"<<endl;
+
 		}
 		//********************************************************
 
 
 
 
-		arg=((index - startIndex)/MOENCH_PACKETS_PER_FRAME)-1;
+		arg=index - startIndex;
 #ifdef VERBOSE
 		cout << "\nstartIndex:" << startIndex << endl;
 		cout << "fName:" << fName << endl;
@@ -1099,7 +1100,6 @@ cout<<"******************* exited loop"<<endl;
 	}
 	//return ok/fail
 
-	///ADDED BY ANNA?!?!?!?   //?????????FOR GOTTHARD AS WELL?????
 
 	delete [] origVal;
 	delete [] retval;
@@ -1261,12 +1261,9 @@ int	slsReceiverFuncs::gotthard_read_frame(){
 		socket->SendDataOnly(&arg,sizeof(arg));
 		socket->SendDataOnly(retval,GOTTHARD_DATA_BYTES);
 	}
-	//return ok/fail
 
-	///ADDED BY ANNA?!?!?!?
 	delete [] retval;
 	delete [] origVal;
-
 
 	return ret;
 }

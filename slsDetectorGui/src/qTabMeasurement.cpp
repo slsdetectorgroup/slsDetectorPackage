@@ -323,6 +323,7 @@ void qTabMeasurement::startStopAcquisition(){
 #endif
 		emit StopSignal();
 		myDet->stopAcquisition();
+		myDet->waitForReceiverReadToFinish();
 
 		UpdateProgress();
 		//spin index

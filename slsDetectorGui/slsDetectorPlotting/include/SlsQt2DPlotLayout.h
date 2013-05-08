@@ -5,6 +5,7 @@
  * 19.06.2012 All modifications with the Ian flag has been made since
  * z_range_ne and the buttons are defined in another class.
  * Logz button and z_range_ne have wrappers to connect them
+ * 05.05.2013 Added ResetZMinZMax
  */
 
 
@@ -67,6 +68,8 @@ void ResetRange();
 #ifndef IAN
 void SetZRange(double,double);
 void EnableZRange(bool enable);
+void ResetZMinZMax(bool zmin, bool zmax, double min, double max);
+
 #endif
 
 signals:

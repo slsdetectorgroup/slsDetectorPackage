@@ -261,7 +261,7 @@ void qTabPlot::Initialization(){
 	connect(chkYMax, 		SIGNAL(toggled(bool)), this, 	SLOT(EnableRange()));
 	connect(chkZMin, 		SIGNAL(toggled(bool)), this, 	SLOT(EnableZRange()));
 	connect(chkZMax, 		SIGNAL(toggled(bool)), this, 	SLOT(EnableZRange()));
-	connect(this, 			SIGNAL(EnableZRangeSignal(bool)), myPlot, 	SIGNAL(EnableZRangeSignal(bool)));
+	connect(this, 			SIGNAL(ResetZMinZMaxSignal(bool,bool,double,double)), myPlot, 	SIGNAL(ResetZMinZMaxSignal(bool,bool,double,double)));
 
 	connect(dispXMin, 		SIGNAL(editingFinished()), this,	SLOT(SetAxesRange()));
 	connect(dispXMax, 		SIGNAL(editingFinished()), this, 	SLOT(SetAxesRange()));
@@ -418,7 +418,8 @@ void qTabPlot::SetAxesRange(){
 
 
 void qTabPlot::SetZRange(){
-	emit SetZRangeSignal(dispZMin->text().toDouble(),dispZMax->text().toDouble());
+//	emit SetZRangeSignal(dispZMin->text().toDouble(),dispZMax->text().toDouble());
+	emit ResetZMinZMaxSignal(chkZMin->isChecked(),chkZMax->isChecked(),dispZMin->text().toDouble(),dispZMax->text().toDouble());
 }
 
 
@@ -428,7 +429,7 @@ void qTabPlot::SetZRange(){
 void qTabPlot::EnableZRange(){
 	dispZMin->setEnabled(chkZMin->isChecked());
 	dispZMax->setEnabled(chkZMax->isChecked());
-	emit EnableZRangeSignal((chkZMin->isChecked())||(chkZMax->isChecked()));
+	emit ResetZMinZMaxSignal(chkZMin->isChecked(),chkZMax->isChecked(),dispZMin->text().toDouble(),dispZMax->text().toDouble());
 }
 
 

@@ -140,8 +140,10 @@ void qTabAdvanced::SetupWidgetWindow(){
 
 
 	//check if its online and set it to red if offline
-	det->checkOnline();
-	det->checkReceiverOnline();
+	if(det->setOnline()==slsDetectorDefs::ONLINE_FLAG)
+		det->checkOnline();
+	if(det->setReceiverOnline()==slsDetectorDefs::ONLINE_FLAG)
+		det->checkReceiverOnline();
 	comboOnline->setCurrentIndex(det->setOnline());
 	comboRxrOnline->setCurrentIndex(det->setReceiverOnline());
 	if(!comboOnline->currentIndex()){
@@ -571,7 +573,10 @@ void qTabAdvanced::SetReceiverOnline(int index){
 	cout << "Setting Reciever Online to :" << index << endl;
 #endif
 	disconnect(comboRxrOnline,		SIGNAL(currentIndexChanged(int)),	this,	SLOT(SetReceiverOnline(int)));
-	comboRxrOnline->setCurrentIndex(det->setReceiverOnline(index));
+	if(index)
+		SetReceiver();
+	else
+		comboRxrOnline->setCurrentIndex(det->setReceiverOnline(index));
 	qDefs::checkErrorMessage(det);
 	connect(comboRxrOnline,		SIGNAL(currentIndexChanged(int)),	this,	SLOT(SetReceiverOnline(int)));
 	//highlight in red if offline
@@ -648,7 +653,10 @@ void qTabAdvanced::SetReceiver(){
 #ifdef VERBOSE
 	cout << "Setting Receiver" << endl;
 #endif
+	string outdir = myDet->getFilePath();
 	dispRxrHostname->setText(QString(det->setReceiver(dispRxrHostname->text().toAscii().constData())));
+	qDefs::checkErrorMessage(det);
+	det->setFilePath(outdir);
 	qDefs::checkErrorMessage(det);
 	Refresh();
 }
@@ -909,8 +917,10 @@ void qTabAdvanced::SetDetector(int index){
 
 
 	//check if its online and set it to red if offline
-	det->checkOnline();
-	det->checkReceiverOnline();
+	if(det->setOnline()==slsDetectorDefs::ONLINE_FLAG)
+		det->checkOnline();
+	if(det->setReceiverOnline()==slsDetectorDefs::ONLINE_FLAG)
+		det->checkReceiverOnline();
 	comboOnline->setCurrentIndex(det->setOnline());
 	comboRxrOnline->setCurrentIndex(det->setReceiverOnline());
 	//highlight in red if detector or receiver is offline
@@ -1026,7 +1036,8 @@ void qTabAdvanced::Refresh(){
 	disconnect(comboOnline,		SIGNAL(currentIndexChanged(int)),	this,	SLOT(SetOnline(int)));
 
 	//so that updated status
-	det->checkOnline();
+	if(det->setOnline()==slsDetectorDefs::ONLINE_FLAG)
+		det->checkOnline();
 	comboOnline->setCurrentIndex(det->setOnline());
 	spinControlPort->setValue(det->getControlPort());
 	spinStopPort->setValue(det->getStopPort());
@@ -1053,7 +1064,8 @@ void qTabAdvanced::Refresh(){
 		dispMAC->setText(det->getDetectorMAC());
 
 		//so that updated status
-		det->checkReceiverOnline();
+		if(det->setReceiverOnline()==slsDetectorDefs::ONLINE_FLAG)
+			det->checkReceiverOnline();
 		comboRxrOnline->setCurrentIndex(det->setReceiverOnline());
 
 		dispRxrHostname->setText(det->getReceiver());

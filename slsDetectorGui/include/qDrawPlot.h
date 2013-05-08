@@ -506,7 +506,7 @@ void ContourSignal(bool);
 void LogzSignal(bool);
 void LogySignal(bool);
 void SetZRangeSignal(double,double);
-void EnableZRangeSignal(bool);
+void ResetZMinZMaxSignal(bool,bool,double,double);
 void SetCurrentMeasurementSignal(int);
 void saveErrorSignal(QString);
 void AcquisitionErrorSignal(QString);

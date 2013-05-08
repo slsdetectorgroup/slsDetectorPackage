@@ -166,6 +166,7 @@ void qTabDataOutput::setOutputDir(){
 		for(int i=0;i<myDet->getNumberOfDetectors();i++){
 			slsDetector *det = 	myDet->getSlsDetector(i);
 			qDefs::checkErrorMessage(myDet);
+			oldPath = det->getFilePath();
 			det->setFilePath(string(path.toAscii().constData()));
 			qDefs::checkErrorMessage(det);
 			if(det->getFilePath()!=(string(path.toAscii().constData()))){
@@ -187,9 +188,20 @@ void qTabDataOutput::setOutputDir(){
 			myDet->setFilePath(string(path.toAscii().constData()));
 	}
 	else	{
-		myDet->setFilePath(string(path.toAscii().constData()));
+		for(int i=0;i<myDet->getNumberOfDetectors();i++){
+			slsDetector *det = 	myDet->getSlsDetector(i);
+			qDefs::checkErrorMessage(myDet);
+			det->setFilePath(string(path.toAscii().constData()));
+			qDefs::checkErrorMessage(det);
+			if(det->getFilePath()!=(string(path.toAscii().constData()))){
+				error=true;
+				qDefs::checkErrorMessage(det);
+				break;
+			}
+		}
+	/*	myDet->setFilePath(string(path.toAscii().constData()));
 		if(myDet->getFilePath()!=(string(path.toAscii().constData())))
-			error=true;
+			error=true;*/
 	}
 
 	if(!error){

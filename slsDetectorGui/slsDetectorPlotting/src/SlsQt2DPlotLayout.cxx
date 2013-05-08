@@ -99,12 +99,12 @@ void SlsQt2DPlotLayout::ConnectSignalsAndSlots(){
 void SlsQt2DPlotLayout::UpdateNKeepSetRangeIfSet(){
 #ifdef IAN
 	if(z_range_ne->CheckBoxState()){
-#else
-	if(zRangeChecked){
 #endif
 		//just reset histogram range before update
 		the_plot->SetZMinMax(z_range_ne->GetValue(0),z_range_ne->GetValue(1));
+#ifdef IAN
 	}
+#endif
 	the_plot->Update();
 }
 
@@ -127,6 +127,37 @@ void SlsQt2DPlotLayout::ResetRange(){
 		//set histogram range
 		the_plot->SetZMinMax(z_range_ne->GetValue(0),z_range_ne->GetValue(1));
 	}
+	the_plot->Update();
+}
+
+
+void SlsQt2DPlotLayout::ResetZMinZMax(bool zmin, bool zmax, double min, double max){
+	z_range_ne->SetNumber(min,0);
+	z_range_ne->SetNumber(max,1);
+
+	//refind z limits
+	the_plot->SetZMinMax();
+	if(btnLogz->isChecked()) the_plot->SetZMinimumToFirstGreaterThanZero();
+
+	//first time check validity
+	if(zmax)			z_range_ne->SetValue(max,0);
+	else				z_range_ne->SetValue(the_plot->GetZMaximum(),1);
+
+	if(zmin)			z_range_ne->SetValue(min,0);
+	else				z_range_ne->SetValue(the_plot->GetZMinimum(),0);
+
+	if(zmin && zmax){
+		bool same = (z_range_ne->GetValue(0)==z_range_ne->GetValue(1)) ? 1:0;
+		if(!z_range_ne->IsValueOk(0)||same) z_range_ne->SetValue(the_plot->GetZMinimum(),0);
+		if(!z_range_ne->IsValueOk(1)||same) z_range_ne->SetValue(the_plot->GetZMaximum(),1);
+	}
+
+	z_range_ne->SetRange(the_plot->GetZMinimum(),z_range_ne->GetValue(1),0);
+	z_range_ne->SetRange(z_range_ne->GetValue(0),the_plot->GetZMaximum(),1);
+
+	//set histogram range
+	the_plot->SetZMinMax(z_range_ne->GetValue(0),z_range_ne->GetValue(1));
+
 	the_plot->Update();
 }
 
@@ -190,5 +221,6 @@ void SlsQt2DPlotLayout::EnableZRange(bool enable){
 #endif
 	zRangeChecked  = enable;
 	ResetRange();
+
 }
 #endif

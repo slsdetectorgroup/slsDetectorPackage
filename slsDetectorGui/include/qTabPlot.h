@@ -151,7 +151,7 @@ private slots:
 signals:
 	void DisableZoomSignal(bool);
 	void SetZRangeSignal(double,double);
-	void EnableZRangeSignal(bool);
+	void ResetZMinZMaxSignal(bool,bool,double,double);
 
 };
 

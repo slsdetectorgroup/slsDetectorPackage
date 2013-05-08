@@ -278,7 +278,7 @@ void qDrawPlot::Initialization(){
 	connect(this, 		SIGNAL(ContourSignal(bool)),	plot2D, 	SIGNAL(ContourSignal(bool)));
 	connect(this, 		SIGNAL(LogzSignal(bool)),		plot2D, 	SLOT(SetZScaleToLog(bool)));
 	connect(this, 		SIGNAL(LogySignal(bool)),		plot1D, 	SLOT(SetLogY(bool)));
-	connect(this, 		SIGNAL(EnableZRangeSignal(bool)),plot2D, 	SLOT(EnableZRange(bool)));
+	connect(this, 		SIGNAL(ResetZMinZMaxSignal(bool,bool,double,double)),plot2D, 	SLOT(ResetZMinZMax(bool,bool,double,double)));
 
 	connect(this, 		SIGNAL(SetZRangeSignal(double,double)),	plot2D, 	SLOT(SetZRange(double,double)));
 

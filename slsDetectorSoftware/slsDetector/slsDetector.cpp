@@ -5793,9 +5793,10 @@ string slsDetector::setFilePath(string s) {
 
 	if(thisDetector->receiverOnlineFlag==OFFLINE_FLAG){
 		if(!s.empty()){
-			if(stat(s.c_str(),&st))
+			if(stat(s.c_str(),&st)){
 				std::cout << "path does not exist" << endl;
-			else
+				setErrorMask((getErrorMask())|(FILE_PATH_DOES_NOT_EXIST));
+			}else
 				fileIO::setFilePath(s);
 		}
 	}
@@ -5809,6 +5810,10 @@ string slsDetector::setFilePath(string s) {
 			ret=thisReceiver->sendString(fnum,retval,arg);
 		if(ret!=FAIL)
 			fileIO::setFilePath(string(retval));
+		else if(!s.empty()){
+			std::cout << "path does not exist" << endl;
+			setErrorMask((getErrorMask())|(FILE_PATH_DOES_NOT_EXIST));
+		}
 		if(ret==FORCE_UPDATE)
 			updateReceiver();
 	}
@@ -6350,7 +6355,9 @@ int slsDetector::setReadReceiverFrequency(int i){
 
 
 void slsDetector::waitForReceiverReadToFinish(){
-	if(dataSocket)
-		while(dataSocket->getsocketDescriptor() >= 0)
+	if(dataSocket){
+		while(dataSocket->Connect() < 0)
 			usleep(1000);
+		dataSocket->Disconnect();
+	}
 }

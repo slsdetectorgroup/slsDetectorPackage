@@ -32,6 +32,7 @@ using namespace std;
 #define COULD_NOT_CONFIGURE_MAC				0x0000000000000001ULL
 #define COULDNOT_SET_NETWORK_PARAMETER		0x0000000000000002ULL
 #define COULDNOT_SET_ROI					0x0000000000000004ULL
+#define FILE_PATH_DOES_NOT_EXIST			0x0000000000000008ULL
 
 
 /** @short class returning all error messages for error mask */
@@ -76,6 +77,9 @@ public:
 
 		if(slsErrorMask&COULDNOT_SET_ROI)
 			retval.append("Could not set the exact region of interest. Verify ROI set by detector.\n");
+
+		if(slsErrorMask&FILE_PATH_DOES_NOT_EXIST)
+			retval.append("File Path does not exist.\n");
 
 		return retval;
 

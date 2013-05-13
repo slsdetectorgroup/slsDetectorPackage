@@ -448,11 +448,13 @@ int slsReceiverFunctionList::startWriting(){
 
 
 	//by default, we read/write everything
-	cbAction=2;
+	cbAction = DO_EVERYTHING;
 	//acquisition start call back returns enable write
 	if (startAcquisitionCallBack)
 		cbAction=startAcquisitionCallBack(filePath,fileName,fileIndex,bufferSize,pStartAcquisition);
-	if(enableFileWrite==0 || cbAction==0)
+	if(cbAction < DO_EVERYTHING)
+		cout << endl << "Note: Call back activated. Data saving must be taken care of by user in call back." << endl;
+	else if(enableFileWrite==0)
 		cout << endl << "Note: Data will not be saved" << endl;
 
 
@@ -466,7 +468,7 @@ int slsReceiverFunctionList::startWriting(){
 			if(frameIndexNeeded==-1)	sprintf(savefilename, "%s/%s_%d.raw", filePath,fileName,fileIndex);
 			else						sprintf(savefilename, "%s/%s_f%012d_%d.raw", filePath,fileName,framesCaught,fileIndex);
 
-			if(enableFileWrite || cbAction>0){
+			if(enableFileWrite && cbAction > DO_NOTHING){
 				//sync file and close fd
 				if(sfilefd) {
 					msync(address,memsize,  MS_ASYNC);
@@ -516,31 +518,28 @@ int slsReceiverFunctionList::startWriting(){
 				//currframenum = (int)(*((int*)wbuf));
 				//cout<<"**************curreframenm:"<<currframenum<<endl;
 
-				//write data
-				if(enableFileWrite){
-					//write data call back
-					if (writeReceiverData) {
-						writeReceiverData(wbuf,bufferSize, sfilefd, pwriteReceiverDataArg);
-					}
-					//write data call back
-					if (cbAction<2) {
-						rawDataReadyCallBack(currframenum, wbuf,sfilefd, guiData,pRawDataReady);
-					}
-					//default writing to file
-					else {
-						if(sfilefd)
-							memcpy((((char*)address)+bufferSize*framesInFile),wbuf, bufferSize);
-						else{
-							cout << "You do not have permissions to overwrite: " << savefilename << endl;
-							usleep(50000);
-						}
+				//write data call back
+				if (writeReceiverData) {
+					writeReceiverData(wbuf,bufferSize, sfilefd, pwriteReceiverDataArg);
+				}
+				//write data call back
+				if (cbAction < DO_EVERYTHING) {
+					rawDataReadyCallBack(currframenum, wbuf,sfilefd, guiData,pRawDataReady);
+				}
+				//default writing to file
+				else if(enableFileWrite){
+					if(sfilefd)
+						memcpy((((char*)address)+bufferSize*framesInFile),wbuf, bufferSize);
+					else{
+						cout << "You do not have permissions to overwrite: " << savefilename << endl;
+						usleep(50000);
 					}
 				}
 
 
+
 				//copies gui data and sets/resets guiDataReady
 				if(guiData){
-					//if (cbAction>=2)
 					memcpy(latestData,wbuf,bufferSize);
 					strcpy(guiFileName,savefilename);
 					guiDataReady=1;

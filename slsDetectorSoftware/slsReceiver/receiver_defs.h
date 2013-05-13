@@ -7,6 +7,11 @@
 
 #define GOODBYE 							-200
 
+#define DO_NOTHING		0
+#define CREATE_FILES	1
+#define DO_EVERYTHING	2
+
+
 //all max frames defined in sls_detector_defs.h. 20000 gotthard, 100000 for short gotthard, 1000 for moench
 
 #define FIFO_SIZE							25000

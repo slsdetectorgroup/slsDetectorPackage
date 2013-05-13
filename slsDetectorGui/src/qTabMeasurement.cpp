@@ -272,9 +272,12 @@ void qTabMeasurement::DeInitialization(){
 void qTabMeasurement::Enable(bool enable){
 	frameTimeResolved->setEnabled(enable);
 	frameNotTimeResolved->setEnabled(enable);
+
 	//Enable this always
-	if(!enable) btnStartStop->setEnabled(true);
-	 btnStartStop->setShortcut(QApplication::translate("TabMeasurementObject", "Shift+Space", 0, QApplication::UnicodeUTF8));
+	//if(!enable) btnStartStop->setEnabled(true);
+
+	//shortcut each time, else it doesnt work a second time
+	btnStartStop->setShortcut(QApplication::translate("TabMeasurementObject", "Shift+Space", 0, QApplication::UnicodeUTF8));
 }
 
 
@@ -321,8 +324,9 @@ void qTabMeasurement::startStopAcquisition(){
 #ifdef VERBOSE
 		cout << "Stopping Acquisition" << endl<< endl;
 #endif
-		emit StopSignal();
+		//emit StopSignal(); commented out to prevent undefined state
 		myDet->stopAcquisition();
+		/* commented out to prevent undefined state
 		myDet->waitForReceiverReadToFinish();
 
 		UpdateProgress();
@@ -335,7 +339,7 @@ void qTabMeasurement::startStopAcquisition(){
 		btnStartStop->setText("Start");
 		btnStartStop->setIcon(*iconStart);
 		btnStartStop->setChecked(false);
-		Enable(1);
+		Enable(1);*/
 	}
 	qDefs::checkErrorMessage(myDet);
 }
@@ -345,7 +349,7 @@ void qTabMeasurement::startStopAcquisition(){
 
 
 void qTabMeasurement::UpdateFinished(){
-	if(btnStartStop->isChecked()){
+	//if(btnStartStop->isChecked()){
 
 		UpdateProgress();
 		disconnect(spinIndex,			SIGNAL(valueChanged(int)),			this,	SLOT(setRunIndex(int)));
@@ -361,7 +365,7 @@ void qTabMeasurement::UpdateFinished(){
 		connect(btnStartStop,SIGNAL(clicked()),this,SLOT(startStopAcquisition()));
 
 
-	}
+	//}
 	qDefs::checkErrorMessage(myDet);
 }
 

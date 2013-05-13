@@ -499,6 +499,7 @@ int pedestalCount;
 bool clientInitiated;
 
 
+
 signals:
 void UpdatingPlotFinished();
 void InterpolateSignal(bool);

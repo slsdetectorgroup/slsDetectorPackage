@@ -271,6 +271,7 @@ yes  */
   virtual int getDataBytes   (   )=0;
   friend class slsDetector;
 
+  string getCurrentFileName(){return currentFileName;};
  protected:
 
 
@@ -282,7 +283,6 @@ yes  */
 
   void incrementDetectorIndex() { (detIndex)++; };
 
-  string getCurrentFileName(){return currentFileName;};
 
   string getCurrentReceiverFilePrefix(){return currentReceiverFilePrefix;};
 

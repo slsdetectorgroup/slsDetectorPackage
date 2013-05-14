@@ -4248,7 +4248,7 @@ string multiSlsDetector::setFileName(string s) {
 
   for (int idet=0; idet<thisMultiDetector->numberOfDetectors; idet++) {
     if (detectors[idet]) {
-      if(getNumberOfDetectors()>1)
+      if((getNumberOfDetectors()>1) && (setReceiverOnline()==ONLINE_FLAG))
         setDetectorIndex(idet);
       ret1=detectors[idet]->setFileName(s);
       if(detectors[idet]->getErrorMask())
@@ -4258,7 +4258,8 @@ string multiSlsDetector::setFileName(string s) {
       else if (ret!=ret1)
 	ret="";
     }
-  }
+  }	
+ 
   return ret;
 }
 
@@ -4566,6 +4567,7 @@ int multiSlsDetector::enableWriteToFile(int enable){
 int multiSlsDetector::setFrameIndex(int index){
 	int ret=-100, ret1;
 
+	fileIO::setFrameIndex(index);
 	for (int idet=0; idet<thisMultiDetector->numberOfDetectors; idet++) {
 		if (detectors[idet]) {
 			ret1=detectors[idet]->setFrameIndex(index);

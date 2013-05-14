@@ -209,6 +209,10 @@ slsDetectorCommand::slsDetectorCommand(slsDetectorUtils *det)  {
   i++;
 
 
+  descrToFuncMap[i].m_pFuncName="currentfname"; //OK
+  descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdFileName;
+  i++;
+
   /* Acquisition actions */
 
   descrToFuncMap[i].m_pFuncName="positions"; //
@@ -1402,11 +1406,14 @@ string slsDetectorCommand::helpOutDir(int narg, char *args[], int action){
 string slsDetectorCommand::cmdFileName(int narg, char *args[], int action){
 	if (action==HELP_ACTION)
 		return helpFileName(narg, args, action);
-
-	else if (action==PUT_ACTION)
+	if (cmd=="fname") {
+	if (action==PUT_ACTION)
 		myDet->setFileName(string(args[1]));
 
 	return string(myDet->getFileName());
+	} else
+	  return string(myDet->getCurrentFileName());
+	  
 }
 
 

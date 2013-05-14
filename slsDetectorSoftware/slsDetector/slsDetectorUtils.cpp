@@ -44,6 +44,15 @@ slsDetectorUtils::slsDetectorUtils()  {
 void  slsDetectorUtils::acquire(int delflag){
 
   bool receiver = (setReceiverOnline()==ONLINE_FLAG);
+  if(!receiver)
+  	setDetectorIndex(-1);
+  int nc=setTimer(CYCLES_NUMBER,-1);
+  int nf=setTimer(FRAME_NUMBER,-1);
+  if (nc==0) nc=1;
+  if (nf==0) nf=1;
+
+  int multiframe = nc*nf;
+  cout << "multiframe:"<< multiframe<<endl;
 
   // setTotalProgress();
   //moved these 2 here for measurement change
@@ -233,12 +242,12 @@ void  slsDetectorUtils::acquire(int delflag){
 
 	    setCurrentFrameIndex(0);
 		//if ((timerValue[FRAME_NUMBER]*timerValue[CYCLES_NUMBER])>1) {
-	    if ((setTimer(FRAME_NUMBER,-1)*setTimer(CYCLES_NUMBER,-1))>1){
+	    if (multiframe>1){
 	      setFrameIndex(0);
 	    } else {
 	      setFrameIndex(-1);
 	    }
-
+	    cout <<"frame index:"<<getFrameIndex()<<endl;
 	    if(receiver){
 	    	//send receiver file name
 	    	pthread_mutex_lock(&mp);
@@ -432,8 +441,10 @@ void  slsDetectorUtils::acquire(int delflag){
 
   // waiting for the data processing thread to finish!
   if (*threadedProcessing) {
+    cout << "wait for data processing thread" << endl;
     setJoinThread(1);
     pthread_join(dataProcessingThread, &status);
+    cout << "data processing thread joined" << endl;
   }
 
 
@@ -451,10 +462,11 @@ void  slsDetectorUtils::acquire(int delflag){
    
   if (eclog)
     delete eclog;
-
+  cout << "acquisition finished callback " << endl;
   if (acquisition_finished)
     acquisition_finished(getCurrentProgress(),getDetectorStatus(),acqFinished_p);
-
+  
+  cout << "acquisition finished callback done " << endl;
 }
 
 

@@ -492,16 +492,18 @@ int slsReceiverFunctionList::startWriting(){
 				address = mmap(NULL,memsize,PROT_READ|PROT_WRITE,MAP_SHARED,fileno(sfilefd),0);
 				if(address == MAP_FAILED)
 					perror("Error: Could not map file to memory:");
+
+
+				//printing packet losses and file names
+				if(prevframenum == 0)
+					cout << savefilename << endl;
+				else{
+					cout << savefilename << "\tpacket loss " << fixed << setprecision(4) << ((currframenum-prevframenum-(packetsPerFrame*framesInFile))/(double)(packetsPerFrame*framesInFile))*100.000 << "%\t\t"
+							"framenum " << currframenum << endl;
+				}
 			}
 
-			//printing packet losses and file names
-			if(prevframenum == 0)
-				cout << savefilename << endl;
-			else{
-				cout << savefilename << "\tpacket loss " << fixed << setprecision(4) << ((currframenum-prevframenum-(packetsPerFrame*framesInFile))/(double)(packetsPerFrame*framesInFile))*100.000 << "%\t\t"
-						"framenum " << currframenum << "\t\t"
-						"p " << prevframenum << endl;
-
+			if(prevframenum != 0){
 				prevframenum=currframenum;
 				framesInFile = 0;
 			}

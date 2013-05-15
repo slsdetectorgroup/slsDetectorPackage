@@ -465,11 +465,14 @@ void  slsDetectorUtils::acquire(int delflag){
    
   if (eclog)
     delete eclog;
+#ifdef VERBOSE
   cout << "acquisition finished callback " << endl;
+#endif
   if (acquisition_finished)
     acquisition_finished(getCurrentProgress(),getDetectorStatus(),acqFinished_p);
-  
+#ifdef VERBOSE
   cout << "acquisition finished callback done " << endl;
+#endif
 }
 
 

@@ -780,7 +780,7 @@
      <rect>
       <x>10</x>
       <y>20</y>
-      <width>341</width>
+      <width>348</width>
       <height>26</height>
      </rect>
     </property>
@@ -1806,6 +1806,46 @@ Interval between plots has 2 modes. A condition to be satisfied, in order to avo
    </widget>
   </widget>
  </widget>
+ <tabstops>
+  <tabstop>radioNoPlot</tabstop>
+  <tabstop>radioHistogram</tabstop>
+  <tabstop>radioDataGraph</tabstop>
+  <tabstop>boxScan</tabstop>
+  <tabstop>radioLevel0</tabstop>
+  <tabstop>radioLevel1</tabstop>
+  <tabstop>radioFileIndex</tabstop>
+  <tabstop>radioAllFrames</tabstop>
+  <tabstop>chkInterpolate</tabstop>
+  <tabstop>chkContour</tabstop>
+  <tabstop>chkLogz</tabstop>
+  <tabstop>chkSaveAll</tabstop>
+  <tabstop>comboFrequency</tabstop>
+  <tabstop>chkTitle</tabstop>
+  <tabstop>dispTitle</tabstop>
+  <tabstop>chkXAxis</tabstop>
+  <tabstop>dispXAxis</tabstop>
+  <tabstop>chkXMin</tabstop>
+  <tabstop>dispXMin</tabstop>
+  <tabstop>chkXMax</tabstop>
+  <tabstop>dispXMax</tabstop>
+  <tabstop>chkYAxis</tabstop>
+  <tabstop>dispYAxis</tabstop>
+  <tabstop>chkYMin</tabstop>
+  <tabstop>dispYMin</tabstop>
+  <tabstop>chkYMax</tabstop>
+  <tabstop>dispYMax</tabstop>
+  <tabstop>chkZAxis</tabstop>
+  <tabstop>dispZAxis</tabstop>
+  <tabstop>chkZMin</tabstop>
+  <tabstop>dispZMin</tabstop>
+  <tabstop>chkZMax</tabstop>
+  <tabstop>dispZMax</tabstop>
+  <tabstop>spinPersistency</tabstop>
+  <tabstop>chk1DLog</tabstop>
+  <tabstop>chkPoints</tabstop>
+  <tabstop>chkLines</tabstop>
+  <tabstop>chkSuperimpose</tabstop>
+ </tabstops>
  <resources>
   <include location="../include/icons.qrc"/>
  </resources>

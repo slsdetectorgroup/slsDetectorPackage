@@ -470,6 +470,17 @@ Defines scan range for a &lt;b&gt;Constant Step Size&lt;/b&gt; with the followin
    </item>
   </layout>
  </widget>
+ <tabstops>
+  <tabstop>comboScript</tabstop>
+  <tabstop>dispScript</tabstop>
+  <tabstop>btnBrowse</tabstop>
+  <tabstop>dispParameter</tabstop>
+  <tabstop>spinSteps</tabstop>
+  <tabstop>spinPrecision</tabstop>
+  <tabstop>radioRange</tabstop>
+  <tabstop>radioCustom</tabstop>
+  <tabstop>radioFile</tabstop>
+ </tabstops>
  <resources>
   <include location="../include/icons.qrc"/>
  </resources>

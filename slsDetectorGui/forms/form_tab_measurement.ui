@@ -975,6 +975,23 @@ Frame period between exposures.
    </widget>
   </widget>
  </widget>
+ <tabstops>
+  <tabstop>spinNumMeasurements</tabstop>
+  <tabstop>chkFile</tabstop>
+  <tabstop>dispFileName</tabstop>
+  <tabstop>spinIndex</tabstop>
+  <tabstop>comboTimingMode</tabstop>
+  <tabstop>spinNumFrames</tabstop>
+  <tabstop>spinExpTime</tabstop>
+  <tabstop>comboExpUnit</tabstop>
+  <tabstop>spinPeriod</tabstop>
+  <tabstop>comboPeriodUnit</tabstop>
+  <tabstop>spinNumTriggers</tabstop>
+  <tabstop>spinDelay</tabstop>
+  <tabstop>comboDelayUnit</tabstop>
+  <tabstop>spinNumGates</tabstop>
+  <tabstop>spinNumProbes</tabstop>
+ </tabstops>
  <resources>
   <include location="../include/icons.qrc"/>
  </resources>

@@ -1510,12 +1510,47 @@ An extension given by the modules serial number will be attached.
       </item>
      </layout>
     </widget>
-    <zorder>boxRxr</zorder>
-    <zorder>gridLayoutWidget_7</zorder>
-    <zorder>label_9</zorder>
    </widget>
   </widget>
  </widget>
+ <tabstops>
+  <tabstop>tabAdvancedSettings</tabstop>
+  <tabstop>chkEnergyLog</tabstop>
+  <tabstop>chkAngularLog</tabstop>
+  <tabstop>boxPlot</tabstop>
+  <tabstop>radioDataGraph</tabstop>
+  <tabstop>radioHistogram</tabstop>
+  <tabstop>btnRefresh</tabstop>
+  <tabstop>btnGetTrimbits</tabstop>
+  <tabstop>boxTrimming</tabstop>
+  <tabstop>comboMethod</tabstop>
+  <tabstop>chkOptimize</tabstop>
+  <tabstop>spinResolution</tabstop>
+  <tabstop>spinCounts</tabstop>
+  <tabstop>spinExpTime</tabstop>
+  <tabstop>comboExpUnit</tabstop>
+  <tabstop>spinThreshold</tabstop>
+  <tabstop>dispFile</tabstop>
+  <tabstop>btnFile</tabstop>
+  <tabstop>btnStart</tabstop>
+  <tabstop>btnGetRoi</tabstop>
+  <tabstop>btnSetRoi</tabstop>
+  <tabstop>btnClearRoi</tabstop>
+  <tabstop>scrollArea</tabstop>
+  <tabstop>comboDetector</tabstop>
+  <tabstop>comboOnline</tabstop>
+  <tabstop>spinControlPort</tabstop>
+  <tabstop>dispIP</tabstop>
+  <tabstop>spinStopPort</tabstop>
+  <tabstop>dispMAC</tabstop>
+  <tabstop>dispRxrHostname</tabstop>
+  <tabstop>comboRxrOnline</tabstop>
+  <tabstop>spinTCPPort</tabstop>
+  <tabstop>dispUDPIP</tabstop>
+  <tabstop>spinUDPPort</tabstop>
+  <tabstop>dispUDPMAC</tabstop>
+  <tabstop>btnRxr</tabstop>
+ </tabstops>
  <resources>
   <include location="../include/icons.qrc"/>
  </resources>

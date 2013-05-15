@@ -200,6 +200,12 @@
    </layout>
   </widget>
  </widget>
+ <tabstops>
+  <tabstop>comboSettings</tabstop>
+  <tabstop>spinThreshold</tabstop>
+  <tabstop>spinNumModules</tabstop>
+  <tabstop>comboDynamicRange</tabstop>
+ </tabstops>
  <resources>
   <include location="../include/icons.qrc"/>
  </resources>

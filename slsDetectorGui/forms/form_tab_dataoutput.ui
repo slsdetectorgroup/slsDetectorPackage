@@ -354,6 +354,19 @@ Directory where one saves the data.
    </widget>
   </widget>
  </widget>
+ <tabstops>
+  <tabstop>dispOutputDir</tabstop>
+  <tabstop>btnOutputBrowse</tabstop>
+  <tabstop>chkFlatField</tabstop>
+  <tabstop>dispFlatField</tabstop>
+  <tabstop>btnFlatField</tabstop>
+  <tabstop>chkRate</tabstop>
+  <tabstop>radioAuto</tabstop>
+  <tabstop>radioDeadTime</tabstop>
+  <tabstop>spinDeadTime</tabstop>
+  <tabstop>chkAngular</tabstop>
+  <tabstop>chkDiscardBad</tabstop>
+ </tabstops>
  <resources>
   <include location="../include/icons.qrc"/>
  </resources>

@@ -458,6 +458,12 @@
    </layout>
   </widget>
  </widget>
+ <tabstops>
+  <tabstop>btnGetInfo</tabstop>
+  <tabstop>comboDetector</tabstop>
+  <tabstop>comboModule</tabstop>
+  <tabstop>btnTest</tabstop>
+ </tabstops>
  <resources>
   <include location="../include/icons.qrc"/>
  </resources>

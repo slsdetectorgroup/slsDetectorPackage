@@ -52,7 +52,6 @@ void  slsDetectorUtils::acquire(int delflag){
   if (nf==0) nf=1;
 
   int multiframe = nc*nf;
-  cout << "multiframe:"<< multiframe<<endl;
 
   // setTotalProgress();
   //moved these 2 here for measurement change
@@ -247,7 +246,7 @@ void  slsDetectorUtils::acquire(int delflag){
 	    } else {
 	      setFrameIndex(-1);
 	    }
-	    cout <<"frame index:"<<getFrameIndex()<<endl;
+
 	    if(receiver){
 	    	//send receiver file name
 	    	pthread_mutex_lock(&mp);

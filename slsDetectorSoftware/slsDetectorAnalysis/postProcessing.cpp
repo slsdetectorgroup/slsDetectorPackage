@@ -430,8 +430,7 @@ void* postProcessing::processData(int delflag) {
 		while(1){
 			cout.flush();
 			cout<<flush;
-			usleep(200000);
-
+			usleep(20000);
 			//get progress
 			pthread_mutex_lock(&mg);
 			caught=getReceiverCurrentFrameIndex();

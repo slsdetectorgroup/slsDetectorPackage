@@ -943,26 +943,22 @@ int	slsReceiverFuncs::moench_read_frame(){
 
 	// execute action if the arguments correctly arrived
 #ifdef SLS_RECEIVER_FUNCTION_LIST
-	ret=FAIL;
-	strcpy(mess,"did not start index\n");
-	for(i=0;i<10;i++){
-		startIndex=slsReceiverList->getStartFrameIndex();
-		if(startIndex!=-1){
-			ret=OK;
-			break;
-		}else
-			usleep(500000);
-	}
 
+	startIndex=slsReceiverList->getStartFrameIndex();
 
-	if(ret==FAIL)
-		cout<<"failed to start"<<endl;
+	/**send garbage with -1 index to try again*/
+	if(startIndex==-1)
+		cout<<"hadnt started yet"<<endl;
 	else{
+		ret = OK;
 		//get frame
 		slsReceiverList->readFrame(fName,&raw);
+		/**send garbage with -1 index to try again*/
 		if (raw == NULL){
 			index = startIndex-1;
-			cout << "didnt get data. Gui will try again" << endl;
+#ifdef VERBOSE
+			cout<<"data not ready for gui yet"<<endl;
+#endif
 		}else{
 			//upto 40 indices, look at just index1 and index2 for now
 			index=(int)(*(int*)raw);
@@ -1069,16 +1065,15 @@ int	slsReceiverFuncs::moench_read_frame(){
 		//********************************************************
 
 
-
-
 		arg=index - startIndex;
+	}
 #ifdef VERBOSE
-		cout << "\nstartIndex:" << startIndex << endl;
-		cout << "fName:" << fName << endl;
-		cout << "index:" << arg << endl;
+	cout << "\nstartIndex:" << startIndex << endl;
+	cout << "fName:" << fName << endl;
+	cout << "index:" << arg << endl;
 #endif
 
-	}
+
 
 #endif
 
@@ -1121,8 +1116,10 @@ int	slsReceiverFuncs::gotthard_read_frame(){
 	//retval is a full frame
 	int rnel 		= GOTTHARD_BUFFER_SIZE/(sizeof(int));
 	int* retval 	= new int[rnel];
+	int* origVal 	= new int[rnel];
 	//all initialized to 0
 	for(i=0;i<rnel;i++)	retval[i]=0;
+	for(i=0;i<rnel;i++)	origVal[i]=0;
 
 	//only for full frames
 	int onebuffersize = GOTTHARD_BUFFER_SIZE/GOTTHARD_PACKETS_PER_FRAME;
@@ -1134,7 +1131,7 @@ int	slsReceiverFuncs::gotthard_read_frame(){
 	if(shortFrame!=-1)
 		bufferSize=GOTTHARD_SHORT_BUFFER_SIZE;
 	char* raw 		= new char[bufferSize];
-	int* origVal 	= new int[rnel];
+
 
 	//int* emptys 	= new int[rnel]();
 
@@ -1148,61 +1145,41 @@ int	slsReceiverFuncs::gotthard_read_frame(){
 	// execute action if the arguments correctly arrived
 #ifdef SLS_RECEIVER_FUNCTION_LIST
 
-	//wait till you get first frame 1. to get index(from startindex 2. filename corresponds to buffer value
-	ret=FAIL;
-	strcpy(mess,"did not start index\n");
-	for(int i=0;i<10;i++){
-		startIndex=slsReceiverList->getStartFrameIndex();
-		if(startIndex!=-1){
-			ret=OK;
-			break;
-		}else
-			usleep(500000);
-	}
 
+	startIndex=slsReceiverList->getStartFrameIndex();
+	/**send garbage with -1 index to try again*/
+	if(startIndex==-1)
+		cout<<"hadnt started yet"<<endl;
+	else{
+		ret = OK;
 
-	//got atleast first frame, read buffer
-	if(ret==OK){
-		if(shortFrame!=-1){
-			//get frame
-			slsReceiverList->readFrame(fName,&raw);
-			//sending garbage values with index = -1 to try again
-			if (raw == NULL){
-				index = startIndex;
-				memcpy((((char*)retval)+(GOTTHARD_SHORT_DATABYTES*shortFrame)),((char*) origVal)+4, GOTTHARD_SHORT_DATABYTES);
-			}else{
-				index=(int)(*(int*)raw);
-				memcpy(origVal,raw,bufferSize);
-				raw=NULL;
+		//get frame
+		slsReceiverList->readFrame(fName,&raw);
+		/**send garbage with -1 index to try again*/
+		if (raw == NULL){
+			index = startIndex;
+#ifdef VERBOSE
+			cout<<"data not ready for gui yet"<<endl;
+#endif
+		}else{
+			index=(int)(*(int*)raw);
+			if(shortFrame==-1)
+				index2= (int)(*((int*)((char*)(raw+onebuffersize))));
+			memcpy(origVal,raw,bufferSize);
+			raw=NULL;
 
-				//copy only the adc part
+			//1 adc
+			if(shortFrame!=-1){
 				memcpy((((char*)retval)+(GOTTHARD_SHORT_DATABYTES*shortFrame)),((char*) origVal)+4, GOTTHARD_SHORT_DATABYTES);
 			}
-
-		}else{
-			//for full frames
-			while(count<10){
-				//get frame
-				slsReceiverList->readFrame(fName,&raw);
-				if (raw == NULL){
-					count = -1;
-					break;
-				}
-
-				index=(int)(*(int*)raw);
-				index2= (int)(*((int*)((char*)(raw+onebuffersize))));
-				memcpy(origVal,raw,bufferSize);
-				raw=NULL;
-				//cout<<"funcs\tindex:"<<index<<"\tindex2:"<<index2<<endl;
-
-
+			//all adc
+			else{
 				//1 odd, 1 even
 				if((index%2)!=index2%2){
 					//ideal situation (should be odd, even(index+1))
 					if(index%2){
 						memcpy(retval,((char*) origVal)+4, onedatasize);
 						memcpy((((char*)retval)+onedatasize), ((char*) origVal)+10+onedatasize, onedatasize);
-						break;
 					}
 
 					//swap to even,odd
@@ -1210,29 +1187,13 @@ int	slsReceiverFuncs::gotthard_read_frame(){
 						memcpy((((char*)retval)+onedatasize),((char*) origVal)+4, onedatasize);
 						memcpy(retval, ((char*) origVal)+10+onedatasize, onedatasize);
 						index=index2;
-						break;
 					}
-
-				}
-				strcpy(mess,"could not read frame due to more than 20 mismatched indices\n");
-
-				usleep(100000);
-				count++;
-			}
-
-			if ((count==10) || (count == -1)){
-				if (count == -10)
+				}else
 					cout << "same type: index:" << index << "\tindex2:" << index2 << endl;
-				else
-					cout << "no data to read for gui" << endl;
-				/**send garbage with -1 index to try again*/
-				index = startIndex;
-				memcpy(retval,((char*) origVal)+4, onedatasize);
-				memcpy((((char*)retval)+onedatasize), ((char*) origVal)+10+onedatasize, onedatasize);
 			}
 		}
-
 		arg=((index - startIndex)/packetsPerFrame)-1;
+	}
 
 #ifdef VERBOSE
 		cout << "\nstartIndex:" << startIndex << endl;
@@ -1240,7 +1201,6 @@ int	slsReceiverFuncs::gotthard_read_frame(){
 		cout << "index:" << arg << endl;
 #endif
 
-	}else cout<<"failed to start"<<endl;
 
 
 #endif

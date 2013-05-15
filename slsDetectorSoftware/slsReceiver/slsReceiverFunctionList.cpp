@@ -86,6 +86,7 @@ slsReceiverFunctionList::slsReceiverFunctionList(detectorType det,bool moenchwit
 	strcpy(filePath,"");
 	strcpy(fileName,"run");
 	guiFileName = new char[MAX_STR_LENGTH];
+	strcpy(guiFileName,"");
 	eth = new char[MAX_STR_LENGTH];
 	strcpy(eth,"");
 
@@ -439,6 +440,9 @@ int slsReceiverFunctionList::startWriting(){
 	if(sfilefd) sfilefd=0;
 	strcpy(savefilename,"");
 
+	//reset this before each acq or you send old data
+	guiData = NULL;
+	strcpy(guiFileName,"");
 
 	cout << "Max Frames Per File:" << maxFramesPerFile << endl;
 	if (writeReceiverData)
@@ -515,6 +519,8 @@ int slsReceiverFunctionList::startWriting(){
 					currframenum = (int)(*((int*)wbuf));
 				else
 					currframenum = (((int)(*((int*)wbuf))) & (frameIndexMask)) >> frameIndexOffset;
+
+
 				//currframenum = (int)(*((int*)wbuf));
 				//cout<<"**************curreframenm:"<<currframenum<<endl;
 
@@ -536,8 +542,16 @@ int slsReceiverFunctionList::startWriting(){
 					}
 				}
 
-
-
+/*
+				//wait for gui data for 100ms
+				if(nFrameToGui){
+					for(int i=0;i<10;i++)
+						if(guiData)
+							break;
+						else
+							usleep(10000);//10ms
+				}
+*/
 				//copies gui data and sets/resets guiDataReady
 				if(guiData){
 					memcpy(latestData,wbuf,bufferSize);
@@ -586,31 +600,20 @@ int slsReceiverFunctionList::startWriting(){
 void slsReceiverFunctionList::readFrame(char* c,char** raw){
 
 	//point to gui data
-	if (guiData == NULL){
+	if (guiData == NULL)
 		guiData = latestData;
-	}else
-		cout<<"gui data was not null" << endl;
 
-	//wait for gui data to be ready, not indefinitely
-	for(int i=0;i<10;i++){
-		if(!guiDataReady)
-			usleep(100000);
-		else
-			break;
-	}
+	//copy data and filename
+	strcpy(c,guiFileName);
 
 	//could not get gui data
 	if(!guiDataReady)
+		*raw = NULL;
+	//data ready, set guidata to receive new data
+	else{
+		*raw = guiData;
 		guiData = NULL;
-
-	//copy data and filename
-	if(guiFileName)
-		strcpy(c,guiFileName);
-	else
-		strcpy(c,"");
-	*raw = guiData;
-
-	guiData = NULL;
+	}
 }
 
 

@@ -201,7 +201,7 @@ void qDrawPlot::SetupWidgetWindow(){
 	histFrameIndexTitle= histFrameIndexTitle = new QLabel("");
 
 	boxPlot = new QGroupBox("");
-		layout->addWidget(boxPlot,1,1);
+		layout->addWidget(boxPlot,1,0);
 		boxPlot->setAlignment(Qt::AlignHCenter);
 		boxPlot->setFont(QFont("Sans Serif",11,QFont::Normal));
 		boxPlot->setTitle("Sample Plot");
@@ -251,8 +251,9 @@ void qDrawPlot::SetupWidgetWindow(){
 	boxPlot->setContentsMargins(0,15,0,0);
 
 	plotLayout =  new QGridLayout(boxPlot);
-		plotLayout->addWidget(plot1D,1,1,1,1);
-		plotLayout->addWidget(plot2D,1,1,1,1);
+	plotLayout->setContentsMargins(0,0,0,0);
+		plotLayout->addWidget(plot1D,0,0,1,1);
+		plotLayout->addWidget(plot2D,0,0,1,1);
 
 
 	//callbacks
@@ -1017,6 +1018,7 @@ void qDrawPlot::SelectPlot(int i){ //1 for 1D otherwise 2D
 		boxPlot->setFlat(false);
 		plot_in_scope=1;
 		layout->addWidget(histFrameIndexTitle,0,0);
+		plotLayout->setContentsMargins(10,10,10,10);
 	}else{
 		plot2D->SetXTitle(imageXAxisTitle);
 		plot2D->SetYTitle(imageYAxisTitle);
@@ -1027,6 +1029,7 @@ void qDrawPlot::SelectPlot(int i){ //1 for 1D otherwise 2D
 		plot_in_scope=2;
 		histFrameIndexTitle->setText("");
 		layout->removeWidget(histFrameIndexTitle);
+		plotLayout->setContentsMargins(0,0,0,0);
 
 	}
 }
@@ -1194,7 +1197,8 @@ void qDrawPlot::ClonePlot(){
 		plot1D->setFont(QFont("Sans Serif",9,QFont::Normal));
 		plot1D->SetXTitle(histXAxisTitle.toAscii().constData());
 		plot1D->SetYTitle(histYAxisTitle.toAscii().constData());
-		plotLayout->addWidget(plot1D,1,1,1,1);
+		plotLayout->addWidget(plot1D,0,0,1,1);
+		plotLayout->setContentsMargins(10,10,10,10);
 		if(running){
 			// update range
 			bool found =false;
@@ -1222,7 +1226,8 @@ void qDrawPlot::ClonePlot(){
 		plot2D->SetXTitle(imageXAxisTitle);
 		plot2D->SetYTitle(imageYAxisTitle);
 		plot2D->SetZTitle(imageZAxisTitle);
-		plotLayout->addWidget(plot2D,1,1,1,1);
+		plotLayout->addWidget(plot2D,0,0,1,1);
+		plotLayout->setContentsMargins(0,0,0,0);
 	}
 
 	UnlockLastImageArray();

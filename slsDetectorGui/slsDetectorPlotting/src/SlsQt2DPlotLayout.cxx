@@ -72,11 +72,12 @@ void SlsQt2DPlotLayout::Layout(){
     the_layout->addWidget(btnInterpolate,1,1);
     the_layout->addWidget(btnContour,1,2);
     the_layout->addWidget(btnLogz,1,3);
-#endif
 	the_layout->addWidget(the_plot,2,1,3,3);
 	the_layout->addWidget(z_range_ne,5,1,1,3);
-#ifdef IAN
-	  the_layout->setMargin(12);
+	the_layout->setMargin(12);
+#else
+	the_layout->addWidget(the_plot,2,0,3,3);
+	the_layout->addWidget(z_range_ne,5,0,1,3);
 #endif
 }
 

@@ -276,7 +276,11 @@ SlsQt1DPlot::SlsQt1DPlot(QWidget *parent):QwtPlot(parent){
   SetupZoom();
 
   // Assign a title
+#ifndef IAN
+  insertLegend(new QwtLegend(), QwtPlot::BottomLegend);
+#else
   insertLegend(new QwtLegend(), QwtPlot::RightLegend);
+#endif
 
   axisScaleEngine(QwtPlot::yLeft)->setAttribute(QwtScaleEngine::Floating);
   axisScaleEngine(QwtPlot::xBottom)->setAttribute(QwtScaleEngine::Floating);

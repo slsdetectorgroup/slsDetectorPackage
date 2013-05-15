@@ -18,29 +18,6 @@ void closeFile(int p){
   exit(0);
 }
 
-
-int StartAcq(char* filepath, char*filename,int fileindex, int datasize, void*p){
-  printf("--StartAcq:  filepath:%s  filename:%s fileindex:%d  datasize:%d\n",
-	 filepath, filename, fileindex, datasize);
-
-  printf("--StartAcq: returning 0\n");
-  return 0;
-}
-
-
-void AcquisitionFinished(int frames, void*p){
-  printf("AcquisitionFinished: frames:%d why ?\n",frames);
-
-}
-
-
-void GetData(int framenum, char* datapointer, FILE* descriptor, char* gui, void* p){
-  printf("GetData: framenum: %d(%d)\n", framenum, *(int*)datapointer);
-
-}
-
-
-
 int main(int argc, char *argv[]) {
   int ret = slsDetectorDefs::OK;
   
@@ -75,10 +52,6 @@ int main(int argc, char *argv[]) {
 	//receiver->registerCallBackStartAcquisition(func,arg);
 
 
-
-  printf("Registering 	StartAcq()\n");
-  receiver->registerCallBackStartAcquisition(StartAcq, NULL);
-
 	/**
 	  callback argument is
 	  total farmes caught
@@ -88,9 +61,6 @@ int main(int argc, char *argv[]) {
 
 	//receiver->registerCallBackAcquisitionFinished(func,arg);
 	
-  printf("Registering 	AcquisitionFinished()\n");
-  receiver->registerCallBackAcquisitionFinished(AcquisitionFinished, NULL);
-
 
 
 	/**
@@ -108,12 +78,6 @@ int main(int argc, char *argv[]) {
 	*/
 
 	//receiver->registerCallBackRawDataReady(func,arg);
-
-
-  printf("Registering     GetData() \n");
-
-
-   receiver->registerCallBackRawDataReady(GetData,NULL);
 
 
 

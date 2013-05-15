@@ -440,10 +440,14 @@ void  slsDetectorUtils::acquire(int delflag){
 
   // waiting for the data processing thread to finish!
   if (*threadedProcessing) {
+#ifdef VERBOSE
     cout << "wait for data processing thread" << endl;
+#endif
     setJoinThread(1);
     pthread_join(dataProcessingThread, &status);
+#ifdef VERBOSE
     cout << "data processing thread joined" << endl;
+#endif
   }
 
 

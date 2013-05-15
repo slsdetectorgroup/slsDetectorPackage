@@ -273,7 +273,9 @@ void postProcessing::doProcessing(double *lfdata, int delflag, string fname) {
 
 
 int postProcessing::fillBadChannelMask() {
+#ifdef VERBOSE
   cout << "pp fill bad channel mask " << endl;
+#endif
   int nbad=0, nb;
   //#define VERBOSE
   if (*correctionMask&(1<< DISCARD_BAD_CHANNELS)) {

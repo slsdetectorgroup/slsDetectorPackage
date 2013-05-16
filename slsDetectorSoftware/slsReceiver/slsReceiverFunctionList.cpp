@@ -428,9 +428,6 @@ int slsReceiverFunctionList::startWriting(){
 	cout << "In startWriting()" <<endl;
 #endif
 
-
-	void *address;
-	int memsize = bufferSize*maxFramesPerFile;
 	char *wbuf;
 	int sleepnumber=0;
 
@@ -473,26 +470,14 @@ int slsReceiverFunctionList::startWriting(){
 			else						sprintf(savefilename, "%s/%s_f%012d_%d.raw", filePath,fileName,framesCaught,fileIndex);
 
 			if(enableFileWrite && cbAction > DO_NOTHING){
-				//sync file and close fd
-				if(sfilefd) {
-					msync(address,memsize,  MS_ASYNC);
-					munmap(address,memsize);
-					fclose(sfilefd);
-				}
 
-				//create file , truncate size and map file to memory
-				if (NULL == (sfilefd = fopen((const char *) (savefilename), "w+"))){
+				if(sfilefd)
+					fclose(sfilefd);
+
+				if (NULL == (sfilefd = fopen((const char *) (savefilename), "w"))){
 					cout << "Error: Could not create file " << savefilename << endl;
 					break;
 				}
-				if (-1 == ftruncate(fileno(sfilefd),memsize)) {
-					perror("Error:Could not truncate file:");
-					break;
-				}
-				address = mmap(NULL,memsize,PROT_READ|PROT_WRITE,MAP_SHARED,fileno(sfilefd),0);
-				if(address == MAP_FAILED)
-					perror("Error: Could not map file to memory:");
-
 
 				//printing packet losses and file names
 				if(prevframenum == 0)
@@ -537,7 +522,7 @@ int slsReceiverFunctionList::startWriting(){
 				//default writing to file
 				else if(enableFileWrite){
 					if(sfilefd)
-						memcpy((((char*)address)+bufferSize*framesInFile),wbuf, bufferSize);
+						fwrite(wbuf, 1, bufferSize, sfilefd);
 					else{
 						cout << "You do not have permissions to overwrite: " << savefilename << endl;
 						usleep(50000);
@@ -575,12 +560,10 @@ int slsReceiverFunctionList::startWriting(){
 	}
 	listening_thread_running = 0;
 	cout << "Total Frames Caught:"<< totalFramesCaught << endl;
-	//sync file and close fd, memsize is still for maxframes because of truncate
-	if(sfilefd){
-		msync(address,memsize,  MS_ASYNC);
-		munmap(address,memsize);
+
+
+	if(sfilefd)
 		fclose(sfilefd);
-	}
 #ifdef VERBOSE
 	cout << "sfield:" << (int)sfilefd << endl;
 #endif

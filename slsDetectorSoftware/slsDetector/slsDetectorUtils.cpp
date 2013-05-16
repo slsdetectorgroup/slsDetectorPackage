@@ -240,19 +240,21 @@ void  slsDetectorUtils::acquire(int delflag){
 	    }
 
 	    setCurrentFrameIndex(0);
-		//if ((timerValue[FRAME_NUMBER]*timerValue[CYCLES_NUMBER])>1) {
-	    if (multiframe>1){
+
+	    if(receiver)
+	    	pthread_mutex_lock(&mg);
+	    if (multiframe>1)
 	      setFrameIndex(0);
-	    } else {
+	    else
 	      setFrameIndex(-1);
-	    }
+
 
 	    if(receiver){
-	    	//send receiver file name
+	    	pthread_mutex_unlock(&mg);//unlock previous
 	    	pthread_mutex_lock(&mp);
 	    	createFileName();
 	    	pthread_mutex_unlock(&mp);
-
+	    	//send receiver file name
 	    	pthread_mutex_lock(&mg);
 	    	setFileName(fileIO::getFileName());
 	    	if(setReceiverOnline()==OFFLINE_FLAG){

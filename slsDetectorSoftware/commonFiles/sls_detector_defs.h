@@ -346,7 +346,15 @@ enum dacIndex {
   G_VCASC_OUT,  /**< gotthard */ 
   G_VIN_CM,     /**< gotthard */
   G_VREF_COMP,  /**< gotthard */ 
-  G_IB_TESTC   /**< gotthard */
+  G_IB_TESTC,   /**< gotthard */
+  V_DAC0,		/**< moench */
+  V_DAC1,		/**< moench */
+  V_DAC2,		/**< moench */
+  V_DAC3,		/**< moench */
+  V_DAC4,		/**< moench */
+  V_DAC5,		/**< moench */
+  V_DAC6,		/**< moench */
+  V_DAC7,		/**< moench */
 };
 
 /** 

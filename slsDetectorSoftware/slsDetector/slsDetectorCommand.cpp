@@ -558,6 +558,45 @@ slsDetectorCommand::slsDetectorCommand(slsDetectorUtils *det)  {
   descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdDAC;
   i++;
 
+  descrToFuncMap[i].m_pFuncName="ib_test_c"; //
+  descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdDAC;
+  i++;
+
+  descrToFuncMap[i].m_pFuncName="dac0"; //
+  descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdDAC;
+  i++;
+
+  descrToFuncMap[i].m_pFuncName="dac1"; //
+  descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdDAC;
+  i++;
+
+  descrToFuncMap[i].m_pFuncName="dac2"; //
+  descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdDAC;
+  i++;
+
+  descrToFuncMap[i].m_pFuncName="dac3"; //
+  descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdDAC;
+  i++;
+
+  descrToFuncMap[i].m_pFuncName="dac4"; //
+  descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdDAC;
+  i++;
+
+  descrToFuncMap[i].m_pFuncName="dac5"; //
+  descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdDAC;
+  i++;
+
+  descrToFuncMap[i].m_pFuncName="dac6"; //
+  descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdDAC;
+  i++;
+
+  descrToFuncMap[i].m_pFuncName="dac7"; //
+  descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdDAC;
+  i++;
+
+
+
+
   /* r/w timers */
 
   descrToFuncMap[i].m_pFuncName="temp_adc"; //
@@ -3019,6 +3058,22 @@ string slsDetectorCommand::cmdDAC(int narg, char *args[], int action) {
     dac=G_VREF_COMP;
   else if (cmd=="ib_test_c")
     dac=G_IB_TESTC;
+  else if (cmd=="dac0")
+    dac=V_DAC0;
+  else if (cmd=="dac1")
+    dac=V_DAC1;
+  else if (cmd=="dac2")
+    dac=V_DAC2;
+  else if (cmd=="dac3")
+    dac=V_DAC3;
+  else if (cmd=="dac4")
+    dac=V_DAC4;
+  else if (cmd=="dac5")
+    dac=V_DAC5;
+  else if (cmd=="dac6")
+    dac=V_DAC6;
+  else if (cmd=="dac7")
+    dac=V_DAC7;
   else
     return string("cannot decode dac ")+cmd;
   
@@ -3082,7 +3137,17 @@ string slsDetectorCommand::helpDAC(int narg, char *args[], int action) {
     os << "vref_comp " << "dacu\t sets vref_comp" << std::endl;
     os << "ib_test_c " << "dacu\t sets ib_test_c" << std::endl;
 
+
+    os << "dac0 " << "dacu\t sets dac 0" << std::endl;
+    os << "dac1 " << "dacu\t sets dac 0" << std::endl;
+    os << "dac2 " << "dacu\t sets dac 0" << std::endl;
+    os << "dac3 " << "dacu\t sets dac 0" << std::endl;
+    os << "dac4 " << "dacu\t sets dac 0" << std::endl;
+    os << "dac5 " << "dacu\t sets dac 0" << std::endl;
+    os << "dac6 " << "dacu\t sets dac 0" << std::endl;
+    os << "dac7 " << "dacu\t sets dac 0" << std::endl;
   }
+
   if (action==GET_ACTION || action==HELP_ACTION) {
 
     os << "vthreshold \t Gets the detector threshold in dac units (0-1024). The energy is approx 800-15*keV" << std::endl;
@@ -3118,6 +3183,18 @@ string slsDetectorCommand::helpDAC(int narg, char *args[], int action) {
     os << "vcasc_out " << "\t gets vcasc_out" << std::endl;
     os << "vref_comp " << "\t gets vref_comp" << std::endl;
     os << "ib_test_c " << "\t gets ib_test_c" << std::endl;
+
+
+    os << "dac0 " << "\t gets dac 0" << std::endl;
+    os << "dac1 " << "\t gets dac 0" << std::endl;
+    os << "dac2 " << "\t gets dac 0" << std::endl;
+    os << "dac3 " << "\t gets dac 0" << std::endl;
+    os << "dac4 " << "\t gets dac 0" << std::endl;
+    os << "dac5 " << "\t gets dac 0" << std::endl;
+    os << "dac6 " << "\t gets dac 0" << std::endl;
+    os << "dac7 " << "\t gets dac 0" << std::endl;
+
+
   }
   return os.str();
 }

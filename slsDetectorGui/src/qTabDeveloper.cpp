@@ -99,14 +99,14 @@ void qTabDeveloper::SetupWidgetWindow(){
 	case slsDetectorDefs::MOENCH:
 		NUM_DAC_WIDGETS = 8;
 		NUM_ADC_WIDGETS = 2;
-		dacNames.push_back("v Reference:");
-		dacNames.push_back("v Cascode n:");
-		dacNames.push_back("v Cascode p:");
-		dacNames.push_back("v Comp. Output:");
-		dacNames.push_back("v Cascode out");
-		dacNames.push_back("v Comp. Input:");
-		dacNames.push_back("v Comp. Ref:");
-		dacNames.push_back("i Base Test:");
+		dacNames.push_back("v Dac 0:");
+		dacNames.push_back("v Dac 1:");
+		dacNames.push_back("v Dac 2:");
+		dacNames.push_back("v Dac 3:");
+		dacNames.push_back("v Dac 4:");
+		dacNames.push_back("v Dac 5:");
+		dacNames.push_back("v Dac 6:");
+		dacNames.push_back("i Dac 7:");
 
 		adcNames.push_back("Temperature ADC:");
 		adcNames.push_back("Temperature FPGA:");

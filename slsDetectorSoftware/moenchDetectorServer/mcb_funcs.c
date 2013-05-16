@@ -637,14 +637,14 @@ int getThresholdEnergy() {
       if (myg>0 && myo>0) {
 	//ethr=(myo-detectorDacs[VTHRESH+imod*NDAC])*1000/myg;
       
-	ethr=(myo-setDACRegister(VREF_DS,-1,imod))*1000/myg;//edited by dhanya
+	ethr=(myo-setDACRegister(VDAC0,-1,imod))*1000/myg;//edited by dhanya
 	// else
       //	ethr=-1;
       
       }
 #ifdef VERBOSE
       //printf("module=%d gain=%f, offset=%f, dacu=%f\n",imod, myg, myo, detectorDacs[VTHRESH+imod*NDAC]);
-      printf("module=%d gain=%f, offset=%f, dacu=%d\n",imod, myg, myo,(int)(setDACRegister(VREF_DS,-1,imod)));//edited by dhanya
+      printf("module=%d gain=%f, offset=%f, dacu=%d\n",imod, myg, myo,(int)(setDACRegister(VDAC0,-1,imod)));//edited by dhanya
       printf("Threshold energy of module %d is %d eV\n", imod, ethr);
 #endif 
       
@@ -709,7 +709,7 @@ int setThresholdEnergy(int ethr) {
       printf("could not set threshold energy for module %d, settings %d (offset is %f; gain is %f)\n",imod,thisSettings,myo,myg);
 #endif
     }
-    initDACbyIndexDACU(VREF_DS, dacu, imod); ///needs to be fixed dhanya
+    initDACbyIndexDACU(VDAC0, dacu, imod); ///needs to be fixed dhanya
   }
   return ret;
 }
@@ -1559,25 +1559,25 @@ int initModulebyNumber(sls_detector_module myMod) {
   */
 
 
-  v[VREF_DS]=(myMod.dacs)[0];
-  v[VCASCN_PB]=(myMod.dacs)[1];
-  v[VCASCP_PB]=(myMod.dacs)[2];
-  v[VOUT_CM]=(myMod.dacs)[3];
-  v[VCASC_OUT]=(myMod.dacs)[4];
-  v[VIN_CM]=(myMod.dacs)[5];
-  v[VREF_COMP]=(myMod.dacs)[6]; 
-  v[IB_TESTC]=(myMod.dacs)[7];
+  v[VDAC0]=(myMod.dacs)[0];
+  v[VDAC1]=(myMod.dacs)[1];
+  v[VDAC2]=(myMod.dacs)[2];
+  v[VDAC3]=(myMod.dacs)[3];
+  v[VDAC4]=(myMod.dacs)[4];
+  v[VDAC5]=(myMod.dacs)[5];
+  v[VDAC6]=(myMod.dacs)[6];
+  v[VDAC7]=(myMod.dacs)[7];
 
 #ifdef VERBOSE
   printf("imod=%d\n",imod);
-  printf("vrefds=%d\n",v[VREF_DS]);
-  printf("vcascn=%d\n",v[VCASCN_PB]);
-  printf("vcascp=%d\n",v[VCASCP_PB]);
-  printf("vout=%d\n",v[VOUT_CM]);
-  printf("vcasc=%d\n",v[VCASC_OUT]);
-  printf("vin=%d\n",v[VIN_CM]);
-  printf("vref_comp=%d\n",v[VREF_COMP]);
-  printf("ib_testc=%d\n",v[IB_TESTC]);
+  printf("vdac0=%d\n",v[VDAC0]);
+  printf("vdac1=%d\n",v[VDAC1]);
+  printf("vdac2=%d\n",v[VDAC2]);
+  printf("vdac3=%d\n",v[VDAC3]);
+  printf("vdac4=%d\n",v[VDAC4]);
+  printf("vdac5=%d\n",v[VDAC5]);
+  printf("vdac6=%d\n",v[VDAC6]);
+  printf("vdac7=%d\n",v[VDAC7]);
 #endif
  
 

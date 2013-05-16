@@ -939,37 +939,37 @@ int set_dac(int file_des) {
 
 #ifdef MCB_FUNCS
 	switch (ind) {
-	case G_VREF_DS :
-		idac=VREF_DS;
+	case V_DAC0 :
+		idac=VDAC0;
 		break;
-	case G_VCASCN_PB:
-		idac=VCASCN_PB;
+	case V_DAC1:
+		idac=VDAC1;
 		break;
-	case G_VCASCP_PB:
-		idac=VCASCP_PB;
+	case V_DAC2:
+		idac=VDAC2;
 		break;
-	case G_VOUT_CM:
-		idac=VOUT_CM;
+	case V_DAC3:
+		idac=VDAC3;
 		break;
-	case G_VCASC_OUT:
-		idac=VCASC_OUT;
+	case V_DAC4:
+		idac=VDAC4;
 		break;
-	case G_VIN_CM:
-		idac=VIN_CM;
+	case V_DAC5:
+		idac=VDAC5;
 		break;
-	case G_VREF_COMP:
-		idac=VREF_COMP;
+	case V_DAC6:
+		idac=VDAC6;
 		break;
-	case G_IB_TESTC:
-		idac=IB_TESTC;
+	case V_DAC7:
+		idac=VDAC7;
 		break;
 	case HV_POT:
 		idac=HIGH_VOLTAGE;
 		break;
 
 	default:
-		printf("Unknown DAC index %d\n",ind);
-		sprintf(mess,"Unknown DAC index %d\n",ind);
+		printf("Unknown DAC index %d for Moench\n",ind);
+		sprintf(mess,"Unknown DAC index %d for Moench\n",ind);
 		ret=FAIL;
 	    break;
 	}

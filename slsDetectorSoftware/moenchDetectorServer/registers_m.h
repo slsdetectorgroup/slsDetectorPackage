@@ -229,6 +229,7 @@
 #define EXT_RO_TRIG_OUT_FALLING        0xC
 
 
+
 /* for temperature register */
 #define T1_CLK_BIT             0x00000001
 #define T1_CS_BIT              0x00000002

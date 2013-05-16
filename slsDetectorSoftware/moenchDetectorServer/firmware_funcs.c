@@ -261,6 +261,7 @@ int cleanFifo(){
 	printf("Cleaning FIFO\n");
 	addr=ADC_SYNC_REG;
 
+
 	reg = bus_r(addr) &	CLEAN_FIFO_MASK;
 
 	//only for start up

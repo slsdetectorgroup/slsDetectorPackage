@@ -5246,7 +5246,7 @@ int slsDetector::readConfigurationFile(string const fname){
 #ifdef VERBOSE
   std::cout<< "Read configuration file of " << iline << " lines" << std::endl;
 #endif
-  return iline;
+  return OK;
 
 }
 
@@ -5308,7 +5308,7 @@ int slsDetector::readConfigurationFile(ifstream &infile){
     iline++;
   }
   delete cmd;
-  return iline;
+  return OK;
 
 }
 
@@ -5339,7 +5339,7 @@ int slsDetector::writeConfigurationFile(string const fname){
 #ifdef VERBOSE
   std::cout<< "wrote " <<ret << " lines to configuration file " << std::endl;
 #endif
-  return ret;
+  return OK;
 
 
 }
@@ -5425,7 +5425,7 @@ int slsDetector::writeConfigurationFile(ofstream &outfile, int id){
     }
   }
   delete cmd;
-  return iv;
+  return OK;
 }
 
 

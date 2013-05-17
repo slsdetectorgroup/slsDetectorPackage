@@ -440,39 +440,43 @@ void* postProcessing::processData(int delflag) {
 			if(setReceiverOnline()==OFFLINE_FLAG)
 				caught=prevCaught;
 			incrementProgress(caught-prevCaught);
-			if(caught-prevCaught) newData=true;
-			else newData=false;
-			prevCaught=caught;
 
 			if (checkJoinThread()) break;
 
-			//read frame if new data
-			if(newData){
-				strcpy(currentfName,"");
-				pthread_mutex_lock(&mg);
-				int* receiverData =  readFrameFromReceiver(currentfName,currentfIndex);
-				pthread_mutex_unlock(&mg);
-				if(setReceiverOnline()==OFFLINE_FLAG)
-					receiverData = NULL;
-				if(receiverData == NULL){
-					currentfIndex = -1;
-					cout<<"****Detector Data returned is NULL***"<<endl;
-				}
-				//not garbage frame
-				if(currentfIndex>=0){
-					fdata=decodeData(receiverData);
-					delete [] receiverData;
-					if(fdata){
-						if (dataReady) {
-							thisData=new detectorData(fdata,NULL,NULL,getCurrentProgress(),currentfName,getTotalNumberOfChannels());
-							dataReady(thisData, currentfIndex, pCallbackArg);
-							delete thisData;
-							fdata=NULL;
+			if (dataReady){
+
+				if(caught-prevCaught) newData=true;
+				else newData=false;
+				prevCaught=caught;
+
+				//read frame if new data
+				if (newData){
+					strcpy(currentfName,"");
+					pthread_mutex_lock(&mg);
+					int* receiverData =  readFrameFromReceiver(currentfName,currentfIndex);
+					pthread_mutex_unlock(&mg);
+					if(setReceiverOnline()==OFFLINE_FLAG)
+						receiverData = NULL;
+					if(receiverData == NULL){
+						currentfIndex = -1;
+						cout<<"****Detector Data returned is NULL***"<<endl;
+					}
+					//not garbage frame
+					if(currentfIndex>=0){
+						fdata=decodeData(receiverData);
+						delete [] receiverData;
+						if(fdata){
+							if (dataReady) {
+								thisData=new detectorData(fdata,NULL,NULL,getCurrentProgress(),currentfName,getTotalNumberOfChannels());
+								dataReady(thisData, currentfIndex, pCallbackArg);
+								delete thisData;
+								fdata=NULL;
+							}
 						}
 					}
-				}
-				else{
-					;//cout<<"****Detector returned mismatched indices/garbage  or acquisition is over. Trying again.***"<<endl;
+					else{
+						;//cout<<"****Detector returned mismatched indices/garbage  or acquisition is over. Trying again.***"<<endl;
+					}
 				}
 			}
 		}

@@ -163,6 +163,21 @@ int64_t slsDetectorUsers::setDelayAfterTrigger(int64_t t){
   return myDetector->setDelayAfterTrigger(t);
 }
 
+double slsDetectorUsers::setExposureTime(double t){
+  int64_t tms = t * 1E+9;
+  return  1E-9 * (double)myDetector->setExposureTime(tms);
+}
+
+double slsDetectorUsers::setExposurePeriod(double t){
+  int64_t tms = t * 1E+9;
+  return  1E-9 * (double)myDetector->setExposurePeriod(tms);
+}
+
+double slsDetectorUsers::setDelayAfterTrigger(double t){
+  int64_t tms = t * 1E+9;
+  return 1E-9 * (double)(myDetector->setDelayAfterTrigger(tms));
+}
+
 int64_t slsDetectorUsers::setNumberOfGates(int64_t t){
   return myDetector->setNumberOfGates(t);
 } 

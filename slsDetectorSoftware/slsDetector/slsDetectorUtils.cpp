@@ -726,7 +726,7 @@ int slsDetectorUtils::retrieveDetectorSetup(string const fname1, int level){
 #ifdef VERBOSE
   std::cout<< "Read  " << iline << " lines" << std::endl;
 #endif
-  return iline;
+  return OK;
 
 
 }
@@ -869,7 +869,7 @@ int slsDetectorUtils::dumpDetectorSetup(string const fname, int level){
   std::cout<< "wrote " <<iv << " lines to  "<< fname1 << std::endl;
 #endif
   
-  return 0;
+  return OK;
 
 } 
 

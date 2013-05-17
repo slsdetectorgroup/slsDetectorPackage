@@ -335,6 +335,28 @@ class slsDetectorUsers
   */
    int64_t setDelayAfterTrigger(int64_t t=-1);
 
+   /**
+        @short set/get exposure time value
+        \param t time in s  (-1 gets)
+        \returns timer set value in s
+    */
+
+   double setExposureTime(double t=-1);
+
+    /**
+         @short set/get exposure period
+        \param t time in s   (-1 gets)
+        \returns timer set value in s
+    */
+   double setExposurePeriod(double t=-1);
+
+    /**
+         @short set/get delay after trigger
+        \param t time in s   (-1 gets)
+        \returns timer set value in s
+    */
+   double setDelayAfterTrigger(double t=-1);
+
   /** 
        @short set/get number of gates
       \param t number of gates  (-1 gets)

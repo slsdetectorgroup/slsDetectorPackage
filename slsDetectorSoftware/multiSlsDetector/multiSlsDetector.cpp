@@ -3898,7 +3898,7 @@ int multiSlsDetector::readConfigurationFile(string const fname){
 
   setNumberOfModules(-1);
   getMaxNumberOfModules();
-  return iline;
+  return OK;
 
 
 };  
@@ -3988,7 +3988,7 @@ int multiSlsDetector::writeConfigurationFile(string const fname){
   std::cout<< "wrote " <<ret << " lines to configuration file " << std::endl;
 #endif
   
-  return iv;
+  return OK;
   
 };
 
@@ -4429,6 +4429,12 @@ int multiSlsDetector::resetFramesCaught() {
 
 int* multiSlsDetector::readFrameFromReceiver(char* fName, int &fIndex){
 	int nel=(thisMultiDetector->dataBytes)/sizeof(int);
+	if(nel <= 0){
+		cout << "Multislsdetector databytes not valid :" << thisMultiDetector->dataBytes << endl;
+		fIndex = -1;
+		return NULL;
+	}
+
 	int n;
 	int* retval=new int[nel];
 	int *retdet, *p=retval;

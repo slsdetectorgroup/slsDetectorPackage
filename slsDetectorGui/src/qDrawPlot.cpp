@@ -431,7 +431,7 @@ bool qDrawPlot::StartOrStopThread(bool start){
 			plot2D->GetPlot()->SetZoom(-0.5,startPixel,nPixelsX,endPixel-startPixel);
 
 
-		cout << "Starting new acquisition threadddd ...." << endl;
+		cout << "Starting new acquisition thread ...." << endl;
 		// Start acquiring data from server
 		if(!firstTime) pthread_join(gui_acquisition_thread,NULL);//wait until he's finished, ie. exits
 		pthread_create(&gui_acquisition_thread, NULL,DataStartAcquireThread, (void*) this);

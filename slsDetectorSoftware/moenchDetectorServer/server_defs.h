@@ -40,7 +40,7 @@
 #define ALLMOD 0xffff
 #define ALLFIFO 0xffff
 
-
+#define GOTTHARD_ADCSYNC_VAL		0x32214
 #define ADCSYNC_VAL   				0x02111
 #define TOKEN_RESTART_DELAY			0x88000000
 #define TOKEN_RESTART_DELAY_ROI     0x1b000000

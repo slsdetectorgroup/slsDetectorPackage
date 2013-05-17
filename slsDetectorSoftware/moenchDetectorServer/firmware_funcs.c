@@ -257,15 +257,20 @@ int setPhaseShiftOnce(){
 
 
 int cleanFifo(){
-	u_int32_t addr, reg, val;
+	u_int32_t addr, reg, val, adc_sync;
 	printf("Cleaning FIFO\n");
 	addr=ADC_SYNC_REG;
+
+	if(withGotthard)
+		adc_sync = GOTTHARD_ADCSYNC_VAL;
+	else
+		adc_sync = ADCSYNC_VAL;
 
 
 	reg = bus_r(addr) &	CLEAN_FIFO_MASK;
 
 	//only for start up
-	if(!reg) reg = ADCSYNC_VAL;
+	if(!reg) reg = adc_sync;
 
 	// 88 3 02111
 	if (ROI_flag==0) {

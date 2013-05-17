@@ -1455,6 +1455,9 @@ int getAdcConfigured(){
 
 u_int32_t runBusy(void) {
 	u_int32_t s = bus_r(STATUS_REG);
+#ifdef VERBOSE
+	printf("status %04x\n",s);
+#endif
   return s;
 }
 
@@ -1584,9 +1587,9 @@ u_int32_t* fifo_read_event()
 #endif
   volatile u_int32_t t = bus_r(LOOK_AT_ME_REG);
 
-#ifdef VERBOSE
+//#ifdef VERBOSE
   printf("lookatmereg=x%x\n",t);
-#endif
+//#endif
 /*
    while ((t&0x1)==0)
      {
@@ -1598,12 +1601,21 @@ u_int32_t* fifo_read_event()
 */
 
    while((t&0x1)==0) {
+#ifdef VERYVERBOSE
+	   printf("look at me reg:%08x\n",bus_r(LOOK_AT_ME_REG));
+#endif
 	   if (runBusy()==0) {
 		   t = bus_r(LOOK_AT_ME_REG);
+#ifdef VERYVERBOSE
+		   printf("status should be idle!..look at me reg:%08x\n",bus_r(LOOK_AT_ME_REG));
+#endif
 		   if ((t&0x1)==0) {
 #ifdef VERBOSE
-			   printf("no frame found - exiting ");
+			   printf("no frame found - exiting\n");
 			   printf("%08x %08x\n", runState(), bus_r(LOOK_AT_ME_REG));
+#endif
+#ifdef VERYVERBOSE
+			   printf("returning null\n");
 #endif
 			   return NULL;
 		   } else {
@@ -1614,9 +1626,13 @@ u_int32_t* fifo_read_event()
 		   }
 	   }
 	   t = bus_r(LOOK_AT_ME_REG);
+#ifdef VERYVERBOSE
+	   printf("before starting while loop again: look at me reg:%08x\n\n",bus_r(LOOK_AT_ME_REG));
+#endif
    }
-
-
+#ifdef VERYVERBOSE
+   printf(" out of while loop!\n");
+#endif
 #ifdef VERBOSE
   printf("before readout %08x %08x\n", runState(), bus_r(LOOK_AT_ME_REG));
 #endif

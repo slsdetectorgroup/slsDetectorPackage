@@ -267,11 +267,11 @@ int cleanFifo(){
 	//only for start up
 	if(!reg) reg = ADCSYNC_VAL;
 
-	//88 3 32214
+	// 88 3 02111
 	if (ROI_flag==0) {
 	val=reg | ADCSYNC_CLEAN_FIFO_BITS | TOKEN_RESTART_DELAY;
 	bus_w(addr,val);
-	//88032214
+	// 88 0 02111
 	val=reg | TOKEN_RESTART_DELAY;
 	bus_w(addr,val);
 	}

@@ -2281,9 +2281,13 @@ int set_roi(int file_des) {
 			ret=FAIL;
 		}
 //#ifdef VERBOSE
+		/*
 		printf("Setting ROI to:");
 		for( i=0;i<nroi;i++)
 			printf("%d\t%d\t%d\t%d\n",arg[i].xmin,arg[i].xmax,arg[i].ymin,arg[i].ymax);
+*/
+
+		printf("Error: Function 41 or Setting ROI is not yet implemented in Moench!\n");
 //#endif
 	}
 	/* execute action if the arguments correctly arrived*/

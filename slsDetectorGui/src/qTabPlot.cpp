@@ -600,6 +600,7 @@ void qTabPlot::SetFrequency(){
 		// Setting the timer value (nth frames) between plots
 		myPlot->SetFrameFactor(spinNthFrame->value());
 
+
 #ifdef VERBOSE
 	cout << "Plotting Frequency: Nth Frame - " << spinNthFrame->value() << endl;
 #endif

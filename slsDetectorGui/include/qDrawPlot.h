@@ -94,8 +94,8 @@ public:
 	double GetMinimumPlotTimer(){return PLOT_TIMER_MS;};
 	/** Set Plot timer - between plots in ms*/
 	void SetPlotTimer(double time){timerValue = time;};
-	/** Set  Plot frame factor - between plots */
-	void SetFrameFactor(int frame){frameFactor = frame;};
+	/** Set  Plot frame factor - between plots, also for receiver if exists */
+	void SetFrameFactor(int frame);
 
 	/** Starts or stop acquisition
 	 * Calls startDaq() function

@@ -1593,3 +1593,16 @@ void qDrawPlot::CalculatePedestal(){
 
 
 //-------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+void qDrawPlot::SetFrameFactor(int frame){
+	frameFactor = frame;
+	if(myDet->setReceiverOnline()==slsDetectorDefs::ONLINE_FLAG){
+		frame = myDet->setReadReceiverFrequency(1,frame);
+#ifdef VERBOSE
+		cout << "Receiver read frequency set to : " << frame << endl;
+#endif
+	}
+}
+
+//-------------------------------------------------------------------------------------------------------------------------------------------------

@@ -409,78 +409,113 @@ void* postProcessing::processData(int delflag) {
 	}
 	//receiver
 	else{
-/*
+		/*
 		//without gui loop
 		while(1){
 		if (checkJoinThread()) break;
 		usleep(200000);
 		}
-*/
+		 */
 		/*if(setReadReceiverFrequency()>0)) ******Not implemented yet ********
 		 * else
 		 */
 
-		pthread_mutex_lock(&mg);
-		int prevCaught=getReceiverCurrentFrameIndex();
-		pthread_mutex_unlock(&mg);
 
+		int prevCaught=0;
 		int caught=0;
 		bool newData=false;
 		char currentfName[MAX_STR_LENGTH]="";
 		int currentfIndex=0;
+		int read_freq = setReadReceiverFrequency(0);
+#ifdef VERBOSE
+		std::cout << "receiver read freq:" << read_freq << std::endl;
+#endif
+
+		//always read nth data
+		if (read_freq != 0)
+			newData = true;
 
 		while(1){
+
 			cout.flush();
 			cout<<flush;
 			usleep(20000);
+
+
 			//get progress
 			pthread_mutex_lock(&mg);
-			caught=getReceiverCurrentFrameIndex();
+			if(setReceiverOnline()==ONLINE_FLAG)
+				caught=getReceiverCurrentFrameIndex();
 			pthread_mutex_unlock(&mg);
 			if(setReceiverOnline()==OFFLINE_FLAG)
 				caught=prevCaught;
-			incrementProgress(caught-prevCaught);
+			setCurrentProgress(caught);
+
 
 			if (checkJoinThread()) break;
 
+
 			if (dataReady){
 
-				if(caught-prevCaught) newData=true;
-				else newData=false;
-				prevCaught=caught;
+				// determine if new Data for random read
+				if (!read_freq){
+					if (caught > prevCaught)
+						newData=true;
+					else
+						newData=false;
+#ifdef VERBOSE
+					std::cout << "caught:" << caught << " prevcaught:" << prevCaught << " newData:" << newData << std::endl;
+#endif
+					prevCaught=caught;
+				}
 
-				//read frame if new data
+				//read frame if new data or nth frame reading
 				if (newData){
-					strcpy(currentfName,"");
-					pthread_mutex_lock(&mg);
-					int* receiverData =  readFrameFromReceiver(currentfName,currentfIndex);
-					pthread_mutex_unlock(&mg);
-					if(setReceiverOnline()==OFFLINE_FLAG)
-						receiverData = NULL;
-					if(receiverData == NULL){
-						currentfIndex = -1;
-						cout<<"****Detector Data returned is NULL***"<<endl;
-					}
-					//not garbage frame
-					if(currentfIndex>=0){
-						fdata=decodeData(receiverData);
-						delete [] receiverData;
-						if(fdata){
-							if (dataReady) {
-								thisData=new detectorData(fdata,NULL,NULL,getCurrentProgress(),currentfName,getTotalNumberOfChannels());
+
+					if(setReceiverOnline()==ONLINE_FLAG){
+
+						//get data
+						strcpy(currentfName,"");
+						pthread_mutex_lock(&mg);
+						int* receiverData = readFrameFromReceiver(currentfName,currentfIndex);
+						pthread_mutex_unlock(&mg);
+						if(setReceiverOnline()==OFFLINE_FLAG)
+							receiverData = NULL;
+						if(receiverData == NULL){
+							currentfIndex = -1;
+							cout<<"****Detector Data returned is NULL***"<<endl;
+						}
+
+						// determine if new Data for nth frame read
+						if (read_freq){
+							//delete if not new data
+							if (caught <= prevCaught)
+								currentfIndex = -1;
+#ifdef VERBOSE
+							std::cout << "caught:" << caught << " prevcaught:" << prevCaught << std::endl;
+#endif
+							prevCaught=caught;
+
+						}
+
+						//not garbage frame
+						if (currentfIndex >= 0) {
+							fdata = decodeData(receiverData);
+							delete [] receiverData;
+							if ((fdata) && (dataReady)){
+								thisData = new detectorData(fdata,NULL,NULL,getCurrentProgress(),currentfName,getTotalNumberOfChannels());
 								dataReady(thisData, currentfIndex, pCallbackArg);
 								delete thisData;
-								fdata=NULL;
+								fdata = NULL;
 							}
 						}
-					}
-					else{
-						;//cout<<"****Detector returned mismatched indices/garbage  or acquisition is over. Trying again.***"<<endl;
+						else{
+							;//cout<<"****Detector returned mismatched indices/garbage  or acquisition is over. Trying again.***"<<endl;
+						}
 					}
 				}
 			}
 		}
-
 	}
 
 	return 0;

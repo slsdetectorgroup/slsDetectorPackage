@@ -439,6 +439,7 @@ int slsReceiverFunctionList::startWriting(){
 
 	//reset this before each acq or you send old data
 	guiData = NULL;
+	guiDataReady=0;
 	strcpy(guiFileName,"");
 
 	cout << "Max Frames Per File:" << maxFramesPerFile << endl;
@@ -507,8 +508,6 @@ int slsReceiverFunctionList::startWriting(){
 				else
 					currframenum = (((int)(*((int*)wbuf))) & (frameIndexMask)) >> frameIndexOffset;
 
-
-				//currframenum = (int)(*((int*)wbuf));
 				//cout<<"**************curreframenm:"<<currframenum<<endl;
 
 				//write data call back
@@ -529,24 +528,41 @@ int slsReceiverFunctionList::startWriting(){
 					}
 				}
 
-/*
-				//wait for gui data for 100ms
-				if(nFrameToGui){
-					for(int i=0;i<10;i++)
-						if(guiData)
-							break;
-						else
-							usleep(10000);//10ms
+				//does not read every frame
+				if(!nFrameToGui){
+					if(guiData){
+						memcpy(latestData,wbuf,bufferSize);
+						strcpy(guiFileName,savefilename);
+						guiDataReady=1;
+					}else
+						guiDataReady=0;
 				}
-*/
-				//copies gui data and sets/resets guiDataReady
-				if(guiData){
+
+
+				//reads every nth frame
+				else{
+
+					//catch nth frame: gui ready to copy data
+					while(guiData==NULL){
+						if(!listening_thread_running)
+							break;
+						usleep(10000);
+						guiDataReady=0;
+					}
+
+					//copies gui data and sets/resets guiDataReady
 					memcpy(latestData,wbuf,bufferSize);
 					strcpy(guiFileName,savefilename);
 					guiDataReady=1;
-				}else
-					guiDataReady=0;
 
+					//catch nth frame: wait for gui to take data
+					while(guiData==latestData){
+						if(!listening_thread_running)
+							break;
+						usleep(100000);
+					}
+					guiDataReady=0;
+				}
 
 
 				framesInFile++;
@@ -592,8 +608,9 @@ void slsReceiverFunctionList::readFrame(char* c,char** raw){
 	strcpy(c,guiFileName);
 
 	//could not get gui data
-	if(!guiDataReady)
+	if(!guiDataReady){
 		*raw = NULL;
+	}
 	//data ready, set guidata to receive new data
 	else{
 		*raw = guiData;

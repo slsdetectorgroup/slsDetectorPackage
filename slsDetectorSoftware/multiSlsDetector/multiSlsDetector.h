@@ -191,6 +191,9 @@ class multiSlsDetector  : public slsDetectorUtils {
     mysteps scanSteps[MAX_SCAN_LEVELS];
     int scanPrecision[MAX_SCAN_LEVELS];
     
+    /* Receiver read frequency */
+    int receiver_read_freq;
+
   };
 
 
@@ -1190,9 +1193,12 @@ class multiSlsDetector  : public slsDetectorUtils {
   /** Sets the read receiver frequency
    	  if Receiver read upon gui request, readRxrFrequency=0,
    	   else every nth frame to be sent to gui
+   	   @param getFromReceiver is 1 if it should ask the receiver,
+   	   0 if it can get it from multislsdetecter
+   	   @param i is the receiver read frequency
    	   /returns read receiver frequency
    */
-  int setReadReceiverFrequency(int i=-1);
+  int setReadReceiverFrequency(int getFromReceiver, int i=-1);
 
   /** updates the multidetector offsets */
   void updateOffsets();
@@ -1201,6 +1207,7 @@ class multiSlsDetector  : public slsDetectorUtils {
    * Waits for receiver read to finish after stopping acquisition
   */
   void waitForReceiverReadToFinish();
+
 
  protected:
  
@@ -1213,6 +1220,7 @@ class multiSlsDetector  : public slsDetectorUtils {
 
   /** Shared memory structure */
   sharedMultiSlsDetector *thisMultiDetector;
+
 
 
 

@@ -6095,8 +6095,6 @@ int* slsDetector::readFrameFromReceiver(char* fName, int &fIndex){
 					}
 				}
 			}
-			else
-				cout << "Acquisition stopped" << endl;
 
 			dataSocket->Disconnect();
 		}
@@ -6333,11 +6331,14 @@ int64_t slsDetector::clearAllErrorMask(){
 
 
 
-int slsDetector::setReadReceiverFrequency(int i){
+int slsDetector::setReadReceiverFrequency(int getFromReceiver,int i){
 	int fnum=F_READ_RECEIVER_FREQUENCY;
 	int ret = FAIL;
 	int retval=-1;
 	int arg = i;
+
+	if(!getFromReceiver)
+		return retval;
 
 	if(setReceiverOnline(ONLINE_FLAG)==ONLINE_FLAG){
 #ifdef VERBOSE
@@ -6349,6 +6350,11 @@ int slsDetector::setReadReceiverFrequency(int i){
 			retval = -1;
 		if(ret==FORCE_UPDATE)
 			updateReceiver();
+	}
+
+	if ((i > 0) && (retval != i)){
+		cout << "could not set receiver read frequency:" << retval << endl;
+		setErrorMask((getErrorMask())|(RECEIVER_READ_FREQUENCY));
 	}
 	return retval;
 }

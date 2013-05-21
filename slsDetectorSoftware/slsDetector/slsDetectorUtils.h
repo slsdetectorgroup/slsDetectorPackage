@@ -444,8 +444,8 @@ class slsDetectorUtils :  public slsDetectorActions, public postProcessing {
   double getCurrentProgress();
 
 
-  void incrementProgress(int i=1);
-
+  void incrementProgress();
+  void setCurrentProgress(int i=0);
 
 
   /** 
@@ -672,12 +672,15 @@ virtual int setROI(int n=-1,ROI roiLimits[]=NULL)=0;
 */
 virtual ROI* getROI(int &n)=0;
 
-/** Sets the variable readRxrFrequency.
+/** Sets the read receiver frequency
  	  if Receiver read upon gui request, readRxrFrequency=0,
  	   else every nth frame to be sent to gui
+ 	   @param getFromReceiver is 1 if it should ask the receiver,
+ 	   0 if it can get it from multislsdetecter
+ 	   @param i is the receiver read frequency
  	   /returns read receiver frequency
  */
-virtual int setReadReceiverFrequency(int i=-1)=0;
+virtual int setReadReceiverFrequency(int getFromReceiver, int i=-1)=0;
 
 
 /**

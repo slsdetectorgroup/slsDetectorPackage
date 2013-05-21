@@ -232,7 +232,8 @@ class slsDetectorBase :  public virtual slsDetectorDefs, public virtual errorDef
   virtual string createFileName()=0;
 
 
-  virtual void incrementProgress(int i=1)=0;
+  virtual void incrementProgress()=0;
+  virtual void setCurrentProgress(int i=0)=0;
   virtual double getCurrentProgress()=0;
   virtual void incrementFileIndex()=0;
   virtual int setTotalProgress()=0;
@@ -473,6 +474,16 @@ class slsDetectorBase :  public virtual slsDetectorDefs, public virtual errorDef
   */
   virtual int* readFrameFromReceiver(char* fName, int &fIndex)=0;
 
+
+  /** Sets the read receiver frequency
+   	  if Receiver read upon gui request, readRxrFrequency=0,
+   	   else every nth frame to be sent to gui
+   	   @param getFromReceiver is 1 if it should ask the receiver,
+   	   0 if it can get it from multislsdetecter
+   	   @param i is the receiver read frequency
+   	   /returns read receiver frequency
+   */
+  virtual int setReadReceiverFrequency(int getFromReceiver, int i=-1)=0;
 
 
   /** returns detector type string from detector type index

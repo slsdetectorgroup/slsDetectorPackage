@@ -1593,12 +1593,15 @@ class slsDetector : public slsDetectorUtils, public energyConversion {
   /** sets the receiver udp port \sa sharedSlsDetector  */
   int setReceiverUDPPort(int udpport);
 
-  /** Sets the variable readRxrFrequency.
+  /** Sets the read receiver frequency
    	  if Receiver read upon gui request, readRxrFrequency=0,
    	   else every nth frame to be sent to gui
+   	   @param getFromReceiver is 1 if it should ask the receiver,
+   	   0 if it can get it from multislsdetecter
+   	   @param i is the receiver read frequency
    	   /returns read receiver frequency
    */
-  int setReadReceiverFrequency(int i=-1);
+  int setReadReceiverFrequency(int getFromReceiver, int i=-1);
 
   /**
    * Waits for receiver read to finish after stopping acquisition

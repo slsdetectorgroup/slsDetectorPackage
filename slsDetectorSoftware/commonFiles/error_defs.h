@@ -33,7 +33,7 @@ using namespace std;
 #define COULDNOT_SET_NETWORK_PARAMETER		0x0000000000000002ULL
 #define COULDNOT_SET_ROI					0x0000000000000004ULL
 #define FILE_PATH_DOES_NOT_EXIST			0x0000000000000008ULL
-
+#define RECEIVER_READ_FREQUENCY				0x0000000000000010ULL
 
 /** @short class returning all error messages for error mask */
 class errorDefs {
@@ -80,6 +80,10 @@ public:
 
 		if(slsErrorMask&FILE_PATH_DOES_NOT_EXIST)
 			retval.append("File Path does not exist.\n");
+
+		if(slsErrorMask&RECEIVER_READ_FREQUENCY)
+			retval.append("Could not set receiver read frequency.\n");
+
 
 		return retval;
 

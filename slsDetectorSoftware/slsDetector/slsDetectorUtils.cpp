@@ -71,8 +71,6 @@ void  slsDetectorUtils::acquire(int delflag){
   void *status;
 
 
-
-
   if ((*correctionMask&(1<< ANGULAR_CONVERSION)) || (*correctionMask&(1<< I0_NORMALIZATION)) || getActionMode(angCalLog) || (getScanMode(0)==positionScan)|| (getScanMode(1)==positionScan)) {
     if (connectChannels==0)
       if (connect_channels) {
@@ -127,6 +125,11 @@ void  slsDetectorUtils::acquire(int delflag){
 	  if(setReceiverOnline()==OFFLINE_FLAG)
 		  *stoppedFlag=1;
 
+	  //multi detectors shouldnt have different receiver read frequencies enabled/disabled
+	  	if(setReadReceiverFrequency(0) < 0){
+	  		std::cout << "Error: The receiver read frequency is invalid:" << setReadReceiverFrequency(0) << std::endl;
+	  		 *stoppedFlag=1;
+	  	}
 
 	  //resets frames caught in receiver
 	  resetFramesCaught();
@@ -619,9 +622,9 @@ double slsDetectorUtils::getCurrentProgress() {
 
 
 
-void slsDetectorUtils::incrementProgress(int i)  {
+void slsDetectorUtils::incrementProgress()  {
   pthread_mutex_lock(&mp);
-  progressIndex+=i;
+  progressIndex++;
   cout << fixed << setprecision(2) << setw (6) << 100.*((double)progressIndex)/((double)totalProgress) << " \%";
   pthread_mutex_unlock(&mp);
 #ifdef VERBOSE
@@ -633,7 +636,18 @@ void slsDetectorUtils::incrementProgress(int i)  {
 };
 
 
-
+void slsDetectorUtils::setCurrentProgress(int i){
+  pthread_mutex_lock(&mp);
+  progressIndex++;
+  progressIndex=i;
+  cout << fixed << setprecision(2) << setw (6) << 100.*((double)progressIndex)/((double)totalProgress) << " \%";
+  pthread_mutex_unlock(&mp);
+#ifdef VERBOSE
+  cout << endl;
+#else
+  cout << "\r" << flush;
+#endif
+}
 
 
 int slsDetectorUtils::retrieveDetectorSetup(string const fname1, int level){

@@ -446,7 +446,7 @@ int slsReceiverFunctionList::startWriting(){
 	if (writeReceiverData)
 		cout << "Note: Data Write has been defined exernally" << endl;
 	if(nFrameToGui)
-		cout << " Not implemented yet: Sending every " << nFrameToGui << "th frame to gui" <<  endl;
+		cout << "Sending every " << nFrameToGui << "th frame to gui" <<  endl;
 
 
 	//by default, we read/write everything

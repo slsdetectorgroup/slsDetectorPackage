@@ -638,7 +638,6 @@ void slsDetectorUtils::incrementProgress()  {
 
 void slsDetectorUtils::setCurrentProgress(int i){
   pthread_mutex_lock(&mp);
-  progressIndex++;
   progressIndex=i;
   cout << fixed << setprecision(2) << setw (6) << 100.*((double)progressIndex)/((double)totalProgress) << " \%";
   pthread_mutex_unlock(&mp);

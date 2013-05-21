@@ -432,8 +432,14 @@ void* postProcessing::processData(int delflag) {
 #endif
 
 		//always read nth data
-		if (read_freq != 0)
+		if (read_freq != 0){
 			newData = true;
+
+			if (!dataReady){
+				std::cout << "Error: receiver read freq should be > 0 only when using gui." << std::endl;
+				std::cout << "Current receiver read frequency: " << read_freq << std::endl;
+			}
+		}
 
 		while(1){
 

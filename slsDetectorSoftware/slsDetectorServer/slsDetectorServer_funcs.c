@@ -721,7 +721,7 @@ int set_external_signal_flag(int file_des) {
 				}
 			}
 
-
+			break;
 		}
 
 #ifdef VERBOSE
@@ -866,10 +866,12 @@ int get_id(int file_des) {
 	case DETECTOR_FIRMWARE_VERSION:
 	case DETECTOR_SOFTWARE_VERSION:
 		retval=getDetectorId(arg);
+		break;
 	default:
 		printf("Required unknown id %d \n", arg);
 		ret=FAIL;
 		retval=FAIL;
+		break;
 	}
 
 #ifdef VERBOSE
@@ -958,6 +960,7 @@ int digital_test(int file_des) {
 			printf("Unknown digital test required %d\n",arg);
 			ret=FAIL;
 			retval=FAIL;
+			break;
 		}
 	}
 
@@ -1030,27 +1033,28 @@ int set_dac(int file_des) {
 	// check if dac exists for this detector
 	switch (ind) {
 	case  TRIMBIT_SIZE:
-		if (myDetectorType==MYTHEN)
+		//if (myDetectorType==MYTHEN)
 			break;
 	case THRESHOLD:
-		if (myDetectorType==MYTHEN)
+		//if (myDetectorType==MYTHEN)
 			break;
 	case SHAPER1:
-		if (myDetectorType==MYTHEN)
+		//if (myDetectorType==MYTHEN)
 			break;
 	case SHAPER2:
-		if (myDetectorType==MYTHEN)
+		//if (myDetectorType==MYTHEN)
 			break;
 	case CALIBRATION_PULSE:
-		if (myDetectorType==MYTHEN)
+		//if (myDetectorType==MYTHEN)
 			break;
 	case PREAMP:
-		if (myDetectorType==MYTHEN)
+		//if (myDetectorType==MYTHEN)
 			break;
 	default:
 		printf("Unknown DAC index %d\n",ind);
 		sprintf(mess,"Unknown DAC index %d\n",ind);
 		ret=FAIL;
+		break;
 	}
 
 	if (ret==OK) {
@@ -1122,27 +1126,28 @@ int get_adc(int file_des) {
 
 	switch (ind) {
 	case  TRIMBIT_SIZE:
-		if (myDetectorType==MYTHEN)
+		//if (myDetectorType==MYTHEN)
 			break;
 	case THRESHOLD:
-		if (myDetectorType==MYTHEN)
+		//if (myDetectorType==MYTHEN)
 			break;
 	case SHAPER1:
-		if (myDetectorType==MYTHEN)
+		//if (myDetectorType==MYTHEN)
 			break;
 	case SHAPER2:
-		if (myDetectorType==MYTHEN)
+		//if (myDetectorType==MYTHEN)
 			break;
 	case CALIBRATION_PULSE:
-		if (myDetectorType==MYTHEN)
+		//if (myDetectorType==MYTHEN)
 			break;
 	case PREAMP:
-		if (myDetectorType==MYTHEN)
+		//if (myDetectorType==MYTHEN)
 			break;
 	default:
 		printf("Unknown DAC index %d\n",ind);
 		ret=FAIL;
 		sprintf(mess,"Unknown ADC index %d\n",ind);
+		break;
 	}
 
 	if (ret==OK) {
@@ -2252,6 +2257,7 @@ int set_timer(int file_des) {
 			default:
 				ret=FAIL;
 				sprintf(mess,"timer index unknown %d\n",ind);
+				break;
 			}
 		}
 	}
@@ -2331,9 +2337,11 @@ int get_time_left(int file_des) {
 				retval=getTimeLeft(ind);
 				break;
 			}
+			break;
 		default:
 			ret=FAIL;
 			sprintf(mess,"timer index unknown %d\n",ind);
+			break;
 		}
 	}
 
@@ -2458,9 +2466,11 @@ int set_readout_flags(int file_des) {
 				retval=setReadOutFlags(arg);
 				break;
 			}
+			break;
 		default:
 			sprintf(mess,"Unknown readout flag %d\n", arg);
 			ret=FAIL;
+			break;
 		}
 	}
 
@@ -2538,9 +2548,11 @@ int set_speed(int file_des) {
 					retval=setSpeed(arg, val);
 					break;
 				}
+				break;
 			default:
 				sprintf(mess,"unknown speed variable %d\n",arg);
 				ret=FAIL;
+				break;
 			}
 		}
 		if (ret==OK && val>=0) {
@@ -2623,11 +2635,12 @@ int execute_trimming(int file_des) {
 						retval=executeTrimming(mode, par1, par2, imod);
 						break;
 					}
-
+					break;
 				default:
 					printf("Unknown trimming mode %d\n",mode);
 					sprintf(mess,"Unknown trimming mode %d\n",mode);
 					ret=FAIL;
+					break;
 				}
 			}
 		}
@@ -2786,6 +2799,7 @@ int load_image(int file_des) {
 				if (retval==-1)
 					ret = FAIL;
 			}
+			break;
 		default:
 			printf("Unknown index %d\n",index);
 			sprintf(mess,"Unknown index %d\n",index);

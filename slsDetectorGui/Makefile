@@ -8,6 +8,7 @@ LIBRARYDIR?=../slsDetectorSoftware
 INCLUDES?= $(LIBRARYDIR)/commonFiles -I$(LIBRARYDIR)/MySocketTCP  -I$(LIBRARYDIR)/slsReceiverInterface   -I$(LIBRARYDIR)/slsDetector  -I$(LIBRARYDIR)/slsDetectorAnalysis  -I$(LIBRARYDIR)/multiSlsDetector   -I$(LIBRARYDIR)/usersFunctions  
 LDFLAG?=-L$(LIBRARYDIR)/bin -lSlsDetector 
 
+
 all: $(PROG) Makefile.gui guiclient
 
 clean: 
@@ -19,7 +20,7 @@ clean:
 Makefile.gui: mm
 
 mm:
-	qmake -set QT_INSTALL_PREFIX $(QTDIR) && qmake -o Makefile.gui INCLUDES='$(INCLUDES)' DESTDIR=$(DESTDIR) SLSDETLIB=$(LIBDIR) SUBLIBS='$(LDFLAG)' INCLUDES='$(INCLUDES)' 
+	qmake -set QT_INSTALL_PREFIX $(QTDIR) && qmake -o Makefile.gui INCLUDES='$(INCLUDES)' DESTDIR=$(DESTDIR) SLSDETLIB=$(LIBDIR) SUBLIBS='$(LDFLAG)'
 
 doc:
 	cd manual && make DESTDIR=$(DOCDIR)

@@ -413,6 +413,7 @@ int slsReceiverFunctionList::startWriting(){
 
 	char *wbuf;
 	int sleepnumber=0;
+	int frameFactor=0;
 
 	framesInFile=0;
 	framesCaught=0;
@@ -520,27 +521,31 @@ int slsReceiverFunctionList::startWriting(){
 
 				//reads every nth frame
 				else{
+					if(frameFactor){
+						frameFactor--;
+					}else{
+						frameFactor = nFrameToGui-1;
+						//catch nth frame: gui ready to copy data
+						while(guiData==NULL){
+							if(!listening_thread_running)
+								break;
+							usleep(10000);
+							guiDataReady=0;
+						}
 
-					//catch nth frame: gui ready to copy data
-					while(guiData==NULL){
-						if(!listening_thread_running)
-							break;
-						usleep(10000);
+						//copies gui data and sets/resets guiDataReady
+						memcpy(latestData,wbuf,bufferSize);
+						strcpy(guiFileName,savefilename);
+						guiDataReady=1;
+
+						//catch nth frame: wait for gui to take data
+						while(guiData==latestData){
+							if(!listening_thread_running)
+								break;
+							usleep(100000);
+						}
 						guiDataReady=0;
 					}
-
-					//copies gui data and sets/resets guiDataReady
-					memcpy(latestData,wbuf,bufferSize);
-					strcpy(guiFileName,savefilename);
-					guiDataReady=1;
-
-					//catch nth frame: wait for gui to take data
-					while(guiData==latestData){
-						if(!listening_thread_running)
-							break;
-						usleep(100000);
-					}
-					guiDataReady=0;
 				}
 
 

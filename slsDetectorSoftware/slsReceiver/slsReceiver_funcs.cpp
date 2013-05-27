@@ -1251,6 +1251,10 @@ int slsReceiverFuncs::set_read_frequency(){
 			sprintf(mess,"Receiver locked by %s\n", socket->lastClientIP);
 			ret=FAIL;
 		}
+		else if((slsReceiverList->getStatus()==RUNNING) && (index >= 0)){
+			ret = FAIL;
+			strcpy(mess,"cannot set up receiver mode when receiver is running\n");
+		}
 		else
 			retval=slsReceiverList->setNFrameToGui(index);
 	}

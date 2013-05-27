@@ -1,14 +1,14 @@
 CC			=	g++ 
-CLAGS		+=  -DSLS_RECEIVER_FUNCTION_LIST  #-DUHRIXCALLBACK  #-DTESTWRITE
+CLAGS		+=  -DSLS_RECEIVER_FUNCTION_LIST  
 LDFLAG=   -L/usr/lib64/ -lpthread -lm  -lstdc++ 
 
 
 #LDLIBS		+= 	-lm  -lstdc++ -lpthread 
 LIBS?= -L$(LIBDIR) -lSlsDetector 
 
-INCLUDES	?= 	-I ../MySocketTCP -I ../commonFiles -I ../usersFunctions -I ../slsDetectorAnalysis -I .
+INCLUDES	?= 	-I ../MySocketTCP -I ../commonFiles -I -I ../slsDetectorAnalysis -I .
 SRC_CLNT	= 	slsReceiver.cpp 
-#../MySocketTCP/MySocketTCP.cpp slsReceiver_funcs.cpp UHRIXCallback.cpp slsReceiverFunctionList.cpp ../usersFunctions/usersFunctions.cpp slsReceiverUsers.cpp 
+#../MySocketTCP/MySocketTCP.cpp slsReceiver_funcs.cpp UHRIXCallback.cpp slsReceiverFunctionList.cpp slsReceiverUsers.cpp 
 
 DESTDIR		?= 	bin
 INSTMODE	= 	0777

@@ -6360,10 +6360,3 @@ int slsDetector::setReadReceiverFrequency(int getFromReceiver,int i){
 }
 
 
-void slsDetector::waitForReceiverReadToFinish(){
-	if(dataSocket){
-		while(dataSocket->Connect() < 0)
-			usleep(1000);
-		dataSocket->Disconnect();
-	}
-}

@@ -1,5 +1,5 @@
 CC			=	g++#powerpc-4xx-softfloat-g++
-CLAGS		+=  -Wall -DDACS_INT  -DSLS_DETECTOR_FUNCTION_LIST -DEIGERD #-DVIRTUAL
+CLAGS		+=  -Wall -DDACS_INT   -DEIGERD  #-DSLS_DETECTOR_FUNCTION_LIST  #-DVIRTUAL
 LDLIBS		+= 	-lm  -lstdc++ 
 
 PROGS		= 	eigerDetectorServer 

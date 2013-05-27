@@ -129,10 +129,6 @@ public:
 	 */
 	void resetTotalFramesCaught();
 
-	/**
-	 * Close File
-	 */
-	//static void closeFile(int p);
 
 	/**
 	 * Starts Receiver - starts to listen for packets
@@ -192,12 +188,6 @@ public:
 	 * or if 0,send frame only upon gui request
 	 */
 	int setNFrameToGui(int i){if(i>=0) nFrameToGui = i; return nFrameToGui;};
-
-	/**
-	 * Register call back function to write receiver data
-	 */
-	void registerWriteReceiverDataCallback(int( *userCallback)(char*, int, FILE*, void*), void *pArg) {writeReceiverData = userCallback; pwriteReceiverDataArg = pArg;};
-
 
 private:
 
@@ -314,11 +304,6 @@ private:
 	int nFrameToGui;
 
 
-
-	/** register for call back to get data */
-	int (*writeReceiverData)(char*,int,FILE*,void*);
-	void *pwriteReceiverDataArg;
-
 	/**
 	   callback arguments are
 	   filepath
@@ -348,10 +333,11 @@ private:
 	  args to raw data ready callback are
 	  framenum
 	  datapointer
+	  datasize in bytes
 	  file descriptor
 	  guidatapointer (NULL, no data required)
 	*/
-	void (*rawDataReadyCallBack)(int, char*, FILE*, char*, void*);
+	void (*rawDataReadyCallBack)(int, char*, int, FILE*, char*, void*);
 	void *pRawDataReady;
 
 	/** The action which decides what the user and default responsibilites to save data are
@@ -407,10 +393,11 @@ public:
 	  args to raw data ready callback are
 	  framenum
 	  datapointer
+	  datasize in bytes
 	  file descriptor
 	  guidatapointer (NULL, no data required)
 	*/
-	void registerCallBackRawDataReady(void (*func)(int, char*, FILE*, char*, void*),void *arg){rawDataReadyCallBack=func; pRawDataReady=arg;};
+	void registerCallBackRawDataReady(void (*func)(int, char*, int, FILE*, char*, void*),void *arg){rawDataReadyCallBack=func; pRawDataReady=arg;};
 };
 
 

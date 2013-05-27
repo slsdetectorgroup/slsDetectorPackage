@@ -71,11 +71,12 @@ public:
 	  args to raw data ready callback are
 	  framenum
 	  datapointer
+	  datasize in bytes
 	  file descriptor
 	  guidatapointer (NULL, no data required)
 	*/
 	
-	void registerCallBackRawDataReady(void (*func)(int, char*, FILE*, char*, void*),void *arg){slsReceiverList->registerCallBackRawDataReady(func,arg);};
+	void registerCallBackRawDataReady(void (*func)(int, char*, int, FILE*, char*, void*),void *arg){slsReceiverList->registerCallBackRawDataReady(func,arg);};
 
 
  private:

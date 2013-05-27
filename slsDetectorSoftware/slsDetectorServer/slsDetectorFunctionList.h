@@ -32,13 +32,18 @@ Here are the definitions, but the actual implementation should be done for each 
 ****************************************************/
 
 
-
+int mapCSP0(void);
 int initializeDetector();
 
-
+enum masterFlags setMaster(enum masterFlags arg);
+enum synchronizationMode setSynchronization(enum synchronizationMode arg);
 
 int setNMod(int nm, enum dimension dim);
 int getNModBoard(enum dimension arg);
+
+enum externalSignalFlag getExtSignal(int signalindex);
+enum externalSignalFlag setExtSignal(int signalindex,  enum externalSignalFlag flag);
+enum externalCommunicationMode setTiming( enum externalCommunicationMode arg);
 
 int64_t getModuleId(enum idMode arg, int imod);
 int64_t getDetectorId(enum idMode arg);
@@ -48,42 +53,46 @@ int detectorTest( enum digitalTestMode arg);
 
 double setDAC(enum dacIndex ind, double val, int imod);
 double getADC(enum dacIndex ind,  int imod);
+bus_w()
+bus_r()
 int setChannel(sls_detector_channel myChan);
 int getChannel(sls_detector_channel *myChan);
 int setChip(sls_detector_chip myChip);
 int getChip(sls_detector_chip *myChip);
 int setModule(sls_detector_module myChan);
 int getModule(sls_detector_module *myChan);
+
+enum detectorSettings setSettings(enum detectorSettings sett, int imod);
 int getThresholdEnergy(int imod);
 int setThresholdEnergy(int thr, int imod);
-enum detectorSettings setSettings(enum detectorSettings sett, int imod);
-
 
 int startStateMachine();
 int stopStateMachine();
 int startReadOut();
 enum runStatus getRunStatus();
 char *readFrame(int *ret, char *mess);
+
+
 int64_t setTimer(enum timerIndex ind, int64_t val);
 int64_t getTimeLeft(enum timerIndex ind);
+
 int setDynamicRange(int dr);
-
-
-int setROI(int mask); //////?????????????????
-int getROI(int *mask); //////////?????????????????????
-int setSpeed(enum speedVariable arg, int val);
 enum readOutFlags setReadOutFlags(enum readOutFlags val);
+int setROI(int mask);
+int setSpeed(enum speedVariable arg, int val);
 int executeTrimming(enum trimMode mode, int par1, int par2, int imod);
 
-
-
+#ifdef GOTTHARDD
 int configureMAC(int ipad, long long int imacadd, long long int iservermacadd, int dtb);
 int loadImage(enum imageType index, char *imageVals);
 int readCounterBlock(int startACQ, char *counterVals);
 int resetCounterBlock(int startACQ);
+int startReceiver(int d);
+int calibratePedestal(int frames);
+#endif
+
 
 int calculateDataBytes();
-
 int getTotalNumberOfChannels();
 int getTotalNumberOfChips();
 int getTotalNumberOfModules();
@@ -93,12 +102,6 @@ int getNumberOfChipsPerModule();
 int getNumberOfDACsPerModule();
 int getNumberOfADCsPerModule();
 
-
-enum externalSignalFlag getExtSignal(int signalindex);
-enum externalSignalFlag setExtSignal(int signalindex,  enum externalSignalFlag flag);
-enum externalCommunicationMode setTiming( enum externalCommunicationMode arg);
-enum masterFlags setMaster(enum masterFlags arg);
-enum synchronizationMode setSynchronization(enum synchronizationMode arg);
 
 
 #endif

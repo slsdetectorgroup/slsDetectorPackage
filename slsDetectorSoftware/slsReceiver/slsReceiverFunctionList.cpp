@@ -7,14 +7,6 @@
 
 #include "slsReceiverFunctionList.h"
 
-#ifdef TESTWRITE
-#include "usersFunctions.h"
-#endif
-
-#ifdef UHRIXCALLBACK
-#include "UHRIXCallback.h"
-#endif
-
 #include <signal.h>  		// SIGINT
 #include <sys/stat.h> 		// stat
 #include <sys/socket.h>		// socket(), bind(), listen(), accept(), shut down
@@ -58,8 +50,6 @@ slsReceiverFunctionList::slsReceiverFunctionList(detectorType det,bool moenchwit
 						guiFileName(NULL),
 						currframenum(0),
 						nFrameToGui(0),
-						writeReceiverData(0),
-						pwriteReceiverDataArg(0),
 						startAcquisitionCallBack(NULL),
 						pStartAcquisition(NULL),
 						acquisitionFinishedCallBack(NULL),
@@ -111,14 +101,7 @@ slsReceiverFunctionList::slsReceiverFunctionList(detectorType det,bool moenchwit
 
 	if(withGotthard)
 		cout << "Testing MOENCH Receiver with GOTTHARD Detector" << endl;
-#ifdef TESTWRITE
-	//to test write receiver data call back
-	registerWriteReceiverDataCallback(&defaultWriteReceiverDataFunc, NULL);
-#endif
 
-#ifdef UHRIXCALLBACK
-	registerWriteReceiverDataCallback(&UHRIXCallbackDataFunc, latestData);
-#endif
 }
 
 
@@ -443,7 +426,7 @@ int slsReceiverFunctionList::startWriting(){
 	strcpy(guiFileName,"");
 
 	cout << "Max Frames Per File:" << maxFramesPerFile << endl;
-	if (writeReceiverData)
+	if (rawDataReadyCallBack)
 		cout << "Note: Data Write has been defined exernally" << endl;
 	if(nFrameToGui)
 		cout << "Sending every " << nFrameToGui << "th frame to gui" <<  endl;
@@ -511,12 +494,8 @@ int slsReceiverFunctionList::startWriting(){
 				//cout<<"**************curreframenm:"<<currframenum<<endl;
 
 				//write data call back
-				if (writeReceiverData) {
-					writeReceiverData(wbuf,bufferSize, sfilefd, pwriteReceiverDataArg);
-				}
-				//write data call back
 				if (cbAction < DO_EVERYTHING) {
-					rawDataReadyCallBack(currframenum, wbuf,sfilefd, guiData,pRawDataReady);
+					rawDataReadyCallBack(currframenum, wbuf, bufferSize, sfilefd, guiData,pRawDataReady);
 				}
 				//default writing to file
 				else if(enableFileWrite){

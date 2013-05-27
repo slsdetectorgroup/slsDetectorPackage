@@ -1603,10 +1603,6 @@ class slsDetector : public slsDetectorUtils, public energyConversion {
    */
   int setReadReceiverFrequency(int getFromReceiver, int i=-1);
 
-  /**
-   * Waits for receiver read to finish after stopping acquisition
-  */
-  void waitForReceiverReadToFinish();
 
  protected:
  

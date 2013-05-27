@@ -13,7 +13,8 @@
 #include <string.h>
 
 
-
+//#if defined(EIGERD) || defined(GOTHARDD) break;
+//#endif
 
 
 // Global variables
@@ -36,11 +37,12 @@ const enum detectorType myDetectorType=GENERIC;
 
 
 //define in communication_funcs
+/*
 extern int lockStatus;
 extern char lastClientIP[INET_ADDRSTRLEN];
 extern char thisClientIP[INET_ADDRSTRLEN];
 extern int differentClients;
-
+*/
 
 
 /* global variables for optimized readout */
@@ -57,17 +59,16 @@ int init_detector(int b) {
 	printf("This is a VIRTUAL detector\n");
 #endif
 
-	//mapCSP0();
+	mapCSP0();
 	//only for control server
 	if(b){
 #ifdef SLS_DETECTOR_FUNCTION_LIST
-		//initializeDetector();
+		initializeDetector();
 		//testFpga();
 		//testRAM();
 
-		//setSettings(GET_SETTINGS,-1);
 		//Initialization
-
+		//setSettings(GET_SETTINGS,-1);
 		//setFrames(1);
 		//setTrains(1);
 		//setExposureTime(1e6);
@@ -90,7 +91,7 @@ int init_detector(int b) {
 
 int decode_function(int file_des) {
 	int fnum,n;
-	int retval=FAIL;
+	int ret=FAIL;
 #ifdef VERBOSE
 	printf( "receive data\n");
 #endif 
@@ -109,10 +110,10 @@ int decode_function(int file_des) {
 #endif
 	if (fnum<0 || fnum>255)
 		fnum=255;
-	retval=(*flist[fnum])(file_des);
-	if (retval==FAIL)
+	ret=(*flist[fnum])(file_des);
+	if (ret==FAIL)
 		printf( "Error executing the function = %d \n",fnum);
-	return retval;
+	return ret;
 }
 
 
@@ -194,18 +195,18 @@ int function_table() {
 
 int  M_nofunc(int file_des){
 
-	int retval=FAIL;
+	int ret=FAIL;
 	sprintf(mess,"Unrecognized Function\n");
 	printf(mess);
-	sendDataOnly(file_des,&retval,sizeof(retval));
+	sendDataOnly(file_des,&ret,sizeof(ret));
 	sendDataOnly(file_des,mess,sizeof(mess));
 	return GOODBYE;
 }
 
 
 int exit_server(int file_des) {
-	int retval=FAIL;
-	sendDataOnly(file_des,&retval,sizeof(retval));
+	int ret=FAIL;
+	sendDataOnly(file_des,&ret,sizeof(ret));
 	printf("closing server.");
 	sprintf(mess,"closing server");
 	sendDataOnly(file_des,mess,sizeof(mess));
@@ -215,7 +216,7 @@ int exit_server(int file_des) {
 int exec_command(int file_des) {
 	char cmd[MAX_STR_LENGTH];
 	char answer[MAX_STR_LENGTH];
-	int retval=OK;
+	int ret=OK;
 	int sysret=0;
 	int n=0;
 
@@ -223,11 +224,11 @@ int exec_command(int file_des) {
 	n = receiveDataOnly(file_des,cmd,MAX_STR_LENGTH);
 	if (n < 0) {
 		sprintf(mess,"Error reading from socket\n");
-		retval=FAIL;
+		ret=FAIL;
 	}
 
 	/* execute action if the arguments correctly arrived*/
-	if (retval==OK) {
+	if (ret==OK) {
 #ifdef VERBOSE
 		printf("executing command %s\n", cmd);
 #endif
@@ -241,23 +242,23 @@ int exec_command(int file_des) {
 				sprintf(answer,"Detector locked by %s\n", lastClientIP);
 		} else {
 			sprintf(answer,"Failed\n");
-			retval=FAIL;
+			ret=FAIL;
 		}
 	} else {
 		sprintf(answer,"Could not receive the command\n");
 	}
 
 	/* send answer */
-	n = sendDataOnly(file_des,&retval,sizeof(retval));
+	n = sendDataOnly(file_des,&ret,sizeof(ret));
 	n = sendDataOnly(file_des,answer,MAX_STR_LENGTH);
 	if (n < 0) {
 		sprintf(mess,"Error writing to socket");
-		retval=FAIL;
+		ret=FAIL;
 	}
 
 
 	/*return ok/fail*/
-	return retval;
+	return ret;
 
 }
 
@@ -468,6 +469,7 @@ int set_master(int file_des) {
 	printf("setting master flags  to %d\n",arg);
 #endif
 
+#ifdef SLS_DETECTOR_FUNCTION_LIST
 	if (differentClients==1 && lockStatus==1 && arg!=GET_READOUT_FLAGS) {
 		ret=FAIL;
 		sprintf(mess,"Detector locked by %s\n",lastClientIP);
@@ -475,9 +477,11 @@ int set_master(int file_des) {
 		retval=setMaster(arg);
 
 	}
+#endif
 	if (retval==GET_MASTER) {
 		ret=FAIL;
 	}
+
 	n = sendDataOnly(file_des,&ret,sizeof(ret));
 	if (ret==FAIL) {
 		n = sendDataOnly(file_des,mess,sizeof(mess));
@@ -513,15 +517,19 @@ int set_synchronization(int file_des) {
 	printf("setting master flags  to %d\n",arg);
 #endif
 
+#ifdef SLS_DETECTOR_FUNCTION_LIST
 	if (differentClients==1 && lockStatus==1 && arg!=GET_READOUT_FLAGS) {
 		ret=FAIL;
 		sprintf(mess,"Detector locked by %s\n",lastClientIP);
 	}  else {
 		retval=setSynchronization(arg);
 	}
+#endif
+
 	if (retval==GET_SYNCHRONIZATION_MODE) {
 		ret=FAIL;
 	}
+
 	n = sendDataOnly(file_des,&ret,sizeof(ret));
 	if (ret==FAIL) {
 		n = sendDataOnly(file_des,mess,sizeof(mess));
@@ -539,15 +547,15 @@ int set_synchronization(int file_des) {
 
 int get_detector_type(int file_des) {
 	int n=0;
-	enum detectorType ret;
-	int retval=OK;
+	enum detectorType retval;
+	int ret=OK;
 
 	sprintf(mess,"Can't return detector type\n");
 
 
 	/* receive arguments */
 	/* execute action */
-	ret=myDetectorType;
+	retval=myDetectorType;
 
 #ifdef VERBOSE
 	printf("Returning detector type %d\n",ret);
@@ -558,15 +566,15 @@ int get_detector_type(int file_des) {
 	if (differentClients==1)
 		retval=FORCE_UPDATE;
 
-	n += sendDataOnly(file_des,&retval,sizeof(retval));
-	if (retval!=FAIL) {
+	n += sendDataOnly(file_des,&ret,sizeof(ret));
+	if (ret!=FAIL) {
 		/* send return argument */
-		n += sendDataOnly(file_des,&ret,sizeof(ret));
+		n += sendDataOnly(file_des,&retval,sizeof(retval));
 	} else {
 		n += sendDataOnly(file_des,mess,sizeof(mess));
 	}
 	/*return ok/fail*/
-	return retval;
+	return ret;
 
 
 }
@@ -574,8 +582,8 @@ int get_detector_type(int file_des) {
 
 int set_number_of_modules(int file_des) {
 	int n;
-	int arg[2], ret=0;
-	int retval=OK;
+	int arg[2], retval=0;
+	int ret=OK;
 	enum dimension dim;
 	int nm;
 
@@ -585,9 +593,9 @@ int set_number_of_modules(int file_des) {
 	n = receiveDataOnly(file_des,&arg,sizeof(arg));
 	if (n < 0) {
 		sprintf(mess,"Error reading from socket %d", n);
-		retval=GOODBYE;
+		ret=GOODBYE;
 	}
-	if (retval==OK) {
+	if (ret==OK) {
 		dim=arg[0];
 		nm=arg[1];
 
@@ -596,43 +604,42 @@ int set_number_of_modules(int file_des) {
 		printf("Setting the number of modules in dimension %d to %d\n",dim,nm );
 #endif
 
-
+#ifdef SLS_DETECTOR_FUNCTION_LIST
 		if (lockStatus==1 && differentClients==1 && nm!=GET_FLAG) {
 			sprintf(mess,"Detector locked by %s\n", lastClientIP);
-			retval=FAIL;
-		} else {
-			ret=setNMod(nm, dim);
-			if (ret==nm || nm==GET_FLAG) {
-				retval=OK;
-				if (differentClients==1)
-					retval=FORCE_UPDATE;
-			} else
-				retval=FAIL;
-		}
+			ret=FAIL;
+		} else
+			retval=setNMod(nm, dim);
 	}
-
-
 	dataBytes=calculateDataBytes();
+#endif
+
+	if (retval==nm || nm==GET_FLAG) {
+		ret=OK;
+		if (differentClients==1)
+			ret=FORCE_UPDATE;
+	} else
+		ret=FAIL;
 
 	/* send answer */
 	/* send OK/failed */
-	n = sendDataOnly(file_des,&retval,sizeof(retval));
-	if (retval!=FAIL) {
+	n = sendDataOnly(file_des,&ret,sizeof(ret));
+	if (ret!=FAIL) {
 		/* send return argument */
-		n += sendDataOnly(file_des,&ret,sizeof(ret));
+		n += sendDataOnly(file_des,&retval,sizeof(retval));
 	} else {
 		n += sendDataOnly(file_des,mess,sizeof(mess));
 	}
-	/*return ok/fail*/
-	return retval;
 
+	/*return ok/fail*/
+	return ret;
 }
 
 
 int get_max_number_of_modules(int file_des) {
 	int n;
-	int ret;
-	int retval=OK;
+	int retval;
+	int ret=OK;
 	enum dimension arg;
 
 	sprintf(mess,"Can't get max number of modules\n");
@@ -640,39 +647,37 @@ int get_max_number_of_modules(int file_des) {
 	n = receiveDataOnly(file_des,&arg,sizeof(arg));
 	if (n < 0) {
 		sprintf(mess,"Error reading from socket\n");
-		retval=FAIL;
+		ret=FAIL;
 	}
 	/* execute action */
 #ifdef VERBOSE
 	printf("Getting the max number of modules in dimension %d \n",arg);
 #endif
 
+#ifdef SLS_DETECTOR_FUNCTION_LIST
 
-	ret=getNModBoard(arg);
+	retval=getNModBoard(arg);
+#endif
 #ifdef VERBOSE
-	printf("Max number of module in dimension %d is %d\n",arg,ret );
+	printf("Max number of module in dimension %d is %d\n",arg,retval );
 #endif  
 
-
-
-	if (differentClients==1 && retval==OK) {
-		retval=FORCE_UPDATE;
+	if (differentClients==1 && ret==OK) {
+		ret=FORCE_UPDATE;
 	}
 
 	/* send answer */
 	/* send OK/failed */
-	n = sendDataOnly(file_des,&retval,sizeof(retval));
-	if (retval!=FAIL) {
+	n = sendDataOnly(file_des,&ret,sizeof(ret));
+	if (ret!=FAIL) {
 		/* send return argument */
-		n += sendDataOnly(file_des,&ret,sizeof(ret));
+		n += sendDataOnly(file_des,&retval,sizeof(retval));
 	} else {
 		n += sendDataOnly(file_des,mess,sizeof(mess));
 	}
 
-
-
 	/*return ok/fail*/
-	return retval;
+	return ret;
 }
 
 
@@ -686,7 +691,7 @@ int set_external_signal_flag(int file_des) {
 	int arg[2];
 	int ret=OK;
 	int signalindex;
-	enum externalSignalFlag flag, retval;
+	enum externalSignalFlag flag, retval=SIGNAL_OFF;
 
 	sprintf(mess,"Can't set external signal flag\n");
 
@@ -696,7 +701,7 @@ int set_external_signal_flag(int file_des) {
 		sprintf(mess,"Error reading from socket\n");
 		ret=FAIL;
 	}
-	retval=SIGNAL_OFF;
+#ifdef SLS_DETECTOR_FUNCTION_LIST
 	if (ret==OK) {
 		signalindex=arg[0];
 		flag=arg[1];
@@ -705,7 +710,6 @@ int set_external_signal_flag(int file_des) {
 		case GET_EXTERNAL_SIGNAL_FLAG:
 			retval=getExtSignal(signalindex);
 			break;
-
 		default:
 			if (differentClients==0 || lockStatus==0) {
 				retval=setExtSignal(signalindex,flag);
@@ -714,24 +718,20 @@ int set_external_signal_flag(int file_des) {
 					sprintf(mess,"External signal %d flag should be 0x%04x but is 0x%04x\n", signalindex, flag, retval);
 				}
 
-			} else {
-				if (lockStatus!=0) {
+			} else if (lockStatus!=0) {
 					ret=FAIL;
 					sprintf(mess,"Detector locked by %s\n", lastClientIP);
-				}
 			}
-
 			break;
 		}
-
 #ifdef VERBOSE
 		printf("Setting external signal %d to flag %d\n",signalindex,flag );
 		printf("Set to flag %d\n",retval);
 #endif
-
 	} else {
 		ret=FAIL;
 	}
+#endif
 
 	if (ret==OK && differentClients!=0)
 		ret=FORCE_UPDATE;
@@ -756,8 +756,8 @@ int set_external_signal_flag(int file_des) {
 
 int set_external_communication_mode(int file_des) {
 	int n;
-	enum externalCommunicationMode arg, ret=GET_EXTERNAL_COMMUNICATION_MODE;
-	int retval=OK;
+	enum externalCommunicationMode arg, retval=GET_EXTERNAL_COMMUNICATION_MODE;
+	int ret=OK;
 
 	sprintf(mess,"Can't set external communication mode\n");
 
@@ -766,7 +766,7 @@ int set_external_communication_mode(int file_des) {
 	n = receiveDataOnly(file_des,&arg,sizeof(arg));
 	if (n < 0) {
 		sprintf(mess,"Error reading from socket\n");
-		retval=FAIL;
+		ret=FAIL;
 	}
 	/*
 enum externalCommunicationMode{
@@ -782,15 +782,16 @@ enum externalCommunicationMode{
   GATE_COINCIDENCE_WITH_INTERNAL_ENABLE
 };
 	 */
-	if (retval==OK) {
+#ifdef SLS_DETECTOR_FUNCTION_LIST
+	if (ret==OK) {
 		/* execute action */
 
-		ret=setTiming(arg);
+		retval=setTiming(arg);
 
 		/*     switch(arg) { */
 		/*     default: */
 		/*       sprintf(mess,"The meaning of single signals should be set\n"); */
-		/*       retval=FAIL; */
+		/*       ret=FAIL; */
 		/*     } */
 
 
@@ -799,19 +800,20 @@ enum externalCommunicationMode{
 #endif
 	} else
 		ret=FAIL;
+#endif
 
 	/* send answer */
 	/* send OK/failed */
-	n = sendDataOnly(file_des,&retval,sizeof(retval));
-	if (retval!=FAIL) {
+	n = sendDataOnly(file_des,&ret,sizeof(ret));
+	if (ret!=FAIL) {
 		/* send return argument */
-		n += sendDataOnly(file_des,&ret,sizeof(ret));
+		n += sendDataOnly(file_des,&retval,sizeof(retval));
 	} else {
 		n += sendDataOnly(file_des,mess,sizeof(mess));
 	}
 
 	/*return ok/fail*/
-	return retval;
+	return ret;
 
 
 }
@@ -2921,7 +2923,6 @@ int reset_counter_block(int file_des) {
 	/*return ok/fail*/
 	return ret;
 }
-
 
 
 

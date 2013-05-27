@@ -1203,10 +1203,6 @@ class multiSlsDetector  : public slsDetectorUtils {
   /** updates the multidetector offsets */
   void updateOffsets();
 
-  /**
-   * Waits for receiver read to finish after stopping acquisition
-  */
-  void waitForReceiverReadToFinish();
 
 
  protected:

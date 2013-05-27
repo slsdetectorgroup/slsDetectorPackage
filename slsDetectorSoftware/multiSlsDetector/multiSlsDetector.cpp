@@ -4684,8 +4684,3 @@ int multiSlsDetector::setReadReceiverFrequency(int getFromReceiver,int i){
 
 
 
-void multiSlsDetector::waitForReceiverReadToFinish(){
-	for (int idet=0; idet<thisMultiDetector->numberOfDetectors; idet++)
-		if (detectors[idet])
-			detectors[idet]->waitForReceiverReadToFinish();
-}

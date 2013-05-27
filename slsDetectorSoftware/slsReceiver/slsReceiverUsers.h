@@ -64,11 +64,11 @@ public:
 
 	/**
 	   @sort register callback to be called when data are available (to process and/or save the data).
-	   \param func raw data ready callback. arguments are framenum datapointer  file descriptor guidatapointer (NULL, no data required)
+	   \param func raw data ready callback. arguments are framenum datapointer  datasize file descriptor guidatapointer (NULL, no data required)
 	  \returns nothing
 	*/
 	
-	void registerCallBackRawDataReady(void (*func)(int framenumber, char* datapointer, FILE* filedescriptor, char* guidatapointer, void*),void *arg);
+	void registerCallBackRawDataReady(void (*func)(int framenumber, char* datapointer, int datasize, FILE* filedescriptor, char* guidatapointer, void*),void *arg);
 
 
  private:

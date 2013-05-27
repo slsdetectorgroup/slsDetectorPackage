@@ -415,6 +415,13 @@ class slsDetectorUsers
   */
    string getDetectorType();
 
+   /**
+       @short sets the mode by which gui requests data from receiver
+       \param n is 0 for random requests for fast acquisitions and greater than 0 for nth read requests
+      \returns the mode set in the receiver
+   */
+   int setReceiverMode(int n=-1);
+
   /**
      @short register calbback for accessing detector final data
      \param userCallback function for plotting/analyzing the data. Its arguments are  the data structure d and the frame number f.

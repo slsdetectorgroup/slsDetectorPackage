@@ -886,16 +886,13 @@ int qDrawPlot::GetData(detectorData *data,int fIndex){
 				// Titles
 				imageTitle = temp_title;
 				// manufacture data for now
-				/*
+				/* default data
 				for(unsigned int px=0;px<nPixelsX;px++)
 					for(unsigned int py=0;py<nPixelsY;py++)
 						lastImageArray[py*nPixelsX+px] = sqrt(pow(currentFrame+1,2)*pow(double(px)-nPixelsX/2,2)/pow(nPixelsX/2,2)/pow(number_of_exposures+1,2) + pow(double(py)-nPixelsY/2,2)/pow(nPixelsY/2,2))/sqrt(2);
-						*/
+				*/
 				// copy data
 				/*memcpy(lastImageArray,data->values,nPixelsX*nPixelsY*sizeof(double));*/
-
-
-
 				//normal data
 				if(resetPedestal){
 					memcpy(lastImageArray,data->values,nPixelsX*nPixelsY*sizeof(double));
@@ -921,22 +918,6 @@ int qDrawPlot::GetData(detectorData *data,int fIndex){
 					pedestalCount++;
 
 				}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 			}
 			pthread_mutex_unlock(&(last_image_complete_mutex));
 		}

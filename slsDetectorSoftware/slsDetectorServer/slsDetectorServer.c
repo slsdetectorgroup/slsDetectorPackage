@@ -20,11 +20,10 @@ void error(char *msg){
 
 int main(int argc, char *argv[]){
 	int  portno, b;
-	char cmd[100];
 	int retval=OK;
 	int sd, fd;
-
 #ifdef STOP_SERVER
+	char cmd[100];
 	if (argc==1) {
 #endif
 		portno = DEFAULT_PORTNO;

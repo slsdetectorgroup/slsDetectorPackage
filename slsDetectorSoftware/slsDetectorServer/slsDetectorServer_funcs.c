@@ -13,15 +13,9 @@
 #include <string.h>
 
 
-//#if defined(EIGERD) || defined(GOTHARDD) break;
-//#endif
-
 
 // Global variables
-
 int (*flist[256])(int);
-
-
 //defined in the detector specific file
 #ifdef MYTHEND
 const enum detectorType myDetectorType=MYTHEN;
@@ -34,8 +28,6 @@ const enum detectorType myDetectorType=PICASSO;
 #else
 const enum detectorType myDetectorType=GENERIC;
 #endif
-
-
 //define in communication_funcs
 /*
 extern int lockStatus;
@@ -43,9 +35,7 @@ extern char lastClientIP[INET_ADDRSTRLEN];
 extern char thisClientIP[INET_ADDRSTRLEN];
 extern int differentClients;
 */
-
-
-/* global variables for optimized readout */
+//global variables for optimized readout
 char *dataretval=NULL;
 int dataret;
 char mess[1000]; 
@@ -58,8 +48,9 @@ int init_detector(int b) {
 #ifdef VIRTUAL
 	printf("This is a VIRTUAL detector\n");
 #endif
-
+#ifdef SLS_DETECTOR_FUNCTION_LIST
 	mapCSP0();
+#endif
 	//only for control server
 	if(b){
 #ifdef SLS_DETECTOR_FUNCTION_LIST
@@ -397,18 +388,16 @@ int send_update(int file_des) {
 
 
 	n = sendDataOnly(file_des,lastClientIP,sizeof(lastClientIP));
-	nm=setNMod(-1,X);
+	/*nm=setNMod(-1,X);*/
 	n = sendDataOnly(file_des,&nm,sizeof(nm));
-	nm=setNMod(-1,Y);
+	/*nm=setNMod(-1,Y);*/
 	n = sendDataOnly(file_des,&nm,sizeof(nm));
-	nm=setDynamicRange(-1);
+	/*nm=setDynamicRange(-1);*/
 	n = sendDataOnly(file_des,&nm,sizeof(nm));
-
 	n = sendDataOnly(file_des,&dataBytes,sizeof(dataBytes));
-
-	t=setSettings(GET_SETTINGS, -1);
+	/*t=setSettings(GET_SETTINGS, -1);*/
 	n = sendDataOnly(file_des,&t,sizeof(t));
-	thr=getThresholdEnergy(-1);
+	/*thr=getThresholdEnergy(-1);*/
 	n = sendDataOnly(file_des,&thr,sizeof(thr));
 	/*retval=setFrames(tns);*/
 	n = sendDataOnly(file_des,&retval,sizeof(int64_t));
@@ -584,9 +573,10 @@ int set_number_of_modules(int file_des) {
 	int n;
 	int arg[2], retval=0;
 	int ret=OK;
-	enum dimension dim;
 	int nm;
-
+#ifdef SLS_DETECTOR_FUNCTION_LIST
+	enum dimension dim;
+#endif
 	sprintf(mess,"Can't set number of modules\n");
 
 	/* receive arguments */
@@ -595,6 +585,7 @@ int set_number_of_modules(int file_des) {
 		sprintf(mess,"Error reading from socket %d", n);
 		ret=GOODBYE;
 	}
+#ifdef SLS_DETECTOR_FUNCTION_LIST
 	if (ret==OK) {
 		dim=arg[0];
 		nm=arg[1];
@@ -603,8 +594,6 @@ int set_number_of_modules(int file_des) {
 #ifdef VERBOSE
 		printf("Setting the number of modules in dimension %d to %d\n",dim,nm );
 #endif
-
-#ifdef SLS_DETECTOR_FUNCTION_LIST
 		if (lockStatus==1 && differentClients==1 && nm!=GET_FLAG) {
 			sprintf(mess,"Detector locked by %s\n", lastClientIP);
 			ret=FAIL;
@@ -690,8 +679,11 @@ int set_external_signal_flag(int file_des) {
 	int n;
 	int arg[2];
 	int ret=OK;
+	enum externalSignalFlag retval=SIGNAL_OFF;
+#ifdef SLS_DETECTOR_FUNCTION_LIST
 	int signalindex;
-	enum externalSignalFlag flag, retval=SIGNAL_OFF;
+	enum externalSignalFlag flag;
+#endif
 
 	sprintf(mess,"Can't set external signal flag\n");
 
@@ -848,7 +840,9 @@ int get_id(int file_des) {
 		if (n < 0) {
 			sprintf(mess,"Error reading from socket\n");
 			ret=FAIL;
-		} else {
+		}
+#ifdef SLS_DETECTOR_FUNCTION_LIST
+		if (ret==OK) {
 #ifdef VERBOSE
 			printf("of module %d\n", imod);
 #endif  
@@ -857,17 +851,16 @@ int get_id(int file_des) {
 			else {
 				ret=FAIL;
 				sprintf(mess,"Module number %d out of range\n", imod);
-
 			}
-
-
-
 		}
+#endif
 		break;
 	case DETECTOR_SERIAL_NUMBER:
 	case DETECTOR_FIRMWARE_VERSION:
 	case DETECTOR_SOFTWARE_VERSION:
+#ifdef SLS_DETECTOR_FUNCTION_LIST
 		retval=getDetectorId(arg);
+#endif
 		break;
 	default:
 		printf("Required unknown id %d \n", arg);
@@ -933,20 +926,23 @@ int digital_test(int file_des) {
 #ifdef VERBOSE
 			printf("of module %d\n", imod);
 #endif   
+#ifdef SLS_DETECTOR_FUNCTION_LIST
 			if (imod>=0 && imod<getTotalNumberOfModules())
 				retval=moduleTest(arg,imod);
 			else {
 				ret=FAIL;
 				sprintf(mess,"Module number %d out of range\n", imod);
-
 			}
+#endif
 			break;
 		case MODULE_FIRMWARE_TEST:
 		case DETECTOR_FIRMWARE_TEST:
 		case DETECTOR_MEMORY_TEST:
 		case DETECTOR_BUS_TEST:
 		case DETECTOR_SOFTWARE_TEST:
+#ifdef SLS_DETECTOR_FUNCTION_LIST
 			retval=detectorTest(arg);
+#endif
 			break;
 		case DIGITAL_BIT_TEST:
 			n = receiveDataOnly(file_des,&ival,sizeof(ival));
@@ -957,7 +953,6 @@ int digital_test(int file_des) {
 
 			retval=0;
 			break;
-
 		default:
 			printf("Unknown digital test required %d\n",arg);
 			ret=FAIL;
@@ -965,12 +960,10 @@ int digital_test(int file_des) {
 			break;
 		}
 	}
-
 #ifdef VERBOSE
 	printf("digital test result is 0x%x\n", retval);
 #endif  
 	//Always returns force update such that the dynamic range is always updated on the client
-
 	// if (differentClients==1 && ret==OK)
 	ret=FORCE_UPDATE;
 
@@ -1024,13 +1017,12 @@ int set_dac(int file_des) {
 #ifdef VERBOSE
 	printf("Setting DAC %d of module %d to %f V\n", ind, imod, val);
 #endif 
-
-
+#ifdef SLS_DETECTOR_FUNCTION_LIST
 	if (imod>=getTotalNumberOfModules()) {
 		ret=FAIL;
 		sprintf(mess,"Module number %d out of range\n",imod);
 	}
-
+#endif
 
 	// check if dac exists for this detector
 	switch (ind) {
@@ -1058,7 +1050,7 @@ int set_dac(int file_des) {
 		ret=FAIL;
 		break;
 	}
-
+#ifdef SLS_DETECTOR_FUNCTION_LIST
 	if (ret==OK) {
 		if (differentClients==1 && lockStatus==1 && val!=-1) {
 			ret=FAIL;
@@ -1066,7 +1058,7 @@ int set_dac(int file_des) {
 		} else
 			retval=setDAC(ind,val,imod);
 	}
-
+#endif
 #ifdef VERBOSE
 	printf("DAC set to %f V\n",  retval);
 #endif  
@@ -1119,12 +1111,12 @@ int get_adc(int file_des) {
 	ind=arg[0];
 	imod=arg[1];
 
-
+#ifdef SLS_DETECTOR_FUNCTION_LIST
 	if (imod>=getTotalNumberOfModules() || imod<0) {
 		ret=FAIL;
 		sprintf(mess,"Module number %d out of range\n",imod);
 	}
-
+#endif
 
 	switch (ind) {
 	case  TRIMBIT_SIZE:
@@ -1151,10 +1143,11 @@ int get_adc(int file_des) {
 		sprintf(mess,"Unknown ADC index %d\n",ind);
 		break;
 	}
-
+#ifdef SLS_DETECTOR_FUNCTION_LIST
 	if (ret==OK) {
 		retval=getADC(ind,imod);
 	}
+#endif
 #ifdef VERBOSE
 	printf("Getting ADC %d of module %d\n", ind, imod);
 #endif 
@@ -1212,15 +1205,14 @@ int write_register(int file_des) {
 #ifdef VERBOSE
 	printf("writing to register 0x%x data 0x%x\n", addr, val);
 #endif
-
+#ifdef SLS_DETECTOR_FUNCTION_LIST
 	if (differentClients==1 && lockStatus==1) {
 		ret=FAIL;
 		sprintf(mess,"Detector locked by %s\n",lastClientIP);
 	} else
 		retval=bus_w(addr,val);
 
-
-
+#endif
 #ifdef VERBOSE
 	printf("Data set to 0x%x\n",  retval);
 #endif
@@ -1271,15 +1263,13 @@ int read_register(int file_des) {
 #ifdef VERBOSE
 	printf("reading  register 0x%x\n", addr);
 #endif
-
+#ifdef SLS_DETECTOR_FUNCTION_LIST
 	retval=bus_r(addr);
-
-
+#endif
 #ifdef VERBOSE
 	printf("Returned value 0x%x\n",  retval);
 #endif
 	if (ret==FAIL) {
-		ret=FAIL;
 		printf("Reading register 0x%x failed\n", addr);
 	} else if (differentClients)
 		ret=FORCE_UPDATE;
@@ -1325,7 +1315,7 @@ int set_channel(int file_des) {
 #ifdef VERBOSE
 	printf("channel number is %d, chip number is %d, module number is %d, register is %lld\n", myChan.chan,myChan.chip, myChan.module, myChan.reg);
 #endif
-
+#ifdef SLS_DETECTOR_FUNCTION_LIST
 	if (myChan.chan>=getNumberOfChannelsPerChip()) {
 		ret=FAIL;
 		sprintf(mess, "channel number %d too large!\n",myChan.chan);
@@ -1349,10 +1339,9 @@ int set_channel(int file_des) {
 			retval=setChannel(myChan);
 		}
 	}
+#endif
 	/* Maybe this is done inside the initialization funcs */
 	//copyChannel(detectorChans[myChan.module][myChan.chip]+(myChan.chan), &myChan);
-
-
 
 	if (differentClients==1 && ret==OK)
 		ret=FORCE_UPDATE;
@@ -1398,6 +1387,7 @@ int get_channel(int file_des) {
 	ichip=arg[1];
 	imod=arg[2];
 
+#ifdef SLS_DETECTOR_FUNCTION_LIST
 	if (ichan>=getNumberOfChannelsPerChip()) {
 		ret=FAIL;
 		sprintf(mess, "channel number %d too large!\n",ichan);
@@ -1416,11 +1406,12 @@ int get_channel(int file_des) {
 		retval.module=imod;
 
 
-	if (ret==OK) {
+	if (ret==OK)
 		ret=getChannel(&retval);
-		if (differentClients && ret==OK)
-			ret=FORCE_UPDATE;
-	}
+#endif
+	if (differentClients && ret==OK)
+		ret=FORCE_UPDATE;
+
 
 #ifdef VERBOSE
 	printf("Returning channel %d %d %d, 0x%llx\n", retval.chan, retval.chip, retval.mod, (retval.reg));
@@ -1447,16 +1438,15 @@ int get_channel(int file_des) {
 
 int set_chip(int file_des) {
 
-	sls_detector_chip myChip;
 	int *ch;
 	int n, retval;
 	int ret=OK;
-
+#ifdef SLS_DETECTOR_FUNCTION_LIST
+	sls_detector_chip myChip;
 
 	myChip.nchan=getNumberOfChannelsPerChip();
 	ch=malloc((myChip.nchan)*sizeof(int));
 	myChip.chanregs=ch;
-
 
 
 
@@ -1475,7 +1465,6 @@ int set_chip(int file_des) {
 	printf("chip number is %d, module number is %d, register is %d, nchan %d\n",myChip.chip, myChip.module, myChip.reg, myChip.nchan);
 #endif
 
-
 	if (myChip.chip>=getNumberOfChipsPerModule()) {
 		ret=FAIL;
 		sprintf(mess, "chip number %d too large!\n",myChip.chip);
@@ -1493,6 +1482,7 @@ int set_chip(int file_des) {
 	} else {
 		retval=setChip(myChip);
 	}
+#endif
 	/* Maybe this is done inside the initialization funcs */
 	//copyChip(detectorChips[myChip.module]+(myChip.chip), &myChip);
 
@@ -1525,11 +1515,11 @@ int get_chip(int file_des) {
 	int n;
 	int *ch;
 
-
+#ifdef SLS_DETECTOR_FUNCTION_LIST
 	retval.nchan=getNumberOfChannelsPerChip();
 	ch=malloc((retval.nchan)*sizeof(int));
 	retval.chanregs=ch;
-
+#endif
 
 	n = receiveDataOnly(file_des,arg,sizeof(arg));
 	if (n < 0) {
@@ -1539,7 +1529,7 @@ int get_chip(int file_des) {
 	ichip=arg[0];
 	imod=arg[1];
 
-
+#ifdef SLS_DETECTOR_FUNCTION_LIST
 	if (ichip>=getNumberOfChipsPerModule()) {
 		ret=FAIL;
 		sprintf(mess, "chip number %d too large!\n",ichip);
@@ -1552,12 +1542,11 @@ int get_chip(int file_des) {
 	} else
 		retval.module=imod;
 
-	if (ret==OK) {
+	if (ret==OK)
 		ret=getChip(&retval);
-		if (differentClients && ret==OK)
-			ret=FORCE_UPDATE;
-	}
-
+#endif
+	if (differentClients && ret==OK)
+		ret=FORCE_UPDATE;
 #ifdef VERBOSE
 	printf("Returning chip %d %d\n",  ichip, imod);
 #endif 
@@ -1581,13 +1570,15 @@ int get_chip(int file_des) {
 
 }
 int set_module(int file_des) {
+	int retval, n;
+	int ret=OK;
+
+#ifdef SLS_DETECTOR_FUNCTION_LIST
 	sls_detector_module myModule;
 	int *myChip=malloc(getNumberOfChipsPerModule()*sizeof(int));
 	int *myChan=malloc(getNumberOfChannelsPerModule()*sizeof(int));
 	int *myDac=malloc(getNumberOfDACsPerModule()*sizeof(int));
 	int *myAdc=malloc(getNumberOfADCsPerModule()*sizeof(int));
-	int retval, n;
-	int ret=OK;
 
 
 	if (myDac)
@@ -1646,7 +1637,7 @@ int set_module(int file_des) {
 			retval=setModule(myModule);
 		}
 	}
-
+#endif
 	if (differentClients==1 && ret==OK)
 		ret=FORCE_UPDATE;
 
@@ -1662,11 +1653,12 @@ int set_module(int file_des) {
 	} else {
 		n += sendDataOnly(file_des,mess,sizeof(mess));
 	}
+#ifdef SLS_DETECTOR_FUNCTION_LIST
 	free(myChip);
 	free(myChan);
 	free(myDac);
 	free(myAdc);
-
+#endif
 	return ret;
 }
 
@@ -1677,15 +1669,12 @@ int get_module(int file_des) {
 
 
 	int ret=OK;
-
-
 	int arg;
 	int  imod;
 	int n;
-
-
-
 	sls_detector_module myModule;
+
+#ifdef SLS_DETECTOR_FUNCTION_LIST
 	int *myChip=malloc(getNumberOfChipsPerModule()*sizeof(int));
 	int *myChan=malloc(getNumberOfChannelsPerModule()*sizeof(int));
 	int *myDac=malloc(getNumberOfDACsPerModule()*sizeof(int));
@@ -1722,7 +1711,7 @@ int get_module(int file_des) {
 	myModule.nchan=getNumberOfChannelsPerModule();
 	myModule.nadc=getNumberOfADCsPerModule();
 
-
+#endif
 
 
 
@@ -1733,6 +1722,7 @@ int get_module(int file_des) {
 	}
 	imod=arg;
 
+#ifdef SLS_DETECTOR_FUNCTION_LIST
 	if (ret==OK) {
 		ret=FAIL;
 		if (imod>=0) {
@@ -1745,7 +1735,7 @@ int get_module(int file_des) {
 #endif 
 		}
 	}
-
+#endif
 	if (differentClients==1 && ret==OK)
 		ret=FORCE_UPDATE;
 
@@ -1759,20 +1749,12 @@ int get_module(int file_des) {
 		n += sendDataOnly(file_des,mess,sizeof(mess));
 	}
 
-
-
+#ifdef SLS_DETECTOR_FUNCTION_LIST
 	free(myChip);
 	free(myChan);
 	free(myDac);
 	free(myAdc);
-
-
-
-
-
-
-
-
+#endif
 	/*return ok/fail*/
 	return ret;
 
@@ -1800,7 +1782,7 @@ int set_settings(int file_des) {
 	imod=arg[1];
 	isett=arg[0];
 
-
+#ifdef SLS_DETECTOR_FUNCTION_LIST
 	if (imod>=getTotalNumberOfModules()) {
 		ret=FAIL;
 		sprintf(mess,"Module number %d out of range\n",imod);
@@ -1827,6 +1809,8 @@ int set_settings(int file_des) {
 		}
 
 	}
+#endif
+
 	if (ret==OK && differentClients==1)
 		ret=FORCE_UPDATE;
 
@@ -1836,8 +1820,6 @@ int set_settings(int file_des) {
 		n += sendDataOnly(file_des,mess,sizeof(mess));
 	} else
 		n += sendDataOnly(file_des,&retval,sizeof(retval));
-
-
 
 	return ret;
 
@@ -1866,15 +1848,14 @@ int get_threshold_energy(int file_des) {
 #ifdef VERBOSE
 	printf("Getting threshold energy of module %d\n", imod);
 #endif 
-
+#ifdef SLS_DETECTOR_FUNCTION_LIST
 	if (imod>=getTotalNumberOfModules()) {
 		ret=FAIL;
 		sprintf(mess,"Module number %d out of range\n",imod);
 	}
 
 	retval=getThresholdEnergy(imod);
-
-
+#endif
 #ifdef VERBOSE
 	printf("Threshold is %d eV\n",  retval);
 #endif  
@@ -1918,24 +1899,20 @@ int set_threshold_energy(int file_des) {
 	ethr=arg[0];
 	imod=arg[1];
 	isett=arg[2];
-
+#ifdef SLS_DETECTOR_FUNCTION_LIST
 	if (imod>=getTotalNumberOfModules()) {
 		ret=FAIL;
 		sprintf(mess,"Module number %d out of range\n",imod);
 	}
-
-
 #ifdef VERBOSE
 	printf("Setting threshold energy of module %d to %d eV with settings %d\n", imod, ethr, isett);
 #endif 
-
 	if (differentClients==1 && lockStatus==1) {
 		ret=FAIL;
 		sprintf(mess,"Detector locked by %s\n",lastClientIP);
 	} else {
 		retval=setThresholdEnergy(ethr, imod);
 	}
-
 #ifdef VERBOSE
 	printf("Threshold set to %d eV\n",  retval);
 #endif  
@@ -1946,6 +1923,7 @@ int set_threshold_energy(int file_des) {
 		printf("Setting threshold of module %d: wrote %d but read %d\n", imod, ethr, retval);
 		sprintf(mess,"Setting threshold of module %d: wrote %d but read %d\n", imod, ethr, retval);
 	}
+#endif
 	if (ret==OK && differentClients==1)
 		ret=FORCE_UPDATE;
 
@@ -1978,13 +1956,14 @@ int start_acquisition(int file_des) {
 #ifdef VERBOSE
 	printf("Starting acquisition\n");
 #endif
-
+#ifdef SLS_DETECTOR_FUNCTION_LIST
 	if (differentClients==1 && lockStatus==1) {
 		ret=FAIL;
 		sprintf(mess,"Detector locked by %s\n",lastClientIP);
 	} else {
 		ret=startStateMachine();
 	}
+#endif
 	if (ret==FAIL)
 		sprintf(mess,"Start acquisition failed\n");
 	else if (differentClients)
@@ -2009,15 +1988,14 @@ int stop_acquisition(int file_des) {
 #ifdef VERBOSE
 	printf("Stopping acquisition\n");
 #endif 
-
-
+#ifdef SLS_DETECTOR_FUNCTION_LIST
 	if (differentClients==1 && lockStatus==1) {
 		ret=FAIL;
 		sprintf(mess,"Detector locked by %s\n",lastClientIP);
 	} else {
 		ret=stopStateMachine();
 	}
-
+#endif
 	if (ret==FAIL)
 		sprintf(mess,"Stop acquisition failed\n");
 	else if (differentClients)
@@ -2047,12 +2025,14 @@ int start_readout(int file_des) {
 #ifdef VERBOSE
 	printf("Starting readout\n");
 #endif     
+#ifdef SLS_DETECTOR_FUNCTION_LIST
 	if (differentClients==1 && lockStatus==1) {
 		ret=FAIL;
 		sprintf(mess,"Detector locked by %s\n",lastClientIP);
 	} else {
 		ret=startReadOut();
 	}
+#endif
 	if (ret==FAIL)
 		sprintf(mess,"Start readout failed\n");
 	else if (differentClients)
@@ -2075,18 +2055,15 @@ int get_run_status(int file_des) {
 
 	int ret=OK;
 	int n;
-
 	enum runStatus s;
 	sprintf(mess,"getting run status\n");
 
 #ifdef VERBOSE
 	printf("Getting status\n");
 #endif 
-
+#ifdef SLS_DETECTOR_FUNCTION_LIST
 	s= getRunStatus();
-
-
-
+#endif
 
 	if (ret!=OK) {
 		printf("get status failed\n");
@@ -2100,9 +2077,6 @@ int get_run_status(int file_des) {
 		n += sendDataOnly(file_des,&s,sizeof(s));
 	}
 	return ret;
-
-
-
 }
 
 
@@ -2123,10 +2097,10 @@ int start_and_read_all(int file_des) {
 		return dataret;
 
 	}
-
-
+#ifdef SLS_DETECTOR_FUNCTION_LIST
 	startStateMachine();
 	read_all(file_des);
+#endif
 #ifdef VERBOSE
 	printf("Frames finished\n");
 #endif
@@ -2145,9 +2119,7 @@ int read_frame(int file_des) {
 #ifdef VERBOSE
 	int n;
 #endif
-
 	dataret=OK;
-
 	if (differentClients==1 && lockStatus==1) {
 		dataret=FAIL;
 		sprintf(mess,"Detector locked by %s\n",lastClientIP);
@@ -2157,9 +2129,9 @@ int read_frame(int file_des) {
 		return dataret;
 	}
 
-
+#ifdef SLS_DETECTOR_FUNCTION_LIST
 	dataretval=readFrame(&dataret, mess);
-
+#endif
 	sendDataOnly(file_des,&dataret,sizeof(dataret));
 	if (dataret==FAIL)
 		sendDataOnly(file_des,mess,sizeof(mess));//sizeof(mess));//sizeof(mess));
@@ -2177,21 +2149,18 @@ int read_frame(int file_des) {
 
 
 int read_all(int file_des) {
-
-
+#ifdef SLS_DETECTOR_FUNCTION_LIST
 	while(read_frame(file_des)==OK) {
 #ifdef VERBOSE
 		printf("frame read\n");
 #endif   
 		;
 	}
-
+#endif
 #ifdef VERBOSE
 	printf("Frames finished\n");
 #endif   
 	return OK;
-
-
 }
 
 
@@ -2228,8 +2197,8 @@ int set_timer(int file_des) {
 #ifdef VERBOSE
 	printf("setting timer %d to %lld ns\n",ind,tns);
 #endif
+#ifdef SLS_DETECTOR_FUNCTION_LIST
 	if (ret==OK) {
-
 		if (differentClients==1 && lockStatus==1 && tns!=-1) {
 			ret=FAIL;
 			sprintf(mess,"Detector locked by %s\n",lastClientIP);
@@ -2263,6 +2232,7 @@ int set_timer(int file_des) {
 			}
 		}
 	}
+#endif
 	if (ret!=OK) {
 		printf(mess);
 		if (differentClients)
@@ -2315,12 +2285,10 @@ int get_time_left(int file_des) {
 		ret=FAIL;
 	}
 
-
 #ifdef VERBOSE
-
 	printf("getting time left on timer %d \n",ind);
 #endif 
-
+#ifdef SLS_DETECTOR_FUNCTION_LIST
 	if (ret==OK) {
 		switch(ind) {
 		case FRAME_NUMBER:
@@ -2346,7 +2314,7 @@ int get_time_left(int file_des) {
 			break;
 		}
 	}
-
+#endif
 
 	if (ret!=OK) {
 		printf("get time left failed\n");
@@ -2354,7 +2322,6 @@ int get_time_left(int file_des) {
 		ret=FORCE_UPDATE;
 
 #ifdef VERBOSE
-
 	printf("time left on timer %d is %lld\n",ind, retval);
 #endif 
 
@@ -2365,13 +2332,9 @@ int get_time_left(int file_des) {
 		n = sendDataOnly(file_des,&retval,sizeof(retval));
 	}
 #ifdef VERBOSE
-
 	printf("data sent\n");
 #endif 
-
 	return ret;
-
-
 }
 
 
@@ -2380,31 +2343,26 @@ int get_time_left(int file_des) {
 
 int set_dynamic_range(int file_des) {
 
-
-
 	int dr;
 	int n;
 	int retval;
 	int ret=OK;
 
-
 	sprintf(mess,"can't set dynamic range\n");
-
 
 	n = receiveDataOnly(file_des,&dr,sizeof(dr));
 	if (n < 0) {
 		sprintf(mess,"Error reading from socket\n");
 		ret=FAIL;
 	}
-
-
+#ifdef SLS_DETECTOR_FUNCTION_LIST
 	if (differentClients==1 && lockStatus==1 && dr>=0) {
 		ret=FAIL;
 		sprintf(mess,"Detector locked by %s\n",lastClientIP);
 	}  else {
 		retval=setDynamicRange(dr);
 	}
-
+#endif
 	if (dr>=0 && retval!=dr)
 		ret=FAIL;
 	if (ret!=OK) {
@@ -2412,8 +2370,9 @@ int set_dynamic_range(int file_des) {
 	} else if (differentClients)
 		ret=FORCE_UPDATE;
 
-
+#ifdef SLS_DETECTOR_FUNCTION_LIST
 	dataBytes=calculateDataBytes();
+#endif
 
 	n = sendDataOnly(file_des,&ret,sizeof(ret));
 	if (ret==FAIL) {
@@ -2436,9 +2395,7 @@ int set_readout_flags(int file_des) {
 	int n;
 	int ret=OK;
 
-
 	sprintf(mess,"can't set readout flags\n");
-
 
 	n = receiveDataOnly(file_des,&arg,sizeof(arg));
 	if (n < 0) {
@@ -2446,18 +2403,14 @@ int set_readout_flags(int file_des) {
 		ret=FAIL;
 	}
 
-
 #ifdef VERBOSE
 	printf("setting readout flags  to %d\n",arg);
 #endif
-
+#ifdef SLS_DETECTOR_FUNCTION_LIST
 	if (differentClients==1 && lockStatus==1 && arg!=GET_READOUT_FLAGS) {
 		ret=FAIL;
 		sprintf(mess,"Detector locked by %s\n",lastClientIP);
 	}  else {
-
-
-
 		switch(arg) {
 		case  GET_READOUT_FLAGS:
 		case STORE_IN_RAM:
@@ -2475,9 +2428,7 @@ int set_readout_flags(int file_des) {
 			break;
 		}
 	}
-
-
-
+#endif
 	if (ret==OK) {
 		if (differentClients)
 			ret=FORCE_UPDATE;
@@ -2502,9 +2453,9 @@ int set_readout_flags(int file_des) {
 
 
 int set_roi(int file_des) {
-
+#ifdef SLS_DETECTOR_FUNCTION_LIST
 	dataBytes=calculateDataBytes();
-
+#endif
 	return FAIL;
 
 }
@@ -2518,7 +2469,6 @@ int set_speed(int file_des) {
 	int retval;
 
 	sprintf(mess,"can't set speed variable\n");
-
 
 	n = receiveDataOnly(file_des,&arg,sizeof(arg));
 	if (n < 0) {
@@ -2540,6 +2490,7 @@ int set_speed(int file_des) {
 			ret=FAIL;
 			sprintf(mess,"Detector locked by %s\n",lastClientIP);
 		}  else {
+#ifdef SLS_DETECTOR_FUNCTION_LIST
 			switch (arg) {
 			case CLOCK_DIVIDER:
 			case WAIT_STATES:
@@ -2556,6 +2507,7 @@ int set_speed(int file_des) {
 				ret=FAIL;
 				break;
 			}
+#endif
 		}
 		if (ret==OK && val>=0) {
 			if (retval!=val) {
@@ -2610,12 +2562,12 @@ int execute_trimming(int file_des) {
 	imod=arg[0];
 	par1=arg[1];
 	par2=arg[2];
-
+#ifdef SLS_DETECTOR_FUNCTION_LIST
 	if (imod>=getTotalNumberOfModules()) {
 		ret=FAIL;
 		sprintf(mess,"Module number out of range %d\n",imod);
 	}
-
+#endif
 	if (ret==OK) {
 
 #ifdef VERBOSE
@@ -2626,7 +2578,7 @@ int execute_trimming(int file_des) {
 			ret=FAIL;
 			sprintf(mess,"Detector locked by %s\n",lastClientIP);
 		}  else {
-
+#ifdef SLS_DETECTOR_FUNCTION_LIST
 			if (ret==OK) {
 				switch(mode) {
 				case NOISE_TRIMMING:
@@ -2645,6 +2597,7 @@ int execute_trimming(int file_des) {
 					break;
 				}
 			}
+#endif
 		}
 	}
 
@@ -2687,7 +2640,6 @@ int configure_mac(int file_des) {
 
 	sprintf(mess,"Can't configure MAC\n");
 
-
 	n = receiveDataOnly(file_des,arg,sizeof(arg));
 	if (n < 0) {
 		sprintf(mess,"Error reading from socket\n");
@@ -2698,14 +2650,12 @@ int configure_mac(int file_des) {
 	sscanf(arg[1], "%llx", &imacadd);
 	sscanf(arg[2], "%llx", &iservermacadd);
 
-
-
+#ifdef SLS_DETECTOR_FUNCTION_LIST
 	if (imod>=getTotalNumberOfModules()) {
 		ret=FAIL;
 		sprintf(mess,"Module number out of range %d\n",imod);
 	}
-
-
+#endif
 #ifdef VERBOSE
 	int i;
 	printf("\ndigital_test_bit in server %d\t",digitalTestBit);
@@ -2718,27 +2668,20 @@ int configure_mac(int file_des) {
 	for (i=0;i<6;i++)
 		printf("server mac adress %d is 0x%x \n",6-i,(unsigned int)(((iservermacadd>>(8*i))&0xFF)));
 	printf("\n");
-#endif 
-
-
-
-
-#ifdef VERBOSE
 	printf("Configuring MAC of module %d\n", imod);
 #endif
-
+#ifdef SLS_DETECTOR_FUNCTION_LIST
 	if (ret==OK) {
 		/*retval=configureMAC(ipad,imacadd,iservermacadd,digitalTestBit);*/
 		if(retval==-1) ret=FAIL;
 	}
-
+#endif
 #ifdef VERBOSE
 	printf("Configured MAC with retval %d\n",  retval);
 #endif  
 	if (ret==FAIL) {
 		printf("configuring MAC of mod %d failed\n", imod);
 	}
-
 
 	if (differentClients)
 		ret=FORCE_UPDATE;
@@ -2786,7 +2729,7 @@ int load_image(int file_des) {
 			sprintf(mess,"Detector locked by %s\n",lastClientIP);
 		}
 
-
+#ifdef SLS_DETECTOR_FUNCTION_LIST
 		switch (index) {
 		case DARK_IMAGE :
 #ifdef VERBOSE
@@ -2808,7 +2751,7 @@ int load_image(int file_des) {
 			ret=FAIL;
 			break;
 		}
-
+#endif
 	}
 
 	if(ret==OK){
@@ -2849,7 +2792,7 @@ int read_counter_block(int file_des) {
 		sprintf(mess,"Error reading from socket\n");
 		ret=FAIL;
 	}
-
+#ifdef SLS_DETECTOR_FUNCTION_LIST
 	if (ret==OK) {
 		if (differentClients==1 && lockStatus==1) {
 			ret=FAIL;
@@ -2863,7 +2806,7 @@ int read_counter_block(int file_des) {
 #endif
 		}
 	}
-
+#endif
 	if(ret!=FAIL){
 		if (differentClients)
 			ret=FORCE_UPDATE;
@@ -2900,7 +2843,7 @@ int reset_counter_block(int file_des) {
 		sprintf(mess,"Error reading from socket\n");
 		ret=FAIL;
 	}
-
+#ifdef SLS_DETECTOR_FUNCTION_LIST
 	if (ret==OK) {
 		if (differentClients==1 && lockStatus==1) {
 			ret=FAIL;
@@ -2908,7 +2851,7 @@ int reset_counter_block(int file_des) {
 		} else
 			ret=resetCounterBlock(startACQ);
 	}
-
+#endif
 	if(ret==OK){
 		if (differentClients)
 			ret=FORCE_UPDATE;
@@ -2937,7 +2880,7 @@ int start_receiver(int file_des) {
 	strcpy(mess,"Could not start receiver\n");
 
 	/* execute action if the arguments correctly arrived*/
-#ifdef MCB_FUNCS
+#ifdef SLS_DETECTOR_FUNCTION_LIST
 	if (lockStatus==1 && differentClients==1){//necessary???
 		sprintf(mess,"Detector locked by %s\n", lastClientIP);
 		ret=FAIL;
@@ -2973,7 +2916,7 @@ int stop_receiver(int file_des) {
 	strcpy(mess,"Could not stop receiver\n");
 
 	/* execute action if the arguments correctly arrived*/
-#ifdef MCB_FUNCS
+#ifdef SLS_DETECTOR_FUNCTION_LIST
 	if (lockStatus==1 && differentClients==1){//necessary???
 		sprintf(mess,"Detector locked by %s\n", lastClientIP);
 		ret=FAIL;
@@ -3015,7 +2958,7 @@ int calibrate_pedestal(int file_des){
 		sprintf(mess,"Error reading from socket\n");
 		ret=FAIL;
 	}
-
+#ifdef SLS_DETECTOR_FUNCTION_LIST
 	if (ret==OK) {
 		if (differentClients==1 && lockStatus==1) {
 			ret=FAIL;
@@ -3023,7 +2966,7 @@ int calibrate_pedestal(int file_des){
 		} else
 			ret=calibratePedestal(frames);
 	}
-
+#endif
 	if(ret==OK){
 		if (differentClients)
 			ret=FORCE_UPDATE;

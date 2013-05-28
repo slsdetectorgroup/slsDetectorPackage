@@ -313,49 +313,30 @@ class slsDetectorUsers
   */
    int setBeamEnergy(int e_eV);
 
-  /** 
-           @short set/get exposure time value
-      \param t time in ns  (-1 gets)
-      \returns timer set value in ns
-  */
-
-   int64_t setExposureTime(int64_t t=-1);
-
-  /** 
-       @short set/get exposure period
-      \param t time in ns   (-1 gets)
-      \returns timer set value in ns
-  */
-   int64_t setExposurePeriod(int64_t t=-1);
-  
-  /** 
-       @short set/get delay after trigger
-      \param t time in ns   (-1 gets)
-      \returns timer set value in ns
-  */
-   int64_t setDelayAfterTrigger(int64_t t=-1);
-
    /**
         @short set/get exposure time value
-        \param t time in s  (-1 gets)
-        \returns timer set value in s
+        \param t time in sn  (-1 gets)
+        \param inseconds true if the value is in s, else ns
+        \returns timer set value in ns, or s if specified
     */
 
-   double setExposureTime(double t=-1);
+   double setExposureTime(double t=-1, bool inseconds=false);
 
     /**
          @short set/get exposure period
-        \param t time in s   (-1 gets)
-        \returns timer set value in s
+        \param t time in ns   (-1 gets)
+        \param inseconds true if the value is in s, else ns
+        \returns timer set value in ns, or s if specified
     */
-   double setExposurePeriod(double t=-1);
+   double setExposurePeriod(double t=-1, bool inseconds=false);
 
     /**
          @short set/get delay after trigger
-        \param t time in s   (-1 gets)
-        \returns timer set value in s
+        \param t time in ns   (-1 gets)
+        \param inseconds true if the value is in s, else ns
+        \returns timer set value in ns, or s if specified
     */
-   double setDelayAfterTrigger(double t=-1);
+   double setDelayAfterTrigger(double t=-1, bool inseconds=false);
 
   /** 
        @short set/get number of gates

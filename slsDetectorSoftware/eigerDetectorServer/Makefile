@@ -6,7 +6,7 @@ PROGS		= 	eigerDetectorServer
 DESTDIR		?= 	bin
 INSTMODE	= 	0777
 
-SRC_CLNT	=	slsDetectorServer.c slsDetectorServer_funcs.c communication_funcs.c slsDetector_firmware.c slsDetectorFunctionList.c 
+SRC_CLNT	=	slsDetectorServer.c slsDetectorServer_funcs.c communication_funcs.c #slsDetectorFunctionList.c 
 OBJS 		= 	$(SRC_CLNT:.cpp=.o) 
 
 

@@ -14,7 +14,7 @@
 #define GOODBYE 		-200
 
 
-/* examples
+/* examples*/
 #define NCHAN 			1
 #define NCHIP 			1
 #define NDAC 			1
@@ -24,7 +24,7 @@
 #define NMAXMOD 		NMAXMODX*NMAXMODY
 #define NCHANS 			NCHAN*NCHIP*NMAXMOD
 #define NDACS 			NDAC*NMAXMOD
-*/
+
 
 
 

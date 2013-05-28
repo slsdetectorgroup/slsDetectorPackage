@@ -152,17 +152,6 @@ int slsDetectorUsers::setBeamEnergy(int e_eV){
   return 2*myDetector->setThresholdEnergy(e_eV/2);
 }
 
-int64_t slsDetectorUsers::setExposureTime(int64_t t){
-  return myDetector->setExposureTime(t);
-}
-int64_t slsDetectorUsers::setExposurePeriod(int64_t t){
-  return myDetector->setExposurePeriod(t);
-}
-  
-int64_t slsDetectorUsers::setDelayAfterTrigger(int64_t t){
-  return myDetector->setDelayAfterTrigger(t);
-}
-
 double slsDetectorUsers::setExposureTime(double t, bool inseconds){
 	int64_t tms = t * (1E+9);
   if(inseconds)

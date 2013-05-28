@@ -892,7 +892,51 @@ int qDrawPlot::GetData(detectorData *data,int fIndex){
 						lastImageArray[py*nPixelsX+px] = sqrt(pow(currentFrame+1,2)*pow(double(px)-nPixelsX/2,2)/pow(nPixelsX/2,2)/pow(number_of_exposures+1,2) + pow(double(py)-nPixelsY/2,2)/pow(nPixelsY/2,2))/sqrt(2);
 						*/
 				// copy data
-				memcpy(lastImageArray,data->values,nPixelsX*nPixelsY*sizeof(double));
+				/*memcpy(lastImageArray,data->values,nPixelsX*nPixelsY*sizeof(double));*/
+
+
+
+				//normal data
+				if(resetPedestal){
+					memcpy(lastImageArray,data->values,nPixelsX*nPixelsY*sizeof(double));
+				}else{
+					//start adding frames to get to the pedestal value
+					if(pedestalCount<NUM_PEDESTAL_FRAMES){
+						for(unsigned int px=0;px<(nPixelsX*nPixelsY);px++)
+							pedestalVals[px] += data->values[px];
+						memcpy(lastImageArray,data->values,nPixelsX*nPixelsY*sizeof(double));
+					}
+					//calculate the pedestal value
+					else if(pedestalCount==NUM_PEDESTAL_FRAMES){
+						cout << "Pedestal Calculated" << endl;
+						for(unsigned int px=0;px<(nPixelsX*nPixelsY);px++)
+							pedestalVals[px] = pedestalVals[px]/(double)NUM_PEDESTAL_FRAMES;
+						memcpy(lastImageArray,data->values,nPixelsX*nPixelsY*sizeof(double));
+					}
+					//use this pedestal value henceforth
+					else{
+						for(unsigned int px=0;px<(nPixelsX*nPixelsY);px++)
+							lastImageArray[px] = data->values[px] - (pedestalVals[px]);
+					}
+					pedestalCount++;
+
+				}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 			}
 			pthread_mutex_unlock(&(last_image_complete_mutex));
 		}
@@ -1578,9 +1622,9 @@ void qDrawPlot::CalculatePedestal(){
 	while(1){
 		if(!pthread_mutex_trylock(&(last_image_complete_mutex))){
 			//create array
-			if(pedestalVals) delete [] pedestalVals; pedestalVals = new double[nPixelsX];
+			if(pedestalVals) delete [] pedestalVals; pedestalVals = new double[nPixelsX*nPixelsY];
 			//reset all values
-			for(unsigned int px=0;px<nPixelsX;px++)
+			for(unsigned int px=0;px<(nPixelsX*nPixelsY);px++)
 				pedestalVals[px] = 0;
 
 			pedestalCount = 0;

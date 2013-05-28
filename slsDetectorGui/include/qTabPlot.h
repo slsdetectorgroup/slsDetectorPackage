@@ -147,6 +147,9 @@ private slots:
 	/** Change pages in 1D box*/
 	void Set1DPage();
 
+	/** Change pages in 2D box*/
+	void Set2DPage();
+
 
 signals:
 	void DisableZoomSignal(bool);

@@ -159,10 +159,14 @@ void qTabPlot::SetupWidgetWindow(){
 	EnableScanBox();
 
 	stackedWidget->setCurrentIndex(0);
-
+	stackedWidget_2->setCurrentIndex(0);
 	if(myDet->getDetectorsType()!=slsDetectorDefs::GOTTHARD){
 		btnCalPedestal->setEnabled(false);
 		btnResetPedestal->setEnabled(false);
+	}
+	if(myDet->getDetectorsType()!=slsDetectorDefs::MOENCH){
+		btnCalPedestal_2->setEnabled(false);
+		btnResetPedestal_2->setEnabled(false);
 	}
 
 	qDefs::checkErrorMessage(myDet);
@@ -172,8 +176,24 @@ void qTabPlot::SetupWidgetWindow(){
 //-------------------------------------------------------------------------------------------------------------------------------------------------
 
 
+void qTabPlot::Set2DPage(){
+	//QPushButton *clickedButton = qobject_cast<QPushButton *>(sender());
+	if(stackedWidget_2->currentIndex()==0){
+		stackedWidget_2->setCurrentIndex(1);
+		box2D->setTitle("2D Plot Options 2");
+	}
+	else{
+		stackedWidget_2->setCurrentIndex(0);
+		box2D->setTitle("2D Plot Options 1");
+	}
+}
+
+
+//-------------------------------------------------------------------------------------------------------------------------------------------------
+
+
 void qTabPlot::Set1DPage(){
-	QPushButton *clickedButton = qobject_cast<QPushButton *>(sender());
+	//QPushButton *clickedButton = qobject_cast<QPushButton *>(sender());
 	if(stackedWidget->currentIndex()==0){
 	//if(clickedButton->icon().pixmap(QSize(16,16)).toImage()==btnLeft->icon().pixmap(QSize(16,16)).toImage())
 		stackedWidget->setCurrentIndex(1);
@@ -240,6 +260,9 @@ void qTabPlot::Initialization(){
 	connect(chkInterpolate, SIGNAL(toggled(bool)),myPlot, SIGNAL(InterpolateSignal(bool)));
 	connect(chkContour, 	SIGNAL(toggled(bool)),myPlot, SIGNAL(ContourSignal(bool)));
 	connect(chkLogz, 		SIGNAL(toggled(bool)),myPlot, SIGNAL(LogzSignal(bool)));
+	//to change pages
+	connect(btn2DRight, 		SIGNAL(clicked()),		this, SLOT(Set2DPage()));
+	connect(btn2DRight2, 		SIGNAL(clicked()),		this, SLOT(Set2DPage()));
 // Plotting frequency box
 	connect(comboFrequency, SIGNAL(currentIndexChanged(int)),	this, SLOT(SetFrequency()));
 	connect(comboTimeGapUnit,SIGNAL(currentIndexChanged(int)),	this, SLOT(SetFrequency()));
@@ -278,7 +301,8 @@ void qTabPlot::Initialization(){
 //pedstal
 	connect(btnResetPedestal, 		SIGNAL(clicked()),myPlot, 	SLOT(ResetPedestal()));
 	connect(btnCalPedestal, 		SIGNAL(clicked()),myPlot, 	SLOT(CalculatePedestal()));
-
+	connect(btnResetPedestal_2, 	SIGNAL(clicked()),myPlot, 	SLOT(ResetPedestal()));
+	connect(btnCalPedestal_2, 		SIGNAL(clicked()),myPlot, 	SLOT(CalculatePedestal()));
 
 }
 

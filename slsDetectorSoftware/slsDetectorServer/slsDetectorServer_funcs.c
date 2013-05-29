@@ -300,14 +300,11 @@ int lock_server(int file_des) {
 
 int get_last_client_ip(int file_des) {
 	int ret=OK;
-	int n;
 	if (differentClients )
 		ret=FORCE_UPDATE;
-	n = sendDataOnly(file_des,&ret,sizeof(ret));
-	n = sendDataOnly(file_des,lastClientIP,sizeof(lastClientIP));
-
+	sendDataOnly(file_des,&ret,sizeof(ret));
+	sendDataOnly(file_des,lastClientIP,sizeof(lastClientIP));
 	return ret;
-
 }
 
 
@@ -384,38 +381,38 @@ int send_update(int file_des) {
 
 	int ret=OK;
 	enum detectorSettings t;
-	int thr, n;
+	int thr, n = 0;
 	// int it;
 	int64_t retval;/*, tns=-1;*/
 	int nm;
 
 
-	n = sendDataOnly(file_des,lastClientIP,sizeof(lastClientIP));
+	n += sendDataOnly(file_des,lastClientIP,sizeof(lastClientIP));
 	/*nm=setNMod(-1,X);*/
-	n = sendDataOnly(file_des,&nm,sizeof(nm));
+	n += sendDataOnly(file_des,&nm,sizeof(nm));
 	/*nm=setNMod(-1,Y);*/
-	n = sendDataOnly(file_des,&nm,sizeof(nm));
+	n += sendDataOnly(file_des,&nm,sizeof(nm));
 	/*nm=setDynamicRange(-1);*/
-	n = sendDataOnly(file_des,&nm,sizeof(nm));
-	n = sendDataOnly(file_des,&dataBytes,sizeof(dataBytes));
+	n += sendDataOnly(file_des,&nm,sizeof(nm));
+	n += sendDataOnly(file_des,&dataBytes,sizeof(dataBytes));
 	/*t=setSettings(GET_SETTINGS, -1);*/
-	n = sendDataOnly(file_des,&t,sizeof(t));
+	n += sendDataOnly(file_des,&t,sizeof(t));
 	/*thr=getThresholdEnergy(-1);*/
-	n = sendDataOnly(file_des,&thr,sizeof(thr));
+	n += sendDataOnly(file_des,&thr,sizeof(thr));
 	/*retval=setFrames(tns);*/
-	n = sendDataOnly(file_des,&retval,sizeof(int64_t));
+	n += sendDataOnly(file_des,&retval,sizeof(int64_t));
 	/*retval=setExposureTime(tns);*/
-	n = sendDataOnly(file_des,&retval,sizeof(int64_t));
+	n += sendDataOnly(file_des,&retval,sizeof(int64_t));
 	/*retval=setPeriod(tns);*/
-	n = sendDataOnly(file_des,&retval,sizeof(int64_t));
+	n += sendDataOnly(file_des,&retval,sizeof(int64_t));
 	/*retval=setDelay(tns);*/
-	n = sendDataOnly(file_des,&retval,sizeof(int64_t));
+	n += sendDataOnly(file_des,&retval,sizeof(int64_t));
 	/*retval=setGates(tns);*/
-	n = sendDataOnly(file_des,&retval,sizeof(int64_t));
+	n += sendDataOnly(file_des,&retval,sizeof(int64_t));
 	/*retval=setProbes(tns);*/
-	n = sendDataOnly(file_des,&retval,sizeof(int64_t));
+	n += sendDataOnly(file_des,&retval,sizeof(int64_t));
 	/*retval=setTrains(tns);*/
-	n = sendDataOnly(file_des,&retval,sizeof(int64_t));
+	n += sendDataOnly(file_des,&retval,sizeof(int64_t));
 
 	if (lockStatus==0) {
 		strcpy(lastClientIP,thisClientIP);
@@ -462,7 +459,7 @@ int set_master(int file_des) {
 #endif
 
 #ifdef SLS_DETECTOR_FUNCTION_LIST
-	if (differentClients==1 && lockStatus==1 && arg!=GET_READOUT_FLAGS) {
+	if (differentClients==1 && lockStatus==1 && ((int)arg!=(int)GET_READOUT_FLAGS)) {
 		ret=FAIL;
 		sprintf(mess,"Detector locked by %s\n",lastClientIP);
 	}  else {
@@ -510,7 +507,7 @@ int set_synchronization(int file_des) {
 #endif
 
 #ifdef SLS_DETECTOR_FUNCTION_LIST
-	if (differentClients==1 && lockStatus==1 && arg!=GET_READOUT_FLAGS) {
+	if (differentClients==1 && lockStatus==1 && ((int)arg!=(int)GET_READOUT_FLAGS)) {
 		ret=FAIL;
 		sprintf(mess,"Detector locked by %s\n",lastClientIP);
 	}  else {
@@ -1341,7 +1338,10 @@ int set_channel(int file_des) {
 		ret=OK;
 	else
 		ret=FAIL;
-#ifdef MYTHEND
+#ifndef MYTHEND
+			ret = FAIL;
+			strcpy(mess,"Not applicable/implemented for this detector\n");
+#else
 #ifdef VERBOSE
 	printf("channel number is %d, chip number is %d, module number is %d, register is %lld\n", myChan.chan,myChan.chip, myChan.module, myChan.reg);
 #endif
@@ -1402,7 +1402,9 @@ int get_channel(int file_des) {
 	sls_detector_channel retval;
 
 	int arg[3];
+#ifdef MYTHEND
 	int ichan, ichip, imod;
+#endif
 	int n;
 
 	sprintf(mess,"Can't get channel\n");
@@ -1414,11 +1416,14 @@ int get_channel(int file_des) {
 		sprintf(mess,"Error reading from socket\n");
 		ret=FAIL;
 	}
+
+#ifndef MYTHEND
+	ret = FAIL;
+	strcpy(mess,"Not applicable/implemented for this detector\n");
+#else
 	ichan=arg[0];
 	ichip=arg[1];
 	imod=arg[2];
-
-#ifdef MYTHEND
 #ifdef SLS_DETECTOR_FUNCTION_LIST
 	if (ichan>=getNumberOfChannelsPerChip()) {
 		ret=FAIL;
@@ -1487,7 +1492,11 @@ int set_chip(int file_des) {
 	printf("Setting chip\n");
 #endif
 	ret=receiveChip(file_des, &myChip);
-#ifdef MYTHEND
+
+#ifndef MYTHEND
+	ret = FAIL;
+	strcpy(mess,"Not applicable/implemented for this detector\n");
+#else
 #ifdef VERBOSE
 	printf("Chip received\n");
 #endif
@@ -1546,9 +1555,11 @@ int get_chip(int file_des) {
 	int ret=OK;
 	sls_detector_chip retval;
 	int arg[2];
+	int n, *ch;
+#ifdef MYTHEND
 	int  ichip, imod;
-	int n;
-	int *ch;
+#endif
+
 
 #ifdef SLS_DETECTOR_FUNCTION_LIST
 	retval.nchan=getNumberOfChannelsPerChip();
@@ -1561,10 +1572,13 @@ int get_chip(int file_des) {
 		sprintf(mess,"Error reading from socket\n");
 		ret=FAIL;
 	}
+
+#ifndef MYTHEND
+	ret = FAIL;
+	strcpy(mess,"Not applicable/implemented for this detector\n");
+#else
 	ichip=arg[0];
 	imod=arg[1];
-
-#ifdef MYTHEND
 #ifdef SLS_DETECTOR_FUNCTION_LIST
 	if (ichip>=getNumberOfChipsPerModule()) {
 		ret=FAIL;
@@ -1924,19 +1938,21 @@ int set_threshold_energy(int file_des) {
 	int ret=OK;
 	int arg[3];
 	int n;
+#if defined(MYTHEND) || defined(EIGERD)
 	int ethr, imod;
-	enum detectorSettings isett;
-
+	//enum detectorSettings isett;
+#endif
 
 	n = receiveDataOnly(file_des,&arg,sizeof(arg));
 	if (n < 0) {
 		sprintf(mess,"Error reading from socket\n");
 		ret=FAIL;
 	}
+
+#if defined(MYTHEND) || defined(EIGERD)
 	ethr=arg[0];
 	imod=arg[1];
-	isett=arg[2];
-#if defined(MYTHEND) || defined(EIGERD)
+	//isett=arg[2];
 #ifdef SLS_DETECTOR_FUNCTION_LIST
 	if (imod>=getTotalNumberOfModules()) {
 		ret=FAIL;
@@ -3041,7 +3057,7 @@ int start_receiver(int file_des) {
 	/* send answer */
 	n = sendDataOnly(file_des,&ret,sizeof(ret));
 	if(ret==FAIL)
-		n = sendDataOnly(file_des,mess,sizeof(mess));
+		n += sendDataOnly(file_des,mess,sizeof(mess));
 	/*return ok/fail*/
 	return ret;
 }
@@ -3081,7 +3097,7 @@ int stop_receiver(int file_des) {
 	/* send answer */
 	n = sendDataOnly(file_des,&ret,sizeof(ret));
 	if(ret==FAIL)
-		n = sendDataOnly(file_des,mess,sizeof(mess));
+		n += sendDataOnly(file_des,mess,sizeof(mess));
 	/*return ok/fail*/
 	return ret;
 }

@@ -7,22 +7,12 @@
 #include <string.h>
 
 
-
-
-extern int nModX;
-extern int nModBoard;
-extern int dataBytes;
-extern int dynamicRange;
 const int nChans=NCHAN;
 const int nChips=NCHIP;
 const int nDacs=NDAC;
 const int nAdcs=NADC;
-enum detectorSettings thisSettings;
-
-int sChan, sChip, sMod, sDac, sAdc;
 const int allSelected=-2;
 const int noneSelected=-1;
-
 
 sls_detector_module *detectorModules=NULL;
 int *detectorChips=NULL;
@@ -30,14 +20,26 @@ int *detectorChans=NULL;
 dacs_t *detectorDacs=NULL;
 dacs_t *detectorAdcs=NULL;
 
+int nModY		=	NMAXMOD;
+int nModX		=	NMAXMOD;
+int dynamicRange=	DYNAMIC_RANGE;
+int dataBytes	=	NMAXMOD*NCHIP*NCHAN*2;
+int masterMode	=	NO_MASTER;
+int syncMode	=	NO_SYNCHRONIZATION;
+int timingMode	=	AUTO_TIMING;
+
+
+
+enum detectorSettings thisSettings;
+int sChan, sChip, sMod, sDac, sAdc;
+int nModBoard;
+extern int dataBytes;
+
 
 int initializeDetector(){
 
 	int imod;
-
 	int n=getNModBoard(X)*getNModBoard(Y);
-	/*nModX=n;*/
-
 #ifdef VERBOSE
 	printf("Board is for %d modules\n",n);
 #endif
@@ -299,14 +301,19 @@ int setDynamicRange(int dr){
 	return 0;
 }
 
-int setROI(int mask){ //////?????????????????
-	return FAIL;
+
+enum readOutFlags setReadOutFlags(enum readOutFlags val){
+	//template setStoreInRAM from firmware_funcs.c
+	return -1;
 }
 
 
-int getROI(int *mask){ //////////?????????????????????
+
+
+int setROI(int n, ROI arg[], int *retvalsize, int *ret){
 	return FAIL;
 }
+
 
 
 int setSpeed(enum speedVariable arg, int val){
@@ -321,11 +328,6 @@ int setSpeed(enum speedVariable arg, int val){
 	return 0;
 }
 
-
-enum readOutFlags setReadOutFlags(enum readOutFlags val){
-	//template setStoreInRAM from firmware_funcs.c
-	return -1;
-}
 
 
 int executeTrimming(enum trimMode mode, int par1, int par2, int imod){
@@ -356,6 +358,16 @@ int readCounterBlock(int startACQ, char *counterVals){
 int resetCounterBlock(int startACQ){
 	//detector specific.
 	return FAIL;
+}
+
+int startReceiver(int d){
+
+	return 0;
+}
+
+int calibratePedestal(int frames){
+
+	return 0;
 }
 
 int calculateDataBytes(){

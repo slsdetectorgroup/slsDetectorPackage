@@ -35,15 +35,8 @@ Here are the definitions, but the actual implementation should be done for each 
 int mapCSP0(void);
 int initializeDetector();
 
-enum masterFlags setMaster(enum masterFlags arg);
-enum synchronizationMode setSynchronization(enum synchronizationMode arg);
-
 int setNMod(int nm, enum dimension dim);
 int getNModBoard(enum dimension arg);
-
-enum externalSignalFlag getExtSignal(int signalindex);
-enum externalSignalFlag setExtSignal(int signalindex,  enum externalSignalFlag flag);
-enum externalCommunicationMode setTiming( enum externalCommunicationMode arg);
 
 int64_t getModuleId(enum idMode arg, int imod);
 int64_t getDetectorId(enum idMode arg);
@@ -53,18 +46,28 @@ int detectorTest( enum digitalTestMode arg);
 
 double setDAC(enum dacIndex ind, double val, int imod);
 double getADC(enum dacIndex ind,  int imod);
-bus_w()
-bus_r()
+
+#if defined(MYTHEND) || defined(GOTTHARDD)
+u_int32_t writeRegister(u_int32_t offset, u_int32_t data);
+u_int32_t readRegister(u_int32_t offset);
+#endif
+
+#ifdef MYTHEND
 int setChannel(sls_detector_channel myChan);
 int getChannel(sls_detector_channel *myChan);
 int setChip(sls_detector_chip myChip);
 int getChip(sls_detector_chip *myChip);
+#endif
+
 int setModule(sls_detector_module myChan);
 int getModule(sls_detector_module *myChan);
 
 enum detectorSettings setSettings(enum detectorSettings sett, int imod);
+
+#if defined(MYTHEND) || defined(EIGERD)
 int getThresholdEnergy(int imod);
 int setThresholdEnergy(int thr, int imod);
+#endif
 
 int startStateMachine();
 int stopStateMachine();
@@ -76,11 +79,19 @@ char *readFrame(int *ret, char *mess);
 int64_t setTimer(enum timerIndex ind, int64_t val);
 int64_t getTimeLeft(enum timerIndex ind);
 
+
 int setDynamicRange(int dr);
+int setROI(int n, ROI arg[], int *retvalsize, int *ret);
+
+
+#ifdef MYTHEND
 enum readOutFlags setReadOutFlags(enum readOutFlags val);
-int setROI(int mask);
 int setSpeed(enum speedVariable arg, int val);
+#endif
+
+#if defined(EIGERD) || defined(MYTHEND)
 int executeTrimming(enum trimMode mode, int par1, int par2, int imod);
+#endif
 
 #ifdef GOTTHARDD
 int configureMAC(int ipad, long long int imacadd, long long int iservermacadd, int dtb);
@@ -102,6 +113,12 @@ int getNumberOfChipsPerModule();
 int getNumberOfDACsPerModule();
 int getNumberOfADCsPerModule();
 
+
+enum externalSignalFlag getExtSignal(int signalindex);
+enum externalSignalFlag setExtSignal(int signalindex,  enum externalSignalFlag flag);
+enum externalCommunicationMode setTiming( enum externalCommunicationMode arg);
+enum masterFlags setMaster(enum masterFlags arg);
+enum synchronizationMode setSynchronization(enum synchronizationMode arg);
 
 
 #endif

@@ -14,6 +14,9 @@
 
 
 
+//#if defined(EIGERD) || defined(GOTTHARDD)
+//#endif
+
 // Global variables
 int (*flist[256])(int);
 //defined in the detector specific file
@@ -36,9 +39,9 @@ extern char thisClientIP[INET_ADDRSTRLEN];
 extern int differentClients;
 */
 //global variables for optimized readout
+char mess[1000];
 char *dataretval=NULL;
 int dataret;
-char mess[1000]; 
 int dataBytes;
 
 
@@ -49,7 +52,7 @@ int init_detector(int b) {
 	printf("This is a VIRTUAL detector\n");
 #endif
 #ifdef SLS_DETECTOR_FUNCTION_LIST
-	mapCSP0();
+	//mapCSP0();
 #endif
 	//only for control server
 	if(b){
@@ -893,7 +896,7 @@ int get_id(int file_des) {
 
 int digital_test(int file_des) {
 
-	int retval;
+	int retval=-1;
 	int ret=OK;
 	int imod=-1;
 	int n=0;
@@ -926,6 +929,10 @@ int digital_test(int file_des) {
 #ifdef VERBOSE
 			printf("of module %d\n", imod);
 #endif   
+#ifndef MYTHEND
+			ret = FAIL;
+			strcpy(mess,"Not applicable/implemented for this detector\n");
+#else
 #ifdef SLS_DETECTOR_FUNCTION_LIST
 			if (imod>=0 && imod<getTotalNumberOfModules())
 				retval=moduleTest(arg,imod);
@@ -934,11 +941,17 @@ int digital_test(int file_des) {
 				sprintf(mess,"Module number %d out of range\n", imod);
 			}
 #endif
+#endif
 			break;
 		case MODULE_FIRMWARE_TEST:
 		case DETECTOR_FIRMWARE_TEST:
 		case DETECTOR_MEMORY_TEST:
 		case DETECTOR_BUS_TEST:
+#ifndef MYTHEND
+			ret = FAIL;
+			strcpy(mess,"Not applicable/implemented for this detector\n");
+			break;
+#endif
 		case DETECTOR_SOFTWARE_TEST:
 #ifdef SLS_DETECTOR_FUNCTION_LIST
 			retval=detectorTest(arg);
@@ -950,8 +963,12 @@ int digital_test(int file_des) {
 				sprintf(mess,"Error reading from socket\n");
 				retval=FAIL;
 			}
-
+#ifndef GOTTHARDD
+			ret = FAIL;
+			strcpy(mess,"Not applicable/implemented for this detector\n");
+#else
 			retval=0;
+#endif
 			break;
 		default:
 			printf("Unknown digital test required %d\n",arg);
@@ -1026,24 +1043,40 @@ int set_dac(int file_des) {
 
 	// check if dac exists for this detector
 	switch (ind) {
-	case  TRIMBIT_SIZE:
-		//if (myDetectorType==MYTHEN)
+#ifdef MYTHEND
+	case  TRIMBIT_SIZE:			//ind = VTRIM;
 			break;
 	case THRESHOLD:
-		//if (myDetectorType==MYTHEN)
 			break;
 	case SHAPER1:
-		//if (myDetectorType==MYTHEN)
 			break;
 	case SHAPER2:
-		//if (myDetectorType==MYTHEN)
 			break;
 	case CALIBRATION_PULSE:
-		//if (myDetectorType==MYTHEN)
 			break;
 	case PREAMP:
-		//if (myDetectorType==MYTHEN)
 			break;
+#endif
+#ifdef GOTTHARDD
+	case G_VREF_DS :
+		break;
+	case G_VCASCN_PB:
+		break;
+	case G_VCASCP_PB:
+		break;
+	case G_VOUT_CM:
+		break;
+	case G_VCASC_OUT:
+		break;
+	case G_VIN_CM:
+		break;
+	case G_VREF_COMP:
+		break;
+	case G_IB_TESTC:
+		break;
+	case HV_POT:
+		break;
+#endif
 	default:
 		printf("Unknown DAC index %d\n",ind);
 		sprintf(mess,"Unknown DAC index %d\n",ind);
@@ -1119,24 +1152,12 @@ int get_adc(int file_des) {
 #endif
 
 	switch (ind) {
-	case  TRIMBIT_SIZE:
-		//if (myDetectorType==MYTHEN)
-			break;
-	case THRESHOLD:
-		//if (myDetectorType==MYTHEN)
-			break;
-	case SHAPER1:
-		//if (myDetectorType==MYTHEN)
-			break;
-	case SHAPER2:
-		//if (myDetectorType==MYTHEN)
-			break;
-	case CALIBRATION_PULSE:
-		//if (myDetectorType==MYTHEN)
-			break;
-	case PREAMP:
-		//if (myDetectorType==MYTHEN)
-			break;
+#ifdef GOTTHARDD
+	case TEMPERATURE_FPGA:	//ind = TEMP_FPGA;
+		break;
+	case TEMPERATURE_ADC:
+		break;
+#endif
 	default:
 		printf("Unknown DAC index %d\n",ind);
 		ret=FAIL;
@@ -1202,6 +1223,7 @@ int write_register(int file_des) {
 	addr=arg[0];
 	val=arg[1];
 
+#if defined(MYTHEND) || defined(GOTTHARDD)
 #ifdef VERBOSE
 	printf("writing to register 0x%x data 0x%x\n", addr, val);
 #endif
@@ -1210,11 +1232,14 @@ int write_register(int file_des) {
 		ret=FAIL;
 		sprintf(mess,"Detector locked by %s\n",lastClientIP);
 	} else
-		retval=bus_w(addr,val);
-
+		retval=writeRegister(addr,val);
 #endif
 #ifdef VERBOSE
 	printf("Data set to 0x%x\n",  retval);
+#endif
+#else
+	ret = FAIL;
+	strcpy(mess,"Not applicable/implemented for this detector\n");
 #endif
 	if (retval==val) {
 		ret=OK;
@@ -1258,17 +1283,21 @@ int read_register(int file_des) {
 	}
 	addr=arg;
 
-
-
+#if defined(MYTHEND) || defined(GOTTHARDD)
 #ifdef VERBOSE
 	printf("reading  register 0x%x\n", addr);
 #endif
 #ifdef SLS_DETECTOR_FUNCTION_LIST
-	retval=bus_r(addr);
+	retval=readRegister(addr);
 #endif
 #ifdef VERBOSE
 	printf("Returned value 0x%x\n",  retval);
 #endif
+#else
+	ret = FAIL;
+	strcpy(mess,"Not applicable/implemented for this detector\n");
+#endif
+
 	if (ret==FAIL) {
 		printf("Reading register 0x%x failed\n", addr);
 	} else if (differentClients)
@@ -1312,6 +1341,7 @@ int set_channel(int file_des) {
 		ret=OK;
 	else
 		ret=FAIL;
+#ifdef MYTHEND
 #ifdef VERBOSE
 	printf("channel number is %d, chip number is %d, module number is %d, register is %lld\n", myChan.chan,myChan.chip, myChan.module, myChan.reg);
 #endif
@@ -1339,6 +1369,7 @@ int set_channel(int file_des) {
 			retval=setChannel(myChan);
 		}
 	}
+#endif
 #endif
 	/* Maybe this is done inside the initialization funcs */
 	//copyChannel(detectorChans[myChan.module][myChan.chip]+(myChan.chan), &myChan);
@@ -1387,6 +1418,7 @@ int get_channel(int file_des) {
 	ichip=arg[1];
 	imod=arg[2];
 
+#ifdef MYTHEND
 #ifdef SLS_DETECTOR_FUNCTION_LIST
 	if (ichan>=getNumberOfChannelsPerChip()) {
 		ret=FAIL;
@@ -1408,6 +1440,7 @@ int get_channel(int file_des) {
 
 	if (ret==OK)
 		ret=getChannel(&retval);
+#endif
 #endif
 	if (differentClients && ret==OK)
 		ret=FORCE_UPDATE;
@@ -1454,6 +1487,7 @@ int set_chip(int file_des) {
 	printf("Setting chip\n");
 #endif
 	ret=receiveChip(file_des, &myChip);
+#ifdef MYTHEND
 #ifdef VERBOSE
 	printf("Chip received\n");
 #endif
@@ -1482,6 +1516,7 @@ int set_chip(int file_des) {
 	} else {
 		retval=setChip(myChip);
 	}
+#endif
 #endif
 	/* Maybe this is done inside the initialization funcs */
 	//copyChip(detectorChips[myChip.module]+(myChip.chip), &myChip);
@@ -1529,6 +1564,7 @@ int get_chip(int file_des) {
 	ichip=arg[0];
 	imod=arg[1];
 
+#ifdef MYTHEND
 #ifdef SLS_DETECTOR_FUNCTION_LIST
 	if (ichip>=getNumberOfChipsPerModule()) {
 		ret=FAIL;
@@ -1544,6 +1580,7 @@ int get_chip(int file_des) {
 
 	if (ret==OK)
 		ret=getChip(&retval);
+#endif
 #endif
 	if (differentClients && ret==OK)
 		ret=FORCE_UPDATE;
@@ -1844,7 +1881,7 @@ int get_threshold_energy(int file_des) {
 		ret=FAIL;
 	}
 
-
+#if defined(MYTHEND) || defined(EIGERD)
 #ifdef VERBOSE
 	printf("Getting threshold energy of module %d\n", imod);
 #endif 
@@ -1859,7 +1896,7 @@ int get_threshold_energy(int file_des) {
 #ifdef VERBOSE
 	printf("Threshold is %d eV\n",  retval);
 #endif  
-
+#endif
 
 	if (differentClients==1 && ret==OK)
 		ret=FORCE_UPDATE;
@@ -1899,6 +1936,7 @@ int set_threshold_energy(int file_des) {
 	ethr=arg[0];
 	imod=arg[1];
 	isett=arg[2];
+#if defined(MYTHEND) || defined(EIGERD)
 #ifdef SLS_DETECTOR_FUNCTION_LIST
 	if (imod>=getTotalNumberOfModules()) {
 		ret=FAIL;
@@ -1923,6 +1961,7 @@ int set_threshold_energy(int file_des) {
 		printf("Setting threshold of module %d: wrote %d but read %d\n", imod, ethr, retval);
 		sprintf(mess,"Setting threshold of module %d: wrote %d but read %d\n", imod, ethr, retval);
 	}
+#endif
 #endif
 	if (ret==OK && differentClients==1)
 		ret=FORCE_UPDATE;
@@ -2204,32 +2243,26 @@ int set_timer(int file_des) {
 			sprintf(mess,"Detector locked by %s\n",lastClientIP);
 		}  else {
 			switch(ind) {
-			case FRAME_NUMBER:
-				retval=setFrames(tns);
-				break;
-			case ACQUISITION_TIME:
-				retval=setExposureTime(tns);
-				break;
-			case FRAME_PERIOD:
-				retval=setPeriod(tns);
-				break;
-			case DELAY_AFTER_TRIGGER:
-				retval=setDelay(tns);
-				break;
-			case GATES_NUMBER:
-				retval=setGates(tns);
-				break;
 			case PROBES_NUMBER:
-				retval=setProbes(tns);
+#ifndef MYTHEND
+				ret=FAIL;
+				strcpy(mess,"Not applicable/implemented for this detector\n");
 				break;
+#endif
+			case FRAME_NUMBER:
+			case ACQUISITION_TIME:
+			case FRAME_PERIOD:
+			case DELAY_AFTER_TRIGGER:
+			case GATES_NUMBER:
 			case CYCLES_NUMBER:
-				retval=setTrains(tns);
+				retval = setTimer(ind,tns);
 				break;
 			default:
 				ret=FAIL;
 				sprintf(mess,"timer index unknown %d\n",ind);
 				break;
 			}
+
 		}
 	}
 #endif
@@ -2291,6 +2324,12 @@ int get_time_left(int file_des) {
 #ifdef SLS_DETECTOR_FUNCTION_LIST
 	if (ret==OK) {
 		switch(ind) {
+		case PROBES_NUMBER:
+#ifndef MYTHEND
+				ret=FAIL;
+				strcpy(mess,"Not applicable/implemented for this detector\n");
+				break;
+#endif
 		case FRAME_NUMBER:
 		case ACQUISITION_TIME:
 		case FRAME_PERIOD:
@@ -2298,15 +2337,9 @@ int get_time_left(int file_des) {
 		case GATES_NUMBER:
 		case CYCLES_NUMBER:
 		case PROGRESS:
-			retval=getTimeLeft(ind);
-			break;
-		case PROBES_NUMBER:
 		case ACTUAL_TIME:
 		case MEASUREMENT_TIME:
-			if (myDetectorType==MYTHEN) {
-				retval=getTimeLeft(ind);
-				break;
-			}
+			getTimeLeft(ind);
 			break;
 		default:
 			ret=FAIL;
@@ -2402,7 +2435,10 @@ int set_readout_flags(int file_des) {
 		sprintf(mess,"Error reading from socket\n");
 		ret=FAIL;
 	}
-
+#ifndef MYTHEND
+	ret = FAIL;
+	strcpy(mess,"Not applicable/implemented for this detector\n");
+#else
 #ifdef VERBOSE
 	printf("setting readout flags  to %d\n",arg);
 #endif
@@ -2437,7 +2473,7 @@ int set_readout_flags(int file_des) {
 			sprintf(mess,"Could not change readout flag: should be %d but is %d\n", arg, retval);
 		}
 	}
-
+#endif
 
 	n = sendDataOnly(file_des,&ret,sizeof(ret));
 	if (ret==FAIL) {
@@ -2453,6 +2489,72 @@ int set_readout_flags(int file_des) {
 
 
 int set_roi(int file_des) {
+
+	int ret=OK;
+	ROI arg[MAX_ROIS];
+	ROI* retval=0;
+	int nroi=-1, n=0, retvalsize=0;
+#ifdef VERBOSE
+	int i;
+#endif
+	strcpy(mess,"Could not set/get roi\n");
+
+	n = receiveDataOnly(file_des,&nroi,sizeof(nroi));
+	if (n < 0) {
+		sprintf(mess,"Error reading from socket\n");
+		ret=FAIL;
+	}
+
+	if(nroi!=-1){
+		n = receiveDataOnly(file_des,arg,nroi*sizeof(ROI));
+		if (n != (nroi*sizeof(ROI))) {
+			sprintf(mess,"Received wrong number of bytes for ROI\n");
+			ret=FAIL;
+		}
+	}
+#ifndef GOTTHARDD
+	ret = FAIL;
+	strcpy(mess,"Not applicable/implemented for this detector\n");
+#else
+#ifdef VERBOSE
+	printf("Setting ROI to:");
+	for( i=0;i<nroi;i++)
+		printf("%d\t%d\t%d\t%d\n",arg[i].xmin,arg[i].xmax,arg[i].ymin,arg[i].ymax);
+#endif
+	/* execute action if the arguments correctly arrived*/
+#ifdef SLS_DETECTOR_FUNCTION_LIST
+	if (lockStatus==1 && differentClients==1){//necessary???
+		sprintf(mess,"Detector locked by %s\n", lastClientIP);
+		ret=FAIL;
+	}
+	else{
+		retval=setROI(nroi,arg,&retvalsize,&ret);
+		if (ret==FAIL){
+			printf("mess:%s\n",mess);
+			sprintf(mess,"Could not set all roi, should have set %d rois, but only set %d rois\n",nroi,retvalsize);
+		}
+	}
+
+#endif
+#endif
+
+
+	if(ret==OK && differentClients){
+		printf("Force update\n");
+		ret=FORCE_UPDATE;
+	}
+
+	/* send answer */
+	n = sendDataOnly(file_des,&ret,sizeof(ret));
+	if(ret==FAIL)
+		n = sendDataOnly(file_des,mess,sizeof(mess));
+	else{
+		sendDataOnly(file_des,&retvalsize,sizeof(retvalsize));
+		sendDataOnly(file_des,retval,retvalsize*sizeof(ROI));
+	}
+	/*return ok/fail*/
+	return ret;
+
 #ifdef SLS_DETECTOR_FUNCTION_LIST
 	dataBytes=calculateDataBytes();
 #endif
@@ -2480,7 +2582,10 @@ int set_speed(int file_des) {
 		sprintf(mess,"Error reading from socket\n");
 		ret=FAIL;
 	}
-
+#ifndef MYTHEND
+	ret = FAIL;
+	strcpy(mess,"Not applicable/implemented for this detector\n");
+#else
 #ifdef VERBOSE
 	printf("setting speed variable %d  to %d\n",arg,val);
 #endif 
@@ -2518,6 +2623,7 @@ int set_speed(int file_des) {
 		if (differentClients && ret==OK)
 			ret=FORCE_UPDATE;
 	}
+#endif
 
 	n = sendDataOnly(file_des,&ret,sizeof(ret));
 	if (ret==FAIL) {
@@ -2536,7 +2642,9 @@ int execute_trimming(int file_des) {
 	int arg[3];
 	int n;
 	int ret=OK, retval;
+#if defined(MYTHEND) || defined(EIGERD)
 	int imod, par1,par2;
+#endif
 	enum trimMode mode;
 
 	printf("called function execute trimming\n");
@@ -2558,6 +2666,11 @@ int execute_trimming(int file_des) {
 		printf("Error reading from socket (args)\n");
 		ret=FAIL;
 	}
+
+#if !defined(MYTHEND) && !defined(EIGERD)
+	ret = FAIL;
+	strcpy(mess,"Not applicable/implemented for this detector\n");
+#else
 
 	imod=arg[0];
 	par1=arg[1];
@@ -2600,6 +2713,7 @@ int execute_trimming(int file_des) {
 #endif
 		}
 	}
+#endif
 
 	if (ret!=OK) {
 		sprintf(mess,"can't set execute trimming\n");
@@ -2633,10 +2747,12 @@ int configure_mac(int file_des) {
 	char arg[3][50];
 	int n;
 
+#ifdef GOTTHARDD
 	int imod=0;//should be in future sent from client as -1, arg[2]
 	int ipad;
 	long long int imacadd;
 	long long int iservermacadd;
+#endif
 
 	sprintf(mess,"Can't configure MAC\n");
 
@@ -2646,6 +2762,10 @@ int configure_mac(int file_des) {
 		ret=FAIL;
 	}
 
+#ifndef GOTTHARDD
+			ret = FAIL;
+			strcpy(mess,"Not applicable/implemented for this detector\n");
+#else
 	sscanf(arg[0], "%x", &ipad);
 	sscanf(arg[1], "%llx", &imacadd);
 	sscanf(arg[2], "%llx", &iservermacadd);
@@ -2685,7 +2805,7 @@ int configure_mac(int file_des) {
 
 	if (differentClients)
 		ret=FORCE_UPDATE;
-
+#endif
 	/* send answer */
 	/* send OK/failed */
 	n = sendDataOnly(file_des,&ret,sizeof(ret));
@@ -2723,6 +2843,11 @@ int load_image(int file_des) {
 		sprintf(mess,"Error reading from socket\n");
 		ret=FAIL;
 	}
+
+#ifndef GOTTHARDD
+	ret = FAIL;
+	strcpy(mess,"Not applicable/implemented for this detector\n");
+#else
 	if (ret==OK) {
 		if (differentClients==1 && lockStatus==1) {
 			ret=FAIL;
@@ -2753,6 +2878,8 @@ int load_image(int file_des) {
 		}
 #endif
 	}
+#endif
+
 
 	if(ret==OK){
 		if (differentClients)
@@ -2792,6 +2919,10 @@ int read_counter_block(int file_des) {
 		sprintf(mess,"Error reading from socket\n");
 		ret=FAIL;
 	}
+#ifndef GOTTHARDD
+	ret = FAIL;
+	strcpy(mess,"Not applicable/implemented for this detector\n");
+#else
 #ifdef SLS_DETECTOR_FUNCTION_LIST
 	if (ret==OK) {
 		if (differentClients==1 && lockStatus==1) {
@@ -2807,6 +2938,8 @@ int read_counter_block(int file_des) {
 		}
 	}
 #endif
+#endif
+
 	if(ret!=FAIL){
 		if (differentClients)
 			ret=FORCE_UPDATE;
@@ -2843,6 +2976,10 @@ int reset_counter_block(int file_des) {
 		sprintf(mess,"Error reading from socket\n");
 		ret=FAIL;
 	}
+#ifndef GOTTHARDD
+	ret = FAIL;
+	strcpy(mess,"Not applicable/implemented for this detector\n");
+#else
 #ifdef SLS_DETECTOR_FUNCTION_LIST
 	if (ret==OK) {
 		if (differentClients==1 && lockStatus==1) {
@@ -2851,6 +2988,7 @@ int reset_counter_block(int file_des) {
 		} else
 			ret=resetCounterBlock(startACQ);
 	}
+#endif
 #endif
 	if(ret==OK){
 		if (differentClients)
@@ -2880,6 +3018,10 @@ int start_receiver(int file_des) {
 	strcpy(mess,"Could not start receiver\n");
 
 	/* execute action if the arguments correctly arrived*/
+#ifndef GOTTHARDD
+	ret = FAIL;
+	strcpy(mess,"Not applicable/implemented for this detector\n");
+#else
 #ifdef SLS_DETECTOR_FUNCTION_LIST
 	if (lockStatus==1 && differentClients==1){//necessary???
 		sprintf(mess,"Detector locked by %s\n", lastClientIP);
@@ -2889,7 +3031,7 @@ int start_receiver(int file_des) {
 		ret = startReceiver(1);
 
 #endif
-
+#endif
 
 	if(ret==OK && differentClients){
 		printf("Force update\n");
@@ -2916,6 +3058,10 @@ int stop_receiver(int file_des) {
 	strcpy(mess,"Could not stop receiver\n");
 
 	/* execute action if the arguments correctly arrived*/
+#ifndef GOTTHARDD
+	ret = FAIL;
+	strcpy(mess,"Not applicable/implemented for this detector\n");
+#else
 #ifdef SLS_DETECTOR_FUNCTION_LIST
 	if (lockStatus==1 && differentClients==1){//necessary???
 		sprintf(mess,"Detector locked by %s\n", lastClientIP);
@@ -2925,7 +3071,7 @@ int stop_receiver(int file_des) {
 		ret=startReceiver(0);
 
 #endif
-
+#endif
 
 	if(ret==OK && differentClients){
 		printf("Force update\n");
@@ -2958,6 +3104,10 @@ int calibrate_pedestal(int file_des){
 		sprintf(mess,"Error reading from socket\n");
 		ret=FAIL;
 	}
+#ifndef GOTTHARDD
+	ret = FAIL;
+	strcpy(mess,"Not applicable/implemented for this detector\n");
+#else
 #ifdef SLS_DETECTOR_FUNCTION_LIST
 	if (ret==OK) {
 		if (differentClients==1 && lockStatus==1) {
@@ -2966,6 +3116,7 @@ int calibrate_pedestal(int file_des){
 		} else
 			ret=calibratePedestal(frames);
 	}
+#endif
 #endif
 	if(ret==OK){
 		if (differentClients)

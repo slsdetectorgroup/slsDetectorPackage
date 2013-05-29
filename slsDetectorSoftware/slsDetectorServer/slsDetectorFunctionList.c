@@ -36,7 +36,7 @@ int nModBoard;
 extern int dataBytes;
 
 
-int initializeDetector(){
+int initializeDetectorStructure(){
 
 	int imod;
 	int n=getNModBoard(X)*getNModBoard(Y);
@@ -79,6 +79,30 @@ int initializeDetector(){
 
 	return OK;
 }
+
+
+
+
+
+
+int setupDetector(){
+	//testFpga();
+	//testRAM();
+
+	//setSettings(GET_SETTINGS,-1);
+	//setFrames(1);
+	//setTrains(1);
+	//setExposureTime(1e6);
+	//setPeriod(1e9);
+	//setDelay(0);
+	//setGates(0);
+
+	//setTiming(GET_EXTERNAL_COMMUNICATION_MODE);
+	//setMaster(GET_MASTER);
+	//setSynchronization(GET_SYNCHRONIZATION_MODE);
+	return OK;
+}
+
 
 
 

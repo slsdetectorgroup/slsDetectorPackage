@@ -52,16 +52,17 @@ int init_detector(int b) {
 	printf("This is a VIRTUAL detector\n");
 #endif
 #ifdef SLS_DETECTOR_FUNCTION_LIST
-	//mapCSP0();
+	mapCSP0();
 #endif
 	//only for control server
 	if(b){
 #ifdef SLS_DETECTOR_FUNCTION_LIST
-		initializeDetector();
+
+		initializeDetectorStructure();
+		setupDetector();
+		/* all these should also be included in setupDetector */
 		//testFpga();
 		//testRAM();
-
-		//Initialization
 		//setSettings(GET_SETTINGS,-1);
 		//setFrames(1);
 		//setTrains(1);
@@ -69,7 +70,6 @@ int init_detector(int b) {
 		//setPeriod(1e9);
 		//setDelay(0);
 		//setGates(0);
-
 		//setTiming(GET_EXTERNAL_COMMUNICATION_MODE);
 		//setMaster(GET_MASTER);
 		//setSynchronization(GET_SYNCHRONIZATION_MODE);
@@ -91,7 +91,9 @@ int decode_function(int file_des) {
 #endif 
 	n = receiveDataOnly(file_des,&fnum,sizeof(fnum));
 	if (n <= 0) {
+#ifdef VERBOSE
 		printf("ERROR reading from socket %d, %d %d\n", n, fnum, file_des);
+#endif
 		return FAIL;
 	}
 #ifdef VERBOSE
@@ -102,6 +104,8 @@ int decode_function(int file_des) {
 #ifdef VERBOSE
 	printf( "calling function fnum = %d %x\n",fnum,flist[fnum]);
 #endif
+	printf( "calling function fnum = %x %x\n",fnum,(unsigned int)flist[fnum]);
+
 	if (fnum<0 || fnum>255)
 		fnum=255;
 	ret=(*flist[fnum])(file_des);

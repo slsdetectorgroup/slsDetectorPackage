@@ -36,7 +36,19 @@ int nModBoard;
 extern int dataBytes;
 
 
-int initializeDetector(){
+/** temporary */
+u_int32_t CSP0BASE;
+int mapCSP0(void) {
+	CSP0BASE = (u_int32_t)malloc(0xFFFFFFF);
+	printf("memory allocated\n");
+	printf("CSPOBASE is 0x%x \n",CSP0BASE);
+	printf("CSPOBASE=from %08x to %x\n",CSP0BASE,CSP0BASE+0xFFFFFFF);
+	return OK;
+}
+
+
+
+int initializeDetectorStructure(){
 
 	int imod;
 	int n=getNModBoard(X)*getNModBoard(Y);
@@ -79,6 +91,31 @@ int initializeDetector(){
 
 	return OK;
 }
+
+
+
+
+
+
+
+int setupDetector(){
+	//testFpga();
+	//testRAM();
+
+	//setSettings(GET_SETTINGS,-1);
+	//setFrames(1);
+	//setTrains(1);
+	//setExposureTime(1e6);
+	//setPeriod(1e9);
+	//setDelay(0);
+	//setGates(0);
+
+	//setTiming(GET_EXTERNAL_COMMUNICATION_MODE);
+	//setMaster(GET_MASTER);
+	//setSynchronization(GET_SYNCHRONIZATION_MODE);
+	return OK;
+}
+
 
 
 

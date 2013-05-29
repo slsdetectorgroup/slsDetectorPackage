@@ -13,6 +13,11 @@ OBJS 		= 	$(SRC_CLNT:.cpp=.o)
 
 all: clean $(PROGS)
 
+pc: clean pccompile $(PROGS)
+
+pccompile:
+CC := gcc
+	
 boot: $(OBJS)
 
 $(PROGS): 

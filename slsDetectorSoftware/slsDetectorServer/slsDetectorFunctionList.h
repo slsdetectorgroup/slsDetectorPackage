@@ -33,7 +33,8 @@ Here are the definitions, but the actual implementation should be done for each 
 
 
 int mapCSP0(void);
-int initializeDetector();
+int initializeDetectorStructure();
+int setupDetector();
 
 int setNMod(int nm, enum dimension dim);
 int getNModBoard(enum dimension arg);

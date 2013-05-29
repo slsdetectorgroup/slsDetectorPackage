@@ -483,7 +483,7 @@ int slsReceiverFunctionList::startWriting(){
 			}
 
 			//if(prevframenum != 0){
-			if(!framesCaught){
+			if(framesCaught){
 				prevframenum=currframenum;
 				framesInFile = 0;
 			}

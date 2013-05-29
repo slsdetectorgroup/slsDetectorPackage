@@ -1,12 +1,12 @@
-CC			=	g++#powerpc-4xx-softfloat-g++
-CLAGS		+=  -Wall -DDACS_INT   -DEIGERD  #-DSLS_DETECTOR_FUNCTION_LIST  #-DVIRTUAL
+CC			=	gcc#powerpc-4xx-softfloat-g++
+CLAGS		+=  -Wall -DDACS_INT   -DEIGERD  -DSLS_DETECTOR_FUNCTION_LIST  #-DVIRTUAL
 LDLIBS		+= 	-lm  -lstdc++ 
 
 PROGS		= 	eigerDetectorServer 
 DESTDIR		?= 	bin
 INSTMODE	= 	0777
 
-SRC_CLNT	=	slsDetectorServer.c slsDetectorServer_funcs.c communication_funcs.c #slsDetectorFunctionList.c 
+SRC_CLNT	=	slsDetectorServer.c slsDetectorServer_funcs.c communication_funcs.c slsDetectorFunctionList.c 
 OBJS 		= 	$(SRC_CLNT:.cpp=.o) 
 
 

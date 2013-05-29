@@ -25,7 +25,7 @@
 #define NCHANS 			NCHAN*NCHIP*NMAXMOD
 #define NDACS 			NDAC*NMAXMOD
 
-
+#define DYNAMIC_RANGE	16
 
 
 #endif /* SLSDETECTORSERVER_DEFS_H_ */

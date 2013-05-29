@@ -7,22 +7,12 @@
 #include <string.h>
 
 
-
-
-extern int nModX;
-extern int nModBoard;
-extern int dataBytes;
-extern int dynamicRange;
 const int nChans=NCHAN;
 const int nChips=NCHIP;
 const int nDacs=NDAC;
 const int nAdcs=NADC;
-enum detectorSettings thisSettings;
-
-int sChan, sChip, sMod, sDac, sAdc;
 const int allSelected=-2;
 const int noneSelected=-1;
-
 
 sls_detector_module *detectorModules=NULL;
 int *detectorChips=NULL;
@@ -30,14 +20,26 @@ int *detectorChans=NULL;
 dacs_t *detectorDacs=NULL;
 dacs_t *detectorAdcs=NULL;
 
+int nModY		=	NMAXMOD;
+int nModX		=	NMAXMOD;
+int dynamicRange=	DYNAMIC_RANGE;
+int dataBytes	=	NMAXMOD*NCHIP*NCHAN*2;
+int masterMode	=	NO_MASTER;
+int syncMode	=	NO_SYNCHRONIZATION;
+int timingMode	=	AUTO_TIMING;
+
+
+
+enum detectorSettings thisSettings;
+int sChan, sChip, sMod, sDac, sAdc;
+int nModBoard;
+extern int dataBytes;
+
 
 int initializeDetector(){
 
 	int imod;
-
 	int n=getNModBoard(X)*getNModBoard(Y);
-	/*nModX=n;*/
-
 #ifdef VERBOSE
 	printf("Board is for %d modules\n",n);
 #endif
@@ -166,32 +168,6 @@ double getADC(enum dacIndex ind,  int imod){
 
 
 
-
-int setChannel(sls_detector_channel myChan){
-	//template initChannelByNumber() from mcb_funcs.c
-
-	return myChan.reg;
-}
-
-
-int getChannel(sls_detector_channel *myChan){
-	//template getChannelbyNumber() from mcb_funcs.c
-	return FAIL;
-}
-
-
-
-int setChip(sls_detector_chip myChip){
-	//template initChipbyNumber() from mcb_funcs.c
-	return myChip.reg;
-}
-
-
-int getChip(sls_detector_chip *myChip){
-	//template getChipbyNumber() from mcb_funcs.c
-	return FAIL;
-}
-
 int setModule(sls_detector_module myChan){
 	//template initModulebyNumber() from mcb_funcs.c
 	return OK;
@@ -299,14 +275,20 @@ int setDynamicRange(int dr){
 	return 0;
 }
 
-int setROI(int mask){ //////?????????????????
-	return FAIL;
+
+
+enum readOutFlags setReadOutFlags(enum readOutFlags val){
+	//template setStoreInRAM from firmware_funcs.c
+	return -1;
 }
 
 
-int getROI(int *mask){ //////////?????????????????????
+
+
+int setROI(int n, ROI arg[], int *retvalsize, int *ret){
 	return FAIL;
 }
+
 
 
 int setSpeed(enum speedVariable arg, int val){
@@ -322,11 +304,6 @@ int setSpeed(enum speedVariable arg, int val){
 }
 
 
-enum readOutFlags setReadOutFlags(enum readOutFlags val){
-	//template setStoreInRAM from firmware_funcs.c
-	return -1;
-}
-
 
 int executeTrimming(enum trimMode mode, int par1, int par2, int imod){
 	// template  trim_with_noise from trimming_funcs.c
@@ -334,29 +311,6 @@ int executeTrimming(enum trimMode mode, int par1, int par2, int imod){
 }
 
 
-
-
-int configureMAC(int ipad, long long int imacadd, long long int iservermacadd, int dtb){
-	//detector specific.
-	return FAIL;
-}
-
-
-int loadImage(enum imageType index, char *imageVals){
-	//detector specific.
-	return FAIL;
-}
-
-
-int readCounterBlock(int startACQ, char *counterVals){
-	//detector specific.
-	return FAIL;
-}
-
-int resetCounterBlock(int startACQ){
-	//detector specific.
-	return FAIL;
-}
 
 int calculateDataBytes(){
 	return 0;

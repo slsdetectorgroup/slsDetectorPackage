@@ -414,6 +414,7 @@ int slsReceiverFunctionList::startWriting(){
 	char *wbuf;
 	int sleepnumber=0;
 	int frameFactor=0;
+	int packetloss=0;
 
 	framesInFile=0;
 	framesCaught=0;
@@ -465,15 +466,24 @@ int slsReceiverFunctionList::startWriting(){
 				}
 
 				//printing packet losses and file names
-				if(prevframenum == 0)
+				//if(prevframenum != 0)
+				if(!framesCaught)
 					cout << savefilename << endl;
 				else{
-					cout << savefilename << "\tpacket loss " << fixed << setprecision(4) << ((currframenum-prevframenum-(packetsPerFrame*framesInFile))/(double)(packetsPerFrame*framesInFile))*100.000 << "%\t\t"
-							"framenum " << currframenum << endl;
+					if(!frameIndexOffset)
+						packetloss = ((currframenum-prevframenum-(packetsPerFrame*framesInFile))/(double)(packetsPerFrame*framesInFile))*100.000;
+					else
+						packetloss = ((currframenum-prevframenum-(framesInFile))/(double)(framesInFile))*100.000;
+					cout << savefilename
+							<< "\tpacket loss " << fixed << setprecision(4)	<< packetloss
+							<< "%\t\t framenum "
+							<< currframenum //<< "\t\t p " << prevframenum
+							<< endl;
 				}
 			}
 
-			if(prevframenum != 0){
+			//if(prevframenum != 0){
+			if(!framesCaught){
 				prevframenum=currframenum;
 				framesInFile = 0;
 			}

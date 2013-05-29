@@ -1,4 +1,4 @@
-CC			=	gcc#powerpc-4xx-softfloat-g++
+CC			=	powerpc-4xx-softfloat-gcc
 CLAGS		+=  -Wall -DDACS_INT   -DEIGERD  -DSLS_DETECTOR_FUNCTION_LIST  #-DVIRTUAL
 LDLIBS		+= 	-lm  -lstdc++ 
 

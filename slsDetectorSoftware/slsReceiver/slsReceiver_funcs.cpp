@@ -1011,8 +1011,9 @@ int	slsReceiverFuncs::moench_read_frame(){
 			//cout<<"this frame number:"<<thisFrameNumber<<endl;
 
 			while (iPacket < numPackets){
+#ifdef VERBOSE
 				printf("iPacket:%d\n",iPacket);cout << endl;
-
+#endif
 				packetIndex = (*((int*)(((char*)origVal)+packetOffset))) & MOENCH_PACKET_INDEX_MASK;
 				//the first packet is placed in the end
 				packetIndex--;
@@ -1026,8 +1027,9 @@ int	slsReceiverFuncs::moench_read_frame(){
 
 					x = packetIndex / 10;
 					y = packetIndex % 10;
+#ifdef VERBOSE
 					cout<<"x:"<<x<<" y:"<<y<<endl;
-
+#endif
 					//copy 16 times 80 bytes
 					for (i = 0; i < partsPerFrame; i++) {
 						memcpy((((char*)retval) +

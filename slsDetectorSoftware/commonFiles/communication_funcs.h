@@ -34,4 +34,5 @@ int receiveChannel(int file_des, sls_detector_channel *myChan);
 int receiveChip(int file_des, sls_detector_chip* myChip); 
 int  receiveModule(int file_des, sls_detector_module* myMod);
 
+
 #endif

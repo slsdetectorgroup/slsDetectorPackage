@@ -1215,6 +1215,14 @@ void qDrawPlot::ClonePlot(){
 
 	LockLastImageArray();
 
+	//disconnect
+	disconnect(this, 		SIGNAL(InterpolateSignal(bool)),	plot2D, 	SIGNAL(InterpolateSignal(bool)));
+	disconnect(this, 		SIGNAL(ContourSignal(bool)),		plot2D, 	SIGNAL(ContourSignal(bool)));
+	disconnect(this, 		SIGNAL(LogzSignal(bool)),			plot2D, 	SLOT(SetZScaleToLog(bool)));
+	disconnect(this, 		SIGNAL(LogySignal(bool)),			plot1D, 	SLOT(SetLogY(bool)));
+	disconnect(this, 		SIGNAL(ResetZMinZMaxSignal(bool,bool,double,double)),plot2D, 	SLOT(ResetZMinZMax(bool,bool,double,double)));
+	disconnect(this, 		SIGNAL(SetZRangeSignal(double,double)),	plot2D, 	SLOT(SetZRange(double,double)));
+
 	// create clone
 	winClone[i] = new qCloneWidget(this,i,boxPlot->title(),(int)plot_in_scope,plot1D,plot2D,sFilePath);
 	if(plot_in_scope==1){
@@ -1267,6 +1275,12 @@ void qDrawPlot::ClonePlot(){
 	connect(this, 		SIGNAL(ContourSignal(bool)),		plot2D, 	SIGNAL(ContourSignal(bool)));
 	connect(this, 		SIGNAL(LogzSignal(bool)),			plot2D, 	SLOT(SetZScaleToLog(bool)));
 	connect(this, 		SIGNAL(LogySignal(bool)),			plot1D, 	SLOT(SetLogY(bool)));
+	connect(this, 		SIGNAL(ResetZMinZMaxSignal(bool,bool,double,double)),plot2D, 	SLOT(ResetZMinZMax(bool,bool,double,double)));
+	connect(this, 		SIGNAL(SetZRangeSignal(double,double)),	plot2D, 	SLOT(SetZRange(double,double)));
+
+	//update ranges on current plot
+	emit UpdateAfterCloningSignal();
+
 	winClone[i]->show();
 
 	// to remember which all clone widgets were closed
@@ -1632,3 +1646,29 @@ void qDrawPlot::SetFrameFactor(int frame){
 }
 
 //-------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+
+void qDrawPlot::UpdateAfterCloning(bool points, bool logy, bool interpolate, bool contour, bool logz){
+#ifdef VERBOSE
+	cout  << endl << "**Updating Plot After Cloning" << endl;
+#endif
+
+	//1d
+	if(plot_in_scope == 1){
+		SetMarkers(points);
+		emit LogySignal(logy);
+	}
+	//2d
+	else{
+		emit InterpolateSignal(interpolate);
+		emit ContourSignal(contour);
+		emit LogzSignal(logz);
+	}
+
+}
+
+
+//-------------------------------------------------------------------------------------------------------------------------------------------------
+
+

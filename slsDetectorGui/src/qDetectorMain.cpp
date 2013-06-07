@@ -279,6 +279,9 @@ void qDetectorMain::Initialization(){
 	//This should not be called as it will change file name to measurement when run finished
 	//connect(myPlot,	SIGNAL(UpdatingPlotFinished()),				tab_plot,			SLOT(Refresh()));
 	connect(myPlot,	SIGNAL(SetCurrentMeasurementSignal(int)),	tab_measurement,	SLOT(SetCurrentMeasurement(int)));
+	//to update all ranges when a clone has been made
+	connect(myPlot,	SIGNAL(UpdateAfterCloningSignal()),			tab_plot,SLOT(UpdateAfterCloning()));
+
 // menubar
 	// Modes Menu
 	connect(menuModes,		SIGNAL(triggered(QAction*)),	this,SLOT(EnableModes(QAction*)));

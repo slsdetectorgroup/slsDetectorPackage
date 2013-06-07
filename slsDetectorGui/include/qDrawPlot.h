@@ -126,6 +126,10 @@ public:
 	 */
 	bool GetClientInitiated(){return clientInitiated;};
 
+	/** Update all ranges, interpolate etc after cloning
+	 * parameters are if they are checked or not
+	 */
+	void UpdateAfterCloning(bool points, bool logy, bool interpolate, bool contour, bool logz);
 
 public slots:
 /** To select 1D or 2D plot
@@ -511,6 +515,7 @@ void ResetZMinZMaxSignal(bool,bool,double,double);
 void SetCurrentMeasurementSignal(int);
 void saveErrorSignal(QString);
 void AcquisitionErrorSignal(QString);
+void UpdateAfterCloningSignal();
 };
 
 

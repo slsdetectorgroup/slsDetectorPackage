@@ -190,7 +190,6 @@ protected:
  * */
 void resizeEvent(QResizeEvent* event);
 
-signals:
 
 };
 

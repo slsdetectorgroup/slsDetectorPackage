@@ -13,7 +13,6 @@
 #include <string.h>
 
 
-
 //#if defined(EIGERD) || defined(GOTTHARDD)
 //#endif
 
@@ -57,22 +56,8 @@ int init_detector(int b) {
 	//only for control server
 	if(b){
 #ifdef SLS_DETECTOR_FUNCTION_LIST
-
 		initializeDetectorStructure();
 		setupDetector();
-		/* all these should also be included in setupDetector */
-		//testFpga();
-		//testRAM();
-		//setSettings(GET_SETTINGS,-1);
-		//setFrames(1);
-		//setTrains(1);
-		//setExposureTime(1e6);
-		//setPeriod(1e9);
-		//setDelay(0);
-		//setGates(0);
-		//setTiming(GET_EXTERNAL_COMMUNICATION_MODE);
-		//setMaster(GET_MASTER);
-		//setSynchronization(GET_SYNCHRONIZATION_MODE);
 #endif
 	}
 	strcpy(mess,"dummy message");
@@ -89,7 +74,7 @@ int decode_function(int file_des) {
 #ifdef VERBOSE
 	printf( "receive data\n");
 #endif 
-	n = receiveDataOnly(file_des,&fnum,sizeof(fnum));
+	n = receiveData(file_des,&fnum,sizeof(fnum),INT32);
 	if (n <= 0) {
 #ifdef VERBOSE
 		printf("ERROR reading from socket %d, %d %d\n", n, fnum, file_des);
@@ -102,10 +87,8 @@ int decode_function(int file_des) {
 #endif
 
 #ifdef VERBOSE
-	printf( "calling function fnum = %d %x\n",fnum,flist[fnum]);
+	printf( "calling function fnum = %d %x\n",fnum,(unsigned int)flist[fnum]);
 #endif
-	printf( "calling function fnum = %x %x\n",fnum,(unsigned int)flist[fnum]);
-
 	if (fnum<0 || fnum>255)
 		fnum=255;
 	ret=(*flist[fnum])(file_des);
@@ -1454,10 +1437,11 @@ int get_channel(int file_des) {
 	if (differentClients && ret==OK)
 		ret=FORCE_UPDATE;
 
-
+#ifdef MYTHEND
 #ifdef VERBOSE
 	printf("Returning channel %d %d %d, 0x%llx\n", retval.chan, retval.chip, retval.mod, (retval.reg));
 #endif 
+#endif
 
 	/* send answer */
 	/* send OK/failed */
@@ -1599,13 +1583,15 @@ int get_chip(int file_des) {
 	if (ret==OK)
 		ret=getChip(&retval);
 #endif
+
 #endif
 	if (differentClients && ret==OK)
 		ret=FORCE_UPDATE;
+#ifdef MYTHEND
 #ifdef VERBOSE
 	printf("Returning chip %d %d\n",  ichip, imod);
 #endif 
-
+#endif
 
 	/* send answer */
 	/* send OK/failed */
@@ -1944,7 +1930,7 @@ int set_threshold_energy(int file_des) {
 	int n;
 #if defined(MYTHEND) || defined(EIGERD)
 	int ethr, imod;
-	//enum detectorSettings isett;
+	enum detectorSettings isett;
 #endif
 
 	n = receiveDataOnly(file_des,&arg,sizeof(arg));
@@ -1956,16 +1942,14 @@ int set_threshold_energy(int file_des) {
 #if defined(MYTHEND) || defined(EIGERD)
 	ethr=arg[0];
 	imod=arg[1];
-	//isett=arg[2];
+	isett=arg[2];
 #ifdef SLS_DETECTOR_FUNCTION_LIST
 	if (imod>=getTotalNumberOfModules()) {
 		ret=FAIL;
 		sprintf(mess,"Module number %d out of range\n",imod);
 	}
-#ifdef VERBOSE
 	printf("Setting threshold energy of module %d to %d eV with settings %d\n", imod, ethr, isett);
-#endif 
-	if (differentClients==1 && lockStatus==1) {
+ 	if (differentClients==1 && lockStatus==1) {
 		ret=FAIL;
 		sprintf(mess,"Detector locked by %s\n",lastClientIP);
 	} else {
@@ -2175,9 +2159,6 @@ int start_and_read_all(int file_des) {
 
 int read_frame(int file_des) {
 
-#ifdef VERBOSE
-	int n;
-#endif
 	dataret=OK;
 	if (differentClients==1 && lockStatus==1) {
 		dataret=FAIL;
@@ -2514,9 +2495,6 @@ int set_roi(int file_des) {
 	ROI arg[MAX_ROIS];
 	ROI* retval=0;
 	int nroi=-1, n=0, retvalsize=0;
-#ifdef VERBOSE
-	int i;
-#endif
 	strcpy(mess,"Could not set/get roi\n");
 
 	n = receiveDataOnly(file_des,&nroi,sizeof(nroi));

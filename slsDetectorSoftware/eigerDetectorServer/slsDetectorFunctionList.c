@@ -6,6 +6,11 @@
 #include <stdio.h>
 #include <string.h>
 
+/** temporary*/
+#include <sys/mman.h>		//PROT_READ,PROT_WRITE,MAP_FILE,MAP_SHARED,MAP_FAILED
+#include <fcntl.h>			//O_RDWR
+
+
 
 const int nChans=NCHAN;
 const int nChips=NCHIP;
@@ -36,7 +41,7 @@ int nModBoard;
 extern int dataBytes;
 
 
-/** temporary */
+/** temporary
 u_int32_t CSP0BASE;
 int mapCSP0(void) {
 	CSP0BASE = (u_int32_t)malloc(0xFFFFFFF);
@@ -45,11 +50,39 @@ int mapCSP0(void) {
 	printf("CSPOBASE=from %08x to %x\n",CSP0BASE,CSP0BASE+0xFFFFFFF);
 	return OK;
 }
+*/
+#define CSP0 				  	0xC4100000		//XPAR_PLB_LL_FIFO_AURORA_DUAL_CTRL_FEB_LEFT_BASEADDR
+#define MEM_SIZE 			  	0xFFFFFFF
+
+u_int32_t CSP0BASE;
+int mapCSP0(void) {
+	int fd;
+	printf("Mapping memory\n");
+#ifdef VIRTUAL
+	CSP0BASE = (u_int32_t)malloc(MEM_SIZE);
+	printf("memory allocated\n");
+#else
+	if ((fd=open("/dev/mem", O_RDWR | O_SYNC)) < 0){
+		printf("Cant find /dev/mem!\n");
+		return FAIL;
+	}
+	printf("/dev/mem opened\n");
+	CSP0BASE = (u_int32_t)mmap(0, MEM_SIZE, PROT_READ|PROT_WRITE, MAP_FILE|MAP_SHARED, fd, CSP0);
+	if (CSP0BASE == (u_int32_t)MAP_FAILED) {
+		printf("\nCan't map memmory area!!\n");
+		return FAIL;
+	}
+#endif
+	printf("CSPOBASE is 0x%x \n",CSP0BASE);
+	printf("CSPOBASE=from %08x to %x\n",CSP0BASE,CSP0BASE+MEM_SIZE);
+
+	return OK;
+}
 
 
 
 int initializeDetectorStructure(){
-
+ printf("EIGER 5\n");
 	int imod;
 	int n=getNModBoard(X)*getNModBoard(Y);
 #ifdef VERBOSE

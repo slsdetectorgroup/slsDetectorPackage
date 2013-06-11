@@ -1,5 +1,5 @@
 CC			=	powerpc-4xx-softfloat-gcc
-CLAGS		+=  -Wall -DDACS_INT   -DEIGERD  -DSLS_DETECTOR_FUNCTION_LIST  #-DVIRTUAL
+CLAGS		+=  -Wall -DDACS_INT   -DEIGERD  -DSLS_DETECTOR_FUNCTION_LIST #-DVERBOSE #-DVIRTUAL
 LDLIBS		+= 	-lm  -lstdc++ 
 
 PROGS		= 	eigerDetectorServer 
@@ -13,10 +13,12 @@ OBJS 		= 	$(SRC_CLNT:.cpp=.o)
 
 all: clean $(PROGS)
 
-pc: clean pccompile $(PROGS)
 
-pccompile:
-CC := gcc
+3pc: clean pccompile $(PROGS)
+
+
+#pccompile:
+#CC := gcc
 	
 boot: $(OBJS)
 

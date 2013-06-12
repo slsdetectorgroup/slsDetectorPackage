@@ -64,32 +64,44 @@ public:
 	/**
 	 * Returns File Index
 	 */
-	int	getFileIndex(){return fileIndex;};
+	int getFileIndex(){return fileIndex;};
 
 	/**
 	 * Returns Frames Caught for each real time acquisition (eg. for each scan)
 	 */
-	int getFramesCaught(){return framesCaught;};
+	uint32_t getFramesCaught(){return framesCaught;};
 
 	/**
 	 * Returns Total Frames Caught for an entire acquisition (including all scans)
 	 */
-	int getTotalFramesCaught(){	return totalFramesCaught;};
+	uint32_t getTotalFramesCaught(){return totalFramesCaught;};
 
 	/**
 	 * Returns the frame index at start of each real time acquisition (eg. for each scan)
 	 */
-	int getStartFrameIndex(){return startFrameIndex;};
+	uint32_t getStartFrameIndex(){return startFrameIndex;};
 
 	/**
 	 * Returns current Frame Index for each real time acquisition (eg. for each scan)
 	 */
-	int getFrameIndex();
+	uint32_t getFrameIndex();
 
 	/**
 	 * Returns current Frame Index Caught for an entire  acquisition (including all scans)
 	 */
-	int getAcquisitionIndex();
+	uint32_t getAcquisitionIndex();
+
+
+	/**
+	 * Returns if acquisition started
+	 */
+	bool getAcquistionStarted(){return acqStarted;};
+
+
+	/**
+	 * Returns if measurement started
+	 */
+	bool getMeasurementStarted(){return measurementStarted;};
 
 	/**
 	 * Set File Name (without frame index, file index and extension)
@@ -195,7 +207,7 @@ private:
 	detectorType myDetectorType;
 
 	/** max frames per file **/
-	int maxFramesPerFile;
+	uint32_t maxFramesPerFile;
 
 	/** File write enable */
 	int enableFileWrite;
@@ -216,28 +228,34 @@ private:
 	int frameIndexNeeded;
 
 	/** Frames Caught for each real time acquisition (eg. for each scan) */
-	int framesCaught;
+	uint32_t framesCaught;
+
+	/* Acquisition started */
+	bool acqStarted;
+
+	/* Measurement started */
+	bool measurementStarted;
 
 	/** Frame index at start of each real time acquisition (eg. for each scan) */
-	int startFrameIndex;
+	uint32_t startFrameIndex;
 
 	/** Actual current frame index of each time acquisition (eg. for each scan) */
-	int frameIndex;
+	uint32_t frameIndex;
 
 	/** Total Frames Caught for an entire acquisition (including all scans) */
 	int totalFramesCaught;
 
 	/** Frame index at start of an entire acquisition (including all scans) */
-	int startAcquisitionIndex;
+	uint32_t startAcquisitionIndex;
 
 	/** Actual current frame index of an entire acquisition (including all scans) */
-	int acquisitionIndex;
+	uint32_t acquisitionIndex;
 
 	/** Frames currently in current file, starts new file when it reaches max */
-	int framesInFile;
+	uint32_t framesInFile;
 
 	/** Previous Frame number from buffer */
-	int prevframenum;
+	uint32_t prevframenum;
 
 	/** thread listening to packets */
 	pthread_t   listening_thread;
@@ -283,10 +301,10 @@ private:
 	int shortFrame;
 
 	/** buffer size can be 1286*2 or 518 or 1286*40 */
-	int bufferSize;
+	uint32_t bufferSize;
 
 	/** number of packets per frame*/
-	int packetsPerFrame;
+	uint32_t packetsPerFrame;
 	
 	/** gui data ready */
 	int guiDataReady;
@@ -298,7 +316,7 @@ private:
 	char* guiFileName;
 
 	/** current frame number */
-	int currframenum;
+	uint32_t currframenum;
 
 	/** send every nth frame to gui or only upon gui request*/
 	int nFrameToGui;

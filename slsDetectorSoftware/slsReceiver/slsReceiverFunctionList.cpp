@@ -30,10 +30,12 @@ slsReceiverFunctionList::slsReceiverFunctionList(detectorType det,bool moenchwit
 						fileIndex(0),
 						frameIndexNeeded(0),
 						framesCaught(0),
-						startFrameIndex(-1),
+						acqStarted(false),
+						measurementStarted(false),
+						startFrameIndex(0),
 						frameIndex(0),
 						totalFramesCaught(0),
-						startAcquisitionIndex(-1),
+						startAcquisitionIndex(0),
 						acquisitionIndex(0),
 						framesInFile(0),
 						prevframenum(0),
@@ -119,26 +121,25 @@ void slsReceiverFunctionList::setEthernetInterface(char* c){
 
 
 
-int slsReceiverFunctionList::getFrameIndex(){
-	if(startFrameIndex==-1)
+uint32_t slsReceiverFunctionList::getFrameIndex(){
+	if(!framesCaught)
 		frameIndex=0;
-	else if(myDetectorType == MOENCH)
-		frameIndex=currframenum - startFrameIndex;
+	else if(frameIndexOffset)
+		frameIndex = currframenum - startFrameIndex; //moench
 	else
-		frameIndex=(currframenum - startFrameIndex)/packetsPerFrame;
+		frameIndex = (currframenum - startFrameIndex)/packetsPerFrame;//moench with gotthard, gotthard
 	return frameIndex;
 }
 
 
 
-int slsReceiverFunctionList::getAcquisitionIndex(){
-	if(startAcquisitionIndex==-1)
+uint32_t slsReceiverFunctionList::getAcquisitionIndex(){
+	if(!totalFramesCaught)
 		acquisitionIndex=0;
-	else if(myDetectorType == MOENCH)
-		acquisitionIndex=currframenum - startAcquisitionIndex;
+	else if(frameIndexOffset)
+		acquisitionIndex = currframenum - startAcquisitionIndex;  //moench
 	else
-		acquisitionIndex=(currframenum - startAcquisitionIndex)/packetsPerFrame;
-
+		acquisitionIndex = (currframenum - startAcquisitionIndex)/packetsPerFrame; //moench with gotthard, gotthard
 	return acquisitionIndex;
 }
 
@@ -177,7 +178,8 @@ int slsReceiverFunctionList::setFileIndex(int i){
 
 
 void slsReceiverFunctionList::resetTotalFramesCaught(){
-	startAcquisitionIndex = -1;
+	acqStarted = false;
+	startAcquisitionIndex = 0;
 	totalFramesCaught = 0;
 
 }
@@ -306,7 +308,9 @@ int slsReceiverFunctionList::startListening(){
 #endif
 
 	int rc;
-	startFrameIndex=-1;
+
+	measurementStarted = false;
+	startFrameIndex = 0;
 
 	// A do/while(FALSE) loop is used to make error cleanup easier.  The
 	//  close() of each of the socket descriptors is only done once at the
@@ -343,20 +347,22 @@ int slsReceiverFunctionList::startListening(){
 					cerr << "recvfrom() failed" << endl;
 
 				//start for each scan
-				if(startFrameIndex==-1){
+				if(!measurementStarted){
 					if(!frameIndexOffset)
-					  startFrameIndex = ((int)(*((int*)buffer)))- packetsPerFrame;
+					  startFrameIndex = ((uint32_t)(*((uint32_t*)buffer)));
 					else
-					  startFrameIndex = ((((int)(*((int*)buffer))) & (frameIndexMask)) >> frameIndexOffset)-1;
+					  startFrameIndex = ((((uint32_t)(*((uint32_t*)buffer))) & (frameIndexMask)) >> frameIndexOffset);
 
 					//cout<<"startFrameIndex:"<<startFrameIndex<<endl;
 					prevframenum=startFrameIndex;
+					measurementStarted = true;
 				}
 
 				//start of acquisition
-				if(startAcquisitionIndex==-1){
+				if(!acqStarted){
 					startAcquisitionIndex=startFrameIndex;
 					currframenum = startAcquisitionIndex;
+					acqStarted = true;
 					cout<<"startAcquisitionIndex:"<<startAcquisitionIndex<<endl;
 				}
 
@@ -475,16 +481,17 @@ int slsReceiverFunctionList::startWriting(){
 					else
 						packetloss = ((currframenum-prevframenum-(framesInFile))/(double)(framesInFile))*100.000;
 					cout << savefilename
-							<< "\tpacket loss " << fixed << setprecision(4)	<< packetloss
-							<< "%\t\t framenum "
+							<< "\tpacket loss " << setw(4)<<fixed << setprecision(4)	<< packetloss
+							<< "%\tframenum "
 							<< currframenum //<< "\t\t p " << prevframenum
+							<< "\tindex " << getFrameIndex()
 							<< endl;
 				}
 			}
 
 			//if(prevframenum != 0){
 			if(framesCaught){
-				prevframenum=currframenum;
+				prevframenum = currframenum;
 				framesInFile = 0;
 			}
 		}
@@ -498,9 +505,9 @@ int slsReceiverFunctionList::startWriting(){
 				framesCaught++;
 				totalFramesCaught++;
 				if(!frameIndexOffset)
-					currframenum = (int)(*((int*)wbuf));
+					currframenum = (uint32_t)(*((uint32_t*)wbuf));
 				else
-					currframenum = (((int)(*((int*)wbuf))) & (frameIndexMask)) >> frameIndexOffset;
+					currframenum = (((uint32_t)(*((uint32_t*)wbuf))) & (frameIndexMask)) >> frameIndexOffset;
 
 				//cout<<"**************curreframenm:"<<currframenum<<endl;
 

@@ -179,18 +179,18 @@ int  M_nofunc(int file_des){
 	int ret=FAIL;
 	sprintf(mess,"Unrecognized Function\n");
 	printf(mess);
-	sendDataOnly(file_des,&ret,sizeof(ret));
-	sendDataOnly(file_des,mess,sizeof(mess));
+	sendData(file_des,&ret,sizeof(ret),INT32);
+	sendData(file_des,mess,sizeof(mess),OTHER);
 	return GOODBYE;
 }
 
 
 int exit_server(int file_des) {
 	int ret=FAIL;
-	sendDataOnly(file_des,&ret,sizeof(ret));
+	sendData(file_des,&ret,sizeof(ret),INT32);
 	printf("closing server.");
 	sprintf(mess,"closing server");
-	sendDataOnly(file_des,mess,sizeof(mess));
+	sendData(file_des,mess,sizeof(mess),OTHER);
 	return GOODBYE;
 }
 
@@ -202,7 +202,7 @@ int exec_command(int file_des) {
 	int n=0;
 
 	/* receive arguments */
-	n = receiveDataOnly(file_des,cmd,MAX_STR_LENGTH);
+	n = receiveData(file_des,cmd,MAX_STR_LENGTH,OTHER);
 	if (n < 0) {
 		sprintf(mess,"Error reading from socket\n");
 		ret=FAIL;
@@ -230,8 +230,8 @@ int exec_command(int file_des) {
 	}
 
 	/* send answer */
-	n = sendDataOnly(file_des,&ret,sizeof(ret));
-	n = sendDataOnly(file_des,answer,MAX_STR_LENGTH);
+	n = sendData(file_des,&ret,sizeof(ret),INT32);
+	n = sendData(file_des,answer,MAX_STR_LENGTH,OTHER);
 	if (n < 0) {
 		sprintf(mess,"Error writing to socket");
 		ret=FAIL;
@@ -254,7 +254,7 @@ int lock_server(int file_des) {
 	int ret=OK;
 
 	int lock;
-	n = receiveDataOnly(file_des,&lock,sizeof(lock));
+	n = receiveData(file_des,&lock,sizeof(lock),INT32);
 	if (n < 0) {
 		sprintf(mess,"Error reading from socket\n");
 		printf("Error reading from socket (lock)\n");
@@ -272,11 +272,11 @@ int lock_server(int file_des) {
 	if (differentClients && ret==OK)
 		ret=FORCE_UPDATE;
 
-	n = sendDataOnly(file_des,&ret,sizeof(ret));
+	n = sendData(file_des,&ret,sizeof(ret),INT32);
 	if (ret==FAIL) {
-		n = sendDataOnly(file_des,mess,sizeof(mess));
+		n = sendData(file_des,mess,sizeof(mess),OTHER);
 	}  else
-		n = sendDataOnly(file_des,&lockStatus,sizeof(lockStatus));
+		n = sendData(file_des,&lockStatus,sizeof(lockStatus),INT32);
 
 	return ret;
 
@@ -289,8 +289,8 @@ int get_last_client_ip(int file_des) {
 	int ret=OK;
 	if (differentClients )
 		ret=FORCE_UPDATE;
-	sendDataOnly(file_des,&ret,sizeof(ret));
-	sendDataOnly(file_des,lastClientIP,sizeof(lastClientIP));
+	sendData(file_des,&ret,sizeof(ret),INT32);
+	sendData(file_des,lastClientIP,sizeof(lastClientIP),OTHER);
 	return ret;
 }
 
@@ -305,14 +305,14 @@ int set_port(int file_des) {
 	enum portType p_type; /** data? control? stop? Unused! */
 	int p_number; /** new port number */
 
-	n = receiveDataOnly(file_des,&p_type,sizeof(p_type));
+	n = receiveData(file_des,&p_type,sizeof(p_type),INT32);
 	if (n < 0) {
 		sprintf(mess,"Error reading from socket\n");
 		printf("Error reading from socket (ptype)\n");
 		ret=FAIL;
 	}
 
-	n = receiveDataOnly(file_des,&p_number,sizeof(p_number));
+	n = receiveData(file_des,&p_number,sizeof(p_number),INT32);
 	if (n < 0) {
 		sprintf(mess,"Error reading from socket\n");
 		printf("Error reading from socket (pnum)\n");
@@ -347,11 +347,11 @@ int set_port(int file_des) {
 		}
 	}
 
-	n = sendDataOnly(file_des,&ret,sizeof(ret));
+	n = sendData(file_des,&ret,sizeof(ret),INT32);
 	if (ret==FAIL) {
-		n = sendDataOnly(file_des,mess,sizeof(mess));
+		n = sendData(file_des,mess,sizeof(mess),OTHER);
 	} else {
-		n = sendDataOnly(file_des,&p_number,sizeof(p_number));
+		n = sendData(file_des,&p_number,sizeof(p_number),INT32);
 		closeConnection(file_des);
 		exitServer(sockfd);
 		sockfd=sd;
@@ -374,32 +374,32 @@ int send_update(int file_des) {
 	int nm;
 
 
-	n += sendDataOnly(file_des,lastClientIP,sizeof(lastClientIP));
+	n += sendData(file_des,lastClientIP,sizeof(lastClientIP),OTHER);
 	/*nm=setNMod(-1,X);*/
-	n += sendDataOnly(file_des,&nm,sizeof(nm));
+	n += sendData(file_des,&nm,sizeof(nm),INT32);
 	/*nm=setNMod(-1,Y);*/
-	n += sendDataOnly(file_des,&nm,sizeof(nm));
+	n += sendData(file_des,&nm,sizeof(nm),INT32);
 	/*nm=setDynamicRange(-1);*/
-	n += sendDataOnly(file_des,&nm,sizeof(nm));
-	n += sendDataOnly(file_des,&dataBytes,sizeof(dataBytes));
+	n += sendData(file_des,&nm,sizeof(nm),INT32);
+	n += sendData(file_des,&dataBytes,sizeof(dataBytes),INT32);
 	/*t=setSettings(GET_SETTINGS, -1);*/
-	n += sendDataOnly(file_des,&t,sizeof(t));
+	n += sendData(file_des,&t,sizeof(t),INT32);
 	/*thr=getThresholdEnergy(-1);*/
-	n += sendDataOnly(file_des,&thr,sizeof(thr));
+	n += sendData(file_des,&thr,sizeof(thr),INT32);
 	/*retval=setFrames(tns);*/
-	n += sendDataOnly(file_des,&retval,sizeof(int64_t));
+	n += sendData(file_des,&retval,sizeof(int64_t),INT64);
 	/*retval=setExposureTime(tns);*/
-	n += sendDataOnly(file_des,&retval,sizeof(int64_t));
+	n += sendData(file_des,&retval,sizeof(int64_t),INT64);
 	/*retval=setPeriod(tns);*/
-	n += sendDataOnly(file_des,&retval,sizeof(int64_t));
+	n += sendData(file_des,&retval,sizeof(int64_t),INT64);
 	/*retval=setDelay(tns);*/
-	n += sendDataOnly(file_des,&retval,sizeof(int64_t));
+	n += sendData(file_des,&retval,sizeof(int64_t),INT64);
 	/*retval=setGates(tns);*/
-	n += sendDataOnly(file_des,&retval,sizeof(int64_t));
+	n += sendData(file_des,&retval,sizeof(int64_t),INT64);
 	/*retval=setProbes(tns);*/
-	n += sendDataOnly(file_des,&retval,sizeof(int64_t));
+	n += sendData(file_des,&retval,sizeof(int64_t),INT64);
 	/*retval=setTrains(tns);*/
-	n += sendDataOnly(file_des,&retval,sizeof(int64_t));
+	n += sendData(file_des,&retval,sizeof(int64_t),INT64);
 
 	if (lockStatus==0) {
 		strcpy(lastClientIP,thisClientIP);
@@ -414,7 +414,7 @@ int send_update(int file_des) {
 int update_client(int file_des) {
 
 	int ret=OK;
-	sendDataOnly(file_des,&ret,sizeof(ret));
+	sendData(file_des,&ret,sizeof(ret),INT32);
 	return send_update(file_des);
 
 }
@@ -434,7 +434,7 @@ int set_master(int file_des) {
 	sprintf(mess,"can't set master flags\n");
 
 
-	n = receiveDataOnly(file_des,&arg,sizeof(arg));
+	n = receiveData(file_des,&arg,sizeof(arg),INT32);
 	if (n < 0) {
 		sprintf(mess,"Error reading from socket\n");
 		ret=FAIL;
@@ -458,11 +458,11 @@ int set_master(int file_des) {
 		ret=FAIL;
 	}
 
-	n = sendDataOnly(file_des,&ret,sizeof(ret));
+	n = sendData(file_des,&ret,sizeof(ret),INT32);
 	if (ret==FAIL) {
-		n = sendDataOnly(file_des,mess,sizeof(mess));
+		n = sendData(file_des,mess,sizeof(mess),OTHER);
 	} else {
-		n = sendDataOnly(file_des,&retval,sizeof(retval));
+		n = sendData(file_des,&retval,sizeof(retval),INT32);
 	}
 	return ret;
 }
@@ -484,7 +484,7 @@ int set_synchronization(int file_des) {
 	sprintf(mess,"can't set synchronization mode\n");
 
 
-	n = receiveDataOnly(file_des,&arg,sizeof(arg));
+	n = receiveData(file_des,&arg,sizeof(arg),INT32);
 	if (n < 0) {
 		sprintf(mess,"Error reading from socket\n");
 		ret=FAIL;
@@ -506,11 +506,11 @@ int set_synchronization(int file_des) {
 		ret=FAIL;
 	}
 
-	n = sendDataOnly(file_des,&ret,sizeof(ret));
+	n = sendData(file_des,&ret,sizeof(ret),INT32);
 	if (ret==FAIL) {
-		n = sendDataOnly(file_des,mess,sizeof(mess));
+		n = sendData(file_des,mess,sizeof(mess),OTHER);
 	} else {
-		n = sendDataOnly(file_des,&retval,sizeof(retval));
+		n = sendData(file_des,&retval,sizeof(retval),INT32);
 	}
 	return ret;
 }
@@ -542,12 +542,12 @@ int get_detector_type(int file_des) {
 	if (differentClients==1)
 		retval=FORCE_UPDATE;
 
-	n += sendDataOnly(file_des,&ret,sizeof(ret));
+	n += sendData(file_des,&ret,sizeof(ret),INT32);
 	if (ret!=FAIL) {
 		/* send return argument */
-		n += sendDataOnly(file_des,&retval,sizeof(retval));
+		n += sendData(file_des,&retval,sizeof(retval),INT32);
 	} else {
-		n += sendDataOnly(file_des,mess,sizeof(mess));
+		n += sendData(file_des,mess,sizeof(mess),OTHER);
 	}
 	/*return ok/fail*/
 	return ret;
@@ -567,7 +567,7 @@ int set_number_of_modules(int file_des) {
 	sprintf(mess,"Can't set number of modules\n");
 
 	/* receive arguments */
-	n = receiveDataOnly(file_des,&arg,sizeof(arg));
+	n = receiveData(file_des,&arg,sizeof(arg),INT32);
 	if (n < 0) {
 		sprintf(mess,"Error reading from socket %d", n);
 		ret=GOODBYE;
@@ -599,12 +599,12 @@ int set_number_of_modules(int file_des) {
 
 	/* send answer */
 	/* send OK/failed */
-	n = sendDataOnly(file_des,&ret,sizeof(ret));
+	n = sendData(file_des,&ret,sizeof(ret),INT32);
 	if (ret!=FAIL) {
 		/* send return argument */
-		n += sendDataOnly(file_des,&retval,sizeof(retval));
+		n += sendData(file_des,&retval,sizeof(retval),INT32);
 	} else {
-		n += sendDataOnly(file_des,mess,sizeof(mess));
+		n += sendData(file_des,mess,sizeof(mess),OTHER);
 	}
 
 	/*return ok/fail*/
@@ -620,7 +620,7 @@ int get_max_number_of_modules(int file_des) {
 
 	sprintf(mess,"Can't get max number of modules\n");
 	/* receive arguments */
-	n = receiveDataOnly(file_des,&arg,sizeof(arg));
+	n = receiveData(file_des,&arg,sizeof(arg),INT32);
 	if (n < 0) {
 		sprintf(mess,"Error reading from socket\n");
 		ret=FAIL;
@@ -644,12 +644,12 @@ int get_max_number_of_modules(int file_des) {
 
 	/* send answer */
 	/* send OK/failed */
-	n = sendDataOnly(file_des,&ret,sizeof(ret));
+	n = sendData(file_des,&ret,sizeof(ret),INT32);
 	if (ret!=FAIL) {
 		/* send return argument */
-		n += sendDataOnly(file_des,&retval,sizeof(retval));
+		n += sendData(file_des,&retval,sizeof(retval),INT32);
 	} else {
-		n += sendDataOnly(file_des,mess,sizeof(mess));
+		n += sendData(file_des,mess,sizeof(mess),OTHER);
 	}
 
 	/*return ok/fail*/
@@ -675,7 +675,7 @@ int set_external_signal_flag(int file_des) {
 	sprintf(mess,"Can't set external signal flag\n");
 
 	/* receive arguments */
-	n = receiveDataOnly(file_des,&arg,sizeof(arg));
+	n = receiveData(file_des,&arg,sizeof(arg),INT32);
 	if (n < 0) {
 		sprintf(mess,"Error reading from socket\n");
 		ret=FAIL;
@@ -718,12 +718,12 @@ int set_external_signal_flag(int file_des) {
 
 	/* send answer */
 	/* send OK/failed */
-	n = sendDataOnly(file_des,&ret,sizeof(ret));
+	n = sendData(file_des,&ret,sizeof(ret),INT32);
 	if (ret!=FAIL) {
 		/* send return argument */
-		n += sendDataOnly(file_des,&retval,sizeof(retval));
+		n += sendData(file_des,&retval,sizeof(retval),INT32);
 	} else {
-		n += sendDataOnly(file_des,mess,sizeof(mess));
+		n += sendData(file_des,mess,sizeof(mess),OTHER);
 	}
 
 
@@ -742,7 +742,7 @@ int set_external_communication_mode(int file_des) {
 
 
 	/* receive arguments */
-	n = receiveDataOnly(file_des,&arg,sizeof(arg));
+	n = receiveData(file_des,&arg,sizeof(arg),INT32);
 	if (n < 0) {
 		sprintf(mess,"Error reading from socket\n");
 		ret=FAIL;
@@ -783,12 +783,12 @@ enum externalCommunicationMode{
 
 	/* send answer */
 	/* send OK/failed */
-	n = sendDataOnly(file_des,&ret,sizeof(ret));
+	n = sendData(file_des,&ret,sizeof(ret),INT32);
 	if (ret!=FAIL) {
 		/* send return argument */
-		n += sendDataOnly(file_des,&retval,sizeof(retval));
+		n += sendData(file_des,&retval,sizeof(retval),INT32);
 	} else {
-		n += sendDataOnly(file_des,mess,sizeof(mess));
+		n += sendData(file_des,mess,sizeof(mess),OTHER);
 	}
 
 	/*return ok/fail*/
@@ -810,7 +810,7 @@ int get_id(int file_des) {
 	sprintf(mess,"Can't return id\n");
 
 	/* receive arguments */
-	n = receiveDataOnly(file_des,&arg,sizeof(arg));
+	n = receiveData(file_des,&arg,sizeof(arg),INT32);
 	if (n < 0) {
 		sprintf(mess,"Error reading from socket\n");
 		ret=FAIL;
@@ -823,7 +823,7 @@ int get_id(int file_des) {
 	switch (arg) {
 	case  MODULE_SERIAL_NUMBER:
 	case MODULE_FIRMWARE_VERSION:
-		n = receiveDataOnly(file_des,&imod,sizeof(imod));
+		n = receiveData(file_des,&imod,sizeof(imod),INT32);
 		if (n < 0) {
 			sprintf(mess,"Error reading from socket\n");
 			ret=FAIL;
@@ -865,12 +865,12 @@ int get_id(int file_des) {
 
 	/* send answer */
 	/* send OK/failed */
-	n = sendDataOnly(file_des,&ret,sizeof(ret));
+	n = sendData(file_des,&ret,sizeof(ret),INT32);
 	if (ret!=FAIL) {
 		/* send return argument */
-		n += sendDataOnly(file_des,&retval,sizeof(retval));
+		n += sendData(file_des,&retval,sizeof(retval),INT64);
 	} else {
-		n += sendDataOnly(file_des,mess,sizeof(mess));
+		n += sendData(file_des,mess,sizeof(mess),OTHER);
 	}
 
 	/*return ok/fail*/
@@ -889,7 +889,7 @@ int digital_test(int file_des) {
 
 	sprintf(mess,"Can't send digital test\n");
 
-	n = receiveDataOnly(file_des,&arg,sizeof(arg));
+	n = receiveData(file_des,&arg,sizeof(arg),INT32);
 	if (n < 0) {
 		sprintf(mess,"Error reading from socket\n");
 		ret=FAIL;
@@ -905,7 +905,7 @@ int digital_test(int file_des) {
 	} else {
 		switch (arg) {
 		case  CHIP_TEST:
-			n = receiveDataOnly(file_des,&imod,sizeof(imod));
+			n = receiveData(file_des,&imod,sizeof(imod),INT32);
 			if (n < 0) {
 				sprintf(mess,"Error reading from socket\n");
 				retval=FAIL;
@@ -942,7 +942,7 @@ int digital_test(int file_des) {
 #endif
 			break;
 		case DIGITAL_BIT_TEST:
-			n = receiveDataOnly(file_des,&ival,sizeof(ival));
+			n = receiveData(file_des,&ival,sizeof(ival),INT32);
 			if (n < 0) {
 				sprintf(mess,"Error reading from socket\n");
 				retval=FAIL;
@@ -970,12 +970,12 @@ int digital_test(int file_des) {
 
 	/* send answer */
 	/* send OK/failed */
-	n = sendDataOnly(file_des,&ret,sizeof(ret));
+	n = sendData(file_des,&ret,sizeof(ret),INT32);
 	if (ret!=FAIL) {
 		/* send return argument */
-		n += sendDataOnly(file_des,&retval,sizeof(retval));
+		n += sendData(file_des,&retval,sizeof(retval),INT32);
 	} else {
-		n += sendDataOnly(file_des,mess,sizeof(mess));
+		n += sendData(file_des,mess,sizeof(mess),OTHER);
 	}
 
 	/*return ok/fail*/
@@ -990,18 +990,18 @@ int digital_test(int file_des) {
 
 int set_dac(int file_des) {
 
-	double retval;
+	int retval;
 	int ret=OK;
 	int arg[2];
 	enum dacIndex ind;
 	int imod;
 	int n;
-	double val;
+	int val;
 
 	sprintf(mess,"Can't set DAC\n");
 
 
-	n = receiveDataOnly(file_des,arg,sizeof(arg));
+	n = receiveData(file_des,arg,sizeof(arg),INT32);
 	if (n < 0) {
 		sprintf(mess,"Error reading from socket\n");
 		ret=FAIL;
@@ -1009,7 +1009,7 @@ int set_dac(int file_des) {
 	ind=arg[0];
 	imod=arg[1];
 
-	n = receiveDataOnly(file_des,&val,sizeof(val));
+	n = receiveData(file_des,&val,sizeof(val),INT32);
 	if (n < 0) {
 		sprintf(mess,"Error reading from socket\n");
 		ret=FAIL;
@@ -1085,18 +1085,18 @@ int set_dac(int file_des) {
 			ret=FORCE_UPDATE;
 	} else {
 		ret=FAIL;
-		printf("Setting dac %d of module %d: wrote %f but read %f\n", ind, imod, val, retval);
+		printf("Setting dac %d of module %d: wrote %d but read %d\n", ind, imod, val, retval);
 	}
 
 
 	/* send answer */
 	/* send OK/failed */
-	n = sendDataOnly(file_des,&ret,sizeof(ret));
+	n = sendData(file_des,&ret,sizeof(ret),INT32);
 	if (ret!=FAIL) {
 		/* send return argument */
-		n += sendDataOnly(file_des,&retval,sizeof(retval));
+		n += sendData(file_des,&retval,sizeof(retval),INT32);
 	} else {
-		n += sendDataOnly(file_des,mess,sizeof(mess));
+		n += sendData(file_des,mess,sizeof(mess),OTHER);
 	}
 
 	/* Maybe this is done inside the initialization funcs */
@@ -1110,7 +1110,7 @@ int set_dac(int file_des) {
 
 int get_adc(int file_des) {
 
-	double retval;
+	int retval;
 	int ret=OK;
 	int arg[2];
 	enum dacIndex ind;
@@ -1120,7 +1120,7 @@ int get_adc(int file_des) {
 	sprintf(mess,"Can't read ADC\n");
 
 
-	n = receiveDataOnly(file_des,arg,sizeof(arg));
+	n = receiveData(file_des,arg,sizeof(arg),INT32);
 	if (n < 0) {
 		sprintf(mess,"Error reading from socket\n");
 		ret=FAIL;
@@ -1170,12 +1170,12 @@ int get_adc(int file_des) {
 
 	/* send answer */
 	/* send OK/failed */
-	n = sendDataOnly(file_des,&ret,sizeof(ret));
+	n = sendData(file_des,&ret,sizeof(ret),INT32);
 	if (ret!=FAIL) {
 		/* send return argument */
-		n += sendDataOnly(file_des,&retval,sizeof(retval));
+		n += sendData(file_des,&retval,sizeof(retval),INT32);
 	} else {
-		n += sendDataOnly(file_des,mess,sizeof(mess));
+		n += sendData(file_des,mess,sizeof(mess),OTHER);
 	}
 
 	/*return ok/fail*/
@@ -1199,7 +1199,7 @@ int write_register(int file_des) {
 
 	sprintf(mess,"Can't write to register\n");
 
-	n = receiveDataOnly(file_des,arg,sizeof(arg));
+	n = receiveData(file_des,arg,sizeof(arg),INT32);
 	if (n < 0) {
 		sprintf(mess,"Error reading from socket\n");
 		ret=FAIL;
@@ -1236,12 +1236,12 @@ int write_register(int file_des) {
 
 	/* send answer */
 	/* send OK/failed */
-	n = sendDataOnly(file_des,&ret,sizeof(ret));
+	n = sendData(file_des,&ret,sizeof(ret),INT32);
 	if (ret!=FAIL) {
 		/* send return argument */
-		n += sendDataOnly(file_des,&retval,sizeof(retval));
+		n += sendData(file_des,&retval,sizeof(retval),INT32);
 	} else {
-		n += sendDataOnly(file_des,mess,sizeof(mess));
+		n += sendData(file_des,mess,sizeof(mess),OTHER);
 	}
 
 	/*return ok/fail*/
@@ -1260,7 +1260,7 @@ int read_register(int file_des) {
 
 	sprintf(mess,"Can't read register\n");
 
-	n = receiveDataOnly(file_des,&arg,sizeof(arg));
+	n = receiveData(file_des,&arg,sizeof(arg),INT32);
 	if (n < 0) {
 		sprintf(mess,"Error reading from socket\n");
 		ret=FAIL;
@@ -1290,12 +1290,12 @@ int read_register(int file_des) {
 
 	/* send answer */
 	/* send OK/failed */
-	n = sendDataOnly(file_des,&ret,sizeof(ret));
+	n = sendData(file_des,&ret,sizeof(ret),INT32);
 	if (ret!=FAIL) {
 		/* send return argument */
-		n += sendDataOnly(file_des,&retval,sizeof(retval));
+		n += sendData(file_des,&retval,sizeof(retval),INT32);
 	} else {
-		n += sendDataOnly(file_des,mess,sizeof(mess));
+		n += sendData(file_des,mess,sizeof(mess),OTHER);
 	}
 
 	/*return ok/fail*/
@@ -1366,12 +1366,12 @@ int set_channel(int file_des) {
 
 	/* send answer */
 	/* send OK/failed */
-	n = sendDataOnly(file_des,&ret,sizeof(ret));
+	n = sendData(file_des,&ret,sizeof(ret),INT32);
 	if (ret!=FAIL) {
 		/* send return argument */
-		n += sendDataOnly(file_des,&retval,sizeof(retval));
+		n += sendData(file_des,&retval,sizeof(retval),INT32);
 	} else {
-		n += sendDataOnly(file_des,mess,sizeof(mess));
+		n += sendData(file_des,mess,sizeof(mess),OTHER);
 	}
 
 
@@ -1398,7 +1398,7 @@ int get_channel(int file_des) {
 
 
 
-	n = receiveDataOnly(file_des,arg,sizeof(arg));
+	n = receiveData(file_des,arg,sizeof(arg),INT32);
 	if (n < 0) {
 		sprintf(mess,"Error reading from socket\n");
 		ret=FAIL;
@@ -1445,12 +1445,12 @@ int get_channel(int file_des) {
 
 	/* send answer */
 	/* send OK/failed */
-	n = sendDataOnly(file_des,&ret,sizeof(ret));
+	n = sendData(file_des,&ret,sizeof(ret),INT32);
 	if (ret!=FAIL) {
 		/* send return argument */
 		ret=sendChannel(file_des, &retval);
 	} else {
-		n += sendDataOnly(file_des,mess,sizeof(mess));
+		n += sendData(file_des,mess,sizeof(mess),OTHER);
 	}
 
 
@@ -1522,12 +1522,12 @@ int set_chip(int file_des) {
 		ret=FORCE_UPDATE;
 	/* send answer */
 	/* send OK/failed */
-	n = sendDataOnly(file_des,&ret,sizeof(ret));
+	n = sendData(file_des,&ret,sizeof(ret),INT32);
 	if (ret!=FAIL) {
 		/* send return argument */
-		n += sendDataOnly(file_des,&retval,sizeof(retval));
+		n += sendData(file_des,&retval,sizeof(retval),INT32);
 	} else {
-		n += sendDataOnly(file_des,mess,sizeof(mess));
+		n += sendData(file_des,mess,sizeof(mess),OTHER);
 	}
 	free(ch);
 
@@ -1555,7 +1555,7 @@ int get_chip(int file_des) {
 	retval.chanregs=ch;
 #endif
 
-	n = receiveDataOnly(file_des,arg,sizeof(arg));
+	n = receiveData(file_des,arg,sizeof(arg),INT32);
 	if (n < 0) {
 		sprintf(mess,"Error reading from socket\n");
 		ret=FAIL;
@@ -1595,12 +1595,12 @@ int get_chip(int file_des) {
 
 	/* send answer */
 	/* send OK/failed */
-	n = sendDataOnly(file_des,&ret,sizeof(ret));
+	n = sendData(file_des,&ret,sizeof(ret),INT32);
 	if (ret!=FAIL) {
 		/* send return argument */
 		ret=sendChip(file_des, &retval);
 	} else {
-		n += sendDataOnly(file_des,mess,sizeof(mess));
+		n += sendData(file_des,mess,sizeof(mess),OTHER);
 	}
 
 	free(ch);
@@ -1687,12 +1687,12 @@ int set_module(int file_des) {
 
 	/* send answer */
 	/* send OK/failed */
-	n = sendDataOnly(file_des,&ret,sizeof(ret));
+	n = sendData(file_des,&ret,sizeof(ret),INT32);
 	if (ret!=FAIL) {
 		/* send return argument */
-		n += sendDataOnly(file_des,&retval,sizeof(retval));
+		n += sendData(file_des,&retval,sizeof(retval),INT32);
 	} else {
-		n += sendDataOnly(file_des,mess,sizeof(mess));
+		n += sendData(file_des,mess,sizeof(mess),OTHER);
 	}
 #ifdef SLS_DETECTOR_FUNCTION_LIST
 	free(myChip);
@@ -1756,7 +1756,7 @@ int get_module(int file_des) {
 
 
 
-	n = receiveDataOnly(file_des,&arg,sizeof(arg));
+	n = receiveData(file_des,&arg,sizeof(arg),INT32);
 	if (n < 0) {
 		sprintf(mess,"Error reading from socket\n");
 		ret=FAIL;
@@ -1782,12 +1782,12 @@ int get_module(int file_des) {
 
 	/* send answer */
 	/* send OK/failed */
-	n = sendDataOnly(file_des,&ret,sizeof(ret));
+	n = sendData(file_des,&ret,sizeof(ret),INT32);
 	if (ret!=FAIL) {
 		/* send return argument */
 		ret=sendModule(file_des, &myModule);
 	} else {
-		n += sendDataOnly(file_des,mess,sizeof(mess));
+		n += sendData(file_des,mess,sizeof(mess),OTHER);
 	}
 
 #ifdef SLS_DETECTOR_FUNCTION_LIST
@@ -1815,7 +1815,7 @@ int set_settings(int file_des) {
 	enum detectorSettings isett;
 
 
-	n = receiveDataOnly(file_des,&arg,sizeof(arg));
+	n = receiveData(file_des,&arg,sizeof(arg),INT32);
 	if (n < 0) {
 		sprintf(mess,"Error reading from socket\n");
 		ret=FAIL;
@@ -1856,11 +1856,11 @@ int set_settings(int file_des) {
 		ret=FORCE_UPDATE;
 
 	/* send answer */
-	n = sendDataOnly(file_des,&ret,sizeof(ret));
+	n = sendData(file_des,&ret,sizeof(ret),INT32);
 	if (ret==FAIL) {
-		n += sendDataOnly(file_des,mess,sizeof(mess));
+		n += sendData(file_des,mess,sizeof(mess),OTHER);
 	} else
-		n += sendDataOnly(file_des,&retval,sizeof(retval));
+		n += sendData(file_des,&retval,sizeof(retval),INT32);
 
 	return ret;
 
@@ -1879,7 +1879,7 @@ int get_threshold_energy(int file_des) {
 	int  imod;
 
 
-	n = receiveDataOnly(file_des,&imod,sizeof(imod));
+	n = receiveData(file_des,&imod,sizeof(imod),INT32);
 	if (n < 0) {
 		sprintf(mess,"Error reading from socket\n");
 		ret=FAIL;
@@ -1906,11 +1906,11 @@ int get_threshold_energy(int file_des) {
 		ret=FORCE_UPDATE;
 
 	/* send answer */
-	n = sendDataOnly(file_des,&ret,sizeof(ret));
+	n = sendData(file_des,&ret,sizeof(ret),INT32);
 	if (ret==FAIL) {
-		n += sendDataOnly(file_des,mess,sizeof(mess));
+		n += sendData(file_des,mess,sizeof(mess),OTHER);
 	} else
-		n += sendDataOnly(file_des,&retval,sizeof(retval));
+		n += sendData(file_des,&retval,sizeof(retval),INT32);
 
 
 	/* Maybe this is done inside the initialization funcs */
@@ -1933,7 +1933,7 @@ int set_threshold_energy(int file_des) {
 	enum detectorSettings isett;
 #endif
 
-	n = receiveDataOnly(file_des,&arg,sizeof(arg));
+	n = receiveData(file_des,&arg,sizeof(arg),INT32);
 	if (n < 0) {
 		sprintf(mess,"Error reading from socket\n");
 		ret=FAIL;
@@ -1971,11 +1971,11 @@ int set_threshold_energy(int file_des) {
 		ret=FORCE_UPDATE;
 
 	/* send answer */
-	n = sendDataOnly(file_des,&ret,sizeof(ret));
+	n = sendData(file_des,&ret,sizeof(ret),INT32);
 	if (ret==FAIL) {
-		n += sendDataOnly(file_des,mess,sizeof(mess));
+		n += sendData(file_des,mess,sizeof(mess),OTHER);
 	} else
-		n += sendDataOnly(file_des,&retval,sizeof(retval));
+		n += sendData(file_des,&retval,sizeof(retval),INT32);
 
 
 	/* Maybe this is done inside the initialization funcs */
@@ -2012,9 +2012,9 @@ int start_acquisition(int file_des) {
 	else if (differentClients)
 		ret=FORCE_UPDATE;
 
-	n = sendDataOnly(file_des,&ret,sizeof(ret));
+	n = sendData(file_des,&ret,sizeof(ret),INT32);
 	if (ret==FAIL) {
-		n += sendDataOnly(file_des,mess,sizeof(mess));
+		n += sendData(file_des,mess,sizeof(mess),OTHER);
 	}
 	return ret;
 
@@ -2044,9 +2044,9 @@ int stop_acquisition(int file_des) {
 	else if (differentClients)
 		ret=FORCE_UPDATE;
 
-	n = sendDataOnly(file_des,&ret,sizeof(ret));
+	n = sendData(file_des,&ret,sizeof(ret),INT32);
 	if (ret==FAIL) {
-		n += sendDataOnly(file_des,mess,sizeof(mess));
+		n += sendData(file_des,mess,sizeof(mess),OTHER);
 	}
 	return ret;
 
@@ -2081,9 +2081,9 @@ int start_readout(int file_des) {
 	else if (differentClients)
 		ret=FORCE_UPDATE;
 
-	n = sendDataOnly(file_des,&ret,sizeof(ret));
+	n = sendData(file_des,&ret,sizeof(ret),INT32);
 	if (ret==FAIL) {
-		n += sendDataOnly(file_des,mess,sizeof(mess));
+		n += sendData(file_des,mess,sizeof(mess),OTHER);
 	}
 	return ret;
 
@@ -2113,11 +2113,11 @@ int get_run_status(int file_des) {
 	} else if (differentClients)
 		ret=FORCE_UPDATE;
 
-	n = sendDataOnly(file_des,&ret,sizeof(ret));
+	n = sendData(file_des,&ret,sizeof(ret),INT32);
 	if (ret==FAIL) {
-		n += sendDataOnly(file_des,mess,sizeof(mess));
+		n += sendData(file_des,mess,sizeof(mess),OTHER);
 	} else {
-		n += sendDataOnly(file_des,&s,sizeof(s));
+		n += sendData(file_des,&s,sizeof(s),INT32);
 	}
 	return ret;
 }
@@ -2135,8 +2135,8 @@ int start_and_read_all(int file_des) {
 	if (differentClients==1 && lockStatus==1) {
 		dataret=FAIL;
 		sprintf(mess,"Detector locked by %s\n",lastClientIP);
-		sendDataOnly(file_des,&dataret,sizeof(dataret));
-		sendDataOnly(file_des,mess,sizeof(mess));
+		sendData(file_des,&dataret,sizeof(dataret),INT32);
+		sendData(file_des,mess,sizeof(mess),OTHER);
 		return dataret;
 
 	}
@@ -2163,8 +2163,8 @@ int read_frame(int file_des) {
 	if (differentClients==1 && lockStatus==1) {
 		dataret=FAIL;
 		sprintf(mess,"Detector locked by %s\n",lastClientIP);
-		sendDataOnly(file_des,&dataret,sizeof(dataret));
-		sendDataOnly(file_des,mess,sizeof(mess));
+		sendData(file_des,&dataret,sizeof(dataret),INT32);
+		sendData(file_des,mess,sizeof(mess),OTHER);
 		printf("dataret %d\n",dataret);
 		return dataret;
 	}
@@ -2172,11 +2172,11 @@ int read_frame(int file_des) {
 #ifdef SLS_DETECTOR_FUNCTION_LIST
 	dataretval=readFrame(&dataret, mess);
 #endif
-	sendDataOnly(file_des,&dataret,sizeof(dataret));
+	sendData(file_des,&dataret,sizeof(dataret),INT32);
 	if (dataret==FAIL)
-		sendDataOnly(file_des,mess,sizeof(mess));//sizeof(mess));//sizeof(mess));
+		sendData(file_des,mess,sizeof(mess),OTHER);//sizeof(mess));//sizeof(mess));
 	else
-		sendDataOnly(file_des,dataretval,dataBytes);
+		sendData(file_des,dataretval,dataBytes,OTHER);
 
 	printf("dataret %d\n",dataret);
 	return dataret;
@@ -2218,13 +2218,13 @@ int set_timer(int file_des) {
 
 	sprintf(mess,"can't set timer\n");
 
-	n = receiveDataOnly(file_des,&ind,sizeof(ind));
+	n = receiveData(file_des,&ind,sizeof(ind),INT32);
 	if (n < 0) {
 		sprintf(mess,"Error reading from socket\n");
 		ret=FAIL;
 	}
 
-	n = receiveDataOnly(file_des,&tns,sizeof(tns));
+	n = receiveData(file_des,&tns,sizeof(tns),INT64);
 	if (n < 0) {
 		sprintf(mess,"Error reading from socket\n");
 		ret=FAIL;
@@ -2283,15 +2283,15 @@ int set_timer(int file_des) {
 			sprintf(mess, "could not allocate RAM for %lld frames\n", tns);
 	}
 
-	n = sendDataOnly(file_des,&ret,sizeof(ret));
+	n = sendData(file_des,&ret,sizeof(ret),INT32);
 	if (ret==FAIL) {
-		n = sendDataOnly(file_des,mess,sizeof(mess));
+		n = sendData(file_des,mess,sizeof(mess),OTHER);
 	} else {
 #ifdef VERBOSE
 		printf("returning ok %d\n",sizeof(retval));
 #endif
 
-		n = sendDataOnly(file_des,&retval,sizeof(retval));
+		n = sendData(file_des,&retval,sizeof(retval),INT64);
 	}
 
 	return ret;
@@ -2313,7 +2313,7 @@ int get_time_left(int file_des) {
 	int ret=OK;
 
 	sprintf(mess,"can't get timer\n");
-	n = receiveDataOnly(file_des,&ind,sizeof(ind));
+	n = receiveData(file_des,&ind,sizeof(ind),INT32);
 	if (n < 0) {
 		sprintf(mess,"Error reading from socket\n");
 		ret=FAIL;
@@ -2359,11 +2359,11 @@ int get_time_left(int file_des) {
 	printf("time left on timer %d is %lld\n",ind, retval);
 #endif 
 
-	n = sendDataOnly(file_des,&ret,sizeof(ret));
+	n = sendData(file_des,&ret,sizeof(ret),INT32);
 	if (ret==FAIL) {
-		n += sendDataOnly(file_des,mess,sizeof(mess));
+		n += sendData(file_des,mess,sizeof(mess),OTHER);
 	} else {
-		n = sendDataOnly(file_des,&retval,sizeof(retval));
+		n = sendData(file_des,&retval,sizeof(retval),INT64);
 	}
 #ifdef VERBOSE
 	printf("data sent\n");
@@ -2384,7 +2384,7 @@ int set_dynamic_range(int file_des) {
 
 	sprintf(mess,"can't set dynamic range\n");
 
-	n = receiveDataOnly(file_des,&dr,sizeof(dr));
+	n = receiveData(file_des,&dr,sizeof(dr),INT32);
 	if (n < 0) {
 		sprintf(mess,"Error reading from socket\n");
 		ret=FAIL;
@@ -2408,11 +2408,11 @@ int set_dynamic_range(int file_des) {
 	dataBytes=calculateDataBytes();
 #endif
 
-	n = sendDataOnly(file_des,&ret,sizeof(ret));
+	n = sendData(file_des,&ret,sizeof(ret),INT32);
 	if (ret==FAIL) {
-		n = sendDataOnly(file_des,mess,sizeof(mess));
+		n = sendData(file_des,mess,sizeof(mess),OTHER);
 	} else {
-		n = sendDataOnly(file_des,&retval,sizeof(retval));
+		n = sendData(file_des,&retval,sizeof(retval),INT32);
 	}
 	return ret;
 }
@@ -2431,7 +2431,7 @@ int set_readout_flags(int file_des) {
 
 	sprintf(mess,"can't set readout flags\n");
 
-	n = receiveDataOnly(file_des,&arg,sizeof(arg));
+	n = receiveData(file_des,&arg,sizeof(arg),INT32);
 	if (n < 0) {
 		sprintf(mess,"Error reading from socket\n");
 		ret=FAIL;
@@ -2476,11 +2476,11 @@ int set_readout_flags(int file_des) {
 	}
 #endif
 
-	n = sendDataOnly(file_des,&ret,sizeof(ret));
+	n = sendData(file_des,&ret,sizeof(ret),INT32);
 	if (ret==FAIL) {
-		n = sendDataOnly(file_des,mess,sizeof(mess));
+		n = sendData(file_des,mess,sizeof(mess),OTHER);
 	} else {
-		n = sendDataOnly(file_des,&retval,sizeof(retval));
+		n = sendData(file_des,&retval,sizeof(retval),INT32);
 	}
 	return ret;
 }
@@ -2494,17 +2494,23 @@ int set_roi(int file_des) {
 	int ret=OK;
 	ROI arg[MAX_ROIS];
 	ROI* retval=0;
-	int nroi=-1, n=0, retvalsize=0;
+	int nroi=-1, n=0, retvalsize=0,i;
 	strcpy(mess,"Could not set/get roi\n");
 
-	n = receiveDataOnly(file_des,&nroi,sizeof(nroi));
+	n = receiveData(file_des,&nroi,sizeof(nroi),INT32);
 	if (n < 0) {
 		sprintf(mess,"Error reading from socket\n");
 		ret=FAIL;
 	}
 
 	if(nroi!=-1){
-		n = receiveDataOnly(file_des,arg,nroi*sizeof(ROI));
+		for(i=0;i<nroi;i++){
+			n = receiveData(file_des,&arg[i].xmin,sizeof(int),INT32);
+			n = receiveData(file_des,&arg[i].xmax,sizeof(int),INT32);
+			n = receiveData(file_des,&arg[i].ymin,sizeof(int),INT32);
+			n = receiveData(file_des,&arg[i].ymax,sizeof(int),INT32);
+		}
+		//n = receiveData(file_des,arg,nroi*sizeof(ROI));
 		if (n != (nroi*sizeof(ROI))) {
 			sprintf(mess,"Received wrong number of bytes for ROI\n");
 			ret=FAIL;
@@ -2543,12 +2549,18 @@ int set_roi(int file_des) {
 	}
 
 	/* send answer */
-	n = sendDataOnly(file_des,&ret,sizeof(ret));
+	n = sendData(file_des,&ret,sizeof(ret),INT32);
 	if(ret==FAIL)
-		n = sendDataOnly(file_des,mess,sizeof(mess));
+		n = sendData(file_des,mess,sizeof(mess),OTHER);
 	else{
-		sendDataOnly(file_des,&retvalsize,sizeof(retvalsize));
-		sendDataOnly(file_des,retval,retvalsize*sizeof(ROI));
+		sendData(file_des,&retvalsize,sizeof(retvalsize),INT32);
+		for(i=0;i<retvalsize;i++){
+			n = sendData(file_des,&retval[i].xmin,sizeof(int),INT32);
+			n = sendData(file_des,&retval[i].xmax,sizeof(int),INT32);
+			n = sendData(file_des,&retval[i].ymin,sizeof(int),INT32);
+			n = sendData(file_des,&retval[i].ymax,sizeof(int),INT32);
+		}
+		//sendData(file_des,retval,retvalsize*sizeof(ROI));
 	}
 	/*return ok/fail*/
 	return ret;
@@ -2570,12 +2582,12 @@ int set_speed(int file_des) {
 
 	sprintf(mess,"can't set speed variable\n");
 
-	n = receiveDataOnly(file_des,&arg,sizeof(arg));
+	n = receiveData(file_des,&arg,sizeof(arg),INT32);
 	if (n < 0) {
 		sprintf(mess,"Error reading from socket\n");
 		ret=FAIL;
 	}
-	n = receiveDataOnly(file_des,&val,sizeof(val));
+	n = receiveData(file_des,&val,sizeof(val),INT32);
 	if (n < 0) {
 		sprintf(mess,"Error reading from socket\n");
 		ret=FAIL;
@@ -2623,11 +2635,11 @@ int set_speed(int file_des) {
 	}
 #endif
 
-	n = sendDataOnly(file_des,&ret,sizeof(ret));
+	n = sendData(file_des,&ret,sizeof(ret),INT32);
 	if (ret==FAIL) {
-		n = sendDataOnly(file_des,mess,sizeof(mess));
+		n = sendData(file_des,mess,sizeof(mess),OTHER);
 	} else {
-		n = sendDataOnly(file_des,&retval,sizeof(retval));
+		n = sendData(file_des,&retval,sizeof(retval),INT32);
 	}
 	return ret;
 }
@@ -2649,7 +2661,7 @@ int execute_trimming(int file_des) {
 
 	sprintf(mess,"can't set execute trimming\n");
 
-	n = receiveDataOnly(file_des,&mode,sizeof(mode));
+	n = receiveData(file_des,&mode,sizeof(mode),INT32);
 	printf("mode received\n");
 	if (n < 0) {
 		sprintf(mess,"Error reading from socket\n");
@@ -2657,7 +2669,7 @@ int execute_trimming(int file_des) {
 		ret=FAIL;
 	}
 
-	n = receiveDataOnly(file_des,arg,sizeof(arg));
+	n = receiveData(file_des,arg,sizeof(arg),INT32);
 	printf("arg received\n");
 	if (n < 0) {
 		sprintf(mess,"Error reading from socket\n");
@@ -2722,9 +2734,9 @@ int execute_trimming(int file_des) {
 	} else if (differentClients)
 		ret=FORCE_UPDATE;
 
-	n = sendDataOnly(file_des,&ret,sizeof(ret));
+	n = sendData(file_des,&ret,sizeof(ret),INT32);
 	if (ret==FAIL) {
-		n = sendDataOnly(file_des,mess,sizeof(mess));
+		n = sendData(file_des,mess,sizeof(mess),OTHER);
 	}
 
 	return ret;
@@ -2754,7 +2766,7 @@ int configure_mac(int file_des) {
 
 	sprintf(mess,"Can't configure MAC\n");
 
-	n = receiveDataOnly(file_des,arg,sizeof(arg));
+	n = receiveData(file_des,arg,sizeof(arg),OTHER);
 	if (n < 0) {
 		sprintf(mess,"Error reading from socket\n");
 		ret=FAIL;
@@ -2806,12 +2818,12 @@ int configure_mac(int file_des) {
 #endif
 	/* send answer */
 	/* send OK/failed */
-	n = sendDataOnly(file_des,&ret,sizeof(ret));
+	n = sendData(file_des,&ret,sizeof(ret),INT32);
 	if (ret!=FAIL) {
 		/* send return argument */
-		n += sendDataOnly(file_des,&retval,sizeof(retval));
+		n += sendData(file_des,&retval,sizeof(retval),INT32);
 	} else {
-		n += sendDataOnly(file_des,mess,sizeof(mess));
+		n += sendData(file_des,mess,sizeof(mess),OTHER);
 	}
 
 	/*return ok/fail*/
@@ -2830,13 +2842,13 @@ int load_image(int file_des) {
 
 	sprintf(mess,"Loading image failed\n");
 
-	n = receiveDataOnly(file_des,&index,sizeof(index));
+	n = receiveData(file_des,&index,sizeof(index),INT32);
 	if (n < 0) {
 		sprintf(mess,"Error reading from socket\n");
 		ret=FAIL;
 	}
 
-	n = receiveDataOnly(file_des,ImageVals,dataBytes);
+	n = receiveData(file_des,ImageVals,dataBytes,OTHER);
 	if (n < 0) {
 		sprintf(mess,"Error reading from socket\n");
 		ret=FAIL;
@@ -2886,12 +2898,12 @@ int load_image(int file_des) {
 
 	/* send answer */
 	/* send OK/failed */
-	n = sendDataOnly(file_des,&ret,sizeof(ret));
+	n = sendData(file_des,&ret,sizeof(ret),INT32);
 	if (ret!=FAIL) {
 		/* send return argument */
-		n += sendDataOnly(file_des,&retval,sizeof(retval));
+		n += sendData(file_des,&retval,sizeof(retval),INT32);
 	} else {
-		n += sendDataOnly(file_des,mess,sizeof(mess));
+		n += sendData(file_des,mess,sizeof(mess),OTHER);
 	}
 
 	/*return ok/fail*/
@@ -2912,7 +2924,7 @@ int read_counter_block(int file_des) {
 
 	sprintf(mess,"Read counter block failed\n");
 
-	n = receiveDataOnly(file_des,&startACQ,sizeof(startACQ));
+	n = receiveData(file_des,&startACQ,sizeof(startACQ),INT32);
 	if (n < 0) {
 		sprintf(mess,"Error reading from socket\n");
 		ret=FAIL;
@@ -2945,12 +2957,12 @@ int read_counter_block(int file_des) {
 
 	/* send answer */
 	/* send OK/failed */
-	n = sendDataOnly(file_des,&ret,sizeof(ret));
+	n = sendData(file_des,&ret,sizeof(ret),INT32);
 	if (ret!=FAIL) {
 		/* send return argument */
-		n += sendDataOnly(file_des,CounterVals,dataBytes);//1280*2
+		n += sendData(file_des,CounterVals,dataBytes,OTHER);//1280*2
 	} else {
-		n += sendDataOnly(file_des,mess,sizeof(mess));
+		n += sendData(file_des,mess,sizeof(mess),OTHER);
 	}
 
 	/*return ok/fail*/
@@ -2969,7 +2981,7 @@ int reset_counter_block(int file_des) {
 
 	sprintf(mess,"Reset counter block failed\n");
 
-	n = receiveDataOnly(file_des,&startACQ,sizeof(startACQ));
+	n = receiveData(file_des,&startACQ,sizeof(startACQ),INT32);
 	if (n < 0) {
 		sprintf(mess,"Error reading from socket\n");
 		ret=FAIL;
@@ -2995,9 +3007,9 @@ int reset_counter_block(int file_des) {
 
 	/* send answer */
 	/* send OK/failed */
-	n = sendDataOnly(file_des,&ret,sizeof(ret));
+	n = sendData(file_des,&ret,sizeof(ret),INT32);
 	if (ret==FAIL)
-		n += sendDataOnly(file_des,mess,sizeof(mess));
+		n += sendData(file_des,mess,sizeof(mess),OTHER);
 
 	/*return ok/fail*/
 	return ret;
@@ -3037,9 +3049,9 @@ int start_receiver(int file_des) {
 	}
 
 	/* send answer */
-	n = sendDataOnly(file_des,&ret,sizeof(ret));
+	n = sendData(file_des,&ret,sizeof(ret),INT32);
 	if(ret==FAIL)
-		n += sendDataOnly(file_des,mess,sizeof(mess));
+		n += sendData(file_des,mess,sizeof(mess),OTHER);
 	/*return ok/fail*/
 	return ret;
 }
@@ -3077,9 +3089,9 @@ int stop_receiver(int file_des) {
 	}
 
 	/* send answer */
-	n = sendDataOnly(file_des,&ret,sizeof(ret));
+	n = sendData(file_des,&ret,sizeof(ret),INT32);
 	if(ret==FAIL)
-		n += sendDataOnly(file_des,mess,sizeof(mess));
+		n += sendData(file_des,mess,sizeof(mess),OTHER);
 	/*return ok/fail*/
 	return ret;
 }
@@ -3097,7 +3109,7 @@ int calibrate_pedestal(int file_des){
 
 	sprintf(mess,"Could not calibrate pedestal\n");
 
-	n = receiveDataOnly(file_des,&frames,sizeof(frames));
+	n = receiveData(file_des,&frames,sizeof(frames),INT32);
 	if (n < 0) {
 		sprintf(mess,"Error reading from socket\n");
 		ret=FAIL;
@@ -3123,11 +3135,11 @@ int calibrate_pedestal(int file_des){
 
 	/* send answer */
 	/* send OK/failed */
-	n = sendDataOnly(file_des,&ret,sizeof(ret));
+	n = sendData(file_des,&ret,sizeof(ret),INT32);
 	if (ret==FAIL)
-		n += sendDataOnly(file_des,mess,sizeof(mess));
+		n += sendData(file_des,mess,sizeof(mess),OTHER);
 	else
-		n += sendDataOnly(file_des,&retval,sizeof(retval));
+		n += sendData(file_des,&retval,sizeof(retval),INT32);
 
 	/*return ok/fail*/
 	return ret;

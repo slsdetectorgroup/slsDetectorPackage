@@ -1,4 +1,5 @@
 CC			=	powerpc-4xx-softfloat-gcc
+CCX			=	powerpc-4xx-softfloat-g++
 CLAGS		+=  -Wall -DDACS_INT   -DEIGERD  -DSLS_DETECTOR_FUNCTION_LIST #-DVERBOSE #-DVIRTUAL
 LDLIBS		+= 	-lm  -lstdc++ 
 
@@ -13,21 +14,17 @@ OBJS 		= 	$(SRC_CLNT:.cpp=.o)
 
 all: clean $(PROGS)
 
-
-3pc: clean pccompile $(PROGS)
-
-
-#pccompile:
-#CC := gcc
 	
 boot: $(OBJS)
 
 $(PROGS): 
 	echo $(OBJS)
 	mkdir -p $(DESTDIR) 
-	$(CC) $(SRC_CLNT) $(CLAGS) $(LDLIBS) -o $@   
+#	$(CC) $(SRC_CLNT) $(CLAGS) $(LDLIBS) -o $@   
+	$(CC)  -c   $(SRC_CLNT) $(CLAGS) $(LDLIBS)
+	$(CCX) -o $@    slsDetectorServer.o slsDetectorServer_funcs.o communication_funcs.o slsDetectorFunctionList.o 
 	mv $(PROGS) $(DESTDIR)
 
-
 clean:
-	rm -rf $(DESTDIR)/$(PROGS)  *.o 
+	rm -rf $(DESTDIR)/$(PROGS)  *.o
+	

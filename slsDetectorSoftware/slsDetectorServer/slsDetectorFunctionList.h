@@ -8,6 +8,7 @@
 #include <stdlib.h>
 
 
+
 /*
 #include <stdio.h>
 #include <stdlib.h>
@@ -122,6 +123,9 @@ enum masterFlags setMaster(enum masterFlags arg);
 enum synchronizationMode setSynchronization(enum synchronizationMode arg);
 
 
+
 #endif
+
+
 
 #endif

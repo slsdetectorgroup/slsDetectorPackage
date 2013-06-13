@@ -14,17 +14,38 @@
 
 #include "sls_detector_defs.h"
 
+
+
+
 char lastClientIP[INET_ADDRSTRLEN];
 char thisClientIP[INET_ADDRSTRLEN];
 int lockStatus;
 int differentClients;
+typedef enum{
+	INT16,
+	INT32,
+	INT64,
+	OTHER
+}intType;
+
+
+
 
 int bindSocket(unsigned short int port_number);
 int acceptConnection(int socketDescriptor);
 void closeConnection(int file_Des);
 void exitServer(int socketDescriptor);
+
+void swapData(void* val,int length,intType itype);
+void swap16(int16_t* val,int length);
+void swap32(int32_t* val,int length);
+void swap64(int64_t* val,int length);
+
+int sendData(int file_des, void* buf,int length, intType itype);
+int receiveData(int file_des, void* buf,int length, intType itype);
 int sendDataOnly(int file_des, void* buf,int length);
 int receiveDataOnly(int file_des, void* buf,int length);
+
 
 int getServerError(int socketDescriptor);
 int sendChannel(int file_des, sls_detector_channel *myChan); 

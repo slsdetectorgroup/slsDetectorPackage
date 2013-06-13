@@ -263,6 +263,55 @@ void exitServer(int socketDescriptor) {
 
 
 
+void swapData(void* val,int length,intType itype){
+	switch(itype){
+	case INT16:	swap16(val,length);	break;
+	case INT32:	swap32(val,length);	break;
+	case INT64:	swap64(val,length);	break;
+	default:	break;
+	}
+}
+
+void swap16(int16_t* val,int length){
+printf("not implemented\n");
+}
+
+void swap32(int32_t* val,int length){
+	int i;
+	for(i=0; length > 0; i++){
+		val[i] = ((val[i] << 8) & 0xFF00FF00) | ((val[i] >> 8) & 0xFF00FF );
+		val[i] = (val[i] << 16) | ((val[i] >> 16) & 0xFFFF);
+		length -= sizeof(int32_t);
+	}
+}
+
+void swap64(int64_t* val,int length){
+	int i;
+	for(i=0; length > 0; i++){
+		val[i] = ((val[i] << 8) & 0xFF00FF00FF00FF00ULL ) | ((val[i] >> 8) & 0x00FF00FF00FF00FFULL );
+		val[i] = ((val[i] << 16) & 0xFFFF0000FFFF0000ULL ) | ((val[i] >> 16) & 0x0000FFFF0000FFFFULL );
+		val[i] =  (val[i] << 32) | ((val[i] >> 32) & 0xFFFFFFFFULL);
+		length -= sizeof(int64_t);
+	}
+}
+
+int sendData(int file_des, void* buf,int length, intType itype){
+	int ret = sendDataOnly(file_des, buf, length);
+#ifdef EIGERD
+	swapData(buf, length, itype);
+#endif
+	return ret;
+}
+
+int receiveData(int file_des, void* buf,int length, intType itype){
+	int ret = receiveDataOnly(file_des, buf, length);
+#ifdef EIGERD
+	swapData(buf, length, itype);
+#endif
+	return ret;
+}
+
+
  int sendDataOnly(int file_des, void* buf,int length) {
 
 

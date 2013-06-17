@@ -44,7 +44,7 @@ int slsDetector::initSharedMemory(detectorType type, int id) {
     nd=13; // dacs+adcs
     break;
   case EIGER:
-    nch=65536; // one EIGER half module
+    nch=256*256; // one EIGER half module
     nm=1; //modules/detector
     nc=4; //chips
     nd=16; //dacs+adcs
@@ -489,10 +489,8 @@ int slsDetector::initializeDetectorSize(detectorType type) {
     thisDetector->myDetectorType=type;
     switch(thisDetector->myDetectorType) {
     case MYTHEN:
-      thisDetector->nChans=128;
       thisDetector->nChan[X]=128;
       thisDetector->nChan[Y]=1;
-      thisDetector->nChips=10;
       thisDetector->nChip[X]=10;
       thisDetector->nChip[Y]=1;
       thisDetector->nDacs=6;
@@ -506,10 +504,8 @@ int slsDetector::initializeDetectorSize(detectorType type) {
 #endif
       break;
     case PICASSO:
-      thisDetector->nChans=128;
       thisDetector->nChan[X]=128;
       thisDetector->nChan[Y]=1;
-      thisDetector->nChips=12;
       thisDetector->nChip[X]=12;
       thisDetector->nChip[Y]=1;
       thisDetector->nDacs=6;
@@ -519,10 +515,8 @@ int slsDetector::initializeDetectorSize(detectorType type) {
       thisDetector->dynamicRange=24;
       break;
     case GOTTHARD:
-      thisDetector->nChans=128;
       thisDetector->nChan[X]=128;
       thisDetector->nChan[Y]=1;
-      thisDetector->nChips=10;
       thisDetector->nChip[X]=10;
       thisDetector->nChip[Y]=1;
       thisDetector->nDacs=8;
@@ -532,10 +526,8 @@ int slsDetector::initializeDetectorSize(detectorType type) {
       thisDetector->dynamicRange=16;
       break;
     case MOENCH:
-      thisDetector->nChans=160*160;
       thisDetector->nChan[X]=160;
       thisDetector->nChan[Y]=160;
-      thisDetector->nChips=1;
       thisDetector->nChip[X]=1;
       thisDetector->nChip[Y]=1;
       thisDetector->nDacs=8;
@@ -544,11 +536,20 @@ int slsDetector::initializeDetectorSize(detectorType type) {
       thisDetector->nModMax[Y]=1;
       thisDetector->dynamicRange=16;
       break;
+    case EIGER:
+      thisDetector->nChan[X]=256;
+      thisDetector->nChan[Y]=256;
+      thisDetector->nChip[X]=4;
+      thisDetector->nChip[Y]=1;
+      thisDetector->nDacs=16;
+      thisDetector->nAdcs=1;
+      thisDetector->nModMax[X]=1;
+      thisDetector->nModMax[Y]=1;
+      thisDetector->dynamicRange=16;
+      break;
     default:
-      thisDetector->nChans=0;
       thisDetector->nChan[X]=0;
       thisDetector->nChan[Y]=0;
-     thisDetector->nChips=0;
      thisDetector->nChip[X]=0;
      thisDetector->nChip[Y]=0;
       thisDetector->nDacs=0;
@@ -557,6 +558,8 @@ int slsDetector::initializeDetectorSize(detectorType type) {
       thisDetector->nModMax[Y]=0;  
       thisDetector->dynamicRange=32;
     }
+    thisDetector->nChans=thisDetector->nChan[X]*thisDetector->nChan[Y];
+    thisDetector->nChips=thisDetector->nChip[X]*thisDetector->nChip[Y];
     thisDetector->nModsMax=thisDetector->nModMax[0]*thisDetector->nModMax[1];
     /** number of modules is initally the maximum number of modules */
     thisDetector->nMod[X]=thisDetector->nModMax[X];
@@ -2794,131 +2797,166 @@ slsDetectorDefs::detectorSettings  slsDetector::getSettings(int imod){
 
 slsDetectorDefs::detectorSettings slsDetector::setSettings( detectorSettings isettings, int imod){
 #ifdef VERBOSE
-  std::cout<< "slsDetector setSettings "<< std::endl;
+	std::cout<< "slsDetector setSettings "<< std::endl;
 #endif
-  sls_detector_module *myMod=createModule();
-  int modmi=imod, modma=imod+1, im=imod;
-  string settingsfname, calfname;
-  string ssettings;
-  detectorSettings minsettings, maxsettings;
+	sls_detector_module *myMod=createModule();
+	int modmi=imod, modma=imod+1, im=imod;
+	string settingsfname, calfname;
+	string ssettings;
 
-  switch(thisDetector->myDetectorType){
-  case MOENCH:
-  case GOTTHARD:
-    minsettings = HIGHGAIN;
-    maxsettings = VERYHIGHGAIN;
-    break;
-  default:
-    minsettings = STANDARD;
-    maxsettings = HIGHGAIN;
-  }
-    
-  if (isettings>=minsettings && isettings<=maxsettings) {
-    switch (isettings) {
-    case STANDARD:
-      ssettings="/standard";
-      thisDetector->currentSettings=STANDARD;
-      break;
-    case FAST:
-      ssettings="/fast";
-      thisDetector->currentSettings=FAST;
-      break;
-    case HIGHGAIN:
-      ssettings="/highgain";
-      thisDetector->currentSettings=HIGHGAIN;
-      break;
-    case DYNAMICGAIN:
-      ssettings="/dynamicgain";
-      thisDetector->currentSettings=DYNAMICGAIN;
-      break;
-    case LOWGAIN:
-      ssettings="/lowgain";
-      thisDetector->currentSettings=LOWGAIN;
-      break;
-    case MEDIUMGAIN:
-      ssettings="/mediumgain";
-      thisDetector->currentSettings=MEDIUMGAIN;
-      break;
-    case VERYHIGHGAIN:
-      ssettings="/veryhighgain";
-      thisDetector->currentSettings=VERYHIGHGAIN;
-      break;
-    default:
-      std::cout<< "Unknown settings!" << std::endl;
-    }
-       
-    if (imod<0) {
-      modmi=0;
-      //  modma=thisDetector->nModMax[X]*thisDetector->nModMax[Y];
-      modma=thisDetector->nMod[X]*thisDetector->nMod[Y];
-    }
-
-    for (im=modmi; im<modma; im++) {
-      ostringstream ostfn, oscfn;
-      myMod->module=im;
-      //create file names
-      switch(thisDetector->myDetectorType){
-      case MOENCH:
-      case GOTTHARD:
-	//settings is saved in myMod.reg for gotthard
-	myMod->reg=thisDetector->currentSettings;
-	ostfn << thisDetector->settingsDir << ssettings <<"/settings.sn";//  << setfill('0') << setw(3) << hex << getId(MODULE_SERIAL_NUMBER, im) << setbase(10); 
-	oscfn << thisDetector->calDir << ssettings << "/calibration.sn";//  << setfill('0') << setw(3) << hex << getId(MODULE_SERIAL_NUMBER, im) << setbase(10); 
-#ifdef VERBOSE
-	std::cout<< thisDetector->settingsDir<<endl<< thisDetector->calDir <<endl;
-#endif
-	break;
-      default:
-	ostfn << thisDetector->settingsDir << ssettings <<"/noise.sn"  << setfill('0') << setw(3) << hex << getId(MODULE_SERIAL_NUMBER, im) << setbase(10); 
-	oscfn << thisDetector->calDir << ssettings << "/calibration.sn"  << setfill('0') << setw(3) << hex << getId(MODULE_SERIAL_NUMBER, im) << setbase(10); 
-      }
-      settingsfname=ostfn.str();
-#ifdef VERBOSE
-      cout << "the settings name is "<<settingsfname << endl;
-#endif
-      if (readSettingsFile(settingsfname,thisDetector->myDetectorType, myMod)) {
-	calfname=oscfn.str();
-#ifdef VERBOSE
-	cout << calfname << endl;
-#endif
-	readCalibrationFile(calfname,myMod->gain, myMod->offset);
-	setModule(*myMod);
-      } else {
-	ostringstream ostfn,oscfn;
-	switch(thisDetector->myDetectorType){
-	case MOENCH:
-	case GOTTHARD:
-	  ostfn << thisDetector->settingsDir << ssettings << ssettings << ".settings";
-	  break;
+	switch (isettings) {
+	case STANDARD:
+		if (    (thisDetector->myDetectorType == MYTHEN) ||
+				(thisDetector->myDetectorType == EIGER)) {
+			ssettings="/standard";
+			thisDetector->currentSettings=STANDARD;
+		}
+		break;
+	case FAST:
+		if (thisDetector->myDetectorType == MYTHEN) {
+			ssettings="/fast";
+			thisDetector->currentSettings=FAST;
+		}
+		break;
+	case HIGHGAIN:
+		if (    (thisDetector->myDetectorType == MYTHEN) ||
+				(thisDetector->myDetectorType == GOTTHARD) ||
+				(thisDetector->myDetectorType == EIGER)) {
+			ssettings="/highgain";
+			thisDetector->currentSettings=HIGHGAIN;
+		}
+		break;
+	case DYNAMICGAIN:
+		if (thisDetector->myDetectorType == GOTTHARD){
+			ssettings="/dynamicgain";
+			thisDetector->currentSettings=DYNAMICGAIN;
+		}
+		break;
+	case LOWGAIN:
+		if (thisDetector->myDetectorType == GOTTHARD){
+			ssettings="/lowgain";
+			thisDetector->currentSettings=LOWGAIN;
+		}
+		break;
+	case MEDIUMGAIN:
+		if (thisDetector->myDetectorType == GOTTHARD){
+			ssettings="/mediumgain";
+			thisDetector->currentSettings=MEDIUMGAIN;
+		}
+		break;
+	case VERYHIGHGAIN:
+		if (thisDetector->myDetectorType == GOTTHARD){
+			ssettings="/veryhighgain";
+			thisDetector->currentSettings=VERYHIGHGAIN;
+		}
+		break;
+	case LOWNOISE:
+		if (thisDetector->myDetectorType == EIGER){
+			ssettings="/lownoise";
+			thisDetector->currentSettings=LOWNOISE;
+		}
+		break;
 	default:
-	  ostfn << thisDetector->settingsDir << ssettings << ssettings << ".trim"; 
+		break;
 	}
-	oscfn << thisDetector->calDir << ssettings << ssettings << ".cal";
-	calfname=oscfn.str();
-	settingsfname=ostfn.str();
+
+
+	if (isettings !=  thisDetector->currentSettings) {
+		std::cout<< "Unknown settings for this detector!" << std::endl;
+	}else{
+		if (imod<0) {
+			modmi=0;
+			//  modma=thisDetector->nModMax[X]*thisDetector->nModMax[Y];
+			modma=thisDetector->nMod[X]*thisDetector->nMod[Y];
+		}
+
+		for (im=modmi; im<modma; im++) {
+			ostringstream ostfn, oscfn;
+			myMod->module=im;
+
+			//create file names
+			switch(thisDetector->myDetectorType){
+			case EIGER:
+				ostfn << thisDetector->settingsDir << ssettings <<"/settings.sn";//  << setfill('0') << setw(3) << hex << getId(MODULE_SERIAL_NUMBER, im) << setbase(10);
+				oscfn << thisDetector->calDir << ssettings << "/calibration.sn";//  << setfill('0') << setw(3) << hex << getId(MODULE_SERIAL_NUMBER, im) << setbase(10);
+				//add the trimbits binary file
+				break;
+			case MOENCH:
+			case GOTTHARD:
+				//settings is saved in myMod.reg for gotthard
+				myMod->reg=thisDetector->currentSettings;
+				ostfn << thisDetector->settingsDir << ssettings <<"/settings.sn";//  << setfill('0') << setw(3) << hex << getId(MODULE_SERIAL_NUMBER, im) << setbase(10);
+				oscfn << thisDetector->calDir << ssettings << "/calibration.sn";//  << setfill('0') << setw(3) << hex << getId(MODULE_SERIAL_NUMBER, im) << setbase(10);
 #ifdef VERBOSE
-	cout << settingsfname << endl;
-	cout << calfname << endl;
+				std::cout<< thisDetector->settingsDir<<endl<< thisDetector->calDir <<endl;
 #endif
-	if (readSettingsFile(settingsfname,thisDetector->myDetectorType, myMod)) {
-	  calfname=oscfn.str();
-	  readCalibrationFile(calfname,myMod->gain, myMod->offset);
-	  setModule(*myMod);
+				break;
+			default:
+				ostfn << thisDetector->settingsDir << ssettings <<"/noise.sn"  << setfill('0') << setw(3) << hex << getId(MODULE_SERIAL_NUMBER, im) << setbase(10);
+				oscfn << thisDetector->calDir << ssettings << "/calibration.sn"  << setfill('0') << setw(3) << hex << getId(MODULE_SERIAL_NUMBER, im) << setbase(10);
+			}
+
+			settingsfname=ostfn.str();
+#ifdef VERBOSE
+			cout << "the settings name is "<<settingsfname << endl;
+#endif
+			if (readSettingsFile(settingsfname,thisDetector->myDetectorType, myMod)) {
+				calfname=oscfn.str();
+#ifdef VERBOSE
+				cout << calfname << endl;
+#endif
+				readCalibrationFile(calfname,myMod->gain, myMod->offset);
+				setModule(*myMod);
+			} else {
+				ostringstream ostfn,oscfn;
+				switch(thisDetector->myDetectorType){
+				case MOENCH:
+				case GOTTHARD:
+					ostfn << thisDetector->settingsDir << ssettings << ssettings << ".settings";
+					break;
+				default:
+					ostfn << thisDetector->settingsDir << ssettings << ssettings << ".trim";
+					break;
+				}
+				oscfn << thisDetector->calDir << ssettings << ssettings << ".cal";
+				calfname=oscfn.str();
+				settingsfname=ostfn.str();
+#ifdef VERBOSE
+				cout << settingsfname << endl;
+				cout << calfname << endl;
+#endif
+				if (readSettingsFile(settingsfname,thisDetector->myDetectorType, myMod)) {
+					calfname=oscfn.str();
+					readCalibrationFile(calfname,myMod->gain, myMod->offset);
+					setModule(*myMod);
+				}else{
+					std::cout << "Could not set settings" << endl;
+					setErrorMask((getErrorMask())|(SETTINGS_NOT_SET));
+					return  thisDetector->currentSettings;
+				}
+			}
+		}
 	}
-      }
-    }
-  }
-  deleteModule(myMod);
-  switch(thisDetector->myDetectorType==MYTHEN){
-    if (thisDetector->correctionMask&(1<<RATE_CORRECTION)) {
-      int isett=getSettings(imod);
-      double t[]=defaultTDead;
-      if (isett>-1 && isett<3) {
-	thisDetector->tDead=t[isett];
-      }
-    }
-  }
-  return  getSettings(imod);
+
+
+
+	deleteModule(myMod);
+	switch(thisDetector->myDetectorType==MYTHEN){
+	if (thisDetector->correctionMask&(1<<RATE_CORRECTION)) {
+		int isett=getSettings(imod);
+		double t[]=defaultTDead;
+		if (isett>-1 && isett<3) {
+			thisDetector->tDead=t[isett];
+		}
+	}
+	}
+
+	if (getSettings(imod) != isettings){
+		std::cout << "Could not set settings" << endl;
+		setErrorMask((getErrorMask())|(SETTINGS_NOT_SET));
+	}
+
+	return  thisDetector->currentSettings;
 };
 
 

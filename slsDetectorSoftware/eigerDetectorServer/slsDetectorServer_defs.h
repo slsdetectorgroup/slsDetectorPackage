@@ -15,7 +15,7 @@
 
 
 /* examples*/
-#define NCHAN 			256*1024
+#define NCHAN 			256*256
 #define NCHIP 			4*1
 #define NDAC 			16
 #define NADC			1

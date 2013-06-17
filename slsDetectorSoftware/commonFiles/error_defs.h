@@ -34,6 +34,7 @@ using namespace std;
 #define COULDNOT_SET_ROI					0x0000000000000004ULL
 #define FILE_PATH_DOES_NOT_EXIST			0x0000000000000008ULL
 #define RECEIVER_READ_FREQUENCY				0x0000000000000010ULL
+#define SETTINGS_NOT_SET					0x0000000000000020ULL
 
 /** @short class returning all error messages for error mask */
 class errorDefs {
@@ -84,6 +85,8 @@ public:
 		if(slsErrorMask&RECEIVER_READ_FREQUENCY)
 			retval.append("Could not set receiver read frequency.\n");
 
+		if(slsErrorMask&SETTINGS_NOT_SET)
+			retval.append("Could not set settings.\n");
 
 		return retval;
 

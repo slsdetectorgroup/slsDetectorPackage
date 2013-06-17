@@ -355,6 +355,23 @@ enum dacIndex {
   V_DAC5,		/**< moench */
   V_DAC6,		/**< moench */
   V_DAC7,		/**< moench */
+  E_SvP,		/**< eiger */
+  E_SvN,		/**< eiger */
+  E_Vtr,		/**< eiger */
+  E_Vrf,		/**< eiger */
+  E_Vrs,		/**< eiger */
+  E_Vtgstv ,	/**< eiger */
+  E_Vcmp_ll,	/**< eiger */
+  E_Vcmp_lr,	/**< eiger */
+  E_cal,		/**< eiger */
+  E_Vcmp_rl,	/**< eiger */
+  E_Vcmp_rr,	/**< eiger */
+  E_rxb_rb ,	/**< eiger */
+  E_rxb_lb,		/**< eiger */
+  E_Vcp,		/**< eiger */
+  E_Vcn,		/**< eiger */
+  E_Vis,		/**< eiger */
+  E_iodelay		/**< eiger */
 };
 
 /** 
@@ -369,6 +386,7 @@ enum detectorSettings{
   LOWGAIN,          /**< low gain  settings */
   MEDIUMGAIN,       /**< medium gain  settings */
   VERYHIGHGAIN,     /**< very high gain  settings */
+  LOWNOISE,			/**< low noise settings */
   UNDEFINED,        /**< undefined or custom  settings */
   UNINITIALIZED     /**< uninitialiazed (status at startup) */
 };

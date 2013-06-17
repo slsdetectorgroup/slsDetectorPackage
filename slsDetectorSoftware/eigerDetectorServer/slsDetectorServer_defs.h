@@ -15,9 +15,9 @@
 
 
 /* examples*/
-#define NCHAN 			1
-#define NCHIP 			1
-#define NDAC 			1
+#define NCHAN 			256*1024
+#define NCHIP 			4*1
+#define NDAC 			16
 #define NADC			1
 #define NMAXMODX  		1
 #define NMAXMODY 		1

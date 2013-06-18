@@ -153,27 +153,30 @@ int slsDetectorUsers::setBeamEnergy(int e_eV){
 }
 
 double slsDetectorUsers::setExposureTime(double t, bool inseconds){
-	int64_t tms = t * (1E+9);
+  int64_t tms = t * (1E+9);
+  if (t < 0) tms = -1;
   if(inseconds)
-	  return myDetector->setExposureTime(t);
+    return myDetector->setExposureTime(t);
   else
-	  return  ((1E-9) * (double)myDetector->setExposureTime(tms));
+    return  ((1E-9) * (double)myDetector->setExposureTime(tms));
 }
 
 double slsDetectorUsers::setExposurePeriod(double t, bool inseconds){
-	int64_t tms = t * (1E+9);
+  int64_t tms = t * (1E+9);
+  if (t < 0) tms = -1;
   if(inseconds)
-	  return myDetector->setExposureTime(t);
+    return myDetector->setExposureTime(t);
   else
-	  return  ((1E-9) * (double)myDetector->setExposurePeriod(tms));
+    return  ((1E-9) * (double)myDetector->setExposurePeriod(tms));
 }
 
 double slsDetectorUsers::setDelayAfterTrigger(double t, bool inseconds){
   int64_t tms = t * (1E+9);
+  if (t < 0) tms = -1;
   if(inseconds)
-	  return myDetector->setExposureTime(t);
+    return myDetector->setExposureTime(t);
   else
-	  return  ((1E-9) * (double)myDetector->setDelayAfterTrigger(tms));
+    return  ((1E-9) * (double)myDetector->setDelayAfterTrigger(tms));
 }
 
 int64_t slsDetectorUsers::setNumberOfGates(int64_t t){

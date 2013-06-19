@@ -1,20 +1,24 @@
 SvP  0
-Vtr  2
-Vrf  1.35
-Vrs  0.7
-SvN  2
-Vtgstv  1.278
-Vcmp_ll  0.5
-Vcmp_lr  0.5
-cal  2
-Vcmp_rl  0.5
-rxb_rb  0.55
-rxb_lb  0.55
-Vcmp_rr  0.5
-Vcp  0.1
-Vcn  1
-Vis  0.775
+Vtr  2000
+Vrf  1350
+Vrs  700
+SvN  2000
+Vtgstv  1278
+Vcmp_ll  500
+Vcmp_lr  500
+cal  2000
+Vcmp_rl  500
+rxb_rb  550
+rxb_lb  550
+Vcmp_rr  500
+Vcp  100
+Vcn  1000
+Vis  775
 iodelay 643
+
+
+
+
 
 
 

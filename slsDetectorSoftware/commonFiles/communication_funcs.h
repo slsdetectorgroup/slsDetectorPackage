@@ -37,10 +37,6 @@ void closeConnection(int file_Des);
 void exitServer(int socketDescriptor);
 
 void swapData(void* val,int length,intType itype);
-void swap16(int16_t* val,int length);
-void swap32(int32_t* val,int length);
-void swap64(int64_t* val,int length);
-
 int sendData(int file_des, void* buf,int length, intType itype);
 int receiveData(int file_des, void* buf,int length, intType itype);
 int sendDataOnly(int file_des, void* buf,int length);

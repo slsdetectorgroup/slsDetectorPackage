@@ -11,7 +11,6 @@
 #include <sys/time.h>
 
 
-
 //int socketDescriptor, file_des;
 const int send_rec_max_size=SEND_REC_MAX_SIZE;
 extern int errno;
@@ -264,44 +263,41 @@ void exitServer(int socketDescriptor) {
 
 
 void swapData(void* val,int length,intType itype){
-	switch(itype){
-	case INT16:	swap16(val,length);	break;
-	case INT32:	swap32(val,length);	break;
-	case INT64:	swap64(val,length);	break;
-	default:	break;
-	}
-}
-
-void swap16(int16_t* val,int length){
-printf("not implemented\n");
-}
-
-void swap32(int32_t* val,int length){
 	int i;
+	int16_t* c= (int16_t*)val;
+	int32_t* a= (int32_t*)val;
+	int64_t* b= (int64_t*)val;
 	for(i=0; length > 0; i++){
-		val[i] = ((val[i] << 8) & 0xFF00FF00) | ((val[i] >> 8) & 0xFF00FF );
-		val[i] = (val[i] << 16) | ((val[i] >> 16) & 0xFFFF);
-		length -= sizeof(int32_t);
-	}
-}
-
-void swap64(int64_t* val,int length){
-	int i;
-	for(i=0; length > 0; i++){
-		val[i] = ((val[i] << 8) & 0xFF00FF00FF00FF00ULL ) | ((val[i] >> 8) & 0x00FF00FF00FF00FFULL );
-		val[i] = ((val[i] << 16) & 0xFFFF0000FFFF0000ULL ) | ((val[i] >> 16) & 0x0000FFFF0000FFFFULL );
-		val[i] =  (val[i] << 32) | ((val[i] >> 32) & 0xFFFFFFFFULL);
-		length -= sizeof(int64_t);
+		switch(itype){
+		case INT16:
+			c[i] = ((c[i] & 0x00FF) << 8) | ((c[i] & 0xFF00) >> 8);
+			length -= sizeof(int16_t);
+			break;
+		case INT32:
+			a[i]=((a[i] << 8) & 0xFF00FF00) | ((a[i] >> 8) & 0xFF00FF );
+			a[i]=(a[i] << 16) 			  | ((a[i] >> 16) & 0xFFFF);
+			length -= sizeof(int32_t);
+			break;
+		case INT64:
+			b[i] = ((b[i] << 8) & 0xFF00FF00FF00FF00ULL ) | ((b[i] >> 8) & 0x00FF00FF00FF00FFULL );
+			b[i] = ((b[i] << 16) & 0xFFFF0000FFFF0000ULL ) | ((b[i] >> 16) & 0x0000FFFF0000FFFFULL );
+			b[i] =  (b[i] << 32) | ((b[i] >> 32) & 0xFFFFFFFFULL);
+			length -= sizeof(int64_t);
+			break;
+		default:
+			length = 0;
+			break;
+		}
 	}
 }
 
 int sendData(int file_des, void* buf,int length, intType itype){
-	int ret = sendDataOnly(file_des, buf, length);
 #ifdef EIGERD
 	swapData(buf, length, itype);
 #endif
-	return ret;
+	return sendDataOnly(file_des, buf, length);
 }
+
 
 int receiveData(int file_des, void* buf,int length, intType itype){
 	int ret = receiveDataOnly(file_des, buf, length);
@@ -379,14 +375,24 @@ int receiveData(int file_des, void* buf,int length, intType itype){
 
 
 int sendChannel(int file_des, sls_detector_channel *myChan) {
-  return  sendDataOnly(file_des,myChan, sizeof(sls_detector_channel));
+  int ts=0;
+  //sendDataOnly(file_des,myChan, sizeof(sls_detector_channel));
+  ts+=sendData(file_des,&(myChan->chan),sizeof(myChan->chan),INT32);
+  ts+=sendData(file_des,&(myChan->chip),sizeof(myChan->chip),INT32);
+  ts+=sendData(file_des,&(myChan->module),sizeof(myChan->module),INT32);
+  ts+=sendData(file_des,&(myChan->reg),sizeof(myChan->reg),INT64);
+  return  ts;
 }
 
 int sendChip(int file_des, sls_detector_chip *myChip) {
   int ts=0;
-  int nChans=myChip->nchan;
-  ts+=sendDataOnly(file_des,myChip,sizeof(sls_detector_chip));
-  ts+=sendDataOnly(file_des,myChip->chanregs,nChans*sizeof(int));
+  //ts+=sendDataOnly(file_des,myChip,sizeof(sls_detector_chip));
+  ts+=sendData(file_des,&(myChip->chip),sizeof(myChip->chip),INT32);
+  ts+=sendData(file_des,&(myChip->module),sizeof(myChip->module),INT32);
+  ts+=sendData(file_des,&(myChip->nchan),sizeof(myChip->nchan),INT32);
+  ts+=sendData(file_des,&(myChip->reg),sizeof(myChip->reg),INT32);
+  ts+=sendData(file_des,(myChip->chanregs),sizeof(myChip->chanregs),INT32);
+  ts+=sendData(file_des,myChip->chanregs,myChip->nchan*sizeof(int),INT32);
   return ts;			  
 }
 
@@ -399,25 +405,39 @@ int sendModule(int file_des, sls_detector_module *myMod) {
   int nChans=myMod->nchan;
   int nAdcs=myMod->nadc;
   int nDacs=myMod->ndac;
-  ts+= sendDataOnly(file_des,myMod,sizeof(sls_detector_module));
+  //ts+= sendDataOnly(file_des,myMod,sizeof(sls_detector_module));
+  ts+=sendData(file_des,&(myMod->module),sizeof(myMod->module),INT32);
+  ts+=sendData(file_des,&(myMod->serialnumber),sizeof(myMod->serialnumber),INT32);
+  ts+=sendData(file_des,&(myMod->nchan),sizeof(myMod->nchan),INT32);
+  ts+=sendData(file_des,&(myMod->nchip),sizeof(myMod->nchip),INT32);
+  ts+=sendData(file_des,&(myMod->ndac),sizeof(myMod->ndac),INT32);
+  ts+=sendData(file_des,&(myMod->nadc),sizeof(myMod->nadc),INT32);
+  ts+=sendData(file_des,&(myMod->reg),sizeof(myMod->reg),INT32);
+  ts+=sendData(file_des,myMod->dacs,sizeof(myMod->ndac),INT32);
+  ts+=sendData(file_des,myMod->adcs,sizeof(myMod->nadc),INT32);
+  ts+=sendData(file_des,myMod->chipregs,sizeof(myMod->nchip),INT32);
+  ts+=sendData(file_des,myMod->chanregs,sizeof(myMod->nchan),INT32);
+  ts+=sendData(file_des,&(myMod->gain), sizeof(myMod->gain),OTHER);
+  ts+=sendData(file_des,&(myMod->offset), sizeof(myMod->offset),OTHER);
+
 #ifdef VERBOSE
   printf("module %d of size %d sent\n",myMod->module, ts);
 #endif
-  ts+= sendDataOnly(file_des,myMod->dacs,sizeof(dacs_t)*nDacs);
+  ts+= sendData(file_des,myMod->dacs,sizeof(dacs_t)*nDacs,INT32);
 #ifdef VERBOSE
   printf("dacs %d of size %d sent\n",myMod->module, ts);
   for (idac=0; idac< nDacs; idac++) 
     printf("dac %d is %d\n",idac,(int)myMod->dacs[idac]);
 #endif
-  ts+= sendDataOnly(file_des,myMod->adcs,sizeof(dacs_t)*nAdcs);
+  ts+= sendData(file_des,myMod->adcs,sizeof(dacs_t)*nAdcs,INT32);
 #ifdef VERBOSE
   printf("adcs %d of size %d sent\n",myMod->module, ts);
 #endif
-  ts+=sendDataOnly(file_des,myMod->chipregs,sizeof(int)*nChips);
+  ts+=sendData(file_des,myMod->chipregs,sizeof(int)*nChips,INT32);
 #ifdef VERBOSE
   printf("chips %d of size %d sent\n",myMod->module, ts);
 #endif
-  ts+=sendDataOnly(file_des,myMod->chanregs,sizeof(int)*nChans);
+  ts+=sendData(file_des,myMod->chanregs,sizeof(int)*nChans,INT32);
 #ifdef VERBOSE
   printf("chans %d of size %d sent - %d\n",myMod->module, ts, myMod->nchan);
 #endif
@@ -428,7 +448,13 @@ int sendModule(int file_des, sls_detector_module *myMod) {
 }
 
 int receiveChannel(int file_des, sls_detector_channel *myChan) {
-  return  receiveDataOnly(file_des,myChan,sizeof(sls_detector_channel));
+  int ts=0;
+  //receiveDataOnly(file_des,myChan,sizeof(sls_detector_channel));
+  ts+=receiveData(file_des,&(myChan->chan),sizeof(myChan->chan),INT32);
+  ts+=receiveData(file_des,&(myChan->chip),sizeof(myChan->chip),INT32);
+  ts+=receiveData(file_des,&(myChan->module),sizeof(myChan->module),INT32);
+  ts+=receiveData(file_des,&(myChan->reg),sizeof(myChan->reg),INT32);
+  return ts;
 }
 
 int receiveChip(int file_des, sls_detector_chip* myChip) {
@@ -437,8 +463,12 @@ int receiveChip(int file_des, sls_detector_chip* myChip) {
   int ts=0;
   int nChans, nchanold=myChip->nchan, chdiff;
 
-  ts+= receiveDataOnly(file_des,myChip,sizeof(sls_detector_chip));
-
+  //ts+= receiveDataOnly(file_des,myChip,sizeof(sls_detector_chip));
+  ts+=receiveData(file_des,&(myChip->chip),sizeof(myChip->chip),INT32);
+  ts+=receiveData(file_des,&(myChip->module),sizeof(myChip->module),INT32);
+  ts+=receiveData(file_des,&(myChip->nchan),sizeof(myChip->nchan),INT32);
+  ts+=receiveData(file_des,&(myChip->reg),sizeof(myChip->reg),INT32);
+  ts+=receiveData(file_des,(myChip->chanregs),sizeof(myChip->chanregs),INT32);
 
   myChip->chanregs=ptr;
   nChans=myChip->nchan;
@@ -454,12 +484,12 @@ int receiveChip(int file_des, sls_detector_chip* myChip) {
 #endif
 
   if (chdiff<=0)
-    ts+=receiveDataOnly(file_des,myChip->chanregs, sizeof(int)*nChans);
+    ts+=receiveData(file_des,myChip->chanregs, sizeof(int)*nChans,INT32);
   else {
     ptr=malloc(chdiff*sizeof(int));
     myChip->nchan=nchanold;
-    ts+=receiveDataOnly(file_des,myChip->chanregs, sizeof(int)*nchanold);
-    ts+=receiveDataOnly(file_des,ptr, sizeof(int)*chdiff);
+    ts+=receiveData(file_des,myChip->chanregs, sizeof(int)*nchanold,INT32);
+    ts+=receiveData(file_des,ptr, sizeof(int)*chdiff,INT32);
     free(ptr);
     return FAIL;
   }
@@ -481,10 +511,23 @@ int  receiveModule(int file_des, sls_detector_module* myMod) {
   int nChans, nchanold=myMod->nchan, nchandiff;
   int nDacs, ndold=myMod->ndac, ndacdiff;
   int nAdcs, naold=myMod->nadc, nadcdiff;
-#ifdef VERBOSE 
-    int id=0;
+#ifdef VERBOSE
+  int id=0;
 #endif
-  ts+= receiveDataOnly(file_des,myMod,sizeof(sls_detector_module));
+  // ts+= receiveDataOnly(file_des,myMod,sizeof(sls_detector_module));
+  ts+=receiveData(file_des,&(myMod->module),sizeof(myMod->module),INT32);
+  ts+=receiveData(file_des,&(myMod->serialnumber),sizeof(myMod->serialnumber),INT32);
+  ts+=receiveData(file_des,&(myMod->nchan),sizeof(myMod->nchan),INT32);
+  ts+=receiveData(file_des,&(myMod->nchip),sizeof(myMod->nchip),INT32);
+  ts+=receiveData(file_des,&(myMod->ndac),sizeof(myMod->ndac),INT32);
+  ts+=receiveData(file_des,&(myMod->nadc),sizeof(myMod->nadc),INT32);
+  ts+=receiveData(file_des,&(myMod->reg),sizeof(myMod->reg),INT32);
+  ts+=receiveData(file_des,myMod->dacs,sizeof(myMod->ndac),INT32);
+  ts+=receiveData(file_des,myMod->adcs,sizeof(myMod->nadc),INT32);
+  ts+=receiveData(file_des,myMod->chipregs,sizeof(myMod->nchip),INT32);
+  ts+=receiveData(file_des,myMod->chanregs,sizeof(myMod->nchan),INT32);
+  ts+=receiveData(file_des,&(myMod->gain), sizeof(myMod->gain),OTHER);
+  ts+=receiveData(file_des,&(myMod->offset), sizeof(myMod->offset),OTHER);
 
   myMod->dacs=dacptr;
   myMod->adcs=adcptr;
@@ -496,7 +539,7 @@ int  receiveModule(int file_des, sls_detector_module* myMod) {
   if (nchipold!=nChips) {
     printf("received wrong number of chips\n");
   } 
-#ifdef VERBOSE 
+#ifdef VERBOSE
   else
     printf("received %d chips\n",nChips);
 #endif
@@ -506,7 +549,7 @@ int  receiveModule(int file_des, sls_detector_module* myMod) {
   if (nchanold!=nChans) {
     printf("received wrong number of channels\n");
   } 
-#ifdef VERBOSE 
+#ifdef VERBOSE
   else
     printf("received %d chans\n",nChans);
 #endif
@@ -517,7 +560,7 @@ int  receiveModule(int file_des, sls_detector_module* myMod) {
   if (ndold!=nDacs) {
     printf("received wrong number of dacs\n");
   } 
-#ifdef VERBOSE 
+#ifdef VERBOSE
   else
     printf("received %d dacs\n",nDacs);
 #endif
@@ -527,13 +570,13 @@ int  receiveModule(int file_des, sls_detector_module* myMod) {
   if (naold!=nAdcs) {
     printf("received wrong number of adcs\n");
   }
-#ifdef VERBOSE 
+#ifdef VERBOSE
   else
     printf("received %d adcs\n",nAdcs);
 #endif
   if (ndacdiff<=0) {
-    ts+=receiveDataOnly(file_des,myMod->dacs, sizeof(dacs_t)*nDacs);
-#ifdef VERBOSE 
+    ts+=receiveData(file_des,myMod->dacs, sizeof(dacs_t)*nDacs,INT32);
+#ifdef VERBOSE
     printf("dacs received\n");
     for (id=0; id<nDacs; id++)
       printf("dac %d val %d\n",id,  (int)myMod->dacs[id]);
@@ -543,50 +586,50 @@ int  receiveModule(int file_des, sls_detector_module* myMod) {
   } else {
     dacptr=malloc(ndacdiff*sizeof(dacs_t));
     myMod->ndac=ndold;
-    ts+=receiveDataOnly(file_des,myMod->dacs, sizeof(dacs_t)*ndold);
-    ts+=receiveDataOnly(file_des,dacptr, sizeof(dacs_t)*ndacdiff);
+    ts+=receiveData(file_des,myMod->dacs, sizeof(dacs_t)*ndold,INT32);
+    ts+=receiveData(file_des,dacptr, sizeof(dacs_t)*ndacdiff,INT32);
     free(dacptr);
     return FAIL;
   }
 
   if (nadcdiff<=0) {
-    ts+=receiveDataOnly(file_des,myMod->adcs, sizeof(dacs_t)*nAdcs);
+    ts+=receiveData(file_des,myMod->adcs, sizeof(dacs_t)*nAdcs,INT32);
 #ifdef VERBOSE 
     printf("adcs received\n");
 #endif
   } else {
     adcptr=malloc(nadcdiff*sizeof(dacs_t));
     myMod->nadc=naold;
-    ts+=receiveDataOnly(file_des,myMod->adcs, sizeof(dacs_t)*naold);
-    ts+=receiveDataOnly(file_des,adcptr, sizeof(dacs_t)*nadcdiff);
+    ts+=receiveData(file_des,myMod->adcs, sizeof(dacs_t)*naold,INT32);
+    ts+=receiveData(file_des,adcptr, sizeof(dacs_t)*nadcdiff,INT32);
     free(adcptr);
     return FAIL;
   }
 
   if (nchipdiff<=0) {
-    ts+=receiveDataOnly(file_des,myMod->chipregs, sizeof(int)*nChips);
+    ts+=receiveData(file_des,myMod->chipregs, sizeof(int)*nChips,INT32);
 #ifdef VERBOSE 
     printf("chips received\n");
 #endif
   } else {
     chipptr=malloc(nchipdiff*sizeof(int));
     myMod->nchip=nchipold;
-    ts+=receiveDataOnly(file_des,myMod->chipregs, sizeof(int)*nchipold);
-    ts+=receiveDataOnly(file_des,chipptr, sizeof(int)*nchipdiff);
+    ts+=receiveData(file_des,myMod->chipregs, sizeof(int)*nchipold,INT32);
+    ts+=receiveData(file_des,chipptr, sizeof(int)*nchipdiff,INT32);
     free(chipptr);
     return FAIL;
   }
 
   if (nchandiff<=0) {
-    ts+=receiveDataOnly(file_des,myMod->chanregs, sizeof(int)*nChans);
+    ts+=receiveData(file_des,myMod->chanregs, sizeof(int)*nChans,INT32);
 #ifdef VERBOSE 
     printf("chans received\n");
 #endif
   } else {
     chanptr=malloc(nchandiff*sizeof(int));
     myMod->nchan=nchanold;
-    ts+=receiveDataOnly(file_des,myMod->chanregs, sizeof(int)*nchanold);
-    ts+=receiveDataOnly(file_des,chanptr, sizeof(int)*nchandiff);
+    ts+=receiveData(file_des,myMod->chanregs, sizeof(int)*nchanold,INT32);
+    ts+=receiveData(file_des,chanptr, sizeof(int)*nchandiff,INT32);
     free(chanptr);
     return FAIL;
   }

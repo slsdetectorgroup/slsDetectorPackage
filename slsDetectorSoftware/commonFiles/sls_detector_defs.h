@@ -370,8 +370,7 @@ enum dacIndex {
   E_rxb_lb,		/**< eiger */
   E_Vcp,		/**< eiger */
   E_Vcn,		/**< eiger */
-  E_Vis,		/**< eiger */
-  E_iodelay		/**< eiger */
+  E_Vis			/**< eiger */
 };
 
 /** 

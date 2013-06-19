@@ -73,7 +73,7 @@ int decode_function(int file_des) {
 	int ret=FAIL;
 #ifdef VERBOSE
 	printf( "receive data\n");
-#endif 
+#endif
 	n = receiveData(file_des,&fnum,sizeof(fnum),INT32);
 	if (n <= 0) {
 #ifdef VERBOSE
@@ -534,7 +534,7 @@ int get_detector_type(int file_des) {
 	retval=myDetectorType;
 
 #ifdef VERBOSE
-	printf("Returning detector type %d\n",ret);
+	printf("Returning detector type %d\n",retval);
 #endif
 
 	/* send answer */
@@ -1647,7 +1647,7 @@ int set_module(int file_des) {
 		ret=FAIL;
 	}
 
-	myModule.ndac=getNumberOfADCsPerModule();
+	myModule.ndac=getNumberOfDACsPerModule();
 	myModule.nchip=getNumberOfChipsPerModule();
 	myModule.nchan=getNumberOfChannelsPerModule();
 	myModule.nadc=getNumberOfADCsPerModule();
@@ -1655,7 +1655,7 @@ int set_module(int file_des) {
 
 #ifdef VERBOSE
 	printf("Setting module\n");
-#endif 
+#endif
 	ret=receiveModule(file_des, &myModule);
 
 

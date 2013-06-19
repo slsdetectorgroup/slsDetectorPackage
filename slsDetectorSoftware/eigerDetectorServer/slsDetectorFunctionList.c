@@ -82,7 +82,7 @@ int mapCSP0(void) {
 
 
 int initializeDetectorStructure(){
- printf("EIGER 5\n");
+ printf("EIGER 9\n");
 	int imod;
 	int n=getNModBoard(X)*getNModBoard(Y);
 #ifdef VERBOSE
@@ -386,14 +386,14 @@ int calculateDataBytes(){
 	return 0;
 }
 
-int getTotalNumberOfChannels(){return 0;}
-int getTotalNumberOfChips(){return 0;}
-int getTotalNumberOfModules(){return 0;}
-int getNumberOfChannelsPerChip(){return 0;}
-int getNumberOfChannelsPerModule(){return 0;}
-int getNumberOfChipsPerModule(){return 0;}
-int getNumberOfDACsPerModule(){return 0;}
-int getNumberOfADCsPerModule(){return 0;}
+int getTotalNumberOfChannels(){return NCHIP*NCHAN*nModBoard;}
+int getTotalNumberOfChips(){return NCHIP*nModBoard;}
+int getTotalNumberOfModules(){return nModBoard;}
+int getNumberOfChannelsPerChip(){return NCHAN;}
+int getNumberOfChannelsPerModule(){return NCHAN*NCHIP;}
+int getNumberOfChipsPerModule(){return NCHIP;}
+int getNumberOfDACsPerModule(){return NDAC;}
+int getNumberOfADCsPerModule(){return NADC;}
 
 
 

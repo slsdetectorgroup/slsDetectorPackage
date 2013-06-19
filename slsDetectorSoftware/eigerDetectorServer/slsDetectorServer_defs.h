@@ -18,7 +18,7 @@
 #define NCHAN 			256*256
 #define NCHIP 			4*1
 #define NDAC 			16
-#define NADC			1
+#define NADC			0
 #define NMAXMODX  		1
 #define NMAXMODY 		1
 #define NMAXMOD 		NMAXMODX*NMAXMODY

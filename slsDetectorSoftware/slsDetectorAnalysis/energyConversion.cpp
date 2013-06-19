@@ -117,7 +117,6 @@ slsDetectorDefs::sls_detector_module* energyConversion::readSettingsFile(string 
 		names[id++]="Vtr";
 		names[id++]="Vrf";
 		names[id++]="Vrs";
-		names[id++]="Vin";
 		names[id++]="Vtgstv";
 		names[id++]="Vcmp_ll";
 		names[id++]="Vcmp_lr";
@@ -126,12 +125,9 @@ slsDetectorDefs::sls_detector_module* energyConversion::readSettingsFile(string 
 		names[id++]="Vcmp_rr";
 		names[id++]="rxb_rb";
 		names[id++]="rxb_lb";
-		names[id++]="Vcmp_lr";
 		names[id++]="Vcp";
-		names[id++]="Vcmp_rl";
 		names[id++]="Vcn";
 		names[id++]="Vis";
-		names[id++]="iodelay";
 		break;
 	default:
 		cout << "Unknown detector type - unknown format for settings file" << endl;
@@ -248,6 +244,7 @@ slsDetectorDefs::sls_detector_module* energyConversion::readSettingsFile(string 
 		case MOENCH:
 		case GOTTHARD:
 			//---------------dacs---------------
+
 			while(infile.good()) {
 				getline(infile,str);
 				iline++;
@@ -266,19 +263,16 @@ slsDetectorDefs::sls_detector_module* energyConversion::readSettingsFile(string 
 						break;
 					}
 				}
-				if (i < id) {
-#ifdef VERBOSE
-					std::cout<< sargname << " dac nr. " << idac << " is " << ival << std::endl;
-#endif
-				}else{
-					std::cout<< "Unknown dac " << sargname << std::endl;
-					infile.close();
-					deleteModule(myMod);
-					return NULL;
-				}
 			}
-			break;
+			if (i < id) {
+#ifdef VERBOSE
+				std::cout<< sargname << " dac nr. " << idac << " is " << ival << std::endl;
+#endif
+			}else
+				std::cout<< "Unknown dac " << sargname << std::endl;
 
+
+			break;
 
 		default:
 			std::cout<< "Unknown detector type - don't know how to read file" <<  myfname << std::endl;

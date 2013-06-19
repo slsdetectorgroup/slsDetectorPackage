@@ -243,7 +243,7 @@ slsDetector::slsDetector(char *name, int id, int cport,multiSlsDetector *p) : sl
 {
   detectorType type=(detectorType)getDetectorType(name, cport);
   
-  
+
   while (shmId<0) {
     /**Initlializes shared memory \sa initSharedMemory
 	  
@@ -542,7 +542,7 @@ int slsDetector::initializeDetectorSize(detectorType type) {
       thisDetector->nChip[X]=4;
       thisDetector->nChip[Y]=1;
       thisDetector->nDacs=16;
-      thisDetector->nAdcs=1;
+      thisDetector->nAdcs=0;
       thisDetector->nModMax[X]=1;
       thisDetector->nModMax[Y]=1;
       thisDetector->dynamicRange=16;
@@ -833,11 +833,11 @@ slsDetectorDefs::sls_detector_module*  slsDetector::createModule(detectorType t)
     na=5;
     break;
   case EIGER:
-    nch=65536; // one EIGER half module
+    nch=256*256; // one EIGER half module
     nm=1; //modules/detector
-    nc=4; //chips
+    nc=4*1; //chips
     nd=16; //dacs
-    na=16;
+    na=0;
     break;
   case MOENCH:
     nch=160*160;
@@ -1093,7 +1093,6 @@ string slsDetector::checkOnline() {
 
 int slsDetector::setTCPSocket(string const name, int const control_port, int const stop_port){
 
-
   char thisName[MAX_STR_LENGTH];
   int thisCP, thisSP;
   int retval=OK;
@@ -1147,7 +1146,7 @@ int slsDetector::setTCPSocket(string const name, int const control_port, int con
     if (controlSocket->getErrorStatus()){
 #ifdef VERBOSE
       std::cout<< "Could not connect Control socket " << thisName  << " " << thisCP << std::endl;
-#endif 
+#endif
       delete controlSocket;
       controlSocket=NULL;
       retval=FAIL;
@@ -1172,7 +1171,6 @@ int slsDetector::setTCPSocket(string const name, int const control_port, int con
       std::cout<< "Stop socket connected " << thisName << " " << thisSP << std::endl;
 #endif
   }
-
   if (retval!=FAIL) {
     checkOnline();
   } else {
@@ -2487,8 +2485,7 @@ int slsDetector::setModule(sls_detector_module module){
 
 #ifdef VERBOSE
   std::cout << "slsDetector set module " << std::endl;
-#endif 
-
+#endif
 
   if (thisDetector->onlineFlag==ONLINE_FLAG) {
     if (connectControl() == OK){
@@ -2803,6 +2800,7 @@ slsDetectorDefs::detectorSettings slsDetector::setSettings( detectorSettings ise
 	int modmi=imod, modma=imod+1, im=imod;
 	string settingsfname, calfname;
 	string ssettings;
+	int ichip,ichan,nch;
 
 	switch (isettings) {
 	case STANDARD:
@@ -2879,7 +2877,16 @@ slsDetectorDefs::detectorSettings slsDetector::setSettings( detectorSettings ise
 			case EIGER:
 				ostfn << thisDetector->settingsDir << ssettings <<"/settings.sn";//  << setfill('0') << setw(3) << hex << getId(MODULE_SERIAL_NUMBER, im) << setbase(10);
 				oscfn << thisDetector->calDir << ssettings << "/calibration.sn";//  << setfill('0') << setw(3) << hex << getId(MODULE_SERIAL_NUMBER, im) << setbase(10);
-				//add the trimbits binary file
+
+				//add the trimbits binary file - temp solution
+
+				nch=((myMod->nchan)/(myMod->nchip));
+				for (ichip=0; ichip<myMod->nchip; ichip++) {
+					myMod->chipregs[ichip]=0;
+					for (ichan=0; ichan<nch; ichan++){
+						myMod->chanregs[ichip*nch+ichan]=0;
+					}
+				}
 				break;
 			case MOENCH:
 			case GOTTHARD:

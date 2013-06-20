@@ -27,5 +27,10 @@
 
 #define DYNAMIC_RANGE	16
 
+#ifdef EIGERD
+enum detDacIndex{SVP,SVN,VTR,VRF,VRS,VTGSTV,VCMP_LL,VCMP_LR,CAL,VCMP_RL,VCMP_RR,RXB_RB,RXB_LB,VCP,VCN,VIS};
+#else
+enum detDacIndex{none};
+#endif
 
 #endif /* SLSDETECTORSERVER_DEFS_H_ */

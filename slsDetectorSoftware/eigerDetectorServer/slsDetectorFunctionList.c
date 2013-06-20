@@ -1,7 +1,6 @@
 #ifdef SLS_DETECTOR_FUNCTION_LIST
 
 #include "slsDetectorFunctionList.h"
-#include "slsDetectorServer_defs.h"
 
 #include <stdio.h>
 #include <string.h>
@@ -40,6 +39,7 @@ int sChan, sChip, sMod, sDac, sAdc;
 int nModBoard;
 extern int dataBytes;
 
+int dacvalues[NDAC];
 
 /** temporary
 u_int32_t CSP0BASE;
@@ -221,17 +221,21 @@ int detectorTest( enum digitalTestMode arg){
 
 
 
-double setDAC(enum dacIndex ind, double val, int imod){
+int setDAC(enum detDacIndex ind, int val, int imod){
+
+	if (val >= 0)
+		dacvalues[(int)ind] = val;
+
 	//template initDACbyIndexDACU from mcb_funcs.c
 
 	//check that slsDetectorServer_funcs.c set_dac() has all the specific dac enums
 	//set dac and write to a register in fpga to remember dac value when server restarts
-	return 0;
+	return dacvalues[(int)ind];
 }
 
 
 
-double getADC(enum dacIndex ind,  int imod){
+int getADC(enum detDacIndex ind,  int imod){
 	//get adc value
 	return 0;
 }
@@ -263,7 +267,7 @@ int setThresholdEnergy(int thr, int imod){
 
 
 
-enum detectorSettings setSettings(enum detectorSettings sett, int imod){
+enum detDacIndex setSettings(enum detDacIndex sett, int imod){
 	//template setSettings() from mcb_funcs.c
 	//reads the dac registers from fpga to confirm which settings, if weird, undefined
 

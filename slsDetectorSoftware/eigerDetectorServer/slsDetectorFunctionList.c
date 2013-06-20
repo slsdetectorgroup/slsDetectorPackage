@@ -39,6 +39,8 @@ int sChan, sChip, sMod, sDac, sAdc;
 int nModBoard;
 extern int dataBytes;
 
+
+const char* dacNames[16] = {"Svp","Svn","Vtr","Vrf","Vrs","Vtgstv","Vcmp_ll","Vcmp_lr","Cal","Vcmp_rl","Vcmp_rr","Rxb_rb","Rxb_lb","Vcp","Vcn","Vis"};
 int dacvalues[NDAC];
 
 /** temporary
@@ -222,7 +224,9 @@ int detectorTest( enum digitalTestMode arg){
 
 
 int setDAC(enum detDacIndex ind, int val, int imod){
-
+//#ifdef VERBOSE
+	printf("Setting dac %d: %s to %d mV\n",ind, dacNames[(int)ind],val);
+//#endif
 	if (val >= 0)
 		dacvalues[(int)ind] = val;
 
@@ -242,12 +246,25 @@ int getADC(enum detDacIndex ind,  int imod){
 
 
 
-int setModule(sls_detector_module myChan){
-	//template initModulebyNumber() from mcb_funcs.c
+int setModule(sls_detector_module myMod){
+#ifdef VERBOSE
+	printf("Setting module\n");
+#endif
+
+	//int nchip = myMod.nchip;
+	//int nchan = (myMod.nchan)/nchip;
+	int i;
+
+	for(i=0;i<myMod.ndac;i++)
+		setDAC(i,myMod.dacs[i],myMod.module);
+
+
+
+
 	return OK;
 }
 
-int getModule(sls_detector_module *myChan){
+int getModule(sls_detector_module *myMod){
 	//template getModulebyNumber() from mcb_funcs.c
 	return FAIL;
 }

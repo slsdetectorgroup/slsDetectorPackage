@@ -64,8 +64,8 @@ int setChip(sls_detector_chip myChip);
 int getChip(sls_detector_chip *myChip);
 #endif
 
-int setModule(sls_detector_module myChan);
-int getModule(sls_detector_module *myChan);
+int setModule(sls_detector_module myMod);
+int getModule(sls_detector_module *myMod);
 
 enum detDacIndex setSettings(enum detDacIndex sett, int imod);
 

@@ -1110,7 +1110,7 @@ int set_dac(int file_des) {
 		break;
 	}
 #ifdef VERBOSE
-		printf("Setting DAC %d of module %d to %d V\n", idac, imod, val);
+		printf("Setting DAC %d of module %d to %d \n", idac, imod, val);
 #endif
 #ifdef SLS_DETECTOR_FUNCTION_LIST
 	if (ret==OK) {

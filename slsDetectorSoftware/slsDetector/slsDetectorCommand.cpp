@@ -594,6 +594,70 @@ slsDetectorCommand::slsDetectorCommand(slsDetectorUtils *det)  {
   descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdDAC;
   i++;
 
+  descrToFuncMap[i].m_pFuncName="vsvp"; //
+  descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdDAC;
+  i++;
+
+  descrToFuncMap[i].m_pFuncName="vsvn"; //
+  descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdDAC;
+  i++;
+
+  descrToFuncMap[i].m_pFuncName="vtr"; //
+  descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdDAC;
+  i++;
+
+  descrToFuncMap[i].m_pFuncName="vrf"; //
+  descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdDAC;
+  i++;
+
+  descrToFuncMap[i].m_pFuncName="vrs"; //
+  descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdDAC;
+  i++;
+
+  descrToFuncMap[i].m_pFuncName="vtgstv"; //
+  descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdDAC;
+  i++;
+
+  descrToFuncMap[i].m_pFuncName="vcmp_ll"; //
+  descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdDAC;
+  i++;
+
+  descrToFuncMap[i].m_pFuncName="vcmp_lr"; //
+  descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdDAC;
+  i++;
+
+  descrToFuncMap[i].m_pFuncName="vcall"; //
+  descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdDAC;
+  i++;
+
+  descrToFuncMap[i].m_pFuncName="vcmp_rl"; //
+  descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdDAC;
+  i++;
+
+  descrToFuncMap[i].m_pFuncName="vcmp_rr"; //
+  descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdDAC;
+  i++;
+
+  descrToFuncMap[i].m_pFuncName="rxb_rb"; //
+  descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdDAC;
+  i++;
+
+  descrToFuncMap[i].m_pFuncName="rxb_lb"; //
+  descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdDAC;
+  i++;
+
+  descrToFuncMap[i].m_pFuncName="vcp"; //
+  descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdDAC;
+  i++;
+
+  descrToFuncMap[i].m_pFuncName="vcn"; //
+  descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdDAC;
+  i++;
+
+  descrToFuncMap[i].m_pFuncName="vis"; //
+  descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdDAC;
+  i++;
+
 
 
 
@@ -3055,25 +3119,57 @@ string slsDetectorCommand::cmdDAC(int narg, char *args[], int action) {
   else if (cmd=="vin_cm")
     dac=G_VIN_CM;
   else if (cmd=="vref_comp")
-    dac=G_VREF_COMP;
+	  dac=G_VREF_COMP;
   else if (cmd=="ib_test_c")
-    dac=G_IB_TESTC;
+	  dac=G_IB_TESTC;
   else if (cmd=="dac0")
-    dac=V_DAC0;
+	  dac=V_DAC0;
   else if (cmd=="dac1")
-    dac=V_DAC1;
+	  dac=V_DAC1;
   else if (cmd=="dac2")
-    dac=V_DAC2;
+	  dac=V_DAC2;
   else if (cmd=="dac3")
-    dac=V_DAC3;
+	  dac=V_DAC3;
   else if (cmd=="dac4")
-    dac=V_DAC4;
+	  dac=V_DAC4;
   else if (cmd=="dac5")
-    dac=V_DAC5;
+	  dac=V_DAC5;
   else if (cmd=="dac6")
-    dac=V_DAC6;
+	  dac=V_DAC6;
   else if (cmd=="dac7")
-    dac=V_DAC7;
+	  dac=V_DAC7;
+  else if (cmd== "vsvp")
+	  dac=E_SvP;
+  else if (cmd=="vsvn")
+	  dac=E_SvN;
+  else if (cmd=="vtr")
+	  dac=E_Vtr;
+  else if (cmd=="vrf")
+	  dac=E_Vrf;
+  else if (cmd=="vrs")
+	  dac=E_Vrs;
+  else if (cmd== "vtgstv")
+	  dac=E_Vtgstv;
+  else if (cmd== "vcmp_ll")
+	  dac=E_Vcmp_ll;
+  else if (cmd=="vcmp_lr")
+	  dac=E_Vcmp_lr;
+  else if (cmd== "vcall")
+	  dac=E_cal;
+  else if (cmd== "vcmp_rl")
+	  dac=E_Vcmp_rl;
+  else if (cmd== "vcmp_rr")
+	  dac=E_Vcmp_rr;
+  else if (cmd== "rxb_rb")
+	  dac=E_rxb_rb;
+  else if (cmd== "rxb_lb")
+	  dac=E_rxb_lb;
+  else if (cmd== "vcp")
+	  dac=E_Vcp;
+  else if (cmd=="vcn")
+	  dac=E_Vcn;
+  else if (cmd== "vis")
+	  dac=E_Vis;
   else
     return string("cannot decode dac ")+cmd;
   
@@ -3139,14 +3235,32 @@ string slsDetectorCommand::helpDAC(int narg, char *args[], int action) {
 
 
     os << "dac0 " << "dacu\t sets dac 0" << std::endl;
-    os << "dac1 " << "dacu\t sets dac 0" << std::endl;
-    os << "dac2 " << "dacu\t sets dac 0" << std::endl;
-    os << "dac3 " << "dacu\t sets dac 0" << std::endl;
-    os << "dac4 " << "dacu\t sets dac 0" << std::endl;
-    os << "dac5 " << "dacu\t sets dac 0" << std::endl;
-    os << "dac6 " << "dacu\t sets dac 0" << std::endl;
-    os << "dac7 " << "dacu\t sets dac 0" << std::endl;
-  }
+    os << "dac1 " << "dacu\t sets dac 1" << std::endl;
+    os << "dac2 " << "dacu\t sets dac 2" << std::endl;
+    os << "dac3 " << "dacu\t sets dac 3" << std::endl;
+    os << "dac4 " << "dacu\t sets dac 4" << std::endl;
+    os << "dac5 " << "dacu\t sets dac 5" << std::endl;
+    os << "dac6 " << "dacu\t sets dac 6" << std::endl;
+    os << "dac7 " << "dacu\t sets dac 7" << std::endl;
+
+    os << "vsvp"	<< "dacu\t sets vsvp" << std::endl;
+    os << "vsvn" 	<< "dacu\t sets vsvn" << std::endl;
+    os << "vtr" 	<< "dacu\t sets vtr" << std::endl;
+    os << "vrf" 	<< "dacu\t sets vrf" << std::endl;
+    os << "vrs" 	<< "dacu\t sets vrs" << std::endl;
+    os << "vtgstv" 	<< "dacu\t sets vtgstv" << std::endl;
+    os << "vcmp_ll" << "dacu\t sets vcmp_ll" << std::endl;
+    os << "vcmp_lr" << "dacu\t sets vcmp_lr" << std::endl;
+    os << "vcall" 	<< "dacu\t sets vcall" << std::endl;
+    os << "vcmp_rl" << "dacu\t sets vcmp_rl" << std::endl;
+    os << "vcmp_rr" << "dacu\t sets vcmp_rr" << std::endl;
+    os << "rxb_rb" 	<< "dacu\t sets rxb_rb" << std::endl;
+    os << "rxb_lb" 	<< "dacu\t sets rxb_lb" << std::endl;
+    os << "vcp" 	<< "dacu\t sets vcp " << std::endl;
+    os << "vcn" 	<< "dacu\t sets vcn " << std::endl;
+    os << "vis" 	<< "dacu\t sets vis " << std::endl;
+
+    }
 
   if (action==GET_ACTION || action==HELP_ACTION) {
 
@@ -3193,6 +3307,23 @@ string slsDetectorCommand::helpDAC(int narg, char *args[], int action) {
     os << "dac5 " << "\t gets dac 0" << std::endl;
     os << "dac6 " << "\t gets dac 0" << std::endl;
     os << "dac7 " << "\t gets dac 0" << std::endl;
+
+    os << "vsvp"	<< "dacu\t gets vsvp" << std::endl;
+    os << "vsvn" 	<< "dacu\t gets vsvn" << std::endl;
+    os << "vtr" 	<< "dacu\t gets vtr" << std::endl;
+    os << "vrf" 	<< "dacu\t gets vrf" << std::endl;
+    os << "vrs" 	<< "dacu\t gets vrs" << std::endl;
+    os << "vtgstv" 	<< "dacu\t gets vtgstv" << std::endl;
+    os << "vcmp_ll" << "dacu\t gets vcmp_ll" << std::endl;
+    os << "vcmp_lr" << "dacu\t gets vcmp_lr" << std::endl;
+    os << "vcall" 	<< "dacu\t gets vcall" << std::endl;
+    os << "vcmp_rl" << "dacu\t gets vcmp_rl" << std::endl;
+    os << "vcmp_rr" << "dacu\t gets vcmp_rr" << std::endl;
+    os << "rxb_rb" 	<< "dacu\t gets rxb_rb" << std::endl;
+    os << "rxb_lb" 	<< "dacu\t gets rxb_lb" << std::endl;
+    os << "vcp" 	<< "dacu\t gets vcp " << std::endl;
+    os << "vcn" 	<< "dacu\t gets vcn " << std::endl;
+    os << "vis" 	<< "dacu\t gets vis " << std::endl;
 
 
   }

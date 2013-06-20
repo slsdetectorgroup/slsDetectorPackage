@@ -4,6 +4,7 @@
 #define SLS_DETECTOR_FUNCTION_LIST_H
 
 #include "sls_detector_defs.h"
+#include "slsDetectorServer_defs.h"
 
 #include <stdlib.h>
 
@@ -33,6 +34,8 @@ Here are the definitions, but the actual implementation should be done for each 
 ****************************************************/
 
 
+
+
 int mapCSP0(void);
 int initializeDetectorStructure();
 int setupDetector();
@@ -46,8 +49,8 @@ int moduleTest( enum digitalTestMode arg, int imod);
 int detectorTest( enum digitalTestMode arg);
 
 
-double setDAC(enum dacIndex ind, double val, int imod);
-double getADC(enum dacIndex ind,  int imod);
+int setDAC(enum detDacIndex ind, int val, int imod);
+int getADC(enum detDacIndex ind,  int imod);
 
 #if defined(MYTHEND) || defined(GOTTHARDD)
 u_int32_t writeRegister(u_int32_t offset, u_int32_t data);
@@ -64,7 +67,7 @@ int getChip(sls_detector_chip *myChip);
 int setModule(sls_detector_module myChan);
 int getModule(sls_detector_module *myChan);
 
-enum detectorSettings setSettings(enum detectorSettings sett, int imod);
+enum detDacIndex setSettings(enum detDacIndex sett, int imod);
 
 #if defined(MYTHEND) || defined(EIGERD)
 int getThresholdEnergy(int imod);

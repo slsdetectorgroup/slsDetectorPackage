@@ -2,12 +2,14 @@
 #define SERVER_FUNCS_H
 
 #include "sls_detector_defs.h"
+#include "slsDetectorServer_defs.h"
 
 #include <stdlib.h>
 
 
 
 int sockfd;
+
 
 //basic server functions
 int init_detector(int);

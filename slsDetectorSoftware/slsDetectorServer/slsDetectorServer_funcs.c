@@ -5,7 +5,6 @@
 #include "slsDetectorServer_funcs.h"
 #include "slsDetectorFunctionList.h"
 
-#include "slsDetectorServer_defs.h"
 #include "communication_funcs.h"
 
 
@@ -30,13 +29,8 @@ const enum detectorType myDetectorType=PICASSO;
 #else
 const enum detectorType myDetectorType=GENERIC;
 #endif
-//define in communication_funcs
-/*
-extern int lockStatus;
-extern char lastClientIP[INET_ADDRSTRLEN];
-extern char thisClientIP[INET_ADDRSTRLEN];
-extern int differentClients;
-*/
+
+
 //global variables for optimized readout
 char mess[1000];
 char *dataretval=NULL;
@@ -997,6 +991,7 @@ int set_dac(int file_des) {
 	int imod;
 	int n;
 	int val;
+	enum detDacIndex idac=0;
 
 	sprintf(mess,"Can't set DAC\n");
 
@@ -1015,9 +1010,6 @@ int set_dac(int file_des) {
 		ret=FAIL;
 	}
 
-#ifdef VERBOSE
-	printf("Setting DAC %d of module %d to %f V\n", ind, imod, val);
-#endif 
 #ifdef SLS_DETECTOR_FUNCTION_LIST
 	if (imod>=getTotalNumberOfModules()) {
 		ret=FAIL;
@@ -1061,31 +1053,86 @@ int set_dac(int file_des) {
 	case HV_POT:
 		break;
 #endif
+#ifdef EIGERD
+	case E_SvP:
+		ind = SVP;
+		break;
+	case E_SvN:
+		ind = SVN;
+		break;
+	case E_Vtr:
+		idac = VTR;
+		break;
+	case E_Vrf:
+		idac = VRF;
+		break;
+	case E_Vrs:
+		idac = VRS;
+		break;
+	case E_Vtgstv:
+		idac = VTGSTV;
+		break;
+	case E_Vcmp_ll:
+		idac = VCMP_LL;
+		break;
+	case E_Vcmp_lr:
+		idac = VCMP_LR;
+		break;
+	case E_cal:
+		idac = CAL;
+		break;
+	case E_Vcmp_rl:
+		idac = VCMP_RL;
+		break;
+	case E_Vcmp_rr:
+		idac = VCMP_RR;
+		break;
+	case E_rxb_rb:
+		idac = RXB_RB;
+		break;
+	case E_rxb_lb:
+		idac = RXB_LB;
+		break;
+	case E_Vcp:
+		idac = VCP;
+		break;
+	case E_Vcn:
+		idac = VCN;
+		break;
+	case E_Vis:
+		idac = VIS;
+		break;
+#endif
 	default:
 		printf("Unknown DAC index %d\n",ind);
 		sprintf(mess,"Unknown DAC index %d\n",ind);
 		ret=FAIL;
 		break;
 	}
+#ifdef VERBOSE
+		printf("Setting DAC %d of module %d to %d V\n", idac, imod, val);
+#endif
 #ifdef SLS_DETECTOR_FUNCTION_LIST
 	if (ret==OK) {
 		if (differentClients==1 && lockStatus==1 && val!=-1) {
 			ret=FAIL;
 			sprintf(mess,"Detector locked by %s\n",lastClientIP);
-		} else
-			retval=setDAC(ind,val,imod);
+		} else{
+			printf("idac:%d val:%d, imod:%d\n",(int)idac,val,imod);
+			retval=setDAC(idac,val,imod);
+		}
 	}
 #endif
 #ifdef VERBOSE
-	printf("DAC set to %f V\n",  retval);
-#endif  
+	printf("DAC set to %d V\n",  retval);
+#endif
 	if (retval==val || val==-1) {
 		ret=OK;
 		if (differentClients)
 			ret=FORCE_UPDATE;
 	} else {
 		ret=FAIL;
-		printf("Setting dac %d of module %d: wrote %d but read %d\n", ind, imod, val, retval);
+		printf("Setting dac %d of module %d: wrote %d but read %d\n", idac, imod, val, retval);
 	}
 
 
@@ -1647,9 +1694,9 @@ int set_module(int file_des) {
 		ret=FAIL;
 	}
 
-	myModule.ndac=getNumberOfDACsPerModule();
 	myModule.nchip=getNumberOfChipsPerModule();
 	myModule.nchan=getNumberOfChannelsPerModule();
+	myModule.ndac=getNumberOfDACsPerModule();
 	myModule.nadc=getNumberOfADCsPerModule();
 
 

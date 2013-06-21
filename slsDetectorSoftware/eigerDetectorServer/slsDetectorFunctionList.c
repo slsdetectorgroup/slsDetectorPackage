@@ -36,7 +36,7 @@ int timingMode	=	AUTO_TIMING;
 
 enum detectorSettings thisSettings;
 int sChan, sChip, sMod, sDac, sAdc;
-int nModBoard;
+int nModBoard = 1;
 extern int dataBytes;
 
 
@@ -248,7 +248,7 @@ int getADC(enum detDacIndex ind,  int imod){
 
 int setModule(sls_detector_module myMod){
 #ifdef VERBOSE
-	printf("Setting module\n");
+	printf("Setting module with settings %d\n",myMod.reg);
 #endif
 
 	//int nchip = myMod.nchip;
@@ -265,8 +265,12 @@ int setModule(sls_detector_module myMod){
 }
 
 int getModule(sls_detector_module *myMod){
+	int i;
+	for(i=0;i<myMod->ndac;i++)
+		myMod->dacs[i]= dacvalues[i];
+
 	//template getModulebyNumber() from mcb_funcs.c
-	return FAIL;
+	return OK;
 }
 
 int getThresholdEnergy(int imod){

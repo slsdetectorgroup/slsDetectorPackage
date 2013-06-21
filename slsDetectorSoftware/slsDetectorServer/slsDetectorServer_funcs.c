@@ -812,7 +812,7 @@ int get_id(int file_des) {
 
 #ifdef VERBOSE
 	printf("Getting id %d\n", arg);
-#endif  
+#endif
 
 	switch (arg) {
 	case  MODULE_SERIAL_NUMBER:
@@ -826,12 +826,13 @@ int get_id(int file_des) {
 		if (ret==OK) {
 #ifdef VERBOSE
 			printf("of module %d\n", imod);
-#endif  
+#endif
 			if (imod>=0 && imod<getTotalNumberOfModules())
 				retval=getModuleId(arg, imod);
 			else {
 				ret=FAIL;
 				sprintf(mess,"Module number %d out of range\n", imod);
+				printf("%s\n",mess);
 			}
 		}
 #endif
@@ -851,8 +852,9 @@ int get_id(int file_des) {
 	}
 
 #ifdef VERBOSE
+	printf("ret is %d\n",ret);
 	printf("Id is %llx\n", retval);
-#endif  
+#endif
 
 	if (differentClients==1)
 		ret=FORCE_UPDATE;

@@ -5,6 +5,7 @@
 #include <iostream>
 #include <cstring>
 
+#include "fileIOStatic.h"
 
 using namespace std;
 
@@ -74,7 +75,6 @@ int energyConversion::writeCalibrationFile(string fname, double gain, double off
 
 
 slsDetectorDefs::sls_detector_module* energyConversion::readSettingsFile(string fname,  detectorType myDetectorType, sls_detector_module *myMod){
-
 	int nflag=0;
 
 
@@ -95,8 +95,7 @@ slsDetectorDefs::sls_detector_module* energyConversion::readSettingsFile(string 
 	int ichan=0, ichip=0, idac=0;
 	int nch=((myMod->nchan)/(myMod->nchip));
 
-
-	//to verify dac
+	//ascii settings/trim file
 	switch (myDetectorType) {
 	case MYTHEN:
 		break;
@@ -112,22 +111,6 @@ slsDetectorDefs::sls_detector_module* energyConversion::readSettingsFile(string 
 		names[id++]="Vib_test";
 		break;
 	case EIGER:
-		names[id++]="SvP";
-		names[id++]="SvN";
-		names[id++]="Vtr";
-		names[id++]="Vrf";
-		names[id++]="Vrs";
-		names[id++]="Vtgstv";
-		names[id++]="Vcmp_ll";
-		names[id++]="Vcmp_lr";
-		names[id++]="cal";
-		names[id++]="Vcmp_rl";
-		names[id++]="Vcmp_rr";
-		names[id++]="rxb_rb";
-		names[id++]="rxb_lb";
-		names[id++]="Vcp";
-		names[id++]="Vcn";
-		names[id++]="Vis";
 		break;
 	default:
 		cout << "Unknown detector type - unknown format for settings file" << endl;
@@ -141,14 +124,12 @@ slsDetectorDefs::sls_detector_module* energyConversion::readSettingsFile(string 
 #ifdef VERBOSE
 	std::cout<< "file name is "<< myfname <<   std::endl;
 #endif
-	infile.open(myfname.c_str(), ios_base::in);
-	if (infile.is_open()) {
 
+	switch (myDetectorType) {
 
-		switch (myDetectorType) {
-
-		case MYTHEN:
-
+	case MYTHEN:
+		infile.open(myfname.c_str(), ios_base::in);
+		if (infile.is_open()) {
 			for (int iarg=0; iarg<myMod->ndac; iarg++) {
 				getline(infile,str);
 				iline++;
@@ -163,25 +144,25 @@ slsDetectorDefs::sls_detector_module* energyConversion::readSettingsFile(string 
 			for (ichip=0; ichip<myMod->nchip; ichip++) {
 				getline(infile,str);
 				iline++;
-#ifdef VERBOSE
-				//	  std::cout<< str << std::endl;
+#ifdef VERYVERBOSE
+				std::cout<< str << std::endl;
 #endif
 				istringstream ssstr(str);
 				ssstr >> sargname >> ival;
-#ifdef VERBOSE
-				//	  std::cout<< "chip " << ichip << " " << sargname << " is " << ival << std::endl;
+#ifdef VERYVERBOSE
+				std::cout<< "chip " << ichip << " " << sargname << " is " << ival << std::endl;
 #endif
 
 				myMod->chipregs[ichip]=ival;
 				for (ichan=0; ichan<nch; ichan++) {
 					getline(infile,str);
-#ifdef VERBOSE
-					// std::cout<< str << std::endl;
+#ifdef VERYVERBOSE
+					std::cout<< str << std::endl;
 #endif
 					istringstream ssstr(str);
 
-#ifdef VERBOSE
-					//   std::cout<< "channel " << ichan+ichip*thisDetector->nChans <<" iline " << iline<< std::endl;
+#ifdef VERYVERBOSE
+					std::cout<< "channel " << ichan+ichip*thisDetector->nChans <<" iline " << iline<< std::endl;
 #endif
 					iline++;
 					myMod->chanregs[ichip*nch+ichan]=0;
@@ -190,38 +171,38 @@ slsDetectorDefs::sls_detector_module* energyConversion::readSettingsFile(string 
 						//if (ssstr.good()) {
 						switch (iarg) {
 						case 0:
-#ifdef VERBOSE
-							//		 std::cout<< "trimbits " << ival ;
+#ifdef VERYVERBOSE
+							std::cout<< "trimbits " << ival ;
 #endif
 							myMod->chanregs[ichip*nch+ichan]|=ival&TRIMBITMASK;
 							break;
 						case 1:
-#ifdef VERBOSE
-							//std::cout<< " compen " << ival ;
+#ifdef VERYVERBOSE
+							std::cout<< " compen " << ival ;
 #endif
 							myMod->chanregs[ichip*nch+ichan]|=ival<<9;
 							break;
 						case 2:
-#ifdef VERBOSE
-							//std::cout<< " anen " << ival ;
+#ifdef VERYVERBOSE
+							std::cout<< " anen " << ival ;
 #endif
 							myMod->chanregs[ichip*nch+ichan]|=ival<<8;
 							break;
 						case 3:
-#ifdef VERBOSE
-							//std::cout<< " calen " << ival  ;
+#ifdef VERYVERBOSE
+							std::cout<< " calen " << ival  ;
 #endif
 							myMod->chanregs[ichip*nch+ichan]|=ival<<7;
 							break;
 						case 4:
 #ifdef VERBOSE
-							//std::cout<< " outcomp " << ival  ;
+							std::cout<< " outcomp " << ival  ;
 #endif
 							myMod->chanregs[ichip*nch+ichan]|=ival<<10;
 							break;
 						case 5:
 #ifdef VERBOSE
-							//std::cout<< " counts " << ival  << std::endl;
+							std::cout<< " counts " << ival  << std::endl;
 #endif
 							myMod->chanregs[ichip*nch+ichan]|=ival<<11;
 							break;
@@ -237,14 +218,46 @@ slsDetectorDefs::sls_detector_module* energyConversion::readSettingsFile(string 
 			std::cout<< "read " << ichan*ichip << " channels" <<std::endl;
 #endif
 
+			infile.close();
+			strcpy(settingsFile,fname.c_str());
 
-			break;
+			return myMod;
 
-		case EIGER:
-		case MOENCH:
-		case GOTTHARD:
-			//---------------dacs---------------
+		}
 
+
+		break;
+
+	case EIGER:
+		infile.open(myfname.c_str(),ifstream::binary);
+		if (infile.is_open()) {
+			infile.read((char*) myMod->dacs,sizeof(int)*(myMod->ndac));
+			infile.read((char*) myMod->chanregs,sizeof(int)*(myMod->nchan));
+#ifdef VERBOSE
+			for(int i=0;i<myMod->ndac;i++)
+				std::cout << "dac " << i << ":" << myMod->dacs[i] << std::endl;
+#endif
+			if(infile.eof()){
+				cout<<endl<<"Error, could not load trimbits end of file, "<<myfname<<", reached."<<endl<<endl;
+				if (nflag)
+					deleteModule(myMod);
+
+				return NULL;
+			}
+			infile.close();
+			strcpy(settingsFile,fname.c_str());
+
+			return myMod;
+
+		}
+
+		break;
+
+	case MOENCH:
+	case GOTTHARD:
+		//---------------dacs---------------
+		infile.open(myfname.c_str(), ios_base::in);
+		if (infile.is_open()) {
 			while(infile.good()) {
 				getline(infile,str);
 				iline++;
@@ -271,132 +284,133 @@ slsDetectorDefs::sls_detector_module* energyConversion::readSettingsFile(string 
 			}else
 				std::cout<< "Unknown dac " << sargname << std::endl;
 
-
-			break;
-
-		default:
-			std::cout<< "Unknown detector type - don't know how to read file" <<  myfname << std::endl;
 			infile.close();
-			deleteModule(myMod);
-			return NULL;
+			strcpy(settingsFile,fname.c_str());
+
+			return myMod;
 
 		}
 
+		//----------------------------------
+		break;
+
+	default:
+		std::cout<< "Unknown detector type - don't know how to read file" <<  myfname << std::endl;
 		infile.close();
-		strcpy(settingsFile,fname.c_str());
-		return myMod;
-
-	} else {
-		std::cout<< "could not open settings file " <<  myfname << std::endl;
-
-		if (nflag)
-			deleteModule(myMod);
-
+		deleteModule(myMod);
 		return NULL;
+
 	}
+
+	std::cout<< "could not open settings file " <<  myfname << std::endl;
+	if (nflag)
+		deleteModule(myMod);
+
+	return NULL;
+
+
 
 };
 
 
 int energyConversion::writeSettingsFile(string fname, detectorType myDetectorType, sls_detector_module mod){
 
-  ofstream outfile;
+	ofstream outfile;
 
-  int nch=((mod.nchan)/(mod.nchip));
+	int nch=((mod.nchan)/(mod.nchip));
 
-  string names[100];
-  int id=0;
-  switch (myDetectorType) {
-  case MYTHEN:
-    names[id++]="Vtrim";
-    names[id++]="Vthresh"; 
-    names[id++]="Rgsh1";
-    names[id++]="Rgsh2";
-    names[id++]="Rgpr";
-    names[id++]="Vcal";
-    names[id++]="outBuffEnable";
-    break;
-  case MOENCH:
-  case GOTTHARD:
-    names[id++]="Vref";
-    names[id++]="VcascN";
-    names[id++]="VcascP";
-    names[id++]="Vout";
-    names[id++]="Vcasc";
-    names[id++]="Vin";
-    names[id++]="Vref_comp";
-    names[id++]="Vib_test";
-    break;
-  case EIGER:
-	names[id++]="SvP";
-	names[id++]="SvN";
-	names[id++]="Vtr";
-	names[id++]="Vrf";
-	names[id++]="Vrs";
-	names[id++]="Vin";
-	names[id++]="Vtgstv";
-	names[id++]="Vcmp_ll";
-	names[id++]="Vcmp_lr";
-	names[id++]="cal";
-	names[id++]="Vcmp_rl";
-	names[id++]="Vcmp_rr";
-	names[id++]="rxb_rb";
-	names[id++]="rxb_lb";
-	names[id++]="Vcmp_lr";
-	names[id++]="Vcp";
-	names[id++]="Vcmp_rl";
-	names[id++]="Vcn";
-	names[id++]="Vis";
-	names[id++]="iodelay";
-	break;
-  default:
-    cout << "Unknown detector type - unknown format for settings file" << endl;
-    return FAIL;
-  }
-
-  int iv, ichan, ichip;
-  int iv1, idac;
-  int nb;
-  outfile.open(fname.c_str(), ios_base::out);
-
-  if (outfile.is_open()) {
-    for (idac=0; idac<mod.ndac; idac++) {
-      iv=(int)mod.dacs[idac];
-      outfile << names[idac] << " " << iv << std::endl;
-    }
-      
-    if((myDetectorType!=GOTTHARD)&&(myDetectorType!=MOENCH)&&(myDetectorType!=EIGER)){
-      for (ichip=0; ichip<mod.nchip; ichip++) {
-	iv1=mod.chipregs[ichip]&1;
-	outfile << names[idac] << " " << iv1 << std::endl;
-	for (ichan=0; ichan<nch; ichan++) {
-	  iv=mod.chanregs[ichip*nch+ichan];
-	  iv1= (iv&TRIMBITMASK);
-	  outfile <<iv1 << " ";
-	  nb=9;
-	  iv1=((iv&(1<<nb))>>nb);
-	  outfile << iv1 << " ";
-	  nb=8;
-	  iv1=((iv&(1<<nb))>>nb);
-	  outfile << iv1 << " ";
-	  nb=7;
-	  iv1=((iv&(1<<nb))>>nb);
-	  outfile <<iv1  << " ";
-	  nb=10;
-	  iv1=((iv&(1<<nb))>>nb);
-	  outfile << iv1 << " ";
-	  nb=11;
-	  iv1= ((iv&0xfffff800)>>nb);
-	  outfile << iv1  << std::endl;
+	string names[100];
+	int id=0;
+	switch (myDetectorType) {
+	case MYTHEN:
+		names[id++]="Vtrim";
+		names[id++]="Vthresh";
+		names[id++]="Rgsh1";
+		names[id++]="Rgsh2";
+		names[id++]="Rgpr";
+		names[id++]="Vcal";
+		names[id++]="outBuffEnable";
+		break;
+	case MOENCH:
+	case GOTTHARD:
+		names[id++]="Vref";
+		names[id++]="VcascN";
+		names[id++]="VcascP";
+		names[id++]="Vout";
+		names[id++]="Vcasc";
+		names[id++]="Vin";
+		names[id++]="Vref_comp";
+		names[id++]="Vib_test";
+		break;
+	case EIGER:
+		break;
+	default:
+		cout << "Unknown detector type - unknown format for settings file" << endl;
+		return FAIL;
 	}
-      }
-    }
-    outfile.close();
-    return OK;
-  } else {
-    std::cout<< "could not open SETTINGS file " << fname << std::endl;
-    return FAIL;
-  }
+
+	int iv, ichan, ichip;
+	int iv1, idac;
+	int nb;
+
+	switch (myDetectorType) {
+	case EIGER:
+		outfile.open(fname.c_str(), ofstream::binary);
+		if (outfile.is_open()) {
+			iv = 1150;
+			outfile.write((char*)mod.dacs, sizeof(int)*(mod.ndac));
+			outfile.write((char*)mod.chanregs, sizeof(int)*(mod.nchan));
+			outfile.close();
+			return slsDetectorDefs::OK;
+		}
+
+		std::cout<< "could not open SETTINGS file " << fname << std::endl;
+		return slsDetectorDefs::FAIL;
+	default:
+
+
+		outfile.open(fname.c_str(), ios_base::out);
+
+		if (outfile.is_open()) {
+			for (idac=0; idac<mod.ndac; idac++) {
+				iv=(int)mod.dacs[idac];
+				outfile << names[idac] << " " << iv << std::endl;
+			}
+
+			if(myDetectorType==MYTHEN){
+				for (ichip=0; ichip<mod.nchip; ichip++) {
+					iv1=mod.chipregs[ichip]&1;
+					outfile << names[idac] << " " << iv1 << std::endl;
+					for (ichan=0; ichan<nch; ichan++) {
+						iv=mod.chanregs[ichip*nch+ichan];
+						iv1= (iv&TRIMBITMASK);
+						outfile <<iv1 << " ";
+						nb=9;
+						iv1=((iv&(1<<nb))>>nb);
+						outfile << iv1 << " ";
+						nb=8;
+						iv1=((iv&(1<<nb))>>nb);
+						outfile << iv1 << " ";
+						nb=7;
+						iv1=((iv&(1<<nb))>>nb);
+						outfile <<iv1  << " ";
+						nb=10;
+						iv1=((iv&(1<<nb))>>nb);
+						outfile << iv1 << " ";
+						nb=11;
+						iv1= ((iv&0xfffff800)>>nb);
+						outfile << iv1  << std::endl;
+					}
+				}
+			}
+			outfile.close();
+			return OK;
+		}
+		std::cout<< "could not open SETTINGS file " << fname << std::endl;
+		return FAIL;
+
+	}
+
 
 };
 

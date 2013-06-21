@@ -30,7 +30,6 @@ class energyConversion
 
   
   /**
-   
       reads a calibration file 
       \param fname file to be read
       \param gain reference to the gain variable
@@ -39,7 +38,6 @@ class energyConversion
   static int readCalibrationFile(string fname, double &gain, double &offset);
   
   /**
-   
       writes a calibration file 
       \param fname file to be written
       \param gain 
@@ -68,7 +66,7 @@ class energyConversion
 
      \sa ::sls_detector_module mythenDetector::writeSettingsFile(string, sls_detector_module)
   */
-  int writeSettingsFile(string fname, detectorType myDetectorType, sls_detector_module mod); 
+  int writeSettingsFile(string fname, detectorType myDetectorType, sls_detector_module mod);
   
   /** allocates the momery for a detector module structure
       \param myDetectorType detector type (needed for number of channels, chips, dacs etc.)

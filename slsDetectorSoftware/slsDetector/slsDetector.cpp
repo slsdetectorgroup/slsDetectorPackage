@@ -2650,7 +2650,6 @@ slsDetectorDefs::sls_detector_module  *slsDetector::getModule(int imod){
     deleteModule(myMod);
     myMod=NULL;
   }
-
   return myMod;
 }
 
@@ -2875,22 +2874,9 @@ slsDetectorDefs::detectorSettings slsDetector::setSettings( detectorSettings ise
 			//create file names
 			switch(thisDetector->myDetectorType){
 			case EIGER:
-				ostfn << thisDetector->settingsDir << ssettings <<"/settings.sn";//  << setfill('0') << setw(3) << hex << getId(MODULE_SERIAL_NUMBER, im) << setbase(10);
-				oscfn << thisDetector->calDir << ssettings << "/calibration.sn";//  << setfill('0') << setw(3) << hex << getId(MODULE_SERIAL_NUMBER, im) << setbase(10);
-
-				//add the trimbits binary file - temp solution
-
-				nch=((myMod->nchan)/(myMod->nchip));
-				for (ichip=0; ichip<myMod->nchip; ichip++) {
-					myMod->chipregs[ichip]=0;
-					for (ichan=0; ichan<nch; ichan++){
-						myMod->chanregs[ichip*nch+ichan]=0;
-					}
-				}
-				break;
 			case MOENCH:
 			case GOTTHARD:
-				//settings is saved in myMod.reg for gotthard
+				//settings is saved in myMod.reg
 				myMod->reg=thisDetector->currentSettings;
 				ostfn << thisDetector->settingsDir << ssettings <<"/settings.sn";//  << setfill('0') << setw(3) << hex << getId(MODULE_SERIAL_NUMBER, im) << setbase(10);
 				oscfn << thisDetector->calDir << ssettings << "/calibration.sn";//  << setfill('0') << setw(3) << hex << getId(MODULE_SERIAL_NUMBER, im) << setbase(10);
@@ -2917,6 +2903,7 @@ slsDetectorDefs::detectorSettings slsDetector::setSettings( detectorSettings ise
 			} else {
 				ostringstream ostfn,oscfn;
 				switch(thisDetector->myDetectorType){
+				case EIGER:
 				case MOENCH:
 				case GOTTHARD:
 					ostfn << thisDetector->settingsDir << ssettings << ssettings << ".settings";
@@ -5541,7 +5528,7 @@ int slsDetector::saveSettingsFile(string fname, int imod) {
   }
   for (int im=mmin; im<mmax; im++) {
     ostringstream ostfn;
-    ostfn << fname << ".sn"  << setfill('0') << setw(3) << hex << getId(MODULE_SERIAL_NUMBER, im); 
+    ostfn << fname << ".sn"  << setfill('0') << setw(3) << hex << getId(MODULE_SERIAL_NUMBER, im);
     if ((myMod=getModule(im))) {
       ret=writeSettingsFile(ostfn.str(), thisDetector->myDetectorType, *myMod);
       deleteModule(myMod);

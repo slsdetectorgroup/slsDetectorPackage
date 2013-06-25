@@ -2818,31 +2818,36 @@ slsDetectorDefs::detectorSettings slsDetector::setSettings( detectorSettings ise
 	case HIGHGAIN:
 		if (    (thisDetector->myDetectorType == MYTHEN) ||
 				(thisDetector->myDetectorType == GOTTHARD) ||
+				(thisDetector->myDetectorType == MOENCH) ||
 				(thisDetector->myDetectorType == EIGER)) {
 			ssettings="/highgain";
 			thisDetector->currentSettings=HIGHGAIN;
 		}
 		break;
 	case DYNAMICGAIN:
-		if (thisDetector->myDetectorType == GOTTHARD){
+		if ((thisDetector->myDetectorType == GOTTHARD) ||
+			(thisDetector->myDetectorType == MOENCH)) {
 			ssettings="/dynamicgain";
 			thisDetector->currentSettings=DYNAMICGAIN;
 		}
 		break;
 	case LOWGAIN:
-		if (thisDetector->myDetectorType == GOTTHARD){
+		if ((thisDetector->myDetectorType == GOTTHARD) ||
+			(thisDetector->myDetectorType == MOENCH)) {
 			ssettings="/lowgain";
 			thisDetector->currentSettings=LOWGAIN;
 		}
 		break;
 	case MEDIUMGAIN:
-		if (thisDetector->myDetectorType == GOTTHARD){
+		if ((thisDetector->myDetectorType == GOTTHARD) ||
+			(thisDetector->myDetectorType == MOENCH)) {
 			ssettings="/mediumgain";
 			thisDetector->currentSettings=MEDIUMGAIN;
 		}
 		break;
 	case VERYHIGHGAIN:
-		if (thisDetector->myDetectorType == GOTTHARD){
+		if ((thisDetector->myDetectorType == GOTTHARD) ||
+			(thisDetector->myDetectorType == MOENCH)) {
 			ssettings="/veryhighgain";
 			thisDetector->currentSettings=VERYHIGHGAIN;
 		}

@@ -3899,6 +3899,10 @@ int multiSlsDetector::readConfigurationFile(string const fname){
 
   setNumberOfModules(-1);
   getMaxNumberOfModules();
+
+  if (getErrorMask())
+	  return FAIL;
+
   return OK;
 
 

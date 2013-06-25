@@ -318,7 +318,7 @@ void qDetectorMain::LoadConfigFile(const string fName){
 	else{
 		//could not load config file
 		if(myDet->readConfigurationFile(fName)==slsDetectorDefs::FAIL)
-			qDefs::Message(qDefs::WARNING,string("Could not load the Configuration Parameters from file:\n")+fName,"Main");
+			qDefs::Message(qDefs::WARNING,string("Could not load all the Configuration Parameters from file:\n")+fName,"Main");
 		//successful
 		else
 			qDefs::Message(qDefs::INFORMATION,"<nobr>The Configuration Parameters have been loaded successfully at start up.</nobr>","Main");
@@ -439,7 +439,7 @@ void qDetectorMain::ExecuteUtilities(QAction *action){
 			if(myDet->readConfigurationFile(string(fName.toAscii().constData()))!=slsDetectorDefs::FAIL){
 				qDefs::Message(qDefs::INFORMATION,"The Configuration Parameters have been configured successfully.","Main");
 				refreshTabs=true;
-			}else qDefs::Message(qDefs::WARNING,string("Could not load the Configuration Parameters from file:\n")+fName.toAscii().constData(),"Main");
+			}else qDefs::Message(qDefs::WARNING,string("Could not load all the Configuration Parameters from file:\n")+fName.toAscii().constData(),"Main");
 			qDefs::checkErrorMessage(myDet);
 		}
 	}

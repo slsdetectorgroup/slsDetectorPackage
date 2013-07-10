@@ -2879,6 +2879,14 @@ slsDetectorDefs::detectorSettings slsDetector::setSettings( detectorSettings ise
 			//create file names
 			switch(thisDetector->myDetectorType){
 			case EIGER:
+				//settings is saved in myMod.reg
+				myMod->reg=thisDetector->currentSettings;
+				ostfn << thisDetector->settingsDir << ssettings <<"/settings.sn"<< setw(6) << hex << getId(MODULE_SERIAL_NUMBER, im) << setbase(10);
+				oscfn << thisDetector->calDir << ssettings << "/calibration.sn"<<setw(6) << hex << getId(MODULE_SERIAL_NUMBER, im) << setbase(10);
+#ifdef VERBOSE
+				std::cout<< thisDetector->settingsDir<<endl<< thisDetector->calDir <<endl;
+#endif
+				break;
 			case MOENCH:
 			case GOTTHARD:
 				//settings is saved in myMod.reg

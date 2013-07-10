@@ -3585,7 +3585,8 @@ int multiSlsDetector::decodeNMod(int i, int &id, int &im) {
  
 int64_t multiSlsDetector::getId(idMode mode, int imod) {
 
-  int id, im, ret;
+  int id, im;
+  int64_t ret;
 
   if (decodeNMod(imod, id, im)>=0) {
     if (detectors[id]) {

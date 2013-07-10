@@ -1871,6 +1871,7 @@ int set_settings(int file_des) {
 	}
 	imod=arg[1];
 	isett=arg[0];
+	printf("isett:%d, imod =%d\n",isett,imod);
 
 #ifdef SLS_DETECTOR_FUNCTION_LIST
 	if (imod>=getTotalNumberOfModules()) {
@@ -1882,11 +1883,11 @@ int set_settings(int file_des) {
 	printf("Changing settings of module %d to %d\n", imod,  isett);
 #endif
 
-	if (differentClients==1 && lockStatus==1 && arg[0]!=GET_SETTINGS) {
+	if (differentClients==1 && lockStatus==1 && isett!=GET_SETTINGS) {
 		ret=FAIL;
 		sprintf(mess,"Detector locked by %s\n",lastClientIP);
 	} else {
-		retval=setSettings(arg[0], imod);
+		retval=setSettings(isett, imod);
 #ifdef VERBOSE
 		printf("Settings changed to %d\n",  isett);
 #endif

@@ -1,6 +1,7 @@
 #ifdef SLS_DETECTOR_FUNCTION_LIST
 
 #include "slsDetectorFunctionList.h"
+#include "svnInfoEiger.h"
 
 #include <stdio.h>
 #include <string.h>
@@ -84,7 +85,7 @@ int mapCSP0(void) {
 
 
 int initializeDetectorStructure(){
- printf("EIGER 9\n");
+ printf("EIGER 10\n");
 	int imod;
 	int n=getNModBoard(X)*getNModBoard(Y);
 #ifdef VERBOSE
@@ -172,22 +173,68 @@ int getNModBoard(enum dimension arg){
 
 
 int64_t getModuleId(enum idMode arg, int imod){
-	//DETECTOR_SERIAL_NUMBER
-	//DETECTOR_FIRMWARE_VERSION
-	return 0;
+	switch(arg){
+	case MODULE_SERIAL_NUMBER:
+		return getDetectorNumber();
+	case MODULE_FIRMWARE_VERSION:
+		return FIRMWAREREV;
+	default:
+		break;
+	}
+	return -1;
 }
 
 
 
 
 int64_t getDetectorId(enum idMode arg){
-	//DETECTOR_SOFTWARE_VERSION defined in slsDetector_defs.h?
-	return 0;
+	int64_t retval = -1;
+	switch(arg){
+	case DETECTOR_SERIAL_NUMBER:
+		retval =  getDetectorMAC();
+		break;
+	case DETECTOR_FIRMWARE_VERSION:
+		return FIRMWAREREV;
+	case DETECTOR_SOFTWARE_VERSION:
+		retval= SVNREV;
+		retval= (retval <<32) | SVNDATE;
+		break;
+	default:
+		break;
+	}
+	return retval;
 }
 
 
 
+int getDetectorNumber(){
+	char output[255]="";
+	int res=0;
+	FILE* sysFile = popen("hostname", "r");
+	fgets(output, sizeof(output), sysFile);
+	pclose(sysFile);
+	sscanf(output,"%x",&res);
+	return res;
+}
 
+
+u_int64_t  getDetectorMAC() {
+	char output[255],mac[255]="";
+	u_int64_t res=0;
+	FILE* sysFile = popen("ifconfig eth0 | grep HWaddr | cut -d \" \" -f 11", "r");
+	fgets(output, sizeof(output), sysFile);
+	pclose(sysFile);
+	//getting rid of ":"
+	char * pch;
+	pch = strtok (output,":");
+	while (pch != NULL){
+		strcat(mac,pch);
+		pch = strtok (NULL, ":");
+	}
+	sscanf(mac,"%llx",&res);
+	printf("mac:%llx\n",res);
+	return res;
+}
 
 int moduleTest( enum digitalTestMode arg, int imod){
 	//template testShiftIn from mcb_funcs.c
@@ -258,7 +305,7 @@ int setModule(sls_detector_module myMod){
 	for(i=0;i<myMod.ndac;i++)
 		setDAC(i,myMod.dacs[i],myMod.module);
 
-
+	thisSettings = myMod.reg;
 
 
 	return OK;
@@ -292,7 +339,7 @@ enum detDacIndex setSettings(enum detDacIndex sett, int imod){
 	//template setSettings() from mcb_funcs.c
 	//reads the dac registers from fpga to confirm which settings, if weird, undefined
 
-	return OK;
+	return thisSettings;
 }
 
 int startStateMachine(){

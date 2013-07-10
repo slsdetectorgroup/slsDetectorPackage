@@ -34,7 +34,7 @@ public:
 	/**
 	 * Destructor
 	 */
-	virtual ~slsReceiverFunctionList(){ if(latestData) delete latestData;};
+	virtual ~slsReceiverFunctionList();
 
 	/**
 	 * Set UDP Port Number

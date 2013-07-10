@@ -1517,7 +1517,21 @@ int stopStateMachine(){
 #endif
   bus_w16(CONTROL_REG, STOP_ACQ_BIT);
   bus_w16(CONTROL_REG, 0x0);
-  usleep(500);
+  /*
+  int i;
+  for(i=0;i<10;i++){
+	  if(!(bus_r(STATUS_REG)&RUNMACHINE_BUSY_BIT)){
+		  printf("stoppped\n");
+		  break;
+	  }else{
+		  usleep(5000);
+		  printf("trying to stop again\n");
+		  bus_w16(CONTROL_REG, STOP_ACQ_BIT);
+		  bus_w16(CONTROL_REG, 0x0);
+	  }
+  }
+  */
+  usleep(5000);
  // if (!runBusy())
   if(!(bus_r(STATUS_REG)&RUNMACHINE_BUSY_BIT))
     return OK;

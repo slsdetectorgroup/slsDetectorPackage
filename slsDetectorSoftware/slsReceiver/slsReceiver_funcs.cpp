@@ -267,7 +267,6 @@ int slsReceiverFuncs::function_table(){
 	flist[F_GET_FRAME_INDEX]		=	&slsReceiverFuncs::get_frame_index;
 	flist[F_RESET_FRAMES_CAUGHT]	=	&slsReceiverFuncs::reset_frames_caught;
 	flist[F_READ_FRAME]				=	&slsReceiverFuncs::read_frame;
-	flist[F_READ_ALL]				=  	&slsReceiverFuncs::read_all;
 	flist[F_READ_RECEIVER_FREQUENCY]= 	&slsReceiverFuncs::set_read_frequency;
 	flist[F_ENABLE_FILE_WRITE]		=	&slsReceiverFuncs::enable_file_write;
 	flist[F_GET_ID]					=	&slsReceiverFuncs::get_version;
@@ -922,8 +921,6 @@ int	slsReceiverFuncs::moench_read_frame(){
 
 
 	int bufferSize = MOENCH_BUFFER_SIZE;
-	char* raw 		= new char[bufferSize];
-
 	int rnel 		= bufferSize/(sizeof(int));
 	int* retval 	= new int[rnel];
 	int* origVal 	= new int[rnel];
@@ -931,6 +928,7 @@ int	slsReceiverFuncs::moench_read_frame(){
 	for(i=0;i<rnel;i++)	retval[i]=0;
 	for(i=0;i<rnel;i++)	origVal[i]=0;
 
+	char* raw 		= new char[bufferSize];
 
 	uint32_t startIndex=0;
 	int index = 0;
@@ -1100,9 +1098,9 @@ int	slsReceiverFuncs::moench_read_frame(){
 	//return ok/fail
 
 
-	delete [] origVal;
 	delete [] retval;
-
+	delete [] origVal;
+	delete [] raw;
 
 	return ret;
 
@@ -1118,7 +1116,8 @@ int	slsReceiverFuncs::gotthard_read_frame(){
 
 
 	//retval is a full frame
-	int rnel 		= GOTTHARD_BUFFER_SIZE/(sizeof(int));
+	int bufferSize  = GOTTHARD_BUFFER_SIZE;
+	int rnel 		= bufferSize/(sizeof(int));
 	int* retval 	= new int[rnel];
 	int* origVal 	= new int[rnel];
 	//all initialized to 0
@@ -1131,13 +1130,10 @@ int	slsReceiverFuncs::gotthard_read_frame(){
 
 
 	//depending on shortframe or not
-	int bufferSize = GOTTHARD_BUFFER_SIZE;
 	if(shortFrame!=-1)
 		bufferSize=GOTTHARD_SHORT_BUFFER_SIZE;
 	char* raw 		= new char[bufferSize];
 
-
-	//int* emptys 	= new int[rnel]();
 
 	uint32_t index=0,index2=0;
 	uint32_t startIndex=0;
@@ -1230,6 +1226,7 @@ int	slsReceiverFuncs::gotthard_read_frame(){
 
 	delete [] retval;
 	delete [] origVal;
+	delete [] raw;
 
 	return ret;
 }
@@ -1282,13 +1279,6 @@ int slsReceiverFuncs::set_read_frequency(){
 	return ret;
 }
 
-
-
-
-/**needs to be implemented */
-int slsReceiverFuncs::read_all(){
-	return ret;
-}
 
 
 

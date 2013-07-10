@@ -137,9 +137,6 @@ public:
 	/** Sets the receiver to send every nth frame to gui, or only upon gui request */
 	int set_read_frequency();
 
-	/** Reads every nth frame, sends them to gui without closing socket */
-	int read_all();
-
 	/** Enable File Write*/
 	int enable_file_write();
 

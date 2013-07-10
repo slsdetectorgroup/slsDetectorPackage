@@ -93,7 +93,15 @@ enum communicationProtocol{
 
  genericSocket(const char* const host_ip_or_name, unsigned short int const port_number, communicationProtocol p, int ps = DEFAULT_PACKET_SIZE, int t = DEFAULT_PACKETS_PER_FRAME) :
    //   portno(port_number), 
-protocol(p), is_a_server(0), socketDescriptor(-1),file_des(-1), packet_size(ps),packets_per_frame(t)// sender (client): where to? ip
+	 protocol(p),
+	 is_a_server(0),
+	 socketDescriptor(-1),
+	 file_des(-1),
+	 packet_size(ps),
+	 nsending(0),
+	 nsent(0),
+	 total_sent(0),
+	 packets_per_frame(t)// sender (client): where to? ip
    { 
 
 	  //   strcpy(hostname,host_ip_or_name);
@@ -142,7 +150,16 @@ protocol(p), is_a_server(0), socketDescriptor(-1),file_des(-1), packet_size(ps),
   
    genericSocket(unsigned short int const port_number, communicationProtocol p, int ps = DEFAULT_PACKET_SIZE, int t = DEFAULT_PACKETS_PER_FRAME, const char *eth=NULL):
      //portno(port_number),
-     protocol(p), is_a_server(1),socketDescriptor(-1), file_des(-1), packet_size(ps), packets_per_frame(t){
+     protocol(p),
+     is_a_server(1),
+     socketDescriptor(-1),
+     file_des(-1),
+     packet_size(ps),
+	 nsending(0),
+	 nsent(0),
+	 total_sent(0),
+     packets_per_frame(t)
+   {
 
 /* // you can specify an IP address: */
 /*  */

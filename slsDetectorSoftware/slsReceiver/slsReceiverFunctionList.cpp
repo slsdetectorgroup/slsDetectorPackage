@@ -108,6 +108,18 @@ slsReceiverFunctionList::slsReceiverFunctionList(detectorType det,bool moenchwit
 
 
 
+slsReceiverFunctionList::~slsReceiverFunctionList(){
+	if(latestData) delete [] latestData;
+	if(fifofree) delete [] fifofree;
+	if(fifo) delete [] fifo;
+	if(guiFileName) delete [] guiFileName;
+	if(eth) delete [] eth;
+	if(mem0) free(mem0);
+}
+
+
+
+
 int slsReceiverFunctionList::setEnableFileWrite(int i){
 	if(i!=-1)
 		enableFileWrite=i;
@@ -322,6 +334,10 @@ int slsReceiverFunctionList::startListening(){
 		if (strchr(eth,'.')!=NULL) strcpy(eth,"");
 		if(!strlen(eth)){
 			cout<<"warning:eth is empty.listening to all"<<endl;
+			if(udpSocket){
+				delete udpSocket;
+				udpSocket = NULL;
+			}
 			udpSocket = new genericSocket(server_port,genericSocket::UDP,bufferSize/packetsPerFrame,packetsPerFrame);
 		}else{
 			cout<<"eth:"<<eth<<endl;
@@ -389,7 +405,6 @@ int slsReceiverFunctionList::startListening(){
 
 	//Close down any open socket descriptors
 	udpSocket->Disconnect();
-
 
 #ifdef VERBOSE
 	cout << "listening_thread_running:" << listening_thread_running << endl;

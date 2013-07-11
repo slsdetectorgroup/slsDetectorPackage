@@ -362,37 +362,36 @@ int send_update(int file_des) {
 
 	int ret=OK;
 	enum detectorSettings t;
-	int thr, n = 0;
-	// int it;
-	int64_t retval;/*, tns=-1;*/
-	int nm;
-
+	int n = 0, nm = 0;
+	int64_t retval = 0;
 
 	n += sendData(file_des,lastClientIP,sizeof(lastClientIP),OTHER);
-	/*nm=setNMod(-1,X);*/
+	nm=setNMod(GET_FLAG,X);
 	n += sendData(file_des,&nm,sizeof(nm),INT32);
-	/*nm=setNMod(-1,Y);*/
+	nm=setNMod(GET_FLAG,Y);
 	n += sendData(file_des,&nm,sizeof(nm),INT32);
-	/*nm=setDynamicRange(-1);*/
+	nm=setDynamicRange(GET_FLAG);
 	n += sendData(file_des,&nm,sizeof(nm),INT32);
 	n += sendData(file_des,&dataBytes,sizeof(dataBytes),INT32);
-	/*t=setSettings(GET_SETTINGS, -1);*/
+
+	t=setSettings(GET_SETTINGS, GET_FLAG);
 	n += sendData(file_des,&t,sizeof(t),INT32);
-	/*thr=getThresholdEnergy(-1);*/
-	n += sendData(file_des,&thr,sizeof(thr),INT32);
-	/*retval=setFrames(tns);*/
+	nm=getThresholdEnergy(GET_FLAG);
+	n += sendData(file_des,&nm,sizeof(nm),INT32);
+
+	retval=setTimer(FRAME_NUMBER,GET_FLAG);
 	n += sendData(file_des,&retval,sizeof(int64_t),INT64);
-	/*retval=setExposureTime(tns);*/
+	retval=setTimer(ACQUISITION_TIME,GET_FLAG);
 	n += sendData(file_des,&retval,sizeof(int64_t),INT64);
-	/*retval=setPeriod(tns);*/
+	retval=setTimer(FRAME_PERIOD,GET_FLAG);
 	n += sendData(file_des,&retval,sizeof(int64_t),INT64);
-	/*retval=setDelay(tns);*/
+	retval=setTimer(DELAY_AFTER_TRIGGER,GET_FLAG);
 	n += sendData(file_des,&retval,sizeof(int64_t),INT64);
-	/*retval=setGates(tns);*/
+	retval=setTimer(GATES_NUMBER,GET_FLAG);
 	n += sendData(file_des,&retval,sizeof(int64_t),INT64);
-	/*retval=setProbes(tns);*/
-	n += sendData(file_des,&retval,sizeof(int64_t),INT64);
-	/*retval=setTrains(tns);*/
+/*	retval=setTimer(PROBES_NUMBER,GET_FLAG);
+	n += sendData(file_des,&retval,sizeof(int64_t),INT64);*/
+	retval=setTimer(CYCLES_NUMBER,GET_FLAG);
 	n += sendData(file_des,&retval,sizeof(int64_t),INT64);
 
 	if (lockStatus==0) {
@@ -400,7 +399,6 @@ int send_update(int file_des) {
 	}
 
 	return ret;
-
 
 }
 

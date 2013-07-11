@@ -1,6 +1,6 @@
 CC			=	powerpc-4xx-softfloat-gcc
 CCX			=	powerpc-4xx-softfloat-g++
-CLAGS		+=  -Wall -DDACS_INT   -DEIGERD  -DSLS_DETECTOR_FUNCTION_LIST  -DDACS_INT  #-DVERBOSE #-DVIRTUAL
+CLAGS		+=  -Wall -DDACS_INT   -DEIGERD  -DSLS_DETECTOR_FUNCTION_LIST  -DDACS_INT -DSTOP_SERVER #-DVERBOSE #-DVIRTUAL
 LDLIBS		+= 	-lm  -lstdc++ 
 
 PROGS		= 	eigerDetectorServer 

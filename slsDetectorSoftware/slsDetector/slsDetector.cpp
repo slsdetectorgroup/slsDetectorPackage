@@ -3054,7 +3054,7 @@ int slsDetector::updateDetectorNoWait() {
   thisDetector->timerValue[GATES_NUMBER]=retval;
 
   //retval=setProbes(tns);
-  if((thisDetector->myDetectorType!= GOTTHARD)&&(thisDetector->myDetectorType!= MOENCH)){
+  if (thisDetector->myDetectorType == MYTHEN){
     n = 	controlSocket->ReceiveDataOnly( &retval,sizeof(int64_t));
     thisDetector->timerValue[PROBES_NUMBER]=retval;
   }

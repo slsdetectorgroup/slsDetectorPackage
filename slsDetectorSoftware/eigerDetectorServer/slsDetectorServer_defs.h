@@ -14,7 +14,7 @@
 #define GOODBYE 		-200
 
 
-#define MODULESERIALNUM 0xbeb045   //temporary should be in firmware
+
 #define FIRMWAREREV		0xcaba	   //temporary should be in firmware
 
 /* examples*/

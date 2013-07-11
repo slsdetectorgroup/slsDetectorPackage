@@ -42,7 +42,15 @@ extern int dataBytes;
 
 
 const char* dacNames[16] = {"Svp","Svn","Vtr","Vrf","Vrs","Vtgstv","Vcmp_ll","Vcmp_lr","Cal","Vcmp_rl","Vcmp_rr","Rxb_rb","Rxb_lb","Vcp","Vcn","Vis"};
+
+//temporary storage on server for debugging until Ian implements
 int dacvalues[NDAC];
+int framenum=0;
+int trains=0;
+int exposureTime=1e6;
+int period=1e9;
+int delay=0;
+int gates=0;
 
 /** temporary
 u_int32_t CSP0BASE;
@@ -323,14 +331,14 @@ int getModule(sls_detector_module *myMod){
 int getThresholdEnergy(int imod){
 	//template getThresholdEnergy() from mcb_funcs.c
 	//depending on settings
-	return FAIL;
+	return 0;
 }
 
 
 int setThresholdEnergy(int thr, int imod){
 	//template getThresholdEnergy() from mcb_funcs.c
 	//depending on settings
-	return FAIL;
+	return 0;
 }
 
 
@@ -385,16 +393,40 @@ char *readFrame(int *ret, char *mess){
 
 
 int64_t setTimer(enum timerIndex ind, int64_t val){
-	//template setDelay() from firmware_funcs.c
-	//writes to reg
-	//FRAME_NUMBER
-	//ACQUISITION_TIME
-	//FRAME_PERIOD
-	//DELAY_AFTER_TRIGGER
-	//GATES_NUMBER
-	//PROBES_NUMBER
-	//CYCLES_NUMBER
-	return 0;
+	switch(ind){
+	case FRAME_NUMBER:
+		if(val >= 0)
+			framenum = val;
+		return framenum;
+	case ACQUISITION_TIME:
+		if(val >= 0)
+			exposureTime = val;
+		return exposureTime;
+	case FRAME_PERIOD:
+		if(val >= 0)
+			period = val;
+		return period;
+	case DELAY_AFTER_TRIGGER:
+		if(val >= 0)
+			delay = val;
+		return delay;
+	case GATES_NUMBER:
+		if(val >= 0)
+			gates = val;
+		return gates;
+/*	case PROBES_NUMBER:
+		if(val >= 0)
+			framenum = val;
+		return framenum;*/
+	case CYCLES_NUMBER:
+		if(val >= 0)
+			trains = val;
+		return trains;
+	default:
+		printf("unknown timer index: %d\n",ind);
+		break;
+	}
+	return -1;
 }
 
 
@@ -414,7 +446,7 @@ int64_t getTimeLeft(enum timerIndex ind){
 
 int setDynamicRange(int dr){
 	//template setDynamicRange() from firmware_funcs.c
-	return 0;
+	return DYNAMIC_RANGE;
 }
 
 

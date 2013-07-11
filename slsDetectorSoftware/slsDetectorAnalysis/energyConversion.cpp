@@ -100,6 +100,15 @@ slsDetectorDefs::sls_detector_module* energyConversion::readSettingsFile(string 
 	case MYTHEN:
 		break;
 	case MOENCH:
+		names[id++]="Vdac0";
+		names[id++]="Vdac1";
+		names[id++]="Vdac2";
+		names[id++]="Vdac3";
+		names[id++]="Vdac4";
+		names[id++]="Vdac5";
+		names[id++]="Vdac6";
+		names[id++]="Vdac7";
+		break;
 	case GOTTHARD:
 		names[id++]="Vref";
 		names[id++]="VcascN";
@@ -332,6 +341,15 @@ int energyConversion::writeSettingsFile(string fname, detectorType myDetectorTyp
 		names[id++]="outBuffEnable";
 		break;
 	case MOENCH:
+		names[id++]="Vdac0";
+		names[id++]="Vdac1";
+		names[id++]="Vdac2";
+		names[id++]="Vdac3";
+		names[id++]="Vdac4";
+		names[id++]="Vdac5";
+		names[id++]="Vdac6";
+		names[id++]="Vdac7";
+		break;
 	case GOTTHARD:
 		names[id++]="Vref";
 		names[id++]="VcascN";

@@ -209,6 +209,9 @@
      <pointsize>9</pointsize>
     </font>
    </property>
+   <property name="focusPolicy">
+    <enum>Qt::StrongFocus</enum>
+   </property>
    <property name="defaultUp">
     <bool>false</bool>
    </property>
@@ -383,7 +386,7 @@ p, li { white-space: pre-wrap; }
   </widget>
   <action name="actionOpenSetup">
    <property name="text">
-    <string>Load &amp;Setup</string>
+    <string>&amp;Load &amp;Setup</string>
    </property>
    <property name="font">
     <font/>
@@ -391,7 +394,7 @@ p, li { white-space: pre-wrap; }
   </action>
   <action name="actionSaveSetup">
    <property name="text">
-    <string>Save &amp;Setup</string>
+    <string>&amp;Save &amp;Setup</string>
    </property>
    <property name="font">
     <font/>
@@ -404,12 +407,12 @@ p, li { white-space: pre-wrap; }
   </action>
   <action name="actionOpenConfiguration">
    <property name="text">
-    <string>Load &amp;Configuration</string>
+    <string>&amp;Load &amp;Configuration</string>
    </property>
   </action>
   <action name="actionSaveConfiguration">
    <property name="text">
-    <string>Save &amp;Configuration</string>
+    <string>&amp;Save &amp;Configuration</string>
    </property>
   </action>
   <action name="actionEnergyCalibration">
@@ -481,27 +484,27 @@ p, li { white-space: pre-wrap; }
     <bool>true</bool>
    </property>
    <property name="text">
-    <string>&amp;Dockable Windows</string>
+    <string>D&amp;ockable Windows</string>
    </property>
   </action>
   <action name="actionLoadTrimbits">
    <property name="text">
-    <string>Load &amp;Trimbits</string>
+    <string>&amp;Load &amp;Trimbits</string>
    </property>
   </action>
   <action name="actionSaveTrimbits">
    <property name="text">
-    <string>Save &amp;Trimbits</string>
+    <string>&amp;Save &amp;Trimbits</string>
    </property>
   </action>
   <action name="actionLoadCalibration">
    <property name="text">
-    <string>Load C&amp;alibration</string>
+    <string>&amp;Load C&amp;alibration</string>
    </property>
   </action>
   <action name="actionSaveCalibration">
    <property name="text">
-    <string>Save C&amp;alibration</string>
+    <string>&amp;Save C&amp;alibration</string>
    </property>
   </action>
   <action name="actionListenGuiClient">
@@ -509,7 +512,7 @@ p, li { white-space: pre-wrap; }
     <bool>true</bool>
    </property>
    <property name="text">
-    <string>Listen to Gui Client</string>
+    <string>&amp;Listen to Gui Client</string>
    </property>
   </action>
  </widget>

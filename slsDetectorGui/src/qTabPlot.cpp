@@ -858,11 +858,14 @@ void qTabPlot::Refresh(){
 	cout  << endl << "**Updating Plot Tab" << endl;
 #endif
 	if(!myPlot->isRunning()){
+		if (!radioNoPlot->isChecked())
+			boxFrequency->setEnabled(true);
 		connect(boxScan,	  SIGNAL(toggled(bool)),				   this, SLOT(EnableScanBox()));
 		EnableScanBox();
 		SetFrequency();
 
 	}else{
+		boxFrequency->setEnabled(false);
 		disconnect(boxScan,	  SIGNAL(toggled(bool)),				   this, SLOT(EnableScanBox()));
 		boxScan->setEnabled(false);
 		//to toggle between no plot and the plot mode chosen while pltting

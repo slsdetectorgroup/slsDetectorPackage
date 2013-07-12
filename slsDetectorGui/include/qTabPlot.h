@@ -116,6 +116,7 @@ public slots:
 	 */
 	void UpdateAfterCloning();
 
+
 private slots:
 	/** Selects the plot to display, enables/disables widgets
 	 * @param b true to select plot dimension 1, else false to select 2D

@@ -44,6 +44,8 @@ slsReceiverFunctionList::slsReceiverFunctionList(detectorType det,bool moenchwit
 						udpSocket(NULL),
 						server_port(DEFAULT_UDP_PORTNO),
 						fifo(NULL),
+						fifofree(NULL),
+						fifosize(GOTTHARD_FIFO_SIZE),
 						shortFrame(-1),
 						bufferSize(GOTTHARD_BUFFER_SIZE),
 						packetsPerFrame(GOTTHARD_PACKETS_PER_FRAME),
@@ -63,7 +65,11 @@ slsReceiverFunctionList::slsReceiverFunctionList(detectorType det,bool moenchwit
 						frameIndexOffset(GOTTHARD_FRAME_INDEX_OFFSET)
 
 {
+	int aligned_frame_size = GOTTHARD_ALIGNED_FRAME_SIZE;
+
 	if(myDetectorType == MOENCH){
+		aligned_frame_size = MOENCH_ALIGNED_FRAME_SIZE;
+		fifosize = MOENCH_FIFO_SIZE;
 		maxFramesPerFile = MOENCH_MAX_FRAMES_PER_FILE;
 		bufferSize = MOENCH_BUFFER_SIZE;
 		packetsPerFrame = MOENCH_PACKETS_PER_FRAME;
@@ -71,7 +77,6 @@ slsReceiverFunctionList::slsReceiverFunctionList(detectorType det,bool moenchwit
 			frameIndexMask = MOENCH_FRAME_INDEX_MASK;
 			frameIndexOffset = MOENCH_FRAME_INDEX_OFFSET;
 		}
-
 	}
 
 	strcpy(savefilename,"");
@@ -83,20 +88,17 @@ slsReceiverFunctionList::slsReceiverFunctionList(detectorType det,bool moenchwit
 	strcpy(eth,"");
 
 	latestData = new char[bufferSize];
-	fifofree = new CircularFifo<char,FIFO_SIZE>();
-	fifo = new CircularFifo<char,FIFO_SIZE>();
-
-	int aligned_frame_size = GOTTHARD_ALIGNED_FRAME_SIZE;
-	if (det == MOENCH)
-		aligned_frame_size = MOENCH_ALIGNED_FRAME_SIZE;
+	fifofree = new CircularFifo<char>(fifosize);
+	fifo = new CircularFifo<char>(fifosize);
 
 
-	mem0=(char*)malloc(aligned_frame_size*FIFO_SIZE);
+
+	mem0=(char*)malloc(aligned_frame_size*fifosize);
 	if (mem0==NULL) {
 		cout<<"++++++++++++++++++++++ COULD NOT ALLOCATE MEMORY!!!!!!!+++++++++++++++++++++" << endl;
 	}
 	buffer=mem0;
-	while (buffer<(mem0+aligned_frame_size*(FIFO_SIZE-1))) {
+	while (buffer<(mem0+aligned_frame_size*(fifosize-1))) {
 		fifofree->push(buffer);
 		buffer+=aligned_frame_size;
 	}
@@ -284,7 +286,7 @@ int slsReceiverFunctionList::stopReceiver(){
 #endif
 		//stop listening thread
 		listening_thread_running=0;
-		udpSocket->ShutDownSocket();
+		if(udpSocket) udpSocket->ShutDownSocket();
 		pthread_join(listening_thread,NULL);
 		status = IDLE;
 
@@ -356,6 +358,7 @@ int slsReceiverFunctionList::startListening(){
 			status = RUNNING;
 			if (!fifofree->isEmpty()) {
 				fifofree->pop(buffer);
+
 
 				//receiver 2 half frames / 1 short frame / 40 moench frames
 				rc = udpSocket->ReceiveDataOnly(buffer,bufferSize);
@@ -440,7 +443,7 @@ int slsReceiverFunctionList::startWriting(){
 	framesInFile=0;
 	framesCaught=0;
 	frameIndex=0;
-	if(sfilefd) sfilefd=0;
+	if(sfilefd) sfilefd=NULL;
 	strcpy(savefilename,"");
 
 	//reset this before each acq or you send old data
@@ -478,8 +481,10 @@ int slsReceiverFunctionList::startWriting(){
 
 			if(enableFileWrite && cbAction > DO_NOTHING){
 
-				if(sfilefd)
+				if(sfilefd){
 					fclose(sfilefd);
+					sfilefd = NULL;
+				}
 
 				if (NULL == (sfilefd = fopen((const char *) (savefilename), "w"))){
 					cout << "Error: Could not create file " << savefilename << endl;
@@ -594,11 +599,13 @@ int slsReceiverFunctionList::startWriting(){
 	cout << "Total Frames Caught:"<< totalFramesCaught << endl;
 
 
-	if(sfilefd)
-		fclose(sfilefd);
+	if(sfilefd){
 #ifdef VERBOSE
 	cout << "sfield:" << (int)sfilefd << endl;
 #endif
+		fclose(sfilefd);
+		sfilefd = NULL;
+	}
 
 	//acquistion over call back
 	if (acquisitionFinishedCallBack)

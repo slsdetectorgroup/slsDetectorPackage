@@ -17,14 +17,19 @@
 
 #include "sls_detector_defs.h"
 
+#include <vector>
+using namespace std;
+
 /** Circular Fifo (a.k.a. Circular Buffer) 
 * Thread safe for one reader, and one writer */
-template<typename Element, unsigned int Size>
+template<typename Element>
 class CircularFifo {
 public:
-   enum {Capacity = Size+1};
 
-   CircularFifo() : tail(0), head(0){}
+   CircularFifo(unsigned int Size) : tail(0), head(0){
+	   Capacity = Size + 1;
+	   array.resize(Capacity);
+   }
    virtual ~CircularFifo() {}
 
    bool push(Element*& item_);
@@ -35,8 +40,9 @@ public:
    
 private:
    volatile unsigned int tail; // input index
-   Element* array[Capacity];
+   vector <Element*> array;
    volatile unsigned int head; // output index
+   unsigned int Capacity;
 
    unsigned int increment(unsigned int idx_) const;
 };
@@ -50,8 +56,8 @@ private:
 *
 * \param item_ copy by reference the input item
 * \return whether operation was successful or not */
-template<typename Element, unsigned int Size>
-bool CircularFifo<Element, Size>::push(Element*& item_)
+template<typename Element>
+bool CircularFifo<Element>::push(Element*& item_)
 {
    int nextTail = increment(tail);
    if(nextTail != head)
@@ -71,8 +77,8 @@ bool CircularFifo<Element, Size>::push(Element*& item_)
 *
 * \param item_ return by reference the wanted item
 * \return whether operation was successful or not */
-template<typename Element, unsigned int Size>
-bool CircularFifo<Element, Size>::pop(Element*& item_)
+template<typename Element>
+bool CircularFifo<Element>::pop(Element*& item_)
 {
    if(head == tail)
       return false;  // empty queue
@@ -87,8 +93,8 @@ bool CircularFifo<Element, Size>::pop(Element*& item_)
   * as the Procuder adds more items.
   *
   * \return true if circular buffer is empty */
-template<typename Element, unsigned int Size>
-bool CircularFifo<Element, Size>::isEmpty() const
+template<typename Element>
+bool CircularFifo<Element>::isEmpty() const
 {
    return (head == tail);
 }
@@ -98,8 +104,8 @@ bool CircularFifo<Element, Size>::isEmpty() const
   * as the Consumer catches up.
   *
   * \return true if circular buffer is full.  */
-template<typename Element, unsigned int Size>
-bool CircularFifo<Element, Size>::isFull() const
+template<typename Element>
+bool CircularFifo<Element>::isFull() const
 {
    int tailCheck = (tail+1) % Capacity;
    return (tailCheck == head);
@@ -110,8 +116,8 @@ bool CircularFifo<Element, Size>::isFull() const
 *
 *  \param idx_ the index to the incremented/wrapped
 *  \return new value for the index */
-template<typename Element, unsigned int Size>
-unsigned int CircularFifo<Element, Size>::increment(unsigned int idx_) const
+template<typename Element>
+unsigned int CircularFifo<Element>::increment(unsigned int idx_) const
 {
    // increment or wrap
    // =================

@@ -291,11 +291,13 @@ private:
 	};
 
 	/** circular fifo to read and write data*/
-	//CircularFifo<dataStruct,FIFO_SIZE>* fifo;
-	CircularFifo<char,FIFO_SIZE>* fifo;
+	CircularFifo<char>* fifo;
 
 	/** circular fifo to read and write data*/
-	CircularFifo<char,FIFO_SIZE>* fifofree;
+	CircularFifo<char>* fifofree;
+
+	/** fifo size */
+	unsigned int fifosize;
 
 	/** short frames */
 	int shortFrame;

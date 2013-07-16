@@ -1486,7 +1486,7 @@ u_int32_t runState(void) {
 // State Machine 
 
 int startStateMachine(){
-
+int i;
 //#ifdef VERBOSE
   printf("*******Starting State Machine*******\n");
 //#endif
@@ -1497,9 +1497,26 @@ int startStateMachine(){
   write_stop_sm(0);
   write_status_sm("Started");
 #endif
-  bus_w16(CONTROL_REG, START_ACQ_BIT |  START_EXPOSURE_BIT);
-  bus_w16(CONTROL_REG, 0x0);
-  printf("statusreg=%08x\n",bus_r(STATUS_REG));
+
+
+  for(i=0;i<100;i++){
+	  //start state machine
+	  bus_w16(CONTROL_REG, START_ACQ_BIT |  START_EXPOSURE_BIT);
+	  bus_w16(CONTROL_REG, 0x0);
+	  //verify
+	  if(bus_r(STATUS_REG) & RUN_BUSY_BIT)
+		  break;
+	  else
+		  usleep(5000);
+  }
+   if(i!=0)
+	   printf("tried to start state machine %d times\n",i);
+   if(i==100){
+	   printf("\n***********COULD NOT START STATE MACHINE***************\n");
+	   return FAIL;
+   }
+
+   printf("statusreg=%08x\n",bus_r(STATUS_REG));
   return OK;
 }
 
@@ -1507,7 +1524,7 @@ int startStateMachine(){
 
 
 int stopStateMachine(){
-
+	int i;
 //#ifdef VERBOSE
   printf("*******Stopping State Machine*******\n");
 //#endif
@@ -1515,28 +1532,32 @@ int stopStateMachine(){
   write_stop_sm(1);
   write_status_sm("Stopped");
 #endif
-  bus_w16(CONTROL_REG, STOP_ACQ_BIT);
-  bus_w16(CONTROL_REG, 0x0);
-  /*
-  int i;
-  for(i=0;i<10;i++){
-	  if(!(bus_r(STATUS_REG)&RUNMACHINE_BUSY_BIT)){
-		  printf("stoppped\n");
-		  break;
-	  }else{
-		  usleep(5000);
-		  printf("trying to stop again\n");
-		  bus_w16(CONTROL_REG, STOP_ACQ_BIT);
-		  bus_w16(CONTROL_REG, 0x0);
-	  }
+  for(i=0;i<100;i++){
+  	  //stop state machine
+	  bus_w16(CONTROL_REG, STOP_ACQ_BIT);
+	  bus_w16(CONTROL_REG, 0x0);
+	  usleep(5000);
+	  //verify
+	  if(!(bus_r(STATUS_REG)&RUNMACHINE_BUSY_BIT))
+		break;
   }
-  */
-  usleep(5000);
+  if(i!=0)
+	  printf("tried to stop state machine %d times\n",i);
+  if(i==100){
+	  printf("\n***********COULD NOT STOP STATE MACHINE***************\n");
+	  return FAIL;
+  }
+
+/*
+ usleep(5000);
  // if (!runBusy())
   if(!(bus_r(STATUS_REG)&RUNMACHINE_BUSY_BIT))
     return OK;
   else
     return FAIL;
+    */
+  printf("statusreg=%08x\n",bus_r(STATUS_REG));
+  return OK;
 }
 
 

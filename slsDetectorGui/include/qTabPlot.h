@@ -147,12 +147,14 @@ private slots:
 	/** Set Plot to none, data graph, histogram*/
 	void SetPlot();
 
-	/** Change pages in 1D box*/
-	void Set1DPage();
+	/** Change pages in plot options box to the right*/
+	void SetPlotOptionsRightPage();
 
-	/** Change pages in 2D box*/
-	void Set2DPage();
+	/** Change pages in plot options box to the left*/
+	void SetPlotOptionsLeftPage();
 
+	/** Plot binary plot */
+	void SetBinary();
 
 signals:
 	void DisableZoomSignal(bool);

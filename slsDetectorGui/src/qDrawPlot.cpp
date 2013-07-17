@@ -179,14 +179,22 @@ void qDrawPlot::SetupWidgetWindow(){
 	fileSaveEnable= myDet->enableWriteToFile();
 
 	//pedestal
-	resetPedestal = true;
+	pedestal = false;
 	pedestalVals = 0;
-	pedestalCount = -1;
+	tempPedestalVals = 0;
+	pedestalCount = 0;
+	startPedestalCal = false;
 
-	if(myDet->getDetectorsType()==slsDetectorDefs::GOTTHARD)
-		pedestalCount = 0;
+	//accumulate
+	accumulate = false;
+	resetAccumulate = false;
 
 	clientInitiated = false;
+
+	//binary plot output
+	binary = false;
+	binaryFrom = 0;
+	binaryTo = 0;
 
 	//widget related initialization
 
@@ -854,70 +862,95 @@ int qDrawPlot::GetData(detectorData *data,int fIndex){
 				for(int i=currentPersistency;i>0;i--)
 					memcpy(histYAxis[i],histYAxis[i-1],nPixelsX*sizeof(double));
 
-				//normal data
-				if(resetPedestal){
-					memcpy(histYAxis[0],data->values,nPixelsX*sizeof(double));
-				}else{
+				//recalculating pedestal
+				if(startPedestalCal){
+					pedestalCount++;
 					//start adding frames to get to the pedestal value
 					if(pedestalCount<NUM_PEDESTAL_FRAMES){
 						for(unsigned int px=0;px<nPixelsX;px++)
-							pedestalVals[px] += data->values[px];
+							tempPedestalVals[px] += data->values[px];
 						memcpy(histYAxis[0],data->values,nPixelsX*sizeof(double));
 					}
 					//calculate the pedestal value
 					else if(pedestalCount==NUM_PEDESTAL_FRAMES){
 						cout << "Pedestal Calculated" << endl;
 						for(unsigned int px=0;px<nPixelsX;px++)
-							pedestalVals[px] = pedestalVals[px]/(double)NUM_PEDESTAL_FRAMES;
-						memcpy(histYAxis[0],data->values,nPixelsX*sizeof(double));
+							tempPedestalVals[px] = tempPedestalVals[px]/(double)NUM_PEDESTAL_FRAMES;
+						memcpy(pedestalVals,tempPedestalVals,nPixelsX*sizeof(double));
+						startPedestalCal = 0;
 					}
-					//use this pedestal value henceforth
-					else{
-						for(unsigned int px=0;px<nPixelsX;px++)
-							histYAxis[0][px] = data->values[px] - (pedestalVals[px]);
-					}
-					pedestalCount++;
-
 				}
 
+				//normal data
+				if(((!pedestal)&(!accumulate))	|| (resetAccumulate)){
+					memcpy(histYAxis[0],data->values,nPixelsX*sizeof(double));
+					resetAccumulate = false;
+				}
+				//pedestal or accumulate
+				else{
+					for(unsigned int px=0;px<(nPixelsX*nPixelsY);px++){
+						if(accumulate)
+							histYAxis[0][px] += data->values[px];
+						else
+							histYAxis[0][px] = data->values[px];
+						if(pedestal)
+							histYAxis[0][px] = histYAxis[0][px] - (pedestalVals[px]);
+						if(binary) {
+							if ((histYAxis[0][px] >= binaryFrom) && (histYAxis[0][px] <= binaryTo))
+								histYAxis[0][px] = 1;
+							else
+								histYAxis[0][px] = 0;
+						}
+					}
+				}
 			}
 			//2d
 			else{
 				// Titles
 				imageTitle = temp_title;
-				// manufacture data for now
-				/* default data
-				for(unsigned int px=0;px<nPixelsX;px++)
-					for(unsigned int py=0;py<nPixelsY;py++)
-						lastImageArray[py*nPixelsX+px] = sqrt(pow(currentFrame+1,2)*pow(double(px)-nPixelsX/2,2)/pow(nPixelsX/2,2)/pow(number_of_exposures+1,2) + pow(double(py)-nPixelsY/2,2)/pow(nPixelsY/2,2))/sqrt(2);
-				*/
-				// copy data
-				/*memcpy(lastImageArray,data->values,nPixelsX*nPixelsY*sizeof(double));*/
-				//normal data
-				if(resetPedestal){
-					memcpy(lastImageArray,data->values,nPixelsX*nPixelsY*sizeof(double));
-				}else{
+				//recalculating pedestal
+				if(startPedestalCal){
+					pedestalCount++;
 					//start adding frames to get to the pedestal value
 					if(pedestalCount<NUM_PEDESTAL_FRAMES){
 						for(unsigned int px=0;px<(nPixelsX*nPixelsY);px++)
-							pedestalVals[px] += data->values[px];
+							tempPedestalVals[px] += data->values[px];
 						memcpy(lastImageArray,data->values,nPixelsX*nPixelsY*sizeof(double));
 					}
 					//calculate the pedestal value
 					else if(pedestalCount==NUM_PEDESTAL_FRAMES){
 						cout << "Pedestal Calculated" << endl;
 						for(unsigned int px=0;px<(nPixelsX*nPixelsY);px++)
-							pedestalVals[px] = pedestalVals[px]/(double)NUM_PEDESTAL_FRAMES;
-						memcpy(lastImageArray,data->values,nPixelsX*nPixelsY*sizeof(double));
-					}
-					//use this pedestal value henceforth
-					else{
-						for(unsigned int px=0;px<(nPixelsX*nPixelsY);px++)
-							lastImageArray[px] = data->values[px] - (pedestalVals[px]);
-					}
-					pedestalCount++;
+							tempPedestalVals[px] = tempPedestalVals[px]/(double)NUM_PEDESTAL_FRAMES;
 
+						memcpy(pedestalVals,tempPedestalVals,nPixelsX*nPixelsY*sizeof(double));
+						startPedestalCal = 0;
+					}
 				}
+
+				//normal data
+				if(((!pedestal)&(!accumulate))	|| (resetAccumulate)){
+					memcpy(lastImageArray,data->values,nPixelsX*nPixelsY*sizeof(double));
+					resetAccumulate = false;
+				}
+				//pedestal or accumulate or binary
+				else{
+					for(unsigned int px=0;px<(nPixelsX*nPixelsY);px++){
+						if(accumulate)
+							lastImageArray[px] += data->values[px];
+						else
+							lastImageArray[px] = data->values[px];
+						if(pedestal)
+							lastImageArray[px] = lastImageArray[px] - (pedestalVals[px]);
+						if(binary) {
+							if ((lastImageArray[px] >= binaryFrom) && (lastImageArray[px] <= binaryTo))
+								lastImageArray[px] = 1;
+							else
+								lastImageArray[px] = 0;
+						}
+					}
+				}
+
 			}
 			pthread_mutex_unlock(&(last_image_complete_mutex));
 		}
@@ -1591,15 +1624,41 @@ int qDrawPlot::UpdateTrimbitPlot(bool fromDetector,bool Histogram){
 //-------------------------------------------------------------------------------------------------------------------------------------------------
 
 
-void qDrawPlot::ResetPedestal(){
+void qDrawPlot::SetPedestal(bool enable){
 #ifdef VERBOSE
-	cout << "Resetting Pedestal" <<  endl;
+	cout << "Setting Pedestal to " << enable <<  endl;
+#endif
+	if(enable){
+		pedestal = true;
+		if(pedestalVals == 0)
+			RecalculatePedestal();
+	}else{
+		pedestal = false;
+	}
+}
+
+
+//-------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+void qDrawPlot::RecalculatePedestal(){
+#ifdef VERBOSE
+	cout << "Recalculating Pedestal" <<  endl;
 #endif
 	while(1){
 		if(!pthread_mutex_trylock(&(last_image_complete_mutex))){
-			pedestalVals = 0;
+			startPedestalCal = 1;
 			pedestalCount = 0;
-			resetPedestal = true;
+
+			//create array
+			if(pedestalVals) 		delete [] pedestalVals; 	pedestalVals 		= new double[nPixelsX*nPixelsY];
+			if(tempPedestalVals) 	delete [] tempPedestalVals; tempPedestalVals 	= new double[nPixelsX*nPixelsY];
+			//reset all values
+			for(unsigned int px=0;px<(nPixelsX*nPixelsY);px++)
+				pedestalVals[px] = 0;
+			for(unsigned int px=0;px<(nPixelsX*nPixelsY);px++)
+				tempPedestalVals[px] = 0;
+
 			pthread_mutex_unlock(&(last_image_complete_mutex));
 			break;
 		}
@@ -1610,20 +1669,23 @@ void qDrawPlot::ResetPedestal(){
 //-------------------------------------------------------------------------------------------------------------------------------------------------
 
 
-void qDrawPlot::CalculatePedestal(){
+void qDrawPlot::SetAccumulate(bool enable){
 #ifdef VERBOSE
-	cout << "Calculating Pedestal" <<  endl;
+	cout << "Setting Accumulate to " << enable <<  endl;
+#endif
+	accumulate = enable;
+}
+
+//-------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+void qDrawPlot::ResetAccumulate(){
+#ifdef VERBOSE
+	cout << "Resetting Accumulation" <<  endl;
 #endif
 	while(1){
 		if(!pthread_mutex_trylock(&(last_image_complete_mutex))){
-			//create array
-			if(pedestalVals) delete [] pedestalVals; pedestalVals = new double[nPixelsX*nPixelsY];
-			//reset all values
-			for(unsigned int px=0;px<(nPixelsX*nPixelsY);px++)
-				pedestalVals[px] = 0;
-
-			pedestalCount = 0;
-			resetPedestal = false;
+			resetAccumulate = true;
 			pthread_mutex_unlock(&(last_image_complete_mutex));
 			break;
 		}
@@ -1666,6 +1728,22 @@ void qDrawPlot::UpdateAfterCloning(bool points, bool logy, bool interpolate, boo
 		emit LogzSignal(logz);
 	}
 
+}
+
+
+//-------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+void qDrawPlot::SetBinary(bool enable, int from, int to){
+#ifdef VERBOSE
+	if(!enable)
+		cout << "Disabling Binary output " << endl;
+	else
+		cout << "Enabling Binary output from " << from << " to " << to << endl;
+#endif
+	binary = enable;
+	binaryFrom = from;
+	binaryTo = to;
 }
 
 

@@ -131,6 +131,9 @@ public:
 	 */
 	void UpdateAfterCloning(bool points, bool logy, bool interpolate, bool contour, bool logz);
 
+	/** set binary range */
+	void SetBinary(bool enable, int from=0, int to=0);
+
 public slots:
 /** To select 1D or 2D plot
  @param i is 1 for 1D, else 2D plot */
@@ -161,14 +164,14 @@ void SetMarkers(bool enable){markers = enable;};
 void SetScanArgument(int scanArg);
 /** sets stop_signal to true */
 void StopAcquisition(){	stop_signal = true; };
-
-
-//pedestal
-/** reset pedestal */
-void ResetPedestal();
-/** Calculate Pedestal */
-void CalculatePedestal();
-
+/** Set/unset pedestal */
+void SetPedestal(bool enable);
+/** Recalculate Pedestal */
+void RecalculatePedestal();
+/** Set/unset accumulate */
+void SetAccumulate(bool enable);
+/** Reset accumulation */
+void ResetAccumulate();
 
 
 private:
@@ -491,12 +494,27 @@ bool originally2D;
 //pedstal
 /** Number of pedestal frames*/
 static const int NUM_PEDESTAL_FRAMES = 20;
-/**reset pedestal*/
-bool resetPedestal;
+/** set/unset pedestal*/
+bool pedestal;
 /** pedestal values */
 double*   pedestalVals;
+/** temporary pedestal values to hide while recalculating*/
+double*   tempPedestalVals;
 /** count for 20 frames to calculate the pedestal */
 int pedestalCount;
+/** start pedestal calculation */
+bool startPedestalCal;
+
+//accumulation
+/** set/unset accumulation */
+bool accumulate;
+/** to reset accumulation */
+bool resetAccumulate;
+
+/** range for binary plot output */
+bool binary;
+int binaryFrom;
+int binaryTo;
 
 /** this is set when client starts/stops acquisition
  * and is reset once the gui really starts/stops */

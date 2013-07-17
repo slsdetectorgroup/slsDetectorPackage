@@ -139,13 +139,37 @@ void qTabPlot::SetupWidgetWindow(){
 	stackedLayout->addWidget(spinNthFrame);
 	stackWidget->setLayout(stackedLayout);
 
+	stackedWidget->setCurrentIndex(0);
+	stackedWidget_2->setCurrentIndex(0);
 
 	// Depending on whether the detector is 1d or 2d
 	switch(myDet->getDetectorsType()){
-	case slsDetectorDefs::MYTHEN:	isOriginallyOneD = true;	break;
-	case slsDetectorDefs::EIGER:	isOriginallyOneD = false;	break;
-	case slsDetectorDefs::GOTTHARD:	isOriginallyOneD = true; 	break;
-	case slsDetectorDefs::MOENCH:	isOriginallyOneD = false; 	break;
+	case slsDetectorDefs::MYTHEN:
+		isOriginallyOneD = true;
+		chkPedestal->setEnabled(false);
+		btnRecalPedestal->setEnabled(false);
+		layoutThreshold->setEnabled(false);
+		chkPedestal_2->setEnabled(false);
+		btnRecalPedestal_2->setEnabled(false);
+		chkBinary->setEnabled(false);
+		chkBinary_2->setEnabled(false);
+		break;
+	case slsDetectorDefs::EIGER:
+		isOriginallyOneD = false;
+		chkPedestal->setEnabled(false);
+		btnRecalPedestal->setEnabled(false);
+		layoutThreshold->setEnabled(false);
+		chkPedestal_2->setEnabled(false);
+		btnRecalPedestal_2->setEnabled(false);
+		chkBinary->setEnabled(false);
+		chkBinary_2->setEnabled(false);
+		break;
+	case slsDetectorDefs::GOTTHARD:
+		isOriginallyOneD = true;
+		break;
+	case slsDetectorDefs::MOENCH:
+		isOriginallyOneD = false;
+		break;
 	default:
 		cout << "ERROR: Detector Type is Generic" << endl;
 		exit(-1);
@@ -158,17 +182,6 @@ void qTabPlot::SetupWidgetWindow(){
 	//to check if this should be enabled
 	EnableScanBox();
 
-	stackedWidget->setCurrentIndex(0);
-	stackedWidget_2->setCurrentIndex(0);
-	if(myDet->getDetectorsType()!=slsDetectorDefs::GOTTHARD){
-		btnCalPedestal->setEnabled(false);
-		btnResetPedestal->setEnabled(false);
-	}
-	if(myDet->getDetectorsType()!=slsDetectorDefs::MOENCH){
-		btnCalPedestal_2->setEnabled(false);
-		btnResetPedestal_2->setEnabled(false);
-	}
-
 	qDefs::checkErrorMessage(myDet);
 }
 
@@ -176,36 +189,44 @@ void qTabPlot::SetupWidgetWindow(){
 //-------------------------------------------------------------------------------------------------------------------------------------------------
 
 
-void qTabPlot::Set2DPage(){
-	//QPushButton *clickedButton = qobject_cast<QPushButton *>(sender());
-	if(stackedWidget_2->currentIndex()==0){
-		stackedWidget_2->setCurrentIndex(1);
-		box2D->setTitle("2D Plot Options 2");
+void qTabPlot::SetPlotOptionsRightPage(){
+	if(isOneD){
+		int i = stackedWidget->currentIndex();
+		if(i == (stackedWidget->count()-1))
+			stackedWidget->setCurrentIndex(0);
+		else
+			stackedWidget->setCurrentIndex(i+1);
+		box1D->setTitle(QString("1D Plot Options %1").arg(stackedWidget->currentIndex()+1));
 	}
 	else{
-		stackedWidget_2->setCurrentIndex(0);
-		box2D->setTitle("2D Plot Options 1");
+		int i = stackedWidget_2->currentIndex();
+		if(i == (stackedWidget_2->count()-1))
+			stackedWidget_2->setCurrentIndex(0);
+		else
+			stackedWidget_2->setCurrentIndex(i+1);
+		box2D->setTitle(QString("2D Plot Options %1").arg(stackedWidget_2->currentIndex()+1));
 	}
 }
-
 
 //-------------------------------------------------------------------------------------------------------------------------------------------------
 
 
-void qTabPlot::Set1DPage(){
-	//QPushButton *clickedButton = qobject_cast<QPushButton *>(sender());
-	if(stackedWidget->currentIndex()==0){
-	//if(clickedButton->icon().pixmap(QSize(16,16)).toImage()==btnLeft->icon().pixmap(QSize(16,16)).toImage())
-		stackedWidget->setCurrentIndex(1);
-		box1D->setTitle("1D Plot Options 2");
-	}
-	else if(stackedWidget->currentIndex()==1){
-		stackedWidget->setCurrentIndex(2);
-		box1D->setTitle("1D Plot Options 3");
+void qTabPlot::SetPlotOptionsLeftPage(){
+	if(isOneD){
+		int i = stackedWidget->currentIndex();
+		if(i == 0)
+			stackedWidget->setCurrentIndex(stackedWidget->count()-1);
+		else
+			stackedWidget->setCurrentIndex(i-1);
+		box1D->setTitle(QString("1D Plot Options %1").arg(stackedWidget->currentIndex()+1));
 	}
 	else{
-		stackedWidget->setCurrentIndex(0);
-		box1D->setTitle("1D Plot Options 1");
+		int i = stackedWidget_2->currentIndex();
+		if(i == 0)
+			stackedWidget_2->setCurrentIndex(stackedWidget_2->count()-1);
+		else
+			stackedWidget_2->setCurrentIndex(i-1);
+		box2D->setTitle(QString("2D Plot Options %1").arg(stackedWidget_2->currentIndex()+1));
 	}
 }
 
@@ -215,6 +236,14 @@ void qTabPlot::Set1DPage(){
 
 void qTabPlot::Select1DPlot(bool b){
 	isOneD = b;
+	lblFrom->setEnabled(false);
+	lblTo->setEnabled(false);
+	lblFrom_2->setEnabled(false);
+	lblTo_2->setEnabled(false);
+	spinFrom->setEnabled(false);
+	spinFrom_2->setEnabled(false);
+	spinTo->setEnabled(false);
+	spinTo_2->setEnabled(false);
 	if(b){
 		box1D->show();
 		box2D->hide();
@@ -247,22 +276,20 @@ void qTabPlot::Initialization(){
 	connect(btnCloseClones, SIGNAL(clicked()),myPlot, 	SLOT(CloseClones()));
 	connect(btnSaveClones,	SIGNAL(clicked()),myPlot, 	SLOT(SaveClones()));
 // 1D Plot box
+	//to change pages
+	connect(btnRight, 		SIGNAL(clicked()),		this, SLOT(SetPlotOptionsRightPage()));
+	connect(btnLeft, 		SIGNAL(clicked()),		this, SLOT(SetPlotOptionsLeftPage()));
+
 	connect(chkSuperimpose, SIGNAL(toggled(bool)),		this, SLOT(EnablePersistency(bool)));
 	connect(spinPersistency,SIGNAL(valueChanged(int)),	myPlot,SLOT(SetPersistency(int)));
 	connect(chkPoints, 		SIGNAL(toggled(bool)),		myPlot, SLOT(SetMarkers(bool)));
 	connect(chkLines, 		SIGNAL(toggled(bool)),		myPlot, SLOT(SetLines(bool)));
 	connect(chk1DLog, 		SIGNAL(toggled(bool)),		myPlot, SIGNAL(LogySignal(bool)));
-	//to change pages
-	connect(btnRight, 		SIGNAL(clicked()),		this, SLOT(Set1DPage()));
-	connect(btnRight2, 		SIGNAL(clicked()),		this, SLOT(Set1DPage()));
-	connect(btnRight3, 		SIGNAL(clicked()),		this, SLOT(Set1DPage()));
+
 // 2D Plot box
 	connect(chkInterpolate, SIGNAL(toggled(bool)),myPlot, SIGNAL(InterpolateSignal(bool)));
 	connect(chkContour, 	SIGNAL(toggled(bool)),myPlot, SIGNAL(ContourSignal(bool)));
 	connect(chkLogz, 		SIGNAL(toggled(bool)),myPlot, SIGNAL(LogzSignal(bool)));
-	//to change pages
-	connect(btn2DRight, 		SIGNAL(clicked()),		this, SLOT(Set2DPage()));
-	connect(btn2DRight2, 		SIGNAL(clicked()),		this, SLOT(Set2DPage()));
 // Plotting frequency box
 	connect(comboFrequency, SIGNAL(currentIndexChanged(int)),	this, SLOT(SetFrequency()));
 	connect(comboTimeGapUnit,SIGNAL(currentIndexChanged(int)),	this, SLOT(SetFrequency()));
@@ -299,11 +326,24 @@ void qTabPlot::Initialization(){
 	connect(this,SIGNAL(SetZRangeSignal(double,double)),myPlot, SIGNAL(SetZRangeSignal(double,double)));
 
 //pedstal
-	connect(btnResetPedestal, 		SIGNAL(clicked()),myPlot, 	SLOT(ResetPedestal()));
-	connect(btnCalPedestal, 		SIGNAL(clicked()),myPlot, 	SLOT(CalculatePedestal()));
-	connect(btnResetPedestal_2, 	SIGNAL(clicked()),myPlot, 	SLOT(ResetPedestal()));
-	connect(btnCalPedestal_2, 		SIGNAL(clicked()),myPlot, 	SLOT(CalculatePedestal()));
+	connect(chkPedestal, 		SIGNAL(toggled(bool)),	myPlot, 	SLOT(SetPedestal(bool)));
+	connect(btnRecalPedestal, 	SIGNAL(clicked()),		myPlot, 	SLOT(RecalculatePedestal()));
+	connect(chkPedestal_2, 		SIGNAL(toggled(bool)),	myPlot, 	SLOT(SetPedestal(bool)));
+	connect(btnRecalPedestal_2,	SIGNAL(clicked()),		myPlot, 	SLOT(RecalculatePedestal()));
 
+//accumulate
+	connect(chkAccumulate, 			SIGNAL(toggled(bool)),	myPlot, 	SLOT(SetAccumulate(bool)));
+	connect(btnResetAccumulate, 	SIGNAL(clicked()),		myPlot, 	SLOT(ResetAccumulate()));
+	connect(chkAccumulate_2, 		SIGNAL(toggled(bool)),	myPlot, 	SLOT(SetAccumulate(bool)));
+	connect(btnResetAccumulate_2,	SIGNAL(clicked()),		myPlot, 	SLOT(ResetAccumulate()));
+
+	//binary
+	connect(chkBinary, 			SIGNAL(toggled(bool)),		this,	SLOT(SetBinary()));
+	connect(chkBinary_2, 		SIGNAL(toggled(bool)),		this,	SLOT(SetBinary()));
+	connect(spinFrom,			SIGNAL(valueChanged(int)),	this,	SLOT(SetBinary()));
+	connect(spinFrom_2,			SIGNAL(valueChanged(int)),	this,	SLOT(SetBinary()));
+	connect(spinTo,				SIGNAL(valueChanged(int)),	this,	SLOT(SetBinary()));
+	connect(spinTo_2,			SIGNAL(valueChanged(int)),	this,	SLOT(SetBinary()));
 }
 
 
@@ -903,6 +943,59 @@ void qTabPlot::UpdateAfterCloning(){
 	else
 		EnableZRange();
 
+}
+
+
+//-------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+void qTabPlot::SetBinary(){
+	//1d
+	if(isOneD){
+		if(chkBinary->isChecked()){
+#ifdef VERBOSE
+			cout  << endl << "Enabling Binary" << endl;
+#endif
+			lblFrom->setEnabled(true);
+			lblTo->setEnabled(true);
+			spinFrom->setEnabled(true);
+			spinTo->setEnabled(true);
+			myPlot->SetBinary(true,spinFrom->value(),spinTo->value());
+		}else{
+#ifdef VERBOSE
+			cout  << endl << "Disabling Binary" << endl;
+#endif
+			lblFrom->setEnabled(false);
+			lblTo->setEnabled(false);
+			spinFrom->setEnabled(false);
+			spinTo->setEnabled(false);
+			myPlot->SetBinary(false);
+		}
+	}
+	//2d
+	else{
+		if(chkBinary_2->isChecked()){
+#ifdef VERBOSE
+			cout  << endl << "Enabling Binary" << endl;
+#endif
+			lblFrom_2->setEnabled(true);
+			lblTo_2->setEnabled(true);
+			spinFrom_2->setEnabled(true);
+			spinTo_2->setEnabled(true);
+			myPlot->SetBinary(true,spinFrom_2->value(),spinTo_2->value());
+
+		}else{
+#ifdef VERBOSE
+			cout  << endl << "Disabling Binary" << endl;
+#endif
+
+			lblFrom_2->setEnabled(false);
+			lblTo_2->setEnabled(false);
+			spinFrom_2->setEnabled(false);
+			spinTo_2->setEnabled(false);
+			myPlot->SetBinary(false);
+		}
+	}
 }
 
 

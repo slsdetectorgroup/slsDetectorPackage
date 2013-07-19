@@ -11,6 +11,7 @@
 #define CREATE_FILES	1
 #define DO_EVERYTHING	2
 
+#define BUF_SIZE        16000000 //16mb
 
 //all max frames defined in sls_detector_defs.h. 20000 gotthard, 100000 for short gotthard, 1000 for moench
 

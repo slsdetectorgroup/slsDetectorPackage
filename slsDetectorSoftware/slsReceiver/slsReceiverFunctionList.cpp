@@ -491,6 +491,9 @@ int slsReceiverFunctionList::startWriting(){
 					break;
 				}
 
+				//setting buffer
+				setvbuf(sfilefd,NULL,_IOFBF,BUF_SIZE);
+
 				//printing packet losses and file names
 				//if(prevframenum != 0)
 				if(!framesCaught)

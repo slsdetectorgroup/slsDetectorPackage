@@ -2799,7 +2799,6 @@ slsDetectorDefs::detectorSettings slsDetector::setSettings( detectorSettings ise
 	int modmi=imod, modma=imod+1, im=imod;
 	string settingsfname, calfname;
 	string ssettings;
-	int ichip,ichan,nch;
 
 	switch (isettings) {
 	case STANDARD:

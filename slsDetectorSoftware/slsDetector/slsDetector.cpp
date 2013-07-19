@@ -589,8 +589,8 @@ int slsDetector::initializeDetectorSize(detectorType type) {
     /** set total number of frames to be acquired to default to 1*/
     thisDetector->totalProgress=1;
 
-    /** set trimDsdir, calDir and filePath to default to home directory*/
-    strcpy(thisDetector->filePath,getenv("HOME"));
+    /** set trimDsdir, calDir and filePath to default to root directory*/
+    strcpy(thisDetector->filePath,"/");
 
     /** set number of trim energies to 0*/
     thisDetector->nTrimEn=0;

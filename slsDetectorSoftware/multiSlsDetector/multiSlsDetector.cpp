@@ -125,8 +125,8 @@ multiSlsDetector::multiSlsDetector(int id) :  slsDetectorUtils(), shmId(-1)
     thisMultiDetector->maxNumberOfChannelsPerDetector[X]=-1;
     thisMultiDetector->maxNumberOfChannelsPerDetector[Y]=-1;
 
-    /** set trimDsdir, calDir and filePath to default to home directory*/
-    strcpy(thisMultiDetector->filePath,getenv("HOME"));
+    /** set trimDsdir, calDir and filePath to default to root directory*/
+    strcpy(thisMultiDetector->filePath,"/");
     /** set fileName to default to run*/
     strcpy(thisMultiDetector->fileName,"run");
     /** set fileIndex to default to 0*/

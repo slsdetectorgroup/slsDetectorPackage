@@ -548,6 +548,8 @@ void qTabDataOutput::Refresh(){
 	lblOutputDir->setToolTip(outDirTip);
 	dispOutputDir->setToolTip(outDirTip);
 	btnOutputBrowse->setToolTip(outDirTip);
+	//making sure it is set
+	setOutputDir();
 
 	//flat field correction from server
 #ifdef VERBOSE

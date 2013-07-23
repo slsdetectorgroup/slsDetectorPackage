@@ -16,6 +16,7 @@
 class multiSlsDetector;
 /** Qt Project Class Headers */
 #include "qDrawPlot.h"
+class qDetectorMain;
 
 /**
  *@short sets up the measurement parameters
@@ -33,7 +34,7 @@ public:
 	 *    @param detector is the detector returned from the detector tab
 	 *    @param plot plot object reference
 	 */
-	qTabMeasurement(QWidget *parent,multiSlsDetector*& detector, qDrawPlot*& plot);
+	qTabMeasurement(qDetectorMain *parent,multiSlsDetector*& detector, qDrawPlot*& plot);
 
 	/** Destructor
 	 */
@@ -167,6 +168,8 @@ private slots:
 
 
 private:
+	/** parent widget */
+	qDetectorMain *thisParent;
 	/** The sls detector object */
 	multiSlsDetector *myDet;
 	/** The Plot widget	 */

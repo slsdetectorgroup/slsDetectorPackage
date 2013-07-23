@@ -7,6 +7,7 @@
 
 //Qt Project Class Headers
 #include "qTabMeasurement.h"
+#include "qDetectorMain.h"
 //Project Class Headers
 #include "slsDetector.h"
 #include "multiSlsDetector.h"
@@ -23,8 +24,8 @@ using namespace std;
 //-------------------------------------------------------------------------------------------------------------------------------------------------
 
 
-qTabMeasurement::qTabMeasurement(QWidget *parent,multiSlsDetector*& detector, qDrawPlot*& plot):
-								QWidget(parent),myDet(detector),myPlot(plot),expertMode(false){
+qTabMeasurement::qTabMeasurement(qDetectorMain *parent,multiSlsDetector*& detector, qDrawPlot*& plot):
+		thisParent(parent),myDet(detector),myPlot(plot),expertMode(false){
 	setupUi(this);
 	SetupWidgetWindow();
 	Initialization();
@@ -38,6 +39,7 @@ qTabMeasurement::qTabMeasurement(QWidget *parent,multiSlsDetector*& detector, qD
 qTabMeasurement::~qTabMeasurement(){
 	delete myDet;
 	delete myPlot;
+	delete thisParent;
 }
 
 
@@ -308,6 +310,14 @@ void qTabMeasurement::setRunIndex(int index){
 
 void qTabMeasurement::startStopAcquisition(){
 	if(btnStartStop->isChecked()){
+
+		if(thisParent->DoesOutputDirExist() == slsDetectorDefs::FAIL){
+			disconnect(btnStartStop,SIGNAL(clicked()),this,SLOT(startStopAcquisition()));
+			btnStartStop->click();
+			connect(btnStartStop,SIGNAL(clicked()),this,SLOT(startStopAcquisition()));
+			return;
+		}
+
 #ifdef VERBOSE
 		cout << endl << endl << "Starting Acquisition" << endl;
 #endif

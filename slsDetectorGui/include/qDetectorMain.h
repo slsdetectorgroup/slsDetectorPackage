@@ -14,7 +14,7 @@
 /** Qt Project Class Headers */
 #include "qDrawPlot.h"
 #include "qTabMeasurement.h"
-class qTabDataOutput;
+#include "qTabDataOutput.h"
 class qTabPlot;
 class qTabActions;
 class qTabAdvanced;
@@ -79,6 +79,9 @@ public:
 
 	/** Returns file path */
 	QString GetFilePath(){QString s = QString(myDet->getFilePath().c_str());qDefs::checkErrorMessage(myDet); return s;};
+
+	/** Verifies if output directories for all the receivers exist */
+	int DoesOutputDirExist(){return tab_dataoutput->VerifyOutputDirectory();};
 
 private:
 	/** The Qt Application */

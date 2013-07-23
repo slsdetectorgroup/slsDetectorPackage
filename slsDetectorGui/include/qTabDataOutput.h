@@ -40,6 +40,10 @@ public:
 	 */
 	void Refresh();
 
+	/** verify output directories
+	 *  /returns success or fail
+	 */
+	int VerifyOutputDirectory();
 
 
 private:
@@ -53,6 +57,9 @@ private:
 	QString 	errFlatFieldTip;
 	QString 	outDirTip;
 	QPalette	red;
+	QPalette	black;
+	QPalette	*red1;
+	QPalette	*black1;
 
 /** methods */
 	/** Sets up the widget */
@@ -61,11 +68,12 @@ private:
 	/** Sets up all the slots and signals */
 	void Initialization();
 
+	/** Populate the readouts
+	 */
+	void PopulateDetectors();
+
 
 private slots:
-/** Sets the output directory
- */
-void setOutputDir();
 
 /** Open dialog to choose the output directory */
 void browseOutputDir();
@@ -90,6 +98,12 @@ void SetAngularCorrection();
 
 /**discard bad channels*/
 void DiscardBadChannels();
+
+/** set output directory*/
+void SetOutputDir();
+
+/** set output directory*/
+void GetOutputDir();
 
 signals:
 /**signal to enable/disable positions in Actions*/

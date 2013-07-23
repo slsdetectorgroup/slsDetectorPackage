@@ -80,7 +80,7 @@ public:
 			retval.append("Could not set the exact region of interest. Verify ROI set by detector.\n");
 
 		if(slsErrorMask&FILE_PATH_DOES_NOT_EXIST)
-			retval.append("File Path does not exist.\n");
+			retval.append("Path to Output Directory does not exist.\n");
 
 		if(slsErrorMask&RECEIVER_READ_FREQUENCY)
 			retval.append("Could not set receiver read frequency.\n");

@@ -218,9 +218,10 @@ static const int64_t GUI_VERSION=0x20121213;
 
 	/**gets error mask and displays the message if it exists
 	 * @param myDet is the slsdetector object
+	 * @param show to display the error message
 		 /returns error message else an empty string
 	 * */
-	static string checkErrorMessage(slsDetector*& myDet){
+	static string checkErrorMessage(slsDetector*& myDet,bool show = true){
 
 
 		int errorLevel= (int)WARNING;
@@ -244,7 +245,8 @@ static const int64_t GUI_VERSION=0x20121213;
 			retval.append("</font></nobr>");
 
 			//display message
-			qDefs::Message((MessageIndex)errorLevel,retval,"Main");
+			if(show)
+				qDefs::Message((MessageIndex)errorLevel,retval,"Main");
 		}
 
 		myDet->clearErrorMask();

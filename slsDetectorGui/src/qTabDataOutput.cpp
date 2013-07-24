@@ -669,64 +669,60 @@ int qTabDataOutput::VerifyOutputDirectory(){
 	cout << "Verifying output directory" << endl;
 #endif
 	bool error = false;
-	QString path = "";
 	QString errTip = outDirTip;
-	QString detName = "";
+	bool receiver = (!comboDetector->itemText(0).compare("All"));
+	string path = string(dispReadOutputDir->text().toAscii().constData());
+	string detName = "";
 
-	path = dispReadOutputDir->text();
-
-	//no receiver
-	if(!comboDetector->itemText(0).compare("All")){
-		if(myDet->setFilePath(string(path.toAscii().constData())).empty()){
-			qDefs::Message(qDefs::WARNING,string("Enter a valid output directory"),"Data Output");
-			error = true;
-			dispReadOutputDir->setText(QString(myDet->getFilePath().c_str()));
-			boxOutDir->setTitle("Receiver Output Directory*");
-		}else if(!qDefs::checkErrorMessage(myDet).empty()){
-			error = true;
-			dispReadOutputDir->setText(QString(myDet->getFilePath().c_str()));
-			dispReadOutputDir->setPalette(*red1);
-			boxOutDir->setPalette(red);
-			boxOutDir->setTitle("Output Directory*");
-			errTip = outDirTip +
-					QString("<nobr><font color=\"red\">"
-							"Enter a valid path to change <b>Output Directory</b>.</font></nobr>");
-			boxOutDir->setToolTip(errTip);
+	//for each detector
+	for(int i=0;i<myDet->getNumberOfDetectors();i++){
+		slsDetector *det = 	myDet->getSlsDetector(i);
+		qDefs::checkErrorMessage(myDet);
+		if(receiver){
+			detName = string(" for ") + string(comboDetector->itemText(i).toAscii().constData()) + string(" readout");
+			path = det->getFilePath();
 		}
+
+		if(det->setFilePath(path).empty()){
+			qDefs::Message(qDefs::WARNING,string("Enter a valid output directory ") + detName,"Data Output");
+			error = true;
+		}else if(!qDefs::checkErrorMessage(det).empty()){
+			error = true;
+		}
+		//verify all paths are the same for no receiver
+		if ((!receiver) && (path != det->getFilePath())){
+			error = true;
+			qDefs::Message(qDefs::WARNING,string("Enter a valid output directory ") + detName,"Data Output");
+		}
+		myDet->setFilePath(det->getFilePath());
 	}
 
-	//receiver
-	else{
-		for(int i=0;i<myDet->getNumberOfDetectors();i++){
-			detName = comboDetector->itemText(i);
-			slsDetector *det = 	myDet->getSlsDetector(i);
-			qDefs::checkErrorMessage(myDet);
-			if(det->setFilePath(det->getFilePath()).empty()){
-				qDefs::Message(qDefs::WARNING,string("Enter a valid output directory for ") +
-						string(detName.toAscii().constData()) + string(" readout"),"Data Output");
-				error = true;
-				dispReadOutputDir->setText(QString(det->getFilePath().c_str()));
-				boxOutDir->setTitle("Receiver Output Directory*");
-			}else if(!qDefs::checkErrorMessage(det).empty()){
-				error = true;
-				dispReadOutputDir->setText(QString(det->getFilePath().c_str()));
-				boxOutDir->setTitle("Receiver Output Directory*");
-			}
-		}
-	}
+
+	//set the read output dir anyway
+	if(receiver)
+		path = myDet->getSlsDetector(comboDetector->currentIndex())->getFilePath();
+	else
+		path = myDet->getFilePath();
+	dispReadOutputDir->setText(QString(path.c_str()));
+
 
 	//if error, display in red
 	if(error){
 #ifdef VERBOSE
-	cout << "The output path doesnt exist anymore" << endl;
+		cout << "The output path doesnt exist anymore" << endl;
 #endif
 		dispReadOutputDir->setPalette(*red1);
 		boxOutDir->setPalette(red);
 		errTip = errTip +
 				QString("<br><nobr><font color=\"red\">"
-						"Enter a valid path for ") + detName +
+						"Enter a valid path for ") + QString(detName.c_str()) +
 						QString( " readout to change <b>Output Directory</b>.</font></nobr>");
 		boxOutDir->setToolTip(errTip);
+
+		if(receiver)
+			boxOutDir->setTitle("Receiver Output Directory*");
+		else
+			boxOutDir->setTitle("Output Directory*");
 
 		return slsDetectorDefs::FAIL;
 	}
@@ -734,18 +730,20 @@ int qTabDataOutput::VerifyOutputDirectory(){
 	//no error
 	else{
 #ifdef VERBOSE
-	cout << "The output path has been verified" << endl;
+		cout << "The output path has been verified" << endl;
 #endif
 		dispReadOutputDir->setPalette(*black1);
 		boxOutDir->setPalette(black);
-		if(!comboDetector->itemText(0).compare("All"))
-			boxOutDir->setTitle("Output Directory");
-		else
-			boxOutDir->setTitle("Receiver Output Directory");
 		boxOutDir->setToolTip(outDirTip);
+
+		if(receiver)
+			boxOutDir->setTitle("Receiver Output Directory");
+		else
+			boxOutDir->setTitle("Output Directory");
 	}
 
 	return slsDetectorDefs::OK;
+
 }
 
 
@@ -759,6 +757,7 @@ void qTabDataOutput::SetOutputDir(){
 #endif
 
 	bool error = false;
+	bool receiver = (!comboDetector->itemText(0).compare("All"));
 	QString path = dispOutputDir->text();
 
 	if(path.isEmpty())
@@ -766,48 +765,71 @@ void qTabDataOutput::SetOutputDir(){
 
 	disconnect(dispOutputDir,		SIGNAL(editingFinished()), 	this, 	SLOT(SetOutputDir()));
 
+
 	//gets rid of the end '/'s
 	while(path.endsWith('/')) path.chop(1);
 	dispOutputDir->setText(path);
 
-	if(!comboDetector->itemText(0).compare("All")){
-		myDet->setFilePath(string(dispOutputDir->text().toAscii().constData()));
-		if(!qDefs::checkErrorMessage(myDet).empty()){
+
+	if(receiver){
+		slsDetector *det = 	myDet->getSlsDetector(comboDetector->currentIndex());
+		qDefs::checkErrorMessage(myDet);
+		det->setFilePath(string(dispOutputDir->text().toAscii().constData()));
+		if(!qDefs::checkErrorMessage(det).empty()){
 #ifdef VERBOSE
-	cout << "The output path could not be set" << endl;
+			cout << "The output path could not be set" << endl;
 #endif
-			myDet->setFilePath(string(dispReadOutputDir->text().toAscii().constData()));
+			det->setFilePath(string(dispReadOutputDir->text().toAscii().constData()));
 			error = true;
 			dispOutputDir->setPalette(*red1);
 		}
+		myDet->setFilePath(det->getFilePath());
 	}
+
 
 	else{
-			slsDetector *det = 	myDet->getSlsDetector(comboDetector->currentIndex());
+		//for each detector
+		for(int i=0;i<myDet->getNumberOfDetectors();i++){
+			slsDetector *det = 	myDet->getSlsDetector(i);
 			qDefs::checkErrorMessage(myDet);
-			det->setFilePath(string(dispOutputDir->text().toAscii().constData()));
-			if(!qDefs::checkErrorMessage(det).empty()){
-#ifdef VERBOSE
-	cout << "The output path could not be set" << endl;
-#endif
-				det->setFilePath(string(dispReadOutputDir->text().toAscii().constData()));
+			if(det->setFilePath(string(path.toAscii().constData())).empty()){
+				qDefs::Message(qDefs::WARNING,string("Enter a valid output directory "),"Data Output");
 				error = true;
-				dispOutputDir->setPalette(*red1);
+			}else if(!qDefs::checkErrorMessage(det).empty()){
+				error = true;
 			}
+			myDet->setFilePath(det->getFilePath());
+		}
 
-			cout<<"filepath:"<<det->getFilePath()<<endl;
+
+		if(error){
+			for(int i=0;i<myDet->getNumberOfDetectors();i++){
+				slsDetector *det = 	myDet->getSlsDetector(i);
+				qDefs::checkErrorMessage(myDet);
+				det->setFilePath(string(dispReadOutputDir->text().toAscii().constData()));
+			}
+		}
+		dispReadOutputDir->setText(QString(myDet->getFilePath().c_str()));
 	}
 
 
-	if(!error){
+
+	if(error){
 #ifdef VERBOSE
-	cout << "The output path has been modified" << endl;
+		cout << "The output path could not be set" << endl;
+#endif
+		dispOutputDir->setPalette(*red1);
+	}
+	else{
+#ifdef VERBOSE
+		cout << "The output path has been modified" << endl;
 #endif
 		dispOutputDir->setPalette(*black1);
 		dispReadOutputDir->setText(dispOutputDir->text());
 		dispOutputDir->setText("");
 		VerifyOutputDirectory();
 	}
+
 
 	connect(dispOutputDir,		SIGNAL(editingFinished()), 	this, 	SLOT(SetOutputDir()));
 

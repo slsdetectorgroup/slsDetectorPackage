@@ -720,6 +720,9 @@ int qTabDataOutput::VerifyOutputDirectory(){
 			mess.replace(pos, 1, "<br>");
 			pos += 1;
 		}
+		mess.insert(0,"<font color=\"red\">");
+		mess.append("</font></nobr>");
+
 		qDefs::Message(qDefs::WARNING,string("Invalid Output Directory ")+ mess,"Data Output");
 		dispReadOutputDir->setPalette(*red1);
 		boxOutDir->setPalette(red);

@@ -715,7 +715,7 @@ int qTabDataOutput::VerifyOutputDirectory(){
 		cout << "The output path doesnt exist anymore" << endl;
 #endif
 		//replace all \n with <br>
-		pos = 0;
+		size_t pos = 0;
 		while((pos = mess.find("\n", pos)) != string::npos){
 			mess.replace(pos, 1, "<br>");
 			pos += 1;

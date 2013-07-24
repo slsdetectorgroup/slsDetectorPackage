@@ -714,18 +714,16 @@ int qTabDataOutput::VerifyOutputDirectory(){
 #ifdef VERBOSE
 		cout << "The output path doesnt exist anymore" << endl;
 #endif
+		qDefs::Message(qDefs::WARNING,string("Invalid Output Directory ")+ mess ,"Data Output");
+		dispReadOutputDir->setPalette(*red1);
+		boxOutDir->setPalette(red);
+
 		//replace all \n with <br>
 		size_t pos = 0;
 		while((pos = mess.find("\n", pos)) != string::npos){
 			mess.replace(pos, 1, "<br>");
 			pos += 1;
 		}
-		mess.insert(0,"<font color=\"red\">");
-		mess.append("</font></nobr>");
-
-		qDefs::Message(qDefs::WARNING,string("Invalid Output Directory ")+ mess,"Data Output");
-		dispReadOutputDir->setPalette(*red1);
-		boxOutDir->setPalette(red);
 		errTip = errTip +
 				QString("<br><nobr><font color=\"red\">"
 						"Invalid <b>Output Directory</b>") + QString(mess.c_str()) +

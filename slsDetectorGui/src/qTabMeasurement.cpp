@@ -312,10 +312,20 @@ void qTabMeasurement::startStopAcquisition(){
 	if(btnStartStop->isChecked()){
 
 		if(thisParent->DoesOutputDirExist() == slsDetectorDefs::FAIL){
-			disconnect(btnStartStop,SIGNAL(clicked()),this,SLOT(startStopAcquisition()));
-			btnStartStop->click();
-			connect(btnStartStop,SIGNAL(clicked()),this,SLOT(startStopAcquisition()));
-			return;
+			if(qDefs::Message(qDefs::QUESTION,
+					"Your data will not be saved. Proceed with acquisition anyway?",
+					"Measurement") == slsDetectorDefs::FAIL){
+				disconnect(btnStartStop,SIGNAL(clicked()),this,SLOT(startStopAcquisition()));
+				btnStartStop->click();
+				connect(btnStartStop,SIGNAL(clicked()),this,SLOT(startStopAcquisition()));
+				return;
+			}else{
+				//done because for receiver it cant save a file with blank file path and returns without acquiring even to the gui
+				disconnect(chkFile, 			SIGNAL(toggled(bool)), 				this, SLOT(EnableFileWrite(bool)));
+				chkFile->setChecked(false);
+				EnableFileWrite(false);
+				connect(chkFile, 			SIGNAL(toggled(bool)), 				this, SLOT(EnableFileWrite(bool)));
+			}
 		}
 
 #ifdef VERBOSE

@@ -679,10 +679,12 @@ int slsReceiverFuncs::start_receiver(){
 		sprintf(mess,"Receiver locked by %s\n", socket->lastClientIP);
 		ret=FAIL;
 	}
+	/*
 	else if(!strlen(slsReceiverList->getFilePath())){
 		strcpy(mess,"receiver not set up. set receiver ip again.\n");
 		ret = FAIL;
 	}
+	*/
 	else if(slsReceiverList->getStatus()!=RUNNING)
 		ret=slsReceiverList->startReceiver();
 #endif

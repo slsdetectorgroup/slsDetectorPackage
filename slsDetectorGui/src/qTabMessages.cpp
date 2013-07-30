@@ -103,9 +103,9 @@ void qTabMessages::SaveLog() {
     		QTextStream out(&outfile);
     		out<<dispLog->toPlainText() << endl;
     		qDefs::Message(qDefs::INFORMATION,string("The Log has been successfully saved to "
-    				"")+fName.toAscii().constData(),"Messages");
+    				"")+fName.toAscii().constData(),"qTabMessages::SaveLog");
     	}
-    	else qDefs::Message(qDefs::WARNING,"Attempt to save log file failed.","Messages");
+    	else qDefs::Message(qDefs::WARNING,"Attempt to save log file failed.","qTabMessages::SaveLog");
      }
 }
 

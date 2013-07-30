@@ -152,7 +152,7 @@ int qServer::StartStopServer(int start){
 			checkStarted=1;
 			if (pthread_create(&gui_server_thread, NULL,StartServerThread, (void*) this)){
 				gui_server_thread_running=0;
-				qDefs::Message(qDefs::WARNING,"Can't create gui server thread", "Server");
+				qDefs::Message(qDefs::WARNING,"Can't create gui server thread", "qServer::StartStopServer");
 				cout << "ERROR: Can't create gui server thread" << endl;
 				return FAIL;
 			}
@@ -168,7 +168,7 @@ int qServer::StartStopServer(int start){
 			checkStopStarted=1;
 			if (pthread_create(&gui_stop_server_thread, NULL,StopServerThread, (void*) this)){
 				gui_server_thread_running=0;
-				qDefs::Message(qDefs::WARNING,"Can't create gui stop server thread", "Server");
+				qDefs::Message(qDefs::WARNING,"Can't create gui stop server thread", "qServer::StartStopServer");
 				cout << "ERROR: Can't create gui stop server thread" << endl;
 				return FAIL;
 			}
@@ -238,7 +238,7 @@ int qServer::StopServer(){
 	myStopSocket = new MySocketTCP(port_no+1);
 	if (myStopSocket->getErrorStatus()){
 		gui_server_thread_running = 0;
-		qDefs::Message(qDefs::WARNING,"Could not start gui stop server socket","Server");
+		qDefs::Message(qDefs::WARNING,"Could not start gui stop server socket","qServer::StopServer");
 	}
 	checkStopStarted = 0;
 
@@ -303,7 +303,7 @@ int qServer::StartServer(){
 	mySocket = new MySocketTCP(port_no);
 	if (mySocket->getErrorStatus()){
 		gui_server_thread_running = 0;
-		qDefs::Message(qDefs::WARNING,"Could not start gui server socket","Server");
+		qDefs::Message(qDefs::WARNING,"Could not start gui server socket","qServer::StartServer");
 	}
 	checkStarted = 0;
 

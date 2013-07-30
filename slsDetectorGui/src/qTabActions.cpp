@@ -220,7 +220,7 @@ void qTabActions::SetupWidgetWindow(){
 	}
 
 
-	qDefs::checkErrorMessage(myDet);
+	qDefs::checkErrorMessage(myDet,"qTabActions::SetupWidgetWindow");
 }
 
 
@@ -364,7 +364,7 @@ void qTabActions::Expand(QAbstractButton *button ){
 		}
 	}
 
-	qDefs::checkErrorMessage(myDet);
+	qDefs::checkErrorMessage(myDet,"qTabActions::Expand");
 }
 
 
@@ -411,10 +411,10 @@ void qTabActions::SetPosition(){
 		positions[i] = comboPos->itemText(i).toDouble();
 	//setting the list and catching error
 	if(myDet->setPositions(comboPos->count(),positions)!=comboPos->count())
-		qDefs::Message(qDefs::WARNING,"The positions list was not set for some reason.","Actions");
+		qDefs::Message(qDefs::WARNING,"The positions list was not set for some reason.","qTabActions::SetPosition");
 
 
-	qDefs::checkErrorMessage(myDet);
+	qDefs::checkErrorMessage(myDet,"qTabActions::SetPosition");
 }
 
 
@@ -466,7 +466,7 @@ void qTabActions::EnablePositions(bool enable){
 		btnExpand[NumPositions]->setEnabled(false);
 	}
 
-	qDefs::checkErrorMessage(myDet);
+	qDefs::checkErrorMessage(myDet,"qTabActions::EnablePositions");
 }
 
 
@@ -524,7 +524,7 @@ void qTabActions::Refresh(){
 #ifdef VERBOSE
 	cout << "**Updated all action widgets: " << endl << endl;
 #endif
-	qDefs::checkErrorMessage(myDet);
+	qDefs::checkErrorMessage(myDet,"qTabActions::Refresh");
 }
 
 

@@ -84,19 +84,19 @@ void qActionsWidget::SetMode(int mode){
 	if(!fName.isEmpty()){
 		//check if mode didnt get set
 		if(mode!=myDet->getActionMode(id)){
-			qDefs::Message(qDefs::WARNING,"The mode could not be changed.","ActionsWidget");
+			qDefs::Message(qDefs::WARNING,"The mode could not be changed.","qActionsWidget::SetMode");
 			comboScript->setCurrentIndex(myDet->getActionMode(id));
 		}//if mode got set and its custom script
 		else if(mode){
 			//when the file name did not get set correctly
 			if(fName.compare(QString(myDet->getActionScript(id).c_str()))){
-				qDefs::Message(qDefs::WARNING,"The file path could not be set.","ActionsWidget");
+				qDefs::Message(qDefs::WARNING,"The file path could not be set.","qActionsWidget::SetMode");
 				dispScript->setText(QString(myDet->getActionScript(id).c_str()));
 				SetScriptFile();
 			}
 		}
 	}
-	qDefs::checkErrorMessage(myDet);
+	qDefs::checkErrorMessage(myDet,"qActionsWidget::SetMode");
 }
 
 
@@ -139,12 +139,12 @@ void qActionsWidget::SetScriptFile(){
 	else{
 		//path doesnt exist
 		if(stat(fName.toAscii().constData(),&st_buf)){
-			qDefs::Message(qDefs::WARNING,"The script file entered does not exist","ActionsWidget");
+			qDefs::Message(qDefs::WARNING,"The script file entered does not exist","qActionsWidget::SetScriptFile");
 			dispScript->setText(QString(myDet->getActionScript(id).c_str()));
 		}
 		//if its not a file
 		else if (!S_ISREG (st_buf.st_mode)) {
-			qDefs::Message(qDefs::WARNING,"The script file path entered is not a file","ActionsWidget");
+			qDefs::Message(qDefs::WARNING,"The script file path entered is not a file","qActionsWidget::SetScriptFile");
 			dispScript->setText(QString(myDet->getActionScript(id).c_str()));
 		}
 		else
@@ -159,7 +159,7 @@ void qActionsWidget::SetScriptFile(){
 		if(fName.compare(QString(myDet->getActionScript(id).c_str()))){
 			//did not get set, write what is was before
 			if(!fName.isEmpty())
-				qDefs::Message(qDefs::WARNING,"The script file could not be set. Reverting to previous file.","ActionsWidget");
+				qDefs::Message(qDefs::WARNING,"The script file could not be set. Reverting to previous file.","qActionsWidget::SetScriptFile");
 			dispScript->setText(QString(myDet->getActionScript(id).c_str()));
 		}
 	}
@@ -167,7 +167,7 @@ void qActionsWidget::SetScriptFile(){
 	//dont display if theres a none
 	if(!dispScript->text().compare("none")) dispScript->setText("");
 
-	qDefs::checkErrorMessage(myDet);
+	qDefs::checkErrorMessage(myDet,"qActionsWidget::SetScriptFile");
 
 }
 
@@ -184,7 +184,7 @@ void qActionsWidget::SetParameter(){
 	//dont display if theres a none
 	if(!dispParameter->text().compare("none")) dispParameter->setText("");
 
-	qDefs::checkErrorMessage(myDet);
+	qDefs::checkErrorMessage(myDet,"qActionsWidget::SetParameter");
 }
 
 
@@ -212,7 +212,7 @@ void qActionsWidget::Refresh(){
 			"parameter:" << parameter << "\t***" << endl;
 #endif
 
-	qDefs::checkErrorMessage(myDet);
+	qDefs::checkErrorMessage(myDet,"qActionsWidget::Refresh");
 }
 
 

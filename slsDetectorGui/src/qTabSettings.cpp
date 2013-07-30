@@ -66,7 +66,7 @@ void qTabSettings::SetupWidgetWindow(){
 	default:	comboDynamicRange->setCurrentIndex(0);	break;
 	}
 
-	qDefs::checkErrorMessage(myDet);
+	qDefs::checkErrorMessage(myDet,"qTabSettings::SetupWidgetWindow");
 }
 
 //-------------------------------------------------------------------------------------------------------------------------------------------------
@@ -74,7 +74,7 @@ void qTabSettings::SetupWidgetWindow(){
 void qTabSettings::SetupDetectorSettings(){
 	// Get detector settings from detector
 	slsDetectorDefs::detectorSettings sett = myDet->getSettings();
-	qDefs::checkErrorMessage(myDet);
+	qDefs::checkErrorMessage(myDet,"qTabSettings::SetupDetectorSettings");
 	if(sett==-1) sett = slsDetectorDefs::UNDEFINED;
 	// To be able to index items on a combo box
 	model = qobject_cast<QStandardItemModel*>(comboSettings->model());
@@ -114,7 +114,7 @@ void qTabSettings::SetupDetectorSettings(){
 			item[(int)VeryHighGain]->setEnabled(true);
 			break;
 		default:
-			qDefs::Message(qDefs::CRITICAL,"Unknown detector type. Exiting GUI.","Settings");
+			qDefs::Message(qDefs::CRITICAL,"Unknown detector type. Exiting GUI.","qTabSettings::SetupDetectorSettings");
 			exit(-1);
 			break;
 		}
@@ -122,7 +122,7 @@ void qTabSettings::SetupDetectorSettings(){
 		// This should not happen -only if the server and gui has a mismatch
 		// on which all modes are allowed in detectors
 		if(!(item[(int)sett]->isEnabled())){
-			qDefs::Message(qDefs::CRITICAL,"Unknown Detector Settings retrieved from detector. Exiting GUI.","Settings");
+			qDefs::Message(qDefs::CRITICAL,"Unknown Detector Settings retrieved from detector. Exiting GUI.","qTabSettings::SetupDetectorSettings");
 #ifdef VERBOSE
 			cout << "ERROR:  Unknown Detector Settings retrieved from detector." << endl;
 #endif
@@ -151,7 +151,7 @@ void qTabSettings::Initialization(){
 void qTabSettings::setSettings(int index){
 	//dont set it if settings is set to undefined or uninitialized
 	if((index==Undefined)||(index==Uninitialized)){
-		qDefs::Message(qDefs::WARNING,"Cannot change settings to Undefined or Uninitialized.","Settings");
+		qDefs::Message(qDefs::WARNING,"Cannot change settings to Undefined or Uninitialized.","qTabSettings::setSettings");
 		disconnect(comboSettings, 		SIGNAL(currentIndexChanged(int)),	this, SLOT(setSettings(int)));
 		int sett = (int)myDet->getSettings();
 		if(sett==-1) sett = slsDetectorDefs::UNDEFINED;
@@ -175,7 +175,7 @@ void qTabSettings::setSettings(int index){
 		}
 	}
 
-	qDefs::checkErrorMessage(myDet);
+	qDefs::checkErrorMessage(myDet,"qTabSettings::setSettings");
 }
 
 //-------------------------------------------------------------------------------------------------------------------------------------------------
@@ -186,13 +186,13 @@ void qTabSettings::SetNumberOfModules(int index){
 #endif
 	int i = myDet->setNumberOfModules(index);
 	if(index!=i)
-		qDefs::Message(qDefs::WARNING,"Number of modules cannot be set for this value.","Settings");
+		qDefs::Message(qDefs::WARNING,"Number of modules cannot be set for this value.","qTabSettings::SetNumberOfModules");
 #ifdef VERBOSE
 	cout << "ERROR: Setting number of modules to "<< i << endl;
 #endif
 	spinNumModules->setValue(i);
 
-	qDefs::checkErrorMessage(myDet);
+	qDefs::checkErrorMessage(myDet,"qTabSettings::SetNumberOfModules");
 }
 
 //-------------------------------------------------------------------------------------------------------------------------------------------------
@@ -213,7 +213,7 @@ void qTabSettings::SetDynamicRange(int index){
 	cout << "Setting dynamic range to "<< dr << endl;
 #endif
 	if(ret!=dr){
-		qDefs::Message(qDefs::WARNING,"Dynamic Range cannot be set to this value.","Settings");
+		qDefs::Message(qDefs::WARNING,"Dynamic Range cannot be set to this value.","qTabSettings::SetDynamicRange");
 #ifdef VERBOSE
 		cout << "ERROR: Setting dynamic range to "<< ret << endl;
 #endif
@@ -227,7 +227,7 @@ void qTabSettings::SetDynamicRange(int index){
 		}
 	}
 
-	qDefs::checkErrorMessage(myDet);
+	qDefs::checkErrorMessage(myDet,"qTabSettings::SetDynamicRange");
 }
 
 
@@ -242,13 +242,13 @@ void qTabSettings::SetEnergy(){
 	myDet->setThresholdEnergy(index);
 	int ret = (int)myDet->getThresholdEnergy();
 	if((ret-index)>200){
-		qDefs::Message(qDefs::WARNING,"Threshold energy could not be set. The difference is greater than 200.","Settings");
+		qDefs::Message(qDefs::WARNING,"Threshold energy could not be set. The difference is greater than 200.","qTabSettings::SetEnergy");
 	}
 	disconnect(spinThreshold,	SIGNAL(valueChanged(int)),	this, SLOT(SetEnergy()));
 	spinThreshold->setValue(ret);
 	connect(spinThreshold,		SIGNAL(valueChanged(int)),	this, SLOT(SetEnergy()));
 
-	qDefs::checkErrorMessage(myDet);
+	qDefs::checkErrorMessage(myDet,"qTabSettings::SetEnergy");
 }
 
 
@@ -314,7 +314,7 @@ void qTabSettings::Refresh(){
 	cout  << "**Updated Settings Tab" << endl << endl;
 #endif
 
-	qDefs::checkErrorMessage(myDet);
+	qDefs::checkErrorMessage(myDet,"qTabSettings::Refresh");
 }
 
 

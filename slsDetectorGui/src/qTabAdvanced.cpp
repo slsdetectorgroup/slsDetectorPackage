@@ -125,7 +125,7 @@ void qTabAdvanced::SetupWidgetWindow(){
 	comboDetector->setCurrentIndex(0);
 	det = myDet->getSlsDetector(comboDetector->currentIndex());
 
-	qDefs::checkErrorMessage(myDet);
+	qDefs::checkErrorMessage(myDet,"qTabAdvanced::SetupWidgetWindow");
 
 	spinControlPort->setValue(det->getControlPort());
 	spinStopPort->setValue(det->getStopPort());
@@ -166,7 +166,7 @@ void qTabAdvanced::SetupWidgetWindow(){
 
 	Initialization();
 
-	qDefs::checkErrorMessage(det);
+	qDefs::checkErrorMessage(det,"qTabAdvanced::SetupWidgetWindow");
 
 }
 
@@ -262,11 +262,11 @@ void qTabAdvanced::SetLogs(){
 #ifdef VERBOSE
 	cout << "Could not set/reset Log." << endl;
 #endif
-		qDefs::Message(qDefs::WARNING,"Could not set/reset Log.","Advanced");
+		qDefs::Message(qDefs::WARNING,"Could not set/reset Log.","qTabAdvanced::SetLogs");
 		checkedBox->setChecked(!enable);
 	}
 
-	qDefs::checkErrorMessage(myDet);
+	qDefs::checkErrorMessage(myDet,"qTabAdvanced::SetLogs");
 }
 
 
@@ -281,7 +281,7 @@ void qTabAdvanced::SetExposureTime(){
 #endif
 	myDet->setTimer(slsDetectorDefs::ACQUISITION_TIME,(int64_t)exptimeNS);
 
-	qDefs::checkErrorMessage(myDet);
+	qDefs::checkErrorMessage(myDet,"qTabAdvanced::SetExposureTime");
 }
 
 
@@ -293,7 +293,7 @@ void qTabAdvanced::SetThreshold(){
 	cout << "Setting Threshold DACu:" << spinThreshold->value() << endl;
 #endif
 	spinThreshold->setValue((double)myDet->setDAC((dacs_t)spinThreshold->value(),slsDetectorDefs::THRESHOLD));
-	qDefs::checkErrorMessage(myDet);
+	qDefs::checkErrorMessage(myDet,"qTabAdvanced::SetThreshold");
 }
 
 
@@ -329,7 +329,7 @@ void qTabAdvanced::SetOutputFile(){
 		if(!dirPath.compare(trimdir)){
 			int ret = qDefs::Message(qDefs::QUESTION,string("<nobr>This will possibly overwrite your original trimbits.</nobr><br>"
 					"<nobr>Proposed file path:") + string(dirPath.toAscii().constData())+
-					string("</nobr><br><nobr>Do you still want to continue?</nobr>"),"Advanced");
+					string("</nobr><br><nobr>Do you still want to continue?</nobr>"),"qTabAdvanced::SetOutputFile");
 			if(ret==qDefs::FAIL){
 				dispFile->setText("");
 				dispFile->setToolTip(outputDirTip + errOutputTip);
@@ -350,7 +350,7 @@ void qTabAdvanced::SetOutputFile(){
 		btnStart->setEnabled(false);
 	}
 
-	qDefs::checkErrorMessage(myDet);
+	qDefs::checkErrorMessage(myDet,"qTabAdvanced::SetOutputFile");
 }
 
 
@@ -480,17 +480,17 @@ void qTabAdvanced::StartTrimming(){
 	int ret = myDet->executeTrimming(trimmingMode,parameter1,parameter2,-1);
 	if((ret!=slsDetectorDefs::FAIL)&&(ret!=-1));
 	else
-		qDefs::Message(qDefs::WARNING,"Atleast 1 channel could not be trimmed.","Advanced");
+		qDefs::Message(qDefs::WARNING,"Atleast 1 channel could not be trimmed.","qTabAdvanced::StartTrimming");
 	//save trim file
 	ret = myDet->saveSettingsFile(string(dispFile->text().toAscii().constData()),-1);
 	if((ret!=slsDetectorDefs::FAIL)&&(ret!=-1)){
-		qDefs::Message(qDefs::INFORMATION,"The Trimbits have been saved successfully.","Advanced");
+		qDefs::Message(qDefs::INFORMATION,"The Trimbits have been saved successfully.","qTabAdvanced::StartTrimming");
 		//updates plots
 		myPlot->UpdateTrimbitPlot(false,radioHistogram->isChecked());
 	}
-	else qDefs::Message(qDefs::WARNING,string("Could not Save the Trimbits to file:\n")+dispFile->text().toAscii().constData(),"Advanced");
+	else qDefs::Message(qDefs::WARNING,string("Could not Save the Trimbits to file:\n")+dispFile->text().toAscii().constData(),"qTabAdvanced::StartTrimming");
 
-	qDefs::checkErrorMessage(myDet);
+	qDefs::checkErrorMessage(myDet,"qTabAdvanced::StartTrimming");
 }
 
 
@@ -516,7 +516,7 @@ void qTabAdvanced::SetControlPort(int port){
 #endif
 	disconnect(spinControlPort,	SIGNAL(valueChanged(int)),	this,	SLOT(SetControlPort(int)));
 	spinControlPort->setValue(det->setPort(slsDetectorDefs::CONTROL_PORT,port));
-	qDefs::checkErrorMessage(det);
+	qDefs::checkErrorMessage(det,"qTabAdvanced::SetControlPort");
 	connect(spinControlPort,	SIGNAL(valueChanged(int)),	this,	SLOT(SetControlPort(int)));
 }
 
@@ -530,7 +530,7 @@ void qTabAdvanced::SetStopPort(int port){
 #endif
 	disconnect(spinStopPort,	SIGNAL(valueChanged(int)),	this,	SLOT(SetStopPort(int)));
 	spinStopPort->setValue(det->setPort(slsDetectorDefs::STOP_PORT,port));
-	qDefs::checkErrorMessage(det);
+	qDefs::checkErrorMessage(det,"qTabAdvanced::SetStopPort");
 	connect(spinStopPort,	SIGNAL(valueChanged(int)),	this,	SLOT(SetStopPort(int)));
 
 }
@@ -545,7 +545,7 @@ void qTabAdvanced::SetRxrTCPPort(int port){
 #endif
 	disconnect(spinTCPPort,		SIGNAL(valueChanged(int)),	this,	SLOT(SetRxrTCPPort(int)));
 	spinTCPPort->setValue(det->setPort(slsDetectorDefs::DATA_PORT,port));
-	qDefs::checkErrorMessage(det);
+	qDefs::checkErrorMessage(det,"qTabAdvanced::SetRxrTCPPort");
 	connect(spinTCPPort,		SIGNAL(valueChanged(int)),	this,	SLOT(SetRxrTCPPort(int)));
 }
 
@@ -560,7 +560,7 @@ void qTabAdvanced::SetRxrUDPPort(int port){
 
 	disconnect(spinUDPPort,		SIGNAL(valueChanged(int)),	this,	SLOT(SetRxrUDPPort(int)));
 	spinUDPPort->setValue(det->setReceiverUDPPort(port));
-	qDefs::checkErrorMessage(det);
+	qDefs::checkErrorMessage(det,"qTabAdvanced::SetRxrUDPPort");
 	connect(spinUDPPort,		SIGNAL(valueChanged(int)),	this,	SLOT(SetRxrUDPPort(int)));
 }
 
@@ -577,7 +577,7 @@ void qTabAdvanced::SetReceiverOnline(int index){
 		SetReceiver();
 	else
 		comboRxrOnline->setCurrentIndex(det->setReceiverOnline(index));
-	qDefs::checkErrorMessage(det);
+	qDefs::checkErrorMessage(det,"qTabAdvanced::SetReceiverOnline");
 	connect(comboRxrOnline,		SIGNAL(currentIndexChanged(int)),	this,	SLOT(SetReceiverOnline(int)));
 	//highlight in red if offline
 	if(!comboRxrOnline->currentIndex()){
@@ -603,7 +603,7 @@ void qTabAdvanced::SetOnline(int index){
 #endif
 	disconnect(comboOnline,		SIGNAL(currentIndexChanged(int)),	this,	SLOT(SetOnline(int)));
 	comboOnline->setCurrentIndex(det->setOnline(index));
-	qDefs::checkErrorMessage(det);
+	qDefs::checkErrorMessage(det,"qTabAdvanced::SetOnline");
 	connect(comboOnline,		SIGNAL(currentIndexChanged(int)),	this,	SLOT(SetOnline(int)));
 	//highlight in red if offline
 	if(!comboOnline->currentIndex()){
@@ -637,7 +637,7 @@ void qTabAdvanced::SetNetworkParameters(){
 	dispMAC->setText(QString(det->setDetectorMAC(dispMAC->text().toAscii().constData())));
 	dispUDPIP->setText(QString(det->setReceiverUDPIP(dispUDPIP->text().toAscii().constData())));
 	dispUDPMAC->setText(QString(det->setReceiverUDPMAC(dispUDPMAC->text().toAscii().constData())));
-	qDefs::checkErrorMessage(det);
+	qDefs::checkErrorMessage(det,"qTabAdvanced::SetNetworkParameters");
 
 	connect(dispIP,				SIGNAL(editingFinished()),	this, SLOT(SetNetworkParameters()));
 	connect(dispMAC,			SIGNAL(editingFinished()),	this, SLOT(SetNetworkParameters()));
@@ -655,9 +655,9 @@ void qTabAdvanced::SetReceiver(){
 #endif
 	string outdir = myDet->getFilePath();
 	dispRxrHostname->setText(QString(det->setReceiver(dispRxrHostname->text().toAscii().constData())));
-	qDefs::checkErrorMessage(det);
+	qDefs::checkErrorMessage(det,"qTabAdvanced::SetReceiver");
 	det->setFilePath(outdir);
-	qDefs::checkErrorMessage(det);
+	qDefs::checkErrorMessage(det,"qTabAdvanced::SetReceiver");
 	Refresh();
 }
 
@@ -674,7 +674,7 @@ void qTabAdvanced::updateROIList(){
 
 	int n,i;
 	slsDetectorDefs::ROI* temp = myDet->getROI(n);
-	qDefs::checkErrorMessage(myDet);
+	qDefs::checkErrorMessage(myDet,"qTabAdvanced::updateROIList");
 
 	if((temp!=NULL)&&(n>0)){
 		//assign into array, else it loses values cuz of memory
@@ -800,7 +800,7 @@ void qTabAdvanced::AddROIInput(int num){
 	cout<<"ROI Inputs added " << num << endl;
 #endif
 
-	qDefs::checkErrorMessage(myDet);
+	qDefs::checkErrorMessage(myDet,"qTabAdvanced::AddROIInput");
 }
 
 
@@ -869,7 +869,7 @@ void qTabAdvanced::setROI(){
 	//configuremac
 	myDet->configureMAC();
 
-	qDefs::checkErrorMessage(myDet);
+	qDefs::checkErrorMessage(myDet,"qTabAdvanced::setROI");
 }
 
 
@@ -949,7 +949,7 @@ void qTabAdvanced::SetDetector(int index){
 		}
 	}
 
-	qDefs::checkErrorMessage(det);
+	qDefs::checkErrorMessage(det,"qTabAdvanced::SetDetector");
 }
 
 
@@ -1028,7 +1028,7 @@ void qTabAdvanced::Refresh(){
 	//network
 	det = myDet->getSlsDetector(comboDetector->currentIndex());
 
-	qDefs::checkErrorMessage(myDet);
+	qDefs::checkErrorMessage(myDet,"qTabAdvanced::Refresh");
 
 	//disconnect
 	disconnect(spinControlPort,	SIGNAL(valueChanged(int)),			this,	SLOT(SetControlPort(int)));
@@ -1121,7 +1121,7 @@ void qTabAdvanced::Refresh(){
 		cout  << "**Updated Advanced Tab" << endl << endl;
 #endif
 
-	qDefs::checkErrorMessage(det);
+	qDefs::checkErrorMessage(det,"qTabAdvanced::Refresh");
 }
 
 

@@ -182,7 +182,7 @@ void qTabPlot::SetupWidgetWindow(){
 	//to check if this should be enabled
 	EnableScanBox();
 
-	qDefs::checkErrorMessage(myDet);
+	qDefs::checkErrorMessage(myDet,"qTabPlot::SetupWidgetWindow");
 }
 
 
@@ -564,7 +564,7 @@ void qTabPlot::SetFrequency(){
 		if(acqPeriodMS==0){
 			qDefs::Message(qDefs::WARNING,"<nobr>Interval between Plots:</nobr><br><nobr>"
 					"<b>Every Nth Image</b>: Period betwen Frames and Exposure Time cannot both be 0 ms.</nobr><br><nobr>"
-					"Resetting to minimum plotting time interval","Plot");
+					"Resetting to minimum plotting time interval","qTabPlot::SetFrequency");
 			comboFrequency->setCurrentIndex(0);
 			stackedLayout->setCurrentIndex(comboFrequency->currentIndex());
 			spinTimeGap->setValue(minPlotTimer);
@@ -579,7 +579,7 @@ void qTabPlot::SetFrequency(){
 			connect(spinTimeGap,	SIGNAL(editingFinished()),			this, SLOT(SetFrequency()));
 			connect(spinNthFrame,	SIGNAL(editingFinished()),			this, SLOT(SetFrequency()));
 			connect(comboFrequency, SIGNAL(currentIndexChanged(int)),	this, SLOT(SetFrequency()));
-			qDefs::checkErrorMessage(myDet);
+			qDefs::checkErrorMessage(myDet,"qTabPlot::SetFrequency");
 			return;
 		}
 	}
@@ -593,7 +593,7 @@ void qTabPlot::SetFrequency(){
 
 		if((int)timeMS==0){
 			qDefs::Message(qDefs::WARNING,"<nobr>Interval between Plots:</nobr><br><nobr>"
-					"Time Interval must be atleast >= 1 ms. Resetting to minimum plotting time interval.","Plot");
+					"Time Interval must be atleast >= 1 ms. Resetting to minimum plotting time interval.","qTabPlot::SetFrequency");
 			spinTimeGap->setValue(minPlotTimer);
 			comboTimeGapUnit->setCurrentIndex(qDefs::MILLISECONDS);
 			timeMS=minPlotTimer;
@@ -676,7 +676,7 @@ void qTabPlot::SetFrequency(){
 	connect(spinNthFrame,	SIGNAL(editingFinished()),			this, SLOT(SetFrequency()));
 	connect(comboFrequency, SIGNAL(currentIndexChanged(int)),	this, SLOT(SetFrequency()));
 
-	qDefs::checkErrorMessage(myDet);
+	qDefs::checkErrorMessage(myDet,"qTabPlot::SetFrequency");
 }
 
 
@@ -697,7 +697,7 @@ void qTabPlot::EnableScanBox(){
 	//none of these scan plotting options make sense if positions exists
 	bool positionsExist = myDet->getAngularConversion(ang);//myDet->getPositions();
 
-	qDefs::checkErrorMessage(myDet);
+	qDefs::checkErrorMessage(myDet,"qTabPlot::EnableScanBox");
 
 	//only now enable/disable
 	boxScan->setEnabled((mode0||mode1)&&(!positionsExist));
@@ -789,7 +789,7 @@ void qTabPlot::EnablingNthFrameFunction(bool enable){
 }
 
 //-------------------------------------------------------------------------------------------------------------------------------------------------
-/** What happens for 2d????*/
+
 void qTabPlot::SetScanArgument(){
 	bool histogram = radioHistogram->isChecked();
 
@@ -886,7 +886,7 @@ void qTabPlot::SetScanArgument(){
 	}else //done here so that it isnt set by default each time
 		myPlot->SetScanArgument(qDefs::None);
 
-	qDefs::checkErrorMessage(myDet);
+	qDefs::checkErrorMessage(myDet,"qTabPlot::SetScanArgument");
 
 }
 

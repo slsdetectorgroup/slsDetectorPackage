@@ -232,10 +232,10 @@ void qCloneWidget::SavePlot(){
     fName = QFileDialog::getSaveFileName(this,tr("Save Snapshot "),fName,tr("PNG Files (*.png);;XPM Files(*.xpm);;JPEG Files(*.jpg)"),0,QFileDialog::ShowDirsOnly);
     if (!fName.isEmpty())
     	if((img.save(fName)))
-    		qDefs::Message(qDefs::INFORMATION,"The SnapShot has been successfully saved","Snapshot");
+    		qDefs::Message(qDefs::INFORMATION,"The SnapShot has been successfully saved","qCloneWidget::SavePlot");
     	else
     		qDefs::Message(qDefs::WARNING,"Attempt to save snapshot failed.\n"
-    				"Formats: .png, .jpg, .xpm.","Snapshot");
+    				"Formats: .png, .jpg, .xpm.","qCloneWidget::SavePlot");
 }
 
 

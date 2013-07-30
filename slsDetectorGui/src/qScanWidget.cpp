@@ -296,7 +296,7 @@ void qScanWidget::EnableSizeWidgets(){
 				char cId[5];sprintf(cId,"%d",id);
 				qDefs::Message(qDefs::INFORMATION,string("<nobr><font color=\"blue\">Scan Level ")+string(cId)+
 								string(": Specific Values</font></nobr><br><br><nobr>Number of positions added: ")+
-								string(cNum)+string("</nobr>"),"ScanWidget");
+								string(cNum)+string("</nobr>"),"qScanWidget::EnableSizeWidgets");
 #endif
 			}
 		}
@@ -404,7 +404,7 @@ int qScanWidget::SetScan(int mode){
 		return qDefs::OK;
 	}else{//mode NOT set
 		if((mode!=actualMode)&&(actualNumSteps)){
-			qDefs::Message(qDefs::WARNING,"The mode could not be changed for an unknown reason.","ScanWidget");
+			qDefs::Message(qDefs::WARNING,"The mode could not be changed for an unknown reason.","qScanWidget::SetScan");
 			comboScript->setCurrentIndex(actualMode);
 			return qDefs::FAIL;
 		}
@@ -412,7 +412,7 @@ int qScanWidget::SetScan(int mode){
 
 	emit EnableScanBox();
 
-	qDefs::checkErrorMessage(myDet);
+	qDefs::checkErrorMessage(myDet,"qScanWidget::SetScan");
 
 	return qDefs::OK;
 }
@@ -471,12 +471,12 @@ void qScanWidget::SetScriptFile(){
 	if(!set){
 		//path doesnt exist
 		if(stat(fName.toAscii().constData(),&st_buf)){
-			qDefs::Message(qDefs::WARNING,"The script file entered does not exist","ScanWidget");
+			qDefs::Message(qDefs::WARNING,"The script file entered does not exist","qScanWidget::SetScriptFile");
 			dispScript->setText(QString(myDet->getScanScript(id).c_str()));
 		}
 		//if its not a file
 		else if (!S_ISREG (st_buf.st_mode)) {
-			qDefs::Message(qDefs::WARNING,"The script file path entered is not a file","ScanWidget");
+			qDefs::Message(qDefs::WARNING,"The script file path entered is not a file","qScanWidget::SetScriptFile");
 			dispScript->setText(QString(myDet->getScanScript(id).c_str()));
 		}
 		else
@@ -489,7 +489,7 @@ void qScanWidget::SetScriptFile(){
 		if(fName.compare(QString(myDet->getScanScript(id).c_str()))){
 			//did not get set, write what is was before
 			if(!fName.isEmpty())
-				qDefs::Message(qDefs::WARNING,"The script file could not be set. Reverting to previous file.","ScanWidget");
+				qDefs::Message(qDefs::WARNING,"The script file could not be set. Reverting to previous file.","qScanWidget::SetScriptFile");
 			dispScript->setText(QString(myDet->getScanScript(id).c_str()));
 		}
 
@@ -504,7 +504,7 @@ void qScanWidget::SetScriptFile(){
 		if(!fName.compare(QString(modeNames[i].c_str())))
 			  dispScript->setText("");
 
-	qDefs::checkErrorMessage(myDet);
+	qDefs::checkErrorMessage(myDet,"qScanWidget::SetScriptFile");
 }
 
 
@@ -530,7 +530,7 @@ void qScanWidget::SetParameter(){
 		if(!parameter.compare(QString(modeNames[i].c_str())))
 			dispParameter->setText("");
 
-	qDefs::checkErrorMessage(myDet);
+	qDefs::checkErrorMessage(myDet,"qScanWidget::SetParameter");
 }
 
 
@@ -546,9 +546,9 @@ void qScanWidget::SetPrecision(int value){
 #endif
 	myDet->setScanPrecision(id,value);
 	if(myDet->getScanPrecision(id)!=value)
-		qDefs::Message(qDefs::WARNING,"The precision was not set for an unknown reason.","ScanWidget");;
+		qDefs::Message(qDefs::WARNING,"The precision was not set for an unknown reason.","qScanWidget::SetPrecision");;
 
-	qDefs::checkErrorMessage(myDet);
+	qDefs::checkErrorMessage(myDet,"qScanWidget::SetPrecision");
 }
 
 
@@ -661,7 +661,7 @@ void qScanWidget::RangeFromChanged(){
 	//check size validity
 	else if(RangeCheckNumValid(numSteps)==qDefs::FAIL)
 		qDefs::Message(qDefs::WARNING,"<nobr><b>Number of Steps</b> = 1 + (<b> To </b> - <b> From </b>) / <b>Size</b>.</nobr><br>"
-				"<b>Number of Steps</b> must be >= 2. Changing <b>From</b> back to previous value.</nobr>","Scan");
+				"<b>Number of Steps</b> must be >= 2. Changing <b>From</b> back to previous value.</nobr>","qScanWidget::RangeFromChanged");
 	else change = true;
 
 	//change it back from = to - size*num + size
@@ -708,11 +708,11 @@ void qScanWidget::RangeToChanged(){
 
 	//check size validity
 	if(RangeCheckSizeZero()==qDefs::FAIL)
-		qDefs::Message(qDefs::WARNING,"<nobr><b>From</b> cannot be equal to <b>To</b>. Changing <b>To</b> back to previous value.</nobr>","Scan");
+		qDefs::Message(qDefs::WARNING,"<nobr><b>From</b> cannot be equal to <b>To</b>. Changing <b>To</b> back to previous value.</nobr>","qScanWidget::RangeToChanged");
 	//check size validity
 	else if(RangeCheckNumValid(numSteps)==qDefs::FAIL)
 		qDefs::Message(qDefs::WARNING,"<nobr><b>Number of Steps</b> = 1 + (<b> To </b> - <b> From </b>) / <b>Size</b>.</nobr><br>"
-				"<b>Number of Steps</b> must be >= 2. Changing <b>To</b> back to previous value.</nobr>","Scan");
+				"<b>Number of Steps</b> must be >= 2. Changing <b>To</b> back to previous value.</nobr>","qScanWidget::RangeToChanged");
 	else change = true;
 
 	//change it back to = size*num - size + from
@@ -760,11 +760,11 @@ void qScanWidget::RangeSizeChanged(){
 
 	//check size validity
 	if(!spinSize->value())
-		qDefs::Message(qDefs::WARNING,"<nobr><b>Size</b> cannot be 0. Changing <b>Size</b> back to previous value.</nobr>","Scan");
+		qDefs::Message(qDefs::WARNING,"<nobr><b>Size</b> cannot be 0. Changing <b>Size</b> back to previous value.</nobr>","qScanWidget::RangeSizeChanged");
 	//check size validity
 	else if(RangeCheckNumValid(numSteps)==qDefs::FAIL)
 		qDefs::Message(qDefs::WARNING,"<nobr><b>Number of Steps</b> = 1 + (<b> To </b> - <b> From </b>) / <b>Size</b>.</nobr><br>"
-				"<b>Number of Steps</b> must be >= 2.  Changing <b>Size</b> back to previous value.</nobr>","Scan");
+				"<b>Number of Steps</b> must be >= 2.  Changing <b>Size</b> back to previous value.</nobr>","qScanWidget::RangeSizeChanged");
 	else change = true;
 
 	//change it back size = (to-from)/(num-1)
@@ -833,13 +833,13 @@ void qScanWidget::SetRangeSteps(){
 		if((comboScript->currentIndex()==CustomScript)&&((script=="")||(script=="none"))){
 			qDefs::Message(qDefs::INFORMATION,string("<nobr><font color=\"blue\">Scan Level ")+string(cId)+
 					string(": Constant Step Size</font></nobr><br><br>"
-							"<nobr>Positions could not be loaded as the script file path is empty.</nobr>"),"ScanWidget");
+							"<nobr>Positions could not be loaded as the script file path is empty.</nobr>"),"qScanWidget::SetRangeSteps");
 		}else{
 			//error loading positions
 			if(myDet->getScanSteps(id)!=actualNumSteps){
 				qDefs::Message(qDefs::WARNING,string("<nobr><font color=\"blue\">Scan Level ")+string(cId)+
 						string(": Values From File</font></nobr><br><br>"
-								"<nobr>The positions list was not set for an unknown reason.</nobr>"),"ScanWidget");
+								"<nobr>The positions list was not set for an unknown reason.</nobr>"),"qScanWidget::SetRangeSteps");
 				/*LoadPositions();
 				comboScript->setCurrentIndex(myDet->getScanMode(id))*/
 			}
@@ -848,13 +848,13 @@ void qScanWidget::SetRangeSteps(){
 				char cNum[200];sprintf(cNum,"%d",actualNumSteps);
 				qDefs::Message(qDefs::INFORMATION,string("<nobr><font color=\"blue\">Scan Level ")+string(cId)+
 						string(": Constant Step Size</font></nobr><br><br><nobr>Number of positions added: ")+
-						string(cNum)+string("</nobr>"),"ScanWidget");
+						string(cNum)+string("</nobr>"),"qScanWidget::SetRangeSteps");
 			}
 #endif
 		}
 	}
 
-	qDefs::checkErrorMessage(myDet);
+	qDefs::checkErrorMessage(myDet,"qScanWidget::SetRangeSteps");
 }
 //-------------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -914,14 +914,14 @@ int qScanWidget::SetCustomSteps(){
 		if((comboScript->currentIndex()==CustomScript)&&((script=="")||(script=="none"))){
 			qDefs::Message(qDefs::INFORMATION,string("<nobr><font color=\"blue\">Scan Level ")+string(cId)+
 				string(": Values From File</font></nobr><br><br>"
-				"<nobr>Positions could not be loaded as the script file path is empty.</nobr>"),"ScanWidget");
+				"<nobr>Positions could not be loaded as the script file path is empty.</nobr>"),"qScanWidget::SetCustomSteps");
 			return qDefs::FAIL;
 		}else{
 			if(myDet->getScanSteps(id)!=actualNumSteps){
-				qDefs::Message(qDefs::WARNING,"The positions list was not set for an unknown reason.","ScanWidget");
+				qDefs::Message(qDefs::WARNING,"The positions list was not set for an unknown reason.","qScanWidget::SetCustomSteps");
 				LoadPositions();
 				comboScript->setCurrentIndex(myDet->getScanMode(id));
-				qDefs::checkErrorMessage(myDet);
+				qDefs::checkErrorMessage(myDet,"qScanWidget::qScanWidget::SetCustomSteps");
 				return qDefs::FAIL;
 			}
 			//else success is checked in enabledsizewidgets , else it does this for every add, delete etc
@@ -1079,20 +1079,20 @@ void qScanWidget::SetFileSteps(){
 			if((comboScript->currentIndex()==CustomScript)&&((script=="")||(script=="none"))){
 				qDefs::Message(qDefs::INFORMATION,string("<nobr><font color=\"blue\">Scan Level ")+string(cId)+
 					string(": Values From File</font></nobr><br><br>"
-					"<nobr>Positions could not be loaded as the script file path is empty.</nobr>"),"ScanWidget");
+					"<nobr>Positions could not be loaded as the script file path is empty.</nobr>"),"qScanWidget::SetFileSteps");
 			}else{
 				//error loading positions
 				if(myDet->getScanSteps(id)!=actualNumSteps){
 					qDefs::Message(qDefs::WARNING,string("<nobr><font color=\"blue\">Scan Level ")+string(cId)+
 					string(": Values From File</font></nobr><br><br>"
-					"<nobr>The positions list was not set for an unknown reason.</nobr>"),"ScanWidget");
+					"<nobr>The positions list was not set for an unknown reason.</nobr>"),"qScanWidget::SetFileSteps");
 				}
 #ifdef VERYVERBOSE
 				else{//SUCCESS
 					char cNum[200];sprintf(cNum,"%d",actualNumSteps);
 					qDefs::Message(qDefs::INFORMATION,string("<nobr><font color=\"blue\">Scan Level ")+string(cId)+
 							string(": Values From File</font></nobr><br><br><nobr>Number of positions added: ")+
-							string(cNum)+string("</nobr>"),"ScanWidget");
+							string(cNum)+string("</nobr>"),"qScanWidget::SetFileSteps");
 				}
 #endif
 			}
@@ -1108,7 +1108,7 @@ void qScanWidget::SetFileSteps(){
 		connect(spinSteps,		SIGNAL(valueChanged(int)), 	this, SLOT(SetNSteps()));
 	}
 
-	qDefs::checkErrorMessage(myDet);
+	qDefs::checkErrorMessage(myDet,"qScanWidget::SetFileSteps");
 }
 
 
@@ -1198,7 +1198,7 @@ void qScanWidget::LoadPositions(){
 	connect(spinSteps,		SIGNAL(valueChanged(int)), 			this, SLOT(SetNSteps()));
 	connect(btnGroup,		SIGNAL(buttonClicked(QAbstractButton*)),this,SLOT(EnableSizeWidgets()));
 
-	qDefs::checkErrorMessage(myDet);
+	qDefs::checkErrorMessage(myDet,"qScanWidget::LoadPositions");
 	//do not set the range variables because if the stepsize is by any chance 0..
 	//then the number of steps should change to 1. so only set custom steps
 }
@@ -1240,7 +1240,7 @@ void qScanWidget::Refresh(){
 			"precision:" << precision << "\t***" << endl;
 #endif
 
-	qDefs::checkErrorMessage(myDet);
+	qDefs::checkErrorMessage(myDet,"qScanWidget::Refresh");
 }
 
 

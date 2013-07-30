@@ -183,7 +183,7 @@ static const int64_t GUI_VERSION=0x20121213;
 	 * @param myDet is the multidetector object
 	 /returns error message else an empty string
 	 * */
-	static string checkErrorMessage(multiSlsDetector*& myDet){
+	static string checkErrorMessage(multiSlsDetector*& myDet, string title = "Main"){
 
 
 		int errorLevel= (int)WARNING;
@@ -206,7 +206,7 @@ static const int64_t GUI_VERSION=0x20121213;
 			retval.append("</font></nobr>");
 
 			//display message
-			qDefs::Message((MessageIndex)errorLevel,retval,"Main");
+			qDefs::Message((MessageIndex)errorLevel,retval,title);
 		}
 
 		myDet->clearAllErrorMask();
@@ -221,7 +221,7 @@ static const int64_t GUI_VERSION=0x20121213;
 	 * @param show to display the error message
 		 /returns error message else an empty string
 	 * */
-	static string checkErrorMessage(slsDetector*& myDet,bool show = true){
+	static string checkErrorMessage(slsDetector*& myDet, string title = "Main", bool show = true){
 
 
 		int errorLevel= (int)WARNING;
@@ -246,7 +246,7 @@ static const int64_t GUI_VERSION=0x20121213;
 
 			//display message
 			if(show)
-				qDefs::Message((MessageIndex)errorLevel,retval,"Main");
+				qDefs::Message((MessageIndex)errorLevel,retval,title);
 		}
 
 		myDet->clearErrorMask();

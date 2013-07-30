@@ -275,7 +275,7 @@ void qDrawPlot::SetupWidgetWindow(){
 	//Setting the callback function to get progress from detector class(using receivers)
 	myDet->registerProgressCallback(&(GetProgressCallBack),this);
 
-	qDefs::checkErrorMessage(myDet);
+	qDefs::checkErrorMessage(myDet,"qDrawPlot::SetupWidgetWindow");
 }
 
 
@@ -369,7 +369,7 @@ void qDrawPlot::StartStopDaqToggle(bool stop_if_running){
 		StartDaq(true);
 		running=!running;
 
-		qDefs::checkErrorMessage(myDet);
+		qDefs::checkErrorMessage(myDet,"qDrawPlot::StartStopDaqToggle");
 	}
 
 	/** if this is set during client initation */
@@ -521,7 +521,7 @@ void qDrawPlot::SetScanArgument(int scanArg){
 
 	UnlockLastImageArray();
 
-	qDefs::checkErrorMessage(myDet);
+	qDefs::checkErrorMessage(myDet,"qDrawPlot::SetScanArgument");
 
 }
 
@@ -1027,7 +1027,7 @@ void qDrawPlot::ShowAcquisitionErrorMessage(QString status){
 		alreadyDisplayed = true;
 		qDefs::Message(qDefs::WARNING,string("<nobr>The acquisiton has ended abruptly. "
 				"Current Detector Status: ")+status.toAscii().constData()+
-				string(".</nobr>"),"Dock");
+				string(".</nobr>"),"qDrawPlot::ShowAcquisitionErrorMessage");
 	}
 }
 
@@ -1241,7 +1241,7 @@ void qDrawPlot::ClonePlot(){
 	if(running) sFilePath = filePath.toAscii().constData();
 	else {
 		sFilePath = myDet->getFilePath();
-		qDefs::checkErrorMessage(myDet);
+		qDefs::checkErrorMessage(myDet,"qDrawPlot::ClonePlot");
 	}
 
 
@@ -1339,7 +1339,7 @@ void qDrawPlot::SaveClones(){
 	if(success)
 		qDefs::Message(qDefs::INFORMATION,"The Snapshots have all been saved successfully in .png.","Dock");
 	else
-		qDefs::Message(qDefs::WARNING,errMessage + string("were not saved."),"Dock");
+		qDefs::Message(qDefs::WARNING,errMessage + string("were not saved."),"qDrawPlot::SaveClones");
 }
 
 
@@ -1378,7 +1378,7 @@ void qDrawPlot::SavePlot(){
 	if(running) fName = filePath;
 	else {
 		fName = QString(myDet->getFilePath().c_str());
-		qDefs::checkErrorMessage(myDet);
+		qDefs::checkErrorMessage(myDet,"qDrawPlot::SavePlot");
 	}
 
 	if(boxPlot->title().contains('.')){
@@ -1391,10 +1391,10 @@ void qDrawPlot::SavePlot(){
 
 	if (!fName.isEmpty())
 		if(savedImage.save(fName))
-			qDefs::Message(qDefs::INFORMATION,"The Image has been successfully saved","Dock");
+			qDefs::Message(qDefs::INFORMATION,"The Image has been successfully saved","qDrawPlot::SavePlot");
 		else
 			qDefs::Message(qDefs::WARNING,"Attempt to save image failed.\n"
-    				"Formats: .png, .jpg, .xpm.","Dock");
+    				"Formats: .png, .jpg, .xpm.","qDrawPlot::SavePlot");
 }
 
 
@@ -1409,7 +1409,7 @@ void qDrawPlot::SavePlotAutomatic(){
 		if(running) qFilePath = filePath;
 		else {
 			qFilePath = QString(myDet->getFilePath().c_str());
-			qDefs::checkErrorMessage(myDet);
+			qDefs::checkErrorMessage(myDet,"qDrawPlot::SavePlotAutomatic");
 		}
 
 
@@ -1447,7 +1447,7 @@ void qDrawPlot::SavePlotAutomatic(){
 
 void qDrawPlot::ShowSaveErrorMessage(QString fileName){
 	qDefs::Message(qDefs::WARNING,string("Automatic Saving: Could not save the first file:\n")+
-			string(fileName.toAscii().constData()) + string("\n\nNote: Will not show future file save errors for this acquisition."),"Dock");
+			string(fileName.toAscii().constData()) + string("\n\nNote: Will not show future file save errors for this acquisition."),"qDrawPlot::ShowSaveErrorMessage");
 
 }
 
@@ -1507,14 +1507,14 @@ int qDrawPlot::UpdateTrimbitPlot(bool fromDetector,bool Histogram){
 		if(histTrimbits) delete [] histTrimbits; histTrimbits = new double[actualPixelsX];
 		ret = myDet->getChanRegs(histTrimbits,fromDetector);
 		if(!ret){
-			qDefs::Message(qDefs::WARNING,"No Trimbit data found in shared memory.","Dock");
+			qDefs::Message(qDefs::WARNING,"No Trimbit data found in shared memory.","qDrawPlot::UpdateTrimbitPlot");
 			return qDefs::FAIL;
 		}
 #ifdef VERBOSE
 		cout << "Got Trimbits" << endl;
 #endif
 
-		qDefs::checkErrorMessage(myDet);
+		qDefs::checkErrorMessage(myDet,"qDrawPlot::UpdateTrimbitPlot");
 
 		//defining axes
 		if(Histogram)	nPixelsX = TRIM_HISTOGRAM_XMAX+1;
@@ -1599,7 +1599,7 @@ int qDrawPlot::UpdateTrimbitPlot(bool fromDetector,bool Histogram){
 		//get trimbits
 		ret = 1;/*myDet->getChanRegs(lastImageArray,fromDetector);*/
 		if(!ret){
-			qDefs::Message(qDefs::WARNING,"No Trimbit data found in shared memory.","Dock");
+			qDefs::Message(qDefs::WARNING,"No Trimbit data found in shared memory.","qDrawPlot::UpdateTrimbitPlot");
 			return qDefs::FAIL;
 		}
 		//clear/select plot and set titles

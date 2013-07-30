@@ -127,7 +127,7 @@ void qTabDataOutput::SetupWidgetWindow(){
 	cout  << "done" << endl;
 #endif
 
-	qDefs::checkErrorMessage(myDet);
+	qDefs::checkErrorMessage(myDet,"qTabDataOutput::SetupWidgetWindow");
 }
 
 
@@ -155,90 +155,8 @@ void qTabDataOutput::Initialization(){
 	connect(chkDiscardBad,		SIGNAL(toggled(bool)), 	this, 	SLOT(DiscardBadChannels()));
 
 }
-//-------------------------------------------------------------------------------------------------------------------------------------------------
 
-/*
-void qTabDataOutput::setOutputDir(){
-	disconnect(dispOutputDir,		SIGNAL(editingFinished()), 	this, 	SLOT(setOutputDir()));
 
-	QString path = dispOutputDir->text();
-
-	string oldPath = myDet->getFilePath();
-	bool error=false;
-
-	//gets rid of the end '/'s
-	while(path.endsWith('/')) path.chop(1);
-	dispOutputDir->setText(path);
-
-	if(myDet->setReceiverOnline()==slsDetectorDefs::ONLINE_FLAG){
-		for(int i=0;i<myDet->getNumberOfDetectors();i++){
-			slsDetector *det = 	myDet->getSlsDetector(i);
-			qDefs::checkErrorMessage(myDet);
-			oldPath = det->getFilePath();
-			det->setFilePath(string(path.toAscii().constData()));
-			qDefs::checkErrorMessage(det);
-			if(det->getFilePath()!=(string(path.toAscii().constData()))){
-				error=true;
-				qDefs::checkErrorMessage(det);
-				break;
-			}
-		}
-		if(error){
-			//set it back for the ones which got set
-			for(int i=0;i<myDet->getNumberOfDetectors();i++){
-				slsDetector *det = 	myDet->getSlsDetector(i);
-				qDefs::checkErrorMessage(myDet);
-				det->setFilePath(oldPath);
-				qDefs::checkErrorMessage(det);
-			}
-		}//set it in multi as well if it worked so that they reflect the same
-		else
-			myDet->setFilePath(string(path.toAscii().constData()));
-	}
-	else	{
-		for(int i=0;i<myDet->getNumberOfDetectors();i++){
-			slsDetector *det = 	myDet->getSlsDetector(i);
-			qDefs::checkErrorMessage(myDet);
-			det->setFilePath(string(path.toAscii().constData()));
-			qDefs::checkErrorMessage(det);
-			if(det->getFilePath()!=(string(path.toAscii().constData()))){
-				error=true;
-				qDefs::checkErrorMessage(det);
-				break;
-			}
-		}
-	}
-
-	if(!error){
-	//if(QFile::exists(path)){
-		lblOutputDir->setText("Output Directory: ");
-		lblOutputDir->setPalette(chkRate->palette());
-		lblOutputDir->setToolTip(outDirTip);
-		dispOutputDir->setToolTip(outDirTip);
-		btnOutputBrowse->setToolTip(outDirTip);
-
-		myDet->setFilePath(string(path.toAscii().constData()));
-	#ifdef VERBOSE
-		cout << "Output Directory changed to :"<<myDet->getFilePath() << endl;
-	#endif
-	}
-	else{
-		lblOutputDir->setText("Output Directory:*");
-		lblOutputDir->setPalette(red);
-		QString errTip = outDirTip +
-				QString("<nobr><font color=\"red\">"
-								"Enter a valid path to change <b>Output Directory</b>.</font></nobr>");
-		lblOutputDir->setToolTip(errTip);
-		dispOutputDir->setToolTip(errTip);
-		btnOutputBrowse->setToolTip(errTip);
-	}
-
-	connect(dispOutputDir,		SIGNAL(editingFinished()), 	this, 	SLOT(setOutputDir()));
-
-	qDefs::checkErrorMessage(myDet);
-}
-
-*/
 //-------------------------------------------------------------------------------------------------------------------------------------------------
 
 
@@ -290,7 +208,7 @@ void qTabDataOutput::SetFlatField(){
 				string sDir = dir.toAscii().constData(),sFile = file.toAscii().constData();
 				if(sDir.length()<1) {sDir = string(QDir::current().absolutePath().toAscii().constData()); /*"/home/";*/}
 				qDefs::Message(qDefs::WARNING,"Invalid Flat Field file: "+sDir+"/"+sFile+
-						".\nUnsetting Flat Field.","Data Output");
+						".\nUnsetting Flat Field.","qTabDataOutput::SetFlatField");
 
 				//Unsetting flat field
 				myDet->setFlatFieldCorrectionFile("");
@@ -324,7 +242,7 @@ void qTabDataOutput::SetFlatField(){
 
 	connect(dispFlatField,SIGNAL(editingFinished()),this,SLOT(SetFlatField()));
 
-	qDefs::checkErrorMessage(myDet);
+	qDefs::checkErrorMessage(myDet,"qTabDataOutput::SetFlatField");
 }
 
 //-------------------------------------------------------------------------------------------------------------------------------------------------
@@ -354,7 +272,7 @@ void qTabDataOutput::UpdateFlatFieldFromServer(){
 
 	connect(dispFlatField,		SIGNAL(editingFinished()),	this,	SLOT(SetFlatField()));
 
-	qDefs::checkErrorMessage(myDet);
+	qDefs::checkErrorMessage(myDet,"qTabDataOutput::UpdateFlatFieldFromServer");
 }
 
 //-------------------------------------------------------------------------------------------------------------------------------------------------
@@ -371,7 +289,8 @@ void qTabDataOutput::BrowseFlatFieldPath(){
 		SetFlatField();
 	}
 
-	qDefs::checkErrorMessage(myDet);
+	qDefs::checkErrorMessage(myDet,"qTabDataOutput::BrowseFlatFieldPath");
+
 }
 
 
@@ -424,7 +343,7 @@ void qTabDataOutput::SetRateCorrection(){
 	connect(radioDeadTime,	SIGNAL(toggled(bool)), 			this, 	SLOT(SetRateCorrection()));
 	connect(spinDeadTime,	SIGNAL(valueChanged(double)), 	this, 	SLOT(SetRateCorrection()));
 
-	qDefs::checkErrorMessage(myDet);
+	qDefs::checkErrorMessage(myDet,"qTabDataOutput::SetRateCorrection");
 }
 
 
@@ -439,7 +358,7 @@ void qTabDataOutput::UpdateRateCorrectionFromServer(){
 
 	double rate;
 	rate = (double)myDet->getRateCorrectionTau();
-	qDefs::checkErrorMessage(myDet);
+	qDefs::checkErrorMessage(myDet,"qTabDataOutput::UpdateRateCorrectionFromServer");
 #ifdef VERBOSE
 	cout << "Getting rate correction from server:" << rate << " : ";
 #endif
@@ -495,7 +414,7 @@ void qTabDataOutput::SetAngularCorrection(){
 		cout << "Setting angular conversion to default"  << endl;
 #endif
 		}else{
-			qDefs::Message(qDefs::WARNING,"Angular Conversion could not be set. Please set the default file name using the command line, if you haven't already.","Data Output");
+			qDefs::Message(qDefs::WARNING,"Angular Conversion could not be set. Please set the default file name using the command line, if you haven't already.","qTabDataOutput::SetAngularCorrection");
 			chkAngular->setChecked(false);
 		}
 	}else{
@@ -507,7 +426,7 @@ void qTabDataOutput::SetAngularCorrection(){
 
 	emit AngularConversionSignal(chkAngular->isChecked());
 
-	qDefs::checkErrorMessage(myDet);
+	qDefs::checkErrorMessage(myDet,"qTabDataOutput::SetAngularCorrection");
 }
 
 
@@ -515,9 +434,9 @@ void qTabDataOutput::SetAngularCorrection(){
 
 
 void qTabDataOutput::DiscardBadChannels(){
-  //#ifdef VERYVERBOSE
+#ifdef VERBOSE
 	cout << "Entering Discard bad channels function" << endl;
-	//#endif
+#endif
 	if(chkDiscardBad->isChecked()){
 #ifdef VERBOSE
 		cout << "Setting bad channel correction to default"  << endl;
@@ -530,7 +449,7 @@ void qTabDataOutput::DiscardBadChannels(){
 		myDet->setBadChannelCorrection("");
 	}
 
-	qDefs::checkErrorMessage(myDet);
+	qDefs::checkErrorMessage(myDet,"qTabDataOutput::DiscardBadChannels");
 }
 
 
@@ -607,7 +526,7 @@ void qTabDataOutput::Refresh(){
 	cout  << "**Updated DataOutput Tab" << endl << endl;
 #endif
 
-	qDefs::checkErrorMessage(myDet);
+	qDefs::checkErrorMessage(myDet,"qTabDataOutput::Refresh");
 }
 
 
@@ -646,7 +565,7 @@ void qTabDataOutput::GetOutputDir(){
 		dispReadOutputDir->setText(QString(myDet->getFilePath().c_str()));
 	}else{
 		slsDetector *det = 	myDet->getSlsDetector(comboDetector->currentIndex());
-		qDefs::checkErrorMessage(myDet);
+		qDefs::checkErrorMessage(myDet,"qTabDataOutput::GetOutputDir");
 		dispReadOutputDir->setText(QString(det->getFilePath().c_str()));
 	}
 
@@ -678,7 +597,7 @@ int qTabDataOutput::VerifyOutputDirectory(){
 	//for each detector
 	for(int i=0;i<myDet->getNumberOfDetectors();i++){
 		slsDetector *det = 	myDet->getSlsDetector(i);
-		qDefs::checkErrorMessage(myDet);
+		qDefs::checkErrorMessage(myDet,"qTabDataOutput::VerifyOutputDirectory");
 		if(receiver){
 			detName = string("\n - ") + string(comboDetector->itemText(i).toAscii().constData()) ;
 			path = det->getFilePath();
@@ -687,7 +606,7 @@ int qTabDataOutput::VerifyOutputDirectory(){
 		if(det->setFilePath(path).empty()){
 			mess. append(detName);
 			error = true;
-		}else if(!qDefs::checkErrorMessage(det,false).empty()){
+		}else if(!qDefs::checkErrorMessage(det,"qTabDataOutput::VerifyOutputDirectory",false).empty()){
 			mess. append(detName);
 			error = true;
 		}
@@ -714,7 +633,7 @@ int qTabDataOutput::VerifyOutputDirectory(){
 #ifdef VERBOSE
 		cout << "The output path doesnt exist anymore" << endl;
 #endif
-		qDefs::Message(qDefs::WARNING,string("Invalid Output Directory ")+ mess ,"Data Output");
+		qDefs::Message(qDefs::WARNING,string("Invalid Output Directory ")+ mess ,"qTabDataOutput::SetAngularCorrection");
 		dispReadOutputDir->setPalette(*red1);
 		boxOutDir->setPalette(red);
 
@@ -784,9 +703,9 @@ void qTabDataOutput::SetOutputDir(){
 
 	if(receiver){
 		slsDetector *det = 	myDet->getSlsDetector(comboDetector->currentIndex());
-		qDefs::checkErrorMessage(myDet);
+		qDefs::checkErrorMessage(myDet,"qTabDataOutput::SetOutputDir");
 		det->setFilePath(string(dispOutputDir->text().toAscii().constData()));
-		if(!qDefs::checkErrorMessage(det).empty()){
+		if(!qDefs::checkErrorMessage(det,"qTabDataOutput::SetOutputDir").empty()){
 #ifdef VERBOSE
 			cout << "The output path could not be set" << endl;
 #endif
@@ -802,10 +721,10 @@ void qTabDataOutput::SetOutputDir(){
 		//for each detector
 		for(int i=0;i<myDet->getNumberOfDetectors();i++){
 			slsDetector *det = 	myDet->getSlsDetector(i);
-			qDefs::checkErrorMessage(myDet);
+			qDefs::checkErrorMessage(myDet,"qTabDataOutput::SetOutputDir");
 			if(det->setFilePath(string(path.toAscii().constData())).empty()){
 				error = true;
-			}else if(!qDefs::checkErrorMessage(det,false).empty()){
+			}else if(!qDefs::checkErrorMessage(det,"qTabDataOutput::SetOutputDir",false).empty()){
 				error = true;
 			}
 			myDet->setFilePath(det->getFilePath());
@@ -813,10 +732,10 @@ void qTabDataOutput::SetOutputDir(){
 
 
 		if(error){
-			qDefs::Message(qDefs::WARNING,string("Invalid output directory "),"Data Output set");
+			qDefs::Message(qDefs::WARNING,string("Invalid output directory "),"qTabDataOutput::SetOutputDir");
 			for(int i=0;i<myDet->getNumberOfDetectors();i++){
 				slsDetector *det = 	myDet->getSlsDetector(i);
-				qDefs::checkErrorMessage(myDet);
+				qDefs::checkErrorMessage(myDet,"qTabDataOutput::SetOutputDir");
 				det->setFilePath(string(dispReadOutputDir->text().toAscii().constData()));
 			}
 		}

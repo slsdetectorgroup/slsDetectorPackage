@@ -5938,15 +5938,24 @@ int slsDetector::setFileIndex(int i) {
 int slsDetector::startReceiver(){
 	int fnum=F_START_RECEIVER;
 	int ret = FAIL;
+	char mess[MAX_STR_LENGTH] = "";
 
 	if (setReceiverOnline(ONLINE_FLAG)==ONLINE_FLAG) {
 #ifdef VERBOSE
 		std::cout << "Starting Receiver " << std::endl;
 #endif
 		if (connectData() == OK)
-			ret=thisReceiver->executeFunction(fnum);
+			ret=thisReceiver->executeFunction(fnum,mess);
 		if(ret==FORCE_UPDATE)
 			ret=updateReceiver();
+		else if (ret == FAIL){
+			if(strstr(mess,"UDP")!=NULL)
+				setErrorMask((getErrorMask())|(COULDNOT_CREATE_UDP_SOCKET));
+			else if(strstr(mess,"file")!=NULL)
+				setErrorMask((getErrorMask())|(COULDNOT_CREATE_FILE));
+			else
+				setErrorMask((getErrorMask())|(COULDNOT_START_RECEIVER));
+		}
 	}
 	if(ret==OK)
 		ret=detectorSendToReceiver(true);
@@ -5960,6 +5969,7 @@ int slsDetector::startReceiver(){
 int slsDetector::stopReceiver(){
 	int fnum=F_STOP_RECEIVER;
 	int ret = FAIL;
+	char mess[] = "";
 
 	detectorSendToReceiver(false);
 
@@ -5968,9 +5978,11 @@ int slsDetector::stopReceiver(){
 		std::cout << "Stopping Receiver " << std::endl;
 #endif
 		if (connectData() == OK)
-			ret=thisReceiver->executeFunction(fnum);
+			ret=thisReceiver->executeFunction(fnum,mess);
 		if(ret==FORCE_UPDATE)
 			ret=updateReceiver();
+		else if (ret == FAIL)
+			setErrorMask((getErrorMask())|(COULDNOT_STOP_RECEIVER));
 	}
 
 	return ret;
@@ -6080,13 +6092,14 @@ int slsDetector::getReceiverCurrentFrameIndex(){
 int slsDetector::resetFramesCaught(){
 	int fnum=F_RESET_FRAMES_CAUGHT;
 	int ret = FAIL;
+	char mess[] = "";
 
 	if (setReceiverOnline(ONLINE_FLAG)==ONLINE_FLAG) {
 #ifdef VERBOSE
 		std::cout << "Reset Frames Caught by Receiver" << std::endl;
 #endif
 		if (connectData() == OK)
-			ret=thisReceiver->executeFunction(fnum);
+			ret=thisReceiver->executeFunction(fnum,mess);
 		if(ret==FORCE_UPDATE)
 			ret=updateReceiver();
 	}

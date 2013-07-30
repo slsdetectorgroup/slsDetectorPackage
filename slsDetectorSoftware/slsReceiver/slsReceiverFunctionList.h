@@ -144,9 +144,10 @@ public:
 
 	/**
 	 * Starts Receiver - starts to listen for packets
+	 * @param message is the error message if there is an error
 	 * Returns success
 	 */
-	int startReceiver();
+	int startReceiver(char message[]);
 
 	/**
 	 * Stops Receiver - stops listening for packets
@@ -262,6 +263,15 @@ private:
 
 	/** thread writing packets */
 	pthread_t   writing_thread;
+
+	/** mutex for locking variable used by different threads */
+	pthread_mutex_t status_mutex;
+
+	/** listening thread running */
+	int listening_thread_running;
+
+	/** writing thread running */
+	int writing_thread_running;
 
 	/** status of receiver */
 	runStatus status;
@@ -383,8 +393,8 @@ public:
 	/** File Descriptor */
 	static FILE *sfilefd;
 
-	/** if the listening thread is running*/
-	static int listening_thread_running;
+	/** if the receiver threads are running*/
+	static int receiver_threads_running;
 
 
 	/**

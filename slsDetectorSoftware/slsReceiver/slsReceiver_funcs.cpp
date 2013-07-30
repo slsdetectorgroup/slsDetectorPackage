@@ -30,12 +30,12 @@ slsReceiverFuncs::~slsReceiverFuncs() {
 
 slsReceiverFuncs::slsReceiverFuncs(int argc, char *argv[], int &success):
 		myDetectorType(GOTTHARD),
-		socket(NULL),
 		ret(OK),
 		lockStatus(0),
 		shortFrame(-1),
 		packetsPerFrame(GOTTHARD_PACKETS_PER_FRAME),
-		withGotthard(0){
+		withGotthard(0),
+		socket(NULL){
 
 	int port_no = DEFAULT_PORTNO+2;
 	ifstream infile;
@@ -348,7 +348,7 @@ int slsReceiverFuncs::M_nofunc(){
 void slsReceiverFuncs::closeFile(int p){
 
 
-	if(slsReceiverFunctionList::listening_thread_running)
+	if(slsReceiverFunctionList::receiver_threads_running)
 		fclose(slsReceiverFunctionList::sfilefd);
 
 
@@ -670,7 +670,6 @@ int slsReceiverFuncs::setup_udp(){
 
 int slsReceiverFuncs::start_receiver(){
 	ret=OK;
-
 	strcpy(mess,"Could not start receiver\n");
 
 	// execute action if the arguments correctly arrived
@@ -686,7 +685,7 @@ int slsReceiverFuncs::start_receiver(){
 	}
 	*/
 	else if(slsReceiverList->getStatus()!=RUNNING)
-		ret=slsReceiverList->startReceiver();
+		ret=slsReceiverList->startReceiver(mess);
 #endif
 
 	if(ret==OK && socket->differentClients){

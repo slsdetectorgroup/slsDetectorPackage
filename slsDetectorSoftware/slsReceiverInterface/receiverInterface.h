@@ -97,9 +97,10 @@ public:
 	/**
 	 * Send a function number to execute function
 	 * @param fnum function enum to determine which function to execute
+	 * @param mess return error message
 	 * \returns success of operation
 	 */
-	int executeFunction(int fnum);
+	int executeFunction(int fnum,char mess[]);
 
 	//here one should implement the funcs listed in 
 

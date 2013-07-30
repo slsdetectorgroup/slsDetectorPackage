@@ -117,15 +117,13 @@ int receiverInterface::getLastClientIP(int fnum, char retval[]){
 
 
 
-int receiverInterface::executeFunction(int fnum){
-
+int receiverInterface::executeFunction(int fnum,char mess[]){
 	int ret = slsDetectorDefs::FAIL;
-	char mess[100] = "";
 
 	dataSocket->SendDataOnly(&fnum,sizeof(fnum));
 	dataSocket->ReceiveDataOnly(&ret,sizeof(ret));
 	if (ret==slsDetectorDefs::FAIL){
-		dataSocket->ReceiveDataOnly(mess,sizeof(mess));
+		dataSocket->ReceiveDataOnly(mess,MAX_STR_LENGTH);
 		std::cout<< "Receiver returned error: " << mess << std::endl;
 	}
 	dataSocket->Disconnect();

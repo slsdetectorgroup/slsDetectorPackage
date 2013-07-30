@@ -21,20 +21,24 @@ using namespace std;
 #define NUM_ERROR_FLAGS 32
 #define CRITICAL_ERROR_MASK 0xFFFFFFFF
 
-#define CANNOT_CONNECT_TO_DETECTOR  0x8000000000000000ULL
-#define CANNOT_CONNECT_TO_RECEIVER  0x4000000000000000ULL
-#define COULDNOT_SET_CONTROL_PORT	0x2000000000000000ULL
-#define COULDNOT_SET_STOP_PORT		0x1000000000000000ULL
-#define COULDNOT_SET_DATA_PORT		0x0800000000000000ULL
+#define CANNOT_CONNECT_TO_DETECTOR  		0x8000000000000000ULL
+#define CANNOT_CONNECT_TO_RECEIVER  		0x4000000000000000ULL
+#define COULDNOT_SET_CONTROL_PORT			0x2000000000000000ULL
+#define COULDNOT_SET_STOP_PORT				0x1000000000000000ULL
+#define COULDNOT_SET_DATA_PORT				0x0800000000000000ULL
+#define FILE_PATH_DOES_NOT_EXIST			0x0400000000000000ULL
+#define COULDNOT_CREATE_UDP_SOCKET			0x0200000000000000ULL
+#define COULDNOT_CREATE_FILE				0x0100000000000000ULL
 
 
 
 #define COULD_NOT_CONFIGURE_MAC				0x0000000000000001ULL
 #define COULDNOT_SET_NETWORK_PARAMETER		0x0000000000000002ULL
 #define COULDNOT_SET_ROI					0x0000000000000004ULL
-#define FILE_PATH_DOES_NOT_EXIST			0x0000000000000008ULL
-#define RECEIVER_READ_FREQUENCY				0x0000000000000010ULL
-#define SETTINGS_NOT_SET					0x0000000000000020ULL
+#define RECEIVER_READ_FREQUENCY				0x0000000000000008ULL
+#define SETTINGS_NOT_SET					0x0000000000000010ULL
+#define COULDNOT_START_RECEIVER				0x0000000000000020ULL // default error like starting threads
+#define COULDNOT_STOP_RECEIVER				0x0000000000000040ULL
 
 /** @short class returning all error messages for error mask */
 class errorDefs {
@@ -68,6 +72,16 @@ public:
 		if(slsErrorMask&COULDNOT_SET_DATA_PORT)
 			retval.append("Could not set receiver port\n");
 
+		if(slsErrorMask&FILE_PATH_DOES_NOT_EXIST)
+			retval.append("Path to Output Directory does not exist\n");
+
+		if(slsErrorMask&COULDNOT_CREATE_UDP_SOCKET)
+			retval.append("Could not create UDP socket to start receiver\n");
+
+		if(slsErrorMask&COULDNOT_CREATE_FILE)
+			retval.append("Could not create file to start receiver.\nCheck permissions of output directory\n");
+
+
 
 
 		if(slsErrorMask&COULD_NOT_CONFIGURE_MAC)
@@ -79,14 +93,18 @@ public:
 		if(slsErrorMask&COULDNOT_SET_ROI)
 			retval.append("Could not set the exact region of interest. Verify ROI set by detector.\n");
 
-		if(slsErrorMask&FILE_PATH_DOES_NOT_EXIST)
-			retval.append("Path to Output Directory does not exist.\n");
-
 		if(slsErrorMask&RECEIVER_READ_FREQUENCY)
 			retval.append("Could not set receiver read frequency.\n");
 
 		if(slsErrorMask&SETTINGS_NOT_SET)
 			retval.append("Could not set settings.\n");
+
+		if(slsErrorMask&COULDNOT_START_RECEIVER)
+			retval.append("Could not start receiver.\n");
+
+		if(slsErrorMask&COULDNOT_STOP_RECEIVER)
+			retval.append("Could not stop receiver.\n");
+
 
 		return retval;
 

@@ -21,7 +21,7 @@
 using namespace std;
 
 FILE* slsReceiverFunctionList::sfilefd(NULL);
-int slsReceiverFunctionList::listening_thread_running(0);
+int slsReceiverFunctionList::receiver_threads_running(0);
 
 slsReceiverFunctionList::slsReceiverFunctionList(detectorType det,bool moenchwithGotthardTest):
 						myDetectorType(det),
@@ -39,6 +39,8 @@ slsReceiverFunctionList::slsReceiverFunctionList(detectorType det,bool moenchwit
 						acquisitionIndex(0),
 						framesInFile(0),
 						prevframenum(0),
+						listening_thread_running(0),
+						writing_thread_running(0),
 						status(IDLE),
 						latestData(NULL),
 						udpSocket(NULL),
@@ -106,6 +108,8 @@ slsReceiverFunctionList::slsReceiverFunctionList(detectorType det,bool moenchwit
 	if(withGotthard)
 		cout << "Testing MOENCH Receiver with GOTTHARD Detector" << endl;
 
+
+	pthread_mutex_init(&status_mutex,NULL);
 }
 
 
@@ -200,50 +204,98 @@ void slsReceiverFunctionList::resetTotalFramesCaught(){
 
 
 
-int slsReceiverFunctionList::startReceiver(){
+int slsReceiverFunctionList::startReceiver(char message[]){
 #ifdef VERBOSE
 	cout << "Starting Receiver" << endl;
 #endif
 	cout << endl;
 
 	int err = 0;
-	if(!listening_thread_running){
+	if(!receiver_threads_running){
 #ifdef VERBOSE
 		cout << "Starting new acquisition threadddd ...." << endl;
 #endif
-		listening_thread_running=1;
+		//change status
+		while(1){
+			if(!pthread_mutex_trylock(&(status_mutex))){
+				status = IDLE;
+				listening_thread_running = 0;
+				writing_thread_running = 0;
+				receiver_threads_running = 1;
+				pthread_mutex_unlock(&(status_mutex));
+				break;
+			}
+		}
 
+		// creating listening thread----------
+		err = pthread_create(&listening_thread, NULL,startListeningThread, (void*) this);
+		if(err){
+			//change status
+			while(1){
+				if(!pthread_mutex_trylock(&(status_mutex))){
+					status = IDLE;
+					listening_thread_running = 0;
+					receiver_threads_running = 0;
+					pthread_mutex_unlock(&(status_mutex));
+					break;
+				}
+			}
+			sprintf(message,"Cant create listening thread. Status:%d\n",status);
+			cout << endl << message << endl;
+			return FAIL;
+		}
+		//wait till udp socket created
+		while(!listening_thread_running);
+		if(listening_thread_running!=1){
+			strcpy(message,"Could not create UDP Socket.\n");
+			return FAIL;
+		}
+#ifdef VERBOSE
+				cout << "Listening thread created successfully." << endl;
+#endif
 
-		// creating writing thread
+		// creating writing thread----------
+		err = 0;
 		err = pthread_create(&writing_thread, NULL,startWritingThread, (void*) this);
 		if(err){
-			listening_thread_running=0;
-			status = IDLE;
-			cout << "Cant create writing thread. Status:" << status << endl << endl;
+			//change status
+			while(1){
+				if(!pthread_mutex_trylock(&(status_mutex))){
+					status = IDLE;
+					writing_thread_running = 0;
+					receiver_threads_running = 0;
+					pthread_mutex_unlock(&(status_mutex));
+					break;
+				}
+			}
+			//stop listening thread
+			pthread_join(listening_thread,NULL);
+			sprintf(message,"Cant create writing thread. Status:%d\n",status);
+			cout << endl << message << endl;
+			return FAIL;
+		}
+		//wait till file is created
+		while(!writing_thread_running);
+		if(writing_thread_running!=1){
+			sprintf(message,"Could not create file %s.\n",savefilename);
 			return FAIL;
 		}
 #ifdef VERBOSE
 		cout << "Writing thread created successfully." << endl;
 #endif
 
-		// creating listenign thread
-		err = 0;
-		err = pthread_create(&listening_thread, NULL,startListeningThread, (void*) this);
-		if(err){
-			listening_thread_running=0;
-			status = IDLE;
-			//stop writing thread
-			pthread_join(writing_thread,NULL);
-			cout << endl << "Cant create listening thread. Status:" << status << endl << endl;
-			return FAIL;
+
+		//change status----------
+		while(1){
+			if(!pthread_mutex_trylock(&(status_mutex))){
+				status = RUNNING;
+				pthread_mutex_unlock(&(status_mutex));
+				break;
+			}
 		}
-
-		while(status!=RUNNING);
-#ifdef VERBOSE
-		cout << "Listening thread created successfully." << endl;
-#endif
-
 		cout << "Threads created successfully." << endl;
+
+
 
 
 		struct sched_param tcp_param, listen_param, write_param;
@@ -280,22 +332,31 @@ int slsReceiverFunctionList::stopReceiver(){
 	cout << "Stopping Receiver" << endl;
 #endif
 
-	if(listening_thread_running){
+	if(receiver_threads_running){
 #ifdef VERBOSE
 		cout << "Stopping new acquisition threadddd ...." << endl;
 #endif
 		//stop listening thread
-		listening_thread_running=0;
+		while(1){
+			if(!pthread_mutex_trylock(&(status_mutex))){
+				receiver_threads_running=0;
+				pthread_mutex_unlock(&(status_mutex));
+				break;
+			}
+		}
 		if(udpSocket) udpSocket->ShutDownSocket();
 		pthread_join(listening_thread,NULL);
-		status = IDLE;
-
-		//stop writing thread
 		pthread_join(writing_thread,NULL);
 	}
-	cout << "Receiver Stoppped.\nStatus:" << status << endl;
-
-
+	//change status
+	while(1){
+		if(!pthread_mutex_trylock(&(status_mutex))){
+			status = IDLE;
+			pthread_mutex_unlock(&(status_mutex));
+			break;
+		}
+	}
+	cout << "Receiver Stopped.\nStatus:" << status << endl;
 	return OK;
 }
 
@@ -320,7 +381,6 @@ int slsReceiverFunctionList::startListening(){
 #ifdef VERYVERBOSE
 	cout << "In startListening()\n");
 #endif
-
 	int rc;
 
 	measurementStarted = false;
@@ -349,13 +409,26 @@ int slsReceiverFunctionList::startListening(){
 #ifdef VERBOSE
 			std::cout<< "Could not create UDP socket "<< server_port  << std::endl;
 #endif
+			while(1){
+				if(!pthread_mutex_trylock(&(status_mutex))){
+					listening_thread_running = -1;
+					pthread_mutex_unlock(&(status_mutex));
+					break;
+				}
+			}
 			break;
 		}
 
 
 
-		while (listening_thread_running) {
-			status = RUNNING;
+		while (receiver_threads_running) {
+			while(1){
+				if(!pthread_mutex_trylock(&(status_mutex))){
+					listening_thread_running = 1;
+					pthread_mutex_unlock(&(status_mutex));
+					break;
+				}
+			}
 			if (!fifofree->isEmpty()) {
 				fifofree->pop(buffer);
 
@@ -388,7 +461,7 @@ int slsReceiverFunctionList::startListening(){
 
 
 				//so that it doesnt write the last frame twice
-				if(listening_thread_running){
+				if(receiver_threads_running){
 					//s.assign(buffer);
 					if(fifo->isFull())
 						;//cout<<"**********************FIFO FULLLLLLLL************************"<<endl;
@@ -402,15 +475,21 @@ int slsReceiverFunctionList::startListening(){
 				}
 			}
 		}
-	} while (listening_thread_running);
-	listening_thread_running=0;
-	status = IDLE;
+	} while (receiver_threads_running);
+	while(1){
+		if(!pthread_mutex_trylock(&(status_mutex))){
+			receiver_threads_running=0;
+			status = IDLE;
+			pthread_mutex_unlock(&(status_mutex));
+			break;
+		}
+	}
 
 	//Close down any open socket descriptors
 	udpSocket->Disconnect();
 
 #ifdef VERBOSE
-	cout << "listening_thread_running:" << listening_thread_running << endl;
+	cout << "receiver_threads_running:" << receiver_threads_running << endl;
 #endif
 
 	return 0;
@@ -470,7 +549,7 @@ int slsReceiverFunctionList::startWriting(){
 
 
 	cout << "Ready!" << endl;
-	while(listening_thread_running || (!fifo->isEmpty())){
+	while(receiver_threads_running || (!fifo->isEmpty())){
 
 		//start a new file
 		if ((framesInFile == maxFramesPerFile)  || (strlen(savefilename) == 0)){
@@ -488,6 +567,13 @@ int slsReceiverFunctionList::startWriting(){
 
 				if (NULL == (sfilefd = fopen((const char *) (savefilename), "w"))){
 					cout << "Error: Could not create file " << savefilename << endl;
+					while(1){
+						if(!pthread_mutex_trylock(&(status_mutex))){
+							writing_thread_running = -1;
+							pthread_mutex_unlock(&(status_mutex));
+							break;
+						}
+					}
 					break;
 				}
 
@@ -509,6 +595,14 @@ int slsReceiverFunctionList::startWriting(){
 							<< currframenum //<< "\t\t p " << prevframenum
 							<< "\tindex " << getFrameIndex()
 							<< endl;
+				}
+			}
+
+			while(1){
+				if(!pthread_mutex_trylock(&(status_mutex))){
+					writing_thread_running = 1;
+					pthread_mutex_unlock(&(status_mutex));
+					break;
 				}
 			}
 
@@ -567,7 +661,7 @@ int slsReceiverFunctionList::startWriting(){
 						frameFactor = nFrameToGui-1;
 						//catch nth frame: gui ready to copy data
 						while(guiData==NULL){
-							if(!listening_thread_running)
+							if(!receiver_threads_running)
 								break;
 							usleep(10000);
 							guiDataReady=0;
@@ -580,7 +674,7 @@ int slsReceiverFunctionList::startWriting(){
 
 						//catch nth frame: wait for gui to take data
 						while(guiData==latestData){
-							if(!listening_thread_running)
+							if(!receiver_threads_running)
 								break;
 							usleep(100000);
 						}
@@ -598,7 +692,14 @@ int slsReceiverFunctionList::startWriting(){
 			usleep(50000);
 		}
 	}
-	listening_thread_running = 0;
+
+	while(1){
+		if(!pthread_mutex_trylock(&(status_mutex))){
+			receiver_threads_running=0;
+			pthread_mutex_unlock(&(status_mutex));
+			break;
+		}
+	}
 	cout << "Total Frames Caught:"<< totalFramesCaught << endl;
 
 

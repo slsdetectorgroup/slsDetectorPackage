@@ -266,8 +266,7 @@ void  slsDetectorUtils::acquire(int delflag){
 	    		break;
 	    	}
 	    	//start receiver
-	    	startReceiver();
-	    	if(setReceiverOnline()==OFFLINE_FLAG){
+	    	if((startReceiver() == FAIL) || (setReceiverOnline()==OFFLINE_FLAG)){
 	    		stopReceiver();
 	    		pthread_mutex_unlock(&mg);
 	    		break;

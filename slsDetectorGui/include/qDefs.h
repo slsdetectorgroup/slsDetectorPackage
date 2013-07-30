@@ -146,19 +146,19 @@ static const int64_t GUI_VERSION=0x20121213;
 		static QMessageBox* msgBox;
 		switch(index){
 		case WARNING:
-			source.append(": WARNING");
+			source.insert(0,"WARNING: #<b>");
 			msgBox= new QMessageBox(QMessageBox::Warning,source.c_str(),tr(message.c_str()),QMessageBox::Ok, msgBox);
 			break;
 		case CRITICAL:
-			source.append(": CRITICAL");
+			source.insert(0,"CRITICAL: #<b>");
 			msgBox= new QMessageBox(QMessageBox::Critical,source.c_str(),tr(message.c_str()),QMessageBox::Ok, msgBox);
 			break;
 		case INFORMATION:
-			source.append(": INFORMATION");
+			source.insert(0,"INFORMATION: #<b>");
 			msgBox= new QMessageBox(QMessageBox::Information,source.c_str(),tr(message.c_str()),QMessageBox::Ok, msgBox);
 			break;
 		default:
-			source.append(": QUESTION");
+			source.insert(0,"QUESTION: #<b>");
 			msgBox= new QMessageBox(QMessageBox::Question,source.c_str(),tr(message.c_str()),QMessageBox::Ok| QMessageBox::Cancel, msgBox);
 			break;
 		}

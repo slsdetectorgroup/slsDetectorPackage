@@ -310,9 +310,11 @@ void qTabMeasurement::setRunIndex(int index){
 
 void qTabMeasurement::startStopAcquisition(){
 	if(btnStartStop->isChecked()){
-		if(thisParent->DoesOutputDirExist() == slsDetectorDefs::FAIL){
+
+		//if file write enabled and output dir doesnt exist
+		if((chkFile->isChecked())&&(thisParent->DoesOutputDirExist() == slsDetectorDefs::FAIL)){
 			if(qDefs::Message(qDefs::QUESTION,
-					"Your data will not be saved. Proceed with acquisition anyway?",
+					"<nobr>Your data will not be saved.</nobr><br><nobr>Disable File write and Proceed with acquisition anyway?</nobr>",
 					"qTabMeasurement::startStopAcquisition") == slsDetectorDefs::FAIL){
 				disconnect(btnStartStop,SIGNAL(clicked()),this,SLOT(startStopAcquisition()));
 				btnStartStop->click();

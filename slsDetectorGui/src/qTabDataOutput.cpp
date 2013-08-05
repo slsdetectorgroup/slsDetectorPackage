@@ -633,7 +633,7 @@ int qTabDataOutput::VerifyOutputDirectory(){
 #ifdef VERBOSE
 		cout << "The output path doesnt exist anymore" << endl;
 #endif
-		qDefs::Message(qDefs::WARNING,string("Invalid Output Directory ")+ mess ,"qTabDataOutput::SetAngularCorrection");
+		qDefs::Message(qDefs::WARNING,string("Invalid Output Directory ")+ mess ,"qTabDataOutput::VerifyOutputDirectory");
 		dispReadOutputDir->setPalette(*red1);
 		boxOutDir->setPalette(red);
 

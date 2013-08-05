@@ -15,6 +15,7 @@
 #include <ostream>
 #include <iostream>
 #include <QMessageBox>
+#include <QAbstractButton>
 using namespace std;
 
 class qDefs:public QWidget{
@@ -144,27 +145,26 @@ static const int64_t GUI_VERSION=0x20121213;
 	static int  Message(MessageIndex index, string message,string source)
 	{
 		static QMessageBox* msgBox;
+
+		message.append(string("<p style=\"font-size:10px;color:grey;\">Source:&nbsp;&nbsp; ") + source + string("</p>"));
+
 		switch(index){
 		case WARNING:
-			source.insert(0,"WARNING: #<b>");
-			msgBox= new QMessageBox(QMessageBox::Warning,source.c_str(),tr(message.c_str()),QMessageBox::Ok, msgBox);
+			msgBox= new QMessageBox(QMessageBox::Warning,"WARNING",tr(message.c_str()),QMessageBox::Ok, msgBox);
 			break;
 		case CRITICAL:
-			source.insert(0,"CRITICAL: #<b>");
-			msgBox= new QMessageBox(QMessageBox::Critical,source.c_str(),tr(message.c_str()),QMessageBox::Ok, msgBox);
+			msgBox= new QMessageBox(QMessageBox::Critical,"CRITICAL",tr(message.c_str()),QMessageBox::Ok, msgBox);
 			break;
 		case INFORMATION:
-			source.insert(0,"INFORMATION: #<b>");
-			msgBox= new QMessageBox(QMessageBox::Information,source.c_str(),tr(message.c_str()),QMessageBox::Ok, msgBox);
+			msgBox= new QMessageBox(QMessageBox::Information,"INFORMATION",tr(message.c_str()),QMessageBox::Ok, msgBox);
 			break;
 		default:
-			source.insert(0,"QUESTION: #<b>");
-			msgBox= new QMessageBox(QMessageBox::Question,source.c_str(),tr(message.c_str()),QMessageBox::Ok| QMessageBox::Cancel, msgBox);
+			msgBox= new QMessageBox(QMessageBox::Question,"QUESTION",tr(message.c_str()),QMessageBox::Ok| QMessageBox::Cancel, msgBox);
 			break;
 		}
+		//msgBox->setDetailedText(QString(source.c_str())); //close button doesnt work with this static function and this
 		if(msgBox->exec()==QMessageBox::Ok) return OK; else return FAIL;
 	}
-
 
 //-------------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -194,13 +194,16 @@ static const int64_t GUI_VERSION=0x20121213;
 		retval = myDet->getErrorMessage(errorLevel);
 
 		if(!retval.empty()){
-
 			//replace all \n with <br>
 			pos = 0;
 			while((pos = retval.find("\n", pos)) != string::npos){
 				retval.replace(pos, 1, "<br>");
 				pos += 1;
 			}
+
+			//get rid of the last \n
+			if(retval.find_last_of("<br>")==retval.length()-1)
+				retval.erase((int)retval.find_last_of("<br>")-3,4);
 
 			retval.insert(0,"<font color=\"darkBlue\">");
 			retval.append("</font></nobr>");
@@ -233,13 +236,16 @@ static const int64_t GUI_VERSION=0x20121213;
 		retval = myDet->getErrorMessage(emask);
 
 		if(!retval.empty()){
-
 			//replace all \n with <br>
 			pos = 0;
 			while((pos = retval.find("\n", pos)) != string::npos){
 				retval.replace(pos, 1, "<br>");
 				pos += 1;
 			}
+
+			//get rid of the last \n
+			if(retval.find_last_of("<br>")==retval.length()-1)
+				retval.erase((int)retval.find_last_of("<br>")-3,4);
 
 			retval.insert(0,"<font color=\"darkBlue\">");
 			retval.append("</font></nobr>");

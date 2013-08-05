@@ -91,7 +91,6 @@ void qTabMessages::customEvent(QEvent *e) {
 //-------------------------------------------------------------------------------------------------------------------------------------------------
 
 void qTabMessages::SaveLog() {
-	//cerr<<endl<<"ERRRORRRR"<<endl<<endl;
 	QString fName = QString(myMainTab->GetFilePath());
 	fName = fName+"/LogFile.txt";
     fName = QFileDialog::getSaveFileName(this,tr("Save Snapshot "),

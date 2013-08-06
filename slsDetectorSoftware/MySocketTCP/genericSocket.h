@@ -222,6 +222,8 @@ enum communicationProtocol{
      if((p == UDP) && (setsockopt(socketDescriptor, SOL_SOCKET, SO_RCVBUF, &val, sizeof(int)) == -1))
      {
        cerr << "Cannot set socket receive buffer size" << endl;
+       socketDescriptor=-1;
+       return;
      }
 
 

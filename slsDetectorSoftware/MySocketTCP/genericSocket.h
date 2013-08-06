@@ -73,6 +73,7 @@ using namespace std;
 
 #define DEFAULT_PACKET_SIZE 1286
 #define DEFAULT_PACKETS_PER_FRAME 2
+#define SOCKET_BUFFER_SIZE (100*1024*1024) //100MB
 #define DEFAULT_PORTNO    1952
 #define DEFAULT_BACKLOG 5
 #define DEFAULT_UDP_PORTNO 50001
@@ -208,24 +209,27 @@ enum communicationProtocol{
 
 
      // reuse port
-     int yes=1;
-     if (setsockopt(socketDescriptor,SOL_SOCKET,SO_REUSEADDR,&yes,sizeof(int)) == -1) {
+     int val=1;
+     if (setsockopt(socketDescriptor,SOL_SOCKET,SO_REUSEADDR,&val,sizeof(int)) == -1) {
     	 cerr << "setsockopt" << endl;
     	 socketDescriptor=-1;
          return;
      }
 
 
+     //increase buffer size if its udp
+     val = SOCKET_BUFFER_SIZE;
+     if((p == UDP) && (setsockopt(socketDescriptor, SOL_SOCKET, SO_RCVBUF, &val, sizeof(int)) == -1))
+     {
+       cerr << "Cannot set socket receive buffer size" << endl;
+     }
+
+
+
      if(bind(socketDescriptor,(struct sockaddr *) &serverAddress,sizeof(serverAddress))<0){
        cerr << "Can not bind socket "<< endl;
        socketDescriptor=-1;
        return;
-     }
-
-     //increase buffer size if its udp
-     if((communicationProtocol == UDP) && (setsockopt(sockfd, SOL_SOCKET, SO_RCVBUF, &SOCKET_BUFFER_SIZE, sizeof(int)) == -1))
-     {
-       cerr << "Cannot set socket receive buffer size" << endl;
      }
 
 

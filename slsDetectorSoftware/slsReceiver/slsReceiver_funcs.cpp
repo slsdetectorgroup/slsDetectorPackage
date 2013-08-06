@@ -161,6 +161,20 @@ slsReceiverFuncs::slsReceiverFuncs(int argc, char *argv[], int &success):
 					}
 				}
 			}
+			//tcp port
+			else if(!strcasecmp(argv[iarg],"-rx_tcpport")){
+				if(iarg+1==argc){
+					cout << "no port given after -rx_tcpport in command line. Exiting." << endl;
+					success=FAIL;
+				}else{
+					if(sscanf(argv[iarg+1],"%d",&port_no))
+						cout<<"dataport:"<<port_no<<endl;
+					else{
+						cout << "could not decode port in command line. \n\nExiting." << endl;
+						success=FAIL;
+					}
+				}
+			}
 		}
 	}
 

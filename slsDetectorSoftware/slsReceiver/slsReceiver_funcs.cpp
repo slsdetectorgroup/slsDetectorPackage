@@ -444,11 +444,11 @@ int slsReceiverFuncs::set_file_dir() {
 		if (lockStatus==1 && socket->differentClients==1){
 			sprintf(mess,"Receiver locked by %s\n", socket->lastClientIP);
 			ret=FAIL;
-		}
+		}/*
 		else if((strlen(fPath))&&(slsReceiverList->getStatus()==RUNNING)){
 			strcpy(mess,"Can not set file path while receiver running\n");
 			ret = FAIL;
-		}
+		}*/
 		else{
 			strcpy(retval,slsReceiverList->setFilePath(fPath));
 			// if file path doesnt exist

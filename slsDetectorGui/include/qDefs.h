@@ -145,7 +145,14 @@ static const int64_t GUI_VERSION=0x20121213;
 	static int  Message(MessageIndex index, string message,string source)
 	{
 		static QMessageBox* msgBox;
+		size_t pos;
 
+		//replace all \n with <br>
+		pos = 0;
+		while((pos = message.find("\n", pos)) != string::npos){
+			message.replace(pos, 1, "<br>");
+			pos += 1;
+		}
 		message.append(string("<p style=\"font-size:10px;color:grey;\">Source:&nbsp;&nbsp; ") + source + string("</p>"));
 
 		switch(index){

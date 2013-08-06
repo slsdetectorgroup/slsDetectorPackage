@@ -221,6 +221,14 @@ enum communicationProtocol{
        socketDescriptor=-1;
        return;
      }
+
+     //increase buffer size if its udp
+     if((communicationProtocol == UDP) && (setsockopt(sockfd, SOL_SOCKET, SO_RCVBUF, &SOCKET_BUFFER_SIZE, sizeof(int)) == -1))
+     {
+       cerr << "Cannot set socket receive buffer size" << endl;
+     }
+
+
      if (getProtocol()==SOCK_STREAM)
        listen(socketDescriptor, DEFAULT_BACKLOG); 
 

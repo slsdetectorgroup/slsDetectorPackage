@@ -19,6 +19,8 @@
 #define MAXDET 100
 /** header length for data :gotthard*/
 #define HEADERLENGTH 12
+/** udp socket buffer size - 100MB*/
+#define SOCKET_BUFFER_SIZE (100*1024*1024)
 
 /** maximum rois */
 #define MAX_ROIS 100

@@ -307,11 +307,11 @@ int slsReceiverFunctionList::startReceiver(char message[]){
 
 
 		if (pthread_setschedparam(listening_thread, policy, &listen_param) == EPERM)
-			cout << "ERROR: Could not prioritize threads. You need to be super user for that." << endl;
+			cout << "WARNING: Could not prioritize threads. You need to be super user for that." << endl;
 		if (pthread_setschedparam(writing_thread, policy, &write_param) == EPERM)
-			cout << "ERROR: Could not prioritize threads. You need to be super user for that." << endl;
+			cout << "WARNING: Could not prioritize threads. You need to be super user for that." << endl;
 		if (pthread_setschedparam(pthread_self(),5 , &tcp_param) == EPERM)
-			cout << "ERROR: Could not prioritize threads. You need to be super user for that." << endl;
+			cout << "WARNING: Could not prioritize threads. You need to be super user for that." << endl;
 
 
 		//pthread_getschedparam(pthread_self(),&policy,&tcp_param);
@@ -391,6 +391,20 @@ int slsReceiverFunctionList::startListening(){
 	//  very end of the program.
 	do {
 
+		//to increase socket receiver buffer size and max length of input queue by changing kernel settings
+		if(system("echo $((100*1024*1024)) > /proc/sys/net/core/rmem_max"))
+			cout << "\nWARNING: Could not change socket receiver buffer size in file /proc/sys/net/core/rmem_max" << endl;
+		else if(system("echo 250000 > /proc/sys/net/core/netdev_max_backlog"))
+			cout << "\nWARNING: Could not change max length of input queue in file /proc/sys/net/core/netdev_max_backlog" << endl;
+
+		/** permanent setting heiner
+		net.core.rmem_max = 104857600 # 100MiB
+		net.core.netdev_max_backlog = 250000
+		sysctl -p
+		// from the manual
+		sysctl -w net.core.rmem_max=16777216
+		sysctl -w net.core.netdev_max_backlog=250000
+		*/
 
 		//creating udp socket
 		if (strchr(eth,'.')!=NULL) strcpy(eth,"");

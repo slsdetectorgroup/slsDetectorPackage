@@ -423,8 +423,7 @@
         </sizepolicy>
        </property>
        <property name="toolTip">
-        <string>The data are accumulated over several (frames) pump-cycles. Set cycles to 1.
-#probes#</string>
+        <string>&lt;nobr&gt;The data are accumulated over several (frames) pump-cycles. Set cycles to 1.&lt;/nobr&gt;&lt;br&gt; &lt;b&gt;Available only in Expert Mode.&lt;/b&gt;&lt;br&gt;#probes#</string>
        </property>
        <property name="text">
         <string>Number of Probes:</string>
@@ -443,8 +442,8 @@
         </sizepolicy>
        </property>
        <property name="toolTip">
-        <string>The data are accumulated over several (frames) pump-cycles. Set cycles to 1.
-#probes#</string>
+        <string>&lt;nobr&gt;The data are accumulated over several (frames) pump-cycles. Set cycles to 1.&lt;/nobr&gt;&lt;br&gt; &lt;b&gt;Available only in Expert Mode.&lt;/b&gt;&lt;br&gt;#probes#
+</string>
        </property>
        <property name="statusTip">
         <string/>

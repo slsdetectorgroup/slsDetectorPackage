@@ -436,8 +436,101 @@ void qTabAdvanced::SetTrimmingMethod(int mode){
 //-------------------------------------------------------------------------------------------------------------------------------------------------
 
 
-void qTabAdvanced::StartTrimming(){
+int qTabAdvanced::validateBeforeTrimming(){
+#ifdef VERBOSE
+	cout << "Validating conditions before Trimming" << endl;
+#endif
+	char temp[100];
+	switch(detType){
+	case slsDetectorDefs::MYTHEN:
 
+		//dynamic range
+		if(myDet->setDynamicRange(-1) != TRIMMING_DYNAMIC_RANGE){
+			sprintf(temp,"%d",TRIMMING_DYNAMIC_RANGE);
+			if(myDet->setDynamicRange(TRIMMING_DYNAMIC_RANGE) != TRIMMING_DYNAMIC_RANGE){
+				qDefs::Message(qDefs::WARNING,
+						string("<nobr>Trimming Pre-condition not satisfied:</nobr><br>"
+								"<nobr>Could not set dynamic range to ") + string(temp)+string(".</nobr><br>"
+								"Trimming Aborted."),"qTabAdvanced::validateBeforeTrimming");
+				return slsDetectorDefs::FAIL;
+			}
+		}
+		//frames
+		if((int)myDet->setTimer(slsDetectorDefs::FRAME_NUMBER,-1) != TRIMMING_FRAME_NUMBER){
+			if((int)myDet->setTimer(slsDetectorDefs::FRAME_NUMBER,TRIMMING_FRAME_NUMBER) != TRIMMING_FRAME_NUMBER){
+				sprintf(temp,"%d",TRIMMING_FRAME_NUMBER);
+				qDefs::Message(qDefs::WARNING,
+						string("<nobr>Trimming Pre-condition not satisfied:</nobr><br>"
+								"<nobr>Could not set <b>Number of Frames</b> to ") + string(temp)+string(".</nobr><br>"
+								"Trimming Aborted."),"qTabAdvanced::validateBeforeTrimming");
+				return slsDetectorDefs::FAIL;
+			}
+		}
+		//trigger
+		if((int)myDet->setTimer(slsDetectorDefs::CYCLES_NUMBER,-1) != TRIMMING_TRIGGER_NUMBER){
+			if((int)myDet->setTimer(slsDetectorDefs::CYCLES_NUMBER,TRIMMING_TRIGGER_NUMBER) != TRIMMING_TRIGGER_NUMBER){
+				sprintf(temp,"%d",TRIMMING_TRIGGER_NUMBER);
+				qDefs::Message(qDefs::WARNING,
+						string("<nobr>Trimming Pre-condition not satisfied:</nobr><br>"
+								"<nobr>Could not set <b>Number of Triggers</b> to ") + string(temp)+string(".</nobr><br>"
+								"Trimming Aborted."),"qTabAdvanced::validateBeforeTrimming");
+				return slsDetectorDefs::FAIL;
+			}
+		}
+		//probes
+		if((int)myDet->setTimer(slsDetectorDefs::PROBES_NUMBER,-1) != TRIMMING_PROBE_NUMBER){
+			if((int)myDet->setTimer(slsDetectorDefs::PROBES_NUMBER,TRIMMING_PROBE_NUMBER) != TRIMMING_PROBE_NUMBER){
+				sprintf(temp,"%d",TRIMMING_PROBE_NUMBER);
+				qDefs::Message(qDefs::WARNING,
+						string("<nobr>Trimming Pre-condition not satisfied:</nobr><br>"
+								"<nobr>Could not set <b>Number of Probes</b> to ") + string(temp)+string(".</nobr><br>"
+								"Trimming Aborted."),"qTabAdvanced::validateBeforeTrimming");
+				return slsDetectorDefs::FAIL;
+			}
+		}
+		//Setting
+		if((int)myDet->getSettings() == slsDetectorDefs::UNINITIALIZED){
+			if(qDefs::Message(qDefs::QUESTION,
+					string("<nobr>Trimming Pre-condition not satisfied:</nobr><br>")+
+					string("<nobr><b>Settings</b> cannot be <b>Uninitialized</b> to start Trimming.</nobr><br>"
+							"Change it to <b>Standard</b> and proceed?"),"qTabAdvanced::validateBeforeTrimming") == slsDetectorDefs::FAIL){
+				qDefs::Message(qDefs::INFORMATION,
+						"<nobr>Please change the <b>Settings</b> in the Settings tab to your choice.</nobr><br>"
+						"Aborting Trimming.","qTabAdvanced::validateBeforeTrimming");
+				return slsDetectorDefs::FAIL;
+			}
+			//user asked to change settings to standard
+			else{
+				if((int)myDet->setSettings(slsDetectorDefs::STANDARD) != slsDetectorDefs::STANDARD){
+					qDefs::Message(qDefs::WARNING,
+							string("<nobr>Trimming Pre-condition not satisfied:</nobr><br>"
+									"<nobr>Could not change <b>Settings</b> to <b>Standard</b></nobr><br>"
+									"Trimming Aborted."),"qTabAdvanced::validateBeforeTrimming");
+					return slsDetectorDefs::FAIL;
+				}
+			}
+		}
+
+		qDefs::Message(qDefs::INFORMATION,"<nobr>All conditions satisfied for Trimming.</nobr><br>"
+				"<nobr>Initiating Trimming...</nobr>","qTabAdvanced::validateBeforeTrimming");
+		return slsDetectorDefs::OK;
+	default:
+		return slsDetectorDefs::FAIL;
+	}
+}
+
+
+//-------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+void qTabAdvanced::StartTrimming(){
+	//check a few conditions before trimming
+	if(validateBeforeTrimming() == slsDetectorDefs::FAIL)
+		return;
+
+#ifdef VERBOSE
+	cout << "Starting Trimming" << endl;
+#endif
 	int parameter1=0, parameter2=0;
 	//optimize
 	bool optimize = chkOptimize->isChecked();

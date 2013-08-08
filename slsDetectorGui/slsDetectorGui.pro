@@ -20,7 +20,7 @@ QMAKE_LIBS 			= 	-L$(QTDIR)/lib
 #LIBS				=	-L$(QWTDIR)/lib	  -lqwt -L$(QWT3D)/lib -Wl,-R$(QWTDIR)/lib  -L /usr/local/epics/base/lib/$(EPICS_HOST_ARCH)/ -Wl,-R/usr/local/epics/base/lib/$(EPICS_HOST_ARCH)  -lca -lCom 
 
 #default
-DEFINES 			+= 	 VERBOSE DACS_INT PRINT_LOG THIS_PATH=\\\"$$PWD\\\" #VERYVERBOSE 
+DEFINES 			+= 	 VERBOSE DACS_INT PRINT_LOG THIS_PATH=\\\"$$PWD\\\" #VERYVERBOSE
 LIBS				=	-L$(QWTDIR)/lib	  -lqwt -L$(QWT3D)/lib 
 
 

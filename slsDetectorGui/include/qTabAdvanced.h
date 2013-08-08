@@ -58,6 +58,11 @@ private:
 	 */
 	void AddROIInput(int num);
 
+	/** Checks for a few conditions before trimming
+	 /returns OK or FAIL
+	 */
+	int validateBeforeTrimming();
+
 
 private slots:
 
@@ -192,6 +197,10 @@ private:
 
 	/** Trimming mode */
 	slsDetectorDefs::trimMode trimmingMode;
+	static const int TRIMMING_DYNAMIC_RANGE 	= 24;
+	static const int TRIMMING_FRAME_NUMBER 		= 1;
+	static const int TRIMMING_TRIGGER_NUMBER 	= 1;
+	static const int TRIMMING_PROBE_NUMBER 		= 0;
 
 	bool isEnergy;
 	bool isAngular;

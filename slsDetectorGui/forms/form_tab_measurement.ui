@@ -427,13 +427,14 @@
 The data are accumulated over several (frames) pump cycles.
 &lt;/nobr&gt;
 &lt;br&gt;
-&lt;nobr&gt; &lt;b&gt;
-Enabled only in Expert Mode and if Number of Frames &gt; 1.
-&lt;/b&gt;&lt;/nobr&gt;
-&lt;br&gt;
-&lt;nobr&gt;Setting Number of Probes will reset Number of Triggers to 1.
+&lt;nobr&gt; 
+Enabled only in &lt;b&gt;Expert Mode&lt;/b&gt; and if&lt;b&gt; Number of Frames&lt;/b&gt; &gt; 1.
 &lt;/nobr&gt;
 &lt;br&gt;
+&lt;nobr&gt;Setting &lt;b&gt;Number of Probes&lt;/b&gt; will reset &lt;b&gt;Number of Triggers&lt;/b&gt; to 1.
+&lt;/nobr&gt;
+&lt;br&gt;
+Maximum value is 3. &lt;br&gt;
 #probes#
 </string>
        </property>
@@ -458,13 +459,14 @@ Enabled only in Expert Mode and if Number of Frames &gt; 1.
 The data are accumulated over several (frames) pump cycles.
 &lt;/nobr&gt;
 &lt;br&gt;
-&lt;nobr&gt; &lt;b&gt;
-Enabled only in Expert Mode and if Number of Frames &gt; 1.
-&lt;/b&gt;&lt;/nobr&gt;
-&lt;br&gt;
-&lt;nobr&gt;Setting Number of Probes will reset Number of Triggers to 1.
+&lt;nobr&gt; 
+Enabled only in &lt;b&gt;Expert Mode&lt;/b&gt; and if&lt;b&gt; Number of Frames&lt;/b&gt; &gt; 1.
 &lt;/nobr&gt;
 &lt;br&gt;
+&lt;nobr&gt;Setting &lt;b&gt;Number of Probes&lt;/b&gt; will reset &lt;b&gt;Number of Triggers&lt;/b&gt; to 1.
+&lt;/nobr&gt;
+&lt;br&gt;
+Maximum value is 3. &lt;br&gt;
 #probes#
 </string>
        </property>

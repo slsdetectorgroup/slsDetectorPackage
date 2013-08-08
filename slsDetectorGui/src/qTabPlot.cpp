@@ -148,7 +148,6 @@ void qTabPlot::SetupWidgetWindow(){
 		isOriginallyOneD = true;
 		chkPedestal->setEnabled(false);
 		btnRecalPedestal->setEnabled(false);
-		layoutThreshold->setEnabled(false);
 		chkPedestal_2->setEnabled(false);
 		btnRecalPedestal_2->setEnabled(false);
 		chkBinary->setEnabled(false);
@@ -158,7 +157,6 @@ void qTabPlot::SetupWidgetWindow(){
 		isOriginallyOneD = false;
 		chkPedestal->setEnabled(false);
 		btnRecalPedestal->setEnabled(false);
-		layoutThreshold->setEnabled(false);
 		chkPedestal_2->setEnabled(false);
 		btnRecalPedestal_2->setEnabled(false);
 		chkBinary->setEnabled(false);

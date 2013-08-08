@@ -87,20 +87,15 @@ private:
 	void SetupTimingMode();
 
 	/** Sets up all the slots and signals
-	 * @param timingChange only some of the signals are disconnected when timing mode is changed
-	 * This method is to reconnect them again.
 	 */
-	void Initialization(int timingChange=0);
-
-	/** Disconnects all the slots and signals (which depend on timing mode)
-	 * to retrieve all the parameters from client.
-	 * This is done only when Timing mode is changed
-	 */
-	void DeInitialization();
+	void Initialization();
 
 	/** Enables/Disables all the widgets
 	 */
 	void Enable(bool enable);
+
+	/** Validates before enabling or disabling probes */
+	void EnableProbes();
 
 
 private slots:

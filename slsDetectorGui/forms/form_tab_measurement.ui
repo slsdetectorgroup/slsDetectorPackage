@@ -423,7 +423,19 @@
         </sizepolicy>
        </property>
        <property name="toolTip">
-        <string>&lt;nobr&gt;The data are accumulated over several (frames) pump-cycles. Set cycles to 1.&lt;/nobr&gt;&lt;br&gt; &lt;b&gt;Available only in Expert Mode.&lt;/b&gt;&lt;br&gt;#probes#</string>
+        <string>&lt;nobr&gt;
+The data are accumulated over several (frames) pump cycles.
+&lt;/nobr&gt;
+&lt;br&gt;
+&lt;nobr&gt; &lt;b&gt;
+Enabled only in Expert Mode and if Number of Frames &gt; 1.
+&lt;/b&gt;&lt;/nobr&gt;
+&lt;br&gt;
+&lt;nobr&gt;Setting Number of Probes will reset Number of Triggers to 1.
+&lt;/nobr&gt;
+&lt;br&gt;
+#probes#
+</string>
        </property>
        <property name="text">
         <string>Number of Probes:</string>
@@ -442,7 +454,18 @@
         </sizepolicy>
        </property>
        <property name="toolTip">
-        <string>&lt;nobr&gt;The data are accumulated over several (frames) pump-cycles. Set cycles to 1.&lt;/nobr&gt;&lt;br&gt; &lt;b&gt;Available only in Expert Mode.&lt;/b&gt;&lt;br&gt;#probes#
+        <string>&lt;nobr&gt;
+The data are accumulated over several (frames) pump cycles.
+&lt;/nobr&gt;
+&lt;br&gt;
+&lt;nobr&gt; &lt;b&gt;
+Enabled only in Expert Mode and if Number of Frames &gt; 1.
+&lt;/b&gt;&lt;/nobr&gt;
+&lt;br&gt;
+&lt;nobr&gt;Setting Number of Probes will reset Number of Triggers to 1.
+&lt;/nobr&gt;
+&lt;br&gt;
+#probes#
 </string>
        </property>
        <property name="statusTip">

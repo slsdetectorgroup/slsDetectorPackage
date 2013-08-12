@@ -97,6 +97,11 @@
       </item>
       <item>
        <property name="text">
+        <string>Low Noise</string>
+       </property>
+      </item>
+      <item>
+       <property name="text">
         <string>Undefined</string>
        </property>
       </item>

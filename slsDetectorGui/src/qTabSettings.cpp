@@ -93,15 +93,17 @@ void qTabSettings::SetupDetectorSettings(){
 			item[(int)LowGain]->setEnabled(false);
 			item[(int)MediumGain]->setEnabled(false);
 			item[(int)VeryHighGain]->setEnabled(false);
+			item[(int)LowNoise]->setEnabled(false);
 			break;
 		case slsDetectorDefs::EIGER:
-			item[(int)Standard]->setEnabled(false);
+			item[(int)Standard]->setEnabled(true);
 			item[(int)Fast]->setEnabled(false);
-			item[(int)HighGain]->setEnabled(false);
+			item[(int)HighGain]->setEnabled(true);
 			item[(int)DynamicGain]->setEnabled(false);
 			item[(int)LowGain]->setEnabled(false);
 			item[(int)MediumGain]->setEnabled(false);
 			item[(int)VeryHighGain]->setEnabled(false);
+			item[(int)LowNoise]->setEnabled(true);
 			break;
 		case slsDetectorDefs::MOENCH:
 		case slsDetectorDefs::GOTTHARD:
@@ -112,6 +114,7 @@ void qTabSettings::SetupDetectorSettings(){
 			item[(int)LowGain]->setEnabled(true);
 			item[(int)MediumGain]->setEnabled(true);
 			item[(int)VeryHighGain]->setEnabled(true);
+			item[(int)LowNoise]->setEnabled(false);
 			break;
 		default:
 			qDefs::Message(qDefs::CRITICAL,"Unknown detector type. Exiting GUI.","qTabSettings::SetupDetectorSettings");

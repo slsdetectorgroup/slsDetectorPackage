@@ -97,7 +97,7 @@ void qTabAdvanced::SetupWidgetWindow(){
 	}
 
 
-	//logs
+	//logs and trimming
 	if(!isAngular && !isEnergy) boxLogs->setEnabled(false);
 	else{
 		if(!isAngular) 	chkAngularLog->setEnabled(false);
@@ -114,7 +114,7 @@ void qTabAdvanced::SetupWidgetWindow(){
 			btnGroup->addButton(btnGetTrimbits,1);
 		}
 	}
-
+	trimmingMode = slsDetectorDefs::NOISE_TRIMMING;
 
 	//network
 
@@ -302,12 +302,12 @@ void qTabAdvanced::SetThreshold(){
 
 void qTabAdvanced::SetOutputFile(){
 #ifdef VERBOSE
-	cout << "Setting Output File for Trimming" << endl;
+	cout << "Setting Output File for Trimming:" << endl;
 #endif
 	QString dirPath = dispFile->text().section('/',0,-2,QString::SectionIncludeLeadingSep);
-	cout<<"directory:"<<dirPath.toAscii().constData()<<"..."<<endl;
+	cout << "Directory:" << dirPath.toAscii().constData() << "." << endl;
 	QString fName = dispFile->text().section('/',-1);
-	cout<<"file name:"<<fName.toAscii().constData()<<"..."<<endl;
+	cout << "File Name:" << fName.toAscii().constData() << "." << endl;
 	//checks if directory exists and file name is not empty
 	if((QFile::exists(dirPath))&&(!fName.isEmpty())){
 
@@ -359,7 +359,7 @@ void qTabAdvanced::SetOutputFile(){
 
 void qTabAdvanced::BrowseOutputFile(){
 #ifdef VERBOSE
-	cout << "Browsing Output Dir for Trimming:" << endl;
+	cout << "Browsing Output Dir for Trimming" << endl;
 #endif
 	QString fName = dispFile->text();
 	//dialog
@@ -441,6 +441,7 @@ int qTabAdvanced::validateBeforeTrimming(){
 	cout << "Validating conditions before Trimming" << endl;
 #endif
 	char temp[100];
+	string message = "<nobr>All conditions satisfied for Trimming.</nobr><br>";
 	switch(detType){
 	case slsDetectorDefs::MYTHEN:
 
@@ -451,45 +452,49 @@ int qTabAdvanced::validateBeforeTrimming(){
 				qDefs::Message(qDefs::WARNING,
 						string("<nobr>Trimming Pre-condition not satisfied:</nobr><br>"
 								"<nobr>Could not set dynamic range to ") + string(temp)+string(".</nobr><br>"
-								"Trimming Aborted."),"qTabAdvanced::validateBeforeTrimming");
+										"Trimming Aborted."),"qTabAdvanced::validateBeforeTrimming");
 				return slsDetectorDefs::FAIL;
-			}
+			}else
+				message.append(string("<nobr><b>Dynamic Range</b> has been changed to ") + string(temp) + string(".<nobr><br>"));
 		}
 		//frames
 		if((int)myDet->setTimer(slsDetectorDefs::FRAME_NUMBER,-1) != TRIMMING_FRAME_NUMBER){
+			sprintf(temp,"%d",TRIMMING_FRAME_NUMBER);
 			if((int)myDet->setTimer(slsDetectorDefs::FRAME_NUMBER,TRIMMING_FRAME_NUMBER) != TRIMMING_FRAME_NUMBER){
-				sprintf(temp,"%d",TRIMMING_FRAME_NUMBER);
 				qDefs::Message(qDefs::WARNING,
 						string("<nobr>Trimming Pre-condition not satisfied:</nobr><br>"
 								"<nobr>Could not set <b>Number of Frames</b> to ") + string(temp)+string(".</nobr><br>"
-								"Trimming Aborted."),"qTabAdvanced::validateBeforeTrimming");
+										"Trimming Aborted."),"qTabAdvanced::validateBeforeTrimming");
 				return slsDetectorDefs::FAIL;
-			}
+			}else
+				message.append(string("<nobr><b>Number of Frames</b> has been changed to ") + string(temp) + string(".<nobr><br>"));
 		}
 		//trigger
 		if((int)myDet->setTimer(slsDetectorDefs::CYCLES_NUMBER,-1) != TRIMMING_TRIGGER_NUMBER){
+			sprintf(temp,"%d",TRIMMING_TRIGGER_NUMBER);
 			if((int)myDet->setTimer(slsDetectorDefs::CYCLES_NUMBER,TRIMMING_TRIGGER_NUMBER) != TRIMMING_TRIGGER_NUMBER){
-				sprintf(temp,"%d",TRIMMING_TRIGGER_NUMBER);
 				qDefs::Message(qDefs::WARNING,
 						string("<nobr>Trimming Pre-condition not satisfied:</nobr><br>"
 								"<nobr>Could not set <b>Number of Triggers</b> to ") + string(temp)+string(".</nobr><br>"
-								"Trimming Aborted."),"qTabAdvanced::validateBeforeTrimming");
+										"Trimming Aborted."),"qTabAdvanced::validateBeforeTrimming");
 				return slsDetectorDefs::FAIL;
-			}
+			}else
+				message.append(string("<nobr><b>Number of Triggers</b> has been changed to ") + string(temp) + string(".<nobr><br>"));
 		}
 		//probes
 		if((int)myDet->setTimer(slsDetectorDefs::PROBES_NUMBER,-1) != TRIMMING_PROBE_NUMBER){
+			sprintf(temp,"%d",TRIMMING_PROBE_NUMBER);
 			if((int)myDet->setTimer(slsDetectorDefs::PROBES_NUMBER,TRIMMING_PROBE_NUMBER) != TRIMMING_PROBE_NUMBER){
-				sprintf(temp,"%d",TRIMMING_PROBE_NUMBER);
 				qDefs::Message(qDefs::WARNING,
 						string("<nobr>Trimming Pre-condition not satisfied:</nobr><br>"
 								"<nobr>Could not set <b>Number of Probes</b> to ") + string(temp)+string(".</nobr><br>"
-								"Trimming Aborted."),"qTabAdvanced::validateBeforeTrimming");
+										"Trimming Aborted."),"qTabAdvanced::validateBeforeTrimming");
 				return slsDetectorDefs::FAIL;
-			}
+			}else
+				message.append(string("<nobr><b>Number of Probes</b> has been changed to ") + string(temp) + string(".<nobr><br>"));
 		}
 		//Setting
-		if((int)myDet->getSettings() == slsDetectorDefs::UNINITIALIZED){
+		if(myDet->getSettings() == slsDetectorDefs::UNINITIALIZED){
 			if(qDefs::Message(qDefs::QUESTION,
 					string("<nobr>Trimming Pre-condition not satisfied:</nobr><br>")+
 					string("<nobr><b>Settings</b> cannot be <b>Uninitialized</b> to start Trimming.</nobr><br>"
@@ -507,16 +512,20 @@ int qTabAdvanced::validateBeforeTrimming(){
 									"<nobr>Could not change <b>Settings</b> to <b>Standard</b></nobr><br>"
 									"Trimming Aborted."),"qTabAdvanced::validateBeforeTrimming");
 					return slsDetectorDefs::FAIL;
-				}
+				}else
+					message.append(string("<nobr><b>Settings</b> has been changed to Standard.<nobr><br>"));
 			}
 		}
-
-		qDefs::Message(qDefs::INFORMATION,"<nobr>All conditions satisfied for Trimming.</nobr><br>"
-				"<nobr>Initiating Trimming...</nobr>","qTabAdvanced::validateBeforeTrimming");
-		return slsDetectorDefs::OK;
+		break;
 	default:
 		return slsDetectorDefs::FAIL;
+
 	}
+
+	message.append("<nobr>Initiating Trimming...</nobr>");
+	qDefs::Message(qDefs::INFORMATION,message,"qTabAdvanced::validateBeforeTrimming");
+	return slsDetectorDefs::OK;
+
 }
 
 
@@ -565,7 +574,7 @@ void qTabAdvanced::StartTrimming(){
 		if(!optimize)	parameter2 = 0;
 		break;
 	default:
-		cout << "Should never come here. Start Trimming will have only 2 methods." << endl;
+		cout << "Should never come here. Start Trimming will have only 2 methods. Trimming Method:" << trimmingMode << endl;
 		break;
 	}
 

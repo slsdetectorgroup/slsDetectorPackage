@@ -73,6 +73,7 @@ void qDrawPlot::SetupWidgetWindow(){
 	}
 
 
+//initialization
 	data_pause_over = true;//to get the first image
 
 	currentMeasurement = 0;
@@ -91,7 +92,6 @@ void qDrawPlot::SetupWidgetWindow(){
 	pthread_mutex_init(&last_image_complete_mutex,NULL);
 
 	// Default titles- only for the initial picture
-
 	imageXAxisTitle="Pixel";
 	imageYAxisTitle="Pixel";
 	imageZAxisTitle="Intensity";
@@ -104,7 +104,6 @@ void qDrawPlot::SetupWidgetWindow(){
 		//histTitle[i] = temp_title;
 	}
 	imageTitle="";
-	/*imageTitle.assign("Start Image");*/
 	plotTitle = "";
 	plotTitle_prefix = "";
 	plot_in_scope   = 0;
@@ -196,7 +195,8 @@ void qDrawPlot::SetupWidgetWindow(){
 	binaryFrom = 0;
 	binaryTo = 0;
 
-	//widget related initialization
+
+//widget related initialization
 
 	// clone
 	for(int i=0;i<MAXCloneWindows;i++) winClone[i]=0;
@@ -206,7 +206,7 @@ void qDrawPlot::SetupWidgetWindow(){
 	layout = new QGridLayout;
 		this->setLayout(layout);
 
-	histFrameIndexTitle= histFrameIndexTitle = new QLabel("");
+		histFrameIndexTitle= histFrameIndexTitle = new QLabel("");
 
 	boxPlot = new QGroupBox("");
 		layout->addWidget(boxPlot,1,0);
@@ -264,7 +264,7 @@ void qDrawPlot::SetupWidgetWindow(){
 		plotLayout->addWidget(plot2D,0,0,1,1);
 
 
-	//callbacks
+//callbacks
 
 	// Setting the callback function to get data from detector class
 	myDet->registerDataCallback(&(GetDataCallBack),this);

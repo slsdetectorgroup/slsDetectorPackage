@@ -69,7 +69,8 @@ void qTabMeasurement::SetupWidgetWindow(){
 	//gates
 	spinNumGates->setValue((int)myDet->setTimer(slsDetectorDefs::GATES_NUMBER,-1));
 	//probes
-	spinNumProbes->setValue((int)myDet->setTimer(slsDetectorDefs::PROBES_NUMBER,-1));
+	if(myDet->getDetectorsType() == slsDetectorDefs::MYTHEN)
+		spinNumProbes->setValue((int)myDet->setTimer(slsDetectorDefs::PROBES_NUMBER,-1));
 	//File Name
 	dispFileName->setText(QString(myDet->getFileName().c_str()));
 	//File Index
@@ -820,11 +821,12 @@ void qTabMeasurement::Refresh(){
 #endif
 
 		//probes
-		spinNumProbes->setValue((int)myDet->setTimer(slsDetectorDefs::PROBES_NUMBER,-1));
+		if(myDet->getDetectorsType() == slsDetectorDefs::MYTHEN){
+			spinNumProbes->setValue((int)myDet->setTimer(slsDetectorDefs::PROBES_NUMBER,-1));
 #ifdef VERBOSE
 		cout  << "Getting number of probes" << endl;
 #endif
-
+		}
 		//File Name
 		dispFileName->setText(QString(myDet->getFileName().c_str()));
 #ifdef VERBOSE
@@ -889,7 +891,8 @@ void qTabMeasurement::EnableProbes(){
 		return;
 	}
 	cout << "Probes not enabled" << endl;
-	spinNumProbes->setValue(0);
+	if(myDet->getDetectorsType()==slsDetectorDefs::MYTHEN)
+		spinNumProbes->setValue(0);
 	lblNumProbes->setEnabled(false);
 	spinNumProbes->setEnabled(false);
 }

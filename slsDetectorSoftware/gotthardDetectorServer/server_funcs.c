@@ -2059,7 +2059,7 @@ int set_timer(int file_des) {
 	retval=setGates(tns);
 	break;
       case PROBES_NUMBER: 
-    sprintf(mess,"can't set timer for gotthard\n");
+    sprintf(mess,"can't set/get number of probes for gotthard\n");
     ret=FAIL;
 	break;
       case CYCLES_NUMBER: 

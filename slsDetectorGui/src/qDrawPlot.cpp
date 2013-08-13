@@ -219,6 +219,44 @@ void qDrawPlot::SetupWidgetWindow(){
 	connect(data_pause_timer, SIGNAL(timeout()), this, SLOT(UpdatePause()));
 
 
+	//display statistics
+	displayStatistics = false;
+	widgetStatistics = new QWidget(this);
+	widgetStatistics->setFixedHeight(15);
+	QHBoxLayout *hl1 = new QHBoxLayout;
+	hl1->setSpacing(0);
+	hl1->setContentsMargins(0, 0, 0, 0);
+	QLabel *lblMin = new QLabel("Min:  ");
+	lblMin->setFixedWidth(40);
+	lblMin->setAlignment(Qt::AlignRight);
+	QLabel *lblMax = new QLabel("Max:  ");
+	lblMax->setFixedWidth(40);
+	lblMax->setAlignment(Qt::AlignRight);
+	QLabel *lblSum = new QLabel("Sum:  ");
+	lblSum->setFixedWidth(40);
+	lblSum->setAlignment(Qt::AlignRight);
+	lblMinDisp = new QLabel("-");
+	lblMinDisp->setAlignment(Qt::AlignLeft);
+	lblMaxDisp = new QLabel("-");
+	lblMaxDisp->setAlignment(Qt::AlignLeft);
+	lblSumDisp = new QLabel("-");
+	lblSumDisp->setSizePolicy(QSizePolicy::Preferred,QSizePolicy::Fixed);
+	lblSumDisp->setAlignment(Qt::AlignLeft);
+	hl1->addItem(new QSpacerItem(20,20,QSizePolicy::Fixed,QSizePolicy::Fixed));
+	hl1->addWidget(lblMin);
+	hl1->addWidget(lblMinDisp);
+	hl1->addItem(new QSpacerItem(20,20,QSizePolicy::Expanding,QSizePolicy::Fixed));
+	hl1->addWidget(lblMax);
+	hl1->addWidget(lblMaxDisp);
+	hl1->addItem(new QSpacerItem(20,20,QSizePolicy::Expanding,QSizePolicy::Fixed));
+	hl1->addWidget(lblSum);
+	hl1->addWidget(lblSumDisp);
+	hl1->addItem(new QSpacerItem(20,20,QSizePolicy::Fixed,QSizePolicy::Fixed));
+	widgetStatistics->setLayout(hl1);
+	layout->addWidget(widgetStatistics,2,0);
+	widgetStatistics->hide();
+
+
 	// setting default plot titles and settings
 	plot1D = new SlsQt1DPlot(boxPlot);
 
@@ -1156,7 +1194,19 @@ void qDrawPlot::UpdatePlot(){
 							plot1D->SetYMinMax(XYRangeValues[qDefs::YMINIMUM],XYRangeValues[qDefs::YMAXIMUM]);
 							XYRangeChanged	= false;
 						}
+						//Display Statistics
+						if(displayStatistics){
+							double min=0,max=0,sum=0;
+							if(anglePlot)
+								GetStatistics(min,max,sum,histYAngleAxis,histNBins);
+							else
+								GetStatistics(min,max,sum,histYAxis[0],histNBins);
+							lblMinDisp->setText(QString("%1").arg(min));
+							lblMaxDisp->setText(QString("%1").arg(max));
+							lblSumDisp->setText(QString("%1").arg(sum));
+						}
 						if(saveAll) SavePlotAutomatic();
+
 					}
 				}
 			}//2-d plot stuff
@@ -1181,6 +1231,14 @@ void qDrawPlot::UpdatePlot(){
 						plot2D->GetPlot()->SetXMinMax(XYRangeValues[qDefs::XMINIMUM],XYRangeValues[qDefs::XMAXIMUM]);
 						plot2D->GetPlot()->SetYMinMax(XYRangeValues[qDefs::YMINIMUM],XYRangeValues[qDefs::YMAXIMUM]);
 						XYRangeChanged	= false;
+					}
+					//Display Statistics
+					if(displayStatistics){
+						double min=0,max=0,sum=0;
+						GetStatistics(min,max,sum,lastImageArray,nPixelsX*nPixelsY);
+						lblMinDisp->setText(QString("%1").arg(min));
+						lblMaxDisp->setText(QString("%1").arg(max));
+						lblSumDisp->setText(QString("%1").arg(sum));
 					}
 					if(saveAll) SavePlotAutomatic();
 				}
@@ -1257,7 +1315,8 @@ void qDrawPlot::ClonePlot(){
 	disconnect(this, 		SIGNAL(SetZRangeSignal(double,double)),	plot2D, 	SLOT(SetZRange(double,double)));
 
 	// create clone
-	winClone[i] = new qCloneWidget(this,i,boxPlot->title(),(int)plot_in_scope,plot1D,plot2D,sFilePath);
+	winClone[i] = new qCloneWidget(this,i,boxPlot->title(),(int)plot_in_scope,plot1D,plot2D,sFilePath,
+			displayStatistics,lblMinDisp->text(),lblMaxDisp->text(),lblSumDisp->text());
 	if(plot_in_scope==1){
 		plot1D = new SlsQt1DPlot(boxPlot);
 		plot1D->setFont(QFont("Sans Serif",9,QFont::Normal));
@@ -1576,7 +1635,14 @@ int qDrawPlot::UpdateTrimbitPlot(bool fromDetector,bool Histogram){
 			//attach plot
 			h->Attach(plot1D);
 		}
-
+		//Display Statistics
+		if(displayStatistics){
+			double min=0,max=0,sum=0;
+			GetStatistics(min,max,sum,histYAxis[0],nPixelsX);
+			lblMinDisp->setText(QString("%1").arg(min));
+			lblMaxDisp->setText(QString("%1").arg(max));
+			lblSumDisp->setText(QString("%1").arg(sum));
+		}
 
 
 #ifdef VERBOSE
@@ -1614,7 +1680,14 @@ int qDrawPlot::UpdateTrimbitPlot(bool fromDetector,bool Histogram){
 		cout << "Trimbits Plot updated" << endl;
 #endif
 	}
-
+	//Display Statistics
+	if(displayStatistics){
+		double min=0,max=0,sum=0;
+		GetStatistics(min,max,sum,lastImageArray,nPixelsX*nPixelsY);
+		lblMinDisp->setText(QString("%1").arg(min));
+		lblMaxDisp->setText(QString("%1").arg(max));
+		lblSumDisp->setText(QString("%1").arg(sum));
+	}
 
 
 	return qDefs::OK;
@@ -1750,3 +1823,42 @@ void qDrawPlot::SetBinary(bool enable, int from, int to){
 //-------------------------------------------------------------------------------------------------------------------------------------------------
 
 
+void qDrawPlot::DisplayStatistics(bool enable){
+#ifdef VERBOSE
+	if(!enable)
+		cout << "Disabling Statistics Display" << endl;
+	else
+		cout << "Enabling Statistics Display" << endl;
+#endif
+	if(enable)	widgetStatistics->show();
+	else widgetStatistics->hide();
+
+	displayStatistics = enable;
+	lblMinDisp->setText("-");
+	lblMaxDisp->setText("-");
+	lblSumDisp->setText("-");
+}
+
+
+//-------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+void qDrawPlot::GetStatistics(double &min, double &max, double &sum, double* array, int size){
+#ifdef VERYVERBOSE
+	cout << "Calculating Statistics" << endl;
+#endif
+
+	for(int i=0; i < size; i++){
+		//calculate min
+		if(array[i] < min)
+			min = array[i];
+		//calculate max
+		if(array[i] > max)
+			max = array[i];
+		//calculate sum
+		sum += array[i];
+	}
+}
+
+
+//-------------------------------------------------------------------------------------------------------------------------------------------------

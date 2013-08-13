@@ -30,6 +30,9 @@ class SlsQtH1D;
 #include <QComboBox>
 #include <QPushButton>
 #include <QCheckBox>
+#include <QString>
+#include <QSpacerItem>
+#include <QWidget>
 /** C++ Include Headers */
 #include <string>
 #include <iostream>
@@ -44,7 +47,8 @@ class qCloneWidget:public QMainWindow{
 public:
 	/** \short The constructor
 	 */
-	qCloneWidget(QWidget *parent,int id,QString title,int numDim,SlsQt1DPlot*& plot1D,SlsQt2DPlotLayout*& plot2D,string FilePath);
+	qCloneWidget(QWidget *parent,int id,QString title,int numDim,SlsQt1DPlot*& plot1D,SlsQt2DPlotLayout*& plot2D,string FilePath,
+		bool displayStats, QString min, QString max, QString sum);
 
 	/** Destructor
 	 */
@@ -124,6 +128,9 @@ private:
 
     /** Gets the current time stamp for the window title*/
     char* GetCurrentTimeStamp();
+
+    /** Display Statistics */
+    void DisplayStats(bool enable, QString min, QString max, QString sum);
 
 
 private slots:

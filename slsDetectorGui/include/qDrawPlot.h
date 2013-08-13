@@ -172,6 +172,12 @@ void RecalculatePedestal();
 void SetAccumulate(bool enable);
 /** Reset accumulation */
 void ResetAccumulate();
+/** Display Statistics */
+void DisplayStatistics(bool enable);
+
+
+
+
 
 
 private:
@@ -258,6 +264,15 @@ void SetStyle(SlsQtH1D*  h){
 	if(markers) h->setSymbol(marker); 			else h->setSymbol(noMarker);
 #endif
 };
+
+
+/** Find Statistics
+ * @param min is the minimum value
+ * @param max is the maximum value
+ * @param sum is the sum of all values
+ * @param array is the array to get statistics from
+ * @param size is the size of the array */
+void GetStatistics(double &min, double &max, double &sum, double* array, int size);
 
 
 
@@ -519,6 +534,15 @@ int binaryTo;
 /** this is set when client starts/stops acquisition
  * and is reset once the gui really starts/stops */
 bool clientInitiated;
+
+
+/** display statistics widgets */
+QWidget *widgetStatistics;
+QLabel *lblMinDisp;
+QLabel *lblMaxDisp;
+QLabel *lblSumDisp;
+
+bool displayStatistics;
 
 
 

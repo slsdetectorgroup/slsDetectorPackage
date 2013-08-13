@@ -18,8 +18,10 @@
 
 //-------------------------------------------------------------------------------------------------------------------------------------------------
 
-qCloneWidget::qCloneWidget(QWidget *parent,int id,QString title,int numDim,SlsQt1DPlot*& plot1D,SlsQt2DPlotLayout*& plot2D,string FilePath):
-	QMainWindow(parent),id(id),cloneplot2D(0),cloneplot1D(0),filePath(FilePath){
+qCloneWidget::qCloneWidget(QWidget *parent,int id,QString title,int numDim,SlsQt1DPlot*& plot1D,SlsQt2DPlotLayout*& plot2D,string FilePath,
+		bool displayStats, QString min, QString max, QString sum):
+	QMainWindow(parent),id(id),cloneplot2D(0),cloneplot1D(0),filePath(FilePath)
+	{
 	/** Window title*/
 	char winTitle[300],currTime[50];
 	strcpy(currTime,GetCurrentTimeStamp());
@@ -28,6 +30,7 @@ qCloneWidget::qCloneWidget(QWidget *parent,int id,QString title,int numDim,SlsQt
 
 	/** Set up widget*/
 	SetupWidgetWindow(title,numDim,plot1D,plot2D);
+    DisplayStats(displayStats,min,max,sum);
 }
 
 //-------------------------------------------------------------------------------------------------------------------------------------------------
@@ -262,11 +265,60 @@ int qCloneWidget::SavePlotAutomatic(){
 	else return -1;
 
 }
+
+
 //-------------------------------------------------------------------------------------------------------------------------------------------------
+
 
 void qCloneWidget::closeEvent(QCloseEvent* event){
 	emit CloneClosedSignal(id);
 	event->accept();
 }
 
+
 //-------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+void qCloneWidget::DisplayStats(bool enable, QString min, QString max, QString sum){
+	if(enable){
+		QWidget *widgetStatistics = new QWidget(this);
+		widgetStatistics->setFixedHeight(15);
+		QHBoxLayout *hl1 = new QHBoxLayout;
+		hl1->setSpacing(0);
+		hl1->setContentsMargins(0, 0, 0, 0);
+		QLabel *lblMin = new QLabel("Min:  ");
+		lblMin->setFixedWidth(40);
+		lblMin->setAlignment(Qt::AlignRight);
+		QLabel *lblMax = new QLabel("Max:  ");
+		lblMax->setFixedWidth(40);
+		lblMax->setAlignment(Qt::AlignRight);
+		QLabel *lblSum = new QLabel("Sum:  ");
+		lblSum->setFixedWidth(40);
+		lblSum->setAlignment(Qt::AlignRight);
+		QLabel *lblMinDisp = new QLabel(min);
+		lblMinDisp->setAlignment(Qt::AlignLeft);
+		QLabel *lblMaxDisp = new QLabel(max);
+		lblMaxDisp->setAlignment(Qt::AlignLeft);
+		QLabel *lblSumDisp = new QLabel(sum);
+		lblSumDisp->setAlignment(Qt::AlignLeft);
+		hl1->addItem(new QSpacerItem(20,20,QSizePolicy::Fixed,QSizePolicy::Fixed));
+		hl1->addWidget(lblMin);
+		hl1->addWidget(lblMinDisp);
+		hl1->addItem(new QSpacerItem(20,20,QSizePolicy::Expanding,QSizePolicy::Fixed));
+		hl1->addWidget(lblMax);
+		hl1->addWidget(lblMaxDisp);
+		hl1->addItem(new QSpacerItem(20,20,QSizePolicy::Expanding,QSizePolicy::Fixed));
+		hl1->addWidget(lblSum);
+		hl1->addWidget(lblSumDisp);
+		hl1->addItem(new QSpacerItem(20,20,QSizePolicy::Fixed,QSizePolicy::Fixed));
+		widgetStatistics->setLayout(hl1);
+		mainLayout->addWidget(widgetStatistics,2,0);
+		widgetStatistics->show();
+
+	}
+}
+
+
+//-------------------------------------------------------------------------------------------------------------------------------------------------
+
+

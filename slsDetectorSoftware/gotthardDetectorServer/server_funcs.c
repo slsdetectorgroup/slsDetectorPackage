@@ -1575,7 +1575,7 @@ int get_threshold_energy(int file_des) {
   int n;
   int  imod;
 
-  strcpy(mess,"cannot set threshold for gotthard");
+  strcpy(mess,"cannot get threshold for gotthard");
 
   n = receiveDataOnly(file_des,&imod,sizeof(imod));
   if (n < 0)

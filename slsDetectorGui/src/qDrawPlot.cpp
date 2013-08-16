@@ -725,40 +725,36 @@ int qDrawPlot::GetData(detectorData *data,int fIndex){
 
 		//angle plotting
 		if(anglePlot){
-			while(1){
-				if(!pthread_mutex_trylock(&(last_image_complete_mutex))){
-					//set title
-					plotTitle=QString(plotTitle_prefix)+QString(data->fileName).section('/',-1);
-					// Title
-					histTitle[0] = temp_title;
+			LockLastImageArray();
+			//set title
+			plotTitle=QString(plotTitle_prefix)+QString(data->fileName).section('/',-1);
+			// Title
+			histTitle[0] = temp_title;
 
-					if(data->angles==NULL){
-						cout<<"\n\nWARNING:RETURNED NULL instead of angles."<<endl;
-						lastImageNumber= currentFrame+1;
-						nAnglePixelsX = nPixelsX;
-						histNBins = nAnglePixelsX;
-						nHists=1;
-						memcpy(histXAngleAxis,histXAxis,nAnglePixelsX*sizeof(double));
-						memcpy(histYAngleAxis,data->values,nAnglePixelsX*sizeof(double));
-						SetHistXAxisTitle("Channel Number");
+			if(data->angles==NULL){
+				cout<<"\n\nWARNING:RETURNED NULL instead of angles."<<endl;
+				lastImageNumber= currentFrame+1;
+				nAnglePixelsX = nPixelsX;
+				histNBins = nAnglePixelsX;
+				nHists=1;
+				memcpy(histXAngleAxis,histXAxis,nAnglePixelsX*sizeof(double));
+				memcpy(histYAngleAxis,data->values,nAnglePixelsX*sizeof(double));
+				SetHistXAxisTitle("Channel Number");
 
-					}
-					else{
-
-						lastImageNumber= currentFrame+1;
-						nAnglePixelsX = data->npoints;
-						histNBins = nAnglePixelsX;
-						nHists=1;
-						if(histXAngleAxis) delete [] histXAngleAxis; histXAngleAxis = new double[nAnglePixelsX];
-						if(histYAngleAxis) delete [] histYAngleAxis; histYAngleAxis = new double[nAnglePixelsX];
-						memcpy(histXAngleAxis,data->angles,nAnglePixelsX*sizeof(double));
-						memcpy(histYAngleAxis,data->values,nAnglePixelsX*sizeof(double));
-						SetHistXAxisTitle("Angles");
-					}
-					pthread_mutex_unlock(&(last_image_complete_mutex));
-					break;
-				}
 			}
+			else{
+
+				lastImageNumber= currentFrame+1;
+				nAnglePixelsX = data->npoints;
+				histNBins = nAnglePixelsX;
+				nHists=1;
+				if(histXAngleAxis) delete [] histXAngleAxis; histXAngleAxis = new double[nAnglePixelsX];
+				if(histYAngleAxis) delete [] histYAngleAxis; histYAngleAxis = new double[nAnglePixelsX];
+				memcpy(histXAngleAxis,data->angles,nAnglePixelsX*sizeof(double));
+				memcpy(histYAngleAxis,data->values,nAnglePixelsX*sizeof(double));
+				SetHistXAxisTitle("Angles");
+			}
+			UnlockLastImageArray();
 			currentFrame++;
 			return 0;
 		}
@@ -796,98 +792,82 @@ int qDrawPlot::GetData(detectorData *data,int fIndex){
 //if scan
 		//alframes
 		if(scanArgument==qDefs::AllFrames){
-			while(1){
-				if(!pthread_mutex_trylock(&(last_image_complete_mutex))){
-					//set title
-					plotTitle=QString(plotTitle_prefix)+QString(data->fileName).section('/',-1);
-					//variables
-					lastImageNumber= currentFrame+1;
-					//title
-					imageTitle = temp_title;
-					//copy data
-					memcpy(lastImageArray+(currentScanDivLevel*nPixelsX),data->values,nPixelsX*sizeof(double));
-					pthread_mutex_unlock(&(last_image_complete_mutex));
-					break;
-				}
-			}
+			LockLastImageArray();
+			//set title
+			plotTitle=QString(plotTitle_prefix)+QString(data->fileName).section('/',-1);
+			//variables
+			lastImageNumber= currentFrame+1;
+			//title
+			imageTitle = temp_title;
+			//copy data
+			memcpy(lastImageArray+(currentScanDivLevel*nPixelsX),data->values,nPixelsX*sizeof(double));
+			UnlockLastImageArray();
 			currentFrame++;
 			currentScanDivLevel++;
 			return 0;
 		}
 		//file index
 		if(scanArgument==qDefs::FileIndex){
-			while(1){
-				if(!pthread_mutex_trylock(&(last_image_complete_mutex))){
-					//set title
-					plotTitle=QString(plotTitle_prefix)+QString(data->fileName).section('/',-1);
-					//variables
-					if(currentFrameIndex == 0) currentScanDivLevel = 0;
-					lastImageNumber= currentFrame+1;
-					//title
-					imageTitle = temp_title;
-					cout<<"lastImageNumber:"<<lastImageNumber<<endl;
-					cout<<"currentScanDivLevel:"<<currentScanDivLevel<<endl;
-					//copy data
-					for(unsigned int px=0;px<nPixelsX;px++)	lastImageArray[currentScanDivLevel*nPixelsX+px] += data->values[px];
-					pthread_mutex_unlock(&(last_image_complete_mutex));
-					break;
-				}
-			}
+			LockLastImageArray();
+			//set title
+			plotTitle=QString(plotTitle_prefix)+QString(data->fileName).section('/',-1);
+			//variables
+			if(currentFrameIndex == 0) currentScanDivLevel = 0;
+			lastImageNumber= currentFrame+1;
+			//title
+			imageTitle = temp_title;
+			cout<<"lastImageNumber:"<<lastImageNumber<<endl;
+			cout<<"currentScanDivLevel:"<<currentScanDivLevel<<endl;
+			//copy data
+			for(unsigned int px=0;px<nPixelsX;px++)	lastImageArray[currentScanDivLevel*nPixelsX+px] += data->values[px];
+			UnlockLastImageArray();
 			currentFrame++;
 			currentScanDivLevel++;
 			return 0;
 		}
 		//level0
 		if(scanArgument==qDefs::Level0){
-			while(1){
-				if(!pthread_mutex_trylock(&(last_image_complete_mutex))){
-					//set title
-					plotTitle=QString(plotTitle_prefix)+QString(data->fileName).section('/',-1);
-					//get scanvariable0
-					int ci = 0, fi = 0, p = 0, di = 0; double cs0 = 0 , cs1 = 0;
-					fileIOStatic::getVariablesFromFileName(string(data->fileName), ci, fi, p, cs0, cs1, di);
-					//variables
-					if(cs0!=currentScanValue) {
-						if(backwardScanPlot)	currentScanDivLevel--;
-						else					currentScanDivLevel++;
-					}
-					currentScanValue = cs0;
-					lastImageNumber= currentFrame+1;
-					//title
-					imageTitle = temp_title;
-					//copy data
-					for(unsigned int px=0;px<nPixelsX;px++) lastImageArray[currentScanDivLevel*nPixelsX+px] += data->values[px];
-					pthread_mutex_unlock(&(last_image_complete_mutex));
-					break;
-				}
+			LockLastImageArray();
+			//set title
+			plotTitle=QString(plotTitle_prefix)+QString(data->fileName).section('/',-1);
+			//get scanvariable0
+			int ci = 0, fi = 0, p = 0, di = 0; double cs0 = 0 , cs1 = 0;
+			fileIOStatic::getVariablesFromFileName(string(data->fileName), ci, fi, p, cs0, cs1, di);
+			//variables
+			if(cs0!=currentScanValue) {
+				if(backwardScanPlot)	currentScanDivLevel--;
+				else					currentScanDivLevel++;
 			}
+			currentScanValue = cs0;
+			lastImageNumber= currentFrame+1;
+			//title
+			imageTitle = temp_title;
+			//copy data
+			for(unsigned int px=0;px<nPixelsX;px++) lastImageArray[currentScanDivLevel*nPixelsX+px] += data->values[px];
+			UnlockLastImageArray();
 			currentFrame++;
 			return 0;
 		}
 		//level1
 		if(scanArgument==qDefs::Level1){
-			while(1){
-				if(!pthread_mutex_trylock(&(last_image_complete_mutex))){
-					//set title
-					plotTitle=QString(plotTitle_prefix)+QString(data->fileName).section('/',-1);
-					//get scanvariable1
-					int ci = 0, fi = 0, p = 0, di = 0; double cs0 = 0 , cs1 = 0;
-					fileIOStatic::getVariablesFromFileName(string(data->fileName), ci, fi, p, cs0, cs1, di);
-					//variables
-					if(cs1!=currentScanValue){
-						if(backwardScanPlot)	currentScanDivLevel--;
-						else					currentScanDivLevel++;
-					}
-					currentScanValue = cs1;
-					lastImageNumber= currentFrame+1;
-					//title
-					imageTitle = temp_title;
-					//copy data
-					for(unsigned int px=0;px<nPixelsX;px++) lastImageArray[currentScanDivLevel*nPixelsX+px] += data->values[px];
-					pthread_mutex_unlock(&(last_image_complete_mutex));
-					break;
-				}
+			LockLastImageArray();
+			//set title
+			plotTitle=QString(plotTitle_prefix)+QString(data->fileName).section('/',-1);
+			//get scanvariable1
+			int ci = 0, fi = 0, p = 0, di = 0; double cs0 = 0 , cs1 = 0;
+			fileIOStatic::getVariablesFromFileName(string(data->fileName), ci, fi, p, cs0, cs1, di);
+			//variables
+			if(cs1!=currentScanValue){
+				if(backwardScanPlot)	currentScanDivLevel--;
+				else					currentScanDivLevel++;
 			}
+			currentScanValue = cs1;
+			lastImageNumber= currentFrame+1;
+			//title
+			imageTitle = temp_title;
+			//copy data
+			for(unsigned int px=0;px<nPixelsX;px++) lastImageArray[currentScanDivLevel*nPixelsX+px] += data->values[px];
+			UnlockLastImageArray();
 			currentFrame++;
 			return 0;
 		}
@@ -917,19 +897,20 @@ int qDrawPlot::GetData(detectorData *data,int fIndex){
 
 				//recalculating pedestal
 				if(startPedestalCal){
-					pedestalCount++;
+
 					//start adding frames to get to the pedestal value
 					if(pedestalCount<NUM_PEDESTAL_FRAMES){
 						for(unsigned int px=0;px<nPixelsX;px++)
-							tempPedestalVals[px] += data->values[px];
+							tempPedestalVals[px] += data->values[px];//cout<<"tempPedestalVals[200]:"<<tempPedestalVals[200]<<endl;
 						memcpy(histYAxis[0],data->values,nPixelsX*sizeof(double));
+						pedestalCount++;
 					}
 					//calculate the pedestal value
 					else if(pedestalCount==NUM_PEDESTAL_FRAMES){
 						cout << "Pedestal Calculated" << endl;
 						for(unsigned int px=0;px<nPixelsX;px++)
-							tempPedestalVals[px] = tempPedestalVals[px]/(double)NUM_PEDESTAL_FRAMES;
-						memcpy(pedestalVals,tempPedestalVals,nPixelsX*sizeof(double));
+							tempPedestalVals[px] = tempPedestalVals[px]/(double)NUM_PEDESTAL_FRAMES;//cout<<"tempPedestalVals[200]:"<<tempPedestalVals[200]<<endl;
+						memcpy(pedestalVals,tempPedestalVals,nPixelsX*sizeof(double));//cout<<"pedestalVals[200]:"<<pedestalVals[200]<<endl;
 						startPedestalCal = 0;
 					}
 				}
@@ -1733,24 +1714,19 @@ void qDrawPlot::RecalculatePedestal(){
 #ifdef VERBOSE
 	cout << "Recalculating Pedestal" <<  endl;
 #endif
-	while(1){
-		if(!pthread_mutex_trylock(&(last_image_complete_mutex))){
-			startPedestalCal = 1;
-			pedestalCount = 0;
+	LockLastImageArray();
+	startPedestalCal = 1;
+	pedestalCount = 0;
 
-			//create array
-			if(pedestalVals) 		delete [] pedestalVals; 	pedestalVals 		= new double[nPixelsX*nPixelsY];
-			if(tempPedestalVals) 	delete [] tempPedestalVals; tempPedestalVals 	= new double[nPixelsX*nPixelsY];
-			//reset all values
-			for(unsigned int px=0;px<(nPixelsX*nPixelsY);px++)
-				pedestalVals[px] = 0;
-			for(unsigned int px=0;px<(nPixelsX*nPixelsY);px++)
-				tempPedestalVals[px] = 0;
-
-			pthread_mutex_unlock(&(last_image_complete_mutex));
-			break;
-		}
-	}
+	//create array
+	if(pedestalVals) 		delete [] pedestalVals; 	pedestalVals 		= new double[nPixelsX*nPixelsY];
+	if(tempPedestalVals) 	delete [] tempPedestalVals; tempPedestalVals 	= new double[nPixelsX*nPixelsY];
+	//reset all values
+	for(unsigned int px=0;px<(nPixelsX*nPixelsY);px++)
+		pedestalVals[px] = 0;
+	for(unsigned int px=0;px<(nPixelsX*nPixelsY);px++)
+		tempPedestalVals[px] = 0;
+	UnlockLastImageArray();
 }
 
 
@@ -1771,13 +1747,9 @@ void qDrawPlot::ResetAccumulate(){
 #ifdef VERBOSE
 	cout << "Resetting Accumulation" <<  endl;
 #endif
-	while(1){
-		if(!pthread_mutex_trylock(&(last_image_complete_mutex))){
-			resetAccumulate = true;
-			pthread_mutex_unlock(&(last_image_complete_mutex));
-			break;
-		}
-	}
+	LockLastImageArray();
+	resetAccumulate = true;
+	UnlockLastImageArray();
 }
 
 

@@ -999,6 +999,11 @@ Displays minimum, maximum and sum of values for each plot.
      </widget>
     </widget>
     <widget class="QWidget" name="page_8">
+     <property name="toolTip">
+      <string>&lt;nobr&gt;
+All values between &lt;b&gt;from&lt;/b&gt; and &lt;b&gt;to&lt;/b&gt; will be reset to 1, others to 0.
+&lt;/nobr&gt;</string>
+     </property>
      <widget class="QWidget" name="horizontalLayoutWidget_11">
       <property name="geometry">
        <rect>
@@ -1019,6 +1024,11 @@ Displays minimum, maximum and sum of values for each plot.
            <horstretch>0</horstretch>
            <verstretch>0</verstretch>
           </sizepolicy>
+         </property>
+         <property name="toolTip">
+          <string>&lt;nobr&gt;
+All values between &lt;b&gt;from&lt;/b&gt; and &lt;b&gt;to&lt;/b&gt; will be reset to 1, others to 0.
+&lt;/nobr&gt;</string>
          </property>
          <property name="text">
           <string>Binary</string>
@@ -1326,7 +1336,7 @@ Displays minimum, maximum and sum of values for each plot.
      <rect>
       <x>10</x>
       <y>20</y>
-      <width>346</width>
+      <width>341</width>
       <height>26</height>
      </rect>
     </property>

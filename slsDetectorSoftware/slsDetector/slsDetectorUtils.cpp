@@ -738,6 +738,10 @@ int slsDetectorUtils::retrieveDetectorSetup(string const fname1, int level){
 #ifdef VERBOSE
   std::cout<< "Read  " << iline << " lines" << std::endl;
 #endif
+
+  if (getErrorMask())
+	  return FAIL;
+
   return OK;
 
 

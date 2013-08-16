@@ -897,20 +897,19 @@ int qDrawPlot::GetData(detectorData *data,int fIndex){
 
 				//recalculating pedestal
 				if(startPedestalCal){
-
 					//start adding frames to get to the pedestal value
 					if(pedestalCount<NUM_PEDESTAL_FRAMES){
 						for(unsigned int px=0;px<nPixelsX;px++)
-							tempPedestalVals[px] += data->values[px];//cout<<"tempPedestalVals[200]:"<<tempPedestalVals[200]<<endl;
+							tempPedestalVals[px] += data->values[px];
 						memcpy(histYAxis[0],data->values,nPixelsX*sizeof(double));
 						pedestalCount++;
 					}
 					//calculate the pedestal value
-					else if(pedestalCount==NUM_PEDESTAL_FRAMES){
+					if(pedestalCount==NUM_PEDESTAL_FRAMES){
 						cout << "Pedestal Calculated" << endl;
 						for(unsigned int px=0;px<nPixelsX;px++)
-							tempPedestalVals[px] = tempPedestalVals[px]/(double)NUM_PEDESTAL_FRAMES;//cout<<"tempPedestalVals[200]:"<<tempPedestalVals[200]<<endl;
-						memcpy(pedestalVals,tempPedestalVals,nPixelsX*sizeof(double));//cout<<"pedestalVals[200]:"<<pedestalVals[200]<<endl;
+							tempPedestalVals[px] = tempPedestalVals[px]/(double)NUM_PEDESTAL_FRAMES;
+						memcpy(pedestalVals,tempPedestalVals,nPixelsX*sizeof(double));
 						startPedestalCal = 0;
 					}
 				}
@@ -944,15 +943,15 @@ int qDrawPlot::GetData(detectorData *data,int fIndex){
 				imageTitle = temp_title;
 				//recalculating pedestal
 				if(startPedestalCal){
-					pedestalCount++;
 					//start adding frames to get to the pedestal value
 					if(pedestalCount<NUM_PEDESTAL_FRAMES){
 						for(unsigned int px=0;px<(nPixelsX*nPixelsY);px++)
 							tempPedestalVals[px] += data->values[px];
 						memcpy(lastImageArray,data->values,nPixelsX*nPixelsY*sizeof(double));
+						pedestalCount++;
 					}
 					//calculate the pedestal value
-					else if(pedestalCount==NUM_PEDESTAL_FRAMES){
+					if(pedestalCount==NUM_PEDESTAL_FRAMES){
 						cout << "Pedestal Calculated" << endl;
 						for(unsigned int px=0;px<(nPixelsX*nPixelsY);px++)
 							tempPedestalVals[px] = tempPedestalVals[px]/(double)NUM_PEDESTAL_FRAMES;

@@ -339,34 +339,30 @@ void qDrawPlot::Initialization(){
 
 
 void qDrawPlot::StartStopDaqToggle(bool stop_if_running){
-//#ifdef VERYVERBOSE
+#ifdef VERYVERBOSE
 	cout << "Entering StartStopDaqToggle(" << stop_if_running << ")" <<endl;
-//#endif
+#endif
 	//static bool running = 1;
 	if(running){ //stopping
 		StartDaq(false);
 		running=!running;
 	}else if(!stop_if_running){ //then start
-
 		// Reset Current Measurement
 		currentMeasurement = 0;
 		emit SetCurrentMeasurementSignal(currentMeasurement);
-
-
 		//to get the first image
 		data_pause_over = true;
 		//in case of error message
 		alreadyDisplayed = false;
 
+		/*
 		// Number of Exposures
 		int numFrames = (isFrameEnabled)*((int)myDet->setTimer(slsDetectorDefs::FRAME_NUMBER,-1));
 		int numTriggers = (isTriggerEnabled)*((int)myDet->setTimer(slsDetectorDefs::CYCLES_NUMBER,-1));
 		numFrames = ((numFrames==0)?1:numFrames);
 		numTriggers = ((numTriggers==0)?1:numTriggers);
-
 		number_of_frames = numFrames * numTriggers;
 		cout << "\tNumber of Frames per Scan/Measurement:" << number_of_frames << endl;
-
 		//get #scansets for level 0 and level 1
 		int numScan0 = myDet->getScanSteps(0);	numScan0 = ((numScan0==0)?1:numScan0);
 		int numScan1 = myDet->getScanSteps(1);	numScan1 = ((numScan1==0)?1:numScan1);
@@ -374,9 +370,8 @@ void qDrawPlot::StartStopDaqToggle(bool stop_if_running){
 
 		number_of_exposures = number_of_frames * numScan0 * numScan1;
 		if(anglePlot) number_of_exposures = numScan0 * numScan1;// * numPos;
-
-
 		cout << "\tNumber of Exposures Per Measurement:" << number_of_exposures << endl;
+		*/
 
 		// ExposureTime
 		exposureTime= ((double)(myDet->setTimer(slsDetectorDefs::ACQUISITION_TIME,-1))*1E-9);
@@ -384,9 +379,7 @@ void qDrawPlot::StartStopDaqToggle(bool stop_if_running){
 		// Acquisition Period
 		acquisitionPeriod= ((double)(myDet->setTimer(slsDetectorDefs::FRAME_PERIOD,-1))*1E-9);
 		cout << "\tAcquisition Period:" << setprecision (10) << acquisitionPeriod << endl;
-
 		cout << "\tFile Index:" << myDet->getFileIndex() << endl;
-
 		//to take the first data if frameFactor
 		numFactor = 0;
 
@@ -401,8 +394,6 @@ void qDrawPlot::StartStopDaqToggle(bool stop_if_running){
 		//update index
 		currentFileIndex = myDet->getFileIndex();
 		currentFrameIndex = 0;
-
-
 
 		StartDaq(true);
 		running=!running;
@@ -502,14 +493,31 @@ void qDrawPlot::SetScanArgument(int scanArg){
 #endif
 	scanArgument = scanArg;
 
+	LockLastImageArray();
+
 	if(plot_in_scope==1) Clear1DPlot();
 
 
-	LockLastImageArray();
-
-
+	maxPixelsY = 0;
+	minPixelsY = 0;
 	nPixelsX = myDet->getTotalNumberOfChannels(slsDetectorDefs::X);
 	nPixelsY = myDet->getTotalNumberOfChannels(slsDetectorDefs::Y);
+
+	// Number of Exposures - must be calculated here to get npixelsy for allframes/frameindex scans
+	int numFrames = (isFrameEnabled)*((int)myDet->setTimer(slsDetectorDefs::FRAME_NUMBER,-1));
+	int numTriggers = (isTriggerEnabled)*((int)myDet->setTimer(slsDetectorDefs::CYCLES_NUMBER,-1));
+	numFrames = ((numFrames==0)?1:numFrames);
+	numTriggers = ((numTriggers==0)?1:numTriggers);
+	number_of_frames = numFrames * numTriggers;
+	cout << "\tNumber of Frames per Scan/Measurement:" << number_of_frames << endl;
+	//get #scansets for level 0 and level 1
+	int numScan0 = myDet->getScanSteps(0);	numScan0 = ((numScan0==0)?1:numScan0);
+	int numScan1 = myDet->getScanSteps(1);	numScan1 = ((numScan1==0)?1:numScan1);
+	int numPos=myDet->getPositions();
+
+	number_of_exposures = number_of_frames * numScan0 * numScan1;
+	if(anglePlot) number_of_exposures = numScan0 * numScan1;// * numPos;
+	cout << "\tNumber of Exposures Per Measurement:" << number_of_exposures << endl;
 
 	//cannot do this in between measurements , so update instantly
 	if(scanArgument==qDefs::Level0){
@@ -530,7 +538,11 @@ void qDrawPlot::SetScanArgument(int scanArg){
 		maxPixelsY = values[numSteps-1];
 		minPixelsY = values[0];
 		nPixelsY = numSteps;
-	}
+	}else if(scanArgument==qDefs::AllFrames)
+		nPixelsY = number_of_exposures;
+	else if(scanArgument==qDefs::FileIndex)
+		nPixelsY = number_of_frames;
+
 
 	if(minPixelsY>maxPixelsY){
 		double temp = minPixelsY;
@@ -609,7 +621,7 @@ void qDrawPlot::SetupMeasurement(){
 			maxPixelsY = number_of_exposures - 1;
 			minPixelsY = 0;
 			if(!running) nPixelsY = number_of_exposures;
-		}//file index
+		}//frame index
 		else if(scanArgument==qDefs::FileIndex){
 			maxPixelsY = number_of_frames - 1;
 			minPixelsY = 0;
@@ -671,6 +683,7 @@ int qDrawPlot::GetDataCallBack(detectorData *data, int fIndex, void *this_pointe
 int qDrawPlot::GetData(detectorData *data,int fIndex){
 #ifdef VERYVERBOSE
 	cout << "******Entering GetDatafunction********" << endl;
+	cout << "fIndex " << fIndex << endl;
 	cout << "fname " << data->fileName << endl;
 	cout << "npoints " << data->npoints << endl;
 	cout << "npy " << data->npy << endl;
@@ -812,6 +825,8 @@ int qDrawPlot::GetData(detectorData *data,int fIndex){
 					lastImageNumber= currentFrame+1;
 					//title
 					imageTitle = temp_title;
+					cout<<"lastImageNumber:"<<lastImageNumber<<endl;
+					cout<<"currentScanDivLevel:"<<currentScanDivLevel<<endl;
 					//copy data
 					for(unsigned int px=0;px<nPixelsX;px++)	lastImageArray[currentScanDivLevel*nPixelsX+px] += data->values[px];
 					pthread_mutex_unlock(&(last_image_complete_mutex));
@@ -1158,7 +1173,7 @@ void qDrawPlot::UpdatePlot(){
 			if(plot_in_scope==1){
 				if(lastImageNumber){
 #ifdef VERYVERBOSE
-					cout << "Last Image Number:" << lastImageNumber << endl;
+					cout << "*Last Image Number:" << lastImageNumber << endl;
 #endif
 					if(histNBins){
 						Clear1DPlot();

@@ -174,8 +174,6 @@ void qTabPlot::SetupWidgetWindow(){
 	}
 
 	Select1DPlot(isOriginallyOneD);
-	if(isOriginallyOneD) myPlot->Select1DPlot();
-	else 				myPlot->Select2DPlot();
 
 	//to check if this should be enabled
 	EnableScanBox();
@@ -248,12 +246,14 @@ void qTabPlot::Select1DPlot(bool b){
 		chkZAxis->setEnabled(false);
 		chkZMin->setEnabled(false);
 		chkZMax->setEnabled(false);
+		myPlot->Select1DPlot();
 	}else{
 		box1D->hide();
 		box2D->show();
 		chkZAxis->setEnabled(true);
 		chkZMin->setEnabled(true);
 		chkZMax->setEnabled(true);
+		myPlot->Select2DPlot();
 	}
 }
 
@@ -267,7 +267,6 @@ void qTabPlot::Initialization(){
 	connect(radioHistogram, SIGNAL(toggled(bool)),this, SLOT(SetPlot()));
 	connect(radioDataGraph, SIGNAL(toggled(bool)),this, SLOT(SetPlot()));
 // Scan box
-	/*connect(btnGroupScan, SIGNAL(buttonClicked(QAbstractButton *)),this, SLOT(SetScanArgument()));*/
 	connect(boxScan,	  SIGNAL(toggled(bool)),				   this, SLOT(EnableScanBox()));
 // Snapshot box
 	connect(btnClone, 		SIGNAL(clicked()),myPlot, 	SLOT(ClonePlot()));
@@ -507,36 +506,27 @@ void qTabPlot::SetPlot(){
 	if(radioNoPlot->isChecked()){
 		cout << " - No Plot" << endl;
 
-		//Select1DPlot(isOriginallyOneD);
-		//if(isOriginallyOneD) {box1D->show(); box2D->hide();}
-		//if(!isOriginallyOneD){box2D->show(); box1D->hide();}
 		myPlot->EnablePlot(false);
-		//if enable is true, disable everything
-
 		boxSnapshot->setEnabled(false);
 		boxSave->setEnabled(false);
 		boxFrequency->setEnabled(false);
 		boxPlotAxis->setEnabled(false);
 		boxScan->setEnabled(false);
-	}else {//if(radioDataGraph->isChecked()){
-		cout << " - DataGraph" << endl;
+	}else {
+		if(radioDataGraph->isChecked())
+			cout << " - DataGraph" << endl;
+		else
+			cout << " - Histogram" << endl;
 
 		myPlot->EnablePlot(true);
-		//if enable is true, disable everything
-		if(isOriginallyOneD)  {box1D->show(); box2D->hide();}
-		if(!isOriginallyOneD) {box2D->show(); box1D->hide();}
 		Select1DPlot(isOriginallyOneD);
-		if(isOriginallyOneD) myPlot->Select1DPlot();
-		else 				myPlot->Select2DPlot();
 		boxSnapshot->setEnabled(true);
 		boxSave->setEnabled(true);
 		boxFrequency->setEnabled(true);
 		boxPlotAxis->setEnabled(true);
-		if(!myPlot->isRunning()) EnableScanBox();
-	}/*else{
-		cout << " - Histogram" << endl;
-		//select(2d) will set oneD to false, but originallyoneD will remember
-	}*/
+		if(!myPlot->isRunning())
+			EnableScanBox();
+	}
 }
 
 
@@ -683,10 +673,98 @@ void qTabPlot::SetFrequency(){
 //-------------------------------------------------------------------------------------------------------------------------------------------------
 
 void qTabPlot::EnableScanBox(){
-#ifdef VERYVERBOSE
+#ifdef VERBOSE
 	cout << "Entering Enable Scan Box()" << endl;
 #endif
+	disconnect(radioNoPlot, 	SIGNAL(toggled(bool)),this, SLOT(SetPlot()));
+	disconnect(radioHistogram, 	SIGNAL(toggled(bool)),this, SLOT(SetPlot()));
+	disconnect(radioDataGraph, 	SIGNAL(toggled(bool)),this, SLOT(SetPlot()));
+	disconnect(boxScan,	  		SIGNAL(toggled(bool)),this, SLOT(EnableScanBox()));
 
+	int mode0 = myDet->getScanMode(0);
+	int mode1 = myDet->getScanMode(1);
+	int ang;
+	bool angConvert = myDet->getAngularConversion(ang);
+
+	//enabling it after it was plotted
+	radioDataGraph->setEnabled(true);
+
+
+	//if angle plot or originally 2d, uncheck and disable scanbox
+	if ((angConvert) || (!isOriginallyOneD)){
+		boxScan->setChecked(false);
+		boxScan->setEnabled(false);
+		//disable histogram
+		radioHistogram->setEnabled(false);
+		if(radioHistogram->isChecked())
+			radioDataGraph->setChecked(true);
+		//angle only
+		if((angConvert)&&(chkSuperimpose->isChecked()))
+			chkSuperimpose->setChecked(false);
+		chkSuperimpose->setEnabled(!angConvert);
+		myPlot->EnableAnglePlot(angConvert);
+		if(angConvert)
+			boxScan->setToolTip("<nobr>Only 1D Plots enabled for Angle Plots</nobr>");
+	}
+
+	//originally1d && not angle plot
+	else{
+		boxScan->setToolTip("");
+		boxScan->setEnabled(true);
+		if(mode0 || mode1)
+			boxScan->setChecked(true);
+
+		//still 1d
+		if(!boxScan->isChecked()){
+			radioHistogram->setEnabled(true);
+			/*if(radioHistogram->isChecked())
+				EnablingNthFrameFunction(false);//just this
+				else	EnablingNthFrameFunction(true);	*/
+		}
+
+		//2d enabled with boxscan
+		else{
+			disconnect(spinNthFrame,	SIGNAL(editingFinished()),			this, SLOT(SetFrequency()));
+			disconnect(comboFrequency, SIGNAL(currentIndexChanged(int)),	this, SLOT(SetFrequency()));
+
+			comboFrequency->setCurrentIndex(1);
+			spinNthFrame->setValue(1);
+			SetFrequency();
+
+			//disable histogram for 2d
+			radioHistogram->setEnabled(false);
+			if(radioHistogram->isChecked())
+				radioDataGraph->setChecked(true);
+
+			/*//make sure nth frame frequency plot is disabled
+			EnablingNthFrameFunction(false);
+			*/
+			//enabling options
+			radioFileIndex->setEnabled(mode0||mode1);
+			if(mode0 && mode1){
+				radioLevel0->setEnabled(false);
+				radioLevel1->setEnabled(false);
+			}else{
+				radioLevel0->setEnabled(mode0);
+				radioLevel1->setEnabled(mode1);
+			}
+			//default is allframes if checked button is disabled
+			if(!btnGroupScan->checkedButton()->isEnabled())
+				radioAllFrames->setChecked(true);
+
+			connect(spinNthFrame,	SIGNAL(editingFinished()),			this, SLOT(SetFrequency()));
+			connect(comboFrequency, SIGNAL(currentIndexChanged(int)),	this, SLOT(SetFrequency()));
+
+
+		}
+	}
+
+	connect(radioNoPlot, 	SIGNAL(toggled(bool)),this, SLOT(SetPlot()));
+	connect(radioHistogram, SIGNAL(toggled(bool)),this, SLOT(SetPlot()));
+	connect(radioDataGraph, SIGNAL(toggled(bool)),this, SLOT(SetPlot()));
+	connect(boxScan,	 	SIGNAL(toggled(bool)),this, SLOT(EnableScanBox()));
+
+/*
 	int mode0 = myDet->getScanMode(0);
 	int mode1 = myDet->getScanMode(1);
 
@@ -759,9 +837,7 @@ void qTabPlot::EnableScanBox(){
 	//boxFrequency->setEnabled(positionsExist);
 	myPlot->EnableAnglePlot(positionsExist);
 
-
-	//sets the scan argument
-	/*SetScanArgument();*/
+*/
 }
 
 
@@ -791,41 +867,85 @@ void qTabPlot::EnablingNthFrameFunction(bool enable){
 //-------------------------------------------------------------------------------------------------------------------------------------------------
 
 void qTabPlot::SetScanArgument(){
-	bool histogram = radioHistogram->isChecked();
+#ifdef VERYVERBOSE
+	cout << "Entering qTabPlot::SetScanArgument()" << endl;
+#endif
 
-	//as default from histogram and default titles are set here if scanbox is disabled
+	//1d
 	if(isOriginallyOneD){
 		dispXAxis->setText(defaultHistXAxisTitle);
 		dispYAxis->setText(defaultHistYAxisTitle);
 		myPlot->SetHistXAxisTitle(defaultHistXAxisTitle);
 		myPlot->SetHistYAxisTitle(defaultHistYAxisTitle);
-	}else{
+		Select1DPlot(true);
+	}
+	//2d
+	else{
 		dispXAxis->setText(defaultImageXAxisTitle);
 		dispYAxis->setText(defaultImageYAxisTitle);
 		dispZAxis->setText(defaultImageZAxisTitle);
 		myPlot->SetImageXAxisTitle(defaultImageXAxisTitle);
 		myPlot->SetImageYAxisTitle(defaultImageYAxisTitle);
 		myPlot->SetImageZAxisTitle(defaultImageZAxisTitle);
+		Select1DPlot(false);
 	}
-	Select1DPlot(isOriginallyOneD);
-	if(isOriginallyOneD) myPlot->Select1DPlot();
-	else 				myPlot->Select2DPlot();
 
+
+
+	//angles (1D)
+	int ang;
+	if(myDet->getAngularConversion(ang)){
+		dispXAxis->setText("Angles");
+		myPlot->SetHistXAxisTitle("Angles");
+		Select1DPlot(true);
+	}
+
+	/*	bool histogram = radioHistogram->isChecked();
+	 * else if(histogram)*/
+
+	//1d with scan
+	if(boxScan->isChecked()){
+
+		myPlot->SetScanArgument(btnGroupScan->checkedId()+1);
+
+		switch(btnGroupScan->checkedId()){
+		case 0://level0
+			dispYAxis->setText("Scan Level 0");
+			myPlot->SetImageYAxisTitle("Scan Level 0");
+			break;
+		case 1://level1
+			dispYAxis->setText("Scan Level 1");
+			myPlot->SetImageYAxisTitle("Scan Level 1");
+			break;
+			break;
+		case 2://file index
+			dispYAxis->setText("Frame Index");
+			myPlot->SetImageYAxisTitle("Frame Index");
+			break;
+		case 3://all frames
+			dispYAxis->setText("All Frames");
+			myPlot->SetImageYAxisTitle("All Frames");
+			break;
+		}
+		Select1DPlot(false);
+	}else
+		myPlot->SetScanArgument(qDefs::None);
+
+	/*
+	Select1DPlot(isOriginallyOneD);
 
 	int ang;
 	//if scans(1D or 2D)
 	if((boxScan->isEnabled())||(histogram)){
 		//setting the title according to the scans
 		Select1DPlot(isOriginallyOneD);
-		if(isOriginallyOneD) myPlot->Select1DPlot();
-		else 				myPlot->Select2DPlot();
+
 
 	}//angles (1D)
 	else if(myDet->getAngularConversion(ang)){
 		dispXAxis->setText("Angles");
 		myPlot->SetHistXAxisTitle("Angles");
 		Select1DPlot(true);
-		myPlot->Select1DPlot();
 
 	}
 
@@ -844,7 +964,6 @@ void qTabPlot::SetScanArgument(){
 
 		//set plot to 2d
 		Select1DPlot(false);
-		myPlot->Select2DPlot();
 	}
 	//2d
 	else if((boxScan->isEnabled())&&(boxScan->isChecked())){
@@ -881,11 +1000,10 @@ void qTabPlot::SetScanArgument(){
 
 		//set plot to 2d
 		Select1DPlot(false);
-		myPlot->Select2DPlot();
 
 	}else //done here so that it isnt set by default each time
 		myPlot->SetScanArgument(qDefs::None);
-
+*/
 	qDefs::checkErrorMessage(myDet,"qTabPlot::SetScanArgument");
 
 }

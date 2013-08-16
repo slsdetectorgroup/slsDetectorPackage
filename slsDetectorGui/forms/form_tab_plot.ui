@@ -1319,7 +1319,7 @@ Displays minimum, maximum and sum of values for each plot.
     <bool>true</bool>
    </property>
    <property name="checked">
-    <bool>true</bool>
+    <bool>false</bool>
    </property>
    <widget class="QWidget" name="horizontalLayoutWidget_3">
     <property name="geometry">
@@ -1341,6 +1341,9 @@ Displays minimum, maximum and sum of values for each plot.
          <horstretch>0</horstretch>
          <verstretch>0</verstretch>
         </sizepolicy>
+       </property>
+       <property name="toolTip">
+        <string>&lt;nobr&gt;Enabled only when there is a Scan Level 0&lt;/nobr&gt;</string>
        </property>
        <property name="text">
         <string>Level 0</string>
@@ -1374,6 +1377,9 @@ Displays minimum, maximum and sum of values for each plot.
          <verstretch>0</verstretch>
         </sizepolicy>
        </property>
+       <property name="toolTip">
+        <string>&lt;nobr&gt;Enabled only when there is a Scan Level 1&lt;/nobr&gt;</string>
+       </property>
        <property name="text">
         <string>Level 1</string>
        </property>
@@ -1403,6 +1409,9 @@ Displays minimum, maximum and sum of values for each plot.
          <verstretch>0</verstretch>
         </sizepolicy>
        </property>
+       <property name="toolTip">
+        <string>&lt;nobr&gt;Enabled only when there is a Scan Level 0 or a Scan Level 1, not both&lt;/nobr&gt;</string>
+       </property>
        <property name="text">
         <string>Frame Index</string>
        </property>
@@ -1431,6 +1440,9 @@ Displays minimum, maximum and sum of values for each plot.
          <horstretch>0</horstretch>
          <verstretch>0</verstretch>
         </sizepolicy>
+       </property>
+       <property name="toolTip">
+        <string>&lt;nobr&gt;Disabled only for Angle Plots, Moench and Eiger Detectors&lt;/nobr&gt;</string>
        </property>
        <property name="text">
         <string>All Frames</string>

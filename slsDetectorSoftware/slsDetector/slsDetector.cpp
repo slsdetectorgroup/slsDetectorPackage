@@ -2719,7 +2719,7 @@ int slsDetector::setThresholdEnergy(int e_eV,  int imod, detectorSettings isetti
   int ret=FAIL;
   char mess[100];
 #ifdef VERBOSE
-  std::cout<< "Getting threshold energy "<< std::endl;
+  std::cout<< "Setting threshold energy "<< std::endl;
 #endif
   if (thisDetector->onlineFlag==ONLINE_FLAG) {
     if (connectControl() == OK){

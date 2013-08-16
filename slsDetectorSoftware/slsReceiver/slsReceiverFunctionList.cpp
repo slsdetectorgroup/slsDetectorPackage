@@ -459,7 +459,7 @@ int slsReceiverFunctionList::startListening(){
 					else
 					  startFrameIndex = ((((uint32_t)(*((uint32_t*)buffer))) & (frameIndexMask)) >> frameIndexOffset);
 
-					//cout<<"startFrameIndex:"<<startFrameIndex<<endl;
+					cout<<"startFrameIndex:"<<startFrameIndex<<endl;
 					prevframenum=startFrameIndex;
 					measurementStarted = true;
 				}
@@ -600,9 +600,9 @@ int slsReceiverFunctionList::startWriting(){
 					cout << savefilename << endl;
 				else{
 					if(!frameIndexOffset)
-						packetloss = ((currframenum-prevframenum-(packetsPerFrame*framesInFile))/(double)(packetsPerFrame*framesInFile))*100.000;
+						packetloss = (int)(((currframenum-prevframenum-(packetsPerFrame*framesInFile))/(double)(packetsPerFrame*framesInFile))*100.000);
 					else
-						packetloss = ((currframenum-prevframenum-(framesInFile))/(double)(framesInFile))*100.000;
+						packetloss = (int)(((currframenum-prevframenum-(framesInFile))/(double)(framesInFile))*100.000);
 					cout << savefilename
 							<< "\tpacket loss " << setw(4)<<fixed << setprecision(4)	<< packetloss
 							<< "%\tframenum "
@@ -714,6 +714,7 @@ int slsReceiverFunctionList::startWriting(){
 			break;
 		}
 	}
+	cout << "RealTime Frames Caught:" << framesCaught << endl;
 	cout << "Total Frames Caught:"<< totalFramesCaught << endl;
 
 

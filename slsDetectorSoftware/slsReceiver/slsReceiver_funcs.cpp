@@ -1179,6 +1179,9 @@ int	slsReceiverFuncs::gotthard_read_frame(){
 #endif
 		}else{
 			index=(uint32_t)(*(uint32_t*)raw);
+#ifdef VERBOSE
+			cout<<"index:"<<index<<endl;
+#endif
 			if(shortFrame==-1)
 				index2= (uint32_t)(*((uint32_t*)((char*)(raw+onebuffersize))));
 			memcpy(origVal,raw,bufferSize);
@@ -1213,9 +1216,10 @@ int	slsReceiverFuncs::gotthard_read_frame(){
 	}
 
 #ifdef VERBOSE
-		cout << "\nstartIndex:" << startIndex << endl;
+	if(arg!=-1){
 		cout << "fName:" << fName << endl;
-		cout << "index:" << arg << endl;
+		cout << "findex:" << arg << endl;
+	}
 #endif
 
 
@@ -1268,11 +1272,11 @@ int slsReceiverFuncs::set_read_frequency(){
 		if (lockStatus==1 && socket->differentClients==1){//necessary???
 			sprintf(mess,"Receiver locked by %s\n", socket->lastClientIP);
 			ret=FAIL;
-		}
+		}/*
 		else if((slsReceiverList->getStatus()==RUNNING) && (index >= 0)){
 			ret = FAIL;
 			strcpy(mess,"cannot set up receiver mode when receiver is running\n");
-		}
+		}*/
 		else
 			retval=slsReceiverList->setNFrameToGui(index);
 	}

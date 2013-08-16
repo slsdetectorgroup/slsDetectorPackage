@@ -421,7 +421,7 @@ void* postProcessing::processData(int delflag) {
 		 */
 
 
-		int prevCaught=0;
+		int prevCaught=-1;
 		int caught=0;
 		bool newData=false;
 		char currentfName[MAX_STR_LENGTH]="";
@@ -483,7 +483,7 @@ void* postProcessing::processData(int delflag) {
 						//get data
 						strcpy(currentfName,"");
 						pthread_mutex_lock(&mg);
-						int* receiverData = readFrameFromReceiver(currentfName,currentfIndex);
+						int* receiverData = readFrameFromReceiver(currentfName,currentfIndex);//if(currentfIndex!=-1)cout<<"--currentfIndex:"<<currentfIndex<<endl;
 						pthread_mutex_unlock(&mg);
 						if(setReceiverOnline()==OFFLINE_FLAG)
 							receiverData = NULL;
@@ -494,14 +494,14 @@ void* postProcessing::processData(int delflag) {
 
 						// determine if new Data for nth frame read
 						if (read_freq){
-							//delete if not new data
-							if (caught <= prevCaught)
-								currentfIndex = -1;
 #ifdef VERBOSE
 							std::cout << "caught:" << caught << " prevcaught:" << prevCaught << std::endl;
 #endif
-							prevCaught=caught;
-
+							//delete if not new data
+							if((caught == prevCaught) || (caught == -1))
+								currentfIndex = -1;
+							else if (currentfIndex!=-1)
+								prevCaught=caught;
 						}
 
 						//not garbage frame

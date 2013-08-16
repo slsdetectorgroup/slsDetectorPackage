@@ -2936,8 +2936,8 @@ slsDetectorDefs::detectorSettings slsDetector::setSettings( detectorSettings ise
 					readCalibrationFile(calfname,myMod->gain, myMod->offset);
 					setModule(*myMod);
 				}else{
-					std::cout << "Could not set settings" << endl;
-					setErrorMask((getErrorMask())|(SETTINGS_NOT_SET));
+					std::cout << "Could not open settings file" << endl;
+					setErrorMask((getErrorMask())|(SETTINGS_FILE_NOT_OPEN));
 					return  thisDetector->currentSettings;
 				}
 			}

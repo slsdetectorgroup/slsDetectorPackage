@@ -37,8 +37,9 @@ using namespace std;
 #define COULDNOT_SET_ROI					0x0000000000000004ULL
 #define RECEIVER_READ_FREQUENCY				0x0000000000000008ULL
 #define SETTINGS_NOT_SET					0x0000000000000010ULL
-#define COULDNOT_START_RECEIVER				0x0000000000000020ULL // default error like starting threads
-#define COULDNOT_STOP_RECEIVER				0x0000000000000040ULL
+#define SETTINGS_FILE_NOT_OPEN				0x0000000000000020ULL
+#define COULDNOT_START_RECEIVER				0x0000000000000040ULL // default error like starting threads
+#define COULDNOT_STOP_RECEIVER				0x0000000000000080ULL
 
 /** @short class returning all error messages for error mask */
 class errorDefs {
@@ -98,6 +99,9 @@ public:
 
 		if(slsErrorMask&SETTINGS_NOT_SET)
 			retval.append("Could not set settings.\n");
+
+		if(slsErrorMask&SETTINGS_FILE_NOT_OPEN)
+			retval.append("Could not open settings file. Verify if it exists.\n");
 
 		if(slsErrorMask&COULDNOT_START_RECEIVER)
 			retval.append("Could not start receiver.\n");

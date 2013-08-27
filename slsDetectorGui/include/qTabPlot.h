@@ -70,6 +70,7 @@ private:
 	QDoubleSpinBox 	*spinTimeGap;
 	QComboBox 		*comboTimeGapUnit;
 	QButtonGroup 	*btnGroupScan;
+	QButtonGroup	*btnGroupPlotType;
 
 	/** some Default Values */
 	static QString defaultPlotTitle;
@@ -97,12 +98,6 @@ private:
 	 */
 	void Initialization();
 
-	/** This enabled/disables the nth frame from frequency plot
-	 * @param enable enable/disable
-	 */
-	void EnablingNthFrameFunction(bool enable);
-
-
 
 public slots:
 	/** Set frequency between plots*/
@@ -110,7 +105,7 @@ public slots:
 
 	/** Enable Scan box
 	 */
-	void EnableScanBox();
+	void EnableScanBox(bool Histo=false);
 
 	/** Update all ranges, interpolate etc after cloning
 	 */

@@ -44,7 +44,8 @@ qTabPlot::qTabPlot(QWidget *parent,multiSlsDetector*& detector, qDrawPlot*& plot
 				spinNthFrame(0),
 				spinTimeGap(0),
 				comboTimeGapUnit(0),
-				btnGroupScan(0){
+				btnGroupScan(0),
+				btnGroupPlotType(0){
 	setupUi(this);
 	SetupWidgetWindow();
 	Initialization();
@@ -76,6 +77,12 @@ void qTabPlot::SetupWidgetWindow(){
 	btnGroupScan->addButton(radioLevel1,1);
 	btnGroupScan->addButton(radioFileIndex,2);
 	btnGroupScan->addButton(radioAllFrames,3);
+
+//plot type
+	btnGroupPlotType = new QButtonGroup(this);
+	btnGroupPlotType->addButton(radioNoPlot,0);
+	btnGroupPlotType->addButton(radioDataGraph,1);
+	btnGroupPlotType->addButton(radioHistogram,2);
 
 // Plot Axis
 	dispTitle->setEnabled(false);
@@ -146,19 +153,15 @@ void qTabPlot::SetupWidgetWindow(){
 	switch(myDet->getDetectorsType()){
 	case slsDetectorDefs::MYTHEN:
 		isOriginallyOneD = true;
-		chkPedestal->setEnabled(false);
-		btnRecalPedestal->setEnabled(false);
-		chkPedestal_2->setEnabled(false);
-		btnRecalPedestal_2->setEnabled(false);
+		pagePedestal->setEnabled(false);
+		pagePedestal_2->setEnabled(false);
 		chkBinary->setEnabled(false);
 		chkBinary_2->setEnabled(false);
 		break;
 	case slsDetectorDefs::EIGER:
 		isOriginallyOneD = false;
-		chkPedestal->setEnabled(false);
-		btnRecalPedestal->setEnabled(false);
-		chkPedestal_2->setEnabled(false);
-		btnRecalPedestal_2->setEnabled(false);
+		pagePedestal->setEnabled(false);
+		pagePedestal_2->setEnabled(false);
 		chkBinary->setEnabled(false);
 		chkBinary_2->setEnabled(false);
 		break;
@@ -231,6 +234,12 @@ void qTabPlot::SetPlotOptionsLeftPage(){
 
 
 void qTabPlot::Select1DPlot(bool b){
+#ifdef VERBOSE
+	if(b)
+		cout << "Selecting 1D Plot" << endl;
+	else
+		cout << "Selecting 2D Plot" << endl;
+#endif
 	isOneD = b;
 	lblFrom->setEnabled(false);
 	lblTo->setEnabled(false);
@@ -263,11 +272,9 @@ void qTabPlot::Select1DPlot(bool b){
 
 void qTabPlot::Initialization(){
 // Plot arguments box
-	connect(radioNoPlot, 	SIGNAL(toggled(bool)),this, SLOT(SetPlot()));
-	connect(radioHistogram, SIGNAL(toggled(bool)),this, SLOT(SetPlot()));
-	connect(radioDataGraph, SIGNAL(toggled(bool)),this, SLOT(SetPlot()));
+	connect(btnGroupPlotType,SIGNAL(buttonClicked(int)),this, SLOT(SetPlot()));
 // Scan box
-	connect(boxScan,	  SIGNAL(toggled(bool)),				   this, SLOT(EnableScanBox()));
+	connect(boxScan,	  SIGNAL(toggled(bool)),  this, SLOT(EnableScanBox()));
 // Snapshot box
 	connect(btnClone, 		SIGNAL(clicked()),myPlot, 	SLOT(ClonePlot()));
 	connect(btnCloseClones, SIGNAL(clicked()),myPlot, 	SLOT(CloseClones()));
@@ -350,6 +357,12 @@ void qTabPlot::Initialization(){
 
 
 void qTabPlot::EnablePersistency(bool enable){
+#ifdef VERBOSE
+	if(enable)
+		cout << "Enabling Persistency" << endl;
+	else
+		cout << "Disabling Persistency" << endl;
+#endif
 	lblPersistency->setEnabled(enable);
 	spinPersistency->setEnabled(enable);
 	if(enable)		myPlot->SetPersistency(spinPersistency->value());
@@ -362,6 +375,9 @@ void qTabPlot::EnablePersistency(bool enable){
 
 
 void qTabPlot::SetTitles(){
+#ifdef VERBOSE
+	cout << "Setting Plot Titles" << endl;
+#endif
 	// Plot Title
 	if(dispTitle->isEnabled())
 		myPlot->SetPlotTitlePrefix(dispTitle->text());
@@ -512,12 +528,8 @@ void qTabPlot::SetPlot(){
 		boxFrequency->setEnabled(false);
 		boxPlotAxis->setEnabled(false);
 		boxScan->setEnabled(false);
-	}else {
-		if(radioDataGraph->isChecked())
-			cout << " - DataGraph" << endl;
-		else
-			cout << " - Histogram" << endl;
-
+	}else if(radioDataGraph->isChecked()){
+		cout << " - DataGraph" << endl;
 		myPlot->EnablePlot(true);
 		Select1DPlot(isOriginallyOneD);
 		boxSnapshot->setEnabled(true);
@@ -527,19 +539,40 @@ void qTabPlot::SetPlot(){
 		if(!myPlot->isRunning())
 			EnableScanBox();
 	}
+	else{
+		//histogram and 2d scans dont work
+		if(boxScan->isChecked()){
+			qDefs::Message(qDefs::WARNING,"<nobr>Histogram cannot be used together with 2D Scan Plots.</nobr><br>"
+					"<nobr>Uncheck <b>2D Scan</b> plots to plot <b>Histograms</b></nobr>", "qTabPlot::SetPlot");
+			radioDataGraph->setChecked(true);
+			return;
+		}
+
+		cout << " - Histogram" << endl;
+		myPlot->EnablePlot(true);
+		Select1DPlot(isOriginallyOneD);
+		boxSnapshot->setEnabled(true);
+		boxSave->setEnabled(true);
+		boxFrequency->setEnabled(true);
+		boxPlotAxis->setEnabled(true);
+		if(!myPlot->isRunning())
+			EnableScanBox(true);
+		qDefs::Message(qDefs::INFORMATION,"<nobr>Please check the <b>Plot Histogram Options</b> below "
+				"before <b>Starting Acquitision</b></nobr>","qTabPlot::SetPlot");
+	}
 }
 
 
 //-------------------------------------------------------------------------------------------------------------------------------------------------
 
 void qTabPlot::SetFrequency(){
-
+#ifdef VERBOSE
+	cout << "Setting Plot Interval Frequency" << endl;
+#endif
 	disconnect(comboTimeGapUnit,SIGNAL(currentIndexChanged(int)),	this, SLOT(SetFrequency()));
 	disconnect(spinTimeGap,		SIGNAL(editingFinished()),			this, SLOT(SetFrequency()));
 	disconnect(spinNthFrame,	SIGNAL(editingFinished()),			this, SLOT(SetFrequency()));
 	disconnect(comboFrequency, SIGNAL(currentIndexChanged(int)),	this, SLOT(SetFrequency()));
-
-
 	double timeMS,acqPeriodMS;
 	double minPlotTimer = myPlot->GetMinimumPlotTimer();
 	char cMin[200];
@@ -665,80 +698,89 @@ void qTabPlot::SetFrequency(){
 	connect(spinTimeGap,	SIGNAL(editingFinished()),			this, SLOT(SetFrequency()));
 	connect(spinNthFrame,	SIGNAL(editingFinished()),			this, SLOT(SetFrequency()));
 	connect(comboFrequency, SIGNAL(currentIndexChanged(int)),	this, SLOT(SetFrequency()));
-
 	qDefs::checkErrorMessage(myDet,"qTabPlot::SetFrequency");
 }
 
 
 //-------------------------------------------------------------------------------------------------------------------------------------------------
 
-void qTabPlot::EnableScanBox(){
+void qTabPlot::EnableScanBox(bool Histo){
 #ifdef VERBOSE
-	cout << "Entering Enable Scan Box()" << endl;
+	cout << "Entering Enable Scan Box, Histo:" << Histo << endl;
 #endif
-	disconnect(radioNoPlot, 	SIGNAL(toggled(bool)),this, SLOT(SetPlot()));
-	disconnect(radioHistogram, 	SIGNAL(toggled(bool)),this, SLOT(SetPlot()));
-	disconnect(radioDataGraph, 	SIGNAL(toggled(bool)),this, SLOT(SetPlot()));
-	disconnect(boxScan,	  		SIGNAL(toggled(bool)),this, SLOT(EnableScanBox()));
+	disconnect(btnGroupPlotType,SIGNAL(buttonClicked(int)),this, SLOT(SetPlot()));
+	disconnect(boxScan,	  	SIGNAL(toggled(bool)),		this, SLOT(EnableScanBox()));
 
 	int mode0 = myDet->getScanMode(0);
 	int mode1 = myDet->getScanMode(1);
 	int ang;
 	bool angConvert = myDet->getAngularConversion(ang);
 
-	//enabling it after it was plotted
 	radioDataGraph->setEnabled(true);
-
+	radioHistogram->setEnabled(true);
+	chkSuperimpose->setEnabled(true);
+	pageAccumulate->setEnabled(true);
+	pageAccumulate_2->setEnabled(true);
+	if((myDet->getDetectorsType() == slsDetectorDefs::GOTTHARD) || (myDet->getDetectorsType() == slsDetectorDefs::MOENCH)){
+		pagePedestal->setEnabled(true);
+		pagePedestal_2->setEnabled(true);
+		chkBinary->setEnabled(true);
+		chkBinary_2->setEnabled(true);
+	}
 
 	//if angle plot or originally 2d, uncheck and disable scanbox
 	if ((angConvert) || (!isOriginallyOneD)){
 		boxScan->setChecked(false);
 		boxScan->setEnabled(false);
-		//disable histogram
-		radioHistogram->setEnabled(false);
-		if(radioHistogram->isChecked())
-			radioDataGraph->setChecked(true);
-		//angle only
-		if((angConvert)&&(chkSuperimpose->isChecked()))
-			chkSuperimpose->setChecked(false);
-		chkSuperimpose->setEnabled(!angConvert);
+
+		//persistency, accumulate, pedestal, binary
+		if(angConvert){
+			if(chkSuperimpose->isChecked())	chkSuperimpose->setChecked(false);
+			if(chkPedestal->isChecked())	chkPedestal->setChecked(false);
+			if(chkPedestal_2->isChecked())	chkPedestal_2->setChecked(false);
+			if(chkAccumulate->isChecked())	chkAccumulate->setChecked(false);
+			if(chkAccumulate_2->isChecked())chkAccumulate_2->setChecked(false);
+			if(chkBinary->isChecked())		chkBinary->setChecked(false);
+			if(chkBinary_2->isChecked())	chkBinary_2->setChecked(false);
+			pagePedestal->setEnabled(false);
+			pagePedestal_2->setEnabled(false);
+			chkBinary->setEnabled(false);
+			chkBinary_2->setEnabled(false);
+			pageAccumulate->setEnabled(false);
+			pageAccumulate_2->setEnabled(false);
+		}
+
+
+
 		myPlot->EnableAnglePlot(angConvert);
-		if(angConvert)
+		if(angConvert){
 			boxScan->setToolTip("<nobr>Only 1D Plots enabled for Angle Plots</nobr>");
+			//disable histogram
+			if(radioHistogram->isChecked()){
+				radioDataGraph->setChecked(true);
+				radioHistogram->setEnabled(false);
+			}
+		}
 	}
 
 	//originally1d && not angle plot
 	else{
 		boxScan->setToolTip("");
 		boxScan->setEnabled(true);
-		if(mode0 || mode1)
-			boxScan->setChecked(true);
-
-		//still 1d
-		if(!boxScan->isChecked()){
-			radioHistogram->setEnabled(true);
-			/*if(radioHistogram->isChecked())
-				EnablingNthFrameFunction(false);//just this
-				else	EnablingNthFrameFunction(true);	*/
-		}
+		/*if(mode0 || mode1)
+			boxScan->setChecked(true);*/
 
 		//2d enabled with boxscan
-		else{
+		if(boxScan->isChecked()){
+			//read every frame
 			disconnect(spinNthFrame,	SIGNAL(editingFinished()),			this, SLOT(SetFrequency()));
 			disconnect(comboFrequency, SIGNAL(currentIndexChanged(int)),	this, SLOT(SetFrequency()));
-
 			comboFrequency->setCurrentIndex(1);
 			spinNthFrame->setValue(1);
 			SetFrequency();
+			connect(spinNthFrame,	SIGNAL(editingFinished()),			this, SLOT(SetFrequency()));
+			connect(comboFrequency, SIGNAL(currentIndexChanged(int)),	this, SLOT(SetFrequency()));
 
-			//disable histogram for 2d
-			radioHistogram->setEnabled(false);
-			if(radioHistogram->isChecked())
-				radioDataGraph->setChecked(true);
-
-			/*//make sure nth frame frequency plot is disabled
-			EnablingNthFrameFunction(false);
-			*/
 			//enabling options
 			radioFileIndex->setEnabled(mode0||mode1);
 			if(mode0 && mode1){
@@ -751,118 +793,56 @@ void qTabPlot::EnableScanBox(){
 			//default is allframes if checked button is disabled
 			if(!btnGroupScan->checkedButton()->isEnabled())
 				radioAllFrames->setChecked(true);
-
-			connect(spinNthFrame,	SIGNAL(editingFinished()),			this, SLOT(SetFrequency()));
-			connect(comboFrequency, SIGNAL(currentIndexChanged(int)),	this, SLOT(SetFrequency()));
-
-
 		}
 	}
 
-	connect(radioNoPlot, 	SIGNAL(toggled(bool)),this, SLOT(SetPlot()));
-	connect(radioHistogram, SIGNAL(toggled(bool)),this, SLOT(SetPlot()));
-	connect(radioDataGraph, SIGNAL(toggled(bool)),this, SLOT(SetPlot()));
-	connect(boxScan,	 	SIGNAL(toggled(bool)),this, SLOT(EnableScanBox()));
 
-/*
-	int mode0 = myDet->getScanMode(0);
-	int mode1 = myDet->getScanMode(1);
-
-	//if it was checked before or disabled before, it remembers to check it again
-	bool checkedBefore = boxScan->isChecked();//||(!boxScan->isEnabled()));
-
-	int ang;
-	//none of these scan plotting options make sense if positions exists
-	bool positionsExist = myDet->getAngularConversion(ang);//myDet->getPositions();
-
-	qDefs::checkErrorMessage(myDet,"qTabPlot::EnableScanBox");
-
-	//only now enable/disable
-	boxScan->setEnabled((mode0||mode1)&&(!positionsExist));
-
-	//after plotting, enable datagraph if it was disabled while plotting(refresh)
-	radioDataGraph->setEnabled(true);
-
-
-	//if there are scan
-	if(boxScan->isEnabled()){
-		//disable histogram
-		if(radioHistogram->isChecked())
+	//histogram
+	if(radioHistogram->isChecked()){
+		//switch back to datagraph
+		if(!Histo)
 			radioDataGraph->setChecked(true);
-		radioHistogram->setEnabled(false);
 
-		//make sure nth frame frequency plot is disabled
-		EnablingNthFrameFunction(false);
+		pageHistogram->setEnabled(true);
+		pageHistogram_2->setEnabled(true);
+		stackedWidget->setCurrentIndex(stackedWidget->count()-1);
+		stackedWidget_2->setCurrentIndex(stackedWidget_2->count()-1);
+		box1D->setTitle(QString("1D Plot Options %1 - Histogram").arg(stackedWidget->currentIndex()+1));
+		box2D->setTitle(QString("2D Plot Options %1 - Histogram").arg(stackedWidget_2->currentIndex()+1));
 
-		//if 2d is chosen or not for scan
-		if(boxScan->isChecked()){
+		if(chkSuperimpose->isChecked())	chkSuperimpose->setChecked(false);
+		if(chkPedestal->isChecked())	chkPedestal->setChecked(false);
+		if(chkPedestal_2->isChecked())	chkPedestal_2->setChecked(false);
+		if(chkAccumulate->isChecked())	chkAccumulate->setChecked(false);
+		if(chkAccumulate_2->isChecked())chkAccumulate_2->setChecked(false);
+		if(chkBinary->isChecked())		chkBinary->setChecked(false);
+		if(chkBinary_2->isChecked())	chkBinary_2->setChecked(false);
+		pagePedestal->setEnabled(false);
+		pagePedestal_2->setEnabled(false);
+		chkBinary->setEnabled(false);
+		chkBinary_2->setEnabled(false);
+		pageAccumulate->setEnabled(false);
+		pageAccumulate_2->setEnabled(false);
 
-			boxScan->setChecked(checkedBefore);
-			//make sure nth frame frequency plot is disabled
-			EnablingNthFrameFunction(false);
+		//read every frame
+		disconnect(spinNthFrame,	SIGNAL(editingFinished()),			this, SLOT(SetFrequency()));
+		disconnect(comboFrequency, SIGNAL(currentIndexChanged(int)),	this, SLOT(SetFrequency()));
+		comboFrequency->setCurrentIndex(1);
+		spinNthFrame->setValue(1);
+		SetFrequency();
+		connect(spinNthFrame,	SIGNAL(editingFinished()),			this, SLOT(SetFrequency()));
+		connect(comboFrequency, SIGNAL(currentIndexChanged(int)),	this, SLOT(SetFrequency()));
 
-			//
-			if(mode0 && mode1){
-				if(!radioFileIndex->isChecked())	radioAllFrames->setChecked(true);
-				radioLevel0->setEnabled(false);
-				radioLevel1->setEnabled(false);
-			}else{
-				radioLevel0->setEnabled(mode0);
-				radioLevel1->setEnabled(mode1);
-			}
 
-			//only if level0 or level1 is checked
-			if((radioLevel0->isChecked())||(radioLevel1->isChecked())){
-				if(mode0)	radioLevel0->setChecked(true);
-				if(mode1)	radioLevel1->setChecked(true);
-			}
-		}
-	}
-	else{
-		//histogram for 1d
-		if(isOriginallyOneD){
-			radioHistogram->setEnabled(true);
-			if(radioHistogram->isChecked())
-				EnablingNthFrameFunction(false);
-			else
-				EnablingNthFrameFunction(true);
-		}
+	}else{
+		pageHistogram->setEnabled(false);
+		pageHistogram_2->setEnabled(false);
 	}
 
-
-	//positions
-	if((positionsExist)&&(chkSuperimpose->isChecked())) chkSuperimpose->setChecked(false);
-	chkSuperimpose->setEnabled(!positionsExist);
-	//box frequency should be enabled cuz its a normal 1d plot
-	//boxFrequency->setEnabled(positionsExist);
-	myPlot->EnableAnglePlot(positionsExist);
-
-*/
+	connect(btnGroupPlotType,SIGNAL(buttonClicked(int)),this, SLOT(SetPlot()));
+	connect(boxScan,	 	SIGNAL(toggled(bool)),	this, SLOT(EnableScanBox()));
 }
 
-
-//-------------------------------------------------------------------------------------------------------------------------------------------------
-
-void qTabPlot::EnablingNthFrameFunction(bool enable){
-#ifdef VERYVERBOSE
-	cout << "Enabling Nth Frame : " << enable << endl;
-#endif
-	QStandardItemModel* model = qobject_cast<QStandardItemModel*>(comboFrequency->model());
-	QStandardItem* item = model->itemFromIndex(model->index(1,	comboFrequency->modelColumn(), comboFrequency->rootModelIndex()));
-
-	//enabling/disabling is easy if it wasnt selected anyway
-	if(comboFrequency->currentIndex()!=1)
-		item->setEnabled(enable);
-	else{
-		//only when it was enabled before and now to disable is a problem
-		if(!enable){
-			spinTimeGap->setValue(myPlot->GetMinimumPlotTimer());
-			comboFrequency->setCurrentIndex(0);
-			item->setEnabled(false);
-		}
-	}
-
-}
 
 //-------------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -891,6 +871,15 @@ void qTabPlot::SetScanArgument(){
 	}
 
 
+	//histogram default  - set before setscanargument
+	myPlot->SetHistogram(radioHistogram->isChecked(),spinHistFrom->value(),spinHistTo->value(),spinHistSize->value());
+	if(radioHistogram->isChecked()){
+		dispXAxis->setText("Intensity");
+		dispYAxis->setText("Frequency");
+		myPlot->SetHistXAxisTitle("Intensity");
+		myPlot->SetHistYAxisTitle("Frequency");
+		Select1DPlot(true);
+	}
 
 	//angles (1D)
 	int ang;
@@ -900,12 +889,9 @@ void qTabPlot::SetScanArgument(){
 		Select1DPlot(true);
 	}
 
-	/*	bool histogram = radioHistogram->isChecked();
-	 * else if(histogram)*/
 
 	//1d with scan
 	if(boxScan->isChecked()){
-
 		myPlot->SetScanArgument(btnGroupScan->checkedId()+1);
 
 		switch(btnGroupScan->checkedId()){
@@ -931,79 +917,6 @@ void qTabPlot::SetScanArgument(){
 	}else
 		myPlot->SetScanArgument(qDefs::None);
 
-	/*
-	Select1DPlot(isOriginallyOneD);
-
-	int ang;
-	//if scans(1D or 2D)
-	if((boxScan->isEnabled())||(histogram)){
-		//setting the title according to the scans
-		Select1DPlot(isOriginallyOneD);
-
-
-	}//angles (1D)
-	else if(myDet->getAngularConversion(ang)){
-		dispXAxis->setText("Angles");
-		myPlot->SetHistXAxisTitle("Angles");
-		Select1DPlot(true);
-
-	}
-
-	//histogram
-	if(histogram){
-		//allFrames
-		myPlot->SetScanArgument(qDefs::AllFrames);
-
-		//default titles  for 2d scan
-		dispXAxis->setText("Channel Number");
-		myPlot->SetImageXAxisTitle("Channel Number");
-		dispZAxis->setText("Counts");
-		myPlot->SetImageZAxisTitle("Counts");
-		dispYAxis->setText("All Frames");
-		myPlot->SetImageYAxisTitle("All Frames");
-
-		//set plot to 2d
-		Select1DPlot(false);
-	}
-	//2d
-	else if((boxScan->isEnabled())&&(boxScan->isChecked())){
-
-		//let qdrawplot know which scan argument
-		myPlot->SetScanArgument(btnGroupScan->checkedId()+1);
-
-		//default titles  for 2d scan
-		dispXAxis->setText("Channel Number");
-		myPlot->SetImageXAxisTitle("Channel Number");
-		dispZAxis->setText("Counts");
-		myPlot->SetImageZAxisTitle("Counts");
-
-		//titles for y of 2d scan
-		switch(btnGroupScan->checkedId()){
-		case 0://level0
-			dispYAxis->setText("Scan Level 0");
-			myPlot->SetImageYAxisTitle("Scan Level 0");
-			break;
-		case 1://level1
-			dispYAxis->setText("Scan Level 1");
-			myPlot->SetImageYAxisTitle("Scan Level 1");
-			break;
-			break;
-		case 2://file index
-			dispYAxis->setText("Frame Index");
-			myPlot->SetImageYAxisTitle("Frame Index");
-			break;
-		case 3://all frames
-			dispYAxis->setText("All Frames");
-			myPlot->SetImageYAxisTitle("All Frames");
-			break;
-		}
-
-		//set plot to 2d
-		Select1DPlot(false);
-
-	}else //done here so that it isnt set by default each time
-		myPlot->SetScanArgument(qDefs::None);
-*/
 	qDefs::checkErrorMessage(myDet,"qTabPlot::SetScanArgument");
 
 }
@@ -1019,18 +932,19 @@ void qTabPlot::Refresh(){
 		if (!radioNoPlot->isChecked())
 			boxFrequency->setEnabled(true);
 		connect(boxScan,	  SIGNAL(toggled(bool)),				   this, SLOT(EnableScanBox()));
-		EnableScanBox();
+		EnableScanBox(true);
 		SetFrequency();
 
 	}else{
 		boxFrequency->setEnabled(false);
 		disconnect(boxScan,	  SIGNAL(toggled(bool)),				   this, SLOT(EnableScanBox()));
 		boxScan->setEnabled(false);
-		//to toggle between no plot and the plot mode chosen while pltting
+		pageHistogram->setEnabled(false);
+		pageHistogram_2->setEnabled(false);
 		if(radioHistogram->isChecked())
 			radioDataGraph->setEnabled(false);
-		radioHistogram->setEnabled(false);
-
+		else
+			radioHistogram->setEnabled(false);
 	}
 #ifdef VERBOSE
 	cout  << "**Updated Plot Tab" << endl << endl;

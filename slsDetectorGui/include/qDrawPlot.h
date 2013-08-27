@@ -25,6 +25,14 @@ class qCloneWidget;
 #include <QString>
 #include "qwt_symbol.h"
 
+
+#include <QVector>
+#include <qwt_series_data.h>
+#include <qwt_plot_histogram.h>
+#include <qwt_plot_grid.h>
+#include <qwt_column_symbol.h>
+#include <qpen.h>
+
 /** C++ Include Headers */
 
 
@@ -133,6 +141,9 @@ public:
 
 	/** set binary range */
 	void SetBinary(bool enable, int from=0, int to=0);
+
+	/** Enable/Disable Histogram */
+	void SetHistogram(bool enable,int min=0, int max=0, int size=0){histogram = enable;histFrom=min;histTo=max;histSize=size;};
 
 public slots:
 /** To select 1D or 2D plot
@@ -543,6 +554,17 @@ QLabel *lblMaxDisp;
 QLabel *lblSumDisp;
 
 bool displayStatistics;
+
+
+/* histogram */
+bool histogram;
+int histFrom;
+int histTo;
+int histSize;
+QwtPlotGrid *grid;
+QwtPlotHistogram	*plotHistogram;
+QVector<QwtIntervalSample> histogramSamples;
+
 
 
 

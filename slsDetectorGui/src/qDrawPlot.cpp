@@ -9,7 +9,6 @@
 #include "qCloneWidget.h"
 #include "slsDetector.h"
 #include"fileIOStatic.h"
-
 // Project Class Headers
 #include "slsDetector.h"
 #include "multiSlsDetector.h"
@@ -19,6 +18,8 @@
 #include <QImage>
 #include <QPainter>
 #include <QFileDialog>
+//#include "qwt_double_interval.h"
+#include "qwt_series_data.h"
 // C++ Include Headers
 #include <iostream>
 #include <string>
@@ -194,6 +195,20 @@ void qDrawPlot::SetupWidgetWindow(){
 	binary = false;
 	binaryFrom = 0;
 	binaryTo = 0;
+
+	//histogram
+	histogram = false;
+	histFrom = 0;
+	histTo = 0;
+	histSize = 0;
+	grid = new QwtPlotGrid;
+		grid->enableXMin(true);
+		grid->enableYMin(true);
+		grid->setMajPen(QPen(Qt::black, 0, Qt::DotLine));
+		grid->setMinPen(QPen(Qt::gray, 0 , Qt::DotLine));
+	plotHistogram = new QwtPlotHistogram();
+	plotHistogram->setStyle(QwtPlotHistogram::Columns);
+
 
 
 //widget related initialization
@@ -464,9 +479,10 @@ bool qDrawPlot::StartOrStopThread(bool start){
 
 		//refixing all the min and max for all scans
 		if (scanArgument == qDefs::None);
-		else
+		else{
+			plot2D->GetPlot()->UnZoom();
 			plot2D->GetPlot()->SetZoom(-0.5,startPixel,nPixelsX,endPixel-startPixel);
-
+		}
 
 		cout << "Starting new acquisition thread ...." << endl;
 		// Start acquiring data from server
@@ -498,11 +514,6 @@ void qDrawPlot::SetScanArgument(int scanArg){
 	if(plot_in_scope==1) Clear1DPlot();
 
 
-	maxPixelsY = 0;
-	minPixelsY = 0;
-	nPixelsX = myDet->getTotalNumberOfChannels(slsDetectorDefs::X);
-	nPixelsY = myDet->getTotalNumberOfChannels(slsDetectorDefs::Y);
-
 	// Number of Exposures - must be calculated here to get npixelsy for allframes/frameindex scans
 	int numFrames = (isFrameEnabled)*((int)myDet->setTimer(slsDetectorDefs::FRAME_NUMBER,-1));
 	int numTriggers = (isTriggerEnabled)*((int)myDet->setTimer(slsDetectorDefs::CYCLES_NUMBER,-1));
@@ -518,6 +529,12 @@ void qDrawPlot::SetScanArgument(int scanArg){
 	number_of_exposures = number_of_frames * numScan0 * numScan1;
 	if(anglePlot) number_of_exposures = numScan0 * numScan1;// * numPos;
 	cout << "\tNumber of Exposures Per Measurement:" << number_of_exposures << endl;
+
+
+	maxPixelsY = 0;
+	minPixelsY = 0;
+	nPixelsX = myDet->getTotalNumberOfChannels(slsDetectorDefs::X);
+	nPixelsY = myDet->getTotalNumberOfChannels(slsDetectorDefs::Y);
 
 	//cannot do this in between measurements , so update instantly
 	if(scanArgument==qDefs::Level0){
@@ -568,6 +585,30 @@ void qDrawPlot::SetScanArgument(int scanArg){
 		for(int px=0;px<(int)nPixelsX;px++)
 			lastImageArray[py*nPixelsX+px] = 0;
 
+
+	//histogram
+	if(histogram){
+		histogramSamples.resize(0);
+		int iloop = 0;
+		int min = iloop*histSize + histFrom;
+		int max = (iloop+1)*histSize + histFrom;
+		while(min < histTo){
+			histogramSamples.resize(iloop+1);
+			histogramSamples[iloop].interval.setInterval(min,max);
+			histogramSamples[iloop].value = 0;
+			iloop++;
+			min = max;
+			max = (iloop+1)*histSize + histFrom;
+			if(max>histTo)
+				max = histTo;
+		}
+		//print values
+		cout << "Histogram Intervals:" << endl;
+		for(int j=0;j<histogramSamples.size();j++){
+			cout<<j<<":\tmin:"<<histogramSamples[j].interval.minValue()<<""
+					"\tmax:"<<histogramSamples[j].interval.maxValue()<<"\t:"<<histogramSamples[j].value<<endl;
+		}
+	}
 
 	UnlockLastImageArray();
 
@@ -816,8 +857,6 @@ int qDrawPlot::GetData(detectorData *data,int fIndex){
 			lastImageNumber= currentFrame+1;
 			//title
 			imageTitle = temp_title;
-			cout<<"lastImageNumber:"<<lastImageNumber<<endl;
-			cout<<"currentScanDivLevel:"<<currentScanDivLevel<<endl;
 			//copy data
 			for(unsigned int px=0;px<nPixelsX;px++)	lastImageArray[currentScanDivLevel*nPixelsX+px] += data->values[px];
 			UnlockLastImageArray();
@@ -885,54 +924,80 @@ int qDrawPlot::GetData(detectorData *data,int fIndex){
 			if(plot_in_scope==1){
 				// Titles
 				histTitle[0] = temp_title;
-				// Persistency
-				if(currentPersistency < persistency)currentPersistency++;
-				else currentPersistency=persistency;
-				nHists = currentPersistency+1;
-				histNBins = nPixelsX;
 
-				// copy data
-				for(int i=currentPersistency;i>0;i--)
-					memcpy(histYAxis[i],histYAxis[i-1],nPixelsX*sizeof(double));
-
-				//recalculating pedestal
-				if(startPedestalCal){
-					//start adding frames to get to the pedestal value
-					if(pedestalCount<NUM_PEDESTAL_FRAMES){
-						for(unsigned int px=0;px<nPixelsX;px++)
-							tempPedestalVals[px] += data->values[px];
-						memcpy(histYAxis[0],data->values,nPixelsX*sizeof(double));
-						pedestalCount++;
-					}
-					//calculate the pedestal value
-					if(pedestalCount==NUM_PEDESTAL_FRAMES){
-						cout << "Pedestal Calculated" << endl;
-						for(unsigned int px=0;px<nPixelsX;px++)
-							tempPedestalVals[px] = tempPedestalVals[px]/(double)NUM_PEDESTAL_FRAMES;
-						memcpy(pedestalVals,tempPedestalVals,nPixelsX*sizeof(double));
-						startPedestalCal = 0;
-					}
-				}
-
-				//normal data
-				if(((!pedestal)&(!accumulate))	|| (resetAccumulate)){
-					memcpy(histYAxis[0],data->values,nPixelsX*sizeof(double));
+				//histogram
+				if(histogram){
 					resetAccumulate = false;
+					lastImageNumber= currentFrame+1;
+
+					int numValues = nPixelsX;
+					if(originally2D)
+						numValues = nPixelsX*nPixelsY;
+
+					for(int i=0;i<numValues;i++){
+						//ignore outside limits
+						if ((data->values[i] <=  histFrom) || (data->values[i] >= histTo))
+							continue;
+						//check for intervals, increment if validates
+						for(int j=0;j<histogramSamples.size();j++){
+							if(histogramSamples[j].interval.contains(data->values[i]))
+								histogramSamples[j].value += 1;
+
+						}
+					}
+
 				}
-				//pedestal or accumulate
+				//not histogram
 				else{
-					for(unsigned int px=0;px<(nPixelsX*nPixelsY);px++){
-						if(accumulate)
-							histYAxis[0][px] += data->values[px];
-						else
-							histYAxis[0][px] = data->values[px];
-						if(pedestal)
-							histYAxis[0][px] = histYAxis[0][px] - (pedestalVals[px]);
-						if(binary) {
-							if ((histYAxis[0][px] >= binaryFrom) && (histYAxis[0][px] <= binaryTo))
-								histYAxis[0][px] = 1;
+					// Persistency
+					if(currentPersistency < persistency)currentPersistency++;
+					else currentPersistency=persistency;
+					nHists = currentPersistency+1;
+					histNBins = nPixelsX;
+
+					// copy data
+					for(int i=currentPersistency;i>0;i--)
+						memcpy(histYAxis[i],histYAxis[i-1],nPixelsX*sizeof(double));
+
+					//recalculating pedestal
+					if(startPedestalCal){
+						//start adding frames to get to the pedestal value
+						if(pedestalCount<NUM_PEDESTAL_FRAMES){
+							for(unsigned int px=0;px<nPixelsX;px++)
+								tempPedestalVals[px] += data->values[px];
+							memcpy(histYAxis[0],data->values,nPixelsX*sizeof(double));
+							pedestalCount++;
+						}
+						//calculate the pedestal value
+						if(pedestalCount==NUM_PEDESTAL_FRAMES){
+							cout << "Pedestal Calculated" << endl;
+							for(unsigned int px=0;px<nPixelsX;px++)
+								tempPedestalVals[px] = tempPedestalVals[px]/(double)NUM_PEDESTAL_FRAMES;
+							memcpy(pedestalVals,tempPedestalVals,nPixelsX*sizeof(double));
+							startPedestalCal = 0;
+						}
+					}
+
+					//normal data
+					if(((!pedestal)&(!accumulate))	|| (resetAccumulate)){
+						memcpy(histYAxis[0],data->values,nPixelsX*sizeof(double));
+						resetAccumulate = false;
+					}
+					//pedestal or accumulate
+					else{
+						for(unsigned int px=0;px<(nPixelsX*nPixelsY);px++){
+							if(accumulate)
+								histYAxis[0][px] += data->values[px];
 							else
-								histYAxis[0][px] = 0;
+								histYAxis[0][px] = data->values[px];
+							if(pedestal)
+								histYAxis[0][px] = histYAxis[0][px] - (pedestalVals[px]);
+							if(binary) {
+								if ((histYAxis[0][px] >= binaryFrom) && (histYAxis[0][px] <= binaryTo))
+									histYAxis[0][px] = 1;
+								else
+									histYAxis[0][px] = 0;
+							}
 						}
 					}
 				}
@@ -955,7 +1020,6 @@ int qDrawPlot::GetData(detectorData *data,int fIndex){
 						cout << "Pedestal Calculated" << endl;
 						for(unsigned int px=0;px<(nPixelsX*nPixelsY);px++)
 							tempPedestalVals[px] = tempPedestalVals[px]/(double)NUM_PEDESTAL_FRAMES;
-
 						memcpy(pedestalVals,tempPedestalVals,nPixelsX*nPixelsY*sizeof(double));
 						startPedestalCal = 0;
 					}
@@ -1012,9 +1076,9 @@ int qDrawPlot::GetAcquisitionFinishedCallBack(double currentProgress,int detecto
 
 
 int qDrawPlot::AcquisitionFinished(double currentProgress, int detectorStatus){
-//#ifdef VERBOSE
+#ifdef VERBOSE
 	cout << "\nEntering Acquisition Finished with status " ;
-//#endif
+#endif
 	QString status = QString(slsDetectorBase::runStatusType(slsDetectorDefs::runStatus(detectorStatus)).c_str());
 #ifdef VERBOSE
 	cout << status.toAscii().constData() << " and progress " << currentProgress << endl;
@@ -1078,9 +1142,9 @@ int qDrawPlot::GetMeasurementFinishedCallBack(int currentMeasurementIndex, int f
 
 
 int qDrawPlot::MeasurementFinished(int currentMeasurementIndex, int fileIndex){
-//#ifdef VERBOSE
+#ifdef VERBOSE
 	cout << "Entering Measurement Finished with currentMeasurement " << currentMeasurementIndex << " and fileIndex " << fileIndex << endl;
-//#endif
+#endif
 	//to make sure it plots the last frame before setting lastimagearray all to 0
 	//if(plot_in_scope==2)
 		usleep(500000);
@@ -1130,8 +1194,10 @@ void qDrawPlot::SelectPlot(int i){ //1 for 1D otherwise 2D
 
 
 void qDrawPlot::Clear1DPlot(){
-	for(QVector<SlsQtH1D*>::iterator h = plot1D_hists.begin();
-			h!=plot1D_hists.end();h++) (*h)->Detach(plot1D); //clear plot
+	for(QVector<SlsQtH1D*>::iterator h = plot1D_hists.begin(); h!=plot1D_hists.end();h++)
+		(*h)->Detach(plot1D);
+
+	plotHistogram->detach();
 }
 
 
@@ -1153,31 +1219,46 @@ void qDrawPlot::UpdatePlot(){
 			if(plot_in_scope==1){
 				if(lastImageNumber){
 #ifdef VERYVERBOSE
-					cout << "*Last Image Number:" << lastImageNumber << endl;
+					cout << "Last Image Number:" << lastImageNumber << endl;
 #endif
 					if(histNBins){
 						Clear1DPlot();
 						plot1D->SetXTitle(histXAxisTitle.toAscii().constData());
 						plot1D->SetYTitle(histYAxisTitle.toAscii().constData());
-						for(int hist_num=0;hist_num<(int)nHists;hist_num++){
-							SlsQtH1D*  h;
-							if(hist_num+1>plot1D_hists.size()){
-								if(anglePlot)
-									plot1D_hists.append(h=new SlsQtH1D("",histNBins,histXAngleAxis,histYAngleAxis));
-								else
-									plot1D_hists.append(h=new SlsQtH1D("",histNBins,histXAxis,GetHistYAxis(hist_num)));
-								h->SetLineColor(hist_num+1);
-							}else{
-								h=plot1D_hists.at(hist_num);
-								if(anglePlot)
-									h->SetData(histNBins,histXAngleAxis,histYAngleAxis);
-								else
-									h->SetData(histNBins,histXAxis,GetHistYAxis(hist_num));
-							}
-							SetStyle(h);
+
+						//histogram
+						if(histogram){
+							plotHistogram->setData(new QwtIntervalSeriesData(histogramSamples));
+							plotHistogram->setPen(QPen(Qt::red));
+							plotHistogram->setBrush(QBrush(Qt::red,Qt::Dense4Pattern));//Qt::SolidPattern
 							histFrameIndexTitle->setText(GetHistTitle(0));
-							//h->setTitle(GetHistTitle(hist_num));
-							h->Attach(plot1D);
+							plotHistogram->attach(plot1D);
+							plot1D->SetZoomBase(plotHistogram->boundingRect().left(),0,
+									plotHistogram->boundingRect().width(),plotHistogram->boundingRect().height());
+						}
+						//not histogram
+						else{
+							for(int hist_num=0;hist_num<(int)nHists;hist_num++){
+								SlsQtH1D*  h;
+								if(hist_num+1>plot1D_hists.size()){
+									if(anglePlot)
+										plot1D_hists.append(h=new SlsQtH1D("",histNBins,histXAngleAxis,histYAngleAxis));
+									else
+										plot1D_hists.append(h=new SlsQtH1D("",histNBins,histXAxis,GetHistYAxis(hist_num)));
+									h->SetLineColor(hist_num+1);
+								}else{
+									h=plot1D_hists.at(hist_num);
+									if(anglePlot)
+										h->SetData(histNBins,histXAngleAxis,histYAngleAxis);
+									else
+										h->SetData(histNBins,histXAxis,GetHistYAxis(hist_num));
+								}
+								SetStyle(h);
+								histFrameIndexTitle->setText(GetHistTitle(0));
+								//h->setTitle(GetHistTitle(hist_num));
+								h->Attach(plot1D);
+							}
+							plot1D->Update();
 						}
 						// update range if required
 						if(XYRangeChanged){
@@ -1209,13 +1290,15 @@ void qDrawPlot::UpdatePlot(){
 				if(lastImageArray){
 					if(lastImageNumber&&last_plot_number!=(int)lastImageNumber && //there is a new plot
 							nPixelsX>0&&nPixelsY>0){
-						//plot2D->GetPlot()->SetData(nPixelsX,-0.5,nPixelsX-0.5,nPixelsY,-0.5,nPixelsY-0.5,lastImageArray);
 						plot2D->GetPlot()->SetData(nPixelsX,-0.5,nPixelsX-0.5,nPixelsY,startPixel,endPixel,lastImageArray);
 						plot2D->setTitle(GetImageTitle());
 						plot2D->SetXTitle(imageXAxisTitle);
 						plot2D->SetYTitle(imageYAxisTitle);
 						plot2D->SetZTitle(imageZAxisTitle);
-						plot2D->UpdateNKeepSetRangeIfSet(); //this will keep a "set" z range, and call Plot()->Update();
+						plot2D->UpdateNKeepSetRangeIfSet(); //keep a "set" z range, and call Update();
+						//to solve the problems regarding zooming out and zoom in
+
+						//plot2D->GetPlot()->SetZoom(-0.5,startPixel,nPixelsX,endPixel-startPixel);
 					}
 					// update range if required
 					if(XYRangeChanged){
@@ -1227,6 +1310,7 @@ void qDrawPlot::UpdatePlot(){
 						plot2D->GetPlot()->SetYMinMax(XYRangeValues[qDefs::YMINIMUM],XYRangeValues[qDefs::YMAXIMUM]);
 						XYRangeChanged	= false;
 					}
+					plot2D->GetPlot()->Update();
 					//Display Statistics
 					if(displayStatistics){
 						double min=0,max=0,sum=0;
@@ -1238,16 +1322,14 @@ void qDrawPlot::UpdatePlot(){
 					if(saveAll) SavePlotAutomatic();
 				}
 			}
-			//}
 			last_plot_number=lastImageNumber;
-
 			//set plot title
 			boxPlot->setTitle(plotTitle);
 		}
 		UnlockLastImageArray();
 	}
 
-	//if acqq stopped before this line, it continues from here, shouldnt restart plotting timer
+	//if acq stopped before this line, it continues from here, shouldnt restart plotting timer
 	if(!stop_signal){
 		if(!frameFactor)
 			plot_update_timer->start((int)timerValue);

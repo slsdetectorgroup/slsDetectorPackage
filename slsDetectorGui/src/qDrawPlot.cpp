@@ -483,8 +483,6 @@ bool qDrawPlot::StartOrStopThread(bool start){
 		//refixing all the min and max for all scans
 		if (scanArgument == qDefs::None);
 		else{
-			//plot2D->GetPlot()->UnZoom();
-
 			plot2D->GetPlot()->SetXMinMax(-0.5,nPixelsX+0.5);
 			plot2D->GetPlot()->SetYMinMax(startPixel,endPixel);
 			plot2D->GetPlot()->SetZoom(-0.5,startPixel,nPixelsX,endPixel-startPixel);

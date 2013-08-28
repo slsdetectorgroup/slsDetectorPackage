@@ -458,6 +458,9 @@ int qDrawPlot::ResetDaqForGui(){
 
 
 bool qDrawPlot::StartOrStopThread(bool start){
+#ifdef VERBOSE
+	cout << "StartOrStopThread:" << start << endl;
+#endif
 	static bool firstTime = true;
 	static bool             gui_acquisition_thread_running = 0;
 	static pthread_t        gui_acquisition_thread;
@@ -480,8 +483,12 @@ bool qDrawPlot::StartOrStopThread(bool start){
 		//refixing all the min and max for all scans
 		if (scanArgument == qDefs::None);
 		else{
-			plot2D->GetPlot()->UnZoom();
+			//plot2D->GetPlot()->UnZoom();
+
+			plot2D->GetPlot()->SetXMinMax(-0.5,nPixelsX+0.5);
+			plot2D->GetPlot()->SetYMinMax(startPixel,endPixel);
 			plot2D->GetPlot()->SetZoom(-0.5,startPixel,nPixelsX,endPixel-startPixel);
+			plot2D->GetPlot()->UnZoom();
 		}
 
 		cout << "Starting new acquisition thread ...." << endl;
@@ -1296,9 +1303,6 @@ void qDrawPlot::UpdatePlot(){
 						plot2D->SetYTitle(imageYAxisTitle);
 						plot2D->SetZTitle(imageZAxisTitle);
 						plot2D->UpdateNKeepSetRangeIfSet(); //keep a "set" z range, and call Update();
-						//to solve the problems regarding zooming out and zoom in
-
-						//plot2D->GetPlot()->SetZoom(-0.5,startPixel,nPixelsX,endPixel-startPixel);
 					}
 					// update range if required
 					if(XYRangeChanged){

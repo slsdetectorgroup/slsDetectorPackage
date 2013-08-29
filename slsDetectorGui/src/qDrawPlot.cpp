@@ -201,15 +201,18 @@ void qDrawPlot::SetupWidgetWindow(){
 	histFrom = 0;
 	histTo = 0;
 	histSize = 0;
+	/*
 	grid = new QwtPlotGrid;
 		grid->enableXMin(true);
 		grid->enableYMin(true);
 		grid->setMajPen(QPen(Qt::black, 0, Qt::DotLine));
 		grid->setMinPen(QPen(Qt::gray, 0 , Qt::DotLine));
+		*/
 	plotHistogram = new QwtPlotHistogram();
 	plotHistogram->setStyle(QwtPlotHistogram::Columns);
 
 
+	firstPlot = false;
 
 //widget related initialization
 
@@ -480,20 +483,18 @@ bool qDrawPlot::StartOrStopThread(bool start){
 		//sets up the measurement parameters
 		SetupMeasurement();
 
-		//refixing all the min and max for all scans
-		if (scanArgument == qDefs::None);
-		else{
-			plot2D->GetPlot()->SetXMinMax(-0.5,nPixelsX+0.5);
-			plot2D->GetPlot()->SetYMinMax(startPixel,endPixel);
-			plot2D->GetPlot()->SetZoom(-0.5,startPixel,nPixelsX,endPixel-startPixel);
-			plot2D->GetPlot()->UnZoom();
-		}
+		//refixing all the zooming
+		plot2D->GetPlot()->SetXMinMax(-0.5,nPixelsX+0.5);
+		plot2D->GetPlot()->SetYMinMax(startPixel,endPixel);
+		plot2D->GetPlot()->SetZoom(-0.5,startPixel,nPixelsX,endPixel-startPixel);
+		plot2D->GetPlot()->UnZoom();
+
 
 		cout << "Starting new acquisition thread ...." << endl;
 		// Start acquiring data from server
 		if(!firstTime) pthread_join(gui_acquisition_thread,NULL);//wait until he's finished, ie. exits
 		pthread_create(&gui_acquisition_thread, NULL,DataStartAcquireThread, (void*) this);
-		firstTime = false;
+		firstPlot = true;
 		// This is set here and later reset to zero when all the plotting is done
 		// This is manually done instead of keeping track of thread because
 		// this thread returns immediately after executing the acquire command
@@ -1238,8 +1239,10 @@ void qDrawPlot::UpdatePlot(){
 							plotHistogram->setBrush(QBrush(Qt::red,Qt::Dense4Pattern));//Qt::SolidPattern
 							histFrameIndexTitle->setText(GetHistTitle(0));
 							plotHistogram->attach(plot1D);
-							plot1D->SetZoomBase(plotHistogram->boundingRect().left(),0,
-									plotHistogram->boundingRect().width(),plotHistogram->boundingRect().height());
+							//refixing all the zooming
+							plot1D->SetXMinMax(histFrom,histTo);
+							plot1D->SetYMinMax(0,plotHistogram->boundingRect().height());
+							plot1D->SetZoomBase(0,0,nPixelsX,plotHistogram->boundingRect().height());
 						}
 						//not histogram
 						else{
@@ -1262,8 +1265,15 @@ void qDrawPlot::UpdatePlot(){
 								histFrameIndexTitle->setText(GetHistTitle(0));
 								//h->setTitle(GetHistTitle(hist_num));
 								h->Attach(plot1D);
+								//refixing all the zooming
+								if(firstPlot){
+									plot1D->SetXMinMax(h->minXValue(),h->maxXValue());
+									plot1D->SetYMinMax(h->minYValue(),h->maxYValue());
+									plot1D->SetZoomBase(h->minXValue(),h->minYValue(),
+											h->maxXValue()-h->minXValue(),h->maxYValue()-h->minYValue());
+									firstPlot = false;
+								}
 							}
-							plot1D->Update();
 						}
 						// update range if required
 						if(XYRangeChanged){
@@ -1273,7 +1283,10 @@ void qDrawPlot::UpdatePlot(){
 							if(!IsXYRange[qDefs::YMAXIMUM])		XYRangeValues[qDefs::YMAXIMUM]= plot1D->GetYMaximum();
 							plot1D->SetXMinMax(XYRangeValues[qDefs::XMINIMUM],XYRangeValues[qDefs::XMAXIMUM]);
 							plot1D->SetYMinMax(XYRangeValues[qDefs::YMINIMUM],XYRangeValues[qDefs::YMAXIMUM]);
-							XYRangeChanged	= false;
+							//Should not be reset for histogram,
+							//that is the only way to zoom in (new plots are zoomed out as its different each time)
+							if(!histogram)
+								XYRangeChanged	= false;
 						}
 						//Display Statistics
 						if(displayStatistics){
@@ -1631,11 +1644,13 @@ void qDrawPlot::DisableZoom(bool disable){
 
 int qDrawPlot::UpdateTrimbitPlot(bool fromDetector,bool Histogram){
 	int ret,i,actualPixelsX;
-	//double *temp=0,*trimXAxis=0,*trimYAxis=0;
+	double min=0,max=0,sum=0;
 #ifdef VERBOSE
 	if(fromDetector)	cout << "Geting Trimbits from Detector" << endl;
 	else				cout << "Getting Trimbits from Shared Memory" << endl;
 #endif
+
+	LockLastImageArray();
 
 	slsDetectorDefs::detectorType detType  = myDet->getDetectorsType();
 	if(detType == slsDetectorDefs::MYTHEN){
@@ -1646,6 +1661,7 @@ int qDrawPlot::UpdateTrimbitPlot(bool fromDetector,bool Histogram){
 		ret = myDet->getChanRegs(histTrimbits,fromDetector);
 		if(!ret){
 			qDefs::Message(qDefs::WARNING,"No Trimbit data found in shared memory.","qDrawPlot::UpdateTrimbitPlot");
+			UnlockLastImageArray();
 			return qDefs::FAIL;
 		}
 #ifdef VERBOSE
@@ -1654,23 +1670,30 @@ int qDrawPlot::UpdateTrimbitPlot(bool fromDetector,bool Histogram){
 
 		qDefs::checkErrorMessage(myDet,"qDrawPlot::UpdateTrimbitPlot");
 
-		//defining axes
-		if(Histogram)	nPixelsX = TRIM_HISTOGRAM_XMAX+1;
-		else			nPixelsX = actualPixelsX;
-
-		if(histXAxis)		delete [] histXAxis;	histXAxis 	= new double [nPixelsX];
-		if(histYAxis[0])	delete [] histYAxis[0]; histYAxis[0]= new double [nPixelsX];
-		//initializing
-		for(unsigned int px=0;px<(int)nPixelsX;px++)	histXAxis[px] = px;
-		for(i=0;i<nPixelsX;i++)							histYAxis[0][i]  = 0;
-
 		//clear/select plot and set titles
-		Clear1DPlot();
 		Select1DPlot();
+		Clear1DPlot();
+
+		//Display Statistics
+		if(displayStatistics){
+			GetStatistics(min,max,sum,histTrimbits,actualPixelsX);
+			lblMinDisp->setText(QString("%1").arg(min));
+			lblMaxDisp->setText(QString("%1").arg(max));
+			lblSumDisp->setText(QString("%1").arg(sum));
+		}
 
 
 		if(!Histogram){
 			cout << "Data Graph:" << nPixelsX << endl;
+
+			//initialize
+			nPixelsX = actualPixelsX;
+			if(histXAxis)		delete [] histXAxis;	histXAxis 	= new double [nPixelsX];
+			if(histYAxis[0])	delete [] histYAxis[0]; histYAxis[0]= new double [nPixelsX];
+			//initializing
+			for(unsigned int px=0;px<(int)nPixelsX;px++)	histXAxis[px] = px;
+			for(i=0;i<nPixelsX;i++)							histYAxis[0][i]  = 0;
+
 			//data
 			memcpy(histYAxis[0],histTrimbits,nPixelsX*sizeof(double));
 			//title
@@ -1678,59 +1701,59 @@ int qDrawPlot::UpdateTrimbitPlot(bool fromDetector,bool Histogram){
 			plot1D->SetXTitle("Channel Number");
 			plot1D->SetYTitle("Trimbits");
 			//set plot parameters
+			plot1D->SetXMinMax(0,nPixelsX);
+			plot1D->SetZoomBase(0,0,nPixelsX,plotHistogram->boundingRect().height());
 			SlsQtH1D*  h;
 			plot1D_hists.append(h=new SlsQtH1D("",nPixelsX,histXAxis,histYAxis[0]));
 			h->SetLineColor(1);
-			h->setTitle(GetHistTitle(0));
+			histFrameIndexTitle->setText(GetHistTitle(0));
 			//attach plot
 			h->Attach(plot1D);
+			//refixing all the zooming
+			plot1D->SetXMinMax(h->minXValue(),h->maxXValue());
+			plot1D->SetYMinMax(h->minYValue(),h->maxYValue());
+			plot1D->SetZoomBase(h->minXValue(),h->minYValue(),
+					h->maxXValue()-h->minXValue(),h->maxYValue()-h->minYValue());
 		}
 
 		else{
-			cout << "Histogram: " << nPixelsX-1 << endl;
-			//data
-			int value =0;
+			cout << "Histogram: " << TRIM_HISTOGRAM_XMAX << endl;
+
+			//create intervals
+			histogramSamples.resize(TRIM_HISTOGRAM_XMAX+1);
+			for(i=0; i<TRIM_HISTOGRAM_XMAX+1; i++){
+				histogramSamples[i].interval.setInterval(i,i+1);
+				histogramSamples[i].value = 0;
+			}
+
+			//fill histogram values
+			int value = 0;
 			for(i=0;i<actualPixelsX;i++){
-				if((histTrimbits[i]<nPixelsX)&&(histTrimbits[i]>=0)){
+				if( (histTrimbits[i] <= TRIM_HISTOGRAM_XMAX) && (histTrimbits[i] >= 0)){//if(histogramSamples[j].interval.contains(data->values[i]))
 					value = (int) histTrimbits[i];
-					histYAxis[0][value]++;
+					histogramSamples[value].value += 1;
 				}
 				else cout<<"OUT OF BOUNDS:"<<i<<"-"<<histTrimbits[i]<<endl;
 			}
-			/*		for(i=0;i<TRIM_HISTOGRAM_XMAX;i++)
-				if((histYAxis[0][i]<=TRIM_HISTOGRAM_XMAX)&&(histYAxis[0][i]>0))
-					cout<<"HIsty["<<i<<"]:"<<histYAxis[0][i]<<endl;*/
 
-			//delete [] histTrimbits;
-			//title
+			//plot
 			boxPlot->setTitle("Trimbits_Plot_Histogram");
 			plot1D->SetXTitle("Trimbits");
 			plot1D->SetYTitle("Frequency");
-			//set plot parameters
-			SlsQtH1D*  h;
-			plot1D_hists.append(h=new SlsQtH1D("",nPixelsX,histXAxis,histYAxis[0]));
-			h->SetLineColor(1);
-			h->setTitle(GetHistTitle(0));
-			//attach plot
-			h->Attach(plot1D);
+			plotHistogram->setData(new QwtIntervalSeriesData(histogramSamples));
+			plotHistogram->setPen(QPen(Qt::red));
+			plotHistogram->setBrush(QBrush(Qt::red,Qt::Dense4Pattern));//Qt::SolidPattern
+			histFrameIndexTitle->setText(GetHistTitle(0));
+			plotHistogram->attach(plot1D);
+			//refixing all the zooming
+			plot1D->SetXMinMax(0,TRIM_HISTOGRAM_XMAX+1);
+			plot1D->SetYMinMax(0,plotHistogram->boundingRect().height());
+			plot1D->SetZoomBase(0,0,actualPixelsX,plotHistogram->boundingRect().height());
 		}
-		//Display Statistics
-		if(displayStatistics){
-			double min=0,max=0,sum=0;
-			GetStatistics(min,max,sum,histYAxis[0],nPixelsX);
-			lblMinDisp->setText(QString("%1").arg(min));
-			lblMaxDisp->setText(QString("%1").arg(max));
-			lblSumDisp->setText(QString("%1").arg(sum));
-		}
-
-
-#ifdef VERBOSE
-		cout << "Trimbits Plot updated" << endl;
-#endif
 	}
 
 
-
+	/**needs to be changed */
 	else if(detType == slsDetectorDefs::EIGER){
 
 		//defining axes
@@ -1745,6 +1768,7 @@ int qDrawPlot::UpdateTrimbitPlot(bool fromDetector,bool Histogram){
 		ret = 1;/*myDet->getChanRegs(lastImageArray,fromDetector);*/
 		if(!ret){
 			qDefs::Message(qDefs::WARNING,"No Trimbit data found in shared memory.","qDrawPlot::UpdateTrimbitPlot");
+			UnlockLastImageArray();
 			return qDefs::FAIL;
 		}
 		//clear/select plot and set titles
@@ -1758,17 +1782,21 @@ int qDrawPlot::UpdateTrimbitPlot(bool fromDetector,bool Histogram){
 #ifdef VERBOSE
 		cout << "Trimbits Plot updated" << endl;
 #endif
-	}
-	//Display Statistics
-	if(displayStatistics){
-		double min=0,max=0,sum=0;
-		GetStatistics(min,max,sum,lastImageArray,nPixelsX*nPixelsY);
-		lblMinDisp->setText(QString("%1").arg(min));
-		lblMaxDisp->setText(QString("%1").arg(max));
-		lblSumDisp->setText(QString("%1").arg(sum));
+
+		//Display Statistics
+		if(displayStatistics){
+			GetStatistics(min,max,sum,lastImageArray,nPixelsX*nPixelsY);
+			lblMinDisp->setText(QString("%1").arg(min));
+			lblMaxDisp->setText(QString("%1").arg(max));
+			lblSumDisp->setText(QString("%1").arg(sum));
+		}
+
 	}
 
-
+	UnlockLastImageArray();
+#ifdef VERBOSE
+		cout << "Trimbits Plot updated" << endl;
+#endif
 	return qDefs::OK;
 }
 

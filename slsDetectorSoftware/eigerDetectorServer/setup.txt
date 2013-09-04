@@ -1,0 +1,53 @@
+
+
+#detector setup
+ #add_module module_number base_address_top  (for half module) 
+ #add_module module_number base_address_top  base_address_bottom (for full module)
+add_half_module 17 0
+#add_half_module 17 1 for bottom
+#add_module 18 10 12
+#add_module 2 13 15
+#add_module 1 120 22
+
+
+#default setting
+photon_energy   8000
+dynamic_range 16
+readout_speed 1  #(0-full,1-half,2-quarter and 3-superslow) 
+readout_mode 0   #(0-parallel,1-non_parallel,2-safe_mode)
+
+
+#default dacs
+SvP  0
+Vtr  1.28
+Vrf  1.55
+Vrs  0.7
+SvN  2
+Vtgstv  1.278
+Vcmp_ll  0.5
+Vcmp_lr  0.5
+cal  2
+Vcmp_rl  0.5
+rxb_rb  0.6
+rxb_lb  0.6
+Vcmp_rr  0.5
+Vcp  0.1
+Vcn  1
+Vis  0.775
+
+#default high_voltage
+high_voltage 152
+
+#default iodelays
+iodelay 675
+
+#newgoodiodelay 643
+#halfspeed_add_about 32
+#goodiodelay 1467
+#goodiodelay 1550
+
+
+
+
+
+

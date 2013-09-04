@@ -422,7 +422,8 @@ void* postProcessing::processData(int delflag) {
 
 
 		int prevCaught=-1;
-		int caught=0;
+		int caught = 0;
+		int prog = 0;
 		bool newData=false;
 		char currentfName[MAX_STR_LENGTH]="";
 		int currentfIndex=0;
@@ -451,11 +452,11 @@ void* postProcessing::processData(int delflag) {
 			//get progress
 			pthread_mutex_lock(&mg);
 			if(setReceiverOnline()==ONLINE_FLAG)
-				caught=getReceiverCurrentFrameIndex();
+				prog=getFramesCaughtByReceiver();//caught=getReceiverCurrentFrameIndex();
 			pthread_mutex_unlock(&mg);
 			if(setReceiverOnline()==OFFLINE_FLAG)
-				caught=prevCaught;
-			setCurrentProgress(caught);
+				prog=prevCaught;
+			setCurrentProgress(prog);
 
 
 			if (checkJoinThread()) break;
@@ -463,8 +464,9 @@ void* postProcessing::processData(int delflag) {
 
 			if (dataReady){
 
-				// determine if new Data for random read
+				// new Data? for random read
 				if (!read_freq){
+					caught = prog;
 					if (caught > prevCaught)
 						newData=true;
 					else
@@ -485,6 +487,8 @@ void* postProcessing::processData(int delflag) {
 						pthread_mutex_lock(&mg);
 						int* receiverData = readFrameFromReceiver(currentfName,currentfIndex);//if(currentfIndex!=-1)cout<<"--currentfIndex:"<<currentfIndex<<endl;
 						pthread_mutex_unlock(&mg);
+
+						//if detector returned null
 						if(setReceiverOnline()==OFFLINE_FLAG)
 							receiverData = NULL;
 						if(receiverData == NULL){
@@ -494,13 +498,14 @@ void* postProcessing::processData(int delflag) {
 
 						// determine if new Data for nth frame read
 						if (read_freq){
+							caught = currentfIndex;
 #ifdef VERBOSE
 							std::cout << "caught:" << caught << " prevcaught:" << prevCaught << std::endl;
 #endif
 							//delete if not new data
 							if((caught == prevCaught) || (caught == -1))
 								currentfIndex = -1;
-							else if (currentfIndex!=-1)
+							else
 								prevCaught=caught;
 						}
 

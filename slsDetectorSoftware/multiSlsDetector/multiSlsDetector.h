@@ -1110,6 +1110,12 @@ class multiSlsDetector  : public slsDetectorUtils {
   */
   int stopReceiver();
 
+  /** Sets the receiver to start any readout remaining in the fifo and
+   * change status to transmitting.
+   * The status changes to run_finished when fifo is empty
+   */
+  runStatus startReceiverReadout();
+
   /**   gets the status of the listening mode of receiver
 	\returns status
   */

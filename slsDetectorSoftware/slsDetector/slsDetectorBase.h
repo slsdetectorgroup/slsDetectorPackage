@@ -485,6 +485,12 @@ class slsDetectorBase :  public virtual slsDetectorDefs, public virtual errorDef
    */
   virtual int setReadReceiverFrequency(int getFromReceiver, int i=-1)=0;
 
+  /** Sets the receiver to start any readout remaining in the fifo and
+   * change status to transmitting.
+   * The status changes to run_finished when fifo is empty
+   */
+  virtual runStatus startReceiverReadout()=0;
+
 
   /** returns detector type string from detector type index
       \param t string can be Mythen, Pilatus, Eiger, Gotthard, Agipd, Unknown

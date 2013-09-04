@@ -285,6 +285,7 @@ int slsReceiverFuncs::function_table(){
 	flist[F_ENABLE_FILE_WRITE]		=	&slsReceiverFuncs::enable_file_write;
 	flist[F_GET_ID]					=	&slsReceiverFuncs::get_version;
 	flist[F_CONFIGURE_MAC]			=	&slsReceiverFuncs::set_short_frame;
+	flist[F_START_READOUT]			= 	&slsReceiverFuncs::start_readout;
 
 	//General Functions
 	flist[F_LOCK_SERVER]			=	&slsReceiverFuncs::lock_receiver;
@@ -1374,7 +1375,33 @@ int slsReceiverFuncs::get_version(){
 
 
 
+int	slsReceiverFuncs::start_readout(){
+	ret=OK;
+	enum runStatus retval;
 
+	// execute action if the arguments correctly arrived
+#ifdef SLS_RECEIVER_FUNCTION_LIST
+	slsReceiverList->startReadout();
+	retval = slsReceiverList->getStatus();
+	if((retval == TRANSMITTING) || (retval == RUN_FINISHED))
+		ret = OK;
+	else
+		ret = FAIL;
+#endif
+
+	if(socket->differentClients){
+		cout << "Force update" << endl;
+		ret=FORCE_UPDATE;
+	}
+
+	// send answer
+	socket->SendDataOnly(&ret,sizeof(ret));
+	socket->SendDataOnly(&retval,sizeof(retval));
+	//return ok/fail
+	return ret;
+
+
+}
 
 
 

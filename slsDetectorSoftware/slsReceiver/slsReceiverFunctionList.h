@@ -17,6 +17,7 @@
 #include <string.h>
 #include <pthread.h>
 #include <stdio.h>
+#include <semaphore.h>
 
 
 /**
@@ -202,6 +203,10 @@ public:
 	 */
 	int setNFrameToGui(int i){if(i>=0) nFrameToGui = i; return nFrameToGui;};
 
+	/** set status to transmitting and
+	 * when fifo is empty later, sets status to run_finished */
+	void startReadout();
+
 private:
 
 	/** detector type */
@@ -385,8 +390,11 @@ private:
 	/** frame index offset */
 	int frameIndexOffset;
 
+	/** semaphore to synchronize writer and guireader threads */
+	sem_t smp;
 
-
+	/** guiDataReady mutex */
+	pthread_mutex_t  dataReadyMutex;
 
 
 public:

@@ -143,6 +143,10 @@ public:
 	/** Get Version */
 	int get_version();
 
+	/** set status to transmitting and
+	 * when fifo is empty later, sets status to run_finished */
+	int start_readout();
+
 
 	//General Functions
 	/** Locks Receiver */

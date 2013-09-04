@@ -311,8 +311,9 @@ void  slsDetectorUtils::acquire(int delflag){
 	    break;
 
 
-	  pthread_mutex_lock(&mg);
+
 	  if(setReceiverOnline()==OFFLINE_FLAG){
+		  pthread_mutex_lock(&mg);
 	  // wait until data processing thread has finished the data
 
 #ifdef VERBOSE
@@ -329,11 +330,21 @@ void  slsDetectorUtils::acquire(int delflag){
 		  if((*correctionMask)&(1<<WRITE_FILE))
 			  closeDataFile();
 	  }
-
-	  }else
-		  stopReceiver();
-
 	  pthread_mutex_unlock(&mg);
+	  }else{
+		  pthread_mutex_lock(&mg);
+		  if(startReceiverReadout() == TRANSMITTING){
+			  while(getReceiverStatus() != RUN_FINISHED){
+				  pthread_mutex_unlock(&mg);
+				  usleep(50000);
+				  pthread_mutex_lock(&mg);
+			  }
+		  }
+		  stopReceiver();
+		  pthread_mutex_unlock(&mg);
+	  }
+
+
 
 
 

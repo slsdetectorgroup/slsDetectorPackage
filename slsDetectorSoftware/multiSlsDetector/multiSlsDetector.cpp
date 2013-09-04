@@ -4346,7 +4346,32 @@ int multiSlsDetector::stopReceiver(){
 }
 
 
+slsDetectorDefs::runStatus multiSlsDetector::startReceiverReadout(){
 
+  runStatus s,s1;
+
+  if (thisMultiDetector->masterPosition>=0)
+    if (detectors[thisMultiDetector->masterPosition]){
+      s = detectors[thisMultiDetector->masterPosition]->startReceiverReadout();
+      if(detectors[thisMultiDetector->masterPosition]->getErrorMask())
+	setErrorMask(getErrorMask()|(1<<thisMultiDetector->masterPosition));
+      return s;
+    }
+
+  if (detectors[0]) s=detectors[0]->startReceiverReadout();
+
+  for (int i=0; i<thisMultiDetector->numberOfDetectors; i++) {
+    s1=detectors[i]->startReceiverReadout();
+    if(detectors[i]->getErrorMask())
+      setErrorMask(getErrorMask()|(1<<i));
+    if (s1==ERROR)
+      s=ERROR;
+    if (s1==IDLE && s!=IDLE)
+      s=ERROR;
+
+  }
+  return s;
+}
 
 slsDetectorDefs::runStatus multiSlsDetector::getReceiverStatus(){
 

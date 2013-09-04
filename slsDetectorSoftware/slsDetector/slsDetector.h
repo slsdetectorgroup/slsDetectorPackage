@@ -1474,6 +1474,12 @@ class slsDetector : public slsDetectorUtils, public energyConversion {
   */
   int stopReceiver();
 
+  /** Sets the receiver to start any readout remaining in the fifo and
+   * change status to transmitting.
+   * The status changes to run_finished when fifo is empty
+   */
+  runStatus startReceiverReadout();
+
   /**   Sets(false) or Resets(true) the CPU bit in detector
         \returns OK or FAIL
   */

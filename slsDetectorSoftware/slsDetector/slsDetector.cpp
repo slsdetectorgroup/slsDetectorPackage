@@ -5990,6 +5990,29 @@ int slsDetector::stopReceiver(){
 
 
 
+
+slsDetectorDefs::runStatus slsDetector::startReceiverReadout(){
+	int fnum=F_START_READOUT;
+	int ret = FAIL;
+	int retval=-1;
+	runStatus s=ERROR;
+
+	if (setReceiverOnline(ONLINE_FLAG)==ONLINE_FLAG) {
+#ifdef VERBOSE
+		std::cout << "Starting Receiver Readout" << std::endl;
+#endif
+		if (connectData() == OK)
+			ret=thisReceiver->getInt(fnum,retval);
+		if(retval!=-1)
+			s=(runStatus)retval;
+		if(ret==FORCE_UPDATE)
+			ret=updateReceiver();
+	}
+
+	return s;
+}
+
+
 int slsDetector::detectorSendToReceiver(bool set){
   int fnum;
   if(set)	fnum=F_START_RECEIVER;

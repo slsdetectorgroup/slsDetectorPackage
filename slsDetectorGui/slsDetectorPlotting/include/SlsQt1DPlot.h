@@ -136,7 +136,7 @@ class SlsQt1DPlot:public QwtPlot{
   void SetZoom(double xmin,double ymin,double x_width,double y_width);
   void SetZoomBase(double xmin,double ymin,double x_width, double y_width){ zoomer->SetZoomBase(xmin,ymin,x_width,y_width);}
 
-
+  void alignScales();
  private:
   
   SlsQtH1DList*     hist_list;
@@ -148,7 +148,7 @@ class SlsQt1DPlot:public QwtPlot{
   
   void SetupZoom();
   void UnknownStuff();
-  void alignScales();
+  //void alignScales();
   
   void CalculateNResetZoomBase();
   void NewHistogramAttached(SlsQtH1D* h);

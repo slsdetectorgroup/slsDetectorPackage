@@ -405,6 +405,7 @@ void qTabDataOutput::UpdateRateCorrectionFromServer(){
 
 
 void qTabDataOutput::SetAngularCorrection(){
+	disconnect(chkAngular,			SIGNAL(toggled(bool)), 	this, 	SLOT(SetAngularCorrection()));
 #ifdef VERYVERBOSE
 	cout << "Entering Set Angular Correction function" << endl;
 #endif
@@ -414,18 +415,28 @@ void qTabDataOutput::SetAngularCorrection(){
 		cout << "Setting angular conversion to default"  << endl;
 #endif
 		}else{
+#ifdef VERBOSE
+		cout << "Could not set angular conversion to default"  << endl;
+#endif
 			qDefs::Message(qDefs::WARNING,"Angular Conversion could not be set. Please set the default file name using the command line, if you haven't already.","qTabDataOutput::SetAngularCorrection");
 			chkAngular->setChecked(false);
 		}
 	}else{
-		myDet->setAngularConversionFile("");
+		if(myDet->setAngularConversionFile("")){
+#ifdef VERBOSE
+		cout << "Could not reset angular correction" << endl;
+#endif
+			qDefs::Message(qDefs::WARNING,"Angular Conversion could not be reset.","qTabDataOutput::SetAngularCorrection");
+			chkAngular->setChecked(true);
+		}else{;
 #ifdef VERBOSE
 		cout << "Unsetting angular correction" << endl;
 #endif
+		}
 	}
 
 	emit AngularConversionSignal(chkAngular->isChecked());
-
+	connect(chkAngular,			SIGNAL(toggled(bool)), 	this, 	SLOT(SetAngularCorrection()));
 	qDefs::checkErrorMessage(myDet,"qTabDataOutput::SetAngularCorrection");
 }
 

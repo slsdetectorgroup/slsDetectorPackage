@@ -1266,7 +1266,7 @@ void qDrawPlot::UpdatePlot(){
 								//h->setTitle(GetHistTitle(hist_num));
 								h->Attach(plot1D);
 								//refixing all the zooming
-								if(firstPlot){
+								if((firstPlot) || (anglePlot)){
 									plot1D->SetXMinMax(h->minXValue(),h->maxXValue());
 									plot1D->SetYMinMax(h->minYValue(),h->maxYValue());
 									plot1D->SetZoomBase(h->minXValue(),h->minYValue(),
@@ -1274,6 +1274,7 @@ void qDrawPlot::UpdatePlot(){
 									firstPlot = false;
 								}
 							}
+
 						}
 						// update range if required
 						if(XYRangeChanged){

@@ -126,7 +126,7 @@ class Eiger:private Feb{
   //bool SetHighVoltage(float value);
   bool SetHighVoltage(unsigned int module_num,float value);
 
-  bool         SetPhotonEnergy(unsigned int full_energy_meV);
+  bool         SetPhotonEnergy(unsigned int full_energy_eV);
   unsigned int GetPhotonEnergy(){return photon_energy_eV;}
 
   bool SetIDelays(unsigned int module_num, unsigned int  ndelay_units);

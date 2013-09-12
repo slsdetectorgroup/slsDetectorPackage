@@ -3,11 +3,11 @@
 * Do with source-code as you will. No requirement to keep this
 * header if need to use it/change it/ or do whatever with it
 *
-* Note that there is No guarantee that this code will work 
+* Note that there is No guarantee that this code will work
 * and I take no responsibility for this code and any problems you
 * might get if using it. The code is highly platform dependent!
 *
-* Code & platform dependent issues with it was originally 
+* Code & platform dependent issues with it was originally
 * published at http://www.kjellkod.cc/threadsafecircularqueue
 * 2009-11-02
 * @author Kjell Hedstr�m, hedstrom@kjellkod.cc */
@@ -20,7 +20,7 @@
 #include <vector>
 using namespace std;
 
-/** Circular Fifo (a.k.a. Circular Buffer) 
+/** Circular Fifo (a.k.a. Circular Buffer)
 * Thread safe for one reader, and one writer */
 template<typename Element>
 class CircularFifo {
@@ -34,10 +34,10 @@ public:
 
    bool push(Element*& item_);
    bool pop(Element*& item_);
-   
+
    bool isEmpty() const;
    bool isFull() const;
-   
+
 private:
    volatile unsigned int tail; // input index
    vector <Element*> array;
@@ -50,7 +50,7 @@ private:
 
 
 
-/** Producer only: Adds item to the circular queue. 
+/** Producer only: Adds item to the circular queue.
 * If queue is full at 'push' operation no update/overwrite
 * will happen, it is up to the caller to handle this case
 *
@@ -124,10 +124,118 @@ unsigned int CircularFifo<Element>::increment(unsigned int idx_) const
    //    index++;
    //    if(index == array.lenght) -> index = 0;
    //
-   //or as written below:   
+   //or as written below:
    //    index = (index+1) % array.length
    idx_ = (idx_+1) % Capacity;
    return idx_;
 }
 
 #endif /* CIRCULARFIFO_H_ */
+
+
+
+
+
+/*
+#ifndef CIRCULARFIFO_H_
+#define CIRCULARFIFO_H_
+
+#include "sls_detector_defs.h"
+
+#include "/usr/include/alsa/atomic.h"
+#include <vector>
+using namespace std;
+
+template<typename Element>
+class CircularFifo {
+public:
+
+	CircularFifo(unsigned int Size) : tail(0), head(0){
+		Capacity = Size + 1;
+		array.resize(Capacity);
+	}
+	virtual ~CircularFifo() {}
+
+	bool push(Element*& item_);
+	bool pop(Element*& item_);
+
+	bool wasEmpty() const;
+	bool wasFull() const;
+	bool isLockFree() const;
+
+private:
+	vector <Element*> array;
+	unsigned int Capacity;
+
+	std::atomic<unsigned int> tail; // input index
+	std::atomic<unsigned int> head; // output index
+
+	unsigned int increment(unsigned int idx_) const;
+};
+
+
+template<typename Element>
+bool CircularFifo<Element>::push(Element*& item_)
+{
+	auto currentTail = tail.load();
+	auto nextTail = increment(currentTail);
+	if(nextTail != head.load())
+	{
+		array[currentTail] = item_;
+		tail.store(nextTail);
+		return true;
+	}
+
+	// queue was full
+	return false;
+}
+
+
+template<typename Element>
+bool CircularFifo<Element>::pop(Element*& item_)
+{
+	const auto currentHead = head.load();
+	if(currentHead == tail.load())
+		return false;  // empty queue
+
+	item_ = array[currentHead];
+	head.store(increment(currentHead));
+	return true;
+}
+
+
+template<typename Element>
+bool CircularFifo<Element>::wasEmpty() const
+{
+	return (head.load() == tail.load());
+}
+
+
+template<typename Element>
+bool CircularFifo<Element>::wasFull() const
+{
+	const auto nextTail = increment(tail.load());
+	return (nextTail == head.load());
+}
+
+template<typename Element>
+bool CircularFifo<Element>::isLockFree() const
+{
+  return (tail.is_lock_free() && head.is_lock_free());
+}
+
+
+template<typename Element>
+unsigned int CircularFifo<Element>::increment(unsigned int idx_) const
+{
+	// increment or wrap
+	// =================
+	//    index++;
+	//    if(index == array.lenght) -> index = 0;
+	//
+	//or as written below:
+	//    index = (index+1) % array.length
+	return (idx_ + 1) % Capacity;
+}
+
+#endif */

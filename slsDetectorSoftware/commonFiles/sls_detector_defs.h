@@ -154,6 +154,7 @@ typedef struct {
   int ymax;   /**< is the roi ymax  (in channel number)*/
 } ROI ;
 
+
 /* /\*  */
 /*     @short structure for a generic integer array */
 /* *\/ */

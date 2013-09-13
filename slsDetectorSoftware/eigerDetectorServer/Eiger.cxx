@@ -7,6 +7,7 @@
 
 #include <stdlib.h>
 #include <math.h>
+#include <string.h>
 
 #include <iostream>
 #include <fstream>
@@ -79,11 +80,16 @@ Eiger::Eiger(){
 
 Eiger::~Eiger(){
   delete[] last_downloaded_trimbits;
+  ClearModules();
+}
+
+void Eiger::ClearModules(){
   for(unsigned int i=0;i<modules.size();i++) delete modules[i];
   modules.clear();
 }
 
 bool Eiger::Init(){
+  ClearModules();
 
   AddModule(0,0xfff); //global send
 
@@ -111,10 +117,8 @@ bool Eiger::Init(){
       sprintf(st,"setup_mod%04d.txt",modules[i]->GetModuleNumber());
       ReadSetUpFile(modules[i]->GetModuleNumber(),st);
     }
-  CheckSetup();
-
-
-  return 1;
+  
+  return CheckSetup();
 }
 
 
@@ -326,6 +330,21 @@ bool Eiger::CheckSetup(){
   return ok;			     
 }
 
+unsigned int Eiger::GetNModules(){
+  if(modules.size()<=0) return 0;
+  return modules.size() - 1;
+}
+
+unsigned int Eiger::GetNHalfModules(){
+  unsigned int n_half_modules = 0;
+  for(unsigned int i=0;i<modules.size();i++){
+    if(modules[i]->TopAddressIsValid()) n_half_modules++;
+    if(modules[i]->BottomAddressIsValid()) n_half_modules++;
+  }
+  
+  return n_half_modules;
+}
+
 bool Eiger::SetPhotonEnergy(unsigned int full_energy_eV){
   photon_energy_eV = full_energy_eV;
   cout<<"Setting photon energy to: "<<photon_energy_eV<<" eV"<<endl;
@@ -535,6 +554,15 @@ bool Eiger::SetDAC(string dac_str, float value){
 bool Eiger::GetDAC(std::string s, float& ret_value){
   cout<<"Function Eiger::GetDAC need to be finished....."<<endl;
   ret_value=1.2;
+  return 1;
+}
+
+bool Eiger::GetDACName(unsigned int dac_num, std::string &s){
+  if(dac_num>=Module::ndacs){
+    cout<<"Warning: Eiger::GetDACName index out of range, "<<dac_num<<" invalid."<<endl;
+    return 0;
+  }
+  s = Module::dac_names[dac_num];
   return 1;
 }
 

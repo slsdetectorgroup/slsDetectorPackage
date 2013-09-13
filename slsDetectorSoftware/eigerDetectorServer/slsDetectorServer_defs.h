@@ -18,6 +18,7 @@
 #define FIRMWAREREV		0xcaba	   //temporary should be in firmware
 
 /* examples*/
+/*
 #define NCHAN 			256*256
 #define NCHIP 			4*1
 #define NDAC 			16
@@ -30,11 +31,8 @@
 
 
 #define DYNAMIC_RANGE	32
+*/
 
-#ifdef EIGERD
-enum detDacIndex{SVP,SVN,VTR,VRF,VRS,VTGSTV,VCMP_LL,VCMP_LR,CAL,VCMP_RL,VCMP_RR,RXB_RB,RXB_LB,VCP,VCN,VIS};
-#else
-enum detDacIndex{none};
-#endif
+enum detDacIndex{SVP,VTR,VRF,VRS,SVN,VTGSTV,VCMP_LL,VCMP_LR,CAL,VCMP_RL,RXB_RB,RXB_LB,VCMP_RR,VCP,VCN,VIS};
 
 #endif /* SLSDETECTORSERVER_DEFS_H_ */

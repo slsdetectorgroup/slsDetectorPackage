@@ -2,199 +2,41 @@
 
 
 #include <stdio.h>
-#include <string.h>
+#include <string>
 
-/** temporary*/
-#include <sys/mman.h>		//PROT_READ,PROT_WRITE,MAP_FILE,MAP_SHARED,MAP_FAILED
-#include <fcntl.h>			//O_RDWR
 
 #include "slsDetectorFunctionList.h"
 #include "svnInfoEiger.h"
 #include "Eiger.h"
 
-const int nChans=NCHAN;
-const int nChips=NCHIP;
-const int nDacs=NDAC;
-const int nAdcs=NADC;
-const int allSelected=-2;
-const int noneSelected=-1;
+using namespace std;
 
-sls_detector_module *detectorModules=NULL;
-int *detectorChips=NULL;
-int *detectorChans=NULL;
-dacs_t *detectorDacs=NULL;
-dacs_t *detectorAdcs=NULL;
+enum detectorSettings thisSettings = STANDARD;
+//static const string dacNames[16] = {"Svp","Svn","Vtr","Vrf","Vrs","Vtgstv","Vcmp_ll","Vcmp_lr","Cal","Vcmp_rl","Vcmp_rr","Rxb_rb","Rxb_lb","Vcp","Vcn","Vis"};
 
-int nModY		=	NMAXMOD;
-int nModX		=	NMAXMOD;
-int dynamicRange=	DYNAMIC_RANGE;
-int dataBytes	=	NMAXMOD*NCHIP*NCHAN*2;
-int masterMode	=	NO_MASTER;
-int syncMode	=	NO_SYNCHRONIZATION;
-int timingMode	=	AUTO_TIMING;
+static Eiger* eiger = new Eiger();
 
-
-
-enum detectorSettings thisSettings;
-int sChan, sChip, sMod, sDac, sAdc;
-int nModBoard = 1;
-extern int dataBytes;
-
-
-const char* dacNames[16] = {"Svp","Svn","Vtr","Vrf","Vrs","Vtgstv","Vcmp_ll","Vcmp_lr","Cal","Vcmp_rl","Vcmp_rr","Rxb_rb","Rxb_lb","Vcp","Vcn","Vis"};
-
-//temporary storage on server for debugging until Ian implements
-int dacvalues[NDAC];
-int64_t framenum=0;
-int64_t trains=0;
-int64_t exposureTime=(int64_t)1e6;
-int64_t period=(int64_t)1e9;
-int64_t delay=0;
-int64_t gates=0;
-
-
-
-//Eiger* eiger;
-
-
-
-
-/** temporary*/
-u_int32_t CSP0BASE;
-int mapCSP0(void) {
-	CSP0BASE = (u_int32_t)malloc(0xFFFFFFF);
-	printf("memory allocated\n");
-	printf("CSPOBASE is 0x%x \n",CSP0BASE);
-	printf("CSPOBASE=from %08x to %x\n",CSP0BASE,CSP0BASE+0xFFFFFFF);
-	return OK;
-}
-/*
-#define CSP0 				  	0xC4100000		//XPAR_PLB_LL_FIFO_AURORA_DUAL_CTRL_FEB_LEFT_BASEADDR
-#define MEM_SIZE 			  	0xFFFFFFF
-
-u_int32_t CSP0BASE;
-int mapCSP0(void) {
-	int fd;
-	printf("Mapping memory\n");
-#ifdef VIRTUAL
-	CSP0BASE = (u_int32_t)malloc(MEM_SIZE);
-	printf("memory allocated\n");
-#else
-	if ((fd=open("/dev/mem", O_RDWR | O_SYNC)) < 0){
-		printf("Cant find /dev/mem!\n");
-		return FAIL;
-	}
-	printf("/dev/mem opened\n");
-	CSP0BASE = (u_int32_t)mmap(0, MEM_SIZE, PROT_READ|PROT_WRITE, MAP_FILE|MAP_SHARED, fd, CSP0);
-	if (CSP0BASE == (u_int32_t)MAP_FAILED) {
-		printf("\nCan't map memmory area!!\n");
-		return FAIL;
-	}
-#endif
-	printf("CSPOBASE is 0x%x \n",CSP0BASE);
-	printf("CSPOBASE=from %08x to %x\n",CSP0BASE,CSP0BASE+MEM_SIZE);
-
-	return OK;
-}
-*/
-
-
-int initializeDetectorStructure(){
- printf("EIGER 10\n");
-	int imod;
-	int n=getNModBoard(X)*getNModBoard(Y);
-#ifdef VERBOSE
-	printf("Board is for %d modules\n",n);
-#endif
-	detectorModules=(sls_detector_module*)malloc(n*sizeof(sls_detector_module));
-	detectorChips=(int*)malloc(n*NCHIP*sizeof(int));
-	detectorChans=(int*)malloc(n*NCHIP*NCHAN*sizeof(int));
-	detectorDacs=(dacs_t*)malloc(n*NDAC*sizeof(int));
-	detectorAdcs=(dacs_t*)malloc(n*NADC*sizeof(int));
-#ifdef VERBOSE
-	printf("modules from 0x%x to 0x%x\n",(unsigned int)(detectorModules), (unsigned int)(detectorModules+n));
-	printf("chips from 0x%x to 0x%x\n",(unsigned int)(detectorChips), (unsigned int)(detectorChips+n*NCHIP));
-	printf("chans from 0x%x to 0x%x\n",(unsigned int)(detectorChans), (unsigned int)(detectorChans+n*NCHIP*NCHAN));
-	printf("dacs from 0x%x to 0x%x\n",(unsigned int)(detectorDacs), (unsigned int)(detectorDacs+n*NDAC));
-	printf("adcs from 0x%x to 0x%x\n",(unsigned int)(detectorAdcs), (unsigned int)(detectorAdcs+n*NADC));
-#endif
-	for (imod=0; imod<n; imod++) {
-		(detectorModules+imod)->dacs=detectorDacs+imod*NDAC;
-		(detectorModules+imod)->adcs=detectorAdcs+imod*NADC;
-		(detectorModules+imod)->chipregs=detectorChips+imod*NCHIP;
-		(detectorModules+imod)->chanregs=detectorChans+imod*NCHIP*NCHAN;
-		(detectorModules+imod)->ndac=NDAC;
-		(detectorModules+imod)->nadc=NADC;
-		(detectorModules+imod)->nchip=NCHIP;
-		(detectorModules+imod)->nchan=NCHIP*NCHAN;
-		(detectorModules+imod)->module=imod;
-		(detectorModules+imod)->gain=0;
-		(detectorModules+imod)->offset=0;
-		(detectorModules+imod)->reg=0;
-		/* initialize registers, dacs, retrieve sn, adc values etc */
-	}
-	thisSettings=UNINITIALIZED;
-	sChan=noneSelected;
-	sChip=noneSelected;
-	sMod=noneSelected;
-	sDac=noneSelected;
-	sAdc=noneSelected;
-
-	return OK;
+int initDetector(){
+  printf("EIGER 10\n");
+  return 1;
 }
 
-
-
-
-
-
-
-int setupDetector(){
-	//eiger = new Eiger();
-	//eiger->Init();
-	//ReadSetUpFileToAddModules(std::string file_name);
-	//ReadSetUpFile(unsigned int module_num, std::string file_name);
-	//eiger->CheckSetup();
-
-
-	//testFpga();
-	//testRAM();
-
-	//setSettings(GET_SETTINGS,-1);
-	//setFrames(1);
-	//setTrains(1);
-	//setExposureTime(1e6);
-	//setPeriod(1e9);
-	//setDelay(0);
-	//setGates(0);
-
-	//setTiming(GET_EXTERNAL_COMMUNICATION_MODE);
-	//setMaster(GET_MASTER);
-	//setSynchronization(GET_SYNCHRONIZATION_MODE);
-	return OK;
-}
-
-
-
+//int reInitDetector(){ eiger->Init() ? 1:0; }
 
 int setNMod(int nm, enum dimension dim){
-	return 1;
+	return eiger->GetNModules();
 }
 
 
 
 int getNModBoard(enum dimension arg){
-	return 1;
+	return eiger->GetNModules();
 }
 
 
 
-
-
-
-
-
 int64_t getModuleId(enum idMode arg, int imod){
+  /*
 	switch(arg){
 	case MODULE_SERIAL_NUMBER:
 		return getDetectorNumber();
@@ -203,6 +45,7 @@ int64_t getModuleId(enum idMode arg, int imod){
 	default:
 		break;
 	}
+  */
 	return -1;
 }
 
@@ -211,6 +54,7 @@ int64_t getModuleId(enum idMode arg, int imod){
 
 int64_t getDetectorId(enum idMode arg){
 	int64_t retval = -1;
+	/*
 	switch(arg){
 	case DETECTOR_SERIAL_NUMBER:
 		retval =  getDetectorMAC();
@@ -224,12 +68,14 @@ int64_t getDetectorId(enum idMode arg){
 	default:
 		break;
 	}
+	*/
 	return retval;
 }
 
 
 
 int getDetectorNumber(){
+  /*
 	char output[255]="";
 	int res=0;
 	FILE* sysFile = popen("hostname", "r");
@@ -237,10 +83,13 @@ int getDetectorNumber(){
 	pclose(sysFile);
 	sscanf(output,"%x",&res);
 	return res;
+  */
+  return 0;
 }
 
 
 u_int64_t  getDetectorMAC() {
+  /*
 	char output[255],mac[255]="";
 	u_int64_t res=0;
 	FILE* sysFile = popen("ifconfig eth0 | grep HWaddr | cut -d \" \" -f 11", "r");
@@ -256,6 +105,8 @@ u_int64_t  getDetectorMAC() {
 	sscanf(mac,"%llx",&res);
 	printf("mac:%llx\n",res);
 	return res;
+  */
+  return 0;
 }
 
 int moduleTest( enum digitalTestMode arg, int imod){
@@ -293,19 +144,17 @@ int detectorTest( enum digitalTestMode arg){
 
 
 int setDAC(enum detDacIndex ind, int val, int imod){
-//#ifdef VERBOSE
-	printf("Setting dac %d: %s to %d mV\n",ind, dacNames[(int)ind],val);
-//#endif
-	if (val >= 0)
-		dacvalues[(int)ind] = val;
+  string iname;
+  float v = val/0.001;
+  if(!eiger->GetDACName((unsigned int) ind,iname)) return -1;
+#ifdef VERBOSE
+  printf("Setting dac %d: %s to %d mV\n",ind, iname.c_str(),val);
+#endif
+  if(val>=0) eiger->SetDAC(iname,v);
 
-	//eiger->SetDac()
+  if(!eiger->GetDAC(iname,v)) v=-1;
 
-	//template initDACbyIndexDACU from mcb_funcs.c
-
-	//check that slsDetectorServer_funcs.c set_dac() has all the specific dac enums
-	//set dac and write to a register in fpga to remember dac value when server restarts
-	return dacvalues[(int)ind];
+  return int(v);
 }
 
 
@@ -318,6 +167,8 @@ int getADC(enum detDacIndex ind,  int imod){
 
 
 int setModule(sls_detector_module myMod){
+  
+  /*
 #ifdef VERBOSE
 	printf("Setting module with settings %d\n",myMod.reg);
 #endif
@@ -330,17 +181,18 @@ int setModule(sls_detector_module myMod){
 		setDAC((detDacIndex)i,myMod.dacs[i],myMod.module);
 
 	thisSettings = (detectorSettings)myMod.reg;
-
-
-	return OK;
+  */
+  return 0;
 }
 
 int getModule(sls_detector_module *myMod){
+  /*
 	int i;
 	for(i=0;i<myMod->ndac;i++)
 		myMod->dacs[i]= dacvalues[i];
 
 	//template getModulebyNumber() from mcb_funcs.c
+	*/
 	return OK;
 }
 
@@ -409,6 +261,7 @@ char *readFrame(int *ret, char *mess){
 
 
 int64_t setTimer(enum timerIndex ind, int64_t val){
+  /*
 	switch(ind){
 	case FRAME_NUMBER:
 		if(val >= 0)
@@ -430,10 +283,10 @@ int64_t setTimer(enum timerIndex ind, int64_t val){
 		if(val >= 0)
 			gates = val;
 		return gates;
-/*	case PROBES_NUMBER:
+	case PROBES_NUMBER:
 		if(val >= 0)
 			framenum = val;
-		return framenum;*/
+		return framenum;
 	case CYCLES_NUMBER:
 		if(val >= 0)
 			trains = val;
@@ -442,6 +295,7 @@ int64_t setTimer(enum timerIndex ind, int64_t val){
 		printf("unknown timer index: %d\n",ind);
 		break;
 	}
+*/
 	return -1;
 }
 
@@ -462,14 +316,15 @@ int64_t getTimeLeft(enum timerIndex ind){
 
 int setDynamicRange(int dr){
 	//template setDynamicRange() from firmware_funcs.c
-	return DYNAMIC_RANGE;
+  //	return DYNAMIC_RANGE;
+	return 0;
 }
 
 
 
 enum readOutFlags setReadOutFlags(enum readOutFlags val){
 	//template setStoreInRAM from firmware_funcs.c
-	return GET_READOUT_FLAGS;
+  return GET_READOUT_FLAGS;
 }
 
 
@@ -506,14 +361,14 @@ int calculateDataBytes(){
 	return 0;
 }
 
-int getTotalNumberOfChannels(){return NCHIP*NCHAN*nModBoard;}
-int getTotalNumberOfChips(){return NCHIP*nModBoard;}
-int getTotalNumberOfModules(){return nModBoard;}
-int getNumberOfChannelsPerChip(){return NCHAN;}
-int getNumberOfChannelsPerModule(){return NCHAN*NCHIP;}
-int getNumberOfChipsPerModule(){return NCHIP;}
-int getNumberOfDACsPerModule(){return NDAC;}
-int getNumberOfADCsPerModule(){return NADC;}
+int getTotalNumberOfChannels(){return 1;};//NCHIP*NCHAN*nModBoard;}
+int getTotalNumberOfChips(){return 1;};//NCHIP*nModBoard;}
+int getTotalNumberOfModules(){return 1;}//nModBoard;}
+int getNumberOfChannelsPerChip(){return  1;}//NCHAN;}
+int getNumberOfChannelsPerModule(){return  1;}//NCHAN*NCHIP;}
+int getNumberOfChipsPerModule(){return  1;}//NCHIP;}
+int getNumberOfDACsPerModule(){return  1;}//NDAC;}
+int getNumberOfADCsPerModule(){return  1;}//NADC;}
 
 
 

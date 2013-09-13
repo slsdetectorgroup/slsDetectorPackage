@@ -8,7 +8,7 @@
 #ifndef EIGER_H
 #define EIGER_H
 
-#include <string.h>
+#include <string>
 #include <vector>
 
 #include "Feb.h"
@@ -71,6 +71,7 @@ class Eiger:private Feb{
  private:
   
   std::vector<Module*> modules;
+  void ClearModules();
 
   unsigned int staticBits;   //program=1,m4=2,m8=4,test=8,rotest=16,cs_bar_left=32,cs_bar_right=64 
   unsigned int acquireNReadoutMode; //safe or parallel, half or full speed
@@ -123,6 +124,9 @@ class Eiger:private Feb{
   bool ReadSetUpFile(unsigned int module_num, std::string file_name);
   bool CheckSetup();
 
+  unsigned int GetNModules();
+  unsigned int GetNHalfModules();
+
   //bool SetHighVoltage(float value);
   bool SetHighVoltage(unsigned int module_num,float value);
 
@@ -134,6 +138,7 @@ class Eiger:private Feb{
 
   bool SetDAC(std::string s, float value);
   bool GetDAC(std::string s, float& ret_value);
+  bool GetDACName(unsigned int dac_num, std::string &s);
 
   bool           SetTrimbits(unsigned char* trimbits);
   unsigned char* GetTrimbits();

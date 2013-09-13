@@ -40,7 +40,8 @@ const enum detectorType myDetectorType=GENERIC;
 char mess[1000];
 char *dataretval=NULL;
 int dataret;
-extern int dataBytes;
+//extern 
+int dataBytes = 10;
 
 
 
@@ -49,14 +50,10 @@ int init_detector(int b) {
 #ifdef VIRTUAL
 	printf("This is a VIRTUAL detector\n");
 #endif
-#ifdef SLS_DETECTOR_FUNCTION_LIST
-	mapCSP0();
-#endif
 	//only for control server
 	if(b){
 #ifdef SLS_DETECTOR_FUNCTION_LIST
-		initializeDetectorStructure();
-		setupDetector();
+		initDetector();
 #endif
 	}
 	strcpy(mess,"dummy message");
@@ -2974,7 +2971,11 @@ int read_counter_block(int file_des) {
 	int n;
 	int startACQ;
 	//char *retval=NULL;
+#ifdef GOTTHARDD
 	char CounterVals[NCHAN*NCHIP];
+#else
+	char CounterVals[dataBytes];
+#endif
 
 	sprintf(mess,"Read counter block failed\n");
 

@@ -11,24 +11,6 @@
 
 
 
-
-/*
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <sys/mman.h>
-#include <fcntl.h>
-#include <stdarg.h>
-#include <unistd.h>
-#include <asm/page.h>
-#include <sys/mman.h>
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <fcntl.h>
-#include <stdarg.h>
-#include <unistd.h>
-*/
-
 /****************************************************
 This functions are used by the slsDetectroServer_funcs interface.
 Here are the definitions, but the actual implementation should be done for each single detector.
@@ -38,9 +20,7 @@ Here are the definitions, but the actual implementation should be done for each 
 
 
 
-int mapCSP0(void);
-int initializeDetectorStructure();
-int setupDetector();
+int initDetector();
 
 int setNMod(int nm, enum dimension dim);
 int getNModBoard(enum dimension arg);

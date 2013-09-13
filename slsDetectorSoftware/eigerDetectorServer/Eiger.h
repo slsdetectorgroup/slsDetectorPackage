@@ -8,7 +8,7 @@
 #ifndef EIGER_H
 #define EIGER_H
 
-#include <string>
+#include <string.h>
 #include <vector>
 
 #include "Feb.h"

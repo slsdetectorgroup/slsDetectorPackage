@@ -8,7 +8,7 @@ DESTDIR		?= 	bin
 INSTMODE	= 	0777
 
 SRC_CLNT	=	communication_funcs.c slsDetectorServer.c slsDetectorServer_funcs.c  slsDetectorFunctionList.c 
-SRC_CLNT2   =   Eiger.cxx HardwareIO.cxx LocalLinkInterface.cxx Feb.cxx
+SRC_CLNT2       =       Eiger.cxx HardwareIO.cxx LocalLinkInterface.cxx Feb.cxx
 OBJS 		= 	$(SRC_CLNT:.c=.o) 
 OBJS2 		= 	$(SRC_CLNT2:.cpp=.o)
 

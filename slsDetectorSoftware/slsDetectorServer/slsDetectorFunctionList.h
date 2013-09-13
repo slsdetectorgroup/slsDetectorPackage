@@ -72,7 +72,7 @@ int getChip(sls_detector_chip *myChip);
 int setModule(sls_detector_module myMod);
 int getModule(sls_detector_module *myMod);
 
-enum detDacIndex setSettings(enum detDacIndex sett, int imod);
+enum detectorSettings setSettings(enum detectorSettings sett, int imod);
 
 #if defined(MYTHEND) || defined(EIGERD)
 int getThresholdEnergy(int imod);
@@ -102,6 +102,7 @@ int setSpeed(enum speedVariable arg, int val);
 #if defined(EIGERD) || defined(MYTHEND)
 int executeTrimming(enum trimMode mode, int par1, int par2, int imod);
 #endif
+
 
 #ifdef GOTTHARDD
 int configureMAC(int ipad, long long int imacadd, long long int iservermacadd, int dtb);

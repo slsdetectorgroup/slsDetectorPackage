@@ -8,7 +8,6 @@
 
 
 
-int sockfd;
 
 
 //basic server functions

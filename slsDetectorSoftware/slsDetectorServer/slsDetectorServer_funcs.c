@@ -4,13 +4,18 @@
 
 #include "slsDetectorServer_funcs.h"
 #include "slsDetectorFunctionList.h"
-
 #include "communication_funcs.h"
 
 
 #include <stdio.h>
 #include <string.h>
 
+#include <arpa/inet.h>
+int sockfd;
+extern int lockStatus;
+extern char lastClientIP[INET_ADDRSTRLEN];
+extern char thisClientIP[INET_ADDRSTRLEN];
+extern int differentClients;
 
 //#if defined(EIGERD) || defined(GOTTHARDD)
 //#endif
@@ -35,7 +40,7 @@ const enum detectorType myDetectorType=GENERIC;
 char mess[1000];
 char *dataretval=NULL;
 int dataret;
-int dataBytes;
+extern int dataBytes;
 
 
 
@@ -466,7 +471,7 @@ int set_master(int file_des) {
 
 int set_synchronization(int file_des) {
 
-	enum synchronizationMode retval=GET_MASTER;
+	enum synchronizationMode retval=GET_SYNCHRONIZATION_MODE;
 	enum synchronizationMode arg;
 	int n;
 	int ret=OK;
@@ -532,7 +537,7 @@ int get_detector_type(int file_des) {
 	/* send answer */
 	/* send OK/failed */
 	if (differentClients==1)
-		retval=FORCE_UPDATE;
+		ret=FORCE_UPDATE;
 
 	n += sendData(file_des,&ret,sizeof(ret),INT32);
 	if (ret!=FAIL) {
@@ -566,7 +571,7 @@ int set_number_of_modules(int file_des) {
 	}
 #ifdef SLS_DETECTOR_FUNCTION_LIST
 	if (ret==OK) {
-		dim=arg[0];
+		dim=(dimension)arg[0];
 		nm=arg[1];
 
 		/* execute action */
@@ -675,7 +680,7 @@ int set_external_signal_flag(int file_des) {
 #ifdef SLS_DETECTOR_FUNCTION_LIST
 	if (ret==OK) {
 		signalindex=arg[0];
-		flag=arg[1];
+		flag=(externalSignalFlag)arg[1];
 		/* execute action */
 		switch (flag) {
 		case GET_EXTERNAL_SIGNAL_FLAG:
@@ -991,7 +996,7 @@ int set_dac(int file_des) {
 	int imod;
 	int n;
 	int val;
-	enum detDacIndex idac=0;
+	enum detDacIndex idac=(detDacIndex)0;
 
 	sprintf(mess,"Can't set DAC\n");
 
@@ -1001,7 +1006,7 @@ int set_dac(int file_des) {
 		sprintf(mess,"Error reading from socket\n");
 		ret=FAIL;
 	}
-	ind=arg[0];
+	ind=(dacIndex)arg[0];
 	imod=arg[1];
 
 	n = receiveData(file_des,&val,sizeof(val),INT32);
@@ -1055,52 +1060,52 @@ int set_dac(int file_des) {
 #endif
 #ifdef EIGERD
 	case E_SvP:
-		ind = SVP;
+		idac = (detDacIndex)SVP;
 		break;
 	case E_SvN:
-		ind = SVN;
+		idac = (detDacIndex)SVN;
 		break;
 	case E_Vtr:
-		idac = VTR;
+		idac = (detDacIndex)VTR;
 		break;
 	case E_Vrf:
-		idac = VRF;
+		idac = (detDacIndex)VRF;
 		break;
 	case E_Vrs:
-		idac = VRS;
+		idac = (detDacIndex)VRS;
 		break;
 	case E_Vtgstv:
-		idac = VTGSTV;
+		idac = (detDacIndex)VTGSTV;
 		break;
 	case E_Vcmp_ll:
-		idac = VCMP_LL;
+		idac = (detDacIndex)VCMP_LL;
 		break;
 	case E_Vcmp_lr:
-		idac = VCMP_LR;
+		idac = (detDacIndex)VCMP_LR;
 		break;
 	case E_cal:
-		idac = CAL;
+		idac = (detDacIndex)CAL;
 		break;
 	case E_Vcmp_rl:
-		idac = VCMP_RL;
+		idac = (detDacIndex)VCMP_RL;
 		break;
 	case E_Vcmp_rr:
-		idac = VCMP_RR;
+		idac = (detDacIndex)VCMP_RR;
 		break;
 	case E_rxb_rb:
-		idac = RXB_RB;
+		idac = (detDacIndex)RXB_RB;
 		break;
 	case E_rxb_lb:
-		idac = RXB_LB;
+		idac = (detDacIndex)RXB_LB;
 		break;
 	case E_Vcp:
-		idac = VCP;
+		idac = (detDacIndex)VCP;
 		break;
 	case E_Vcn:
-		idac = VCN;
+		idac = (detDacIndex)VCN;
 		break;
 	case E_Vis:
-		idac = VIS;
+		idac = (detDacIndex)VIS;
 		break;
 #endif
 	default:
@@ -1163,6 +1168,7 @@ int get_adc(int file_des) {
 	enum dacIndex ind;
 	int imod;
 	int n;
+	enum detDacIndex idac=(detDacIndex)0;
 
 	sprintf(mess,"Can't read ADC\n");
 
@@ -1172,7 +1178,7 @@ int get_adc(int file_des) {
 		sprintf(mess,"Error reading from socket\n");
 		ret=FAIL;
 	}
-	ind=arg[0];
+	ind=(dacIndex)arg[0];
 	imod=arg[1];
 
 #ifdef SLS_DETECTOR_FUNCTION_LIST
@@ -1184,7 +1190,7 @@ int get_adc(int file_des) {
 
 	switch (ind) {
 #ifdef GOTTHARDD
-	case TEMPERATURE_FPGA:	//ind = TEMP_FPGA;
+	case TEMPERATURE_FPGA:	//dac = (detDacIndex)TEMP_FPGA;
 		break;
 	case TEMPERATURE_ADC:
 		break;
@@ -1197,18 +1203,18 @@ int get_adc(int file_des) {
 	}
 #ifdef SLS_DETECTOR_FUNCTION_LIST
 	if (ret==OK) {
-		retval=getADC(ind,imod);
+		retval=getADC(idac,imod);
 	}
 #endif
 #ifdef VERBOSE
-	printf("Getting ADC %d of module %d\n", ind, imod);
+	printf("Getting ADC %d of module %d\n", idac, imod);
 #endif 
 
 #ifdef VERBOSE
 	printf("ADC is %f V\n",  retval);
 #endif  
 	if (ret==FAIL) {
-		printf("Getting adc %d of module %d failed\n", ind, imod);
+		printf("Getting adc %d of module %d failed\n", idac, imod);
 	}
 
 
@@ -1518,7 +1524,7 @@ int set_chip(int file_des) {
 	sls_detector_chip myChip;
 
 	myChip.nchan=getNumberOfChannelsPerChip();
-	ch=malloc((myChip.nchan)*sizeof(int));
+	ch=(int*)malloc((myChip.nchan)*sizeof(int));
 	myChip.chanregs=ch;
 
 
@@ -1598,7 +1604,7 @@ int get_chip(int file_des) {
 
 #ifdef SLS_DETECTOR_FUNCTION_LIST
 	retval.nchan=getNumberOfChannelsPerChip();
-	ch=malloc((retval.nchan)*sizeof(int));
+	ch=(int*)malloc((retval.nchan)*sizeof(int));
 	retval.chanregs=ch;
 #endif
 
@@ -1663,10 +1669,10 @@ int set_module(int file_des) {
 
 #ifdef SLS_DETECTOR_FUNCTION_LIST
 	sls_detector_module myModule;
-	int *myChip=malloc(getNumberOfChipsPerModule()*sizeof(int));
-	int *myChan=malloc(getNumberOfChannelsPerModule()*sizeof(int));
-	int *myDac=malloc(getNumberOfDACsPerModule()*sizeof(int));
-	int *myAdc=malloc(getNumberOfADCsPerModule()*sizeof(int));
+	int *myChip=(int*)malloc(getNumberOfChipsPerModule()*sizeof(int));
+	int *myChan=(int*)malloc(getNumberOfChannelsPerModule()*sizeof(int));
+	int *myDac=(int*)malloc(getNumberOfDACsPerModule()*sizeof(int));
+	int *myAdc=(int*)malloc(getNumberOfADCsPerModule()*sizeof(int));
 
 
 	if (myDac)
@@ -1763,10 +1769,10 @@ int get_module(int file_des) {
 	sls_detector_module myModule;
 
 #ifdef SLS_DETECTOR_FUNCTION_LIST
-	int *myChip=malloc(getNumberOfChipsPerModule()*sizeof(int));
-	int *myChan=malloc(getNumberOfChannelsPerModule()*sizeof(int));
-	int *myDac=malloc(getNumberOfDACsPerModule()*sizeof(int));
-	int *myAdc=malloc(getNumberOfADCsPerModule()*sizeof(int));
+	int *myChip=(int*)malloc(getNumberOfChipsPerModule()*sizeof(int));
+	int *myChan=(int*)malloc(getNumberOfChannelsPerModule()*sizeof(int));
+	int *myDac=(int*)malloc(getNumberOfDACsPerModule()*sizeof(int));
+	int *myAdc=(int*)malloc(getNumberOfADCsPerModule()*sizeof(int));
 
 
 	if (myDac)
@@ -1868,7 +1874,7 @@ int set_settings(int file_des) {
 		ret=FAIL;
 	}
 	imod=arg[1];
-	isett=arg[0];
+	isett=(detectorSettings)arg[0];
 	printf("isett:%d, imod =%d\n",isett,imod);
 
 #ifdef SLS_DETECTOR_FUNCTION_LIST
@@ -1990,7 +1996,7 @@ int set_threshold_energy(int file_des) {
 #if defined(MYTHEND) || defined(EIGERD)
 	ethr=arg[0];
 	imod=arg[1];
-	isett=arg[2];
+	isett=(detectorSettings)arg[2];
 #ifdef SLS_DETECTOR_FUNCTION_LIST
 	if (imod>=getTotalNumberOfModules()) {
 		ret=FAIL;
@@ -2559,7 +2565,7 @@ int set_roi(int file_des) {
 			n = receiveData(file_des,&arg[i].ymax,sizeof(int),INT32);
 		}
 		//n = receiveData(file_des,arg,nroi*sizeof(ROI));
-		if (n != (nroi*sizeof(ROI))) {
+		if ((unsigned int)n != (nroi*sizeof(ROI))) {
 			sprintf(mess,"Received wrong number of bytes for ROI\n");
 			ret=FAIL;
 		}
@@ -2699,7 +2705,7 @@ int execute_trimming(int file_des) {
 
 	int arg[3];
 	int n;
-	int ret=OK, retval;
+	int ret=OK, retval=0;
 #if defined(MYTHEND) || defined(EIGERD)
 	int imod, par1,par2;
 #endif

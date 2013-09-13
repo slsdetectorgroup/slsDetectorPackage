@@ -1,6 +1,7 @@
 #ifdef SLS_DETECTOR_FUNCTION_LIST
 
 #include "slsDetectorFunctionList.h"
+#include "Eiger.h"
 #include "svnInfoEiger.h"
 
 #include <stdio.h>
@@ -45,12 +46,12 @@ const char* dacNames[16] = {"Svp","Svn","Vtr","Vrf","Vrs","Vtgstv","Vcmp_ll","Vc
 
 //temporary storage on server for debugging until Ian implements
 int dacvalues[NDAC];
-int framenum=0;
-int trains=0;
-int exposureTime=1e6;
-int period=1e9;
-int delay=0;
-int gates=0;
+int64_t framenum=0;
+int64_t trains=0;
+int64_t exposureTime=(int64_t)1e6;
+int64_t period=(int64_t)1e9;
+int64_t delay=0;
+int64_t gates=0;
 
 /** temporary
 u_int32_t CSP0BASE;
@@ -99,11 +100,11 @@ int initializeDetectorStructure(){
 #ifdef VERBOSE
 	printf("Board is for %d modules\n",n);
 #endif
-	detectorModules=malloc(n*sizeof(sls_detector_module));
-	detectorChips=malloc(n*NCHIP*sizeof(int));
-	detectorChans=malloc(n*NCHIP*NCHAN*sizeof(int));
-	detectorDacs=malloc(n*NDAC*sizeof(int));
-	detectorAdcs=malloc(n*NADC*sizeof(int));
+	detectorModules=(sls_detector_module*)malloc(n*sizeof(sls_detector_module));
+	detectorChips=(int*)malloc(n*NCHIP*sizeof(int));
+	detectorChans=(int*)malloc(n*NCHIP*NCHAN*sizeof(int));
+	detectorDacs=(dacs_t*)malloc(n*NDAC*sizeof(int));
+	detectorAdcs=(dacs_t*)malloc(n*NADC*sizeof(int));
 #ifdef VERBOSE
 	printf("modules from 0x%x to 0x%x\n",(unsigned int)(detectorModules), (unsigned int)(detectorModules+n));
 	printf("chips from 0x%x to 0x%x\n",(unsigned int)(detectorChips), (unsigned int)(detectorChips+n*NCHIP));
@@ -311,9 +312,9 @@ int setModule(sls_detector_module myMod){
 	int i;
 
 	for(i=0;i<myMod.ndac;i++)
-		setDAC(i,myMod.dacs[i],myMod.module);
+		setDAC((detDacIndex)i,myMod.dacs[i],myMod.module);
 
-	thisSettings = myMod.reg;
+	thisSettings = (detectorSettings)myMod.reg;
 
 
 	return OK;
@@ -343,7 +344,7 @@ int setThresholdEnergy(int thr, int imod){
 
 
 
-enum detDacIndex setSettings(enum detDacIndex sett, int imod){
+enum detectorSettings setSettings(enum detectorSettings sett, int imod){
 	//template setSettings() from mcb_funcs.c
 	//reads the dac registers from fpga to confirm which settings, if weird, undefined
 
@@ -453,7 +454,7 @@ int setDynamicRange(int dr){
 
 enum readOutFlags setReadOutFlags(enum readOutFlags val){
 	//template setStoreInRAM from firmware_funcs.c
-	return -1;
+	return GET_READOUT_FLAGS;
 }
 
 
@@ -508,7 +509,7 @@ int getNumberOfADCsPerModule(){return NADC;}
 enum externalSignalFlag getExtSignal(int signalindex){
 	//template getExtSignal from firmware_funcs.c
 	//return signals[signalindex];
-	return -1;
+	return GET_EXTERNAL_SIGNAL_FLAG;
 }
 
 
@@ -576,7 +577,7 @@ enum externalCommunicationMode setTiming( enum externalCommunicationMode arg){
 	//if( flag=SIGNAL_OFF and signals[signalindex]==MASTER_SLAVE_SYNCHRONIZATION), return -1, (ensures masterslaveflag !=off now)
 	//else return flag
 
-	int ret=GET_EXTERNAL_COMMUNICATION_MODE;
+	enum externalCommunicationMode ret=GET_EXTERNAL_COMMUNICATION_MODE;
 	//sets timingmode variable
 	//ensures that the signals are in acceptance with timing mode and according sets the timing mode
 	/*

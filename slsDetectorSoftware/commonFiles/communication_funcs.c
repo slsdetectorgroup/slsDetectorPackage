@@ -9,7 +9,10 @@
 #include <errno.h>
 
 #include <sys/time.h>
-
+char lastClientIP[INET_ADDRSTRLEN];
+char thisClientIP[INET_ADDRSTRLEN];
+int lockStatus;
+int differentClients;
 
 //int socketDescriptor, file_des;
 const int send_rec_max_size=SEND_REC_MAX_SIZE;
@@ -486,7 +489,7 @@ int receiveChip(int file_des, sls_detector_chip* myChip) {
   if (chdiff<=0)
     ts+=receiveData(file_des,myChip->chanregs, sizeof(int)*nChans,INT32);
   else {
-    ptr=malloc(chdiff*sizeof(int));
+    ptr=(int*)malloc(chdiff*sizeof(int));
     myChip->nchan=nchanold;
     ts+=receiveData(file_des,myChip->chanregs, sizeof(int)*nchanold,INT32);
     ts+=receiveData(file_des,ptr, sizeof(int)*chdiff,INT32);
@@ -584,7 +587,7 @@ int  receiveModule(int file_des, sls_detector_module* myMod) {
 
 #endif
   } else {
-    dacptr=malloc(ndacdiff*sizeof(dacs_t));
+    dacptr=(dacs_t*)malloc(ndacdiff*sizeof(dacs_t));
     myMod->ndac=ndold;
     ts+=receiveData(file_des,myMod->dacs, sizeof(dacs_t)*ndold,INT32);
     ts+=receiveData(file_des,dacptr, sizeof(dacs_t)*ndacdiff,INT32);
@@ -598,7 +601,7 @@ int  receiveModule(int file_des, sls_detector_module* myMod) {
     printf("adcs received\n");
 #endif
   } else {
-    adcptr=malloc(nadcdiff*sizeof(dacs_t));
+    adcptr=(dacs_t*)malloc(nadcdiff*sizeof(dacs_t));
     myMod->nadc=naold;
     ts+=receiveData(file_des,myMod->adcs, sizeof(dacs_t)*naold,INT32);
     ts+=receiveData(file_des,adcptr, sizeof(dacs_t)*nadcdiff,INT32);
@@ -612,7 +615,7 @@ int  receiveModule(int file_des, sls_detector_module* myMod) {
     printf("chips received\n");
 #endif
   } else {
-    chipptr=malloc(nchipdiff*sizeof(int));
+    chipptr=(int*)malloc(nchipdiff*sizeof(int));
     myMod->nchip=nchipold;
     ts+=receiveData(file_des,myMod->chipregs, sizeof(int)*nchipold,INT32);
     ts+=receiveData(file_des,chipptr, sizeof(int)*nchipdiff,INT32);
@@ -626,7 +629,7 @@ int  receiveModule(int file_des, sls_detector_module* myMod) {
     printf("chans received\n");
 #endif
   } else {
-    chanptr=malloc(nchandiff*sizeof(int));
+    chanptr=(int*)malloc(nchandiff*sizeof(int));
     myMod->nchan=nchanold;
     ts+=receiveData(file_des,myMod->chanregs, sizeof(int)*nchanold,INT32);
     ts+=receiveData(file_des,chanptr, sizeof(int)*nchandiff,INT32);

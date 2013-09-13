@@ -62,11 +62,10 @@ $Revision$
 /** get flag form most functions */
 #define GET_FLAG -1
 
-#ifdef __cplusplus
+#if defined(__cplusplus) && !defined(EIGERD)
 
 /** @short class containing all the structures, constants and enum definitions */
 class slsDetectorDefs {
-
  public:
 
   slsDetectorDefs(){};
@@ -565,7 +564,7 @@ enum angleConversionParameter {
 //} angleConversionConstant;
 
 
-#ifdef __cplusplus
+#if defined(__cplusplus) && !defined(EIGERD)
  protected:
 #endif
 
@@ -575,7 +574,8 @@ enum angleConversionParameter {
 #include "sls_detector_funcs.h"
 #endif
 
-#ifdef __cplusplus
+
+#if defined(__cplusplus) && !defined(EIGERD)
 };
 #endif
 ;

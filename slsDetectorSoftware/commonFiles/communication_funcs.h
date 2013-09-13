@@ -16,11 +16,6 @@
 
 
 
-
-char lastClientIP[INET_ADDRSTRLEN];
-char thisClientIP[INET_ADDRSTRLEN];
-int lockStatus;
-int differentClients;
 typedef enum{
 	INT16,
 	INT32,

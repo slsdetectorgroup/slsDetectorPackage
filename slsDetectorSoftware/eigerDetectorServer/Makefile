@@ -21,10 +21,8 @@ boot: $(OBJS) $(OBJS2)
 $(PROGS): 
 	echo $(OBJS) $(OBJS2)
 	mkdir -p $(DESTDIR) 
-#	$(CC) $(SRC_CLNT) $(CLAGS) $(LDLIBS) -o $@   
+	#if you use g++ for pc, uncomment swapData in SendData() and ReceiveData() in communication_funcs.c
 	$(CCX)  -o $@  $(SRC_CLNT) $(SRC_CLNT2) $(CFLAGS) $(LDLIBS) 
-#	$(CCX)  -c   $(SRC_CLNT) $(CLAGS) $(LDLIBS)
-#	$(CCX) -o $@    slsDetectorServer.o slsDetectorServer_funcs.o communication_funcs.o slsDetectorFunctionList.o 
 	mv $(PROGS) $(DESTDIR)
 
 clean:

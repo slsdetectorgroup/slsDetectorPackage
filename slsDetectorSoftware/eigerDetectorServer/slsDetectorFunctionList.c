@@ -1,8 +1,5 @@
 #ifdef SLS_DETECTOR_FUNCTION_LIST
 
-#include "slsDetectorFunctionList.h"
-#include "Eiger.h"
-#include "svnInfoEiger.h"
 
 #include <stdio.h>
 #include <string.h>
@@ -11,7 +8,9 @@
 #include <sys/mman.h>		//PROT_READ,PROT_WRITE,MAP_FILE,MAP_SHARED,MAP_FAILED
 #include <fcntl.h>			//O_RDWR
 
-
+#include "slsDetectorFunctionList.h"
+#include "svnInfoEiger.h"
+#include "Eiger.h"
 
 const int nChans=NCHAN;
 const int nChips=NCHIP;
@@ -53,7 +52,14 @@ int64_t period=(int64_t)1e9;
 int64_t delay=0;
 int64_t gates=0;
 
-/** temporary
+
+
+//Eiger* eiger;
+
+
+
+
+/** temporary*/
 u_int32_t CSP0BASE;
 int mapCSP0(void) {
 	CSP0BASE = (u_int32_t)malloc(0xFFFFFFF);
@@ -62,7 +68,7 @@ int mapCSP0(void) {
 	printf("CSPOBASE=from %08x to %x\n",CSP0BASE,CSP0BASE+0xFFFFFFF);
 	return OK;
 }
-*/
+/*
 #define CSP0 				  	0xC4100000		//XPAR_PLB_LL_FIFO_AURORA_DUAL_CTRL_FEB_LEFT_BASEADDR
 #define MEM_SIZE 			  	0xFFFFFFF
 
@@ -90,7 +96,7 @@ int mapCSP0(void) {
 
 	return OK;
 }
-
+*/
 
 
 int initializeDetectorStructure(){
@@ -144,6 +150,13 @@ int initializeDetectorStructure(){
 
 
 int setupDetector(){
+	//eiger = new Eiger();
+	//eiger->Init();
+	//ReadSetUpFileToAddModules(std::string file_name);
+	//ReadSetUpFile(unsigned int module_num, std::string file_name);
+	//eiger->CheckSetup();
+
+
 	//testFpga();
 	//testRAM();
 
@@ -285,6 +298,8 @@ int setDAC(enum detDacIndex ind, int val, int imod){
 //#endif
 	if (val >= 0)
 		dacvalues[(int)ind] = val;
+
+	//eiger->SetDac()
 
 	//template initDACbyIndexDACU from mcb_funcs.c
 

@@ -30,7 +30,7 @@ typedef char mystring[MAX_STR_LENGTH];
 typedef double mysteps[MAX_SCAN_STEPS];
 
 
-#ifdef DACS_INT
+#ifndef DACS_FLOAT
 typedef int dacs_t;
 #else
 typedef float dacs_t;

@@ -385,7 +385,7 @@ enum detectorSettings{
   LOWGAIN,          /**< low gain  settings */
   MEDIUMGAIN,       /**< medium gain  settings */
   VERYHIGHGAIN,     /**< very high gain  settings */
-  LOWNOISE,			/**< low noise settings */
+  LOWNOISE,	    /**< low noise settings */
   UNDEFINED,        /**< undefined or custom  settings */
   UNINITIALIZED     /**< uninitialiazed (status at startup) */
 };
@@ -443,7 +443,9 @@ enum speedVariable {
   WAIT_STATES, /**< wait states for bus read */
   TOT_CLOCK_DIVIDER, /**< wait states for bus read */
   TOT_DUTY_CYCLE, /**< wait states for bus read */
-  SET_SIGNAL_LENGTH /**< set/clear signal length */
+  SET_SIGNAL_LENGTH, /**< set/clear signal length */
+  PHASE_SHIFT, /**< adds phase shift */
+  OVERSAMPLING /**< oversampling for analog detectors */
 };
 
 /** 

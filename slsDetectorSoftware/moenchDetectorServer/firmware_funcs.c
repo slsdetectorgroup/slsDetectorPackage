@@ -39,7 +39,7 @@ int ram_size=0;
 int64_t totalTime=1;
 u_int32_t progressMask=0;
 
-int phase_shift=DEFAULT_PHASE_SHIFT;
+int phase_shift=0;//DEFAULT_PHASE_SHIFT;
 int ipPacketSize=DEFAULT_IP_PACKETSIZE;
 int udpPacketSize=DEFAULT_UDP_PACKETSIZE;
 
@@ -253,6 +253,30 @@ int setPhaseShiftOnce(){
 
 	return OK;
 }
+int phaseStep(int st){
+	u_int32_t addr;
+	int i;
+
+	addr=MULTI_PURPOSE_REG;
+
+	if (st>0) {  
+	  bus_w(PLL_CNTRL_REG, 1);//reset PLL
+	  bus_w(PLL_CNTRL_REG, 0);
+	  phase_shift=0;
+	  for (i=0;i<st;i++) {
+	    bus_w(addr,(INT_RSTN_BIT|ENET_RESETN_BIT|SW1_BIT|PHASE_STEP_BIT));//0x2821
+	    bus_w(addr,(INT_RSTN_BIT|ENET_RESETN_BIT|(SW1_BIT&~PHASE_STEP_BIT)));//0x2820
+	    phase_shift++;
+	  }
+	}
+		
+#ifdef VERBOSE
+	printf("Multipupose reg now:%x\n",bus_r(addr));
+#endif
+
+
+	return phase_shift;
+}
 
 
 
@@ -356,11 +380,164 @@ u_int32_t readin(int modnum) {
 }
 
 u_int32_t setClockDivider(int d) {
+  
+
+  int nc;
+  if (d>1)  nc=d;//  nc=161/d;
+  else return -1;
+
+   if (nc>255) 
+     return -1; 
+
+  int addr, addr1, addr0;
+  u_int32_t pat,pat1,pat0;
+
+  addr= PLL_PARAM_REG;
+  addr0= PLL_PARAM_OUT_REG;
+  addr1=PLL_CNTRL_REG;
+  pat1=0x10;
+
+
+  //write high count c0
+/*   pat=(1<<12)|(7<<9)|nc; */
+/*   bus_w(addr, pat); */
+/*   bus_w(addr1, pat1); */
+/*   bus_w(addr1, 0); */
+/*   usleep (1000); */
+/*   pat=bus_r(addr0); */
+/*   bus_w(addr1, 0x4); */
+/*   bus_w(addr1, 0); */
+/*   pat=bus_r(addr0); */
+/*   printf("M nominal count read %x (%d)\n",pat,(pat&0x1ff)); */
+
+
+ 
+  //write low count c0
+  pat=(nc-1)|(4<<12)|(1<<9);
+  bus_w(addr, pat);
+  bus_w(addr1, pat1);
+  bus_w(addr1, 0);
+  pat0=bus_r(PLL_PARAM_OUT_REG);
+  usleep (1000);
+  printf("C0 low count status %x\n",pat0);
+
+  //write high count c0
+  pat=(nc)|(4<<12)|(0<<9);
+  bus_w(addr, pat);
+  bus_w(addr1, pat1);
+  bus_w(addr1, 0);
+  pat0=bus_r(PLL_PARAM_OUT_REG);
+  printf("C0 high count status %x\n",pat0);
+  usleep (1000);
+
+  //write low count c1
+  pat=(nc-1)|(5<<12)|(1<<9);
+  bus_w(addr, pat);
+  bus_w(addr1, pat1);
+  bus_w(addr1, 0);
+  pat0=bus_r(PLL_PARAM_OUT_REG);
+  printf("C1 high count status %x\n",pat0);
+  usleep (1000);
+
+  //write high count c1
+  pat=(nc)|(5<<12)|(0<<9);
+  bus_w(addr, pat);
+  bus_w(addr1, pat1);
+  bus_w(addr1, 0);
+  pat0=bus_r(PLL_PARAM_OUT_REG);
+  printf("C1 low count status %x\n",pat0);
+  usleep (1000);
+
+  //reconfigure pll
+  pat1=0x8;
+  bus_w(addr1, pat1);
+  bus_w(addr1, 0);
+  pat0=bus_r(PLL_PARAM_OUT_REG);
+  printf("configure  status %d\n",pat0);
+  sleep (1);
+  printf("finish  status %x\n",pat0);
+
+
+  bus_w(PLL_CNTRL_REG, 1); //reset PLL
+  bus_w(PLL_CNTRL_REG, 0);
+
  return 0;
 }
 
 u_int32_t getClockDivider() {
-	 return 0;
+  int addr, addr1, addr0;
+  u_int32_t pat,pat1;
+
+  addr0= PLL_PARAM_REG;
+  addr= PLL_PARAM_OUT_REG;
+  addr1=PLL_CNTRL_REG;
+  pat1=0x4;
+
+
+  //write low count c0
+  pat=(4<<12)|(1<<9);
+  bus_w(addr0, pat);
+  bus_w(addr1, pat1);
+  bus_w(addr1, 0);
+  usleep (1000);
+  pat=bus_r(addr);
+  printf("C0 low count read %x (%d)\n",pat,(pat&0xff));
+
+  //write high count c0
+  pat=(4<<12)|(0<<9);
+  bus_w(addr0, pat);
+  bus_w(addr1, pat1);
+  bus_w(addr1, 0);
+  usleep (1000);
+  pat=bus_r(addr);
+  printf("C0 high count read %x (%d)\n",pat,(pat&0xff));
+
+
+  //write low count c1
+  pat=(5<<12)|(1<<9);
+  bus_w(addr0, pat);
+  bus_w(addr1, pat1);
+  bus_w(addr1, 0);
+  usleep (1000);
+  pat=bus_r(addr);
+  printf("C1 low count read %x (%d)\n",pat,(pat&0xff));
+
+  //write high count c1
+  pat=(5<<12)|(0<<9);
+  bus_w(addr0, pat);
+  bus_w(addr1, pat1);
+  bus_w(addr1, 0);
+  usleep (1000);
+  pat=bus_r(addr);
+  printf("C1 high count read %x (%d)\n",pat,(pat&0xff));
+
+ 
+  return (pat&0xff);
+
+/*   //write low count c0 */
+/*   pat=(0<<12)|(7<<9); */
+/*   bus_w(addr0, pat); */
+/*   bus_w(addr1, pat1); */
+/*   bus_w(addr1, 0); */
+/*   usleep (1000); */
+/*   pat=bus_r(addr); */
+/*   printf("N nominal count read %x (%d)\n",pat,pat&0x1ff); */
+
+/*   //write high count c0 */
+/*   pat=(1<<12)|(7<<9); */
+/*   bus_w(addr0, pat); */
+/*   bus_w(addr1, pat1); */
+/*   bus_w(addr1, 0); */
+/*   usleep (1000); */
+/*   pat=bus_r(addr); */
+/*   printf("M nominal count read %x (%d)\n",pat,(pat&0x1ff)); */
+
+
+ 
+/*   if ((pat&0x1ff)!=0) */
+/*     return 161/(pat&0x1ff); */
+/*   else */
+/*     return -1; */
 }
 
 u_int32_t setSetLength(int d) {
@@ -369,6 +546,14 @@ u_int32_t setSetLength(int d) {
 
 u_int32_t getSetLength() {
 	 return 0;
+}
+
+u_int32_t setOversampling(int d) {
+
+  if (d>=0 && d<=255)
+    bus_w(OVERSAMPLING_REG, d);
+
+  return bus_r(OVERSAMPLING_REG);
 }
 
 
@@ -1445,6 +1630,8 @@ int configureMAC(int ipad,long long int macad,long long int detectormacad, int d
 	//  if(val!=0x2820) return -1;
 
 
+	
+
 	return adcConfigured;
 }
 
@@ -1636,6 +1823,7 @@ u_int32_t* fifo_read_event()
 */
 
    while((t&0x1)==0) {
+  printf("before readout %08x %08x\n", runState(), bus_r(LOOK_AT_ME_REG));
 #ifdef VERYVERBOSE
 	   printf("look at me reg:%08x\n",bus_r(LOOK_AT_ME_REG));
 #endif
@@ -1916,7 +2104,6 @@ int prepareADC(){
 
  valw=valw&(~(0x1<<cdx));usleep(0);
     valw=0xff; bus_w(ADC_WRITE_REG,(valw)); // stop point =start point */
-
        return;
 }
 

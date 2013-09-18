@@ -29,6 +29,7 @@ u_int32_t bus_w(u_int32_t offset, u_int32_t data);
 u_int32_t bus_r(u_int32_t offset);
 
 int setPhaseShiftOnce();
+int phaseStep(int st);
 int cleanFifo();
 int setDAQRegister();
 
@@ -44,6 +45,7 @@ u_int32_t setTotClockDivider(int d);
 u_int32_t getTotClockDivider();
 u_int32_t setTotDutyCycle(int d);
 u_int32_t getTotDutyCycle();
+u_int32_t setOversampling(int d);
 
 u_int32_t setExtSignal(int d, enum externalSignalFlag  mode);
 int  getExtSignal(int d);

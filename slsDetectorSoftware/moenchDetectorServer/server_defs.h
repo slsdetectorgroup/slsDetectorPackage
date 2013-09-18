@@ -47,7 +47,7 @@
 #define TOKEN_TIMING_REV1           0x1f16
 #define TOKEN_TIMING_REV2           0x1f0f
 
-#define DEFAULT_PHASE_SHIFT			120
+#define DEFAULT_PHASE_SHIFT		0 //	120
 #define DEFAULT_IP_PACKETSIZE		0x0522
 #define DEFAULT_UDP_PACKETSIZE		0x050E
 #define ADC1_IP_PACKETSIZE			256*2+14+20
@@ -57,7 +57,7 @@
 #define DEBUGOUT
 #endif
 
-#define CLK_FREQ 32.1E+6
+#define CLK_FREQ 65.6E+6
 
 
 #endif

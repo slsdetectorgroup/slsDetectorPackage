@@ -771,6 +771,14 @@ slsDetectorCommand::slsDetectorCommand(slsDetectorUtils *det)  {
   descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdSpeed;
   i++;
 
+  descrToFuncMap[i].m_pFuncName="phasestep"; //
+  descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdSpeed;
+  i++;
+
+  descrToFuncMap[i].m_pFuncName="oversampling"; //
+  descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdSpeed;
+  i++;
+
   /* settings dump/retrieve */
   descrToFuncMap[i].m_pFuncName="config"; 
   descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdConfiguration;
@@ -3618,6 +3626,10 @@ string slsDetectorCommand::cmdSpeed(int narg, char *args[], int action) {
     index=TOT_CLOCK_DIVIDER;
   else if (cmd=="totdutycycle")
     index=TOT_DUTY_CYCLE;
+  else if (cmd=="phasestep")
+    index=PHASE_SHIFT;
+  else if (cmd=="oversampling")
+    index=OVERSAMPLING;
   else
     return string("could not decode speed variable ")+cmd;
 
@@ -3629,11 +3641,9 @@ string slsDetectorCommand::cmdSpeed(int narg, char *args[], int action) {
       return string("cannot scan speed value ")+string(args[1]);
   }
   
-  
   myDet->setOnline(ONLINE_FLAG);
 
   ret=myDet->setSpeed(index,t);
-  
 
   sprintf(answer,"%d",ret);
   return string(answer);

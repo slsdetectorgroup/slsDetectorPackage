@@ -54,9 +54,12 @@ More advanced configuration functions are not implemented and can be written in 
 
 slsReceiverUsers is a class to receive the data for detectors with external data receiver (e.g. GOTTHARD). Callbacks can be registered to process the data or save them in specific formats.
 
-detectorData is a structure containing the data and additional information which is used to return the data e.g. to the  GUi for displaying them.
+detectorData is a structure containing the data and additional information which is used to return the data e.g. to the  GUI for displaying them.
 
  
+You can  find examples of how this classes can be instatiated in mainClient.cpp and mainReceiver.cpp
+
+
    \authors <a href="mailto:anna.bergamaschi@psi.ch">Anna Bergamaschi</a>, <a href="mailto:dhanya.maliakal@psi.ch">Dhanya Maliakal</a>
    @version 0.2
 <H2>Currently supported detectors</H2>

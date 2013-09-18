@@ -103,6 +103,17 @@
 
 
 
+#define PLL_PARAM_REG  0x37<<11
+#define PLL_PARAM_OUT_REG 0x38<<11
+#define PLL_CNTRL_REG 0x34<<11
+
+#define ROI_REG 0x35<<11
+#define OVERSAMPLING_REG 0x36<<11
+#define MOENCH_CNTR_REG 0x31<<11
+#define MOENCH_CNTR_OUT_REG 0x33<<11
+#define MOENCH_CNTR_CONF_REG 0x32<<11
+
+
 
 //image
 #define DARK_IMAGE_REG     0x81<<11

@@ -79,7 +79,6 @@ int init_detector(int b, int checkType) {
   }
 
   if (b) {
-	int reg;
 #ifdef MCB_FUNCS
 	 printf("\nBoard Revision:0x%x\n",(bus_r(PCB_REV_REG)&BOARD_REVISION_MASK));
     initDetector();
@@ -89,23 +88,26 @@ int init_detector(int b, int checkType) {
     testRAM();
     printf("ADC_SYNC_REG:%x\n",bus_r(ADC_SYNC_REG));
     //moench specific
-    setPhaseShiftOnce();
-    prepareADC();
-    setADC(-1); //already does setdaqreg and clean fifo
-    setSettings(GET_SETTINGS,-1);
+  
+    //  setPhaseShiftOnce(); //firmware.h
+
+
+    prepareADC(); // server_funcs
+    setADC(-1); //already does setdaqreg and clean fifo 
+    setSettings(GET_SETTINGS,-1); 
 
     //Initialization
     setFrames(1);
     setTrains(1);
-    setExposureTime(1e6);
-    setPeriod(1e9);
+    setExposureTime(1e3);
+    setPeriod(1E6);
     setDelay(0);
     setGates(0);
 
     setTiming(GET_EXTERNAL_COMMUNICATION_MODE);
     setMaster(GET_MASTER);
     setSynchronization(GET_SYNCHRONIZATION_MODE);
-    startReceiver(0);
+    startReceiver(0); //firmware
   }
   strcpy(mess,"dummy message");
   strcpy(lastClientIP,"none");
@@ -2337,18 +2339,78 @@ int get_roi(int file_des) {
 int set_speed(int file_des) {
 
   enum speedVariable arg;
-  int val;
-  int ret=FAIL;
+  int val,n;
+  int ret=OK;
+  int retval;
   
-  receiveDataOnly(file_des,&arg,sizeof(arg));
-  receiveDataOnly(file_des,&val,sizeof(val));
+  n=receiveDataOnly(file_des,&arg,sizeof(arg));
+  if (n < 0) {
+    sprintf(mess,"Error reading from socket\n");
+    ret=FAIL;
+  }
+  n=receiveDataOnly(file_des,&val,sizeof(val));
+   if (n < 0) {
+     sprintf(mess,"Error reading from socket\n");
+     ret=FAIL;
+   }
   
-  sprintf(mess,"can't set speed variable for moench\n");
+  
+  
+  if (ret==OK) {
+
+    if (val>=0) {
+      if (differentClients==1 && lockStatus==1 && val>=0) {
+	ret=FAIL;
+	sprintf(mess,"Detector locked by %s\n",lastClientIP);
+      }  else {
+	switch (arg) {
+	case CLOCK_DIVIDER:
+	  retval=setClockDivider(val);
+	  break;
+
+	case PHASE_SHIFT:
+	  retval=phaseStep(val);
+	  break;
+
+	case OVERSAMPLING:
+	  retval=setOversampling(val);
+	  break;
+
+	default:
+	  ret=FAIL;
+	  sprintf(mess,"Unknown speed parameter %d",arg);
+	}
+      }
+    }
 
 
-  sendDataOnly(file_des,&ret,sizeof(ret));
-  sendDataOnly(file_des,mess,sizeof(mess));
+    switch (arg) {
+    case CLOCK_DIVIDER:
+      retval=getClockDivider();
+      break;
 
+    case PHASE_SHIFT:
+      retval=phaseStep(-1);
+      break;
+
+	case OVERSAMPLING:
+	  retval=setOversampling(-1);
+	  break;
+
+    default:
+      ret=FAIL;
+      sprintf(mess,"Unknown speed parameter %d",arg);
+    }
+  }
+
+  
+
+  n = sendDataOnly(file_des,&ret,sizeof(ret));
+  if (ret==FAIL) {
+    n = sendDataOnly(file_des,mess,sizeof(mess));
+  } else {
+    n = sendDataOnly(file_des,&retval,sizeof(retval));
+  }
   return ret; 
 }
 

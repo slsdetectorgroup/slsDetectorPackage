@@ -2,7 +2,7 @@
 #ifndef SLS_RECEIVER_USERS_H
 #define SLS_RECEIVER_USERS_H
 
-#include "slsReceiver_funcs.h"
+#include <stdio.h>
 
 class slsReceiverFuncs;
 

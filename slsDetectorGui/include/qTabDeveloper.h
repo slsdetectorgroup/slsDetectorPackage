@@ -74,7 +74,7 @@ public:
 
 	/** To stop ADC Timer when starting acquisition
 	 */
-	void StopADCTimer(){adcTimer->stop();};
+	void StopADCTimer(){if(adcTimer) adcTimer->stop();};
 
 private:
 	/** The sls detector object */

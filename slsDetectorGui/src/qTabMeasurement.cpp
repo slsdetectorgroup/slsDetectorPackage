@@ -437,7 +437,7 @@ void qTabMeasurement::setExposureTime(){
 	cout << "Setting acquisition time to " << exptimeNS << " clocks" << "/" << spinExpTime->value() << qDefs::getUnitString((qDefs::timeUnit)comboExpUnit->currentIndex()) << endl;
 #endif
 	myDet->setTimer(slsDetectorDefs::ACQUISITION_TIME,(int64_t)exptimeNS);
-
+	/*
 	//updating value set
 	disconnect(spinExpTime,SIGNAL(valueChanged(double)),			this,	SLOT(setExposureTime()));
 	disconnect(comboExpUnit,SIGNAL(currentIndexChanged(int)),		this,	SLOT(setExposureTime()));
@@ -447,7 +447,7 @@ void qTabMeasurement::setExposureTime(){
 	comboExpUnit->setCurrentIndex((int)unit);
 	connect(spinExpTime,SIGNAL(valueChanged(double)),			this,	SLOT(setExposureTime()));
 	connect(comboExpUnit,SIGNAL(currentIndexChanged(int)),		this,	SLOT(setExposureTime()));
-
+*/
 	//could be different if it didnt work
 	exptimeNS = qDefs::getNSTime((qDefs::timeUnit)comboExpUnit->currentIndex(),spinExpTime->value());
 
@@ -480,7 +480,7 @@ void qTabMeasurement::setAcquisitionPeriod(){
 	cout << "Setting frame period between exposures to " << acqtimeNS << " clocks"<< "/" << spinPeriod->value() << qDefs::getUnitString((qDefs::timeUnit)comboPeriodUnit->currentIndex()) << endl;
 #endif
 	myDet->setTimer(slsDetectorDefs::FRAME_PERIOD,(int64_t)acqtimeNS);
-
+/*
 	//updating value set
 	disconnect(spinPeriod,SIGNAL(valueChanged(double)),			this,	SLOT(setAcquisitionPeriod()));
 	disconnect(comboPeriodUnit,SIGNAL(currentIndexChanged(int)),	this,	SLOT(setAcquisitionPeriod()));
@@ -490,7 +490,7 @@ void qTabMeasurement::setAcquisitionPeriod(){
 	comboPeriodUnit->setCurrentIndex((int)unit);
 	connect(spinPeriod,SIGNAL(valueChanged(double)),			this,	SLOT(setAcquisitionPeriod()));
 	connect(comboPeriodUnit,SIGNAL(currentIndexChanged(int)),	this,	SLOT(setAcquisitionPeriod()));
-
+*/
 	//could be different if it didnt work
 	acqtimeNS = qDefs::getNSTime((qDefs::timeUnit)comboPeriodUnit->currentIndex(),spinPeriod->value());
 
@@ -541,7 +541,7 @@ void qTabMeasurement::setDelay(){
 	cout << "Setting delay after trigger to " << exptimeNS << " clocks" <<  "/" << spinDelay->value() << qDefs::getUnitString((qDefs::timeUnit)comboDelayUnit->currentIndex()) << endl;
 #endif
 	myDet->setTimer(slsDetectorDefs::DELAY_AFTER_TRIGGER,(int64_t)exptimeNS);
-
+/*
 	//updating value set
 	disconnect(spinDelay,SIGNAL(valueChanged(double)),				this,	SLOT(setDelay()));
 	disconnect(comboDelayUnit,SIGNAL(currentIndexChanged(int)),	this,	SLOT(setDelay()));
@@ -551,7 +551,7 @@ void qTabMeasurement::setDelay(){
 	comboDelayUnit->setCurrentIndex((int)unit);
 	connect(spinDelay,SIGNAL(valueChanged(double)),				this,	SLOT(setDelay()));
 	connect(comboDelayUnit,SIGNAL(currentIndexChanged(int)),	this,	SLOT(setDelay()));
-
+*/
 
 	qDefs::checkErrorMessage(myDet,"qTabMeasurement::setDelay");
 }

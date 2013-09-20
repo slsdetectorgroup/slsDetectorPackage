@@ -771,7 +771,7 @@ Displays minimum, maximum and sum of values for each plot.
      </rect>
     </property>
     <property name="currentIndex">
-     <number>6</number>
+     <number>4</number>
     </property>
     <widget class="QWidget" name="page">
      <widget class="QWidget" name="gridLayoutWidget_2">
@@ -1249,7 +1249,7 @@ All values between &lt;b&gt;from&lt;/b&gt; and &lt;b&gt;to&lt;/b&gt; will be res
           <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
          </property>
          <property name="minimum">
-          <number>0</number>
+          <number>-16777215</number>
          </property>
          <property name="maximum">
           <number>16777215</number>
@@ -1296,7 +1296,7 @@ All values between &lt;b&gt;from&lt;/b&gt; and &lt;b&gt;to&lt;/b&gt; will be res
           <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
          </property>
          <property name="minimum">
-          <number>0</number>
+          <number>-16777215</number>
          </property>
          <property name="maximum">
           <number>16777215</number>

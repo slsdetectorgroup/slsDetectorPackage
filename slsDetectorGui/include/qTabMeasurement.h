@@ -110,9 +110,8 @@ private slots:
 	void setNumMeasurements(int num);
 
 	/** Set file name
-	 * @param fName name of file
 	 */
-	void setFileName(const QString& fName);
+	void setFileName();
 
 	/** Set index of file name
 	 * @param index index of selection

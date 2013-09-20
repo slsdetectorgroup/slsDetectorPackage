@@ -218,7 +218,7 @@ void qTabMeasurement::Initialization(){
 	//Number of Measurements
 	connect(spinNumMeasurements,SIGNAL(valueChanged(int)),			this,	SLOT(setNumMeasurements(int)));
 	//File Name
-	connect(dispFileName,		SIGNAL(textChanged(const QString&)),this,	SLOT(setFileName(const QString&)));
+	connect(dispFileName,		SIGNAL(editingFinished()),this,	SLOT(setFileName()));
 	//File Index
 	connect(spinIndex,			SIGNAL(valueChanged(int)),			this,	SLOT(setRunIndex(int)));
 	//Start/Stop Acquisition
@@ -362,15 +362,16 @@ void qTabMeasurement::UpdateProgress(){
 //-------------------------------------------------------------------------------------------------------------------------------------------------
 
 
-void qTabMeasurement::setFileName(const QString& fName){
+void qTabMeasurement::setFileName(){
+	QString fName = dispFileName->text();
 #ifdef VERBOSE
 	cout << "Setting File name to "  <<  fName.toAscii().constData() << endl;
 #endif
 	myDet->setFileName(fName.toAscii().data());
 
-	disconnect(dispFileName,		SIGNAL(textChanged(const QString&)),this,	SLOT(setFileName(const QString&)));
+	disconnect(dispFileName,		SIGNAL(editingFinished()),this,	SLOT(setFileName()));
 	dispFileName->setText(QString(myDet->getFileName().c_str()));
-	connect(dispFileName,		SIGNAL(textChanged(const QString&)),this,	SLOT(setFileName(const QString&)));
+	connect(dispFileName,		SIGNAL(editingFinished()),this,	SLOT(setFileName()));
 
 	qDefs::checkErrorMessage(myDet,"qTabMeasurement::setFileName");
 }
@@ -752,7 +753,7 @@ void qTabMeasurement::EnableFileWrite(bool enable){
 #endif
 	myDet->enableWriteToFile(enable);
 	dispFileName->setEnabled(enable);
-	if(enable) setFileName(dispFileName->text());
+	if(enable) setFileName();
 	myPlot->SetEnableFileWrite(enable);
 
 	disconnect(chkFile, 			SIGNAL(toggled(bool)), 				this, SLOT(EnableFileWrite(bool)));

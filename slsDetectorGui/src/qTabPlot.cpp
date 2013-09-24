@@ -992,6 +992,9 @@ void qTabPlot::SetBinary(){
 			lblTo->setEnabled(true);
 			spinFrom->setEnabled(true);
 			spinTo->setEnabled(true);
+			spinFrom->setRange(-10000,+10000);
+			spinTo->setRange(-10000,+10000);
+
 			myPlot->SetBinary(true,spinFrom->value(),spinTo->value());
 		}else{
 #ifdef VERBOSE

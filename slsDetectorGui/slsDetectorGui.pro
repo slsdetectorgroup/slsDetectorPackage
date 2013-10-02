@@ -64,6 +64,11 @@ INCLUDEPATH 		= 	\
 							slsDetectorPlotting/include\
 							include\
 							forms/include\
+							/usr/include/qwt\  #these are not included for standard installations, also bin path should include qt4 bin, not qt3 bin
+							/usr/include/qt4\	
+							/usr/include/Qt\
+							/usr/include/QtCore\
+							/usr/include/QtGui\
 							$(INCLUDES)
 #epics
 #                            $(INCLUDES) /usr/local/epics/base/include/ -I /usr/local/epics/base/include/os/Linux/

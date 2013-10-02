@@ -488,7 +488,7 @@ bool qDrawPlot::StartOrStopThread(bool start){
 		plot2D->GetPlot()->SetYMinMax(startPixel,endPixel);
 		plot2D->GetPlot()->SetZoom(-0.5,startPixel,nPixelsX,endPixel-startPixel);
 		plot2D->GetPlot()->UnZoom();
-
+		XYRangeChanged = true;
 
 		cout << "Starting new acquisition thread ...." << endl;
 		// Start acquiring data from server

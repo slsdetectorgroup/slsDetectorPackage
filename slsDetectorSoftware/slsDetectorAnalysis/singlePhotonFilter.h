@@ -68,44 +68,52 @@ class singlePhotonFilter{
 public:
 	/**
 	 * Constructor
-	 * @param nChannelsX Number of Channels in X direction
-	 * @param nChannelsY Number of Channels in Y direction
+	 * @param nx Number of Channels in X direction
+	 * @param ny Number of Channels in Y direction
+	 * @param fmask frame index mask
+	 * @param pmask packet index mask
+	 * @param foffset frame index offset
+	 * @param poffset packet index offset
+	 * @param pperf packets per frame
+	 * @param iValue increment value (only for gotthard to increment index to have matching frame number)
 	 * @param m Map to data without headers
 	 * @param s mask as to which adcs are inverted
 	 * @param d Size of data with the headers
 	 */
 
 	/** why is the datasize -1, you need to know the datasize with headers  so that you dont go over the limits */
-	singlePhotonFilter(int x, int y, vector <vector<int16_t> >m, vector <vector<int16_t> >s, int d = -1);
-	/*map[56][63]=656; data[map[56][63]] ^ 0x7fff*/
+	singlePhotonFilter(
+			int nx,
+			int ny,
+			int fmask,
+			int pmask,
+			int foffset,
+			int poffset,
+			int pperf,
+			int iValue,
+			vector <vector<int16_t> > m,
+			vector <vector<int16_t> > s,
+			int d = -1);
 
 	/** virtual destructor */
 	virtual ~singlePhotonFilter(){};
 
 	/**
-	 * Construct a tree, populate struct for the single photon hit
-	 * @param outdir Output file directory
-	 * @param fname Output file name
+	 * Construct a tree, populate struct for the single photon hit and provide all the masks and offsets
+	 * @param outdir Output file directory/Output file name
+
 	 */
-	void initTree(char *outdir, char *fname);
+	void initTree(char *outfname);
 
 	/**
-	 * Reset Indices before starting acquisition and provide all the masks and offsets
-	 * @param fmask frame index mask
-	 * @param pmask packet index mask
-	 * @param foffset frame index offset
-	 * @param poffset packet index offset
-	 * @param pperf packets per frame
+	 * Reset Indices before starting acquisition
 	 */
-	void initialize(int fmask, int pmask, int foffset, int poffset, int pperf);
+	void setupAcquisitionParameters();
 
-	/** Verify if all packets exist for the frame
+	/** reconstruct the frame with all the right packets
 	 * @param inData the data from socket to be verified
-	 * @param inDataSize datasize of packet
-	 * @param myData frame with all the packets
-	 * @param firstTime the first frame received from socket
 	 * */
-	int verifyFrame(char *inData, int inDataSize, int16_t* myData, int firstTime);
+	int verifyFrame(char *inData);
 
 	/**
 	 * Writes tree/struct to file
@@ -120,6 +128,16 @@ public:
 	 * returns number of hits
 	 */
 	int findHits(int16_t *myData, int myDataSize);
+
+	/**
+	 * Enable Filter, This makes sure findHits() is called
+	 */
+	void enableFilter(bool r){enable = r;};
+
+	/**
+	 * Returns packets per frame
+	 */
+	int getPacketsPerFrame(){ return packets_per_frame;};
 
 
 
@@ -187,13 +205,13 @@ private:
 	int nClusterY;
 
 	/** map to the data without headers */
-	vector <vector<int16_t> >map;
+	vector <vector<int16_t> > map;
 
 	/** Size of data with headers */
 	int dataSize;
 
 	/** mask as to which adcs are inverted */
-	vector <vector<int16_t> >mask;
+	vector <vector<int16_t> > mask;
 
 	/** movingStat object */
 	vector <vector<movingStat> > stat;
@@ -254,6 +272,24 @@ private:
 
 	/** number of packets per frame */
 	int packets_per_frame;
+
+	/** increment value for index for gotthard */
+	int incrementValue;
+
+	/** filter enable */
+	bool enable;
+
+	/** first packet */
+	bool firstTime;
+
+	/** return status */
+	int ret;
+
+	/** current packet index */
+	int pIndex;
+
+	/** current frame index */
+	int fIndex;
 
 };
 

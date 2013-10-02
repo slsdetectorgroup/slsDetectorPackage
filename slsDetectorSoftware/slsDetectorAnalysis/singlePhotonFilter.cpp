@@ -5,20 +5,18 @@
 #include "singlePhotonFilter.h"
 
 
-/*#define MOENCH_FRAME_INDEX_MASK 0xFFFFFF00
-#define MOENCH_PACKET_INDEX_MASK 0xFF
-#define MOENCH_FRAME_INDEX_OFFSET 8
-*/
 
-singlePhotonFilter::singlePhotonFilter(int x, int y, vector <vector<int16_t> >m, vector <vector<int16_t> >s, int d):
+singlePhotonFilter::singlePhotonFilter(int nx, int ny,
+		int fmask, int pmask, int foffset, int poffset, int pperf, int iValue,
+		vector <vector<int16_t> > m, vector <vector<int16_t> > s, int d):
 #ifdef MYROOT
 										myTree(NULL),
 										myFile(NULL),
 #else
 										myFile(NULL),
 #endif
-										nChannelsX(x),
-										nChannelsY(y),
+										nChannelsX(nx),
+										nChannelsY(ny),
 										nClusterX(CLUSTER_SIZE),
 										nClusterY(CLUSTER_SIZE),
 										map(m),
@@ -32,19 +30,25 @@ singlePhotonFilter::singlePhotonFilter(int x, int y, vector <vector<int16_t> >m,
 										pnum(0),
 										ptot(0),
 										f0(0),
-										frame_index_mask(0x00000000),
-										packet_index_mask(0x00000000),
-										frame_index_offset(0),
-										packet_index_offset(0),
-										packets_per_frame(0){
+										frame_index_mask(fmask),
+										packet_index_mask(pmask),
+										frame_index_offset(foffset),
+										packet_index_offset(poffset),
+										packets_per_frame(pperf),
+										incrementValue(iValue),
+										enable(false),
+										firstTime(true),
+										ret(0),
+										pIndex(0),
+										fIndex(0){
 
 
-	if (x == 1)
+	if (nChannelsX)
 		nClusterX = 1;
 
-	stat.resize(x);
-	for(int i=0; i<x; i++)
-		stat[i].resize(y);
+	stat.resize(nChannelsX);
+	for(int i=0; i<nChannelsX; i++)
+		stat[i].resize(nChannelsY);
 
 	//struct
 	myPhotonHit.data.resize(nClusterX);
@@ -61,12 +65,13 @@ singlePhotonFilter::singlePhotonFilter(int x, int y, vector <vector<int16_t> >m,
 
 
 
-void singlePhotonFilter::initTree(char *outdir, char *fname){
-	//path
-	char outfname[MAX_STR_LENGTH];
-	sprintf(outfname, "%s/%s.root", outdir, fname);
+void singlePhotonFilter::initTree(char *outfname){
 
 #ifdef MYROOT
+	outfname = string(outfname).replace(".raw",".root");
+	//fName.replace(".raw",".png");
+	//sprintf(outfname, "%s/%s.root", outdir, fname);
+
 	char c1[10],c2[10],cdata[100];
 	sprintf(c1,"%d",nClusterX);
 	sprintf(c2,"%d",nClusterY);
@@ -82,7 +87,7 @@ void singlePhotonFilter::initTree(char *outdir, char *fname){
 	myTree->Branch("pedestal",&myPhotonHit.ped,"pedestal/D");
 	myTree->Branch("rms",&myPhotonHit.rms,"rms/D");
 #else
-	myFile = fopen(outfname, "w");
+	;/*myFile = fopen(outfname, "w");*/
 #endif
 	//initialize
 	for (int ir=0; ir<nChannelsX; ir++){
@@ -105,12 +110,13 @@ int singlePhotonFilter::writeToFile(){
 		delete myFile;
 	}
 #else
-	if(myFile){ /*&& (number of structs?)*/
+	;
+	/*if(myFile){ //&& (number of structs?)
 		fwrite((void*)(&myPhotonHit), 1, sizeof(myPhotonHit), myFile);
 		fclose(myFile);
 		delete myFile;
 		return OK;
-	}
+	}*/
 #endif
 	return FAIL;
 }
@@ -241,103 +247,105 @@ if(firstTimeHere){
 */
 
 
-void singlePhotonFilter::initialize(int fmask, int pmask, int foffset, int poffset, int pperf){
-	fnum = 0; pnum = 0; ptot = 0; f0 = 0;
-	frame_index_mask = fmask;
-	packet_index_mask = pmask;
-	frame_index_offset = foffset;
-	packet_index_offset = poffset;
-	packets_per_frame = pperf;
+void singlePhotonFilter::setupAcquisitionParameters(){
+	fnum = 0; pnum = 0; ptot = 0; f0 = 0; firstTime = true;
+
 }
 
 
 
-int singlePhotonFilter::verifyFrame(char *inData, int inDataSize, int16_t* myData, int firstTime){
-	int offset = 0;
-	int fIndex = 0;
-	int pIndex = 0;
+int singlePhotonFilter::verifyFrame(char *inData){
+	ret = 0;
+	pIndex = 0;
+	fIndex = 0;
+	fIndex = (((uint32_t)(*((uint32_t*)inData)))& frame_index_mask) >> frame_index_offset;
+	pIndex = (((uint32_t)(*((uint32_t*)inData)))& packet_index_mask) >> packet_index_offset;
+
+	//check validity of packet index
+	if ((pIndex < 0) && (pIndex >= packets_per_frame)){
+		cout << "cannot decode packet index:" << pIndex << endl;
+		//its already dealt with cuz this frame will be discarded in the end
+	}
+	pIndex += incrementValue;
+
+	//for moench, put first packet last
+	if (pIndex == 0)
+		pIndex = packets_per_frame;
+#ifdef VERYVERBOSE
+	cout<<"fi:"<<hex<<fIndex<< " pi:"<< pIndex << endl;
+#endif
+	//firsttime
+	if (firstTime){
+		firstTime = false;
+		f0 = fIndex;
+		fnum = fIndex;
+		pnum = pIndex - 1; //should b 0 at first
+		ptot = 0;
+	}
+
+	//if it is not matching withthe frame number
+	if (fIndex != fnum){
+		/*cout << "**Frame number doesnt match:Missing Packet! " << fnum << " "
+				"Expected f " << fnum << " p " << pnum + 1 << " received f " << fIndex << " p " << pIndex << endl;*/
+		fnum = fIndex;
+	/*	pnum = pIndex - 1;
+		ptot = 0;*/
+		pnum = pIndex;
+		ptot = 1;
+		ret = -2; //dont return here.. if is the end of packets, for gotthard uve toreturn -1
+	}
+
+	//if missing a packet, discard
+	else if (pIndex != pnum + 1){/**else */
+	/*	cout << "**packet number doesnt match:Missing Packet! " << fnum << " "
+				"Expected f" << fnum << " p " << pnum + 1 << " received f " << fnum << " p " << pIndex << endl;*/
+		pnum = pIndex;
+		ptot++;/*ptot = 0;*/
+	}
+	//no missing packet
+	else{
+		pnum++;
+		ptot++;
+	}
 
 
-	while(offset < inDataSize){
-		fIndex = ((((int)(*((int*)inData))) & (frame_index_mask)) >> frame_index_offset);
-		pIndex = ((((int)(*((int*)inData))) & (packet_index_mask)) >> packet_index_offset);
-
-		offset += 4;
-
-		//check validity of packet index
-		if ((pIndex < 0) && (pIndex >= packets_per_frame)){
-			cout << "cannot decode packet index:" << pIndex << endl;
-			//its already dealt with cuz this frame will be discarded in the end
-		}
-
-		//put first packet last
-		if (pIndex == 0)
-			pIndex = packets_per_frame;
+	//copy packet to correct spot in outData
+	/*myData[pIndex-1] = inData;
+	cout<<"mydata["<<pIndex-1<<"]:"<<hex<<(uint32_t)(*((uint32_t*)inData))<<endl;*/
+	/*memcpy((myData+(pIndex-1)*inDataSize), inData, inDataSize);*/
+	//memcpy(((char*)(myData+(pIndex-1)*640)), (inData + offset), 1280);
 
 
-		//copy packet to correct spot in outData
-		memcpy(((char*)(myData+(pIndex-1)*640)), (inData + offset), 1280);
-		offset += 1280 + 2;
 
-		//firsttime
-		if (firstTime){
-			firstTime = 0;
-			f0 = fIndex;
-			fnum = fIndex;
-			pnum = pIndex - 1; //should b 0 at first
+	//if its the last index
+	if (pIndex == packets_per_frame){
+		//got all packets
+		if (ptot == packets_per_frame){
+			/*myPhotonHit.iframe = fnum - f0;//??
+			if (enable)
+				;*//*findHits(myData,inDataSize * ptot);*/
+			fnum = fIndex + 1;
 			ptot = 0;
-		}
-
-		//if it is not matching withthe frame number
-		if (fIndex != fnum){
-			cout << "Missing Packet! " << fnum << " "
-					"Expected f" << fnum << " p " << pnum + 1 << " received f " << fnum << " p " << pIndex << endl;
-			fnum = fIndex;
-			pnum = pIndex - 1;
+			pnum = 0;
+			ret = 1;
+		}else{
+		/*	cout << "* Some packets have been missed!*************************************" << fnum << " " << pnum<<" " << ptot<<endl;*/
 			ptot = 0;
-		}
-
-		//if missing a packet, discard
-		if (pIndex != pnum + 1){
-			cout << "Missing Packet! " << fnum << " "
-					"Expected f" << fnum << " p " << pnum + 1 << " received f " << fnum << " p " << pIndex << endl;
-			pnum = pIndex;
-			ptot = 0;/** should it be 0 or just not incrememnted */
-		}
-		//no missing packet
-		else{
-			pnum++;
-			ptot++;
-		}
-
-
-		//if its the last index
-		if (pIndex == packets_per_frame){
-			//got all packets
-			if (ptot == packets_per_frame){
-				myPhotonHit.iframe = fnum - f0;/** ?? */
-				findHits(myData,nChannelsX*nChannelsY*2);
-				return 1;
-			}else{
-				cout << "* Some packets have been missed!" << fnum << endl;
-				ptot = 0;
-				pnum = 0;
-				fnum = fIndex + 1;
-			}
-		}
-
-		//index not 40, but total  is 40.. strange
-		else if (ptot == packets_per_frame){
-			cout << "** Some packets have been missed! " << fnum << endl;
-			ptot = 0;
-			pnum = pIndex - 1;
-			fnum = fIndex;
+			pnum = 0;
+			fnum = fIndex + 1;
+			ret = -1;
 		}
 	}
 
-	delete myData;
-
-	return 0;
+	//index not 40, but total  is 40.. strange
+	else if (ptot == packets_per_frame){
+		cout << "***** Some packets have been missed! " << fnum << " " << pnum<< endl;
+		ptot = 0;
+		pnum = pIndex - 1;
+		fnum = fIndex;
+		ret = -1;
+	}
+	return ret;
 }
 
 /*

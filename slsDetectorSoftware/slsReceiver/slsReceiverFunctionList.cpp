@@ -644,7 +644,6 @@ int slsReceiverFunctionList::startWriting(){
 	int sleepnumber=0;
 	int frameFactor=0;
 	int i;
-/*int i1,i2;*/
 
 	packetsInFile=0;
 	framesCaught=0;
@@ -801,10 +800,6 @@ int slsReceiverFunctionList::startWriting(){
 						strcpy(guiFileName,savefilename);
 						pthread_mutex_lock(&dataReadyMutex);
 						guiDataReady=1;
-				/*		i1 = ((((uint32_t)(*((uint32_t*)latestData))) & (frameIndexMask)) >> frameIndexOffset);
-						i2 = ((((uint32_t)(*((uint32_t*)(latestData+oneBufferSize)))) & (frameIndexMask)) >> frameIndexOffset);
-						if ( i1 == (i2+1))
-							cout<<"222WEIRDDD:"<<i1<<":"<<i2<<endl;*/
 						pthread_mutex_unlock(&dataReadyMutex);
 					}else{
 						pthread_mutex_lock(&dataReadyMutex);
@@ -883,7 +878,6 @@ int slsReceiverFunctionList::startWriting(){
 
 
 void slsReceiverFunctionList::readFrame(char* c,char** raw){
-	int i1,i2;
 	//point to gui data
 	if (guiData == NULL)
 		guiData = latestData;
@@ -896,10 +890,6 @@ void slsReceiverFunctionList::readFrame(char* c,char** raw){
 	//data ready, set guidata to receive new data
 	else{
 		*raw = guiData;
-		i1 = ((((uint32_t)(*((uint32_t*)guiData))) & (frameIndexMask)) >> frameIndexOffset);
-		i2 = ((((uint32_t)(*((uint32_t*)(guiData+oneBufferSize)))) & (frameIndexMask)) >> frameIndexOffset);
-		if ( i1 == (i2+1))
-			cout<<"WEIRDDD:"<<i1<<":"<<i2<<endl;
 		guiData = NULL;
 		pthread_mutex_lock(&dataReadyMutex);
 		guiDataReady = 0;

@@ -13,7 +13,7 @@
 
 #define BUF_SIZE        (16*1024*1024) //16mb
 
-//all max frames defined in sls_detector_defs.h. 20000 gotthard, 100000 for short gotthard, 1000 for moench
+//all max frames defined in sls_detector_defs.h.  20000 gotthard, 100000 for short gotthard, 1000 for moench
 
 
 #define GOTTHARD_FIFO_SIZE					25000

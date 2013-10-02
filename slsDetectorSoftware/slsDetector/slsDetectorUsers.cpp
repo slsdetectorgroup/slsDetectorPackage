@@ -1,4 +1,3 @@
-
 #include "slsDetectorUsers.h"
 #include "detectorData.h"
 #include "multiSlsDetector.h"

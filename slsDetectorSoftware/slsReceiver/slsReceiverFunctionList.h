@@ -360,7 +360,7 @@ private:
 	/** oen buffer size */
 	int oneBufferSize;
 
-	/** semaphore to synchronize writer and guireader threads */
+	/** semaphore to synchronize  writer and guireader threads */
 	sem_t smp;
 
 	/** guiDataReady mutex */

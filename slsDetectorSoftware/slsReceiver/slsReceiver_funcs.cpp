@@ -1116,7 +1116,7 @@ int	slsReceiverFuncs::gotthard_read_frame(){
 				pindex = (bindex & GOTTHARD_SHORT_PACKET_INDEX_MASK);
 				index = ((bindex & GOTTHARD_SHORT_FRAME_INDEX_MASK) >> GOTTHARD_SHORT_FRAME_INDEX_OFFSET);
 #ifdef VERBOSE
-			cout<<"index:"<<hex<<index<<endl;
+				cout << "index:" << hex << index << endl;
 #endif
 			}else{
 				bindex = (uint32_t)(*((uint32_t*)raw));
@@ -1126,8 +1126,8 @@ int	slsReceiverFuncs::gotthard_read_frame(){
 				pindex2 =(bindex2 & GOTTHARD_PACKET_INDEX_MASK);
 				index2 =((bindex2 & GOTTHARD_FRAME_INDEX_MASK) >> GOTTHARD_FRAME_INDEX_OFFSET);
 #ifdef VERBOSE
-			cout<<"index1:"<<hex<<index<<endl;
-			cout<<"index2:"<<hex<<index<<endl;
+			cout << "index1:" << hex << index << endl;
+			cout << "index2:" << hex << index << endl;
 #endif
 			}
 

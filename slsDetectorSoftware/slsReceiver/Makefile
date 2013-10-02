@@ -8,7 +8,7 @@ LIBS?= -L$(LIBDIR) -lSlsDetector
 
 INCLUDES	?= 	-I ../MySocketTCP -I ../commonFiles -I -I ../slsDetectorAnalysis -I .
 SRC_CLNT	= 	slsReceiver.cpp
-#../MySocketTCP/MySocketTCP.cpp slsReceiver_funcs.cpp UHRIXCallback.cpp slsReceiverFunctionList.cpp slsReceiverUsers.cpp 
+#../MySocketTCP/MySocketTCP.cpp  slsReceiver_funcs.cpp UHRIXCallback.cpp slsReceiverFunctionList.cpp slsReceiverUsers.cpp 
 
 DESTDIR		?= 	bin
 INSTMODE	= 	0777

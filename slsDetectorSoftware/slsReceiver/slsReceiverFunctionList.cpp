@@ -119,9 +119,8 @@ slsReceiverFunctionList::slsReceiverFunctionList(detectorType det):
 	int offset,ipacket;
 
 
-	int x;
-	int y;
-	int i, j;
+	int x,y,i,j;
+	int ipx,ipy,ix,iy;
 
 	/** not for roi */
 	//filter
@@ -138,20 +137,20 @@ slsReceiverFunctionList::slsReceiverFunctionList(detectorType det):
 
 
 		//set up mask for moench
-
-		for(int i=0;i<x; i++)
-			for(j=0;i<y; i++)
+		for(i=0;i<x; i++)
+			for(j=0;j<y; j++){
 				if (j<mask_y_offset)
 					mask[i][j] = mask_adc;
 				else
 					mask[i][j] = 0;
+			}
 
 		//set up mapping for moench
-		for (int ipx = 0; ipx < num_packets_in_col; ipx++ )
-			for (int ipy = 0; ipy < num_packets_in_row; ipy++ )
-				for (int ix = 0; ix < num_pixels_per_packet_in_col; ix++ ){
-					offset = initial_offset;
-					for (int iy = 0; iy < num_pixels_per_packet_in_row; iy++ ){
+		for (ipy = 0; ipx < num_packets_in_col; ipx++ )
+			for (ipx = 0; ipy < num_packets_in_row; ipy++ ){
+				offset = initial_offset;
+				for (ix = 0; ix < num_pixels_per_packet_in_col; ix++ ){
+					for (iy = 0; iy < num_pixels_per_packet_in_row; iy++ ){
 						ipacket = (ipx + 1) + (ipy * num_packets_in_row);
 						if (ipacket == MOENCH_PACKETS_PER_FRAME)
 							ipacket = 0;
@@ -161,13 +160,14 @@ slsReceiverFunctionList::slsReceiverFunctionList(detectorType det):
 					}
 
 				}
+			}
 
 
 		filter = new singlePhotonFilter(x,y, MOENCH_FRAME_INDEX_MASK, MOENCH_PACKET_INDEX_MASK, MOENCH_FRAME_INDEX_OFFSET, 0, MOENCH_PACKETS_PER_FRAME, 0,map, mask,MOENCH_BUFFER_SIZE);
 		break;
 	default:
 		x = 1;
-		y = (GOTTHARD_DATA_BYTES/GOTTHARD_PACKETS_PER_FRAME);
+		y = (GOTTHARD_DATA_BYTES/GOTTHARD_PACKETS_PER_FRAME);/*bufferSize/sizeof(int16_t)*/
 		offset = initial_offset;
 
 		mask.resize(x);
@@ -178,14 +178,14 @@ slsReceiverFunctionList::slsReceiverFunctionList(detectorType det):
 			map[i].resize(y);
 
 		//set up mask for moench
-		for (int i=0; i < x; i++)
-			for (int j=0; j < y; j++){
+		for (i=0; i < x; i++)
+			for (j=0; j < y; j++){
 				mask[i][j] = 0;
 			}
 
 		//set up mapping for gotthard
-		for (int i=0; i < x; i++)
-			for (int j=0; j < y; j++){
+		for (i=0; i < x; i++)
+			for (j=0; j < y; j++){
 				//since there are 2 packets
 				if (y == y/2)
 					offset += initial_offset;

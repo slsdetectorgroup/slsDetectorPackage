@@ -34,7 +34,6 @@ slsReceiverFuncs::slsReceiverFuncs(int argc, char *argv[], int &success):
 		lockStatus(0),
 		shortFrame(-1),
 		packetsPerFrame(GOTTHARD_PACKETS_PER_FRAME),
-		withGotthard(0),
 		socket(NULL){
 
 	int port_no = DEFAULT_PORTNO+2;
@@ -147,20 +146,6 @@ slsReceiverFuncs::slsReceiverFuncs(int argc, char *argv[], int &success):
 					}
 				}
 			}
-			//test with gotthard module
-			else if(!strcasecmp(argv[iarg],"-test")){
-				if(iarg+1==argc){
-					cout << "no test condition given after -test in command line. Exiting." << endl;
-					success=FAIL;
-				}else{
-					if(!strcasecmp(argv[iarg+1],"with_gotthard"))
-						withGotthard = 1;
-					else{
-						cout << "could not decode test condition in command line. \nOptions are:\nwith_gotthard.\n\nExiting." << endl;
-						success=FAIL;
-					}
-				}
-			}
 			//tcp port
 			else if(!strcasecmp(argv[iarg],"-rx_tcpport")){
 				if(iarg+1==argc){
@@ -184,18 +169,10 @@ slsReceiverFuncs::slsReceiverFuncs(int argc, char *argv[], int &success):
 		//display detector message
 		switch(myDetectorType){
 		case GOTTHARD:
-			if(withGotthard){
-				cout << "Option -test with_gotthard exists only for MOENCH detectors. Exiting" << endl;
-				exit(-1);
-			}else
-				cout << "This is a GOTTHARD Receiver" << endl;
+			cout << "This is a GOTTHARD Receiver" << endl;
 			break;
 		case MOENCH:
-			if(withGotthard)
-				cout << "This is a MOENCH Receiver using a GOTTHARD Detector."
-				"\nNote:Packet numbers are not matched for its corresponding frames." << endl;
-			else
-				cout << "This is a MOENCH Receiver" << endl;
+			cout << "This is a MOENCH Receiver" << endl;
 			break;
 		default:
 			cout << "Unknown Receiver" << endl;
@@ -218,7 +195,7 @@ slsReceiverFuncs::slsReceiverFuncs(int argc, char *argv[], int &success):
 			strcpy(mess,"dummy message");
 
 			function_table();
-			slsReceiverList =  new slsReceiverFunctionList(myDetectorType,withGotthard);
+			slsReceiverList =  new slsReceiverFunctionList(myDetectorType);
 
 #ifdef VERBOSE
 			cout << "Function table assigned." << endl;
@@ -933,7 +910,7 @@ int	slsReceiverFuncs::read_frame(){
 int	slsReceiverFuncs::moench_read_frame(){
 	ret=OK;
 	char fName[MAX_STR_LENGTH]="";
-	int arg = -1,i,j,x,y;
+	int arg = -1,i;
 
 
 	int bufferSize = MOENCH_BUFFER_SIZE;
@@ -948,7 +925,6 @@ int	slsReceiverFuncs::moench_read_frame(){
 
 	uint32_t startIndex=0;
 	int index = 0;
-	int count=0;
 	int offset=0;
 
 
@@ -982,108 +958,63 @@ int	slsReceiverFuncs::moench_read_frame(){
 			memcpy(origVal,raw,bufferSize);
 			raw=NULL;
 
-
-			//************** default order*****************************
-			if(withGotthard){
-				count = 0;
-				offset = 4;
-				j=0;
-				for(x=0;x<(MOENCH_BYTES_IN_ONE_ROW/MOENCH_BYTES_PER_ADC);x++){
-					for(y=0;y<MOENCH_PIXELS_IN_ONE_ROW;y++){
-
-						memcpy((((char*)retval) +
-								y * MOENCH_BYTES_IN_ONE_ROW +
-								x * MOENCH_BYTES_PER_ADC),
-								(((char*) origVal) +
-										offset +
-										j * MOENCH_BYTES_PER_ADC) ,
-										MOENCH_BYTES_PER_ADC);
-						j++;
-						count++;
-						if(count==16){
-							count=0;
-							offset+=6;
-						}
-
-					}
-				}
-			}
-			//********************************************************
-
-
-
 			//************** packet number order**********************
-			else{
-				if(!withGotthard)
-					index = ((index & (MOENCH_FRAME_INDEX_MASK)) >> MOENCH_FRAME_INDEX_OFFSET);
-				//cout<<"this frame number:"<<index<<endl;
+			index = ((index & (MOENCH_FRAME_INDEX_MASK)) >> MOENCH_FRAME_INDEX_OFFSET);
 
-				uint32_t numPackets = MOENCH_PACKETS_PER_FRAME; //40
-				uint32_t onePacketSize = MOENCH_DATA_BYTES / MOENCH_PACKETS_PER_FRAME; //1280*40 / 40 = 1280
-				uint32_t packetDatabytes_row = onePacketSize * (MOENCH_BYTES_IN_ONE_ROW / MOENCH_BYTES_PER_ADC); //1280 * 4 = 5120
-				uint32_t partsPerFrame = onePacketSize / MOENCH_BYTES_PER_ADC; // 1280 / 80 = 16
-				uint32_t packetOffset = 0;
-				int packetIndex,x,y;
-				int iPacket = 0;
-				offset = 4;
+			uint32_t numPackets = MOENCH_PACKETS_PER_FRAME; //40
+			uint32_t onePacketSize = MOENCH_DATA_BYTES / MOENCH_PACKETS_PER_FRAME; //1280*40 / 40 = 1280
+			uint32_t packetDatabytes_row = onePacketSize * (MOENCH_BYTES_IN_ONE_ROW / MOENCH_BYTES_PER_ADC); //1280 * 4 = 5120
+			uint32_t partsPerFrame = onePacketSize / MOENCH_BYTES_PER_ADC; // 1280 / 80 = 16
+			uint32_t packetOffset = 0;
+			int packetIndex,x,y;
+			int iPacket = 0;
+			offset = 4;
 
-				while (iPacket < numPackets){
+			while (iPacket < (int)numPackets){
 #ifdef VERBOSE
-					printf("iPacket:%d\n",iPacket);cout << endl;
+				printf("iPacket:%d\n",iPacket);cout << endl;
 #endif
-					packetIndex = (*((uint32_t*)(((char*)origVal)+packetOffset))) & MOENCH_PACKET_INDEX_MASK;
-					//the first packet is placed in the end
-					packetIndex--;
-					if(packetIndex ==-1)
-						packetIndex = 39;
+				packetIndex = (*((uint32_t*)(((char*)origVal)+packetOffset))) & MOENCH_PACKET_INDEX_MASK;
+				//the first packet is placed in the end
+				packetIndex--;
+				if(packetIndex ==-1)
+					packetIndex = 39;
 
-					//check validity
-					if ((packetIndex >= 40) && (packetIndex < 0))
-						cout << "cannot decode packet index:" << packetIndex << endl;
-					else{
+				//check validity
+				if ((packetIndex >= 40) && (packetIndex < 0))
+					cout << "cannot decode packet index:" << packetIndex << endl;
+				else{
 
-						x = packetIndex / 10;
-						y = packetIndex % 10;
+					x = packetIndex / 10;
+					y = packetIndex % 10;
 #ifdef VERBOSE
-						cout<<"x:"<<x<<" y:"<<y<<endl;
+					cout<<"x:"<<x<<" y:"<<y<<endl;
 #endif
-						//copy 16 times 80 bytes
-						for (i = 0; i < partsPerFrame; i++) {
-							memcpy((((char*)retval) +
-									y * packetDatabytes_row +
-									i * MOENCH_BYTES_IN_ONE_ROW +
-									x * MOENCH_BYTES_PER_ADC),
+					//copy 16 times 80 bytes
+					for (i = 0; i < (int)partsPerFrame; i++) {
+						memcpy((((char*)retval) +
+								y * packetDatabytes_row +
+								i * MOENCH_BYTES_IN_ONE_ROW +
+								x * MOENCH_BYTES_PER_ADC),
 
-									(((char*) origVal) +
-											iPacket * offset +
-											iPacket * onePacketSize +
-											i * MOENCH_BYTES_PER_ADC + 4)  ,
-											MOENCH_BYTES_PER_ADC);
-						}
+								(((char*) origVal) +
+										iPacket * offset +
+										iPacket * onePacketSize +
+										i * MOENCH_BYTES_PER_ADC + 4)  ,
+										MOENCH_BYTES_PER_ADC);
 					}
-
-					//increment
-					offset=6;
-					iPacket++;
-					packetOffset = packetOffset + offset + onePacketSize;
-
-					//	cout <<" checking next frame number:"<<hex<<(((*((int*)((char*)(origVal+packetOffset)))) & (MOENCH_FRAME_INDEX_MASK)) >> MOENCH_FRAME_INDEX_OFFSET)<<endl;
-					//check if same frame number
-					/*	while ((((*((int*)((char*)(origVal+packetOffset)))) & (MOENCH_FRAME_INDEX_MASK)) >> MOENCH_FRAME_INDEX_OFFSET) != index){cout<<"did not match"<<endl;
-					if(iPacket >= numPackets)
-						break;
-					//increment
-					offset+=6;
-					iPacket++;
-					packetOffset = packetOffset + offset + onePacketSize;
-					}*/
 				}
+
+				//increment
+				offset=6;
+				iPacket++;
+				packetOffset = packetOffset + offset + onePacketSize;
+
+				//check if same frame number
 			}
+
 			arg = index - startIndex;
-			if(withGotthard)
-				arg = arg/MOENCH_PACKETS_PER_FRAME;
 		}
-		//********************************************************
 
 	}
 
@@ -1152,8 +1083,9 @@ int	slsReceiverFuncs::gotthard_read_frame(){
 
 
 	uint32_t index=0,index2=0;
+	uint32_t pindex=0,pindex2=0;
+	uint32_t bindex=0,bindex2=0;
 	uint32_t startIndex=0;
-	int count=0;
 
 	strcpy(mess,"Could not read frame\n");
 
@@ -1179,40 +1111,63 @@ int	slsReceiverFuncs::gotthard_read_frame(){
 			cout<<"data not ready for gui yet"<<endl;
 #endif
 		}else{
-			index=(uint32_t)(*(uint32_t*)raw);
+			if(shortFrame!=-1){
+				bindex = (uint32_t)(*((uint32_t*)raw));
+				pindex = (bindex & GOTTHARD_SHORT_PACKET_INDEX_MASK);
+				index = ((bindex & GOTTHARD_SHORT_FRAME_INDEX_MASK) >> GOTTHARD_SHORT_FRAME_INDEX_OFFSET);
 #ifdef VERBOSE
-			cout<<"index:"<<index<<endl;
+			cout<<"index:"<<hex<<index<<endl;
 #endif
-			if(shortFrame==-1)
-				index2= (uint32_t)(*((uint32_t*)((char*)(raw+onebuffersize))));
+			}else{
+				bindex = (uint32_t)(*((uint32_t*)raw));
+				pindex = (bindex & GOTTHARD_PACKET_INDEX_MASK);
+				index = ((bindex & GOTTHARD_FRAME_INDEX_MASK) >> GOTTHARD_FRAME_INDEX_OFFSET);
+				bindex2 = (uint32_t)(*((uint32_t*)((char*)(raw+onebuffersize))));
+				pindex2 =(bindex2 & GOTTHARD_PACKET_INDEX_MASK);
+				index2 =((bindex2 & GOTTHARD_FRAME_INDEX_MASK) >> GOTTHARD_FRAME_INDEX_OFFSET);
+#ifdef VERBOSE
+			cout<<"index1:"<<hex<<index<<endl;
+			cout<<"index2:"<<hex<<index<<endl;
+#endif
+			}
+
 			memcpy(origVal,raw,bufferSize);
 			raw=NULL;
 
+
 			//1 adc
 			if(shortFrame!=-1){
-				memcpy((((char*)retval)+(GOTTHARD_SHORT_DATABYTES*shortFrame)),((char*) origVal)+4, GOTTHARD_SHORT_DATABYTES);
+				if(bindex != 0xFFFFFFFF)
+					memcpy((((char*)retval)+(GOTTHARD_SHORT_DATABYTES*shortFrame)),((char*) origVal)+4, GOTTHARD_SHORT_DATABYTES);
+				else
+					index = startIndex - 1;
 			}
 			//all adc
 			else{
-				//1 odd, 1 even
-				if((index%2)!=index2%2){
-					//ideal situation (should be odd, even(index+1))
-					if(index%2){
-						memcpy(retval,((char*) origVal)+4, onedatasize);
-						memcpy((((char*)retval)+onedatasize), ((char*) origVal)+10+onedatasize, onedatasize);
-					}
+				//ignore if half frame is missing
+				if ((bindex != 0xFFFFFFFF) && (bindex2 != 0xFFFFFFFF)){
 
-					//swap to even,odd
-					if(index2%2){
-						memcpy((((char*)retval)+onedatasize),((char*) origVal)+4, onedatasize);
-						memcpy(retval, ((char*) origVal)+10+onedatasize, onedatasize);
-						index=index2;
-					}
-				}else
-					cout << "same type: index:" << index << "\tindex2:" << index2 << endl;
+					//should be same frame
+					if (index == index2){
+						//ideal situation (should be odd, even(index+1))
+						if(!pindex){
+							memcpy(retval,((char*) origVal)+4, onedatasize);
+							memcpy((((char*)retval)+onedatasize), ((char*) origVal)+10+onedatasize, onedatasize);
+						}
+						//swap to even,odd
+						else{
+							memcpy((((char*)retval)+onedatasize),((char*) origVal)+4, onedatasize);
+							memcpy(retval, ((char*) origVal)+10+onedatasize, onedatasize);
+							index=index2;
+						}
+					}else
+						cout << "different frames caught. frame1:"<< hex << index << ":"<<pindex<<" frame2:" << hex << index2 << ":"<<pindex2<<endl;
+				}
+				else
+					index = startIndex - 1;
 			}
 
-			arg = ((index - startIndex)/packetsPerFrame);
+			arg = (index - startIndex);
 		}
 	}
 

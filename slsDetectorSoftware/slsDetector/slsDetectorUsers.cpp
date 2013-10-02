@@ -153,28 +153,28 @@ int slsDetectorUsers::setBeamEnergy(int e_eV){
 }
 
 double slsDetectorUsers::setExposureTime(double t, bool inseconds){
-  int64_t tms = t * (1E+9);
+  int64_t tms = (int64_t)(t * (1E+9));
   if (t < 0) tms = -1;
   if(!inseconds)
-    return myDetector->setExposureTime(t);
+    return myDetector->setExposureTime((int64_t)t);
   else
     return  ((1E-9) * (double)myDetector->setExposureTime(tms));
 }
 
 double slsDetectorUsers::setExposurePeriod(double t, bool inseconds){
-  int64_t tms = t * (1E+9);
+  int64_t tms = (int64_t)(t * (1E+9));
   if (t < 0) tms = -1;
   if(!inseconds)
-    return myDetector->setExposurePeriod(t);
+    return myDetector->setExposurePeriod((int64_t)t);
   else
     return  ((1E-9) * (double)myDetector->setExposurePeriod(tms));
 }
 
 double slsDetectorUsers::setDelayAfterTrigger(double t, bool inseconds){
-  int64_t tms = t * (1E+9);
+  int64_t tms = (int64_t)(t * (1E+9));
   if (t < 0) tms = -1;
   if(!inseconds)
-    return myDetector->setDelayAfterTrigger(t);
+    return myDetector->setDelayAfterTrigger((int64_t)t);
   else
     return  ((1E-9) * (double)myDetector->setDelayAfterTrigger(tms));
 }

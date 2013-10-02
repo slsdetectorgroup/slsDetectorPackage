@@ -200,9 +200,6 @@ public:
 	/** Packets per frame */
 	int packetsPerFrame;
 
-	/** temporary variable to debug moench receiver with gotthard module */
-	int withGotthard;
-
 	static int file_des;
 	static int socketDescriptor;
 

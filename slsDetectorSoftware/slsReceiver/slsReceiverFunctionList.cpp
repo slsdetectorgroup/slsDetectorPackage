@@ -23,48 +23,49 @@ using namespace std;
 FILE* slsReceiverFunctionList::sfilefd(NULL);
 int slsReceiverFunctionList::receiver_threads_running(0);
 
-slsReceiverFunctionList::slsReceiverFunctionList(detectorType det,bool moenchwithGotthardTest):
-										myDetectorType(det),
-										maxFramesPerFile(MAX_FRAMES_PER_FILE),
-										enableFileWrite(1),
-										fileIndex(0),
-										frameIndexNeeded(0),
-										framesCaught(0),
-										acqStarted(false),
-										measurementStarted(false),
-										startFrameIndex(0),
-										frameIndex(0),
-										totalFramesCaught(0),
-										startAcquisitionIndex(0),
-										acquisitionIndex(0),
-										framesInFile(0),
-										prevframenum(0),
-										listening_thread_running(0),
-										writing_thread_running(0),
-										status(IDLE),
-										latestData(NULL),
-										udpSocket(NULL),
-										server_port(DEFAULT_UDP_PORTNO),
-										fifo(NULL),
-										fifofree(NULL),
-										fifosize(GOTTHARD_FIFO_SIZE),
-										shortFrame(-1),
-										bufferSize(GOTTHARD_BUFFER_SIZE),
-										packetsPerFrame(GOTTHARD_PACKETS_PER_FRAME),
-										guiDataReady(0),
-										guiData(NULL),
-										guiFileName(NULL),
-										currframenum(0),
-										nFrameToGui(0),
-										startAcquisitionCallBack(NULL),
-										pStartAcquisition(NULL),
-										acquisitionFinishedCallBack(NULL),
-										pAcquisitionFinished(NULL),
-										rawDataReadyCallBack(NULL),
-										pRawDataReady(NULL),
-										withGotthard(moenchwithGotthardTest),
-										frameIndexMask(GOTTHARD_FRAME_INDEX_MASK),
-										frameIndexOffset(GOTTHARD_FRAME_INDEX_OFFSET)
+slsReceiverFunctionList::slsReceiverFunctionList(detectorType det):
+														myDetectorType(det),
+														maxFramesPerFile(MAX_FRAMES_PER_FILE),
+														enableFileWrite(1),
+														fileIndex(0),
+														frameIndexNeeded(0),
+														framesCaught(0),
+														acqStarted(false),
+														measurementStarted(false),
+														startFrameIndex(0),
+														frameIndex(0),
+														totalFramesCaught(0),
+														startAcquisitionIndex(0),
+														acquisitionIndex(0),
+														packetsInFile(0),
+														prevframenum(0),
+														listening_thread_running(0),
+														writing_thread_running(0),
+														status(IDLE),
+														latestData(NULL),
+														udpSocket(NULL),
+														server_port(DEFAULT_UDP_PORTNO),
+														fifo(NULL),
+														fifofree(NULL),
+														fifosize(GOTTHARD_FIFO_SIZE),
+														shortFrame(-1),
+														bufferSize(GOTTHARD_BUFFER_SIZE),
+														packetsPerFrame(GOTTHARD_PACKETS_PER_FRAME),
+														guiDataReady(0),
+														guiData(NULL),
+														guiFileName(NULL),
+														currframenum(0),
+														nFrameToGui(0),
+														frameIndexMask(GOTTHARD_FRAME_INDEX_MASK),
+														frameIndexOffset(GOTTHARD_FRAME_INDEX_OFFSET),
+														dataCompression(false),
+														startAcquisitionCallBack(NULL),
+														pStartAcquisition(NULL),
+														acquisitionFinishedCallBack(NULL),
+														pAcquisitionFinished(NULL),
+														rawDataReadyCallBack(NULL),
+														pRawDataReady(NULL)
+
 
 
 {
@@ -76,11 +77,8 @@ slsReceiverFunctionList::slsReceiverFunctionList(detectorType det,bool moenchwit
 		maxFramesPerFile = MOENCH_MAX_FRAMES_PER_FILE;
 		bufferSize = MOENCH_BUFFER_SIZE;
 		packetsPerFrame = MOENCH_PACKETS_PER_FRAME;
-		if(!withGotthard){
-			frameIndexMask = MOENCH_FRAME_INDEX_MASK;
-			frameIndexOffset = MOENCH_FRAME_INDEX_OFFSET;
-		}
 	}
+	oneBufferSize = bufferSize/packetsPerFrame;
 
 	strcpy(savefilename,"");
 	strcpy(filePath,"");
@@ -106,12 +104,105 @@ slsReceiverFunctionList::slsReceiverFunctionList(detectorType det,bool moenchwit
 		buffer+=aligned_frame_size;
 	}
 
-	if(withGotthard)
-		cout << "Testing MOENCH Receiver with GOTTHARD Detector" << endl;
 
+	vector <vector<int16_t> > map;
+	vector <vector<int16_t> > mask;
+	int initial_offset = 4;
+	int later_offset = 2;
+
+	int mask_y_offset = 120;
+	int mask_adc = 0x7fff;
+	int num_packets_in_col = 4;
+	int num_packets_in_row = 10;
+	int num_pixels_per_packet_in_row = 40;
+	int num_pixels_per_packet_in_col = 16;
+	int offset,ipacket;
+
+
+	int x;
+	int y;
+	int i, j;
+
+	/** not for roi */
+	//filter
+	switch(myDetectorType){
+	case MOENCH:
+		x = MOENCH_PIXELS_IN_ONE_ROW;
+		y = MOENCH_PIXELS_IN_ONE_ROW;
+		mask.resize(x);
+		for(i=0;i<x; i++)
+			mask[i].resize(y);
+		map.resize(x);
+		for(i=0;i<x; i++)
+			map[i].resize(y);
+
+
+		//set up mask for moench
+
+		for(int i=0;i<x; i++)
+			for(j=0;i<y; i++)
+				if (j<mask_y_offset)
+					mask[i][j] = mask_adc;
+				else
+					mask[i][j] = 0;
+
+		//set up mapping for moench
+		for (int ipx = 0; ipx < num_packets_in_col; ipx++ )
+			for (int ipy = 0; ipy < num_packets_in_row; ipy++ )
+				for (int ix = 0; ix < num_pixels_per_packet_in_col; ix++ ){
+					offset = initial_offset;
+					for (int iy = 0; iy < num_pixels_per_packet_in_row; iy++ ){
+						ipacket = (ipx + 1) + (ipy * num_packets_in_row);
+						if (ipacket == MOENCH_PACKETS_PER_FRAME)
+							ipacket = 0;
+						map[ ipx * num_pixels_per_packet_in_col + ix][ ipy * num_pixels_per_packet_in_row + iy] =
+								ipacket * MOENCH_ONE_PACKET_SIZE + offset;
+						offset += later_offset;
+					}
+
+				}
+
+
+		filter = new singlePhotonFilter(x,y, MOENCH_FRAME_INDEX_MASK, MOENCH_PACKET_INDEX_MASK, MOENCH_FRAME_INDEX_OFFSET, 0, MOENCH_PACKETS_PER_FRAME, 0,map, mask,MOENCH_BUFFER_SIZE);
+		break;
+	default:
+		x = 1;
+		y = (GOTTHARD_DATA_BYTES/GOTTHARD_PACKETS_PER_FRAME);
+		offset = initial_offset;
+
+		mask.resize(x);
+		for(int i=0;i<x; i++)
+			mask[i].resize(y);
+		map.resize(x);
+		for(int i=0;i<x; i++)
+			map[i].resize(y);
+
+		//set up mask for moench
+		for (int i=0; i < x; i++)
+			for (int j=0; j < y; j++){
+				mask[i][j] = 0;
+			}
+
+		//set up mapping for gotthard
+		for (int i=0; i < x; i++)
+			for (int j=0; j < y; j++){
+				//since there are 2 packets
+				if (y == y/2)
+					offset += initial_offset;
+				map[i][j] = offset;
+				offset += 2;
+			}
+
+
+		filter = new singlePhotonFilter(x,y,GOTTHARD_FRAME_INDEX_MASK, GOTTHARD_PACKET_INDEX_MASK, GOTTHARD_FRAME_INDEX_OFFSET, 0, GOTTHARD_PACKETS_PER_FRAME, 1,map, mask,GOTTHARD_BUFFER_SIZE);
+		break;
+	}
 
 	pthread_mutex_init(&status_mutex,NULL);
 	pthread_mutex_init(&dataReadyMutex,NULL);
+
+
+	dataCompression = false;
 }
 
 
@@ -144,10 +235,8 @@ void slsReceiverFunctionList::setEthernetInterface(char* c){
 uint32_t slsReceiverFunctionList::getFrameIndex(){
 	if(!framesCaught)
 		frameIndex=0;
-	else if(frameIndexOffset)
-		frameIndex = currframenum - startFrameIndex; //moench
 	else
-		frameIndex = (currframenum - startFrameIndex)/packetsPerFrame;//moench with gotthard, gotthard
+		frameIndex = currframenum - startFrameIndex;
 	return frameIndex;
 }
 
@@ -156,10 +245,8 @@ uint32_t slsReceiverFunctionList::getFrameIndex(){
 uint32_t slsReceiverFunctionList::getAcquisitionIndex(){
 	if(!totalFramesCaught)
 		acquisitionIndex=0;
-	else if(frameIndexOffset)
-		acquisitionIndex = currframenum - startAcquisitionIndex;  //moench
 	else
-		acquisitionIndex = (currframenum - startAcquisitionIndex)/packetsPerFrame; //moench with gotthard, gotthard
+		acquisitionIndex = currframenum - startAcquisitionIndex;
 	return acquisitionIndex;
 }
 
@@ -377,6 +464,13 @@ int slsReceiverFunctionList::startListening(){
 	measurementStarted = false;
 	startFrameIndex = 0;
 
+	int offset=0;
+	int ret=1;
+	int i=0;
+	uint32_t *framenum;
+	char *tempchar = new char[oneBufferSize];
+
+
 	// A do/while(FALSE) loop is used to make error cleanup easier.  The
 	//  close() of each of the socket descriptors is only done once at the
 	//  very end of the program.
@@ -405,10 +499,10 @@ int slsReceiverFunctionList::startListening(){
 				delete udpSocket;
 				udpSocket = NULL;
 			}
-			udpSocket = new genericSocket(server_port,genericSocket::UDP,bufferSize/packetsPerFrame,packetsPerFrame);
+			udpSocket = new genericSocket(server_port,genericSocket::UDP,oneBufferSize,1);//packetsPerFrame);
 		}else{
 			cout<<"eth:"<<eth<<endl;
-			udpSocket = new genericSocket(server_port,genericSocket::UDP,bufferSize/packetsPerFrame,packetsPerFrame,eth);
+			udpSocket = new genericSocket(server_port,genericSocket::UDP,oneBufferSize,1,eth);//packetsPerFrame,eth);
 		}
 		if (udpSocket->getErrorStatus()){
 #ifdef VERBOSE
@@ -420,30 +514,43 @@ int slsReceiverFunctionList::startListening(){
 			break;
 		}
 
-
+		filter->setupAcquisitionParameters();
 
 		while (receiver_threads_running) {
-			pthread_mutex_lock(&status_mutex);
-			listening_thread_running = 1;
-			pthread_mutex_unlock(&(status_mutex));
+			if(!listening_thread_running){
+				pthread_mutex_lock(&status_mutex);
+				listening_thread_running = 1;
+				pthread_mutex_unlock(&(status_mutex));
+			}
 
 			if (!fifofree->isEmpty()) {
-				fifofree->pop(buffer);
+				if (ret!=0)
+					fifofree->pop(buffer);
 
+				if(ret == -2){
+					memcpy(buffer,tempchar,oneBufferSize);
+					offset = oneBufferSize;
+				}
 
 				//receiver 2 half frames / 1 short frame / 40 moench frames
-				rc = udpSocket->ReceiveDataOnly(buffer,bufferSize);
-				if( rc < 0)
+				rc = udpSocket->ReceiveDataOnly(buffer+offset,oneBufferSize);
+				if( rc <= 0){
+#ifdef VERYVERBOSE
 					cerr << "recvfrom() failed" << endl;
+#endif
+					continue;
+				}
+				if ((myDetectorType == GOTTHARD) && (shortFrame == -1))
+					(*((uint32_t*)(buffer+offset)))++;
+
+
+				ret = filter->verifyFrame(buffer+offset);
+
 
 				//start for each scan
 				if(!measurementStarted){
-					if(!frameIndexOffset)
-						startFrameIndex = ((uint32_t)(*((uint32_t*)buffer)));
-					else
-						startFrameIndex = ((((uint32_t)(*((uint32_t*)buffer))) & (frameIndexMask)) >> frameIndexOffset);
-
-					cout<<"startFrameIndex:"<<startFrameIndex<<endl;
+					startFrameIndex = ((((uint32_t)(*((uint32_t*)buffer))) & (frameIndexMask)) >> frameIndexOffset);
+					cout<<"startFrameIndex:"<<hex<<startFrameIndex<<endl;
 					prevframenum=startFrameIndex;
 					measurementStarted = true;
 				}
@@ -453,24 +560,47 @@ int slsReceiverFunctionList::startListening(){
 					startAcquisitionIndex=startFrameIndex;
 					currframenum = startAcquisitionIndex;
 					acqStarted = true;
-					cout<<"startAcquisitionIndex:"<<startAcquisitionIndex<<endl;
+					cout<<"startAcquisitionIndex:"<<hex<<startAcquisitionIndex<<endl;
 				}
 
 
+				/*
+				if(ret < 0){
+					offset = 0;
+					continue;
+				}
+				 */
+				//last packet, but not the full frame, must push previous frame
+				if(ret == -1){
+					//set reminaing headers invalid
+					for( i = offset+ oneBufferSize; i < bufferSize; i += oneBufferSize)
+						(*((uint32_t*)(buffer+i))) = 0xFFFFFFFF;
+					offset = 0;
+				}
+
+				//first packet of new frame, must push previous frame
+				else if(ret == -2){
+					//copy the new frame to a temp
+					memcpy(tempchar, buffer+offset, oneBufferSize);
+					//set all the new frame header and remaining headers invalid
+					for(i = offset; i < bufferSize; i += oneBufferSize);
+					(*((uint32_t*)(buffer+i))) = 0xFFFFFFFF;
+				}
+				//wait for new packets of same frame
+				else if (ret == 0){
+					offset += oneBufferSize;
+					continue;
+				}
+				//wait for next frame
+				else{
+					offset = 0;
+				}
 
 				//so that it doesnt write the last frame twice
-				if(receiver_threads_running){
-					//s.assign(buffer);
-					if(fifo->isFull())
-						;//cout<<"**********************FIFO FULLLLLLLL************************"<<endl;
-					else{
-						//cout<<"read index:"<<dec<<(int)(*(int*)buffer)<<endl;& (frameIndexMask)) >> frameIndexOffset;
-						fifo->push(buffer);
-					}
-
-
-
+				if((receiver_threads_running) && (!fifo->isFull())){
+					fifo->push(buffer);
 				}
+
 			}
 		}
 	} while (receiver_threads_running);
@@ -482,6 +612,7 @@ int slsReceiverFunctionList::startListening(){
 
 	//Close down any open socket descriptors
 	udpSocket->Disconnect();
+	delete tempchar;
 
 #ifdef VERBOSE
 	cout << "receiver_threads_running:" << receiver_threads_running << endl;
@@ -512,9 +643,10 @@ int slsReceiverFunctionList::startWriting(){
 	char *wbuf;
 	int sleepnumber=0;
 	int frameFactor=0;
-	int packetloss=0;
+	int i;
+/*int i1,i2;*/
 
-	framesInFile=0;
+	packetsInFile=0;
 	framesCaught=0;
 	frameIndex=0;
 	if(sfilefd) sfilefd=NULL;
@@ -546,11 +678,16 @@ int slsReceiverFunctionList::startWriting(){
 
 
 	cout << "Ready!" << endl;
+
+
+	if (dataCompression)
+		filter->enableFilter(true);
+
 	//will always run till acquisition over and then runs till fifo is empty
 	while(receiver_threads_running || (!fifo->isEmpty())){
 
 		//start a new file
-		if ((framesInFile == maxFramesPerFile)  || (strlen(savefilename) == 0)){
+		if (((int)(packetsInFile/packetsPerFrame) >= maxFramesPerFile)  || (strlen(savefilename) == 0)){
 
 			//create file name
 			if(frameIndexNeeded==-1)	sprintf(savefilename, "%s/%s_%d.raw", filePath,fileName,fileIndex);
@@ -558,6 +695,14 @@ int slsReceiverFunctionList::startWriting(){
 
 			if(enableFileWrite && cbAction > DO_NOTHING){
 
+				//create tree and file
+				if(dataCompression){
+					if(enableFileWrite){
+						filter->writeToFile();
+						filter->initTree(savefilename);
+					}
+				}
+				/*else{*///the standard way
 				if(sfilefd){
 					fclose(sfilefd);
 					sfilefd = NULL;
@@ -570,24 +715,22 @@ int slsReceiverFunctionList::startWriting(){
 					pthread_mutex_unlock(&(status_mutex));
 					break;
 				}
-
 				//setting buffer
 				setvbuf(sfilefd,NULL,_IOFBF,BUF_SIZE);
+				/*}*/
 
 				//printing packet losses and file names
 				//if(prevframenum != 0)
 				if(!framesCaught)
 					cout << savefilename << endl;
 				else{
-					if(!frameIndexOffset)
-						packetloss = (int)(((currframenum-prevframenum-(packetsPerFrame*framesInFile))/(double)(packetsPerFrame*framesInFile))*100.000);
-					else
-						packetloss = (int)(((currframenum-prevframenum-(framesInFile))/(double)(framesInFile))*100.000);
 					cout << savefilename
-							<< "\tpacket loss " << setw(4)<<fixed << setprecision(4)	<< packetloss
+							<< "\tpacket loss "
+							<< setw(4)<<fixed << setprecision(4)<< dec <<
+							(int)(((((currframenum-prevframenum)*packetsPerFrame)-(packetsInFile))/(double)((currframenum-prevframenum)*packetsPerFrame))*100.000)/*packetloss*/
 							<< "%\tframenum "
-							<< currframenum //<< "\t\t p " << prevframenum
-							<< "\tindex " << getFrameIndex()
+							<< dec << currframenum //<< "\t\t p " << prevframenum
+							<< "\tindex " << dec << getFrameIndex()
 							<< endl;
 				}
 			}
@@ -600,7 +743,7 @@ int slsReceiverFunctionList::startWriting(){
 			//if(prevframenum != 0){
 			if(framesCaught){
 				prevframenum = currframenum;
-				framesInFile = 0;
+				packetsInFile=0;
 			}
 		}
 
@@ -609,62 +752,90 @@ int slsReceiverFunctionList::startWriting(){
 		if(!fifo->isEmpty()){
 
 			if(fifo->pop(wbuf)){
-			framesCaught++;
-			totalFramesCaught++;
-			if(!frameIndexOffset)
-				currframenum = (uint32_t)(*((uint32_t*)wbuf));
-			else
-				currframenum = (((uint32_t)(*((uint32_t*)wbuf))) & (frameIndexMask)) >> frameIndexOffset;
 
-			//cout<<"currframenum:"<<currframenum<<endl;
+				currframenum = ((uint32_t)(*((uint32_t*)wbuf))& frameIndexMask) >>frameIndexOffset;
+				//cout<<"currframenum: "<<hex<<currframenum<<endl;
+				//cout<<"currframenum2:"<<hex<<((((uint32_t)(*((uint32_t*)((char*)(wbuf+oneBufferSize)))))& frameIndexMask) >> frameIndexOffset)<<endl;;
 
-			//write data call back
-			if (cbAction < DO_EVERYTHING) {
-				rawDataReadyCallBack(currframenum, wbuf, bufferSize, sfilefd, guiData,pRawDataReady);
-			}
-			//default writing to file
-			else if(enableFileWrite){
-				if(sfilefd)
-					fwrite(wbuf, 1, bufferSize, sfilefd);
+				for(i=0; i < packetsPerFrame; i++){
+					if(((uint32_t)(*((uint32_t*)((char*)(wbuf+oneBufferSize))))) == 0xFFFFFFFF){
+						//cout<<"found one: currframenum:"<<currframenum<<" currframe2:"<<((((uint32_t)(*((uint32_t*)((char*)(wbuf+oneBufferSize)))))& frameIndexMask) >> frameIndexOffset)<<endl;
+						break;
+					}
+				}
+
+				packetsInFile += i;
+				//count only if you get full frames
+				if(i == packetsPerFrame){
+					framesCaught++;
+					totalFramesCaught++;
+				}
+
+				//write data call back
+				if (cbAction < DO_EVERYTHING) {
+					rawDataReadyCallBack(currframenum, wbuf, i*oneBufferSize, sfilefd, guiData,pRawDataReady);
+				}
+				//default writing to file
+				else if(enableFileWrite){
+					/*if(!dataCompression){*/
+					if(sfilefd)
+						fwrite(wbuf, 1, i*oneBufferSize, sfilefd);
+					else{
+						cout << "You do not have permissions to overwrite: " << savefilename << endl;
+						usleep(50000);
+					}
+					/*}*/
+				}
+
+
+
+
+
+				//does not read every frame
+				if(!nFrameToGui){
+					if((guiData) && (i == packetsPerFrame)){
+						pthread_mutex_lock(&dataReadyMutex);
+						guiDataReady=0;
+						pthread_mutex_unlock(&dataReadyMutex);
+						memcpy(latestData,wbuf,bufferSize);
+						strcpy(guiFileName,savefilename);
+						pthread_mutex_lock(&dataReadyMutex);
+						guiDataReady=1;
+				/*		i1 = ((((uint32_t)(*((uint32_t*)latestData))) & (frameIndexMask)) >> frameIndexOffset);
+						i2 = ((((uint32_t)(*((uint32_t*)(latestData+oneBufferSize)))) & (frameIndexMask)) >> frameIndexOffset);
+						if ( i1 == (i2+1))
+							cout<<"222WEIRDDD:"<<i1<<":"<<i2<<endl;*/
+						pthread_mutex_unlock(&dataReadyMutex);
+					}else{
+						pthread_mutex_lock(&dataReadyMutex);
+						guiDataReady=0;
+						pthread_mutex_unlock(&dataReadyMutex);
+					}
+				}
+				//reads every nth frame
 				else{
-					cout << "You do not have permissions to overwrite: " << savefilename << endl;
-					usleep(50000);
-				}
-			}
+					if (i != packetsPerFrame)//so no 1 packet frame writing over previous 2 packet frame
+						;
+					else if(frameFactor){
+						frameFactor--;
+					}else{
+						frameFactor = nFrameToGui-1;
+						//block current process if the guireader hasnt read it yet
+						sem_wait(&smp);
+						//copy data and set guidataready
+						pthread_mutex_lock(&dataReadyMutex);
+						guiDataReady=0;
+						pthread_mutex_unlock(&dataReadyMutex);
+						memcpy(latestData,wbuf,bufferSize);
+						strcpy(guiFileName,savefilename);
+						pthread_mutex_lock(&dataReadyMutex);
+						guiDataReady = 1;
+						pthread_mutex_unlock(&dataReadyMutex);
 
-			//does not read every frame
-			if(!nFrameToGui){
-				if(guiData){
-					memcpy(latestData,wbuf,bufferSize);
-					strcpy(guiFileName,savefilename);
-					pthread_mutex_lock(&dataReadyMutex);
-					guiDataReady=1;
-					pthread_mutex_unlock(&dataReadyMutex);
-				}else{
-					pthread_mutex_lock(&dataReadyMutex);
-					guiDataReady=0;
-					pthread_mutex_unlock(&dataReadyMutex);
+					}
 				}
-			}
-			//reads every nth frame
-			else{
-				if(frameFactor){
-					frameFactor--;
-				}else{
-					frameFactor = nFrameToGui-1;
-					//block current process if the guireader hasnt read it yet
-					sem_wait(&smp);
-					//copy data and set guidataready
-					memcpy(latestData,wbuf,bufferSize);
-					strcpy(guiFileName,savefilename);
-					pthread_mutex_lock(&dataReadyMutex);
-					guiDataReady = 1;
-					pthread_mutex_unlock(&dataReadyMutex);
 
-				}
-			}
-			framesInFile++;
-			fifofree->push(wbuf);
+				fifofree->push(wbuf);
 			}
 		}
 		else{//cout<<"************************fifo empty**********************************"<<endl;
@@ -685,8 +856,8 @@ int slsReceiverFunctionList::startWriting(){
 	receiver_threads_running=0;
 	pthread_mutex_unlock(&status_mutex);
 
-	cout << "RealTime Frames Caught:" << framesCaught << endl;
-	cout << "Total Frames Caught:"<< totalFramesCaught << endl;
+	cout << "RealTime Frames Caught:" << dec <<framesCaught << endl;
+	cout << "Total Frames Caught:"<< dec << totalFramesCaught << endl;
 
 
 	if(sfilefd){
@@ -712,6 +883,7 @@ int slsReceiverFunctionList::startWriting(){
 
 
 void slsReceiverFunctionList::readFrame(char* c,char** raw){
+	int i1,i2;
 	//point to gui data
 	if (guiData == NULL)
 		guiData = latestData;
@@ -724,13 +896,17 @@ void slsReceiverFunctionList::readFrame(char* c,char** raw){
 	//data ready, set guidata to receive new data
 	else{
 		*raw = guiData;
+		i1 = ((((uint32_t)(*((uint32_t*)guiData))) & (frameIndexMask)) >> frameIndexOffset);
+		i2 = ((((uint32_t)(*((uint32_t*)(guiData+oneBufferSize)))) & (frameIndexMask)) >> frameIndexOffset);
+		if ( i1 == (i2+1))
+			cout<<"WEIRDDD:"<<i1<<":"<<i2<<endl;
 		guiData = NULL;
 		pthread_mutex_lock(&dataReadyMutex);
 		guiDataReady = 0;
 		pthread_mutex_unlock(&dataReadyMutex);
 		if((nFrameToGui) && (receiver_threads_running)){
-		//release after getting data
-		sem_post(&smp);
+			//release after getting data
+			sem_post(&smp);
 		}
 	}
 }
@@ -745,13 +921,92 @@ int slsReceiverFunctionList::setShortFrame(int i){
 		bufferSize = GOTTHARD_SHORT_BUFFER_SIZE;
 		maxFramesPerFile = SHORT_MAX_FRAMES_PER_FILE;
 		packetsPerFrame = GOTTHARD_SHORT_PACKETS_PER_FRAME;
+		frameIndexMask = GOTTHARD_SHORT_FRAME_INDEX_MASK;
+		frameIndexOffset = GOTTHARD_SHORT_FRAME_INDEX_OFFSET;
 
 	}else{
 		bufferSize = GOTTHARD_BUFFER_SIZE;
 		maxFramesPerFile = MAX_FRAMES_PER_FILE;
 		packetsPerFrame = GOTTHARD_PACKETS_PER_FRAME;
+		frameIndexMask = GOTTHARD_FRAME_INDEX_MASK;
+		frameIndexOffset = GOTTHARD_FRAME_INDEX_OFFSET;
 	}
 
+	oneBufferSize = bufferSize/packetsPerFrame;
+
+	//if the filter is inititalized with the wrong readout
+	if(filter->getPacketsPerFrame() != packetsPerFrame){
+
+		vector <vector<int16_t> > map;
+		vector <vector<int16_t> > mask;
+		int initial_offset = 4;
+		int later_offset = 2;
+		int x,y,i,j,offset = 0;
+
+		switch(packetsPerFrame){
+		case GOTTHARD_SHORT_PACKETS_PER_FRAME://roi readout for gotthard
+			x = 1;
+			y = (GOTTHARD_DATA_BYTES/GOTTHARD_PACKETS_PER_FRAME)/2;
+			offset = initial_offset;
+
+			mask.resize(x);
+			for(int i=0;i<x; i++)
+				mask[i].resize(y);
+			map.resize(x);
+			for(int i=0;i<x; i++)
+				map[i].resize(y);
+			//set up mask for moench
+			for (int i=0; i < x; i++)
+				for (int j=0; j < y; j++){
+					mask[i][j] = 0;
+				}
+			//set up mapping for gotthard
+			for (int i=0; i < x; i++)
+				for (int j=0; j < y; j++){
+					map[i][j] = offset;
+					offset += 2;
+				}
+
+			delete filter;
+			filter = new singlePhotonFilter(x,y,frameIndexMask, GOTTHARD_PACKET_INDEX_MASK, frameIndexOffset, 0, GOTTHARD_SHORT_PACKETS_PER_FRAME, 0,map, mask,GOTTHARD_SHORT_BUFFER_SIZE);
+			break;
+
+		default: //normal readout for gotthard
+			x = 1;
+			y = (GOTTHARD_DATA_BYTES/GOTTHARD_PACKETS_PER_FRAME);
+			offset = initial_offset;
+
+			mask.resize(x);
+			for(int i=0;i<x; i++)
+				mask[i].resize(y);
+			map.resize(x);
+			for(int i=0;i<x; i++)
+				map[i].resize(y);
+
+			//set up mask for moench
+			for (int i=0; i < x; i++)
+				for (int j=0; j < y; j++){
+					mask[i][j] = 0;
+				}
+
+			//set up mapping for gotthard
+			for (int i=0; i < x; i++)
+				for (int j=0; j < y; j++){
+					//since there are 2 packets
+					if (y == y/2)
+						offset += initial_offset;
+					map[i][j] = offset;
+					offset += 2;
+				}
+
+			delete filter;
+			filter = new singlePhotonFilter(x,y,frameIndexMask, GOTTHARD_PACKET_INDEX_MASK, frameIndexOffset, 0, GOTTHARD_PACKETS_PER_FRAME, 1,map, mask,GOTTHARD_BUFFER_SIZE);
+			break;
+		}
+
+
+
+	}
 	return shortFrame;
 }
 

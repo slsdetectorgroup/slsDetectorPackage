@@ -12,6 +12,7 @@
 #include "receiver_defs.h"
 #include "genericSocket.h"
 #include "circularFifo.h"
+#include "singlePhotonFilter.h"
 
 
 #include <string.h>
@@ -30,7 +31,7 @@ public:
 	/**
 	 * Constructor
 	 */
-	slsReceiverFunctionList(detectorType det, bool moenchwithGotthardTest);
+	slsReceiverFunctionList(detectorType det);
 
 	/**
 	 * Destructor
@@ -207,6 +208,12 @@ public:
 	 * when fifo is empty later, sets status to run_finished */
 	void startReadout();
 
+	/** enabl data compression, by saving only hits */
+	void enableDataCompression(bool enable){dataCompression = enable;};
+
+	/** get data compression, by saving only hits */
+	bool getDataCompression(){ return dataCompression;};
+
 private:
 
 	/** detector type */
@@ -257,8 +264,8 @@ private:
 	/** Actual current frame index of an entire acquisition (including all scans) */
 	uint32_t acquisitionIndex;
 
-	/** Frames currently in current file, starts new file when it reaches max */
-	uint32_t framesInFile;
+	/** Packets currently in current file, starts new file when it reaches max */
+	uint32_t packetsInFile;
 
 	/** Previous Frame number from buffer */
 	uint32_t prevframenum;
@@ -338,6 +345,26 @@ private:
 	/** send every nth frame to gui or only upon gui request*/
 	int nFrameToGui;
 
+	/** frame index mask */
+	int frameIndexMask;
+
+	/** frame index offset */
+	int frameIndexOffset;
+
+	/** datacompression - save only hits */
+	bool dataCompression;
+
+	/** single photon filter */
+	singlePhotonFilter *filter;
+
+	/** oen buffer size */
+	int oneBufferSize;
+
+	/** semaphore to synchronize writer and guireader threads */
+	sem_t smp;
+
+	/** guiDataReady mutex */
+	pthread_mutex_t  dataReadyMutex;
 
 	/**
 	   callback arguments are
@@ -380,21 +407,6 @@ private:
 	 * 1 callback writes file, we have to open, close it
 	 * 2 we open, close, write file, callback does not do anything */
 	int cbAction;
-
-	/**temporary variable to test moench with gotthard module*/
-	bool withGotthard;
-
-	/** frame index mask */
-	int frameIndexMask;
-
-	/** frame index offset */
-	int frameIndexOffset;
-
-	/** semaphore to synchronize writer and guireader threads */
-	sem_t smp;
-
-	/** guiDataReady mutex */
-	pthread_mutex_t  dataReadyMutex;
 
 
 public:

@@ -1813,35 +1813,114 @@ int allocateRAM() {
 
 }
 int prepareADC(){
-  printf("Preparing ADC\n");
-  u_int32_t valw,codata,csmask;              
-  int i,cdx,ddx;
-   cdx=0; ddx=1;
-   csmask=0x7c; //  1111100
-   
-    codata=0;           
-    codata=(0x14<<8)+(0x0);  //command and value;
-    valw=0xff; bus_w(ADC_WRITE_REG,(valw)); // start point
-     valw=((0xffffffff&(~csmask)));bus_w(ADC_WRITE_REG,valw); //chip sel bar down
-    for (i=0;i<24;i++) {
-      valw=valw&(~(0x1<<cdx));bus_w(ADC_WRITE_REG,valw);usleep(0); //cldwn  
-#ifdef VERBOSE
-      printf("DOWN 0x%x \n",valw);
-#endif
-      valw=(valw&(~(0x1<<ddx)))+(((codata>>(23-i))&0x1)<<ddx); bus_w(ADC_WRITE_REG,valw); usleep(0); //write data (i)
-#ifdef VERBOSE
-      printf("LOW 0x%x \n",valw);
-#endif
-      valw=valw+(0x1<<cdx);bus_w(ADC_WRITE_REG,valw); usleep(0); //clkup
-#ifdef VERBOSE
-      printf("up  0x%x \n",valw);
-#endif
-    } 
+	printf("Preparing ADC\n");
+	u_int32_t valw,codata,csmask;
+	int i,j,cdx,ddx,value;
+	cdx=0; ddx=1;
+	csmask=0x7c; //  1111100
 
- valw=valw&(~(0x1<<cdx));usleep(0);
-    valw=0xff; bus_w(ADC_WRITE_REG,(valw)); // stop point =start point */
+	for(j=0;j<3;j++){
+		//command and value;
+		codata = 0;
+		if(j==0)
+			codata=(0x08<<8)+(0x3);//Power modes(global) //reset
+		else if(j==1)
+			codata=(0x08<<8)+(0x0);//Power modes(global) //chip run
+		else
+			codata = (0x14<<8)+(0x0);//Output mode //offset binary
 
-       return;
+
+		// start point
+		valw=0xff;
+		bus_w(ADC_WRITE_REG,(valw));
+
+		 //chip sel bar down
+		valw=((0xffffffff&(~csmask)));
+		bus_w(ADC_WRITE_REG,valw);
+
+		for (i=0;i<24;i++) {
+			 //cldwn
+			valw=valw&(~(0x1<<cdx));
+			bus_w(ADC_WRITE_REG,valw);
+			usleep(0);
+
+			//write data (i)
+			valw=(valw&(~(0x1<<ddx)))+(((codata>>(23-i))&0x1)<<ddx);
+			bus_w(ADC_WRITE_REG,valw);
+			usleep(0);
+
+			//clkup
+			valw=valw+(0x1<<cdx);
+			bus_w(ADC_WRITE_REG,valw);
+			usleep(0);
+		}
+
+		 // stop point =start point
+		valw=valw&(~(0x1<<cdx));
+		usleep(0);
+		valw=0xff;
+		bus_w(ADC_WRITE_REG,(valw));
+
+		//usleep in between
+		usleep(50000);
+	}
+
+	return OK;
+
+	/*
+	codata=0;
+	codata=(0x14<<8)+(0x0);  //command and value;
+	valw=0xff; bus_w(ADC_WRITE_REG,(valw)); // start point
+	valw=((0xffffffff&(~csmask)));bus_w(ADC_WRITE_REG,valw); //chip sel bar down
+	for (i=0;i<24;i++) {
+		valw=valw&(~(0x1<<cdx));bus_w(ADC_WRITE_REG,valw);usleep(0); //cldwn
+
+		valw=(valw&(~(0x1<<ddx)))+(((codata>>(23-i))&0x1)<<ddx); bus_w(ADC_WRITE_REG,valw); usleep(0); //write data (i)
+
+		valw=valw+(0x1<<cdx);bus_w(ADC_WRITE_REG,valw); usleep(0); //clkup
+
+	}
+
+	valw=valw&(~(0x1<<cdx));usleep(0);
+	valw=0xff; bus_w(ADC_WRITE_REG,(valw)); // stop point =start point
+
+
+
+	usleep(5000);
+
+	codata=0;
+	codata=(0x08<<8)+(0x3);  //command and value;Power modes(global) reset
+	valw=0xff; bus_w(ADC_WRITE_REG,(valw)); // start point
+	valw=((0xffffffff&(~csmask)));bus_w(ADC_WRITE_REG,valw); //chip sel bar down
+	for (i=0;i<24;i++) {
+		valw=valw&(~(0x1<<cdx));bus_w(ADC_WRITE_REG,valw);usleep(0); //cldwn
+
+		valw=(valw&(~(0x1<<ddx)))+(((codata>>(23-i))&0x1)<<ddx); bus_w(ADC_WRITE_REG,valw); usleep(0); //write data (i)
+		valw=valw+(0x1<<cdx);bus_w(ADC_WRITE_REG,valw); usleep(0); //clkup
+
+	}
+
+	valw=valw&(~(0x1<<cdx));usleep(0);
+	valw=0xff; bus_w(ADC_WRITE_REG,(valw)); // stop point =start point
+
+
+
+	usleep(50000);
+	codata=0;
+	codata=(0x08<<8)+(0x0);  //command and value;Power modes(global) reset
+	valw=0xff; bus_w(ADC_WRITE_REG,(valw)); // start point
+	valw=((0xffffffff&(~csmask)));bus_w(ADC_WRITE_REG,valw); //chip sel bar down
+	for (i=0;i<24;i++) {
+		valw=valw&(~(0x1<<cdx));bus_w(ADC_WRITE_REG,valw);usleep(0); //cldwn
+
+		valw=(valw&(~(0x1<<ddx)))+(((codata>>(23-i))&0x1)<<ddx); bus_w(ADC_WRITE_REG,valw); usleep(0); //write data (i)
+		valw=valw+(0x1<<cdx);bus_w(ADC_WRITE_REG,valw); usleep(0); //clkup
+
+	}
+
+	valw=valw&(~(0x1<<cdx));usleep(0);
+	valw=0xff; bus_w(ADC_WRITE_REG,(valw)); // stop point =start point
+*/
 }
 
 

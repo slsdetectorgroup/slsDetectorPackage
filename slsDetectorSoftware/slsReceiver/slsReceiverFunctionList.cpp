@@ -858,7 +858,7 @@ int slsReceiverFunctionList::startWriting(){
 	receiver_threads_running=0;
 	pthread_mutex_unlock(&status_mutex);
 
-	cout << "Total RealTime Packets Caught:" << dec << totalPacketsCaught << endl;
+	cout << "Total Packets Caught:" << dec << totalPacketsCaught << endl;
 	//cout << "RealTime Full Frames Caught:" << dec << framesCaught << endl;
 	cout << "Total Full Frames Caught:"<< dec << totalFramesCaught << endl;
 

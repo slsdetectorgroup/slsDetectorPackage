@@ -232,19 +232,7 @@ int singlePhotonFilter::findHits(int16_t *myData, int myDataSize){
 }
 
 
-/*
-//inside the receiver
-//pop fifo
 
-int16_t myData[160*160];
-if (singlePhotonFilter::verifyFrame(wbuf,rc, myData,firstTimeHere))
-if(firstTimeHere){
-	firsttimeHere = 0;
-	//f0 = fnum;
-}
-//singlePhotonFilter:SetFrameNumber(fnum - f0); singlePhotonFilter:SetFrameNumber(int i){myPhotonHit.iframe = i;};
-	singlePhotonFilter.findhits(myData,1286*40);
-*/
 
 
 void singlePhotonFilter::setupAcquisitionParameters(){
@@ -288,8 +276,6 @@ int singlePhotonFilter::verifyFrame(char *inData){
 		/*cout << "**Frame number doesnt match:Missing Packet! " << fnum << " "
 				"Expected f " << fnum << " p " << pnum + 1 << " received f " << fIndex << " p " << pIndex << endl;*/
 		fnum = fIndex;
-	/*	pnum = pIndex - 1;
-		ptot = 0;*/
 		pnum = pIndex;
 		ptot = 1;
 		ret = -2; //dont return here.. if is the end of packets, for gotthard uve toreturn -1
@@ -300,21 +286,13 @@ int singlePhotonFilter::verifyFrame(char *inData){
 	/*	cout << "**packet number doesnt match:Missing Packet! " << fnum << " "
 				"Expected f" << fnum << " p " << pnum + 1 << " received f " << fnum << " p " << pIndex << endl;*/
 		pnum = pIndex;
-		ptot++;/*ptot = 0;*/
+		ptot++;
 	}
 	//no missing packet
 	else{
 		pnum++;
 		ptot++;
 	}
-
-
-	//copy packet to correct spot in outData
-	/*myData[pIndex-1] = inData;
-	cout<<"mydata["<<pIndex-1<<"]:"<<hex<<(uint32_t)(*((uint32_t*)inData))<<endl;*/
-	/*memcpy((myData+(pIndex-1)*inDataSize), inData, inDataSize);*/
-	//memcpy(((char*)(myData+(pIndex-1)*640)), (inData + offset), 1280);
-
 
 
 	//if its the last index
@@ -339,214 +317,16 @@ int singlePhotonFilter::verifyFrame(char *inData){
 
 	//index not 40, but total  is 40.. strange
 	else if (ptot == packets_per_frame){
-		cout << "***** Some packets have been missed! " << fnum << " " << pnum<< endl;
+		cout << "***** Some packets have been missed! Shouldnt be here " << fnum << " " << pnum<< endl;
 		ptot = 0;
 		pnum = pIndex - 1;
 		fnum = fIndex;
 		ret = -1;
 	}
+
 	return ret;
 }
 
-/*
-void singlePhotonFilter::makeRunTree(char *fformat, int runmin, int runmax, char *tname, int off) {
-
-	char buff[1286];
-	int *header=(int*)buff;
-	char *footer=buff+1284;
-	Short_t mydata[160*160];//=(Short_t*)(buff+4);
-	int pnum;
-	int fnum;
-	int ifr;
-	int ipa;
-	Double_t dd[3][3];
-	int ncol=colwidth*4;//=160;
-	int nch=nrow*ncol;
-	char fname[1000];
-	Int_t chan[160][160];
-	Int_t nHits=0;
-	char vtype[100];
-	int afifo_length;
-	ifstream filebin;
-	int ptot=0;
 
 
-	for (int irun=runmin; irun<=runmax; irun++) {
-		sprintf(fname,fformat,irun);
-		cout << "file name " << fname << " " << tall->GetEntries() << endl;
-		filebin.open((const char *)(fname), ios::in | ios::binary);
-		if (filebin.is_open()) {
-			while (readNextFrame(filebin, mydata, fnum)) {
-				//to get rid of the first frame number
-				if (iii==0) {
-					f0=fnum;
-					iii = 1;
-				}
-				iframe=fnum-f0;
-				findHits(mydata, tall);
-			}
-			if (filebin.is_open())
-				filebin.close();
-		} else
-			cout << "could not open file " << fname << endl;
-	}
-}
-
-
-
-
-int readNextFrame(ifstream &filebin, int16_t *mydata, int &ifr){
-
-	char buff[1286];
-	int *header=(int*)buff;
-	char *footer=buff+1284;
-	//  Short_t mydata[160*160];//=(Short_t*)(buff+4);
-	int pnum;
-	int fnum;
-	// int ifr;
-	int ipa;
-	int iii=0;
-	int nrow=160;
-	int colwidth=40;
-	//  int nsigma=5;
-	int ncol=colwidth*4;//=160;
-	int nch=nrow*ncol;
-	int f0;
-	char fname[1000];
-	int ptot=0;
-	if (filebin.is_open()) {
-		while (filebin.read(buff,sizeof(4))) {
-			//  while (filebin.read(buff,sizeof(buff))) {
-			pnum=(*header)&0xff;//packet num
-			fnum=((*header)&(0xffffff00))>>8;//frame num
-			if (pnum==0)
-				pnum=40;
-			filebin.read((char*)(mydata+(pnum-1)*640),1280);
-			filebin.read(footer,2);
-			if (iii==0) {
-				//	  cout << "fnum " << fnum << " pnum " << pnum << coff << endl;
-				ifr=fnum;
-				ipa=pnum-1;
-				f0=fnum;//not used
-				iii=1;
-				ptot=0;
-			}
-			if (fnum!=ifr) {
-				cout << "Missing packet! "<< ifr << " ";
-				cout << "Expected f " <<ifr << " p " << ipa+1 << " received f " << fnum << " p " << pnum << endl;
-				ifr=fnum;
-				ipa=pnum-1;
-				ptot=0;
-			}
-			if (pnum!=ipa+1) {
-				cout << "Missing packet! "<< ifr << " ";
-				cout << "Expected f " <<ifr << " p " << ipa+1 << " received f " << fnum << " p " << pnum << endl;
-				ipa=pnum;
-				ptot=0;
-			} else {
-				ipa++;
-				ptot++;
-			}
-
-			if (pnum==40) {
-				if (ptot==40) {
-					return 1;
-				} else {
-					cout << "* Some packets have been missed! " << ifr << endl;
-					ptot=0;
-					ipa=0;
-					ifr=fnum+1;
-					//   return 0;
-				}
-			}  else if (ptot==40) {
-				cout << "** Some packets have been missed! " << ifr << endl;
-				ptot=0;
-				ipa=pnum-1;
-				ifr=fnum;
-			}
-		}
-	}
-
-	return 0;
-}
-
-
-
-*/
-/*
-  int nch=nrow*ncol;
-
-  int f0;
-
-  char fname[1000];
-
-  int ptot=0;
-
-    if (filebin.is_open()) {
-
-      while (filebin.read(buff,sizeof(4))) {
-      //  while (filebin.read(buff,sizeof(buff))) {
-
-	pnum=(*header)&0xff;
-	fnum=((*header)&(0xffffff00))>>8;
-
-	if (pnum==0)
-	  pnum=40;
-
-
-	filebin.read((char*)(mydata+(pnum-1)*640),1280);
-	filebin.read(footer,2);
-
-	if (iii==0) {
-	  //	  cout << "fnum " << fnum << " pnum " << pnum << coff << endl;
-	  ifr=fnum;
-	  ipa=pnum-1;
-	  f0=fnum;
-	  iii=1;
-	  ptot=0;
-
-	}
-
-	if (fnum!=ifr) {
-	  cout << "Missing packet! "<< ifr << " ";
-	  cout << "Expected f " <<ifr << " p " << ipa+1 << " received f " << fnum << " p " << pnum << endl;
-	  ifr=fnum;
-	  ipa=pnum-1;
-	  ptot=0;
-	}
-
-
-	if (pnum!=ipa+1) {
-	  cout << "Missing packet! "<< ifr << " ";
-	  cout << "Expected f " <<ifr << " p " << ipa+1 << " received f " << fnum << " p " << pnum << endl;
-	  ipa=pnum;
-	  ptot=0;
-	} else {
-	  ipa++;
-	  ptot++;
-	}
-
-	if (pnum==40) {
-	  if (ptot==40) {
-	    return 1;
-	  } else {
-	    cout << "* Some packets have been missed! " << ifr << endl;
-	    ptot=0;
-	    ipa=0;
-	    ifr=fnum+1;
-	    //   return 0;
-	  }
-	}  else if (ptot==40) {
-	  cout << "** Some packets have been missed! " << ifr << endl;
-	  ptot=0;
-	  ipa=pnum-1;
-	  ifr=fnum;
-	}
-      }
-    }
-
-    return 0;
-}
-
-*/
 

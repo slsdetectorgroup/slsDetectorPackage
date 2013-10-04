@@ -735,7 +735,7 @@ int slsReceiverFunctionList::startWriting(){
 							<< "%\tframenum "
 							<< dec << currframenum //<< "\t\t p " << prevframenum
 							<< "\tindex " << dec << getFrameIndex()
-							<< endl;
+							<< "\tpackets lost " << dec << ((currframenum-prevframenum)*packetsPerFrame)-(packetsInFile) << endl;
 				}
 			}
 

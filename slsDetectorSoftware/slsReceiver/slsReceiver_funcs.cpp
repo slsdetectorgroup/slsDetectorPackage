@@ -924,8 +924,7 @@ int	slsReceiverFuncs::moench_read_frame(){
 	char* raw 		= new char[bufferSize];
 
 	uint32_t startIndex=0;
-	int index = 0;
-	int offset=0;
+	int index = 0,bindex = 0, offset=0;
 
 
 	strcpy(mess,"Could not read frame\n");
@@ -954,12 +953,12 @@ int	slsReceiverFuncs::moench_read_frame(){
 		}
 
 		else{
-			index = ((uint32_t)(*((uint32_t*)raw)));
+			bindex = ((uint32_t)(*((uint32_t*)raw)));
 			memcpy(origVal,raw,bufferSize);
 			raw=NULL;
 
 			//************** packet number order**********************
-			index = ((index & (MOENCH_FRAME_INDEX_MASK)) >> MOENCH_FRAME_INDEX_OFFSET);
+			index = ((bindex & (MOENCH_FRAME_INDEX_MASK)) >> MOENCH_FRAME_INDEX_OFFSET);
 
 			uint32_t numPackets = MOENCH_PACKETS_PER_FRAME; //40
 			uint32_t onePacketSize = MOENCH_DATA_BYTES / MOENCH_PACKETS_PER_FRAME; //1280*40 / 40 = 1280
@@ -974,7 +973,15 @@ int	slsReceiverFuncs::moench_read_frame(){
 #ifdef VERBOSE
 				printf("iPacket:%d\n",iPacket);cout << endl;
 #endif
-				packetIndex = (*((uint32_t*)(((char*)origVal)+packetOffset))) & MOENCH_PACKET_INDEX_MASK;
+				//if missing packets, dont send to gui
+				bindex = (*((uint32_t*)(((char*)origVal)+packetOffset)));
+				if (bindex == 0xFFFFFFFF){
+					cout << "Missing Packet,Not sending to gui" << endl;
+					index = startIndex - 1;
+					break;//use continue and change index above if you want to display missing packets with 0 value anyway in gui
+				}
+
+				packetIndex = bindex & MOENCH_PACKET_INDEX_MASK;
 				//the first packet is placed in the end
 				packetIndex--;
 				if(packetIndex ==-1)

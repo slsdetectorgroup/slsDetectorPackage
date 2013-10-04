@@ -258,6 +258,9 @@ private:
 	/** Total Frames Caught for an entire acquisition (including all scans) */
 	int totalFramesCaught;
 
+	/** Total packets caught for an entire acquisition (including all scans) */
+	int totalPacketsCaught;
+
 	/** Frame index at start of an entire acquisition (including all scans) */
 	uint32_t startAcquisitionIndex;
 

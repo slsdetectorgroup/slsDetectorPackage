@@ -35,6 +35,7 @@ slsReceiverFunctionList::slsReceiverFunctionList(detectorType det):
 														startFrameIndex(0),
 														frameIndex(0),
 														totalFramesCaught(0),
+														totalPacketsCaught(0),
 														startAcquisitionIndex(0),
 														acquisitionIndex(0),
 														packetsInFile(0),
@@ -290,7 +291,7 @@ void slsReceiverFunctionList::resetTotalFramesCaught(){
 	acqStarted = false;
 	startAcquisitionIndex = 0;
 	totalFramesCaught = 0;
-
+	totalPacketsCaught = 0;
 }
 
 
@@ -769,6 +770,7 @@ int slsReceiverFunctionList::startWriting(){
 				}
 
 				packetsInFile += i;
+				totalPacketsCaught += i;
 				//count only if you get full frames
 				if(i == packetsPerFrame){
 					framesCaught++;
@@ -856,9 +858,9 @@ int slsReceiverFunctionList::startWriting(){
 	receiver_threads_running=0;
 	pthread_mutex_unlock(&status_mutex);
 
-	cout << "RealTime Packets Caught:" << dec << packetsInFile << endl;
-	cout << "RealTime Frames Caught:" << dec << framesCaught << endl;
-	cout << "Total Frames Caught:"<< dec << totalFramesCaught << endl;
+	cout << "Total RealTime Packets Caught:" << dec << totalPacketsCaught << endl;
+	//cout << "RealTime Full Frames Caught:" << dec << framesCaught << endl;
+	cout << "Total Full Frames Caught:"<< dec << totalFramesCaught << endl;
 
 
 	if(sfilefd){

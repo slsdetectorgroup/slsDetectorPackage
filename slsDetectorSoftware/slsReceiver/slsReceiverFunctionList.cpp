@@ -77,6 +77,8 @@ slsReceiverFunctionList::slsReceiverFunctionList(detectorType det):
 		maxFramesPerFile = MOENCH_MAX_FRAMES_PER_FILE;
 		bufferSize = MOENCH_BUFFER_SIZE;
 		packetsPerFrame = MOENCH_PACKETS_PER_FRAME;
+		frameIndexMask = MOENCH_FRAME_INDEX_MASK;
+		frameIndexOffset = MOENCH_FRAME_INDEX_OFFSET;
 	}
 	oneBufferSize = bufferSize/packetsPerFrame;
 
@@ -540,6 +542,9 @@ int slsReceiverFunctionList::startListening(){
 #endif
 					continue;
 				}
+				//cout<<"got index:"<<hex<<(((uint32_t)(*((uint32_t*)(buffer+offset))) & (frameIndexMask)) >> frameIndexOffset);
+
+
 				if ((myDetectorType == GOTTHARD) && (shortFrame == -1))
 					(*((uint32_t*)(buffer+offset)))++;
 
@@ -851,7 +856,8 @@ int slsReceiverFunctionList::startWriting(){
 	receiver_threads_running=0;
 	pthread_mutex_unlock(&status_mutex);
 
-	cout << "RealTime Frames Caught:" << dec <<framesCaught << endl;
+	cout << "RealTime Packets Caught:" << dec << packetsInFile << endl;
+	cout << "RealTime Frames Caught:" << dec << framesCaught << endl;
 	cout << "Total Frames Caught:"<< dec << totalFramesCaught << endl;
 
 

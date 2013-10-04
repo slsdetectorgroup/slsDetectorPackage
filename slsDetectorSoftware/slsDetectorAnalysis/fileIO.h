@@ -30,7 +30,7 @@ class fileIO :  public fileIOStatic, public virtual slsDetectorBase  {
 
 
   /** default constructor */
-  fileIO(): fileIOStatic(){currentFrameIndex=-1;frameIndex=-1;detIndex=-1; framesPerFile=&nframes; nframes=1; };
+  fileIO(): fileIOStatic(){currentFrameIndex=-1;frameIndex=-1;detIndex=-1; framesPerFile=&nframes; nframes=1; filefd = NULL;};
 
   /** virtual destructor */
   virtual ~fileIO(){};

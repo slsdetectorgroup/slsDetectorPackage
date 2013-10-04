@@ -293,7 +293,7 @@ void qDrawPlot::SetupWidgetWindow(){
 		plot1D->SetXTitle("X Axis");
 		plot1D->SetYTitle("Y Axis");
 		plot1D_hists.append(h=new SlsQtH1D("",histNBins,histXAxis,histYAxis[0]));
-		h->SetLineColor(1);
+		h->SetLineColor(0);
 		SetStyle(h);
 		h->Attach(plot1D);
 		Clear1DPlot();
@@ -1253,7 +1253,7 @@ void qDrawPlot::UpdatePlot(){
 										plot1D_hists.append(h=new SlsQtH1D("",histNBins,histXAngleAxis,histYAngleAxis));
 									else
 										plot1D_hists.append(h=new SlsQtH1D("",histNBins,histXAxis,GetHistYAxis(hist_num)));
-									h->SetLineColor(hist_num+1);
+									h->SetLineColor(hist_num);
 								}else{
 									h=plot1D_hists.at(hist_num);
 									if(anglePlot)
@@ -1706,7 +1706,7 @@ int qDrawPlot::UpdateTrimbitPlot(bool fromDetector,bool Histogram){
 			plot1D->SetZoomBase(0,0,nPixelsX,plotHistogram->boundingRect().height());
 			SlsQtH1D*  h;
 			plot1D_hists.append(h=new SlsQtH1D("",nPixelsX,histXAxis,histYAxis[0]));
-			h->SetLineColor(1);
+			h->SetLineColor(0);
 			histFrameIndexTitle->setText(GetHistTitle(0));
 			//attach plot
 			h->Attach(plot1D);

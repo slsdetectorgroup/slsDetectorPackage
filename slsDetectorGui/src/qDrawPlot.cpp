@@ -991,19 +991,21 @@ int qDrawPlot::GetData(detectorData *data,int fIndex){
 					}
 					//pedestal or accumulate
 					else{
+						double temp;//cannot overwrite cuz of accumulate
 						for(unsigned int px=0;px<(nPixelsX*nPixelsY);px++){
-							if(accumulate)
-								histYAxis[0][px] += data->values[px];
-							else
-								histYAxis[0][px] = data->values[px];
+							temp = data->values[px];
 							if(pedestal)
-								histYAxis[0][px] = histYAxis[0][px] - (pedestalVals[px]);
+								temp = data->values[px] - (pedestalVals[px]);
 							if(binary) {
-								if ((histYAxis[0][px] >= binaryFrom) && (histYAxis[0][px] <= binaryTo))
-									histYAxis[0][px] = 1;
+								if ((temp >= binaryFrom) && (temp <= binaryTo))
+									temp = 1;
 								else
-									histYAxis[0][px] = 0;
+									temp = 0;
 							}
+							if(accumulate)
+								temp += histYAxis[0][px];
+							//after all processing
+							histYAxis[0][px] = temp;
 						}
 					}
 				}
@@ -1038,19 +1040,21 @@ int qDrawPlot::GetData(detectorData *data,int fIndex){
 				}
 				//pedestal or accumulate or binary
 				else{
+					double temp;
 					for(unsigned int px=0;px<(nPixelsX*nPixelsY);px++){
-						if(accumulate)
-							lastImageArray[px] += data->values[px];
-						else
-							lastImageArray[px] = data->values[px];
+						temp = data->values[px];
 						if(pedestal)
-							lastImageArray[px] = lastImageArray[px] - (pedestalVals[px]);
+							temp = data->values[px] - (pedestalVals[px]);
 						if(binary) {
-							if ((lastImageArray[px] >= binaryFrom) && (lastImageArray[px] <= binaryTo))
-								lastImageArray[px] = 1;
+							if ((temp >= binaryFrom) && (temp <= binaryTo))
+								temp = 1;
 							else
-								lastImageArray[px] = 0;
+								temp = 0;
 						}
+						if(accumulate)
+							temp += lastImageArray[px];
+						//after all processing
+						lastImageArray[px] = temp;
 					}
 				}
 

@@ -784,6 +784,13 @@ void qTabMeasurement::Refresh(){
 #ifdef VERBOSE
 		cout  << "Getting number of frames" << endl;
 #endif
+		//to prevent it from recalculating forever
+		disconnect(spinExpTime,SIGNAL(valueChanged(double)),			this,	SLOT(setExposureTime()));
+		disconnect(comboExpUnit,SIGNAL(currentIndexChanged(int)),		this,	SLOT(setExposureTime()));
+		disconnect(spinPeriod,SIGNAL(valueChanged(double)),				this,	SLOT(setAcquisitionPeriod()));
+		disconnect(comboPeriodUnit,SIGNAL(currentIndexChanged(int)),	this,	SLOT(setAcquisitionPeriod()));
+		disconnect(spinDelay,SIGNAL(valueChanged(double)),				this,	SLOT(setDelay()));
+		disconnect(comboDelayUnit,SIGNAL(currentIndexChanged(int)),		this,	SLOT(setDelay()));
 		//Exp Time
 		qDefs::timeUnit unit;
 		double time = qDefs::getCorrectTime(unit,((double)(myDet->setTimer(slsDetectorDefs::ACQUISITION_TIME,-1)*(1E-9))));
@@ -792,7 +799,6 @@ void qTabMeasurement::Refresh(){
 #ifdef VERBOSE
 		cout  << "Getting Exposure time" << endl;
 #endif
-
 		//period
 		time = qDefs::getCorrectTime(unit,((double)(myDet->setTimer(slsDetectorDefs::FRAME_PERIOD,-1)*(1E-9))));
 		spinPeriod->setValue(time);
@@ -800,19 +806,41 @@ void qTabMeasurement::Refresh(){
 #ifdef VERBOSE
 		cout  << "Getting Acquisition Period" << endl;
 #endif
-
-		//Number of Triggers
-		spinNumTriggers->setValue((int)myDet->setTimer(slsDetectorDefs::CYCLES_NUMBER,-1));
-#ifdef VERBOSE
-		cout  << "Getting number of triggers" << endl;
-#endif
-
+		double acqtimeNS = qDefs::getNSTime((qDefs::timeUnit)comboPeriodUnit->currentIndex(),spinPeriod->value());
+		double exptimeNS = qDefs::getNSTime((qDefs::timeUnit)comboExpUnit->currentIndex(),spinExpTime->value());
+		if(exptimeNS>acqtimeNS){
+			spinPeriod->setToolTip(errPeriodTip);
+			lblPeriod->setToolTip(errPeriodTip);
+			lblPeriod->setPalette(red);
+			lblPeriod->setText("Acquisition Period:*");
+		}
+		else {
+			spinPeriod->setToolTip(acqPeriodTip);
+			lblPeriod->setToolTip(acqPeriodTip);
+			lblPeriod->setPalette(lblTimingMode->palette());
+			lblPeriod->setText("Acquisition Period:");
+		}
+		//Check if the interval between plots is ok
+		emit CheckPlotIntervalSignal();
 		//delay
 		time = qDefs::getCorrectTime(unit,((double)(myDet->setTimer(slsDetectorDefs::DELAY_AFTER_TRIGGER,-1)*(1E-9))));
 		spinDelay->setValue(time);
 		comboDelayUnit->setCurrentIndex((int)unit);
 #ifdef VERBOSE
 		cout  << "Getting delay after trigger" << endl;
+#endif
+		connect(spinExpTime,SIGNAL(valueChanged(double)),			this,	SLOT(setExposureTime()));
+		connect(comboExpUnit,SIGNAL(currentIndexChanged(int)),		this,	SLOT(setExposureTime()));
+		connect(spinPeriod,SIGNAL(valueChanged(double)),			this,	SLOT(setAcquisitionPeriod()));
+		connect(comboPeriodUnit,SIGNAL(currentIndexChanged(int)),	this,	SLOT(setAcquisitionPeriod()));
+		connect(spinDelay,SIGNAL(valueChanged(double)),				this,	SLOT(setDelay()));
+		connect(comboDelayUnit,SIGNAL(currentIndexChanged(int)),	this,	SLOT(setDelay()));
+
+
+		//Number of Triggers
+		spinNumTriggers->setValue((int)myDet->setTimer(slsDetectorDefs::CYCLES_NUMBER,-1));
+#ifdef VERBOSE
+		cout  << "Getting number of triggers" << endl;
 #endif
 
 		//gates

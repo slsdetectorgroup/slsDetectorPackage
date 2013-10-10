@@ -118,7 +118,7 @@ static const int64_t GUI_VERSION=0x20121213;
 			while((newVal>=1)&&(intUnit>=(int)HOURS)){
 				/** value retains the old value */
 				value = newVal;
-				newVal = value/60;
+				newVal = value/(double)60;
 				intUnit--;
 			}
 			/** returning the previous value*/
@@ -128,7 +128,7 @@ static const int64_t GUI_VERSION=0x20121213;
 		/** ms, us, ns */
 		else{
 			while((value<1)&&(intUnit<(int)NANOSECONDS)){
-				value = value*1000;
+				value = value*(double)1000;
 				intUnit++;
 			}
 			unit = (timeUnit)(intUnit);

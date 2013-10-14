@@ -985,7 +985,7 @@ int qDrawPlot::GetData(detectorData *data,int fIndex){
 					}
 
 					//normal data
-					if(((!pedestal)&(!accumulate))	|| (resetAccumulate)){
+					if(((!pedestal)&(!accumulate)&(!binary))	|| (resetAccumulate)){
 						memcpy(histYAxis[0],data->values,nPixelsX*sizeof(double));
 						resetAccumulate = false;
 					}
@@ -1034,7 +1034,7 @@ int qDrawPlot::GetData(detectorData *data,int fIndex){
 				}
 
 				//normal data
-				if(((!pedestal)&(!accumulate))	|| (resetAccumulate)){
+				if(((!pedestal)&(!accumulate)&(!binary))	|| (resetAccumulate)){
 					memcpy(lastImageArray,data->values,nPixelsX*nPixelsY*sizeof(double));
 					resetAccumulate = false;
 				}

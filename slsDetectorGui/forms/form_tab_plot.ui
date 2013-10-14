@@ -634,7 +634,7 @@ Displays minimum, maximum and sum of values for each plot.
           <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
          </property>
          <property name="minimum">
-          <number>0</number>
+          <number>-16777215</number>
          </property>
          <property name="maximum">
           <number>16777215</number>
@@ -681,7 +681,7 @@ Displays minimum, maximum and sum of values for each plot.
           <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
          </property>
          <property name="minimum">
-          <number>0</number>
+          <number>-16777215</number>
          </property>
          <property name="maximum">
           <number>16777215</number>
@@ -728,7 +728,7 @@ Displays minimum, maximum and sum of values for each plot.
           <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
          </property>
          <property name="minimum">
-          <number>0</number>
+          <number>-16777215</number>
          </property>
          <property name="maximum">
           <number>16777215</number>
@@ -771,7 +771,7 @@ Displays minimum, maximum and sum of values for each plot.
      </rect>
     </property>
     <property name="currentIndex">
-     <number>4</number>
+     <number>6</number>
     </property>
     <widget class="QWidget" name="page">
      <widget class="QWidget" name="gridLayoutWidget_2">
@@ -1448,7 +1448,7 @@ Displays minimum, maximum and sum of values for each plot.
           <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
          </property>
          <property name="minimum">
-          <number>0</number>
+          <number>-16777215</number>
          </property>
          <property name="maximum">
           <number>16777215</number>
@@ -1495,7 +1495,7 @@ Displays minimum, maximum and sum of values for each plot.
           <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
          </property>
          <property name="minimum">
-          <number>0</number>
+          <number>-16777215</number>
          </property>
          <property name="maximum">
           <number>16777215</number>

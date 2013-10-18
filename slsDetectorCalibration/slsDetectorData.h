@@ -92,7 +92,7 @@ class slsDetectorData {
   */
 
 
-  int getChannel(char *data, int ix, int iy=1) {
+  inline int getChannel(char *data, int ix, int iy=1) {
     return (*(data+dataMap[iy][ix]))^dataMask[iy][ix];
   };
   
@@ -107,7 +107,7 @@ class slsDetectorData {
 
   */
 
-  u_int16_t getChannelShort(char  *data, int ix, int iy=1) {
+  inline u_int16_t getChannelShort(char  *data, int ix, int iy=1) {
     u_int16_t m=dataMask[iy][ix], d=*(u_int16_t*)(data+dataMap[iy][ix]);
     // cout << ix << " " << iy << " " << dataMap[ix][iy] << endl;
     // return (*(dd+dataMap[ix][iy]))^((u_int16_t)dataMask[ix][iy]);

@@ -10,12 +10,12 @@
 	
 	void SetN(int i) {n=i;};
 	int GetN() {return n;};
-	void Calc(double x) {
+	inline void Calc(double x) {
 	  if (m_n<n) Add(x);
 	  else Push(x);
 	}
 
-	void Add(double x) {
+	inline void Add(double x) {
 	  m_n++;
 
             // See Knuth TAOCP vol 2, 3rd edition, page 232
@@ -38,7 +38,7 @@
 	}
 
 
-        void Push(double x)
+        inline void Push(double x)
         {
 	  if (m_n == 1)
             {
@@ -62,7 +62,7 @@
             return m_n;
         }
 
-        double Mean() const
+        inline double Mean() const
         {
             return (m_n > 0) ? m_newM/m_n : 0.0;
         }
@@ -71,12 +71,12 @@
             return ( (m_n > 1) ? m_newM2/m_n : 0.0 );
         }
 
-        double Variance() const
+        inline double Variance() const
         {
 	  return ( (m_n > 1) ? (M2()-Mean()*Mean()) : 0.0 );
         }
 
-        double StandardDeviation() const
+        inline double StandardDeviation() const
         {
 	  return ( (Variance() > 0) ? sqrt( Variance() ) : -1 );
         }

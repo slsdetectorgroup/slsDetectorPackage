@@ -22,13 +22,64 @@
 using namespace std;
 
 #ifdef MYROOT
+
+Double_t energyCalibrationFunctions::pedestal(Double_t *x, Double_t *par) { 
+    return par[0]-par[1]*sign*x[0];                                      
+}
+
+
 Double_t energyCalibrationFunctions::gaussChargeSharing(Double_t *x, Double_t *par) { 
   Double_t f, arg=0;
-  if (par[3]!=0) arg=(x[0]-par[2])/par[3];
-    f=par[4]*TMath::Exp(-1*arg*arg/2.); 
-    f=f+par[5]*(par[4]/2*(TMath::Erfc(sign*arg/(TMath::Sqrt(2.)))))+par[0]-par[1]*sign*x[0]; 
-    return f;                                       
+  if (par[3]!=0) arg=sign*(x[0]-par[2])/par[3];
+    f=TMath::Exp(-1*arg*arg/2.); 
+    f=f+par[5]/2.*(TMath::Erfc(arg/(TMath::Sqrt(2.)))); 
+    return par[4]*f+pedestal(x,par);                                       
 }
+
+Double_t energyCalibrationFunctions::gaussChargeSharingPixel(Double_t *x, Double_t *par) { 
+  Double_t f;
+  if (par[3]<=0 || par[2]*(*x)<=0 || par[5]<0 || par[4]<=0) return 0;
+
+  Double_t pp[3];
+
+  pp[0]=0;
+  pp[1]=par[2];
+  pp[2]=par[3];
+  
+
+  f=(par[5]-par[6]*(TMath::Log(*x/par[2])))*erfBox(x,pp);
+  f+=par[4]*TMath::Gaus(*x, par[2], par[3], kTRUE);
+  return f+pedestal(x,par);                                       
+}
+
+Double_t energyCalibrationFunctions::erfBox(Double_t *z, Double_t *par) {
+
+  
+  
+  Double_t m=par[0];
+  Double_t M=par[1];
+  
+  if (par[0]>par[1]) {
+    m=par[1];
+    M=par[0];
+  }
+  
+  if (m==M)
+    return 0;
+
+
+  if (par[2]<=0) {
+    if (*z>=m && *z<=M)
+      return 1./(M-m);
+    else
+      return 0;
+
+  }
+
+  return (TMath::Erfc((z[0]-M)/par[2])-TMath::Erfc((z[0]-m)/par[2]))*0.5/(M-m);
+
+}
+
 
 // basic erf function
 Double_t energyCalibrationFunctions::erfFunction(Double_t *x, Double_t *par) {	
@@ -155,6 +206,10 @@ Double_t energyCalibrationFunctions::spectrum(Double_t *x, Double_t *par) {
   return gaussChargeSharing(x,par);	
 }
 
+Double_t energyCalibrationFunctions::spectrumPixel(Double_t *x, Double_t *par) {
+  return gaussChargeSharingPixel(x,par);	
+}
+
 
 Double_t energyCalibrationFunctions::scurve(Double_t *x, Double_t *par) {
   return erfFunctionChargeSharing(x,par);
@@ -192,6 +247,9 @@ energyCalibration::energyCalibration() :
 
   fspectrum=new TF1("fspectrum",funcs,&energyCalibrationFunctions::spectrum,0,1000,6,"energyCalibrationFunctions","spectrum");	
   fspectrum->SetParNames("Background Pedestal","Background slope", "Peak position","Noise RMS", "Number of Photons","Charge Sharing Pedestal");
+
+  fspixel=new TF1("fspixel",funcs,&energyCalibrationFunctions::spectrumPixel,0,1000,7,"energyCalibrationFunctions","spectrumPixel");	
+  fspixel->SetParNames("Background Pedestal","Background slope", "Peak position","Noise RMS", "Number of Photons","Charge Sharing Pedestal","Corner");
 
 #endif
 

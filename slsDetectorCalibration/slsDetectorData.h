@@ -1,8 +1,13 @@
 #ifndef SLSDETECTORDATA_H
 #define  SLSDETECTORDATA_H
 
-class slsDetectorData {
+#include <iostream>
+#include <fstream>
 
+using namespace std;
+
+class slsDetectorData {
+ public:
   /**
 
      Constructor (no error checking if datasize and offsets are compatible!)
@@ -23,26 +28,58 @@ class slsDetectorData {
     else
       dataSize=ds;
 
-    dataMap=new int[nx][ny];
-    dataMask=new int[nx][ny];
+    dataMask=new int*[ny];
+    for(int i = 0; i < ny; i++) {
+      dataMask[i] = new int[nx];
+    }
+    dataMap=new int*[ny];
+    for(int i = 0; i < ny; i++) {
+      dataMap[i] = new int[nx];
+    }
     
+    setDataMap(dMap);
+    setDataMask(dMask);
+
+  };
+
+  ~slsDetectorData() {
+    for(int i = 0; i < ny; i++) {
+    delete [] dataMap[i];
+    delete [] dataMask[i];
+    }
+    delete [] dataMap;
+    delete [] dataMask;
+  }
+
+  void setDataMap(int **dMap=NULL) {
+
+
     if (dMap==NULL) {
       for (int iy=0; iy<ny; iy++)
 	 for (int ix=0; ix<nx; ix++)
-	   dataMap[ix][iy]=iy*nx+ix;
+	   dataMap[iy][ix]=ix*ny+ix;
     } else {
       for (int iy=0; iy<ny; iy++)
 	 for (int ix=0; ix<nx; ix++)
-	   dataMap[ix][iy]=dMap[ix][iy];
-    }
-    if (dMap!=NULL) {
-
-      for (int iy=0; iy<ny; iy++)
-	 for (int ix=0; ix<nx; ix++)
-	   dataMask[ix][iy]=dMask[ix][iy];
+	   dataMap[iy][ix]=dMap[iy][ix];
     }
     
   };
+
+  void setDataMask(int **dMask=NULL){
+
+    if (dMask!=NULL) {
+
+      for (int iy=0; iy<ny; iy++)
+	 for (int ix=0; ix<nx; ix++)
+	   dataMask[iy][ix]=dMask[iy][ix];
+    }
+    
+  };
+
+
+
+
   /**
 
      Returns the value of the selected channel for the given dataset (no error checking if number of pixels are compatible!)
@@ -55,8 +92,8 @@ class slsDetectorData {
   */
 
 
-  int getChannel(int *data, int ix, int iy=1) {
-    return *(data+dataMap[ix][iy])^dataMask[ix][iy];
+  int getChannel(char *data, int ix, int iy=1) {
+    return (*(data+dataMap[iy][ix]))^dataMask[iy][ix];
   };
   
   /**
@@ -70,9 +107,11 @@ class slsDetectorData {
 
   */
 
-
-  int getChannel(u_int16_t  *data, int ix, int iy=1) {
-    return *(data+dataMap[ix][iy])^((u_int16_t)dataMask[ix][iy]);
+  u_int16_t getChannelShort(char  *data, int ix, int iy=1) {
+    u_int16_t m=dataMask[iy][ix], d=*(u_int16_t*)(data+dataMap[iy][ix]);
+    // cout << ix << " " << iy << " " << dataMap[ix][iy] << endl;
+    // return (*(dd+dataMap[ix][iy]))^((u_int16_t)dataMask[ix][iy]);
+    return d^m;
   };
   
 

@@ -18,6 +18,7 @@
 #define MYROOT
 #endif
 
+#define MYROOT
 
 #ifdef MYROOT
 #include <TROOT.h>
@@ -84,12 +85,29 @@ class energyCalibrationFunctions {
       Gaussian Function with charge sharing pedestal
       par[0] is the absolute height of the background pedestal
       par[1] is the slope of the background pedestal
+  */
+  Double_t pedestal(Double_t *x, Double_t *par);
+
+  /** 
+      Gaussian Function with charge sharing pedestal
+      par[0] is the absolute height of the background pedestal
+      par[1] is the slope of the background pedestal
       par[2] is the gaussian peak position
       par[3] is the RMS of the gaussian (and of the pedestal)
       par[4] is the height of the function
       par[5] is the fractional height of the charge sharing pedestal (scales with par[3])
   */
   Double_t gaussChargeSharing(Double_t *x, Double_t *par);
+  /** 
+      Gaussian Function with charge sharing pedestal
+      par[0] is the absolute height of the background pedestal
+      par[1] is the slope of the background pedestal
+      par[2] is the gaussian peak position
+      par[3] is the RMS of the gaussian (and of the pedestal)
+      par[4] is the height of the function
+      par[5] is the fractional height of the charge sharing pedestal (scales with par[3])
+  */
+  Double_t gaussChargeSharingPixel(Double_t *x, Double_t *par);
 
   /** 
       Basic erf function
@@ -98,7 +116,7 @@ class energyCalibrationFunctions {
       par[2] is the amplitude
   */
 Double_t erfFunction(Double_t *x, Double_t *par) ;
-
+ Double_t erfBox(Double_t *z, Double_t *par);
   /** Erf function with charge sharing slope
       par[0] is the  pedestal 
       par[1] is the  slope of the pedestal
@@ -128,12 +146,24 @@ Double_t erfFuncFluo(Double_t *x, Double_t *par);
   /** 
       static function Gaussian with charge sharing pedestal with the correct scan sign
       par[0] is the absolute height of the background pedestal
-      par[1] is the fractional height of the charge sharing pedestal (scales with par[3]
+      par[1]  is the  slope of the pedestal 
       par[2] is the gaussian peak position
       par[3] is the RMS of the gaussian (and of the pedestal)
       par[4] is the height of the function
+      par[5] is the fractional height of the charge sharing pedestal (scales with par[4]
   */
   Double_t spectrum(Double_t *x, Double_t *par);
+
+  /** 
+      static function Gaussian with charge sharing pedestal with the correct scan sign
+      par[0] is the absolute height of the background pedestal
+      par[1]  is the  slope of the pedestal 
+      par[2] is the gaussian peak position
+      par[3] is the RMS of the gaussian (and of the pedestal)
+      par[4] is the height of the function
+      par[5] is the fractional height of the charge sharing pedestal (scales with par[4]
+  */
+  Double_t spectrumPixel(Double_t *x, Double_t *par);
 
 
  /** Erf function with charge sharing slope with the correct scan sign
@@ -380,6 +410,8 @@ class energyCalibration  {
   TF1 *fscurve; /**< function with which the s-curve will be fitted */
 
   TF1 *fspectrum; /**< function with which the spectrum will be fitted */
+
+  TF1 *fspixel; /**< function with which the spectrum will be fitted */
 
 #endif
 

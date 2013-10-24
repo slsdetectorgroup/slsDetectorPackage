@@ -14,26 +14,33 @@
 #include <list>
 #include <queue>
 #include <fstream>
-#include "RunningStat.h"
-#include "MovingStat.h"
 #include "moench02ModuleData.h"
 
 using namespace std;
 
+#define NC 160
+#define NR 160
 
-TH2F *moenchReadData(char *fformat, int runmin, int runmax, int nbins=1500, int hmin=-500, int hmax=1000, int sign=1) {
 
+
+TH2F *moenchReadData(char *fformat, int runmin, int runmax, int nbins=1500, int hmin=-500, int hmax=1000, int sign=1, int nsigma=5, double hc=0, double tc=0, int xmin=0, int xmax=NC, int ymin=0, int ymax=NR) {
+  
   moench02ModuleData *decoder=new moench02ModuleData();
   char *buff;
+  char *oldbuff=NULL;
   char fname[10000];
-  
+  double oldval;
   int nf=0;
 
+
+  moench02ModuleData::eventType thisEvent=moench02ModuleData::PEDESTAL;
+
+
   TH2F *h2=NULL;
-  h2=new TH2F("h2",fformat,nbins,hmin-0.5,hmax-0.5,160*160,-0.5,160*160-0.5);
-  
+  h2=new TH2F("h2",fformat,nbins,hmin-0.5,hmax-0.5,NC*NR,-0.5,NC*NR-0.5);
+
   int val, dum;
-  double me, sig, tot;
+  double me=0, sig, tot, vv;
 
   MovingStat stat[160][160];
 
@@ -41,15 +48,11 @@ TH2F *moenchReadData(char *fformat, int runmin, int runmax, int nbins=1500, int 
 
   int nbg=1000;
 
-  int ix, iy, ir, ic;
+  int ix=20, iy=20, ir, ic;
 
+  // 6% x-talk from previous pixel
+  // 12% x-talk from previous frame
 
-  for (ir=0; ir<160; ir++) {
-    for (ic=0; ic<160; ic++) {
-      stat[ir][ic].Clear();
-      stat[ir][ic].SetN(nbg);
-    }
-  }
 
   for (int irun=runmin; irun<runmax; irun++) {
     sprintf(fname,fformat,irun);
@@ -58,38 +61,25 @@ TH2F *moenchReadData(char *fformat, int runmin, int runmax, int nbins=1500, int 
    
     while ((buff=decoder->readNextFrame(filebin))) {
 	
-	for (ix=0; ix<160; ix++)
-	  for (iy=0; iy<160; iy++) {
+      for (ix=xmin-1; ix<xmax+1; ix++)
+	for (iy=ymin-1; iy<ymax+1; iy++) {
 
-	    dum=0; //no hit
-	    tot=0;
-
-	    if (nf>1000) {
-	      me=stat[iy][ix].Mean();
-	      sig=stat[iy][ix].StandardDeviation();
-	      val=sign*decoder->getChannelShort(buff,ix,iy)-me;
-	      h2->Fill(val,ix*160+iy);
-
-	      dum=0; //no hit
-	      tot=0;
-
-	      for (ir=-1; ir<2; ir++)
-		for (ic=-1; ic<2; ic++){
-		  if ((ix+ic)>=0 && (ix+ic)<160 && (iy+ir)>=0 && (iy+ir)<160) {
-		    if (decoder->getChannelShort(buff,ix+ic,iy+ir)>(stat[iy+ir][ix+ic].Mean()+3.*stat[iy+ir][ix+ic].StandardDeviation())) dum=1; //is a hit or neighbour is a hit!
-		    tot+=decoder->getChannelShort(buff,ix+ic,iy+ir)-stat[iy+ir][ix+ic].Mean();
-		  }
-		}
-
-	      if (tot>3.*sig) dum=3; //discard events where sum of the neighbours is too large.
-
-	      if (val<(me-3.*sig)) dum=2; //discard negative events!
-	    }
-	    if (nf<1000 || dum==0) 
-	      stat[iy][ix].Calc(sign*decoder->getChannelShort(buff,ix,iy));
-	   
+	  
+	  if (nf>100) {
+	    thisEvent= decoder->getEventType(ix, iy, hc, tc, 1);
+	  } 
+		
+	  if (thisEvent==moench02ModuleData::PEDESTAL) {	
+	    decoder->addToPedestal(decoder->getClusterElement(0,0), ix, iy);
 	  }
-      delete [] buff;
+	    
+	      
+	      /***********************************************************
+Add  here the function that you want to call: fill histos, make trees etc.
+	      ************************************************************/
+	      // getClusterElement to access quickly the photon and the neighbours
+	  
+	}
       cout << "=" ;
       nf++;
     }
@@ -99,7 +89,11 @@ TH2F *moenchReadData(char *fformat, int runmin, int runmax, int nbins=1500, int 
     else
       cout << "could not open file " << fname << endl;
   }
+  
+  
 
+  
+  
   delete decoder;
   cout << "Read " << nf << " frames" << endl;
   return h2;

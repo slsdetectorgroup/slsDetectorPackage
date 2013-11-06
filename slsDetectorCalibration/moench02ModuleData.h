@@ -8,6 +8,7 @@
 #include <iostream>
 #include <fstream>
 
+#include <TTree.h>
 using namespace std;
 
 
@@ -110,7 +111,7 @@ class moench02ModuleData : public slsDetectorData {
 
   char *readNextFrame(ifstream &filebin) {
     
-    if (oldbuff)
+    if (oldbuff) 
       delete [] oldbuff;
 
     oldbuff=buff;
@@ -159,7 +160,7 @@ class moench02ModuleData : public slsDetectorData {
       if (np>0)
 	cout << "Too few packets for this frame! "<< fnum << " " << pnum << endl;
       delete [] data;
-      buff=NULL;
+      data=NULL;
     }
     buff=data;
     return data;
@@ -183,7 +184,7 @@ class moench02ModuleData : public slsDetectorData {
     if (ix>0 && hc!=0)
       val-=hc*slsDetectorData::getChannelShort(buff,ix-1,iy);
     
-    if (oldbuff && tc!=0)
+    if (oldbuff && tc!=0) 
       val+=tc*slsDetectorData::getChannelShort(oldbuff,ix,iy);
 
 
@@ -248,7 +249,19 @@ class moench02ModuleData : public slsDetectorData {
   double  *getCluster(){return &cluster[0][0];};
 
 
+  TTree *initMoenchTree(char *tname, Int_t *iframe, Int_t * x, Int_t* y, Double_t data[3][3], Double_t *ped, Double_t *sigma) {
+    TTree* tall=new TTree(tname,tname);
+    tall->Branch("iFrame",iframe,"iframe/I");
+    tall->Branch("x",x,"x/I");
+    tall->Branch("y",y,"y/I");
+    tall->Branch("data",data,"data[3][3]/D");
+    tall->Branch("pedestal",ped,"pedestal/D");
+    tall->Branch("rms",sigma,"rms/D");
+    return tall;
 
+  };
+
+  
 
  private:
   

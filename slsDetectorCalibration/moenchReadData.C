@@ -219,7 +219,7 @@ Add  here the function that you want to call: fill histos, make trees etc.
       cout << "could not open file " << fname << endl;
   }
   if (pedsub)
-    tall->Write();
+    tall->Write(tall->GetName(),TObject::kOverwrite);
 
   
   

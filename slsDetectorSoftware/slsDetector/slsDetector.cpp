@@ -1912,19 +1912,22 @@ int slsDetector::readRegister(int addr){
   std::cout<< "Reading register "<< hex<<addr  << std::endl;
 #endif
   if (thisDetector->onlineFlag==ONLINE_FLAG) {
-    if (connectControl() == OK){
-      controlSocket->SendDataOnly(&fnum,sizeof(fnum));
-      controlSocket->SendDataOnly(&arg,sizeof(arg));
-      controlSocket->ReceiveDataOnly(&ret,sizeof(ret));
+    // if (connectControl() == OK){
+    if (stopSocket) {
+      if  (stopSocket->Connect()>=0) {
+      stopSocket->SendDataOnly(&fnum,sizeof(fnum));
+      stopSocket->SendDataOnly(&arg,sizeof(arg));
+      stopSocket->ReceiveDataOnly(&ret,sizeof(ret));
       if (ret!=FAIL)
-	controlSocket->ReceiveDataOnly(&retval,sizeof(retval));
+	stopSocket->ReceiveDataOnly(&retval,sizeof(retval));
       else {
-	controlSocket->ReceiveDataOnly(mess,sizeof(mess));
+	stopSocket->ReceiveDataOnly(mess,sizeof(mess));
 	std::cout<< "Detector returned error: " << mess << std::endl;
       }
-      controlSocket->Disconnect();
-      if (ret==FORCE_UPDATE)
-	updateDetector();
+      stopSocket->Disconnect();
+      //  if (ret==FORCE_UPDATE)
+      //	updateDetector();
+      }
     }
   }
 #ifdef VERBOSE

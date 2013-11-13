@@ -455,6 +455,27 @@ slsDetectorCommand::slsDetectorCommand(slsDetectorUtils *det)  {
   descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdRegister;
   i++;
 
+  descrToFuncMap[i].m_pFuncName="setbit"; //
+  descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdRegister;
+  i++;
+
+  descrToFuncMap[i].m_pFuncName="clearbit"; //
+  descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdRegister;
+  i++;
+
+  descrToFuncMap[i].m_pFuncName="getbit"; //
+  descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdRegister;
+  i++;
+
+
+
+
+
+
+
+
+
+
   /* settings, threshold */
 
   descrToFuncMap[i].m_pFuncName="settings"; //
@@ -3029,38 +3050,105 @@ string slsDetectorCommand::cmdRegister(int narg, char *args[], int action) {
   if (action==HELP_ACTION)
     return helpRegister(narg, args, action);
 
-  int addr, val;
+  int addr, val,n;
   char answer[1000];
 
   myDet->setOnline(ONLINE_FLAG);
   
+
+ // "reg" //
+ 
+  // "setbit" //
+ 
+    // "clearbit" //
+ 
+    // "getbit" //
+ 
+
+
   if (action==PUT_ACTION) {
-    if(narg<3) 
-      return string("wrong usage: should specify both address and value (hexadecimal fomat) ");
+      if (cmd=="getbit")	
+	return string("Cannot put");
+	
+    if(narg<3) {
+      if (cmd=="reg")
+	return string("wrong usage: should specify both address and value (hexadecimal fomat) ");
+      else
+	return string("wrong usage: should specify both address (hexadecimal fomat) and bit number");
+	
+    }
+
     if (sscanf(args[1],"%x",&addr))
       ;
     else
       return string("Could not scan address  (hexadecimal fomat) ")+string(args[1]);
+
     
-    if (sscanf(args[2],"%x",&val))
-      ;
-    else
-      return string("Could not scan value  (hexadecimal fomat) ")+string(args[2]);
-    
-    
-    sprintf(answer,"%x",myDet->writeRegister(addr,val));
-    
-  } else {
-    if (narg<2) 
-      return string("wrong usage: should specify address  (hexadecimal fomat) ");
-    if (sscanf(args[1],"%x",&addr))
-      ;
-    else
-      return string("Could not scan address  (hexadecimal fomat) ")+string(args[1]);
-	
-	
-    sprintf(answer,"%x",myDet->readRegister(addr));
+    if (cmd=="reg") {
+      if (sscanf(args[2],"%x",&val))
+	;
+      else
+	return string("Could not scan value  (hexadecimal fomat) ")+string(args[2]);
+      sprintf(answer,"%x",myDet->writeRegister(addr,val));
+    } else {
       
+      if (sscanf(args[2],"%d",&n))
+	;
+      else
+	return string("Could not scan bit number ")+string(args[2]);
+
+      if (n<0 || n>31)
+	return string("Bit number out of range")+string(args[2]);
+      
+      if (cmd=="setbit")
+	sprintf(answer,"%x",myDet->writeRegister(addr,myDet->readRegister(addr)| 1<<n));
+      if (cmd=="clearbit")
+	sprintf(answer,"%x",myDet->writeRegister(addr,myDet->readRegister(addr) & ~(1<<n)));
+	
+    }
+
+
+  } else {
+    if (cmd=="setbit")	
+      return string("Cannot get");
+    if (cmd=="clearbit")	
+      return string("Cannot get");
+
+    if (cmd=="reg") {
+      if (narg<2) 
+	return string("wrong usage: should specify address  (hexadecimal fomat) ");
+      if (sscanf(args[1],"%x",&addr))
+	;
+      else
+	return string("Could not scan address  (hexadecimal fomat) ")+string(args[1]);
+      
+	
+      sprintf(answer,"%x",myDet->readRegister(addr));
+
+    }
+    
+    if (cmd=="getbit") {
+
+      if(narg<3) 
+	return string("wrong usage: should specify both address (hexadecimal fomat) and bit number");
+
+
+      if (sscanf(args[1],"%x",&addr))
+	;
+      else
+	return string("Could not scan address  (hexadecimal fomat) ")+string(args[1]);
+      
+      if (sscanf(args[2],"%d",&n))
+	;
+      else
+	return string("Could not scan bit number ")+string(args[2]);
+      
+      if (n<0 || n>31)
+	return string("Bit number out of range")+string(args[2]);
+      
+
+      sprintf(answer,"%d",(myDet->readRegister(addr) >> n) & 1);
+    }
   }
 
   return string(answer);
@@ -3404,9 +3492,9 @@ string slsDetectorCommand::helpTiming(int narg, char *args[], int action){
   
   ostringstream os;
   if (action==GET_ACTION || action==HELP_ACTION)
-    os << string("sync \t gets the synchronization mode of the structure\n");
+    os << string("timing \t gets the timing mode of the detector (auto, trigger, ro_trigger, gating, triggered_gating)\n");
   if (action==PUT_ACTION || action==HELP_ACTION)
-    os << string("sync mode \t sets synchronization mode of the structure. Cane be none, gating, trigger, complementary \n");
+    os << string("timing mode \t sets synchronization mode of the detector. Can be auto, trigger, ro_trigger, gating, triggered_gating \n");
   return os.str();
 }
 

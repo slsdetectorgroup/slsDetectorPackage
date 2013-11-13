@@ -48,6 +48,7 @@
 
 
 #include "sls_detector_defs.h"
+#include "slsDetectorUsers.h"
 #include "error_defs.h"
 
 #include <string>
@@ -392,8 +393,7 @@ class slsDetectorBase :  public virtual slsDetectorDefs, public virtual errorDef
       \returns current external communication mode
   */
   virtual externalCommunicationMode setExternalCommunicationMode(externalCommunicationMode pol=GET_EXTERNAL_COMMUNICATION_MODE)=0;
-  int setTimingMode(int i=-1){return (int)setExternalCommunicationMode((externalCommunicationMode)i);};
-
+  int setTimingMode(int i=-1){return slsDetectorUsers::getTimingMode( externalCommunicationType( setExternalCommunicationMode(externalCommunicationType( slsDetectorUsers::getTimingMode(i)  ) ) ) );};
 
   virtual int setThresholdEnergy(int e_eV,  int imod, detectorSettings isettings=GET_SETTINGS)=0;
   int setThresholdEnergy(int e_eV){return setThresholdEnergy(e_eV,-1);};

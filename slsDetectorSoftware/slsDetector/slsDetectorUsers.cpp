@@ -178,6 +178,8 @@ double slsDetectorUsers::setDelayAfterTrigger(double t, bool inseconds){
     return  ((1E-9) * (double)myDetector->setDelayAfterTrigger(tms));
 }
 
+
+
 int64_t slsDetectorUsers::setNumberOfGates(int64_t t){
   return myDetector->setNumberOfGates(t);
 } 

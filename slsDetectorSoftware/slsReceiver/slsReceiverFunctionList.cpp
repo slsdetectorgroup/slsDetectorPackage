@@ -200,7 +200,7 @@ slsReceiverFunctionList::slsReceiverFunctionList(detectorType det):
 				/*cout<<"offset["<<i*y+j<<"]:"<<map[i*y+j]<<"\t";*/
 				offset += 1;
 			}
-cout<<endl;
+
 
 		filter = new singlePhotonFilter(x,y,GOTTHARD_FRAME_INDEX_MASK, GOTTHARD_PACKET_INDEX_MASK, GOTTHARD_FRAME_INDEX_OFFSET,
 				0, GOTTHARD_PACKETS_PER_FRAME, 1,map, mask,fifofree,GOTTHARD_BUFFER_SIZE);

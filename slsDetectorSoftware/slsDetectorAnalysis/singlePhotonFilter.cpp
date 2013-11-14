@@ -5,6 +5,7 @@
 #include "singlePhotonFilter.h"
 #include <errno.h>
 
+
 #define BUF_SIZE        (16*1024*1024) //16mb
 
 
@@ -113,7 +114,12 @@ singlePhotonFilter::~singlePhotonFilter(){
 
 int singlePhotonFilter::enableCompression(bool enable){
 //#ifdef VERBOSE
-	cout << "Compression set to " <<  enable << endl;
+	cout << "Compression set to " <<  enable;
+#ifdef MYROOT
+	cout << " with root" << endl;
+#else
+	cout << " without root" << endl;
+#endif
 //#endif
 	if(enable){
 		threads_mask = 0x0;
@@ -136,7 +142,7 @@ int singlePhotonFilter::enableCompression(bool enable){
 		for(int i=0; i<NUM_THREADS; ++i){
 			//cancel threads
 				while(pthread_cancel(find_hits_thread[i])!=0)
-					cout << "Unable to cancel Thread " << index << endl;/*pthread_join(find_hits_thread[i],NULL);*/
+					cout << "Unable to cancel Thread " << i << endl;/*pthread_join(find_hits_thread[i],NULL);*/
 				pthread_mutex_lock(&write_mutex);
 				closeFile();
 				pthread_mutex_unlock(&write_mutex);
@@ -159,23 +165,22 @@ void* singlePhotonFilter::createThreads(void *this_pointer){
 
 int singlePhotonFilter::initTree(){
 #ifdef MYROOT
-	if(myFile) {
-		writeToFile();
-		closeFile();
-	}
-	outfname = string(outfname).replace(".raw",".root");
-	//fName.replace(".raw",".png");
-	//sprintf(outfname, "%s/%s.root", outdir, fname);
+	writeToFile();
+	closeFile();
+	sprintf(savefilename, "%s/%s_f%012d_%d.root", filePath,fileName,nTotalHits,fileIndex);
 
+	//file
+	myFile = new TFile(savefilename, "RECREATE"); /** later  return error if it exists */
+
+	//tree
 	char c1[10],c2[10],cdata[100];
 	sprintf(c1,"%d",nClusterX);
 	sprintf(c2,"%d",nClusterY);
 	sprintf(cdata,"data[%s][%s]/D",c1,c2);
 
-	//file
-	myFile = new TFile(outfname, "RECREATE"); /** later  return error if it exists */
-	//tree
-	myTree = new TTree(fname, fname);
+
+	sprintf(savefilename, "%s_f%012d_%d", fileName,nTotalHits,fileIndex);
+	myTree = new TTree(savefilename, savefilename);
 	myTree->Branch("iframe",&myPhotonHit->iframe,"iframe/I");
 	myTree->Branch("x",&myPhotonHit->x,"x/I");
 	myTree->Branch("y",&myPhotonHit->y,"y/I");
@@ -198,11 +203,14 @@ int singlePhotonFilter::initTree(){
 
 
 int singlePhotonFilter::writeToFile(){
-#ifdef MYROOT
-	if((myTree) && (myFile))
-		myTree->Write();
-#else
 	if(nHitsPerFrame){
+#ifdef MYROOT
+		if((myTree) && (myFile)){
+			myTree->Write();
+			return OK;
+		}else
+			cout << "ERROR: Could not write to " << nHitsPerFrame << " hits to file as file or tree doesnt exist" << endl;
+#else
 		if(myFile){
 			/*cout<<"writing "<< nHitsPerFrame << " hits to file" << endl;*/
 			fwrite((void*)(photonHitList), 1, sizeof(single_photon_hit)*nHitsPerFrame, myFile);
@@ -210,9 +218,9 @@ int singlePhotonFilter::writeToFile(){
 			//cout<<"Exiting writeToFile"<<endl;
 			return OK;
 		}else
-			cout << "ERROR: Could not write to " << nHitsPerFrame <<" hits to file as myfile doesnt exist" << endl;
-	}
+			cout << "ERROR: Could not write to " << nHitsPerFrame <<" hits to file as file doesnt exist" << endl;
 #endif
+	}
 	return FAIL;
 }
 

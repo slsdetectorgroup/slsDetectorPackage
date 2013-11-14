@@ -87,8 +87,8 @@ void  slsDetectorUtils::acquire(int delflag){
     eclog=new enCalLogClass(this);
   
   
-  
-  
+
+
   setJoinThread(0);
   positionFinished(0);
 

@@ -12,15 +12,16 @@
 singlePhotonFilter::singlePhotonFilter(int nx, int ny,
 		int fmask, int pmask, int foffset, int poffset, int pperf, int iValue,
 		int16_t *m, int16_t *s, CircularFifo<char>* f, int d):
-#ifdef MYROOT
+#ifdef MYROOT1
 										myTree(NULL),
 										myFile(NULL),
 #else
 										myFile(NULL),
-										nHitsPerFrame(0),
+
 										nHitsPerFile(0),
 										nTotalHits(0),
 #endif
+										nHitsPerFrame(0),
 										nChannelsX(nx),
 										nChannelsY(ny),
 										nClusterX(CLUSTER_SIZE),
@@ -53,7 +54,7 @@ singlePhotonFilter::singlePhotonFilter(int nx, int ny,
 										fileIndex(0),
 										fifo(f){
 
-#ifndef MYROOT
+#ifndef MYROOT1
 	photonHitList  = new single_photon_hit[nChannelsX*nChannelsY];
 #endif
 	//cluster
@@ -115,7 +116,7 @@ singlePhotonFilter::~singlePhotonFilter(){
 int singlePhotonFilter::enableCompression(bool enable){
 //#ifdef VERBOSE
 	cout << "Compression set to " <<  enable;
-#ifdef MYROOT
+#ifdef MYROOT1
 	cout << " with root" << endl;
 #else
 	cout << " without root" << endl;
@@ -164,10 +165,10 @@ void* singlePhotonFilter::createThreads(void *this_pointer){
 
 
 int singlePhotonFilter::initTree(){
-#ifdef MYROOT
+#ifdef MYROOT1
 	writeToFile();
 	closeFile();
-	sprintf(savefilename, "%s/%s_f%012d_%d.root", filePath,fileName,nTotalHits,fileIndex);
+	sprintf(savefilename, "%s/%s_%d_.root", filePath,fileName,fileIndex);
 
 	//file
 	myFile = new TFile(savefilename, "RECREATE"); /** later  return error if it exists */
@@ -179,7 +180,7 @@ int singlePhotonFilter::initTree(){
 	sprintf(cdata,"data[%s][%s]/D",c1,c2);
 
 
-	sprintf(savefilename, "%s_f%012d_%d", fileName,nTotalHits,fileIndex);
+	sprintf(savefilename, "%s_%d_", fileName,fileIndex);
 	myTree = new TTree(savefilename, savefilename);
 	myTree->Branch("iframe",&myPhotonHit->iframe,"iframe/I");
 	myTree->Branch("x",&myPhotonHit->x,"x/I");
@@ -204,12 +205,13 @@ int singlePhotonFilter::initTree(){
 
 int singlePhotonFilter::writeToFile(){
 	if(nHitsPerFrame){
-#ifdef MYROOT
-		if((myTree) && (myFile)){
-			myTree->Write();
-			return OK;
-		}else
-			cout << "ERROR: Could not write to " << nHitsPerFrame << " hits to file as file or tree doesnt exist" << endl;
+#ifdef MYROOT1
+	if((myTree) && (myFile)){
+		myTree->Write();
+		nHitsPerFrame = 0;
+		return OK;
+	}else
+		cout << "ERROR: Could not write to " << nHitsPerFrame << " hits to file as file or tree doesnt exist" << endl;
 #else
 		if(myFile){
 			/*cout<<"writing "<< nHitsPerFrame << " hits to file" << endl;*/
@@ -219,6 +221,7 @@ int singlePhotonFilter::writeToFile(){
 			return OK;
 		}else
 			cout << "ERROR: Could not write to " << nHitsPerFrame <<" hits to file as file doesnt exist" << endl;
+
 #endif
 	}
 	return FAIL;
@@ -227,7 +230,7 @@ int singlePhotonFilter::writeToFile(){
 
 
 int singlePhotonFilter::closeFile(){
-#ifdef MYROOT
+#ifdef MYROOT1
 	if(myTree){
 		if (myFile){
 			myFile = myTree->GetCurrentFile();
@@ -264,7 +267,7 @@ void singlePhotonFilter::setupAcquisitionParameters(char *outfpath, char* outfna
 
 	nHitStat->Clear();
 	nHitStat->SetN(nbackground);
-#ifndef MYROOT
+#ifndef MYROOT1
 	nTotalHits = 0;
 #endif
 }
@@ -497,7 +500,8 @@ void singlePhotonFilter::findHits(){
 							// this is an event and we are in the center
 							else if (dum == 1){
 								pthread_mutex_lock(&write_mutex);
-#ifdef MYROOT
+								nHitsPerFrame++;
+#ifdef MYROOT1
 								myTree->Fill();
 #else
 								photonHitList[nHitsPerFrame].data = clusterData;
@@ -507,7 +511,6 @@ void singlePhotonFilter::findHits(){
 								photonHitList[nHitsPerFrame].ped = clusterped;
 								photonHitList[nHitsPerFrame].iframe = clusteriframe;
 
-								nHitsPerFrame++;
 								nHitsPerFile++;
 								nTotalHits++;
 								if(nHitsPerFile >= MAX_HITS_PER_FILE-1)

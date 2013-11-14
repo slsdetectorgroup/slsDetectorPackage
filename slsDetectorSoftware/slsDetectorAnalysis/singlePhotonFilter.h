@@ -9,11 +9,11 @@
 
 
 #ifdef __CINT
-#define MYROOT
+#define MYROOT1
 #endif
 
 
-#ifdef MYROOT
+#ifdef MYROOT1
 #include <TFile.h>
 #include <TMath.h>
 #include <TTree.h>
@@ -99,7 +99,7 @@ public:
 	/** virtual destructor */
 	virtual ~singlePhotonFilter();
 
-#ifdef MYROOT
+#ifdef MYROOT1
 	/**
 	 * returns tree
 	 */
@@ -204,7 +204,7 @@ public:
 
 private:
 
-#ifdef MYROOT
+#ifdef MYROOT1
 	/** Tree where the hits are stored */
 	TTree *myTree;
 
@@ -216,15 +216,15 @@ private:
 	/** pointer to array of structs when only using files */
 	single_photon_hit* photonHitList;
 
-	/** Number of Hits per frame*/
-	int nHitsPerFrame;
-
 	/** Number of Hits per file */
 	int nHitsPerFile;
 
 	/** Total Number of Hits Per Acquisition */
 	int nTotalHits;
 #endif
+
+	/** Number of Hits per frame*/
+	int nHitsPerFrame;
 
 	/** Maximum Number of hits written to file */
 	const static int MAX_HITS_PER_FILE = 200000;

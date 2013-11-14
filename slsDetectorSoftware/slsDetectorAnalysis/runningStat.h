@@ -7,8 +7,11 @@
 
 #include <math.h>
 
-#include "sls_detector_defs.h"
+//#include "sls_detector_defs.h"
 
+typedef  double double32_t;
+typedef  float float32_t;
+typedef  int int32_t;
 
 /**
    @short class handling pedestal data that is static

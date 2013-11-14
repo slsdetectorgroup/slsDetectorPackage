@@ -262,12 +262,14 @@ void  slsDetectorUtils::acquire(int delflag){
 	    	setFileName(fileIO::getFileName());
 	    	if(setReceiverOnline()==OFFLINE_FLAG){
 	    		stopReceiver();
+	    		*stoppedFlag=1;
 	    		pthread_mutex_unlock(&mg);
 	    		break;
 	    	}
 	    	//start receiver
-	    	if((startReceiver() == FAIL) || (setReceiverOnline()==OFFLINE_FLAG)){
+	    	if(startReceiver() == FAIL) {
 	    		stopReceiver();
+	    		*stoppedFlag=1;
 	    		pthread_mutex_unlock(&mg);
 	    		break;
 	    	}
@@ -275,12 +277,12 @@ void  slsDetectorUtils::acquire(int delflag){
 	    }
 #ifdef VERBOSE
 	    cout << "Acquiring " << endl;
-#endif     
+#endif
 	    startAndReadAll();
 #ifdef VERBOSE
 	    cout << "finished " << endl;
 	    cout << "returned! " << endl;
-#endif     
+#endif
        
 
 
@@ -333,13 +335,14 @@ void  slsDetectorUtils::acquire(int delflag){
 	  pthread_mutex_unlock(&mg);
 	  }else{
 		  pthread_mutex_lock(&mg);
+		  cout<<"going to start transmit"<<endl;
 		  if(startReceiverReadout() == TRANSMITTING){
 			  while(getReceiverStatus() != RUN_FINISHED){
 				  pthread_mutex_unlock(&mg);
 				  usleep(50000);
 				  pthread_mutex_lock(&mg);
 			  }
-		  }
+		  }cout<<"going to stop receiver"<<endl;
 		  stopReceiver();
 		  pthread_mutex_unlock(&mg);
 	  }

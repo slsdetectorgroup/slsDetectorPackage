@@ -452,11 +452,14 @@ void* postProcessing::processData(int delflag) {
 			//get progress
 			pthread_mutex_lock(&mg);
 			if(setReceiverOnline()==ONLINE_FLAG)
-				prog=getFramesCaughtByReceiver();//caught=getReceiverCurrentFrameIndex();
+				prog=getReceiverCurrentFrameIndex();//getFramesCaughtByReceiver();//caught=getReceiverCurrentFrameIndex();
 			pthread_mutex_unlock(&mg);
 			if(setReceiverOnline()==OFFLINE_FLAG)
 				prog=prevCaught;
-			setCurrentProgress(prog);
+			if(prevCaught == -1)
+				setCurrentProgress(0);
+			else
+				setCurrentProgress(prog);
 
 
 			if (checkJoinThread()) break;

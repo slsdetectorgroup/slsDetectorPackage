@@ -26,8 +26,10 @@
 #include <list>
 #include <queue>
 #include <fstream>
+#include <pthread.h>
+#include <semaphore.h>
 
-
+#include "circularFifo.h"
 #include "runningStat.h"
 #include "movingStat.h"
 using namespace std;
@@ -36,7 +38,7 @@ using namespace std;
 typedef  double double32_t;
 typedef  float float32_t;
 typedef  int int32_t;
-
+#define MAX_STR_LENGTH 1000
 
 /**
     return values
@@ -49,15 +51,13 @@ enum  {
     @short structure for a single photon hit
 */
 typedef struct{
-	vector < vector<double> > data;		/**< data size */
+	double* data;		/**< data size */
 	int 	x; 			/**< x-coordinate of the center of hit */
 	int		y; 			/**< x-coordinate of the center of hit */
 	double	rms; 		/**< noise of central pixel */
 	double 	ped; 		/**< pedestal of the central pixel */
 	int		iframe; 	/**< frame number */
 }single_photon_hit;
-
-
 
 
 /**
@@ -78,10 +78,9 @@ public:
 	 * @param iValue increment value (only for gotthard to increment index to have matching frame number)
 	 * @param m Map to data without headers
 	 * @param s mask as to which adcs are inverted
+	 * @param f circular fifo buffer, which needs to be freed
 	 * @param d Size of data with the headers
 	 */
-
-	/** why is the datasize -1, you need to know the datasize with headers  so that you dont go over the limits */
 	singlePhotonFilter(
 			int nx,
 			int ny,
@@ -91,55 +90,13 @@ public:
 			int poffset,
 			int pperf,
 			int iValue,
-			vector <vector<int16_t> > m,
-			vector <vector<int16_t> > s,
-			int d = -1);
+			int16_t *m,
+			int16_t *s,
+			CircularFifo<char>* f,
+			int d);
 
 	/** virtual destructor */
-	virtual ~singlePhotonFilter(){};
-
-	/**
-	 * Construct a tree, populate struct for the single photon hit and provide all the masks and offsets
-	 * @param outdir Output file directory/Output file name
-
-	 */
-	void initTree(char *outfname);
-
-	/**
-	 * Reset Indices before starting acquisition
-	 */
-	void setupAcquisitionParameters();
-
-	/** reconstruct the frame with all the right packets
-	 * @param inData the data from socket to be verified
-	 * */
-	int verifyFrame(char *inData);
-
-	/**
-	 * Writes tree/struct to file
-	 * returns OK if successful, else FAIL
-	 */
-	int writeToFile();
-
-	/**
-	 * Find Hits frame by frame
-	 * @param myData data for one frame
-	 * @param myDataSize data size for one frame with headers
-	 * returns number of hits
-	 */
-	int findHits(int16_t *myData, int myDataSize);
-
-	/**
-	 * Enable Filter, This makes sure findHits() is called
-	 */
-	void enableFilter(bool r){enable = r;};
-
-	/**
-	 * Returns packets per frame
-	 */
-	int getPacketsPerFrame(){ return packets_per_frame;};
-
-
+	virtual ~singlePhotonFilter();
 
 #ifdef MYROOT
 	/**
@@ -149,9 +106,14 @@ public:
 #endif
 
 	/**
+	 * Returns packets per frame
+	 */
+	int getPacketsPerFrame(){ return packets_per_frame;};
+
+	/**
 	 * returns struct
 	 */
-	single_photon_hit getStructure(){ return myPhotonHit; };
+	single_photon_hit* getStructure(){ return myPhotonHit; };
 
 	/** Set number of frames to calculate pedestal at beginning */
 	void setNPed(int n){ nped = n; };
@@ -177,6 +139,65 @@ public:
 	/** Get correction */
 	double getOutCorr(){return outcorr;};
 
+	/**
+	 * Construct a tree, populate struct for the single photon hit and provide all the masks and offsets
+	 * @param outdir Output file directory/Output file name
+	 * returns OK if successful, else FAIL
+
+	 */
+	int initTree();
+
+	/**
+	 * Writes tree/struct to file
+	 * returns OK if successful, else FAIL
+	 */
+	int writeToFile();
+
+	/**
+	 * Closes file
+	 * returns OK if successful, else FAIL
+	 */
+	int closeFile();
+
+	/**
+	 * Reset Indices before starting acquisition
+	 */
+	void setupAcquisitionParameters(char *outfpath, char* outfname, int outfIndex);
+
+	/** reconstruct the frame with all the right packets
+	 * @param inData the data from socket to be verified
+	 * returns 0 if still waiting for next packet of same frame,
+	 * 1 if end of complete frame, -1 if end of incomplete frame,
+	 * -2 first packet of next frame, so push previous one; -3 last packet of current frame, push both frames
+	 * */
+	int verifyFrame(char *inData);
+
+	/**
+	 * Find Hits frame by frame and save it in file/tree
+	 */
+	void findHits();
+
+	/** Enable or disable compression
+	 * @param enable true to enable compression and false to disable
+	 * returns OK for success or FAIL for failure, incase threads fail to start
+	 * */
+	int enableCompression(bool enable);
+
+	/** create threads for compression
+	 * @param this_pointer obejct of this class
+	 * */
+	static void* createThreads(void *this_pointer);
+
+	/** assignjobs to each thread
+	 * @param thisData a bunch of frames
+	 * @param numThisData number of frames
+	 * */
+	void assignJobsForThread(char *thisData, int numThisData);
+
+	/** Checks if all the threads are done processing
+	 * @param returns 1 for jobs done and 0 for jobs not done
+	 * */
+	int checkIfJobsDone();
 
 
 
@@ -190,7 +211,22 @@ private:
 	TFile *myFile;
 #else
     FILE *myFile;
+
+	/** pointer to array of structs when only using files */
+	single_photon_hit* photonHitList;
+
+	/** Number of Hits per frame*/
+	int nHitsPerFrame;
+
+	/** Number of Hits per file */
+	int nHitsPerFile;
+
+	/** Total Number of Hits Per Acquisition */
+	int nTotalHits;
 #endif
+
+	/** Maximum Number of hits written to file */
+	const static int MAX_HITS_PER_FILE = 200000;
 
 	/** Number of Channels in X  direction */
 	int nChannelsX;
@@ -205,19 +241,21 @@ private:
 	int nClusterY;
 
 	/** map to the data without headers */
-	vector <vector<int16_t> > map;
+	int16_t *map;
 
 	/** Size of data with headers */
 	int dataSize;
 
 	/** mask as to which adcs are inverted */
-	vector <vector<int16_t> > mask;
+	int16_t *mask;
 
 	/** movingStat object */
-	vector <vector<movingStat> > stat;
+	movingStat *stat;
+
+	movingStat *nHitStat;
 
 	/** single Photon Hit structure */
-	single_photon_hit myPhotonHit;
+	single_photon_hit* myPhotonHit;
 
 	/** Cluster size */
 	const static int CLUSTER_SIZE = 3;
@@ -276,9 +314,6 @@ private:
 	/** increment value for index for gotthard */
 	int incrementValue;
 
-	/** filter enable */
-	bool enable;
-
 	/** first packet */
 	bool firstTime;
 
@@ -291,6 +326,58 @@ private:
 	/** current frame index */
 	int fIndex;
 
+	/** thread related variables */
+	static const int NUM_THREADS = 15;
+	pthread_t   find_hits_thread[NUM_THREADS];
+	volatile int thread_started;
+	volatile int threads_mask;
+	pthread_mutex_t write_mutex;
+	pthread_mutex_t running_mutex;
+
+	/** current thread the job being allotted to */
+	int currentThread;
+
+	/** current index alloted for each thread */
+	int thisThreadIndex;
+
+	/** semaphore to synchronize between different jobs on same thread */
+	sem_t smp[NUM_THREADS];
+
+	/** starting memory of data for different threads */
+	char* mem0[NUM_THREADS];
+
+	/** number of frames alloted for each thread to process */
+	int* numFramesAlloted;
+
+
+
+	/** final file name */
+	char savefilename[MAX_STR_LENGTH];
+
+	/** file path */
+	char filePath[MAX_STR_LENGTH];
+
+	/** file prefix */
+	char fileName[MAX_STR_LENGTH];
+
+	/** file acquisition index */
+	int fileIndex;
+
+
+	/** 0 for 1d and 1 for 2d */
+	int deltaX;
+
+	/** index of center of cluster for 1d and for 2d*/
+	int clusterCenterPixel;
+
+	/** squareroot of cluster */
+	double sqrtCluster;
+
+	/** circular fifo buffer to be freed */
+	CircularFifo<char>* fifo;
 };
+
+
+
 
 #endif

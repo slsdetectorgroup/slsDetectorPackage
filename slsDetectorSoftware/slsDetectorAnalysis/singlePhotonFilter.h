@@ -20,6 +20,7 @@
 #include <TChain.h>
 #endif
 
+#include <stdint.h>
 #include <stdio.h>
 #include <iostream>
 #include <deque>

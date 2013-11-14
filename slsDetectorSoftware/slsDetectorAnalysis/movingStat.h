@@ -6,7 +6,7 @@
 #define MOVINGSTAT_H
 
 //#include "sls_detector_defs.h"
-
+#include <stdint.h>
 #include <iostream>
 #include <fstream>
 #include <iomanip>

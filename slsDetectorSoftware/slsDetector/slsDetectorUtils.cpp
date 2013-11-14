@@ -335,14 +335,13 @@ void  slsDetectorUtils::acquire(int delflag){
 	  pthread_mutex_unlock(&mg);
 	  }else{
 		  pthread_mutex_lock(&mg);
-		  cout<<"going to start transmit"<<endl;
 		  if(startReceiverReadout() == TRANSMITTING){
 			  while(getReceiverStatus() != RUN_FINISHED){
 				  pthread_mutex_unlock(&mg);
 				  usleep(50000);
 				  pthread_mutex_lock(&mg);
 			  }
-		  }cout<<"going to stop receiver"<<endl;
+		  }
 		  stopReceiver();
 		  pthread_mutex_unlock(&mg);
 	  }

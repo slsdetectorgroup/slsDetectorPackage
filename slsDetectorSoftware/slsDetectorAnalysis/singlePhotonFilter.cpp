@@ -533,13 +533,13 @@ void singlePhotonFilter::findHits(){
 			isData += 4096;
 			myData += 2048;
 
-/*
+
 			if ((clusteriframe%1000 == 0) && (clusteriframe != 0) ){
 				cout << dec << "Frame: " << clusteriframe << " Hit Avg over last frames: " <<
 						nHitStat->Mean() <<  "  .. "<<nHitStat->StandardDeviation() << endl;
 				cout<<"writing "<< nHitsPerFrame << " hits to file" << endl;
 			}
-*/
+
 		}
 
 		pthread_mutex_lock(&running_mutex);

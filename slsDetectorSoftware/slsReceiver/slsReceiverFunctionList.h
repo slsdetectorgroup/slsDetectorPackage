@@ -51,7 +51,7 @@ public:
 	/**
 	 * Returns status of receiver: idle, running or error
 	 */
-	runStatus getStatus(){return status;};
+	runStatus getStatus(){ return status;};
 
 	/**
 	 * Returns File Name
@@ -71,12 +71,12 @@ public:
 	/**
 	 * Returns Frames Caught for each real time acquisition (eg. for each scan)
 	 */
-	uint32_t getFramesCaught(){return framesCaught;};
+	int getFramesCaught(){return framesCaught;};
 
 	/**
 	 * Returns Total Frames Caught for an entire acquisition (including all scans)
 	 */
-	uint32_t getTotalFramesCaught(){return totalFramesCaught;};
+	int getTotalFramesCaught(){return totalFramesCaught;};
 
 	/**
 	 * Returns the frame index at start of each real time acquisition (eg. for each scan)
@@ -209,10 +209,13 @@ public:
 	void startReadout();
 
 	/** enabl data compression, by saving only hits */
-	void enableDataCompression(bool enable){dataCompression = enable;};
+	void enableDataCompression(bool enable){dataCompression = enable;filter->enableCompression(enable);};
 
 	/** get data compression, by saving only hits */
 	bool getDataCompression(){ return dataCompression;};
+
+	/** Set Number of Jobs Per Thread */
+	void setNumberOfJobsPerThread(int i){userDefinedNumJobsPerThread = i; numJobsPerThread = i;};
 
 private:
 
@@ -220,7 +223,7 @@ private:
 	detectorType myDetectorType;
 
 	/** max frames per file **/
-	uint32_t maxFramesPerFile;
+	int maxFramesPerFile;
 
 	/** File write enable */
 	int enableFileWrite;
@@ -241,7 +244,7 @@ private:
 	int frameIndexNeeded;
 
 	/** Frames Caught for each real time acquisition (eg. for each scan) */
-	uint32_t framesCaught;
+	int framesCaught;
 
 	/* Acquisition started */
 	bool acqStarted;
@@ -268,7 +271,7 @@ private:
 	uint32_t acquisitionIndex;
 
 	/** Packets currently in current file, starts new file when it reaches max */
-	uint32_t packetsInFile;
+	int packetsInFile;
 
 	/** Previous Frame number from buffer */
 	uint32_t prevframenum;
@@ -328,10 +331,10 @@ private:
 	int shortFrame;
 
 	/** buffer size can be 1286*2 or 518 or 1286*40 */
-	uint32_t bufferSize;
+	int bufferSize;
 
 	/** number of packets per frame*/
-	uint32_t packetsPerFrame;
+	int packetsPerFrame;
 	
 	/** gui data ready */
 	int guiDataReady;
@@ -368,6 +371,12 @@ private:
 
 	/** guiDataReady mutex */
 	pthread_mutex_t  dataReadyMutex;
+
+	/** Number of jobs per thread for data compression */
+	int numJobsPerThread;
+
+	/** user defined number of jobs per thread for data compression */
+	int userDefinedNumJobsPerThread;
 
 	/**
 	   callback arguments are
@@ -410,6 +419,7 @@ private:
 	 * 1 callback writes file, we have to open, close it
 	 * 2 we open, close, write file, callback does not do anything */
 	int cbAction;
+
 
 
 public:

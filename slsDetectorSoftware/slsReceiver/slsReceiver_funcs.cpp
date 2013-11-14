@@ -40,6 +40,8 @@ slsReceiverFuncs::slsReceiverFuncs(int argc, char *argv[], int &success):
 	ifstream infile;
 	string sLine,sargname;
 	int iline = 0;
+	bool dcompr = false;
+	int jobthread = -1;
 
 
 	success=OK;
@@ -130,17 +132,20 @@ slsReceiverFuncs::slsReceiverFuncs(int argc, char *argv[], int &success):
 	//parse command line for type etc.. more priority
 	if(success == OK){
 		for(int iarg=1;iarg<argc;iarg++){
+
 			//type
 			if(!strcasecmp(argv[iarg],"-type")){
 				if(iarg+1==argc){
 					cout << "no detector type given after -type in command line. Exiting." << endl;
 					success=FAIL;
 				}else{
-					if(!strcasecmp(argv[iarg+1],"gotthard"))
+					if(!strcasecmp(argv[iarg+1],"gotthard")){
 						slsReceiverFuncs::myDetectorType = GOTTHARD;
-					else if(!strcasecmp(argv[iarg+1],"moench"))
+						iarg++;
+					}else if(!strcasecmp(argv[iarg+1],"moench")){
 						slsReceiverFuncs::myDetectorType = MOENCH;
-					else{
+						iarg++;
+					}else{
 						cout << "could not decode detector type in command line. \nOptions are:\ngotthard\nmoench.\n\nExiting." << endl;
 						success=FAIL;
 					}
@@ -152,20 +157,57 @@ slsReceiverFuncs::slsReceiverFuncs(int argc, char *argv[], int &success):
 					cout << "no port given after -rx_tcpport in command line. Exiting." << endl;
 					success=FAIL;
 				}else{
-					if(sscanf(argv[iarg+1],"%d",&port_no))
+					if(sscanf(argv[iarg+1],"%d",&port_no)){
 						cout<<"dataport:"<<port_no<<endl;
-					else{
+						iarg++;
+					}else{
 						cout << "could not decode port in command line. \n\nExiting." << endl;
 						success=FAIL;
 					}
 				}
 			}
+			//compression
+			else if(!strcasecmp(argv[iarg],"-compression")){
+				if(iarg+1==argc){
+					cout << "no value given after -compression in command line. Exiting." << endl;
+					success=FAIL;
+				}else {
+					if(!strcasecmp(argv[iarg+1],"yes")){
+						dcompr = true;
+						iarg++;
+				}else if(!strcasecmp(argv[iarg+1],"no")){
+						dcompr = true;
+						iarg++;
+					}else{
+						cout << "could not decode value for compression in command line. \n\nExiting." << endl;
+						success=FAIL;
+					}
+				}
+			}
+			//jobstothread
+			else if(!strcasecmp(argv[iarg],"-jobthread")){
+				if(iarg+1==argc){
+					cout << "no value given after -jobthread in command line. Exiting." << endl;
+					success=FAIL;
+				}else {
+					if(sscanf(argv[iarg+1],"%d",&jobthread)){
+						iarg++;
+					}else{
+						cout << "could not decode value for jobthread in command line. \n\nExiting." << endl;
+						success=FAIL;
+					}
+				}
+			}
+			else{
+				cout << "Unknown argument:" << argv[iarg] << endl;
+				success=FAIL;
+			}
 		}
 	}
 
 
-	if(success == OK){
 
+	if(success == OK){
 		//display detector message
 		switch(myDetectorType){
 		case GOTTHARD:
@@ -180,6 +222,16 @@ slsReceiverFuncs::slsReceiverFuncs(int argc, char *argv[], int &success):
 			break;
 		}
 	}
+	//help
+	else{
+		cout << "Help Commands " << endl;
+		cout << "type:\t\t Type of receiver. Default: Gotthard. Options: Moench" << endl;
+		cout << "rx_tcpport:\t TCP Communication Port with the client. Default:1954. " << endl;
+		cout << "compression:\t Data Compression. Saving only hits. Option:yes, no" << endl;
+		cout << "jobthread:\t Number of jobs given to a thread for compression." << endl << endl;
+	}
+
+
 
 	//create socket
 	if(success == OK){
@@ -196,6 +248,9 @@ slsReceiverFuncs::slsReceiverFuncs(int argc, char *argv[], int &success):
 
 			function_table();
 			slsReceiverList =  new slsReceiverFunctionList(myDetectorType);
+
+			if(dcompr)	slsReceiverList->enableDataCompression(dcompr);
+			if(jobthread!=-1) slsReceiverList->setNumberOfJobsPerThread(jobthread);
 
 #ifdef VERBOSE
 			cout << "Function table assigned." << endl;
@@ -1146,8 +1201,10 @@ int	slsReceiverFuncs::gotthard_read_frame(){
 			if(shortFrame!=-1){
 				if(bindex != 0xFFFFFFFF)
 					memcpy((((char*)retval)+(GOTTHARD_SHORT_DATABYTES*shortFrame)),((char*) origVal)+4, GOTTHARD_SHORT_DATABYTES);
-				else
+				else{
 					index = startIndex - 1;
+					cout << "Missing Packet,Not sending to gui" << endl;
+				}
 			}
 			//all adc
 			else{
@@ -1170,8 +1227,10 @@ int	slsReceiverFuncs::gotthard_read_frame(){
 					}else
 						cout << "different frames caught. frame1:"<< hex << index << ":"<<pindex<<" frame2:" << hex << index2 << ":"<<pindex2<<endl;
 				}
-				else
+				else{
 					index = startIndex - 1;
+					cout << "Missing Packet,Not sending to gui" << endl;
+				}
 			}
 
 			arg = (index - startIndex);

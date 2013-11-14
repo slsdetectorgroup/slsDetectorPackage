@@ -424,8 +424,7 @@ enum communicationProtocol{
 
 
      void ShutDownSocket(){
-    	 if (socketDescriptor != -1)
-    	 	shutdown(socketDescriptor, SHUT_RDWR);
+   		 while(!shutdown(socketDescriptor, SHUT_RDWR));
      };
 
 

@@ -540,7 +540,7 @@ int slsReceiverFunctionList::startListening(){
 
 			if (!fifofree->isEmpty()) {
 				if (ret!=0)
-					fifofree->pop(buffer);
+					while(!fifofree->pop(buffer));
 
 
 				if(ret == -3){
@@ -574,6 +574,7 @@ int slsReceiverFunctionList::startListening(){
 						//#ifdef VERYVERBOSE
 						cerr << "recvfrom() failed:"<<endl;;// << receiver_threads_running<<endl;
 						fifofree->push(buffer);
+						cout<<"***************buffer pushed!!"<<(void*)buffer<<endl;
 						//#endif
 						continue;
 					}
@@ -644,7 +645,7 @@ int slsReceiverFunctionList::startListening(){
 			}
 		}
 	}
-
+cout<<"end of listening buffer with:"<<(void*)buffer<<endl;
 	delete  tempchar;
 	return 0;
 }
@@ -833,7 +834,6 @@ int slsReceiverFunctionList::startWriting(){
 						/*cout<<"wbuf:"<<(void*)wbuf<<endl;*/
 						//filter and write
 						if(iJob==-2){
-							/*cout<<"startingmem changed"<<endl;*/
 							startingmem = wbuf;
 							/*cout<<"***************startingmem:"<<(void*)startingmem<<endl;
 							cout<<"mem0:"<<(void*)mem0<<endl;*/
@@ -847,11 +847,19 @@ int slsReceiverFunctionList::startWriting(){
 						++pointinfifo;
 						++iJob;
 
+						/*if((((wbuf-mem0)/4096)+1)!=pointinfifo){
+							 cout<<"+++++++++++++++++++++ wbuf:"<<(void*)wbuf<<endl;
+							 cout<<"pointfifo:"<<pointinfifo<<endl;
+							 cout<<"value:"<<((wbuf-mem0)/4096)+1<<endl;
+							 cout<<"starting mem:"<<((startingmem-mem0)/4096)+1<<endl;
+						}*/
+
 						if(pointinfifo >= (fifosize-1)){
 							/*cout<<"*** sending not normally  "<<iJob<<endl;
-							cout<<"value:"<<((startingmem-mem0)/4096)+1<<endl;
+							cout<<"value:"<<((wbuf-mem0)/4096)+1<<endl;
 							 cout<<"pointfifo:"<<pointinfifo<<endl;
-							cout<<"iJob:"<<iJob<<endl;*/
+							 cout<<"last sent:"<<(void*)wbuf<<endl;*/
+
 							filter->assignJobsForThread(startingmem,iJob);
 							startingmem = mem0;
 							iJob = 0;
@@ -863,9 +871,10 @@ int slsReceiverFunctionList::startWriting(){
 						}
 						else if(iJob>=(numJobsPerThread)){
 							/*cout<<"*** sending normally "<<numJobsPerThread<<endl;
-							cout<<"value:"<<((startingmem-mem0)/4096)+1<<endl;
+							cout<<"value:"<<((wbuf-mem0)/4096)+1<<endl;
 							 cout<<"pointfifo:"<<pointinfifo<<endl;
-							cout<<"iJob:"<<iJob<<endl;*/
+							 cout<<"last sent:"<<(void*)wbuf<<endl;*/
+							 //if(((startingmem-mem0)/4096)+numJobsPerThread)>
 							filter->assignJobsForThread(startingmem,numJobsPerThread);
 							iJob = -2;
 						}
@@ -962,11 +971,13 @@ int slsReceiverFunctionList::startWriting(){
 					else{
 						//all jobs done
 						if(filter->checkIfJobsDone()){
-							//its all done
-							pthread_mutex_lock(&status_mutex);
-							status = RUN_FINISHED;
-							pthread_mutex_unlock(&(status_mutex));
-							cout << "Status: Run Finished" << endl;
+							if(fifo->isEmpty()){
+								//its all done
+								pthread_mutex_lock(&status_mutex);
+								status = RUN_FINISHED;
+								pthread_mutex_unlock(&(status_mutex));
+								cout << "Status: Run Finished" << endl;
+							}
 						}
 					}
 				}
@@ -976,7 +987,7 @@ int slsReceiverFunctionList::startWriting(){
 					pthread_mutex_lock(&status_mutex);
 					status = RUN_FINISHED;
 					pthread_mutex_unlock(&(status_mutex));
-					cout << "Status: Run Finished" << endl;
+					cout << "***** Status: Run Finished *****" << endl;
 				}
 			}
 			//acquisition not done in detector

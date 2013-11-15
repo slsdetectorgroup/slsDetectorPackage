@@ -172,7 +172,7 @@ int singlePhotonFilter::initTree(){
 
 	//file
 	myFile = new TFile(savefilename, "RECREATE"); /** later  return error if it exists */
-
+	cout<<"File created: "<<savefilename<<endl;
 	//tree
 	char c1[10],c2[10],cdata[100];
 	sprintf(c1,"%d",nClusterX);
@@ -235,9 +235,9 @@ int singlePhotonFilter::closeFile(){
 		if (myFile){
 			myFile = myTree->GetCurrentFile();
 			myFile->Close();
-			delete myFile;
+			myFile = NULL;//delete myFile;
 		}
-		delete myTree;
+		myTree = NULL;//delete myTree;
 	}
 #else
 	if(myFile)
@@ -536,12 +536,14 @@ void singlePhotonFilter::findHits(){
 			isData += 4096;
 			myData += 2048;
 
-
+/*
 			if ((clusteriframe%1000 == 0) && (clusteriframe != 0) ){
 				cout << dec << "Frame: " << clusteriframe << " Hit Avg over last frames: " <<
 						nHitStat->Mean() <<  "  .. "<<nHitStat->StandardDeviation() << endl;
 				cout<<"writing "<< nHitsPerFrame << " hits to file" << endl;
 			}
+*/
+
 
 		}
 

@@ -16,7 +16,9 @@
 //all max frames defined in sls_detector_defs.h.  20000 gotthard, 100000 for short gotthard, 1000 for moench
 
 
-#define GOTTHARD_FIFO_SIZE					25000//11
+
+//#define GOTTHARD_FIFO_SIZE					25000
+#define GOTTHARD_FIFO_SIZE					11
 #define GOTTHARD_ALIGNED_FRAME_SIZE			4096
 #define GOTTHARD_PACKETS_PER_FRAME			2
 #define GOTTHARD_ONE_PACKET_SIZE			1286
@@ -35,7 +37,8 @@
 #define GOTTHARD_PACKET_INDEX_MASK			0x1
 
 
-#define GOTTHARD_NUM_JOBS_P_THREAD			5000//20000//3 with 25 frames
+//#define GOTTHARD_NUM_JOBS_P_THREAD			5000//20000
+#define GOTTHARD_NUM_JOBS_P_THREAD			3//with 25 frames
 #define GOTTHARD_SHORT_NUM_JOBS_P_THREAD 	2500//40000
 #define MOENCH_NUM_JOBS_P_THREAD			1000//10000
 

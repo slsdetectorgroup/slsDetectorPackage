@@ -341,12 +341,12 @@ class fileIOStatic  {
        \param offset start channel number
        \returns OK or FAIL if it could not write the file or data=NULL
   */
-  static  int writeDataFile(ofstream &outfile, int nch, double *data, double *err=NULL, double *ang=NULL, char dataformat='f', int offset=0){ \
+  static  int writeDataFile(ofstream &outfile, int nch, double *data, double *err=NULL, double *ang=NULL, char dataformat='f', int offset=0){ 
     int idata;								\
-    if (data==NULL) {							\
+    if (data==NULL || nch==0) {							\
       cout << "No data to write!" << endl;				\
       return slsDetectorDefs::FAIL;					\
-    }									\
+    } 	\
     for (int ichan=0; ichan<nch; ichan++) {				\
       if (ang==NULL) {							\
 	outfile << ichan+offset << " ";				\

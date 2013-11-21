@@ -322,7 +322,7 @@ int multiSlsDetector::addSlsDetector(int id, int pos) {
   thisMultiDetector->dataBytes+=detectors[pos]->getDataBytes();
  
   thisMultiDetector->numberOfChannels+=detectors[pos]->getTotalNumberOfChannels();
-  thisMultiDetector->maxNumberOfChannels+=detectors[j]->getMaxNumberOfChannels();
+  thisMultiDetector->maxNumberOfChannels+=detectors[pos]->getMaxNumberOfChannels();
 
 
 
@@ -3466,6 +3466,21 @@ int multiSlsDetector::getMaxMods() {
 }
 
 
+
+
+  int multiSlsDetector::getTotalNumberOfChannels(){thisMultiDetector->numberOfChannels=0; for (int id=0; id< thisMultiDetector->numberOfDetectors; id++) thisMultiDetector->numberOfChannels+=detectors[id]->getTotalNumberOfChannels(); return thisMultiDetector->numberOfChannels;};
+
+  int multiSlsDetector::getTotalNumberOfChannels(dimension d){thisMultiDetector->numberOfChannel[d]=0; for (int id=0; id< thisMultiDetector->numberOfDetectors; id++) thisMultiDetector->numberOfChannel[d]+=detectors[id]->getTotalNumberOfChannels(d); return thisMultiDetector->numberOfChannel[d];};
+
+  int multiSlsDetector::getMaxNumberOfChannels(){thisMultiDetector->maxNumberOfChannels=0; for (int id=0; id< thisMultiDetector->numberOfDetectors; id++) thisMultiDetector->maxNumberOfChannels+=detectors[id]->getMaxNumberOfChannels();return thisMultiDetector->maxNumberOfChannels;};
+
+  int multiSlsDetector::getMaxNumberOfChannels(dimension d){thisMultiDetector->maxNumberOfChannel[d]=0; for (int id=0; id< thisMultiDetector->numberOfDetectors; id++) thisMultiDetector->maxNumberOfChannel[d]+=detectors[id]->getMaxNumberOfChannels(d);return thisMultiDetector->maxNumberOfChannel[d];};
+
+
+
+
+
+
 int multiSlsDetector::getMaxMod(dimension d){
 
   int ret=0, ret1;
@@ -4014,7 +4029,7 @@ int multiSlsDetector::writeConfigurationFile(string const fname){
 int multiSlsDetector::writeDataFile(string fname, double *data, double *err, double *ang, char dataformat, int nch) {
 
 #ifdef VERBOSE
-  cout << "using overloaded multiSlsDetector function to write formatted data file " << endl;
+  cout << "using overloaded multiSlsDetector function to write formatted data file " << getTotalNumberOfChannels()<< endl;
 #endif
 
 
@@ -4044,7 +4059,8 @@ int multiSlsDetector::writeDataFile(string fname, double *data, double *err, dou
 #ifdef VERBOSE
 	  cout << " write " << i << " position " << off << " offset " << choff << endl;
 #endif
-	  detectors[i]->writeDataFile(outfile,n, data+off, pe, pa, dataformat, choff);
+	  //detectors[i]->writeDataFile(outfile,n, data+off, pe, pa, dataformat, choff);
+	  fileIOStatic::writeDataFile(outfile,n, data+off, pe, pa, dataformat, choff);
 	  if(detectors[i]->getErrorMask())
 	    setErrorMask(getErrorMask()|(1<<i));
 
@@ -4063,7 +4079,6 @@ int multiSlsDetector::writeDataFile(string fname, double *data, double *err, dou
 	}
      
       }
-   
       outfile.close();
       return OK;
     } else {

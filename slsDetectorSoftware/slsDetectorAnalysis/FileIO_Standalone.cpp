@@ -227,6 +227,8 @@ int fileIO::writeDataFile(ofstream &outfile, int nch, double *data, double *err,
 
   //  args|=0x10; // one line per channel!
 
+  cout << "Static file " << endl;
+
 
     for (int ichan=0; ichan<nch; ichan++) {
       if (ang==NULL) {

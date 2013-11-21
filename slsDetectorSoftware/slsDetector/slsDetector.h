@@ -685,7 +685,7 @@ class slsDetector : public slsDetectorUtils, public energyConversion {
   */
   int getMaxNumberOfModules(dimension d=X); //
  
- 
+
   /** 
       set/get the use of an external signal 
       \param pol meaning of the signal \sa externalSignalFlag

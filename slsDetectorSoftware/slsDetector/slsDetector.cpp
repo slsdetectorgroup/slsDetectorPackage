@@ -560,7 +560,7 @@ int slsDetector::initializeDetectorSize(detectorType type) {
     }
     thisDetector->nChans=thisDetector->nChan[X]*thisDetector->nChan[Y];
     thisDetector->nChips=thisDetector->nChip[X]*thisDetector->nChip[Y];
-    thisDetector->nModsMax=thisDetector->nModMax[0]*thisDetector->nModMax[1];
+    thisDetector->nModsMax=thisDetector->nModMax[X]*thisDetector->nModMax[Y];
     /** number of modules is initally the maximum number of modules */
     thisDetector->nMod[X]=thisDetector->nModMax[X];
     thisDetector->nMod[Y]=thisDetector->nModMax[Y];  
@@ -666,6 +666,9 @@ int slsDetector::initializeDetectorSize(detectorType type) {
     thisDetector->chanoff=thisDetector->chipoff+sizeof(int)*thisDetector->nChips*thisDetector->nModsMax;
      
      
+    //update?!?!?!?
+
+
   } 
 
 
@@ -1524,7 +1527,10 @@ int slsDetector::getMaxNumberOfModules(dimension d){
     return retval;
   }  else {
     thisDetector->nModMax[d]=retval;
-    thisDetector->nModsMax=thisDetector->nModMax[0]*thisDetector->nModMax[1];
+    thisDetector->nModsMax=thisDetector->nModMax[X]*thisDetector->nModMax[Y];
+
+    
+
   }
   return thisDetector->nModMax[d];
 }; 

@@ -52,6 +52,8 @@ int fileIO::writeDataFile(string fname, double *data, double *err, double *ang, 
   if (nch==-1)
     nch=getTotalNumberOfChannels();
   
+  cout << "Write filexxx...." << endl;
+
   return fileIOStatic::writeDataFile(fname, nch, data, err, ang, dataformat);
 
 }
@@ -59,6 +61,8 @@ int fileIO::writeDataFile(ofstream &outfile, double *data, double *err, double *
   if (nch==-1)
     nch=getTotalNumberOfChannels();
   
+  cout << "Write file...." << endl;
+
   return fileIOStatic::writeDataFile(outfile, nch, data, err, ang, dataformat, offset);
 
 }
@@ -74,6 +78,7 @@ int fileIO::writeDataFile(string fname, int *data){
 
 int fileIO::writeDataFile(ofstream &outfile, int *data, int offset){
   
+  cout << "Write raw file...." << endl;
   return fileIOStatic::writeDataFile(outfile, getTotalNumberOfChannels(), data, offset);
 }
 
@@ -108,6 +113,7 @@ int fileIO::writeDataFile(void *data, int iframe) {
 
 
 int fileIO::closeDataFile() {
+  cout << "close file...." << endl;
   if (filefd)
       fclose(filefd);
     filefd=NULL;
@@ -120,6 +126,7 @@ int fileIO::closeDataFile() {
 
 int fileIO::writeDataFile(string fname, short int *data){
 
+  cout << "Write raw file...." << endl;
   return fileIOStatic::writeDataFile(fname, getTotalNumberOfChannels(), data);
 }
 

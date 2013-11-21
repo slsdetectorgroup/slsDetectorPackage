@@ -117,6 +117,7 @@ void postProcessing::processFrame(int *myData, int delflag) {
      if (getDetectorsType()==MYTHEN){
     // if (fdata) {
        //uses static function?!?!?!?
+       // cout << "write to file?!?!?!?" << endl;
        writeDataFile (fname+string(".raw"),fdata, NULL, NULL, 'i');
      } else {
        writeDataFile ((void*)myData, currentFrameIndex);
@@ -130,6 +131,9 @@ void postProcessing::processFrame(int *myData, int delflag) {
       doProcessing(fdata,delflag, fname);
     } else
       if (dataReady){
+
+	cout << "callback arg "<< getCurrentProgress()<< " " << (fname+string(".raw")).c_str() << " " << getTotalNumberOfChannels() << endl;
+
 	thisData=new detectorData(fdata,NULL,NULL,getCurrentProgress(),(fname+string(".raw")).c_str(),getTotalNumberOfChannels()); 
 	dataReady(thisData, currentFrameIndex, pCallbackArg);
 	delete thisData;
@@ -220,6 +224,7 @@ void postProcessing::doProcessing(double *lfdata, int delflag, string fname) {
   
   val=new double[arraySize];
   err=new double[arraySize];
+
   initDataset(0);
   }
     
@@ -250,6 +255,8 @@ void postProcessing::doProcessing(double *lfdata, int delflag, string fname) {
 
 
 	if (dataReady) {
+	  cout << "callback arg "<< getCurrentProgress()<< " " << (fname+ext).c_str() << " " << np << endl;
+
 	  thisData=new detectorData(val,err,ang,getCurrentProgress(),(fname+ext).c_str(),np);
 	  dataReady(thisData, currentFrameIndex, pCallbackArg);
 	  delete thisData;
@@ -758,6 +765,9 @@ void postProcessing::initDataset(int r) {
 
 
   } else {
+
+    cout << "implicit inti dataset! " << endl;
+
     ppFun->initDataset();
 
 

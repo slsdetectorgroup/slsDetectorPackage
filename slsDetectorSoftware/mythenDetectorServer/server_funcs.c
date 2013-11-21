@@ -2242,14 +2242,74 @@ int set_dynamic_range(int file_des) {
 
 int set_roi(int file_des) {
 
-  return FAIL;
+
+  int arg=-1;
+  int n;
+  ROI roiLimits[MAX_ROIS];
+  int ret=OK;
+  ROI retval;
+
+  int nm=setNMod(-1), nmax=getNModBoard(), nroi;
+
+
+  sprintf(mess,"can't set ROI\n");
+
+  n = receiveDataOnly(file_des,&arg,sizeof(arg));
+  if(arg>0){
+    n+=receiveDataOnly(file_des,roiLimits,arg*sizeof(ROI));
+  }
+
+  if (arg>1) {
+    ret=FAIL;
+    sprintf(mess,"can't set more than 1 ROI per detector\n");
+    
+  } else
+    ret=OK;
+
+  if (arg>0) {
+
+    nm=(roiLimits[0].xmax-1)/1280+1;
+    
+    if (roiLimits[0].xmin>0) {
+      roiLimits[0].xmin=0;
+      ret=FAIL;
+      sprintf(mess,"ROI starts at 0\n");
+    }
+    
+    if (nm>nmax) {
+      retval.xmax=setNMod(-1)*1280;
+      ret=FAIL;
+      sprintf(mess,"ROI max larger than detector size\n");
+    }
+  
+  } else if (arg==0) {
+    setNMod(nmax);
+  }
+
+  n = sendDataOnly(file_des,&ret,sizeof(ret));
+  if (ret==FAIL) {
+    n = sendDataOnly(file_des,mess,sizeof(mess));
+  } else {
+    retval.xmin=0;
+    retval.xmax=setNMod(-1)*1280;
+    retval.ymin=0;
+    retval.ymax=0;
+    if (setNMod(-1)<nmax)
+      nroi=1;
+    else
+      nroi=0;
+    
+    n = sendDataOnly(file_des,&nroi,sizeof(nroi));
+    if (nroi)
+      n = sendDataOnly(file_des,&retval,nroi*sizeof(retval));
+  }
+  return ret; 
 
 }
 
 int get_roi(int file_des) {
+  return set_roi(file_des);
 
-
-  return FAIL;
 }
 
 int set_speed(int file_des) {

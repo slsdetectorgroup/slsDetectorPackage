@@ -80,12 +80,13 @@ void  slsDetectorUtils::acquire(int delflag){
   }
   
 
-  if (getActionMode(angCalLog))
+  if (getActionMode(angCalLog)) {
     aclog=new angCalLogClass(this);
- 
-  if (getActionMode(enCalLog))
+  }
+  if (getActionMode(enCalLog)) {
     eclog=new enCalLogClass(this);
-  
+    
+  }
   
 
 

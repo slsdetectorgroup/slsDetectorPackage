@@ -318,13 +318,13 @@ class multiSlsDetector  : public slsDetectorUtils {
   angleConversionConstant *getAngularConversionPointer(int imod=0);
   
 
-  int getTotalNumberOfChannels(){return thisMultiDetector->numberOfChannels;};
+  int getTotalNumberOfChannels();
 
-  int getTotalNumberOfChannels(dimension d){return thisMultiDetector->numberOfChannel[d];};
+  int getTotalNumberOfChannels(dimension d);
 
-  int getMaxNumberOfChannels(){return thisMultiDetector->maxNumberOfChannels;};
+  int getMaxNumberOfChannels();
 
-  int getMaxNumberOfChannels(dimension d){return thisMultiDetector->maxNumberOfChannel[d];};
+  int getMaxNumberOfChannels(dimension d);
 
   int getMaxNumberOfChannelsPerDetector(dimension d){return thisMultiDetector->maxNumberOfChannelsPerDetector[d];};
 

@@ -18,9 +18,11 @@ int postProcessingFuncs::initDataset() {
     me=new double[nBins];
     mm=new int[nBins];
     resetMerging(mp,mv,me,mm, nBins);
+    cout << "nbins " << nBins <<  endl;
   } else {
     mv=new double[totalChans];
     me=new double[totalChans];
+    cout << "nchans " << totalChans << endl;
   }
   totalI0=0;
 

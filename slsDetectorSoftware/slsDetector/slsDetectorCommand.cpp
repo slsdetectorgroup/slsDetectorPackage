@@ -1651,6 +1651,7 @@ string slsDetectorCommand::cmdFlatField(int narg, char *args[], int action){
 	sval=string(args[1]);
       else
 	sval="none";
+      //  cout << myDet->getMaxNumberOfChannels() << endl;
       double corr[ myDet->getMaxNumberOfChannels()], ecorr[myDet->getMaxNumberOfChannels()];
       if (myDet->getFlatFieldCorrection(corr,ecorr)) {
 	if (sval!="none") {

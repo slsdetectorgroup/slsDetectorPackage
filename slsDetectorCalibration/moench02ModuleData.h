@@ -109,8 +109,55 @@ class moench02ModuleData : public slsDetectorData {
   };
 
 
+  void calculateCommonMode(int xmin=0, int xmax=160, int ymin=0, int ymax=160, double hc=0, double tc=0) {
+
+    int scmin=xmin/40;
+    int scmax=(xmax-1)/40+1;
+    int isc=0, ix, iy;
+
+    for (isc=scmin; isc<scmax; isc++) {
+      nCm[isc]=0;
+      cmPed[isc]=0;
+    }
+    
+    
+
+
+    for (ix=xmin-1; ix<xmax+1; ix++) {
+      isc=ix/40;
+      for (iy=ymin-1; iy<ymax+1; iy++) {
+	
+	if (getEventType(ix, iy, hc, tc, 1)==PEDESTAL) {
+	  cmPed[isc]+=getChannelShort(ix, iy, hc, tc);
+	  nCm[isc]++;
+	}
+
+      }
+
+    }
+
+    
+    for (isc=scmin; isc<scmax; isc++) {
+      if (nCm[isc]>0)
+	cmStat[isc].Calc(cmPed[isc]/nCm[isc]);
+    }
+
+
+  };
+
+  double getCommonMode(int ix, int iy) {
+    int isc=ix/40;
+    if (nCm[isc]>0)
+      return cmPed[isc]/nCm[isc]-cmStat[isc].Mean();
+    else
+      return 0;
+  };
+
+
+
   char *readNextFrame(ifstream &filebin) {
     
+
     if (oldbuff) 
       delete [] oldbuff;
 
@@ -223,10 +270,7 @@ class moench02ModuleData : public slsDetectorData {
 	      } else if (v<-nSigma*getPedestalRMS(ix,iy))
 	       ret=NEGATIVE_PEDESTAL;
 	    }
-	    
-	    
 	  }
-	  
 	}
       }
       
@@ -238,14 +282,19 @@ class moench02ModuleData : public slsDetectorData {
       }
       
    
-
+      cx=ix;
+      cy=iy;
 
       return ret;
 
   };
 
 
-  double getClusterElement(int ic, int ir){return cluster[ic+1][ir+1];};
+  double getClusterElement(int ic, int ir, int cm=0){
+    if (cm) cluster[ic+1][ir+1]-getCommonMode(cx,cy);
+    else return cluster[ic+1][ir+1];
+  };
+  
   double  *getCluster(){return &cluster[0][0];};
 
 
@@ -271,8 +320,12 @@ class moench02ModuleData : public slsDetectorData {
   char *buff;
   char *oldbuff;
   int pedSub;
+  int cmSub;
 
-
+  MovingStat cmStat[4]; //stores the common mode average per supercolumn
+  double cmPed[4]; // stores the common mode for this frame per supercolumn
+  double nCm[4]; // stores the number of pedestals to calculate the cm per supercolumn
+  int cx, cy;
 };
 
 

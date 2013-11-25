@@ -488,7 +488,7 @@ bool qDrawPlot::StartOrStopThread(bool start){
 		plot2D->GetPlot()->SetYMinMax(startPixel,endPixel);
 		plot2D->GetPlot()->SetZoom(-0.5,startPixel,nPixelsX,endPixel-startPixel);
 		plot2D->GetPlot()->UnZoom();
-		XYRangeChanged = true;
+		/*XYRangeChanged = true;*/
 
 		cout << "Starting new acquisition thread ...." << endl;
 		// Start acquiring data from server
@@ -694,6 +694,7 @@ void qDrawPlot::SetupMeasurement(){
 		}
 	}
 
+
 /*
 	cout<<"nPixelsX:"<<nPixelsX<<endl;
 	cout<<"nPixelsY:"<<nPixelsY<<endl;
@@ -738,7 +739,6 @@ int qDrawPlot::GetData(detectorData *data,int fIndex){
 	cout << "values " << data->values << endl;
 	cout << "errors " << data->errors << endl;
 	cout << "angle " << data->angles << endl;
-	
 #endif
 	if(!stop_signal){
 
@@ -790,19 +790,41 @@ int qDrawPlot::GetData(detectorData *data,int fIndex){
 
 			}
 			else{
-
 				lastImageNumber= currentFrame+1;
 				nAnglePixelsX = data->npoints;
 				histNBins = nAnglePixelsX;
 				nHists=1;
 				if(histXAngleAxis) delete [] histXAngleAxis; histXAngleAxis = new double[nAnglePixelsX];
 				if(histYAngleAxis) delete [] histYAngleAxis; histYAngleAxis = new double[nAnglePixelsX];
+#ifdef CHECKINFERROR
+				int k = 0;
+				for(int i = 0; i < data->npoints; i++){
+					if(isinf(data->values[i])){
+						//cout << "*** ERROR: value at " << i << " infinity" << endl;
+						k++;
+						data->values[i] = 0;
+					}
+				}
+				cout << "*** ERROR: value at " << k << " places have infinity values!" <<  endl;
+				double m1,m2,s1;
+				GetStatistics(m1,m2,s1,data->angles,nAnglePixelsX);
+				cout << "angle min:" << m1 << endl;
+				cout << "angle max:" << m2 << endl;
+				cout << "angle sum:" << s1 << endl;
+				GetStatistics(m1,m2,s1,data->values,nAnglePixelsX);
+				cout << "value min:" << m1 << endl;
+				cout << "value max:" << m2 << endl;
+				cout << "value sum:" << s1 << endl;
+#endif
 				memcpy(histXAngleAxis,data->angles,nAnglePixelsX*sizeof(double));
 				memcpy(histYAngleAxis,data->values,nAnglePixelsX*sizeof(double));
 				SetHistXAxisTitle("Angles");
 			}
 			UnlockLastImageArray();
 			currentFrame++;
+#ifdef VERYVERBOSE
+			cout << "Exiting GetData Function " << endl;
+#endif
 			return 0;
 		}
 
@@ -1271,10 +1293,10 @@ void qDrawPlot::UpdatePlot(){
 								h->Attach(plot1D);
 								//refixing all the zooming
 								if((firstPlot) || (anglePlot)){
-									plot1D->SetXMinMax(h->minXValue(),h->maxXValue());
+									/*plot1D->SetXMinMax(h->minXValue(),h->maxXValue());
 									plot1D->SetYMinMax(h->minYValue(),h->maxYValue());
 									plot1D->SetZoomBase(h->minXValue(),h->minYValue(),
-											h->maxXValue()-h->minXValue(),h->maxYValue()-h->minYValue());
+											h->maxXValue()-h->minXValue(),h->maxYValue()-h->minYValue());*/
 									firstPlot = false;
 								}
 							}
@@ -1715,10 +1737,10 @@ int qDrawPlot::UpdateTrimbitPlot(bool fromDetector,bool Histogram){
 			//attach plot
 			h->Attach(plot1D);
 			//refixing all the zooming
-			plot1D->SetXMinMax(h->minXValue(),h->maxXValue());
+			/*plot1D->SetXMinMax(h->minXValue(),h->maxXValue());
 			plot1D->SetYMinMax(h->minYValue(),h->maxYValue());
 			plot1D->SetZoomBase(h->minXValue(),h->minYValue(),
-					h->maxXValue()-h->minXValue(),h->maxYValue()-h->minYValue());
+					h->maxXValue()-h->minXValue(),h->maxYValue()-h->minYValue());*/
 		}
 
 		else{
@@ -1751,9 +1773,9 @@ int qDrawPlot::UpdateTrimbitPlot(bool fromDetector,bool Histogram){
 			histFrameIndexTitle->setText(GetHistTitle(0));
 			plotHistogram->attach(plot1D);
 			//refixing all the zooming
-			plot1D->SetXMinMax(0,TRIM_HISTOGRAM_XMAX+1);
+			/*plot1D->SetXMinMax(0,TRIM_HISTOGRAM_XMAX+1);
 			plot1D->SetYMinMax(0,plotHistogram->boundingRect().height());
-			plot1D->SetZoomBase(0,0,actualPixelsX,plotHistogram->boundingRect().height());
+			plot1D->SetZoomBase(0,0,actualPixelsX,plotHistogram->boundingRect().height());*/
 		}
 	}
 

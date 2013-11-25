@@ -732,6 +732,18 @@ void qDetectorMain::EnableTabs(){
 
 	//moved to here, so that its all in order, instead of signals and different threads
 	if(!enable) {
+		//refresh all the required tabs
+		tab_actions->Refresh();
+		tab_measurement->Refresh();
+
+		tab_settings->Refresh();
+		tab_dataoutput->Refresh();
+		if(tab_advanced->isEnabled())	tab_advanced->Refresh();
+		if(tab_debugging->isEnabled())	tab_debugging->Refresh();
+		if(tab_developer->isEnabled())	tab_developer->Refresh();
+
+		tab_plot->Refresh();
+
 		//stop the adc timer in gotthard
 		if(tab_developer->isEnabled())
 			tab_developer->StopADCTimer();

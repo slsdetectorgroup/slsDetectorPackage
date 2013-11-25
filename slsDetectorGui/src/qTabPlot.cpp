@@ -841,6 +841,7 @@ void qTabPlot::EnableScanBox(bool Histo){
 
 	connect(btnGroupPlotType,SIGNAL(buttonClicked(int)),this, SLOT(SetPlot()));
 	connect(boxScan,	 	SIGNAL(toggled(bool)),	this, SLOT(EnableScanBox()));
+
 }
 
 
@@ -916,6 +917,9 @@ void qTabPlot::SetScanArgument(){
 		Select1DPlot(false);
 	}else
 		myPlot->SetScanArgument(qDefs::None);
+
+	//update the from and to labels to be enabled
+	SetBinary();
 
 	qDefs::checkErrorMessage(myDet,"qTabPlot::SetScanArgument");
 

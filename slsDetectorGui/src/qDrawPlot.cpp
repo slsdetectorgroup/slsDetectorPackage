@@ -802,7 +802,7 @@ int qDrawPlot::GetData(detectorData *data,int fIndex){
 					if(isinf(data->values[i])){
 						//cout << "*** ERROR: value at " << i << " infinity" << endl;
 						k++;
-						data->values[i] = 0;
+						data->values[i] = -1;
 					}
 				}
 				cout << "*** ERROR: value at " << k << " places have infinity values!" <<  endl;

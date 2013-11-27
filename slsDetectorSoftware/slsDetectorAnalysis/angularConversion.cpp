@@ -67,6 +67,8 @@ int angularConversion::deleteMerging() {
 int angularConversion::resetMerging() {
   getAngularConversionParameter(BIN_SIZE);
 
+  cout << "reset merging * " << endl;
+
   mergingBins=new double[nBins];
   
 
@@ -83,6 +85,8 @@ int angularConversion::resetMerging() {
 }
 
 int angularConversion::resetMerging(double *mp, double *mv, double *me, int *mm) {
+  cout << "reset merging " << endl;
+
   getAngularConversionParameter(BIN_SIZE);
   if (nBins)
     return angularConversionStatic::resetMerging(mp, mv, me, mm,nBins);
@@ -94,6 +98,7 @@ int angularConversion::resetMerging(double *mp, double *mv, double *me, int *mm)
 
 
 int angularConversion::finalizeMerging() {
+  cout << "finalize merging *" << endl;
   int np=finalizeMerging(mergingBins, mergingCounts, mergingErrors, mergingMultiplicity);
 
   if (mergingMultiplicity)

@@ -24,6 +24,9 @@ angularConversionStatic::~angularConversionStatic(){
 
 
 double* angularConversionStatic::convertAngles(double pos, int nch, int *chansPerMod, angleConversionConstant **angOff, int *mF, double fo, double go, int angdir) {
+
+  //  cout << "PPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPP convert angles " << endl;
+
   int imod=0;
   double    *ang=new double[nch];
   double enc=pos;
@@ -86,6 +89,7 @@ double* angularConversionStatic::convertAngles(double pos, int nch, int *chansPe
 
 double angularConversionStatic::convertAngle(double pos, int ich, angleConversionConstant *p, int mF, double fo, double go, int angdir) {
 
+  //  cout << "PPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPP convert angle " << endl;
   // if (p)
   //   cout <<  pos			<< endl <<     fo+go << endl << 		    p->r_conversion << endl 	<<	    p->center				<< endl <<	    p->offset << endl << 		    mF <<  endl <<		    angdir	<< endl;
   //   else
@@ -148,6 +152,7 @@ double angularConversionStatic::convertAngle(double pos, int ich, angleConversio
 
 double angularConversionStatic::convertAngle(double pos, int ich, int *chansPerMod, angleConversionConstant **angOff, int *mF, double fo, double go, int angdir) {
 
+  //  cout << "PPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPP convert angles xx" << endl;
   int imod=0;
   double    ang;
   // double enc=0, trans=0;
@@ -302,6 +307,7 @@ int angularConversionStatic:: writeAngularConversion(ofstream& outfile, int nmod
 //static
 int angularConversionStatic::resetMerging(double *mp, double *mv, double *me, int *mm, int nb) {
   
+  //  cout << "PPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPP reset merging " << endl;
 		
 #ifdef VERBOSE
   cout << "creating merging arrays "<<  nb << endl;
@@ -320,13 +326,14 @@ int angularConversionStatic::resetMerging(double *mp, double *mv, double *me, in
 
 //static
 int angularConversionStatic::finalizeMerging(double *mp, double *mv, double *me, int *mm,int nb) {
+  //  cout << "PPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPP finalize merging " << endl;
    int np=0;
    for (int ibin=0; ibin<nb; ibin++) {
      if (mm[ibin]>0) {
       	
-// #ifdef VERBOSE 
-//        cout << "finalize " << ibin << "  "<< mm[ibin] << " " << mp[ibin]<< mv[ibin] << me[ibin] << endl;
-// #endif
+ #ifdef VERBOSE 
+       cout << "finalize " << ibin << "  "<< mm[ibin] << " " << mp[ibin]<< " " << mv[ibin] << " " << me[ibin] << endl;
+ #endif
        mp[np]=mp[ibin]/mm[ibin];
        mv[np]=mv[ibin]/mm[ibin];
        me[np]=me[ibin]/mm[ibin];
@@ -334,7 +341,8 @@ int angularConversionStatic::finalizeMerging(double *mp, double *mv, double *me,
        mm[np]=mm[ibin];
        np++;
      }
-  }
+   } 
+   //  cout << endl ;
   return np;
 }
 
@@ -342,6 +350,7 @@ int angularConversionStatic::finalizeMerging(double *mp, double *mv, double *me,
 int  angularConversionStatic::addToMerging(double *p1, double *v1, double *e1, double *mp, double *mv,double *me, int *mm, int nchans, double binsize,int nbins, int *badChanMask ) {
 
 
+  //  cout << "PPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPP add to merging " << endl;
   double binmi=-180.;
   int ibin=0;
 
@@ -404,6 +413,7 @@ int  angularConversionStatic::addToMerging(double *p1, double *v1, double *e1, d
 int  angularConversionStatic::addPointToMerging(double p1, double v1, double e1, double *mp, double *mv,double *me, int *mm,  double binsize,int nbins) {
 
 
+  //  cout << "PPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPP add point to merging "<< v1 << " " << e1 << endl;
   double binmi=-180.;
   int ibin=0;
 
@@ -429,6 +439,7 @@ int  angularConversionStatic::addPointToMerging(double p1, double v1, double e1,
    
  
     if (ibin<nbins && ibin>=0) {
+      //  cout << "before " << ibin << " " <<  mp[ibin] << " " << mv[ibin] << " " << me[ibin] << endl;
       mp[ibin]+=p1;
       mv[ibin]+=v1;
       if (e1)
@@ -436,6 +447,7 @@ int  angularConversionStatic::addPointToMerging(double p1, double v1, double e1,
       else
 	me[ibin]+=v1;
       mm[ibin]++;
+      //   cout << "after " << ibin << " " <<  mp[ibin] << " " << mv[ibin] << " " << me[ibin] << endl;
 
 // #ifdef VERBOSE
 //       cout << "add " << ibin << "  "<< mm[ibin] << " " << mp[ibin]<< mv[ibin] << me[ibin] << endl;

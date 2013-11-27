@@ -2821,13 +2821,13 @@ int multiSlsDetector::getBadChannelCorrection(int *bad) {
   
   if (((thisMultiDetector->correctionMask)&(1<< DISCARD_BAD_CHANNELS))==0)
     return 0;
-  else
-    cout << "bad chans corr enabled "<< thisMultiDetector->correctionMask << endl;
+  //else
+  // cout << "bad chans corr enabled "<< thisMultiDetector->correctionMask << endl;
 
   for (int idet=0; idet<thisMultiDetector->numberOfDetectors; idet++) {
     if (detectors[idet]) {
       nd=detectors[idet]->getBadChannelCorrection();
-      cout << "det " << idet << " nbad " << nd << endl;
+      //  cout << "det " << idet << " nbad " << nd << endl;
       if (nd>0) {
 	bd = new int[nd];
 	nd=detectors[idet]->getBadChannelCorrection(bd);

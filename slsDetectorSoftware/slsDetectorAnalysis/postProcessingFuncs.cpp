@@ -12,17 +12,19 @@ postProcessingFuncs::postProcessingFuncs(int *nModules,int *chPerMod,int modMask
 
 int postProcessingFuncs::initDataset() {
 
+  // cout << "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAA init dataset " << endl;
+
   if (nBins) {
     mp=new double[nBins];
     mv=new double[nBins];
     me=new double[nBins];
     mm=new int[nBins];
     resetMerging(mp,mv,me,mm, nBins);
-    cout << "nbins " << nBins <<  endl;
+    // cout << "nbins " << nBins <<  endl;
   } else {
     mv=new double[totalChans];
     me=new double[totalChans];
-    cout << "nchans " << totalChans << endl;
+    // cout << "nchans " << totalChans << endl;
   }
   totalI0=0;
 
@@ -32,6 +34,8 @@ int postProcessingFuncs::initDataset() {
 
 int postProcessingFuncs::finalizeDataset(double *ang, double *val, double *err, int *np) {
   
+  // cout << "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAA finalize dataset " << endl;
+
   if (nBins) 
     *np=finalizeMerging(mp,mv,me,mm,nBins);
   else
@@ -78,14 +82,25 @@ int postProcessingFuncs::addFrame(double *data, double *pos, double *I0, double 
 
   double p1, vin, ein, vout, eout;
   double  e=0.;
-  double i0=*I0;
+  double i0;
+
   int imod=0, ch0=0;
 
   int chlast=chansPerMod[0]-1;
   int nchmod=chansPerMod[0];
 
-  if (i0>0)
+
+
+  if (I0>0) {
+    i0=*I0; 
     totalI0+=i0;
+  } else
+    i0=-1;
+
+//  if (badChannelMask)
+//    cout << "---------------- Discarding bad chans " << endl;
+
+  // cout << "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAA add frame " << i0 << endl;
 
   for (int ich=0; ich<totalChans; ich++) {
     
@@ -108,9 +123,9 @@ int postProcessingFuncs::addFrame(double *data, double *pos, double *I0, double 
 
 
     if (tDead) {
-#ifdef VERBOSE
-    cout << "ppFuncs ratecorrect" << endl;
-#endif
+      //#ifdef VERBOSE
+      //    cout << "ppFuncs ratecorrect" << endl;
+    //#endif
       rateCorrect(vin, ein, vout, eout, tDead, *expTime);
       vin=vout;
       ein=eout;
@@ -118,9 +133,9 @@ int postProcessingFuncs::addFrame(double *data, double *pos, double *I0, double 
       //ffcorrect
     
     if (ffCoeff) {
-#ifdef VERBOSE
-      cout << "ppFuncs ffcorrect" << endl;
-#endif
+      //#ifdef VERBOSE
+      //      cout << "ppFuncs ffcorrect" << endl;
+      //#endif
       if (ffErr)
 	e=ffErr[ich];
       else
@@ -131,19 +146,21 @@ int postProcessingFuncs::addFrame(double *data, double *pos, double *I0, double 
 
     //i0correct
     if (i0>0) {
-#ifdef VERBOSE
-      cout << "ppFuncs i0 norm" << endl;
-#endif
+      //#ifdef VERBOSE
+      // cout << "ppFuncs i0 norm" << endl;
+      //#endif
       vout/=i0;
       eout/=i0;
     }
       
     if (badChannelMask) {
-#ifdef VERBOSE
-      cout << "ppFuncs badchans" << endl;
-#endif
-      if (badChannelMask[ich])
+      //#ifdef VERBOSE
+      //      cout << "ppFuncs badchans" << endl;
+      //#endif
+      if (badChannelMask[ich]) {
+	//	cout << "------------------ Discarding channel " << ich << endl;
 	continue;
+      }
     }
     if (nBins) {
       //angconv
@@ -157,7 +174,7 @@ int postProcessingFuncs::addFrame(double *data, double *pos, double *I0, double 
       p1=convertAngle(*pos,ich-ch0,angConv[imod],moduleMask[imod],totalOffset,0,angDir);
 
 // #ifdef VERBOSE
-//       cout << "ppFuncs merge" << endl;
+//   cout << "************************** ppFuncs merge" << endl;
 // #endif
       addPointToMerging(p1,vout,eout,mp,mv,me,mm, binSize, nBins);
 
@@ -180,16 +197,17 @@ int postProcessingFuncs::addFrame(double *data, double *pos, double *I0, double 
 
 int postProcessingFuncs::initDataset(int *nModules,int *chPerMod,int modMask[],int badCh[], double ffcoeff[], double fferr[], double* t, int *dir, double angRadius[], double angOffset[], double angCenter[], double* to, double* bs, double *sX, double *sY) {
 
-#ifdef VERBOSE
-  cout << "delete pointers " << endl;
-#endif
+  // cout << "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAA init dataset XXXXXX " << endl;
+  //#ifdef VERBOSE
+  // cout << "delete pointers " << endl;
+  //#endif
 
   deletePointers();
  
 
-#ifdef VERBOSE
-  cout << "nmod " << endl;
-#endif
+  //#ifdef VERBOSE
+    // cout << "nmod " << endl;
+  //#endif
 
   if (nModules)
     nMods=*nModules;
@@ -197,9 +215,9 @@ int postProcessingFuncs::initDataset(int *nModules,int *chPerMod,int modMask[],i
     nMods=0;
 
 
-#ifdef VERBOSE
-  cout << nMods << endl;
-#endif
+  //#ifdef VERBOSE
+  //cout << nMods << endl;
+  //#endif
 #ifdef VERBOSE
   cout << "tdead " << endl;
 #endif
@@ -225,18 +243,18 @@ int postProcessingFuncs::initDataset(int *nModules,int *chPerMod,int modMask[],i
 #endif
 
 
-#ifdef VERBOSE
-  cout << "binsize " << endl;
-#endif
+  //#ifdef VERBOSE
+    // cout << "binsize " << endl;
+  //#endif
   if (bs)
     binSize=*bs;
   else
     binSize=0;
 
 
-#ifdef VERBOSE
-  cout << binSize << endl;
-#endif
+  //#ifdef VERBOSE
+    // cout << binSize << endl;
+  //#endif
 #ifdef VERBOSE
   cout << "samplex " << endl;
 #endif
@@ -259,17 +277,17 @@ int postProcessingFuncs::initDataset(int *nModules,int *chPerMod,int modMask[],i
 #ifdef VERBOSE
   cout << sampleY  << endl;
 #endif
-#ifdef VERBOSE
-  cout << "angdir " << endl;
-#endif
+  //#ifdef VERBOSE
+    // cout << "angdir " << endl;
+  //#endif
   if (dir)
     angDir=*dir;
   else
     angDir=1;
 
-#ifdef VERBOSE
-  cout << angDir  << endl;
-#endif
+  //#ifdef VERBOSE
+    // cout << angDir  << endl;
+  //#endif
   totalChans=0;
 
 
@@ -281,26 +299,32 @@ int postProcessingFuncs::initDataset(int *nModules,int *chPerMod,int modMask[],i
   
   nBins=0;
   if (angRadius && angOffset && angCenter && (binSize>0)) {
+    // cout << "??????? creating angConv"<< endl;
     angConv=new angleConversionConstant*[nMods];
     nBins=(int)(360./binSize)+1;
   }
-#ifdef VERBOSE
-  cout << "nBins " << nBins << endl;
-#endif
+  //#ifdef VERBOSE
+  //cout << "nBins " << nBins << endl;
+  //#endif
   for (int im=0; im<nMods; im++) {
     //#ifdef VERBOSE
-    // cout << "MODULE "<< im << endl;
+    //cout << "MODULE "<< im << endl;
     //#endif
     chansPerMod[im]=chPerMod[im];
+    //cout <<  chansPerMod[im] << endl;
     moduleMask[im]=modMask[im];
+    //cout <<  modMask[im] << endl;
     totalChans+=chansPerMod[im];
+    //cout << totalChans << endl;
     if (angConv) {
+      //cout << "??????? angConv"<< endl;
       angConv[im]=new angleConversionConstant(angCenter[im], angRadius[im], angOffset[im], 0);
-      
-    }
-    //   cout << angCenter[im] << " " << chansPerMod[im] << " " << angRadius[im] << " " << angOffset[im] << " " << moduleMask[im] << endl;
+      //cout << angCenter[im] << " " << chansPerMod[im] << " " << angRadius[im] << " " << angOffset[im] << " " << moduleMask[im] << endl;
+    } 
+    //else cout << "no ang conv " << endl;
   }
-
+  
+  // cout << "finished modules loop" << endl;
   
 #ifdef VERBOSE
   cout << "badchans " << endl;
@@ -334,7 +358,7 @@ int postProcessingFuncs::initDataset(int *nModules,int *chPerMod,int modMask[],i
     // cout << " init ff " << ich <<  " " << ffCoeff[ich] << ffcoeff[ich] << endl;
 
   }
-
+  //cout << "init dataset finished " << endl;
   return 0;
 
 }
@@ -345,25 +369,35 @@ int postProcessingFuncs::initDataset(int *nModules,int *chPerMod,int modMask[],i
 void postProcessingFuncs::deletePointers() {
 
   delete [] chansPerMod;
+  chansPerMod=NULL;
   
   delete [] moduleMask;
-  if (badChannelMask)
+  moduleMask=NULL;
+
+
+  if (badChannelMask) {
     delete [] badChannelMask;
+    badChannelMask=NULL;
+  }
   
-  if (ffCoeff)
+  if (ffCoeff) {
     delete [] ffCoeff;
-  
-  if (ffErr)
+    ffCoeff=NULL;
+  }
+  if (ffErr) {
     delete [] ffErr;
-
-    if (angConv) {
-      for (int im=0; im<nMods; im++) {
-	if (angConv[im])
-	  delete angConv[im];
-      }
-      delete [] angConv;
+    ffErr=NULL;
+  }
+  if (angConv) {
+    for (int im=0; im<nMods; im++) {
+      if (angConv[im])
+	delete angConv[im];
     }
-
+    // cout << "deleting angConv "<< angConv  << endl;
+    delete [] angConv;
+    angConv=NULL;
+  }
+  // cout << "angConv pointer " << angConv << endl;
 
 }
 

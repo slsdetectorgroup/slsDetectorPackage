@@ -132,7 +132,7 @@ void postProcessing::processFrame(int *myData, int delflag) {
     } else
       if (dataReady){
 
-	cout << "callback arg "<< getCurrentProgress()<< " " << (fname+string(".raw")).c_str() << " " << getTotalNumberOfChannels() << endl;
+	//	cout << "callback arg "<< getCurrentProgress()<< " " << (fname+string(".raw")).c_str() << " " << getTotalNumberOfChannels() << endl;
 
 	thisData=new detectorData(fdata,NULL,NULL,getCurrentProgress(),(fname+string(".raw")).c_str(),getTotalNumberOfChannels()); 
 	dataReady(thisData, currentFrameIndex, pCallbackArg);
@@ -183,9 +183,9 @@ void postProcessing::processFrame(int *myData, int delflag) {
 
 void postProcessing::doProcessing(double *lfdata, int delflag, string fname) {
   
-#ifdef VERBOSE
-  cout << "do processing - data size is " << arraySize << endl;
-#endif
+  #ifdef VERBOSE
+  cout << "??????????????????????????????????????????? do processing - data size is " << arraySize << endl;
+ #endif
 
 
   int np;
@@ -255,7 +255,7 @@ void postProcessing::doProcessing(double *lfdata, int delflag, string fname) {
 
 
 	if (dataReady) {
-	  cout << "callback arg "<< getCurrentProgress()<< " " << (fname+ext).c_str() << " " << np << endl;
+	  //	  cout << "callback arg "<< getCurrentProgress()<< " " << (fname+ext).c_str() << " " << np << endl;
 
 	  thisData=new detectorData(val,err,ang,getCurrentProgress(),(fname+ext).c_str(),np);
 	  dataReady(thisData, currentFrameIndex, pCallbackArg);
@@ -306,9 +306,9 @@ int postProcessing::fillBadChannelMask() {
 	delete [] badChannelMask;
 
 
-      //#ifdef VERBOSE
+#ifdef VERBOSE
       cout << " nchans " << getTotalNumberOfChannels()  << endl;
-      //#endif
+#endif
 
       badChannelMask=new int[getTotalNumberOfChannels()];
 
@@ -350,8 +350,8 @@ int postProcessing::fillBadChannelMask() {
 #ifdef VERBOSE
       cout << "deleting bad channel mask beacuse no bad channel correction is selected" << endl;
 #endif
-      //delete [] badChannelMask;
-      //badChannelMask=NULL;
+      delete [] badChannelMask;
+      badChannelMask=NULL;
     }
   }
   
@@ -371,7 +371,7 @@ void* postProcessing::processData(int delflag) {
 	if(setReceiverOnline()==OFFLINE_FLAG){
 
 #ifdef VERBOSE
-		std::cout<< " processing data - threaded mode " << *threadedProcessing << endl;
+		std::cout<< " ??????????????????????????????????????????? processing data - threaded mode " << *threadedProcessing << endl;
 #endif
 
 
@@ -741,6 +741,7 @@ void postProcessing::initDataset(int r) {
   fillBadChannelMask();
   // cout << "pp bad channel mask " << badChannelMask << endl;
   
+  //cout << "EEEEEEEEEEEEEEEEEEEE init dataset " << endl;
   ppFun->initDataset(&nmod,chPM,mM,badChannelMask, ffcoeff, fferr, &tdead, &angdir, angRad, angOff, angCenter, &to, &bs, &sx, &sy);
   
 #ifdef VERBOSE
@@ -766,7 +767,7 @@ void postProcessing::initDataset(int r) {
 
   } else {
 
-    cout << "implicit inti dataset! " << endl;
+    // cout << "EEEEEEEEEEEEEEEEEEEE init dataset XXXX " << endl;
 
     ppFun->initDataset();
 
@@ -781,12 +782,20 @@ void postProcessing::initDataset(int r) {
 
 
 void postProcessing::addFrame(double *data, double pos, double i0, double t, string fname, double var) {
-  ppFun->addFrame(data, &pos, &i0, &t, fname.c_str(), &var);    
+  // cout << "EEEEEEEEEEEEEEEEEEEE add frame " << pos << " " << i0 << endl;
+
+  if (*correctionMask&(1<< I0_NORMALIZATION))
+    ppFun->addFrame(data, &pos, &i0, &t, fname.c_str(), &var);
+  else
+    ppFun->addFrame(data, &pos,NULL, &t, fname.c_str(), &var);
+    
+
 
 }
 
 void postProcessing::finalizeDataset(double *a, double *v, double *e, int &np) {
 
+  // cout << "EEEEEEEEEEEEEEEEEEEE finalize dataset " << endl;
   ppFun->finalizeDataset(a, v, e, &np);
 
 }

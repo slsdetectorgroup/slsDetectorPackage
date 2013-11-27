@@ -39,6 +39,8 @@ lib:
 
 stextclient: slsDetectorClient_static
 
+slsDetectorClient: textclient
+
 slsDetectorClient_static: lib
 	cd  $(CLIENTDIR) && $(MAKE) static_clients FLAGS=$(FLAGS) LIBS=$(LDFLAG) DESTDIR=$(BINDIR) LIBDIR=$(LIBDIR) INCLUDES=$(INCLUDES)
 
@@ -48,6 +50,7 @@ textclient: lib
 
 slsReceiver: receiver
 
+slsReceiver_static: receiver
 
 receiver: lib
 	cd  $(RECEIVERDIR) && $(MAKE)  receiver FLAGS=$(FLAGS) DESTDIR=$(BINDIR) LIBDIR=$(LIBDIR)  LIBS=$(LDFLAG) INCLUDES=$(INCLUDES)
@@ -91,10 +94,16 @@ clean:
 
 
 
-install_lib: 
-	cd $(LIBRARYDIR) && $(MAKE) install DESTDIR=$(LIBDIR) INCLUDES=$(INCLUDES)
-	cd $(LIBRARYDIR) && $(MAKE) install_inc DESTDIR=$(INCDIR)
+#install_lib: 
+#	cd $(LIBRARYDIR) && $(MAKE) install DESTDIR=$(LIBDIR) INCLUDES=$(INCLUDES)
+#	cd $(LIBRARYDIR) && $(MAKE) install_inc DESTDIR=$(INCDIR)
 
+mythen_virtual:
+	cd $(LIBRARYDIR) && $(MAKE) mythenVirtualServer DESTDIR=$(BINDIR)
+
+
+gotthard_virtual:
+	cd $(LIBRARYDIR) && $(MAKE) gotthardVirtualServer DESTDIR=$(BINDIR)
 
 
 install_client: textclient slsReceiver
@@ -129,17 +138,15 @@ conf:
 	@echo "INCDIR is $(INCDIR)"
 	@echo "DOCDIR is $(DOCDIR)"
 
-tar:
-	make clean
-	cd .. && tar czf newMythenSoftware.tgz newMythenSoftware
 
 help:
 	@echo "Targets:"
 	@echo "make all 		compile library,  text clients, data reciever"
 	@echo "make lib 		compile library"
-	@echo "make client		compile the slsDetectorClient dynamically linking the libraries"
-	@echo "make sclient 		compile slsDetectorClient statically linking the libraries"
+	@echo "make textclient		compile the slsDetectorClient dynamically linking the libraries"
+	@echo "make stextclient 		compile slsDetectorClient statically linking the libraries"
 	@echo "make receiver		compile the slsReciever dynamically linking the libraries"
+	@echo "make sreceiver		compile the slsReciever statically linking the libraries"
 	@echo "make gui			compile slsDetectorGUI - requires a working Qt4 and Qwt installation"
 	@echo "make calWiz 		compile the calibration wizards - requires a working Root installation"
 	@echo "make doc			compile pdf documentation"
@@ -149,7 +156,6 @@ help:
 	@echo "make confinstall         installs all software, including the gui, the cal wizards and the includes for the API, prompting for the install paths"
 	@echo "make clean              	remove object files and executables"
 	@echo "make help               	lists possible targets"
-	@echo "make tar                 makes a compressed tar of the software package"
 	@echo ""
 	@echo ""
 	@echo "Variables -  to change them run <source configure> :"

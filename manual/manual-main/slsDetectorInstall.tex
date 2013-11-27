@@ -33,6 +33,7 @@ The complete software package is composed of several programs which can be insta
 \item The \textbf{data receiver (slsReceiver)}, which can be run on a different machine, receives the data from the detector and interfaces to the control software via TCP/IP for defining e.g. the file name, output path and return status and progress of the acquisition
 \item The  \textbf{graphical user interface (slsDetectorGUI)} which provides a user friendly way of operating the detectors with online data preview
 \item The  \textbf{calibration wizards (energyCalibrationWizard, angularCalibrationWizard)} to analyze the data and produce the energy or angular calibration files
+\item The  \textbf{GOTTHARD and MYTHEN virtual servers} to simulate the detectors behavior (however only control commands work, not the data acquisition itself)
 \end{itemize}
 
 Please refere to the SLS Detectors FAQ for additional documentation.
@@ -137,11 +138,17 @@ http://root.cern.ch/drupal/content/production-version-534
 
 If you simply want to install the software in the working directory you can:
 \begin{itemize}
-\item[make] compile the library and command line interface 
+\item[make] compile the library, the command line interface and the receiver 
 
 \item[make lib]     	compile only the library 
 
 \item[make slsDetectorClient] compile the command line interface (and the library, since it is required)
+
+\item[make slsDetectorClient\_static] compile the command line interface statically linking the library (and the library, since it is required)
+
+\item[make slsReceiver] compile the data reciever (and the library, since it is required)
+
+\item[make slsReceiver\_static] compile the data reciever statically linking the library (and the library, since it is required)
 
 \item[make slsDetectorGUI]  compile slsDetectorGUI - requires a working Qt4 and Qwt installation
 
@@ -159,9 +166,11 @@ If you simply want to install the software in the working directory you can:
 
 \item[make clean]              remove object files and executables
 
-\item[make tar]              makes a compressed tar of the software package
-
 \item[make help]               lists possible targets
+
+\item[make mythen\_virtual]     compile a virtual MYTHEN detector server (works for control commands, not for data taking)
+
+\item[make gotthard\_virtual]     compile a virtual GOTTHARD detector server (works for control commands, not for data taking)
 \end{itemize}
 
 The path where the files binaries, libraries, documentation and includes  will be installed can either be defined interactively by sourcing the  \verb=configure= script (not executing!) or during compilation using \verb=make confinstall= or defined on the command line deifning one (or all) the following variables (normally \verb=INSTALLROOT= is enough:

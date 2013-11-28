@@ -3464,8 +3464,8 @@ int64_t slsDetector::setTimer(timerIndex index, int64_t t){
   
 
   int fnum=F_SET_TIMER;
-  int64_t retval;
-  uint64_t ut;
+  int64_t retval = -1;
+  int64_t ut = -2;
   char mess[100];
   int ret=OK;
   int n=0;
@@ -3476,7 +3476,6 @@ int64_t slsDetector::setTimer(timerIndex index, int64_t t){
 #ifdef VERBOSE
     std::cout<< "Setting timer  "<< index << " to " <<  t << "ns" << std::endl;
 #endif
-    ut=t;
     if (thisDetector->onlineFlag==ONLINE_FLAG) {
       if (connectControl() == OK){
 	controlSocket->SendDataOnly(&fnum,sizeof(fnum));
@@ -3486,6 +3485,7 @@ int64_t slsDetector::setTimer(timerIndex index, int64_t t){
 	if (ret==FAIL) {
 	  controlSocket->ReceiveDataOnly(mess,sizeof(mess));
 	  std::cout<< "Detector returned error: " << mess << std::endl;
+	  setErrorMask((getErrorMask())|(DETECTOR_TIMER_VALUE_NOT_SET));
 	} else {
 	  controlSocket->ReceiveDataOnly(&retval,sizeof(retval)); 
 	  thisDetector->timerValue[index]=retval; 
@@ -3522,6 +3522,26 @@ int64_t slsDetector::setTimer(timerIndex index, int64_t t){
   /* set progress */
   if ((index==FRAME_NUMBER) || (index==CYCLES_NUMBER)) {
     setTotalProgress();
+  }
+
+  //send acquisiton period to receiver
+  if((index==FRAME_PERIOD) && (ret != FAIL)  && (t != -1) && (setReceiverOnline(ONLINE_FLAG)==ONLINE_FLAG)){
+	  //if acquisition period is zero, then #frames/buffer depends on exposure time and not acq period
+	  if(!retval)
+		  retval = timerValue[ACQUISITION_TIME];
+#ifdef VERBOSE
+	  std::cout << "Sending/Getting acquisition period to/from receiver " << retval << std::endl;
+#endif
+	  if (connectData() == OK)
+		  ret=thisReceiver->sendInt(fnum,ut,retval);
+	  if(ut != retval){
+		  ret = FAIL;
+		  cout << "ERROR:Acquisition Period in receiver set incorrectly to " << ut << " instead of " << retval << endl;
+	  }
+	  if(ret==FAIL)
+		  setErrorMask((getErrorMask())|(RECEIVER_ACQ_PERIOD_NOT_SET));
+	  if(ret==FORCE_UPDATE)
+		  updateReceiver();
   }
 
   return thisDetector->timerValue[index];
@@ -4793,13 +4813,21 @@ char* slsDetector::setDetectorIP(string detectorIP){
 
 
 char* slsDetector::setReceiver(string receiverIP){
-
 	if(getRunStatus()==RUNNING)
 		stopAcquisition();
 
 	strcpy(thisDetector->receiver_hostname,receiverIP.c_str());
 
 	if(setReceiverOnline(ONLINE_FLAG)==ONLINE_FLAG){
+#ifdef VERBOSE
+	std::cout << "Setting up receiver with" << endl <<
+			"file path:" << fileIO::getFilePath() << endl <<
+			"file name:" << fileIO::getFileName() << endl <<
+			"file index:" << fileIO::getFileIndex() << endl <<
+			"frame index needed:" <<  ((setTimer(FRAME_NUMBER,-1)*setTimer(CYCLES_NUMBER,-1))>1) << endl <<
+			"write enable:" << parentDet->enableWriteToFileMask() << endl <<
+			"frame period:" << setTimer(FRAME_PERIOD,-1) << endl << endl;
+#endif
 		setFilePath(fileIO::getFilePath());
 		setFileName(fileIO::getFileName());
 		setFileIndex(fileIO::getFileIndex());
@@ -4808,6 +4836,7 @@ char* slsDetector::setReceiver(string receiverIP){
 		  else
 			  setFrameIndex(-1);
 		enableWriteToFile(parentDet->enableWriteToFileMask());
+		setTimer(FRAME_PERIOD,setTimer(FRAME_PERIOD,-1));
 		setUDPConnection();
 	}
 

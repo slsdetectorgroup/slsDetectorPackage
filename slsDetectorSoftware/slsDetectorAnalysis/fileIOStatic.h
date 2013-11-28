@@ -133,7 +133,7 @@ class fileIOStatic  {
 	  if (sscanf( s.substr(uscore+1,s.size()-uscore-1).c_str(),"f%d",&i)) 					\
 		  if(i==-1)return 0;																\
 		  else return i; 																	\
-	  cout << "******************************** cannot parse frame index" << endl;			\
+	  /*cout << "******************************** cannot parse frame index" << endl;			\*/
 	  return 0;																				\
   };
 

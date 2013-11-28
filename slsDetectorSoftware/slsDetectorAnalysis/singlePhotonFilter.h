@@ -81,6 +81,8 @@ public:
 	 * @param s mask as to which adcs are inverted
 	 * @param f circular fifo buffer, which needs to be freed
 	 * @param d Size of data with the headers
+	 * @param tfcaught pointer to total frames caught
+	 * @param fcaught pointer to frames caught
 	 */
 	singlePhotonFilter(
 			int nx,
@@ -94,7 +96,9 @@ public:
 			int16_t *m,
 			int16_t *s,
 			CircularFifo<char>* f,
-			int d);
+			int d,
+			int* tfcaught,
+			int* fcaught);
 
 	/** virtual destructor */
 	virtual ~singlePhotonFilter();
@@ -167,10 +171,24 @@ public:
 
 	/** reconstruct the frame with all the right packets
 	 * @param inData the data from socket to be verified
-	 * returns 0 if still waiting for next packet of same frame,
-	 * 1 if end of complete frame, -1 if end of incomplete frame,
-	 * -2 first packet of next frame, so push previous one; -3 last packet of current frame, push both frames
-	 * */
+	 * returns
+	 * 0: 	waiting for next packet of new frame
+	 * 1:	finished with full frame,
+	 *	   	start new frame
+	 * -1:	last packet of current frame,
+	 * 		invalidate remaining packets,
+	 * 		start new frame
+	 * -2: 	first packet of new frame,
+	 * 		invalidate remaining packets,
+	 * 		check buffer needs to be pushed,
+	 * 		start new frame with the current packet,
+	 * 		then ret = 0
+	 * -3: 	last packet of new frame,
+	 * 		invalidate remaining packets,
+	 * 		check buffer needs to be pushed,
+	 * 		start new frame with current packet,
+	 * 		then ret = -1 (invalidate remaining packets and start a new frame)
+	 */
 	int verifyFrame(char *inData);
 
 	/**
@@ -200,6 +218,13 @@ public:
 	 * */
 	int checkIfJobsDone();
 
+	/**
+	 * call back to free fifo
+	 * call back arguments are
+	 * fbuffer buffer address to be freed
+	 */
+	void registerCallBackFreeFifo(void (*func)(char*, void*),void *arg){freeFifoCallBack=func; pFreeFifo=arg;};
+
 
 
 private:
@@ -227,7 +252,7 @@ private:
 	int nHitsPerFrame;
 
 	/** Maximum Number of hits written to file */
-	const static int MAX_HITS_PER_FILE = 200000;
+	const static int MAX_HITS_PER_FILE = 2000000;
 
 	/** Number of Channels in X  direction */
 	int nChannelsX;
@@ -376,6 +401,18 @@ private:
 
 	/** circular fifo buffer to be freed */
 	CircularFifo<char>* fifo;
+
+	/**total frames caught */
+	int* totalFramesCaught;
+
+	/** frames caught */
+	int* framesCaught;
+
+	/** call back function */
+	void (*freeFifoCallBack)(char*, void*);
+
+	/** call back arguments */
+	void *pFreeFifo;
 };
 
 

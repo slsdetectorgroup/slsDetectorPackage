@@ -7,11 +7,13 @@
 
 
 #define BUF_SIZE        (16*1024*1024) //16mb
+#define HEADER_SIZE_NUM_FRAMES	2
+#define HEADER_SIZE_NUM_PACKETS	1
 
 
 singlePhotonFilter::singlePhotonFilter(int nx, int ny,
 		int fmask, int pmask, int foffset, int poffset, int pperf, int iValue,
-		int16_t *m, int16_t *s, CircularFifo<char>* f, int d):
+		int16_t *m, int16_t *s, CircularFifo<char>* f, int d, int* tfcaught, int* fcaught):
 #ifdef MYROOT1
 										myTree(NULL),
 										myFile(NULL),
@@ -52,8 +54,11 @@ singlePhotonFilter::singlePhotonFilter(int nx, int ny,
 										currentThread(-1),
 										thisThreadIndex(-1),
 										fileIndex(0),
-										fifo(f){
-
+										fifo(f),
+										totalFramesCaught(tfcaught),
+										framesCaught(fcaught),
+										freeFifoCallBack(NULL),
+										pFreeFifo(NULL){
 #ifndef MYROOT1
 	photonHitList  = new single_photon_hit[nChannelsX*nChannelsY];
 #endif
@@ -216,6 +221,7 @@ int singlePhotonFilter::writeToFile(){
 		if(myFile){
 			/*cout<<"writing "<< nHitsPerFrame << " hits to file" << endl;*/
 			fwrite((void*)(photonHitList), 1, sizeof(single_photon_hit)*nHitsPerFrame, myFile);
+			/*framesInFile += nHitsPerFrame;*/
 			nHitsPerFrame = 0;
 			//cout<<"Exiting writeToFile"<<endl;
 			return OK;
@@ -257,6 +263,8 @@ void singlePhotonFilter::setupAcquisitionParameters(char *outfpath, char* outfna
 	strcpy(fileName,outfname);
 
 	fnum = 0; pnum = 0; ptot = 0; f0 = 0; firstTime = true; currentThread = -1;
+	*framesCaught = 0;
+
 	//initialize
 	for (int ir=0; ir<nChannelsX; ir++){
 		for (int ic=0; ic<nChannelsY; ic++){
@@ -273,7 +281,25 @@ void singlePhotonFilter::setupAcquisitionParameters(char *outfpath, char* outfna
 }
 
 
-
+/*
+	rets
+case 0:  waiting for next packet of new frame
+case 1:  finished with full frame,
+	     start new frame
+case -1: last packet of current frame,
+		 invalidate remaining packets,
+		 start new frame
+case -2: first packet of new frame,
+		 invalidate remaining packets,
+		 check buffer needs to be pushed,
+		 start new frame with the current packet,
+		 then ret = 0
+case -3: last packet of new frame,
+		 invalidate remaining packets,
+		 check buffer needs to be pushed,
+		 start new frame with current packet,
+		 then ret = -1 (invalidate remaining packets and start a new frame)
+ */
 int singlePhotonFilter::verifyFrame(char *inData){
 	ret = 0;
 	pIndex = 0;
@@ -389,6 +415,7 @@ void singlePhotonFilter::findHits(){
 	int dum;
 	double tot; // total value of pixel
 	char* isData;
+	char* freeData;
 	int16_t* myData;
 	int index = thisThreadIndex;
 
@@ -411,6 +438,7 @@ void singlePhotonFilter::findHits(){
 			cout << "Could not set Thread " << index <<" cancel state to be disabled" << endl;
 
 		isData = mem0[index];
+		freeData = isData;
 
 		pthread_mutex_lock(&running_mutex);
 		threads_mask|=(1<<index);
@@ -420,18 +448,25 @@ void singlePhotonFilter::findHits(){
 		while((dum = sem_wait(&smp[index]))!=0)
 			cout<<"got data semwait:["<<index<<"]:"<<dum<<endl;
 
+		isData += HEADER_SIZE_NUM_FRAMES;
 
-
-		myData = (int16_t*)isData;
-
+		//for all the frames in one buffer
 		for (i=0; i < numFramesAlloted[index]; ++i){
-			/*cout<<"mydata:"<<(void*)isData<<endl;*/
 
-			clusteriframe = (uint32_t)(*((uint32_t*)(isData)));
+			//ignore frames which have less than 2 packets
+			if((uint8_t)(*((uint8_t*)isData)) == packets_per_frame){
 
-			if(clusteriframe != 0xFFFFFFFF){
-				clusteriframe = ((clusteriframe & frame_index_mask) >>frame_index_offset) - f0;
+				(*framesCaught)++;
+				(*totalFramesCaught)++;
 
+
+				isData += HEADER_SIZE_NUM_PACKETS;
+				clusteriframe = (((uint32_t)(*((uint32_t*)(isData)))& frame_index_mask) >>frame_index_offset);
+#ifdef VERYVERBOSE
+				cout << "scurrframnum:" << clusteriframe << endl;
+#endif
+				clusteriframe -= f0;
+				myData = (int16_t*)isData;
 
 				//for each pixel
 				for (ir=0; ir<nChannelsX; ++ir){
@@ -522,31 +557,37 @@ void singlePhotonFilter::findHits(){
 						}
 					}
 				}
-
-
-			}//else cout<<"***did not get whoel frame in single photon filter"<<endl;
-
+			}else{
+				//cout<< "did no receiver fulll frame"<<endl;
+				isData += HEADER_SIZE_NUM_PACKETS;
+			}
+			//calulate the average hits per frame
 			nHitStat->Calc((double)nHitsPerFrame);
-
+			//write for each frame, not packet
 			pthread_mutex_lock(&write_mutex);
 			writeToFile();
-			fifo->push(isData);
+			//fifo->push(isData);
 			pthread_mutex_unlock(&write_mutex);
 
-			isData += 4096;
-			myData += 2048;
+			//increment offset
+			isData += dataSize;
 
-/*
+			/*
 			if ((clusteriframe%1000 == 0) && (clusteriframe != 0) ){
 				cout << dec << "Frame: " << clusteriframe << " Hit Avg over last frames: " <<
 						nHitStat->Mean() <<  "  .. "<<nHitStat->StandardDeviation() << endl;
 				cout<<"writing "<< nHitsPerFrame << " hits to file" << endl;
 			}
-*/
-
-
+			 */
 		}
 
+		pthread_mutex_lock(&write_mutex);
+		if(freeFifoCallBack)
+			freeFifoCallBack(freeData,pFreeFifo);
+		//fifo->push(freeData);//fifo->push(isData);
+		pthread_mutex_unlock(&write_mutex);
+
+		//thread not running
 		pthread_mutex_lock(&running_mutex);
 		threads_mask^=(1<<index);
 		pthread_mutex_unlock(&running_mutex);
@@ -554,6 +595,10 @@ void singlePhotonFilter::findHits(){
 		if(pthread_setcancelstate(PTHREAD_CANCEL_ENABLE, NULL)!=0)
 			cout << "Could not set Thread " << index <<" cancel state to be enabled" << endl;
 	}
+
+
+
+	delete [] clusterData;
 }
 
 

@@ -41,7 +41,7 @@ slsReceiverFuncs::slsReceiverFuncs(int argc, char *argv[], int &success):
 	string sLine,sargname;
 	int iline = 0;
 	bool dcompr = false;
-	int jobthread = -1;
+	/*int jobthread = -1;*/
 
 
 	success=OK;
@@ -67,7 +67,7 @@ slsReceiverFuncs::slsReceiverFuncs(int argc, char *argv[], int &success):
 				getline(infile,sLine);
 				iline++;
 #ifdef VERBOSE
-				cout <<  str << endl;
+				cout <<  sLine << endl;
 #endif
 				if(sLine.find('#')!=string::npos){
 #ifdef VERBOSE
@@ -184,7 +184,7 @@ slsReceiverFuncs::slsReceiverFuncs(int argc, char *argv[], int &success):
 					}
 				}
 			}
-			//jobstothread
+			/*//jobstothread
 			else if(!strcasecmp(argv[iarg],"-jobthread")){
 				if(iarg+1==argc){
 					cout << "no value given after -jobthread in command line. Exiting." << endl;
@@ -197,7 +197,7 @@ slsReceiverFuncs::slsReceiverFuncs(int argc, char *argv[], int &success):
 						success=FAIL;
 					}
 				}
-			}
+			}*/
 			else{
 				cout << "Unknown argument:" << argv[iarg] << endl;
 				success=FAIL;
@@ -227,8 +227,8 @@ slsReceiverFuncs::slsReceiverFuncs(int argc, char *argv[], int &success):
 		cout << "Help Commands " << endl;
 		cout << "type:\t\t Type of receiver. Default: Gotthard. Options: Moench" << endl;
 		cout << "rx_tcpport:\t TCP Communication Port with the client. Default:1954. " << endl;
-		cout << "compression:\t Data Compression. Saving only hits. Option:yes, no" << endl;
-		cout << "jobthread:\t Number of jobs given to a thread for compression." << endl << endl;
+		cout << "compression:\t Data Compression. Saving only hits. Option:yes, no" << endl << endl;;
+		/*cout << "jobthread:\t Number of jobs given to a thread for compression." << endl << endl;*/
 	}
 
 
@@ -250,7 +250,7 @@ slsReceiverFuncs::slsReceiverFuncs(int argc, char *argv[], int &success):
 			slsReceiverList =  new slsReceiverFunctionList(myDetectorType);
 
 			if(dcompr)	slsReceiverList->enableDataCompression(dcompr);
-			if(jobthread!=-1) slsReceiverList->setNumberOfJobsPerThread(jobthread);
+			/*if(jobthread!=-1) slsReceiverList->setNumberOfJobsPerThread(jobthread);*/
 
 #ifdef VERBOSE
 			cout << "Function table assigned." << endl;
@@ -318,6 +318,8 @@ int slsReceiverFuncs::function_table(){
 	flist[F_GET_ID]					=	&slsReceiverFuncs::get_version;
 	flist[F_CONFIGURE_MAC]			=	&slsReceiverFuncs::set_short_frame;
 	flist[F_START_READOUT]			= 	&slsReceiverFuncs::start_readout;
+	flist[F_SET_TIMER]				= 	&slsReceiverFuncs::set_acquisition_period;
+
 
 	//General Functions
 	flist[F_LOCK_SERVER]			=	&slsReceiverFuncs::lock_receiver;
@@ -1422,6 +1424,55 @@ int	slsReceiverFuncs::start_readout(){
 	return ret;
 
 
+}
+
+
+
+
+int slsReceiverFuncs::set_acquisition_period() {
+	ret=OK;
+	int64_t retval = -1;
+	int64_t index = -1;
+	strcpy(mess,"Could not set acquisition period in receiver\n");
+
+
+	// receive arguments
+	if(socket->ReceiveDataOnly(&index,sizeof(index)) < 0 ){
+		strcpy(mess,"Error reading from socket\n");
+		ret = FAIL;
+	}
+
+	// execute action if the arguments correctly arrived
+#ifdef SLS_RECEIVER_FUNCTION_LIST
+	if (ret==OK) {
+		if (lockStatus==1 && socket->differentClients==1){//necessary???
+			sprintf(mess,"Receiver locked by %s\n", socket->lastClientIP);
+			ret=FAIL;
+		}
+		else
+			retval=slsReceiverList->setAcquisitionPeriod(index);
+	}
+#ifdef VERBOSE
+	if(ret!=FAIL)
+		cout << "acquisition period:" << retval << endl;
+	else
+		cout << mess << endl;
+#endif
+#endif
+
+	if(ret==OK && socket->differentClients){
+		cout << "Force update" << endl;
+		ret=FORCE_UPDATE;
+	}
+
+	// send answer
+	socket->SendDataOnly(&ret,sizeof(ret));
+	if(ret==FAIL)
+		socket->SendDataOnly(mess,sizeof(mess));
+	socket->SendDataOnly(&retval,sizeof(retval));
+
+	//return ok/fail
+	return ret;
 }
 
 

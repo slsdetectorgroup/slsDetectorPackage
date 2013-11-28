@@ -40,6 +40,8 @@ using namespace std;
 #define SETTINGS_FILE_NOT_OPEN				0x0000000000000020ULL
 #define COULDNOT_START_RECEIVER				0x0000000000000040ULL // default error like starting threads
 #define COULDNOT_STOP_RECEIVER				0x0000000000000080ULL
+#define DETECTOR_TIMER_VALUE_NOT_SET		0x0000000000000100ULL
+#define RECEIVER_ACQ_PERIOD_NOT_SET			0x0000000000000200ULL
 
 /** @short class returning all error messages for error mask */
 class errorDefs {
@@ -108,6 +110,12 @@ public:
 
 		if(slsErrorMask&COULDNOT_STOP_RECEIVER)
 			retval.append("Could not stop receiver.\n");
+
+		if(slsErrorMask&DETECTOR_TIMER_VALUE_NOT_SET)
+			retval.append("Could not set one of timer values in detector.\n");
+
+		if(slsErrorMask&RECEIVER_ACQ_PERIOD_NOT_SET)
+			retval.append("Could not set acquisition period in receiver.\n");
 
 
 		return retval;

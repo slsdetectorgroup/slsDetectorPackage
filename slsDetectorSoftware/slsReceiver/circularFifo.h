@@ -16,7 +16,7 @@
 #define CIRCULARFIFO_H_
 
 //#include "sls_detector_defs.h"
-
+#include <semaphore.h>
 #include <vector>
 using namespace std;
 
@@ -35,6 +35,7 @@ public:
    CircularFifo(unsigned int Size) : tail(0), head(0){
 	   Capacity = Size + 1;
 	   array.resize(Capacity);
+	   sem_init(&free_mutex,0,0);
    }
    virtual ~CircularFifo() {}
 
@@ -49,6 +50,7 @@ private:
    vector <Element*> array;
    volatile unsigned int head; // output index
    unsigned int Capacity;
+   sem_t free_mutex;
 
    unsigned int increment(unsigned int idx_) const;
 };
@@ -70,6 +72,7 @@ bool CircularFifo<Element>::push(Element*& item_)
    {
       array[tail] = item_;
       tail = nextTail;
+      sem_post(&free_mutex);
       return true;
    }
 
@@ -86,8 +89,9 @@ bool CircularFifo<Element>::push(Element*& item_)
 template<typename Element>
 bool CircularFifo<Element>::pop(Element*& item_)
 {
-   if(head == tail)
-      return false;  // empty queue
+  // if(head == tail)
+  //    return false;  // empty queue
+  sem_wait(&free_mutex);
 
    item_ = array[head];
    head = increment(head);

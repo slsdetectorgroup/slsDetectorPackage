@@ -147,6 +147,9 @@ public:
 	 * when fifo is empty later, sets status to run_finished */
 	int start_readout();
 
+	/** set acquisition period to find the value of n */
+	int set_acquisition_period();
+
 
 	//General Functions
 	/** Locks Receiver */

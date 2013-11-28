@@ -78,6 +78,15 @@ public:
 	int getInt(int fnum, int &retval);
 
 	/**
+	 * Send an integer to receiver
+	 * @param fnum function enum to determine what parameter
+	 * @param retval return value
+	 * @param arg value to send
+	 * \returns success of operation
+	 */
+	int sendInt(int fnum, int64_t &retval, int64_t arg);
+
+	/**
 	 * Get an integer value from receiver
 	 * @param fnum function enum to determine what parameter
 	 * @param retval return value

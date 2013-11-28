@@ -37,9 +37,9 @@ slsReceiverFunctionList::slsReceiverFunctionList(detectorType det):
 														frameIndex(0),
 														totalFramesCaught(0),
 														totalPacketsCaught(0),
+														framesInFile(0),
 														startAcquisitionIndex(0),
 														acquisitionIndex(0),
-														packetsInFile(0),
 														prevframenum(0),
 														listening_thread_running(0),
 														writing_thread_running(0),
@@ -61,8 +61,8 @@ slsReceiverFunctionList::slsReceiverFunctionList(detectorType det):
 														frameIndexMask(GOTTHARD_FRAME_INDEX_MASK),
 														frameIndexOffset(GOTTHARD_FRAME_INDEX_OFFSET),
 														dataCompression(false),
-														numJobsPerThread(GOTTHARD_NUM_JOBS_P_THREAD),
-														userDefinedNumJobsPerThread(0),
+														numJobsPerThread(-1),
+														acquisitionPeriod(SAMPLE_TIME_IN_NS),
 														startAcquisitionCallBack(NULL),
 														pStartAcquisition(NULL),
 														acquisitionFinishedCallBack(NULL),
@@ -73,22 +73,15 @@ slsReceiverFunctionList::slsReceiverFunctionList(detectorType det):
 
 
 {
-	int aligned_frame_size = GOTTHARD_ALIGNED_FRAME_SIZE;
 
 	if(myDetectorType == MOENCH){
-		aligned_frame_size = MOENCH_ALIGNED_FRAME_SIZE;
 		fifosize = MOENCH_FIFO_SIZE;
 		maxFramesPerFile = MOENCH_MAX_FRAMES_PER_FILE;
 		bufferSize = MOENCH_BUFFER_SIZE;
 		packetsPerFrame = MOENCH_PACKETS_PER_FRAME;
 		frameIndexMask = MOENCH_FRAME_INDEX_MASK;
 		frameIndexOffset = MOENCH_FRAME_INDEX_OFFSET;
-		numJobsPerThread = MOENCH_NUM_JOBS_P_THREAD;
 	}
-
-	if(userDefinedNumJobsPerThread)
-		numJobsPerThread = userDefinedNumJobsPerThread;
-
 
 	oneBufferSize = bufferSize/packetsPerFrame;
 
@@ -101,22 +94,12 @@ slsReceiverFunctionList::slsReceiverFunctionList(detectorType det):
 	strcpy(eth,"");
 
 	latestData = new char[bufferSize];
-	fifofree = new CircularFifo<char>(fifosize);
-	fifo = new CircularFifo<char>(fifosize);
 
 
-
-	mem0=(char*)malloc(aligned_frame_size*fifosize);
-	if (mem0==NULL) {
-		cout<<"++++++++++++++++++++++ COULD NOT ALLOCATE MEMORY!!!!!!!+++++++++++++++++++++" << endl;
-	}
-	buffer=mem0;
-	while (buffer<(mem0+aligned_frame_size*(fifosize-1))) {
-		fifofree->push(buffer);
-		buffer+=aligned_frame_size;
-	}
+	setupFifoStructure();
 
 
+	//for the filter
 	int16_t* map;
 	int16_t* mask;
 	int initial_offset = 2;
@@ -172,7 +155,7 @@ slsReceiverFunctionList::slsReceiverFunctionList(detectorType det):
 
 
 		filter = new singlePhotonFilter(x,y, MOENCH_FRAME_INDEX_MASK, MOENCH_PACKET_INDEX_MASK, MOENCH_FRAME_INDEX_OFFSET,
-				0, MOENCH_PACKETS_PER_FRAME, 0,map, mask,fifofree,MOENCH_BUFFER_SIZE);
+				0, MOENCH_PACKETS_PER_FRAME, 0,map, mask,fifofree,MOENCH_BUFFER_SIZE,&totalFramesCaught,&framesCaught);
 		break;
 	default:
 		x = 1;
@@ -197,20 +180,20 @@ slsReceiverFunctionList::slsReceiverFunctionList(detectorType det):
 					offset += 1;
 				}
 				map[i*y+j] = offset;
-				/*cout<<"offset["<<i*y+j<<"]:"<<map[i*y+j]<<"\t";*/
 				offset += 1;
 			}
 
 
 		filter = new singlePhotonFilter(x,y,GOTTHARD_FRAME_INDEX_MASK, GOTTHARD_PACKET_INDEX_MASK, GOTTHARD_FRAME_INDEX_OFFSET,
-				0, GOTTHARD_PACKETS_PER_FRAME, 1,map, mask,fifofree,GOTTHARD_BUFFER_SIZE);
+				0, GOTTHARD_PACKETS_PER_FRAME, 1,map, mask,fifofree,GOTTHARD_BUFFER_SIZE,&totalFramesCaught,&framesCaught);
 		break;
 	}
 
 
-
 	pthread_mutex_init(&status_mutex,NULL);
 	pthread_mutex_init(&dataReadyMutex,NULL);
+
+	filter->registerCallBackFreeFifo(&(freeFifoBufferCallBack),this);
 
 
 	dataCompression = false;
@@ -305,9 +288,9 @@ void slsReceiverFunctionList::resetTotalFramesCaught(){
 
 
 int slsReceiverFunctionList::startReceiver(char message[]){
-#ifdef VERBOSE
+//#ifdef VERBOSE
 	cout << "Starting Receiver" << endl;
-#endif
+//#endif
 	cout << endl;
 
 	int err = 0;
@@ -406,14 +389,15 @@ int slsReceiverFunctionList::startReceiver(char message[]){
 		listen_param.sched_priority = 99;
 		write_param.sched_priority = 90;
 
-
-		if (pthread_setschedparam(listening_thread, policy, &listen_param) == EPERM)
-			cout << "WARNING: Could not prioritize threads. You need to be super user for that." << endl;
-		if (pthread_setschedparam(writing_thread, policy, &write_param) == EPERM)
-			cout << "WARNING: Could not prioritize threads. You need to be super user for that." << endl;
-		if (pthread_setschedparam(pthread_self(),5 , &tcp_param) == EPERM)
-			cout << "WARNING: Could not prioritize threads. You need to be super user for that." << endl;
-
+		/*** ???????????????????????????*/
+		if(!dataCompression){
+			if (pthread_setschedparam(listening_thread, policy, &listen_param) == EPERM)
+				cout << "WARNING: Could not prioritize threads. You need to be super user for that." << endl;
+			if (pthread_setschedparam(writing_thread, policy, &write_param) == EPERM)
+				cout << "WARNING: Could not prioritize threads. You need to be super user for that." << endl;
+			if (pthread_setschedparam(pthread_self(),5 , &tcp_param) == EPERM)
+				cout << "WARNING: Could not prioritize threads. You need to be super user for that." << endl;
+		}
 
 		//pthread_getschedparam(pthread_self(),&policy,&tcp_param);
 		//cout << "current priority of main tcp thread is " << tcp_param.sched_priority << endl;
@@ -436,19 +420,21 @@ int slsReceiverFunctionList::stopReceiver(){
 //#endif
 
 	if(receiver_threads_running){
-//#ifdef VERBOSE
+#ifdef VERBOSE
 		cout << "Stopping new acquisition thread" << endl;
-//#endif
+#endif
 		//stop listening thread
 		pthread_mutex_lock(&status_mutex);
 		receiver_threads_running=0;
 		pthread_mutex_unlock(&(status_mutex));
 
-		if(udpSocket) udpSocket->ShutDownSocket();
-		pthread_join(listening_thread,NULL);
-		pthread_join(writing_thread,NULL);
-		/*if(dataCompression)
-			filter->enableCompression(false);*/
+		if(listening_thread_running == 1){
+			if(udpSocket) udpSocket->ShutDownSocket();
+			pthread_join(listening_thread,NULL);
+		}
+		if(writing_thread_running == 1)
+			pthread_join(writing_thread,NULL);
+
 	}
 	//change status
 	pthread_mutex_lock(&status_mutex);
@@ -488,11 +474,17 @@ int slsReceiverFunctionList::startListening(){
 	int rc=0;
 	measurementStarted = false;
 	startFrameIndex = 0;
+
 	int offset=0;
+	int frameStartOffset = 0;
 	int ret=1;
 	int i=0;
+	int framesCount = -1;
+	int packetsCount = 0;
 	char *tempchar = new char[oneBufferSize];
-
+#ifdef VERYVERBOSE
+	int totalcount = 0;
+#endif
 
 	//to increase socket receiver buffer size and max length of input queue by changing kernel settings
 	if(system("echo $((100*1024*1024)) > /proc/sys/net/core/rmem_max"))
@@ -533,120 +525,194 @@ int slsReceiverFunctionList::startListening(){
 		return 0;
 	}else{
 
-		/*filter->setupAcquisitionParameters();*/
-
-
 		while (receiver_threads_running) {
 
-			if (!fifofree->isEmpty()) {
-				if (ret!=0)
-					while(!fifofree->pop(buffer));
+			//push buffer
+			if(framesCount >= numJobsPerThread){
+				//write frame count for each buffer
+				(*((uint16_t*)buffer)) = framesCount;
+				while(!fifo->push(buffer));
+#ifdef VERYVERBOSE
+				cout << "lbuf1:" << (void*)buffer << endl;
+#endif
+			}
 
 
-				if(ret == -3){
-					memcpy(buffer,tempchar,oneBufferSize);
-					offset = oneBufferSize;
-					//set all the new frame header and remaining headers invalid
-					for(i = offset; i < bufferSize; i += oneBufferSize)
-						(*((uint32_t*)(buffer+i))) = 0xFFFFFFFF;
-					//start from beginning
-					offset = 0;
-					ret = 0;
+			//pop freefifo
+			if((framesCount >= numJobsPerThread) || (framesCount == -1)){
+				//reset frame count and packet count
+				framesCount = 0;
+				packetsCount = 0;
+				//pop freefifo
+				if(!fifofree->isEmpty())
+					fifofree->pop(buffer);
+				//increment offsets
+				offset = HEADER_SIZE_NUM_FRAMES;
+				offset += HEADER_SIZE_NUM_PACKETS;
+				frameStartOffset = HEADER_SIZE_NUM_FRAMES;
+			}
+
+			//let tcp thread know this thread is in working condition
+			if(!startFrameIndex){
+				if(!listening_thread_running){
+					pthread_mutex_lock(&status_mutex);
+					listening_thread_running = 1;
+					pthread_mutex_unlock(&(status_mutex));
 				}
-				else{
-					if(ret == -2){/** for moench, in between nxt, means ots -1*/
-						memcpy(buffer,tempchar,oneBufferSize);
-						offset = oneBufferSize;
-						ret = 0;
+			}
+
+
+			//ret -2, remaining, start new frame with curent packet, then progress to ret = 0 (waiting for next packet)
+			if(ret ==  -2){
+				memcpy(buffer+offset,tempchar,oneBufferSize);
+				ret = 0;
+			}
+
+			//ret = -3, remaning: start new frame with current packet, progress to ret = -1 (invalidate remaining packets, start new frame)
+			else if(ret ==  -3){
+				memcpy(buffer+offset,tempchar,oneBufferSize);
+				ret = -1;
+			}
+
+
+
+			else{
+				//receive 1 packet
+				rc = udpSocket->ReceiveDataOnly(buffer+offset,oneBufferSize);
+				if( rc <= 0){
+					//#ifdef VERYVERBOSE
+					cerr << "recvfrom() failed:"<<endl;
+					//#endif
+					if(status != TRANSMITTING){
+						continue;
 					}
-
-
-					if(!startFrameIndex){
-						if(!listening_thread_running){
-							pthread_mutex_lock(&status_mutex);
-							listening_thread_running = 1;
-							pthread_mutex_unlock(&(status_mutex));
+					//the end of listening thread, after pushing off to fifo
+					else{
+						//push the last buffer into fifo
+						if(framesCount > 0){
+							(*((uint16_t*)buffer)) = framesCount;
+							fifo->push(buffer);
+#ifdef VERYVERBOSE
+							cout <<" last lbuf1:" << (void*)buffer << endl;
+#endif
 						}
+						//push in dummy packet
+						while(fifofree->isEmpty());
+						fifofree->pop(buffer);
+						(*((uint16_t*)buffer)) = 0xFFFF;
+						fifo->push(buffer);
+#ifdef VERYVERBOSE
+						cout << "pushed in dummy buffer:" << (void*)buffer << endl;
+#endif
+
+						break;
 					}
-					//receiver 2 half frames / 1 short frame / 40 moench frames
-					rc = udpSocket->ReceiveDataOnly(buffer+offset,oneBufferSize);
-					if( rc <= 0){
-						//#ifdef VERYVERBOSE
-						cerr << "recvfrom() failed:"<<endl;;// << receiver_threads_running<<endl;
-						fifofree->push(buffer);
-						cout<<"***************buffer pushed!!"<<(void*)buffer<<endl;
-						//#endif
-						continue;
-					}
+				}
+				//manipulate buffer number to inlude frame number and packet number for gotthard
+				if ((myDetectorType == GOTTHARD) && (shortFrame == -1))
+					(*((uint32_t*)(buffer+offset)))++;
 
 
-					//manipulate buffer number to inlude frame number and packet number for gotthard
-					if ((myDetectorType == GOTTHARD) && (shortFrame == -1))
-						(*((uint32_t*)(buffer+offset)))++;
-
-
-					ret = filter->verifyFrame(buffer+offset);
-
-					//start for each scan
-					if(!measurementStarted){
-						startFrameIndex = ((((uint32_t)(*((uint32_t*)buffer))) & (frameIndexMask)) >> frameIndexOffset);
-						cout<<"startFrameIndex:"<<startFrameIndex<<endl;
-						prevframenum=startFrameIndex;
-						measurementStarted = true;
-					}
-
-					//start of acquisition
-					if(!acqStarted){
-						startAcquisitionIndex=startFrameIndex;
-						currframenum = startAcquisitionIndex;
-						acqStarted = true;
-						cout<<"startAcquisitionIndex:"<<startAcquisitionIndex<<endl;
-					}
-
-					//last packet, but not the full frame, must push previous frame
-					if(ret == -1){
-						//set reminaing headers invalid
-						for( i = offset+ oneBufferSize; i < bufferSize; i += oneBufferSize)
-							(*((uint32_t*)(buffer+i))) = 0xFFFFFFFF;
-						offset = 0;
-					}
-
-					else if(ret == -3){
-						//copy the new frame to a temp
-						memcpy(tempchar, buffer+offset, oneBufferSize);
-						//set all the new frame header and remaining headers invalid
-						for(i = offset; i < bufferSize; i += oneBufferSize)
-							(*((uint32_t*)(buffer+i))) = 0xFFFFFFFF;
-					}
-					//first packet of new frame, must push previous frame
-					else if(ret == -2){
-						//copy the new frame to a temp
-						memcpy(tempchar, buffer+offset, oneBufferSize);
-						//set all the new frame header and remaining headers invalid
-						for(i = offset; i < bufferSize; i += oneBufferSize)
-							(*((uint32_t*)(buffer+i))) = 0xFFFFFFFF;
-					}
-					//wait for new packets of same frame
-					else if (ret == 0){
-						offset += oneBufferSize;
-						continue;
-					}
-					//wait for next frame
-					else
-						offset = 0;
-
+				//start for each scan
+				if(!measurementStarted){
+					startFrameIndex = ((((uint32_t)(*((uint32_t*)(buffer+offset)))) & (frameIndexMask)) >> frameIndexOffset);
+					cout<<"startFrameIndex:"<<startFrameIndex<<endl;
+					prevframenum=startFrameIndex;
+					measurementStarted = true;
 				}
 
-				//so that it doesnt write the last frame twice
-				if((receiver_threads_running) && (!fifo->isFull())){
-					fifo->push(buffer);
+				//start of acquisition
+				if(!acqStarted){
+					startAcquisitionIndex=startFrameIndex;
+					currframenum = startAcquisitionIndex;
+					acqStarted = true;
+					cout<<"startAcquisitionIndex:"<<startAcquisitionIndex<<endl;
 				}
+
+
+				ret = filter->verifyFrame(buffer+offset);
+				/*
+ 	 	 	 	rets
+				case 0:  waiting for next packet of new frame
+				case 1:  finished with full frame,
+					     start new frame
+				case -1: last packet of current frame,
+						 invalidate remaining packets,
+						 start new frame
+				case -2: first packet of new frame,
+						 invalidate remaining packets,
+						 check buffer needs to be pushed,
+						 start new frame with the current packet,
+						 then ret = 0
+				case -3: last packet of new frame,
+						 invalidate remaining packets,
+						 check buffer needs to be pushed,
+						 start new frame with current packet,
+						 then ret = -1 (invalidate remaining packets and start a new frame)
+				 */
 
 			}
+
+
+			//for each packet
+			packetsCount++;
+
+			//ret = 0, so just increment offset and continue
+			if(ret == 0){
+				offset += oneBufferSize;
+				continue;
+			}
+
+
+			//ret -2, -3, copy the current packet temporarily
+			if(ret < -1){
+				memcpy(tempchar, buffer+offset, oneBufferSize);
+				packetsCount --;
+			}
+			//ret -1, change needed only for the remaining packets
+			else if (ret == -1){
+				offset += oneBufferSize;
+				ret = 1;
+			}
+
+			//ret = -1, -2, -3, invalidate remaining packets
+			if(ret < 0){
+				for( i = offset; i < bufferSize; i += oneBufferSize)
+					(*((uint32_t*)(buffer+i))) = 0xFFFFFFFF;
+			}
+
+
+
+			//for each frame
+			//write packet count
+			(*((uint8_t*)(buffer+frameStartOffset))) = packetsCount;
+			//reset packet count
+			packetsCount = 0;
+			//increment frame count
+			framesCount++;
+#ifdef VERYVERBOSE
+			totalcount++;
+			cout<<"lcurrframnum:"<< dec<<
+				(((uint32_t)(*((uint32_t*)(buffer+offset))) & frameIndexMask) >> frameIndexOffset)<<"*"<<endl;
+#endif
+
+			//increment offsets
+			frameStartOffset += (HEADER_SIZE_NUM_PACKETS + bufferSize);
+			offset = frameStartOffset + HEADER_SIZE_NUM_PACKETS;
+
 		}
+
 	}
-cout<<"end of listening buffer with:"<<(void*)buffer<<endl;
+
 	delete  tempchar;
+
+	pthread_mutex_lock(&status_mutex);
+	listening_thread_running = FINISHED;
+	pthread_mutex_unlock(&(status_mutex));
+
+#ifdef VERYVERBOSE
+	cout << "total count listened to " << totalcount << endl;
+#endif
 	return 0;
 }
 
@@ -669,30 +735,25 @@ int slsReceiverFunctionList::startWriting(){
 #endif
 
 	char *wbuf;
-	int sleepnumber=0;
-	int frameFactor=0;
-	int i,p;
+	int numFrames = 0;
+	int numFramesToBeSaved = 0;
+	int i,offset,npackets;
 
-/*	char* trialarr[GOTTHARD_COMPRESSION_FIFO_SIZE];*/
-	int iJob = -2;
-	char* startingmem = 0;
-	int header_of_last_packet = (packetsPerFrame-1)*oneBufferSize;
-	int pointinfifo=0;
-	int firsttime = 1;
 
-	packetsInFile=0;
+	//reset counters
+	framesInFile=0;
 	framesCaught=0;
 	frameIndex=0;
 	if(sfilefd) sfilefd=NULL;
 	strcpy(savefilename,"");
-
-
-
 	//reset this before each acq or you send old data
 	guiData = NULL;
 	guiDataReady=0;
 	strcpy(guiFileName,"");
+	//by default, we read/write everything, this changes with the first callback
+	cbAction = DO_EVERYTHING;
 
+	//printouts
 	cout << "Max Frames Per File:" << maxFramesPerFile << endl;
 	if (rawDataReadyCallBack)
 		cout << "Note: Data Write has been defined exernally" << endl;
@@ -701,326 +762,287 @@ int slsReceiverFunctionList::startWriting(){
 	if(nFrameToGui)
 		cout << "Sending every " << nFrameToGui << "th frame to gui" <<  endl;
 
-	//by default, we read/write everything
-	cbAction = DO_EVERYTHING;
+
 	//acquisition start call back returns enable write
 	if (startAcquisitionCallBack)
 		cbAction=startAcquisitionCallBack(filePath,fileName,fileIndex,bufferSize,pStartAcquisition);
+
 	if(cbAction < DO_EVERYTHING)
 		cout << endl << "Note: Call back activated. Data saving must be taken care of by user in call back." << endl;
 	else if(enableFileWrite==0)
 		cout << endl << "Note: Data will not be saved" << endl;
 
 
-	cout << "Ready!" << endl;
+	//creating first file
+	if(!dataCompression)
+		i = createNewFile();
+	else{
+		//create file name for gui purposes, and set up acquistion parameters
+		sprintf(savefilename, "%s/%s_fxxx_%d.raw", filePath,fileName,fileIndex);
+		filter->setupAcquisitionParameters(filePath,fileName,fileIndex);
+		// if(enableFileWrite && cbAction > DO_NOTHING)
+		// This commented option doesnt exist as we save and do ebverything for data compression
+		//create file
+		i = filter->initTree();
+	}
 
+	//file/tree not created
+	if(i == FAIL){
+		cout << " Error: Could not create file " << savefilename << endl;
+		pthread_mutex_lock(&status_mutex);
+		writing_thread_running = -1;
+		pthread_mutex_unlock(&(status_mutex));
+	}
 
-	//will always run till acquisition over and then runs till fifo is empty
-	while(receiver_threads_running || (!fifo->isEmpty())){
+	else{
+		//let tcp thread know it started successfully
+		pthread_mutex_lock(&status_mutex);
+		writing_thread_running = 1;
+		pthread_mutex_unlock(&(status_mutex));
 
-		//start a new file
-		if ((strlen(savefilename) == 0) || ((packetsInFile/packetsPerFrame) >= maxFramesPerFile)){
+		cout << "Ready!" << endl;
 
-			//create file name
-			if(!dataCompression){
-				if(frameIndexNeeded==-1)
-					sprintf(savefilename, "%s/%s_%d.raw", filePath,fileName,fileIndex);
-				else
-					sprintf(savefilename, "%s/%s_f%012d_%d.raw", filePath,fileName,framesCaught,fileIndex);
-			}
-
-			//only for gui display
-			else if(strlen(savefilename) == 0){
-				sprintf(savefilename, "%s/%s_fxxx_%d.raw", filePath,fileName,fileIndex);
-				filter->setupAcquisitionParameters(filePath,fileName,fileIndex);
-			}
-
-
-
-			if(enableFileWrite && cbAction > DO_NOTHING){
-				if (dataCompression){
-					//only the first time
-					if ((!framesCaught) && (filter->initTree()== FAIL)){
-						cout << " Error: Could not create file " << savefilename << endl;
-						pthread_mutex_lock(&status_mutex);
-						writing_thread_running = -1;
-						pthread_mutex_unlock(&(status_mutex));
-						break;
-					}
-				}
-
-
-				//standard way
-				else{
-					//close and open file
-					if(sfilefd){
-						fclose(sfilefd);
-						sfilefd = NULL;
-					}
-					if (NULL == (sfilefd = fopen((const char *) (savefilename), "w"))){
-						cout << "Error: Could not create file " << savefilename << endl;
-						pthread_mutex_lock(&status_mutex);
-						writing_thread_running = -1;
-						pthread_mutex_unlock(&(status_mutex));
-						break;
-					}
-					//setting buffer
-					setvbuf(sfilefd,NULL,_IOFBF,BUF_SIZE);
-
-
-					//printing packet losses and file names
-					if(!framesCaught)
-						cout << savefilename << endl;
-					else{
-						cout << savefilename
-								<< "\tpacket loss "
-								<< setw(4)<<fixed << setprecision(4)<< dec <<
-								(int)(((((currframenum-prevframenum)*packetsPerFrame)-(packetsInFile))/(double)((currframenum-prevframenum)*packetsPerFrame))*100.000)/*packetloss*/
-								<< "%\tframenum "
-								<< dec << currframenum //<< "\t\t p " << prevframenum
-								<< "\tindex " << dec << getFrameIndex()
-								<< "\tpackets lost " << dec << ((currframenum-prevframenum)*packetsPerFrame)-(packetsInFile) << endl;
-
-					}
-				}
-			}
-
-			//only the first time - state the thread is rinning
-			if (!framesCaught){
-				pthread_mutex_lock(&status_mutex);
-				writing_thread_running = 1;
-				pthread_mutex_unlock(&(status_mutex));
-			}
-			else if (!dataCompression){
-				prevframenum = currframenum;
-				packetsInFile=0;
-			}
-		}
-
-
-		//pop fifo
-		if(!fifo->isEmpty()){
-
+		//will always run till acquisition over and then runs till fifo is empty
+		while(receiver_threads_running || (!fifo->isEmpty())){
+			//pop fifo
 			if(fifo->pop(wbuf)){
-				currframenum = ((uint32_t)(*((uint32_t*)wbuf))& frameIndexMask) >>frameIndexOffset;
-				//cout<<"currframenum2:"<<((((uint32_t)(*((uint32_t*)((char*)(wbuf+oneBufferSize)))))& frameIndexMask) >> frameIndexOffset)<<endl;;
 
-				//write data call back
-				if (cbAction < DO_EVERYTHING) {
-					rawDataReadyCallBack(currframenum, wbuf, bufferSize, sfilefd, guiData,pRawDataReady);
-				}
-
-				//default writing to file
-				else if(enableFileWrite){
-
-					if(dataCompression){
-
-						//if whole frame received
-						if(((uint32_t)(*((uint32_t*)(wbuf+header_of_last_packet)))) != 0xFFFFFFFF){
-							framesCaught++;
-							totalFramesCaught++;
-							packetsInFile += packetsPerFrame;
-							totalPacketsCaught += packetsPerFrame;
-							p = packetsPerFrame;
-						}
-						//to skip incompleete frames
-						else  {
-							/*cout<<"***not whole frame currframenum:"<<currframenum<<endl;*/
-							(*((uint32_t*)(wbuf))) = 0xFFFFFFFF;
-							p=0;
-						}
-
-
-						/*cout<<"wbuf:"<<(void*)wbuf<<endl;*/
-						//filter and write
-						if(iJob==-2){
-							startingmem = wbuf;
-							/*cout<<"***************startingmem:"<<(void*)startingmem<<endl;
-							cout<<"mem0:"<<(void*)mem0<<endl;*/
-							iJob=0;
-							if(firsttime){
-								pointinfifo = (startingmem-mem0)/4096;
-								firsttime = 0;
-								/*cout<<"fist time pointinfifo :"<<pointinfifo+1<< " iJob:"<<iJob+1<<endl;*/
-							}
-						}
-						++pointinfifo;
-						++iJob;
-
-						/*if((((wbuf-mem0)/4096)+1)!=pointinfifo){
-							 cout<<"+++++++++++++++++++++ wbuf:"<<(void*)wbuf<<endl;
-							 cout<<"pointfifo:"<<pointinfifo<<endl;
-							 cout<<"value:"<<((wbuf-mem0)/4096)+1<<endl;
-							 cout<<"starting mem:"<<((startingmem-mem0)/4096)+1<<endl;
-						}*/
-
-						if(pointinfifo >= (fifosize-1)){
-							/*cout<<"*** sending not normally  "<<iJob<<endl;
-							cout<<"value:"<<((wbuf-mem0)/4096)+1<<endl;
-							 cout<<"pointfifo:"<<pointinfifo<<endl;
-							 cout<<"last sent:"<<(void*)wbuf<<endl;*/
-
-							filter->assignJobsForThread(startingmem,iJob);
-							startingmem = mem0;
-							iJob = 0;
-							pointinfifo = 0;
-							/*cout<<"***************1trialmem:"<<(void*)startingmem<<endl;
-							cout<<"1mem0:"<<(void*)mem0<<endl;
-							cout<<"1fist time pointinfifo :"<<pointinfifo+1<< " iJob:"<<iJob+1<<endl;*/
-
-						}
-						else if(iJob>=(numJobsPerThread)){
-							/*cout<<"*** sending normally "<<numJobsPerThread<<endl;
-							cout<<"value:"<<((wbuf-mem0)/4096)+1<<endl;
-							 cout<<"pointfifo:"<<pointinfifo<<endl;
-							 cout<<"last sent:"<<(void*)wbuf<<endl;*/
-							 //if(((startingmem-mem0)/4096)+numJobsPerThread)>
-							filter->assignJobsForThread(startingmem,numJobsPerThread);
-							iJob = -2;
-						}
-					}
-
-
-					//standard way
-					else{
-						//find number of packets received
-						for(i=0,p=0; i < bufferSize; i+=oneBufferSize,++p){
-							if(((uint32_t)(*((uint32_t*)((wbuf+i))))) == 0xFFFFFFFF){
-								break;
-							}
-						}
-						//increment counters
-						totalPacketsCaught += p;
-						packetsInFile += p;
-						if(p == packetsPerFrame){
-							framesCaught++;
-							totalFramesCaught++;
-						}
-						//write to file
-						if(sfilefd)
-							fwrite(wbuf, 1, p*oneBufferSize, sfilefd);
-						else{
-							cout << "You do not have permissions to overwrite: " << savefilename << endl;
-							usleep(50000);
-						}
-					}
-				}
+				//number of frames per buffer
+				numFrames =	(uint16_t)(*((uint16_t*)wbuf));
 
 
 
-				//does not read every frame
-				if(!nFrameToGui){
-					if((guiData) && (p == packetsPerFrame)){/*change it in funcs*/
-				/*	if(guiData){*/
-						pthread_mutex_lock(&dataReadyMutex);
-						guiDataReady=0;
-						pthread_mutex_unlock(&dataReadyMutex);
-						memcpy(latestData,wbuf,bufferSize);
-						strcpy(guiFileName,savefilename);
-						pthread_mutex_lock(&dataReadyMutex);
-						guiDataReady=1;
-						pthread_mutex_unlock(&dataReadyMutex);
-					}else{
-						pthread_mutex_lock(&dataReadyMutex);
-						guiDataReady=0;
-						pthread_mutex_unlock(&dataReadyMutex);
-					}
-				}
-				//reads every nth frame
-				else{
-					if (p != packetsPerFrame)//so no 1 packet frame writing over previous 2 packet frame
-						;
-					else if(frameFactor){
-						frameFactor--;
-					}else{
-						frameFactor = nFrameToGui-1;
-						//block current process if the guireader hasnt read it yet
-						sem_wait(&smp);
-						//copy data and set guidataready
-						pthread_mutex_lock(&dataReadyMutex);
-						guiDataReady=0;
-						pthread_mutex_unlock(&dataReadyMutex);
-						memcpy(latestData,wbuf,bufferSize);
-						strcpy(guiFileName,savefilename);
-						pthread_mutex_lock(&dataReadyMutex);
-						guiDataReady = 1;
-						pthread_mutex_unlock(&dataReadyMutex);
-
-					}
-				}
-
-
-				if(!dataCompression)
+				//last dummy packet
+				if(numFrames == 0xFFFF){
+#ifdef VERYVERBOSE
+					cout << "popped last dummy frame:" << (void*)wbuf << endl;
+#endif
 					fifofree->push(wbuf);
-			}
-		}
-		else{//cout<<"************************fifo empty**********************************"<<endl;
-
-			//acquisition in the detector is done
-			if(status==TRANSMITTING){
-
-				//compression
-				if(dataCompression){
-					//popped data
-					if(iJob>0){
-						cout<<"sending at the end  "<<iJob<<endl;
-						filter->assignJobsForThread(startingmem,iJob);
-						iJob = -2;
-					}
-					//no more popped data
-					else{
-						//all jobs done
-						if(filter->checkIfJobsDone()){
-							if(fifo->isEmpty()){
-								//its all done
-								pthread_mutex_lock(&status_mutex);
-								status = RUN_FINISHED;
-								pthread_mutex_unlock(&(status_mutex));
-								cout << "Status: Run Finished" << endl;
-							}
+/*
+					cout <<"fifofree is full?:" << fifofree->isFull()<<endl;
+					cout <<"fifo is empty?:" << fifo->isEmpty()<<endl;
+*/
+					if(status == TRANSMITTING)cout<<"transmitting as well"<<endl; else cout <<"not transmitting"<<endl;
+					if(fifo->isEmpty() && status == TRANSMITTING){
+						cout<<"inside transmitting"<<endl;
+						//data compression
+						if(dataCompression){
+							//check if jobs done
+							while(!filter->checkIfJobsDone())
+								usleep(50000);
 						}
+/*
+						cout <<"fifofree is full?:" << fifofree->isFull()<<endl;
+						cout <<"fifo is empty?:" << fifo->isEmpty()<<endl;
+*/
+						pthread_mutex_lock(&status_mutex);
+						status = RUN_FINISHED;
+						pthread_mutex_unlock(&(status_mutex));
+						cout << "Status: Run Finished" << endl;
+						break;
+					}else{
+						while(!fifo->isEmpty()){
+							cout<<"popped:"<<fifo->pop(buffer)<<endl;
+							cout<<"buff val:"<<(void*)buffer<<endl;
+							exit(-1);
+						}
+
 					}
+
 				}
+
+
+
+
+				//real frames
+#ifdef VERYVERBOSE
+				cout << "buf1:" << (void*)wbuf << endl;
+#endif
+				currframenum = (((uint32_t)(*((uint32_t*)(wbuf + HEADER_SIZE_NUM_FRAMES + HEADER_SIZE_NUM_PACKETS)))& frameIndexMask) >>frameIndexOffset);
+#ifdef VERYVERBOSE
+				cout << "currframnum:" << dec << currframenum << endl;
+#endif
+
+				//send it for writing and data compression
+				if(dataCompression)
+					filter->assignJobsForThread(wbuf, numFrames);
 
 				//standard way
 				else{
-					pthread_mutex_lock(&status_mutex);
-					status = RUN_FINISHED;
-					pthread_mutex_unlock(&(status_mutex));
-					cout << "***** Status: Run Finished *****" << endl;
+					//write data call back
+					if (cbAction < DO_EVERYTHING) {
+						rawDataReadyCallBack(currframenum, wbuf, numFrames * bufferSize, sfilefd, guiData,pRawDataReady);
+					}
+					else {
+						offset = HEADER_SIZE_NUM_FRAMES;
+
+						while(numFrames > 0){
+							//to make sure, we write according to max frames per file
+							numFramesToBeSaved = maxFramesPerFile - framesInFile;
+							if(numFramesToBeSaved > numFrames)
+								numFramesToBeSaved = numFrames;
+
+							//write packets to file
+							for(i = 0; i < numFramesToBeSaved; i++){
+								//determine number of packets
+								npackets = (uint8_t)(*((uint8_t*)(wbuf + offset)));
+								totalPacketsCaught += npackets;
+								offset += HEADER_SIZE_NUM_PACKETS;
+								//write to file
+								if(enableFileWrite){
+									if(sfilefd)
+										fwrite(wbuf+offset, 1, npackets * oneBufferSize, sfilefd);
+									else{
+										if(!totalPacketsCaught)
+											cout << "ERROR: You do not have permissions to overwrite: " << savefilename << endl;
+									}
+								}
+
+
+								//increment offset
+								offset += bufferSize;
+							}
+
+
+
+							//increment/decrement counters
+							framesInFile += numFramesToBeSaved;
+							framesCaught += numFramesToBeSaved;
+							totalFramesCaught += numFramesToBeSaved;
+							numFrames -= numFramesToBeSaved;
+							//create new file
+							if(framesInFile >= maxFramesPerFile)
+								createNewFile();
+
+						}
+					}
+				}
+
+
+				copyFrameToGui(wbuf + HEADER_SIZE_NUM_FRAMES + HEADER_SIZE_NUM_PACKETS);
+
+
+				if(!dataCompression){
+					fifofree->push(wbuf);
+#ifdef VERYVERBOSE
+					cout<<"buf freed:"<<(void*)wbuf<<endl;
+#endif
 				}
 			}
-			//acquisition not done in detector
-			else{
-				sleepnumber++;
-				usleep(50000);
-			}
+
 		}
 	}
 
 
-	cout << "Total Packets Caught:" << dec << totalPacketsCaught << endl;
-	//cout << "RealTime Full Frames Caught:" << dec << framesCaught << endl;
+
+	if(!dataCompression){
+		if(sfilefd){
+#ifdef VERBOSE
+			cout << "sfield:" << (int)sfilefd << endl;
+#endif
+			fclose(sfilefd);
+			sfilefd = NULL;
+		}
+		cout << "Total Packets Caught and written to files:" << dec << totalPacketsCaught << endl;
+	}
 	cout << "Total Full Frames Caught:"<< dec << totalFramesCaught << endl;
 
 
-	if((!dataCompression)&&(sfilefd)){
-#ifdef VERBOSE
-		cout << "sfield:" << (int)sfilefd << endl;
-#endif
-		fclose(sfilefd);
-		sfilefd = NULL;
-	}
 
 	//acquistion over call back
 	if (acquisitionFinishedCallBack)
 		acquisitionFinishedCallBack(totalFramesCaught, pAcquisitionFinished);
+
+
+	pthread_mutex_lock(&status_mutex);
+	writing_thread_running = FINISHED;
+	pthread_mutex_unlock(&(status_mutex));
+
 
 	return 0;
 }
 
 
 
+int slsReceiverFunctionList::createNewFile(){
+
+	//create file name
+	if(frameIndexNeeded==-1)
+		sprintf(savefilename, "%s/%s_%d.raw", filePath,fileName,fileIndex);
+	else
+		sprintf(savefilename, "%s/%s_f%012d_%d.raw", filePath,fileName,framesCaught,fileIndex);
+
+
+	//if filewrite and we are allowed to write
+	if(enableFileWrite && cbAction > DO_NOTHING){
+		//close
+		if(sfilefd){
+			fclose(sfilefd);
+			sfilefd = NULL;
+		}
+		//open file
+		if (NULL == (sfilefd = fopen((const char *) (savefilename), "w"))){
+			cout << "Error: Could not create file " << savefilename << endl;
+			pthread_mutex_lock(&status_mutex);
+			writing_thread_running = -1;
+			pthread_mutex_unlock(&(status_mutex));
+			return FAIL;
+		}
+		//setting buffer
+		setvbuf(sfilefd,NULL,_IOFBF,BUF_SIZE);
+		//printing packet losses and file names
+		if(!framesCaught)
+			cout << savefilename << endl;
+		else{
+			cout << savefilename
+					<< "\tpacket loss "
+					<< setw(4)<<fixed << setprecision(4)<< dec <<
+					(int)((((currframenum-prevframenum)-framesInFile)/(double)(currframenum-prevframenum))*100.000)
+					<< "%\tframenum "
+					<< dec << currframenum //<< "\t\t p " << prevframenum
+					<< "\tindex " << dec << getFrameIndex()
+					<< "\tpackets lost " << dec << (currframenum-prevframenum)-framesInFile << endl;
+
+		}
+	}
+
+	//reset counters for each new file
+	if(framesCaught){
+		prevframenum = currframenum;
+		framesInFile = 0;
+	}
+
+	return OK;
+}
+
+
+void slsReceiverFunctionList::copyFrameToGui(char* startbuf){
+
+	//random read when gui not ready
+	if((!nFrameToGui) && (!guiData)){
+		pthread_mutex_lock(&dataReadyMutex);
+		guiDataReady=0;
+		pthread_mutex_unlock(&dataReadyMutex);
+	}
+
+	//random read or nth frame read, gui needs data now
+	else{
+		//nth frame read
+		//block current process if the guireader hasnt read it yet
+		if(nFrameToGui)
+			sem_wait(&smp);
+
+		pthread_mutex_lock(&dataReadyMutex);
+		guiDataReady=0;
+		pthread_mutex_unlock(&dataReadyMutex);
+		//send the first one
+		memcpy(latestData,startbuf,bufferSize);
+		strcpy(guiFileName,savefilename);
+		pthread_mutex_lock(&dataReadyMutex);
+		guiDataReady=1;
+		pthread_mutex_unlock(&dataReadyMutex);
+	}
+}
 
 
 
@@ -1062,7 +1084,6 @@ int slsReceiverFunctionList::setShortFrame(int i){
 		packetsPerFrame = GOTTHARD_SHORT_PACKETS_PER_FRAME;
 		frameIndexMask = GOTTHARD_SHORT_FRAME_INDEX_MASK;
 		frameIndexOffset = GOTTHARD_SHORT_FRAME_INDEX_OFFSET;
-		numJobsPerThread = GOTTHARD_SHORT_NUM_JOBS_P_THREAD;
 
 	}else{
 		bufferSize = GOTTHARD_BUFFER_SIZE;
@@ -1070,11 +1091,8 @@ int slsReceiverFunctionList::setShortFrame(int i){
 		packetsPerFrame = GOTTHARD_PACKETS_PER_FRAME;
 		frameIndexMask = GOTTHARD_FRAME_INDEX_MASK;
 		frameIndexOffset = GOTTHARD_FRAME_INDEX_OFFSET;
-		numJobsPerThread = GOTTHARD_NUM_JOBS_P_THREAD;
 	}
 
-	if(userDefinedNumJobsPerThread)
-		numJobsPerThread = userDefinedNumJobsPerThread;
 
 	oneBufferSize = bufferSize/packetsPerFrame;
 
@@ -1085,7 +1103,6 @@ int slsReceiverFunctionList::setShortFrame(int i){
 		int16_t* mask;
 
 		int initial_offset = 2;
-		int later_offset = 1;
 		int x,y,i,j,offset = 0;
 
 		switch(packetsPerFrame){
@@ -1099,20 +1116,20 @@ int slsReceiverFunctionList::setShortFrame(int i){
 			map = new int16_t[x*y];
 
 			//set up mask for gotthard short
-			for (int i=0; i < x; i++)
-				for (int j=0; j < y; j++){
+			for (i=0; i < x; i++)
+				for (j=0; j < y; j++){
 					mask[i*y+j] = 0;
 				}
 			//set up mapping for gotthard short
-			for (int i=0; i < x; i++)
-				for (int j=0; j < y; j++){
+			for (i=0; i < x; i++)
+				for (j=0; j < y; j++){
 					map[i*y+j] = offset;
 					offset += 2;
 				}
 
 			delete filter;
 			filter = new singlePhotonFilter(x,y,frameIndexMask, GOTTHARD_PACKET_INDEX_MASK, frameIndexOffset,
-					0, GOTTHARD_SHORT_PACKETS_PER_FRAME, 0,map, mask,fifofree,GOTTHARD_SHORT_BUFFER_SIZE);
+					0, GOTTHARD_SHORT_PACKETS_PER_FRAME, 0,map, mask,fifofree,GOTTHARD_SHORT_BUFFER_SIZE,&totalFramesCaught,&framesCaught);
 			break;
 
 		default: //normal readout for gotthard
@@ -1124,14 +1141,14 @@ int slsReceiverFunctionList::setShortFrame(int i){
 			map = new int16_t[x*y];
 
 			//set up mask for gotthard
-			for (int i=0; i < x; i++)
-				for (int j=0; j < y; j++){
+			for (i=0; i < x; i++)
+				for (j=0; j < y; j++){
 					mask[i*y+j] = 0;
 				}
 
 			//set up mapping for gotthard
-			for (int i=0; i < x; i++)
-				for (int j=0; j < y; j++){
+			for (i=0; i < x; i++)
+				for (j=0; j < y; j++){
 					//since there are 2 packets
 					if (j == y/2){
 						offset += initial_offset;
@@ -1143,7 +1160,7 @@ int slsReceiverFunctionList::setShortFrame(int i){
 
 			delete filter;
 			filter = new singlePhotonFilter(x,y,frameIndexMask, GOTTHARD_PACKET_INDEX_MASK, frameIndexOffset,
-					0, GOTTHARD_PACKETS_PER_FRAME, 1,map, mask,fifofree,GOTTHARD_BUFFER_SIZE);
+					0, GOTTHARD_PACKETS_PER_FRAME, 1,map, mask,fifofree,GOTTHARD_BUFFER_SIZE,&totalFramesCaught,&framesCaught);
 			break;
 		}
 
@@ -1155,12 +1172,113 @@ int slsReceiverFunctionList::setShortFrame(int i){
 
 
 
-
 void slsReceiverFunctionList::startReadout(){
+	//wait so that all packets which take time has arrived
+	usleep(50000);
+
 	pthread_mutex_lock(&status_mutex);
 	status = TRANSMITTING;
 	pthread_mutex_unlock(&status_mutex);
 	cout << "Status: Transmitting" << endl;
+
+	//push last packet
+	if((udpSocket) && (listening_thread_running == 1))
+		udpSocket->ShutDownSocket();
 }
 #endif
 
+
+
+
+int slsReceiverFunctionList::setNFrameToGui(int i){
+	if(i>=0){
+		nFrameToGui = i;
+		setupFifoStructure();
+	}
+	return nFrameToGui;
+};
+
+
+int64_t slsReceiverFunctionList::setAcquisitionPeriod(int64_t index){
+	if(index >= 0){
+		if(index != acquisitionPeriod){
+			acquisitionPeriod = index;
+			setupFifoStructure();
+		}
+	}
+	return acquisitionPeriod;
+};
+
+
+
+void slsReceiverFunctionList::setupFifoStructure(){
+	int64_t i;
+	int oldn = numJobsPerThread;
+
+	//if every nth frame mode
+	if(nFrameToGui)
+		numJobsPerThread = nFrameToGui;
+
+	//random nth frame mode
+	else{
+		if(!acquisitionPeriod)
+			i = SAMPLE_TIME_IN_NS;
+		else
+			i = SAMPLE_TIME_IN_NS/acquisitionPeriod;
+		if (i > MAX_JOBS_PER_THREAD)
+			numJobsPerThread = MAX_JOBS_PER_THREAD;
+		else if (i < 1)
+			numJobsPerThread = 1;
+		else
+			numJobsPerThread = i;
+	}
+
+
+	//if same, return
+	if(oldn == numJobsPerThread)
+		return;
+
+
+	//deleting old structure and creating fifo structure
+	if(fifofree){
+		while(!fifofree->isEmpty())
+			fifofree->pop(buffer);
+		delete fifofree;
+	}
+	if(fifo)		delete fifo;
+	if(mem0) 		free(mem0);
+	fifofree 	= new CircularFifo<char>(fifosize);
+	fifo 		= new CircularFifo<char>(fifosize);
+
+
+	//otherwise memory too much if numjobsperthread is at max = 1000
+	fifosize = GOTTHARD_FIFO_SIZE;
+	if(myDetectorType == MOENCH)
+		fifosize = MOENCH_FIFO_SIZE;
+
+	if(fifosize % numJobsPerThread)
+		fifosize = (fifosize/numJobsPerThread)+1;
+	else
+		fifosize = fifosize/numJobsPerThread;
+
+
+	/*
+	fifosize = 11;
+	numJobsPerThread = 3;
+*/
+	//allocate memory
+	mem0=(char*)malloc(((bufferSize+HEADER_SIZE_NUM_PACKETS)*numJobsPerThread+HEADER_SIZE_NUM_FRAMES)*fifosize);
+
+	if (mem0==NULL) /** shud let the client know about this */
+		cout<<"++++++++++++++++++++++ COULD NOT ALLOCATE MEMORY!!!!!!!+++++++++++++++++++++" << endl;
+	buffer=mem0;
+
+	//push the addresses into freed fifo
+	while (buffer<(mem0+((bufferSize+HEADER_SIZE_NUM_PACKETS)*numJobsPerThread+HEADER_SIZE_NUM_FRAMES)*(fifosize-1))) {
+		fifofree->push(buffer);
+		buffer+=((bufferSize+HEADER_SIZE_NUM_PACKETS)*numJobsPerThread+HEADER_SIZE_NUM_FRAMES);
+	}
+
+	cout<<"Number of Frames per buffer:"<<numJobsPerThread<<endl;
+	cout << "Fifo structure reconstructed" << endl;
+}

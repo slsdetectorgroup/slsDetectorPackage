@@ -186,6 +186,18 @@ public:
 	int startWriting();
 
 	/**
+	 * Creates new file
+	 *\returns OK for succces or FAIL for failure
+	 */
+	int createNewFile();
+
+	/**
+	 * Copy frames to gui
+	 * uses semaphore for nth frame mode
+	 */
+	void copyFrameToGui(char* startbuf);
+
+	/**
 	 * Returns the buffer-current frame read by receiver
 	 * @param c pointer to current file name
 	 * @param raw address of pointer, pointing to current frame to send to gui
@@ -198,24 +210,33 @@ public:
 	 */
 	int setShortFrame(int i);
 
-	/**
-	 * Set the variable to send every nth frame to gui
-	 * or if 0,send frame only upon gui request
-	 */
-	int setNFrameToGui(int i){if(i>=0) nFrameToGui = i; return nFrameToGui;};
-
 	/** set status to transmitting and
 	 * when fifo is empty later, sets status to run_finished */
 	void startReadout();
 
 	/** enabl data compression, by saving only hits */
-	void enableDataCompression(bool enable){dataCompression = enable;filter->enableCompression(enable);};
+	void enableDataCompression(bool enable){dataCompression = enable;if(filter)filter->enableCompression(enable);};
 
 	/** get data compression, by saving only hits */
 	bool getDataCompression(){ return dataCompression;};
 
-	/** Set Number of Jobs Per Thread */
-	void setNumberOfJobsPerThread(int i){userDefinedNumJobsPerThread = i; numJobsPerThread = i;};
+	/**
+	 * Set the variable to send every nth frame to gui
+	 * or if 0,send frame only upon gui request
+	 */
+	int setNFrameToGui(int i);
+
+	/** set acquisition period if a positive number */
+	int64_t setAcquisitionPeriod(int64_t index);
+
+	/** set up fifo according to the new numjobsperthread */
+	void setupFifoStructure ();
+
+	/** free fifo buffer, called back from single photon filter */
+	static void freeFifoBufferCallBack (char* fbuffer, void *this_pointer){((slsReceiverFunctionList*)this_pointer)->freeFifoBuffer(fbuffer);};
+	void freeFifoBuffer(char* fbuffer){fifofree->push(fbuffer);};
+
+
 
 private:
 
@@ -264,14 +285,14 @@ private:
 	/** Total packets caught for an entire acquisition (including all scans) */
 	int totalPacketsCaught;
 
+	/** Frames currently in current file, starts new file when it reaches max */
+	int framesInFile;
+
 	/** Frame index at start of an entire acquisition (including all scans) */
 	uint32_t startAcquisitionIndex;
 
 	/** Actual current frame index of an entire acquisition (including all scans) */
 	uint32_t acquisitionIndex;
-
-	/** Packets currently in current file, starts new file when it reaches max */
-	int packetsInFile;
 
 	/** Previous Frame number from buffer */
 	uint32_t prevframenum;
@@ -375,8 +396,8 @@ private:
 	/** Number of jobs per thread for data compression */
 	int numJobsPerThread;
 
-	/** user defined number of jobs per thread for data compression */
-	int userDefinedNumJobsPerThread;
+	/** acquisition period */
+	int64_t acquisitionPeriod;
 
 	/**
 	   callback arguments are

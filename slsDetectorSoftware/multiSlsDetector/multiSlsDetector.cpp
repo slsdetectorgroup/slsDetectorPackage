@@ -4362,30 +4362,31 @@ int multiSlsDetector::stopReceiver(){
 
 
 slsDetectorDefs::runStatus multiSlsDetector::startReceiverReadout(){
+	int i=0;
+	runStatus s,s1;
+	i=thisMultiDetector->masterPosition;
+	if (thisMultiDetector->masterPosition>=0) {
+		if (detectors[i]) {
+			s1=detectors[i]->startReceiverReadout();
+			if(detectors[i]->getErrorMask())
+				setErrorMask(getErrorMask()|(1<<i));
 
-  runStatus s,s1;
+		}
+	}
+	for (i=0; i<thisMultiDetector->numberOfDetectors; i++) {
+		if (detectors[i]) {
+			s=detectors[i]->startReceiverReadout();
+			if(detectors[i]->getErrorMask())
+				setErrorMask(getErrorMask()|(1<<i));
+			if(s == ERROR)
+				s1 = ERROR;
+			if(s1 != s)
+				s1 = ERROR;
+		}
+	}
 
-  if (thisMultiDetector->masterPosition>=0)
-    if (detectors[thisMultiDetector->masterPosition]){
-      s = detectors[thisMultiDetector->masterPosition]->startReceiverReadout();
-      if(detectors[thisMultiDetector->masterPosition]->getErrorMask())
-	setErrorMask(getErrorMask()|(1<<thisMultiDetector->masterPosition));
-      return s;
-    }
-
-  if (detectors[0]) s=detectors[0]->startReceiverReadout();
-
-  for (int i=0; i<thisMultiDetector->numberOfDetectors; i++) {
-    s1=detectors[i]->startReceiverReadout();
-    if(detectors[i]->getErrorMask())
-      setErrorMask(getErrorMask()|(1<<i));
-    if (s1==ERROR)
-      s=ERROR;
-    if (s1==IDLE && s!=IDLE)
-      s=ERROR;
-
-  }
-  return s;
+	*stoppedFlag=1;
+	return s;
 }
 
 slsDetectorDefs::runStatus multiSlsDetector::getReceiverStatus(){

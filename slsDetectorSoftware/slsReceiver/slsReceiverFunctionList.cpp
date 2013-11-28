@@ -824,7 +824,6 @@ int slsReceiverFunctionList::startWriting(){
 */
 					if(status == TRANSMITTING)cout<<"transmitting as well"<<endl; else cout <<"not transmitting"<<endl;
 					if(fifo->isEmpty() && status == TRANSMITTING){
-						cout<<"inside transmitting"<<endl;
 						//data compression
 						if(dataCompression){
 							//check if jobs done

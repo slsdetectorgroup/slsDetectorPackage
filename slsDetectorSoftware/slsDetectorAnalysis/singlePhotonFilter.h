@@ -81,8 +81,9 @@ public:
 	 * @param s mask as to which adcs are inverted
 	 * @param f circular fifo buffer, which needs to be freed
 	 * @param d Size of data with the headers
-	 * @param tfcaught pointer to total frames caught
-	 * @param fcaught pointer to frames caught
+	 * @param tfcaught pointer to total frames caught- needs updation for client
+	 * @param fcaught pointer to frames caught - needs updation for client
+	 * @param cframenum pointer to currentframe num- needs updation for progress for gui
 	 */
 	singlePhotonFilter(
 			int nx,
@@ -98,7 +99,8 @@ public:
 			CircularFifo<char>* f,
 			int d,
 			int* tfcaught,
-			int* fcaught);
+			int* fcaught,
+			uint32_t* cframenum);
 
 	/** virtual destructor */
 	virtual ~singlePhotonFilter();
@@ -359,7 +361,9 @@ private:
 	volatile int threads_mask;
 	pthread_mutex_t write_mutex;
 	pthread_mutex_t running_mutex;
+	pthread_mutex_t frnum_mutex;
 
+	static const int PROGRESS_INCREMENT = 50;
 	/** current thread the job being allotted to */
 	int currentThread;
 
@@ -407,6 +411,9 @@ private:
 
 	/** frames caught */
 	int* framesCaught;
+
+	/** current frame number */
+	uint32_t* currentframenum;
 
 	/** call back function */
 	void (*freeFifoCallBack)(char*, void*);

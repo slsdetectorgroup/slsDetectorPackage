@@ -13,7 +13,7 @@
 
 singlePhotonFilter::singlePhotonFilter(int nx, int ny,
 		int fmask, int pmask, int foffset, int poffset, int pperf, int iValue,
-		int16_t *m, int16_t *s, CircularFifo<char>* f, int d, int* tfcaught, int* fcaught):
+		int16_t *m, int16_t *s, CircularFifo<char>* f, int d, int* tfcaught, int* fcaught,uint32_t* cframenum):
 #ifdef MYROOT1
 										myTree(NULL),
 										myFile(NULL),
@@ -57,6 +57,7 @@ singlePhotonFilter::singlePhotonFilter(int nx, int ny,
 										fifo(f),
 										totalFramesCaught(tfcaught),
 										framesCaught(fcaught),
+										currentframenum(cframenum),
 										freeFifoCallBack(NULL),
 										pFreeFifo(NULL){
 #ifndef MYROOT1
@@ -93,6 +94,7 @@ singlePhotonFilter::singlePhotonFilter(int nx, int ny,
 
 	pthread_mutex_init(&write_mutex,NULL);
 	pthread_mutex_init(&running_mutex,NULL);
+	pthread_mutex_init(&frnum_mutex,NULL);
 
 
 
@@ -264,6 +266,7 @@ void singlePhotonFilter::setupAcquisitionParameters(char *outfpath, char* outfna
 
 	fnum = 0; pnum = 0; ptot = 0; f0 = 0; firstTime = true; currentThread = -1;
 	*framesCaught = 0;
+	*currentframenum = 0;
 
 	//initialize
 	for (int ir=0; ir<nChannelsX; ir++){
@@ -449,6 +452,11 @@ void singlePhotonFilter::findHits(){
 			cout<<"got data semwait:["<<index<<"]:"<<dum<<endl;
 
 		isData += HEADER_SIZE_NUM_FRAMES;
+		if(clusteriframe > *currentframenum){
+			pthread_mutex_lock(&frnum_mutex);
+			*currentframenum = clusteriframe;
+			pthread_mutex_unlock(&frnum_mutex);
+		}
 
 		//for all the frames in one buffer
 		for (i=0; i < numFramesAlloted[index]; ++i){
@@ -462,6 +470,13 @@ void singlePhotonFilter::findHits(){
 
 				isData += HEADER_SIZE_NUM_PACKETS;
 				clusteriframe = (((uint32_t)(*((uint32_t*)(isData)))& frame_index_mask) >>frame_index_offset);
+				//progress
+				if((clusteriframe + PROGRESS_INCREMENT) > *currentframenum){
+					pthread_mutex_lock(&frnum_mutex);
+					*currentframenum = clusteriframe;
+					pthread_mutex_unlock(&frnum_mutex);
+				}
+
 #ifdef VERYVERBOSE
 				cout << "scurrframnum:" << clusteriframe << endl;
 #endif

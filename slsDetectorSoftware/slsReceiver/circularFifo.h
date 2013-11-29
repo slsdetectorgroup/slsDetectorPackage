@@ -18,6 +18,7 @@
 //#include "sls_detector_defs.h"
 #include <semaphore.h>
 #include <vector>
+#include <iostream>
 using namespace std;
 
 typedef  double double32_t;
@@ -45,6 +46,8 @@ public:
    bool isEmpty() const;
    bool isFull() const;
 
+   int getSemValue();
+
 private:
    volatile unsigned int tail; // input index
    vector <Element*> array;
@@ -55,7 +58,13 @@ private:
    unsigned int increment(unsigned int idx_) const;
 };
 
-
+template<typename Element>
+int CircularFifo<Element>::getSemValue()
+{
+	int value;
+	sem_getvalue(&free_mutex, &value);
+	return value;
+}
 
 
 /** Producer only: Adds item to the circular queue.
@@ -67,6 +76,7 @@ private:
 template<typename Element>
 bool CircularFifo<Element>::push(Element*& item_)
 {
+
    int nextTail = increment(tail);
    if(nextTail != head)
    {

@@ -155,7 +155,7 @@ slsReceiverFunctionList::slsReceiverFunctionList(detectorType det):
 
 
 		filter = new singlePhotonFilter(x,y, MOENCH_FRAME_INDEX_MASK, MOENCH_PACKET_INDEX_MASK, MOENCH_FRAME_INDEX_OFFSET,
-				0, MOENCH_PACKETS_PER_FRAME, 0,map, mask,fifofree,MOENCH_BUFFER_SIZE,&totalFramesCaught,&framesCaught);
+				0, MOENCH_PACKETS_PER_FRAME, 0,map, mask,fifofree,MOENCH_BUFFER_SIZE,&totalFramesCaught,&framesCaught,&currframenum);
 		break;
 	default:
 		x = 1;
@@ -185,7 +185,7 @@ slsReceiverFunctionList::slsReceiverFunctionList(detectorType det):
 
 
 		filter = new singlePhotonFilter(x,y,GOTTHARD_FRAME_INDEX_MASK, GOTTHARD_PACKET_INDEX_MASK, GOTTHARD_FRAME_INDEX_OFFSET,
-				0, GOTTHARD_PACKETS_PER_FRAME, 1,map, mask,fifofree,GOTTHARD_BUFFER_SIZE,&totalFramesCaught,&framesCaught);
+				0, GOTTHARD_PACKETS_PER_FRAME, 1,map, mask,fifofree,GOTTHARD_BUFFER_SIZE,&totalFramesCaught,&framesCaught,&currframenum);
 		break;
 	}
 
@@ -544,8 +544,11 @@ int slsReceiverFunctionList::startListening(){
 				framesCount = 0;
 				packetsCount = 0;
 				//pop freefifo
-				if(!fifofree->isEmpty())
-					fifofree->pop(buffer);
+				/*while(fifofree->isEmpty());*/
+				fifofree->pop(buffer);
+#ifdef VERYVERBOSE
+				cout << "lbuf1 popped:" << (void*)buffer << endl;
+#endif
 				//increment offsets
 				offset = HEADER_SIZE_NUM_FRAMES;
 				offset += HEADER_SIZE_NUM_PACKETS;
@@ -580,9 +583,9 @@ int slsReceiverFunctionList::startListening(){
 				//receive 1 packet
 				rc = udpSocket->ReceiveDataOnly(buffer+offset,oneBufferSize);
 				if( rc <= 0){
-					//#ifdef VERYVERBOSE
+#ifdef VERYVERBOSE
 					cerr << "recvfrom() failed:"<<endl;
-					//#endif
+#endif
 					if(status != TRANSMITTING){
 						continue;
 					}
@@ -692,6 +695,8 @@ int slsReceiverFunctionList::startListening(){
 			framesCount++;
 #ifdef VERYVERBOSE
 			totalcount++;
+#endif
+#ifdef VERYVERBOSE
 			cout<<"lcurrframnum:"<< dec<<
 				(((uint32_t)(*((uint32_t*)(buffer+offset))) & frameIndexMask) >> frameIndexOffset)<<"*"<<endl;
 #endif
@@ -803,7 +808,7 @@ int slsReceiverFunctionList::startWriting(){
 		cout << "Ready!" << endl;
 
 		//will always run till acquisition over and then runs till fifo is empty
-		while(receiver_threads_running || (!fifo->isEmpty())){
+		while(receiver_threads_running){// || (!fifo->isEmpty())){
 			//pop fifo
 			if(fifo->pop(wbuf)){
 
@@ -817,12 +822,12 @@ int slsReceiverFunctionList::startWriting(){
 #ifdef VERYVERBOSE
 					cout << "popped last dummy frame:" << (void*)wbuf << endl;
 #endif
-					fifofree->push(wbuf);
+					//fifofree->push(wbuf);
 /*
 					cout <<"fifofree is full?:" << fifofree->isFull()<<endl;
 					cout <<"fifo is empty?:" << fifo->isEmpty()<<endl;
 */
-					if(status == TRANSMITTING)cout<<"transmitting as well"<<endl; else cout <<"not transmitting"<<endl;
+					//if(status == TRANSMITTING)cout<<"transmitting as well"<<endl; else cout <<"not transmitting"<<endl;
 					if(fifo->isEmpty() && status == TRANSMITTING){
 						//data compression
 						if(dataCompression){
@@ -830,6 +835,10 @@ int slsReceiverFunctionList::startWriting(){
 							while(!filter->checkIfJobsDone())
 								usleep(50000);
 						}
+#ifdef VERYVERBOSE
+						cout << "fifo freed:" << (void*)wbuf << endl;
+#endif
+						fifofree->push(wbuf);
 /*
 						cout <<"fifofree is full?:" << fifofree->isFull()<<endl;
 						cout <<"fifo is empty?:" << fifo->isEmpty()<<endl;
@@ -840,12 +849,9 @@ int slsReceiverFunctionList::startWriting(){
 						cout << "Status: Run Finished" << endl;
 						break;
 					}else{
-						while(!fifo->isEmpty()){
-							cout<<"popped:"<<fifo->pop(buffer)<<endl;
-							cout<<"buff val:"<<(void*)buffer<<endl;
-							exit(-1);
-						}
-
+						cout<<"*************************should not be here!"<<endl;
+						numJobsPerThread = -1;
+						break;
 					}
 
 				}
@@ -857,11 +863,13 @@ int slsReceiverFunctionList::startWriting(){
 #ifdef VERYVERBOSE
 				cout << "buf1:" << (void*)wbuf << endl;
 #endif
-				currframenum = (((uint32_t)(*((uint32_t*)(wbuf + HEADER_SIZE_NUM_FRAMES + HEADER_SIZE_NUM_PACKETS)))& frameIndexMask) >>frameIndexOffset);
+				//must be updated only in singlephoton if compression, else lock issues. (exception in the beginning for startframeindex)
+				if(!dataCompression){
+					currframenum = (((uint32_t)(*((uint32_t*)(wbuf + HEADER_SIZE_NUM_FRAMES + HEADER_SIZE_NUM_PACKETS)))& frameIndexMask) >>frameIndexOffset);
 #ifdef VERYVERBOSE
-				cout << "currframnum:" << dec << currframenum << endl;
+					cout << "currframnum:" << dec << currframenum << endl;
 #endif
-
+				}
 				//send it for writing and data compression
 				if(dataCompression)
 					filter->assignJobsForThread(wbuf, numFrames);
@@ -1128,7 +1136,7 @@ int slsReceiverFunctionList::setShortFrame(int i){
 
 			delete filter;
 			filter = new singlePhotonFilter(x,y,frameIndexMask, GOTTHARD_PACKET_INDEX_MASK, frameIndexOffset,
-					0, GOTTHARD_SHORT_PACKETS_PER_FRAME, 0,map, mask,fifofree,GOTTHARD_SHORT_BUFFER_SIZE,&totalFramesCaught,&framesCaught);
+					0, GOTTHARD_SHORT_PACKETS_PER_FRAME, 0,map, mask,fifofree,GOTTHARD_SHORT_BUFFER_SIZE,&totalFramesCaught,&framesCaught,&currframenum);
 			break;
 
 		default: //normal readout for gotthard
@@ -1159,7 +1167,7 @@ int slsReceiverFunctionList::setShortFrame(int i){
 
 			delete filter;
 			filter = new singlePhotonFilter(x,y,frameIndexMask, GOTTHARD_PACKET_INDEX_MASK, frameIndexOffset,
-					0, GOTTHARD_PACKETS_PER_FRAME, 1,map, mask,fifofree,GOTTHARD_BUFFER_SIZE,&totalFramesCaught,&framesCaught);
+					0, GOTTHARD_PACKETS_PER_FRAME, 1,map, mask,fifofree,GOTTHARD_BUFFER_SIZE,&totalFramesCaught,&framesCaught,&currframenum);
 			break;
 		}
 
@@ -1232,6 +1240,8 @@ void slsReceiverFunctionList::setupFifoStructure(){
 			numJobsPerThread = i;
 	}
 
+	/*for testing
+	 numJobsPerThread = 3;*/
 
 	//if same, return
 	if(oldn == numJobsPerThread)
@@ -1261,10 +1271,11 @@ void slsReceiverFunctionList::setupFifoStructure(){
 		fifosize = fifosize/numJobsPerThread;
 
 
-	/*
-	fifosize = 11;
-	numJobsPerThread = 3;
-*/
+
+	/*for testing
+	 fifosize = 11;*/
+
+
 	//allocate memory
 	mem0=(char*)malloc(((bufferSize+HEADER_SIZE_NUM_PACKETS)*numJobsPerThread+HEADER_SIZE_NUM_FRAMES)*fifosize);
 

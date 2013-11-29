@@ -234,7 +234,7 @@ public:
 
 	/** free fifo buffer, called back from single photon filter */
 	static void freeFifoBufferCallBack (char* fbuffer, void *this_pointer){((slsReceiverFunctionList*)this_pointer)->freeFifoBuffer(fbuffer);};
-	void freeFifoBuffer(char* fbuffer){fifofree->push(fbuffer);};
+	void freeFifoBuffer(char* fbuffer){/*cout<< "fifo freed:"<<(void*)fbuffer<<endl;*/fifofree->push(fbuffer);};
 
 
 

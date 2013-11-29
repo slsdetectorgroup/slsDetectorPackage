@@ -9,7 +9,6 @@ delay 0.999999968
 gates 1
 frames 300000.000000000
 cycles 1.000000000
-probes 0
 timing auto
 fineoff 0.000000
 startscript none

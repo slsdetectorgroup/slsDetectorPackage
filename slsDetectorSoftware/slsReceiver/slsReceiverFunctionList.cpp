@@ -482,9 +482,9 @@ int slsReceiverFunctionList::startListening(){
 	int framesCount = -1;
 	int packetsCount = 0;
 	char *tempchar = new char[oneBufferSize];
-#ifdef VERYVERBOSE
+//#ifdef VERYVERBOSE
 	int totalcount = 0;
-#endif
+//#endif
 
 	//to increase socket receiver buffer size and max length of input queue by changing kernel settings
 	if(system("echo $((100*1024*1024)) > /proc/sys/net/core/rmem_max"))
@@ -693,9 +693,9 @@ int slsReceiverFunctionList::startListening(){
 			packetsCount = 0;
 			//increment frame count
 			framesCount++;
-#ifdef VERYVERBOSE
+//#ifdef VERYVERBOSE
 			totalcount++;
-#endif
+//#endif
 #ifdef VERYVERBOSE
 			cout<<"lcurrframnum:"<< dec<<
 				(((uint32_t)(*((uint32_t*)(buffer+offset))) & frameIndexMask) >> frameIndexOffset)<<"*"<<endl;
@@ -715,9 +715,9 @@ int slsReceiverFunctionList::startListening(){
 	listening_thread_running = FINISHED;
 	pthread_mutex_unlock(&(status_mutex));
 
-#ifdef VERYVERBOSE
-	cout << "total count listened to " << totalcount << endl;
-#endif
+//#ifdef VERYVERBOSE
+	cout << "Total count listened to " << totalcount << endl;
+//#endif
 	return 0;
 }
 

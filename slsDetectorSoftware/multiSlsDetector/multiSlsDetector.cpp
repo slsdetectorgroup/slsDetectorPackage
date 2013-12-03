@@ -1510,7 +1510,7 @@ slsDetectorDefs::runStatus  multiSlsDetector::getRunStatus() {
       setErrorMask(getErrorMask()|(1<<0));
   }
 
-  for (int i=0; i<thisMultiDetector->numberOfDetectors; i++) {
+  for (int i=1; i<thisMultiDetector->numberOfDetectors; i++) {
     s1=detectors[i]->getRunStatus(); 
     if(detectors[i]->getErrorMask())
       setErrorMask(getErrorMask()|(1<<i));

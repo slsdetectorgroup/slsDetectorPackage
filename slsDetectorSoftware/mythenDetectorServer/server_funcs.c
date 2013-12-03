@@ -1805,15 +1805,16 @@ int get_run_status(int file_des) {
   enum runStatus s;
   sprintf(mess,"getting run status\n");
 
-#ifdef VERBOSE
-  printf("Getting status\n");
-#endif 
+  //#ifdef VERBOSE
+  printf("********************************* Getting status\n");
+  //#endif 
 
   retval= runState();
 
-  if (retval&0x8000)
+  if (retval&0x8000) {
     s=ERROR;
-  else if (retval&0x00000001)
+    printf("********* Status error %08x\n",retval); 
+  }  else if (retval&0x00000001)
     if (retval&0x00010000)
       s=TRANSMITTING;
     else
@@ -1829,8 +1830,15 @@ int get_run_status(int file_des) {
 
   if (ret!=OK) {
     printf("get status failed\n");
-  } else if (differentClients)
-    ret=FORCE_UPDATE;
+  } //else if (differentClients)
+    //ret=FORCE_UPDATE;
+
+  
+
+  //#ifdef VERBOSE
+  printf("%d %08x %d\n", ret, retval, s);
+  //#endif 
+
 
   n = sendDataOnly(file_des,&ret,sizeof(ret));
   if (ret==FAIL) {

@@ -1012,6 +1012,9 @@ u_int32_t runState(void) {
     write_status_sm("Running");
   else
     write_status_sm("Stopped");  
+
+  write_istatus_sm(s);
+
 #endif
 #ifdef VERBOSE
   printf("status %08x\n",s);

@@ -3191,6 +3191,7 @@ slsDetectorDefs::runStatus slsDetector::getRunStatus(){
   int fnum=F_GET_RUN_STATUS;
   int ret=FAIL;
   char mess[100];
+  strcpy(mess,"aaaaa");
   runStatus retval=ERROR;
 #ifdef VERBOSE
   std::cout<< "Getting status "<< std::endl;
@@ -3199,12 +3200,16 @@ slsDetectorDefs::runStatus slsDetector::getRunStatus(){
     if (stopSocket) {
       if  (stopSocket->Connect()>=0) {
 	stopSocket->SendDataOnly(&fnum,sizeof(fnum));
-	stopSocket->ReceiveDataOnly(&ret,sizeof(ret));
+	cout << stopSocket->ReceiveDataOnly(&ret,sizeof(ret)) ;
+
+	cout << "________:::____________" << ret << endl;
+	
 	if (ret==FAIL) {
 	  stopSocket->ReceiveDataOnly(mess,sizeof(mess));
 	  std::cout<< "Detector returned error: " << mess << std::endl;
 	} else {
-	  stopSocket->ReceiveDataOnly(&retval,sizeof(retval));   
+	  stopSocket->ReceiveDataOnly(&retval,sizeof(retval));  
+	cout << "____________________" << retval << endl; 
 	} 
 	stopSocket->Disconnect();
       }

@@ -30,6 +30,13 @@ void write_status_sm(char *status) {
   strcpy(stdata->status,status);
 }
 
+void write_istatus_sm(int i) {
+  stdata->istatus=i;
+}
+int read_istatus_sm() {
+  return stdata->istatus;
+}
+
 void write_stop_sm(int v) {
   stdata->stop=v;
 }

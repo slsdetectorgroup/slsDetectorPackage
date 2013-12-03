@@ -33,6 +33,7 @@
 struct statusdata {
   int runnumber;
   int stop;
+  int istatus;
   char status[20];
 } ;
 
@@ -43,5 +44,9 @@ int inism(int clsv);
 void write_status_sm(char *status);
 void write_stop_sm(int v);
 void write_runnumber_sm(int v);
+
+void write_istatus_sm(int v);
+
+int read_istatus_sm();
 
 #endif

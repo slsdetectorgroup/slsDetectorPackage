@@ -363,7 +363,7 @@ private:
 	pthread_mutex_t running_mutex;
 	pthread_mutex_t frnum_mutex;
 
-	static const int PROGRESS_INCREMENT = 50;
+	static const int PROGRESS_INCREMENT = 100;
 	/** current thread the job being allotted to */
 	int currentThread;
 

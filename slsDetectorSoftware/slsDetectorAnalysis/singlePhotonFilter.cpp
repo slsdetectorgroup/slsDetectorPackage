@@ -414,7 +414,7 @@ void singlePhotonFilter::findHits(){
 	double sigmarms;
 	double clusterrms;
 	double clusterped;
-	uint32_t clusteriframe;
+	uint32_t clusteriframe = 0;
 	int dum;
 	double tot; // total value of pixel
 	char* isData;
@@ -452,12 +452,7 @@ void singlePhotonFilter::findHits(){
 			cout<<"got data semwait:["<<index<<"]:"<<dum<<endl;
 
 		isData += HEADER_SIZE_NUM_FRAMES;
-		if(clusteriframe > *currentframenum){
-			pthread_mutex_lock(&frnum_mutex);
-			*currentframenum = clusteriframe;
-			pthread_mutex_unlock(&frnum_mutex);
-		}
-
+/*cout<<"currentframenum:"<<(*currentframenum)<<endl;*/
 		//for all the frames in one buffer
 		for (i=0; i < numFramesAlloted[index]; ++i){
 
@@ -475,6 +470,7 @@ void singlePhotonFilter::findHits(){
 					pthread_mutex_lock(&frnum_mutex);
 					*currentframenum = clusteriframe;
 					pthread_mutex_unlock(&frnum_mutex);
+					/*cout<<"currentframenum:"<<dec<<(*currentframenum)<<endl;*/
 				}
 
 #ifdef VERYVERBOSE

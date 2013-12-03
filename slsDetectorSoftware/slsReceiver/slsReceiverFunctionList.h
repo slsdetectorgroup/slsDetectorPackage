@@ -158,6 +158,51 @@ public:
 	int stopReceiver();
 
 	/**
+	 * Returns the buffer-current frame read by receiver
+	 * @param c pointer to current file name
+	 * @param raw address of pointer, pointing to current frame to send to gui
+	 */
+	void readFrame(char* c,char** raw);
+
+	/**
+	 * Set short frame
+	 * @param i if shortframe i=1
+	 */
+	int setShortFrame(int i);
+
+	/** set status to transmitting and
+	 * when fifo is empty later, sets status to run_finished
+	 */
+	void startReadout();
+
+	/** enabl data compression, by saving only hits
+	 */
+	void enableDataCompression(bool enable){dataCompression = enable;if(filter)filter->enableCompression(enable);};
+
+	/** get data compression, by saving only hits
+	 */
+	bool getDataCompression(){ return dataCompression;};
+
+	/**
+	 * Set the variable to send every nth frame to gui
+	 * or if 0,send frame only upon gui request
+	 */
+	int setNFrameToGui(int i);
+
+	/** set acquisition period if a positive number
+	 */
+	int64_t setAcquisitionPeriod(int64_t index);
+
+	/** free fifo buffer, called back from single photon filter
+	 */
+	static void freeFifoBufferCallBack (char* fbuffer, void *this_pointer){((slsReceiverFunctionList*)this_pointer)->freeFifoBuffer(fbuffer);};
+	void freeFifoBuffer(char* fbuffer){fifofree->push(fbuffer);};
+
+
+
+private:
+
+	/**
 	 * Static function - Thread started which listens to packets.
 	 * Called by startReceiver()
 	 * @param this_pointer pointer to this object
@@ -197,48 +242,16 @@ public:
 	 */
 	void copyFrameToGui(char* startbuf);
 
-	/**
-	 * Returns the buffer-current frame read by receiver
-	 * @param c pointer to current file name
-	 * @param raw address of pointer, pointing to current frame to send to gui
+	/** set up fifo according to the new numjobsperthread
 	 */
-	void readFrame(char* c,char** raw);
-
-	/**
-	 * Set short frame
-	 * @param i if shortframe i=1
-	 */
-	int setShortFrame(int i);
-
-	/** set status to transmitting and
-	 * when fifo is empty later, sets status to run_finished */
-	void startReadout();
-
-	/** enabl data compression, by saving only hits */
-	void enableDataCompression(bool enable){dataCompression = enable;if(filter)filter->enableCompression(enable);};
-
-	/** get data compression, by saving only hits */
-	bool getDataCompression(){ return dataCompression;};
-
-	/**
-	 * Set the variable to send every nth frame to gui
-	 * or if 0,send frame only upon gui request
-	 */
-	int setNFrameToGui(int i);
-
-	/** set acquisition period if a positive number */
-	int64_t setAcquisitionPeriod(int64_t index);
-
-	/** set up fifo according to the new numjobsperthread */
 	void setupFifoStructure ();
 
-	/** free fifo buffer, called back from single photon filter */
-	static void freeFifoBufferCallBack (char* fbuffer, void *this_pointer){((slsReceiverFunctionList*)this_pointer)->freeFifoBuffer(fbuffer);};
-	void freeFifoBuffer(char* fbuffer){/*cout<< "fifo freed:"<<(void*)fbuffer<<endl;*/fifofree->push(fbuffer);};
+	/**
+	 * increment counters, pop and push fifos
+	 */
+	void processFrameForFifo();
 
 
-
-private:
 
 	/** detector type */
 	detectorType myDetectorType;
@@ -393,8 +406,23 @@ private:
 	/** guiDataReady mutex */
 	pthread_mutex_t  dataReadyMutex;
 
-	/** Number of jobs per thread for data compression */
+	/** number of jobs per thread for data compression */
 	int numJobsPerThread;
+
+	/** offset of current frame */
+	int currentFrameOffset;
+
+	/** offset of current packet */
+	int currentPacketOffset;
+
+	/** current packet count for current frame */
+	int currentPacketCount;
+
+	/** current frame count for current buffer */
+	int currentFrameCount;
+
+	/** total frame count the listening thread has listened to */
+	int totalListeningFrameCount;
 
 	/** acquisition period */
 	int64_t acquisitionPeriod;

@@ -428,6 +428,102 @@ void* postProcessing::processData(int delflag) {
 		 */
 
 
+		int progress = 0;
+		char currentfName[MAX_STR_LENGTH]="";
+		int currentfIndex = -1;
+		bool newData = false;
+		int nthframe = setReadReceiverFrequency(0);
+#ifdef VERBOSE
+		std::cout << "receiver read freq:" << nthframe << std::endl;
+#endif
+
+		//if nth frame
+		if(nthframe){
+			newData = true;
+			//and no gui
+			if(!dataReady){
+				std::cout << "Error: receiver read freq is set to " << nthframe << " but should be > 0 only when using gui." << std::endl;
+				nthframe = 0;
+				std::cout << "Current receiver read frequency: " << nthframe << std::endl;
+			}
+		}
+
+		//repeat forever until joined by the calling thread
+		while(1){
+
+			cout.flush();
+			cout<<flush;
+			usleep(20000);
+
+			//get progress
+			pthread_mutex_lock(&mg);
+			if(setReceiverOnline() == ONLINE_FLAG)
+				currentfIndex = getReceiverCurrentFrameIndex();
+			pthread_mutex_unlock(&mg);
+
+			//updating progress
+			if(currentfIndex != -1)
+				setCurrentProgress(currentfIndex+1);
+
+			if (checkJoinThread()) break;
+
+
+			if (dataReady){
+				//for random reads, ask only if it has new data
+				if(!newData){
+					if(currentfIndex > progress)
+						newData = true;
+				}
+
+				if(newData){
+					if(setReceiverOnline()==ONLINE_FLAG){
+						//get data
+						strcpy(currentfName,"");
+						pthread_mutex_lock(&mg);
+						int* receiverData = readFrameFromReceiver(currentfName,currentfIndex);
+						pthread_mutex_unlock(&mg);
+						/*cout<<"index:"<<dec<<currentfIndex<<endl<<endl<<endl;;*/
+						//if detector returned null
+						if(setReceiverOnline()==OFFLINE_FLAG)
+							receiverData = NULL;
+
+						//no data or wrong data for print out
+						if(receiverData == NULL){
+							currentfIndex = -1;
+							cout<<"****Detector Data returned is NULL***"<<endl;
+						}
+
+						if(nthframe){
+							if((currentfIndex == -1) || (currentfIndex == progress))
+								currentfIndex = -1;
+							else
+								progress = currentfIndex;
+						}
+
+						//not garbage frame
+						if (currentfIndex >= 0) {
+							fdata = decodeData(receiverData);
+							delete [] receiverData;
+							if ((fdata) && (dataReady)){
+								thisData = new detectorData(fdata,NULL,NULL,getCurrentProgress(),currentfName,getTotalNumberOfChannels());
+								dataReady(thisData, currentfIndex, pCallbackArg);
+								delete thisData;
+								fdata = NULL;
+								progress = currentfIndex;
+								if(!nthframe)
+									newData = false;
+							}
+						}
+						else{
+							;//cout<<"****Detector returned mismatched indices/garbage  or acquisition is over. Trying again.***"<<endl;
+						}
+					}
+				}
+			}
+		}
+
+/*
+
 		int prevCaught=-1;
 		int caught = 0;
 		int prog = 0;
@@ -536,7 +632,7 @@ void* postProcessing::processData(int delflag) {
 					}
 				}
 			}
-		}
+		}*/
 	}
 
 	return 0;

@@ -1,5 +1,5 @@
 CC			=	g++ 
-CLAGS		+=  -DSLS_RECEIVER_FUNCTION_LIST
+CLAGS		+=  -DSLS_RECEIVER_FUNCTION_LIST -O3
 LDFLAG=   -L/usr/lib64/ -lpthread -lm  -lstdc++ 
 
 

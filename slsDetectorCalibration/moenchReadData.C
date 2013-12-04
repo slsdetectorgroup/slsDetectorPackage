@@ -10,9 +10,9 @@
 #include <THStack.h>
 #include <TCanvas.h>
 #include <stdio.h>
-#include <deque>
-#include <list>
-#include <queue>
+//#include <deque>
+//#include <list>
+//#include <queue>
 #include <fstream>
 #include "moench02ModuleData.h"
 
@@ -23,7 +23,14 @@ using namespace std;
 #define NC 160
 #define NR 160
 
+
+#define MY_DEBUG 1
+#ifdef MY_DEBUG
+#include <TCanvas.h>
+#endif
+
 /**
+
   char *fformat, file name format
   char *tit, title of the tree etc.
   int runmin, minimum run number
@@ -67,6 +74,9 @@ THStack *moenchReadData(char *fformat, char *tit, int runmin, int runmax, int nb
 
   THStack *hs=new THStack("hs",fformat);
 
+
+  int iev=0;
+
   TH2F *h1=new TH2F("h1",tit,nbins,hmin-0.5,hmax-0.5,NC*NR,-0.5,NC*NR-0.5);
   hs->Add(h1);
 
@@ -106,6 +116,14 @@ THStack *moenchReadData(char *fformat, char *tit, int runmin, int runmax, int nb
   // 6% x-talk from previous pixel
   // 12% x-talk from previous frame
 
+#ifdef MY_DEBUG
+  TCanvas *myC=new TCanvas();
+  TH2F *he=new TH2F("he","Event",3,-1.5,1.5,3,-1.5,1.5);
+  he->SetStats(kFALSE);
+  he->Draw("colz");
+  he->SetMinimum(0);
+  he->SetMaximum(0.5*hmax);
+#endif
 
   for (int irun=runmin; irun<runmax; irun++) {
     sprintf(fname,fformat,irun);
@@ -119,9 +137,13 @@ THStack *moenchReadData(char *fformat, char *tit, int runmin, int runmax, int nb
       if (nf>100) {
 	if (cmsub) {
 	  for (int isc=scmin; isc<scmax; isc++) {
-	    decoder->calculateCommonMode(3+isc*40, 40*(isc-1)-3, 3, NR-3, hc, tc);
+	    decoder->calculateCommonMode(3+isc*40, 40*(isc+1)-3, 3, NR-3, hc, tc);
+#ifdef MY_DEBUG
+	    if (nf%1000==0) cout << "sc=" << isc << " CM="<< decoder->getCommonMode(3+isc*40, NR/2)<< endl;
+#endif
 	  }
 	}
+	
       }
       
 
@@ -134,7 +156,7 @@ THStack *moenchReadData(char *fformat, char *tit, int runmin, int runmax, int nb
 
 
 	    if (nf>100) {
-	      thisEvent= decoder->getEventType(ix, iy, hc, tc, 1);
+	      thisEvent= decoder->getEventType(ix, iy, hc, tc, 1,1);
 	    } 
 	    
 	  
@@ -142,9 +164,10 @@ THStack *moenchReadData(char *fformat, char *tit, int runmin, int runmax, int nb
 
 	    if (thisEvent==moench02ModuleData::PEDESTAL) {
 	      if (cmsub && nf>1000)
-		decoder->addToPedestal( decoder->getChannelShort(ix, iy, hc, tc)- decoder->getCommonMode(ix,iy), ix, iy); 
+		decoder->addToPedestal(decoder->getChannelShort(ix, iy, hc, tc)-decoder->getCommonMode(ix,iy), ix, iy); 
 	      else
 		decoder->addToPedestal( decoder->getChannelShort(ix, iy, hc, tc), ix, iy); 
+	     
 	     
 	    }
 	    
@@ -159,15 +182,30 @@ Add  here the function that you want to call: fill histos, make trees etc.
 	    tr=0;
 	    bl=0;
 	    br=0;
-	    h1->Fill(decoder->getClusterElement(0,0, cmsub), iy+NR*ix);
+	    h1->Fill(decoder->getClusterElement(0,0), iy+NR*ix);
+	    
+	    //  if (nf%1000==0 && ix==20 && iy==20) cout <<  " val="<< decoder->getClusterElement(0,0)<< endl;
 
 	    if (thisEvent==moench02ModuleData::PHOTON_MAX ) {
-
-
+	      #ifdef MY_DEBUG
+		  if (iev%100000==0) {
+		  cout << "Event " << iev << " Frame "<< nf << endl;
+		  }
+#endif		  
+	
+	      
 	      for (ir=-1; ir<2; ir++) {
 		for (ic=-1; ic<2; ic++) {
 		  v=decoder->getClusterElement(ic,ir,cmsub);
 		  data[ic+1][ir+1]=v;
+#ifdef MY_DEBUG
+		  if (iev%100000==0) {
+		    he->SetBinContent(ic+2,ir+2,v);
+		    cout << "Histo("<< ix+ic << ","<< iy+ir <<")" << v << endl;
+		  }
+#endif		  
+		  
+
 		  tot+=v;
 		  if (ir<1) {
 		    
@@ -237,7 +275,16 @@ Add  here the function that you want to call: fill histos, make trees etc.
 		y=iy;
 
 		tall->Fill();
-	          
+	   
+#ifdef MY_DEBUG
+		  if (iev%100000==0) {
+		    myC->Modified();
+		    myC->Update();
+		  }
+#endif		  
+
+		iev++;
+       
 	    }
 	    
 	    

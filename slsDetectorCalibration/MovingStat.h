@@ -1,7 +1,7 @@
   class MovingStat
     {
     public:
-    MovingStat() : m_n(0), n(0) {}
+    MovingStat() : m_n(0), n(1000) {}
 
         void Clear()
         {

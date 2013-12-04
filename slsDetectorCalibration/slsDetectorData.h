@@ -19,9 +19,7 @@ class slsDetectorData {
 
 
   */
-  slsDetectorData(int npx, int npy=1, int ds=-1, int **dMap=NULL, int **dMask=NULL) {
-    nx=npx;
-    ny=npy;
+  slsDetectorData(int npx, int npy=1, int ds=-1, int **dMap=NULL, int **dMask=NULL, int **dROI=NULL): nx(npx), ny(npy) {
 
     if (ds<=0)
       dataSize=nx*ny;
@@ -37,8 +35,14 @@ class slsDetectorData {
       dataMap[i] = new int[nx];
     }
     
+    dataROIMask=new int*[ny];
+    for(int i = 0; i < ny; i++) {
+      dataROIMask[i] = new int[nx];
+    }
+    
     setDataMap(dMap);
     setDataMask(dMask);
+    setDataROIMask(dROI);
 
   };
 
@@ -46,9 +50,11 @@ class slsDetectorData {
     for(int i = 0; i < ny; i++) {
     delete [] dataMap[i];
     delete [] dataMask[i];
+    delete [] dataROIMask[i];
     }
     delete [] dataMap;
     delete [] dataMask;
+    delete [] dataROIMask;
   }
 
   void setDataMap(int **dMap=NULL) {
@@ -76,8 +82,27 @@ class slsDetectorData {
     }
     
   };
+  void setDataROIMask(int **dROI=NULL){
 
+    if (dROI!=NULL) {
 
+      for (int iy=0; iy<ny; iy++)
+	 for (int ix=0; ix<nx; ix++)
+	   dataROIMask[iy][ix]=dROI[iy][ix];
+    } else {
+
+      for (int iy=0; iy<ny; iy++)
+	 for (int ix=0; ix<nx; ix++)
+	   dataROIMask[iy][ix]=1;
+
+    }
+      
+    
+  };
+
+  int setBad(int ix, int iy, int i=1) {dataROIMask[iy][ix]=i; return isGood(ix,iy);};
+
+  int isGood(int ix, int iy) {return dataROIMask[iy][ix];};
 
 
   /**
@@ -117,11 +142,12 @@ class slsDetectorData {
 
 
  private:
-  int nx; /**< Number of pixels in the x direction */
-  int ny; /**< Number of pixels in the y direction */
+  const int nx; /**< Number of pixels in the x direction */
+  const int ny; /**< Number of pixels in the y direction */
   int dataSize; /**< Size of a dataset */
   int **dataMap; /**< Array of size nx*ny storing the pointers to the data in the dataset (as offset)*/
-  int **dataMask; /**< Array of size nx*ny storing the polarity of the data in the dataset (should be 0 if no inversion is required, 0xffffffff is inversion is required */
+  int **dataMask; /**< Array of size nx*ny storing the polarity of the data in the dataset (should be 0 if no inversion is required, 0xffffffff is inversion is required) */
+  int **dataROIMask; /**< Array of size nx*ny 1 if channel is good (or in the ROI), 0 if bad channel (or out of ROI)   */
 
 };
 

@@ -126,31 +126,42 @@ class moench02ModuleData : public slsDetectorData {
     for (ix=xmin-1; ix<xmax+1; ix++) {
       isc=ix/40;
       for (iy=ymin-1; iy<ymax+1; iy++) {
-	
-	if (getEventType(ix, iy, hc, tc, 1)==PEDESTAL) {
-	  cmPed[isc]+=getChannelShort(ix, iy, hc, tc);
-	  nCm[isc]++;
+	if (isGood(ix,iy)) {
+	  if (getEventType(ix, iy, hc, tc, 1,0)==PEDESTAL) {
+	    cmPed[isc]+=getChannelShort(ix, iy, hc, tc);
+	    nCm[isc]++;
+	  }
 	}
-
+	
       }
 
     }
 
     
     for (isc=scmin; isc<scmax; isc++) {
+
       if (nCm[isc]>0)
 	cmStat[isc].Calc(cmPed[isc]/nCm[isc]);
-    }
 
+      //   cout << "SC " << isc << nCm[isc] << " " << cmPed[isc]/nCm[isc] << " " << cmStat[isc].Mean() << endl;
+
+    }
+    
 
   };
 
   double getCommonMode(int ix, int iy) {
     int isc=ix/40;
-    if (nCm[isc]>0)
+    if (nCm[isc]>0) {
+     /*  if (ix==20 && iy==20) */
+/* 	cout << cmPed[isc] << " " << nCm[isc] << " " << cmStat[isc].Mean() << " " << cmPed[isc]/nCm[isc]-cmStat[isc].Mean() << endl; */
       return cmPed[isc]/nCm[isc]-cmStat[isc].Mean();
-    else
+    } else {
+  /*     if (ix==20 && iy==20) */
+/* 	cout << "No common mode!" << endl; */
+      
       return 0;
+    }
   };
 
 
@@ -221,7 +232,7 @@ class moench02ModuleData : public slsDetectorData {
   char *getBuff(){return buff;}
   char *getOldBuff(){return oldbuff;}
 
-  int setPedestalSubstraction(int i=-1){if (i==0) pedSub=0; if (i==1) pedSub=1; return pedSub;};
+  int setPedestalSubstraction(int i=-1){if (i>=0) pedSub=i; return pedSub;};
 
 
   double getChannelShort(int ix, int iy, double hc=0, double tc=0) {
@@ -240,7 +251,7 @@ class moench02ModuleData : public slsDetectorData {
   
 
 
-  eventType getEventType(int ix, int iy, double hcorr=0, double tcorr=0, int sign=1) {
+  eventType getEventType(int ix, int iy, double hcorr=0, double tcorr=0, int sign=1, int cm=0) {
 
  /*    PEDESTAL, */
 /*     NEIGHBOUR, */
@@ -256,9 +267,11 @@ class moench02ModuleData : public slsDetectorData {
       for (int ir=-1; ir<2; ir++) {
 	for (int ic=-1; ic<2; ic ++) {
 	  if ((iy+ir)>=0 && (iy+ir)<160 && (ix+ic)>=0 && (ix+ic)<160) {
-	    v=getChannelShort(ix+ic, iy+ir, hcorr, tcorr);
+	    v=sign*getChannelShort(ix+ic, iy+ir, hcorr, tcorr);
 	    if (pedSub)
-	      v=sign*(v-getPedestal(ix+ic,iy+ir));
+	      v-=sign*getPedestal(ix+ic,iy+ir);
+	    if (cm)
+	      v-=sign*getCommonMode(ix+ic, iy+ic);
 	    cluster[ic+1][ir+1]=v;
 	    tot+=v;
 	    if (v>max) {
@@ -290,10 +303,7 @@ class moench02ModuleData : public slsDetectorData {
   };
 
 
-  double getClusterElement(int ic, int ir, int cm=0){
-    if (cm) cluster[ic+1][ir+1]-getCommonMode(cx,cy);
-    else return cluster[ic+1][ir+1];
-  };
+  double getClusterElement(int ic, int ir, int cmsub=0){return cluster[ic+1][ir+1];};
   
   double  *getCluster(){return &cluster[0][0];};
 

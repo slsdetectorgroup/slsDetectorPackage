@@ -58,14 +58,17 @@ singlePhotonFilter::singlePhotonFilter(int nx, int ny,
 										totalFramesCaught(tfcaught),
 										framesCaught(fcaught),
 										currentframenum(cframenum),
-										freeFifoCallBack(NULL),
+										freeFifoCallBack(NULL),	
 										pFreeFifo(NULL){
-#ifndef MYROOT1
-	photonHitList  = new single_photon_hit[nChannelsX*nChannelsY];
-#endif
 	//cluster
-	if (nChannelsX)
-		nClusterX = 1;
+  if (nChannelsX)
+    nClusterX = 1;	
+  
+#ifndef MYROOT1
+  //photonHitList=(single_photon_hit**) (new int*[nChannelsX*nChannelsY/(nClusterX*nClusterY)*1000]);
+  photonHitList=new single_photon_hit*[nChannelsX*nChannelsY/(nClusterX*nClusterY)*1000];
+#endif
+
 	sqrtCluster = sqrt(nClusterX*nClusterY);
 	deltaX = nClusterX/2;// 0 or 1
 	clusterCenterPixel = (deltaX * nClusterY) + 1;
@@ -74,8 +77,8 @@ singlePhotonFilter::singlePhotonFilter(int nx, int ny,
 	stat = new movingStat[nChannelsX*nChannelsY];
 	nHitStat = new movingStat();
 
-	myPhotonHit 		= new single_photon_hit;
-	myPhotonHit->data 	= new double[nClusterX*nClusterY];
+	myPhotonHit 		= new single_photon_hit(nClusterX,nClusterY);
+	//	myPhotonHit->data 	= new double[nClusterX*nClusterY];
 	myPhotonHit->x 		= 0;
 	myPhotonHit->y 		= 0;
 	myPhotonHit->rms 	= 0;
@@ -221,8 +224,16 @@ int singlePhotonFilter::writeToFile(){
 		cout << "ERROR: Could not write to " << nHitsPerFrame << " hits to file as file or tree doesnt exist" << endl;
 #else
 		if(myFile){
+		  int ii;
 			/*cout<<"writing "<< nHitsPerFrame << " hits to file" << endl;*/
-			fwrite((void*)(photonHitList), 1, sizeof(single_photon_hit)*nHitsPerFrame, myFile);
+		  for (ii=0; ii<nHitsPerFrame; ii++) {
+		    photonHitList[ii]->write(myFile);
+		    delete  photonHitList[ii];
+		  }
+		  delete  photonHitList[ii];
+
+
+		  //			fwrite((void*)(photonHitList), 1, sizeof(single_photon_hit)*nHitsPerFrame, myFile);
 			/*framesInFile += nHitsPerFrame;*/
 			nHitsPerFrame = 0;
 			//cout<<"Exiting writeToFile"<<endl;
@@ -410,7 +421,9 @@ void singlePhotonFilter::findHits(){
 	int currentIndex;
 	int pixelIndex;
 	int clusterIndex;
-	double* clusterData	= new double[nClusterX*nClusterY];
+	//	single_photon_hit *hit;
+
+	double* clusterData;//	= hit.data;
 	double sigmarms;
 	double clusterrms;
 	double clusterped;
@@ -478,6 +491,10 @@ void singlePhotonFilter::findHits(){
 #endif
 				clusteriframe -= f0;
 				myData = (int16_t*)isData;
+				if (nHitsPerFrame==0)
+				  photonHitList[nHitsPerFrame]=new single_photon_hit(nClusterX, nClusterY);
+
+				clusterData=photonHitList[nHitsPerFrame]->data;
 
 				//for each pixel
 				for (ir=0; ir<nChannelsX; ++ir){
@@ -546,17 +563,19 @@ void singlePhotonFilter::findHits(){
 							// this is an event and we are in the center
 							else if (dum == 1){
 								pthread_mutex_lock(&write_mutex);
-								nHitsPerFrame++;
 #ifdef MYROOT1
 								myTree->Fill();
 #else
-								photonHitList[nHitsPerFrame].data = clusterData;
-								photonHitList[nHitsPerFrame].x = ic;
-								photonHitList[nHitsPerFrame].y = ir;
-								photonHitList[nHitsPerFrame].rms = clusterrms;
-								photonHitList[nHitsPerFrame].ped = clusterped;
-								photonHitList[nHitsPerFrame].iframe = clusteriframe;
-
+								//	photonHitList[nHitsPerFrame].data = clusterData;
+								photonHitList[nHitsPerFrame]->x = ic;
+								photonHitList[nHitsPerFrame]->y = ir;
+								photonHitList[nHitsPerFrame]->rms = clusterrms;
+								photonHitList[nHitsPerFrame]->ped = clusterped;
+								photonHitList[nHitsPerFrame]->iframe = clusteriframe;
+								//hit.write(myFile);
+								
+								nHitsPerFrame++;
+								photonHitList[nHitsPerFrame]=new single_photon_hit(nClusterX,nClusterY);
 								nHitsPerFile++;
 								nTotalHits++;
 								if(nHitsPerFile >= MAX_HITS_PER_FILE-1)
@@ -575,9 +594,9 @@ void singlePhotonFilter::findHits(){
 			//calulate the average hits per frame
 			nHitStat->Calc((double)nHitsPerFrame);
 			//write for each frame, not packet
+
 			pthread_mutex_lock(&write_mutex);
 			writeToFile();
-			//fifo->push(isData);
 			pthread_mutex_unlock(&write_mutex);
 
 			//increment offset

@@ -33,6 +33,7 @@
 #include "circularFifo.h"
 #include "runningStat.h"
 #include "movingStat.h"
+#include "single_photon_hit.h"
 using namespace std;
 
 
@@ -48,17 +49,6 @@ enum  {
   OK, /**< function succeeded */
   FAIL /**< function failed */
 };
-/**
-    @short structure for a single photon hit
-*/
-typedef struct{
-	double* data;		/**< data size */
-	int 	x; 			/**< x-coordinate of the center of hit */
-	int		y; 			/**< x-coordinate of the center of hit */
-	double	rms; 		/**< noise of central pixel */
-	double 	ped; 		/**< pedestal of the central pixel */
-	int		iframe; 	/**< frame number */
-}single_photon_hit;
 
 
 /**
@@ -241,7 +231,8 @@ private:
     FILE *myFile;
 
 	/** pointer to array of structs when only using files */
-	single_photon_hit* photonHitList;
+	//single_photon_hit* photonHitList;
+	single_photon_hit  ** photonHitList;
 
 	/** Number of Hits per file */
 	int nHitsPerFile;

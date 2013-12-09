@@ -1,7 +1,13 @@
-  class MovingStat
+#ifndef MOVINGSTAT_H
+#define MOVINGSTAT_H 
+
+#include <math.h>
+
+
+class MovingStat
     {
     public:
-    MovingStat() : m_n(0), n(1000) {}
+      MovingStat() : n(1000), m_n(0) {}
 
         void Clear()
         {
@@ -86,3 +92,4 @@
         int m_n;
         double m_oldM, m_newM, m_oldM2, m_newM2;
     };
+#endif

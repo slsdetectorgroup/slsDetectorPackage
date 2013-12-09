@@ -1,6 +1,7 @@
 #ifndef MOENCH02MODULEDATA_H
 #define  MOENCH02MODULEDATA_H
-#include "slsDetectorData.h"
+//#include "slsDetectorData.h"
+#include "singlePhotonDetector.h"
 
 #include "RunningStat.h"
 #include "MovingStat.h"
@@ -13,17 +14,8 @@ using namespace std;
 
 
 
-class moench02ModuleData : public slsDetectorData {
+class moench02ModuleData : public slsDetectorData<uint16_t> {
  public:
-
-
-  enum eventType {
-    PEDESTAL,
-    NEIGHBOUR,
-    PHOTON,
-    PHOTON_MAX,
-    NEGATIVE_PEDESTAL,
-  };
 
 
 
@@ -41,7 +33,7 @@ class moench02ModuleData : public slsDetectorData {
   */
   
 
-  moench02ModuleData(int nbg=1000): slsDetectorData(160, 160, 1286*40), nSigma(5), buff(NULL), oldbuff(NULL), pedSub(1) {
+  moench02ModuleData(int nbg=1000): slsDetectorData<uint16_t>(160, 160, 40, 1286), nSigma(5), buff(NULL), oldbuff(NULL), pedSub(1) {
     int headerOff=0;
     int footerOff=1284;
     int dataOff=4;
@@ -77,7 +69,7 @@ class moench02ModuleData : public slsDetectorData {
 	    ix=isc*40+ic;
 	    iy=ip*16+ir;
 
-	    dMap[iy][ix]=1280*(isc*10+ip)+2*ir*40+2*ic;
+	    dMap[iy][ix]=1286*(isc*10+ip)+2*ir*40+2*ic;
 	    // cout << ix << " " << iy << " " << dMap[ix][iy] << endl;
 	  }
 	}
@@ -100,12 +92,12 @@ class moench02ModuleData : public slsDetectorData {
     
     ~moench02ModuleData() {if (buff) delete [] buff; if (oldbuff) delete [] oldbuff; };
   
-    int getFrameNumber(char *buff){
-    return ((*(int*)buff)&(0xffffff00))>>8;;
-  };
 
   int getPacketNumber(char *buff){
-    return (*(int*)buff)&0xff;
+    int np=(*(int*)buff)&0xff;
+    if (np==0)
+      np=40;
+    return np;
   };
 
 
@@ -166,64 +158,6 @@ class moench02ModuleData : public slsDetectorData {
 
 
 
-  char *readNextFrame(ifstream &filebin) {
-    
-
-    if (oldbuff) 
-      delete [] oldbuff;
-
-    oldbuff=buff;
-    
-    char *data=new char[1280*40];
-    char p[1286];
-    
-    int fn, fnum=-1,  np=0, pnum=-1;
-
-    if (filebin.is_open()) {
-      while (filebin.read(p,4)) { //read header
-	pnum=getPacketNumber(p);
-	fn=getFrameNumber(p);
-
-	if (pnum<0 || pnum>39) {
-	  cout << "Bad packet number " << pnum << " frame "<< fn << endl;
-	  continue;
-	}
-
-	if (pnum==0)
-	  pnum=40;
-	
-	if (pnum==1) {
-	  fnum=fn;
-	  if (np>0)
-	    cout << "*Incomplete frame number " << fnum << endl;
-	  np=0;
-	} else if (fn!=fnum) {
-	  if (fnum!=-1)
-	    cout << " **Incomplete frame number " << fnum << " pnum " << pnum << " " << getFrameNumber(p) << endl;
-	  np=0;
-	}
-	filebin.read(data+1280*(pnum-1),1280); //readdata
-	np++;
-	filebin.read(p,2); //readfooter
-
-	if (np==40)
-	  if (pnum==40)
-	    break;
-	  else
-	    cout << "Too many packets for this frame! "<< fnum << " " << pnum << endl;
-
-      }
-    }
-    if (np<40) {
-      if (np>0)
-	cout << "Too few packets for this frame! "<< fnum << " " << pnum << endl;
-      delete [] data;
-      data=NULL;
-    }
-    buff=data;
-    return data;
-  };
-
 
   void addToPedestal(double val, int ix, int iy){stat[iy][ix].Calc(val);};
   double getPedestal(int ix, int iy){return stat[iy][ix].Mean();};
@@ -237,13 +171,13 @@ class moench02ModuleData : public slsDetectorData {
 
   double getChannelShort(int ix, int iy, double hc=0, double tc=0) {
     
-    double val=slsDetectorData::getChannelShort(buff,ix,iy);
+    double val=slsDetectorData<uint16_t>::getChannel(buff,ix,iy);
 
     if (ix>0 && hc!=0)
-      val-=hc*slsDetectorData::getChannelShort(buff,ix-1,iy);
+      val-=hc*slsDetectorData<uint16_t>::getChannel(buff,ix-1,iy);
     
     if (oldbuff && tc!=0) 
-      val+=tc*slsDetectorData::getChannelShort(oldbuff,ix,iy);
+      val+=tc*slsDetectorData<uint16_t>::getChannel(oldbuff,ix,iy);
 
 
     return val;

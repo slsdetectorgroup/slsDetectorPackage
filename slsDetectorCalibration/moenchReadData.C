@@ -60,7 +60,7 @@ THStack *moenchReadData(char *fformat, char *tit, int runmin, int runmax, int nb
   double oldval;
   int nf=0;
   
-  moench02ModuleData::eventType thisEvent=moench02ModuleData::PEDESTAL;
+  eventType thisEvent=PEDESTAL;
 
   // int iframe;
   // double *data, ped, sigma;
@@ -162,7 +162,7 @@ THStack *moenchReadData(char *fformat, char *tit, int runmin, int runmax, int nb
 	  
 
 
-	    if (thisEvent==moench02ModuleData::PEDESTAL) {
+	    if (thisEvent==PEDESTAL) {
 	      if (cmsub && nf>1000)
 		decoder->addToPedestal(decoder->getChannelShort(ix, iy, hc, tc)-decoder->getCommonMode(ix,iy), ix, iy); 
 	      else
@@ -186,7 +186,7 @@ Add  here the function that you want to call: fill histos, make trees etc.
 	    
 	    //  if (nf%1000==0 && ix==20 && iy==20) cout <<  " val="<< decoder->getClusterElement(0,0)<< endl;
 
-	    if (thisEvent==moench02ModuleData::PHOTON_MAX ) {
+	    if (thisEvent==PHOTON_MAX ) {
 	      #ifdef MY_DEBUG
 		  if (iev%100000==0) {
 		  cout << "Event " << iev << " Frame "<< nf << endl;

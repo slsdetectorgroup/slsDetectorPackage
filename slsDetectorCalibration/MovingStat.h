@@ -7,11 +7,15 @@
 class MovingStat
     {
     public:
-      MovingStat() : n(1000), m_n(0) {}
+      MovingStat(int nn=1000) : n(nn), m_n(0) {}
 
         void Clear()
         {
-            m_n = 0;
+	  m_n = 0; 
+	  m_oldM=0;  
+	  m_newM=0; 
+	  m_oldM2=0; 
+	  m_newM2=0;
         }
 	
 	void SetN(int i) {n=i;};

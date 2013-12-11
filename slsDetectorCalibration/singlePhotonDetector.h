@@ -1,9 +1,22 @@
 #ifndef SINGLEPHOTONDETECTOR_H
 #define  SINGLEPHOTONDETECTOR_H
+
+
+#include <inttypes.h>
 #include "slsDetectorData.h"
 
-#include "MovingStat.h"
 #include "single_photon_hit.h"
+#include "pedestalSubtraction.h"
+#include "commonModeSubtraction.h"
+
+
+#define MYROOT1
+
+#ifdef MYROOT1
+#include <TTree.h>
+
+#endif
+
 
 #include <iostream>
 
@@ -11,11 +24,12 @@ using namespace std;
 
 
   enum eventType {
-    PEDESTAL,
-    NEIGHBOUR,
-    PHOTON,
-    PHOTON_MAX,
-    NEGATIVE_PEDESTAL,
+    PEDESTAL=0,
+    NEIGHBOUR=1,
+    PHOTON=2,
+    PHOTON_MAX=3,
+    NEGATIVE_PEDESTAL=4,
+    UNDEFINED=-1
   };
 
 
@@ -40,7 +54,13 @@ class singlePhotonDetector {
   */
   
 
-  singlePhotonDetector(slsDetectorData<dataType> *d, int csize=3, double nsigma=5) : det(d), clusterSize(csize), clusterSizeY(csize),nSigma(nsigma) {
+  singlePhotonDetector(slsDetectorData<dataType> *d, 
+		       int csize=3, 
+		       double nsigma=5,  
+		       int sign=1, 
+		       commonModeSubtraction *cm=NULL,
+		       int nped=1000, 
+		       int nd=100) : det(d), nx(0), ny(0), stat(NULL), cmSub(cm),  nDark(nd), eventMask(NULL),nSigma (nsigma), clusterSize(csize), clusterSizeY(csize), cluster(NULL), iframe(-1), dataSign(sign) {
 
    
 
@@ -48,9 +68,13 @@ class singlePhotonDetector {
     
 
 
-    stat=new MovingStat*[ny];
-    for (int i=0; i<ny; i++)
-      stat[i]=new MovingStat;
+    stat=new pedestalSubtraction*[ny];
+    eventMask=new eventType*[ny];
+    for (int i=0; i<ny; i++) {
+      stat[i]=new pedestalSubtraction[nx];
+      stat[i]->SetNPedestals(nped);
+      eventMask[i]=new eventType[nx];
+    }
    
     if (ny==1)
       clusterSizeY=1;
@@ -59,13 +83,24 @@ class singlePhotonDetector {
     
   };
     
-    ~singlePhotonDetector() {delete cluster; delete [] stat;};
-  
+    virtual ~singlePhotonDetector() {delete cluster; for (int i=0; i<ny; i++) delete [] stat[i]; delete [] stat;};
 
 
-    void addToPedestal(double val, int ix, int iy){ if (ix>=0 && ix<nx && iy>=0 && iy<ny) stat[iy][ix].Calc(val);};
-    double getPedestal(int ix, int iy){if (ix>=0 && ix<nx && iy>=0 && iy<ny) return stat[iy][ix].Mean(); else return -1;};
-    double getPedestalRMS(int ix, int iy){if (ix>=0 && ix<nx && iy>=0 && iy<ny) return stat[iy][ix].StandardDeviation();else return -1;};
+    void newDataSet(){iframe=-1; for (int iy=0; iy<ny; iy++) for (int ix=0; ix<nx; ix++) stat[iy][ix].Clear(); if (cmSub) cmSub->Clear(); };  
+    void newFrame(){iframe++; for (int iy=0; iy<ny; iy++) for (int ix=0; ix<nx; ix++) eventMask[iy][ix]=UNDEFINED; if (cmSub) cmSub->newFrame();};
+
+
+    commonModeSubtraction setCommonModeSubtraction(commonModeSubtraction *cm) {cmSub=cm; return cmSub;};
+
+    int setDataSign(int sign=0) {if (sign==1 || sign==-1) dataSign=sign; return dataSign;};
+
+    virtual void addToPedestal(double val, int ix, int iy){ if (ix>=0 && ix<nx && iy>=0 && iy<ny) { stat[iy][ix].addToPedestal(val); if (cmSub && det->isGood(ix, iy) ) cmSub->addToCommonMode(val, ix, iy);}};
+
+
+    virtual double getPedestal(int ix, int iy, int cm=0){if (ix>=0 && ix<nx && iy>=0 && iy<ny) if (cmSub && cm>0) return stat[iy][ix].getPedestal()-cmSub->getCommonMode(); else return stat[iy][ix].getPedestal(); else return -1;};
+
+
+    double getPedestalRMS(int ix, int iy){if (ix>=0 && ix<nx && iy>=0 && iy<ny) return stat[iy][ix].getPedestalRMS();else return -1;};
   
     double setNSigma(double n=-1){if (n>0) nSigma=n; return nSigma;}
  
@@ -85,49 +120,74 @@ class singlePhotonDetector {
     
 
 
-    eventType getEventType(char *data, int ix, int iy, double hcorr=0, double tcorr=0, int sign=1, int cm=0) {
+    eventType getEventType(char *data, int ix, int iy, int cm=0) {
 
-      eventType ret=PEDESTAL;
-      double tot=0, v, max=0, sig;
+      // eventType ret=PEDESTAL;
+      double tot=0, max=0;
+  
+      if (iframe<nDark) {
+	if (cm==0)
+	  addToPedestal(det->getValue(data, ix, iy),ix,iy);
+	return UNDEFINED;
+      }
+      
       
 
-      sig=getPedestalRMS(ix,iy);
+      if (eventMask[iy][ix]==UNDEFINED) {
+	
+	eventMask[iy][ix]=PEDESTAL;
+	
+	
+	cluster->x=ix;
+	cluster->y=iy;
+	cluster->rms=getPedestalRMS(ix,iy);
+	cluster->ped=getPedestal(ix,iy, cm);
+	
 
-      cluster->x=ix;
-      cluster->y=iy;
-      cluster->rms=sig;
-      cluster->ped=getPedestal(ix,iy);
-      
-
-      for (int ir=-(clusterSizeY/2); ir<(clusterSizeY/2)+1; ir++) {
-	for (int ic=-(clusterSize/2); ic<(clusterSize/2)+1; ic++) {
-	  if ((iy+ir)>=0 && (iy+ir)<160 && (ix+ic)>=0 && (ix+ic)<160) {
-	    v=sign*(det->getValue(data, ix+ic, iy+ir)-getPedestal(ix+ic,iy+ir));
-	    // if (cm)
-	    //  v-=sign*getCommonMode(ix+ic, iy+ic);
-	    cluster->set_data(ic, ir, v);
-	    tot+=v;
-	    if (v>max) {
-	      max=v;
-	    }
-	    if (ir==0 && ic==0) {
-	      if (v>nSigma*getPedestalRMS(ix,iy)) {
-		ret=PHOTON;
-	      } else if (v<-nSigma*getPedestalRMS(ix,iy))
-		ret=NEGATIVE_PEDESTAL;
+	for (int ir=-(clusterSizeY/2); ir<(clusterSizeY/2)+1; ir++) {
+	  for (int ic=-(clusterSize/2); ic<(clusterSize/2)+1; ic++) {
+	    if ((iy+ir)>=0 && (iy+ir)<ny && (ix+ic)>=0 && (ix+ic)<nx) {
+	      cluster->set_data(dataSign*(det->getValue(data, ix+ic, iy+ir)-getPedestal(ix+ic,iy+ir,cm)), ic, ir       );
+	      tot+=cluster->get_data(ic,ir);
+	      if (cluster->get_data(ic,ir)>max) {
+		max=cluster->get_data(ic,ir);
+	      }
+	      if (ir==0 && ic==0) {
+		if (cluster->get_data(ic,ir)>nSigma*cluster->rms) {
+		  eventMask[iy][ix]=PHOTON;
+		} else if (cluster->get_data(ic,ir)<-nSigma*cluster->rms)
+		  eventMask[iy][ix]=NEGATIVE_PEDESTAL;
+	      }
 	    }
 	  }
 	}
+	
+	if (eventMask[iy][ix]!=PHOTON && tot>sqrt(clusterSizeY*clusterSize)*nSigma*cluster->rms) {
+	  eventMask[iy][ix]=NEIGHBOUR;
+	  
+	} else if (eventMask[iy][ix]==PHOTON) {
+	  if (cluster->get_data(0,0)>=max) {
+	    for (int ir=-(clusterSizeY/2); ir<(clusterSizeY/2)+1; ir++) {
+	      for (int ic=-(clusterSize/2); ic<(clusterSize/2)+1; ic++) {
+		
+		if ((iy+ir)>=0 && (iy+ir)<ny && (ix+ic)>=0 && (ix+ic)<nx) {
+		  if (eventMask[iy+ir][ix+ic]==UNDEFINED) 
+		    if (ir==0 && ic==0)   eventMask[iy+ir][ix+ic]=PHOTON_MAX;
+		    else eventMask[iy+ir][ix+ic]=NEIGHBOUR;
+		}
+		
+	      }
+	    }
+	    
+
+	  }
+	} else if (eventMask[iy][ix]==PEDESTAL) {
+	  if (cm==0)
+	    addToPedestal(det->getValue(data, ix, iy),ix,iy);
+	}
       }
-      
-      if (ret!=PHOTON && tot>3*nSigma*sig)
-	ret=NEIGHBOUR;
-      else if (ret==PHOTON) {
-	if (cluster->get_data(0,0)>=max)
-	  ret=PHOTON_MAX;
-      }
-      
-      return ret;
+           
+      return  eventMask[iy][ix];
 
   };
 
@@ -135,10 +195,31 @@ class singlePhotonDetector {
 
 
 
+    int SetNPedestals(int i=-1) {int ix=0, iy=0; if (i>0) for (ix=0; ix<nx; ix++) for (iy=0; iy<ny; iy++) stat[iy][ix].SetNPedestals(i); return stat[0][0].SetNPedestals();};
 
+    double getClusterElement(int ic, int ir){return cluster->get_data(ic,ir);};
+    eventType getEventMask(int ic, int ir){return eventMask[ir][ic];};
+ 
+#ifdef MYROOT1
+    TTree *initEventTree(char *tname, int *iFrame=NULL) {
+      TTree* tall=new TTree(tname,tname);
 
-  double getClusterElement(int ic, int ir, int cmsub=0){return cluster->get_data(ic,ir);};
-  
+      if (iFrame)
+	tall->Branch("iFrame",iFrame,"iframe/I");
+      else
+	tall->Branch("iFrame",&(cluster->iframe),"iframe/I");
+
+      tall->Branch("x",&(cluster->x),"x/I");
+      tall->Branch("y",&(cluster->y),"y/I");
+      char tit[100];
+      sprintf(tit,"data[%d]/D",clusterSize*clusterSizeY);
+      tall->Branch("data",cluster->data,tit);
+      tall->Branch("pedestal",&(cluster->ped),"pedestal/D");
+      tall->Branch("rms",&(cluster->rms),"rms/D");
+      return tall;
+    };
+#endif
+
 
  private:
   
@@ -146,79 +227,21 @@ class singlePhotonDetector {
   int nx, ny;
 
 
-
-  MovingStat **stat;
+  pedestalSubtraction **stat;
+  commonModeSubtraction *cmSub;
+  //MovingStat **stat;
+  int nDark;
+  eventType **eventMask;
   double nSigma;
   int clusterSize, clusterSizeY;
   single_photon_hit *cluster;
+  int iframe;
+  int dataSign;
 
-  MovingStat cmStat[4]; //stores the common mode average per supercolumn
-  double cmPed[4]; // stores the common mode for this frame per supercolumn
-  double nCm[4]; // stores the number of pedestals to calculate the cm per supercolumn
-  int cx, cy;
+  /*   int cx, cy; */
 };
 
 
-
-
-
-
-
-    /////////////////////////////////////////////////////// DONE UNTIL HERE!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
- /*  void calculateCommonMode(int xmin=0, int xmax=160, int ymin=0, int ymax=160, double hc=0, double tc=0) { */
-
-/*     int scmin=xmin/40; */
-/*     int scmax=(xmax-1)/40+1; */
-/*     int isc=0, ix, iy; */
-
-/*     for (isc=scmin; isc<scmax; isc++) { */
-/*       nCm[isc]=0; */
-/*       cmPed[isc]=0; */
-/*     } */
-    
-    
-
-
-/*     for (ix=xmin-1; ix<xmax+1; ix++) { */
-/*       isc=ix/40; */
-/*       for (iy=ymin-1; iy<ymax+1; iy++) { */
-/* 	if (isGood(ix,iy)) { */
-/* 	  if (getEventType(ix, iy, hc, tc, 1,0)==PEDESTAL) { */
-/* 	    cmPed[isc]+=getChannelShort(ix, iy, hc, tc); */
-/* 	    nCm[isc]++; */
-/* 	  } */
-/* 	} */
-	
-/*       } */
-
-/*     } */
-
-    
-/*     for (isc=scmin; isc<scmax; isc++) { */
-
-/*       if (nCm[isc]>0) */
-/* 	cmStat[isc].Calc(cmPed[isc]/nCm[isc]); */
-
-/*       //   cout << "SC " << isc << nCm[isc] << " " << cmPed[isc]/nCm[isc] << " " << cmStat[isc].Mean() << endl; */
-
-/*     } */
-    
-
-/*   }; */
-
-/*   double getCommonMode(int ix, int iy) { */
-/*     int isc=ix/40; */
-/*     if (nCm[isc]>0) { */
-/*      /\*  if (ix==20 && iy==20) *\/ */
-/* /\* 	cout << cmPed[isc] << " " << nCm[isc] << " " << cmStat[isc].Mean() << " " << cmPed[isc]/nCm[isc]-cmStat[isc].Mean() << endl; *\/ */
-/*       return cmPed[isc]/nCm[isc]-cmStat[isc].Mean(); */
-/*     } else { */
-/*   /\*     if (ix==20 && iy==20) *\/ */
-/* /\* 	cout << "No common mode!" << endl; *\/ */
-      
-/*       return 0; */
-/*     } */
-/*   }; */
 
 
 

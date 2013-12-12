@@ -2,7 +2,6 @@
 #define  SINGLEPHOTONDETECTOR_H
 
 
-#include <inttypes.h>
 #include "slsDetectorData.h"
 
 #include "single_photon_hit.h"
@@ -37,6 +36,7 @@ using namespace std;
 template <class dataType>
 class singlePhotonDetector {
 
+  /** @short class to perform pedestal subtraction etc. and find single photon clusters for an analog detector */
 
  public:
 
@@ -44,11 +44,12 @@ class singlePhotonDetector {
   /**
 
      Constructor (no error checking if datasize and offsets are compatible!)
-     \param npx number of pixels in the x direction
-     \param npy number of pixels in the y direction
-     \param ds size of the dataset
-     \param dMap array of size nx*ny storing the pointers to the data in the dataset (as offset)
-     \param dMask Array of size nx*ny storing the polarity of the data in the dataset (should be 0 if no inversion is required, 0xffffffff is inversion is required)
+     \param s detector data structure to be used
+     \param csize cluster size (should be an odd number). Defaults to 3
+     \param nsigma number of rms to discriminate from the noise. Defaults to 5
+     \param cm common mode subtraction algorithm, if any. Defaults to NULL i.e. none
+     \param nped number of samples for pedestal averaging
+     \param nd number of dark frames to average as pedestals without photon discrimination at the beginning of the measurement
 
 
   */
@@ -63,7 +64,6 @@ class singlePhotonDetector {
 		       int nd=100) : det(d), nx(0), ny(0), stat(NULL), cmSub(cm),  nDark(nd), eventMask(NULL),nSigma (nsigma), clusterSize(csize), clusterSizeY(csize), cluster(NULL), iframe(-1), dataSign(sign) {
 
    
-
     det->getDetectorSize(nx,ny);
     
 
@@ -80,39 +80,80 @@ class singlePhotonDetector {
       clusterSizeY=1;
 
     cluster=new single_photon_hit(clusterSize,clusterSizeY);
+    setClusterSize(csize);
     
   };
-    
+    /**
+       destructor. Deletes the cluster structure and the pdestalSubtraction array
+    */
     virtual ~singlePhotonDetector() {delete cluster; for (int i=0; i<ny; i++) delete [] stat[i]; delete [] stat;};
 
-
+    
+    /** resets the pedestalSubtraction array and the commonModeSubtraction */
     void newDataSet(){iframe=-1; for (int iy=0; iy<ny; iy++) for (int ix=0; ix<nx; ix++) stat[iy][ix].Clear(); if (cmSub) cmSub->Clear(); };  
+
+    /** resets the eventMask to undefined and the commonModeSubtraction */
     void newFrame(){iframe++; for (int iy=0; iy<ny; iy++) for (int ix=0; ix<nx; ix++) eventMask[iy][ix]=UNDEFINED; if (cmSub) cmSub->newFrame();};
 
 
+    /** sets the commonModeSubtraction algorithm to be used 
+	\param cm commonModeSubtraction algorithm to be used (NULL unsets) 
+	\returns pointer to the actual common mode subtraction algorithm
+    */
     commonModeSubtraction setCommonModeSubtraction(commonModeSubtraction *cm) {cmSub=cm; return cmSub;};
 
+
+    /**
+       sets the sign of the data
+       \param sign 1 means positive values for photons, -1 negative, 0 gets
+       \returns current sign for the data
+    */
     int setDataSign(int sign=0) {if (sign==1 || sign==-1) dataSign=sign; return dataSign;};
 
+    
+    /**
+       adds value to pedestal (and common mode) for the given pixel
+       \param val value to be added
+       \param ix pixel x coordinate
+       \param iy pixel y coordinate
+    */
     virtual void addToPedestal(double val, int ix, int iy){ if (ix>=0 && ix<nx && iy>=0 && iy<ny) { stat[iy][ix].addToPedestal(val); if (cmSub && det->isGood(ix, iy) ) cmSub->addToCommonMode(val, ix, iy);}};
 
-
+  /**
+       gets  pedestal (and common mode)
+       \param ix pixel x coordinate
+       \param iy pixel y coordinate
+       \param cm 0 (default) without common mode subtraction, 1 with common mode subtraction (if defined)
+    */
     virtual double getPedestal(int ix, int iy, int cm=0){if (ix>=0 && ix<nx && iy>=0 && iy<ny) if (cmSub && cm>0) return stat[iy][ix].getPedestal()-cmSub->getCommonMode(); else return stat[iy][ix].getPedestal(); else return -1;};
 
-
+  /**
+       gets  pedestal rms (i.e. noise)
+       \param ix pixel x coordinate
+       \param iy pixel y coordinate
+    */
     double getPedestalRMS(int ix, int iy){if (ix>=0 && ix<nx && iy>=0 && iy<ny) return stat[iy][ix].getPedestalRMS();else return -1;};
   
+
+    /** sets/gets number of rms threshold to detect photons
+	\param n number of sigma to be set (0 or negative gets)
+	\returns actual number of sigma parameter
+    */
     double setNSigma(double n=-1){if (n>0) nSigma=n; return nSigma;}
- 
+  
+    /** sets/gets cluster size
+	\param n cluster size to be set, (0 or negative gets). If even is incremented by 1.
+	\returns actual cluster size
+    */
     int setClusterSize(int n=-1){
       if (n>0 && n!=clusterSize) {
 	if (n%2==0)
 	  n+=1;
 	clusterSize=n; 
-	delete cluster;    
+	if (cluster)
+	  delete cluster;    
 	if (ny>1)
 	  clusterSizeY=clusterSize;
-
 	cluster=new single_photon_hit(clusterSize,clusterSizeY);
       }
       return clusterSize;
@@ -120,6 +161,17 @@ class singlePhotonDetector {
     
 
 
+
+    /** finds event type for pixel and fills cluster structure. The algorithm loops only if the evenMask for this pixel is still undefined.
+	if pixel or cluster around it are above threshold (nsigma*pedestalRMS) cluster is filled and pixel mask is PHOTON_MAX (if maximum in cluster) or NEIGHBOUR; If PHOTON_MAX, the elements of the cluster are also set as NEIGHBOURs in order to speed up the looping
+	if below threshold the pixel is either marked as PEDESTAL (and added to the pedestal calculator) or NEGATIVE_PEDESTAL is case it's lower than -threshold, otherwise the pedestal average would drift to negative values while it should be 0.
+
+	/param data pointer to the data
+	/param ix pixel x coordinate
+	/param iy pixel y coordinate
+	/param cm enable(1)/disable(0) common mode subtraction (if defined). 
+	/returns event type for the given pixel
+    */
     eventType getEventType(char *data, int ix, int iy, int cm=0) {
 
       // eventType ret=PEDESTAL;
@@ -194,13 +246,32 @@ class singlePhotonDetector {
 
 
 
-
+    /** sets/gets number of samples for moving average pedestal calculation
+	\param i number of samples to be set (0 or negative gets)
+	\returns actual number of samples
+    */
     int SetNPedestals(int i=-1) {int ix=0, iy=0; if (i>0) for (ix=0; ix<nx; ix++) for (iy=0; iy<ny; iy++) stat[iy][ix].SetNPedestals(i); return stat[0][0].SetNPedestals();};
 
-    double getClusterElement(int ic, int ir){return cluster->get_data(ic,ir);};
-    eventType getEventMask(int ic, int ir){return eventMask[ir][ic];};
+    /** returns value for cluster element in relative coordinates
+	\param ic x coordinate (center is (0,0))
+	\param ir y coordinate (center is (0,0))
+	\returns cluster element
+    */
+    double getClusterElement(int ic, int ir=0){return cluster->get_data(ic,ir);};
+
+    /** returns event mask for the given pixel
+	\param ic x coordinate (center is (0,0))
+	\param ir y coordinate (center is (0,0))
+	\returns event mask enum for the given pixel
+    */
+    eventType getEventMask(int ic, int ir=0){return eventMask[ir][ic];};
  
-#ifdef MYROOT1
+#ifdef MYROOT1  
+    /** generates a tree and maps the branches
+	\param tname name for the tree
+	\param iframe pointer to the frame number
+	\returns returns pointer to the TTree
+    */
     TTree *initEventTree(char *tname, int *iFrame=NULL) {
       TTree* tall=new TTree(tname,tname);
 
@@ -223,22 +294,22 @@ class singlePhotonDetector {
 
  private:
   
-  slsDetectorData<dataType> *det;
-  int nx, ny;
+    slsDetectorData<dataType> *det; /**< slsDetectorData to be used */
+    int nx; /**< Size of the detector in x direction */
+    int ny; /**< Size of the detector in y direction */
 
 
-  pedestalSubtraction **stat;
-  commonModeSubtraction *cmSub;
-  //MovingStat **stat;
-  int nDark;
-  eventType **eventMask;
-  double nSigma;
-  int clusterSize, clusterSizeY;
-  single_photon_hit *cluster;
-  int iframe;
-  int dataSign;
-
-  /*   int cx, cy; */
+    pedestalSubtraction **stat; /**< pedestalSubtraction class */
+    commonModeSubtraction *cmSub;/**< commonModeSubtraction class */
+    int nDark; /**< number of frames to be used at the beginning of the dataset to calculate pedestal without applying photon discrimination */
+    eventType **eventMask; /**< matrix of event type or each pixel */
+    double nSigma; /**< number of sigma parameter for photon discrimination */
+    int clusterSize; /**< cluster size in the x direction */
+    int clusterSizeY; /**< cluster size in the y direction i.e. 1 for strips, clusterSize for pixels */
+    single_photon_hit *cluster; /**< single photon hit data structure */
+    int iframe;  /**< frame number (not from file but incremented within the dataset every time newFrame is called */
+    int dataSign; /**< sign of the data i.e. 1 if photon is positive, -1 if negative */
+    
 };
 
 

@@ -1,6 +1,7 @@
 #ifndef SLSDETECTORDATA_H
 #define  SLSDETECTORDATA_H
 
+#include <inttypes.h>
 #include <iostream>
 #include <fstream>
 
@@ -15,16 +16,19 @@ class slsDetectorData {
 
   /**
 
-     Constructor (no error checking if datasize and offsets are compatible!)
-     \param npx number of pixels in the x direction
-     \param npy number of pixels in the y direction
-     \param ds size of the dataset
-     \param dMap array of size nx*ny storing the pointers to the data in the dataset (as offset)
-     \param dMask Array of size nx*ny storing the polarity of the data in the dataset (should be 0 if no inversion is required, 0xffffffff is inversion is required)
 
+  General slsDetectors data structure. Works for data acquired using the slsDetectorReceiver. Can be generalized to other detectors (many virtual funcs).
+
+  Constructor (no error checking if datasize and offsets are compatible!)
+  \param npx number of pixels in the x direction
+  \param npy number of pixels in the y direction (1 for strips)
+  \param dsize size of the data
+  \param dMap array of size nx*ny storing the pointers to the data in the dataset (as offset)
+  \param dMask Array of size nx*ny storing the polarity of the data in the dataset (should be 0 if no inversion is required, 0xffffffff is inversion is required)
+  \param dROI Array of size nx*ny. The elements are 1s if the channel is good or in the ROI, 0 is bad or out of the ROI. NULL (default) means all 1s. 
 
   */
-  slsDetectorData(int npx, int npy, int np, int psize, int **dMap=NULL, dataType **dMask=NULL, int **dROI=NULL): nx(npx), ny(npy), nPackets(np), packetSize(psize) {
+  slsDetectorData(int npx, int npy, int dsize, int **dMap=NULL, dataType **dMask=NULL, int **dROI=NULL): nx(npx), ny(npy), dataSize(dsize) {
 
    
 
@@ -59,13 +63,20 @@ class slsDetectorData {
     delete [] dataROIMask;
   }
 
+  /**
+     defines the data map (as offset) - no error checking if datasize and offsets are compatible!
+     \param dMap array of size nx*ny storing the pointers to the data in the dataset (as offset). If NULL (default),the data are arranged as if read out row by row (dataMap[iy][ix]=(iy*nx+ix)*sizeof(dataType);)
+
+  */
+
+
   void setDataMap(int **dMap=NULL) {
 
 
     if (dMap==NULL) {
       for (int iy=0; iy<ny; iy++)
 	 for (int ix=0; ix<nx; ix++)
-	   dataMap[iy][ix]=ix*ny+ix;
+	   dataMap[iy][ix]=(iy*nx+ix)*sizeof(dataType);
     } else {
       for (int iy=0; iy<ny; iy++)
 	 for (int ix=0; ix<nx; ix++)
@@ -74,6 +85,14 @@ class slsDetectorData {
     
   };
 
+
+  /**
+     defines the data mask i.e. the polarity of the data
+     \param dMask Array of size nx*ny storing the polarity of the data in the dataset (should be 0 if no inversion is required, 0xffffffff is inversion is required)
+
+  */
+
+
   void setDataMask(dataType **dMask=NULL){
 
     if (dMask!=NULL) {
@@ -81,9 +100,18 @@ class slsDetectorData {
       for (int iy=0; iy<ny; iy++)
 	 for (int ix=0; ix<nx; ix++)
 	   dataMask[iy][ix]=dMask[iy][ix];
+    } else {
+      for (int iy=0; iy<ny; iy++)
+	 for (int ix=0; ix<nx; ix++)
+	   dataMask[iy][ix]=0;
     }
-    
   };
+  /**
+     defines the region of interest and/or the bad channels mask
+     \param dROI Array of size nx*ny. The lements are 1s if the channel is good or in the ROI, 0 is bad or out of the ROI. NULL (default) means all 1s. 
+
+  */
+
   void setDataROIMask(int **dROI=NULL){
 
     if (dROI!=NULL) {
@@ -102,21 +130,37 @@ class slsDetectorData {
     
   };
 
+  /**
+     Define bad channel or roi mask for a single channel
+     \param ix channel x coordinate
+     \param iy channel y coordinate (1 for strips)
+     \param i 1 if pixel is good (or in the roi), 0 if bad
+     \returns 1 if pixel is good, 0 if it's bad, -1 if pixel is out of range
+  */
   int setGood(int ix, int iy, int i=1) {  if (ix>=0 && ix<nx && iy>=0 && iy<ny) dataROIMask[iy][ix]=i; return isGood(ix,iy);};
-
+  /**
+     Define bad channel or roi mask for a single channel
+     \param ix channel x coordinate
+     \param iy channel y coordinate (1 for strips)
+     \returns 1 if pixel is good, 0 if it's bad, -1 if pixel is out of range
+  */
   int isGood(int ix, int iy) {  if (ix>=0 && ix<nx && iy>=0 && iy<ny) return dataROIMask[iy][ix]; else return -1;};
 
-
-  void getDetectorSize(int &npx, int &npy){npx=nx; npy=ny;};
+  /**
+     Returns detector size in x,y
+     \param nx reference to number of channels in x
+     \param ny reference to number of channels in y (will be 1 for strips)
+     \returns total number of channels
+  */
+  int getDetectorSize(int &npx, int &npy){npx=nx; npy=ny; return nx*ny;};
 
 
   /**
 
-     Returns the value of the selected channel for the given dataset (no error checking if number of pixels are compatible!)
+     Returns the value of the selected channel for the given dataset. Virtual function, can be overloaded.
      \param data pointer to the dataset (including headers etc)
-     \param ix pixel numb er in the x direction
+     \param ix pixel number in the x direction
      \param iy pixel number in the y direction
-
      \returns data for the selected channel, with inversion if required
 
   */
@@ -124,119 +168,72 @@ class slsDetectorData {
 
   virtual dataType getChannel(char *data, int ix, int iy=0) {
     dataType m=0, d=0;
-    if (ix>=0 && ix<nx && iy>=0 && iy<ny && dataMap[iy][ix]>=0 && dataMap[iy][ix]<nPackets*packetSize) {
+    if (ix>=0 && ix<nx && iy>=0 && iy<ny && dataMap[iy][ix]>=0 && dataMap[iy][ix]<dataSize) {
       m=dataMask[iy][ix];
       d=*((dataType*)(data+dataMap[iy][ix]));
     }  
     return d^m;
   };
 
+  /**
+
+     Returns the value of the selected channel for the given dataset as double.
+     \param data pointer to the dataset (including headers etc)
+     \param ix pixel number in the x direction
+     \param iy pixel number in the y direction
+     \returns data for the selected channel, with inversion if required as double
+
+  */
   virtual double getValue(char *data, int ix, int iy=0) {return (double)getChannel(data, ix, iy);};
 
+   /**
 
-  virtual  int getFrameNumber(char *buff){return ((*(int*)buff)&(0xffffff00))>>8;};
-  virtual int getPacketNumber(char *buff) {return (*(int*)buff)&0xff;};
+     Returns the frame number for the given dataset. Purely virtual func.
+     \param buff pointer to the dataset
+     \returns frame number
 
-
-  virtual  char *findNextFrame(char *data, int &npackets, int dsize) {
-    char *retval=NULL, *p=data;
-    int dd=0;
-    int fn, fnum=-1,  np=0, pnum=-1;
-    while (dd<=(dsize-packetSize)) {
-      pnum=getPacketNumber(p);
-      fn=getFrameNumber(p);
-      if (pnum<0 || pnum>=nPackets) {
-	cout << "Bad packet number " << pnum << " frame "<< fn << endl;
-	retval=NULL;
-	continue;
-      }	
-      if (pnum==1) {
-	fnum=fn;
-	retval=p;
-	if (np>0)
-	  cout << "*Incomplete frame number " << fnum << endl;
-	np=0;
-      } else if (fn!=fnum) {
-	if (fnum!=-1) {
-	  cout << " **Incomplete frame number " << fnum << " pnum " << pnum << " " << getFrameNumber(p) << endl;
-	  retval=NULL;
-	}
-	np=0;
-      }
-      p+=packetSize;
-      dd+=packetSize;
-      np++;
-      if (np==nPackets)
-	if (pnum==nPackets)
-	  break;
-	else {
-	  cout << "Too many packets for this frame! "<< fnum << " " << pnum << endl;
-	  retval=NULL;
-	}
-    }
-    if (np<40) {
-      if (np>0) 
-	cout << "Too few packets for this frame! "<< fnum << " " << pnum << endl;
-    }
-    
-    npackets=np;
-    
-    return retval;
-  };
+  */
 
 
-  virtual char *readNextFrame(ifstream &filebin) {
-    
+  virtual  int getFrameNumber(char *buff)=0;   
 
-/*     if (oldbuff)  */
-/*       delete [] oldbuff; */
+  /**
 
-/*     oldbuff=buff; */
-    
-    // char *p=new char[1286];
-    char *data=new char[packetSize*nPackets];
-    char *retval=0;
-    int np=40;
+     Returns the packet number for the given dataset. purely virtual func
+     \param buff pointer to the dataset
+     \returns packet number number
 
-    if (filebin.is_open()) {
-      while (filebin.read(data+np*packetSize,packetSize)) {
+  */
 
-	if (np==nPackets) {
-
-	  retval=findNextFrame(data,np,packetSize*nPackets);
-	  if (retval==data && np==nPackets)
-	    return data;
-	  else if (np>nPackets) {
-	    cout << "too many packets!!!!!!!!!!" << endl;
-	    delete [] data;
-	    return NULL;
-	  } else {
-	    for (int ip=0; ip<np; ip++)
-	      memcpy(data+ip*packetSize,retval+ip*packetSize,packetSize);
-	  } 
-
-	} else if (np>nPackets) {
-	  cout << "*******too many packets!!!!!!!!!!" << endl;
-	  delete [] data;
-	  return NULL;
-	} else {
-	  // memcpy(data+np*1286,p,1286);
-	  np++;
-	}
-	    
-      }
-    }
-    delete [] data;
-    return NULL;
-  };
+  virtual int getPacketNumber(char *buff)=0;
 
 
+   /**
 
- private:
+     Loops over a memory slot until a complete frame is found (i.e. all packets 0 to nPackets, same frame number). purely virtual func
+     \param data pointer to the memory to be analyzed
+     \param ndata reference to the amount of data found for the frame, in case the frame is incomplete at the end of the memory slot
+     \param dsize size of the memory slot to be analyzed
+     \returns pointer to the beginning of the last good frame (might be incomplete if ndata smaller than dataSize), or NULL if no frame is found 
+
+  */
+  virtual  char *findNextFrame(char *data, int &ndata, int dsize)=0;
+
+
+   /**
+
+     Loops over a file stream until a complete frame is found (i.e. all packets 0 to nPackets, same frame number). Can be overloaded for different kind of detectors! 
+     \param filebin input file stream (binary)
+     \returns pointer to the begin of the last good frame, NULL if no frame is found or last frame is incomplete
+
+  */
+  virtual char *readNextFrame(ifstream &filebin)=0;
+
+
+ protected:
   const int nx; /**< Number of pixels in the x direction */
   const int ny; /**< Number of pixels in the y direction */
-  const int nPackets; /**<number of UDP packets constituting one frame */
-  const int packetSize; /**< size of a udp packet */
+  const int dataSize; /**<size of the data constituting one frame */
   int **dataMap; /**< Array of size nx*ny storing the pointers to the data in the dataset (as offset)*/
   dataType **dataMask; /**< Array of size nx*ny storing the polarity of the data in the dataset (should be 0 if no inversion is required, 0xffffffff is inversion is required) */
   int **dataROIMask; /**< Array of size nx*ny 1 if channel is good (or in the ROI), 0 if bad channel (or out of ROI)   */

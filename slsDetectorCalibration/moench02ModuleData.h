@@ -1,39 +1,24 @@
 #ifndef MOENCH02MODULEDATA_H
 #define  MOENCH02MODULEDATA_H
-//#include "slsDetectorData.h"
-#include "singlePhotonDetector.h"
-
-#include "RunningStat.h"
-#include "MovingStat.h"
-
-#include <iostream>
-#include <fstream>
-
-#include <TTree.h>
-using namespace std;
+#include "slsReceiverData.h"
 
 
 
-class moench02ModuleData : public slsDetectorData<uint16_t> {
+class moench02ModuleData : public slsReceiverData<uint16_t> {
  public:
 
 
 
 
   /**
-
-     Constructor (no error checking if datasize and offsets are compatible!)
-     \param npx number of pixels in the x direction
-     \param npy number of pixels in the y direction
-     \param ds size of the dataset
-     \param dMap array of size nx*ny storing the pointers to the data in the dataset (as offset)
-     \param dMask Array of size nx*ny storing the polarity of the data in the dataset (should be 0 if no inversion is required, 0xffffffff is inversion is required)
-
+     Implements the slsReceiverData structure for the moench02 prototype read out by a module i.e. using the slsReceiver
+     (160x160 pixels, 40 packets 1286 large etc.)
+     \param c crosstalk parameter for the output buffer
 
   */
   
 
-  moench02ModuleData(double c=0): slsDetectorData<uint16_t>(160, 160, 40, 1286), xtalk(c) {
+  moench02ModuleData(double c=0): slsReceiverData<uint16_t>(160, 160, 40, 1286), xtalk(c) {
 
 
 
@@ -60,7 +45,7 @@ class moench02ModuleData : public slsDetectorData<uint16_t> {
 	    ix=isc*40+ic;
 	    iy=ip*16+ir;
 
-	    dMap[iy][ix]=1286*(isc*10+ip)+2*ir*40+2*ic;
+	    dMap[iy][ix]=1286*(isc*10+ip)+2*ir*40+2*ic+4; 
 	    // cout << ix << " " << iy << " " << dMap[ix][iy] << endl;
 	  }
 	}
@@ -85,9 +70,15 @@ class moench02ModuleData : public slsDetectorData<uint16_t> {
 
   };
     
-    //   ~moench02ModuleData() {if (buff) delete [] buff; if (oldbuff) delete [] oldbuff; };
   
+  
+  /**
+     gets the packets number (last packet is labelled with 0 and is replaced with 40)
+     \param buff pointer to the memory
+     \returns packet number
 
+  */
+  
   int getPacketNumber(char *buff){
     int np=(*(int*)buff)&0xff;
     if (np==0)
@@ -95,6 +86,15 @@ class moench02ModuleData : public slsDetectorData<uint16_t> {
     return np;
   };
 
+
+  /**
+    returns the pixel value as double correcting for the output buffer crosstalk
+     \param data pointer to the memory
+     \param ix coordinate in the x direction
+     \param iy coordinate in the y direction
+     \returns channel value as double
+
+  */
   double getValue(char *data, int ix, int iy=0) {
     if (xtalk==0 || ix%40==0)
       return (double)getValue(data, ix, iy);
@@ -102,7 +102,19 @@ class moench02ModuleData : public slsDetectorData<uint16_t> {
       return slsDetectorData<uint16_t>::getValue(data, ix, iy)-xtalk*slsDetectorData<uint16_t>::getValue(data, ix-1, iy);
   };
   
+  
+
+  /** sets the output buffer crosstalk correction parameter
+      \param c output buffer crosstalk correction parameter to be set
+      \returns current value for the output buffer crosstalk correction parameter
+
+  */
   double setXTalk(double c) {xtalk=c; return xtalk;}
+
+
+  /** gets the output buffer crosstalk parameter
+      \returns current value for the output buffer crosstalk correction parameter
+  */
   double getXTalk() {return xtalk;}
   
 
@@ -113,7 +125,7 @@ class moench02ModuleData : public slsDetectorData<uint16_t> {
 
  private:
   
-  double xtalk;
+  double xtalk; /**<output buffer crosstalk correction parameter */
 
 
 };

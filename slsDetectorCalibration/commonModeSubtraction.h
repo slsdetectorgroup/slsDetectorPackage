@@ -5,10 +5,22 @@
 
 class commonModeSubtraction {
 
+  /** @short class to calculate the common mode of the pedestals based on an approximated moving average*/ 
+
  public:
+  
+  /** constructor
+      \param nn number of samples for the moving average to calculate the average common mode
+      \param iroi number of regions on which one can calculate the common mode separately. Defaults to 1 i.e. whole detector
+
+  */
   commonModeSubtraction(int nn=1000, int iroi=1) : cmStat(NULL), cmPed(NULL), nCm(NULL), nROI(iroi)  {cmStat=new MovingStat[nROI]; for (int i=0; i<nROI; i++) cmStat[i].SetN(nn); cmPed=new double[nROI]; nCm=new double[nROI];};
+
+    /** destructor - deletes the moving average(s) and the sum of pedestals calculator(s) */
     virtual ~commonModeSubtraction() {delete [] cmStat; delete [] cmPed; delete [] nCm;};
     
+
+    /** clears the moving average and the sum of pedestals calculation - virtual func*/
     virtual void  Clear(){
       for (int i=0; i<nROI; i++) {
 	cmStat[i].Clear();  
@@ -16,6 +28,7 @@ class commonModeSubtraction {
 	cmPed[i]=0;
       }};
     
+    /** adds the average of pedestals to the  moving average and reienitialize the calculation of the sum of pedestals for all ROIs. - virtual func*/
     virtual void  newFrame(){
       for (int i=0; i<nROI; i++) {
 	if (nCm[i]>0) cmStat[i].Calc(cmPed[i]/nCm[i]);  
@@ -23,25 +36,32 @@ class commonModeSubtraction {
 	cmPed[i]=0;
       }};
     
-    virtual void addToCommonMode(double val, int ix=0, int iy=0) {
-      (void)ix; (void)iy;
-      cmPed[0]+=val; 
-      nCm[0]++;};
-    
-    virtual double getCommonMode(int ix=0, int iy=0) {
-      (void)ix; (void)iy;
-      if (nCm[0]>0) return cmPed[0]/nCm[0]-cmStat[0].Mean(); 
-      else return 0;};
+    /** adds the pixel to the sum of pedestals -- virtual func 
+	\param isc region of interest index
+    */
+    virtual void addToCommonMode(double val, int isc=0) {
+      if (isc>=0 && isc<nROI) {
+	cmPed[isc]+=val; 
+	nCm[isc]++;}};
+
+    /** gets the common mode i.e. the difference between the current average sum of pedestals mode and the average pedestal -- virtual func 
+	\param isc region of interest index
+	\return the difference  between the current average sum of pedestals and the average pedestal
+    */
+    virtual double getCommonMode(int isc=0) {
+      if (isc>=0 && isc<nROI)
+	if (nCm[0]>0) return cmPed[0]/nCm[0]-cmStat[0].Mean(); 
+      return 0;};
     
 
 
 
 
  protected:
-  MovingStat *cmStat; //stores the common mode average per supercolumn */
-  double *cmPed; // stores the common mode for this frame per supercolumn */
-  double *nCm; // stores the number of pedestals to calculate the cm per supercolumn */
-  const int nROI;
+  MovingStat *cmStat; /**<array of moving average of the pedestal average per region of interest */
+  double *cmPed; /**< array storing the sum of pedestals per region of interest */
+  double *nCm; /**< array storing the number of pixels currently contributing to the pedestals */
+  const int nROI; /**< constant parameter for number of regions on which the common mode should be calculated separately e.g. supercolumns */
 
 
 };

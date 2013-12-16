@@ -101,6 +101,26 @@ export QWTDIR=/usr/local/qwt-6.0-svn/
 export LD_LIBRARY_PATH=$QWTDIR/lib:$LD_LIBRARY_PATH
 \end{verbatim}
 
+\subsection{Installation with YUM}
+
+You must install the qt4 and qwt development package i.e.
+\begin{verbatim}
+> yum install qt-devel qwt-devel 
+\end{verbatim}
+ and then edit edit your .bashrc as follows
+\begin{verbatim}
+export ROOTSYS=/opt/root/5.28.00
+export QTDIR=/usr/lib64/qt4
+export QWTDIR=/usr/include/qwt
+export PATH=$QTDIR:bin:$PATH
+\end{verbatim}
+
+You should then continue with the root installation.
+
+To compile, you should edit the file slsDetectorGui/slsDetectorGui.pro as follows.\\
+All lines containing \verb=$QTDIR= and \verb=$QWTDIR= should be commented, except in the INCLUDEPATH (\verb=$QWTDIR \=).\\
+Moreover the  \verb=LIBS= line should be changed \verb=-L$(QWTDIR)/lib= to \verb=-L$(QWTDIR)/lib64=. 
+
 
 \subsection{Root installation}
 
@@ -140,17 +160,17 @@ If you simply want to install the software in the working directory you can:
 \begin{itemize}
 \item[make] compile the library, the command line interface and the receiver 
 
-\item[make lib]     	compile only the library 
+\item[make lib]  compile only the library 
 
-\item[make slsDetectorClient] compile the command line interface (and the library, since it is required)
+\item[make textclient] compile the command line interface (and the library, since it is required)
 
-\item[make slsDetectorClient\_static] compile the command line interface statically linking the library (and the library, since it is required)
+\item[make stextclient] compile the command line interface statically linking the library (and the library, since it is required)
 
-\item[make slsReceiver] compile the data reciever (and the library, since it is required)
+\item[make receiver] compile the data reciever (and the library, since it is required)
 
-\item[make slsReceiver\_static] compile the data reciever statically linking the library (and the library, since it is required)
+\item[make sreceiver] compile the data reciever statically linking the library (and the library, since it is required)
 
-\item[make slsDetectorGUI]  compile slsDetectorGUI - requires a working Qt4 and Qwt installation
+\item[make gui]  compile slsDetectorGUI - requires a working Qt4 and Qwt installation
 
 \item[make calWiz] compile the calibration wizards - requires a working root installation
 

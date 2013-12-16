@@ -37,7 +37,9 @@ class commonModeSubtraction {
       }};
     
     /** adds the pixel to the sum of pedestals -- virtual func must be overloaded to define the regions of interest
-	\param ix region of interest index
+	\param val value to add
+	\param ix pixel x coordinate
+	\param iy pixel y coordinate
     */
     virtual void addToCommonMode(double val, int ix=0, int iy=0) {
       (void) ix; (void) iy;
@@ -48,7 +50,8 @@ class commonModeSubtraction {
     };
 
     /** gets the common mode i.e. the difference between the current average sum of pedestals mode and the average pedestal -- virtual func must be overloaded to define the regions of interest
-	\param isc region of interest index
+	\param ix pixel x coordinate
+	\param iy pixel y coordinate
 	\return the difference  between the current average sum of pedestals and the average pedestal
     */
     virtual double getCommonMode(int ix=0, int iy=0) {

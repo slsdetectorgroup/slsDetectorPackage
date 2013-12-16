@@ -148,8 +148,8 @@ class slsDetectorData {
 
   /**
      Returns detector size in x,y
-     \param nx reference to number of channels in x
-     \param ny reference to number of channels in y (will be 1 for strips)
+     \param npx reference to number of channels in x
+     \param npy reference to number of channels in y (will be 1 for strips)
      \returns total number of channels
   */
   int getDetectorSize(int &npx, int &npy){npx=nx; npy=ny; return nx*ny;};

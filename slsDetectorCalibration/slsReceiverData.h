@@ -56,13 +56,13 @@ class slsReceiverData : public slsDetectorData<dataType> {
 
      Loops over a memory slot until a complete frame is found (i.e. all packets 0 to nPackets, same frame number). Can be overloaded for different kind of detectors!
      \param data pointer to the memory to be analyzed
-     \param ndata
+     \param ndata size of frame returned
      \param dsize size of the memory slot to be analyzed
      \returns pointer to the first packet of the last good frame (might be incomplete if npackets lower than the number of packets), or NULL if no frame is found 
 
   */
 
-  virtual  char *findNextFrame(char *data, int &npackets, int dsize) {
+  virtual  char *findNextFrame(char *data, int &ndata, int dsize) {
     char *retval=NULL, *p=data;
     int dd=0;
     int fn, fnum=-1,  np=0, pnum=-1;
@@ -103,7 +103,7 @@ class slsReceiverData : public slsDetectorData<dataType> {
 	cout << "Too few packets for this frame! "<< fnum << " " << pnum << endl;
     }
     
-    npackets=np*packetSize;
+    ndata=np*packetSize;
     
     return retval;
   };

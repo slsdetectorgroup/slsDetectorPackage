@@ -44,9 +44,10 @@ class singlePhotonDetector {
   /**
 
      Constructor (no error checking if datasize and offsets are compatible!)
-     \param s detector data structure to be used
+     \param d detector data structure to be used
      \param csize cluster size (should be an odd number). Defaults to 3
      \param nsigma number of rms to discriminate from the noise. Defaults to 5
+     \param sign 1 if photons are positive, -1 if  negative
      \param cm common mode subtraction algorithm, if any. Defaults to NULL i.e. none
      \param nped number of samples for pedestal averaging
      \param nd number of dark frames to average as pedestals without photon discrimination at the beginning of the measurement
@@ -269,7 +270,7 @@ class singlePhotonDetector {
 #ifdef MYROOT1  
     /** generates a tree and maps the branches
 	\param tname name for the tree
-	\param iframe pointer to the frame number
+	\param iFrame pointer to the frame number
 	\returns returns pointer to the TTree
     */
     TTree *initEventTree(char *tname, int *iFrame=NULL) {

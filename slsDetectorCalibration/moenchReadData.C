@@ -33,20 +33,22 @@ using namespace std;
 
 /**
 
-  \param fformat, file name format
-  \param tit, title of the tree etc.
-  \param runmin, minimum run number
-  \param runmax, max run number
-  \param nbins=1500, number of bins for spectrum hists
-  \param hmin=-500, minimum for spectrum hists
-  \param hmax=1000, maximum for spectrum hists
-  \param sign=1, sign of the spectrum to find hits
-  \param hc=0, readout correlation coefficient with previous pixel
-  \param xmin=0, minimum x coordinate
-  \param xmax=NC, maximum x coordinate
-  \param ymin=0, minimum y coordinate
-  \param ymax=NR, maximum y coordinate
-  \param cmsub=0  enable commonmode subtraction
+Loops over data file to find single photons, fills the tree (and writes it to file, althoug the root file should be opened before) and creates 1x1, 2x2, 3x3 cluster histograms with ADCu on the x axis, channel number (160*x+y) on the y axis.
+
+  \param fformat file name format
+  \param tit title of the tree etc.
+  \param runmin minimum run number
+  \param runmax max run number
+  \param nbins  number of bins for spectrum hists
+  \param hmin histo minimum for spectrum hists
+  \param hmax histo maximum for spectrum hists
+  \param sign sign of the spectrum to find hits
+  \param hc readout correlation coefficient with previous pixel
+  \param xmin minimum x coordinate
+  \param xmax maximum x coordinate
+  \param ymin minimum y coordinate
+  \param ymax maximum y coordinate
+  \param cmsub  enable commonmode subtraction
   \returns pointer to histo stack with cluster spectra
 */
 

@@ -33,23 +33,21 @@ using namespace std;
 
 /**
 
-  char *fformat, file name format
-  char *tit, title of the tree etc.
-  int runmin, minimum run number
-  int runmax, max run number
-  int nbins=1500, number of bins for spectrum hists
-  int hmin=-500, minimum for spectrum hists
-  int hmax=1000, maximum for spectrum hists
-  int sign=1, sign of the spectrum to find hits
-  double hc=0, readout correlation coefficient with previous pixel
-  double tc=0, time correlation coefficient with previous frame (case of bad reset)
-  int xmin=0, minimum x coordinate
-  int xmax=NC, maximum x coordinate
-  int ymin=0, minimum y coordinate
-  int ymax=NR, maximum y coordinate
-  int pedsub=1, enable pedestal subtraction
-  int cmsub=0  enable commonmode subtraction
-
+  \param fformat, file name format
+  \param tit, title of the tree etc.
+  \param runmin, minimum run number
+  \param runmax, max run number
+  \param nbins=1500, number of bins for spectrum hists
+  \param hmin=-500, minimum for spectrum hists
+  \param hmax=1000, maximum for spectrum hists
+  \param sign=1, sign of the spectrum to find hits
+  \param hc=0, readout correlation coefficient with previous pixel
+  \param xmin=0, minimum x coordinate
+  \param xmax=NC, maximum x coordinate
+  \param ymin=0, minimum y coordinate
+  \param ymax=NR, maximum y coordinate
+  \param cmsub=0  enable commonmode subtraction
+  \returns pointer to histo stack with cluster spectra
 */
 
 

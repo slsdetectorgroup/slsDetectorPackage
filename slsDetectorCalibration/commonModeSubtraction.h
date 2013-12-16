@@ -36,21 +36,24 @@ class commonModeSubtraction {
 	cmPed[i]=0;
       }};
     
-    /** adds the pixel to the sum of pedestals -- virtual func 
-	\param isc region of interest index
+    /** adds the pixel to the sum of pedestals -- virtual func must be overloaded to define the regions of interest
+	\param ix region of interest index
     */
-    virtual void addToCommonMode(double val, int isc=0) {
-      if (isc>=0 && isc<nROI) {
-	cmPed[isc]+=val; 
-	nCm[isc]++;}};
+    virtual void addToCommonMode(double val, int ix=0, int iy=0) {
+      (void) ix; (void) iy;
+      
+      //if (isc>=0 && isc<nROI) {
+      cmPed[0]+=val; 
+      nCm[0]++;//}
+    };
 
-    /** gets the common mode i.e. the difference between the current average sum of pedestals mode and the average pedestal -- virtual func 
+    /** gets the common mode i.e. the difference between the current average sum of pedestals mode and the average pedestal -- virtual func must be overloaded to define the regions of interest
 	\param isc region of interest index
 	\return the difference  between the current average sum of pedestals and the average pedestal
     */
-    virtual double getCommonMode(int isc=0) {
-      if (isc>=0 && isc<nROI)
-	if (nCm[0]>0) return cmPed[0]/nCm[0]-cmStat[0].Mean(); 
+    virtual double getCommonMode(int ix=0, int iy=0) {
+      (void) ix; (void) iy;
+      if (nCm[0]>0) return cmPed[0]/nCm[0]-cmStat[0].Mean(); 
       return 0;};
     
 

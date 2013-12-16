@@ -541,7 +541,7 @@ enum communicationProtocol{
      };
 
     
-     int ReceiveDataOnly(void* buf,int length){
+     int ReceiveDataOnly(void* buf,int length=0){
    
 
        if (buf==NULL) return -1;
@@ -562,16 +562,26 @@ enum communicationProtocol{
 	 break;
        case UDP:
 	 if (socketDescriptor<0) return -1;
-	// while(length>0){
-	for(int i=0;i<packets_per_frame;i++){
-		nsending=packet_size;
-	   //nsending = (length>packet_size) ? packet_size:length;
-	   nsent = recvfrom(socketDescriptor,(char*)buf+total_sent,nsending, 0, (struct sockaddr *) &clientAddress, &clientAddress_length); 
-	   if(!nsent) break;
-	   length-=nsent;
-	   total_sent+=nsent;
+	 //if length given
+	 if(length){
+		 while(length>0){
+			 nsending=packet_size;
+			 nsent = recvfrom(socketDescriptor,(char*)buf+total_sent,nsending, 0, (struct sockaddr *) &clientAddress, &clientAddress_length);
+			 if(!nsent) break;
+			 length-=nsent;
+			 total_sent+=nsent;
+		 }
 	 }
-	 
+	 //depends on packets per frame
+	 else{
+		 for(int i=0;i<packets_per_frame;i++){
+			 nsending=packet_size;
+			 nsent = recvfrom(socketDescriptor,(char*)buf+total_sent,nsending, 0, (struct sockaddr *) &clientAddress, &clientAddress_length);
+			 if(!nsent) break;
+			 length-=nsent;
+			 total_sent+=nsent;
+		 }
+	 }
 	 break;
        default:
 	 ;

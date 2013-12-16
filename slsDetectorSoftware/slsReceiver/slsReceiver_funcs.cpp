@@ -733,7 +733,7 @@ int slsReceiverFuncs::start_receiver(){
 		ret = FAIL;
 	}
 	*/
-	else if(slsReceiverList->getStatus()!=RUNNING)
+	else if(slsReceiverList->getStatus()==IDLE)
 		ret=slsReceiverList->startReceiver(mess);
 #endif
 
@@ -1183,10 +1183,10 @@ int	slsReceiverFuncs::gotthard_read_frame(){
 				cout << "index:" << hex << index << endl;
 #endif
 			}else{
-				bindex = (uint32_t)(*((uint32_t*)raw));
+				bindex = ((uint32_t)(*((uint32_t*)raw)))+1;
 				pindex = (bindex & GOTTHARD_PACKET_INDEX_MASK);
 				index = ((bindex & GOTTHARD_FRAME_INDEX_MASK) >> GOTTHARD_FRAME_INDEX_OFFSET);
-				bindex2 = (uint32_t)(*((uint32_t*)((char*)(raw+onebuffersize))));
+				bindex2 = ((uint32_t)(*((uint32_t*)((char*)(raw+onebuffersize)))))+1;
 				pindex2 =(bindex2 & GOTTHARD_PACKET_INDEX_MASK);
 				index2 =((bindex2 & GOTTHARD_FRAME_INDEX_MASK) >> GOTTHARD_FRAME_INDEX_OFFSET);
 #ifdef VERBOSE

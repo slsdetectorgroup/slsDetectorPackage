@@ -71,12 +71,12 @@ public:
 	/**
 	 * Returns Frames Caught for each real time acquisition (eg. for each scan)
 	 */
-	int getFramesCaught(){return framesCaught;};
+	int getFramesCaught(){return (packetsCaught/packetsPerFrame);};
 
 	/**
 	 * Returns Total Frames Caught for an entire acquisition (including all scans)
 	 */
-	int getTotalFramesCaught(){return totalFramesCaught;};
+	int getTotalFramesCaught(){return (totalPacketsCaught/packetsPerFrame);};
 
 	/**
 	 * Returns the frame index at start of each real time acquisition (eg. for each scan)
@@ -143,6 +143,52 @@ public:
 	 */
 	void resetTotalFramesCaught();
 
+	/**
+	 * Set short frame
+	 * @param i if shortframe i=1
+	 */
+	int setShortFrame(int i);
+
+	/**
+	 * Set the variable to send every nth frame to gui
+	 * or if 0,send frame only upon gui request
+	 */
+	int setNFrameToGui(int i);
+
+	/** set acquisition period if a positive number
+	 */
+	int64_t setAcquisitionPeriod(int64_t index);
+
+	/** enabl data compression, by saving only hits
+	 */
+	void enableDataCompression(bool enable);
+
+	/** get data compression, by saving only hits
+	 */
+	bool getDataCompression(){ return dataCompression;};
+
+	/** set status to transmitting and
+	 * when fifo is empty later, sets status to run_finished
+	 */
+	void startReadout();
+
+	/**
+	 * Returns the buffer-current frame read by receiver
+	 * @param c pointer to current file name
+	 * @param raw address of pointer, pointing to current frame to send to gui
+	 */
+	void readFrame(char* c,char** raw);
+
+
+	/** free fifo buffer, called back from single photon filter
+	 */
+	static void freeFifoBufferCallBack (char* fbuffer, void *this_pointer);
+
+	/**
+	 * Call back from single photon filter to free writingfifo
+	 * called from freeFifoBufferCallBack
+	 */
+	void freeFifoBuffer(char* fbuffer);
 
 	/**
 	 * Starts Receiver - starts to listen for packets
@@ -157,50 +203,48 @@ public:
 	 */
 	int stopReceiver();
 
-	/**
-	 * Returns the buffer-current frame read by receiver
-	 * @param c pointer to current file name
-	 * @param raw address of pointer, pointing to current frame to send to gui
-	 */
-	void readFrame(char* c,char** raw);
-
-	/**
-	 * Set short frame
-	 * @param i if shortframe i=1
-	 */
-	int setShortFrame(int i);
-
-	/** set status to transmitting and
-	 * when fifo is empty later, sets status to run_finished
-	 */
-	void startReadout();
-
-	/** enabl data compression, by saving only hits
-	 */
-	void enableDataCompression(bool enable){dataCompression = enable;if(filter)filter->enableCompression(enable);};
-
-	/** get data compression, by saving only hits
-	 */
-	bool getDataCompression(){ return dataCompression;};
-
-	/**
-	 * Set the variable to send every nth frame to gui
-	 * or if 0,send frame only upon gui request
-	 */
-	int setNFrameToGui(int i);
-
-	/** set acquisition period if a positive number
-	 */
-	int64_t setAcquisitionPeriod(int64_t index);
-
-	/** free fifo buffer, called back from single photon filter
-	 */
-	static void freeFifoBufferCallBack (char* fbuffer, void *this_pointer){((slsReceiverFunctionList*)this_pointer)->freeFifoBuffer(fbuffer);};
-	void freeFifoBuffer(char* fbuffer){fifofree->push(fbuffer);};
-
-
 
 private:
+	/**
+	 * Constructs the singlePhotonFilter object
+	 */
+	void setupFilter();
+
+	/**
+	 * Copy frames to gui
+	 * uses semaphore for nth frame mode
+	 */
+	void copyFrameToGui(char* startbuf);
+
+	/**
+	 * set up fifo according to the new numjobsperthread
+	 */
+	void setupFifoStructure ();
+
+	/**
+	 * creates udp socket
+	 * \returns if success or fail
+	 */
+	int createUDPSocket();
+
+	/**
+	 * create listening thread and many writer threads at class construction
+	 * @param destroy is true to kill all threads and start again
+	 */
+	int createThreads(bool destroy = false);
+
+	/**
+	 * initializes variables and creates the first file
+	 * also does the startAcquisitionCallBack
+	 * \returns FAIL or OK
+	 */
+	int setupWriter();
+
+	/**
+	 * Creates new file
+	 *\returns OK for succces or FAIL for failure
+	 */
+	int createNewFile();
 
 	/**
 	 * Static function - Thread started which listens to packets.
@@ -210,18 +254,18 @@ private:
 	static void* startListeningThread(void *this_pointer);
 
 	/**
-	 * Thread started which listens to packets.
-	 * Called by startReceiver()
-	 *
-	 */
-	int startListening();
-
-	/**
 	 * Static function - Thread started which writes packets to file.
 	 * Called by startReceiver()
 	 * @param this_pointer pointer to this object
 	 */
 	static void* startWritingThread(void *this_pointer);
+
+	/**
+	 * Thread started which listens to packets.
+	 * Called by startReceiver()
+	 *
+	 */
+	int startListening();
 
 	/**
 	 * Thread started which writes packets to file.
@@ -230,34 +274,38 @@ private:
 	 */
 	int startWriting();
 
-	/**
-	 * Creates new file
-	 *\returns OK for succces or FAIL for failure
-	 */
-	int createNewFile();
 
 	/**
-	 * Copy frames to gui
-	 * uses semaphore for nth frame mode
+	 * Writing to file without compression
+	 * @param buf is the address of buffer popped out of fifo
+	 * @param num
 	 */
-	void copyFrameToGui(char* startbuf);
+	void writeToFile_withoutCompression(char* buf,int numpackets);
 
-	/** set up fifo according to the new numjobsperthread
-	 */
-	void setupFifoStructure ();
 
-	/**
-	 * increment counters, pop and push fifos
-	 */
-	void processFrameForFifo();
+
+
+
 
 
 
 	/** detector type */
 	detectorType myDetectorType;
 
-	/** max frames per file **/
-	int maxFramesPerFile;
+	/** status of receiver */
+	runStatus status;
+
+	/** UDP Socket between Receiver and Detector */
+	genericSocket* udpSocket;
+
+	/** Server UDP Port*/
+	int server_port;
+
+	/** ethernet interface or IP to listen to */
+	char *eth;
+
+	/** max packets per file **/
+	int maxPacketsPerFile;
 
 	/** File write enable */
 	int enableFileWrite;
@@ -277,9 +325,6 @@ private:
 	/** if frame index required in file name */
 	int frameIndexNeeded;
 
-	/** Frames Caught for each real time acquisition (eg. for each scan) */
-	int framesCaught;
-
 	/* Acquisition started */
 	bool acqStarted;
 
@@ -292,14 +337,14 @@ private:
 	/** Actual current frame index of each time acquisition (eg. for each scan) */
 	uint32_t frameIndex;
 
-	/** Total Frames Caught for an entire acquisition (including all scans) */
-	int totalFramesCaught;
+	/** Frames Caught for each real time acquisition (eg. for each scan) */
+	int packetsCaught;
 
 	/** Total packets caught for an entire acquisition (including all scans) */
 	int totalPacketsCaught;
 
-	/** Frames currently in current file, starts new file when it reaches max */
-	int framesInFile;
+	/** Pckets currently in current file, starts new file when it reaches max */
+	int packetsInFile;
 
 	/** Frame index at start of an entire acquisition (including all scans) */
 	uint32_t startAcquisitionIndex;
@@ -307,69 +352,39 @@ private:
 	/** Actual current frame index of an entire acquisition (including all scans) */
 	uint32_t acquisitionIndex;
 
-	/** Previous Frame number from buffer */
-	uint32_t prevframenum;
+	/** number of packets per frame*/
+	int packetsPerFrame;
 
-	/** thread listening to packets */
-	pthread_t   listening_thread;
+	/** frame index mask */
+	uint32_t frameIndexMask;
 
-	/** thread writing packets */
-	pthread_t   writing_thread;
+	/** packet index mask */
+	uint32_t packetIndexMask;
 
-	/** mutex for locking variable used by different threads */
-	pthread_mutex_t status_mutex;
+	/** frame index offset */
+	int frameIndexOffset;
 
-	/** listening thread running */
-	int listening_thread_running;
-
-	/** writing thread running */
-	int writing_thread_running;
-
-	/** status of receiver */
-	runStatus status;
-
-	/** Receiver buffer */
-	char* buffer;
-
-	/** Receiver buffer */
-	char *mem0, *memfull;
-
-	/** latest data */
-	char* latestData;
-
-	/** UDP Socket between Receiver and Detector */
-	genericSocket* udpSocket;
-
-	/** Server UDP Port*/
-	int server_port;
-
-	/** ethernet interface or IP to listen to */
-	char *eth;
-
-	/** Element structure to put inside a fifo */
-	struct dataStruct {
-	char* buffer;
-	int rc;
-	};
-
-	/** circular fifo to read and write data*/
-	CircularFifo<char>* fifo;
-
-	/** circular fifo to read and write data*/
-	CircularFifo<char>* fifofree;
-
-	/** fifo size */
-	unsigned int fifosize;
+	/** acquisition period */
+	int64_t acquisitionPeriod;
 
 	/** short frames */
 	int shortFrame;
 
+	/** current frame number */
+	uint32_t currframenum;
+
+	/** Previous Frame number from buffer */
+	uint32_t prevframenum;
+
 	/** buffer size can be 1286*2 or 518 or 1286*40 */
 	int bufferSize;
 
-	/** number of packets per frame*/
-	int packetsPerFrame;
-	
+	/** oen buffer size */
+	int onePacketSize;
+
+	/** latest data */
+	char* latestData;
+
 	/** gui data ready */
 	int guiDataReady;
 
@@ -379,17 +394,17 @@ private:
 	/** points to the filename to send to gui */
 	char* guiFileName;
 
-	/** current frame number */
-	uint32_t currframenum;
-
 	/** send every nth frame to gui or only upon gui request*/
 	int nFrameToGui;
 
-	/** frame index mask */
-	int frameIndexMask;
+	/** fifo size */
+	unsigned int fifosize;
 
-	/** frame index offset */
-	int frameIndexOffset;
+	/** number of jobs per thread for data compression */
+	int numJobsPerThread;
+
+	/** memory allocated for the buffer */
+	char *mem0;
 
 	/** datacompression - save only hits */
 	bool dataCompression;
@@ -397,35 +412,66 @@ private:
 	/** single photon filter */
 	singlePhotonFilter *filter;
 
-	/** oen buffer size */
-	int oneBufferSize;
+	/** circular fifo to store addresses of data read */
+	CircularFifo<char>* fifo;
 
-	/** semaphore to synchronize  writer and guireader threads */
-	sem_t smp;
+	/** circular fifo to store addresses of data already written and ready to be resued*/
+	CircularFifo<char>* fifoFree;
 
-	/** guiDataReady mutex */
-	pthread_mutex_t  dataReadyMutex;
+	/** Receiver buffer */
+	char *buffer;
 
-	/** number of jobs per thread for data compression */
-	int numJobsPerThread;
+	/** max number of writer threads */
+	const static int MAX_NUM_WRITER_THREADS = 15;
 
-	/** offset of current frame */
-	int currentFrameOffset;
+	/** number of writer threads */
+	int numWriterThreads;
 
-	/** offset of current packet */
-	int currentPacketOffset;
+	/** to know if listening and writer threads created properly */
+	int thread_started;
 
-	/** current packet count for current frame */
-	int currentPacketCount;
+	/** mask showing which threads are running */
+	volatile int32_t writerthreads_mask;
 
-	/** current frame count for current buffer */
-	int currentFrameCount;
+	/** current writer thread index*/
+	int currentWriterThreadIndex;
+
+	/** thread listening to packets */
+	pthread_t   listening_thread;
+
+	/** thread writing packets */
+	pthread_t   writing_thread[MAX_NUM_WRITER_THREADS];
 
 	/** total frame count the listening thread has listened to */
 	int totalListeningFrameCount;
 
-	/** acquisition period */
-	int64_t acquisitionPeriod;
+	/** 0 if receiver is idle, 1 otherwise */
+	int running;
+
+
+
+//semaphores
+	/** semaphore to synchronize  writer and guireader threads */
+	sem_t smp;
+	/** semaphore to synchronize  listener thread */
+	sem_t listensmp;
+	/** semaphore to synchronize  writer threads */
+	sem_t writersmp[MAX_NUM_WRITER_THREADS];
+
+//mutex
+	/** guiDataReady mutex */
+	pthread_mutex_t  dataReadyMutex;
+
+	/** mutex for status */
+	pthread_mutex_t status_mutex;
+
+	/** mutex for progress variable currframenum */
+	pthread_mutex_t progress_mutex;
+
+	/** mutex for writing data to file */
+	pthread_mutex_t write_mutex;
+
+
 
 	/**
 	   callback arguments are
@@ -490,14 +536,12 @@ public:
 	   0 callback takes care of open,close,wrie file
 	   1 callback writes file, we have to open, close it
 	   2 we open, close, write file, callback does not do anything
-
 	*/
 	void registerCallBackStartAcquisition(int (*func)(char*, char*,int, int, void*),void *arg){startAcquisitionCallBack=func; pStartAcquisition=arg;};
 
 	/**
 	   callback argument is
 	   toatal frames caught
-
 	*/
 	void registerCallBackAcquisitionFinished(void (*func)(int, void*),void *arg){acquisitionFinishedCallBack=func; pAcquisitionFinished=arg;};
 	

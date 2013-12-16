@@ -331,9 +331,9 @@ int singlePhotonFilter::verifyFrame(char *inData){
 	//for moench, put first packet last
 	if (pIndex == 0)
 		pIndex = packets_per_frame;
-#ifdef VERYVERBOSE
+//#ifdef VERYVERBOSE
 	cout<<"fi:"<<fIndex<< " pi:"<< pIndex << endl;
-#endif
+//#endif
 	//firsttime
 	if (firstTime){
 		firstTime = false;
@@ -345,8 +345,8 @@ int singlePhotonFilter::verifyFrame(char *inData){
 
 	//if it is not matching withthe frame number
 	if (fIndex != fnum){
-		/*cout << "**Frame number doesnt match:Missing Packet! " << fnum << " "
-				"Expected f " << fnum << " p " << pnum + 1 << " received f " << fIndex << " p " << pIndex << endl;*/
+		cout << "**Frame number doesnt match:Missing Packet! " << fnum << " "
+				"Expected f " << fnum << " p " << pnum + 1 << " received f " << fIndex << " p " << pIndex << endl;
 
 		if (ptot == 0) {
 			if (pIndex == 1)//so that its not moved to next line.
@@ -368,8 +368,8 @@ int singlePhotonFilter::verifyFrame(char *inData){
 
 	//if missing a packet, discard
 	else if (pIndex != pnum + 1){/**else */
-		/*cout << "**packet number doesnt match:Missing Packet! " << fnum << " "
-				"Expected f" << fnum << " p " << pnum + 1 << " received f " << fnum << " p " << pIndex << endl;*/
+		cout << "**packet number doesnt match:Missing Packet! " << fnum << " "
+				"Expected f" << fnum << " p " << pnum + 1 << " received f " << fnum << " p " << pIndex << endl;
 		pnum = pIndex;
 		ptot++;
 	}

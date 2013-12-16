@@ -16,13 +16,12 @@ singlePhotonFilter::singlePhotonFilter(int nx, int ny,
 		int16_t *m, int16_t *s, CircularFifo<char>* f, int d, int* tfcaught, int* fcaught,uint32_t* cframenum):
 #ifdef MYROOT1
 										myTree(NULL),
-										myFile(NULL),
 #else
-										myFile(NULL),
 
 										nHitsPerFile(0),
 										nTotalHits(0),
 #endif
+										myFile(NULL),
 										nHitsPerFrame(0),
 										nChannelsX(nx),
 										nChannelsY(ny),
@@ -66,7 +65,10 @@ singlePhotonFilter::singlePhotonFilter(int nx, int ny,
   
 #ifndef MYROOT1
   //photonHitList=(single_photon_hit**) (new int*[nChannelsX*nChannelsY/(nClusterX*nClusterY)*1000]);
-  photonHitList=new single_photon_hit*[nChannelsX*nChannelsY/(nClusterX*nClusterY)*1000];
+  photonHitList=new single_photon_hit*[nChannelsX*nChannelsY/(nClusterX*nClusterY)*1000];  
+  for (int ii=0; ii<nChannelsX*nChannelsY/(nClusterX*nClusterY)*1000; ii++)
+    photonHitList[ii]=new single_photon_hit(nClusterX, nClusterY);
+  cout << nClusterX << " " << nClusterY << " " << nClusterX*nClusterY << endl;
 #endif
 
 	sqrtCluster = sqrt(nClusterX*nClusterY);
@@ -228,16 +230,16 @@ int singlePhotonFilter::writeToFile(){
 			/*cout<<"writing "<< nHitsPerFrame << " hits to file" << endl;*/
 		  for (ii=0; ii<nHitsPerFrame; ii++) {
 		    photonHitList[ii]->write(myFile);
-		    delete  photonHitList[ii];
+		    // delete  photonHitList[ii];
 		  }
-		  delete  photonHitList[ii];
-
+		  // delete  photonHitList[ii];
+		  // photonHitList[0]=new single_photon_hit(nClusterX,nClusterY);
 
 		  //			fwrite((void*)(photonHitList), 1, sizeof(single_photon_hit)*nHitsPerFrame, myFile);
 			/*framesInFile += nHitsPerFrame;*/
-			nHitsPerFrame = 0;
+		  nHitsPerFrame = 0;
 			//cout<<"Exiting writeToFile"<<endl;
-			return OK;
+		  return OK;
 		}else
 			cout << "ERROR: Could not write to " << nHitsPerFrame <<" hits to file as file doesnt exist" << endl;
 
@@ -412,10 +414,6 @@ int singlePhotonFilter::verifyFrame(char *inData){
 }
 
 
-
-
-
-
 void singlePhotonFilter::findHits(){
 	int ir,ic,r,c,i;
 	int currentIndex;
@@ -423,7 +421,7 @@ void singlePhotonFilter::findHits(){
 	int clusterIndex;
 	//	single_photon_hit *hit;
 
-	double* clusterData;//	= hit.data;
+	double clusterData[nClusterX*nClusterY];//	= hit.data;
 	double sigmarms;
 	double clusterrms;
 	double clusterped;
@@ -491,9 +489,8 @@ void singlePhotonFilter::findHits(){
 #endif
 				clusteriframe -= f0;
 				myData = (int16_t*)isData;
-				if (nHitsPerFrame==0)
-				  photonHitList[nHitsPerFrame]=new single_photon_hit(nClusterX, nClusterY);
-
+			       
+			
 				clusterData=photonHitList[nHitsPerFrame]->data;
 
 				//for each pixel
@@ -566,7 +563,9 @@ void singlePhotonFilter::findHits(){
 #ifdef MYROOT1
 								myTree->Fill();
 #else
-								//	photonHitList[nHitsPerFrame].data = clusterData;
+								for (int ix=0; ix<nClusterX*nClusterY; ix++)
+								photonHitList[nHitsPerFrame]->data[ix] = clusterData[ix];
+
 								photonHitList[nHitsPerFrame]->x = ic;
 								photonHitList[nHitsPerFrame]->y = ir;
 								photonHitList[nHitsPerFrame]->rms = clusterrms;
@@ -575,7 +574,11 @@ void singlePhotonFilter::findHits(){
 								//hit.write(myFile);
 								
 								nHitsPerFrame++;
-								photonHitList[nHitsPerFrame]=new single_photon_hit(nClusterX,nClusterY);
+
+								//	cout << nHitsPerFrame << " " << nChannelsX*nChannelsY/(nClusterX*nClusterY)*1000 << endl;
+
+								//	photonHitList[nHitsPerFrame]=new single_photon_hit(nClusterX,nClusterY);
+								//	cout << "done" << endl;
 								nHitsPerFile++;
 								nTotalHits++;
 								if(nHitsPerFile >= MAX_HITS_PER_FILE-1)
@@ -596,6 +599,7 @@ void singlePhotonFilter::findHits(){
 			//write for each frame, not packet
 
 			pthread_mutex_lock(&write_mutex);
+			cout << "write to file "  << nHitsPerFrame << endl;
 			writeToFile();
 			pthread_mutex_unlock(&write_mutex);
 
@@ -628,7 +632,7 @@ void singlePhotonFilter::findHits(){
 
 
 
-	delete [] clusterData;
+	//	delete [] clusterData;
 }
 
 

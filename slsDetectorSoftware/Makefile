@@ -82,6 +82,6 @@ install: package
 
 install_inc:
 	$(shell test -d $(DESTDIR) || mkdir -p $(DESTDIR))
-	cp -P slsDetector/slsDetectorUsers.h slsDetectorAnalysis/detectorData.h  $(DESTDIR) slsReceiver/slsReceiverUsers.h 
+	cp -P slsDetector/slsDetectorUsers.h slsDetectorAnalysis/detectorData.h  $(DESTDIR) slsReceiver/slsReceiverUsers.h $(DESTDIR)
 
 

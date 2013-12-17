@@ -12,7 +12,7 @@ postProcessingFuncs::postProcessingFuncs(int *nModules,int *chPerMod,int modMask
 
 int postProcessingFuncs::initDataset() {
 
-  // cout << "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAA init dataset " << endl;
+  cout << "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAA init dataset " << endl;
 
   if (nBins) {
     mp=new double[nBins];
@@ -34,7 +34,7 @@ int postProcessingFuncs::initDataset() {
 
 int postProcessingFuncs::finalizeDataset(double *ang, double *val, double *err, int *np) {
   
-  // cout << "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAA finalize dataset " << endl;
+  cout << "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAA finalize dataset " << endl;
 
   if (nBins) 
     *np=finalizeMerging(mp,mv,me,mm,nBins);
@@ -62,15 +62,27 @@ int postProcessingFuncs::finalizeDataset(double *ang, double *val, double *err, 
   }
 
 
-
-  if (mp)
+  // cout << "delete mp " <<endl;
+  if (mp) {
     delete [] mp;
-  if (mv)
+    mp=NULL;
+  }
+  // cout << "delete mv " <<endl;
+  if (mv) {
     delete [] mv;
-  if (me)
+    mv=NULL;
+  }
+  // cout << "delete me " <<endl;
+  if (me) {
     delete [] me;
-  if (mm)
+    me=NULL;
+  }
+  // cout << "delete mm " <<endl;
+  if (mm) {
     delete [] mm;
+    mm=NULL;
+
+  }
 
 
   return 0;
@@ -536,6 +548,7 @@ int postProcessingFuncs::calculateFlatField(int* nModules, int *chPerMod, int *m
       cout << "done " << endl;
 
   delete [] xmed;
+  xmed=NULL;
 
   return 0;
 

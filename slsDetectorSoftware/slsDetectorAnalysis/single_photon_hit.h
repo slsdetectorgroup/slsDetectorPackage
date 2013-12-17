@@ -25,8 +25,8 @@ class single_photon_hit {
   ~single_photon_hit(){delete [] data;};
   void write(FILE *myFile) {fwrite((void*)this, 1, 3*sizeof(int)+2*sizeof(double), myFile); fwrite((void*)data, 1, dx*dy*sizeof(double), myFile);};
   void read(FILE *myFile) {fread((void*)this, 1,  3*sizeof(int)+2*sizeof(double), myFile); fread((void*)data, 1, dx*dy*sizeof(double), myFile);};
-  void set_data(double v, int ix, int iy=0){data[(iy+ny/2)*nx+ix+nx/2]=v;};
-  double get_data(int ix, int iy=0){return data[(iy+ny/2)*nx+ix+nx/2];};
+  void set_data(double v, int ix, int iy=0){data[(iy+dy/2)*dx+ix+dx/2]=v;};
+  double get_data(int ix, int iy=0){return data[(iy+dy/2)*dx+ix+dx/2];};
 
   
 	int 	x; 			/**< x-coordinate of the center of hit */

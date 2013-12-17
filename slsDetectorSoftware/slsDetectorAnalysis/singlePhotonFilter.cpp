@@ -421,7 +421,7 @@ void singlePhotonFilter::findHits(){
 	int clusterIndex;
 	//	single_photon_hit *hit;
 
-	double clusterData[nClusterX*nClusterY];//	= hit.data;
+	double *clusterData;//[nClusterX*nClusterY];//	= hit.data;
 	double sigmarms;
 	double clusterrms;
 	double clusterped;

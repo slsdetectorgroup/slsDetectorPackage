@@ -633,6 +633,10 @@ void qDrawPlot::SetupMeasurement(){
 
 	LockLastImageArray();
 
+#ifdef VERBOSE
+	cout << "locklastimagearray" << endl;
+
+#endif
 	// Defaults
 	if(!running)
 		stop_signal = 0;
@@ -649,6 +653,10 @@ void qDrawPlot::SetupMeasurement(){
 
 	//1d with no scan
 	if ((!originally2D) && (scanArgument==qDefs::None)){
+#ifdef VERBOSE
+	cout << "1D" << endl;
+
+#endif
 		if(!running){
 			maxPixelsY = 100;
 			minPixelsY = 0;
@@ -657,6 +665,10 @@ void qDrawPlot::SetupMeasurement(){
 		}
 	}
 	else {
+#ifdef VERBOSE
+	cout << "2D" << endl;
+
+#endif
 		//2d with no scan
 		if ((originally2D) && (scanArgument==qDefs::None)){
 			maxPixelsY = nPixelsY;
@@ -704,6 +716,12 @@ void qDrawPlot::SetupMeasurement(){
 	cout<<"endPixel:"<<endPixel<<endl<<endl;
 */
 	UnlockLastImageArray();
+
+
+#ifdef VERBOSE
+	cout << "locklastimagearray" << endl;
+
+#endif
 }
 
 
@@ -721,6 +739,7 @@ void* qDrawPlot::DataStartAcquireThread(void *this_pointer){
 
 int qDrawPlot::GetDataCallBack(detectorData *data, int fIndex, void *this_pointer){
 	((qDrawPlot*)this_pointer)->GetData(data,fIndex);
+	cout << "data ready callback worked ok" << endl;
 	return 0;
 }
 
@@ -729,7 +748,7 @@ int qDrawPlot::GetDataCallBack(detectorData *data, int fIndex, void *this_pointe
 
 
 int qDrawPlot::GetData(detectorData *data,int fIndex){
-#ifdef VERYVERBOSE
+  //#ifdef VERYVERBOSE
 	cout << "******Entering GetDatafunction********" << endl;
 	cout << "fIndex " << fIndex << endl;
 	cout << "fname " << data->fileName << endl;
@@ -739,7 +758,7 @@ int qDrawPlot::GetData(detectorData *data,int fIndex){
 	cout << "values " << data->values << endl;
 	cout << "errors " << data->errors << endl;
 	cout << "angle " << data->angles << endl;
-#endif
+	//#endif
 	if(!stop_signal){
 
 		//set progress
@@ -805,16 +824,18 @@ int qDrawPlot::GetData(detectorData *data,int fIndex){
 						data->values[i] = -1;
 					}
 				}
-				cout << "*** ERROR: value at " << k << " places have infinity values!" <<  endl;
-				double m1,m2,s1;
-				GetStatistics(m1,m2,s1,data->angles,nAnglePixelsX);
-				cout << "angle min:" << m1 << endl;
-				cout << "angle max:" << m2 << endl;
-				cout << "angle sum:" << s1 << endl;
-				GetStatistics(m1,m2,s1,data->values,nAnglePixelsX);
-				cout << "value min:" << m1 << endl;
-				cout << "value max:" << m2 << endl;
-				cout << "value sum:" << s1 << endl;
+				if (k>0) {
+				  cout << "*** ERROR: value at " << k << " places have infinity values!" <<  endl;
+				  double m1,m2,s1;
+				  GetStatistics(m1,m2,s1,data->angles,nAnglePixelsX);
+				  cout << "angle min:" << m1 << endl;
+				  cout << "angle max:" << m2 << endl;
+				  cout << "angle sum:" << s1 << endl;
+				  GetStatistics(m1,m2,s1,data->values,nAnglePixelsX);
+				  cout << "value min:" << m1 << endl;
+				  cout << "value max:" << m2 << endl;
+				  cout << "value sum:" << s1 << endl;
+				}
 #endif
 				memcpy(histXAngleAxis,data->angles,nAnglePixelsX*sizeof(double));
 				memcpy(histYAngleAxis,data->values,nAnglePixelsX*sizeof(double));
@@ -1100,6 +1121,7 @@ int qDrawPlot::GetData(detectorData *data,int fIndex){
 
 int qDrawPlot::GetAcquisitionFinishedCallBack(double currentProgress,int detectorStatus, void *this_pointer){
 	((qDrawPlot*)this_pointer)->AcquisitionFinished(currentProgress,detectorStatus);
+	cout << "acquisition finished callback worked ok" << endl;
 	return 0;
 }
 
@@ -1144,6 +1166,7 @@ int qDrawPlot::AcquisitionFinished(double currentProgress, int detectorStatus){
 
 int qDrawPlot::GetProgressCallBack(double currentProgress, void *this_pointer){
 	((qDrawPlot*)this_pointer)->progress= currentProgress;
+	cout << "progress callback " << endl;
 	return 0;
 }
 
@@ -1165,7 +1188,9 @@ void qDrawPlot::ShowAcquisitionErrorMessage(QString status){
 
 
 int qDrawPlot::GetMeasurementFinishedCallBack(int currentMeasurementIndex, int fileIndex, void *this_pointer){
+	cout << "measurement finished callback?" << endl;
 	((qDrawPlot*)this_pointer)->MeasurementFinished(currentMeasurementIndex, fileIndex);
+	cout << "measurement finished callback worked ok" << endl;
 	return 0;
 }
 

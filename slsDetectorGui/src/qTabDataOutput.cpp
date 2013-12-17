@@ -283,7 +283,7 @@ void qTabDataOutput::BrowseFlatFieldPath(){
 	if(dir.isEmpty()) dir =  QString(myDet->getFlatFieldCorrectionDir().c_str());/*"/home/";*/
 	fName = QFileDialog::getOpenFileName(this,
 			tr("Load Flat Field Correction File"),dir,
-			tr("Flat Field Correction Files(*.dat)"),0,QFileDialog::ShowDirsOnly);
+					     tr("Data Files(*.raw *.dat);; All Files (*.*)"),0,QFileDialog::ShowDirsOnly);
 	if (!fName.isEmpty()){
 		dispFlatField->setText(fName);
 		SetFlatField();
@@ -292,7 +292,6 @@ void qTabDataOutput::BrowseFlatFieldPath(){
 	qDefs::checkErrorMessage(myDet,"qTabDataOutput::BrowseFlatFieldPath");
 
 }
-
 
 //-------------------------------------------------------------------------------------------------------------------------------------------------
 

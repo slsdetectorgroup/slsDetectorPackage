@@ -3,6 +3,9 @@
 
 #include "MovingStat.h"
 
+
+
+
 class commonModeSubtraction {
 
   /** @short class to calculate the common mode of the pedestals based on an approximated moving average*/ 

@@ -61,7 +61,6 @@ slsReceiverFunctionList::slsReceiverFunctionList(detectorType det):
 					numJobsPerThread(-1),
 					mem0(NULL),
 					dataCompression(false),
-					filter(NULL),
 					fifo(NULL),
 					fifoFree(NULL),
 					buffer(NULL),
@@ -71,7 +70,7 @@ slsReceiverFunctionList::slsReceiverFunctionList(detectorType det):
 					currentWriterThreadIndex(-1),
 					totalListeningFrameCount(0),
 					running(0),
-
+					filter(NULL),
 					startAcquisitionCallBack(NULL),
 					pStartAcquisition(NULL),
 					acquisitionFinishedCallBack(NULL),
@@ -264,9 +263,44 @@ int64_t slsReceiverFunctionList::setAcquisitionPeriod(int64_t index){
 	return acquisitionPeriod;
 }
 
+/*
+void slsReceiverFunctionList::setupFilter(){
+	char *fformat;
+	char *tit;
+	int runmin;
+	int runmax;
+	int nbins=1500;
+	int hmin=-500;
+	int hmax=1000;
+	int sign=1;
+	double hc=0;
+	int xmin=0;
+	int xmax = ?;
+	int ymin=0;
+	int ymax = ?;
+	int cmsub=0;
 
+	mdecoder = NULL;
+	gdecoder = NULL;
+	if(myDetectorType == MOENCH){
+		mdecoder=new moench02ModuleData(hc);
+		xmax = 160;
+		ymax = 160;
+	}else{
+		gdecoder = new gotthardModuleData(hc,shortFrame!=-1);
+		if(shortFrame){
+			gdecoder = new gotthardModuleData(hc,true);
+			xmax = 1;
+			ymax = 256;
+		}else{
+			gdecoder = new gotthardModuleData(hc,false);
+			xmax = 1;
+			ymax = 1280;
+		}
+	}
 
-
+}
+*/
 void slsReceiverFunctionList::setupFilter(){
 	int16_t* map;
 	int16_t* mask;
@@ -941,16 +975,16 @@ int slsReceiverFunctionList::startListening(){
 	cout << "In startListening()" << endl;
 #endif
 
-	int lastpacket, offset, rc, packetcount, maxBufferSize;
+	int lastpacketoffset, expected, rc, packetcount, maxBufferSize, carryonBufferSize;
+	int lastframeheader;// for moench to check for all the packets in last frame
 	char* tempchar = NULL;
 
 	while(1){
 		//variables that need to be checked/set before each acquisition
-		offset = HEADER_SIZE_NUM_TOT_PACKETS;
-		lastpacket = 0;
+		carryonBufferSize = 0;
 		maxBufferSize = packetsPerFrame * numJobsPerThread * onePacketSize;
 		if(tempchar) {delete [] tempchar;tempchar = NULL;}
-		tempchar = new char[onePacketSize];
+		tempchar = new char[onePacketSize * (packetsPerFrame - 1)]; //gotthard: 1packet size, moench:39 packet size
 
 
 		while(running){
@@ -962,24 +996,22 @@ int slsReceiverFunctionList::startListening(){
 #endif
 
 			//receive
-			offset = HEADER_SIZE_NUM_TOT_PACKETS;
-			if(!lastpacket){
-				rc = udpSocket->ReceiveDataOnly(buffer + offset, maxBufferSize);
-				offset = maxBufferSize;
+			if(!carryonBufferSize){
+				rc = udpSocket->ReceiveDataOnly(buffer + HEADER_SIZE_NUM_TOT_PACKETS, maxBufferSize);
+				expected = maxBufferSize;
 			}else{
 #ifdef VERYDEBUG
-				cout << "***last packet" << endl;
+				cout << "***carry on buffer" << carryonBufferSize << endl;
 #endif
-				//if there is a packet from previous buffer, copy it and listen to 1 less frame
-				memcpy(buffer + offset, tempchar, onePacketSize);
-				offset += onePacketSize;
-				rc = udpSocket->ReceiveDataOnly(buffer + offset,maxBufferSize - onePacketSize);
-				offset = maxBufferSize - onePacketSize;
+				//if there is a packet from previous buffer, copy it and listen to n less frame
+				memcpy(buffer + HEADER_SIZE_NUM_TOT_PACKETS, tempchar, carryonBufferSize);
+				rc = udpSocket->ReceiveDataOnly((buffer + HEADER_SIZE_NUM_TOT_PACKETS + carryonBufferSize),maxBufferSize - carryonBufferSize);
+				expected = maxBufferSize - carryonBufferSize;
 			}
 
 #ifdef VERYDEBUG
 			cout << "*** rc:" << rc << endl;
-			cout << "*** offset:" << offset << endl;*/
+			cout << "*** expected:" << expected << endl;
 #endif
 			//start indices
 			//start of scan
@@ -1005,13 +1037,14 @@ int slsReceiverFunctionList::startListening(){
 
 
 			//problem in receiving or end of acquisition
-			if(rc < offset){
+			if((rc < expected)||(rc <= 0)){
 #ifdef VERYVERBOSE
 				cerr << "recvfrom() failed:"<<endl;
 #endif
 				if(status != TRANSMITTING){
 					cout<<"*** shoule never be here********************************"<<endl;/**/
 					fifoFree->push(buffer);
+					exit(-1);
 					continue;
 				}
 				//push the last buffer into fifo
@@ -1042,37 +1075,75 @@ int slsReceiverFunctionList::startListening(){
 			}
 
 
-			//check if last packet valid and calculate packet count
+			//reset
 			packetcount = packetsPerFrame * numJobsPerThread;
-			if(shortFrame != -1)
-				lastpacket = 0;
-			else{
-				switch(myDetectorType){
-				case MOENCH:
-					/*** last 40 packets ??? last packet header calculation with no +1) copy how many*/
-					break;
-				default:
-					lastpacket = (((numJobsPerThread * packetsPerFrame - 1) * onePacketSize) + HEADER_SIZE_NUM_TOT_PACKETS);
+			carryonBufferSize = 0;
+
+			//check if last packet valid and calculate packet count
+			switch(myDetectorType){
+
+
+
+			case MOENCH:
+				lastpacketoffset = (((numJobsPerThread * packetsPerFrame - 1) * onePacketSize) + HEADER_SIZE_NUM_TOT_PACKETS);
 #ifdef VERYDEBUG
-					cout << "last opacket:" << lastpacket << endl;
+				cout <<"first packet:"<< ((((uint32_t)(*((uint32_t*)(buffer+HEADER_SIZE_NUM_TOT_PACKETS))))) & (packetIndexMask)) << endl;
+				cout <<"first header:"<< (((((uint32_t)(*((uint32_t*)(buffer+HEADER_SIZE_NUM_TOT_PACKETS))))) & (frameIndexMask)) >> frameIndexOffset) << endl;
+				cout << "last packet offset:" << lastpacketoffset << endl;
+				cout <<"last packet:"<< ((((uint32_t)(*((uint32_t*)(buffer+lastpacketoffset))))) & (packetIndexMask)) << endl;
+				cout <<"last header:"<< (((((uint32_t)(*((uint32_t*)(buffer+lastpacketoffset))))) & (frameIndexMask)) >> frameIndexOffset) << endl;
 #endif
-					if((packetsPerFrame -1) == ((((uint32_t)(*((uint32_t*)(buffer+lastpacket))))+1) & (packetIndexMask)))
-						lastpacket = 0;
-					else{
-						memcpy(tempchar,buffer+lastpacket, onePacketSize);
-#ifdef VERYDEBUG
-						cout << "tempchar header:" << (((((uint32_t)(*((uint32_t*)(tempchar))))+1)
-													& (frameIndexMask)) >> frameIndexOffset) << endl;
-#endif
+				//moench last packet value is 0
+				if( ((((uint32_t)(*((uint32_t*)(buffer+lastpacketoffset))))) & (packetIndexMask))){
+					lastframeheader = ((((uint32_t)(*((uint32_t*)(buffer+lastpacketoffset))))) & (frameIndexMask)) >> frameIndexOffset;
+					carryonBufferSize += onePacketSize;
+					lastpacketoffset -= onePacketSize;
+					--packetcount;
+					while (lastframeheader == (((((uint32_t)(*((uint32_t*)(buffer+lastpacketoffset))))) & (frameIndexMask)) >> frameIndexOffset)){
+						carryonBufferSize += onePacketSize;
+						lastpacketoffset -= onePacketSize;
 						--packetcount;
 					}
-					break;
-				}
+					memcpy(tempchar, buffer+(lastpacketoffset+onePacketSize), carryonBufferSize);
+#ifdef VERYDEBUG
+					cout << "tempchar header:" << (((((uint32_t)(*((uint32_t*)(tempchar)))))
+							& (frameIndexMask)) >> frameIndexOffset) << endl;
+			cout << "header:" << (((((uint32_t)(*((uint32_t*)(buffer + HEADER_SIZE_NUM_TOT_PACKETS)))))
+										& (frameIndexMask)) >> frameIndexOffset) << endl;
+#endif
 			}
+				break;
 
+
+
+			default:
+				if(shortFrame == -1){
+					lastpacketoffset = (((numJobsPerThread * packetsPerFrame - 1) * onePacketSize) + HEADER_SIZE_NUM_TOT_PACKETS);
+#ifdef VERYDEBUG
+					cout << "last packet offset:" << lastpacketoffset << endl;
+#endif
+
+					if((packetsPerFrame -1) != ((((uint32_t)(*((uint32_t*)(buffer+lastpacketoffset))))+1) & (packetIndexMask))){
+						memcpy(tempchar,buffer+lastpacketoffset, onePacketSize);
+#ifdef VERYDEBUG
+						cout << "tempchar header:" << (((((uint32_t)(*((uint32_t*)(tempchar))))+1)
+								& (frameIndexMask)) >> frameIndexOffset) << endl;
+#endif
+						carryonBufferSize = onePacketSize;
+						--packetcount;
+					}
+				}
 #ifdef VERYDEBUG
 			cout << "header:" << (((((uint32_t)(*((uint32_t*)(buffer + HEADER_SIZE_NUM_TOT_PACKETS))))+1)
 										& (frameIndexMask)) >> frameIndexOffset) << endl;
+#endif
+				break;
+
+
+
+
+			}
+#ifdef VERYDEBUG
 			cout << "*** packetcount:" << packetcount << endl;
 #endif
 			//write packet count and push

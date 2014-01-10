@@ -6,8 +6,8 @@ LDFLAG=   -L/usr/lib64/ -lpthread -lm  -lstdc++
 #LDLIBS		+= 	-lm  -lstdc++ -lpthread 
 LIBS?= -L$(LIBDIR) -lSlsDetector 
 
-INCLUDES	?= 	-I ../MySocketTCP -I ../commonFiles -I -I ../slsDetectorAnalysis -I .
-SRC_CLNT	= 	slsReceiver.cpp
+INCLUDES	?= 	-I ../MySocketTCP -I ../commonFiles -I ../../slsDetectorAnalysis -I . 
+SRC_CLNT	= 	slsReceiver.cpp 
 #../MySocketTCP/MySocketTCP.cpp  slsReceiver_funcs.cpp UHRIXCallback.cpp slsReceiverFunctionList.cpp slsReceiverUsers.cpp 
 
 DESTDIR		?= 	bin

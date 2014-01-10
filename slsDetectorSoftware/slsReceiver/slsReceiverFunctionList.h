@@ -409,9 +409,6 @@ private:
 	/** datacompression - save only hits */
 	bool dataCompression;
 
-	/** single photon filter */
-	singlePhotonFilter *filter;
-
 	/** circular fifo to store addresses of data read */
 	CircularFifo<char>* fifo;
 
@@ -470,6 +467,12 @@ private:
 
 	/** mutex for writing data to file */
 	pthread_mutex_t write_mutex;
+
+
+//filter
+	/** single photon filter */
+	singlePhotonFilter *filter;
+
 
 
 

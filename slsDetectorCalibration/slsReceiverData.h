@@ -10,8 +10,6 @@ class slsReceiverData : public slsDetectorData<dataType> {
  public:
 
   /**
-
-
   slsReceiver data structure. Works for data acquired using the slsDetectorReceiver subdivided in different packets with headers and footers. 
   Inherits and implements slsDetectorData.
 
@@ -69,12 +67,13 @@ class slsReceiverData : public slsDetectorData<dataType> {
     while (dd<=(dsize-packetSize)) {
       pnum=getPacketNumber(p);
       fn=getFrameNumber(p);
-      if (pnum<0 || pnum>=nPackets) {
+
+
+      if (pnum<1 || pnum>nPackets) {
 	cout << "Bad packet number " << pnum << " frame "<< fn << endl;
 	retval=NULL;
-	continue;
-      }	
-      if (pnum==1) {
+	np=0;
+      }	else if  (pnum==1) {
 	fnum=fn;
 	retval=p;
 	if (np>0)
@@ -90,21 +89,23 @@ class slsReceiverData : public slsDetectorData<dataType> {
       p+=packetSize;
       dd+=packetSize;
       np++;
+      // cout << pnum << " " << fn << " " << np << " " << dd << " " << dsize << endl;
       if (np==nPackets)
-	if (pnum==nPackets)
+	if (pnum==nPackets) {
+	  // cout << "Frame found!" << endl;
 	  break;
-	else {
+	}	else {
 	  cout << "Too many packets for this frame! "<< fnum << " " << pnum << endl;
 	  retval=NULL;
 	}
     }
-    if (np<40) {
+    if (np<nPackets) {
       if (np>0) 
 	cout << "Too few packets for this frame! "<< fnum << " " << pnum << endl;
     }
     
     ndata=np*packetSize;
-    
+    //  cout << "return " << ndata << endl;
     return retval;
   };
 
@@ -128,14 +129,19 @@ class slsReceiverData : public slsDetectorData<dataType> {
 
 	  retval=findNextFrame(data,nd,packetSize*nPackets);
 	  np=nd/packetSize;
+	  //	  cout << np << endl;
 
-	  if (retval==data && np==nPackets)
+
+	  if (retval==data && np==nPackets) {
+	    //	    cout << "-" << endl;
 	    return data;
-	  else if (np>nPackets) {
-	    cout << "too many packets!!!!!!!!!!" << endl;
+
+	  }	  else if (np>nPackets) {
+	       cout << "too many packets!!!!!!!!!!" << endl;
 	    delete [] data;
 	    return NULL;
-	  } else {
+	  } else if (retval!=NULL) {
+	    //  cout << "+" << endl;;
 	    for (int ip=0; ip<np; ip++)
 	      memcpy(data+ip*packetSize,retval+ip*packetSize,packetSize);
 	  } 
@@ -145,6 +151,7 @@ class slsReceiverData : public slsDetectorData<dataType> {
 	  delete [] data;
 	  return NULL;
 	} else {
+	  //  cout << "." << endl;;
 	  np++;
 	}  
       }

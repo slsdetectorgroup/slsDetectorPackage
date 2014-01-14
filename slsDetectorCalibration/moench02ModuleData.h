@@ -18,7 +18,8 @@ class moench02ModuleData : public slsReceiverData<uint16_t> {
   */
   
 
-  moench02ModuleData(double c=0): slsReceiverData<uint16_t>(160, 160, 40, 1286), xtalk(c) {
+  moench02ModuleData(double c=0): slsReceiverData<uint16_t>(160, 160, 40, 1286), 
+    xtalk(c) {
 
 
 
@@ -96,8 +97,9 @@ class moench02ModuleData : public slsReceiverData<uint16_t> {
 
   */
   double getValue(char *data, int ix, int iy=0) {
+    //  cout << "##" << (void*)data << " " << ix << " " <<iy << endl;
     if (xtalk==0 || ix%40==0)
-      return (double)getValue(data, ix, iy);
+      return  slsDetectorData<uint16_t>::getValue(data, ix, iy);
     else
       return slsDetectorData<uint16_t>::getValue(data, ix, iy)-xtalk*slsDetectorData<uint16_t>::getValue(data, ix-1, iy);
   };

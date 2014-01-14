@@ -134,6 +134,7 @@ THStack *moenchReadData(char *fformat, char *tit, int runmin, int runmax, int nb
 
 	//calculate pedestals and common modes
       if (cmsub) {
+	//	cout << "cm" << endl;
 	for (ix=xmin-1; ix<xmax+1; ix++)
 	  for (iy=ymin-1; iy<ymax+1; iy++) {
 	    thisEvent=filter->getEventType(buff, ix, iy,0);
@@ -141,10 +142,11 @@ THStack *moenchReadData(char *fformat, char *tit, int runmin, int runmax, int nb
       }
 
 
-
+      //   cout << "new frame " << endl;
 
       for (ix=xmin-1; ix<xmax+1; ix++)
 	for (iy=ymin-1; iy<ymax+1; iy++) {
+	  //	  cout << ix << " " << iy << endl;
 	  thisEvent=filter->getEventType(buff, ix, iy, cmsub);
 
 #ifdef MY_DEBUG

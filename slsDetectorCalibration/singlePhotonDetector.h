@@ -118,7 +118,15 @@ class singlePhotonDetector {
        \param ix pixel x coordinate
        \param iy pixel y coordinate
     */
-    virtual void addToPedestal(double val, int ix, int iy){ if (ix>=0 && ix<nx && iy>=0 && iy<ny) { stat[iy][ix].addToPedestal(val); if (cmSub && det->isGood(ix, iy) ) cmSub->addToCommonMode(val, ix, iy);}};
+    virtual void addToPedestal(double val, int ix, int iy){ 
+      //	cout << "*"<< ix << " " << iy << " " << val << endl;
+      if (ix>=0 && ix<nx && iy>=0 && iy<ny) {
+	//	cout << ix << " " << iy << " " << val << endl;
+	stat[iy][ix].addToPedestal(val); 
+	if (cmSub && det->isGood(ix, iy) ) 
+	  cmSub->addToCommonMode(val, ix, iy);
+      };
+    };
 
   /**
        gets  pedestal (and common mode)
@@ -177,10 +185,14 @@ class singlePhotonDetector {
 
       // eventType ret=PEDESTAL;
       double tot=0, max=0;
-  
+      //  cout << iframe << endl;
+
       if (iframe<nDark) {
-	if (cm==0)
+	if (cm==0) {
+	  //  cout << "=" << endl;
 	  addToPedestal(det->getValue(data, ix, iy),ix,iy);
+	  // cout << "=" << endl;
+	}
 	return UNDEFINED;
       }
       

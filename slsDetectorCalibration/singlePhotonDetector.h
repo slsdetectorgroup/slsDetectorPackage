@@ -9,7 +9,7 @@
 #include "commonModeSubtraction.h"
 
 
-#define MYROOT1
+/*#define MYROOT1*/
 
 #ifdef MYROOT1
 #include <TTree.h>

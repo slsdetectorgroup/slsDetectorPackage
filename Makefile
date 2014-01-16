@@ -1,6 +1,6 @@
 # do not change below this line
 
-INCS='-I$(LIBRARYDIR)/commonFiles -I$(LIBRARYDIR)/slsDetector -I$(LIBRARYDIR)/MySocketTCP -I$(LIBRARYDIR)/usersFunctions -I$(LIBRARYDIR)/multiSlsDetector -I$(LIBRARYDIR)/slsDetectorUtils -I$(LIBRARYDIR)/slsDetectorCommand -I$(LIBRARYDIR)/slsDetectorAnalysis -I$(LIBRARYDIR)/slsReceiverInterface -I$(ASM)'
+INCS='-I$(LIBRARYDIR)/commonFiles -I$(LIBRARYDIR)/slsDetector -I$(LIBRARYDIR)/MySocketTCP -I$(LIBRARYDIR)/usersFunctions -I$(LIBRARYDIR)/multiSlsDetector -I$(LIBRARYDIR)/slsDetectorUtils -I$(LIBRARYDIR)/slsDetectorCommand -I$(LIBRARYDIR)/slsDetectorAnalysis -I$(LIBRARYDIR)/slsReceiverInterface -I$(CALIBDIR) -I$(ASM)'
 
 WD=$(shell pwd)
 LIBRARYDIR=$(WD)/slsDetectorSoftware
@@ -9,6 +9,7 @@ GUIDIR=$(WD)/slsDetectorGui
 RECEIVERDIR=$(LIBRARYDIR)/slsReceiver
 CALWIZDIR=$(WD)/calibrationWizards
 MANDIR=$(WD)/manual
+CALIBDIR=$(WD)/slsDetectorCalibration
 
 INSTALLROOT?=$(PWD)
 BINDIR?=$(INSTALLROOT)/bin
@@ -24,7 +25,7 @@ ASM=$(shell echo "/lib/modules/`uname -r`/build/include")
 
 
 
-INCLUDES='-I. -I$(LIBRARYDIR)/commonFiles -I$(LIBRARYDIR)/slsDetector -I$(LIBRARYDIR)/MySocketTCP -I$(LIBRARYDIR)/usersFunctions -I$(LIBRARYDIR)/multiSlsDetector -I$(LIBRARYDIR)/slsDetectorUtils -I$(LIBRARYDIR)/slsDetectorCommand -I$(LIBRARYDIR)/slsDetectorAnalysis -I$(LIBRARYDIR)/slsReceiverInterface -I$(LIBRARYDIR)/slsReceiver -I$(ASM)'
+INCLUDES='-I. -I$(LIBRARYDIR)/commonFiles -I$(LIBRARYDIR)/slsDetector -I$(LIBRARYDIR)/MySocketTCP -I$(LIBRARYDIR)/usersFunctions -I$(LIBRARYDIR)/multiSlsDetector -I$(LIBRARYDIR)/slsDetectorUtils -I$(LIBRARYDIR)/slsDetectorCommand -I$(LIBRARYDIR)/slsDetectorAnalysis -I$(LIBRARYDIR)/slsReceiverInterface -I$(LIBRARYDIR)/slsReceiver -I$(CALIBDIR) -I$(ASM)'
 
 
 

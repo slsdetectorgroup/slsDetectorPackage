@@ -1065,19 +1065,19 @@ int slsReceiverFunctionList::startWriting(){
 			//pop
 			fifo->pop(wbuf);
 			numpackets =	(uint16_t)(*((uint16_t*)wbuf));
-//#ifdef VERYDEBUG
+#ifdef VERYDEBUG
 			cout << "numpackets:" << hex << numpackets << endl;
 			cout << ithread << "*** popped from fifo " << numpackets << endl;
-//#endif
+#endif
 
 
 
 
 			//last dummy packet
 			if(numpackets == 0xFFFF){
-//#ifdef VERYDEBUG
+#ifdef VERYDEBUG
 				cout << "popped last dummy frame:" << (void*)wbuf << endl;
-//#endif
+#endif
 				//data compression, check if jobs done
 				if(dataCompression){
 					/*while(!filter->checkIfJobsDone())
@@ -1086,9 +1086,9 @@ int slsReceiverFunctionList::startWriting(){
 				}
 				//free fifo
 				while(!fifoFree->push(wbuf));
-//#ifdef VERYDEBUG
+#ifdef VERYDEBUG
 				cout << "fifo freed:" << (void*)wbuf << endl;
-//#endif
+#endif
 				//update status
 				pthread_mutex_lock(&status_mutex);
 				status = RUN_FINISHED;
@@ -1128,9 +1128,9 @@ int slsReceiverFunctionList::startWriting(){
 					currframenum = tempframenum;
 				pthread_mutex_unlock(&progress_mutex);
 			}
-//#ifdef VERYDEBUG
+#ifdef VERYDEBUG
 	cout << ithread << " tempframenum:" << dec << tempframenum << " curframenum:" << currframenum << endl;
-//#endif
+#endif
 
 
 			//without datacompression: write datacall back, or write data, free fifo
@@ -1145,9 +1145,9 @@ int slsReceiverFunctionList::startWriting(){
 						pthread_mutex_unlock(&progress_mutex);
 				}
 				while(!fifoFree->push(wbuf));
-//#ifdef VERYVERBOSE
+#ifdef VERYVERBOSE
 				cout<<"buf freed:"<<(void*)wbuf<<endl;
-//#endif
+#endif
 			}
 
 
@@ -1237,9 +1237,9 @@ int slsReceiverFunctionList::startWriting(){
 				}
 
 				while(!fifoFree->push(wbuf));
-//#ifdef VERYVERBOSE
+#ifdef VERYVERBOSE
 				cout<<"buf freed:"<<(void*)wbuf<<endl;
-//#endif
+#endif
 				/**********************************/
 #endif
 			}

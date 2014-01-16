@@ -1,21 +1,21 @@
 CFLAGS= -DC_ONLY -fPIC
 #FLAGS+=  #-DVERBOSE -DVERYVERBOSE
 
-DFLAGS= -DDACS_INT -DTHIS_PATH='"$(shell pwd)"' -DSLS_RECEIVER_FUNCTION_LIST #$(shell root-config --cflags --glibs) -DMYROOT1
+DFLAGS= -DDACS_INT -DTHIS_PATH='"$(shell pwd)"' -DSLS_RECEIVER_FUNCTION_LIST #$(shell root-config --cflags --glibs) -DMYROOT1  #-DMYROOT1 `root-config --cflags --glibs`
 
 #ASM=$(shell echo "/lib/modules/`uname -r`/build/include")
 
-INCLUDES?= -IcommonFiles -IslsDetector -IMySocketTCP -IusersFunctions -ImultiSlsDetector -IslsDetectorUtils -IslsDetectorCommand -IslsDetectorAnalysis -IslsReceiverInterface -IslsReceiver -I$(ASM)
+INCLUDES?= -IcommonFiles -IslsDetector -IMySocketTCP -IusersFunctions -ImultiSlsDetector -IslsDetectorUtils -IslsDetectorCommand -IslsDetectorAnalysis -IslsReceiverInterface -IslsReceiver -I../slsDetectorCalibration -I$(ASM)
 
 #EPICSFLAGS=-D EPICS -I/usr/local/epics/base/include/ -I /usr/local/epics/base/include/os/Linux/ -L /usr/local/epics/base/lib/SL5-x86/ -Wl,-R/usr/local/epics/base/lib/SL5-x86  -lca -lCom 
 CC=g++
 
 
-SRC_CLNT= slsDetectorAnalysis/fileIO.cpp MySocketTCP/MySocketTCP.cpp usersFunctions/usersFunctions.cpp slsDetector/slsDetectorUtils.cpp slsDetector/slsDetectorCommand.cpp slsDetectorAnalysis/angularConversion.cpp slsDetectorAnalysis/angularConversionStatic.cpp slsDetectorAnalysis/energyConversion.cpp slsDetector/slsDetectorActions.cpp slsDetectorAnalysis/postProcessing.cpp slsDetector/slsDetector.cpp multiSlsDetector/multiSlsDetector.cpp slsDetector/slsDetectorUsers.cpp slsDetectorAnalysis/postProcessingFuncs.cpp slsReceiverInterface/receiverInterface.cpp slsReceiver/slsReceiverFunctionList.cpp  slsReceiver/slsReceiver_funcs.cpp  slsReceiver/slsReceiverUsers.cpp slsDetectorAnalysis/singlePhotonFilter.cpp 
+SRC_CLNT= slsDetectorAnalysis/fileIO.cpp MySocketTCP/MySocketTCP.cpp usersFunctions/usersFunctions.cpp slsDetector/slsDetectorUtils.cpp slsDetector/slsDetectorCommand.cpp slsDetectorAnalysis/angularConversion.cpp slsDetectorAnalysis/angularConversionStatic.cpp slsDetectorAnalysis/energyConversion.cpp slsDetector/slsDetectorActions.cpp slsDetectorAnalysis/postProcessing.cpp slsDetector/slsDetector.cpp multiSlsDetector/multiSlsDetector.cpp slsDetector/slsDetectorUsers.cpp slsDetectorAnalysis/postProcessingFuncs.cpp slsReceiverInterface/receiverInterface.cpp slsReceiver/slsReceiverFunctionList.cpp  slsReceiver/slsReceiver_funcs.cpp  slsReceiver/slsReceiverUsers.cpp  
 
 OBJS = $(SRC_CLNT:.cpp=.o) 
 
-HEADERS = $(SRC_CLNT:.cpp=.h) commonFiles/sls_detector_defs.h slsDetectorAnalysis/detectorData.h slsDetector/slsDetectorBase.h multiSlsDetector/multiSlsDetectorCommand.h   slsDetectorAnalysis/enCalLogClass.h  slsDetectorAnalysis/angCalLogClass.h slsDetectorAnalysis/angleConversionConstant.h  usersFunctions/angleFunction.h slsReceiverInterface/receiverInterface.h slsDetector/svnInfoLib.h slsReceiver/circularFifo.h        slsReceiver/slsReceiver_funcs.h        slsReceiver/svnInfoReceiverTmp.h slsReceiver/receiver_defs.h       slsReceiver/slsReceiverFunctionList.h  slsReceiver/slsReceiverUsers.h slsReceiver/svnInfoReceiver.h 
+HEADERS = $(SRC_CLNT:.cpp=.h) commonFiles/sls_detector_defs.h slsDetectorAnalysis/detectorData.h slsDetector/slsDetectorBase.h multiSlsDetector/multiSlsDetectorCommand.h   slsDetectorAnalysis/enCalLogClass.h  slsDetectorAnalysis/angCalLogClass.h slsDetectorAnalysis/angleConversionConstant.h  usersFunctions/angleFunction.h slsReceiverInterface/receiverInterface.h slsDetector/svnInfoLib.h slsReceiver/circularFifo.h        slsReceiver/slsReceiver_funcs.h        slsReceiver/svnInfoReceiverTmp.h slsReceiver/receiver_defs.h       slsReceiver/slsReceiverFunctionList.h  slsReceiver/slsReceiverUsers.h slsReceiver/svnInfoReceiver.h #../slsDetectorCalibration/singlePhotonDetector.h  ../slsDetectorCalibration/moenchCommonMode.h ../slsDetectorCalibration/moench02ModuleData.h ../slsDetectorCalibration/slsReceiverData.h
 
 
 

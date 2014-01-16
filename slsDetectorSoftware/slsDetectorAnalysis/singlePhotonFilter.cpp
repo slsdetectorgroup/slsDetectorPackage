@@ -65,7 +65,7 @@ singlePhotonFilter::singlePhotonFilter(int nx, int ny,
   
 #ifndef MYROOT1
   //photonHitList=(single_photon_hit**) (new int*[nChannelsX*nChannelsY/(nClusterX*nClusterY)*1000]);
-  photonHitList=new single_photon_hit*[nChannelsX*nChannelsY/(nClusterX*nClusterY)*1000];  
+  photonHitList=new single_photon_hit*[nChannelsX*nChannelsY/(nClusterX*nClusterY)*1000];
   for (int ii=0; ii<nChannelsX*nChannelsY/(nClusterX*nClusterY)*1000; ii++)
     photonHitList[ii]=new single_photon_hit(nClusterX, nClusterY);
   cout << nClusterX << " " << nClusterY << " " << nClusterX*nClusterY << endl;

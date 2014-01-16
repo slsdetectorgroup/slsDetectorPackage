@@ -12,7 +12,13 @@
 #include "receiver_defs.h"
 #include "genericSocket.h"
 #include "circularFifo.h"
-#include "singlePhotonFilter.h"
+
+#include "singlePhotonDetector.h"
+#include "moench02ModuleData.h"
+
+#ifdef MYROOT1
+#include <TTree.h>
+#endif
 
 
 #include <string.h>
@@ -206,7 +212,7 @@ public:
 
 private:
 	/**
-	 * Constructs the singlePhotonFilter object
+	 * Constructs the filter for single photon data
 	 */
 	void setupFilter();
 
@@ -281,7 +287,6 @@ private:
 	 * @param num
 	 */
 	void writeToFile_withoutCompression(char* buf,int numpackets);
-
 
 
 
@@ -470,11 +475,18 @@ private:
 
 
 //filter
-	/** single photon filter */
-	singlePhotonFilter *filter;
+	singlePhotonDetector<uint16_t> *singlePhotonDet;
 
+	moench02ModuleData *mdecoder;
 
+	bool commonModeSubtractionEnable;
 
+	int iFrame;
+
+#ifdef MYROOT1
+	/** Tree where the hits are stored */
+	TTree *myTree;
+#endif
 
 	/**
 	   callback arguments are

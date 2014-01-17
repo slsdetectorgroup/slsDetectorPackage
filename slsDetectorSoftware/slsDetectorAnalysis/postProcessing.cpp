@@ -233,9 +233,13 @@ void postProcessing::doProcessing(double *lfdata, int delflag, string fname) {
 #endif
       
       addFrame(lfdata,currentPosition, currentI0, t, fname, 0);    
+      cout << "++++++++++++++++++++" << GetCurrentPositionIndex() << " " << npos << " " << positionFinished() << " " << dataQueueSize() << endl;
+      if ((GetCurrentPositionIndex()>=npos  && dataQueueSize()) || npos<2) {
+	//&& 
 
-      if ((GetCurrentPositionIndex()>=npos && positionFinished() && dataQueueSize()) || npos<2) {
-	
+	while(positionFinished()==0) {
+	  ;
+	}
 #ifdef VERBOSE
 	cout << "finalize dataset" << endl;
 #endif
@@ -248,7 +252,7 @@ void postProcessing::doProcessing(double *lfdata, int delflag, string fname) {
 	fname=createFileName();
 	pthread_mutex_unlock(&mp);
 	  //}
-
+      
 	if((*correctionMask)&(1<<WRITE_FILE)) {  
 	  writeDataFile (fname+ext,np,val, err,ang,'f');
 	}   

@@ -2198,7 +2198,7 @@ int testExtPulseMux(int imod, int ow) {
 	if (v!=vright) {
 	  result++;
 	  chipr++;
-	  printf("Counter test mux %d mode: channel %d chip %d read %d instead of %d\n",ow, ichan+(ichip+imod*NCHIP)*NCHAN, ichip, v, vright);
+	  //	  printf("Counter test mux %d mode: channel %d chip %d read %d instead of %d\n",ow, ichan+(ichip+imod*NCHIP)*NCHAN, ichip, v, vright);
 	  //break;
 	}
 	//printf("\n");
@@ -2272,7 +2272,7 @@ int testDataInOutMux(int imod, int ow, int num) {
 	if (v!=vright) {
 	  result++;
 	  chipr++;
-	  printf("DataInOut test mux %d mode: channel %d chip %d  read %d instead of %d\n",ow, ichan+(ichip+imod*NCHIP)*NCHAN, ichip, v, vright);
+	  printf("DataInOut test mux %d mode: channel %d chip %d  read %08x instead of %08x\n",ow, ichan+(ichip+imod*NCHIP)*NCHAN, ichip, v, vright);
 	  //break;
 	}
 	//printf("\n");
@@ -2363,13 +2363,13 @@ int testOutMux(int imod) {
 	v=val & 1<< j;
 	if (pat & (1<<(i*dist))) {
 	  if (v==0) {
-	    printf("Outmux: module %d chip %i bit %d  read %d instead of %ld\n",k, j,(i*dist), v,pat & (1<<(i*dist) ));
+	    // printf("Outmux: module %d chip %i bit %d  read %d instead of %ld\n",k, j,(i*dist), v,pat & (1<<(i*dist) ));
 	    result++;
 	  }
 	  // should be 1
 	} else { 
 	  if (v) {
-	    printf("Outmux: module %d chip %i bit %d  read %d instead of %ld\n",k, j,(i*dist), v,pat & (1<<(i*dist) ));
+	    //  printf("Outmux: module %d chip %i bit %d  read %d instead of %ld\n",k, j,(i*dist), v,pat & (1<<(i*dist) ));
 	    result++;
 	  }
 	}
@@ -2564,13 +2564,13 @@ int testFpgaMux(int imod)  {
 	    v=val & 1<< j;
 	    if (pat & (1<<(i*dist))) {
 	      if (v==0) {
-		printf("Fpgamux: module %d chip %i bit %d  read %d instead of %ld\n",k,j,(i*dist), v,pat & (1<<(i*dist) ));
+		//	printf("Fpgamux: module %d chip %i bit %d  read %d instead of %ld\n",k,j,(i*dist), v,pat & (1<<(i*dist) ));
 		result++;
 	      }
 	  // should be 1
 	    } else { 
 	      if (v) {
-		printf("Fpgamux: module %d chip %i bit %d  read %d instead of %ld\n",k,j,(i*dist), v,pat & (1<<(i*dist) ));
+		//	printf("Fpgamux: module %d chip %i bit %d  read %d instead of %ld\n",k,j,(i*dist), v,pat & (1<<(i*dist) ));
 		result++;
 	      }
 	    }

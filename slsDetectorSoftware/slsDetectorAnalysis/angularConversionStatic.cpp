@@ -330,7 +330,6 @@ int angularConversionStatic::finalizeMerging(double *mp, double *mv, double *me,
    int np=0;
    for (int ibin=0; ibin<nb; ibin++) {
      if (mm[ibin]>0) {
-      	
  #ifdef VERBOSE 
        cout << "finalize " << ibin << "  "<< mm[ibin] << " " << mp[ibin]<< " " << mv[ibin] << " " << me[ibin] << endl;
  #endif
@@ -452,9 +451,10 @@ int  angularConversionStatic::addPointToMerging(double p1, double v1, double e1,
 // #ifdef VERBOSE
 //       cout << "add " << ibin << "  "<< mm[ibin] << " " << mp[ibin]<< mv[ibin] << me[ibin] << endl;
 // #endif
-    }  else
+    }  else {
+      cout << "Bin out of range! " << ibin << endl;
       return slsDetectorDefs::FAIL;
-  
+    }
 
   return slsDetectorDefs::OK;
   

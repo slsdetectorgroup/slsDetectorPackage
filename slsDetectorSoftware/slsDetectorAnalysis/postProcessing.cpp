@@ -233,7 +233,7 @@ void postProcessing::doProcessing(double *lfdata, int delflag, string fname) {
 #endif
       
       addFrame(lfdata,currentPosition, currentI0, t, fname, 0);    
-      cout << "++++++++++++++++++++" << GetCurrentPositionIndex() << " " << npos << " " << positionFinished() << " " << dataQueueSize() << endl;
+      //  cout << "++++++++++++++++++++" << GetCurrentPositionIndex() << " " << npos << " " << positionFinished() << " " << dataQueueSize() << endl;
       if ((GetCurrentPositionIndex()>=npos  && dataQueueSize()) || npos<2) {
 	//&& 
 

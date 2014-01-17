@@ -12,7 +12,7 @@ postProcessingFuncs::postProcessingFuncs(int *nModules,int *chPerMod,int modMask
 
 int postProcessingFuncs::initDataset() {
 
-  cout << "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAA init dataset " << endl;
+  //  cout << "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAA init dataset " << endl;
 
   if (nBins) {
     mp=new double[nBins];
@@ -34,7 +34,7 @@ int postProcessingFuncs::initDataset() {
 
 int postProcessingFuncs::finalizeDataset(double *ang, double *val, double *err, int *np) {
   
-  cout << "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAA finalize dataset " << endl;
+  // cout << "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAA finalize dataset " << endl;
 
   if (nBins) 
     *np=finalizeMerging(mp,mv,me,mm,nBins);

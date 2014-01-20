@@ -26,7 +26,7 @@ using namespace std;
 #define NR 160
 
 
-#define MY_DEBUG 1
+//#define MY_DEBUG 1
 #ifdef MY_DEBUG
 #include <TCanvas.h>
 #endif
@@ -60,7 +60,7 @@ THStack *moenchReadData(char *fformat, char *tit, int runmin, int runmax, int nb
   if (cmsub)
     cmSub=new moenchCommonMode();
 
-    
+  int nph=0;
 
   singlePhotonDetector<uint16_t> *filter=new singlePhotonDetector<uint16_t>(decoder, 3, 5, sign, cmSub);
 
@@ -118,6 +118,16 @@ THStack *moenchReadData(char *fformat, char *tit, int runmin, int runmax, int nb
   TH2F *he=new TH2F("he","Event Mask",xmax-xmin, xmin, xmax, ymax-ymin, ymin, ymax);
   he->SetStats(kFALSE);
   he->Draw("colz");
+  TCanvas *cH1=new TCanvas();
+  cH1->SetLogz();
+  h1->Draw("colz");
+  TCanvas *cH2=new TCanvas();
+  cH2->SetLogz();
+  h2->Draw("colz");
+  TCanvas *cH3=new TCanvas();
+  cH3->SetLogz();
+  h3->Draw("colz");
+
 #endif
   filter->newDataSet();
 
@@ -126,9 +136,9 @@ THStack *moenchReadData(char *fformat, char *tit, int runmin, int runmax, int nb
     sprintf(fname,fformat,irun);
     cout << "file name " << fname << endl;
     filebin.open((const char *)(fname), ios::in | ios::binary);
-   
+    nph=0;
     while ((buff=decoder->readNextFrame(filebin))) {
-
+      
 
       filter->newFrame();
 
@@ -150,7 +160,7 @@ THStack *moenchReadData(char *fformat, char *tit, int runmin, int runmax, int nb
 	  thisEvent=filter->getEventType(buff, ix, iy, cmsub);
 
 #ifdef MY_DEBUG
-	  if (iev%10000==0)
+	  if (iev%1000==0)
 	    he->SetBinContent(ix+1-xmin, iy+1-ymin, (int)thisEvent);
 #endif	  
 	  
@@ -165,7 +175,7 @@ THStack *moenchReadData(char *fformat, char *tit, int runmin, int runmax, int nb
 	    //  if (nf%1000==0 && ix==20 && iy==20) cout <<  " val="<< decoder->getClusterElement(0,0)<< endl;
 
 	    if (thisEvent==PHOTON_MAX ) {
-     
+	      nph++;
 	      for (ir=-1; ir<2; ir++) {
 		for (ic=-1; ic<2; ic++) {
 		  v=filter->getClusterElement(ic,ir);
@@ -239,28 +249,35 @@ THStack *moenchReadData(char *fformat, char *tit, int runmin, int runmax, int nb
 
 		tall->Fill();
 	   
-#ifdef MY_DEBUG
-		  if (iev%100000==0) {
-		    myC->Modified();
-		    myC->Update();
-		  }
-#endif		  
-
-		iev++;
        
 	    }
+	  
 	    
+	  }  
 	    
-	    
-	  }
-	} 
+
+	}
 	  //////////////////////////////////////////////////////////
     
+#ifdef MY_DEBUG
+		  if (iev%1000==0) {
+		    myC->Modified();
+		    myC->Update();
+		    cH1->Modified();
+		    cH1->Update();
+		    cH2->Modified();
+		    cH2->Update();
+		    cH3->Modified();
+		    cH3->Update();
+		  }
+		  iev++;
+#endif		  
 
       cout << "=" ;
       nf++;
+      delete [] buff;
     }
-    cout << endl;
+    cout << nph << endl;
     if (filebin.is_open())
       filebin.close();	  
     else

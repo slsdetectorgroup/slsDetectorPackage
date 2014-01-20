@@ -232,20 +232,20 @@ class singlePhotonDetector {
 	  
 	} else if (eventMask[iy][ix]==PHOTON) {
 	  if (cluster->get_data(0,0)>=max) {
-	    for (int ir=-(clusterSizeY/2); ir<(clusterSizeY/2)+1; ir++) {
-	      for (int ic=-(clusterSize/2); ic<(clusterSize/2)+1; ic++) {
+	    eventMask[iy][ix]=PHOTON_MAX;
+	   /*  for (int ir=-(clusterSizeY/2); ir<(clusterSizeY/2)+1; ir++) { */
+/* 	      for (int ic=-(clusterSize/2); ic<(clusterSize/2)+1; ic++) { */
 		
-		if ((iy+ir)>=0 && (iy+ir)<ny && (ix+ic)>=0 && (ix+ic)<nx) {
-		  if (eventMask[iy+ir][ix+ic]==UNDEFINED) 
-		    if (ir==0 && ic==0)   eventMask[iy+ir][ix+ic]=PHOTON_MAX;
-		    else eventMask[iy+ir][ix+ic]=NEIGHBOUR;
-		}
+/* 		if ((iy+ir)>=0 && (iy+ir)<ny && (ix+ic)>=0 && (ix+ic)<nx) { */
+/* 		  if (eventMask[iy+ir][ix+ic]==UNDEFINED)  */
+/* 		    eventMask[iy+ir][ix+ic]=NEIGHBOUR; */
+/* 		} */
 		
-	      }
-	    }
+/* 	      } */
+/* 	    } */
 	    
 
-	  }
+	  } 
 	} else if (eventMask[iy][ix]==PEDESTAL) {
 	  if (cm==0)
 	    addToPedestal(det->getValue(data, ix, iy),ix,iy);

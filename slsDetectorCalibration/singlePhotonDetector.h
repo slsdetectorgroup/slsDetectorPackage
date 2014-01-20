@@ -9,7 +9,7 @@
 #include "commonModeSubtraction.h"
 
 
-/*#define MYROOT1*/
+#define MYROOT1
 
 #ifdef MYROOT1
 #include <TTree.h>
@@ -198,7 +198,7 @@ class singlePhotonDetector {
       
       
 
-      if (eventMask[iy][ix]==UNDEFINED) {
+      //   if (eventMask[iy][ix]==UNDEFINED) {
 	
 	eventMask[iy][ix]=PEDESTAL;
 	
@@ -229,28 +229,27 @@ class singlePhotonDetector {
 	
 	if (eventMask[iy][ix]!=PHOTON && tot>sqrt(clusterSizeY*clusterSize)*nSigma*cluster->rms) {
 	  eventMask[iy][ix]=NEIGHBOUR;
-	  
 	} else if (eventMask[iy][ix]==PHOTON) {
 	  if (cluster->get_data(0,0)>=max) {
 	    eventMask[iy][ix]=PHOTON_MAX;
-	   /*  for (int ir=-(clusterSizeY/2); ir<(clusterSizeY/2)+1; ir++) { */
-/* 	      for (int ic=-(clusterSize/2); ic<(clusterSize/2)+1; ic++) { */
-		
-/* 		if ((iy+ir)>=0 && (iy+ir)<ny && (ix+ic)>=0 && (ix+ic)<nx) { */
-/* 		  if (eventMask[iy+ir][ix+ic]==UNDEFINED)  */
-/* 		    eventMask[iy+ir][ix+ic]=NEIGHBOUR; */
+	 /*    if (iframe%1000==0) { */
+/* 	    for (int ir=-(clusterSizeY/2); ir<(clusterSizeY/2)+1; ir++) { */
+/*  	      for (int ic=-(clusterSize/2); ic<(clusterSize/2)+1; ic++) {  */
+/*  		if ((iy+ir)>=0 && (iy+ir)<ny && (ix+ic)>=0 && (ix+ic)<nx) {  */
+/* /\* 		  if (eventMask[iy+ir][ix+ic]==UNDEFINED) *\/ */
+/* /\* 		    eventMask[iy+ir][ix+ic]=NEIGHBOUR; *\/ */
+/* 		  cout << cluster->get_data(ic,ir) << " "; */
 /* 		} */
-		
 /* 	      } */
 /* 	    } */
-	    
-
-	  } 
+/* 	    cout << endl;; */
+/* 	    } */
+	  }
 	} else if (eventMask[iy][ix]==PEDESTAL) {
 	  if (cm==0)
 	    addToPedestal(det->getValue(data, ix, iy),ix,iy);
 	}
-      }
+	//    }
            
       return  eventMask[iy][ix];
 

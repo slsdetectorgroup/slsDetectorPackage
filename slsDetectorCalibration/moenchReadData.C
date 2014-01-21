@@ -26,7 +26,7 @@ using namespace std;
 #define NR 160
 
 
-#define MY_DEBUG 1
+//#define MY_DEBUG 1
 #ifdef MY_DEBUG
 #include <TCanvas.h>
 #endif

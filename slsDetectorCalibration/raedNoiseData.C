@@ -13,7 +13,7 @@ void raedNoiseData(char *tit, int sign=1){
   sprintf(fname,"/data/moench_xbox_20140113/MoTarget_45kV_0_8mA_120V_%s.root",tit);
   fout=new TFile(fname,"RECREATE");
 
-  sprintf(fname,"/data/moench_xbox_20140113/MoTarget_45kV_0_8mA_120V_%s_f00000%%04d000_0.raw",tit);
+  sprintf(fname,"/data/moench_xbox_20140113/MoTarget_45kV_0_8mA_12us_120V_%s_f00000%%04d000_0.raw",tit);
 
   hs2N=moenchReadData(fname,tit,0,3000,1500,-500,2500,sign,0.,1,159,1,159, 0); 
   hs2N->SetName(tit);

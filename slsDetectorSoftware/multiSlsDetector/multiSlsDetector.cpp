@@ -1137,12 +1137,16 @@ int multiSlsDetector::getChanRegs(double* retval,bool fromDetector){
 
   for (int idet=0; idet<thisMultiDetector->numberOfDetectors; idet++) {
     if (detectors[idet]) {
+      //  cout << "det " << idet << endl;
       nChansDet = detectors[idet]->getChanRegs(retval1,fromDetector);
+      //   cout << "returned" << endl;
       if(detectors[idet]->getErrorMask())
 	setErrorMask(getErrorMask()|(1<<idet));
+      //  cout << "memcopy "<< currentNumChans << " " << nChansDet << "(" << n << ")" << endl;
 
-      memcpy(retval + (currentNumChans * sizeof(double)), retval1 , nChansDet*sizeof(double));
+      memcpy(retval + (currentNumChans), retval1 , nChansDet*sizeof(double));
       currentNumChans += nChansDet;
+      //  cout << "Done" << endl;
     }
   }
   return n;

@@ -270,36 +270,47 @@ int defaultConnectChannels(void *) {
     /* status code */
     int status;
 
+#ifdef VERBOSE
     printf("starting...\n");
+#endif
 
     /* init channel access context before any caget/put */
     ca_context_create(ca_enable_preemptive_callback);
-
+#ifdef VERBOSE
     printf("context created\n");
-
+#endif
     //"caputq X04SA-ES2-TH2:RO p"
    
     //"ca_get X04SA-ES2-SC:CH6"
 
     /* open the channel by name and return ch_id */
     status = connect_channel("X04SA-ES2-SC:CH6",  &ch_i0);
-    if (status  ==  ECA_NORMAL)
+    if (status  ==  ECA_NORMAL) {
+#ifdef VERBOSE
         printf("I0 channel connected \n");
-    else {
+#endif
+	;
+    }    else {
         printf(ca_message(status));
         //ch_i0=-1;;
     }
     status = connect_channel("X04SA-ES2-TH2:RO",  &ch_pos);
-    if (status  ==  ECA_NORMAL)
+    if (status  ==  ECA_NORMAL) {
+#ifdef VERBOSE
         printf("Detector position channel connected \n");
-    else {
+#endif
+	;
+    }      else {
         printf(ca_message(status));
         //ch_i0=-1;;
     }
         status = connect_channel("X04SA-ES2-TH2:RO.RBV",  &ch_getpos);
-    if (status  ==  ECA_NORMAL)
+	if (status  ==  ECA_NORMAL) {
+#ifdef VERBOSE
         printf("Detector get position channel connected \n");
-    else {
+#endif
+	;
+    }      else {
         printf(ca_message(status));
         //ch_getpos=-1;;
     }

@@ -3248,7 +3248,7 @@ int* slsDetector::readFrame(){
 int* slsDetector::getDataFromDetector(int *retval){
   int nel=thisDetector->dataBytes/sizeof(int);
   int n;
-	
+
   int *r=retval;
 
 
@@ -3270,6 +3270,7 @@ int* slsDetector::getDataFromDetector(int *retval){
 
   if (ret!=OK) {
     n= controlSocket->ReceiveDataOnly(mess,sizeof(mess));
+   // if(thisDetector->receiverOnlineFlag == OFFLINE_FLAG)
     if (ret==FAIL) {
       thisDetector->stoppedFlag=1;
       std::cout<< "Detector returned: " << mess << " " << n << std::endl;
@@ -3285,7 +3286,7 @@ int* slsDetector::getDataFromDetector(int *retval){
     return NULL;
   } else {
     n=controlSocket->ReceiveDataOnly(retval,thisDetector->dataBytes);
-	  
+
 #ifdef VERBOSE
     std::cout<< "Received "<< n << " data bytes" << std::endl;
 #endif
@@ -6191,7 +6192,7 @@ int* slsDetector::readFrameFromReceiver(char* fName, int &fIndex){
 		std::cout<< "slsDetector: Reading frame from receiver "<< thisDetector->dataBytes << " " <<nel <<std::endl;
 #endif
 		if (connectData() == OK){
-			if(!thisDetector->stoppedFlag){
+			//if(!thisDetector->stoppedFlag){
 				dataSocket->SendDataOnly(&fnum,sizeof(fnum));
 				dataSocket->ReceiveDataOnly(&ret,sizeof(ret));
 
@@ -6217,7 +6218,7 @@ int* slsDetector::readFrameFromReceiver(char* fName, int &fIndex){
 						return NULL;
 					}
 				}
-			}
+			//}
 
 			dataSocket->Disconnect();
 		}

@@ -18,6 +18,7 @@
 
 #ifdef MYROOT1
 #include <TTree.h>
+#include <TFile.h>
 #endif
 
 
@@ -247,6 +248,12 @@ private:
 	int setupWriter();
 
 	/**
+	 * Creates new tree and file for compression
+	 *\returns OK for succces or FAIL for failure
+	 */
+	int createCompressionFile();
+
+	/**
 	 * Creates new file
 	 *\returns OK for succces or FAIL for failure
 	 */
@@ -447,8 +454,7 @@ private:
 	/** total frame count the listening thread has listened to */
 	int totalListeningFrameCount;
 
-	/** 0 if receiver is idle, 1 otherwise */
-	int running;
+
 
 
 
@@ -482,11 +488,6 @@ private:
 	bool commonModeSubtractionEnable;
 
 	int iFrame;
-
-#ifdef MYROOT1
-	/** Tree where the hits are stored */
-	TTree *myTree;
-#endif
 
 	/**
 	   callback arguments are
@@ -533,12 +534,24 @@ private:
 
 
 public:
+
+#ifdef MYROOT1
+	/** Tree where the hits are stored */
+	static TTree *myTree;
+
+	/** File where the tree is saved */
+	static TFile *myFile;
+#endif
+
+
 	/** File Descriptor */
 	static FILE *sfilefd;
 
 	/** if the receiver threads are running*/
 	static int receiver_threads_running;
 
+	/** 0 if receiver is idle, 1 otherwise */
+	static int running;
 
 	/**
 	   callback arguments are

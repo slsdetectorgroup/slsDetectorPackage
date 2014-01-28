@@ -30,10 +30,9 @@ using namespace std;
 
 //-------------------------------------------------------------------------------------------------------------------------------------------------
 
-
 int main (int argc, char **argv) {
-
-	QApplication *theApp = new QApplication(argc, argv);
+  MyApplication *theApp = new MyApplication(argc, argv);
+  //	QApplication *theApp = new QApplication(argc, argv);
 	theApp->setStyle(new QPlastiqueStyle);//not default when desktop is windows
 	theApp->setWindowIcon(QIcon( ":/icons/images/mountain.png" ));
 	qDetectorMain *det=new qDetectorMain(argc, argv, theApp,0);

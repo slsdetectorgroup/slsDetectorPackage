@@ -630,8 +630,9 @@ void qDrawPlot::SetupMeasurement(){
 #ifdef VERBOSE
 	cout << "SetupMeasurement function:" << running << endl;
 #endif
-
-	LockLastImageArray();
+	cout<<"begnPixelsX:"<<nPixelsX<<endl;
+	cout<<"begnPixelsY:"<<nPixelsY<<endl;
+	LockLastImageArray();cout<<"after lockimage"<<endl;
 
 #ifdef VERBOSE
 	cout << "locklastimagearray" << endl;
@@ -644,13 +645,14 @@ void qDrawPlot::SetupMeasurement(){
 	//for 2d scans
 	currentScanDivLevel = 0;
 	//if(plot_in_scope==2)
-		if(!running)	lastImageNumber = 0;/**Just now */
-
+		if(!running)
+		  lastImageNumber = 0;/**Just now */
+		cout<<"before 2d"<<endl;
 	//initializing 2d array
 	for(int py=0;py<(int)nPixelsY;py++)
 		for(int px=0;px<(int)nPixelsX;px++)
 			lastImageArray[py*nPixelsX+px] = 0;
-
+	cout<<"end of 2d"<<endl;
 	//1d with no scan
 	if ((!originally2D) && (scanArgument==qDefs::None)){
 #ifdef VERBOSE
@@ -662,7 +664,7 @@ void qDrawPlot::SetupMeasurement(){
 			minPixelsY = 0;
 			startPixel = -0.5;
 			endPixel = nPixelsY-0.5;
-		}
+		}else cout<<"correct palce"<<endl;
 	}
 	else {
 #ifdef VERBOSE
@@ -715,7 +717,7 @@ void qDrawPlot::SetupMeasurement(){
 	cout<<"startPixel:"<<startPixel<<endl;
 	cout<<"endPixel:"<<endPixel<<endl<<endl;
 */
-	UnlockLastImageArray();
+	UnlockLastImageArray();cout<<"out of setupmeasure"<<endl;
 
 
 #ifdef VERBOSE
@@ -760,7 +762,7 @@ int qDrawPlot::GetData(detectorData *data,int fIndex){
 	cout << "angle " << data->angles << endl;
 	//#endif
 	if(!stop_signal){
-
+cout<<"before progress"<<endl;
 		//set progress
 		progress=(int)data->progressIndex;
 		currentFrameIndex = fileIOStatic::getIndicesFromFileName(string(data->fileName),currentFileIndex);
@@ -769,10 +771,9 @@ int qDrawPlot::GetData(detectorData *data,int fIndex){
 			cout << "Received empty file name. Exiting function without updating data for plot." << endl;
 			return -1;
 		}
-#ifdef VERYVERBOSE
+		//#ifdef VERYVERBOSE
 		cout << "progress:" << progress << endl;
-#endif
-
+		//#endif
 		// secondary title necessary to differentiate between frames when not saving data
 		char temp_title[2000];
 		//findex is used because in the receiver, you cannot know the frame index as many frames are in 1 file.
@@ -788,7 +789,7 @@ int qDrawPlot::GetData(detectorData *data,int fIndex){
 		//Plot Disabled
 		if(!plotEnable) 	return 0;
 
-
+		cout<<"before entering angleplot"<<endl;
 		//angle plotting
 		if(anglePlot){
 			LockLastImageArray();
@@ -853,33 +854,33 @@ int qDrawPlot::GetData(detectorData *data,int fIndex){
 
 		//Nth Frame
 		if(frameFactor){
-			//plots if numfactor becomes 0
-			if(!numFactor) numFactor=frameFactor-1;
-			//return if not
-			else{
-				numFactor--;
-				return 0;
-			}
+		  //plots if numfactor becomes 0
+		  if(!numFactor) numFactor=frameFactor-1;
+		  //return if not
+		  else{
+		    numFactor--;
+		    return 0;
+		  }
 		}
 
 
 
 		//Not Nth Frame, to check time out(NOT for Scans and angle plots)
 		else{
-			if (scanArgument == qDefs::None) {
-				//if the time is not over, RETURN
-				if(!data_pause_over){
-					return 0;
-				}
-				data_pause_over=false;
-				data_pause_timer->start((int)(PLOT_TIMER_MS/2));
-			}
+		  if (scanArgument == qDefs::None) {
+		    //if the time is not over, RETURN
+		    if(!data_pause_over){
+		      return 0;
+		    }
+		    data_pause_over=false;
+		    data_pause_timer->start((int)(PLOT_TIMER_MS/2));
+		  }
 		}
 
 
 
 
-//if scan
+		//if scan
 		//alframes
 		if(scanArgument==qDefs::AllFrames){
 			LockLastImageArray();
@@ -964,10 +965,10 @@ int qDrawPlot::GetData(detectorData *data,int fIndex){
 
 		//normal measurement or 1d scans
 		if(!pthread_mutex_trylock(&(last_image_complete_mutex))){
-			//set title
-			plotTitle=QString(plotTitle_prefix)+QString(data->fileName).section('/',-1);
-			// only if you got the lock, do u need to remember lastimagenumber to plot
-			lastImageNumber= currentFrame+1;
+		  //set title
+		  plotTitle=QString(plotTitle_prefix)+QString(data->fileName).section('/',-1);
+		  // only if you got the lock, do u need to remember lastimagenumber to plot
+		  lastImageNumber= currentFrame+1;
 
 			//1d
 			if(plot_in_scope==1){
@@ -1051,7 +1052,7 @@ int qDrawPlot::GetData(detectorData *data,int fIndex){
 							histYAxis[0][px] = temp;
 						}
 					}
-				}
+		    }
 			}
 			//2d
 			else{
@@ -1135,9 +1136,9 @@ int qDrawPlot::AcquisitionFinished(double currentProgress, int detectorStatus){
 #endif
 	QString status = QString(slsDetectorBase::runStatusType(slsDetectorDefs::runStatus(detectorStatus)).c_str());
 #ifdef VERBOSE
-	cout << status.toAscii().constData() << " and progress " << currentProgress << endl;
+  cout << status.toAscii().constData() << " and progress " << currentProgress << endl;
 #endif
-	//error or stopped
+  //error or stopped
 	if((stop_signal)||(detectorStatus==slsDetectorDefs::ERROR)){
 #ifdef VERBOSE
 		cout << "Error in Acquisition" << endl << endl;
@@ -1325,8 +1326,9 @@ void qDrawPlot::UpdatePlot(){
 									firstPlot = false;
 								}
 							}
-
 						}
+
+
 						// update range if required
 						if(XYRangeChanged){
 							if(!IsXYRange[qDefs::XMINIMUM])		XYRangeValues[qDefs::XMINIMUM]= plot1D->GetXMinimum();
@@ -1709,8 +1711,10 @@ int qDrawPlot::UpdateTrimbitPlot(bool fromDetector,bool Histogram){
 
 		//get trimbits
 		actualPixelsX = myDet->getTotalNumberOfChannels(slsDetectorDefs::X);
-		if(histTrimbits) delete [] histTrimbits; histTrimbits = new double[actualPixelsX];
+		if(histTrimbits) delete [] histTrimbits; 
+		histTrimbits = new double[actualPixelsX]; 
 		ret = myDet->getChanRegs(histTrimbits,fromDetector);
+		//	cout << "got it!" << endl;
 		if(!ret){
 			qDefs::Message(qDefs::WARNING,"No Trimbit data found in shared memory.","qDrawPlot::UpdateTrimbitPlot");
 			UnlockLastImageArray();

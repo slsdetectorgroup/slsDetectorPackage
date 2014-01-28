@@ -584,14 +584,15 @@ void qTabAdvanced::StartTrimming(){
 		break;
 	default:
 		cout << "Should never come here. Start Trimming will have only 2 methods. Trimming Method:" << trimmingMode << endl;
-		break;
+		return;
 	}
 
 	//execute
 	int ret = myDet->executeTrimming(trimmingMode,parameter1,parameter2,-1);
+
 	if((ret!=slsDetectorDefs::FAIL)&&(ret!=-1));
 	else
-		qDefs::Message(qDefs::WARNING,"Atleast 1 channel could not be trimmed.","qTabAdvanced::StartTrimming");
+	   qDefs::Message(qDefs::WARNING,"Atleast 1 channel could not be trimmed.","qTabAdvanced::StartTrimming");
 	//save trim file
 	ret = myDet->saveSettingsFile(string(dispFile->text().toAscii().constData()),-1);
 	if((ret!=slsDetectorDefs::FAIL)&&(ret!=-1)){

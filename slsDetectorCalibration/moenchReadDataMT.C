@@ -12,10 +12,13 @@ typedef struct task_s{
 } Task;
 
 void *moenchMakeTreeTask(void *p){
+  TThread::Lock();
   char fname[1000];
   Task *t = (Task *)p;
   sprintf(fname,"%s%s_%i.root",t->tdir,t->tname,t->treeIndex);
   TFile *f = new TFile(fname,"RECREATE");
+  cout << "Call moenchReadData(" << t->fformat << "," << t->tname << "," << t->runmin<< "," << t->runmax <<")" << endl;
+  TThread::UnLock();
   moenchReadData(t->fformat,t->tname,t->runmin,t->runmax);
   f->Close();
   return 0;
@@ -38,6 +41,11 @@ void moenchReadDataMT(char *fformat, char *tit, char *tdir, int runmin, int runo
     threads[i] = new TThread(threadName, moenchMakeTreeTask, t);
     threads[i]->Run();
   }
+
+  for(int i = 0; i < nThreads; i++){
+    threads[i]->Join();
+  }
+
 }
 
 

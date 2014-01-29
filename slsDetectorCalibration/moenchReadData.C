@@ -53,7 +53,7 @@ Loops over data file to find single photons, fills the tree (and writes it to fi
 */
 
 
-THStack *moenchReadData(char *fformat, char *tit, int runmin, int runmax, int nbins=1500, int hmin=-500, int hmax=1000, int sign=1, double hc=0, int xmin=0, int xmax=NC, int ymin=0, int ymax=NR, int cmsub=0, int hitfinder=1) {
+THStack *moenchReadData(char *fformat, char *tit, int runmin, int runmax, int nbins=1500, int hmin=-500, int hmax=1000, int sign=1, double hc=0, int xmin=1, int xmax=NC-1, int ymin=1, int ymax=NR-1, int cmsub=0, int hitfinder=1) {
   
   moench02ModuleData *decoder=new moench02ModuleData(hc);
   moenchCommonMode *cmSub=NULL;

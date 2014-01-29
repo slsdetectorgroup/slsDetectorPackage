@@ -102,7 +102,7 @@ void moenchMakeTree(char *fformat, char *tname, int runmin, int runmax, int sign
 	    if (nf>nbg) {
 	      me=stat[iy][ix].Mean();
 	      sig=stat[iy][ix].StandardDeviation();
-	      val=sign*decoder->getChannelShort(buff,ix,iy)-me;
+	      val=sign*decoder->getChannel(buff,ix,iy)-me;
 
 	      dum=0; //no hit
 	      tot=0;
@@ -111,8 +111,8 @@ void moenchMakeTree(char *fformat, char *tname, int runmin, int runmax, int sign
 	      for (ir=-1; ir<2; ir++){
 		for (ic=-1; ic<2; ic++){
 		  if ((ix+ic)>=0 && (ix+ic)<160 && (iy+ir)>=0 && (iy+ir)<160) {
-		    valNei = sign*decoder->getChannelShort(buff,ix+ic,iy+ir)-stat[iy+ir][ix+ic].Mean();
-		    if (sign*decoder->getChannelShort(buff,ix+ic,iy+ir)>(stat[iy+ir][ix+ic].Mean()+3.*stat[iy+ir][ix+ic].StandardDeviation())) dum=1; //is a hit or neighbour is a hit!
+		    valNei = sign*decoder->getChannel(buff,ix+ic,iy+ir)-stat[iy+ir][ix+ic].Mean();
+		    if (sign*decoder->getChannel(buff,ix+ic,iy+ir)>(stat[iy+ir][ix+ic].Mean()+3.*stat[iy+ir][ix+ic].StandardDeviation())) dum=1; //is a hit or neighbour is a hit!
 		    tot+=valNei;
 		    data[ir+1][ic+1] = valNei;
 		    maxNei = max(maxNei,valNei);		    
@@ -134,7 +134,7 @@ void moenchMakeTree(char *fformat, char *tname, int runmin, int runmax, int sign
 	      //cout << dum;
 	    }
 	    if (nf<nbg || dum==0) 
-	      stat[iy][ix].Calc(sign*decoder->getChannelShort(buff,ix,iy));
+	      stat[iy][ix].Calc(sign*decoder->getChannel(buff,ix,iy));
 	   
 	  }
       }

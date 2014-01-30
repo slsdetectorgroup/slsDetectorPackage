@@ -128,7 +128,7 @@ class fileIOStatic  {
 		  index=i;																			\
 	  	  s=fname.substr(0,uscore);															\
 	  }																						\
-	  else      cout << "******************************** cannot parse file index" << endl; \
+	  /*else      cout << "******************************** cannot parse file index" << endl; \*/
 	  uscore=s.rfind("_");																	\
 	  if (sscanf( s.substr(uscore+1,s.size()-uscore-1).c_str(),"f%d",&i)) 					\
 		  if(i==-1)return 0;																\
@@ -161,7 +161,7 @@ class fileIOStatic  {
       index=i;								\
       s=fname.substr(0,uscore);						\
     }									\
-    else      cout << "******************************** cannot parse file index" << endl; \
+    /*else      cout << "******************************** cannot parse file index" << endl; \*/
     uscore=s.rfind("_");						\
     if (sscanf( s.substr(uscore+1,s.size()-uscore-1).c_str(),"f%d",&i))   \
       s=fname.substr(0,uscore);			\

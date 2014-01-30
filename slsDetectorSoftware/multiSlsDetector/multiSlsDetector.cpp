@@ -353,7 +353,7 @@ void multiSlsDetector::updateOffsets(){
 	  int offsetX=0,offsetY=0,numX,numY;
 	  int maxChanX = thisMultiDetector->maxNumberOfChannelsPerDetector[X];
 	  int maxChanY = thisMultiDetector->maxNumberOfChannelsPerDetector[Y];
-
+	  cout << "Updating detector offsets" << endl;
 		thisMultiDetector->numberOfChannel[X] = 0;
 		thisMultiDetector->maxNumberOfChannel[X] = 0;
 		thisMultiDetector->numberOfChannel[Y] = 0;
@@ -364,7 +364,7 @@ void multiSlsDetector::updateOffsets(){
 	    	thisMultiDetector->offsetX[i] = offsetX;
 	    	thisMultiDetector->offsetY[i] = offsetY;
 
-	    	cout << "Detector pos: " << i << " offset X:" << offsetX << " offset Y:" << offsetY << endl;
+	    	cout << "Detector at position: " << i << " at offset X:" << offsetX << "  and offset Y:" << offsetY << endl;
 
 	    	numX = detectors[i]->getMaxNumberOfChannels(X);
 	    	numY = detectors[i]->getMaxNumberOfChannels(Y);
@@ -1946,7 +1946,7 @@ slsDetectorDefs::ROI* multiSlsDetector::getROI(int &n){
 
 
 #ifdef VERBOSE
-	cout<<"Getting ROI :"<<endl;
+	cout<<"ROI :"<<endl;
 		for(int j=0;j<n;j++){
 			cout<<roiLimits[j].xmin<<"\t"<<roiLimits[j].xmax<<"\t"<<roiLimits[j].ymin<<"\t"<<roiLimits[j].ymax<<endl;
 		}

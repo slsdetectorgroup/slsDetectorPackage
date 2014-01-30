@@ -1,13 +1,13 @@
-CFLAGS= -DC_ONLY -fPIC
+CFLAGS= -g -DC_ONLY -fPIC
 #FLAGS+=  #-DVERBOSE -DVERYVERBOSE
 
-DFLAGS= -DDACS_INT -DTHIS_PATH='"$(shell pwd)"' -DSLS_RECEIVER_FUNCTION_LIST #$(shell root-config --cflags --glibs) -DMYROOT1  #-DMYROOT1 `root-config --cflags --glibs`
+DFLAGS= -g -DDACS_INT -DTHIS_PATH='"$(shell pwd)"' -DSLS_RECEIVER_FUNCTION_LIST $(shell root-config --cflags --glibs) -DMYROOT1  #-DMYROOT1 `root-config --cflags --glibs`
 
 #ASM=$(shell echo "/lib/modules/`uname -r`/build/include")
 
 INCLUDES?= -IcommonFiles -IslsDetector -IMySocketTCP -IusersFunctions -ImultiSlsDetector -IslsDetectorUtils -IslsDetectorCommand -IslsDetectorAnalysis -IslsReceiverInterface -IslsReceiver -I../slsDetectorCalibration -I$(ASM)
 
-EPICSFLAGS=-D EPICS -I/usr/local/epics/base/include/ -I /usr/local/epics/base/include/os/Linux/ -L /usr/local/epics/base/lib/$(EPICS_HOST_ARCH) -Wl,-R/usr/local/epics/base/lib/$(EPICS_HOST_ARCH)  -lca -lCom 
+#EPICSFLAGS=-D EPICS -I/usr/local/epics/base/include/ -I /usr/local/epics/base/include/os/Linux/ -L /usr/local/epics/base/lib/$(EPICS_HOST_ARCH) -Wl,-R/usr/local/epics/base/lib/$(EPICS_HOST_ARCH)  -lca -lCom 
 
 CC=g++
 

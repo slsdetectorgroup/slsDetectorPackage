@@ -3200,7 +3200,7 @@ slsDetectorDefs::runStatus slsDetector::getRunStatus(){
     if (stopSocket) {
       if  (stopSocket->Connect()>=0) {
 	stopSocket->SendDataOnly(&fnum,sizeof(fnum));
-	cout << stopSocket->ReceiveDataOnly(&ret,sizeof(ret)) ;
+	stopSocket->ReceiveDataOnly(&ret,sizeof(ret));
 
 	//	cout << "________:::____________" << ret << endl;
 	

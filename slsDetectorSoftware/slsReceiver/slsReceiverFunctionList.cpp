@@ -1228,7 +1228,7 @@ int slsReceiverFunctionList::startWriting(){
 					if(dataCompression){
 						cout<<"Waiting for jobs to be done.. current mask:"<< hex << writerthreads_mask <<endl;
 						while(writerthreads_mask){
-							cout << "." << flush;
+							/*cout << "." << flush;*/
 							usleep(50000);
 						}
 						cout<<" Jobs Done!"<<endl;

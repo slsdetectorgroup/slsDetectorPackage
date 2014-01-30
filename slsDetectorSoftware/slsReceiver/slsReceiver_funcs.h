@@ -5,6 +5,7 @@
 #ifndef RECEIVER_H
 #define RECEIVER_H
 
+
 #include "sls_detector_defs.h"
 #include "receiver_defs.h"
 #include "MySocketTCP.h"
@@ -28,6 +29,7 @@ public:
 	 */
   slsReceiverFuncs(int argc, char *argv[], int &success);
 
+
   /** starts listening on the TCP port for client comminication */
   
 	void start();
@@ -35,9 +37,11 @@ public:
 	/** Destructor */
 	virtual ~slsReceiverFuncs();
 
-	/** Close File */
-	static void closeFile(int p);
+	/** Close all threaded Files and exit */
+	void closeFile(int p);
 
+	/** Static function to call closeFile */
+	static void staticCloseFile(int p);
 
 	/**
 	   callback arguments are

@@ -31,7 +31,7 @@ using namespace std;
 //-------------------------------------------------------------------------------------------------------------------------------------------------
 
 int main (int argc, char **argv) {
-  MyApplication *theApp = new MyApplication(argc, argv);
+  QApplication *theApp = new QApplication(argc, argv);
   //	QApplication *theApp = new QApplication(argc, argv);
 	theApp->setStyle(new QPlastiqueStyle);//not default when desktop is windows
 	theApp->setWindowIcon(QIcon( ":/icons/images/mountain.png" ));

@@ -630,13 +630,9 @@ void qDrawPlot::SetupMeasurement(){
 #ifdef VERBOSE
 	cout << "SetupMeasurement function:" << running << endl;
 #endif
-	cout<<"begnPixelsX:"<<nPixelsX<<endl;
-	cout<<"begnPixelsY:"<<nPixelsY<<endl;
-	LockLastImageArray();cout<<"after lockimage"<<endl;
-
+	LockLastImageArray();
 #ifdef VERBOSE
 	cout << "locklastimagearray" << endl;
-
 #endif
 	// Defaults
 	if(!running)
@@ -652,12 +648,11 @@ void qDrawPlot::SetupMeasurement(){
 	for(int py=0;py<(int)nPixelsY;py++)
 		for(int px=0;px<(int)nPixelsX;px++)
 			lastImageArray[py*nPixelsX+px] = 0;
-	cout<<"end of 2d"<<endl;
+
 	//1d with no scan
 	if ((!originally2D) && (scanArgument==qDefs::None)){
 #ifdef VERBOSE
 	cout << "1D" << endl;
-
 #endif
 		if(!running){
 			maxPixelsY = 100;
@@ -669,7 +664,6 @@ void qDrawPlot::SetupMeasurement(){
 	else {
 #ifdef VERBOSE
 	cout << "2D" << endl;
-
 #endif
 		//2d with no scan
 		if ((originally2D) && (scanArgument==qDefs::None)){
@@ -717,12 +711,11 @@ void qDrawPlot::SetupMeasurement(){
 	cout<<"startPixel:"<<startPixel<<endl;
 	cout<<"endPixel:"<<endPixel<<endl<<endl;
 */
-	UnlockLastImageArray();cout<<"out of setupmeasure"<<endl;
+	UnlockLastImageArray();
 
 
 #ifdef VERBOSE
 	cout << "locklastimagearray" << endl;
-
 #endif
 }
 
@@ -741,7 +734,6 @@ void* qDrawPlot::DataStartAcquireThread(void *this_pointer){
 
 int qDrawPlot::GetDataCallBack(detectorData *data, int fIndex, void *this_pointer){
 	((qDrawPlot*)this_pointer)->GetData(data,fIndex);
-	cout << "data ready callback worked ok" << endl;
 	return 0;
 }
 
@@ -750,7 +742,7 @@ int qDrawPlot::GetDataCallBack(detectorData *data, int fIndex, void *this_pointe
 
 
 int qDrawPlot::GetData(detectorData *data,int fIndex){
-  //#ifdef VERYVERBOSE
+#ifdef VERYVERBOSE
 	cout << "******Entering GetDatafunction********" << endl;
 	cout << "fIndex " << fIndex << endl;
 	cout << "fname " << data->fileName << endl;
@@ -760,9 +752,9 @@ int qDrawPlot::GetData(detectorData *data,int fIndex){
 	cout << "values " << data->values << endl;
 	cout << "errors " << data->errors << endl;
 	cout << "angle " << data->angles << endl;
-	//#endif
+#endif
 	if(!stop_signal){
-cout<<"before progress"<<endl;
+
 		//set progress
 		progress=(int)data->progressIndex;
 		currentFrameIndex = fileIOStatic::getIndicesFromFileName(string(data->fileName),currentFileIndex);
@@ -771,9 +763,9 @@ cout<<"before progress"<<endl;
 			cout << "Received empty file name. Exiting function without updating data for plot." << endl;
 			return -1;
 		}
-		//#ifdef VERYVERBOSE
+#ifdef VERYVERBOSE
 		cout << "progress:" << progress << endl;
-		//#endif
+#endif
 		// secondary title necessary to differentiate between frames when not saving data
 		char temp_title[2000];
 		//findex is used because in the receiver, you cannot know the frame index as many frames are in 1 file.
@@ -789,7 +781,6 @@ cout<<"before progress"<<endl;
 		//Plot Disabled
 		if(!plotEnable) 	return 0;
 
-		cout<<"before entering angleplot"<<endl;
 		//angle plotting
 		if(anglePlot){
 			LockLastImageArray();
@@ -1167,7 +1158,6 @@ int qDrawPlot::AcquisitionFinished(double currentProgress, int detectorStatus){
 
 int qDrawPlot::GetProgressCallBack(double currentProgress, void *this_pointer){
 	((qDrawPlot*)this_pointer)->progress= currentProgress;
-	cout << "progress callback " << endl;
 	return 0;
 }
 
@@ -1189,9 +1179,7 @@ void qDrawPlot::ShowAcquisitionErrorMessage(QString status){
 
 
 int qDrawPlot::GetMeasurementFinishedCallBack(int currentMeasurementIndex, int fileIndex, void *this_pointer){
-	cout << "measurement finished callback?" << endl;
 	((qDrawPlot*)this_pointer)->MeasurementFinished(currentMeasurementIndex, fileIndex);
-	cout << "measurement finished callback worked ok" << endl;
 	return 0;
 }
 

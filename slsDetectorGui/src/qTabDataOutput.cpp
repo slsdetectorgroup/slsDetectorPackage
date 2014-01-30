@@ -110,8 +110,7 @@ void qTabDataOutput::SetupWidgetWindow(){
 
 	//discard bad channels from server
 #ifdef VERBOSE
-	cout  << "Getting bad channel correction" << endl;
-	cout << "func " << myDet->getBadChannelCorrection() << endl;
+	cout  << "Getting bad channel correction:" << myDet->getBadChannelCorrection() << endl;
 #endif
 
 
@@ -123,9 +122,6 @@ void qTabDataOutput::SetupWidgetWindow(){
 		chkDiscardBad->setChecked(false);
 	connect(chkDiscardBad,		SIGNAL(toggled(bool)), 	this, 	SLOT(DiscardBadChannels()));
 
-#ifdef VERBOSE
-	cout  << "done" << endl;
-#endif
 
 	qDefs::checkErrorMessage(myDet,"qTabDataOutput::SetupWidgetWindow");
 }

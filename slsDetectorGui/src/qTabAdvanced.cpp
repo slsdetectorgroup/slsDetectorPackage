@@ -127,13 +127,13 @@ void qTabAdvanced::SetupWidgetWindow(){
 	det = myDet->getSlsDetector(comboDetector->currentIndex());
 
 	qDefs::checkErrorMessage(myDet,"qTabAdvanced::SetupWidgetWindow");
-	cout << "ports" << endl;
+	cout << "Getting ports" << endl;
 	spinControlPort->setValue(det->getControlPort());
 	spinStopPort->setValue(det->getStopPort());
 	spinTCPPort->setValue(det->getReceiverPort());
 	spinUDPPort->setValue(atoi(det->getReceiverUDPPort()));
 
-	cout << "net" << endl;
+	cout << "Getting network information" << endl;
 	dispIP->setText(det->getDetectorIP());
 	dispMAC->setText(det->getDetectorMAC());
 	dispRxrHostname->setText(det->getReceiver());
@@ -142,8 +142,9 @@ void qTabAdvanced::SetupWidgetWindow(){
 
 
 	//check if its online and set it to red if offline
-
+#ifdef VERYVERBOSE
 	cout << "online" << endl;
+#endif
 	if(det->setOnline()==slsDetectorDefs::ONLINE_FLAG)
 		det->checkOnline();
 	if(det->setReceiverOnline()==slsDetectorDefs::ONLINE_FLAG)
@@ -164,16 +165,11 @@ void qTabAdvanced::SetupWidgetWindow(){
 	}
 
 
-	cout << "ROI" << endl;
-
 	//updates roi
+	cout << "Getting ROI" << endl;
 	updateROIList();
 
-	cout << "Init" << endl;
-
 	Initialization();
-
-	cout << "done" << endl;
 
 	qDefs::checkErrorMessage(det,"qTabAdvanced::SetupWidgetWindow");
 

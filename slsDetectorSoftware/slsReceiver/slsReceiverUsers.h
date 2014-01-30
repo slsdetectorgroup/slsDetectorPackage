@@ -34,7 +34,7 @@ public:
 	~slsReceiverUsers();
 
 	/** Close File */
-	static void closeFile(int p);
+	void closeFile(int p);
 
 	/** starts listening on the TCP port for client comminication */
 	void start();
@@ -70,11 +70,8 @@ public:
 	
 	void registerCallBackRawDataReady(void (*func)(int framenumber, char* datapointer, int datasize, FILE* filedescriptor, char* guidatapointer, void*),void *arg);
 
-
- private:
-
-	slsReceiverFuncs *receiver;
-
+	// made static to close thread files with ctrl+c
+	static slsReceiverFuncs* receiver;
 };
 
 

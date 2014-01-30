@@ -6,6 +6,10 @@
 #include "slsReceiver_funcs.h"
 #include "slsReceiverFunctionList.h"
 #include "svnInfoReceiver.h"
+#include "slsReceiverUsers.h"
+
+#include  <signal.h>	//SIGINT
+#include <cstdlib>	//EXIT
 
 #include <iostream>
 #include <string>
@@ -20,11 +24,11 @@ int slsReceiverFuncs::socketDescriptor(-1);
 
 
 slsReceiverFuncs::~slsReceiverFuncs() {
-
-	slsReceiverFuncs::closeFile(0);
-	cout << "Goodbye!" << endl;
+	/*if(file_des != -1){close(file_des);file_des = -1;}
+	//shutdown(socketDescriptor,SHUT_RDWR);
+	close(socketDescriptor);*/
 	if(socket) delete socket;
-
+	closeFile(0);
 }
 
 
@@ -249,7 +253,10 @@ slsReceiverFuncs::slsReceiverFuncs(int argc, char *argv[], int &success):
 			function_table();
 			slsReceiverList =  new slsReceiverFunctionList(myDetectorType);
 
-			if(dcompr)	slsReceiverList->enableDataCompression(dcompr);
+			//Catch signal SIGINT to close files properly
+			signal(SIGINT,staticCloseFile);
+
+			/*if(dcompr)*/	slsReceiverList->enableDataCompression(dcompr);
 			/*if(jobthread!=-1) slsReceiverList->setNumberOfJobsPerThread(jobthread);*/
 
 #ifdef VERBOSE
@@ -395,17 +402,16 @@ int slsReceiverFuncs::M_nofunc(){
 
 
 void slsReceiverFuncs::closeFile(int p){
-
-
-	if(slsReceiverFunctionList::receiver_threads_running)
-		fclose(slsReceiverFunctionList::sfilefd);
-
-
-	close(file_des);
-	//shutdown(socketDescriptor,SHUT_RDWR);
-	close(socketDescriptor);
-
+	cout<<"Closing Files... "<<endl;
+	slsReceiverList->closeFile();
+	cout << "Goodbye!" << endl;
+	exit(1);
 }
+
+void slsReceiverFuncs::staticCloseFile(int p){
+	slsReceiverUsers::receiver->closeFile(p);
+}
+
 
 
 
@@ -983,7 +989,6 @@ int	slsReceiverFuncs::moench_read_frame(){
 	uint32_t startIndex=0;
 	int index = 0,bindex = 0, offset=0;
 
-
 	strcpy(mess,"Could not read frame\n");
 
 
@@ -1026,6 +1031,7 @@ int	slsReceiverFuncs::moench_read_frame(){
 			int iPacket = 0;
 			offset = 4;
 
+
 			while (iPacket < (int)numPackets){
 #ifdef VERBOSE
 				printf("iPacket:%d\n",iPacket);cout << endl;
@@ -1039,11 +1045,12 @@ int	slsReceiverFuncs::moench_read_frame(){
 				}
 
 				packetIndex = bindex & MOENCH_PACKET_INDEX_MASK;
+				//cout<<"packetIndex:"<<packetIndex<<endl;
 				//the first packet is placed in the end
 				packetIndex--;
 				if(packetIndex ==-1)
 					packetIndex = 39;
-
+				//cout<<"packetIndexM:"<<packetIndex<<endl;
 				//check validity
 				if ((packetIndex >= 40) && (packetIndex < 0))
 					cout << "cannot decode packet index:" << packetIndex << endl;
@@ -1086,6 +1093,7 @@ int	slsReceiverFuncs::moench_read_frame(){
 	cout << "\nstartIndex:" << startIndex << endl;
 	cout << "fName:" << fName << endl;
 	cout << "index:" << arg << endl;
+	if(retval==NULL)cout<<"retval is null"<<endl;
 #endif
 
 #endif

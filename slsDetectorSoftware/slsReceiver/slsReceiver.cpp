@@ -4,32 +4,23 @@
 #include "sls_detector_defs.h"
 #include "slsReceiverUsers.h"
 
-
-#include <signal.h>	//SIGINT
-#include <cstdlib>	//EXIT
-
 #include <iostream>
 using namespace std;
 
 
-void closeFile(int p){
-  cout<<"close file in receiver"<<endl;
-  slsReceiverUsers::closeFile(p);
-  exit(0);
-}
+
+
+
 
 int main(int argc, char *argv[]) {
   int ret = slsDetectorDefs::OK;
   
-  slsReceiverUsers *receiver = new slsReceiverUsers(argc, argv, ret);
+  slsReceiverUsers *user = new slsReceiverUsers(argc, argv, ret);
   
   if(ret==slsDetectorDefs::FAIL)
     return -1;
   
-  
-  //Catch signal SIGINT to close files properly
-  signal(SIGINT,closeFile);
-  
+
   //register callbacks 
 
 
@@ -82,7 +73,7 @@ int main(int argc, char *argv[]) {
 
 
 
-  receiver->start();
+  user->start();
   
   
   return 0;

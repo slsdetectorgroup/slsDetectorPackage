@@ -77,11 +77,11 @@ class slsReceiverData : public slsDetectorData<dataType> {
 	fnum=fn;
 	retval=p;
 	if (np>0)
-	  cout << "*Incomplete frame number " << fnum << endl;
+	  /*cout << "*Incomplete frame number " << fnum << endl;*/
 	np=0;
       } else if (fn!=fnum) {
 	if (fnum!=-1) {
-	  cout << " **Incomplete frame number " << fnum << " pnum " << pnum << " " << getFrameNumber(p) << endl;
+	 /* cout << " **Incomplete frame number " << fnum << " pnum " << pnum << " " << getFrameNumber(p) << endl;*/
 	  retval=NULL;
 	}
 	np=0;

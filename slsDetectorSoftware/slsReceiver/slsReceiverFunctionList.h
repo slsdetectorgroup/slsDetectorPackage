@@ -210,6 +210,12 @@ public:
 	 */
 	int stopReceiver();
 
+	/**
+	 * Closes all files
+	 * @param ithr thread index
+	 */
+	void closeFile(int ithr = -1);
+
 
 private:
 	/**
@@ -249,9 +255,11 @@ private:
 
 	/**
 	 * Creates new tree and file for compression
+	 * @param ithr thread number
+	 * @param iframe frame number
 	 *\returns OK for succces or FAIL for failure
 	 */
-	int createCompressionFile();
+	int createCompressionFile(int ithr, int iframe);
 
 	/**
 	 * Creates new file
@@ -439,9 +447,6 @@ private:
 	/** to know if listening and writer threads created properly */
 	int thread_started;
 
-	/** mask showing which threads are running */
-	volatile int32_t writerthreads_mask;
-
 	/** current writer thread index*/
 	int currentWriterThreadIndex;
 
@@ -479,15 +484,6 @@ private:
 	/** mutex for writing data to file */
 	pthread_mutex_t write_mutex;
 
-
-//filter
-	singlePhotonDetector<uint16_t> *singlePhotonDet;
-
-	moench02ModuleData *mdecoder;
-
-	bool commonModeSubtractionEnable;
-
-	int iFrame;
 
 	/**
 	   callback arguments are
@@ -531,27 +527,32 @@ private:
 	 * 2 we open, close, write file, callback does not do anything */
 	int cbAction;
 
+	//filter
+		singlePhotonDetector<uint16_t> *singlePhotonDet[MAX_NUM_WRITER_THREADS];
 
+		moench02ModuleData *mdecoder[MAX_NUM_WRITER_THREADS];
+
+		bool commonModeSubtractionEnable;
 
 public:
 
 #ifdef MYROOT1
 	/** Tree where the hits are stored */
-	static TTree *myTree;
+	TTree *myTree[MAX_NUM_WRITER_THREADS];
 
 	/** File where the tree is saved */
-	static TFile *myFile;
+	TFile *myFile[MAX_NUM_WRITER_THREADS];
 #endif
 
 
 	/** File Descriptor */
-	static FILE *sfilefd;
+	FILE *sfilefd;
 
-	/** if the receiver threads are running*/
-	static int receiver_threads_running;
+	/** mask showing which threads are running */
+	volatile uint32_t writerthreads_mask;
 
-	/** 0 if receiver is idle, 1 otherwise */
-	static int running;
+	/** 0 if listening thread is idle, 1 otherwise */
+	int listening_thread_running;
 
 	/**
 	   callback arguments are

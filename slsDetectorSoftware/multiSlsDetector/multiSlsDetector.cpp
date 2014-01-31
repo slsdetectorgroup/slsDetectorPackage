@@ -353,7 +353,7 @@ void multiSlsDetector::updateOffsets(){
 	  int offsetX=0,offsetY=0,numX,numY;
 	  int maxChanX = thisMultiDetector->maxNumberOfChannelsPerDetector[X];
 	  int maxChanY = thisMultiDetector->maxNumberOfChannelsPerDetector[Y];
-	  cout << "Updating detector offsets" << endl;
+	  cout << "Updating multi detector offsets" << endl;
 		thisMultiDetector->numberOfChannel[X] = 0;
 		thisMultiDetector->maxNumberOfChannel[X] = 0;
 		thisMultiDetector->numberOfChannel[Y] = 0;
@@ -364,7 +364,7 @@ void multiSlsDetector::updateOffsets(){
 	    	thisMultiDetector->offsetX[i] = offsetX;
 	    	thisMultiDetector->offsetY[i] = offsetY;
 
-	    	cout << "Detector at position: " << i << " at offset X:" << offsetX << "  and offset Y:" << offsetY << endl;
+	    	cout << "Detector at position: " << i << " x offset:" << offsetX << " y offset:" << offsetY << endl;
 
 	    	numX = detectors[i]->getMaxNumberOfChannels(X);
 	    	numY = detectors[i]->getMaxNumberOfChannels(Y);
@@ -3554,7 +3554,8 @@ int multiSlsDetector::setNumberOfModules(int p, dimension d) {
     }
   }
 
-  updateOffsets();
+  if(p != -1)
+    updateOffsets();
   return ret;
 
 }

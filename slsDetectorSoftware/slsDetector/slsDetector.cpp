@@ -2884,6 +2884,8 @@ slsDetectorDefs::detectorSettings slsDetector::setSettings( detectorSettings ise
 			ostringstream ostfn, oscfn;
 			myMod->module=im;
 
+			std::cout << std::endl << "Loading settings for module:" << im << std::endl;
+
 			//create file names
 			switch(thisDetector->myDetectorType){
 			case EIGER:
@@ -2912,7 +2914,7 @@ slsDetectorDefs::detectorSettings slsDetector::setSettings( detectorSettings ise
 
 			settingsfname=ostfn.str();
 #ifdef VERBOSE
-			cout << "the settings name is "<<settingsfname << endl;
+			cout << "the settings file name is "<<settingsfname << endl;
 #endif
 			if (readSettingsFile(settingsfname,thisDetector->myDetectorType, myMod)) {
 				calfname=oscfn.str();

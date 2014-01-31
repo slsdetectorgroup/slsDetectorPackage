@@ -28,6 +28,7 @@ int energyConversion::readCalibrationFile(string fname, double &gain, double &of
     istringstream ssstr(str);
     ssstr >> offset >> gain;
     infile.close();
+	cout << "Calibration file loaded: " << fname << endl;
   } else {
     std::cout<< "Could not open calibration file "<< fname << std::endl;
     gain=0.;
@@ -229,7 +230,7 @@ slsDetectorDefs::sls_detector_module* energyConversion::readSettingsFile(string 
 
 			infile.close();
 			strcpy(settingsFile,fname.c_str());
-
+			cout << "Settings file loaded: " << settingsFile << endl;
 			return myMod;
 
 		}
@@ -255,7 +256,7 @@ slsDetectorDefs::sls_detector_module* energyConversion::readSettingsFile(string 
 			}
 			infile.close();
 			strcpy(settingsFile,fname.c_str());
-
+			cout << "Settings file loaded: " << settingsFile << endl;
 			return myMod;
 
 		}
@@ -295,7 +296,7 @@ slsDetectorDefs::sls_detector_module* energyConversion::readSettingsFile(string 
 
 			infile.close();
 			strcpy(settingsFile,fname.c_str());
-
+			cout << "Settings file loaded: " << settingsFile << endl;
 			return myMod;
 
 		}
@@ -311,7 +312,7 @@ slsDetectorDefs::sls_detector_module* energyConversion::readSettingsFile(string 
 
 	}
 
-	std::cout<< "could not open settings file " <<  myfname << std::endl;
+	std::cout<< "Error: Could not open settings file " <<  myfname << std::endl;
 	if (nflag)
 		deleteModule(myMod);
 

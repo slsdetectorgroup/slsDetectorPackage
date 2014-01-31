@@ -404,30 +404,20 @@ void qTabDataOutput::SetAngularCorrection(){
 #ifdef VERYVERBOSE
 	cout << "Entering Set Angular Correction function" << endl;
 #endif
-	if(chkAngular->isChecked()){
-		if(myDet->setAngularConversionFile("default")){
+	bool enabled = chkAngular->isChecked();
+	//set
+	if(myDet->setAngularCorrectionMask(enabled) == enabled){
 #ifdef VERBOSE
-		cout << "Setting angular conversion to default"  << endl;
+		cout << "Angular Conversion mask:"  << enabled << endl;
 #endif
-		}else{
+	}
+	//error
+	else{
 #ifdef VERBOSE
 		cout << "Could not set angular conversion to default"  << endl;
 #endif
-			qDefs::Message(qDefs::WARNING,"Angular Conversion could not be set. Please set the default file name using the command line, if you haven't already.","qTabDataOutput::SetAngularCorrection");
-			chkAngular->setChecked(false);
-		}
-	}else{
-		if(myDet->setAngularConversionFile("")){
-#ifdef VERBOSE
-		cout << "Could not reset angular correction" << endl;
-#endif
-			qDefs::Message(qDefs::WARNING,"Angular Conversion could not be reset.","qTabDataOutput::SetAngularCorrection");
-			chkAngular->setChecked(true);
-		}else{;
-#ifdef VERBOSE
-		cout << "Unsetting angular correction" << endl;
-#endif
-		}
+		qDefs::Message(qDefs::WARNING,"Angular Conversion could not be set/reset. Please set the default file name using the command line, if you want to set it.","qTabDataOutput::SetAngularCorrection");
+		chkAngular->setChecked(!enabled);
 	}
 
 	emit AngularConversionSignal(chkAngular->isChecked());

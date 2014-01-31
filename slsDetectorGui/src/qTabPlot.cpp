@@ -715,6 +715,7 @@ void qTabPlot::EnableScanBox(bool Histo){
 	int mode1 = myDet->getScanMode(1);
 	int ang;
 	bool angConvert = myDet->getAngularConversion(ang);
+	myPlot->EnableAnglePlot(angConvert);
 
 	radioDataGraph->setEnabled(true);
 	radioHistogram->setEnabled(true);
@@ -752,7 +753,6 @@ void qTabPlot::EnableScanBox(bool Histo){
 
 
 
-		myPlot->EnableAnglePlot(angConvert);
 		if(angConvert){
 			boxScan->setToolTip("<nobr>Only 1D Plots enabled for Angle Plots</nobr>");
 			//disable histogram

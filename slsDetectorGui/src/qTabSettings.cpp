@@ -266,9 +266,12 @@ void qTabSettings::Refresh(){
 
 
 	// Number of Modules
+#ifdef VERBOSE
+	cout  << "Getting number of modules:" ;
+#endif
 	int numMod = myDet->setNumberOfModules();
 #ifdef VERBOSE
-	cout  << "Getting number of modules:" << numMod << endl;
+	cout << numMod << endl;
 #endif
 	spinNumModules->setValue(numMod);
 

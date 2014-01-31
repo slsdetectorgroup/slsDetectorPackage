@@ -461,7 +461,7 @@ int qDrawPlot::ResetDaqForGui(){
 
 
 bool qDrawPlot::StartOrStopThread(bool start){
-#ifdef VERBOSE
+#ifdef VERYVERBOSE
 	cout << "StartOrStopThread:" << start << endl;
 #endif
 	static bool firstTime = true;
@@ -510,7 +510,7 @@ bool qDrawPlot::StartOrStopThread(bool start){
 
 
 void qDrawPlot::SetScanArgument(int scanArg){
-#ifdef VERBOSE
+#ifdef VERYVERBOSE
 	cout << "SetScanArgument function:" << scanArg << " running:" << running << endl;
 #endif
 	scanArgument = scanArg;
@@ -627,11 +627,11 @@ void qDrawPlot::SetScanArgument(int scanArg){
 
 
 void qDrawPlot::SetupMeasurement(){
-#ifdef VERBOSE
+#ifdef VERYVERBOSE
 	cout << "SetupMeasurement function:" << running << endl;
 #endif
 	LockLastImageArray();
-#ifdef VERBOSE
+#ifdef VERYVERBOSE
 	cout << "locklastimagearray" << endl;
 #endif
 	// Defaults
@@ -643,7 +643,6 @@ void qDrawPlot::SetupMeasurement(){
 	//if(plot_in_scope==2)
 		if(!running)
 		  lastImageNumber = 0;/**Just now */
-		cout<<"before 2d"<<endl;
 	//initializing 2d array
 	for(int py=0;py<(int)nPixelsY;py++)
 		for(int px=0;px<(int)nPixelsX;px++)
@@ -651,7 +650,7 @@ void qDrawPlot::SetupMeasurement(){
 
 	//1d with no scan
 	if ((!originally2D) && (scanArgument==qDefs::None)){
-#ifdef VERBOSE
+#ifdef VERYVERBOSE
 	cout << "1D" << endl;
 #endif
 		if(!running){
@@ -662,7 +661,7 @@ void qDrawPlot::SetupMeasurement(){
 		}else cout<<"correct palce"<<endl;
 	}
 	else {
-#ifdef VERBOSE
+#ifdef VERYVERBOSE
 	cout << "2D" << endl;
 #endif
 		//2d with no scan
@@ -714,7 +713,7 @@ void qDrawPlot::SetupMeasurement(){
 	UnlockLastImageArray();
 
 
-#ifdef VERBOSE
+#ifdef VERYVERBOSE
 	cout << "locklastimagearray" << endl;
 #endif
 }

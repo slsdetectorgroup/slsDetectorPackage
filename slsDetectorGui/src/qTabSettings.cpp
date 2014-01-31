@@ -41,9 +41,6 @@ void qTabSettings::SetupWidgetWindow(){
 
 	// Settings
 	SetupDetectorSettings();
-	int sett = (int)myDet->getSettings();
-	if(sett==-1) sett = slsDetectorDefs::UNDEFINED;
-	comboSettings->setCurrentIndex(sett);
 
 	//threshold
 	if((detType == slsDetectorDefs::MYTHEN) || (detType == slsDetectorDefs::EIGER))
@@ -166,7 +163,7 @@ void qTabSettings::setSettings(int index){
 	else{
 		slsDetectorDefs::detectorSettings sett = myDet->setSettings((slsDetectorDefs::detectorSettings)index);
 	#ifdef VERBOSE
-		cout << "Settings have been set to " << myDet->slsDetectorBase::getDetectorSettings(sett) << endl;
+		cout << endl << "Settings have been set to " << myDet->slsDetectorBase::getDetectorSettings(sett) << endl;
 	#endif
 
 		//threshold

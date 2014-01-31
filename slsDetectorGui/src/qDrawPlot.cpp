@@ -658,7 +658,7 @@ void qDrawPlot::SetupMeasurement(){
 			minPixelsY = 0;
 			startPixel = -0.5;
 			endPixel = nPixelsY-0.5;
-		}else cout<<"correct palce"<<endl;
+		}
 	}
 	else {
 #ifdef VERYVERBOSE

@@ -28,7 +28,15 @@ using namespace std;
     PHOTON=2,
     PHOTON_MAX=3,
     NEGATIVE_PEDESTAL=4,
-    UNDEFINED=-1
+    UNDEFINED_EVENT=-1
+  };
+
+  enum quadrant {
+    TOP_LEFT=0,
+    TOP_RIGHT=1,
+    BOTTOM_LEFT=2,
+    BOTTOM_RIGHT=3,
+    UNDEFINED_QUADRANT=-1
   };
 
 
@@ -62,7 +70,7 @@ class singlePhotonDetector {
 		       int sign=1, 
 		       commonModeSubtraction *cm=NULL,
 		       int nped=1000, 
-		       int nd=100) : det(d), nx(0), ny(0), stat(NULL), cmSub(cm),  nDark(nd), eventMask(NULL),nSigma (nsigma), clusterSize(csize), clusterSizeY(csize), cluster(NULL), iframe(-1), dataSign(sign) {
+		       int nd=100) : det(d), nx(0), ny(0), stat(NULL), cmSub(cm),  nDark(nd), eventMask(NULL),nSigma (nsigma), clusterSize(csize), clusterSizeY(csize), cluster(NULL), iframe(-1), dataSign(sign), quad(UNDEFINED_QUADRANT), tot(0), quadTot(0) {
 
    
     det->getDetectorSize(nx,ny);
@@ -94,7 +102,7 @@ class singlePhotonDetector {
     void newDataSet(){iframe=-1; for (int iy=0; iy<ny; iy++) for (int ix=0; ix<nx; ix++) stat[iy][ix].Clear(); if (cmSub) cmSub->Clear(); };  
 
     /** resets the eventMask to undefined and the commonModeSubtraction */
-    void newFrame(){iframe++; for (int iy=0; iy<ny; iy++) for (int ix=0; ix<nx; ix++) eventMask[iy][ix]=UNDEFINED; if (cmSub) cmSub->newFrame();};
+    void newFrame(){iframe++; for (int iy=0; iy<ny; iy++) for (int ix=0; ix<nx; ix++) eventMask[iy][ix]=UNDEFINED_EVENT; if (cmSub) cmSub->newFrame();};
 
 
     /** sets the commonModeSubtraction algorithm to be used 
@@ -184,8 +192,13 @@ class singlePhotonDetector {
     eventType getEventType(char *data, int ix, int iy, int cm=0) {
 
       // eventType ret=PEDESTAL;
-      double tot=0, max=0;
+      double max=0, tl=0, tr=0, bl=0,br=0, v;
       //  cout << iframe << endl;
+    
+      tot=0;
+      quadTot=0;
+      quad=UNDEFINED_QUADRANT;
+
 
       if (iframe<nDark) {
 	if (cm==0) {
@@ -194,7 +207,7 @@ class singlePhotonDetector {
 	  cluster->set_data(dataSign*(det->getValue(data, ix, iy)-getPedestal(ix,iy,cm)), 0,0       );
 	  // cout << "=" << endl;
 	}
-	return UNDEFINED;
+	return UNDEFINED_EVENT;
       }
       
       
@@ -214,12 +227,22 @@ class singlePhotonDetector {
 	  for (int ic=-(clusterSize/2); ic<(clusterSize/2)+1; ic++) {
 	    if ((iy+ir)>=0 && (iy+ir)<ny && (ix+ic)>=0 && (ix+ic)<nx) {
 	      cluster->set_data(dataSign*(det->getValue(data, ix+ic, iy+ir)-getPedestal(ix+ic,iy+ir,cm)), ic, ir       );
-	      tot+=cluster->get_data(ic,ir);
+	      v=cluster->get_data(ic,ir);
+	      tot+=v;
+	      if (ir<=0 && ic<=0)
+		bl+=v;
+	      if (ir<=0 && ic>=0)
+		br+=v;
+	      if (ir>=0 && ic<=0)
+		tl+=v;
+	      if (ir>=0 && ic>=0)
+		tr+=v;
+	      
 	      if (cluster->get_data(ic,ir)>max) {
-		max=cluster->get_data(ic,ir);
+		max=v;
 	      }
 	      if (ir==0 && ic==0) {
-		if (cluster->get_data(ic,ir)>nSigma*cluster->rms) {
+		if (v>nSigma*cluster->rms) {
 		  eventMask[iy][ix]=PHOTON;
 		} else if (cluster->get_data(ic,ir)<-nSigma*cluster->rms)
 		  eventMask[iy][ix]=NEGATIVE_PEDESTAL;
@@ -233,31 +256,54 @@ class singlePhotonDetector {
 	} else if (eventMask[iy][ix]==PHOTON) {
 	  if (cluster->get_data(0,0)>=max) {
 	    eventMask[iy][ix]=PHOTON_MAX;
-	 /*    if (iframe%1000==0) { */
-/* 	    for (int ir=-(clusterSizeY/2); ir<(clusterSizeY/2)+1; ir++) { */
-/*  	      for (int ic=-(clusterSize/2); ic<(clusterSize/2)+1; ic++) {  */
-/*  		if ((iy+ir)>=0 && (iy+ir)<ny && (ix+ic)>=0 && (ix+ic)<nx) {  */
-/* /\* 		  if (eventMask[iy+ir][ix+ic]==UNDEFINED) *\/ */
-/* /\* 		    eventMask[iy+ir][ix+ic]=NEIGHBOUR; *\/ */
-/* 		  cout << cluster->get_data(ic,ir) << " "; */
-/* 		} */
-/* 	      } */
-/* 	    } */
-/* 	    cout << endl;; */
-/* 	    } */
 	  }
 	} else if (eventMask[iy][ix]==PEDESTAL) {
 	  if (cm==0)
 	    addToPedestal(det->getValue(data, ix, iy),ix,iy);
 	}
-	//    }
-           
+      
+	
+	if (bl>=br && bl>=tl && bl>=tr) {
+	  quad=BOTTOM_LEFT;
+	  quadTot=bl;
+	} else if (br>=bl && br>=tl && br>=tr) {
+	  quad=BOTTOM_RIGHT;
+	  quadTot=br;
+	} else if (tl>=br && tl>=bl && tl>=tr) {
+	  quad=TOP_LEFT;
+	  quadTot=tl;
+     	} else if   (tr>=bl && tr>=tl && tr>=br) {
+	  quad=TOP_RIGHT;
+	  quadTot=tr;
+	} 
+
+
       return  eventMask[iy][ix];
 
   };
 
+    /**<
+       retrurns the total signal in a cluster
+       \param size cluser size  should be 1,2 or 3
+       \returns cluster center if size=1, sum of the maximum quadrant if size=2, total of the cluster if size=3 or anything else
+    */
 
+    double getClusterTotal(int size) {
+      switch (size) {
+      case 1:
+	return getClusterElement(0,0);
+      case 2:
+	return quadTot;
+      default:
+	return tot;
+      };
+    };
 
+      /**<
+       retrurns the quadrant with maximum signal
+       \returns quadrant where the cluster is located    */
+
+    quadrant getQuadrant() {return quad;};
 
     /** sets/gets number of samples for moving average pedestal calculation
 	\param i number of samples to be set (0 or negative gets)
@@ -279,6 +325,7 @@ class singlePhotonDetector {
     */
     eventType getEventMask(int ic, int ir=0){return eventMask[ir][ic];};
  
+
 #ifdef MYROOT1  
     /** generates a tree and maps the branches
 	\param tname name for the tree
@@ -298,8 +345,8 @@ class singlePhotonDetector {
       char tit[100];
       sprintf(tit,"data[%d]/D",clusterSize*clusterSizeY);
       tall->Branch("data",cluster->data,tit);
-      tall->Branch("pedestal",&(cluster->ped),"pedestal/D");
-      tall->Branch("rms",&(cluster->rms),"rms/D");
+      // tall->Branch("pedestal",&(cluster->ped),"pedestal/D");
+      // tall->Branch("rms",&(cluster->rms),"rms/D");
       return tall;
     };
 #endif
@@ -322,7 +369,11 @@ class singlePhotonDetector {
     single_photon_hit *cluster; /**< single photon hit data structure */
     int iframe;  /**< frame number (not from file but incremented within the dataset every time newFrame is called */
     int dataSign; /**< sign of the data i.e. 1 if photon is positive, -1 if negative */
-    
+    quadrant quad; /**< quadrant where the photon is located */
+    double tot; /**< sum of the 3x3 cluster */
+    double quadTot; /**< sum of the maximum 2x2cluster */
+
+
 };
 
 

@@ -83,7 +83,6 @@ THStack *moenchReadData(char *fformat, char *tit, int runmin, int runmax, int nb
   THStack *hs=new THStack("hs",fformat);
 
 
-  int iev=0;
 
   TH2F *h1=new TH2F("h1",tit,nbins,hmin-0.5,hmax-0.5,NC*NR,-0.5,NC*NR-0.5);
   hs->Add(h1);
@@ -113,7 +112,6 @@ THStack *moenchReadData(char *fformat, char *tit, int runmin, int runmax, int nb
     tall=filter->initEventTree(tit, &iFrame);
 
 
-  double tot, tl, tr, bl, br, v;
   
 
 #ifdef MY_DEBUG
@@ -152,16 +150,16 @@ THStack *moenchReadData(char *fformat, char *tit, int runmin, int runmax, int nb
       
 
       if (hitfinder) {
-      filter->newFrame();
+	filter->newFrame();
 
 	//calculate pedestals and common modes
-      if (cmsub) {
+	if (cmsub) {
 	//	cout << "cm" << endl;
-	for (ix=xmin-1; ix<xmax+1; ix++)
-	  for (iy=ymin-1; iy<ymax+1; iy++) {
-	    thisEvent=filter->getEventType(buff, ix, iy,0);
-	  }
-      }
+	  for (ix=xmin-1; ix<xmax+1; ix++)
+	    for (iy=ymin-1; iy<ymax+1; iy++) {
+	      thisEvent=filter->getEventType(buff, ix, iy,0);
+	    }
+	}
       }
 
       //   cout << "new frame " << endl;
@@ -179,87 +177,14 @@ THStack *moenchReadData(char *fformat, char *tit, int runmin, int runmax, int nb
 #endif	  
 	  
 	  if (nf>1000) {
-	    h1->Fill(filter->getClusterElement(0,0), iy+NR*ix);
+	    h1->Fill(filter->getClusterTotal(1), iy+NR*ix);
 	    if (hitfinder) {
-	      tot=0;
-	      tl=0;
-	      tr=0;
-	      bl=0;
-	      br=0;
 	      
-	      //  if (nf%1000==0 && ix==20 && iy==20) cout <<  " val="<< decoder->getClusterElement(0,0)<< endl;
-
 	      if (thisEvent==PHOTON_MAX ) {
 		nph++;
-		for (ir=-1; ir<2; ir++) {
-		  for (ic=-1; ic<2; ic++) {
-		    v=filter->getClusterElement(ic,ir);
-		    //	  data[ic+1][ir+1]=v;
-  
-		    
-		    
-		    tot+=v;
-		    if (ir<1) {
-		    
-		      if (ic<1) {
-			bl+=v;
-			
-		      }
-		      if (ic>-1) {
-			br+=v;
-		      }
-		    }
-		    
-		    if (ir>-1) {
-		      if (ic<1) {
-			tl+=v;
-		      }
-		      if (ic>-1) {
-			tr+=v;
-		      }
-		    }
-		  }
-		}
-		
 
-		if (bl>br && bl>tl && bl>tr) {
-		  h2->Fill(bl, iy+NR*ix);
-		  if (bl>0) {
-		    hetaX->Fill((filter->getClusterElement(0,0)+filter->getClusterElement(0,-1))/bl,iy+NR*ix);
-		    hetaY->Fill((filter->getClusterElement(0,0)+filter->getClusterElement(-1,0))/bl,iy+NR*ix);
-		    hetaX->Fill(1.-(filter->getClusterElement(0,0)+filter->getClusterElement(0,-1))/bl,iy+NR*(ix-1));
-		    hetaY->Fill(1.-(filter->getClusterElement(0,0)+filter->getClusterElement(-1,0))/bl,(iy-1)+NR*ix);
-		  }
-		} else if (br>bl && br>tl && br>tr) {
-		  h2->Fill(br, iy+NR*ix);
-		  if (br>0) {
-		    hetaX->Fill((filter->getClusterElement(0,0)+filter->getClusterElement(0,-1))/br,iy+NR*ix);
-		    hetaY->Fill((filter->getClusterElement(0,0)+filter->getClusterElement(1,0))/br,iy+NR*ix);
-		    hetaX->Fill(1.-(filter->getClusterElement(0,0)+filter->getClusterElement(0,-1))/br,iy+NR*(ix+1));
-		    hetaY->Fill(1.-(filter->getClusterElement(0,0)+filter->getClusterElement(1,0))/br,iy-1+NR*ix);
-		  }
-		} else if (tl>br && tl>bl && tl>tr) {
-		  h2->Fill(tl, iy+NR*ix);
-		  if (tl>0) {
-		    hetaX->Fill((filter->getClusterElement(0,0)+filter->getClusterElement(0,1))/tl,iy+NR*ix);
-		    hetaY->Fill((filter->getClusterElement(0,0)+filter->getClusterElement(-1,0))/tl,iy+NR*ix);
-		    hetaX->Fill(1.-(filter->getClusterElement(0,0)+filter->getClusterElement(0,1))/tl,iy+NR*(ix-1));
-		    hetaY->Fill(1.-(filter->getClusterElement(0,0)+filter->getClusterElement(-1,0))/tl,iy+1+NR*ix);
-		  }
-		} else if (tr>bl && tr>tl && tr>br) {
-		  h2->Fill(tr, iy+NR*ix);
-		  if (tr>0) {
-		    hetaX->Fill((filter->getClusterElement(0,0)+filter->getClusterElement(0,1))/tr,iy+NR*ix);
-		    hetaY->Fill((filter->getClusterElement(0,0)+filter->getClusterElement(1,0))/tr,iy+NR*ix);
-		    hetaX->Fill(1.-(filter->getClusterElement(0,0)+filter->getClusterElement(0,1))/tr,iy+NR*(ix+1));
-		    hetaY->Fill(1.-(filter->getClusterElement(0,0)+filter->getClusterElement(1,0))/tr,iy+1+NR*ix);
-		  }
-		  
-
-		  
-		}
-
-		h3->Fill(tot, iy+NR*ix);
+		h2->Fill(filter->getClusterTotal(2), iy+NR*ix);
+		h3->Fill(filter->getClusterTotal(3), iy+NR*ix);
 		iFrame=decoder->getFrameNumber(buff);
 
 		tall->Fill();

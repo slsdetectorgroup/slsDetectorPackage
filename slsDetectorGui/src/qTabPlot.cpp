@@ -585,7 +585,10 @@ void qTabPlot::SetFrequency(){
 		acqPeriodMS = (myDet->setTimer(slsDetectorDefs::ACQUISITION_TIME,-1)*(1E-6));
 
 		if(acqPeriodMS==0){
-			qDefs::Message(qDefs::WARNING,"<nobr>Interval between Plots:</nobr><br><nobr>"
+			//to reduce the warnings displayed
+			if((comboFrequency->currentIndex() == 0) && (spinTimeGap->value() == minPlotTimer));
+			else
+				qDefs::Message(qDefs::WARNING,"<nobr>Interval between Plots:</nobr><br><nobr>"
 					"<b>Every Nth Image</b>: Period betwen Frames and Exposure Time cannot both be 0 ms.</nobr><br><nobr>"
 					"Resetting to minimum plotting time interval","qTabPlot::SetFrequency");
 			comboFrequency->setCurrentIndex(0);

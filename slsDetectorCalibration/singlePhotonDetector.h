@@ -191,6 +191,7 @@ class singlePhotonDetector {
 	if (cm==0) {
 	  //  cout << "=" << endl;
 	  addToPedestal(det->getValue(data, ix, iy),ix,iy);
+	  cluster->set_data(dataSign*(det->getValue(data, ix, iy)-getPedestal(ix,iy,cm)), 0,0       );
 	  // cout << "=" << endl;
 	}
 	return UNDEFINED;

@@ -151,6 +151,7 @@ THStack *moenchReadData(char *fformat, char *tit, int runmin, int runmax, int nb
     while ((buff=decoder->readNextFrame(filebin))) {
       
 
+      if (hitfinder) {
       filter->newFrame();
 
 	//calculate pedestals and common modes
@@ -161,7 +162,7 @@ THStack *moenchReadData(char *fformat, char *tit, int runmin, int runmax, int nb
 	    thisEvent=filter->getEventType(buff, ix, iy,0);
 	  }
       }
-
+      }
 
       //   cout << "new frame " << endl;
 

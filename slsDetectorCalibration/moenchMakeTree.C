@@ -23,9 +23,9 @@ using namespace std;
 
 
 //tree variables 
-int xC,yC,iFrameC;
-double meC,sigC;
-Double_t dataC[3][3];
+ int xC,yC,iFrameC;
+ double meC,sigC;
+ Double_t dataC[3][3];
 TTree* tall;
 
 typedef struct task_s{
@@ -50,13 +50,19 @@ inline void storeEvent(int iF,int x,int y, Double_t data[][3], double me, double
   TThread::Lock();
   xC = x; yC = y; iFrameC = iF;
   memcpy(dataC,data,sizeof(Double_t)*3*3);
+  //cout << "X: " << x << " Y: " << y      << endl;
+  /*  for(int i = 0; i < 3; i++){
+    for(int j = 0; j < 3; j++){
+      cout << "i: " << i << " j: " << j << " dataC " << dataC[i][j] << " data " << data[i][j] << endl;
+    }
+    }*/
   meC = me; sigC = sig;
   tall->Fill(); 
   TThread::UnLock();
 }
 
 void moenchMakeTree(char *fformat, char *tname, int runmin, int runmax, int sign=1) {
-
+  double nThSigma = 3.;
   moench02ModuleData *decoder=new moench02ModuleData();
   char *buff;
   char fname[10000];
@@ -71,9 +77,9 @@ void moenchMakeTree(char *fformat, char *tname, int runmin, int runmax, int sign
 
   ifstream filebin;
 
-  int nbg=1000;
+  int nbg=20;
 
-  int ix, iy, ir, ic;
+  int ix, iy, ir, ic, mx,my;
   Double_t data[3][3];
 
   nPhotonsStat.Clear();
@@ -93,21 +99,31 @@ void moenchMakeTree(char *fformat, char *tname, int runmin, int runmax, int sign
    
     while ((buff=decoder->readNextFrame(filebin))) {
       nPhotons=0;
-      for (ix=0; ix<160; ix++){
-	  for (iy=0; iy<160; iy++) {
+      //for (ix=0; ix<160; ix++){
+      for (ix=0; ix<40; ix++){
+	for (iy=0; iy<160; iy++) {
+	
 
-	    dum=0; //no hit
-	    tot=0;
+
+	   dum=0; //no hit
+	   // tot=0;	     
+	    
+	    me=stat[iy][ix].Mean();
+	    sig=stat[iy][ix].StandardDeviation();
+	    val=sign*(decoder->getChannelShort(buff,ix,iy)-me);
+
 
 	    if (nf>nbg) {
 	      me=stat[iy][ix].Mean();
 	      sig=stat[iy][ix].StandardDeviation();
 	      val=sign*decoder->getChannel(buff,ix,iy)-me;
 
-	      dum=0; //no hit
+	      //    dum=0; //no hit
 	      tot=0;
 	      maxNei = 0;
 
+	      if (val>nThSigma*sig)//{ //hit check if neighbors are higher
+		dum=1;
 	      for (ir=-1; ir<2; ir++){
 		for (ic=-1; ic<2; ic++){
 		  if ((ix+ic)>=0 && (ix+ic)<160 && (iy+ir)>=0 && (iy+ir)<160) {
@@ -115,23 +131,34 @@ void moenchMakeTree(char *fformat, char *tname, int runmin, int runmax, int sign
 		    if (sign*decoder->getChannel(buff,ix+ic,iy+ir)>(stat[iy+ir][ix+ic].Mean()+3.*stat[iy+ir][ix+ic].StandardDeviation())) dum=1; //is a hit or neighbour is a hit!
 		    tot+=valNei;
 		    data[ir+1][ic+1] = valNei;
-		    maxNei = max(maxNei,valNei);		    
+		    if(valNei/stat[iy+ir][ix+ic].StandardDeviation() > maxNei){
+		      maxNei = valNei/stat[iy+ir][ix+ic].StandardDeviation();		    
+		      mx = ir;
+		      my = ic;
+		    }
 		  }
 		}
 	      }
+		// }
 
-	      if (val<(me-3.*sig)) dum=2; //discard negative events!
+	      if (val<(-nThSigma*sig)) dum=2; //discard negative events!
 
-	      if(maxNei == val && dum == 1){ // this is an event and we are in the center
+	      if(dum == 1 && mx == 0 && my == 0){ // this is an event and we are in the center
 		storeEvent(nf,ix,iy,data,me,sig);
 		nPhotons++;
-		//cout << "X: " << ix << " Y: " << iy << " val: " << val << " tot: " << tot << endl; 
-	      }else{
-		dum = 3; //discard events (for pedestal) where sum of the neighbours is too large.
+		//cout << "BF X: " << ix << " Y: " << iy << " val: " << val << " tot: " << tot << " me: " << me << " sig: " << sig <<  endl; 
 	      }
+	      
 
-	      //if (tot>3.*sig && dum == 1){ dum=3;} 	      
+	      //if (tot>9.*sig && dum == 1){ dum=3;} 	      
 	      //cout << dum;
+	    }  
+	    //if (ix==20 && iy==40)
+	    //cout << decoder->getChannelShort(buff,ix,iy)<< " " << val << " " << me << " " << sig << " " << dum << endl;
+
+	    if ( dum==0) {
+	   
+	      stat[iy][ix].Calc(decoder->getChannelShort(buff,ix,iy));
 	    }
 	    if (nf<nbg || dum==0) 
 	      stat[iy][ix].Calc(sign*decoder->getChannel(buff,ix,iy));
@@ -144,7 +171,7 @@ void moenchMakeTree(char *fformat, char *tname, int runmin, int runmax, int sign
       nf++;
     }
     //cout << endl;
-    cout << "processed File " << fname << "  done. Avg. Photons/Frame: " << nPhotonsStat.Mean() << " sig: " <<  nPhotonsStat.StandardDeviation() << endl;
+    cout << "processed File " << fname << "  done. Avg. Photons/Frame: " << nPhotonsStat.Mean() << " sig: " <<  nPhotonsStat.StandardDeviation() << " " << runmax-irun << " files need processing" << endl;
     if (filebin.is_open())
       filebin.close();	  
     else
@@ -168,7 +195,7 @@ void *moenchMakeTreeTask(void *p){
 int main(int argc, char **argv){
   if(argc != 6){ cout << "Usage: inFile outdir tname fileNrStart fileNrEnd" << endl; exit(-1); }
   
-  int nThreads = 15;
+  int nThreads = 10;
   TThread *threads[nThreads];
 
   char *inFile = argv[1];
@@ -192,24 +219,26 @@ int main(int argc, char **argv){
     Task *t = (Task *)malloc(sizeof(Task));
     t->fformat = inFile;
     t->tname = tName;
-    t->sign = -1;
-    t->runmin = start + (end-start)/(nThreads-1)*i;
-    t->runmax = start + (end-start)/(nThreads-1)*(i+1);
+    t->sign = 1.;
+    t->runmin = start + (end-start)/(nThreads)*i;
+    t->runmax = start + (end-start)/(nThreads)*(i+1);
     if(i == nThreads - 1) t->runmax = end;
     cout << "start thread " << i << " start: " << t->runmin << " end " << t->runmax << endl;
     threads[i] = new TThread(threadName, moenchMakeTreeTask, t);
     threads[i]->Run();
+    //moenchMakeTreeTask(t);
   }
   
 
   //TThread::Ps();
 
-  for(int i = 0; i < nThreads; i++){
+    for(int i = 0; i < nThreads; i++){
     threads[i]->Join();
   }
 
 
   tall->Write();
-  tall->GetCurrentFile()->Close();
+  tall->Print();  
+  f->Close();
 }
 

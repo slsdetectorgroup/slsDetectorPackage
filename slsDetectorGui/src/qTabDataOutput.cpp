@@ -123,6 +123,10 @@ void qTabDataOutput::SetupWidgetWindow(){
 	connect(chkDiscardBad,		SIGNAL(toggled(bool)), 	this, 	SLOT(DiscardBadChannels()));
 
 
+	if(detType == slsDetectorDefs::MYTHEN){
+		comboDetector->hide();
+	}
+
 	qDefs::checkErrorMessage(myDet,"qTabDataOutput::SetupWidgetWindow");
 }
 

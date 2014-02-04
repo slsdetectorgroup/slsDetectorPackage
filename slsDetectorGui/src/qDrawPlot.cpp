@@ -1745,6 +1745,8 @@ int qDrawPlot::UpdateTrimbitPlot(bool fromDetector,bool Histogram){
 			plot1D->SetYTitle("Trimbits");
 			//set plot parameters
 			plot1D->SetXMinMax(0,nPixelsX);
+			/*plot1D->SetYMinMax(0,plotHistogram->boundingRect().height()); plot1D->SetZoomBase(0,0,nPixelsX,plot1D->GetYMaximum());*/
+			//for some reason this plothistogram works as well.
 			plot1D->SetZoomBase(0,0,nPixelsX,plotHistogram->boundingRect().height());
 			SlsQtH1D*  h;
 			plot1D_hists.append(h=new SlsQtH1D("",nPixelsX,histXAxis,histYAxis[0]));
@@ -1789,9 +1791,9 @@ int qDrawPlot::UpdateTrimbitPlot(bool fromDetector,bool Histogram){
 			histFrameIndexTitle->setText(GetHistTitle(0));
 			plotHistogram->attach(plot1D);
 			//refixing all the zooming
-			/*plot1D->SetXMinMax(0,TRIM_HISTOGRAM_XMAX+1);
+			plot1D->SetXMinMax(0,TRIM_HISTOGRAM_XMAX+1);
 			plot1D->SetYMinMax(0,plotHistogram->boundingRect().height());
-			plot1D->SetZoomBase(0,0,actualPixelsX,plotHistogram->boundingRect().height());*/
+			plot1D->SetZoomBase(0,0,actualPixelsX,plotHistogram->boundingRect().height());
 		}
 	}
 

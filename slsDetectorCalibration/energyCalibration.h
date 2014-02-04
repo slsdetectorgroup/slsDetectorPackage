@@ -251,7 +251,15 @@ class energyCalibration  {
 
 #ifdef MYROOT
 
-  static TH1F* createMedianHistogram(TH2F* h2, int ch0, int nch);
+  /**
+     Creates an histogram with the median of nchannels starting from a specified one. the direction on which it is mediated can be selected (defaults to x=0)
+     \param h2 2D histogram on which the median will be calculated
+     \param ch0 starting channel
+     \param nch number of channels to be mediated
+     \param direction can be either 0 (x, default) or 1 (y)
+     \returns a TH1F histogram with the X-axis as a clone of the h2 Y (if direction=0) or X (if direction=0) axis, and on the Y axis the median of the counts of the mediated channels f h2
+   */
+  static TH1F* createMedianHistogram(TH2F* h2, int ch0, int nch, int direction=0);
 
 
   /** sets the s-curve fit range 

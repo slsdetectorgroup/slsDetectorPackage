@@ -1,7 +1,10 @@
 #include "moenchReadData.C"
 
 
+
 void raedNoiseData(char *tit, int sign=1){
+
+
 
 
 
@@ -10,12 +13,12 @@ void raedNoiseData(char *tit, int sign=1){
   TFile *fout;
   THStack *hs2N;
 
-  sprintf(fname,"/data/moench_xbox_20140113/MoTarget_45kV_0_8mA_120V_%s.root",tit);
+  sprintf(fname,"/data/moench_xbox_20140113/MoTarget_45kV_0_8mA_120V_%s_0.root",tit);
   fout=new TFile(fname,"RECREATE");
 
   sprintf(fname,"/data/moench_xbox_20140113/MoTarget_45kV_0_8mA_120V_%s_f00000%%04d000_0.raw",tit);
 
-  hs2N=moenchReadData(fname,tit,0,3000,1500,-500,2500,sign,0.,1,159,1,159, 0); 
+  hs2N=moenchReadData(fname,0,3000,1500,-500,2500,1,0.,1,159,1,159, 0,1); 
   hs2N->SetName(tit);
   hs2N->SetTitle(tit);
   (TH2F*)(hs2N->GetHists()->At(0))->Write();

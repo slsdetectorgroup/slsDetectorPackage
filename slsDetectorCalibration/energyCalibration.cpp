@@ -289,7 +289,9 @@ energyCalibration::~energyCalibration(){
 
 
 
-TH1F* energyCalibration::createMedianHistogram(TH2F* h2, int ch0, int nch) {
+
+
+TH1F* energyCalibration::createMedianHistogram(TH2F* h2, int ch0, int nch, int direction) {
 
   if (h2==NULL || nch==0)
     return NULL;
@@ -299,19 +301,28 @@ TH1F* energyCalibration::createMedianHistogram(TH2F* h2, int ch0, int nch) {
   
   double val=-1;
 
-  h1=new TH1F("median","Median",h2->GetYaxis()->GetNbins(),h2->GetYaxis()->GetXmin(),h2->GetYaxis()->GetXmax());
-  
-
-  for (int ib=0; ib<h1->GetXaxis()->GetNbins(); ib++) {
-    for (int ich=0; ich<nch; ich++) {
-      x[ich]=h2->GetBinContent(ch0+ich+1,ib+1);
+  if (direction==0) {
+    h1=new TH1F("median","Median",h2->GetYaxis()->GetNbins(),h2->GetYaxis()->GetXmin(),h2->GetYaxis()->GetXmax());
+    for (int ib=0; ib<h1->GetXaxis()->GetNbins(); ib++) {
+      for (int ich=0; ich<nch; ich++) {
+	x[ich]=h2->GetBinContent(ch0+ich+1,ib+1);
+      }
+      val=energyCalibrationFunctions::median(x, nch);
+      h1->SetBinContent(ib+1,val);
     }
-    val=energyCalibrationFunctions::median(x, nch);
-    h1->SetBinContent(ib+1,val);
+  } else if (direction==1) {   
+    h1=new TH1F("median","Median",h2->GetXaxis()->GetNbins(),h2->GetXaxis()->GetXmin(),h2->GetXaxis()->GetXmax());
+    for (int ib=0; ib<h1->GetYaxis()->GetNbins(); ib++) {
+      for (int ich=0; ich<nch; ich++) {
+	x[ich]=h2->GetBinContent(ib+1,ch0+ich+1);
+      }
+      val=energyCalibrationFunctions::median(x, nch);
+      h1->SetBinContent(ib+1,val);
+    }
   }
-  return h1;
+  delete [] x;
 
-    
+  return h1;
 
 }
 
@@ -480,6 +491,7 @@ TGraphErrors* energyCalibration::linearCalibration(int nscan, Double_t *en, Doub
   eoff=fitfun->GetParError(0);
 
   gain=funcs->setScanSign()*mypar[1];
+  
   off=mypar[0]; 
   
   return gr;

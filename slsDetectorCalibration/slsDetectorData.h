@@ -208,10 +208,10 @@ class slsDetectorData {
      \param buff pointer to the dataset
      \returns packet number number
 
-  */
 
   virtual int getPacketNumber(char *buff)=0;
 
+  */
 
    /**
 

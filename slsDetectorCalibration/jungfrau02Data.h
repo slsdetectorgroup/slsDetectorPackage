@@ -73,11 +73,11 @@ class jungfrau02Data : public chiptestBoardData {
     uint16_t m=0, d=0;
     if (ix>=0 && ix<nx && iy>=0 && iy<ny && dataMap[iy][ix]>=0 && dataMap[iy][ix]<dataSize) {
       m=dataMask[iy][ix];
-      d=*((uint16_t*)(data+dataMap[iy][ix]));
+      d=*(((uint16_t*)(data))+dataMap[iy][ix]);
 	if (nAdc==3) {
-           if (*(uint16_t*)(data+dataMap[iy][ix]+1)>8000)
+	  if (*((uint16_t*)(data)+dataMap[iy][ix]+1)>8000)
 		d|=(1<<14); // set gain bit 0
-           if (*(uint16_t*)(data+dataMap[iy][ix]+2)>8000)
+	  if (*((uint16_t*)(data)+dataMap[iy][ix]+2)>8000)
 		d|=(1<<15); // set gain bit 1
 
         }

@@ -229,11 +229,15 @@ class slsDetectorData {
   */
   virtual char *readNextFrame(ifstream &filebin)=0;
 
+  /** Returns the size of the data frame */
+  int getDataSize() {return dataSize;};
+  /** changes the size of the data frame */
+  int setDataSize(int d) {};//dataSize=d; return dataSize;};
 
  protected:
   const int nx; /**< Number of pixels in the x direction */
   const int ny; /**< Number of pixels in the y direction */
-  const int dataSize; /**<size of the data constituting one frame */
+  int dataSize; /**<size of the data constituting one frame */
   int **dataMap; /**< Array of size nx*ny storing the pointers to the data in the dataset (as offset)*/
   dataType **dataMask; /**< Array of size nx*ny storing the polarity of the data in the dataset (should be 0 if no inversion is required, 0xffffffff is inversion is required) */
   int **dataROIMask; /**< Array of size nx*ny 1 if channel is good (or in the ROI), 0 if bad channel (or out of ROI)   */

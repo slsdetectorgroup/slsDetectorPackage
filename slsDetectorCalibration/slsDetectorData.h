@@ -154,6 +154,11 @@ class slsDetectorData {
   */
   int getDetectorSize(int &npx, int &npy){npx=nx; npy=ny; return nx*ny;};
 
+  /** Returns the size of the data frame */
+  int getDataSize() {return dataSize;};
+  /** changes the size of the data frame */
+  int setDataSize(int d) {dataSize=d; return dataSize;};
+
 
   /**
 
@@ -228,11 +233,6 @@ class slsDetectorData {
 
   */
   virtual char *readNextFrame(ifstream &filebin)=0;
-
-  /** Returns the size of the data frame */
-  int getDataSize() {return dataSize;};
-  /** changes the size of the data frame */
-  int setDataSize(int d) {};//dataSize=d; return dataSize;};
 
  protected:
   const int nx; /**< Number of pixels in the x direction */

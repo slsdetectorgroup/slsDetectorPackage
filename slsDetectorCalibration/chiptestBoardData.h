@@ -3,7 +3,7 @@
 
 #include "slsDetectorData.h"
 
-class chiptestBoardData : public slsDetectorData<uint16_t> {
+class chiptestBoardData : public virtual slsDetectorData<uint16_t> {
 
 
  public:

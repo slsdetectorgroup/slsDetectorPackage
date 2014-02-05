@@ -278,8 +278,7 @@ void qDetectorMain::Initialization(){
 	//This should not be called as it will change file name to measurement when run finished
 	//connect(myPlot,	SIGNAL(UpdatingPlotFinished()),				tab_plot,			SLOT(Refresh()));
 	connect(myPlot,	SIGNAL(SetCurrentMeasurementSignal(int)),	tab_measurement,	SLOT(SetCurrentMeasurement(int)));
-	//to update all ranges when a clone has been made
-	connect(myPlot,	SIGNAL(UpdateAfterCloningSignal()),			tab_plot,SLOT(UpdateAfterCloning()));
+
 
 // menubar
 	// Modes Menu
@@ -397,7 +396,7 @@ void qDetectorMain::ExecuteUtilities(QAction *action){
 		qDefs::checkErrorMessage(myDet,"qDetectorMain::ExecuteUtilities");
 		fName = QFileDialog::getOpenFileName(this,
 				tr("Load Detector Setup"),fName,
-				tr("Detector Setup files (*.det)"));
+				tr("Detector Setup files (*.det);;All Files(*)"));
 		// Gets called when cancelled as well
 		if (!fName.isEmpty()){
 			if(myDet->retrieveDetectorSetup(string(fName.toAscii().constData()))!=slsDetectorDefs::FAIL){
@@ -415,7 +414,7 @@ void qDetectorMain::ExecuteUtilities(QAction *action){
 		qDefs::checkErrorMessage(myDet,"qDetectorMain::ExecuteUtilities");
 		fName = QFileDialog::getSaveFileName(this,
 				tr("Save Current Detector Setup"),fName,
-				tr("Detector Setup files (*.det) "));
+				tr("Detector Setup files (*.det);;All Files(*) "));
 		// Gets called when cancelled as well
 		if (!fName.isEmpty()){
 			if(myDet->dumpDetectorSetup(string(fName.toAscii().constData()))!=slsDetectorDefs::FAIL)
@@ -432,7 +431,7 @@ void qDetectorMain::ExecuteUtilities(QAction *action){
 		qDefs::checkErrorMessage(myDet,"qDetectorMain::ExecuteUtilities");
 		fName = QFileDialog::getOpenFileName(this,
 				tr("Load Detector Configuration"),fName,
-				tr("Configuration files (*.config)"));
+				tr("Configuration files (*.config);;All Files(*)"));
 		// Gets called when cancelled as well
 		if (!fName.isEmpty()){
 			if(myDet->readConfigurationFile(string(fName.toAscii().constData()))!=slsDetectorDefs::FAIL){
@@ -450,7 +449,7 @@ void qDetectorMain::ExecuteUtilities(QAction *action){
 		qDefs::checkErrorMessage(myDet,"qDetectorMain::ExecuteUtilities");
 		fName = QFileDialog::getSaveFileName(this,
 				tr("Save Current Detector Configuration"),fName,
-				tr("Configuration files (*.config) "));
+				tr("Configuration files (*.config) ;;All Files(*)"));
 		// Gets called when cancelled as well
 		if (!fName.isEmpty()){
 			if(myDet->writeConfigurationFile(string(fName.toAscii().constData()))!=slsDetectorDefs::FAIL)
@@ -469,7 +468,7 @@ void qDetectorMain::ExecuteUtilities(QAction *action){
 #endif
 			fName = QFileDialog::getOpenFileName(this,
 					tr("Load Detector Settings"),fName,
-					tr("Settings files (*.settings settings.sn*)"));
+					tr("Settings files (*.settings settings.sn*);;All Files(*)"));
 			// Gets called when cancelled as well
 			if (!fName.isEmpty()){
 				if(myDet->loadSettingsFile(string(fName.toAscii().constData()),-1)!=slsDetectorDefs::FAIL)
@@ -483,10 +482,14 @@ void qDetectorMain::ExecuteUtilities(QAction *action){
 #ifdef VERBOSE
 			cout << "Loading Trimbits" << endl;
 #endif
-
-			fName = QFileDialog::getOpenFileName(this,
+			//so that even nonexisting files can be selected
+			QFileDialog	*fileDialog = new QFileDialog(this,
 					tr("Load Detector Trimbits"),fName,
-					tr("Trimbit files (*.trim noise.sn*)"));
+					tr("Trimbit files (*.trim noise.sn*);;All Files(*)"));
+			fileDialog->setFileMode(QFileDialog::AnyFile );
+		    if ( fileDialog->exec() == QDialog::Accepted )
+		    	fName = fileDialog->selectedFiles()[0];
+
 			// Gets called when cancelled as well
 			if (!fName.isEmpty()){
 				if(myDet->loadSettingsFile(string(fName.toAscii().constData()),-1)!=slsDetectorDefs::FAIL)
@@ -507,7 +510,7 @@ void qDetectorMain::ExecuteUtilities(QAction *action){
 			qDefs::checkErrorMessage(myDet,"qDetectorMain::ExecuteUtilities");
 			fName = QFileDialog::getSaveFileName(this,
 					tr("Save Current Detector Settings"),fName,
-					tr("Settings files (*.settings settings.sn*) "));
+					tr("Settings files (*.settings settings.sn*);;All Files(*) "));
 			// Gets called when cancelled as well
 			if (!fName.isEmpty()){
 				if(myDet->saveSettingsFile(string(fName.toAscii().constData()),-1)!=slsDetectorDefs::FAIL)
@@ -524,7 +527,7 @@ void qDetectorMain::ExecuteUtilities(QAction *action){
 			qDefs::checkErrorMessage(myDet,"qDetectorMain::ExecuteUtilities");
 			fName = QFileDialog::getSaveFileName(this,
 					tr("Save Current Detector Trimbits"),fName,
-					tr("Trimbit files (*.trim noise.sn*) "));
+					tr("Trimbit files (*.trim noise.sn*) ;;All Files(*)"));
 			// Gets called when cancelled as well
 			if (!fName.isEmpty()){
 				if(myDet->saveSettingsFile(string(fName.toAscii().constData()),-1)!=slsDetectorDefs::FAIL)
@@ -540,9 +543,15 @@ void qDetectorMain::ExecuteUtilities(QAction *action){
 #endif
 		QString fName = QString(myDet->getCalDir());
 		qDefs::checkErrorMessage(myDet);
-		fName = QFileDialog::getOpenFileName(this,
+
+		//so that even nonexisting files can be selected
+		QFileDialog	*fileDialog = new QFileDialog(this,
 				tr("Load Detector Calibration Data"),fName,
-				tr("Calibration files (*.cal calibration.sn*)"));
+				tr("Calibration files (*.cal calibration.sn*);;All Files(*)"));
+		fileDialog->setFileMode(QFileDialog::AnyFile );
+	    if ( fileDialog->exec() == QDialog::Accepted )
+	    	fName = fileDialog->selectedFiles()[0];
+
 		// Gets called when cancelled as well
 		if (!fName.isEmpty()){
 			if(myDet->loadCalibrationFile(string(fName.toAscii().constData()),-1)!=slsDetectorDefs::FAIL)
@@ -559,7 +568,7 @@ void qDetectorMain::ExecuteUtilities(QAction *action){
 		qDefs::checkErrorMessage(myDet);
 		fName = QFileDialog::getSaveFileName(this,
 				tr("Save Current Detector Calibration Data"),fName,
-				tr("Calibration files (*.cal calibration.sn*) "));
+				tr("Calibration files (*.cal calibration.sn*);;All Files(*) "));
 		// Gets called when cancelled as well
 		if (!fName.isEmpty()){
 			if(myDet->saveCalibrationFile(string(fName.toAscii().constData()),-1)!=slsDetectorDefs::FAIL)

@@ -368,9 +368,13 @@ void qTabAdvanced::BrowseOutputFile(){
 #endif
 	QString fName = dispFile->text();
 	//dialog
-	fName = QFileDialog::getSaveFileName(this,
-			tr("Choose file to write the trimbits to"),fName,
-			tr("Trimbit files (*.trim noise.sn*) "));
+	QFileDialog	*fileDialog = new QFileDialog(this,
+			tr("Save Trimbits"),fName,
+			tr("Trimbit files (*.trim noise.sn*);;All Files(*) "));
+	fileDialog->setFileMode(QFileDialog::AnyFile );
+    if ( fileDialog->exec() == QDialog::Accepted )
+    	fName = fileDialog->selectedFiles()[0];
+
 	//if empty, set the file name and it calls SetFileSteps, else ignore
 	if (!fName.isEmpty()){
 		dispFile->setText(fName);

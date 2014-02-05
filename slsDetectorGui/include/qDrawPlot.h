@@ -579,7 +579,6 @@ void ResetZMinZMaxSignal(bool,bool,double,double);
 void SetCurrentMeasurementSignal(int);
 void saveErrorSignal(QString);
 void AcquisitionErrorSignal(QString);
-void UpdateAfterCloningSignal();
 };
 
 

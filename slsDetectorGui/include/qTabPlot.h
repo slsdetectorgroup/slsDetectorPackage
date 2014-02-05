@@ -107,10 +107,6 @@ public slots:
 	 */
 	void EnableScanBox(bool Histo=false);
 
-	/** Update all ranges, interpolate etc after cloning
-	 */
-	void UpdateAfterCloning();
-
 
 private slots:
 	/** Selects the plot to display, enables/disables widgets

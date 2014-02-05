@@ -962,32 +962,6 @@ void qTabPlot::Refresh(){
 //-------------------------------------------------------------------------------------------------------------------------------------------------
 
 
-void qTabPlot::UpdateAfterCloning(){
-#ifdef VERBOSE
-	cout  << endl << "**Updating Plot After Cloning" << endl;
-#endif
-	EnableRange();
-	EnableTitles();
-	myPlot->UpdateAfterCloning(
-			chkPoints->isChecked(),
-			chk1DLog->isChecked(),
-			chkInterpolate->isChecked(),
-			chkContour->isChecked(),
-			chkLogz->isChecked());
-
-	//1d
-	if(isOneD)
-		EnablePersistency(chkSuperimpose->isChecked());
-	//2d
-	else
-		EnableZRange();
-
-}
-
-
-//-------------------------------------------------------------------------------------------------------------------------------------------------
-
-
 void qTabPlot::SetBinary(){
 	//1d
 	if(isOneD){

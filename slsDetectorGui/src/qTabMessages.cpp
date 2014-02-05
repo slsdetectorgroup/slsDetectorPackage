@@ -94,7 +94,7 @@ void qTabMessages::SaveLog() {
 	QString fName = QString(myMainTab->GetFilePath());
 	fName = fName+"/LogFile.txt";
     fName = QFileDialog::getSaveFileName(this,tr("Save Snapshot "),
-    		fName,tr("Text files (*.txt)"));
+    		fName,tr("Text files (*.txt);;All Files(*)"));
     if (!fName.isEmpty()){
     	QFile outfile;
     	outfile.setFileName(fName);

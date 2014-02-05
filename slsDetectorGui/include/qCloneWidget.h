@@ -47,7 +47,7 @@ class qCloneWidget:public QMainWindow{
 public:
 	/** \short The constructor
 	 */
-	qCloneWidget(QWidget *parent,int id,QString title,int numDim,SlsQt1DPlot*& plot1D,SlsQt2DPlotLayout*& plot2D,string FilePath,
+	qCloneWidget(QWidget *parent,int id,QString title,QString xTitle, QString yTitle, QString zTitle, int numDim,string FilePath,
 		bool displayStats, QString min, QString max, QString sum);
 
 	/** Destructor
@@ -56,11 +56,12 @@ public:
 
 	/** Sets up the widget window
 	 * @param title title of the image with frame number
+	 * @param xTitle title of x axis
+	 * @param yTitle title of y axis
+	 * @param zTitle title of z axis
 	 * @param numDim 1D or 2D
-	 * @param plot1D plot1d object reference
-	 * @param plot2D plot2d object reference
 	 * */
-	void SetupWidgetWindow(QString title,int numDim,SlsQt1DPlot*& plot1D,SlsQt2DPlotLayout*& plot2D);
+	void SetupWidgetWindow(QString title, QString xTitle, QString yTitle, QString zTitle, int numDim);
 
 
 
@@ -85,6 +86,17 @@ public:
 	 * @param markers style of plot markers or not
 	 * */
 	void SetCloneHists(int nHists,int histNBins,double* histXAxis,double* histYAxis,string histTitle[],bool lines,bool markers);
+
+	/** Get the 1D hist values to plot for angle plotting
+	 * @param nbinsx number of bins in x axis
+	 * @param xmin minimum in x axis
+	 * @param xmax maximum in x axis
+	 * @param nbinsy number of bins in y axis
+	 * @param ymin minimum in y axis
+	 * @param ymax maximum in y axis
+	 * @param d data
+	 * */
+	void SetCloneHists2D(int nbinsx,double xmin,double xmax,int nbinsy, double ymin, double ymax, double *d);
 
 	/**Set the range of the 1d plot
 	 * @param IsXYRange array of x,y,min,max if these values are set
@@ -115,9 +127,11 @@ private:
 	/**	vector of 1D hist values */
 	QVector<SlsQtH1D*> 	cloneplot1D_hists;
 
+	/** markers for the plot*/
+	QwtSymbol *marker;
+	QwtSymbol *nomarker;
 
 	 QMenuBar 	*menubar;
-	// QMenu 		*menuFile;
 	 QAction 	*actionSave;
 
 	QGridLayout *mainLayout;

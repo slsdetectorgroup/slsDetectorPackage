@@ -1413,21 +1413,23 @@ void qDrawPlot::StopUpdatePlot(){
 
 
 void qDrawPlot::ClonePlot(){
-	int i=0;
+	int i;
+
+	//check for space for more clone widget references
 	bool found = false;
 	for(i=0;i<MAXCloneWindows;i++)
 		if(!winClone[i]){
 			found=true;
 			break;
 		}
-	// no space for more clone widget references
+	// no space
 	if(!found){
 		cout << "Too many clones" << endl;
 		exit(-1);
 	}
-	// save height to keep maintain same height of plot
-	int preheight = height();
 
+
+	//get file path while acquisition runnign without accessing shared memory
 	string sFilePath;
 	if(running) sFilePath = filePath.toAscii().constData();
 	else {
@@ -1439,72 +1441,34 @@ void qDrawPlot::ClonePlot(){
 
 	LockLastImageArray();
 
-	//disconnect
-	disconnect(this, 		SIGNAL(InterpolateSignal(bool)),	plot2D, 	SIGNAL(InterpolateSignal(bool)));
-	disconnect(this, 		SIGNAL(ContourSignal(bool)),		plot2D, 	SIGNAL(ContourSignal(bool)));
-	disconnect(this, 		SIGNAL(LogzSignal(bool)),			plot2D, 	SLOT(SetZScaleToLog(bool)));
-	disconnect(this, 		SIGNAL(LogySignal(bool)),			plot1D, 	SLOT(SetLogY(bool)));
-	disconnect(this, 		SIGNAL(ResetZMinZMaxSignal(bool,bool,double,double)),plot2D, 	SLOT(ResetZMinZMax(bool,bool,double,double)));
-	disconnect(this, 		SIGNAL(SetZRangeSignal(double,double)),	plot2D, 	SLOT(SetZRange(double,double)));
 
-	// create clone
-	winClone[i] = new qCloneWidget(this,i,boxPlot->title(),(int)plot_in_scope,plot1D,plot2D,sFilePath,
-			displayStatistics,lblMinDisp->text(),lblMaxDisp->text(),lblSumDisp->text());
+	// create clone & copy data
 	if(plot_in_scope==1){
-		plot1D = new SlsQt1DPlot(boxPlot);
-		plot1D->setFont(QFont("Sans Serif",9,QFont::Normal));
-		plot1D->SetXTitle(histXAxisTitle.toAscii().constData());
-		plot1D->SetYTitle(histYAxisTitle.toAscii().constData());
-		plotLayout->addWidget(plot1D,0,0,1,1);
-		plotLayout->setContentsMargins(10,10,10,10);
-		if(running){
-			// update range
-			bool found =false;
-			for(int index=0;index<4;index++)
-				if(IsXYRange[index]){
-					found=true;
-					break;
-				}
-			if(found) winClone[i]->SetRange(IsXYRange,XYRangeValues);
-			//copy data
-			//LockLastImageArray();
-			if(!anglePlot)
-				winClone[i]->SetCloneHists((int)nHists,histNBins,histXAxis,histYAxis,histTitle,lines,markers);
-			else
-				winClone[i]->SetCloneHists((int)nHists,histNBins,histXAngleAxis,histYAngleAxis,histTitle,lines,markers);
-			//UnlockLastImageArray();
-		}
-	}
-	else{
+		winClone[i] = new qCloneWidget(this,i,boxPlot->title(),histXAxisTitle,histYAxisTitle,"",
+				(int)plot_in_scope,sFilePath,displayStatistics,lblMinDisp->text(),lblMaxDisp->text(),lblSumDisp->text());
+		if(!anglePlot)
+			winClone[i]->SetCloneHists((int)nHists,histNBins,histXAxis,histYAxis,histTitle,lines,markers);
+		else
+			winClone[i]->SetCloneHists((int)nHists,histNBins,histXAngleAxis,histYAngleAxis,histTitle,lines,markers);
 
-		plot2D = new SlsQt2DPlotLayout(boxPlot);
-		plot2D->GetPlot()->SetData(nPixelsX,-0.5,nPixelsX-0.5,nPixelsY,startPixel,endPixel,lastImageArray);
-		plot2D->setFont(QFont("Sans Serif",9,QFont::Normal));
-		plot2D->setTitle(GetImageTitle());
-		plot2D->SetXTitle(imageXAxisTitle);
-		plot2D->SetYTitle(imageYAxisTitle);
-		plot2D->SetZTitle(imageZAxisTitle);
-		plotLayout->addWidget(plot2D,0,0,1,1);
-		plotLayout->setContentsMargins(0,0,0,0);
+	}else{
+		winClone[i] = new qCloneWidget(this,i,boxPlot->title(),imageXAxisTitle, imageYAxisTitle, imageZAxisTitle,
+				(int)plot_in_scope,sFilePath,displayStatistics,lblMinDisp->text(),lblMaxDisp->text(),lblSumDisp->text());
+		winClone[i]->SetCloneHists2D(nPixelsX,-0.5,nPixelsX-0.5,nPixelsY,startPixel,endPixel,lastImageArray);
 	}
+
+	// update range
+	found =false;
+	for(int index=0;index<4;index++)
+		if(IsXYRange[index]){
+			found=true;
+			break;
+		}
+	if(found)
+		winClone[i]->SetRange(IsXYRange,XYRangeValues);
+
 
 	UnlockLastImageArray();
-
-
-	setMinimumHeight(preheight);
-	resize(width(),preheight);
-
-	// update the actual plot  only if running, else it doesnt know when its over
-	if(running)	UpdatePlot();
-	connect(this, 		SIGNAL(InterpolateSignal(bool)),	plot2D, 	SIGNAL(InterpolateSignal(bool)));
-	connect(this, 		SIGNAL(ContourSignal(bool)),		plot2D, 	SIGNAL(ContourSignal(bool)));
-	connect(this, 		SIGNAL(LogzSignal(bool)),			plot2D, 	SLOT(SetZScaleToLog(bool)));
-	connect(this, 		SIGNAL(LogySignal(bool)),			plot1D, 	SLOT(SetLogY(bool)));
-	connect(this, 		SIGNAL(ResetZMinZMaxSignal(bool,bool,double,double)),plot2D, 	SLOT(ResetZMinZMax(bool,bool,double,double)));
-	connect(this, 		SIGNAL(SetZRangeSignal(double,double)),	plot2D, 	SLOT(SetZRange(double,double)));
-
-	//update ranges on current plot
-	emit UpdateAfterCloningSignal();
 
 	winClone[i]->show();
 

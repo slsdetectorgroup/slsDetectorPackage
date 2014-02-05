@@ -3,7 +3,7 @@
 
 #include "slsDetectorData.h"
 
-class chiptestBoardData : public virtual slsDetectorData<uint16_t> {
+class chiptestBoardData : public slsDetectorData<uint16_t> {
 
 
  public:
@@ -22,8 +22,7 @@ class chiptestBoardData : public virtual slsDetectorData<uint16_t> {
   \param dROI Array of size nx*ny. The elements are 1s if the channel is good or in the ROI, 0 is bad or out of the ROI. NULL (default) means all 1s. 
 
   */
- chiptestBoardData(int npx, int npy, int nadc, int offset, int **dMap=NULL, uint16_t **dMask=NULL, int **dROI=NULL): \
-  slsDetectorData<uint16_t>(npx, npy, nadc*(npx*npy)+offset, dMap, dMask, dROI), nAdc(nadc), offSize(offset), iframe(0) {};
+ chiptestBoardData(int npx, int npy, int nadc, int offset, int **dMap=NULL, uint16_t **dMask=NULL, int **dROI=NULL): slsDetectorData<uint16_t>(npx, npy, nadc*(npx*npy)+offset, dMap, dMask, dROI), nAdc(nadc), offSize(offset), iframe(0) {};
 
    
  

@@ -1,5 +1,5 @@
 #ifndef JUNGFRAU02DATA_H
-#define  JUNGFRAU02DATA_H
+#define JUNGFRAU02DATA_H
 
 #include "chiptestBoardData.h"
 
@@ -13,7 +13,7 @@ class jungfrau02Data : public chiptestBoardData {
 
   /**
      Implements the chiptestBoardData structure for the jungfrau02 prototype 
-     (48x48 pixels, ADC2 for analog output, eventually 2 more for digital bits , offset configurable etc.)
+     (48x48 pixels, ADC2 for analog output, 2 more ADCs used for readout of digital bits, pixel offset configurable.)
      \param c crosstalk parameter for the output buffer
 
   */
@@ -61,7 +61,7 @@ class jungfrau02Data : public chiptestBoardData {
     
    /**
 
-     Returns the value of the selected channel for the given dataset. Since the ADC is only 14bit wide, if the gain bits are read out they are returned in bit 14-15
+     Returns the value of the selected channel for the given dataset. Since the ADC is only 14bit wide, only bit 0-13 are occupied. If the gain bits are read out, they are returned in bit 14-15.
      \param data pointer to the dataset (including headers etc)
      \param ix pixel number in the x direction
      \param iy pixel number in the y direction

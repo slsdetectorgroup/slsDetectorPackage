@@ -1,5 +1,5 @@
 #ifndef CHIPTESTDATA_H
-#define  CHIPTESTDATA_H
+#define CHIPTESTDATA_H
 
 #include "slsDetectorData.h"
 
@@ -22,7 +22,7 @@ class chiptestBoardData : public slsDetectorData<uint16_t> {
   \param dROI Array of size nx*ny. The elements are 1s if the channel is good or in the ROI, 0 is bad or out of the ROI. NULL (default) means all 1s. 
 
   */
- chiptestBoardData(int npx, int npy, int nadc, int offset, int **dMap=NULL, uint16_t **dMask=NULL, int **dROI=NULL): slsDetectorData<uint16_t>(npx, npy, nadc*(npx*npy)+offset, dMap, dMask, dROI), nAdc(nadc), offSize(offset), iframe(0) {};
+ chiptestBoardData(int npx, int npy, int nadc, int offset, int **dMap=NULL, uint16_t **dMask=NULL, int **dROI=NULL): slsDetectorData<uint16_t>(npx, npy, nadc*(npx*npy)+offset, dMap, dMask, dROI), nAdc(nadc), offSize(offset), iframe(0) {}; // should be? nadc*(npx*npy+offset)
 
    
  
@@ -56,8 +56,8 @@ class chiptestBoardData : public slsDetectorData<uint16_t> {
 
   virtual char *readNextFrame(ifstream &filebin) {
 	
- 	int afifo_length=0;  //int afifo_length;
- 	uint16_t *afifo_cont;//2343 values for
+ 	int afifo_length=0;  
+ 	uint16_t *afifo_cont; 
 
     if (filebin.is_open()) {
      if (filebin.read((char*)&afifo_length,sizeof(uint32_t))) {

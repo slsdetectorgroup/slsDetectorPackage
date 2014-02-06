@@ -16,6 +16,7 @@
 #include <fstream>
 #include "jungfrau02Data.h"
 #include "moenchCommonMode.h"
+#include "jungfrau02CommonMode.h"
 #include "singlePhotonDetector.h"
 
 //#include "MovingStat.h"
@@ -33,7 +34,7 @@ using namespace std;
 
 /**
 
-Loops over data file to find single photons, fills the tree (and writes it to file, althoug the root file should be opened before) and creates 1x1, 2x2, 3x3 cluster histograms with ADCu on the x axis, channel number (160*x+y) on the y axis.
+Loops over data file to find single photons, fills the tree (and writes it to file, although the root file should be opened before) and creates 1x1, 2x2, 3x3 cluster histograms with ADCu on the x axis, channel number (48*x+y) on the y axis.
 
   \param fformat file name format
   \param tit title of the tree etc.
@@ -48,8 +49,8 @@ Loops over data file to find single photons, fills the tree (and writes it to fi
   \param xmax maximum x coordinate
   \param ymin minimum y coordinate
   \param ymax maximum y coordinate
-  \param cmsub  enable commonmode subtraction
-  \param hitfinder if 0, performs pedestal subtraction, not hit finding
+  \param cmsub  enable commonmode subtraction -> Currently, CM subtraction is not implemented for Jungfrau!
+  \param hitfinder if 0: performs pedestal subtraction, not hit finding; if 1: performs both pedestal subtraction and hit finding
   \returns pointer to histo stack with cluster spectra
 */
 
@@ -57,7 +58,7 @@ Loops over data file to find single photons, fills the tree (and writes it to fi
 THStack *jungfrauReadData(char *fformat, char *tit, int runmin, int runmax, int nbins=1500, int hmin=-500, int hmax=1000, int sign=1, double hc=0, int xmin=1, int xmax=NC-1, int ymin=1, int ymax=NR-1, int cmsub=0, int hitfinder=1) {
   
   jungfrau02Data *decoder=new jungfrau02Data(1,0,0);
-   moenchCommonMode *cmSub=NULL;
+  jungfrau02CommonMode *cmSub=NULL;//moenchCommonMode *cmSub=NULL; //
 //   if (cmsub)
 //     cmSub=new moenchCommonMode();
 
@@ -78,8 +79,8 @@ THStack *jungfrauReadData(char *fformat, char *tit, int runmin, int runmax, int 
 
   TH2F *h2;
   TH2F *h3;
-  TH2F *hetaX;
-  TH2F *hetaY;
+  TH2F *hetaX; // not needed for JF?
+  TH2F *hetaY; // not needed for JF?
 
   THStack *hs=new THStack("hs",fformat);
 
@@ -91,12 +92,12 @@ THStack *jungfrauReadData(char *fformat, char *tit, int runmin, int runmax, int 
   if (hitfinder) {
     h2=new TH2F("h2",tit,nbins,hmin-0.5,hmax-0.5,NC*NR,-0.5,NC*NR-0.5);
     h3=new TH2F("h3",tit,nbins,hmin-0.5,hmax-0.5,NC*NR,-0.5,NC*NR-0.5);
-    hetaX=new TH2F("hetaX",tit,nbins,-1,2,NC*NR,-0.5,NC*NR-0.5);
-    hetaY=new TH2F("hetaY",tit,nbins,-1,2,NC*NR,-0.5,NC*NR-0.5);
+    hetaX=new TH2F("hetaX",tit,nbins,-1,2,NC*NR,-0.5,NC*NR-0.5); // not needed for JF?
+    hetaY=new TH2F("hetaY",tit,nbins,-1,2,NC*NR,-0.5,NC*NR-0.5); // not needed for JF?
     hs->Add(h2);
     hs->Add(h3);
-    hs->Add(hetaX);
-    hs->Add(hetaY);
+    hs->Add(hetaX); // not needed for JF?
+    hs->Add(hetaY); // not needed for JF?
   }
 
   
@@ -142,7 +143,7 @@ THStack *jungfrauReadData(char *fformat, char *tit, int runmin, int runmax, int 
   filter->newDataSet();
 
 
-  for (int irun=runmin; irun<runmax; irun++) {
+  for (int irun=runmin; irun<=runmax; irun++){ //{for (int irun=runmin; irun<runmax; irun++) {
     sprintf(fname,fformat,irun);
     cout << "file name " << fname << endl;
     filebin.open((const char *)(fname), ios::in | ios::binary);
@@ -221,15 +222,15 @@ THStack *jungfrauReadData(char *fformat, char *tit, int runmin, int runmax, int 
       iev++;
 #endif		    
       nf++;
-      
-      cout << "=" ;
+
+      cout << "="; // one "=" for every frame that's been processed
       delete [] buff;
     }
-    cout << nph << endl;
+    cout << nph << endl; // number of photons found in file
     if (filebin.is_open())
     filebin.close();	  
     else
-      cout << "could not open file " << fname << endl;
+      cout << "Could not open file :( ... " << fname << endl;
   } 
   if (hitfinder)
     tall->Write(tall->GetName(),TObject::kOverwrite);
@@ -237,7 +238,7 @@ THStack *jungfrauReadData(char *fformat, char *tit, int runmin, int runmax, int 
     
   
   delete decoder;
-  cout << "Read " << nf << " frames" << endl;
+  cout << "Read " << nf << " frames." << endl;
   return hs;
 }
   

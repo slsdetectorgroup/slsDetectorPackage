@@ -1,5 +1,5 @@
 #ifndef SLSDETECTORDATA_H
-#define  SLSDETECTORDATA_H
+#define SLSDETECTORDATA_H
 
 #include <inttypes.h>
 #include <iostream>

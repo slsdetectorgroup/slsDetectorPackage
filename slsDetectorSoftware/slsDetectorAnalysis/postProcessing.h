@@ -17,6 +17,7 @@
 #include <sstream>
 #include <queue>
 #include <math.h>
+#include <semaphore.h>
 
 class postProcessingFuncs;
 
@@ -294,8 +295,9 @@ s
  /** data queue size */
   int queuesize;
 
+  /** queue mutex */
+  sem_t queue_mutex;
 
-  
 
   /**
     start data processing thread

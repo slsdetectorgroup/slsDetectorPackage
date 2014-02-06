@@ -3237,6 +3237,7 @@ int* slsDetector::readFrame(){
       retval=getDataFromDetector();
       if (retval) {
 	dataQueue.push(retval);
+	sem_post(&queue_mutex);
 	controlSocket->Disconnect();
       }
     }
@@ -3333,6 +3334,7 @@ int* slsDetector::readAll(){
 	//std::cout << "-" << flush ;
 #endif
 	dataQueue.push(retval);
+	sem_post(&queue_mutex);
       }
       controlSocket->Disconnect();
     }
@@ -3393,6 +3395,7 @@ int* slsDetector::startAndReadAll(){
     //std::cout<< "-" << flush;
 #endif
     dataQueue.push(retval);
+	sem_post(&queue_mutex);
   }
   controlSocket->Disconnect();
 

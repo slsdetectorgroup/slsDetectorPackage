@@ -35,7 +35,9 @@ postProcessing::postProcessing(): expTime(NULL), ang(NULL), val(NULL), err(NULL)
   pCallbackArg = 0; 
   //cout << "done "<< endl;
   rawDataReady = 0;
-  pRawDataArg = 0; 
+  pRawDataArg = 0;
+
+  sem_init(&queue_mutex,0,0);
 
 #ifdef VERBOSE
   registerDataCallback(&defaultDataReadyFunc,  NULL);
@@ -581,6 +583,7 @@ int* postProcessing::popDataQueue() {
   cout << "Pop data queue lock" << endl;
 #endif
 
+  sem_wait(&queue_mutex);
   pthread_mutex_lock(&mp);
   if( !dataQueue.empty() ) {
     retval=dataQueue.front();
@@ -609,6 +612,7 @@ void postProcessing::resetDataQueue() {
   int *retval=NULL;
   pthread_mutex_lock(&mp);
   while( !dataQueue.empty() ) {
+    sem_wait(&queue_mutex);
     retval=dataQueue.front();
     dataQueue.pop();
     delete [] retval;

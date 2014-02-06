@@ -296,7 +296,10 @@ s
   int queuesize;
 
   /** queue mutex */
-  /*sem_t queue_mutex;*/
+  sem_t sem_queue;
+
+  /** set when detector finishes acquiring */
+  int acquiringDone;
 
 
   /**

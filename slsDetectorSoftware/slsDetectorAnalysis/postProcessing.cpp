@@ -37,7 +37,6 @@ postProcessing::postProcessing(): expTime(NULL), ang(NULL), val(NULL), err(NULL)
   rawDataReady = 0;
   pRawDataArg = 0;
 
- /* sem_init(&queue_mutex,0,0);*/
 
 #ifdef VERBOSE
   registerDataCallback(&defaultDataReadyFunc,  NULL);
@@ -405,6 +404,11 @@ void* postProcessing::processData(int delflag) {
 				if (myData) {
 					processFrame(myData,delflag);
 				}
+			}
+
+			/** IF detector acquisition is done, let the acquire() thread know to finish up and force join thread */
+			if(acquiringDone){
+				sem_post(&sem_queue);
 			}
 
 			/* IF THERE ARE NO DATA look if acquisition is finished */

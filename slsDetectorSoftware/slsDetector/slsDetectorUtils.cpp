@@ -141,7 +141,9 @@ void  slsDetectorUtils::acquire(int delflag){
   }
 
 
+
   if (*threadedProcessing) {
+	sem_init(&sem_queue,0,0);
     startThread(delflag);
   }
 #ifdef VERBOSE
@@ -318,16 +320,21 @@ void  slsDetectorUtils::acquire(int delflag){
 	  if(setReceiverOnline()==OFFLINE_FLAG){
 		  pthread_mutex_lock(&mg);
 	  // wait until data processing thread has finished the data
+		  acquiringDone = 1;
+		  if (*threadedProcessing) {
+			  sem_wait(&sem_queue);
+			  acquiringDone = 0;
+		  }
 
 #ifdef VERBOSE
 	  cout << "check data queue size " << endl;
 #endif
-	  while (dataQueueSize()){
+	  /*while (dataQueueSize()){
 #ifdef VERBOSE
 	    cout << "AAAAAAAAA check data queue size " << endl;
 #endif
 	    usleep(100000);
-	  }
+	  }*/
 
 	  if ((getDetectorsType()==GOTTHARD) || (getDetectorsType()==MOENCH)){
 		  if((*correctionMask)&(1<<WRITE_FILE))
@@ -463,6 +470,7 @@ void  slsDetectorUtils::acquire(int delflag){
 #endif
     setJoinThread(1);
     pthread_join(dataProcessingThread, &status);
+    sem_destroy(&sem_queue);
 #ifdef VERBOSE
     cout << "data processing thread joined" << endl;
 #endif

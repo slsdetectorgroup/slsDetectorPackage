@@ -38,13 +38,13 @@ class jungfrau02Data : public chiptestBoardData {
     }
 
 
-	for (int iy=0; iy<48; iy++) {
-	  for (int ix=0; ix<48; ix++) {
-
-	    dMap[iy][ix]=offset+(iy*48+ix)*nAdc;
-	    // cout << ix << " " << iy << " " << dMap[ix][iy] << endl;
-	  }
-	}
+    for (int iy=0; iy<48; iy++) {
+      for (int ix=0; ix<48; ix++) {
+	
+	dMap[iy][ix]=offset+(iy*48+ix)*nAdc;
+	// cout << ix << " " << iy << " " << dMap[ix][iy] << endl;
+      }
+    }
 
     for (int ix=0; ix<48; ix++) {
       for (int iy=0; iy<48; iy++)
@@ -74,12 +74,14 @@ class jungfrau02Data : public chiptestBoardData {
     if (ix>=0 && ix<nx && iy>=0 && iy<ny && dataMap[iy][ix]>=0 && dataMap[iy][ix]<dataSize) {
       m=dataMask[iy][ix];
       d=*(((uint16_t*)(data))+dataMap[iy][ix]);
+      // cout << ix << " " << iy << " " << (uint16_t*)data << " " << ((uint16_t*)(data))+dataMap[iy][ix] << " " << d << endl;
 	if (nAdc==3) {
+	  cout << "Gain bit!" << endl;
 	  if (*((uint16_t*)(data)+dataMap[iy][ix]+1)>8000)
 		d|=(1<<14); // set gain bit 0
 	  if (*((uint16_t*)(data)+dataMap[iy][ix]+2)>8000)
 		d|=(1<<15); // set gain bit 1
-
+	  
         }
 
     }  
@@ -96,10 +98,12 @@ class jungfrau02Data : public chiptestBoardData {
   */
   double getValue(char *data, int ix, int iy=0) {
     //  cout << "##" << (void*)data << " " << ix << " " <<iy << endl;
+    uint16_t d=getChannel(data, ix, iy);
+    // cout << d << " " << (d&0x3fff) << endl;
     if (xtalk==0 || ix==0)
-      return  (double)(getChannel(data, ix, iy)&0x3ff);
+      return  (double)(getChannel(data, ix, iy)&0x3fff);
     else
-      return  (double)(getChannel(data, ix, iy)&0x3ff)-xtalk* (double)(getChannel(data, ix, iy)&0x3ff);
+      return  (double)(getChannel(data, ix, iy)&0x3fff)-xtalk* (double)(getChannel(data, ix, iy)&0x3fff);
   };
   
   

@@ -49,6 +49,7 @@ Loops over data file to find single photons, fills the tree (and writes it to fi
   \param ymin minimum y coordinate
   \param ymax maximum y coordinate
   \param cmsub  enable commonmode subtraction
+  \param hitfinder if 0, performs pedestal subtraction, not hit finding
   \returns pointer to histo stack with cluster spectra
 */
 
@@ -56,9 +57,9 @@ Loops over data file to find single photons, fills the tree (and writes it to fi
 THStack *jungfrauReadData(char *fformat, char *tit, int runmin, int runmax, int nbins=1500, int hmin=-500, int hmax=1000, int sign=1, double hc=0, int xmin=1, int xmax=NC-1, int ymin=1, int ymax=NR-1, int cmsub=0, int hitfinder=1) {
   
   jungfrau02Data *decoder=new jungfrau02Data(1,0,0);
-  moenchCommonMode *cmSub=NULL;
-  if (cmsub)
-    cmSub=new moenchCommonMode();
+   moenchCommonMode *cmSub=NULL;
+//   if (cmsub)
+//     cmSub=new moenchCommonMode();
 
   int nph=0;
   int iev=0;
@@ -170,31 +171,30 @@ THStack *jungfrauReadData(char *fformat, char *tit, int runmin, int runmax, int 
 	
 
 
-	  // thisEvent=filter->getEventType(buff, ix, iy, cmsub);
+	  thisEvent=filter->getEventType(buff, ix, iy, cmsub);
 
 #ifdef MY_DEBUG
 	  if (hitfinder) {
 	    if (iev%1000==0)
-	      he->SetBinContent(ix+1-xmin, iy+1-ymin, decoder->getValue(buff,ix,iy));
-	      //he->SetBinContent(ix+1-xmin, iy+1-ymin, (int)thisEvent);
+	      he->SetBinContent(ix+1-xmin, iy+1-ymin, (int)thisEvent);
 	    
 	  }
 #endif	  
 	  
 	  if (nf>1000) {
 
-	    h1->Fill(decoder->getValue(buff,ix,iy), iy+NR*ix);
-	    //	    h1->Fill(filter->getClusterTotal(1), iy+NR*ix);
+	    //   h1->Fill(decoder->getValue(buff,ix,iy), iy+NR*ix);
+	    h1->Fill(filter->getClusterTotal(1), iy+NR*ix);
 	    if (hitfinder) {
 	      
 	      if (thisEvent==PHOTON_MAX ) {
 		nph++;
 
-// 		h2->Fill(filter->getClusterTotal(2), iy+NR*ix);
-// 		h3->Fill(filter->getClusterTotal(3), iy+NR*ix);
-// 		iFrame=decoder->getFrameNumber(buff);
+		h2->Fill(filter->getClusterTotal(2), iy+NR*ix);
+		h3->Fill(filter->getClusterTotal(3), iy+NR*ix);
+		iFrame=decoder->getFrameNumber(buff);
 
-// 		tall->Fill();
+		tall->Fill();
 	   
        
 	      }
@@ -231,8 +231,8 @@ THStack *jungfrauReadData(char *fformat, char *tit, int runmin, int runmax, int 
     else
       cout << "could not open file " << fname << endl;
   } 
-//   if (hitfinder)
-//     tall->Write(tall->GetName(),TObject::kOverwrite);
+  if (hitfinder)
+    tall->Write(tall->GetName(),TObject::kOverwrite);
   
     
   

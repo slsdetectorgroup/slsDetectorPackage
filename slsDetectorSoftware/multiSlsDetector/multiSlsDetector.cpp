@@ -1365,7 +1365,6 @@ int* multiSlsDetector::readFrame(){
     }
   }
   dataQueue.push(retval);
-  sem_post(&queue_mutex);
   return retval;
 
 };
@@ -1401,7 +1400,6 @@ int* multiSlsDetector::readAll(){
       //std::cout << "-" << flush;
 #endif
       dataQueue.push(retval);
-  	  sem_post(&queue_mutex);
     }
     for (int id=0; id<thisMultiDetector->numberOfDetectors; id++) {
       if (detectors[id]) {
@@ -1442,7 +1440,6 @@ int* multiSlsDetector::startAndReadAll(){
       //std::cout << "-" << flush;
 #endif
       dataQueue.push(retval);
-  	  sem_post(&queue_mutex);
     }
 
     for (int id=0; id<thisMultiDetector->numberOfDetectors; id++) {
@@ -1533,7 +1530,6 @@ slsDetectorDefs::runStatus  multiSlsDetector::getRunStatus() {
 
 int* multiSlsDetector::popDataQueue() {
   int *retval=NULL;
-  sem_wait(&queue_mutex);
   if( !dataQueue.empty() ) {
     retval=dataQueue.front();
     dataQueue.pop();
@@ -1553,7 +1549,6 @@ detectorData* multiSlsDetector::popFinalDataQueue() {
 void multiSlsDetector::resetDataQueue() {
   int *retval=NULL;
   while( !dataQueue.empty() ) {
-	sem_wait(&queue_mutex);
     retval=dataQueue.front();
     dataQueue.pop();
     delete [] retval;

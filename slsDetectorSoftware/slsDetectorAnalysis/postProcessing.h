@@ -296,7 +296,7 @@ s
   int queuesize;
 
   /** queue mutex */
-  sem_t queue_mutex;
+  /*sem_t queue_mutex;*/
 
 
   /**

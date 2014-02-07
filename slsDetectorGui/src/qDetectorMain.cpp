@@ -741,7 +741,7 @@ void qDetectorMain::EnableTabs(){
 	//moved to here, so that its all in order, instead of signals and different threads
 	if(!enable) {
 		//refresh all the required tabs
-		tab_actions->Refresh();
+		tab_actions->Refresh();// angular, positions,
 		tab_measurement->Refresh();
 
 		tab_settings->Refresh();

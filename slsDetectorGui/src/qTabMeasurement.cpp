@@ -772,6 +772,21 @@ void qTabMeasurement::Refresh(){
 #endif
 
 	if(!myPlot->isRunning()){
+		//to prevent it from recalculating forever
+		disconnect(spinNumMeasurements,	SIGNAL(valueChanged(int)),			this,	SLOT(setNumMeasurements(int)));
+		disconnect(dispFileName,		SIGNAL(editingFinished()),			this,	SLOT(setFileName()));
+		disconnect(spinIndex,			SIGNAL(valueChanged(int)),			this,	SLOT(setRunIndex(int)));
+		disconnect(progressTimer, 		SIGNAL(timeout()), 					this, 	SLOT(UpdateProgress()));
+		disconnect(chkFile, 			SIGNAL(toggled(bool)), 				this, 	SLOT(EnableFileWrite(bool)));
+		disconnect(spinNumFrames,		SIGNAL(valueChanged(int)),			this,	SLOT(setNumFrames(int)));
+		disconnect(spinExpTime,			SIGNAL(valueChanged(double)),		this,	SLOT(setExposureTime()));
+		disconnect(comboExpUnit,		SIGNAL(currentIndexChanged(int)),	this,	SLOT(setExposureTime()));
+		disconnect(spinPeriod,			SIGNAL(valueChanged(double)),		this,	SLOT(setAcquisitionPeriod()));
+		disconnect(comboPeriodUnit,		SIGNAL(currentIndexChanged(int)),	this,	SLOT(setAcquisitionPeriod()));
+		disconnect(spinNumTriggers,		SIGNAL(valueChanged(int)),			this,	SLOT(setNumTriggers(int)));
+		disconnect(spinDelay,			SIGNAL(valueChanged(double)),		this,	SLOT(setDelay()));
+		disconnect(comboDelayUnit,		SIGNAL(currentIndexChanged(int)),	this,	SLOT(setDelay()));
+		disconnect(spinNumGates,		SIGNAL(valueChanged(int)),		 	this,	SLOT(setNumGates(int)));
 
 		//Number of measurements
 		spinNumMeasurements->setValue((int)myDet->setTimer(slsDetectorDefs::MEASUREMENTS_NUMBER,-1));
@@ -784,13 +799,7 @@ void qTabMeasurement::Refresh(){
 #ifdef VERBOSE
 		cout  << "Getting number of frames" << endl;
 #endif
-		//to prevent it from recalculating forever
-		disconnect(spinExpTime,SIGNAL(valueChanged(double)),			this,	SLOT(setExposureTime()));
-		disconnect(comboExpUnit,SIGNAL(currentIndexChanged(int)),		this,	SLOT(setExposureTime()));
-		disconnect(spinPeriod,SIGNAL(valueChanged(double)),				this,	SLOT(setAcquisitionPeriod()));
-		disconnect(comboPeriodUnit,SIGNAL(currentIndexChanged(int)),	this,	SLOT(setAcquisitionPeriod()));
-		disconnect(spinDelay,SIGNAL(valueChanged(double)),				this,	SLOT(setDelay()));
-		disconnect(comboDelayUnit,SIGNAL(currentIndexChanged(int)),		this,	SLOT(setDelay()));
+
 		//Exp Time
 		qDefs::timeUnit unit;
 		double time = qDefs::getCorrectTime(unit,((double)(myDet->setTimer(slsDetectorDefs::ACQUISITION_TIME,-1)*(1E-9))));
@@ -806,22 +815,6 @@ void qTabMeasurement::Refresh(){
 #ifdef VERBOSE
 		cout  << "Getting Acquisition Period" << endl;
 #endif
-		double acqtimeNS = qDefs::getNSTime((qDefs::timeUnit)comboPeriodUnit->currentIndex(),spinPeriod->value());
-		double exptimeNS = qDefs::getNSTime((qDefs::timeUnit)comboExpUnit->currentIndex(),spinExpTime->value());
-		if(exptimeNS>acqtimeNS){
-			spinPeriod->setToolTip(errPeriodTip);
-			lblPeriod->setToolTip(errPeriodTip);
-			lblPeriod->setPalette(red);
-			lblPeriod->setText("Acquisition Period:*");
-		}
-		else {
-			spinPeriod->setToolTip(acqPeriodTip);
-			lblPeriod->setToolTip(acqPeriodTip);
-			lblPeriod->setPalette(lblTimingMode->palette());
-			lblPeriod->setText("Acquisition Period:");
-		}
-		//Check if the interval between plots is ok
-		emit CheckPlotIntervalSignal();
 		//delay
 		time = qDefs::getCorrectTime(unit,((double)(myDet->setTimer(slsDetectorDefs::DELAY_AFTER_TRIGGER,-1)*(1E-9))));
 		spinDelay->setValue(time);
@@ -829,13 +822,6 @@ void qTabMeasurement::Refresh(){
 #ifdef VERBOSE
 		cout  << "Getting delay after trigger" << endl;
 #endif
-		connect(spinExpTime,SIGNAL(valueChanged(double)),			this,	SLOT(setExposureTime()));
-		connect(comboExpUnit,SIGNAL(currentIndexChanged(int)),		this,	SLOT(setExposureTime()));
-		connect(spinPeriod,SIGNAL(valueChanged(double)),			this,	SLOT(setAcquisitionPeriod()));
-		connect(comboPeriodUnit,SIGNAL(currentIndexChanged(int)),	this,	SLOT(setAcquisitionPeriod()));
-		connect(spinDelay,SIGNAL(valueChanged(double)),				this,	SLOT(setDelay()));
-		connect(comboDelayUnit,SIGNAL(currentIndexChanged(int)),	this,	SLOT(setDelay()));
-
 
 		//Number of Triggers
 		spinNumTriggers->setValue((int)myDet->setTimer(slsDetectorDefs::CYCLES_NUMBER,-1));
@@ -849,13 +835,6 @@ void qTabMeasurement::Refresh(){
 		cout  << "Getting number of gates" << endl;
 #endif
 
-		//probes
-		if(myDet->getDetectorsType() == slsDetectorDefs::MYTHEN){
-			spinNumProbes->setValue((int)myDet->setTimer(slsDetectorDefs::PROBES_NUMBER,-1));
-#ifdef VERBOSE
-		cout  << "Getting number of probes" << endl;
-#endif
-		}
 		//File Name
 		dispFileName->setText(QString(myDet->getFileName().c_str()));
 #ifdef VERBOSE
@@ -880,6 +859,21 @@ void qTabMeasurement::Refresh(){
 		else
 			lblProgressIndex->setText(QString::number(myDet->getFrameIndex()));
 
+		connect(spinNumMeasurements,SIGNAL(valueChanged(int)),			this,	SLOT(setNumMeasurements(int)));
+		connect(dispFileName,		SIGNAL(editingFinished()),			this,	SLOT(setFileName()));
+		connect(spinIndex,			SIGNAL(valueChanged(int)),			this,	SLOT(setRunIndex(int)));
+		connect(progressTimer, 		SIGNAL(timeout()), 					this, 	SLOT(UpdateProgress()));
+		connect(chkFile, 			SIGNAL(toggled(bool)), 				this, 	SLOT(EnableFileWrite(bool)));
+		connect(spinNumFrames,		SIGNAL(valueChanged(int)),			this,	SLOT(setNumFrames(int)));
+		connect(spinExpTime,		SIGNAL(valueChanged(double)),		this,	SLOT(setExposureTime()));
+		connect(comboExpUnit,		SIGNAL(currentIndexChanged(int)),	this,	SLOT(setExposureTime()));
+		connect(spinPeriod,			SIGNAL(valueChanged(double)),		this,	SLOT(setAcquisitionPeriod()));
+		connect(comboPeriodUnit,	SIGNAL(currentIndexChanged(int)),	this,	SLOT(setAcquisitionPeriod()));
+		connect(spinNumTriggers,	SIGNAL(valueChanged(int)),			this,	SLOT(setNumTriggers(int)));
+		connect(spinDelay,			SIGNAL(valueChanged(double)),		this,	SLOT(setDelay()));
+		connect(comboDelayUnit,		SIGNAL(currentIndexChanged(int)),	this,	SLOT(setDelay()));
+		connect(spinNumGates,		SIGNAL(valueChanged(int)),		 	this,	SLOT(setNumGates(int)));
+
 		//Timing mode - will also check if exptime>acq period and also enableprobes()
 		SetupTimingMode();
 
@@ -900,9 +894,6 @@ void qTabMeasurement::Refresh(){
 
 
 void qTabMeasurement::EnableProbes(){
-#ifdef VERBOSE
-	cout << "Validating if probes should be enabled" << endl;
-#endif
 	//enabled only in expert mode and if #Frames > 1
 	if((expertMode)&&(myDet->getDetectorsType()==slsDetectorDefs::MYTHEN)&&(spinNumFrames->value()>1)){
 		lblNumProbes->setEnabled(true);

@@ -261,6 +261,11 @@ void qTabSettings::Refresh(){
 	cout  << endl << "**Updating Settings Tab" << endl;
 #endif
 
+	disconnect(comboSettings, 		SIGNAL(currentIndexChanged(int)),	this, SLOT(setSettings(int)));
+	disconnect(spinNumModules, 	SIGNAL(valueChanged(int)), 			this, SLOT(SetNumberOfModules(int)));
+	disconnect(comboDynamicRange, 	SIGNAL(activated(int)), 			this, SLOT(SetDynamicRange(int)));
+	disconnect(spinThreshold,		SIGNAL(valueChanged(int)),			this, SLOT(SetEnergy()));
+
 
 	// Number of Modules
 #ifdef VERBOSE
@@ -290,11 +295,9 @@ void qTabSettings::Refresh(){
 #ifdef VERBOSE
 	cout  << "Getting settings" << endl;
 #endif
-	disconnect(comboSettings, 		SIGNAL(currentIndexChanged(int)),	this, SLOT(setSettings(int)));
 	int sett = (int)myDet->getSettings();
 	if(sett==-1) sett = slsDetectorDefs::UNDEFINED;
 	comboSettings->setCurrentIndex(sett);
-	connect(comboSettings, 		SIGNAL(currentIndexChanged(int)),	this, SLOT(setSettings(int)));
 
 
 	//threshold
@@ -309,10 +312,15 @@ void qTabSettings::Refresh(){
 #ifdef VERBOSE
 			cout  << "Getting threshold energy" << endl;
 #endif
-			SetEnergy();
+			spinThreshold->setValue(myDet->getThresholdEnergy());
 		}
 	}
 
+
+	connect(comboSettings, 		SIGNAL(currentIndexChanged(int)),	this, SLOT(setSettings(int)));
+	connect(spinNumModules, 	SIGNAL(valueChanged(int)), 			this, SLOT(SetNumberOfModules(int)));
+	connect(comboDynamicRange, 	SIGNAL(activated(int)), 			this, SLOT(SetDynamicRange(int)));
+	connect(spinThreshold,		SIGNAL(valueChanged(int)),			this, SLOT(SetEnergy()));
 
 #ifdef VERBOSE
 	cout  << "**Updated Settings Tab" << endl << endl;

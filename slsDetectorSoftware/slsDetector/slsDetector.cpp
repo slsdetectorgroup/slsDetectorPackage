@@ -3533,7 +3533,7 @@ int64_t slsDetector::setTimer(timerIndex index, int64_t t){
   }
 
   //send acquisiton period to receiver
-  if((index==FRAME_PERIOD) && (ret != FAIL)  && (t != -1) && (setReceiverOnline(ONLINE_FLAG)==ONLINE_FLAG)){
+  if((setReceiverOnline(ONLINE_FLAG)==ONLINE_FLAG) && (index==FRAME_PERIOD) && (ret != FAIL)  && (t != -1)){
 	  //if acquisition period is zero, then #frames/buffer depends on exposure time and not acq period
 	  if(!retval)
 		  retval = timerValue[ACQUISITION_TIME];

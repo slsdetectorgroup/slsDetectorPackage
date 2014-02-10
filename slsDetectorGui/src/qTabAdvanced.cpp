@@ -1142,9 +1142,14 @@ void qTabAdvanced::Refresh(){
 
 	qDefs::checkErrorMessage(myDet,"qTabAdvanced::Refresh");
 
+
+
+#ifdef VERBOSE
+		cout << "Getting Detector Ports" << endl;
+#endif
 	//disconnect
 	disconnect(spinControlPort,	SIGNAL(valueChanged(int)),			this,	SLOT(SetControlPort(int)));
-	disconnect(spinStopPort,		SIGNAL(valueChanged(int)),		this,	SLOT(SetStopPort(int)));
+	disconnect(spinStopPort,	SIGNAL(valueChanged(int)),			this,	SLOT(SetStopPort(int)));
 	disconnect(comboOnline,		SIGNAL(currentIndexChanged(int)),	this,	SLOT(SetOnline(int)));
 
 	//so that updated status
@@ -1160,7 +1165,9 @@ void qTabAdvanced::Refresh(){
 	connect(comboOnline,		SIGNAL(currentIndexChanged(int)),	this,	SLOT(SetOnline(int)));
 
 
-
+#ifdef VERBOSE
+		cout << "Getting Receiver Network Information" << endl;
+#endif
 	if ((detType==slsDetectorDefs::GOTTHARD) || (detType==slsDetectorDefs::MOENCH)){
 		//disconnect
 		disconnect(spinTCPPort,			SIGNAL(valueChanged(int)),	this,	SLOT(SetRxrTCPPort(int)));
@@ -1226,6 +1233,9 @@ void qTabAdvanced::Refresh(){
 	}
 
 	//roi
+#ifdef VERBOSE
+		cout << "Getting ROI" << endl;
+#endif
 	updateROIList();
 
 

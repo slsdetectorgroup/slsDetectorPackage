@@ -15,6 +15,7 @@
 /** Project Class Headers */
 class multiSlsDetector;
 /** Qt Project Class Headers */
+#include <QStandardItemModel>
 #include "qDrawPlot.h"
 class qDetectorMain;
 
@@ -97,6 +98,14 @@ private:
 	/** Validates before enabling or disabling probes */
 	void EnableProbes();
 
+	/** Get timing mode from detector
+	 * @param startup is true when gui has just started up*/
+	void GetModeFromDetector(bool startup = false);
+
+	/** Checks if acquisition period is greater than exposure time
+	 * and dsplays in red as a warning */
+	void CheckAcqPeriodGreaterThanExp();
+
 
 private slots:
 	/** Sets the timing mode
@@ -168,6 +177,8 @@ private:
 	multiSlsDetector *myDet;
 	/** The Plot widget	 */
 	qDrawPlot *myPlot;
+	/** detector type */
+	slsDetectorDefs::detectorType detType;
 	/** enum for the timing mode */
 	enum{None, Auto, Trigger_Exp_Series, Trigger_Frame, Trigger_Readout, Gated, Gated_Start, Trigger_Window, NumTimingModes};
 	/** timer to update the progress*/
@@ -180,7 +191,8 @@ private:
 	bool expertMode;
 	QIcon	*iconStart;
 	QIcon	*iconStop;
-
+	/** to access items in settings combobox */
+	QStandardItemModel* model;
 
 signals:
 	void StartSignal();

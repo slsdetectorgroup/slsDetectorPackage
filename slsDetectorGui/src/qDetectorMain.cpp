@@ -742,7 +742,9 @@ void qDetectorMain::EnableTabs(){
 	if(!enable) {
 		//refresh all the required tabs
 		tab_actions->Refresh();// angular, positions,
-		tab_measurement->Refresh();
+
+		//too slow to refresh
+		/*tab_measurement->Refresh();*/
 
 		tab_settings->Refresh();
 		tab_dataoutput->Refresh();
@@ -791,17 +793,17 @@ int qDetectorMain::StartStopAcquisitionFromClient(bool start){
 	if (tab_measurement->GetStartStatus() != start){
 		if(start){
 			if(!myPlot->isRunning()){
-				//refresh all the required tabs
-				tab_actions->Refresh();
-				tab_measurement->Refresh();
-
+				//refresh all the required tabs - all these are done in button click anyway
+			/*	tab_actions->Refresh();
+				//too slow to refresh
+				//tab_measurement->Refresh();
 				tab_settings->Refresh();
 				tab_dataoutput->Refresh();
 				if(tab_advanced->isEnabled())	tab_advanced->Refresh();
 				if(tab_debugging->isEnabled())	tab_debugging->Refresh();
 				if(tab_developer->isEnabled())	tab_developer->Refresh();
 
-				tab_plot->Refresh();
+				tab_plot->Refresh();*/
 			}
 		}
 		//click start/stop

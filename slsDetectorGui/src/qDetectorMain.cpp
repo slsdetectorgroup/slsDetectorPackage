@@ -582,7 +582,6 @@ void qDetectorMain::ExecuteUtilities(QAction *action){
 	if(refreshTabs){
 		tab_actions->Refresh();
 		tab_measurement->Refresh();
-
 		tab_settings->Refresh();
 		tab_dataoutput->Refresh();
 		if(tab_advanced->isEnabled())	tab_advanced->Refresh();

@@ -185,7 +185,7 @@ void qTabMeasurement::GetModeFromDetector(bool startup){
 		// to let qdrawplot know that triggers or frames are used
 		myPlot->setFrameEnabled(lblNumFrames->isEnabled());
 		myPlot->setTriggerEnabled(lblNumTriggers->isEnabled());
-		if((!startup) && (comboTimingMode->currentIndex() == mode)){
+		if((!startup) && (comboTimingMode->currentIndex() == (mode+1))){
 			if(lblPeriod->isEnabled())
 				CheckAcqPeriodGreaterThanExp();
 			else{

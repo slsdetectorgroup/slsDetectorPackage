@@ -15,6 +15,8 @@
 
 #include "singlePhotonDetector.h"
 #include "moench02ModuleData.h"
+#include "gotthardModuleData.h"
+#include "moenchCommonMode.h"
 
 #ifdef MYROOT1
 #include <TTree.h>
@@ -185,17 +187,6 @@ public:
 	 * @param raw address of pointer, pointing to current frame to send to gui
 	 */
 	void readFrame(char* c,char** raw);
-
-
-	/** free fifo buffer, called back from single photon filter
-	 */
-	static void freeFifoBufferCallBack (char* fbuffer, void *this_pointer);
-
-	/**
-	 * Call back from single photon filter to free writingfifo
-	 * called from freeFifoBufferCallBack
-	 */
-	void freeFifoBuffer(char* fbuffer);
 
 	/**
 	 * Starts Receiver - starts to listen for packets
@@ -531,6 +522,10 @@ private:
 		singlePhotonDetector<uint16_t> *singlePhotonDet[MAX_NUM_WRITER_THREADS];
 
 		moench02ModuleData *mdecoder[MAX_NUM_WRITER_THREADS];
+
+		gotthardModuleData *gdecoder[MAX_NUM_WRITER_THREADS];
+
+		moenchCommonMode *cmSub;
 
 		bool commonModeSubtractionEnable;
 

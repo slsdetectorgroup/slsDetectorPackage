@@ -40,6 +40,9 @@
 #define GOTTHARD_FRAME_INDEX_OFFSET			1
 #define GOTTHARD_PACKET_INDEX_MASK			0x1
 
+#define GOTTHARD_PIXELS_IN_ROW				1280
+#define GOTTHARD_PIXELS_IN_COL				1
+
 
 
 #define MOENCH_FIFO_SIZE					2500 //cannot be less than max jobs per thread = 1000

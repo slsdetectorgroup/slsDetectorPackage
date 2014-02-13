@@ -18,7 +18,7 @@ class moench02ModuleData : public slsReceiverData<uint16_t> {
   */
   
 
-  moench02ModuleData(double c=0): slsReceiverData<uint16_t>(160, 160, 40, 1286), 
+  moench02ModuleData(double c=0): slsReceiverData<uint16_t>(160, 160, 40, 1286),
     xtalk(c) {
 
 
@@ -65,9 +65,10 @@ class moench02ModuleData : public slsReceiverData<uint16_t> {
 
     setDataMap(dMap);
     setDataMask(dMask);
+    setFrameIndexMask(0xffffff00);
+    setPacketIndexMask(0xff);
+    setFrameIndexOffset(8);
 
-
-    
 
   };
     

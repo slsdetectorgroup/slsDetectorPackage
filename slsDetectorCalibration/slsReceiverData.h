@@ -23,21 +23,46 @@ class slsReceiverData : public slsDetectorData<dataType> {
   \param dROI Array of size nx*ny. The elements are 1s if the channel is good or in the ROI, 0 is bad or out of the ROI. NULL (default) means all 1s. 
 
   */
-  slsReceiverData(int npx, int npy, int np, int psize, int **dMap=NULL, dataType **dMask=NULL, int **dROI=NULL): slsDetectorData<dataType>(npx, npy, np*psize, dMap, dMask, dROI), nPackets(np), packetSize(psize) {};
+  slsReceiverData(int npx, int npy, int np, int psize, int **dMap=NULL, dataType **dMask=NULL, int **dROI=NULL): slsDetectorData<dataType>(npx, npy, np*psize, dMap, dMask, dROI), nPackets(np), packetSize(psize),frameIndexMask(0),packetIndexMask(0),frameIndexOffset(0) {};
 
    
- 
-   /**
+  /**
+
+    Sets frame index mask for the given dataset. Virtual func: works for slsDetectorReceiver packets, but can be overloaded.
+    \param m frame index mask
+
+ */
+
+  virtual void setFrameIndexMask(uint32_t m) {frameIndexMask = m;};
+
+  /**
+
+   Sets the packet index mask for the given dataset. Virtual func: works for slsDetectorReceiver packets, but can be overloaded.
+   \param m packet index mask
+
+   */
+
+  virtual void setPacketIndexMask(uint32_t m) {packetIndexMask = m;};
+
+  /**
+
+  Sets the frame index offset for the given dataset. Virtual func: works for slsDetectorReceiver packets, but can be overloaded.
+  \param o frame index offset
+   */
+
+  virtual void setFrameIndexOffset(int o)  {frameIndexOffset = o;};
+
+  /**
 
      Returns the frame number for the given dataset. Virtual func: works for slsDetectorReceiver data (also for each packet), but can be overloaded. 
      \param buff pointer to the dataset
      \returns frame number
 
-  */
+   */
 
-  virtual  int getFrameNumber(char *buff){return ((*(int*)buff)&(0xffffff00))>>8;};
+  virtual  int getFrameNumber(char *buff){return ((*(int*)buff)&(frameIndexMask))>>frameIndexOffset;};/*{return ((*(int*)buff)&(0xffffff00))>>8;};*/
 
-   /**
+  /**
 
      Returns the packet number for the given dataset. Virtual func: works for slsDetectorReceiver packets, but can be overloaded. 
      \param buff pointer to the dataset
@@ -45,7 +70,7 @@ class slsReceiverData : public slsDetectorData<dataType> {
 
   */
 
-  virtual int getPacketNumber(char *buff) {return (*(int*)buff)&0xff;};
+  virtual int getPacketNumber(char *buff) {return (*(int*)buff)&packetIndexMask;};/*{return (*(int*)buff)&0xff;};*/
 
 
 
@@ -61,52 +86,52 @@ class slsReceiverData : public slsDetectorData<dataType> {
   */
 
   virtual  char *findNextFrame(char *data, int &ndata, int dsize) {
-    char *retval=NULL, *p=data;
-    int dd=0;
-    int fn, fnum=-1,  np=0, pnum=-1;
-    while (dd<=(dsize-packetSize)) {
-      pnum=getPacketNumber(p);
-      fn=getFrameNumber(p);
+	  char *retval=NULL, *p=data;
+	  int dd=0;
+	  int fn, fnum=-1,  np=0, pnum=-1;
+	  while (dd<=(dsize-packetSize)) {
+		  pnum=getPacketNumber(p);
+		  fn=getFrameNumber(p);
 
 
-      if (pnum<1 || pnum>nPackets) {
-	cout << "Bad packet number " << pnum << " frame "<< fn << endl;
-	retval=NULL;
-	np=0;
-      }	else if  (pnum==1) {
-	fnum=fn;
-	retval=p;
-	if (np>0)
-	  /*cout << "*Incomplete frame number " << fnum << endl;*/
-	np=0;
-      } else if (fn!=fnum) {
-	if (fnum!=-1) {
-	 /* cout << " **Incomplete frame number " << fnum << " pnum " << pnum << " " << getFrameNumber(p) << endl;*/
-	  retval=NULL;
-	}
-	np=0;
-      }
-      p+=packetSize;
-      dd+=packetSize;
-      np++;
-      // cout << pnum << " " << fn << " " << np << " " << dd << " " << dsize << endl;
-      if (np==nPackets)
-	if (pnum==nPackets) {
-	  // cout << "Frame found!" << endl;
-	  break;
-	}	else {
-	  cout << "Too many packets for this frame! "<< fnum << " " << pnum << endl;
-	  retval=NULL;
-	}
-    }
-    if (np<nPackets) {
-      if (np>0) 
-	cout << "Too few packets for this frame! "<< fnum << " " << pnum << endl;
-    }
-    
-    ndata=np*packetSize;
-    //  cout << "return " << ndata << endl;
-    return retval;
+		  if (pnum<1 || pnum>nPackets) {
+			  cout << "Bad packet number " << pnum << " frame "<< fn << endl;
+			  retval=NULL;
+			  np=0;
+		  }	else if  (pnum==1) {
+			  fnum=fn;
+			  retval=p;
+			  if (np>0)
+				  /*cout << "*Incomplete frame number " << fnum << endl;*/
+				  np=0;
+		  } else if (fn!=fnum) {
+			  if (fnum!=-1) {
+				  /* cout << " **Incomplete frame number " << fnum << " pnum " << pnum << " " << getFrameNumber(p) << endl;*/
+				  retval=NULL;
+			  }
+			  np=0;
+		  }
+		  p+=packetSize;
+		  dd+=packetSize;
+		  np++;
+		  // cout << pnum << " " << fn << " " << np << " " << dd << " " << dsize << endl;
+		  if (np==nPackets)
+			  if (pnum==nPackets) {
+				  // cout << "Frame found!" << endl;
+				  break;
+			  }	else {
+				  cout << "Too many packets for this frame! "<< fnum << " " << pnum << endl;
+				  retval=NULL;
+			  }
+	  }
+	  if (np<nPackets) {
+		  if (np>0)
+			  cout << "Too few packets for this frame! "<< fnum << " " << pnum << endl;
+	  }
+
+	  ndata=np*packetSize;
+	  //  cout << "return " << ndata << endl;
+	  return retval;
   };
 
    /**
@@ -165,6 +190,9 @@ class slsReceiverData : public slsDetectorData<dataType> {
  private:
   const int nPackets; /**<number of UDP packets constituting one frame */
   const int packetSize; /**< size of a udp packet */
+  uint32_t frameIndexMask;
+  uint32_t packetIndexMask;
+  int frameIndexOffset;
 };
 
 

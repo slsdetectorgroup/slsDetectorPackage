@@ -191,31 +191,6 @@ class slsDetectorData {
   */
   virtual double getValue(char *data, int ix, int iy=0) {return (double)getChannel(data, ix, iy);};
 
-  /**
-
-    Sets frame index mask for the given dataset. Virtual func: works for slsDetectorReceiver packets, but can be overloaded.
-    \param m frame index mask
-
- */
-
-  virtual void setFrameIndexMask(uint32_t m)=0;
-
-  /**
-
-   Sets the packet index mask for the given dataset. Virtual func: works for slsDetectorReceiver packets, but can be overloaded.
-   \param m packet index mask
-
-   */
-
-  virtual void setPacketIndexMask(uint32_t m)=0;
-
-  /**
-
-  Sets the frame index offset for the given dataset. Virtual func: works for slsDetectorReceiver packets, but can be overloaded.
-  \param o frame index offset
-   */
-
-  virtual void setFrameIndexOffset(int o)=0;
 
    /**
 
@@ -234,10 +209,10 @@ class slsDetectorData {
      \param buff pointer to the dataset
      \returns packet number number
 
-
+*/
   virtual int getPacketNumber(char *buff)=0;
 
-  */
+  /*
 
    /**
 

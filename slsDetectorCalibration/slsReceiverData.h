@@ -23,35 +23,9 @@ class slsReceiverData : public slsDetectorData<dataType> {
   \param dROI Array of size nx*ny. The elements are 1s if the channel is good or in the ROI, 0 is bad or out of the ROI. NULL (default) means all 1s. 
 
   */
-  slsReceiverData(int npx, int npy, int np, int psize, int **dMap=NULL, dataType **dMask=NULL, int **dROI=NULL): slsDetectorData<dataType>(npx, npy, np*psize, dMap, dMask, dROI), nPackets(np), packetSize(psize),frameIndexMask(0),packetIndexMask(0),frameIndexOffset(0) {};
+  slsReceiverData(int npx, int npy, int np, int psize, int **dMap=NULL, dataType **dMask=NULL, int **dROI=NULL): slsDetectorData<dataType>(npx, npy, np*psize, dMap, dMask, dROI), nPackets(np), packetSize(psize) {};
 
    
-  /**
-
-    Sets frame index mask for the given dataset. Virtual func: works for slsDetectorReceiver packets, but can be overloaded.
-    \param m frame index mask
-
- */
-
-  virtual void setFrameIndexMask(uint32_t m) {frameIndexMask = m;};
-
-  /**
-
-   Sets the packet index mask for the given dataset. Virtual func: works for slsDetectorReceiver packets, but can be overloaded.
-   \param m packet index mask
-
-   */
-
-  virtual void setPacketIndexMask(uint32_t m) {packetIndexMask = m;};
-
-  /**
-
-  Sets the frame index offset for the given dataset. Virtual func: works for slsDetectorReceiver packets, but can be overloaded.
-  \param o frame index offset
-   */
-
-  virtual void setFrameIndexOffset(int o)  {frameIndexOffset = o;};
-
   /**
 
      Returns the frame number for the given dataset. Virtual func: works for slsDetectorReceiver data (also for each packet), but can be overloaded. 
@@ -60,7 +34,7 @@ class slsReceiverData : public slsDetectorData<dataType> {
 
    */
 
-  virtual  int getFrameNumber(char *buff){return ((*(int*)buff)&(frameIndexMask))>>frameIndexOffset;};/*{return ((*(int*)buff)&(0xffffff00))>>8;};*/
+  virtual  int getFrameNumber(char *buff){return ((*(int*)buff)&(0xffffff00))>>8;};
 
   /**
 
@@ -70,7 +44,7 @@ class slsReceiverData : public slsDetectorData<dataType> {
 
   */
 
-  virtual int getPacketNumber(char *buff) {return (*(int*)buff)&packetIndexMask;};/*{return (*(int*)buff)&0xff;};*/
+  virtual int getPacketNumber(char *buff){return (*(int*)buff)&0xff;};
 
 
 
@@ -99,11 +73,11 @@ class slsReceiverData : public slsDetectorData<dataType> {
 			  retval=NULL;
 			  np=0;
 		  }	else if  (pnum==1) {
-			  fnum=fn;
 			  retval=p;
 			  if (np>0)
 				  /*cout << "*Incomplete frame number " << fnum << endl;*/
 				  np=0;
+			  fnum=fn;
 		  } else if (fn!=fnum) {
 			  if (fnum!=-1) {
 				  /* cout << " **Incomplete frame number " << fnum << " pnum " << pnum << " " << getFrameNumber(p) << endl;*/
@@ -190,9 +164,6 @@ class slsReceiverData : public slsDetectorData<dataType> {
  private:
   const int nPackets; /**<number of UDP packets constituting one frame */
   const int packetSize; /**< size of a udp packet */
-  uint32_t frameIndexMask;
-  uint32_t packetIndexMask;
-  int frameIndexOffset;
 };
 
 

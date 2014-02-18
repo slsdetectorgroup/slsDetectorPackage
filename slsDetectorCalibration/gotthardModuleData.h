@@ -13,9 +13,6 @@
 #define FRAMEMASK 0xFFFFFFFE
 #define PACKETMASK 1
 #define FRAMEOFFSET 0x1
-#define SHORT_FRAMEMASK 0xFFFFFFFF
-#define SHORT_PACKETMASK 0
-#define SHORT_FRAMEOFFSET 0
 
 
 class gotthardModuleData : public slsReceiverData<uint16_t> {
@@ -32,8 +29,7 @@ public:
 	 */
 
 
-	gotthardModuleData(double c=0, bool s=-1): slsReceiverData<uint16_t>(X_PIXELS, Y_PIXELS, NPACKETS, BUFFERSIZE), xtalk(c),shortFrame(s) {
-
+	gotthardModuleData(double c=0, int s=-1): slsReceiverData<uint16_t>(X_PIXELS, Y_PIXELS, NPACKETS, BUFFERSIZE), xtalk(c),shortFrame(s) {
 
 		if(shortFrame == -1)
 			shortFrame = 0;
@@ -84,16 +80,28 @@ public:
 
 		setDataMap(dMap);
 		setDataMask(dMask);
-		if(shortFrame){
-			setFrameIndexMask(FRAMEMASK);
-			setPacketIndexMask(PACKETMASK);
-			setFrameIndexOffset(FRAMEOFFSET);
-		}else{
-			setFrameIndexMask(SHORT_FRAMEMASK);
-			setPacketIndexMask(SHORT_PACKETMASK);
-			setFrameIndexOffset(SHORT_FRAMEOFFSET);
-		}
 
+	};
+
+
+	  /**
+
+	     Returns the frame number for the given dataset.
+	     \param buff pointer to the dataset
+	     \returns frame number
+
+	   */
+
+	int getFrameNumber(char *buff){
+		int np=(*(int*)buff);
+
+		if(shortFrame)
+			return np;
+
+		//gotthards frame header must be incremented
+		++np;
+		//packet index should be 1 or 2
+		return ((np&FRAMEMASK)>>FRAMEOFFSET);
 	};
 
 
@@ -109,9 +117,11 @@ public:
 		if(shortFrame)
 			return 1;
 
-		int np=(*(int*)buff)&0x1;
+		int np=(*(int*)buff);
+		//gotthards frame header must be incremented
 		++np;
-		return np;
+		//packet index should be 1 or 2
+		return ((np&PACKETMASK)+1);
 	};
 
 

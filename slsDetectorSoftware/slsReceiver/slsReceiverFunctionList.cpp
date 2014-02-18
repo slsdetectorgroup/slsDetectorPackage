@@ -267,8 +267,8 @@ int slsReceiverFunctionList::setShortFrame(int i){
 	onePacketSize = bufferSize/packetsPerFrame;
 
 	/** done only in the case that compression can be chosen only at the beginn of program exe */
-	if(dataCompression)
-		setupFilter();
+	/*if(dataCompression)
+		setupFilter();*/
 
 	return shortFrame;
 }
@@ -712,7 +712,7 @@ int slsReceiverFunctionList::createCompressionFile(int ithr, int iframe){
 		//resets the pedestalSubtraction array and the commonModeSubtraction
 		singlePhotonDet[ithr]->newDataSet();
 		if(myFile[ithr]==NULL){
-			cout<<"file not null"<<endl;
+			cout<<"file null"<<endl;
 			return FAIL;
 		}
 		if(!myFile[ithr]->IsOpen()){
@@ -819,7 +819,7 @@ void slsReceiverFunctionList::closeFile(int ithr){
 			//close file
 			if(myTree[ithr] && myFile[ithr])
 				myFile[ithr] = myTree[ithr]->GetCurrentFile();
-			if(myFile[ithr])
+			if(myFile[ithr] != NULL)
 				myFile[ithr]->Close();
 			myFile[ithr] = NULL;
 			myTree[ithr] = NULL;

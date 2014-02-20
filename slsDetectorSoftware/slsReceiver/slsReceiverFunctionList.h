@@ -236,10 +236,21 @@ private:
 	int createUDPSocket();
 
 	/**
-	 * create listening thread and many writer threads at class construction
+	 * create listening thread
 	 * @param destroy is true to kill all threads and start again
 	 */
-	int createThreads(bool destroy = false);
+	int createListeningThreads(bool destroy = false);
+
+	/**
+	 * create writer threads
+	 * @param destroy is true to kill all threads and start again
+	 */
+	int createWriterThreads(bool destroy = false);
+
+	/**
+	 * set thread priorities
+	 */
+	void setThreadPriorities();
 
 	/**
 	 * initializes variables and creates the first file

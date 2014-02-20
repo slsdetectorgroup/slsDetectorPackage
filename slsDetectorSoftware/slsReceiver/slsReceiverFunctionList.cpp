@@ -682,9 +682,7 @@ int slsReceiverFunctionList::setupWriter(){
 		ret = createNewFile();
 	else{
 		for(int i=0;i<numWriterThreads;i++){
-			pthread_mutex_lock(&write_mutex);
 			ret1 = createCompressionFile(i,0);
-			pthread_mutex_unlock(&write_mutex);
 			if(ret1 == FAIL)
 				ret = FAIL;
 		}
@@ -1287,11 +1285,11 @@ int slsReceiverFunctionList::startWriting(){
 				if (cbAction < DO_EVERYTHING)
 					rawDataReadyCallBack(currframenum, wbuf, numpackets * onePacketSize, sfilefd, guiData,pRawDataReady);
 				else if (numpackets > 0){
-					if(numWriterThreads >1)
-						pthread_mutex_lock(&progress_mutex);
+					/*if(numWriterThreads >1)
+						pthread_mutex_lock(&progress_mutex);*/
 					writeToFile_withoutCompression(wbuf, numpackets);
-					if(numWriterThreads >1)
-						pthread_mutex_unlock(&progress_mutex);
+					/*if(numWriterThreads >1)
+						pthread_mutex_unlock(&progress_mutex);*/
 				}
 				//copy to gui
 				copyFrameToGui(wbuf + HEADER_SIZE_NUM_TOT_PACKETS);
@@ -1326,7 +1324,7 @@ int slsReceiverFunctionList::startWriting(){
 
 					xmax = MOENCH_PIXELS_IN_ONE_ROW-1, ymax = MOENCH_PIXELS_IN_ONE_ROW-1;
 
-					while(buff = mdecoder[ithread]->findNextFrame(data,ndata,remainingsize  )){/**need mutex??????????*/
+					while(buff = mdecoder[ithread]->findNextFrame(data,ndata,remainingsize  )){
 						np = ndata/onePacketSize;
 
 						//cout<<"buff framnum:"<<ithread <<":"<< ((((uint32_t)(*((uint32_t*)buff)))& (frameIndexMask)) >> frameIndexOffset)<<endl;
@@ -1337,14 +1335,14 @@ int slsReceiverFunctionList::startWriting(){
 
 							singlePhotonDet[ithread]->newFrame();
 							if(commonModeSubtractionEnable){
-								for(ix = xmin - 1; ix < xmax + 1; ix++){
-									for(iy = ymin - 1; iy < ymax + 1; iy++){
+								for(ix = xmin - 1; ix < xmax; ix++){
+									for(iy = ymin - 1; iy < ymax; iy++){
 										thisEvent = singlePhotonDet[ithread]->getEventType(buff, ix, iy, 0);
 									}
 								}
 							}
-							for(ix = xmin - 1; ix < xmax + 1; ix++)
-								for(iy = ymin - 1; iy < ymax + 1; iy++){
+							for(ix = xmin - 1; ix < xmax; ix++)
+								for(iy = ymin - 1; iy < ymax; iy++){
 									thisEvent=singlePhotonDet[ithread]->getEventType(buff, ix, iy, commonModeSubtractionEnable);
 									if (nf>1000) {
 										tot=0;
@@ -1354,10 +1352,8 @@ int slsReceiverFunctionList::startWriting(){
 										br=0;
 										if (thisEvent==PHOTON_MAX) {
 
-											iFrame=mdecoder[ithread]->getFrameNumber(buff);/**need mutex??????????*/
-											pthread_mutex_lock(&write_mutex);
+											iFrame=mdecoder[ithread]->getFrameNumber(buff);
 											myTree[ithread]->Fill();
-											pthread_mutex_unlock(&write_mutex);
 											//cout << "Fill in event: frmNr: " << iFrame <<  " ix " << ix << " iy " << iy << " type " <<  thisEvent << endl;
 										}
 									}
@@ -1408,9 +1404,8 @@ int slsReceiverFunctionList::startWriting(){
 
 
 							singlePhotonDet[ithread]->newFrame();
-
-							for(ix = xmin - 1; ix < xmax + 1; ix++)
-								for(iy = ymin - 1; iy < ymax + 1; iy++){
+							for(ix = xmin - 1; ix < xmax; ix++)
+								for(iy = ymin - 1; iy < ymax; iy++){
 									thisEvent=singlePhotonDet[ithread]->getEventType(buff, ix, iy, 0);
 									if (nf>1000) {
 										tot=0;
@@ -1420,10 +1415,8 @@ int slsReceiverFunctionList::startWriting(){
 										br=0;
 										if (thisEvent==PHOTON_MAX) {
 
-											iFrame=gdecoder[ithread]->getFrameNumber(buff);/**need mutex??????????*/
-											pthread_mutex_lock(&write_mutex);
+											iFrame=gdecoder[ithread]->getFrameNumber(buff);
 											myTree[ithread]->Fill();
-											pthread_mutex_unlock(&write_mutex);
 											//cout << "Fill in event: frmNr: " << iFrame <<  " ix " << ix << " iy " << iy << " type " <<  thisEvent << endl;
 										}
 									}

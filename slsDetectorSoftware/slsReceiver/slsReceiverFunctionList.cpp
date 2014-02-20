@@ -7,6 +7,11 @@
 
 #include "slsReceiverFunctionList.h"
 
+#include "moench02ModuleData.h"
+#include "gotthardModuleData.h"
+#include "gotthardShortModuleData.h"
+
+
 #include <signal.h>  		// SIGINT
 #include <sys/stat.h> 		// stat
 #include <sys/socket.h>		// socket(), bind(), listen(), accept(), shut down
@@ -106,8 +111,7 @@ slsReceiverFunctionList::slsReceiverFunctionList(detectorType det):
 	cmSub = NULL;
 	for(int i=0;i<numWriterThreads;i++){
 		singlePhotonDet[i] = NULL;
-		mdecoder[i] = NULL;
-		gdecoder[i] = NULL;
+		receiverdata[i] = NULL;
 
 #ifdef MYROOT1
 					myTree[i] = (NULL);
@@ -154,8 +158,8 @@ slsReceiverFunctionList::~slsReceiverFunctionList(){
 	for(int i=0;i<numWriterThreads;i++){
 		if(singlePhotonDet[i])
 			delete singlePhotonDet[i];
-		if(mdecoder[i])
-			delete mdecoder[i];
+		if(receiverdata[i])
+			delete receiverdata[i];
 	}
 	createThreads(true);
 
@@ -266,9 +270,9 @@ int slsReceiverFunctionList::setShortFrame(int i){
 
 	onePacketSize = bufferSize/packetsPerFrame;
 
-	/** done only in the case that compression can be chosen only at the beginn of program exe */
-	/*if(dataCompression)
-		setupFilter();*/
+	deleteFilter();
+	if(dataCompression)
+		setupFilter();
 
 	return shortFrame;
 }
@@ -304,68 +308,81 @@ int64_t slsReceiverFunctionList::setAcquisitionPeriod(int64_t index){
 
 /******************* need to look at exit strategy **************************/
 void slsReceiverFunctionList::enableDataCompression(bool enable){
-	dataCompression = enable;
+	//delete filter for the current number of threads
+	deleteFilter();
 
+	dataCompression = enable;
 	pthread_mutex_lock(&status_mutex);
 	listening_thread_running = false;
 	writerthreads_mask = 0x0;
 	pthread_mutex_unlock(&(status_mutex));
 
-	/*createThreads(true);*/
+	/*createThreads(true); need to make sure number of threads is correct when deleting old stuff*/
 	if(enable)
 		numWriterThreads = MAX_NUM_WRITER_THREADS;
 	else
 		numWriterThreads = 1;
 	createThreads();
 
-	setupFilter();
+	if(enable)
+		setupFilter();
 }
 
 
 
 
-void slsReceiverFunctionList::setupFilter(){
+void slsReceiverFunctionList::deleteFilter(){
+	cmSub=NULL;
+
 	for(int i=0;i<numWriterThreads;i++){
 		if(singlePhotonDet[i]){
 			delete singlePhotonDet[i];
 			singlePhotonDet[i] = NULL;
 		}
-		if(mdecoder[i]){
-			delete mdecoder[i];
-			mdecoder[i] = NULL;
-		}
-		if(gdecoder[i]){
-			delete gdecoder[i];
-			gdecoder[i] = NULL;
+		if(receiverdata[i]){
+			delete receiverdata[i];
+			receiverdata[i] = NULL;
 		}
 	}
-
-	if(dataCompression){
-		double hc = 0;
-		double sigma = 5;
-		int sign = 1;
-		cmSub=NULL;
-		switch(myDetectorType){
-
-		case MOENCH:
-			if (commonModeSubtractionEnable)
-				cmSub=new moenchCommonMode();
-			for(int i=0;i<numWriterThreads;i++){
-				mdecoder[i]=new moench02ModuleData(hc);
-				singlePhotonDet[i]=new singlePhotonDetector<uint16_t>(mdecoder[i], 3, sigma, sign, cmSub);
-			}
-			break;
+}
 
 
-		default:
-			for(int i=0;i<numWriterThreads;i++){
-				gdecoder[i]=new gotthardModuleData(hc,shortFrame);
-				singlePhotonDet[i]=new singlePhotonDetector<uint16_t>(gdecoder[i], 1, sigma, sign);
-			}
-			break;
 
+void slsReceiverFunctionList::setupFilter(){
+	double hc = 0;
+	double sigma = 5;
+	int sign = 1;
+	int csize;
+	int i;
+
+
+	if (commonModeSubtractionEnable)
+		cmSub=new moenchCommonMode();
+
+
+
+	switch(myDetectorType){
+	case MOENCH:
+		csize = 3;
+		for(i=0;i<numWriterThreads;i++)
+			receiverdata[i]=new moench02ModuleData(hc);
+		break;
+	default:
+		csize = 1;
+		if(shortFrame == -1){
+			for(i=0;i<numWriterThreads;i++)
+				receiverdata[i]=new gotthardModuleData(hc);
+		}else{
+			for(i=0;i<numWriterThreads;i++)
+				receiverdata[i]=new gotthardShortModuleData(hc);
 		}
+		break;
 	}
+
+	for(i=0;i<numWriterThreads;i++)
+		singlePhotonDet[i]=new singlePhotonDetector<uint16_t>(receiverdata[i], csize, sigma, sign, cmSub);
+
+
 }
 
 
@@ -802,9 +819,7 @@ void slsReceiverFunctionList::closeFile(int ithr){
 		}
 		else{
 			//write to file
-			/*if(packetsInFile){*/
 			if(myTree[ithr] && myFile[ithr]){
-				 /*if(tall->Write(tall->GetName(),TObject::kOverwrite);*/
 				myFile[ithr] = myTree[ithr]->GetCurrentFile();
 				if(myFile[ithr]->Write())
 					cout << "Thread " << ithr <<" wrote frames to file" << endl;
@@ -812,8 +827,6 @@ void slsReceiverFunctionList::closeFile(int ithr){
 					cout << "Thread " << ithr << " could not write frames to file" << endl;
 			}else
 				cout << "Thread " << ithr << " could not write frames to file: No file or No Tree" << endl;
-			/*	packetsInFile = 0;
-		}*/
 			//close file
 			if(myTree[ithr] && myFile[ithr])
 				myFile[ithr] = myTree[ithr]->GetCurrentFile();
@@ -1179,11 +1192,26 @@ int slsReceiverFunctionList::startWriting(){
 	char* wbuf;
 	char *data=new char[bufferSize];
 	int iFrame = 0;
+	int xmax=0,ymax=0;
+
 
 	while(1){
 
 		nf = 0;
 		iFrame = 0;
+		if(myDetectorType == MOENCH){
+				xmax = MOENCH_PIXELS_IN_ONE_ROW-1;
+				ymax = MOENCH_PIXELS_IN_ONE_ROW-1;
+			}else{
+				if(shortFrame == -1){
+				xmax = GOTTHARD_PIXELS_IN_ROW-1;
+				ymax = GOTTHARD_PIXELS_IN_COL-1;
+				}else{
+					xmax = GOTTHARD_SHORT_PIXELS_IN_ROW-1;
+					ymax = GOTTHARD_SHORT_PIXELS_IN_COL-1;
+				}
+			}
+
 
 		while((1<<ithread)&writerthreads_mask){
 
@@ -1285,11 +1313,7 @@ int slsReceiverFunctionList::startWriting(){
 				if (cbAction < DO_EVERYTHING)
 					rawDataReadyCallBack(currframenum, wbuf, numpackets * onePacketSize, sfilefd, guiData,pRawDataReady);
 				else if (numpackets > 0){
-					/*if(numWriterThreads >1)
-						pthread_mutex_lock(&progress_mutex);*/
 					writeToFile_withoutCompression(wbuf, numpackets);
-					/*if(numWriterThreads >1)
-						pthread_mutex_unlock(&progress_mutex);*/
 				}
 				//copy to gui
 				copyFrameToGui(wbuf + HEADER_SIZE_NUM_TOT_PACKETS);
@@ -1317,137 +1341,69 @@ int slsReceiverFunctionList::startWriting(){
 				int np;
 				int once = 0;
 				double tot, tl, tr, bl, br, v;
-				int xmin = 1, ymin = 1, xmax, ymax, ix, iy;
+				int xmin = 1, ymin = 1, ix, iy;
 
 
-				if(myDetectorType == MOENCH){
+				while(buff = receiverdata[ithread]->findNextFrame(data,ndata,remainingsize  )){
+					np = ndata/onePacketSize;
 
-					xmax = MOENCH_PIXELS_IN_ONE_ROW-1, ymax = MOENCH_PIXELS_IN_ONE_ROW-1;
+					//cout<<"buff framnum:"<<ithread <<":"<< ((((uint32_t)(*((uint32_t*)buff)))& (frameIndexMask)) >> frameIndexOffset)<<endl;
 
-					while(buff = mdecoder[ithread]->findNextFrame(data,ndata,remainingsize  )){
-						np = ndata/onePacketSize;
-
-						//cout<<"buff framnum:"<<ithread <<":"<< ((((uint32_t)(*((uint32_t*)buff)))& (frameIndexMask)) >> frameIndexOffset)<<endl;
-
-						if ((np == packetsPerFrame) && (buff!=NULL)){
-							if(nf == 1000) cout << " pedestal done " << endl;
+					if ((np == packetsPerFrame) && (buff!=NULL)){
+						if(nf == 1000) cout << " pedestal done " << endl;
 
 
-							singlePhotonDet[ithread]->newFrame();
-							if(commonModeSubtractionEnable){
-								for(ix = xmin - 1; ix < xmax; ix++){
-									for(iy = ymin - 1; iy < ymax; iy++){
-										thisEvent = singlePhotonDet[ithread]->getEventType(buff, ix, iy, 0);
-									}
+						singlePhotonDet[ithread]->newFrame();
+
+						//only for moench
+						if(commonModeSubtractionEnable){
+							for(ix = xmin - 1; ix < xmax+1; ix++){
+								for(iy = ymin - 1; iy < ymax+1; iy++){
+									thisEvent = singlePhotonDet[ithread]->getEventType(buff, ix, iy, 0);
 								}
-							}
-							for(ix = xmin - 1; ix < xmax; ix++)
-								for(iy = ymin - 1; iy < ymax; iy++){
-									thisEvent=singlePhotonDet[ithread]->getEventType(buff, ix, iy, commonModeSubtractionEnable);
-									if (nf>1000) {
-										tot=0;
-										tl=0;
-										tr=0;
-										bl=0;
-										br=0;
-										if (thisEvent==PHOTON_MAX) {
-
-											iFrame=mdecoder[ithread]->getFrameNumber(buff);
-											myTree[ithread]->Fill();
-											//cout << "Fill in event: frmNr: " << iFrame <<  " ix " << ix << " iy " << iy << " type " <<  thisEvent << endl;
-										}
-									}
-								}
-
-							nf++;
-
-							pthread_mutex_lock(&write_mutex);
-
-							packetsInFile += packetsPerFrame;
-							packetsCaught += packetsPerFrame;
-							totalPacketsCaught += packetsPerFrame;
-
-							pthread_mutex_unlock(&write_mutex);
-							if(!once){
-								copyFrameToGui(buff);
-								//cout<<"buff framnum:"<<ithread <<":"<< ((((uint32_t)(*((uint32_t*)buff)))& (frameIndexMask)) >> frameIndexOffset)<<endl;
-								once = 1;
 							}
 						}
 
-						remainingsize -= ((buff + ndata) - data);
-						data = buff + ndata;
-						if(data > (wbuf + HEADER_SIZE_NUM_TOT_PACKETS + numpackets * onePacketSize) )
-							cout <<" **************WE HAVE A PROBLEM!"<<endl;
-						//cout << "remaining size: " << remainingsize << endl;
 
-					}
+						for(ix = xmin - 1; ix < xmax+1; ix++)
+							for(iy = ymin - 1; iy < ymax+1; iy++){
+								thisEvent=singlePhotonDet[ithread]->getEventType(buff, ix, iy, commonModeSubtractionEnable);
+								if (nf>1000) {
+									tot=0;
+									tl=0;
+									tr=0;
+									bl=0;
+									br=0;
+									if (thisEvent==PHOTON_MAX) {
 
-				}
-
-
-
-				//gotthard
-				else{
-
-
-					xmax = GOTTHARD_PIXELS_IN_ROW, ymax = GOTTHARD_PIXELS_IN_COL;
-
-
-					while(buff = gdecoder[ithread]->findNextFrame(data,ndata,remainingsize  )){/**need mutex??????????*/
-						np = ndata/onePacketSize;
-
-						//cout<<"buff framnum:"<<ithread <<":"<< ((((uint32_t)(*((uint32_t*)buff)))& (frameIndexMask)) >> frameIndexOffset)<<endl;
-
-						if ((np == packetsPerFrame) && (buff!=NULL)){
-							if(nf == 1000) cout << " pedestal done " << endl;
-
-
-							singlePhotonDet[ithread]->newFrame();
-							for(ix = xmin - 1; ix < xmax; ix++)
-								for(iy = ymin - 1; iy < ymax; iy++){
-									thisEvent=singlePhotonDet[ithread]->getEventType(buff, ix, iy, 0);
-									if (nf>1000) {
-										tot=0;
-										tl=0;
-										tr=0;
-										bl=0;
-										br=0;
-										if (thisEvent==PHOTON_MAX) {
-
-											iFrame=gdecoder[ithread]->getFrameNumber(buff);
-											myTree[ithread]->Fill();
-											//cout << "Fill in event: frmNr: " << iFrame <<  " ix " << ix << " iy " << iy << " type " <<  thisEvent << endl;
-										}
+										iFrame=receiverdata[ithread]->getFrameNumber(buff);
+										myTree[ithread]->Fill();
+										//cout << "Fill in event: frmNr: " << iFrame <<  " ix " << ix << " iy " << iy << " type " <<  thisEvent << endl;
 									}
 								}
-
-							nf++;
-
-							pthread_mutex_lock(&write_mutex);
-
-							packetsInFile += packetsPerFrame;
-							packetsCaught += packetsPerFrame;
-							totalPacketsCaught += packetsPerFrame;
-
-							pthread_mutex_unlock(&write_mutex);
-							if(!once){
-								copyFrameToGui(buff);
-								//cout<<"buff framnum:"<<ithread <<":"<< ((((uint32_t)(*((uint32_t*)buff)))& (frameIndexMask)) >> frameIndexOffset)<<endl;
-								once = 1;
 							}
+
+						nf++;
+
+						pthread_mutex_lock(&write_mutex);
+
+						packetsInFile += packetsPerFrame;
+						packetsCaught += packetsPerFrame;
+						totalPacketsCaught += packetsPerFrame;
+
+						pthread_mutex_unlock(&write_mutex);
+						if(!once){
+							copyFrameToGui(buff);
+							once = 1;
 						}
-
-						remainingsize -= ((buff + ndata) - data);
-						data = buff + ndata;
-						if(data > (wbuf + HEADER_SIZE_NUM_TOT_PACKETS + numpackets * onePacketSize) )
-							cout <<" **************WE HAVE A PROBLEM!"<<endl;
-						//cout << "remaining size: " << remainingsize << endl;
-
 					}
+
+					remainingsize -= ((buff + ndata) - data);
+					data = buff + ndata;
+					if(data > (wbuf + HEADER_SIZE_NUM_TOT_PACKETS + numpackets * onePacketSize) )
+						cout <<" **************ERROR SHOULD NOT COME HERE, Error 142536!"<<endl;
+
 				}
-
-
 
 				while(!fifoFree->push(wbuf));
 #ifdef VERYVERBOSE

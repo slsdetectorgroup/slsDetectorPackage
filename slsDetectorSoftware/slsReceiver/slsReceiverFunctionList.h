@@ -14,8 +14,7 @@
 #include "circularFifo.h"
 
 #include "singlePhotonDetector.h"
-#include "moench02ModuleData.h"
-#include "gotthardModuleData.h"
+#include "slsReceiverData.h"
 #include "moenchCommonMode.h"
 
 #ifdef MYROOT1
@@ -209,6 +208,11 @@ public:
 
 
 private:
+	/**
+	 * Deletes all the filter objects for single photon data
+	 */
+	void deleteFilter();
+
 	/**
 	 * Constructs the filter for single photon data
 	 */
@@ -521,9 +525,7 @@ private:
 	//filter
 		singlePhotonDetector<uint16_t> *singlePhotonDet[MAX_NUM_WRITER_THREADS];
 
-		moench02ModuleData *mdecoder[MAX_NUM_WRITER_THREADS];
-
-		gotthardModuleData *gdecoder[MAX_NUM_WRITER_THREADS];
+		slsReceiverData<uint16_t>  *receiverdata[MAX_NUM_WRITER_THREADS];
 
 		moenchCommonMode *cmSub;
 

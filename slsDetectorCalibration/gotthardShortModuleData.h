@@ -1,40 +1,36 @@
-#ifndef GOTTHARDMODULEDATA_H
-#define  GOTTHARDMODULEDATA_H
+#ifndef GOTTHARDSHORTMODULEDATA_H
+#define  GOTTHARDSHORTMODULEDATA_H
 #include "slsReceiverData.h"
 
 
 
-#define X_PIXELS 1280
+#define X_PIXELS 256
 #define Y_PIXELS 1
-#define NPACKETS 2
-#define BUFFERSIZE 1286
-
-#define FRAMEMASK 0xFFFFFFFE
-#define PACKETMASK 1
-#define FRAMEOFFSET 0x1
+#define NPACKETS 1
+#define BUFFERSIZE 518
 
 
-class gotthardModuleData : public slsReceiverData<uint16_t> {
+
+class gotthardShortModuleData : public slsReceiverData<uint16_t> {
 public:
 
 
 
 
 	/**
-     Implements the slsReceiverData structure for the gotthard read out by a module i.e. using the slsReceiver
-     (1x1280 pixels, 2 packets 1286 large etc.)
+     Implements the slsReceiverData structure for the gotthard short read out by a module i.e. using the slsReceiver
+     (1x256 pixels, 1 packet 256 large etc.)
      \param c crosstalk parameter for the output buffer
 
 	 */
 
 
-	gotthardModuleData(double c=0): slsReceiverData<uint16_t>(X_PIXELS, Y_PIXELS, NPACKETS, BUFFERSIZE), xtalk(c) {
+	gotthardShortModuleData(double c=0): slsReceiverData<uint16_t>(X_PIXELS, Y_PIXELS, NPACKETS, BUFFERSIZE), xtalk(c){
 
 		uint16_t **dMask;
 		int **dMap;
 		int ix, iy;
-		int initial_offset = 2;
-		int offset = initial_offset;
+		int offset = 2;
 
 		dMask=new uint16_t*[Y_PIXELS];
 		dMap=new int*[Y_PIXELS];
@@ -47,20 +43,14 @@ public:
 			for(iy=0; iy<X_PIXELS; ++iy)
 				dMask[ix][iy] = 0x0;
 
-		for(ix=0; ix<Y_PIXELS; ++ix){
-			if(ix == (Y_PIXELS/2)){
-				offset += initial_offset;//2
-				offset++;
-			}
+		for(ix=0; ix<Y_PIXELS; ++ix)
 			for(iy=0; iy<X_PIXELS; ++iy){
 				dMap[ix][iy] = offset;
 				offset++;
 			}
-		}
 
 		setDataMap(dMap);
 		setDataMask(dMask);
-
 	};
 
 
@@ -73,11 +63,7 @@ public:
 	   */
 
 	int getFrameNumber(char *buff){
-		int np=(*(int*)buff);
-		//gotthards frame header must be incremented
-		++np;
-		//packet index should be 1 or 2
-		return ((np&FRAMEMASK)>>FRAMEOFFSET);
+		return (*(int*)buff);
 	};
 
 
@@ -90,11 +76,7 @@ public:
 	 */
 
 	int getPacketNumber(char *buff){
-		int np=(*(int*)buff);
-		//gotthards frame header must be incremented
-		++np;
-		//packet index should be 1 or 2
-		return ((np&PACKETMASK)+1);
+			return 1;
 	};
 
 
@@ -138,7 +120,6 @@ public:
 private:
 
 	double xtalk; /**<output buffer crosstalk correction parameter */
-
 
 };
 

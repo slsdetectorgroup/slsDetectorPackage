@@ -212,7 +212,6 @@ class slsDetectorData {
 */
   virtual int getPacketNumber(char *buff)=0;
 
-  /*
 
    /**
 

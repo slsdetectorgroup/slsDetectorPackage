@@ -28,6 +28,7 @@ class angCalLogClass {
     argv[0]=cmd;							\
     sprintf(cmd,"_%d.angcal",det->getFileIndex());			\
     outfile.open(string(det->getFilePath()+string("/")+det->getFileName()+string(cmd)).c_str()); \
+    outfile.precision(8);
     myDet=new slsDetectorCommand(det);					\
     if (outfile.is_open()) {						\
       for (int iv=0; iv<nvars; iv++) {					\
@@ -36,14 +37,14 @@ class angCalLogClass {
       };								\
     };									\
   };
-  ~angCalLogClass(){delete myDet; outfile.close();};
+  ~angCalLogClass(){delete myDet;  outfile.close();};
 #else
   angCalLogClass() { createVars();  };
   ~angCalLogClass(){};
 #endif  
   
   
-  int addStep(double pos, string fname) {outfile << pos << " " << fname << endl; return 0;};
+  int addStep(double pos, string fname) {std::cout.precision(5); outfile << pos << " " << fname << endl; return 0;};
   
   
     // 
@@ -143,7 +144,6 @@ class angCalLogClass {
 
   char vars[100][100];
   int nvars;
-
 };
 
 

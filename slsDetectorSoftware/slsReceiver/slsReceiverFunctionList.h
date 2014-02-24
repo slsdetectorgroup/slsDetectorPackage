@@ -168,8 +168,9 @@ public:
 	int64_t setAcquisitionPeriod(int64_t index);
 
 	/** enabl data compression, by saving only hits
+	 /returns if failed
 	 */
-	void enableDataCompression(bool enable);
+	int enableDataCompression(bool enable);
 
 	/** get data compression, by saving only hits
 	 */
@@ -465,8 +466,27 @@ private:
 	/** total frame count the listening thread has listened to */
 	int totalListeningFrameCount;
 
+	/** mask showing which threads are running */
+	volatile uint32_t writerthreads_mask;
+
+	/** 0 if listening thread is idle, 1 otherwise */
+	int listening_thread_running;
+
+	/** variable used to self terminate threads waiting for semaphores */
+	int killListeningThread;
+
+	/** variable used to self terminate threads waiting for semaphores */
+	int killAllWritingThreads;
 
 
+//filter
+		singlePhotonDetector<uint16_t> *singlePhotonDet[MAX_NUM_WRITER_THREADS];
+
+		slsReceiverData<uint16_t>  *receiverdata[MAX_NUM_WRITER_THREADS];
+
+		moenchCommonMode *cmSub;
+
+		bool commonModeSubtractionEnable;
 
 
 //semaphores
@@ -476,6 +496,7 @@ private:
 	sem_t listensmp;
 	/** semaphore to synchronize  writer threads */
 	sem_t writersmp[MAX_NUM_WRITER_THREADS];
+
 
 //mutex
 	/** guiDataReady mutex */
@@ -489,6 +510,20 @@ private:
 
 	/** mutex for writing data to file */
 	pthread_mutex_t write_mutex;
+
+
+#ifdef MYROOT1
+	/** Tree where the hits are stored */
+	TTree *myTree[MAX_NUM_WRITER_THREADS];
+
+	/** File where the tree is saved */
+	TFile *myFile[MAX_NUM_WRITER_THREADS];
+#endif
+
+	/** File Descriptor */
+	FILE *sfilefd;
+
+
 
 
 	/**
@@ -533,34 +568,9 @@ private:
 	 * 2 we open, close, write file, callback does not do anything */
 	int cbAction;
 
-	//filter
-		singlePhotonDetector<uint16_t> *singlePhotonDet[MAX_NUM_WRITER_THREADS];
-
-		slsReceiverData<uint16_t>  *receiverdata[MAX_NUM_WRITER_THREADS];
-
-		moenchCommonMode *cmSub;
-
-		bool commonModeSubtractionEnable;
 
 public:
 
-#ifdef MYROOT1
-	/** Tree where the hits are stored */
-	TTree *myTree[MAX_NUM_WRITER_THREADS];
-
-	/** File where the tree is saved */
-	TFile *myFile[MAX_NUM_WRITER_THREADS];
-#endif
-
-
-	/** File Descriptor */
-	FILE *sfilefd;
-
-	/** mask showing which threads are running */
-	volatile uint32_t writerthreads_mask;
-
-	/** 0 if listening thread is idle, 1 otherwise */
-	int listening_thread_running;
 
 	/**
 	   callback arguments are

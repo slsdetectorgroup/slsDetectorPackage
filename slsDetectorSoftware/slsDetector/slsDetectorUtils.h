@@ -683,7 +683,11 @@ virtual ROI* getROI(int &n)=0;
 virtual int setReadReceiverFrequency(int getFromReceiver, int i=-1)=0;
 
 
-
+/** enable/disable or get data compression in receiver
+ * @param i is -1 to get, 0 to disable and 1 to enable
+   /returns data compression in receiver
+ */
+virtual int enableReceiverCompression(int i = -1)=0;
 
   protected:
 

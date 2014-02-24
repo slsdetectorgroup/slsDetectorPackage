@@ -6486,3 +6486,21 @@ int slsDetector::setReadReceiverFrequency(int getFromReceiver,int i){
 }
 
 
+int slsDetector::enableReceiverCompression(int i){
+	int fnum=F_ENABLE_COMPRESSION;
+	int ret = FAIL;
+	int retval=-1;
+
+
+	if(setReceiverOnline(ONLINE_FLAG)==ONLINE_FLAG){
+#ifdef VERBOSE
+		std::cout << "Getting/Enabling/Disabling Receiver Compression with argument " << i << std::endl;
+#endif
+		if (connectData() == OK)
+			ret=thisReceiver->sendInt(fnum,retval,i);
+		if(ret==FAIL)
+			setErrorMask((getErrorMask())|(COULDNOT_ENABLE_COMPRESSION));
+	}
+	return retval;
+}
+

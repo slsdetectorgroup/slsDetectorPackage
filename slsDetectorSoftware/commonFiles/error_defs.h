@@ -29,6 +29,7 @@ using namespace std;
 #define FILE_PATH_DOES_NOT_EXIST			0x0400000000000000ULL
 #define COULDNOT_CREATE_UDP_SOCKET			0x0200000000000000ULL
 #define COULDNOT_CREATE_FILE				0x0100000000000000ULL
+#define COULDNOT_ENABLE_COMPRESSION			0x0080000000000000ULL
 
 
 
@@ -83,6 +84,9 @@ public:
 
 		if(slsErrorMask&COULDNOT_CREATE_FILE)
 			retval.append("Could not create file to start receiver.\nCheck permissions of output directory\n");
+
+		if(slsErrorMask&COULDNOT_ENABLE_COMPRESSION)
+			retval.append("Could not enable/disable data compression in receiver.\nThread creation failed.\n");
 
 
 

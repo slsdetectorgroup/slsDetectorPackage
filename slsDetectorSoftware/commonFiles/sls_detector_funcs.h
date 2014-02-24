@@ -134,7 +134,9 @@ enum {
 
   F_CALIBRATE_PEDESTAL,		/**< starts acquistion, calibrates pedestal and write back to fpga */
 
-  F_READ_RECEIVER_FREQUENCY /**< sets the frequency of receiver sending frames to gui */
+  F_READ_RECEIVER_FREQUENCY, /**< sets the frequency of receiver sending frames to gui */
+
+  F_ENABLE_COMPRESSION		/**< enable compression in receiver */
   /* Always append functions hereafter!!! */
 
 };

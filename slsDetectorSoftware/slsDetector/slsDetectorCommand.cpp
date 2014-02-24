@@ -847,6 +847,11 @@ slsDetectorCommand::slsDetectorCommand(slsDetectorUtils *det)  {
   descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdReceiver;
   i++;
 
+  descrToFuncMap[i].m_pFuncName="r_compression"; //
+  descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdReceiver;
+  i++;
+
+
   numberOfCommands=i;
   
   // #ifdef VERBOSE
@@ -4003,6 +4008,17 @@ string slsDetectorCommand::cmdReceiver(int narg, char *args[], int action) {
 			  myDet->setReadReceiverFrequency(1,ival);
 	  }
 	  sprintf(answer,"%d",myDet->setReadReceiverFrequency(1));
+	  return string(answer);
+
+  }
+  else if(cmd=="r_compression"){
+	  if (action==PUT_ACTION){
+		  if (!sscanf(args[1],"%d",&ival))
+			  return string("Could not scan receiver compression input ")+string(args[1]);
+		  if(ival>=0)
+			  sprintf(answer,"%d",myDet->enableReceiverCompression(ival));
+	  }else
+		  sprintf(answer,"%d",myDet->enableReceiverCompression());
 	  return string(answer);
 
   }

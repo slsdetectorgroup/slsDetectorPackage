@@ -154,6 +154,9 @@ public:
 	/** set acquisition period to find the value of n */
 	int set_acquisition_period();
 
+	/** enable compression */
+	int enable_compression();
+
 
 	//General Functions
 	/** Locks Receiver */

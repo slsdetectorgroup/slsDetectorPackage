@@ -1609,6 +1609,12 @@ class slsDetector : public slsDetectorUtils, public energyConversion {
    */
   int setReadReceiverFrequency(int getFromReceiver, int i=-1);
 
+  /** enable/disable or get data compression in receiver
+   * @param i is -1 to get, 0 to disable and 1 to enable
+     /returns data compression in receiver
+   */
+  int enableReceiverCompression(int i = -1);
+
 
  protected:
  

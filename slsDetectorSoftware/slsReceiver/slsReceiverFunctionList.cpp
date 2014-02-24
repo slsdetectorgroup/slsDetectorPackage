@@ -77,6 +77,8 @@ slsReceiverFunctionList::slsReceiverFunctionList(detectorType det):
 					sfilefd(NULL),
 					writerthreads_mask(0x0),
 					listening_thread_running(0),
+					killListeningThread(0),
+					killAllWritingThreads(0),
 					cbAction(DO_EVERYTHING),
 					startAcquisitionCallBack(NULL),
 					pStartAcquisition(NULL),
@@ -317,8 +319,8 @@ int64_t slsReceiverFunctionList::setAcquisitionPeriod(int64_t index){
 
 
 
-/******************* need to look at exit strategy **************************/
-void slsReceiverFunctionList::enableDataCompression(bool enable){
+
+int slsReceiverFunctionList::enableDataCompression(bool enable){
 	cout << "Data compression ";
 	if(enable)
 		cout << "enabled" << endl;
@@ -341,13 +343,15 @@ void slsReceiverFunctionList::enableDataCompression(bool enable){
 
 	if(createWriterThreads() == FAIL){
 		cout << "ERROR: Could not create writer threads" << endl;
-		exit (-1);
+		return FAIL;
 	}
 	setThreadPriorities();
 
 
 	if(enable)
 		setupFilter();
+
+	return OK;
 }
 
 
@@ -583,15 +587,18 @@ int slsReceiverFunctionList::createUDPSocket(){
 
 
 int slsReceiverFunctionList::createListeningThreads(bool destroy){
+	void* status;
+
+	killListeningThread = 0;
+
+	pthread_mutex_lock(&status_mutex);
+	listening_thread_running = 0;
+	pthread_mutex_unlock(&(status_mutex));
 
 	if(!destroy){
-		pthread_mutex_lock(&status_mutex);
-		listening_thread_running = 0;
-		pthread_mutex_unlock(&(status_mutex));
-
 		//listening thread
 		cout << "Creating Listening Thread" << endl;
-		sem_init(&listensmp,0,0);
+		sem_init(&listensmp,0,1);
 		if(pthread_create(&listening_thread, NULL,startListeningThread, (void*) this)){
 			cout << "Could not create listening thread" << endl;
 			return FAIL;
@@ -601,11 +608,12 @@ int slsReceiverFunctionList::createListeningThreads(bool destroy){
 #endif
 	}else{
 		cout<<"Destroying Listening Thread"<<endl;
+		killListeningThread = 1;
 		sem_post(&listensmp);
-		sem_destroy(&listensmp);
-		cout << "Threads destroyed" << endl;
-		if(pthread_cancel(listening_thread)!=0)
-			cout << "Unable to cancel listening Thread " << endl;
+		pthread_join(listening_thread, &status);
+		killListeningThread = 0;
+		cout << "Listening thread destroyed" << endl;
+
 	}
 
 	return OK;
@@ -619,13 +627,16 @@ int slsReceiverFunctionList::createListeningThreads(bool destroy){
 
 int slsReceiverFunctionList::createWriterThreads(bool destroy){
 	int i;
+	void* status;
+
+	killAllWritingThreads = 0;
+
+	pthread_mutex_lock(&status_mutex);
+	writerthreads_mask = 0x0;
+	pthread_mutex_unlock(&(status_mutex));
+
 
 	if(!destroy){
-
-		pthread_mutex_lock(&status_mutex);
-		writerthreads_mask = 0x0;
-		pthread_mutex_unlock(&(status_mutex));
-
 
 		//start writer threads
 		cout << "Creating Writer Threads";
@@ -633,7 +644,7 @@ int slsReceiverFunctionList::createWriterThreads(bool destroy){
 		currentWriterThreadIndex = -1;
 
 		for(i = 0; i < numWriterThreads; ++i){
-			sem_init(&writersmp[i],0,0);
+			sem_init(&writersmp[i],0,1);
 			thread_started = 0;
 			currentWriterThreadIndex = i;
 			if(pthread_create(&writing_thread[i], NULL,startWritingThread, (void*) this)){
@@ -652,12 +663,14 @@ int slsReceiverFunctionList::createWriterThreads(bool destroy){
 
 	}else{
 		cout << "Destroying Writer Thread" << endl;
+		killAllWritingThreads = 1;
 		for(i = 0; i < numWriterThreads; ++i){
 			sem_post(&writersmp[i]);
-			sem_destroy(&writersmp[i]);
-			if(pthread_cancel(writing_thread[i])!=0)
-				cout << "Unable to cancel Thread of index" << i << endl;
+			pthread_join(writing_thread[i],&status);
+			cout <<"."<<flush;
 		}
+		killAllWritingThreads = 0;
+		cout << endl << "Writer threads destroyed" << endl;
 	}
 
 	return OK;
@@ -714,9 +727,11 @@ int slsReceiverFunctionList::setupWriter(){
 	guiDataReady=0;
 	strcpy(guiFileName,"");
 	cbAction = DO_EVERYTHING;
-	writerthreads_mask = 0x0;
 	int ret,ret1 = OK;
 
+	pthread_mutex_lock(&status_mutex);
+	writerthreads_mask = 0x0;
+	pthread_mutex_unlock(&status_mutex);
 
 	//printouts
 	cout << "Max Packets Per File:" << maxPacketsPerFile << endl;
@@ -745,7 +760,9 @@ int slsReceiverFunctionList::setupWriter(){
 		ret = createNewFile();
 	else{
 		for(int i=0;i<numWriterThreads;i++){
+			pthread_mutex_lock(&write_mutex);
 			ret1 = createCompressionFile(i,0);
+			pthread_mutex_unlock(&write_mutex);
 			if(ret1 == FAIL)
 				ret = FAIL;
 		}
@@ -845,6 +862,9 @@ int slsReceiverFunctionList::createNewFile(){
 
 
 void slsReceiverFunctionList::closeFile(int ithr){
+#ifdef VERBOSE
+	cout << "In closeFile for thread " << ithr << endl;
+#endif
 	if(!dataCompression){
 		//close file
 		if(sfilefd){
@@ -936,8 +956,14 @@ int slsReceiverFunctionList::startReceiver(char message[]){
 
 	//start listening /writing
 	sem_post(&listensmp);
+
+	/*int k;*/
+
 	for(int i=0; i < numWriterThreads; ++i){
+
+		/*sem_getvalue(&writersmp[i],&k);*/
 		sem_post(&writersmp[i]);
+		/*sem_getvalue(&writersmp[i],&k);*/
 	}
 	cout << "Receiver Started.\nStatus:" << status << endl;
 
@@ -1207,6 +1233,9 @@ int slsReceiverFunctionList::startListening(){
 
 		sem_wait(&listensmp);
 
+		//make sure its not exiting thread
+		if(killListeningThread)
+			pthread_exit(NULL);
 	}
 
 	return OK;
@@ -1260,13 +1289,15 @@ int slsReceiverFunctionList::startWriting(){
 
 
 		while((1<<ithread)&writerthreads_mask){
-
+#ifdef VERYDEBUG
+			cout << ithread << " ***waiting to pop out of fifo" << endl;
+#endif
 			//pop
 			fifo->pop(wbuf);
 			numpackets =	(uint16_t)(*((uint16_t*)wbuf));
 #ifdef VERYDEBUG
-			cout << "numpackets:" << dec << numpackets << endl;
-			cout << ithread << "*** popped from fifo " << numpackets << endl;
+			cout << ithread << " numpackets:" << dec << numpackets << endl;
+			cout << ithread << " *** popped from fifo " << numpackets << endl;
 #endif
 
 
@@ -1277,23 +1308,25 @@ int slsReceiverFunctionList::startWriting(){
 			//last dummy packet
 			if(numpackets == 0xFFFF){
 #ifdef VERYDEBUG
-				cout << "**********************popped last dummy frame:" << (void*)wbuf << "  from thread " << ithread << endl;
+				cout << ithread << " **********************popped last dummy frame:" << (void*)wbuf << endl;
 #endif
 
 				//free fifo
 				while(!fifoFree->push(wbuf));
 #ifdef VERYDEBUG
-				cout << "fifo freed:" << (void*)wbuf << "  from thread " << ithread << endl;
+				cout << ithread  << " fifo freed:" << (void*)wbuf << endl;
 #endif
 
 
 
 				//all threads need to close file, reset mask and exit loop
-				pthread_mutex_lock(&status_mutex);
+				pthread_mutex_lock(&write_mutex);
 				closeFile(ithread);
+				pthread_mutex_unlock(&write_mutex);
+				pthread_mutex_lock(&status_mutex);
 				writerthreads_mask^=(1<<ithread);
 #ifdef VERYDEBUG
-				cout <<"Resetting mask of current thread " << ithread << ". New Mask: " << writerthreads_mask << endl;
+				cout << ithread << " Resetting mask of current thread. New Mask: " << writerthreads_mask << endl;
 #endif
 				pthread_mutex_unlock(&status_mutex);
 
@@ -1303,7 +1336,7 @@ int slsReceiverFunctionList::startWriting(){
 				//change status to run finished
 				if(ithread == 0){
 					if(dataCompression){
-						cout<<"Waiting for jobs to be done.. current mask:"<< hex << writerthreads_mask <<endl;
+						cout << "Waiting for jobs to be done.. current mask:" << hex << writerthreads_mask << endl;
 						while(writerthreads_mask){
 							/*cout << "." << flush;*/
 							usleep(50000);
@@ -1423,7 +1456,9 @@ int slsReceiverFunctionList::startWriting(){
 									if (thisEvent==PHOTON_MAX) {
 
 										iFrame=receiverdata[ithread]->getFrameNumber(buff);
+										pthread_mutex_lock(&write_mutex);
 										myTree[ithread]->Fill();
+										pthread_mutex_unlock(&write_mutex);
 										//cout << "Fill in event: frmNr: " << iFrame <<  " ix " << ix << " iy " << iy << " type " <<  thisEvent << endl;
 									}
 								}
@@ -1431,13 +1466,13 @@ int slsReceiverFunctionList::startWriting(){
 
 						nf++;
 
-						pthread_mutex_lock(&write_mutex);
+						pthread_mutex_lock(&progress_mutex);
 
 						packetsInFile += packetsPerFrame;
 						packetsCaught += packetsPerFrame;
 						totalPacketsCaught += packetsPerFrame;
 
-						pthread_mutex_unlock(&write_mutex);
+						pthread_mutex_unlock(&progress_mutex);
 						if(!once){
 							copyFrameToGui(buff);
 							once = 1;
@@ -1460,14 +1495,30 @@ int slsReceiverFunctionList::startWriting(){
 			}
 		}
 
+		/*int k;
+		sem_getvalue(&writersmp[ithread],&k);
+		cout<<ithread<<" waiting for sem:"<<k <<endl;*/
 		//wait
 		sem_wait(&writersmp[ithread]);
+
+		if(killAllWritingThreads)
+			pthread_exit(NULL);
+
 
 	}
 
 
 	return OK;
 }
+
+
+
+
+
+
+
+
+
 
 
 

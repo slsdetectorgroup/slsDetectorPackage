@@ -24,9 +24,6 @@ int slsReceiverFuncs::socketDescriptor(-1);
 
 
 slsReceiverFuncs::~slsReceiverFuncs() {
-	/*if(file_des != -1){close(file_des);file_des = -1;}
-	//shutdown(socketDescriptor,SHUT_RDWR);
-	close(socketDescriptor);*/
 	if(socket) delete socket;
 	closeFile(0);
 }
@@ -45,7 +42,6 @@ slsReceiverFuncs::slsReceiverFuncs(int argc, char *argv[], int &success):
 	string sLine,sargname;
 	int iline = 0;
 	bool dcompr = false;
-	/*int jobthread = -1;*/
 
 
 	success=OK;
@@ -115,9 +111,14 @@ slsReceiverFuncs::slsReceiverFuncs(int argc, char *argv[], int &success):
 							}
 						}
 					}
-
-
-
+					//compression
+					else if(sargname=="compression"){
+						if(sstr.good()) {
+							sstr >> sargname;
+							if((!strcasecmp(sargname.c_str(),"yes"))||(!strcasecmp(sargname.c_str(),"y")))
+								dcompr = true;
+						}
+					}
 				}
 			}
 			infile.close();
@@ -176,32 +177,15 @@ slsReceiverFuncs::slsReceiverFuncs(int argc, char *argv[], int &success):
 					cout << "no value given after -compression in command line. Exiting." << endl;
 					success=FAIL;
 				}else {
-					if(!strcasecmp(argv[iarg+1],"yes")){
+					if((!strcasecmp(argv[iarg+1],"yes"))||(!strcasecmp(argv[iarg+1],"y"))){
 						dcompr = true;
 						iarg++;
-				}else if(!strcasecmp(argv[iarg+1],"no")){
-						dcompr = true;
-						iarg++;
-					}else{
+				}else{
 						cout << "could not decode value for compression in command line. \n\nExiting." << endl;
 						success=FAIL;
 					}
 				}
 			}
-			/*//jobstothread
-			else if(!strcasecmp(argv[iarg],"-jobthread")){
-				if(iarg+1==argc){
-					cout << "no value given after -jobthread in command line. Exiting." << endl;
-					success=FAIL;
-				}else {
-					if(sscanf(argv[iarg+1],"%d",&jobthread)){
-						iarg++;
-					}else{
-						cout << "could not decode value for jobthread in command line. \n\nExiting." << endl;
-						success=FAIL;
-					}
-				}
-			}*/
 			else{
 				cout << "Unknown argument:" << argv[iarg] << endl;
 				success=FAIL;
@@ -232,7 +216,6 @@ slsReceiverFuncs::slsReceiverFuncs(int argc, char *argv[], int &success):
 		cout << "type:\t\t Type of receiver. Default: Gotthard. Options: Moench" << endl;
 		cout << "rx_tcpport:\t TCP Communication Port with the client. Default:1954. " << endl;
 		cout << "compression:\t Data Compression. Saving only hits. Option:yes, no" << endl << endl;;
-		/*cout << "jobthread:\t Number of jobs given to a thread for compression." << endl << endl;*/
 	}
 
 
@@ -256,8 +239,8 @@ slsReceiverFuncs::slsReceiverFuncs(int argc, char *argv[], int &success):
 			//Catch signal SIGINT to close files properly
 			signal(SIGINT,staticCloseFile);
 
-			/*if(dcompr)*/	slsReceiverList->enableDataCompression(dcompr);
-			/*if(jobthread!=-1) slsReceiverList->setNumberOfJobsPerThread(jobthread);*/
+			if(dcompr)
+				slsReceiverList->enableDataCompression(dcompr);
 
 #ifdef VERBOSE
 			cout << "Function table assigned." << endl;
@@ -326,7 +309,7 @@ int slsReceiverFuncs::function_table(){
 	flist[F_CONFIGURE_MAC]			=	&slsReceiverFuncs::set_short_frame;
 	flist[F_START_READOUT]			= 	&slsReceiverFuncs::start_readout;
 	flist[F_SET_TIMER]				= 	&slsReceiverFuncs::set_acquisition_period;
-
+	flist[F_ENABLE_COMPRESSION]		= 	&slsReceiverFuncs::enable_compression;
 
 	//General Functions
 	flist[F_LOCK_SERVER]			=	&slsReceiverFuncs::lock_receiver;
@@ -405,7 +388,7 @@ void slsReceiverFuncs::closeFile(int p){
 	cout<<"Closing Files... "<<endl;
 	slsReceiverList->closeFile();
 	cout << "Goodbye!" << endl;
-	exit(1);
+	exit(-1);
 }
 
 void slsReceiverFuncs::staticCloseFile(int p){
@@ -545,7 +528,7 @@ int slsReceiverFuncs::set_file_index() {
 	// execute action if the arguments correctly arrived
 #ifdef SLS_RECEIVER_FUNCTION_LIST
 	if (ret==OK) {
-		if (lockStatus==1 && socket->differentClients==1){//necessary???
+		if (lockStatus==1 && socket->differentClients==1){
 			sprintf(mess,"Receiver locked by %s\n", socket->lastClientIP);
 			ret=FAIL;
 		}
@@ -598,7 +581,7 @@ int slsReceiverFuncs::set_frame_index() {
 	// execute action if the arguments correctly arrived
 #ifdef SLS_RECEIVER_FUNCTION_LIST
 	if (ret==OK) {
-		if (lockStatus==1 && socket->differentClients==1){//necessary???
+		if (lockStatus==1 && socket->differentClients==1){
 			sprintf(mess,"Receiver locked by %s\n", socket->lastClientIP);
 			ret=FAIL;
 		}
@@ -655,7 +638,7 @@ int slsReceiverFuncs::setup_udp(){
 	// execute action if the arguments correctly arrived
 #ifdef SLS_RECEIVER_FUNCTION_LIST
 	if (ret==OK) {
-		if (lockStatus==1 && socket->differentClients==1){//necessary???
+		if (lockStatus==1 && socket->differentClients==1){
 			sprintf(mess,"Receiver locked by %s\n", socket->lastClientIP);
 			ret=FAIL;
 		}
@@ -922,7 +905,7 @@ int slsReceiverFuncs::set_short_frame() {
 	// execute action if the arguments correctly arrived
 #ifdef SLS_RECEIVER_FUNCTION_LIST
 	if (ret==OK) {
-		if (lockStatus==1 && socket->differentClients==1){//necessary???
+		if (lockStatus==1 && socket->differentClients==1){
 			sprintf(mess,"Receiver locked by %s\n", socket->lastClientIP);
 			ret=FAIL;
 		}
@@ -1301,7 +1284,7 @@ int slsReceiverFuncs::set_read_frequency(){
 	// execute action if the arguments correctly arrived
 #ifdef SLS_RECEIVER_FUNCTION_LIST
 	if (ret==OK) {
-		if (lockStatus==1 && socket->differentClients==1){//necessary???
+		if (lockStatus==1 && socket->differentClients==1){
 			sprintf(mess,"Receiver locked by %s\n", socket->lastClientIP);
 			ret=FAIL;
 		}/*
@@ -1351,7 +1334,7 @@ int slsReceiverFuncs::enable_file_write(){
 	// execute action if the arguments correctly arrived
 #ifdef SLS_RECEIVER_FUNCTION_LIST
 	if (ret==OK) {
-		if (lockStatus==1 && socket->differentClients==1){//necessary???
+		if (lockStatus==1 && socket->differentClients==1){
 			sprintf(mess,"Receiver locked by %s\n", socket->lastClientIP);
 			ret=FAIL;
 		}
@@ -1453,7 +1436,7 @@ int slsReceiverFuncs::set_acquisition_period() {
 	// execute action if the arguments correctly arrived
 #ifdef SLS_RECEIVER_FUNCTION_LIST
 	if (ret==OK) {
-		if (lockStatus==1 && socket->differentClients==1){//necessary???
+		if (lockStatus==1 && socket->differentClients==1){
 			sprintf(mess,"Receiver locked by %s\n", socket->lastClientIP);
 			ret=FAIL;
 		}
@@ -1488,6 +1471,53 @@ int slsReceiverFuncs::set_acquisition_period() {
 
 
 
+int slsReceiverFuncs::enable_compression() {
+	ret=OK;
+	int enable=-1;
+	int retval=-100;
+	strcpy(mess,"Could not enable/disable compression for receiver\n");
+
+	// receive arguments
+	if(socket->ReceiveDataOnly(&enable,sizeof(enable)) < 0 ){
+		strcpy(mess,"Error reading from socket\n");
+		ret = FAIL;
+	}
+
+
+	// execute action if the arguments correctly arrived
+#ifdef SLS_RECEIVER_FUNCTION_LIST
+	if (ret==OK) {
+		if(enable >= 0){
+			if (lockStatus==1 && socket->differentClients==1){
+				sprintf(mess,"Receiver locked by %s\n", socket->lastClientIP);
+				ret=FAIL;
+			}
+			else if(slsReceiverList->getStatus()==RUNNING){
+				strcpy(mess,"Cannot enable/disable compression while status is running\n");
+				ret=FAIL;
+			}
+			else
+				ret = slsReceiverList->enableDataCompression(enable);
+		}
+
+		retval=slsReceiverList->getDataCompression();
+	}
+#endif
+
+	if(ret==OK && socket->differentClients){
+		cout << "Force update" << endl;
+		ret=FORCE_UPDATE;
+	}
+
+	// send answer
+	socket->SendDataOnly(&ret,sizeof(ret));
+	if(ret==FAIL)
+		socket->SendDataOnly(mess,sizeof(mess));
+	socket->SendDataOnly(&retval,sizeof(retval));
+
+	//return ok/fail
+	return ret;
+}
 
 
 

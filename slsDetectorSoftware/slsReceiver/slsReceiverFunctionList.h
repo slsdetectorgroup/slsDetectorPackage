@@ -469,6 +469,12 @@ private:
 	/** mask showing which threads are running */
 	volatile uint32_t writerthreads_mask;
 
+	/** mask showing which threads  have created files*/
+	volatile uint32_t createfile_mask;
+
+	/** OK if file created was successful */
+	int ret_createfile;
+
 	/** 0 if listening thread is idle, 1 otherwise */
 	int listening_thread_running;
 

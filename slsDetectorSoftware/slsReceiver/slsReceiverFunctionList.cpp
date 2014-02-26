@@ -166,15 +166,14 @@ slsReceiverFunctionList::slsReceiverFunctionList(detectorType det):
 
 
 slsReceiverFunctionList::~slsReceiverFunctionList(){
-	closeFile(-1);
+	createListeningThreads(true);
+	createWriterThreads(true);
 	for(int i=0;i<numWriterThreads;i++){
 		if(singlePhotonDet[i])
 			delete singlePhotonDet[i];
 		if(receiverdata[i])
 			delete receiverdata[i];
 	}
-	createListeningThreads(true);
-	createWriterThreads(true);
 
 	if(udpSocket) 		delete udpSocket;
 	if(eth) 			delete [] eth;
@@ -598,7 +597,7 @@ int slsReceiverFunctionList::createListeningThreads(bool destroy){
 	if(!destroy){
 		//listening thread
 		cout << "Creating Listening Thread" << endl;
-		sem_init(&listensmp,0,1);
+		sem_init(&listensmp,1,0);
 		if(pthread_create(&listening_thread, NULL,startListeningThread, (void*) this)){
 			cout << "Could not create listening thread" << endl;
 			return FAIL;
@@ -633,6 +632,7 @@ int slsReceiverFunctionList::createWriterThreads(bool destroy){
 
 	pthread_mutex_lock(&status_mutex);
 	writerthreads_mask = 0x0;
+	createfile_mask = 0x0;
 	pthread_mutex_unlock(&(status_mutex));
 
 
@@ -644,7 +644,7 @@ int slsReceiverFunctionList::createWriterThreads(bool destroy){
 		currentWriterThreadIndex = -1;
 
 		for(i = 0; i < numWriterThreads; ++i){
-			sem_init(&writersmp[i],0,1);
+			sem_init(&writersmp[i],1,0);
 			thread_started = 0;
 			currentWriterThreadIndex = i;
 			if(pthread_create(&writing_thread[i], NULL,startWritingThread, (void*) this)){
@@ -727,10 +727,11 @@ int slsReceiverFunctionList::setupWriter(){
 	guiDataReady=0;
 	strcpy(guiFileName,"");
 	cbAction = DO_EVERYTHING;
-	int ret,ret1 = OK;
 
 	pthread_mutex_lock(&status_mutex);
 	writerthreads_mask = 0x0;
+	createfile_mask = 0x0;
+	ret_createfile = OK;
 	pthread_mutex_unlock(&status_mutex);
 
 	//printouts
@@ -756,19 +757,32 @@ int slsReceiverFunctionList::setupWriter(){
 
 
 	//creating first file
-	if(!dataCompression)
-		ret = createNewFile();
-	else{
-		for(int i=0;i<numWriterThreads;i++){
-			pthread_mutex_lock(&write_mutex);
-			ret1 = createCompressionFile(i,0);
-			pthread_mutex_unlock(&write_mutex);
-			if(ret1 == FAIL)
-				ret = FAIL;
+	pthread_mutex_lock(&status_mutex);
+	for(int i=0;i<numWriterThreads;i++)
+		createfile_mask|=(1<<i);
+	pthread_mutex_unlock(&status_mutex);
+
+	for(int i=0;i<numWriterThreads;i++){
+#ifdef VERYDEBUG
+		cout << i << " gonna post 1st sem" << endl;
+#endif
+		sem_post(&writersmp[i]);
+		//wait for each file to be created
+		while((1<<i)&createfile_mask){
+			cout<<"*"<<flush;
+			usleep(5000);
 		}
 	}
+	//wait till its created
+	/*while(createfile_mask){
+		cout<<"*"<<flush;
+		usleep(5000);
+	}*/
+	if (createfile_mask)
+		cout <<"*********************************************sooo weird:"<<createfile_mask<<endl;
 
-	return ret;
+	return ret_createfile;
+
 }
 
 
@@ -778,15 +792,15 @@ int slsReceiverFunctionList::setupWriter(){
 
 int slsReceiverFunctionList::createCompressionFile(int ithr, int iframe){
 #ifdef MYROOT1
-
+	char temp[MAX_STR_LENGTH];
 		//create file name for gui purposes, and set up acquistion parameters
-		sprintf(savefilename, "%s/%s_fxxx_%d_%d.root", filePath,fileName,fileIndex,ithr);
+		sprintf(temp, "%s/%s_fxxx_%d_%d.root", filePath,fileName,fileIndex,ithr);
 		//file
-		myFile[ithr] = new TFile(savefilename,"RECREATE");/** later  return error if it exists */
-		cout<<"File created: "<<savefilename<<endl;
+		myFile[ithr] = new TFile(temp,"RECREATE");/** later  return error if it exists */
+		cout << "Thread " << ithr << ": created File: "<< temp << endl;
 		//tree
-		sprintf(savefilename, "%s_fxxx_%d_%d",fileName,fileIndex,ithr);
-		myTree[ithr]=singlePhotonDet[ithr]->initEventTree(savefilename, &iframe);
+		sprintf(temp, "%s_fxxx_%d_%d",fileName,fileIndex,ithr);
+		myTree[ithr]=singlePhotonDet[ithr]->initEventTree(temp, &iframe);
 		//resets the pedestalSubtraction array and the commonModeSubtraction
 		singlePhotonDet[ithr]->newDataSet();
 		if(myFile[ithr]==NULL){
@@ -879,30 +893,33 @@ void slsReceiverFunctionList::closeFile(int ithr){
 	//datacompression
 	else{
 #ifdef MYROOT1
-		if(ithr == -1){
-			for(int i=0;i<numWriterThreads;i++)
-				closeFile(i);
-		}
-		else{
-			//write to file
-			if(myTree[ithr] && myFile[ithr]){
-				myFile[ithr] = myTree[ithr]->GetCurrentFile();
-				if(myFile[ithr]->Write())
-					cout << "Thread " << ithr <<" wrote frames to file" << endl;
-				else
-					cout << "Thread " << ithr << " could not write frames to file" << endl;
-			}else
-				cout << "Thread " << ithr << " could not write frames to file: No file or No Tree" << endl;
-			//close file
-			if(myTree[ithr] && myFile[ithr])
-				myFile[ithr] = myTree[ithr]->GetCurrentFile();
-			if(myFile[ithr] != NULL)
-				myFile[ithr]->Close();
-			myFile[ithr] = NULL;
-			myTree[ithr] = NULL;
-		}
+		pthread_mutex_lock(&write_mutex);
+		//write to file
+		if(myTree[ithr] && myFile[ithr]){
+			myFile[ithr] = myTree[ithr]->GetCurrentFile();
+
+			if(myFile[ithr]->Write())
+				//->Write(tall->GetName(),TObject::kOverwrite);
+				cout << "Thread " << ithr <<": wrote frames to file" << endl;
+			else
+				cout << "Thread " << ithr << ": could not write frames to file" << endl;
+
+		}else
+			cout << "Thread " << ithr << ": could not write frames to file: No file or No Tree" << endl;
+		//close file
+		if(myTree[ithr] && myFile[ithr])
+			myFile[ithr] = myTree[ithr]->GetCurrentFile();
+		if(myFile[ithr] != NULL)
+			myFile[ithr]->Close();
+		myFile[ithr] = NULL;
+		myTree[ithr] = NULL;
+		pthread_mutex_unlock(&write_mutex);
+
 #endif
 	}
+#ifdef VERBOSE
+	cout << ithr << " out of close file" << endl;
+#endif
 }
 
 
@@ -937,13 +954,14 @@ int slsReceiverFunctionList::startReceiver(char message[]){
 		sprintf(message,"Could not create file %s.\n",savefilename);
 		return FAIL;
 	}
+	cout << "Successfully created file(s)" << endl;
 
 	//done to give the gui some proper name instead of always the last file name
 	if(dataCompression)
 		sprintf(savefilename, "%s/%s_fxxx_%d_xx.root", filePath,fileName,fileIndex);
 
 	//initialize semaphore
-	sem_init(&smp,0,1);
+	sem_init(&smp,1,0);
 
 	//status
 	pthread_mutex_lock(&status_mutex);
@@ -956,15 +974,10 @@ int slsReceiverFunctionList::startReceiver(char message[]){
 
 	//start listening /writing
 	sem_post(&listensmp);
-
-	/*int k;*/
-
 	for(int i=0; i < numWriterThreads; ++i){
-
-		/*sem_getvalue(&writersmp[i],&k);*/
 		sem_post(&writersmp[i]);
-		/*sem_getvalue(&writersmp[i],&k);*/
 	}
+
 	cout << "Receiver Started.\nStatus:" << status << endl;
 
 	return OK;
@@ -1268,6 +1281,7 @@ int slsReceiverFunctionList::startWriting(){
 	char *data=new char[bufferSize];
 	int iFrame = 0;
 	int xmax=0,ymax=0;
+	int ret;
 
 
 	while(1){
@@ -1320,15 +1334,14 @@ int slsReceiverFunctionList::startWriting(){
 
 
 				//all threads need to close file, reset mask and exit loop
-				pthread_mutex_lock(&write_mutex);
 				closeFile(ithread);
-				pthread_mutex_unlock(&write_mutex);
 				pthread_mutex_lock(&status_mutex);
 				writerthreads_mask^=(1<<ithread);
 #ifdef VERYDEBUG
 				cout << ithread << " Resetting mask of current thread. New Mask: " << writerthreads_mask << endl;
 #endif
 				pthread_mutex_unlock(&status_mutex);
+
 
 
 				//only thread 0 needs to do this
@@ -1429,7 +1442,7 @@ int slsReceiverFunctionList::startWriting(){
 					//cout<<"buff framnum:"<<ithread <<":"<< ((((uint32_t)(*((uint32_t*)buff)))& (frameIndexMask)) >> frameIndexOffset)<<endl;
 
 					if ((np == packetsPerFrame) && (buff!=NULL)){
-						if(nf == 1000) cout << " pedestal done " << endl;
+						if(nf == 1000) cout << "Thread " << ithread << ": pedestal done " << endl;
 
 
 						singlePhotonDet[ithread]->newFrame();
@@ -1456,9 +1469,7 @@ int slsReceiverFunctionList::startWriting(){
 									if (thisEvent==PHOTON_MAX) {
 
 										iFrame=receiverdata[ithread]->getFrameNumber(buff);
-										pthread_mutex_lock(&write_mutex);
 										myTree[ithread]->Fill();
-										pthread_mutex_unlock(&write_mutex);
 										//cout << "Fill in event: frmNr: " << iFrame <<  " ix " << ix << " iy " << iy << " type " <<  thisEvent << endl;
 									}
 								}
@@ -1494,17 +1505,54 @@ int slsReceiverFunctionList::startWriting(){
 #endif
 			}
 		}
-
-		/*int k;
-		sem_getvalue(&writersmp[ithread],&k);
-		cout<<ithread<<" waiting for sem:"<<k <<endl;*/
+#ifdef VERYVERBOSE
+		cout << ithread << " gonna wait for 1st sem" << endl;
+#endif
 		//wait
 		sem_wait(&writersmp[ithread]);
-
-		if(killAllWritingThreads)
+		if(killAllWritingThreads){
+			cout << ithread << " good bye thread" << endl;
+			closeFile(ithread);
 			pthread_exit(NULL);
+		}
+#ifdef VERYVERBOSE
+		cout << ithread << " got 1st post" << endl;
+#endif
 
 
+		if((1<<ithread)&createfile_mask){
+			if(dataCompression){
+				pthread_mutex_lock(&write_mutex);
+				ret = createCompressionFile(ithread,0);
+				pthread_mutex_unlock(&write_mutex);
+				if(ret == FAIL)
+					ret_createfile = FAIL;
+			}else{
+				ret = createNewFile();
+				if(ret == FAIL)
+					ret_createfile = FAIL;
+			}
+
+			//let tcp know
+			pthread_mutex_lock(&status_mutex);
+			createfile_mask^=(1<<ithread);
+			pthread_mutex_unlock(&status_mutex);
+		}
+
+
+#ifdef VERYVERBOSE
+		cout << ithread << " gonna wait for 2nd sem" << endl;
+#endif
+		//wait
+		sem_wait(&writersmp[ithread]);
+		if(killAllWritingThreads){
+			cout << ithread << " Goodbye thread" << endl;
+			closeFile(ithread);
+			pthread_exit(NULL);
+		}
+#ifdef VERYVERBOSE
+		cout << ithread << " got 2nd post" << endl;
+#endif
 	}
 
 

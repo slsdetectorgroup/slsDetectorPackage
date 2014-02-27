@@ -9,7 +9,7 @@
 #include "slsReceiverUsers.h"
 
 #include  <signal.h>	//SIGINT
-#include <cstdlib>	//EXIT
+#include  <stdlib.h>	//EXIT
 
 #include <iostream>
 #include <string>

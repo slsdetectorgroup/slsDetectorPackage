@@ -768,10 +768,10 @@ int slsReceiverFunctionList::setupWriter(){
 #endif
 		sem_post(&writersmp[i]);
 		//wait for each file to be created
-		while((1<<i)&createfile_mask){
+		/*while((1<<i)&createfile_mask){
 			cout<<"*"<<flush;
 			usleep(5000);
-		}
+		}*/
 	}
 	//wait till its created
 	/*while(createfile_mask){

@@ -45,6 +45,11 @@ public:
 	 */
 	int VerifyOutputDirectory();
 
+	/** To enable expert mode
+	 * @param enable to enable if true
+	 */
+	void SetExpertMode(bool enable);
+
 
 private:
 	/** The sls detector object */
@@ -52,6 +57,7 @@ private:
 
 	/** detector type */
 	slsDetectorDefs::detectorType detType;
+
 
 	QString 	flatFieldTip;
 	QString 	errFlatFieldTip;
@@ -71,6 +77,9 @@ private:
 	/** Populate the readouts
 	 */
 	void PopulateDetectors();
+
+	/** Get Compression */
+	void GetCompression();
 
 
 private slots:
@@ -104,6 +113,9 @@ void SetOutputDir();
 
 /** set output directory*/
 void GetOutputDir();
+
+/** set compression */
+void SetCompression(bool enable);
 
 signals:
 /**signal to enable/disable positions in Actions*/

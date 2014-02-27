@@ -73,6 +73,8 @@ void qTabDataOutput::SetupWidgetWindow(){
 	outDirTip = boxOutDir->toolTip();
 
 
+	//expert mode is not enabled initially
+	chkCompression->setEnabled(false);
 
 	Initialization();
 
@@ -153,6 +155,19 @@ void qTabDataOutput::Initialization(){
 	connect(chkAngular,			SIGNAL(toggled(bool)), 	this, 	SLOT(SetAngularCorrection()));
 	//discard bad channels
 	connect(chkDiscardBad,		SIGNAL(toggled(bool)), 	this, 	SLOT(DiscardBadChannels()));
+	//compression
+	connect(chkCompression,		SIGNAL(toggled(bool)), 	this, 	SLOT(SetCompression(bool)));
+}
+
+
+//-------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+void qTabDataOutput::SetExpertMode(bool enable){
+	if((detType == slsDetectorDefs::GOTTHARD) || (detType == slsDetectorDefs::MOENCH)){
+		chkCompression->setEnabled(enable);
+		GetCompression();
+	}
 
 }
 
@@ -456,83 +471,6 @@ void qTabDataOutput::DiscardBadChannels(){
 //-------------------------------------------------------------------------------------------------------------------------------------------------
 
 
-void qTabDataOutput::Refresh(){
-#ifdef VERBOSE
-	cout  << endl << "**Updating DataOutput Tab" << endl;
-#endif
-
-
-	// output dir
-#ifdef VERBOSE
-	cout  << "Getting output directory" << endl;
-#endif
-	disconnect(comboDetector,		SIGNAL(currentIndexChanged(int)), 	this, 	SLOT(GetOutputDir()));
-	PopulateDetectors();
-	connect(comboDetector,		SIGNAL(currentIndexChanged(int)), 	this, 	SLOT(GetOutputDir()));
-
-
-	//flat field correction from server
-#ifdef VERBOSE
-	cout  << "Getting flat field" << endl;
-#endif
-	UpdateFlatFieldFromServer();
-
-
-	//rate correction - not for charge integrating detectors
-	if((detType == slsDetectorDefs::MYTHEN)||(detType == slsDetectorDefs::EIGER)){
-#ifdef VERBOSE
-		cout  << "Getting rate correction" << endl;
-#endif
-		UpdateRateCorrectionFromServer();
-	}
-
-
-	//update angular conversion from server
-	if((detType == slsDetectorDefs::MYTHEN)||(detType == slsDetectorDefs::GOTTHARD)){
-#ifdef VERBOSE
-		cout  << "Getting angular conversion" << endl;
-#endif
-		int ang;
-		if(myDet->getAngularConversion(ang))
-			chkAngular->setChecked(true);
-		emit AngularConversionSignal(chkAngular->isChecked());
-	}
-
-
-	//discard bad channels from server
-#ifdef VERBOSE
-	cout  << "Getting bad channel correction" << endl;
-	//	cout << "ff " << myDet->getBadChannelCorrection() << endl;
-#endif
-	
-
-	disconnect(chkDiscardBad,		SIGNAL(toggled(bool)));
-	if(myDet->getBadChannelCorrection())
-		chkDiscardBad->setChecked(true);
-	else
-		chkDiscardBad->setChecked(false);
-	connect(chkDiscardBad,		SIGNAL(toggled(bool)), 	this, 	SLOT(DiscardBadChannels()));
-
-	if(myDet->setReceiverOnline()==slsDetectorDefs::ONLINE_FLAG){
-		btnOutputBrowse->setEnabled(false);
-		btnOutputBrowse->setToolTip("<font color=\"red\">This button is disabled as receiver PC is different from "
-				"client PC and hence different directory structures.</font><br><br>" + dispOutputDir->toolTip());
-	}else{
-		btnOutputBrowse->setEnabled(true);
-		btnOutputBrowse->setToolTip(dispOutputDir->toolTip());
-	}
-
-#ifdef VERBOSE
-	cout  << "**Updated DataOutput Tab" << endl << endl;
-#endif
-
-	qDefs::checkErrorMessage(myDet,"qTabDataOutput::Refresh");
-}
-
-
-//-------------------------------------------------------------------------------------------------------------------------------------------------
-
-
 void qTabDataOutput::PopulateDetectors(){
 #ifdef VERBOSE
 	cout << "Populating detectors" << endl;
@@ -763,6 +701,119 @@ void qTabDataOutput::SetOutputDir(){
 
 	connect(dispOutputDir,		SIGNAL(editingFinished()), 	this, 	SLOT(SetOutputDir()));
 
+}
+
+
+//-------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+void qTabDataOutput::GetCompression(){
+	disconnect(chkCompression,		SIGNAL(toggled(bool)), 	this, 	SLOT(SetCompression(bool)));
+	int ret = myDet->enableReceiverCompression();
+	if(ret > 0)	chkCompression->setChecked(true);
+	else		chkCompression->setChecked(false);
+	connect(chkCompression,			SIGNAL(toggled(bool)), 	this, 	SLOT(SetCompression(bool)));
+
+	qDefs::checkErrorMessage(myDet,"qTabDataOutput::GetCompression");
+}
+
+
+//-------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+void qTabDataOutput::SetCompression(bool enable){
+	disconnect(chkCompression,		SIGNAL(toggled(bool)), 	this, 	SLOT(SetCompression(bool)));
+	int ret = myDet->enableReceiverCompression(enable);
+	if(ret > 0)	chkCompression->setChecked(true);
+	else		chkCompression->setChecked(false);
+	connect(chkCompression,			SIGNAL(toggled(bool)), 	this, 	SLOT(SetCompression(bool)));
+
+	qDefs::checkErrorMessage(myDet,"qTabDataOutput::SetCompression");
+}
+
+
+//-------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+void qTabDataOutput::Refresh(){
+#ifdef VERBOSE
+	cout  << endl << "**Updating DataOutput Tab" << endl;
+#endif
+
+
+	// output dir
+#ifdef VERBOSE
+	cout  << "Getting output directory" << endl;
+#endif
+	disconnect(comboDetector,		SIGNAL(currentIndexChanged(int)), 	this, 	SLOT(GetOutputDir()));
+	PopulateDetectors();
+	connect(comboDetector,		SIGNAL(currentIndexChanged(int)), 	this, 	SLOT(GetOutputDir()));
+
+
+	//flat field correction from server
+#ifdef VERBOSE
+	cout  << "Getting flat field" << endl;
+#endif
+	UpdateFlatFieldFromServer();
+
+
+	//rate correction - not for charge integrating detectors
+	if((detType == slsDetectorDefs::MYTHEN)||(detType == slsDetectorDefs::EIGER)){
+#ifdef VERBOSE
+		cout  << "Getting rate correction" << endl;
+#endif
+		UpdateRateCorrectionFromServer();
+	}
+
+
+	//update angular conversion from server
+	if((detType == slsDetectorDefs::MYTHEN)||(detType == slsDetectorDefs::GOTTHARD)){
+#ifdef VERBOSE
+		cout  << "Getting angular conversion" << endl;
+#endif
+		int ang;
+		if(myDet->getAngularConversion(ang))
+			chkAngular->setChecked(true);
+		emit AngularConversionSignal(chkAngular->isChecked());
+	}
+
+
+	//discard bad channels from server
+#ifdef VERBOSE
+	cout  << "Getting bad channel correction" << endl;//cout << "ff " << myDet->getBadChannelCorrection() << endl;
+#endif
+
+
+	disconnect(chkDiscardBad,		SIGNAL(toggled(bool)));
+	if(myDet->getBadChannelCorrection())
+		chkDiscardBad->setChecked(true);
+	else
+		chkDiscardBad->setChecked(false);
+	connect(chkDiscardBad,		SIGNAL(toggled(bool)), 	this, 	SLOT(DiscardBadChannels()));
+
+	if(myDet->setReceiverOnline()==slsDetectorDefs::ONLINE_FLAG){
+		btnOutputBrowse->setEnabled(false);
+		btnOutputBrowse->setToolTip("<font color=\"red\">This button is disabled as receiver PC is different from "
+				"client PC and hence different directory structures.</font><br><br>" + dispOutputDir->toolTip());
+	}else{
+		btnOutputBrowse->setEnabled(true);
+		btnOutputBrowse->setToolTip(dispOutputDir->toolTip());
+	}
+
+	//getting compression
+	if(chkCompression->isEnabled()){
+#ifdef VERBOSE
+		cout  << "Getting compression" << endl;
+#endif
+		GetCompression();
+	}
+
+
+#ifdef VERBOSE
+	cout  << "**Updated DataOutput Tab" << endl << endl;
+#endif
+
+	qDefs::checkErrorMessage(myDet,"qTabDataOutput::Refresh");
 }
 
 

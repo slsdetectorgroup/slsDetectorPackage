@@ -774,10 +774,10 @@ int slsReceiverFunctionList::setupWriter(){
 		}*/
 	}
 	//wait till its created
-	/*while(createfile_mask){
+	while(createfile_mask){
 		cout<<"*"<<flush;
 		usleep(5000);
-	}*/
+	}
 	if (createfile_mask)
 		cout <<"*********************************************sooo weird:"<<createfile_mask<<endl;
 

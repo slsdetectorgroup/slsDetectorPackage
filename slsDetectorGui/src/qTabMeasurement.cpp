@@ -869,7 +869,7 @@ void qTabMeasurement::Refresh(){
 
 void qTabMeasurement::EnableProbes(){
 
-	disconnect(spinNumProbes,SIGNAL(valueChanged(int)),		this,	SLOT(setNumProbes(int)));
+	//disconnect(spinNumProbes,SIGNAL(valueChanged(int)),		this,	SLOT(setNumProbes(int)));
 	disconnect(spinNumTriggers,SIGNAL(valueChanged(int)),	this,	SLOT(setNumTriggers(int)));
 
 
@@ -901,7 +901,7 @@ void qTabMeasurement::EnableProbes(){
 	lblNumProbes->setEnabled(false);
 	spinNumProbes->setEnabled(false);
 
-	connect(spinNumProbes,SIGNAL(valueChanged(int)),			this,	SLOT(setNumProbes(int)));
+	//connect(spinNumProbes,SIGNAL(valueChanged(int)),			this,	SLOT(setNumProbes(int)));
 	connect(spinNumTriggers,SIGNAL(valueChanged(int)),			this,	SLOT(setNumTriggers(int)));
 }
 

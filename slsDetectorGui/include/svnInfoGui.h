@@ -2,10 +2,10 @@
 #define SVNURL "file:///afs/psi.ch/project/sls_det_software/svn/slsDetectorGui"
 //#define SVNREPPATH ""
 #define SVNREPUUID "af1100a4-978c-4157-bff7-07162d2ba061"
-//#define SVNREV 0x251
+//#define SVNREV 0x262
 //#define SVNKIND ""
 //#define SVNSCHED ""
 #define SVNAUTH "l_maliakal_d"
-#define SVNREV 0x251
-#define SVNDATE 0x20140130
+#define SVNREV 0x262
+#define SVNDATE 0x20140227
 //

@@ -784,7 +784,7 @@ int slsReceiverFunctionList::setupWriter(){
 	}
 	//wait till its created
 	while(createfile_mask){
-		cout<<"*"<<flush;
+		//cout<<"*"<<flush;
 		usleep(5000);
 	}
 	if (createfile_mask)
@@ -850,6 +850,8 @@ int slsReceiverFunctionList::createNewFile(int ithr){
 		}
 		//setting buffer
 		setvbuf(sfilefdAll[ithr],NULL,_IOFBF,BUF_SIZE);
+
+		cout << "File Created:" << savefilename << endl;
 
 		//reset counters for each new file
 		if(packetsCaught){

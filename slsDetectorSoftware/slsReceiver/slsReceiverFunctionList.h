@@ -270,9 +270,10 @@ private:
 
 	/**
 	 * Creates new file
+	 * @param ithr thread number
 	 *\returns OK for succces or FAIL for failure
 	 */
-	int createNewFile();
+	int createNewFile(int ithr = 0);
 
 	/**
 	 * Static function - Thread started which listens to packets.
@@ -307,8 +308,9 @@ private:
 	 * Writing to file without compression
 	 * @param buf is the address of buffer popped out of fifo
 	 * @param num
+	 * @param ithr thread number
 	 */
-	void writeToFile_withoutCompression(char* buf,int numpackets);
+	void writeToFile_withoutCompression(char* buf,int numpackets,int ithr = 0);
 
 
 
@@ -529,7 +531,13 @@ private:
 	/** File Descriptor */
 	FILE *sfilefd;
 
+#ifdef ALLFILE
+	/** File Descriptor */
+	FILE *sfilefdAll[MAX_NUM_WRITER_THREADS];
 
+	/** Pckets currently in current file, starts new file when it reaches max  for the current thread*/
+	int packetsInAllFile[MAX_NUM_WRITER_THREADS];
+#endif
 
 
 	/**

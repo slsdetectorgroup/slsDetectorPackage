@@ -114,7 +114,10 @@ slsReceiverFunctionList::slsReceiverFunctionList(detectorType det):
 	for(int i=0;i<numWriterThreads;i++){
 		singlePhotonDet[i] = NULL;
 		receiverdata[i] = NULL;
-
+#ifdef ALLFILE
+		packetsInAllFile[i] = 0;
+		sfilefdAll[i] = NULL;
+#endif
 #ifdef MYROOT1
 		myTree[i] = (NULL);
 		myFile[i] = (NULL);
@@ -720,6 +723,12 @@ int slsReceiverFunctionList::setupWriter(){
 
 	//reset writing thread variables
 	packetsInFile=0;
+#ifdef ALLFILE
+	for(int i=0;i<numWriterThreads;i++){
+		packetsInAllFile[i] = 0;
+		if(sfilefdAll[i]) sfilefdAll[i] = NULL;
+	}
+#endif
 	packetsCaught=0;
 	frameIndex=0;
 	if(sfilefd) sfilefd=NULL;
@@ -820,51 +829,78 @@ int slsReceiverFunctionList::createCompressionFile(int ithr, int iframe){
 
 
 
-int slsReceiverFunctionList::createNewFile(){
+int slsReceiverFunctionList::createNewFile(int ithr){
+	if(dataCompression){
+#ifdef ALLFILE
+		//create file name
+		if(frameIndexNeeded==-1)
+			sprintf(savefilename, "%s/%s_%d_%d.raw", filePath,fileName,fileIndex,ithr);
+		else
+			sprintf(savefilename, "%s/%s_f%012d_%d_%d.raw", filePath,fileName,(packetsCaught/packetsPerFrame),fileIndex,ithr);
 
-	//create file name
-	if(frameIndexNeeded==-1)
-		sprintf(savefilename, "%s/%s_%d.raw", filePath,fileName,fileIndex);
-	else
-		sprintf(savefilename, "%s/%s_f%012d_%d.raw", filePath,fileName,(packetsCaught/packetsPerFrame),fileIndex);
-
-
-	//if filewrite and we are allowed to write
-	if(enableFileWrite && cbAction > DO_NOTHING){
 		//close
-		if(sfilefd){
-			fclose(sfilefd);
-			sfilefd = NULL;
+		if(sfilefdAll[ithr]){
+			fclose(sfilefdAll[ithr]);
+			sfilefdAll[ithr] = NULL;
 		}
 		//open file
-		if (NULL == (sfilefd = fopen((const char *) (savefilename), "w"))){
+		if (NULL == (sfilefdAll[ithr] = fopen((const char *) (savefilename), "w"))){
 			cout << "Error: Could not create file " << savefilename << endl;
 			return FAIL;
 		}
 		//setting buffer
-		setvbuf(sfilefd,NULL,_IOFBF,BUF_SIZE);
-		//printing packet losses and file names
-		if(!packetsCaught)
-			cout << savefilename << endl;
-		else{
-			cout << savefilename
-					<< "\tpacket loss "
-					<< setw(4)<<fixed << setprecision(4)<< dec <<
-					(int)((((currframenum-prevframenum)-(packetsInFile/packetsPerFrame))/(double)(currframenum-prevframenum))*100.000)
-					<< "%\tframenum "
-					<< dec << currframenum //<< "\t\t p " << prevframenum
-					<< "\tindex " << dec << getFrameIndex()
-					<< "\tlost " << dec << (((int)(currframenum-prevframenum))-(packetsInFile/packetsPerFrame)) << endl;
+		setvbuf(sfilefdAll[ithr],NULL,_IOFBF,BUF_SIZE);
 
+		//reset counters for each new file
+		if(packetsCaught){
+			prevframenum = currframenum;
+			packetsInAllFile[ithr] = 0;
+		}
+#endif
+	}else{
+
+		//create file name
+		if(frameIndexNeeded==-1)
+			sprintf(savefilename, "%s/%s_%d.raw", filePath,fileName,fileIndex);
+		else
+			sprintf(savefilename, "%s/%s_f%012d_%d.raw", filePath,fileName,(packetsCaught/packetsPerFrame),fileIndex);
+
+		//if filewrite and we are allowed to write
+		if(enableFileWrite && cbAction > DO_NOTHING){
+			//close
+			if(sfilefd){
+				fclose(sfilefd);
+				sfilefd = NULL;
+			}
+			//open file
+			if (NULL == (sfilefd = fopen((const char *) (savefilename), "w"))){
+				cout << "Error: Could not create file " << savefilename << endl;
+				return FAIL;
+			}
+			//setting buffer
+			setvbuf(sfilefd,NULL,_IOFBF,BUF_SIZE);
+			//printing packet losses and file names
+			if(!packetsCaught)
+				cout << savefilename << endl;
+			else{
+				cout << savefilename
+						<< "\tpacket loss "
+						<< setw(4)<<fixed << setprecision(4)<< dec <<
+						(int)((((currframenum-prevframenum)-(packetsInFile/packetsPerFrame))/(double)(currframenum-prevframenum))*100.000)
+						<< "%\tframenum "
+						<< dec << currframenum //<< "\t\t p " << prevframenum
+						<< "\tindex " << dec << getFrameIndex()
+						<< "\tlost " << dec << (((int)(currframenum-prevframenum))-(packetsInFile/packetsPerFrame)) << endl;
+
+			}
+		}
+
+		//reset counters for each new file
+		if(packetsCaught){
+			prevframenum = currframenum;
+			packetsInFile = 0;
 		}
 	}
-
-	//reset counters for each new file
-	if(packetsCaught){
-		prevframenum = currframenum;
-		packetsInFile = 0;
-	}
-
 	return OK;
 }
 
@@ -893,6 +929,17 @@ void slsReceiverFunctionList::closeFile(int ithr){
 	//datacompression
 	else{
 #ifdef MYROOT1
+
+#ifdef ALLFILE
+		//close file
+		if(sfilefdAll[ithr]){
+#ifdef VERBOSE
+			cout << "sfield:" << (int)sfilefdAll[ithr] << endl;
+#endif
+			fclose(sfilefdAll[ithr]);
+			sfilefdAll[ithr] = NULL;
+		}
+#endif
 		pthread_mutex_lock(&write_mutex);
 		//write to file
 		if(myTree[ithr] && myFile[ithr]){
@@ -1423,7 +1470,9 @@ int slsReceiverFunctionList::startWriting(){
 			//data compression
 			else{
 #ifdef MYROOT1
-
+#ifdef ALLFILE
+				writeToFile_withoutCompression(wbuf, numpackets,ithread);
+#endif
 				eventType thisEvent = PEDESTAL;
 				int ndata;
 				char* buff = 0;
@@ -1527,6 +1576,13 @@ int slsReceiverFunctionList::startWriting(){
 				pthread_mutex_unlock(&write_mutex);
 				if(ret == FAIL)
 					ret_createfile = FAIL;
+#ifdef ALLFILE
+				if(ret != FAIL){
+					ret = createNewFile(ithread);
+					if(ret == FAIL)
+						ret_createfile = FAIL;
+				}
+#endif
 			}else{
 				ret = createNewFile();
 				if(ret == FAIL)
@@ -1571,49 +1627,21 @@ int slsReceiverFunctionList::startWriting(){
 
 
 
-void slsReceiverFunctionList::writeToFile_withoutCompression(char* buf,int numpackets){
+void slsReceiverFunctionList::writeToFile_withoutCompression(char* buf,int numpackets, int ithr){
 	int packetsToSave, offset,tempframenum,lastpacket;
 
-	//file write
-	if((enableFileWrite) && (sfilefd)){
 
-		offset = HEADER_SIZE_NUM_TOT_PACKETS;
-		while(numpackets > 0){
-			//for progress and packet loss calculation(new files)
-			if ((myDetectorType == GOTTHARD) && (shortFrame == -1))
-				tempframenum = (((((uint32_t)(*((uint32_t*)(buf + HEADER_SIZE_NUM_TOT_PACKETS))))+1)& (frameIndexMask)) >> frameIndexOffset);
-			else
-				tempframenum = ((((uint32_t)(*((uint32_t*)(buf + HEADER_SIZE_NUM_TOT_PACKETS))))& (frameIndexMask)) >> frameIndexOffset);
-
-			if(numWriterThreads == 1)
-				currframenum = tempframenum;
-			else{
-				if(tempframenum > currframenum)
-					currframenum = tempframenum;
-			}
-#ifdef VERYDEBUG
-			cout << "tempframenum:" << dec << tempframenum << " curframenum:" << currframenum << endl;
-#endif
-
-			//to create new file when max reached
-			packetsToSave = maxPacketsPerFile - packetsInFile;
-			if(packetsToSave > numpackets)
-				packetsToSave = numpackets;
-
-			fwrite(buf+offset, 1, packetsToSave * onePacketSize, sfilefd);
-			packetsInFile += packetsToSave;
-			packetsCaught += packetsToSave;
-			totalPacketsCaught += packetsToSave;
-
-			//new file
-			if(packetsInFile >= maxPacketsPerFile){
-				lastpacket = (((packetsToSave - 1) * onePacketSize) + offset);
-
-				//for packet loss
+	if(dataCompression){
+#ifdef ALLFILE
+		//file write
+		if((enableFileWrite) && (sfilefdAll[ithr])){
+			offset = HEADER_SIZE_NUM_TOT_PACKETS;
+			while(numpackets > 0){
+				//for progress and packet loss calculation(new files)
 				if ((myDetectorType == GOTTHARD) && (shortFrame == -1))
-					tempframenum = (((((uint32_t)(*((uint32_t*)(buf + lastpacket))))+1)& (frameIndexMask)) >> frameIndexOffset);
+					tempframenum = (((((uint32_t)(*((uint32_t*)(buf + HEADER_SIZE_NUM_TOT_PACKETS))))+1)& (frameIndexMask)) >> frameIndexOffset);
 				else
-					tempframenum = ((((uint32_t)(*((uint32_t*)(buf + lastpacket))))& (frameIndexMask)) >> frameIndexOffset);
+					tempframenum = ((((uint32_t)(*((uint32_t*)(buf + HEADER_SIZE_NUM_TOT_PACKETS))))& (frameIndexMask)) >> frameIndexOffset);
 
 				if(numWriterThreads == 1)
 					currframenum = tempframenum;
@@ -1625,18 +1653,115 @@ void slsReceiverFunctionList::writeToFile_withoutCompression(char* buf,int numpa
 				cout << "tempframenum:" << dec << tempframenum << " curframenum:" << currframenum << endl;
 #endif
 
-				createNewFile();
+				//to create new file when max reached
+				packetsToSave = maxPacketsPerFile - packetsInAllFile[ithr];
+				if(packetsToSave > numpackets)
+					packetsToSave = numpackets;
+
+				fwrite(buf+offset, 1, packetsToSave * onePacketSize, sfilefdAll[ithr]);
+				packetsInAllFile[ithr] += packetsToSave;
+
+				//new file
+				if(packetsInAllFile[ithr] >= maxPacketsPerFile){
+					lastpacket = (((packetsToSave - 1) * onePacketSize) + offset);
+
+
+					//for packet loss
+					if ((myDetectorType == GOTTHARD) && (shortFrame == -1))
+						tempframenum = (((((uint32_t)(*((uint32_t*)(buf + lastpacket))))+1)& (frameIndexMask)) >> frameIndexOffset);
+					else
+						tempframenum = ((((uint32_t)(*((uint32_t*)(buf + lastpacket))))& (frameIndexMask)) >> frameIndexOffset);
+
+					if(numWriterThreads == 1)
+						currframenum = tempframenum;
+					else{
+						if(tempframenum > currframenum)
+							currframenum = tempframenum;
+					}
+#ifdef VERYDEBUG
+					cout << "tempframenum:" << dec << tempframenum << " curframenum:" << currframenum << endl;
+#endif
+
+					createNewFile(ithr);
+				}
+				offset += (packetsToSave * onePacketSize);
+				numpackets -= packetsToSave;
+			}
+		}
+		//no file write
+		else{
+			packetsInAllFile[ithr] += numpackets;
+		}
+#endif
+	}
+
+	else{
+		//file write
+		if((enableFileWrite) && (sfilefd)){
+
+			offset = HEADER_SIZE_NUM_TOT_PACKETS;
+			while(numpackets > 0){
+				//for progress and packet loss calculation(new files)
+				if ((myDetectorType == GOTTHARD) && (shortFrame == -1))
+					tempframenum = (((((uint32_t)(*((uint32_t*)(buf + HEADER_SIZE_NUM_TOT_PACKETS))))+1)& (frameIndexMask)) >> frameIndexOffset);
+				else
+					tempframenum = ((((uint32_t)(*((uint32_t*)(buf + HEADER_SIZE_NUM_TOT_PACKETS))))& (frameIndexMask)) >> frameIndexOffset);
+
+				if(numWriterThreads == 1)
+					currframenum = tempframenum;
+				else{
+					if(tempframenum > currframenum)
+						currframenum = tempframenum;
+				}
+#ifdef VERYDEBUG
+				cout << "tempframenum:" << dec << tempframenum << " curframenum:" << currframenum << endl;
+#endif
+
+
+				//to create new file when max reached
+				packetsToSave = maxPacketsPerFile - packetsInFile;
+				if(packetsToSave > numpackets)
+					packetsToSave = numpackets;
+
+				fwrite(buf+offset, 1, packetsToSave * onePacketSize, sfilefd);
+				packetsInFile += packetsToSave;
+				packetsCaught += packetsToSave;
+				totalPacketsCaught += packetsToSave;
+
+				//new file
+				if(packetsInFile >= maxPacketsPerFile){
+					lastpacket = (((packetsToSave - 1) * onePacketSize) + offset);
+
+					//for packet loss
+					if ((myDetectorType == GOTTHARD) && (shortFrame == -1))
+						tempframenum = (((((uint32_t)(*((uint32_t*)(buf + lastpacket))))+1)& (frameIndexMask)) >> frameIndexOffset);
+					else
+						tempframenum = ((((uint32_t)(*((uint32_t*)(buf + lastpacket))))& (frameIndexMask)) >> frameIndexOffset);
+
+					if(numWriterThreads == 1)
+						currframenum = tempframenum;
+					else{
+						if(tempframenum > currframenum)
+							currframenum = tempframenum;
+					}
+#ifdef VERYDEBUG
+					cout << "tempframenum:" << dec << tempframenum << " curframenum:" << currframenum << endl;
+#endif
+
+					createNewFile(ithr);
+				}
+
+				offset += (packetsToSave * onePacketSize);
+				numpackets -= packetsToSave;
 			}
 
-			offset += (packetsToSave * onePacketSize);
-			numpackets -= packetsToSave;
 		}
-	}
-	//no file write
-	else{
-		packetsInFile += numpackets;
-		packetsCaught += numpackets;
-		totalPacketsCaught += numpackets;
+		else{
+			packetsInFile += numpackets;
+			packetsCaught += numpackets;
+			totalPacketsCaught += numpackets;
+		}
+
 	}
 
 }

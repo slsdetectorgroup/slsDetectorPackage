@@ -1,7 +1,7 @@
 CFLAGS= -g -DC_ONLY -fPIC
 #FLAGS+=  #-DVERBOSE -DVERYVERBOSE
 
-DFLAGS= -g -DDACS_INT -DTHIS_PATH='"$(shell pwd)"' -DSLS_RECEIVER_FUNCTION_LIST $(shell root-config --cflags --glibs) -DMYROOT1  #-DMYROOT1 `root-config --cflags --glibs`
+DFLAGS= -g -DDACS_INT -DTHIS_PATH='"$(shell pwd)"' -DSLS_RECEIVER_FUNCTION_LIST $(shell root-config --cflags --glibs) -DMYROOT1  -DALLFILE #-DMYROOT1 `root-config --cflags --glibs`
 
 #ASM=$(shell echo "/lib/modules/`uname -r`/build/include")
 

@@ -86,7 +86,7 @@ public:
 			retval.append("Could not create file to start receiver.\nCheck permissions of output directory\n");
 
 		if(slsErrorMask&COULDNOT_ENABLE_COMPRESSION)
-			retval.append("Could not enable/disable data compression in receiver.\nThread creation failed.\n");
+			retval.append("Could not enable/disable data compression in receiver.\nThread creation failed or recompile code with MYROOT1 flag.\n");
 
 
 

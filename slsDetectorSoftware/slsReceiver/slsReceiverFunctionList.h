@@ -13,11 +13,10 @@
 #include "genericSocket.h"
 #include "circularFifo.h"
 
+#ifdef MYROOT1
 #include "singlePhotonDetector.h"
 #include "slsReceiverData.h"
 #include "moenchCommonMode.h"
-
-#ifdef MYROOT1
 #include <TTree.h>
 #include <TFile.h>
 #endif
@@ -270,10 +269,9 @@ private:
 
 	/**
 	 * Creates new file
-	 * @param ithr thread number
 	 *\returns OK for succces or FAIL for failure
 	 */
-	int createNewFile(int ithr = 0);
+	int createNewFile();
 
 	/**
 	 * Static function - Thread started which listens to packets.
@@ -307,10 +305,9 @@ private:
 	/**
 	 * Writing to file without compression
 	 * @param buf is the address of buffer popped out of fifo
-	 * @param num
-	 * @param ithr thread number
+	 * @param numpackets is the number of packets
 	 */
-	void writeToFile_withoutCompression(char* buf,int numpackets,int ithr = 0);
+	void writeToFile_withoutCompression(char* buf,int numpackets);
 
 
 
@@ -487,14 +484,6 @@ private:
 	int killAllWritingThreads;
 
 
-//filter
-		singlePhotonDetector<uint16_t> *singlePhotonDet[MAX_NUM_WRITER_THREADS];
-
-		slsReceiverData<uint16_t>  *receiverdata[MAX_NUM_WRITER_THREADS];
-
-		moenchCommonMode *cmSub;
-
-		bool commonModeSubtractionEnable;
 
 
 //semaphores
@@ -519,24 +508,21 @@ private:
 	/** mutex for writing data to file */
 	pthread_mutex_t write_mutex;
 
+	/** File Descriptor */
+	FILE *sfilefd;
 
 #ifdef MYROOT1
+	//filter
+	singlePhotonDetector<uint16_t> *singlePhotonDet[MAX_NUM_WRITER_THREADS];
+	slsReceiverData<uint16_t>  *receiverdata[MAX_NUM_WRITER_THREADS];
+	moenchCommonMode *cmSub;
+	bool commonModeSubtractionEnable;
+
 	/** Tree where the hits are stored */
 	TTree *myTree[MAX_NUM_WRITER_THREADS];
 
 	/** File where the tree is saved */
 	TFile *myFile[MAX_NUM_WRITER_THREADS];
-#endif
-
-	/** File Descriptor */
-	FILE *sfilefd;
-
-#ifdef ALLFILE
-	/** File Descriptor */
-	FILE *sfilefdAll[MAX_NUM_WRITER_THREADS];
-
-	/** Pckets currently in current file, starts new file when it reaches max  for the current thread*/
-	int packetsInAllFile[MAX_NUM_WRITER_THREADS];
 #endif
 
 

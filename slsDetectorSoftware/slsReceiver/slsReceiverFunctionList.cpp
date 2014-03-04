@@ -73,7 +73,6 @@ slsReceiverFunctionList::slsReceiverFunctionList(detectorType det):
 					thread_started(0),
 					currentWriterThreadIndex(-1),
 					totalListeningFrameCount(0),
-					commonModeSubtractionEnable(false),
 					sfilefd(NULL),
 					writerthreads_mask(0x0),
 					listening_thread_running(0),
@@ -110,19 +109,19 @@ slsReceiverFunctionList::slsReceiverFunctionList(detectorType det):
 	strcpy(savefilename,"");
 	strcpy(filePath,"");
 	strcpy(fileName,"run");
-	cmSub = NULL;
+
 	for(int i=0;i<numWriterThreads;i++){
+#ifdef MYROOT1
+		commonModeSubtractionEnable = false;
 		singlePhotonDet[i] = NULL;
 		receiverdata[i] = NULL;
-#ifdef ALLFILE
-		packetsInAllFile[i] = 0;
-		sfilefdAll[i] = NULL;
-#endif
-#ifdef MYROOT1
 		myTree[i] = (NULL);
 		myFile[i] = (NULL);
 #endif
 	}
+#ifdef MYROOT1
+	cmSub = NULL;
+#endif
 
 	setupFifoStructure();
 
@@ -171,13 +170,14 @@ slsReceiverFunctionList::slsReceiverFunctionList(detectorType det):
 slsReceiverFunctionList::~slsReceiverFunctionList(){
 	createListeningThreads(true);
 	createWriterThreads(true);
+#ifdef MYROOT1
 	for(int i=0;i<numWriterThreads;i++){
 		if(singlePhotonDet[i])
 			delete singlePhotonDet[i];
 		if(receiverdata[i])
 			delete receiverdata[i];
 	}
-
+#endif
 	if(udpSocket) 		delete udpSocket;
 	if(eth) 			delete [] eth;
 	if(latestData) 		delete [] latestData;
@@ -323,6 +323,10 @@ int64_t slsReceiverFunctionList::setAcquisitionPeriod(int64_t index){
 
 
 int slsReceiverFunctionList::enableDataCompression(bool enable){
+#ifndef MYROOT1
+	return FAIL;
+#endif
+
 	cout << "Data compression ";
 	if(enable)
 		cout << "enabled" << endl;
@@ -360,6 +364,7 @@ int slsReceiverFunctionList::enableDataCompression(bool enable){
 
 
 void slsReceiverFunctionList::deleteFilter(){
+#ifdef MYROOT1
 	cmSub=NULL;
 
 	for(int i=0;i<numWriterThreads;i++){
@@ -372,22 +377,21 @@ void slsReceiverFunctionList::deleteFilter(){
 			receiverdata[i] = NULL;
 		}
 	}
+#endif
 }
 
 
 
 void slsReceiverFunctionList::setupFilter(){
+#ifdef MYROOT1
 	double hc = 0;
 	double sigma = 5;
 	int sign = 1;
 	int csize;
 	int i;
 
-
 	if (commonModeSubtractionEnable)
 		cmSub=new moenchCommonMode();
-
-
 
 	switch(myDetectorType){
 	case MOENCH:
@@ -410,7 +414,7 @@ void slsReceiverFunctionList::setupFilter(){
 	for(i=0;i<numWriterThreads;i++)
 		singlePhotonDet[i]=new singlePhotonDetector<uint16_t>(receiverdata[i], csize, sigma, sign, cmSub);
 
-
+#endif
 }
 
 
@@ -723,12 +727,6 @@ int slsReceiverFunctionList::setupWriter(){
 
 	//reset writing thread variables
 	packetsInFile=0;
-#ifdef ALLFILE
-	for(int i=0;i<numWriterThreads;i++){
-		packetsInAllFile[i] = 0;
-		if(sfilefdAll[i]) sfilefdAll[i] = NULL;
-	}
-#endif
 	packetsCaught=0;
 	frameIndex=0;
 	if(sfilefd) sfilefd=NULL;
@@ -790,6 +788,16 @@ int slsReceiverFunctionList::setupWriter(){
 	if (createfile_mask)
 		cout <<"*********************************************sooo weird:"<<createfile_mask<<endl;
 
+	if(dataCompression){
+#ifdef ALLFILE
+		if(ret_createfile != FAIL){
+			int ret = createNewFile();
+			if(ret == FAIL)
+				ret_createfile = FAIL;
+		}
+#endif
+	}
+
 	return ret_createfile;
 
 }
@@ -820,67 +828,37 @@ int slsReceiverFunctionList::createCompressionFile(int ithr, int iframe){
 			cout<<"file not open"<<endl;
 			return FAIL;
 		}
-		return OK;
-#else
-		return FAIL;
 #endif
+	return OK;
 }
 
 
 
 
-int slsReceiverFunctionList::createNewFile(int ithr){
-	if(dataCompression){
-#ifdef ALLFILE
-		//create file name
-		if(frameIndexNeeded==-1)
-			sprintf(savefilename, "%s/%s_%d_%d.raw", filePath,fileName,fileIndex,ithr);
-		else
-			sprintf(savefilename, "%s/%s_f%012d_%d_%d.raw", filePath,fileName,(packetsCaught/packetsPerFrame),fileIndex,ithr);
+int slsReceiverFunctionList::createNewFile(){
 
+	//create file name
+	if(frameIndexNeeded==-1)
+		sprintf(savefilename, "%s/%s_%d.raw", filePath,fileName,fileIndex);
+	else
+		sprintf(savefilename, "%s/%s_f%012d_%d.raw", filePath,fileName,(packetsCaught/packetsPerFrame),fileIndex);
+
+	//if filewrite and we are allowed to write
+	if(enableFileWrite && cbAction > DO_NOTHING){
 		//close
-		if(sfilefdAll[ithr]){
-			fclose(sfilefdAll[ithr]);
-			sfilefdAll[ithr] = NULL;
+		if(sfilefd){
+			fclose(sfilefd);
+			sfilefd = NULL;
 		}
 		//open file
-		if (NULL == (sfilefdAll[ithr] = fopen((const char *) (savefilename), "w"))){
+		if (NULL == (sfilefd = fopen((const char *) (savefilename), "w"))){
 			cout << "Error: Could not create file " << savefilename << endl;
 			return FAIL;
 		}
 		//setting buffer
-		setvbuf(sfilefdAll[ithr],NULL,_IOFBF,BUF_SIZE);
+		setvbuf(sfilefd,NULL,_IOFBF,BUF_SIZE);
 
-		cout << "File Created:" << savefilename << endl;
-
-		//reset counters for each new file
-		if(packetsCaught){
-			prevframenum = currframenum;
-			packetsInAllFile[ithr] = 0;
-		}
-#endif
-	}else{
-
-		//create file name
-		if(frameIndexNeeded==-1)
-			sprintf(savefilename, "%s/%s_%d.raw", filePath,fileName,fileIndex);
-		else
-			sprintf(savefilename, "%s/%s_f%012d_%d.raw", filePath,fileName,(packetsCaught/packetsPerFrame),fileIndex);
-
-		//if filewrite and we are allowed to write
-		if(enableFileWrite && cbAction > DO_NOTHING){
-			//close
-			if(sfilefd){
-				fclose(sfilefd);
-				sfilefd = NULL;
-			}
-			//open file
-			if (NULL == (sfilefd = fopen((const char *) (savefilename), "w"))){
-				cout << "Error: Could not create file " << savefilename << endl;
-				return FAIL;
-			}
-			//setting buffer
-			setvbuf(sfilefd,NULL,_IOFBF,BUF_SIZE);
+		if(!dataCompression){
 			//printing packet losses and file names
 			if(!packetsCaught)
 				cout << savefilename << endl;
@@ -896,13 +874,21 @@ int slsReceiverFunctionList::createNewFile(int ithr){
 
 			}
 		}
-
-		//reset counters for each new file
-		if(packetsCaught){
-			prevframenum = currframenum;
-			packetsInFile = 0;
+		//data compression and dvpr flag allfile
+		else{
+#ifdef ALLFILE
+			cout << "File created:" << savefilename << endl;
+#endif
 		}
+
 	}
+
+	//reset counters for each new file
+	if(packetsCaught){
+		prevframenum = currframenum;
+		packetsInFile = 0;
+	}
+
 	return OK;
 }
 
@@ -934,12 +920,12 @@ void slsReceiverFunctionList::closeFile(int ithr){
 
 #ifdef ALLFILE
 		//close file
-		if(sfilefdAll[ithr]){
+		if(sfilefd){
 #ifdef VERBOSE
-			cout << "sfield:" << (int)sfilefdAll[ithr] << endl;
+			cout << "sfield:" << (int)sfilefd << endl;
 #endif
-			fclose(sfilefdAll[ithr]);
-			sfilefdAll[ithr] = NULL;
+			fclose(sfilefd);
+			sfilefd = NULL;
 		}
 #endif
 		pthread_mutex_lock(&write_mutex);
@@ -1471,10 +1457,15 @@ int slsReceiverFunctionList::startWriting(){
 
 			//data compression
 			else{
-#ifdef MYROOT1
+
 #ifdef ALLFILE
-				writeToFile_withoutCompression(wbuf, numpackets,ithread);
+				writeToFile_withoutCompression(wbuf, numpackets);
+#ifndef MYROOT1
+				copyFrameToGui(wbuf + HEADER_SIZE_NUM_TOT_PACKETS);
 #endif
+#endif
+
+#ifdef MYROOT1
 				eventType thisEvent = PEDESTAL;
 				int ndata;
 				char* buff = 0;
@@ -1527,14 +1518,13 @@ int slsReceiverFunctionList::startWriting(){
 							}
 
 						nf++;
-
+#ifndef ALLFILE
 						pthread_mutex_lock(&progress_mutex);
-
 						packetsInFile += packetsPerFrame;
 						packetsCaught += packetsPerFrame;
 						totalPacketsCaught += packetsPerFrame;
-
 						pthread_mutex_unlock(&progress_mutex);
+#endif
 						if(!once){
 							copyFrameToGui(buff);
 							once = 1;
@@ -1547,13 +1537,12 @@ int slsReceiverFunctionList::startWriting(){
 						cout <<" **************ERROR SHOULD NOT COME HERE, Error 142536!"<<endl;
 
 				}
-
+#endif
 				while(!fifoFree->push(wbuf));
 #ifdef VERYVERBOSE
 				cout<<"buf freed:"<<(void*)wbuf<<endl;
 #endif
 
-#endif
 			}
 		}
 #ifdef VERYVERBOSE
@@ -1578,13 +1567,6 @@ int slsReceiverFunctionList::startWriting(){
 				pthread_mutex_unlock(&write_mutex);
 				if(ret == FAIL)
 					ret_createfile = FAIL;
-#ifdef ALLFILE
-				if(ret != FAIL){
-					ret = createNewFile(ithread);
-					if(ret == FAIL)
-						ret_createfile = FAIL;
-				}
-#endif
 			}else{
 				ret = createNewFile();
 				if(ret == FAIL)
@@ -1629,21 +1611,55 @@ int slsReceiverFunctionList::startWriting(){
 
 
 
-void slsReceiverFunctionList::writeToFile_withoutCompression(char* buf,int numpackets, int ithr){
+void slsReceiverFunctionList::writeToFile_withoutCompression(char* buf,int numpackets){
 	int packetsToSave, offset,tempframenum,lastpacket;
 
+	//file write
+	if((enableFileWrite) && (sfilefd)){
 
-	if(dataCompression){
-#ifdef ALLFILE
-		//file write
-		if((enableFileWrite) && (sfilefdAll[ithr])){
-			offset = HEADER_SIZE_NUM_TOT_PACKETS;
-			while(numpackets > 0){
-				//for progress and packet loss calculation(new files)
+		offset = HEADER_SIZE_NUM_TOT_PACKETS;
+		while(numpackets > 0){
+
+			//for progress and packet loss calculation(new files)
+			if ((myDetectorType == GOTTHARD) && (shortFrame == -1))
+				tempframenum = (((((uint32_t)(*((uint32_t*)(buf + HEADER_SIZE_NUM_TOT_PACKETS))))+1)& (frameIndexMask)) >> frameIndexOffset);
+			else
+				tempframenum = ((((uint32_t)(*((uint32_t*)(buf + HEADER_SIZE_NUM_TOT_PACKETS))))& (frameIndexMask)) >> frameIndexOffset);
+
+			if(numWriterThreads == 1)
+				currframenum = tempframenum;
+			else{
+				if(tempframenum > currframenum)
+					currframenum = tempframenum;
+			}
+#ifdef VERYDEBUG
+			cout << "tempframenum:" << dec << tempframenum << " curframenum:" << currframenum << endl;
+#endif
+
+			//lock
+			if(numWriterThreads > 1)
+				pthread_mutex_lock(&write_mutex);
+
+
+			//to create new file when max reached
+			packetsToSave = maxPacketsPerFile - packetsInFile;
+			if(packetsToSave > numpackets)
+				packetsToSave = numpackets;
+
+			fwrite(buf+offset, 1, packetsToSave * onePacketSize, sfilefd);
+			packetsInFile += packetsToSave;
+			packetsCaught += packetsToSave;
+			totalPacketsCaught += packetsToSave;
+
+
+			//new file
+			if(packetsInFile >= maxPacketsPerFile){
+				//for packet loss
+				lastpacket = (((packetsToSave - 1) * onePacketSize) + offset);
 				if ((myDetectorType == GOTTHARD) && (shortFrame == -1))
-					tempframenum = (((((uint32_t)(*((uint32_t*)(buf + HEADER_SIZE_NUM_TOT_PACKETS))))+1)& (frameIndexMask)) >> frameIndexOffset);
+					tempframenum = (((((uint32_t)(*((uint32_t*)(buf + lastpacket))))+1)& (frameIndexMask)) >> frameIndexOffset);
 				else
-					tempframenum = ((((uint32_t)(*((uint32_t*)(buf + HEADER_SIZE_NUM_TOT_PACKETS))))& (frameIndexMask)) >> frameIndexOffset);
+					tempframenum = ((((uint32_t)(*((uint32_t*)(buf + lastpacket))))& (frameIndexMask)) >> frameIndexOffset);
 
 				if(numWriterThreads == 1)
 					currframenum = tempframenum;
@@ -1654,117 +1670,31 @@ void slsReceiverFunctionList::writeToFile_withoutCompression(char* buf,int numpa
 #ifdef VERYDEBUG
 				cout << "tempframenum:" << dec << tempframenum << " curframenum:" << currframenum << endl;
 #endif
-
-				//to create new file when max reached
-				packetsToSave = maxPacketsPerFile - packetsInAllFile[ithr];
-				if(packetsToSave > numpackets)
-					packetsToSave = numpackets;
-
-				fwrite(buf+offset, 1, packetsToSave * onePacketSize, sfilefdAll[ithr]);
-				packetsInAllFile[ithr] += packetsToSave;
-
-				//new file
-				if(packetsInAllFile[ithr] >= maxPacketsPerFile){
-					lastpacket = (((packetsToSave - 1) * onePacketSize) + offset);
-
-
-					//for packet loss
-					if ((myDetectorType == GOTTHARD) && (shortFrame == -1))
-						tempframenum = (((((uint32_t)(*((uint32_t*)(buf + lastpacket))))+1)& (frameIndexMask)) >> frameIndexOffset);
-					else
-						tempframenum = ((((uint32_t)(*((uint32_t*)(buf + lastpacket))))& (frameIndexMask)) >> frameIndexOffset);
-
-					if(numWriterThreads == 1)
-						currframenum = tempframenum;
-					else{
-						if(tempframenum > currframenum)
-							currframenum = tempframenum;
-					}
-#ifdef VERYDEBUG
-					cout << "tempframenum:" << dec << tempframenum << " curframenum:" << currframenum << endl;
-#endif
-
-					createNewFile(ithr);
-				}
-				offset += (packetsToSave * onePacketSize);
-				numpackets -= packetsToSave;
+				//create
+				createNewFile();
 			}
-		}
-		//no file write
-		else{
-			packetsInAllFile[ithr] += numpackets;
-		}
-#endif
-	}
 
+			//unlock
+			if(numWriterThreads > 1)
+				pthread_mutex_unlock(&write_mutex);
+
+
+			offset += (packetsToSave * onePacketSize);
+			numpackets -= packetsToSave;
+		}
+
+	}
 	else{
-		//file write
-		if((enableFileWrite) && (sfilefd)){
-
-			offset = HEADER_SIZE_NUM_TOT_PACKETS;
-			while(numpackets > 0){
-				//for progress and packet loss calculation(new files)
-				if ((myDetectorType == GOTTHARD) && (shortFrame == -1))
-					tempframenum = (((((uint32_t)(*((uint32_t*)(buf + HEADER_SIZE_NUM_TOT_PACKETS))))+1)& (frameIndexMask)) >> frameIndexOffset);
-				else
-					tempframenum = ((((uint32_t)(*((uint32_t*)(buf + HEADER_SIZE_NUM_TOT_PACKETS))))& (frameIndexMask)) >> frameIndexOffset);
-
-				if(numWriterThreads == 1)
-					currframenum = tempframenum;
-				else{
-					if(tempframenum > currframenum)
-						currframenum = tempframenum;
-				}
-#ifdef VERYDEBUG
-				cout << "tempframenum:" << dec << tempframenum << " curframenum:" << currframenum << endl;
-#endif
-
-
-				//to create new file when max reached
-				packetsToSave = maxPacketsPerFile - packetsInFile;
-				if(packetsToSave > numpackets)
-					packetsToSave = numpackets;
-
-				fwrite(buf+offset, 1, packetsToSave * onePacketSize, sfilefd);
-				packetsInFile += packetsToSave;
-				packetsCaught += packetsToSave;
-				totalPacketsCaught += packetsToSave;
-
-				//new file
-				if(packetsInFile >= maxPacketsPerFile){
-					lastpacket = (((packetsToSave - 1) * onePacketSize) + offset);
-
-					//for packet loss
-					if ((myDetectorType == GOTTHARD) && (shortFrame == -1))
-						tempframenum = (((((uint32_t)(*((uint32_t*)(buf + lastpacket))))+1)& (frameIndexMask)) >> frameIndexOffset);
-					else
-						tempframenum = ((((uint32_t)(*((uint32_t*)(buf + lastpacket))))& (frameIndexMask)) >> frameIndexOffset);
-
-					if(numWriterThreads == 1)
-						currframenum = tempframenum;
-					else{
-						if(tempframenum > currframenum)
-							currframenum = tempframenum;
-					}
-#ifdef VERYDEBUG
-					cout << "tempframenum:" << dec << tempframenum << " curframenum:" << currframenum << endl;
-#endif
-
-					createNewFile(ithr);
-				}
-
-				offset += (packetsToSave * onePacketSize);
-				numpackets -= packetsToSave;
-			}
-
-		}
-		else{
-			packetsInFile += numpackets;
-			packetsCaught += numpackets;
-			totalPacketsCaught += numpackets;
-		}
-
+		if(numWriterThreads > 1)
+			pthread_mutex_lock(&write_mutex);
+		packetsInFile += numpackets;
+		packetsCaught += numpackets;
+		totalPacketsCaught += numpackets;
+		if(numWriterThreads > 1)
+			pthread_mutex_unlock(&write_mutex);
 	}
+
+
 
 }
 

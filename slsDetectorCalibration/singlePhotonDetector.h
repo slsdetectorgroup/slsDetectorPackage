@@ -9,7 +9,7 @@
 #include "commonModeSubtraction.h"
 
 
-#define MYROOT1
+//#define MYROOT1
 
 #ifdef MYROOT1
 #include <TTree.h>
@@ -92,6 +92,8 @@ class singlePhotonDetector {
     setClusterSize(csize);
     
   };
+
+
     /**
        destructor. Deletes the cluster structure and the pdestalSubtraction array
     */
@@ -324,7 +326,7 @@ class singlePhotonDetector {
 	\returns event mask enum for the given pixel
     */
     eventType getEventMask(int ic, int ir=0){return eventMask[ir][ic];};
- 
+
 
 #ifdef MYROOT1  
     /** generates a tree and maps the branches
@@ -349,6 +351,9 @@ class singlePhotonDetector {
       // tall->Branch("rms",&(cluster->rms),"rms/D");
       return tall;
     };
+#else
+    /** write cluster to filer*/
+    void writeCluster(FILE* myFile){cluster->write(myFile);};
 #endif
 
 
@@ -372,7 +377,6 @@ class singlePhotonDetector {
     quadrant quad; /**< quadrant where the photon is located */
     double tot; /**< sum of the 3x3 cluster */
     double quadTot; /**< sum of the maximum 2x2cluster */
-
 
 };
 

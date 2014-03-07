@@ -4,10 +4,6 @@
 
 
 
-#define X_PIXELS 256
-#define Y_PIXELS 1
-#define NPACKETS 1
-#define BUFFERSIZE 518
 
 
 
@@ -25,26 +21,26 @@ public:
 	 */
 
 
-	gotthardShortModuleData(double c=0): slsReceiverData<uint16_t>(X_PIXELS, Y_PIXELS, NPACKETS, BUFFERSIZE), xtalk(c){
+	gotthardShortModuleData(double c=0): slsReceiverData<uint16_t>(xpixels, ypixels, npackets, buffersize), xtalk(c){
 
 		uint16_t **dMask;
 		int **dMap;
 		int ix, iy;
 		int offset = 2;
 
-		dMask=new uint16_t*[Y_PIXELS];
-		dMap=new int*[Y_PIXELS];
-		for (int i = 0; i < Y_PIXELS; i++) {
-			dMap[i] = new int[X_PIXELS];
-			dMask[i] = new uint16_t[X_PIXELS];
+		dMask=new uint16_t*[ypixels];
+		dMap=new int*[ypixels];
+		for (int i = 0; i < ypixels; i++) {
+			dMap[i] = new int[xpixels];
+			dMask[i] = new uint16_t[xpixels];
 		}
 
-		for(ix=0; ix<Y_PIXELS; ++ix)
-			for(iy=0; iy<X_PIXELS; ++iy)
+		for(ix=0; ix<ypixels; ++ix)
+			for(iy=0; iy<xpixels; ++iy)
 				dMask[ix][iy] = 0x0;
 
-		for(ix=0; ix<Y_PIXELS; ++ix)
-			for(iy=0; iy<X_PIXELS; ++iy){
+		for(ix=0; ix<ypixels; ++ix)
+			for(iy=0; iy<xpixels; ++iy){
 				dMap[ix][iy] = offset;
 				offset++;
 			}
@@ -120,7 +116,10 @@ public:
 private:
 
 	double xtalk; /**<output buffer crosstalk correction parameter */
-
+	const static int xpixels = 256;
+	const static int ypixels = 1;
+	const static int npackets = 1;
+	const static int buffersize = 518;
 };
 
 

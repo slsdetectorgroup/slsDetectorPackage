@@ -110,18 +110,17 @@ slsReceiverFunctionList::slsReceiverFunctionList(detectorType det):
 	strcpy(filePath,"");
 	strcpy(fileName,"run");
 
+	cmSub = NULL;
 	for(int i=0;i<numWriterThreads;i++){
-#ifdef MYROOT1
 		commonModeSubtractionEnable = false;
 		singlePhotonDet[i] = NULL;
 		receiverdata[i] = NULL;
+#ifdef MYROOT1
 		myTree[i] = (NULL);
 		myFile[i] = (NULL);
 #endif
 	}
-#ifdef MYROOT1
-	cmSub = NULL;
-#endif
+
 
 	setupFifoStructure();
 
@@ -170,14 +169,12 @@ slsReceiverFunctionList::slsReceiverFunctionList(detectorType det):
 slsReceiverFunctionList::~slsReceiverFunctionList(){
 	createListeningThreads(true);
 	createWriterThreads(true);
-#ifdef MYROOT1
 	for(int i=0;i<numWriterThreads;i++){
 		if(singlePhotonDet[i])
 			delete singlePhotonDet[i];
 		if(receiverdata[i])
 			delete receiverdata[i];
 	}
-#endif
 	if(udpSocket) 		delete udpSocket;
 	if(eth) 			delete [] eth;
 	if(latestData) 		delete [] latestData;
@@ -323,10 +320,6 @@ int64_t slsReceiverFunctionList::setAcquisitionPeriod(int64_t index){
 
 
 int slsReceiverFunctionList::enableDataCompression(bool enable){
-#ifndef MYROOT1
-	return FAIL;
-#endif
-
 	cout << "Data compression ";
 	if(enable)
 		cout << "enabled" << endl;
@@ -364,10 +357,10 @@ int slsReceiverFunctionList::enableDataCompression(bool enable){
 
 
 void slsReceiverFunctionList::deleteFilter(){
-#ifdef MYROOT1
+	int i;
 	cmSub=NULL;
 
-	for(int i=0;i<numWriterThreads;i++){
+	for(i=0;i<numWriterThreads;i++){
 		if(singlePhotonDet[i]){
 			delete singlePhotonDet[i];
 			singlePhotonDet[i] = NULL;
@@ -377,13 +370,11 @@ void slsReceiverFunctionList::deleteFilter(){
 			receiverdata[i] = NULL;
 		}
 	}
-#endif
 }
 
 
 
 void slsReceiverFunctionList::setupFilter(){
-#ifdef MYROOT1
 	double hc = 0;
 	double sigma = 5;
 	int sign = 1;
@@ -414,7 +405,6 @@ void slsReceiverFunctionList::setupFilter(){
 	for(i=0;i<numWriterThreads;i++)
 		singlePhotonDet[i]=new singlePhotonDetector<uint16_t>(receiverdata[i], csize, sigma, sign, cmSub);
 
-#endif
 }
 
 
@@ -764,6 +754,8 @@ int slsReceiverFunctionList::setupWriter(){
 
 
 	//creating first file
+
+	//mask
 	pthread_mutex_lock(&status_mutex);
 	for(int i=0;i<numWriterThreads;i++)
 		createfile_mask|=(1<<i);
@@ -774,11 +766,6 @@ int slsReceiverFunctionList::setupWriter(){
 		cout << i << " gonna post 1st sem" << endl;
 #endif
 		sem_post(&writersmp[i]);
-		//wait for each file to be created
-		/*while((1<<i)&createfile_mask){
-			cout<<"*"<<flush;
-			usleep(5000);
-		}*/
 	}
 	//wait till its created
 	while(createfile_mask){
@@ -788,8 +775,9 @@ int slsReceiverFunctionList::setupWriter(){
 	if (createfile_mask)
 		cout <<"*********************************************sooo weird:"<<createfile_mask<<endl;
 
+
 	if(dataCompression){
-#ifdef ALLFILE
+#if (defined(MYROOT1) && defined(ALLFILE_DEBUG)) || !defined(MYROOT1)
 		if(ret_createfile != FAIL){
 			int ret = createNewFile();
 			if(ret == FAIL)
@@ -858,29 +846,20 @@ int slsReceiverFunctionList::createNewFile(){
 		//setting buffer
 		setvbuf(sfilefd,NULL,_IOFBF,BUF_SIZE);
 
-		if(!dataCompression){
-			//printing packet losses and file names
-			if(!packetsCaught)
-				cout << savefilename << endl;
-			else{
-				cout << savefilename
-						<< "\tpacket loss "
-						<< setw(4)<<fixed << setprecision(4)<< dec <<
-						(int)((((currframenum-prevframenum)-(packetsInFile/packetsPerFrame))/(double)(currframenum-prevframenum))*100.000)
-						<< "%\tframenum "
-						<< dec << currframenum //<< "\t\t p " << prevframenum
-						<< "\tindex " << dec << getFrameIndex()
-						<< "\tlost " << dec << (((int)(currframenum-prevframenum))-(packetsInFile/packetsPerFrame)) << endl;
-
-			}
-		}
-		//data compression and dvpr flag allfile
+		//printing packet losses and file names
+		if(!packetsCaught)
+			cout << savefilename << endl;
 		else{
-#ifdef ALLFILE
-			cout << "File created:" << savefilename << endl;
-#endif
-		}
+			cout << savefilename
+					<< "\tpacket loss "
+					<< setw(4)<<fixed << setprecision(4)<< dec <<
+					(int)((((currframenum-prevframenum)-(packetsInFile/packetsPerFrame))/(double)(currframenum-prevframenum))*100.000)
+					<< "%\tframenum "
+					<< dec << currframenum //<< "\t\t p " << prevframenum
+					<< "\tindex " << dec << getFrameIndex()
+					<< "\tlost " << dec << (((int)(currframenum-prevframenum))-(packetsInFile/packetsPerFrame)) << endl;
 
+		}
 	}
 
 	//reset counters for each new file
@@ -903,8 +882,8 @@ void slsReceiverFunctionList::closeFile(int ithr){
 #ifdef VERBOSE
 	cout << "In closeFile for thread " << ithr << endl;
 #endif
+
 	if(!dataCompression){
-		//close file
 		if(sfilefd){
 #ifdef VERBOSE
 			cout << "sfield:" << (int)sfilefd << endl;
@@ -913,13 +892,9 @@ void slsReceiverFunctionList::closeFile(int ithr){
 			sfilefd = NULL;
 		}
 	}
-
-	//datacompression
+	//compression
 	else{
-#ifdef MYROOT1
-
-#ifdef ALLFILE
-		//close file
+#if (defined(MYROOT1) && defined(ALLFILE_DEBUG)) || !defined(MYROOT1)
 		if(sfilefd){
 #ifdef VERBOSE
 			cout << "sfield:" << (int)sfilefd << endl;
@@ -928,6 +903,8 @@ void slsReceiverFunctionList::closeFile(int ithr){
 			sfilefd = NULL;
 		}
 #endif
+
+#ifdef MYROOT1
 		pthread_mutex_lock(&write_mutex);
 		//write to file
 		if(myTree[ithr] && myFile[ithr]){
@@ -952,9 +929,6 @@ void slsReceiverFunctionList::closeFile(int ithr){
 
 #endif
 	}
-#ifdef VERBOSE
-	cout << ithr << " out of close file" << endl;
-#endif
 }
 
 
@@ -1457,15 +1431,10 @@ int slsReceiverFunctionList::startWriting(){
 
 			//data compression
 			else{
-
-#ifdef ALLFILE
+#if defined(MYROOT1) && defined(ALLFILE_DEBUG)
 				writeToFile_withoutCompression(wbuf, numpackets);
-#ifndef MYROOT1
-				copyFrameToGui(wbuf + HEADER_SIZE_NUM_TOT_PACKETS);
-#endif
 #endif
 
-#ifdef MYROOT1
 				eventType thisEvent = PEDESTAL;
 				int ndata;
 				char* buff = 0;
@@ -1511,8 +1480,15 @@ int slsReceiverFunctionList::startWriting(){
 									if (thisEvent==PHOTON_MAX) {
 
 										iFrame=receiverdata[ithread]->getFrameNumber(buff);
+#ifdef MYROOT1
 										myTree[ithread]->Fill();
 										//cout << "Fill in event: frmNr: " << iFrame <<  " ix " << ix << " iy " << iy << " type " <<  thisEvent << endl;
+#else
+										pthread_mutex_lock(&write_mutex);
+										if((enableFileWrite) && (sfilefd))
+											singlePhotonDet[ithread]->writeCluster(sfilefd);
+										pthread_mutex_unlock(&write_mutex);
+#endif
 									}
 								}
 							}
@@ -1523,7 +1499,10 @@ int slsReceiverFunctionList::startWriting(){
 						packetsInFile += packetsPerFrame;
 						packetsCaught += packetsPerFrame;
 						totalPacketsCaught += packetsPerFrame;
+						if(packetsInFile >= maxPacketsPerFile)
+							createNewFile();
 						pthread_mutex_unlock(&progress_mutex);
+
 #endif
 						if(!once){
 							copyFrameToGui(buff);
@@ -1537,7 +1516,7 @@ int slsReceiverFunctionList::startWriting(){
 						cout <<" **************ERROR SHOULD NOT COME HERE, Error 142536!"<<endl;
 
 				}
-#endif
+
 				while(!fifoFree->push(wbuf));
 #ifdef VERYVERBOSE
 				cout<<"buf freed:"<<(void*)wbuf<<endl;
@@ -1562,11 +1541,13 @@ int slsReceiverFunctionList::startWriting(){
 
 		if((1<<ithread)&createfile_mask){
 			if(dataCompression){
+#ifdef MYROOT1
 				pthread_mutex_lock(&write_mutex);
 				ret = createCompressionFile(ithread,0);
 				pthread_mutex_unlock(&write_mutex);
 				if(ret == FAIL)
 					ret_createfile = FAIL;
+#endif
 			}else{
 				ret = createNewFile();
 				if(ret == FAIL)

@@ -13,10 +13,12 @@
 #include "genericSocket.h"
 #include "circularFifo.h"
 
-#ifdef MYROOT1
+
 #include "singlePhotonDetector.h"
 #include "slsReceiverData.h"
 #include "moenchCommonMode.h"
+
+#ifdef MYROOT1
 #include <TTree.h>
 #include <TFile.h>
 #endif
@@ -511,19 +513,20 @@ private:
 	/** File Descriptor */
 	FILE *sfilefd;
 
-#ifdef MYROOT1
 	//filter
 	singlePhotonDetector<uint16_t> *singlePhotonDet[MAX_NUM_WRITER_THREADS];
 	slsReceiverData<uint16_t>  *receiverdata[MAX_NUM_WRITER_THREADS];
 	moenchCommonMode *cmSub;
 	bool commonModeSubtractionEnable;
 
+#ifdef MYROOT1
 	/** Tree where the hits are stored */
 	TTree *myTree[MAX_NUM_WRITER_THREADS];
 
 	/** File where the tree is saved */
 	TFile *myFile[MAX_NUM_WRITER_THREADS];
 #endif
+
 
 
 	/**

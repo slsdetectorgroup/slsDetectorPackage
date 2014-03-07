@@ -105,6 +105,8 @@ slsReceiverFuncs::slsReceiverFuncs(int argc, char *argv[], int &success):
 								slsReceiverFuncs::myDetectorType = GOTTHARD;
 							else if(!strcasecmp(sargname.c_str(),"moench"))
 								slsReceiverFuncs::myDetectorType = MOENCH;
+							else if(!strcasecmp(sargname.c_str(),"eiger"))
+								slsReceiverFuncs::myDetectorType = EIGER;
 							else{
 								cout << "could not decode detector type in config file.\nOptions are:\ngotthard\nmoench.\n\nExiting." << endl;
 								success=FAIL;
@@ -149,6 +151,9 @@ slsReceiverFuncs::slsReceiverFuncs(int argc, char *argv[], int &success):
 						iarg++;
 					}else if(!strcasecmp(argv[iarg+1],"moench")){
 						slsReceiverFuncs::myDetectorType = MOENCH;
+						iarg++;
+					}else if(!strcasecmp(argv[iarg+1],"eiger")){
+						slsReceiverFuncs::myDetectorType = EIGER;
 						iarg++;
 					}else{
 						cout << "could not decode detector type in command line. \nOptions are:\ngotthard\nmoench.\n\nExiting." << endl;
@@ -204,6 +209,9 @@ slsReceiverFuncs::slsReceiverFuncs(int argc, char *argv[], int &success):
 		case MOENCH:
 			cout << "This is a MOENCH Receiver" << endl;
 			break;
+		case EIGER:
+			cout << "This is a EIGER Receiver" << endl;
+			break;
 		default:
 			cout << "Unknown Receiver" << endl;
 			success=FAIL;
@@ -213,7 +221,7 @@ slsReceiverFuncs::slsReceiverFuncs(int argc, char *argv[], int &success):
 	//help
 	else{
 		cout << "Help Commands " << endl;
-		cout << "type:\t\t Type of receiver. Default: Gotthard. Options: Moench" << endl;
+		cout << "type:\t\t Type of receiver. Default: Gotthard. Options: Gotthard, Moench, Eiger" << endl;
 		cout << "rx_tcpport:\t TCP Communication Port with the client. Default:1954. " << endl;
 		cout << "compression:\t Data Compression. Saving only hits. Option:yes, no" << endl << endl;;
 	}

@@ -97,6 +97,7 @@ slsReceiverFunctionList::slsReceiverFunctionList(detectorType det):
 		frameIndexOffset = MOENCH_FRAME_INDEX_OFFSET;
 		packetIndexMask = MOENCH_PACKET_INDEX_MASK;
 	}
+	/*else if(myDetectorType == EIGER){???}*/
 
 	//variable initialization
 	onePacketSize = bufferSize/packetsPerFrame;

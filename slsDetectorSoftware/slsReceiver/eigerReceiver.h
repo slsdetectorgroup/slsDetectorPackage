@@ -46,6 +46,17 @@ public:
 	char* getFilePath();
 
 	/**
+	 * Returns the number of bits per pixel
+	 */
+	int getDynamicRange();
+
+	/**
+	 * Returns scan tag
+	 */
+	int getScanTag();
+
+
+	/**
 	 * Set File Name (without frame index, file index and extension)
 	 * @param c file name
 	 */
@@ -56,6 +67,18 @@ public:
 	 * @param c file path
 	 */
 	char* setFilePath(char c[]);
+
+	/**
+	 * Returns the number of bits per pixel
+	 @param dr sets dynamic range
+	 */
+	int setDynamicRange(int dr);
+
+	/**
+	 * Set scan tag
+	 @param tag scan tag
+	 */
+	int setScanTag(int tag);
 
 	/**
 	 * Set enable file write

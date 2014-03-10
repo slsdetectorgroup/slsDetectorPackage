@@ -55,48 +55,63 @@ public:
 	 */
 	int getScanTag();
 
+	/**
+	 * Returns number of frames
+	 */
+	int getNumberOfFrames();
 
 	/**
 	 * Set File Name (without frame index, file index and extension)
-	 * @param c file name
+	 @param c file name
+	 /returns file name
 	 */
 	char* setFileName(char c[]);
 
 	/**
 	 * Set File Path
-	 * @param c file path
+	 @param c file path
+	 /returns file path
 	 */
 	char* setFilePath(char c[]);
 
 	/**
 	 * Returns the number of bits per pixel
 	 @param dr sets dynamic range
+	 /returns dynamic range
 	 */
 	int setDynamicRange(int dr);
 
 	/**
 	 * Set scan tag
 	 @param tag scan tag
+	 /returns scan tag
 	 */
 	int setScanTag(int tag);
 
 	/**
+	 * Sets number of frames
+	 @param fnum number of frames
+	 /returns number of frames
+	 */
+	int setNumberOfFrames(int fnum);
+
+	/**
 	 * Set enable file write
 	 * @param i file write enable
-	 * Returns file write enable
+	 /returns file write enable
 	 */
 	int setEnableFileWrite(int i);
 
 	/**
 	 * Starts Receiver - starts to listen for packets
-	 * @param message is the error message if there is an error
-	 * Returns success
+	 @param message is the error message if there is an error
+	 /returns success
 	 */
 	int startReceiver(char message[]);
 
 	/**
 	 * Stops Receiver - stops listening for packets
-	 * Returns success
+	 /returns success
 	 */
 	int stopReceiver();
 

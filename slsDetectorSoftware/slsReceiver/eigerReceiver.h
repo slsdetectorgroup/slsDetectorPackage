@@ -1,147 +1,206 @@
-#ifdef EIGER_RECEIVER_H
-/********************************************//**
+
+#ifdef EIGER_RECEIVER
+
+#ifndef EIGERRECEIVER_H
+#define EIGERRECEIVER_H
+/***********************************************
  * @file eigerReceiver.h
  * @short does all the functions for a receiver, set/get parameters, start/stop etc.
  ***********************************************/
-
-
-
 
 /**
  * @short does all the functions for a receiver, set/get parameters, start/stop etc.
  */
 
-class eigerReceiver{ /** public slsDetectorDefs Its an enum unders slsDetectorsPackage/slsDetectorSoftware/commonFiles/slsDetectorDefs.h
+class EigerReceiver {
+	/* abstract class that defines the public interface of an eiger data receiver.
+	 *
+	 * Use the factory method EigerReceiver::create() to get an instance:
+	 *
+	 *      EigerReceiver *receiver = EigerReceiver::create()
+	 *
+	 *  supported sequence of method-calls:
+	 *
+	 *  initialize() : once and only once after create()
+	 *
+	 *  get*()       : anytime after initialize(), multiples times
+	 *  set*()       : anytime after initialize(), multiple times
+	 *
+	 *  startReceiver(): anytime after initialize(). Will fail if state already is 'running'
+	 *
+	 *  abort(),
+	 *  stopReceiver() : anytime after initialize(). Will do nothing if state already is idle.
+	 *
+	 *  getStatus() returns the actual state of the data receiver - running or idle. All other
+	 *  get*() and set*() methods access the local cache of configuration values only and *do not* modify the data receiver settings.
+	 *
+	 *  Only startReceiver() does change the data receiver configuration, it does pass the whole configuration cache to the data receiver.
+	 *
+	 *  get- and set-methods that return a char array (char *) allocate a new array at each call. The caller is responsible to free the allocated space:
+	 *
+	 *      char *c = receiver->getFileName();
+	 *          ....
+	 *      delete[] c;
+	 *
+	 *  always: 1:YES       0:NO      for int as bool-like arguments
+	 *
+	 */
 
 public:
+
 	/**
-	 * Constructor
+	 * factory method to create instances
 	 */
-	eigerReceiver();
+	static EigerReceiver *create();
 
 	/**
 	 * Destructor
 	 */
-	virtual ~eigerReceiver();
+	virtual ~EigerReceiver() {};
 
 	/**
 	 * Initialize the Receiver
 	 @param detectorHostName detector hostname
+	 * you can call this function only once. You must call it before you call startReceiver() for  the first time.
 	 */
-	void initialize(char* detectorHostName);
+	virtual void initialize(const char *detectorHostName) = 0;
+
+	/**
+ 	 * Set detector hostname
+ 	 @param c hostname
+ 	 /returns hostname
+ 	 */
+ 	/*FIXME: char* setDetectorHostname(char c[]);  Can/want we support this setter function? Can't change after initialization */
+
+	 /* Returns detector hostname
+ 	 /returns hostname
+ 	  * caller needs to deallocate the returned char array.
+ 	 */
+ 	virtual char *getDetectorHostname() = 0;
 
 	/**
 	 * Returns status of receiver: idle, running or error
 	 */
-	runStatus getStatus();
+	/*FIXME: need to implement runStatus getStatus();*/
+ 	/* the struct slsDetectorDefs is available in  slsDetectorsPackage/slsDetectorSoftware/commonFiles/slsDetectorDefs.h */
 
-	/**
-	 * Returns detector hostname
-	 /returns hostname
-	 */
-	char* getDetectorHostname();
 
 	/**
 	 * Returns File Name
+	 * caller is responsible to deallocate the returned char array.
 	 */
-	char* getFileName();
+	virtual char *getFileName() = 0;
+
 
 	/**
 	 * Returns File Path
+	 * caller is responsible to deallocate the returned char array
 	 */
-	char* getFilePath();
+	virtual char *getFilePath() = 0; //FIXME: Does the caller need to free() the returned pointer?
+
 
 	/**
 	 * Returns the number of bits per pixel
 	 */
-	int getDynamicRange();
+	virtual int getDynamicRange() = 0;
 
 	/**
 	 * Returns scan tag
 	 */
-	int getScanTag();
+	virtual int getScanTag() = 0;
+
+	/*
+	 * Returns number of frames to receive
+	 * This is the number of frames to expect to receiver from the detector.
+	 * The data receiver will change from running to idle when it got this number of frames
+	 */
+	virtual int getNumberOfFrames() = 0;
 
 	/**
-	 * Returns number of frames
-	 */
-	int getNumberOfFrames();
-
-	/**
-	 * Returns file write enable
-	 */
-	int getEnableFileWrite();
-
-	/**
-	 * Set detector hostname
-	 @param c hostname
-	 /returns hostname
-	 */
-	char* setDetectorHostname(char c[]);
+	* Returns file write enable
+	* 1: YES 0: NO
+	*/
+	virtual int getEnableFileWrite() = 0;
 
 	/**
 	 * Set File Name (without frame index, file index and extension)
 	 @param c file name
 	 /returns file name
+	  * returns NULL on failure (like bad file name)
+	  * does not check the existence of the file - we don't know which path we'll finally use, so no point to check.
+	  * caller is responsible to deallocate the returned char array.
 	 */
-	char* setFileName(char c[]);
+	virtual char* setFileName(const char c[]) = 0;
 
 	/**
 	 * Set File Path
 	 @param c file path
 	 /returns file path
+	  * checks the existence of the directory. returns NULL if directory does not exist or is not readable.
+	  * caller is responsible to deallocate the returned char array.
 	 */
-	char* setFilePath(char c[]);
+	virtual char* setFilePath(const char c[]) = 0;
 
 	/**
 	 * Returns the number of bits per pixel
 	 @param dr sets dynamic range
 	 /returns dynamic range
+	  * returns -1 on failure
+	  * FIXME: what are the allowd values - should we use an enum as argument?
 	 */
-	int setDynamicRange(int dr);
+	virtual int setDynamicRange(const int dr) = 0;
+
 
 	/**
 	 * Set scan tag
 	 @param tag scan tag
-	 /returns scan tag
+	 /returns scan tag (always non-negative)
+	  * FIXME: valid range - only positive? 16bit ore 32bit?
+	  * returns -1 on failure
 	 */
-	int setScanTag(int tag);
+	virtual int setScanTag(const int tag) = 0;
 
 	/**
 	 * Sets number of frames
 	 @param fnum number of frames
 	 /returns number of frames
 	 */
-	int setNumberOfFrames(int fnum);
+	virtual int setNumberOfFrames(const int fnum) = 0;
 
 	/**
 	 * Set enable file write
 	 * @param i file write enable
 	 /returns file write enable
 	 */
-	int setEnableFileWrite(int i);
+	virtual int setEnableFileWrite(const int i) = 0;
 
 	/**
-	 * Starts Receiver - starts to listen for packets
+	 * Starts Receiver - activate all configuration settings to the eiger receiver and start to listen for packets
 	 @param message is the error message if there is an error
-	 /returns success
+	 /returns 0 on success or -1 on failure
 	 */
-	int startReceiver(char message[]);
+	//FIXME: success == 0 or success == 1?
+	virtual int startReceiver(char message[]) = 0; //FIXME: who allocates message[]?
 
 	/**
 	 * Stops Receiver - stops listening for packets
 	 /returns success
+	  * same as abort(). Always returns 0.
 	 */
-	int stopReceiver();
+	virtual int stopReceiver() = 0;
 
 	/**
-	 * abort program with minimum damage
+	 * abort acquisition with minimum damage: close open files, cleanup.
+	 * does nothing if state already is 'idle'
 	 */
-	void abort();
+	virtual void abort() = 0;
 
+protected:
 
 private:
 	
 };
 
-#endif
+#endif  /* #ifndef EIGERRECEIVER_H */
+#endif  /* #ifdef EIGER_RECEIVER */
 

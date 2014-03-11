@@ -1,5 +1,6 @@
 CC			=	g++ 
-CLAGS		+=  -DSLS_RECEIVER_FUNCTION_LIST -O3 #-DEIGER_RECEIVER_H
+CFLAGS		+=  -DSLS_RECEIVER_FUNCTION_LIST -O3 -DEIGER_RECEIVER
+CPPFLAGS    = ${CFLAGS}   # for MAC
 LDFLAG=   -L/usr/lib64/ -lpthread -lm  -lstdc++ 
 
 
@@ -45,4 +46,11 @@ lib:
 	cd ../ && $(MAKE) DESTDIR=$(LIBDIR) 
 
 clean:
-	rm -rf $(DESTDIR)/$(PROGS)  *.o 
+	rm -rf $(DESTDIR)/$(PROGS)  *.o  eigerReceiverTest
+
+# EigerDataReceiver
+eigerReceiverTest.o: eigerReceiver.h
+eigerReceiver.o    : eigerReceiver.h
+eigerReceiverTest: eigerReceiver.o eigerReceiverTest.o
+#EOF
+

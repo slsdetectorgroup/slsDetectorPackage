@@ -154,7 +154,7 @@ int setDAC(enum detDacIndex ind, int val, int imod){
 
   if(!eiger->GetDAC(iname,v)) v=-1;
 
-  return int(v);
+  return int(v*1000);
 }
 
 

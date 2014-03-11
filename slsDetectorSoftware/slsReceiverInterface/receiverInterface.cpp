@@ -111,6 +111,25 @@ int receiverInterface::sendInt(int fnum, int64_t &retval, int64_t arg){
 
 
 
+int receiverInterface::sendIntArray(int fnum, int64_t &retval, int64_t arg[2]){
+	int64_t args[2];
+	int ret = slsDetectorDefs::FAIL;
+	char mess[100] = "";
+	dataSocket->SendDataOnly(&fnum,sizeof(fnum));
+	dataSocket->SendDataOnly(arg,sizeof(args));
+	dataSocket->ReceiveDataOnly(&ret,sizeof(ret));
+	if (ret==slsDetectorDefs::FAIL){
+		dataSocket->ReceiveDataOnly(mess,sizeof(mess));
+		std::cout<< "Receiver returned error: " << mess << std::endl;
+	}
+	dataSocket->ReceiveDataOnly(&retval,sizeof(retval));
+	dataSocket->Disconnect();
+
+	return ret;
+}
+
+
+
 int receiverInterface::getInt(int fnum, int64_t &retval){
 	int ret = slsDetectorDefs::FAIL;
 

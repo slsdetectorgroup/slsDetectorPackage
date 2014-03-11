@@ -151,8 +151,8 @@ public:
 	 * when fifo is empty later, sets status to run_finished */
 	int start_readout();
 
-	/** set acquisition period to find the value of n */
-	int set_acquisition_period();
+	/** set acquisition period, frame number etc */
+	int set_timer();
 
 	/** enable compression */
 	int enable_compression();

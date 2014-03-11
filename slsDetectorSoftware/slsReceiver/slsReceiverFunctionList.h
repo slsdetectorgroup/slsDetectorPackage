@@ -57,6 +57,20 @@ public:
 	 */
 	void setEthernetInterface(char* c);
 
+#ifdef EIGER_RECEIVER
+	/** set frame number if a positive number
+	 */
+	int32_t setNumberOfFrames(int32_t fnum);
+
+	/** set scan tag if its is a positive number
+	 */
+	int32_t setScanTag(int32_t stag);
+
+	/** set dynamic range if its is a positive number
+	 */
+	int32_t setDynamicRange(int32_t dr);
+#endif
+
 	/**
 	 * Returns status of receiver: idle, running or error
 	 */
@@ -208,7 +222,6 @@ public:
 	 */
 	void closeFile(int ithr = -1);
 
-
 private:
 	/**
 	 * Deletes all the filter objects for single photon data
@@ -313,8 +326,9 @@ private:
 
 
 
-
-
+#ifdef EIGER_RECEIVER
+	eigerReceiver eigerRxr;
+#endif
 
 
 	/** detector type */

@@ -61,6 +61,11 @@ public:
 	int getNumberOfFrames();
 
 	/**
+	 * Returns file write enable
+	 */
+	int getEnableFileWrite();
+
+	/**
 	 * Set File Name (without frame index, file index and extension)
 	 @param c file name
 	 /returns file name

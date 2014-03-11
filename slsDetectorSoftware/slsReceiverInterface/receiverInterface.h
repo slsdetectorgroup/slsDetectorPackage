@@ -68,7 +68,6 @@ public:
 	 */
 	int sendInt(int fnum, int &retval, int arg);
 
-
 	/**
 	 * Get an integer value from receiver
 	 * @param fnum function enum to determine what parameter
@@ -85,6 +84,16 @@ public:
 	 * \returns success of operation
 	 */
 	int sendInt(int fnum, int64_t &retval, int64_t arg);
+
+
+	/**
+	 * Send an integer to receiver
+	 * @param fnum function enum to determine what parameter
+	 * @param retval return value
+	 * @param arg values to send
+	 * \returns success of operation
+	 */
+	int sendIntArray(int fnum, int64_t &retval, int64_t arg[2]);
 
 	/**
 	 * Get an integer value from receiver

@@ -30,6 +30,9 @@ using namespace std;
 
 
 slsReceiverFunctionList::slsReceiverFunctionList(detectorType det):
+#ifdef EIGER_RECEIVER
+					eigerRxr(NULL),
+#endif
 					myDetectorType(det),
 					status(IDLE),
 					udpSocket(NULL),
@@ -97,7 +100,11 @@ slsReceiverFunctionList::slsReceiverFunctionList(detectorType det):
 		frameIndexOffset = MOENCH_FRAME_INDEX_OFFSET;
 		packetIndexMask = MOENCH_PACKET_INDEX_MASK;
 	}
-	/*else if(myDetectorType == EIGER){???}*/
+	else if(myDetectorType == EIGER){
+#ifdef EIGER_RECEIVER
+		eigerRxr = new eigerReceiver();
+#endif
+	}
 
 	//variable initialization
 	onePacketSize = bufferSize/packetsPerFrame;
@@ -212,11 +219,42 @@ uint32_t slsReceiverFunctionList::getAcquisitionIndex(){
 
 
 
-char* slsReceiverFunctionList::setFileName(char c[]){
-	if(strlen(c))
-		strcpy(fileName,c);
+#ifdef EIGER_RECEIVER
 
+int32_t slsReceiverFunctionList::setNumberOfFrames(int32_t fnum){
+	if(fnum >= 0)
+		eigerRxr->setNumberOfFrames(fnum);
+	return eigerRxr->getNumberOfFrames();
+}
+
+int32_t slsReceiverFunctionList::setScanTag(int32_t stag){
+	if(stag >= 0)
+		eigerRxr->setScanTag(stag);
+	return eigerRxr->getScanTag();
+}
+
+int32_t slsReceiverFunctionList::setDynamicRange(int32_t dr){
+	if(dr >= 0)
+		eigerRxr->setDynamicRange(dr);
+	return eigerRxr->getDynamicRange();
+}
+
+#endif
+
+
+char* slsReceiverFunctionList::setFileName(char c[]){
+	if(strlen(c)){
+#ifdef EIGER_RECEIVER
+		eigerRxr->setFileName(c);
+#else
+		strcpy(fileName,c);
+#endif
+	}
+#ifdef EIGER_RECEIVER
+		return  eigerRxr->getFileName();
+#else
 	return getFileName();
+#endif
 }
 
 
@@ -225,14 +263,22 @@ char* slsReceiverFunctionList::setFilePath(char c[]){
 	if(strlen(c)){
 		//check if filepath exists
 		struct stat st;
-		if(stat(c,&st) == 0)
+		if(stat(c,&st) == 0){
+#ifdef EIGER_RECEIVER
+			eigerRxr->setFileName(c);
+#else
 			strcpy(filePath,c);
-		else{
+#endif
+		}else{
 			strcpy(filePath,"");
 			cout<<"FilePath does not exist:"<<filePath<<endl;
 		}
 	}
+#ifdef EIGER_RECEIVER
+		return  eigerRxr->getFilePath();
+#else
 	return getFilePath();
+#endif
 }
 
 
@@ -246,9 +292,18 @@ int slsReceiverFunctionList::setFileIndex(int i){
 
 
 int slsReceiverFunctionList::setEnableFileWrite(int i){
-	if(i!=-1)
+	if(i!=-1){
+#ifdef EIGER_RECEIVER
+		eigerRxr->setEnableFileWrite(i);
+#else
 		enableFileWrite=i;
+#endif
+	}
+#ifdef EIGER_RECEIVER
+		return  eigerRxr->getEnableFileWrite();
+#else
 	return enableFileWrite;
+#endif
 }
 
 
@@ -315,8 +370,6 @@ int64_t slsReceiverFunctionList::setAcquisitionPeriod(int64_t index){
 	}
 	return acquisitionPeriod;
 }
-
-
 
 
 
@@ -1679,5 +1732,6 @@ void slsReceiverFunctionList::writeToFile_withoutCompression(char* buf,int numpa
 
 
 }
+
 
 #endif

@@ -3534,7 +3534,7 @@ int64_t slsDetector::setTimer(timerIndex index, int64_t t){
 
 
 
-  if((ret != FAIL) && (t! = -1)){
+  if((ret != FAIL) && (t != -1)){
 
   //send acquisiton period to receiver
   if((setReceiverOnline(ONLINE_FLAG)==ONLINE_FLAG) && ((index==FRAME_PERIOD)||(index==FRAME_NUMBER)) && (ret != FAIL)  && (t != -1)){
@@ -4849,17 +4849,19 @@ char* slsDetector::setReceiver(string receiverIP){
 
 	if(setReceiverOnline(ONLINE_FLAG)==ONLINE_FLAG){
 #ifdef VERBOSE
-	std::cout << "Setting up receiver with" << endl <<
-			"file path:" << fileIO::getFilePath() << endl <<
-			"file name:" << fileIO::getFileName() << endl <<
-			"write enable:" << parentDet->enableWriteToFileMask() << endl;
-			if(thisDetector->myDetectorType != EIGER){
-				std::cout << "file index:" << fileIO::getFileIndex() << endl <<
-						"frame index needed:" <<  ((setTimer(FRAME_NUMBER,-1)*setTimer(CYCLES_NUMBER,-1))>1) << endl <<
-						"frame period:" << setTimer(FRAME_PERIOD,-1) << endl;
-			}
-			std::cout << endl;
+		std::cout << "Setting up receiver with" << endl <<
+				"file path:" << fileIO::getFilePath() << endl <<
+				"file name:" << fileIO::getFileName() << endl <<
+				"write enable:" << parentDet->enableWriteToFileMask() << endl;
+		if(thisDetector->myDetectorType != EIGER){
+			std::cout << "file index:" << fileIO::getFileIndex() << endl <<
+					"frame index needed:" <<  ((setTimer(FRAME_NUMBER,-1)*setTimer(CYCLES_NUMBER,-1))>1) << endl <<
+					"frame period:" << setTimer(FRAME_PERIOD,-1) << endl;
+		}
+		std::cout << endl;
 #endif
+		if(thisDetector->myDetectorType == EIGER)
+			setDetectorHostname();
 		setFilePath(fileIO::getFilePath());
 		setFileName(fileIO::getFileName());
 		enableWriteToFile(parentDet->enableWriteToFileMask());
@@ -6532,3 +6534,21 @@ int slsDetector::enableReceiverCompression(int i){
 	return retval;
 }
 
+
+
+void slsDetector::setDetectorHostname(){
+	int fnum=F_SET_DETECTOR_HOSTNAME;
+	int ret = FAIL;
+	char retval[MAX_STR_LENGTH]="";
+
+
+	if(setReceiverOnline(ONLINE_FLAG)==ONLINE_FLAG){
+#ifdef VERBOSE
+		std::cout << "Sending detector hostname to Receiver " << thisDetector->hostname << std::endl;
+#endif
+		if (connectData() == OK)
+			ret=thisReceiver->sendString(fnum,retval,thisDetector->hostname);
+		if((ret==FAIL) || (strcmp(retval,thisDetector->hostname)))
+			setErrorMask((getErrorMask())|(RECEIVER_DET_HOSTNAME_NOT_SET));
+	}
+}

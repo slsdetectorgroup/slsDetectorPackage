@@ -1615,6 +1615,10 @@ class slsDetector : public slsDetectorUtils, public energyConversion {
    */
   int enableReceiverCompression(int i = -1);
 
+  /** send the detector host name to the eiger receiver
+   * for various handshaking required with the detector
+   */
+  void setDetectorHostname();
 
  protected:
  

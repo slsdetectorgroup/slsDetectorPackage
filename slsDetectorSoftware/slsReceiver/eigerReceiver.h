@@ -36,6 +36,12 @@ public:
 	runStatus getStatus();
 
 	/**
+	 * Returns detector hostname
+	 /returns hostname
+	 */
+	char* getDetectorHostname();
+
+	/**
 	 * Returns File Name
 	 */
 	char* getFileName();
@@ -64,6 +70,13 @@ public:
 	 * Returns file write enable
 	 */
 	int getEnableFileWrite();
+
+	/**
+	 * Set detector hostname
+	 @param c hostname
+	 /returns hostname
+	 */
+	char* setDetectorHostname(char c[]);
 
 	/**
 	 * Set File Name (without frame index, file index and extension)

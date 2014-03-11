@@ -136,7 +136,9 @@ enum {
 
   F_READ_RECEIVER_FREQUENCY, /**< sets the frequency of receiver sending frames to gui */
 
-  F_ENABLE_COMPRESSION		/**< enable compression in receiver */
+  F_ENABLE_COMPRESSION,		/**< enable compression in receiver */
+
+  F_SET_DETECTOR_HOSTNAME	/**< set detector hostname in receiver */
   /* Always append functions hereafter!!! */
 
 };

@@ -129,6 +129,12 @@ public:
 	bool getMeasurementStarted(){return measurementStarted;};
 
 	/**
+	 * Set detector hostname
+	 * @param c hostname
+	 */
+	char* setDetectorHostname(char c[]);
+
+	/**
 	 * Set File Name (without frame index, file index and extension)
 	 * @param c file name
 	 */

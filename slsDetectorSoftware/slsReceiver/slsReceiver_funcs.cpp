@@ -318,6 +318,8 @@ int slsReceiverFuncs::function_table(){
 	flist[F_START_READOUT]			= 	&slsReceiverFuncs::start_readout;
 	flist[F_SET_TIMER]				= 	&slsReceiverFuncs::set_timer;
 	flist[F_ENABLE_COMPRESSION]		= 	&slsReceiverFuncs::enable_compression;
+	flist[F_SET_DETECTOR_HOSTNAME]	= 	&slsReceiverFuncs::set_detector_hostname;
+
 
 	//General Functions
 	flist[F_LOCK_SERVER]			=	&slsReceiverFuncs::lock_receiver;
@@ -1537,6 +1539,64 @@ int slsReceiverFuncs::enable_compression() {
 	//return ok/fail
 	return ret;
 }
+
+
+
+
+int slsReceiverFuncs::set_detector_hostname() {
+	ret=OK;
+	char retval[MAX_STR_LENGTH]="";
+	char hostname[MAX_STR_LENGTH]="";
+	strcpy(mess,"Could not set detector hostname");
+
+	// receive arguments
+	if(socket->ReceiveDataOnly(hostname,MAX_STR_LENGTH) < 0 ){
+		strcpy(mess,"Error reading from socket\n");
+		ret = FAIL;
+	}
+
+	// execute action if the arguments correctly arrived
+#ifdef SLS_RECEIVER_FUNCTION_LIST
+	if (ret==OK) {
+
+		if (lockStatus==1 && socket->differentClients==1){
+			sprintf(mess,"Receiver locked by %s\n", socket->lastClientIP);
+			ret=FAIL;
+		}
+#ifdef EIGER_RECEIVER_H
+ 	 	 else
+			strcpy(retval,slsReceiverList->setDetectorHostname(hostname));
+#endif
+
+	}
+#ifdef VERBOSE
+	if(ret!=FAIL)
+		cout << "hostname:" << retval << endl;
+	else
+		cout << mess << endl;
+#endif
+#endif
+
+	if(ret==OK && socket->differentClients){
+		cout << "Force update" << endl;
+		ret=FORCE_UPDATE;
+	}
+
+	// send answer
+	socket->SendDataOnly(&ret,sizeof(ret));
+	if(ret==FAIL)
+		socket->SendDataOnly(mess,sizeof(mess));
+	socket->SendDataOnly(retval,MAX_STR_LENGTH);
+
+	//return ok/fail
+	return ret;
+}
+
+
+
+
+
+
 
 
 

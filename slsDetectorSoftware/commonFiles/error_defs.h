@@ -30,6 +30,7 @@ using namespace std;
 #define COULDNOT_CREATE_UDP_SOCKET			0x0200000000000000ULL
 #define COULDNOT_CREATE_FILE				0x0100000000000000ULL
 #define COULDNOT_ENABLE_COMPRESSION			0x0080000000000000ULL
+#define RECEIVER_DET_HOSTNAME_NOT_SET		0x0040000000000000ULL
 
 
 
@@ -88,6 +89,10 @@ public:
 
 		if(slsErrorMask&COULDNOT_ENABLE_COMPRESSION)
 			retval.append("Could not enable/disable data compression in receiver.\nThread creation failed or recompile code with MYROOT1 flag.\n");
+
+		if(slsErrorMask&RECEIVER_DET_HOSTNAME_NOT_SET)
+			retval.append("Could not send the detector hostname to the receiver.\n");
+
 
 
 

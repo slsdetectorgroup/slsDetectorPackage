@@ -157,6 +157,11 @@ public:
 	/** enable compression */
 	int enable_compression();
 
+	/** set detector hostname for eiger */
+	int set_detector_hostname();
+
+
+
 
 	//General Functions
 	/** Locks Receiver */

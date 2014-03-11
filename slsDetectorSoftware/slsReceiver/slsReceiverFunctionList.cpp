@@ -239,7 +239,16 @@ int32_t slsReceiverFunctionList::setDynamicRange(int32_t dr){
 	return eigerRxr->getDynamicRange();
 }
 
+
+char* slsReceiverFunctionList::setDetectorHostname(char c[]){
+	if(strlen(c))
+		eigerRxr->setDetectorHostname(c);
+	return  eigerRxr->getDetectorHostname();
+}
+
+
 #endif
+
 
 
 char* slsReceiverFunctionList::setFileName(char c[]){

@@ -3532,24 +3532,45 @@ int64_t slsDetector::setTimer(timerIndex index, int64_t t){
     setTotalProgress();
   }
 
+
+
+  if((ret != FAIL) && (t! = -1)){
+
   //send acquisiton period to receiver
-  if((setReceiverOnline(ONLINE_FLAG)==ONLINE_FLAG) && (index==FRAME_PERIOD) && (ret != FAIL)  && (t != -1)){
-	  //if acquisition period is zero, then #frames/buffer depends on exposure time and not acq period
-	  if(!retval)
-		  retval = timerValue[ACQUISITION_TIME];
+  if((setReceiverOnline(ONLINE_FLAG)==ONLINE_FLAG) && ((index==FRAME_PERIOD)||(index==FRAME_NUMBER)) && (ret != FAIL)  && (t != -1)){
+	  int64_t args[2];
+	  args[1] = retval;
+	  if(index==FRAME_NUMBER)
+		  args[0] = FRAME_NUMBER;
+	  else{
+		  args[0] = FRAME_PERIOD;
+		  //if acquisition period is zero, then #frames/buffer depends on exposure time and not acq period
+		  if(!retval)
+			  args[1] = timerValue[ACQUISITION_TIME];
+	  }
+
+
 #ifdef VERBOSE
-	  std::cout << "Sending/Getting acquisition period to/from receiver " << retval << std::endl;
+	  if(index==FRAME_PERIOD)
+		  std::cout << "Sending/Getting acquisition period to/from receiver " << retval << std::endl;
+	  else
+		  std::cout << "Sending/Getting number of frames to/from receiver " << retval << std::endl;
 #endif
 	  if (connectData() == OK)
-		  ret=thisReceiver->sendInt(fnum,ut,retval);
+		  ret=thisReceiver->sendIntArray(fnum,ut,args);
 	  if(ut != retval){
 		  ret = FAIL;
 		  cout << "ERROR:Acquisition Period in receiver set incorrectly to " << ut << " instead of " << retval << endl;
 	  }
-	  if(ret==FAIL)
-		  setErrorMask((getErrorMask())|(RECEIVER_ACQ_PERIOD_NOT_SET));
+	  if(ret==FAIL){
+		  if(index==FRAME_PERIOD)
+			  setErrorMask((getErrorMask())|(RECEIVER_ACQ_PERIOD_NOT_SET));
+		  else
+			  setErrorMask((getErrorMask())|(RECEIVER_FRAME_NUM_NOT_SET));
+	  }
 	  if(ret==FORCE_UPDATE)
 		  updateReceiver();
+  }
   }
 
   return thisDetector->timerValue[index];
@@ -4831,21 +4852,28 @@ char* slsDetector::setReceiver(string receiverIP){
 	std::cout << "Setting up receiver with" << endl <<
 			"file path:" << fileIO::getFilePath() << endl <<
 			"file name:" << fileIO::getFileName() << endl <<
-			"file index:" << fileIO::getFileIndex() << endl <<
-			"frame index needed:" <<  ((setTimer(FRAME_NUMBER,-1)*setTimer(CYCLES_NUMBER,-1))>1) << endl <<
-			"write enable:" << parentDet->enableWriteToFileMask() << endl <<
-			"frame period:" << setTimer(FRAME_PERIOD,-1) << endl << endl;
+			"write enable:" << parentDet->enableWriteToFileMask() << endl;
+			if(thisDetector->myDetectorType != EIGER){
+				std::cout << "file index:" << fileIO::getFileIndex() << endl <<
+						"frame index needed:" <<  ((setTimer(FRAME_NUMBER,-1)*setTimer(CYCLES_NUMBER,-1))>1) << endl <<
+						"frame period:" << setTimer(FRAME_PERIOD,-1) << endl;
+			}
+			std::cout << endl;
 #endif
 		setFilePath(fileIO::getFilePath());
 		setFileName(fileIO::getFileName());
-		setFileIndex(fileIO::getFileIndex());
-		  if ((setTimer(FRAME_NUMBER,-1)*setTimer(CYCLES_NUMBER,-1))>1)
-			  setFrameIndex(0);
-		  else
-			  setFrameIndex(-1);
 		enableWriteToFile(parentDet->enableWriteToFileMask());
-		setTimer(FRAME_PERIOD,setTimer(FRAME_PERIOD,-1));
-		setUDPConnection();
+
+		if(thisDetector->myDetectorType != EIGER){
+			setFileIndex(fileIO::getFileIndex());
+			if ((setTimer(FRAME_NUMBER,-1)*setTimer(CYCLES_NUMBER,-1))>1)
+				setFrameIndex(0);
+			else
+				setFrameIndex(-1);
+
+			setTimer(FRAME_PERIOD,setTimer(FRAME_PERIOD,-1));
+			setUDPConnection();
+		}
 	}
 
   return thisDetector->receiver_hostname;

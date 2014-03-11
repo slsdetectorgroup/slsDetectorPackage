@@ -316,7 +316,7 @@ int slsReceiverFuncs::function_table(){
 	flist[F_GET_ID]					=	&slsReceiverFuncs::get_version;
 	flist[F_CONFIGURE_MAC]			=	&slsReceiverFuncs::set_short_frame;
 	flist[F_START_READOUT]			= 	&slsReceiverFuncs::start_readout;
-	flist[F_SET_TIMER]				= 	&slsReceiverFuncs::set_acquisition_period;
+	flist[F_SET_TIMER]				= 	&slsReceiverFuncs::set_timer;
 	flist[F_ENABLE_COMPRESSION]		= 	&slsReceiverFuncs::enable_compression;
 
 	//General Functions
@@ -1428,19 +1428,20 @@ int	slsReceiverFuncs::start_readout(){
 
 
 
-int slsReceiverFuncs::set_acquisition_period() {
+int slsReceiverFuncs::set_timer() {
 	ret=OK;
 	int64_t retval = -1;
-	int64_t index = -1;
-	strcpy(mess,"Could not set acquisition period in receiver\n");
+	int64_t index[2];
+	index[1] = -1;
+	strcpy(mess,"Could not set acquisition period or frame number in receiver\n");
 
 
 	// receive arguments
-	if(socket->ReceiveDataOnly(&index,sizeof(index)) < 0 ){
+	if(socket->ReceiveDataOnly(index,sizeof(index)) < 0 ){
 		strcpy(mess,"Error reading from socket\n");
 		ret = FAIL;
 	}
-
+cout<<"index[0]"<<index[0]<<" index[1]:"<<index[1]<<endl;
 	// execute action if the arguments correctly arrived
 #ifdef SLS_RECEIVER_FUNCTION_LIST
 	if (ret==OK) {
@@ -1448,13 +1449,23 @@ int slsReceiverFuncs::set_acquisition_period() {
 			sprintf(mess,"Receiver locked by %s\n", socket->lastClientIP);
 			ret=FAIL;
 		}
-		else
-			retval=slsReceiverList->setAcquisitionPeriod(index);
+		else{
+			if(index[0] == slsDetectorDefs::FRAME_PERIOD)
+				retval=slsReceiverList->setAcquisitionPeriod(index[1]);
+#ifdef EIGER_RECEIVER
+			else
+				retval=slsReceiverList->setNumberOfFrames(index[1]);
+#endif
+		}
 	}
 #ifdef VERBOSE
-	if(ret!=FAIL)
-		cout << "acquisition period:" << retval << endl;
-	else
+	if(ret!=FAIL){
+		if(index[0] == slsDetectorDefs::FRAME_PERIOD)
+			cout << "acquisition period:" << retval << endl;
+#ifdef EIGER_RECEIVER
+			cout << "frame number:" << retval << endl;
+#endif
+	}else
 		cout << mess << endl;
 #endif
 #endif

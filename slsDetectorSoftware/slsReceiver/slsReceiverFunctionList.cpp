@@ -30,7 +30,7 @@ using namespace std;
 
 
 slsReceiverFunctionList::slsReceiverFunctionList(detectorType det):
-#ifdef EIGER_RECEIVER
+#ifdef EIGER_RECEIVER_H
 					eigerRxr(NULL),
 #endif
 					myDetectorType(det),
@@ -101,7 +101,7 @@ slsReceiverFunctionList::slsReceiverFunctionList(detectorType det):
 		packetIndexMask = MOENCH_PACKET_INDEX_MASK;
 	}
 	else if(myDetectorType == EIGER){
-#ifdef EIGER_RECEIVER
+#ifdef EIGER_RECEIVER_H
 		eigerRxr = new eigerReceiver();
 #endif
 	}
@@ -219,7 +219,7 @@ uint32_t slsReceiverFunctionList::getAcquisitionIndex(){
 
 
 
-#ifdef EIGER_RECEIVER
+#ifdef EIGER_RECEIVER_H
 
 int32_t slsReceiverFunctionList::setNumberOfFrames(int32_t fnum){
 	if(fnum >= 0)
@@ -244,13 +244,13 @@ int32_t slsReceiverFunctionList::setDynamicRange(int32_t dr){
 
 char* slsReceiverFunctionList::setFileName(char c[]){
 	if(strlen(c)){
-#ifdef EIGER_RECEIVER
+#ifdef EIGER_RECEIVER_H
 		eigerRxr->setFileName(c);
 #else
 		strcpy(fileName,c);
 #endif
 	}
-#ifdef EIGER_RECEIVER
+#ifdef EIGER_RECEIVER_H
 		return  eigerRxr->getFileName();
 #else
 	return getFileName();
@@ -264,7 +264,7 @@ char* slsReceiverFunctionList::setFilePath(char c[]){
 		//check if filepath exists
 		struct stat st;
 		if(stat(c,&st) == 0){
-#ifdef EIGER_RECEIVER
+#ifdef EIGER_RECEIVER_H
 			eigerRxr->setFileName(c);
 #else
 			strcpy(filePath,c);
@@ -274,7 +274,7 @@ char* slsReceiverFunctionList::setFilePath(char c[]){
 			cout<<"FilePath does not exist:"<<filePath<<endl;
 		}
 	}
-#ifdef EIGER_RECEIVER
+#ifdef EIGER_RECEIVER_H
 		return  eigerRxr->getFilePath();
 #else
 	return getFilePath();
@@ -293,13 +293,13 @@ int slsReceiverFunctionList::setFileIndex(int i){
 
 int slsReceiverFunctionList::setEnableFileWrite(int i){
 	if(i!=-1){
-#ifdef EIGER_RECEIVER
+#ifdef EIGER_RECEIVER_H
 		eigerRxr->setEnableFileWrite(i);
 #else
 		enableFileWrite=i;
 #endif
 	}
-#ifdef EIGER_RECEIVER
+#ifdef EIGER_RECEIVER_H
 		return  eigerRxr->getEnableFileWrite();
 #else
 	return enableFileWrite;

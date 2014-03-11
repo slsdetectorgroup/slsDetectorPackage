@@ -1452,7 +1452,7 @@ cout<<"index[0]"<<index[0]<<" index[1]:"<<index[1]<<endl;
 		else{
 			if(index[0] == slsDetectorDefs::FRAME_PERIOD)
 				retval=slsReceiverList->setAcquisitionPeriod(index[1]);
-#ifdef EIGER_RECEIVER
+#ifdef EIGER_RECEIVER_H
 			else
 				retval=slsReceiverList->setNumberOfFrames(index[1]);
 #endif
@@ -1462,7 +1462,7 @@ cout<<"index[0]"<<index[0]<<" index[1]:"<<index[1]<<endl;
 	if(ret!=FAIL){
 		if(index[0] == slsDetectorDefs::FRAME_PERIOD)
 			cout << "acquisition period:" << retval << endl;
-#ifdef EIGER_RECEIVER
+#ifdef EIGER_RECEIVER_H
 			cout << "frame number:" << retval << endl;
 #endif
 	}else

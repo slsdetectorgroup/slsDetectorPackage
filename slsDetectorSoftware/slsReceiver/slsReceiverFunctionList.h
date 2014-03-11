@@ -57,7 +57,7 @@ public:
 	 */
 	void setEthernetInterface(char* c);
 
-#ifdef EIGER_RECEIVER
+#ifdef EIGER_RECEIVER_H
 	/** set frame number if a positive number
 	 */
 	int32_t setNumberOfFrames(int32_t fnum);
@@ -326,7 +326,7 @@ private:
 
 
 
-#ifdef EIGER_RECEIVER
+#ifdef EIGER_RECEIVER_H
 	eigerReceiver eigerRxr;
 #endif
 

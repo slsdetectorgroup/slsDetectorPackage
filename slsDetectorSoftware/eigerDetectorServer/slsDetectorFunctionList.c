@@ -147,9 +147,9 @@ int setDAC(enum detDacIndex ind, int val, int imod){
   string iname;
   float v = val/0.001;
   if(!eiger->GetDACName((unsigned int) ind,iname)) return -1;
-#ifdef VERBOSE
+//#ifdef VERBOSE
   printf("Setting dac %d: %s to %d mV\n",ind, iname.c_str(),val);
-#endif
+//#endif
   if(val>=0) eiger->SetDAC(iname,v);
 
   if(!eiger->GetDAC(iname,v)) v=-1;

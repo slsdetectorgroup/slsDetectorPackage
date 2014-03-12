@@ -3275,6 +3275,8 @@ string slsDetectorCommand::cmdDAC(int narg, char *args[], int action) {
   else
     return string("cannot decode dac ")+cmd;
   
+  myDet->setOnline(ONLINE_FLAG);
+
   if (action==PUT_ACTION) {
 #ifdef DACS_INT
     if (sscanf(args[1],"%d", &val))
@@ -3284,13 +3286,14 @@ string slsDetectorCommand::cmdDAC(int narg, char *args[], int action) {
 	;
       else
 	return string("cannot scan DAC value ")+string(args[1]);
+
+    myDet->setDAC(val,dac);
   }
   
-  myDet->setOnline(ONLINE_FLAG);
 #ifdef DACS_INT
-  sprintf(answer,"%d",myDet->setDAC(val,dac));
+  sprintf(answer,"%d",myDet->setDAC(-1,dac));
 #else
-  sprintf(answer,"%f",myDet->setDAC(val,dac));
+  sprintf(answer,"%f",myDet->setDAC(-1,dac));
 #endif
   return string(answer);
 

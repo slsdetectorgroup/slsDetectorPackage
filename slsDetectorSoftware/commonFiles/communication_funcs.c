@@ -295,8 +295,10 @@ void swapData(void* val,int length,intType itype){
 }
 
 int sendData(int file_des, void* buf,int length, intType itype){
+#ifndef PCCOMPILE
 #ifdef EIGERD
 	swapData(buf, length, itype);
+#endif
 #endif
 	return sendDataOnly(file_des, buf, length);
 }
@@ -304,8 +306,10 @@ int sendData(int file_des, void* buf,int length, intType itype){
 
 int receiveData(int file_des, void* buf,int length, intType itype){
 	int ret = receiveDataOnly(file_des, buf, length);
+#ifndef PCCOMPILE
 #ifdef EIGERD
 	swapData(buf, length, itype);
+#endif
 #endif
 	return ret;
 }

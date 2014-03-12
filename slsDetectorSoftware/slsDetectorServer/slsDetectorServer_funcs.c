@@ -37,7 +37,7 @@ const enum detectorType myDetectorType=GENERIC;
 
 
 //global variables for optimized readout
-char mess[1000];
+char mess[MAX_STR_LENGTH];
 char *dataretval=NULL;
 int dataret;
 //extern 
@@ -193,7 +193,7 @@ int exit_server(int file_des) {
 int exec_command(int file_des) {
 	char cmd[MAX_STR_LENGTH];
 	char answer[MAX_STR_LENGTH];
-	int ret=OK;
+	int ret=OK,ret1=OK;
 	int sysret=0;
 	int n=0;
 
@@ -226,7 +226,9 @@ int exec_command(int file_des) {
 	}
 
 	/* send answer */
-	n = sendData(file_des,&ret,sizeof(ret),INT32);
+	//ret could be swapped during sendData
+	ret1 = ret;
+	n = sendData(file_des,&ret1,sizeof(ret),INT32);
 	n = sendData(file_des,answer,MAX_STR_LENGTH,OTHER);
 	if (n < 0) {
 		sprintf(mess,"Error writing to socket");
@@ -247,7 +249,8 @@ int lock_server(int file_des) {
 
 
 	int n;
-	int ret=OK;
+	int ret=OK,ret1=OK;
+
 
 	int lock;
 	n = receiveData(file_des,&lock,sizeof(lock),INT32);
@@ -268,7 +271,9 @@ int lock_server(int file_des) {
 	if (differentClients && ret==OK)
 		ret=FORCE_UPDATE;
 
-	n = sendData(file_des,&ret,sizeof(ret),INT32);
+	//ret could be swapped during sendData
+	ret1 = ret;
+	n = sendData(file_des,&ret1,sizeof(ret),INT32);
 	if (ret==FAIL) {
 		n = sendData(file_des,mess,sizeof(mess),OTHER);
 	}  else
@@ -282,10 +287,10 @@ int lock_server(int file_des) {
 
 
 int get_last_client_ip(int file_des) {
-	int ret=OK;
+	int ret=OK,ret1=OK;
 	if (differentClients )
 		ret=FORCE_UPDATE;
-	sendData(file_des,&ret,sizeof(ret),INT32);
+	sendData(file_des,&ret1,sizeof(ret),INT32);
 	sendData(file_des,lastClientIP,sizeof(lastClientIP),OTHER);
 	return ret;
 }
@@ -295,7 +300,7 @@ int get_last_client_ip(int file_des) {
 
 int set_port(int file_des) {
 	int n;
-	int ret=OK;
+	int ret=OK,ret1=OK;
 	int sd=-1;
 
 	enum portType p_type; /** data? control? stop? Unused! */
@@ -342,8 +347,9 @@ int set_port(int file_des) {
 
 		}
 	}
-
-	n = sendData(file_des,&ret,sizeof(ret),INT32);
+	//ret could be swapped during sendData
+	ret1 = ret;
+	n = sendData(file_des,&ret1,sizeof(ret),INT32);
 	if (ret==FAIL) {
 		n = sendData(file_des,mess,sizeof(mess),OTHER);
 	} else {
@@ -362,7 +368,6 @@ int set_port(int file_des) {
 
 int send_update(int file_des) {
 
-	int ret=OK;
 	enum detectorSettings t;
 	int n = 0, nm = 0;
 	int64_t retval = 0;
@@ -374,7 +379,8 @@ int send_update(int file_des) {
 	n += sendData(file_des,&nm,sizeof(nm),INT32);
 	nm=setDynamicRange(GET_FLAG);
 	n += sendData(file_des,&nm,sizeof(nm),INT32);
-	n += sendData(file_des,&dataBytes,sizeof(dataBytes),INT32);
+	nm = dataBytes;
+	n += sendData(file_des,&nm,sizeof(nm),INT32);
 
 	t=setSettings(GET_SETTINGS, GET_FLAG);
 	n += sendData(file_des,&t,sizeof(t),INT32);
@@ -400,7 +406,7 @@ int send_update(int file_des) {
 		strcpy(lastClientIP,thisClientIP);
 	}
 
-	return ret;
+	return OK;
 
 }
 
@@ -421,7 +427,7 @@ int set_master(int file_des) {
 	enum masterFlags retval=GET_MASTER;
 	enum masterFlags arg;
 	int n;
-	int ret=OK;
+	int ret=OK,ret1=OK;
 	// int regret=OK;
 
 
@@ -452,7 +458,9 @@ int set_master(int file_des) {
 		ret=FAIL;
 	}
 
-	n = sendData(file_des,&ret,sizeof(ret),INT32);
+	//ret could be swapped during sendData
+	ret1 = ret;
+	n = sendData(file_des,&ret1,sizeof(ret),INT32);
 	if (ret==FAIL) {
 		n = sendData(file_des,mess,sizeof(mess),OTHER);
 	} else {
@@ -471,7 +479,7 @@ int set_synchronization(int file_des) {
 	enum synchronizationMode retval=GET_SYNCHRONIZATION_MODE;
 	enum synchronizationMode arg;
 	int n;
-	int ret=OK;
+	int ret=OK,ret1=OK;
 	//int regret=OK;
 
 
@@ -500,7 +508,9 @@ int set_synchronization(int file_des) {
 		ret=FAIL;
 	}
 
-	n = sendData(file_des,&ret,sizeof(ret),INT32);
+	//ret could be swapped during sendData
+	ret1 = ret;
+	n = sendData(file_des,&ret1,sizeof(ret),INT32);
 	if (ret==FAIL) {
 		n = sendData(file_des,mess,sizeof(mess),OTHER);
 	} else {
@@ -518,7 +528,7 @@ int set_synchronization(int file_des) {
 int get_detector_type(int file_des) {
 	int n=0;
 	enum detectorType retval;
-	int ret=OK;
+	int ret=OK,ret1=OK;
 
 	sprintf(mess,"Can't return detector type\n");
 
@@ -536,7 +546,9 @@ int get_detector_type(int file_des) {
 	if (differentClients==1)
 		ret=FORCE_UPDATE;
 
-	n += sendData(file_des,&ret,sizeof(ret),INT32);
+	//ret could be swapped during sendData
+	ret1 = ret;
+	n += sendData(file_des,&ret1,sizeof(ret),INT32);
 	if (ret!=FAIL) {
 		/* send return argument */
 		n += sendData(file_des,&retval,sizeof(retval),INT32);
@@ -553,7 +565,7 @@ int get_detector_type(int file_des) {
 int set_number_of_modules(int file_des) {
 	int n;
 	int arg[2], retval=0;
-	int ret=OK;
+	int ret=OK,ret1=OK;
 	int nm;
 #ifdef SLS_DETECTOR_FUNCTION_LIST
 	enum dimension dim;
@@ -593,7 +605,9 @@ int set_number_of_modules(int file_des) {
 
 	/* send answer */
 	/* send OK/failed */
-	n = sendData(file_des,&ret,sizeof(ret),INT32);
+	//ret could be swapped during sendData
+	ret1 = ret;
+	n = sendData(file_des,&ret1,sizeof(ret),INT32);
 	if (ret!=FAIL) {
 		/* send return argument */
 		n += sendData(file_des,&retval,sizeof(retval),INT32);
@@ -609,7 +623,7 @@ int set_number_of_modules(int file_des) {
 int get_max_number_of_modules(int file_des) {
 	int n;
 	int retval;
-	int ret=OK;
+	int ret=OK,ret1=OK;
 	enum dimension arg;
 
 	sprintf(mess,"Can't get max number of modules\n");
@@ -638,7 +652,9 @@ int get_max_number_of_modules(int file_des) {
 
 	/* send answer */
 	/* send OK/failed */
-	n = sendData(file_des,&ret,sizeof(ret),INT32);
+	//ret could be swapped during sendData
+	ret1 = ret;
+	n = sendData(file_des,&ret1,sizeof(ret),INT32);
 	if (ret!=FAIL) {
 		/* send return argument */
 		n += sendData(file_des,&retval,sizeof(retval),INT32);
@@ -659,7 +675,7 @@ int get_max_number_of_modules(int file_des) {
 int set_external_signal_flag(int file_des) {
 	int n;
 	int arg[2];
-	int ret=OK;
+	int ret=OK,ret1=OK;
 	enum externalSignalFlag retval=SIGNAL_OFF;
 #ifdef SLS_DETECTOR_FUNCTION_LIST
 	int signalindex;
@@ -712,7 +728,9 @@ int set_external_signal_flag(int file_des) {
 
 	/* send answer */
 	/* send OK/failed */
-	n = sendData(file_des,&ret,sizeof(ret),INT32);
+	//ret could be swapped during sendData
+	ret1 = ret;
+	n = sendData(file_des,&ret1,sizeof(ret),INT32);
 	if (ret!=FAIL) {
 		/* send return argument */
 		n += sendData(file_des,&retval,sizeof(retval),INT32);
@@ -730,7 +748,7 @@ int set_external_signal_flag(int file_des) {
 int set_external_communication_mode(int file_des) {
 	int n;
 	enum externalCommunicationMode arg, retval=GET_EXTERNAL_COMMUNICATION_MODE;
-	int ret=OK;
+	int ret=OK,ret1=OK;
 
 	sprintf(mess,"Can't set external communication mode\n");
 
@@ -777,7 +795,9 @@ enum externalCommunicationMode{
 
 	/* send answer */
 	/* send OK/failed */
-	n = sendData(file_des,&ret,sizeof(ret),INT32);
+	//ret could be swapped during sendData
+	ret1 = ret;
+	n = sendData(file_des,&ret1,sizeof(ret),INT32);
 	if (ret!=FAIL) {
 		/* send return argument */
 		n += sendData(file_des,&retval,sizeof(retval),INT32);
@@ -796,7 +816,7 @@ enum externalCommunicationMode{
 int get_id(int file_des) {
 	// sends back 64 bits!
 	int64_t retval;
-	int ret=OK;
+	int ret=OK,ret1=OK;
 	int imod=-1;
 	int n=0;
 	enum idMode arg;
@@ -861,7 +881,9 @@ int get_id(int file_des) {
 
 	/* send answer */
 	/* send OK/failed */
-	n = sendData(file_des,&ret,sizeof(ret),INT32);
+	//ret could be swapped during sendData
+	ret1 = ret;
+	n = sendData(file_des,&ret1,sizeof(ret),INT32);
 	if (ret!=FAIL) {
 		/* send return argument */
 		n += sendData(file_des,&retval,sizeof(retval),INT64);
@@ -877,7 +899,7 @@ int get_id(int file_des) {
 int digital_test(int file_des) {
 
 	int retval=-1;
-	int ret=OK;
+	int ret=OK,ret1=OK;
 	int imod=-1;
 	int n=0;
 	int ival;
@@ -966,7 +988,9 @@ int digital_test(int file_des) {
 
 	/* send answer */
 	/* send OK/failed */
-	n = sendData(file_des,&ret,sizeof(ret),INT32);
+	//ret could be swapped during sendData
+	ret1 = ret;
+	n = sendData(file_des,&ret1,sizeof(ret),INT32);
 	if (ret!=FAIL) {
 		/* send return argument */
 		n += sendData(file_des,&retval,sizeof(retval),INT32);
@@ -987,7 +1011,7 @@ int digital_test(int file_des) {
 int set_dac(int file_des) {
 
 	int retval;
-	int ret=OK;
+	int ret=OK,ret1=OK;
 	int arg[2];
 	enum dacIndex ind;
 	int imod;
@@ -1106,8 +1130,8 @@ int set_dac(int file_des) {
 		break;
 #endif
 	default:
-		printf("Unknown DAC index %d\n",ind);
-		sprintf(mess,"Unknown DAC index %d\n",ind);
+		printf("Unknown DAC index %d\n",(int)ind);
+		sprintf(mess,"Unknown DAC index %d for this detector\n",ind);
 		ret=FAIL;
 		break;
 	}
@@ -1119,28 +1143,30 @@ int set_dac(int file_des) {
 		if (differentClients==1 && lockStatus==1 && val!=-1) {
 			ret=FAIL;
 			sprintf(mess,"Detector locked by %s\n",lastClientIP);
-		} else{
-			printf("idac:%d val:%d, imod:%d\n",(int)idac,val,imod);
+		} else
 			retval=setDAC(idac,val,imod);
-		}
 	}
 #endif
 #ifdef VERBOSE
 	printf("DAC set to %d V\n",  retval);
 #endif
-	if (retval==val || val==-1) {
-		ret=OK;
-		if (differentClients)
-			ret=FORCE_UPDATE;
-	} else {
-		ret=FAIL;
-		printf("Setting dac %d of module %d: wrote %d but read %d\n", idac, imod, val, retval);
+	if(ret == OK){
+		if (retval==val || val==-1) {
+			ret=OK;
+			if (differentClients)
+				ret=FORCE_UPDATE;
+		} else {
+			ret=FAIL;
+			printf("Setting dac %d of module %d: wrote %d but read %d\n", idac, imod, val, retval);
+		}
 	}
 
 
 	/* send answer */
 	/* send OK/failed */
-	n = sendData(file_des,&ret,sizeof(ret),INT32);
+	//ret could be swapped during sendData
+	ret1 = ret;
+	n = sendData(file_des,&ret1,sizeof(ret),INT32);
 	if (ret!=FAIL) {
 		/* send return argument */
 		n += sendData(file_des,&retval,sizeof(retval),INT32);
@@ -1160,7 +1186,7 @@ int set_dac(int file_des) {
 int get_adc(int file_des) {
 
 	int retval;
-	int ret=OK;
+	int ret=OK,ret1=OK;
 	int arg[2];
 	enum dacIndex ind;
 	int imod;
@@ -1220,7 +1246,9 @@ int get_adc(int file_des) {
 
 	/* send answer */
 	/* send OK/failed */
-	n = sendData(file_des,&ret,sizeof(ret),INT32);
+	//ret could be swapped during sendData
+	ret1 = ret;
+	n = sendData(file_des,&ret1,sizeof(ret),INT32);
 	if (ret!=FAIL) {
 		/* send return argument */
 		n += sendData(file_des,&retval,sizeof(retval),INT32);
@@ -1241,7 +1269,7 @@ int get_adc(int file_des) {
 int write_register(int file_des) {
 
 	int retval;
-	int ret=OK;
+	int ret=OK,ret1=OK;
 	int arg[2];
 	int addr, val;
 	int n;
@@ -1286,7 +1314,9 @@ int write_register(int file_des) {
 
 	/* send answer */
 	/* send OK/failed */
-	n = sendData(file_des,&ret,sizeof(ret),INT32);
+	//ret could be swapped during sendData
+	ret1 = ret;
+	n = sendData(file_des,&ret1,sizeof(ret),INT32);
 	if (ret!=FAIL) {
 		/* send return argument */
 		n += sendData(file_des,&retval,sizeof(retval),INT32);
@@ -1302,7 +1332,7 @@ int write_register(int file_des) {
 int read_register(int file_des) {
 
 	int retval;
-	int ret=OK;
+	int ret=OK,ret1=OK;
 	int arg;
 	int addr;
 	int n;
@@ -1340,7 +1370,9 @@ int read_register(int file_des) {
 
 	/* send answer */
 	/* send OK/failed */
-	n = sendData(file_des,&ret,sizeof(ret),INT32);
+	//ret could be swapped during sendData
+	ret1 = ret;
+	n = sendData(file_des,&ret1,sizeof(ret),INT32);
 	if (ret!=FAIL) {
 		/* send return argument */
 		n += sendData(file_des,&retval,sizeof(retval),INT32);
@@ -1359,7 +1391,7 @@ int read_register(int file_des) {
 
 
 int set_channel(int file_des) {
-	int ret=OK;
+	int ret=OK,ret1=OK;
 	sls_detector_channel myChan;
 	int retval;
 	int n;
@@ -1416,7 +1448,9 @@ int set_channel(int file_des) {
 
 	/* send answer */
 	/* send OK/failed */
-	n = sendData(file_des,&ret,sizeof(ret),INT32);
+	//ret could be swapped during sendData
+	ret1 = ret;
+	n = sendData(file_des,&ret1,sizeof(ret),INT32);
 	if (ret!=FAIL) {
 		/* send return argument */
 		n += sendData(file_des,&retval,sizeof(retval),INT32);
@@ -1435,7 +1469,7 @@ int set_channel(int file_des) {
 
 int get_channel(int file_des) {
 
-	int ret=OK;
+	int ret=OK,ret1=OK;
 	sls_detector_channel retval;
 
 	int arg[3];
@@ -1495,7 +1529,9 @@ int get_channel(int file_des) {
 
 	/* send answer */
 	/* send OK/failed */
-	n = sendData(file_des,&ret,sizeof(ret),INT32);
+	//ret could be swapped during sendData
+	ret1 = ret;
+	n = sendData(file_des,&ret1,sizeof(ret),INT32);
 	if (ret!=FAIL) {
 		/* send return argument */
 		ret=sendChannel(file_des, &retval);
@@ -1516,7 +1552,7 @@ int set_chip(int file_des) {
 
 	int *ch;
 	int n, retval;
-	int ret=OK;
+	int ret=OK,ret1=OK;
 #ifdef SLS_DETECTOR_FUNCTION_LIST
 	sls_detector_chip myChip;
 
@@ -1572,7 +1608,9 @@ int set_chip(int file_des) {
 		ret=FORCE_UPDATE;
 	/* send answer */
 	/* send OK/failed */
-	n = sendData(file_des,&ret,sizeof(ret),INT32);
+	//ret could be swapped during sendData
+	ret1 = ret;
+	n = sendData(file_des,&ret1,sizeof(ret),INT32);
 	if (ret!=FAIL) {
 		/* send return argument */
 		n += sendData(file_des,&retval,sizeof(retval),INT32);
@@ -1590,7 +1628,7 @@ int set_chip(int file_des) {
 int get_chip(int file_des) {
 
 
-	int ret=OK;
+	int ret=OK,ret1=OK;
 	sls_detector_chip retval;
 	int arg[2];
 	int n, *ch;
@@ -1645,7 +1683,9 @@ int get_chip(int file_des) {
 
 	/* send answer */
 	/* send OK/failed */
-	n = sendData(file_des,&ret,sizeof(ret),INT32);
+	//ret could be swapped during sendData
+	ret1 = ret;
+	n = sendData(file_des,&ret1,sizeof(ret),INT32);
 	if (ret!=FAIL) {
 		/* send return argument */
 		ret=sendChip(file_des, &retval);
@@ -1662,7 +1702,7 @@ int get_chip(int file_des) {
 }
 int set_module(int file_des) {
 	int retval, n;
-	int ret=OK;
+	int ret=OK,ret1=OK;
 
 #ifdef SLS_DETECTOR_FUNCTION_LIST
 	sls_detector_module myModule;
@@ -1737,7 +1777,9 @@ int set_module(int file_des) {
 
 	/* send answer */
 	/* send OK/failed */
-	n = sendData(file_des,&ret,sizeof(ret),INT32);
+	//ret could be swapped during sendData
+	ret1 = ret;
+	n = sendData(file_des,&ret1,sizeof(ret),INT32);
 	if (ret!=FAIL) {
 		/* send return argument */
 		n += sendData(file_des,&retval,sizeof(retval),INT32);
@@ -1759,7 +1801,7 @@ int set_module(int file_des) {
 int get_module(int file_des) {
 
 
-	int ret=OK;
+	int ret=OK,ret1=OK;
 	int arg;
 	int  imod;
 	int n;
@@ -1832,7 +1874,9 @@ int get_module(int file_des) {
 
 	/* send answer */
 	/* send OK/failed */
-	n = sendData(file_des,&ret,sizeof(ret),INT32);
+	//ret could be swapped during sendData
+	ret1 = ret;
+	n = sendData(file_des,&ret1,sizeof(ret),INT32);
 	if (ret!=FAIL) {
 		/* send return argument */
 		ret=sendModule(file_des, &myModule);
@@ -1858,7 +1902,7 @@ int get_module(int file_des) {
 int set_settings(int file_des) {
 
 	int retval;
-	int ret=OK;
+	int ret=OK,ret1=OK;
 	int arg[2];
 	int n;
 	int  imod;
@@ -1907,7 +1951,9 @@ int set_settings(int file_des) {
 		ret=FORCE_UPDATE;
 
 	/* send answer */
-	n = sendData(file_des,&ret,sizeof(ret),INT32);
+	//ret could be swapped during sendData
+	ret1 = ret;
+	n = sendData(file_des,&ret1,sizeof(ret),INT32);
 	if (ret==FAIL) {
 		n += sendData(file_des,mess,sizeof(mess),OTHER);
 	} else
@@ -1925,7 +1971,7 @@ int set_settings(int file_des) {
 
 int get_threshold_energy(int file_des) { 
 	int retval;
-	int ret=OK;
+	int ret=OK,ret1=OK;
 	int n;
 	int  imod;
 
@@ -1957,7 +2003,9 @@ int get_threshold_energy(int file_des) {
 		ret=FORCE_UPDATE;
 
 	/* send answer */
-	n = sendData(file_des,&ret,sizeof(ret),INT32);
+	//ret could be swapped during sendData
+	ret1 = ret;
+	n = sendData(file_des,&ret1,sizeof(ret),INT32);
 	if (ret==FAIL) {
 		n += sendData(file_des,mess,sizeof(mess),OTHER);
 	} else
@@ -1976,7 +2024,7 @@ int get_threshold_energy(int file_des) {
 
 int set_threshold_energy(int file_des) { 
 	int retval;
-	int ret=OK;
+	int ret=OK,ret1=OK;
 	int arg[3];
 	int n;
 #if defined(MYTHEND) || defined(EIGERD)
@@ -2022,7 +2070,9 @@ int set_threshold_energy(int file_des) {
 		ret=FORCE_UPDATE;
 
 	/* send answer */
-	n = sendData(file_des,&ret,sizeof(ret),INT32);
+	//ret could be swapped during sendData
+	ret1 = ret;
+	n = sendData(file_des,&ret1,sizeof(ret),INT32);
 	if (ret==FAIL) {
 		n += sendData(file_des,mess,sizeof(mess),OTHER);
 	} else
@@ -2041,7 +2091,7 @@ int set_threshold_energy(int file_des) {
 
 int start_acquisition(int file_des) {
 
-	int ret=OK;
+	int ret=OK,ret1=OK;
 	int n;
 
 
@@ -2063,7 +2113,9 @@ int start_acquisition(int file_des) {
 	else if (differentClients)
 		ret=FORCE_UPDATE;
 
-	n = sendData(file_des,&ret,sizeof(ret),INT32);
+	//ret could be swapped during sendData
+	ret1 = ret;
+	n = sendData(file_des,&ret1,sizeof(ret),INT32);
 	if (ret==FAIL) {
 		n += sendData(file_des,mess,sizeof(mess),OTHER);
 	}
@@ -2073,7 +2125,7 @@ int start_acquisition(int file_des) {
 
 int stop_acquisition(int file_des) {
 
-	int ret=OK;
+	int ret=OK,ret1=OK;
 	int n;
 
 
@@ -2095,7 +2147,9 @@ int stop_acquisition(int file_des) {
 	else if (differentClients)
 		ret=FORCE_UPDATE;
 
-	n = sendData(file_des,&ret,sizeof(ret),INT32);
+	//ret could be swapped during sendData
+	ret1 = ret;
+	n = sendData(file_des,&ret1,sizeof(ret),INT32);
 	if (ret==FAIL) {
 		n += sendData(file_des,mess,sizeof(mess),OTHER);
 	}
@@ -2110,7 +2164,7 @@ int stop_acquisition(int file_des) {
 int start_readout(int file_des) {
 
 
-	int ret=OK;
+	int ret=OK,ret1=OK;
 	int n;
 
 
@@ -2132,7 +2186,9 @@ int start_readout(int file_des) {
 	else if (differentClients)
 		ret=FORCE_UPDATE;
 
-	n = sendData(file_des,&ret,sizeof(ret),INT32);
+	//ret could be swapped during sendData
+	ret1 = ret;
+	n = sendData(file_des,&ret1,sizeof(ret),INT32);
 	if (ret==FAIL) {
 		n += sendData(file_des,mess,sizeof(mess),OTHER);
 	}
@@ -2147,7 +2203,7 @@ int start_readout(int file_des) {
 
 int get_run_status(int file_des) {  
 
-	int ret=OK;
+	int ret=OK,ret1=OK;
 	int n;
 	enum runStatus s;
 	sprintf(mess,"getting run status\n");
@@ -2164,7 +2220,9 @@ int get_run_status(int file_des) {
 	} else if (differentClients)
 		ret=FORCE_UPDATE;
 
-	n = sendData(file_des,&ret,sizeof(ret),INT32);
+	//ret could be swapped during sendData
+	ret1 = ret;
+	n = sendData(file_des,&ret1,sizeof(ret),INT32);
 	if (ret==FAIL) {
 		n += sendData(file_des,mess,sizeof(mess),OTHER);
 	} else {
@@ -2178,7 +2236,7 @@ int get_run_status(int file_des) {
 
 
 int start_and_read_all(int file_des) {
-	//int dataret=OK;
+	int dataret1;
 #ifdef VERBOSE
 	printf("Starting and reading all frames\n");
 #endif
@@ -2186,7 +2244,9 @@ int start_and_read_all(int file_des) {
 	if (differentClients==1 && lockStatus==1) {
 		dataret=FAIL;
 		sprintf(mess,"Detector locked by %s\n",lastClientIP);
-		sendData(file_des,&dataret,sizeof(dataret),INT32);
+		//ret could be swapped during sendData
+		dataret1 = dataret;
+		sendData(file_des,&dataret1,sizeof(dataret),INT32);
 		sendData(file_des,mess,sizeof(mess),OTHER);
 		return dataret;
 
@@ -2211,10 +2271,13 @@ int start_and_read_all(int file_des) {
 int read_frame(int file_des) {
 
 	dataret=OK;
+	int dataret1;
 	if (differentClients==1 && lockStatus==1) {
 		dataret=FAIL;
 		sprintf(mess,"Detector locked by %s\n",lastClientIP);
-		sendData(file_des,&dataret,sizeof(dataret),INT32);
+		//dataret could be swapped during sendData
+		dataret1 = dataret;
+		sendData(file_des,&dataret1,sizeof(dataret),INT32);
 		sendData(file_des,mess,sizeof(mess),OTHER);
 		printf("dataret %d\n",dataret);
 		return dataret;
@@ -2223,7 +2286,9 @@ int read_frame(int file_des) {
 #ifdef SLS_DETECTOR_FUNCTION_LIST
 	dataretval=readFrame(&dataret, mess);
 #endif
-	sendData(file_des,&dataret,sizeof(dataret),INT32);
+	//dataret could be swapped during sendData
+	dataret1 = dataret;
+	sendData(file_des,&dataret1,sizeof(dataret),INT32);
 	if (dataret==FAIL)
 		sendData(file_des,mess,sizeof(mess),OTHER);//sizeof(mess));//sizeof(mess));
 	else
@@ -2264,7 +2329,7 @@ int set_timer(int file_des) {
 	int64_t tns;
 	int n;
 	int64_t retval;
-	int ret=OK;
+	int ret=OK,ret1=OK;
 
 
 	sprintf(mess,"can't set timer\n");
@@ -2334,7 +2399,9 @@ int set_timer(int file_des) {
 			sprintf(mess, "could not allocate RAM for %lld frames\n", tns);
 	}
 
-	n = sendData(file_des,&ret,sizeof(ret),INT32);
+	//ret could be swapped during sendData
+	ret1 = ret;
+	n = sendData(file_des,&ret1,sizeof(ret),INT32);
 	if (ret==FAIL) {
 		n = sendData(file_des,mess,sizeof(mess),OTHER);
 	} else {
@@ -2361,7 +2428,7 @@ int get_time_left(int file_des) {
 	enum timerIndex ind;
 	int n;
 	int64_t retval;
-	int ret=OK;
+	int ret=OK,ret1=OK;
 
 	sprintf(mess,"can't get timer\n");
 	n = receiveData(file_des,&ind,sizeof(ind),INT32);
@@ -2410,7 +2477,9 @@ int get_time_left(int file_des) {
 	printf("time left on timer %d is %lld\n",ind, retval);
 #endif 
 
-	n = sendData(file_des,&ret,sizeof(ret),INT32);
+	//ret could be swapped during sendData
+	ret1 = ret;
+	n = sendData(file_des,&ret1,sizeof(ret),INT32);
 	if (ret==FAIL) {
 		n += sendData(file_des,mess,sizeof(mess),OTHER);
 	} else {
@@ -2431,7 +2500,7 @@ int set_dynamic_range(int file_des) {
 	int dr;
 	int n;
 	int retval;
-	int ret=OK;
+	int ret=OK,ret1=OK;
 
 	sprintf(mess,"can't set dynamic range\n");
 
@@ -2459,7 +2528,9 @@ int set_dynamic_range(int file_des) {
 	dataBytes=calculateDataBytes();
 #endif
 
-	n = sendData(file_des,&ret,sizeof(ret),INT32);
+	//ret could be swapped during sendData
+	ret1 = ret;
+	n = sendData(file_des,&ret1,sizeof(ret),INT32);
 	if (ret==FAIL) {
 		n = sendData(file_des,mess,sizeof(mess),OTHER);
 	} else {
@@ -2478,7 +2549,7 @@ int set_readout_flags(int file_des) {
 	enum readOutFlags retval;
 	enum readOutFlags arg;
 	int n;
-	int ret=OK;
+	int ret=OK,ret1=OK;
 
 	sprintf(mess,"can't set readout flags\n");
 
@@ -2527,7 +2598,9 @@ int set_readout_flags(int file_des) {
 	}
 #endif
 
-	n = sendData(file_des,&ret,sizeof(ret),INT32);
+	//ret could be swapped during sendData
+	ret1 = ret;
+	n = sendData(file_des,&ret1,sizeof(ret),INT32);
 	if (ret==FAIL) {
 		n = sendData(file_des,mess,sizeof(mess),OTHER);
 	} else {
@@ -2542,10 +2615,10 @@ int set_readout_flags(int file_des) {
 
 int set_roi(int file_des) {
 
-	int ret=OK;
+	int ret=OK,ret1=OK;
 	ROI arg[MAX_ROIS];
 	ROI* retval=0;
-	int nroi=-1, n=0, retvalsize=0,i;
+	int nroi=-1, n=0, retvalsize=0,retvalsize1,i;
 	strcpy(mess,"Could not set/get roi\n");
 
 	n = receiveData(file_des,&nroi,sizeof(nroi),INT32);
@@ -2600,11 +2673,15 @@ int set_roi(int file_des) {
 	}
 
 	/* send answer */
-	n = sendData(file_des,&ret,sizeof(ret),INT32);
+	//ret could be swapped during sendData
+	ret1 = ret;
+	n = sendData(file_des,&ret1,sizeof(ret),INT32);
 	if(ret==FAIL)
 		n = sendData(file_des,mess,sizeof(mess),OTHER);
 	else{
-		sendData(file_des,&retvalsize,sizeof(retvalsize),INT32);
+		//retvalsize could be swapped during sendData
+		retvalsize1=retvalsize;
+		sendData(file_des,&retvalsize1,sizeof(retvalsize),INT32);
 		for(i=0;i<retvalsize;i++){
 			n = sendData(file_des,&retval[i].xmin,sizeof(int),INT32);
 			n = sendData(file_des,&retval[i].xmax,sizeof(int),INT32);
@@ -2628,7 +2705,7 @@ int set_speed(int file_des) {
 
 	enum speedVariable arg;
 	int val, n;
-	int ret=OK;
+	int ret=OK,ret1=OK;
 	int retval;
 
 	sprintf(mess,"can't set speed variable\n");
@@ -2686,7 +2763,9 @@ int set_speed(int file_des) {
 	}
 #endif
 
-	n = sendData(file_des,&ret,sizeof(ret),INT32);
+	//ret could be swapped during sendData
+	ret1 = ret;
+	n = sendData(file_des,&ret1,sizeof(ret),INT32);
 	if (ret==FAIL) {
 		n = sendData(file_des,mess,sizeof(mess),OTHER);
 	} else {
@@ -2702,7 +2781,7 @@ int execute_trimming(int file_des) {
 
 	int arg[3];
 	int n;
-	int ret=OK, retval=0;
+	int ret=OK, ret1=OK, retval=0;
 #if defined(MYTHEND) || defined(EIGERD)
 	int imod, par1,par2;
 #endif
@@ -2785,7 +2864,9 @@ int execute_trimming(int file_des) {
 	} else if (differentClients)
 		ret=FORCE_UPDATE;
 
-	n = sendData(file_des,&ret,sizeof(ret),INT32);
+	//ret could be swapped during sendData
+	ret1 = ret;
+	n = sendData(file_des,&ret1,sizeof(ret),INT32);
 	if (ret==FAIL) {
 		n = sendData(file_des,mess,sizeof(mess),OTHER);
 	}
@@ -2804,7 +2885,7 @@ int execute_trimming(int file_des) {
 int configure_mac(int file_des) {
 
 	int retval;
-	int ret=OK;
+	int ret=OK,ret1=OK;
 	char arg[3][50];
 	int n;
 
@@ -2869,7 +2950,9 @@ int configure_mac(int file_des) {
 #endif
 	/* send answer */
 	/* send OK/failed */
-	n = sendData(file_des,&ret,sizeof(ret),INT32);
+	//ret could be swapped during sendData
+	ret1 = ret;
+	n = sendData(file_des,&ret1,sizeof(ret),INT32);
 	if (ret!=FAIL) {
 		/* send return argument */
 		n += sendData(file_des,&retval,sizeof(retval),INT32);
@@ -2886,7 +2969,7 @@ int configure_mac(int file_des) {
 
 int load_image(int file_des) {
 	int retval;
-	int ret=OK;
+	int ret=OK,ret1=OK;
 	int n;
 	enum imageType index;
 	char ImageVals[dataBytes];
@@ -2949,7 +3032,9 @@ int load_image(int file_des) {
 
 	/* send answer */
 	/* send OK/failed */
-	n = sendData(file_des,&ret,sizeof(ret),INT32);
+	//ret could be swapped during sendData
+	ret1 = ret;
+	n = sendData(file_des,&ret1,sizeof(ret),INT32);
 	if (ret!=FAIL) {
 		/* send return argument */
 		n += sendData(file_des,&retval,sizeof(retval),INT32);
@@ -2967,7 +3052,7 @@ int load_image(int file_des) {
 
 int read_counter_block(int file_des) {
 
-	int ret=OK;
+	int ret=OK,ret1=OK;
 	int n;
 	int startACQ;
 	//char *retval=NULL;
@@ -3012,7 +3097,9 @@ int read_counter_block(int file_des) {
 
 	/* send answer */
 	/* send OK/failed */
-	n = sendData(file_des,&ret,sizeof(ret),INT32);
+	//ret could be swapped during sendData
+	ret1 = ret;
+	n = sendData(file_des,&ret1,sizeof(ret),INT32);
 	if (ret!=FAIL) {
 		/* send return argument */
 		n += sendData(file_des,CounterVals,dataBytes,OTHER);//1280*2
@@ -3030,7 +3117,7 @@ int read_counter_block(int file_des) {
 
 int reset_counter_block(int file_des) {
 
-	int ret=OK;
+	int ret=OK,ret1=OK;
 	int n;
 	int startACQ;
 
@@ -3062,7 +3149,9 @@ int reset_counter_block(int file_des) {
 
 	/* send answer */
 	/* send OK/failed */
-	n = sendData(file_des,&ret,sizeof(ret),INT32);
+	//ret could be swapped during sendData
+	ret1 = ret;
+	n = sendData(file_des,&ret1,sizeof(ret),INT32);
 	if (ret==FAIL)
 		n += sendData(file_des,mess,sizeof(mess),OTHER);
 
@@ -3078,7 +3167,7 @@ int reset_counter_block(int file_des) {
 
 
 int start_receiver(int file_des) {
-	int ret=OK;
+	int ret=OK,ret1=OK;
 	int n=0;
 	strcpy(mess,"Could not start receiver\n");
 
@@ -3104,7 +3193,9 @@ int start_receiver(int file_des) {
 	}
 
 	/* send answer */
-	n = sendData(file_des,&ret,sizeof(ret),INT32);
+	//ret could be swapped during sendData
+	ret1 = ret;
+	n = sendData(file_des,&ret1,sizeof(ret),INT32);
 	if(ret==FAIL)
 		n += sendData(file_des,mess,sizeof(mess),OTHER);
 	/*return ok/fail*/
@@ -3117,7 +3208,7 @@ int start_receiver(int file_des) {
 
 
 int stop_receiver(int file_des) {
-	int ret=OK;
+	int ret=OK,ret1=OK;
 	int n=0;
 
 	strcpy(mess,"Could not stop receiver\n");
@@ -3144,7 +3235,9 @@ int stop_receiver(int file_des) {
 	}
 
 	/* send answer */
-	n = sendData(file_des,&ret,sizeof(ret),INT32);
+	//ret could be swapped during sendData
+	ret1 = ret;
+	n = sendData(file_des,&ret1,sizeof(ret),INT32);
 	if(ret==FAIL)
 		n += sendData(file_des,mess,sizeof(mess),OTHER);
 	/*return ok/fail*/
@@ -3157,7 +3250,7 @@ int stop_receiver(int file_des) {
 
 int calibrate_pedestal(int file_des){
 
-	int ret=OK;
+	int ret=OK,ret1=OK;
 	int retval=-1;
 	int n;
 	int frames;
@@ -3190,7 +3283,9 @@ int calibrate_pedestal(int file_des){
 
 	/* send answer */
 	/* send OK/failed */
-	n = sendData(file_des,&ret,sizeof(ret),INT32);
+	//ret could be swapped during sendData
+	ret1 = ret;
+	n = sendData(file_des,&ret1,sizeof(ret),INT32);
 	if (ret==FAIL)
 		n += sendData(file_des,mess,sizeof(mess),OTHER);
 	else

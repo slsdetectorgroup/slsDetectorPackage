@@ -67,7 +67,7 @@ int EigerSendCMD(){
   if(n<0||ret_length<0) return 0;
 
 
-  fprintf(stdout,"%s\n",eiger_message);
+  //fprintf(stdout,"%s\n",eiger_message);
   if(eiger_ret_val>0){
     int i=0;
     eiger_message[1]='\0';

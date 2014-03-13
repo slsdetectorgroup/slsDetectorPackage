@@ -653,10 +653,10 @@ void qTabMeasurement::SetTimingMode(int mode){
 		if(myDet->setExternalCommunicationMode(slsDetectorDefs::TRIGGER_EXPOSURE)==slsDetectorDefs::TRIGGER_EXPOSURE)
 			success = true;
 		break;
-	case Trigger_Frame://ExpTime, #Triggers
-		spinNumFrames->setValue(1);
+	case Trigger_Frame://ExpTime, #Frames
+		lblNumFrames->setEnabled(true);		spinNumFrames->setEnabled(true);
 		lblExpTime->setEnabled(true);		spinExpTime->setEnabled(true);			comboExpUnit->setEnabled(true);
-		lblNumTriggers->setEnabled(true);	spinNumTriggers->setEnabled(true);
+		lblNumTriggers->setEnabled(false);	spinNumTriggers->setEnabled(false);
 		if(myDet->setExternalCommunicationMode(slsDetectorDefs::TRIGGER_FRAME)==slsDetectorDefs::TRIGGER_FRAME)
 			success = true;
 		break;
@@ -685,9 +685,8 @@ void qTabMeasurement::SetTimingMode(int mode){
 		if(myDet->setExternalCommunicationMode(slsDetectorDefs::GATE_WITH_START_TRIGGER)==slsDetectorDefs::GATE_WITH_START_TRIGGER)
 			success = true;
 		break;
-	case Trigger_Window://#Triggers
-		spinNumFrames->setValue(1);
-		lblNumTriggers->setEnabled(true);	spinNumTriggers->setEnabled(true);
+	case Trigger_Window://#Frames
+		lblNumFrames->setEnabled(true);		spinNumFrames->setEnabled(true);
 		if(myDet->setExternalCommunicationMode(slsDetectorDefs::TRIGGER_WINDOW)==slsDetectorDefs::TRIGGER_WINDOW)
 			success = true;
 		break;

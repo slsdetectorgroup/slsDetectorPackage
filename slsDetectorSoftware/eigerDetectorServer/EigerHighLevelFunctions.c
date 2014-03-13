@@ -18,8 +18,8 @@ char eiger_message[1024];
 int  eiger_message_length = 0;
 int  eiger_ret_val=0;
 
-const unsigned int ndacs         = 16;
-const char*        dac_names[16] = {"SvP","Vtr","Vrf","Vrs","SvN","Vtgstv","Vcmp_ll","Vcmp_lr","cal","Vcmp_rl","rxb_rb","rxb_lb","Vcmp_rr","Vcp","Vcn","Vis"};
+const int   ndacs         = 16;
+const char* dac_names[16] = {"SvP","Vtr","Vrf","Vrs","SvN","Vtgstv","Vcmp_ll","Vcmp_lr","cal","Vcmp_rl","rxb_rb","rxb_lb","Vcmp_rr","Vcp","Vcn","Vis"};
 
 
 int EigerInit(){

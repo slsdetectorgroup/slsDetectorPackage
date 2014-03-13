@@ -8,6 +8,7 @@
 #include "slsDetectorFunctionList.h"
 #include "svnInfoEiger.h"
 #include "Eiger.h"
+#include "EigerHighLevelFunctions.c"
 
 using namespace std;
 
@@ -225,7 +226,7 @@ int startStateMachine(){
 	now_ptr=(char*)ram_values;
 	//send start acquisition to fpga
 	 */
-	return FAIL;
+	return OK;
 }
 
 
@@ -233,7 +234,7 @@ int stopStateMachine(){
 	//template stopStateMachine() from firmware_funcs.c
 	// send stop to fpga
 	//if status = busy after 500us, return FAIL
-	return FAIL;
+	return OK;
 }
 
 

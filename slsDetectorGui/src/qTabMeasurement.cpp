@@ -141,7 +141,7 @@ void qTabMeasurement::SetupTimingMode(){
 			item[(int)Trigger_Window]->setEnabled(false);
 			break;
 		case slsDetectorDefs::EIGER:
-			item[(int)Trigger_Exp_Series]->setEnabled(true);
+			item[(int)Trigger_Exp_Series]->setEnabled(false);/**not implemented yet*/
 			item[(int)Trigger_Frame]->setEnabled(true);
 			item[(int)Trigger_Readout]->setEnabled(false);
 			item[(int)Gated]->setEnabled(false);

@@ -203,13 +203,13 @@ int EigerStartAcquisition(){
   return EigerSendCMD();
 }
 
-/*
+
 int EigerRunStatus(){
   eiger_ret_val=1;
   eiger_message_length = sprintf(eiger_message,"isdaqstillrunning");
-  return EigerSendCMD();
+  if(!EigerSendCMD()) return -1;
+  return eiger_ret_val;
 }
-*/
 
 int EigerStopAcquisition(){
   eiger_ret_val=0;
@@ -239,8 +239,10 @@ int main(){
   fprintf(stdout," ret : %d\n",EigerSetPhotonEnergy(9200));
   fprintf(stdout," ret : %d\n",EigerSetDynamicRange(16));
   fprintf(stdout," ret : %d\n",EigerStartAcquisition());
+  fprintf(stdout," aret : %d\n",EigerRunStatus());
   sleep(1);
   fprintf(stdout," ret : %d\n",EigerStopAcquisition());
+  fprintf(stdout," bret : %d\n",EigerRunStatus());
   fprintf(stdout," ret : %d\n",t);
   
   return 0;

@@ -4861,18 +4861,18 @@ char* slsDetector::setReceiver(string receiverIP){
 	strcpy(thisDetector->receiver_hostname,receiverIP.c_str());
 
 	if(setReceiverOnline(ONLINE_FLAG)==ONLINE_FLAG){
-//#ifdef VERBOSE
+#ifdef VERBOSE
 		std::cout << "Setting up receiver with" << endl <<
 				"file path:" << fileIO::getFilePath() << endl <<
 				"file name:" << fileIO::getFileName() << endl <<
-				"write enable:" << parentDet->enableWriteToFileMask() << endl;
+				"write enable:" << parentDet->enableWriteToFileMask();
 		if(thisDetector->myDetectorType != EIGER){
 			std::cout << "file index:" << fileIO::getFileIndex() << endl <<
 					"frame index needed:" <<  ((setTimer(FRAME_NUMBER,-1)*setTimer(CYCLES_NUMBER,-1))>1) << endl <<
-					"frame period:" << setTimer(FRAME_PERIOD,-1) << endl;
+					"frame period:" << setTimer(FRAME_PERIOD,-1) ;
 		}
 		std::cout << endl;
-//#endif
+#endif
 		if(thisDetector->myDetectorType == EIGER)
 			setDetectorHostname();
 		setFilePath(fileIO::getFilePath());

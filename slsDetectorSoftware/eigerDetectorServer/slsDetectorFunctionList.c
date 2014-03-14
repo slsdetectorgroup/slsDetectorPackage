@@ -2,36 +2,32 @@
 
 
 #include <stdio.h>
-#include <string>
+#include <string.h>
 
 
 #include "slsDetectorFunctionList.h"
 #include "svnInfoEiger.h"
-#include "Eiger.h"
 #include "EigerHighLevelFunctions.c"
 
-using namespace std;
 
 enum detectorSettings thisSettings = STANDARD;
 //static const string dacNames[16] = {"Svp","Svn","Vtr","Vrf","Vrs","Vtgstv","Vcmp_ll","Vcmp_lr","Cal","Vcmp_rl","Vcmp_rr","Rxb_rb","Rxb_lb","Vcp","Vcn","Vis"};
 
-static Eiger* eiger = new Eiger();
 
 int initDetector(){
   printf("EIGER 10\n");
   return 1;
 }
 
-//int reInitDetector(){ eiger->Init() ? 1:0; }
 
 int setNMod(int nm, enum dimension dim){
-	return eiger->GetNModules();
+	return 1;
 }
 
 
 
 int getNModBoard(enum dimension arg){
-	return eiger->GetNModules();
+	return 1;
 }
 
 
@@ -145,17 +141,15 @@ int detectorTest( enum digitalTestMode arg){
 
 
 int setDAC(enum detDacIndex ind, int val, int imod){
-  string iname;
-  float v = val/0.001;
-  if(!eiger->GetDACName((unsigned int) ind,iname)) return -1;
+	char iname[10];
+	strcpy(iname,EigerGetDACName((int)ind));
 //#ifdef VERBOSE
-  printf("Setting dac %d: %s to %d mV\n",ind, iname.c_str(),val);
+	printf("Setting dac %d: %s to %d mV\n",ind, iname,val);
 //#endif
-  if(val>=0) eiger->SetDAC(iname,v);
+	if(val >= 0)
+		EigerSetDAC(iname,val/1000);
 
-  if(!eiger->GetDAC(iname,v)) v=-1;
-
-  return int(v*1000);
+	return (EigerGetDAC(iname)*1000);
 }
 
 
@@ -198,16 +192,15 @@ int getModule(sls_detector_module *myMod){
 }
 
 int getThresholdEnergy(int imod){
-	//template getThresholdEnergy() from mcb_funcs.c
-	//depending on settings
-	return 0;
+	printf("Threshold energy: %d\n",EigerGetPhotonEnergy());
+	return EigerGetPhotonEnergy();
 }
 
 
 int setThresholdEnergy(int thr, int imod){
-	//template getThresholdEnergy() from mcb_funcs.c
-	//depending on settings
-	return 0;
+	printf("Setting threshold energy:%d\n",thr);
+	EigerSetPhotonEnergy(thr);
+	return EigerGetPhotonEnergy();
 }
 
 
@@ -220,20 +213,15 @@ enum detectorSettings setSettings(enum detectorSettings sett, int imod){
 }
 
 int startStateMachine(){
-	//template startStateMachine() from firmware_funcs.c
-	/*
-	fifoReset();
-	now_ptr=(char*)ram_values;
-	//send start acquisition to fpga
-	 */
+	printf("Going to start acquisition\n");
+	EigerStartAcquisition();
 	return OK;
 }
 
 
 int stopStateMachine(){
-	//template stopStateMachine() from firmware_funcs.c
-	// send stop to fpga
-	//if status = busy after 500us, return FAIL
+	printf("Going to stop acquisition\n");
+	EigerStopAcquisition();
 	return OK;
 }
 
@@ -246,9 +234,15 @@ int startReadOut(){
 
 
 enum runStatus getRunStatus(){
-	//template runState() from firmware_funcs.c
-	//get status from fpga
-	return ERROR;
+	int i = EigerRunStatus();
+	printf("Status:%d ",i);
+	if(i== 0){
+		printf(" returning %d\n",IDLE);
+		return IDLE;
+	}else{
+		printf(" returning %d\n",RUNNING);
+		return RUNNING;
+	}
 }
 
 
@@ -262,41 +256,45 @@ char *readFrame(int *ret, char *mess){
 
 
 int64_t setTimer(enum timerIndex ind, int64_t val){
-  /*
+
 	switch(ind){
 	case FRAME_NUMBER:
-		if(val >= 0)
-			framenum = val;
-		return framenum;
+		if(val >= 0){
+			printf(" Setting number of frames: %d\n",(unsigned int)val);
+			EigerSetNumberOfExposures((unsigned int)val);
+		}return EigerGetNumberOfExposures();
 	case ACQUISITION_TIME:
-		if(val >= 0)
-			exposureTime = val;
-		return exposureTime;
+		if(val >= 0){
+			printf(" Setting exp time: %fs\n",val/(1E9));
+			EigerSetExposureTime(val/(1E9));
+		}return EigerGetExposureTime();
 	case FRAME_PERIOD:
+		if(val >= 0){
+			printf(" Setting acq period: %fs\n",val/(1E9));
+			EigerSetExposurePeriod(val/(1E9));
+		}return (EigerGetExposurePeriod()*(1E9));
+/*	case DELAY_AFTER_TRIGGER:
 		if(val >= 0)
-			period = val;
-		return period;
-	case DELAY_AFTER_TRIGGER:
-		if(val >= 0)
-			delay = val;
-		return delay;
+			EigerSetNumberOfExposures((unsigned int)val);
+		return EigerGetNumberOfExposures();
 	case GATES_NUMBER:
 		if(val >= 0)
-			gates = val;
-		return gates;
+			EigerSetNumberOfExposures((unsigned int)val);
+		return EigerGetNumberOfExposures();
 	case PROBES_NUMBER:
 		if(val >= 0)
-			framenum = val;
-		return framenum;
+			EigerSetNumberOfExposures((unsigned int)val);
+		return EigerGetNumberOfExposures();*/
 	case CYCLES_NUMBER:
-		if(val >= 0)
-			trains = val;
-		return trains;
+		if(val >= 0){
+			printf(" Setting number of triggers: %d\n",(unsigned int)val);
+			EigerSetNumberOfExposureSeries((unsigned int)val);
+		}return EigerGetNumberOfExposureSeries();
 	default:
 		printf("unknown timer index: %d\n",ind);
 		break;
 	}
-*/
+
 	return -1;
 }
 
@@ -316,9 +314,10 @@ int64_t getTimeLeft(enum timerIndex ind){
 
 
 int setDynamicRange(int dr){
-	//template setDynamicRange() from firmware_funcs.c
-  //	return DYNAMIC_RANGE;
-	return 0;
+	if(dr > 0){
+		printf(" Setting dynamic range: %d\n",dr);
+		EigerSetDynamicRange(dr);
+	}return EigerGetDynamicRange();
 }
 
 

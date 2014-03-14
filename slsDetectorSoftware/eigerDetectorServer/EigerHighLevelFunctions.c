@@ -22,6 +22,19 @@ const int   ndacs         = 16;
 const char* dac_names[16] = {"SvP","Vtr","Vrf","Vrs","SvN","Vtgstv","Vcmp_ll","Vcmp_lr","cal","Vcmp_rl","rxb_rb","rxb_lb","Vcmp_rr","Vcp","Vcn","Vis"};
 
 
+
+
+unsigned int EigerGetNumberOfExposures(){return 1;};
+float EigerGetExposureTime(){return 1;};
+float EigerGetExposurePeriod(){return 1;};
+int EigerGetDynamicRange(){return 1;};
+int EigerGetPhotonEnergy(){return 1;};
+/* for later */
+unsigned int EigerGetNumberOfExposureSeries(){return 1;};
+unsigned int EigerSetNumberOfExposureSeries(unsigned int i){return 1;};
+
+
+
 int EigerInit(){
   static int passed = 0;
 
@@ -164,14 +177,6 @@ int EigerGetDynamicRange(){
 }
 */
 
-/*
-int EigerGetExposurePeriod(float v){
-  eiger_ret_val=1;
-  eiger_message_length = sprintf(eiger_message,"getexposuretime");
-  if(!EigerSendCMD()) return 0;
-  return eiger_ret_val;
-}
-*/
 
 int EigerSetPhotonEnergy(int in_eV){
   eiger_ret_val=0;
@@ -231,6 +236,7 @@ int main(){
 
   fprintf(stdout," ret : %d\n",EigerSetDAC(n,v));
   t = EigerGetDAC(n);
+  fprintf(stdout," ret : %d\n",t);
   
   float f=0.12; 
   fprintf(stdout," ret : %d\n",EigerSetNumberOfExposures(120));
@@ -243,7 +249,6 @@ int main(){
   sleep(1);
   fprintf(stdout," ret : %d\n",EigerStopAcquisition());
   fprintf(stdout," bret : %d\n",EigerRunStatus());
-  fprintf(stdout," ret : %d\n",t);
   
   return 0;
 }

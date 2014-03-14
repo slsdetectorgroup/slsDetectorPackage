@@ -62,7 +62,8 @@ $Revision$
 /** get flag form most functions */
 #define GET_FLAG -1
 
-#if defined(__cplusplus) && !defined(EIGERD)
+//#if defined(__cplusplus) && !defined(EIGERD)
+#ifdef __cplusplus
 
 /** @short class containing all the structures, constants and enum definitions */
 class slsDetectorDefs {
@@ -566,7 +567,8 @@ enum angleConversionParameter {
 //} angleConversionConstant;
 
 
-#if defined(__cplusplus) && !defined(EIGERD)
+//#if defined(__cplusplus) && !defined(EIGERD)
+#ifdef __cplusplus
  protected:
 #endif
 
@@ -577,7 +579,8 @@ enum angleConversionParameter {
 #endif
 
 
-#if defined(__cplusplus) && !defined(EIGERD)
+//#if defined(__cplusplus) && !defined(EIGERD)
+#ifdef __cplusplus
 };
 #endif
 ;

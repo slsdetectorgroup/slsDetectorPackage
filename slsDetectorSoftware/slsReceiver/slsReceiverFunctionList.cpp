@@ -31,7 +31,7 @@ using namespace std;
 
 slsReceiverFunctionList::slsReceiverFunctionList(detectorType det):
 #ifdef EIGER_RECEIVER_H
-					eigerRxr(NULL),
+					receiver(NULL),
 #endif
 					myDetectorType(det),
 					status(IDLE),
@@ -102,7 +102,7 @@ slsReceiverFunctionList::slsReceiverFunctionList(detectorType det):
 	}
 	else if(myDetectorType == EIGER){
 #ifdef EIGER_RECEIVER_H
-		eigerRxr = new eigerReceiver();
+		receiver = new EigerReceiver::create();
 #endif
 	}
 
@@ -223,27 +223,28 @@ uint32_t slsReceiverFunctionList::getAcquisitionIndex(){
 
 int32_t slsReceiverFunctionList::setNumberOfFrames(int32_t fnum){
 	if(fnum >= 0)
-		eigerRxr->setNumberOfFrames(fnum);
-	return eigerRxr->getNumberOfFrames();
+		receiver->setNumberOfFrames(fnum);
+	return receiver->getNumberOfFrames();
 }
 
 int32_t slsReceiverFunctionList::setScanTag(int32_t stag){
 	if(stag >= 0)
-		eigerRxr->setScanTag(stag);
-	return eigerRxr->getScanTag();
+		receiver->setScanTag(stag);
+	return receiver->getScanTag();
 }
 
 int32_t slsReceiverFunctionList::setDynamicRange(int32_t dr){
 	if(dr >= 0)
-		eigerRxr->setDynamicRange(dr);
-	return eigerRxr->getDynamicRange();
+		receiver->setDynamicRange(dr);
+	return receiver->getDynamicRange();
 }
 
 
 char* slsReceiverFunctionList::setDetectorHostname(char c[]){
-	if(strlen(c))
-		eigerRxr->setDetectorHostname(c);
-	return  eigerRxr->getDetectorHostname();
+	if((strlen(c))&& (receiver->getDetectorHostname() == NULL))
+		receiver->initialize(c);
+	}
+	return  receiver->getDetectorHostname();
 }
 
 
@@ -254,13 +255,13 @@ char* slsReceiverFunctionList::setDetectorHostname(char c[]){
 char* slsReceiverFunctionList::setFileName(char c[]){
 	if(strlen(c)){
 #ifdef EIGER_RECEIVER_H
-		eigerRxr->setFileName(c);
+		receiver->setFileName(c);
 #else
 		strcpy(fileName,c);
 #endif
 	}
 #ifdef EIGER_RECEIVER_H
-		return  eigerRxr->getFileName();
+		return  receiver->getFileName();
 #else
 	return getFileName();
 #endif
@@ -274,7 +275,7 @@ char* slsReceiverFunctionList::setFilePath(char c[]){
 		struct stat st;
 		if(stat(c,&st) == 0){
 #ifdef EIGER_RECEIVER_H
-			eigerRxr->setFileName(c);
+			receiver->setFileName(c);
 #else
 			strcpy(filePath,c);
 #endif
@@ -284,7 +285,7 @@ char* slsReceiverFunctionList::setFilePath(char c[]){
 		}
 	}
 #ifdef EIGER_RECEIVER_H
-		return  eigerRxr->getFilePath();
+		return  receiver->getFilePath();
 #else
 	return getFilePath();
 #endif
@@ -303,13 +304,13 @@ int slsReceiverFunctionList::setFileIndex(int i){
 int slsReceiverFunctionList::setEnableFileWrite(int i){
 	if(i!=-1){
 #ifdef EIGER_RECEIVER_H
-		eigerRxr->setEnableFileWrite(i);
+		receiver->setEnableFileWrite(i);
 #else
 		enableFileWrite=i;
 #endif
 	}
 #ifdef EIGER_RECEIVER_H
-		return  eigerRxr->getEnableFileWrite();
+		return  receiver->getEnableFileWrite();
 #else
 	return enableFileWrite;
 #endif

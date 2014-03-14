@@ -333,7 +333,7 @@ private:
 
 
 #ifdef EIGER_RECEIVER_H
-	eigerReceiver eigerRxr;
+	EigerReceiver receiver;
 #endif
 
 

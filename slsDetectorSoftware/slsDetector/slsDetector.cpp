@@ -3570,15 +3570,15 @@ int64_t slsDetector::setTimer(timerIndex index, int64_t t){
 #endif
 	  if (connectData() == OK)
 		  ret=thisReceiver->sendIntArray(fnum,ut,args);
-	  if(ut != retval){
+	  if((ut != retval)|| (ret==FAIL)){
 		  ret = FAIL;
-		  cout << "ERROR:Acquisition Period in receiver set incorrectly to " << ut << " instead of " << retval << endl;
-	  }
-	  if(ret==FAIL){
-		  if(index==FRAME_PERIOD)
+		  if(index==FRAME_PERIOD){
+			  cout << "ERROR:Acquisition Period in receiver set incorrectly to " << ut << " instead of " << retval << endl;
 			  setErrorMask((getErrorMask())|(RECEIVER_ACQ_PERIOD_NOT_SET));
-		  else
+		  }else{
+			  cout << "ERROR:Number of Frames in receiver set incorrectly to " << ut << " instead of " << retval << endl;
 			  setErrorMask((getErrorMask())|(RECEIVER_FRAME_NUM_NOT_SET));
+		  }
 	  }
 	  if(ret==FORCE_UPDATE)
 		  updateReceiver();

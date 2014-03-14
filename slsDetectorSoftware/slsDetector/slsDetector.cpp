@@ -3534,10 +3534,22 @@ int64_t slsDetector::setTimer(timerIndex index, int64_t t){
 
 
 
-  if((ret != FAIL) && (t != -1)){
 
-  //send acquisiton period to receiver
-  if((setReceiverOnline(ONLINE_FLAG)==ONLINE_FLAG) && ((index==FRAME_PERIOD)||(index==FRAME_NUMBER)) && (ret != FAIL)  && (t != -1)){
+  //send acquisiton period/frame number to receiver
+  switch(thisDetector->myDetectorType){
+  case EIGER:
+	  if(index != FRAME_NUMBER)
+		  return thisDetector->timerValue[index];
+	  break;
+	  //for gotthard and moench, mythen returns anyway because of no rxr
+  default:
+	  if(index != FRAME_PERIOD)
+		  return thisDetector->timerValue[index];
+	 break;
+  }
+
+  if((ret != FAIL) && (t != -1)){
+  if(setReceiverOnline(ONLINE_FLAG)==ONLINE_FLAG){
 	  int64_t args[2];
 	  args[1] = retval;
 	  if(index==FRAME_NUMBER)
@@ -3571,6 +3583,7 @@ int64_t slsDetector::setTimer(timerIndex index, int64_t t){
 	  if(ret==FORCE_UPDATE)
 		  updateReceiver();
   }
+
   }
 
   return thisDetector->timerValue[index];
@@ -4848,7 +4861,7 @@ char* slsDetector::setReceiver(string receiverIP){
 	strcpy(thisDetector->receiver_hostname,receiverIP.c_str());
 
 	if(setReceiverOnline(ONLINE_FLAG)==ONLINE_FLAG){
-#ifdef VERBOSE
+//#ifdef VERBOSE
 		std::cout << "Setting up receiver with" << endl <<
 				"file path:" << fileIO::getFilePath() << endl <<
 				"file name:" << fileIO::getFileName() << endl <<
@@ -4859,7 +4872,7 @@ char* slsDetector::setReceiver(string receiverIP){
 					"frame period:" << setTimer(FRAME_PERIOD,-1) << endl;
 		}
 		std::cout << endl;
-#endif
+//#endif
 		if(thisDetector->myDetectorType == EIGER)
 			setDetectorHostname();
 		setFilePath(fileIO::getFilePath());

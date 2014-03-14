@@ -65,16 +65,11 @@ public:
 	 */
 	virtual void initialize(const char *detectorHostName) = 0;
 
-	/**
- 	 * Set detector hostname
- 	 @param c hostname
- 	 /returns hostname
- 	 */
- 	/*FIXME: char* setDetectorHostname(char c[]);  Can/want we support this setter function? Can't change after initialization */
 
 	 /* Returns detector hostname
  	 /returns hostname
  	  * caller needs to deallocate the returned char array.
+ 	  * if uninitialized, it must return NULL
  	 */
  	virtual char *getDetectorHostname() = 0;
 

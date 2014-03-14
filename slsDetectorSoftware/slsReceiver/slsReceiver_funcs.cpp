@@ -7,6 +7,7 @@
 #include "slsReceiverFunctionList.h"
 #include "svnInfoReceiver.h"
 #include "slsReceiverUsers.h"
+#include "slsDetectorBase.h"
 
 #include  <signal.h>	//SIGINT
 #include  <stdlib.h>	//EXIT
@@ -718,6 +719,9 @@ int slsReceiverFuncs::setup_udp(){
 
 int slsReceiverFuncs::start_receiver(){
 	ret=OK;
+	ret=OK;
+	enum runStatus s;
+	char cstatus[15];
 	strcpy(mess,"Could not start receiver\n");
 
 	// execute action if the arguments correctly arrived
@@ -732,8 +736,17 @@ int slsReceiverFuncs::start_receiver(){
 		ret = FAIL;
 	}
 	*/
-	else if(slsReceiverList->getStatus()==IDLE)
-		ret=slsReceiverList->startReceiver(mess);
+	else {
+		s = slsReceiverList->getStatus();
+		strcpy(cstatus, slsDetectorBase::runStatusType(s).c_str());
+		if(s == IDLE)
+			ret=slsReceiverList->startReceiver(mess);
+		else{
+			sprintf(mess,"Cannot start Receiver as it is in %s state\n",cstatus);
+			ret=FAIL;
+		}
+	}
+
 #endif
 
 	if(ret==OK && socket->differentClients){
@@ -1443,7 +1456,7 @@ int slsReceiverFuncs::set_timer() {
 		strcpy(mess,"Error reading from socket\n");
 		ret = FAIL;
 	}
-cout<<"index[0]"<<index[0]<<" index[1]:"<<index[1]<<endl;
+
 	// execute action if the arguments correctly arrived
 #ifdef SLS_RECEIVER_FUNCTION_LIST
 	if (ret==OK) {
@@ -1767,10 +1780,12 @@ int slsReceiverFuncs::send_update() {
 
 	//index
 #ifdef SLS_RECEIVER_FUNCTION_LIST
+
+#ifndef EIGER_RECEIVER
 	ind=slsReceiverList->getFileIndex();
 #endif
 	socket->SendDataOnly(&ind,sizeof(ind));
-
+#endif
 
 	//filepath
 #ifdef SLS_RECEIVER_FUNCTION_LIST

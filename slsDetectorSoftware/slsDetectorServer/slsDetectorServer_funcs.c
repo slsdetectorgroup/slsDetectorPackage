@@ -3168,7 +3168,7 @@ int start_receiver(int file_des) {
 	int n=0;
 	strcpy(mess,"Could not start receiver\n");
 
-	/* execute action if the arguments correctly arrived*/
+	/* execute action if the arguments correctly arri ved*/
 #ifndef GOTTHARDD
 	ret = FAIL;
 	strcpy(mess,"Not applicable/implemented for this detector\n");

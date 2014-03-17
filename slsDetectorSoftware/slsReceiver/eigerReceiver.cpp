@@ -13,7 +13,7 @@
 /* uncomment next line to enable debug output */
 #define EIGER_DEBUG
 
-/* macro for debug output */
+/* macro for debug output http://stackoverflow.com/a/14256296 */
 #ifdef EIGER_DEBUG
 #define DEBUG(x) do { std::cerr << x << std::endl; } while (0)
 #else

@@ -1,4 +1,4 @@
-
+//#define EIGER_RECEIVER
 #ifdef EIGER_RECEIVER
 
 #ifndef EIGERRECEIVER_H
@@ -71,7 +71,7 @@ public:
  	  * caller needs to deallocate the returned char array.
  	  * if uninitialized, it must return NULL
  	 */
- 	virtual char *getDetectorHostname() = 0;
+ 	virtual char *getDetectorHostname() const  = 0;
 
 	/**
 	 * Returns status of receiver: idle, running or error
@@ -84,38 +84,38 @@ public:
 	 * Returns File Name
 	 * caller is responsible to deallocate the returned char array.
 	 */
-	virtual char *getFileName() = 0;
+	virtual char *getFileName() const = 0;
 
 
 	/**
 	 * Returns File Path
 	 * caller is responsible to deallocate the returned char array
 	 */
-	virtual char *getFilePath() = 0; //FIXME: Does the caller need to free() the returned pointer?
+	virtual char *getFilePath() const = 0; //FIXME: Does the caller need to free() the returned pointer?
 
 
 	/**
 	 * Returns the number of bits per pixel
 	 */
-	virtual int getDynamicRange() = 0;
+	virtual int getDynamicRange() const = 0;
 
 	/**
 	 * Returns scan tag
 	 */
-	virtual int getScanTag() = 0;
+	virtual int getScanTag() const = 0;
 
 	/*
 	 * Returns number of frames to receive
 	 * This is the number of frames to expect to receiver from the detector.
 	 * The data receiver will change from running to idle when it got this number of frames
 	 */
-	virtual int getNumberOfFrames() = 0;
+	virtual int getNumberOfFrames() const = 0;
 
 	/**
 	* Returns file write enable
 	* 1: YES 0: NO
 	*/
-	virtual int getEnableFileWrite() = 0;
+	virtual int getEnableFileWrite() const  = 0;
 
 	/**
 	 * Set File Name (without frame index, file index and extension)

@@ -11,7 +11,7 @@
 
 
 /* uncomment next line to enable debug output */
-// #define EIGER_DEBUG
+#define EIGER_DEBUG
 
 /* macro for debug output */
 #ifdef EIGER_DEBUG
@@ -27,7 +27,7 @@ public:
 	 DEBUG("initialize() with: detectorHostName= " << detectorHostName << ".");
 	}
 
-	char *getDetectorHostname() {
+	char *getDetectorHostname() const {
 		const std::string name = "some_host_name";
 	    char *c = new char[name.length()];
 	    name.copy(c, name.length());
@@ -36,7 +36,7 @@ public:
 	    return(c);
 	}
 
-	char *getFileName() {
+	char *getFileName() const {
 		const std::string name = "some_file_name";
 	    char *c = new char[name.length()];
 	    name.copy(c, name.length());
@@ -45,7 +45,7 @@ public:
 	    return(c);
 	}
 
-	char *getFilePath() {
+	char *getFilePath() const {
 		std::string name = "some_path";
 	    char *c = new char[name.length()];
 	    name.copy(c, name.length());
@@ -54,17 +54,17 @@ public:
 	    return(c);
 	}
 
-	int getDynamicRange() {
+	int getDynamicRange() const {
 		DEBUG("getDynamicRange(): Return 16.");
 		return(16);
 	}
 
-	int getScanTag() {
+	int getScanTag() const {
 		DEBUG("getScanTag(): return 4711.");
 		return(4711);
 	}
 
-	int getNumberOfFrames() {
+	int getNumberOfFrames() const {
 		DEBUG("getNumberOfFrames(): return 42.");
 		return(42);
 	}
@@ -79,7 +79,7 @@ public:
 		return(this->getFilePath());
 	}
 
-	int getEnableFileWrite() {
+	int getEnableFileWrite() const {
 		DEBUG("getEnableFileWrite() returns 1.");
 		return(1);
 	}

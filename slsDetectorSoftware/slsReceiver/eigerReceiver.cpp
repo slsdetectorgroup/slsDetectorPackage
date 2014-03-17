@@ -9,11 +9,22 @@
 #include <string>
 #include "eigerReceiver.h"
 
+
+/* uncomment next line to enable debug output */
+// #define EIGER_DEBUG
+
+/* macro for debug output */
+#ifdef EIGER_DEBUG
+#define DEBUG(x) do { std::cerr << x << std::endl; } while (0)
+#else
+#define DEBUG(x)
+#endif
+
 class EigerReceiverImplementation: public EigerReceiver {
 
 public:
 	void initialize(const char *detectorHostName) {
-	 std::cout << "initialize() with: detectorHostName= " << detectorHostName << ".\n";
+	 DEBUG("initialize() with: detectorHostName= " << detectorHostName << ".");
 	}
 
 	char *getDetectorHostname() {
@@ -21,7 +32,7 @@ public:
 	    char *c = new char[name.length()];
 	    name.copy(c, name.length());
 	    c[name.length()] = '\0';
-        std::cout << "getDetectorHostname(): Return " << c << ".\n";
+        DEBUG("getDetectorHostname(): Return " << c << ".");
 	    return(c);
 	}
 
@@ -30,7 +41,7 @@ public:
 	    char *c = new char[name.length()];
 	    name.copy(c, name.length());
 	    c[name.length()] = '\0';
-        std::cout << "getFileName(): Return " << c << ".\n";
+        DEBUG("getFileName(): Return " << c);
 	    return(c);
 	}
 
@@ -39,78 +50,78 @@ public:
 	    char *c = new char[name.length()];
 	    name.copy(c, name.length());
 	    c[name.length()] = '\0';
-        std::cout << "getFilePath(): Return " << c << ".\n";
+        DEBUG("getFilePath(): Return " << c);
 	    return(c);
 	}
 
 	int getDynamicRange() {
-		std::cout << "getDynamicRange(): Return 16.\n";
+		DEBUG("getDynamicRange(): Return 16.");
 		return(16);
 	}
 
 	int getScanTag() {
-		std::cout << "getScanTag(): return 4711.\n";
+		DEBUG("getScanTag(): return 4711.");
 		return(4711);
 	}
 
 	int getNumberOfFrames() {
-		std::cout << "getNumberOfFrames(): return 42.\n";
+		DEBUG("getNumberOfFrames(): return 42.");
 		return(42);
 	}
 
 	char * setFileName(const char c[]) {
-		std::cout << "setFileName() called with " << c <<".\n";
+		DEBUG("setFileName() called with " << c <<".");
 		return(this->getFileName());
 	}
 
 	char * setFilePath(const char c[]) {
-		std::cout << "setFilePath() called with" << c << ".\n";
+		DEBUG("setFilePath() called with" << c << ".");
 		return(this->getFilePath());
 	}
 
 	int getEnableFileWrite() {
-		std::cout << "getEnableFileWrite() returns 1.\n";
+		DEBUG("getEnableFileWrite() returns 1.");
 		return(1);
 	}
 	int setDynamicRange (const int dr) {
-		std::cout << "setDynamicRange() called with " << dr << '.' << '\n';
+		DEBUG("setDynamicRange() called with " << dr << '.');
 		return(this->getDynamicRange());
 	}
 
 	int setScanTag (const int tag) {
-		std::cout << "setScanTag() called with " << tag << ".\n";
+		DEBUG("setScanTag() called with " << tag);
 		return(this->getScanTag());
 	}
 
 	int setNumberOfFrames (const int fnum) {
-		std::cout << "setNumberOfFrames() called with " << fnum << ".\n";
+		DEBUG("setNumberOfFrames() called with " << fnum);
 		return(this->getNumberOfFrames());
 	}
 
 	int setEnableFileWrite(const int i) {
-		std::cout << "enableFileWrite() called with " << i << ".\n";
+		DEBUG("enableFileWrite() called with " << i);
 		return(0);
 	}
 
 	int startReceiver(char message[]) {
-		std::cout << "startReceiver(): return 0.\n";
+		DEBUG("startReceiver(): return 0.");
 		message = NULL;
 		return(0);
 	}
 
 	int stopReceiver() {
-		std::cout << "stopReceiver(): return 0.\n";
+		DEBUG("stopReceiver(): return 0.");
 		return(0);
 	}
 
 	void abort() {
-		std::cout << "abort(): return 0.\n";
+		DEBUG("abort(): return 0.");
 	}
 
 };
 
 EigerReceiver *EigerReceiver::create(void) {
-	std::cout << "create(): Return new EigerReceiverImplementation instance.\n";
+	DEBUG("create(): Return new EigerReceiverImplementation instance.");
 	return new EigerReceiverImplementation();
 }
 

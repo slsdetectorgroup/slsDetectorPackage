@@ -1,4 +1,6 @@
+//#ifndef EIGER_RECEIVER
 //#define EIGER_RECEIVER
+//#endif
 #ifdef EIGER_RECEIVER
 
 #ifndef EIGERRECEIVER_H
@@ -11,6 +13,8 @@
 /**
  * @short does all the functions for a receiver, set/get parameters, start/stop etc.
  */
+
+#include "sls_detector_defs.h"
 
 class EigerReceiver {
 	/* abstract class that defines the public interface of an eiger data receiver.
@@ -76,9 +80,7 @@ public:
 	/**
 	 * Returns status of receiver: idle, running or error
 	 */
-	/*FIXME: need to implement runStatus getStatus();*/
- 	/* the struct slsDetectorDefs is available in  slsDetectorsPackage/slsDetectorSoftware/commonFiles/slsDetectorDefs.h */
-
+    virtual slsDetectorDefs::runStatus getStatus() const = 0;
 
 	/**
 	 * Returns File Name

@@ -266,7 +266,10 @@ char* slsReceiverFunctionList::setFilePath(char c[]){
 
 
 char* slsReceiverFunctionList::getFileName(){
-	return fileName;
+	if(myDetectorType == EIGER)
+		receiver->getFileName();
+	else
+		return fileName;
 }
 
 char* slsReceiverFunctionList::setFileName(char c[]){
@@ -327,7 +330,10 @@ int slsReceiverFunctionList::setEnableFileWrite(int i){
 /*other parameters*/
 
 slsDetectorDefs::runStatus slsReceiverFunctionList::getStatus(){
-	return status;
+	if(myDetectorType == EIGER)
+		return receiver->getStatus();
+	else
+		return status;
 }
 
 
@@ -1057,6 +1063,11 @@ void slsReceiverFunctionList::closeFile(int ithr){
 
 
 int slsReceiverFunctionList::startReceiver(char message[]){
+
+	if(myDetectorType == EIGER)
+		return receiver->startReceiver(message);
+
+
 //#ifdef VERBOSE
 	cout << "Starting Receiver" << endl;
 //#endif
@@ -1117,6 +1128,11 @@ int slsReceiverFunctionList::startReceiver(char message[]){
 
 
 int slsReceiverFunctionList::stopReceiver(){
+
+	if(myDetectorType == EIGER)
+		return receiver->stopReceiver();
+
+
 //#ifdef VERBOSE
 	cout << "Stopping Receiver" << endl;
 //#endif

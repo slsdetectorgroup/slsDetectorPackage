@@ -30,9 +30,7 @@ using namespace std;
 
 
 slsReceiverFunctionList::slsReceiverFunctionList(detectorType det):
-#ifdef EIGER_RECEIVER_H
 					receiver(NULL),
-#endif
 					myDetectorType(det),
 					status(IDLE),
 					udpSocket(NULL),
@@ -90,6 +88,8 @@ slsReceiverFunctionList::slsReceiverFunctionList(detectorType det):
 					pRawDataReady(NULL){
 
 	maxPacketsPerFile = MAX_FRAMES_PER_FILE * packetsPerFrame;
+
+
 	//moench variables
 	if(myDetectorType == MOENCH){
 		fifosize = MOENCH_FIFO_SIZE;
@@ -100,10 +100,9 @@ slsReceiverFunctionList::slsReceiverFunctionList(detectorType det):
 		frameIndexOffset = MOENCH_FRAME_INDEX_OFFSET;
 		packetIndexMask = MOENCH_PACKET_INDEX_MASK;
 	}
+
 	else if(myDetectorType == EIGER){
-#ifdef EIGER_RECEIVER_H
-		receiver = new EigerReceiver::create();
-#endif
+		receiver = EigerReceiver::create();
 	}
 
 	//variable initialization
@@ -193,11 +192,20 @@ slsReceiverFunctionList::~slsReceiverFunctionList(){
 
 
 
-void slsReceiverFunctionList::setEthernetInterface(char* c){
-	strcpy(eth,c);
-}
 
 
+
+/*Frame indices and numbers caught*/
+
+bool slsReceiverFunctionList::getAcquistionStarted(){return acqStarted;};
+
+bool slsReceiverFunctionList::getMeasurementStarted(){return measurementStarted;};
+
+int slsReceiverFunctionList::getFramesCaught(){return (packetsCaught/packetsPerFrame);}
+
+int slsReceiverFunctionList::getTotalFramesCaught(){return (totalPacketsCaught/packetsPerFrame);}
+
+uint32_t slsReceiverFunctionList::getStartFrameIndex(){return startFrameIndex;}
 
 uint32_t slsReceiverFunctionList::getFrameIndex(){
 	if(!packetsCaught)
@@ -206,8 +214,6 @@ uint32_t slsReceiverFunctionList::getFrameIndex(){
 		frameIndex = currframenum - startFrameIndex;
 	return frameIndex;
 }
-
-
 
 uint32_t slsReceiverFunctionList::getAcquisitionIndex(){
 	if(!totalPacketsCaught)
@@ -218,8 +224,134 @@ uint32_t slsReceiverFunctionList::getAcquisitionIndex(){
 }
 
 
+void slsReceiverFunctionList::resetTotalFramesCaught(){
+	acqStarted = false;
+	startAcquisitionIndex = 0;
+	totalPacketsCaught = 0;
+}
 
-#ifdef EIGER_RECEIVER_H
+
+
+
+
+
+
+
+
+/*file parameters*/
+
+char* slsReceiverFunctionList::getFilePath(){
+	return filePath;
+}
+
+char* slsReceiverFunctionList::setFilePath(char c[]){
+	if(strlen(c)){
+		//check if filepath exists
+		struct stat st;
+		if(stat(c,&st) == 0){
+			if(myDetectorType == EIGER)
+				receiver->setFileName(c);
+			else
+				strcpy(filePath,c);
+		}else{
+			strcpy(filePath,"");
+			cout<<"FilePath does not exist:"<<filePath<<endl;
+		}
+	}
+	if(myDetectorType == EIGER)
+		return  receiver->getFilePath();
+	else
+		return getFilePath();
+}
+
+
+char* slsReceiverFunctionList::getFileName(){
+	return fileName;
+}
+
+char* slsReceiverFunctionList::setFileName(char c[]){
+	if(strlen(c)){
+		if(myDetectorType == EIGER)
+			receiver->setFileName(c);
+		else
+			strcpy(fileName,c);
+
+	}
+	if(myDetectorType == EIGER)
+		return  receiver->getFileName();
+	else
+		return getFileName();
+
+}
+
+
+int slsReceiverFunctionList::getFileIndex(){
+	return fileIndex;
+}
+
+int slsReceiverFunctionList::setFileIndex(int i){
+	if(i>=0)
+		fileIndex = i;
+	return getFileIndex();
+}
+
+
+int slsReceiverFunctionList::setFrameIndexNeeded(int i){
+	frameIndexNeeded = i;
+	return frameIndexNeeded;
+}
+
+
+int slsReceiverFunctionList::setEnableFileWrite(int i){
+	if(i!=-1){
+		if(myDetectorType == EIGER)
+			receiver->setEnableFileWrite(i);
+		else
+			enableFileWrite=i;
+
+	}
+	if(myDetectorType == EIGER)
+		return  receiver->getEnableFileWrite();
+	else
+		return enableFileWrite;
+
+}
+
+
+
+
+
+
+
+
+/*other parameters*/
+
+slsDetectorDefs::runStatus slsReceiverFunctionList::getStatus(){
+	return status;
+}
+
+
+char* slsReceiverFunctionList::setDetectorHostname(char c[]){
+	if(strlen(c)){
+		char *c0 = receiver->getDetectorHostname();
+		if(c0== NULL)
+			receiver->initialize(c);
+		delete[] c0;
+	}
+
+	return  receiver->getDetectorHostname();
+}
+
+
+void slsReceiverFunctionList::setEthernetInterface(char* c){
+	strcpy(eth,c);
+}
+
+
+void slsReceiverFunctionList::setUDPPortNo(int p){
+	server_port = p;
+}
+
 
 int32_t slsReceiverFunctionList::setNumberOfFrames(int32_t fnum){
 	if(fnum >= 0)
@@ -237,92 +369,6 @@ int32_t slsReceiverFunctionList::setDynamicRange(int32_t dr){
 	if(dr >= 0)
 		receiver->setDynamicRange(dr);
 	return receiver->getDynamicRange();
-}
-
-
-char* slsReceiverFunctionList::setDetectorHostname(char c[]){
-	if((strlen(c))&& (receiver->getDetectorHostname() == NULL))
-		receiver->initialize(c);
-	}
-	return  receiver->getDetectorHostname();
-}
-
-
-#endif
-
-
-
-char* slsReceiverFunctionList::setFileName(char c[]){
-	if(strlen(c)){
-#ifdef EIGER_RECEIVER_H
-		receiver->setFileName(c);
-#else
-		strcpy(fileName,c);
-#endif
-	}
-#ifdef EIGER_RECEIVER_H
-		return  receiver->getFileName();
-#else
-	return getFileName();
-#endif
-}
-
-
-
-char* slsReceiverFunctionList::setFilePath(char c[]){
-	if(strlen(c)){
-		//check if filepath exists
-		struct stat st;
-		if(stat(c,&st) == 0){
-#ifdef EIGER_RECEIVER_H
-			receiver->setFileName(c);
-#else
-			strcpy(filePath,c);
-#endif
-		}else{
-			strcpy(filePath,"");
-			cout<<"FilePath does not exist:"<<filePath<<endl;
-		}
-	}
-#ifdef EIGER_RECEIVER_H
-		return  receiver->getFilePath();
-#else
-	return getFilePath();
-#endif
-}
-
-
-
-int slsReceiverFunctionList::setFileIndex(int i){
-	if(i>=0)
-		fileIndex = i;
-	return getFileIndex();
-}
-
-
-
-int slsReceiverFunctionList::setEnableFileWrite(int i){
-	if(i!=-1){
-#ifdef EIGER_RECEIVER_H
-		receiver->setEnableFileWrite(i);
-#else
-		enableFileWrite=i;
-#endif
-	}
-#ifdef EIGER_RECEIVER_H
-		return  receiver->getEnableFileWrite();
-#else
-	return enableFileWrite;
-#endif
-}
-
-
-
-
-void slsReceiverFunctionList::resetTotalFramesCaught(){
-	acqStarted = false;
-	startAcquisitionIndex = 0;
-	totalPacketsCaught = 0;
 }
 
 
@@ -345,7 +391,6 @@ int slsReceiverFunctionList::setShortFrame(int i){
 		frameIndexOffset = GOTTHARD_FRAME_INDEX_OFFSET;
 	}
 
-
 	onePacketSize = bufferSize/packetsPerFrame;
 
 	deleteFilter();
@@ -356,10 +401,6 @@ int slsReceiverFunctionList::setShortFrame(int i){
 }
 
 
-
-
-
-
 int slsReceiverFunctionList::setNFrameToGui(int i){
 	if(i>=0){
 		nFrameToGui = i;
@@ -367,7 +408,6 @@ int slsReceiverFunctionList::setNFrameToGui(int i){
 	}
 	return nFrameToGui;
 }
-
 
 
 
@@ -382,6 +422,7 @@ int64_t slsReceiverFunctionList::setAcquisitionPeriod(int64_t index){
 }
 
 
+bool slsReceiverFunctionList::getDataCompression(){return dataCompression;}
 
 int slsReceiverFunctionList::enableDataCompression(bool enable){
 	cout << "Data compression ";
@@ -420,6 +461,17 @@ int slsReceiverFunctionList::enableDataCompression(bool enable){
 
 
 
+
+
+
+
+
+
+
+
+/*other functions*/
+
+
 void slsReceiverFunctionList::deleteFilter(){
 	int i;
 	cmSub=NULL;
@@ -435,7 +487,6 @@ void slsReceiverFunctionList::deleteFilter(){
 		}
 	}
 }
-
 
 
 void slsReceiverFunctionList::setupFilter(){
@@ -469,63 +520,6 @@ void slsReceiverFunctionList::setupFilter(){
 	for(i=0;i<numWriterThreads;i++)
 		singlePhotonDet[i]=new singlePhotonDetector<uint16_t>(receiverdata[i], csize, sigma, sign, cmSub);
 
-}
-
-
-void slsReceiverFunctionList::readFrame(char* c,char** raw){
-	//point to gui data
-	if (guiData == NULL)
-		guiData = latestData;
-
-	//copy data and filename
-	strcpy(c,guiFileName);
-
-	//could not get gui data
-	if(!guiDataReady){
-		*raw = NULL;
-	}
-	//data ready, set guidata to receive new data
-	else{
-		*raw = guiData;
-		guiData = NULL;
-
-		pthread_mutex_lock(&dataReadyMutex);
-		guiDataReady = 0;
-		pthread_mutex_unlock(&dataReadyMutex);
-		if((nFrameToGui) && (writerthreads_mask)){
-			//release after getting data
-			sem_post(&smp);
-		}
-	}
-}
-
-
-
-
-
-void slsReceiverFunctionList::copyFrameToGui(char* startbuf){
-
-	//random read when gui not ready
-	if((!nFrameToGui) && (!guiData)){
-		pthread_mutex_lock(&dataReadyMutex);
-		guiDataReady=0;
-		pthread_mutex_unlock(&dataReadyMutex);
-	}
-
-	//random read or nth frame read, gui needs data now
-	else{
-		//nth frame read, block current process if the guireader hasnt read it yet
-		if(nFrameToGui)
-			sem_wait(&smp);
-
-		pthread_mutex_lock(&dataReadyMutex);
-		guiDataReady=0;
-		//send the first one
-		memcpy(latestData,startbuf,bufferSize);
-		strcpy(guiFileName,savefilename);
-		guiDataReady=1;
-		pthread_mutex_unlock(&dataReadyMutex);
-	}
 }
 
 
@@ -606,6 +600,69 @@ void slsReceiverFunctionList::setupFifoStructure(){
 	cout << "Fifo structure reconstructed" << endl;
 }
 
+
+
+
+
+
+
+/** acquisition functions */
+
+void slsReceiverFunctionList::readFrame(char* c,char** raw){
+	//point to gui data
+	if (guiData == NULL)
+		guiData = latestData;
+
+	//copy data and filename
+	strcpy(c,guiFileName);
+
+	//could not get gui data
+	if(!guiDataReady){
+		*raw = NULL;
+	}
+	//data ready, set guidata to receive new data
+	else{
+		*raw = guiData;
+		guiData = NULL;
+
+		pthread_mutex_lock(&dataReadyMutex);
+		guiDataReady = 0;
+		pthread_mutex_unlock(&dataReadyMutex);
+		if((nFrameToGui) && (writerthreads_mask)){
+			//release after getting data
+			sem_post(&smp);
+		}
+	}
+}
+
+
+
+
+
+void slsReceiverFunctionList::copyFrameToGui(char* startbuf){
+
+	//random read when gui not ready
+	if((!nFrameToGui) && (!guiData)){
+		pthread_mutex_lock(&dataReadyMutex);
+		guiDataReady=0;
+		pthread_mutex_unlock(&dataReadyMutex);
+	}
+
+	//random read or nth frame read, gui needs data now
+	else{
+		//nth frame read, block current process if the guireader hasnt read it yet
+		if(nFrameToGui)
+			sem_wait(&smp);
+
+		pthread_mutex_lock(&dataReadyMutex);
+		guiDataReady=0;
+		//send the first one
+		memcpy(latestData,startbuf,bufferSize);
+		strcpy(guiFileName,savefilename);
+		guiDataReady=1;
+		pthread_mutex_unlock(&dataReadyMutex);
+	}
+}
 
 
 

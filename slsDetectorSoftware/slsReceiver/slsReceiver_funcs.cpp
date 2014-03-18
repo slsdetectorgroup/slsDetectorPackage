@@ -1467,19 +1467,16 @@ int slsReceiverFuncs::set_timer() {
 		else{
 			if(index[0] == slsDetectorDefs::FRAME_PERIOD)
 				retval=slsReceiverList->setAcquisitionPeriod(index[1]);
-#ifdef EIGER_RECEIVER_H
 			else
 				retval=slsReceiverList->setNumberOfFrames(index[1]);
-#endif
 		}
 	}
 #ifdef VERBOSE
 	if(ret!=FAIL){
 		if(index[0] == slsDetectorDefs::FRAME_PERIOD)
 			cout << "acquisition period:" << retval << endl;
-#ifdef EIGER_RECEIVER_H
+		else
 			cout << "frame number:" << retval << endl;
-#endif
 	}else
 		cout << mess << endl;
 #endif
@@ -1576,11 +1573,8 @@ int slsReceiverFuncs::set_detector_hostname() {
 			sprintf(mess,"Receiver locked by %s\n", socket->lastClientIP);
 			ret=FAIL;
 		}
-#ifdef EIGER_RECEIVER_H
  	 	 else
 			strcpy(retval,slsReceiverList->setDetectorHostname(hostname));
-#endif
-
 	}
 #ifdef VERBOSE
 	if(ret!=FAIL)
@@ -1781,9 +1775,9 @@ int slsReceiverFuncs::send_update() {
 	//index
 #ifdef SLS_RECEIVER_FUNCTION_LIST
 
-#ifndef EIGER_RECEIVER
-	ind=slsReceiverList->getFileIndex();
-#endif
+	if(myDetectorType != EIGER)
+		ind=slsReceiverList->getFileIndex();
+
 	socket->SendDataOnly(&ind,sizeof(ind));
 #endif
 

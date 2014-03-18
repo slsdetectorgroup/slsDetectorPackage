@@ -12,11 +12,10 @@
 #include "receiver_defs.h"
 #include "genericSocket.h"
 #include "circularFifo.h"
-
-
 #include "singlePhotonDetector.h"
 #include "slsReceiverData.h"
 #include "moenchCommonMode.h"
+#include "eigerReceiver.h"
 
 #ifdef MYROOT1
 #include <TTree.h>
@@ -47,64 +46,33 @@ public:
 	 */
 	virtual ~slsReceiverFunctionList();
 
+
+
+	//Frame indices and numbers caught
 	/**
-	 * Set UDP Port Number
+	 * Returns current Frame Index Caught for an entire  acquisition (including all scans)
 	 */
-	void setUDPPortNo(int p){server_port = p;};
-
-	/**
-	 * Set Ethernet Interface or IP to listen to
-	 */
-	void setEthernetInterface(char* c);
-
-#ifdef EIGER_RECEIVER_H
-	/** set frame number if a positive number
-	 */
-	int32_t setNumberOfFrames(int32_t fnum);
-
-	/** set scan tag if its is a positive number
-	 */
-	int32_t setScanTag(int32_t stag);
-
-	/** set dynamic range if its is a positive number
-	 */
-	int32_t setDynamicRange(int32_t dr);
-#endif
+	uint32_t getAcquisitionIndex();
 
 	/**
-	 * Returns status of receiver: idle, running or error
+	 * Returns if acquisition started
 	 */
-	runStatus getStatus(){ return status;};
-
-	/**
-	 * Returns File Name
-	 */
-	char* getFileName(){return fileName;};
-
-	/**
-	 * Returns File Path
-	 */
-	char* getFilePath(){return filePath;};
-
-	/**
-	 * Returns File Index
-	 */
-	int getFileIndex(){return fileIndex;};
+	bool getAcquistionStarted();
 
 	/**
 	 * Returns Frames Caught for each real time acquisition (eg. for each scan)
 	 */
-	int getFramesCaught(){return (packetsCaught/packetsPerFrame);};
+	int getFramesCaught();
 
 	/**
 	 * Returns Total Frames Caught for an entire acquisition (including all scans)
 	 */
-	int getTotalFramesCaught(){return (totalPacketsCaught/packetsPerFrame);};
+	int getTotalFramesCaught();
 
 	/**
 	 * Returns the frame index at start of each real time acquisition (eg. for each scan)
 	 */
-	uint32_t getStartFrameIndex(){return startFrameIndex;};
+	uint32_t getStartFrameIndex();
 
 	/**
 	 * Returns current Frame Index for each real time acquisition (eg. for each scan)
@@ -112,27 +80,36 @@ public:
 	uint32_t getFrameIndex();
 
 	/**
-	 * Returns current Frame Index Caught for an entire  acquisition (including all scans)
-	 */
-	uint32_t getAcquisitionIndex();
-
-
-	/**
-	 * Returns if acquisition started
-	 */
-	bool getAcquistionStarted(){return acqStarted;};
-
-
-	/**
 	 * Returns if measurement started
 	 */
-	bool getMeasurementStarted(){return measurementStarted;};
+	bool getMeasurementStarted();
 
 	/**
-	 * Set detector hostname
-	 * @param c hostname
+	 * Resets the Total Frames Caught
+	 * This is how the receiver differentiates between entire acquisitions
+	 * Returns 0
 	 */
-	char* setDetectorHostname(char c[]);
+	void resetTotalFramesCaught();
+
+
+
+
+	//file parameters
+	/**
+	 * Returns File Path
+	 */
+	char* getFilePath();
+
+	/**
+	 * Set File Path
+	 * @param c file path
+	 */
+	char* setFilePath(char c[]);
+
+	/**
+	 * Returns File Name
+	 */
+	char* getFileName();
 
 	/**
 	 * Set File Name (without frame index, file index and extension)
@@ -141,10 +118,9 @@ public:
 	char* setFileName(char c[]);
 
 	/**
-	 * Set File Path
-	 * @param c file path
+	 * Returns File Index
 	 */
-	char* setFilePath(char c[]);
+	int getFileIndex();
 
 	/**
 	 * Set File Index
@@ -156,7 +132,7 @@ public:
 	 * Set Frame Index Needed
 	 * @param i frame index needed
 	 */
-	int setFrameIndexNeeded(int i){frameIndexNeeded = i; return frameIndexNeeded;};
+	int setFrameIndexNeeded(int i);
 
 	/**
 	 * Set enable file write
@@ -165,12 +141,48 @@ public:
 	 */
 	int setEnableFileWrite(int i);
 
+
+
+
+
+
+//other parameters
+
 	/**
-	 * Resets the Total Frames Caught
-	 * This is how the receiver differentiates between entire acquisitions
-	 * Returns 0
+	 * Returns status of receiver: idle, running or error
 	 */
-	void resetTotalFramesCaught();
+	runStatus getStatus();
+
+	/**
+	 * Set detector hostname
+	 * @param c hostname
+	 */
+	char* setDetectorHostname(char c[]);
+
+	/**
+	 * Set Ethernet Interface or IP to listen to
+	 */
+	void setEthernetInterface(char* c);
+
+	/**
+	 * Set UDP Port Number
+	 */
+	void setUDPPortNo(int p);
+
+	/**
+	 * set frame number if a positive number
+	 */
+	int32_t setNumberOfFrames(int32_t fnum);
+
+	/**
+	 * set scan tag if its is a positive number
+	 */
+	int32_t setScanTag(int32_t stag);
+
+	/**
+	 * set dynamic range if its is a positive number
+	 */
+	int32_t setDynamicRange(int32_t dr);
 
 	/**
 	 * Set short frame
@@ -188,19 +200,21 @@ public:
 	 */
 	int64_t setAcquisitionPeriod(int64_t index);
 
+	/** get data compression, by saving only hits
+	 */
+	bool getDataCompression();
+
 	/** enabl data compression, by saving only hits
 	 /returns if failed
 	 */
 	int enableDataCompression(bool enable);
 
-	/** get data compression, by saving only hits
-	 */
-	bool getDataCompression(){ return dataCompression;};
 
-	/** set status to transmitting and
-	 * when fifo is empty later, sets status to run_finished
-	 */
-	void startReadout();
+
+
+
+
+//other functions
 
 	/**
 	 * Returns the buffer-current frame read by receiver
@@ -208,6 +222,12 @@ public:
 	 * @param raw address of pointer, pointing to current frame to send to gui
 	 */
 	void readFrame(char* c,char** raw);
+
+	/**
+	 * Closes all files
+	 * @param ithr thread index
+	 */
+	void closeFile(int ithr = -1);
 
 	/**
 	 * Starts Receiver - starts to listen for packets
@@ -222,11 +242,11 @@ public:
 	 */
 	int stopReceiver();
 
-	/**
-	 * Closes all files
-	 * @param ithr thread index
+	/** set status to transmitting and
+	 * when fifo is empty later, sets status to run_finished
 	 */
-	void closeFile(int ithr = -1);
+	void startReadout();
+
 
 private:
 	/**
@@ -240,15 +260,15 @@ private:
 	void setupFilter();
 
 	/**
+	 * set up fifo according to the new numjobsperthread
+	 */
+	void setupFifoStructure ();
+
+	/**
 	 * Copy frames to gui
 	 * uses semaphore for nth frame mode
 	 */
 	void copyFrameToGui(char* startbuf);
-
-	/**
-	 * set up fifo according to the new numjobsperthread
-	 */
-	void setupFifoStructure ();
 
 	/**
 	 * creates udp socket
@@ -332,10 +352,9 @@ private:
 
 
 
-#ifdef EIGER_RECEIVER_H
-	EigerReceiver receiver;
-#endif
 
+	/** Eiger Receiver	 */
+	EigerReceiver *receiver;
 
 	/** detector type */
 	detectorType myDetectorType;

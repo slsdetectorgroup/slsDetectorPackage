@@ -1,8 +1,3 @@
-//#ifndef EIGER_RECEIVER
-//#define EIGER_RECEIVER
-//#endif
-#ifdef EIGER_RECEIVER
-
 #ifndef EIGERRECEIVER_H
 #define EIGERRECEIVER_H
 /***********************************************
@@ -199,5 +194,3 @@ private:
 };
 
 #endif  /* #ifndef EIGERRECEIVER_H */
-#endif  /* #ifdef EIGER_RECEIVER */
-

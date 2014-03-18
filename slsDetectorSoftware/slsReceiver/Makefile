@@ -1,5 +1,5 @@
 CC			=	g++ 
-CFLAGS		+=  -DSLS_RECEIVER_FUNCTION_LIST -O3 #-DEIGER_RECEIVER
+CFLAGS		+=  -DSLS_RECEIVER_FUNCTION_LIST -O3 
 CPPFLAGS    = ${CFLAGS}   # for MAC
 LDFLAG=   -L/usr/lib64/ -lpthread -lm  -lstdc++ 
 

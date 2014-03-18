@@ -6046,7 +6046,7 @@ int slsDetector::startReceiver(){
 				setErrorMask((getErrorMask())|(COULDNOT_START_RECEIVER));
 		}
 	}
-	if(ret==OK)
+	if((ret==OK)&& (thisDetector->myDetectorType != EIGER))
 		ret=detectorSendToReceiver(true);
 
 	return ret;
@@ -6060,7 +6060,8 @@ int slsDetector::stopReceiver(){
 	int ret = FAIL;
 	char mess[] = "";
 
-	detectorSendToReceiver(false);
+	if(thisDetector->myDetectorType != EIGER)
+		detectorSendToReceiver(false);
 
 	if (setReceiverOnline(ONLINE_FLAG)==ONLINE_FLAG) {
 #ifdef VERBOSE

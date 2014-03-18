@@ -1775,7 +1775,7 @@ int slsReceiverFuncs::send_update() {
 	//index
 #ifdef SLS_RECEIVER_FUNCTION_LIST
 
-	if(myDetectorType != EIGER)
+	/*if(myDetectorType != EIGER)*/
 		ind=slsReceiverList->getFileIndex();
 
 	socket->SendDataOnly(&ind,sizeof(ind));

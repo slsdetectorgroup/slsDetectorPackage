@@ -115,7 +115,10 @@ slsReceiverFunctionList::slsReceiverFunctionList(detectorType det):
 	strcpy(latestData,"");
 	strcpy(savefilename,"");
 	strcpy(filePath,"");
+
 	strcpy(fileName,"run");
+	if(myDetectorType == EIGER)
+		receiver->setFileName(fileName);
 
 	cmSub = NULL;
 	for(int i=0;i<numWriterThreads;i++){
@@ -241,7 +244,10 @@ void slsReceiverFunctionList::resetTotalFramesCaught(){
 /*file parameters*/
 
 char* slsReceiverFunctionList::getFilePath(){
-	return filePath;
+	if(myDetectorType == EIGER)
+		return receiver->getFilePath();
+	else
+		return filePath;
 }
 
 char* slsReceiverFunctionList::setFilePath(char c[]){
@@ -250,7 +256,7 @@ char* slsReceiverFunctionList::setFilePath(char c[]){
 		struct stat st;
 		if(stat(c,&st) == 0){
 			if(myDetectorType == EIGER)
-				receiver->setFileName(c);
+				receiver->setFilePath(c);
 			else
 				strcpy(filePath,c);
 		}else{
@@ -258,10 +264,7 @@ char* slsReceiverFunctionList::setFilePath(char c[]){
 			cout<<"FilePath does not exist:"<<filePath<<endl;
 		}
 	}
-	if(myDetectorType == EIGER)
-		return  receiver->getFilePath();
-	else
-		return getFilePath();
+	return getFilePath();
 }
 
 
@@ -280,10 +283,7 @@ char* slsReceiverFunctionList::setFileName(char c[]){
 			strcpy(fileName,c);
 
 	}
-	if(myDetectorType == EIGER)
-		return  receiver->getFileName();
-	else
-		return getFileName();
+	return getFileName();
 
 }
 

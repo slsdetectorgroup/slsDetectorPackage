@@ -50,3 +50,22 @@ void moenchReadDataMT(char *fformat, char *tit, char *tdir, int runmin, int runo
 
 
 
+//to compile: g++ -DMYROOT -DMYROOT1 -g `root-config --cflags --glibs` -o moenchReadDataMT moenchReadDataMT.C
+int main(int argc, char **argv){
+  if(argc != 8){ 
+    cout << "Usage: " << argv[0] << " fformat tit tdir runmin runoffset nThreads treeIndexStart"  << endl; 
+    exit(-1); 
+  }
+
+  char *fformat = argv[1];
+  char *tit = argv[2];
+  char *tdir = argv[3];
+  int runmin = atoi(argv[4]);
+  int runoffset = atoi(argv[5]);
+  int nThreads = atoi(argv[6]);
+  int treeIndexStart = atoi(argv[7]);
+
+  moenchReadDataMT(fformat, tit, tdir,runmin,runoffset,nThreads,treeIndexStart);
+  
+}
+  

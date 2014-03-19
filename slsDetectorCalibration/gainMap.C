@@ -137,7 +137,7 @@ TH2F *gainMap(TH2F *h2, float g) {
 }
 
 
-TH2F *noiseMap(TH2F *h2) {
+TH2F *noiseMap(TH2F *h2, TH2F *gMap=NULL) {
   //  int npx, npy;
   int npx=160, npy=160;
   // det->getDetectorSize(npx, npy);
@@ -150,14 +150,18 @@ TH2F *noiseMap(TH2F *h2) {
   for (int ix=0; ix<npx; ix++) {
     for (int iy=0; iy<npy; iy++) {
       cout << ix << " " << iy << " " << ibin << endl;
-      ibin=ix*npy+iy;
-      px=h2->ProjectionX("px",ibin+1,ibin+1);
+      ibin=h2->GetYaxis()->FindBin(ix*npy+iy);
+      px=h2->ProjectionX("px",ibin,ibin);
       px->Fit("gaus", FOPT);
       if (px->GetFunction("gaus")) {
 	nMap->SetBinContent(ix+1,iy+1,px->GetFunction("gaus")->GetParameter(2));
       }
       // delete px;
     }
+  }
+  if (gMap) {
+    nMap->Divide(gMap);
+    nMap->Scale(1000./3.6);
   }
 
   return nMap;
@@ -167,7 +171,7 @@ TH2F *noiseMap(TH2F *h2) {
 THStack *noiseHistos(char *tit) {
   char fname[10000];
 
-  sprintf(fname,"/data/moench_xbox_20140116/noise_map_%s.root",tit);
+  sprintf(fname,"/data/moench_xbox_201401_trees/noise_map_%s.root",tit);
   TFile *fn=new TFile(fname);
   TH2F *nmap=(TH2F*)fn->Get("nmap");
 
@@ -177,7 +181,7 @@ THStack *noiseHistos(char *tit) {
     return NULL;
   }
 
-  sprintf(fname,"/data/moench_xbox_20140113/gain_map_%s.root",tit);
+  sprintf(fname,"/data/moench_xbox_201401_trees/gain_map_%s.root",tit);
   TFile *fg=new TFile(fname);
   TH2F *gmap=(TH2F*)fg->Get("gmap");
 
@@ -200,6 +204,47 @@ THStack *noiseHistos(char *tit) {
   for (int is=0; is<4; is++) {
     sprintf(hname,"h%ds",is+1);
 
+    h=new TH1F(hname,tit,500,0,500);
+    hs->Add(h);
+    //  cout << hs->GetHists()->GetEntries() << endl;
+    for (int ix=40*is+2; ix<40*(is+1)-2; ix++) {
+
+      for (int iy=2; iy<158; iy++) {
+	if (ix<100 || ix>120)
+	  h->Fill(nmap->GetBinContent(ix+1,iy+1));
+      }
+    } 
+    cout << is+1 << "SC: " <<  "" << h->GetMean() << "+-" << h->GetRMS();
+    h->Fit("gaus","0Q");
+    h->SetLineColor(is+1);
+    if (h->GetFunction("gaus")) {
+      h->GetFunction("gaus")->SetLineColor(is+1);
+      cout << " or " << h->GetFunction("gaus")->GetParameter(1) << "+-" << h->GetFunction("gaus")->GetParError(1);
+    }
+    cout << endl;
+  }
+
+  //  cout << hs->GetHists()->GetEntries() << endl;
+
+  return hs;
+
+
+}
+
+THStack *noiseHistos(TH2F *nmap) {
+
+  
+  char tit[1000];
+
+  strcpy(tit,nmap->GetTitle());
+  THStack *hs=new THStack(tit,tit);
+  hs->SetTitle(tit);
+
+  TH1F *h;
+  char hname[100];
+  cout << tit << endl;
+  for (int is=0; is<4; is++) {
+    sprintf(hname,"h%ds",is+1);
     h=new TH1F(hname,tit,500,0,500);
     hs->Add(h);
     //  cout << hs->GetHists()->GetEntries() << endl;

@@ -26,7 +26,7 @@ using namespace std;
 #define NR 160
 
 
-#define MY_DEBUG 1
+//#define MY_DEBUG 1
 #ifdef MY_DEBUG
 #include <TCanvas.h>
 #endif
@@ -102,14 +102,16 @@ THStack *moenchReadData(char *fformat, char *tit, int runmin, int runmax, int nb
   
   ifstream filebin;
 
-
+  int iev;
   int ix=20, iy=20, ir, ic;
 
 
   Int_t iFrame;
   TTree *tall;
+  cout << "init tree " << tit << endl;
   if (hitfinder)
     tall=filter->initEventTree(tit, &iFrame);
+  cout << "done" << endl;
 
 
   

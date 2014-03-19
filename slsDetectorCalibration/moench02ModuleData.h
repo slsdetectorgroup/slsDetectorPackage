@@ -129,6 +129,45 @@ class moench02ModuleData : public slsReceiverData<uint16_t> {
 
 };
 
+class moench02OversampledData :   public moench02ModuleData {
+ public:
+ moench02OversampledData(int nos, int off=0): moench02ModuleData(), nSamples(nos), offset(off){};
+
+   /**
+    returns the pixel value as double correcting for the output buffer crosstalk
+     \param data pointer to the memory
+     \param ix coordinate in the x direction
+     \param iy coordinate in the y direction
+     \returns channel value as double
+
+  */
+  double getValue(char *data, int ix, int iy=0) {
+    double v=0, is=0;
+    int ix1, iy1, isc=ix/40, ip=ix%40, ip1=iy*nSamples*40+ix;
+    
+    if (iy*nSamples<160) {
+      for (int i=offset; i<nSamples; i++) {
+	ip1=iy*nSamples*40+ip*nSamples+i-1;
+	iy1=ip1/40;
+	ix1=ip1%40+isc*40;
+	if (ix1>=0 && iy1>=0 && ix1<160 && iy1<160) {
+	  v+=moench02ModuleData::getValue(data,ix1,iy1);
+	  is++;
+	}
+      }
+      if (is>0)
+	v/=is;
+    }
+
+    return v;
+  };
+  
+
+ private:
+  int nSamples;
+  int offset;
+};
+
 
 
 #endif

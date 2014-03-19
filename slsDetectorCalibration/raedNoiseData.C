@@ -1,4 +1,5 @@
 #include "moenchReadData.C"
+#include "moenchReadOversampledData.C"
 
 
 
@@ -13,12 +14,12 @@ void raedNoiseData(char *tit, int sign=1){
   TFile *fout;
   THStack *hs2N;
 
-  sprintf(fname,"/data/moench_xbox_20140113/MoTarget_45kV_0_8mA_120V_%s_0.root",tit);
+  sprintf(fname,"/data/moench_xbox_20140113/MoTarget_45kV_0_8mA_120V_%s.root",tit);
   fout=new TFile(fname,"RECREATE");
 
   sprintf(fname,"/data/moench_xbox_20140113/MoTarget_45kV_0_8mA_120V_%s_f00000%%04d000_0.raw",tit);
 
-  hs2N=moenchReadData(fname,0,3000,1500,-500,2500,1,0.,1,159,1,159, 0,1); 
+  hs2N=moenchReadData(fname,tit,0,3000,1500,-500,2500,sign,0.,1,159,1,159, 0,1); 
   hs2N->SetName(tit);
   hs2N->SetTitle(tit);
   (TH2F*)(hs2N->GetHists()->At(0))->Write();
@@ -35,6 +36,59 @@ void raedNoiseData(char *tit, int sign=1){
 
 }
 
+
+void raedOsNoiseData(){
+
+
+  THStack *hs[10];
+
+
+
+  char fname[1000];
+  char f[1000];
+  TFile *fout;
+
+
+
+  strcpy(fname,"/data/moench_xbox_201401_trees/noise_cds_g1_os10_2ndsample.root");
+  fout=new TFile(fname,"RECREATE");
+
+  for (int ir=0; ir<10; ir++) {
+    sprintf(fname,"/data/moench_xbox_201401/moench_xbox_20140116/noise_os10_16rows_f00000%%04d000_%d.raw",ir);
+    hs[ir]=moenchReadOversampledData(fname,"cds_g1_os10",0,1000,1000,-500,500,1,10,0,160,0,16,0);
+
+  }  
+  TH2F *h;
+  int ii=0, ii1=0;
+  h=(TH2F*)(hs[0]->GetHists()->At(0));
+  TH2F *hn=(TH2F*)h->Clone();
+  for (int ir=1; ir<10; ir++) {
+    h=(TH2F*)(hs[ir]->GetHists()->At(0));
+    for (int iy=0; iy<16; iy++)
+      for (int ix=0; ix<160; ix++)
+	for (int ib=0; ib<hn->GetNbinsX(); ib++) {
+	  ii=h->GetYaxis()->FindBin(iy+ix*160);
+	  ii1= hn->GetYaxis()->FindBin(iy+ir*16+ix*160);
+	  hn->SetBinContent(ib+1,ii1,h->GetBinContent(ib+1,ii));
+
+	}
+  }
+
+
+
+  hn->Write();
+
+  // (TH2F*)(hs2N->GetHists()->At(1))->Write();
+  // (TH2F*)(hs2N->GetHists()->At(2))->Write();
+  // (TH2F*)(hs2N->GetHists()->At(3))->Write();
+  // (TH2F*)(hs2N->GetHists()->At(4))->Write();
+
+
+  fout->Close();
+
+
+
+}
 
 
 void raedNoiseDataN(char *tit, int sign=1){
@@ -74,7 +128,7 @@ void g4() {
 
   raedNoiseData("cds_g4_low_gain");
   raedNoiseData("cds_g4_sto1_only");
-  raedNoiseData("cds_g4_no sto");
+  raedNoiseData("cds_g4_no_sto");
   
 
 
@@ -84,7 +138,7 @@ void no_cds() {
 
   raedNoiseData("cds_disable_low_gain",-1);
   raedNoiseData("cds_disable_sto1_only",-1);
-  raedNoiseData("cds_disable_no sto",-1);
+  raedNoiseData("cds_disable_no_sto",-1);
   
 
 

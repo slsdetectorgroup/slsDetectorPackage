@@ -335,20 +335,22 @@ class singlePhotonDetector {
 	\returns returns pointer to the TTree
     */
     TTree *initEventTree(char *tname, int *iFrame=NULL) {
+      cout << tname << endl;
       TTree* tall=new TTree(tname,tname);
-
+      cout << "tree instantiated" << endl;
       if (iFrame)
 	tall->Branch("iFrame",iFrame,"iframe/I");
       else
 	tall->Branch("iFrame",&(cluster->iframe),"iframe/I");
-
+      cout << "iframe" << endl;
+      char tit[100];
       tall->Branch("x",&(cluster->x),"x/I");
       tall->Branch("y",&(cluster->y),"y/I");
-      char tit[100];
       sprintf(tit,"data[%d]/D",clusterSize*clusterSizeY);
       tall->Branch("data",cluster->data,tit);
-      // tall->Branch("pedestal",&(cluster->ped),"pedestal/D");
-      // tall->Branch("rms",&(cluster->rms),"rms/D");
+      tall->Branch("pedestal",&(cluster->ped),"pedestal/D");
+      tall->Branch("rms",&(cluster->rms),"rms/D");
+      cout << "Cluster" << endl;
       return tall;
     };
 #else

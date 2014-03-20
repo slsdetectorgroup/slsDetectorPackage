@@ -3536,56 +3536,46 @@ int64_t slsDetector::setTimer(timerIndex index, int64_t t){
 
 
   //send acquisiton period/frame number to receiver
-  switch(thisDetector->myDetectorType){
-  case EIGER:
-	  if(index != FRAME_NUMBER)
-		  return thisDetector->timerValue[index];
-	  break;
-	  //for gotthard and moench, mythen returns anyway because of no rxr
-  default:
-	  if(index != FRAME_PERIOD)
-		  return thisDetector->timerValue[index];
-	 break;
-  }
+  if((index==FRAME_NUMBER)||(index==FRAME_PERIOD))
+  {
+	  if((ret != FAIL) && (t != -1)){
+		  if(setReceiverOnline(ONLINE_FLAG)==ONLINE_FLAG){
+			  int64_t args[2];
+			  args[1] = retval;
 
-  if((ret != FAIL) && (t != -1)){
-  if(setReceiverOnline(ONLINE_FLAG)==ONLINE_FLAG){
-	  int64_t args[2];
-	  args[1] = retval;
-	  if(index==FRAME_NUMBER)
-		  args[0] = FRAME_NUMBER;
-	  else{
-		  args[0] = FRAME_PERIOD;
-		  //if acquisition period is zero, then #frames/buffer depends on exposure time and not acq period
-		  if(!retval)
-			  args[1] = timerValue[ACQUISITION_TIME];
-	  }
-
-
+			  if(index==FRAME_NUMBER){
 #ifdef VERBOSE
-	  if(index==FRAME_PERIOD)
-		  std::cout << "Sending/Getting acquisition period to/from receiver " << retval << std::endl;
-	  else
-		  std::cout << "Sending/Getting number of frames to/from receiver " << retval << std::endl;
+				  std::cout << "Sending/Getting number of frames to/from receiver " << retval << std::endl;
 #endif
-	  if (connectData() == OK)
-		  ret=thisReceiver->sendIntArray(fnum,ut,args);
-	  if((ut != retval)|| (ret==FAIL)){
-		  ret = FAIL;
-		  if(index==FRAME_PERIOD){
-			  cout << "ERROR:Acquisition Period in receiver set incorrectly to " << ut << " instead of " << retval << endl;
-			  setErrorMask((getErrorMask())|(RECEIVER_ACQ_PERIOD_NOT_SET));
-		  }else{
-			  cout << "ERROR:Number of Frames in receiver set incorrectly to " << ut << " instead of " << retval << endl;
-			  setErrorMask((getErrorMask())|(RECEIVER_FRAME_NUM_NOT_SET));
+				  args[0] = FRAME_NUMBER;
+			  }else{
+#ifdef VERBOSE
+				  std::cout << "Sending/Getting acquisition period to/from receiver " << retval << std::endl;
+#endif
+				  args[0] = FRAME_PERIOD;
+				  //if acquisition period is zero, then #frames/buffer depends on exposure time and not acq period
+				  if(!retval)
+					  args[1] = timerValue[ACQUISITION_TIME];
+			  }
+
+			  if (connectData() == OK)
+				  ret=thisReceiver->sendIntArray(fnum,ut,args);
+			  if((ut != retval)|| (ret==FAIL)){
+				  ret = FAIL;
+				  if(index==FRAME_PERIOD){
+					  cout << "ERROR:Acquisition Period in receiver set incorrectly to " << ut << " instead of " << retval << endl;
+					  setErrorMask((getErrorMask())|(RECEIVER_ACQ_PERIOD_NOT_SET));
+				  }else{
+					  cout << "ERROR:Number of Frames in receiver set incorrectly to " << ut << " instead of " << retval << endl;
+					  setErrorMask((getErrorMask())|(RECEIVER_FRAME_NUM_NOT_SET));
+				  }
+			  }
+			  if(ret==FORCE_UPDATE)
+				  updateReceiver();
 		  }
+
 	  }
-	  if(ret==FORCE_UPDATE)
-		  updateReceiver();
-  }
-
-  }
-
+}
   return thisDetector->timerValue[index];
   
 };

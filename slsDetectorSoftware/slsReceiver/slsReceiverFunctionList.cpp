@@ -54,6 +54,7 @@ slsReceiverFunctionList::slsReceiverFunctionList(detectorType det):
 					packetIndexMask(GOTTHARD_PACKET_INDEX_MASK),
 					frameIndexOffset(GOTTHARD_FRAME_INDEX_OFFSET),
 					acquisitionPeriod(SAMPLE_TIME_IN_NS),
+					numberOfFrames(0),
 					shortFrame(-1),
 					currframenum(0),
 					prevframenum(0),
@@ -74,18 +75,18 @@ slsReceiverFunctionList::slsReceiverFunctionList(detectorType det):
 					thread_started(0),
 					currentWriterThreadIndex(-1),
 					totalListeningFrameCount(0),
-					sfilefd(NULL),
 					writerthreads_mask(0x0),
 					listening_thread_running(0),
 					killListeningThread(0),
 					killAllWritingThreads(0),
-					cbAction(DO_EVERYTHING),
+					sfilefd(NULL),
 					startAcquisitionCallBack(NULL),
 					pStartAcquisition(NULL),
 					acquisitionFinishedCallBack(NULL),
 					pAcquisitionFinished(NULL),
 					rawDataReadyCallBack(NULL),
-					pRawDataReady(NULL){
+					pRawDataReady(NULL),
+					cbAction(DO_EVERYTHING){
 
 	maxPacketsPerFile = MAX_FRAMES_PER_FILE * packetsPerFrame;
 
@@ -261,7 +262,7 @@ char* slsReceiverFunctionList::setFilePath(char c[]){
 				strcpy(filePath,c);
 		}else{
 			strcpy(filePath,"");
-			cout<<"FilePath does not exist:"<<filePath<<endl;
+			cout << "FilePath does not exist:" << filePath << endl;
 		}
 	}
 	return getFilePath();
@@ -270,7 +271,7 @@ char* slsReceiverFunctionList::setFilePath(char c[]){
 
 char* slsReceiverFunctionList::getFileName(){
 	if(myDetectorType == EIGER)
-		receiver->getFileName();
+		return receiver->getFileName();
 	else
 		return fileName;
 }
@@ -339,12 +340,9 @@ slsDetectorDefs::runStatus slsReceiverFunctionList::getStatus(){
 
 char* slsReceiverFunctionList::setDetectorHostname(char c[]){
 	if(strlen(c)){
-		char *c0 = receiver->getDetectorHostname();
-		if(c0== NULL)
+		if(receiver->getDetectorHostname()== NULL)
 			receiver->initialize(c);
-		delete[] c0;
 	}
-
 	return  receiver->getDetectorHostname();
 }
 
@@ -360,9 +358,17 @@ void slsReceiverFunctionList::setUDPPortNo(int p){
 
 
 int32_t slsReceiverFunctionList::setNumberOfFrames(int32_t fnum){
-	if(fnum >= 0)
-		receiver->setNumberOfFrames(fnum);
-	return receiver->getNumberOfFrames();
+	if(fnum >= 0){
+		if(myDetectorType == EIGER)
+			receiver->setNumberOfFrames(fnum);
+		else
+			numberOfFrames = fnum;
+	}
+
+	if(myDetectorType == EIGER)
+		return receiver->getNumberOfFrames();
+	else
+		return numberOfFrames;
 }
 
 int32_t slsReceiverFunctionList::setScanTag(int32_t stag){
@@ -418,6 +424,7 @@ int slsReceiverFunctionList::setNFrameToGui(int i){
 
 
 int64_t slsReceiverFunctionList::setAcquisitionPeriod(int64_t index){
+
 	if(index >= 0){
 		if(index != acquisitionPeriod){
 			acquisitionPeriod = index;
@@ -1161,6 +1168,13 @@ int slsReceiverFunctionList::stopReceiver(){
 
 
 void slsReceiverFunctionList::startReadout(){
+
+	if(myDetectorType == EIGER){
+		receiver->stopReceiver();
+		return;
+	}
+
+
 	//wait so that all packets which take time has arrived
 	usleep(50000);
 
@@ -1201,7 +1215,7 @@ int slsReceiverFunctionList::startListening(){
 #endif
 
 	int lastpacketoffset, expected, rc, packetcount, maxBufferSize, carryonBufferSize;
-	int lastframeheader;// for moench to check for all the packets in last frame
+	uint32_t lastframeheader;// for moench to check for all the packets in last frame
 	char* tempchar = NULL;
 
 
@@ -1358,7 +1372,7 @@ int slsReceiverFunctionList::startListening(){
 					cout << "last packet offset:" << lastpacketoffset << endl;
 #endif
 
-					if((packetsPerFrame -1) != ((((uint32_t)(*((uint32_t*)(buffer+lastpacketoffset))))+1) & (packetIndexMask))){
+					if((unsigned int)(packetsPerFrame -1) != ((((uint32_t)(*((uint32_t*)(buffer+lastpacketoffset))))+1) & (packetIndexMask))){
 						memcpy(tempchar,buffer+lastpacketoffset, onePacketSize);
 #ifdef VERYDEBUG
 						cout << "tempchar header:" << (((((uint32_t)(*((uint32_t*)(tempchar))))+1)
@@ -1422,7 +1436,8 @@ int slsReceiverFunctionList::startWriting(){
 
 	thread_started = 1;
 
-	int numpackets,tempframenum, nf;
+	int numpackets, nf;
+	uint32_t tempframenum;
 	char* wbuf;
 	char *data=new char[bufferSize];
 	int iFrame = 0;
@@ -1576,15 +1591,14 @@ int slsReceiverFunctionList::startWriting(){
 				int ndata;
 				char* buff = 0;
 				data = wbuf+ HEADER_SIZE_NUM_TOT_PACKETS;
-				int ir, ic;
 				int remainingsize = numpackets * onePacketSize;
 				int np;
 				int once = 0;
-				double tot, tl, tr, bl, br, v;
+				double tot, tl, tr, bl, br;
 				int xmin = 1, ymin = 1, ix, iy;
 
 
-				while(buff = receiverdata[ithread]->findNextFrame(data,ndata,remainingsize  )){
+				while(buff = receiverdata[ithread]->findNextFrame(data,ndata,remainingsize)){
 					np = ndata/onePacketSize;
 
 					//cout<<"buff framnum:"<<ithread <<":"<< ((((uint32_t)(*((uint32_t*)buff)))& (frameIndexMask)) >> frameIndexOffset)<<endl;
@@ -1730,7 +1744,8 @@ int slsReceiverFunctionList::startWriting(){
 
 
 void slsReceiverFunctionList::writeToFile_withoutCompression(char* buf,int numpackets){
-	int packetsToSave, offset,tempframenum,lastpacket;
+	int packetsToSave, offset,lastpacket;
+	uint32_t tempframenum;
 
 	//file write
 	if((enableFileWrite) && (sfilefd)){

@@ -1420,7 +1420,7 @@ int	slsReceiverFuncs::start_readout(){
 #ifdef SLS_RECEIVER_FUNCTION_LIST
 	slsReceiverList->startReadout();
 	retval = slsReceiverList->getStatus();
-	if((retval == TRANSMITTING) || (retval == RUN_FINISHED))
+	if((retval == TRANSMITTING) || (retval == RUN_FINISHED) || (retval == IDLE))
 		ret = OK;
 	else
 		ret = FAIL;

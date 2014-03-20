@@ -434,6 +434,9 @@ private:
 	/** acquisition period */
 	int64_t acquisitionPeriod;
 
+	/** frame number */
+	int32_t numberOfFrames;
+
 	/** short frames */
 	int shortFrame;
 

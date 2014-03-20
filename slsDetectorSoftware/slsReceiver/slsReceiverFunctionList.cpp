@@ -55,6 +55,7 @@ slsReceiverFunctionList::slsReceiverFunctionList(detectorType det):
 					frameIndexOffset(GOTTHARD_FRAME_INDEX_OFFSET),
 					acquisitionPeriod(SAMPLE_TIME_IN_NS),
 					numberOfFrames(0),
+					dynamicRange(0),
 					shortFrame(-1),
 					currframenum(0),
 					prevframenum(0),
@@ -378,9 +379,17 @@ int32_t slsReceiverFunctionList::setScanTag(int32_t stag){
 }
 
 int32_t slsReceiverFunctionList::setDynamicRange(int32_t dr){
-	if(dr >= 0)
-		receiver->setDynamicRange(dr);
-	return receiver->getDynamicRange();
+	if(dr >= 0){
+		if(myDetectorType == EIGER)
+			receiver->setDynamicRange(dr);
+		else
+			dynamicRange = dr;
+	}
+
+	if(myDetectorType == EIGER)
+		return receiver->getDynamicRange();
+	else
+		return dynamicRange;
 }
 
 

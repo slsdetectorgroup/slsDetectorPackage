@@ -3538,10 +3538,12 @@ int64_t slsDetector::setTimer(timerIndex index, int64_t t){
   //send acquisiton period/frame number to receiver
   if((index==FRAME_NUMBER)||(index==FRAME_PERIOD))
   {
-	  if((ret != FAIL) && (t != -1)){
+	  if(ret != FAIL){
 		  if(setReceiverOnline(ONLINE_FLAG)==ONLINE_FLAG){
 			  int64_t args[2];
 			  args[1] = retval;
+			  if(t == -1)
+				  args[1] = -1;
 
 			  if(index==FRAME_NUMBER){
 #ifdef VERBOSE
@@ -4017,7 +4019,7 @@ int slsDetector::setDynamicRange(int n){
 
   // cout << "single "  << endl;
   int fnum=F_SET_DYNAMIC_RANGE;
-  int retval=-1;
+  int retval=-1,retval1;
   char mess[100];
   int ret=OK;
 
@@ -4068,8 +4070,27 @@ int slsDetector::setDynamicRange(int n){
     std::cout<< "Dynamic range set to  "<< thisDetector->dynamicRange   << std::endl;
     std::cout<< "Data bytes "<< thisDetector->dataBytes   << std::endl;
 #endif
-    
-  } 
+  }
+
+
+  //receiver
+  if(ret != FAIL){
+	  if(setReceiverOnline(ONLINE_FLAG)==ONLINE_FLAG){
+#ifdef VERBOSE
+			  std::cout << "Sending/Getting dynamic range to/from receiver " << retval << std::endl;
+#endif
+		  if (connectData() == OK)
+			  ret=thisReceiver->sendInt(fnum,retval1,retval);
+		  if((retval1 != retval)|| (ret==FAIL)){
+			  ret = FAIL;
+			  cout << "ERROR:Acquisition Period in receiver set incorrectly to " << retval1 << " instead of " << retval << endl;
+			  setErrorMask((getErrorMask())|(RECEIVER_DYNAMIC_RANGE));
+		  }
+		  if(ret==FORCE_UPDATE)
+			  updateReceiver();
+	  }
+  }
+
   return thisDetector->dynamicRange;
 };
 
@@ -4876,9 +4897,15 @@ char* slsDetector::setReceiver(string receiverIP){
 			else
 				setFrameIndex(-1);
 
-			setTimer(FRAME_PERIOD,setTimer(FRAME_PERIOD,-1));
+			setTimer(FRAME_PERIOD,thisDetector->timerValue[FRAME_PERIOD]);
 			setUDPConnection();
 		}
+
+		else{
+			setTimer(FRAME_NUMBER,thisDetector->timerValue[FRAME_NUMBER]);
+			setDynamicRange(thisDetector->dynamicRange);
+		}
+
 	}
 
   return thisDetector->receiver_hostname;

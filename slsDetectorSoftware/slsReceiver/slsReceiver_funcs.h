@@ -157,10 +157,11 @@ public:
 	/** enable compression */
 	int enable_compression();
 
-	/** set detector hostname for eiger */
+	/** set detector hostname  */
 	int set_detector_hostname();
 
-
+	/** set dynamic range  */
+	int set_dynamic_range();
 
 
 	//General Functions

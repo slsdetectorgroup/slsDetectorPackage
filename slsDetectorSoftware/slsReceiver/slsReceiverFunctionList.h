@@ -437,6 +437,9 @@ private:
 	/** frame number */
 	int32_t numberOfFrames;
 
+	/** dynamic range */
+	int dynamicRange;
+
 	/** short frames */
 	int shortFrame;
 

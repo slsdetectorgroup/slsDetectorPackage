@@ -45,6 +45,7 @@ using namespace std;
 #define DETECTOR_TIMER_VALUE_NOT_SET		0x0000000000000100ULL
 #define RECEIVER_ACQ_PERIOD_NOT_SET			0x0000000000000200ULL
 #define RECEIVER_FRAME_NUM_NOT_SET			0x0000000000000400ULL
+#define RECEIVER_DYNAMIC_RANGE				0x0000000000000800ULL
 
 /** @short class returning all error messages for error mask */
 class errorDefs {
@@ -129,6 +130,10 @@ public:
 
 		if(slsErrorMask&RECEIVER_FRAME_NUM_NOT_SET)
 			retval.append("Could not set frame number in receiver.\n");
+
+		if(slsErrorMask&RECEIVER_DYNAMIC_RANGE)
+			retval.append("Could not set dynamic range in receiver.\n");
+
 
 		return retval;
 

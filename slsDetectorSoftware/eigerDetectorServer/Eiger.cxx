@@ -117,7 +117,7 @@ bool Eiger::Init(){
       sprintf(st,"setup_mod%04d.txt",modules[i]->GetModuleNumber());
       ReadSetUpFile(modules[i]->GetModuleNumber(),st);
     }
-  
+
   return CheckSetup();
 }
 

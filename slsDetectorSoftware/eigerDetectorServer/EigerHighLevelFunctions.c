@@ -23,15 +23,20 @@ const char* dac_names[16] = {"SvP","Vtr","Vrf","Vrs","SvN","Vtgstv","Vcmp_ll","V
 
 
 
-
-unsigned int EigerGetNumberOfExposures(){return 1;};
-float EigerGetExposureTime(){return 1;};
-float EigerGetExposurePeriod(){return 1;};
-int EigerGetDynamicRange(){return 1;};
-int EigerGetPhotonEnergy(){return 1;};
+int eiger_nexposures = 1;
+int EigerGetNumberOfExposures(){return eiger_nexposures;}
+float eiger_exposuretime = 1;
+float EigerGetExposureTime(){return eiger_exposuretime;}
+float eiger_exposureperiod = 1;
+float EigerGetExposurePeriod(){return eiger_exposureperiod;}
+unsigned int eigerdynamicrange = 16;
+unsigned int EigerGetDynamicRange(){return eigerdynamicrange;}
+unsigned int eigergetphotonenergy = 8000;
+unsigned int EigerGetPhotonEnergy(){return eigergetphotonenergy;}
 /* for later */
-unsigned int EigerGetNumberOfExposureSeries(){return 1;};
-unsigned int EigerSetNumberOfExposureSeries(unsigned int i){return 1;};
+int eigernumberofexposureseries = 1;
+unsigned int EigerGetNumberOfExposureSeries(){return eigernumberofexposureseries;}
+int EigerSetNumberOfExposureSeries(unsigned int i){eigernumberofexposureseries = i;}
 
 
 
@@ -121,9 +126,10 @@ int EigerGetDAC(const char* iname){
   return eiger_ret_val;
 }
 
-int EigerSetNumberOfExposures(unsigned int n){
+int EigerSetNumberOfExposures(int n){
+  eiger_nexposures = n;
   eiger_ret_val=0;
-  eiger_message_length = sprintf(eiger_message,"setnumberofexposures %u",n);
+  eiger_message_length = sprintf(eiger_message,"setnumberofexposures %d",n);
   return EigerSendCMD();
 }
 
@@ -137,6 +143,7 @@ int EigerGetNumberOfExposures(unsigned int n){
 */
 
 int EigerSetExposureTime(float v){
+  eiger_exposuretime = v;
   eiger_ret_val=0;
   eiger_message_length = sprintf(eiger_message,"setexposuretime %f",v);
   return EigerSendCMD();
@@ -152,6 +159,7 @@ int EigerGetExposureTime(float v){
 */
 
 int EigerSetExposurePeriod(float v){
+  eiger_exposureperiod = v;
   eiger_ret_val=0;
   eiger_message_length = sprintf(eiger_message,"setexposureperiod %f",v);
   return EigerSendCMD();
@@ -167,6 +175,7 @@ int EigerGetExposurePeriod(float v){
 */
 
 int EigerSetDynamicRange(unsigned int i){
+  eigerdynamicrange = i;
   eiger_ret_val=0;
   eiger_message_length = sprintf(eiger_message,"setbitmode %u",i);
   return EigerSendCMD();
@@ -178,9 +187,10 @@ int EigerGetDynamicRange(){
 */
 
 
-int EigerSetPhotonEnergy(int in_eV){
+int EigerSetPhotonEnergy(unsigned int in_eV){
+  eigergetphotonenergy = in_eV;
   eiger_ret_val=0;
-  eiger_message_length = sprintf(eiger_message,"setphotonenergy %d",in_eV);
+  eiger_message_length = sprintf(eiger_message,"setphotonenergy %u",in_eV);
   return EigerSendCMD();
 }
 

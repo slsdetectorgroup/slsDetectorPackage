@@ -68,6 +68,17 @@ public:
 	   status = slsDetectorDefs::IDLE;
 	 }
 
+	 //REST call - hardcoded
+	 RestHelper rest ;
+	 rest.init("localhost",8080);
+	 std::string answer;
+	 int code = rest.get_json("status", &answer);
+	 std::cout << answer << std::endl;
+	 
+	 JsonBox::Value json_value;
+	 code = rest.get_json("status", &json_value);
+	 std::cout << "JSON " << json_value["status"] << std::endl;
+
 	}
 
 	char *getDetectorHostname() const {

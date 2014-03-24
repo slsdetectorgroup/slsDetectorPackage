@@ -10,6 +10,7 @@
  */
 
 #include "sls_detector_defs.h"
+#include "RestHelper.h"
 
 class EigerReceiver {
 	/* abstract class that defines the public interface of an eiger data receiver.

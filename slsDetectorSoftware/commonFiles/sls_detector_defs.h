@@ -494,8 +494,9 @@ enum correctionFlags {
   FLAT_FIELD_CORRECTION,  /**< data are flat field corrected */
   RATE_CORRECTION,  /**< data are rate corrected */
   ANGULAR_CONVERSION,/**< angular conversion is calculated */
-  WRITE_FILE,
-  I0_NORMALIZATION
+  WRITE_FILE,		/**< file write enable */
+  I0_NORMALIZATION,
+  OVERWRITE_FILE		/**< file over write enable */
 };
 /** port type */
 enum portType {

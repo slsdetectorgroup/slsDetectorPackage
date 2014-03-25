@@ -138,7 +138,9 @@ enum {
 
   F_ENABLE_COMPRESSION,		/**< enable compression in receiver */
 
-  F_SET_DETECTOR_HOSTNAME	/**< set detector hostname in receiver */
+  F_SET_DETECTOR_HOSTNAME,	/**< set detector hostname in receiver */
+
+  F_ENABLE_OVERWRITE		/**< set overwrite flag in receiver */
   /* Always append functions hereafter!!! */
 
 };

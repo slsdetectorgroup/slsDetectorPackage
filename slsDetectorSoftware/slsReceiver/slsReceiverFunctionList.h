@@ -141,8 +141,12 @@ public:
 	 */
 	int setEnableFileWrite(int i);
 
-
-
+	/**
+	 * Enable/disable overwrite
+	 * @param i enable
+	 * Returns enable over write
+	 */
+	int enableOverwrite(int i);
 
 
 
@@ -377,6 +381,9 @@ private:
 	/** File write enable */
 	int enableFileWrite;
 
+	/** File over write enable */
+	int overwrite;
+
 	/** Complete File name */
 	char savefilename[MAX_STR_LENGTH];
 
@@ -388,6 +395,9 @@ private:
 
 	/** File Index */
 	int fileIndex;
+
+	/** scan tag */
+	int scanTag;
 
 	/** if frame index required in file name */
 	int frameIndexNeeded;

@@ -36,12 +36,14 @@ struct EigerReceiverScanConfiguration {
 	int scanTag;
 	int numberOfFrames;
 	bool doFileWrite;
+	bool doFileOverWrite;
 
 	EigerReceiverScanConfiguration():
 			dynamicRange(-1),
 			scanTag(-1),
 			numberOfFrames(-1),
-			doFileWrite(false) {};
+			doFileWrite(false),
+			doFileOverWrite(false){};
 };
 
 class EigerReceiverImplementation: public EigerReceiver {
@@ -163,6 +165,11 @@ public:
 		return(scan_config.doFileWrite);
 	}
 
+	int getEnableOverwrite() const {
+		DEBUG("getEnableOverwrite() returns " << scan_config.doFileOverWrite);
+		return(scan_config.doFileOverWrite);
+	}
+
 	slsDetectorDefs::runStatus getStatus() const {
 		DEBUG("getStatus(): return " <<status);
 		return(status);
@@ -202,6 +209,12 @@ public:
 		DEBUG("enableFileWrite() called with " << i);
 		scan_config.doFileWrite = i;
 		return(getEnableFileWrite());
+	}
+
+	int setEnableOverwrite(const int i) {
+		DEBUG("setEnableOverwrite() called with " << i);
+		scan_config.doFileOverWrite = i;
+		return(getEnableOverwrite());
 	}
 
 	int startReceiver(char message[]) {

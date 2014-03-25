@@ -116,6 +116,12 @@ public:
 	virtual int getEnableFileWrite() const  = 0;
 
 	/**
+	* Returns file overwrite enable
+	* 1: YES 0: NO
+	*/
+	virtual int getEnableOverwrite() const  = 0;
+
+	/**
 	 * Set File Name (without frame index, file index and extension)
 	 @param c file name
 	 /returns file name
@@ -166,6 +172,13 @@ public:
 	 /returns file write enable
 	 */
 	virtual int setEnableFileWrite(const int i) = 0;
+
+	/**
+	 * Set enable file overwrite
+	 * @param i file overwrite enable
+	 /returns file overwrite enable
+	 */
+	virtual int setEnableOverwrite(const int i) = 0;
 
 	/**
 	 * Starts Receiver - activate all configuration settings to the eiger receiver and start to listen for packets

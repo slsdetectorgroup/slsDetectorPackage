@@ -321,6 +321,9 @@ int slsReceiverFuncs::function_table(){
 	flist[F_ENABLE_COMPRESSION]		= 	&slsReceiverFuncs::enable_compression;
 	flist[F_SET_DETECTOR_HOSTNAME]	= 	&slsReceiverFuncs::set_detector_hostname;
 	flist[F_SET_DYNAMIC_RANGE]		= 	&slsReceiverFuncs::set_dynamic_range;
+	flist[F_ENABLE_OVERWRITE]		= 	&slsReceiverFuncs::enable_overwrite;
+
+
 
 	//General Functions
 	flist[F_LOCK_SERVER]			=	&slsReceiverFuncs::lock_receiver;
@@ -1650,6 +1653,61 @@ int slsReceiverFuncs::set_dynamic_range() {
 	//return ok/fail
 	return ret;
 }
+
+
+
+
+
+
+
+int slsReceiverFuncs::enable_overwrite() {
+	ret=OK;
+	int retval=-1;
+	int index;
+	strcpy(mess,"Could not enable/disable overwrite\n");
+
+
+	// receive arguments
+	if(socket->ReceiveDataOnly(&index,sizeof(index)) < 0 ){
+		strcpy(mess,"Error reading from socket\n");
+		ret = FAIL;
+	}
+
+	// execute action if the arguments correctly arrived
+#ifdef SLS_RECEIVER_FUNCTION_LIST
+	if (ret==OK) {
+		if (lockStatus==1 && socket->differentClients==1){
+			sprintf(mess,"Receiver locked by %s\n", socket->lastClientIP);
+			ret=FAIL;
+		}
+		else
+			retval=slsReceiverList->enableOverwrite(index);
+	}
+#ifdef VERBOSE
+	if(ret!=FAIL)
+		cout << "overwrite:" << retval << endl;
+	else
+		cout << mess << endl;
+#endif
+#endif
+
+	if(ret==OK && socket->differentClients){
+		cout << "Force update" << endl;
+		ret=FORCE_UPDATE;
+	}
+
+	// send answer
+	socket->SendDataOnly(&ret,sizeof(ret));
+	if(ret==FAIL)
+		socket->SendDataOnly(mess,sizeof(mess));
+	socket->SendDataOnly(&retval,sizeof(retval));
+
+	//return ok/fail
+	return ret;
+}
+
+
+
 
 
 

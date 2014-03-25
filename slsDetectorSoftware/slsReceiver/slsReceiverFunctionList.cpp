@@ -38,7 +38,9 @@ slsReceiverFunctionList::slsReceiverFunctionList(detectorType det):
 					eth(NULL),
 					maxPacketsPerFile(0),
 					enableFileWrite(1),
+					overwrite(1),
 					fileIndex(0),
+					scanTag(0),
 					frameIndexNeeded(0),
 					acqStarted(false),
 					measurementStarted(false),
@@ -324,7 +326,20 @@ int slsReceiverFunctionList::setEnableFileWrite(int i){
 
 
 
+int slsReceiverFunctionList::enableOverwrite(int i){
+	if(i!=-1){
+		if(myDetectorType == EIGER)
+			receiver->setEnableOverwrite(i);
+		else
+			overwrite=i;
 
+	}
+	if(myDetectorType == EIGER)
+		return  receiver->getEnableOverwrite();
+	else
+		return overwrite;
+
+}
 
 
 
@@ -373,9 +388,17 @@ int32_t slsReceiverFunctionList::setNumberOfFrames(int32_t fnum){
 }
 
 int32_t slsReceiverFunctionList::setScanTag(int32_t stag){
-	if(stag >= 0)
-		receiver->setScanTag(stag);
-	return receiver->getScanTag();
+	if(stag >= 0){
+		if(myDetectorType == EIGER)
+			receiver->setScanTag(stag);
+		else
+			scanTag = stag;
+	}
+
+	if(myDetectorType == EIGER)
+		return receiver->getScanTag();
+	else
+		return scanTag;
 }
 
 int32_t slsReceiverFunctionList::setDynamicRange(int32_t dr){
@@ -437,7 +460,8 @@ int64_t slsReceiverFunctionList::setAcquisitionPeriod(int64_t index){
 	if(index >= 0){
 		if(index != acquisitionPeriod){
 			acquisitionPeriod = index;
-			setupFifoStructure();
+			if(myDetectorType != EIGER)
+				setupFifoStructure();
 		}
 	}
 	return acquisitionPeriod;
@@ -982,7 +1006,12 @@ int slsReceiverFunctionList::createNewFile(){
 			sfilefd = NULL;
 		}
 		//open file
-		if (NULL == (sfilefd = fopen((const char *) (savefilename), "w"))){
+		if(!overwrite){
+			if (NULL == (sfilefd = fopen((const char *) (savefilename), "wx"))){
+				cout << "Error: Could not create new file " << savefilename << endl;
+				return FAIL;
+			}
+		}else if (NULL == (sfilefd = fopen((const char *) (savefilename), "w"))){
 			cout << "Error: Could not create file " << savefilename << endl;
 			return FAIL;
 		}

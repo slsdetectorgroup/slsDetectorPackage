@@ -86,7 +86,7 @@ public:
 			retval.append("Could not create UDP socket to start receiver\n");
 
 		if(slsErrorMask&COULDNOT_CREATE_FILE)
-			retval.append("Could not create file to start receiver.\nCheck permissions of output directory\n");
+			retval.append("Could not create file to start receiver.\nCheck permissions of output directory or the overwrite flag\n");
 
 		if(slsErrorMask&COULDNOT_ENABLE_COMPRESSION)
 			retval.append("Could not enable/disable data compression in receiver.\nThread creation failed or recompile code with MYROOT1 flag.\n");

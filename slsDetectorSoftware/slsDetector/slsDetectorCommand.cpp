@@ -208,6 +208,9 @@ slsDetectorCommand::slsDetectorCommand(slsDetectorUtils *det)  {
   descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdEnablefwrite;
   i++;
 
+  descrToFuncMap[i].m_pFuncName="overwrite"; //
+  descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdOverwrite;
+  i++;
 
   descrToFuncMap[i].m_pFuncName="currentfname"; //OK
   descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdFileName;
@@ -1565,15 +1568,15 @@ string slsDetectorCommand::helpFileName(int narg, char *args[], int action){
 }
 
 
-//enable file write
+
 string slsDetectorCommand::cmdEnablefwrite(int narg, char *args[], int action){
 
   int i;
   char ans[100];
   
   if (action==HELP_ACTION) {
-    return helpFileName(narg, args, action);
-  } 
+    return helpEnablefwrite(narg, args, action);
+  }
   if (action==PUT_ACTION) {
     if (sscanf(args[1],"%d",&i))
       myDet->enableWriteToFile(i);
@@ -1596,6 +1599,40 @@ string slsDetectorCommand::helpEnablefwrite(int narg, char *args[], int action){
     os << string(" i \t  should be 1 or 0 or -1\n");
   return os.str();
 }
+
+
+string slsDetectorCommand::cmdOverwrite(int narg, char *args[], int action){
+
+  int i;
+  char ans[100];
+
+  if (action==HELP_ACTION) {
+    return helpOverwrite(narg, args, action);
+  } 
+  if (action==PUT_ACTION) {
+    if (sscanf(args[1],"%d",&i))
+      myDet->overwriteFile(i);
+    else
+      return string("could not decode overwrite");
+
+
+  }
+  sprintf(ans,"%d",myDet->overwriteFile());
+  return string(ans);
+}
+
+
+
+string slsDetectorCommand::helpOverwrite(int narg, char *args[], int action){
+  ostringstream os;
+  if (action==GET_ACTION || action==HELP_ACTION)
+    os << string("When Enabled overwrites files\n");
+  if (action==PUT_ACTION || action==HELP_ACTION)
+    os << string(" i \t  should be 1 or 0 or -1\n");
+  return os.str();
+}
+
+
 
 string slsDetectorCommand::cmdFileIndex(int narg, char *args[], int action){
 	char ans[100];
@@ -3304,7 +3341,7 @@ string slsDetectorCommand::helpDAC(int narg, char *args[], int action) {
 
   ostringstream os;
   if (action==PUT_ACTION || action==HELP_ACTION) {
-    os << "vthreshold dacu\t sets the detector threshold in dac units (0-1024). The energy is approx 800-15*keV" << std::endl;
+    os << "vthreshold dacu\t sets the detector threshold in dac units (0-1024) or mV. The energy is approx 800-15*keV" << std::endl;
     os << std::endl;
 
     os << "vcalibration " << "dacu\t sets the calibration pulse amplitude in dac units (0-1024)." << std::endl;

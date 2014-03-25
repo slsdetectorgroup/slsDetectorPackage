@@ -1169,6 +1169,13 @@ class multiSlsDetector  : public slsDetectorUtils {
   int enableWriteToFile(int enable=-1);
 
   /**
+     Sets/Gets file overwrite enable
+     @param enable 1 or 0 to set/reset file overwrite enable
+     /returns file overwrite enable
+  */
+  int overwriteFile(int enable=-1);
+
+  /**
    * set frame index to 0 or -1
    * @param index is the frame index
   */

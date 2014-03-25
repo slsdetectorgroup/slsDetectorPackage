@@ -644,12 +644,19 @@ virtual int* readFrameFromReceiver(char* fName, int &fIndex)=0;
 virtual int exitReceiver()=0;
 
 /**
+   Sets/Gets file overwrite enable
+   @param enable 1 or 0 to set/reset file overwrite enable
+   /returns file overwrite enable
+*/
+virtual int overwriteFile(int enable=-1)=0;
+
+
+/**
    Sets/Gets receiver file write enable
    @param enable 1 or 0 to set/reset file write enable
    /returns file write enable
 */
 virtual int enableWriteToFile(int enable=-1)=0;
-
 
 /** Starts acquisition, calibrates pedestal and writes to fpga
    /returns number of frames

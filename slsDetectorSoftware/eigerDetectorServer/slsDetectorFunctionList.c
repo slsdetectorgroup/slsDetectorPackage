@@ -144,7 +144,10 @@ int setDAC(enum detDacIndex ind, int val, int imod){
 	char iname[10];
 	strcpy(iname,EigerGetDACName((int)ind));
 //#ifdef VERBOSE
-	printf("Setting dac %d: %s to %d mV\n",ind, iname,val);
+	if(val >= 0)
+		printf("Setting dac %d: %s to %d mV\n",ind, iname,val);
+	else
+		printf("Getting dac %d: %s\n",ind, iname);
 //#endif
 	if(val >= 0)
 		EigerSetDAC(iname,val/1000);
@@ -267,7 +270,7 @@ int64_t setTimer(enum timerIndex ind, int64_t val){
 		if(val >= 0){
 			printf(" Setting exp time: %fs\n",val/(1E9));
 			EigerSetExposureTime(val/(1E9));
-		}return EigerGetExposureTime();
+		}return (EigerGetExposureTime()*(1E9));
 	case FRAME_PERIOD:
 		if(val >= 0){
 			printf(" Setting acq period: %fs\n",val/(1E9));

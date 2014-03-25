@@ -8,6 +8,7 @@
 #include <arpa/inet.h>
 #include <bitset>
 #include <cstdlib>
+#include <math.h>
 #include "svnInfoLib.h"
 
 
@@ -3482,7 +3483,7 @@ int64_t slsDetector::setTimer(timerIndex index, int64_t t){
   
 
 #ifdef VERBOSE
-    std::cout<< "Setting timer  "<< index << " to " <<  t << "ns" << std::endl;
+    std::cout<< "Setting timer "<< index << " to " <<  t << "ns/value" << std::endl;
 #endif
     if (thisDetector->onlineFlag==ONLINE_FLAG) {
       if (connectControl() == OK){
@@ -3496,7 +3497,7 @@ int64_t slsDetector::setTimer(timerIndex index, int64_t t){
 	  setErrorMask((getErrorMask())|(DETECTOR_TIMER_VALUE_NOT_SET));
 	} else {
 	  controlSocket->ReceiveDataOnly(&retval,sizeof(retval)); 
-	  thisDetector->timerValue[index]=retval; 
+	  thisDetector->timerValue[index]=retval;
 	} 
 	controlSocket->Disconnect();
 	if (ret==FORCE_UPDATE) {
@@ -3534,7 +3535,6 @@ int64_t slsDetector::setTimer(timerIndex index, int64_t t){
 
 
 
-
   //send acquisiton period/frame number to receiver
   if((index==FRAME_NUMBER)||(index==FRAME_PERIOD))
   {
@@ -3545,14 +3545,16 @@ int64_t slsDetector::setTimer(timerIndex index, int64_t t){
 			  if(t == -1)
 				  args[1] = -1;
 
+
 			  if(index==FRAME_NUMBER){
 #ifdef VERBOSE
-				  std::cout << "Sending/Getting number of frames to/from receiver " << retval << std::endl;
+
+				  std::cout << "Setting/Getting number of frames " << index <<" to/from receiver " << args[1] << std::endl;
 #endif
 				  args[0] = FRAME_NUMBER;
 			  }else{
 #ifdef VERBOSE
-				  std::cout << "Sending/Getting acquisition period to/from receiver " << retval << std::endl;
+				  std::cout << "Setting/Getting acquisition period " << index << " to/from receiver " << args[1] << std::endl;
 #endif
 				  args[0] = FRAME_PERIOD;
 				  //if acquisition period is zero, then #frames/buffer depends on exposure time and not acq period
@@ -3560,22 +3562,26 @@ int64_t slsDetector::setTimer(timerIndex index, int64_t t){
 					  args[1] = timerValue[ACQUISITION_TIME];
 			  }
 
+
 			  if (connectData() == OK)
 				  ret=thisReceiver->sendIntArray(fnum,ut,args);
 			  if((ut != retval)|| (ret==FAIL)){
 				  ret = FAIL;
 				  if(index==FRAME_PERIOD){
-					  cout << "ERROR:Acquisition Period in receiver set incorrectly to " << ut << " instead of " << retval << endl;
-					  setErrorMask((getErrorMask())|(RECEIVER_ACQ_PERIOD_NOT_SET));
+					  //exptime sent if acq period = 0
+					  if(retval){
+						  cout << "ERROR:Acquisition Period in receiver set incorrectly to " << ut << " instead of " << retval << endl;
+						  setErrorMask((getErrorMask())|(RECEIVER_ACQ_PERIOD_NOT_SET));
+					  }
 				  }else{
 					  cout << "ERROR:Number of Frames in receiver set incorrectly to " << ut << " instead of " << retval << endl;
 					  setErrorMask((getErrorMask())|(RECEIVER_FRAME_NUM_NOT_SET));
 				  }
 			  }
+
 			  if(ret==FORCE_UPDATE)
 				  updateReceiver();
 		  }
-
 	  }
 }
   return thisDetector->timerValue[index];
@@ -4873,39 +4879,38 @@ char* slsDetector::setReceiver(string receiverIP){
 
 	if(setReceiverOnline(ONLINE_FLAG)==ONLINE_FLAG){
 #ifdef VERBOSE
-		std::cout << "Setting up receiver with" << endl <<
-				"file path:" << fileIO::getFilePath() << endl <<
-				"file name:" << fileIO::getFileName() << endl <<
-				"write enable:" << parentDet->enableWriteToFileMask();
-		if(thisDetector->myDetectorType != EIGER){
-			std::cout << "file index:" << fileIO::getFileIndex() << endl <<
-					"frame index needed:" <<  ((setTimer(FRAME_NUMBER,-1)*setTimer(CYCLES_NUMBER,-1))>1) << endl <<
-					"frame period:" << setTimer(FRAME_PERIOD,-1) ;
-		}
-		std::cout << endl;
+		std::cout << "Setting up receiver with" << endl;
+		std::cout << "file path:" << fileIO::getFilePath() << endl;
+		std::cout << "file name:" << fileIO::getFileName() << endl;
+		std::cout << "file index:" << fileIO::getFileIndex() << endl;
+		std::cout << "write enable:" << parentDet->enableWriteToFileMask() << endl;
+		std::cout << "overwrite enable:" << parentDet->enableOverwriteMask() << endl;
+		std::cout << "frame index needed:" <<  ((thisDetector->timerValue[FRAME_NUMBER]*thisDetector->timerValue[CYCLES_NUMBER])>1) << endl;
+		std::cout << "frame period:" << thisDetector->timerValue[FRAME_PERIOD] << endl;
+		std::cout << "frame number:" << thisDetector->timerValue[FRAME_NUMBER] << endl;
+		std::cout << "dynamic range:" << thisDetector->dynamicRange << endl << endl;
+
 #endif
 		if(thisDetector->myDetectorType == EIGER)
 			setDetectorHostname();
 		setFilePath(fileIO::getFilePath());
 		setFileName(fileIO::getFileName());
+		setFileIndex(fileIO::getFileIndex());
 		enableWriteToFile(parentDet->enableWriteToFileMask());
+		overwriteFile(parentDet->enableOverwriteMask());
 
+		if ((thisDetector->timerValue[FRAME_NUMBER]*thisDetector->timerValue[CYCLES_NUMBER])>1)
+			setFrameIndex(0);
+		else
+			setFrameIndex(-1);
+
+		setTimer(FRAME_PERIOD,thisDetector->timerValue[FRAME_PERIOD]);
+		setTimer(FRAME_NUMBER,thisDetector->timerValue[FRAME_NUMBER]);
+		setDynamicRange(thisDetector->dynamicRange);
+		//set scan tag
 		if(thisDetector->myDetectorType != EIGER){
-			setFileIndex(fileIO::getFileIndex());
-			if ((setTimer(FRAME_NUMBER,-1)*setTimer(CYCLES_NUMBER,-1))>1)
-				setFrameIndex(0);
-			else
-				setFrameIndex(-1);
-
-			setTimer(FRAME_PERIOD,thisDetector->timerValue[FRAME_PERIOD]);
 			setUDPConnection();
 		}
-
-		else{
-			setTimer(FRAME_NUMBER,thisDetector->timerValue[FRAME_NUMBER]);
-			setDynamicRange(thisDetector->dynamicRange);
-		}
-
 	}
 
   return thisDetector->receiver_hostname;
@@ -6445,6 +6450,35 @@ int slsDetector::enableWriteToFile(int enable){
 	return parentDet->enableWriteToFileMask();
 }
 
+
+
+
+int slsDetector::overwriteFile(int enable){
+	int fnum=F_ENABLE_OVERWRITE;
+	int ret = FAIL;
+	int retval=-1;
+	int arg = enable;
+
+
+	if(thisDetector->receiverOnlineFlag==OFFLINE_FLAG){
+		if(enable>=0)
+			parentDet->enableOverwriteMask(enable);
+	}
+
+	else if(setReceiverOnline(ONLINE_FLAG)==ONLINE_FLAG){
+#ifdef VERBOSE
+		std::cout << "Sending enable file write to receiver " << arg << std::endl;
+#endif
+		if (connectData() == OK)
+			ret=thisReceiver->sendInt(fnum,retval,arg);
+		if(ret!=FAIL)
+			parentDet->enableOverwriteMask(retval);
+		if(ret==FORCE_UPDATE)
+			updateReceiver();
+	}
+
+	return parentDet->enableOverwriteMask();
+}
 
 
 

@@ -35,8 +35,8 @@ unsigned int eigergetphotonenergy = 8000;
 unsigned int EigerGetPhotonEnergy(){return eigergetphotonenergy;}
 /* for later */
 int eigernumberofexposureseries = 1;
-unsigned int EigerGetNumberOfExposureSeries(){return eigernumberofexposureseries;}
-int EigerSetNumberOfExposureSeries(unsigned int i){eigernumberofexposureseries = i;}
+int EigerGetNumberOfExposureSeries(){return eigernumberofexposureseries;}
+int EigerSetNumberOfExposureSeries(int i){eigernumberofexposureseries = i;return 1;}
 
 
 

@@ -163,6 +163,9 @@ public:
 	/** set dynamic range  */
 	int set_dynamic_range();
 
+	/** enable overwrite  */
+	int enable_overwrite();
+
 
 	//General Functions
 	/** Locks Receiver */

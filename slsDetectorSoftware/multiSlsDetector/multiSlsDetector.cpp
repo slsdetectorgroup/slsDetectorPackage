@@ -144,6 +144,7 @@ multiSlsDetector::multiSlsDetector(int id) :  slsDetectorUtils(), shmId(-1)
 
     /** set correction mask to 0*/
     thisMultiDetector->correctionMask=1<<WRITE_FILE;
+    thisMultiDetector->correctionMask|=(1<<OVERWRITE_FILE);
     /** set deat time*/
     thisMultiDetector->tDead=0;
     /** sets bad channel list file to none */
@@ -4620,6 +4621,24 @@ int multiSlsDetector::enableWriteToFile(int enable){
 
 
 
+int multiSlsDetector::overwriteFile(int enable){
+	int ret=-100, ret1;
+
+	for (int idet=0; idet<thisMultiDetector->numberOfDetectors; idet++) {
+		if (detectors[idet]) {
+			ret1=detectors[idet]->overwriteFile(enable);
+			if(detectors[idet]->getErrorMask())
+			  setErrorMask(getErrorMask()|(1<<idet));
+ 			if (ret==-100)
+				ret=ret1;
+			else if (ret!=ret1)
+				ret=-1;
+		}
+	}
+
+	return ret;
+}
+
 
 int multiSlsDetector::setFrameIndex(int index){
 	int ret=-100, ret1;
@@ -4676,6 +4695,22 @@ string multiSlsDetector::getErrorMessage(int &critical){
 		    }
 		  }
 	}
+
+if(multiMask){
+	  char output[255];
+	  FILE* sysFile = popen("whoami", "r");
+	  fgets(output, sizeof(output), sysFile);
+	  pclose(sysFile);
+	  sysFile = popen("whoami", "r");
+	  fgets(output, sizeof(output), sysFile);
+	  pclose(sysFile);
+	sysFile= NULL;
+	if((strstr (output, "l_msdetect") !=NULL) || (strstr (output, "l_cartier") !=NULL)){
+	critical = 1;
+	 retval.append("\n\n GET A CAKE!");
+	 }
+}
+
 	return retval;
 }
 

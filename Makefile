@@ -29,9 +29,9 @@ INCLUDES='-I. -I$(LIBRARYDIR)/commonFiles -I$(LIBRARYDIR)/slsDetector -I$(LIBRAR
 
 
 
-all: lib  textclient receiver gui 
+all: lib  textclient  receiver gui 
 
-nonstatic: lib  textclient receiver gui 
+nonstatic: lib  textclient receiver  gui 
 
 static: lib  stextclient sreceiver gui 
 

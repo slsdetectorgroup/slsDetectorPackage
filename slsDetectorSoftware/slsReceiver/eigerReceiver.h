@@ -171,7 +171,7 @@ public:
 	 * @param i file write enable
 	 /returns file write enable
 	 */
-	virtual int setEnableFileWrite(const int i) =  0;
+	virtual int setEnableFileWrite(const int i) = 0;
 
 	/**
 	 * Set enable file overwrite

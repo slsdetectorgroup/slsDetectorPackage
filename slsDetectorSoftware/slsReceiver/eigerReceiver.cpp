@@ -69,37 +69,46 @@ public:
 	 }
 
 	 //REST call - hardcoded
-	 RestHelper rest ;
-	 rest.init("localhost",8080);
-	 std::string answer;
-	 std::cout << "---- REST test 1: true, string "<< std::endl;
-	 int code = rest.get_json("status", &answer);
-	 std::cout << "Answer: " <<  answer << std::endl;
+         RestHelper rest ;
+         rest.init("localhost",8080);
+         std::string answer;
+         std::cout << "---- REST test 1: true, string "<< std::endl;
+         int code = rest.get_json("status", &answer);
+         std::cout << "Answer: " <<  answer << std::endl;
 
-	 std::cout << "---- REST test 2: 404, string "<< std::endl;
-	 code = rest.get_json("statuss", &answer);
+         std::cout << "---- REST test 2: 404, string "<< std::endl;
+         code = rest.get_json("statuss", &answer);
+         if (code != 0){
+           //throw -1;
+           std::cout << "I SHOULD THROW AN EXCEPTION!!!" << std::endl;
+         }
+
+         std::cout << "---- REST test 3: true, json object "<< std::endl;
+         JsonBox::Value json_value;
+         code = rest.get_json("status", &json_value);
+         std::cout << "JSON " << json_value["status"] << std::endl;
+
+	 answer = "";
+	 std::cout << "---- REST test 4: POST, string "<< std::endl;
+         code = rest.post_json("recipes/cassoela", &answer);
+	 std::cout << "POST answer: " << answer << std::endl;
 	 if (code != 0){
-	   //throw -1;
-	   std::cout << "I SHOULD THROW AN EXCEPTION!!!" << std::endl;
-	 }
-
-	 std::cout << "---- REST test 3: true, json object "<< std::endl;
-	 JsonBox::Value json_value;
-	 code = rest.get_json("status", &json_value);
-	 std::cout << "JSON " << json_value["status"] << std::endl;
-
+           //throw -1;
+           std::cout << "I SHOULD THROW AN EXCEPTION!!!" << std::endl;
+         }
 
 	 RestHelper rest2 ;
-	 rest2.init("reallyfake",8080);
-	 std::cout << "---- REST test 4: host not found, json object "<< std::endl;
-	 JsonBox::Value json_value2;
-	 code = rest2.get_json("status", &json_value2);
-	 if (code != 0){
-	   //throw -1;
-	   std::cout << "I SHOULD THROW AN EXCEPTION!!!" << std::endl;
-	 }
+         rest2.init("reallyfake",8080);
+         std::cout << "---- REST test 4: host not found, json object "<< std::endl;
+         JsonBox::Value json_value2;
+         code = rest2.get_json("status", &json_value2);
+         if (code != 0){
+           //throw -1;
+           std::cout << "I SHOULD THROW AN EXCEPTION!!!" << std::endl;
+         }
 
-	}
+        }
+
 
 	char *getDetectorHostname() const {
 		string name = init_config.detectorHostname;

@@ -116,7 +116,7 @@ public:
 	virtual int getEnableFileWrite() const  = 0;
 
 	/**
-	* Returns file overwrite enable
+	* Returns file over write enable
 	* 1: YES 0: NO
 	*/
 	virtual int getEnableOverwrite() const  = 0;

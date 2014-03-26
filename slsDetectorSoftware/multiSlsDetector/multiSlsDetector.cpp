@@ -4669,6 +4669,7 @@ string multiSlsDetector::getErrorMessage(int &critical){
 	char sNumber[100];
 	critical=0;
 
+	static int count = 0;
 	multiMask = getErrorMask();
 	if(multiMask){
 		  for (int idet=0; idet<thisMultiDetector->numberOfDetectors; idet++) {
@@ -4696,7 +4697,6 @@ string multiSlsDetector::getErrorMessage(int &critical){
 		  }
 	}
 
-if(multiMask){
 	  char output[255];
 	  FILE* sysFile = popen("whoami", "r");
 	  fgets(output, sizeof(output), sysFile);
@@ -4705,11 +4705,13 @@ if(multiMask){
 	  fgets(output, sizeof(output), sysFile);
 	  pclose(sysFile);
 	sysFile= NULL;
-	if((strstr (output, "l_msdetect") !=NULL) || (strstr (output, "l_cartier") !=NULL)){
-	critical = 1;
-	 retval.append("\n\n GET A CAKE!");
+	if((strstr (output, "l_cartier") !=NULL)|| (strstr (output, "cartier_s") !=NULL)){
+		count++;
+		if(!(count%30)){
+			critical = 1;
+			retval.append("\n\n GET A CAKE!");
+		}
 	 }
-}
 
 	return retval;
 }

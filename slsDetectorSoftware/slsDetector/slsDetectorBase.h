@@ -644,11 +644,9 @@ class slsDetectorBase :  public virtual slsDetectorDefs, public virtual errorDef
     switch(f) {						 \
     case AUTO_TIMING:      return string( "auto");			\
     case TRIGGER_EXPOSURE: return string("trigger");			\
-    case TRIGGER_FRAME: return string("trigger_frame");			\
     case TRIGGER_READOUT: return string("ro_trigger");			\
     case GATE_FIX_NUMBER: return string("gating");			\
     case GATE_WITH_START_TRIGGER: return string("triggered_gating");	\
-    case TRIGGER_WINDOW: return string("trigger_window");	\
     default:    return string( "unknown");				\
     }    };
   
@@ -663,11 +661,9 @@ class slsDetectorBase :  public virtual slsDetectorDefs, public virtual errorDef
   static externalCommunicationMode externalCommunicationType(string sval){\
     if (sval=="auto")      return AUTO_TIMING;\
     if (sval=="trigger")     return TRIGGER_EXPOSURE;	\
-    if (sval=="trigger_frame")     return TRIGGER_FRAME;	\
     if  (sval=="ro_trigger") return TRIGGER_READOUT;\
     if  (sval=="gating") return GATE_FIX_NUMBER;\
     if  (sval=="triggered_gating") return GATE_WITH_START_TRIGGER;\
-    if (sval=="trigger_window")     return TRIGGER_WINDOW;	\
     return GET_EXTERNAL_COMMUNICATION_MODE;			\
   };
 

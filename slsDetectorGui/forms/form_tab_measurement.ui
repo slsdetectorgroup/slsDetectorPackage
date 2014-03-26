@@ -525,11 +525,6 @@ Maximum value is 3. &lt;br&gt;
        </item>
        <item>
         <property name="text">
-         <string>Trigger Frame</string>
-        </property>
-       </item>
-       <item>
-        <property name="text">
          <string>Trigger Readout</string>
         </property>
        </item>
@@ -541,11 +536,6 @@ Maximum value is 3. &lt;br&gt;
        <item>
         <property name="text">
          <string>Gated with Start Trigger</string>
-        </property>
-       </item>
-       <item>
-        <property name="text">
-         <string>External Trigger Window</string>
         </property>
        </item>
       </widget>

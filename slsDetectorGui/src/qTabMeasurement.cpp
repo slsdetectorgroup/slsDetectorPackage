@@ -134,28 +134,22 @@ void qTabMeasurement::SetupTimingMode(){
 		switch(detType){
 		case slsDetectorDefs::MYTHEN:
 			item[(int)Trigger_Exp_Series]->setEnabled(true);
-			item[(int)Trigger_Frame]->setEnabled(false);
 			item[(int)Trigger_Readout]->setEnabled(true);
 			item[(int)Gated]->setEnabled(true);
 			item[(int)Gated_Start]->setEnabled(true);
-			item[(int)Trigger_Window]->setEnabled(false);
 			break;
 		case slsDetectorDefs::EIGER:
 			item[(int)Trigger_Exp_Series]->setEnabled(false);/**not implemented yet*/
-			item[(int)Trigger_Frame]->setEnabled(true);
 			item[(int)Trigger_Readout]->setEnabled(false);
-			item[(int)Gated]->setEnabled(false);
+			item[(int)Gated]->setEnabled(true);
 			item[(int)Gated_Start]->setEnabled(false);
-			item[(int)Trigger_Window]->setEnabled(true);
 			break;
 		case slsDetectorDefs::MOENCH:
 		case slsDetectorDefs::GOTTHARD:
 			item[(int)Trigger_Exp_Series]->setEnabled(true);
-			item[(int)Trigger_Frame]->setEnabled(false);
 			item[(int)Trigger_Readout]->setEnabled(false);
 			item[(int)Gated]->setEnabled(false);
 			item[(int)Gated_Start]->setEnabled(false);
-			item[(int)Trigger_Window]->setEnabled(false);
 			break;
 		default:
 			qDefs::Message(qDefs::CRITICAL,"Unknown detector type.","qTabMeasurement::SetupTimingMode");
@@ -645,19 +639,16 @@ void qTabMeasurement::SetTimingMode(int mode){
 			success = true;
 		break;
 	case Trigger_Exp_Series://#Frames, #Triggers, ExpTime, Period, Delay
+		if(detType == slsDetectorDefs::EIGER)//more than 1 frame per trigger yet to be implemented
+			spinNumFrames->setValue(1);
+		else{
 		lblNumFrames->setEnabled(true);		spinNumFrames->setEnabled(true);
+		}
 		lblExpTime->setEnabled(true);		spinExpTime->setEnabled(true);			comboExpUnit->setEnabled(true);
 		lblPeriod->setEnabled(true);		spinPeriod->setEnabled(true);			comboPeriodUnit->setEnabled(true);
 		lblNumTriggers->setEnabled(true);	spinNumTriggers->setEnabled(true);
 		lblDelay->setEnabled(true);			spinDelay->setEnabled(true);			comboDelayUnit->setEnabled(true);
 		if(myDet->setExternalCommunicationMode(slsDetectorDefs::TRIGGER_EXPOSURE)==slsDetectorDefs::TRIGGER_EXPOSURE)
-			success = true;
-		break;
-	case Trigger_Frame://ExpTime, #Frames
-		lblNumFrames->setEnabled(true);		spinNumFrames->setEnabled(true);
-		lblExpTime->setEnabled(true);		spinExpTime->setEnabled(true);			comboExpUnit->setEnabled(true);
-		lblNumTriggers->setEnabled(false);	spinNumTriggers->setEnabled(false);
-		if(myDet->setExternalCommunicationMode(slsDetectorDefs::TRIGGER_FRAME)==slsDetectorDefs::TRIGGER_FRAME)
 			success = true;
 		break;
 	case Trigger_Readout://#Frames, ExpTime, Period, Delay
@@ -671,8 +662,12 @@ void qTabMeasurement::SetTimingMode(int mode){
 		break;
 	case Gated://#Frames, #Gates
 		spinNumTriggers->setValue(1);
-		lblNumFrames->setEnabled(true);		spinNumFrames->setEnabled(true);
+		if(detType == slsDetectorDefs::EIGER)//more than 1 frame per trigger yet to be implemented
+			spinNumGates->setValue(1);
+		else{
 		lblNumGates->setEnabled(true);		spinNumGates->setEnabled(true);
+		}
+		lblNumFrames->setEnabled(true);		spinNumFrames->setEnabled(true);
 		if(myDet->setExternalCommunicationMode(slsDetectorDefs::GATE_FIX_NUMBER)==slsDetectorDefs::GATE_FIX_NUMBER)
 			success = true;
 		break;
@@ -683,11 +678,6 @@ void qTabMeasurement::SetTimingMode(int mode){
 		lblNumTriggers->setEnabled(true);	spinNumTriggers->setEnabled(true);
 		lblNumGates->setEnabled(true);		spinNumGates->setEnabled(true);
 		if(myDet->setExternalCommunicationMode(slsDetectorDefs::GATE_WITH_START_TRIGGER)==slsDetectorDefs::GATE_WITH_START_TRIGGER)
-			success = true;
-		break;
-	case Trigger_Window://#Frames
-		lblNumFrames->setEnabled(true);		spinNumFrames->setEnabled(true);
-		if(myDet->setExternalCommunicationMode(slsDetectorDefs::TRIGGER_WINDOW)==slsDetectorDefs::TRIGGER_WINDOW)
 			success = true;
 		break;
 	default:

@@ -180,7 +180,7 @@ private:
 	/** detector type */
 	slsDetectorDefs::detectorType detType;
 	/** enum for the timing mode */
-	enum{None, Auto, Trigger_Exp_Series, Trigger_Frame, Trigger_Readout, Gated, Gated_Start, Trigger_Window, NumTimingModes};
+	enum{None, Auto, Trigger_Exp_Series, Trigger_Readout, Gated, Gated_Start, NumTimingModes};
 	/** timer to update the progress*/
 	QTimer *progressTimer;
 	/** tool tip variables*/

@@ -10,8 +10,9 @@
  */
 
 #include "sls_detector_defs.h"
+#ifdef SALA
 #include "RestHelper.h"
-
+#endif
 class EigerReceiver {
 	/* abstract class that defines the public interface of an eiger data receiver.
 	 *

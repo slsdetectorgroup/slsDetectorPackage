@@ -70,6 +70,7 @@ public:
 	   status = slsDetectorDefs::IDLE;
 	 }
 
+#ifdef SALA
 	 //REST call - hardcoded
          RestHelper rest ;
          rest.init("localhost",8080);
@@ -109,6 +110,7 @@ public:
            std::cout << "I SHOULD THROW AN EXCEPTION!!!" << std::endl;
          }
 
+#endif
         }
 
 

@@ -2914,14 +2914,14 @@ slsDetectorDefs::detectorSettings slsDetector::setSettings( detectorSettings ise
 			}
 
 			settingsfname=ostfn.str();
-//#ifdef VERBOSE
+#ifdef VERBOSE
 			cout << "the settings file name is "<<settingsfname << endl;
-//#endif
+#endif
 			if (readSettingsFile(settingsfname,thisDetector->myDetectorType, myMod)) {
 				calfname=oscfn.str();
-//#ifdef VERBOSE
+#ifdef VERBOSE
 				cout << calfname << endl;
-//#endif
+#endif
 				readCalibrationFile(calfname,myMod->gain, myMod->offset);
 				setModule(*myMod);
 			} else {

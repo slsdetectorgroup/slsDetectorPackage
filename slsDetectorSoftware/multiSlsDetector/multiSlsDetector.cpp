@@ -3572,7 +3572,7 @@ int multiSlsDetector::decodeNMod(int i, int &id, int &im) {
 #ifdef VERBOSE
     cout  << " A---------" << id << " position " << im << endl;
 #endif
-cout<<"decodeNMod:-1"<<endl;
+
     return -1;
   }
   int nm;
@@ -3585,7 +3585,6 @@ cout<<"decodeNMod:-1"<<endl;
 #ifdef VERBOSE
 	cout  << " B---------" <<id << " position " << im << endl;
 #endif
-	cout<<"decodeNMod:"<<im<<endl;
 	return im;
       } else {
 	i-=nm;
@@ -3597,7 +3596,6 @@ cout<<"decodeNMod:-1"<<endl;
 #ifdef VERBOSE
   cout  <<" C---------" << id << " position " << im << endl;
 #endif
-  cout<<"decodeNMod:-1"<<endl;
   return -1;
   
 

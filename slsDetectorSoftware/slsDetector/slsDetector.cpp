@@ -5658,7 +5658,7 @@ int slsDetector::saveSettingsFile(string fname, int imod) {
     if(thisDetector->myDetectorType == EIGER)
     	ostfn << fname << "."  << setw(6) << hex << getId(DETECTOR_SERIAL_NUMBER);
     else
-    	ostfn << fname << ".sn"  << setfill('0') << setw(3) << hex << getId(MODULE_SERIAL_NUMBER);
+    	ostfn << fname << ".sn"  << setfill('0') << setw(3) << hex << getId(MODULE_SERIAL_NUMBER,im);
     if ((myMod=getModule(im))) {
       ret=writeSettingsFile(ostfn.str(), thisDetector->myDetectorType, *myMod);
       deleteModule(myMod);

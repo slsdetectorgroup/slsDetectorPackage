@@ -11,6 +11,13 @@ CALWIZDIR=$(WD)/calibrationWizards
 MANDIR=$(WD)/manual
 CALIBDIR=$(WD)/slsDetectorCalibration
 
+POCODIR = /afs/psi.ch/user/s/sala/public/poco-slp_5.7-32bit
+JSONBOXDIR = /afs/psi.ch/user/s/sala/public/JsonBox-slp_5.7-32bit
+#POCODIR = /home/sala/Programs/poco-ubuntu_13.10-64bit
+#JSONBOXDIR = /home/sala/Programs/JsonBox-ubuntu_13.10-64bit
+
+EIGERFLAGS = -L$(JSONBOXDIR) -L$(POCODIR)/lib -Wl,-rpath=$(POCODIR)/lib -I$(POCODIR)/include 
+
 INSTALLROOT?=$(PWD)
 BINDIR?=$(INSTALLROOT)/bin
 DOCDIR?=$(INSTALLROOT)/docs
@@ -18,7 +25,8 @@ LIBDIR?=$(INSTALLROOT)/bin
 INCDIR?=$(INSTALLROOT)/include
 
 
-LDFLAG:='-L$(LIBDIR) -lSlsDetector'
+LDFLAG = '-L$(LIBDIR) -lSlsDetector $(EIGERFLAGS) -lPocoNet -lPocoFoundation -lJsonBox'
+#LDFLAG:='-L$(LIBDIR) -lSlsDetector'
 
 #FLAGS=-DVERBOSE
 ASM=$(shell echo "/lib/modules/`uname -r`/build/include")
@@ -62,7 +70,7 @@ sreceiver: lib
 
 slsDetectorGUI: lib
 	echo $(LDFLAG)
-	cd  $(GUIDIR) && $(MAKE)  FLAGS=$(FLAGS) LDFLAG='-L$(LIBDIR) -lSlsDetector' DESTDIR=$(BINDIR) LIBDIR=$(LIBDIR) INCLUDES=$(INCLUDES)
+	cd  $(GUIDIR) && $(MAKE)  FLAGS=$(FLAGS) LDFLAG='-L$(LIBDIR) -lSlsDetector $(EIGERFLAGS) -lPocoNet -lJsonBox' DESTDIR=$(BINDIR) LIBDIR=$(LIBDIR) INCLUDES=$(INCLUDES)
 
 calWiz: 
 	cd  $(CALWIZDIR) && $(MAKE)  FLAGS=$(FLAGS)  LDFLAG=$(LDFLAG) DESTDIR=$(BINDIR) INCLUDES=$(INCLUDES)
@@ -87,8 +95,8 @@ clean:
 	cd $(LIBDIR) && rm -rf libSlsDetector.so libSlsDetector.a
 	cd $(LIBRARYDIR) && $(MAKE) clean
 	cd $(CLIENTDIR) && $(MAKE) clean
-	cd $(GUIDIR) && $(MAKE) clean
 	cd $(RECEIVERDIR) && $(MAKE) clean	
+	cd $(GUIDIR) && $(MAKE) clean
 	cd  $(CALWIZDIR) && $(MAKE) clean	
 	cd manual && $(MAKE) clean
 	cd $(DOCDIR) && rm -rf * 

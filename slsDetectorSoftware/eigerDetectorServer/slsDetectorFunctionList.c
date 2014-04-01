@@ -2,6 +2,7 @@
 
 
 #include <stdio.h>
+#include <unistd.h> //to gethostname
 #include <string.h>
 
 
@@ -33,16 +34,8 @@ int getNModBoard(enum dimension arg){
 
 
 int64_t getModuleId(enum idMode arg, int imod){
-  /*
-	switch(arg){
-	case MODULE_SERIAL_NUMBER:
-		return getDetectorNumber();
-	case MODULE_FIRMWARE_VERSION:
-		return FIRMWAREREV;
-	default:
-		break;
-	}
-  */
+
+/**/
 	return -1;
 }
 
@@ -51,13 +44,13 @@ int64_t getModuleId(enum idMode arg, int imod){
 
 int64_t getDetectorId(enum idMode arg){
 	int64_t retval = -1;
-	/*
+
 	switch(arg){
 	case DETECTOR_SERIAL_NUMBER:
-		retval =  getDetectorMAC();
+		retval =  getDetectorNumber();/** to be implemented with mac? */
 		break;
 	case DETECTOR_FIRMWARE_VERSION:
-		return FIRMWAREREV;
+		return FIRMWAREREV;/** to be implemented */
 	case DETECTOR_SOFTWARE_VERSION:
 		retval= SVNREV;
 		retval= (retval <<32) | SVNDATE;
@@ -65,14 +58,24 @@ int64_t getDetectorId(enum idMode arg){
 	default:
 		break;
 	}
-	*/
+
 	return retval;
 }
 
 
 
 int getDetectorNumber(){
-  /*
+	int res=0;
+    char hostname[100];
+    if (gethostname(hostname, sizeof hostname) == 0)
+        puts(hostname);
+    else
+        perror("gethostname");
+    sscanf(hostname,"%x",&res);
+    return res;
+
+
+/*
 	char output[255]="";
 	int res=0;
 	FILE* sysFile = popen("hostname", "r");
@@ -80,8 +83,8 @@ int getDetectorNumber(){
 	pclose(sysFile);
 	sscanf(output,"%x",&res);
 	return res;
-  */
-  return 0;
+	*/
+
 }
 
 
@@ -166,20 +169,17 @@ int getADC(enum detDacIndex ind,  int imod){
 
 int setModule(sls_detector_module myMod){
   
-  /*
+
 #ifdef VERBOSE
 	printf("Setting module with settings %d\n",myMod.reg);
 #endif
 
-	//int nchip = myMod.nchip;
-	//int nchan = (myMod.nchan)/nchip;
 	int i;
-
 	for(i=0;i<myMod.ndac;i++)
 		setDAC((detDacIndex)i,myMod.dacs[i],myMod.module);
 
 	thisSettings = (detectorSettings)myMod.reg;
-  */
+
   return 0;
 }
 
@@ -209,9 +209,9 @@ int setThresholdEnergy(int thr, int imod){
 
 
 enum detectorSettings setSettings(enum detectorSettings sett, int imod){
-	//template setSettings() from mcb_funcs.c
-	//reads the dac registers from fpga to confirm which settings, if weird, undefined
 
+	if(sett != GET_SETTINGS)
+		printf("trying to set settings!\n");
 	return thisSettings;
 }
 

@@ -814,7 +814,9 @@ int get_id(int file_des) {
 	// sends back 64 bits!
 	int64_t retval;
 	int ret=OK,ret1=OK;
+#ifndef EIGERD
 	int imod=-1;
+#endif
 	int n=0;
 	enum idMode arg;
 
@@ -832,6 +834,7 @@ int get_id(int file_des) {
 #endif
 
 	switch (arg) {
+#ifndef EIGERD
 	case  MODULE_SERIAL_NUMBER:
 	case MODULE_FIRMWARE_VERSION:
 		n = receiveData(file_des,&imod,sizeof(imod),INT32);
@@ -854,6 +857,7 @@ int get_id(int file_des) {
 		}
 #endif
 		break;
+#endif
 	case DETECTOR_SERIAL_NUMBER:
 	case DETECTOR_FIRMWARE_VERSION:
 	case DETECTOR_SOFTWARE_VERSION:

@@ -23,6 +23,7 @@ const char* dac_names[16] = {"SvP","Vtr","Vrf","Vrs","SvN","Vtgstv","Vcmp_ll","V
 
 
 
+/** Ian, the setdac and getdac should take float if it takes only V and not mV*/
 int eiger_nexposures = 1;
 int EigerGetNumberOfExposures(){return eiger_nexposures;}
 float eiger_exposuretime = 1;

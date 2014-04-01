@@ -176,9 +176,9 @@ int setModule(sls_detector_module myMod){
 
 	int i;
 	for(i=0;i<myMod.ndac;i++)
-		setDAC((detDacIndex)i,myMod.dacs[i],myMod.module);
+		setDAC((enum detDacIndex)i,myMod.dacs[i],myMod.module);
 
-	thisSettings = (detectorSettings)myMod.reg;
+	thisSettings = (enum detectorSettings)myMod.reg;
 
   return 0;
 }
@@ -364,14 +364,14 @@ int calculateDataBytes(){
 	return 0;
 }
 
-int getTotalNumberOfChannels(){return 1;};//NCHIP*NCHAN*nModBoard;}
-int getTotalNumberOfChips(){return 1;};//NCHIP*nModBoard;}
+int getTotalNumberOfChannels(){return getNumberOfChannelsPerModule();};//NCHIP*NCHAN*nModBoard;}
+int getTotalNumberOfChips(){return 4;};//NCHIP*nModBoard;}
 int getTotalNumberOfModules(){return 1;}//nModBoard;}
-int getNumberOfChannelsPerChip(){return  1;}//NCHAN;}
-int getNumberOfChannelsPerModule(){return  1;}//NCHAN*NCHIP;}
-int getNumberOfChipsPerModule(){return  1;}//NCHIP;}
-int getNumberOfDACsPerModule(){return  1;}//NDAC;}
-int getNumberOfADCsPerModule(){return  1;}//NADC;}
+int getNumberOfChannelsPerChip(){return  (256*256);}//NCHAN;}
+int getNumberOfChannelsPerModule(){return  getNumberOfChannelsPerChip() * getTotalNumberOfChips();}//NCHAN*NCHIP;}
+int getNumberOfChipsPerModule(){return  4;}//NCHIP;}
+int getNumberOfDACsPerModule(){return  16;}//NDAC;}
+int getNumberOfADCsPerModule(){return  0;}//NADC;}
 
 
 

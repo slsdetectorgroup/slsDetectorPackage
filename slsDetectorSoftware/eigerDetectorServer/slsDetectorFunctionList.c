@@ -153,9 +153,9 @@ int setDAC(enum detDacIndex ind, int val, int imod){
 		printf("Getting dac %d: %s\n",ind, iname);
 //#endif
 	if(val >= 0)
-		EigerSetDAC(iname,val/1000);
+		EigerSetDAC(iname,val);
 
-	return (EigerGetDAC(iname)*1000);
+	return EigerGetDAC(iname);
 }
 
 

@@ -14,12 +14,12 @@ void raedNoiseData(char *tit, int sign=1){
   TFile *fout;
   THStack *hs2N;
 
-  sprintf(fname,"/data/moench_xbox_20140113/MoTarget_45kV_0_8mA_120V_%s.root",tit);
+  sprintf(fname,"/data/moench_trieste_calibration_trees/flat_20keV_%s.root",tit);
   fout=new TFile(fname,"RECREATE");
 
-  sprintf(fname,"/data/moench_xbox_20140113/MoTarget_45kV_0_8mA_120V_%s_f00000%%04d000_0.raw",tit);
+  sprintf(fname,"/data/moench_trieste_calibration/flat_20keV_%s_f00000%%04d000_0.raw",tit);
 
-  hs2N=moenchReadData(fname,tit,0,3000,1500,-500,2500,sign,0.,1,159,1,159, 0,1); 
+  hs2N=moenchReadData(fname,tit,0,2000,1500,-500,2500,sign,0.,1,159,1,159, 0,1); 
   hs2N->SetName(tit);
   hs2N->SetTitle(tit);
   (TH2F*)(hs2N->GetHists()->At(0))->Write();
@@ -100,10 +100,10 @@ void raedNoiseDataN(char *tit, int sign=1){
   TFile *fout;
   THStack *hs2N;
 
-  sprintf(fname,"/data/moench_xbox_20140116/noise_%s.root",tit);
+  sprintf(fname,"/data/moench_noise_20140327_trees/noise_%s.root",tit);
   fout=new TFile(fname,"RECREATE");
 
-  sprintf(fname,"/data/moench_xbox_20140116/noise_%s_f00000%%04d000_0.raw",tit);
+  sprintf(fname,"/data/moench_noise_20140327/noise_%s_f00000%%04d000_0.raw",tit);
 
   hs2N=moenchReadData(fname,tit,0,3000,1500,-500,2500,sign,0.,1,159,1,159, 0,0); 
   hs2N->SetName(tit);

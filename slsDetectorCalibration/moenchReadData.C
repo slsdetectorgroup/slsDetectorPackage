@@ -26,7 +26,7 @@ using namespace std;
 #define NR 160
 
 
-//#define MY_DEBUG 1
+#define MY_DEBUG 1
 #ifdef MY_DEBUG
 #include <TCanvas.h>
 #endif
@@ -79,6 +79,7 @@ THStack *moenchReadData(char *fformat, char *tit, int runmin, int runmax, int nb
   TH2F *h3;
   TH2F *hetaX;
   TH2F *hetaY;
+  TH2D *clustHist;
 
   THStack *hs=new THStack("hs",fformat);
 
@@ -117,12 +118,18 @@ THStack *moenchReadData(char *fformat, char *tit, int runmin, int runmax, int nb
   
 
 #ifdef MY_DEBUG
-  
+  quadrant quad;
+  tall->Branch("q",&quad,"q/I");  
+
+
   TCanvas *myC;
   TH2F *he;
   TCanvas *cH1;
   TCanvas *cH2;
   TCanvas *cH3;
+
+  int quadrants[5];
+  for(int i = 0; i < 5; i++){ quadrants[i] = 0; }
 
   if (hitfinder) {
     myC=new TCanvas();
@@ -138,6 +145,8 @@ THStack *moenchReadData(char *fformat, char *tit, int runmin, int runmax, int nb
     cH3=new TCanvas();
     cH3->SetLogz();
     h3->Draw("colz");
+
+    clustHist= new TH2D("clustHist","clustHist",3,-1.5,1.5,3,-1.5,1.5);
   }
 #endif
   filter->newDataSet();
@@ -145,7 +154,7 @@ THStack *moenchReadData(char *fformat, char *tit, int runmin, int runmax, int nb
 
   for (int irun=runmin; irun<runmax; irun++) {
     sprintf(fname,fformat,irun);
-    cout << "file name " << fname << endl;
+    cout << "file name " << fname << " ( " << (((double)(irun-runmin))*100./((double)(runmax-runmin))) << "% )" << endl;
     filebin.open((const char *)(fname), ios::in | ios::binary);
     nph=0;
     while ((buff=decoder->readNextFrame(filebin))) {
@@ -189,9 +198,17 @@ THStack *moenchReadData(char *fformat, char *tit, int runmin, int runmax, int nb
 		h3->Fill(filter->getClusterTotal(3), iy+NR*ix);
 		iFrame=decoder->getFrameNumber(buff);
 
+
+#ifdef MY_DEBUG	 
+		for(int cx=-1; cx <2; cx++)
+		  for(int cy=-1; cy < 2; cy++)
+		    clustHist->Fill(cx,cy,filter->getClusterElement(cx,cy));
+
+		quad = filter->getQuadrant();
+		quadrants[quad]++;
+#endif	        
 		tall->Fill();
-	   
-       
+
 	      }
 	  
 	    
@@ -217,10 +234,10 @@ THStack *moenchReadData(char *fformat, char *tit, int runmin, int runmax, int nb
 #endif		    
       nf++;
       
-      cout << "=" ;
+      //cout << "=" ;
       delete [] buff;
     }
-    cout << nph << endl;
+    //cout << nph << endl;
     if (filebin.is_open())
     filebin.close();	  
     else
@@ -233,6 +250,14 @@ THStack *moenchReadData(char *fformat, char *tit, int runmin, int runmax, int nb
   
   delete decoder;
   cout << "Read " << nf << " frames" << endl;
+
+#ifdef MY_DEBUG
+   cout << "quadrants: " ;
+   for(int i = 0; i<5; i++) cout << i << ": " << quadrants[i] << " || " ;
+   cout << endl;
+   cout << "Read Events " << nph << endl;
+#endif 
+
   return hs;
 }
   

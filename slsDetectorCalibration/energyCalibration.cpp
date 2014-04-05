@@ -447,9 +447,11 @@ TF1* energyCalibration::fitFunction(TF1 *fun, TH1 *h1, Double_t *mypar, Double_t
 
 
   fitfun= h1->GetFunction(fname);
-  fitfun->GetParameters(mypar);
-  for (int ip=0; ip<6; ip++) {
-    emypar[ip]=fitfun->GetParError(ip);
+  if (fitfun) {
+    fitfun->GetParameters(mypar);
+    for (int ip=0; ip<6; ip++) {
+      emypar[ip]=fitfun->GetParError(ip);
+    }
   }
   return fitfun;
 }

@@ -1,15 +1,27 @@
+# LEO: Won't compile without libSlsDetector
 
-PROG= $(DESTDIR)/slsDetectorGui
-DESTDIR?=bin
-DOCDIR?=docs
+include ../Makefile.include
 
-LIBDIR?=../bin
-LIBRARYDIR?=../slsDetectorSoftware
-INCLUDES?= $(LIBRARYDIR)/commonFiles -I$(LIBRARYDIR)/MySocketTCP  -I$(LIBRARYDIR)/slsReceiverInterface   -I$(LIBRARYDIR)/slsDetector  -I$(LIBRARYDIR)/slsDetectorAnalysis  -I$(LIBRARYDIR)/multiSlsDetector   -I$(LIBRARYDIR)/usersFunctions  
-LDFLAG?=-L$(LIBRARYDIR)/bin -lSlsDetector 
+PROG		= 	$(DESTDIR)/slsDetectorGui
+
+DESTDIR		?=	../bin
+LIBDIR		?=	$(DESTDIR)
+DOCDIR		?=	docs
+
+LIBRARYDIR	?=	../slsDetectorSoftware
+INCLUDES	?= 	$(LIBRARYDIR)/commonFiles -I$(LIBRARYDIR)/MySocketTCP  -I$(LIBRARYDIR)/slsReceiverInterface   -I$(LIBRARYDIR)/slsDetector  -I$(LIBRARYDIR)/slsDetectorAnalysis  -I$(LIBRARYDIR)/multiSlsDetector   -I$(LIBRARYDIR)/usersFunctions
+
+ifeq ( $(EIGERSLS), yes)  	
+	LDFLAG += $(EIGERFLAGS)
+endif
+
+.PHONY: all lib clean mm doc htmldoc guiclient
 
 
-all: $(PROG) Makefile.gui guiclient
+all: lib $(PROG) Makefile.gui guiclient
+
+lib:
+	cd ../ && make lib
 
 clean: 
 	if test -e Makefile.gui; then make -f Makefile.gui clean; make -f Makefile.gui mocclean; 	rm Makefile.gui; else 	make Makefile.gui; 	make -f Makefile.gui clean; make -f Makefile.gui mocclean;  fi
@@ -29,9 +41,7 @@ htmldoc:
 	cd manual && make html DESTDIR=$(DOCDIR)
 
 $(PROG): Makefile.gui $(DIR)
-	echo $(LDFLAG)
 	make -f Makefile.gui SLSDETLIB=$(LIBDIR) DESTDIR=$(DESTDIR) SUBLIBS='$(LDFLAG)' INCLUDES='$(INCLUDES)'
-
 
 guiclient:
 	echo $(WD)

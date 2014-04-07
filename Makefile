@@ -1,41 +1,28 @@
 # do not change below this line
 
-INCS='-I$(LIBRARYDIR)/commonFiles -I$(LIBRARYDIR)/slsDetector -I$(LIBRARYDIR)/MySocketTCP -I$(LIBRARYDIR)/usersFunctions -I$(LIBRARYDIR)/multiSlsDetector -I$(LIBRARYDIR)/slsDetectorUtils -I$(LIBRARYDIR)/slsDetectorCommand -I$(LIBRARYDIR)/slsDetectorAnalysis -I$(LIBRARYDIR)/slsReceiverInterface -I$(CALIBDIR) -I$(ASM)'
+# Include common definitions
+include Makefile.include
 
-WD=$(shell pwd)
-LIBRARYDIR=$(WD)/slsDetectorSoftware
-CLIENTDIR=$(LIBRARYDIR)/slsDetectorClient
-GUIDIR=$(WD)/slsDetectorGui
-RECEIVERDIR=$(LIBRARYDIR)/slsReceiver
-CALWIZDIR=$(WD)/calibrationWizards
-MANDIR=$(WD)/manual
-CALIBDIR=$(WD)/slsDetectorCalibration
+INSTALLROOT	?=	$(PWD)
+BINDIR	?=	$(INSTALLROOT)/bin
+DOCDIR	?=	$(INSTALLROOT)/docs
+LIBDIR	?=	$(INSTALLROOT)/bin
+INCDIR	?=	$(INSTALLROOT)/include
 
-POCODIR = /afs/psi.ch/user/s/sala/public/poco-slp_5.7-32bit
-JSONBOXDIR = /afs/psi.ch/user/s/sala/public/JsonBox-slp_5.7-32bit
-#POCODIR = /home/sala/Programs/poco-ubuntu_13.10-64bit
-#JSONBOXDIR = /home/sala/Programs/JsonBox-ubuntu_13.10-64bit
-
-EIGERFLAGS = -L$(JSONBOXDIR) -L$(POCODIR)/lib -Wl,-rpath=$(POCODIR)/lib -I$(POCODIR)/include 
-
-INSTALLROOT?=$(PWD)
-BINDIR?=$(INSTALLROOT)/bin
-DOCDIR?=$(INSTALLROOT)/docs
-LIBDIR?=$(INSTALLROOT)/bin
-INCDIR?=$(INSTALLROOT)/include
+WD		=	$(shell pwd)
+LIBRARYDIR	=	$(WD)/slsDetectorSoftware
+CLIENTDIR	=	$(LIBRARYDIR)/slsDetectorClient
+GUIDIR		=	$(WD)/slsDetectorGui
+RECEIVERDIR	=	$(LIBRARYDIR)/slsReceiver
+CALWIZDIR	=	$(WD)/calibrationWizards
+MANDIR		=	$(WD)/manual
+CALIBDIR	=	$(WD)/slsDetectorCalibration
 
 
-LDFLAG = '-L$(LIBDIR) -lSlsDetector $(EIGERFLAGS) -lPocoNet -lPocoFoundation -lJsonBox'
-#LDFLAG:='-L$(LIBDIR) -lSlsDetector'
-
-#FLAGS=-DVERBOSE
-ASM=$(shell echo "/lib/modules/`uname -r`/build/include")
+INCLUDES=-I. -I$(LIBRARYDIR)/commonFiles -I$(LIBRARYDIR)/slsDetector -I$(LIBRARYDIR)/MySocketTCP -I$(LIBRARYDIR)/usersFunctions -I$(LIBRARYDIR)/multiSlsDetector -I$(LIBRARYDIR)/slsDetectorUtils -I$(LIBRARYDIR)/slsDetectorCommand -I$(LIBRARYDIR)/slsDetectorAnalysis -I$(LIBRARYDIR)/slsReceiverInterface -I$(LIBRARYDIR)/slsReceiver -I$(CALIBDIR) -I$(ASM)
 
 
-
-INCLUDES='-I. -I$(LIBRARYDIR)/commonFiles -I$(LIBRARYDIR)/slsDetector -I$(LIBRARYDIR)/MySocketTCP -I$(LIBRARYDIR)/usersFunctions -I$(LIBRARYDIR)/multiSlsDetector -I$(LIBRARYDIR)/slsDetectorUtils -I$(LIBRARYDIR)/slsDetectorCommand -I$(LIBRARYDIR)/slsDetectorAnalysis -I$(LIBRARYDIR)/slsReceiverInterface -I$(LIBRARYDIR)/slsReceiver -I$(CALIBDIR) -I$(ASM)'
-
-
+.PHONY: all nonstatic static lib textclient receiver gui stextclient sreceiver
 
 all: lib  textclient  receiver gui 
 
@@ -44,33 +31,33 @@ nonstatic: lib  textclient receiver  gui
 static: lib  stextclient sreceiver gui 
 
 lib:
-	cd $(LIBRARYDIR) && $(MAKE) FLAGS=$(FLAGS) DESTDIR=$(LIBDIR) INCLUDES=$(INCLUDES)
+	cd $(LIBRARYDIR) && $(MAKE) FLAGS='$(FLAGS)' DESTDIR='$(LIBDIR)' INCLUDES='$(INCLUDES)'
 
 stextclient: slsDetectorClient_static
 
 slsDetectorClient: textclient
 
 slsDetectorClient_static: lib
-	cd  $(CLIENTDIR) && $(MAKE) static_clients FLAGS=$(FLAGS) LIBS=$(LDFLAG) DESTDIR=$(BINDIR) LIBDIR=$(LIBDIR) INCLUDES=$(INCLUDES)
+	cd  $(CLIENTDIR) && $(MAKE) static_clients FLAGS='$(FLAGS)' LIBS='$(LDFLAG)' DESTDIR='$(BINDIR)' LIBDIR='$(LIBDIR)' INCLUDES='$(INCLUDES)'
 
 
 textclient: lib
-	cd  $(CLIENTDIR) && $(MAKE) FLAGS=$(FLAGS) DESTDIR=$(BINDIR)  LIBDIR=$(LIBDIR) LIBS=$(LDFLAG) INCLUDES=$(INCLUDES)
+	cd  $(CLIENTDIR) && $(MAKE) FLAGS='$(FLAGS)' DESTDIR='$(BINDIR)'  LIBDIR='$(LIBDIR)' LIBS='$(LDFLAG)' INCLUDES='$(INCLUDES)'
 
 slsReceiver: receiver
 
 slsReceiver_static: receiver
 
 receiver: lib
-	cd  $(RECEIVERDIR) && $(MAKE)  receiver FLAGS=$(FLAGS) DESTDIR=$(BINDIR) LIBDIR=$(LIBDIR)  LIBS=$(LDFLAG) INCLUDES=$(INCLUDES)
+	cd  $(RECEIVERDIR) && $(MAKE) receiver FLAGS='$(FLAGS)' DESTDIR='$(BINDIR)' LIBDIR='$(LIBDIR)'  LIBS='$(LDFLAG)' INCLUDES='$(INCLUDES)'
 
 sreceiver: lib
-	cd  $(RECEIVERDIR) && $(MAKE)  static_receiver FLAGS=$(FLAGS) DESTDIR=$(BINDIR) LIBDIR=$(LIBDIR)  LIBS=$(LDFLAG) INCLUDES=$(INCLUDES)
+	cd  $(RECEIVERDIR) && $(MAKE)  static_receiver FLAGS='$(FLAGS)' DESTDIR='$(BINDIR)' LIBDIR='$(LIBDIR)'  LIBS='$(LDFLAG)' INCLUDES='$(INCLUDES)'
 
 
 slsDetectorGUI: lib
-	echo $(LDFLAG)
-	cd  $(GUIDIR) && $(MAKE)  FLAGS=$(FLAGS) LDFLAG='-L$(LIBDIR) -lSlsDetector $(EIGERFLAGS) -lPocoNet -lJsonBox' DESTDIR=$(BINDIR) LIBDIR=$(LIBDIR) INCLUDES=$(INCLUDES)
+	cd  $(GUIDIR) && $(MAKE) DESTDIR='$(BINDIR)' LIBDIR='$(LIBDIR)' INCLUDES='$(INCLUDES)' 
+
 
 calWiz: 
 	cd  $(CALWIZDIR) && $(MAKE)  FLAGS=$(FLAGS)  LDFLAG=$(LDFLAG) DESTDIR=$(BINDIR) INCLUDES=$(INCLUDES)

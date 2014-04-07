@@ -42,7 +42,6 @@ slsReceiverFuncs::slsReceiverFuncs(int argc, char *argv[], int &success):
 	ifstream infile;
 	string sLine,sargname;
 	int iline = 0;
-	bool dcompr = false;
 
 
 	success=OK;
@@ -98,30 +97,6 @@ slsReceiverFuncs::slsReceiverFuncs(int argc, char *argv[], int &success):
 							}
 						}
 					}
-					//type
-					else if(sargname=="type"){
-						if(sstr.good()) {
-							sstr >> sargname;
-							if(!strcasecmp(sargname.c_str(),"gotthard"))
-								slsReceiverFuncs::myDetectorType = GOTTHARD;
-							else if(!strcasecmp(sargname.c_str(),"moench"))
-								slsReceiverFuncs::myDetectorType = MOENCH;
-							else if(!strcasecmp(sargname.c_str(),"eiger"))
-								slsReceiverFuncs::myDetectorType = EIGER;
-							else{
-								cout << "could not decode detector type in config file.\nOptions are:\ngotthard\nmoench.\n\nExiting." << endl;
-								success=FAIL;
-							}
-						}
-					}
-					//compression
-					else if(sargname=="compression"){
-						if(sstr.good()) {
-							sstr >> sargname;
-							if((!strcasecmp(sargname.c_str(),"yes"))||(!strcasecmp(sargname.c_str(),"y")))
-								dcompr = true;
-						}
-					}
 				}
 			}
 			infile.close();
@@ -137,33 +112,12 @@ slsReceiverFuncs::slsReceiverFuncs(int argc, char *argv[], int &success):
 
 
 
-	//parse command line for type etc.. more priority
+	//parse command line for port etc.. more priority
 	if(success == OK){
 		for(int iarg=1;iarg<argc;iarg++){
 
-			//type
-			if(!strcasecmp(argv[iarg],"-type")){
-				if(iarg+1==argc){
-					cout << "no detector type given after -type in command line. Exiting." << endl;
-					success=FAIL;
-				}else{
-					if(!strcasecmp(argv[iarg+1],"gotthard")){
-						slsReceiverFuncs::myDetectorType = GOTTHARD;
-						iarg++;
-					}else if(!strcasecmp(argv[iarg+1],"moench")){
-						slsReceiverFuncs::myDetectorType = MOENCH;
-						iarg++;
-					}else if(!strcasecmp(argv[iarg+1],"eiger")){
-						slsReceiverFuncs::myDetectorType = EIGER;
-						iarg++;
-					}else{
-						cout << "could not decode detector type in command line. \nOptions are:\ngotthard\nmoench.\n\nExiting." << endl;
-						success=FAIL;
-					}
-				}
-			}
 			//tcp port
-			else if(!strcasecmp(argv[iarg],"-rx_tcpport")){
+			if(!strcasecmp(argv[iarg],"-rx_tcpport")){
 				if(iarg+1==argc){
 					cout << "no port given after -rx_tcpport in command line. Exiting." << endl;
 					success=FAIL;
@@ -177,21 +131,6 @@ slsReceiverFuncs::slsReceiverFuncs(int argc, char *argv[], int &success):
 					}
 				}
 			}
-			//compression
-			else if(!strcasecmp(argv[iarg],"-compression")){
-				if(iarg+1==argc){
-					cout << "no value given after -compression in command line. Exiting." << endl;
-					success=FAIL;
-				}else {
-					if((!strcasecmp(argv[iarg+1],"yes"))||(!strcasecmp(argv[iarg+1],"y"))){
-						dcompr = true;
-						iarg++;
-				}else{
-						cout << "could not decode value for compression in command line. \n\nExiting." << endl;
-						success=FAIL;
-					}
-				}
-			}
 			else{
 				cout << "Unknown argument:" << argv[iarg] << endl;
 				success=FAIL;
@@ -200,31 +139,10 @@ slsReceiverFuncs::slsReceiverFuncs(int argc, char *argv[], int &success):
 	}
 
 
-
-	if(success == OK){
-		//display detector message
-		switch(myDetectorType){
-		case GOTTHARD:
-			cout << "This is a GOTTHARD Receiver" << endl;
-			break;
-		case MOENCH:
-			cout << "This is a MOENCH Receiver" << endl;
-			break;
-		case EIGER:
-			cout << "This is a EIGER Receiver" << endl;
-			break;
-		default:
-			cout << "Unknown Receiver" << endl;
-			success=FAIL;
-			break;
-		}
-	}
 	//help
-	else{
+	if(success != OK){
 		cout << "Help Commands " << endl;
-		cout << "type:\t\t Type of receiver. Default: Gotthard. Options: Gotthard, Moench, Eiger" << endl;
-		cout << "rx_tcpport:\t TCP Communication Port with the client. Default:1954. " << endl;
-		cout << "compression:\t Data Compression. Saving only hits. Option:yes, no" << endl << endl;;
+		cout << "rx_tcpport:\t TCP Communication Port with the client. Default:1954. " << endl << endl;
 	}
 
 
@@ -243,17 +161,14 @@ slsReceiverFuncs::slsReceiverFuncs(int argc, char *argv[], int &success):
 			strcpy(mess,"dummy message");
 
 			function_table();
-			slsReceiverList =  new slsReceiverFunctionList(myDetectorType);
+#ifdef VERBOSE
+			cout << "Function table assigned." << endl;
+#endif
+			slsReceiverList =  new slsReceiverFunctionList();
 
 			//Catch signal SIGINT to close files properly
 			signal(SIGINT,staticCloseFile);
 
-			if(dcompr)
-				slsReceiverList->enableDataCompression(dcompr);
-
-#ifdef VERBOSE
-			cout << "Function table assigned." << endl;
-#endif
 
 			file_des=socket->getFileDes();
 			socketDescriptor=socket->getsocketDescriptor();
@@ -300,6 +215,8 @@ int slsReceiverFuncs::function_table(){
 	for (int i=0;i<numberOfFunctions;i++)
 		flist[i]=&slsReceiverFuncs::M_nofunc;
 
+
+	flist[F_GET_DETECTOR_TYPE]		=	&slsReceiverFuncs::set_detector_type;
 	flist[F_SET_FILE_NAME]			=	&slsReceiverFuncs::set_file_name;
 	flist[F_SET_FILE_PATH]			=	&slsReceiverFuncs::set_file_dir;
 	flist[F_SET_FILE_INDEX]		 	=	&slsReceiverFuncs::set_file_index;
@@ -408,6 +325,58 @@ void slsReceiverFuncs::closeFile(int p){
 void slsReceiverFuncs::staticCloseFile(int p){
 	slsReceiverUsers::receiver->closeFile(p);
 }
+
+
+int slsReceiverFuncs::set_detector_type(){
+	ret=OK;
+	int retval=FAIL;
+	detectorType dr;
+	strcpy(mess,"Could not set detector type range\n");
+
+
+	// receive arguments
+	if(socket->ReceiveDataOnly(&dr,sizeof(dr)) < 0 ){
+		strcpy(mess,"Error reading from socket\n");
+		ret = FAIL;
+	}
+
+	// execute action if the arguments correctly arrived
+#ifdef SLS_RECEIVER_FUNCTION_LIST
+	if (ret==OK) {
+		if (lockStatus==1 && socket->differentClients==1){
+			sprintf(mess,"Receiver locked by %s\n", socket->lastClientIP);
+			ret=FAIL;
+		}
+		else{
+			myDetectorType = dr;
+			ret=slsReceiverList->setDetectorType(dr);
+			retval = myDetectorType;
+		}
+	}
+//#ifdef VERBOSE
+	if(ret!=FAIL)
+		cout << "detector type" << dr << endl;
+	else
+		cout << mess << endl;
+//#endif
+#endif
+
+	if(ret==OK && socket->differentClients){
+		cout << "Force update" << endl;
+		ret=FORCE_UPDATE;
+	}
+
+	// send answer
+	socket->SendDataOnly(&ret,sizeof(ret));
+	if(ret==FAIL)
+		socket->SendDataOnly(mess,sizeof(mess));
+	socket->SendDataOnly(&retval,sizeof(retval));
+
+	//return ok/fail
+	return ret;
+}
+
+
 
 
 

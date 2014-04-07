@@ -29,120 +29,37 @@ using namespace std;
 
 
 
-slsReceiverFunctionList::slsReceiverFunctionList(detectorType det):
-					receiver(NULL),
-					myDetectorType(det),
-					status(IDLE),
-					udpSocket(NULL),
-					server_port(DEFAULT_UDP_PORTNO),
-					eth(NULL),
-					maxPacketsPerFile(0),
-					enableFileWrite(1),
-					overwrite(1),
-					fileIndex(0),
-					scanTag(0),
-					frameIndexNeeded(0),
-					acqStarted(false),
-					measurementStarted(false),
-					startFrameIndex(0),
-					frameIndex(0),
-					packetsCaught(0),
-					totalPacketsCaught(0),
-					packetsInFile(0),
-					startAcquisitionIndex(0),
-					acquisitionIndex(0),
-					packetsPerFrame(GOTTHARD_PACKETS_PER_FRAME),
-					frameIndexMask(GOTTHARD_FRAME_INDEX_MASK),
-					packetIndexMask(GOTTHARD_PACKET_INDEX_MASK),
-					frameIndexOffset(GOTTHARD_FRAME_INDEX_OFFSET),
-					acquisitionPeriod(SAMPLE_TIME_IN_NS),
-					numberOfFrames(0),
-					dynamicRange(0),
-					shortFrame(-1),
-					currframenum(0),
-					prevframenum(0),
-					bufferSize(GOTTHARD_BUFFER_SIZE),
-					latestData(NULL),
-					guiDataReady(0),
-					guiData(NULL),
-					guiFileName(NULL),
-					nFrameToGui(0),
-					fifosize(GOTTHARD_FIFO_SIZE),
-					numJobsPerThread(-1),
-					mem0(NULL),
-					dataCompression(false),
-					fifo(NULL),
-					fifoFree(NULL),
-					buffer(NULL),
-					numWriterThreads(1),
-					thread_started(0),
-					currentWriterThreadIndex(-1),
-					totalListeningFrameCount(0),
-					writerthreads_mask(0x0),
-					listening_thread_running(0),
-					killListeningThread(0),
-					killAllWritingThreads(0),
-					sfilefd(NULL),
-					startAcquisitionCallBack(NULL),
-					pStartAcquisition(NULL),
-					acquisitionFinishedCallBack(NULL),
-					pAcquisitionFinished(NULL),
-					rawDataReadyCallBack(NULL),
-					pRawDataReady(NULL),
-					cbAction(DO_EVERYTHING){
+slsReceiverFunctionList::slsReceiverFunctionList():
+		receiver(NULL),
+		server_port(DEFAULT_UDP_PORTNO),
+		thread_started(0),
+		udpSocket(NULL),
+		eth(NULL),
+		latestData(NULL),
+		guiFileName(NULL),
+		mem0(NULL),
+		fifo(NULL),
+		fifoFree(NULL){
 
-	maxPacketsPerFile = MAX_FRAMES_PER_FILE * packetsPerFrame;
-
-
-	//moench variables
-	if(myDetectorType == MOENCH){
-		fifosize = MOENCH_FIFO_SIZE;
-		bufferSize = MOENCH_BUFFER_SIZE;
-		packetsPerFrame = MOENCH_PACKETS_PER_FRAME;
-		maxPacketsPerFile = MOENCH_MAX_FRAMES_PER_FILE * MOENCH_PACKETS_PER_FRAME;
-		frameIndexMask = MOENCH_FRAME_INDEX_MASK;
-		frameIndexOffset = MOENCH_FRAME_INDEX_OFFSET;
-		packetIndexMask = MOENCH_PACKET_INDEX_MASK;
-	}
-
-	else if(myDetectorType == EIGER){
-		receiver = EigerReceiver::create();
-	}
-
-	//variable initialization
-	onePacketSize = bufferSize/packetsPerFrame;
-	eth = new char[MAX_STR_LENGTH];
-	guiFileName = new char[MAX_STR_LENGTH];
-	latestData = new char[bufferSize];
-	strcpy(eth,"");
-	strcpy(guiFileName,"");
-	strcpy(latestData,"");
-	strcpy(savefilename,"");
-	strcpy(filePath,"");
-
-	strcpy(fileName,"run");
-	if(myDetectorType == EIGER)
-		receiver->setFileName(fileName);
-
-	cmSub = NULL;
 	for(int i=0;i<numWriterThreads;i++){
-		commonModeSubtractionEnable = false;
 		singlePhotonDet[i] = NULL;
 		receiverdata[i] = NULL;
-#ifdef MYROOT1
-		myTree[i] = (NULL);
-		myFile[i] = (NULL);
-#endif
 	}
 
+	startAcquisitionCallBack = NULL;
+	pStartAcquisition = NULL;
+	acquisitionFinishedCallBack = NULL;
+	pAcquisitionFinished = NULL;
+	rawDataReadyCallBack = NULL;
+	pRawDataReady = NULL;
 
-	setupFifoStructure();
+	initializeMembers();
 
+	//mutex
 	pthread_mutex_init(&dataReadyMutex,NULL);
 	pthread_mutex_init(&status_mutex,NULL);
 	pthread_mutex_init(&progress_mutex,NULL);
 	pthread_mutex_init(&write_mutex,NULL);
-
 
 
 	//to increase socket receiver buffer size and max length of input queue by changing kernel settings
@@ -158,12 +75,183 @@ slsReceiverFunctionList::slsReceiverFunctionList(detectorType det):
 	sysctl -w net.core.rmem_max=16777216
 	sysctl -w net.core.netdev_max_backlog=250000
 	 */
+}
 
 
-	//threads
+
+slsReceiverFunctionList::~slsReceiverFunctionList(){
+	createListeningThreads(true);
+	createWriterThreads(true);
+	deleteMembers();
+}
+
+
+
+
+void slsReceiverFunctionList::deleteMembers(){
+	//kill threads
+	if(thread_started){
+		createListeningThreads(true);
+		createWriterThreads(true);
+	}
+
+	for(int i=0;i<numWriterThreads;i++){
+		if(singlePhotonDet[i]){
+			delete singlePhotonDet[i];
+			singlePhotonDet[i] = NULL;
+		}
+		if(receiverdata[i]){
+			delete receiverdata[i];
+			receiverdata[i] = NULL;
+		}
+	}
+	if(udpSocket) 		{delete udpSocket;		udpSocket = NULL;}
+	if(eth) 			{delete [] eth;			eth = NULL;}
+	if(latestData) 		{delete [] latestData;	latestData = NULL;}
+	if(guiFileName) 	{delete [] guiFileName;	guiFileName = NULL;}
+	if(mem0)			{free(mem0);			mem0 = NULL;}
+	if(fifo)			{delete fifo;			fifo = NULL;}
+	if(fifoFree)		{delete fifoFree;		fifoFree = NULL;}
+}
+
+
+void slsReceiverFunctionList::initializeMembers(){
+	myDetectorType = GENERIC;
+	maxPacketsPerFile = 0;
+	enableFileWrite = 1;
+	overwrite = 1;
+	fileIndex = 0;
+	scanTag = 0;
+	frameIndexNeeded = 0;
+	acqStarted = false;
+	measurementStarted = false;
+	startFrameIndex = 0;
+	frameIndex = 0;
+	packetsCaught = 0;
+	totalPacketsCaught = 0;
+	packetsInFile = 0;
+	startAcquisitionIndex = 0;
+	acquisitionIndex = 0;
+	packetsPerFrame = 0;
+	frameIndexMask = 0;
+	packetIndexMask = 0;
+	frameIndexOffset = 0;
+	acquisitionPeriod = SAMPLE_TIME_IN_NS;
+	numberOfFrames = 0;
+	dynamicRange = 0;
+	shortFrame = -1;
+	currframenum = 0;
+	prevframenum = 0;
+	bufferSize = 0;
+	onePacketSize = 0;
+	guiDataReady = 0;
+	nFrameToGui = 0;
+	fifosize = 0;
+	numJobsPerThread = -1;
+	dataCompression = false;
+	numWriterThreads = 1;
+	thread_started = 0;
+	currentWriterThreadIndex = -1;
+	totalListeningFrameCount = 0;
+	writerthreads_mask = 0x0;
+	listening_thread_running = 0;
+	killListeningThread = 0;
+	killAllWritingThreads = 0;
+	cbAction = DO_EVERYTHING;
+
+	udpSocket = NULL;
+	eth = NULL;
+	latestData = NULL;
+	guiFileName = NULL;
+	mem0 = NULL;
+	fifo = NULL;
+	fifoFree = NULL;
+	buffer = NULL;
+	guiData = NULL;
+	sfilefd = NULL;
+	cmSub = NULL;
+
+
+	//diff threads
+	for(int i=0;i<numWriterThreads;i++){
+		commonModeSubtractionEnable = false;
+		singlePhotonDet[i] = NULL;
+		receiverdata[i] = NULL;
+#ifdef MYROOT1
+		myTree[i] = (NULL);
+		myFile[i] = (NULL);
+#endif
+	}
+
+	guiFileName = new char[MAX_STR_LENGTH];
+	eth = new char[MAX_STR_LENGTH];
+	strcpy(eth,"");
+	strcpy(detHostname,"");
+	strcpy(guiFileName,"");
+	strcpy(savefilename,"");
+	strcpy(filePath,"");
+	strcpy(fileName,"run");
+
+
+	//status
 	pthread_mutex_lock(&status_mutex);
 	status = IDLE;
 	pthread_mutex_unlock(&(status_mutex));
+
+}
+
+int slsReceiverFunctionList::setDetectorType(detectorType det){
+
+	deleteMembers();
+	initializeMembers();
+
+	myDetectorType = det;
+
+	switch(myDetectorType){
+	case GOTTHARD:
+		cout << endl << "***** This is a GOTTHARD Receiver *****" << endl << endl;
+		break;
+	case MOENCH:
+		cout << endl << "***** This is a MOENCH Receiver *****" << endl << endl;
+		break;
+	case EIGER:
+		cout << endl << "***** This is a EIGER Receiver *****" << endl << endl;
+		break;
+	default:
+		cout << endl << "***** Unknown Receiver *****" << endl << endl;
+	return FAIL;
+		break;
+	}
+
+	//moench variables
+	if(myDetectorType == GOTTHARD){
+		fifosize = GOTTHARD_FIFO_SIZE;
+		bufferSize = GOTTHARD_BUFFER_SIZE;
+		packetsPerFrame = GOTTHARD_PACKETS_PER_FRAME;
+		maxPacketsPerFile = MAX_FRAMES_PER_FILE * GOTTHARD_PACKETS_PER_FRAME;
+		frameIndexMask = GOTTHARD_FRAME_INDEX_MASK;
+		frameIndexOffset = GOTTHARD_FRAME_INDEX_OFFSET;
+		packetIndexMask = GOTTHARD_PACKET_INDEX_MASK;
+	}else if(myDetectorType == MOENCH){
+		fifosize = MOENCH_FIFO_SIZE;
+		bufferSize = MOENCH_BUFFER_SIZE;
+		packetsPerFrame = MOENCH_PACKETS_PER_FRAME;
+		maxPacketsPerFile = MOENCH_MAX_FRAMES_PER_FILE * MOENCH_PACKETS_PER_FRAME;
+		frameIndexMask = MOENCH_FRAME_INDEX_MASK;
+		frameIndexOffset = MOENCH_FRAME_INDEX_OFFSET;
+		packetIndexMask = MOENCH_PACKET_INDEX_MASK;
+	}
+	else if(myDetectorType == EIGER){
+		if(receiver == NULL)
+			receiver = EigerReceiver::create();
+		receiver->setFileName(fileName);
+	}
+
+	onePacketSize = bufferSize/packetsPerFrame;
+	latestData = new char[bufferSize];
+
+
+	setupFifoStructure();
 
 	if(createListeningThreads() == FAIL){
 		cout << "ERROR: Could not create listening thread" << endl;
@@ -176,27 +264,9 @@ slsReceiverFunctionList::slsReceiverFunctionList(detectorType det):
 	}
 
 	setThreadPriorities();
+
+	return OK;
 }
-
-
-
-slsReceiverFunctionList::~slsReceiverFunctionList(){
-	createListeningThreads(true);
-	createWriterThreads(true);
-	for(int i=0;i<numWriterThreads;i++){
-		if(singlePhotonDet[i])
-			delete singlePhotonDet[i];
-		if(receiverdata[i])
-			delete receiverdata[i];
-	}
-	if(udpSocket) 		delete udpSocket;
-	if(eth) 			delete [] eth;
-	if(latestData) 		delete [] latestData;
-	if(guiFileName) 	delete [] guiFileName;
-	if(mem0)			free(mem0);
-	if(fifo)			delete fifo;
-}
-
 
 
 
@@ -356,10 +426,17 @@ slsDetectorDefs::runStatus slsReceiverFunctionList::getStatus(){
 
 char* slsReceiverFunctionList::setDetectorHostname(char c[]){
 	if(strlen(c)){
-		if(receiver->getDetectorHostname()== NULL)
-			receiver->initialize(c);
+		if(myDetectorType == EIGER){
+			if(receiver->getDetectorHostname()== NULL)
+				receiver->initialize(c);
+		}else
+			strcpy(detHostname,c);
 	}
-	return  receiver->getDetectorHostname();
+
+	if(myDetectorType == EIGER)
+		return receiver->getDetectorHostname();
+	else
+		return detHostname;
 }
 
 
@@ -722,6 +799,8 @@ int slsReceiverFunctionList::createUDPSocket(){
 	if (strchr(eth,'.')!=NULL)
 		strcpy(eth,"");
 
+	if(udpSocket){delete udpSocket;		udpSocket = NULL;}
+
 	//if no eth, listen to all
 	if(!strlen(eth)){
 		cout<<"warning:eth is empty.listening to all"<<endl;
@@ -834,6 +913,7 @@ int slsReceiverFunctionList::createWriterThreads(bool destroy){
 			cout <<"."<<flush;
 		}
 		killAllWritingThreads = 0;
+		thread_started = 0;
 		cout << endl << "Writer threads destroyed" << endl;
 	}
 

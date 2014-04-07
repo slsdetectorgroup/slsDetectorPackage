@@ -39,13 +39,29 @@ public:
 	/**
 	 * Constructor
 	 */
-	slsReceiverFunctionList(detectorType det);
+	slsReceiverFunctionList();
 
 	/**
 	 * Destructor
 	 */
 	virtual ~slsReceiverFunctionList();
 
+	/**
+	 * delete and free member parameters
+	 */
+	void deleteMembers();
+
+	/**
+	 * initialize member parameters
+	 */
+	void initializeMembers();
+
+	/**
+	 * Set receiver type
+	 * @param det detector type
+	 * Returns success or FAIL
+	 */
+	int setDetectorType(detectorType det);
 
 
 	//Frame indices and numbers caught
@@ -362,6 +378,9 @@ private:
 
 	/** detector type */
 	detectorType myDetectorType;
+
+	/** detector hostname */
+	char detHostname[MAX_STR_LENGTH];
 
 	/** status of receiver */
 	runStatus status;

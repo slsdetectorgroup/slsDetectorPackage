@@ -303,6 +303,25 @@ slsDetectorDefs::detectorType slsDetector::getDetectorType(const char *name, int
     cout << "Cannot connect to server " << name << " over port " << cport << endl;
   }
 
+
+/*
+  //receiver
+  if((t != GENERIC) && (setReceiverOnline()==ONLINE_FLAG)) {
+	  int k;
+	  retval = FAIL;
+	  if(setReceiverOnline(ONLINE_FLAG)==ONLINE_FLAG){
+#ifdef VERBOSE
+		  std::cout << "Sending detector type to Receiver " << (int)thisDetector->myDetectorType << std::endl;
+#endif
+		  if (connectData() == OK)
+			  retval=thisReceiver->sendInt(fnum,k,(int)t);
+		  if(retval==FAIL){
+			  cout << "ERROR: Could not send detector type to receiver" << endl;
+			  setErrorMask((getErrorMask())|(RECEIVER_DET_HOSTTYPE_NOT_SET));
+		  }
+	  }
+  }
+*/
   delete s;
   return t;
 
@@ -1363,6 +1382,24 @@ int slsDetector::setDetectorType(detectorType const type){
   }
   else
     thisDetector->myDetectorType=retType;
+
+
+  //receiver
+  if((retType != GENERIC) && (setReceiverOnline()==ONLINE_FLAG)) {
+	  retval = FAIL;
+	  if(setReceiverOnline(ONLINE_FLAG)==ONLINE_FLAG){
+#ifdef VERBOSE
+		  std::cout << "Sending detector type to Receiver " << (int)thisDetector->myDetectorType << std::endl;
+#endif
+		  if (connectData() == OK)
+			  retval=thisReceiver->sendInt(fnum,arg,(int)thisDetector->myDetectorType);
+		  if(retval==FAIL){
+			  cout << "ERROR: Could not send detector type to receiver" << endl;
+			  setErrorMask((getErrorMask())|(RECEIVER_DET_HOSTTYPE_NOT_SET));
+		  }
+	  }
+  }
+
 
 
   return retType;
@@ -4878,8 +4915,10 @@ char* slsDetector::setReceiver(string receiverIP){
 	strcpy(thisDetector->receiver_hostname,receiverIP.c_str());
 
 	if(setReceiverOnline(ONLINE_FLAG)==ONLINE_FLAG){
-#ifdef VERBOSE
+//#ifdef VERBOSE
 		std::cout << "Setting up receiver with" << endl;
+		std::cout << "detector type:" << slsDetectorBase::getDetectorType(thisDetector->myDetectorType) << endl;
+		std::cout << "detector hostname:" << thisDetector->hostname << endl;
 		std::cout << "file path:" << fileIO::getFilePath() << endl;
 		std::cout << "file name:" << fileIO::getFileName() << endl;
 		std::cout << "file index:" << fileIO::getFileIndex() << endl;
@@ -4889,27 +4928,28 @@ char* slsDetector::setReceiver(string receiverIP){
 		std::cout << "frame period:" << thisDetector->timerValue[FRAME_PERIOD] << endl;
 		std::cout << "frame number:" << thisDetector->timerValue[FRAME_NUMBER] << endl;
 		std::cout << "dynamic range:" << thisDetector->dynamicRange << endl << endl;
-
-#endif
-		if(thisDetector->myDetectorType == EIGER)
+/** enable compresison, */
+//#endif
+		if(setDetectorType()!= GENERIC){
 			setDetectorHostname();
-		setFilePath(fileIO::getFilePath());
-		setFileName(fileIO::getFileName());
-		setFileIndex(fileIO::getFileIndex());
-		enableWriteToFile(parentDet->enableWriteToFileMask());
-		overwriteFile(parentDet->enableOverwriteMask());
+			setFilePath(fileIO::getFilePath());
+			setFileName(fileIO::getFileName());
+			setFileIndex(fileIO::getFileIndex());
+			enableWriteToFile(parentDet->enableWriteToFileMask());
+			overwriteFile(parentDet->enableOverwriteMask());
 
-		if ((thisDetector->timerValue[FRAME_NUMBER]*thisDetector->timerValue[CYCLES_NUMBER])>1)
-			setFrameIndex(0);
-		else
-			setFrameIndex(-1);
+			if ((thisDetector->timerValue[FRAME_NUMBER]*thisDetector->timerValue[CYCLES_NUMBER])>1)
+				setFrameIndex(0);
+			else
+				setFrameIndex(-1);
 
-		setTimer(FRAME_PERIOD,thisDetector->timerValue[FRAME_PERIOD]);
-		setTimer(FRAME_NUMBER,thisDetector->timerValue[FRAME_NUMBER]);
-		setDynamicRange(thisDetector->dynamicRange);
-		//set scan tag
-		if(thisDetector->myDetectorType != EIGER){
-			setUDPConnection();
+			setTimer(FRAME_PERIOD,thisDetector->timerValue[FRAME_PERIOD]);
+			setTimer(FRAME_NUMBER,thisDetector->timerValue[FRAME_NUMBER]);
+			setDynamicRange(thisDetector->dynamicRange);
+			//set scan tag
+			if(thisDetector->myDetectorType != EIGER){
+				setUDPConnection();
+			}
 		}
 	}
 
@@ -6630,3 +6670,4 @@ void slsDetector::setDetectorHostname(){
 			setErrorMask((getErrorMask())|(RECEIVER_DET_HOSTNAME_NOT_SET));
 	}
 }
+

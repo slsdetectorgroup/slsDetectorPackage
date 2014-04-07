@@ -93,6 +93,9 @@ public:
 	/** Unrecognized Function */
 	int M_nofunc();
 
+	/** Set detector type */
+	int set_detector_type();
+
 	/** Set File name without frame index, file index and extension */
 	int set_file_name();
 

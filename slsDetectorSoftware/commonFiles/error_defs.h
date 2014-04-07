@@ -31,6 +31,7 @@ using namespace std;
 #define COULDNOT_CREATE_FILE				0x0100000000000000ULL
 #define COULDNOT_ENABLE_COMPRESSION			0x0080000000000000ULL
 #define RECEIVER_DET_HOSTNAME_NOT_SET		0x0040000000000000ULL
+#define RECEIVER_DET_HOSTTYPE_NOT_SET		0x0020000000000000ULL
 
 
 
@@ -94,6 +95,8 @@ public:
 		if(slsErrorMask&RECEIVER_DET_HOSTNAME_NOT_SET)
 			retval.append("Could not send the detector hostname to the receiver.\n");
 
+		if(slsErrorMask&RECEIVER_DET_HOSTTYPE_NOT_SET)
+			retval.append("Could not send the detector type to the receiver.\n");
 
 
 

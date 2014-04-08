@@ -41,21 +41,24 @@ class jungfrau02Data : public chiptestBoardData {
     for (int iy=0; iy<48; iy++) {
       for (int ix=0; ix<48; ix++) {
 	
-	dMap[iy][ix]=offset+(iy*48+ix)*nAdc;
+	dMap[ix][iy]=offset+(iy*48+ix)*nAdc;//dMap[iy][ix]=offset+(iy*48+ix)*nAdc;
 	// cout << ix << " " << iy << " " << dMap[ix][iy] << endl;
       }
     }
 
+    cout << (0,0) << " " << dMap[0][0] << endl;
+    cout << (47,47) << " " << dMap[47][47] << endl;
+	
+
     for (int ix=0; ix<48; ix++) {
       for (int iy=0; iy<48; iy++)
-	dMask[iy][ix]=0x0;
-    }
+	dMask[iy][ix]=0x0; 
 
     setDataMap(dMap);
     setDataMask(dMask);
+    }
 
 
-    
 
   };
     
@@ -69,18 +72,18 @@ class jungfrau02Data : public chiptestBoardData {
 
   */
  
- virtual uint16_t getChannel(char *data, int ix, int iy=0) {
+ virtual uint16_t getChannel(char *data, int ix, int iy=0) { 
     uint16_t m=0, d=0;
-    if (ix>=0 && ix<nx && iy>=0 && iy<ny && dataMap[iy][ix]>=0 && dataMap[iy][ix]<dataSize) {
-      m=dataMask[iy][ix];
-      d=*(((uint16_t*)(data))+dataMap[iy][ix]);
+    if (ix>=0 && ix<nx && iy>=0 && iy<ny && dataMap[iy][ix]>=0 && dataMap[iy][ix]<dataSize) { 
+          m=dataMask[iy][ix]; 
+          d=*(((uint16_t*)(data))+dataMap[iy][ix]); 
       // cout << ix << " " << iy << " " << (uint16_t*)data << " " << ((uint16_t*)(data))+dataMap[iy][ix] << " " << d << endl;
 	if (nAdc==3) {
-	  cout << "Gain bit!" << endl;
-	  if (*((uint16_t*)(data)+dataMap[iy][ix]+1)>8000)
-		d|=(1<<14); // set gain bit 0
-	  if (*((uint16_t*)(data)+dataMap[iy][ix]+2)>8000)
-		d|=(1<<15); // set gain bit 1
+	  //cout << "Gain bit!" << endl;
+	  if (*((uint16_t*)(data)+dataMap[iy][ix]+2)>8000) //exchange if gainBits==2 is returned!
+		d|=(1<<14); // gain bit 1
+	  if (*((uint16_t*)(data)+dataMap[iy][ix]+1)>8000) //exchange if gainBits==2 is returned!
+		d|=(1<<15); // gain bit 0
 	  
         }
 
@@ -96,7 +99,7 @@ class jungfrau02Data : public chiptestBoardData {
      \returns channel value as double
 
   */
-  double getValue(char *data, int ix, int iy=0) {
+  double getValue(char *data, int ix, int iy=0) { 
     //  cout << "##" << (void*)data << " " << ix << " " <<iy << endl;
     uint16_t d=getChannel(data, ix, iy);
     // cout << d << " " << (d&0x3fff) << endl;
@@ -106,6 +109,20 @@ class jungfrau02Data : public chiptestBoardData {
       return  (double)(getChannel(data, ix, iy)&0x3fff)-xtalk* (double)(getChannel(data, ix, iy)&0x3fff);
   };
   
+  /**
+    returns the gain bit value, i.e. returns 0 if(GB0==0 && GB1==0), returns 1 if(GB0==1 && GB1==0), returns 3 if(GB0==1 && GB1==1), if it returns 2 -> the gain bits are read out the wrong way around (i.e. GB0 and GB1 have to be reversed!)
+     \param data pointer to the memory
+     \param ix coordinate in the x direction
+     \param iy coordinate in the y direction
+     \returns gain bits as int
+  */
+  int getGainBits(char *data, int ix, int iy=0) { 
+  	uint16_t d=getChannel(data, ix, iy);
+  	return ((d&0xc000)>>14); 
+  };
+  //*/
+ 
+
   
 
   /** sets the output buffer crosstalk correction parameter

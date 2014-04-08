@@ -62,7 +62,7 @@ class chiptestBoardData : public slsDetectorData<uint16_t> {
     if (filebin.is_open()) {
      if (filebin.read((char*)&afifo_length,sizeof(uint32_t))) {
 	setDataSize(afifo_length*nAdc*sizeof(uint16_t));
-	afifo_cont=new uint16_t[afifo_length];
+	afifo_cont=new uint16_t[afifo_length*nAdc];
  	if (filebin.read((char*)afifo_cont,afifo_length*sizeof(uint16_t)*nAdc)) {
 		iframe++;
 		return (char*)afifo_cont;

@@ -235,7 +235,7 @@ energyCalibration::energyCalibration() :
 					 fspectrum(NULL),
 #endif
 					 funcs(NULL),
-					 plot_flag(1),
+					 plot_flag(1), // fit parameters output to screen
 					 cs_flag(1)
 {
 
@@ -441,7 +441,7 @@ TF1* energyCalibration::fitFunction(TF1 *fun, TH1 *h1, Double_t *mypar, Double_t
   strcpy(fname, fun->GetName());
 
   if (plot_flag) {
-    h1->Fit(fname,"R");
+    h1->Fit(fname,"R0Q");
   } else
     h1->Fit(fname,"R0Q");
 
@@ -526,4 +526,4 @@ TGraphErrors* energyCalibration::calibrate(int nscan, Double_t *en, Double_t *ee
 
 
 
-
+Fit data is empty

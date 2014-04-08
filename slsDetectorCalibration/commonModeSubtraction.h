@@ -31,7 +31,7 @@ class commonModeSubtraction {
 	cmPed[i]=0;
       }};
     
-    /** adds the average of pedestals to the  moving average and reienitialize the calculation of the sum of pedestals for all ROIs. - virtual func*/
+    /** adds the average of pedestals to the moving average and reinitializes the calculation of the sum of pedestals for all ROIs. - virtual func*/
     virtual void  newFrame(){
       for (int i=0; i<nROI; i++) {
 	if (nCm[i]>0) cmStat[i].Calc(cmPed[i]/nCm[i]);  

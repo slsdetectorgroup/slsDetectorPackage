@@ -44,6 +44,8 @@ class slsDetectorData {
     dataROIMask=new int*[ny];
     for(int i = 0; i < ny; i++) {
       dataROIMask[i] = new int[nx];
+      for (int j=0; j<nx; j++)
+	 dataROIMask[i][j]=1;
     }
     
     setDataMap(dMap);

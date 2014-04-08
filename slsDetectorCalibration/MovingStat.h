@@ -27,7 +27,7 @@ class MovingStat
         }
 	
 	
-	/** sets number of samples  parameter
+	/** sets number of samples parameter
 	    \param i number of samples  parameter to be set 
 	*/
 	

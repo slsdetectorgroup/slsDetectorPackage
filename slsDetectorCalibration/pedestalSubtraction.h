@@ -21,7 +21,7 @@ class pedestalSubtraction  {
     /** adds the element to the moving average 
 	\param val value to be added
     */
-    virtual void addToPedestal(double val){ stat.Calc(val);};
+    virtual void addToPedestal(double val){stat.Calc(val);};
 
   /** returns the average value of the pedestal
       \returns mean of the moving average

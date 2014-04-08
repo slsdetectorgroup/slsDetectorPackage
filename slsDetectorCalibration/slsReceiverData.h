@@ -26,17 +26,18 @@ class slsReceiverData : public slsDetectorData<dataType> {
   slsReceiverData(int npx, int npy, int np, int psize, int **dMap=NULL, dataType **dMask=NULL, int **dROI=NULL): slsDetectorData<dataType>(npx, npy, np*psize, dMap, dMask, dROI), nPackets(np), packetSize(psize) {};
 
    
-  /**
+ 
+   /**
 
      Returns the frame number for the given dataset. Virtual func: works for slsDetectorReceiver data (also for each packet), but can be overloaded. 
      \param buff pointer to the dataset
      \returns frame number
 
-   */
+  */
 
   virtual  int getFrameNumber(char *buff){return ((*(int*)buff)&(0xffffff00))>>8;};
 
-  /**
+   /**
 
      Returns the packet number for the given dataset. Virtual func: works for slsDetectorReceiver packets, but can be overloaded. 
      \param buff pointer to the dataset
@@ -44,7 +45,7 @@ class slsReceiverData : public slsDetectorData<dataType> {
 
   */
 
-  virtual int getPacketNumber(char *buff){return (*(int*)buff)&0xff;};
+  virtual int getPacketNumber(char *buff) {return (*(int*)buff)&0xff;};
 
 
 
@@ -60,52 +61,52 @@ class slsReceiverData : public slsDetectorData<dataType> {
   */
 
   virtual  char *findNextFrame(char *data, int &ndata, int dsize) {
-	  char *retval=NULL, *p=data;
-	  int dd=0;
-	  int fn, fnum=-1,  np=0, pnum=-1;
-	  while (dd<=(dsize-packetSize)) {
-		  pnum=getPacketNumber(p);
-		  fn=getFrameNumber(p);
+    char *retval=NULL, *p=data;
+    int dd=0;
+    int fn, fnum=-1,  np=0, pnum=-1;
+    while (dd<=(dsize-packetSize)) {
+      pnum=getPacketNumber(p);
+      fn=getFrameNumber(p);
 
 
-		  if (pnum<1 || pnum>nPackets) {
-			  cout << "Bad packet number " << pnum << " frame "<< fn << endl;
-			  retval=NULL;
-			  np=0;
-		  }	else if  (pnum==1) {
-			  retval=p;
-			  if (np>0)
-				  /*cout << "*Incomplete frame number " << fnum << endl;*/
-				  np=0;
-			  fnum=fn;
-		  } else if (fn!=fnum) {
-			  if (fnum!=-1) {
-				  /* cout << " **Incomplete frame number " << fnum << " pnum " << pnum << " " << getFrameNumber(p) << endl;*/
-				  retval=NULL;
-			  }
-			  np=0;
-		  }
-		  p+=packetSize;
-		  dd+=packetSize;
-		  np++;
-		  // cout << pnum << " " << fn << " " << np << " " << dd << " " << dsize << endl;
-		  if (np==nPackets)
-			  if (pnum==nPackets) {
-				  // cout << "Frame found!" << endl;
-				  break;
-			  }	else {
-				  cout << "Too many packets for this frame! "<< fnum << " " << pnum << endl;
-				  retval=NULL;
-			  }
-	  }
-	  if (np<nPackets) {
-		  if (np>0)
-			  cout << "Too few packets for this frame! "<< fnum << " " << pnum << endl;
-	  }
-
-	  ndata=np*packetSize;
-	  //  cout << "return " << ndata << endl;
-	  return retval;
+      if (pnum<1 || pnum>nPackets) {
+	cout << "Bad packet number " << pnum << " frame "<< fn << endl;
+	retval=NULL;
+	np=0;
+      }	else if  (pnum==1) {
+	fnum=fn;
+	retval=p;
+	if (np>0)
+	  /*cout << "*Incomplete frame number " << fnum << endl;*/
+	np=0;
+      } else if (fn!=fnum) {
+	if (fnum!=-1) {
+	 /* cout << " **Incomplete frame number " << fnum << " pnum " << pnum << " " << getFrameNumber(p) << endl;*/
+	  retval=NULL;
+	}
+	np=0;
+      }
+      p+=packetSize;
+      dd+=packetSize;
+      np++;
+      // cout << pnum << " " << fn << " " << np << " " << dd << " " << dsize << endl;
+      if (np==nPackets)
+	if (pnum==nPackets) {
+	  // cout << "Frame found!" << endl;
+	  break;
+	}	else {
+	  cout << "Too many packets for this frame! "<< fnum << " " << pnum << endl;
+	  retval=NULL;
+	}
+    }
+    if (np<nPackets) {
+      if (np>0) 
+	cout << "Too few packets for this frame! "<< fnum << " " << pnum << endl;
+    }
+    
+    ndata=np*packetSize;
+    //  cout << "return " << ndata << endl;
+    return retval;
   };
 
    /**

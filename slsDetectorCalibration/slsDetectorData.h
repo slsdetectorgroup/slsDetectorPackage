@@ -84,7 +84,7 @@ class slsDetectorData {
 	 for (int ix=0; ix<nx; ix++)
 	   dataMap[iy][ix]=dMap[iy][ix];
     }
-
+    
   };
 
 
@@ -193,7 +193,6 @@ class slsDetectorData {
   */
   virtual double getValue(char *data, int ix, int iy=0) {return (double)getChannel(data, ix, iy);};
 
-
    /**
 
      Returns the frame number for the given dataset. Purely virtual func.
@@ -205,15 +204,16 @@ class slsDetectorData {
 
   virtual  int getFrameNumber(char *buff)=0;   
 
-  /*
+  /**
 
      Returns the packet number for the given dataset. purely virtual func
      \param buff pointer to the dataset
      \returns packet number number
 
-*/
+
   virtual int getPacketNumber(char *buff)=0;
 
+  */
 
    /**
 

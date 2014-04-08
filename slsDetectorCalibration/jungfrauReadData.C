@@ -20,7 +20,6 @@
 
 //#include "MovingStat.h"
 
-
 using namespace std;
 
 #define NC 48
@@ -51,15 +50,14 @@ Loops over data file to find single photons, fills the tree (and writes it to fi
   \param ymax maximum y coordinate
   \param cmsub  enable commonmode subtraction 
   \param hitfinder if 0: performs pedestal subtraction, not hit finding; if 1: performs both pedestal subtraction and hit finding
-  \param fcal -> calibration file, which contains 7 columns per pixel; 1) pixel #, 2) cal. offset G0, 3) cal. slope G0, 4) cal. offset G1, 5) cal. slope G1, 6) cal. offset G2, 7) cal. slope G2
   \returns pointer to histo stack with cluster spectra
 */
 
 
 THStack *jungfrauReadData(char *fformat, char *tit, int runmin, int runmax, int nbins=1500, int hmin=-500, int hmax=1000, int sign=1, double hc=0, int xmin=1, int xmax=NC-1, int ymin=1, int ymax=NR-1, int cmsub=0, int hitfinder=1){
-
+/*
   // read in calibration file
-  ifstream calfile("/mnt/slitnas/datadir_jungfrau02/analysis_tests/CalibrationParametersTest_fake.txt");
+  ifstream calfile("/home/l_msdetect/TriesteBeam2014/dummy data for scripts/CalibrationParametersTest_fake.txt");
   if (calfile.is_open()==0){cout << "Unable to open calibration file!" << endl;}
   int pix;
   double of0,sl0,of1,sl1,of2,sl2;
@@ -73,10 +71,10 @@ THStack *jungfrauReadData(char *fformat, char *tit, int runmin, int runmax, int 
     	sl_2[pix]=sl2; //if(pix==200) cout << "sl_2[200] " << sl_2[200] << endl;
   }
   calfile.close();
-  
+*/  
   double adc_value, num_photon;
 
-  jungfrau02Data *decoder=new jungfrau02Data(1,0,0);//(3,0,0); // (adc,offset,crosstalk) //(1,0,0) //(3,0,0) for readout of GB
+  jungfrau02Data *decoder=new jungfrau02Data(1,0,0);//(1,0,0); // (adc,offset,crosstalk) //(1,0,0) //(3,0,0) for readout of GB
   jungfrau02CommonMode *cmSub=NULL;
    if (cmsub)
      cmSub=new jungfrau02CommonMode();
@@ -106,9 +104,6 @@ THStack *jungfrauReadData(char *fformat, char *tit, int runmin, int runmax, int 
 
   TH2F *h1=new TH2F("h1",tit,nbins,hmin-0.5,hmax-0.5,NC*NR,-0.5,NC*NR-0.5);
   hs->Add(h1);
-  
-  
- 
 
   if (hitfinder) {
     h2=new TH2F("h2",tit,nbins,hmin-0.5,hmax-0.5,NC*NR,-0.5,NC*NR-0.5);
@@ -193,7 +188,7 @@ THStack *jungfrauReadData(char *fformat, char *tit, int runmin, int runmax, int 
 
 
 	  thisEvent=filter->getEventType(buff, ix, iy, cmsub);
-	  int gainBits=decoder->getGainBits(buff,ix,iy); // get gain bits
+	  int gainBits=decoder->getGainBits(buff,ix,iy); //XXX
 
 #ifdef MY_DEBUG
 	  if (hitfinder) {
@@ -210,8 +205,7 @@ THStack *jungfrauReadData(char *fformat, char *tit, int runmin, int runmax, int 
 	    //   h1->Fill(decoder->getValue(buff,ix,iy), iy+NR*ix);
 	    h1->Fill(filter->getClusterTotal(1), iy+NR*ix);
 
-            
- 
+
 	    if (hitfinder) {
 	      
 	      if (thisEvent==PHOTON_MAX ) {

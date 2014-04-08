@@ -92,8 +92,6 @@ class singlePhotonDetector {
     setClusterSize(csize);
     
   };
-
-
     /**
        destructor. Deletes the cluster structure and the pdestalSubtraction array
     */
@@ -326,7 +324,7 @@ class singlePhotonDetector {
 	\returns event mask enum for the given pixel
     */
     eventType getEventMask(int ic, int ir=0){return eventMask[ir][ic];};
-
+ 
 
 #ifdef MYROOT1  
     /** generates a tree and maps the branches
@@ -335,27 +333,22 @@ class singlePhotonDetector {
 	\returns returns pointer to the TTree
     */
     TTree *initEventTree(char *tname, int *iFrame=NULL) {
-      cout << tname << endl;
       TTree* tall=new TTree(tname,tname);
-      cout << "tree instantiated" << endl;
+
       if (iFrame)
 	tall->Branch("iFrame",iFrame,"iframe/I");
       else
 	tall->Branch("iFrame",&(cluster->iframe),"iframe/I");
-      cout << "iframe" << endl;
-      char tit[100];
+
       tall->Branch("x",&(cluster->x),"x/I");
       tall->Branch("y",&(cluster->y),"y/I");
+      char tit[100];
       sprintf(tit,"data[%d]/D",clusterSize*clusterSizeY);
       tall->Branch("data",cluster->data,tit);
-      tall->Branch("pedestal",&(cluster->ped),"pedestal/D");
-      tall->Branch("rms",&(cluster->rms),"rms/D");
-      cout << "Cluster" << endl;
+      // tall->Branch("pedestal",&(cluster->ped),"pedestal/D");
+      // tall->Branch("rms",&(cluster->rms),"rms/D");
       return tall;
     };
-#else
-    /** write cluster to filer*/
-    void writeCluster(FILE* myFile){cluster->write(myFile);};
 #endif
 
 
@@ -379,6 +372,7 @@ class singlePhotonDetector {
     quadrant quad; /**< quadrant where the photon is located */
     double tot; /**< sum of the 3x3 cluster */
     double quadTot; /**< sum of the maximum 2x2cluster */
+
 
 };
 

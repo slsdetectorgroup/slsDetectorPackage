@@ -14,7 +14,7 @@ FLAGS= -Wall -DVERBOSE
 # libraries
 ##############################################################   
 
-EIGERSLS = no	
+EIGERSLS = no
 
 #POCODIR = /afs/psi.ch/user/s/sala/public/poco-slp_5.7-32bit
 #JSONBOXDIR = /afs/psi.ch/user/s/sala/public/JsonBox-slp_5.7-32bit
@@ -28,6 +28,23 @@ EIGERFLAGS = -L$(POCODIR)/lib -Wl,-rpath=$(POCODIR)/lib -I$(POCODIR)/include -L$
 ifeq ($(EIGERSLS),yes)
      LDFLAG = -L$(LIBDIR) -lSlsDetector $(EIGERFLAGS) -DEIGERSLS
 endif
+
+
+##############################################################
+# ROOTSLS specific. Set this to yes, if you want to compile
+# ROOTSLS code: in this case, you need also root libraries
+##############################################################   
+
+ROOTSLS = no
+
+ROOTFLAGS = $(shell root-config --cflags --glibs) -DMYROOT1   #-DALLFILE_DEBUG #-DMYROOT1 
+
+ifeq ($(ROOTSLS),yes)
+     LDFLAG = -L$(LIBDIR) -lSlsDetector $(ROOTFLAGS) -DROOTSLS
+endif
+
+
+
 
 
 

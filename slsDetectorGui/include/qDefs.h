@@ -217,10 +217,6 @@ static const int64_t GUI_VERSION=0x20121213;
 
 			//display message
 			qDefs::Message((MessageIndex)errorLevel,retval,title);
-
-			if(retval.find("CAKE")!=string::npos){
-				qDefs::Message((MessageIndex)errorLevel,"So You will get a cake tomorrow right?",title);
-			}
 		}
 
 		myDet->clearAllErrorMask();

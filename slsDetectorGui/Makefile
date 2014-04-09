@@ -13,6 +13,8 @@ INCLUDES	?= 	$(LIBRARYDIR)/commonFiles -I$(LIBRARYDIR)/MySocketTCP  -I$(LIBRARYD
 
 ifeq ( $(EIGERSLS), yes)  	
 	LDFLAG += $(EIGERFLAGS)
+else ifeq ( $(ROOTSLS), yes)  	
+	LDFLAG += $(ROOTFLAGS)
 endif
 
 .PHONY: all lib clean mm doc htmldoc guiclient

@@ -10,7 +10,7 @@ DOCDIR 		?= 	docs
 CFLAGS= -g -DC_ONLY -fPIC
 #FLAGS+=  #-DVERBOSE -DVERYVERBOSE
 
-DFLAGS= -g -DDACS_INT -DTHIS_PATH='"$(shell pwd)"' -DSLS_RECEIVER_FUNCTION_LIST $(shell root-config --cflags --glibs)   #-DALLFILE_DEBUG #-DMYROOT1 -DALLFILE   #-DMYROOT1 `root-config --cflags --glibs`
+DFLAGS= -g -DDACS_INT -DTHIS_PATH='"$(shell pwd)"' -DSLS_RECEIVER_FUNCTION_LIST #$(shell root-config --cflags --glibs)   -DMYROOT1 #-DALLFILE_DEBUG #-DMYROOT1 -DALLFILE   #-DMYROOT1 `root-config --cflags --glibs`
 
 INCLUDES?= -IcommonFiles -IslsDetector -IMySocketTCP -IusersFunctions -ImultiSlsDetector -IslsDetectorUtils -IslsDetectorCommand -IslsDetectorAnalysis -IslsReceiverInterface -IslsReceiver -I../slsDetectorCalibration -I$(ASM)
 
@@ -67,7 +67,11 @@ gotthardVirtualServer:  $(SRC_MYTHEN_SVC)
 %.o : %.cpp %.h Makefile
 ifeq ($(EIGERSLS),yes)
 	$(CXX) -DEIGERSLS -o $@ -c $< $(INCLUDES) $(DFLAGS)  $(EIGERFLAGS) -fPIC  $(EPICSFLAGS) -L/usr/lib64/ #$(FLAGS)
+else ifeq ($(ROOTSLS),yes)
+	echo "with root"
+	$(CXX) -DROOTSLS -o $@ -c $< $(INCLUDES) $(DFLAGS)  $(ROOTFLAGS) -fPIC  $(EPICSFLAGS) -L/usr/lib64/ #$(FLAGS)
 else
+	echo "without root"
 	$(CXX) -o $@ -c $< $(INCLUDES) $(DFLAGS) -fPIC  $(EPICSFLAGS) -lpthread #$(FLAGS)
 endif
 

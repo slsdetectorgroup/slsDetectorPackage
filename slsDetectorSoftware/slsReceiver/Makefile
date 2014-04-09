@@ -49,10 +49,14 @@ eigerReceiver:
 	$(CXX) $(FLAGS) $(CFLAGS) -fPIC -c -o eigerReceiverTest.o eigerReceiverTest.cpp $(EIGERFLAGS)
 	$(CXX) $(FLAGS) $(CFLAGS) -fPIC -c -o eigerReceiver.o eigerReceiver.cpp $(EIGERFLAGS)
 	$(CXX)  eigerReceiverTest.o eigerReceiver.o   -o eigerReceiverTest $(EIGERFLAGS)
+else ifeq ($(ROOTSLS), yes)
+eigerReceiver: eigerReceiverDummy.cpp 
+	echo "Compiling dummy EigerReceiver with root"
+	$(CXX) $(FLAGS) $(CFLAGS) -fPIC -c -o eigerReceiver.o eigerReceiverDummy.cpp $(ROOTFLAGS)
 else
 eigerReceiver: eigerReceiverDummy.cpp
 	echo "Compiling dummy EigerReceiver"
-	$(CXX) $(FLAGS) $(CFLAGS) -fPIC -c -o eigerReceiver.o eigerReceiverDummy.cpp 
+	$(CXX) $(FLAGS) $(CFLAGS) -fPIC -c -o eigerReceiver.o eigerReceiverDummy.cpp 	
 endif
 
 lib:

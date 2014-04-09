@@ -553,6 +553,11 @@ int slsReceiverFunctionList::enableDataCompression(bool enable){
 		cout << "enabled" << endl;
 	else
 		cout << "disabled" << endl;
+#ifdef MYROOT1
+	cout << " WITH ROOT" << endl;
+#else
+	cout << " WITHOUT ROOT" << endl;
+#endif
 	//delete filter for the current number of threads
 	deleteFilter();
 

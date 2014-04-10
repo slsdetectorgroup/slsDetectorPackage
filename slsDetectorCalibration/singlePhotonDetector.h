@@ -345,10 +345,14 @@ class singlePhotonDetector {
       char tit[100];
       sprintf(tit,"data[%d]/D",clusterSize*clusterSizeY);
       tall->Branch("data",cluster->data,tit);
-      // tall->Branch("pedestal",&(cluster->ped),"pedestal/D");
-      // tall->Branch("rms",&(cluster->rms),"rms/D");
+      tall->Branch("pedestal",&(cluster->ped),"pedestal/D");
+      tall->Branch("rms",&(cluster->rms),"rms/D");
       return tall;
     };
+#else
+    /** write cluster to filer*/
+    void writeCluster(FILE* myFile){cluster->write(myFile);};
+
 #endif
 
 

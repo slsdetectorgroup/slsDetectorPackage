@@ -330,9 +330,9 @@ void  slsDetectorUtils::acquire(int delflag){
 	  cout << "check data queue size " << endl;
 #endif
 	  /*while (dataQueueSize()){
-#ifdef VERBOSE
+	    //#ifdef VERBOSE
 	    cout << "AAAAAAAAA check data queue size " << endl;
-#endif
+	    //#endif
 	    usleep(100000);
 	  }*/
 

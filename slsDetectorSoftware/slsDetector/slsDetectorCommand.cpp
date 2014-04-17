@@ -3147,7 +3147,6 @@ string slsDetectorCommand::cmdRegister(int narg, char *args[], int action) {
 	sprintf(answer,"%x",myDet->writeRegister(addr,myDet->readRegister(addr)| 1<<n));
       if (cmd=="clearbit")
 	sprintf(answer,"%x",myDet->writeRegister(addr,myDet->readRegister(addr) & ~(1<<n)));
-	
     }
 
 

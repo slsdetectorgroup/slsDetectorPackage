@@ -240,17 +240,24 @@ TH1F* energyCalibration::createMedianHistogram(TH2F* h2, int ch0, int nch) {
   TH1F *h1=NULL;
   
   double val=-1;
+  double me=0;
+  
 
   h1=new TH1F("median","Median",h2->GetYaxis()->GetNbins(),h2->GetYaxis()->GetXmin(),h2->GetYaxis()->GetXmax());
   
 
   for (int ib=0; ib<h1->GetXaxis()->GetNbins(); ib++) {
+    me=0;
     for (int ich=0; ich<nch; ich++) {
       x[ich]=h2->GetBinContent(ch0+ich+1,ib+1);
+      me+=x[ich];
     }
+    cout << ib << " calculating median ch0=" << ch0 << " nch=" << nch << endl;
     val=energyCalibrationFunctions::median(x, nch);
+    cout << "median=" << val << " mean= " << me/nch << endl;
     h1->SetBinContent(ib+1,val);
   }
+  delete [] x;
   return h1;
 
     

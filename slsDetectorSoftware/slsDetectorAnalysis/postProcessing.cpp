@@ -7,6 +7,7 @@
 #include "usersFunctions.h"
 #endif
 
+//#define VERBOSE
 
 static void* startProcessData(void *n){\
    postProcessing *myDet=(postProcessing*)n;\
@@ -38,9 +39,9 @@ postProcessing::postProcessing(): expTime(NULL), ang(NULL), val(NULL), err(NULL)
   pRawDataArg = 0;
 
 
-#ifdef VERBOSE
-  registerDataCallback(&defaultDataReadyFunc,  NULL);
-#endif
+  //#ifdef VERBOSE
+  //  registerDataCallback(&defaultDataReadyFunc,  NULL);
+  //#endif
 #ifdef EXTPP
   registerRawDataCallback(&defaultRawDataReadyFunc,  NULL);
 #endif
@@ -82,18 +83,18 @@ void postProcessing::processFrame(int *myData, int delflag) {
  /** decode data */
  
  // if (getDetectorsType()==MYTHEN) {
-    fdata=decodeData(myData, fdata);
+  fdata=decodeData(myData, fdata);
     
 #ifdef VERBOSE
     cout << "decode"<< endl;
 #endif
-  //} else
+    // } else
   //  fdata=NULL;
 
   if (rawDataReady) {
-#ifdef VERBOSE
+    #ifdef VERBOSE
     cout << "raw data ready..." << endl;
-#endif
+    #endif
     rawDataReady(fdata,numberOfChannels, pRawDataArg);
 #ifdef VERBOSE
     cout << "done" << endl;
@@ -128,7 +129,8 @@ void postProcessing::processFrame(int *myData, int delflag) {
 #endif
     }
 
-    if ((*correctionMask) & ~(1<<WRITE_FILE)) {
+    if ((*correctionMask) & ~((1<<WRITE_FILE) | (1<<OVERWRITE_FILE))) {
+      //  cout << "cmask is not 0: " << *correctionMask << " - " <<  ((*correctionMask) & (1<<I0_NORMALIZATION)) << "-" <<   ((*correctionMask) & (1<<OVERWRITE_FILE)) << endl;
       doProcessing(fdata,delflag, fname);
     } else
       if (dataReady){
@@ -232,7 +234,22 @@ void postProcessing::doProcessing(double *lfdata, int delflag, string fname) {
 #ifdef VERBOSE
       cout << "add frame" << endl;
 #endif
-      
+
+      /**ot them
+start processing
+prog incremented
+decode
+fname is //run_f0_0
+??????????????????????????????????????????? do processing - data size is 30720
+arrays allocated
+npos is 0
+exptime is 10.00
+init dataset
+add frame
+data queue size lock
+data queue size unlock
+      **/
+
       addFrame(lfdata,currentPosition, currentI0, t, fname, 0);    
       //  cout << "++++++++++++++++++++" << GetCurrentPositionIndex() << " " << npos << " " << positionFinished() << " " << dataQueueSize() << endl;
       if ((GetCurrentPositionIndex()>=npos  && dataQueueSize()) || npos<2) {
@@ -393,7 +410,7 @@ void* postProcessing::processData(int delflag) {
 			while((queuesize=dataQueueSize())>0) {
 				/** Pop data queue */
 #ifdef VERBOSE
-				cout << "data found"<< endl<<endl;;
+				cout << "data foun"<< endl<<endl;;
 #endif
 
 				myData=dataQueueFront(); // get the data from the queue
@@ -404,12 +421,18 @@ void* postProcessing::processData(int delflag) {
 				if (myData) {
 					processFrame(myData,delflag);
 				}
+#ifdef VERBOSE
+				cout << "frame processed"<< endl;
+#endif
 			}
 
 			/** IF detector acquisition is done, let the acquire() thread know to finish up and force join thread */
 			if(acquiringDone){
 				sem_post(&sem_queue);
-			}
+				//	cout << "Sem posted" << endl;
+			} //else
+			// cout << "Sem not posted" << endl;
+			  
 
 			/* IF THERE ARE NO DATA look if acquisition is finished */
 			if (checkJoinThread()) {

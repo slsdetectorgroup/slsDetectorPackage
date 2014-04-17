@@ -298,7 +298,9 @@ u_int32_t setExtSignal(int d, enum externalSignalFlag  mode) {
 u_int32_t setFPGASignal(int d, enum externalSignalFlag  mode) {
   
 
-  int modes[]={EXT_SIG_OFF, EXT_GATE_IN_ACTIVEHIGH, EXT_GATE_IN_ACTIVELOW,EXT_TRIG_IN_RISING,EXT_TRIG_IN_FALLING,EXT_RO_TRIG_IN_RISING, EXT_RO_TRIG_IN_FALLING,EXT_GATE_OUT_ACTIVEHIGH, EXT_GATE_OUT_ACTIVELOW, EXT_TRIG_OUT_RISING, EXT_TRIG_OUT_FALLING, EXT_RO_TRIG_OUT_RISING, EXT_RO_TRIG_OUT_FALLING};
+  int modes[]={SIGNAL_OFF, GATE_IN_ACTIVE_HIGH, GATE_IN_ACTIVE_LOW,TRIGGER_IN_RISING_EDGE, TRIGGER_IN_FALLING_EDGE,RO_TRIGGER_IN_RISING_EDGE, RO_TRIGGER_IN_FALLING_EDGE, GATE_OUT_ACTIVE_HIGH,   GATE_OUT_ACTIVE_LOW, TRIGGER_OUT_RISING_EDGE, TRIGGER_OUT_FALLING_EDGE, RO_TRIGGER_OUT_RISING_EDGE,RO_TRIGGER_OUT_FALLING_EDGE};
+    
+  // int modes[]={EXT_SIG_OFF, EXT_GATE_IN_ACTIVEHIGH, EXT_GATE_IN_ACTIVELOW,EXT_TRIG_IN_RISING,EXT_TRIG_IN_FALLING,EXT_RO_TRIG_IN_RISING, EXT_RO_TRIG_IN_FALLING,EXT_GATE_OUT_ACTIVEHIGH, EXT_GATE_OUT_ACTIVELOW, EXT_TRIG_OUT_RISING, EXT_TRIG_OUT_FALLING, EXT_RO_TRIG_OUT_RISING, EXT_RO_TRIG_OUT_FALLING};
 
   u_int32_t c;
   int off=d*SIGNAL_OFFSET;
@@ -383,7 +385,7 @@ int setTiming(int ti) {
   int g=-1, t=-1, rot=-1;
 
   int i;
-
+  printf("*********************************Setting timing mode %d!\n", ti);
   switch (ti) {
   case AUTO_TIMING:  
     timingMode=ti;
@@ -425,6 +427,7 @@ int setTiming(int ti) {
     
   case GATE_FIX_NUMBER: 
     timingMode=ti;
+    printf("*********************************Setting gating!\n");
     // if one of the signals is configured to be trigger, set it and unset possible gates
     for (i=0; i<4; i++) {
       if (signals[i]==RO_TRIGGER_IN_RISING_EDGE ||  signals[i]==RO_TRIGGER_IN_FALLING_EDGE)
@@ -1148,6 +1151,8 @@ u_int32_t  fifo_full(void)
 u_int32_t* fifo_read_event()
 {
 
+  int ir=0;
+
 #ifdef VERBOSE
   int ichip;
   int ichan;
@@ -1167,24 +1172,33 @@ u_int32_t* fifo_read_event()
     printf("Waiting for data status %x\n",runState());
 #endif
     if (runBusy()==0) {
-       if (bus_r(LOOK_AT_ME_REG)==0) {
-#ifdef VERBOSE
-	 printf("no frame found - exiting ");
-
-	 printf("%08x %08x\n", runState(), bus_r(LOOK_AT_ME_REG)); 
-  /* for (ichip=0; ichip<nModBoard*NCHIP; ichip++) {
-    if ((fifoReadCounter(ichip)&FIFO_COUNTER_MASK)%128)
-      printf("FIFO %d contains %d words\n",ichip,(fifoReadCounter(ichip)&FIFO_COUNTER_MASK)); 
-  }
-  */
-#endif
-	 return NULL;
-       } else {
+     /*  for (ir=0; ir<100; ir++) { */
+/* 	//usleep(100); */
+/* 	//printf("check %d\n", ir);  */
+/* 	if (runBusy()==1)  */
+/* 	  break; */
+/*       } */
+/*       if (ir==100) { */
+	if (bus_r(LOOK_AT_ME_REG)==0) {
+	 //#ifdef VERBOSE
+	  printf("no frame found - exiting ");
+	  
+	  printf("%08x %08x\n", runState(), bus_r(LOOK_AT_ME_REG)); 
+	  //  for (ichip=0; ichip<nModBoard*NCHIP; ichip++) {
+	    //  if ((fifoReadCounter(ichip)&FIFO_COUNTER_MASK)%128)
+	  // printf("FIFO %d contains %d words\n",ichip,(fifoReadCounter(ichip)&FIFO_COUNTER_MASK)); 
+	  // }
+	  
+	  //#endif
+	  return NULL;
+	} else {
 #ifdef VERYVERBOSE
-	 printf("no frame found %x status %x\n", bus_r(LOOK_AT_ME_REG),runState());
+	  printf("no frame found %x status %x\n", bus_r(LOOK_AT_ME_REG),runState());
 #endif
-	 break;
-       }
+	  break;
+	}
+    /*   } else */
+/* 	printf("run busy error workaround %d \n", ir); */
     }
    }
 #ifdef VERYVERBOSE

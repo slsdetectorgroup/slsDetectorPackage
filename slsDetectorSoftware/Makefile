@@ -1,5 +1,3 @@
-### LEO: NB slsDetectorSoftware cannot compile by itself, as it depends on slsDetectorCalibration (see INCLUDES)
-
 include ../Makefile.include
 
 DESTDIR		?=	../bin

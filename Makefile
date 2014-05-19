@@ -67,6 +67,7 @@ calWiz:
 gui: slsDetectorGUI
 
 
+
 doc:
 	$(shell test -d $(DOCDIR) || mkdir -p $(DOCDIR))
 	cd manual && make all DESTDIR=$(DOCDIR)

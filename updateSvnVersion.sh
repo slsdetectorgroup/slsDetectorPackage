@@ -3,12 +3,14 @@
 #folders
 MAINDIR=slsDetectorsPackage
 LIBDIR=slsDetectorSoftware
+RXRDIR=slsReceiverSoftware
 GUIDIR=slsDetectorGui
 CALWIZDIR=calibrationWizards
 
 SVNPATH=file:///afs/psi.ch/project/sls_det_software/svn
 MAINDIRSVN=$SVNPATH/$MAINDIR
 LIBDIRSVN=$SVNPATH/$LIBDIR
+RXRDIRSVN=$SVNPATH/$RXRDIR
 GUIDIRSVN=$SVNPATH/$GUIDIR
 CALWIZSVN=$SVNPATH/$GUIDIR
 
@@ -17,6 +19,7 @@ CALWIZSVN=$SVNPATH/$GUIDIR
 #svn export --force $MAINDIRSVN
 #cd $MAINDIR
 #svn export --force  $LIBDIRSVN
+#svn export --force  $RXRDIRSVN
 #svn export --force  $GUIDIRSVN
 #svn export --force  $CALWIZSVN
 
@@ -38,8 +41,8 @@ svn info $LIBDIRSVN/eigerDetectorServer > $LIBDIR/eigerDetectorServer/svnInfo.tx
 ./genVersionHeader.sh $LIBDIR/eigerDetectorServer/svnInfo.txt $LIBDIR/eigerDetectorServer/svnInfoEigerTmp.h $LIBDIR/eigerDetectorServer/svnInfoEiger.h 
 
 
-svn info $LIBDIRSVN/slsReceiver > $LIBDIR/slsReceiver/svnInfo.txt
-./genVersionHeader.sh $LIBDIR/slsReceiver/svnInfo.txt $LIBDIR/slsReceiver/svnInfoReceiverTmp.h $LIBDIR/slsReceiver/svnInfoReceiver.h 
+svn info $RXRDIRSVN/includes > $RXRDIR/includes/svnInfo.txt
+./genVersionHeader.sh $RXRDIR/includes/svnInfo.txt $RXRDIR/includes/svnInfoReceiverTmp.h $RXRDIR/includes/svnInfoReceiver.h 
 
 svn info $GUIDIRSVN > $GUIDIR/svnInfo.txt
 ./genVersionHeader.sh $GUIDIR/svnInfo.txt $GUIDIR/include/svnInfoGuiTmp.h $GUIDIR/include/svnInfoGui.h 

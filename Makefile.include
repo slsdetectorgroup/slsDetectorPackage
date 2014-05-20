@@ -5,7 +5,8 @@
 CC = g++
 CXX = $(CC)
 ASM=$(shell echo "/lib/modules/`uname -r`/build/include")
-LDFLAG = -L$(LIBDIR) -lSlsDetector -L/usr/lib64/ -lpthread
+LDFLAGDET = -L$(LIBDIR) -lSlsDetector -L/usr/lib64/ -lpthread
+LDFLAGRXR = -L$(LIBDIR) -lSlsReceiver -L/usr/lib64/ -lpthread
 FLAGS= -Wall -DVERBOSE 
 
 ##############################################################
@@ -26,7 +27,7 @@ JSONBOXDIR = /home/sala/Programs/JsonBox-ubuntu_13.10-64bit
 EIGERFLAGS = -L$(POCODIR)/lib -Wl,-rpath=$(POCODIR)/lib -I$(POCODIR)/include -L$(JSONBOXDIR) -Wl,-rpath=$(JSONBOXDIR)/lib -I$(JSONBOXDIR)/include -lPocoNet -lPocoFoundation -lJsonBox
 
 ifeq ($(EIGERSLS),yes)
-     LDFLAG = -L$(LIBDIR) -lSlsDetector $(EIGERFLAGS) -DEIGERSLS
+     LDFLAGRXR = -L$(LIBDIR) -lSlsReceiver $(EIGERFLAGS) -DEIGERSLS
 endif
 
 
@@ -40,7 +41,7 @@ ROOTSLS = no
 ROOTFLAGS = $(shell root-config --cflags --glibs) -DMYROOT1   #-DALLFILE_DEBUG #-DMYROOT1 
 
 ifeq ($(ROOTSLS),yes)
-     LDFLAG = -L$(LIBDIR) -lSlsDetector $(ROOTFLAGS) -DROOTSLS
+     LDFLAGRXR = -L$(LIBDIR) -lSlsReceiver $(ROOTFLAGS) -DROOTSLS
 endif
 
 

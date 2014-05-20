@@ -9,63 +9,69 @@ DOCDIR	?=	$(INSTALLROOT)/docs
 LIBDIR	?=	$(INSTALLROOT)/bin
 INCDIR	?=	$(INSTALLROOT)/include
 
-WD		=	$(shell pwd)
-LIBRARYDIR	=	$(WD)/slsDetectorSoftware
-CLIENTDIR	=	$(LIBRARYDIR)/slsDetectorClient
-GUIDIR		=	$(WD)/slsDetectorGui
-RECEIVERDIR	=	$(LIBRARYDIR)/slsReceiver
-CALWIZDIR	=	$(WD)/calibrationWizards
-MANDIR		=	$(WD)/manual
-CALIBDIR	=	$(WD)/slsDetectorCalibration
+WD				=	$(shell pwd)
+LIBRARYDIR		=	$(WD)/slsDetectorSoftware
+LIBRARYRXRDIR 	= 	$(WD)/slsReceiverSoftware
+CLIENTDIR		=	$(LIBRARYDIR)/slsDetectorClient
+GUIDIR			=	$(WD)/slsDetectorGui
+RECEIVERDIR		=	$(LIBRARYRXRDIR)/slsReceiver
+CALWIZDIR		=	$(WD)/calibrationWizards
+MANDIR			=	$(WD)/manual
+CALIBDIR		=	$(LIBRARYRXRDIR)/slsDetectorCalibration
 
 
-INCLUDES=-I. -I$(LIBRARYDIR)/commonFiles -I$(LIBRARYDIR)/slsDetector -I$(LIBRARYDIR)/MySocketTCP -I$(LIBRARYDIR)/usersFunctions -I$(LIBRARYDIR)/multiSlsDetector -I$(LIBRARYDIR)/slsDetectorUtils -I$(LIBRARYDIR)/slsDetectorCommand -I$(LIBRARYDIR)/slsDetectorAnalysis -I$(LIBRARYDIR)/slsReceiverInterface -I$(LIBRARYDIR)/slsReceiver -I$(CALIBDIR) -I$(ASM)
+INCLUDES=-I. -I$(LIBRARYDIR)/commonFiles -I$(LIBRARYDIR)/slsDetector -I$(LIBRARYRXRDIR)/MySocketTCP -I$(LIBRARYDIR)/usersFunctions -I$(LIBRARYDIR)/multiSlsDetector -I$(LIBRARYDIR)/slsDetectorUtils -I$(LIBRARYDIR)/slsDetectorCommand -I$(LIBRARYDIR)/slsDetectorAnalysis -I$(LIBRARYDIR)/slsReceiverInterface  -I$(LIBRARYRXRDIR)/includes -I$(ASM)
+INCLUDESRXR=-I. -I$(LIBRARYRXRDIR)/MySocketTCP -I$(LIBRARYRXRDIR)/includes -I$(RECEIVERDIR)  -I$(RECEIVERDIR)/eigerReceiver -I$(CALIBDIR) -I$(ASM) #-I$(LIBRARYDIR)/slsReceiverInterface
 
+.PHONY: all nonstatic static lib libreceiver textclient receiver gui stextclient sreceiver
 
-.PHONY: all nonstatic static lib textclient receiver gui stextclient sreceiver
+all: lib textclient  receiver gui 
 
-all: lib  textclient  receiver gui 
+nonstatic: lib libreceiver textclient receiver  gui 
 
-nonstatic: lib  textclient receiver  gui 
+static: lib  libreceiver stextclient sreceiver gui 
 
-static: lib  stextclient sreceiver gui 
 
 lib:
 	cd $(LIBRARYDIR) && $(MAKE) FLAGS='$(FLAGS)' DESTDIR='$(LIBDIR)' INCLUDES='$(INCLUDES)'
+	
+libreceiver:
+	cd $(LIBRARYRXRDIR) && $(MAKE) FLAGS='$(FLAGS)' DESTDIR='$(LIBDIR)' INCLUDES='$(INCLUDESRXR)'
+
 
 stextclient: slsDetectorClient_static
 
 slsDetectorClient: textclient
 
 slsDetectorClient_static: lib
-	cd  $(CLIENTDIR) && $(MAKE) static_clients FLAGS='$(FLAGS)' LIBS='$(LDFLAG)' DESTDIR='$(BINDIR)' LIBDIR='$(LIBDIR)' INCLUDES='$(INCLUDES)'
-
+	cd  $(CLIENTDIR) && $(MAKE) static_clients FLAGS='$(FLAGS)' LIBS='$(LDFLAGDET)' DESTDIR='$(BINDIR)' LIBDIR='$(LIBDIR)' INCLUDES='$(INCLUDES)'
 
 textclient: lib
-	cd  $(CLIENTDIR) && $(MAKE) FLAGS='$(FLAGS)' DESTDIR='$(BINDIR)'  LIBDIR='$(LIBDIR)' LIBS='$(LDFLAG)' INCLUDES='$(INCLUDES)'
+	cd  $(CLIENTDIR) && $(MAKE) FLAGS='$(FLAGS)' DESTDIR='$(BINDIR)'  LIBDIR='$(LIBDIR)' LIBS='$(LDFLAGDET)' INCLUDES='$(INCLUDES)'
+
 
 slsReceiver: receiver
 
 slsReceiver_static: receiver
 
-receiver: lib
-	cd  $(RECEIVERDIR) && $(MAKE) receiver FLAGS='$(FLAGS)' DESTDIR='$(BINDIR)' LIBDIR='$(LIBDIR)'  LIBS='$(LDFLAG)' INCLUDES='$(INCLUDES)'
+receiver: libreceiver
+	cd  $(RECEIVERDIR) && $(MAKE) receiver FLAGS='$(FLAGS)' DESTDIR='$(BINDIR)' LIBDIR='$(LIBDIR)'  LIBS='$(LDFLAGRXR)' INCLUDES='$(INCLUDESRXR)'
 
-sreceiver: lib
-	cd  $(RECEIVERDIR) && $(MAKE)  static_receiver FLAGS='$(FLAGS)' DESTDIR='$(BINDIR)' LIBDIR='$(LIBDIR)'  LIBS='$(LDFLAG)' INCLUDES='$(INCLUDES)'
+sreceiver: libreceiver
+	cd  $(RECEIVERDIR) && $(MAKE)  static_receiver FLAGS='$(FLAGS)' DESTDIR='$(BINDIR)' LIBDIR='$(LIBDIR)'  LIBS='$(LDFLAGRXR)' INCLUDES='$(INCLUDESRXR)'
+
 
 
 slsDetectorGUI: lib
-	cd  $(GUIDIR) && $(MAKE) DESTDIR='$(BINDIR)' LIBDIR='$(LIBDIR)' INCLUDES='$(INCLUDES)' 
+	cd  $(GUIDIR) && $(MAKE) DESTDIR='$(BINDIR)' LIBDIR='$(LIBDIR)' INCLUDES='$(INCLUDES)' LDFLAGDET='-L$(LIBDIR) -lSlsDetector'  
 
 
 calWiz: 
-	cd  $(CALWIZDIR) && $(MAKE)  FLAGS=$(FLAGS)  LDFLAG=$(LDFLAG) DESTDIR=$(BINDIR) INCLUDES=$(INCLUDES)
+	cd  $(CALWIZDIR) && $(MAKE)  FLAGS=$(FLAGS)  LDFLAGDET=$(LDFLAGDET) DESTDIR=$(BINDIR) INCLUDES=$(INCLUDES)
 
 
 
 gui: slsDetectorGUI
-
 
 
 doc:
@@ -80,12 +86,12 @@ htmldoc:
 
 clean:
 	cd $(BINDIR) && rm -rf sls_detector_* slsDetectorGui slsReceiver angularCalibrationWizard energyCalibrationWizard 
-	cd $(LIBDIR) && rm -rf libSlsDetector.so libSlsDetector.a
-	cd $(LIBRARYDIR) && $(MAKE) clean
+	cd $(LIBDIR) && rm -rf libSlsDetector.so libSlsDetector.a libSlsReceiver.so libSlsReceiver.a 
+	cd $(LIBRARYDIR) && $(MAKE) clean 
+	cd $(LIBRARYRXRDIR) && $(MAKE) clean 
 	cd $(CLIENTDIR) && $(MAKE) clean
-	cd $(RECEIVERDIR) && $(MAKE) clean	
 	cd $(GUIDIR) && $(MAKE) clean
-	cd  $(CALWIZDIR) && $(MAKE) clean	
+	cd $(CALWIZDIR) && $(MAKE) clean
 	cd manual && $(MAKE) clean
 	cd $(DOCDIR) && rm -rf * 
 
@@ -113,18 +119,20 @@ confinstall:
 
 install_lib: 
 	make lib;\
+	make libreceiver; \
 	make textclient; \
 	make slsReceiver; \
 	make doc; \
 	make htmldoc; \
-	cd $(LIBRARYDIR) && $(MAKE) install_inc DESTDIR=$(INCDIR);
-
+	cd $(LIBRARYDIR) && $(MAKE) install_inc DESTDIR=$(INCDIR); \
+	cd $(LIBRARYRXRDIR) && $(MAKE) install_inc DESTDIR=$(INCDIR);
+	
 install: 
 	make install_lib; \
 	make gui; \
 	make calWiz; \
-	cd $(LIBRARYDIR) && $(MAKE) install_inc DESTDIR=$(INCDIR);
-
+	cd $(LIBRARYDIR) && $(MAKE) install_inc DESTDIR=$(INCDIR);\
+	cd $(LIBRARYRXRDIR) && $(MAKE) install_inc DESTDIR=$(INCDIR);
 
 conf:
 	set -e; \
@@ -140,6 +148,7 @@ help:
 	@echo "Targets:"
 	@echo "make all 		compile library,  text clients, data reciever"
 	@echo "make lib 		compile library"
+	@echo "make libreceiver 		compile receiver library"
 	@echo "make textclient		compile the slsDetectorClient dynamically linking the libraries"
 	@echo "make stextclient 		compile slsDetectorClient statically linking the libraries"
 	@echo "make receiver		compile the slsReciever dynamically linking the libraries"

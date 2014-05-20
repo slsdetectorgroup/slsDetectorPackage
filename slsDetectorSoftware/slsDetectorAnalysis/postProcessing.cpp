@@ -255,7 +255,7 @@ data queue size unlock
       if ((GetCurrentPositionIndex()>=npos  && dataQueueSize()) || npos<2) {
 	//&& 
 
-	while(positionFinished()==0) {
+	while(positionFinished()==0 && npos>1) {
 	  ;
 	}
 #ifdef VERBOSE

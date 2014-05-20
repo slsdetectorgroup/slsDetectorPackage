@@ -3,8 +3,9 @@ CLAGS		+=  -DVERBOSE #VERYBOSE
 LDLIBS		+= 	-lm  -lstdc++ -lpthread 
 
 LDIR 		=	../../slsDetectorSoftware
-INCLUDES	= 	-I ../../slsDetectorSoftware/commonFiles  -I ../../slsDetectorSoftware/MySocketTCP -I ../../slsDetectorSoftware/slsDetector -I ../include
-SRC_CLNT	= 	qClient.cpp ../../slsDetectorSoftware/MySocketTCP/MySocketTCP.cpp
+RDIR 		= 	../../slsReceiverSoftware
+INCLUDES	= 	-I $(LDIR)/commonFiles  -I $(RDIR)/MySocketTCP -I $(LDIR)/slsDetector -I ../include -I $(RDIR)/includes
+SRC_CLNT	= 	qClient.cpp $(RDIR)/MySocketTCP/MySocketTCP.cpp
 
 PROGS		= 	gui_client 
 DESTDIR		?= 	bin
@@ -26,8 +27,7 @@ $(PROGS):
 	mv $(PROGS) $(FINALDIR)
 
 clean:
-	rm -rf $(DESTDIR)/$(PROGS)  *.o 
-	rm -rf $(FINALDIR)/$(PROGS)
+	rm -rf $(DESTDIR)/$(PROGS)  *.o  $(FINALDIR)/$(PROGS)
 
 
 

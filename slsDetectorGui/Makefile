@@ -8,14 +8,15 @@ DESTDIR		?=	../bin
 LIBDIR		?=	$(DESTDIR)
 DOCDIR		?=	docs
 
-LIBRARYDIR	?=	../slsDetectorSoftware
-INCLUDES	?= 	$(LIBRARYDIR)/commonFiles -I$(LIBRARYDIR)/MySocketTCP  -I$(LIBRARYDIR)/slsReceiverInterface   -I$(LIBRARYDIR)/slsDetector  -I$(LIBRARYDIR)/slsDetectorAnalysis  -I$(LIBRARYDIR)/multiSlsDetector   -I$(LIBRARYDIR)/usersFunctions
+LIBRARYDIR		?=	../slsDetectorSoftware
+LIBRARYRXRDIR 	?= 	../slsReceiverSoftware
+INCLUDES	?= 	$(LIBRARYDIR)/commonFiles -I$(LIBRARYRXRDIR)/MySocketTCP  -I$(LIBRARYDIR)/slsReceiverInterface   -I$(LIBRARYDIR)/slsDetector  -I$(LIBRARYDIR)/slsDetectorAnalysis  -I$(LIBRARYDIR)/multiSlsDetector   -I$(LIBRARYDIR)/usersFunctions  -I$(LIBRARYRXRDIR)/includes
 
-ifeq ( $(EIGERSLS), yes)  	
-	LDFLAG += $(EIGERFLAGS)
-else ifeq ( $(ROOTSLS), yes)  	
-	LDFLAG += $(ROOTFLAGS)
-endif
+#ifeq ( $(EIGERSLS), yes)  	
+#	LDFLAG += $(EIGERFLAGS)
+#else ifeq ( $(ROOTSLS), yes)  	
+#	LDFLAG += $(ROOTFLAGS)
+#endif
 
 .PHONY: all lib clean mm doc htmldoc guiclient
 
@@ -34,7 +35,7 @@ clean:
 Makefile.gui: mm
 
 mm:
-	qmake -set QT_INSTALL_PREFIX $(QTDIR) && qmake -o Makefile.gui INCLUDES='$(INCLUDES)' DESTDIR=$(DESTDIR) SLSDETLIB=$(LIBDIR) SUBLIBS='$(LDFLAG)'
+	qmake -set QT_INSTALL_PREFIX $(QTDIR) && qmake -o Makefile.gui INCLUDES='$(INCLUDES)' DESTDIR=$(DESTDIR) SLSDETLIB=$(LIBDIR) SUBLIBS='$(LDFLAGDET)'
 
 doc:
 	cd manual && make DESTDIR=$(DOCDIR)
@@ -43,7 +44,7 @@ htmldoc:
 	cd manual && make html DESTDIR=$(DOCDIR)
 
 $(PROG): Makefile.gui $(DIR)
-	make -f Makefile.gui SLSDETLIB=$(LIBDIR) DESTDIR=$(DESTDIR) SUBLIBS='$(LDFLAG)' INCLUDES='$(INCLUDES)'
+	make -f Makefile.gui SLSDETLIB=$(LIBDIR) DESTDIR=$(DESTDIR) SUBLIBS='$(LDFLAGDET)' INCLUDES='$(INCLUDES)'
 
 guiclient:
 	echo $(WD)

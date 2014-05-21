@@ -1,3 +1,6 @@
 slsDetectorGui
 slsDetectorSoftware
 slsReceiverSoftware
+bin
+.cproject
+.project

@@ -450,7 +450,42 @@ class slsDetectorUsers
   
   virtual void finalizeDataset(double *a, double *v, double *e, int &np); 
 
+  /**
+     get get Module Firmware Version
+     \returns id
+  */
+  int64_t getModuleFirmwareVersion();
 
+  /**
+     get get Module Serial Number
+     @param imod module number
+     \returns id
+  */
+  int64_t getModuleSerialNumber(int imod=-1);
+
+  /**
+     get get Detector Firmware Version
+     \returns id
+  */
+  int64_t getDetectorFirmwareVersion();
+
+  /**
+     get get Detector Serial Number
+     \returns id
+  */
+  int64_t getDetectorSerialNumber();
+
+  /**
+     get get Detector Software Version
+     \returns id
+  */
+  int64_t getDetectorSoftwareVersion();
+
+  /**
+     get this Software Version
+     \returns id
+  */
+  int64_t getThisSoftwareVersion();
 
   /**
      @short register calbback for accessing detector final data

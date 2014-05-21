@@ -12,9 +12,10 @@
 #include <sys/shm.h>
 #include <sys/stat.h>
 
+#include <stdlib.h>
 
 //for memory mapping
-u_int32_t CSP0BASE;
+u_int64_t CSP0BASE;
 
 FILE *debugfp, *datafp;
 
@@ -162,7 +163,7 @@ int mapCSP0(void) {
 
 #endif
 #ifdef VIRTUAL
-  CSP0BASE = (u_int32_t)malloc(MEM_SIZE);
+  CSP0BASE = malloc(MEM_SIZE);
   printf("memory allocated\n");
 #endif
 #ifdef SHAREDMEMORY 
@@ -1071,6 +1072,9 @@ int64_t get64BitReg(int aLSB, int aMSB){
   vMSB=bus_r(aMSB);
   v64=vMSB;
   v64=(v64<<32) | vLSB;
+
+  printf("reg64(%x,%x) %x %x %llx\n", aLSB, aMSB, vLSB, vMSB, v64);
+
   return v64;
 }
 
@@ -1079,6 +1083,7 @@ int64_t setFrames(int64_t value){
 }
 
 int64_t getFrames(){
+  printf("gf");
   return get64BitReg(GET_FRAMES_LSB_REG, GET_FRAMES_MSB_REG);
 }
 
@@ -1512,6 +1517,7 @@ int configureMAC(int ipad,long long int macad,long long int detectormacad, int d
 	mac_conf_regs->mac.mac_dest_mac4  =((macad>>(8*2))&0xFF);// 0x24; //pc7060
 	mac_conf_regs->mac.mac_dest_mac5  =((macad>>(8*1))&0xFF);// 0xEB; //pc7060
 	mac_conf_regs->mac.mac_dest_mac6  =((macad>>(8*0))&0xFF);// 0xEE; //pc7060
+
 	/*
   mac_conf_regs->mac.mac_src_mac1   = 0x00;     
   mac_conf_regs->mac.mac_src_mac2   = 0xAA;     
@@ -1529,6 +1535,7 @@ int configureMAC(int ipad,long long int macad,long long int detectormacad, int d
 	mac_conf_regs->mac.mac_ether_type   = 0x0800;   //ipv4
 
 
+
 	mac_conf_regs->ip.ip_ver            = 0x4;
 	mac_conf_regs->ip.ip_ihl            = 0x5;
 	mac_conf_regs->ip.ip_tos            = 0x0;
@@ -1542,7 +1549,7 @@ int configureMAC(int ipad,long long int macad,long long int detectormacad, int d
 	mac_conf_regs->ip.ip_sourceip       = detipad; //0x8181CA2E;129.129.202.46
 	mac_conf_regs->ip.ip_destip         = ipad; //CA57
 
-#ifdef VERBOSE
+	//#ifdef VERBOSE
 	printf("mac_dest:%llx %x:%x:%x:%x:%x:%x\n",
 			macad,
 			mac_conf_regs->mac.mac_dest_mac1,
@@ -1560,7 +1567,10 @@ int configureMAC(int ipad,long long int macad,long long int detectormacad, int d
 			mac_conf_regs->mac.mac_src_mac5,
 			mac_conf_regs->mac.mac_src_mac6);
 	printf("ip_ttl:%x\n",mac_conf_regs->ip.ip_ttl);
-#endif
+	printf("det_ip: %x %x\n",detipad,	mac_conf_regs->ip.ip_sourceip);
+	printf("dest_ip: %x %x\n",ipad, mac_conf_regs->ip.ip_destip);
+
+	//#endif
 
 	//checksum
 	count=sizeof(mac_conf_regs->ip);
@@ -1602,6 +1612,7 @@ int configureMAC(int ipad,long long int macad,long long int detectormacad, int d
 	tse_conf_regs->tx_almost_full      = 0x3;
 	tse_conf_regs->mdio_addr0          = 0x12;
 	tse_conf_regs->mdio_addr1          = 0x0;
+
 	mac_conf_regs->cdone               = 0xFFFFFFFF;
 
 
@@ -1641,7 +1652,7 @@ int getAdcConfigured(){
 }
 
 u_int32_t runBusy(void) {
-	u_int32_t s = bus_r(STATUS_REG);
+	u_int32_t s = bus_r(STATUS_REG) & 1;
 #ifdef VERBOSE
 	printf("status %04x\n",s);
 #endif
@@ -1800,6 +1811,9 @@ u_int32_t  fifo_full(void)
 
 u_int32_t* fifo_read_event()
 {
+
+  int i=0;
+
 #ifdef VIRTUAL
   return NULL;
 #endif
@@ -1809,9 +1823,9 @@ u_int32_t* fifo_read_event()
 #endif
   volatile u_int32_t t = bus_r(LOOK_AT_ME_REG);
 
-//#ifdef VERBOSE
+#ifdef VERBOSE
   printf("lookatmereg=x%x\n",t);
-//#endif
+#endif
 /*
    while ((t&0x1)==0)
      {
@@ -1823,8 +1837,8 @@ u_int32_t* fifo_read_event()
 */
 
    while((t&0x1)==0) {
-#ifdef VERBOSE
-  printf("before readout %08x %08x\n", runState(), bus_r(LOOK_AT_ME_REG));
+#ifdef VERYVERBOSE
+       printf("before readout %08x %08x\n", runState(), bus_r(LOOK_AT_ME_REG));
 #endif
 #ifdef VERYVERBOSE
 	   printf("look at me reg:%08x\n",bus_r(LOOK_AT_ME_REG));
@@ -1842,6 +1856,7 @@ u_int32_t* fifo_read_event()
 #ifdef VERYVERBOSE
 			   printf("returning null\n");
 #endif
+			   printf("lookatmereg=x%x\n",t);
 			   return NULL;
 		   } else {
 #ifdef VERBOSE
@@ -1854,11 +1869,14 @@ u_int32_t* fifo_read_event()
 #ifdef VERYVERBOSE
 	   printf("before starting while loop again: look at me reg:%08x\n\n",bus_r(LOOK_AT_ME_REG));
 #endif
+	   if (i%1000==0)
+	     printf("%08x %08x\n", runState(), bus_r(LOOK_AT_ME_REG));
+	   i++;
    }
 #ifdef VERYVERBOSE
    printf(" out of while loop!\n");
 #endif
-#ifdef VERBOSE
+#ifdef VERYVERBOSE
   printf("before readout %08x %08x\n", runState(), bus_r(LOOK_AT_ME_REG));
 #endif
 
@@ -1874,7 +1892,7 @@ u_int32_t* fifo_read_event()
   printf("********\n");
   //memcpy(now_ptr, values, dataBytes);
 #endif
-#ifdef VERBOSE
+#ifdef VERYVERBOSE
   printf("Copying to ptr %08x %d\n",(unsigned int)(now_ptr), dataBytes);
   printf("after readout %08x %08x\n", runState(), bus_r(LOOK_AT_ME_REG));
 #endif
@@ -1882,6 +1900,7 @@ u_int32_t* fifo_read_event()
   if (storeInRAM>0) {
     now_ptr+=dataBytes;
   }
+  printf("lookatmereg=x%x\n",t);
   return ram_values;
 }
 

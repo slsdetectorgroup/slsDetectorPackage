@@ -42,7 +42,7 @@ using namespace std;
 
 #define DEFAULT_HOSTNAME  "localhost"
 #define DEFAULT_SHM_KEY  5678
-#define THIS_REVISION "$Rev$"
+#define THIS_REVISION "$Rev: 822 $"
 
 //test
 
@@ -187,14 +187,6 @@ class slsDetectorUtils :  public slsDetectorActions, public postProcessing {
      \returns actual port number
   */
   virtual int setPort(portType t, int i=-1)=0; 
-
-  /**
-     get detector ids/versions for module=0
-     \param mode which id/version has to be read
-     \param imod module number for module serial number
-     \returns id
-  */
-  virtual int64_t getId(idMode mode, int imod=0)=0;
 
   /**
      checks if the detector(s) are online/offline

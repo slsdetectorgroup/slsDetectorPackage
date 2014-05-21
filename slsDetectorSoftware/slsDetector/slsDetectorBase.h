@@ -48,6 +48,7 @@
 
 
 #include "sls_detector_defs.h"
+#include "sls_receiver_defs.h"
 #include "slsDetectorUsers.h"
 #include "error_defs.h"
 
@@ -65,7 +66,7 @@ using namespace std;
 */
 
 //public virtual slsDetectorUsers,
-class slsDetectorBase :  public virtual slsDetectorDefs, public virtual errorDefs  {
+class slsDetectorBase :  public virtual slsDetectorDefs, public virtual errorDefs {
 
  public:
 
@@ -326,6 +327,20 @@ class slsDetectorBase :  public virtual slsDetectorDefs, public virtual errorDef
   */ 
   virtual int* readFrame()=0;
 
+
+  /**
+     get detector ids/versions for module=0
+     \param mode which id/version has to be read
+     \param imod module number for module serial number
+     \returns id
+  */
+  virtual int64_t getId(idMode mode, int imod=0)=0;
+  int64_t getModuleFirmwareVersion(){return getId(MODULE_FIRMWARE_VERSION,-1);};
+  int64_t getModuleSerialNumber(int imod=-1){return getId(MODULE_SERIAL_NUMBER,imod);};
+  int64_t getDetectorFirmwareVersion(){return getId(DETECTOR_FIRMWARE_VERSION,-1);};
+  int64_t getDetectorSerialNumber(){return getId(DETECTOR_SERIAL_NUMBER,-1);};
+  int64_t getDetectorSoftwareVersion(){return getId(DETECTOR_SOFTWARE_VERSION,-1);};
+  int64_t getThisSoftwareVersion(){return getId(THIS_SOFTWARE_VERSION,-1);};
 
   /**
      start detector acquisition

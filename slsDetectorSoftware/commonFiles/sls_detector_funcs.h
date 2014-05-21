@@ -21,9 +21,7 @@ enum {
   F_SET_EXTERNAL_SIGNAL_FLAG,  /**< set/get flag for external signal */
   F_SET_EXTERNAL_COMMUNICATION_MODE, /**< set/get  external communication mode (obsolete) */
 
-
   // Tests and identification
-
   F_GET_ID, /**< get detector id of version */
   F_DIGITAL_TEST,  /**< digital test of the detector */
   F_ANALOG_TEST,  /**<analog test of the detector */
@@ -38,7 +36,6 @@ enum {
   F_WRITE_MEMORY,  /**< write to memory */
   F_READ_MEMORY, /**< read memory */
 
-
   F_SET_CHANNEL,  /**< initialize channel */
   F_GET_CHANNEL,  /**< get channel register */
   F_SET_ALL_CHANNELS,  /**< initialize all channels */
@@ -51,11 +48,9 @@ enum {
   F_GET_MODULE,  /**< get module status */
   F_SET_ALL_MODULES,  /**< initialize all modules */
 
-
   F_SET_SETTINGS,  /**< set detector settings */
   F_GET_THRESHOLD_ENERGY,  /**< get detector threshold (in eV) */
   F_SET_THRESHOLD_ENERGY,  /**< set detector threshold (in eV) */
-
 
   // Acquisition functions
   F_START_ACQUISITION, /**< start acquisition */
@@ -70,77 +65,30 @@ enum {
   F_SET_TIMER,  /**< set/get timer value */
   F_GET_TIME_LEFT,  /**< get current value of the timer (time left) */
 
-
-
   F_SET_DYNAMIC_RANGE,  /**< set/get detector dynamic range */
   F_SET_READOUT_FLAGS,  /**< set/get readout flags */
   F_SET_ROI,  /**< set/get region of interest */
-
   F_SET_SPEED,  /**< set/get readout speed parameters */
 
   //Trimming
   F_EXECUTE_TRIMMING,   /**< execute trimming */
 
   F_EXIT_SERVER,  /**< turn off detector server */
-
   F_LOCK_SERVER, /**< Locks/Unlocks server communication to the given client */ 
-
   F_GET_LAST_CLIENT_IP,  /**< returns the IP of the client last connected to the detector */ 
-  
   F_SET_PORT, /**< Changes communication port of the server */
-
   F_UPDATE_CLIENT, /**< Returns all the important parameters to update the shared memory of the client */
 
   F_CONFIGURE_MAC, /**< Configures MAC for Gotthard readout */
-  
   F_LOAD_IMAGE,   /**< Loads Dark/Gain image to the Gotthard detector */
 
   // multi detector structures
-
   F_SET_MASTER, /**< sets master/slave flag for multi detector structures */
-
   F_SET_SYNCHRONIZATION_MODE, /**< sets master/slave synchronization mode for multidetector structures */
-
   F_READ_COUNTER_BLOCK, /**< reads the counter block memory for gotthard */
-
   F_RESET_COUNTER_BLOCK, /**< resets the counter block memory for gotthard */
+  F_CALIBRATE_PEDESTAL	/**< starts acquistion, calibrates pedestal and write back to fpga */
 
-
-  //receiver
-
-  F_SET_FILE_PATH, 			/**< sets receiver file directory */
-
-  F_SET_FILE_NAME, 			/**< sets receiver file name */
-
-  F_SET_FILE_INDEX, 		/**< sets receiver file index */
-
-  F_START_RECEIVER,			/**< starts the receiver listening mode */
-
-  F_STOP_RECEIVER,			/**< stops the receiver listening mode */
-
-  F_GET_RECEIVER_STATUS,	/**< gets the status of receiver listening mode */
-
-  F_GET_FRAMES_CAUGHT,		/**< gets the number of frames caught by receiver */
-
-  F_GET_FRAME_INDEX,		/**< gets the frame index */
-
-  F_RESET_FRAMES_CAUGHT,    /**< resets the frames caught */
-
-  F_SETUP_UDP,				/**< sets the receiver udp connection and returns receiver mac address */
-
-  F_ENABLE_FILE_WRITE,		/**< sets the receiver file write */
-
-  F_SET_FRAME_INDEX,		/**< sets the receiver frame index */
-
-  F_CALIBRATE_PEDESTAL,		/**< starts acquistion, calibrates pedestal and write back to fpga */
-
-  F_READ_RECEIVER_FREQUENCY, /**< sets the frequency of receiver sending frames to gui */
-
-  F_ENABLE_COMPRESSION,		/**< enable compression in receiver */
-
-  F_SET_DETECTOR_HOSTNAME,	/**< set detector hostname in receiver */
-
-  F_ENABLE_OVERWRITE		/**< set overwrite flag in receiver */
   /* Always append functions hereafter!!! */
 
 };

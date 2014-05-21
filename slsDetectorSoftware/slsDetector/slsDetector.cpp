@@ -39,7 +39,7 @@ int slsDetector::initSharedMemory(detectorType type, int id) {
     nd=6; // dacs+adcs
     break;
   case GOTTHARD:
-    nch=128; 
+    nch=128;
     nm=1;
     nc=10;
     nd=13; // dacs+adcs
@@ -65,7 +65,7 @@ int slsDetector::initSharedMemory(detectorType type, int id) {
   }
   /**
      The size of the shared memory is:
-     size of shared structure + ffcoefficents +fferrors + modules+ dacs+adcs+chips+chans 
+     size of shared structure + ffcoefficents +fferrors + modules+ dacs+adcs+chips+chans
   */
 
 
@@ -79,13 +79,13 @@ int slsDetector::initSharedMemory(detectorType type, int id) {
     std::cout<<"*** shmget error (server) ***"<< shm_id << std::endl;
     return shm_id;
   }
-  
+
   /**
      thisDetector pointer is set to the memory address of the shared memory
   */
 
   thisDetector = (sharedSlsDetector*) shmat(shm_id, NULL, 0);  /* attach */
-  
+
   if (thisDetector == (void*)-1) {
     std::cout<<"*** shmat error (server) ***" << std::endl;
     return shm_id;
@@ -120,10 +120,10 @@ int slsDetector::freeSharedMemory() {
 
 
 slsDetector::slsDetector(int id,multiSlsDetector *p) :slsDetectorUtils(),
-						      thisDetector(NULL),  
+						      thisDetector(NULL),
 						      detId(id),
 							  parentDet(p),
-						      shmId(-1), 
+						      shmId(-1),
 						      controlSocket(NULL),
 						      stopSocket(NULL),
 						      dataSocket(NULL),
@@ -144,7 +144,7 @@ slsDetector::slsDetector(int id,multiSlsDetector *p) :slsDetectorUtils(),
 
   while (shmId<0) {
     /**Initlializes shared memory \sa initSharedMemory
-	  
+
     if it fails the detector id is incremented until it succeeds
     */
     shmId=initSharedMemory(type,id);
@@ -155,7 +155,7 @@ slsDetector::slsDetector(int id,multiSlsDetector *p) :slsDetectorUtils(),
   std::cout<< "Detector id is " << id << std::endl;
 #endif
   detId=id;
-  
+
 
   /**Initializes the detector stucture \sa initializeDetectorSize
    */
@@ -170,10 +170,10 @@ slsDetector::slsDetector(int id,multiSlsDetector *p) :slsDetectorUtils(),
 
 
 slsDetector::slsDetector(detectorType type, int id,multiSlsDetector *p): slsDetectorUtils(),
-									 thisDetector(NULL),  
+									 thisDetector(NULL),
 									 detId(id),
 								     parentDet(p),
-									 shmId(-1), 
+									 shmId(-1),
 									 controlSocket(NULL),
 									 stopSocket(NULL),
 									 dataSocket(NULL),
@@ -224,10 +224,10 @@ slsDetector::~slsDetector(){
 };
 
 slsDetector::slsDetector(char *name, int id, int cport,multiSlsDetector *p) : slsDetectorUtils(),
-									      thisDetector(NULL),  
+									      thisDetector(NULL),
 									      detId(id),
 									      parentDet(p),
-									      shmId(-1), 
+									      shmId(-1),
 									      controlSocket(NULL),
 									      stopSocket(NULL),
 									      dataSocket(NULL),
@@ -243,11 +243,11 @@ slsDetector::slsDetector(char *name, int id, int cport,multiSlsDetector *p) : sl
 
 {
   detectorType type=(detectorType)getDetectorType(name, cport);
-  
+
 
   while (shmId<0) {
     /**Initlializes shared memory \sa initSharedMemory
-	  
+
     if it fails the detector id is incremented until it succeeds
     */
     shmId=initSharedMemory(type,id);
@@ -258,8 +258,8 @@ slsDetector::slsDetector(char *name, int id, int cport,multiSlsDetector *p) : sl
   std::cout<< "Detector id is " << id << std::endl;
 #endif
   detId=id;
-  
-  
+
+
   /**Initializes the detector stucture \sa initializeDetectorSize
    */
   initializeDetectorSize(type);
@@ -267,14 +267,14 @@ slsDetector::slsDetector(char *name, int id, int cport,multiSlsDetector *p) : sl
 
 
 
-  
+
   setTCPSocket(name, cport);
   updateDetector();
 
 }
 
 slsDetectorDefs::detectorType slsDetector::getDetectorType(const char *name, int cport) {
-  
+
   int retval=FAIL;
   detectorType t=GENERIC;
   int fnum=F_GET_DETECTOR_TYPE;
@@ -286,14 +286,14 @@ slsDetectorDefs::detectorType slsDetector::getDetectorType(const char *name, int
   if (s->Connect()>=0) {
     s->SendDataOnly(&fnum,sizeof(fnum));
     s->ReceiveDataOnly(&retval,sizeof(retval));
-    
+
     if (retval!=FAIL) {
       s->ReceiveDataOnly(&t,sizeof(t));
 
 #ifdef VERBOSE
       cout << "Detector type is "<< t << endl;
 #endif
-      
+
     } else {
       s->ReceiveDataOnly(m,sizeof(m));
       std::cout<< "Detector returned error: " << m << std::endl;
@@ -314,7 +314,7 @@ slsDetectorDefs::detectorType slsDetector::getDetectorType(const char *name, int
 		  std::cout << "Sending detector type to Receiver " << (int)thisDetector->myDetectorType << std::endl;
 #endif
 		  if (connectData() == OK)
-			  retval=thisReceiver->sendInt(fnum,k,(int)t);
+			  retval=thisReceiver->sendInt(fnum2,k,(int)t);
 		  if(retval==FAIL){
 			  cout << "ERROR: Could not send detector type to receiver" << endl;
 			  setErrorMask((getErrorMask())|(RECEIVER_DET_HOSTTYPE_NOT_SET));
@@ -352,13 +352,13 @@ int slsDetector::exists(int id) {
     std::cout<<"*** shmget error (server) ***"<< shm_id << std::endl;
     return -1;
   }
-  
+
   /**
      thisDetector pointer is set to the memory address of the shared memory
   */
 
   sharedSlsDetector* det = (sharedSlsDetector*) shmat(shm_id, NULL, 0);  /* attach */
-  
+
   if (det == (void*)-1) {
     std::cout<<"*** shmat error (server) ***" << std::endl;
     return -1;
@@ -402,7 +402,7 @@ int slsDetector::exists(int id) {
 
 
 slsDetectorDefs::detectorType slsDetector::getDetectorType(int id) {
-  
+
   detectorType t=GENERIC;
 
 
@@ -422,13 +422,13 @@ slsDetectorDefs::detectorType slsDetector::getDetectorType(int id) {
     std::cout<<"*** shmget error (server) ***"<< shm_id << std::endl;
     return t;
   }
-  
+
   /**
      thisDetector pointer is set to the memory address of the shared memory
   */
 
   sharedSlsDetector* det = (sharedSlsDetector*) shmat(shm_id, NULL, 0);  /* attach */
-  
+
   if (det == (void*)-1) {
     std::cout<<"*** shmat error (server) ***" << std::endl;
     return t;
@@ -575,7 +575,7 @@ int slsDetector::initializeDetectorSize(detectorType type) {
       thisDetector->nDacs=0;
       thisDetector->nAdcs=0;
       thisDetector->nModMax[X]=0;
-      thisDetector->nModMax[Y]=0;  
+      thisDetector->nModMax[Y]=0;
       thisDetector->dynamicRange=32;
     }
     thisDetector->nChans=thisDetector->nChan[X]*thisDetector->nChan[Y];
@@ -583,14 +583,14 @@ int slsDetector::initializeDetectorSize(detectorType type) {
     thisDetector->nModsMax=thisDetector->nModMax[X]*thisDetector->nModMax[Y];
     /** number of modules is initally the maximum number of modules */
     thisDetector->nMod[X]=thisDetector->nModMax[X];
-    thisDetector->nMod[Y]=thisDetector->nModMax[Y];  
+    thisDetector->nMod[Y]=thisDetector->nModMax[Y];
     thisDetector->nMods=thisDetector->nModsMax;
     /** calculates the expected data size */
     thisDetector->timerValue[PROBES_NUMBER]=0;
     thisDetector->timerValue[FRAME_NUMBER]=1;
     thisDetector->timerValue[MEASUREMENTS_NUMBER]=1;
     thisDetector->timerValue[CYCLES_NUMBER]=1;
-     
+
     thisDetector->dataBytes=thisDetector->nMod[X]*thisDetector->nMod[Y]*thisDetector->nChips*thisDetector->nChans*thisDetector->dynamicRange/8;
 
     if(thisDetector->myDetectorType==MYTHEN){
@@ -663,7 +663,7 @@ int slsDetector::initializeDetectorSize(detectorType type) {
 
 
     for (int iscan=0; iscan<MAX_SCAN_LEVELS; iscan++) {
-       
+
       thisDetector->scanMode[iscan]=0;
       strcpy(thisDetector->scanScript[iscan],"none");
       strcpy(thisDetector->scanParameter[iscan],"none");
@@ -675,8 +675,8 @@ int slsDetector::initializeDetectorSize(detectorType type) {
     /** sets receiver onlineFlag to OFFLINE_FLAG */
     thisDetector->receiverOnlineFlag=OFFLINE_FLAG;
 
-     
-    /** calculates the memory offsets for flat field coefficients and errors, module structures, dacs, adcs, chips and channels */ 
+
+    /** calculates the memory offsets for flat field coefficients and errors, module structures, dacs, adcs, chips and channels */
     thisDetector->ffoff=sizeof(sharedSlsDetector);
     thisDetector->fferroff=thisDetector->ffoff+sizeof(double)*thisDetector->nChans*thisDetector->nChips*thisDetector->nModsMax;
     thisDetector->modoff= thisDetector->fferroff+sizeof(double)*thisDetector->nChans*thisDetector->nChips*thisDetector->nModsMax;
@@ -684,15 +684,15 @@ int slsDetector::initializeDetectorSize(detectorType type) {
     thisDetector->adcoff=thisDetector->dacoff+sizeof(dacs_t)*thisDetector->nDacs*thisDetector->nModsMax;
     thisDetector->chipoff=thisDetector->adcoff+sizeof(dacs_t)*thisDetector->nAdcs*thisDetector->nModsMax;
     thisDetector->chanoff=thisDetector->chipoff+sizeof(int)*thisDetector->nChips*thisDetector->nModsMax;
-     
-     
+
+
     //update?!?!?!?
 
 
-  } 
+  }
 
 
-  /** also in case thisDetector alread existed initialize the pointer for flat field coefficients and errors, module structures, dacs, adcs, chips and channels */ 
+  /** also in case thisDetector alread existed initialize the pointer for flat field coefficients and errors, module structures, dacs, adcs, chips and channels */
   ffcoefficients=(double*)(goff+thisDetector->ffoff);
   fferrors=(double*)(goff+thisDetector->fferroff);
   detectorModules=(sls_detector_module*)(goff+ thisDetector->modoff);
@@ -705,22 +705,22 @@ int slsDetector::initializeDetectorSize(detectorType type) {
   chipregs=(int*)(goff+thisDetector->chipoff);
   chanregs=(int*)(goff+thisDetector->chanoff);
   if (thisDetector->alreadyExisting==0) {
-    /** if thisDetector is new, initialize its structures \sa initializeDetectorStructure();   */ 
+    /** if thisDetector is new, initialize its structures \sa initializeDetectorStructure();   */
     initializeDetectorStructure();
-    /** set  thisDetector->alreadyExisting=1  */   
+    /** set  thisDetector->alreadyExisting=1  */
     thisDetector->alreadyExisting=1;
-  } 
+  }
 
 #ifdef VERBOSE
   cout << "passing pointers" << endl;
-#endif   
+#endif
 
 
   stoppedFlag=&thisDetector->stoppedFlag;
   threadedProcessing=&thisDetector->threadedProcessing;
   actionMask=&thisDetector->actionMask;
-  actionScript=thisDetector->actionScript;		
-  actionParameter=thisDetector->actionParameter;      
+  actionScript=thisDetector->actionScript;
+  actionParameter=thisDetector->actionParameter;
   nScanSteps=thisDetector->nScanSteps;
   scanMode=thisDetector->scanMode;
   scanScript=thisDetector->scanScript;
@@ -761,7 +761,7 @@ int slsDetector::initializeDetectorSize(detectorType type) {
 
 #ifdef VERBOSE
   cout << "done" << endl;
-#endif   
+#endif
 
 
   /** modifies the last PID accessing the detector */
@@ -778,11 +778,11 @@ int slsDetector::initializeDetectorStructure() {
   sls_detector_module *thisMod;
   char *p2;
   p2=(char*)thisDetector;
- 
+
   /** for each of the detector modules up to the maximum number which can be installed initlialize the sls_detector_module structure \sa ::sls_detector_module*/
   for (int imod=0; imod<thisDetector->nModsMax; imod++) {
 
-   
+
 
     thisMod=detectorModules+imod;
     thisMod->module=imod;
@@ -792,7 +792,7 @@ int slsDetector::initializeDetectorStructure() {
     thisMod->nchip=thisDetector->nChips;
     thisMod->ndac=thisDetector->nDacs;
     thisMod->nadc=thisDetector->nAdcs;
-    
+
 
     /** initializes the serial number and register to 0 */
     thisMod->serialnumber=0;
@@ -802,7 +802,7 @@ int slsDetector::initializeDetectorStructure() {
     for (int idac=0; idac<thisDetector->nDacs; idac++) {
       *(dacs+idac+thisDetector->nDacs*imod)=0;
     }
-    
+
 
     /** initializes the adc values to 0 */
     for (int iadc=0; iadc<thisDetector->nAdcs; iadc++) {
@@ -815,7 +815,7 @@ int slsDetector::initializeDetectorStructure() {
     for (int ichip=0; ichip<thisDetector->nChips; ichip++) {
       *(chipregs+ichip+thisDetector->nChips*imod)=-1;
     }
-    
+
 
     /** initializes the channel registers to 0 */
     for (int ichan=0; ichan<thisDetector->nChans*thisDetector->nChips; ichan++) {
@@ -849,7 +849,7 @@ slsDetectorDefs::sls_detector_module*  slsDetector::createModule(detectorType t)
     nd=6; // dacs+adcs
     break;
   case GOTTHARD:
-    nch=128; 
+    nch=128;
     nm=1;
     nc=10;
     nd=8; // dacs+adcs
@@ -885,7 +885,7 @@ slsDetectorDefs::sls_detector_module*  slsDetector::createModule(detectorType t)
   myMod->nadc=na;
   myMod->nchip=nc;
   myMod->nchan=nch*nc;
- 
+
   myMod->dacs=dacs;
   myMod->adcs=adcs;
   myMod->chipregs=chipregs;
@@ -1018,7 +1018,7 @@ int  slsDetector::receiveModule(sls_detector_module* myMod) {
   myMod->adcs=adcptr;
   myMod->chipregs=chipptr;
   myMod->chanregs=chanptr;
-  
+
 #ifdef VERBOSE
   std::cout<< "received module " << myMod->module << " of size "<< ts << " register " << myMod->reg << std::endl;
 #endif
@@ -1038,7 +1038,7 @@ int  slsDetector::receiveModule(sls_detector_module* myMod) {
 #ifdef VERBOSE
   std::cout<< "nchans= " << thisDetector->nChans << " nchips= " << thisDetector->nChips;
   std::cout<< "mod - nchans= " << myMod->nchan << " nchips= " <<myMod->nchip;
-  
+
   std::cout<< "received chans " << myMod->module << " of size "<< ts << std::endl;
 #endif
 #ifdef VERBOSE
@@ -1105,8 +1105,8 @@ string slsDetector::checkOnline() {
 
 
 
-/* 
-   configure the socket communication and check that the server exists 
+/*
+   configure the socket communication and check that the server exists
    enum communicationProtocol{
    TCP,
    UDP
@@ -1142,7 +1142,7 @@ int slsDetector::setTCPSocket(string const name, int const control_port, int con
     std::cout<< "setting control port" << std::endl;
 #endif
     thisCP=control_port;
-    thisDetector->controlPort=thisCP; 
+    thisDetector->controlPort=thisCP;
     if (controlSocket) {
       delete controlSocket;
       controlSocket=NULL;
@@ -1188,7 +1188,7 @@ int slsDetector::setTCPSocket(string const name, int const control_port, int con
       delete stopSocket;
       stopSocket=NULL;
       retval=FAIL;
-    } 
+    }
 #ifdef VERYVERBOSE
     else
       std::cout<< "Stop socket connected " << thisName << " " << thisSP << std::endl;
@@ -1283,22 +1283,22 @@ int slsDetector::disconnectStop(){
 
 // General purpose functions
 
-/* 
-   executes a system command on the server 
+/*
+   executes a system command on the server
    e.g. mount an nfs disk, reboot and returns answer etc.
 */
 int slsDetector::execCommand(string cmd, string answer){
 
   char arg[MAX_STR_LENGTH], retval[MAX_STR_LENGTH];
   int fnum=F_EXEC_COMMAND;
-  
+
   int ret=FAIL;
 
   strcpy(arg,cmd.c_str());
 
 #ifdef VERBOSE
   std::cout<< std::endl;
-  std::cout<< "Sending command " << arg << std::endl; 
+  std::cout<< "Sending command " << arg << std::endl;
 #endif
   if (thisDetector->onlineFlag==ONLINE_FLAG) {
     if (connectControl() == OK){
@@ -1313,7 +1313,7 @@ int slsDetector::execCommand(string cmd, string answer){
       controlSocket->Disconnect();
     }
 #ifdef VERBOSE
-    std::cout<< "Detector answer is " << answer << std::endl; 
+    std::cout<< "Detector answer is " << answer << std::endl;
 #endif
   }
   return ret;
@@ -1321,8 +1321,8 @@ int slsDetector::execCommand(string cmd, string answer){
 
 // Detector configuration functions
 
-/* 
-   the detector knows what type of detector it is 
+/*
+   the detector knows what type of detector it is
 
    enum detectorType{
    GET_DETECTOR_TYPE,
@@ -1337,9 +1337,9 @@ int slsDetector::execCommand(string cmd, string answer){
 
 */
 int slsDetector::setDetectorType(detectorType const type){
-  
+
   int arg, retval=FAIL;
-  int fnum=F_GET_DETECTOR_TYPE;
+  int fnum=F_GET_DETECTOR_TYPE,fnum2=F_GET_RECEIVER_TYPE;
   arg=int(type);
   detectorType retType=type;
   char mess[100];
@@ -1348,7 +1348,7 @@ int slsDetector::setDetectorType(detectorType const type){
 
 #ifdef VERBOSE
   std::cout<< std::endl;
-  std::cout<< "Setting detector type to " << arg << std::endl; 
+  std::cout<< "Setting detector type to " << arg << std::endl;
 #endif
   if (thisDetector->onlineFlag==ONLINE_FLAG) {
     if (connectControl() == OK){
@@ -1374,7 +1374,7 @@ int slsDetector::setDetectorType(detectorType const type){
     retval=OK;
   }
 #ifdef VERBOSE
-  std::cout<< "Detector type set to " << retType << std::endl; 
+  std::cout<< "Detector type set to " << retType << std::endl;
 #endif
   if (retval==FAIL) {
     std::cout<< "Set detector type failed " << std::endl;
@@ -1392,7 +1392,7 @@ int slsDetector::setDetectorType(detectorType const type){
 		  std::cout << "Sending detector type to Receiver " << (int)thisDetector->myDetectorType << std::endl;
 #endif
 		  if (connectData() == OK)
-			  retval=thisReceiver->sendInt(fnum,arg,(int)thisDetector->myDetectorType);
+			  retval=thisReceiver->sendInt(fnum2,arg,(int)thisDetector->myDetectorType);
 		  if(retval==FAIL){
 			  cout << "ERROR: Could not send detector type to receiver" << endl;
 			  setErrorMask((getErrorMask())|(RECEIVER_DET_HOSTTYPE_NOT_SET));
@@ -1518,11 +1518,11 @@ int slsDetector::setNumberOfModules(int n, dimension d){
 #endif
   }
   return thisDetector->nMod[d];
-}; 
+};
 
 
 
- 
+
 int slsDetector::getMaxNumberOfModules(dimension d){
 
   int retval;
@@ -1567,17 +1567,17 @@ int slsDetector::getMaxNumberOfModules(dimension d){
     thisDetector->nModMax[d]=retval;
     thisDetector->nModsMax=thisDetector->nModMax[X]*thisDetector->nModMax[Y];
 
-    
+
 
   }
   return thisDetector->nModMax[d];
-}; 
+};
 
 
- 
+
 /*
   This function is used to set the polarity and meaning of the digital I/O signals (signal index)
-    
+
   enum externalSignalFlag {
   GET_EXTERNAL_SIGNAL_FLAG,
   SIGNAL_OFF,
@@ -1592,8 +1592,8 @@ slsDetectorDefs::externalSignalFlag slsDetector::setExternalSignalFlags(external
 
 
 
-  
-  int arg[2]; 
+
+  int arg[2];
   externalSignalFlag  retval;
   int ret=FAIL;
   int fnum=F_SET_EXTERNAL_SIGNAL_FLAG;
@@ -1606,7 +1606,7 @@ slsDetectorDefs::externalSignalFlag slsDetector::setExternalSignalFlags(external
 
 #ifdef VERBOSE
   std::cout<< std::endl;
-  std::cout<< "Setting signal "<< signalindex <<  " to flag" << pol << std::endl; 
+  std::cout<< "Setting signal "<< signalindex <<  " to flag" << pol << std::endl;
 #endif
   if (thisDetector->onlineFlag==ONLINE_FLAG) {
     if (connectControl() == OK){
@@ -1642,7 +1642,7 @@ slsDetectorDefs::externalSignalFlag slsDetector::setExternalSignalFlags(external
 
 };
 
-/* 
+/*
    this function is used to select wether the detector is triggered or gated and in which mode
    enum externalCommunicationMode{
    GET_EXTERNAL_COMMUNICATION_MODE,
@@ -1708,7 +1708,7 @@ slsDetectorDefs::externalCommunicationMode slsDetector::setExternalCommunication
 
 
 // Tests and identification
-/* 
+/*
    Gets versions
 
    enum idMode{
@@ -1729,7 +1729,7 @@ slsDetectorDefs::externalCommunicationMode slsDetector::setExternalCommunication
 int64_t slsDetector::getId( idMode mode, int imod){
 
   int64_t retval=-1;
-  int fnum=F_GET_ID;
+  int fnum=F_GET_ID,fnum2 = F_GET_RECEIVER_ID;
   int ret=FAIL;
   char mess[100];
 
@@ -1747,7 +1747,7 @@ int64_t slsDetector::getId( idMode mode, int imod){
   } else if (mode==RECEIVER_VERSION) {
     if (setReceiverOnline(ONLINE_FLAG)==ONLINE_FLAG) {
       if (connectData() == OK)
-    	  ret=thisReceiver->getInt(fnum,retval);
+    	  ret=thisReceiver->getInt(fnum2,retval);
       if(ret==FORCE_UPDATE)
 	ret=updateReceiver();
     }
@@ -1848,7 +1848,7 @@ int slsDetector::digitalTest( digitalTestMode mode, int imod){
 
 
 
-/* 
+/*
    analog test of the modules
    enum analogTestMode {
    COUNT_CALIBRATION_PULSES,
@@ -1861,8 +1861,8 @@ int slsDetector::digitalTest( digitalTestMode mode, int imod){
   std::cout<< "function not yet implemented " << std::endl;
   };
 */
-/* 
-   enable analog output of channel 
+/*
+   enable analog output of channel
 */
 /*
   int slsDetector::enableAnalogOutput(int ichan){
@@ -1871,15 +1871,15 @@ int slsDetector::digitalTest( digitalTestMode mode, int imod){
   int ichip=ichan/nChans;
   ichan-=ichip*(nChans);
   enableAnalogOutput(imod,ichip,ichan);
-  
+
   };
   int slsDetector::enableAnalogOutput(int imod, int ichip, int ichan){
   std::cout<< "function not yet implemented " << std::endl;
   };
 */
-/* 
-   give a train of calibration pulses 
-*/ 
+/*
+   give a train of calibration pulses
+*/
 /*
   int slsDetector::giveCalibrationPulse(double vcal, int npulses){
   std::cout<< "function not yet implemented " << std::endl;
@@ -2101,10 +2101,10 @@ dacs_t slsDetector::getADC(dacIndex index, int imod){
 
 
 
-}; 
+};
 
-/* 
-   configure single channel 
+/*
+   configure single channel
    enum channelRegisterBit {
    COMPARATOR_ENABLE_OFF,
    ANALOG_SIGNAL_ENABLE_OFF,
@@ -2145,7 +2145,7 @@ int slsDetector::setChannel(int64_t reg, int ichan, int ichip, int imod){
   myChan.chip=ichip;//ichi;
   myChan.module=imod;//im;
   myChan.reg=reg;
-  ret=setChannel(myChan);	 
+  ret=setChannel(myChan);
   //     }
   // }
   // }
@@ -2286,7 +2286,7 @@ slsDetectorDefs::sls_detector_channel  slsDetector::getChannel(int ichan, int ic
   return myChan;
 }
 
-/* 
+/*
    configure chip
    enum chipRegisterBit {
    ENABLE_ANALOG_OUTPUT,
@@ -2321,7 +2321,7 @@ int slsDetector::setChip(int reg, int ichip, int imod){
       myChip.chip=ichi;
       myChip.module=im;
       if (chanregs)
-	myChip.chanregs=(chanregs+ichi*thisDetector->nChans+im*thisDetector->nChans*thisDetector->nChips); 
+	myChip.chanregs=(chanregs+ichi*thisDetector->nChans+im*thisDetector->nChans*thisDetector->nChips);
       else {
 	for (int i=0; i<thisDetector->nChans; i++)
 	  chregs[i]=-1;
@@ -2432,8 +2432,8 @@ slsDetectorDefs::sls_detector_chip slsDetector::getChip(int ichip, int imod){
 
   return myChip;
 };
- 
-/* 
+
+/*
    configure module
    enum moduleRegisterBit {
    I_DON_T_KNOW,
@@ -2443,31 +2443,31 @@ slsDetectorDefs::sls_detector_chip slsDetector::getChip(int ichip, int imod){
 
 int slsDetector::setModule(int reg, int imod){
   sls_detector_module myModule;
-  
+
 #ifdef VERBOSE
   std::cout << "slsDetector set module " << std::endl;
-#endif 
+#endif
   int charegs[thisDetector->nChans*thisDetector->nChips];
   int chiregs[thisDetector->nChips];
   dacs_t das[thisDetector->nDacs], ads[thisDetector->nAdcs];
   int mmin=imod, mmax=imod+1;
   int ret=FAIL;
-  
+
   if (imod==-1) {
     mmin=0;
     mmax=thisDetector->nModsMax;
   }
 
-  
-  
+
+
   for (int im=mmin; im<mmax; im++) {
-     
+
     myModule.module=im;
     myModule.nchan=thisDetector->nChans;
     myModule.nchip=thisDetector->nChips;
     myModule.ndac=thisDetector->nDacs;
     myModule.nadc=thisDetector->nAdcs;
-    
+
     myModule.reg=reg;
     if (detectorModules) {
       myModule.gain=(detectorModules+im)->gain;
@@ -2478,43 +2478,43 @@ int slsDetector::setModule(int reg, int imod){
       myModule.offset=-1;
       myModule.serialnumber=-1;
     }
-    
-   
+
+
     for (int i=0; i<thisDetector->nAdcs; i++)
       ads[i]=-1;
-    
+
     if (chanregs)
       myModule.chanregs=chanregs+im*thisDetector->nChips*thisDetector->nChans;
-    else {	
+    else {
       for (int i=0; i<thisDetector->nChans*thisDetector->nChips; i++)
 	charegs[i]=-1;
       myModule.chanregs=charegs;
     }
     if (chipregs)
       myModule.chipregs=chanregs+im*thisDetector->nChips;
-    else { 
+    else {
       for (int ichip=0; ichip<thisDetector->nChips; ichip++)
 	chiregs[ichip]=-1;
       myModule.chipregs=chiregs;
     }
     if (dacs)
       myModule.dacs=dacs+im*thisDetector->nDacs;
-    else {   
+    else {
       for (int i=0; i<thisDetector->nDacs; i++)
-	das[i]=-1; 
+	das[i]=-1;
       myModule.dacs=das;
     }
     if (adcs)
       myModule.adcs=adcs+im*thisDetector->nAdcs;
-    else {   
+    else {
       for (int i=0; i<thisDetector->nAdcs; i++)
 	ads[i]=-1;
-      myModule.adcs=ads; 
+      myModule.adcs=ads;
     }
     ret=setModule(myModule);
   }
   return ret;
-  
+
 
 };
 
@@ -2602,7 +2602,7 @@ slsDetectorDefs::sls_detector_module  *slsDetector::getModule(int imod){
 
 #ifdef VERBOSE
   std::cout << "slsDetector get module " << std::endl;
-#endif 
+#endif
 
   int fnum=F_GET_MODULE;
   sls_detector_module *myMod=createModule();
@@ -2708,16 +2708,16 @@ slsDetectorDefs::sls_detector_module  *slsDetector::getModule(int imod){
   really needed?
 
   int slsDetector::setCalibration(int imod,  detectorSettings isettings, double gain, double offset){
-  std::cout<< "function not yet implemented " << std::endl; 
-  
-  
+  std::cout<< "function not yet implemented " << std::endl;
+
+
 
   return OK;
 
   }
   int slsDetector::getCalibration(int imod,  detectorSettings isettings, double &gain, double &offset){
 
-  std::cout<< "function not yet implemented " << std::endl; 
+  std::cout<< "function not yet implemented " << std::endl;
 
 
 
@@ -2748,16 +2748,16 @@ int slsDetector::getThresholdEnergy(int imod){
 	controlSocket->ReceiveDataOnly(mess,sizeof(mess));
 	std::cout<<  mess << std::endl;
       } else {
-	controlSocket->ReceiveDataOnly(&retval,sizeof(retval));  
+	controlSocket->ReceiveDataOnly(&retval,sizeof(retval));
 	thisDetector->currentThresholdEV=retval;
       }
       controlSocket->Disconnect();
       if (ret==FORCE_UPDATE)
 	updateDetector();
     }
-  } 
+  }
   return  thisDetector->currentThresholdEV;
-};  
+};
 
 int slsDetector::setThresholdEnergy(int e_eV,  int imod, detectorSettings isettings){
 
@@ -2783,8 +2783,8 @@ int slsDetector::setThresholdEnergy(int e_eV,  int imod, detectorSettings isetti
 #ifdef VERBOSE
 	std::cout<< "Detector returned OK "<< std::endl;
 #endif
-	controlSocket->ReceiveDataOnly(&retval,sizeof(retval));  
-	thisDetector->currentThresholdEV=retval;   
+	controlSocket->ReceiveDataOnly(&retval,sizeof(retval));
+	thisDetector->currentThresholdEV=retval;
       }
       controlSocket->Disconnect();
       if (ret==FORCE_UPDATE)
@@ -2794,14 +2794,14 @@ int slsDetector::setThresholdEnergy(int e_eV,  int imod, detectorSettings isetti
     thisDetector->currentThresholdEV=e_eV;
   }
   return   thisDetector->currentThresholdEV;
-};  
+};
 
 /*
   select detector settings
 */
 slsDetectorDefs::detectorSettings  slsDetector::getSettings(int imod){
 
-   
+
   int fnum=F_SET_SETTINGS;
   int ret=FAIL;
   char mess[100];
@@ -3060,9 +3060,9 @@ int slsDetector::updateDetectorNoWait() {
   }
 
   thisDetector->nMods=thisDetector->nMod[Y]*thisDetector->nMod[X];
-  if (thisDetector->nModsMax<thisDetector->nMods) 
+  if (thisDetector->nModsMax<thisDetector->nMods)
     thisDetector->nModsMax=thisDetector->nMods;
-	
+
   if (thisDetector->nModMax[X]<thisDetector->nMod[X])
     thisDetector->nModMax[X]=thisDetector->nMod[X];
 
@@ -3243,21 +3243,21 @@ slsDetectorDefs::runStatus slsDetector::getRunStatus(){
 	stopSocket->ReceiveDataOnly(&ret,sizeof(ret));
 
 	//	cout << "________:::____________" << ret << endl;
-	
+
 	if (ret==FAIL) {
 	  stopSocket->ReceiveDataOnly(mess,sizeof(mess));
 	  std::cout<< "Detector returned error: " << mess << std::endl;
 	} else {
-	  stopSocket->ReceiveDataOnly(&retval,sizeof(retval));  
-	  //	cout << "____________________" << retval << endl; 
-	} 
+	  stopSocket->ReceiveDataOnly(&retval,sizeof(retval));
+	  //	cout << "____________________" << retval << endl;
+	}
 	stopSocket->Disconnect();
       }
     }
   }
   return retval;
 
-  
+
 };
 
 
@@ -3351,7 +3351,7 @@ int* slsDetector::getDataFromDetector(int *retval){
 
 
 int* slsDetector::readAll(){
-  
+
   int fnum=F_READ_ALL;
   int* retval; // check what we return!
 
@@ -3391,11 +3391,11 @@ int* slsDetector::readAll(){
 int slsDetector::readAllNoWait(){
 
   int fnum= F_READ_ALL;
-  
+
 #ifdef VERBOSE
   std::cout<< "Reading all frames "<< std::endl;
 #endif
-  
+
   if (thisDetector->onlineFlag==ONLINE_FLAG) {
     if (connectControl() == OK){
       controlSocket->SendDataOnly(&fnum,sizeof(fnum));
@@ -3414,12 +3414,12 @@ int slsDetector::readAllNoWait(){
 
 int* slsDetector::startAndReadAll(){
 
- 
+
   int* retval;
 #ifdef VERBOSE
   int i=0;
 #endif
-  startAndReadAllNoWait();  
+  startAndReadAllNoWait();
   //#ifdef VERBOSE
   // std::cout<< "started" << std::endl;
   //#endif
@@ -3437,7 +3437,7 @@ int* slsDetector::startAndReadAll(){
 #ifdef VERBOSE
   std::cout<< "received "<< i<< " frames" << std::endl;
   //#else
-  // std::cout << std::endl; 
+  // std::cout << std::endl;
 #endif
   return dataQueue.front(); // check what we return!
   /* while ((retval=getDataFromDetectorNoWait()))
@@ -3447,7 +3447,7 @@ int* slsDetector::startAndReadAll(){
      #endif
      return dataQueue.front(); // check what we return!
   */
-  
+
 };
 
 
@@ -3455,7 +3455,7 @@ int* slsDetector::startAndReadAll(){
 int slsDetector::startAndReadAllNoWait(){
 
   int fnum= F_START_AND_READ_ALL;
-  
+
 #ifdef VERBOSE
   std::cout<< "Starting and reading all frames "<< std::endl;
 #endif
@@ -3493,8 +3493,8 @@ int slsDetector::startAndReadAllNoWait(){
 
 
 
-/* 
-   set or read the acquisition timers 
+/*
+   set or read the acquisition timers
    enum timerIndex {
    FRAME_NUMBER,
    ACQUISITION_TIME,
@@ -3507,17 +3507,17 @@ int slsDetector::startAndReadAllNoWait(){
    }
 */
 int64_t slsDetector::setTimer(timerIndex index, int64_t t){
-  
 
-  int fnum=F_SET_TIMER;
+
+  int fnum=F_SET_TIMER,fnum2=F_SET_RECEIVER_TIMER;
   int64_t retval = -1;
   int64_t ut = -2;
   char mess[100];
   int ret=OK;
   int n=0;
-  
+
   if (index!=MEASUREMENTS_NUMBER) {
-  
+
 
 #ifdef VERBOSE
     std::cout<< "Setting timer "<< index << " to " <<  t << "ns/value" << std::endl;
@@ -3533,16 +3533,16 @@ int64_t slsDetector::setTimer(timerIndex index, int64_t t){
 	  std::cout<< "Detector returned error: " << mess << std::endl;
 	  setErrorMask((getErrorMask())|(DETECTOR_TIMER_VALUE_NOT_SET));
 	} else {
-	  controlSocket->ReceiveDataOnly(&retval,sizeof(retval)); 
+	  controlSocket->ReceiveDataOnly(&retval,sizeof(retval));
 	  thisDetector->timerValue[index]=retval;
-	} 
+	}
 	controlSocket->Disconnect();
 	if (ret==FORCE_UPDATE) {
 	  updateDetector();
 #ifdef VERBOSE
 	  std::cout<< "Updated!" << std::endl;
 #endif
-	  
+
 	}
       }
     } else {
@@ -3555,7 +3555,7 @@ int64_t slsDetector::setTimer(timerIndex index, int64_t t){
   } else {
     if (t>=0)
       thisDetector->timerValue[index]=t;
-  }	
+  }
 #ifdef VERBOSE
   std::cout<< "Timer " << index << " set to  "<< thisDetector->timerValue[index] << "ns"  << std::endl;
 #endif
@@ -3564,7 +3564,7 @@ int64_t slsDetector::setTimer(timerIndex index, int64_t t){
     setDynamicRange();
     //cout << "Changing probes: data size = " << thisDetector->dataBytes <<endl;
   }
-  
+
   /* set progress */
   if ((index==FRAME_NUMBER) || (index==CYCLES_NUMBER)) {
     setTotalProgress();
@@ -3601,7 +3601,7 @@ int64_t slsDetector::setTimer(timerIndex index, int64_t t){
 
 
 			  if (connectData() == OK)
-				  ret=thisReceiver->sendIntArray(fnum,ut,args);
+				  ret=thisReceiver->sendIntArray(fnum2,ut,args);
 			  if((ut != retval)|| (ret==FAIL)){
 				  ret = FAIL;
 				  if(index==FRAME_PERIOD){
@@ -3622,7 +3622,7 @@ int64_t slsDetector::setTimer(timerIndex index, int64_t t){
 	  }
 }
   return thisDetector->timerValue[index];
-  
+
 };
 
 int slsDetector::lockServer(int lock) {
@@ -3630,7 +3630,7 @@ int slsDetector::lockServer(int lock) {
   int retval=-1;
   int ret=OK;
   char mess[100];
-  
+
   if (thisDetector->onlineFlag==ONLINE_FLAG) {
     if (connectControl() == OK){
       controlSocket->SendDataOnly(&fnum,sizeof(fnum));
@@ -3640,8 +3640,8 @@ int slsDetector::lockServer(int lock) {
 	controlSocket->ReceiveDataOnly(mess,sizeof(mess));
 	std::cout<< "Detector returned error: " << mess << std::endl;
       } else {
-	controlSocket->ReceiveDataOnly(&retval,sizeof(retval)); 
-      } 
+	controlSocket->ReceiveDataOnly(&retval,sizeof(retval));
+      }
       controlSocket->Disconnect();
       if (ret==FORCE_UPDATE)
 	updateDetector();
@@ -3653,14 +3653,14 @@ int slsDetector::lockServer(int lock) {
 
 }
 
- 
+
 string slsDetector::getLastClientIP() {
 
   int fnum=F_GET_LAST_CLIENT_IP;
   char clientName[INET_ADDRSTRLEN];
   char mess[100];
   int ret=OK;
-  
+
   if (thisDetector->onlineFlag==ONLINE_FLAG) {
     if (connectControl() == OK){
       controlSocket->SendDataOnly(&fnum,sizeof(fnum));
@@ -3669,8 +3669,8 @@ string slsDetector::getLastClientIP() {
 	controlSocket->ReceiveDataOnly(mess,sizeof(mess));
 	std::cout<< "Detector returned error: " << mess << std::endl;
       } else {
-	controlSocket->ReceiveDataOnly(clientName,sizeof(clientName)); 
-      } 
+	controlSocket->ReceiveDataOnly(clientName,sizeof(clientName));
+      }
       controlSocket->Disconnect();
       if (ret==FORCE_UPDATE)
 	updateDetector();
@@ -3684,7 +3684,7 @@ string slsDetector::getLastClientIP() {
 
 int slsDetector::setPort(portType index, int num){
 
-	int fnum=F_SET_PORT;
+	int fnum=F_SET_PORT, fnum2 = F_SET_RECEIVER_PORT;
 	int retval;
 	//  uint64_t ut;
 	char mess[100];
@@ -3785,6 +3785,8 @@ int slsDetector::setPort(portType index, int num){
 		if (online) {
 			if (s) {
 				if  (s->Connect()>=0) {
+					if(s==dataSocket)
+						fnum = fnum2;
 					s->SendDataOnly(&fnum,sizeof(fnum));
 					s->SendDataOnly(&index,sizeof(index));
 					s->SendDataOnly(&num,sizeof(num));
@@ -3880,7 +3882,7 @@ int slsDetector::setPort(portType index, int num){
 
 #ifdef VERBOSE
 	cout << thisDetector->controlPort<< " " << thisDetector->receiverTCPPort << " " << thisDetector->stopPort << endl;
-#endif 
+#endif
 
 
 
@@ -3904,7 +3906,7 @@ int slsDetector::setPort(portType index, int num){
 int slsDetector::setTotalProgress() {
 
   int nf=1, npos=1, nscan[MAX_SCAN_LEVELS]={1,1}, nc=1, nm=1;
-      
+
   if (thisDetector->timerValue[FRAME_NUMBER])
     nf=thisDetector->timerValue[FRAME_NUMBER];
 
@@ -3923,7 +3925,7 @@ int slsDetector::setTotalProgress() {
 
   if ((thisDetector->nScanSteps[1]>0) && (thisDetector->actionMask & (1 << (MAX_ACTIONS+1))))
     nscan[1]=thisDetector->nScanSteps[1];
-      
+
   thisDetector->totalProgress=nf*nc*npos*nm*nscan[0]*nscan[1];
 
 #ifdef VERBOSE
@@ -3963,9 +3965,9 @@ double slsDetector::getCurrentProgress() {
   important speed parameters
 
   enum speedVariable {
-  CLOCK_DIVIDER, 
-  WAIT_STATES, 
-  SET_SIGNAL_LENGTH 
+  CLOCK_DIVIDER,
+  WAIT_STATES,
+  SET_SIGNAL_LENGTH
   };
 */
 
@@ -3993,8 +3995,8 @@ int slsDetector::setSpeed(speedVariable sp, int value) {
 	controlSocket->ReceiveDataOnly(mess,sizeof(mess));
 	std::cout<< "Detector returned error: " << mess << std::endl;
       } else {
-	controlSocket->ReceiveDataOnly(&retval,sizeof(retval));  
-      } 
+	controlSocket->ReceiveDataOnly(&retval,sizeof(retval));
+      }
       controlSocket->Disconnect();
       if (ret==FORCE_UPDATE)
 	updateDetector();
@@ -4004,7 +4006,7 @@ int slsDetector::setSpeed(speedVariable sp, int value) {
   std::cout<< "Speed set to  "<< retval  << std::endl;
 #endif
   return retval;
-  
+
 }
 
 
@@ -4023,7 +4025,7 @@ int slsDetector::setSpeed(speedVariable sp, int value) {
 
 
 int64_t slsDetector::getTimeLeft(timerIndex index){
-  
+
 
   int fnum=F_GET_TIME_LEFT;
   int64_t retval;
@@ -4043,8 +4045,8 @@ int64_t slsDetector::getTimeLeft(timerIndex index){
 	  stopSocket->ReceiveDataOnly(mess,sizeof(mess));
 	  std::cout<< "Detector returned error: " << mess << std::endl;
 	} else {
-	  stopSocket->ReceiveDataOnly(&retval,sizeof(retval)); 
-	}   
+	  stopSocket->ReceiveDataOnly(&retval,sizeof(retval));
+	}
 	stopSocket->Disconnect();
       }
     }
@@ -4053,7 +4055,7 @@ int64_t slsDetector::getTimeLeft(timerIndex index){
   std::cout<< "Time left is  "<< retval << std::endl;
 #endif
   return retval;
-  
+
 };
 
 
@@ -4061,7 +4063,7 @@ int64_t slsDetector::getTimeLeft(timerIndex index){
 int slsDetector::setDynamicRange(int n){
 
   // cout << "single "  << endl;
-  int fnum=F_SET_DYNAMIC_RANGE;
+  int fnum=F_SET_DYNAMIC_RANGE,fnum2=F_SET_RECEIVER_DYNAMIC_RANGE;
   int retval=-1,retval1;
   char mess[100];
   int ret=OK;
@@ -4080,7 +4082,7 @@ int slsDetector::setDynamicRange(int n){
 	controlSocket->ReceiveDataOnly(mess,sizeof(mess));
 	std::cout<< "Detector returned error: " << mess << std::endl;
       } else {
-	controlSocket->ReceiveDataOnly(&retval,sizeof(retval)); 
+	controlSocket->ReceiveDataOnly(&retval,sizeof(retval));
       }
       controlSocket->Disconnect();
       if (ret==FORCE_UPDATE)
@@ -4091,7 +4093,7 @@ int slsDetector::setDynamicRange(int n){
       thisDetector->dynamicRange=n;
     retval=thisDetector->dynamicRange;
   }
-    
+
   if (ret!=FAIL && retval>0) {
     /* checking the number of probes to chose the data size */
 
@@ -4105,10 +4107,10 @@ int slsDetector::setDynamicRange(int n){
 
     if (retval==32)
       thisDetector->dynamicRange=24;
-    else 
+    else
       thisDetector->dynamicRange=retval;
-    
-    
+
+
 #ifdef VERBOSE
     std::cout<< "Dynamic range set to  "<< thisDetector->dynamicRange   << std::endl;
     std::cout<< "Data bytes "<< thisDetector->dataBytes   << std::endl;
@@ -4123,7 +4125,7 @@ int slsDetector::setDynamicRange(int n){
 			  std::cout << "Sending/Getting dynamic range to/from receiver " << retval << std::endl;
 #endif
 		  if (connectData() == OK)
-			  ret=thisReceiver->sendInt(fnum,retval1,retval);
+			  ret=thisReceiver->sendInt(fnum2,retval1,retval);
 		  if((retval1 != retval)|| (ret==FAIL)){
 			  ret = FAIL;
 			  cout << "ERROR:Acquisition Period in receiver set incorrectly to " << retval1 << " instead of " << retval << endl;
@@ -4231,7 +4233,7 @@ int slsDetector::sendROI(int n,ROI roiLimits[]){
 
 
 /*
-   
+
 enum readOutFlags {
 NORMAL_READOUT,
 setReadOutFlags(STORE_IN_RAM,
@@ -4239,12 +4241,12 @@ READ_HITS,
 ZERO_COMPRESSION,
 BACKGROUND_CORRECTION
 }{};
- 
+
 */
 
 int slsDetector::setReadOutFlags(readOutFlags flag){
 
-  
+
   int fnum=F_SET_READOUT_FLAGS;
   readOutFlags retval;
   char mess[100];
@@ -4263,7 +4265,7 @@ int slsDetector::setReadOutFlags(readOutFlags flag){
 	controlSocket->ReceiveDataOnly(mess,sizeof(mess));
 	std::cout<< "Detector returned error: " << mess << std::endl;
       } else {
-	controlSocket->ReceiveDataOnly(&retval,sizeof(retval)); 
+	controlSocket->ReceiveDataOnly(&retval,sizeof(retval));
 	thisDetector->roFlags=retval;
       }
       controlSocket->Disconnect();
@@ -4292,7 +4294,7 @@ int slsDetector::setReadOutFlags(readOutFlags flag){
   }{};
 */
 int slsDetector::executeTrimming(trimMode mode, int par1, int par2, int imod){
-  
+
   int fnum= F_EXECUTE_TRIMMING;
   int retval=FAIL;
   char mess[100];
@@ -4325,7 +4327,7 @@ int slsDetector::executeTrimming(trimMode mode, int par1, int par2, int imod){
 	std::cout<< "Detector trimmed "<< ret   << std::endl;
 #endif
 	/*
-	  controlSocket->ReceiveDataOnly(&retval,sizeof(retval)); 
+	  controlSocket->ReceiveDataOnly(&retval,sizeof(retval));
 	  thisDetector->roFlags=retval;
 	*/
 	retval=ret;
@@ -4346,7 +4348,7 @@ double* slsDetector::decodeData(int *datain, double *fdata) {
     dataout=fdata;
   else
     dataout=new double[thisDetector->nChans*thisDetector->nChips*thisDetector->nMods];
-  
+
   const int bytesize=8;
 
   int ival=0;
@@ -4398,13 +4400,13 @@ double* slsDetector::decodeData(int *datain, double *fdata) {
 	dataout[ichan]=ival;
       }
       break;
-    default:    
+    default:
       for (ichan=0; ichan<nch; ichan++) {
 	ival=datain[ichan]&0xffffff;
 	dataout[ichan]=ival;
       }
     }
-  } else { 
+  } else {
     for (ichan=0; ichan<nch; ichan++) {
       dataout[ichan]=datain[ichan];
     }
@@ -4418,7 +4420,7 @@ double* slsDetector::decodeData(int *datain, double *fdata) {
 
   return dataout;
 }
- 
+
 //Correction
 /*
   enum correctionFlags {
@@ -4454,16 +4456,16 @@ int slsDetector::setFlatFieldCorrection(string fname)
 
 
 
-  } else { 
+  } else {
 #ifdef VERBOSE
     std::cout<< "Setting flat field correction from file " << fname << std::endl;
 #endif
 
-     
+
     sprintf(ffffname,"%s/%s",thisDetector->flatFieldDir,fname.c_str());
     nch=readDataFile(string(ffffname),data);
     if (nch>0) {
-       
+
       //???? bad ff chans?
       int nm=getNMods();
       int chpm[nm];
@@ -4473,19 +4475,19 @@ int slsDetector::setFlatFieldCorrection(string fname)
 	mMask[im]=im;
       }
       fillModuleMask(mMask);
-      
+
       if ((postProcessingFuncs::calculateFlatField(&nm, chpm, mMask, badChannelMask, data, ffcoefficients, fferrors))>=0) {
 	strcpy(thisDetector->flatFieldFile,fname.c_str());
-	 
-	
+
+
 	thisDetector->correctionMask|=(1<<FLAT_FIELD_CORRECTION);
-	 
+
 	setFlatFieldCorrection(ffcoefficients, fferrors);
-	 
-      } 
+
+      }
     }  else {
       std::cout<< "Flat field from file " << fname << " is not valid " << nch << std::endl;
-      
+
     }
   }
 
@@ -4497,7 +4499,7 @@ int slsDetector::fillModuleMask(int *mM){
   if (mM)
     for (int i=0; i<getNMods(); i++)
       mM[i]=i;
-  
+
   return getNMods();
 }
 
@@ -4521,7 +4523,7 @@ int slsDetector::setFlatFieldCorrection(double *corr, double *ecorr) {
     thisDetector->correctionMask&=~(1<<FLAT_FIELD_CORRECTION);
 #ifdef VERBOSE
   cout << "set ff corrections " << ((thisDetector->correctionMask)&(1<<FLAT_FIELD_CORRECTION)) << endl;
-#endif  
+#endif
 
 
   return thisDetector->correctionMask&(1<<FLAT_FIELD_CORRECTION);
@@ -4535,7 +4537,7 @@ int slsDetector::setFlatFieldCorrection(double *corr, double *ecorr) {
 
 
 
- 
+
 int slsDetector::getFlatFieldCorrection(double *corr, double *ecorr) {
   if (thisDetector->correctionMask&(1<<FLAT_FIELD_CORRECTION)) {
 #ifdef VERBOSE
@@ -4674,16 +4676,16 @@ int slsDetector::rateCorrect(double* datain, double *errin, double* dataout, dou
     std::cout<< "Rate correcting data with dead time "<< tau << " and acquisition time "<< t << std::endl;
 #endif
     for (int ichan=0; ichan<thisDetector->nMod[X]*thisDetector->nMod[Y]*thisDetector->nChans*thisDetector->nChips; ichan++) {
-      
+
       if (errin==NULL) {
 	e=sqrt(datain[ichan]);
       } else
 	e=errin[ichan];
-      
+
       postProcessingFuncs::rateCorrect(datain[ichan], e, dataout[ichan], errout[ichan], tau, t);
     }
   }
-  
+
   return 0;
 };
 
@@ -4694,14 +4696,14 @@ int slsDetector::rateCorrect(double* datain, double *errin, double* dataout, dou
 
 
 int slsDetector::setBadChannelCorrection(string fname){
-  
+
  // int nbadmod;
   int ret=0;
   //int badchanlist[MAX_BADCHANS];
   //int off;
 
   string fn=fname;
-  
+
   if (fname=="default")
     fname=string(badChanFile);
 
@@ -4790,11 +4792,11 @@ int slsDetector::getBadChannelCorrection(int *bad) {
 
 
 
-int slsDetector::exitServer(){  
-  
+int slsDetector::exitServer(){
+
   int retval;
   int fnum=F_EXIT_SERVER;
- 
+
   if (thisDetector->onlineFlag==ONLINE_FLAG) {
     if (controlSocket) {
       controlSocket->Connect();
@@ -4840,7 +4842,7 @@ char* slsDetector::setNetworkParameter(networkParameter index, string value) {
 
 
 char* slsDetector::getNetworkParameter(networkParameter index) {
-  
+
   switch (index) {
   case DETECTOR_MAC:
     return getDetectorMAC();
@@ -5010,7 +5012,7 @@ int slsDetector::setReceiverUDPPort(int udpport){
 int slsDetector::setUDPConnection(){
 
 	int ret = FAIL;
-	int fnum = F_SETUP_UDP;
+	int fnum = F_SETUP_RECEIVER_UDP;
 	char args[2][MAX_STR_LENGTH];
 	char retval[MAX_STR_LENGTH]="";
 
@@ -5074,7 +5076,7 @@ int slsDetector::setUDPConnection(){
 int slsDetector::configureMAC(){
   int i;
   int ret=FAIL;
-  int fnum=F_CONFIGURE_MAC;
+  int fnum=F_CONFIGURE_MAC,fnum2=F_RECEIVER_SHORT_FRAME;
   char mess[100];
   char arg[5][50];
   char cword[50]="", *pcword;
@@ -5196,6 +5198,7 @@ int slsDetector::configureMAC(){
       setFramesPerFile(MAX_FRAMES_PER_FILE);
     else
       setFramesPerFile(SHORT_MAX_FRAMES_PER_FILE);
+
     //connect to receiver
     if(thisDetector->receiverOnlineFlag==ONLINE_FLAG){
       if(setReceiverOnline(ONLINE_FLAG)==ONLINE_FLAG){
@@ -5203,7 +5206,7 @@ int slsDetector::configureMAC(){
 	std::cout << "Sending adc val to receiver " << retval << std::endl;
 #endif
 	if (connectData() == OK)
-		ret=thisReceiver->sendInt(fnum,retval,retval);
+		ret=thisReceiver->sendInt(fnum2,retval,retval);
 	if(ret==FAIL)
 	  setErrorMask((getErrorMask())|(COULD_NOT_CONFIGURE_MAC));
       }
@@ -5417,14 +5420,14 @@ int slsDetector::resetCounterBlock(int startACQ){
 
 
 int slsDetector::readConfigurationFile(string const fname){
-  
+
 
 
   string ans;
   string str;
   ifstream infile;
   //char *args[1000];
-    
+
   string sargname, sargval;
   int iline=0;
 #ifdef VERBOSE
@@ -5447,7 +5450,7 @@ int slsDetector::readConfigurationFile(string const fname){
 
 
 int slsDetector::readConfigurationFile(ifstream &infile){
-  
+
 
 
 
@@ -5459,7 +5462,7 @@ int slsDetector::readConfigurationFile(ifstream &infile){
   int interrupt=0;
   char *args[100];
   char myargs[1000][1000];
-    
+
   string sargname, sargval;
   int iline=0;
   while (infile.good() and interrupt==0) {
@@ -5487,7 +5490,7 @@ int slsDetector::readConfigurationFile(ifstream &infile){
       while (ssstr.good()) {
 	ssstr >> sargname;
 	//if (ssstr.good()) {
-#ifdef VERBOSE 
+#ifdef VERBOSE
 	std::cout<< iargval << " " << sargname  << std::endl;
 #endif
 	strcpy(myargs[iargval],sargname.c_str());
@@ -5496,7 +5499,7 @@ int slsDetector::readConfigurationFile(ifstream &infile){
 	//}
       }
       ans=cmd->executeLine(iargval,args,PUT_ACTION);
-#ifdef VERBOSE 
+#ifdef VERBOSE
       std::cout<< ans << std::endl;
 #endif
     }
@@ -5517,11 +5520,11 @@ int slsDetector::readConfigurationFile(ifstream &infile){
 
 
 int slsDetector::writeConfigurationFile(string const fname){
-  
+
 
   ofstream outfile;
   int ret;
-  
+
   outfile.open(fname.c_str(),ios_base::out);
   if (outfile.is_open()) {
     ret=writeConfigurationFile(outfile);
@@ -5541,7 +5544,7 @@ int slsDetector::writeConfigurationFile(string const fname){
 
 
 int slsDetector::writeConfigurationFile(ofstream &outfile, int id){
-  
+
   slsDetectorCommand *cmd=new slsDetectorCommand(this);
   int nvar=15;
 
@@ -5565,7 +5568,7 @@ int slsDetector::writeConfigurationFile(ofstream &outfile, int id){
   // to be added in the future
   //    "trimen",
   //   "receiverTCPPort",
-	
+
   if ((thisDetector->myDetectorType==GOTTHARD)||(thisDetector->myDetectorType==MOENCH)) {
 	names[0]= "hostname";
 	names[1]= "port";
@@ -5593,14 +5596,14 @@ int slsDetector::writeConfigurationFile(ofstream &outfile, int id){
   int iv=0;
   char *args[100];
   char myargs[100][1000];
-  
+
   for (int ia=0; ia<100; ia++) {
     //args[ia]=new char[1000];
-    
+
     args[ia]=myargs[ia];
   }
-  
-  
+
+
   for (iv=0; iv<nvar; iv++) {
     cout << iv << " " << names[iv] << endl;
     if (names[iv]=="extsig") {
@@ -5609,7 +5612,7 @@ int slsDetector::writeConfigurationFile(ofstream &outfile, int id){
 
 	if (id>=0)
 	  outfile << id << ":";
-	 
+
 	outfile << args[0] << " " << cmd->executeLine(1,args,GET_ACTION) << std::endl;
       }
     } else {
@@ -5660,7 +5663,7 @@ int slsDetector::loadSettingsFile(string fname, int imod) {
     ostringstream ostfn;
     ostfn << fname;
     if (fname.find(".sn")==string::npos && fname.find(".trim")==string::npos && fname.find(".settings")==string::npos) {
-      ostfn << ".sn"  << setfill('0') << setw(3) << hex << getId(MODULE_SERIAL_NUMBER, im); 
+      ostfn << ".sn"  << setfill('0') << setw(3) << hex << getId(MODULE_SERIAL_NUMBER, im);
       fn=ostfn.str();
     }
     if (fname.find(".beb")==string::npos && fname.find(".trim")==string::npos && fname.find(".settings")==string::npos) {
@@ -5675,7 +5678,7 @@ int slsDetector::loadSettingsFile(string fname, int imod) {
 	myMod->reg=thisDetector->currentSettings;
       setModule(*myMod);
       deleteModule(myMod);
-    } else	
+    } else
       return FAIL;
   }
   return OK;
@@ -5772,12 +5775,12 @@ int slsDetector::saveCalibrationFile(string fname, int imod) {
 
 
 
-/* returns if the detector is Master, slave or nothing 
+/* returns if the detector is Master, slave or nothing
    \param flag can be GET_MASTER, NO_MASTER, IS_MASTER, IS_SLAVE
    \returns master flag of the detector
 */
 slsDetectorDefs::masterFlags  slsDetector::setMaster(masterFlags flag) {
-  
+
 
   int fnum=F_SET_MASTER;
   masterFlags retval=GET_MASTER;
@@ -5787,7 +5790,7 @@ slsDetectorDefs::masterFlags  slsDetector::setMaster(masterFlags flag) {
 #ifdef VERBOSE
   std::cout<< "Setting master flags to "<< flag << std::endl;
 #endif
-  
+
   if (thisDetector->onlineFlag==ONLINE_FLAG) {
     if (connectControl() == OK){
       controlSocket->SendDataOnly(&fnum,sizeof(fnum));
@@ -5797,13 +5800,13 @@ slsDetectorDefs::masterFlags  slsDetector::setMaster(masterFlags flag) {
 	controlSocket->ReceiveDataOnly(mess,sizeof(mess));
 	std::cout<< "Detector returned error: " << mess << std::endl;
       } else {
-	controlSocket->ReceiveDataOnly(&retval,sizeof(retval)); 
+	controlSocket->ReceiveDataOnly(&retval,sizeof(retval));
       }
       controlSocket->Disconnect();
       if (ret==FORCE_UPDATE)
 	updateDetector();
     }
-  } 
+  }
 
 #ifdef VERBOSE
   std::cout<< "Master flag set to  "<< retval   << std::endl;
@@ -5817,12 +5820,12 @@ slsDetectorDefs::masterFlags  slsDetector::setMaster(masterFlags flag) {
 /*
   Sets/gets the synchronization mode of the various detectors
   \param sync syncronization mode can be GET_SYNCHRONIZATION_MODE, NO_SYNCHRONIZATION, MASTER_GATES, MASTER_TRIGGERS, SLAVE_STARTS_WHEN_MASTER_STOPS
-  \returns current syncronization mode   
-*/   
+  \returns current syncronization mode
+*/
 slsDetectorDefs::synchronizationMode slsDetector::setSynchronization(synchronizationMode flag) {
-  
 
-  
+
+
   int fnum=F_SET_SYNCHRONIZATION_MODE;
   synchronizationMode retval=GET_SYNCHRONIZATION_MODE;
   char mess[100];
@@ -5831,7 +5834,7 @@ slsDetectorDefs::synchronizationMode slsDetector::setSynchronization(synchroniza
 #ifdef VERBOSE
   std::cout<< "Setting synchronization mode to "<< flag << std::endl;
 #endif
-  
+
   if (thisDetector->onlineFlag==ONLINE_FLAG) {
     if (connectControl() == OK){
       controlSocket->SendDataOnly(&fnum,sizeof(fnum));
@@ -5841,13 +5844,13 @@ slsDetectorDefs::synchronizationMode slsDetector::setSynchronization(synchroniza
 	controlSocket->ReceiveDataOnly(mess,sizeof(mess));
 	std::cout<< "Detector returned error: " << mess << std::endl;
       } else {
-	controlSocket->ReceiveDataOnly(&retval,sizeof(retval)); 
+	controlSocket->ReceiveDataOnly(&retval,sizeof(retval));
       }
       controlSocket->Disconnect();
       if (ret==FORCE_UPDATE)
 	updateDetector();
     }
-  } 
+  }
 
 #ifdef VERBOSE
   std::cout<< "Readout flag set to  "<< retval   << std::endl;
@@ -5993,7 +5996,7 @@ int slsDetector::setReceiverTCPSocket(string const name, int const receiver_port
 
 
 string slsDetector::setFilePath(string s) {
-	int fnum = F_SET_FILE_PATH;
+	int fnum = F_SET_RECEIVER_FILE_PATH;
 	int ret = FAIL;
 	char arg[MAX_STR_LENGTH];
 	char retval[MAX_STR_LENGTH] = "";
@@ -6032,7 +6035,7 @@ string slsDetector::setFilePath(string s) {
 
 
 string slsDetector::setFileName(string s) {
-	int fnum=F_SET_FILE_NAME;
+	int fnum=F_SET_RECEIVER_FILE_NAME;
 	int ret = FAIL;
 	char arg[MAX_STR_LENGTH];
 	char retval[MAX_STR_LENGTH]="";
@@ -6070,7 +6073,7 @@ string slsDetector::setFileName(string s) {
 
 
 int slsDetector::setFileIndex(int i) {
-	int fnum=F_SET_FILE_INDEX;
+	int fnum=F_SET_RECEIVER_FILE_INDEX;
 	int ret = FAIL;
 	int retval=-1;
 	int arg = i;
@@ -6157,7 +6160,7 @@ int slsDetector::stopReceiver(){
 
 
 slsDetectorDefs::runStatus slsDetector::startReceiverReadout(){
-	int fnum=F_START_READOUT;
+	int fnum=F_START_RECEIVER_READOUT;
 	int ret = FAIL;
 	int retval=-1;
 	runStatus s=ERROR;
@@ -6237,7 +6240,7 @@ slsDetectorDefs::runStatus slsDetector::getReceiverStatus(){
 
 
 int slsDetector::getFramesCaughtByReceiver(){
-	int fnum=F_GET_FRAMES_CAUGHT;
+	int fnum=F_GET_RECEIVER_FRAMES_CAUGHT;
 	int ret = FAIL;
 	int retval=-1;
 
@@ -6257,7 +6260,7 @@ int slsDetector::getFramesCaughtByReceiver(){
 
 
 int slsDetector::getReceiverCurrentFrameIndex(){
-	int fnum=F_GET_FRAME_INDEX;
+	int fnum=F_GET_RECEIVER_FRAME_INDEX;
 	int ret = FAIL;
 	int retval=-1;
 
@@ -6278,7 +6281,7 @@ int slsDetector::getReceiverCurrentFrameIndex(){
 
 
 int slsDetector::resetFramesCaught(){
-	int fnum=F_RESET_FRAMES_CAUGHT;
+	int fnum=F_RESET_RECEIVER_FRAMES_CAUGHT;
 	int ret = FAIL;
 	char mess[] = "";
 
@@ -6300,7 +6303,7 @@ int slsDetector::resetFramesCaught(){
 
 
 int* slsDetector::readFrameFromReceiver(char* fName, int &fIndex){
-	int fnum=F_READ_FRAME;
+	int fnum=F_READ_RECEIVER_FRAME;
 	int nel=thisDetector->dataBytes/sizeof(int);
 	int* retval=new int[nel];
 	int ret=FAIL;
@@ -6353,7 +6356,7 @@ int* slsDetector::readFrameFromReceiver(char* fName, int &fIndex){
 
 
 int slsDetector::lockReceiver(int lock){
-	int fnum=F_LOCK_SERVER;
+	int fnum=F_LOCK_RECEIVER;
 	int ret = FAIL;
 	int retval=-1;
 	int arg=lock;
@@ -6378,7 +6381,7 @@ int slsDetector::lockReceiver(int lock){
 
 
 string slsDetector::getReceiverLastClientIP(){
-	int fnum=F_GET_LAST_CLIENT_IP;
+	int fnum=F_GET_LAST_RECEIVER_CLIENT_IP;
 	int ret = FAIL;
 	char retval[INET_ADDRSTRLEN]="";
 
@@ -6424,7 +6427,7 @@ int slsDetector::updateReceiverNoWait() {
 
 
 int slsDetector::updateReceiver() {
-	int fnum=F_UPDATE_CLIENT;
+	int fnum=F_UPDATE_RECEIVER_CLIENT;
 	int ret=OK;
 	char mess[100];
 
@@ -6453,7 +6456,7 @@ int slsDetector::updateReceiver() {
 int slsDetector::exitReceiver(){
 
   int retval;
-  int fnum=F_EXIT_SERVER;
+  int fnum=F_EXIT_RECEIVER;
 
   if (setReceiverOnline(ONLINE_FLAG)==ONLINE_FLAG) {
     if (dataSocket) {
@@ -6477,7 +6480,7 @@ int slsDetector::exitReceiver(){
 
 
 int slsDetector::enableWriteToFile(int enable){
-	int fnum=F_ENABLE_FILE_WRITE;
+	int fnum=F_ENABLE_RECEIVER_FILE_WRITE;
 	int ret = FAIL;
 	int retval=-1;
 	int arg = enable;
@@ -6507,7 +6510,7 @@ int slsDetector::enableWriteToFile(int enable){
 
 
 int slsDetector::overwriteFile(int enable){
-	int fnum=F_ENABLE_OVERWRITE;
+	int fnum=F_ENABLE_RECEIVER_OVERWRITE;
 	int ret = FAIL;
 	int retval=-1;
 	int arg = enable;
@@ -6537,7 +6540,7 @@ int slsDetector::overwriteFile(int enable){
 
 
 int slsDetector::setFrameIndex(int index){
-	int fnum=F_SET_FRAME_INDEX;
+	int fnum=F_SET_RECEIVER_FRAME_INDEX;
 	int ret = FAIL;
 	int retval=-1;
 	int arg = index;
@@ -6635,7 +6638,7 @@ int slsDetector::setReadReceiverFrequency(int getFromReceiver,int i){
 
 
 int slsDetector::enableReceiverCompression(int i){
-	int fnum=F_ENABLE_COMPRESSION;
+	int fnum=F_ENABLE_RECEIVER_COMPRESSION;
 	int ret = FAIL;
 	int retval=-1;
 
@@ -6655,7 +6658,7 @@ int slsDetector::enableReceiverCompression(int i){
 
 
 void slsDetector::setDetectorHostname(){
-	int fnum=F_SET_DETECTOR_HOSTNAME;
+	int fnum=F_SEND_RECEIVER_DETHOSTNAME;
 	int ret = FAIL;
 	char retval[MAX_STR_LENGTH]="";
 

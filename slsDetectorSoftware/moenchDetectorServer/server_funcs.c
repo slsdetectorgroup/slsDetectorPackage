@@ -62,6 +62,11 @@ int init_detector(int b, int checkType) {
     exit(1);  
   }
 
+  //
+
+  bus_w16(CONTROL_REG, SYNC_RESET);
+  bus_w16(CONTROL_REG, 0x0);
+
   //confirm if it is really moench
   if(((bus_r(PCB_REV_REG) & DETECTOR_TYPE_MASK)>>DETECTOR_TYPE_OFFSET) != MOENCH_MODULE ){
 	  if(checkType){
@@ -83,7 +88,10 @@ int init_detector(int b, int checkType) {
 	 printf("\nBoard Revision:0x%x\n",(bus_r(PCB_REV_REG)&BOARD_REVISION_MASK));
     initDetector();
     printf("Initializing Detector\n");
+    bus_w16(CONTROL_REG, SYNC_RESET); // reset registers
 #endif
+
+
     testFpga();
     testRAM();
     printf("ADC_SYNC_REG:%x\n",bus_r(ADC_SYNC_REG));
@@ -2139,14 +2147,15 @@ int get_time_left(int file_des) {
   }
   
 
-#ifdef VERBOSE
+  //#ifdef VERBOSE
 
   printf("getting time left on timer %d \n",ind);
-#endif 
+  //#endif
 
   if (ret==OK) {
     switch(ind) {
     case FRAME_NUMBER:
+       printf("getting frames \n");
       retval=getFrames(); 
       break;
     case ACQUISITION_TIME: 
@@ -2189,10 +2198,10 @@ int get_time_left(int file_des) {
   } else if (differentClients)
       ret=FORCE_UPDATE;
 
-#ifdef VERBOSE
+  //#ifdef VERBOSE
 
   printf("time left on timer %d is %lld\n",ind, retval);
-#endif 
+  //#endif
 
   n = sendDataOnly(file_des,&ret,sizeof(ret));
   if (ret!=OK) {

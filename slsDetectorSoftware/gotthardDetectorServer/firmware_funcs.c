@@ -12,9 +12,10 @@
 #include <sys/shm.h>
 #include <sys/stat.h>
 
+#include <stdlib.h>
 
 //for memory mapping
-u_int32_t CSP0BASE;
+u_int64_t CSP0BASE;
 
 FILE *debugfp, *datafp;
 
@@ -161,7 +162,7 @@ int mapCSP0(void) {
 
 #endif
 #ifdef VIRTUAL
-  CSP0BASE = (u_int32_t)malloc(MEM_SIZE);
+  CSP0BASE = malloc(MEM_SIZE);
   printf("memory allocated\n");
 #endif
 #ifdef SHAREDMEMORY 

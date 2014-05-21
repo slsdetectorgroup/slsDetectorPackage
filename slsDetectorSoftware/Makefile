@@ -8,25 +8,19 @@ DOCDIR 		?= 	docs
 CFLAGS= -g -DC_ONLY -fPIC
 #FLAGS+=  #-DVERBOSE -DVERYVERBOSE
 
-DFLAGS= -g -DDACS_INT -DTHIS_PATH='"$(shell pwd)"' -DSLS_RECEIVER_FUNCTION_LIST #$(shell root-config --cflags --glibs)   -DMYROOT1 #-DALLFILE_DEBUG #-DMYROOT1 -DALLFILE   #-DMYROOT1 `root-config --cflags --glibs`
+DFLAGS= -g -DDACS_INT 
 
-INCLUDES?= -IcommonFiles -IslsDetector -IMySocketTCP -IusersFunctions -ImultiSlsDetector -IslsDetectorUtils -IslsDetectorCommand -IslsDetectorAnalysis -IslsReceiverInterface -IslsReceiver -I../slsDetectorCalibration -I$(ASM)
+INCLUDES?= -IcommonFiles -IslsDetector -I../slsReceiverSoftware/MySocketTCP -IusersFunctions -ImultiSlsDetector -IslsDetectorUtils -IslsDetectorCommand -IslsDetectorAnalysis -IslsReceiverInterface -I../slsReceiverSoftware/includes -I$(ASM)
 
 #EPICSFLAGS=-D EPICS -I/usr/local/epics/base/include/ -I /usr/local/epics/base/include/os/Linux/ -L /usr/local/epics/base/lib/$(EPICS_HOST_ARCH) -Wl,-R/usr/local/epics/base/lib/$(EPICS_HOST_ARCH)  -lca -lCom 
 
-SRC_CLNT=slsDetectorAnalysis/fileIO.cpp MySocketTCP/MySocketTCP.cpp usersFunctions/usersFunctions.cpp slsDetector/slsDetectorUtils.cpp slsDetector/slsDetectorCommand.cpp slsDetectorAnalysis/angularConversion.cpp slsDetectorAnalysis/angularConversionStatic.cpp slsDetectorAnalysis/energyConversion.cpp slsDetector/slsDetectorActions.cpp slsDetectorAnalysis/postProcessing.cpp slsDetector/slsDetector.cpp multiSlsDetector/multiSlsDetector.cpp slsDetector/slsDetectorUsers.cpp slsDetectorAnalysis/postProcessingFuncs.cpp slsReceiverInterface/receiverInterface.cpp slsReceiver/slsReceiverFunctionList.cpp  slsReceiver/slsReceiver_funcs.cpp  slsReceiver/slsReceiverUsers.cpp
-# slsReceiver/eigerReceiver.cpp  
+SRC_CLNT=slsDetectorAnalysis/fileIO.cpp ../slsReceiverSoftware/MySocketTCP/MySocketTCP.cpp usersFunctions/usersFunctions.cpp slsDetector/slsDetectorUtils.cpp slsDetector/slsDetectorCommand.cpp slsDetectorAnalysis/angularConversion.cpp slsDetectorAnalysis/angularConversionStatic.cpp slsDetectorAnalysis/energyConversion.cpp slsDetector/slsDetectorActions.cpp slsDetectorAnalysis/postProcessing.cpp slsDetector/slsDetector.cpp multiSlsDetector/multiSlsDetector.cpp slsDetector/slsDetectorUsers.cpp slsDetectorAnalysis/postProcessingFuncs.cpp slsReceiverInterface/receiverInterface.cpp 
 
 
 
 OBJS = $(SRC_CLNT:.cpp=.o) 
-OBJS +=  slsReceiver/eigerReceiver.o  
 
-### LEO: unused
-#HEADERS = $(SRC_CLNT:.cpp=.h) commonFiles/sls_detector_defs.h slsDetectorAnalysis/detectorData.h slsDetector/slsDetectorBase.h multiSlsDetector/multiSlsDetectorCommand.h   slsDetectorAnalysis/enCalLogClass.h  slsDetectorAnalysis/angCalLogClass.h slsDetectorAnalysis/angleConversionConstant.h  usersFunctions/angleFunction.h slsReceiverInterface/receiverInterface.h slsDetector/svnInfoLib.h slsReceiver/circularFifo.h        slsReceiver/slsReceiver_funcs.h        slsReceiver/svnInfoReceiverTmp.h slsReceiver/receiver_defs.h       slsReceiver/slsReceiverFunctionList.h  slsReceiver/slsReceiverUsers.h slsReceiver/svnInfoReceiver.h #../slsDetectorCalibration/singlePhotonDetector.h  ../slsDetectorCalibration/moenchCommonMode.h ../slsDetectorCalibration/moench02ModuleData.h ../slsDetectorCalibration/slsReceiverData.h
-
-
-.PHONY: all intdoc doc htmldoc package eigerReceiver clean
+.PHONY: all intdoc doc htmldoc package clean
 
 all: package $(SRC_CLNT)
 
@@ -63,21 +57,12 @@ gotthardVirtualServer:  $(SRC_MYTHEN_SVC)
 
 
 %.o : %.cpp %.h Makefile
-ifeq ($(EIGERSLS),yes)
-	$(CXX) -DEIGERSLS -o $@ -c $< $(INCLUDES) $(DFLAGS)  $(EIGERFLAGS) -fPIC  $(EPICSFLAGS) -L/usr/lib64/ #$(FLAGS)
-else ifeq ($(ROOTSLS),yes)
-	echo "with root"
-	$(CXX) -DROOTSLS -o $@ -c $< $(INCLUDES) $(DFLAGS)  $(ROOTFLAGS) -fPIC  $(EPICSFLAGS) -L/usr/lib64/ #$(FLAGS)
-else
-	echo "without root"
 	$(CXX) -o $@ -c $< $(INCLUDES) $(DFLAGS) -fPIC  $(EPICSFLAGS) -lpthread #$(FLAGS)
-endif
+	
 
-# LEO: not satisfied by eigerReceiver 
-package:  eigerReceiver $(OBJS) $(DESTDIR)/libSlsDetector.so $(DESTDIR)/libSlsDetector.a 
 
-eigerReceiver:
-	cd slsReceiver && make eigerReceiver
+package:  $(OBJS) $(DESTDIR)/libSlsDetector.so $(DESTDIR)/libSlsDetector.a 
+
 
 $(DESTDIR)/libSlsDetector.so: $(OBJS) 
 	$(CXX)  -shared -Wl,-soname,libSlsDetector.so -o libSlsDetector.so  $(OBJS)  -lc $(INCLUDES) $(DFLAGS) $(FLAGS) $(EPICSFLAGS)  -L/usr/lib64 -lpthread
@@ -89,7 +74,6 @@ $(DESTDIR)/libSlsDetector.a: $(OBJS)
 	mv libSlsDetector.a $(DESTDIR)
 
 clean:
-	cd slsReceiver && make clean
 	rm -rf  $(DESTDIR)/libSlsDetector.a   $(DESTDIR)/libSlsDetector.so core  docs/* slsDetectorUsersDocs $(OBJS)
 	cd 
 
@@ -99,6 +83,6 @@ install: package
 
 install_inc:
 	$(shell test -d $(DESTDIR) || mkdir -p $(DESTDIR))
-	cp -P slsDetector/slsDetectorUsers.h slsDetectorAnalysis/detectorData.h  $(DESTDIR) slsReceiver/slsReceiverUsers.h $(DESTDIR)
+	cp -P slsDetector/slsDetectorUsers.h slsDetectorAnalysis/detectorData.h  $(DESTDIR)
 
 

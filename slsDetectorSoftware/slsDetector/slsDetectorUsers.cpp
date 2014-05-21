@@ -239,6 +239,31 @@ int slsDetectorUsers::setReceiverMode(int n){
 
 
 
+int64_t slsDetectorUsers::getModuleFirmwareVersion(){
+	return myDetector->getModuleFirmwareVersion();
+}
+
+int64_t slsDetectorUsers::getModuleSerialNumber(int imod){
+	return myDetector->getModuleSerialNumber(imod);
+}
+
+int64_t slsDetectorUsers::getDetectorFirmwareVersion(){
+	return myDetector->getDetectorFirmwareVersion();
+}
+
+int64_t slsDetectorUsers::getDetectorSerialNumber(){
+	return myDetector->getDetectorSerialNumber();
+}
+
+int64_t slsDetectorUsers::getDetectorSoftwareVersion(){
+	return myDetector->getDetectorSoftwareVersion();
+}
+
+int64_t slsDetectorUsers::getThisSoftwareVersion(){
+	return myDetector->getThisSoftwareVersion();
+}
+
+
 
 
 void slsDetectorUsers::registerDataCallback(int( *userCallback)(detectorData*, int, void*), void *pArg){

@@ -1,1 +1,1 @@
-../../slsDetectorSoftware/slsReceiver/slsReceiverUsers.h
+../../slsReceiverSoftware/slsReceiver/slsReceiverUsers.h

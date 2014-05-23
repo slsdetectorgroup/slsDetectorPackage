@@ -14,6 +14,7 @@ where lib is the location of libSlsDetector.so
 #include "slsDetectorUsers.h"
 #include "detectorData.h"
 
+
 /** Definition of the data callback which simply prints out the number of points received and teh frame number */
 int dataCallback(detectorData *pData, int iframe, void *pArg)
 {
@@ -22,8 +23,9 @@ int dataCallback(detectorData *pData, int iframe, void *pArg)
 
 
 /**example of a main program using the slsDetectorUsers class */
-int main(int argc,  char **argv) {
+int main(int argc,  char *argv[]) {
   int id=0;
+  int status;
   /** if specified, argv[2] is used as detector ID (default is 0)*/
   if (argc>=3)
     id=atoi(argv[2]);
@@ -40,19 +42,24 @@ int main(int argc,  char **argv) {
  
   /** Setting the detector online (should be by default */
    pDetector->setOnline(1);
+
+   /** Load setup file if argv[2] specified */
+   if (argc>=3)
+	   pDetector->retrieveDetectorSetup( argv[2]);
+   else{
    /** defining the detector size */
-    int minX, minY=0, sizeX, sizeY=1; 
+    int minX, minY=0, sizeX, sizeY=1;
     pDetector->getDetectorSize(minX, minY, sizeX,  sizeY); 
     std::cout  << "X: Start=" << minX << ", Size= "  << sizeX  << std::endl; 
     std::cout  << "Y: Start=" << minY << ", Size= "  << sizeY  << std::endl; 
     pDetector->setDetectorSize(0,0,7680,1);
     std::cout  <<  pDetector->getDetectorDeveloper()  << std::endl; 
-    
+
     /** registering data callback */
     pDetector->registerDataCallback(&dataCallback, NULL); 
 
     /** checking detector status and exiting if not idle */
-   int status = pDetector->getDetectorStatus(); 
+    status = pDetector->getDetectorStatus();
     if (status  !=  0){
       std::cout << "Detector not ready: " << slsDetectorUsers::runStatusType(status) << std::endl; 
       return 1; 
@@ -60,7 +67,7 @@ int main(int argc,  char **argv) {
 
     /** checking and setting detector settings */
     std::cout  << "settings: "  << slsDetectorUsers::getDetectorSettings(pDetector->setSettings()) << std::endl; 
-    pDetector->setSettings(slsDetectorUsers::getDetectorSettings("standard")); 
+    pDetector->setSettings(slsDetectorUsers::getDetectorSettings("veryhighgain"));
     std::cout  << "settings: "  << slsDetectorUsers::getDetectorSettings(pDetector->setSettings()) << std::endl; 
 
      /** Settings exposure time to 10ms */
@@ -71,18 +78,20 @@ int main(int argc,  char **argv) {
  
      /** Settingsnumber of frames to 30 */
      pDetector->setNumberOfFrames(30);
-
+}
      /** start measurement */
      pDetector->startMeasurement(); 
-     
+
      while (1) {
        usleep(100000); 
-       status = pDetector->getDetectorStatus(); 
+        status = pDetector->getDetectorStatus();
         if (status  == 0 || status == 1|| status == 3)
 	  break; 
      }
+
+     char *temp[] = {"rx_tcpport", "1957", NULL};
      /** returning when acquisition is finished or data are avilable */
-     
+   	 std::cout << "answer to a get command:" << pDetector->putCommand(2,temp,0) << std::endl;
     
      delete pDetector; 
      

@@ -1,11 +1,28 @@
-DESTDIR?=../docs
+INCLUDES	=   -I . 
+SRC_DET		= 	mainClient.cpp 	
+SRC_REC		=   mainReceiver.cpp
+LIBDIR		=   ../../bin
+LDFLAG_DET 	=	-L$(LIBDIR) -lSlsDetector -L/usr/lib64/ -lpthread
+LDFLAG_REC 	=	-L$(LIBDIR) -lSlsReceiver -L/usr/lib64/ -lpthread
+DESTDIR		?=	../docs
 
 
+#all: clean detUser detReceiver 
+all: docs
 
-
-
-all: 
+docs:
 	doxygen slsDetectorUsers.doxy
 
+detUser:$(SRC_DET)
+	echo "creating client"
+	g++ -o detUser $(SRC_DET) $(INCLUDES) $(LDFLAG_DET) -lm -lstdc++
+
+detReceiver:$(SRC_REC)
+	echo "creating receiver"
+	g++ -o detReceiver $(SRC_REC) $(INCLUDES) $(LDFLAG_REC) -lm -lstdc++
+	
 clean:
-	rm -rf slsDetectorUsers
+	echo "cleaning"
+	rm -rf detUser detReceiver slsDetectorUsersDocs
+
+

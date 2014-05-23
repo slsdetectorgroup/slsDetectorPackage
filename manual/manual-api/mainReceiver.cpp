@@ -18,21 +18,9 @@ where lib is the location of libSlsDetector.so
 #include "slsReceiverUsers.h"
 
 
-#include <signal.h>	//SIGINT
-#include <cstdlib>	//EXIT
-
 #include <iostream>
 using namespace std;
 
-/** 
-    close file if receiver process is interrupted
-*/
-
-void closeFile(int p){
-  cout<<"close file in receiver"<<endl;
-  slsReceiverUsers::closeFile(p);
-  exit(0);
-}
 
 int main(int argc, char *argv[]) {
   int ret = 0;
@@ -50,10 +38,7 @@ int main(int argc, char *argv[]) {
   if(ret==1)
     return -1;
   
-  
-  /* Catch signal SIGINT to close files properly */
-  signal(SIGINT,closeFile);
-  
+
   /*register callbacks */
 
 

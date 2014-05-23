@@ -89,9 +89,9 @@ int main(int argc,  char *argv[]) {
 	  break; 
      }
 
-     char *temp[] = {"rx_tcpport", "1957", NULL};
+     char *temp[] = {"receiver", NULL};
      /** returning when acquisition is finished or data are avilable */
-   	 std::cout << "answer to a get command:" << pDetector->putCommand(2,temp,0) << std::endl;
+   	std::cout << "answer to a get command:" << pDetector->getCommand(1,temp,0) << std::endl;
     
      delete pDetector; 
      

@@ -90,9 +90,13 @@ int main(int argc, char *argv[]) {
 
 
   /* start receiver to listen for commands from the client (and data from detectors when expected */
-
   receiver->start();
-  
+
+  /** sleep for 10 s*/
+  usleep(10000000);
+
+  /** stop udp socket and tcp socket and thread */
+  receiver->stop();
   
   return 0;
 }

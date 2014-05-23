@@ -105,7 +105,7 @@ void slsReceiverUDPFunctions::deleteMembers(){
 			receiverdata[i] = NULL;
 		}
 	}
-	if(udpSocket) 		{delete udpSocket;		udpSocket = NULL;}
+	shutDownUDPSocket();
 	if(eth) 			{delete [] eth;			eth = NULL;}
 	if(latestData) 		{delete [] latestData;	latestData = NULL;}
 	if(guiFileName) 	{delete [] guiFileName;	guiFileName = NULL;}
@@ -802,14 +802,11 @@ void slsReceiverUDPFunctions::copyFrameToGui(char* startbuf){
 
 int slsReceiverUDPFunctions::createUDPSocket(){
 
-	if(udpSocket)
-		udpSocket->ShutDownSocket();
-
 	//if eth is mistaken with ip address
 	if (strchr(eth,'.')!=NULL)
 		strcpy(eth,"");
 
-	if(udpSocket){delete udpSocket;		udpSocket = NULL;}
+	shutDownUDPSocket();
 
 	//if no eth, listen to all
 	if(!strlen(eth)){
@@ -834,6 +831,22 @@ int slsReceiverUDPFunctions::createUDPSocket(){
 	}
 	return OK;
 }
+
+
+
+
+
+
+
+int slsReceiverUDPFunctions::shutDownUDPSocket(){
+	if(udpSocket){
+		udpSocket->ShutDownSocket();
+		delete udpSocket;
+		udpSocket = NULL;
+	}
+	return OK;
+}
+
 
 
 
@@ -1224,8 +1237,7 @@ int slsReceiverUDPFunctions::startReceiver(char message[]){
 
 	if(setupWriter() == FAIL){
 		//stop udp socket
-		if(udpSocket)
-			udpSocket->ShutDownSocket();
+		shutDownUDPSocket();
 
 		sprintf(message,"Could not create file %s.\n",savefilename);
 		return FAIL;
@@ -1312,11 +1324,7 @@ void slsReceiverUDPFunctions::startReadout(){
 	cout << "Status: Transmitting" << endl;
 
 	//kill udp socket to tell the listening thread to push last packet
-	if(udpSocket){
-		udpSocket->ShutDownSocket();
-		delete udpSocket;
-		udpSocket = NULL;
-	}
+	shutDownUDPSocket();
 
 }
 

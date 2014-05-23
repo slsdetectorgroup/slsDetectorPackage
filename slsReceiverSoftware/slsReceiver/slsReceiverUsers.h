@@ -40,6 +40,9 @@ public:
 	/** starts listening on the TCP port for client comminication */
 	void start();
 
+	/** stops listening to the TCP & UDP port and exit receiver program*/
+	void stop();
+
 	/**
 	 get get Receiver Version
 	 \returns id

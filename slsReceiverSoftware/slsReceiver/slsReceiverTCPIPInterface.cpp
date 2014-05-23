@@ -31,6 +31,7 @@ slsReceiverTCPIPInterface::~slsReceiverTCPIPInterface() {
 
 slsReceiverTCPIPInterface::slsReceiverTCPIPInterface(int argc, char *argv[], int &success):
 		myDetectorType(GOTTHARD),
+		slsReceiverFunctions(NULL),
 		ret(OK),
 		lockStatus(0),
 		shortFrame(-1),
@@ -168,7 +169,6 @@ slsReceiverTCPIPInterface::slsReceiverTCPIPInterface(int argc, char *argv[], int
 			//Catch signal SIGINT to close files properly
 			signal(SIGINT,staticCloseFile);
 
-
 			file_des=socket->getFileDes();
 			socketDescriptor=socket->getsocketDescriptor();
 
@@ -177,6 +177,7 @@ slsReceiverTCPIPInterface::slsReceiverTCPIPInterface(int argc, char *argv[], int
 	}
 
 }
+
 
 void slsReceiverTCPIPInterface::start(){
 
@@ -203,9 +204,18 @@ void slsReceiverTCPIPInterface::start(){
 #endif
 		}
 	}
-	
+}
 
 
+void slsReceiverTCPIPInterface::stop(){
+	//shut down udp socket
+	if(slsReceiverFunctions)
+		slsReceiverFunctions->shutDownUDPSocket();
+	//disconnect and delete socket
+	socket->Disconnect();
+	delete socket;
+	//close file and exit
+	closeFile(0);
 }
 
 

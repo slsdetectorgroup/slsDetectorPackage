@@ -1,4 +1,4 @@
-  /********************************************//**
+/********************************************//**
  * @file slsReceiverTCPIPInterface.h
  * @short interface between receiver and client
  ***********************************************/
@@ -14,8 +14,8 @@
 
 
 /**
-  *@short interface between receiver and client
-  */
+ *@short interface between receiver and client
+ */
 
 class slsReceiverTCPIPInterface : private virtual slsReceiverDefs {
 
@@ -27,12 +27,13 @@ public:
 	 * @param argv from command line
 	 * @param succecc socket creation was successfull
 	 */
-  slsReceiverTCPIPInterface(int argc, char *argv[], int &success);
+	slsReceiverTCPIPInterface(int argc, char *argv[], int &success);
 
-
-  /** starts listening on the TCP port for client comminication */
-  
+	/** starts listening on the TCP port for client comminication */
 	void start();
+
+	/** stop listening on the TCP & UDP port for client comminication and exit receiver */
+	void stop();
 
 	/** Destructor */
 	virtual ~slsReceiverTCPIPInterface();
@@ -52,14 +53,14 @@ public:
 	   filename
 	   fileindex
 	   data size
-	   
+
 	   return value is 
 	   0 callback takes care of open,close,wrie file
 	   1 callback writes file, we have to open, close it
 	   2 we open, close, write file, callback does not do anything
 
-	*/
-	
+	 */
+
 	void registerCallBackStartAcquisition(int (*func)(char*, char*,int, int, void*),void *arg){slsReceiverFunctions->registerCallBackStartAcquisition(func,arg);};;
 
 
@@ -67,11 +68,11 @@ public:
 	  callback argument is
 	  toatal farmes caught
 
-	*/
-	
-	
+	 */
+
+
 	void registerCallBackAcquisitionFinished(void (*func)(int, void*),void *arg){slsReceiverFunctions->registerCallBackAcquisitionFinished(func,arg);};
-	
+
 
 
 	/**
@@ -81,12 +82,12 @@ public:
 	  datasize in bytes
 	  file descriptor
 	  guidatapointer (NULL, no data required)
-	*/
-	
+	 */
+
 	void registerCallBackRawDataReady(void (*func)(int, char*, int, FILE*, char*, void*),void *arg){slsReceiverFunctions->registerCallBackRawDataReady(func,arg);};
 
 
- private:
+private:
 	/** assigns functions to the fnum enum */
 	int function_table();
 
@@ -228,8 +229,8 @@ public:
 	static int file_des;
 	static int socketDescriptor;
 
-//private:
- protected:
+	//private:
+protected:
 	/** Socket */
 	MySocketTCP* socket;
 };

@@ -15,6 +15,10 @@ void slsReceiverUsers::start() {
 	slsReceiverUsers::receiver->start();
 }
 
+void slsReceiverUsers::stop() {
+	slsReceiverUsers::receiver->stop();
+}
+
 
 void slsReceiverUsers::closeFile(int p) {
 	slsReceiverUsers::receiver->closeFile(p);

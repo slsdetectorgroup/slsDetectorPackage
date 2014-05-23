@@ -266,6 +266,11 @@ public:
 	 */
 	void startReadout();
 
+	/**
+	 * shuts down the  udp socket
+	 * \returns if success or fail
+	 */
+	int shutDownUDPSocket();
 
 private:
 	/**

@@ -11,8 +11,8 @@ slsReceiverUsers::~slsReceiverUsers() {
   delete slsReceiverUsers::receiver;
 }
 
-void slsReceiverUsers::start() {
-	slsReceiverUsers::receiver->start();
+int slsReceiverUsers::start() {
+	return slsReceiverUsers::receiver->start();
 }
 
 void slsReceiverUsers::stop() {

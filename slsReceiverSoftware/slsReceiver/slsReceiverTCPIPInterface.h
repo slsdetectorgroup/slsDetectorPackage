@@ -29,10 +29,13 @@ public:
 	 */
 	slsReceiverTCPIPInterface(int argc, char *argv[], int &success);
 
-	/** starts listening on the TCP port for client comminication */
-	void start();
+	/**
+	 * Starts listening on the TCP port for client comminication
+	 \returns OK or FAIL
+	 */
+	int start();
 
-	/** stop listening on the TCP & UDP port for client comminication and exit receiver */
+	/** stop listening on the TCP & UDP port for client comminication */
 	void stop();
 
 	/** Destructor */
@@ -88,6 +91,20 @@ public:
 
 
 private:
+
+	/**
+	 * Static function - Thread started which is a TCP server
+	 * Called by start()
+	 * @param this_pointer pointer to this object
+	 */
+	static void* startTCPServerThread(void *this_pointer);
+
+	/**
+	 * Thread started which is a TCP server
+	 * Called by start()
+	 */
+	void startTCPServer();
+
 	/** assigns functions to the fnum enum */
 	int function_table();
 
@@ -226,10 +243,12 @@ private:
 	/** Packets per  frame */
 	int packetsPerFrame;
 
-	static int file_des;
-	static int socketDescriptor;
+	/** kill tcp server thread */
+	int killTCPServerThread;
 
-	//private:
+	/** thread for TCP server */
+	pthread_t   TCPServer_thread;
+
 protected:
 	/** Socket */
 	MySocketTCP* socket;

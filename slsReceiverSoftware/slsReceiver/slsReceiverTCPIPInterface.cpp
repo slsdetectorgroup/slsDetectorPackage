@@ -19,8 +19,6 @@
 using namespace std;
 
 
-int slsReceiverTCPIPInterface::file_des(-1);
-int slsReceiverTCPIPInterface::socketDescriptor(-1);
 
 
 slsReceiverTCPIPInterface::~slsReceiverTCPIPInterface() {
@@ -36,7 +34,8 @@ slsReceiverTCPIPInterface::slsReceiverTCPIPInterface(int argc, char *argv[], int
 		lockStatus(0),
 		shortFrame(-1),
 		packetsPerFrame(GOTTHARD_PACKETS_PER_FRAME),
-		socket(NULL){
+		socket(NULL),
+		killTCPServerThread(0){
 
 	int port_no = DEFAULT_PORTNO+2;
 	ifstream infile;
@@ -169,21 +168,64 @@ slsReceiverTCPIPInterface::slsReceiverTCPIPInterface(int argc, char *argv[], int
 			//Catch signal SIGINT to close files properly
 			signal(SIGINT,staticCloseFile);
 
-			file_des=socket->getFileDes();
-			socketDescriptor=socket->getsocketDescriptor();
-
-			//success = OK;
 		}
 	}
 
 }
 
 
-void slsReceiverTCPIPInterface::start(){
+int slsReceiverTCPIPInterface::start(){
+	cout << "Creating TCP Server Thread" << endl;
+	killTCPServerThread = 0;
+	if(pthread_create(&TCPServer_thread, NULL,startTCPServerThread, (void*) this)){
+		cout << "Could not create TCP Server thread" << endl;
+		return FAIL;
+	}
+#ifdef VERBOSE
+	cout << "TCP Server thread created successfully." << endl;
+#endif
+	return OK;
+}
 
-  int v=slsReceiverDefs::OK;
 
-	while(v!=GOODBYE) {
+void slsReceiverTCPIPInterface::stop(){
+
+	cout << "Shutting down UDP Socket" << endl;
+	if(slsReceiverFunctions)
+		slsReceiverFunctions->shutDownUDPSocket();
+
+	cout << "Closing Files... " << endl;
+		slsReceiverFunctions->closeFile();
+
+
+	cout<<"Shutting down TCP Socket and TCP thread"<<endl;
+	killTCPServerThread = 1;
+	socket->ShutDownSocket();
+	void* status;
+	pthread_join(TCPServer_thread, &status);
+	killTCPServerThread = 0;
+
+}
+
+
+
+
+
+void* slsReceiverTCPIPInterface::startTCPServerThread(void *this_pointer){
+	((slsReceiverTCPIPInterface*)this_pointer)->startTCPServer();
+	return this_pointer;
+}
+
+
+void slsReceiverTCPIPInterface::startTCPServer(){
+
+
+#ifdef VERYVERBOSE
+	cout << "Starting Receiver TCP Server" << endl;
+#endif
+	int v=slsReceiverDefs::OK;
+
+	while(1) {
 #ifdef VERBOSE
 		cout<< endl;
 #endif
@@ -192,31 +234,39 @@ void slsReceiverTCPIPInterface::start(){
 #endif
 		if(socket->Connect()>=0){
 #ifdef VERY_VERBOSE
-		cout << "Conenction accepted" << endl;
+			cout << "Conenction accepted" << endl;
 #endif
-		v = decode_function();
+			v = decode_function();
 #ifdef VERY_VERBOSE
-		cout << "function executed" << endl;
+			cout << "function executed" << endl;
 #endif
-		socket->Disconnect();
+			socket->Disconnect();
 #ifdef VERY_VERBOSE
-		cout << "connection closed" << endl;
+			cout << "connection closed" << endl;
 #endif
 		}
+
+		//if tcp command was to exit server
+		if(v==GOODBYE){
+			cout << "Shutting down UDP Socket" << endl;
+			if(slsReceiverFunctions)
+				slsReceiverFunctions->shutDownUDPSocket();
+
+			cout << "Closing Files... " << endl;
+			slsReceiverFunctions->closeFile();
+
+			pthread_exit(NULL);
+		}
+
+		//if user entered exit
+		if(killTCPServerThread)
+			pthread_exit(NULL);
+
 	}
 }
 
 
-void slsReceiverTCPIPInterface::stop(){
-	//shut down udp socket
-	if(slsReceiverFunctions)
-		slsReceiverFunctions->shutDownUDPSocket();
-	//disconnect and delete socket
-	socket->Disconnect();
-	delete socket;
-	//close file and exit
-	closeFile(0);
-}
+
 
 
 int slsReceiverTCPIPInterface::function_table(){
@@ -330,8 +380,7 @@ int slsReceiverTCPIPInterface::M_nofunc(){
 
 
 void slsReceiverTCPIPInterface::closeFile(int p){
-	cout<<"Closing Files... "<<endl;
-	slsReceiverFunctions->closeFile();
+	stop();
 	cout << "Goodbye!" << endl;
 	exit(-1);
 }
@@ -1850,7 +1899,6 @@ int slsReceiverTCPIPInterface::set_port() {
 			socket->Disconnect();
 			delete socket;
 			socket = mySocket;
-			file_des=socket->getFileDes();
 		}
 	}
 

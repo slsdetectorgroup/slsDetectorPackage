@@ -5,6 +5,7 @@
 #include "slsReceiverUsers.h"
 
 #include <iostream>
+#include <string.h>
 using namespace std;
 
 
@@ -13,15 +14,15 @@ using namespace std;
 
 
 int main(int argc, char *argv[]) {
-  int ret = slsReceiverDefs::OK;
-  
-  slsReceiverUsers *user = new slsReceiverUsers(argc, argv, ret);
-  
-  if(ret==slsReceiverDefs::FAIL)
-    return -1;
-  
+	int ret = slsReceiverDefs::OK;
 
-  //register callbacks 
+	slsReceiverUsers *user = new slsReceiverUsers(argc, argv, ret);
+
+	if(ret==slsReceiverDefs::FAIL)
+		return -1;
+
+
+	//register callbacks
 
 
 	/**
@@ -30,7 +31,7 @@ int main(int argc, char *argv[]) {
 	   filename
 	   fileindex
 	   datasize
-	   
+
 	   return value is 
 	   0 raw data ready callback takes care of open,close,write file
 	   1 callback writes file, we have to open, close it
@@ -38,8 +39,8 @@ int main(int argc, char *argv[]) {
 
 
 	   registerCallBackStartAcquisition(int (*func)(char*, char*,int, int, void*),void *arg);
-	*/
-	
+	 */
+
 	//receiver->registerCallBackStartAcquisition(func,arg);
 
 
@@ -47,11 +48,11 @@ int main(int argc, char *argv[]) {
 	  callback argument is
 	  total farmes caught
 	  registerCallBackAcquisitionFinished(void (*func)(int, void*),void *arg);
-	*/
-	
+	 */
+
 
 	//receiver->registerCallBackAcquisitionFinished(func,arg);
-	
+
 
 
 	/**
@@ -60,22 +61,30 @@ int main(int argc, char *argv[]) {
 	  datapointer
 	  file descriptor
 	  guidatapointer (NULL, no data required)
-	  
+
 	  NEVER DELETE THE DATA POINTER
 	  REMEMBER THAT THE CALLBACK IS BLOCKING
 
 	  registerCallBackRawDataReady(void (*func)(int, char*, FILE*, char*, void*),void *arg);
 
-	*/
+	 */
 
 	//receiver->registerCallBackRawDataReady(func,arg);
 
 
 
+	//start tcp server thread
+	if(user->start() == slsReceiverDefs::OK){
+		string str;
+		cin>>str;
+		//wait and look for an exit keyword
+		while(str.find("exit") == string::npos)
+			cin>>str;
+		//stop tcp server thread, stop udp socket
+		user->stop();
+	}
 
-  user->start();
-  
-  
-  return 0;
+	cout << "Goodbye!" << endl;
+	return 0;
 }
 

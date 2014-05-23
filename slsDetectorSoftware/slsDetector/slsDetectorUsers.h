@@ -15,7 +15,7 @@
 
 class detectorData;
 class multiSlsDetector;
-
+class multiSlsDetectorCommand;
 
 
 #include <stdint.h>
@@ -525,7 +525,25 @@ class slsDetectorUsers
      \param func function for reading the I0 (called with parameter 0 before the acquisition, 1 after and the return value used as I0)
   */
    void registerGetI0Callback( double (*func)(int,void*),void *arg);
-  
+
+   /**
+     @short sets parameters in command interface http://www.psi.ch/detectors/UsersSupportEN/slsDetectorClientHowTo.pdf
+     \param narg value to be set
+     \param args value to be set
+     \param pos position of detector in multislsdetector list
+     \returns answer string
+    */
+   string putCommand(int narg, char *args[], int pos=-1);
+
+   /**
+     @short gets parameters in command interface http://www.psi.ch/detectors/UsersSupportEN/slsDetectorClientHowTo.pdf
+     \param narg value to be set
+     \param args value to be set
+     \param pos position of detector in multislsdetector list
+     \returns answer string
+    */
+   string getCommand(int narg, char *args[], int pos=-1);
+
   /************************************************************************
 
                            STATIC FUNCTIONS
@@ -614,7 +632,7 @@ class slsDetectorUsers
 
  private:
   multiSlsDetector *myDetector;
-
+  multiSlsDetectorCommand *myCmd;
  };
 
 #endif

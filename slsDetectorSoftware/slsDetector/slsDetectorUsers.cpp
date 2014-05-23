@@ -1,11 +1,13 @@
 #include "slsDetectorUsers.h"
 #include "detectorData.h"
 #include "multiSlsDetector.h"
+#include "multiSlsDetectorCommand.h"
+
 
 slsDetectorUsers::slsDetectorUsers(int id) : myDetector(NULL){
 
   myDetector=new multiSlsDetector(id);
-
+  myCmd=new multiSlsDetectorCommand(myDetector);
 };
 
 
@@ -302,6 +304,19 @@ void slsDetectorUsers::registerGetI0Callback( double (*func)(int,void*),void *ar
   myDetector->registerGetI0Callback(func,arg);
 }
 
+
+string slsDetectorUsers::putCommand(int narg, char *args[], int pos){
+	if(narg < 2)
+		return string("Error: Insufficient Parameters");
+	return myCmd->putCommand(narg, args, pos);
+}
+
+
+string slsDetectorUsers::getCommand(int narg, char *args[], int pos){
+	if(narg < 1)
+		return string("Error: Insufficient Parameters");
+	return myCmd->getCommand(narg, args, pos);
+}
 
 
   

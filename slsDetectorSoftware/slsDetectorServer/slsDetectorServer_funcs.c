@@ -2885,12 +2885,12 @@ int execute_trimming(int file_des) {
 
 int configure_mac(int file_des) {
 
-	int retval;
+	int retval=-1;
 	int ret=OK,ret1=OK;
 	char arg[3][50];
 	int n;
 
-#ifdef GOTTHARDD
+#ifndef MYTHEND
 	int imod=0;//should be in future sent from client as -1, arg[2]
 	int ipad;
 	long long int imacadd;
@@ -2905,9 +2905,9 @@ int configure_mac(int file_des) {
 		ret=FAIL;
 	}
 
-#ifndef GOTTHARDD
-			ret = FAIL;
-			strcpy(mess,"Not applicable/implemented for this detector\n");
+#ifdef MYTHEND
+	ret = FAIL;
+	strcpy(mess,"Not applicable/implemented for this detector\n");
 #else
 	sscanf(arg[0], "%x", &ipad);
 	sscanf(arg[1], "%llx", &imacadd);
@@ -2921,7 +2921,7 @@ int configure_mac(int file_des) {
 #endif
 #ifdef VERBOSE
 	int i;
-	printf("\ndigital_test_bit in server %d\t",digitalTestBit);
+	/*printf("\ndigital_test_bit in server %d\t",digitalTestBit);for gotthard*/
 	printf("\nipadd %x\t",ipad);
 	printf("destination ip is %d.%d.%d.%d = 0x%x \n",(ipad>>24)&0xff,(ipad>>16)&0xff,(ipad>>8)&0xff,(ipad)&0xff,ipad);
 	printf("macad:%llx\n",imacadd);
@@ -2936,7 +2936,8 @@ int configure_mac(int file_des) {
 #ifdef SLS_DETECTOR_FUNCTION_LIST
 	if (ret==OK) {
 		/*retval=configureMAC(ipad,imacadd,iservermacadd,digitalTestBit);*/
-		if(retval==-1) ret=FAIL;
+		retval=configureMAC(ipad,imacadd,iservermacadd);
+		/*if(retval==-1) 	ret=FAIL;*/
 	}
 #endif
 #ifdef VERBOSE

@@ -359,6 +359,10 @@ int executeTrimming(enum trimMode mode, int par1, int par2, int imod){
 }
 
 
+int configureMAC(int ipad, long long int imacadd, long long int iservermacadd, int dtb=0){
+	return 0;
+}
+
 
 int calculateDataBytes(){
 	return 0;

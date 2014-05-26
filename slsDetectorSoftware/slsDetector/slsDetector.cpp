@@ -4917,7 +4917,7 @@ char* slsDetector::setReceiver(string receiverIP){
 	strcpy(thisDetector->receiver_hostname,receiverIP.c_str());
 
 	if(setReceiverOnline(ONLINE_FLAG)==ONLINE_FLAG){
-//#ifdef VERBOSE
+#ifdef VERBOSE
 		std::cout << "Setting up receiver with" << endl;
 		std::cout << "detector type:" << slsDetectorBase::getDetectorType(thisDetector->myDetectorType) << endl;
 		std::cout << "detector hostname:" << thisDetector->hostname << endl;
@@ -4931,7 +4931,7 @@ char* slsDetector::setReceiver(string receiverIP){
 		std::cout << "frame number:" << thisDetector->timerValue[FRAME_NUMBER] << endl;
 		std::cout << "dynamic range:" << thisDetector->dynamicRange << endl << endl;
 /** enable compresison, */
-//#endif
+#endif
 		if(setDetectorType()!= GENERIC){
 			setDetectorHostname();
 			setFilePath(fileIO::getFilePath());
@@ -4949,9 +4949,7 @@ char* slsDetector::setReceiver(string receiverIP){
 			setTimer(FRAME_NUMBER,thisDetector->timerValue[FRAME_NUMBER]);
 			setDynamicRange(thisDetector->dynamicRange);
 			//set scan tag
-			if(thisDetector->myDetectorType != EIGER){
-				setUDPConnection();
-			}
+			setUDPConnection();
 		}
 	}
 

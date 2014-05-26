@@ -84,8 +84,11 @@ int executeTrimming(enum trimMode mode, int par1, int par2, int imod);
 #endif
 
 
+#ifndef MYTHEND
+int configureMAC(int ipad, long long int imacadd, long long int iservermacadd, int dtb=0);
+#endif
+
 #ifdef GOTTHARDD
-int configureMAC(int ipad, long long int imacadd, long long int iservermacadd, int dtb);
 int loadImage(enum imageType index, char *imageVals);
 int readCounterBlock(int startACQ, char *counterVals);
 int resetCounterBlock(int startACQ);

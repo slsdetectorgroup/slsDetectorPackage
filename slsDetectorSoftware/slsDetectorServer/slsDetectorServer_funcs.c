@@ -2936,7 +2936,7 @@ int configure_mac(int file_des) {
 #ifdef SLS_DETECTOR_FUNCTION_LIST
 	if (ret==OK) {
 		/*retval=configureMAC(ipad,imacadd,iservermacadd,digitalTestBit);*/
-		retval=configureMAC(ipad,imacadd,iservermacadd);
+		retval=configureMAC(ipad,imacadd,iservermacadd,0);
 		/*if(retval==-1) 	ret=FAIL;*/
 	}
 #endif

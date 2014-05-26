@@ -1,0 +1,1187 @@
+\hypertarget{classslsDetectorUsers}{
+\subsection{sls\-Detector\-Users Class Reference}
+\label{classslsDetectorUsers}\index{slsDetectorUsers@{slsDetectorUsers}}
+}
+Class for detector functionalitiesto embed the detector controls in the users custom interface e.g. EPICS, Lima etc.  
+
+
+{\tt \#include $<$sls\-Detector\-Users.h$>$}
+
+\subsubsection*{Public Member Functions}
+\begin{CompactItemize}
+\item 
+\hyperlink{classslsDetectorUsers_17323cd635b9e5c2916be3ca30ec748c}{sls\-Detector\-Users} (int id=0)
+\begin{CompactList}\small\item\em default constructor \item\end{CompactList}\item 
+virtual \hyperlink{classslsDetectorUsers_0d1daf6539befe56d6e3df0b24f5d68b}{$\sim$sls\-Detector\-Users} ()
+\begin{CompactList}\small\item\em virtual destructor \item\end{CompactList}\item 
+string \hyperlink{classslsDetectorUsers_30c2ba51c33cc914f290a0b7891da4ec}{get\-Detector\-Developer} ()
+\begin{CompactList}\small\item\em useful to define subset of working functions \item\end{CompactList}\item 
+int \hyperlink{classslsDetectorUsers_ee622153ebd6b0dad065d95b07221955}{set\-Online} (int const online=-1)
+\begin{CompactList}\small\item\em sets the online\-Flag \item\end{CompactList}\item 
+void \hyperlink{classslsDetectorUsers_a34810bb0e872fdf929ebe62d8582bd3}{start\-Measurement} ()
+\begin{CompactList}\small\item\em start measurement and acquires \item\end{CompactList}\item 
+int \hyperlink{classslsDetectorUsers_2abc673c45c1fe006f6b0fea6188e3a9}{stop\-Measurement} ()
+\begin{CompactList}\small\item\em stop measurement \item\end{CompactList}\item 
+int \hyperlink{classslsDetectorUsers_c7d0254e38b8fe783204f691a4ee05b2}{get\-Detector\-Status} ()
+\begin{CompactList}\small\item\em get run status \item\end{CompactList}\item 
+string \hyperlink{classslsDetectorUsers_81969295c2b08f14e9c3d4fa1f7d4e16}{get\-File\-Path} ()
+\begin{CompactList}\small\item\em returns the default output files path \item\end{CompactList}\item 
+string \hyperlink{classslsDetectorUsers_d833e1051299e101a5b5097c598ba9cb}{set\-File\-Path} (string s)
+\begin{CompactList}\small\item\em sets the default output files path \item\end{CompactList}\item 
+string \hyperlink{classslsDetectorUsers_5f30c83e8bf07a92fad0916d43e3799c}{get\-File\-Name} ()
+\item 
+string \hyperlink{classslsDetectorUsers_ff4a8ff4852e50d4ec05204cbc7fea9e}{set\-File\-Name} (string s)
+\begin{CompactList}\small\item\em sets the default output files path \item\end{CompactList}\item 
+int \hyperlink{classslsDetectorUsers_6e3467bf3c0c246f69f85d485d84dd62}{get\-File\-Index} ()
+\item 
+int \hyperlink{classslsDetectorUsers_6b92ea7e237c77aa5107d7aabf76fe2d}{set\-File\-Index} (int i)
+\begin{CompactList}\small\item\em sets the default output file index \item\end{CompactList}\item 
+string \hyperlink{classslsDetectorUsers_0b20511a94205abd689f31bd1a2d4c18}{get\-Flat\-Field\-Correction\-Dir} ()
+\begin{CompactList}\small\item\em get flat field corrections file directory \item\end{CompactList}\item 
+string \hyperlink{classslsDetectorUsers_65b112dac3d8b94f219f4d64c13cf0f9}{set\-Flat\-Field\-Correction\-Dir} (string dir)
+\begin{CompactList}\small\item\em set flat field corrections file directory \item\end{CompactList}\item 
+string \hyperlink{classslsDetectorUsers_a83083f73523557e6129f33b59f38327}{get\-Flat\-Field\-Correction\-File} ()
+\begin{CompactList}\small\item\em get flat field corrections file name \item\end{CompactList}\item 
+int \hyperlink{classslsDetectorUsers_ad9e6da8683ba2887174505fd3b7d739}{set\-Flat\-Field\-Correction\-File} (string fname=\char`\"{}\char`\"{})
+\begin{CompactList}\small\item\em set flat field correction file \item\end{CompactList}\item 
+int \hyperlink{classslsDetectorUsers_94c74499f7653116cd8aff9ec0d14c43}{enable\-Flat\-Field\-Correction} (int i=-1)
+\begin{CompactList}\small\item\em enable/disable flat field corrections (without changing file name) \item\end{CompactList}\item 
+int \hyperlink{classslsDetectorUsers_82efe2f57758d63d330d78b121f8e77e}{enable\-Count\-Rate\-Correction} (int i=-1)
+\begin{CompactList}\small\item\em enable/disable count rate corrections \item\end{CompactList}\item 
+int \hyperlink{classslsDetectorUsers_e5bc1c9c8e7e6cb7c9cde06a3133d263}{enable\-Pixel\-Mask\-Correction} (int i=-1)
+\begin{CompactList}\small\item\em enable/disable bad channel corrections \item\end{CompactList}\item 
+int \hyperlink{classslsDetectorUsers_51f92b69e05e8ee2e0c547ec4a6e97da}{enable\-Angular\-Conversion} (int i=-1)
+\begin{CompactList}\small\item\em enable/disable angular conversion \item\end{CompactList}\item 
+int \hyperlink{classslsDetectorUsers_6d54a79ae4cfdb808f5db9969537efd3}{enable\-Write\-To\-File} (int i=-1)
+\item 
+int \hyperlink{classslsDetectorUsers_f296c05ee6134fb8d53d08a025e89775}{set\-Positions} (int n\-Pos, double $\ast$pos)
+\begin{CompactList}\small\item\em set positions for the acquisition \item\end{CompactList}\item 
+int \hyperlink{classslsDetectorUsers_e6e5f06995e3ef110824adc5f8b095e9}{get\-Positions} (double $\ast$pos=NULL)
+\begin{CompactList}\small\item\em get positions for the acquisition \item\end{CompactList}\item 
+int \hyperlink{classslsDetectorUsers_42c97d03516a2457f8e9a98a16a9a43d}{set\-Detector\-Size} (int x0=-1, int y0=-1, int nx=-1, int ny=-1)
+\begin{CompactList}\small\item\em sets the detector size \item\end{CompactList}\item 
+int \hyperlink{classslsDetectorUsers_7f4fb3cefff5f0175cd2e4fd57ee1be4}{get\-Detector\-Size} (int \&x0, int \&y0, int \&nx, int \&ny)
+\begin{CompactList}\small\item\em gets detector size \item\end{CompactList}\item 
+int \hyperlink{classslsDetectorUsers_588a5e1d231cd6778f6f78fdc53b9681}{get\-Maximum\-Detector\-Size} (int \&nx, int \&ny)
+\begin{CompactList}\small\item\em setsthe maximum detector size \item\end{CompactList}\item 
+int \hyperlink{classslsDetectorUsers_ff667cf0665154cdff5d5f3dbc3526ba}{set\-Bit\-Depth} (int i=-1)
+\begin{CompactList}\small\item\em set/get dynamic range \item\end{CompactList}\item 
+int \hyperlink{classslsDetectorUsers_31b25d2659d3b244bb10b5516a9fd957}{set\-Settings} (int isettings=-1)
+\begin{CompactList}\small\item\em set detector settings \item\end{CompactList}\item 
+int \hyperlink{classslsDetectorUsers_fe8029788742125c44383817f89214ca}{get\-Threshold\-Energy} ()
+\begin{CompactList}\small\item\em get threshold energy \item\end{CompactList}\item 
+int \hyperlink{classslsDetectorUsers_1354266fd1bfaccd58992a3f51bbbd1d}{set\-Threshold\-Energy} (int e\_\-e\-V)
+\begin{CompactList}\small\item\em set threshold energy \item\end{CompactList}\item 
+int \hyperlink{classslsDetectorUsers_c9ea028f75a180534c8d00eeea0727d3}{get\-Beam\-Energy} ()
+\begin{CompactList}\small\item\em get beam energy -- only for dectris! \item\end{CompactList}\item 
+int \hyperlink{classslsDetectorUsers_475938986407804877df4dcece97cc19}{set\-Beam\-Energy} (int e\_\-e\-V)
+\begin{CompactList}\small\item\em set beam energy -- only for dectris! \item\end{CompactList}\item 
+double \hyperlink{classslsDetectorUsers_134225893d41bc97e9f1d645e035a04a}{set\-Exposure\-Time} (double t=-1, bool inseconds=false)
+\begin{CompactList}\small\item\em set/get exposure time value \item\end{CompactList}\item 
+double \hyperlink{classslsDetectorUsers_cac89084aba58ebe81420c7c9ac4217a}{set\-Exposure\-Period} (double t=-1, bool inseconds=false)
+\begin{CompactList}\small\item\em set/get exposure period \item\end{CompactList}\item 
+double \hyperlink{classslsDetectorUsers_99f67fab7edfe68cc8b2300e282ff3f2}{set\-Delay\-After\-Trigger} (double t=-1, bool inseconds=false)
+\begin{CompactList}\small\item\em set/get delay after trigger \item\end{CompactList}\item 
+int64\_\-t \hyperlink{classslsDetectorUsers_61d4acb00c997c5e02be6a191401c4ce}{set\-Number\-Of\-Gates} (int64\_\-t t=-1)
+\begin{CompactList}\small\item\em set/get number of gates \item\end{CompactList}\item 
+int64\_\-t \hyperlink{classslsDetectorUsers_fc82f608bf74d10f3aa866bff94cbbab}{set\-Number\-Of\-Frames} (int64\_\-t t=-1)
+\begin{CompactList}\small\item\em set/get number of frames i.e. number of exposure per trigger \item\end{CompactList}\item 
+int64\_\-t \hyperlink{classslsDetectorUsers_8b741851c4eaef4e29322c99fd17cb3b}{set\-Number\-Of\-Cycles} (int64\_\-t t=-1)
+\begin{CompactList}\small\item\em set/get number of cycles i.e. number of triggers \item\end{CompactList}\item 
+int \hyperlink{classslsDetectorUsers_e2825524756c4bdf418a6233e137b4d7}{set\-Timing\-Mode} (int pol=-1)
+\begin{CompactList}\small\item\em set/get the external communication mode \item\end{CompactList}\item 
+int \hyperlink{classslsDetectorUsers_8aeda7c2cbc270c7f8756761823e8d95}{read\-Configuration\-File} (string const fname)
+\begin{CompactList}\small\item\em Reads the configuration file -- will contain all the informations needed for the configuration (e.g. for a PSI detector caldir, settingsdir, angconv, badchannels, hostname etc.). \item\end{CompactList}\item 
+int \hyperlink{classslsDetectorUsers_d6b968f4d520342324762c496ebeb481}{dump\-Detector\-Setup} (string const fname)
+\begin{CompactList}\small\item\em Reads the parameters from the detector and writes them to file. \item\end{CompactList}\item 
+int \hyperlink{classslsDetectorUsers_8769c8ea5020b43dc3557c86f9e4159b}{retrieve\-Detector\-Setup} (string const fname)
+\begin{CompactList}\small\item\em Loads the detector setup from file. \item\end{CompactList}\item 
+string \hyperlink{classslsDetectorUsers_5292a3d9c12696512b81bcc6c579a03c}{get\-Detector\-Type} ()
+\begin{CompactList}\small\item\em useful for data plotting etc. \item\end{CompactList}\item 
+int \hyperlink{classslsDetectorUsers_db084473ffe61960b86abdfa8efcc80d}{set\-Receiver\-Mode} (int n=-1)
+\begin{CompactList}\small\item\em sets the mode by which gui requests data from receiver \item\end{CompactList}\item 
+void \hyperlink{classslsDetectorUsers_4a1db91fc49fc1710f98ce98e33bc16b}{register\-Data\-Callback} (int($\ast$user\-Callback)(\hyperlink{classdetectorData}{detector\-Data} $\ast$d, int f, void $\ast$), void $\ast$p\-Arg)
+\begin{CompactList}\small\item\em register calbback for accessing detector final data \item\end{CompactList}\item 
+void \hyperlink{classslsDetectorUsers_898cf0db148f0d3de7d4725cc8342c56}{register\-Raw\-Data\-Callback} (int($\ast$user\-Callback)(double $\ast$p, int n, void $\ast$), void $\ast$p\-Arg)
+\begin{CompactList}\small\item\em register callback for accessing raw data - if the raw\-Data\-Callback is registered, no filewriting/postprocessing will be carried on automatically by the software - the raw data are deleted by the software \item\end{CompactList}\item 
+virtual void \hyperlink{classslsDetectorUsers_56fa8890298a01fc58baad413dfdf1c1}{init\-Dataset} (int refresh)
+\begin{CompactList}\small\item\em function to initalize a set of measurements (reset binning if angular conversion, reset summing otherwise) - can be overcome by the user's functions thanks to the virtual property \item\end{CompactList}\item 
+virtual void \hyperlink{classslsDetectorUsers_5128e295a5b926ccabdb48083d324789}{add\-Frame} (double $\ast$data, double pos, double i0, double t, string fname, double var)
+\begin{CompactList}\small\item\em adds frame to merging/summation - can be overcome by the user's functions thanks to the virtual property \item\end{CompactList}\item 
+virtual void \hyperlink{classslsDetectorUsers_9cbe00dac8a19b71de88ebbdf3b0ea29}{finalize\-Dataset} (double $\ast$a, double $\ast$v, double $\ast$e, int \&np)
+\begin{CompactList}\small\item\em finalizes the data set returning the array of angles, values and errors to be used as final data - can be overcome by the user's functions thanks to the virtual property \item\end{CompactList}\item 
+int64\_\-t \hyperlink{classslsDetectorUsers_09ded3b9c81e4544d42bb0697c3b7624}{get\-Module\-Firmware\-Version} ()
+\item 
+int64\_\-t \hyperlink{classslsDetectorUsers_5c0e9f8836e1a8a2d986408e4f5dfd3b}{get\-Module\-Serial\-Number} (int imod=-1)
+\item 
+int64\_\-t \hyperlink{classslsDetectorUsers_2cbba4518b585064f7870ae2d39a8b8b}{get\-Detector\-Firmware\-Version} ()
+\item 
+int64\_\-t \hyperlink{classslsDetectorUsers_1c79314ceeda9b3085ca118e25882669}{get\-Detector\-Serial\-Number} ()
+\item 
+int64\_\-t \hyperlink{classslsDetectorUsers_1857f2afea58227cb96ad92f5e562a5e}{get\-Detector\-Software\-Version} ()
+\item 
+int64\_\-t \hyperlink{classslsDetectorUsers_547feb09262a2f0fa1ec4de82e92ab63}{get\-This\-Software\-Version} ()
+\item 
+void \hyperlink{classslsDetectorUsers_2a85e28ff08e3ec1e08bea3ba7d0fb08}{register\-Acquisition\-Finished\-Callback} (int($\ast$func)(double, int, void $\ast$), void $\ast$p\-Arg)
+\begin{CompactList}\small\item\em register calbback for accessing detector final data \item\end{CompactList}\item 
+void \hyperlink{classslsDetectorUsers_c2b87416288e657a209e1374c778eb16}{register\-Get\-Position\-Callback} (double($\ast$func)(void $\ast$), void $\ast$arg)
+\begin{CompactList}\small\item\em register calbback for reading detector position \item\end{CompactList}\item 
+void \hyperlink{classslsDetectorUsers_d1ab73675435879c2c5cef7adab02c32}{register\-Connect\-Channels\-Callback} (int($\ast$func)(void $\ast$), void $\ast$arg)
+\begin{CompactList}\small\item\em register callback for connecting to the epics channels \item\end{CompactList}\item 
+void \hyperlink{classslsDetectorUsers_a94dd8fce8548ba8e79201ec50fe27d6}{register\-Disconnect\-Channels\-Callback} (int($\ast$func)(void $\ast$), void $\ast$arg)
+\begin{CompactList}\small\item\em register callback to disconnect the epics channels \item\end{CompactList}\item 
+void \hyperlink{classslsDetectorUsers_0f7c9bd3c46647d5dda2fa5312f3ef92}{register\-Go\-To\-Position\-Callback} (int($\ast$func)(double, void $\ast$), void $\ast$arg)
+\begin{CompactList}\small\item\em register callback for moving the detector \item\end{CompactList}\item 
+void \hyperlink{classslsDetectorUsers_e807e9f4a015a4bbcb22e36b80577ea5}{register\-Go\-To\-Position\-No\-Wait\-Callback} (int($\ast$func)(double, void $\ast$), void $\ast$arg)
+\begin{CompactList}\small\item\em register callback for moving the detector without waiting \item\end{CompactList}\item 
+void \hyperlink{classslsDetectorUsers_1969785197030aa8e2d3c3d48a9cb45c}{register\-Get\-I0Callback} (double($\ast$func)(int, void $\ast$), void $\ast$arg)
+\begin{CompactList}\small\item\em register calbback reading to I0 \item\end{CompactList}\item 
+string \hyperlink{classslsDetectorUsers_5f7c26833decef59c1abfd7d745c4671}{put\-Command} (int narg, char $\ast$args\mbox{[}$\,$\mbox{]}, int pos=-1)
+\begin{CompactList}\small\item\em sets parameters in command interface \href{http://www.psi.ch/detectors/UsersSupportEN/slsDetectorClientHowTo.pdf}\tt{http://www.psi.ch/detectors/Users\-Support\-EN/sls\-Detector\-Client\-How\-To.pdf} \item\end{CompactList}\item 
+string \hyperlink{classslsDetectorUsers_dc83b8005abccc735b35464c1c6d3ea7}{get\-Command} (int narg, char $\ast$args\mbox{[}$\,$\mbox{]}, int pos=-1)
+\begin{CompactList}\small\item\em gets parameters in command interface \href{http://www.psi.ch/detectors/UsersSupportEN/slsDetectorClientHowTo.pdf}\tt{http://www.psi.ch/detectors/Users\-Support\-EN/sls\-Detector\-Client\-How\-To.pdf} \item\end{CompactList}\end{CompactItemize}
+\subsubsection*{Static Public Member Functions}
+\begin{CompactItemize}
+\item 
+static string \hyperlink{classslsDetectorUsers_2c073513ae3ac53f3e040bc2911b6ee2}{run\-Status\-Type} (int s)
+\begin{CompactList}\small\item\em returns string from run status index \item\end{CompactList}\item 
+static int \hyperlink{classslsDetectorUsers_7f2e97b2fa0e106b364c9c200a5d74ad}{get\-Detector\-Settings} (string s)
+\begin{CompactList}\small\item\em returns detector settings string from index \item\end{CompactList}\item 
+static string \hyperlink{classslsDetectorUsers_a66defec09b568a514e57b444dbe0d7f}{get\-Detector\-Settings} (int s)
+\begin{CompactList}\small\item\em returns detector settings string from index \item\end{CompactList}\item 
+static string \hyperlink{classslsDetectorUsers_420880726f4036bf9da83edfcb2d6cf0}{get\-Timing\-Mode} (int f)
+\begin{CompactList}\small\item\em returns external communication mode string from index \item\end{CompactList}\item 
+static int \hyperlink{classslsDetectorUsers_e88a9626e4e661c1c0e1d27ba4a57d50}{get\-Timing\-Mode} (string s)
+\begin{CompactList}\small\item\em returns external communication mode string from index \item\end{CompactList}\end{CompactItemize}
+
+
+\subsubsection{Detailed Description}
+Class for detector functionalitiesto embed the detector controls in the users custom interface e.g. EPICS, Lima etc. 
+
+
+
+Definition at line 84 of file sls\-Detector\-Users.h.
+
+\subsubsection{Constructor \& Destructor Documentation}
+\hypertarget{classslsDetectorUsers_17323cd635b9e5c2916be3ca30ec748c}{
+\index{slsDetectorUsers@{sls\-Detector\-Users}!slsDetectorUsers@{slsDetectorUsers}}
+\index{slsDetectorUsers@{slsDetectorUsers}!slsDetectorUsers@{sls\-Detector\-Users}}
+\paragraph[slsDetectorUsers]{\setlength{\rightskip}{0pt plus 5cm}sls\-Detector\-Users::sls\-Detector\-Users (int {\em id} = {\tt 0})}\hfill}
+\label{classslsDetectorUsers_17323cd635b9e5c2916be3ca30ec748c}
+
+
+default constructor 
+
+\hypertarget{classslsDetectorUsers_0d1daf6539befe56d6e3df0b24f5d68b}{
+\index{slsDetectorUsers@{sls\-Detector\-Users}!~slsDetectorUsers@{$\sim$slsDetectorUsers}}
+\index{~slsDetectorUsers@{$\sim$slsDetectorUsers}!slsDetectorUsers@{sls\-Detector\-Users}}
+\paragraph[$\sim$slsDetectorUsers]{\setlength{\rightskip}{0pt plus 5cm}virtual sls\-Detector\-Users::$\sim$sls\-Detector\-Users ()\hspace{0.3cm}{\tt  \mbox{[}virtual\mbox{]}}}\hfill}
+\label{classslsDetectorUsers_0d1daf6539befe56d6e3df0b24f5d68b}
+
+
+virtual destructor 
+
+
+
+\subsubsection{Member Function Documentation}
+\hypertarget{classslsDetectorUsers_5128e295a5b926ccabdb48083d324789}{
+\index{slsDetectorUsers@{sls\-Detector\-Users}!addFrame@{addFrame}}
+\index{addFrame@{addFrame}!slsDetectorUsers@{sls\-Detector\-Users}}
+\paragraph[addFrame]{\setlength{\rightskip}{0pt plus 5cm}virtual void sls\-Detector\-Users::add\-Frame (double $\ast$ {\em data}, double {\em pos}, double {\em i0}, double {\em t}, string {\em fname}, double {\em var})\hspace{0.3cm}{\tt  \mbox{[}virtual\mbox{]}}}\hfill}
+\label{classslsDetectorUsers_5128e295a5b926ccabdb48083d324789}
+
+
+adds frame to merging/summation - can be overcome by the user's functions thanks to the virtual property 
+
+\begin{Desc}
+\item[Parameters:]
+\begin{description}
+\item[{\em data}]pointer to the raw data \item[{\em pos}]encoder position \item[{\em i0}]beam monitor readout for intensity normalization (if 0 not performed) \item[{\em t}]exposure time in seconds, required only if rate corrections \item[{\em fname}]file name (unused since filewriting would be performed by the user) \item[{\em var}]optional parameter - unused. \end{description}
+\end{Desc}
+\hypertarget{classslsDetectorUsers_d6b968f4d520342324762c496ebeb481}{
+\index{slsDetectorUsers@{sls\-Detector\-Users}!dumpDetectorSetup@{dumpDetectorSetup}}
+\index{dumpDetectorSetup@{dumpDetectorSetup}!slsDetectorUsers@{sls\-Detector\-Users}}
+\paragraph[dumpDetectorSetup]{\setlength{\rightskip}{0pt plus 5cm}int sls\-Detector\-Users::dump\-Detector\-Setup (string const  {\em fname})}\hfill}
+\label{classslsDetectorUsers_d6b968f4d520342324762c496ebeb481}
+
+
+Reads the parameters from the detector and writes them to file. 
+
+\begin{Desc}
+\item[Parameters:]
+\begin{description}
+\item[{\em fname}]file to write to \end{description}
+\end{Desc}
+\begin{Desc}
+\item[Returns:]OK or FAIL \end{Desc}
+\hypertarget{classslsDetectorUsers_51f92b69e05e8ee2e0c547ec4a6e97da}{
+\index{slsDetectorUsers@{sls\-Detector\-Users}!enableAngularConversion@{enableAngularConversion}}
+\index{enableAngularConversion@{enableAngularConversion}!slsDetectorUsers@{sls\-Detector\-Users}}
+\paragraph[enableAngularConversion]{\setlength{\rightskip}{0pt plus 5cm}int sls\-Detector\-Users::enable\-Angular\-Conversion (int {\em i} = {\tt -1})}\hfill}
+\label{classslsDetectorUsers_51f92b69e05e8ee2e0c547ec4a6e97da}
+
+
+enable/disable angular conversion 
+
+\begin{Desc}
+\item[Parameters:]
+\begin{description}
+\item[{\em i}]0 disables, 1 enables, -1 gets \end{description}
+\end{Desc}
+\begin{Desc}
+\item[Returns:]0 if angular conversion disabled, 1 if enabled \end{Desc}
+\hypertarget{classslsDetectorUsers_82efe2f57758d63d330d78b121f8e77e}{
+\index{slsDetectorUsers@{sls\-Detector\-Users}!enableCountRateCorrection@{enableCountRateCorrection}}
+\index{enableCountRateCorrection@{enableCountRateCorrection}!slsDetectorUsers@{sls\-Detector\-Users}}
+\paragraph[enableCountRateCorrection]{\setlength{\rightskip}{0pt plus 5cm}int sls\-Detector\-Users::enable\-Count\-Rate\-Correction (int {\em i} = {\tt -1})}\hfill}
+\label{classslsDetectorUsers_82efe2f57758d63d330d78b121f8e77e}
+
+
+enable/disable count rate corrections 
+
+\begin{Desc}
+\item[Parameters:]
+\begin{description}
+\item[{\em i}]0 disables, 1 enable, -1 gets \end{description}
+\end{Desc}
+\begin{Desc}
+\item[Returns:]0 if count corrections disabled, 1 if enabled \end{Desc}
+\hypertarget{classslsDetectorUsers_94c74499f7653116cd8aff9ec0d14c43}{
+\index{slsDetectorUsers@{sls\-Detector\-Users}!enableFlatFieldCorrection@{enableFlatFieldCorrection}}
+\index{enableFlatFieldCorrection@{enableFlatFieldCorrection}!slsDetectorUsers@{sls\-Detector\-Users}}
+\paragraph[enableFlatFieldCorrection]{\setlength{\rightskip}{0pt plus 5cm}int sls\-Detector\-Users::enable\-Flat\-Field\-Correction (int {\em i} = {\tt -1})}\hfill}
+\label{classslsDetectorUsers_94c74499f7653116cd8aff9ec0d14c43}
+
+
+enable/disable flat field corrections (without changing file name) 
+
+\begin{Desc}
+\item[Parameters:]
+\begin{description}
+\item[{\em i}]0 disables, 1 enables, -1 gets \end{description}
+\end{Desc}
+\begin{Desc}
+\item[Returns:]0 if ff corrections disabled, 1 if enabled \end{Desc}
+\hypertarget{classslsDetectorUsers_e5bc1c9c8e7e6cb7c9cde06a3133d263}{
+\index{slsDetectorUsers@{sls\-Detector\-Users}!enablePixelMaskCorrection@{enablePixelMaskCorrection}}
+\index{enablePixelMaskCorrection@{enablePixelMaskCorrection}!slsDetectorUsers@{sls\-Detector\-Users}}
+\paragraph[enablePixelMaskCorrection]{\setlength{\rightskip}{0pt plus 5cm}int sls\-Detector\-Users::enable\-Pixel\-Mask\-Correction (int {\em i} = {\tt -1})}\hfill}
+\label{classslsDetectorUsers_e5bc1c9c8e7e6cb7c9cde06a3133d263}
+
+
+enable/disable bad channel corrections 
+
+\begin{Desc}
+\item[Parameters:]
+\begin{description}
+\item[{\em i}]0 disables, 1 enables, -1 gets \end{description}
+\end{Desc}
+\begin{Desc}
+\item[Returns:]0 if bad channels corrections disabled, 1 if enabled \end{Desc}
+\hypertarget{classslsDetectorUsers_6d54a79ae4cfdb808f5db9969537efd3}{
+\index{slsDetectorUsers@{sls\-Detector\-Users}!enableWriteToFile@{enableWriteToFile}}
+\index{enableWriteToFile@{enableWriteToFile}!slsDetectorUsers@{sls\-Detector\-Users}}
+\paragraph[enableWriteToFile]{\setlength{\rightskip}{0pt plus 5cm}int sls\-Detector\-Users::enable\-Write\-To\-File (int {\em i} = {\tt -1})}\hfill}
+\label{classslsDetectorUsers_6d54a79ae4cfdb808f5db9969537efd3}
+
+
+Enable write file function included \hypertarget{classslsDetectorUsers_9cbe00dac8a19b71de88ebbdf3b0ea29}{
+\index{slsDetectorUsers@{sls\-Detector\-Users}!finalizeDataset@{finalizeDataset}}
+\index{finalizeDataset@{finalizeDataset}!slsDetectorUsers@{sls\-Detector\-Users}}
+\paragraph[finalizeDataset]{\setlength{\rightskip}{0pt plus 5cm}virtual void sls\-Detector\-Users::finalize\-Dataset (double $\ast$ {\em a}, double $\ast$ {\em v}, double $\ast$ {\em e}, int \& {\em np})\hspace{0.3cm}{\tt  \mbox{[}virtual\mbox{]}}}\hfill}
+\label{classslsDetectorUsers_9cbe00dac8a19b71de88ebbdf3b0ea29}
+
+
+finalizes the data set returning the array of angles, values and errors to be used as final data - can be overcome by the user's functions thanks to the virtual property 
+
+\begin{Desc}
+\item[Parameters:]
+\begin{description}
+\item[{\em a}]pointer to the array of angles - can be null if no angular coversion is required \item[{\em v}]pointer to the array of values \item[{\em e}]pointer to the array of errors \item[{\em np}]reference returning the number of points \end{description}
+\end{Desc}
+\hypertarget{classslsDetectorUsers_c9ea028f75a180534c8d00eeea0727d3}{
+\index{slsDetectorUsers@{sls\-Detector\-Users}!getBeamEnergy@{getBeamEnergy}}
+\index{getBeamEnergy@{getBeamEnergy}!slsDetectorUsers@{sls\-Detector\-Users}}
+\paragraph[getBeamEnergy]{\setlength{\rightskip}{0pt plus 5cm}int sls\-Detector\-Users::get\-Beam\-Energy ()}\hfill}
+\label{classslsDetectorUsers_c9ea028f75a180534c8d00eeea0727d3}
+
+
+get beam energy -- only for dectris! 
+
+\begin{Desc}
+\item[Returns:]current beam energy \end{Desc}
+\hypertarget{classslsDetectorUsers_dc83b8005abccc735b35464c1c6d3ea7}{
+\index{slsDetectorUsers@{sls\-Detector\-Users}!getCommand@{getCommand}}
+\index{getCommand@{getCommand}!slsDetectorUsers@{sls\-Detector\-Users}}
+\paragraph[getCommand]{\setlength{\rightskip}{0pt plus 5cm}string sls\-Detector\-Users::get\-Command (int {\em narg}, char $\ast$ {\em args}\mbox{[}$\,$\mbox{]}, int {\em pos} = {\tt -1})}\hfill}
+\label{classslsDetectorUsers_dc83b8005abccc735b35464c1c6d3ea7}
+
+
+gets parameters in command interface \href{http://www.psi.ch/detectors/UsersSupportEN/slsDetectorClientHowTo.pdf}\tt{http://www.psi.ch/detectors/Users\-Support\-EN/sls\-Detector\-Client\-How\-To.pdf} 
+
+\begin{Desc}
+\item[Parameters:]
+\begin{description}
+\item[{\em narg}]value to be set \item[{\em args}]value to be set \item[{\em pos}]position of detector in multislsdetector list \end{description}
+\end{Desc}
+\begin{Desc}
+\item[Returns:]answer string \end{Desc}
+
+
+Referenced by main().\hypertarget{classslsDetectorUsers_30c2ba51c33cc914f290a0b7891da4ec}{
+\index{slsDetectorUsers@{sls\-Detector\-Users}!getDetectorDeveloper@{getDetectorDeveloper}}
+\index{getDetectorDeveloper@{getDetectorDeveloper}!slsDetectorUsers@{sls\-Detector\-Users}}
+\paragraph[getDetectorDeveloper]{\setlength{\rightskip}{0pt plus 5cm}string sls\-Detector\-Users::get\-Detector\-Developer ()}\hfill}
+\label{classslsDetectorUsers_30c2ba51c33cc914f290a0b7891da4ec}
+
+
+useful to define subset of working functions 
+
+\begin{Desc}
+\item[Returns:]\char`\"{}PSI\char`\"{} or \char`\"{}Dectris\char`\"{} \end{Desc}
+
+
+Referenced by main().\hypertarget{classslsDetectorUsers_2cbba4518b585064f7870ae2d39a8b8b}{
+\index{slsDetectorUsers@{sls\-Detector\-Users}!getDetectorFirmwareVersion@{getDetectorFirmwareVersion}}
+\index{getDetectorFirmwareVersion@{getDetectorFirmwareVersion}!slsDetectorUsers@{sls\-Detector\-Users}}
+\paragraph[getDetectorFirmwareVersion]{\setlength{\rightskip}{0pt plus 5cm}int64\_\-t sls\-Detector\-Users::get\-Detector\-Firmware\-Version ()}\hfill}
+\label{classslsDetectorUsers_2cbba4518b585064f7870ae2d39a8b8b}
+
+
+get get Detector Firmware Version \begin{Desc}
+\item[Returns:]id \end{Desc}
+\hypertarget{classslsDetectorUsers_1c79314ceeda9b3085ca118e25882669}{
+\index{slsDetectorUsers@{sls\-Detector\-Users}!getDetectorSerialNumber@{getDetectorSerialNumber}}
+\index{getDetectorSerialNumber@{getDetectorSerialNumber}!slsDetectorUsers@{sls\-Detector\-Users}}
+\paragraph[getDetectorSerialNumber]{\setlength{\rightskip}{0pt plus 5cm}int64\_\-t sls\-Detector\-Users::get\-Detector\-Serial\-Number ()}\hfill}
+\label{classslsDetectorUsers_1c79314ceeda9b3085ca118e25882669}
+
+
+get get Detector Serial Number \begin{Desc}
+\item[Returns:]id \end{Desc}
+\hypertarget{classslsDetectorUsers_a66defec09b568a514e57b444dbe0d7f}{
+\index{slsDetectorUsers@{sls\-Detector\-Users}!getDetectorSettings@{getDetectorSettings}}
+\index{getDetectorSettings@{getDetectorSettings}!slsDetectorUsers@{sls\-Detector\-Users}}
+\paragraph[getDetectorSettings]{\setlength{\rightskip}{0pt plus 5cm}static string sls\-Detector\-Users::get\-Detector\-Settings (int {\em s})\hspace{0.3cm}{\tt  \mbox{[}inline, static\mbox{]}}}\hfill}
+\label{classslsDetectorUsers_a66defec09b568a514e57b444dbe0d7f}
+
+
+returns detector settings string from index 
+
+\begin{Desc}
+\item[Parameters:]
+\begin{description}
+\item[{\em s}]settings index \end{description}
+\end{Desc}
+\begin{Desc}
+\item[Returns:]standard, fast, highgain, dynamicgain, lowgain, mediumgain, veryhighgain, undefined when wrong index \end{Desc}
+
+
+Definition at line 589 of file sls\-Detector\-Users.h.\hypertarget{classslsDetectorUsers_7f2e97b2fa0e106b364c9c200a5d74ad}{
+\index{slsDetectorUsers@{sls\-Detector\-Users}!getDetectorSettings@{getDetectorSettings}}
+\index{getDetectorSettings@{getDetectorSettings}!slsDetectorUsers@{sls\-Detector\-Users}}
+\paragraph[getDetectorSettings]{\setlength{\rightskip}{0pt plus 5cm}static int sls\-Detector\-Users::get\-Detector\-Settings (string {\em s})\hspace{0.3cm}{\tt  \mbox{[}inline, static\mbox{]}}}\hfill}
+\label{classslsDetectorUsers_7f2e97b2fa0e106b364c9c200a5d74ad}
+
+
+returns detector settings string from index 
+
+\begin{Desc}
+\item[Parameters:]
+\begin{description}
+\item[{\em s}]can be standard, fast, highgain, dynamicgain, lowgain, mediumgain, veryhighgain \end{description}
+\end{Desc}
+\begin{Desc}
+\item[Returns:]setting index (-1 unknown string) \end{Desc}
+
+
+Definition at line 575 of file sls\-Detector\-Users.h.
+
+Referenced by main().\hypertarget{classslsDetectorUsers_7f4fb3cefff5f0175cd2e4fd57ee1be4}{
+\index{slsDetectorUsers@{sls\-Detector\-Users}!getDetectorSize@{getDetectorSize}}
+\index{getDetectorSize@{getDetectorSize}!slsDetectorUsers@{sls\-Detector\-Users}}
+\paragraph[getDetectorSize]{\setlength{\rightskip}{0pt plus 5cm}int sls\-Detector\-Users::get\-Detector\-Size (int \& {\em x0}, int \& {\em y0}, int \& {\em nx}, int \& {\em ny})}\hfill}
+\label{classslsDetectorUsers_7f4fb3cefff5f0175cd2e4fd57ee1be4}
+
+
+gets detector size 
+
+\begin{Desc}
+\item[Parameters:]
+\begin{description}
+\item[{\em x0}]horizontal position origin in channel number \item[{\em y0}]vertical position origin in channel number \item[{\em nx}]number of channels in horiziontal \item[{\em ny}]number of channels in vertical \end{description}
+\end{Desc}
+\begin{Desc}
+\item[Returns:]OK/FAIL \end{Desc}
+
+
+Referenced by main().\hypertarget{classslsDetectorUsers_1857f2afea58227cb96ad92f5e562a5e}{
+\index{slsDetectorUsers@{sls\-Detector\-Users}!getDetectorSoftwareVersion@{getDetectorSoftwareVersion}}
+\index{getDetectorSoftwareVersion@{getDetectorSoftwareVersion}!slsDetectorUsers@{sls\-Detector\-Users}}
+\paragraph[getDetectorSoftwareVersion]{\setlength{\rightskip}{0pt plus 5cm}int64\_\-t sls\-Detector\-Users::get\-Detector\-Software\-Version ()}\hfill}
+\label{classslsDetectorUsers_1857f2afea58227cb96ad92f5e562a5e}
+
+
+get get Detector Software Version \begin{Desc}
+\item[Returns:]id \end{Desc}
+\hypertarget{classslsDetectorUsers_c7d0254e38b8fe783204f691a4ee05b2}{
+\index{slsDetectorUsers@{sls\-Detector\-Users}!getDetectorStatus@{getDetectorStatus}}
+\index{getDetectorStatus@{getDetectorStatus}!slsDetectorUsers@{sls\-Detector\-Users}}
+\paragraph[getDetectorStatus]{\setlength{\rightskip}{0pt plus 5cm}int sls\-Detector\-Users::get\-Detector\-Status ()}\hfill}
+\label{classslsDetectorUsers_c7d0254e38b8fe783204f691a4ee05b2}
+
+
+get run status 
+
+\begin{Desc}
+\item[Returns:]status mask \end{Desc}
+
+
+Referenced by main().\hypertarget{classslsDetectorUsers_5292a3d9c12696512b81bcc6c579a03c}{
+\index{slsDetectorUsers@{sls\-Detector\-Users}!getDetectorType@{getDetectorType}}
+\index{getDetectorType@{getDetectorType}!slsDetectorUsers@{sls\-Detector\-Users}}
+\paragraph[getDetectorType]{\setlength{\rightskip}{0pt plus 5cm}string sls\-Detector\-Users::get\-Detector\-Type ()}\hfill}
+\label{classslsDetectorUsers_5292a3d9c12696512b81bcc6c579a03c}
+
+
+useful for data plotting etc. 
+
+\begin{Desc}
+\item[Returns:]Mythen, Eiger, Gotthard etc. \end{Desc}
+\hypertarget{classslsDetectorUsers_6e3467bf3c0c246f69f85d485d84dd62}{
+\index{slsDetectorUsers@{sls\-Detector\-Users}!getFileIndex@{getFileIndex}}
+\index{getFileIndex@{getFileIndex}!slsDetectorUsers@{sls\-Detector\-Users}}
+\paragraph[getFileIndex]{\setlength{\rightskip}{0pt plus 5cm}int sls\-Detector\-Users::get\-File\-Index ()}\hfill}
+\label{classslsDetectorUsers_6e3467bf3c0c246f69f85d485d84dd62}
+
+
+\begin{Desc}
+\item[Returns:]the default output file index \end{Desc}
+\hypertarget{classslsDetectorUsers_5f30c83e8bf07a92fad0916d43e3799c}{
+\index{slsDetectorUsers@{sls\-Detector\-Users}!getFileName@{getFileName}}
+\index{getFileName@{getFileName}!slsDetectorUsers@{sls\-Detector\-Users}}
+\paragraph[getFileName]{\setlength{\rightskip}{0pt plus 5cm}string sls\-Detector\-Users::get\-File\-Name ()}\hfill}
+\label{classslsDetectorUsers_5f30c83e8bf07a92fad0916d43e3799c}
+
+
+\begin{Desc}
+\item[Returns:]the default output files root name \end{Desc}
+\hypertarget{classslsDetectorUsers_81969295c2b08f14e9c3d4fa1f7d4e16}{
+\index{slsDetectorUsers@{sls\-Detector\-Users}!getFilePath@{getFilePath}}
+\index{getFilePath@{getFilePath}!slsDetectorUsers@{sls\-Detector\-Users}}
+\paragraph[getFilePath]{\setlength{\rightskip}{0pt plus 5cm}string sls\-Detector\-Users::get\-File\-Path ()}\hfill}
+\label{classslsDetectorUsers_81969295c2b08f14e9c3d4fa1f7d4e16}
+
+
+returns the default output files path 
+
+\hypertarget{classslsDetectorUsers_0b20511a94205abd689f31bd1a2d4c18}{
+\index{slsDetectorUsers@{sls\-Detector\-Users}!getFlatFieldCorrectionDir@{getFlatFieldCorrectionDir}}
+\index{getFlatFieldCorrectionDir@{getFlatFieldCorrectionDir}!slsDetectorUsers@{sls\-Detector\-Users}}
+\paragraph[getFlatFieldCorrectionDir]{\setlength{\rightskip}{0pt plus 5cm}string sls\-Detector\-Users::get\-Flat\-Field\-Correction\-Dir ()}\hfill}
+\label{classslsDetectorUsers_0b20511a94205abd689f31bd1a2d4c18}
+
+
+get flat field corrections file directory 
+
+\begin{Desc}
+\item[Returns:]flat field correction file directory \end{Desc}
+\hypertarget{classslsDetectorUsers_a83083f73523557e6129f33b59f38327}{
+\index{slsDetectorUsers@{sls\-Detector\-Users}!getFlatFieldCorrectionFile@{getFlatFieldCorrectionFile}}
+\index{getFlatFieldCorrectionFile@{getFlatFieldCorrectionFile}!slsDetectorUsers@{sls\-Detector\-Users}}
+\paragraph[getFlatFieldCorrectionFile]{\setlength{\rightskip}{0pt plus 5cm}string sls\-Detector\-Users::get\-Flat\-Field\-Correction\-File ()}\hfill}
+\label{classslsDetectorUsers_a83083f73523557e6129f33b59f38327}
+
+
+get flat field corrections file name 
+
+\begin{Desc}
+\item[Returns:]flat field correction file name \end{Desc}
+\hypertarget{classslsDetectorUsers_588a5e1d231cd6778f6f78fdc53b9681}{
+\index{slsDetectorUsers@{sls\-Detector\-Users}!getMaximumDetectorSize@{getMaximumDetectorSize}}
+\index{getMaximumDetectorSize@{getMaximumDetectorSize}!slsDetectorUsers@{sls\-Detector\-Users}}
+\paragraph[getMaximumDetectorSize]{\setlength{\rightskip}{0pt plus 5cm}int sls\-Detector\-Users::get\-Maximum\-Detector\-Size (int \& {\em nx}, int \& {\em ny})}\hfill}
+\label{classslsDetectorUsers_588a5e1d231cd6778f6f78fdc53b9681}
+
+
+setsthe maximum detector size 
+
+\begin{Desc}
+\item[Parameters:]
+\begin{description}
+\item[{\em x0}]horizontal position origin in channel number \item[{\em y0}]vertical position origin in channel number \item[{\em nx}]number of channels in horiziontal \item[{\em ny}]number of channels in vertical \end{description}
+\end{Desc}
+\begin{Desc}
+\item[Returns:]OK/FAIL \end{Desc}
+\hypertarget{classslsDetectorUsers_09ded3b9c81e4544d42bb0697c3b7624}{
+\index{slsDetectorUsers@{sls\-Detector\-Users}!getModuleFirmwareVersion@{getModuleFirmwareVersion}}
+\index{getModuleFirmwareVersion@{getModuleFirmwareVersion}!slsDetectorUsers@{sls\-Detector\-Users}}
+\paragraph[getModuleFirmwareVersion]{\setlength{\rightskip}{0pt plus 5cm}int64\_\-t sls\-Detector\-Users::get\-Module\-Firmware\-Version ()}\hfill}
+\label{classslsDetectorUsers_09ded3b9c81e4544d42bb0697c3b7624}
+
+
+get get Module Firmware Version \begin{Desc}
+\item[Returns:]id \end{Desc}
+\hypertarget{classslsDetectorUsers_5c0e9f8836e1a8a2d986408e4f5dfd3b}{
+\index{slsDetectorUsers@{sls\-Detector\-Users}!getModuleSerialNumber@{getModuleSerialNumber}}
+\index{getModuleSerialNumber@{getModuleSerialNumber}!slsDetectorUsers@{sls\-Detector\-Users}}
+\paragraph[getModuleSerialNumber]{\setlength{\rightskip}{0pt plus 5cm}int64\_\-t sls\-Detector\-Users::get\-Module\-Serial\-Number (int {\em imod} = {\tt -1})}\hfill}
+\label{classslsDetectorUsers_5c0e9f8836e1a8a2d986408e4f5dfd3b}
+
+
+get get Module Serial Number \begin{Desc}
+\item[Parameters:]
+\begin{description}
+\item[{\em imod}]module number \end{description}
+\end{Desc}
+\begin{Desc}
+\item[Returns:]id \end{Desc}
+\hypertarget{classslsDetectorUsers_e6e5f06995e3ef110824adc5f8b095e9}{
+\index{slsDetectorUsers@{sls\-Detector\-Users}!getPositions@{getPositions}}
+\index{getPositions@{getPositions}!slsDetectorUsers@{sls\-Detector\-Users}}
+\paragraph[getPositions]{\setlength{\rightskip}{0pt plus 5cm}int sls\-Detector\-Users::get\-Positions (double $\ast$ {\em pos} = {\tt NULL})}\hfill}
+\label{classslsDetectorUsers_e6e5f06995e3ef110824adc5f8b095e9}
+
+
+get positions for the acquisition 
+
+\begin{Desc}
+\item[Parameters:]
+\begin{description}
+\item[{\em pos}]array which will contain the encoder positions \end{description}
+\end{Desc}
+\begin{Desc}
+\item[Returns:]number of positions \end{Desc}
+\hypertarget{classslsDetectorUsers_547feb09262a2f0fa1ec4de82e92ab63}{
+\index{slsDetectorUsers@{sls\-Detector\-Users}!getThisSoftwareVersion@{getThisSoftwareVersion}}
+\index{getThisSoftwareVersion@{getThisSoftwareVersion}!slsDetectorUsers@{sls\-Detector\-Users}}
+\paragraph[getThisSoftwareVersion]{\setlength{\rightskip}{0pt plus 5cm}int64\_\-t sls\-Detector\-Users::get\-This\-Software\-Version ()}\hfill}
+\label{classslsDetectorUsers_547feb09262a2f0fa1ec4de82e92ab63}
+
+
+get this Software Version \begin{Desc}
+\item[Returns:]id \end{Desc}
+\hypertarget{classslsDetectorUsers_fe8029788742125c44383817f89214ca}{
+\index{slsDetectorUsers@{sls\-Detector\-Users}!getThresholdEnergy@{getThresholdEnergy}}
+\index{getThresholdEnergy@{getThresholdEnergy}!slsDetectorUsers@{sls\-Detector\-Users}}
+\paragraph[getThresholdEnergy]{\setlength{\rightskip}{0pt plus 5cm}int sls\-Detector\-Users::get\-Threshold\-Energy ()}\hfill}
+\label{classslsDetectorUsers_fe8029788742125c44383817f89214ca}
+
+
+get threshold energy 
+
+\begin{Desc}
+\item[Returns:]current threshold value for imod in ev (-1 failed) \end{Desc}
+\hypertarget{classslsDetectorUsers_e88a9626e4e661c1c0e1d27ba4a57d50}{
+\index{slsDetectorUsers@{sls\-Detector\-Users}!getTimingMode@{getTimingMode}}
+\index{getTimingMode@{getTimingMode}!slsDetectorUsers@{sls\-Detector\-Users}}
+\paragraph[getTimingMode]{\setlength{\rightskip}{0pt plus 5cm}static int sls\-Detector\-Users::get\-Timing\-Mode (string {\em s})\hspace{0.3cm}{\tt  \mbox{[}inline, static\mbox{]}}}\hfill}
+\label{classslsDetectorUsers_e88a9626e4e661c1c0e1d27ba4a57d50}
+
+
+returns external communication mode string from index 
+
+\begin{Desc}
+\item[Parameters:]
+\begin{description}
+\item[{\em f}]index for communication mode \end{description}
+\end{Desc}
+\begin{Desc}
+\item[Returns:]auto, trigger, ro\_\-trigger, gating, triggered\_\-gating, unknown when wrong mode \end{Desc}
+
+
+Definition at line 625 of file sls\-Detector\-Users.h.\hypertarget{classslsDetectorUsers_420880726f4036bf9da83edfcb2d6cf0}{
+\index{slsDetectorUsers@{sls\-Detector\-Users}!getTimingMode@{getTimingMode}}
+\index{getTimingMode@{getTimingMode}!slsDetectorUsers@{sls\-Detector\-Users}}
+\paragraph[getTimingMode]{\setlength{\rightskip}{0pt plus 5cm}static string sls\-Detector\-Users::get\-Timing\-Mode (int {\em f})\hspace{0.3cm}{\tt  \mbox{[}inline, static\mbox{]}}}\hfill}
+\label{classslsDetectorUsers_420880726f4036bf9da83edfcb2d6cf0}
+
+
+returns external communication mode string from index 
+
+\begin{Desc}
+\item[Parameters:]
+\begin{description}
+\item[{\em f}]index for communication mode \end{description}
+\end{Desc}
+\begin{Desc}
+\item[Returns:]auto, trigger, ro\_\-trigger, gating, triggered\_\-gating, unknown when wrong mode \end{Desc}
+
+
+Definition at line 609 of file sls\-Detector\-Users.h.\hypertarget{classslsDetectorUsers_56fa8890298a01fc58baad413dfdf1c1}{
+\index{slsDetectorUsers@{sls\-Detector\-Users}!initDataset@{initDataset}}
+\index{initDataset@{initDataset}!slsDetectorUsers@{sls\-Detector\-Users}}
+\paragraph[initDataset]{\setlength{\rightskip}{0pt plus 5cm}virtual void sls\-Detector\-Users::init\-Dataset (int {\em refresh})\hspace{0.3cm}{\tt  \mbox{[}virtual\mbox{]}}}\hfill}
+\label{classslsDetectorUsers_56fa8890298a01fc58baad413dfdf1c1}
+
+
+function to initalize a set of measurements (reset binning if angular conversion, reset summing otherwise) - can be overcome by the user's functions thanks to the virtual property 
+
+\begin{Desc}
+\item[Parameters:]
+\begin{description}
+\item[{\em refresh}]if 1, all parameters like ffcoefficients, badchannels, ratecorrections etc. are reset (should be called at least onece with this option), if 0 simply reset merging/ summation \end{description}
+\end{Desc}
+\hypertarget{classslsDetectorUsers_5f7c26833decef59c1abfd7d745c4671}{
+\index{slsDetectorUsers@{sls\-Detector\-Users}!putCommand@{putCommand}}
+\index{putCommand@{putCommand}!slsDetectorUsers@{sls\-Detector\-Users}}
+\paragraph[putCommand]{\setlength{\rightskip}{0pt plus 5cm}string sls\-Detector\-Users::put\-Command (int {\em narg}, char $\ast$ {\em args}\mbox{[}$\,$\mbox{]}, int {\em pos} = {\tt -1})}\hfill}
+\label{classslsDetectorUsers_5f7c26833decef59c1abfd7d745c4671}
+
+
+sets parameters in command interface \href{http://www.psi.ch/detectors/UsersSupportEN/slsDetectorClientHowTo.pdf}\tt{http://www.psi.ch/detectors/Users\-Support\-EN/sls\-Detector\-Client\-How\-To.pdf} 
+
+\begin{Desc}
+\item[Parameters:]
+\begin{description}
+\item[{\em narg}]value to be set \item[{\em args}]value to be set \item[{\em pos}]position of detector in multislsdetector list \end{description}
+\end{Desc}
+\begin{Desc}
+\item[Returns:]answer string \end{Desc}
+\hypertarget{classslsDetectorUsers_8aeda7c2cbc270c7f8756761823e8d95}{
+\index{slsDetectorUsers@{sls\-Detector\-Users}!readConfigurationFile@{readConfigurationFile}}
+\index{readConfigurationFile@{readConfigurationFile}!slsDetectorUsers@{sls\-Detector\-Users}}
+\paragraph[readConfigurationFile]{\setlength{\rightskip}{0pt plus 5cm}int sls\-Detector\-Users::read\-Configuration\-File (string const  {\em fname})}\hfill}
+\label{classslsDetectorUsers_8aeda7c2cbc270c7f8756761823e8d95}
+
+
+Reads the configuration file -- will contain all the informations needed for the configuration (e.g. for a PSI detector caldir, settingsdir, angconv, badchannels, hostname etc.). 
+
+\begin{Desc}
+\item[Parameters:]
+\begin{description}
+\item[{\em fname}]file name \end{description}
+\end{Desc}
+\begin{Desc}
+\item[Returns:]OK or FAIL \end{Desc}
+
+
+Referenced by main().\hypertarget{classslsDetectorUsers_2a85e28ff08e3ec1e08bea3ba7d0fb08}{
+\index{slsDetectorUsers@{sls\-Detector\-Users}!registerAcquisitionFinishedCallback@{registerAcquisitionFinishedCallback}}
+\index{registerAcquisitionFinishedCallback@{registerAcquisitionFinishedCallback}!slsDetectorUsers@{sls\-Detector\-Users}}
+\paragraph[registerAcquisitionFinishedCallback]{\setlength{\rightskip}{0pt plus 5cm}void sls\-Detector\-Users::register\-Acquisition\-Finished\-Callback (int($\ast$)(double, int, void $\ast$) {\em func}, void $\ast$ {\em p\-Arg})}\hfill}
+\label{classslsDetectorUsers_2a85e28ff08e3ec1e08bea3ba7d0fb08}
+
+
+register calbback for accessing detector final data 
+
+\begin{Desc}
+\item[Parameters:]
+\begin{description}
+\item[{\em func}]function to be called at the end of the acquisition. gets detector status and progress index as arguments \end{description}
+\end{Desc}
+\hypertarget{classslsDetectorUsers_d1ab73675435879c2c5cef7adab02c32}{
+\index{slsDetectorUsers@{sls\-Detector\-Users}!registerConnectChannelsCallback@{registerConnectChannelsCallback}}
+\index{registerConnectChannelsCallback@{registerConnectChannelsCallback}!slsDetectorUsers@{sls\-Detector\-Users}}
+\paragraph[registerConnectChannelsCallback]{\setlength{\rightskip}{0pt plus 5cm}void sls\-Detector\-Users::register\-Connect\-Channels\-Callback (int($\ast$)(void $\ast$) {\em func}, void $\ast$ {\em arg})}\hfill}
+\label{classslsDetectorUsers_d1ab73675435879c2c5cef7adab02c32}
+
+
+register callback for connecting to the epics channels 
+
+\begin{Desc}
+\item[Parameters:]
+\begin{description}
+\item[{\em func}]function for connecting to the epics channels \end{description}
+\end{Desc}
+\hypertarget{classslsDetectorUsers_4a1db91fc49fc1710f98ce98e33bc16b}{
+\index{slsDetectorUsers@{sls\-Detector\-Users}!registerDataCallback@{registerDataCallback}}
+\index{registerDataCallback@{registerDataCallback}!slsDetectorUsers@{sls\-Detector\-Users}}
+\paragraph[registerDataCallback]{\setlength{\rightskip}{0pt plus 5cm}void sls\-Detector\-Users::register\-Data\-Callback (int($\ast$)(\hyperlink{classdetectorData}{detector\-Data} $\ast$d, int f, void $\ast$) {\em user\-Callback}, void $\ast$ {\em p\-Arg})}\hfill}
+\label{classslsDetectorUsers_4a1db91fc49fc1710f98ce98e33bc16b}
+
+
+register calbback for accessing detector final data 
+
+\begin{Desc}
+\item[Parameters:]
+\begin{description}
+\item[{\em user\-Callback}]function for plotting/analyzing the data. Its arguments are the data structure d and the frame number f. \end{description}
+\end{Desc}
+
+
+Referenced by main().\hypertarget{classslsDetectorUsers_a94dd8fce8548ba8e79201ec50fe27d6}{
+\index{slsDetectorUsers@{sls\-Detector\-Users}!registerDisconnectChannelsCallback@{registerDisconnectChannelsCallback}}
+\index{registerDisconnectChannelsCallback@{registerDisconnectChannelsCallback}!slsDetectorUsers@{sls\-Detector\-Users}}
+\paragraph[registerDisconnectChannelsCallback]{\setlength{\rightskip}{0pt plus 5cm}void sls\-Detector\-Users::register\-Disconnect\-Channels\-Callback (int($\ast$)(void $\ast$) {\em func}, void $\ast$ {\em arg})}\hfill}
+\label{classslsDetectorUsers_a94dd8fce8548ba8e79201ec50fe27d6}
+
+
+register callback to disconnect the epics channels 
+
+\begin{Desc}
+\item[Parameters:]
+\begin{description}
+\item[{\em func}]function to disconnect the epics channels \end{description}
+\end{Desc}
+\hypertarget{classslsDetectorUsers_1969785197030aa8e2d3c3d48a9cb45c}{
+\index{slsDetectorUsers@{sls\-Detector\-Users}!registerGetI0Callback@{registerGetI0Callback}}
+\index{registerGetI0Callback@{registerGetI0Callback}!slsDetectorUsers@{sls\-Detector\-Users}}
+\paragraph[registerGetI0Callback]{\setlength{\rightskip}{0pt plus 5cm}void sls\-Detector\-Users::register\-Get\-I0Callback (double($\ast$)(int, void $\ast$) {\em func}, void $\ast$ {\em arg})}\hfill}
+\label{classslsDetectorUsers_1969785197030aa8e2d3c3d48a9cb45c}
+
+
+register calbback reading to I0 
+
+\begin{Desc}
+\item[Parameters:]
+\begin{description}
+\item[{\em func}]function for reading the I0 (called with parameter 0 before the acquisition, 1 after and the return value used as I0) \end{description}
+\end{Desc}
+\hypertarget{classslsDetectorUsers_c2b87416288e657a209e1374c778eb16}{
+\index{slsDetectorUsers@{sls\-Detector\-Users}!registerGetPositionCallback@{registerGetPositionCallback}}
+\index{registerGetPositionCallback@{registerGetPositionCallback}!slsDetectorUsers@{sls\-Detector\-Users}}
+\paragraph[registerGetPositionCallback]{\setlength{\rightskip}{0pt plus 5cm}void sls\-Detector\-Users::register\-Get\-Position\-Callback (double($\ast$)(void $\ast$) {\em func}, void $\ast$ {\em arg})}\hfill}
+\label{classslsDetectorUsers_c2b87416288e657a209e1374c778eb16}
+
+
+register calbback for reading detector position 
+
+\begin{Desc}
+\item[Parameters:]
+\begin{description}
+\item[{\em func}]function for reading the detector position \end{description}
+\end{Desc}
+\hypertarget{classslsDetectorUsers_0f7c9bd3c46647d5dda2fa5312f3ef92}{
+\index{slsDetectorUsers@{sls\-Detector\-Users}!registerGoToPositionCallback@{registerGoToPositionCallback}}
+\index{registerGoToPositionCallback@{registerGoToPositionCallback}!slsDetectorUsers@{sls\-Detector\-Users}}
+\paragraph[registerGoToPositionCallback]{\setlength{\rightskip}{0pt plus 5cm}void sls\-Detector\-Users::register\-Go\-To\-Position\-Callback (int($\ast$)(double, void $\ast$) {\em func}, void $\ast$ {\em arg})}\hfill}
+\label{classslsDetectorUsers_0f7c9bd3c46647d5dda2fa5312f3ef92}
+
+
+register callback for moving the detector 
+
+\begin{Desc}
+\item[Parameters:]
+\begin{description}
+\item[{\em func}]function for moving the detector \end{description}
+\end{Desc}
+\hypertarget{classslsDetectorUsers_e807e9f4a015a4bbcb22e36b80577ea5}{
+\index{slsDetectorUsers@{sls\-Detector\-Users}!registerGoToPositionNoWaitCallback@{registerGoToPositionNoWaitCallback}}
+\index{registerGoToPositionNoWaitCallback@{registerGoToPositionNoWaitCallback}!slsDetectorUsers@{sls\-Detector\-Users}}
+\paragraph[registerGoToPositionNoWaitCallback]{\setlength{\rightskip}{0pt plus 5cm}void sls\-Detector\-Users::register\-Go\-To\-Position\-No\-Wait\-Callback (int($\ast$)(double, void $\ast$) {\em func}, void $\ast$ {\em arg})}\hfill}
+\label{classslsDetectorUsers_e807e9f4a015a4bbcb22e36b80577ea5}
+
+
+register callback for moving the detector without waiting 
+
+\begin{Desc}
+\item[Parameters:]
+\begin{description}
+\item[{\em func}]function for moving the detector \end{description}
+\end{Desc}
+\hypertarget{classslsDetectorUsers_898cf0db148f0d3de7d4725cc8342c56}{
+\index{slsDetectorUsers@{sls\-Detector\-Users}!registerRawDataCallback@{registerRawDataCallback}}
+\index{registerRawDataCallback@{registerRawDataCallback}!slsDetectorUsers@{sls\-Detector\-Users}}
+\paragraph[registerRawDataCallback]{\setlength{\rightskip}{0pt plus 5cm}void sls\-Detector\-Users::register\-Raw\-Data\-Callback (int($\ast$)(double $\ast$p, int n, void $\ast$) {\em user\-Callback}, void $\ast$ {\em p\-Arg})}\hfill}
+\label{classslsDetectorUsers_898cf0db148f0d3de7d4725cc8342c56}
+
+
+register callback for accessing raw data - if the raw\-Data\-Callback is registered, no filewriting/postprocessing will be carried on automatically by the software - the raw data are deleted by the software 
+
+\begin{Desc}
+\item[Parameters:]
+\begin{description}
+\item[{\em user\-Callback}]function for postprocessing and saving the data - p is the pointer to the data, n is the number of channels \end{description}
+\end{Desc}
+\hypertarget{classslsDetectorUsers_8769c8ea5020b43dc3557c86f9e4159b}{
+\index{slsDetectorUsers@{sls\-Detector\-Users}!retrieveDetectorSetup@{retrieveDetectorSetup}}
+\index{retrieveDetectorSetup@{retrieveDetectorSetup}!slsDetectorUsers@{sls\-Detector\-Users}}
+\paragraph[retrieveDetectorSetup]{\setlength{\rightskip}{0pt plus 5cm}int sls\-Detector\-Users::retrieve\-Detector\-Setup (string const  {\em fname})}\hfill}
+\label{classslsDetectorUsers_8769c8ea5020b43dc3557c86f9e4159b}
+
+
+Loads the detector setup from file. 
+
+\begin{Desc}
+\item[Parameters:]
+\begin{description}
+\item[{\em fname}]file to read from \end{description}
+\end{Desc}
+\begin{Desc}
+\item[Returns:]OK or FAIL \end{Desc}
+
+
+Referenced by main().\hypertarget{classslsDetectorUsers_2c073513ae3ac53f3e040bc2911b6ee2}{
+\index{slsDetectorUsers@{sls\-Detector\-Users}!runStatusType@{runStatusType}}
+\index{runStatusType@{runStatusType}!slsDetectorUsers@{sls\-Detector\-Users}}
+\paragraph[runStatusType]{\setlength{\rightskip}{0pt plus 5cm}static string sls\-Detector\-Users::run\-Status\-Type (int {\em s})\hspace{0.3cm}{\tt  \mbox{[}inline, static\mbox{]}}}\hfill}
+\label{classslsDetectorUsers_2c073513ae3ac53f3e040bc2911b6ee2}
+
+
+returns string from run status index 
+
+\begin{Desc}
+\item[Parameters:]
+\begin{description}
+\item[{\em s}]run status index \end{description}
+\end{Desc}
+\begin{Desc}
+\item[Returns:]string error, waiting, running, data, finished or unknown when wrong index \end{Desc}
+
+
+Definition at line 557 of file sls\-Detector\-Users.h.
+
+Referenced by main().\hypertarget{classslsDetectorUsers_475938986407804877df4dcece97cc19}{
+\index{slsDetectorUsers@{sls\-Detector\-Users}!setBeamEnergy@{setBeamEnergy}}
+\index{setBeamEnergy@{setBeamEnergy}!slsDetectorUsers@{sls\-Detector\-Users}}
+\paragraph[setBeamEnergy]{\setlength{\rightskip}{0pt plus 5cm}int sls\-Detector\-Users::set\-Beam\-Energy (int {\em e\_\-e\-V})}\hfill}
+\label{classslsDetectorUsers_475938986407804877df4dcece97cc19}
+
+
+set beam energy -- only for dectris! 
+
+\begin{Desc}
+\item[Parameters:]
+\begin{description}
+\item[{\em e\_\-e\-V}]beam in e\-V \end{description}
+\end{Desc}
+\begin{Desc}
+\item[Returns:]current beam energyin ev (-1 failed) \end{Desc}
+\hypertarget{classslsDetectorUsers_ff667cf0665154cdff5d5f3dbc3526ba}{
+\index{slsDetectorUsers@{sls\-Detector\-Users}!setBitDepth@{setBitDepth}}
+\index{setBitDepth@{setBitDepth}!slsDetectorUsers@{sls\-Detector\-Users}}
+\paragraph[setBitDepth]{\setlength{\rightskip}{0pt plus 5cm}int sls\-Detector\-Users::set\-Bit\-Depth (int {\em i} = {\tt -1})}\hfill}
+\label{classslsDetectorUsers_ff667cf0665154cdff5d5f3dbc3526ba}
+
+
+set/get dynamic range 
+
+\begin{Desc}
+\item[Parameters:]
+\begin{description}
+\item[{\em i}]dynamic range (-1 get) \end{description}
+\end{Desc}
+\begin{Desc}
+\item[Returns:]current dynamic range \end{Desc}
+\hypertarget{classslsDetectorUsers_99f67fab7edfe68cc8b2300e282ff3f2}{
+\index{slsDetectorUsers@{sls\-Detector\-Users}!setDelayAfterTrigger@{setDelayAfterTrigger}}
+\index{setDelayAfterTrigger@{setDelayAfterTrigger}!slsDetectorUsers@{sls\-Detector\-Users}}
+\paragraph[setDelayAfterTrigger]{\setlength{\rightskip}{0pt plus 5cm}double sls\-Detector\-Users::set\-Delay\-After\-Trigger (double {\em t} = {\tt -1}, bool {\em inseconds} = {\tt false})}\hfill}
+\label{classslsDetectorUsers_99f67fab7edfe68cc8b2300e282ff3f2}
+
+
+set/get delay after trigger 
+
+\begin{Desc}
+\item[Parameters:]
+\begin{description}
+\item[{\em t}]time in ns (-1 gets) \item[{\em inseconds}]true if the value is in s, else ns \end{description}
+\end{Desc}
+\begin{Desc}
+\item[Returns:]timer set value in ns, or s if specified \end{Desc}
+\hypertarget{classslsDetectorUsers_42c97d03516a2457f8e9a98a16a9a43d}{
+\index{slsDetectorUsers@{sls\-Detector\-Users}!setDetectorSize@{setDetectorSize}}
+\index{setDetectorSize@{setDetectorSize}!slsDetectorUsers@{sls\-Detector\-Users}}
+\paragraph[setDetectorSize]{\setlength{\rightskip}{0pt plus 5cm}int sls\-Detector\-Users::set\-Detector\-Size (int {\em x0} = {\tt -1}, int {\em y0} = {\tt -1}, int {\em nx} = {\tt -1}, int {\em ny} = {\tt -1})}\hfill}
+\label{classslsDetectorUsers_42c97d03516a2457f8e9a98a16a9a43d}
+
+
+sets the detector size 
+
+\begin{Desc}
+\item[Parameters:]
+\begin{description}
+\item[{\em x0}]horizontal position origin in channel number (-1 unchanged) \item[{\em y0}]vertical position origin in channel number (-1 unchanged) \item[{\em nx}]number of channels in horiziontal (-1 unchanged) \item[{\em ny}]number of channels in vertical (-1 unchanged) \end{description}
+\end{Desc}
+\begin{Desc}
+\item[Returns:]OK/FAIL \end{Desc}
+
+
+Referenced by main().\hypertarget{classslsDetectorUsers_cac89084aba58ebe81420c7c9ac4217a}{
+\index{slsDetectorUsers@{sls\-Detector\-Users}!setExposurePeriod@{setExposurePeriod}}
+\index{setExposurePeriod@{setExposurePeriod}!slsDetectorUsers@{sls\-Detector\-Users}}
+\paragraph[setExposurePeriod]{\setlength{\rightskip}{0pt plus 5cm}double sls\-Detector\-Users::set\-Exposure\-Period (double {\em t} = {\tt -1}, bool {\em inseconds} = {\tt false})}\hfill}
+\label{classslsDetectorUsers_cac89084aba58ebe81420c7c9ac4217a}
+
+
+set/get exposure period 
+
+\begin{Desc}
+\item[Parameters:]
+\begin{description}
+\item[{\em t}]time in ns (-1 gets) \item[{\em inseconds}]true if the value is in s, else ns \end{description}
+\end{Desc}
+\begin{Desc}
+\item[Returns:]timer set value in ns, or s if specified \end{Desc}
+
+
+Referenced by main().\hypertarget{classslsDetectorUsers_134225893d41bc97e9f1d645e035a04a}{
+\index{slsDetectorUsers@{sls\-Detector\-Users}!setExposureTime@{setExposureTime}}
+\index{setExposureTime@{setExposureTime}!slsDetectorUsers@{sls\-Detector\-Users}}
+\paragraph[setExposureTime]{\setlength{\rightskip}{0pt plus 5cm}double sls\-Detector\-Users::set\-Exposure\-Time (double {\em t} = {\tt -1}, bool {\em inseconds} = {\tt false})}\hfill}
+\label{classslsDetectorUsers_134225893d41bc97e9f1d645e035a04a}
+
+
+set/get exposure time value 
+
+\begin{Desc}
+\item[Parameters:]
+\begin{description}
+\item[{\em t}]time in sn (-1 gets) \item[{\em inseconds}]true if the value is in s, else ns \end{description}
+\end{Desc}
+\begin{Desc}
+\item[Returns:]timer set value in ns, or s if specified \end{Desc}
+
+
+Referenced by main().\hypertarget{classslsDetectorUsers_6b92ea7e237c77aa5107d7aabf76fe2d}{
+\index{slsDetectorUsers@{sls\-Detector\-Users}!setFileIndex@{setFileIndex}}
+\index{setFileIndex@{setFileIndex}!slsDetectorUsers@{sls\-Detector\-Users}}
+\paragraph[setFileIndex]{\setlength{\rightskip}{0pt plus 5cm}int sls\-Detector\-Users::set\-File\-Index (int {\em i})}\hfill}
+\label{classslsDetectorUsers_6b92ea7e237c77aa5107d7aabf76fe2d}
+
+
+sets the default output file index 
+
+\begin{Desc}
+\item[Parameters:]
+\begin{description}
+\item[{\em i}]file index \end{description}
+\end{Desc}
+\begin{Desc}
+\item[Returns:]the default output file index \end{Desc}
+\hypertarget{classslsDetectorUsers_ff4a8ff4852e50d4ec05204cbc7fea9e}{
+\index{slsDetectorUsers@{sls\-Detector\-Users}!setFileName@{setFileName}}
+\index{setFileName@{setFileName}!slsDetectorUsers@{sls\-Detector\-Users}}
+\paragraph[setFileName]{\setlength{\rightskip}{0pt plus 5cm}string sls\-Detector\-Users::set\-File\-Name (string {\em s})}\hfill}
+\label{classslsDetectorUsers_ff4a8ff4852e50d4ec05204cbc7fea9e}
+
+
+sets the default output files path 
+
+\begin{Desc}
+\item[Parameters:]
+\begin{description}
+\item[{\em s}]file name \end{description}
+\end{Desc}
+\begin{Desc}
+\item[Returns:]the default output files root name \end{Desc}
+\hypertarget{classslsDetectorUsers_d833e1051299e101a5b5097c598ba9cb}{
+\index{slsDetectorUsers@{sls\-Detector\-Users}!setFilePath@{setFilePath}}
+\index{setFilePath@{setFilePath}!slsDetectorUsers@{sls\-Detector\-Users}}
+\paragraph[setFilePath]{\setlength{\rightskip}{0pt plus 5cm}string sls\-Detector\-Users::set\-File\-Path (string {\em s})}\hfill}
+\label{classslsDetectorUsers_d833e1051299e101a5b5097c598ba9cb}
+
+
+sets the default output files path 
+
+\begin{Desc}
+\item[Parameters:]
+\begin{description}
+\item[{\em s}]file path \end{description}
+\end{Desc}
+\begin{Desc}
+\item[Returns:]file path \end{Desc}
+\hypertarget{classslsDetectorUsers_65b112dac3d8b94f219f4d64c13cf0f9}{
+\index{slsDetectorUsers@{sls\-Detector\-Users}!setFlatFieldCorrectionDir@{setFlatFieldCorrectionDir}}
+\index{setFlatFieldCorrectionDir@{setFlatFieldCorrectionDir}!slsDetectorUsers@{sls\-Detector\-Users}}
+\paragraph[setFlatFieldCorrectionDir]{\setlength{\rightskip}{0pt plus 5cm}string sls\-Detector\-Users::set\-Flat\-Field\-Correction\-Dir (string {\em dir})}\hfill}
+\label{classslsDetectorUsers_65b112dac3d8b94f219f4d64c13cf0f9}
+
+
+set flat field corrections file directory 
+
+\begin{Desc}
+\item[Parameters:]
+\begin{description}
+\item[{\em dir}]flat field correction file directory \end{description}
+\end{Desc}
+\begin{Desc}
+\item[Returns:]flat field correction file directory \end{Desc}
+\hypertarget{classslsDetectorUsers_ad9e6da8683ba2887174505fd3b7d739}{
+\index{slsDetectorUsers@{sls\-Detector\-Users}!setFlatFieldCorrectionFile@{setFlatFieldCorrectionFile}}
+\index{setFlatFieldCorrectionFile@{setFlatFieldCorrectionFile}!slsDetectorUsers@{sls\-Detector\-Users}}
+\paragraph[setFlatFieldCorrectionFile]{\setlength{\rightskip}{0pt plus 5cm}int sls\-Detector\-Users::set\-Flat\-Field\-Correction\-File (string {\em fname} = {\tt \char`\"{}\char`\"{}})}\hfill}
+\label{classslsDetectorUsers_ad9e6da8683ba2887174505fd3b7d739}
+
+
+set flat field correction file 
+
+\begin{Desc}
+\item[Parameters:]
+\begin{description}
+\item[{\em fname}]name of the flat field file (or \char`\"{}\char`\"{} if disable) \end{description}
+\end{Desc}
+\begin{Desc}
+\item[Returns:]0 if disable (or file could not be read), $>$0 otherwise \end{Desc}
+\hypertarget{classslsDetectorUsers_8b741851c4eaef4e29322c99fd17cb3b}{
+\index{slsDetectorUsers@{sls\-Detector\-Users}!setNumberOfCycles@{setNumberOfCycles}}
+\index{setNumberOfCycles@{setNumberOfCycles}!slsDetectorUsers@{sls\-Detector\-Users}}
+\paragraph[setNumberOfCycles]{\setlength{\rightskip}{0pt plus 5cm}int64\_\-t sls\-Detector\-Users::set\-Number\-Of\-Cycles (int64\_\-t {\em t} = {\tt -1})}\hfill}
+\label{classslsDetectorUsers_8b741851c4eaef4e29322c99fd17cb3b}
+
+
+set/get number of cycles i.e. number of triggers 
+
+\begin{Desc}
+\item[Parameters:]
+\begin{description}
+\item[{\em t}]number of frames (-1 gets) \end{description}
+\end{Desc}
+\begin{Desc}
+\item[Returns:]number of frames \end{Desc}
+\hypertarget{classslsDetectorUsers_fc82f608bf74d10f3aa866bff94cbbab}{
+\index{slsDetectorUsers@{sls\-Detector\-Users}!setNumberOfFrames@{setNumberOfFrames}}
+\index{setNumberOfFrames@{setNumberOfFrames}!slsDetectorUsers@{sls\-Detector\-Users}}
+\paragraph[setNumberOfFrames]{\setlength{\rightskip}{0pt plus 5cm}int64\_\-t sls\-Detector\-Users::set\-Number\-Of\-Frames (int64\_\-t {\em t} = {\tt -1})}\hfill}
+\label{classslsDetectorUsers_fc82f608bf74d10f3aa866bff94cbbab}
+
+
+set/get number of frames i.e. number of exposure per trigger 
+
+\begin{Desc}
+\item[Parameters:]
+\begin{description}
+\item[{\em t}]number of frames (-1 gets) \end{description}
+\end{Desc}
+\begin{Desc}
+\item[Returns:]number of frames \end{Desc}
+
+
+Referenced by main().\hypertarget{classslsDetectorUsers_61d4acb00c997c5e02be6a191401c4ce}{
+\index{slsDetectorUsers@{sls\-Detector\-Users}!setNumberOfGates@{setNumberOfGates}}
+\index{setNumberOfGates@{setNumberOfGates}!slsDetectorUsers@{sls\-Detector\-Users}}
+\paragraph[setNumberOfGates]{\setlength{\rightskip}{0pt plus 5cm}int64\_\-t sls\-Detector\-Users::set\-Number\-Of\-Gates (int64\_\-t {\em t} = {\tt -1})}\hfill}
+\label{classslsDetectorUsers_61d4acb00c997c5e02be6a191401c4ce}
+
+
+set/get number of gates 
+
+\begin{Desc}
+\item[Parameters:]
+\begin{description}
+\item[{\em t}]number of gates (-1 gets) \end{description}
+\end{Desc}
+\begin{Desc}
+\item[Returns:]number of gates \end{Desc}
+\hypertarget{classslsDetectorUsers_ee622153ebd6b0dad065d95b07221955}{
+\index{slsDetectorUsers@{sls\-Detector\-Users}!setOnline@{setOnline}}
+\index{setOnline@{setOnline}!slsDetectorUsers@{sls\-Detector\-Users}}
+\paragraph[setOnline]{\setlength{\rightskip}{0pt plus 5cm}int sls\-Detector\-Users::set\-Online (int const  {\em online} = {\tt -1})}\hfill}
+\label{classslsDetectorUsers_ee622153ebd6b0dad065d95b07221955}
+
+
+sets the online\-Flag 
+
+\begin{Desc}
+\item[Parameters:]
+\begin{description}
+\item[{\em online}]can be: -1 returns wether the detector is in online (1) or offline (0) state; 0 detector in offline state; 1 detector in online state \end{description}
+\end{Desc}
+\begin{Desc}
+\item[Returns:]0 (offline) or 1 (online) \end{Desc}
+
+
+Referenced by main().\hypertarget{classslsDetectorUsers_f296c05ee6134fb8d53d08a025e89775}{
+\index{slsDetectorUsers@{sls\-Detector\-Users}!setPositions@{setPositions}}
+\index{setPositions@{setPositions}!slsDetectorUsers@{sls\-Detector\-Users}}
+\paragraph[setPositions]{\setlength{\rightskip}{0pt plus 5cm}int sls\-Detector\-Users::set\-Positions (int {\em n\-Pos}, double $\ast$ {\em pos})}\hfill}
+\label{classslsDetectorUsers_f296c05ee6134fb8d53d08a025e89775}
+
+
+set positions for the acquisition 
+
+\begin{Desc}
+\item[Parameters:]
+\begin{description}
+\item[{\em n\-Pos}]number of positions \item[{\em pos}]array with the encoder positions \end{description}
+\end{Desc}
+\begin{Desc}
+\item[Returns:]number of positions \end{Desc}
+\hypertarget{classslsDetectorUsers_db084473ffe61960b86abdfa8efcc80d}{
+\index{slsDetectorUsers@{sls\-Detector\-Users}!setReceiverMode@{setReceiverMode}}
+\index{setReceiverMode@{setReceiverMode}!slsDetectorUsers@{sls\-Detector\-Users}}
+\paragraph[setReceiverMode]{\setlength{\rightskip}{0pt plus 5cm}int sls\-Detector\-Users::set\-Receiver\-Mode (int {\em n} = {\tt -1})}\hfill}
+\label{classslsDetectorUsers_db084473ffe61960b86abdfa8efcc80d}
+
+
+sets the mode by which gui requests data from receiver 
+
+\begin{Desc}
+\item[Parameters:]
+\begin{description}
+\item[{\em n}]is 0 for random requests for fast acquisitions and greater than 0 for nth read requests \end{description}
+\end{Desc}
+\begin{Desc}
+\item[Returns:]the mode set in the receiver \end{Desc}
+\hypertarget{classslsDetectorUsers_31b25d2659d3b244bb10b5516a9fd957}{
+\index{slsDetectorUsers@{sls\-Detector\-Users}!setSettings@{setSettings}}
+\index{setSettings@{setSettings}!slsDetectorUsers@{sls\-Detector\-Users}}
+\paragraph[setSettings]{\setlength{\rightskip}{0pt plus 5cm}int sls\-Detector\-Users::set\-Settings (int {\em isettings} = {\tt -1})}\hfill}
+\label{classslsDetectorUsers_31b25d2659d3b244bb10b5516a9fd957}
+
+
+set detector settings 
+
+\begin{Desc}
+\item[Parameters:]
+\begin{description}
+\item[{\em isettings}]settings index (-1 gets) \end{description}
+\end{Desc}
+\begin{Desc}
+\item[Returns:]current settings \end{Desc}
+
+
+Referenced by main().\hypertarget{classslsDetectorUsers_1354266fd1bfaccd58992a3f51bbbd1d}{
+\index{slsDetectorUsers@{sls\-Detector\-Users}!setThresholdEnergy@{setThresholdEnergy}}
+\index{setThresholdEnergy@{setThresholdEnergy}!slsDetectorUsers@{sls\-Detector\-Users}}
+\paragraph[setThresholdEnergy]{\setlength{\rightskip}{0pt plus 5cm}int sls\-Detector\-Users::set\-Threshold\-Energy (int {\em e\_\-e\-V})}\hfill}
+\label{classslsDetectorUsers_1354266fd1bfaccd58992a3f51bbbd1d}
+
+
+set threshold energy 
+
+\begin{Desc}
+\item[Parameters:]
+\begin{description}
+\item[{\em e\_\-e\-V}]threshold in e\-V \end{description}
+\end{Desc}
+\begin{Desc}
+\item[Returns:]current threshold value for imod in ev (-1 failed) \end{Desc}
+\hypertarget{classslsDetectorUsers_e2825524756c4bdf418a6233e137b4d7}{
+\index{slsDetectorUsers@{sls\-Detector\-Users}!setTimingMode@{setTimingMode}}
+\index{setTimingMode@{setTimingMode}!slsDetectorUsers@{sls\-Detector\-Users}}
+\paragraph[setTimingMode]{\setlength{\rightskip}{0pt plus 5cm}int sls\-Detector\-Users::set\-Timing\-Mode (int {\em pol} = {\tt -1})}\hfill}
+\label{classslsDetectorUsers_e2825524756c4bdf418a6233e137b4d7}
+
+
+set/get the external communication mode 
+
+\begin{Desc}
+\item[Parameters:]
+\begin{description}
+\item[{\em pol}]value to be set\end{description}
+\end{Desc}
+\begin{Desc}
+\item[See also:]\hyperlink{classslsDetectorUsers_420880726f4036bf9da83edfcb2d6cf0}{get\-Timing\-Mode} \end{Desc}
+\begin{Desc}
+\item[Returns:]current external communication mode \end{Desc}
+\hypertarget{classslsDetectorUsers_a34810bb0e872fdf929ebe62d8582bd3}{
+\index{slsDetectorUsers@{sls\-Detector\-Users}!startMeasurement@{startMeasurement}}
+\index{startMeasurement@{startMeasurement}!slsDetectorUsers@{sls\-Detector\-Users}}
+\paragraph[startMeasurement]{\setlength{\rightskip}{0pt plus 5cm}void sls\-Detector\-Users::start\-Measurement ()}\hfill}
+\label{classslsDetectorUsers_a34810bb0e872fdf929ebe62d8582bd3}
+
+
+start measurement and acquires 
+
+\begin{Desc}
+\item[Returns:]OK/FAIL \end{Desc}
+
+
+Referenced by main().\hypertarget{classslsDetectorUsers_2abc673c45c1fe006f6b0fea6188e3a9}{
+\index{slsDetectorUsers@{sls\-Detector\-Users}!stopMeasurement@{stopMeasurement}}
+\index{stopMeasurement@{stopMeasurement}!slsDetectorUsers@{sls\-Detector\-Users}}
+\paragraph[stopMeasurement]{\setlength{\rightskip}{0pt plus 5cm}int sls\-Detector\-Users::stop\-Measurement ()}\hfill}
+\label{classslsDetectorUsers_2abc673c45c1fe006f6b0fea6188e3a9}
+
+
+stop measurement 
+
+\begin{Desc}
+\item[Returns:]OK/FAIL \end{Desc}
+
+
+The documentation for this class was generated from the following file:\begin{CompactItemize}
+\item 
+\hyperlink{slsDetectorUsers_8h}{sls\-Detector\-Users.h}\end{CompactItemize}

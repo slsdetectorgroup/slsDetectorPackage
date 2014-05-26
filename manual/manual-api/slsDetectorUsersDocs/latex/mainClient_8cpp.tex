@@ -1,0 +1,79 @@
+\hypertarget{mainClient_8cpp}{
+\subsection{main\-Client.cpp File Reference}
+\label{mainClient_8cpp}\index{mainClient.cpp@{mainClient.cpp}}
+}
+{\tt \#include $<$iostream$>$}\par
+{\tt \#include \char`\"{}sls\-Detector\-Users.h\char`\"{}}\par
+{\tt \#include \char`\"{}detector\-Data.h\char`\"{}}\par
+\subsubsection*{Functions}
+\begin{CompactItemize}
+\item 
+int \hyperlink{mainClient_8cpp_21ef7438e7f0ed24a190513fb8e6af8a}{data\-Callback} (\hyperlink{classdetectorData}{detector\-Data} $\ast$p\-Data, int iframe, void $\ast$p\-Arg)
+\item 
+int \hyperlink{mainClient_8cpp_0ddf1224851353fc92bfbff6f499fa97}{main} (int argc, char $\ast$argv\mbox{[}$\,$\mbox{]})
+\end{CompactItemize}
+
+
+\subsubsection{Detailed Description}
+This file is an example of how to implement the \hyperlink{classslsDetectorUsers}{sls\-Detector\-Users} class You can compile it linking it to the sls\-Detector library
+
+gcc \hyperlink{mainClient_8cpp}{main\-Client.cpp} -L lib -l Sls\-Detector -lm -lpthread
+
+where lib is the location of lib\-Sls\-Detector.so 
+
+Definition in file \hyperlink{mainClient_8cpp-source}{main\-Client.cpp}.
+
+\subsubsection{Function Documentation}
+\hypertarget{mainClient_8cpp_21ef7438e7f0ed24a190513fb8e6af8a}{
+\index{mainClient.cpp@{main\-Client.cpp}!dataCallback@{dataCallback}}
+\index{dataCallback@{dataCallback}!mainClient.cpp@{main\-Client.cpp}}
+\paragraph[dataCallback]{\setlength{\rightskip}{0pt plus 5cm}int data\-Callback (\hyperlink{classdetectorData}{detector\-Data} $\ast$ {\em p\-Data}, int {\em iframe}, void $\ast$ {\em p\-Arg})}\hfill}
+\label{mainClient_8cpp_21ef7438e7f0ed24a190513fb8e6af8a}
+
+
+Definition of the data callback which simply prints out the number of points received and teh frame number 
+
+Definition at line 19 of file main\-Client.cpp.
+
+References detector\-Data::npoints, and detector\-Data::npy.
+
+Referenced by main().\hypertarget{mainClient_8cpp_0ddf1224851353fc92bfbff6f499fa97}{
+\index{mainClient.cpp@{main\-Client.cpp}!main@{main}}
+\index{main@{main}!mainClient.cpp@{main\-Client.cpp}}
+\paragraph[main]{\setlength{\rightskip}{0pt plus 5cm}int main (int {\em argc}, char $\ast$ {\em argv}\mbox{[}$\,$\mbox{]})}\hfill}
+\label{mainClient_8cpp_0ddf1224851353fc92bfbff6f499fa97}
+
+
+example of a main program using the \hyperlink{classslsDetectorUsers}{sls\-Detector\-Users} class 
+
+if specified, argv\mbox{[}2\mbox{]} is used as detector ID (default is 0)
+
+\hyperlink{classslsDetectorUsers}{sls\-Detector\-Users} is instantiated
+
+if specified, argv\mbox{[}1\mbox{]} is used as detector config file (necessary at least the first time it is called to properly configure advanced settings in the shared memory)
+
+Setting the detector online (should be by default
+
+Load setup file if argv\mbox{[}2\mbox{]} specified
+
+defining the detector size
+
+registering data callback
+
+checking detector status and exiting if not idle
+
+checking and setting detector settings
+
+Settings exposure time to 10ms
+
+Settings exposure time to 100ms
+
+Settingsnumber of frames to 30
+
+start measurement
+
+returning when acquisition is finished or data are avilable 
+
+Definition at line 26 of file main\-Client.cpp.
+
+References data\-Callback(), sls\-Detector\-Users::get\-Command(), sls\-Detector\-Users::get\-Detector\-Developer(), sls\-Detector\-Users::get\-Detector\-Settings(), sls\-Detector\-Users::get\-Detector\-Size(), sls\-Detector\-Users::get\-Detector\-Status(), sls\-Detector\-Users::read\-Configuration\-File(), sls\-Detector\-Users::register\-Data\-Callback(), sls\-Detector\-Users::retrieve\-Detector\-Setup(), sls\-Detector\-Users::run\-Status\-Type(), sls\-Detector\-Users::set\-Detector\-Size(), sls\-Detector\-Users::set\-Exposure\-Period(), sls\-Detector\-Users::set\-Exposure\-Time(), sls\-Detector\-Users::set\-Number\-Of\-Frames(), sls\-Detector\-Users::set\-Online(), sls\-Detector\-Users::set\-Settings(), and sls\-Detector\-Users::start\-Measurement().

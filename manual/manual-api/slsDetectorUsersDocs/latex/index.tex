@@ -1,0 +1,26 @@
+\subsection*{API for SLS detectors data acquisition}
+
+
+
+
+
+Although the SLS detectors group delvelops several types of detectors (1/2D, counting/integrating etc.) it is common interest of the group to use a common platfor for data acquisition
+
+The architecture of the acquisitions system is intended as follows: \begin{itemize}
+\item A socket server running on the detector (or more than one in some special cases) \item C++ classes common to all detectors for client-server communication. These can be supplied to users as libraries and embedded also in acquisition systems which are not developed by the SLS \item the possibility of using a Qt-based graphical user interface (with eventually root analisys capabilities) \item the possibility of running all commands from command line. In order to ensure a fast operation of this so called \char`\"{}text client\char`\"{} the detector parameters should not be re-initialized everytime. For this reason a shared memory block is allocated where the main detector flags and parameters are stored \item a Root library for data postprocessing and detector calibration (energy, angle).\end{itemize}
+\hyperlink{classslsDetectorUsers}{sls\-Detector\-Users} is a class to control the detector which should be instantiated by the users in their acquisition software (EPICS, spec etc.). A callback for dislaying the data can be registered. More advanced configuration functions are not implemented and can be written in a configuration file tha can be read/written.
+
+\hyperlink{classslsReceiverUsers}{sls\-Receiver\-Users} is a class to receive the data for detectors with external data receiver (e.g. GOTTHARD). Callbacks can be registered to process the data or save them in specific formats.
+
+\hyperlink{classdetectorData}{detector\-Data} is a structure containing the data and additional information which is used to return the data e.g. to the GUI for displaying them.
+
+You can find examples of how this classes can be instatiated in \hyperlink{mainClient_8cpp}{main\-Client.cpp} and \hyperlink{mainReceiver_8cpp}{main\-Receiver.cpp}
+
+\begin{Desc}
+\item[Authors:]\href{mailto:anna.bergamaschi@psi.ch}{\tt Anna Bergamaschi}, \href{mailto:dhanya.maliakal@psi.ch}{\tt Dhanya Maliakal} \end{Desc}
+\begin{Desc}
+\item[Version:]0.2 \subsubsection*{Currently supported detectors}\end{Desc}
+\begin{itemize}
+\item MYTHEN \item GOTTHARD controls \item GOTTHARD data receiver \paragraph*{Coming soon}\end{itemize}
+\begin{itemize}
+\item EIGER \end{itemize}

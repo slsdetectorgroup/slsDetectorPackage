@@ -7,7 +7,7 @@ LDFLAG_REC 	=	-L$(LIBDIR) -lSlsReceiver -L/usr/lib64/ -lpthread
 DESTDIR		?=	../docs
 
 
-#all: clean detUser detReceiver 
+#all: detUser detReceiver 
 all: docs
 
 docs:

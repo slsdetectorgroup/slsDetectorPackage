@@ -18,7 +18,7 @@ char eiger_message[1024];
 int  eiger_message_length = 0;
 int  eiger_ret_val=0;
 
-const int   ndacs         = 16;
+const unsigned int ndacs = 16;
 const char* dac_names[16] = {"SvP","Vtr","Vrf","Vrs","SvN","Vtgstv","Vcmp_ll","Vcmp_lr","cal","Vcmp_rl","rxb_rb","rxb_lb","Vcmp_rr","Vcp","Vcn","Vis"};
 
 
@@ -47,6 +47,7 @@ int EigerInit(){
   if(!passed){
     struct hostent *dst_host;
     if((dst_host = gethostbyname("localhost")) == NULL){  //or look into getaddrinfo(3)
+    /*if((dst_host = gethostbyname("beb026")) == NULL){  //or look into getaddrinfo(3)*/
       fprintf(stderr,"ERROR, no such host\n");
       return 0;
     }else{
@@ -127,10 +128,10 @@ int EigerGetDAC(const char* iname){
   return eiger_ret_val;
 }
 
-int EigerSetNumberOfExposures(int n){
+int EigerSetNumberOfExposures(unsigned int n){
   eiger_nexposures = n;
   eiger_ret_val=0;
-  eiger_message_length = sprintf(eiger_message,"setnumberofexposures %d",n);
+  eiger_message_length = sprintf(eiger_message,"setnumberofexposures %u",n);
   return EigerSendCMD();
 }
 
@@ -188,10 +189,10 @@ int EigerGetDynamicRange(){
 */
 
 
-int EigerSetPhotonEnergy(unsigned int in_eV){
+int EigerSetPhotonEnergy(int in_eV){
   eigergetphotonenergy = in_eV;
   eiger_ret_val=0;
-  eiger_message_length = sprintf(eiger_message,"setphotonenergy %u",in_eV);
+  eiger_message_length = sprintf(eiger_message,"setphotonenergy %d",in_eV);
   return EigerSendCMD();
 }
 

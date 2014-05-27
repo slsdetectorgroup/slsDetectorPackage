@@ -359,7 +359,7 @@ int executeTrimming(enum trimMode mode, int par1, int par2, int imod){
 }
 
 
-int configureMAC(int ipad, long long int imacadd, long long int iservermacadd, int dtb){
+int configureMAC(int ipad, long long int macad, long long int detectormacadd, int detipad, int udpport, int ival){
 	return 0;
 }
 

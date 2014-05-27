@@ -4128,7 +4128,7 @@ int slsDetector::setDynamicRange(int n){
 			  ret=thisReceiver->sendInt(fnum2,retval1,retval);
 		  if((retval1 != retval)|| (ret==FAIL)){
 			  ret = FAIL;
-			  cout << "ERROR:Acquisition Period in receiver set incorrectly to " << retval1 << " instead of " << retval << endl;
+			  cout << "ERROR:Dynamic range in receiver set incorrectly to " << retval1 << " instead of " << retval << endl;
 			  setErrorMask((getErrorMask())|(RECEIVER_DYNAMIC_RANGE));
 		  }
 		  if(ret==FORCE_UPDATE)

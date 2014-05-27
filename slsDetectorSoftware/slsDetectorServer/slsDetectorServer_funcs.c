@@ -370,33 +370,53 @@ int send_update(int file_des) {
 	int64_t retval = 0;
 
 	n += sendData(file_des,lastClientIP,sizeof(lastClientIP),OTHER);
+#ifdef	SLS_DETECTOR_FUNCTION_LIST
 	nm=setNMod(GET_FLAG,X);
+#endif
 	n += sendData(file_des,&nm,sizeof(nm),INT32);
+#ifdef	SLS_DETECTOR_FUNCTION_LIST
 	nm=setNMod(GET_FLAG,Y);
+#endif
 	n += sendData(file_des,&nm,sizeof(nm),INT32);
+#ifdef	SLS_DETECTOR_FUNCTION_LIST
 	nm=setDynamicRange(GET_FLAG);
+#endif
 	n += sendData(file_des,&nm,sizeof(nm),INT32);
 	nm = dataBytes;
 	n += sendData(file_des,&nm,sizeof(nm),INT32);
-
+#ifdef	SLS_DETECTOR_FUNCTION_LIST
 	t=setSettings(GET_SETTINGS, GET_FLAG);
+#endif
 	n += sendData(file_des,&t,sizeof(t),INT32);
+#ifdef	SLS_DETECTOR_FUNCTION_LIST
 	nm=getThresholdEnergy(GET_FLAG);
+#endif
 	n += sendData(file_des,&nm,sizeof(nm),INT32);
-
+#ifdef	SLS_DETECTOR_FUNCTION_LIST
 	retval=setTimer(FRAME_NUMBER,GET_FLAG);
+#endif
 	n += sendData(file_des,&retval,sizeof(int64_t),INT64);
+#ifdef	SLS_DETECTOR_FUNCTION_LIST
 	retval=setTimer(ACQUISITION_TIME,GET_FLAG);
+#endif
 	n += sendData(file_des,&retval,sizeof(int64_t),INT64);
+#ifdef	SLS_DETECTOR_FUNCTION_LIST
 	retval=setTimer(FRAME_PERIOD,GET_FLAG);
+#endif
 	n += sendData(file_des,&retval,sizeof(int64_t),INT64);
+#ifdef	SLS_DETECTOR_FUNCTION_LIST
 	retval=setTimer(DELAY_AFTER_TRIGGER,GET_FLAG);
+#endif
 	n += sendData(file_des,&retval,sizeof(int64_t),INT64);
+#ifdef	SLS_DETECTOR_FUNCTION_LIST
 	retval=setTimer(GATES_NUMBER,GET_FLAG);
+#endif
 	n += sendData(file_des,&retval,sizeof(int64_t),INT64);
 /*	retval=setTimer(PROBES_NUMBER,GET_FLAG);
 	n += sendData(file_des,&retval,sizeof(int64_t),INT64);*/
+#ifdef	SLS_DETECTOR_FUNCTION_LIST
 	retval=setTimer(CYCLES_NUMBER,GET_FLAG);
+#endif
 	n += sendData(file_des,&retval,sizeof(int64_t),INT64);
 
 	if (lockStatus==0) {
@@ -2885,16 +2905,18 @@ int execute_trimming(int file_des) {
 
 int configure_mac(int file_des) {
 
-	int retval=-1;
+	int retval=-100;
 	int ret=OK,ret1=OK;
-	char arg[3][50];
+	char arg[5][50];
 	int n;
 
 #ifndef MYTHEND
 	int imod=0;//should be in future sent from client as -1, arg[2]
 	int ipad;
 	long long int imacadd;
-	long long int iservermacadd;
+	long long int idetectormacadd;
+	int udpport;
+	int detipad;
 #endif
 
 	sprintf(mess,"Can't configure MAC\n");
@@ -2909,9 +2931,13 @@ int configure_mac(int file_des) {
 	ret = FAIL;
 	strcpy(mess,"Not applicable/implemented for this detector\n");
 #else
-	sscanf(arg[0], "%x", &ipad);
-	sscanf(arg[1], "%llx", &imacadd);
-	sscanf(arg[2], "%llx", &iservermacadd);
+	sscanf(arg[0], "%x", 	&ipad);
+	sscanf(arg[1], "%llx", 	&imacadd);
+	sscanf(arg[2], "%x", 	&udpport);
+	sscanf(arg[3], "%llx",	&idetectormacadd);
+	sscanf(arg[4], "%x",	&detipad);
+
+
 
 #ifdef SLS_DETECTOR_FUNCTION_LIST
 	if (imod>=getTotalNumberOfModules()) {
@@ -2927,17 +2953,20 @@ int configure_mac(int file_des) {
 	printf("macad:%llx\n",imacadd);
 	for (i=0;i<6;i++)
 		printf("mac adress %d is 0x%x \n",6-i,(unsigned int)(((imacadd>>(8*i))&0xFF)));
-	printf("server macad:%llx\n",iservermacadd);
+	printf("udp port:0x%x\n",udpport);
+	printf("detector macad:%llx\n",idetectormacadd);
 	for (i=0;i<6;i++)
-		printf("server mac adress %d is 0x%x \n",6-i,(unsigned int)(((iservermacadd>>(8*i))&0xFF)));
+		printf("detector mac adress %d is 0x%x \n",6-i,(unsigned int)(((idetectormacadd>>(8*i))&0xFF)));
+	printf("detipad %x\n",detipad);
 	printf("\n");
-	printf("Configuring MAC of module %d\n", imod);
+	printf("Configuring MAC of module %d at port %x\n", imod, udpport);
 #endif
 #ifdef SLS_DETECTOR_FUNCTION_LIST
 	if (ret==OK) {
-		/*retval=configureMAC(ipad,imacadd,iservermacadd,digitalTestBit);*/
-		retval=configureMAC(ipad,imacadd,iservermacadd,0);
-		/*if(retval==-1) 	ret=FAIL;*/
+		if(getRunStatus() == RUNNING)
+			stopStateMachine();
+		retval=configureMAC(ipad,imacadd,idetectormacadd,detipad,udpport,0);	/*digitalTestBit);*/
+		if(retval==-1) 	ret=FAIL;
 	}
 #endif
 #ifdef VERBOSE

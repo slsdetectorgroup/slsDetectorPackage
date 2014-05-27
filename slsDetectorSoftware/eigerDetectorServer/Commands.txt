@@ -24,4 +24,5 @@ Acquisition:
     stop acquisition
     acquisition in progress
     wait until daq is finished
+    status (needs to be implemented)
 

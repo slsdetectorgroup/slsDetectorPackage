@@ -19,21 +19,21 @@ readout_mode 0   #(0-parallel,1-non_parallel,2-safe_mode)
 
 #default dacs
 SvP  0
-Vtr  1.28
-Vrf  1.55
-Vrs  0.7
-SvN  2
-Vtgstv  1.278
-Vcmp_ll  0.5
-Vcmp_lr  0.5
-cal  2
-Vcmp_rl  0.5
-rxb_rb  0.6
-rxb_lb  0.6
-Vcmp_rr  0.5
-Vcp  0.1
-Vcn  1
-Vis  0.775
+Vtr  1280
+Vrf  1550
+Vrs  700
+SvN  2000
+Vtgstv  1278
+Vcmp_ll  750
+Vcmp_lr  750
+cal  2000
+Vcmp_rl  750
+rxb_rb  600
+rxb_lb  600
+Vcmp_rr  750
+Vcp  100
+Vcn  1000
+Vis  775
 
 #default high_voltage
 high_voltage 152

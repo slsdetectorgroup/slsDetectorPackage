@@ -798,9 +798,9 @@ int slsReceiverTCPIPInterface::start_receiver(){
 
 	// send answer
 	socket->SendDataOnly(&ret,sizeof(ret));
-	if(ret==FAIL)
+	if(ret==FAIL){
 		socket->SendDataOnly(mess,sizeof(mess));
-	cout<<"ret of start receiver:"<<ret<<endl;
+	}
 	//return ok/fail
 	return ret;
 

@@ -227,29 +227,43 @@ int slsReceiverUDPFunctions::setDetectorType(detectorType det){
 
 	//moench variables
 	if(myDetectorType == GOTTHARD){
-		fifosize = GOTTHARD_FIFO_SIZE;
-		bufferSize = GOTTHARD_BUFFER_SIZE;
-		packetsPerFrame = GOTTHARD_PACKETS_PER_FRAME;
-		maxPacketsPerFile = MAX_FRAMES_PER_FILE * GOTTHARD_PACKETS_PER_FRAME;
-		frameIndexMask = GOTTHARD_FRAME_INDEX_MASK;
-		frameIndexOffset = GOTTHARD_FRAME_INDEX_OFFSET;
-		packetIndexMask = GOTTHARD_PACKET_INDEX_MASK;
+		fifosize 			= GOTTHARD_FIFO_SIZE;
+		packetsPerFrame 	= GOTTHARD_PACKETS_PER_FRAME;
+		onePacketSize		= GOTTHARD_ONE_PACKET_SIZE;
+		bufferSize 			= GOTTHARD_BUFFER_SIZE;
+		maxPacketsPerFile 	= MAX_FRAMES_PER_FILE * GOTTHARD_PACKETS_PER_FRAME;
+		frameIndexMask 		= GOTTHARD_FRAME_INDEX_MASK;
+		frameIndexOffset 	= GOTTHARD_FRAME_INDEX_OFFSET;
+		packetIndexMask 	= GOTTHARD_PACKET_INDEX_MASK;
 	}else if(myDetectorType == MOENCH){
-		fifosize = MOENCH_FIFO_SIZE;
-		bufferSize = MOENCH_BUFFER_SIZE;
-		packetsPerFrame = MOENCH_PACKETS_PER_FRAME;
-		maxPacketsPerFile = MOENCH_MAX_FRAMES_PER_FILE * MOENCH_PACKETS_PER_FRAME;
-		frameIndexMask = MOENCH_FRAME_INDEX_MASK;
-		frameIndexOffset = MOENCH_FRAME_INDEX_OFFSET;
-		packetIndexMask = MOENCH_PACKET_INDEX_MASK;
+		fifosize 			= MOENCH_FIFO_SIZE;
+		packetsPerFrame 	= MOENCH_PACKETS_PER_FRAME;
+		onePacketSize		= MOENCH_ONE_PACKET_SIZE;
+		bufferSize 			= MOENCH_BUFFER_SIZE;
+		maxPacketsPerFile 	= MOENCH_MAX_FRAMES_PER_FILE * MOENCH_PACKETS_PER_FRAME;
+		frameIndexMask 		= MOENCH_FRAME_INDEX_MASK;
+		frameIndexOffset 	= MOENCH_FRAME_INDEX_OFFSET;
+		packetIndexMask 	= MOENCH_PACKET_INDEX_MASK;
 	}
 	else if(myDetectorType == EIGER){
+#ifndef EIGERSLS
+		cout << "SLS Eiger Receiver" << endl;
+		fifosize 			= EIGER_FIFO_SIZE;
+		packetsPerFrame 	= EIGER_PACKETS_PER_FRAME;
+		onePacketSize		= EIGER_ONE_PACKET_SIZE;
+		bufferSize 			= EIGER_BUFFER_SIZE;
+		maxPacketsPerFile 	= EIGER_MAX_FRAMES_PER_FILE * EIGER_PACKETS_PER_FRAME;
+		frameIndexMask 		= EIGER_FRAME_INDEX_MASK;
+		frameIndexOffset 	= EIGER_FRAME_INDEX_OFFSET;
+		packetIndexMask 	= EIGER_PACKET_INDEX_MASK;
+#else
+		cout << "Heiner's Receiver" << endl;
 		if(receiver == NULL)
 			receiver = EigerReceiver::create();
 		receiver->setFileName(fileName);
-	}
+#endif
 
-	onePacketSize = bufferSize/packetsPerFrame;
+	}
 	latestData = new char[bufferSize];
 
 
@@ -322,7 +336,7 @@ void slsReceiverUDPFunctions::resetTotalFramesCaught(){
 /*file parameters*/
 
 char* slsReceiverUDPFunctions::getFilePath(){
-	if(myDetectorType == EIGER)
+	if(receiver != NULL)
 		return receiver->getFilePath();
 	else
 		return filePath;
@@ -333,7 +347,7 @@ char* slsReceiverUDPFunctions::setFilePath(char c[]){
 		//check if filepath exists
 		struct stat st;
 		if(stat(c,&st) == 0){
-			if(myDetectorType == EIGER)
+			if(receiver != NULL)
 				receiver->setFilePath(c);
 			else
 				strcpy(filePath,c);
@@ -347,7 +361,7 @@ char* slsReceiverUDPFunctions::setFilePath(char c[]){
 
 
 char* slsReceiverUDPFunctions::getFileName(){
-	if(myDetectorType == EIGER)
+	if(receiver != NULL)
 		return receiver->getFileName();
 	else
 		return fileName;
@@ -355,7 +369,7 @@ char* slsReceiverUDPFunctions::getFileName(){
 
 char* slsReceiverUDPFunctions::setFileName(char c[]){
 	if(strlen(c)){
-		if(myDetectorType == EIGER)
+		if(receiver != NULL)
 			receiver->setFileName(c);
 		else
 			strcpy(fileName,c);
@@ -385,13 +399,13 @@ int slsReceiverUDPFunctions::setFrameIndexNeeded(int i){
 
 int slsReceiverUDPFunctions::setEnableFileWrite(int i){
 	if(i!=-1){
-		if(myDetectorType == EIGER)
+		if(receiver != NULL)
 			receiver->setEnableFileWrite(i);
 		else
 			enableFileWrite=i;
 
 	}
-	if(myDetectorType == EIGER)
+	if(receiver != NULL)
 		return  receiver->getEnableFileWrite();
 	else
 		return enableFileWrite;
@@ -402,13 +416,13 @@ int slsReceiverUDPFunctions::setEnableFileWrite(int i){
 
 int slsReceiverUDPFunctions::enableOverwrite(int i){
 	if(i!=-1){
-		if(myDetectorType == EIGER)
+		if(receiver != NULL)
 			receiver->setEnableOverwrite(i);
 		else
 			overwrite=i;
 
 	}
-	if(myDetectorType == EIGER)
+	if(receiver != NULL)
 		return  receiver->getEnableOverwrite();
 	else
 		return overwrite;
@@ -421,7 +435,7 @@ int slsReceiverUDPFunctions::enableOverwrite(int i){
 /*other parameters*/
 
 slsReceiverDefs::runStatus slsReceiverUDPFunctions::getStatus(){
-	if(myDetectorType == EIGER)
+	if(receiver != NULL)
 		return receiver->getStatus();
 	else
 		return status;
@@ -430,14 +444,14 @@ slsReceiverDefs::runStatus slsReceiverUDPFunctions::getStatus(){
 
 char* slsReceiverUDPFunctions::setDetectorHostname(char c[]){
 	if(strlen(c)){
-		if(myDetectorType == EIGER){
+		if(receiver != NULL){
 			if(receiver->getDetectorHostname()== NULL)
 				receiver->initialize(c);
 		}else
 			strcpy(detHostname,c);
 	}
 
-	if(myDetectorType == EIGER)
+	if(receiver != NULL)
 		return receiver->getDetectorHostname();
 	else
 		return detHostname;
@@ -456,13 +470,13 @@ void slsReceiverUDPFunctions::setUDPPortNo(int p){
 
 int32_t slsReceiverUDPFunctions::setNumberOfFrames(int32_t fnum){
 	if(fnum >= 0){
-		if(myDetectorType == EIGER)
+		if(receiver != NULL)
 			receiver->setNumberOfFrames(fnum);
 		else
 			numberOfFrames = fnum;
 	}
 
-	if(myDetectorType == EIGER)
+	if(receiver != NULL)
 		return receiver->getNumberOfFrames();
 	else
 		return numberOfFrames;
@@ -470,13 +484,13 @@ int32_t slsReceiverUDPFunctions::setNumberOfFrames(int32_t fnum){
 
 int32_t slsReceiverUDPFunctions::setScanTag(int32_t stag){
 	if(stag >= 0){
-		if(myDetectorType == EIGER)
+		if(receiver != NULL)
 			receiver->setScanTag(stag);
 		else
 			scanTag = stag;
 	}
 
-	if(myDetectorType == EIGER)
+	if(receiver != NULL)
 		return receiver->getScanTag();
 	else
 		return scanTag;
@@ -484,13 +498,13 @@ int32_t slsReceiverUDPFunctions::setScanTag(int32_t stag){
 
 int32_t slsReceiverUDPFunctions::setDynamicRange(int32_t dr){
 	if(dr >= 0){
-		if(myDetectorType == EIGER)
+		if(receiver != NULL)
 			receiver->setDynamicRange(dr);
 		else
 			dynamicRange = dr;
 	}
 
-	if(myDetectorType == EIGER)
+	if(receiver != NULL)
 		return receiver->getDynamicRange();
 	else
 		return dynamicRange;
@@ -541,7 +555,7 @@ int64_t slsReceiverUDPFunctions::setAcquisitionPeriod(int64_t index){
 	if(index >= 0){
 		if(index != acquisitionPeriod){
 			acquisitionPeriod = index;
-			if(myDetectorType != EIGER)
+			if(receiver != NULL)
 				setupFifoStructure();
 		}
 	}
@@ -658,6 +672,10 @@ void slsReceiverUDPFunctions::setupFilter(){
 
 
 void slsReceiverUDPFunctions::setupFifoStructure(){
+
+	if(receiver != NULL)
+		return;
+
 	int64_t i;
 	int oldn = numJobsPerThread;
 
@@ -688,6 +706,8 @@ void slsReceiverUDPFunctions::setupFifoStructure(){
 	fifosize = GOTTHARD_FIFO_SIZE;
 	if(myDetectorType == MOENCH)
 		fifosize = MOENCH_FIFO_SIZE;
+	else if(myDetectorType == EIGER)
+		fifosize = EIGER_FIFO_SIZE;
 
 	if(fifosize % numJobsPerThread)
 		fifosize = (fifosize/numJobsPerThread)+1;
@@ -1212,7 +1232,7 @@ void slsReceiverUDPFunctions::closeFile(int ithr){
 
 int slsReceiverUDPFunctions::startReceiver(char message[]){
 
-	if(myDetectorType == EIGER)
+	if(receiver != NULL)
 		return receiver->startReceiver(message);
 
 
@@ -1276,7 +1296,7 @@ int slsReceiverUDPFunctions::startReceiver(char message[]){
 
 int slsReceiverUDPFunctions::stopReceiver(){
 
-	if(myDetectorType == EIGER)
+	if(receiver != NULL)
 		return receiver->stopReceiver();
 
 
@@ -1309,7 +1329,7 @@ int slsReceiverUDPFunctions::stopReceiver(){
 
 void slsReceiverUDPFunctions::startReadout(){
 
-	if(myDetectorType == EIGER){
+	if(receiver != NULL){
 		receiver->stopReceiver();
 		return;
 	}

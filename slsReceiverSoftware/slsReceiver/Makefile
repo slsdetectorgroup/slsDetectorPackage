@@ -40,7 +40,7 @@ $(DESTDIR)/sslsReceiver: lib
 
 
 $(DESTDIR)/slsReceiver: eigerReceiver	lib
-	$(CXX)   -o $@  $(SRC_CLNT)  $(FLAGS)  $(INCLUDES) $(CLAGS) $(LIBS) $(LDFLAGRXR) -fPIC
+	$(CXX)   -o $@  $(SRC_CLNT)  $(FLAGS)  $(INCLUDES) $(CLAGS) $(LIBS) $(LDFLAGRXR) -fPIC 
 #$(EIGERFLAGS) 	
 
 

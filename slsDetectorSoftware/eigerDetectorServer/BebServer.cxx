@@ -18,6 +18,7 @@
 #include <string.h>
 
 #include "Beb.h"
+#include "slsDetectorServer_defs.h" //include port number
 
 using namespace std;
 
@@ -72,7 +73,7 @@ int main(int argc, char* argv[]){
 
   //  unsigned short int port_number = atoi(argv[1]);
 
-  unsigned short int port_number = 43212;
+  unsigned short int port_number = BEB_PORT;
   if(!SetupListenSocket(port_number)) return 1;
   
 

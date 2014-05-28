@@ -2307,6 +2307,8 @@ int read_frame(int file_des) {
 #ifdef SLS_DETECTOR_FUNCTION_LIST
 	dataretval=readFrame(&dataret, mess);
 #endif
+
+
 	//dataret could be swapped during sendData
 	dataret1 = dataret;
 	sendData(file_des,&dataret1,sizeof(dataret),INT32);
@@ -2535,8 +2537,17 @@ int set_dynamic_range(int file_des) {
 		ret=FAIL;
 		sprintf(mess,"Detector locked by %s\n",lastClientIP);
 	}  else {
-		retval=setDynamicRange(dr);
+#ifdef EIGERD
+		switch(dr){
+		case -1:case 4:	case 8:	case 16:case 32:break;
+		default:
+			strcpy(mess,"could not set dynamic range. Must be 4,8,16 or 32.\n");
+			ret = FAIL;
+		}
+#endif
 	}
+	if(ret == OK)
+		retval=setDynamicRange(dr);
 #endif
 	if (dr>=0 && retval!=dr)
 		ret=FAIL;
@@ -2961,6 +2972,7 @@ int configure_mac(int file_des) {
 	printf("\n");
 	printf("Configuring MAC of module %d at port %x\n", imod, udpport);
 #endif
+	printf("ret:%d\n",ret);
 #ifdef SLS_DETECTOR_FUNCTION_LIST
 	if (ret==OK) {
 		if(getRunStatus() == RUNNING)
@@ -2971,7 +2983,7 @@ int configure_mac(int file_des) {
 #endif
 #ifdef VERBOSE
 	printf("Configured MAC with retval %d\n",  retval);
-#endif  
+#endif
 	if (ret==FAIL) {
 		printf("configuring MAC of mod %d failed\n", imod);
 	}

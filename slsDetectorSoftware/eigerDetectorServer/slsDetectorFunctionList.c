@@ -9,14 +9,13 @@
 #include "slsDetectorFunctionList.h"
 #include "svnInfoEiger.h"
 #include "EigerHighLevelFunctions.c"
-
+#include "EigerBackEndFunctions.c"
 
 enum detectorSettings thisSettings = STANDARD;
 //static const string dacNames[16] = {"Svp","Svn","Vtr","Vrf","Vrs","Vtgstv","Vcmp_ll","Vcmp_lr","Cal","Vcmp_rl","Vcmp_rr","Rxb_rb","Rxb_lb","Vcp","Vcn","Vis"};
 
-
 int initDetector(){
-  printf("EIGER 10\n");
+  printf("EIGER Server\n");
   return 1;
 }
 
@@ -250,10 +249,11 @@ enum runStatus getRunStatus(){
 
 
 char *readFrame(int *ret, char *mess){
-	//template fifo_read_event() from firmware_funcs.c
-	//checks if state machine running and if fifo has data(look_at_me_reg) and accordingly reads frame
-	// memcpy(now_ptr, values, dataBytes);
-	//returns ptr to values
+	EigerStartAcquisition(); /**polling  should be done inside feb server */
+	RequestImages();
+	while(EigerRunStatus())
+		usleep(50000);
+	*ret = (int)FINISHED;
 	return NULL;
 }
 
@@ -317,10 +317,17 @@ int64_t getTimeLeft(enum timerIndex ind){
 
 
 int setDynamicRange(int dr){
+	int r;
 	if(dr > 0){
 		printf(" Setting dynamic range: %d\n",dr);
 		EigerSetDynamicRange(dr);
-	}return EigerGetDynamicRange();
+		EigerSetBitMode(dr);
+	}
+	//make sure back end and front end have the same bit mode
+	r= EigerGetDynamicRange();
+	if(r != EigerGetBitMode())
+		EigerSetBitMode(r);
+	return r;
 }
 
 
@@ -360,6 +367,8 @@ int executeTrimming(enum trimMode mode, int par1, int par2, int imod){
 
 
 int configureMAC(int ipad, long long int macad, long long int detectormacadd, int detipad, int udpport, int ival){
+	EigerSetupTableEntryLeft(ipad, macad, detectormacadd, detipad, udpport);
+	EigerSetupTableEntryRight(ipad, macad, detectormacadd, detipad, udpport);
 	return 0;
 }
 

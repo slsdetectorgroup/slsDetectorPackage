@@ -19,7 +19,7 @@
 #include <string.h>
 
 #include "FebControl.h"
-
+#include "slsDetectorServer_defs.h" //include port number
 
 using namespace std;
 
@@ -122,7 +122,7 @@ int main(int argc, char* argv[]){
 
   FebControl *feb_controler = new FebControl();
 
-  unsigned short int port_number = 43210;
+  unsigned short int port_number = FEB_PORT;
   if(!SetupListenSocket(port_number)) return 1;
   
 

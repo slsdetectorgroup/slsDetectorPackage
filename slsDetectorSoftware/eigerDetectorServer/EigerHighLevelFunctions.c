@@ -10,7 +10,7 @@
 #include <string.h>
 #include <unistd.h>
 
-
+#include "slsDetectorServer_defs.h" //include port number
 
 struct sockaddr_in eiger_socket_addr;
 int  eiger_max_message_length = 1024;
@@ -32,8 +32,8 @@ float eiger_exposureperiod = 1;
 float EigerGetExposurePeriod(){return eiger_exposureperiod;}
 unsigned int eigerdynamicrange = 16;
 unsigned int EigerGetDynamicRange(){return eigerdynamicrange;}
-unsigned int eigergetphotonenergy = 8000;
-unsigned int EigerGetPhotonEnergy(){return eigergetphotonenergy;}
+int eigergetphotonenergy = 8000;
+int EigerGetPhotonEnergy(){return eigergetphotonenergy;}
 /* for later */
 int eigernumberofexposureseries = 1;
 int EigerGetNumberOfExposureSeries(){return eigernumberofexposureseries;}
@@ -47,12 +47,11 @@ int EigerInit(){
   if(!passed){
     struct hostent *dst_host;
     if((dst_host = gethostbyname("localhost")) == NULL){  //or look into getaddrinfo(3)
-    /*if((dst_host = gethostbyname("beb026")) == NULL){  //or look into getaddrinfo(3)*/
       fprintf(stderr,"ERROR, no such host\n");
       return 0;
     }else{
       //struct sockaddr_in eiger_socket_addr;
-      int port = 43210;
+      int port = FEB_PORT;
       bzero((char *) &eiger_socket_addr, sizeof(eiger_socket_addr));
       eiger_socket_addr.sin_family = AF_INET;
       bcopy((char *)dst_host->h_addr,(char *)&eiger_socket_addr.sin_addr.s_addr,dst_host->h_length);

@@ -7,22 +7,32 @@ PROGS		= 	eigerDetectorServer
 DESTDIR		?= 	bin
 INSTMODE	= 	0777
 
+
 SRC_CLNT	=	communication_funcs.c slsDetectorServer.c slsDetectorServer_funcs.c  slsDetectorFunctionList.c 
-#SRC_CLNT2   =   Eiger.cxx HardwareIO.cxx LocalLinkInterface.cxx Feb.cxx
+SRC_CLNT2   =	FebServer.cxx FebControl.cxx FebInterface.cxx LocalLinkInterface.cxx HardwareIO.cxx
+SRC_CLNT3   =	BebServer.cxx Beb.cxx LocalLinkInterface.cxx HardwareIO.cxx
+
 OBJS 		= 	$(SRC_CLNT:.c=.o) 
-OBJS2 		= 	$(SRC_CLNT2:.cpp=.o)
 
 
-all: clean $(PROGS)
+all: clean $(PROGS) feb_debug beb_debug
 
 	
-boot: $(OBJS) $(OBJS2)
+boot: $(OBJS) 
 
 $(PROGS): 
-	echo $(OBJS) $(OBJS2)
+	echo $(OBJS) 
 	mkdir -p $(DESTDIR) 
-	$(CC)  -o $@  $(SRC_CLNT) $(CFLAGS) $(LDLIBS) 
+	$(CC)  	-o $@  $(SRC_CLNT) $(CFLAGS) $(LDLIBS) 
 	mv $(PROGS) $(DESTDIR)
+	
+feb_debug:$(SRC_CLNT2)
+	$(CCX)  -o feb_debug  $(SRC_CLNT2) -I.
+	mv feb_debug $(DESTDIR)
+	
+beb_debug:$(SRC_CLNT3)
+	$(CCX)  -o beb_debug  $(SRC_CLNT3) -I.
+	mv beb_debug $(DESTDIR)	
 
 clean:
 	rm -rf $(DESTDIR)/$(PROGS)  *.o

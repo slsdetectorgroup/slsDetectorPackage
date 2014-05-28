@@ -8,10 +8,12 @@
 #ifndef SLSDETECTORSERVER_DEFS_H_
 #define SLSDETECTORSERVER_DEFS_H_
 
-#include "sls_detector_defs.h"
+//#include "sls_detector_defs.h"
 #include <stdint.h>
 
 #define GOODBYE 		-200
+#define FEB_PORT		43210
+#define BEB_PORT		43212
 
 
 

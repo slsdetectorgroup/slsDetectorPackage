@@ -249,8 +249,7 @@ enum runStatus getRunStatus(){
 
 
 char *readFrame(int *ret, char *mess){
-	EigerStartAcquisition(); /**polling  should be done inside feb server */
-	RequestImages();
+	RequestImages(); /** polling should be done in server */
 	while(EigerRunStatus())
 		usleep(50000);
 	*ret = (int)FINISHED;

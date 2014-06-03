@@ -5,7 +5,7 @@
 
 #include "slsReceiverTCPIPInterface.h"
 #include "slsReceiverUDPFunctions.h"
-#include "svnInfoReceiver.h"
+#include "gitInfoReceiver.h"
 #include "slsReceiverUsers.h"
 
 #include  <signal.h>	//SIGINT

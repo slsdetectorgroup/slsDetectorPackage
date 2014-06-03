@@ -1,9 +1,9 @@
 Path: slsDetectorsPackage/slsDetectorGui 
 URL: origin git@gitorious.psi.ch:sls_det_software/sls_detector_gui.git 
 Repository Root: origin git@gitorious.psi.ch:sls_det_software/sls_detector_gui.git 
-Repsitory UUID: bf99e3b9300675c33067e0934fd271b841d5dd66 
-Revision: 271 
+Repsitory UUID: 8d8e3f9221be0f85c016a7d48e5d1abed5fdcc95 
+Revision: 272 
 Branch: separate_receiver 
 Last Changed Author: Maliakal_Dhanya 
-Last Changed Rev: 271 
-Last Changed Date: 2014-05-23 14:52:12 +0200
+Last Changed Rev: 272 
+Last Changed Date: 2014-06-03 12:07:35 +0200

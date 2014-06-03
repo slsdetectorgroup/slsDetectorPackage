@@ -17,7 +17,7 @@
 #include "slsDetector.h"
 #include "multiSlsDetector.h"
 #include "sls_detector_defs.h"
-#include "svnInfoGui.h"
+#include "gitInfoGui.h"
 // Qt Include Headers
 #include <QSizePolicy>
 #include <QFileDialog>

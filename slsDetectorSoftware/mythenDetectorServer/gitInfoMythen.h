@@ -1,11 +1,11 @@
 //#define SVNPATH ""
-#define SVNURL "file:///afs/psi.ch/project/sls_det_software/svn/slsDetectorSoftware/mythenDetectorServer"
+#define SVNURL "git@gitorious.psi.ch:sls_det_software/sls_detector_software.git/mythenDetectorServer"
 //#define SVNREPPATH ""
-#define SVNREPUUID "951219d9-93cf-4727-9268-0efd64621fa3"
-//#define SVNREV 0x729
+#define SVNREPUUID "046a469b1e6582c4c55bd6eaeb4818b618d0a9a9"
+//#define SVNREV 0x14
 //#define SVNKIND ""
 //#define SVNSCHED ""
-#define SVNAUTH "l_maliakal_d"
-#define SVNREV 0x729
-#define SVNDATE 0x20140130
+#define SVNAUTH "Maliakal_Dhanya"
+#define SVNREV 0x14
+#define SVNDATE 0x20140603
 //

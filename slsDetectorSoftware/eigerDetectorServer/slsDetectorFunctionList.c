@@ -7,7 +7,7 @@
 
 
 #include "slsDetectorFunctionList.h"
-#include "svnInfoEiger.h"
+#include "gitInfoEiger.h"
 #include "EigerHighLevelFunctions.c"
 #include "EigerBackEndFunctions.c"
 

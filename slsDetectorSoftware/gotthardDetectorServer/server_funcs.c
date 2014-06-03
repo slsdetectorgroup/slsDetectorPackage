@@ -9,7 +9,7 @@
 #include "mcb_funcs.h"
 #include "trimming_funcs.h"
 #include "registers_g.h"
-#include "svnInfoGotthard.h"
+#include "gitInfoGotthard.h"
 
 #define FIFO_DATA_REG_OFF     0x50<<11
 #define CONTROL_REG           0x24<<11

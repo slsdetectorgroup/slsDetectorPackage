@@ -9,7 +9,7 @@
 #include <bitset>
 #include <cstdlib>
 #include <math.h>
-#include "svnInfoLib.h"
+#include "gitInfoLib.h"
 
 
 int slsDetector::initSharedMemory(detectorType type, int id) {

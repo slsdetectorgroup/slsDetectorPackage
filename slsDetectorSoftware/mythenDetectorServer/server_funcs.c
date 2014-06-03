@@ -8,7 +8,7 @@
 #include "firmware_funcs.h"
 #include "mcb_funcs.h"
 #include "trimming_funcs.h"
-
+#include "gitInfoMythen.h"
 
 // Global variables
 
@@ -580,13 +580,13 @@ int get_id(int file_des) {
     retval=getMcsVersion();
     break;
   case DETECTOR_SOFTWARE_VERSION:
-
-
-    sscanf(THIS_REVISION,"$Rev : %x",&rev1);
+	retval= SVNREV;
+	retval= (retval <<32) | SVNDATE;
+/*  sscanf(THIS_REVISION,"$Rev : %x",&rev1);
     rev=((int64_t)rev1);
     dat=THIS_SOFTWARE_VERSION;
     retval=(dat<<32) | rev;
-
+    */
     break;
   default:
     printf("Required unknown id %d \n", arg);

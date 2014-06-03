@@ -9,7 +9,7 @@
 #include "mcb_funcs.h"
 #include "trimming_funcs.h"
 #include "registers_m.h"
-#include "svnInfoMoench.h"
+#include "gitInfoMoench.h"
 
 #define FIFO_DATA_REG_OFF     0x50<<11
 #define CONTROL_REG           0x24<<11

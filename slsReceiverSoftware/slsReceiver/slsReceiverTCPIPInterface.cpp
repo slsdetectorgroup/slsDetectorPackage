@@ -192,7 +192,7 @@ void slsReceiverTCPIPInterface::stop(){
 
 	cout << "Shutting down UDP Socket" << endl;
 	if(slsReceiverFunctions)
-		slsReceiverFunctions->shutDownUDPSocket();
+		slsReceiverFunctions->shutDownUDPSockets();
 
 	cout << "Closing Files... " << endl;
 		slsReceiverFunctions->closeFile();
@@ -250,7 +250,7 @@ void slsReceiverTCPIPInterface::startTCPServer(){
 		if(v==GOODBYE){
 			cout << "Shutting down UDP Socket" << endl;
 			if(slsReceiverFunctions)
-				slsReceiverFunctions->shutDownUDPSocket();
+				slsReceiverFunctions->shutDownUDPSockets();
 
 			cout << "Closing Files... " << endl;
 			slsReceiverFunctions->closeFile();

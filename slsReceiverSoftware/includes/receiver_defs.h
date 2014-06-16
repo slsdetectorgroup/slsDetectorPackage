@@ -22,6 +22,7 @@
 //all max frames defined in sls_receiver_defs.h.  20000 gotthard, 100000 for short gotthard, 1000 for moench, eiger 20000
 
 
+
 #define GOTTHARD_FIFO_SIZE					25000 //cannot be less than max jobs per thread = 1000
 /*#define GOTTHARD_ALIGNED_FRAME_SIZE		4096*/
 #define GOTTHARD_PACKETS_PER_FRAME			2
@@ -38,6 +39,7 @@
 
 
 #define GOTTHARD_SHORT_PACKETS_PER_FRAME	1
+#define GOTTHARD_SHORT_ONE_PACKET_SIZE			518
 #define GOTTHARD_SHORT_BUFFER_SIZE			518
 #define GOTTHARD_SHORT_DATABYTES			512
 #define GOTTHARD_SHORT_FRAME_INDEX_MASK		0xFFFFFFFF
@@ -67,17 +69,21 @@
 
 
 
+#define MAX_EIGER_PORTS 					2
+#define EIGER_HEADER_LENGTH					48
 
 #define EIGER_FIFO_SIZE						2500 //cannot be less than max jobs per thread = 1000
 /*#define EIGER_ALIGNED_FRAME_SIZE			65536*/
-#define EIGER_PACKETS_PER_FRAME				1  //default for 16B
+#define EIGER_PACKETS_PER_FRAME				(256*MAX_EIGER_PORTS)  //default for 16B
 #define EIGER_ONE_PACKET_SIZE				1040 //default for 16B
-#define EIGER_BUFFER_SIZE 					(EIGER_ONE_PACKET_SIZE*EIGER_PACKETS_PER_FRAME) 	//1040*1 //default for 16B
-#define EIGER_DATA_BYTES	 				(1032*EIGER_PACKETS_PER_FRAME)						//1280*40 //default for 16B
+#define EIGER_BUFFER_SIZE 					(EIGER_ONE_PACKET_SIZE*EIGER_PACKETS_PER_FRAME) 	//1040*256//default for 16B
+#define EIGER_DATA_BYTES	 				(1024*EIGER_PACKETS_PER_FRAME)						//1024*256 //default for 16B
 
-#define EIGER_FRAME_INDEX_MASK				0xFFFFFF00
-#define EIGER_FRAME_INDEX_OFFSET			8
-#define EIGER_PACKET_INDEX_MASK				0xFF
+#define EIGER_FRAME_INDEX_MASK				0xFFFF
+#define EIGER_FRAME_INDEX_OFFSET			0
+#define EIGER_PACKET_INDEX_MASK				0x0
+
+#define EIGER_IMAGE_HEADER_SIZE				32
 
 
 

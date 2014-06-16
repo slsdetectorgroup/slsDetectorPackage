@@ -72,7 +72,6 @@ class sockaddr_in;
 using namespace std;
 
 #define DEFAULT_PACKET_SIZE 1286
-#define DEFAULT_PACKETS_PER_FRAME 2
 #define SOCKET_BUFFER_SIZE (100*1024*1024) //100MB
 #define DEFAULT_PORTNO    1952
 #define DEFAULT_BACKLOG 5
@@ -91,8 +90,7 @@ enum communicationProtocol{
   UDP /**< UDP */
 };
 
-
- genericSocket(const char* const host_ip_or_name, unsigned short int const port_number, communicationProtocol p, int ps = DEFAULT_PACKET_SIZE, int t = DEFAULT_PACKETS_PER_FRAME) :
+ genericSocket(const char* const host_ip_or_name, unsigned short int const port_number, communicationProtocol p, int ps = DEFAULT_PACKET_SIZE) :
    //   portno(port_number), 
 	 protocol(p),
 	 is_a_server(0),
@@ -101,8 +99,7 @@ enum communicationProtocol{
 	 packet_size(ps),
 	 nsending(0),
 	 nsent(0),
-	 total_sent(0),
-	 packets_per_frame(t)// sender (client): where to? ip
+	 total_sent(0)// sender (client): where to? ip
    { 
 
 	  //   strcpy(hostname,host_ip_or_name);
@@ -149,7 +146,7 @@ enum communicationProtocol{
 
   */
   
-   genericSocket(unsigned short int const port_number, communicationProtocol p, int ps = DEFAULT_PACKET_SIZE, int t = DEFAULT_PACKETS_PER_FRAME, const char *eth=NULL):
+   genericSocket(unsigned short int const port_number, communicationProtocol p, int ps = DEFAULT_PACKET_SIZE, const char *eth=NULL):
      //portno(port_number),
      protocol(p),
      is_a_server(1),
@@ -158,8 +155,7 @@ enum communicationProtocol{
      packet_size(ps),
 	 nsending(0),
 	 nsent(0),
-	 total_sent(0),
-     packets_per_frame(t)
+	 total_sent(0)
    {
 
 /* // you can specify an IP address: */
@@ -562,25 +558,23 @@ enum communicationProtocol{
 	 break;
        case UDP:
 	 if (socketDescriptor<0) return -1;
-	 //if length given
+	 //if length given, listens to length, else listens for packetsize till length is reached
 	 if(length){
 		 while(length>0){
-			 nsending=packet_size;
+			 nsending = (length>packet_size) ? packet_size:length;
 			 nsent = recvfrom(socketDescriptor,(char*)buf+total_sent,nsending, 0, (struct sockaddr *) &clientAddress, &clientAddress_length);
 			 if(!nsent) break;
 			 length-=nsent;
 			 total_sent+=nsent;
 		 }
 	 }
-	 //depends on packets per frame
+	 //listens to only 1 packet
 	 else{
-		 for(int i=0;i<packets_per_frame;i++){
-			 nsending=packet_size;
-			 nsent = recvfrom(socketDescriptor,(char*)buf+total_sent,nsending, 0, (struct sockaddr *) &clientAddress, &clientAddress_length);
-			 if(!nsent) break;
-			 length-=nsent;
-			 total_sent+=nsent;
-		 }
+		 nsending=packet_size;
+		 nsent = recvfrom(socketDescriptor,(char*)buf+total_sent,nsending, 0, (struct sockaddr *) &clientAddress, &clientAddress_length);
+		 if(!nsent) break;
+		 length-=nsent;
+		 total_sent+=nsent;
 	 }
 	 break;
        default:
@@ -677,7 +671,6 @@ enum communicationProtocol{
   int nsending;
   int nsent;
   int total_sent;
-  int packets_per_frame;
   
        
 

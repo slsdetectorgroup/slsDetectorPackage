@@ -1,4 +1,4 @@
-#ifdef SLS_RECEIVER_UDP_FUNCTIONS
+/*#ifdef SLS_RECEIVER_UDP_FUNCTIONS*/
 #ifndef SLS_RECEIVER_UDP_FUNCTIONS_H
 #define SLS_RECEIVER_UDP_FUNCTIONS_H
 /********************************************//**
@@ -267,10 +267,10 @@ public:
 	void startReadout();
 
 	/**
-	 * shuts down the  udp socket
+	 * shuts down the  udp sockets
 	 * \returns if success or fail
 	 */
-	int shutDownUDPSocket();
+	int shutDownUDPSockets();
 
 private:
 	/**
@@ -295,10 +295,10 @@ private:
 	void copyFrameToGui(char* startbuf);
 
 	/**
-	 * creates udp socket
+	 * creates udp sockets
 	 * \returns if success or fail
 	 */
-	int createUDPSocket();
+	int createUDPSockets();
 
 	/**
 	 * create listening thread
@@ -366,16 +366,54 @@ private:
 	 */
 	int startWriting();
 
-
 	/**
 	 * Writing to file without compression
 	 * @param buf is the address of buffer popped out of fifo
 	 * @param numpackets is the number of packets
+	 * @param framenum current frame number
 	 */
-	void writeToFile_withoutCompression(char* buf,int numpackets);
+	void writeToFile_withoutCompression(char* buf,int numpackets, uint32_t framenum);
+
+	/**
+	 * Its called for the first packet of a scan or acquistion
+	 * Sets the startframeindices and the variables to know if acquisition started
+	 * @param ithread listening thread number
+	 */
+	void startFrameIndices(int ithread);
+
+	/**
+	 * This is called when udp socket is shut down
+	 * It pops ffff instead of packet number into fifo
+	 * to inform writers about the end of listening session
+	 * @param ithread listening thread number
+	 * @param rc number of bytes received
+	 * @param pc packet count
+	 * @param t total packets listened to
+	 */
+	void stopListening(int ithread, int rc, int &pc, int &t);
 
 
+	/** structure of an eiger image header*/
+	typedef struct
+	{
+		unsigned char header_before[20];
+		unsigned char  fnum[4];
+		unsigned char  header_after[24];
+	} eiger_image_header;
 
+
+	/** structure of an eiger image header*/
+	typedef struct
+	{
+		unsigned char num1[4];
+		unsigned char num2[4];
+	} eiger_packet_header;
+
+	/** max number of listening threads */
+	const static int MAX_NUM_LISTENING_THREADS = MAX_EIGER_PORTS;
+
+	/** max number of writer threads */
+	const static int MAX_NUM_WRITER_THREADS = 15;
 
 	/** Eiger Receiver	 */
 	EigerReceiver *receiver;
@@ -390,10 +428,10 @@ private:
 	runStatus status;
 
 	/** UDP Socket between Receiver and Detector */
-	genericSocket* udpSocket;
+	genericSocket* udpSocket[MAX_NUM_LISTENING_THREADS];
 
 	/** Server UDP Port*/
-	int server_port;
+	int server_port[MAX_NUM_LISTENING_THREADS];
 
 	/** ethernet interface or IP to listen to */
 	char *eth;
@@ -482,7 +520,10 @@ private:
 	/** Previous Frame number from buffer */
 	uint32_t prevframenum;
 
-	/** buffer size can be 1286*2 or 518 or 1286*40 */
+	/** size of one frame */
+	int frameSize;
+
+	/** buffer size. different from framesize as we wait for one packet instead of frame for eiger */
 	int bufferSize;
 
 	/** oen buffer size */
@@ -509,23 +550,23 @@ private:
 	/** number of jobs per thread for data compression */
 	int numJobsPerThread;
 
-	/** memory allocated for the buffer */
-	char *mem0;
-
 	/** datacompression - save only hits */
 	bool dataCompression;
 
+	/** memory allocated for the buffer */
+	char *mem0[MAX_NUM_LISTENING_THREADS];
+
 	/** circular fifo to store addresses of data read */
-	CircularFifo<char>* fifo;
+	CircularFifo<char>* fifo[MAX_NUM_LISTENING_THREADS];
 
 	/** circular fifo to store addresses of data already written and ready to be resued*/
-	CircularFifo<char>* fifoFree;
+	CircularFifo<char>* fifoFree[MAX_NUM_LISTENING_THREADS];
 
 	/** Receiver buffer */
-	char *buffer;
+	char *buffer[MAX_NUM_LISTENING_THREADS];
 
-	/** max number of writer threads */
-	const static int MAX_NUM_WRITER_THREADS = 15;
+	/** number of writer threads */
+	int numListeningThreads;
 
 	/** number of writer threads */
 	int numWriterThreads;
@@ -533,19 +574,25 @@ private:
 	/** to know if listening and writer threads created properly */
 	int thread_started;
 
+	/** current listening thread index*/
+	int currentListeningThreadIndex;
+
 	/** current writer thread index*/
 	int currentWriterThreadIndex;
 
 	/** thread listening to packets */
-	pthread_t   listening_thread;
+	pthread_t   listening_thread[MAX_NUM_LISTENING_THREADS];
 
 	/** thread writing packets */
 	pthread_t   writing_thread[MAX_NUM_WRITER_THREADS];
 
 	/** total frame count the listening thread has listened to */
-	int totalListeningFrameCount;
+	int totalListeningFrameCount[MAX_NUM_LISTENING_THREADS];
 
-	/** mask showing which threads are running */
+	/** mask showing which listening threads are running */
+	volatile uint32_t listeningthreads_mask;
+
+	/** mask showing which writer threads are running */
 	volatile uint32_t writerthreads_mask;
 
 	/** mask showing which threads  have created files*/
@@ -554,11 +601,8 @@ private:
 	/** OK if file created was successful */
 	int ret_createfile;
 
-	/** 0 if listening thread is idle, 1 otherwise */
-	int listening_thread_running;
-
 	/** variable used to self terminate threads waiting for semaphores */
-	int killListeningThread;
+	int killAllListeningThreads;
 
 	/** variable used to self terminate threads waiting for semaphores */
 	int killAllWritingThreads;
@@ -569,8 +613,8 @@ private:
 //semaphores
 	/** semaphore to synchronize  writer and guireader threads */
 	sem_t smp;
-	/** semaphore to synchronize  listener thread */
-	sem_t listensmp;
+	/** semaphore to synchronize  listener threads */
+	sem_t listensmp[MAX_NUM_LISTENING_THREADS];
 	/** semaphore to synchronize  writer threads */
 	sem_t writersmp[MAX_NUM_WRITER_THREADS];
 
@@ -687,4 +731,4 @@ public:
 
 #endif
 
-#endif
+/*#endif*/

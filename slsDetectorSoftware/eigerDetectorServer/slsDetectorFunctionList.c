@@ -11,11 +11,20 @@
 #include "EigerHighLevelFunctions.c"
 #include "EigerBackEndFunctions.c"
 
+int tempframes;
+int64_t timewait1;
+int64_t timewait2;
+
 enum detectorSettings thisSettings = STANDARD;
 //static const string dacNames[16] = {"Svp","Svn","Vtr","Vrf","Vrs","Vtgstv","Vcmp_ll","Vcmp_lr","Cal","Vcmp_rl","Vcmp_rr","Rxb_rb","Rxb_lb","Vcp","Vcn","Vis"};
 
 int initDetector(){
-  printf("EIGER Server\n");
+  printf("This is the EIGER Server\n");
+
+  //set number of frames to 1
+  setTimer(FRAME_NUMBER,1);
+  setTimer(ACQUISITION_TIME,1E9);
+  setTimer(ACQUISITION_TIME,1E9);
   return 1;
 }
 
@@ -217,6 +226,7 @@ enum detectorSettings setSettings(enum detectorSettings sett, int imod){
 int startStateMachine(){
 	printf("Going to start acquisition\n");
 	EigerStartAcquisition();
+	RequestImages();
 	return OK;
 }
 
@@ -229,8 +239,7 @@ int stopStateMachine(){
 
 
 int startReadOut(){
-	//template startReadOut() from firmware_funcs.c
-	//send fpga start readout
+	RequestImages();
 	return FAIL;
 }
 
@@ -249,9 +258,15 @@ enum runStatus getRunStatus(){
 
 
 char *readFrame(int *ret, char *mess){
-	RequestImages(); /** polling should be done in server */
-	while(EigerRunStatus())
-		usleep(50000);
+	int i;
+	int64_t t;
+	t=timewait1>timewait2?timewait1:timewait2;
+	/*RequestImages();done inside startacqusition *//** polling should be done in server */
+	printf("status:%d\n",EigerRunStatus());
+	/*while(EigerRunStatus())*/
+	printf("going to randomly wait for %f us\n",tempframes*(t/1000));
+	 for(i=0;i<tempframes;i++)
+		usleep(t/1000);/*get status doesnt work.so temporarily wait for 2s*#frames*/
 	*ret = (int)FINISHED;
 	return NULL;
 }
@@ -264,16 +279,20 @@ int64_t setTimer(enum timerIndex ind, int64_t val){
 		if(val >= 0){
 			printf(" Setting number of frames: %d\n",(unsigned int)val);
 			EigerSetNumberOfExposures((unsigned int)val);
+			SetDestinationParameters(val);
+			tempframes = val;
 		}return EigerGetNumberOfExposures();
 	case ACQUISITION_TIME:
 		if(val >= 0){
 			printf(" Setting exp time: %fs\n",val/(1E9));
 			EigerSetExposureTime(val/(1E9));
+			timewait1 = val;
 		}return (EigerGetExposureTime()*(1E9));
 	case FRAME_PERIOD:
 		if(val >= 0){
 			printf(" Setting acq period: %fs\n",val/(1E9));
 			EigerSetExposurePeriod(val/(1E9));
+			timewait2 = val;
 		}return (EigerGetExposurePeriod()*(1E9));
 /*	case DELAY_AFTER_TRIGGER:
 		if(val >= 0)

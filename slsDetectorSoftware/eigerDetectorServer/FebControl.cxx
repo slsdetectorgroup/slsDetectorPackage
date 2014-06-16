@@ -813,8 +813,10 @@ bool FebControl::AcquisitionInProgress(){
 
   for(unsigned int i=1;i<modules.size();i++){
     unsigned int status_reg_r=0,status_reg_l=0;
-    if(!(GetDAQStatusRegister(modules[i]->GetTopLeftAddress(),status_reg_r)&&GetDAQStatusRegister(modules[i]->GetTopRightAddress(),status_reg_l))){
-      for(int i=0;i<100;i++) cout<<"Waring trouble reading status register. Returning zero to avoid inifite loops, this could cause trouble!"<<endl;
+    /**edited by dhanya*/
+   /* if(!(GetDAQStatusRegister(modules[i]->GetTopLeftAddress(),status_reg_r)&&GetDAQStatusRegister(modules[i]->GetTopRightAddress(),status_reg_l))){*/
+     if(!(GetDAQStatusRegister(modules[i]->GetTopLeftAddress(),status_reg_r)||GetDAQStatusRegister(modules[i]->GetTopRightAddress(),status_reg_l))){
+      for(int i=0;i<2;i++) cout<<"Waring trouble reading status register. Returning zero to avoid inifite loops, this could cause trouble!"<<endl;
       return 0; //to avoid inifite loops
     }
     if((status_reg_r|status_reg_l)&DAQ_STATUS_DAQ_RUNNING) return 1;

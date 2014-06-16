@@ -999,7 +999,9 @@ string slsDetectorCommand::cmdData(int narg, char *args[], int action) {
     myDet->setThreadedProcessing(0);
     myDet->setOnline(ONLINE_FLAG);
     myDet->readAll();
-    myDet->processData(1);
+    //processdata in receiver is useful only for gui purposes
+    if(myDet->setReceiverOnline()==OFFLINE_FLAG)
+    	myDet->processData(1);
     myDet->setThreadedProcessing(b);
     return string("");
   } 
@@ -1031,7 +1033,9 @@ string slsDetectorCommand::cmdFrame(int narg, char *args[], int action) {
     myDet->setThreadedProcessing(0);
     myDet->setOnline(ONLINE_FLAG);
     myDet->readFrame();
-    myDet->processData(1);
+    //processdata in receiver is useful only for gui purposes
+    if(myDet->setReceiverOnline()==OFFLINE_FLAG)
+    	myDet->processData(1);
     myDet->setThreadedProcessing(b);
     return string("ok");
   } 
@@ -4012,10 +4016,11 @@ string slsDetectorCommand::cmdReceiver(int narg, char *args[], int action) {
       else if(!strcasecmp(args[1],"stop")){
     	  myDet->startReceiverReadout();
     	  runStatus s = myDet->getReceiverStatus();
-    	  while((s != RUN_FINISHED)&&(s != IDLE))
+    	  while(s != RUN_FINISHED){
     		  usleep(50000);
-    	  if(s != IDLE)
-    		  myDet->stopReceiver();
+    		  s = myDet->getReceiverStatus();
+    	  }
+    	  myDet->stopReceiver();
       }
       else
 	return helpReceiver(narg, args, action);

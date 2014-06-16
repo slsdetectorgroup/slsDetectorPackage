@@ -377,7 +377,7 @@ bool Beb::SendMultiReadRequest(unsigned int beb_number, unsigned int left_right,
     else if(left_right == 3) send_data[0] = 0x000c0000;
     else                     return 0;
 
-    packet_size/=2;
+    //packet_size/=2;
     if(dst_number>0x3f)   return 0;
     if(packet_size>0x3ff) return 0;
     if(npackets==0||npackets>0x100) return 0;

@@ -79,6 +79,24 @@ void qTabDeveloper::SetupWidgetWindow(){
 	case slsDetectorDefs::EIGER:
 		NUM_DAC_WIDGETS = 16;
 		NUM_ADC_WIDGETS = 0;
+
+		dacNames.push_back("v SvP:");
+		dacNames.push_back("v Vtr:");
+		dacNames.push_back("v Vrf:");
+		dacNames.push_back("v Vrs:");
+		dacNames.push_back("v SvN");
+		dacNames.push_back("v Vtgstv:");
+		dacNames.push_back("v Vcmp_ll:");
+		dacNames.push_back("v Vcmp_lr:");
+		dacNames.push_back("i cal:");
+		dacNames.push_back("v Vcmp_rl:");
+		dacNames.push_back("v rxb_rb:");
+		dacNames.push_back("v rxb_lb:");
+		dacNames.push_back("v Vcmp_rr:");
+		dacNames.push_back("v Vcp");
+		dacNames.push_back("v Vcn:");
+		dacNames.push_back("v Vis:");
+
 		break;
 	case slsDetectorDefs::GOTTHARD:
 		NUM_DAC_WIDGETS = 8;
@@ -296,8 +314,28 @@ slsDetectorDefs::dacIndex qTabDeveloper::getSLSIndex(int index){
 		}
 		break;
 	case slsDetectorDefs::EIGER:
-		return slsDetectorDefs::HUMIDITY;
-		/**fill in here*/
+		switch(index){
+		case 0:	return slsDetectorDefs::E_SvP;
+		case 1:	return slsDetectorDefs::E_Vtr;
+		case 2:	return slsDetectorDefs::E_Vrf;
+		case 3:	return slsDetectorDefs::E_Vrs;
+		case 4:	return slsDetectorDefs::E_SvN;
+		case 5:	return slsDetectorDefs::E_Vtgstv;
+		case 6:	return slsDetectorDefs::E_Vcmp_ll;
+		case 7:	return slsDetectorDefs::E_Vcmp_lr;
+		case 8:	return slsDetectorDefs::E_cal;
+		case 9:	return slsDetectorDefs::E_Vcmp_rl;
+		case 10:return slsDetectorDefs::E_rxb_rb;
+		case 11:return slsDetectorDefs::E_rxb_lb;
+		case 12:return slsDetectorDefs::E_Vcmp_rr;
+		case 13:return slsDetectorDefs::E_Vcp;
+		case 14:return slsDetectorDefs::E_Vcn;
+		case 15:return slsDetectorDefs::E_Vis;
+		default:
+			qDefs::Message(qDefs::CRITICAL,"Unknown DAC/ADC Index. Weird Error","qTabDeveloper::getSLSIndex");
+			Refresh();
+			break;
+		}
 		break;
 	case slsDetectorDefs::MOENCH:
 	case slsDetectorDefs::GOTTHARD:

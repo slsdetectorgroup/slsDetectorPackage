@@ -55,6 +55,9 @@ void FebInterface::SendCompleteList(unsigned int n,unsigned int* list){
 bool FebInterface::WriteTo(unsigned int ch){
   if(ch>0xfff) return 0;
 
+  send_data_raw[0] = 0x8fff0000;
+  if(ll->Write(4,send_data_raw)!=4) return 0;
+
   send_data_raw[0] = 0x90000000 | (ch<<16);
     if(ll->Write(4,send_data_raw)!=4) return 0;
 

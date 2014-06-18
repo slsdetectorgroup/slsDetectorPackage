@@ -11,9 +11,6 @@
 #include "EigerHighLevelFunctions.c"
 #include "EigerBackEndFunctions.c"
 
-int tempframes;
-int64_t timewait1;
-int64_t timewait2;
 
 enum detectorSettings thisSettings = STANDARD;
 //static const string dacNames[16] = {"Svp","Svn","Vtr","Vrf","Vrs","Vtgstv","Vcmp_ll","Vcmp_lr","Cal","Vcmp_rl","Vcmp_rr","Rxb_rb","Rxb_lb","Vcp","Vcn","Vis"};
@@ -258,16 +255,13 @@ enum runStatus getRunStatus(){
 
 
 char *readFrame(int *ret, char *mess){
-	int i;
-	int64_t t;
-	t=timewait1>timewait2?timewait1:timewait2;
-	/*RequestImages();done inside startacqusition *//** polling should be done in server */
-	printf("status:%d\n",EigerRunStatus());
-	/*while(EigerRunStatus())*/
-	printf("going to randomly wait for %f us\n",tempframes*(t/1000));
-	 for(i=0;i<tempframes;i++)
-		usleep(t/1000);/*get status doesnt work.so temporarily wait for 2s*#frames*/
-	*ret = (int)FINISHED;
+	int i = EigerRunStatus();
+	printf("status:%d\n",i);
+	while(i){
+		i = EigerRunStatus();
+		printf("status:%d\n",i);
+		usleep(1000);/* should be watiing in server*/
+	}*ret = (int)FINISHED;
 	return NULL;
 }
 
@@ -280,19 +274,16 @@ int64_t setTimer(enum timerIndex ind, int64_t val){
 			printf(" Setting number of frames: %d\n",(unsigned int)val);
 			EigerSetNumberOfExposures((unsigned int)val);
 			SetDestinationParameters(val);
-			tempframes = val;
 		}return EigerGetNumberOfExposures();
 	case ACQUISITION_TIME:
 		if(val >= 0){
 			printf(" Setting exp time: %fs\n",val/(1E9));
 			EigerSetExposureTime(val/(1E9));
-			timewait1 = val;
 		}return (EigerGetExposureTime()*(1E9));
 	case FRAME_PERIOD:
 		if(val >= 0){
 			printf(" Setting acq period: %fs\n",val/(1E9));
 			EigerSetExposurePeriod(val/(1E9));
-			timewait2 = val;
 		}return (EigerGetExposurePeriod()*(1E9));
 /*	case DELAY_AFTER_TRIGGER:
 		if(val >= 0)
@@ -472,118 +463,11 @@ enum externalSignalFlag setExtSignal(int signalindex,  enum externalSignalFlag f
 
 
 enum externalCommunicationMode setTiming( enum externalCommunicationMode arg){
-	//template setTiming from firmware_funcs.c
-	//template getFPGASignal from firmware_funcs.c
-
-
-	//getFPGASignal(signalindex) used later on in this fucntion
-	//gets flag from fpga reg, checks if flag within limits,
-	//if( flag=SIGNAL_OFF and signals[signalindex]==MASTER_SLAVE_SYNCHRONIZATION), return -1, (ensures masterslaveflag !=off now)
-	//else return flag
 
 	enum externalCommunicationMode ret=GET_EXTERNAL_COMMUNICATION_MODE;
-	//sets timingmode variable
-	//ensures that the signals are in acceptance with timing mode and according sets the timing mode
-	/*
-	int g=-1, t=-1, rot=-1;
 
-	int i;
+	ret = AUTO_TIMING;
 
-	switch (ti) {
-	case AUTO_TIMING:
-		timingMode=ti;
-		// disable all gates/triggers in except if used for master/slave synchronization
-		for (i=0; i<4; i++) {
-			if (getFPGASignal(i)>0 && getFPGASignal(i)<GATE_OUT_ACTIVE_HIGH && signals[i]!=MASTER_SLAVE_SYNCHRONIZATION)
-				setFPGASignal(i,SIGNAL_OFF);
-		}
-		break;
-
-	case   TRIGGER_EXPOSURE:
-		timingMode=ti;
-		// if one of the signals is configured to be trigger, set it and unset possible gates
-		for (i=0; i<4; i++) {
-			if (signals[i]==TRIGGER_IN_RISING_EDGE ||  signals[i]==TRIGGER_IN_FALLING_EDGE)
-				setFPGASignal(i,signals[i]);
-			else if (signals[i]==GATE_IN_ACTIVE_HIGH || signals[i]==GATE_IN_ACTIVE_LOW)
-				setFPGASignal(i,SIGNAL_OFF);
-			else if (signals[i]==RO_TRIGGER_IN_RISING_EDGE ||  signals[i]==RO_TRIGGER_IN_FALLING_EDGE)
-				setFPGASignal(i,SIGNAL_OFF);
-		}
-		break;
-
-
-
-	case  TRIGGER_READOUT:
-		timingMode=ti;
-		// if one of the signals is configured to be trigger, set it and unset possible gates
-		for (i=0; i<4; i++) {
-			if (signals[i]==RO_TRIGGER_IN_RISING_EDGE ||  signals[i]==RO_TRIGGER_IN_FALLING_EDGE)
-				setFPGASignal(i,signals[i]);
-			else if (signals[i]==GATE_IN_ACTIVE_HIGH || signals[i]==GATE_IN_ACTIVE_LOW)
-				setFPGASignal(i,SIGNAL_OFF);
-			else if (signals[i]==TRIGGER_IN_RISING_EDGE ||  signals[i]==TRIGGER_IN_FALLING_EDGE)
-				setFPGASignal(i,SIGNAL_OFF);
-		}
-		break;
-
-	case GATE_FIX_NUMBER:
-		timingMode=ti;
-		// if one of the signals is configured to be trigger, set it and unset possible gates
-		for (i=0; i<4; i++) {
-			if (signals[i]==RO_TRIGGER_IN_RISING_EDGE ||  signals[i]==RO_TRIGGER_IN_FALLING_EDGE)
-				setFPGASignal(i,SIGNAL_OFF);
-			else if (signals[i]==GATE_IN_ACTIVE_HIGH || signals[i]==GATE_IN_ACTIVE_LOW)
-				setFPGASignal(i,signals[i]);
-			else if (signals[i]==TRIGGER_IN_RISING_EDGE ||  signals[i]==TRIGGER_IN_FALLING_EDGE)
-				setFPGASignal(i,SIGNAL_OFF);
-		}
-		break;
-
-
-	case GATE_WITH_START_TRIGGER:
-		timingMode=ti;
-		for (i=0; i<4; i++) {
-			if (signals[i]==RO_TRIGGER_IN_RISING_EDGE ||  signals[i]==RO_TRIGGER_IN_FALLING_EDGE)
-				setFPGASignal(i,SIGNAL_OFF);
-			else if (signals[i]==GATE_IN_ACTIVE_HIGH || signals[i]==GATE_IN_ACTIVE_LOW)
-				setFPGASignal(i,signals[i]);
-			else if (signals[i]==TRIGGER_IN_RISING_EDGE ||  signals[i]==TRIGGER_IN_FALLING_EDGE)
-				setFPGASignal(i,signals[i]);
-		}
-		break;
-
-	default:
-		;
-
-	}
-
-
-	for (i=0; i<4; i++) {
-		if (signals[i]!=MASTER_SLAVE_SYNCHRONIZATION) {
-			if (getFPGASignal(i)==RO_TRIGGER_IN_RISING_EDGE ||  getFPGASignal(i)==RO_TRIGGER_IN_FALLING_EDGE)
-				rot=i;
-			else if (getFPGASignal(i)==GATE_IN_ACTIVE_HIGH || getFPGASignal(i)==GATE_IN_ACTIVE_LOW)
-				g=i;
-			else if (getFPGASignal(i)==TRIGGER_IN_RISING_EDGE ||  getFPGASignal(i)==TRIGGER_IN_FALLING_EDGE)
-				t=i;
-		}
-	}
-
-
-	if (g>=0 && t>=0 && rot<0) {
-		ret=GATE_WITH_START_TRIGGER;
-	} else if (g<0 && t>=0 && rot<0) {
-		ret=TRIGGER_EXPOSURE;
-	} else if (g>=0 && t<0 && rot<0) {
-		ret=GATE_FIX_NUMBER;
-	} else if (g<0 && t<0 && rot>0) {
-		ret=TRIGGER_READOUT;
-	} else if (g<0 && t<0 && rot<0) {
-		ret=AUTO_TIMING;
-	}
-
-	 */
 	return ret;
 }
 

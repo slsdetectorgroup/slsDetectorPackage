@@ -810,19 +810,22 @@ bool FebControl::WaitForFinishedFlag(int sleep_time_us){
 }
 
 bool FebControl::AcquisitionInProgress(){
+	unsigned int status_reg_r=0;
 
-  for(unsigned int i=1;i<modules.size();i++){
-    unsigned int status_reg_r=0,status_reg_l=0;
-    /**edited by dhanya*/
-   /* if(!(GetDAQStatusRegister(modules[i]->GetTopLeftAddress(),status_reg_r)&&GetDAQStatusRegister(modules[i]->GetTopRightAddress(),status_reg_l))){*/
-     if(!(GetDAQStatusRegister(modules[i]->GetTopLeftAddress(),status_reg_r)||GetDAQStatusRegister(modules[i]->GetTopRightAddress(),status_reg_l))){
+	if(!(GetDAQStatusRegister(modules[1]->GetTopRightAddress(),status_reg_r)))
+		return 0;
+	if(status_reg_r&DAQ_STATUS_DAQ_RUNNING) return 1;
+
+	/*
+    if(!(GetDAQStatusRegister(modules[i]->GetTopLeftAddress(),status_reg_r)&&GetDAQStatusRegister(modules[i]->GetTopRightAddress(),status_reg_l))){
       for(int i=0;i<2;i++) cout<<"Waring trouble reading status register. Returning zero to avoid inifite loops, this could cause trouble!"<<endl;
       return 0; //to avoid inifite loops
     }
     if((status_reg_r|status_reg_l)&DAQ_STATUS_DAQ_RUNNING) return 1;
   }
+	 */
 
-  return 0; //i.e. not running (status_reg_r|status_reg_l)&DAQ_STATUS_DAQ_RUNNING;
+	return 0; //i.e. not running (status_reg_r|status_reg_l)&DAQ_STATUS_DAQ_RUNNING;
 }
 
 bool FebControl::Reset(){
@@ -886,7 +889,7 @@ bool FebControl::SetDynamicRange(unsigned int four_eight_sixteen_or_thirtytwo){
 }
 
 unsigned int FebControl::GetDynamicRange(){
-  if(subFrameMode|DAQ_NEXPOSURERS_ACTIVATE_AUTO_SUBIMAGING) return 32;
+  if(subFrameMode&DAQ_NEXPOSURERS_ACTIVATE_AUTO_SUBIMAGING) return 32;
   else if(DAQ_STATIC_BIT_M4&staticBits)                     return 4;
   else if(DAQ_STATIC_BIT_M8&staticBits)                     return 8;
 

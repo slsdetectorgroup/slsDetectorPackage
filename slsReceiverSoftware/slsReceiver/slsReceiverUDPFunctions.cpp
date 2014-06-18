@@ -1,4 +1,4 @@
-/*#ifdef SLS_RECEIVER_UDP_FUNCTIONS*/
+#ifdef SLS_RECEIVER_UDP_FUNCTIONS
 /********************************************//**
  * @file slsReceiverUDPFunctions.cpp
  * @short does all the functions for a receiver, set/get parameters, start/stop etc.
@@ -34,7 +34,8 @@ slsReceiverUDPFunctions::slsReceiverUDPFunctions():
 		thread_started(0),
 		eth(NULL),
 		latestData(NULL),
-		guiFileName(NULL){
+		guiFileName(NULL),
+		guiFrameNumber(0){
 	for(int i=0;i<MAX_NUM_LISTENING_THREADS;i++){
 		udpSocket[i] = NULL;
 		server_port[i] = DEFAULT_UDP_PORTNO+i;
@@ -178,6 +179,7 @@ void slsReceiverUDPFunctions::initializeMembers(){
 	latestData = NULL;
 	guiFileName = NULL;
 	guiData = NULL;
+	guiFrameNumber = 0;
 	sfilefd = NULL;
 	cmSub = NULL;
 
@@ -788,13 +790,15 @@ void slsReceiverUDPFunctions::setupFifoStructure(){
 
 /** acquisition functions */
 
-void slsReceiverUDPFunctions::readFrame(char* c,char** raw){
+void slsReceiverUDPFunctions::readFrame(char* c,char** raw, uint32_t &fnum){
 	//point to gui data
 	if (guiData == NULL)
 		guiData = latestData;
 
 	//copy data and filename
 	strcpy(c,guiFileName);
+	fnum = guiFrameNumber;
+
 
 	//could not get gui data
 	if(!guiDataReady){
@@ -819,7 +823,8 @@ void slsReceiverUDPFunctions::readFrame(char* c,char** raw){
 
 
 
-void slsReceiverUDPFunctions::copyFrameToGui(char* startbuf){
+void slsReceiverUDPFunctions::copyFrameToGui(char* startbuf[], uint32_t fnum, char* buf){
+
 	//random read when gui not ready
 	if((!nFrameToGui) && (!guiData)){
 		pthread_mutex_lock(&dataReadyMutex);
@@ -835,9 +840,17 @@ void slsReceiverUDPFunctions::copyFrameToGui(char* startbuf){
 
 		pthread_mutex_lock(&dataReadyMutex);
 		guiDataReady=0;
-		//send the first one
-		for(int i=0;i<numListeningThreads;i++)
-			memcpy(latestData,(void*)(startbuf + HEADER_SIZE_NUM_TOT_PACKETS + i *(bufferSize+ HEADER_SIZE_NUM_TOT_PACKETS)),bufferSize);
+		//eiger
+		if(startbuf != NULL){
+			for(int i=numListeningThreads;i<packetsPerFrame+numListeningThreads;++i){
+				memcpy((((char*)latestData)+((i-numListeningThreads)*bufferSize)) ,startbuf[i] + HEADER_SIZE_NUM_TOT_PACKETS,bufferSize);
+				//cout<<"p"<<i<<":"<<(htonl(*(uint32_t*)((eiger_packet_header *)((uint32_t*)(startbuf[i] + HEADER_SIZE_NUM_TOT_PACKETS)))->num2)&0xff)<<"\t\t";
+			}
+			guiFrameNumber = fnum;
+		}else//other detectors
+			memcpy(latestData,buf,bufferSize);
+
+
 		strcpy(guiFileName,savefilename);
 		guiDataReady=1;
 		pthread_mutex_unlock(&dataReadyMutex);
@@ -1071,6 +1084,7 @@ int slsReceiverUDPFunctions::setupWriter(){
 	guiData = NULL;
 	guiDataReady=0;
 	strcpy(guiFileName,"");
+	guiFrameNumber = 0;
 	cbAction = DO_EVERYTHING;
 
 	pthread_mutex_lock(&status_mutex);
@@ -1402,6 +1416,8 @@ void slsReceiverUDPFunctions::startReadout(){
 	//wait so that all packets which take time has arrived
 	usleep(50000);
 
+	/********************************************/
+	usleep(1000000);
 	pthread_mutex_lock(&status_mutex);
 	status = TRANSMITTING;
 	pthread_mutex_unlock(&status_mutex);
@@ -1528,7 +1544,7 @@ int slsReceiverUDPFunctions::startListening(){
 
 
 			//start indices for each start of scan/acquisition - eiger does it before
-			if((!measurementStarted) && (rc > 0))
+			if((!measurementStarted) && (rc > 0) && (!ithread))
 				startFrameIndices(ithread);
 
 			//problem in receiving or end of acquisition
@@ -1620,11 +1636,11 @@ int slsReceiverUDPFunctions::startListening(){
 			(*((uint16_t*)(buffer[ithread]))) = packetcount;
 			totalListeningFrameCount[ithread] += packetcount;
 #ifdef VERYDEBUG
-			if(!ithread) cout << "totalListeningFrameCount[" << ithread << "]:" << totalListeningFrameCount[ithread] << endl;
+			cout<<dec<<ithread<<" listener going to push fifo:"<<(void*)(buffer[ithread])<<endl;
 #endif
 			while(!fifo[ithread]->push(buffer[ithread]));
 #ifdef VERYDEBUG
-			cout << "*** pushed into listening fifo" << endl;
+			if(!ithread) cout << ithread << " *** pushed into listening fifo" << endl;
 #endif
 		}
 
@@ -1652,8 +1668,6 @@ int slsReceiverUDPFunctions::startListening(){
 
 
 
-
-
 int slsReceiverUDPFunctions::startWriting(){
 	int ithread = currentWriterThreadIndex;
 #ifdef VERYVERBOSE
@@ -1664,16 +1678,17 @@ int slsReceiverUDPFunctions::startWriting(){
 
 	int numpackets, nf;
 	uint32_t tempframenum;
-	char* wbuf[MAX_NUM_LISTENING_THREADS];
-	char *data=new char[bufferSize];
-	int iFrame = 0;
+	char* wbuf[packetsPerFrame+numListeningThreads];//interleaved + 2 ports header
+	char *d=new char[bufferSize];
 	int xmax=0,ymax=0;
-	int ret,i;
+	int ret,i,j;
+	int w_index=0;
+	int packetsPerThread = packetsPerFrame/numListeningThreads;
 
 	while(1){
 
 		nf = 0;
-		iFrame = 0;
+		w_index = 0;
 		if(myDetectorType == MOENCH){
 				xmax = MOENCH_PIXELS_IN_ONE_ROW-1;
 				ymax = MOENCH_PIXELS_IN_ONE_ROW-1;
@@ -1688,80 +1703,36 @@ int slsReceiverUDPFunctions::startWriting(){
 			}
 
 
+
+
 		while((1<<ithread)&writerthreads_mask){
 #ifdef VERYDEBUG
 			cout << ithread << " ***waiting to pop out of writing fifo" << endl;
 #endif
 			//pop
-			for(i=0;i<numListeningThreads;i++)
-				fifo[i]->pop(wbuf[i]);
-			numpackets =	(uint16_t)(*((uint16_t*)wbuf[0]));
+			for(i=0;i<numListeningThreads;++i){
+				fifo[i]->pop(wbuf[w_index+i]);
+				numpackets = (uint16_t)(*((uint16_t*)wbuf[w_index]));
 #ifdef VERYDEBUG
-			cout << ithread << " numpackets:" << dec << numpackets << endl;
-			cout << ithread << " *** popped from fifo " << numpackets << endl;
+				if((!w_index)||(!numpackets)) cout << ithread << " numpackets:" << dec << numpackets << endl;
 #endif
+			}
 
-
+#ifdef VERYDEBUG
+				cout << ithread << " numpackets:" << dec << numpackets << endl;
+				cout << ithread << " *** writer popped from fifo " << (void*) wbuf[w_index]<< endl;
+				cout << ithread << " *** writer popped from fifo " << (void*) wbuf[w_index+1]<< endl;
+#endif
 
 
 
 
 			//last dummy packet
 			if(numpackets == 0xFFFF){
-#ifdef VERYDEBUG
-				cout << ithread << " **********************popped last dummy frame:" << (void*)wbuf[0] << endl;
-#endif
-
-				//free fifo
-				for(i=0;i<numListeningThreads;i++)
-					while(!fifoFree[i]->push(wbuf[i]));
-#ifdef VERYDEBUG
-				cout << ithread  << " fifo freed:" << (void*)wbuf[i] << endl;
-#endif
-
-
-
-				//all threads need to close file, reset mask and exit loop
-				closeFile(ithread);
-				pthread_mutex_lock(&status_mutex);
-				writerthreads_mask^=(1<<ithread);
-#ifdef VERYDEBUG
-				cout << ithread << " Resetting mask of current writing thread. New Mask: " << writerthreads_mask << endl;
-#endif
-				pthread_mutex_unlock(&status_mutex);
-
-
-
-				//only thread 0 needs to do this
-				//check if all jobs are done and wait
-				//change status to run finished
-				if(ithread == 0){
-					if(dataCompression){
-						cout << "Waiting for jobs to be done.. current mask:" << hex << writerthreads_mask << endl;
-						while(writerthreads_mask){
-							/*cout << "." << flush;*/
-							usleep(50000);
-						}
-						cout<<" Jobs Done!"<<endl;
-					}
-					//to make sure listening threads are done before you update status, as that returns to client
-					while(listeningthreads_mask)
-						usleep(5000);
-					//update status
-					pthread_mutex_lock(&status_mutex);
-					status = RUN_FINISHED;
-					pthread_mutex_unlock(&(status_mutex));
-					//report
-					cout << "Status: Run Finished" << endl;
-					cout << "Total Packets Caught:" << dec << totalPacketsCaught << endl;
-					cout << "Total Frames Caught:"<< dec << (totalPacketsCaught/packetsPerFrame) << endl;
-					//acquisition end
-					if (acquisitionFinishedCallBack)
-						acquisitionFinishedCallBack((totalPacketsCaught/packetsPerFrame), pAcquisitionFinished);
-
-				}
+				stopWriting(ithread,wbuf,w_index);
 				continue;
 			}
+
 
 
 
@@ -1769,11 +1740,11 @@ int slsReceiverUDPFunctions::startWriting(){
 			//for progress
 			if(myDetectorType == EIGER){
 				if(!numpackets)
-					tempframenum = htonl(*(unsigned int*)((eiger_image_header *)((char*)(wbuf[0] + HEADER_SIZE_NUM_TOT_PACKETS)))->fnum);
+					tempframenum = htonl(*(unsigned int*)((eiger_image_header *)((char*)(wbuf[w_index] + HEADER_SIZE_NUM_TOT_PACKETS)))->fnum);
 			}else if ((myDetectorType == GOTTHARD) && (shortFrame == -1))
-				tempframenum = (((((uint32_t)(*((uint32_t*)(wbuf[0] + HEADER_SIZE_NUM_TOT_PACKETS))))+1)& (frameIndexMask)) >> frameIndexOffset);
+				tempframenum = (((((uint32_t)(*((uint32_t*)(wbuf[w_index] + HEADER_SIZE_NUM_TOT_PACKETS))))+1)& (frameIndexMask)) >> frameIndexOffset);
 			else
-				tempframenum = ((((uint32_t)(*((uint32_t*)(wbuf[0] + HEADER_SIZE_NUM_TOT_PACKETS))))& (frameIndexMask)) >> frameIndexOffset);
+				tempframenum = ((((uint32_t)(*((uint32_t*)(wbuf[w_index] + HEADER_SIZE_NUM_TOT_PACKETS))))& (frameIndexMask)) >> frameIndexOffset);
 
 			if(numWriterThreads == 1)
 				currframenum = tempframenum;
@@ -1784,136 +1755,58 @@ int slsReceiverUDPFunctions::startWriting(){
 				pthread_mutex_unlock(&progress_mutex);
 			}
 #ifdef VERYDEBUG
-	cout << endl <<ithread << " tempframenum:" << dec << tempframenum << " curframenum:" << currframenum << endl;
+			if(!numpackets) cout << endl <<ithread << " tempframenum:" << dec << tempframenum << " curframenum:" << currframenum << endl;
 #endif
 
-/*if(numpackets)
-	cout<<"p:"<<(htonl(*(uint32_t*)((eiger_packet_header *)((uint32_t*)(wbuf[0] + HEADER_SIZE_NUM_TOT_PACKETS)))->num2)&0xff)<<"\t\t"<<endl;
-*/
+
 
 
 
 			//without datacompression: write datacall back, or write data, free fifo
-	if(!dataCompression){
+			if(!dataCompression){
 
-			if (cbAction < DO_EVERYTHING){
-				for(i=0;i<numListeningThreads;i++)
-					rawDataReadyCallBack(currframenum, wbuf[i], numpackets * onePacketSize, sfilefd, guiData,pRawDataReady);
-			}else if (numpackets > 0){
-				for(i=0;i<numListeningThreads;i++)
-					writeToFile_withoutCompression(wbuf[i], numpackets,currframenum);
-			}
-			//copy to gui
-			if (numpackets > 0){
-				cout<<"numpackets:"<<numpackets<<" wbuf:"<<(void*)wbuf[0]<<endl;
-				copyFrameToGui(wbuf[0]);
-			}
-
-			for(i=0;i<numListeningThreads;i++)
-				while(!fifoFree[i]->push(wbuf[i]));
-#ifdef VERYVERBOSE
-			cout<<"buf freed:"<<(void*)wbuf[0]<<endl;
-#endif
-
-	}
-
-
-
-
-
-			//data compression
-			else{
-#if defined(MYROOT1) && defined(ALLFILE_DEBUG)
-				writeToFile_withoutCompression(wbuf, numpackets,currframenum);
-#endif
-
-				eventType thisEvent = PEDESTAL;
-				int ndata;
-				char* buff = 0;
-				data = wbuf[0]+ HEADER_SIZE_NUM_TOT_PACKETS;
-				int remainingsize = numpackets * onePacketSize;
-				int np;
-				int once = 0;
-				double tot, tl, tr, bl, br;
-				int xmin = 1, ymin = 1, ix, iy;
-
-
-				while(buff = receiverdata[ithread]->findNextFrame(data,ndata,remainingsize)){
-					np = ndata/onePacketSize;
-
-					//cout<<"buff framnum:"<<ithread <<":"<< ((((uint32_t)(*((uint32_t*)buff)))& (frameIndexMask)) >> frameIndexOffset)<<endl;
-
-					if ((np == packetsPerFrame) && (buff!=NULL)){
-						if(nf == 1000) cout << "Thread " << ithread << ": pedestal done " << endl;
-
-
-						singlePhotonDet[ithread]->newFrame();
-
-						//only for moench
-						if(commonModeSubtractionEnable){
-							for(ix = xmin - 1; ix < xmax+1; ix++){
-								for(iy = ymin - 1; iy < ymax+1; iy++){
-									thisEvent = singlePhotonDet[ithread]->getEventType(buff, ix, iy, 0);
-								}
-							}
-						}
-
-
-						for(ix = xmin - 1; ix < xmax+1; ix++)
-							for(iy = ymin - 1; iy < ymax+1; iy++){
-								thisEvent=singlePhotonDet[ithread]->getEventType(buff, ix, iy, commonModeSubtractionEnable);
-								if (nf>1000) {
-									tot=0;
-									tl=0;
-									tr=0;
-									bl=0;
-									br=0;
-									if (thisEvent==PHOTON_MAX) {
-
-										iFrame=receiverdata[ithread]->getFrameNumber(buff);
-#ifdef MYROOT1
-										myTree[ithread]->Fill();
-										//cout << "Fill in event: frmNr: " << iFrame <<  " ix " << ix << " iy " << iy << " type " <<  thisEvent << endl;
-#else
-										pthread_mutex_lock(&write_mutex);
-										if((enableFileWrite) && (sfilefd))
-											singlePhotonDet[ithread]->writeCluster(sfilefd);
-										pthread_mutex_unlock(&write_mutex);
-#endif
-									}
-								}
-							}
-
-						nf++;
-#ifndef ALLFILE
-						pthread_mutex_lock(&progress_mutex);
-						packetsInFile += packetsPerFrame;
-						packetsCaught += packetsPerFrame;
-						totalPacketsCaught += packetsPerFrame;
-						if(packetsInFile >= maxPacketsPerFile)
-							createNewFile();
-						pthread_mutex_unlock(&progress_mutex);
-
-#endif
-						if(!once){
-							copyFrameToGui(buff);
-							once = 1;
-						}
-					}
-
-					remainingsize -= ((buff + ndata) - data);
-					data = buff + ndata;
-					if(data > (wbuf[0] + HEADER_SIZE_NUM_TOT_PACKETS + numpackets * onePacketSize) )
-						cout <<" **************ERROR SHOULD NOT COME HERE, Error 142536!"<<endl;
-
+				if (cbAction < DO_EVERYTHING){
+					for(i=0;i<numListeningThreads;++i)
+						rawDataReadyCallBack(currframenum, wbuf[w_index+i], numpackets * onePacketSize, sfilefd, guiData,pRawDataReady);
+				}else if (numpackets > 0){
+					for(i=0;i<numListeningThreads;++i)
+						writeToFile_withoutCompression(wbuf[w_index+i], numpackets,currframenum);
 				}
 
-				while(!fifoFree[0]->push(wbuf[0]));
+
+				if(myDetectorType == EIGER) {
+					//last packet
+					if((packetsPerThread-1)==(htonl(*(uint32_t*)((eiger_packet_header *)((uint32_t*)(wbuf[w_index] + HEADER_SIZE_NUM_TOT_PACKETS)))->num2)&0xff)){
+						copyFrameToGui(wbuf,currframenum);
+						for(j=0;j<w_index;j=j+numListeningThreads){
+							for(i=0;i<numListeningThreads;++i){
+								while(!fifoFree[i]->push(wbuf[j+i]));
+							}
+						}
+						w_index = 0;
+					}else
+						w_index+=numListeningThreads;
+				}
+				else{
+					//copy to gui
+					copyFrameToGui(NULL,-1,wbuf[0]+HEADER_SIZE_NUM_TOT_PACKETS);
+#ifdef VERYVERBOSE
+					cout << ithread << " finished copying" << endl;
+#endif
+					while(!fifoFree[0]->push(wbuf[0]));
 #ifdef VERYVERBOSE
 				cout<<"buf freed:"<<(void*)wbuf[0]<<endl;
 #endif
-
+				}
 			}
+			//data compression
+			else
+				handleDataCompression(ithread,wbuf,numpackets,d, xmax, ymax, nf);
+
+
+
+
+
 		}
 #ifdef VERYVERBOSE
 		cout << ithread << " gonna wait for 1st sem" << endl;
@@ -2016,7 +1909,7 @@ int i;
 				if(rc > 0){
 					pc = (rc/onePacketSize);
 #ifdef VERYDEBUG
-					cout << ithread <<  " *** last packetcount:" << packetcount << endl;
+					cout << ithread <<  " *** last packetcount:" << pc << endl;
 #endif
 					(*((uint16_t*)(buffer[ithread]))) = pc;
 					totalListeningFrameCount[ithread] += pc;
@@ -2031,6 +1924,9 @@ int i;
 				for(i=0;i<numWriterThreads;++i){
 					fifoFree[ithread]->pop(buffer[ithread]);
 					(*((uint16_t*)(buffer[ithread]))) = 0xFFFF;
+#ifdef VERYDEBUG
+					cout << ithread << " going to push in dummy buffer:" << (void*)buffer[ithread] << " with num packets:"<< (*((uint16_t*)(buffer[ithread]))) << endl;
+#endif
 					while(!fifo[ithread]->push(buffer[ithread]));
 #ifdef VERYDEBUG
 					cout << ithread << " pushed in dummy buffer:" << (void*)buffer[ithread] << endl;
@@ -2046,7 +1942,7 @@ int i;
 				pthread_mutex_unlock(&(status_mutex));
 
 #ifdef VERYDEBUG
-				cout << ithread << ": Frames listened to " << ((totalListeningFrameCount[ithread]/packetsPerFrame)/numListeningThreads) << endl;
+				cout << ithread << ": Frames listened to " << dec << ((totalListeningFrameCount[ithread]*numListeningThreads)/packetsPerFrame) << endl;
 #endif
 
 				//waiting for all listening threads to be done, to print final count of frames listened to
@@ -2061,11 +1957,84 @@ int i;
 					t = 0;
 					for(i=0;i<numListeningThreads;++i)
 						t += totalListeningFrameCount[i];
-					cout << "Total frames listened to " << (t/packetsPerFrame) << endl;
+					cout << "Total frames listened to " << dec <<(t/packetsPerFrame) << endl;
 #endif
 				}
 
 }
+
+
+
+
+
+
+
+
+
+
+void slsReceiverUDPFunctions::stopWriting(int ithread, char* wbuffer[], int wIndex){
+	int i,j;
+#ifdef VERYDEBUG
+	cout << ithread << " **********************popped last dummy frame:" << (void*)wbuffer[wIndex] << endl;
+#endif
+
+	//free fifo
+	for(i=0;i<numListeningThreads;++i)
+		for(j=0;j<wIndex;++j){
+			while(!fifoFree[i]->push(wbuffer[wIndex+j]));
+#ifdef VERYDEBUG
+			cout << ithread  << " fifo freed:" << (void*)wbuffer[wIndex+j] << endl;
+#endif
+		}
+
+
+	//all threads need to close file, reset mask and exit loop
+	closeFile(ithread);
+	pthread_mutex_lock(&status_mutex);
+	writerthreads_mask^=(1<<ithread);
+#ifdef VERYDEBUG
+	cout << ithread << " Resetting mask of current writing thread. New Mask: " << writerthreads_mask << endl;
+#endif
+	pthread_mutex_unlock(&status_mutex);
+
+
+
+	//only thread 0 needs to do this
+	//check if all jobs are done and wait
+	//change status to run finished
+	if(ithread == 0){
+		if(dataCompression){
+			cout << "Waiting for jobs to be done.. current mask:" << hex << writerthreads_mask << endl;
+			while(writerthreads_mask){
+				/*cout << "." << flush;*/
+				usleep(50000);
+			}
+			cout<<" Jobs Done!"<<endl;
+		}
+		//to make sure listening threads are done before you update status, as that returns to client
+		while(listeningthreads_mask)
+			usleep(5000);
+		//update status
+		pthread_mutex_lock(&status_mutex);
+		status = RUN_FINISHED;
+		pthread_mutex_unlock(&(status_mutex));
+		//report
+		cout << "Status: Run Finished" << endl;
+		cout << "Total Packets Caught:" << dec << totalPacketsCaught << endl;
+		cout << "Total Frames Caught:"<< dec << (totalPacketsCaught/packetsPerFrame) << endl;
+		//acquisition end
+		if (acquisitionFinishedCallBack)
+			acquisitionFinishedCallBack((totalPacketsCaught/packetsPerFrame), pAcquisitionFinished);
+
+	}
+}
+
+
+
+
+
+
+
 
 
 
@@ -2159,10 +2128,132 @@ void slsReceiverUDPFunctions::writeToFile_withoutCompression(char* buf,int numpa
 		if(numWriterThreads > 1)
 			pthread_mutex_unlock(&write_mutex);
 	}
+}
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+void slsReceiverUDPFunctions::handleDataCompression(int ithread, char* wbuffer[], int &npackets, char* data, int xmax, int ymax, int &nf){
+
+#if defined(MYROOT1) && defined(ALLFILE_DEBUG)
+				writeToFile_withoutCompression(wbuf[0], numpackets,currframenum);
+#endif
+
+				eventType thisEvent = PEDESTAL;
+				int ndata;
+				char* buff = 0;
+				data = wbuffer[0]+ HEADER_SIZE_NUM_TOT_PACKETS;
+				int remainingsize = npackets * onePacketSize;
+				int np;
+				int once = 0;
+				double tot, tl, tr, bl, br;
+				int xmin = 1, ymin = 1, ix, iy;
+
+
+				while(buff = receiverdata[ithread]->findNextFrame(data,ndata,remainingsize)){
+					np = ndata/onePacketSize;
+
+					//cout<<"buff framnum:"<<ithread <<":"<< ((((uint32_t)(*((uint32_t*)buff)))& (frameIndexMask)) >> frameIndexOffset)<<endl;
+
+					if ((np == packetsPerFrame) && (buff!=NULL)){
+						if(nf == 1000) cout << "Thread " << ithread << ": pedestal done " << endl;
+
+
+						singlePhotonDet[ithread]->newFrame();
+
+						//only for moench
+						if(commonModeSubtractionEnable){
+							for(ix = xmin - 1; ix < xmax+1; ix++){
+								for(iy = ymin - 1; iy < ymax+1; iy++){
+									thisEvent = singlePhotonDet[ithread]->getEventType(buff, ix, iy, 0);
+								}
+							}
+						}
+
+
+						for(ix = xmin - 1; ix < xmax+1; ix++)
+							for(iy = ymin - 1; iy < ymax+1; iy++){
+								thisEvent=singlePhotonDet[ithread]->getEventType(buff, ix, iy, commonModeSubtractionEnable);
+								if (nf>1000) {
+									tot=0;
+									tl=0;
+									tr=0;
+									bl=0;
+									br=0;
+									if (thisEvent==PHOTON_MAX) {
+										receiverdata[ithread]->getFrameNumber(buff);
+										//iFrame=receiverdata[ithread]->getFrameNumber(buff);
+#ifdef MYROOT1
+										myTree[ithread]->Fill();
+										//cout << "Fill in event: frmNr: " << iFrame <<  " ix " << ix << " iy " << iy << " type " <<  thisEvent << endl;
+#else
+										pthread_mutex_lock(&write_mutex);
+										if((enableFileWrite) && (sfilefd))
+											singlePhotonDet[ithread]->writeCluster(sfilefd);
+										pthread_mutex_unlock(&write_mutex);
+#endif
+									}
+								}
+							}
+
+						nf++;
+#ifndef ALLFILE
+						pthread_mutex_lock(&progress_mutex);
+						packetsInFile += packetsPerFrame;
+						packetsCaught += packetsPerFrame;
+						totalPacketsCaught += packetsPerFrame;
+						if(packetsInFile >= maxPacketsPerFile)
+							createNewFile();
+						pthread_mutex_unlock(&progress_mutex);
+
+#endif
+						if(!once){
+							copyFrameToGui(NULL,-1,buff);
+							once = 1;
+						}
+					}
+
+					remainingsize -= ((buff + ndata) - data);
+					data = buff + ndata;
+					if(data > (wbuffer[0] + HEADER_SIZE_NUM_TOT_PACKETS + npackets * onePacketSize) )
+						cout <<" **************ERROR SHOULD NOT COME HERE, Error 142536!"<<endl;
+
+				}
+
+				while(!fifoFree[0]->push(wbuffer[0]));
+#ifdef VERYVERBOSE
+				cout<<"buf freed:"<<(void*)wbuffer[0]<<endl;
+#endif
 
 
 }
 
 
-/*#endif*/
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+#endif

@@ -1,4 +1,4 @@
-/*#ifdef SLS_RECEIVER_UDP_FUNCTIONS*/
+#ifdef SLS_RECEIVER_UDP_FUNCTIONS
 #ifndef SLS_RECEIVER_UDP_FUNCTIONS_H
 #define SLS_RECEIVER_UDP_FUNCTIONS_H
 /********************************************//**
@@ -239,8 +239,9 @@ public:
 	 * Returns the buffer-current frame read by receiver
 	 * @param c pointer to current file name
 	 * @param raw address of pointer, pointing to current frame to send to gui
+	 * @param fnum frame number for eiger as it is not in the packet
 	 */
-	void readFrame(char* c,char** raw);
+	void readFrame(char* c,char** raw, uint32_t &fnum);
 
 	/**
 	 * Closes all files
@@ -292,7 +293,7 @@ private:
 	 * Copy frames to gui
 	 * uses semaphore for nth frame mode
 	 */
-	void copyFrameToGui(char* startbuf);
+	void copyFrameToGui(char* startbuf[], uint32_t fnum=-1, char* buf=NULL);
 
 	/**
 	 * creates udp sockets
@@ -391,6 +392,27 @@ private:
 	 * @param t total packets listened to
 	 */
 	void stopListening(int ithread, int rc, int &pc, int &t);
+
+	/**
+	 * When acquisition is over, this is called
+	 * @param ithread listening thread number
+	 * @param wbuffer writer buffer
+	 * @param wIndex writer Index
+	 */
+	void stopWriting(int ithread, char* wbuffer[], int wIndex);
+
+
+	/**
+	 * data compression for each fifo output
+	 * @param ithread listening thread number
+	 * @param wbuffer writer buffer
+	 * @param npackets number of packets from the fifo
+	 * @param data pointer to the next packet start
+	 * @param xmax max pixels in x direction
+	 * @param ymax max pixels in y direction
+	 * @param nf nf
+	 */
+	void handleDataCompression(int ithread, char* wbuffer[], int &npackets, char* data, int xmax, int ymax, int &nf);
 
 
 	/** structure of an eiger image header*/
@@ -540,6 +562,9 @@ private:
 
 	/** points to the filename to send to gui */
 	char* guiFileName;
+
+	/** temporary number for eiger frame number as its not included in the packet */
+	uint32_t guiFrameNumber;
 
 	/** send every nth frame to gui or only upon gui request*/
 	int nFrameToGui;
@@ -731,4 +756,4 @@ public:
 
 #endif
 
-/*#endif*/
+#endif

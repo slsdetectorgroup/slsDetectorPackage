@@ -377,8 +377,13 @@ int energyConversion::writeSettingsFile(string fname, detectorType myDetectorTyp
 		outfile.open(fname.c_str(), ofstream::binary);
 		if (outfile.is_open()) {
 			iv = 1150;
+#ifdef VERBOSE
+			for(int i=0;i<mod.ndac;i++)
+				std::cout << "dac " << i << ":" << mod.dacs[i] << std::endl;
+#endif
 			outfile.write((char*)mod.dacs, sizeof(int)*(mod.ndac));
 			outfile.write((char*)mod.chanregs, sizeof(int)*(mod.nchan));
+
 			outfile.close();
 			return slsDetectorDefs::OK;
 		}

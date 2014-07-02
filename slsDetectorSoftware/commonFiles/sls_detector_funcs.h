@@ -87,7 +87,10 @@ enum {
   F_SET_SYNCHRONIZATION_MODE, /**< sets master/slave synchronization mode for multidetector structures */
   F_READ_COUNTER_BLOCK, /**< reads the counter block memory for gotthard */
   F_RESET_COUNTER_BLOCK, /**< resets the counter block memory for gotthard */
-  F_CALIBRATE_PEDESTAL	/**< starts acquistion, calibrates pedestal and write back to fpga */
+  F_CALIBRATE_PEDESTAL,	/**< starts acquistion, calibrates pedestal and write back to fpga */
+
+  F_ENABLE_TEN_GIGA  /**< enable 10Gbe */
+
 
   /* Always append functions hereafter!!! */
 

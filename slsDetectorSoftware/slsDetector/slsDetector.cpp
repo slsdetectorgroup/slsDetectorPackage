@@ -2929,8 +2929,8 @@ slsDetectorDefs::detectorSettings slsDetector::setSettings( detectorSettings ise
 			case EIGER:
 				//settings is saved in myMod.reg
 				myMod->reg=thisDetector->currentSettings;
-				ostfn << thisDetector->settingsDir << ssettings <<"/settings."<< setw(6) << hex << getId(DETECTOR_SERIAL_NUMBER) << setbase(10);
-				oscfn << thisDetector->calDir << ssettings << "/calibration."<<setw(6) << hex << getId(DETECTOR_SERIAL_NUMBER) << setbase(10);
+				ostfn << thisDetector->settingsDir << ssettings <<"/noise.sn"<< setw(6) << hex << getId(DETECTOR_SERIAL_NUMBER) << setbase(10);
+				oscfn << thisDetector->calDir << ssettings << "/calibration.sn"<<setw(6) << hex << getId(DETECTOR_SERIAL_NUMBER) << setbase(10);
 #ifdef VERBOSE
 				std::cout<< thisDetector->settingsDir<<endl<< thisDetector->calDir <<endl;
 #endif
@@ -2964,11 +2964,11 @@ slsDetectorDefs::detectorSettings slsDetector::setSettings( detectorSettings ise
 			} else {
 				ostringstream ostfn,oscfn;
 				switch(thisDetector->myDetectorType){
-				case EIGER:
 				case MOENCH:
 				case GOTTHARD:
 					ostfn << thisDetector->settingsDir << ssettings << ssettings << ".settings";
 					break;
+				case EIGER:
 				default:
 					ostfn << thisDetector->settingsDir << ssettings << ssettings << ".trim";
 					break;
@@ -3556,9 +3556,9 @@ int64_t slsDetector::setTimer(timerIndex index, int64_t t){
     if (t>=0)
       thisDetector->timerValue[index]=t;
   }
-#ifdef VERBOSE
+//#ifdef VERBOSE
   std::cout<< "Timer " << index << " set to  "<< thisDetector->timerValue[index] << "ns"  << std::endl;
-#endif
+//#endif
 
   if ((thisDetector->myDetectorType==MYTHEN)&&(index==PROBES_NUMBER)) {
     setDynamicRange();
@@ -4102,12 +4102,12 @@ int slsDetector::setDynamicRange(int n){
 	  if(thisDetector->myDetectorType==MYTHEN){
 		  if (thisDetector->timerValue[PROBES_NUMBER]!=0)
 			  thisDetector->dataBytes=thisDetector->nMod[X]*thisDetector->nMod[Y]*thisDetector->nChips*thisDetector->nChans*4;
+
+		    if (retval==32)
+		      thisDetector->dynamicRange=24;
 	  }
 
 
-    if (retval==32)
-      thisDetector->dynamicRange=24;
-    else
       thisDetector->dynamicRange=retval;
 
 
@@ -5660,12 +5660,13 @@ int slsDetector::loadSettingsFile(string fname, int imod) {
   for (int im=mmin; im<mmax; im++) {
     ostringstream ostfn;
     ostfn << fname;
-    if (fname.find(".sn")==string::npos && fname.find(".trim")==string::npos && fname.find(".settings")==string::npos) {
-      ostfn << ".sn"  << setfill('0') << setw(3) << hex << getId(MODULE_SERIAL_NUMBER, im);
-      fn=ostfn.str();
-    }
-    if (fname.find(".beb")==string::npos && fname.find(".trim")==string::npos && fname.find(".settings")==string::npos) {
-      ostfn << "."  << setw(6) << hex << getId(DETECTOR_SERIAL_NUMBER, im);
+    if(thisDetector->myDetectorType != EIGER){
+    	if (fname.find(".sn")==string::npos && fname.find(".trim")==string::npos && fname.find(".settings")==string::npos) {
+    		ostfn << ".sn"  << setfill('0') << setw(3) << hex << getId(MODULE_SERIAL_NUMBER, im);
+    		fn=ostfn.str();
+    	}
+    }else if (fname.find(".sn")==string::npos && fname.find(".trim")==string::npos && fname.find(".settings")==string::npos) {
+      ostfn << ".sn"  << setw(6) << hex << getId(DETECTOR_SERIAL_NUMBER, im);
       fn=ostfn.str();
     }
     myMod=readSettingsFile(fn, thisDetector->myDetectorType);
@@ -5697,7 +5698,7 @@ int slsDetector::saveSettingsFile(string fname, int imod) {
   for (int im=mmin; im<mmax; im++) {
     ostringstream ostfn;
     if(thisDetector->myDetectorType == EIGER)
-    	ostfn << fname << "."  << setw(6) << hex << getId(DETECTOR_SERIAL_NUMBER);
+    	ostfn << fname << ".sn"  << setw(6) << hex << getId(DETECTOR_SERIAL_NUMBER);
     else
     	ostfn << fname << ".sn"  << setfill('0') << setw(3) << hex << getId(MODULE_SERIAL_NUMBER,im);
     if ((myMod=getModule(im))) {
@@ -5725,10 +5726,11 @@ int slsDetector::loadCalibrationFile(string fname, int imod) {
   for (int im=mmin; im<mmax; im++) {
     ostringstream ostfn;
     ostfn << fname ;
-    if (fname.find(".sn")==string::npos && fname.find(".cal")==string::npos) {
-      ostfn << ".sn"  << setfill('0') << setw(3) << hex << getId(MODULE_SERIAL_NUMBER, im);
-    }
-    if (fname.find(".beb")==string::npos && fname.find(".cal")==string::npos) {
+    if(thisDetector->myDetectorType != EIGER){
+    	if (fname.find(".sn")==string::npos && fname.find(".cal")==string::npos) {
+    		ostfn << ".sn"  << setfill('0') << setw(3) << hex << getId(MODULE_SERIAL_NUMBER, im);
+    	}
+    }else if (fname.find(".sn")==string::npos && fname.find(".cal")==string::npos) {
       ostfn << "."  << setw(6) << hex << getId(DETECTOR_SERIAL_NUMBER);
     }
     fn=ostfn.str();
@@ -5758,7 +5760,7 @@ int slsDetector::saveCalibrationFile(string fname, int imod) {
   for (int im=mmin; im<mmax; im++) {
     ostringstream ostfn;
     if(thisDetector->myDetectorType == EIGER)
-    	ostfn << fname << "."  << setw(6) << hex << getId(DETECTOR_SERIAL_NUMBER);
+    	ostfn << fname << ".sn"  << setw(6) << hex << getId(DETECTOR_SERIAL_NUMBER);
     else
     	ostfn << fname << ".sn"  << setfill('0') << setw(3) << hex << getId(MODULE_SERIAL_NUMBER,im);
     if ((myMod=getModule(im))) {
@@ -6672,3 +6674,53 @@ void slsDetector::setDetectorHostname(){
 	}
 }
 
+
+
+int slsDetector::enableTenGigabitEthernet(int i){
+	int ret=FAIL;
+	int retval = -1;
+	int fnum=F_ENABLE_TEN_GIGA,fnum2 = F_ENABLE_RECEIVER_TEN_GIGA;
+	char mess[100];
+
+#ifdef VERBOSE
+	std::cout<< std::endl<< "Enabling / Disabling 10Gbe" << endl;
+#endif
+
+	if (thisDetector->onlineFlag==ONLINE_FLAG) {
+		if (connectControl() == OK){
+			controlSocket->SendDataOnly(&fnum,sizeof(fnum));
+			controlSocket->SendDataOnly(&i,sizeof(i));
+			controlSocket->ReceiveDataOnly(&ret,sizeof(ret));
+			if (ret==FAIL){
+				controlSocket->ReceiveDataOnly(mess,sizeof(mess));
+				std::cout<< "Detector returned error: " << mess << std::endl;
+				 setErrorMask((getErrorMask())|(DETECTOR_TEN_GIGA));
+			}
+			controlSocket->ReceiveDataOnly(&retval,sizeof(retval));
+			controlSocket->Disconnect();
+			if (ret==FORCE_UPDATE)
+				updateDetector();
+		}
+	}
+
+
+	if(ret!=FAIL){
+		//must also configuremac
+		if((i != -1)&&(retval == i))
+			configureMAC();
+
+		ret = FAIL;
+		retval=-1;
+		if(setReceiverOnline(ONLINE_FLAG)==ONLINE_FLAG){
+	#ifdef VERBOSE
+			std::cout << "Enabling / Disabling 10Gbe in receiver: " << i << std::endl;
+	#endif
+			if (connectData() == OK)
+				ret=thisReceiver->sendInt(fnum,retval,i);
+			if(ret==FAIL)
+				setErrorMask((getErrorMask())|(RECEIVER_TEN_GIGA));
+		}
+	}
+
+	return retval;
+}

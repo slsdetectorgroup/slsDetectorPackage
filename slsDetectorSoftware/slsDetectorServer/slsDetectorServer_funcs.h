@@ -80,5 +80,6 @@ int reset_counter_block(int);
 int start_receiver(int);
 int stop_receiver(int);
 int calibrate_pedestal(int);
+int enable_ten_giga(int);
 
 #endif

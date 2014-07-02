@@ -688,6 +688,13 @@ virtual int setReadReceiverFrequency(int getFromReceiver, int i=-1)=0;
  */
 virtual int enableReceiverCompression(int i = -1)=0;
 
+/** enable/disable or 10Gbe
+ * @param i is -1 to get, 0 to disable and 1 to enable
+   /returns if 10Gbe is enabled
+ */
+virtual int enableTenGigabitEthernet(int i = -1)=0;
+
+
   protected:
 
 

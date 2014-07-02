@@ -4767,3 +4767,20 @@ int multiSlsDetector::enableReceiverCompression(int i){
 		}
 	return ret;
 }
+
+
+
+int multiSlsDetector::enableTenGigabitEthernet(int i){
+	int ret=-100,ret1;
+	for (int idet=0; idet<thisMultiDetector->numberOfDetectors; idet++)
+		if (detectors[idet]){
+			ret1=detectors[idet]->enableTenGigabitEthernet(i);
+		    if(detectors[idet]->getErrorMask())
+			  setErrorMask(getErrorMask()|(1<<idet));
+			if(ret==-100)
+				ret=ret1;
+			else if (ret!=ret1)
+				ret=-1;
+		}
+	return ret;
+}

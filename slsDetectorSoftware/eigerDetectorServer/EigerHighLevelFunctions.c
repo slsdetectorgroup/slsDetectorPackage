@@ -18,26 +18,38 @@ char eiger_message[1024];
 int  eiger_message_length = 0;
 int  eiger_ret_val=0;
 
+int eiger_nexposures = 0;
+float eiger_exposuretime = 0;
+float eiger_exposureperiod = 0;
+int eiger_ncycles = 0;
+int eiger_ngates = 0;
+int eiger_getphotonenergy = 0;
+int eiger_dynamicrange = 0;
+int eiger_readoutspeed = 0;
+int eiger_readoutmode = 0;
+int eiger_highvoltage = 0;
+int eiger_iodelay = 0;
+int eiger_triggermode = 0;
+
 const unsigned int ndacs = 16;
 const char* dac_names[16] = {"SvP","Vtr","Vrf","Vrs","SvN","Vtgstv","Vcmp_ll","Vcmp_lr","cal","Vcmp_rl","rxb_rb","rxb_lb","Vcmp_rr","Vcp","Vcn","Vis"};
 
 
 
 
-int eiger_nexposures = 1;
 int EigerGetNumberOfExposures(){return eiger_nexposures;}
-float eiger_exposuretime = 1;
 float EigerGetExposureTime(){return eiger_exposuretime;}
-float eiger_exposureperiod = 1;
 float EigerGetExposurePeriod(){return eiger_exposureperiod;}
-unsigned int eigerdynamicrange = 16;
-unsigned int EigerGetDynamicRange(){return eigerdynamicrange;}
-int eigergetphotonenergy = 8000;
-int EigerGetPhotonEnergy(){return eigergetphotonenergy;}
-/* for later */
-int eigernumberofexposureseries = 1;
-int EigerGetNumberOfExposureSeries(){return eigernumberofexposureseries;}
-int EigerSetNumberOfExposureSeries(int i){eigernumberofexposureseries = i;return 1;}
+int EigerGetNumberOfCycles(){return eiger_ncycles;}
+/*int EigerGetNumberOfGates(){return eiger_ngates;}*/
+unsigned int EigerGetDynamicRange(){return eiger_dynamicrange;}
+int EigerGetPhotonEnergy(){return eiger_getphotonenergy;}
+int EigerGetReadoutSpeed(){return eiger_readoutspeed;}
+int EigerGetReadoutMode(){return eiger_readoutmode;}
+int EigerGetHighVoltage(){return eiger_highvoltage;}
+int EigerGetIODelay(){return eiger_iodelay;}
+int EigerGetTriggerMode(){return eiger_triggermode;}
+
 
 
 
@@ -116,13 +128,13 @@ const char* EigerGetDACName(int i){
 
 int EigerSetDAC(const char* iname,int v){
   eiger_ret_val=0;
-  eiger_message_length = sprintf(eiger_message,"setdacvalue %s %d",iname,v);
+  eiger_message_length = sprintf(eiger_message,"setdacvoltage %s %d",iname,v); //setdacvoltage
   return EigerSendCMD();
 }
 
 int EigerGetDAC(const char* iname){
   eiger_ret_val=1;
-  eiger_message_length = sprintf(eiger_message,"getdacvalue %s",iname);
+  eiger_message_length = sprintf(eiger_message,"getdacvoltage %s",iname);//getdacvoltage
   if(!EigerSendCMD()) return -1;
   return eiger_ret_val;
 }
@@ -134,15 +146,6 @@ int EigerSetNumberOfExposures(unsigned int n){
   return EigerSendCMD();
 }
 
-/*
-int EigerGetNumberOfExposures(unsigned int n){
-  eiger_ret_val=1;
-  eiger_message_length = sprintf(eiger_message,"getnumberofexposures %s",iname);
-  if(!EigerSendCMD()) return -1;
-  return eiger_ret_val;
-}
-*/
-
 int EigerSetExposureTime(float v){
   eiger_exposuretime = v;
   eiger_ret_val=0;
@@ -150,14 +153,6 @@ int EigerSetExposureTime(float v){
   return EigerSendCMD();
 }
 
-/*
-int EigerGetExposureTime(float v){
-  eiger_ret_val=1;
-  eiger_message_length = sprintf(eiger_message,"getexposuretime");
-  if(!EigerSendCMD()) return 0;
-  return eiger_ret_val;
-}
-*/
 
 int EigerSetExposurePeriod(float v){
   eiger_exposureperiod = v;
@@ -166,52 +161,70 @@ int EigerSetExposurePeriod(float v){
   return EigerSendCMD();
 }
 
+int EigerSetNumberOfCycles(unsigned int n){
+  eiger_ncycles = n;
+  eiger_ret_val=0;
+  eiger_message_length = sprintf(eiger_message,"setnumberofexposures %u",n);
+  return EigerSendCMD();
+}
 /*
-int EigerGetExposurePeriod(float v){
-  eiger_ret_val=1;
-  eiger_message_length = sprintf(eiger_message,"getexposuretime");
-  if(!EigerSendCMD()) return 0;
-  return eiger_ret_val;
+int EigerSetNumberOfGates(unsigned int n){
+  eiger_ngates = n;
+  eiger_ret_val=0;
+  eiger_message_length = sprintf(eiger_message,"setnumberofexposures %u",n);
+  return EigerSendCMD();
 }
 */
-
 int EigerSetDynamicRange(unsigned int i){
-  eigerdynamicrange = i;
+  eiger_dynamicrange = i;
   eiger_ret_val=0;
   eiger_message_length = sprintf(eiger_message,"setbitmode %u",i);
   return EigerSendCMD();
 }
 
-/*
-int EigerGetDynamicRange(){
-}
-*/
-
 
 int EigerSetPhotonEnergy(int in_eV){
-  eigergetphotonenergy = in_eV;
+  eiger_getphotonenergy = in_eV;
   eiger_ret_val=0;
   eiger_message_length = sprintf(eiger_message,"setphotonenergy %d",in_eV);
   return EigerSendCMD();
 }
 
-/*
-int EigerGetPhotonEnergy(int in_eV){
-  eiger_ret_val=1;
-  eiger_message_length = sprintf(eiger_message,"the %s",iname);
-  if(!EigerSendCMD()) return -1;
-  return eiger_ret_val;
-}
-*/
-
-/*
-int EigerSetGainMode(int i){
+int EigerSetReadoutSpeed(int speed){
+  eiger_readoutspeed = speed;
   eiger_ret_val=0;
-  eiger_message_length = sprintf(eiger_message,"setphotonenergy %f",v);
+  eiger_message_length = sprintf(eiger_message,"setreadoutspeed %d",speed);
   return EigerSendCMD();
 }
-get function too....
-*/
+
+int EigerSetReadoutMode(int mode){
+  eiger_readoutmode = mode;
+  eiger_ret_val=0;
+  eiger_message_length = sprintf(eiger_message,"setreadoutmode %d",mode);
+  return EigerSendCMD();
+}
+
+int EigerSetHighVoltage(int hv){
+  eiger_highvoltage = hv;
+  eiger_ret_val=0;
+  eiger_message_length = sprintf(eiger_message,"sethighvoltage %d",hv);
+  return EigerSendCMD();
+}
+
+int EigerSetIODelay(int io){
+	eiger_iodelay = io;
+  eiger_ret_val=0;
+  eiger_message_length = sprintf(eiger_message,"setinputdelays %d",io);
+  return EigerSendCMD();
+}
+
+int EigerSetTriggerMode(int m){
+  eiger_triggermode = m;
+  eiger_ret_val=0;
+  eiger_message_length = sprintf(eiger_message,"settriggermode %d",m);
+  return EigerSendCMD();
+}
+
 
 int EigerStartAcquisition(){
   eiger_ret_val=0;

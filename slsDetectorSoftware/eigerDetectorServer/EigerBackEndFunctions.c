@@ -22,6 +22,7 @@ int  eiger_back_ret_val=0;
 
 
 int bit_mode=0;
+int ten_giga=0;
 
 int EigerBackInit(){
   static int passed = 0;
@@ -110,13 +111,13 @@ int EigerSetupTableEntryLeft(int ipad, long long int macad, long long int detect
 	int dst_port = udpport;
 	sprintf(src_ip,"%d.%d.%d.%d",(detipad>>24)&0xff,(detipad>>16)&0xff,(detipad>>8)&0xff,(detipad)&0xff);
 	sprintf(dst_ip,"%d.%d.%d.%d",(ipad>>24)&0xff,(ipad>>16)&0xff,(ipad>>8)&0xff,(ipad)&0xff);
-	sprintf(src_mac,"%x:%x:%x:%x:%x:%x",(unsigned int)((detectormacadd>>40)&0xFF),
+	sprintf(src_mac,"%02x:%02x:%02x:%02x:%02x:%02x",(unsigned int)((detectormacadd>>40)&0xFF),
 										(unsigned int)((detectormacadd>>32)&0xFF),
 										(unsigned int)((detectormacadd>>24)&0xFF),
 										(unsigned int)((detectormacadd>>16)&0xFF),
 										(unsigned int)((detectormacadd>>8)&0xFF),
 										(unsigned int)((detectormacadd>>0)&0xFF));
-	sprintf(dst_mac,"%x:%x:%x:%x:%x:%x",(unsigned int)((macad>>40)&0xFF),
+	sprintf(dst_mac,"%02x:%02x:%02x:%02x:%02x:%02x",(unsigned int)((macad>>40)&0xFF),
 										(unsigned int)((macad>>32)&0xFF),
 										(unsigned int)((macad>>24)&0xFF),
 										(unsigned int)((macad>>16)&0xFF),
@@ -129,7 +130,7 @@ int EigerSetupTableEntryLeft(int ipad, long long int macad, long long int detect
 	if(((macad>>40)&0xFF)<9)
 		sprintf(dst_mac,"0%s",macad);
 */
-	strcpy(src_mac,"00:aa:bb:cc:dd:ee");
+	//strcpy(src_mac,"00:aa:bb:cc:dd:ee");
 	printf("Seting up Table Entry Left:\n");
 	printf("src_port:%d\n",src_port);
 	printf("dst_port:%d\n",dst_port);
@@ -141,7 +142,7 @@ int EigerSetupTableEntryLeft(int ipad, long long int macad, long long int detect
 
 
   eiger_back_ret_val=0;
-  eiger_back_message_length = sprintf(eiger_back_message,"setuptableentry %d %d %d %s %s %d %s %s %d",34,0,0,src_mac,src_ip,src_port,dst_mac,dst_ip,dst_port);
+  eiger_back_message_length = sprintf(eiger_back_message,"setuptableentry %d %d %d %s %s %d %s %s %d",34,ten_giga,0,src_mac,src_ip,src_port,dst_mac,dst_ip,dst_port);
   return EigerBackSendCMD();
 }
 
@@ -153,20 +154,20 @@ int EigerSetupTableEntryRight(int ipad, long long int macad, long long int detec
 	int dst_port = udpport+1;
 	sprintf(src_ip,"%d.%d.%d.%d",(detipad>>24)&0xff,(detipad>>16)&0xff,(detipad>>8)&0xff,(detipad)&0xff);
 	sprintf(dst_ip,"%d.%d.%d.%d",(ipad>>24)&0xff,(ipad>>16)&0xff,(ipad>>8)&0xff,(ipad)&0xff);
-	sprintf(src_mac,"%x:%x:%x:%x:%x:%x",(unsigned int)((detectormacadd>>40)&0xFF),
+	sprintf(src_mac,"%02x:%02x:%02x:%02x:%02x:%02x",(unsigned int)((detectormacadd>>40)&0xFF),
 										(unsigned int)((detectormacadd>>32)&0xFF),
 										(unsigned int)((detectormacadd>>24)&0xFF),
 										(unsigned int)((detectormacadd>>16)&0xFF),
 										(unsigned int)((detectormacadd>>8)&0xFF),
 										(unsigned int)((detectormacadd>>0)&0xFF));
-	sprintf(dst_mac,"%x:%x:%x:%x:%x:%x",(unsigned int)((macad>>40)&0xFF),
+	sprintf(dst_mac,"%02x:%02x:%02x:%02x:%02x:%02x",(unsigned int)((macad>>40)&0xFF),
 										(unsigned int)((macad>>32)&0xFF),
 										(unsigned int)((macad>>24)&0xFF),
 										(unsigned int)((macad>>16)&0xFF),
 										(unsigned int)((macad>>8)&0xFF),
 										(unsigned int)((macad>>0)&0xFF));
 
-	strcpy(src_mac,"00:aa:bb:cc:dd:ee");
+	//strcpy(src_mac,"00:aa:bb:cc:dd:ee");
 	printf("Seting up Table Entry Right:\n");
 	printf("src_port:%d\n",src_port);
 	printf("dst_port:%d\n",dst_port);
@@ -176,7 +177,7 @@ int EigerSetupTableEntryRight(int ipad, long long int macad, long long int detec
 	printf("dst_mac:%s\n\n",dst_mac);
 
   eiger_back_ret_val=0;
-  eiger_back_message_length = sprintf(eiger_back_message,"setuptableentry %d %d %d %s %s %d %s %s %d",34,0,32,src_mac,src_ip,src_port,dst_mac,dst_ip,dst_port);
+  eiger_back_message_length = sprintf(eiger_back_message,"setuptableentry %d %d %d %s %s %d %s %s %d",34,ten_giga,32,src_mac,src_ip,src_port,dst_mac,dst_ip,dst_port);
   return EigerBackSendCMD();
 }
 
@@ -197,12 +198,22 @@ int SetDestinationParameters(int i){
 
 int SetLeftDestinationParameters(int i){
 	eiger_back_ret_val=0;
-	eiger_back_message_length = sprintf(eiger_back_message,"setdstparameters %d %d %d",0,1,i);
+	eiger_back_message_length = sprintf(eiger_back_message,"setdstparameters %d %d %d",ten_giga,1,i);
 	return EigerBackSendCMD();
 }
 
 int SetRightDestinationParameters(int i){
 	eiger_back_ret_val=0;
-	eiger_back_message_length = sprintf(eiger_back_message,"setdstparameters %d %d %d",0,32,i);
+	eiger_back_message_length = sprintf(eiger_back_message,"setdstparameters %d %d %d",ten_giga,32,i);
 	return EigerBackSendCMD();
+}
+
+
+void SetTenGigbaBitEthernet(int val){
+	ten_giga = val;
+}
+
+
+int GetTenGigbaBitEthernet(){
+	return ten_giga;
 }

@@ -26,10 +26,11 @@ using namespace std;
 enum cmd_string {evNotFound,
 		 evReinitialize,evReset,
 
-		 //		 evSetInputDelays,
+		 evSetInputDelays,
 		 evSetDACValue,evGetDACValue,evSetDACVoltage,evGetDACVoltage,evSetHighVoltage,//evGetHighVoltage,
 
-//		 evSetTrimBits,evLoadTrimBitFile,
+		 evSetTrimBits,
+		 //evLoadTrimBitFile,
 
 		 evSetBitMode,
 		 evSetPhotonEnergy,
@@ -41,7 +42,8 @@ enum cmd_string {evNotFound,
 		 //		 evNotFound1,evNotFound2,evNotFound3,
 
 		 evSetNumberOfExposures,evSetExposureTime,evSetExposurePeriod,
-		 //		 evSetTriggerPolarityToPositive,evSetTriggerPolarityToNegative,evSetTriggerMode,
+		 //		 evSetTriggerPolarityToPositive,evSetTriggerPolarityToNegative,
+		 evSetTriggerMode,
 		 //		 evEnableExternalGatingWhenSignalsPositive,evEnableExternalGatingWhenSignalsNegative,evDisableExternalGating,
 		 evStartAcquisition,evStopAcquisition,evIsDaqStillRunning};
 		 //		 evWaitUntilDaqFinished,evExitServer
@@ -54,14 +56,14 @@ void init(){
   enum_map["reinitialize"]           = evReinitialize;
   enum_map["reset"]                  = evReset;
 
-  //  enum_map["setinputdelays"]         = evSetInputDelays;
+  enum_map["setinputdelays"]         = evSetInputDelays;
   enum_map["setdacvalue"]            = evSetDACValue;
   enum_map["getdacvalue"]            = evGetDACValue;
   enum_map["setdacvoltage"]          = evSetDACVoltage;
   enum_map["getdacvoltage"]          = evGetDACVoltage;
   enum_map["sethighvoltage"]         = evSetHighVoltage;
 
-  //  enum_map["settrimbits"]            = evSetTrimBits;
+  enum_map["settrimbits"]            = evSetTrimBits;
   //  enum_map["loadtrimbitfile"]        = evLoadTrimBitFile;
 
   enum_map["setbitmode"]             = evSetBitMode;
@@ -82,8 +84,9 @@ void init(){
   /*
   enum_map["settriggerpolaritytopositive"] = evSetTriggerPolarityToPositive;
   enum_map["settriggerpolaritytonegative"] = evSetTriggerPolarityToNegative;
+  */
   enum_map["settriggermode"]               = evSetTriggerMode;
-
+/*
   enum_map["enableexternalgatingwhensignalspositive"] = evEnableExternalGatingWhenSignalsPositive;
   enum_map["enableexternalgatingwhensignalsnegative"] = evEnableExternalGatingWhenSignalsNegative;
   enum_map["disableexternalgating"]  = evDisableExternalGating;
@@ -185,7 +188,21 @@ int main(int argc, char* argv[]){
 	  break;
 
 
-  //  case evSetInputDelays :
+
+        case evSetInputDelays :
+      	  tmp_str[0] = GetNextString(data);
+      	  n[0] = atoi(tmp_str[0].data());
+
+      	  if(tmp_str[0].length()>0&&feb_controler->SetIDelays(0,n[0])){
+      	    return_message.append("\tExecuted:  SetInputDelays "); AddNumber(return_message,n[0]); return_message.append("\n");
+      	    ret_val = 0;
+      	  }else{
+      	    return_message.append("\tError executing: SetInputDelays <delay>\n");
+      	    ret_val = 1;
+      	  }
+        break;
+
+
 
         case evSetDACValue :
 	  tmp_str[0] = GetNextString(data);
@@ -252,7 +269,17 @@ int main(int argc, char* argv[]){
 	  }
 	  break;
 
-  //      case evSetTrimBits :
+        case evSetTrimBits :
+      	  /*if(tmp_str[0].length()>0&&feb_controler->SetDynamicRange(n[0])){*/
+      	  	feb_controler->SetTrimbits(0,(unsigned char*)data);
+      	    return_message.append("\tExecuted:  SetTrimBits "); AddNumber(return_message,n[0]); return_message.append("\n");
+      	    ret_val = 0;
+      	  /*}else{
+      	    return_message.append("\tError executing: SetTrimBits \n");
+      	    ret_val = 1;
+      	  }	*/
+        break;
+
   //      case evLoadTrimBitFile :
 
         case evSetBitMode :
@@ -347,7 +374,17 @@ int main(int argc, char* argv[]){
 	  break;
   //  case evSetTriggerPolarityToPositive :
   //  case evSetTriggerPolarityToNegative :
-  //  case evSetTriggerMode :
+      case evSetTriggerMode :
+	  tmp_str[0] = GetNextString(data);
+	  n[0] = atoi(tmp_str[0].data());
+	  if(tmp_str[0].length()>0&&feb_controler->SetTriggerMode(n[0])){
+		  return_message.append("\tExecuted:  SetTriggerMode "); AddNumber(return_message,n[0]); return_message.append("\n");
+		  ret_val = 0;
+	  }else{
+		  return_message.append("\tError executing: SetTriggerMode <n>\n");
+		  ret_val = 1;
+	  }
+	  break;
 
   //  case evEnableExternalGatingWhenSignalsPositive :
   //  case evEnableExternalGatingWhenSignalsNegative :

@@ -12,17 +12,83 @@
 #include "EigerBackEndFunctions.c"
 
 
-enum detectorSettings thisSettings = STANDARD;
+enum detectorSettings thisSettings;
 //static const string dacNames[16] = {"Svp","Svn","Vtr","Vrf","Vrs","Vtgstv","Vcmp_ll","Vcmp_lr","Cal","Vcmp_rl","Vcmp_rr","Rxb_rb","Rxb_lb","Vcp","Vcn","Vis"};
 
+sls_detector_module *detectorModules=NULL;
+int *detectorChips=NULL;
+int *detectorChans=NULL;
+dacs_t *detectorDacs=NULL;
+dacs_t *detectorAdcs=NULL;
+
+
+
 int initDetector(){
+	  int imod,i,n;
+	  n = getNModBoard(1);
+
   printf("This is the EIGER Server\n");
+
+  //#ifdef VERBOSE
+  printf("Board is for %d half modules\n",n);
+  //#endif
+
+
+  detectorModules=malloc(n*sizeof(sls_detector_module));
+  detectorChips=malloc(n*NCHIP*sizeof(int));
+
+  detectorChans=malloc(n*NCHIP*NCHAN*sizeof(int));
+  detectorDacs=malloc(n*NDAC*sizeof(dacs_t));
+  detectorAdcs=malloc(n*NADC*sizeof(dacs_t));
+#ifdef VERBOSE
+  printf("modules from 0x%x to 0x%x\n",detectorModules, detectorModules+n);
+  printf("chips from 0x%x to 0x%x\n",detectorChips, detectorChips+n*NCHIP);
+  printf("chans from 0x%x to 0x%x\n",detectorChans, detectorChans+n*NCHIP*NCHAN);
+  printf("dacs from 0x%x to 0x%x\n",detectorDacs, detectorDacs+n*NDAC);
+  printf("adcs from 0x%x to 0x%x\n",detectorAdcs, detectorAdcs+n*NADC);
+#endif
+  for (imod=0; imod<n; imod++) {
+    (detectorModules+imod)->dacs=detectorDacs+imod*NDAC;
+    (detectorModules+imod)->adcs=detectorAdcs+imod*NADC;
+    (detectorModules+imod)->chipregs=detectorChips+imod*NCHIP;
+    (detectorModules+imod)->chanregs=detectorChans+imod*NCHIP*NCHAN;
+    (detectorModules+imod)->ndac=NDAC;
+    (detectorModules+imod)->nadc=NADC;
+    (detectorModules+imod)->nchip=NCHIP;
+    (detectorModules+imod)->nchan=NCHIP*NCHAN;
+    (detectorModules+imod)->module=imod;
+    (detectorModules+imod)->gain=0;
+    (detectorModules+imod)->offset=0;
+    (detectorModules+imod)->reg=0;
+    /* initialize registers, dacs, retrieve sn, adc values etc */
+  }
+  thisSettings = STANDARD;/**UNITIALIZED*/
+  /*sChan=noneSelected;
+  sChip=noneSelected;
+  sMod=noneSelected;
+  sDac=noneSelected;
+  sAdc=noneSelected;
+*/
+
+  //get dac values
+	for(i=0;i<(detectorModules)->ndac;i++)
+		(detectorModules)->dacs[i] = setDAC((enum detDacIndex)i,-1,(detectorModules)->module);
+
+  /* initialize dynamic range etc. */
+
 
   //set number of frames to 1
   setTimer(FRAME_NUMBER,1);
   setTimer(ACQUISITION_TIME,1E9);
   setTimer(ACQUISITION_TIME,1E9);
-  return 1;
+  setDynamicRange(16);
+  setThresholdEnergy(8000,0);
+  setReadOutFlags(PARALLEL);
+  setSpeed(0,1);//clk_devider,half speed
+ setHighVolage(150,0);
+  setIODelay(675,0);
+  setTiming(AUTO_TIMING);
+   return 1;
 }
 
 
@@ -164,6 +230,14 @@ int setDAC(enum detDacIndex ind, int val, int imod){
 }
 
 
+int setHighVolage(int val, int imod){
+	if(val!=-1){
+		printf(" Setting High Voltage: %d\n",val);
+		EigerSetHighVoltage(val);
+	}
+	return EigerGetHighVoltage();
+}
+
 
 int getADC(enum detDacIndex ind,  int imod){
 	//get adc value
@@ -171,42 +245,67 @@ int getADC(enum detDacIndex ind,  int imod){
 }
 
 
+int setIODelay(int val, int imod){
+	if(val!=-1){
+		printf(" Setting IO Delay: %d\n",val);
+		EigerSetIODelay(val);
+	}
+	return EigerGetIODelay();
+}
+
+
+int enableTenGigabitEthernet(int val){
+	if(val!=-1){
+		if(val>0)
+			SetTenGigbaBitEthernet(1);
+		else
+			SetTenGigbaBitEthernet(0);
+		SetDestinationParameters(EigerGetNumberOfExposures()*EigerGetNumberOfCycles());
+		//configuremac called from client
+	}
+	return GetTenGigbaBitEthernet();
+}
+
 
 int setModule(sls_detector_module myMod){
-  
-
-#ifdef VERBOSE
+  #ifdef VERBOSE
 	printf("Setting module with settings %d\n",myMod.reg);
 #endif
-
 	int i;
 	for(i=0;i<myMod.ndac;i++)
 		setDAC((enum detDacIndex)i,myMod.dacs[i],myMod.module);
 
-	thisSettings = (enum detectorSettings)myMod.reg;
 
+	thisSettings = (enum detectorSettings)myMod.reg;
+	thisSettings = 0;
+/** set trimbits*/
+	if (detectorModules)
+		copyModule(detectorModules,&myMod);
   return 0;
 }
 
-int getModule(sls_detector_module *myMod){
-  /*
-	int i;
-	for(i=0;i<myMod->ndac;i++)
-		myMod->dacs[i]= dacvalues[i];
 
-	//template getModulebyNumber() from mcb_funcs.c
-	*/
+int getModule(sls_detector_module *myMod){
+	  if (detectorModules)
+	    copyModule(myMod,detectorModules);/*copyModule(myMod,detectorModules+iMod);*/
+	  else
+	    return FAIL;
 	return OK;
 }
 
+
+
+
+
+
 int getThresholdEnergy(int imod){
-	printf("Threshold energy: %d\n",EigerGetPhotonEnergy());
+	printf(" Getting Threshold energy\n");
 	return EigerGetPhotonEnergy();
 }
 
 
 int setThresholdEnergy(int thr, int imod){
-	printf("Setting threshold energy:%d\n",thr);
+	printf(" Setting threshold energy:%d\n",thr);
 	EigerSetPhotonEnergy(thr);
 	return EigerGetPhotonEnergy();
 }
@@ -214,11 +313,14 @@ int setThresholdEnergy(int thr, int imod){
 
 
 enum detectorSettings setSettings(enum detectorSettings sett, int imod){
-
 	if(sett != GET_SETTINGS)
-		printf("trying to set settings!\n");
+		thisSettings = sett;
 	return thisSettings;
 }
+
+
+
+
 
 int startStateMachine(){
 	printf("Going to start acquisition\n");
@@ -237,33 +339,36 @@ int stopStateMachine(){
 
 int startReadOut(){
 	RequestImages();
-	return FAIL;
+	return OK;
 }
 
 
 enum runStatus getRunStatus(){
 	int i = EigerRunStatus();
-	printf("Status:%d ",i);
 	if(i== 0){
-		printf(" returning %d\n",IDLE);
+		printf("IDLE\n");
 		return IDLE;
 	}else{
-		printf(" returning %d\n",RUNNING);
+		printf("RUNNING\n");
 		return RUNNING;
 	}
 }
 
 
+
 char *readFrame(int *ret, char *mess){
 	int i = EigerRunStatus();
-	printf("status:%d\n",i);
 	while(i){
 		i = EigerRunStatus();
-		printf("status:%d\n",i);
 		usleep(1000);/* should be watiing in server*/
 	}*ret = (int)FINISHED;
 	return NULL;
 }
+
+
+
+
+
 
 
 int64_t setTimer(enum timerIndex ind, int64_t val){
@@ -273,7 +378,7 @@ int64_t setTimer(enum timerIndex ind, int64_t val){
 		if(val >= 0){
 			printf(" Setting number of frames: %d\n",(unsigned int)val);
 			EigerSetNumberOfExposures((unsigned int)val);
-			SetDestinationParameters(val);
+			SetDestinationParameters(EigerGetNumberOfExposures()*EigerGetNumberOfCycles());
 		}return EigerGetNumberOfExposures();
 	case ACQUISITION_TIME:
 		if(val >= 0){
@@ -289,10 +394,12 @@ int64_t setTimer(enum timerIndex ind, int64_t val){
 		if(val >= 0)
 			EigerSetNumberOfExposures((unsigned int)val);
 		return EigerGetNumberOfExposures();
+
 	case GATES_NUMBER:
 		if(val >= 0)
-			EigerSetNumberOfExposures((unsigned int)val);
-		return EigerGetNumberOfExposures();
+			EigerSetNumberOfGates((unsigned int)val);
+		return EigerGetNumberOfGates();
+
 	case PROBES_NUMBER:
 		if(val >= 0)
 			EigerSetNumberOfExposures((unsigned int)val);
@@ -300,8 +407,9 @@ int64_t setTimer(enum timerIndex ind, int64_t val){
 	case CYCLES_NUMBER:
 		if(val >= 0){
 			printf(" Setting number of triggers: %d\n",(unsigned int)val);
-			EigerSetNumberOfExposureSeries((unsigned int)val);
-		}return EigerGetNumberOfExposureSeries();
+			EigerSetNumberOfCycles((unsigned int)val);
+			SetDestinationParameters(EigerGetNumberOfExposures()*EigerGetNumberOfCycles());
+		}return EigerGetNumberOfCycles();
 	default:
 		printf("unknown timer index: %d\n",ind);
 		break;
@@ -311,18 +419,13 @@ int64_t setTimer(enum timerIndex ind, int64_t val){
 }
 
 
+
+
 int64_t getTimeLeft(enum timerIndex ind){
-	//template getDelay() from firmware_funcs.c
-	//reads from reg
-	//FRAME_NUMBER
-	//ACQUISITION_TIME
-	//FRAME_PERIOD
-	//DELAY_AFTER_TRIGGER
-	//GATES_NUMBER
-	//PROBES_NUMBER
-	//CYCLES_NUMBER
+
 	return -1;
 }
+
 
 
 int setDynamicRange(int dr){
@@ -336,14 +439,32 @@ int setDynamicRange(int dr){
 	r= EigerGetDynamicRange();
 	if(r != EigerGetBitMode())
 		EigerSetBitMode(r);
+
 	return r;
 }
 
 
 
 enum readOutFlags setReadOutFlags(enum readOutFlags val){
-	//template setStoreInRAM from firmware_funcs.c
-  return GET_READOUT_FLAGS;
+	int ret;
+	if(val!=GET_READOUT_FLAGS){
+		switch(val){
+		case PARALLEL:  	val=0; break;
+		case NONPARALLEL:	val=1; break;
+		case SAFE:			val=2; break;
+		default:  			val=0; break;
+		}
+		printf(" Setting Read out Flag: %d\n",val);
+		EigerSetReadoutMode(val);
+	}
+	switch(EigerGetReadoutMode()){
+	case 0: ret=PARALLEL; 		break;
+	case 1:	ret=NONPARALLEL; 	break;
+	case 2:	ret=SAFE; 			break;
+	default:ret=-1; 			break;
+	}
+
+  return ret;
 }
 
 
@@ -356,21 +477,16 @@ int setROI(int n, ROI arg[], int *retvalsize, int *ret){
 
 
 int setSpeed(enum speedVariable arg, int val){
-	//template setClockDivider() from firmware_funcs.c
-	//CLOCK_DIVIDER
-	//WAIT_STATES
-	//SET_SIGNAL_LENGTH
-	//TOT_CLOCK_DIVIDER
-	//TOT_DUTY_CYCLE
-
-	//returns eg getClockDivider from firmware_funcs.c
-	return 0;
+	if(val != -1){
+		printf(" Setting Read out Speed: %d\n",val);
+		EigerSetReadoutSpeed(val);
+	}
+	return 	EigerGetReadoutSpeed();
 }
 
 
 
 int executeTrimming(enum trimMode mode, int par1, int par2, int imod){
-	// template  trim_with_noise from trimming_funcs.c
 	return FAIL;
 }
 
@@ -383,8 +499,86 @@ int configureMAC(int ipad, long long int macad, long long int detectormacadd, in
 
 
 int calculateDataBytes(){
-	return 0;
+	return setDynamicRange(-1)*16*1040;
 }
+
+
+int copyModule(sls_detector_module *destMod, sls_detector_module *srcMod){
+
+	int ichip, idac,  ichan, iadc;
+	int ret=OK;
+
+#ifdef VERBOSE
+	printf("Copying module %x to module %x\n",srcMod,destMod);
+#endif
+
+	if (srcMod->module>=0) {
+#ifdef VERBOSE
+		printf("Copying module number %d to module number %d\n",srcMod->module,destMod->module);
+#endif
+		destMod->module=srcMod->module;
+	}
+	if (srcMod->serialnumber>=0){
+
+		destMod->serialnumber=srcMod->serialnumber;
+	}
+	if ((srcMod->nchip)>(destMod->nchip)) {
+		printf("Number of chip of source is larger than number of chips of destination\n");
+		return FAIL;
+	}
+	if ((srcMod->nchan)>(destMod->nchan)) {
+		printf("Number of channels of source is larger than number of channels of destination\n");
+		return FAIL;
+	}
+	if ((srcMod->ndac)>(destMod->ndac)) {
+		printf("Number of dacs of source is larger than number of dacs of destination\n");
+		return FAIL;
+	}
+	if ((srcMod->nadc)>(destMod->nadc)) {
+		printf("Number of dacs of source is larger than number of dacs of destination\n");
+		return FAIL;
+	}
+
+#ifdef VERBOSE
+	printf("DACs: src %d, dest %d\n",srcMod->ndac,destMod->ndac);
+	printf("ADCs: src %d, dest %d\n",srcMod->nadc,destMod->nadc);
+	printf("Chips: src %d, dest %d\n",srcMod->nchip,destMod->nchip);
+	printf("Chans: src %d, dest %d\n",srcMod->nchan,destMod->nchan);
+
+#endif
+	destMod->ndac=srcMod->ndac;
+	destMod->nadc=srcMod->nadc;
+	destMod->nchip=srcMod->nchip;
+	destMod->nchan=srcMod->nchan;
+	if (srcMod->reg>=0)
+		destMod->reg=srcMod->reg;
+#ifdef VERBOSE
+	printf("Copying register %x (%x)\n",destMod->reg,srcMod->reg );
+#endif
+	if (srcMod->gain>=0)
+		destMod->gain=srcMod->gain;
+	if (srcMod->offset>=0)
+		destMod->offset=srcMod->offset;
+
+	for (ichip=0; ichip<(srcMod->nchip); ichip++) {
+		if (*((srcMod->chipregs)+ichip)>=0)
+			*((destMod->chipregs)+ichip)=*((srcMod->chipregs)+ichip);
+	}
+	for (ichan=0; ichan<(srcMod->nchan); ichan++) {
+		if (*((srcMod->chanregs)+ichan)>=0)
+			*((destMod->chanregs)+ichan)=*((srcMod->chanregs)+ichan);
+	}
+	for (idac=0; idac<(srcMod->ndac); idac++) {
+		if (*((srcMod->dacs)+idac)>=0)
+			*((destMod->dacs)+idac)=*((srcMod->dacs)+idac);
+	}
+	for (iadc=0; iadc<(srcMod->nadc); iadc++) {
+		if (*((srcMod->adcs)+iadc)>=0)
+			*((destMod->adcs)+iadc)=*((srcMod->adcs)+iadc);
+	}
+	return ret;
+}
+
 
 int getTotalNumberOfChannels(){return getNumberOfChannelsPerModule();};//NCHIP*NCHAN*nModBoard;}
 int getTotalNumberOfChips(){return 4;};//NCHIP*nModBoard;}
@@ -402,8 +596,6 @@ int getNumberOfADCsPerModule(){return  0;}//NADC;}
 
 
 enum externalSignalFlag getExtSignal(int signalindex){
-	//template getExtSignal from firmware_funcs.c
-	//return signals[signalindex];
 	return GET_EXTERNAL_SIGNAL_FLAG;
 }
 
@@ -412,48 +604,6 @@ enum externalSignalFlag getExtSignal(int signalindex){
 
 
 enum externalSignalFlag setExtSignal(int signalindex,  enum externalSignalFlag flag){
-	//template setExtSignal from firmware_funcs.c
-
-	//in short..sets signals array, checks if agrees with timing mode, writes to fpga reg, calls synchronization and then settiming
-	/*
-	if (signalindex>=0 && signalindex<4) {
-		signals[signalindex]=flag;
-#ifdef VERBOSE
-		printf("settings signal variable number %d to value %04x\n", signalindex, signals[signalindex]);
-#endif
-		// if output signal, set it!
-		switch (flag) {
-		case GATE_IN_ACTIVE_HIGH:
-		case GATE_IN_ACTIVE_LOW:
-			if (timingMode==GATE_FIX_NUMBER || timingMode==GATE_WITH_START_TRIGGER)//timingMode = AUTO_TIMING by default and is set in setTiming()
-				setFPGASignal(signalindex,flag);	//not implemented here, checks if flag within limits and writes to fpga reg
-			else
-				setFPGASignal(signalindex,SIGNAL_OFF);
-			break;
-		case TRIGGER_IN_RISING_EDGE:
-		case TRIGGER_IN_FALLING_EDGE:
-			if (timingMode==TRIGGER_EXPOSURE || timingMode==GATE_WITH_START_TRIGGER)
-				setFPGASignal(signalindex,flag);
-			else
-				setFPGASignal(signalindex,SIGNAL_OFF);
-			break;
-		case RO_TRIGGER_IN_RISING_EDGE:
-		case RO_TRIGGER_IN_FALLING_EDGE:
-			if (timingMode==TRIGGER_READOUT)
-				setFPGASignal(signalindex,flag);
-			else
-				setFPGASignal(signalindex,SIGNAL_OFF);
-			break;
-		case MASTER_SLAVE_SYNCHRONIZATION:
-			setSynchronization(syncMode);//syncmode = NO_SYNCHRONIZATION by default and set with this function
-			break;
-		default:
-			setFPGASignal(signalindex,mode);
-		}
-
-		setTiming(GET_EXTERNAL_COMMUNICATION_MODE);
-	}
-	 */
 	return getExtSignal(signalindex);
 }
 
@@ -463,254 +613,40 @@ enum externalSignalFlag setExtSignal(int signalindex,  enum externalSignalFlag f
 
 
 enum externalCommunicationMode setTiming( enum externalCommunicationMode arg){
-
 	enum externalCommunicationMode ret=GET_EXTERNAL_COMMUNICATION_MODE;
-
-	ret = AUTO_TIMING;
-
+	if(arg != GET_EXTERNAL_COMMUNICATION_MODE){
+		switch((int)arg){
+		case AUTO_TIMING:			ret = 0;	break;
+		case TRIGGER_EXPOSURE:		ret = 2;	break;
+		case TRIGGER_READOUT:		ret = 1;	break;
+		case GATE_FIX_NUMBER:		ret = 3;	break;
+		}
+		printf(" Setting Triggering Mode: %d\n",(int)ret);
+		//EigerSetTriggerMode(ret);
+	}
+ret=0;
+	//ret = EigerGetTriggerMode();
+	switch((int)ret){
+	case 0:		ret = AUTO_TIMING;		break;
+	case 2:		ret = TRIGGER_EXPOSURE; break;
+	case 1:		ret = TRIGGER_READOUT;	break;
+	case 3:		ret = GATE_FIX_NUMBER;	break;
+	default:
+		printf("Unknown trigger mode found %d\n",ret);
+		ret = 0;
+	}
 	return ret;
 }
 
 
 
 enum masterFlags setMaster(enum masterFlags arg){
-	//template setMaster from firmware_funcs.c
-	/*
-	int i;
-	switch(f) {
-	case NO_MASTER:
-		// switch of gates or triggers
-		masterMode=NO_MASTER;
-		for (i=0; i<4; i++) {
-			if (signals[i]==MASTER_SLAVE_SYNCHRONIZATION) {
-				setFPGASignal(i,SIGNAL_OFF);
-			}
-		}
-		break;
-	case IS_MASTER:
-		// configure gate or trigger out
-		masterMode=IS_MASTER;
-		for (i=0; i<4; i++) {
-			if (signals[i]==MASTER_SLAVE_SYNCHRONIZATION) {
-				switch (syncMode) {
-				case NO_SYNCHRONIZATION:
-					setFPGASignal(i,SIGNAL_OFF);
-					break;
-				case MASTER_GATES:
-					setFPGASignal(i,GATE_OUT_ACTIVE_HIGH);
-					break;
-				case MASTER_TRIGGERS:
-					setFPGASignal(i,TRIGGER_OUT_RISING_EDGE);
-					break;
-				case SLAVE_STARTS_WHEN_MASTER_STOPS:
-					setFPGASignal(i,RO_TRIGGER_OUT_RISING_EDGE);
-					break;
-				default:
-					;
-				}
-			}
-		}
-		break;
-	case IS_SLAVE:
-		// configure gate or trigger in
-		masterMode=IS_SLAVE;
-		for (i=0; i<4; i++) {
-			if (signals[i]==MASTER_SLAVE_SYNCHRONIZATION) {
-				switch (syncMode) {
-				case NO_SYNCHRONIZATION:
-					setFPGASignal(i,SIGNAL_OFF);
-					break;
-				case MASTER_GATES:
-					setFPGASignal(i,GATE_IN_ACTIVE_HIGH);
-					break;
-				case MASTER_TRIGGERS:
-					setFPGASignal(i,TRIGGER_IN_RISING_EDGE);
-					break;
-				case SLAVE_STARTS_WHEN_MASTER_STOPS:
-					setFPGASignal(i,TRIGGER_IN_RISING_EDGE);
-					break;
-				default:
-					;
-				}
-			}
-		}
-		break;
-	default:
-		//do nothing
-		;
-	}
-
-	switch(masterMode) {
-	case NO_MASTER:
-		return NO_MASTER;
-
-
-	case IS_MASTER:
-		for (i=0; i<4; i++) {
-			if (signals[i]==MASTER_SLAVE_SYNCHRONIZATION) {
-				switch (syncMode) {
-				case NO_SYNCHRONIZATION:
-					return IS_MASTER;
-				case MASTER_GATES:
-					if (getFPGASignal(i)==GATE_OUT_ACTIVE_HIGH)
-						return IS_MASTER;
-					else
-						return NO_MASTER;
-				case MASTER_TRIGGERS:
-					if (getFPGASignal(i)==TRIGGER_OUT_RISING_EDGE)
-						return IS_MASTER;
-					else
-						return NO_MASTER;
-				case SLAVE_STARTS_WHEN_MASTER_STOPS:
-					if (getFPGASignal(i)==RO_TRIGGER_OUT_RISING_EDGE)
-						return IS_MASTER;
-					else
-						return NO_MASTER;
-				default:
-					return NO_MASTER;
-				}
-
-			}
-		}
-
-	case IS_SLAVE:
-		for (i=0; i<4; i++) {
-			if (signals[i]==MASTER_SLAVE_SYNCHRONIZATION) {
-				switch (syncMode) {
-				case NO_SYNCHRONIZATION:
-					return IS_SLAVE;
-				case MASTER_GATES:
-					if (getFPGASignal(i)==GATE_IN_ACTIVE_HIGH)
-						return IS_SLAVE;
-					else
-						return NO_MASTER;
-				case MASTER_TRIGGERS:
-				case SLAVE_STARTS_WHEN_MASTER_STOPS:
-					if (getFPGASignal(i)==TRIGGER_IN_RISING_EDGE)
-						return IS_SLAVE;
-					else
-						return NO_MASTER;
-				default:
-					return NO_MASTER;
-				}
-
-			}
-		}
-
-	}
-	 */
-
 	return NO_MASTER;
 }
 
 
 
 enum synchronizationMode setSynchronization(enum synchronizationMode arg){
-	/*
-	int i;
-
-	switch(s) {
-	case NO_SYNCHRONIZATION:
-		syncMode=NO_SYNCHRONIZATION;
-		for (i=0; i<4; i++) {
-			if (signals[i]==MASTER_SLAVE_SYNCHRONIZATION) {
-				setFPGASignal(i,SIGNAL_OFF);
-			}
-		}
-		break;
-		// disable external signals?
-	case MASTER_GATES:
-		// configure gate in or out
-		syncMode=MASTER_GATES;
-		for (i=0; i<4; i++) {
-			if (signals[i]==MASTER_SLAVE_SYNCHRONIZATION) {
-				if (masterMode==IS_MASTER)
-					setFPGASignal(i,GATE_OUT_ACTIVE_HIGH);
-				else if (masterMode==IS_SLAVE)
-					setFPGASignal(i,GATE_IN_ACTIVE_HIGH);
-			}
-		}
-
-		break;
-	case MASTER_TRIGGERS:
-		// configure trigger in or out
-		syncMode=MASTER_TRIGGERS;
-		for (i=0; i<4; i++) {
-			if (signals[i]==MASTER_SLAVE_SYNCHRONIZATION) {
-				if (masterMode==IS_MASTER)
-					setFPGASignal(i,TRIGGER_OUT_RISING_EDGE);
-				else if (masterMode==IS_SLAVE)
-					setFPGASignal(i,TRIGGER_IN_RISING_EDGE);
-			}
-		}
-		break;
-
-
-	case SLAVE_STARTS_WHEN_MASTER_STOPS:
-		// configure trigger in or out
-		syncMode=SLAVE_STARTS_WHEN_MASTER_STOPS;
-		for (i=0; i<4; i++) {
-			if (signals[i]==MASTER_SLAVE_SYNCHRONIZATION) {
-				if (masterMode==IS_MASTER)
-					setFPGASignal(i,RO_TRIGGER_OUT_RISING_EDGE);
-				else if (masterMode==IS_SLAVE)
-					setFPGASignal(i,TRIGGER_IN_RISING_EDGE);
-			}
-		}
-		break;
-
-
-	default:
-		//do nothing
-		;
-	}
-
-	switch (syncMode) {
-
-	case NO_SYNCHRONIZATION:
-		return NO_SYNCHRONIZATION;
-
-	case MASTER_GATES:
-
-		for (i=0; i<4; i++) {
-			if (signals[i]==MASTER_SLAVE_SYNCHRONIZATION) {
-				if (masterMode==IS_MASTER && getFPGASignal(i)==GATE_OUT_ACTIVE_HIGH)
-					return MASTER_GATES;
-				else if (masterMode==IS_SLAVE && getFPGASignal(i)==GATE_IN_ACTIVE_HIGH)
-					return MASTER_GATES;
-			}
-		}
-		return NO_SYNCHRONIZATION;
-
-	case MASTER_TRIGGERS:
-		for (i=0; i<4; i++) {
-			if (signals[i]==MASTER_SLAVE_SYNCHRONIZATION) {
-				if (masterMode==IS_MASTER && getFPGASignal(i)==TRIGGER_OUT_RISING_EDGE)
-					return MASTER_TRIGGERS;
-				else if (masterMode==IS_SLAVE && getFPGASignal(i)==TRIGGER_IN_RISING_EDGE)
-					return MASTER_TRIGGERS;
-			}
-		}
-		return NO_SYNCHRONIZATION;
-
-	case SLAVE_STARTS_WHEN_MASTER_STOPS:
-		for (i=0; i<4; i++) {
-			if (signals[i]==MASTER_SLAVE_SYNCHRONIZATION) {
-				if (masterMode==IS_MASTER &&	getFPGASignal(i)==RO_TRIGGER_OUT_RISING_EDGE)
-					return SLAVE_STARTS_WHEN_MASTER_STOPS;
-				else if (masterMode==IS_SLAVE && getFPGASignal(i)==TRIGGER_IN_RISING_EDGE)
-					return SLAVE_STARTS_WHEN_MASTER_STOPS;
-			}
-		}
-		return NO_SYNCHRONIZATION;
-
-	default:
-		return NO_SYNCHRONIZATION;
-
-	}
-
-
-	 */
 	return NO_SYNCHRONIZATION;
 }
 

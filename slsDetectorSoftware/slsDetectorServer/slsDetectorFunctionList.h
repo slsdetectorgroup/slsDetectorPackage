@@ -37,6 +37,15 @@ int detectorTest( enum digitalTestMode arg);
 int setDAC(enum detDacIndex ind, int val, int imod);
 int getADC(enum detDacIndex ind,  int imod);
 
+#if defined(EIGERD) || defined(GOTTHARD)
+int setHighVolage(int val, int imod);
+#endif
+
+#ifdef EIGERD
+int setIODelay(int val, int imod);
+int enableTenGigabitEthernet(int val);
+#endif
+
 #if defined(MYTHEND) || defined(GOTTHARDD)
 u_int32_t writeRegister(u_int32_t offset, u_int32_t data);
 u_int32_t readRegister(u_int32_t offset);
@@ -96,6 +105,8 @@ int startReceiver(int d);
 int calibratePedestal(int frames);
 #endif
 
+
+int copyModule(sls_detector_module *destMod, sls_detector_module *srcMod);
 
 int calculateDataBytes();
 int getTotalNumberOfChannels();

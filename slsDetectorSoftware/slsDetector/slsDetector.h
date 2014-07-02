@@ -1627,6 +1627,12 @@ class slsDetector : public slsDetectorUtils, public energyConversion {
    */
   void setDetectorHostname();
 
+  /** enable/disable or 10Gbe
+   * @param i is -1 to get, 0 to disable and 1 to enable
+     /returns if 10Gbe is enabled
+   */
+  int enableTenGigabitEthernet(int i = -1);
+
  protected:
  
 

@@ -156,6 +156,8 @@ int function_table() {
 	flist[F_START_RECEIVER]=&start_receiver;
 	flist[F_STOP_RECEIVER]=&stop_receiver;
 	flist[F_CALIBRATE_PEDESTAL]=&calibrate_pedestal;
+	flist[F_ENABLE_TEN_GIGA]=&enable_ten_giga;
+
 
 
 #ifdef VERBOSE
@@ -793,22 +795,32 @@ enum externalCommunicationMode{
 #ifdef SLS_DETECTOR_FUNCTION_LIST
 	if (ret==OK) {
 		/* execute action */
-
-		retval=setTiming(arg);
-
-		/*     switch(arg) { */
-		/*     default: */
-		/*       sprintf(mess,"The meaning of single signals should be set\n"); */
-		/*       ret=FAIL; */
-		/*     } */
-
-
+		switch(arg){
+#ifdef EIGERD
+		case GET_EXTERNAL_COMMUNICATION_MODE:
+		case AUTO_TIMING:
+		case TRIGGER_EXPOSURE:
+		case TRIGGER_READOUT:
+		case GATE_FIX_NUMBER:
+			break;
+#endif
+		default:
+			ret = FAIL;
+			sprintf("This timing mode %d not implemented in this detector\n",(int)arg);
+			break;
+		}
+	}
+	if (ret==OK) {
 #ifdef VERBOSE
 		printf("Setting external communication mode to %d\n", arg);
 #endif
-	} else
-		ret=FAIL;
+		retval=setTiming(arg);
+
+		if (differentClients==1)
+			ret=FORCE_UPDATE;
+	}
 #endif
+
 
 	/* send answer */
 	/* send OK/failed */
@@ -1149,6 +1161,10 @@ int set_dac(int file_des) {
 	case E_Vis:
 		idac = VIS;
 		break;
+	case HV_POT:
+		break;
+	case IO_DELAY:
+		break;
 #endif
 	default:
 		printf("Unknown DAC index %d\n",(int)ind);
@@ -1164,15 +1180,21 @@ int set_dac(int file_des) {
 		if (differentClients==1 && lockStatus==1 && val!=-1) {
 			ret=FAIL;
 			sprintf(mess,"Detector locked by %s\n",lastClientIP);
-		} else
-			retval=setDAC(idac,val,imod);
+		} else{
+			if(ind == HV_POT)
+				retval = setHighVolage(val,imod);
+			else if(ind == IO_DELAY)
+				retval = setIODelay(val,imod);
+			else
+				retval=setDAC(idac,val,imod);
+		}
 	}
 #endif
 #ifdef VERBOSE
 	printf("DAC set to %d V\n",  retval);
 #endif
 	if(ret == OK){
-		if (retval==val || val==-1) {
+		if ((abs(retval-val)<=5) || val==-1) {
 			ret=OK;
 			if (differentClients)
 				ret=FORCE_UPDATE;
@@ -2408,20 +2430,20 @@ int set_timer(int file_des) {
 #endif
 	if (ret!=OK) {
 		printf(mess);
-		if (differentClients)
-			ret=FORCE_UPDATE;
-	}
-
-	if (ret!=OK) {
-		printf(mess);
 		printf("set timer failed\n");
 		sprintf(mess, "set timer %d failed\n", ind);
-	} else if (ind==FRAME_NUMBER) {
-		/*ret=allocateRAM();*/
+	}
+	else{
+#if defined(MYTHEND) || defined(GOTTHARD)
+	if (ind==FRAME_NUMBER) {
+		ret=allocateRAM();
 		if (ret!=OK)
 			sprintf(mess, "could not allocate RAM for %lld frames\n", tns);
 	}
-
+#endif
+	if (differentClients)
+		ret=FORCE_UPDATE;
+}
 	//ret could be swapped during sendData
 	ret1 = ret;
 	n = sendData(file_des,&ret1,sizeof(ret),INT32);
@@ -2590,10 +2612,7 @@ int set_readout_flags(int file_des) {
 		sprintf(mess,"Error reading from socket\n");
 		ret=FAIL;
 	}
-#ifndef MYTHEND
-	ret = FAIL;
-	strcpy(mess,"Not applicable/implemented for this detector\n");
-#else
+
 #ifdef VERBOSE
 	printf("setting readout flags  to %d\n",arg);
 #endif
@@ -2604,31 +2623,35 @@ int set_readout_flags(int file_des) {
 	}  else {
 		switch(arg) {
 		case  GET_READOUT_FLAGS:
+#ifdef MYTHEND
 		case STORE_IN_RAM:
 		case TOT_MODE:
 		case CONTINOUS_RO:
 		case NORMAL_READOUT:
-			if (myDetectorType==MYTHEN) {
-				retval=setReadOutFlags(arg);
-				break;
-			}
-			break;
+			retval=setReadOutFlags(arg);
+		break;
+#elif EIGERD
+	    case PARALLEL:
+	    case NONPARALLEL:
+	    case SAFE:
+	    	retval=setReadOutFlags(arg);
+	    	break;
+#endif
 		default:
-			sprintf(mess,"Unknown readout flag %d\n", arg);
+			sprintf(mess,"Unknown readout flag %d for this detector\n", arg);
 			ret=FAIL;
 			break;
 		}
 	}
 #endif
 	if (ret==OK) {
-		if (differentClients)
-			ret=FORCE_UPDATE;
 		if (arg!=GET_READOUT_FLAGS && arg!=retval) {
 			ret=FAIL;
 			sprintf(mess,"Could not change readout flag: should be %d but is %d\n", arg, retval);
-		}
+		}else if (differentClients)
+			ret=FORCE_UPDATE;
 	}
-#endif
+
 
 	//ret could be swapped during sendData
 	ret1 = ret;
@@ -2752,10 +2775,7 @@ int set_speed(int file_des) {
 		sprintf(mess,"Error reading from socket\n");
 		ret=FAIL;
 	}
-#ifndef MYTHEND
-	ret = FAIL;
-	strcpy(mess,"Not applicable/implemented for this detector\n");
-#else
+
 #ifdef VERBOSE
 	printf("setting speed variable %d  to %d\n",arg,val);
 #endif 
@@ -2767,33 +2787,36 @@ int set_speed(int file_des) {
 		}  else {
 #ifdef SLS_DETECTOR_FUNCTION_LIST
 			switch (arg) {
+#ifdef MYTHEND
 			case CLOCK_DIVIDER:
 			case WAIT_STATES:
 			case SET_SIGNAL_LENGTH:
 			case TOT_CLOCK_DIVIDER:
 			case TOT_DUTY_CYCLE:
-				if (myDetectorType==MYTHEN) {
-					retval=setSpeed(arg, val);
-					break;
-				}
+				retval=setSpeed(arg, val);
 				break;
+#elif EIGERD
+			case CLOCK_DIVIDER:
+				retval=setSpeed(arg, val);
+				break;
+#endif
 			default:
-				sprintf(mess,"unknown speed variable %d\n",arg);
+				sprintf(mess,"unknown speed variable %d for this detector\n",arg);
 				ret=FAIL;
 				break;
 			}
 #endif
 		}
-		if (ret==OK && val>=0) {
-			if (retval!=val) {
+		if (ret==OK){
+			if ((retval!=val) && (val>=0)) {
 				ret=FAIL;
 				sprintf(mess,"could not change speed variable %d: should be %d but is %d \n",arg, val, retval);
-			}
+			}else if (differentClients)
+				ret=FORCE_UPDATE;
+
 		}
-		if (differentClients && ret==OK)
-			ret=FORCE_UPDATE;
 	}
-#endif
+
 
 	//ret could be swapped during sendData
 	ret1 = ret;
@@ -3340,3 +3363,48 @@ int calibrate_pedestal(int file_des){
 
 
 
+
+
+
+
+
+
+int enable_ten_giga(int file_des) {
+	int n;
+	int retval;
+	int ret=OK,ret1=OK;
+	int arg = -1;
+
+	sprintf(mess,"Can't enable/disable 10Gbe \n");
+	/* receive arguments */
+	n = receiveData(file_des,&arg,sizeof(arg),INT32);
+	if (n < 0) {
+		sprintf(mess,"Error reading from socket\n");
+		ret=FAIL;
+	}
+	/* execute action */
+	if(ret != FAIL){
+#ifdef VERBOSE
+		printf("Enabling 10Gbe :%d \n",arg);
+#endif
+#ifdef SLS_DETECTOR_FUNCTION_LIST
+		retval=enableTenGigabitEthernet(arg);
+		if((arg != -1) && (retval != arg))
+			ret=FAIL;
+		else if (differentClients==1 && ret==OK) {
+			ret=FORCE_UPDATE;
+		}
+#endif
+	}
+	/* send answer */
+	/* send OK/failed */
+	//ret could be swapped during sendData
+	ret1 = ret;
+	n = sendData(file_des,&ret1,sizeof(ret),INT32);
+	if (ret==FAIL)
+		n += sendData(file_des,mess,sizeof(mess),OTHER);
+	/* send return argument */
+	n += sendData(file_des,&retval,sizeof(retval),INT32);
+	/*return ok/fail*/
+	return ret;
+}

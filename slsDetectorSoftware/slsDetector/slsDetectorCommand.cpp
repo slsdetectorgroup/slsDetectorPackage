@@ -682,6 +682,9 @@ slsDetectorCommand::slsDetectorCommand(slsDetectorUtils *det)  {
   descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdDAC;
   i++;
 
+  descrToFuncMap[i].m_pFuncName="iodelay"; //
+  descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdDAC;
+  i++;
 
 
 
@@ -851,6 +854,10 @@ slsDetectorCommand::slsDetectorCommand(slsDetectorUtils *det)  {
   i++;
 
   descrToFuncMap[i].m_pFuncName="r_compression"; //
+  descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdReceiver;
+  i++;
+
+  descrToFuncMap[i].m_pFuncName="tengiga"; //
   descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdReceiver;
   i++;
 
@@ -3312,6 +3319,8 @@ string slsDetectorCommand::cmdDAC(int narg, char *args[], int action) {
 	  dac=E_Vcn;
   else if (cmd== "vis")
 	  dac=E_Vis;
+  else if (cmd== "iodelay")
+	  dac=IO_DELAY;
   else
     return string("cannot decode dac ")+cmd;
   
@@ -3849,6 +3858,12 @@ string slsDetectorCommand::cmdAdvanced(int narg, char *args[], int action) {
 	flag=TOT_MODE;
       else if (sval=="continous")
 	flag=CONTINOUS_RO;
+      else if (sval=="parallel")
+	flag=PARALLEL;
+      else if (sval=="nonparallel")
+	flag=NONPARALLEL;
+      else if (sval=="safe")
+	flag=SAFE;
       else
 	return string("could not scan flag ")+string(args[1]);
     }
@@ -3865,6 +3880,12 @@ string slsDetectorCommand::cmdAdvanced(int narg, char *args[], int action) {
       return string("tot");
     case CONTINOUS_RO:
       return string("continous");
+    case PARALLEL:
+      return string("parallel");
+    case NONPARALLEL:
+      return string("nonparallel");
+    case SAFE:
+      return string("safe");
     default:
       return string("unknown");
     }  
@@ -3898,13 +3919,13 @@ string slsDetectorCommand::helpAdvanced(int narg, char *args[], int action) {
   if (action==PUT_ACTION || action==HELP_ACTION) {
 
     os << "extsig:i mode \t sets the mode of the external signal i. can be  \n \t \t \t off, \n \t \t \t gate_in_active_high, \n \t \t \t gate_in_active_low, \n \t \t \t trigger_in_rising_edge, \n \t \t \t trigger_in_falling_edge, \n \t \t \t ro_trigger_in_rising_edge, \n \t \t \t ro_trigger_in_falling_edge, \n \t \t \t gate_out_active_high, \n \t \t \t gate_out_active_low, \n \t \t \t trigger_out_rising_edge, \n \t \t \t trigger_out_falling_edge, \n \t \t \t ro_trigger_out_rising_edge, \n \t \t \t ro_trigger_out_falling_edge" << std::endl;
-    os << "flags mode \t sets the readout flags to mode. can be none, storeinram, tot, continous, unknown" << std::endl;
+    os << "flags mode \t sets the readout flags to mode. can be none, storeinram, tot, continous, parallel, nonparallel, safe, unknown" << std::endl;
     
   }
   if (action==GET_ACTION || action==HELP_ACTION) {
 
     os << "extsig:i \t gets the mode of the external signal i. can be  \n \t \t \t off, \n \t \t \t gate_in_active_high, \n \t \t \t gate_in_active_low, \n \t \t \t trigger_in_rising_edge, \n \t \t \t trigger_in_falling_edge, \n \t \t \t ro_trigger_in_rising_edge, \n \t \t \t ro_trigger_in_falling_edge, \n \t \t \t gate_out_active_high, \n \t \t \t gate_out_active_low, \n \t \t \t trigger_out_rising_edge, \n \t \t \t trigger_out_falling_edge, \n \t \t \t ro_trigger_out_rising_edge, \n \t \t \t ro_trigger_out_falling_edge" << std::endl;
-    os << "flags \t gets the readout flags. can be none, storeinram, tot, continous, unknown" << std::endl;
+    os << "flags \t gets the readout flags. can be none, storeinram, tot, continous, parallel, nonparallel, safe, unknown" << std::endl;
 
   } 
   return os.str();
@@ -4069,6 +4090,17 @@ string slsDetectorCommand::cmdReceiver(int narg, char *args[], int action) {
 
   }
 
+  else if(cmd=="tengiga"){
+	  if (action==PUT_ACTION){
+		  if (!sscanf(args[1],"%d",&ival))
+			  return string("Could not scan tengiga input ")+string(args[1]);
+		  if(ival>=0)
+			  sprintf(answer,"%d",myDet->enableTenGigabitEthernet(ival));
+	  }else
+		  sprintf(answer,"%d",myDet->enableTenGigabitEthernet());
+	  return string(answer);
+
+  }
 
     return string("could not decode command");
 
@@ -4082,11 +4114,13 @@ string slsDetectorCommand::helpReceiver(int narg, char *args[], int action) {
   if (action==PUT_ACTION || action==HELP_ACTION)
     os << "receiver [status] \t starts/stops the receiver to listen to detector packets. - can be start or stop" << std::endl;
   	os << "r_readfreq \t sets the gui read frequency of the receiver, 0 if gui requests frame, >0 if receiver sends every nth frame to gui" << std::endl;
+	os << "tengiga \t sets system to be configure for 10Gbe if set to 1, else 1Gbe if set to 0" << std::endl;
   if (action==GET_ACTION || action==HELP_ACTION){
     os << "receiver \t returns the status of receiver - can be running or idle" << std::endl;
     os << "framescaught \t returns the number of frames caught by receiver(average for multi)" << std::endl;
     os << "frameindex \t returns the current frame index of receiver(average for multi)" << std::endl;
     os << "r_readfreq \t returns the gui read frequency of the receiver" << std::endl;
+    os << "tengiga \t returns 1 if the system is configured for 10Gbe else 0 for 1Gbe" << std::endl;
   }
   return os.str();
 

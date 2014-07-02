@@ -23,8 +23,6 @@ qTabSettings::qTabSettings(QWidget *parent,multiSlsDetector*& detector):
 		item[i]=0;
 	setupUi(this);
 	SetupWidgetWindow();
-	Initialization();
-
 }
 
 //-------------------------------------------------------------------------------------------------------------------------------------------------
@@ -54,20 +52,51 @@ void qTabSettings::SetupWidgetWindow(){
 	spinNumModules->setMaximum(myDet->getMaxNumberOfModules());
 	spinNumModules->setValue(myDet->setNumberOfModules());
 
+	Initialization();
+
 	// Dynamic Range
-	switch(myDet->setDynamicRange(-1)){
+	GetDynamicRange();
+
+	qDefs::checkErrorMessage(myDet,"qTabSettings::SetupWidgetWindow");
+}
+
+
+//-------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+void qTabSettings::GetDynamicRange(int setvalue){
+#ifdef VERBOSE
+	cout  << "Getting dynamic range" << endl;
+#endif
+	int ret = myDet->setDynamicRange(-1);
+	if(detType == slsDetectorDefs::MYTHEN)
+		if(ret==24)
+			ret=32;
+		else if(ret==24)
+			cout<<"ret:"<<ret<<endl;
+	//check if the set value is equal to return value
+	if((setvalue!=-1) && (setvalue!=ret)){
+			qDefs::Message(qDefs::WARNING,"Dynamic Range cannot be set to this value.","qTabSettings::SetDynamicRange");
+#ifdef VERBOSE
+			cout << "ERROR: Setting dynamic range to "<< ret << endl;
+#endif
+	}
+
+	//set the final value on gui
+	disconnect(comboDynamicRange, 	SIGNAL(activated(int)), 			this, SLOT(SetDynamicRange(int)));
+	switch(ret){
 	case 32:   	comboDynamicRange->setCurrentIndex(0);	break;
-	case 24:   	comboDynamicRange->setCurrentIndex(0);	break;
 	case 16:	comboDynamicRange->setCurrentIndex(1);  break;
 	case 8:	  	comboDynamicRange->setCurrentIndex(2);	break;
 	case 4:	  	comboDynamicRange->setCurrentIndex(3);	break;
 	default:	comboDynamicRange->setCurrentIndex(0);	break;
 	}
-
-	qDefs::checkErrorMessage(myDet,"qTabSettings::SetupWidgetWindow");
+	connect(comboDynamicRange, 	SIGNAL(activated(int)), 			this, SLOT(SetDynamicRange(int)));
 }
 
+
 //-------------------------------------------------------------------------------------------------------------------------------------------------
+
 
 void qTabSettings::SetupDetectorSettings(){
 	// Get detector settings from detector
@@ -200,34 +229,20 @@ void qTabSettings::SetNumberOfModules(int index){
 
 
 void qTabSettings::SetDynamicRange(int index){
-	int ret,dr;
+	int dr;
 	switch (index) {
-	case 0:    dr=32;		break;
+	case 0:    dr=32;	break;
 	case 1:    dr=16;  	break;
 	case 2:    dr=8;   	break;
 	case 3:    dr=4;   	break;
 	default:   dr=32;  	break;
 	}
-	ret=myDet->setDynamicRange(dr);
-	if((ret==24)&&(dr==32)) dr = ret;
+	myDet->setDynamicRange(dr);
 #ifdef VERBOSE
 	cout << "Setting dynamic range to "<< dr << endl;
 #endif
-	if(ret!=dr){
-		qDefs::Message(qDefs::WARNING,"Dynamic Range cannot be set to this value.","qTabSettings::SetDynamicRange");
-#ifdef VERBOSE
-		cout << "ERROR: Setting dynamic range to "<< ret << endl;
-#endif
-		switch(ret){
-		case 32:  comboDynamicRange->setCurrentIndex(0);	break;
-		case 24:  comboDynamicRange->setCurrentIndex(0);	break;
-		case 16:	comboDynamicRange->setCurrentIndex(1);  break;
-		case 8:	comboDynamicRange->setCurrentIndex(2);	break;
-		case 4:	comboDynamicRange->setCurrentIndex(3);	break;
-		default:	comboDynamicRange->setCurrentIndex(0);	break;
-		}
-	}
-
+	//check
+	GetDynamicRange(dr);
 	qDefs::checkErrorMessage(myDet,"qTabSettings::SetDynamicRange");
 }
 
@@ -263,7 +278,6 @@ void qTabSettings::Refresh(){
 
 	disconnect(comboSettings, 		SIGNAL(currentIndexChanged(int)),	this, SLOT(setSettings(int)));
 	disconnect(spinNumModules, 	SIGNAL(valueChanged(int)), 			this, SLOT(SetNumberOfModules(int)));
-	disconnect(comboDynamicRange, 	SIGNAL(activated(int)), 			this, SLOT(SetDynamicRange(int)));
 	disconnect(spinThreshold,		SIGNAL(valueChanged(int)),			this, SLOT(SetEnergy()));
 
 
@@ -278,18 +292,7 @@ void qTabSettings::Refresh(){
 	spinNumModules->setValue(numMod);
 
 	// Dynamic Range
-#ifdef VERBOSE
-	cout  << "Getting dynamic range" << endl;
-#endif
-	switch(myDet->setDynamicRange(-1)){
-	case 32:   	comboDynamicRange->setCurrentIndex(0);	break;
-	case 24:   	comboDynamicRange->setCurrentIndex(0);	break;
-	case 16:	comboDynamicRange->setCurrentIndex(1);  break;
-	case 8:	  	comboDynamicRange->setCurrentIndex(2);	break;
-	case 4:	  	comboDynamicRange->setCurrentIndex(3);	break;
-	default:	comboDynamicRange->setCurrentIndex(0);	break;
-	}
-
+	GetDynamicRange();
 
 	// Settings
 #ifdef VERBOSE
@@ -319,7 +322,6 @@ void qTabSettings::Refresh(){
 
 	connect(comboSettings, 		SIGNAL(currentIndexChanged(int)),	this, SLOT(setSettings(int)));
 	connect(spinNumModules, 	SIGNAL(valueChanged(int)), 			this, SLOT(SetNumberOfModules(int)));
-	connect(comboDynamicRange, 	SIGNAL(activated(int)), 			this, SLOT(SetDynamicRange(int)));
 	connect(spinThreshold,		SIGNAL(valueChanged(int)),			this, SLOT(SetEnergy()));
 
 #ifdef VERBOSE

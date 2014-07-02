@@ -76,7 +76,10 @@ private:
 	 */
 	void Initialization();
 
-
+	/** Gets the dynamic range and sets it on the gui
+	 * @param setvalue the value set by the gui when used as a check
+	 */
+	void GetDynamicRange(int setvalue = -1);
 
 
 

@@ -88,7 +88,7 @@ void qTabDeveloper::SetupWidgetWindow(){
 		dacNames.push_back("v Vtgstv:");
 		dacNames.push_back("v Vcmp_ll:");
 		dacNames.push_back("v Vcmp_lr:");
-		dacNames.push_back("i cal:");
+		dacNames.push_back("v cal:");
 		dacNames.push_back("v Vcmp_rl:");
 		dacNames.push_back("v rxb_rb:");
 		dacNames.push_back("v rxb_lb:");
@@ -260,7 +260,8 @@ void qTabDeveloper::SetDacValues(int id){
 #ifdef VERBOSE
 	cout << "Setting dac:" << dacNames[id] << " : " << spinDacs[id]->value() << endl;
 #endif
-	spinDacs[id]->setValue((double)myDet->setDAC((dacs_t)spinDacs[id]->value(),getSLSIndex(id)));
+	//spinDacs[id]->setValue((double)myDet->setDAC((dacs_t)spinDacs[id]->value(),getSLSIndex(id)));
+	myDet->setDAC((dacs_t)spinDacs[id]->value(),getSLSIndex(id));
 
 	qDefs::checkErrorMessage(myDet,"qTabDeveloper::SetDacValues");
 }

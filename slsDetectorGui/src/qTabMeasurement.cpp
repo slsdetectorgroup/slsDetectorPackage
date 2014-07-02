@@ -139,8 +139,8 @@ void qTabMeasurement::SetupTimingMode(){
 			item[(int)Gated_Start]->setEnabled(true);
 			break;
 		case slsDetectorDefs::EIGER:
-			item[(int)Trigger_Exp_Series]->setEnabled(false);/**not implemented yet*/
-			item[(int)Trigger_Readout]->setEnabled(false);
+			item[(int)Trigger_Exp_Series]->setEnabled(true);
+			item[(int)Trigger_Readout]->setEnabled(true);
 			item[(int)Gated]->setEnabled(true);
 			item[(int)Gated_Start]->setEnabled(false);
 			break;
@@ -638,36 +638,38 @@ void qTabMeasurement::SetTimingMode(int mode){
 		if(myDet->setExternalCommunicationMode(slsDetectorDefs::AUTO_TIMING)==slsDetectorDefs::AUTO_TIMING)
 			success = true;
 		break;
-	case Trigger_Exp_Series://#Frames, #Triggers, ExpTime, Period, Delay
-		if(detType == slsDetectorDefs::EIGER)//more than 1 frame per trigger yet to be implemented
-			spinNumFrames->setValue(1);
+	case Trigger_Exp_Series://#(Frames), #Triggers, ExpTime, Period, (Delay)
+		if(detType == slsDetectorDefs::EIGER) //only 1 frame for each trigger for eiger
+		  spinNumFrames->setValue(1);
 		else{
-		lblNumFrames->setEnabled(true);		spinNumFrames->setEnabled(true);
+		 lblNumFrames->setEnabled(true);	spinNumFrames->setEnabled(true);
+		 lblDelay->setEnabled(true);		spinDelay->setEnabled(true);			comboDelayUnit->setEnabled(true);
+		 lblPeriod->setEnabled(true);		spinPeriod->setEnabled(true);			comboPeriodUnit->setEnabled(true);
 		}
 		lblExpTime->setEnabled(true);		spinExpTime->setEnabled(true);			comboExpUnit->setEnabled(true);
-		lblPeriod->setEnabled(true);		spinPeriod->setEnabled(true);			comboPeriodUnit->setEnabled(true);
 		lblNumTriggers->setEnabled(true);	spinNumTriggers->setEnabled(true);
-		lblDelay->setEnabled(true);			spinDelay->setEnabled(true);			comboDelayUnit->setEnabled(true);
 		if(myDet->setExternalCommunicationMode(slsDetectorDefs::TRIGGER_EXPOSURE)==slsDetectorDefs::TRIGGER_EXPOSURE)
 			success = true;
 		break;
-	case Trigger_Readout://#Frames, ExpTime, Period, Delay
+	case Trigger_Readout://#Frames, ExpTime, Period, (Delay)
+		if(detType != slsDetectorDefs::EIGER){
+		  lblDelay->setEnabled(true);		spinDelay->setEnabled(true);			comboDelayUnit->setEnabled(true);
+		}
 		spinNumTriggers->setValue(1);
 		lblNumFrames->setEnabled(true);		spinNumFrames->setEnabled(true);
 		lblExpTime->setEnabled(true);		spinExpTime->setEnabled(true);			comboExpUnit->setEnabled(true);
 		lblPeriod->setEnabled(true);		spinPeriod->setEnabled(true);			comboPeriodUnit->setEnabled(true);
-		lblDelay->setEnabled(true);			spinDelay->setEnabled(true);			comboDelayUnit->setEnabled(true);
 		if(myDet->setExternalCommunicationMode(slsDetectorDefs::TRIGGER_READOUT)==slsDetectorDefs::TRIGGER_READOUT)
 			success = true;
 		break;
-	case Gated://#Frames, #Gates
-		spinNumTriggers->setValue(1);
-		if(detType == slsDetectorDefs::EIGER)//more than 1 frame per trigger yet to be implemented
-			spinNumGates->setValue(1);
-		else{
-		lblNumGates->setEnabled(true);		spinNumGates->setEnabled(true);
+	case Gated://#Frames, #(Gates)
+		if(detType != slsDetectorDefs::EIGER){
+		  lblNumGates->setEnabled(true);		spinNumGates->setEnabled(true);
 		}
+		spinNumTriggers->setValue(1);
 		lblNumFrames->setEnabled(true);		spinNumFrames->setEnabled(true);
+
+
 		if(myDet->setExternalCommunicationMode(slsDetectorDefs::GATE_FIX_NUMBER)==slsDetectorDefs::GATE_FIX_NUMBER)
 			success = true;
 		break;

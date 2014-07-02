@@ -38,7 +38,9 @@ public:
 	   array.resize(Capacity);
 	   sem_init(&free_mutex,0,0);
    }
-   virtual ~CircularFifo() {}
+   virtual ~CircularFifo() {
+		sem_destroy(&free_mutex);
+   }
 
    bool push(Element*& item_);
    bool pop(Element*& item_);
@@ -151,111 +153,3 @@ unsigned int CircularFifo<Element>::increment(unsigned int idx_) const
 }
 
 #endif /* CIRCULARFIFO_H_ */
-
-
-
-
-
-/*
-#ifndef CIRCULARFIFO_H_
-#define CIRCULARFIFO_H_
-
-#include "sls_receiver_defs.h"
-
-#include "/usr/include/alsa/atomic.h"
-#include <vector>
-using namespace std;
-
-template<typename Element>
-class CircularFifo {
-public:
-
-	CircularFifo(unsigned int Size) : tail(0), head(0){
-		Capacity = Size + 1;
-		array.resize(Capacity);
-	}
-	virtual ~CircularFifo() {}
-
-	bool push(Element*& item_);
-	bool pop(Element*& item_);
-
-	bool wasEmpty() const;
-	bool wasFull() const;
-	bool isLockFree() const;
-
-private:
-	vector <Element*> array;
-	unsigned int Capacity;
-
-	std::atomic<unsigned int> tail; // input index
-	std::atomic<unsigned int> head; // output index
-
-	unsigned int increment(unsigned int idx_) const;
-};
-
-
-template<typename Element>
-bool CircularFifo<Element>::push(Element*& item_)
-{
-	auto currentTail = tail.load();
-	auto nextTail = increment(currentTail);
-	if(nextTail != head.load())
-	{
-		array[currentTail] = item_;
-		tail.store(nextTail);
-		return true;
-	}
-
-	// queue was full
-	return false;
-}
-
-
-template<typename Element>
-bool CircularFifo<Element>::pop(Element*& item_)
-{
-	const auto currentHead = head.load();
-	if(currentHead == tail.load())
-		return false;  // empty queue
-
-	item_ = array[currentHead];
-	head.store(increment(currentHead));
-	return true;
-}
-
-
-template<typename Element>
-bool CircularFifo<Element>::wasEmpty() const
-{
-	return (head.load() == tail.load());
-}
-
-
-template<typename Element>
-bool CircularFifo<Element>::wasFull() const
-{
-	const auto nextTail = increment(tail.load());
-	return (nextTail == head.load());
-}
-
-template<typename Element>
-bool CircularFifo<Element>::isLockFree() const
-{
-  return (tail.is_lock_free() && head.is_lock_free());
-}
-
-
-template<typename Element>
-unsigned int CircularFifo<Element>::increment(unsigned int idx_) const
-{
-	// increment or wrap
-	// =================
-	//    index++;
-	//    if(index == array.lenght) -> index = 0;
-	//
-	//or as written below:
-	//    index = (index+1) % array.length
-	return (idx_ + 1) % Capacity;
-}
-
-#endif */

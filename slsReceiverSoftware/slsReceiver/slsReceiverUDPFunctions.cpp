@@ -143,7 +143,7 @@ void slsReceiverUDPFunctions::initializeMembers(){
 	frameIndexOffset = 0;
 	acquisitionPeriod = SAMPLE_TIME_IN_NS;
 	numberOfFrames = 0;
-	dynamicRange = 0;
+	dynamicRange = 16;
 	shortFrame = -1;
 	currframenum = 0;
 	prevframenum = 0;
@@ -262,11 +262,11 @@ int slsReceiverUDPFunctions::setDetectorType(detectorType det){
 #ifndef EIGERSLS
 		cout << "SLS Eiger Receiver" << endl;
 		fifosize 			= EIGER_FIFO_SIZE;
-		packetsPerFrame 	= EIGER_PACKETS_PER_FRAME;
+		packetsPerFrame 	= EIGER_PACKETS_PER_FRAME_COSTANT * dynamicRange;
 		onePacketSize		= EIGER_ONE_PACKET_SIZE;
-		frameSize			= EIGER_BUFFER_SIZE;
-		bufferSize 			= EIGER_ONE_PACKET_SIZE; // because if you listen to a whole frame on one port, it will be interleaved
-		maxPacketsPerFile 	= EIGER_MAX_FRAMES_PER_FILE * EIGER_PACKETS_PER_FRAME;
+		frameSize			= EIGER_BUFFER_SIZE_CONSTANT * dynamicRange;
+		bufferSize 			= (frameSize/EIGER_MAX_PORTS) + EIGER_HEADER_LENGTH;//for only one port
+		maxPacketsPerFile 	= EIGER_MAX_FRAMES_PER_FILE * packetsPerFrame;
 		frameIndexMask 		= EIGER_FRAME_INDEX_MASK;
 		frameIndexOffset 	= EIGER_FRAME_INDEX_OFFSET;
 		packetIndexMask 	= EIGER_PACKET_INDEX_MASK;
@@ -522,11 +522,52 @@ int32_t slsReceiverUDPFunctions::setScanTag(int32_t stag){
 }
 
 int32_t slsReceiverUDPFunctions::setDynamicRange(int32_t dr){
+	cout << "Setting Dynamic Range" << endl;
+
+	int olddr = dynamicRange;
 	if(dr >= 0){
 		if(receiver != NULL)
 			receiver->setDynamicRange(dr);
-		else
+		else{
 			dynamicRange = dr;
+			packetsPerFrame 	= EIGER_PACKETS_PER_FRAME_COSTANT * dynamicRange;
+			frameSize			= EIGER_BUFFER_SIZE_CONSTANT * dynamicRange;
+			bufferSize 			= (frameSize/EIGER_MAX_PORTS) + EIGER_HEADER_LENGTH;//for only one port
+			maxPacketsPerFile 	= EIGER_MAX_FRAMES_PER_FILE * packetsPerFrame;
+
+			if(olddr != dr){
+
+				//del
+				if(thread_started){
+					createListeningThreads(true);
+					createWriterThreads(true);
+				}
+				for(int i=0;i<numListeningThreads;i++){
+						if(mem0[i])			{free(mem0[i]);			mem0[i] = NULL;}
+						if(fifo[i])			{delete fifo[i];		fifo[i] = NULL;}
+						if(fifoFree[i])		{delete fifoFree[i];	fifoFree[i] = NULL;}
+						buffer[i] = NULL;
+					}
+				if(latestData) 		{delete [] latestData;	latestData = NULL;}
+				latestData = new char[frameSize];
+
+				numJobsPerThread = -1;
+				setupFifoStructure();
+
+				if(createListeningThreads() == FAIL){
+					cout << "ERROR: Could not create listening thread" << endl;
+					exit (-1);
+				}
+
+				if(createWriterThreads() == FAIL){
+					cout << "ERROR: Could not create writer threads" << endl;
+					exit (-1);
+				}
+
+				setThreadPriorities();
+			}
+
+		}
 	}
 
 	if(receiver != NULL)
@@ -842,10 +883,21 @@ void slsReceiverUDPFunctions::copyFrameToGui(char* startbuf[], uint32_t fnum, ch
 		guiDataReady=0;
 		//eiger
 		if(startbuf != NULL){
-			for(int i=numListeningThreads;i<packetsPerFrame+numListeningThreads;++i){
-				memcpy((((char*)latestData)+((i-numListeningThreads)*bufferSize)) ,startbuf[i] + HEADER_SIZE_NUM_TOT_PACKETS,bufferSize);
-				//cout<<"p"<<i<<":"<<(htonl(*(uint32_t*)((eiger_packet_header *)((uint32_t*)(startbuf[i] + HEADER_SIZE_NUM_TOT_PACKETS)))->num2)&0xff)<<"\t\t";
+			int offset = 0;
+			int size = frameSize/EIGER_MAX_PORTS;
+			for(int j=0;j<numListeningThreads;++j){
+				memcpy((((char*)latestData)+offset) ,startbuf[j] + (HEADER_SIZE_NUM_TOT_PACKETS + EIGER_HEADER_LENGTH),size);
+				offset += size;
 			}
+
+			/*
+			for(int j=25;j<27;++j)
+			for(int i=1000;i<1010;i=i+2)
+				//cout<<"startbuf:"<<dec<<i<<hex<<":\t0x"<<htonl((uint32_t)(*((uint32_t*)(startbuf[1] + HEADER_SIZE_NUM_TOT_PACKETS+ EIGER_HEADER_LENGTH+8+ i))))<<endl;
+			cout<<"startbuf:"<<dec<<i<<hex<<":\t0x"<<((uint16_t)(*((uint16_t*)(startbuf[1] + 2+ 48+ j*1040+8+ i))))<<endl;
+*/
+
+
 			guiFrameNumber = fnum;
 		}else//other detectors
 			memcpy(latestData,buf,bufferSize);
@@ -1417,7 +1469,7 @@ void slsReceiverUDPFunctions::startReadout(){
 	usleep(50000);
 
 	/********************************************/
-	usleep(1000000);
+	usleep(2000000);
 	pthread_mutex_lock(&status_mutex);
 	status = TRANSMITTING;
 	pthread_mutex_unlock(&status_mutex);
@@ -1457,7 +1509,7 @@ int slsReceiverUDPFunctions::startListening(){
 	thread_started = 1;
 
 	int i,total;
-	int lastpacketoffset, expected, rc, packetcount, maxBufferSize, carryonBufferSize;
+	int lastpacketoffset, expected, rc, rc1,packetcount, maxBufferSize, carryonBufferSize;
 	uint32_t lastframeheader;// for moench to check for all the packets in last frame
 	char* tempchar = NULL;
 	int imageheader = 0;
@@ -1476,10 +1528,7 @@ int slsReceiverUDPFunctions::startListening(){
 
 		if(tempchar) {delete [] tempchar;tempchar = NULL;}
 		if(myDetectorType == EIGER)
-			tempchar = new char[bufferSize];
-		else
-			tempchar = new char[onePacketSize * (packetsPerFrame - 1)]; //gotthard: 1packet size, moench:39 packet size
-
+			tempchar = new char[onePacketSize * ((packetsPerFrame/numListeningThreads) - 1)]; //gotthard: 1packet size, moench:39 packet size
 
 
 		while((1<<ithread)&listeningthreads_mask){
@@ -1501,24 +1550,10 @@ int slsReceiverUDPFunctions::startListening(){
 			}
 			//normal listening
 			else if(!carryonBufferSize){
-				//eiger
-				if (imageheader){
-					rc = udpSocket[ithread]->ReceiveDataOnly(buffer[ithread] + HEADER_SIZE_NUM_TOT_PACKETS);
-					//if it was the header
-					if(rc == EIGER_HEADER_LENGTH){
-#ifdef VERYDEBUG
-						cout << "rc for header2:" << dec << rc << endl;
-#endif
-						expected = EIGER_HEADER_LENGTH;
-					}else{
-						expected = maxBufferSize;
-					}
-				}
-				//not eiger
-				else{
-					rc = udpSocket[ithread]->ReceiveDataOnly(buffer[ithread] + HEADER_SIZE_NUM_TOT_PACKETS, maxBufferSize);
-					expected = maxBufferSize;
-				}
+
+				rc = udpSocket[ithread]->ReceiveDataOnly(buffer[ithread] + HEADER_SIZE_NUM_TOT_PACKETS, maxBufferSize);
+				expected = maxBufferSize;
+
 			}
 			//the remaining packets from previous buffer
 			else{
@@ -1536,10 +1571,17 @@ int slsReceiverUDPFunctions::startListening(){
 			}
 
 #ifdef VERYDEBUG
-			cout << ithread << " *** rc:" << dec << rc << endl;
-			cout << ithread << " *** expected:" << dec << expected << endl;
+			cout << ithread << " *** rc:" << dec << rc << ". expected:" << dec << expected << endl;
 #endif
 
+/*
+			if(ithread){
+				for(int j=25;j<27;++j)
+				for(int i=1000;i<1010;i=i+2)
+				//cout<<"startbuf:"<<dec<<i<<hex<<":\t0x"<<htonl((uint32_t)(*((uint32_t*)(buffer[ithread] + HEADER_SIZE_NUM_TOT_PACKETS+ EIGER_HEADER_LENGTH+ 8+i))))<<endl;
+				cout<<"startbuf:"<<dec<<i<<hex<<":\t0x"<<((uint16_t)(*((uint16_t*)(buffer[ithread] + 2+ 48+ j*1040+8+i))))<<endl;
+			}
+*/
 
 
 
@@ -1556,7 +1598,7 @@ int slsReceiverUDPFunctions::startListening(){
 
 
 			//reset
-			packetcount = packetsPerFrame * numJobsPerThread;
+			packetcount = (packetsPerFrame/numListeningThreads) * numJobsPerThread;
 			carryonBufferSize = 0;
 
 
@@ -1617,10 +1659,7 @@ int slsReceiverUDPFunctions::startListening(){
 #endif
 				break;
 			default:
-				if(rc==EIGER_HEADER_LENGTH)
-					packetcount=0;
-				else
-					packetcount = 1;
+
 				break;
 
 			}
@@ -1649,6 +1688,7 @@ int slsReceiverUDPFunctions::startListening(){
 		//make sure its not exiting thread
 		if(killAllListeningThreads){
 			cout << ithread << " good bye listening thread" << endl;
+			if(tempchar) {delete [] tempchar;tempchar = NULL;}
 			pthread_exit(NULL);
 		}
 	}
@@ -1678,17 +1718,18 @@ int slsReceiverUDPFunctions::startWriting(){
 
 	int numpackets, nf;
 	uint32_t tempframenum;
-	char* wbuf[packetsPerFrame+numListeningThreads];//interleaved + 2 ports header
-	char *d=new char[bufferSize];
+	char* wbuf[numListeningThreads];//interleaved
+	char *d=new char[bufferSize*numListeningThreads];
 	int xmax=0,ymax=0;
 	int ret,i,j;
-	int w_index=0;
 	int packetsPerThread = packetsPerFrame/numListeningThreads;
+int loop;
 
 	while(1){
 
+
 		nf = 0;
-		w_index = 0;
+		packetsPerThread = packetsPerFrame/numListeningThreads;
 		if(myDetectorType == MOENCH){
 				xmax = MOENCH_PIXELS_IN_ONE_ROW-1;
 				ymax = MOENCH_PIXELS_IN_ONE_ROW-1;
@@ -1711,40 +1752,36 @@ int slsReceiverUDPFunctions::startWriting(){
 #endif
 			//pop
 			for(i=0;i<numListeningThreads;++i){
-				fifo[i]->pop(wbuf[w_index+i]);
-				numpackets = (uint16_t)(*((uint16_t*)wbuf[w_index]));
+				fifo[i]->pop(wbuf[i]);
+				numpackets = (uint16_t)(*((uint16_t*)wbuf[i]));
 #ifdef VERYDEBUG
-				if((!w_index)||(!numpackets)) cout << ithread << " numpackets:" << dec << numpackets << endl;
+				cout << ithread << " numpackets:" << dec << numpackets << endl;
 #endif
 			}
 
 #ifdef VERYDEBUG
 				cout << ithread << " numpackets:" << dec << numpackets << endl;
-				cout << ithread << " *** writer popped from fifo " << (void*) wbuf[w_index]<< endl;
-				cout << ithread << " *** writer popped from fifo " << (void*) wbuf[w_index+1]<< endl;
+				cout << ithread << " *** writer popped from fifo " << (void*) wbuf[0]<< endl;
+				cout << ithread << " *** writer popped from fifo " << (void*) wbuf[1]<< endl;
 #endif
-
-
 
 
 			//last dummy packet
 			if(numpackets == 0xFFFF){
-				stopWriting(ithread,wbuf,w_index);
+				stopWriting(ithread,wbuf);
 				continue;
 			}
 
 
 
 
-
 			//for progress
 			if(myDetectorType == EIGER){
-				if(!numpackets)
-					tempframenum = htonl(*(unsigned int*)((eiger_image_header *)((char*)(wbuf[w_index] + HEADER_SIZE_NUM_TOT_PACKETS)))->fnum);
+				tempframenum = htonl(*(unsigned int*)((eiger_image_header *)((char*)(wbuf[ithread] + HEADER_SIZE_NUM_TOT_PACKETS)))->fnum);
 			}else if ((myDetectorType == GOTTHARD) && (shortFrame == -1))
-				tempframenum = (((((uint32_t)(*((uint32_t*)(wbuf[w_index] + HEADER_SIZE_NUM_TOT_PACKETS))))+1)& (frameIndexMask)) >> frameIndexOffset);
+				tempframenum = (((((uint32_t)(*((uint32_t*)(wbuf[ithread] + HEADER_SIZE_NUM_TOT_PACKETS))))+1)& (frameIndexMask)) >> frameIndexOffset);
 			else
-				tempframenum = ((((uint32_t)(*((uint32_t*)(wbuf[w_index] + HEADER_SIZE_NUM_TOT_PACKETS))))& (frameIndexMask)) >> frameIndexOffset);
+				tempframenum = ((((uint32_t)(*((uint32_t*)(wbuf[ithread] + HEADER_SIZE_NUM_TOT_PACKETS))))& (frameIndexMask)) >> frameIndexOffset);
 
 			if(numWriterThreads == 1)
 				currframenum = tempframenum;
@@ -1754,12 +1791,9 @@ int slsReceiverUDPFunctions::startWriting(){
 					currframenum = tempframenum;
 				pthread_mutex_unlock(&progress_mutex);
 			}
-#ifdef VERYDEBUG
-			if(!numpackets) cout << endl <<ithread << " tempframenum:" << dec << tempframenum << " curframenum:" << currframenum << endl;
-#endif
-
-
-
+//#ifdef VERYDEBUG
+			cout << endl <<ithread << " tempframenum:" << hex << tempframenum << " curframenum:" << currframenum << endl;
+//#endif
 
 
 			//without datacompression: write datacall back, or write data, free fifo
@@ -1767,25 +1801,23 @@ int slsReceiverUDPFunctions::startWriting(){
 
 				if (cbAction < DO_EVERYTHING){
 					for(i=0;i<numListeningThreads;++i)
-						rawDataReadyCallBack(currframenum, wbuf[w_index+i], numpackets * onePacketSize, sfilefd, guiData,pRawDataReady);
+						rawDataReadyCallBack(currframenum, wbuf[i], numpackets * onePacketSize, sfilefd, guiData,pRawDataReady);
 				}else if (numpackets > 0){
 					for(i=0;i<numListeningThreads;++i)
-						writeToFile_withoutCompression(wbuf[w_index+i], numpackets,currframenum);
+						writeToFile_withoutCompression(wbuf[i], numpackets,currframenum);
 				}
 
 
 				if(myDetectorType == EIGER) {
-					//last packet
-					if((packetsPerThread-1)==(htonl(*(uint32_t*)((eiger_packet_header *)((uint32_t*)(wbuf[w_index] + HEADER_SIZE_NUM_TOT_PACKETS)))->num2)&0xff)){
-						copyFrameToGui(wbuf,currframenum);
-						for(j=0;j<w_index;j=j+numListeningThreads){
-							for(i=0;i<numListeningThreads;++i){
-								while(!fifoFree[i]->push(wbuf[j+i]));
-							}
-						}
-						w_index = 0;
-					}else
-						w_index+=numListeningThreads;
+					copyFrameToGui(wbuf,currframenum);
+					for(i=0;i<numListeningThreads;++i){
+						while(!fifoFree[i]->push(wbuf[i]));
+#ifdef VERYDEBUG
+						cout << ithread  << ":" << i+j << " fifo freed:" << (void*)wbuf[i] << endl;
+#endif
+					}
+
+
 				}
 				else{
 					//copy to gui
@@ -1972,20 +2004,20 @@ int i;
 
 
 
-void slsReceiverUDPFunctions::stopWriting(int ithread, char* wbuffer[], int wIndex){
+void slsReceiverUDPFunctions::stopWriting(int ithread, char* wbuffer[]){
 	int i,j;
 #ifdef VERYDEBUG
 	cout << ithread << " **********************popped last dummy frame:" << (void*)wbuffer[wIndex] << endl;
 #endif
 
 	//free fifo
-	for(i=0;i<numListeningThreads;++i)
-		for(j=0;j<wIndex;++j){
-			while(!fifoFree[i]->push(wbuffer[wIndex+j]));
+	for(i=0;i<numListeningThreads;++i){
+		while(!fifoFree[i]->push(wbuffer[i]));
 #ifdef VERYDEBUG
-			cout << ithread  << " fifo freed:" << (void*)wbuffer[wIndex+j] << endl;
+		cout << ithread  << ":" << i<< " fifo freed:" << (void*)wbuffer[i] << endl;
 #endif
-		}
+	}
+
 
 
 	//all threads need to close file, reset mask and exit loop
@@ -2047,13 +2079,13 @@ void slsReceiverUDPFunctions::writeToFile_withoutCompression(char* buf,int numpa
 	if((enableFileWrite) && (sfilefd)){
 
 		offset = HEADER_SIZE_NUM_TOT_PACKETS;
+		if(myDetectorType == EIGER)
+			offset += EIGER_HEADER_LENGTH;
 		while(numpackets > 0){
 
 			//for progress and packet loss calculation(new files)
-			if(myDetectorType == EIGER){
-				if(((uint16_t)(*((uint16_t*)buf)))==0)
-					tempframenum = htonl(*(unsigned int*)((eiger_image_header *)((char*)(buf + HEADER_SIZE_NUM_TOT_PACKETS)))->fnum);
-			}else if ((myDetectorType == GOTTHARD) && (shortFrame == -1))
+			if(myDetectorType == EIGER);
+			else if ((myDetectorType == GOTTHARD) && (shortFrame == -1))
 				tempframenum = (((((uint32_t)(*((uint32_t*)(buf + HEADER_SIZE_NUM_TOT_PACKETS))))+1)& (frameIndexMask)) >> frameIndexOffset);
 			else
 				tempframenum = ((((uint32_t)(*((uint32_t*)(buf + HEADER_SIZE_NUM_TOT_PACKETS))))& (frameIndexMask)) >> frameIndexOffset);
@@ -2077,7 +2109,7 @@ void slsReceiverUDPFunctions::writeToFile_withoutCompression(char* buf,int numpa
 			packetsToSave = maxPacketsPerFile - packetsInFile;
 			if(packetsToSave > numpackets)
 				packetsToSave = numpackets;
-
+/**next time offset is still plus header length*/
 			fwrite(buf+offset, 1, packetsToSave * onePacketSize, sfilefd);
 			packetsInFile += packetsToSave;
 			packetsCaught += packetsToSave;
@@ -2088,10 +2120,8 @@ void slsReceiverUDPFunctions::writeToFile_withoutCompression(char* buf,int numpa
 			if(packetsInFile >= maxPacketsPerFile){
 				//for packet loss
 				lastpacket = (((packetsToSave - 1) * onePacketSize) + offset);
-				if(myDetectorType == EIGER){
-					if(((uint16_t)(*((uint16_t*)buf)))==0)
-						tempframenum = htonl(*(unsigned int*)((eiger_image_header *)((char*)(buf + lastpacket)))->fnum);
-				}else if ((myDetectorType == GOTTHARD) && (shortFrame == -1))
+				if(myDetectorType == EIGER);
+				else if ((myDetectorType == GOTTHARD) && (shortFrame == -1))
 					tempframenum = (((((uint32_t)(*((uint32_t*)(buf + lastpacket))))+1)& (frameIndexMask)) >> frameIndexOffset);
 				else
 					tempframenum = ((((uint32_t)(*((uint32_t*)(buf + lastpacket))))& (frameIndexMask)) >> frameIndexOffset);

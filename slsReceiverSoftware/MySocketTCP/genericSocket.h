@@ -570,10 +570,9 @@ enum communicationProtocol{
 	 }
 	 //listens to only 1 packet
 	 else{
+		  //normal
 		 nsending=packet_size;
 		 nsent = recvfrom(socketDescriptor,(char*)buf+total_sent,nsending, 0, (struct sockaddr *) &clientAddress, &clientAddress_length);
-		 if(!nsent) break;
-		 length-=nsent;
 		 total_sent+=nsent;
 	 }
 	 break;

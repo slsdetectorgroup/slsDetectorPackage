@@ -397,9 +397,8 @@ private:
 	 * When acquisition is over, this is called
 	 * @param ithread listening thread number
 	 * @param wbuffer writer buffer
-	 * @param wIndex writer Index
 	 */
-	void stopWriting(int ithread, char* wbuffer[], int wIndex);
+	void stopWriting(int ithread, char* wbuffer[]);
 
 
 	/**
@@ -432,7 +431,7 @@ private:
 	} eiger_packet_header;
 
 	/** max number of listening threads */
-	const static int MAX_NUM_LISTENING_THREADS = MAX_EIGER_PORTS;
+	const static int MAX_NUM_LISTENING_THREADS = EIGER_MAX_PORTS;
 
 	/** max number of writer threads */
 	const static int MAX_NUM_WRITER_THREADS = 15;

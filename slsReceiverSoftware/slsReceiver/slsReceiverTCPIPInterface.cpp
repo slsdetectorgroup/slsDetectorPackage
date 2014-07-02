@@ -34,6 +34,7 @@ slsReceiverTCPIPInterface::slsReceiverTCPIPInterface(int argc, char *argv[], int
 		lockStatus(0),
 		shortFrame(-1),
 		packetsPerFrame(GOTTHARD_PACKETS_PER_FRAME),
+		dynamicrange(16),
 		socket(NULL),
 		killTCPServerThread(0){
 
@@ -1347,37 +1348,23 @@ int	slsReceiverTCPIPInterface::eiger_read_frame(){
 	int arg = -1,i;
 	uint32_t index=0;
 
-	int bufferSize  = EIGER_BUFFER_SIZE;
-	int onebuffersize = EIGER_BUFFER_SIZE/EIGER_PACKETS_PER_FRAME;
-	int onedatasize = EIGER_DATA_BYTES/EIGER_PACKETS_PER_FRAME;
-	int numpackets = EIGER_PACKETS_PER_FRAME;
-
+	int bufferSize  = EIGER_BUFFER_SIZE_CONSTANT * dynamicrange;
 	char* raw 		= new char[bufferSize];
 	char* origVal 	= new char[bufferSize];
-	char* retval 	= new char[EIGER_DATA_BYTES];
-
-	/*
-	//retval is a full frame
-	int rnel 		= bufferSize/(sizeof(int));
-	int* retval 	= new int[rnel];
-	int* origVal 	= new int[rnel];
-	//all initialized to 0
-	for(i=0;i<rnel;i++)	retval[i]=0;
-	for(i=0;i<rnel;i++)	origVal[i]=0;
-*/
+	char* retval 	= new char[(EIGER_DATA_BYTES_CONSTANT*dynamicrange)];
 
 	strcpy(mess,"Could not read frame\n");
 
-/*
+
 	typedef struct
 	{
 		unsigned char num1[4];
 		unsigned char num2[4];
 	} eiger_packet_header;
-*/
+
 
 	// execute action if the arguments correctly arrived
-#ifdef SLS_RECEIVER_UDP_FUNCTIONS
+//#ifdef SLS_RECEIVER_UDP_FUNCTIONS
 
 
 
@@ -1409,15 +1396,78 @@ int	slsReceiverTCPIPInterface::eiger_read_frame(){
 			raw=NULL;
 
 
-			int copyindex=8;
-			int retindex=0;
 
-			for(int i=0;i<numpackets;++i){
-				//cout<<"p"<<i<<":"<<(htonl(*(uint32_t*)((eiger_packet_header *)((uint32_t*)(origVal[i] + HEADER_SIZE_NUM_TOT_PACKETS)))->num2)&0xff)<<"\t\t";
-				memcpy(retval+retindex ,origVal+copyindex ,onedatasize);
-				copyindex += 16+onedatasize;
-				retindex += onedatasize;
+
+			int c1=8;
+			int c2=(bufferSize/2) + 8; //only 2 ports
+			int retindex=0;
+			int irow,ibytesperpacket,irepeat;
+			int repeat=1;
+			int linesperpacket = 16/dynamicrange;// 16:1 line, 8:2 lines, 4:4 lines, 32: 0.5
+			int numbytesperlineperport=(EIGER_PIXELS_IN_ONE_ROW/EIGER_MAX_PORTS)*dynamicrange/8;//16:1024,8:512,4:256,32:2048
+			if(dynamicrange == 32){
+				repeat=2;
+				numbytesperlineperport = 1024;
+				linesperpacket = 1; //we repeat this twice anyway
 			}
+
+			//cout <<"linesperpacket:" <<dec<<linesperpacket <<" numbytesperlineperport:"<<numbytesperlineperport<<endl;
+
+			//for each
+			for(irow=0;irow<256/linesperpacket;++irow){
+				//cout <<"irow:"<<irow<<endl;
+				ibytesperpacket=0;
+				while(ibytesperpacket<1024){
+					//cout <<"ibytesperpacket:"<<ibytesperpacket<<endl;
+					for(irepeat=0;irepeat<repeat;irepeat++){//only for 32 bit mode, take 2 packets from same port
+						//cout <<"irepeat:"<<irepeat<<" c1:"<<c1<<" retindex:"<<retindex<<endl;
+						memcpy(retval+retindex ,origVal+c1 ,numbytesperlineperport);
+						retindex += numbytesperlineperport;
+						c1 += numbytesperlineperport;
+					}
+					for(irepeat=0;irepeat<repeat;irepeat++){//only for 32 bit mode, take 2 packets from same port
+						//cout <<"irepeat:"<<irepeat<<" c2:"<<c2<<" retindex:"<<retindex<<endl;
+						memcpy(retval+retindex ,origVal+c2 ,numbytesperlineperport);
+						retindex += numbytesperlineperport;
+						c2 += numbytesperlineperport;
+					}
+					ibytesperpacket += numbytesperlineperport;
+				}
+				c1 += 16;
+				c2 += 16;
+			}
+
+
+
+
+
+
+
+/*
+			for(i=0;i<(packetsPerFrame/EIGER_MAX_PORTS);++i){
+				//cout<<i<<" p1:"<<dec<<(htonl(*(uint32_t*)((eiger_packet_header *)((uint32_t*)(origVal + (c1-8))))->num2)&0xff)<<"\t\t";
+				memcpy(retval+retindex ,origVal+c1 ,EIGER_ONE_DATA_SIZE);
+				c1 += 16+EIGER_ONE_DATA_SIZE;
+				retindex += EIGER_ONE_DATA_SIZE;
+
+				//cout<<i<<" p2:"<<dec<<(htonl(*(uint32_t*)((eiger_packet_header *)((uint32_t*)(origVal + (c2-8))))->num2)&0xff)<<endl;
+				memcpy(retval+retindex ,origVal+c2 ,EIGER_ONE_DATA_SIZE);
+				c2 += 16+EIGER_ONE_DATA_SIZE;
+				retindex += EIGER_ONE_DATA_SIZE;
+			}
+
+*/
+
+
+	for(i=0;i<(1024*(16*dynamicrange)*2)/4;i++)
+				(*((uint32_t*)retval+i)) = htonl((uint32_t)(*((uint32_t*)retval+i)));
+
+			/*
+			for(int j=25;j<27;++j)
+			for(int i=1000;i<1010;i=i+2)
+				//cout<<"retval:"<<dec<<i<<hex<<":\t0x"<<htonl((uint32_t)(*((uint32_t*)(retval+ (EIGER_ONE_DATA_SIZE)+i))))<<endl;
+			cout<<"retval:"<<dec<<i<<hex<<":\t0x"<<((uint16_t)(*((uint16_t*)(retval+ j* 2048+(1024)+i))))<<endl;
+*/
 			arg = index-1;
 		}
 	}
@@ -1431,7 +1481,7 @@ int	slsReceiverTCPIPInterface::eiger_read_frame(){
 
 
 
-#endif
+//#endif
 
 	if(ret==OK && socket->differentClients){
 		cout << "Force update" << endl;
@@ -1447,7 +1497,7 @@ int	slsReceiverTCPIPInterface::eiger_read_frame(){
 	else{
 		socket->SendDataOnly(fName,MAX_STR_LENGTH);
 		socket->SendDataOnly(&arg,sizeof(arg));
-		socket->SendDataOnly(retval,EIGER_DATA_BYTES);
+		socket->SendDataOnly(retval,(EIGER_DATA_BYTES_CONSTANT*dynamicrange));
 	}
 
 	delete [] retval;
@@ -1799,8 +1849,24 @@ int slsReceiverTCPIPInterface::set_dynamic_range() {
 			sprintf(mess,"Receiver locked by %s\n", socket->lastClientIP);
 			ret=FAIL;
 		}
-		else
+		else if(myDetectorType == EIGER){
+			switch(dr){
+				case 4:
+				case 8:
+				case 16:
+				case 32:break;
+				default:
+					sprintf(mess,"This dynamic range does not exist for eiger: %d\n",dr);
+					ret=FAIL;
+					break;
+			}
+		}
+		if(ret!=FAIL){
 			retval=slsReceiverFunctions->setDynamicRange(dr);
+			dynamicrange = dr;
+			 if(myDetectorType == EIGER)
+				 packetsPerFrame = dr*EIGER_PACKETS_PER_FRAME_COSTANT;
+		}
 	}
 #ifdef VERBOSE
 	if(ret!=FAIL)
@@ -1883,7 +1949,51 @@ int slsReceiverTCPIPInterface::enable_overwrite() {
 
 
 
+int slsReceiverTCPIPInterface::enable_tengiga() {
+	ret=OK;
+	int retval=-1;
+	int val;
+	strcpy(mess,"Could not enable/disable 10Gbe\n");
 
+
+	// receive arguments
+	if(socket->ReceiveDataOnly(&val,sizeof(val)) < 0 ){
+		strcpy(mess,"Error reading from socket\n");
+		ret = FAIL;
+	}
+
+	// execute action if the arguments correctly arrived
+#ifdef SLS_RECEIVER_UDP_FUNCTIONS
+	if (ret==OK) {
+		if (lockStatus==1 && socket->differentClients==1){
+			sprintf(mess,"Receiver locked by %s\n", socket->lastClientIP);
+			ret=FAIL;
+		}
+		else
+			;//retval=slsReceiverFunctions->enable10GbE(val);
+	}
+#ifdef VERBOSE
+	if(ret!=FAIL)
+		cout << "10Gbe:" << val << endl;
+	else
+		cout << mess << endl;
+#endif
+#endif
+
+	if(ret==OK && socket->differentClients){
+		cout << "Force update" << endl;
+		ret=FORCE_UPDATE;
+	}
+
+	// send answer
+	socket->SendDataOnly(&ret,sizeof(ret));
+	if(ret==FAIL)
+		socket->SendDataOnly(mess,sizeof(mess));
+	socket->SendDataOnly(&retval,sizeof(retval));
+
+	//return ok/fail
+	return ret;
+}
 
 
 
@@ -2063,8 +2173,7 @@ int slsReceiverTCPIPInterface::send_update() {
 	//index
 #ifdef SLS_RECEIVER_UDP_FUNCTIONS
 
-	/*if(myDetectorType != EIGER)*/
-		ind=slsReceiverFunctions->getFileIndex();
+	ind=slsReceiverFunctions->getFileIndex();
 
 	socket->SendDataOnly(&ind,sizeof(ind));
 #endif

@@ -193,6 +193,8 @@ private:
 	/** enable overwrite  */
 	int enable_overwrite();
 
+	/** enable 10Gbe */
+	int enable_tengiga();
 
 	//General Functions
 	/** Locks Receiver */
@@ -245,6 +247,9 @@ private:
 
 	/** Packets per  frame */
 	int packetsPerFrame;
+
+	/** Dynamic Range */
+	int dynamicrange;
 
 	/** kill tcp server thread */
 	int killTCPServerThread;

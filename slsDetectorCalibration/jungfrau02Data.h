@@ -8,7 +8,7 @@
 class jungfrau02Data : public chiptestBoardData {
  public:
 
-
+/* test :) */
 
 
   /**

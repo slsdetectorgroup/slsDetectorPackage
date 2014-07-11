@@ -29,6 +29,7 @@ qTabDataOutput::qTabDataOutput(QWidget *parent,multiSlsDetector*& detector):
 						QWidget(parent),myDet(detector){
 	setupUi(this);
 	SetupWidgetWindow();
+	Refresh();
 }
 
 
@@ -53,6 +54,9 @@ void qTabDataOutput::SetupWidgetWindow(){
 
 	if((detType == slsDetectorDefs::MYTHEN)||(detType == slsDetectorDefs::GOTTHARD))
 		chkAngular->setEnabled(true);
+
+	if(detType == slsDetectorDefs::EIGER)
+		chkTenGiga->setEnabled(true);
 
 	/** error message **/
 	red = QPalette();
@@ -157,6 +161,8 @@ void qTabDataOutput::Initialization(){
 	connect(chkDiscardBad,		SIGNAL(toggled(bool)), 	this, 	SLOT(DiscardBadChannels()));
 	//compression
 	connect(chkCompression,		SIGNAL(toggled(bool)), 	this, 	SLOT(SetCompression(bool)));
+	//10GbE
+	connect(chkTenGiga,		SIGNAL(toggled(bool)), 	this, 	SLOT(EnableTenGigabitEthernet(bool)));
 }
 
 
@@ -735,6 +741,27 @@ void qTabDataOutput::SetCompression(bool enable){
 //-------------------------------------------------------------------------------------------------------------------------------------------------
 
 
+void qTabDataOutput::EnableTenGigabitEthernet(bool enable,int get){
+#ifdef VERBOSE
+	cout  << endl << "Enabling/Disabling 10GbE" << endl;
+#endif
+	disconnect(chkTenGiga,	SIGNAL(toggled(bool)), 	this, 	SLOT(EnableTenGigabitEthernet(bool)));
+	int ret;
+	if(get)
+		ret = myDet->enableTenGigabitEthernet(-1);
+	else
+		ret = myDet->enableTenGigabitEthernet(enable);
+	if(ret > 0)	chkTenGiga->setChecked(true);
+	else		chkTenGiga->setChecked(false);
+	connect(chkTenGiga,		SIGNAL(toggled(bool)), 	this, 	SLOT(EnableTenGigabitEthernet(bool)));
+
+	qDefs::checkErrorMessage(myDet,"qTabDataOutput::EnableTenGigabitEthernet");
+}
+
+
+//-------------------------------------------------------------------------------------------------------------------------------------------------
+
+
 void qTabDataOutput::Refresh(){
 #ifdef VERBOSE
 	cout  << endl << "**Updating DataOutput Tab" << endl;
@@ -807,6 +834,16 @@ void qTabDataOutput::Refresh(){
 #endif
 		GetCompression();
 	}
+
+	//getting 10GbE
+	if(chkTenGiga->isEnabled()){
+#ifdef VERBOSE
+		cout  << "Getting 10GbE enable" << endl;
+#endif
+		EnableTenGigabitEthernet(-1,1);
+	}
+
+
 
 
 #ifdef VERBOSE

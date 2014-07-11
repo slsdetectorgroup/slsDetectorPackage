@@ -38,6 +38,7 @@ qTabDeveloper::qTabDeveloper(QWidget *parent,multiSlsDetector*& detector):
 		lblAdcs[i]=0;
 		spinDacs[i]=0;
 		spinAdcs[i]=0;
+		lblDacsmV[i]=0;
 	}
 	SetupWidgetWindow();
 	Initialization();
@@ -81,21 +82,23 @@ void qTabDeveloper::SetupWidgetWindow(){
 		NUM_ADC_WIDGETS = 0;
 
 		dacNames.push_back("v SvP:");
-		dacNames.push_back("v Vtr:");
+		dacNames.push_back("v SvN");
 		dacNames.push_back("v Vrf:");
 		dacNames.push_back("v Vrs:");
-		dacNames.push_back("v SvN");
+		dacNames.push_back("v Vtr:");
 		dacNames.push_back("v Vtgstv:");
-		dacNames.push_back("v Vcmp_ll:");
-		dacNames.push_back("v Vcmp_lr:");
 		dacNames.push_back("v cal:");
-		dacNames.push_back("v Vcmp_rl:");
-		dacNames.push_back("v rxb_rb:");
-		dacNames.push_back("v rxb_lb:");
-		dacNames.push_back("v Vcmp_rr:");
 		dacNames.push_back("v Vcp");
 		dacNames.push_back("v Vcn:");
 		dacNames.push_back("v Vis:");
+		dacNames.push_back("v rxb_lb:");
+		dacNames.push_back("v rxb_rb:");
+		dacNames.push_back("v Vcmp_ll:");
+		dacNames.push_back("v Vcmp_lr:");
+		dacNames.push_back("v Vcmp_rl:");
+		dacNames.push_back("v Vcmp_rr:");
+
+
 
 		break;
 	case slsDetectorDefs::GOTTHARD:
@@ -218,13 +221,16 @@ void qTabDeveloper::CreateDACWidgets(){
 		lblDacs[i] 	= new QLabel(QString(dacNames[i].c_str()),boxDacs);
 		spinDacs[i]	= new MyDoubleSpinBox(i,boxDacs);
 		spinDacs[i]->setMaximum(10000);
+		lblDacsmV[i]= new QLabel("",boxDacs);
 
-		dacLayout->addWidget(lblDacs[i],(int)(i/2),((i%2)==0)?1:4);
-		dacLayout->addWidget(spinDacs[i],(int)(i/2),((i%2)==0)?2:5);
+
+		dacLayout->addWidget(lblDacs[i],(int)(i/2),((i%2)==0)?1:5);
+		dacLayout->addWidget(spinDacs[i],(int)(i/2),((i%2)==0)?2:6);
+		dacLayout->addWidget(lblDacsmV[i],(int)(i/2),((i%2)==0)?3:7);
 		if(!(i%2)){
 			dacLayout->addItem(new QSpacerItem(20,20,QSizePolicy::Fixed,QSizePolicy::Fixed),(int)(i/2),0);
-			dacLayout->addItem(new QSpacerItem(60,20,QSizePolicy::Fixed,QSizePolicy::Fixed),(int)(i/2),3);
-			dacLayout->addItem(new QSpacerItem(20,20,QSizePolicy::Fixed,QSizePolicy::Fixed),(int)(i/2),6);
+			dacLayout->addItem(new QSpacerItem(60,20,QSizePolicy::Fixed,QSizePolicy::Fixed),(int)(i/2),4);
+			dacLayout->addItem(new QSpacerItem(20,20,QSizePolicy::Fixed,QSizePolicy::Fixed),(int)(i/2),8);
 		}
 	}
 }
@@ -261,7 +267,8 @@ void qTabDeveloper::SetDacValues(int id){
 	cout << "Setting dac:" << dacNames[id] << " : " << spinDacs[id]->value() << endl;
 #endif
 	//spinDacs[id]->setValue((double)myDet->setDAC((dacs_t)spinDacs[id]->value(),getSLSIndex(id)));
-	myDet->setDAC((dacs_t)spinDacs[id]->value(),getSLSIndex(id));
+	myDet->setDAC((dacs_t)spinDacs[id]->value(),getSLSIndex(id),0);
+	lblDacsmV[id]->setText(QString("%1mV").arg(myDet->setDAC(-1,getSLSIndex(id),1),-10));
 
 	qDefs::checkErrorMessage(myDet,"qTabDeveloper::SetDacValues");
 }
@@ -275,7 +282,7 @@ void qTabDeveloper::SetHighVoltage(){
 	cout << "Setting high voltage:" << comboHV->currentText().toAscii().constData() << endl;
 #endif
 	int highvoltage = comboHV->currentText().toInt();
-	int ret = myDet->setDAC(highvoltage,slsDetectorDefs::HV_POT);
+	int ret = myDet->setDAC(highvoltage,slsDetectorDefs::HV_POT,0);
 	qDefs::checkErrorMessage(myDet,"qTabDeveloper::SetHighVoltage");
 	//error
 	if(ret != highvoltage){
@@ -317,21 +324,24 @@ slsDetectorDefs::dacIndex qTabDeveloper::getSLSIndex(int index){
 	case slsDetectorDefs::EIGER:
 		switch(index){
 		case 0:	return slsDetectorDefs::E_SvP;
-		case 1:	return slsDetectorDefs::E_Vtr;
+		case 1:	return slsDetectorDefs::E_SvN;
 		case 2:	return slsDetectorDefs::E_Vrf;
 		case 3:	return slsDetectorDefs::E_Vrs;
-		case 4:	return slsDetectorDefs::E_SvN;
+		case 4:	return slsDetectorDefs::E_Vtr;
 		case 5:	return slsDetectorDefs::E_Vtgstv;
-		case 6:	return slsDetectorDefs::E_Vcmp_ll;
-		case 7:	return slsDetectorDefs::E_Vcmp_lr;
-		case 8:	return slsDetectorDefs::E_cal;
-		case 9:	return slsDetectorDefs::E_Vcmp_rl;
-		case 10:return slsDetectorDefs::E_rxb_rb;
-		case 11:return slsDetectorDefs::E_rxb_lb;
-		case 12:return slsDetectorDefs::E_Vcmp_rr;
-		case 13:return slsDetectorDefs::E_Vcp;
-		case 14:return slsDetectorDefs::E_Vcn;
-		case 15:return slsDetectorDefs::E_Vis;
+		case 6:	return slsDetectorDefs::E_cal;
+		case 7:	return slsDetectorDefs::E_Vcp;
+		case 8:	return slsDetectorDefs::E_Vcn;
+		case 9:	return slsDetectorDefs::E_Vis;
+		case 10:return slsDetectorDefs::E_rxb_lb;
+		case 11:return slsDetectorDefs::E_rxb_rb;
+		case 12:return slsDetectorDefs::E_Vcmp_ll;
+		case 13:return slsDetectorDefs::E_Vcmp_lr;
+		case 14:return slsDetectorDefs::E_Vcmp_rl;
+		case 15:return slsDetectorDefs::E_Vcmp_rr;
+
+
+
 		default:
 			qDefs::Message(qDefs::CRITICAL,"Unknown DAC/ADC Index. Weird Error","qTabDeveloper::getSLSIndex");
 			Refresh();
@@ -394,8 +404,10 @@ void qTabDeveloper::Refresh(){
 	cout << "Gettings DACs"  << endl;
 #endif
 	//dacs
-	for(int i=0;i<NUM_DAC_WIDGETS;i++)
-		spinDacs[i]->setValue((double)myDet->setDAC(-1,getSLSIndex(i)));
+	for(int i=0;i<NUM_DAC_WIDGETS;i++){
+		spinDacs[i]->setValue((double)myDet->setDAC(-1,getSLSIndex(i),0));
+		lblDacsmV[i]->setText(QString("%1mV").arg(myDet->setDAC(-1,getSLSIndex(i),1),-10));
+	}
 	//adcs
 	if(NUM_ADC_WIDGETS) RefreshAdcs();
 
@@ -409,7 +421,7 @@ void qTabDeveloper::Refresh(){
 		lblHV->setToolTip(tipHV);
 		comboHV->setToolTip(tipHV);
 		//getting hv value
-		int ret = (int)myDet->setDAC(-1,slsDetectorDefs::HV_POT);
+		int ret = (int)myDet->setDAC(-1,slsDetectorDefs::HV_POT,0);
 		switch(ret){
 		case 0: 	comboHV->setCurrentIndex(0);break;
 		case 90:	comboHV->setCurrentIndex(1);break;

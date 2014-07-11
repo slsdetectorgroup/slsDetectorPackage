@@ -49,23 +49,13 @@
       <x>15</x>
       <y>25</y>
       <width>701</width>
-      <height>141</height>
+      <height>66</height>
      </rect>
     </property>
     <layout class="QGridLayout" name="gridLayout_2">
      <property name="verticalSpacing">
       <number>3</number>
      </property>
-     <item row="2" column="0">
-      <widget class="QCheckBox" name="chkAngular">
-       <property name="enabled">
-        <bool>false</bool>
-       </property>
-       <property name="text">
-        <string>Angular Conversion</string>
-       </property>
-      </widget>
-     </item>
      <item row="0" column="0">
       <widget class="QCheckBox" name="chkFlatField">
        <property name="toolTip">
@@ -107,55 +97,6 @@
        </property>
       </widget>
      </item>
-     <item row="3" column="6">
-      <spacer name="horizontalSpacer_5">
-       <property name="orientation">
-        <enum>Qt::Horizontal</enum>
-       </property>
-       <property name="sizeType">
-        <enum>QSizePolicy::Fixed</enum>
-       </property>
-       <property name="sizeHint" stdset="0">
-        <size>
-         <width>40</width>
-         <height>20</height>
-        </size>
-       </property>
-      </spacer>
-     </item>
-     <item row="3" column="0">
-      <widget class="QCheckBox" name="chkDiscardBad">
-       <property name="text">
-        <string>Discard Bad Channels</string>
-       </property>
-      </widget>
-     </item>
-     <item row="1" column="2">
-      <widget class="QRadioButton" name="radioAuto">
-       <property name="enabled">
-        <bool>false</bool>
-       </property>
-       <property name="text">
-        <string>Auto</string>
-       </property>
-      </widget>
-     </item>
-     <item row="3" column="3">
-      <spacer name="horizontalSpacer_7">
-       <property name="orientation">
-        <enum>Qt::Horizontal</enum>
-       </property>
-       <property name="sizeType">
-        <enum>QSizePolicy::Fixed</enum>
-       </property>
-       <property name="sizeHint" stdset="0">
-        <size>
-         <width>40</width>
-         <height>20</height>
-        </size>
-       </property>
-      </spacer>
-     </item>
      <item row="0" column="8">
       <widget class="QPushButton" name="btnFlatField">
        <property name="enabled">
@@ -190,37 +131,15 @@
        </property>
       </widget>
      </item>
-     <item row="3" column="8">
-      <spacer name="horizontalSpacer_8">
-       <property name="orientation">
-        <enum>Qt::Horizontal</enum>
+     <item row="1" column="2">
+      <widget class="QRadioButton" name="radioAuto">
+       <property name="enabled">
+        <bool>false</bool>
        </property>
-       <property name="sizeType">
-        <enum>QSizePolicy::Fixed</enum>
+       <property name="text">
+        <string>Auto</string>
        </property>
-       <property name="sizeHint" stdset="0">
-        <size>
-         <width>40</width>
-         <height>20</height>
-        </size>
-       </property>
-      </spacer>
-     </item>
-     <item row="3" column="7">
-      <spacer name="horizontalSpacer_9">
-       <property name="orientation">
-        <enum>Qt::Horizontal</enum>
-       </property>
-       <property name="sizeType">
-        <enum>QSizePolicy::Fixed</enum>
-       </property>
-       <property name="sizeHint" stdset="0">
-        <size>
-         <width>40</width>
-         <height>20</height>
-        </size>
-       </property>
-      </spacer>
+      </widget>
      </item>
      <item row="1" column="6" colspan="3">
       <widget class="QDoubleSpinBox" name="spinDeadTime">
@@ -257,7 +176,23 @@
        </property>
       </widget>
      </item>
-     <item row="3" column="4">
+     <item row="1" column="3">
+      <spacer name="horizontalSpacer_7">
+       <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+       </property>
+       <property name="sizeType">
+        <enum>QSizePolicy::Fixed</enum>
+       </property>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>40</width>
+         <height>20</height>
+        </size>
+       </property>
+      </spacer>
+     </item>
+     <item row="1" column="4">
       <spacer name="horizontalSpacer_6">
        <property name="orientation">
         <enum>Qt::Horizontal</enum>
@@ -273,7 +208,71 @@
        </property>
       </spacer>
      </item>
-     <item row="4" column="0">
+    </layout>
+   </widget>
+   <widget class="QWidget" name="gridLayoutWidget_3">
+    <property name="geometry">
+     <rect>
+      <x>15</x>
+      <y>95</y>
+      <width>701</width>
+      <height>66</height>
+     </rect>
+    </property>
+    <layout class="QGridLayout" name="gridLayout_3">
+     <property name="verticalSpacing">
+      <number>3</number>
+     </property>
+     <item row="0" column="3">
+      <spacer name="horizontalSpacer_5">
+       <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+       </property>
+       <property name="sizeType">
+        <enum>QSizePolicy::Fixed</enum>
+       </property>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>310</width>
+         <height>20</height>
+        </size>
+       </property>
+      </spacer>
+     </item>
+     <item row="0" column="2">
+      <widget class="QCheckBox" name="chkDiscardBad">
+       <property name="text">
+        <string>Discard Bad Channels</string>
+       </property>
+      </widget>
+     </item>
+     <item row="0" column="1">
+      <spacer name="horizontalSpacer_4">
+       <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+       </property>
+       <property name="sizeType">
+        <enum>QSizePolicy::Fixed</enum>
+       </property>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>40</width>
+         <height>20</height>
+        </size>
+       </property>
+      </spacer>
+     </item>
+     <item row="0" column="0">
+      <widget class="QCheckBox" name="chkAngular">
+       <property name="enabled">
+        <bool>false</bool>
+       </property>
+       <property name="text">
+        <string>Angular Conversion</string>
+       </property>
+      </widget>
+     </item>
+     <item row="1" column="0">
       <widget class="QCheckBox" name="chkCompression">
        <property name="toolTip">
         <string>&lt;nobr&gt;
@@ -284,6 +283,23 @@ Compression using Root. Available only for Gotthard in Expert Mode.
        </property>
        <property name="text">
         <string>Compression</string>
+       </property>
+      </widget>
+     </item>
+     <item row="1" column="2">
+      <widget class="QCheckBox" name="chkTenGiga">
+       <property name="enabled">
+        <bool>false</bool>
+       </property>
+       <property name="toolTip">
+        <string>&lt;nobr&gt;
+Compression using Root. Available only for Gotthard in Expert Mode.
+&lt;/nobr&gt;&lt;br&gt;&lt;nobr&gt;
+ #r_compression#
+&lt;/nobr&gt;</string>
+       </property>
+       <property name="text">
+        <string>10GbE</string>
        </property>
       </widget>
      </item>
@@ -508,8 +524,6 @@ Directory where one saves the data.
   <tabstop>radioAuto</tabstop>
   <tabstop>radioDeadTime</tabstop>
   <tabstop>spinDeadTime</tabstop>
-  <tabstop>chkAngular</tabstop>
-  <tabstop>chkDiscardBad</tabstop>
  </tabstops>
  <resources>
   <include location="../include/icons.qrc"/>

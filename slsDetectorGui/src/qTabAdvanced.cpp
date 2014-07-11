@@ -74,7 +74,15 @@ void qTabAdvanced::SetupWidgetWindow(){
 	detType = myDet->getDetectorsType();
 	switch(detType){
 	case slsDetectorDefs::MYTHEN: 	isEnergy = true; 	isAngular = true; 	break;
-	case slsDetectorDefs::EIGER:	isEnergy = true; 	isAngular = false;	break;
+	case slsDetectorDefs::EIGER:
+		isEnergy = true;
+		isAngular = false;
+		lblIP->setEnabled(true);
+		lblMAC->setEnabled(true);
+		dispIP->setEnabled(true);
+		dispMAC->setEnabled(true);
+		boxRxr->setEnabled(true);
+		break;
 	case slsDetectorDefs::MOENCH:
 		isEnergy = false;
 		isAngular = false;
@@ -223,7 +231,7 @@ void qTabAdvanced::Initialization(){
 	connect(spinStopPort,		SIGNAL(valueChanged(int)),	this,	SLOT(SetStopPort(int)));
 	connect(comboOnline,		SIGNAL(currentIndexChanged(int)),	this,	SLOT(SetOnline(int)));
 
-	if((detType==slsDetectorDefs::GOTTHARD) || (detType==slsDetectorDefs::MOENCH)){
+	if((detType==slsDetectorDefs::GOTTHARD) || (detType==slsDetectorDefs::MOENCH) || (detType==slsDetectorDefs::EIGER)){
 
 		//network
 		connect(spinTCPPort,		SIGNAL(valueChanged(int)),	this,	SLOT(SetRxrTCPPort(int)));
@@ -241,6 +249,8 @@ void qTabAdvanced::Initialization(){
 
 
 	//roi
+
+
 	connect(btnClearRoi,		SIGNAL(clicked()),			this, SLOT(clearROIinDetector()));
 	connect(btnGetRoi,			SIGNAL(clicked()),			this, SLOT(updateROIList()));
 	connect(btnSetRoi,			SIGNAL(clicked()),			this, SLOT(setROI()));
@@ -297,7 +307,7 @@ void qTabAdvanced::SetThreshold(){
 #ifdef VERBOSE
 	cout << "Setting Threshold DACu:" << spinThreshold->value() << endl;
 #endif
-	spinThreshold->setValue((double)myDet->setDAC((dacs_t)spinThreshold->value(),slsDetectorDefs::THRESHOLD));
+	spinThreshold->setValue((double)myDet->setDAC((dacs_t)spinThreshold->value(),slsDetectorDefs::THRESHOLD,0));
 	qDefs::checkErrorMessage(myDet,"qTabAdvanced::SetThreshold");
 }
 
@@ -1122,7 +1132,7 @@ void qTabAdvanced::Refresh(){
 
 
 		//threshold
-		double threshold = (double)myDet->setDAC(-1,slsDetectorDefs::THRESHOLD);
+		double threshold = (double)myDet->setDAC(-1,slsDetectorDefs::THRESHOLD,0);
 #ifdef VERBOSE
 		cout << "Getting Threshold DACu : " << threshold << endl;
 #endif
@@ -1168,7 +1178,7 @@ void qTabAdvanced::Refresh(){
 #ifdef VERBOSE
 		cout << "Getting Receiver Network Information" << endl;
 #endif
-	if ((detType==slsDetectorDefs::GOTTHARD) || (detType==slsDetectorDefs::MOENCH)){
+	if ((detType==slsDetectorDefs::GOTTHARD) || (detType==slsDetectorDefs::MOENCH)|| (detType==slsDetectorDefs::EIGER)){
 		//disconnect
 		disconnect(spinTCPPort,			SIGNAL(valueChanged(int)),	this,	SLOT(SetRxrTCPPort(int)));
 		disconnect(spinUDPPort,			SIGNAL(valueChanged(int)),	this,	SLOT(SetRxrUDPPort(int)));

@@ -117,6 +117,9 @@ void GetOutputDir();
 /** set compression */
 void SetCompression(bool enable);
 
+/** enable 10GbE */
+void EnableTenGigabitEthernet(bool enable, int get=0);
+
 signals:
 /**signal to enable/disable positions in Actions*/
 void AngularConversionSignal(bool);

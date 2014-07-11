@@ -100,6 +100,7 @@ private:
 	QLabel 			*lblDacs[20];
 	QLabel			*lblAdcs[20];
 	MyDoubleSpinBox	*spinDacs[20];
+	QLabel			*lblDacsmV[20];
 	QDoubleSpinBox	*spinAdcs[20];
 	QLabel			*lblHV;
 	QComboBox		*comboHV;

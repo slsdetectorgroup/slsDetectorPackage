@@ -251,6 +251,9 @@ class slsDetector : public slsDetectorUtils, public energyConversion {
     /** online flag - is set if the receiver is connected, unset if socket connection is not possible  */
     int receiverOnlineFlag;
 
+    /** 10 Gbe enable*/
+    int tenGigaEnable;
+
   } sharedSlsDetector;
 
 
@@ -779,10 +782,11 @@ class slsDetector : public slsDetectorUtils, public energyConversion {
      set dacs value
      \param val value (in V)
      \param index DAC index
+     \param mV 0 in dac units or 1 in mV
      \param imod module number (if -1 alla modules)
      \returns current DAC value
   */
-  dacs_t setDAC(dacs_t val, dacIndex index, int imod=-1);
+  dacs_t setDAC(dacs_t val, dacIndex index , int mV, int imod=-1);
   
   /**
      set dacs value

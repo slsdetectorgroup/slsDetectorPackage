@@ -237,7 +237,7 @@ void  slsDetectorUtils::acquire(int delflag){
 	    	aclog->addStep(getCurrentPosition(), getCurrentFileName());
 
 	    if (eclog)
-			eclog->addStep(setDAC(-1,THRESHOLD), getCurrentFileName());
+			eclog->addStep(setDAC(-1,THRESHOLD,0), getCurrentFileName());
 
 
 	    if (*correctionMask&(1<< I0_NORMALIZATION)) {
@@ -773,45 +773,118 @@ int slsDetectorUtils::retrieveDetectorSetup(string const fname1, int level){
 int slsDetectorUtils::dumpDetectorSetup(string const fname, int level){
 
   slsDetectorCommand *cmd;
+  string names[100];
+  int nvar=0;
 
-  string names[]={
-    "fname",\
-    "index",\
-    "flags",\
-    "dr",\
-    "settings",\
-    "threshold",\
-    "exptime",\
-    "period",\
-    "delay",\
-    "gates",\
-    "frames",\
-    "cycles",\
-    "probes",\
-    "timing",\
-    "fineoff",\
-    "startscript",\
-    "startscriptpar",\
-    "stopscript",\
-    "stopscriptpar",\
-    "scriptbefore",\
-    "scriptbeforepar",\
-    "scriptafter",\
-    "scriptafterpar",\
-    "scan0script",\
-    "scan0par",\
-    "scan0prec",\
-    "scan0steps",\
-    "scan1script",\
-    "scan1par",\
-    "scan1prec",\
-    "scan1steps",\
-    "ratecorr",\
-    "flatfield",\
-    "badchannels",\
-    "trimbits"
-  };
-  int nvar=35;
+  switch (getDetectorsType()) {
+  case EIGER:
+		names[nvar++]="fname";
+		names[nvar++]="index";
+		names[nvar++]="flags";
+		names[nvar++]="dr";
+		names[nvar++]="settings";
+		names[nvar++]="threshold";
+		names[nvar++]="exptime";
+		names[nvar++]="period";
+		names[nvar++]="frames";
+		names[nvar++]="cycles";
+		names[nvar++]="timing";
+		names[nvar++]="fineoff";
+		names[nvar++]="startscript";
+		names[nvar++]="startscriptpar";
+		names[nvar++]="stopscript";
+		names[nvar++]="stopscriptpar";
+		names[nvar++]="scriptbefore";
+		names[nvar++]="scriptbeforepar";
+		names[nvar++]="scriptafter";
+		names[nvar++]="scriptafterpar";
+		names[nvar++]="scan0script";
+		names[nvar++]="scan0par";
+		names[nvar++]="scan0prec";
+		names[nvar++]="scan0steps";
+		names[nvar++]="scan1script";
+		names[nvar++]="scan1par";
+		names[nvar++]="scan1prec";
+		names[nvar++]="scan1steps";
+		names[nvar++]="ratecorr";
+		names[nvar++]="flatfield";
+		names[nvar++]="badchannels";
+		break;
+  case GOTTHARD:
+		names[nvar++]="fname";
+		names[nvar++]="index";
+		names[nvar++]="flags";
+		names[nvar++]="dr";
+		names[nvar++]="settings";
+		names[nvar++]="exptime";
+		names[nvar++]="period";
+		names[nvar++]="delay";
+		names[nvar++]="gates";
+		names[nvar++]="frames";
+		names[nvar++]="cycles";
+		names[nvar++]="timing";
+		names[nvar++]="fineoff";
+		names[nvar++]="startscript";
+		names[nvar++]="startscriptpar";
+		names[nvar++]="stopscript";
+		names[nvar++]="stopscriptpar";
+		names[nvar++]="scriptbefore";
+		names[nvar++]="scriptbeforepar";
+		names[nvar++]="scriptafter";
+		names[nvar++]="scriptafterpar";
+		names[nvar++]="scan0script";
+		names[nvar++]="scan0par";
+		names[nvar++]="scan0prec";
+		names[nvar++]="scan0steps";
+		names[nvar++]="scan1script";
+		names[nvar++]="scan1par";
+		names[nvar++]="scan1prec";
+		names[nvar++]="scan1steps";
+		names[nvar++]="ratecorr";
+		names[nvar++]="flatfield";
+		names[nvar++]="badchannels";
+		break;
+  case MYTHEN:
+		names[nvar++]="fname";
+		names[nvar++]="index";
+		names[nvar++]="flags";
+		names[nvar++]="dr";
+		names[nvar++]="settings";
+		names[nvar++]="threshold";
+		names[nvar++]="exptime";
+		names[nvar++]="period";
+		names[nvar++]="delay";
+		names[nvar++]="gates";
+		names[nvar++]="frames";
+		names[nvar++]="cycles";
+		names[nvar++]="probes";
+		names[nvar++]="timing";
+		names[nvar++]="fineoff";
+		names[nvar++]="startscript";
+		names[nvar++]="startscriptpar";
+		names[nvar++]="stopscript";
+		names[nvar++]="stopscriptpar";
+		names[nvar++]="scriptbefore";
+		names[nvar++]="scriptbeforepar";
+		names[nvar++]="scriptafter";
+		names[nvar++]="scriptafterpar";
+		names[nvar++]="scan0script";
+		names[nvar++]="scan0par";
+		names[nvar++]="scan0prec";
+		names[nvar++]="scan0steps";
+		names[nvar++]="scan1script";
+		names[nvar++]="scan1par";
+		names[nvar++]="scan1prec";
+		names[nvar++]="scan1steps";
+		names[nvar++]="ratecorr";
+		names[nvar++]="flatfield";
+		names[nvar++]="badchannels";
+		names[nvar++]="trimbits";
+		break;
+
+  }
+
+
 
 
 

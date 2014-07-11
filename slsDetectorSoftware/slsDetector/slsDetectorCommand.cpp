@@ -3229,10 +3229,12 @@ string slsDetectorCommand::cmdDAC(int narg, char *args[], int action) {
 
   if (action==HELP_ACTION)
     return helpDAC(narg, args, action);
-  
+
   dacIndex dac;
   dacs_t val=-1;
   char answer[1000];
+  int mode=0;
+
   if (cmd=="vthreshold")
     dac=THRESHOLD;
   else if (cmd=="vcalibration")
@@ -3327,23 +3329,30 @@ string slsDetectorCommand::cmdDAC(int narg, char *args[], int action) {
   myDet->setOnline(ONLINE_FLAG);
 
   if (action==PUT_ACTION) {
+
+	if(narg > 2)
+	   if(!strcasecmp(args[2],"mv"))
+		   mode = 1;
 #ifdef DACS_INT
-    if (sscanf(args[1],"%d", &val))
+
+	if (sscanf(args[1],"%d", &val))
 #else
-      if (sscanf(args[1],"%f", &val))
+    if (sscanf(args[1],"%f", &val))
 #endif
 	;
       else
 	return string("cannot scan DAC value ")+string(args[1]);
 
-    myDet->setDAC(val,dac);
+    myDet->setDAC(val,dac,mode);
   }
   
 #ifdef DACS_INT
-  sprintf(answer,"%d",myDet->setDAC(-1,dac));
+  sprintf(answer,"%d",myDet->setDAC(-1,dac,mode));
 #else
-  sprintf(answer,"%f",myDet->setDAC(-1,dac));
+  sprintf(answer,"%f",myDet->setDAC(-1,dac,mode));
 #endif
+  if(mode)
+	  strcat(answer,"mV");
   return string(answer);
 
 }
@@ -3414,6 +3423,8 @@ string slsDetectorCommand::helpDAC(int narg, char *args[], int action) {
     os << "vcn" 	<< "dacu\t sets vcn " << std::endl;
     os << "vis" 	<< "dacu\t sets vis " << std::endl;
 
+
+    os << "<dac name> mv <value> if you want in mV else <dac name> <value> in dac units " << std::endl;
     }
 
   if (action==GET_ACTION || action==HELP_ACTION) {

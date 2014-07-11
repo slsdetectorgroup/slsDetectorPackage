@@ -423,7 +423,7 @@ int slsDetectorActions::executeScan(int level, int istep) {
     setThresholdEnergy((int)currentScanVariable[level]); //energy scan
     break;
   case thresholdScan:
-    setDAC((dacs_t)currentScanVariable[level],THRESHOLD); // threshold scan
+    setDAC((dacs_t)currentScanVariable[level],THRESHOLD,0); // threshold scan
     break;
   case trimbitsScan:
     trimbit=(int)currentScanVariable[level];

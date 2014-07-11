@@ -496,10 +496,11 @@ class slsDetectorUtils :  public slsDetectorActions, public postProcessing {
      set dacs value
      \param val value (in V)
      \param index DAC index
+     \param mV 0 in dac units or 1 in mV
      \param imod module number (if -1 alla modules)
      \returns current DAC value
   */
-  virtual dacs_t setDAC(dacs_t val, dacIndex index , int imod=-1)=0;
+  virtual dacs_t setDAC(dacs_t val, dacIndex index , int mV, int imod=-1)=0;
 
 
   /**

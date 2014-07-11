@@ -101,6 +101,9 @@ public:
 		if(slsErrorMask&RECEIVER_DET_HOSTTYPE_NOT_SET)
 			retval.append("Could not send the detector type to the receiver.\n");
 
+		if(slsErrorMask&DETECTOR_TEN_GIGA)
+			retval.append("Could not enable/disable 10GbE in the detector.\n");
+
 
 
 
@@ -139,6 +142,10 @@ public:
 
 		if(slsErrorMask&RECEIVER_DYNAMIC_RANGE)
 			retval.append("Could not set dynamic range in receiver.\n");
+
+		if(slsErrorMask&RECEIVER_TEN_GIGA)
+			retval.append("Could not enable/disable 10GbE in the receiver.\n");
+
 
 
 		return retval;

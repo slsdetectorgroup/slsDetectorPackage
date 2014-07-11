@@ -655,6 +655,7 @@ int slsDetector::initializeDetectorSize(detectorType type) {
 
     thisDetector->actionMask=0;
 
+    thisDetector->tenGigaEnable=0;
 
     for (int ia=0; ia<MAX_ACTIONS; ia++) {
       strcpy(thisDetector->actionScript[ia],"none");
@@ -2000,16 +2001,17 @@ int slsDetector::readRegister(int addr){
   }{};
 */
 
-dacs_t slsDetector::setDAC(dacs_t val, dacIndex index, int imod){
+dacs_t slsDetector::setDAC(dacs_t val, dacIndex index, int mV, int imod){
 
 
-  dacs_t retval;
+  dacs_t retval[2];
   int fnum=F_SET_DAC;
   int ret=FAIL;
   char mess[100];
-  int arg[2];
+  int arg[3];
   arg[0]=index;
   arg[1]=imod;
+  arg[2]=mV;
 
 #ifdef VERBOSE
   std::cout<< std::endl;
@@ -2022,16 +2024,16 @@ dacs_t slsDetector::setDAC(dacs_t val, dacIndex index, int imod){
       controlSocket->SendDataOnly(&val,sizeof(val));
       controlSocket->ReceiveDataOnly(&ret,sizeof(ret));
       if (ret!=FAIL) {
-	controlSocket->ReceiveDataOnly(&retval,sizeof(retval));
+	controlSocket->ReceiveDataOnly(retval,sizeof(retval));
 	if (index <  thisDetector->nDacs){
 
 	  if (dacs) {
 	    if (imod>=0) {
-	      *(dacs+index+imod*thisDetector->nDacs)=retval;
+	      *(dacs+index+imod*thisDetector->nDacs)=retval[0];
 	    }
 	    else {
 	      for (imod=0; imod<thisDetector->nModsMax; imod++)
-		*(dacs+index+imod*thisDetector->nDacs)=retval;
+		*(dacs+index+imod*thisDetector->nDacs)=retval[0];
 	    }
 	  }
 	}
@@ -2046,12 +2048,15 @@ dacs_t slsDetector::setDAC(dacs_t val, dacIndex index, int imod){
     }
   }
 #ifdef VERBOSE
-  std::cout<< "Dac set to "<< retval << std::endl;
+  std::cout<< "Dac set to "<< retval[0] << " dac units (" << retval[1] << "mV)" << std::endl;
 #endif
   if (ret==FAIL) {
     std::cout<< "Set dac failed " << std::endl;
   }
-  return retval;
+  if(mV)
+	  return retval[1];
+
+  return retval[0];
 };
 
 
@@ -4930,6 +4935,7 @@ char* slsDetector::setReceiver(string receiverIP){
 		std::cout << "frame period:" << thisDetector->timerValue[FRAME_PERIOD] << endl;
 		std::cout << "frame number:" << thisDetector->timerValue[FRAME_NUMBER] << endl;
 		std::cout << "dynamic range:" << thisDetector->dynamicRange << endl << endl;
+		std::cout << "10GbE:" << thisDetector->tenGigaEnable << endl << endl;
 /** enable compresison, */
 #endif
 		if(setDetectorType()!= GENERIC){
@@ -4950,6 +4956,8 @@ char* slsDetector::setReceiver(string receiverIP){
 			setDynamicRange(thisDetector->dynamicRange);
 			//set scan tag
 			setUDPConnection();
+			if(thisDetector->myDetectorType == EIGER)
+				enableTenGigabitEthernet(thisDetector->tenGigaEnable);
 		}
 	}
 
@@ -6707,20 +6715,22 @@ int slsDetector::enableTenGigabitEthernet(int i){
 	if(ret!=FAIL){
 		//must also configuremac
 		if((i != -1)&&(retval == i))
-			configureMAC();
-
-		ret = FAIL;
-		retval=-1;
-		if(setReceiverOnline(ONLINE_FLAG)==ONLINE_FLAG){
-	#ifdef VERBOSE
-			std::cout << "Enabling / Disabling 10Gbe in receiver: " << i << std::endl;
-	#endif
-			if (connectData() == OK)
-				ret=thisReceiver->sendInt(fnum,retval,i);
-			if(ret==FAIL)
-				setErrorMask((getErrorMask())|(RECEIVER_TEN_GIGA));
-		}
+			if(configureMAC() != FAIL){
+				ret = FAIL;
+				retval=-1;
+				if(setReceiverOnline(ONLINE_FLAG)==ONLINE_FLAG){
+#ifdef VERBOSE
+					std::cout << "Enabling / Disabling 10Gbe in receiver: " << i << std::endl;
+#endif
+					if (connectData() == OK)
+						ret=thisReceiver->sendInt(fnum2,retval,i);
+					if(ret==FAIL)
+						setErrorMask((getErrorMask())|(RECEIVER_TEN_GIGA));
+				}
+			}
 	}
 
+	if(ret != FAIL)
+		thisDetector->tenGigaEnable=retval;
 	return retval;
 }

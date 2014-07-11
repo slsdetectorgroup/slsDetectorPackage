@@ -34,8 +34,9 @@ int moduleTest( enum digitalTestMode arg, int imod);
 int detectorTest( enum digitalTestMode arg);
 
 
-int setDAC(enum detDacIndex ind, int val, int imod);
+void setDAC(enum detDacIndex ind, int val, int imod, int mV, int retval[]);
 int getADC(enum detDacIndex ind,  int imod);
+
 
 #if defined(EIGERD) || defined(GOTTHARD)
 int setHighVolage(int val, int imod);
@@ -125,6 +126,9 @@ enum externalCommunicationMode setTiming( enum externalCommunicationMode arg);
 enum masterFlags setMaster(enum masterFlags arg);
 enum synchronizationMode setSynchronization(enum synchronizationMode arg);
 
+#ifdef EIGERD
+void setExternalGating(int enable[]);
+#endif
 
 
 #endif

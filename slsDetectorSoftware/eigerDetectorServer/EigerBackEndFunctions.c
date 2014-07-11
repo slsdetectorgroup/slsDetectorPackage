@@ -124,13 +124,6 @@ int EigerSetupTableEntryLeft(int ipad, long long int macad, long long int detect
 										(unsigned int)((macad>>8)&0xFF),
 										(unsigned int)((macad>>0)&0xFF));
 
-/*
-	if(((detectormacadd>>40)&0xFF)<9)
-		sprintf(src_mac,"0%s",detectormacadd);
-	if(((macad>>40)&0xFF)<9)
-		sprintf(dst_mac,"0%s",macad);
-*/
-	//strcpy(src_mac,"00:aa:bb:cc:dd:ee");
 	printf("Seting up Table Entry Left:\n");
 	printf("src_port:%d\n",src_port);
 	printf("dst_port:%d\n",dst_port);
@@ -167,7 +160,6 @@ int EigerSetupTableEntryRight(int ipad, long long int macad, long long int detec
 										(unsigned int)((macad>>8)&0xFF),
 										(unsigned int)((macad>>0)&0xFF));
 
-	//strcpy(src_mac,"00:aa:bb:cc:dd:ee");
 	printf("Seting up Table Entry Right:\n");
 	printf("src_port:%d\n",src_port);
 	printf("dst_port:%d\n",dst_port);
@@ -187,24 +179,13 @@ int EigerSetupTableEntryRight(int ipad, long long int macad, long long int detec
 int RequestImages(){
 	printf("Going to request images\n");
   eiger_back_ret_val=0;
-  eiger_back_message_length = sprintf(eiger_back_message,"requestimages %d",0);
+  eiger_back_message_length = sprintf(eiger_back_message,"requestimages %d",0); // dst_number
   return EigerBackSendCMD();
 }
 
 int SetDestinationParameters(int i){
-	SetLeftDestinationParameters(i);
-	return SetRightDestinationParameters(i);
-}
-
-int SetLeftDestinationParameters(int i){
 	eiger_back_ret_val=0;
-	eiger_back_message_length = sprintf(eiger_back_message,"setdstparameters %d %d %d",ten_giga,1,i);
-	return EigerBackSendCMD();
-}
-
-int SetRightDestinationParameters(int i){
-	eiger_back_ret_val=0;
-	eiger_back_message_length = sprintf(eiger_back_message,"setdstparameters %d %d %d",ten_giga,32,i);
+	eiger_back_message_length = sprintf(eiger_back_message,"setdstparameters %d %d %d",ten_giga,32,i);// number of dsts
 	return EigerBackSendCMD();
 }
 

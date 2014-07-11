@@ -71,8 +71,11 @@ int initDetector(){
 */
 
   //get dac values
-	for(i=0;i<(detectorModules)->ndac;i++)
-		(detectorModules)->dacs[i] = setDAC((enum detDacIndex)i,-1,(detectorModules)->module);
+  int retval[2];
+	for(i=0;i<(detectorModules)->ndac;i++){
+		setDAC((enum detDacIndex)i,-1,(detectorModules)->module,0,retval);
+		(detectorModules)->dacs[i] = retval[0];
+	}
 
   /* initialize dynamic range etc. */
 
@@ -88,6 +91,8 @@ int initDetector(){
  setHighVolage(150,0);
   setIODelay(675,0);
   setTiming(AUTO_TIMING);
+  int enable[2] = {0,1};
+  setExternalGating(enable);//disable external gating
    return 1;
 }
 
@@ -214,19 +219,26 @@ int detectorTest( enum digitalTestMode arg){
 
 
 
-int setDAC(enum detDacIndex ind, int val, int imod){
+void setDAC(enum detDacIndex ind, int val, int imod, int mV, int retval[]){
 	char iname[10];
 	strcpy(iname,EigerGetDACName((int)ind));
-//#ifdef VERBOSE
+#ifdef VERBOSE
 	if(val >= 0)
-		printf("Setting dac %d: %s to %d mV\n",ind, iname,val);
+		printf("Setting dac %d: %s to %d ",ind, iname,val);
 	else
-		printf("Getting dac %d: %s\n",ind, iname);
-//#endif
+		printf("Getting dac %d: %s ",ind, iname);
+	if(mV)
+		printf("in mV\n");
+	else
+		printf("in dac units\n");
+#endif
 	if(val >= 0)
-		EigerSetDAC(iname,val);
+		EigerSetDAC(iname,val,mV);
+	retval[0] = EigerGetDAC(iname);
+	retval[1] = EigerGetDACmV(iname);
 
-	return EigerGetDAC(iname);
+	(detectorModules)->dacs[ind] = retval[0];
+
 }
 
 
@@ -260,7 +272,6 @@ int enableTenGigabitEthernet(int val){
 			SetTenGigbaBitEthernet(1);
 		else
 			SetTenGigbaBitEthernet(0);
-		SetDestinationParameters(EigerGetNumberOfExposures()*EigerGetNumberOfCycles());
 		//configuremac called from client
 	}
 	return GetTenGigbaBitEthernet();
@@ -268,12 +279,13 @@ int enableTenGigabitEthernet(int val){
 
 
 int setModule(sls_detector_module myMod){
+	int retval[2];
   #ifdef VERBOSE
 	printf("Setting module with settings %d\n",myMod.reg);
 #endif
 	int i;
 	for(i=0;i<myMod.ndac;i++)
-		setDAC((enum detDacIndex)i,myMod.dacs[i],myMod.module);
+		setDAC((enum detDacIndex)i,myMod.dacs[i],myMod.module,0,retval);
 
 
 	thisSettings = (enum detectorSettings)myMod.reg;
@@ -357,11 +369,14 @@ enum runStatus getRunStatus(){
 
 
 char *readFrame(int *ret, char *mess){
+	EigerWaitForAcquisitionFinish();
+	/*
 	int i = EigerRunStatus();
 	while(i){
 		i = EigerRunStatus();
-		usleep(1000);/* should be watiing in server*/
-	}*ret = (int)FINISHED;
+		usleep(1000);
+	}*/
+	*ret = (int)FINISHED;
 	return NULL;
 }
 
@@ -494,6 +509,7 @@ int executeTrimming(enum trimMode mode, int par1, int par2, int imod){
 int configureMAC(int ipad, long long int macad, long long int detectormacadd, int detipad, int udpport, int ival){
 	EigerSetupTableEntryLeft(ipad, macad, detectormacadd, detipad, udpport);
 	EigerSetupTableEntryRight(ipad, macad, detectormacadd, detipad, udpport);
+	SetDestinationParameters(EigerGetNumberOfExposures()*EigerGetNumberOfCycles());
 	return 0;
 }
 
@@ -622,10 +638,10 @@ enum externalCommunicationMode setTiming( enum externalCommunicationMode arg){
 		case GATE_FIX_NUMBER:		ret = 3;	break;
 		}
 		printf(" Setting Triggering Mode: %d\n",(int)ret);
-		//EigerSetTriggerMode(ret);
+		EigerSetTriggerMode(ret);
 	}
-ret=0;
-	//ret = EigerGetTriggerMode();
+
+	ret = EigerGetTriggerMode();
 	switch((int)ret){
 	case 0:		ret = AUTO_TIMING;		break;
 	case 2:		ret = TRIGGER_EXPOSURE; break;
@@ -638,6 +654,13 @@ ret=0;
 	return ret;
 }
 
+
+void setExternalGating(int enable[]){
+	if(enable>=0)
+		EigerSetExternalGating(enable[0], enable[1]);//enable = 0 or 1, polarity = 0 or 1 , where 1 is positive
+	enable[0] = EigerGetExternalGatingPolarity();
+	enable[1] = EigerGetExternalGating();
+}
 
 
 enum masterFlags setMaster(enum masterFlags arg){

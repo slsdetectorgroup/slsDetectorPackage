@@ -1043,13 +1043,15 @@ int digital_test(int file_des) {
 
 int set_dac(int file_des) {
 
-	int retval;
+	int retval[2];retval[1]=-1;
+	int temp;
 	int ret=OK,ret1=OK;
-	int arg[2];
+	int arg[3];
 	enum dacIndex ind;
 	int imod;
 	int n;
 	int val;
+	int mV;
 	enum detDacIndex idac=0;
 
 	sprintf(mess,"Can't set DAC\n");
@@ -1062,6 +1064,7 @@ int set_dac(int file_des) {
 	}
 	ind=arg[0];
 	imod=arg[1];
+	mV=arg[2];
 
 	n = receiveData(file_des,&val,sizeof(val),INT32);
 	if (n < 0) {
@@ -1182,25 +1185,33 @@ int set_dac(int file_des) {
 			sprintf(mess,"Detector locked by %s\n",lastClientIP);
 		} else{
 			if(ind == HV_POT)
-				retval = setHighVolage(val,imod);
+				retval[0] = setHighVolage(val,imod);
 			else if(ind == IO_DELAY)
-				retval = setIODelay(val,imod);
+				retval[0] = setIODelay(val,imod);
 			else
-				retval=setDAC(idac,val,imod);
+				setDAC(idac,val,imod,mV,retval);
 		}
+
+
+
 	}
 #endif
 #ifdef VERBOSE
-	printf("DAC set to %d V\n",  retval);
+	printf("DAC set to %d in dac units and %d mV\n",  retval[0],retval[1]);
 #endif
+
 	if(ret == OK){
-		if ((abs(retval-val)<=5) || val==-1) {
+		if(mV)
+			temp = retval[1];
+		else
+			temp = retval[0];
+		if ((abs(temp-val)<=5) || val==-1) {
 			ret=OK;
 			if (differentClients)
 				ret=FORCE_UPDATE;
 		} else {
 			ret=FAIL;
-			printf("Setting dac %d of module %d: wrote %d but read %d\n", idac, imod, val, retval);
+			printf("Setting dac %d of module %d: wrote %d but read %d\n", idac, imod, val, temp);
 		}
 	}
 
@@ -2977,6 +2988,7 @@ int configure_mac(int file_des) {
 	if (imod>=getTotalNumberOfModules()) {
 		ret=FAIL;
 		sprintf(mess,"Module number out of range %d\n",imod);
+		printf("mess:%s\n",mess);
 	}
 #endif
 #ifdef VERBOSE
@@ -3384,14 +3396,14 @@ int enable_ten_giga(int file_des) {
 	}
 	/* execute action */
 	if(ret != FAIL){
-#ifdef VERBOSE
+//#ifdef VERBOSE
 		printf("Enabling 10Gbe :%d \n",arg);
-#endif
+//#endif
 #ifdef SLS_DETECTOR_FUNCTION_LIST
 		retval=enableTenGigabitEthernet(arg);
 		if((arg != -1) && (retval != arg))
 			ret=FAIL;
-		else if (differentClients==1 && ret==OK) {
+		else if (differentClients==1) {
 			ret=FORCE_UPDATE;
 		}
 #endif

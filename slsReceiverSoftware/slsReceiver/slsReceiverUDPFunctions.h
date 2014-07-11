@@ -1,4 +1,4 @@
-#ifdef SLS_RECEIVER_UDP_FUNCTIONS
+//#ifdef SLS_RECEIVER_UDP_FUNCTIONS
 #ifndef SLS_RECEIVER_UDP_FUNCTIONS_H
 #define SLS_RECEIVER_UDP_FUNCTIONS_H
 /********************************************//**
@@ -228,8 +228,12 @@ public:
 	 */
 	int enableDataCompression(bool enable);
 
-
-
+	/**
+	 * enable 10Gbe
+	 @param enable 1 for 10Gbe or 0 for 1 Gbe, -1 to read out
+	 \returns enable for 10Gbe
+	 */
+	int enableTenGiga(int enable = -1);
 
 
 
@@ -631,6 +635,9 @@ private:
 	/** variable used to self terminate threads waiting for semaphores */
 	int killAllWritingThreads;
 
+	/** 10Gbe enable*/
+	int tengigaEnable;
+
 
 
 
@@ -755,4 +762,4 @@ public:
 
 #endif
 
-#endif
+//#endif

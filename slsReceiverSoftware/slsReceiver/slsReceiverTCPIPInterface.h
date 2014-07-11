@@ -257,6 +257,9 @@ private:
 	/** thread for TCP server */
 	pthread_t   TCPServer_thread;
 
+	/** size of one frame*/
+	int tenGigaEnable;
+
 protected:
 	/** Socket */
 	MySocketTCP* socket;

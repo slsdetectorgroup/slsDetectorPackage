@@ -1,4 +1,4 @@
-#ifdef SLS_RECEIVER_UDP_FUNCTIONS
+//#ifdef SLS_RECEIVER_UDP_FUNCTIONS
 /********************************************//**
  * @file slsReceiverUDPFunctions.cpp
  * @short does all the functions for a receiver, set/get parameters, start/stop etc.
@@ -35,7 +35,8 @@ slsReceiverUDPFunctions::slsReceiverUDPFunctions():
 		eth(NULL),
 		latestData(NULL),
 		guiFileName(NULL),
-		guiFrameNumber(0){
+		guiFrameNumber(0),
+		tengigaEnable(0){
 	for(int i=0;i<MAX_NUM_LISTENING_THREADS;i++){
 		udpSocket[i] = NULL;
 		server_port[i] = DEFAULT_UDP_PORTNO+i;
@@ -167,6 +168,7 @@ void slsReceiverUDPFunctions::initializeMembers(){
 	killAllListeningThreads = 0;
 	killAllWritingThreads = 0;
 	cbAction = DO_EVERYTHING;
+	tengigaEnable = 0;
 
 	for(int i=0;i<numListeningThreads;i++){
 		udpSocket[i] = NULL;
@@ -262,10 +264,10 @@ int slsReceiverUDPFunctions::setDetectorType(detectorType det){
 #ifndef EIGERSLS
 		cout << "SLS Eiger Receiver" << endl;
 		fifosize 			= EIGER_FIFO_SIZE;
-		packetsPerFrame 	= EIGER_PACKETS_PER_FRAME_COSTANT * dynamicRange;
-		onePacketSize		= EIGER_ONE_PACKET_SIZE;
-		frameSize			= EIGER_BUFFER_SIZE_CONSTANT * dynamicRange;
-		bufferSize 			= (frameSize/EIGER_MAX_PORTS) + EIGER_HEADER_LENGTH;//for only one port
+		packetsPerFrame 	= EIGER_ONE_GIGA_CONSTANT * dynamicRange * EIGER_MAX_PORTS;
+		onePacketSize		= EIGER_ONE_GIGA_ONE_PACKET_SIZE;
+		frameSize			= onePacketSize * packetsPerFrame;
+		bufferSize 			= (frameSize/EIGER_MAX_PORTS) + EIGER_HEADER_LENGTH;//everything one port gets (img header plus packets)
 		maxPacketsPerFile 	= EIGER_MAX_FRAMES_PER_FILE * packetsPerFrame;
 		frameIndexMask 		= EIGER_FRAME_INDEX_MASK;
 		frameIndexOffset 	= EIGER_FRAME_INDEX_OFFSET;
@@ -530,43 +532,52 @@ int32_t slsReceiverUDPFunctions::setDynamicRange(int32_t dr){
 			receiver->setDynamicRange(dr);
 		else{
 			dynamicRange = dr;
-			packetsPerFrame 	= EIGER_PACKETS_PER_FRAME_COSTANT * dynamicRange;
-			frameSize			= EIGER_BUFFER_SIZE_CONSTANT * dynamicRange;
-			bufferSize 			= (frameSize/EIGER_MAX_PORTS) + EIGER_HEADER_LENGTH;//for only one port
-			maxPacketsPerFile 	= EIGER_MAX_FRAMES_PER_FILE * packetsPerFrame;
 
-			if(olddr != dr){
+			if(myDetectorType == EIGER){
 
-				//del
-				if(thread_started){
-					createListeningThreads(true);
-					createWriterThreads(true);
-				}
-				for(int i=0;i<numListeningThreads;i++){
+
+				if(!tengigaEnable)
+					packetsPerFrame 	= EIGER_ONE_GIGA_CONSTANT * dynamicRange * EIGER_MAX_PORTS;
+				else
+					packetsPerFrame 	= EIGER_TEN_GIGA_CONSTANT * dynamicRange * EIGER_MAX_PORTS;
+				frameSize			= onePacketSize * packetsPerFrame;
+				bufferSize 			= (frameSize/EIGER_MAX_PORTS) + EIGER_HEADER_LENGTH;//everything one port gets (img header plus packets)
+				maxPacketsPerFile 	= EIGER_MAX_FRAMES_PER_FILE * packetsPerFrame;
+
+
+
+				if(olddr != dr){
+
+					//del
+					if(thread_started){
+						createListeningThreads(true);
+						createWriterThreads(true);
+					}
+					for(int i=0;i<numListeningThreads;i++){
 						if(mem0[i])			{free(mem0[i]);			mem0[i] = NULL;}
 						if(fifo[i])			{delete fifo[i];		fifo[i] = NULL;}
 						if(fifoFree[i])		{delete fifoFree[i];	fifoFree[i] = NULL;}
 						buffer[i] = NULL;
 					}
-				if(latestData) 		{delete [] latestData;	latestData = NULL;}
-				latestData = new char[frameSize];
+					if(latestData) 		{delete [] latestData;	latestData = NULL;}
+					latestData = new char[frameSize];
 
-				numJobsPerThread = -1;
-				setupFifoStructure();
+					numJobsPerThread = -1;
+					setupFifoStructure();
 
-				if(createListeningThreads() == FAIL){
-					cout << "ERROR: Could not create listening thread" << endl;
-					exit (-1);
+					if(createListeningThreads() == FAIL){
+						cout << "ERROR: Could not create listening thread" << endl;
+						exit (-1);
+					}
+
+					if(createWriterThreads() == FAIL){
+						cout << "ERROR: Could not create writer threads" << endl;
+						exit (-1);
+					}
+
+					setThreadPriorities();
 				}
-
-				if(createWriterThreads() == FAIL){
-					cout << "ERROR: Could not create writer threads" << endl;
-					exit (-1);
-				}
-
-				setThreadPriorities();
 			}
-
 		}
 	}
 
@@ -1527,7 +1538,7 @@ int slsReceiverUDPFunctions::startListening(){
 #endif
 
 		if(tempchar) {delete [] tempchar;tempchar = NULL;}
-		if(myDetectorType == EIGER)
+		if(myDetectorType != EIGER)
 			tempchar = new char[onePacketSize * ((packetsPerFrame/numListeningThreads) - 1)]; //gotthard: 1packet size, moench:39 packet size
 
 
@@ -1574,14 +1585,6 @@ int slsReceiverUDPFunctions::startListening(){
 			cout << ithread << " *** rc:" << dec << rc << ". expected:" << dec << expected << endl;
 #endif
 
-/*
-			if(ithread){
-				for(int j=25;j<27;++j)
-				for(int i=1000;i<1010;i=i+2)
-				//cout<<"startbuf:"<<dec<<i<<hex<<":\t0x"<<htonl((uint32_t)(*((uint32_t*)(buffer[ithread] + HEADER_SIZE_NUM_TOT_PACKETS+ EIGER_HEADER_LENGTH+ 8+i))))<<endl;
-				cout<<"startbuf:"<<dec<<i<<hex<<":\t0x"<<((uint16_t)(*((uint16_t*)(buffer[ithread] + 2+ 48+ j*1040+8+i))))<<endl;
-			}
-*/
 
 
 
@@ -1665,6 +1668,7 @@ int slsReceiverUDPFunctions::startListening(){
 			}
 
 
+		//	cout<<"*********** "<<ithread<<" tempnum:"<< htonl(*(unsigned int*)((eiger_image_header *)((char*)(buffer[ithread] + HEADER_SIZE_NUM_TOT_PACKETS)))->fnum)<<endl;
 
 
 
@@ -1792,7 +1796,8 @@ int loop;
 				pthread_mutex_unlock(&progress_mutex);
 			}
 //#ifdef VERYDEBUG
-			cout << endl <<ithread << " tempframenum:" << hex << tempframenum << " curframenum:" << currframenum << endl;
+			if(myDetectorType == EIGER)
+				cout << endl <<ithread << " tempframenum:" << hex << tempframenum << " curframenum:" << currframenum << endl;
 //#endif
 
 
@@ -1929,9 +1934,9 @@ void slsReceiverUDPFunctions::startFrameIndices(int ithread){
 void slsReceiverUDPFunctions::stopListening(int ithread, int rc, int &pc, int &t){
 int i;
 
-#ifdef VERYVERBOSE
+//#ifdef VERYVERBOSE
 				cerr << ithread << " recvfrom() failed:"<<endl;
-#endif
+//#endif
 				if(status != TRANSMITTING){
 					cout << ithread << " *** shoule never be here********* status not transmitting***********************"<<endl;/**/
 					fifoFree[ithread]->push(buffer[ithread]);
@@ -1960,37 +1965,37 @@ int i;
 					cout << ithread << " going to push in dummy buffer:" << (void*)buffer[ithread] << " with num packets:"<< (*((uint16_t*)(buffer[ithread]))) << endl;
 #endif
 					while(!fifo[ithread]->push(buffer[ithread]));
-#ifdef VERYDEBUG
+//#ifdef VERYDEBUG
 					cout << ithread << " pushed in dummy buffer:" << (void*)buffer[ithread] << endl;
-#endif
+//#endif
 				}
 
 				//reset mask and exit loop
 				pthread_mutex_lock(&status_mutex);
 				listeningthreads_mask^=(1<<ithread);
-#ifdef VERYDEBUG
+//#ifdef VERYDEBUG
 				cout << ithread << " Resetting mask of current listening thread. New Mask: " << listeningthreads_mask << endl;
-#endif
+//#endif
 				pthread_mutex_unlock(&(status_mutex));
 
-#ifdef VERYDEBUG
+//#ifdef VERYDEBUG
 				cout << ithread << ": Frames listened to " << dec << ((totalListeningFrameCount[ithread]*numListeningThreads)/packetsPerFrame) << endl;
-#endif
+//#endif
 
 				//waiting for all listening threads to be done, to print final count of frames listened to
 				if(ithread == 0){
-#ifdef VERYDEBUG
+//#ifdef VERYDEBUG
 					if(numListeningThreads > 1)
 						cout << "Waiting for listening to be done.. current mask:" << hex << listeningthreads_mask << endl;
-#endif
+//#endif
 					while(listeningthreads_mask)
 						usleep(5000);
-#ifdef VERYDEBUG
+//#ifdef VERYDEBUG
 					t = 0;
 					for(i=0;i<numListeningThreads;++i)
 						t += totalListeningFrameCount[i];
 					cout << "Total frames listened to " << dec <<(t/packetsPerFrame) << endl;
-#endif
+//#endif
 				}
 
 }
@@ -2272,6 +2277,81 @@ void slsReceiverUDPFunctions::handleDataCompression(int ithread, char* wbuffer[]
 
 
 
+int slsReceiverUDPFunctions::enableTenGiga(int enable){
+
+	cout << "Enabling 10Gbe to" << enable << endl;
+
+	int oldtengiga = tengigaEnable;
+	if(enable >= 0){
+		if(receiver != NULL)
+			;/*receiver->setTenGigaBitEthernet(enable);*/
+		else{
+			tengigaEnable = enable;
+
+			if(myDetectorType == EIGER){
+
+				if(!tengigaEnable){
+					packetsPerFrame = EIGER_ONE_GIGA_CONSTANT * dynamicRange * EIGER_MAX_PORTS;
+					onePacketSize  	= EIGER_ONE_GIGA_ONE_PACKET_SIZE;
+					maxPacketsPerFile 	= EIGER_MAX_FRAMES_PER_FILE * packetsPerFrame;
+				}else{
+					packetsPerFrame = EIGER_TEN_GIGA_CONSTANT * dynamicRange * EIGER_MAX_PORTS;
+					onePacketSize  	= EIGER_TEN_GIGA_ONE_PACKET_SIZE;
+					maxPacketsPerFile 	= EIGER_MAX_FRAMES_PER_FILE * packetsPerFrame*4;
+				}
+				frameSize			= onePacketSize * packetsPerFrame;
+				bufferSize 			= (frameSize/EIGER_MAX_PORTS) + EIGER_HEADER_LENGTH;//everything one port gets (img header plus packets)
+				//maxPacketsPerFile 	= EIGER_MAX_FRAMES_PER_FILE * packetsPerFrame;
+
+
+				cout<<"packetsPerFrame:"<<dec<<packetsPerFrame<<endl;
+				cout<<"onePacketSize:"<<onePacketSize<<endl;
+				cout<<"framsize:"<<frameSize<<endl;
+				cout<<"bufferSize:"<<bufferSize<<endl;
+				cout<<"maxPacketsPerFile:"<<maxPacketsPerFile<<endl;
+
+
+				if(oldtengiga != enable){
+
+					//del
+					if(thread_started){
+						createListeningThreads(true);
+						createWriterThreads(true);
+					}
+					for(int i=0;i<numListeningThreads;i++){
+						if(mem0[i])			{free(mem0[i]);			mem0[i] = NULL;}
+						if(fifo[i])			{delete fifo[i];		fifo[i] = NULL;}
+						if(fifoFree[i])		{delete fifoFree[i];	fifoFree[i] = NULL;}
+						buffer[i] = NULL;
+					}
+					if(latestData) 		{delete [] latestData;	latestData = NULL;}
+					latestData = new char[frameSize];
+
+					numJobsPerThread = -1;
+					setupFifoStructure();
+
+					if(createListeningThreads() == FAIL){
+						cout << "ERROR: Could not create listening thread" << endl;
+						exit (-1);
+					}
+
+					if(createWriterThreads() == FAIL){
+						cout << "ERROR: Could not create writer threads" << endl;
+						exit (-1);
+					}
+
+					setThreadPriorities();
+				}
+			}
+		}
+	}
+
+	if(receiver != NULL)
+		;/*return receiver->getTenGigaBitEthernet();*/
+	else
+		return tengigaEnable;
+
+}
 
 
 
@@ -2285,5 +2365,4 @@ void slsReceiverUDPFunctions::handleDataCompression(int ithread, char* wbuffer[]
 
 
 
-
-#endif
+//#endif

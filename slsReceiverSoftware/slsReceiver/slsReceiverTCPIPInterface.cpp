@@ -36,7 +36,8 @@ slsReceiverTCPIPInterface::slsReceiverTCPIPInterface(int argc, char *argv[], int
 		packetsPerFrame(GOTTHARD_PACKETS_PER_FRAME),
 		dynamicrange(16),
 		socket(NULL),
-		killTCPServerThread(0){
+		killTCPServerThread(0),
+		tenGigaEnable(0){
 
 	int port_no = DEFAULT_PORTNO+2;
 	ifstream infile;
@@ -315,6 +316,9 @@ int slsReceiverTCPIPInterface::function_table(){
 	flist[F_ENABLE_RECEIVER_FILE_WRITE]		=	&slsReceiverTCPIPInterface::enable_file_write;
 	flist[F_ENABLE_RECEIVER_COMPRESSION]	= 	&slsReceiverTCPIPInterface::enable_compression;
 	flist[F_ENABLE_RECEIVER_OVERWRITE]		= 	&slsReceiverTCPIPInterface::enable_overwrite;
+
+	flist[F_ENABLE_RECEIVER_TEN_GIGA]		= 	&slsReceiverTCPIPInterface::enable_tengiga;
+
 
 #ifdef VERBOSE
 	for (int i=0;i<numberOfFunctions;i++)
@@ -1348,23 +1352,25 @@ int	slsReceiverTCPIPInterface::eiger_read_frame(){
 	int arg = -1,i;
 	uint32_t index=0;
 
-	int bufferSize  = EIGER_BUFFER_SIZE_CONSTANT * dynamicrange;
-	char* raw 		= new char[bufferSize];
-	char* origVal 	= new char[bufferSize];
-	char* retval 	= new char[(EIGER_DATA_BYTES_CONSTANT*dynamicrange)];
+	int frameSize   = EIGER_ONE_GIGA_ONE_PACKET_SIZE * packetsPerFrame;
+	int dataSize 	= EIGER_ONE_GIGA_ONE_DATA_SIZE * packetsPerFrame;
+	if(tenGigaEnable){
+		frameSize  	= EIGER_TEN_GIGA_ONE_PACKET_SIZE * packetsPerFrame;
+		dataSize	= EIGER_TEN_GIGA_ONE_DATA_SIZE * packetsPerFrame;
+	}
+	char* raw 		= new char[frameSize];
+	char* origVal 	= new char[frameSize];
+	char* retval 	= new char[dataSize];
 
 	strcpy(mess,"Could not read frame\n");
 
-
-	typedef struct
-	{
+/*	typedef struct{
 		unsigned char num1[4];
 		unsigned char num2[4];
-	} eiger_packet_header;
-
+	} eiger_packet_header;*/
 
 	// execute action if the arguments correctly arrived
-//#ifdef SLS_RECEIVER_UDP_FUNCTIONS
+#ifdef SLS_RECEIVER_UDP_FUNCTIONS
 
 
 
@@ -1391,42 +1397,40 @@ int	slsReceiverTCPIPInterface::eiger_read_frame(){
 
 		/**proper frame*/
 		else{
-
-			memcpy(origVal,raw,bufferSize);
+			memcpy(origVal,raw,frameSize);
 			raw=NULL;
 
-
-
-
-			int c1=8;
-			int c2=(bufferSize/2) + 8; //only 2 ports
+			int c1=8;//first port
+			int c2=(frameSize/2) + 8; //second port
 			int retindex=0;
 			int irow,ibytesperpacket,irepeat;
 			int repeat=1;
-			int linesperpacket = 16/dynamicrange;// 16:1 line, 8:2 lines, 4:4 lines, 32: 0.5
+			int linesperpacket = (16/dynamicrange)* 1;// 16:1 line, 8:2 lines, 4:4 lines, 32: 0.5
 			int numbytesperlineperport=(EIGER_PIXELS_IN_ONE_ROW/EIGER_MAX_PORTS)*dynamicrange/8;//16:1024,8:512,4:256,32:2048
-			if(dynamicrange == 32){
+			int datapacketlength = EIGER_ONE_GIGA_ONE_DATA_SIZE;
+
+
+			if(tenGigaEnable){
+				linesperpacket = (16/dynamicrange)* 4;// 16:4 line, 8:8 lines, 4:16 lines, 32: 2
+				datapacketlength = EIGER_TEN_GIGA_ONE_DATA_SIZE;
+			}
+			//if 1GbE, one line is split into two packets for 32 bit mode, so its special
+			else if(dynamicrange == 32){
 				repeat=2;
 				numbytesperlineperport = 1024;
-				linesperpacket = 1; //we repeat this twice anyway
+				linesperpacket = 1; //we repeat this twice anyway for 32 bit
 			}
 
-			//cout <<"linesperpacket:" <<dec<<linesperpacket <<" numbytesperlineperport:"<<numbytesperlineperport<<endl;
 
-			//for each
-			for(irow=0;irow<256/linesperpacket;++irow){
-				//cout <<"irow:"<<irow<<endl;
+			for(irow=0;irow<EIGER_PIXELS_IN_ONE_COL/linesperpacket;++irow){
 				ibytesperpacket=0;
-				while(ibytesperpacket<1024){
-					//cout <<"ibytesperpacket:"<<ibytesperpacket<<endl;
+				while(ibytesperpacket<datapacketlength){
 					for(irepeat=0;irepeat<repeat;irepeat++){//only for 32 bit mode, take 2 packets from same port
-						//cout <<"irepeat:"<<irepeat<<" c1:"<<c1<<" retindex:"<<retindex<<endl;
 						memcpy(retval+retindex ,origVal+c1 ,numbytesperlineperport);
 						retindex += numbytesperlineperport;
 						c1 += numbytesperlineperport;
 					}
 					for(irepeat=0;irepeat<repeat;irepeat++){//only for 32 bit mode, take 2 packets from same port
-						//cout <<"irepeat:"<<irepeat<<" c2:"<<c2<<" retindex:"<<retindex<<endl;
 						memcpy(retval+retindex ,origVal+c2 ,numbytesperlineperport);
 						retindex += numbytesperlineperport;
 						c2 += numbytesperlineperport;
@@ -1438,36 +1442,24 @@ int	slsReceiverTCPIPInterface::eiger_read_frame(){
 			}
 
 
-
-
-
-
-
-/*
-			for(i=0;i<(packetsPerFrame/EIGER_MAX_PORTS);++i){
-				//cout<<i<<" p1:"<<dec<<(htonl(*(uint32_t*)((eiger_packet_header *)((uint32_t*)(origVal + (c1-8))))->num2)&0xff)<<"\t\t";
-				memcpy(retval+retindex ,origVal+c1 ,EIGER_ONE_DATA_SIZE);
-				c1 += 16+EIGER_ONE_DATA_SIZE;
-				retindex += EIGER_ONE_DATA_SIZE;
-
-				//cout<<i<<" p2:"<<dec<<(htonl(*(uint32_t*)((eiger_packet_header *)((uint32_t*)(origVal + (c2-8))))->num2)&0xff)<<endl;
-				memcpy(retval+retindex ,origVal+c2 ,EIGER_ONE_DATA_SIZE);
-				c2 += 16+EIGER_ONE_DATA_SIZE;
-				retindex += EIGER_ONE_DATA_SIZE;
+			int64_t temp;
+			for(i=0;i<(1024*(16*dynamicrange)*2)/8;i++){
+			  temp = ((uint64_t)(*(((uint64_t*)retval)+i)));
+			  temp = ((temp << 8) & 0xFF00FF00FF00FF00ULL ) | ((temp >> 8) & 0x00FF00FF00FF00FFULL );
+			  temp = ((temp << 16) & 0xFFFF0000FFFF0000ULL ) | ((temp >> 16) & 0x0000FFFF0000FFFFULL );
+			  temp =  (temp << 32) | ((temp >> 32) & 0xFFFFFFFFULL);
+			  (*(((uint64_t*)retval)+i)) = temp;
 			}
-
-*/
-
-
-	for(i=0;i<(1024*(16*dynamicrange)*2)/4;i++)
-				(*((uint32_t*)retval+i)) = htonl((uint32_t)(*((uint32_t*)retval+i)));
-
+/*
+				 ( (((val) >> 56) & 0x00000000000000FF) | (((val) >> 40) & 0x000000000000FF00) | \
+				   (((val) >> 24) & 0x0000000000FF0000) | (((val) >>  8) & 0x00000000FF000000) | \
+				   (((val) <<  8) & 0x000000FF00000000) | (((val) << 24) & 0x0000FF0000000000) | \
+				   (((val) << 40) & 0x00FF000000000000) | (((val) << 56) & 0xFF00000000000000) )
+			*/
 			/*
-			for(int j=25;j<27;++j)
-			for(int i=1000;i<1010;i=i+2)
-				//cout<<"retval:"<<dec<<i<<hex<<":\t0x"<<htonl((uint32_t)(*((uint32_t*)(retval+ (EIGER_ONE_DATA_SIZE)+i))))<<endl;
-			cout<<"retval:"<<dec<<i<<hex<<":\t0x"<<((uint16_t)(*((uint16_t*)(retval+ j* 2048+(1024)+i))))<<endl;
-*/
+			for(i=0;i<(1024*(16*dynamicrange)*2)/4;i++)
+				                (*(((uint32_t*)retval)+i)) = htonl((uint32_t)(*(((uint32_t*)retval)+i)));
+			*/
 			arg = index-1;
 		}
 	}
@@ -1481,7 +1473,7 @@ int	slsReceiverTCPIPInterface::eiger_read_frame(){
 
 
 
-//#endif
+#endif
 
 	if(ret==OK && socket->differentClients){
 		cout << "Force update" << endl;
@@ -1497,7 +1489,7 @@ int	slsReceiverTCPIPInterface::eiger_read_frame(){
 	else{
 		socket->SendDataOnly(fName,MAX_STR_LENGTH);
 		socket->SendDataOnly(&arg,sizeof(arg));
-		socket->SendDataOnly(retval,(EIGER_DATA_BYTES_CONSTANT*dynamicrange));
+		socket->SendDataOnly(retval,dataSize);
 	}
 
 	delete [] retval;
@@ -1506,6 +1498,11 @@ int	slsReceiverTCPIPInterface::eiger_read_frame(){
 
 	return ret;
 }
+
+
+
+
+
 
 
 int slsReceiverTCPIPInterface::set_read_frequency(){
@@ -1864,8 +1861,12 @@ int slsReceiverTCPIPInterface::set_dynamic_range() {
 		if(ret!=FAIL){
 			retval=slsReceiverFunctions->setDynamicRange(dr);
 			dynamicrange = dr;
-			 if(myDetectorType == EIGER)
-				 packetsPerFrame = dr*EIGER_PACKETS_PER_FRAME_COSTANT;
+			 if(myDetectorType == EIGER){
+				 if(!tenGigaEnable)
+					 packetsPerFrame = EIGER_ONE_GIGA_CONSTANT * dynamicrange * EIGER_MAX_PORTS;
+				 else
+					 packetsPerFrame = EIGER_TEN_GIGA_CONSTANT * dynamicrange * EIGER_MAX_PORTS;
+			 }
 		}
 	}
 #ifdef VERBOSE
@@ -1969,8 +1970,13 @@ int slsReceiverTCPIPInterface::enable_tengiga() {
 			sprintf(mess,"Receiver locked by %s\n", socket->lastClientIP);
 			ret=FAIL;
 		}
-		else
-			;//retval=slsReceiverFunctions->enable10GbE(val);
+		else{
+			retval=slsReceiverFunctions->enableTenGiga(val);
+			if((val!=-1) && (val != retval))
+				ret = FAIL;
+			else
+				tenGigaEnable = retval;
+		}
 	}
 #ifdef VERBOSE
 	if(ret!=FAIL)

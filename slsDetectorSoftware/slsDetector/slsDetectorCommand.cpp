@@ -3330,9 +3330,9 @@ string slsDetectorCommand::cmdDAC(int narg, char *args[], int action) {
 
   if (action==PUT_ACTION) {
 
-	if(narg > 2)
-	   if(!strcasecmp(args[2],"mv"))
-		   mode = 1;
+	  if(narg >= 3)
+		  if(!strcasecmp(args[2],"mv"))
+			  mode = 1;
 #ifdef DACS_INT
 
 	if (sscanf(args[1],"%d", &val))
@@ -3346,6 +3346,10 @@ string slsDetectorCommand::cmdDAC(int narg, char *args[], int action) {
     myDet->setDAC(val,dac,mode);
   }
   
+  else if(narg >= 2)
+	  if(!strcasecmp(args[1],"mv"))
+		  mode = 1;
+
 #ifdef DACS_INT
   sprintf(answer,"%d",myDet->setDAC(-1,dac,mode));
 #else

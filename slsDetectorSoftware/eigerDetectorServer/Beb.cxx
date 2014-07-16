@@ -51,7 +51,7 @@ void BebInfo::Print(){
 }
 
 
-Beb::Beb(){
+Beb::Beb(int arg1){
 
   send_ndata = 0;
   send_buffer_size = 1026;
@@ -74,6 +74,14 @@ Beb::Beb(){
   ll = new LocalLinkInterface(XPAR_PLB_LL_FIFO_AURORA_DUAL_CTRL_FEB_LEFT_BASEADDR);
 
   SetByteOrder();
+
+
+  new_memory = new LocalLinkInterface();
+  if(!new_memory->InitNewMemory(XPAR_PLB_LL_NEW_MEMORY, arg1))
+	  printf("New Memory FAIL\n");
+  else
+	  printf("New Memory OK\n");
+
 }
 
 Beb::~Beb(){

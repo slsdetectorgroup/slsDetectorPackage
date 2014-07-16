@@ -31,6 +31,48 @@ LocalLinkInterface::LocalLinkInterface(unsigned int ll_fifo_badr){
 
 LocalLinkInterface::~LocalLinkInterface(){};
 
+LocalLinkInterface::LocalLinkInterface(){
+         printf("Initialize new memory\n");
+ }
+
+int LocalLinkInterface::InitNewMemory (unsigned int addr, int ifg){
+	unsigned int CSP0BASE;
+	int fd;
+
+	/*fd = open("/dev/mem", O_RDWR | O_SYNC, 0);
+	if (fd == -1) {
+		printf("\nCan't find /dev/mem!\n");
+		return 0;
+	}
+	printf("/dev/mem opened\n");
+
+
+	CSP0BASE = (u_int32_t)mmap(0, 0x1000, PROT_READ|PROT_WRITE, MAP_FILE|MAP_SHARED, fd, addr);
+	if (CSP0BASE == (u_int32_t)MAP_FAILED) {
+		printf("\nCan't map memmory area!!\n");
+		return 0;
+	}
+	printf("CSP0 mapped\n");
+
+
+	volatile u_int8_t *ptr1;
+
+	ptr1=(u_int8_t*)(CSP0BASE);
+
+	printf("pointer val=%x\n",(void*)ptr1);
+
+	printf("ifg_control=%02x\n",*ptr1);
+
+	*ptr1=ifg;
+
+	printf("ifg_control new=%02x\n",*ptr1);
+
+	close(fd);
+*/
+	return 1;
+}
+
+
 
 bool LocalLinkInterface::Init(unsigned int ll_fifo_badr){
     int fd; 

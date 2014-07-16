@@ -31,6 +31,9 @@ class LocalLinkInterface: public HardwareIO{ //
 
   int  Test(unsigned int buffer_len, void *buffer);
 
+  LocalLinkInterface();
+  int InitNewMemory (unsigned int addr, int ifg);
+
   /*
   bool FiFoReset(unsigned int numb);
   int  FifoSend(unsigned int numb, unsigned int frame_len, void *buffer);

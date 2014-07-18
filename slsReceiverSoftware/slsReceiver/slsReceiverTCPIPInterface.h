@@ -9,7 +9,7 @@
 #include "sls_receiver_defs.h"
 #include "receiver_defs.h"
 #include "MySocketTCP.h"
-#include "slsReceiverUDPFunctions.h"
+#include "slsReceiverBase.h"
 
 
 
@@ -26,8 +26,9 @@ public:
 	 * @param argc from command line
 	 * @param argv from command line
 	 * @param succecc socket creation was successfull
+	 * rbase pointer to the receiver base
 	 */
-	slsReceiverTCPIPInterface(int argc, char *argv[], int &success);
+	slsReceiverTCPIPInterface(int argc, char *argv[], int &success, slsReceiverBase* rbase);
 
 	/**
 	 * Starts listening on the TCP port for client comminication
@@ -48,7 +49,7 @@ public:
 	static void staticCloseFile(int p);
 
 	/** gets version */
-	int64_t get_version();
+	int64_t getReceiverVersion();
 
 	/**
 	   callback arguments are
@@ -64,7 +65,7 @@ public:
 
 	 */
 
-	void registerCallBackStartAcquisition(int (*func)(char*, char*,int, int, void*),void *arg){slsReceiverFunctions->registerCallBackStartAcquisition(func,arg);};;
+	void registerCallBackStartAcquisition(int (*func)(char*, char*,int, int, void*),void *arg){receiverBase->registerCallBackStartAcquisition(func,arg);};;
 
 
 	/**
@@ -74,7 +75,7 @@ public:
 	 */
 
 
-	void registerCallBackAcquisitionFinished(void (*func)(int, void*),void *arg){slsReceiverFunctions->registerCallBackAcquisitionFinished(func,arg);};
+	void registerCallBackAcquisitionFinished(void (*func)(int, void*),void *arg){receiverBase->registerCallBackAcquisitionFinished(func,arg);};
 
 
 
@@ -87,7 +88,7 @@ public:
 	  guidatapointer (NULL, no data required)
 	 */
 
-	void registerCallBackRawDataReady(void (*func)(int, char*, int, FILE*, char*, void*),void *arg){slsReceiverFunctions->registerCallBackRawDataReady(func,arg);};
+	void registerCallBackRawDataReady(void (*func)(int, char*, int, FILE*, char*, void*),void *arg){receiverBase->registerCallBackRawDataReady(func,arg);};
 
 
 private:
@@ -224,8 +225,8 @@ private:
 	/** detector type */
 	detectorType myDetectorType;
 
-	/** slsReceiverUDPFunctions object */
-	slsReceiverUDPFunctions *slsReceiverFunctions;
+	/** slsReceiverBase object */
+	slsReceiverBase *receiverBase;
 
 	/** Number of functions */
 	static const int numberOfFunctions = 256;

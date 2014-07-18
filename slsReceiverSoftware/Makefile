@@ -14,7 +14,7 @@ DFLAGS= -g -DDACS_INT  -DSLS_RECEIVER_UDP_FUNCTIONS
 INCLUDES?= -I. -Iincludes -IMySocketTCP -IslsReceiver -IslsDetectorCalibration -IslsReceiver/eigerReceiver -I$(ASM) 
 #-IslsReceiverInterface
 
-SRC_CLNT= MySocketTCP/MySocketTCP.cpp  slsReceiver/slsReceiverUDPFunctions.cpp  slsReceiver/slsReceiverTCPIPInterface.cpp   slsReceiver/slsReceiverUsers.cpp 
+SRC_CLNT= MySocketTCP/MySocketTCP.cpp slsReceiver/slsReceiver.cpp slsReceiver/slsReceiverUDPFunctions.cpp  slsReceiver/slsReceiverTCPIPInterface.cpp   slsReceiver/slsReceiverUsers.cpp 
 #slsReceiverInterface/receiverInterface.cpp
 
 OBJS = $(SRC_CLNT:.cpp=.o) 
@@ -44,6 +44,7 @@ endif
 package:  eigerReceiver $(OBJS) $(DESTDIR)/libSlsReceiver.so $(DESTDIR)/libSlsReceiver.a 
 
 eigerReceiver:
+	echo "src client:" $(SRC_CLNT)
 	cd slsReceiver && make eigerReceiver
 
 $(DESTDIR)/libSlsReceiver.so: $(OBJS) 

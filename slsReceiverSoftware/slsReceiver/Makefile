@@ -14,7 +14,7 @@ LDFLAGRXR 		+=	-lm  -lstdc++
 
 
 INCLUDES	?= 	-I ../MySocketTCP  -I ../slsDetectorCalibration -I ../includes -I eigerReceiver -I . 
-SRC_CLNT	= 	slsReceiver.cpp 
+SRC_CLNT	= 	main.cpp 
 
 
 INSTMODE	= 	0777

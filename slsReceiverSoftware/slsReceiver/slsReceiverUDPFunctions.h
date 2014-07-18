@@ -14,7 +14,9 @@
 #include "singlePhotonDetector.h"
 #include "slsReceiverData.h"
 #include "moenchCommonMode.h"
-#include "eigerReceiver.h"
+
+#include "slsReceiverBase.h"
+
 
 #ifdef MYROOT1
 #include <TTree.h>
@@ -32,7 +34,7 @@
  * @short does all the functions for a receiver, set/get parameters, start/stop etc.
  */
 
-class slsReceiverUDPFunctions : private virtual slsReceiverDefs  {
+class slsReceiverUDPFunctions : private virtual slsReceiverDefs, public slsReceiverBase  {
 
 public:
 	/**
@@ -113,24 +115,24 @@ public:
 	/**
 	 * Returns File Path
 	 */
-	char* getFilePath();
+	char* getFilePath() const;
 
 	/**
 	 * Set File Path
 	 * @param c file path
 	 */
-	char* setFilePath(char c[]);
+	char* setFilePath(const char c[]);
 
 	/**
 	 * Returns File Name
 	 */
-	char* getFileName();
+	char* getFileName() const;
 
 	/**
 	 * Set File Name (without frame index, file index and extension)
 	 * @param c file name
 	 */
-	char* setFileName(char c[]);
+	char* setFileName(const char c[]);
 
 	/**
 	 * Returns File Index
@@ -161,22 +163,45 @@ public:
 	 * @param i enable
 	 * Returns enable over write
 	 */
-	int enableOverwrite(int i);
+	int setEnableOverwrite(int i);
 
+	/**
+	* Returns file write enable
+	* 1: YES 0: NO
+	*/
+	int getEnableFileWrite() const;
 
+	/**
+	* Returns file over write enable
+	* 1: YES 0: NO
+	*/
+	int getEnableOverwrite() const;
 
 //other parameters
 
 	/**
+	 * abort acquisition with minimum damage: close open files, cleanup.
+	 * does nothing if state already is 'idle'
+	 */
+	void abort() {};
+
+	/**
 	 * Returns status of receiver: idle, running or error
 	 */
-	runStatus getStatus();
+	runStatus getStatus() const;
 
 	/**
 	 * Set detector hostname
 	 * @param c hostname
 	 */
-	char* setDetectorHostname(char c[]);
+	void initialize(const char *detectorHostName);
+
+	 /* Returns detector hostname
+	 /returns hostname
+	  * caller needs to deallocate the returned char array.
+	  * if uninitialized, it must return NULL
+	 */
+	char *getDetectorHostname() const;
 
 	/**
 	 * Set Ethernet Interface or IP to listen to
@@ -188,15 +213,32 @@ public:
 	 */
 	void setUDPPortNo(int p);
 
+	/*
+	 * Returns number of frames to receive
+	 * This is the number of frames to expect to receiver from the detector.
+	 * The data receiver will change from running to idle when it got this number of frames
+	 */
+	int getNumberOfFrames() const;
+
 	/**
 	 * set frame number if a positive number
 	 */
 	int32_t setNumberOfFrames(int32_t fnum);
 
 	/**
+	 * Returns scan tag
+	 */
+	int getScanTag() const;
+
+	/**
 	 * set scan tag if its is a positive number
 	 */
 	int32_t setScanTag(int32_t stag);
+
+	/**
+	 * Returns the number of bits per pixel
+	 */
+	int getDynamicRange() const;
 
 	/**
 	 * set dynamic range if its is a positive number
@@ -439,9 +481,6 @@ private:
 
 	/** max number of writer threads */
 	const static int MAX_NUM_WRITER_THREADS = 15;
-
-	/** Eiger Receiver	 */
-	EigerReceiver *receiver;
 
 	/** detector type */
 	detectorType myDetectorType;

@@ -30,7 +30,6 @@ using namespace std;
 
 
 slsReceiverUDPFunctions::slsReceiverUDPFunctions():
-		receiver(NULL),
 		thread_started(0),
 		eth(NULL),
 		latestData(NULL),
@@ -261,8 +260,6 @@ int slsReceiverUDPFunctions::setDetectorType(detectorType det){
 		packetIndexMask 	= MOENCH_PACKET_INDEX_MASK;
 	}
 	else if(myDetectorType == EIGER){
-#ifndef EIGERSLS
-		cout << "SLS Eiger Receiver" << endl;
 		fifosize 			= EIGER_FIFO_SIZE;
 		packetsPerFrame 	= EIGER_ONE_GIGA_CONSTANT * dynamicRange * EIGER_MAX_PORTS;
 		onePacketSize		= EIGER_ONE_GIGA_ONE_PACKET_SIZE;
@@ -280,14 +277,6 @@ int slsReceiverUDPFunctions::setDetectorType(detectorType det){
 			createListeningThreads(true);
 
 		numListeningThreads = MAX_NUM_LISTENING_THREADS;
-
-#else
-		cout << "Heiner's Receiver" << endl;
-		if(receiver == NULL)
-			receiver = EigerReceiver::create();
-		receiver->setFileName(fileName);
-#endif
-
 	}
 	latestData = new char[frameSize];
 
@@ -360,23 +349,17 @@ void slsReceiverUDPFunctions::resetTotalFramesCaught(){
 
 /*file parameters*/
 
-char* slsReceiverUDPFunctions::getFilePath(){
-	if(receiver != NULL)
-		return receiver->getFilePath();
-	else
-		return filePath;
+char* slsReceiverUDPFunctions::getFilePath() const{
+		return (char*)filePath;
 }
 
-char* slsReceiverUDPFunctions::setFilePath(char c[]){
+char* slsReceiverUDPFunctions::setFilePath(const char c[]){
 	if(strlen(c)){
 		//check if filepath exists
 		struct stat st;
-		if(stat(c,&st) == 0){
-			if(receiver != NULL)
-				receiver->setFilePath(c);
-			else
-				strcpy(filePath,c);
-		}else{
+		if(stat(c,&st) == 0)
+			strcpy(filePath,c);
+		else{
 			strcpy(filePath,"");
 			cout << "FilePath does not exist:" << filePath << endl;
 		}
@@ -385,23 +368,14 @@ char* slsReceiverUDPFunctions::setFilePath(char c[]){
 }
 
 
-char* slsReceiverUDPFunctions::getFileName(){
-	if(receiver != NULL)
-		return receiver->getFileName();
-	else
-		return fileName;
+char* slsReceiverUDPFunctions::getFileName() const{
+	return (char*)fileName;
 }
 
-char* slsReceiverUDPFunctions::setFileName(char c[]){
-	if(strlen(c)){
-		if(receiver != NULL)
-			receiver->setFileName(c);
-		else
-			strcpy(fileName,c);
-
-	}
+char* slsReceiverUDPFunctions::setFileName(const char c[]){
+	if(strlen(c))
+		strcpy(fileName,c);
 	return getFileName();
-
 }
 
 
@@ -422,66 +396,44 @@ int slsReceiverUDPFunctions::setFrameIndexNeeded(int i){
 }
 
 
+int slsReceiverUDPFunctions::getEnableFileWrite()  const{
+	return enableFileWrite;
+}
+
 int slsReceiverUDPFunctions::setEnableFileWrite(int i){
-	if(i!=-1){
-		if(receiver != NULL)
-			receiver->setEnableFileWrite(i);
-		else
-			enableFileWrite=i;
-
-	}
-	if(receiver != NULL)
-		return  receiver->getEnableFileWrite();
-	else
-		return enableFileWrite;
-
+	enableFileWrite=i;
+	return getEnableFileWrite();
 }
 
-
-
-int slsReceiverUDPFunctions::enableOverwrite(int i){
-	if(i!=-1){
-		if(receiver != NULL)
-			receiver->setEnableOverwrite(i);
-		else
-			overwrite=i;
-
-	}
-	if(receiver != NULL)
-		return  receiver->getEnableOverwrite();
-	else
-		return overwrite;
-
+int slsReceiverUDPFunctions::getEnableOverwrite()  const{
+	return overwrite;
 }
+
+int slsReceiverUDPFunctions::setEnableOverwrite(int i){
+	overwrite=i;
+	return getEnableOverwrite();
+}
+
 
 
 
 
 /*other parameters*/
 
-slsReceiverDefs::runStatus slsReceiverUDPFunctions::getStatus(){
-	if(receiver != NULL)
-		return receiver->getStatus();
-	else
-		return status;
+slsReceiverDefs::runStatus slsReceiverUDPFunctions::getStatus() const{
+	return status;
 }
 
 
-char* slsReceiverUDPFunctions::setDetectorHostname(char c[]){
-	if(strlen(c)){
-		if(receiver != NULL){
-			if(receiver->getDetectorHostname()== NULL)
-				receiver->initialize(c);
-		}else
-			strcpy(detHostname,c);
-	}
-
-	if(receiver != NULL)
-		return receiver->getDetectorHostname();
-	else
-		return detHostname;
+void slsReceiverUDPFunctions::initialize(const char *detectorHostName){
+	if(strlen(detectorHostName))
+		strcpy(detHostname,detectorHostName);
 }
 
+
+char *slsReceiverUDPFunctions::getDetectorHostname() const{
+	return (char*)detHostname;
+}
 
 void slsReceiverUDPFunctions::setEthernetInterface(char* c){
 	strcpy(eth,c);
@@ -495,32 +447,33 @@ void slsReceiverUDPFunctions::setUDPPortNo(int p){
 }
 
 
-int32_t slsReceiverUDPFunctions::setNumberOfFrames(int32_t fnum){
-	if(fnum >= 0){
-		if(receiver != NULL)
-			receiver->setNumberOfFrames(fnum);
-		else
-			numberOfFrames = fnum;
-	}
-
-	if(receiver != NULL)
-		return receiver->getNumberOfFrames();
-	else
-		return numberOfFrames;
+int slsReceiverUDPFunctions::getNumberOfFrames() const {
+	return numberOfFrames;
 }
 
-int32_t slsReceiverUDPFunctions::setScanTag(int32_t stag){
-	if(stag >= 0){
-		if(receiver != NULL)
-			receiver->setScanTag(stag);
-		else
-			scanTag = stag;
-	}
 
-	if(receiver != NULL)
-		return receiver->getScanTag();
-	else
-		return scanTag;
+int32_t slsReceiverUDPFunctions::setNumberOfFrames(int32_t fnum){
+	if(fnum >= 0)
+		numberOfFrames = fnum;
+
+	return getNumberOfFrames();
+}
+
+int slsReceiverUDPFunctions::getScanTag() const{
+	return scanTag;
+}
+
+
+int32_t slsReceiverUDPFunctions::setScanTag(int32_t stag){
+	if(stag >= 0)
+		scanTag = stag;
+
+	return getScanTag();
+}
+
+
+int slsReceiverUDPFunctions::getDynamicRange() const{
+	return dynamicRange;
 }
 
 int32_t slsReceiverUDPFunctions::setDynamicRange(int32_t dr){
@@ -528,63 +481,57 @@ int32_t slsReceiverUDPFunctions::setDynamicRange(int32_t dr){
 
 	int olddr = dynamicRange;
 	if(dr >= 0){
-		if(receiver != NULL)
-			receiver->setDynamicRange(dr);
-		else{
-			dynamicRange = dr;
+		dynamicRange = dr;
 
-			if(myDetectorType == EIGER){
+		if(myDetectorType == EIGER){
 
 
-				if(!tengigaEnable)
-					packetsPerFrame 	= EIGER_ONE_GIGA_CONSTANT * dynamicRange * EIGER_MAX_PORTS;
-				else
-					packetsPerFrame 	= EIGER_TEN_GIGA_CONSTANT * dynamicRange * EIGER_MAX_PORTS;
-				frameSize			= onePacketSize * packetsPerFrame;
-				bufferSize 			= (frameSize/EIGER_MAX_PORTS) + EIGER_HEADER_LENGTH;//everything one port gets (img header plus packets)
-				maxPacketsPerFile 	= EIGER_MAX_FRAMES_PER_FILE * packetsPerFrame;
+			if(!tengigaEnable)
+				packetsPerFrame 	= EIGER_ONE_GIGA_CONSTANT * dynamicRange * EIGER_MAX_PORTS;
+			else
+				packetsPerFrame 	= EIGER_TEN_GIGA_CONSTANT * dynamicRange * EIGER_MAX_PORTS;
+			frameSize			= onePacketSize * packetsPerFrame;
+			bufferSize 			= (frameSize/EIGER_MAX_PORTS) + EIGER_HEADER_LENGTH;//everything one port gets (img header plus packets)
+			maxPacketsPerFile 	= EIGER_MAX_FRAMES_PER_FILE * packetsPerFrame;
 
 
 
-				if(olddr != dr){
+			if(olddr != dr){
 
-					//del
-					if(thread_started){
-						createListeningThreads(true);
-						createWriterThreads(true);
-					}
-					for(int i=0;i<numListeningThreads;i++){
-						if(mem0[i])			{free(mem0[i]);			mem0[i] = NULL;}
-						if(fifo[i])			{delete fifo[i];		fifo[i] = NULL;}
-						if(fifoFree[i])		{delete fifoFree[i];	fifoFree[i] = NULL;}
-						buffer[i] = NULL;
-					}
-					if(latestData) 		{delete [] latestData;	latestData = NULL;}
-					latestData = new char[frameSize];
-
-					numJobsPerThread = -1;
-					setupFifoStructure();
-
-					if(createListeningThreads() == FAIL){
-						cout << "ERROR: Could not create listening thread" << endl;
-						exit (-1);
-					}
-
-					if(createWriterThreads() == FAIL){
-						cout << "ERROR: Could not create writer threads" << endl;
-						exit (-1);
-					}
-
-					setThreadPriorities();
+				//del
+				if(thread_started){
+					createListeningThreads(true);
+					createWriterThreads(true);
 				}
+				for(int i=0;i<numListeningThreads;i++){
+					if(mem0[i])			{free(mem0[i]);			mem0[i] = NULL;}
+					if(fifo[i])			{delete fifo[i];		fifo[i] = NULL;}
+					if(fifoFree[i])		{delete fifoFree[i];	fifoFree[i] = NULL;}
+					buffer[i] = NULL;
+				}
+				if(latestData) 		{delete [] latestData;	latestData = NULL;}
+				latestData = new char[frameSize];
+
+				numJobsPerThread = -1;
+				setupFifoStructure();
+
+				if(createListeningThreads() == FAIL){
+					cout << "ERROR: Could not create listening thread" << endl;
+					exit (-1);
+				}
+
+				if(createWriterThreads() == FAIL){
+					cout << "ERROR: Could not create writer threads" << endl;
+					exit (-1);
+				}
+
+				setThreadPriorities();
 			}
 		}
+
 	}
 
-	if(receiver != NULL)
-		return receiver->getDynamicRange();
-	else
-		return dynamicRange;
+	return getDynamicRange();
 }
 
 
@@ -634,8 +581,7 @@ int64_t slsReceiverUDPFunctions::setAcquisitionPeriod(int64_t index){
 	if(index >= 0){
 		if(index != acquisitionPeriod){
 			acquisitionPeriod = index;
-			if(receiver != NULL)
-				setupFifoStructure();
+			setupFifoStructure();
 		}
 	}
 	return acquisitionPeriod;
@@ -751,9 +697,6 @@ void slsReceiverUDPFunctions::setupFilter(){
 
 
 void slsReceiverUDPFunctions::setupFifoStructure(){
-
-	if(receiver != NULL)
-		return;
 
 	int64_t i;
 	int oldn = numJobsPerThread;
@@ -1368,9 +1311,6 @@ void slsReceiverUDPFunctions::closeFile(int ithr){
 int slsReceiverUDPFunctions::startReceiver(char message[]){
 	int i;
 
-	if(receiver != NULL)
-		return receiver->startReceiver(message);
-
 
 // #ifdef VERBOSE
 	cout << "Starting Receiver" << endl;
@@ -1435,9 +1375,6 @@ int slsReceiverUDPFunctions::startReceiver(char message[]){
 
 int slsReceiverUDPFunctions::stopReceiver(){
 
-	if(receiver != NULL)
-		return receiver->stopReceiver();
-
 
 //#ifdef VERBOSE
 	cout << "Stopping Receiver" << endl;
@@ -1468,10 +1405,6 @@ int slsReceiverUDPFunctions::stopReceiver(){
 
 void slsReceiverUDPFunctions::startReadout(){
 
-	if(receiver != NULL){
-		receiver->stopReceiver();
-		return;
-	}
 	//#ifdef VERBOSE
 		cout << "Start Receiver Readout" << endl;
 	//#endif
@@ -2283,74 +2216,68 @@ int slsReceiverUDPFunctions::enableTenGiga(int enable){
 
 	int oldtengiga = tengigaEnable;
 	if(enable >= 0){
-		if(receiver != NULL)
-			;/*receiver->setTenGigaBitEthernet(enable);*/
-		else{
-			tengigaEnable = enable;
 
-			if(myDetectorType == EIGER){
+		tengigaEnable = enable;
 
-				if(!tengigaEnable){
-					packetsPerFrame = EIGER_ONE_GIGA_CONSTANT * dynamicRange * EIGER_MAX_PORTS;
-					onePacketSize  	= EIGER_ONE_GIGA_ONE_PACKET_SIZE;
-					maxPacketsPerFile 	= EIGER_MAX_FRAMES_PER_FILE * packetsPerFrame;
-				}else{
-					packetsPerFrame = EIGER_TEN_GIGA_CONSTANT * dynamicRange * EIGER_MAX_PORTS;
-					onePacketSize  	= EIGER_TEN_GIGA_ONE_PACKET_SIZE;
-					maxPacketsPerFile 	= EIGER_MAX_FRAMES_PER_FILE * packetsPerFrame*4;
+		if(myDetectorType == EIGER){
+
+			if(!tengigaEnable){
+				packetsPerFrame = EIGER_ONE_GIGA_CONSTANT * dynamicRange * EIGER_MAX_PORTS;
+				onePacketSize  	= EIGER_ONE_GIGA_ONE_PACKET_SIZE;
+				maxPacketsPerFile 	= EIGER_MAX_FRAMES_PER_FILE * packetsPerFrame;
+			}else{
+				packetsPerFrame = EIGER_TEN_GIGA_CONSTANT * dynamicRange * EIGER_MAX_PORTS;
+				onePacketSize  	= EIGER_TEN_GIGA_ONE_PACKET_SIZE;
+				maxPacketsPerFile 	= EIGER_MAX_FRAMES_PER_FILE * packetsPerFrame*4;
+			}
+			frameSize			= onePacketSize * packetsPerFrame;
+			bufferSize 			= (frameSize/EIGER_MAX_PORTS) + EIGER_HEADER_LENGTH;//everything one port gets (img header plus packets)
+			//maxPacketsPerFile 	= EIGER_MAX_FRAMES_PER_FILE * packetsPerFrame;
+
+
+			cout<<"packetsPerFrame:"<<dec<<packetsPerFrame<<endl;
+			cout<<"onePacketSize:"<<onePacketSize<<endl;
+			cout<<"framsize:"<<frameSize<<endl;
+			cout<<"bufferSize:"<<bufferSize<<endl;
+			cout<<"maxPacketsPerFile:"<<maxPacketsPerFile<<endl;
+
+
+			if(oldtengiga != enable){
+
+				//del
+				if(thread_started){
+					createListeningThreads(true);
+					createWriterThreads(true);
 				}
-				frameSize			= onePacketSize * packetsPerFrame;
-				bufferSize 			= (frameSize/EIGER_MAX_PORTS) + EIGER_HEADER_LENGTH;//everything one port gets (img header plus packets)
-				//maxPacketsPerFile 	= EIGER_MAX_FRAMES_PER_FILE * packetsPerFrame;
-
-
-				cout<<"packetsPerFrame:"<<dec<<packetsPerFrame<<endl;
-				cout<<"onePacketSize:"<<onePacketSize<<endl;
-				cout<<"framsize:"<<frameSize<<endl;
-				cout<<"bufferSize:"<<bufferSize<<endl;
-				cout<<"maxPacketsPerFile:"<<maxPacketsPerFile<<endl;
-
-
-				if(oldtengiga != enable){
-
-					//del
-					if(thread_started){
-						createListeningThreads(true);
-						createWriterThreads(true);
-					}
-					for(int i=0;i<numListeningThreads;i++){
-						if(mem0[i])			{free(mem0[i]);			mem0[i] = NULL;}
-						if(fifo[i])			{delete fifo[i];		fifo[i] = NULL;}
-						if(fifoFree[i])		{delete fifoFree[i];	fifoFree[i] = NULL;}
-						buffer[i] = NULL;
-					}
-					if(latestData) 		{delete [] latestData;	latestData = NULL;}
-					latestData = new char[frameSize];
-
-					numJobsPerThread = -1;
-					setupFifoStructure();
-
-					if(createListeningThreads() == FAIL){
-						cout << "ERROR: Could not create listening thread" << endl;
-						exit (-1);
-					}
-
-					if(createWriterThreads() == FAIL){
-						cout << "ERROR: Could not create writer threads" << endl;
-						exit (-1);
-					}
-
-					setThreadPriorities();
+				for(int i=0;i<numListeningThreads;i++){
+					if(mem0[i])			{free(mem0[i]);			mem0[i] = NULL;}
+					if(fifo[i])			{delete fifo[i];		fifo[i] = NULL;}
+					if(fifoFree[i])		{delete fifoFree[i];	fifoFree[i] = NULL;}
+					buffer[i] = NULL;
 				}
+				if(latestData) 		{delete [] latestData;	latestData = NULL;}
+				latestData = new char[frameSize];
+
+				numJobsPerThread = -1;
+				setupFifoStructure();
+
+				if(createListeningThreads() == FAIL){
+					cout << "ERROR: Could not create listening thread" << endl;
+					exit (-1);
+				}
+
+				if(createWriterThreads() == FAIL){
+					cout << "ERROR: Could not create writer threads" << endl;
+					exit (-1);
+				}
+
+				setThreadPriorities();
 			}
 		}
+
 	}
 
-	if(receiver != NULL)
-		;/*return receiver->getTenGigaBitEthernet();*/
-	else
-		return tengigaEnable;
-
+	return tengigaEnable;
 }
 
 

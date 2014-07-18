@@ -1,10 +1,10 @@
 #include "slsReceiverUsers.h"
-#include "slsReceiverTCPIPInterface.h"
+#include "slsReceiver.h"
 
-slsReceiverTCPIPInterface* slsReceiverUsers::receiver(NULL);
+slsReceiver* slsReceiverUsers::receiver(NULL);
 
 slsReceiverUsers::slsReceiverUsers(int argc, char *argv[], int &success) {
-	slsReceiverUsers::receiver=new slsReceiverTCPIPInterface(argc, argv, success);
+	slsReceiverUsers::receiver=new slsReceiver(argc, argv, success);
 }
 
 slsReceiverUsers::~slsReceiverUsers() {
@@ -25,7 +25,7 @@ void slsReceiverUsers::closeFile(int p) {
 }
 
 int64_t slsReceiverUsers::getReceiverVersion(){
-	slsReceiverUsers::receiver->get_version();
+	slsReceiverUsers::receiver->getReceiverVersion();
 }
 
 

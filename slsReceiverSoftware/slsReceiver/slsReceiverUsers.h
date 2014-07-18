@@ -5,7 +5,8 @@
 #include <stdio.h>
 #include <stdint.h>
 
-class slsReceiverTCPIPInterface;
+
+class slsReceiver;
 
   /** 
 @short Class for implementing the SLS data receiver in the users application. Callbacks can be defined for processing and/or saving data
@@ -84,7 +85,7 @@ public:
 	void registerCallBackRawDataReady(void (*func)(int framenumber, char* datapointer, int datasize, FILE* filedescriptor, char* guidatapointer, void*),void *arg);
 
 	// made static to close thread files with ctrl+c
-	static slsReceiverTCPIPInterface* receiver;
+	static slsReceiver* receiver;
 };
 
 

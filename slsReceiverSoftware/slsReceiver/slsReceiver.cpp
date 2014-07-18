@@ -1,90 +1,60 @@
-/* A simple server in the internet domain using TCP
-   The port number is passed as an argument */
+/********************************************//**
+ * @file slsReceiver.cpp
+ * @short creates the UDP and TCP class objects
+ ***********************************************/
 
-#include "sls_receiver_defs.h"
-#include "slsReceiverUsers.h"
-
-#include <iostream>
-#include <string.h>
-using namespace std;
-
+#include "slsReceiver.h"
+#include "slsReceiverUDPFunctions.h"
+#include "eigerReceiver.h"
 
 
+slsReceiver::slsReceiver(int argc, char *argv[], int &success){
+	//creating base receiver
+	cout << "SLS Receiver" << endl;
+	receiverBase = new slsReceiverUDPFunctions();
 
-
-
-int main(int argc, char *argv[]) {
-	int ret = slsReceiverDefs::OK;
-
-	slsReceiverUsers *user = new slsReceiverUsers(argc, argv, ret);
-
-	if(ret==slsReceiverDefs::FAIL)
-		return -1;
-
-
-	//register callbacks
-
-
-	/**
-	   callback arguments are
-	   filepath
-	   filename
-	   fileindex
-	   datasize
-
-	   return value is 
-	   0 raw data ready callback takes care of open,close,write file
-	   1 callback writes file, we have to open, close it
-	   2 we open, close, write file, callback does not do anything
-
-
-	   registerCallBackStartAcquisition(int (*func)(char*, char*,int, int, void*),void *arg);
-	 */
-
-	//receiver->registerCallBackStartAcquisition(func,arg);
-
-
-	/**
-	  callback argument is
-	  total farmes caught
-	  registerCallBackAcquisitionFinished(void (*func)(int, void*),void *arg);
-	 */
-
-
-	//receiver->registerCallBackAcquisitionFinished(func,arg);
-
-
-
-	/**
-	  args to raw data ready callback are
-	  framenum
-	  datapointer
-	  file descriptor
-	  guidatapointer (NULL, no data required)
-
-	  NEVER DELETE THE DATA POINTER
-	  REMEMBER THAT THE CALLBACK IS BLOCKING
-
-	  registerCallBackRawDataReady(void (*func)(int, char*, FILE*, char*, void*),void *arg);
-
-	 */
-
-	//receiver->registerCallBackRawDataReady(func,arg);
-
-
-
-	//start tcp server thread
-	if(user->start() == slsReceiverDefs::OK){
-		string str;
-		cin>>str;
-		//wait and look for an exit keyword
-		while(str.find("exit") == string::npos)
-			cin>>str;
-		//stop tcp server thread, stop udp socket
-		user->stop();
-	}
-
-	cout << "Goodbye!" << endl;
-	return 0;
+	//tcp ip interface
+	tcpipInterface = new slsReceiverTCPIPInterface(argc,argv,success,receiverBase);
 }
+
+
+slsReceiver::~slsReceiver() {if(receiverBase) delete receiverBase; if(tcpipInterface) delete tcpipInterface;}
+
+
+int slsReceiver::start() {
+	return tcpipInterface->start();
+}
+
+
+void slsReceiver::stop() {
+	tcpipInterface->stop();
+}
+
+
+void slsReceiver::closeFile(int p) {
+	tcpipInterface->closeFile(p);
+}
+
+
+
+int64_t slsReceiver::getReceiverVersion(){
+	tcpipInterface->getReceiverVersion();
+}
+
+
+void slsReceiver::registerCallBackStartAcquisition(int (*func)(char*, char*,int, int, void*),void *arg){
+	tcpipInterface->registerCallBackStartAcquisition(func,arg);
+}
+
+
+
+void slsReceiver::registerCallBackAcquisitionFinished(void (*func)(int, void*),void *arg){
+	tcpipInterface->registerCallBackAcquisitionFinished(func,arg);
+}
+
+
+void slsReceiver::registerCallBackRawDataReady(void (*func)(int, char*, int, FILE*, char*, void*),void *arg){
+	tcpipInterface->registerCallBackRawDataReady(func,arg);
+}
+
 

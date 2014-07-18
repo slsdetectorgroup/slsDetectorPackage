@@ -51,44 +51,44 @@ public:
 	/** gets version */
 	int64_t getReceiverVersion();
 
-	/**
-	   callback arguments are
-	   filepath
-	   filename
-	   fileindex
-	   data size
+/* 	/\** */
+/* 	   callback arguments are */
+/* 	   filepath */
+/* 	   filename */
+/* 	   fileindex */
+/* 	   data size */
 
-	   return value is 
-	   0 callback takes care of open,close,wrie file
-	   1 callback writes file, we have to open, close it
-	   2 we open, close, write file, callback does not do anything
+/* 	   return value is  */
+/* 	   0 callback takes care of open,close,wrie file */
+/* 	   1 callback writes file, we have to open, close it */
+/* 	   2 we open, close, write file, callback does not do anything */
 
-	 */
+/* 	 *\/ */
 
-	void registerCallBackStartAcquisition(int (*func)(char*, char*,int, int, void*),void *arg){receiverBase->registerCallBackStartAcquisition(func,arg);};;
-
-
-	/**
-	  callback argument is
-	  toatal farmes caught
-
-	 */
+/* 	void registerCallBackStartAcquisition(int (*func)(char*, char*,int, int, void*),void *arg){receiverBase->registerCallBackStartAcquisition(func,arg);};; */
 
 
-	void registerCallBackAcquisitionFinished(void (*func)(int, void*),void *arg){receiverBase->registerCallBackAcquisitionFinished(func,arg);};
+/* 	/\** */
+/* 	  callback argument is */
+/* 	  toatal farmes caught */
+
+/* 	 *\/ */
+
+
+/* 	void registerCallBackAcquisitionFinished(void (*func)(int, void*),void *arg){receiverBase->registerCallBackAcquisitionFinished(func,arg);}; */
 
 
 
-	/**
-	  args to raw data ready callback are
-	  framenum
-	  datapointer
-	  datasize in bytes
-	  file descriptor
-	  guidatapointer (NULL, no data required)
-	 */
+/* 	/\** */
+/* 	  args to raw data ready callback are */
+/* 	  framenum */
+/* 	  datapointer */
+/* 	  datasize in bytes */
+/* 	  file descriptor */
+/* 	  guidatapointer (NULL, no data required) */
+/* 	 *\/ */
 
-	void registerCallBackRawDataReady(void (*func)(int, char*, int, FILE*, char*, void*),void *arg){receiverBase->registerCallBackRawDataReady(func,arg);};
+/* 	void registerCallBackRawDataReady(void (*func)(int, char*, int, FILE*, char*, void*),void *arg){receiverBase->registerCallBackRawDataReady(func,arg);}; */
 
 
 private:

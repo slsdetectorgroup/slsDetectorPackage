@@ -43,18 +43,21 @@ int64_t slsReceiver::getReceiverVersion(){
 
 
 void slsReceiver::registerCallBackStartAcquisition(int (*func)(char*, char*,int, int, void*),void *arg){
-	tcpipInterface->registerCallBackStartAcquisition(func,arg);
+  //tcpipInterface
+	  receiverBase->registerCallBackStartAcquisition(func,arg);
 }
 
 
 
 void slsReceiver::registerCallBackAcquisitionFinished(void (*func)(int, void*),void *arg){
-	tcpipInterface->registerCallBackAcquisitionFinished(func,arg);
+  //tcpipInterface
+	  receiverBase->registerCallBackAcquisitionFinished(func,arg);
 }
 
 
 void slsReceiver::registerCallBackRawDataReady(void (*func)(int, char*, int, FILE*, char*, void*),void *arg){
-	tcpipInterface->registerCallBackRawDataReady(func,arg);
+  //tcpipInterface
+	  receiverBase->registerCallBackRawDataReady(func,arg);
 }
 
 

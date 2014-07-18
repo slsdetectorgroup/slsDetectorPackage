@@ -30,6 +30,7 @@ enum cmd_string {evNotFound,
 	evSetDACValue,evGetDACValue,evSetDACVoltage,evGetDACVoltage,evSetHighVoltage,//evGetHighVoltage,
 
 	evSetTrimBits,
+	evGetTrimBits,
 	//evLoadTrimBitFile,
 
 	evSetBitMode,
@@ -63,6 +64,7 @@ void init(){
 	enum_map["getdacvoltage"]         = evGetDACVoltage;
 	enum_map["sethighvoltage"]        = evSetHighVoltage;
 	enum_map["settrimbits"]           = evSetTrimBits;
+	enum_map["gettrimbits"]           = evGetTrimBits;
 	//  enum_map["loadtrimbitfile"]        = evLoadTrimBitFile;
 	enum_map["setbitmode"]            = evSetBitMode;
 	enum_map["setphotonenergy"]       = evSetPhotonEnergy;
@@ -257,15 +259,17 @@ int main(int argc, char* argv[]){
 				break;
 
 			case evSetTrimBits :
-				/*if(tmp_str[0].length()>0&&feb_controler->SetDynamicRange(n[0])){*/
 				feb_controler->SetTrimbits(0,(unsigned char*)data);
 				return_message.append("\tExecuted:  SetTrimBits "); AddNumber(return_message,n[0]); return_message.append("\n");
 				ret_val = 0;
-				/*}else{
-      	    return_message.append("\tError executing: SetTrimBits \n");
-      	    ret_val = 1;
-      	  }	*/
 				break;
+
+			case evGetTrimBits :
+				/*strcpy(ret_parameter, feb_controler->GetTrimbits()); parameter to pass string*/
+				return_message.append("\tExecuted:  GetTrimBits "); AddNumber(return_message,n[0]); return_message.append("\n");
+				ret_val = 0;
+				break;
+
 
 				//      case evLoadTrimBitFile :
 

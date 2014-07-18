@@ -162,6 +162,35 @@ int EigerSetTrimbits(const int *data){
 }
 
 
+
+int EigerSetAllTrimbits(unsigned int value){
+	eiger_ret_val=0;
+	char tt[263681];
+	tt[263680]='\0';
+	int ip=0, ich=0;
+	int iy, ix;
+	int ichip;
+
+	// convert the trimbits from int32 to chars and add border pixels.
+	for(iy=0;iy<256;y++) {
+		for (ichip=0; ichip<4; ichip++) {
+			for(ix=0;ix<256;ix++) {
+				tt[ip++]=value&0x3f;
+			}
+			if (ichip<3) {
+				tt[ip++]=0;
+				tt[ip++]=0;
+			}
+		}
+	}
+	eiger_message_length = sprintf(eiger_message,"settrimbits %s", tt);
+	memcpy(saved_trimbits,data,256*256*4*sizeof(int));
+	return EigerSendCMD();
+}
+
+
+
+
 /* int EigerGetTrimbits(const int *data){ */
 /* 	eiger_ret_val=0; */
 /* 	char tt[263681]; */
@@ -176,6 +205,20 @@ int EigerSetTrimbits(const int *data){
 /* } */
 
 
+
+
+ int EigerGetTrimbits(const int *data){
+ 	eiger_ret_val=0;
+ 	char tt[263681];
+ 	tt[263680]='\0';
+ 	int ip=0, ich=0;
+ 	int iy, ix;
+ 	int ichip;
+
+ 	eiger_message_length = sprintf(eiger_message,"gettrimbits ");
+ 	memcpy(data,saved_trimbits,256*256*4*sizeof(int));
+ 	return EigerSendCMD();
+ }
 
 
 

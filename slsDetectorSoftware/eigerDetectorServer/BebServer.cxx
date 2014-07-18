@@ -69,7 +69,13 @@ int main(int argc, char* argv[]){
   */
   init();
 
-  Beb *bebs = new Beb();
+  int arg1;
+  Beb *bebs;
+
+  if(argc>1)
+	  bebs = new Beb(atoi(argv[1]));
+  else
+	  bebs = new Beb(-1);
 
   //  unsigned short int port_number = atoi(argv[1]);
 
@@ -203,7 +209,8 @@ int main(int argc, char* argv[]){
 	    return_message.append("\tError executing: SetupTableEntry <beb_number> <1GbE(0) or 10GbE(1)> <dst_number> <src_mac> <src_ip> <src_port> <dst_mac> <dst_ip> <dst_port>\n");
 	    ret_val = 1;
 	  }else{
-	    ret_val = !bebs->SetBebSrcHeaderInfos(n[0],n[1],tmp_str[0],tmp_str[1],n[3])||!bebs->SetUpUDPHeader(n[0],n[1],n[2],tmp_str[2],tmp_str[3],n[4]);
+		  for(int i=0;i<32;i++)/** modified for Aldo*/
+	    ret_val = !bebs->SetBebSrcHeaderInfos(n[0],n[1],tmp_str[0],tmp_str[1],n[3])||!bebs->SetUpUDPHeader(n[0],n[1],n[2]+i,tmp_str[2],tmp_str[3],n[4]);
 	    
 	    if(ret_val) return_message.append("\tError Executing: SetupTableEntry ");
 	    else        return_message.append("\tExecuted: SetupTableEntry ");

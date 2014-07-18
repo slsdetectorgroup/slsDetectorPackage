@@ -55,6 +55,8 @@ class Beb{ //
   unsigned int GetBebInfoIndex(unsigned int beb_numb);
 
   LocalLinkInterface* ll;
+  LocalLinkInterface* new_memory;
+
   
   int           send_ndata;
   unsigned int  send_buffer_size;
@@ -82,7 +84,7 @@ class Beb{ //
   short bit_mode;
 
  public:
-  Beb();
+  Beb(int arg1);
   virtual ~Beb();
 
   bool SetBebSrcHeaderInfos(unsigned int beb_number, bool ten_gig, std::string src_mac, std::string src_ip, unsigned int src_port);

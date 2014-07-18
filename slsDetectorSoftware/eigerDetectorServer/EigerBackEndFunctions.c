@@ -185,7 +185,7 @@ int RequestImages(){
 
 int SetDestinationParameters(int i){
 	eiger_back_ret_val=0;
-	eiger_back_message_length = sprintf(eiger_back_message,"setdstparameters %d %d %d",ten_giga,32,i);// number of dsts
+	eiger_back_message_length = sprintf(eiger_back_message,"setdstparameters %d %d %d",ten_giga,1,i);// number of dsts
 	return EigerBackSendCMD();
 }
 

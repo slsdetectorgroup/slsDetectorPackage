@@ -707,7 +707,7 @@ bool FebControl::SetTrimbits(unsigned int module_num, unsigned char *trimbits){
 
   if(!Reset()) cout<<"Warning could not reset DAQ."<<endl;
 
-  for(int l_r=0;l_r<2;l_r++){
+  for(int l_r=0;l_r<2;l_r++){ // l_r loop
     unsigned int disable_chip_mask = l_r ? DAQ_CS_BAR_LEFT : DAQ_CS_BAR_RIGHT;
     
     if(!(WriteRegister(0xfff,DAQ_REG_STATIC_BITS,disable_chip_mask|DAQ_STATIC_BIT_PROGRAM|DAQ_STATIC_BIT_M8)&&SetCommandRegister(DAQ_SET_STATIC_BIT)&&StartDAQOnlyNWaitForFinish())){
@@ -730,26 +730,26 @@ bool FebControl::SetTrimbits(unsigned int module_num, unsigned char *trimbits){
 
       static unsigned int trimbits_to_load_l[1024];
       static unsigned int trimbits_to_load_r[1024];
-      for(int row=0;row<16;row++){
+      for(int row=0;row<16;row++){ //row loop
 	int offset   = 2*32*row;
-	for(int sc=0;sc<32;sc++){
+	for(int sc=0;sc<32;sc++){  //supercolumn loop sc
 	  int super_column_start_position_l = 1030*row +       l_r *258 + sc*8;
 	  int super_column_start_position_r = 1030*row + 516 + l_r *258 + sc*8;
 	  int chip_sc = 31 - sc;
 	  trimbits_to_load_l[offset+chip_sc] = 0;
 	  trimbits_to_load_r[offset+chip_sc] = 0;
-	  for(int i=0;i<8;i++){
+	  for(int i=0;i<8;i++){ // column loop i
 	    trimbits_to_load_l[offset+chip_sc]    |= ( 0x7  & trimbits[263679 - (row_set*16480+super_column_start_position_l+i)])<<((7-i)*4);//low
 	    trimbits_to_load_l[offset+chip_sc+32] |= ((0x38 & trimbits[263679 - (row_set*16480+super_column_start_position_l+i)])>>3)<<((7-i)*4);//upper
 	    trimbits_to_load_r[offset+chip_sc]    |= ( 0x7  & trimbits[263679 - (row_set*16480+super_column_start_position_r+i)])<<((7-i)*4);//low
 	    trimbits_to_load_r[offset+chip_sc+32] |= ((0x38 & trimbits[263679 - (row_set*16480+super_column_start_position_r+i)])>>3)<<((7-i)*4);//upper
-	  }
-	}
-      }
+	  } // end column loop i
+	} //end supercolumn loop sc
+      } //end row loop
 
       if(!WriteMemory(modules[0]->GetTopLeftAddress(),0,0,1024,trimbits_to_load_r)||!WriteMemory(modules[0]->GetTopRightAddress(),0,0,1024,trimbits_to_load_l)||!StartDAQOnlyNWaitForFinish()) return 0;
-    }
-  }
+    } //end row_set loop (groups of 16 rows)
+  } // end l_r loop
 
   memcpy(last_downloaded_trimbits,trimbits,trimbit_size*sizeof(unsigned char));
 

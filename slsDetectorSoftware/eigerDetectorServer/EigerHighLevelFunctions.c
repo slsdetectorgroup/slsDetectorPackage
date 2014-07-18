@@ -36,7 +36,7 @@ int eiger_extgatingpolarity = 0;
 const unsigned int ndacs = 16;
 const char* dac_names[16] = {"SvP","Vtr","Vrf","Vrs","SvN","Vtgstv","Vcmp_ll","Vcmp_lr","cal","Vcmp_rl","rxb_rb","rxb_lb","Vcmp_rr","Vcp","Vcn","Vis"};
 
-
+int saved_trimbits[256*256*4];
 
 
 int EigerGetNumberOfExposures(){return eiger_nexposures;}
@@ -53,7 +53,6 @@ int EigerGetIODelay(){return eiger_iodelay;}
 int EigerGetTriggerMode(){return eiger_triggermode;}
 int EigerGetExternalGating(){return eiger_extgating;}
 int EigerGetExternalGatingPolarity(){return eiger_extgatingpolarity;}
-
 
 int EigerInit(){
 	static int passed = 0;
@@ -136,6 +135,52 @@ int EigerSetDAC(const char* iname,int v, int mV){
 		eiger_message_length = sprintf(eiger_message,"setdacvalue %s %d",iname,v);
 	return EigerSendCMD();
 }
+
+int EigerSetTrimbits(const int *data){
+	eiger_ret_val=0;
+	char tt[263681];
+	tt[263680]='\0';
+	int ip=0, ich=0;
+	int iy, ix;
+	int ichip;
+
+	// convert the trimbits from int32 to chars and add border pixels.
+	for(iy=0;iy<256;y++) {
+	  for (ichip=0; ichip<4; ichip++) {
+	    for(ix=0;ix<256;ix++) {
+	      tt[ip++]=(char)(data[ich++]&(0x3f)); 
+	    }
+	    if (ichip<3) {
+	      tt[ip++]=0;
+	      tt[ip++]=0;
+	    }
+	  }
+	}
+	eiger_message_length = sprintf(eiger_message,"settrimbits %s", tt);
+	memcpy(saved_trimbits,data,256*256*4*sizeof(int));
+	return EigerSendCMD();
+}
+
+
+/* int EigerGetTrimbits(const int *data){ */
+/* 	eiger_ret_val=0; */
+/* 	char tt[263681]; */
+/* 	tt[263680]='\0'; */
+/* 	int ip=0, ich=0; */
+/* 	int iy, ix; */
+/* 	int ichip; */
+
+/* 	eiger_message_length = sprintf(eiger_message,"settrimbits %s", tt); */
+/* 	memcpy(data,saved_trimbits,256*256*4*sizeof(int)); */
+/* 	return EigerSendCMD(); */
+/* } */
+
+
+
+
+
+
+
 
 int EigerGetDAC(const char* iname){
 	eiger_ret_val=1;

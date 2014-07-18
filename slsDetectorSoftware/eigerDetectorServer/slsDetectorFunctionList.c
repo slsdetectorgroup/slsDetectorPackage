@@ -288,8 +288,10 @@ int setModule(sls_detector_module myMod){
 		setDAC((enum detDacIndex)i,myMod.dacs[i],myMod.module,0,retval);
 
 
-	thisSettings = (enum detectorSettings)myMod.reg;
-	thisSettings = 0;
+	//	thisSettings = (enum detectorSettings)myMod.reg;
+	//	thisSettings = 0;
+	
+	setSettings( (enum detectorSettings)myMod.reg); // put the settings in the module register?!?!? 
 /** set trimbits*/
 	if (detectorModules)
 		copyModule(detectorModules,&myMod);

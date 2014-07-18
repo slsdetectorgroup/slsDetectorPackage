@@ -851,7 +851,7 @@ int set_dac(int file_des) {
 
   dacs_t retval;
   int ret=OK;
-  int arg[2];
+  int arg[3];
   enum dacIndex ind;
   int imod;
   int n;

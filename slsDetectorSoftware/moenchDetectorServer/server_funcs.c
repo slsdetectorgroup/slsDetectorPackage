@@ -916,7 +916,7 @@ int set_dac(int file_des) {
 	//default:all mods
 	int retval;
 	int ret=OK;
-	int arg[2];
+	int arg[3];
 	enum dacIndex ind;
 	int imod;
 	int n;

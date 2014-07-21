@@ -13,8 +13,8 @@
 #include "slsDetectorServer_defs.h" //include port number
 
 struct sockaddr_in eiger_socket_addr;
-int  eiger_max_message_length = 1024;
-char eiger_message[1024];
+int  eiger_max_message_length = 270000;//263681
+char eiger_message[270000];//263681
 int  eiger_message_length = 0;
 int  eiger_ret_val=0;
 
@@ -55,6 +55,8 @@ int EigerGetExternalGating(){return eiger_extgating;}
 int EigerGetExternalGatingPolarity(){return eiger_extgatingpolarity;}
 
 int EigerInit(){
+	saved_trimbits[0] = -1;
+
 	static int passed = 0;
 
 	if(!passed){
@@ -145,7 +147,7 @@ int EigerSetTrimbits(const int *data){
 	int ichip;
 
 	// convert the trimbits from int32 to chars and add border pixels.
-	for(iy=0;iy<256;y++) {
+	for(iy=0;iy<256;iy++) {
 	  for (ichip=0; ichip<4; ichip++) {
 	    for(ix=0;ix<256;ix++) {
 	      tt[ip++]=(char)(data[ich++]&(0x3f)); 
@@ -170,12 +172,13 @@ int EigerSetAllTrimbits(unsigned int value){
 	int ip=0, ich=0;
 	int iy, ix;
 	int ichip;
+	int sl=0;
 
 	// convert the trimbits from int32 to chars and add border pixels.
-	for(iy=0;iy<256;y++) {
+	for(iy=0;iy<256;iy++) {
 		for (ichip=0; ichip<4; ichip++) {
 			for(ix=0;ix<256;ix++) {
-				tt[ip++]=value&0x3f;
+				tt[ip++]=(char)(value&0x3f);
 			}
 			if (ichip<3) {
 				tt[ip++]=0;
@@ -183,27 +186,24 @@ int EigerSetAllTrimbits(unsigned int value){
 			}
 		}
 	}
-	eiger_message_length = sprintf(eiger_message,"settrimbits %s", tt);
-	memcpy(saved_trimbits,data,256*256*4*sizeof(int));
+
+	char s2[270000];
+	strcpy(s2,"settrimbits ");
+	//for()
+	sl=strlen(s2);
+	strncpy(s2+sl,tt, 263680);
+	s2[263680+sl]='\0';
+
+	eiger_message_length = strlen(s2);
+	//eiger_message_length = sprintf(eiger_message,"settrimbits %s", tt);
+	for (iy=0;iy<263680;++iy)
+		printf("%d:%c\t\t",iy,tt[iy]);
+	printf("tfggt:%s , length :%d\n",tt, strlen(tt));
+	printf("Command sent:%s , length :%d\n",s2, eiger_message_length);
+	for(iy=0;iy<256*256*4;++iy)
+		saved_trimbits[iy] = value;
 	return EigerSendCMD();
 }
-
-
-
-
-/* int EigerGetTrimbits(const int *data){ */
-/* 	eiger_ret_val=0; */
-/* 	char tt[263681]; */
-/* 	tt[263680]='\0'; */
-/* 	int ip=0, ich=0; */
-/* 	int iy, ix; */
-/* 	int ichip; */
-
-/* 	eiger_message_length = sprintf(eiger_message,"settrimbits %s", tt); */
-/* 	memcpy(data,saved_trimbits,256*256*4*sizeof(int)); */
-/* 	return EigerSendCMD(); */
-/* } */
-
 
 
 
@@ -219,9 +219,6 @@ int EigerSetAllTrimbits(unsigned int value){
  	memcpy(data,saved_trimbits,256*256*4*sizeof(int));
  	return EigerSendCMD();
  }
-
-
-
 
 
 

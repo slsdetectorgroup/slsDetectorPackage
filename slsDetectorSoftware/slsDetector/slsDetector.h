@@ -510,6 +510,13 @@ class slsDetector : public slsDetectorUtils, public energyConversion {
   */
   int saveSettingsFile(string fname, int imod=-1);
 
+  /** sets all the trimbits to a particular value
+      \param val trimbit value
+      \param imod module number, -1 means all modules
+      \returns OK or FAIL
+  */
+  int setAllTrimbits(int val, int imod=-1);
+
 
   /** loads the modules calibration data  reading from a file
       \param fname file name . If not specified, extension is automatically generated!

@@ -3721,6 +3721,36 @@ int multiSlsDetector::saveSettingsFile(string fname, int imod) {
 
 
 
+int multiSlsDetector::setAllTrimbits(int val, int imod){
+
+	int ret=-100, ret1,id, im;
+
+	if (decodeNMod(imod, id, im)>=0) {
+		if (detectors[id]) {
+			ret1=detectors[id]->setAllTrimbits(val,im);
+			if(detectors[id]->getErrorMask())
+				setErrorMask(getErrorMask()|(1<<id));
+		}
+	}
+	else  if (imod<0) {
+		for (int idet=0; idet<thisMultiDetector->numberOfDetectors; idet++) {
+			if (detectors[idet]) {
+				ret1=detectors[idet]->setAllTrimbits(val,imod);
+				if(detectors[idet]->getErrorMask())
+					setErrorMask(getErrorMask()|(1<<idet));
+				if (ret==-100)
+					ret=ret1;
+				else if (ret!=ret1)
+					ret=-1;
+			}
+		}
+	}
+	return ret;
+}
+
+
+
+
 
 int multiSlsDetector::loadCalibrationFile(string fname, int imod) {
   int id, im, ret;

@@ -698,62 +698,62 @@ float FebControl::GetDAC(string s){
 */
 
 bool FebControl::SetTrimbits(unsigned int module_num, unsigned char *trimbits){
-
-  unsigned int module_index=0;
-  if(!GetModuleIndex(module_num,module_index)){
-    cout<<"Warning could not set trimbits, bad module number."<<endl;
-    return 0;
-  }
-
-  if(!Reset()) cout<<"Warning could not reset DAQ."<<endl;
-
-  for(int l_r=0;l_r<2;l_r++){ // l_r loop
-    unsigned int disable_chip_mask = l_r ? DAQ_CS_BAR_LEFT : DAQ_CS_BAR_RIGHT;
-    
-    if(!(WriteRegister(0xfff,DAQ_REG_STATIC_BITS,disable_chip_mask|DAQ_STATIC_BIT_PROGRAM|DAQ_STATIC_BIT_M8)&&SetCommandRegister(DAQ_SET_STATIC_BIT)&&StartDAQOnlyNWaitForFinish())){
-      cout<<"Could not select chips"<<endl;
-      return 0;
-    }
-
-    for(int row_set=0;row_set<16;row_set++){ //16 rows at a time
-      if(row_set==0){
-	if(!SetCommandRegister(DAQ_RESET_COMPLETELY|DAQ_SEND_A_TOKEN_IN|DAQ_LOAD_16ROWS_OF_TRIMBITS)){
-	  cout<<"Warning: Could not SetCommandRegister for loading trim bits."<<endl;
-	  return 0;
+	printf("aaa\n");
+	unsigned int module_index=0;
+	if(!GetModuleIndex(module_num,module_index)){
+		cout<<"Warning could not set trimbits, bad module number."<<endl;
+		return 0;
 	}
-      }else{
-	if(!SetCommandRegister(DAQ_LOAD_16ROWS_OF_TRIMBITS)){
-	  cout<<"Warning: Could not SetCommandRegister for loading trim bits."<<endl;
-	  return 0;
-	}
-      }
+	printf("bbb\n");
+	if(!Reset()) cout<<"Warning could not reset DAQ."<<endl;
+	printf("ccc\n");
+	for(int l_r=0;l_r<2;l_r++){ // l_r loop
+		unsigned int disable_chip_mask = l_r ? DAQ_CS_BAR_LEFT : DAQ_CS_BAR_RIGHT;
 
-      static unsigned int trimbits_to_load_l[1024];
-      static unsigned int trimbits_to_load_r[1024];
-      for(int row=0;row<16;row++){ //row loop
-	int offset   = 2*32*row;
-	for(int sc=0;sc<32;sc++){  //supercolumn loop sc
-	  int super_column_start_position_l = 1030*row +       l_r *258 + sc*8;
-	  int super_column_start_position_r = 1030*row + 516 + l_r *258 + sc*8;
-	  int chip_sc = 31 - sc;
-	  trimbits_to_load_l[offset+chip_sc] = 0;
-	  trimbits_to_load_r[offset+chip_sc] = 0;
-	  for(int i=0;i<8;i++){ // column loop i
-	    trimbits_to_load_l[offset+chip_sc]    |= ( 0x7  & trimbits[263679 - (row_set*16480+super_column_start_position_l+i)])<<((7-i)*4);//low
-	    trimbits_to_load_l[offset+chip_sc+32] |= ((0x38 & trimbits[263679 - (row_set*16480+super_column_start_position_l+i)])>>3)<<((7-i)*4);//upper
-	    trimbits_to_load_r[offset+chip_sc]    |= ( 0x7  & trimbits[263679 - (row_set*16480+super_column_start_position_r+i)])<<((7-i)*4);//low
-	    trimbits_to_load_r[offset+chip_sc+32] |= ((0x38 & trimbits[263679 - (row_set*16480+super_column_start_position_r+i)])>>3)<<((7-i)*4);//upper
-	  } // end column loop i
-	} //end supercolumn loop sc
-      } //end row loop
+		if(!(WriteRegister(0xfff,DAQ_REG_STATIC_BITS,disable_chip_mask|DAQ_STATIC_BIT_PROGRAM|DAQ_STATIC_BIT_M8)&&SetCommandRegister(DAQ_SET_STATIC_BIT)&&StartDAQOnlyNWaitForFinish())){
+			cout<<"Could not select chips"<<endl;
+			return 0;
+		}
 
-      if(!WriteMemory(modules[0]->GetTopLeftAddress(),0,0,1024,trimbits_to_load_r)||!WriteMemory(modules[0]->GetTopRightAddress(),0,0,1024,trimbits_to_load_l)||!StartDAQOnlyNWaitForFinish()) return 0;
-    } //end row_set loop (groups of 16 rows)
-  } // end l_r loop
+		for(int row_set=0;row_set<16;row_set++){ //16 rows at a time
+			if(row_set==0){
+				if(!SetCommandRegister(DAQ_RESET_COMPLETELY|DAQ_SEND_A_TOKEN_IN|DAQ_LOAD_16ROWS_OF_TRIMBITS)){
+					cout<<"Warning: Could not SetCommandRegister for loading trim bits."<<endl;
+					return 0;
+				}
+			}else{
+				if(!SetCommandRegister(DAQ_LOAD_16ROWS_OF_TRIMBITS)){
+					cout<<"Warning: Could not SetCommandRegister for loading trim bits."<<endl;
+					return 0;
+				}
+			}
 
-  memcpy(last_downloaded_trimbits,trimbits,trimbit_size*sizeof(unsigned char));
+			static unsigned int trimbits_to_load_l[1024];
+			static unsigned int trimbits_to_load_r[1024];
+			for(int row=0;row<16;row++){ //row loop
+				int offset   = 2*32*row;
+				for(int sc=0;sc<32;sc++){  //supercolumn loop sc
+					int super_column_start_position_l = 1030*row +       l_r *258 + sc*8;
+					int super_column_start_position_r = 1030*row + 516 + l_r *258 + sc*8;
+					int chip_sc = 31 - sc;
+					trimbits_to_load_l[offset+chip_sc] = 0;
+					trimbits_to_load_r[offset+chip_sc] = 0;
+					for(int i=0;i<8;i++){ // column loop i
+						trimbits_to_load_l[offset+chip_sc]    |= ( 0x7  & trimbits[263679 - (row_set*16480+super_column_start_position_l+i)])<<((7-i)*4);//low
+						trimbits_to_load_l[offset+chip_sc+32] |= ((0x38 & trimbits[263679 - (row_set*16480+super_column_start_position_l+i)])>>3)<<((7-i)*4);//upper
+						trimbits_to_load_r[offset+chip_sc]    |= ( 0x7  & trimbits[263679 - (row_set*16480+super_column_start_position_r+i)])<<((7-i)*4);//low
+						trimbits_to_load_r[offset+chip_sc+32] |= ((0x38 & trimbits[263679 - (row_set*16480+super_column_start_position_r+i)])>>3)<<((7-i)*4);//upper
+					} // end column loop i
+				} //end supercolumn loop sc
+			} //end row loop
 
-  return SetStaticBits(); //send the static bits
+			if(!WriteMemory(modules[0]->GetTopLeftAddress(),0,0,1024,trimbits_to_load_r)||!WriteMemory(modules[0]->GetTopRightAddress(),0,0,1024,trimbits_to_load_l)||!StartDAQOnlyNWaitForFinish()) return 0;
+		} //end row_set loop (groups of 16 rows)
+	} // end l_r loop
+
+	memcpy(last_downloaded_trimbits,trimbits,trimbit_size*sizeof(unsigned char));
+
+	return SetStaticBits(); //send the static bits
 }
 
 

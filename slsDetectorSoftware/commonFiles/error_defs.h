@@ -49,6 +49,7 @@ using namespace std;
 #define RECEIVER_FRAME_NUM_NOT_SET			0x0000000000000400ULL
 #define RECEIVER_DYNAMIC_RANGE				0x0000000000000800ULL
 #define RECEIVER_TEN_GIGA					0x0000000000001000ULL
+#define ALLTIMBITS_NOT_SET					0x0000000000002000ULL
 
 //											0x00000000FFFFFFFFULL
 /** @short class returning all error messages for error mask */
@@ -145,6 +146,9 @@ public:
 
 		if(slsErrorMask&RECEIVER_TEN_GIGA)
 			retval.append("Could not enable/disable 10GbE in the receiver.\n");
+
+		if(slsErrorMask&ALLTIMBITS_NOT_SET)
+			retval.append("Could not set all trimbits to value.\n");
 
 
 

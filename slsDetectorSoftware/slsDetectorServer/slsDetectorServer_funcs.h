@@ -81,5 +81,6 @@ int start_receiver(int);
 int stop_receiver(int);
 int calibrate_pedestal(int);
 int enable_ten_giga(int);
+int set_all_trimbits(int);
 
 #endif

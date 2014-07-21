@@ -497,6 +497,9 @@ slsDetectorCommand::slsDetectorCommand(slsDetectorUtils *det)  {
   descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdSettings;
   i++;
 
+  descrToFuncMap[i].m_pFuncName="trimval"; //
+  descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdSettings;
+  i++;
 
   descrToFuncMap[i].m_pFuncName="pedestal"; //
   descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdSettings;
@@ -2912,6 +2915,15 @@ string slsDetectorCommand::cmdSettings(int narg, char *args[], int action) {
     myDet->saveSettingsFile(sval, -1);
     return string("done");
     
+  } else if (cmd=="trimval") {
+	  if (action==PUT_ACTION){
+		  if (sscanf(args[1],"%d",&val))
+			  myDet->setAllTrimbits(val);
+		  else
+			  return string("invalid trimbit value ")+cmd;
+	  }
+	  sprintf(ans,"%d",myDet->setAllTrimbits(-1));
+	  return ans;
   } else if (cmd=="pedestal") {
 	  if (action==GET_ACTION)
 		  return string("cannot get");
@@ -2935,6 +2947,7 @@ string slsDetectorCommand::helpSettings(int narg, char *args[], int action) {
     os << "threshold eV\n sets the detector threshold in eV"<< std::endl;
     os << "trimbits fname\n loads the trimfile fname to the detector. If no extension is specified, the serial number of each module will be attached."<< std::endl;
     os << "trim:mode fname\n trims the detector according to mode (can be noise, beam, improve, fix) and saves the resulting trimbits to file fname."<< std::endl;
+    os << "trimval i \n sets all the trimbits to i" << std::endl;
     os << "pedestal i \n starts acquisition for i frames, calculates pedestal and writes back to fpga."<< std::endl;
 
   }
@@ -2942,6 +2955,7 @@ string slsDetectorCommand::helpSettings(int narg, char *args[], int action) {
     os << "settings \n gets the settings of the detector"<< std::endl;
     os << "threshold V\n gets the detector threshold"<< std::endl;
     os << "trimbits [fname]\n returns the trimfile loaded on the detector. If fname is specified the trimbits are saved to file. If no extension is specified, the serial number of each module will be attached."<< std::endl;
+    os << "trimval \n returns the value all trimbits are set to. If they are different, returns -1." << std::endl;
   } 
   return os.str();
 

@@ -259,7 +259,12 @@ int main(int argc, char* argv[]){
 				break;
 
 			case evSetTrimBits :
-				feb_controler->SetTrimbits(0,(unsigned char*)data);
+				tmp_str[0] = GetNextString(data);
+				/*char tt[263681];*/
+				for(int i=0;i<10;i++)
+					cout <<i<<":"<<tmp_str[0][i]<<"\t\t";
+				printf("Cjhgkfdjg :%s\n",tmp_str[0].c_str());
+				feb_controler->SetTrimbits(0,(unsigned char*)(tmp_str[0].c_str()));
 				return_message.append("\tExecuted:  SetTrimBits "); AddNumber(return_message,n[0]); return_message.append("\n");
 				ret_val = 0;
 				break;

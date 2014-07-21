@@ -89,7 +89,8 @@ enum {
   F_RESET_COUNTER_BLOCK, /**< resets the counter block memory for gotthard */
   F_CALIBRATE_PEDESTAL,	/**< starts acquistion, calibrates pedestal and write back to fpga */
 
-  F_ENABLE_TEN_GIGA  /**< enable 10Gbe */
+  F_ENABLE_TEN_GIGA,  /**< enable 10Gbe */
+  F_SET_ALL_TRIMBITS  /** < set all trimbits to this value */
 
 
   /* Always append functions hereafter!!! */

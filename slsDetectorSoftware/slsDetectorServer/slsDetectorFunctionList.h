@@ -128,6 +128,8 @@ enum synchronizationMode setSynchronization(enum synchronizationMode arg);
 
 #ifdef EIGERD
 void setExternalGating(int enable[]);
+void setAllTrimbits(int val);
+int getAllTrimbits();
 #endif
 
 

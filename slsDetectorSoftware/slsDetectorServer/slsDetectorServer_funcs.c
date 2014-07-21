@@ -157,7 +157,7 @@ int function_table() {
 	flist[F_STOP_RECEIVER]=&stop_receiver;
 	flist[F_CALIBRATE_PEDESTAL]=&calibrate_pedestal;
 	flist[F_ENABLE_TEN_GIGA]=&enable_ten_giga;
-
+	flist[F_SET_ALL_TRIMBITS]=&set_all_trimbits;
 
 
 #ifdef VERBOSE
@@ -3419,4 +3419,61 @@ int enable_ten_giga(int file_des) {
 	n += sendData(file_des,&retval,sizeof(retval),INT32);
 	/*return ok/fail*/
 	return ret;
+}
+
+
+
+int set_all_trimbits(int file_des){
+
+
+	int retval;
+	int arg;
+	int n;
+	int ret=OK,ret1=OK;
+
+	sprintf(mess,"can't set sll trimbits\n");
+
+	n = receiveData(file_des,&arg,sizeof(arg),INT32);
+	if (n < 0) {
+		sprintf(mess,"Error reading from socket\n");
+		ret=FAIL;
+	}
+
+#ifdef VERBOSE
+	printf("setting all trimbits to %d\n",arg);
+#endif
+#ifdef SLS_DETECTOR_FUNCTION_LIST
+	if (differentClients==1 && lockStatus==1 && arg!=GET_READOUT_FLAGS) {
+		ret=FAIL;
+		sprintf(mess,"Detector locked by %s\n",lastClientIP);
+	}  else {
+		if(arg < -1){
+			ret = FAIL;
+			strcpy(mess,"Cant set trimbits to this value\n");
+		}else {
+			if(arg >= 0)
+				setAllTrimbits(arg);
+			retval = getAllTrimbits();
+		}
+	}
+#endif
+	if (ret==OK) {
+		if (arg!=-1 && arg!=retval) {
+			ret=FAIL;
+			sprintf(mess,"Could not set all trimbits: should be %d but is %d\n", arg, retval);
+		}else if (differentClients)
+			ret=FORCE_UPDATE;
+	}
+
+
+	//ret could be swapped during sendData
+	ret1 = ret;
+	n = sendData(file_des,&ret1,sizeof(ret),INT32);
+	if (ret==FAIL) {
+		n = sendData(file_des,mess,sizeof(mess),OTHER);
+	} else {
+		n = sendData(file_des,&retval,sizeof(retval),INT32);
+	}
+	return ret;
+
 }

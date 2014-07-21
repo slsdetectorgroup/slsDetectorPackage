@@ -5719,6 +5719,41 @@ int slsDetector::saveSettingsFile(string fname, int imod) {
 
 
 
+int slsDetector::setAllTrimbits(int val, int imod){
+	int fnum=F_SET_ALL_TRIMBITS;
+	int retval;
+	char mess[100];
+	int ret=OK;
+
+#ifdef VERBOSE
+	std::cout<< "Setting all trimbits to "<< val << std::endl;
+#endif
+
+	if (thisDetector->onlineFlag==ONLINE_FLAG) {
+		if (connectControl() == OK){
+			controlSocket->SendDataOnly(&fnum,sizeof(fnum));
+			controlSocket->SendDataOnly(&val,sizeof(val));
+			controlSocket->ReceiveDataOnly(&ret,sizeof(ret));
+			if (ret==FAIL) {
+				controlSocket->ReceiveDataOnly(mess,sizeof(mess));
+				std::cout<< "Detector returned error: " << mess << std::endl;
+				setErrorMask((getErrorMask())|(ALLTIMBITS_NOT_SET));
+			} else {
+				controlSocket->ReceiveDataOnly(&retval,sizeof(retval));
+			}
+			controlSocket->Disconnect();
+			if (ret==FORCE_UPDATE)
+				updateDetector();
+		}
+	}
+
+#ifdef VERBOSE
+	std::cout<< "All trimbits were set to "<< retval   << std::endl;
+#endif
+	return retval;
+}
+
+
 
 
 int slsDetector::loadCalibrationFile(string fname, int imod) {

@@ -141,6 +141,7 @@ int64_t getDetectorId(enum idMode arg){
 
 
 int getDetectorNumber(){
+
 	int res=0;
     char hostname[100];
     if (gethostname(hostname, sizeof hostname) == 0)
@@ -159,8 +160,13 @@ int getDetectorNumber(){
 	pclose(sysFile);
 	sscanf(output,"%x",&res);
 	return res;
+*/
+	/*
+	int res=0;
+	char hostname[100] = "beb000";
+	sscanf(hostname,"%x",&res);
+	return res;
 	*/
-
 }
 
 
@@ -291,8 +297,9 @@ int setModule(sls_detector_module myMod){
 	//	thisSettings = (enum detectorSettings)myMod.reg;
 	//	thisSettings = 0;
 	
-	setSettings( (enum detectorSettings)myMod.reg); // put the settings in the module register?!?!? 
-/** set trimbits*/
+	setSettings( (enum detectorSettings)myMod.reg,-1); // put the settings in the module register?!?!?
+	EigerSetTrimbits(myMod.chanregs);
+
 	if (detectorModules)
 		copyModule(detectorModules,&myMod);
   return 0;
@@ -598,6 +605,7 @@ int copyModule(sls_detector_module *destMod, sls_detector_module *srcMod){
 }
 
 
+
 int getTotalNumberOfChannels(){return getNumberOfChannelsPerModule();};//NCHIP*NCHAN*nModBoard;}
 int getTotalNumberOfChips(){return 4;};//NCHIP*nModBoard;}
 int getTotalNumberOfModules(){return 1;}//nModBoard;}
@@ -675,6 +683,21 @@ enum synchronizationMode setSynchronization(enum synchronizationMode arg){
 	return NO_SYNCHRONIZATION;
 }
 
+void setAllTrimbits(int val){
+	int ichan;
+	EigerSetAllTrimbits(val);
+#ifdef VERBOSE
+	printf("Copying register %x value %d\n",destMod->reg,val);
+#endif
+	if (detectorModules){
+		for (ichan=0; ichan<(detectorModules->nchan); ichan++) {
+				*((detectorModules->chanregs)+ichan)=val;
+		}
+	}
+}
 
+int getAllTrimbits(){
+	return *((detectorModules->chanregs));
+}
 
 #endif

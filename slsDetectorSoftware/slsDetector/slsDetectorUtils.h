@@ -490,6 +490,14 @@ class slsDetectorUtils :  public slsDetectorActions, public postProcessing {
   */
   virtual int saveSettingsFile(string fname, int imod=-1)=0;
 
+  /** sets all the trimbits to a particular value
+      \param val trimbit value
+      \param imod module number, -1 means all modules
+      \returns OK or FAIL
+  */
+  virtual int setAllTrimbits(int val, int imod=-1)=0;
+
+
 
 
   /**

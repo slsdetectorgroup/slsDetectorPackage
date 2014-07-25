@@ -28,7 +28,7 @@ slsReceiverTCPIPInterface::~slsReceiverTCPIPInterface() {
 }
 
 
-slsReceiverTCPIPInterface::slsReceiverTCPIPInterface(int argc, char *argv[], int &success, slsReceiverBase* rbase):
+slsReceiverTCPIPInterface::slsReceiverTCPIPInterface(int &success, slsReceiverBase* rbase, int pn):
 		myDetectorType(GOTTHARD),
 		receiverBase(rbase),
 		ret(OK),
@@ -38,116 +38,15 @@ slsReceiverTCPIPInterface::slsReceiverTCPIPInterface(int argc, char *argv[], int
 		dynamicrange(16),
 		socket(NULL),
 		killTCPServerThread(0),
-		tenGigaEnable(0){
+		tenGigaEnable(0), portNumber(DEFAULT_PORTNO+2){
 
-	int port_no = DEFAULT_PORTNO+2;
-	ifstream infile;
-	string sLine,sargname;
-	int iline = 0;
+  int port_no=portNumber;
 
 
-	success=OK;
-	string fname = "";
+  if (pn>0)
+    port_no = pn;
 
-	//parse command line for config
-	for(int iarg=1;iarg<argc;iarg++){
-		if((!strcasecmp(argv[iarg],"-config"))||(!strcasecmp(argv[iarg],"-f"))){
-			if(iarg+1==argc){
-				cout << "no config file name given. Exiting." << endl;
-				success=FAIL;
-			}else
-				fname.assign(argv[iarg+1]);
-		}
-	}
-	if((!fname.empty()) && (success == OK)){
-#ifdef VERBOSE
-		std::cout<< "config file name "<< fname << std::endl;
-#endif
-		infile.open(fname.c_str(), ios_base::in);
-		if (infile.is_open()) {
-			while(infile.good()){
-				getline(infile,sLine);
-				iline++;
-#ifdef VERBOSE
-				cout <<  sLine << endl;
-#endif
-				if(sLine.find('#')!=string::npos){
-#ifdef VERBOSE
-					cout << "Line is a comment " << endl;
-#endif
-					continue;
-				}else if(sLine.length()<2){
-#ifdef VERBOSE
-					cout << "Empty line " << endl;
-#endif
-					continue;
-				}else{
-					istringstream sstr(sLine);
-					//parameter name
-					if(sstr.good())
-						sstr >> sargname;
-
-					//tcp port
-					if(sargname=="rx_tcpport"){
-						if(sstr.good()) {
-							sstr >> sargname;
-							if(sscanf(sargname.c_str(),"%d",&port_no))
-								cout<<"dataport:"<<port_no<<endl;
-							else{
-								cout << "could not decode port in config file. Exiting." << endl;
-								success=FAIL;
-							}
-						}
-					}
-				}
-			}
-			infile.close();
-		}else {
-			cout << "Error opening configuration file " << fname << endl;
-			success = FAIL;
-		}
-#ifdef VERBOSE
-		cout << "Read configuration file of " << iline << " lines" << endl;
-#endif
-
-	}
-
-
-
-	//parse command line for port etc.. more priority
-	if(success == OK){
-		for(int iarg=1;iarg<argc;iarg++){
-
-			//tcp port
-			if(!strcasecmp(argv[iarg],"-rx_tcpport")){
-				if(iarg+1==argc){
-					cout << "no port given after -rx_tcpport in command line. Exiting." << endl;
-					success=FAIL;
-				}else{
-					if(sscanf(argv[iarg+1],"%d",&port_no)){
-						cout<<"dataport:"<<port_no<<endl;
-						iarg++;
-					}else{
-						cout << "could not decode port in command line. \n\nExiting." << endl;
-						success=FAIL;
-					}
-				}
-			}
-			else{
-				cout << "Unknown argument:" << argv[iarg] << endl;
-				success=FAIL;
-			}
-		}
-	}
-
-
-	//help
-	if(success != OK){
-		cout << "Help Commands " << endl;
-		cout << "rx_tcpport:\t TCP Communication Port with the client. Default:1954. " << endl << endl;
-	}
-
-
+  success=OK;
 
 	//create socket
 	if(success == OK){
@@ -157,6 +56,7 @@ slsReceiverTCPIPInterface::slsReceiverTCPIPInterface(int argc, char *argv[], int
 			delete socket;
 			socket=NULL;
 		}	else {
+		  portNumber=port_no;
 			//initialize variables
 			strcpy(socket->lastClientIP,"none");
 			strcpy(socket->thisClientIP,"none1");
@@ -174,6 +74,47 @@ slsReceiverTCPIPInterface::slsReceiverTCPIPInterface(int argc, char *argv[], int
 	}
 
 }
+
+int slsReceiverTCPIPInterface::setPortNumber(int pn){
+  int p_number;
+  MySocketTCP *oldsocket=NULL;;
+  int sd=0;
+
+  if (pn>0) {
+    p_number = pn;
+    
+    if (p_number<1024) {
+      sprintf(mess,"Too low port number %d\n", p_number);
+      cout << mess << endl;
+    } else {
+      
+      oldsocket=socket;
+      socket = new MySocketTCP(p_number);
+      if(socket){
+	sd = socket->getErrorStatus();
+	if (!sd){
+	  portNumber=p_number;
+	  delete oldsocket;
+	} else {
+	  cout << "Could not bind port " << p_number << endl;
+	  if (sd==-10) {
+	
+	    cout << "Port "<< p_number << " already set" << endl;
+	  } else {
+	    delete socket;
+	    socket=oldsocket;
+	  }
+	}
+	
+      } else {
+	socket=oldsocket;
+      }
+    }
+  }
+
+  return portNumber;
+}
+
 
 
 int slsReceiverTCPIPInterface::start(){

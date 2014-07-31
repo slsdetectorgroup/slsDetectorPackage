@@ -1318,7 +1318,9 @@ int	slsReceiverTCPIPInterface::eiger_read_frame(){
 	/**send garbage with -1 index to try again*/
 	if(!receiverBase->getFramesCaught()){
 		arg=-1;
+#ifdef VERBOSE
 		cout<<"haven't caught any frame yet"<<endl;
+#endif
 	}
 	/** acq started */
 	else{
@@ -1338,6 +1340,7 @@ int	slsReceiverTCPIPInterface::eiger_read_frame(){
 
 		/**proper frame*/
 		else{
+
 			memcpy(origVal,raw,frameSize);
 			raw=NULL;
 

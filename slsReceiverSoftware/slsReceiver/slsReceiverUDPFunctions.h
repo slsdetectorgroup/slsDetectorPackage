@@ -1,4 +1,4 @@
-//#ifdef SLS_RECEIVER_UDP_FUNCTIONS
+#ifdef SLS_RECEIVER_UDP_FUNCTIONS
 #ifndef SLS_RECEIVER_UDP_FUNCTIONS_H
 #define SLS_RECEIVER_UDP_FUNCTIONS_H
 /********************************************//**
@@ -801,4 +801,4 @@ public:
 
 #endif
 
-//#endif
+#endif

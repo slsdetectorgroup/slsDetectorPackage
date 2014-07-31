@@ -1,4 +1,4 @@
-//#ifdef SLS_RECEIVER_UDP_FUNCTIONS
+#ifdef SLS_RECEIVER_UDP_FUNCTIONS
 /********************************************//**
  * @file slsReceiverUDPFunctions.cpp
  * @short does all the functions for a receiver, set/get parameters, start/stop etc.
@@ -318,7 +318,7 @@ uint32_t slsReceiverUDPFunctions::getStartFrameIndex(){return startFrameIndex;}
 
 uint32_t slsReceiverUDPFunctions::getFrameIndex(){
 	if(!packetsCaught)
-		frameIndex=0;
+		frameIndex=-1;
 	else
 		frameIndex = currframenum - startFrameIndex;
 	return frameIndex;
@@ -326,7 +326,7 @@ uint32_t slsReceiverUDPFunctions::getFrameIndex(){
 
 uint32_t slsReceiverUDPFunctions::getAcquisitionIndex(){
 	if(!totalPacketsCaught)
-		acquisitionIndex=0;
+		acquisitionIndex=-1;
 	else
 		acquisitionIndex = currframenum - startAcquisitionIndex;
 	return acquisitionIndex;
@@ -808,6 +808,7 @@ void slsReceiverUDPFunctions::readFrame(char* c,char** raw, uint32_t &fnum){
 		guiDataReady = 0;
 		pthread_mutex_unlock(&dataReadyMutex);
 		if((nFrameToGui) && (writerthreads_mask)){
+		/*if(nFrameToGui){*/
 			//release after getting data
 			sem_post(&smp);
 		}
@@ -829,10 +830,11 @@ void slsReceiverUDPFunctions::copyFrameToGui(char* startbuf[], uint32_t fnum, ch
 
 	//random read or nth frame read, gui needs data now
 	else{
+		/*
 		//nth frame read, block current process if the guireader hasnt read it yet
 		if(nFrameToGui)
 			sem_wait(&smp);
-
+*/
 		pthread_mutex_lock(&dataReadyMutex);
 		guiDataReady=0;
 		//eiger
@@ -860,6 +862,11 @@ void slsReceiverUDPFunctions::copyFrameToGui(char* startbuf[], uint32_t fnum, ch
 		strcpy(guiFileName,savefilename);
 		guiDataReady=1;
 		pthread_mutex_unlock(&dataReadyMutex);
+
+		//nth frame read, block current process if the guireader hasnt read it yet
+		if(nFrameToGui)
+			sem_wait(&smp);
+
 	}
 }
 
@@ -1192,7 +1199,8 @@ int slsReceiverUDPFunctions::createCompressionFile(int ithr, int iframe){
 
 
 int slsReceiverUDPFunctions::createNewFile(){
-
+ int gt = getFrameIndex();
+ if(gt==-1) gt=0;
 	//create file name
 	if(frameIndexNeeded==-1)
 		sprintf(savefilename, "%s/%s_%d.raw", filePath,fileName,fileIndex);
@@ -1229,7 +1237,7 @@ int slsReceiverUDPFunctions::createNewFile(){
 					(int)((((currframenum-prevframenum)-(packetsInFile/packetsPerFrame))/(double)(currframenum-prevframenum))*100.000)
 					<< "%\tframenum "
 					<< dec << currframenum //<< "\t\t p " << prevframenum
-					<< "\tindex " << dec << getFrameIndex()
+					<< "\tindex " << dec << gt
 					<< "\tlost " << dec << (((int)(currframenum-prevframenum))-(packetsInFile/packetsPerFrame)) << endl;
 
 		}
@@ -1319,7 +1327,10 @@ int slsReceiverUDPFunctions::startReceiver(char message[]){
 
 	//reset listening thread variables
 	measurementStarted = false;
+	//should be set to zero as its added to get next start frame indices for scans for eiger
+	if(!acqStarted)		currframenum = 0;
 	startFrameIndex = 0;
+
 	for(int i = 0; i < numListeningThreads; ++i)
 		totalListeningFrameCount[i] = 0;
 
@@ -1715,6 +1726,7 @@ int loop;
 			//for progress
 			if(myDetectorType == EIGER){
 				tempframenum = htonl(*(unsigned int*)((eiger_image_header *)((char*)(wbuf[ithread] + HEADER_SIZE_NUM_TOT_PACKETS)))->fnum);
+				tempframenum += (startFrameIndex-1); //eiger frame numbers start at 1, so need to -1
 			}else if ((myDetectorType == GOTTHARD) && (shortFrame == -1))
 				tempframenum = (((((uint32_t)(*((uint32_t*)(wbuf[ithread] + HEADER_SIZE_NUM_TOT_PACKETS))))+1)& (frameIndexMask)) >> frameIndexOffset);
 			else
@@ -1840,6 +1852,7 @@ int loop;
 void slsReceiverUDPFunctions::startFrameIndices(int ithread){
 
 	if (myDetectorType == EIGER)
+		//add currframenum later  in this method for scans
 		startFrameIndex = htonl(*(unsigned int*)((eiger_image_header *)((char*)(buffer[ithread] + HEADER_SIZE_NUM_TOT_PACKETS)))->fnum);
 	//gotthard has +1 for frame number and not a short frame
 	else if ((myDetectorType == GOTTHARD) && (shortFrame == -1))
@@ -1850,9 +1863,6 @@ void slsReceiverUDPFunctions::startFrameIndices(int ithread){
 				& (frameIndexMask)) >> frameIndexOffset);
 
 
-	cout << "startFrameIndex:" << startFrameIndex<<endl;
-	prevframenum=startFrameIndex;
-	measurementStarted = true;
 	//start of acquisition
 	if(!acqStarted){
 		startAcquisitionIndex=startFrameIndex;
@@ -1860,6 +1870,15 @@ void slsReceiverUDPFunctions::startFrameIndices(int ithread){
 		acqStarted = true;
 		cout << "startAcquisitionIndex:" << startAcquisitionIndex<<endl;
 	}
+	//for scans, cuz currfraenum resets
+	else if (myDetectorType == EIGER)
+		startFrameIndex += currframenum;
+
+
+	cout << "startFrameIndex:" << startFrameIndex<<endl;
+	prevframenum=startFrameIndex;
+	measurementStarted = true;
+
 }
 
 
@@ -1867,9 +1886,9 @@ void slsReceiverUDPFunctions::startFrameIndices(int ithread){
 void slsReceiverUDPFunctions::stopListening(int ithread, int rc, int &pc, int &t){
 int i;
 
-//#ifdef VERYVERBOSE
+#ifdef VERYVERBOSE
 				cerr << ithread << " recvfrom() failed:"<<endl;
-//#endif
+#endif
 				if(status != TRANSMITTING){
 					cout << ithread << " *** shoule never be here********* status not transmitting***********************"<<endl;/**/
 					fifoFree[ithread]->push(buffer[ithread]);
@@ -1898,37 +1917,37 @@ int i;
 					cout << ithread << " going to push in dummy buffer:" << (void*)buffer[ithread] << " with num packets:"<< (*((uint16_t*)(buffer[ithread]))) << endl;
 #endif
 					while(!fifo[ithread]->push(buffer[ithread]));
-//#ifdef VERYDEBUG
+#ifdef VERYDEBUG
 					cout << ithread << " pushed in dummy buffer:" << (void*)buffer[ithread] << endl;
-//#endif
+#endif
 				}
 
 				//reset mask and exit loop
 				pthread_mutex_lock(&status_mutex);
 				listeningthreads_mask^=(1<<ithread);
-//#ifdef VERYDEBUG
+#ifdef VERYDEBUG
 				cout << ithread << " Resetting mask of current listening thread. New Mask: " << listeningthreads_mask << endl;
-//#endif
+#endif
 				pthread_mutex_unlock(&(status_mutex));
 
-//#ifdef VERYDEBUG
+#ifdef VERYDEBUG
 				cout << ithread << ": Frames listened to " << dec << ((totalListeningFrameCount[ithread]*numListeningThreads)/packetsPerFrame) << endl;
-//#endif
+#endif
 
 				//waiting for all listening threads to be done, to print final count of frames listened to
 				if(ithread == 0){
-//#ifdef VERYDEBUG
+#ifdef VERYDEBUG
 					if(numListeningThreads > 1)
 						cout << "Waiting for listening to be done.. current mask:" << hex << listeningthreads_mask << endl;
-//#endif
+#endif
 					while(listeningthreads_mask)
 						usleep(5000);
-//#ifdef VERYDEBUG
+#ifdef VERYDEBUG
 					t = 0;
 					for(i=0;i<numListeningThreads;++i)
 						t += totalListeningFrameCount[i];
 					cout << "Total frames listened to " << dec <<(t/packetsPerFrame) << endl;
-//#endif
+#endif
 				}
 
 }
@@ -2292,4 +2311,4 @@ int slsReceiverUDPFunctions::enableTenGiga(int enable){
 
 
 
-//#endif
+#endif

@@ -737,6 +737,18 @@ void qTabPlot::EnableScanBox(bool Histo){
 		boxScan->setChecked(false);
 		boxScan->setEnabled(false);
 
+		//2d scans read every frame, not compulsory, but for historgrams
+		if((!isOriginallyOneD) && (mode0 || mode1)){
+			//read every frame
+			disconnect(spinNthFrame,	SIGNAL(editingFinished()),			this, SLOT(SetFrequency()));
+			disconnect(comboFrequency, SIGNAL(currentIndexChanged(int)),	this, SLOT(SetFrequency()));
+			comboFrequency->setCurrentIndex(1);
+			spinNthFrame->setValue(1);
+			SetFrequency();
+			connect(spinNthFrame,	SIGNAL(editingFinished()),			this, SLOT(SetFrequency()));
+			connect(comboFrequency, SIGNAL(currentIndexChanged(int)),	this, SLOT(SetFrequency()));
+		}
+
 		//persistency, accumulate, pedestal, binary
 		if(angConvert){
 			if(chkSuperimpose->isChecked())	chkSuperimpose->setChecked(false);

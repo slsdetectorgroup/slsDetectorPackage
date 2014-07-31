@@ -88,7 +88,7 @@ class FebControl:private FebInterface{
   float        exposure_period_in_sec;
 
   unsigned int   trimbit_size;
-  unsigned char* last_downloaded_trimbits;
+  unsigned int* last_downloaded_trimbits;
 
   void PrintModuleList();
   bool GetModuleIndex(unsigned int module_number, unsigned int& module_index);
@@ -150,11 +150,17 @@ class FebControl:private FebInterface{
   bool GetDAC(std::string s, int& ret_value, bool voltage_mv=0);
   bool GetDACName(unsigned int dac_num, std::string &s);
 
-  bool           SetTrimbits(unsigned int module_num, unsigned char* trimbits);
-  unsigned char* GetTrimbits();
+  bool SetTrimbits(unsigned int module_num, unsigned int* trimbits);
+  unsigned int* GetTrimbits();
 
+
+  /**Added by Dhanya */
+  bool LoadTrimbitFile();
+  bool SaveTrimbitFile();
+  bool SaveAllTrimbitsTo(int value);
 
   
+
   bool Reset();
   bool StartAcquisition();
   bool StopAcquisition();

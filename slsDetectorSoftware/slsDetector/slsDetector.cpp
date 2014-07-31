@@ -3561,9 +3561,9 @@ int64_t slsDetector::setTimer(timerIndex index, int64_t t){
     if (t>=0)
       thisDetector->timerValue[index]=t;
   }
-//#ifdef VERBOSE
+#ifdef VERBOSE
   std::cout<< "Timer " << index << " set to  "<< thisDetector->timerValue[index] << "ns"  << std::endl;
-//#endif
+#endif
 
   if ((thisDetector->myDetectorType==MYTHEN)&&(index==PROBES_NUMBER)) {
     setDynamicRange();

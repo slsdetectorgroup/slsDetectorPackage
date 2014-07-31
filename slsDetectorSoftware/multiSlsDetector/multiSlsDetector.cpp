@@ -4420,7 +4420,7 @@ slsDetectorDefs::runStatus multiSlsDetector::startReceiverReadout(){
 		}
 	}
 
-	*stoppedFlag=1;
+	/**stoppedFlag=1;*/
 	return s;
 }
 

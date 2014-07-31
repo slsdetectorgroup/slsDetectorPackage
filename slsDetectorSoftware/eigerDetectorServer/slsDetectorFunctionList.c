@@ -27,7 +27,7 @@ int initDetector(){
 	  int imod,i,n;
 	  n = getNModBoard(1);
 
-  printf("This is the EIGER Server\n");
+  printf("This is the EIGER Server of revision %llx\n", getDetectorId(DETECTOR_SOFTWARE_VERSION));
 
   //#ifdef VERBOSE
   printf("Board is for %d half modules\n",n);
@@ -307,6 +307,13 @@ int setModule(sls_detector_module myMod){
 
 
 int getModule(sls_detector_module *myMod){
+int i;
+int retval[2];
+	for(i=0;i<NDAC;i++)
+		setDAC((enum detDacIndex)i,-1,-1,0,retval);
+
+	EigerGetTrimbits(myMod->chanregs);
+
 	  if (detectorModules)
 	    copyModule(myMod,detectorModules);/*copyModule(myMod,detectorModules+iMod);*/
 	  else

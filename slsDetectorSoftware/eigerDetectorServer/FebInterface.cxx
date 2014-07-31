@@ -158,9 +158,9 @@ bool FebInterface::WriteMemory(unsigned int sub_num, unsigned int mem_num, unsig
   mem_num       &= 0x3f;
   start_address &= 0x3fff;
   nwrites       &= 0x3ff;
-  if(!nwrites||nwrites>send_buffer_size-2) return 0;
+  if(!nwrites||nwrites>send_buffer_size-2) {cout<<"error herer: nwrites:"<<nwrites<<endl;return 0;}//*d-1026
 
-  send_ndata           =  nwrites+2;
+  send_ndata           =  nwrites+2;//*d-1025
   send_data[0]         = 0xc0000000 | mem_num << 24 | nwrites << 14 | start_address; //cmd -> write to memory, nwrites, mem number, start address
   send_data[nwrites+1] = 0;
   for(unsigned int i=0;i<nwrites;i++) send_data[i+1] = values[i];

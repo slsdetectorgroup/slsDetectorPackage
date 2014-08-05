@@ -11,7 +11,7 @@ CFLAGS= -g -DC_ONLY -fPIC
 
 DFLAGS= -g -DDACS_INT  -DSLS_RECEIVER_UDP_FUNCTIONS 
 
-INCLUDES?= -I. -Iincludes -IMySocketTCP -IslsReceiver -IslsDetectorCalibration -IslsReceiver/eigerReceiver -I$(ASM) 
+INCLUDES?= -I. -Iincludes -IMySocketTCP -IslsReceiver -IslsDetectorCalibration -IslsReceiver/eigerReceiver -I$(ASM) -I../slsDetectorSoftware/commonFiles
 #-IslsReceiverInterface
 
 SRC_CLNT= MySocketTCP/MySocketTCP.cpp slsReceiver/slsReceiver.cpp slsReceiver/slsReceiverUDPFunctions.cpp  slsReceiver/slsReceiverTCPIPInterface.cpp   slsReceiver/slsReceiverUsers.cpp 
@@ -37,6 +37,7 @@ else ifeq ($(ROOTSLS),yes)
 	$(CXX) -DROOTSLS -o $@ -c $< $(INCLUDES) $(DFLAGS)  $(ROOTFLAGS) -fPIC  $(EPICSFLAGS) -L/usr/lib64/ #$(FLAGS)
 else
 	echo "without root"
+	echo $(INCLUDES)
 	$(CXX) -o $@ -c $< $(INCLUDES) $(DFLAGS) -fPIC  $(EPICSFLAGS) -lpthread #$(FLAGS)
 endif
 

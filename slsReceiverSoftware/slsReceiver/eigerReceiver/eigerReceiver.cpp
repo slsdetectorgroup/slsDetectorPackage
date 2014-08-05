@@ -39,77 +39,77 @@ struct EigerReceiverScanConfiguration {
 	bool doFileOverWrite;
 
 	EigerReceiverScanConfiguration():
-			dynamicRange(-1),
-			scanTag(-1),
-			numberOfFrames(-1),
-			doFileWrite(false),
-			doFileOverWrite(false){};
+		dynamicRange(-1),
+		scanTag(-1),
+		numberOfFrames(-1),
+		doFileWrite(false),
+		doFileOverWrite(false){};
 };
 
 class EigerReceiverImplementation: public EigerReceiver {
-
+	
 public:
-
+	
 	EigerReceiverImplementation() : isInitialized(false), status(slsReceiverDefs::ERROR) {};
-
+	
 	void initialize(const char *detectorHostname) {
-
-	 string name;
-	 if (detectorHostname != NULL) {
-		 name = detectorHostname;
-	 }
-
-	 if (name.empty()) {
-		 DEBUG("initialize(): can't initialize with empty string or NULL for detectorHostname");
-	 } else if (isInitialized == true) {
-		 DEBUG("initialize(): already initialized, can't initialize several times");
-	 } else {
-	   DEBUG("initialize(): initialize() with: detectorHostName=" << name << ".");
-	   init_config.detectorHostname = name;
-	   isInitialized = true;
-	   status = slsReceiverDefs::IDLE;
-	 }
-
+		
+		string name;
+		if (detectorHostname != NULL) {
+			name = detectorHostname;
+		}
+		
+		if (name.empty()) {
+			DEBUG("initialize(): can't initialize with empty string or NULL for detectorHostname");
+		} else if (isInitialized == true) {
+			DEBUG("initialize(): already initialized, can't initialize several times");
+		} else {
+			DEBUG("initialize(): initialize() with: detectorHostName=" << name << ".");
+			init_config.detectorHostname = name;
+			isInitialized = true;
+			status = slsReceiverDefs::IDLE;
+		}
+		
 #ifdef SALA
-	 //REST call - hardcoded
-         RestHelper rest ;
-         rest.init("localhost",8080);
-         std::string answer;
-         std::cout << "---- REST test 1: true, string "<< std::endl;
-         int code = rest.get_json("status", &answer);
-         std::cout << "Answer: " <<  answer << std::endl;
-
-         std::cout << "---- REST test 2: 404, string "<< std::endl;
-         code = rest.get_json("statuss", &answer);
-         if (code != 0){
-           //throw -1;
-           std::cout << "I SHOULD THROW AN EXCEPTION!!!" << std::endl;
-         }
-
-         std::cout << "---- REST test 3: true, json object "<< std::endl;
-         JsonBox::Value json_value;
-         code = rest.get_json("status", &json_value);
-         std::cout << "JSON " << json_value["status"] << std::endl;
-
-	 answer = "";
-	 std::cout << "---- REST test 4: POST, string "<< std::endl;
-         code = rest.post_json("recipes/cassoela", &answer);
-	 std::cout << "POST answer: " << answer << std::endl;
-	 if (code != 0){
-           //throw -1;
-           std::cout << "I SHOULD THROW AN EXCEPTION!!!" << std::endl;
-         }
-
-	 RestHelper rest2 ;
-         rest2.init("reallyfake",8080);
-         std::cout << "---- REST test 4: host not found, json object "<< std::endl;
-         JsonBox::Value json_value2;
-         code = rest2.get_json("status", &json_value2);
-         if (code != 0){
-           //throw -1;
-           std::cout << "I SHOULD THROW AN EXCEPTION!!!" << std::endl;
-         }
-
+		//REST call - hardcoded
+		RestHelper rest ;
+		rest.init("localhost",8080);
+		std::string answer;
+		std::cout << "---- REST test 1: true, string "<< std::endl;
+		int code = rest.get_json("status", &answer);
+		std::cout << "Answer: " <<  answer << std::d::endl;
+		
+		std::cout << "---- REST test 2: 404, string "<< std::endl;
+		code = rest.get_json("statuss", &answer);
+		if (code != 0){
+			//throw -1;
+			std::cout << "I SHOULD THROW AN EXCEPTION!!!" << std::endl;
+		}
+		
+		std::cout << "---- REST test 3: true, json object "<< std::endl;
+		JsonBox::Value json_value;
+		code = rest.get_json("status", &json_value);
+		std::cout << "JSON " << json_value["status"] << std::endl;
+		
+		answer = "";
+		std::cout << "---- REST test 4: POST, string "<< std::endl;
+		code = rest.post_json("recipes/cassoela", &answer);
+		std::cout << "POST answer: " << answer << std::endl;
+		if (code != 0){
+			//throw -1;
+			std::cout << "I SHOULD THROW AN EXCEPTION!!!" << std::endl;
+		}
+		
+		RestHelper rest2 ;
+		rest2.init("reallyfake",8080);
+		std::cout << "---- REST test 4: host not found, json object "<< std::endl;
+		JsonBox::Value json_value2;
+		code = rest2.get_json("status", &json_value2);
+		if (code != 0){
+			//throw -1;
+			std::cout << "I SHOULD THROW AN EXCEPTION!!!" << std::endl;
+		}
+		
 #endif
         }
 
@@ -120,31 +120,31 @@ public:
 			DEBUG("getDetectorHostname(): Return NULL");
 			return(NULL);
 		}
-	    char *c = new char[name.length()+1];
-	    name.copy(c, name.length());
-	    c[name.length()] = '\0';
-        DEBUG("getDetectorHostname(): Return " << c << ".");
-	    return(c);
+		char *c = new char[name.length()+1];
+		name.copy(c, name.length());
+		c[name.length()] = '\0';
+		DEBUG("getDetectorHostname(): Return " << c << ".");
+		return(c);
 	}
-
+	
 	char *getFileName() const {
 		string name = scan_config.fileName;
-
-	    char *c = new char[name.length()+1];
-	    name.copy(c, name.length());
-	    c[name.length()] = '\0';
-        DEBUG("getFileName(): Return " << c);
-	    return(c);
+		
+		char *c = new char[name.length()+1];
+		name.copy(c, name.length());
+		c[name.length()] = '\0';
+		DEBUG("getFileName(): Return " << c);
+		return(c);
 	}
-
+	
 	char *getFilePath() const {
 		string name = scan_config.filePath;
 
-	    char *c = new char[name.length()+1];
-	    name.copy(c, name.length());
-	    c[name.length()] = '\0';
-        DEBUG("getFilePath(): Return " << c);
-	    return(c);
+		char *c = new char[name.length()+1];
+		name.copy(c, name.length());
+		c[name.length()] = '\0';
+		DEBUG("getFilePath(): Return " << c);
+		return(c);
 	}
 
 	int getDynamicRange() const {
@@ -235,6 +235,11 @@ public:
 	void abort() {
 		DEBUG("abort(): return 0.");
 		status = slsReceiverDefs::IDLE;
+	}
+
+	// Temporary workaround
+	int setDetectorType(slsReceiverDefs::detectorType det){
+		return 0;
 	}
 
 private:

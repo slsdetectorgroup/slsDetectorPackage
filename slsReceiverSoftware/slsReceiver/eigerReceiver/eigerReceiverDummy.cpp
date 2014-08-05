@@ -49,6 +49,8 @@ public:
 	char *getFileName() const {return (char*)"";}
 
 	char *getFilePath() const {return (char*)"";}
+	
+	int getFileIndex() const {return 0;}
 
 	int getDynamicRange() const { return 0;}
 

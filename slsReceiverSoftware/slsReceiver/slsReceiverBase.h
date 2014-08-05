@@ -1,5 +1,6 @@
 #ifndef SLSRECEIVERBASE_H
 #define SLSRECEIVERBASE_H
+
 /***********************************************
  * @file slsReceiverBase.h
  * @short base class with all the functions for a receiver, set/get parameters, start/stop etc.
@@ -12,20 +13,61 @@
  * @short base class with all the functions for a receiver, set/get parameters, start/stop etc.
  */
 
+
+#include "sls_detector_defs.h"
+
 class slsReceiverBase {
-
+	/* abstract class that defines the public interface of an sls detector data receiver.
+	 *
+	 * Use the factory method slsReceiverBase::create() to get an instance:
+	 *
+	 *      slsReceiverBase *receiver = slsReceiverBase::create()
+	 *
+	 *  supported sequence of method-calls:
+	 *
+	 *  initialize() : once and only once after create()
+	 *
+	 *  get*()       : anytime after initialize(), multiples times
+	 *  set*()       : anytime after initialize(), multiple times
+	 *
+	 *  startReceiver(): anytime after initialize(). Will fail if state already is 'running'
+	 *
+	 *  abort(),
+	 *  stopReceiver() : anytime after initialize(). Will do nothing if state already is idle.
+	 *
+	 *  getStatus() returns the actual state of the data receiver - running or idle. All other
+	 *  get*() and set*() methods access the local cache of configuration values only and *do not* modify the data receiver settings.
+	 *
+	 *  Only startReceiver() does change the data receiver configuration, it does pass the whole configuration cache to the data receiver.
+	 *
+	 *  get- and set-methods that return a char array (char *) allocate a new array at each call. The caller is responsible to free the allocated space:
+	 *
+	 *      char *c = receiver->getFileName();
+	 *          ....
+	 *      delete[] c;
+	 *
+	 *  always: 1:YES       0:NO      for int as bool-like arguments
+	 *
+	 */
 public:
-
-  /**
-   * constructor
-   */
-  slsReceiverBase(){};
-  
-  /**
-   * Destructor
-   */
-  virtual ~slsReceiverBase() {};
-
+	
+	// Using Factory instead
+	/**
+	 * constructor
+	 */
+	//slsReceiverBase(){};
+	
+	/**
+	 * factory method to create instances
+	 */
+	static slsReceiverBase *create();
+	
+	
+	/**
+	 * Destructor
+	 */
+	virtual ~slsReceiverBase() {};
+	
 	/**
 	 * Initialize the Receiver
 	 @param detectorHostName detector hostname
@@ -44,8 +86,8 @@ public:
 	/**
 	 * Returns status of receiver: idle, running or error
 	 */
-    virtual slsReceiverDefs::runStatus getStatus() const = 0;
-
+	virtual slsReceiverDefs::runStatus getStatus() const = 0;
+	
 	/**
 	 * Returns File Name
 	 * caller is responsible to deallocate the returned char array.

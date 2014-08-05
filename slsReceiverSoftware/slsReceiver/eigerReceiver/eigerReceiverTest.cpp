@@ -29,7 +29,7 @@ int main(int argc, char *argv[]){
 	}
 	delete[] c0;
 
-    cout <<prefix<< "initialize 4 times - only the second should work" << endl;
+	cout <<prefix<< "initialize 4 times - only the second should work" << endl;
 	receiver->initialize(empty);
 	status = receiver->getStatus();
 	receiver->initialize(name);

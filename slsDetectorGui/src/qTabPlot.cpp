@@ -45,7 +45,8 @@ qTabPlot::qTabPlot(QWidget *parent,multiSlsDetector*& detector, qDrawPlot*& plot
 				spinTimeGap(0),
 				comboTimeGapUnit(0),
 				btnGroupScan(0),
-				btnGroupPlotType(0){
+				btnGroupPlotType(0),
+				btnGroupHistogram(0){
 	setupUi(this);
 	SetupWidgetWindow();
 	Initialization();
@@ -83,6 +84,12 @@ void qTabPlot::SetupWidgetWindow(){
 	btnGroupPlotType->addButton(radioNoPlot,0);
 	btnGroupPlotType->addButton(radioDataGraph,1);
 	btnGroupPlotType->addButton(radioHistogram,2);
+
+//histogram arguments
+	btnGroupHistogram = new QButtonGroup(this);
+	btnGroupHistogram->addButton(radioHistIntensity,0);
+	btnGroupHistogram->addButton(radioHistLevel0,1);
+	btnGroupHistogram->addButton(radioHistLevel1,2);
 
 // Plot Axis
 	dispTitle->setEnabled(false);
@@ -181,6 +188,9 @@ void qTabPlot::SetupWidgetWindow(){
 	//to check if this should be enabled
 	EnableScanBox();
 
+	//disable histogram initially
+	boxHistogram->hide();
+
 	qDefs::checkErrorMessage(myDet,"qTabPlot::SetupWidgetWindow");
 }
 
@@ -273,6 +283,8 @@ void qTabPlot::Select1DPlot(bool b){
 void qTabPlot::Initialization(){
 // Plot arguments box
 	connect(btnGroupPlotType,SIGNAL(buttonClicked(int)),this, SLOT(SetPlot()));
+// Histogram arguments box
+	connect(btnGroupHistogram,SIGNAL(buttonClicked(int)),this, SLOT(SetHistogramOptions()));
 // Scan box
 	connect(boxScan,	  SIGNAL(toggled(bool)),  this, SLOT(EnableScanBox()));
 // Snapshot box
@@ -522,14 +534,20 @@ void qTabPlot::SetPlot(){
 	if(radioNoPlot->isChecked()){
 		cout << " - No Plot" << endl;
 
+		boxScan->show();
+		boxHistogram->hide();
 		myPlot->EnablePlot(false);
 		boxSnapshot->setEnabled(false);
 		boxSave->setEnabled(false);
 		boxFrequency->setEnabled(false);
 		boxPlotAxis->setEnabled(false);
 		boxScan->setEnabled(false);
+
 	}else if(radioDataGraph->isChecked()){
 		cout << " - DataGraph" << endl;
+
+		boxScan->show();
+		boxHistogram->hide();
 		myPlot->EnablePlot(true);
 		Select1DPlot(isOriginallyOneD);
 		boxSnapshot->setEnabled(true);
@@ -538,6 +556,8 @@ void qTabPlot::SetPlot(){
 		boxPlotAxis->setEnabled(true);
 		if(!myPlot->isRunning())
 			EnableScanBox();
+		//  To remind the updateplot in qdrawplot to set range after updating plot
+		myPlot->SetXYRange(true);
 	}
 	else{
 		//histogram and 2d scans dont work
@@ -545,10 +565,20 @@ void qTabPlot::SetPlot(){
 			qDefs::Message(qDefs::WARNING,"<nobr>Histogram cannot be used together with 2D Scan Plots.</nobr><br>"
 					"<nobr>Uncheck <b>2D Scan</b> plots to plot <b>Histograms</b></nobr>", "qTabPlot::SetPlot");
 			radioDataGraph->setChecked(true);
+			boxScan->show();
+			boxHistogram->hide();
 			return;
 		}
 
 		cout << " - Histogram" << endl;
+
+		if(radioHistIntensity->isChecked())
+			pageHistogram->setEnabled(true);
+		else
+			pageHistogram->setEnabled(false);
+
+		boxScan->hide();
+		boxHistogram->show();
 		myPlot->EnablePlot(true);
 		Select1DPlot(isOriginallyOneD);
 		boxSnapshot->setEnabled(true);
@@ -556,7 +586,7 @@ void qTabPlot::SetPlot(){
 		boxFrequency->setEnabled(true);
 		boxPlotAxis->setEnabled(true);
 		if(!myPlot->isRunning())
-			EnableScanBox(true);
+			EnableScanBox();
 		qDefs::Message(qDefs::INFORMATION,"<nobr>Please check the <b>Plot Histogram Options</b> below "
 				"before <b>Starting Acquitision</b></nobr>","qTabPlot::SetPlot");
 	}
@@ -707,15 +737,18 @@ void qTabPlot::SetFrequency(){
 
 //-------------------------------------------------------------------------------------------------------------------------------------------------
 
-void qTabPlot::EnableScanBox(bool Histo){
+void qTabPlot::EnableScanBox(){
 #ifdef VERBOSE
-	cout << "Entering Enable Scan Box, Histo:" << Histo << endl;
+	cout << "Entering Enable Scan Box"<< endl;
 #endif
 	disconnect(btnGroupPlotType,SIGNAL(buttonClicked(int)),this, SLOT(SetPlot()));
 	disconnect(boxScan,	  	SIGNAL(toggled(bool)),		this, SLOT(EnableScanBox()));
 
 	int mode0 = myDet->getScanMode(0);
 	int mode1 = myDet->getScanMode(1);
+
+	radioHistLevel0->setEnabled(mode0);
+	radioHistLevel1->setEnabled(mode1);
 	int ang;
 	bool angConvert = myDet->getAngularConversion(ang);
 	myPlot->EnableAnglePlot(angConvert);
@@ -731,6 +764,9 @@ void qTabPlot::EnableScanBox(bool Histo){
 		chkBinary->setEnabled(true);
 		chkBinary_2->setEnabled(true);
 	}
+
+
+
 
 	//if angle plot or originally 2d, uncheck and disable scanbox
 	if ((angConvert) || (!isOriginallyOneD)){
@@ -766,17 +802,22 @@ void qTabPlot::EnableScanBox(bool Histo){
 			pageAccumulate_2->setEnabled(false);
 		}
 
-
-
 		if(angConvert){
 			boxScan->setToolTip("<nobr>Only 1D Plots enabled for Angle Plots</nobr>");
 			//disable histogram
 			if(radioHistogram->isChecked()){
 				radioDataGraph->setChecked(true);
 				radioHistogram->setEnabled(false);
+				//  To remind the updateplot in qdrawplot to set range after updating plot
+				myPlot->SetXYRange(true);
+				boxScan->show();
+				boxHistogram->hide();
 			}
 		}
 	}
+
+
+
 
 	//originally1d && not angle plot
 	else{
@@ -787,6 +828,16 @@ void qTabPlot::EnableScanBox(bool Histo){
 
 		//2d enabled with boxscan
 		if(boxScan->isChecked()){
+
+			//2d for 1d detctors and histogram dont go
+			if(radioHistogram->isChecked()){
+				radioDataGraph->setChecked(true);
+				//  To remind the updateplot in qdrawplot to set range after updating plot
+				myPlot->SetXYRange(true);
+				boxScan->show();
+				boxHistogram->hide();
+			}
+
 			//read every frame
 			disconnect(spinNthFrame,	SIGNAL(editingFinished()),			this, SLOT(SetFrequency()));
 			disconnect(comboFrequency, SIGNAL(currentIndexChanged(int)),	this, SLOT(SetFrequency()));
@@ -814,12 +865,10 @@ void qTabPlot::EnableScanBox(bool Histo){
 
 	//histogram
 	if(radioHistogram->isChecked()){
-		//switch back to datagraph
-		if(!Histo)
-			radioDataGraph->setChecked(true);
-
-		pageHistogram->setEnabled(true);
-		pageHistogram_2->setEnabled(true);
+		if(radioHistIntensity->isChecked())
+			pageHistogram->setEnabled(true);
+		else
+			pageHistogram->setEnabled(false);
 		stackedWidget->setCurrentIndex(stackedWidget->count()-1);
 		stackedWidget_2->setCurrentIndex(stackedWidget_2->count()-1);
 		box1D->setTitle(QString("1D Plot Options %1 - Histogram").arg(stackedWidget->currentIndex()+1));
@@ -851,7 +900,7 @@ void qTabPlot::EnableScanBox(bool Histo){
 
 	}else{
 		pageHistogram->setEnabled(false);
-		pageHistogram_2->setEnabled(false);
+		/*pageHistogram_2->setEnabled(false);*/
 	}
 
 	connect(btnGroupPlotType,SIGNAL(buttonClicked(int)),this, SLOT(SetPlot()));
@@ -888,9 +937,49 @@ void qTabPlot::SetScanArgument(){
 
 
 	//histogram default  - set before setscanargument
-	myPlot->SetHistogram(radioHistogram->isChecked(),spinHistFrom->value(),spinHistTo->value(),spinHistSize->value());
+	int min = spinHistFrom->value();
+	int max = spinHistTo->value();
+	int size = spinHistSize->value();
+	int histArg = qDefs::Intensity;
 	if(radioHistogram->isChecked()){
-		dispXAxis->setText("Intensity");
+		if(!radioHistIntensity->isChecked()){
+
+			int mode = 0;
+			histArg = qDefs::histLevel0;
+			if(radioHistLevel1->isChecked()){
+				mode = 1;
+				histArg = qDefs::histLevel1;
+			}
+
+
+			int numSteps = myDet->getScanSteps(mode);
+			double *values = NULL;
+			min = 0;max = 1;size = 1;
+
+			if(numSteps > 0){
+				values = new double[numSteps];
+				myDet->getScanSteps(mode,values);
+				min = values[0];
+				max = values[numSteps - 1];
+				size = (max - min)/(numSteps - 1);
+				min -= (size/2);
+				max += (size/2);
+			}
+		}
+
+	}
+
+	cout <<"min:"<<min<<" max:"<<max<<" size:"<<size<<endl;
+	myPlot->SetHistogram(radioHistogram->isChecked(),histArg,min,max,size);
+
+
+	if(radioHistogram->isChecked()){
+		if(radioHistIntensity->isChecked())
+			dispXAxis->setText("Intensity");
+		else if (radioHistLevel0->isChecked())
+			dispXAxis->setText("Level 0");
+		else
+			dispXAxis->setText("Level 1");
 		dispYAxis->setText("Frequency");
 		myPlot->SetHistXAxisTitle("Intensity");
 		myPlot->SetHistYAxisTitle("Frequency");
@@ -938,36 +1027,6 @@ void qTabPlot::SetScanArgument(){
 
 	qDefs::checkErrorMessage(myDet,"qTabPlot::SetScanArgument");
 
-}
-
-
-//-------------------------------------------------------------------------------------------------------------------------------------------------
-
-void qTabPlot::Refresh(){
-#ifdef VERBOSE
-	cout  << endl << "**Updating Plot Tab" << endl;
-#endif
-	if(!myPlot->isRunning()){
-		if (!radioNoPlot->isChecked())
-			boxFrequency->setEnabled(true);
-		connect(boxScan,	  SIGNAL(toggled(bool)),				   this, SLOT(EnableScanBox()));
-		EnableScanBox(true);
-		SetFrequency();
-
-	}else{
-		boxFrequency->setEnabled(false);
-		disconnect(boxScan,	  SIGNAL(toggled(bool)),				   this, SLOT(EnableScanBox()));
-		boxScan->setEnabled(false);
-		pageHistogram->setEnabled(false);
-		pageHistogram_2->setEnabled(false);
-		if(radioHistogram->isChecked())
-			radioDataGraph->setEnabled(false);
-		else
-			radioHistogram->setEnabled(false);
-	}
-#ifdef VERBOSE
-	cout  << "**Updated Plot Tab" << endl << endl;
-#endif
 }
 
 
@@ -1025,3 +1084,47 @@ void qTabPlot::SetBinary(){
 
 
 //-------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+void qTabPlot::SetHistogramOptions(){
+	if(radioHistIntensity->isChecked()){
+		pageHistogram->setEnabled(true);
+	}else {
+		pageHistogram->setEnabled(false);
+	}
+}
+
+
+
+//-------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+void qTabPlot::Refresh(){
+#ifdef VERBOSE
+	cout  << endl << "**Updating Plot Tab" << endl;
+#endif
+	if(!myPlot->isRunning()){
+		if (!radioNoPlot->isChecked())
+			boxFrequency->setEnabled(true);
+		connect(boxScan,	  SIGNAL(toggled(bool)),				   this, SLOT(EnableScanBox()));
+		EnableScanBox();
+		SetFrequency();
+
+	}else{
+		boxFrequency->setEnabled(false);
+		disconnect(boxScan,	  SIGNAL(toggled(bool)),				   this, SLOT(EnableScanBox()));
+		boxScan->setEnabled(false);
+		pageHistogram->setEnabled(false);
+		if(radioHistogram->isChecked())
+			radioDataGraph->setEnabled(false);
+		else
+			radioHistogram->setEnabled(false);
+	}
+#ifdef VERBOSE
+	cout  << "**Updated Plot Tab" << endl << endl;
+#endif
+}
+
+
+//-------------------------------------------------------------------------------------------------------------------------------------------------
+

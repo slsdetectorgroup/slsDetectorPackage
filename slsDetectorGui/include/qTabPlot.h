@@ -71,6 +71,7 @@ private:
 	QComboBox 		*comboTimeGapUnit;
 	QButtonGroup 	*btnGroupScan;
 	QButtonGroup	*btnGroupPlotType;
+	QButtonGroup	*btnGroupHistogram;
 
 	/** some Default Values */
 	static QString defaultPlotTitle;
@@ -105,7 +106,7 @@ public slots:
 
 	/** Enable Scan box
 	 */
-	void EnableScanBox(bool Histo=false);
+	void EnableScanBox();
 
 
 private slots:
@@ -146,6 +147,9 @@ private slots:
 
 	/** Plot binary plot */
 	void SetBinary();
+
+	/** Set histogram options */
+	void SetHistogramOptions();
 
 signals:
 	void DisableZoomSignal(bool);

@@ -168,6 +168,7 @@ void qDrawPlot::SetupWidgetWindow(){
 	isTriggerEnabled = false;
 
 	scanArgument = qDefs::None;
+	histogramArgument = qDefs::Intensity;
 	anglePlot = false;
 	alreadyDisplayed =  false;
 
@@ -600,7 +601,7 @@ void qDrawPlot::SetScanArgument(int scanArg){
 		int max = (iloop+1)*histSize + histFrom;
 		while(min < histTo){
 			histogramSamples.resize(iloop+1);
-			histogramSamples[iloop].interval.setInterval(min,max);
+			histogramSamples[iloop].interval.setInterval(min,max-1);
 			histogramSamples[iloop].value = 0;
 			iloop++;
 			min = max;
@@ -974,15 +975,56 @@ int qDrawPlot::GetData(detectorData *data,int fIndex){
 					if(originally2D)
 						numValues = nPixelsX*nPixelsY;
 
+					//clean up graph
+					if(histogramArgument == qDefs::Intensity){
+						for(int j=0;j<histogramSamples.size();j++){
+								histogramSamples[j].value = 0;
+
+						}
+					}
+
+					int val = 0 ;
 					for(int i=0;i<numValues;i++){
+						//frequency of intensity
+						if(histogramArgument == qDefs::Intensity){
+							//ignore outside limits
+							if ((data->values[i] <=  histFrom) || (data->values[i] >= histTo))
+								continue;
+							//check for intervals, increment if validates
+							for(int j=0;j<histogramSamples.size();j++){
+								if(histogramSamples[j].interval.contains(data->values[i]))
+									histogramSamples[j].value += 1;
+
+							}
+						}
+						//get sum of data pixels
+						else
+							val += data->values[i];
+
+					}
+
+
+					if(histogramArgument != qDefs::Intensity){
+						val /= numValues;
+
+						//find scan value
+						int ci = 0, fi = 0; double cs0 = 0 , cs1 = 0;
+						fileIOStatic::getVariablesFromFileName(string(data->fileName), ci, fi,  cs0, cs1);
+
+						int scanval=-1;
+						if(cs0 != -1)
+							scanval = cs0;
+						else scanval = cs1;
+
 						//ignore outside limits
-						if ((data->values[i] <=  histFrom) || (data->values[i] >= histTo))
-							continue;
+						if ((scanval <=  histFrom) || (scanval >= histTo) || (scanval == -1))
+							scanval = -1;
 						//check for intervals, increment if validates
 						for(int j=0;j<histogramSamples.size();j++){
-							if(histogramSamples[j].interval.contains(data->values[i]))
-								histogramSamples[j].value += 1;
-
+							if(histogramSamples[j].interval.contains(scanval)){
+								histogramSamples[j].value = val;
+							cout << "j:"<<j<<" scanval:"<<scanval<<" val:"<<val<<endl;
+							}
 						}
 					}
 

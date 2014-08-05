@@ -2765,6 +2765,123 @@ Interval between plots has 2 modes. A condition to be satisfied, in order to avo
     <bool>true</bool>
    </property>
   </widget>
+  <widget class="QGroupBox" name="boxHistogram">
+   <property name="geometry">
+    <rect>
+     <x>410</x>
+     <y>5</y>
+     <width>351</width>
+     <height>51</height>
+    </rect>
+   </property>
+   <property name="title">
+    <string>Histogram  -  X Axis Values</string>
+   </property>
+   <property name="checkable">
+    <bool>false</bool>
+   </property>
+   <property name="checked">
+    <bool>false</bool>
+   </property>
+   <widget class="QWidget" name="horizontalLayoutWidget_15">
+    <property name="geometry">
+     <rect>
+      <x>10</x>
+      <y>20</y>
+      <width>351</width>
+      <height>26</height>
+     </rect>
+    </property>
+    <layout class="QHBoxLayout" name="horizontalLayout_3">
+     <property name="spacing">
+      <number>0</number>
+     </property>
+     <item>
+      <widget class="QRadioButton" name="radioHistIntensity">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+       <property name="toolTip">
+        <string>&lt;nobr&gt;Enabled only when there is a Scan Level 0&lt;/nobr&gt;</string>
+       </property>
+       <property name="text">
+        <string>Intensity</string>
+       </property>
+       <property name="checked">
+        <bool>true</bool>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <spacer name="horizontalSpacer_10">
+       <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+       </property>
+       <property name="sizeType">
+        <enum>QSizePolicy::Fixed</enum>
+       </property>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>7</width>
+         <height>10</height>
+        </size>
+       </property>
+      </spacer>
+     </item>
+     <item>
+      <widget class="QRadioButton" name="radioHistLevel0">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+       <property name="toolTip">
+        <string>&lt;nobr&gt;Enabled only when there is a Scan Level 1&lt;/nobr&gt;</string>
+       </property>
+       <property name="text">
+        <string>Level 0</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <spacer name="horizontalSpacer_11">
+       <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+       </property>
+       <property name="sizeType">
+        <enum>QSizePolicy::Fixed</enum>
+       </property>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>7</width>
+         <height>10</height>
+        </size>
+       </property>
+      </spacer>
+     </item>
+     <item>
+      <widget class="QRadioButton" name="radioHistLevel1">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+       <property name="toolTip">
+        <string>&lt;nobr&gt;Enabled only when there is a Scan Level 0 or a Scan Level 1, not both&lt;/nobr&gt;</string>
+       </property>
+       <property name="text">
+        <string>Level 1</string>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </widget>
+  </widget>
   <zorder>box1D</zorder>
   <zorder>box2D</zorder>
   <zorder>boxSave</zorder>
@@ -2775,6 +2892,7 @@ Interval between plots has 2 modes. A condition to be satisfied, in order to avo
   <zorder>boxSnapshot</zorder>
   <zorder>btnRight</zorder>
   <zorder>btnLeft</zorder>
+  <zorder>boxHistogram</zorder>
  </widget>
  <tabstops>
   <tabstop>radioNoPlot</tabstop>

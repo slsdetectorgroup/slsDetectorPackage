@@ -143,7 +143,7 @@ public:
 	void SetBinary(bool enable, int from=0, int to=0);
 
 	/** Enable/Disable Histogram */
-	void SetHistogram(bool enable,int min=0, int max=0, int size=0){histogram = enable;histFrom=min;histTo=max;histSize=size;};
+	void SetHistogram(bool enable,int histArg, int min=0, int max=0, int size=0){histogram = enable;histogramArgument = histArg; histFrom=min;histTo=max;histSize=size;};
 
 public slots:
 /** To select 1D or 2D plot
@@ -493,6 +493,9 @@ bool isTriggerEnabled;
 
 /** scan arguments*/
 int scanArgument;
+
+/** histogram arguments*/
+int histogramArgument;
 
 /** enable angle plot */
 bool anglePlot;

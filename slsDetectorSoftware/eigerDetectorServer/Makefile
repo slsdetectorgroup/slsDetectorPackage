@@ -13,7 +13,7 @@ SRC_CLNT2   =	FebServer.cxx FebControl.cxx FebInterface.cxx LocalLinkInterface.c
 SRC_CLNT3   =	BebServer.cxx Beb.cxx LocalLinkInterface.cxx HardwareIO.cxx
 
 OBJS 		= 	$(SRC_CLNT:.c=.o) 
-
+ 
 
 all: clean $(PROGS) feb_debug beb_debug
 

@@ -52,6 +52,12 @@ int init_detector(int b) {
 #ifdef SLS_DETECTOR_FUNCTION_LIST
 		initDetector();
 #endif
+	}else{
+		  Feb_Interface_FebInterface();
+		  Feb_Control_FebControl();
+		  printf("FEb control constructor done\n");
+		 /* Beb_Beb(-1);
+		  printf("BEB constructor done\n");*/
 	}
 	strcpy(mess,"dummy message");
 	strcpy(lastClientIP,"none");
@@ -1970,8 +1976,9 @@ int set_settings(int file_des) {
 	}
 	imod=arg[1];
 	isett=arg[0];
-	printf("isett:%d, imod =%d\n",isett,imod);
-
+#ifdef VERBOSE
+	printf("In set_settings, isett:%d, imod =%d\n",isett,imod);
+#endif
 #ifdef SLS_DETECTOR_FUNCTION_LIST
 	if (imod>=getTotalNumberOfModules()) {
 		ret=FAIL;
@@ -2262,11 +2269,11 @@ int get_run_status(int file_des) {
 	enum runStatus s;
 	sprintf(mess,"getting run status\n");
 
-#ifdef VERBOSE
+//#ifdef VERBOSE
 	printf("Getting status\n");
-#endif 
+//#endif
 #ifdef SLS_DETECTOR_FUNCTION_LIST
-	s= getRunStatus();
+	s= getRunStatus();printf("status:%d\n");
 #endif
 
 	if (ret!=OK) {
@@ -2452,6 +2459,7 @@ int set_timer(int file_des) {
 			sprintf(mess, "could not allocate RAM for %lld frames\n", tns);
 	}
 #endif
+
 	if (differentClients)
 		ret=FORCE_UPDATE;
 }
@@ -2709,6 +2717,7 @@ int set_roi(int file_des) {
 #ifndef GOTTHARDD
 	ret = FAIL;
 	strcpy(mess,"Not applicable/implemented for this detector\n");
+	printf("Error:Set ROI-%s",mess);
 #else
 #ifdef VERBOSE
 	printf("Setting ROI to:");
@@ -3007,11 +3016,13 @@ int configure_mac(int file_des) {
 	printf("\n");
 	printf("Configuring MAC of module %d at port %x\n", imod, udpport);
 #endif
-	printf("ret:%d\n",ret);
+
 #ifdef SLS_DETECTOR_FUNCTION_LIST
 	if (ret==OK) {
-		if(getRunStatus() == RUNNING)
+		if(getRunStatus() == RUNNING){
 			stopStateMachine();
+		}
+
 		retval=configureMAC(ipad,imacadd,idetectormacadd,detipad,udpport,0);	/*digitalTestBit);*/
 		if(retval==-1) 	ret=FAIL;
 	}
@@ -3396,9 +3407,9 @@ int enable_ten_giga(int file_des) {
 	}
 	/* execute action */
 	if(ret != FAIL){
-//#ifdef VERBOSE
+#ifdef VERBOSE
 		printf("Enabling 10Gbe :%d \n",arg);
-//#endif
+#endif
 #ifdef SLS_DETECTOR_FUNCTION_LIST
 		retval=enableTenGigabitEthernet(arg);
 		if((arg != -1) && (retval != arg))

@@ -54,10 +54,8 @@ char mess[1000];
 
 int digitalTestBit = 0;
 
-extern int withGotthard;
 
-
-int init_detector(int b, int checkType) {
+int init_detector(int b) {
   if (mapCSP0()==FAIL) { printf("Could not map memory\n");
     exit(1);  
   }
@@ -69,21 +67,13 @@ int init_detector(int b, int checkType) {
 
   //confirm if it is really moench
   if(((bus_r(PCB_REV_REG) & DETECTOR_TYPE_MASK)>>DETECTOR_TYPE_OFFSET) != MOENCH_MODULE ){
-	  if(checkType){
-		  printf("This is a Gotthard detector. Exiting Moench Server.\n\n");
-	  	  exit(-1);
-	  }
-	  //no check required as specified in command line arguments
-	  else if(b){
-		  printf("***This is a GOTTHARD detector with %d chips per module***\n",GOTTHARDNCHIP);
-		  printf("***Assuming this to be a MOENCH detector***\n");
-	  }
-	  withGotthard = 1;
-  }	  else if(b){
-	  printf("***This is a MOENCH detector with %d chips per module***\n",NCHIP);
+	  printf("This is a Gotthard detector. Exiting Moench Server.\n\n");
+	  exit(-1);
   }
 
   if (b) {
+	  printf("***This is a MOENCH detector with %d chips per module***\n",NCHIP);
+
 #ifdef MCB_FUNCS
 	 printf("\nBoard Revision:0x%x\n",(bus_r(PCB_REV_REG)&BOARD_REVISION_MASK));
     initDetector();
@@ -914,13 +904,15 @@ int read_register(int file_des) {
 
 int set_dac(int file_des) {
 	//default:all mods
-	int retval;
+	int retval[2];retval[1]=-1;
+	int temp;
 	int ret=OK;
 	int arg[3];
 	enum dacIndex ind;
 	int imod;
 	int n;
 	int val;
+	int mV;
 	int idac=0;
 
 	sprintf(mess,"Can't set DAC\n");
@@ -932,6 +924,7 @@ int set_dac(int file_des) {
 	}
 	ind=arg[0];
 	imod=arg[1];
+	mV=arg[2];
 
 	n = receiveDataOnly(file_des,&val,sizeof(val));
 	if (n < 0) {
@@ -990,37 +983,42 @@ int set_dac(int file_des) {
 			ret=FAIL;
 			sprintf(mess,"Detector locked by %s\n",lastClientIP);
 		} else{
-			if(idac==HIGH_VOLTAGE)
-				retval=initHighVoltageByModule(val,imod);
-			else
-				retval=initDACbyIndexDACU(idac,val,imod);
+			if(idac==HIGH_VOLTAGE){
+				retval[0]=initHighVoltageByModule(val,imod);
+				ret=FAIL;
+				if(retval[0]==-2)
+					strcpy(mess,"Invalid Voltage.Valid values are 0,90,110,120,150,180,200");
+				else if(retval[0]==-3)
+					strcpy(mess,"Weird value read back or it has not been set yet\n");
+				else
+					ret=OK;
+			}else{
+				initDACbyIndexDACU(idac,val,imod,mV,retval);
+				ret=FAIL;
+				if(mV)
+					temp = retval[1];
+				else
+					temp = retval[0];
+				if ((abs(temp-val)<=3) || val==-1) {
+					ret=OK;
+#ifdef VERBOSE
+	printf("DAC set to %d  in dac units and %d mV\n",  retval[0],retval[1]);
+#endif
+				}
+			}
 		}
 	}
-	if(ret==OK){
-		ret=FAIL;
-		if(idac==HIGH_VOLTAGE){
-			if(retval==-2)
-				strcpy(mess,"Invalid Voltage.Valid values are 0,90,110,120,150,180,200");
-			else if(retval==-3)
-				strcpy(mess,"Weird value read back or it has not been set yet\n");
-			else
-				ret=OK;
-		}//since v r saving only msb
-		else if ((retval-val)<=3 || val==-1)
-			ret=OK;
-	}
+
 #endif
 
-#ifdef VERBOSE
-	printf("DAC set to %d V\n",  retval);
-#endif  
 
 	if(ret==FAIL)
-		printf("Setting dac %d of module %d: wrote %d but read %d\n", ind, imod, val, retval);
+		printf("Setting dac %d of module %d: wrote %d but read %d\n", ind, imod, val, temp);
 	else{
 		if (differentClients)
 			ret=FORCE_UPDATE;
 	}
+
 
 
 	/* send answer */
@@ -1028,7 +1026,7 @@ int set_dac(int file_des) {
 	n = sendDataOnly(file_des,&ret,sizeof(ret));
 	if (ret!=FAIL) {
 		/* send return argument */
-		n += sendDataOnly(file_des,&retval,sizeof(retval));
+		n += sendDataOnly(file_des,retval,sizeof(retval));
 	} else {
 		n += sendDataOnly(file_des,mess,sizeof(mess));
 	}
@@ -1610,7 +1608,7 @@ int get_threshold_energy(int file_des) {
   n += sendDataOnly(file_des,mess,sizeof(mess));
 
   /*return ok/fail*/
-  return OK;
+  return ret;
 
 }
  
@@ -1631,7 +1629,7 @@ int set_threshold_energy(int file_des) {
   n += sendDataOnly(file_des,mess,sizeof(mess));
 
   /*return ok/fail*/
-  return OK;
+  return ret;
 
 }
 

@@ -11,11 +11,7 @@
 
 #include "slsDetectorServer_defs.h" //include port number
 
-struct sockaddr_in eiger_socket_addr;
-int  eiger_max_message_length = 270000;//263681
-char eiger_message[270000];//263681
-int  eiger_message_length = 0;
-int  eiger_ret_val=0;
+
 
 int eiger_nexposures = 1;
 float eiger_exposuretime = 0;
@@ -56,25 +52,7 @@ int EigerGetExternalGatingPolarity(){return eiger_extgatingpolarity;}
 int EigerInit(){
 	saved_trimbits[0] = -1;
 
-	static int passed = 0;
 
-	if(!passed){
-		struct hostent *dst_host;
-		if((dst_host = gethostbyname("localhost")) == NULL){  //or look into getaddrinfo(3)
-			fprintf(stderr,"ERROR, no such host\n");
-			return 0;
-		}else{
-			//struct sockaddr_in eiger_socket_addr;
-			int port = FEB_PORT;
-			bzero((char *) &eiger_socket_addr, sizeof(eiger_socket_addr));
-			eiger_socket_addr.sin_family = AF_INET;
-			bcopy((char *)dst_host->h_addr,(char *)&eiger_socket_addr.sin_addr.s_addr,dst_host->h_length);
-			eiger_socket_addr.sin_port = htons(port);
-			passed = 1;
-		}
-	}
-
-	return passed;
 }
 
 

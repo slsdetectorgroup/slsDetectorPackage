@@ -8,11 +8,15 @@
 
 #include "slsDetectorFunctionList.h"
 #include "gitInfoEiger.h"
-#include "EigerHighLevelFunctions.c"
-#include "EigerBackEndFunctions.c"
+/*#include "EigerHighLevelFunctions.c"
+#include "EigerBackEndFunctions.c"*/
+#include "FebControl.h"
+#include "Beb.h"
 
 
 enum detectorSettings thisSettings;
+const char* dac_names[16] = {"SvP","Vtr","Vrf","Vrs","SvN","Vtgstv","Vcmp_ll","Vcmp_lr","cal","Vcmp_rl","rxb_rb","rxb_lb","Vcmp_rr","Vcp","Vcn","Vis"};
+
 //static const string dacNames[16] = {"Svp","Svn","Vtr","Vrf","Vrs","Vtgstv","Vcmp_ll","Vcmp_lr","Cal","Vcmp_rl","Vcmp_rr","Rxb_rb","Rxb_lb","Vcp","Vcn","Vis"};
 
 sls_detector_module *detectorModules=NULL;
@@ -21,6 +25,29 @@ int *detectorChans=NULL;
 dacs_t *detectorDacs=NULL;
 dacs_t *detectorAdcs=NULL;
 
+
+int eiger_highvoltage = 0;
+int eiger_iodelay = 0;
+int eiger_photonenergy = 0;
+int eiger_dynamicrange = 0;
+int eiger_readoutmode = 0;
+int eiger_readoutspeed = 0;
+int eiger_triggermode = 0;
+int eiger_extgating = 0;
+int eiger_extgatingpolarity = 0;
+
+
+
+int eiger_nexposures = 1;
+int eiger_ncycles = 1;
+
+
+
+int send_to_ten_gig = 0;
+int  ndsts_in_use=32;
+unsigned int nimages_per_request=1;
+int  on_dst=0;
+int dst_requested[32] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
 
 
 int initDetector(){
@@ -70,6 +97,12 @@ int initDetector(){
   sAdc=noneSelected;
 */
 
+  Feb_Interface_FebInterface();
+  Feb_Control_FebControl();
+  printf("FEb control constructor done\n");
+  Beb_Beb(-1);
+  printf("BEB constructor done\n");
+
   //get dac values
   int retval[2];
 	for(i=0;i<(detectorModules)->ndac;i++){
@@ -83,7 +116,7 @@ int initDetector(){
   //set number of frames to 1
   setTimer(FRAME_NUMBER,1);
   setTimer(ACQUISITION_TIME,1E9);
-  setTimer(ACQUISITION_TIME,1E9);
+  setTimer(FRAME_PERIOD,1E9);
   setDynamicRange(16);
   setThresholdEnergy(8000,0);
   setReadOutFlags(PARALLEL);
@@ -227,7 +260,13 @@ int detectorTest( enum digitalTestMode arg){
 
 void setDAC(enum detDacIndex ind, int val, int imod, int mV, int retval[]){
 	char iname[10];
-	strcpy(iname,EigerGetDACName((int)ind));
+
+	if(((int)ind>=0)&&((int)ind<NDAC))
+		strcpy(iname,dac_names[(int)ind]);
+	else{
+		printf("dac value outside range:%d\n",(int)ind);
+		strcpy(iname,dac_names[0]);
+	}
 #ifdef VERBOSE
 	if(val >= 0)
 		printf("Setting dac %d: %s to %d ",ind, iname,val);
@@ -239,9 +278,12 @@ void setDAC(enum detDacIndex ind, int val, int imod, int mV, int retval[]){
 		printf("in dac units\n");
 #endif
 	if(val >= 0)
-		EigerSetDAC(iname,val,mV);
-	retval[0] = EigerGetDAC(iname);
-	retval[1] = EigerGetDACmV(iname);
+		Feb_Control_SetDAC(iname,val,mV);
+	int k;
+		Feb_Control_GetDAC(iname, &k,0);
+		retval[0] = k;
+		Feb_Control_GetDAC(iname,&k,1);
+		retval[1] = k;
 
 	(detectorModules)->dacs[ind] = retval[0];
 
@@ -251,9 +293,10 @@ void setDAC(enum detDacIndex ind, int val, int imod, int mV, int retval[]){
 int setHighVolage(int val, int imod){
 	if(val!=-1){
 		printf(" Setting High Voltage: %d\n",val);
-		EigerSetHighVoltage(val);
+		if(Feb_Control_SetHighVoltage(val))
+			eiger_highvoltage = val;
 	}
-	return EigerGetHighVoltage();
+	return eiger_highvoltage;
 }
 
 
@@ -266,21 +309,25 @@ int getADC(enum detDacIndex ind,  int imod){
 int setIODelay(int val, int imod){
 	if(val!=-1){
 		printf(" Setting IO Delay: %d\n",val);
-		EigerSetIODelay(val);
+		if(Feb_Control_SetIDelays(0,val))
+			eiger_iodelay = val;
 	}
-	return EigerGetIODelay();
+	return eiger_iodelay;
 }
 
 
 int enableTenGigabitEthernet(int val){
 	if(val!=-1){
 		if(val>0)
-			SetTenGigbaBitEthernet(1);
+			send_to_ten_gig = 1;
 		else
-			SetTenGigbaBitEthernet(0);
+			send_to_ten_gig = 0;
 		//configuremac called from client
 	}
-	return GetTenGigbaBitEthernet();
+//#ifdef VERBOSE
+	printf("10Gbe:%d\n",send_to_ten_gig);
+//#endif
+	return send_to_ten_gig;
 }
 
 
@@ -297,11 +344,13 @@ int setModule(sls_detector_module myMod){
 	//	thisSettings = (enum detectorSettings)myMod.reg;
 	//	thisSettings = 0;
 	
-	setSettings( (enum detectorSettings)myMod.reg,-1); // put the settings in the module register?!?!?
-	EigerSetTrimbits(myMod.chanregs);
-
 	if (detectorModules)
 		copyModule(detectorModules,&myMod);
+
+	setSettings( (enum detectorSettings)myMod.reg,-1); // put the settings in the module register?!?!?
+	Feb_Control_SetTrimbits(0,myMod.chanregs);
+
+
   return 0;
 }
 
@@ -312,10 +361,10 @@ int retval[2];
 	for(i=0;i<NDAC;i++)
 		setDAC((enum detDacIndex)i,-1,-1,0,retval);
 
-	EigerGetTrimbits(myMod->chanregs);
+	myMod->chanregs = Feb_Control_GetTrimbits();
 
 	  if (detectorModules)
-	    copyModule(myMod,detectorModules);/*copyModule(myMod,detectorModules+iMod);*/
+	    copyModule(myMod,detectorModules);
 	  else
 	    return FAIL;
 	return OK;
@@ -328,14 +377,15 @@ int retval[2];
 
 int getThresholdEnergy(int imod){
 	printf(" Getting Threshold energy\n");
-	return EigerGetPhotonEnergy();
+	return eiger_photonenergy;
 }
 
 
 int setThresholdEnergy(int thr, int imod){
 	printf(" Setting threshold energy:%d\n",thr);
-	EigerSetPhotonEnergy(thr);
-	return EigerGetPhotonEnergy();
+	if(Feb_Control_SetPhotonEnergy(thr))
+		eiger_photonenergy = thr;
+	return  getThresholdEnergy(imod);
 }
 
 
@@ -352,27 +402,61 @@ enum detectorSettings setSettings(enum detectorSettings sett, int imod){
 
 int startStateMachine(){
 	printf("Going to start acquisition\n");
-	EigerStartAcquisition();
-	RequestImages();
-	return OK;
+	if(Feb_Control_StartAcquisition()){
+
+		//RequestImages();
+		int ret_val = 0;
+		dst_requested[0] = 1;
+	    while(dst_requested[on_dst]){
+	      //waits on data
+	      if((ret_val = (!Beb_RequestNImages(0,1,send_to_ten_gig,on_dst,nimages_per_request,0)||
+	    		  !Beb_RequestNImages(0,2,send_to_ten_gig,0x20|on_dst,nimages_per_request,0))))
+	    	  break;
+	      dst_requested[on_dst++]=0;
+	      on_dst%=ndsts_in_use;
+	    }
+
+	    if(ret_val)
+	    	return FAIL;
+	    else
+	    	return OK;
+	}
+	return FAIL;
 }
 
 
 int stopStateMachine(){
 	printf("Going to stop acquisition\n");
-	EigerStopAcquisition();
-	return OK;
+	if(Feb_Control_StopAcquisition())
+		return OK;
+	return FAIL;
 }
 
 
 int startReadOut(){
-	RequestImages();
+	//RequestImages();
+	int ret_val = 0;
+	dst_requested[0] = 1;
+    while(dst_requested[on_dst]){
+      //waits on data
+      if((ret_val = (!Beb_RequestNImages(0,1,send_to_ten_gig,on_dst,nimages_per_request,0)||
+    		  !Beb_RequestNImages(0,2,send_to_ten_gig,0x20|on_dst,nimages_per_request,0))))
+    	  break;
+      dst_requested[on_dst++]=0;
+      on_dst%=ndsts_in_use;
+    }
+
+    if(ret_val)
+    	return FAIL;
+    else
+    	return OK;
+
 	return OK;
 }
 
 
 enum runStatus getRunStatus(){
-	int i = EigerRunStatus();
+	int i = Feb_Control_AcquisitionInProgress();
 	if(i== 0){
 		printf("IDLE\n");
 		return IDLE;
@@ -385,13 +469,8 @@ enum runStatus getRunStatus(){
 
 
 char *readFrame(int *ret, char *mess){
-	EigerWaitForAcquisitionFinish();
-	/*
-	int i = EigerRunStatus();
-	while(i){
-		i = EigerRunStatus();
-		usleep(1000);
-	}*/
+	if(!Feb_Control_WaitForFinishedFlag(5000))
+		printf("error in waiting for finished flag\n");
 	*ret = (int)FINISHED;
 	return NULL;
 }
@@ -408,19 +487,27 @@ int64_t setTimer(enum timerIndex ind, int64_t val){
 	case FRAME_NUMBER:
 		if(val >= 0){
 			printf(" Setting number of frames: %d\n",(unsigned int)val);
-			EigerSetNumberOfExposures((unsigned int)val);
-			SetDestinationParameters(EigerGetNumberOfExposures()*EigerGetNumberOfCycles());
-		}return EigerGetNumberOfExposures();
+			if(Feb_Control_SetNExposures((unsigned int)val)*eiger_ncycles){
+				eiger_nexposures = val;
+				//SetDestinationParameters(EigerGetNumberOfExposures()*EigerGetNumberOfCycles());
+				  on_dst = 0;
+				  int i;
+				  for(i=0;i<32;i++) dst_requested[i] = 0; //clear dst requested
+				ndsts_in_use = 1;
+				nimages_per_request = eiger_nexposures * eiger_ncycles;
+			}
+		}return eiger_nexposures;
 	case ACQUISITION_TIME:
 		if(val >= 0){
 			printf(" Setting exp time: %fs\n",val/(1E9));
-			EigerSetExposureTime(val/(1E9));
-		}return (EigerGetExposureTime()*(1E9));
+			Feb_Control_SetExposureTime(val/(1E9));
+		}
+		return (Feb_Control_GetExposureTime()*(1E9));
 	case FRAME_PERIOD:
 		if(val >= 0){
 			printf(" Setting acq period: %fs\n",val/(1E9));
-			EigerSetExposurePeriod(val/(1E9));
-		}return (EigerGetExposurePeriod()*(1E9));
+			Feb_Control_SetExposurePeriod(val/(1E9));
+		}return (Feb_Control_GetExposurePeriod()*(1E9));
 /*	case DELAY_AFTER_TRIGGER:
 		if(val >= 0)
 			EigerSetNumberOfExposures((unsigned int)val);
@@ -438,9 +525,15 @@ int64_t setTimer(enum timerIndex ind, int64_t val){
 	case CYCLES_NUMBER:
 		if(val >= 0){
 			printf(" Setting number of triggers: %d\n",(unsigned int)val);
-			EigerSetNumberOfCycles((unsigned int)val);
-			SetDestinationParameters(EigerGetNumberOfExposures()*EigerGetNumberOfCycles());
-		}return EigerGetNumberOfCycles();
+			if(Feb_Control_SetNExposures((unsigned int)val*eiger_nexposures)){
+				eiger_ncycles = val;
+				//SetDestinationParameters(EigerGetNumberOfExposures()*EigerGetNumberOfCycles());
+				  on_dst = 0;
+				  int i;
+				  for(i=0;i<32;i++) dst_requested[i] = 0; //clear dst requested
+				nimages_per_request = eiger_nexposures * eiger_ncycles;
+			}
+		}return eiger_ncycles;
 	default:
 		printf("unknown timer index: %d\n",ind);
 		break;
@@ -460,18 +553,22 @@ int64_t getTimeLeft(enum timerIndex ind){
 
 
 int setDynamicRange(int dr){
-	int r;
 	if(dr > 0){
 		printf(" Setting dynamic range: %d\n",dr);
-		EigerSetDynamicRange(dr);
-		EigerSetBitMode(dr);
+		if(Feb_Control_SetDynamicRange(dr)){
+
+			//EigerSetBitMode(dr);
+			  on_dst = 0;
+			  int i;
+			  for(i=0;i<32;i++) dst_requested[i] = 0; //clear dst requested
+			  if(Beb_SetUpTransferParameters(dr))
+				  eiger_dynamicrange = dr;
+		}
 	}
 	//make sure back end and front end have the same bit mode
-	r= EigerGetDynamicRange();
-	if(r != EigerGetBitMode())
-		EigerSetBitMode(r);
+	dr= Feb_Control_GetDynamicRange();
 
-	return r;
+	return dr;
 }
 
 
@@ -486,9 +583,10 @@ enum readOutFlags setReadOutFlags(enum readOutFlags val){
 		default:  			val=0; break;
 		}
 		printf(" Setting Read out Flag: %d\n",val);
-		EigerSetReadoutMode(val);
+		if(Feb_Control_SetReadoutMode(val))
+			eiger_readoutmode = val;
 	}
-	switch(EigerGetReadoutMode()){
+	switch(eiger_readoutmode){
 	case 0: ret=PARALLEL; 		break;
 	case 1:	ret=NONPARALLEL; 	break;
 	case 2:	ret=SAFE; 			break;
@@ -510,9 +608,10 @@ int setROI(int n, ROI arg[], int *retvalsize, int *ret){
 int setSpeed(enum speedVariable arg, int val){
 	if(val != -1){
 		printf(" Setting Read out Speed: %d\n",val);
-		EigerSetReadoutSpeed(val);
+		if(Feb_Control_SetReadoutSpeed(val))
+			eiger_readoutspeed = val;
 	}
-	return 	EigerGetReadoutSpeed();
+	return 	eiger_readoutspeed;
 }
 
 
@@ -523,9 +622,58 @@ int executeTrimming(enum trimMode mode, int par1, int par2, int imod){
 
 
 int configureMAC(int ipad, long long int macad, long long int detectormacadd, int detipad, int udpport, int ival){
-	EigerSetupTableEntryLeft(ipad, macad, detectormacadd, detipad, udpport);
-	EigerSetupTableEntryRight(ipad, macad, detectormacadd, detipad, udpport);
-	SetDestinationParameters(EigerGetNumberOfExposures()*EigerGetNumberOfCycles());
+	char src_mac[50], src_ip[50],dst_mac[50], dst_ip[50];
+	int src_port = 0xE185;
+	int dst_port = udpport;
+	sprintf(src_ip,"%d.%d.%d.%d",(detipad>>24)&0xff,(detipad>>16)&0xff,(detipad>>8)&0xff,(detipad)&0xff);
+	sprintf(dst_ip,"%d.%d.%d.%d",(ipad>>24)&0xff,(ipad>>16)&0xff,(ipad>>8)&0xff,(ipad)&0xff);
+	sprintf(src_mac,"%02x:%02x:%02x:%02x:%02x:%02x",(unsigned int)((detectormacadd>>40)&0xFF),
+										(unsigned int)((detectormacadd>>32)&0xFF),
+										(unsigned int)((detectormacadd>>24)&0xFF),
+										(unsigned int)((detectormacadd>>16)&0xFF),
+										(unsigned int)((detectormacadd>>8)&0xFF),
+										(unsigned int)((detectormacadd>>0)&0xFF));
+	sprintf(dst_mac,"%02x:%02x:%02x:%02x:%02x:%02x",(unsigned int)((macad>>40)&0xFF),
+										(unsigned int)((macad>>32)&0xFF),
+										(unsigned int)((macad>>24)&0xFF),
+										(unsigned int)((macad>>16)&0xFF),
+										(unsigned int)((macad>>8)&0xFF),
+										(unsigned int)((macad>>0)&0xFF));
+
+	printf("Seting up Table Entry Left:\n");
+	printf("src_port:%d\n",src_port);
+	printf("dst_port:%d\n",dst_port);
+	printf("src_ip:%s\n",src_ip);
+	printf("dst_ip:%s\n",dst_ip);
+	printf("src_mac:%s\n",src_mac);
+	printf("dst_mac:%s\n\n",dst_mac);
+
+	int beb_num = 34;
+	int header_number = 0;
+
+int i=0;
+	//EigerSetupTableEntryLeft(ipad, macad, detectormacadd, detipad, udpport);
+	/* for(i=0;i<32;i++){/** modified for Aldo*/
+		    if(Beb_SetBebSrcHeaderInfos(beb_num,send_to_ten_gig,src_mac,src_ip,src_port) &&
+		    		Beb_SetUpUDPHeader(beb_num,send_to_ten_gig,header_number+i,dst_mac,dst_ip, dst_port))
+		    	printf("set up left ok\n");
+		    else return -1;
+	 /*}*/
+	//EigerSetupTableEntryRight(ipad, macad, detectormacadd, detipad, udpport);
+	header_number = 32;
+	dst_port = udpport +1;
+	 /*for(i=0;i<32;i++){*//** modified for Aldo*/
+		    if(Beb_SetBebSrcHeaderInfos(beb_num,send_to_ten_gig,src_mac,src_ip,src_port) &&
+		    		Beb_SetUpUDPHeader(beb_num,send_to_ten_gig,header_number+i,dst_mac,dst_ip, dst_port))
+		    	printf("set up right ok\n");
+		    else return -1;
+	/*}*/
+	//SetDestinationParameters(EigerGetNumberOfExposures()*EigerGetNumberOfCycles());
+	  on_dst = 0;
+
+	  for(i=0;i<32;i++) dst_requested[i] = 0; //clear dst requested
+	    nimages_per_request=eiger_nexposures * eiger_ncycles;
+
 	return 0;
 }
 
@@ -655,10 +803,11 @@ enum externalCommunicationMode setTiming( enum externalCommunicationMode arg){
 		case GATE_FIX_NUMBER:		ret = 3;	break;
 		}
 		printf(" Setting Triggering Mode: %d\n",(int)ret);
-		EigerSetTriggerMode(ret);
+		if(Feb_Control_SetTriggerMode(ret,1))
+			eiger_triggermode = ret;
 	}
 
-	ret = EigerGetTriggerMode();
+	ret = eiger_triggermode;
 	switch((int)ret){
 	case 0:		ret = AUTO_TIMING;		break;
 	case 2:		ret = TRIGGER_EXPOSURE; break;
@@ -673,10 +822,13 @@ enum externalCommunicationMode setTiming( enum externalCommunicationMode arg){
 
 
 void setExternalGating(int enable[]){
-	if(enable>=0)
-		EigerSetExternalGating(enable[0], enable[1]);//enable = 0 or 1, polarity = 0 or 1 , where 1 is positive
-	enable[0] = EigerGetExternalGatingPolarity();
-	enable[1] = EigerGetExternalGating();
+	if(enable>=0){
+		Feb_Control_SetExternalEnableMode(enable[0], enable[1]);//enable = 0 or 1, polarity = 0 or 1 , where 1 is positive
+			eiger_extgating = enable[0];
+			eiger_extgatingpolarity = enable[1];
+	}
+	enable[0] = eiger_extgating;
+	enable[1] = eiger_extgatingpolarity;
 }
 
 
@@ -692,15 +844,16 @@ enum synchronizationMode setSynchronization(enum synchronizationMode arg){
 
 void setAllTrimbits(int val){
 	int ichan;
-	EigerSetAllTrimbits(val);
+	if(Feb_Control_SaveAllTrimbitsTo(val)){
 #ifdef VERBOSE
-	printf("Copying register %x value %d\n",destMod->reg,val);
+		printf("Copying register %x value %d\n",destMod->reg,val);
 #endif
-	if (detectorModules){
-		for (ichan=0; ichan<(detectorModules->nchan); ichan++) {
+		if (detectorModules){
+			for (ichan=0; ichan<(detectorModules->nchan); ichan++) {
 				*((detectorModules->chanregs)+ichan)=val;
+			}
 		}
-	}
+	}else printf("error in setting all trimbits to value\n");
 }
 
 int getAllTrimbits(){

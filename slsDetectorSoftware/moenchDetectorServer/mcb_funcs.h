@@ -109,10 +109,9 @@ int initDAC(int dac_addr, int value,int imod );
 int initDACs(int* v,int imod );
 int setSettings(int i,int imod);
 int initDACbyIndex(int ind,int val, int imod);
-int initDACbyIndexDACU(int ind,int val, int imod);
+int initDACbyIndexDACU(int ind,int val, int imod, int mV, int retval[]);
 int getDACbyIndexDACU(int ind,  int imod);
-int getThresholdEnergy();
-int setThresholdEnergy(int ethr);
+
 
 /* Other DAC index routines*/
 int getTemperatureByModule(int tempSensor, int imod);

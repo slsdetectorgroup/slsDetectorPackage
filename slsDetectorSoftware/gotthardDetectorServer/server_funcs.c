@@ -1012,7 +1012,7 @@ int set_dac(int file_des) {
 	n = sendDataOnly(file_des,&ret,sizeof(ret));
 	if (ret!=FAIL) {
 		/* send return argument */
-		n += sendDataOnly(file_des,&retval,sizeof(retval));
+		n += sendDataOnly(file_des,retval,sizeof(retval));
 	} else {
 		n += sendDataOnly(file_des,mess,sizeof(mess));
 	}

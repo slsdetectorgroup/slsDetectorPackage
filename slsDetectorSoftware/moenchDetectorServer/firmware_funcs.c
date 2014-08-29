@@ -51,7 +51,6 @@ int masterMode=NO_MASTER, syncMode=NO_SYNCHRONIZATION, timingMode=AUTO_TIMING;
 
 enum externalSignalFlag  signals[4]={EXT_SIG_OFF, EXT_SIG_OFF, EXT_SIG_OFF, EXT_SIG_OFF};
 
-int withGotthard = 0;
 
 #ifdef MCB_FUNCS
 extern const int nChans;
@@ -286,10 +285,7 @@ int cleanFifo(){
 	printf("Cleaning FIFO\n");
 	addr=ADC_SYNC_REG;
 
-	if(withGotthard)
-		adc_sync = GOTTHARD_ADCSYNC_VAL;
-	else
-		adc_sync = ADCSYNC_VAL;
+	adc_sync = ADCSYNC_VAL;
 
 
 	reg = bus_r(addr) &	CLEAN_FIFO_MASK;
@@ -1404,19 +1400,7 @@ int setADC(int adc){
 	setDAQRegister();//token timing
 	cleanFifo();//adc sync
 
-	//with gotthard module
-	if(withGotthard){
-		//set packet size
-		ipPacketSize= DEFAULT_IP_PACKETSIZE;
-		udpPacketSize=DEFAULT_UDP_PACKETSIZE;
-		//set channel mask
-		nchips = GOTTHARDNCHIP;
-		nchans = GOTTHARDNCHAN;
-		mask = ACTIVE_ADC_MASK;
-	}
-
-	//with moench module all adc
-	else{/* if(adc==-1){*/
+/* if(adc==-1){*/
 		//set packet size
 		ipPacketSize= DEFAULT_IP_PACKETSIZE;
 		udpPacketSize=DEFAULT_UDP_PACKETSIZE;
@@ -1424,7 +1408,7 @@ int setADC(int adc){
 		nchips = NCHIP;
 		nchans = NCHANS;
 		mask = ACTIVE_ADC_MASK;
-	}/*
+	/*
 	//with moench module 1 adc -- NOT IMPLEMENTED
 	else{
 		ipPacketSize= ADC1_IP_PACKETSIZE;

@@ -316,7 +316,7 @@ slsDetectorDefs::dacIndex qTabDeveloper::getSLSIndex(int index){
 		case 4:	return slsDetectorDefs::CALIBRATION_PULSE;
 		case 5:	return slsDetectorDefs::PREAMP;
 		default:
-			qDefs::Message(qDefs::CRITICAL,"Unknown DAC/ADC Index. Weird Error","qTabDeveloper::getSLSIndex");
+			qDefs::Message(qDefs::CRITICAL,"Unknown DAC/ADC Index. Weird Error Index:"+ index,"qTabDeveloper::getSLSIndex");
 			Refresh();
 			break;
 		}
@@ -343,12 +343,31 @@ slsDetectorDefs::dacIndex qTabDeveloper::getSLSIndex(int index){
 
 
 		default:
-			qDefs::Message(qDefs::CRITICAL,"Unknown DAC/ADC Index. Weird Error","qTabDeveloper::getSLSIndex");
+			qDefs::Message(qDefs::CRITICAL,"Unknown DAC/ADC Index. Weird Error Index:"+ index,"qTabDeveloper::getSLSIndex");
 			Refresh();
 			break;
 		}
 		break;
 	case slsDetectorDefs::MOENCH:
+		switch(index){
+		case 0:	return slsDetectorDefs::V_DAC0;
+		case 1:	return slsDetectorDefs::V_DAC1;
+		case 2:	return slsDetectorDefs::V_DAC2;
+		case 3:	return slsDetectorDefs::V_DAC3;
+		case 4:	return slsDetectorDefs::V_DAC4;
+		case 5:	return slsDetectorDefs::V_DAC5;
+		case 6:	return slsDetectorDefs::V_DAC6;
+		case 7:	return slsDetectorDefs::V_DAC7;
+		case 8:	return slsDetectorDefs::TEMPERATURE_ADC;
+		case 9:return slsDetectorDefs::TEMPERATURE_FPGA;
+
+		default:
+			qDefs::Message(qDefs::CRITICAL,"Unknown DAC/ADC Index. Weird Error. Index:"+ index,"qTabDeveloper::getSLSIndex");
+			Refresh();
+			break;
+		}
+		break;
+
 	case slsDetectorDefs::GOTTHARD:
 		switch(index){
 		case 0:	return slsDetectorDefs::G_VREF_DS;
@@ -362,7 +381,7 @@ slsDetectorDefs::dacIndex qTabDeveloper::getSLSIndex(int index){
 		case 8:	return slsDetectorDefs::TEMPERATURE_ADC;
 		case 9:return slsDetectorDefs::TEMPERATURE_FPGA;
 		default:
-			qDefs::Message(qDefs::CRITICAL,"Unknown DAC/ADC Index. Weird Error","qTabDeveloper::getSLSIndex");
+			qDefs::Message(qDefs::CRITICAL,"Unknown DAC/ADC Index. Weird Error Index:"+ index,"qTabDeveloper::getSLSIndex");
 			Refresh();
 			break;
 		}
@@ -387,6 +406,7 @@ void qTabDeveloper::RefreshAdcs(){
 	adcTimer->stop();
 	for(int i=0;i<NUM_ADC_WIDGETS;i++)
 		spinAdcs[i]->setValue((double)myDet->getADC(getSLSIndex(i+NUM_DAC_WIDGETS)));
+
 	adcTimer->start(ADC_TIMEOUT);
 	qDefs::checkErrorMessage(myDet,"qTabDeveloper::RefreshAdcs");
 }
@@ -404,6 +424,7 @@ void qTabDeveloper::Refresh(){
 	cout << "Gettings DACs"  << endl;
 #endif
 	//dacs
+
 	for(int i=0;i<NUM_DAC_WIDGETS;i++){
 		spinDacs[i]->setValue((double)myDet->setDAC(-1,getSLSIndex(i),0));
 		lblDacsmV[i]->setText(QString("%1mV").arg(myDet->setDAC(-1,getSLSIndex(i),1),-10));

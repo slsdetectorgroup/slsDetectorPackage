@@ -14,8 +14,10 @@ DFLAGS= -g -DDACS_INT  -DSLS_RECEIVER_UDP_FUNCTIONS
 INCLUDES?= -I. -Iincludes -IMySocketTCP -IslsReceiver -IslsDetectorCalibration -IslsReceiver/eigerReceiver -I$(ASM) 
 #-IslsReceiverInterface
 
-SRC_CLNT= MySocketTCP/MySocketTCP.cpp slsReceiver/slsReceiver.cpp slsReceiver/slsReceiverUDPFunctions.cpp  slsReceiver/slsReceiverTCPIPInterface.cpp   slsReceiver/slsReceiverUsers.cpp 
+SRC_CLNT= MySocketTCP/MySocketTCP.cpp  slsReceiver/slsReceiver.cpp slsReceiver/UDPInterface.cpp  slsReceiver/UDPBaseImplementation.cpp slsReceiver/slsReceiverTCPIPInterface.cpp   slsReceiver/slsReceiverUsers.cpp 
+
 #slsReceiverInterface/receiverInterface.cpp
+#slsReceiver/slsReceiverUDPFunctions.cpp
 
 OBJS = $(SRC_CLNT:.cpp=.o) 
 OBJS +=  slsReceiver/eigerReceiver.o  

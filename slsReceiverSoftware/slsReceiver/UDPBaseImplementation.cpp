@@ -1,13 +1,11 @@
 #ifdef SLS_RECEIVER_UDP_FUNCTIONS
 /********************************************//**
- * @file slsReceiverUDPFunctions.cpp
+ * @file UDPBaseImplementation.cpp
  * @short does all the functions for a receiver, set/get parameters, start/stop etc.
  ***********************************************/
 
 
-#include "slsReceiverUDPFunctions.h"
 #include "UDPBaseImplementation.h"
-
 
 #include "moench02ModuleData.h"
 #include "gotthardModuleData.h"
@@ -26,21 +24,21 @@
 
 #include <string.h>
 #include <iostream>
+
+
+
 using namespace std;
 
 
 
-slsReceiverUDPFunctions * slsReceiverUDPFunctions::create(void){
-	return slsReceiverUDPFunctions();
-}
-
-slsReceiverUDPFunctions::slsReceiverUDPFunctions():
+UDPBaseImplementation::UDPBaseImplementation():
 		thread_started(0),
 		eth(NULL),
 		latestData(NULL),
 		guiFileName(NULL),
 		guiFrameNumber(0),
 		tengigaEnable(0){
+
 	for(int i=0;i<MAX_NUM_LISTENING_THREADS;i++){
 		udpSocket[i] = NULL;
 		server_port[i] = DEFAULT_UDP_PORTNO+i;
@@ -87,7 +85,7 @@ slsReceiverUDPFunctions::slsReceiverUDPFunctions():
 
 
 
-slsReceiverUDPFunctions::~slsReceiverUDPFunctions(){
+UDPBaseImplementation::~UDPBaseImplementation(){
 	createListeningThreads(true);
 	createWriterThreads(true);
 	deleteMembers();
@@ -96,7 +94,7 @@ slsReceiverUDPFunctions::~slsReceiverUDPFunctions(){
 
 
 
-void slsReceiverUDPFunctions::deleteMembers(){
+void UDPBaseImplementation::deleteMembers(){
 	//kill threads
 	if(thread_started){
 		createListeningThreads(true);
@@ -125,7 +123,7 @@ void slsReceiverUDPFunctions::deleteMembers(){
 }
 
 
-void slsReceiverUDPFunctions::initializeMembers(){
+void UDPBaseImplementation::initializeMembers(){
 	myDetectorType = GENERIC;
 	maxPacketsPerFile = 0;
 	enableFileWrite = 1;
@@ -218,7 +216,7 @@ void slsReceiverUDPFunctions::initializeMembers(){
 
 }
 
-int slsReceiverUDPFunctions::setDetectorType(detectorType det){
+int UDPBaseImplementation::setDetectorType(detectorType det){
 	cout << "Setting Receiver Type " << endl;
 
 	deleteMembers();
@@ -311,17 +309,17 @@ int slsReceiverUDPFunctions::setDetectorType(detectorType det){
 
 /*Frame indices and numbers caught*/
 
-bool slsReceiverUDPFunctions::getAcquistionStarted(){return acqStarted;};
+bool UDPBaseImplementation::getAcquistionStarted(){return acqStarted;};
 
-bool slsReceiverUDPFunctions::getMeasurementStarted(){return measurementStarted;};
+bool UDPBaseImplementation::getMeasurementStarted(){return measurementStarted;};
 
-int slsReceiverUDPFunctions::getFramesCaught(){return (packetsCaught/packetsPerFrame);}
+int UDPBaseImplementation::getFramesCaught(){return (packetsCaught/packetsPerFrame);}
 
-int slsReceiverUDPFunctions::getTotalFramesCaught(){return (totalPacketsCaught/packetsPerFrame);}
+int UDPBaseImplementation::getTotalFramesCaught(){return (totalPacketsCaught/packetsPerFrame);}
 
-uint32_t slsReceiverUDPFunctions::getStartFrameIndex(){return startFrameIndex;}
+uint32_t UDPBaseImplementation::getStartFrameIndex(){return startFrameIndex;}
 
-uint32_t slsReceiverUDPFunctions::getFrameIndex(){
+uint32_t UDPBaseImplementation::getFrameIndex(){
 	if(!packetsCaught)
 		frameIndex=-1;
 	else
@@ -329,7 +327,7 @@ uint32_t slsReceiverUDPFunctions::getFrameIndex(){
 	return frameIndex;
 }
 
-uint32_t slsReceiverUDPFunctions::getAcquisitionIndex(){
+uint32_t UDPBaseImplementation::getAcquisitionIndex(){
 	if(!totalPacketsCaught)
 		acquisitionIndex=-1;
 	else
@@ -338,7 +336,7 @@ uint32_t slsReceiverUDPFunctions::getAcquisitionIndex(){
 }
 
 
-void slsReceiverUDPFunctions::resetTotalFramesCaught(){
+void UDPBaseImplementation::resetTotalFramesCaught(){
 	acqStarted = false;
 	startAcquisitionIndex = 0;
 	totalPacketsCaught = 0;
@@ -354,11 +352,11 @@ void slsReceiverUDPFunctions::resetTotalFramesCaught(){
 
 /*file parameters*/
 
-char* slsReceiverUDPFunctions::getFilePath() const{
+char* UDPBaseImplementation::getFilePath() const{
 		return (char*)filePath;
 }
 
-char* slsReceiverUDPFunctions::setFilePath(const char c[]){
+char* UDPBaseImplementation::setFilePath(const char c[]){
 	if(strlen(c)){
 		//check if filepath exists
 		struct stat st;
@@ -373,48 +371,48 @@ char* slsReceiverUDPFunctions::setFilePath(const char c[]){
 }
 
 
-char* slsReceiverUDPFunctions::getFileName() const{
+char* UDPBaseImplementation::getFileName() const{
 	return (char*)fileName;
 }
 
-char* slsReceiverUDPFunctions::setFileName(const char c[]){
+char* UDPBaseImplementation::setFileName(const char c[]){
 	if(strlen(c))
 		strcpy(fileName,c);
 	return getFileName();
 }
 
 
-int slsReceiverUDPFunctions::getFileIndex(){
+int UDPBaseImplementation::getFileIndex(){
 	return fileIndex;
 }
 
-int slsReceiverUDPFunctions::setFileIndex(int i){
+int UDPBaseImplementation::setFileIndex(int i){
 	if(i>=0)
 		fileIndex = i;
 	return getFileIndex();
 }
 
 
-int slsReceiverUDPFunctions::setFrameIndexNeeded(int i){
+int UDPBaseImplementation::setFrameIndexNeeded(int i){
 	frameIndexNeeded = i;
 	return frameIndexNeeded;
 }
 
 
-int slsReceiverUDPFunctions::getEnableFileWrite()  const{
+int UDPBaseImplementation::getEnableFileWrite()  const{
 	return enableFileWrite;
 }
 
-int slsReceiverUDPFunctions::setEnableFileWrite(int i){
+int UDPBaseImplementation::setEnableFileWrite(int i){
 	enableFileWrite=i;
 	return getEnableFileWrite();
 }
 
-int slsReceiverUDPFunctions::getEnableOverwrite()  const{
+int UDPBaseImplementation::getEnableOverwrite()  const{
 	return overwrite;
 }
 
-int slsReceiverUDPFunctions::setEnableOverwrite(int i){
+int UDPBaseImplementation::setEnableOverwrite(int i){
 	overwrite=i;
 	return getEnableOverwrite();
 }
@@ -425,51 +423,51 @@ int slsReceiverUDPFunctions::setEnableOverwrite(int i){
 
 /*other parameters*/
 
-slsReceiverDefs::runStatus slsReceiverUDPFunctions::getStatus() const{
+slsReceiverDefs::runStatus UDPBaseImplementation::getStatus() const{
 	return status;
 }
 
 
-void slsReceiverUDPFunctions::initialize(const char *detectorHostName){
+void UDPBaseImplementation::initialize(const char *detectorHostName){
 	if(strlen(detectorHostName))
 		strcpy(detHostname,detectorHostName);
 }
 
 
-char *slsReceiverUDPFunctions::getDetectorHostname() const{
+char *UDPBaseImplementation::getDetectorHostname() const{
 	return (char*)detHostname;
 }
 
-void slsReceiverUDPFunctions::setEthernetInterface(char* c){
+void UDPBaseImplementation::setEthernetInterface(char* c){
 	strcpy(eth,c);
 }
 
 
-void slsReceiverUDPFunctions::setUDPPortNo(int p){
+void UDPBaseImplementation::setUDPPortNo(int p){
 	for(int i=0;i<numListeningThreads;i++){
 		server_port[i] = p+i;
 	}
 }
 
 
-int slsReceiverUDPFunctions::getNumberOfFrames() const {
+int UDPBaseImplementation::getNumberOfFrames() const {
 	return numberOfFrames;
 }
 
 
-int32_t slsReceiverUDPFunctions::setNumberOfFrames(int32_t fnum){
+int32_t UDPBaseImplementation::setNumberOfFrames(int32_t fnum){
 	if(fnum >= 0)
 		numberOfFrames = fnum;
 
 	return getNumberOfFrames();
 }
 
-int slsReceiverUDPFunctions::getScanTag() const{
+int UDPBaseImplementation::getScanTag() const{
 	return scanTag;
 }
 
 
-int32_t slsReceiverUDPFunctions::setScanTag(int32_t stag){
+int32_t UDPBaseImplementation::setScanTag(int32_t stag){
 	if(stag >= 0)
 		scanTag = stag;
 
@@ -477,11 +475,11 @@ int32_t slsReceiverUDPFunctions::setScanTag(int32_t stag){
 }
 
 
-int slsReceiverUDPFunctions::getDynamicRange() const{
+int UDPBaseImplementation::getDynamicRange() const{
 	return dynamicRange;
 }
 
-int32_t slsReceiverUDPFunctions::setDynamicRange(int32_t dr){
+int32_t UDPBaseImplementation::setDynamicRange(int32_t dr){
 	cout << "Setting Dynamic Range" << endl;
 
 	int olddr = dynamicRange;
@@ -541,7 +539,7 @@ int32_t slsReceiverUDPFunctions::setDynamicRange(int32_t dr){
 
 
 
-int slsReceiverUDPFunctions::setShortFrame(int i){
+int UDPBaseImplementation::setShortFrame(int i){
 	shortFrame=i;
 
 	if(shortFrame!=-1){
@@ -571,7 +569,7 @@ int slsReceiverUDPFunctions::setShortFrame(int i){
 }
 
 
-int slsReceiverUDPFunctions::setNFrameToGui(int i){
+int UDPBaseImplementation::setNFrameToGui(int i){
 	if(i>=0){
 		nFrameToGui = i;
 		setupFifoStructure();
@@ -581,7 +579,7 @@ int slsReceiverUDPFunctions::setNFrameToGui(int i){
 
 
 
-int64_t slsReceiverUDPFunctions::setAcquisitionPeriod(int64_t index){
+int64_t UDPBaseImplementation::setAcquisitionPeriod(int64_t index){
 
 	if(index >= 0){
 		if(index != acquisitionPeriod){
@@ -593,9 +591,9 @@ int64_t slsReceiverUDPFunctions::setAcquisitionPeriod(int64_t index){
 }
 
 
-bool slsReceiverUDPFunctions::getDataCompression(){return dataCompression;}
+bool UDPBaseImplementation::getDataCompression(){return dataCompression;}
 
-int slsReceiverUDPFunctions::enableDataCompression(bool enable){
+int UDPBaseImplementation::enableDataCompression(bool enable){
 	cout << "Data compression ";
 	if(enable)
 		cout << "enabled" << endl;
@@ -648,7 +646,7 @@ int slsReceiverUDPFunctions::enableDataCompression(bool enable){
 /*other functions*/
 
 
-void slsReceiverUDPFunctions::deleteFilter(){
+void UDPBaseImplementation::deleteFilter(){
 	int i;
 	cmSub=NULL;
 
@@ -665,7 +663,7 @@ void slsReceiverUDPFunctions::deleteFilter(){
 }
 
 
-void slsReceiverUDPFunctions::setupFilter(){
+void UDPBaseImplementation::setupFilter(){
 	double hc = 0;
 	double sigma = 5;
 	int sign = 1;
@@ -701,7 +699,7 @@ void slsReceiverUDPFunctions::setupFilter(){
 
 
 //LEO: it is not clear to me..
-void slsReceiverUDPFunctions::setupFifoStructure(){
+void UDPBaseImplementation::setupFifoStructure(){
 
 	int64_t i;
 	int oldn = numJobsPerThread;
@@ -790,7 +788,7 @@ void slsReceiverUDPFunctions::setupFifoStructure(){
 
 /** acquisition functions */
 
-void slsReceiverUDPFunctions::readFrame(char* c,char** raw, uint32_t &fnum){
+void UDPBaseImplementation::readFrame(char* c,char** raw, uint32_t &fnum){
 	//point to gui data
 	if (guiData == NULL)
 		guiData = latestData;
@@ -824,7 +822,7 @@ void slsReceiverUDPFunctions::readFrame(char* c,char** raw, uint32_t &fnum){
 
 
 
-void slsReceiverUDPFunctions::copyFrameToGui(char* startbuf[], uint32_t fnum, char* buf){
+void UDPBaseImplementation::copyFrameToGui(char* startbuf[], uint32_t fnum, char* buf){
 
 	//random read when gui not ready
 	if((!nFrameToGui) && (!guiData)){
@@ -879,7 +877,7 @@ void slsReceiverUDPFunctions::copyFrameToGui(char* startbuf[], uint32_t fnum, ch
 
 
 
-int slsReceiverUDPFunctions::createUDPSockets(){
+int UDPBaseImplementation::createUDPSockets(){
 
 
 	//if eth is mistaken with ip address
@@ -924,7 +922,7 @@ int slsReceiverUDPFunctions::createUDPSockets(){
 
 
 
-int slsReceiverUDPFunctions::shutDownUDPSockets(){
+int UDPBaseImplementation::shutDownUDPSockets(){
 	for(int i=0;i<numListeningThreads;i++){
 		if(udpSocket[i]){
 			udpSocket[i]->ShutDownSocket();
@@ -939,7 +937,7 @@ int slsReceiverUDPFunctions::shutDownUDPSockets(){
 
 
 
-int slsReceiverUDPFunctions::createListeningThreads(bool destroy){
+int UDPBaseImplementation::createListeningThreads(bool destroy){
 	int i;
 	void* status;
 
@@ -994,7 +992,7 @@ int slsReceiverUDPFunctions::createListeningThreads(bool destroy){
 
 
 
-int slsReceiverUDPFunctions::createWriterThreads(bool destroy){
+int UDPBaseImplementation::createWriterThreads(bool destroy){
 	int i;
 	void* status;
 
@@ -1055,7 +1053,7 @@ int slsReceiverUDPFunctions::createWriterThreads(bool destroy){
 
 
 
-void slsReceiverUDPFunctions::setThreadPriorities(){
+void UDPBaseImplementation::setThreadPriorities(){
 	int i;
 	//assign priorities
 	struct sched_param tcp_param, listen_param, write_param;
@@ -1092,7 +1090,7 @@ void slsReceiverUDPFunctions::setThreadPriorities(){
 
 
 
-int slsReceiverUDPFunctions::setupWriter(){
+int UDPBaseImplementation::setupWriter(){
 
 	//reset writing thread variables
 	packetsInFile=0;
@@ -1175,7 +1173,7 @@ int slsReceiverUDPFunctions::setupWriter(){
 
 
 
-int slsReceiverUDPFunctions::createCompressionFile(int ithr, int iframe){
+int UDPBaseImplementation::createCompressionFile(int ithr, int iframe){
 #ifdef MYROOT1
 	char temp[MAX_STR_LENGTH];
 		//create file name for gui purposes, and set up acquistion parameters
@@ -1203,7 +1201,7 @@ int slsReceiverUDPFunctions::createCompressionFile(int ithr, int iframe){
 
 
 
-int slsReceiverUDPFunctions::createNewFile(){
+int UDPBaseImplementation::createNewFile(){
  int gt = getFrameIndex();
  if(gt==-1) gt=0;
 	//create file name
@@ -1264,7 +1262,7 @@ int slsReceiverUDPFunctions::createNewFile(){
 
 
 
-void slsReceiverUDPFunctions::closeFile(int ithr){
+void UDPBaseImplementation::closeFile(int ithr){
 #ifdef VERBOSE
 	cout << "In closeFile for thread " << ithr << endl;
 #endif
@@ -1321,7 +1319,7 @@ void slsReceiverUDPFunctions::closeFile(int ithr){
 
 
 
-int slsReceiverUDPFunctions::startReceiver(char message[]){
+int UDPBaseImplementation::startReceiver(char message[]){
 	int i;
 
 
@@ -1389,7 +1387,7 @@ int slsReceiverUDPFunctions::startReceiver(char message[]){
 
 
 
-int slsReceiverUDPFunctions::stopReceiver(){
+int UDPBaseImplementation::stopReceiver(){
 
 
 //#ifdef VERBOSE
@@ -1419,7 +1417,7 @@ int slsReceiverUDPFunctions::stopReceiver(){
 
 
 
-void slsReceiverUDPFunctions::startReadout(){
+void UDPBaseImplementation::startReadout(){
 
 	//#ifdef VERBOSE
 		cout << "Start Receiver Readout" << endl;
@@ -1442,16 +1440,16 @@ void slsReceiverUDPFunctions::startReadout(){
 
 
 
-void* slsReceiverUDPFunctions::startListeningThread(void* this_pointer){
-	((slsReceiverUDPFunctions*)this_pointer)->startListening();
+void* UDPBaseImplementation::startListeningThread(void* this_pointer){
+	((UDPBaseImplementation*)this_pointer)->startListening();
 
 	return this_pointer;
 }
 
 
 
-void* slsReceiverUDPFunctions::startWritingThread(void* this_pointer){
-	((slsReceiverUDPFunctions*)this_pointer)->startWriting();
+void* UDPBaseImplementation::startWritingThread(void* this_pointer){
+	((UDPBaseImplementation*)this_pointer)->startWriting();
 	return this_pointer;
 }
 
@@ -1460,7 +1458,7 @@ void* slsReceiverUDPFunctions::startWritingThread(void* this_pointer){
 
 
 
-int slsReceiverUDPFunctions::startListening(){
+int UDPBaseImplementation::startListening(){
 	int ithread = currentListeningThreadIndex;
 #ifdef VERYVERBOSE
 	cout << "In startListening() " << endl;
@@ -1661,7 +1659,7 @@ int slsReceiverUDPFunctions::startListening(){
 
 
 
-int slsReceiverUDPFunctions::startWriting(){
+int UDPBaseImplementation::startWriting(){
 	int ithread = currentWriterThreadIndex;
 #ifdef VERYVERBOSE
 	cout << ithread << "In startWriting()" <<endl;
@@ -1854,7 +1852,7 @@ int loop;
 
 
 
-void slsReceiverUDPFunctions::startFrameIndices(int ithread){
+void UDPBaseImplementation::startFrameIndices(int ithread){
 
 	if (myDetectorType == EIGER)
 		//add currframenum later  in this method for scans
@@ -1888,7 +1886,7 @@ void slsReceiverUDPFunctions::startFrameIndices(int ithread){
 
 
 
-void slsReceiverUDPFunctions::stopListening(int ithread, int rc, int &pc, int &t){
+void UDPBaseImplementation::stopListening(int ithread, int rc, int &pc, int &t){
 int i;
 
 #ifdef VERYVERBOSE
@@ -1966,7 +1964,7 @@ int i;
 
 
 
-void slsReceiverUDPFunctions::stopWriting(int ithread, char* wbuffer[]){
+void UDPBaseImplementation::stopWriting(int ithread, char* wbuffer[]){
 	int i,j;
 #ifdef VERYDEBUG
 	cout << ithread << " **********************popped last dummy frame:" << (void*)wbuffer[wIndex] << endl;
@@ -2033,7 +2031,7 @@ void slsReceiverUDPFunctions::stopWriting(int ithread, char* wbuffer[]){
 
 
 
-void slsReceiverUDPFunctions::writeToFile_withoutCompression(char* buf,int numpackets, uint32_t framenum){
+void UDPBaseImplementation::writeToFile_withoutCompression(char* buf,int numpackets, uint32_t framenum){
 	int packetsToSave, offset,lastpacket;
 	uint32_t tempframenum = framenum;
 
@@ -2135,7 +2133,7 @@ void slsReceiverUDPFunctions::writeToFile_withoutCompression(char* buf,int numpa
 
 
 
-void slsReceiverUDPFunctions::handleDataCompression(int ithread, char* wbuffer[], int &npackets, char* data, int xmax, int ymax, int &nf){
+void UDPBaseImplementation::handleDataCompression(int ithread, char* wbuffer[], int &npackets, char* data, int xmax, int ymax, int &nf){
 
 #if defined(MYROOT1) && defined(ALLFILE_DEBUG)
 				writeToFile_withoutCompression(wbuf[0], numpackets,currframenum);
@@ -2234,7 +2232,7 @@ void slsReceiverUDPFunctions::handleDataCompression(int ithread, char* wbuffer[]
 
 
 
-int slsReceiverUDPFunctions::enableTenGiga(int enable){
+int UDPBaseImplementation::enableTenGiga(int enable){
 
 	cout << "Enabling 10Gbe to" << enable << endl;
 

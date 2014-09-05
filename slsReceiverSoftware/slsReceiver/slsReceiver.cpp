@@ -10,23 +10,25 @@
 #include <stdlib.h>
 
 #include "slsReceiver.h"
-#include "slsReceiverUDPFunctions.h"
-#include "eigerReceiver.h"
+//#include "slsReceiverUDPFunctions.h"
+//#include "eigerReceiver.h"
+
+#include "UDPInterface.h"
+//#include "UDPBaseImplementation.h"
+
+
+#include "utilities.h"
 
 using namespace std;
 
 slsReceiver::slsReceiver(int argc, char *argv[], int &success){
+	
 	//creating base receiver
-	cout << "SLS Receiver" << endl;
-	receiverBase = new slsReceiverUDPFunctions();
 	int tcpip_port_no=-1;
 
-
-	
 	ifstream infile;
 	string sLine,sargname;
 	int iline = 0;
-
 
 	success=OK;
 
@@ -38,34 +40,34 @@ slsReceiver::slsReceiver(int argc, char *argv[], int &success){
 			if(iarg+1==argc){
 				cout << "no config file name given. Exiting." << endl;
 				success=FAIL;
-			}else
+			}
+			else
 				fname.assign(argv[iarg+1]);
 		}
 	}
 	if((!fname.empty()) && (success == OK)){
-#ifdef VERBOSE
-		std::cout<< "config file name "<< fname << std::endl;
-#endif
+
+		VERBOSE_PRINT("config file name " + fname );
+		
 		infile.open(fname.c_str(), ios_base::in);
 		if (infile.is_open()) {
 			while(infile.good()){
 				getline(infile,sLine);
 				iline++;
-#ifdef VERBOSE
-				cout <<  sLine << endl;
-#endif
+
+				VERBOSE_PRINT(sLine);
+
 				if(sLine.find('#')!=string::npos){
-#ifdef VERBOSE
-					cout << "Line is a comment " << endl;
-#endif
+					VERBOSE_PRINT( "Line is a comment ");
 					continue;
-				}else if(sLine.length()<2){
-#ifdef VERBOSE
-					cout << "Empty line " << endl;
-#endif
+				}
+				else if(sLine.length()<2){
+					VERBOSE_PRINT("Empty line ");
 					continue;
-				}else{
+				}
+				else{
 					istringstream sstr(sLine);
+					
 					//parameter name
 					if(sstr.good())
 						sstr >> sargname;
@@ -85,14 +87,13 @@ slsReceiver::slsReceiver(int argc, char *argv[], int &success){
 				}
 			}
 			infile.close();
-		}else {
+		}
+		else {
 			cout << "Error opening configuration file " << fname << endl;
 			success = FAIL;
 		}
-#ifdef VERBOSE
-		cout << "Read configuration file of " << iline << " lines" << endl;
-#endif
 
+		VERBOSE_PRINT("Read configuration file of " + iline + " lines");
 	}
 
 
@@ -131,16 +132,16 @@ slsReceiver::slsReceiver(int argc, char *argv[], int &success){
 	}
 
 
-	if (success==OK)
-	  tcpipInterface = new slsReceiverTCPIPInterface(success,receiverBase, tcpip_port_no);
-	  //tcp ip interface
-
-
-
+	if (success==OK){
+		cout << "SLS Receiver" << endl;
+		udp_interface = UDPInterface::create("stasndard");
+		tcpipInterface = new slsReceiverTCPIPInterface(success, udp_interface, tcpip_port_no);
+		//tcp ip interface
+	}
 }
 
 
-slsReceiver::~slsReceiver() {if(receiverBase) delete receiverBase; if(tcpipInterface) delete tcpipInterface;}
+slsReceiver::~slsReceiver() {if(udp_interface) delete udp_interface; if(tcpipInterface) delete tcpipInterface;}
 
 
 int slsReceiver::start() {
@@ -158,7 +159,6 @@ void slsReceiver::closeFile(int p) {
 }
 
 
-
 int64_t slsReceiver::getReceiverVersion(){
 	tcpipInterface->getReceiverVersion();
 }
@@ -166,20 +166,20 @@ int64_t slsReceiver::getReceiverVersion(){
 
 void slsReceiver::registerCallBackStartAcquisition(int (*func)(char*, char*,int, int, void*),void *arg){
   //tcpipInterface
-	  receiverBase->registerCallBackStartAcquisition(func,arg);
+	udp_interface->registerCallBackStartAcquisition(func,arg);
 }
 
 
 
 void slsReceiver::registerCallBackAcquisitionFinished(void (*func)(int, void*),void *arg){
   //tcpipInterface
-	  receiverBase->registerCallBackAcquisitionFinished(func,arg);
+	udp_interface->registerCallBackAcquisitionFinished(func,arg);
 }
 
 
 void slsReceiver::registerCallBackRawDataReady(void (*func)(int, char*, int, FILE*, char*, void*),void *arg){
-  //tcpipInterface
-	  receiverBase->registerCallBackRawDataReady(func,arg);
+	//tcpipInterface
+	udp_interface->registerCallBackRawDataReady(func,arg);
 }
 
 

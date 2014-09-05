@@ -1,24 +1,21 @@
-#ifdef SLS_RECEIVER_UDP_FUNCTIONS
-#ifndef SLS_RECEIVER_UDP_FUNCTIONS_H
-#define SLS_RECEIVER_UDP_FUNCTIONS_H
+//#ifdef UDP_BASE_IMPLEMENTATION
+#ifndef UDP_BASE_IMPLEMENTATION_H
+#define UDP_BASE_IMPLEMENTATION_H
 /********************************************//**
- * @file slsReceiverUDPFunctions.h
+ * @file UDPBaseImplementation.h
  * @short does all the functions for a receiver, set/get parameters, start/stop etc.
  ***********************************************/
 
 
-//#include "sls_receiver_defs.h"
-//#include "receiver_defs.h"
-//#include "genericSocket.h"
+#include "sls_receiver_defs.h"
+#include "receiver_defs.h"
+#include "genericSocket.h"
 #include "circularFifo.h"
 #include "singlePhotonDetector.h"
 #include "slsReceiverData.h"
 #include "moenchCommonMode.h"
 
-
 #include "UDPInterface.h"
-#include "UDPBaseImplementation.h"
-
 
 #ifdef MYROOT1
 #include <TTree.h>
@@ -36,19 +33,20 @@
  * @short does all the functions for a receiver, set/get parameters, start/stop etc.
  */
 
-
-class slsReceiverUDPFunctions : private virtual slsReceiverDefs, public UDPInterface {
+class UDPBaseImplementation : private virtual slsReceiverDefs, public UDPInterface {
 	
  public:
 	/**
 	 * Constructor
 	 */
-	slsReceiverUDPFunctions();
+	UDPBaseImplementation();
 
 	/**
 	 * Destructor
 	 */
-	virtual ~slsReceiverUDPFunctions();
+	virtual ~UDPBaseImplementation();
+
+	
 
 	/**
 	 * delete and free member parameters
@@ -323,6 +321,12 @@ class slsReceiverUDPFunctions : private virtual slsReceiverDefs, public UDPInter
 	int shutDownUDPSockets();
 
 private:
+	
+	/*
+	void not_implemented(string method_name){
+		std::cout << "[WARNING] Method " << method_name << " not implemented!" << std::endl;
+	};
+	*/
 	/**
 	 * Deletes all the filter objects for single photon data
 	 */
@@ -804,4 +808,4 @@ public:
 
 #endif
 
-#endif
+//#endif

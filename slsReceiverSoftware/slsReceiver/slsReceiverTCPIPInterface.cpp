@@ -4,7 +4,7 @@
  ***********************************************/
 
 #include "slsReceiverTCPIPInterface.h"
-#include "slsReceiverBase.h"
+#include "UDPInterface.h"
 #include "gitInfoReceiver.h"
 #include "slsReceiverUsers.h"
 #include "slsReceiver.h"
@@ -28,7 +28,7 @@ slsReceiverTCPIPInterface::~slsReceiverTCPIPInterface() {
 }
 
 
-slsReceiverTCPIPInterface::slsReceiverTCPIPInterface(int &success, slsReceiverBase* rbase, int pn):
+slsReceiverTCPIPInterface::slsReceiverTCPIPInterface(int &success, UDPInterface* rbase, int pn):
 		myDetectorType(GOTTHARD),
 		receiverBase(rbase),
 		ret(OK),
@@ -124,9 +124,9 @@ int slsReceiverTCPIPInterface::start(){
 		cout << "Could not create TCP Server thread" << endl;
 		return FAIL;
 	}
-#ifdef VERBOSE
+	//#ifdef VERBOSE
 	cout << "TCP Server thread created successfully." << endl;
-#endif
+	//#endif
 	return OK;
 }
 
@@ -503,7 +503,7 @@ int slsReceiverTCPIPInterface::set_file_dir() {
 
 
 
-
+// LEO: do we need it in the base class?
 int slsReceiverTCPIPInterface::set_file_index() {
 	ret=OK;
 	int retval=-1;
@@ -608,7 +608,7 @@ int slsReceiverTCPIPInterface::set_frame_index() {
 
 
 
-
+//LEO: is the client that commands the setup, or you just need the args?
 int slsReceiverTCPIPInterface::setup_udp(){
 	ret=OK;
 	strcpy(mess,"could not set up udp connection");
@@ -1773,7 +1773,7 @@ int slsReceiverTCPIPInterface::set_detector_hostname() {
 
 
 
-
+//LEO: why the receiver should set the dynamic range?
 int slsReceiverTCPIPInterface::set_dynamic_range() {
 	ret=OK;
 	int retval=-1;

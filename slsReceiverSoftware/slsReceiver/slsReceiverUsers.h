@@ -1,4 +1,3 @@
-
 #ifndef SLS_RECEIVER_USERS_H
 #define SLS_RECEIVER_USERS_H
 
@@ -29,7 +28,7 @@ public:
 	 * @param argv from command line
 	 * @param succecc socket creation was successfull
 	 */
-  slsReceiverUsers(int argc, char *argv[], int &success);
+	slsReceiverUsers(int argc, char *argv[], int &success);
 
 
 	/** Destructor */

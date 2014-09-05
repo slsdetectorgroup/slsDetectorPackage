@@ -1,7 +1,7 @@
-#ifndef SLSRECEIVERBASE_H
-#define SLSRECEIVERBASE_H
+#ifndef UDPINTERFACE_H
+#define UDPINTERFACE_H
 /***********************************************
- * @file slsReceiverBase.h
+ * @file UDPInterface.h
  * @short base class with all the functions for a receiver, set/get parameters, start/stop etc.
  ***********************************************/
 /**
@@ -12,19 +12,35 @@
  * @short base class with all the functions for a receiver, set/get parameters, start/stop etc.
  */
 
-class slsReceiverBase {
+#include "sls_receiver_defs.h"
+#include "receiver_defs.h"
+#include "MySocketTCP.h"
 
-public:
+/*
+void print_not_implemented(string method_name){
+	std::cout << "[WARNING] Method " << method_name << " not implemented!" << std::endl; 
+}
+*/
 
-  /**
-   * constructor
-   */
-  slsReceiverBase(){};
-  
-  /**
-   * Destructor
-   */
-  virtual ~slsReceiverBase() {};
+class UDPInterface {
+	
+ public:
+	
+	/**
+	 * constructor
+	 */
+	//UDPInterface(){};
+	
+	/**
+	 * Destructor
+	 */
+	virtual ~UDPInterface() {};
+	
+	/**
+	 * Factory create method
+	 */
+	static UDPInterface *create(string receiver_type = "standard");
+	
 
 	/**
 	 * Initialize the Receiver
@@ -32,7 +48,7 @@ public:
 	 * you can call this function only once. You must call it before you call startReceiver() for  the first time.
 	 */
 	virtual void initialize(const char *detectorHostName) = 0;
-
+	
 
 	 /* Returns detector hostname
  	 /returns hostname
@@ -44,7 +60,7 @@ public:
 	/**
 	 * Returns status of receiver: idle, running or error
 	 */
-    virtual slsReceiverDefs::runStatus getStatus() const = 0;
+	virtual slsReceiverDefs::runStatus getStatus() const = 0;
 
 	/**
 	 * Returns File Name

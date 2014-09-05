@@ -7,8 +7,12 @@
 
 
 #include "slsReceiverTCPIPInterface.h"
-#include "slsReceiverBase.h"
+#include "UDPInterface.h"
+#include "UDPBaseImplementation.h"
 
+#include "sls_receiver_defs.h"
+#include "receiver_defs.h"
+#include "MySocketTCP.h"
 
 
 
@@ -17,8 +21,8 @@
  */
 
 class slsReceiver : private virtual slsReceiverDefs {
-
-public:
+	
+ public:
 	/**
 	 * Constructor
 	 * creates the tcp interface and the udp class
@@ -80,9 +84,9 @@ public:
 	void registerCallBackRawDataReady(void (*func)(int, char*, int, FILE*, char*, void*),void *arg);
 
 
-private:
-	slsReceiverTCPIPInterface*  tcpipInterface;
-	slsReceiverBase*			receiverBase;
+ private:
+	slsReceiverTCPIPInterface* tcpipInterface;
+	UDPInterface* udp_interface;
 };
 
 

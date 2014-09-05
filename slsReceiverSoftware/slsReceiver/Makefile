@@ -13,7 +13,7 @@ LDFLAGRXR 		?=	-L$(LIBDIR) -lSlsReceiver -L/usr/lib64/ -lpthread
 LDFLAGRXR 		+=	-lm  -lstdc++ 
 
 
-INCLUDES	?= 	-I ../MySocketTCP  -I ../slsDetectorCalibration -I ../includes -I eigerReceiver -I . 
+INCLUDES	?= 	-I ../MySocketTCP  -I ../slsDetectorCalibration -I ../includes/ -I eigerReceiver -I . 
 SRC_CLNT	= 	main.cpp 
 
 
@@ -40,19 +40,21 @@ $(DESTDIR)/sslsReceiver: lib
 
 
 $(DESTDIR)/slsReceiver: eigerReceiver	lib
+	echo "AAAAAAAAAAAA" $(CXX)   -o $@  $(SRC_CLNT)  $(FLAGS)  $(INCLUDES) $(CLAGS) $(LIBS) $(LDFLAGRXR) -fPIC 
 	$(CXX)   -o $@  $(SRC_CLNT)  $(FLAGS)  $(INCLUDES) $(CLAGS) $(LIBS) $(LDFLAGRXR) -fPIC 
 #$(EIGERFLAGS) 	
 
 
 ifeq ($(EIGERSLS), yes)
 eigerReceiver: 
-	$(CXX) $(FLAGS) $(CFLAGS) -fPIC -c -o eigerReceiverTest.o eigerReceiver/eigerReceiverTest.cpp $(EIGERFLAGS)
-	$(CXX) $(FLAGS) $(CFLAGS) -fPIC -c -o eigerReceiver.o eigerReceiver/eigerReceiver.cpp $(EIGERFLAGS)
-	$(CXX)  eigerReceiverTest.o eigerReceiver.o   -o eigerReceiver/eigerReceiverTest $(EIGERFLAGS)
+#	$(CXX) $(FLAGS) $(CFLAGS) -fPIC -c -o eigerReceiverTest.o 	eigerReceiver/eigerReceiverTest.cpp $(EIGERFLAGS)
+#	$(CXX) $(FLAGS) $(CFLAGS) -fPIC -c -o eigerReceiver.o eigerReceiver/eigerReceiver.cpp $(EIGERFLAGS)
+#	$(CXX)  eigerReceiverTest.o eigerReceiver.o   -o eigerReceiver/eigerReceiverTest $(EIGERFLAGS)	
+	$(CXX) $(FLAGS) $(CFLAGS) $(INCLUDES) -fPIC -c -o eigerReceiver.o eigerReceiverImplementation.cpp $(EIGERFLAGS)
 else ifeq ($(ROOTSLS), yes)
 eigerReceiver: eigerReceiver/eigerReceiverDummy.cpp 
 	echo "Compiling with root"
-	$(CXX) $(FLAGS) $(CFLAGS) -fPIC -c -o eigerReceiver.o eigerReceiver/eeigerReceiverDummy.cpp $(ROOTFLAGS)
+	$(CXX) $(FLAGS) $(CFLAGS) -fPIC -c -o eigerReceiver.o eigerReceiver/eigerReceiverDummy.cpp $(ROOTFLAGS)
 else
 eigerReceiver: eigerReceiver/eigerReceiverDummy.cpp
 	$(CXX) $(FLAGS) $(CFLAGS) $(INCLUDES) -fPIC -c -o eigerReceiver.o eigerReceiver/eigerReceiverDummy.cpp 	
@@ -63,6 +65,6 @@ lib:
 
 clean:
 	rm -rf $(PROGS)  *.o  eigerReceiverTest $(DESTDIR)/libSlsReceiver.a   $(DESTDIR)/libSlsReceiver.so core
-	
+
 
 

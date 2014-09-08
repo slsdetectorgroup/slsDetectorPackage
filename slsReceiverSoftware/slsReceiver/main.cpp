@@ -6,6 +6,9 @@
 
 #include <iostream>
 #include <string.h>
+
+#include "utilities.h"
+
 using namespace std;
 
 

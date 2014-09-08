@@ -22,6 +22,7 @@ using namespace std;
 
 #include "UDPInterface.h"
 #include "UDPBaseImplementation.h"
+#include "UDPStandardImplementation.h"
 
 
 
@@ -30,7 +31,9 @@ using namespace std;
 UDPInterface * UDPInterface::create(string receiver_type){
 	
 	if (receiver_type == "standard")
-		return new UDPBaseImplementation();
+		return new UDPStandardImplementation();
+	//else if (receiver_type == "REST")
+	//	return new UDPRESTImplementation();
 	else{
 		cout << "[ERROR] UDP interface not supported, using standard implementation" << endl;
 		return new UDPBaseImplementation();

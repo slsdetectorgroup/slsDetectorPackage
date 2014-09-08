@@ -20,12 +20,10 @@
 #include <iomanip>			//set precision
 #include <sys/mman.h>		//munmap
 
-
-
 #include <string.h>
 #include <iostream>
 
-
+//#include "utilities.h"
 
 using namespace std;
 
@@ -216,90 +214,9 @@ void UDPBaseImplementation::initializeMembers(){
 
 }
 
+
 int UDPBaseImplementation::setDetectorType(detectorType det){
-	cout << "Setting Receiver Type " << endl;
-
-	deleteMembers();
-	initializeMembers();
-
-	myDetectorType = det;
-
-	switch(myDetectorType){
-	case GOTTHARD:
-		cout << endl << "***** This is a GOTTHARD Receiver *****" << endl << endl;
-		break;
-	case MOENCH:
-		cout << endl << "***** This is a MOENCH Receiver *****" << endl << endl;
-		break;
-	case EIGER:
-		cout << endl << "***** This is a EIGER Receiver *****" << endl << endl;
-		break;
-	default:
-		cout << endl << "***** Unknown Receiver *****" << endl << endl;
-	return FAIL;
-		break;
-	}
-
-	//moench variables
-	if(myDetectorType == GOTTHARD){
-		fifosize 			= GOTTHARD_FIFO_SIZE;
-		packetsPerFrame 	= GOTTHARD_PACKETS_PER_FRAME;
-		onePacketSize		= GOTTHARD_ONE_PACKET_SIZE;
-		frameSize			= GOTTHARD_BUFFER_SIZE;
-		bufferSize 			= GOTTHARD_BUFFER_SIZE;
-		maxPacketsPerFile 	= MAX_FRAMES_PER_FILE * GOTTHARD_PACKETS_PER_FRAME;
-		frameIndexMask 		= GOTTHARD_FRAME_INDEX_MASK;
-		frameIndexOffset 	= GOTTHARD_FRAME_INDEX_OFFSET;
-		packetIndexMask 	= GOTTHARD_PACKET_INDEX_MASK;
-	}else if(myDetectorType == MOENCH){
-		fifosize 			= MOENCH_FIFO_SIZE;
-		packetsPerFrame 	= MOENCH_PACKETS_PER_FRAME;
-		onePacketSize		= MOENCH_ONE_PACKET_SIZE;
-		frameSize			= MOENCH_BUFFER_SIZE;
-		bufferSize 			= MOENCH_BUFFER_SIZE;
-		maxPacketsPerFile 	= MOENCH_MAX_FRAMES_PER_FILE * MOENCH_PACKETS_PER_FRAME;
-		frameIndexMask 		= MOENCH_FRAME_INDEX_MASK;
-		frameIndexOffset 	= MOENCH_FRAME_INDEX_OFFSET;
-		packetIndexMask 	= MOENCH_PACKET_INDEX_MASK;
-	}
-	else if(myDetectorType == EIGER){
-		fifosize 			= EIGER_FIFO_SIZE;
-		packetsPerFrame 	= EIGER_ONE_GIGA_CONSTANT * dynamicRange * EIGER_MAX_PORTS;
-		onePacketSize		= EIGER_ONE_GIGA_ONE_PACKET_SIZE;
-		frameSize			= onePacketSize * packetsPerFrame;
-		bufferSize 			= (frameSize/EIGER_MAX_PORTS) + EIGER_HEADER_LENGTH;//everything one port gets (img header plus packets)
-		maxPacketsPerFile 	= EIGER_MAX_FRAMES_PER_FILE * packetsPerFrame;
-		frameIndexMask 		= EIGER_FRAME_INDEX_MASK;
-		frameIndexOffset 	= EIGER_FRAME_INDEX_OFFSET;
-		packetIndexMask 	= EIGER_PACKET_INDEX_MASK;
-
-		pthread_mutex_lock(&status_mutex);
-		listeningthreads_mask = 0x0;
-		pthread_mutex_unlock(&(status_mutex));
-		if(thread_started)
-			createListeningThreads(true);
-
-		numListeningThreads = MAX_NUM_LISTENING_THREADS;
-	}
-	latestData = new char[frameSize];
-
-
-	setupFifoStructure();
-
-	if(createListeningThreads() == FAIL){
-		cout << "ERROR: Could not create listening thread" << endl;
-		exit (-1);
-	}
-
-	if(createWriterThreads() == FAIL){
-		cout << "ERROR: Could not create writer threads" << endl;
-		exit (-1);
-	}
-
-	setThreadPriorities();
-
-	cout << "Ready..." << endl;
-
+	cout << "[WARNING] This is a base implementation, " << __func__ << " not correctly implemented" << endl;
 	return OK;
 }
 
@@ -327,6 +244,7 @@ uint32_t UDPBaseImplementation::getFrameIndex(){
 	return frameIndex;
 }
 
+
 uint32_t UDPBaseImplementation::getAcquisitionIndex(){
 	if(!totalPacketsCaught)
 		acquisitionIndex=-1;
@@ -343,20 +261,17 @@ void UDPBaseImplementation::resetTotalFramesCaught(){
 }
 
 
-
-
-
-
-
-
-
 /*file parameters*/
 
 char* UDPBaseImplementation::getFilePath() const{
-		return (char*)filePath;
+	FILE_LOG(logWARNING) << "[WARNING] This is a base implementation, " << __func__ << " could have no effects.x" << endl;
+	return (char*)filePath;
 }
 
 char* UDPBaseImplementation::setFilePath(const char c[]){
+	cout << "[WARNING] This is a base implementation, " << __func__ << " could have no effects." << endl;
+	
+	/*
 	if(strlen(c)){
 		//check if filepath exists
 		struct stat st;
@@ -367,6 +282,7 @@ char* UDPBaseImplementation::setFilePath(const char c[]){
 			cout << "FilePath does not exist:" << filePath << endl;
 		}
 	}
+	*/
 	return getFilePath();
 }
 
@@ -376,8 +292,11 @@ char* UDPBaseImplementation::getFileName() const{
 }
 
 char* UDPBaseImplementation::setFileName(const char c[]){
-	if(strlen(c))
+	cout << "[WARNING] This is a base implementation, " << __func__ << " could have no effects." << endl;
+	/*
+	  if(strlen(c))
 		strcpy(fileName,c);
+	*/
 	return getFileName();
 }
 
@@ -387,13 +306,17 @@ int UDPBaseImplementation::getFileIndex(){
 }
 
 int UDPBaseImplementation::setFileIndex(int i){
+	cout << "[WARNING] This is a base implementation, " << __func__ << " could have no effects." << endl;
+	/*
 	if(i>=0)
 		fileIndex = i;
+	*/
 	return getFileIndex();
 }
 
 
 int UDPBaseImplementation::setFrameIndexNeeded(int i){
+	cout << "[WARNING] This is a base implementation, " << __func__ << " could have no effects." << endl;
 	frameIndexNeeded = i;
 	return frameIndexNeeded;
 }

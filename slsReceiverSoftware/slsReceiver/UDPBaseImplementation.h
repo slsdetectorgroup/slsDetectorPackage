@@ -28,7 +28,6 @@
 #include <stdio.h>
 #include <semaphore.h>
 
-
 /**
  * @short does all the functions for a receiver, set/get parameters, start/stop etc.
  */

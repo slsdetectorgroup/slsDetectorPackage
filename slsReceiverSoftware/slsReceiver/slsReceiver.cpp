@@ -12,9 +12,7 @@
 #include <getopt.h>
 
 #include "slsReceiver.h"
-#include "UDPInterface.h"
-
-#include "utilities.h"
+//#include "UDPInterface.h"
 
 using namespace std;
 
@@ -35,6 +33,7 @@ slsReceiver::slsReceiver(int argc, char *argv[], int &success){
 	int tcpip_port_no = 1984;
 	success=OK;
 	string fname = "";
+	string udp_interface_type = "standard";
 
 	//parse command line for config
 	static struct option long_options[] = {
@@ -42,6 +41,7 @@ slsReceiver::slsReceiver(int argc, char *argv[], int &success){
 		//{"verbose", no_argument,       &verbose_flag, 1},
 		/* These options don’t set a flag.
 		   We distinguish them by their indices. */
+		{"type",     required_argument,       0, 't'},
 		{"config",     required_argument,       0, 'f'},
 		{"rx_tcpport",  required_argument,       0, 'b'},
 		{"help",  no_argument,       0, 'h'},
@@ -52,7 +52,7 @@ slsReceiver::slsReceiver(int argc, char *argv[], int &success){
 	int c;
 
 	while ( c != -1 ){
-		c = getopt_long (argc, argv, "bfh", long_options, &option_index);
+		c = getopt_long (argc, argv, "bfht", long_options, &option_index);
 		
 		/* Detect the end of the options. */
 		if (c == -1)
@@ -61,12 +61,15 @@ slsReceiver::slsReceiver(int argc, char *argv[], int &success){
 		switch(c){
 		case 'f':
 			fname = optarg;
-			cout << long_options[option_index].name << " " << optarg << endl;
+			//cout << long_options[option_index].name << " " << optarg << endl;
 			break;
 
 		case 'b':
-			sscanf(optarg,"%d",&tcpip_port_no);
-			cout << long_options[option_index].name << " " << optarg << endl;
+			sscanf(optarg, "%d", &tcpip_port_no);
+			break;
+			
+		case 't':
+			udp_interface_type = optarg;
 			break;
 
 		case 'h':
@@ -74,6 +77,7 @@ slsReceiver::slsReceiver(int argc, char *argv[], int &success){
 			help_message += """usage: slsReceiver --config config_fname [--rx_tcpport port]\n\n""";
 			help_message += """\t--config:\t configuration filename for SLS Detector receiver\n""";
 			help_message += """\t--rx_tcpport:\t TCP Communication Port with the client. Default: 1954.\n\n""";
+			help_message += """\t--type:\t Type of the receiver. Possible arguments are: standard, REST. Default: standard.\n\n""";
 			cout << help_message << endl;
 			break;
 		       
@@ -85,30 +89,35 @@ slsReceiver::slsReceiver(int argc, char *argv[], int &success){
 		success = FAIL;
 
 	if((!fname.empty()) && (success == OK)){
-		VERBOSE_PRINT("config file name " + fname );
+		FILE_LOG(logINFO) << "config file name " << fname;
 		success = read_config_file(fname, &tcpip_port_no);
-		VERBOSE_PRINT("Read configuration file of " + iline + " lines");
+		//VERBOSE_PRINT("Read configuration file of " + iline + " lines");
 	}
 	else {
-		cout << "Error opening configuration file " << fname << endl;
+		FILE_LOG(logERROR) << "Error opening configuration file " << fname ;
 		success = FAIL;
 	}
 
 
 	if(success != OK){
-		cout << "Failed: see output above for more information " << endl;
+		FILE_LOG(logERROR) << "Failed: see output above for more information " ;
 	}
 
 	if (success==OK){
 		cout << "SLS Receiver starting" << endl;
-		udp_interface = UDPInterface::create("standard");
+		udp_interface = UDPInterface::create(udp_interface_type);
 		tcpipInterface = new slsReceiverTCPIPInterface(success, udp_interface, tcpip_port_no);
 		//tcp ip interface
 	}
 }
 
 
-slsReceiver::~slsReceiver() {if(udp_interface) delete udp_interface; if(tcpipInterface) delete tcpipInterface;}
+slsReceiver::~slsReceiver() {
+	if(udp_interface) 
+		delete udp_interface; 
+	if(tcpipInterface) 
+		delete tcpipInterface;
+}
 
 
 int slsReceiver::start() {

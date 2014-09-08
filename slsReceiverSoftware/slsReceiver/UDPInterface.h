@@ -16,6 +16,9 @@
 #include "receiver_defs.h"
 #include "MySocketTCP.h"
 
+#include "utilities.h"
+
+
 /*
 void print_not_implemented(string method_name){
 	std::cout << "[WARNING] Method " << method_name << " not implemented!" << std::endl; 

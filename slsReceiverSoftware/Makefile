@@ -11,16 +11,16 @@ CFLAGS= -g -DC_ONLY -fPIC
 
 DFLAGS= -g -DDACS_INT  -DSLS_RECEIVER_UDP_FUNCTIONS 
 
-INCLUDES?= -I. -Iincludes -IMySocketTCP -IslsReceiver -IslsDetectorCalibration -IslsReceiver/eigerReceiver -I$(ASM) 
+INCLUDES?= -I. -Iincludes -IMySocketTCP -IslsReceiver -IslsDetectorCalibration -I$(ASM) 
 #-IslsReceiverInterface
 
-SRC_CLNT= MySocketTCP/MySocketTCP.cpp  slsReceiver/slsReceiver.cpp slsReceiver/UDPInterface.cpp  slsReceiver/UDPBaseImplementation.cpp slsReceiver/slsReceiverTCPIPInterface.cpp   slsReceiver/slsReceiverUsers.cpp 
-
+SRC_CLNT= MySocketTCP/MySocketTCP.cpp slsReceiver/UDPInterface.cpp  slsReceiver/UDPBaseImplementation.cpp slsReceiver/UDPStandardImplementation.cpp slsReceiver/slsReceiverTCPIPInterface.cpp slsReceiver/slsReceiver.cpp slsReceiver/slsReceiverUsers.cpp includes/utilities.h
 #slsReceiverInterface/receiverInterface.cpp
 #slsReceiver/slsReceiverUDPFunctions.cpp
 
 OBJS = $(SRC_CLNT:.cpp=.o) 
-OBJS +=  slsReceiver/eigerReceiver.o  
+OBJS += includes/utilities.h
+#OBJS +=  slsReceiver/eigerReceiver.o  
 
 
 .PHONY: all intdoc  package eigerReceiver clean
@@ -31,10 +31,8 @@ intdoc: $(SRC_H) $(SRC_CLNT)
 	doxygen doxy.config
 
 
-%.o : %.cpp %.h Makefile
-ifeq ($(EIGERSLS),yes)
-	$(CXX) -DEIGERSLS -o $@ -c $< $(INCLUDES) $(DFLAGS)  $(EIGERFLAGS) -fPIC  $(EPICSFLAGS) -L/usr/lib64/ #$(FLAGS)
-else ifeq ($(ROOTSLS),yes)
+%.o : %.cpp Makefile
+ifeq ($(ROOTSLS),yes)
 	echo "with root"
 	$(CXX) -DROOTSLS -o $@ -c $< $(INCLUDES) $(DFLAGS)  $(ROOTFLAGS) -fPIC  $(EPICSFLAGS) -L/usr/lib64/ #$(FLAGS)
 else
@@ -43,14 +41,14 @@ else
 endif
 
 # LEO: not satisfied by eigerReceiver 
-package:  eigerReceiver $(OBJS) $(DESTDIR)/libSlsReceiver.so $(DESTDIR)/libSlsReceiver.a 
+package:  $(OBJS) $(DESTDIR)/libSlsReceiver.so $(DESTDIR)/libSlsReceiver.a 
 
-eigerReceiver:
-	echo "src client:" $(SRC_CLNT)
-	cd slsReceiver && make eigerReceiver
+#eigerReceiver:
+#	echo "src client:" $(SRC_CLNT)
+#	cd slsReceiver && make eigerReceiver
 
 $(DESTDIR)/libSlsReceiver.so: $(OBJS) 
-	$(CXX)  -shared -Wl,-soname,libSlsReceiver.so -o libSlsReceiver.so  $(OBJS)  -lc $(INCLUDES) $(DFLAGS) $(FLAGS) $(EPICSFLAGS)  -L/usr/lib64 -lpthread
+	$(CXX)  -shared -Wl,-soname,libSlsReceiver.so -o libSlsReceiver.so  $(OBJS) -lc $(INCLUDES) $(DFLAGS) $(FLAGS) $(EPICSFLAGS)  -L/usr/lib64 -lpthread
 	$(shell test -d $(DESTDIR) || mkdir -p $(DESTDIR))
 	mv libSlsReceiver.so $(DESTDIR)
 

@@ -6,7 +6,7 @@
 
 
 
-
+/*
 #include <signal.h>  		// SIGINT
 #include <sys/stat.h> 		// stat
 #include <sys/socket.h>		// socket(), bind(), listen(), accept(), shut down
@@ -14,6 +14,7 @@
 #include <stdlib.h>			// exit()
 #include <iomanip>			//set precision
 #include <sys/mman.h>		//munmap
+*/
 
 #include <string.h>
 #include <iostream>
@@ -22,9 +23,6 @@ using namespace std;
 #include "UDPInterface.h"
 #include "UDPBaseImplementation.h"
 
-#include "moench02ModuleData.h"
-#include "gotthardModuleData.h"
-#include "gotthardShortModuleData.h"
 
 
 using namespace std;

@@ -10,7 +10,6 @@
 #include "UDPInterface.h"
 #include "UDPBaseImplementation.h"
 
-#include "sls_receiver_defs.h"
 #include "receiver_defs.h"
 #include "MySocketTCP.h"
 

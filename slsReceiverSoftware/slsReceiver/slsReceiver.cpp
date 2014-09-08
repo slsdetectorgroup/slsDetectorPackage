@@ -9,132 +9,99 @@
 #include <fstream>
 #include <stdlib.h>
 
+#include <getopt.h>
+
 #include "slsReceiver.h"
-//#include "slsReceiverUDPFunctions.h"
-//#include "eigerReceiver.h"
-
 #include "UDPInterface.h"
-//#include "UDPBaseImplementation.h"
-
 
 #include "utilities.h"
 
 using namespace std;
 
+
+
 slsReceiver::slsReceiver(int argc, char *argv[], int &success){
+
+	/** 
+	 * Constructor method to start up a Receiver server. Reads configuration file, options, and 
+	 * assembles a Receiver using TCP and UDP detector interfaces
+	 * 
+	 * @param iarg 
+	 * 
+	 * @return 
+	 */
 	
 	//creating base receiver
-	int tcpip_port_no=-1;
-
-	ifstream infile;
-	string sLine,sargname;
-	int iline = 0;
-
+	int tcpip_port_no = 1984;
 	success=OK;
-
 	string fname = "";
 
 	//parse command line for config
-	for(int iarg=1;iarg<argc;iarg++){
-		if((!strcasecmp(argv[iarg],"-config"))||(!strcasecmp(argv[iarg],"-f"))){
-			if(iarg+1==argc){
-				cout << "no config file name given. Exiting." << endl;
-				success=FAIL;
-			}
-			else
-				fname.assign(argv[iarg+1]);
+	static struct option long_options[] = {
+		/* These options set a flag. */
+		//{"verbose", no_argument,       &verbose_flag, 1},
+		/* These options don’t set a flag.
+		   We distinguish them by their indices. */
+		{"config",     required_argument,       0, 'f'},
+		{"rx_tcpport",  required_argument,       0, 'b'},
+		{"help",  no_argument,       0, 'h'},
+		{0, 0, 0, 0}
+        };
+	/* getopt_long stores the option index here. */
+	int option_index = 0;
+	int c;
+
+	while ( c != -1 ){
+		c = getopt_long (argc, argv, "bfh", long_options, &option_index);
+		
+		/* Detect the end of the options. */
+		if (c == -1)
+			break;
+	
+		switch(c){
+		case 'f':
+			fname = optarg;
+			cout << long_options[option_index].name << " " << optarg << endl;
+			break;
+
+		case 'b':
+			sscanf(optarg,"%d",&tcpip_port_no);
+			cout << long_options[option_index].name << " " << optarg << endl;
+			break;
+
+		case 'h':
+			string help_message = """\nSLS Receiver Server\n\n""";
+			help_message += """usage: slsReceiver --config config_fname [--rx_tcpport port]\n\n""";
+			help_message += """\t--config:\t configuration filename for SLS Detector receiver\n""";
+			help_message += """\t--rx_tcpport:\t TCP Communication Port with the client. Default: 1954.\n\n""";
+			cout << help_message << endl;
+			break;
+		       
 		}
 	}
+
+	// if required fname parameter not available, fail
+	if (fname == "")
+		success = FAIL;
+
 	if((!fname.empty()) && (success == OK)){
-
 		VERBOSE_PRINT("config file name " + fname );
-		
-		infile.open(fname.c_str(), ios_base::in);
-		if (infile.is_open()) {
-			while(infile.good()){
-				getline(infile,sLine);
-				iline++;
-
-				VERBOSE_PRINT(sLine);
-
-				if(sLine.find('#')!=string::npos){
-					VERBOSE_PRINT( "Line is a comment ");
-					continue;
-				}
-				else if(sLine.length()<2){
-					VERBOSE_PRINT("Empty line ");
-					continue;
-				}
-				else{
-					istringstream sstr(sLine);
-					
-					//parameter name
-					if(sstr.good())
-						sstr >> sargname;
-
-					//tcp port
-					if(sargname=="rx_tcpport"){
-						if(sstr.good()) {
-							sstr >> sargname;
-							if(sscanf(sargname.c_str(),"%d",&tcpip_port_no))
-								cout<<"dataport:"<<tcpip_port_no<<endl;
-							else{
-								cout << "could not decode port in config file. Exiting." << endl;
-								success=FAIL;
-							}
-						}
-					}
-				}
-			}
-			infile.close();
-		}
-		else {
-			cout << "Error opening configuration file " << fname << endl;
-			success = FAIL;
-		}
-
+		success = read_config_file(fname, &tcpip_port_no);
 		VERBOSE_PRINT("Read configuration file of " + iline + " lines");
 	}
-
-
-
-	//parse command line for port etc.. more priority
-	if(success == OK){
-		for(int iarg=1;iarg<argc;iarg++){
-
-			//tcp port
-			if(!strcasecmp(argv[iarg],"-rx_tcpport")){
-				if(iarg+1==argc){
-					cout << "no port given after -rx_tcpport in command line. Exiting." << endl;
-					success=FAIL;
-				}else{
-					if(sscanf(argv[iarg+1],"%d",&tcpip_port_no)){
-						cout<<"dataport:"<<tcpip_port_no<<endl;
-						iarg++;
-					}else{
-						cout << "could not decode port in command line. \n\nExiting." << endl;
-						success=FAIL;
-					}
-				}
-			}
-			else{
-				cout << "Unknown argument:" << argv[iarg] << endl;
-				success=FAIL;
-			}
-		}
+	else {
+		cout << "Error opening configuration file " << fname << endl;
+		success = FAIL;
 	}
 
 
-	//help
 	if(success != OK){
-		cout << "Help Commands " << endl;
-		cout << "rx_tcpport:\t TCP Communication Port with the client. Default:1954. " << endl << endl;
+		cout << "Failed: see output above for more information " << endl;
 	}
-
 
 	if (success==OK){
-		cout << "SLS Receiver" << endl;
-		udp_interface = UDPInterface::create("stasndard");
+		cout << "SLS Receiver starting" << endl;
+		udp_interface = UDPInterface::create("standard");
 		tcpipInterface = new slsReceiverTCPIPInterface(success, udp_interface, tcpip_port_no);
 		//tcp ip interface
 	}

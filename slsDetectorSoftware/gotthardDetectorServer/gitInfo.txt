@@ -1,9 +1,9 @@
 Path: slsDetectorsPackage/slsDetectorSoftware/gotthardDetectorServer 
 URL: origin git@gitorious.psi.ch:sls_det_software/sls_detector_software.git/gotthardDetectorServer 
 Repository Root: origin git@gitorious.psi.ch:sls_det_software/sls_detector_software.git 
-Repsitory UUID: 8c994ea0d538628b36a9497508960388816749fa 
-Revision: 172 
+Repsitory UUID: c31619c88e5690230fcd389dc18f9139295c442c 
+Revision: 173 
 Branch: master 
 Last Changed Author: Maliakal_Dhanya 
-Last Changed Rev: 278 
-Last Changed Date: 2014-08-08 14:03:30 +0200
+Last Changed Rev: 280 
+Last Changed Date: 2014-09-09 15:43:18 +0200

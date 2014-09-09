@@ -423,13 +423,7 @@ int slsDetectorActions::executeScan(int level, int istep) {
     setThresholdEnergy((int)currentScanVariable[level]); //energy scan
     break;
   case thresholdScan:
-	if(getDetectorsType() == EIGER){
-      setDAC((dacs_t)currentScanVariable[level],E_Vcmp_ll,0); // threshold scan
-      setDAC((dacs_t)currentScanVariable[level],E_Vcmp_lr,0); // threshold scan
-      setDAC((dacs_t)currentScanVariable[level],E_Vcmp_rl,0); // threshold scan
-      setDAC((dacs_t)currentScanVariable[level],E_Vcmp_rr,0); // threshold scan
-	}else
-	  setDAC((dacs_t)currentScanVariable[level],THRESHOLD,0); // threshold scan
+    setDAC((dacs_t)currentScanVariable[level],THRESHOLD,0); // threshold scan
     break;
   case trimbitsScan:
     trimbit=(int)currentScanVariable[level];

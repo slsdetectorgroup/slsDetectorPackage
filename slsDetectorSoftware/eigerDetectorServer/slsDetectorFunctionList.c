@@ -259,6 +259,13 @@ int detectorTest( enum digitalTestMode arg){
 
 
 void setDAC(enum detDacIndex ind, int val, int imod, int mV, int retval[]){
+
+	if(ind == VTHRESHOLD){
+		setDAC(VCMP_LL,val,imod,mV,retval);
+		setDAC(VCMP_LR,val,imod,mV,retval);
+		setDAC(VCMP_RL,val,imod,mV,retval);
+		ind = VCMP_RR;
+	}
 	char iname[10];
 
 	if(((int)ind>=0)&&((int)ind<NDAC))

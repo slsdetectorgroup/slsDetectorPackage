@@ -1122,6 +1122,12 @@ int set_dac(int file_des) {
 		break;
 #endif
 #ifdef EIGERD
+	case TRIMBIT_SIZE:
+		idac = VTR;
+		break;
+	case THRESHOLD:
+		idac = VTHRESHOLD;
+		break;
 	case E_SvP:
 		idac = SVP;
 		break;

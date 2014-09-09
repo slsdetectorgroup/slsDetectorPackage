@@ -838,7 +838,8 @@ int Feb_Control_SetTrimbits(unsigned int module_num, unsigned int *trimbits){
 	//for (int iy=263670;iy<263680;++iy)//263681
 	//	printf("%d:%c\t\t",iy,trimbits[iy]);
 
-
+	unsigned int trimbits_to_load_l[1024];
+	unsigned int trimbits_to_load_r[1024];
 
 	unsigned int module_index=0;
 	if(!Feb_Control_GetModuleIndex(module_num,&module_index)){
@@ -847,8 +848,9 @@ int Feb_Control_SetTrimbits(unsigned int module_num, unsigned int *trimbits){
 	}
 
 	if(!Feb_Control_Reset()) printf("Warning could not reset DAQ.\n");
-	int l_r;
+	int l_r;	//printf("222\n");
 	for(l_r=0;l_r<2;l_r++){ // l_r loop
+		//printf("\nl_r:%d\t\t",l_r);
 		unsigned int disable_chip_mask = l_r ? DAQ_CS_BAR_LEFT : DAQ_CS_BAR_RIGHT;
 		if(!(Feb_Interface_WriteRegister(0xfff,DAQ_REG_STATIC_BITS,disable_chip_mask|DAQ_STATIC_BIT_PROGRAM|DAQ_STATIC_BIT_M8,0,0)&&Feb_Control_SetCommandRegister(DAQ_SET_STATIC_BIT)&&Feb_Control_StartDAQOnlyNWaitForFinish(5000))){
 			printf("Could not select chips\n");
@@ -856,6 +858,7 @@ int Feb_Control_SetTrimbits(unsigned int module_num, unsigned int *trimbits){
 		}
 		int row_set;
 		for(row_set=0;row_set<16;row_set++){ //16 rows at a time
+			//printf("row_set:%d\t\t",row_set);
 			if(row_set==0){
 				if(!Feb_Control_SetCommandRegister(DAQ_RESET_COMPLETELY|DAQ_SEND_A_TOKEN_IN|DAQ_LOAD_16ROWS_OF_TRIMBITS)){
 					printf("Warning: Could not Feb_Control_SetCommandRegister for loading trim bits.\n");
@@ -868,14 +871,13 @@ int Feb_Control_SetTrimbits(unsigned int module_num, unsigned int *trimbits){
 				}
 			}
 
-			static unsigned int trimbits_to_load_l[1024];
-			static unsigned int trimbits_to_load_r[1024];
 			int row;
 			for(row=0;row<16;row++){ //row loop
+				//printf("row:%d\t\t",row);
 				int offset   = 2*32*row;
 				int sc;
 				for(sc=0;sc<32;sc++){  //supercolumn loop sc
-
+					//printf("sc:%d\t\t",sc);
 					int super_column_start_position_l = 1030*row +       l_r *258 + sc*8;
 					int super_column_start_position_r = 1030*row + 516 + l_r *258 + sc*8;
 
@@ -886,10 +888,12 @@ int Feb_Control_SetTrimbits(unsigned int module_num, unsigned int *trimbits){
 					int chip_sc = 31 - sc;
 					trimbits_to_load_l[offset+chip_sc] = 0;
 					trimbits_to_load_r[offset+chip_sc] = 0;
+					trimbits_to_load_l[offset+chip_sc+32] = 0;
+					trimbits_to_load_r[offset+chip_sc+32] = 0;
 					int i;
 					for(i=0;i<8;i++){ // column loop i
-
-					    trimbits_to_load_l[offset+chip_sc]    |= ( 0x7  & trimbits[row_set*16480+super_column_start_position_l+i])<<((7-i)*4);//low
+						//printf("i:%d\t\t",i);
+						trimbits_to_load_l[offset+chip_sc]    |= ( 0x7  & trimbits[row_set*16480+super_column_start_position_l+i])<<((7-i)*4);//low
 					    trimbits_to_load_l[offset+chip_sc+32] |= ((0x38 & trimbits[row_set*16480+super_column_start_position_l+i])>>3)<<((7-i)*4);//upper
 					    trimbits_to_load_r[offset+chip_sc]    |= ( 0x7  & trimbits[row_set*16480+super_column_start_position_r+i])<<((7-i)*4);//low
 					    trimbits_to_load_r[offset+chip_sc+32] |= ((0x38 & trimbits[row_set*16480+super_column_start_position_r+i])>>3)<<((7-i)*4);//upper
@@ -898,26 +902,26 @@ int Feb_Control_SetTrimbits(unsigned int module_num, unsigned int *trimbits){
 						trimbits_to_load_l[offset+chip_sc+32] |= ((0x38 & trimbits[263679 - (row_set*16480+super_column_start_position_l+i)])>>3)<<((7-i)*4);//upper
 						trimbits_to_load_r[offset+chip_sc]    |= ( 0x7  & trimbits[263679 - (row_set*16480+super_column_start_position_r+i)])<<((7-i)*4);//low
 						trimbits_to_load_r[offset+chip_sc+32] |= ((0x38 & trimbits[263679 - (row_set*16480+super_column_start_position_r+i)])>>3)<<((7-i)*4);//upper
-					*/
-
+*/
 					} // end column loop i
 				} //end supercolumn loop sc
 			} //end row loop
 
-/*
-			if(!WriteMemory(modules[0]->Module_GetTopLeftAddress(),0,0,1024,trimbits_to_load_r)||!WriteMemory(modules[0]->Module_GetTopRightAddress(),0,0,1024,trimbits_to_load_l)||!Feb_Control_StartDAQOnlyNWaitForFinish()){
-				cout <<" some errror!"<< endl;
-				return 0;
-			}
-*/
-			if(!Feb_Interface_WriteMemory(Module_GetTopLeftAddress(&modules[0]),0,0,1023,trimbits_to_load_r)||!Feb_Interface_WriteMemory(Module_GetTopRightAddress(&modules[0]),0,0,1023,trimbits_to_load_l)||!Feb_Control_StartDAQOnlyNWaitForFinish(5000)){
+
+			if(!Feb_Interface_WriteMemoryInLoops(Module_GetTopLeftAddress(&modules[0]),0,0,1024,trimbits_to_load_r)||
+				!Feb_Interface_WriteMemoryInLoops(Module_GetTopRightAddress(&modules[0]),0,0,1024,trimbits_to_load_l)||
+			//if(!Feb_Interface_WriteMemory(Module_GetTopLeftAddress(&modules[0]),0,0,1023,trimbits_to_load_r)||
+			//	!Feb_Interface_WriteMemory(Module_GetTopRightAddress(&modules[0]),0,0,1023,trimbits_to_load_l)||
+				!Feb_Control_StartDAQOnlyNWaitForFinish(5000)){
 				printf(" some errror!\n");
 				return 0;
 			}
 
 		} //end row_set loop (groups of 16 rows)
 	} // end l_r loop
+
 	memcpy(Feb_Control_last_downloaded_trimbits,trimbits,Feb_Control_trimbit_size*sizeof(unsigned char));
+
 	return Feb_Control_SetStaticBits(); //send the static bits
 }
 
@@ -1360,81 +1364,6 @@ int Feb_Control_StopAcquisition(){
   return Feb_Control_Reset();
 }
 
-
-
-
-int Feb_Control_LoadTrimbitFile(){/*
-	string filename = "/home/root/noise.snbeb040";
-	ifstream input_file;
-
-	int Module_ndacs =16;
-	int dacs[Module_ndacs];
-	unsigned int chanregs[trimbit_size];
-
-
-	input_file.open(filename.c_str() ,ifstream::binary);
-	if(!input_file.is_open()){
-		printf("Warning, could not open trimbit file: %s\n",filename);
-		exit(-1);
-	}
-
-	//dacs
-	int i;
-	for(i=0;i<Module_ndacs;++i){
-		input_file.read((char*) &dacs[i],sizeof(int));
-		printf("  dac %d:%s:%d\n",i,Module_dac_names[i],dacs[i]);
-		Feb_Control_SetDAC(Module_dac_names[i],dacs[i]);
-
-	}
-
-	printf("Loading trimbits from file %s\n");
-
-	//trimbits
-	input_file.read((char*) chanregs,Feb_Control_trimbit_size*sizeof(unsigned int));
-    if(input_file.eof()){
-      printf("\nError, could not load trimbits end of file, %s, reached.\n\n",filename);
-      exit(-1);
-    }
-
-	input_file.close();
-	return Feb_Control_SetTrimbits(0,chanregs);
-	*/
-	return 1;
-}
-
-
-
-int Feb_Control_SaveTrimbitFile(){
-	/*
-	string filename = "/home/root/noise.snbeb040";
-	ofstream output_file;
-
-	int Module_ndacs =16;
-	int dacs[Module_ndacs];
-
-	output_file.open(filename.c_str() ,ofstream::binary);
-	if(!output_file.is_open()){
-		printf("Warning, could not open trimbit file: %s\n",filename);
-		return 0;
-	}
-
-	printf("Writing trimbits to file %s\n",filename);
-
-	//dacs
-	int i;
-	for(i=0;i<Module_ndacs;++i){
-		Feb_Control_GetDAC(Module_dac_names[i], dacs[i]);
-		output_file.write((char*) &dacs[i],sizeof(int));
-		printf("  dac %d:%s:%s\n",i,Module_dac_names[i],dacs[i]);
-	}
-
-	//trimbits
-	output_file.write((char*) Feb_Control_last_downloaded_trimbits,Feb_Control_trimbit_size * sizeof(unsigned int));
-
-	output_file.close();
-*/
-	return 1;
-}
 
 
 int Feb_Control_SaveAllTrimbitsTo(int value){

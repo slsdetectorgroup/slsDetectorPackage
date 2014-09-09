@@ -32,6 +32,9 @@
   /*int Feb_Interface_WriteRegisters(unsigned int sub_num, unsigned int nwrites, unsigned int* reg_nums, unsigned int* values, int* wait_ons=0, unsigned int* wait_on_addresses=0);*/
   int Feb_Interface_WriteRegisters(unsigned int sub_num, unsigned int nwrites, unsigned int* reg_nums, unsigned int* values, int* wait_ons, unsigned int* wait_on_addresses);
 
+
+  int Feb_Interface_WriteMemoryInLoops(unsigned int sub_num, unsigned int mem_num, unsigned int start_address, unsigned int nwrites, unsigned int *values);
+
   int Feb_Interface_WriteMemory(unsigned int sub_num, unsigned int mem_num, unsigned int start_address, unsigned int nwrites, unsigned int *values);
   
 

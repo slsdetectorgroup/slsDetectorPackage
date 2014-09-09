@@ -140,8 +140,6 @@ int          Module_GetBottomDACValue(struct Module* mod,unsigned int i);
 
 
   /**Added by Dhanya */
-  int Feb_Control_LoadTrimbitFile();
-  int Feb_Control_SaveTrimbitFile();
   int Feb_Control_SaveAllTrimbitsTo(int value);
 
   

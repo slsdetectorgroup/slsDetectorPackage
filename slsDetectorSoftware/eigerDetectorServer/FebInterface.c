@@ -165,6 +165,22 @@ int Feb_Interface_WriteRegisters(unsigned int sub_num, unsigned int nwrites, uns
   return 1;
 }
 
+int Feb_Interface_WriteMemoryInLoops(unsigned int sub_num, unsigned int mem_num, unsigned int start_address, unsigned int nwrites, unsigned int *values){
+	unsigned int max_single_packet_size = 352;
+	int passed=1;
+	unsigned int n_to_send  = max_single_packet_size;
+	unsigned int ndata_sent = 0;
+	unsigned int ndata_countdown = nwrites;
+	while(ndata_countdown>0){
+		n_to_send = ndata_countdown<max_single_packet_size ? ndata_countdown:max_single_packet_size;
+		if(!Feb_Interface_WriteMemory(sub_num,mem_num,start_address,n_to_send,&(values[ndata_sent]))){passed=0; break;}
+		ndata_countdown-=n_to_send;
+		ndata_sent     +=n_to_send;
+		start_address  +=n_to_send;
+		usleep(0);//500 works
+	}
+	return passed;
+}
 
 int Feb_Interface_WriteMemory(unsigned int sub_num, unsigned int mem_num, unsigned int start_address, unsigned int nwrites, unsigned int *values){
    // -1 means write to all
@@ -174,7 +190,7 @@ int Feb_Interface_WriteMemory(unsigned int sub_num, unsigned int mem_num, unsign
   nwrites       &= 0x3ff;
   if(!nwrites||nwrites>Feb_Interface_send_buffer_size-2) {printf("error herer: nwrites:%d\n",nwrites);return 0;}//*d-1026
 
-  Feb_Interface_send_ndata           =  nwrites+2;//*d-1025
+  Feb_Interface_send_ndata           =  nwrites+2;//*d-1026
   Feb_Interface_send_data[0]         = 0xc0000000 | mem_num << 24 | nwrites << 14 | start_address; //cmd -> write to memory, nwrites, mem number, start address
   Feb_Interface_send_data[nwrites+1] = 0;
   for(i=0;i<nwrites;i++) Feb_Interface_send_data[i+1] = values[i];

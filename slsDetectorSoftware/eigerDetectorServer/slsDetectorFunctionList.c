@@ -324,18 +324,18 @@ int enableTenGigabitEthernet(int val){
 			send_to_ten_gig = 0;
 		//configuremac called from client
 	}
-//#ifdef VERBOSE
+#ifdef VERBOSE
 	printf("10Gbe:%d\n",send_to_ten_gig);
-//#endif
+#endif
 	return send_to_ten_gig;
 }
 
 
 int setModule(sls_detector_module myMod){
 	int retval[2];
-  #ifdef VERBOSE
+//#ifdef VERBOSE
 	printf("Setting module with settings %d\n",myMod.reg);
-#endif
+//#endif
 	int i;
 	for(i=0;i<myMod.ndac;i++)
 		setDAC((enum detDacIndex)i,myMod.dacs[i],myMod.module,0,retval);
@@ -348,7 +348,25 @@ int setModule(sls_detector_module myMod){
 		copyModule(detectorModules,&myMod);
 
 	setSettings( (enum detectorSettings)myMod.reg,-1); // put the settings in the module register?!?!?
-	Feb_Control_SetTrimbits(0,myMod.chanregs);
+
+	//includ gap pixels
+	int offset = 0;
+	unsigned int tt[263680];
+	int iy,ichip,ix,ip=0,ich=0;
+	for(iy=0;iy<256;iy++) {
+		for (ichip=0; ichip<4; ichip++) {
+			for(ix=0;ix<256;ix++) {
+				tt[ip++]=myMod.chanregs[ich++];
+			}
+			if (ichip<3) {
+				tt[ip++]=0;
+				tt[ip++]=0;
+			}
+		}
+	}
+
+
+	Feb_Control_SetTrimbits(0,tt);
 
 
   return 0;
@@ -358,11 +376,32 @@ int setModule(sls_detector_module myMod){
 int getModule(sls_detector_module *myMod){
 int i;
 int retval[2];
+
+	//dacs
 	for(i=0;i<NDAC;i++)
 		setDAC((enum detDacIndex)i,-1,-1,0,retval);
 
-	myMod->chanregs = Feb_Control_GetTrimbits();
 
+	//trimbits
+	unsigned int* tt;
+	tt = Feb_Control_GetTrimbits();
+
+	//exclude gap pixels
+	int offset = 0;
+	int iy,ichip,ix,ip=0,ich=0;
+	for(iy=0;iy<256;iy++) {
+		for (ichip=0; ichip<4; ichip++) {
+			for(ix=0;ix<256;ix++) {
+				myMod->chanregs[ich++]=tt[ip++];
+			}
+			if (ichip<3) {
+				ip++;
+				ip++;
+			}
+		}
+	}
+
+	//copy to local copy as well
 	  if (detectorModules)
 	    copyModule(myMod,detectorModules);
 	  else

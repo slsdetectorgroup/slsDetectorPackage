@@ -5680,8 +5680,8 @@ int slsDetector::loadSettingsFile(string fname, int imod) {
     myMod=readSettingsFile(fn, thisDetector->myDetectorType);
     if (myMod) {
       myMod->module=im;
-      //settings is saved in myMod.reg for gotthard or moench
-      if((thisDetector->myDetectorType==GOTTHARD)||(thisDetector->myDetectorType==MOENCH))
+      //settings is saved in myMod.reg for all except mythen
+      if(thisDetector->myDetectorType!=MYTHEN)
 	myMod->reg=thisDetector->currentSettings;
       setModule(*myMod);
       deleteModule(myMod);

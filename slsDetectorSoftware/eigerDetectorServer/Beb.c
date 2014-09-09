@@ -507,7 +507,10 @@ int Beb_RequestNImages(unsigned int beb_number, unsigned int left_right, int ten
   int          in_two_requests = (!ten_gig&&Beb_bit_mode==32);
   if(in_two_requests) npackets/=2;
  
-  printf("here: %d %d %d %d %d %d %d\n",beb_number,left_right,ten_gig,dst_number,nimages, header_size,test_just_send_out_packets_no_wait);
+  //usleep needed after acquisition start, else you miss the single images
+  usleep(0);
+
+  //printf("beb no:%d left_right:%d ten_gig:%d dst_number:%d #images:%d header_size:%d test_just_send_out_packets_no_wait:%d\n",beb_number,left_right,ten_gig,dst_number,nimages, header_size,test_just_send_out_packets_no_wait);
   //printf("here: "<<beb_number<<","<<left_right<<","<<ten_gig<<","<<dst_number<<","<<1<<","<<header_size<<","<<test_just_send_out_packets_no_wait\n");
   unsigned int i;
   for(i=0;i<nimages;i++){

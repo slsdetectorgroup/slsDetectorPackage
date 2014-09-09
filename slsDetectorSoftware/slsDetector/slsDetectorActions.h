@@ -197,6 +197,13 @@ class slsDetectorActions : public virtual slsDetectorBase
   */
   virtual dacs_t setDAC(dacs_t val, dacIndex index , int mV, int imod=-1)=0;
 
+  /** sets all the trimbits to a particular value
+      \param val trimbit value
+      \param imod module number, -1 means all modules
+      \returns OK or FAIL
+  */
+  virtual int setAllTrimbits(int val, int imod=-1)=0;
+
   /** returns the detector type
       \param pos position in the multi detector structure (is -1 returns type of detector with id -1)
       \returns type

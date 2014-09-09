@@ -75,7 +75,7 @@ int Local_InitNewMemory (struct LocalLinkInterface* ll,unsigned int addr, int if
 
 
 int Local_Init(struct LocalLinkInterface* ll,unsigned int ll_fifo_badr){
-    int fd; 
+    int fd;
     void *plb_ll_fifo_ptr;
 
     if ((fd=open("/dev/mem", O_RDWR)) < 0){
@@ -113,9 +113,9 @@ int Local_Reset1(struct LocalLinkInterface* ll,unsigned int rst_mask){
     HWIO_xfs_out32(ll->ll_fifo_base+4*PLB_LL_FIFO_REG_CTRL,ll->ll_fifo_ctrl_reg);
 
     ll->ll_fifo_ctrl_reg &= (~rst_mask);
-   
+
     HWIO_xfs_out32(ll->ll_fifo_base+4*PLB_LL_FIFO_REG_CTRL,ll->ll_fifo_ctrl_reg);
-    // printf("FIFO CTRL Address: 0x%08x\n FIFO CTRL Register: 0x%08x\n",PLB_LL_FIFO_REG_CTRL,plb_ll_fifo[PLB_LL_FIFO_REG_CTRL]);   
+    // printf("FIFO CTRL Address: 0x%08x\n FIFO CTRL Register: 0x%08x\n",PLB_LL_FIFO_REG_CTRL,plb_ll_fifo[PLB_LL_FIFO_REG_CTRL]);
     return 1;
 }
 
@@ -130,17 +130,17 @@ int Local_Write(struct LocalLinkInterface* ll,unsigned int buffer_len, void *buf
     // frame_len in byte
     int vacancy=0;
     int i;
-    int words_send = 0;  
-    int last_word;  
+    int words_send = 0;
+    int last_word;
     unsigned int *word_ptr;
     unsigned int fifo_ctrl;
     xfs_u32 status;
 
     if (buffer_len < 1) return -1;
-  
+
     last_word = (buffer_len-1)/4;
     word_ptr = (unsigned int *)buffer;
-  
+
     while (words_send <= last_word)
     {
       while (!vacancy)//wait for Fifo to be empty again
@@ -176,12 +176,12 @@ int Local_Read(struct LocalLinkInterface* ll,unsigned int buffer_len, void *buff
     // frame_len in byte
     int len;
     unsigned int *word_ptr;
-    unsigned int status;  
+    unsigned int status;
     volatile unsigned int fifo_val;
     int sof = 0;
-  
-    word_ptr = (unsigned int *)buffer;  
-    do 
+
+    word_ptr = (unsigned int *)buffer;
+    do
     {
       status = HWIO_xfs_in32(ll->ll_fifo_base+4*PLB_LL_FIFO_REG_STATUS);
 
@@ -189,7 +189,7 @@ int Local_Read(struct LocalLinkInterface* ll,unsigned int buffer_len, void *buff
 	{
 	    if (status & PLB_LL_FIFO_STATUS_LL_SOF)
 	    {
-		if (buffer_ptr)		
+		if (buffer_ptr)
 		{
 		    buffer_ptr = 0;
 		    return -1; // buffer overflow
@@ -200,14 +200,14 @@ int Local_Read(struct LocalLinkInterface* ll,unsigned int buffer_len, void *buff
 	    }
 
 	   fifo_val = HWIO_xfs_in32(ll->ll_fifo_base+4*PLB_LL_FIFO_REG_FIFO);  //read from fifo
-		
+
 	    if ((buffer_ptr > 0) || sof)
 	    {
 		if ( (buffer_len >> 2) > buffer_ptr)
 		{
 		    word_ptr[buffer_ptr++] = fifo_val; //write to buffer
 		}
-		else 
+		else
 		{
 		    buffer_ptr = 0;
 		    return -2; // buffer overflow
@@ -223,9 +223,9 @@ int Local_Read(struct LocalLinkInterface* ll,unsigned int buffer_len, void *buff
 
 	    }
 	}
-    }     
+    }
     while(!(status & PLB_LL_FIFO_STATUS_EMPTY));
-  
+
     return 0;
 }
 
@@ -245,7 +245,7 @@ int Local_Test(struct LocalLinkInterface* ll,unsigned int buffer_len, void *buff
 
   int len;
   unsigned int rec_buff_len = 4096;
-  unsigned int rec_buffer[4097];	
+  unsigned int rec_buffer[4097];
 
 
   Local_Write(ll,buffer_len,buffer);
@@ -258,11 +258,11 @@ int Local_Test(struct LocalLinkInterface* ll,unsigned int buffer_len, void *buff
     if (len > 0){
       rec_buffer[len]=0;
       printf((char*) rec_buffer);
-      printf("\n");      
+      printf("\n");
     }
   } while(len > 0);
 
-  printf("\n\n\n\n");      
+  printf("\n\n\n\n");
   return 1;
 }
 

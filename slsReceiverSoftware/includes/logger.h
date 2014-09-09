@@ -10,30 +10,25 @@ inline std::string NowTime();
 enum TLogLevel {logERROR, logWARNING, logINFO, logDEBUG, logDEBUG1, logDEBUG2, logDEBUG3, logDEBUG4};
 
 template <typename T>
-class Log
-{
-public:
-    Log();
-    virtual ~Log();
-    std::ostringstream& Get(TLogLevel level = logINFO);
-public:
-    static TLogLevel& ReportingLevel();
-    static std::string ToString(TLogLevel level);
-    static TLogLevel FromString(const std::string& level);
-protected:
-    std::ostringstream os;
-private:
-    Log(const Log&);
-    Log& operator =(const Log&);
+class Log{
+ public:
+	Log();
+	virtual ~Log();
+	std::ostringstream& Get(TLogLevel level = logINFO);
+ public:
+	static TLogLevel& ReportingLevel();
+	static std::string ToString(TLogLevel level);
+	static TLogLevel FromString(const std::string& level);
+ protected:
+	std::ostringstream os;
+ private:
+	Log(const Log&);
+	Log& operator =(const Log&);
 };
 
-template <typename T>
-Log<T>::Log()
-{
-}
+template <typename T> Log<T>::Log() {}
 
-template <typename T>
-std::ostringstream& Log<T>::Get(TLogLevel level)
+template <typename T> std::ostringstream& Log<T>::Get(TLogLevel level)
 {
     os << "- " << NowTime();
     os << " " << ToString(level) << ": ";
@@ -41,29 +36,25 @@ std::ostringstream& Log<T>::Get(TLogLevel level)
     return os;
 }
 
-template <typename T>
-Log<T>::~Log()
+template <typename T> Log<T>::~Log()
 {
     os << std::endl;
     T::Output(os.str());
 }
 
-template <typename T>
-TLogLevel& Log<T>::ReportingLevel()
+template <typename T> TLogLevel& Log<T>::ReportingLevel()
 {
     static TLogLevel reportingLevel = logDEBUG4;
     return reportingLevel;
 }
 
-template <typename T>
-std::string Log<T>::ToString(TLogLevel level)
+template <typename T> std::string Log<T>::ToString(TLogLevel level)
 {
 	static const char* const buffer[] = {"ERROR", "WARNING", "INFO", "DEBUG", "DEBUG1", "DEBUG2", "DEBUG3", "DEBUG4"};
     return buffer[level];
 }
 
-template <typename T>
-TLogLevel Log<T>::FromString(const std::string& level)
+template <typename T> TLogLevel Log<T>::FromString(const std::string& level)
 {
     if (level == "DEBUG4")
         return logDEBUG4;
@@ -85,15 +76,13 @@ TLogLevel Log<T>::FromString(const std::string& level)
     return logINFO;
 }
 
-class Output2FILE
-{
+class Output2FILE {
 public:
     static FILE*& Stream();
     static void Output(const std::string& msg);
 };
 
-inline FILE*& Output2FILE::Stream()
-{
+inline FILE*& Output2FILE::Stream() {
     static FILE* pStream = stderr;
     return pStream;
 }
@@ -136,6 +125,7 @@ class FILELOG_DECLSPEC FILELog : public Log<Output2FILE> {};
 #include <windows.h>
 
 inline std::string NowTime()
+
 {
     const int MAX_LEN = 200;
     char buffer[MAX_LEN];

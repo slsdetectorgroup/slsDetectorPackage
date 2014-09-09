@@ -210,7 +210,7 @@ void qDrawPlot::SetupWidgetWindow(){
 		grid->setMinPen(QPen(Qt::gray, 0 , Qt::DotLine));
 		*/
 	plotHistogram = new QwtPlotHistogram();
-	plotHistogram->setStyle(QwtPlotHistogram::Columns);
+	plotHistogram->setStyle(QwtPlotHistogram::Columns);//Options:Outline,Columns, Lines
 
 
 	firstPlot = false;
@@ -542,7 +542,6 @@ void qDrawPlot::SetScanArgument(int scanArg){
 	minPixelsY = 0;
 	nPixelsX = myDet->getTotalNumberOfChannels(slsDetectorDefs::X);
 	nPixelsY = myDet->getTotalNumberOfChannels(slsDetectorDefs::Y);
-
 	//cannot do this in between measurements , so update instantly
 	if(scanArgument==qDefs::Level0){
 		//no need to check if numsteps=0,cuz otherwise this mode wont be set in plot tab
@@ -595,25 +594,23 @@ void qDrawPlot::SetScanArgument(int scanArg){
 
 	//histogram
 	if(histogram){
-		histogramSamples.resize(0);
 		int iloop = 0;
-		int min = iloop*histSize + histFrom;
-		int max = (iloop+1)*histSize + histFrom;
-		while(min < histTo){
-			histogramSamples.resize(iloop+1);
-			histogramSamples[iloop].interval.setInterval(min,max-1);
+		int numSteps = ((histTo-histFrom)/(histSize)) + 1;
+		histogramSamples.resize(numSteps);
+		startPixel = histFrom -(histSize/2);
+		endPixel = histTo + (histSize/2);
+		while(startPixel < endPixel){
+			histogramSamples[iloop].interval.setInterval(startPixel,startPixel+histSize,QwtInterval::ExcludeMaximum);
 			histogramSamples[iloop].value = 0;
+			startPixel += histSize;
 			iloop++;
-			min = max;
-			max = (iloop+1)*histSize + histFrom;
-			if(max>histTo)
-				max = histTo;
 		}
+
 		//print values
 		cout << "Histogram Intervals:" << endl;
 		for(int j=0;j<histogramSamples.size();j++){
 			cout<<j<<":\tmin:"<<histogramSamples[j].interval.minValue()<<""
-					"\tmax:"<<histogramSamples[j].interval.maxValue()<<"\t:"<<histogramSamples[j].value<<endl;
+					"\t\tmax:"<<histogramSamples[j].interval.maxValue()<<"\t\tvalue:"<<histogramSamples[j].value<<endl;
 		}
 	}
 
@@ -699,6 +696,11 @@ void qDrawPlot::SetupMeasurement(){
 			pixelWidth = (maxPixelsY -minPixelsY)/(nPixelsY-1);
 			startPixel = minPixelsY -(pixelWidth/2);
 			endPixel = maxPixelsY + (pixelWidth/2);
+		}
+
+		if(histogram){
+			startPixel = histFrom -(histSize/2);
+			endPixel = histTo + (histSize/2);
 		}
 	}
 
@@ -988,7 +990,7 @@ int qDrawPlot::GetData(detectorData *data,int fIndex){
 						//frequency of intensity
 						if(histogramArgument == qDefs::Intensity){
 							//ignore outside limits
-							if ((data->values[i] <=  histFrom) || (data->values[i] >= histTo))
+							if ((data->values[i] <  histFrom) || (data->values[i] >= histTo))
 								continue;
 							//check for intervals, increment if validates
 							for(int j=0;j<histogramSamples.size();j++){
@@ -1017,7 +1019,7 @@ int qDrawPlot::GetData(detectorData *data,int fIndex){
 						else scanval = cs1;
 
 						//ignore outside limits
-						if ((scanval <=  histFrom) || (scanval >= histTo) || (scanval == -1))
+						if ((scanval <  histFrom) || (scanval > histTo) || (scanval == -1))
 							scanval = -1;
 						//check for intervals, increment if validates
 						for(int j=0;j<histogramSamples.size();j++){
@@ -1190,6 +1192,19 @@ int qDrawPlot::AcquisitionFinished(double currentProgress, int detectorStatus){
 	//this lets the measurement tab know its over, and to enable tabs
 	emit UpdatingPlotFinished();
 
+	//calculate s curve inflection point
+	int l1=0,l2=0,j;
+	if((histogram)&&(histogramArgument != qDefs::Intensity)){
+		for(j=0;j<histogramSamples.size()-2;j++){
+			l1 = histogramSamples[j+1].value - histogramSamples[j].value;
+			l2 = histogramSamples[j+2].value - histogramSamples[j+1].value;
+			if(l1 > l2){
+				cout << "***** s curve inflectionfound at " << histogramSamples[j].interval.maxValue() << ""
+						"or j at " << j << " with l1 " << l1 << " and l2 " << l2 << endl;
+			}
+		}
+	}
+
 	return 0;
 }
 
@@ -1321,9 +1336,9 @@ void qDrawPlot::UpdatePlot(){
 							histFrameIndexTitle->setText(GetHistTitle(0));
 							plotHistogram->attach(plot1D);
 							//refixing all the zooming
-							plot1D->SetXMinMax(histFrom,histTo);
+							plot1D->SetXMinMax(startPixel,endPixel);
 							plot1D->SetYMinMax(0,plotHistogram->boundingRect().height());
-							plot1D->SetZoomBase(0,0,nPixelsX,plotHistogram->boundingRect().height());
+							plot1D->SetZoomBase(startPixel,0,endPixel-startPixel,plotHistogram->boundingRect().height());
 						}
 						//not histogram
 						else{

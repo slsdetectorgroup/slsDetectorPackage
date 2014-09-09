@@ -572,11 +572,13 @@ void qTabPlot::SetPlot(){
 
 		cout << " - Histogram" << endl;
 
-		if(radioHistIntensity->isChecked())
+		if(radioHistIntensity->isChecked()){
 			pageHistogram->setEnabled(true);
-		else
+			pageHistogram_2->setEnabled(true);
+		}else{
 			pageHistogram->setEnabled(false);
-
+			pageHistogram_2->setEnabled(false);
+		}
 		boxScan->hide();
 		boxHistogram->show();
 		myPlot->EnablePlot(true);
@@ -587,8 +589,9 @@ void qTabPlot::SetPlot(){
 		boxPlotAxis->setEnabled(true);
 		if(!myPlot->isRunning())
 			EnableScanBox();
-		qDefs::Message(qDefs::INFORMATION,"<nobr>Please check the <b>Plot Histogram Options</b> below "
-				"before <b>Starting Acquitision</b></nobr>","qTabPlot::SetPlot");
+
+		//qDefs::Message(qDefs::INFORMATION,"<nobr>Please check the <b>Plot Histogram Options</b> below "
+		//		"before <b>Starting Acquitision</b></nobr>","qTabPlot::SetPlot");
 	}
 }
 
@@ -865,10 +868,13 @@ void qTabPlot::EnableScanBox(){
 
 	//histogram
 	if(radioHistogram->isChecked()){
-		if(radioHistIntensity->isChecked())
+		if(radioHistIntensity->isChecked()){
 			pageHistogram->setEnabled(true);
-		else
+			pageHistogram_2->setEnabled(true);
+		}else{
 			pageHistogram->setEnabled(false);
+			pageHistogram_2->setEnabled(false);
+		}
 		stackedWidget->setCurrentIndex(stackedWidget->count()-1);
 		stackedWidget_2->setCurrentIndex(stackedWidget_2->count()-1);
 		box1D->setTitle(QString("1D Plot Options %1 - Histogram").arg(stackedWidget->currentIndex()+1));
@@ -900,7 +906,7 @@ void qTabPlot::EnableScanBox(){
 
 	}else{
 		pageHistogram->setEnabled(false);
-		/*pageHistogram_2->setEnabled(false);*/
+		pageHistogram_2->setEnabled(false);
 	}
 
 	connect(btnGroupPlotType,SIGNAL(buttonClicked(int)),this, SLOT(SetPlot()));
@@ -939,7 +945,7 @@ void qTabPlot::SetScanArgument(){
 	//histogram default  - set before setscanargument
 	int min = spinHistFrom->value();
 	int max = spinHistTo->value();
-	int size = spinHistSize->value();
+	double size = spinHistSize->value();
 	int histArg = qDefs::Intensity;
 	if(radioHistogram->isChecked()){
 		if(!radioHistIntensity->isChecked()){
@@ -1089,8 +1095,10 @@ void qTabPlot::SetBinary(){
 void qTabPlot::SetHistogramOptions(){
 	if(radioHistIntensity->isChecked()){
 		pageHistogram->setEnabled(true);
+		pageHistogram_2->setEnabled(true);
 	}else {
 		pageHistogram->setEnabled(false);
+		pageHistogram_2->setEnabled(false);
 	}
 }
 
@@ -1115,6 +1123,7 @@ void qTabPlot::Refresh(){
 		disconnect(boxScan,	  SIGNAL(toggled(bool)),				   this, SLOT(EnableScanBox()));
 		boxScan->setEnabled(false);
 		pageHistogram->setEnabled(false);
+		pageHistogram_2->setEnabled(false);
 		if(radioHistogram->isChecked())
 			radioDataGraph->setEnabled(false);
 		else

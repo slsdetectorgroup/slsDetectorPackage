@@ -143,7 +143,7 @@ public:
 	void SetBinary(bool enable, int from=0, int to=0);
 
 	/** Enable/Disable Histogram */
-	void SetHistogram(bool enable,int histArg, int min=0, int max=0, int size=0){histogram = enable;histogramArgument = histArg; histFrom=min;histTo=max;histSize=size;};
+	void SetHistogram(bool enable,int histArg, int min=0, int max=0, double size=0){histogram = enable;histogramArgument = histArg; histFrom=min;histTo=max;histSize=size;};
 
 public slots:
 /** To select 1D or 2D plot
@@ -563,7 +563,7 @@ bool displayStatistics;
 bool histogram;
 int histFrom;
 int histTo;
-int histSize;
+double histSize;
 QwtPlotGrid *grid;
 QwtPlotHistogram	*plotHistogram;
 QVector<QwtIntervalSample> histogramSamples;

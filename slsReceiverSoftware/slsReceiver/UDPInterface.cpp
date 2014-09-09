@@ -30,12 +30,14 @@ using namespace std;
 
 UDPInterface * UDPInterface::create(string receiver_type){
 	
-	if (receiver_type == "standard")
+	if (receiver_type == "standard"){
+		cout << "Starting " << receiver_type << endl;
 		return new UDPStandardImplementation();
+	}
 	//else if (receiver_type == "REST")
 	//	return new UDPRESTImplementation();
 	else{
-		cout << "[ERROR] UDP interface not supported, using standard implementation" << endl;
+		FILE_LOG(logWARNING) << "[ERROR] UDP interface not supported, using standard implementation";
 		return new UDPBaseImplementation();
 	}
 }

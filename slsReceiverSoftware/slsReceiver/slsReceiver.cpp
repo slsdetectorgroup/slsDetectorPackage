@@ -104,7 +104,7 @@ slsReceiver::slsReceiver(int argc, char *argv[], int &success){
 	}
 
 	if (success==OK){
-		cout << "SLS Receiver starting" << endl;
+		cout << "SLS Receiver starting " << udp_interface_type << endl;
 		udp_interface = UDPInterface::create(udp_interface_type);
 		tcpipInterface = new slsReceiverTCPIPInterface(success, udp_interface, tcpip_port_no);
 		//tcp ip interface

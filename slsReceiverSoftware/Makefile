@@ -14,7 +14,7 @@ DFLAGS= -g -DDACS_INT  -DSLS_RECEIVER_UDP_FUNCTIONS
 INCLUDES?= -I. -Iincludes -IMySocketTCP -IslsReceiver -IslsDetectorCalibration -I$(ASM) 
 #-IslsReceiverInterface
 
-SRC_CLNT= MySocketTCP/MySocketTCP.cpp slsReceiver/UDPInterface.cpp  slsReceiver/UDPBaseImplementation.cpp slsReceiver/UDPStandardImplementation.cpp slsReceiver/slsReceiverTCPIPInterface.cpp slsReceiver/slsReceiver.cpp slsReceiver/slsReceiverUsers.cpp includes/utilities.h
+SRC_CLNT= MySocketTCP/MySocketTCP.cpp slsReceiver/UDPInterface.cpp  slsReceiver/UDPBaseImplementation.cpp slsReceiver/UDPStandardImplementation.cpp slsReceiver/UDPRESTImplementation.cpp slsReceiver/slsReceiverTCPIPInterface.cpp slsReceiver/slsReceiver.cpp slsReceiver/slsReceiverUsers.cpp includes/utilities.h
 #slsReceiverInterface/receiverInterface.cpp
 #slsReceiver/slsReceiverUDPFunctions.cpp
 
@@ -35,7 +35,7 @@ intdoc: $(SRC_H) $(SRC_CLNT)
 ifeq ($(ROOTSLS),yes)
 	echo "with root"
 	$(CXX) -DROOTSLS -o $@ -c $< $(INCLUDES) $(DFLAGS)  $(ROOTFLAGS) -fPIC  $(EPICSFLAGS) -L/usr/lib64/ #$(FLAGS)
-else
+else	
 	echo "without root"
 	$(CXX) -o $@ -c $< $(INCLUDES) $(DFLAGS) -fPIC  $(EPICSFLAGS) -lpthread #$(FLAGS)
 endif

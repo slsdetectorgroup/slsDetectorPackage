@@ -34,8 +34,11 @@ UDPInterface * UDPInterface::create(string receiver_type){
 		cout << "Starting " << receiver_type << endl;
 		return new UDPStandardImplementation();
 	}
-	//else if (receiver_type == "REST")
-	//	return new UDPRESTImplementation();
+
+#ifdef REST
+	else if (receiver_type == "REST")
+		return new UDPRESTImplementation();
+#endif
 	else{
 		FILE_LOG(logWARNING) << "[ERROR] UDP interface not supported, using standard implementation";
 		return new UDPBaseImplementation();

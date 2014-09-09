@@ -8,6 +8,7 @@
 #include <string.h>
 
 #include "utilities.h"
+#include "logger.h"
 
 using namespace std;
 

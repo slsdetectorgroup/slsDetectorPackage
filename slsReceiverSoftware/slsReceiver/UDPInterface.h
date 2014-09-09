@@ -17,7 +17,7 @@
 #include "MySocketTCP.h"
 
 #include "utilities.h"
-
+#include "logger.h"
 
 /*
 void print_not_implemented(string method_name){

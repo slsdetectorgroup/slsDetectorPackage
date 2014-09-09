@@ -1,9 +1,9 @@
 Path: slsDetectorsPackage/calibrationWizards 
 URL: origin git@gitorious.psi.ch:sls_det_software/sls_detector_gui.git 
 Repository Root: origin git@gitorious.psi.ch:sls_det_software/sls_detector_gui.git 
-Repsitory UUID: f2467753988c780455e50953db2cb6b4e643e704 
-Revision: 278 
+Repsitory UUID: 09bbb7805f877800116ba4333e891042c8289dbb 
+Revision: 280 
 Branch: master 
 Last Changed Author: Maliakal_Dhanya 
-Last Changed Rev: 278 
-Last Changed Date: 2014-08-05 11:30:36 +0200
+Last Changed Rev: 280 
+Last Changed Date: 2014-09-09 15:46:36 +0200

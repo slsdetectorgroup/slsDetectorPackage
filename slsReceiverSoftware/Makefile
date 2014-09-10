@@ -17,8 +17,6 @@ DFLAGS= -g -DDACS_INT  -DSLS_RECEIVER_UDP_FUNCTIONS
 
 INCLUDES?= -Iinclude -I../slsDetectorCalibration -I$(ASM) 
 
-#-I$(SRCDIR)Interface
-
 SRC_CLNT = MySocketTCP.cpp UDPInterface.cpp  UDPBaseImplementation.cpp UDPStandardImplementation.cpp slsReceiverTCPIPInterface.cpp slsReceiver.cpp slsReceiverUsers.cpp utilities.cpp 
 MAIN_SRC = main.cpp
 
@@ -67,17 +65,18 @@ mysocket_test:
 
 
 clean: buildclean
+	make testclean
 	rm $(DESTDIR)/libSlsReceiver.a   $(DESTDIR)/libSlsReceiver.so
 	rm $(PROGS)
-	ifeq (,$(wildcard $(TESTDIR/rec)))
-		make testclean
-	endif
+
 
 buildclean:
 	rm -rf $(OBJS)		
 
 testclean:
-	cd $(TESTDIR) && rm *.o rec send 
+	if [ -f $(TESTDIR)/rec ]; then \
+		cd $(TESTDIR) && rm *.o rec send; \
+	fi
 
 
 #-------------------------------------------------------------------------------

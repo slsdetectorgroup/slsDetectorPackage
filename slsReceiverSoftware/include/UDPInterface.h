@@ -1,5 +1,6 @@
 #ifndef UDPINTERFACE_H
 #define UDPINTERFACE_H
+
 /***********************************************
  * @file UDPInterface.h
  * @short base class with all the functions for a receiver, set/get parameters, start/stop etc.
@@ -11,6 +12,7 @@
 /**
  * @short base class with all the functions for a receiver, set/get parameters, start/stop etc.
  */
+
 
 #include "sls_receiver_defs.h"
 #include "receiver_defs.h"
@@ -26,6 +28,39 @@ void print_not_implemented(string method_name){
 */
 
 class UDPInterface {
+	
+	/* abstract class that defines the public interface of an sls detector data receiver.
+	 *
+	 * Use the factory method slsReceiverBase::create() to get an instance:
+	 *
+	 *      slsReceiverBase *receiver = slsReceiverBase::create()
+	 *
+	 *  supported sequence of method-calls:
+	 *
+	 *  initialize() : once and only once after create()
+	 *
+	 *  get*()       : anytime after initialize(), multiples times
+	 *  set*()       : anytime after initialize(), multiple times
+	 *
+	 *  startReceiver(): anytime after initialize(). Will fail if state already is 'running'
+	 *
+	 *  abort(),
+	 *  stopReceiver() : anytime after initialize(). Will do nothing if state already is idle.
+	 *
+	 *  getStatus() returns the actual state of the data receiver - running or idle. All other
+	 *  get*() and set*() methods access the local cache of configuration values only and *do not* modify the data receiver settings.
+	 *
+	 *  Only startReceiver() does change the data receiver configuration, it does pass the whole configuration cache to the data receiver.
+	 *
+	 *  get- and set-methods that return a char array (char *) allocate a new array at each call. The caller is responsible to free the allocated space:
+	 *
+	 *      char *c = receiver->getFileName();
+	 *          ....
+	 *      delete[] c;
+	 *
+	 *  always: 1:YES       0:NO      for int as bool-like arguments
+	 *
+	 */
 	
  public:
 	
@@ -45,6 +80,10 @@ class UDPInterface {
 	static UDPInterface *create(string receiver_type = "standard");
 	
 
+public:
+	
+
+	
 	/**
 	 * Initialize the Receiver
 	 @param detectorHostName detector hostname

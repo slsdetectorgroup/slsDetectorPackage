@@ -32,15 +32,11 @@ static_receiver: $(DESTDIR)/sslsReceiver
 boot: $(OBJS)
 
 $(DESTDIR)/sslsReceiver: lib
-	echo $(OBJS)
-	echo $(LDFLAGRXR)
-	echo $(LIBS)
 	mkdir -p $(DESTDIR) 
 	$(CXX) -static  -o $@  $(SRC_CLNT)  $(FLAGS)  $(INCLUDES) $(CLAGS)  $(LIBS) $(LDFLAGRXR)
 
 
 $(DESTDIR)/slsReceiver: 	lib
-	echo "AAAAAAAAAAAA" $(CXX)   -o $@  $(SRC_CLNT)  $(FLAGS)  $(INCLUDES) $(CLAGS) $(LIBS) $(LDFLAGRXR) -fPIC 
 	$(CXX)   -o $@  $(SRC_CLNT)  $(FLAGS)  $(INCLUDES) $(CLAGS) $(LIBS) $(LDFLAGRXR) -fPIC 
 #$(EIGERFLAGS) 	
 

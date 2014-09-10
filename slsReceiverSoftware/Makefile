@@ -5,6 +5,8 @@ DESTDIR		?=	../bin
 LIBDIR	 	?= 	$(DESTDIR)
 DOCDIR 		?= 	docs
 SRCDIR		=	src
+TESTDIR		=	test
+BUILDDIR	=	build
 PROGS		= 	$(DESTDIR)/slsReceiver 
 
 
@@ -13,24 +15,24 @@ CFLAGS= -g -DC_ONLY -fPIC
 
 DFLAGS= -g -DDACS_INT  -DSLS_RECEIVER_UDP_FUNCTIONS 
 
-INCLUDES?= -Iinclude -IMySocketTCP -I../slsDetectorCalibration -I$(ASM) 
+INCLUDES?= -Iinclude -I../slsDetectorCalibration -I$(ASM) 
 
 #-I$(SRCDIR)Interface
 
-SRC_CLNT = $(SRCDIR)/MySocketTCP.cpp $(SRCDIR)/UDPInterface.cpp  $(SRCDIR)/UDPBaseImplementation.cpp $(SRCDIR)/UDPStandardImplementation.cpp $(SRCDIR)/slsReceiverTCPIPInterface.cpp $(SRCDIR)/slsReceiver.cpp $(SRCDIR)/slsReceiverUsers.cpp $(SRCDIR)/utilities.cpp 
-MAIN_SRC = $(SRCDIR)/main.cpp
+SRC_CLNT = MySocketTCP.cpp UDPInterface.cpp  UDPBaseImplementation.cpp UDPStandardImplementation.cpp slsReceiverTCPIPInterface.cpp slsReceiver.cpp slsReceiverUsers.cpp utilities.cpp 
+MAIN_SRC = main.cpp
 
-OBJS=$(SRC_CLNT:.cpp=.o) 
+OBJS=$(SRC_CLNT:%.cpp=$(BUILDDIR)/%.o) 
 
 
 .PHONY: all intdoc  package eigerReceiver clean
 
-all: lib $(SRC_CLNT) receiver
+all: lib receiver
 
 intdoc: $(SRC_H) $(SRC_CLNT) 
 	doxygen doxy.config
 
-%.o : %.cpp Makefile
+$(BUILDDIR)/%.o : $(SRCDIR)/%.cpp Makefile
 ifeq ($(ROOTSLS),yes)
 	$(CXX) -DROOTSLS -o $@ -c $< $(INCLUDES) $(DFLAGS)  $(ROOTFLAGS) -fPIC  $(EPICSFLAGS) -L/usr/lib64/ #$(FLAGS)
 else	
@@ -53,22 +55,30 @@ $(DESTDIR)/libSlsReceiver.a: $(OBJS)
 
 
 $(DESTDIR)/slsReceiver: 	lib
-	$(CXX)   -o $@  $(MAIN_SRC)  $(FLAGS)  $(INCLUDES) $(CLAGS) $(LIBS) $(LDFLAGRXR) -fPIC 
+	$(CXX)   -o $@  $(SRCDIR)/$(MAIN_SRC)  $(FLAGS)  $(INCLUDES) $(CLAGS) $(LIBS) $(LDFLAGRXR) -fPIC 
 #$(EIGERFLAGS)
 
 
 # Stand-alone Mysocket tests
 mysocket_test:
-	g++ -c $(SRCDIR)/MySocketTCP.cpp -I include
-	g++ -o rec MySocketTCP.o $(SRCDIR)/rec.cxx -I include
-	g++ -o send MySocketTCP.o $(SRCDIR)/send.cxx -I include
+	g++ -o $(TESTDIR)/MySocketTCP.o -c $(SRCDIR)/MySocketTCP.cpp -I include
+	g++ -o $(TESTDIR)/rec $(TESTDIR)/MySocketTCP.o $(TESTDIR)/rec.cxx -I include
+	g++ -o $(TESTDIR)/send $(TESTDIR)/MySocketTCP.o $(TESTDIR)/send.cxx -I include
 
 
-clean:
-	rm -rf $(OBJS)
+clean: buildclean
+	rm $(DESTDIR)/libSlsReceiver.a   $(DESTDIR)/libSlsReceiver.so
 	rm $(PROGS)
-	rm $(DESTDIR)/libSlsReceiver.a   $(DESTDIR)/libSlsReceiver.so	
-	cd 
+	ifeq (,$(wildcard $(TESTDIR/rec)))
+		make testclean
+	endif
+
+buildclean:
+	rm -rf $(OBJS)		
+
+testclean:
+	cd $(TESTDIR) && rm *.o rec send 
+
 
 #-------------------------------------------------------------------------------
 

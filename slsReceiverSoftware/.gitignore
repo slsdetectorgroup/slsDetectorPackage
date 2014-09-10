@@ -1,5 +1,6 @@
 *~
 *.o
+build
 GPATH
 GRTAGS
 GSYMS

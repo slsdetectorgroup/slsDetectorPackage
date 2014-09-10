@@ -3,14 +3,14 @@
 
 /***********************************************
  * @file UDPInterface.h
- * @short base class with all the functions for a receiver, set/get parameters, start/stop etc.
+ * @short Base class with all the functions for the UDP inteface of the receiver
  ***********************************************/
 /**
- * \mainpage Base class with all the functions for a receiver, set/get parameters, start/stop etc.
+ * \mainpage Base class with all the functions for the UDP inteface of the receiver
  */
 
 /**
- * @short base class with all the functions for a receiver, set/get parameters, start/stop etc.
+ * @short Base class with all the functions for the UDP inteface of the receiver
  */
 
 
@@ -21,19 +21,14 @@
 #include "utilities.h"
 #include "logger.h"
 
-/*
-void print_not_implemented(string method_name){
-	std::cout << "[WARNING] Method " << method_name << " not implemented!" << std::endl; 
-}
-*/
 
 class UDPInterface {
 	
-	/* abstract class that defines the public interface of an sls detector data receiver.
+	/* abstract class that defines the UDP interface of an sls detector data receiver.
 	 *
-	 * Use the factory method slsReceiverBase::create() to get an instance:
+	 * Use the factory method UDPInterface::create() to get an instance:
 	 *
-	 *      slsReceiverBase *receiver = slsReceiverBase::create()
+	 *      UDPInterface *udp_interface = UDPInterface::create()
 	 *
 	 *  supported sequence of method-calls:
 	 *
@@ -80,9 +75,9 @@ class UDPInterface {
 	static UDPInterface *create(string receiver_type = "standard");
 	
 
-public:
+ public:
 	
-
+	
 	
 	/**
 	 * Initialize the Receiver
@@ -383,11 +378,11 @@ public:
 	  guidatapointer (NULL, no data required)
 	*/
 	virtual void registerCallBackRawDataReady(void (*func)(int, char*, int, FILE*, char*, void*),void *arg) = 0;
-
-protected:
-
-private:
+	
+ protected:
+	
+ private:
 	
 };
 
-#endif  /* #ifndef SLSRECEIVERBASE_H */
+#endif  /* #ifndef UDPINTERFACE_H */

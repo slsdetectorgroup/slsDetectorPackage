@@ -92,8 +92,9 @@ public:
 
     void   SetData(int nbinsx, double xmin, double xmax, int nbinsy,double ymin, double ymax,double *d,double zmin=0, double zmax=-1){
       hist->SetData(nbinsx,xmin,xmax,nbinsy,ymin,ymax,d,zmin,zmax);
-      
     }
+
+
 
     double* GetDataPtr()                        {return hist->GetDataPtr();}
     int     GetBinIndex(int bx,int by)          {return hist->GetBinIndex(bx,by);}

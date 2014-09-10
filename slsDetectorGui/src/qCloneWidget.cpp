@@ -190,6 +190,7 @@ void qCloneWidget::SetCloneHists(int nHists,int histNBins,double* histXAxis,doub
 
 void qCloneWidget::SetCloneHists2D(int nbinsx,double xmin,double xmax,int nbinsy, double ymin, double ymax, double *d){
 	cloneplot2D->GetPlot()->SetData(nbinsx,xmin,xmax,nbinsy,ymin,ymax,d);
+	cloneplot2D->UpdateNKeepSetRangeIfSet();
 }
 
 
@@ -226,6 +227,7 @@ void qCloneWidget::SetRange(bool IsXYRange[],double XYRangeValues[]){
 	}else{
 		cloneplot2D->GetPlot()->SetXMinMax(XYRangeValues[qDefs::XMINIMUM],XYRangeValues[qDefs::XMAXIMUM]);
 		cloneplot2D->GetPlot()->SetYMinMax(XYRangeValues[qDefs::YMINIMUM],XYRangeValues[qDefs::YMAXIMUM]);
+		cloneplot2D->GetPlot()->Update();
 	}
 }
 

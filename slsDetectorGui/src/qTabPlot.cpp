@@ -1116,6 +1116,8 @@ void qTabPlot::Refresh(){
 			boxFrequency->setEnabled(true);
 		connect(boxScan,	  SIGNAL(toggled(bool)),				   this, SLOT(EnableScanBox()));
 		EnableScanBox();
+		if(myDet->getDetectorsType() == slsDetectorDefs::EIGER)
+			comboFrequency->setCurrentIndex(1);
 		SetFrequency();
 
 	}else{

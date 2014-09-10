@@ -1,2 +1,6 @@
+*~
 *.o
-slsDetectorCalibration
+GPATH
+GRTAGS
+GSYMS
+GTAGS

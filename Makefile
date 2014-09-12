@@ -21,9 +21,8 @@ CALIBDIR		=	$(WD)/slsDetectorCalibration
 
 
 INCLUDES=-I. -I$(LIBRARYDIR)/commonFiles -I$(LIBRARYDIR)/slsDetector -I$(LIBRARYDIR)/usersFunctions -I$(LIBRARYDIR)/multiSlsDetector -I$(LIBRARYDIR)/slsDetectorUtils -I$(LIBRARYDIR)/slsDetectorCommand -I$(LIBRARYDIR)/slsDetectorAnalysis -I$(LIBRARYDIR)/slsReceiverInterface  -I$(LIBRARYRXRDIR)/include -I$(ASM)
-INCLUDESRXR=-I. -I$(LIBRARYRXRDIR)/MySocketTCP -I$(LIBRARYRXRDIR)/include -I$(RECEIVERDIR)  -I$(RECEIVERDIR)/eigerReceiver -I$(CALIBDIR) -I$(ASM) #-I$(LIBRARYDIR)/slsReceiverInterface
+INCLUDESRXR=-I. -I$(LIBRARYRXRDIR)/MySocketTCP -I$(LIBRARYRXRDIR)/include -I$(RECEIVERDIR)  -I$(RECEIVERDIR)/eigerReceiver -I$(CALIBDIR) -I$(ASM) 
 
-# -I$(LIBRARYRXRDIR)/MySocketTCP
 
 $(info )
 $(info #######################################)

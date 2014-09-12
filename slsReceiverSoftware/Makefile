@@ -23,6 +23,13 @@ MAIN_SRC = main.cpp
 OBJS=$(SRC_CLNT:%.cpp=$(BUILDDIR)/%.o) 
 
 
+$(info )
+$(info #######################################)
+$(info #    Compiling slsReceiverSoftware    #)
+$(info #######################################)
+$(info )
+
+
 .PHONY: all intdoc  package eigerReceiver clean
 
 all: lib receiver

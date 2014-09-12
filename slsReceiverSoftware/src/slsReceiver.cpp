@@ -30,7 +30,7 @@ slsReceiver::slsReceiver(int argc, char *argv[], int &success){
 	 */
 	
 	//creating base receiver
-	int tcpip_port_no = 1984;
+	int tcpip_port_no = 1954;
 	success=OK;
 	string fname = "";
 	string udp_interface_type = "standard";
@@ -85,17 +85,19 @@ slsReceiver::slsReceiver(int argc, char *argv[], int &success){
 	}
 
 	// if required fname parameter not available, fail
-	if (fname == "")
-		success = FAIL;
+	//if (fname == "")
+	//	success = FAIL;
 
-	if((!fname.empty()) && (success == OK)){
-		FILE_LOG(logINFO) << "config file name " << fname;
-		success = read_config_file(fname, &tcpip_port_no);
-		//VERBOSE_PRINT("Read configuration file of " + iline + " lines");
-	}
-	else {
-		FILE_LOG(logERROR) << "Error opening configuration file " << fname ;
+	if( !fname.empty() ){
+		try{
+			FILE_LOG(logINFO) << "config file name " << fname;
+			success = read_config_file(fname, &tcpip_port_no);
+			//VERBOSE_PRINT("Read configuration file of " + iline + " lines");
+		}
+		catch(...){
+			FILE_LOG(logERROR) << "Error opening configuration file " << fname ;
 		success = FAIL;
+		}
 	}
 
 
@@ -104,7 +106,7 @@ slsReceiver::slsReceiver(int argc, char *argv[], int &success){
 	}
 
 	if (success==OK){
-		cout << "SLS Receiver starting " << udp_interface_type << endl;
+		FILE_LOG(logINFO) << "SLS Receiver starting " << udp_interface_type << " on port " << tcpip_port_no << endl;
 		udp_interface = UDPInterface::create(udp_interface_type);
 		tcpipInterface = new slsReceiverTCPIPInterface(success, udp_interface, tcpip_port_no);
 		//tcp ip interface

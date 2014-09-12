@@ -2,6 +2,14 @@
 
 include ../Makefile.include
 
+$(info )
+$(info ##################################)
+$(info #    Compiling slsDetectorGui    #)
+$(info ##################################)
+$(info )
+
+
+
 PROG		= 	$(DESTDIR)/slsDetectorGui
 
 DESTDIR		?=	../bin

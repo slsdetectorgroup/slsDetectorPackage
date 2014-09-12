@@ -4,8 +4,9 @@ LDLIBS		+= 	-lm  -lstdc++ -lpthread
 
 LDIR 		=	../../slsDetectorSoftware
 RDIR 		= 	../../slsReceiverSoftware
-INCLUDES	= 	-I $(LDIR)/commonFiles  -I $(RDIR)/MySocketTCP -I $(LDIR)/slsDetector -I ../include -I $(RDIR)/includes
-SRC_CLNT	= 	qClient.cpp $(RDIR)/MySocketTCP/MySocketTCP.cpp
+INCLUDES       =       -I $(LDIR)/commonFiles  -I $(LDIR)/slsDetector -I ../include -I $(RDIR)/include
+SRC_CLNT       =       qClient.cpp $(RDIR)/src/MySocketTCP.cpp
+
 
 PROGS		= 	gui_client 
 DESTDIR		?= 	bin

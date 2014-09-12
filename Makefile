@@ -11,17 +11,26 @@ INCDIR	?=	$(INSTALLROOT)/include
 
 WD				=	$(shell pwd)
 LIBRARYDIR		=	$(WD)/slsDetectorSoftware
-LIBRARYRXRDIR 	= 	$(WD)/slsReceiverSoftware
+LIBRARYRXRDIR 		= 	$(WD)/slsReceiverSoftware
 CLIENTDIR		=	$(LIBRARYDIR)/slsDetectorClient
 GUIDIR			=	$(WD)/slsDetectorGui
-RECEIVERDIR		=	$(LIBRARYRXRDIR)/slsReceiver
+RECEIVERDIR		=	$(LIBRARYRXRDIR)
 CALWIZDIR		=	$(WD)/calibrationWizards
 MANDIR			=	$(WD)/manual
-CALIBDIR		=	$(LIBRARYRXRDIR)/slsDetectorCalibration
+CALIBDIR		=	$(WD)/slsDetectorCalibration
 
 
-INCLUDES=-I. -I$(LIBRARYDIR)/commonFiles -I$(LIBRARYDIR)/slsDetector -I$(LIBRARYRXRDIR)/MySocketTCP -I$(LIBRARYDIR)/usersFunctions -I$(LIBRARYDIR)/multiSlsDetector -I$(LIBRARYDIR)/slsDetectorUtils -I$(LIBRARYDIR)/slsDetectorCommand -I$(LIBRARYDIR)/slsDetectorAnalysis -I$(LIBRARYDIR)/slsReceiverInterface  -I$(LIBRARYRXRDIR)/includes -I$(ASM)
-INCLUDESRXR=-I. -I$(LIBRARYRXRDIR)/MySocketTCP -I$(LIBRARYRXRDIR)/includes -I$(RECEIVERDIR)  -I$(RECEIVERDIR)/eigerReceiver -I$(CALIBDIR) -I$(ASM) #-I$(LIBRARYDIR)/slsReceiverInterface
+INCLUDES=-I. -I$(LIBRARYDIR)/commonFiles -I$(LIBRARYDIR)/slsDetector -I$(LIBRARYDIR)/usersFunctions -I$(LIBRARYDIR)/multiSlsDetector -I$(LIBRARYDIR)/slsDetectorUtils -I$(LIBRARYDIR)/slsDetectorCommand -I$(LIBRARYDIR)/slsDetectorAnalysis -I$(LIBRARYDIR)/slsReceiverInterface  -I$(LIBRARYRXRDIR)/include -I$(ASM)
+INCLUDESRXR=-I. -I$(LIBRARYRXRDIR)/MySocketTCP -I$(LIBRARYRXRDIR)/include -I$(RECEIVERDIR)  -I$(RECEIVERDIR)/eigerReceiver -I$(CALIBDIR) -I$(ASM) #-I$(LIBRARYDIR)/slsReceiverInterface
+
+# -I$(LIBRARYRXRDIR)/MySocketTCP
+
+$(info )
+$(info #######################################)
+$(info #    Compiling slsDetectorsPackage    #)
+$(info #######################################)
+$(info )
+
 
 .PHONY: all nonstatic static lib libreceiver textclient receiver gui stextclient sreceiver
 
@@ -34,7 +43,7 @@ static: lib  libreceiver stextclient sreceiver gui
 
 lib:
 	cd $(LIBRARYDIR) && $(MAKE) FLAGS='$(FLAGS)' DESTDIR='$(LIBDIR)' INCLUDES='$(INCLUDES)'
-	
+
 libreceiver:
 	cd $(LIBRARYRXRDIR) && $(MAKE) FLAGS='$(FLAGS)' DESTDIR='$(LIBDIR)' INCLUDES='$(INCLUDESRXR)'
 
@@ -126,7 +135,7 @@ install_lib:
 	make htmldoc; \
 	cd $(LIBRARYDIR) && $(MAKE) install_inc DESTDIR=$(INCDIR); \
 	cd $(LIBRARYRXRDIR) && $(MAKE) install_inc DESTDIR=$(INCDIR);
-	
+
 install: 
 	make install_lib; \
 	make gui; \

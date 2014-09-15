@@ -319,7 +319,7 @@ class UDPBaseImplementation : private virtual slsReceiverDefs, public UDPInterfa
 	 */
 	int shutDownUDPSockets();
 
-private:
+protected:
 	
 	/*
 	void not_implemented(string method_name){
@@ -466,6 +466,10 @@ private:
 	void handleDataCompression(int ithread, char* wbuffer[], int &npackets, char* data, int xmax, int ymax, int &nf);
 
 
+
+	//// Could be done more fine-grained... TODO
+	// private:
+ protected:
 	/** structure of an eiger image header*/
 	typedef struct
 	{
@@ -682,6 +686,9 @@ private:
 
 	/** 10Gbe enable*/
 	int tengigaEnable;
+
+	// TODO: not properly sure where to put these...
+	/** structure of an eiger image header*/
 
 
 

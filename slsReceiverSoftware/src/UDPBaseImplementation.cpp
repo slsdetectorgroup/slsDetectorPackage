@@ -94,11 +94,12 @@ void UDPBaseImplementation::resetTotalFramesCaught(){
 /*file parameters*/
 
 char* UDPBaseImplementation::getFilePath() const{
-	FILE_LOG(logWARNING) << "[WARNING] This is a base implementation, " << __func__ << " could have no effects.";
+	//FILE_LOG(logWARNING) << "[WARNING] This is a base implementation, " << __func__ << " could have no effects.";
 	return (char*)filePath;
 }
 
-char* UDPBaseImplementation::setFilePath(const char c[]){
+inline char* UDPBaseImplementation::setFilePath(const char c[]){
+	cout << "SET FILE PATH " << c << endl;
 	if(strlen(c)){
 		//check if filepath exists
 		struct stat st;
@@ -109,6 +110,7 @@ char* UDPBaseImplementation::setFilePath(const char c[]){
 			FILE_LOG(logWARNING) << "FilePath does not exist:" << filePath;
 		}
 	}
+	cout << getFilePath() << " " << filePath << endl;
 	return getFilePath();
 }
 
@@ -117,7 +119,7 @@ char* UDPBaseImplementation::getFileName() const{
 	return (char*)fileName;
 }
 
-char* UDPBaseImplementation::setFileName(const char c[]){
+inline char* UDPBaseImplementation::setFileName(const char c[]){
 	//cout << "[WARNING] This is a base implementation, " << __func__ << " could have no effects." << endl;
 	
 	if(strlen(c))
@@ -132,17 +134,15 @@ int UDPBaseImplementation::getFileIndex(){
 }
 
 int UDPBaseImplementation::setFileIndex(int i){
-	cout << "[WARNING] This is a base implementation, " << __func__ << " could have no effects." << endl;
-	/*
+	//cout << "[WARNING] This is a base implementation, " << __func__ << " could have no effects." << endl;
 	if(i>=0)
 		fileIndex = i;
-	*/
 	return getFileIndex();
 }
 
 
 int UDPBaseImplementation::setFrameIndexNeeded(int i){
-	cout << "[WARNING] This is a base implementation, " << __func__ << " could have no effects." << endl;
+	//cout << "[WARNING] This is a base implementation, " << __func__ << " could have no effects." << endl;
 	frameIndexNeeded = i;
 	return frameIndexNeeded;
 }
@@ -871,8 +871,10 @@ int UDPBaseImplementation::setupWriter(){
 
 
 	//acquisition start call back returns enable write
-	if (startAcquisitionCallBack)
+	if (startAcquisitionCallBack){
+		cout << filePath << " - " << fileName << endl;
 		cbAction=startAcquisitionCallBack(filePath,fileName,fileIndex,bufferSize,pStartAcquisition);
+	}
 
 	if(cbAction < DO_EVERYTHING)
 		cout << endl << "Note: Call back activated. Data saving must be taken care of by user in call back." << endl;
@@ -952,13 +954,20 @@ int UDPBaseImplementation::createCompressionFile(int ithr, int iframe){
 
 
 int UDPBaseImplementation::createNewFile(){
- int gt = getFrameIndex();
- if(gt==-1) gt=0;
+
+	cout << "[WARNING] This is a base implementation, " << __func__ << " not correctly implemented" << endl;
+
+
+	/*
+	int gt = getFrameIndex();
+	if(gt==-1) gt=0;
 	//create file name
 	if(frameIndexNeeded==-1)
 		sprintf(savefilename, "%s/%s_%d.raw", filePath,fileName,fileIndex);
 	else
 		sprintf(savefilename, "%s/%s_f%012d_%d.raw", filePath,fileName,(packetsCaught/packetsPerFrame),fileIndex);
+
+	cout << filePath << " + " << fileName << endl;
 
 	//if filewrite and we are allowed to write
 	if(enableFileWrite && cbAction > DO_NOTHING){
@@ -974,7 +983,7 @@ int UDPBaseImplementation::createNewFile(){
 				return FAIL;
 			}
 		}else if (NULL == (sfilefd = fopen((const char *) (savefilename), "w"))){
-			cout << "Error: Could not create file " << savefilename << endl;
+			cout << "Error: Could not creat     dsdasdserwe file " << savefilename << endl;
 			return FAIL;
 		}
 		//setting buffer
@@ -1001,7 +1010,7 @@ int UDPBaseImplementation::createNewFile(){
 		prevframenum = currframenum;
 		packetsInFile = 0;
 	}
-
+	*/
 	return OK;
 }
 

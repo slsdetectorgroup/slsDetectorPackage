@@ -110,8 +110,11 @@ void UDPStandardImplementation::initializeMembers(){
 	strcpy(detHostname,"");
 	strcpy(guiFileName,"");
 	strcpy(savefilename,"");
-	strcpy(filePath,"");
-	strcpy(fileName,"run");
+	
+	setFileName("run");
+	setFilePath("");
+	//strcpy(filePath,"");
+	//strcpy(fileName,"run");
 
 
 	//status
@@ -122,15 +125,16 @@ void UDPStandardImplementation::initializeMembers(){
 }
 
 
-UDPStandardImplementation::UDPStandardImplementation():
-		thread_started(0),
-		eth(NULL),
-		latestData(NULL),
-		guiFileName(NULL),
-		guiFrameNumber(0),
-		tengigaEnable(0){
+UDPStandardImplementation::UDPStandardImplementation(){
 
 	cout << "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAa" << endl;
+
+	thread_started = 0;
+	eth = NULL;
+	latestData = NULL;
+	guiFileName = NULL;
+	guiFrameNumber = 0;
+	tengigaEnable = 0;
 
 	for(int i=0;i<MAX_NUM_LISTENING_THREADS;i++){
 		udpSocket[i] = NULL;
@@ -364,7 +368,6 @@ char* UDPStandardImplementation::getFilePath() const{
 		return (char*)filePath;
 }
 */
-
 /*
 char* UDPStandardImplementation::setFilePath(const char c[]){
 	if(strlen(c)){
@@ -1233,6 +1236,9 @@ int UDPStandardImplementation::createNewFile(){
 		sprintf(savefilename, "%s/%s_%d.raw", filePath,fileName,fileIndex);
 	else
 		sprintf(savefilename, "%s/%s_f%012d_%d.raw", filePath,fileName,(packetsCaught/packetsPerFrame),fileIndex);
+
+
+	cout << filePath << " + " << fileName << endl;
 
 	//if filewrite and we are allowed to write
 	if(enableFileWrite && cbAction > DO_NOTHING){

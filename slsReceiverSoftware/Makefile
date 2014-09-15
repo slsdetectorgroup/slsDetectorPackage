@@ -32,7 +32,7 @@ $(info )
 
 .PHONY: all intdoc  package eigerReceiver clean
 
-all: lib receiver
+all: builddir lib receiver
 
 intdoc: $(SRC_H) $(SRC_CLNT) 
 	doxygen doxy.config
@@ -76,6 +76,8 @@ clean: buildclean
 	rm $(DESTDIR)/libSlsReceiver.a   $(DESTDIR)/libSlsReceiver.so
 	rm $(PROGS)
 
+builddir:
+	if [ ! -d $(BUILDDIR) ]; then mkdir $(BUILDDIR); fi
 
 buildclean:
 	rm -rf $(OBJS)		

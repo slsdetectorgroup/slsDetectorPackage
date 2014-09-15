@@ -15,9 +15,16 @@ CFLAGS= -g -DC_ONLY -fPIC
 
 DFLAGS= -g -DDACS_INT  -DSLS_RECEIVER_UDP_FUNCTIONS 
 
-INCLUDES?= -Iinclude -I../slsDetectorCalibration -I$(ASM) 
+INCLUDES?= $(INCLUDESRXR) -I include/ -I ../slsDetectorCalibration
+
+#-Iinclude -I../slsDetectorCalibration -I$(ASM) 
 
 SRC_CLNT = MySocketTCP.cpp UDPInterface.cpp  UDPBaseImplementation.cpp UDPStandardImplementation.cpp slsReceiverTCPIPInterface.cpp slsReceiver.cpp slsReceiverUsers.cpp utilities.cpp 
+
+ifeq ($(REST), yes)
+	SRC_CLNT += UDPRESTImplementation.cpp
+endif
+
 MAIN_SRC = main.cpp
 
 OBJS=$(SRC_CLNT:%.cpp=$(BUILDDIR)/%.o) 

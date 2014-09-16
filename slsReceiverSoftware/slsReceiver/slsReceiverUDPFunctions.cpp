@@ -26,6 +26,8 @@
 #include <iostream>
 using namespace std;
 
+#define EIGER_32BIT_INITIAL_CONSTANT 0x17c
+
 
 
 
@@ -785,7 +787,7 @@ void slsReceiverUDPFunctions::setupFifoStructure(){
 
 /** acquisition functions */
 
-void slsReceiverUDPFunctions::readFrame(char* c,char** raw, uint32_t &fnum){
+void slsReceiverUDPFunctions::readFrame(char* c,char** raw, uint32_t &fnum, uint32_t &fstartind){
 	//point to gui data
 	if (guiData == NULL)
 		guiData = latestData;
@@ -793,7 +795,7 @@ void slsReceiverUDPFunctions::readFrame(char* c,char** raw, uint32_t &fnum){
 	//copy data and filename
 	strcpy(c,guiFileName);
 	fnum = guiFrameNumber;
-
+	fstartind = getStartFrameIndex();
 
 	//could not get gui data
 	if(!guiDataReady){
@@ -1506,9 +1508,13 @@ int slsReceiverUDPFunctions::startListening(){
 			//normal listening
 			else if(!carryonBufferSize){
 
+			/*	if(!ithread){*/
 				rc = udpSocket[ithread]->ReceiveDataOnly(buffer[ithread] + HEADER_SIZE_NUM_TOT_PACKETS, maxBufferSize);
 				expected = maxBufferSize;
-
+				/*}else{
+					while(1) usleep(100000000);
+				}
+*/
 			}
 			//the remaining packets from previous buffer
 			else{
@@ -1726,7 +1732,10 @@ int loop;
 			//for progress
 			if(myDetectorType == EIGER){
 				tempframenum = htonl(*(unsigned int*)((eiger_image_header *)((char*)(wbuf[ithread] + HEADER_SIZE_NUM_TOT_PACKETS)))->fnum);
-				tempframenum += (startFrameIndex-1); //eiger frame numbers start at 1, so need to -1
+				if(dynamicRange != 32)
+					tempframenum += (startFrameIndex-1); //eiger frame numbers start at 1, so need to -1
+				else
+					tempframenum = ((tempframenum / EIGER_32BIT_INITIAL_CONSTANT) + startFrameIndex)-1;//eiger 32 bit mode is a multiple of 17c. +startframeindex for scans
 			}else if ((myDetectorType == GOTTHARD) && (shortFrame == -1))
 				tempframenum = (((((uint32_t)(*((uint32_t*)(wbuf[ithread] + HEADER_SIZE_NUM_TOT_PACKETS))))+1)& (frameIndexMask)) >> frameIndexOffset);
 			else
@@ -1751,6 +1760,7 @@ int loop;
 
 				if (cbAction < DO_EVERYTHING){
 					for(i=0;i<numListeningThreads;++i)
+						/* for eiger 32 bit mode, currframenum like gotthard, does not start from 0 or 1 */
 						rawDataReadyCallBack(currframenum, wbuf[i], numpackets * onePacketSize, sfilefd, guiData,pRawDataReady);
 				}else if (numpackets > 0){
 					for(i=0;i<numListeningThreads;++i)
@@ -1871,8 +1881,13 @@ void slsReceiverUDPFunctions::startFrameIndices(int ithread){
 		cout << "startAcquisitionIndex:" << startAcquisitionIndex<<endl;
 	}
 	//for scans, cuz currfraenum resets
-	else if (myDetectorType == EIGER)
-		startFrameIndex += currframenum;
+	else if (myDetectorType == EIGER){
+		if(dynamicRange == 32)
+			startFrameIndex = (currframenum + 1);// to be added later for scans
+		else
+			startFrameIndex += currframenum;
+
+	}
 
 
 	cout << "startFrameIndex:" << startFrameIndex<<endl;

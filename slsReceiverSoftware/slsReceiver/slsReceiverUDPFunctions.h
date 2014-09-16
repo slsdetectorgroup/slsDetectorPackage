@@ -286,8 +286,9 @@ public:
 	 * @param c pointer to current file name
 	 * @param raw address of pointer, pointing to current frame to send to gui
 	 * @param fnum frame number for eiger as it is not in the packet
+	 * @param fstartind is the start index of the acquisition
 	 */
-	void readFrame(char* c,char** raw, uint32_t &fnum);
+	void readFrame(char* c,char** raw, uint32_t &fnum, uint32_t &fstartind);
 
 	/**
 	 * Closes all files
@@ -467,7 +468,6 @@ private:
 		unsigned char  fnum[4];
 		unsigned char  header_after[24];
 	} eiger_image_header;
-
 
 	/** structure of an eiger image header*/
 	typedef struct

@@ -1000,8 +1000,8 @@ int	slsReceiverTCPIPInterface::moench_read_frame(){
 
 	else{
 		ret = OK;
-		startIndex=receiverBase->getStartFrameIndex();
-		receiverBase->readFrame(fName,&raw,index);
+		/*startIndex=receiverBase->getStartFrameIndex();*/
+		receiverBase->readFrame(fName,&raw,index,startIndex);
 
 		/**send garbage with -1 index to try again*/
 		if (raw == NULL){
@@ -1170,8 +1170,8 @@ int	slsReceiverTCPIPInterface::gotthard_read_frame(){
 		cout<<"haven't caught any frame yet"<<endl;
 	}else{
 		ret = OK;
-		startIndex=receiverBase->getStartFrameIndex();
-		receiverBase->readFrame(fName,&raw,index);
+		/*startIndex=receiverBase->getStartFrameIndex();*/
+		receiverBase->readFrame(fName,&raw,index,startIndex);
 
 		/**send garbage with -1 index to try again*/
 		if (raw == NULL){
@@ -1302,13 +1302,9 @@ int	slsReceiverTCPIPInterface::eiger_read_frame(){
 	char* raw 		= new char[frameSize];
 	char* origVal 	= new char[frameSize];
 	char* retval 	= new char[dataSize];
-
+	uint32_t startIndex=0;
 	strcpy(mess,"Could not read frame\n");
 
-/*	typedef struct{
-		unsigned char num1[4];
-		unsigned char num2[4];
-	} eiger_packet_header;*/
 
 	// execute action if the arguments correctly arrived
 #ifdef SLS_RECEIVER_UDP_FUNCTIONS
@@ -1326,7 +1322,7 @@ int	slsReceiverTCPIPInterface::eiger_read_frame(){
 	else{
 		ret = OK;
 		/** read a frame */
-		receiverBase->readFrame(fName,&raw, index);
+		receiverBase->readFrame(fName,&raw,index,startIndex);
 #ifdef VERBOSE
 		cout << "index:" << dec << index << endl;
 #endif
@@ -1373,16 +1369,21 @@ int	slsReceiverTCPIPInterface::eiger_read_frame(){
 						memcpy(retval+retindex ,origVal+c1 ,numbytesperlineperport);
 						retindex += numbytesperlineperport;
 						c1 += numbytesperlineperport;
+						if(repeat == 2) c1 += 16;
 					}
 					for(irepeat=0;irepeat<repeat;irepeat++){//only for 32 bit mode, take 2 packets from same port
+
 						memcpy(retval+retindex ,origVal+c2 ,numbytesperlineperport);
 						retindex += numbytesperlineperport;
 						c2 += numbytesperlineperport;
+						if(repeat == 2) c2 += 16;
 					}
 					ibytesperpacket += numbytesperlineperport;
 				}
-				c1 += 16;
-				c2 += 16;
+				if(repeat == 1) {
+					c1 += 16;
+					c2 += 16;
+				}
 			}
 
 
@@ -1404,7 +1405,7 @@ int	slsReceiverTCPIPInterface::eiger_read_frame(){
 			for(i=0;i<(1024*(16*dynamicrange)*2)/4;i++)
 				                (*(((uint32_t*)retval)+i)) = htonl((uint32_t)(*(((uint32_t*)retval)+i)));
 			*/
-			arg = index-1;
+			arg = index-startIndex;
 		}
 	}
 

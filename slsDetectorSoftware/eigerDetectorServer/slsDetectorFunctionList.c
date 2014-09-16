@@ -6,6 +6,7 @@
 #include <string.h>
 
 
+
 #include "slsDetectorFunctionList.h"
 #include "gitInfoEiger.h"
 /*#include "EigerHighLevelFunctions.c"
@@ -609,6 +610,7 @@ int setDynamicRange(int dr){
 			  for(i=0;i<32;i++) dst_requested[i] = 0; //clear dst requested
 			  if(Beb_SetUpTransferParameters(dr))
 				  eiger_dynamicrange = dr;
+			  else printf("ERROR:Could not set bit mode in the back end\n");
 		}
 	}
 	//make sure back end and front end have the same bit mode

@@ -506,19 +506,35 @@ int Beb_RequestNImages(unsigned int beb_number, unsigned int left_right, int ten
   unsigned int         npackets = ten_gig ?  Beb_bit_mode*4 : Beb_bit_mode*16;
   int          in_two_requests = (!ten_gig&&Beb_bit_mode==32);
   if(in_two_requests) npackets/=2;
- 
+ // printf("npackets:%d\n",npackets);
   //usleep needed after acquisition start, else you miss the single images
-  usleep(0);
+  usleep(1000);
 
   //printf("beb no:%d left_right:%d ten_gig:%d dst_number:%d #images:%d header_size:%d test_just_send_out_packets_no_wait:%d\n",beb_number,left_right,ten_gig,dst_number,nimages, header_size,test_just_send_out_packets_no_wait);
   //printf("here: "<<beb_number<<","<<left_right<<","<<ten_gig<<","<<dst_number<<","<<1<<","<<header_size<<","<<test_just_send_out_packets_no_wait\n");
+/*
+  unsigned int i;
+  for(i=0;i<nimages;i++){
+    //header then data request
+	    //usleep(10000);
+    if(!Beb_SendMultiReadRequest(beb_number,left_right,ten_gig,dst_number,1,header_size,test_just_send_out_packets_no_wait)){printf("Send failed\n");return 0;}
+    //usleep(10000);
+    if(!Beb_SendMultiReadRequest(beb_number,left_right,ten_gig,dst_number,npackets,packet_size,test_just_send_out_packets_no_wait)){printf("Send failed\n");return 0;}
+   // usleep(0);
+    if(in_two_requests){if(!Beb_SendMultiReadRequest(beb_number,left_right,ten_gig,dst_number,npackets,packet_size,test_just_send_out_packets_no_wait)){printf("Send failed\n");return 0;}
+    }
+  }
+*/
+
   unsigned int i;
   for(i=0;i<nimages;i++){
     //header then data request
     if(!Beb_SendMultiReadRequest(beb_number,left_right,ten_gig,dst_number,1,header_size,test_just_send_out_packets_no_wait) ||
        !Beb_SendMultiReadRequest(beb_number,left_right,ten_gig,dst_number,npackets,packet_size,test_just_send_out_packets_no_wait) ||
-       (in_two_requests&&!Beb_SendMultiReadRequest(beb_number,left_right,ten_gig,dst_number,npackets,packet_size,test_just_send_out_packets_no_wait)))
+       (in_two_requests&&!Beb_SendMultiReadRequest(beb_number,left_right,ten_gig,dst_number,npackets,packet_size,test_just_send_out_packets_no_wait))){
+       	printf("SendMultiReadRequest failed\n");
     	return 0;
+    }
   }
 
   return 1;

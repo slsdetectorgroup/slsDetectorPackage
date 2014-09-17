@@ -13,6 +13,7 @@
  * @short base class with all the functions for a receiver, set/get parameters, start/stop etc.
  */
 
+#include <exception>
 
 #include "sls_receiver_defs.h"
 #include "receiver_defs.h"
@@ -20,7 +21,6 @@
 
 #include "utilities.h"
 #include "logger.h"
-
 /*
 void print_not_implemented(string method_name){
 	std::cout << "[WARNING] Method " << method_name << " not implemented!" << std::endl; 
@@ -78,9 +78,10 @@ class UDPInterface {
 	 * Factory create method
 	 */
 	static UDPInterface *create(string receiver_type = "standard");
-	
 
-public:
+	virtual void configure(map<string, string> config_map) = 0;
+	
+ public:
 	
 
 	

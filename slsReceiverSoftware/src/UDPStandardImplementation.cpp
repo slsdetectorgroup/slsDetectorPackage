@@ -127,8 +127,8 @@ void UDPStandardImplementation::initializeMembers(){
 
 UDPStandardImplementation::UDPStandardImplementation(){
 
-	cout << "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAa" << endl;
-
+	FILE_LOG(logDEBUG) << __FILE__ << "::" << __func__ << " starting" ;
+	
 	thread_started = 0;
 	eth = NULL;
 	latestData = NULL;
@@ -963,7 +963,7 @@ int UDPStandardImplementation::shutDownUDPSockets(){
 
 
 
-
+// TODO: add a destroyListeningThreads
 int UDPStandardImplementation::createListeningThreads(bool destroy){
 	int i;
 	void* status;
@@ -973,6 +973,8 @@ int UDPStandardImplementation::createListeningThreads(bool destroy){
 	pthread_mutex_lock(&status_mutex);
 	listeningthreads_mask = 0x0;
 	pthread_mutex_unlock(&(status_mutex));
+
+	FILE_LOG(logDEBUG) << "Starting " << __func__ << endl;
 
 	if(!destroy){
 

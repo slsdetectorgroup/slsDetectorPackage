@@ -16,55 +16,113 @@
 #include <sys/stat.h> 		// stat
 #include <sys/socket.h>		// socket(), bind(), listen(), accept(), shut down
 #include <arpa/inet.h>		// sock_addr_in, htonl, INADDR_ANY
-#include <stdlib.h>			// exit()
-#include <iomanip>			//set precision
-#include <sys/mman.h>		//munmap
+#include <stdlib.h>		// exit()
+#include <iomanip>		// set precision
+#include <sys/mman.h>		// munmap
 
 #include <string.h>
 #include <iostream>
+#include <sstream>
 
 //#include "utilities.h"
 
 using namespace std;
 
+/*
+ TODO
+ + filePath != getFilePath
+
+*/
 
 
-UDPRESTImplementation::UDPRESTImplementation() : isInitialized(false), status(slsReceiverDefs::ERROR) {}
+UDPRESTImplementation::UDPRESTImplementation(){
+	
+	rest_hostname = "localhost";
+	rest_port = 8081;
+}
 
 
 UDPRESTImplementation::~UDPRESTImplementation(){}
 
 
-void UDPRESTImplementation::initialize(const char *detectorHostName){
+void UDPRESTImplementation::configure(map<string, string> config_map){
+	FILE_LOG(logWARNING) << __AT__ << " called";
 
-	 string name;
-	 if (detectorHostName != NULL)
-		 name = detectorHostName;
+	map<string, string>::const_iterator pos;
 
-	 if (name.empty()) {
-		 FILE_LOG(logDEBUG) << "initialize(): can't initialize with empty string or NULL for detectorHostname";
-	 } else if (isInitialized == true) {
-		 FILE_LOG(logDEBUG) << "initialize(): already initialized, can't initialize several times";
-	 } else {
-		 FILE_LOG(logDEBUG) << "initialize(): initialize() with: detectorHostName=" << name;
-		 strcpy(detHostname,detectorHostName);
-		 //init_config.detectorHostname = name;
+	pos = config_map.find("rest_hostname");
+	if (pos != config_map.end() ){
+		string host_port_str = pos->second;
+		std::size_t pos = host_port_str.find(":");      // position of "live" in str
+		if(pos != string::npos){
+			istringstream (host_port_str.substr (pos)) >> rest_port;
+			rest_hostname = host_port_str.substr(0, pos);
+			cout << rest_hostname << " " << rest_port << endl;
+		}	
+	}
+	
+	for(map<string, string>::const_iterator i=config_map.begin(); i != config_map.end(); i++){
+		std::cout << i->first << " " << i->second<< std::endl;
+	}
+
+
+};
+
+
+
+void UDPRESTImplementation::initialize_REST(){
+
+	 if (rest_hostname.empty()) {
+		 FILE_LOG(logDEBUG) << __AT__ <<"can't initialize with empty string or NULL for detectorHostname";
+	 } 
+	 else if (isInitialized == true) {
+		 FILE_LOG(logDEBUG) << __AT__ << "already initialized, can't initialize several times";
+	 } 
+	 else {
+		 FILE_LOG(logDEBUG) << __AT__ << "with receiverHostName=" << rest_hostname << ":" << rest_port;
 		 
-		 //REST call - hardcoded
-		 //RestHelper rest ;
-		 rest->init(detHostname, 8080);
+		 rest = new RestHelper() ;
 		 std::string answer;
-		 int code = rest->get_json("status", &answer);
-		 if (code != 0){
-			 //throw -1;
-			 std::cout << "I SHOULD THROW AN EXCEPTION!!!" << std::endl;
-		 }
-		 else{
-			 isInitialized = true;
-			 status = slsReceiverDefs::IDLE;
-		 }
-		 std::cout << "Answer: " <<  answer << std::endl;
+		 int code;
+		 try{
+			 rest->init(rest_hostname, rest_port);
+			 code = rest->get_json("state", &answer);
 
+			 if (code != 0){
+				 throw answer;
+			 }
+			 else{
+				 isInitialized = true;
+				 status = slsReceiverDefs::IDLE;
+			 }
+			 FILE_LOG(logDEBUG) << __func__ << "Answer: " <<  answer;
+		 }
+		 catch(std::string e){
+			 FILE_LOG(logERROR) <<  __func__ << ": " << e;
+			 throw;
+		 }
+
+		 //JsonBox::Object json_object;
+		 //json_object["configfile"] = JsonBox::Value("FILENAME");
+		 JsonBox::Value json_request;
+		 //json_request["configfile"] = "config.py";
+		 json_request["path"] = filePath;
+		 
+		 stringstream ss;
+		 string test;
+		 std::cout << "GetSTring: " << json_request << std::endl;
+		 json_request.writeToStream(ss, false);
+		 //ss << json_request;
+		 ss >> test;
+
+		 
+		 cout << "aaaa" <<filePath << endl;
+		 test =  "{\"path\":\"" + string( getFilePath() ) + "\"}";
+		 code = rest->post_json("state/initialize", &answer, test);
+		 FILE_LOG(logDEBUG) << __AT__ << "state/configure got " << code;
+		 code = rest->get_json("state", &answer);
+		 FILE_LOG(logDEBUG) << __AT__ << "state got " << code << " " << answer;
+		 
 
 		 /*
 		   std::std::cout << string << std::endl; << "---- REST test 3: true, json object "<< std::endl;
@@ -73,14 +131,18 @@ void UDPRESTImplementation::initialize(const char *detectorHostName){
 		   std::cout << "JSON " << json_value["status"] << std::endl;
 		 */
 	 }
+
+	 FILE_LOG(logDEBUG) << __func__ << ": initialize() done";
+
 }
 
 
+/*
 int UDPRESTImplementation::setDetectorType(detectorType det){
 	cout << "[WARNING] This is a base implementation, " << __func__ << " not correctly implemented" << endl;
 	return OK;
 }
-
+*/
 
 
 /*Frame indices and numbers caught*/
@@ -180,7 +242,9 @@ char *UDPRESTImplementation::getDetectorHostname() const{
 */
 
 void UDPRESTImplementation::setEthernetInterface(char* c){
-	strcpy(eth,c);
+	FILE_LOG(logDEBUG) << __FILE__ << "::" << __func__ << " starting";
+	//strcpy(eth,c);
+	FILE_LOG(logDEBUG) << __FILE__ << "::" << __func__ << " done";
 }
 
 
@@ -219,14 +283,17 @@ int32_t UDPRESTImplementation::setScanTag(int32_t stag){
 */
 
 int32_t UDPRESTImplementation::setDynamicRange(int32_t dr){
-	cout << "Setting Dynamic Range" << endl;
+	FILE_LOG(logDEBUG) << __FILE__ << "::" << __func__ << " starting";
 
 	int olddr = dynamicRange;
 	if(dr >= 0){
 		dynamicRange = dr;
 	}
 	
+	FILE_LOG(logDEBUG) << __FILE__ << "::" << __func__ << " " << getDynamicRange();
 	return getDynamicRange();
+	
+		
 }
 
 
@@ -571,6 +638,8 @@ void UDPRESTImplementation::copyFrameToGui(char* startbuf[], uint32_t fnum, char
 
 int UDPRESTImplementation::createUDPSockets(){
 
+	FILE_LOG(logDEBUG) << __FILE__ << "::" << __func__ << " starting";
+	std::cout << "AAAAAAAAAAAa" << std::endl;
 
 	//if eth is mistaken with ip address
 	if (strchr(eth,'.')!=NULL)
@@ -615,13 +684,24 @@ int UDPRESTImplementation::createUDPSockets(){
 
 
 int UDPRESTImplementation::shutDownUDPSockets(){
+
+	FILE_LOG(logDEBUG) << __AT__ << "called";
+	FILE_LOG(logDEBUG) << __AT__ << "doing nothing";
+
+
+	/*
 	for(int i=0;i<numListeningThreads;i++){
 		if(udpSocket[i]){
+			FILE_LOG(logDEBUG) << __AT__ << " UDP socket " << i;
 			udpSocket[i]->ShutDownSocket();
 			delete udpSocket[i];
 			udpSocket[i] = NULL;
 		}
 	}
+	*/
+
+	FILE_LOG(logDEBUG) << __AT__ << "finished";
+
 	return OK;
 }
 
@@ -955,9 +1035,7 @@ int UDPRESTImplementation::createNewFile(){
 
 
 void UDPRESTImplementation::closeFile(int ithr){
-#ifdef VERBOSE
-	cout << "In closeFile for thread " << ithr << endl;
-#endif
+	FILE_LOG(logDEBUG) << __AT__ << "called for thread " << ithr;
 
 	if(!dataCompression){
 		if(sfilefd){
@@ -1005,6 +1083,8 @@ void UDPRESTImplementation::closeFile(int ithr){
 
 #endif
 	}
+
+	FILE_LOG(logDEBUG) << __AT__ << "exited for thread " << ithr;
 }
 
 
@@ -1014,13 +1094,32 @@ void UDPRESTImplementation::closeFile(int ithr){
 int UDPRESTImplementation::startReceiver(char message[]){
 	int i;
 
+	FILE_LOG(logDEBUG) << __FILE__ << "::" << __func__ << " starting";
+	initialize_REST();
+	FILE_LOG(logDEBUG) << __FILE__ << "::" << __func__ << " initialized";
 
 // #ifdef VERBOSE
 	cout << "Starting Receiver" << endl;
 //#endif
 
+	std::string answer;
+	int code;
+
+	
+	//test =  "{\"configfile\":\"config.pu\", \"path\":\"patto\"}";
+	code = rest->post_json("state/configure", &answer);
+	std::cout << answer << std::endl;
+	code = rest->get_json("state", &answer);
+	std::cout << answer << std::endl;
+
+	code = rest->post_json("state/open", &answer);
+	std::cout << answer << std::endl;
+	code = rest->get_json("state", &answer);
+	std::cout << answer << std::endl;
+
 
 	//reset listening thread variables
+	/*
 	measurementStarted = false;
 	//should be set to zero as its added to get next start frame indices for scans for eiger
 	if(!acqStarted)		currframenum = 0;
@@ -1028,8 +1127,9 @@ int UDPRESTImplementation::startReceiver(char message[]){
 
 	for(int i = 0; i < numListeningThreads; ++i)
 		totalListeningFrameCount[i] = 0;
-
+	*/
 	//udp socket
+	/*
 	if(createUDPSockets() == FAIL){
 		strcpy(message,"Could not create UDP Socket(s).\n");
 		cout << endl << message << endl;
@@ -1037,7 +1137,8 @@ int UDPRESTImplementation::startReceiver(char message[]){
 	}
 	cout << "UDP socket(s) created successfully. 1st  port " << server_port[0] << endl;
 
-
+	*/
+	/*
 	if(setupWriter() == FAIL){
 		//stop udp socket
 		shutDownUDPSockets();
@@ -1069,7 +1170,7 @@ int UDPRESTImplementation::startReceiver(char message[]){
 		sem_post(&listensmp[i]);
 	for(i=0; i < numWriterThreads; ++i)
 		sem_post(&writersmp[i]);
-
+	*/
 
 	cout << "Receiver Started.\nStatus:" << status << endl;
 
@@ -1081,10 +1182,7 @@ int UDPRESTImplementation::startReceiver(char message[]){
 
 int UDPRESTImplementation::stopReceiver(){
 
-
-//#ifdef VERBOSE
-	cout << "Stopping Receiver" << endl;
-//#endif
+	FILE_LOG(logDEBUG) << __AT__ << "called";
 
 	if(status == RUNNING)
 		startReadout();
@@ -1101,7 +1199,8 @@ int UDPRESTImplementation::stopReceiver(){
 	status = IDLE;
 	pthread_mutex_unlock(&(status_mutex));
 
-	cout << "Receiver Stopped.\nStatus:" << status << endl << endl;
+	FILE_LOG(logDEBUG) << __AT__ << "exited, status " << endl;
+
 	return OK;
 }
 
@@ -1110,10 +1209,7 @@ int UDPRESTImplementation::stopReceiver(){
 
 
 void UDPRESTImplementation::startReadout(){
-
-	//#ifdef VERBOSE
-		cout << "Start Receiver Readout" << endl;
-	//#endif
+	FILE_LOG(logDEBUG) << __FILE__ << "::" << __func__ << " starting";
 
 	//wait so that all packets which take time has arrived
 	usleep(50000);
@@ -1127,6 +1223,7 @@ void UDPRESTImplementation::startReadout(){
 
 	//kill udp socket to tell the listening thread to push last packet
 	shutDownUDPSockets();
+	FILE_LOG(logDEBUG) << __FILE__ << "::" << __func__ << " done";
 
 }
 

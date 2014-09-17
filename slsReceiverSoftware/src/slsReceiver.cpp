@@ -8,7 +8,7 @@
 #include <sstream>
 #include <fstream>
 #include <stdlib.h>
-
+#include <map>
 #include <getopt.h>
 
 #include "slsReceiver.h"
@@ -30,10 +30,12 @@ slsReceiver::slsReceiver(int argc, char *argv[], int &success){
 	 */
 	
 	//creating base receiver
+	map<string, string> configuration_map;
 	int tcpip_port_no = 1954;
 	success=OK;
 	string fname = "";
 	string udp_interface_type = "standard";
+	string rest_hostname = "localhost:8081";
 
 	//parse command line for config
 	static struct option long_options[] = {
@@ -44,6 +46,7 @@ slsReceiver::slsReceiver(int argc, char *argv[], int &success){
 		{"type",     required_argument,       0, 't'},
 		{"config",     required_argument,       0, 'f'},
 		{"rx_tcpport",  required_argument,       0, 'b'},
+		{"rest_hostname",  required_argument,       0, 'r'},
 		{"help",  no_argument,       0, 'h'},
 		{0, 0, 0, 0}
         };
@@ -52,7 +55,7 @@ slsReceiver::slsReceiver(int argc, char *argv[], int &success){
 	int c;
 
 	while ( c != -1 ){
-		c = getopt_long (argc, argv, "bfht", long_options, &option_index);
+		c = getopt_long (argc, argv, "bfhtr", long_options, &option_index);
 		
 		/* Detect the end of the options. */
 		if (c == -1)
@@ -72,12 +75,19 @@ slsReceiver::slsReceiver(int argc, char *argv[], int &success){
 			udp_interface_type = optarg;
 			break;
 
+		case 'r':
+			rest_hostname = optarg;
+			break;
+
 		case 'h':
 			string help_message = """\nSLS Receiver Server\n\n""";
 			help_message += """usage: slsReceiver --config config_fname [--rx_tcpport port]\n\n""";
 			help_message += """\t--config:\t configuration filename for SLS Detector receiver\n""";
 			help_message += """\t--rx_tcpport:\t TCP Communication Port with the client. Default: 1954.\n\n""";
+			help_message += """\t--rest_hostname:\t Receiver hostname:port. It applies only to REST receivers, and indicates the hostname of the REST backend. Default: localhost:8081.\n\n""";
+
 			help_message += """\t--type:\t Type of the receiver. Possible arguments are: standard, REST. Default: standard.\n\n""";
+
 			cout << help_message << endl;
 			break;
 		       
@@ -91,7 +101,7 @@ slsReceiver::slsReceiver(int argc, char *argv[], int &success){
 	if( !fname.empty() ){
 		try{
 			FILE_LOG(logINFO) << "config file name " << fname;
-			success = read_config_file(fname, &tcpip_port_no);
+			success = read_config_file(fname, &tcpip_port_no, &configuration_map);
 			//VERBOSE_PRINT("Read configuration file of " + iline + " lines");
 		}
 		catch(...){
@@ -108,6 +118,7 @@ slsReceiver::slsReceiver(int argc, char *argv[], int &success){
 	if (success==OK){
 		FILE_LOG(logINFO) << "SLS Receiver starting " << udp_interface_type << " on port " << tcpip_port_no << endl;
 		udp_interface = UDPInterface::create(udp_interface_type);
+		udp_interface->configure(configuration_map);
 		tcpipInterface = new slsReceiverTCPIPInterface(success, udp_interface, tcpip_port_no);
 		//tcp ip interface
 	}

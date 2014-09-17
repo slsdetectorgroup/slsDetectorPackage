@@ -32,7 +32,7 @@
  * @short does all the functions for a receiver, set/get parameters, start/stop etc.
  */
 
-class UDPBaseImplementation : private virtual slsReceiverDefs, public UDPInterface {
+class UDPBaseImplementation : protected virtual slsReceiverDefs, public UDPInterface {
 	
  public:
 	/**
@@ -45,7 +45,8 @@ class UDPBaseImplementation : private virtual slsReceiverDefs, public UDPInterfa
 	 */
 	virtual ~UDPBaseImplementation();
 
-	
+	void configure(map<string, string> config_map);
+
 
 	/**
 	 * delete and free member parameters

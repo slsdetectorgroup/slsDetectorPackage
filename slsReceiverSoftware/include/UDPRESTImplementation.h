@@ -48,8 +48,10 @@ class UDPRESTImplementation : protected virtual slsReceiverDefs, public UDPBaseI
 	virtual ~UDPRESTImplementation();
 
 
+ protected:
 	void initialize_REST();
 
+ public:
 	void configure(map<string, string> config_map);	
 
 	/**

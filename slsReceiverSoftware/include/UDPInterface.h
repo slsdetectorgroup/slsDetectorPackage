@@ -21,19 +21,15 @@
 
 #include "utilities.h"
 #include "logger.h"
-/*
-void print_not_implemented(string method_name){
-	std::cout << "[WARNING] Method " << method_name << " not implemented!" << std::endl; 
-}
-*/
+
 
 class UDPInterface {
 	
-	/* abstract class that defines the public interface of an sls detector data receiver.
+	/* abstract class that defines the public interface of an sls detector data receiver UDP part.
 	 *
 	 * Use the factory method slsReceiverBase::create() to get an instance:
 	 *
-	 *      slsReceiverBase *receiver = slsReceiverBase::create()
+	 *      UDPInterface *receiver = UDPInterface::create()
 	 *
 	 *  supported sequence of method-calls:
 	 *
@@ -65,11 +61,6 @@ class UDPInterface {
  public:
 	
 	/**
-	 * constructor
-	 */
-	//UDPInterface(){};
-	
-	/**
 	 * Destructor
 	 */
 	virtual ~UDPInterface() {};
@@ -80,10 +71,9 @@ class UDPInterface {
 	static UDPInterface *create(string receiver_type = "standard");
 
 	virtual void configure(map<string, string> config_map) = 0;
+
 	
  public:
-	
-
 	
 	/**
 	 * Initialize the Receiver
@@ -94,10 +84,10 @@ class UDPInterface {
 	
 
 	 /* Returns detector hostname
- 	 /returns hostname
- 	  * caller needs to deallocate the returned char array.
- 	  * if uninitialized, it must return NULL
- 	 */
+	    /returns hostname
+	    * caller needs to deallocate the returned char array.
+	    * if uninitialized, it must return NULL
+	    */
  	virtual char *getDetectorHostname() const  = 0;
 
 	/**

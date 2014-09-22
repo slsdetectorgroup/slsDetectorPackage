@@ -2121,12 +2121,24 @@ int UDPBaseImplementation::enableTenGiga(int enable){
 					createWriterThreads(true);
 				}
 				for(int i=0;i<numListeningThreads;i++){
-					if(mem0[i])			{free(mem0[i]);			mem0[i] = NULL;}
-					if(fifo[i])			{delete fifo[i];		fifo[i] = NULL;}
-					if(fifoFree[i])		{delete fifoFree[i];	fifoFree[i] = NULL;}
+					if(mem0[i]){
+						free(mem0[i]);
+						mem0[i] = NULL;
+					}
+					if(fifo[i]){
+						delete fifo[i];
+						fifo[i] = NULL;
+					}
+					if(fifoFree[i])	{
+						delete fifoFree[i];	
+						fifoFree[i] = NULL;
+					}
 					buffer[i] = NULL;
 				}
-				if(latestData) 		{delete [] latestData;	latestData = NULL;}
+				if(latestData){
+					delete [] latestData;	
+					latestData = NULL;
+				}
 				latestData = new char[frameSize];
 
 				numJobsPerThread = -1;

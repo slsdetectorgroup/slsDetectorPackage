@@ -44,7 +44,9 @@ UDPRESTImplementation::UDPRESTImplementation(){
 }
 
 
-UDPRESTImplementation::~UDPRESTImplementation(){}
+UDPRESTImplementation::~UDPRESTImplementation(){
+	delete rest;
+}
 
 
 void UDPRESTImplementation::configure(map<string, string> config_map){
@@ -74,67 +76,67 @@ void UDPRESTImplementation::configure(map<string, string> config_map){
 
 void UDPRESTImplementation::initialize_REST(){
 	FILE_LOG(logDEBUG) << __AT__ << " called";
-
-	 if (rest_hostname.empty()) {
-		 FILE_LOG(logDEBUG) << __AT__ <<"can't initialize with empty string or NULL for detectorHostname";
-	 } 
-	 else if (isInitialized == true) {
-		 FILE_LOG(logDEBUG) << __AT__ << "already initialized, can't initialize several times";
-	 } 
-	 else {
-		 FILE_LOG(logDEBUG) << __AT__ << "with receiverHostName=" << rest_hostname << ":" << rest_port;
-		 
-		 rest = new RestHelper() ;
-		 std::string answer;
-		 int code;
-		 try{
-			 rest->init(rest_hostname, rest_port);
-			 code = rest->get_json("state", &answer);
-
-			 if (code != 0){
-				 throw answer;
-			 }
-			 else{
-				 isInitialized = true;
-				 status = slsReceiverDefs::IDLE;
-			 }
-			 FILE_LOG(logDEBUG) << __func__ << "Answer: " <<  answer;
-		 }
-		 catch(std::string e){
-			 FILE_LOG(logERROR) <<  __func__ << ": " << e;
-			 throw;
-		 }
-
-		 //JsonBox::Object json_object;
-		 //json_object["configfile"] = JsonBox::Value("FILENAME");
-		 JsonBox::Value json_request;
-		 //json_request["configfile"] = "config.py";
-		 json_request["path"] = filePath;
-		 
-		 stringstream ss;
-		 string test;
-		 std::cout << "GetSTring: " << json_request << std::endl;
-		 json_request.writeToStream(ss, false);
-		 //ss << json_request;
-		 ss >> test;
-
-		 
-		 test =  "{\"path\":\"" + string( getFilePath() ) + "\"}";
-		 code = rest->post_json("state/initialize", &answer, test);
-		 FILE_LOG(logDEBUG) << __AT__ << "state/configure got " << code;
-		 code = rest->get_json("state", &answer);
-		 FILE_LOG(logDEBUG) << __AT__ << "state got " << code << " " << answer;
-		 
-
-		 /*
-		   std::std::cout << string << std::endl; << "---- REST test 3: true, json object "<< std::endl;
-		   JsonBox::Value json_value;
-		   code = rest.get_json("status", &json_value);
-		   std::cout << "JSON " << json_value["status"] << std::endl;
+	
+	if (rest_hostname.empty()) {
+		FILE_LOG(logDEBUG) << __AT__ <<"can't initialize with empty string or NULL for detectorHostname";
+	} 
+	else if (isInitialized == true) {
+		FILE_LOG(logDEBUG) << __AT__ << "already initialized, can't initialize several times";
+	} 
+	else {
+		FILE_LOG(logDEBUG) << __AT__ << "with receiverHostName=" << rest_hostname << ":" << rest_port;
+		
+		rest = new RestHelper() ;
+		std::string answer;
+		int code;
+		try{
+			rest->init(rest_hostname, rest_port);
+			code = rest->get_json("state", &answer);
+			
+			if (code != 0){
+				throw answer;
+			}
+			else{
+				isInitialized = true;
+				status = slsReceiverDefs::IDLE;
+			}
+			FILE_LOG(logDEBUG) << __func__ << "Answer: " <<  answer;
+		}
+		catch(std::string e){
+			FILE_LOG(logERROR) <<  __func__ << ": " << e;
+			throw;
+		}
+		
+		//JsonBox::Object json_object;
+		//json_object["configfile"] = JsonBox::Value("FILENAME");
+		JsonBox::Value json_request;
+		//json_request["configfile"] = "config.py";
+		json_request["path"] = filePath;
+		
+		stringstream ss;
+		string test;
+		std::cout << "GetSTring: " << json_request << std::endl;
+		json_request.writeToStream(ss, false);
+		//ss << json_request;
+		ss >> test;
+		
+		
+		test =  "{\"path\":\"" + string( getFilePath() ) + "\"}";
+		code = rest->post_json("state/initialize", &answer, test);
+		FILE_LOG(logDEBUG) << __AT__ << "state/configure got " << code;
+		code = rest->get_json("state", &answer);
+		FILE_LOG(logDEBUG) << __AT__ << "state got " << code << " " << answer;
+		
+		
+		/*
+		  std::std::cout << string << std::endl; << "---- REST test 3: true, json object "<< std::endl;
+		  JsonBox::Value json_value;
+		  code = rest.get_json("status", &json_value);
+		  std::cout << "JSON " << json_value["status"] << std::endl;
 		 */
-	 }
-
-	 FILE_LOG(logDEBUG) << __func__ << ": initialize() done";
+	}
+	
+	FILE_LOG(logDEBUG) << __func__ << ": initialize() done";
 
 }
 
@@ -166,6 +168,10 @@ int UDPRESTImplementation::getFramesCaught(){
 
 int UDPRESTImplementation::getTotalFramesCaught(){
 	FILE_LOG(logDEBUG) << __AT__ << " called";
+	if (packetsPerFrame == 0){
+		FILE_LOG(logWARNING) << __AT__ << " packetsPerFrame is 0!!!";
+		return 0;
+	}
 	return (totalPacketsCaught/packetsPerFrame);
 }
 
@@ -216,7 +222,6 @@ int UDPRESTImplementation::getFileIndex(){
 
 int UDPRESTImplementation::setFileIndex(int i){
 	FILE_LOG(logDEBUG) << __AT__ << " called";
-	cout << "[WARNING] This is a base implementation, " << __func__ << " could have no effects." << endl;
 	
 	if(i>=0)
 		fileIndex = i;
@@ -390,53 +395,9 @@ bool UDPRESTImplementation::getDataCompression(){
 }
 
 int UDPRESTImplementation::enableDataCompression(bool enable){
-	FILE_LOG(logDEBUG) << __AT__ << " called";
-	cout << "Data compression ";
-	if(enable)
-		cout << "enabled" << endl;
-	else
-		cout << "disabled" << endl;
-#ifdef MYROOT1
-	cout << " WITH ROOT" << endl;
-#else
-	cout << " WITHOUT ROOT" << endl;
-#endif
-	//delete filter for the current number of threads
-	deleteFilter();
-
-	dataCompression = enable;
-	pthread_mutex_lock(&status_mutex);
-	writerthreads_mask = 0x0;
-	pthread_mutex_unlock(&(status_mutex));
-
-	createWriterThreads(true);
-
-	if(enable)
-		numWriterThreads = MAX_NUM_WRITER_THREADS;
-	else
-		numWriterThreads = 1;
-
-	if(createWriterThreads() == FAIL){
-		cout << "ERROR: Could not create writer threads" << endl;
-		return FAIL;
-	}
-	setThreadPriorities();
-
-
-	if(enable)
-		setupFilter();
-
+	FILE_LOG(logDEBUG) << __AT__ << " called, doing nothing";
 	return OK;
 }
-
-
-
-
-
-
-
-
-
 
 
 
@@ -462,6 +423,8 @@ void UDPRESTImplementation::deleteFilter(){
 
 
 void UDPRESTImplementation::setupFilter(){
+	//LEO: check
+
 	FILE_LOG(logDEBUG) << __AT__ << " called";
 	double hc = 0;
 	double sigma = 5;
@@ -698,7 +661,7 @@ int UDPRESTImplementation::createUDPSockets(){
 	}
 	//normal socket
 	else{
-		cout<<"eth:"<<eth<<endl;
+		cout << "eth:" << eth << endl;
 
 		for(int i=0;i<numListeningThreads;i++)
 			udpSocket[i] = new genericSocket(server_port[i],genericSocket::UDP,bufferSize,eth);
@@ -728,7 +691,6 @@ int UDPRESTImplementation::createUDPSockets(){
 int UDPRESTImplementation::shutDownUDPSockets(){
 
 	FILE_LOG(logDEBUG) << __AT__ << "called";
-	FILE_LOG(logDEBUG) << __AT__ << "doing nothing";
 
 	std::string answer;
 	int code = rest->get_json("state", &answer);
@@ -742,7 +704,7 @@ int UDPRESTImplementation::shutDownUDPSockets(){
 	code = rest->get_json("state", &answer);
 	std::cout << answer << std::endl;
 
-	status = slsReceiverDefs::IDLE;
+	status = slsReceiverDefs::RUN_FINISHED;
 
 	
 
@@ -1744,7 +1706,11 @@ void UDPRESTImplementation::startFrameIndices(int ithread){
 }
 
 
+void UDPRESTImplementation::stopListening(int ithread, int rc, int &pc, int &t){
+	FILE_LOG(logDEBUG) << __AT__ << " called, doing nothing";
+};
 
+/*
 void UDPRESTImplementation::stopListening(int ithread, int rc, int &pc, int &t){
 	FILE_LOG(logDEBUG) << __AT__ << " called";
 
@@ -1754,7 +1720,7 @@ int i;
 				cerr << ithread << " recvfrom() failed:"<<endl;
 #endif
 				if(status != TRANSMITTING){
-					cout << ithread << " *** shoule never be here********* status not transmitting***********************"<<endl;/**/
+					cout << ithread << " *** shoule never be here********* status not transmitting***********************"<<endl;
 					fifoFree[ithread]->push(buffer[ithread]);
 					exit(-1);
 				}
@@ -1815,7 +1781,7 @@ int i;
 				}
 
 }
-
+*/
 
 
 

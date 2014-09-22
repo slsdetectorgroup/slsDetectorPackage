@@ -35,6 +35,11 @@ UDPBaseImplementation::UDPBaseImplementation(){}
 UDPBaseImplementation::~UDPBaseImplementation(){}
 
 
+void UDPBaseImplementation::configure(map<string, string> config_map){
+	FILE_LOG(logWARNING) << __AT__ << "doing nothing...";
+};
+
+
 void UDPBaseImplementation::deleteMembers(){
 	FILE_LOG(logWARNING) << "[WARNING] This is a base implementation, " << __func__ << " could have no effects.";
 }
@@ -47,6 +52,92 @@ void UDPBaseImplementation::initializeMembers(){
 
 int UDPBaseImplementation::setDetectorType(detectorType det){
 	cout << "[WARNING] This is a base implementation, " << __func__ << " not correctly implemented" << endl;
+
+		cout << "Setting Receiver Type " << endl;
+
+	deleteMembers();
+	initializeMembers();
+
+	myDetectorType = det;
+
+	switch(myDetectorType){
+	case GOTTHARD:
+		cout << endl << "***** This is a GOTTHARD Receiver *****" << endl << endl;
+		break;
+	case MOENCH:
+		cout << endl << "***** This is a MOENCH Receiver *****" << endl << endl;
+		break;
+	case EIGER:
+		cout << endl << "***** This is a EIGER Receiver *****" << endl << endl;
+		break;
+	default:
+		cout << endl << "***** Unknown Receiver *****" << endl << endl;
+	return FAIL;
+		break;
+	}
+
+	//moench variables
+	if(myDetectorType == GOTTHARD){
+		fifosize 			= GOTTHARD_FIFO_SIZE;
+		packetsPerFrame 	= GOTTHARD_PACKETS_PER_FRAME;
+		onePacketSize		= GOTTHARD_ONE_PACKET_SIZE;
+		frameSize			= GOTTHARD_BUFFER_SIZE;
+		bufferSize 			= GOTTHARD_BUFFER_SIZE;
+		maxPacketsPerFile 	= MAX_FRAMES_PER_FILE * GOTTHARD_PACKETS_PER_FRAME;
+		frameIndexMask 		= GOTTHARD_FRAME_INDEX_MASK;
+		frameIndexOffset 	= GOTTHARD_FRAME_INDEX_OFFSET;
+		packetIndexMask 	= GOTTHARD_PACKET_INDEX_MASK;
+	}else if(myDetectorType == MOENCH){
+		fifosize 			= MOENCH_FIFO_SIZE;
+		packetsPerFrame 	= MOENCH_PACKETS_PER_FRAME;
+		onePacketSize		= MOENCH_ONE_PACKET_SIZE;
+		frameSize			= MOENCH_BUFFER_SIZE;
+		bufferSize 			= MOENCH_BUFFER_SIZE;
+		maxPacketsPerFile 	= MOENCH_MAX_FRAMES_PER_FILE * MOENCH_PACKETS_PER_FRAME;
+		frameIndexMask 		= MOENCH_FRAME_INDEX_MASK;
+		frameIndexOffset 	= MOENCH_FRAME_INDEX_OFFSET;
+		packetIndexMask 	= MOENCH_PACKET_INDEX_MASK;
+	}
+	else if(myDetectorType == EIGER){
+		fifosize 			= EIGER_FIFO_SIZE;
+		packetsPerFrame 	= EIGER_ONE_GIGA_CONSTANT * dynamicRange * EIGER_MAX_PORTS;
+		onePacketSize		= EIGER_ONE_GIGA_ONE_PACKET_SIZE;
+		frameSize			= onePacketSize * packetsPerFrame;
+		bufferSize 			= (frameSize/EIGER_MAX_PORTS) + EIGER_HEADER_LENGTH;//everything one port gets (img header plus packets)
+		maxPacketsPerFile 	= EIGER_MAX_FRAMES_PER_FILE * packetsPerFrame;
+		frameIndexMask 		= EIGER_FRAME_INDEX_MASK;
+		frameIndexOffset 	= EIGER_FRAME_INDEX_OFFSET;
+		packetIndexMask 	= EIGER_PACKET_INDEX_MASK;
+
+		pthread_mutex_lock(&status_mutex);
+		listeningthreads_mask = 0x0;
+		pthread_mutex_unlock(&(status_mutex));
+		if(thread_started)
+			createListeningThreads(true);
+
+		numListeningThreads = MAX_NUM_LISTENING_THREADS;
+	}
+	latestData = new char[frameSize];
+
+
+	setupFifoStructure();
+
+	if(createListeningThreads() == FAIL){
+		cout << "ERROR: Could not create listening thread" << endl;
+		exit (-1);
+	}
+
+	if(createWriterThreads() == FAIL){
+		cout << "ERROR: Could not create writer threads" << endl;
+		exit (-1);
+	}
+
+	setThreadPriorities();
+
+	cout << "Ready..." << endl;
+
+	return OK;
+
 	return OK;
 }
 
@@ -94,11 +185,11 @@ void UDPBaseImplementation::resetTotalFramesCaught(){
 /*file parameters*/
 
 char* UDPBaseImplementation::getFilePath() const{
-	FILE_LOG(logWARNING) << "[WARNING] This is a base implementation, " << __func__ << " could have no effects.";
 	return (char*)filePath;
 }
 
-char* UDPBaseImplementation::setFilePath(const char c[]){
+inline char* UDPBaseImplementation::setFilePath(const char c[]){
+	FILE_LOG(logDEBUG) << __AT__ << "called";
 	if(strlen(c)){
 		//check if filepath exists
 		struct stat st;
@@ -109,6 +200,8 @@ char* UDPBaseImplementation::setFilePath(const char c[]){
 			FILE_LOG(logWARNING) << "FilePath does not exist:" << filePath;
 		}
 	}
+	FILE_LOG(logDEBUG) << __AT__ << getFilePath();
+	cout << getFilePath() << " " << filePath << endl;
 	return getFilePath();
 }
 
@@ -117,7 +210,7 @@ char* UDPBaseImplementation::getFileName() const{
 	return (char*)fileName;
 }
 
-char* UDPBaseImplementation::setFileName(const char c[]){
+inline char* UDPBaseImplementation::setFileName(const char c[]){
 	//cout << "[WARNING] This is a base implementation, " << __func__ << " could have no effects." << endl;
 	
 	if(strlen(c))
@@ -132,17 +225,15 @@ int UDPBaseImplementation::getFileIndex(){
 }
 
 int UDPBaseImplementation::setFileIndex(int i){
-	cout << "[WARNING] This is a base implementation, " << __func__ << " could have no effects." << endl;
-	/*
+	//cout << "[WARNING] This is a base implementation, " << __func__ << " could have no effects." << endl;
 	if(i>=0)
 		fileIndex = i;
-	*/
 	return getFileIndex();
 }
 
 
 int UDPBaseImplementation::setFrameIndexNeeded(int i){
-	cout << "[WARNING] This is a base implementation, " << __func__ << " could have no effects." << endl;
+	//cout << "[WARNING] This is a base implementation, " << __func__ << " could have no effects." << endl;
 	frameIndexNeeded = i;
 	return frameIndexNeeded;
 }
@@ -628,6 +719,7 @@ void UDPBaseImplementation::copyFrameToGui(char* startbuf[], uint32_t fnum, char
 
 
 int UDPBaseImplementation::createUDPSockets(){
+	FILE_LOG(logDEBUG) << __FILE__ << "::" << __func__ << " starting";
 
 
 	//if eth is mistaken with ip address
@@ -871,8 +963,10 @@ int UDPBaseImplementation::setupWriter(){
 
 
 	//acquisition start call back returns enable write
-	if (startAcquisitionCallBack)
+	if (startAcquisitionCallBack){
+		cout << filePath << " - " << fileName << endl;
 		cbAction=startAcquisitionCallBack(filePath,fileName,fileIndex,bufferSize,pStartAcquisition);
+	}
 
 	if(cbAction < DO_EVERYTHING)
 		cout << endl << "Note: Call back activated. Data saving must be taken care of by user in call back." << endl;
@@ -952,13 +1046,20 @@ int UDPBaseImplementation::createCompressionFile(int ithr, int iframe){
 
 
 int UDPBaseImplementation::createNewFile(){
- int gt = getFrameIndex();
- if(gt==-1) gt=0;
+
+	cout << "[WARNING] This is a base implementation, " << __func__ << " not correctly implemented" << endl;
+
+
+	/*
+	int gt = getFrameIndex();
+	if(gt==-1) gt=0;
 	//create file name
 	if(frameIndexNeeded==-1)
 		sprintf(savefilename, "%s/%s_%d.raw", filePath,fileName,fileIndex);
 	else
 		sprintf(savefilename, "%s/%s_f%012d_%d.raw", filePath,fileName,(packetsCaught/packetsPerFrame),fileIndex);
+
+	cout << filePath << " + " << fileName << endl;
 
 	//if filewrite and we are allowed to write
 	if(enableFileWrite && cbAction > DO_NOTHING){
@@ -974,7 +1075,7 @@ int UDPBaseImplementation::createNewFile(){
 				return FAIL;
 			}
 		}else if (NULL == (sfilefd = fopen((const char *) (savefilename), "w"))){
-			cout << "Error: Could not create file " << savefilename << endl;
+			cout << "Error: Could not creat     dsdasdserwe file " << savefilename << endl;
 			return FAIL;
 		}
 		//setting buffer
@@ -1001,22 +1102,17 @@ int UDPBaseImplementation::createNewFile(){
 		prevframenum = currframenum;
 		packetsInFile = 0;
 	}
-
+	*/
 	return OK;
 }
 
 
-
-
-
-
-
-
-void UDPBaseImplementation::closeFile(int ithr){
-#ifdef VERBOSE
-	cout << "In closeFile for thread " << ithr << endl;
-#endif
-
+// This is actually called on CTRL-C 
+void UDPBaseImplementation::closeFile(int ithr)
+{
+	
+	FILE_LOG(logDEBUG) << __AT__ << "called";
+	
 	if(!dataCompression){
 		if(sfilefd){
 #ifdef VERBOSE
@@ -1063,6 +1159,9 @@ void UDPBaseImplementation::closeFile(int ithr){
 
 #endif
 	}
+
+	FILE_LOG(logDEBUG) << __AT__ << "exited";
+
 }
 
 
@@ -2022,12 +2121,24 @@ int UDPBaseImplementation::enableTenGiga(int enable){
 					createWriterThreads(true);
 				}
 				for(int i=0;i<numListeningThreads;i++){
-					if(mem0[i])			{free(mem0[i]);			mem0[i] = NULL;}
-					if(fifo[i])			{delete fifo[i];		fifo[i] = NULL;}
-					if(fifoFree[i])		{delete fifoFree[i];	fifoFree[i] = NULL;}
+					if(mem0[i]){
+						free(mem0[i]);
+						mem0[i] = NULL;
+					}
+					if(fifo[i]){
+						delete fifo[i];
+						fifo[i] = NULL;
+					}
+					if(fifoFree[i])	{
+						delete fifoFree[i];	
+						fifoFree[i] = NULL;
+					}
 					buffer[i] = NULL;
 				}
-				if(latestData) 		{delete [] latestData;	latestData = NULL;}
+				if(latestData){
+					delete [] latestData;	
+					latestData = NULL;
+				}
 				latestData = new char[frameSize];
 
 				numJobsPerThread = -1;

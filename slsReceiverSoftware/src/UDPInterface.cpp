@@ -6,16 +6,6 @@
 
 
 
-/*
-#include <signal.h>  		// SIGINT
-#include <sys/stat.h> 		// stat
-#include <sys/socket.h>		// socket(), bind(), listen(), accept(), shut down
-#include <arpa/inet.h>		// sock_addr_in, htonl, INADDR_ANY
-#include <stdlib.h>			// exit()
-#include <iomanip>			//set precision
-#include <sys/mman.h>		//munmap
-*/
-
 #include <string.h>
 #include <iostream>
 using namespace std;
@@ -23,6 +13,7 @@ using namespace std;
 #include "UDPInterface.h"
 #include "UDPBaseImplementation.h"
 #include "UDPStandardImplementation.h"
+#include "UDPRESTImplementation.h"
 
 
 
@@ -34,11 +25,11 @@ UDPInterface * UDPInterface::create(string receiver_type){
 		cout << "Starting " << receiver_type << endl;
 		return new UDPStandardImplementation();
 	}
-
-#ifdef REST
-	else if (receiver_type == "REST")
+	//#ifdef REST
+	else if (receiver_type == "REST"){
 		return new UDPRESTImplementation();
-#endif
+	}
+	//#endif
 	else{
 		FILE_LOG(logWARNING) << "[ERROR] UDP interface not supported, using standard implementation";
 		return new UDPBaseImplementation();

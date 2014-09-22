@@ -29,25 +29,25 @@ slsReceiverTCPIPInterface::~slsReceiverTCPIPInterface() {
 
 
 slsReceiverTCPIPInterface::slsReceiverTCPIPInterface(int &success, UDPInterface* rbase, int pn):
-		myDetectorType(GOTTHARD),
-		receiverBase(rbase),
-		ret(OK),
-		lockStatus(0),
-		shortFrame(-1),
-		packetsPerFrame(GOTTHARD_PACKETS_PER_FRAME),
-		dynamicrange(16),
-		socket(NULL),
-		killTCPServerThread(0),
-		tenGigaEnable(0), portNumber(DEFAULT_PORTNO+2){
-
-  int port_no=portNumber;
-
-
-  if (pn>0)
-    port_no = pn;
-
-  success=OK;
-
+	myDetectorType(GOTTHARD),
+	receiverBase(rbase),
+	ret(OK),
+	lockStatus(0),
+	shortFrame(-1),
+	packetsPerFrame(GOTTHARD_PACKETS_PER_FRAME),
+	dynamicrange(16),
+	socket(NULL),
+	killTCPServerThread(0),
+	tenGigaEnable(0), portNumber(DEFAULT_PORTNO+2){
+	
+	int port_no=portNumber;
+	
+	
+	if (pn>0)
+		port_no = pn;
+	
+	success=OK;
+	
 	//create socket
 	if(success == OK){
 		socket = new MySocketTCP(port_no);
@@ -56,27 +56,27 @@ slsReceiverTCPIPInterface::slsReceiverTCPIPInterface(int &success, UDPInterface*
 			delete socket;
 			socket=NULL;
 		}	else {
-		  portNumber=port_no;
+			portNumber=port_no;
 			//initialize variables
 			strcpy(socket->lastClientIP,"none");
 			strcpy(socket->thisClientIP,"none1");
 			strcpy(mess,"dummy message");
-
+			
 			function_table();
 #ifdef VERBOSE
 			cout << "Function table assigned." << endl;
 #endif
-
+			
 			//Catch signal SIGINT to close files properly
 			signal(SIGINT,staticCloseFile);
-
 		}
 	}
-
+	
 }
 
+
 int slsReceiverTCPIPInterface::setPortNumber(int pn){
-  int p_number;
+	int p_number;
   MySocketTCP *oldsocket=NULL;;
   int sd=0;
 
@@ -144,10 +144,12 @@ void slsReceiverTCPIPInterface::stop(){
 	cout<<"Shutting down TCP Socket and TCP thread"<<endl;
 	killTCPServerThread = 1;
 	socket->ShutDownSocket();
+	cout<<"Socket closed"<<endl;
 	void* status;
 	pthread_join(TCPServer_thread, &status);
 	killTCPServerThread = 0;
-
+	cout<<"Threads joined"<<endl;
+		
 }
 
 
@@ -656,7 +658,7 @@ int slsReceiverTCPIPInterface::setup_udp(){
 					 strcpy(eth,"");
 					 ret = FAIL;
 				 }
-				 cout<<"eth:"<<eth<<endl;
+				 FILE_LOG(logDEBUG) << __FILE__ << "::" << __func__ << " " << eth;
 				 receiverBase->setEthernetInterface(eth);
 
 				 //get mac address from ethernet interface

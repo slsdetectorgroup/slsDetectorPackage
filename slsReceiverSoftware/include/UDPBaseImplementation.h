@@ -32,7 +32,7 @@
  * @short does all the functions for a receiver, set/get parameters, start/stop etc.
  */
 
-class UDPBaseImplementation : private virtual slsReceiverDefs, public UDPInterface {
+class UDPBaseImplementation : protected virtual slsReceiverDefs, public UDPInterface {
 	
  public:
 	/**
@@ -45,7 +45,8 @@ class UDPBaseImplementation : private virtual slsReceiverDefs, public UDPInterfa
 	 */
 	virtual ~UDPBaseImplementation();
 
-	
+	void configure(map<string, string> config_map);
+
 
 	/**
 	 * delete and free member parameters
@@ -319,7 +320,7 @@ class UDPBaseImplementation : private virtual slsReceiverDefs, public UDPInterfa
 	 */
 	int shutDownUDPSockets();
 
-private:
+protected:
 	
 	/*
 	void not_implemented(string method_name){
@@ -466,6 +467,10 @@ private:
 	void handleDataCompression(int ithread, char* wbuffer[], int &npackets, char* data, int xmax, int ymax, int &nf);
 
 
+
+	//// Could be done more fine-grained... TODO
+	// private:
+ protected:
 	/** structure of an eiger image header*/
 	typedef struct
 	{
@@ -682,6 +687,9 @@ private:
 
 	/** 10Gbe enable*/
 	int tengigaEnable;
+
+	// TODO: not properly sure where to put these...
+	/** structure of an eiger image header*/
 
 
 

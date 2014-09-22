@@ -15,17 +15,31 @@ CFLAGS= -g -DC_ONLY -fPIC
 
 DFLAGS= -g -DDACS_INT  -DSLS_RECEIVER_UDP_FUNCTIONS 
 
-INCLUDES?= -Iinclude -I../slsDetectorCalibration -I$(ASM) 
+INCLUDES?= $(INCLUDESRXR) -I include/ -I ../slsDetectorCalibration
+
+#-Iinclude -I../slsDetectorCalibration -I$(ASM) 
 
 SRC_CLNT = MySocketTCP.cpp UDPInterface.cpp  UDPBaseImplementation.cpp UDPStandardImplementation.cpp slsReceiverTCPIPInterface.cpp slsReceiver.cpp slsReceiverUsers.cpp utilities.cpp 
+
+ifeq ($(REST), yes)
+	SRC_CLNT += UDPRESTImplementation.cpp
+endif
+
 MAIN_SRC = main.cpp
 
 OBJS=$(SRC_CLNT:%.cpp=$(BUILDDIR)/%.o) 
 
 
+$(info )
+$(info #######################################)
+$(info #    Compiling slsReceiverSoftware    #)
+$(info #######################################)
+$(info )
+
+
 .PHONY: all intdoc  package eigerReceiver clean
 
-all: lib receiver
+all: builddir lib receiver
 
 intdoc: $(SRC_H) $(SRC_CLNT) 
 	doxygen doxy.config
@@ -69,6 +83,8 @@ clean: buildclean
 	rm $(DESTDIR)/libSlsReceiver.a   $(DESTDIR)/libSlsReceiver.so
 	rm $(PROGS)
 
+builddir:
+	if [ ! -d $(BUILDDIR) ]; then mkdir $(BUILDDIR); fi
 
 buildclean:
 	rm -rf $(OBJS)		

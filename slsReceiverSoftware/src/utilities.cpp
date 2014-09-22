@@ -5,18 +5,22 @@
 #include <stdio.h>
 #include <fstream>
 
+#include <map>
+
 #include "utilities.h"
 
 
 using namespace std;
 
 
-int read_config_file(string fname, int *tcpip_port_no){
+int read_config_file(string fname, int *tcpip_port_no, map<string, string> * configuration_map ){
 	
 	ifstream infile;
-	string sLine,sargname;
+	string sLine,sargname, sargvalue;
 	int iline = 0;
 	int success = slsReceiverDefs::OK;
+
+
 
 	infile.open(fname.c_str(), ios_base::in);
 	if (infile.is_open()) {
@@ -26,21 +30,25 @@ int read_config_file(string fname, int *tcpip_port_no){
 			
 			//VERBOSE_PRINT(sLine);
 			
-			if(sLine.find('#')!=string::npos){
-				//VERBOSE_PRINT( "Line is a comment ");
+			if(sLine.find('#') != string::npos)
 				continue;
-			}
-			else if(sLine.length()<2){
-				//VERBOSE_PRINT("Empty line ");
+
+			else if(sLine.length()<2)
 				continue;
-			}
+
 			else{
 				istringstream sstr(sLine);
 				
 				//parameter name
-				if(sstr.good())
+				if(sstr.good()){
 					sstr >> sargname;
 				
+					if (! sstr.good())
+						continue;
+
+					sstr >> sargvalue;
+					(*configuration_map)[sargname] = sargvalue;
+				}
 				//tcp port
 				if(sargname=="rx_tcpport"){
 					if(sstr.good()) {

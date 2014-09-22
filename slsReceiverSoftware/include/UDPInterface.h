@@ -13,6 +13,7 @@
  * @short Base class with all the functions for the UDP inteface of the receiver
  */
 
+#include <exception>
 
 #include "sls_receiver_defs.h"
 #include "receiver_defs.h"
@@ -24,6 +25,7 @@
 
 class UDPInterface {
 	
+
 	/* abstract class that defines the UDP interface of an sls detector data receiver.
 	 *
 	 * Use the factory method UDPInterface::create() to get an instance:
@@ -60,11 +62,6 @@ class UDPInterface {
  public:
 	
 	/**
-	 * constructor
-	 */
-	//UDPInterface(){};
-	
-	/**
 	 * Destructor
 	 */
 	virtual ~UDPInterface() {};
@@ -73,11 +70,11 @@ class UDPInterface {
 	 * Factory create method
 	 */
 	static UDPInterface *create(string receiver_type = "standard");
-	
 
+	virtual void configure(map<string, string> config_map) = 0;
+
+	
  public:
-	
-	
 	
 	/**
 	 * Initialize the Receiver
@@ -88,10 +85,10 @@ class UDPInterface {
 	
 
 	 /* Returns detector hostname
- 	 /returns hostname
- 	  * caller needs to deallocate the returned char array.
- 	  * if uninitialized, it must return NULL
- 	 */
+	    /returns hostname
+	    * caller needs to deallocate the returned char array.
+	    * if uninitialized, it must return NULL
+	    */
  	virtual char *getDetectorHostname() const  = 0;
 
 	/**

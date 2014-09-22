@@ -16,86 +16,173 @@
 #include <sys/stat.h> 		// stat
 #include <sys/socket.h>		// socket(), bind(), listen(), accept(), shut down
 #include <arpa/inet.h>		// sock_addr_in, htonl, INADDR_ANY
-#include <stdlib.h>			// exit()
-#include <iomanip>			//set precision
-#include <sys/mman.h>		//munmap
+#include <stdlib.h>		// exit()
+#include <iomanip>		// set precision
+#include <sys/mman.h>		// munmap
 
 #include <string.h>
 #include <iostream>
+#include <sstream>
 
 //#include "utilities.h"
 
 using namespace std;
 
+/*
+ TODO
+ + filePath != getFilePath
+ + better state handling. Now it is only IDLE - RUNNING - IDLE
+*/
 
 
-UDPRESTImplementation::UDPRESTImplementation() : isInitialized(false), status(slsReceiverDefs::ERROR) {}
+UDPRESTImplementation::UDPRESTImplementation(){
+	FILE_LOG(logDEBUG) << __AT__ << " called";
 
-
-UDPRESTImplementation::~UDPRESTImplementation(){}
-
-
-void UDPRESTImplementation::initialize(const char *detectorHostName){
-
-	 string name;
-	 if (detectorHostName != NULL)
-		 name = detectorHostName;
-
-	 if (name.empty()) {
-		 FILE_LOG(logDEBUG) << "initialize(): can't initialize with empty string or NULL for detectorHostname";
-	 } else if (isInitialized == true) {
-		 FILE_LOG(logDEBUG) << "initialize(): already initialized, can't initialize several times";
-	 } else {
-		 FILE_LOG(logDEBUG) << "initialize(): initialize() with: detectorHostName=" << name;
-		 strcpy(detHostname,detectorHostName);
-		 //init_config.detectorHostname = name;
-		 
-		 //REST call - hardcoded
-		 //RestHelper rest ;
-		 rest->init(detHostname, 8080);
-		 std::string answer;
-		 int code = rest->get_json("status", &answer);
-		 if (code != 0){
-			 //throw -1;
-			 std::cout << "I SHOULD THROW AN EXCEPTION!!!" << std::endl;
-		 }
-		 else{
-			 isInitialized = true;
-			 status = slsReceiverDefs::IDLE;
-		 }
-		 std::cout << "Answer: " <<  answer << std::endl;
-
-
-		 /*
-		   std::std::cout << string << std::endl; << "---- REST test 3: true, json object "<< std::endl;
-		   JsonBox::Value json_value;
-		   code = rest.get_json("status", &json_value);
-		   std::cout << "JSON " << json_value["status"] << std::endl;
-		 */
-	 }
+	// Default values
+	rest_hostname = "localhost";
+	rest_port = 8081;
 }
 
 
+UDPRESTImplementation::~UDPRESTImplementation(){
+	delete rest;
+}
+
+
+void UDPRESTImplementation::configure(map<string, string> config_map){
+	FILE_LOG(logWARNING) << __AT__ << " called";
+
+	map<string, string>::const_iterator pos;
+
+	pos = config_map.find("rest_hostname");
+	if (pos != config_map.end() ){
+		string host_port_str = pos->second;
+		std::size_t pos = host_port_str.find(":");      // position of "live" in str
+		if(pos != string::npos){
+			istringstream (host_port_str.substr (pos)) >> rest_port;
+			rest_hostname = host_port_str.substr(0, pos);
+		}	
+	}
+
+	/*
+	for(map<string, string>::const_iterator i=config_map.begin(); i != config_map.end(); i++){
+		std::cout << i->first << " " << i->second<< std::endl;
+	}
+	*/
+
+};
+
+
+
+void UDPRESTImplementation::initialize_REST(){
+	FILE_LOG(logDEBUG) << __AT__ << " called";
+	
+	if (rest_hostname.empty()) {
+		FILE_LOG(logDEBUG) << __AT__ <<"can't initialize with empty string or NULL for detectorHostname";
+	} 
+	else if (isInitialized == true) {
+		FILE_LOG(logDEBUG) << __AT__ << "already initialized, can't initialize several times";
+	} 
+	else {
+		FILE_LOG(logDEBUG) << __AT__ << "with receiverHostName=" << rest_hostname << ":" << rest_port;
+		
+		rest = new RestHelper() ;
+		std::string answer;
+		int code;
+		try{
+			rest->init(rest_hostname, rest_port);
+			code = rest->get_json("state", &answer);
+			
+			if (code != 0){
+				throw answer;
+			}
+			else{
+				isInitialized = true;
+				status = slsReceiverDefs::IDLE;
+			}
+			FILE_LOG(logDEBUG) << __func__ << "Answer: " <<  answer;
+		}
+		catch(std::string e){
+			FILE_LOG(logERROR) <<  __func__ << ": " << e;
+			throw;
+		}
+		
+		//JsonBox::Object json_object;
+		//json_object["configfile"] = JsonBox::Value("FILENAME");
+		JsonBox::Value json_request;
+		//json_request["configfile"] = "config.py";
+		json_request["path"] = filePath;
+		
+		stringstream ss;
+		string test;
+		std::cout << "GetSTring: " << json_request << std::endl;
+		json_request.writeToStream(ss, false);
+		//ss << json_request;
+		ss >> test;
+		
+		
+		test =  "{\"path\":\"" + string( getFilePath() ) + "\"}";
+		code = rest->post_json("state/initialize", &answer, test);
+		FILE_LOG(logDEBUG) << __AT__ << "state/configure got " << code;
+		code = rest->get_json("state", &answer);
+		FILE_LOG(logDEBUG) << __AT__ << "state got " << code << " " << answer;
+		
+		
+		/*
+		  std::std::cout << string << std::endl; << "---- REST test 3: true, json object "<< std::endl;
+		  JsonBox::Value json_value;
+		  code = rest.get_json("status", &json_value);
+		  std::cout << "JSON " << json_value["status"] << std::endl;
+		 */
+	}
+	
+	FILE_LOG(logDEBUG) << __func__ << ": initialize() done";
+
+}
+
+
+/*
 int UDPRESTImplementation::setDetectorType(detectorType det){
 	cout << "[WARNING] This is a base implementation, " << __func__ << " not correctly implemented" << endl;
 	return OK;
 }
-
+*/
 
 
 /*Frame indices and numbers caught*/
 
-bool UDPRESTImplementation::getAcquistionStarted(){return acqStarted;};
+bool UDPRESTImplementation::getAcquistionStarted(){
+	FILE_LOG(logDEBUG) << __AT__ << " called";
+	return acqStarted;
+};
 
-bool UDPRESTImplementation::getMeasurementStarted(){return measurementStarted;};
+bool UDPRESTImplementation::getMeasurementStarted(){
+	FILE_LOG(logDEBUG) << __AT__ << " called";
+	return measurementStarted;
+};
 
-int UDPRESTImplementation::getFramesCaught(){return (packetsCaught/packetsPerFrame);}
+int UDPRESTImplementation::getFramesCaught(){
+	FILE_LOG(logDEBUG) << __AT__ << " called";
+	return (packetsCaught/packetsPerFrame);
+}
 
-int UDPRESTImplementation::getTotalFramesCaught(){return (totalPacketsCaught/packetsPerFrame);}
+int UDPRESTImplementation::getTotalFramesCaught(){
+	FILE_LOG(logDEBUG) << __AT__ << " called";
+	if (packetsPerFrame == 0){
+		FILE_LOG(logWARNING) << __AT__ << " packetsPerFrame is 0!!!";
+		return 0;
+	}
+	return (totalPacketsCaught/packetsPerFrame);
+}
 
-uint32_t UDPRESTImplementation::getStartFrameIndex(){return startFrameIndex;}
+uint32_t UDPRESTImplementation::getStartFrameIndex(){
+	FILE_LOG(logDEBUG) << __AT__ << " called";
+	return startFrameIndex;
+}
 
 uint32_t UDPRESTImplementation::getFrameIndex(){
+	FILE_LOG(logDEBUG) << __AT__ << " called";
+
 	if(!packetsCaught)
 		frameIndex=-1;
 	else
@@ -105,15 +192,22 @@ uint32_t UDPRESTImplementation::getFrameIndex(){
 
 
 uint32_t UDPRESTImplementation::getAcquisitionIndex(){
+	//FILE_LOG(logDEBUG) << __AT__ << " called, idx: " << acquisitionIndex;
 	if(!totalPacketsCaught)
-		acquisitionIndex=-1;
+		acquisitionIndex = -1;
 	else
 		acquisitionIndex = currframenum - startAcquisitionIndex;
+
+	//FILE_LOG(logDEBUG) << __AT__ << " idx: " << acquisitionIndex 
+	//		   << " currframenum: " << currframenum
+	//		   << " startAcqIdx: " << startAcquisitionIndex;
+
 	return acquisitionIndex;
 }
 
 
 void UDPRESTImplementation::resetTotalFramesCaught(){
+	FILE_LOG(logDEBUG) << __AT__ << " called";
 	acqStarted = false;
 	startAcquisitionIndex = 0;
 	totalPacketsCaught = 0;
@@ -122,21 +216,22 @@ void UDPRESTImplementation::resetTotalFramesCaught(){
 
 /*file parameters*/
 int UDPRESTImplementation::getFileIndex(){
+	FILE_LOG(logDEBUG) << __AT__ << " called";
 	return fileIndex;
 }
 
 int UDPRESTImplementation::setFileIndex(int i){
-	cout << "[WARNING] This is a base implementation, " << __func__ << " could have no effects." << endl;
-	/*
+	FILE_LOG(logDEBUG) << __AT__ << " called";
+	
 	if(i>=0)
 		fileIndex = i;
-	*/
+	
 	return getFileIndex();
 }
 
 
 int UDPRESTImplementation::setFrameIndexNeeded(int i){
-	cout << "[WARNING] This is a base implementation, " << __func__ << " could have no effects." << endl;
+	FILE_LOG(logDEBUG) << __AT__ << " called";
 	frameIndexNeeded = i;
 	return frameIndexNeeded;
 }
@@ -168,6 +263,7 @@ int UDPRESTImplementation::setEnableOverwrite(int i){
 /*other parameters*/
 
 slsReceiverDefs::runStatus UDPRESTImplementation::getStatus() const{
+	FILE_LOG(logDEBUG) << __AT__ << " called, status: " << status;
 	return status;
 }
 
@@ -180,11 +276,16 @@ char *UDPRESTImplementation::getDetectorHostname() const{
 */
 
 void UDPRESTImplementation::setEthernetInterface(char* c){
-	strcpy(eth,c);
+	FILE_LOG(logDEBUG) << __FILE__ << "::" << __func__ << " starting";
+
+	// TODO: this segfaults
+	//strcpy(eth,c);
+	//FILE_LOG(logDEBUG) << __FILE__ << "::" << __func__ << " done";
 }
 
 
 void UDPRESTImplementation::setUDPPortNo(int p){
+	FILE_LOG(logDEBUG) << __AT__ << " called";
 	for(int i=0;i<numListeningThreads;i++){
 		server_port[i] = p+i;
 	}
@@ -219,19 +320,23 @@ int32_t UDPRESTImplementation::setScanTag(int32_t stag){
 */
 
 int32_t UDPRESTImplementation::setDynamicRange(int32_t dr){
-	cout << "Setting Dynamic Range" << endl;
+	FILE_LOG(logDEBUG) << __FILE__ << "::" << __func__ << " starting";
 
 	int olddr = dynamicRange;
 	if(dr >= 0){
 		dynamicRange = dr;
 	}
 	
+	FILE_LOG(logDEBUG) << __FILE__ << "::" << __func__ << " " << getDynamicRange();
 	return getDynamicRange();
+	
+		
 }
 
 
 
 int UDPRESTImplementation::setShortFrame(int i){
+	FILE_LOG(logDEBUG) << __AT__ << " called";
 	shortFrame=i;
 
 	if(shortFrame!=-1){
@@ -262,6 +367,7 @@ int UDPRESTImplementation::setShortFrame(int i){
 
 
 int UDPRESTImplementation::setNFrameToGui(int i){
+	FILE_LOG(logDEBUG) << __AT__ << " called";
 	if(i>=0){
 		nFrameToGui = i;
 		setupFifoStructure();
@@ -272,7 +378,7 @@ int UDPRESTImplementation::setNFrameToGui(int i){
 
 
 int64_t UDPRESTImplementation::setAcquisitionPeriod(int64_t index){
-
+	FILE_LOG(logDEBUG) << __AT__ << " called";
 	if(index >= 0){
 		if(index != acquisitionPeriod){
 			acquisitionPeriod = index;
@@ -283,55 +389,15 @@ int64_t UDPRESTImplementation::setAcquisitionPeriod(int64_t index){
 }
 
 
-bool UDPRESTImplementation::getDataCompression(){return dataCompression;}
-
-int UDPRESTImplementation::enableDataCompression(bool enable){
-	cout << "Data compression ";
-	if(enable)
-		cout << "enabled" << endl;
-	else
-		cout << "disabled" << endl;
-#ifdef MYROOT1
-	cout << " WITH ROOT" << endl;
-#else
-	cout << " WITHOUT ROOT" << endl;
-#endif
-	//delete filter for the current number of threads
-	deleteFilter();
-
-	dataCompression = enable;
-	pthread_mutex_lock(&status_mutex);
-	writerthreads_mask = 0x0;
-	pthread_mutex_unlock(&(status_mutex));
-
-	createWriterThreads(true);
-
-	if(enable)
-		numWriterThreads = MAX_NUM_WRITER_THREADS;
-	else
-		numWriterThreads = 1;
-
-	if(createWriterThreads() == FAIL){
-		cout << "ERROR: Could not create writer threads" << endl;
-		return FAIL;
-	}
-	setThreadPriorities();
-
-
-	if(enable)
-		setupFilter();
-
-	return OK;
+bool UDPRESTImplementation::getDataCompression(){
+	FILE_LOG(logDEBUG) << __AT__ << " called";
+	return dataCompression;
 }
 
-
-
-
-
-
-
-
-
+int UDPRESTImplementation::enableDataCompression(bool enable){
+	FILE_LOG(logDEBUG) << __AT__ << " called, doing nothing";
+	return OK;
+}
 
 
 
@@ -339,6 +405,7 @@ int UDPRESTImplementation::enableDataCompression(bool enable){
 
 
 void UDPRESTImplementation::deleteFilter(){
+	FILE_LOG(logDEBUG) << __AT__ << " called";
 	int i;
 	cmSub=NULL;
 
@@ -356,6 +423,9 @@ void UDPRESTImplementation::deleteFilter(){
 
 
 void UDPRESTImplementation::setupFilter(){
+	//LEO: check
+
+	FILE_LOG(logDEBUG) << __AT__ << " called";
 	double hc = 0;
 	double sigma = 5;
 	int sign = 1;
@@ -392,6 +462,11 @@ void UDPRESTImplementation::setupFilter(){
 
 //LEO: it is not clear to me..
 void UDPRESTImplementation::setupFifoStructure(){
+	FILE_LOG(logDEBUG) << __AT__ << " called, doing nothing";
+}
+/*
+void UDPRESTImplementation::setupFifoStructure(){
+	FILE_LOG(logDEBUG) << __AT__ << " called";
 
 	int64_t i;
 	int oldn = numJobsPerThread;
@@ -437,10 +512,6 @@ void UDPRESTImplementation::setupFifoStructure(){
 	cout << "Number of Frames per buffer:" << numJobsPerThread << endl;
 	cout << "Fifo Size:" << fifosize << endl;
 
-	/*
-	//for testing
-	 numJobsPerThread = 3; fifosize = 11;
-	 */
 
 	for(int i=0;i<numListeningThreads;i++){
 		//deleting old structure and creating fifo structure
@@ -457,7 +528,7 @@ void UDPRESTImplementation::setupFifoStructure(){
 
 		//allocate memory
 		mem0[i]=(char*)malloc((bufferSize * numJobsPerThread + HEADER_SIZE_NUM_TOT_PACKETS)*fifosize);
-		/** shud let the client know about this */
+		// shud let the client know about this 
 		if (mem0[i]==NULL){
 			cout<<"++++++++++++++++++++++ COULD NOT ALLOCATE MEMORY FOR LISTENING !!!!!!!+++++++++++++++++++++" << endl;
 			exit(-1);
@@ -471,7 +542,7 @@ void UDPRESTImplementation::setupFifoStructure(){
 	}
 	cout << "Fifo structure(s) reconstructed" << endl;
 }
-
+*/
 
 
 
@@ -481,6 +552,7 @@ void UDPRESTImplementation::setupFifoStructure(){
 /** acquisition functions */
 
 void UDPRESTImplementation::readFrame(char* c,char** raw, uint32_t &fnum){
+	FILE_LOG(logDEBUG) << __AT__ << " called";
 	//point to gui data
 	if (guiData == NULL)
 		guiData = latestData;
@@ -515,6 +587,7 @@ void UDPRESTImplementation::readFrame(char* c,char** raw, uint32_t &fnum){
 
 
 void UDPRESTImplementation::copyFrameToGui(char* startbuf[], uint32_t fnum, char* buf){
+	FILE_LOG(logDEBUG) << __AT__ << " called";
 
 	//random read when gui not ready
 	if((!nFrameToGui) && (!guiData)){
@@ -571,6 +644,7 @@ void UDPRESTImplementation::copyFrameToGui(char* startbuf[], uint32_t fnum, char
 
 int UDPRESTImplementation::createUDPSockets(){
 
+	FILE_LOG(logDEBUG) << __FILE__ << "::" << __func__ << " starting";
 
 	//if eth is mistaken with ip address
 	if (strchr(eth,'.')!=NULL)
@@ -587,7 +661,7 @@ int UDPRESTImplementation::createUDPSockets(){
 	}
 	//normal socket
 	else{
-		cout<<"eth:"<<eth<<endl;
+		cout << "eth:" << eth << endl;
 
 		for(int i=0;i<numListeningThreads;i++)
 			udpSocket[i] = new genericSocket(server_port[i],genericSocket::UDP,bufferSize,eth);
@@ -615,13 +689,38 @@ int UDPRESTImplementation::createUDPSockets(){
 
 
 int UDPRESTImplementation::shutDownUDPSockets(){
+
+	FILE_LOG(logDEBUG) << __AT__ << "called";
+
+	std::string answer;
+	int code = rest->get_json("state", &answer);
+	std::cout << answer << std::endl;
+
+	code = rest->post_json("state/close", &answer);
+	std::cout << answer << std::endl;
+	code = rest->post_json("state/reset", &answer);
+	std::cout << answer << std::endl;
+
+	code = rest->get_json("state", &answer);
+	std::cout << answer << std::endl;
+
+	status = slsReceiverDefs::RUN_FINISHED;
+
+	
+
+	/*
 	for(int i=0;i<numListeningThreads;i++){
 		if(udpSocket[i]){
+			FILE_LOG(logDEBUG) << __AT__ << " UDP socket " << i;
 			udpSocket[i]->ShutDownSocket();
 			delete udpSocket[i];
 			udpSocket[i] = NULL;
 		}
 	}
+	*/
+
+	FILE_LOG(logDEBUG) << __AT__ << "finished";
+
 	return OK;
 }
 
@@ -630,6 +729,8 @@ int UDPRESTImplementation::shutDownUDPSockets(){
 
 
 int UDPRESTImplementation::createListeningThreads(bool destroy){
+
+	FILE_LOG(logDEBUG) << __AT__ << " called";
 	int i;
 	void* status;
 
@@ -685,6 +786,7 @@ int UDPRESTImplementation::createListeningThreads(bool destroy){
 
 
 int UDPRESTImplementation::createWriterThreads(bool destroy){
+	FILE_LOG(logDEBUG) << __AT__ << " called";
 	int i;
 	void* status;
 
@@ -746,6 +848,7 @@ int UDPRESTImplementation::createWriterThreads(bool destroy){
 
 
 void UDPRESTImplementation::setThreadPriorities(){
+	FILE_LOG(logDEBUG) << __AT__ << " called";
 	int i;
 	//assign priorities
 	struct sched_param tcp_param, listen_param, write_param;
@@ -783,7 +886,7 @@ void UDPRESTImplementation::setThreadPriorities(){
 
 
 int UDPRESTImplementation::setupWriter(){
-
+	FILE_LOG(logDEBUG) << __AT__ << " called";
 	//reset writing thread variables
 	packetsInFile=0;
 	packetsCaught=0;
@@ -866,6 +969,8 @@ int UDPRESTImplementation::setupWriter(){
 
 
 int UDPRESTImplementation::createCompressionFile(int ithr, int iframe){
+	FILE_LOG(logDEBUG) << __AT__ << " called";
+
 #ifdef MYROOT1
 	char temp[MAX_STR_LENGTH];
 		//create file name for gui purposes, and set up acquistion parameters
@@ -894,8 +999,9 @@ int UDPRESTImplementation::createCompressionFile(int ithr, int iframe){
 
 
 int UDPRESTImplementation::createNewFile(){
- int gt = getFrameIndex();
- if(gt==-1) gt=0;
+	FILE_LOG(logDEBUG) << __AT__ << " called";
+	int gt = getFrameIndex();
+	if(gt==-1) gt=0;
 	//create file name
 	if(frameIndexNeeded==-1)
 		sprintf(savefilename, "%s/%s_%d.raw", filePath,fileName,fileIndex);
@@ -955,9 +1061,7 @@ int UDPRESTImplementation::createNewFile(){
 
 
 void UDPRESTImplementation::closeFile(int ithr){
-#ifdef VERBOSE
-	cout << "In closeFile for thread " << ithr << endl;
-#endif
+	FILE_LOG(logDEBUG) << __AT__ << "called for thread " << ithr;
 
 	if(!dataCompression){
 		if(sfilefd){
@@ -1005,6 +1109,8 @@ void UDPRESTImplementation::closeFile(int ithr){
 
 #endif
 	}
+
+	FILE_LOG(logDEBUG) << __AT__ << "exited for thread " << ithr;
 }
 
 
@@ -1014,13 +1120,33 @@ void UDPRESTImplementation::closeFile(int ithr){
 int UDPRESTImplementation::startReceiver(char message[]){
 	int i;
 
+	FILE_LOG(logDEBUG) << __FILE__ << "::" << __func__ << " starting";
+	initialize_REST();
+	FILE_LOG(logDEBUG) << __FILE__ << "::" << __func__ << " initialized";
 
 // #ifdef VERBOSE
 	cout << "Starting Receiver" << endl;
 //#endif
 
+	std::string answer;
+	int code;
+
+	
+	//test =  "{\"configfile\":\"config.pu\", \"path\":\"patto\"}";
+	code = rest->post_json("state/configure", &answer);
+	std::cout << answer << std::endl;
+	code = rest->get_json("state", &answer);
+	std::cout << answer << std::endl;
+
+	code = rest->post_json("state/open", &answer);
+	std::cout << answer << std::endl;
+	code = rest->get_json("state", &answer);
+	std::cout << answer << std::endl;
+
+	status = slsReceiverDefs::RUNNING;
 
 	//reset listening thread variables
+	/*
 	measurementStarted = false;
 	//should be set to zero as its added to get next start frame indices for scans for eiger
 	if(!acqStarted)		currframenum = 0;
@@ -1028,8 +1154,9 @@ int UDPRESTImplementation::startReceiver(char message[]){
 
 	for(int i = 0; i < numListeningThreads; ++i)
 		totalListeningFrameCount[i] = 0;
-
+	*/
 	//udp socket
+	/*
 	if(createUDPSockets() == FAIL){
 		strcpy(message,"Could not create UDP Socket(s).\n");
 		cout << endl << message << endl;
@@ -1037,7 +1164,8 @@ int UDPRESTImplementation::startReceiver(char message[]){
 	}
 	cout << "UDP socket(s) created successfully. 1st  port " << server_port[0] << endl;
 
-
+	*/
+	/*
 	if(setupWriter() == FAIL){
 		//stop udp socket
 		shutDownUDPSockets();
@@ -1069,9 +1197,7 @@ int UDPRESTImplementation::startReceiver(char message[]){
 		sem_post(&listensmp[i]);
 	for(i=0; i < numWriterThreads; ++i)
 		sem_post(&writersmp[i]);
-
-
-	cout << "Receiver Started.\nStatus:" << status << endl;
+	*/
 
 	return OK;
 }
@@ -1081,10 +1207,7 @@ int UDPRESTImplementation::startReceiver(char message[]){
 
 int UDPRESTImplementation::stopReceiver(){
 
-
-//#ifdef VERBOSE
-	cout << "Stopping Receiver" << endl;
-//#endif
+	FILE_LOG(logDEBUG) << __AT__ << "called";
 
 	if(status == RUNNING)
 		startReadout();
@@ -1101,7 +1224,8 @@ int UDPRESTImplementation::stopReceiver(){
 	status = IDLE;
 	pthread_mutex_unlock(&(status_mutex));
 
-	cout << "Receiver Stopped.\nStatus:" << status << endl << endl;
+	FILE_LOG(logDEBUG) << __AT__ << "exited, status " << endl;
+
 	return OK;
 }
 
@@ -1110,10 +1234,7 @@ int UDPRESTImplementation::stopReceiver(){
 
 
 void UDPRESTImplementation::startReadout(){
-
-	//#ifdef VERBOSE
-		cout << "Start Receiver Readout" << endl;
-	//#endif
+	FILE_LOG(logDEBUG) << __FILE__ << "::" << __func__ << " starting";
 
 	//wait so that all packets which take time has arrived
 	usleep(50000);
@@ -1127,12 +1248,15 @@ void UDPRESTImplementation::startReadout(){
 
 	//kill udp socket to tell the listening thread to push last packet
 	shutDownUDPSockets();
+	FILE_LOG(logDEBUG) << __FILE__ << "::" << __func__ << " done";
 
 }
 
 
 
 void* UDPRESTImplementation::startListeningThread(void* this_pointer){
+	FILE_LOG(logDEBUG) << __AT__ << " called";
+
 	((UDPRESTImplementation*)this_pointer)->startListening();
 
 	return this_pointer;
@@ -1141,6 +1265,7 @@ void* UDPRESTImplementation::startListeningThread(void* this_pointer){
 
 
 void* UDPRESTImplementation::startWritingThread(void* this_pointer){
+	FILE_LOG(logDEBUG) << __AT__ << " called";
 	((UDPRESTImplementation*)this_pointer)->startWriting();
 	return this_pointer;
 }
@@ -1151,6 +1276,8 @@ void* UDPRESTImplementation::startWritingThread(void* this_pointer){
 
 
 int UDPRESTImplementation::startListening(){
+	FILE_LOG(logDEBUG) << __AT__ << " called";
+
 	int ithread = currentListeningThreadIndex;
 #ifdef VERYVERBOSE
 	cout << "In startListening() " << endl;
@@ -1352,6 +1479,7 @@ int UDPRESTImplementation::startListening(){
 
 
 int UDPRESTImplementation::startWriting(){
+	FILE_LOG(logDEBUG) << __AT__ << " called";
 	int ithread = currentWriterThreadIndex;
 #ifdef VERYVERBOSE
 	cout << ithread << "In startWriting()" <<endl;
@@ -1545,6 +1673,7 @@ int loop;
 
 
 void UDPRESTImplementation::startFrameIndices(int ithread){
+	FILE_LOG(logDEBUG) << __AT__ << " called";
 
 	if (myDetectorType == EIGER)
 		//add currframenum later  in this method for scans
@@ -1577,15 +1706,21 @@ void UDPRESTImplementation::startFrameIndices(int ithread){
 }
 
 
-
 void UDPRESTImplementation::stopListening(int ithread, int rc, int &pc, int &t){
+	FILE_LOG(logDEBUG) << __AT__ << " called, doing nothing";
+};
+
+/*
+void UDPRESTImplementation::stopListening(int ithread, int rc, int &pc, int &t){
+	FILE_LOG(logDEBUG) << __AT__ << " called";
+
 int i;
 
 #ifdef VERYVERBOSE
 				cerr << ithread << " recvfrom() failed:"<<endl;
 #endif
 				if(status != TRANSMITTING){
-					cout << ithread << " *** shoule never be here********* status not transmitting***********************"<<endl;/**/
+					cout << ithread << " *** shoule never be here********* status not transmitting***********************"<<endl;
 					fifoFree[ithread]->push(buffer[ithread]);
 					exit(-1);
 				}
@@ -1646,7 +1781,7 @@ int i;
 				}
 
 }
-
+*/
 
 
 
@@ -1657,6 +1792,7 @@ int i;
 
 
 void UDPRESTImplementation::stopWriting(int ithread, char* wbuffer[]){
+	FILE_LOG(logDEBUG) << __AT__ << " called";
 	int i,j;
 #ifdef VERYDEBUG
 	cout << ithread << " **********************popped last dummy frame:" << (void*)wbuffer[wIndex] << endl;
@@ -1724,6 +1860,7 @@ void UDPRESTImplementation::stopWriting(int ithread, char* wbuffer[]){
 
 
 void UDPRESTImplementation::writeToFile_withoutCompression(char* buf,int numpackets, uint32_t framenum){
+	FILE_LOG(logDEBUG) << __AT__ << " called";
 	int packetsToSave, offset,lastpacket;
 	uint32_t tempframenum = framenum;
 
@@ -1827,6 +1964,8 @@ void UDPRESTImplementation::writeToFile_withoutCompression(char* buf,int numpack
 
 void UDPRESTImplementation::handleDataCompression(int ithread, char* wbuffer[], int &npackets, char* data, int xmax, int ymax, int &nf){
 
+	FILE_LOG(logDEBUG) << __AT__ << " called";
+
 #if defined(MYROOT1) && defined(ALLFILE_DEBUG)
 				writeToFile_withoutCompression(wbuf[0], numpackets,currframenum);
 #endif
@@ -1925,6 +2064,7 @@ void UDPRESTImplementation::handleDataCompression(int ithread, char* wbuffer[], 
 
 
 int UDPRESTImplementation::enableTenGiga(int enable){
+	FILE_LOG(logDEBUG) << __AT__ << " called";
 
 	cout << "Enabling 10Gbe to" << enable << endl;
 

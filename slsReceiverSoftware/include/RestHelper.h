@@ -19,17 +19,13 @@
 
 #include "JsonBox/Value.h"
 
+//#include "logger.h"
+
 #include <iostream>
 #include <sstream>
 #include <string>
 #include <exception>
 
-#define EIGER_DEBUG
-#ifdef EIGER_DEBUG
-#define DEBUG(x) do { std::cerr << "[DEBUG] " << x << std::endl; } while (0)
-#else
-#define DEBUG(x)
-#endif
 
 
 using namespace Poco::Net;
@@ -39,7 +35,7 @@ using namespace std;
 class RestHelper {
  public:
 
-  RestHelper(int timeout=10, int n_tries=3){    
+  RestHelper(int timeout=10, int n_tries=10){    
   /** 
    * 
    * 
@@ -78,18 +74,22 @@ class RestHelper {
 	   */
 
 	  //Check for http:// string
+	  FILE_LOG(logDEBUG) << __func__ << " starting";
 	  string proto_str = "http://";
+	  
 	  if( size_t found = hostname.find(proto_str) != string::npos ){
+		  cout << hostname << endl;
+
 		  char c1[hostname.size()-found-1];
+		  cout << c1 << endl;
 		  size_t length1 = hostname.copy(c1, hostname.size()-found-1, proto_str.size());
 	 	  c1[length1]='\0';
 		  hostname = c1;
 	  }
 	  
 	  full_hostname = "http://"+hostname;
-	  session = new HTTPClientSession(hostname,port );
+	  session = new HTTPClientSession(hostname, port );
 	  session->setKeepAliveTimeout( Timespan( http_timeout,0) );
-	  
   };
 
 
@@ -168,7 +168,7 @@ class RestHelper {
     string answer;
     int code = send_request(session, req, &answer);
     if(code == 0 ) {
-	    DEBUG("ANSWER " << answer );
+	    FILE_LOG(logDEBUG) << "ANSWER " << answer;
 	    json_value->loadFromString(answer);
     }
     delete uri;
@@ -176,7 +176,7 @@ class RestHelper {
   };
 
 
-  int post_json(string request, string *answer, string request_body=""){
+  int post_json(string request, string *answer, string request_body="{}"){
     /** 
      * 
      * 
@@ -192,15 +192,16 @@ class RestHelper {
     if (path.empty()) path = "/";
     HTTPRequest req(HTTPRequest::HTTP_POST, path, HTTPMessage::HTTP_1_1 );
     req.setContentType("application/json\r\n");
-    req.setContentLength( request.length() );
-
+    cout << "REQUEST BODY " << request_body << endl;
+    req.setContentLength( request_body.length() );
     int code = send_request(session, req, answer, request_body);
+    
     delete uri;
     return code;
   }
 
 
-  int post_json(string request,  JsonBox::Value* json_value, string request_body=""){
+  int post_json(string request,  JsonBox::Value* json_value, string request_body="{}"){
     /** 
      * 
      * 
@@ -283,7 +284,7 @@ class RestHelper {
 	return code;
       }
       catch (exception& e){
-	cout << "Exception connecting to "<< full_hostname << ": "<< e.what() << ", sleeping 5 seconds (" << n << "/"<<n_connection_tries << ")" << endl;
+	      FILE_LOG(logERROR) << "Exception connecting to "<< full_hostname << ": "<< e.what() << ", sleeping 5 seconds (" << n << "/"<<n_connection_tries << ")";
 	sleep(5);
       }
       n+=1;

@@ -5,6 +5,19 @@
 #include <string>
 #include <stdio.h>
 
+#define STRINGIFY(x) #x
+#define TOSTRING(x) STRINGIFY(x)
+#define MYCONCAT(x,y)  
+#define __AT__ string(__FILE__) + string("::") + string(__func__) + string("(): ")
+
+//":" TOSTRING(__LINE__)
+
+/*
+void error(const char *location, const char *msg){
+  printf("Error at %s: %s\n", location, msg);
+}
+*/
+
 inline std::string NowTime();
 
 enum TLogLevel {logERROR, logWARNING, logINFO, logDEBUG, logDEBUG1, logDEBUG2, logDEBUG3, logDEBUG4};
@@ -110,7 +123,7 @@ template <typename T> std::ostringstream& Log<T>::Get(TLogLevel level)
 template <typename T> Log<T>::~Log()
 {
     os << std::endl;
-    T::Output(os.str());
+    T::Output( os.str());
 }
 
 template <typename T> TLogLevel& Log<T>::ReportingLevel()

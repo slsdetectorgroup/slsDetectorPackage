@@ -34,7 +34,7 @@
  * @short does all the functions for a receiver, set/get parameters, start/stop etc.
  */
 
-class UDPRESTImplementation : private virtual slsReceiverDefs, public UDPBaseImplementation {
+class UDPRESTImplementation : protected virtual slsReceiverDefs, public UDPBaseImplementation {
 	
  public:
 	/**
@@ -47,7 +47,12 @@ class UDPRESTImplementation : private virtual slsReceiverDefs, public UDPBaseImp
 	 */
 	virtual ~UDPRESTImplementation();
 
-	
+
+ protected:
+	void initialize_REST();
+
+ public:
+	void configure(map<string, string> config_map);	
 
 	/**
 	 * delete and free member parameters
@@ -57,14 +62,28 @@ class UDPRESTImplementation : private virtual slsReceiverDefs, public UDPBaseImp
 	/**
 	 * initialize member parameters
 	 */
-	void initializeMembers();
+	//void initializeMembers();
+
+	/**
+	 * Set detector hostname
+	 * @param c hostname
+	 */
+	//void initialize(const char *detectorHostName);
+
+	 /* Returns detector hostname
+	 /returns hostname
+	  * caller needs to deallocate the returned char array.
+	  * if uninitialized, it must return NULL
+	 */
+	//char *getDetectorHostname() const;
+
 
 	/**
 	 * Set receiver type
 	 * @param det detector type
 	 * Returns success or FAIL
 	 */
-	int setDetectorType(detectorType det);
+	//int setDetectorType(detectorType det);
 
 
 	//Frame indices and numbers caught
@@ -192,18 +211,6 @@ class UDPRESTImplementation : private virtual slsReceiverDefs, public UDPBaseImp
 	 */
 	runStatus getStatus() const;
 
-	/**
-	 * Set detector hostname
-	 * @param c hostname
-	 */
-	void initialize(const char *detectorHostName);
-
-	 /* Returns detector hostname
-	 /returns hostname
-	  * caller needs to deallocate the returned char array.
-	  * if uninitialized, it must return NULL
-	 */
-	//char *getDetectorHostname() const;
 
 	/**
 	 * Set Ethernet Interface or IP to listen to
@@ -811,6 +818,9 @@ public:
 	//REST specific
 	bool isInitialized;
 	RestHelper * rest ;
+	int rest_port;  // receiver backend port
+	string rest_hostname;  // receiver hostname
+	
 };
 
 

@@ -35,6 +35,7 @@ struct Module{
 
 
 void Module_Module(struct Module* mod,unsigned int number, unsigned int address_top);
+void Module_ModuleBottom(struct Module* mod,unsigned int number, unsigned int address_bottom);
 void Module_Module1(struct Module* mod,unsigned int number, unsigned int address_top, unsigned int address_bottom);
 unsigned int Module_GetModuleNumber(struct Module* mod);
 int         Module_TopAddressIsValid(struct Module* mod);

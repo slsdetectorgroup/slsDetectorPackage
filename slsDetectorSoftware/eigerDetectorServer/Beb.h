@@ -28,6 +28,7 @@ struct BebInfo{
 
 
   void BebInfo_BebInfo(struct BebInfo* bebInfo, unsigned int beb_num);
+  void BebInfo_BebDstInfo(struct BebInfo* bebInfo, unsigned int beb_num);
   int         BebInfo_SetSerialAddress(struct BebInfo* bebInfo, unsigned int add);
   int         BebInfo_SetHeaderInfo(struct BebInfo* bebInfo, int ten_gig, char* src_mac, char* src_ip, unsigned int src_port);//src_port fixed 42000+beb_number or 52000 + beb_number);
   unsigned int BebInfo_GetBebNumber(struct BebInfo* bebInfo);

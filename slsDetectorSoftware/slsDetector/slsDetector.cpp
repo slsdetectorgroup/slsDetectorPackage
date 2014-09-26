@@ -488,6 +488,8 @@ int slsDetector::initializeDetectorSize(detectorType type) {
     thisDetector->receiverTCPPort=DEFAULT_PORTNO+2;
     /** set receiver udp port */
     thisDetector->receiverUDPPort=DEFAULT_UDP_PORTNO;
+    /** set receiver udp port for Eiger */
+    thisDetector->receiverUDPPort2=DEFAULT_UDP_PORTNO+1;
     /** set receiver ip address/hostname */
     strcpy(thisDetector->receiver_hostname,"none");
     /** set receiver udp ip address */
@@ -4838,6 +4840,15 @@ char* slsDetector::setNetworkParameter(networkParameter index, string value) {
 		sscanf(value.c_str(),"%d",&i);
 		setReceiverUDPPort(i);
 		return getReceiverUDPPort();
+	case RECEIVER_UDP_PORT2:
+		sscanf(value.c_str(),"%d",&i);
+		if(thisDetector->myDetectorType == EIGER)
+			setReceiverUDPPort2(i);
+		else
+			setReceiverUDPPort(i);
+		if(thisDetector->myDetectorType == EIGER)
+			return getReceiverUDPPort2();
+		return getReceiverUDPPort();
   default:
     return ("unknown network parameter");
   }
@@ -4866,6 +4877,9 @@ char* slsDetector::getNetworkParameter(networkParameter index) {
     break;
   case RECEIVER_UDP_PORT:
     return getReceiverUDPPort();
+    break;
+  case RECEIVER_UDP_PORT2:
+    return getReceiverUDPPort2();
     break;
   default:
     return ("unknown network parameter");
@@ -5012,14 +5026,17 @@ int slsDetector::setReceiverUDPPort(int udpport){
 	return thisDetector->receiverUDPPort;
 }
 
-
+int slsDetector::setReceiverUDPPort2(int udpport){
+	thisDetector->receiverUDPPort2 = udpport;
+	return thisDetector->receiverUDPPort2;
+}
 
 
 int slsDetector::setUDPConnection(){
 
 	int ret = FAIL;
 	int fnum = F_SETUP_RECEIVER_UDP;
-	char args[2][MAX_STR_LENGTH];
+	char args[3][MAX_STR_LENGTH];
 	char retval[MAX_STR_LENGTH]="";
 
 
@@ -5043,9 +5060,11 @@ int slsDetector::setUDPConnection(){
 	//copy arguments to args[][]
 	strcpy(args[0],thisDetector->receiverUDPIP);
 	sprintf(args[1],"%d",thisDetector->receiverUDPPort);
+	sprintf(args[2],"%d",thisDetector->receiverUDPPort2);
 #ifdef VERBOSE
 	std::cout << "Receiver udp ip address: " << thisDetector->receiverUDPIP << std::endl;
 	std::cout << "Receiver udp port: " << thisDetector->receiverUDPPort << std::endl;
+	std::cout << "Receiver udp port2: " << thisDetector->receiverUDPPort2 << std::endl;
 #endif
 
 	//set up receiver for UDP Connection and get receivermac address
@@ -5084,7 +5103,7 @@ int slsDetector::configureMAC(){
   int ret=FAIL;
   int fnum=F_CONFIGURE_MAC,fnum2=F_RECEIVER_SHORT_FRAME;
   char mess[100];
-  char arg[5][50];
+  char arg[6][50];
   char cword[50]="", *pcword;
   string sword;
   int retval=-1;
@@ -5112,6 +5131,7 @@ int slsDetector::configureMAC(){
   sprintf(arg[2],"%x",thisDetector->receiverUDPPort);
   strcpy(arg[3],thisDetector->detectorMAC);
   strcpy(arg[4],thisDetector->detectorIP);
+  sprintf(arg[5],"%x",thisDetector->receiverUDPPort2);
 
 #ifdef VERBOSE
   std::cout<< "Configuring MAC"<< std::endl;
@@ -5173,6 +5193,9 @@ int slsDetector::configureMAC(){
   strcpy(arg[4],cword);
 #ifdef VERBOSE
   std::cout<<"detector ip:"<<arg[4]<<"."<<std::endl;
+#endif
+#ifdef VERBOSE
+  std::cout<<"receiver udp port2:"<<arg[5]<<"."<<std::endl;
 #endif
 
   //send to server

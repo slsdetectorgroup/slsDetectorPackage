@@ -95,7 +95,7 @@ int executeTrimming(enum trimMode mode, int par1, int par2, int imod);
 
 
 #ifndef MYTHEND
-int configureMAC(int ipad, long long int macad, long long int detectormacadd, int detipad, int udpport, int ival);
+int configureMAC(int ipad, long long int macad, long long int detectormacadd, int detipad, int udpport, int udpport2, int ival);
 #endif
 
 #ifdef GOTTHARDD

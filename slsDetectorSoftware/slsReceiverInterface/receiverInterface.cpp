@@ -40,8 +40,8 @@ int receiverInterface::sendString(int fnum, char retval[], char arg[]){
 
 
 
-int receiverInterface::sendUDPDetails(int fnum, char retval[], char arg[2][MAX_STR_LENGTH]){
-	char args[2][MAX_STR_LENGTH];
+int receiverInterface::sendUDPDetails(int fnum, char retval[], char arg[3][MAX_STR_LENGTH]){
+	char args[3][MAX_STR_LENGTH];
 	int ret = slsDetectorDefs::FAIL;
 	char mess[100] = "";
 

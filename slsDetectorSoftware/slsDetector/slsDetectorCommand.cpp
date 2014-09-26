@@ -344,6 +344,10 @@ slsDetectorCommand::slsDetectorCommand(slsDetectorUtils *det)  {
   descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdNetworkParameter;
   i++;
 
+  descrToFuncMap[i].m_pFuncName="rx_udpport2"; //
+  descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdNetworkParameter;
+  i++;
+
   descrToFuncMap[i].m_pFuncName="detectormac"; //
   descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdNetworkParameter;
   i++;
@@ -2464,6 +2468,12 @@ string slsDetectorCommand::cmdNetworkParameter(int narg, char *args[], int actio
       if (!(sscanf(args[1],"%d",&i)))
         return ("cannot parse argument") + string(args[1]);
     }
+  } else if (cmd=="rx_udpport2") {
+	t=RECEIVER_UDP_PORT2;
+	if (action==PUT_ACTION){
+	   if (!(sscanf(args[1],"%d",&i)))
+	     return ("cannot parse argument") + string(args[1]);
+	}
   } else return ("unknown network parameter")+cmd;
 
   if (action==PUT_ACTION)
@@ -2485,6 +2495,7 @@ string slsDetectorCommand::helpNetworkParameter(int narg, char *args[], int acti
     os << "rx_udpip ip \n sets receiver udp ip to ip"<< std::endl;
     os << "rx_udpmac mac \n sets receiver udp mac to mac"<< std::endl;
     os << "rx_udpport port \n sets receiver udp port to port"<< std::endl;
+    os << "rx_udpport2 port \n sets receiver udp port to port. For Eiger, it is the second half module and for other detectors, same as rx_udpport"<< std::endl;
   }
   if (action==GET_ACTION || action==HELP_ACTION) {
 	os << "detectormac \n gets detector mac "<< std::endl;
@@ -2492,6 +2503,8 @@ string slsDetectorCommand::helpNetworkParameter(int narg, char *args[], int acti
     os << "rx_hostname \n gets receiver ip "<< std::endl;
     os << "rx_udpmac \n gets receiver udp mac "<< std::endl;
     os << "rx_udpport \n gets receiver udp port "<< std::endl;
+    os << "rx_udpport2 \n gets receiver udp port. For Eiger, it is the second half module and for other detectors, same as rx_udpport"<< std::endl;
+
   } 
   return os.str();
 

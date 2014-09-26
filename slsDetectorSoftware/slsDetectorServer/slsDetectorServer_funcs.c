@@ -2963,11 +2963,11 @@ int execute_trimming(int file_des) {
 
 
 
-int configure_mac(int file_des) {
+int configure_mac(int file_des) {printf("in hereeeeee\n");
 
 	int retval=-100;
 	int ret=OK,ret1=OK;
-	char arg[5][50];
+	char arg[6][50];
 	int n;
 
 #ifndef MYTHEND
@@ -2976,9 +2976,10 @@ int configure_mac(int file_des) {
 	long long int imacadd;
 	long long int idetectormacadd;
 	int udpport;
+	int udpport2;
 	int detipad;
 #endif
-
+printf("111\n");
 	sprintf(mess,"Can't configure MAC\n");
 
 	n = receiveData(file_des,arg,sizeof(arg),OTHER);
@@ -2986,7 +2987,7 @@ int configure_mac(int file_des) {
 		sprintf(mess,"Error reading from socket\n");
 		ret=FAIL;
 	}
-
+printf("222\n");
 #ifdef MYTHEND
 	ret = FAIL;
 	strcpy(mess,"Not applicable/implemented for this detector\n");
@@ -2996,7 +2997,7 @@ int configure_mac(int file_des) {
 	sscanf(arg[2], "%x", 	&udpport);
 	sscanf(arg[3], "%llx",	&idetectormacadd);
 	sscanf(arg[4], "%x",	&detipad);
-
+	sscanf(arg[5], "%x", 	&udpport2);
 
 
 #ifdef SLS_DETECTOR_FUNCTION_LIST
@@ -3006,7 +3007,8 @@ int configure_mac(int file_des) {
 		printf("mess:%s\n",mess);
 	}
 #endif
-#ifdef VERBOSE
+printf("333\n");
+	//#ifdef VERBOSE
 	int i;
 	/*printf("\ndigital_test_bit in server %d\t",digitalTestBit);for gotthard*/
 	printf("\nipadd %x\t",ipad);
@@ -3019,9 +3021,10 @@ int configure_mac(int file_des) {
 	for (i=0;i<6;i++)
 		printf("detector mac adress %d is 0x%x \n",6-i,(unsigned int)(((idetectormacadd>>(8*i))&0xFF)));
 	printf("detipad %x\n",detipad);
+	printf("udp port2:0x%x\n",udpport2);
 	printf("\n");
 	printf("Configuring MAC of module %d at port %x\n", imod, udpport);
-#endif
+	//#endif
 
 #ifdef SLS_DETECTOR_FUNCTION_LIST
 	if (ret==OK) {
@@ -3029,13 +3032,13 @@ int configure_mac(int file_des) {
 			stopStateMachine();
 		}
 
-		retval=configureMAC(ipad,imacadd,idetectormacadd,detipad,udpport,0);	/*digitalTestBit);*/
+		retval=configureMAC(ipad,imacadd,idetectormacadd,detipad,udpport,udpport2,0);	/*digitalTestBit);*/
 		if(retval==-1) 	ret=FAIL;
 	}
 #endif
-#ifdef VERBOSE
+	//#ifdef VERBOSE
 	printf("Configured MAC with retval %d\n",  retval);
-#endif
+	//#endif
 	if (ret==FAIL) {
 		printf("configuring MAC of mod %d failed\n", imod);
 	}

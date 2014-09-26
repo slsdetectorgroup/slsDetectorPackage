@@ -52,6 +52,7 @@ void BebInfo_BebInfo(struct BebInfo* bebInfo, unsigned int beb_num){
 	bebInfo->src_port_1GbE=bebInfo->src_port_10GbE=0;
 }
 
+
 int BebInfo_SetSerialAddress(struct BebInfo* bebInfo, unsigned int a){
   //address pre shifted
   if(a>0xff) return 0;
@@ -329,7 +330,7 @@ int Beb_SetUpUDPHeader(unsigned int beb_number, int ten_gig, unsigned int header
     Beb_SwapDataFun(1,12,&(Beb_send_data[2]));
 
   if(!Beb_WriteTo(i)) return 0;
-  
+  printf("dst_port:%d\n",dst_port);
   return 1;
 }
 
@@ -368,12 +369,18 @@ int Beb_SetHeaderData1(char* src_mac, char* src_ip, unsigned int src_port, char*
 */
 
   if(!Beb_SetMAC(src_mac,&(udp_header.src_mac[0])))           return 0;
+  printf("Setting Source MAC to %s\n",src_mac);
   if(!Beb_SetIP(src_ip,&(udp_header.src_ip[0])))              return 0;
+  printf("Setting Source IP to %s\n",src_ip);
   if(!Beb_SetPortNumber(src_port,&(udp_header.src_port[0])))  return 0;
+  printf("Setting Source port to %d\n",src_port);
 
   if(!Beb_SetMAC(dst_mac,&(udp_header.dst_mac[0])))           return 0;
+  printf("Setting Destination MAC to %s\n",dst_mac);
   if(!Beb_SetIP(dst_ip,&(udp_header.dst_ip[0])))              return 0;
+  printf("Setting Destination IP to %s\n",dst_ip);
   if(!Beb_SetPortNumber(dst_port,&(udp_header.dst_port[0])))  return 0;
+  printf("Setting Destination port to %d\n",dst_port);
 
 
   Beb_AdjustIPChecksum(&udp_header);
@@ -392,8 +399,7 @@ int Beb_SetHeaderData1(char* src_mac, char* src_ip, unsigned int src_port, char*
 
 
 int Beb_SetMAC(char* mac, uint8_t* dst_ptr){
-
-char macVal[50];strcpy(macVal,mac);
+	char macVal[50];strcpy(macVal,mac);
 
 	int i = 0;
 	char *pch = strtok (macVal,":");

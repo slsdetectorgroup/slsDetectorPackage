@@ -72,6 +72,29 @@ void Module_Module(struct Module* mod,unsigned int number, unsigned int address_
   for(i=0;i<Module_ndacs;i++) mod->bottom_dac[i] = mod->bottom_address_valid ? -1:0;
 }
 
+
+void Module_ModuleBottom(struct Module* mod,unsigned int number, unsigned int address_bottom){
+	unsigned int i;
+	mod->module_number        = number;
+	mod->top_address_valid    = 0;
+	mod->top_left_address     = 0;
+	mod->top_right_address    = 0;
+	mod-> bottom_address_valid = 1;
+	mod-> bottom_left_address  = 0x100 | (0xff & address_bottom);
+	mod-> bottom_right_address = (0x200 | (0xff & address_bottom));
+
+	mod->high_voltage          = -1;
+
+	for(i=0;i<4;i++) mod->idelay_top[i]=mod->idelay_bottom[i]=0;
+
+	mod->top_dac              = malloc(Module_ndacs * sizeof(int));
+	mod->bottom_dac           = malloc(Module_ndacs * sizeof(int));
+  for(i=0;i<Module_ndacs;i++) mod->top_dac[i]    = mod->top_address_valid    ? -1:0;
+  for(i=0;i<Module_ndacs;i++) mod->bottom_dac[i] = mod->bottom_address_valid ? -1:0;
+}
+
+
+
 void Module_Module1(struct Module* mod,unsigned int number, unsigned int address_top, unsigned int address_bottom){
 	unsigned int i;
 	mod->module_number        = number;
@@ -159,9 +182,9 @@ void Feb_Control_ClearModules(){
 int Feb_Control_Init(){
 	unsigned int i;
 	Feb_Control_ClearModules();
-	Feb_Control_AddModule(0,0xff);//global send
+	/*Feb_Control_AddModule(0,0xff);//global send
 
-	  Feb_Control_PrintModuleList();
+	  Feb_Control_PrintModuleList();*/
 
 	Feb_Control_ReadSetUpFileToAddModules("/home/root/executables/setup.txt");
 
@@ -216,10 +239,29 @@ int Feb_Control_ReadSetUpFileToAddModules(char* file_name){
 				 exit(0);
 			 }
 			 printf ("str:%s len:%d i0:%d i1:%d\n", str, strlen(str),i0,i1);
-			  if(!Feb_Control_AddModule(i0,i1)){
+
+			 /**Added by dhanya*/
+			 if(i1 == 0){
+				Feb_Control_AddModule1(0,0xff,0,1);//global send
+				Feb_Control_PrintModuleList();
+				  if(!Feb_Control_AddModule1(i0,i1,0,1)){
+					  printf("Error adding module, parameter was assigned twice in setup file: %s.\n",file_name);
+					  exit(0);
+				  }
+			 }else{
+				 Feb_Control_AddModule1(0,0,0xff,1);//global send
+				 Feb_Control_PrintModuleList();
+				  if(!Feb_Control_AddModule1(i0,0,i1,1)){
+					  printf("Error adding module, parameter was assigned twice in setup file: %s.\n",file_name);
+					  exit(0);
+				  }
+			 }
+
+
+			/*  if(!Feb_Control_AddModule1(i0,i1)){
 				  printf("Error adding module, parameter was assigned twice in setup file: %s.\n",file_name);
 				  exit(0);
-			  }
+			  }*/
 		 }
 	 }
 	fclose(fp);
@@ -315,7 +357,10 @@ int Feb_Control_AddModule1(unsigned int module_number, unsigned int top_address,
   struct Module mod,* m;
   m= &mod;
 
-  if(half_module) Module_Module(m,module_number,top_address);
+ /* if((half_module)&& (top_address != 1)) Module_Module(m,module_number,top_address);
+  else if(half_module)  Module_ModuleBottom(m,module_number,top_address);*/
+  if ((half_module)&& (!bottom_address)) Module_Module(m,module_number,top_address);
+  else if (half_module)  Module_ModuleBottom(m,module_number,bottom_address);
   else            Module_Module1(m,module_number,top_address,bottom_address);
 
 
@@ -657,12 +702,14 @@ int Feb_Control_DecodeDACString(char* dac_str, unsigned int* module_index, int* 
 	  strncpy(temp, p1+3, (p2-p1));
 	  temp[p2-p1] = '\0';
 	  unsigned int number = atoi(temp); //unsigned int number = atoi((local_s.substr(p1+3,p2-3)).c_str());
+
     if(!Feb_Control_GetModuleIndex(number,module_index)){
       printf("Error in dac_name \"%s\", module number %d not in list.\n",dac_str,number);
       return 0;
     }
     strcpy(local_s,p2+2);//local_s    = local_s.substr(p2+2);
   }
+
 
   *top    = 1;
   *bottom = 1;
@@ -682,12 +729,12 @@ int Feb_Control_DecodeDACString(char* dac_str, unsigned int* module_index, int* 
     strcpy(local_s,p1+8);
     *top=0;
   }
-
   *dac_ch = 0;
   if(!Feb_Control_GetDACNumber(local_s,dac_ch)){
     printf("Error in dac_name: %s  (%s)\n",dac_str,local_s);
     return 0;
   }
+
   return 1;
 }
 
@@ -748,9 +795,9 @@ int Feb_Control_SetDAC(char* dac_str, int value, int is_a_voltage_mv){
   }
 
   if(bottom&&Module_BottomAddressIsValid(&modules[module_index])){
-    if(!Feb_Control_SendDACValue(Module_GetBottomRightAddress(&modules[module_index]),dac_ch,&v)) return 0;
-    if(module_index!=0)                             Module_SetBottomDACValue(&modules[module_index],dac_ch,v);
-    else for(i=0;i<moduleSize;i++) Module_SetBottomDACValue(&modules[i],dac_ch,v);
+    if(!Feb_Control_SendDACValue(Module_GetBottomRightAddress(&modules[module_index]),dac_ch,&v))return 0;
+    if(module_index!=0) Module_SetBottomDACValue(&modules[module_index],dac_ch,v);
+    else for(i=0;i<moduleSize;i++)   Module_SetBottomDACValue(&modules[i],dac_ch,v);
   }
 
   return 1;
@@ -935,7 +982,11 @@ unsigned int* Feb_Control_GetTrimbits(){
 
 unsigned int Feb_Control_AddressToAll(){
   if(moduleSize==0) return 0;
-  return Module_GetTopLeftAddress(&modules[0])|Module_GetTopRightAddress(&modules[0]);
+  if(Module_BottomAddressIsValid(&modules[1])){//printf("************* bottom\n");
+     return Module_GetBottomLeftAddress(&modules[1])|Module_GetBottomRightAddress(&modules[1]);}
+
+  //printf("************* top\n");
+  return Module_GetTopLeftAddress(&modules[1])|Module_GetTopRightAddress(&modules[1]);
 }
 
 int Feb_Control_SetCommandRegister(unsigned int cmd){
@@ -978,10 +1029,23 @@ int Feb_Control_WaitForFinishedFlag(int sleep_time_us){
 }
 
 int Feb_Control_AcquisitionInProgress(){
-	unsigned int status_reg_r=0;
+	unsigned int status_reg_r=0,status_reg_l=0;
 
-	if(!(Feb_Control_GetDAQStatusRegister(Module_GetTopRightAddress(&modules[1]),&status_reg_r)))
+
+	//printf("right:%d\n",Feb_Control_GetDAQStatusRegister(Module_GetTopRightAddress(&modules[1]),&status_reg_r));
+	//printf("left:%d\n",Feb_Control_GetDAQStatusRegister(Module_GetTopLeftAddress(&modules[1]),&status_reg_l));
+
+	if(Module_BottomAddressIsValid(&modules[0])){
+		//printf("************* bottom1\n");
+
+		if(!(Feb_Control_GetDAQStatusRegister(Module_GetBottomRightAddress(&modules[1]),&status_reg_r)))
+				return 0;
+	}else{
+		//printf("************* top1\n");
+		if(!(Feb_Control_GetDAQStatusRegister(Module_GetTopRightAddress(&modules[1]),&status_reg_r)))
 		return 0;
+	}
+
 	if(status_reg_r&DAQ_STATUS_DAQ_RUNNING) return 1;
 
 	/*

@@ -50,6 +50,10 @@ unsigned int nimages_per_request=1;
 int  on_dst=0;
 int dst_requested[32] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
 
+int default_dac_values[16] = {0,2000,2000,1250,700,1278,500,500,2000,500,500,550,550,100,1000,775};
+
+
+
 
 int initDetector(){
 	  int imod,i,n;
@@ -106,10 +110,9 @@ int initDetector(){
 
   //get dac values
   int retval[2];
-	for(i=0;i<(detectorModules)->ndac;i++){
-		setDAC((enum detDacIndex)i,-1,(detectorModules)->module,0,retval);
-		(detectorModules)->dacs[i] = retval[0];
-	}
+	for(i=0;i<(detectorModules)->ndac;i++)
+		setDAC((enum detDacIndex)i,default_dac_values[i],(detectorModules)->module,0,retval);
+
 
   /* initialize dynamic range etc. */
 
@@ -127,6 +130,7 @@ int initDetector(){
   setTiming(AUTO_TIMING);
   int enable[2] = {0,1};
   setExternalGating(enable);//disable external gating
+
    return 1;
 }
 
@@ -288,10 +292,10 @@ void setDAC(enum detDacIndex ind, int val, int imod, int mV, int retval[]){
 	if(val >= 0)
 		Feb_Control_SetDAC(iname,val,mV);
 	int k;
-		Feb_Control_GetDAC(iname, &k,0);
-		retval[0] = k;
-		Feb_Control_GetDAC(iname,&k,1);
-		retval[1] = k;
+	Feb_Control_GetDAC(iname, &k,0);
+	retval[0] = k;
+	Feb_Control_GetDAC(iname,&k,1);
+	retval[1] = k;
 
 	(detectorModules)->dacs[ind] = retval[0];
 
@@ -669,7 +673,7 @@ int executeTrimming(enum trimMode mode, int par1, int par2, int imod){
 }
 
 
-int configureMAC(int ipad, long long int macad, long long int detectormacadd, int detipad, int udpport, int ival){
+int configureMAC(int ipad, long long int macad, long long int detectormacadd, int detipad, int udpport, int udpport2, int ival){
 	char src_mac[50], src_ip[50],dst_mac[50], dst_ip[50];
 	int src_port = 0xE185;
 	int dst_port = udpport;
@@ -688,7 +692,6 @@ int configureMAC(int ipad, long long int macad, long long int detectormacadd, in
 										(unsigned int)((macad>>8)&0xFF),
 										(unsigned int)((macad>>0)&0xFF));
 
-	printf("Seting up Table Entry Left:\n");
 	printf("src_port:%d\n",src_port);
 	printf("dst_port:%d\n",dst_port);
 	printf("src_ip:%s\n",src_ip);
@@ -696,27 +699,28 @@ int configureMAC(int ipad, long long int macad, long long int detectormacadd, in
 	printf("src_mac:%s\n",src_mac);
 	printf("dst_mac:%s\n\n",dst_mac);
 
+
 	int beb_num = 34;
 	int header_number = 0;
 
-int i=0;
-	//EigerSetupTableEntryLeft(ipad, macad, detectormacadd, detipad, udpport);
+	int i=0;
 	/* for(i=0;i<32;i++){/** modified for Aldo*/
 		    if(Beb_SetBebSrcHeaderInfos(beb_num,send_to_ten_gig,src_mac,src_ip,src_port) &&
 		    		Beb_SetUpUDPHeader(beb_num,send_to_ten_gig,header_number+i,dst_mac,dst_ip, dst_port))
 		    	printf("set up left ok\n");
 		    else return -1;
 	 /*}*/
-	//EigerSetupTableEntryRight(ipad, macad, detectormacadd, detipad, udpport);
+
 	header_number = 32;
-	dst_port = udpport +1;
+	dst_port = udpport2;
+
 	 /*for(i=0;i<32;i++){*//** modified for Aldo*/
 		    if(Beb_SetBebSrcHeaderInfos(beb_num,send_to_ten_gig,src_mac,src_ip,src_port) &&
 		    		Beb_SetUpUDPHeader(beb_num,send_to_ten_gig,header_number+i,dst_mac,dst_ip, dst_port))
 		    	printf("set up right ok\n");
 		    else return -1;
 	/*}*/
-	//SetDestinationParameters(EigerGetNumberOfExposures()*EigerGetNumberOfCycles());
+
 	  on_dst = 0;
 
 	  for(i=0;i<32;i++) dst_requested[i] = 0; //clear dst requested

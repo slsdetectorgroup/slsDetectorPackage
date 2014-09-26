@@ -443,9 +443,16 @@ void slsReceiverUDPFunctions::setEthernetInterface(char* c){
 
 
 void slsReceiverUDPFunctions::setUDPPortNo(int p){
-	for(int i=0;i<numListeningThreads;i++){
-		server_port[i] = p+i;
-	}
+	//for(int i=0;i<numListeningThreads;i++){
+		server_port[0] = p;
+	//}
+}
+
+
+void slsReceiverUDPFunctions::setUDPPortNo2(int p){
+	//for(int i=0;i<numListeningThreads;i++){
+		server_port[1] = p;
+	//}
 }
 
 
@@ -904,7 +911,9 @@ int slsReceiverUDPFunctions::createUDPSockets(){
 	int iret;
 	for(int i=0;i<numListeningThreads;i++){
 		iret = udpSocket[i]->getErrorStatus();
-		if(iret){
+		if(!iret)
+			cout << "UDP port opened at port " << server_port[i] << endl;
+		else{
 #ifdef VERBOSE
 			cout << "Could not create UDP socket on port " << server_port[i]  << " error:" << iret << endl;
 #endif

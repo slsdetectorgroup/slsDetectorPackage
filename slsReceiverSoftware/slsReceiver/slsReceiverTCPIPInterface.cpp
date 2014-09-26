@@ -613,10 +613,10 @@ int slsReceiverTCPIPInterface::setup_udp(){
 	ret=OK;
 	strcpy(mess,"could not set up udp connection");
 	char retval[MAX_STR_LENGTH]="";
-	char args[2][MAX_STR_LENGTH];
+	char args[3][MAX_STR_LENGTH];
 
 	string temp;
-	int udpport;
+	int udpport,udpport2;
 	char eth[MAX_STR_LENGTH];
 
 
@@ -641,8 +641,9 @@ int slsReceiverTCPIPInterface::setup_udp(){
 		else{
 			//set up udp port
 			 sscanf(args[1],"%d",&udpport);
+			 sscanf(args[2],"%d",&udpport2);
 			 receiverBase->setUDPPortNo(udpport);
-
+			 receiverBase->setUDPPortNo2(udpport2);
 			 //setup udpip
 			 //get ethernet interface or IP to listen to
 			 temp = genericSocket::ipToName(args[0]);

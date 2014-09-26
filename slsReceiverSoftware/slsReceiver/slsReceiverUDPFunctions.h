@@ -213,6 +213,11 @@ public:
 	 */
 	void setUDPPortNo(int p);
 
+	/**
+	 * Set UDP Port Number2
+	 */
+	void setUDPPortNo2(int p);
+
 	/*
 	 * Returns number of frames to receive
 	 * This is the number of frames to expect to receiver from the detector.

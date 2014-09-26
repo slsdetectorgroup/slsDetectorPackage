@@ -233,6 +233,11 @@ public:
 	virtual void setUDPPortNo(int p) = 0;
 
 	/**
+	 * Set UDP Port Number
+	 */
+	virtual void setUDPPortNo2(int p) = 0;
+
+	/**
 	 * Set Ethernet Interface or IP to listen to
 	 */
 	virtual void setEthernetInterface(char* c) = 0;

@@ -344,6 +344,10 @@ slsDetectorCommand::slsDetectorCommand(slsDetectorUtils *det)  {
   descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdNetworkParameter;
   i++;
 
+  descrToFuncMap[i].m_pFuncName="rx_udpport2"; //
+  descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdNetworkParameter;
+  i++;
+
   descrToFuncMap[i].m_pFuncName="detectormac"; //
   descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdNetworkParameter;
   i++;
@@ -497,6 +501,9 @@ slsDetectorCommand::slsDetectorCommand(slsDetectorUtils *det)  {
   descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdSettings;
   i++;
 
+  descrToFuncMap[i].m_pFuncName="trimval"; //
+  descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdSettings;
+  i++;
 
   descrToFuncMap[i].m_pFuncName="pedestal"; //
   descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdSettings;
@@ -2461,6 +2468,12 @@ string slsDetectorCommand::cmdNetworkParameter(int narg, char *args[], int actio
       if (!(sscanf(args[1],"%d",&i)))
         return ("cannot parse argument") + string(args[1]);
     }
+  } else if (cmd=="rx_udpport2") {
+	t=RECEIVER_UDP_PORT2;
+	if (action==PUT_ACTION){
+	   if (!(sscanf(args[1],"%d",&i)))
+	     return ("cannot parse argument") + string(args[1]);
+	}
   } else return ("unknown network parameter")+cmd;
 
   if (action==PUT_ACTION)
@@ -2482,6 +2495,7 @@ string slsDetectorCommand::helpNetworkParameter(int narg, char *args[], int acti
     os << "rx_udpip ip \n sets receiver udp ip to ip"<< std::endl;
     os << "rx_udpmac mac \n sets receiver udp mac to mac"<< std::endl;
     os << "rx_udpport port \n sets receiver udp port to port"<< std::endl;
+    os << "rx_udpport2 port \n sets receiver udp port to port. For Eiger, it is the second half module and for other detectors, same as rx_udpport"<< std::endl;
   }
   if (action==GET_ACTION || action==HELP_ACTION) {
 	os << "detectormac \n gets detector mac "<< std::endl;
@@ -2489,6 +2503,8 @@ string slsDetectorCommand::helpNetworkParameter(int narg, char *args[], int acti
     os << "rx_hostname \n gets receiver ip "<< std::endl;
     os << "rx_udpmac \n gets receiver udp mac "<< std::endl;
     os << "rx_udpport \n gets receiver udp port "<< std::endl;
+    os << "rx_udpport2 \n gets receiver udp port. For Eiger, it is the second half module and for other detectors, same as rx_udpport"<< std::endl;
+
   } 
   return os.str();
 
@@ -2912,6 +2928,15 @@ string slsDetectorCommand::cmdSettings(int narg, char *args[], int action) {
     myDet->saveSettingsFile(sval, -1);
     return string("done");
     
+  } else if (cmd=="trimval") {
+	  if (action==PUT_ACTION){
+		  if (sscanf(args[1],"%d",&val))
+			  myDet->setAllTrimbits(val);
+		  else
+			  return string("invalid trimbit value ")+cmd;
+	  }
+	  sprintf(ans,"%d",myDet->setAllTrimbits(-1));
+	  return ans;
   } else if (cmd=="pedestal") {
 	  if (action==GET_ACTION)
 		  return string("cannot get");
@@ -2935,6 +2960,7 @@ string slsDetectorCommand::helpSettings(int narg, char *args[], int action) {
     os << "threshold eV\n sets the detector threshold in eV"<< std::endl;
     os << "trimbits fname\n loads the trimfile fname to the detector. If no extension is specified, the serial number of each module will be attached."<< std::endl;
     os << "trim:mode fname\n trims the detector according to mode (can be noise, beam, improve, fix) and saves the resulting trimbits to file fname."<< std::endl;
+    os << "trimval i \n sets all the trimbits to i" << std::endl;
     os << "pedestal i \n starts acquisition for i frames, calculates pedestal and writes back to fpga."<< std::endl;
 
   }
@@ -2942,6 +2968,7 @@ string slsDetectorCommand::helpSettings(int narg, char *args[], int action) {
     os << "settings \n gets the settings of the detector"<< std::endl;
     os << "threshold V\n gets the detector threshold"<< std::endl;
     os << "trimbits [fname]\n returns the trimfile loaded on the detector. If fname is specified the trimbits are saved to file. If no extension is specified, the serial number of each module will be attached."<< std::endl;
+    os << "trimval \n returns the value all trimbits are set to. If they are different, returns -1." << std::endl;
   } 
   return os.str();
 

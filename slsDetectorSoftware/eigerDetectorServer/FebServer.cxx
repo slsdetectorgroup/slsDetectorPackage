@@ -30,6 +30,8 @@ enum cmd_string {evNotFound,
 	evSetDACValue,evGetDACValue,evSetDACVoltage,evGetDACVoltage,evSetHighVoltage,//evGetHighVoltage,
 
 	evSetTrimBits,
+	evSetAllTrimBits,
+	evGetTrimBits,
 	//evLoadTrimBitFile,
 
 	evSetBitMode,
@@ -63,6 +65,8 @@ void init(){
 	enum_map["getdacvoltage"]         = evGetDACVoltage;
 	enum_map["sethighvoltage"]        = evSetHighVoltage;
 	enum_map["settrimbits"]           = evSetTrimBits;
+	enum_map["setalltrimbits"]        = evSetAllTrimBits;
+	enum_map["gettrimbits"]           = evGetTrimBits;
 	//  enum_map["loadtrimbitfile"]        = evLoadTrimBitFile;
 	enum_map["setbitmode"]            = evSetBitMode;
 	enum_map["setphotonenergy"]       = evSetPhotonEnergy;
@@ -116,8 +120,8 @@ int main(int argc, char* argv[]){
 	if(!SetupListenSocket(port_number)) return 1;
 
 
-	int  length=1000;
-	char data[1000];
+	int  length=270000;
+	char data[270000];
 
 	int stop = 0;
 	time_t rawtime;
@@ -126,13 +130,14 @@ int main(int argc, char* argv[]){
 
 	while(!stop){
 
-		cout<<endl<<"\n\n\n\nWaiting for command -> "<<flush;
+		/*cout<<"Waiting for command -> "<<flush;*/
 		int nread = AccpetConnectionAndWaitForData(data,length);
+
 		if(nread<=0) return 0;
 
 		time(&rawtime); timeinfo=localtime(&rawtime);
 		cout<<asctime(timeinfo);
-		cout<<"  Command received: "<<data<<endl<<endl;
+		/*cout<<"  Command received: "<<data<<endl;*/
 
 
 
@@ -140,13 +145,15 @@ int main(int argc, char* argv[]){
 		float v[4];//,v2,v3,v4,v5;
 		int n[5];
 
+
+
 		string cmd  = GetNextString(data,1);
 		int    ret_val = 1;
 
-		string return_message = "\n\n\tCommand recieved: ";
+		string return_message = "";/*\n\n\tCommand recieved: ";
 		return_message.append(data);
 		return_message.append("\n");
-
+*/
 		int return_start_pos;
 		while(cmd.length()>0){
 			int ret_parameter = 0;
@@ -209,7 +216,7 @@ int main(int argc, char* argv[]){
 				tmp_str[0] = GetNextString(data);
 
 				if(tmp_str[0].length()>0&&feb_controler->GetDAC(tmp_str[0],ret_parameter)){
-					return_message.append("\tExecuted:  GetDACValue "); return_message.append(tmp_str[0]+"  ->  ");AddNumber(return_message,ret_parameter); return_message.append(" mV\n");
+					return_message.append("\tExecuted:  GetDACValue "); return_message.append(tmp_str[0]+"  ->  ");AddNumber(return_message,ret_parameter); return_message.append("\n");
 					ret_val = 0;
 				}else{
 					return_message.append("\tError executing: GetDACValue <dac_name>\n");
@@ -257,15 +264,47 @@ int main(int argc, char* argv[]){
 				break;
 
 			case evSetTrimBits :
-				/*if(tmp_str[0].length()>0&&feb_controler->SetDynamicRange(n[0])){*/
-				feb_controler->SetTrimbits(0,(unsigned char*)data);
-				return_message.append("\tExecuted:  SetTrimBits "); AddNumber(return_message,n[0]); return_message.append("\n");
-				ret_val = 0;
-				/*}else{
-      	    return_message.append("\tError executing: SetTrimBits \n");
-      	    ret_val = 1;
-      	  }	*/
+				tmp_str[0] = GetNextString(data);
+				if(feb_controler->LoadTrimbitFile()){
+			/*	if(1){*/
+					/*tmp_str[0] = GetNextString(data);
+					feb_controler->SetTrimbits(0,(unsigned char*)(tmp_str[0].c_str()));*/
+					return_message.append("\tExecuted:  SetTrimBits\n");
+					ret_val = 0;
+				}else{
+					return_message.append("\tError executing: SetTrimBits \n");
+					ret_val = 1;
+				}
 				break;
+
+			case evSetAllTrimBits :
+				tmp_str[0] = GetNextString(data);
+				n[0] = atoi(tmp_str[0].data());
+				if(feb_controler->SaveAllTrimbitsTo(n[0])){
+					/*feb_controler->SetTrimbits(0,(unsigned char*)(tmp_str[0].c_str()));*/
+				/*if(1){*/
+					return_message.append("\tExecuted:  SetAllTrimBits\n");
+					ret_val = 0;
+				}else{
+					return_message.append("\tError executing: SetAllTrimBits \n");
+					ret_val = 1;
+				}
+				break;
+
+
+			case evGetTrimBits :
+				if(feb_controler->SaveTrimbitFile()){
+				/*if(1){*/
+					/*tmp_str[0] = GetNextString(data);
+					feb_controler->GetTrimbits();*/
+					return_message.append("\tExecuted:  GetTrimBits\n");
+					ret_val = 0;
+				}else{
+					return_message.append("\tError executing: GetTrimBits \n");
+					ret_val = 1;
+				}
+				break;
+
 
 				//      case evLoadTrimBitFile :
 
@@ -455,11 +494,11 @@ int main(int argc, char* argv[]){
 
 			cmd = GetNextString(data);
 		}
-		return_message.append("\n\n\n");
+		/*return_message.append("\n\n\n");*/
 
 		AddNumber(return_message,ret_val,0,1);
-		cout<<return_message.c_str()<<endl;
-		cout<<"\treturn: "<<ret_val<<endl;
+		cout<<return_message.c_str()<<"\t\t";
+		cout<<"return: "<<ret_val<<endl;
 
 		if(!WriteNClose(return_message.c_str(),return_message.length())) return 0;
 	}

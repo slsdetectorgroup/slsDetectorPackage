@@ -1012,7 +1012,7 @@ int set_dac(int file_des) {
 	n = sendDataOnly(file_des,&ret,sizeof(ret));
 	if (ret!=FAIL) {
 		/* send return argument */
-		n += sendDataOnly(file_des,&retval,sizeof(retval));
+		n += sendDataOnly(file_des,retval,sizeof(retval));
 	} else {
 		n += sendDataOnly(file_des,mess,sizeof(mess));
 	}
@@ -2547,7 +2547,7 @@ int update_client(int file_des) {
 int configure_mac(int file_des) {
 
 	int ret=OK;
-	char arg[5][50];
+	char arg[6][50];
 	int n;
 
 	int imod=0;//should be in future sent from client as -1, arg[2]
@@ -2572,7 +2572,7 @@ int configure_mac(int file_des) {
 	sscanf(arg[2], "%x", 		&udpport);
 	sscanf(arg[3], "%llx",	&idetectormacadd);
 	sscanf(arg[4], "%x",		&detipad);
-
+	//arg[5] is udpport2 for eiger
 #ifdef VERBOSE
 	int i;
 	printf("\ndigital_test_bit in server %d\t",digitalTestBit);

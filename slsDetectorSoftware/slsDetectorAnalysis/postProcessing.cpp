@@ -461,7 +461,7 @@ void* postProcessing::processData(int delflag) {
 		 */
 
 
-		int progress = 0;
+		int progress = -1;
 		char currentfName[MAX_STR_LENGTH]="";
 		int currentfIndex = -1;
 		bool newData = false;
@@ -502,6 +502,7 @@ void* postProcessing::processData(int delflag) {
 
 
 			if (dataReady){
+
 				//for random reads, ask only if it has new data
 				if(!newData){
 					if(currentfIndex > progress)
@@ -525,13 +526,12 @@ void* postProcessing::processData(int delflag) {
 							currentfIndex = -1;
 							cout<<"****Detector Data returned is NULL***"<<endl;
 						}
-
-						if(nthframe){
+						/*if(nthframe){
 							if((currentfIndex == -1) || (currentfIndex == progress))
 								currentfIndex = -1;
 							else
 								progress = currentfIndex;
-						}
+						}*/
 
 						//not garbage frame
 						if (currentfIndex >= 0) {

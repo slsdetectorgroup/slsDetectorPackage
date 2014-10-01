@@ -474,6 +474,14 @@ class multiSlsDetector  : public slsDetectorUtils {
   int saveSettingsFile(string fname, int nmod=0);
 
 
+  /** sets all the trimbits to a particular value
+      \param val trimbit value
+      \param imod module number, -1 means all modules
+      \returns OK or FAIL
+  */
+  int setAllTrimbits(int val, int imod=-1);
+
+
   /** loads the modules calibration data reading from a file -  file name extension is automatically generated! */
   int loadCalibrationFile(string fname, int nmod=0);
 

@@ -427,7 +427,10 @@ int slsDetectorActions::executeScan(int level, int istep) {
     break;
   case trimbitsScan:
     trimbit=(int)currentScanVariable[level];
-    setChannel((trimbit<<((int)TRIMBIT_OFF))|((int)COMPARATOR_ENABLE)); // trimbit scan
+   if(getDetectorsType() == EIGER)
+    	setAllTrimbits(trimbit);
+    else
+    	setChannel((trimbit<<((int)TRIMBIT_OFF))|((int)COMPARATOR_ENABLE)); // trimbit scan
     break;
   case positionScan:
     //check if channels are connected!

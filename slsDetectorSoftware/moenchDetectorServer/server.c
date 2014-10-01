@@ -25,7 +25,6 @@ int main(int argc, char *argv[])
 	int retval=OK;
 	int sd, fd;
 	int iarg;
-	int checkType = 1;
 
 
 	for(iarg=1; iarg<argc; iarg++){
@@ -39,20 +38,6 @@ int main(int argc, char *argv[])
 				printf("could not decode phase shift\n");
 				return 1;
 			}
-		}
-
-		else if(!strcasecmp(argv[iarg],"-test")){
-			if(argc==iarg+1){
-				printf("No test condition given. Exiting.\n");
-				return 1;
-			}
-			if(!strcasecmp(argv[iarg+1],"with_gotthard")){
-				checkType = 0;
-			}else{
-				printf("could not decode test condition. Possible arguments: with_gotthard. Exiting\n");
-				return 1;
-			}
-
 		}
 	}
 
@@ -71,10 +56,7 @@ int main(int argc, char *argv[])
 	//control server
 	else {
 		portno = DEFAULT_PORTNO;
-		if(checkType)
-			sprintf(cmd,"%s %d stopserver &",argv[0],DEFAULT_PORTNO+1);
-		else
-			sprintf(cmd,"%s %d stopserver -test with_gotthard &",argv[0],DEFAULT_PORTNO+1);
+		sprintf(cmd,"%s %d stopserver &",argv[0],DEFAULT_PORTNO+1);
 		printf("\n\nControl Server\nOpening control server on port %d\n",portno );
 
 		//printf("\n\ncmd:%s\n",cmd);
@@ -83,7 +65,7 @@ int main(int argc, char *argv[])
 	}
 
 
-	init_detector(b, checkType);
+	init_detector(b);
 
 
 	sd=bindSocket(portno);

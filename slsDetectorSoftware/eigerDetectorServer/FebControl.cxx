@@ -78,7 +78,7 @@ FebControl::FebControl(){
   staticBits=acquireNReadoutMode=triggerMode=externalEnableMode=subFrameMode=0;
 
   trimbit_size=263680;
-  last_downloaded_trimbits = new unsigned char [trimbit_size];
+  last_downloaded_trimbits = new unsigned int [trimbit_size];
 
   cout<<endl<<"Default Settings:"<<endl;
   nimages                = 1;
@@ -697,67 +697,95 @@ float FebControl::GetDAC(string s){
 }
 */
 
-bool FebControl::SetTrimbits(unsigned int module_num, unsigned char *trimbits){
+bool FebControl::SetTrimbits(unsigned int module_num, unsigned int *trimbits){
+	printf("Setting Trimbits\n");
 
-  unsigned int module_index=0;
-  if(!GetModuleIndex(module_num,module_index)){
-    cout<<"Warning could not set trimbits, bad module number."<<endl;
-    return 0;
-  }
+	//for (int iy=10000;iy<20020;++iy)//263681
+	//for (int iy=263670;iy<263680;++iy)//263681
+	//	printf("%d:%c\t\t",iy,trimbits[iy]);
 
-  if(!Reset()) cout<<"Warning could not reset DAQ."<<endl;
 
-  for(int l_r=0;l_r<2;l_r++){ // l_r loop
-    unsigned int disable_chip_mask = l_r ? DAQ_CS_BAR_LEFT : DAQ_CS_BAR_RIGHT;
-    
-    if(!(WriteRegister(0xfff,DAQ_REG_STATIC_BITS,disable_chip_mask|DAQ_STATIC_BIT_PROGRAM|DAQ_STATIC_BIT_M8)&&SetCommandRegister(DAQ_SET_STATIC_BIT)&&StartDAQOnlyNWaitForFinish())){
-      cout<<"Could not select chips"<<endl;
-      return 0;
-    }
 
-    for(int row_set=0;row_set<16;row_set++){ //16 rows at a time
-      if(row_set==0){
-	if(!SetCommandRegister(DAQ_RESET_COMPLETELY|DAQ_SEND_A_TOKEN_IN|DAQ_LOAD_16ROWS_OF_TRIMBITS)){
-	  cout<<"Warning: Could not SetCommandRegister for loading trim bits."<<endl;
-	  return 0;
+	unsigned int module_index=0;
+	if(!GetModuleIndex(module_num,module_index)){
+		cout<<"Warning could not set trimbits, bad module number."<<endl;
+		return 0;
 	}
-      }else{
-	if(!SetCommandRegister(DAQ_LOAD_16ROWS_OF_TRIMBITS)){
-	  cout<<"Warning: Could not SetCommandRegister for loading trim bits."<<endl;
-	  return 0;
-	}
-      }
 
-      static unsigned int trimbits_to_load_l[1024];
-      static unsigned int trimbits_to_load_r[1024];
-      for(int row=0;row<16;row++){ //row loop
-	int offset   = 2*32*row;
-	for(int sc=0;sc<32;sc++){  //supercolumn loop sc
-	  int super_column_start_position_l = 1030*row +       l_r *258 + sc*8;
-	  int super_column_start_position_r = 1030*row + 516 + l_r *258 + sc*8;
-	  int chip_sc = 31 - sc;
-	  trimbits_to_load_l[offset+chip_sc] = 0;
-	  trimbits_to_load_r[offset+chip_sc] = 0;
-	  for(int i=0;i<8;i++){ // column loop i
-	    trimbits_to_load_l[offset+chip_sc]    |= ( 0x7  & trimbits[263679 - (row_set*16480+super_column_start_position_l+i)])<<((7-i)*4);//low
-	    trimbits_to_load_l[offset+chip_sc+32] |= ((0x38 & trimbits[263679 - (row_set*16480+super_column_start_position_l+i)])>>3)<<((7-i)*4);//upper
-	    trimbits_to_load_r[offset+chip_sc]    |= ( 0x7  & trimbits[263679 - (row_set*16480+super_column_start_position_r+i)])<<((7-i)*4);//low
-	    trimbits_to_load_r[offset+chip_sc+32] |= ((0x38 & trimbits[263679 - (row_set*16480+super_column_start_position_r+i)])>>3)<<((7-i)*4);//upper
-	  } // end column loop i
-	} //end supercolumn loop sc
-      } //end row loop
+	if(!Reset()) cout<<"Warning could not reset DAQ."<<endl;
 
-      if(!WriteMemory(modules[0]->GetTopLeftAddress(),0,0,1024,trimbits_to_load_r)||!WriteMemory(modules[0]->GetTopRightAddress(),0,0,1024,trimbits_to_load_l)||!StartDAQOnlyNWaitForFinish()) return 0;
-    } //end row_set loop (groups of 16 rows)
-  } // end l_r loop
+	for(int l_r=0;l_r<2;l_r++){ // l_r loop
+		unsigned int disable_chip_mask = l_r ? DAQ_CS_BAR_LEFT : DAQ_CS_BAR_RIGHT;
+		if(!(WriteRegister(0xfff,DAQ_REG_STATIC_BITS,disable_chip_mask|DAQ_STATIC_BIT_PROGRAM|DAQ_STATIC_BIT_M8)&&SetCommandRegister(DAQ_SET_STATIC_BIT)&&StartDAQOnlyNWaitForFinish())){
+			cout<<"Could not select chips"<<endl;
+			return 0;
+		}
 
-  memcpy(last_downloaded_trimbits,trimbits,trimbit_size*sizeof(unsigned char));
+		for(int row_set=0;row_set<16;row_set++){ //16 rows at a time
+			if(row_set==0){
+				if(!SetCommandRegister(DAQ_RESET_COMPLETELY|DAQ_SEND_A_TOKEN_IN|DAQ_LOAD_16ROWS_OF_TRIMBITS)){
+					cout<<"Warning: Could not SetCommandRegister for loading trim bits."<<endl;
+					return 0;
+				}
+			}else{
+				if(!SetCommandRegister(DAQ_LOAD_16ROWS_OF_TRIMBITS)){
+					cout<<"Warning: Could not SetCommandRegister for loading trim bits."<<endl;
+					return 0;
+				}
+			}
 
-  return SetStaticBits(); //send the static bits
+			static unsigned int trimbits_to_load_l[1024];
+			static unsigned int trimbits_to_load_r[1024];
+			for(int row=0;row<16;row++){ //row loop
+				int offset   = 2*32*row;
+				for(int sc=0;sc<32;sc++){  //supercolumn loop sc
+
+					int super_column_start_position_l = 1030*row +       l_r *258 + sc*8;
+					int super_column_start_position_r = 1030*row + 516 + l_r *258 + sc*8;
+
+					/*
+					  int super_column_start_position_l = 1024*row +       l_r *256 + sc*8; //256 per row, 8 per super column
+					  int super_column_start_position_r = 1024*row + 512 + l_r *256 + sc*8; //256 per row, 8 per super column
+*/
+					int chip_sc = 31 - sc;
+					trimbits_to_load_l[offset+chip_sc] = 0;
+					trimbits_to_load_r[offset+chip_sc] = 0;
+					for(int i=0;i<8;i++){ // column loop i
+
+					    trimbits_to_load_l[offset+chip_sc]    |= ( 0x7  & trimbits[row_set*16480+super_column_start_position_l+i])<<((7-i)*4);//low
+					    trimbits_to_load_l[offset+chip_sc+32] |= ((0x38 & trimbits[row_set*16480+super_column_start_position_l+i])>>3)<<((7-i)*4);//upper
+					    trimbits_to_load_r[offset+chip_sc]    |= ( 0x7  & trimbits[row_set*16480+super_column_start_position_r+i])<<((7-i)*4);//low
+					    trimbits_to_load_r[offset+chip_sc+32] |= ((0x38 & trimbits[row_set*16480+super_column_start_position_r+i])>>3)<<((7-i)*4);//upper
+/*
+						trimbits_to_load_l[offset+chip_sc]    |= ( 0x7  & trimbits[263679 - (row_set*16480+super_column_start_position_l+i)])<<((7-i)*4);//low
+						trimbits_to_load_l[offset+chip_sc+32] |= ((0x38 & trimbits[263679 - (row_set*16480+super_column_start_position_l+i)])>>3)<<((7-i)*4);//upper
+						trimbits_to_load_r[offset+chip_sc]    |= ( 0x7  & trimbits[263679 - (row_set*16480+super_column_start_position_r+i)])<<((7-i)*4);//low
+						trimbits_to_load_r[offset+chip_sc+32] |= ((0x38 & trimbits[263679 - (row_set*16480+super_column_start_position_r+i)])>>3)<<((7-i)*4);//upper
+					*/
+
+					} // end column loop i
+				} //end supercolumn loop sc
+			} //end row loop
+
+/*
+			if(!WriteMemory(modules[0]->GetTopLeftAddress(),0,0,1024,trimbits_to_load_r)||!WriteMemory(modules[0]->GetTopRightAddress(),0,0,1024,trimbits_to_load_l)||!StartDAQOnlyNWaitForFinish()){
+				cout <<" some errror!"<< endl;
+				return 0;
+			}
+*/
+			if(!WriteMemory(modules[0]->GetTopLeftAddress(),0,0,1023,trimbits_to_load_r)||!WriteMemory(modules[0]->GetTopRightAddress(),0,0,1023,trimbits_to_load_l)||!StartDAQOnlyNWaitForFinish()){
+				cout <<" some errror!"<< endl;
+				return 0;
+			}
+
+		} //end row_set loop (groups of 16 rows)
+	} // end l_r loop
+	memcpy(last_downloaded_trimbits,trimbits,trimbit_size*sizeof(unsigned char));
+	return SetStaticBits(); //send the static bits
 }
 
 
-unsigned char* FebControl::GetTrimbits(){
+unsigned int* FebControl::GetTrimbits(){
   return last_downloaded_trimbits;
 }
 
@@ -1191,4 +1219,79 @@ bool FebControl::StopAcquisition(){
 
 
 
+bool FebControl::LoadTrimbitFile(){
+	string filename = "/home/root/noise.snbeb040";
+	ifstream input_file;
 
+	int ndacs =16;
+	int dacs[ndacs];
+	unsigned int chanregs[trimbit_size];
+
+
+	input_file.open(filename.c_str() ,ifstream::binary);
+	if(!input_file.is_open()){
+		cout<<"Warning, could not open trimbit file: "<<filename<<endl;
+		exit(-1);
+	}
+
+	//dacs
+	for(int i=0;i<ndacs;++i){
+		input_file.read((char*) &dacs[i],sizeof(int));
+		cout << "  dac " << i << ":"<< Module::dac_names[i] << ":" << dacs[i] << endl;
+		SetDAC(Module::dac_names[i],dacs[i]);
+
+	}
+
+	cout << "Loading trimbits from file " << filename << endl;
+
+	//trimbits
+	input_file.read((char*) chanregs,trimbit_size*sizeof(unsigned int));
+    if(input_file.eof()){
+      cout<<endl<<"Error, could not load trimbits end of file, "<<filename<<", reached."<<endl<<endl;
+      exit(-1);
+    }
+
+	input_file.close();
+
+	return SetTrimbits(0,chanregs);
+}
+
+
+
+bool FebControl::SaveTrimbitFile(){
+	string filename = "/home/root/noise.snbeb040";
+	ofstream output_file;
+
+	int ndacs =16;
+	int dacs[ndacs];
+
+	output_file.open(filename.c_str() ,ofstream::binary);
+	if(!output_file.is_open()){
+		cout<<"Warning, could not open trimbit file: "<<filename<<endl;
+		return 0;
+	}
+
+	cout << "Writing trimbits to file " << filename << endl;
+
+	//dacs
+	for(int i=0;i<ndacs;++i){
+		GetDAC(Module::dac_names[i], dacs[i]);
+		output_file.write((char*) &dacs[i],sizeof(int));
+		cout << "  dac " << i << ":"<< Module::dac_names[i] << ":" << dacs[i] << endl;
+	}
+
+	//trimbits
+	output_file.write((char*) last_downloaded_trimbits,trimbit_size * sizeof(unsigned int));
+
+	output_file.close();
+
+	return 1;
+}
+
+
+bool FebControl::SaveAllTrimbitsTo(int value){
+	unsigned int chanregs[trimbit_size];
+	for(int i=0;i<trimbit_size;i++)
+		chanregs[i] = value;
+	  return SetTrimbits(0,chanregs);
+}

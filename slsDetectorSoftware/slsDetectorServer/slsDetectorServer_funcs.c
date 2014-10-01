@@ -52,6 +52,12 @@ int init_detector(int b) {
 #ifdef SLS_DETECTOR_FUNCTION_LIST
 		initDetector();
 #endif
+	}else{
+		  Feb_Interface_FebInterface();
+		  Feb_Control_FebControl();
+		  printf("FEb control constructor done\n");
+		 /* Beb_Beb(-1);
+		  printf("BEB constructor done\n");*/
 	}
 	strcpy(mess,"dummy message");
 	strcpy(lastClientIP,"none");
@@ -157,7 +163,7 @@ int function_table() {
 	flist[F_STOP_RECEIVER]=&stop_receiver;
 	flist[F_CALIBRATE_PEDESTAL]=&calibrate_pedestal;
 	flist[F_ENABLE_TEN_GIGA]=&enable_ten_giga;
-
+	flist[F_SET_ALL_TRIMBITS]=&set_all_trimbits;
 
 
 #ifdef VERBOSE
@@ -1116,6 +1122,12 @@ int set_dac(int file_des) {
 		break;
 #endif
 #ifdef EIGERD
+	case TRIMBIT_SIZE:
+		idac = VTR;
+		break;
+	case THRESHOLD:
+		idac = VTHRESHOLD;
+		break;
 	case E_SvP:
 		idac = SVP;
 		break;
@@ -1970,8 +1982,9 @@ int set_settings(int file_des) {
 	}
 	imod=arg[1];
 	isett=arg[0];
-	printf("isett:%d, imod =%d\n",isett,imod);
-
+#ifdef VERBOSE
+	printf("In set_settings, isett:%d, imod =%d\n",isett,imod);
+#endif
 #ifdef SLS_DETECTOR_FUNCTION_LIST
 	if (imod>=getTotalNumberOfModules()) {
 		ret=FAIL;
@@ -2262,11 +2275,11 @@ int get_run_status(int file_des) {
 	enum runStatus s;
 	sprintf(mess,"getting run status\n");
 
-#ifdef VERBOSE
+//#ifdef VERBOSE
 	printf("Getting status\n");
-#endif 
+//#endif
 #ifdef SLS_DETECTOR_FUNCTION_LIST
-	s= getRunStatus();
+	s= getRunStatus();printf("status:%d\n");
 #endif
 
 	if (ret!=OK) {
@@ -2452,6 +2465,7 @@ int set_timer(int file_des) {
 			sprintf(mess, "could not allocate RAM for %lld frames\n", tns);
 	}
 #endif
+
 	if (differentClients)
 		ret=FORCE_UPDATE;
 }
@@ -2709,6 +2723,7 @@ int set_roi(int file_des) {
 #ifndef GOTTHARDD
 	ret = FAIL;
 	strcpy(mess,"Not applicable/implemented for this detector\n");
+	printf("Error:Set ROI-%s",mess);
 #else
 #ifdef VERBOSE
 	printf("Setting ROI to:");
@@ -2948,11 +2963,11 @@ int execute_trimming(int file_des) {
 
 
 
-int configure_mac(int file_des) {
+int configure_mac(int file_des) {printf("in hereeeeee\n");
 
 	int retval=-100;
 	int ret=OK,ret1=OK;
-	char arg[5][50];
+	char arg[6][50];
 	int n;
 
 #ifndef MYTHEND
@@ -2961,9 +2976,10 @@ int configure_mac(int file_des) {
 	long long int imacadd;
 	long long int idetectormacadd;
 	int udpport;
+	int udpport2;
 	int detipad;
 #endif
-
+printf("111\n");
 	sprintf(mess,"Can't configure MAC\n");
 
 	n = receiveData(file_des,arg,sizeof(arg),OTHER);
@@ -2971,7 +2987,7 @@ int configure_mac(int file_des) {
 		sprintf(mess,"Error reading from socket\n");
 		ret=FAIL;
 	}
-
+printf("222\n");
 #ifdef MYTHEND
 	ret = FAIL;
 	strcpy(mess,"Not applicable/implemented for this detector\n");
@@ -2981,7 +2997,7 @@ int configure_mac(int file_des) {
 	sscanf(arg[2], "%x", 	&udpport);
 	sscanf(arg[3], "%llx",	&idetectormacadd);
 	sscanf(arg[4], "%x",	&detipad);
-
+	sscanf(arg[5], "%x", 	&udpport2);
 
 
 #ifdef SLS_DETECTOR_FUNCTION_LIST
@@ -2991,7 +3007,8 @@ int configure_mac(int file_des) {
 		printf("mess:%s\n",mess);
 	}
 #endif
-#ifdef VERBOSE
+printf("333\n");
+	//#ifdef VERBOSE
 	int i;
 	/*printf("\ndigital_test_bit in server %d\t",digitalTestBit);for gotthard*/
 	printf("\nipadd %x\t",ipad);
@@ -3004,21 +3021,24 @@ int configure_mac(int file_des) {
 	for (i=0;i<6;i++)
 		printf("detector mac adress %d is 0x%x \n",6-i,(unsigned int)(((idetectormacadd>>(8*i))&0xFF)));
 	printf("detipad %x\n",detipad);
+	printf("udp port2:0x%x\n",udpport2);
 	printf("\n");
 	printf("Configuring MAC of module %d at port %x\n", imod, udpport);
-#endif
-	printf("ret:%d\n",ret);
+	//#endif
+
 #ifdef SLS_DETECTOR_FUNCTION_LIST
 	if (ret==OK) {
-		if(getRunStatus() == RUNNING)
+		if(getRunStatus() == RUNNING){
 			stopStateMachine();
-		retval=configureMAC(ipad,imacadd,idetectormacadd,detipad,udpport,0);	/*digitalTestBit);*/
+		}
+
+		retval=configureMAC(ipad,imacadd,idetectormacadd,detipad,udpport,udpport2,0);	/*digitalTestBit);*/
 		if(retval==-1) 	ret=FAIL;
 	}
 #endif
-#ifdef VERBOSE
+	//#ifdef VERBOSE
 	printf("Configured MAC with retval %d\n",  retval);
-#endif
+	//#endif
 	if (ret==FAIL) {
 		printf("configuring MAC of mod %d failed\n", imod);
 	}
@@ -3396,9 +3416,9 @@ int enable_ten_giga(int file_des) {
 	}
 	/* execute action */
 	if(ret != FAIL){
-//#ifdef VERBOSE
+#ifdef VERBOSE
 		printf("Enabling 10Gbe :%d \n",arg);
-//#endif
+#endif
 #ifdef SLS_DETECTOR_FUNCTION_LIST
 		retval=enableTenGigabitEthernet(arg);
 		if((arg != -1) && (retval != arg))
@@ -3419,4 +3439,61 @@ int enable_ten_giga(int file_des) {
 	n += sendData(file_des,&retval,sizeof(retval),INT32);
 	/*return ok/fail*/
 	return ret;
+}
+
+
+
+int set_all_trimbits(int file_des){
+
+
+	int retval;
+	int arg;
+	int n;
+	int ret=OK,ret1=OK;
+
+	sprintf(mess,"can't set sll trimbits\n");
+
+	n = receiveData(file_des,&arg,sizeof(arg),INT32);
+	if (n < 0) {
+		sprintf(mess,"Error reading from socket\n");
+		ret=FAIL;
+	}
+
+#ifdef VERBOSE
+	printf("setting all trimbits to %d\n",arg);
+#endif
+#ifdef SLS_DETECTOR_FUNCTION_LIST
+	if (differentClients==1 && lockStatus==1 && arg!=GET_READOUT_FLAGS) {
+		ret=FAIL;
+		sprintf(mess,"Detector locked by %s\n",lastClientIP);
+	}  else {
+		if(arg < -1){
+			ret = FAIL;
+			strcpy(mess,"Cant set trimbits to this value\n");
+		}else {
+			if(arg >= 0)
+				setAllTrimbits(arg);
+			retval = getAllTrimbits();
+		}
+	}
+#endif
+	if (ret==OK) {
+		if (arg!=-1 && arg!=retval) {
+			ret=FAIL;
+			sprintf(mess,"Could not set all trimbits: should be %d but is %d\n", arg, retval);
+		}else if (differentClients)
+			ret=FORCE_UPDATE;
+	}
+
+
+	//ret could be swapped during sendData
+	ret1 = ret;
+	n = sendData(file_des,&ret1,sizeof(ret),INT32);
+	if (ret==FAIL) {
+		n = sendData(file_des,mess,sizeof(mess),OTHER);
+	} else {
+		n = sendData(file_des,&retval,sizeof(retval),INT32);
+	}
+	return ret;
+
 }

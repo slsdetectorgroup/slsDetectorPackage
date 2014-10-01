@@ -16,9 +16,7 @@
 #define NDAC 8
 #define NADC 1
 
-/**when moench readout tested with gotthard module*/
-#define GOTTHARDNCHAN 128
-#define GOTTHARDNCHIP 10
+
 
 
 

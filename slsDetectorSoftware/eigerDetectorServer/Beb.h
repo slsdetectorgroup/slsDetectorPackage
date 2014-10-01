@@ -8,98 +8,82 @@
 #ifndef BEB_H
 #define BEB_H
 
-#include <string>
-#include <vector>
+
 
 #include "LocalLinkInterface.h"
 
 
-class BebInfo{
+
   
- private:
+struct BebInfo{
   unsigned int beb_number;
   unsigned int serial_address;
-  std::string  src_mac_1GbE;
-  std::string  src_mac_10GbE;
-  std::string  src_ip_1GbE;
-  std::string  src_ip_10GbE;
+  char  src_mac_1GbE[50];
+  char src_mac_10GbE[50];
+  char  src_ip_1GbE[50];
+  char src_ip_10GbE[50];
   unsigned int src_port_1GbE;
   unsigned int src_port_10GbE;
-
- public:
-  BebInfo(unsigned int beb_num);
-  ~BebInfo(){};
-
-  bool         SetSerialAddress(unsigned int add);
-  bool         SetHeaderInfo(bool ten_gig, std::string src_mac, std::string src_ip, unsigned int src_port);//src_port fixed 42000+beb_number or 52000 + beb_number);
-  unsigned int GetBebNumber()           {return beb_number;}
-  unsigned int GetSerialAddress()       {return serial_address;}
-  std::string  GetSrcMAC(bool ten_gig)  {return ten_gig ? src_mac_10GbE  : src_mac_1GbE;}
-  std::string  GetSrcIP(bool ten_gig)   {return ten_gig ? src_ip_10GbE   : src_ip_1GbE;}
-  unsigned int GetSrcPort(bool ten_gig) {return ten_gig ? src_port_10GbE : src_port_1GbE;}
-
-  void Print();
-
 };
 
 
-
-class Beb{ //
-
- private:
-  std::vector<BebInfo*> beb_infos;
-  void ClearBebInfos();
-  bool InitBebInfos();
-  bool ReadSetUpFromFile(std::string file_name);
-  bool CheckSourceStuffBebInfo();
-  unsigned int GetBebInfoIndex(unsigned int beb_numb);
-
-  LocalLinkInterface* ll;
-  LocalLinkInterface* new_memory;
-
-  
-  int           send_ndata;
-  unsigned int  send_buffer_size;
-  unsigned int* send_data_raw;
-  unsigned int* send_data;
-
-  int           recv_ndata;
-  unsigned int  recv_buffer_size;
-  unsigned int* recv_data_raw;
-  unsigned int* recv_data;
-
-  bool WriteTo(unsigned int index);
-
-  bool SetMAC(std::string mac, unsigned char* dst_ptr);
-  bool SetIP(std::string ip, unsigned char* dst_ptr);
-  bool SetPortNumber(unsigned int port_number, unsigned char* dst_ptr);
-  void AdjustIPChecksum(udp_header_type *ip);
-
-  bool SetHeaderData(unsigned int beb_number, bool ten_gig, std::string dst_mac, std::string dst_ip, unsigned int dst_port);
-  bool SetHeaderData(std::string src_mac, std::string src_ip, unsigned int src_port, std::string dst_mac, std::string dst_ip, unsigned int dst_port);
-
-  void SwapDataFun(bool little_endian, unsigned int n, unsigned int *d);
-  bool SetByteOrder();
-
-  short bit_mode;
-
- public:
-  Beb(int arg1);
-  virtual ~Beb();
-
-  bool SetBebSrcHeaderInfos(unsigned int beb_number, bool ten_gig, std::string src_mac, std::string src_ip, unsigned int src_port);
-  bool SetUpUDPHeader(unsigned int beb_number, bool ten_gig, unsigned int header_number, std::string dst_mac, std::string dst_ip, unsigned int dst_port);
-
-  bool SendMultiReadRequest(unsigned int beb_number, unsigned int  left_right, bool ten_gig, unsigned int dst_number, unsigned int npackets, unsigned int packet_size, bool stop_read_when_fifo_empty=1);
+  void BebInfo_BebInfo(struct BebInfo* bebInfo, unsigned int beb_num);
+  void BebInfo_BebDstInfo(struct BebInfo* bebInfo, unsigned int beb_num);
+  int         BebInfo_SetSerialAddress(struct BebInfo* bebInfo, unsigned int add);
+  int         BebInfo_SetHeaderInfo(struct BebInfo* bebInfo, int ten_gig, char* src_mac, char* src_ip, unsigned int src_port);//src_port fixed 42000+beb_number or 52000 + beb_number);
+  unsigned int BebInfo_GetBebNumber(struct BebInfo* bebInfo);
+  unsigned int BebInfo_GetSerialAddress(struct BebInfo* bebInfo);
+  char*  BebInfo_GetSrcMAC(struct BebInfo* bebInfo, int ten_gig);
+  char*  BebInfo_GetSrcIP(struct BebInfo* bebInfo, int ten_gig);
+  unsigned int BebInfo_GetSrcPort(struct BebInfo* bebInfo, int ten_gig);
+  void BebInfo_Print(struct BebInfo* bebInfo);
 
 
-  bool SetUpTransferParameters(short the_bit_mode);
-  bool RequestNImages(unsigned int beb_number, unsigned int left_right, bool ten_gig, unsigned int dst_number, unsigned int nimages, bool test_just_send_out_packets_no_wait=0); //all images go to the same destination!
 
 
-  bool Test(unsigned int beb_number);
 
-};
+  void Beb_ClearBebInfos();
+  int Beb_InitBebInfos();
+  int Beb_ReadSetUpFromFile(char* file_name);
+  int Beb_CheckSourceStuffBebInfo();
+  unsigned int Beb_GetBebInfoIndex(unsigned int beb_numb);
+
+
+
+
+
+
+  int Beb_WriteTo(unsigned int index);
+
+  int Beb_SetMAC(char* mac, uint8_t* dst_ptr);
+  int Beb_SetIP(char* ip, uint8_t* dst_ptr);
+  int Beb_SetPortNumber(unsigned int port_number, uint8_t* dst_ptr);
+  void Beb_AdjustIPChecksum(struct udp_header_type *ip);
+
+  int Beb_SetHeaderData(unsigned int beb_number, int ten_gig, char* dst_mac, char* dst_ip, unsigned int dst_port);
+  int Beb_SetHeaderData1(char* src_mac, char* src_ip, unsigned int src_port, char* dst_mac, char* dst_ip, unsigned int dst_port);
+
+  void Beb_SwapDataFun(int little_endian, unsigned int n, unsigned int *d);
+  int Beb_SetByteOrder();
+
+
+
+
+  void Beb_Beb(int arg1);
+
+
+  int Beb_SetBebSrcHeaderInfos(unsigned int beb_number, int ten_gig, char* src_mac, char* src_ip, unsigned int src_port);
+  int Beb_SetUpUDPHeader(unsigned int beb_number, int ten_gig, unsigned int header_number, char* dst_mac, char* dst_ip, unsigned int dst_port);
+
+  /*int Beb_SendMultiReadRequest(unsigned int beb_number, unsigned int  left_right, int ten_gig, unsigned int dst_number, unsigned int npackets, unsigned int packet_size, int stop_read_when_fifo_empty=1);*/
+  int Beb_SendMultiReadRequest(unsigned int beb_number, unsigned int  left_right, int ten_gig, unsigned int dst_number, unsigned int npackets, unsigned int packet_size, int stop_read_when_fifo_empty);
+
+  int Beb_SetUpTransferParameters(short the_bit_mode);
+  /*int Beb_RequestNImages(unsigned int beb_number, unsigned int left_right, int ten_gig, unsigned int dst_number, unsigned int nimages, int test_just_send_out_packets_no_wait=0); //all images go to the same destination!*/
+  int Beb_RequestNImages(unsigned int beb_number, unsigned int left_right, int ten_gig, unsigned int dst_number, unsigned int nimages, int test_just_send_out_packets_no_wait);
+
+  int Beb_Test(unsigned int beb_number);
+
 
 
 #endif 

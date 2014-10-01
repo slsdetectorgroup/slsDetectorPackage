@@ -24,14 +24,16 @@ int main(int argc, char *argv[]){
 	int sd, fd;
 #ifdef STOP_SERVER
 	char cmd[100];
-	if (argc==1) {
 #endif
+	if (argc==1) {
+//#endif
 		portno = DEFAULT_PORTNO;
 		printf("opening control server on port %d\n",portno );
 		b=1;
 #ifdef STOP_SERVER
 		sprintf(cmd,"%s %d &",argv[0],DEFAULT_PORTNO+1);
 		system(cmd);
+#endif
 	} else {
 		portno = DEFAULT_PORTNO+1;
 		if ( sscanf(argv[1],"%d",&portno) ==0) {
@@ -41,7 +43,7 @@ int main(int argc, char *argv[]){
 		printf("opening stop server on port %d\n",portno);
 		b=0;
 	}
-#endif
+//#endif
 
 
 	init_detector(b); //defined in slsDetectorServer_funcs

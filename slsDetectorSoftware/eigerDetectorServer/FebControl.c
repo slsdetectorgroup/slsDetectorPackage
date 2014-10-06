@@ -694,7 +694,7 @@ int Feb_Control_SendHighVoltage(unsigned int dst_num,float* value){
 int Feb_Control_DecodeDACString(char* dac_str, unsigned int* module_index, int* top, int* bottom, unsigned int* dac_ch){
   char*       local_s = dac_str;
   char temp[50];
-  *module_index  = 0;
+  *module_index  = 1;
 
   char* p1 = strstr(local_s,"mod");//size_t p1 = local_s.find("mod");
   char* p2 = strstr(local_s,"::");//size_t p2 =local_s.find("::");
@@ -729,6 +729,15 @@ int Feb_Control_DecodeDACString(char* dac_str, unsigned int* module_index, int* 
     strcpy(local_s,p1+8);
     *top=0;
   }
+/*
+  if(Module_BottomAddressIsValid(&modules[*module_index]))
+	  *top=0;
+  else
+	  *bottom=0;
+printf("*****************top %d bottom %d\n",*top,*bottom);
+*/
+
+
   *dac_ch = 0;
   if(!Feb_Control_GetDACNumber(local_s,dac_ch)){
     printf("Error in dac_name: %s  (%s)\n",dac_str,local_s);
@@ -955,8 +964,8 @@ int Feb_Control_SetTrimbits(unsigned int module_num, unsigned int *trimbits){
 			} //end row loop
 
 
-			if(!Feb_Interface_WriteMemoryInLoops(Module_GetTopLeftAddress(&modules[0]),0,0,1024,trimbits_to_load_r)||
-				!Feb_Interface_WriteMemoryInLoops(Module_GetTopRightAddress(&modules[0]),0,0,1024,trimbits_to_load_l)||
+			if(!Feb_Interface_WriteMemoryInLoops(Module_GetTopLeftAddress(&modules[1]),0,0,1024,trimbits_to_load_r)||
+				!Feb_Interface_WriteMemoryInLoops(Module_GetTopRightAddress(&modules[1]),0,0,1024,trimbits_to_load_l)||
 			//if(!Feb_Interface_WriteMemory(Module_GetTopLeftAddress(&modules[0]),0,0,1023,trimbits_to_load_r)||
 			//	!Feb_Interface_WriteMemory(Module_GetTopRightAddress(&modules[0]),0,0,1023,trimbits_to_load_l)||
 				!Feb_Control_StartDAQOnlyNWaitForFinish(5000)){
@@ -982,11 +991,14 @@ unsigned int* Feb_Control_GetTrimbits(){
 
 unsigned int Feb_Control_AddressToAll(){
   if(moduleSize==0) return 0;
-  if(Module_BottomAddressIsValid(&modules[1])){//printf("************* bottom\n");
-     return Module_GetBottomLeftAddress(&modules[1])|Module_GetBottomRightAddress(&modules[1]);}
 
-  //printf("************* top\n");
-  return Module_GetTopLeftAddress(&modules[1])|Module_GetTopRightAddress(&modules[1]);
+  if(Module_BottomAddressIsValid(&modules[0])){
+	  //printf("************* bottom\n");
+     return Module_GetBottomLeftAddress(&modules[0])|Module_GetBottomRightAddress(&modules[0]);
+  }
+ // printf("************* top\n");
+ return Module_GetTopLeftAddress(&modules[0])|Module_GetTopRightAddress(&modules[0]);
+
 }
 
 int Feb_Control_SetCommandRegister(unsigned int cmd){
@@ -1035,18 +1047,18 @@ int Feb_Control_AcquisitionInProgress(){
 	//printf("right:%d\n",Feb_Control_GetDAQStatusRegister(Module_GetTopRightAddress(&modules[1]),&status_reg_r));
 	//printf("left:%d\n",Feb_Control_GetDAQStatusRegister(Module_GetTopLeftAddress(&modules[1]),&status_reg_l));
 
-	if(Module_BottomAddressIsValid(&modules[0])){
+	if(Module_BottomAddressIsValid(&modules[1])){
 		//printf("************* bottom1\n");
 
 		if(!(Feb_Control_GetDAQStatusRegister(Module_GetBottomRightAddress(&modules[1]),&status_reg_r)))
-				return 0;
+		{printf("**idle\n");return 0;}
 	}else{
 		//printf("************* top1\n");
 		if(!(Feb_Control_GetDAQStatusRegister(Module_GetTopRightAddress(&modules[1]),&status_reg_r)))
-		return 0;
+		{printf("**idle\n");return 0;}
 	}
 
-	if(status_reg_r&DAQ_STATUS_DAQ_RUNNING) return 1;
+	if(status_reg_r&DAQ_STATUS_DAQ_RUNNING) {printf("******running\n");return 1;}
 
 	/*
     if(!(GetDAQStatusRegister(modules[i]->Module_GetTopLeftAddress(),status_reg_r)&&GetDAQStatusRegister(modules[i]->Module_GetTopRightAddress(),status_reg_l))){
@@ -1057,7 +1069,7 @@ int Feb_Control_AcquisitionInProgress(){
   }
 	 */
 
-	return 0; //i.e. not running (status_reg_r|status_reg_l)&DAQ_STATUS_DAQ_RUNNING;
+	printf("**idle\n");return 0; //i.e. not running (status_reg_r|status_reg_l)&DAQ_STATUS_DAQ_RUNNING;
 }
 
 int Feb_Control_Reset(){
@@ -1370,7 +1382,7 @@ int Feb_Control_WriteNRead(char* message, int length, int max_length){
 }
 */
 
-int Feb_Control_StartAcquisition(){
+int Feb_Control_StartAcquisition(){printf("****** starting acquisition********* \n");
 
   static unsigned int reg_nums[20];
   static unsigned int reg_vals[20];

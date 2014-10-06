@@ -53,7 +53,8 @@ int dst_requested[32] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 int default_dac_values[16] = {0,2000,2000,1250,700,1278,500,500,2000,500,500,550,550,100,1000,775};
 
 
-
+enum masterFlags  masterMode=NO_MASTER;
+enum masterFlags  trialMasterMode=NO_MASTER;
 
 int initDetector(){
 	  int imod,i,n;
@@ -128,9 +129,12 @@ int initDetector(){
  setHighVolage(150,0);
   setIODelay(675,0);
   setTiming(AUTO_TIMING);
+  setMaster(GET_MASTER);
   int enable[2] = {0,1};
   setExternalGating(enable);//disable external gating
 
+  if(getDetectorNumber() == 0xbeb031)
+    trialMasterMode = IS_MASTER;
    return 1;
 }
 
@@ -453,8 +457,13 @@ enum detectorSettings setSettings(enum detectorSettings sett, int imod){
 
 int startStateMachine(){
 	printf("Going to start acquisition\n");
-	if(Feb_Control_StartAcquisition()){
 
+
+	if(trialMasterMode == IS_MASTER)
+		Feb_Control_StartAcquisition();
+
+
+printf("requesting images\n");
 		//RequestImages();
 		int ret_val = 0;
 		dst_requested[0] = 1;
@@ -471,15 +480,19 @@ int startStateMachine(){
 	    	return FAIL;
 	    else
 	    	return OK;
-	}
+
 	return FAIL;
 }
 
 
 int stopStateMachine(){
 	printf("Going to stop acquisition\n");
-	if(Feb_Control_StopAcquisition())
-		return OK;
+
+	if(trialMasterMode == IS_MASTER){
+		if(Feb_Control_StopAcquisition())
+			return OK;
+	}else return OK;
+
 	return FAIL;
 }
 
@@ -885,7 +898,10 @@ void setExternalGating(int enable[]){
 
 
 enum masterFlags setMaster(enum masterFlags arg){
-	return NO_MASTER;
+	if(arg != GET_MASTER)
+		masterMode = arg;
+
+	return arg;
 }
 
 

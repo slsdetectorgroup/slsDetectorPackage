@@ -1198,15 +1198,6 @@ int multiSlsDetector::startAcquisition(){
   int i=0;
   int ret=OK, ret1=OK;
 
-  if (detectors[0]) {
-	  ret=detectors[0]->startAcquisition();
-	  if(detectors[0]->getErrorMask())
-		  setErrorMask(getErrorMask()|(1<<i));
-	  if (ret!=OK)
-		  ret1=FAIL;
-  }
-
-  /*
   for (i=0; i<thisMultiDetector->numberOfDetectors; i++) {
     if (i!=thisMultiDetector->masterPosition)
       if (detectors[i]) {
@@ -1226,7 +1217,7 @@ int multiSlsDetector::startAcquisition(){
       if (ret!=OK)
 	ret1=FAIL;
     }
-  }*/
+  }
   return ret1;
      
 };
@@ -1474,7 +1465,7 @@ int* multiSlsDetector::startAndReadAll(){
       if (detectors[id]) {
 	detectors[id]->disconnectControl();
       }
-    }  
+    }
  
   }
 
@@ -1515,6 +1506,7 @@ int multiSlsDetector::startAndReadAllNoWait(){
 	ret1=FAIL;
     }
   }
+
   return ret1;
 
 }
@@ -1536,20 +1528,16 @@ slsDetectorDefs::runStatus  multiSlsDetector::getRunStatus() {
       return s;
     }
 
-  if (detectors[0]){
-    s=detectors[0]->getRunStatus(); 
-    if(detectors[0]->getErrorMask())
-      setErrorMask(getErrorMask()|(1<<0));
-  }
-
   for (int i=1; i<thisMultiDetector->numberOfDetectors; i++) {
     s1=detectors[i]->getRunStatus(); 
     if(detectors[i]->getErrorMask())
       setErrorMask(getErrorMask()|(1<<i));
     if (s1==ERROR)
       s=ERROR;
-    if (s1==IDLE && s!=IDLE)
-      s=ERROR;
+    if (s1!=IDLE)
+    	s = s1;
+   // if (s1==IDLE && s!=IDLE)
+   //   s=ERROR;
     
   }
   return s;

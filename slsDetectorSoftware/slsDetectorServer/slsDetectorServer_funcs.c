@@ -54,8 +54,8 @@ int init_detector(int b) {
 #endif
 	}else{
 		  Feb_Interface_FebInterface();
-		  Feb_Control_FebControl();
-		  printf("FEb control constructor done\n");
+		  //Feb_Control_FebControl();
+		 // printf("FEb control constructor done\n");
 		 /* Beb_Beb(-1);
 		  printf("BEB constructor done\n");*/
 	}

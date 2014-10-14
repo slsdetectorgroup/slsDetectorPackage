@@ -330,7 +330,7 @@ int Beb_SetUpUDPHeader(unsigned int beb_number, int ten_gig, unsigned int header
     Beb_SwapDataFun(1,12,&(Beb_send_data[2]));
 
   if(!Beb_WriteTo(i)) return 0;
-  printf("dst_port:%d\n",dst_port);
+  printf("beb dst_port:%d\n",dst_port);
   return 1;
 }
 
@@ -514,7 +514,7 @@ int Beb_RequestNImages(unsigned int beb_number, unsigned int left_right, int ten
   if(in_two_requests) npackets/=2;
  // printf("npackets:%d\n",npackets);
   //usleep needed after acquisition start, else you miss the single images
-  usleep(1000);
+  usleep(10000);//less than this and it starts sending half stuff sometimes
 
   //printf("beb no:%d left_right:%d ten_gig:%d dst_number:%d #images:%d header_size:%d test_just_send_out_packets_no_wait:%d\n",beb_number,left_right,ten_gig,dst_number,nimages, header_size,test_just_send_out_packets_no_wait);
   //printf("here: "<<beb_number<<","<<left_right<<","<<ten_gig<<","<<dst_number<<","<<1<<","<<header_size<<","<<test_just_send_out_packets_no_wait\n");

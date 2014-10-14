@@ -1,0 +1,30 @@
+
+DESTDIR ?= ./
+
+CC    = gcc
+CFLAGS += -Wall -DMOENCHD -DMCB_FUNCS -DDACS_INT  -DDEBUG -DVIRTUAL 
+
+
+PROGS= 		$(DESTDIR)/moenchVirtualServer 
+
+
+SRCS = server.c server_funcs.c communication_funcs.c firmware_funcs.c mcb_funcs.c trimming_funcs.c  sharedmemory.c 
+OBJS = $(SRCS:%.c=%.o) 
+
+moenchVirtualServer = $(PROGS)
+
+all:	clean $(PROGS) 
+
+
+$(PROGS): $(OBJS)
+	$(CC) $(CFLAGS) -o $@ $^ $(LDLIBS_$@) $(LDFLAGS_$@)
+
+
+clean:
+	rm -rf $(PROGS)  *.o *.gdb
+
+
+
+
+
+

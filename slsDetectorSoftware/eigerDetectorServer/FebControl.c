@@ -141,9 +141,11 @@ int          Module_GetBottomDACValue(struct Module* mod,unsigned int i)        
 
 
 
-
-
-
+int Feb_Control_IsBottomModule(){
+	if(Module_BottomAddressIsValid(&modules[1]))
+		return 1;
+	return 0;
+}
 
 
 void Feb_Control_FebControl(){
@@ -694,7 +696,7 @@ int Feb_Control_SendHighVoltage(unsigned int dst_num,float* value){
 int Feb_Control_DecodeDACString(char* dac_str, unsigned int* module_index, int* top, int* bottom, unsigned int* dac_ch){
   char*       local_s = dac_str;
   char temp[50];
-  *module_index  = 0;
+  *module_index  = 1;
 
   char* p1 = strstr(local_s,"mod");//size_t p1 = local_s.find("mod");
   char* p2 = strstr(local_s,"::");//size_t p2 =local_s.find("::");
@@ -711,24 +713,24 @@ int Feb_Control_DecodeDACString(char* dac_str, unsigned int* module_index, int* 
   }
 
 
-  *top    = 1;
+  *top    = 1;//make them both 1 instead of this
   *bottom = 1;
-  /*
-  if((p1 = local_s.find("top::"))!=string::npos){
-    local_s = local_s.substr(p1+5);
-    *bottom=0;
-  }else if((p1 = local_s.find("bottom::"))!=string::npos){
-    local_s = local_s.substr(p1+8);
-    *top=0;
-  }
-  */
-  if(p1 = strstr(local_s,"top::")!=NULL){
+  /*if(p1 = strstr(local_s,"top::")!=NULL){
     strcpy(local_s,p1+5);
     *bottom=0;
   }else if(p1 = strstr(local_s,"bottom::")!=NULL){
     strcpy(local_s,p1+8);
     *top=0;
-  }
+  }*/
+
+  if(Module_BottomAddressIsValid(&modules[*module_index]))
+	  *top=0;
+  else
+	  *bottom=0;
+
+
+
+
   *dac_ch = 0;
   if(!Feb_Control_GetDACNumber(local_s,dac_ch)){
     printf("Error in dac_name: %s  (%s)\n",dac_str,local_s);
@@ -777,11 +779,11 @@ int Feb_Control_SetDAC(char* dac_str, int value, int is_a_voltage_mv){
 
   unsigned int v = value;
   if(is_a_voltage_mv&&!Feb_Control_VoltageToDAC(value,&v,4096,0,2048)){
-    printf("Waring: SetDac bad value, %d. The range is 0 to 2048 mV.\n",value);
+    printf("Warning: SetDac bad value, %d. The range is 0 to 2048 mV.\n",value);
     return 0;
   }
   if(v<0||v>4095){
-    printf("Waring: SetDac bad value, %d. The range is 0 to 4095.\n",v);
+    printf("Warning: SetDac bad value, %d. The range is 0 to 4095.\n",v);
     return 0;
   }
 
@@ -940,28 +942,41 @@ int Feb_Control_SetTrimbits(unsigned int module_num, unsigned int *trimbits){
 					int i;
 					for(i=0;i<8;i++){ // column loop i
 						//printf("i:%d\t\t",i);
-						trimbits_to_load_l[offset+chip_sc]    |= ( 0x7  & trimbits[row_set*16480+super_column_start_position_l+i])<<((7-i)*4);//low
-					    trimbits_to_load_l[offset+chip_sc+32] |= ((0x38 & trimbits[row_set*16480+super_column_start_position_l+i])>>3)<<((7-i)*4);//upper
-					    trimbits_to_load_r[offset+chip_sc]    |= ( 0x7  & trimbits[row_set*16480+super_column_start_position_r+i])<<((7-i)*4);//low
-					    trimbits_to_load_r[offset+chip_sc+32] |= ((0x38 & trimbits[row_set*16480+super_column_start_position_r+i])>>3)<<((7-i)*4);//upper
-/*
-						trimbits_to_load_l[offset+chip_sc]    |= ( 0x7  & trimbits[263679 - (row_set*16480+super_column_start_position_l+i)])<<((7-i)*4);//low
-						trimbits_to_load_l[offset+chip_sc+32] |= ((0x38 & trimbits[263679 - (row_set*16480+super_column_start_position_l+i)])>>3)<<((7-i)*4);//upper
-						trimbits_to_load_r[offset+chip_sc]    |= ( 0x7  & trimbits[263679 - (row_set*16480+super_column_start_position_r+i)])<<((7-i)*4);//low
-						trimbits_to_load_r[offset+chip_sc+32] |= ((0x38 & trimbits[263679 - (row_set*16480+super_column_start_position_r+i)])>>3)<<((7-i)*4);//upper
-*/
+
+						if(Module_TopAddressIsValid(&modules[0])){
+							trimbits_to_load_l[offset+chip_sc]    |= ( 0x7  & trimbits[row_set*16480+super_column_start_position_l+i])<<((7-i)*4);//low
+							trimbits_to_load_l[offset+chip_sc+32] |= ((0x38 & trimbits[row_set*16480+super_column_start_position_l+i])>>3)<<((7-i)*4);//upper
+							trimbits_to_load_r[offset+chip_sc]    |= ( 0x7  & trimbits[row_set*16480+super_column_start_position_r+i])<<((7-i)*4);//low
+							trimbits_to_load_r[offset+chip_sc+32] |= ((0x38 & trimbits[row_set*16480+super_column_start_position_r+i])>>3)<<((7-i)*4);//upper
+						}else{
+							trimbits_to_load_l[offset+chip_sc]    |= ( 0x7  & trimbits[263679 - (row_set*16480+super_column_start_position_l+i)])<<((7-i)*4);//low
+							trimbits_to_load_l[offset+chip_sc+32] |= ((0x38 & trimbits[263679 - (row_set*16480+super_column_start_position_l+i)])>>3)<<((7-i)*4);//upper
+							trimbits_to_load_r[offset+chip_sc]    |= ( 0x7  & trimbits[263679 - (row_set*16480+super_column_start_position_r+i)])<<((7-i)*4);//low
+							trimbits_to_load_r[offset+chip_sc+32] |= ((0x38 & trimbits[263679 - (row_set*16480+super_column_start_position_r+i)])>>3)<<((7-i)*4);//upper
+
+						}
 					} // end column loop i
 				} //end supercolumn loop sc
 			} //end row loop
 
-
-			if(!Feb_Interface_WriteMemoryInLoops(Module_GetTopLeftAddress(&modules[0]),0,0,1024,trimbits_to_load_r)||
-				!Feb_Interface_WriteMemoryInLoops(Module_GetTopRightAddress(&modules[0]),0,0,1024,trimbits_to_load_l)||
-			//if(!Feb_Interface_WriteMemory(Module_GetTopLeftAddress(&modules[0]),0,0,1023,trimbits_to_load_r)||
-			//	!Feb_Interface_WriteMemory(Module_GetTopRightAddress(&modules[0]),0,0,1023,trimbits_to_load_l)||
-				!Feb_Control_StartDAQOnlyNWaitForFinish(5000)){
-				printf(" some errror!\n");
-				return 0;
+			if(Module_TopAddressIsValid(&modules[0])){
+				if(!Feb_Interface_WriteMemoryInLoops(Module_GetTopLeftAddress(&modules[1]),0,0,1024,trimbits_to_load_r)||
+						!Feb_Interface_WriteMemoryInLoops(Module_GetTopRightAddress(&modules[1]),0,0,1024,trimbits_to_load_l)||
+						//if(!Feb_Interface_WriteMemory(Module_GetTopLeftAddress(&modules[0]),0,0,1023,trimbits_to_load_r)||
+						//	!Feb_Interface_WriteMemory(Module_GetTopRightAddress(&modules[0]),0,0,1023,trimbits_to_load_l)||
+						!Feb_Control_StartDAQOnlyNWaitForFinish(5000)){
+					printf(" some errror!\n");
+					return 0;
+				}
+			}else{
+				if(!Feb_Interface_WriteMemoryInLoops(Module_GetBottomLeftAddress(&modules[1]),0,0,1024,trimbits_to_load_r)||
+						!Feb_Interface_WriteMemoryInLoops(Module_GetBottomRightAddress(&modules[1]),0,0,1024,trimbits_to_load_l)||
+						//if(!Feb_Interface_WriteMemory(Module_GetTopLeftAddress(&modules[0]),0,0,1023,trimbits_to_load_r)||
+						//	!Feb_Interface_WriteMemory(Module_GetTopRightAddress(&modules[0]),0,0,1023,trimbits_to_load_l)||
+						!Feb_Control_StartDAQOnlyNWaitForFinish(5000)){
+					printf(" some errror!\n");
+					return 0;
+				}
 			}
 
 		} //end row_set loop (groups of 16 rows)
@@ -982,11 +997,14 @@ unsigned int* Feb_Control_GetTrimbits(){
 
 unsigned int Feb_Control_AddressToAll(){
   if(moduleSize==0) return 0;
-  if(Module_BottomAddressIsValid(&modules[1])){//printf("************* bottom\n");
-     return Module_GetBottomLeftAddress(&modules[1])|Module_GetBottomRightAddress(&modules[1]);}
 
+  if(Module_BottomAddressIsValid(&modules[0])){
+	  //printf("************* bottom\n");
+     return Module_GetBottomLeftAddress(&modules[0])|Module_GetBottomRightAddress(&modules[0]);
+  }
   //printf("************* top\n");
-  return Module_GetTopLeftAddress(&modules[1])|Module_GetTopRightAddress(&modules[1]);
+ return Module_GetTopLeftAddress(&modules[0])|Module_GetTopRightAddress(&modules[0]);
+
 }
 
 int Feb_Control_SetCommandRegister(unsigned int cmd){
@@ -1035,15 +1053,15 @@ int Feb_Control_AcquisitionInProgress(){
 	//printf("right:%d\n",Feb_Control_GetDAQStatusRegister(Module_GetTopRightAddress(&modules[1]),&status_reg_r));
 	//printf("left:%d\n",Feb_Control_GetDAQStatusRegister(Module_GetTopLeftAddress(&modules[1]),&status_reg_l));
 
-	if(Module_BottomAddressIsValid(&modules[0])){
+	if(Module_BottomAddressIsValid(&modules[1])){
 		//printf("************* bottom1\n");
 
 		if(!(Feb_Control_GetDAQStatusRegister(Module_GetBottomRightAddress(&modules[1]),&status_reg_r)))
-				return 0;
+			return 0;
 	}else{
 		//printf("************* top1\n");
 		if(!(Feb_Control_GetDAQStatusRegister(Module_GetTopRightAddress(&modules[1]),&status_reg_r)))
-		return 0;
+			return 0;
 	}
 
 	if(status_reg_r&DAQ_STATUS_DAQ_RUNNING) return 1;
@@ -1057,7 +1075,7 @@ int Feb_Control_AcquisitionInProgress(){
   }
 	 */
 
-	return 0; //i.e. not running (status_reg_r|status_reg_l)&DAQ_STATUS_DAQ_RUNNING;
+	/*printf("**idle\n");*/return 0; //i.e. not running (status_reg_r|status_reg_l)&DAQ_STATUS_DAQ_RUNNING;
 }
 
 int Feb_Control_Reset(){
@@ -1370,7 +1388,7 @@ int Feb_Control_WriteNRead(char* message, int length, int max_length){
 }
 */
 
-int Feb_Control_StartAcquisition(){
+int Feb_Control_StartAcquisition(){printf("****** starting acquisition********* \n");
 
   static unsigned int reg_nums[20];
   static unsigned int reg_vals[20];

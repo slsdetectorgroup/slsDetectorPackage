@@ -53,7 +53,8 @@ int dst_requested[32] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 int default_dac_values[16] = {0,2000,2000,1250,700,1278,500,500,2000,500,500,550,550,100,1000,775};
 
 
-
+enum masterFlags  masterMode=NO_MASTER;
+enum masterFlags  trialMasterMode=NO_MASTER;
 
 int initDetector(){
 	  int imod,i,n;
@@ -128,9 +129,12 @@ int initDetector(){
  setHighVolage(150,0);
   setIODelay(675,0);
   setTiming(AUTO_TIMING);
+  //setMaster(GET_MASTER);
   int enable[2] = {0,1};
   setExternalGating(enable);//disable external gating
 
+  if(getDetectorNumber() == 0xbeb031)
+    trialMasterMode = IS_MASTER;
    return 1;
 }
 
@@ -452,34 +456,42 @@ enum detectorSettings setSettings(enum detectorSettings sett, int imod){
 
 
 int startStateMachine(){
-	printf("Going to start acquisition\n");
-	if(Feb_Control_StartAcquisition()){
 
-		//RequestImages();
-		int ret_val = 0;
-		dst_requested[0] = 1;
-	    while(dst_requested[on_dst]){
-	      //waits on data
-	      if((ret_val = (!Beb_RequestNImages(0,1,send_to_ten_gig,on_dst,nimages_per_request,0)||
-	    		  !Beb_RequestNImages(0,2,send_to_ten_gig,0x20|on_dst,nimages_per_request,0))))
-	    	  break;
-	      dst_requested[on_dst++]=0;
-	      on_dst%=ndsts_in_use;
-	    }
-
-	    if(ret_val)
-	    	return FAIL;
-	    else
-	    	return OK;
+	if(trialMasterMode == IS_MASTER){
+		printf("Going to start acquisition\n");
+		Feb_Control_StartAcquisition();
 	}
+
+
+	printf("requesting images\n");
+	//RequestImages();
+	int ret_val = 0;
+	dst_requested[0] = 1;
+	while(dst_requested[on_dst]){
+		//waits on data
+		if((ret_val = (!Beb_RequestNImages(0,1,send_to_ten_gig,on_dst,nimages_per_request,0)||
+				!Beb_RequestNImages(0,2,send_to_ten_gig,0x20|on_dst,nimages_per_request,0))))
+			break;
+		dst_requested[on_dst++]=0;
+		on_dst%=ndsts_in_use;
+	}
+
+	if(ret_val)
+		return FAIL;
+	else
+		return OK;
+
 	return FAIL;
 }
 
 
 int stopStateMachine(){
-	printf("Going to stop acquisition\n");
-	if(Feb_Control_StopAcquisition())
-		return OK;
+	if(trialMasterMode == IS_MASTER){
+		printf("Going to stop acquisition\n");
+		if(Feb_Control_StopAcquisition())
+			return OK;
+	}else return OK;
+
 	return FAIL;
 }
 
@@ -509,10 +521,10 @@ int startReadOut(){
 enum runStatus getRunStatus(){
 	int i = Feb_Control_AcquisitionInProgress();
 	if(i== 0){
-		printf("IDLE\n");
+		/*printf("IDLE\n");*/
 		return IDLE;
 	}else{
-		printf("RUNNING\n");
+		/*printf("RUNNING\n");*/
 		return RUNNING;
 	}
 }
@@ -676,7 +688,6 @@ int executeTrimming(enum trimMode mode, int par1, int par2, int imod){
 int configureMAC(int ipad, long long int macad, long long int detectormacadd, int detipad, int udpport, int udpport2, int ival){
 	char src_mac[50], src_ip[50],dst_mac[50], dst_ip[50];
 	int src_port = 0xE185;
-	int dst_port = udpport;
 	sprintf(src_ip,"%d.%d.%d.%d",(detipad>>24)&0xff,(detipad>>16)&0xff,(detipad>>8)&0xff,(detipad)&0xff);
 	sprintf(dst_ip,"%d.%d.%d.%d",(ipad>>24)&0xff,(ipad>>16)&0xff,(ipad>>8)&0xff,(ipad)&0xff);
 	sprintf(src_mac,"%02x:%02x:%02x:%02x:%02x:%02x",(unsigned int)((detectormacadd>>40)&0xFF),
@@ -693,15 +704,17 @@ int configureMAC(int ipad, long long int macad, long long int detectormacadd, in
 										(unsigned int)((macad>>0)&0xFF));
 
 	printf("src_port:%d\n",src_port);
-	printf("dst_port:%d\n",dst_port);
 	printf("src_ip:%s\n",src_ip);
 	printf("dst_ip:%s\n",dst_ip);
 	printf("src_mac:%s\n",src_mac);
-	printf("dst_mac:%s\n\n",dst_mac);
+	printf("dst_mac:%s\n",dst_mac);
 
 
 	int beb_num = 34;
 	int header_number = 0;
+	int dst_port = udpport;
+
+	printf("dst_port:%d\n\n",dst_port);
 
 	int i=0;
 	/* for(i=0;i<32;i++){/** modified for Aldo*/
@@ -713,11 +726,12 @@ int configureMAC(int ipad, long long int macad, long long int detectormacadd, in
 
 	header_number = 32;
 	dst_port = udpport2;
+	printf("dst_port:%d\n\n",dst_port);
 
 	 /*for(i=0;i<32;i++){*//** modified for Aldo*/
 		    if(Beb_SetBebSrcHeaderInfos(beb_num,send_to_ten_gig,src_mac,src_ip,src_port) &&
 		    		Beb_SetUpUDPHeader(beb_num,send_to_ten_gig,header_number+i,dst_mac,dst_ip, dst_port))
-		    	printf("set up right ok\n");
+		    	printf("set up right ok\n\n");
 		    else return -1;
 	/*}*/
 
@@ -885,6 +899,9 @@ void setExternalGating(int enable[]){
 
 
 enum masterFlags setMaster(enum masterFlags arg){
+	//if(arg != GET_MASTER)
+	//	masterMode = arg;
+
 	return NO_MASTER;
 }
 

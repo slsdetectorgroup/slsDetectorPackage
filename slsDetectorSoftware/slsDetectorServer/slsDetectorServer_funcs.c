@@ -54,8 +54,8 @@ int init_detector(int b) {
 #endif
 	}else{
 		  Feb_Interface_FebInterface();
-		  Feb_Control_FebControl();
-		  printf("FEb control constructor done\n");
+		  //Feb_Control_FebControl();
+		 // printf("FEb control constructor done\n");
 		 /* Beb_Beb(-1);
 		  printf("BEB constructor done\n");*/
 	}
@@ -2963,7 +2963,7 @@ int execute_trimming(int file_des) {
 
 
 
-int configure_mac(int file_des) {printf("in hereeeeee\n");
+int configure_mac(int file_des) {
 
 	int retval=-100;
 	int ret=OK,ret1=OK;
@@ -2979,7 +2979,7 @@ int configure_mac(int file_des) {printf("in hereeeeee\n");
 	int udpport2;
 	int detipad;
 #endif
-printf("111\n");
+
 	sprintf(mess,"Can't configure MAC\n");
 
 	n = receiveData(file_des,arg,sizeof(arg),OTHER);
@@ -2987,7 +2987,7 @@ printf("111\n");
 		sprintf(mess,"Error reading from socket\n");
 		ret=FAIL;
 	}
-printf("222\n");
+
 #ifdef MYTHEND
 	ret = FAIL;
 	strcpy(mess,"Not applicable/implemented for this detector\n");
@@ -3007,7 +3007,6 @@ printf("222\n");
 		printf("mess:%s\n",mess);
 	}
 #endif
-printf("333\n");
 	//#ifdef VERBOSE
 	int i;
 	/*printf("\ndigital_test_bit in server %d\t",digitalTestBit);for gotthard*/
@@ -3036,9 +3035,9 @@ printf("333\n");
 		if(retval==-1) 	ret=FAIL;
 	}
 #endif
-	//#ifdef VERBOSE
+#ifdef VERBOSE
 	printf("Configured MAC with retval %d\n",  retval);
-	//#endif
+#endif
 	if (ret==FAIL) {
 		printf("configuring MAC of mod %d failed\n", imod);
 	}

@@ -869,6 +869,97 @@ slsDetectorCommand::slsDetectorCommand(slsDetectorUtils *det)  {
   i++;
 
 
+  /* pattern generator */
+
+ 
+  descrToFuncMap[i].m_pFuncName="pattern"; //
+  descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdPattern;
+  i++;
+ 
+
+  descrToFuncMap[i].m_pFuncName="patword"; //
+  descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdPattern;
+  i++;
+
+
+  descrToFuncMap[i].m_pFuncName="patioctrl"; //
+  descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdPattern;
+  i++;
+
+  
+  descrToFuncMap[i].m_pFuncName="patclkctrl"; //
+  descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdPattern;
+  i++;
+
+  
+  descrToFuncMap[i].m_pFuncName="patlimits"; //
+  descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdPattern;
+  i++;
+
+  descrToFuncMap[i].m_pFuncName="patloop0"; //
+  descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdPattern;
+  i++;
+
+
+  descrToFuncMap[i].m_pFuncName="patnloop0"; //
+  descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdPattern;
+  i++;
+
+  
+  descrToFuncMap[i].m_pFuncName="patwait0"; //
+  descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdPattern;
+  i++;
+
+ 
+  descrToFuncMap[i].m_pFuncName="patwaittime0"; //
+  descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdPattern;
+  i++;
+
+
+  descrToFuncMap[i].m_pFuncName="patloop1"; //
+  descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdPattern;
+  i++;
+
+
+  descrToFuncMap[i].m_pFuncName="patnloop1"; //
+  descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdPattern;
+  i++;
+
+  
+  descrToFuncMap[i].m_pFuncName="patwait1"; //
+  descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdPattern;
+  i++;
+
+ 
+  descrToFuncMap[i].m_pFuncName="patwaittime1"; //
+  descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdPattern;
+  i++;
+
+
+  descrToFuncMap[i].m_pFuncName="patloop2"; //
+  descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdPattern;
+  i++;
+
+
+  descrToFuncMap[i].m_pFuncName="patnloop2"; //
+  descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdPattern;
+  i++;
+
+  
+  descrToFuncMap[i].m_pFuncName="patwait2"; //
+  descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdPattern;
+  i++;
+
+ 
+  descrToFuncMap[i].m_pFuncName="patwaittime2"; //
+  descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdPattern;
+  i++;
+
+  
+  
+  
+  
+
   numberOfCommands=i;
   
   // #ifdef VERBOSE
@@ -4153,10 +4244,11 @@ string slsDetectorCommand::cmdReceiver(int narg, char *args[], int action) {
 string slsDetectorCommand::helpReceiver(int narg, char *args[], int action) {
 
   ostringstream os;
-  if (action==PUT_ACTION || action==HELP_ACTION)
+  if (action==PUT_ACTION || action==HELP_ACTION) {
     os << "receiver [status] \t starts/stops the receiver to listen to detector packets. - can be start or stop" << std::endl;
   	os << "r_readfreq \t sets the gui read frequency of the receiver, 0 if gui requests frame, >0 if receiver sends every nth frame to gui" << std::endl;
 	os << "tengiga \t sets system to be configure for 10Gbe if set to 1, else 1Gbe if set to 0" << std::endl;
+  }
   if (action==GET_ACTION || action==HELP_ACTION){
     os << "receiver \t returns the status of receiver - can be running or idle" << std::endl;
     os << "framescaught \t returns the number of frames caught by receiver(average for multi)" << std::endl;
@@ -4172,5 +4264,83 @@ string slsDetectorCommand::helpReceiver(int narg, char *args[], int action) {
 
 
 
+
+}
+
+string slsDetectorCommand::helpPattern(int narg, char *args[], int action) {
+
+  ostringstream os;
+  if (action==PUT_ACTION || action==HELP_ACTION) {
+    os << "pattern fname \t loads pattern file" << std::endl;
+  	os << "patword addr word \t writes pattern word - only very advanced users!" << std::endl;
+	os << "patioctrl reg\t configures inputs/outputs of the chiptest board - only advanced users!" << std::endl;
+	os << "patclkctrl reg\t configures output clk enable of the chiptest board- only advanced users! " << std::endl;
+	os << "patlimits addr1 addr2\t defines pattern limits between addr1 and addr2" << std::endl;
+	os << "patloop0 addr1 adrr2 \t configures the limits of the 0 loop " << std::endl;
+	os << "patloop1 addr1 adrr2 \t configures the limits of the 1 loop " << std::endl;
+	os << "patloop2 addr1 adrr2 \t configures the limits of the 2 loop " << std::endl;
+	os << "patnloop0 n \t sets number of cycles of the 0 loop " << std::endl;
+	os << "patnloop1 n \t sets number of cycles of the 1 loop " << std::endl;
+	os << "patnloop2 n \t sets number of cycles of the 2 loop " << std::endl;
+	os << "patwait0 addr \t configures pattern wait 0 address " << std::endl;
+	os << "patwait1 addr \t configures pattern wait 1 address " << std::endl;
+	os << "patwait2 addr \t configures pattern wait 2 address " << std::endl;
+	os << "patwaittime0 nclk \t sets wait 0 waiting time in clock number " << std::endl;
+	os << "patwaittime1 nclk \t sets wait 1 waiting time in clock number " << std::endl;
+	os << "patwaittime2 nclk \t sets wait 2 waiting time in clock number " << std::endl;
+  }	
+  if (action==GET_ACTION || action==HELP_ACTION){
+    os << "pattern \t cannot get" << std::endl;
+  	os << "patword \t cannot get" << std::endl;
+	os << "patioctrl \t returns inputs/outputs of the chiptest board - only advanced users!" << std::endl;
+	os << "patclkctrl\t returns output clk enable of the chiptest board- only advanced users! " << std::endl;
+	os << "patlimits \t returns pattern limits between addr1 and addr2" << std::endl;
+	os << "patloop0  \t returns the limits of the 0 loop " << std::endl;
+	os << "patloop1  \t returns the limits of the 1 loop " << std::endl;
+	os << "patloop2  \t returns the limits of the 2 loop " << std::endl;
+	os << "patnloop0 \t returns the number of cycles of the 0 loop " << std::endl;
+	os << "patnloop1 \t returns the number of cycles of the 1 loop " << std::endl;
+	os << "patnloop2 \t  returns the number of cycles of the 2 loop " << std::endl;
+	os << "patwait0 \t  returns the pattern wait 0 address " << std::endl;
+	os << "patwait1 \t  returns the pattern wait 1 address " << std::endl;
+	os << "patwait2 \t  returns the pattern wait 2 address " << std::endl;
+	os << "patwaittime0 \t  returns the wait 0 waiting time in clock number " << std::endl;
+	os << "patwaittime1 \t  returns the wait 1 waiting time in clock number " << std::endl;
+	os << "patwaittime2 \t  returns the wait 2 waiting time in clock number " << std::endl;
+
+  }
+  return os.str();
+
+}
+
+
+string slsDetectorCommand::cmdPattern(int narg, char *args[], int action) {
+
+  /********
+	   
+  Must implement set ctb functions in slsDetector and multiSlsDetector
+  
+  **********/
+  ostringstream os;
+  if (cmd=="pattern")
+  	else if (cmd=="patword") ;
+	else if (cmd=="patioctrl") ;
+	else if (cmd=="patclkctrl") ;
+	else if (cmd=="patlimits") ;
+	else if (cmd=="patloop0") ;
+	else if (cmd=="patloop1") ;
+	else if (cmd=="patloop2") ;
+	else if (cmd=="patnloop0") ;
+	else if (cmd=="patnloop1") ;
+	else if (cmd=="patnloop2") ;
+	else if (cmd=="patwait0") ;
+	else if (cmd=="patwait1") ;
+	else if (cmd=="patwait2") ;
+	else if (cmd=="patwaittime0") ;
+	else if (cmd=="patwaittime1") ;
+	else if (cmd=="patwaittime2") ;
+	else  return helpPattern(narg, args, action);
+  
+  return os.str();
 
 }

@@ -2612,3 +2612,121 @@ int calibratePedestal(int frames){
   return 0;
 }
 
+
+uint64_t writePatternWord(int addr, uint64_t word) {
+  
+  int cntrl=0;
+  if (addr>=MAX_PATTERN_LENGTH)
+    return -1;
+
+  if (word>=0) {
+    set64BitReg(word,PATTERN_IN_REG_LSB,PATTERN_IN_REG_MSB);
+    cntrl= (addr&APATTERN_MASK) << PATTERN_CTRL_ADDR_OFFSET;
+    bus_w(PATTERN_CNTRL_REG, cntrl);
+    bus_w(PATTERN_CNTRL_REG, cntrl | (1<< PATTERN_CTRL_WRITE_BIT)  );
+    bus_w(PATTERN_CNTRL_REG, cntrl);
+  }
+ return word;
+}
+uint64_t writePatternIOControl(uint64_t word) {
+  if (word>=0)set64BitReg(word,PATTERN_IOCTRL_REG_LSB,PATTERN_IOCTRL_REG_MSB);
+  return get64BitReg(PATTERN_IOCTRL_REG_LSB,PATTERN_IOCTRL_REG_MSB);
+    
+}
+uint64_t writePatternClkControl(uint64_t word) {
+  if (word>=0)set64BitReg(word,PATTERN_IOCLKCTRL_REG_LSB,PATTERN_IOCLKCTRL_REG_MSB);
+  return get64BitReg(PATTERN_IOCLKCTRL_REG_LSB,PATTERN_IOCLKCTRL_REG_MSB);
+    
+}
+
+int setPatternLoop(int level, int *start, int *stop, int *n) {
+  int ret=OK;
+  int lval=0;
+
+
+  switch (level) {
+  case 0:
+    if (*n>=0) bus_w(*n,PATTERN_N_LOOP0_REG);
+    *n=bus_r(PATTERN_N_LOOP0_REG);
+    lval=bus_r(PATTERN_LOOP0_AREG);
+    if (*start==-1) *start=(lval>> ASTART_OFFSET)   & APATTERN_MASK;
+    if (*stop==-1) *start=(lval>> ASTOP_OFFSET)   & APATTERN_MASK;
+    lval= ((*start & APATTERN_MASK) << ASTART_OFFSET) | ((*stop & APATTERN_MASK) << ASTOP_OFFSET);
+    bus_w(lval, PATTERN_LOOP0_AREG);
+    break;
+  case 1:
+    if (*n>=0) bus_w(*n,PATTERN_N_LOOP1_REG);
+    *n=bus_r(PATTERN_N_LOOP1_REG);
+    lval=bus_r(PATTERN_LOOP1_AREG);
+    if (*start==-1) *start=(lval>> ASTART_OFFSET)   & APATTERN_MASK;
+    if (*stop==-1) *start=(lval>> ASTOP_OFFSET)   & APATTERN_MASK;
+    lval= ((*start & APATTERN_MASK) << ASTART_OFFSET) | ((*stop & APATTERN_MASK) << ASTOP_OFFSET);
+    bus_w(lval, PATTERN_LOOP1_AREG);
+
+    break;
+  case 2:
+    if (*n>=0) bus_w(*n,PATTERN_N_LOOP2_REG);
+    *n=bus_r(PATTERN_N_LOOP2_REG);
+    lval=bus_r(PATTERN_LOOP2_AREG);
+    if (*start==-1) *start=(lval>> ASTART_OFFSET)   & APATTERN_MASK;
+    if (*stop==-1) *start=(lval>> ASTOP_OFFSET)   & APATTERN_MASK;
+    lval= ((*start & APATTERN_MASK) << ASTART_OFFSET) | ((*stop & APATTERN_MASK) << ASTOP_OFFSET);
+    bus_w(lval, PATTERN_LOOP2_AREG);
+    
+    break;
+  case -1:
+    
+    lval=bus_r(PATTERN_LIMITS_AREG);
+    if (*start==-1) start=(lval>> ASTART_OFFSET)   & APATTERN_MASK;
+    if (*stop==-1) start=(lval>> ASTOP_OFFSET)   & APATTERN_MASK;
+    lval= ((*start & APATTERN_MASK) << ASTART_OFFSET) | ((*stop & APATTERN_MASK) << ASTOP_OFFSET);
+    bus_w(lval, PATTERN_LIMITS_AREG);
+    break;
+  default:
+    ret=FAIL;
+
+
+
+
+  }
+
+  return ret;
+}
+
+
+int setPatternWaitAddress(int level, int addr) { 
+  int ret=-1;
+  switch (level) {
+  case 0:
+    if (addr>=0) bus_w(addr,PATTERN_WAIT0_AREG);
+    return bus_r(PATTERN_WAIT0_AREG);
+  case 1:
+    if (addr>=0) bus_w(addr,PATTERN_WAIT1_AREG);
+    return bus_r(PATTERN_WAIT1_AREG);
+  case 2:
+    if (addr>=0)  bus_w(addr,PATTERN_WAIT2_AREG);
+    return bus_r(PATTERN_WAIT2_AREG);
+  };
+
+  return ret;
+}
+
+
+uint64_t setPatternWaitTime(int level, uint64_t t) { 
+  uint64_t ret=-1;
+  switch (level) {
+  case 0:
+    if (t>=0) set64BitReg(t,PATTERN_WAIT0_TIME_REG_LSB,PATTERN_WAIT0_TIME_REG_MSB);
+      return get64BitReg(PATTERN_WAIT0_TIME_REG_LSB,PATTERN_WAIT0_TIME_REG_MSB);
+  case 1:
+    if (t>=0) set64BitReg(t,PATTERN_WAIT1_TIME_REG_LSB,PATTERN_WAIT1_TIME_REG_MSB);
+    return get64BitReg(PATTERN_WAIT1_TIME_REG_LSB,PATTERN_WAIT1_TIME_REG_MSB);
+  case 2:
+    if (t>=0) set64BitReg(t,PATTERN_WAIT2_TIME_REG_LSB,PATTERN_WAIT2_TIME_REG_MSB);
+    return get64BitReg(PATTERN_WAIT2_TIME_REG_LSB,PATTERN_WAIT2_TIME_REG_MSB);
+  }
+  return ret;
+}
+
+
+

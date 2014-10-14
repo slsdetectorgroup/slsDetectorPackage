@@ -145,15 +145,15 @@ main(void) {
   fprintf(fd,"patlimits %04x %04x\n",start, stop);
 
   for (iloop=0; iloop<MAXLOOPS; iloop++) {
-    fprintf(fd,"loop%d %04x %04x\n",iloop, startloopaddr[iloop], stoploopaddr[iloop]);
+    fprintf(fd,"patloop%d %04x %04x\n",iloop, startloopaddr[iloop], stoploopaddr[iloop]);
     if ( startloopaddr[iloop]<0 || stoploopaddr[iloop]<= startloopaddr[iloop]) nloop[iloop]=0;
-    fprintf(fd,"nloop%d %d\n",iloop, nloop[iloop]);
+    fprintf(fd,"patnloop%d %d\n",iloop, nloop[iloop]);
   }
 
   for (iloop=0; iloop<MAXTIMERS; iloop++) {
-    fprintf(fd,"wait%d %04x\n",iloop, waitaddr[iloop]);
+    fprintf(fd,"patwait%d %04x\n",iloop, waitaddr[iloop]);
     if (waitaddr[iloop]<0) waittime[iloop]=0;
-    fprintf(fd,"waittime%d %lld\n",iloop, waittime[iloop]);
+    fprintf(fd,"patwaittime%d %lld\n",iloop, waittime[iloop]);
   }
   
   close((int)fd);

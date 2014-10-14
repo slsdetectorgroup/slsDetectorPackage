@@ -4843,3 +4843,126 @@ int multiSlsDetector::enableTenGigabitEthernet(int i){
 		}
 	return ret;
 }
+
+
+
+
+  /** opens pattern file and sends pattern to CTB 
+      @param fname pattern file to open
+      @returns OK/FAIL
+  */
+int setCTBPattern(string fname) {
+
+
+
+
+
+}
+
+  
+  /** Writes a pattern word to the CTB
+      @param addr address of the word, -1 is I/O control register,  -2 is clk control register
+      @param word 64bit word to be written, -1 gets
+      @returns actual value
+  */
+uint64_t setCTBWord(int addr,uint64_t word) {
+	uint64_t ret=-100,ret1;
+	for (int idet=0; idet<thisMultiDetector->numberOfDetectors; idet++)
+		if (detectors[idet]){
+		  ret1=detectors[idet]->setCTBWord(addr, word);
+		    if(detectors[idet]->getErrorMask())
+			  setErrorMask(getErrorMask()|(1<<idet));
+			if(ret==-100)
+				ret=ret1;
+			else if (ret!=ret1)
+				ret=-1;
+		}
+	return ret;
+}
+  
+
+
+
+  /** Sets the pattern or loop limits in the CTB
+      @param level -1 complete pattern, 0,1,2, loop level
+      @param start start address if >=0
+      @param stop stop address if >=0
+      @param n number of loops (if level >=0)
+      @returns OK/FAIL
+  */
+int setCTBPatLoops(int level,int &start, int &stop, int &n) {
+
+
+	int ret=-100,ret1;
+	for (int idet=0; idet<thisMultiDetector->numberOfDetectors; idet++)
+		if (detectors[idet]){
+		  ret1=detectors[idet]->setCTBPatLoops(level, start, stop, n);
+		    if(detectors[idet]->getErrorMask())
+			  setErrorMask(getErrorMask()|(1<<idet));
+			if(ret==-100)
+				ret=ret1;
+			else if (ret!=ret1)
+				ret=-1;
+		}
+	return ret;
+
+
+}
+
+
+  /** Sets the wait address in the CTB
+      @param level  0,1,2, wait level
+      @param addr wait address, -1 gets
+      @returns actual value
+  */
+int setCTBPatWaitAddr(int level, int addr) {
+
+  
+
+	int ret=-100,ret1;
+	for (int idet=0; idet<thisMultiDetector->numberOfDetectors; idet++)
+		if (detectors[idet]){
+		  ret1=detectors[idet]->setCTBPatWaitAddr(level, addr);
+		    if(detectors[idet]->getErrorMask())
+			  setErrorMask(getErrorMask()|(1<<idet));
+			if(ret==-100)
+				ret=ret1;
+			else if (ret!=ret1)
+				ret=-1;
+		}
+	return ret;
+
+
+
+}
+
+   /** Sets the wait time in the CTB
+      @param level  0,1,2, wait level
+      @param t wait time, -1 gets
+      @returns actual value
+  */
+int setCTBPatWaitTime(int level, uint64_t t=-1) {
+
+
+
+  
+
+	int ret=-100,ret1;
+	for (int idet=0; idet<thisMultiDetector->numberOfDetectors; idet++)
+		if (detectors[idet]){
+		  ret1=detectors[idet]->setCTBPatWaitTime(level,t);
+		    if(detectors[idet]->getErrorMask())
+			  setErrorMask(getErrorMask()|(1<<idet));
+			if(ret==-100)
+				ret=ret1;
+			else if (ret!=ret1)
+				ret=-1;
+		}
+	return ret;
+
+
+
+
+}
+
+ 

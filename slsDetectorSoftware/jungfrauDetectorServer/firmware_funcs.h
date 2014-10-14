@@ -149,6 +149,14 @@ int resetCounterBlock(int startACQ);
 
 int calibratePedestal(int frames);
 
+uint64_t writePatternWord(int addr, uint64_t word);
+uint64_t writePatternIOControl(uint64_t word);
+uint64_t writePatternClkControl(uint64_t word);
+int setPatternLoop(int level, int *start, int *stop, int *n);
+int setPatternWaitAddress(int level, int addr);
+uint64_t setPatternWaitTime(int level, uint64_t t);
+
+
 
 
 /*

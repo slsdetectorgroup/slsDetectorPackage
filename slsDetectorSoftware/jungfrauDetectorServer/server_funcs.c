@@ -227,6 +227,7 @@ int function_table() {
   flist[F_START_RECEIVER]=&start_receiver;
   flist[F_STOP_RECEIVER]=&stop_receiver;
   flist[F_CALIBRATE_PEDESTAL]=&calibrate_pedestal;
+  flist[F_SET_CTB_PATTERN]=&set_ctb_pattern;
   return OK;
 }
 
@@ -3100,6 +3101,141 @@ int calibrate_pedestal(int file_des){
 		n += sendDataOnly(file_des,mess,sizeof(mess));
 	else
 		n += sendDataOnly(file_des,&retval,sizeof(retval));
+
+	/*return ok/fail*/
+	return ret;
+}
+
+
+int set_ctb_pattern(int file_des){
+
+	int ret=FAIL;
+	int retval=-1;
+	int n;
+	int mode;
+	uint64_t word, retval64, t;
+	int addr;
+	int level, start, stop, nl;
+
+	sprintf(mess,"Could not set pattern\n");
+
+ 	n = receiveDataOnly(file_des,&mode,sizeof(mode)); 
+	switch (mode) {
+
+	case 0: //sets word
+	  n = receiveDataOnly(file_des,&addr,sizeof(addr)); 
+	  n = receiveDataOnly(file_des,&word,sizeof(word)); 
+	  ret=OK;
+
+	  switch (addr) {
+	  case -1:
+	    retval64=writePatternIOControl(word);
+	    break;
+	  case -2:
+	    retval64=writePatternClkControl(word);
+	    break;
+	  default:
+	    retval64=writePatternWord(addr,word);
+	  };
+
+
+	  //write word;
+	  //@param addr address of the word, -1 is I/O control register,  -2 is clk control register
+	  //@param word 64bit word to be written, -1 gets
+	  
+	  n = sendDataOnly(file_des,&ret,sizeof(ret));
+	  if (ret==FAIL)
+	    n += sendDataOnly(file_des,mess,sizeof(mess));
+	  else
+	    n += sendDataOnly(file_des,&retval64,sizeof(retval64));
+	  break;
+
+	case 1: //pattern loop
+	  n = receiveDataOnly(file_des,&level,sizeof(level)); 
+	  n = receiveDataOnly(file_des,&start,sizeof(start)); 
+	  n = receiveDataOnly(file_des,&stop,sizeof(stop)); 
+	  n = receiveDataOnly(file_des,&nl,sizeof(nl)); 
+	  
+
+  /** Sets the pattern or loop limits in the CTB
+      @param level -1 complete pattern, 0,1,2, loop level
+      @param start start address if >=0
+      @param stop stop address if >=0
+      @param n number of loops (if level >=0)
+      @returns OK/FAIL
+  */
+	  ret=setPatternLoop(level, &start, &stop, &nl);
+	  
+	  n = sendDataOnly(file_des,&ret,sizeof(ret));
+	  if (ret==FAIL)
+	    n += sendDataOnly(file_des,mess,sizeof(mess));
+	  else {
+	    n += sendDataOnly(file_des,&start,sizeof(start));
+	    n += sendDataOnly(file_des,&stop,sizeof(stop));
+	    n += sendDataOnly(file_des,&nl,sizeof(nl));
+	  }
+	  break;
+
+
+
+	case 2: //wait address
+	  n = receiveDataOnly(file_des,&level,sizeof(level)); 
+	  n = receiveDataOnly(file_des,&addr,sizeof(addr)); 
+
+	  
+
+  /** Sets the wait address in the CTB
+      @param level  0,1,2, wait level
+      @param addr wait address, -1 gets
+      @returns actual value
+  */
+	  retval=setPatternWaitAddress(level,addr);
+	  ret=OK;
+	  if (ret==FAIL)
+	    n += sendDataOnly(file_des,mess,sizeof(mess));
+	  else {
+	    n += sendDataOnly(file_des,&retval,sizeof(retval));
+
+	  }
+	  
+
+	  break;
+
+
+	case 3: //wait time
+	  n = receiveDataOnly(file_des,&level,sizeof(level)); 
+	  n = receiveDataOnly(file_des,&t,sizeof(t)); 
+
+
+   /** Sets the wait time in the CTB
+      @param level  0,1,2, wait level
+      @param t wait time, -1 gets
+      @returns actual value
+  */
+
+	  ret=OK;
+
+	  retval64=setPatternWaitTime(level,t);
+
+	  n = sendDataOnly(file_des,&ret,sizeof(ret));
+	  if (ret==FAIL)
+	    n += sendDataOnly(file_des,mess,sizeof(mess));
+	  else
+	    n += sendDataOnly(file_des,&retval64,sizeof(retval64));
+
+	  break;
+
+
+	default:
+	  ret=FAIL;
+	  sprintf(mess,"%s - wrong mode %d\n",mess, mode);
+	  n = sendDataOnly(file_des,&ret,sizeof(ret));
+	  n += sendDataOnly(file_des,mess,sizeof(mess));
+	  
+	  
+
+	}
+
 
 	/*return ok/fail*/
 	return ret;

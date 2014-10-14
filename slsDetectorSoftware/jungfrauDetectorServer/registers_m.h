@@ -108,7 +108,6 @@
 //#define FLOW_STATUS_REG       0x12<<11
 //#define FRAME_REG             0x13<<11
 #define MULTI_PURPOSE_REG     0x14<<11
-#define DAQ_REG               0x15<<11
 //#define TIME_FROM_START_REG   0x16<<11
 #define DAC_REG     64<<11//0x17<<11// control the dacs
 //ADC
@@ -210,12 +209,44 @@
 #define DETECTORIP_AREG 75<<11//detectorip_AReg_c   : integer:= 75; */
 #define IPCHKSUM_AREG 76<<11//ipchksum_AReg_c : integer:= 76; */
 
+#define PATTERN_CNTRL_REG 82<<11
+#define PATTERN_LIMITS_AREG 83<<11
+
+#define PATTERN_LOOP0_AREG 84<<11
+#define PATTERN_N_LOOP0_REG 85<<11
+
+#define PATTERN_LOOP1_AREG 86<<11
+#define PATTERN_N_LOOP1_REG 87<<11
+
+#define PATTERN_LOOP2_AREG 88<<11
+#define PATTERN_N_LOOP2_REG 89<<11
+
+#define PATTERN_WAIT0_AREG 90<<11
+#define PATTERN_WAIT1_AREG 91<<11
+#define PATTERN_WAIT2_AREG 92<<11
 
 
 
+#define DAQ_REG   93<<11
+#define ADC_LATCH_ENABLE_REG   94<<11
 
-
-
+   
+#define PATTERN_IOCTRL_REG_LSB 108<<11
+#define PATTERN_IOCTRL_REG_MSB 109<<12
+#define PATTERN_IOCLKCTRL_REG_LSB 110<<11
+#define PATTERN_IOCLKCTRL_REG_MSB 111<<11
+#define PATTERN_IN_REG_LSB 112<<11
+#define PATTERN_IN_REG_MSB 113<<11
+#define PATTERN_WAIT0_TIME_REG_LSB 114<<11
+#define PATTERN_WAIT0_TIME_REG_MSB 115<<11
+#define PATTERN_WAIT1_TIME_REG_LSB 116<<11
+#define PATTERN_WAIT1_TIME_REG_MSB 117<<11
+#define PATTERN_WAIT2_TIME_REG_LSB 118<<11
+#define PATTERN_WAIT2_TIME_REG_MSB 119<<11
+   
+   
+ 
+ 
 
 
 
@@ -450,14 +481,24 @@
 #define PPL_C0_CNT_PARAM_DEFAULT 0x20D0C
 #define PPL_C1_CNT_PARAM_DEFAULT 0xA0A0
 #define PPL_C2_CNT_PARAM_DEFAULT 0x20D0C
-#define PPL_C2_CNT_PARAM_DEFAULT 0x0808
+#define PPL_C3_CNT_PARAM_DEFAULT 0x0808
 #define PPL_BW_PARAM_DEFAULT 0x2EE0
 #define PPL_VCO_PARAM_DEFAULT 0x1
 
 
 
 
-
+/**------------------
+-- pattern registers definitions
+--------------------------------------------- */
+#define  IOSIGNALS_MASK 0xfffffffffffff
+#define ADC_ENABLE_BIT 63
+#define  APATTERN_MASK 0x3ff
+#define ASTART_OFFSET 0
+#define ASTOP_OFFSET 16
+#define PATTERN_CTRL_WRITE_BIT 0
+#define PATTERN_CTRL_ADDR_OFFSET 16
+#define MAX_PATTERN_LENGTH 1024
 
 
 #endif

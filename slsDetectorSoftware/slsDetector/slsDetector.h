@@ -1650,6 +1650,48 @@ class slsDetector : public slsDetectorUtils, public energyConversion {
    */
   int enableTenGigabitEthernet(int i = -1);
 
+
+  /******** CTB funcs */
+
+  /** opens pattern file and sends pattern to CTB 
+      @param fname pattern file to open
+      @returns OK/FAIL
+  */
+  int setCTBPattern(string fname);
+
+  
+  /** Writes a pattern word to the CTB
+      @param addr address of the word, -1 is I/O control register,  -2 is clk control register
+      @param word 64bit word to be written, -1 gets
+      @returns actual value
+  */
+  int setCTBWord(int addr,uint64_t word=-1);  
+  
+  /** Sets the pattern or loop limits in the CTB
+      @param level -1 complete pattern, 0,1,2, loop level
+      @param start start address if >=0
+      @param stop stop address if >=0
+      @param n number of loops (if level >=0)
+      @returns OK/FAIL
+  */
+  int setCTBPatLoops(int level,int &start, int &stop, int &n);  
+
+
+  /** Sets the wait address in the CTB
+      @param level  0,1,2, wait level
+      @param addr wait address, -1 gets
+      @returns actual value
+  */
+  int setCTBPatWaitAddr(int level, int addr=-1);  
+
+   /** Sets the wait time in the CTB
+      @param level  0,1,2, wait level
+      @param t wait time, -1 gets
+      @returns actual value
+  */
+  int setCTBPatWaitTime(int level, uint64_t t=-1);  
+
+ 
  protected:
  
 

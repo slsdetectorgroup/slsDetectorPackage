@@ -6792,3 +6792,235 @@ int slsDetector::enableTenGigabitEthernet(int i){
 		thisDetector->tenGigaEnable=retval;
 	return retval;
 }
+
+
+
+  /******** CTB funcs */
+
+  /** opens pattern file and sends pattern to CTB 
+      @param fname pattern file to open
+      @returns OK/FAIL
+  */
+int setCTBPattern(string fname) {
+
+
+	int fnum=F_SEND_RECEIVER_DETHOSTNAME;
+	int ret = FAIL;
+	char retval[MAX_STR_LENGTH]="";
+
+
+	if(setReceiverOnline(ONLINE_FLAG)==ONLINE_FLAG){
+#ifdef VERBOSE
+		std::cout << "Sending detector hostname to Receiver " << thisDetector->hostname << std::endl;
+#endif
+		if (connectData() == OK)
+			ret=thisReceiver->sendString(fnum,retval,thisDetector->hostname);
+		if((ret==FAIL) || (strcmp(retval,thisDetector->hostname)))
+			setErrorMask((getErrorMask())|(RECEIVER_DET_HOSTNAME_NOT_SET));
+	}
+
+  return ret;
+
+
+}
+
+  
+  /** Writes a pattern word to the CTB
+      @param addr address of the word, -1 is I/O control register,  -2 is clk control register
+      @param word 64bit word to be written, -1 gets
+      @returns actual value
+  */
+uint64_t setCTBWord(int addr,uint64_t word) {
+
+  uint64_t ret;
+
+  int ret=FAIL;
+   uint64_t retval=-1;
+  int fnum=F_SET_CTB_PATTERN;
+  int mode=0; //sets word
+
+  char mess[100];
+
+#ifdef VERBOSE
+  std::cout<<"Setting CTB word" <<std::endl;
+#endif
+
+  if (thisDetector->onlineFlag==ONLINE_FLAG) {
+    if (connectControl() == OK){
+      controlSocket->SendDataOnly(&fnum,sizeof(fnum));
+      controlSocket->SendDataOnly(&mode,sizeof(mode));
+      controlSocket->SendDataOnly(&addr,sizeof(addr));
+      controlSocket->SendDataOnly(&word,sizeof(word));
+      controlSocket->ReceiveDataOnly(&ret,sizeof(ret));
+      if (ret!=FAIL)
+	controlSocket->ReceiveDataOnly(&retval,sizeof(retval));
+      else {
+	controlSocket->ReceiveDataOnly(mess,sizeof(mess));
+	std::cout<< "Detector returned error: " << mess << std::endl;
+      }
+      controlSocket->Disconnect();
+      if (ret==FORCE_UPDATE)
+	updateDetector();
+    }
+  }
+
+  return retval;
+
+
+}
+  
+  /** Sets the pattern or loop limits in the CTB
+      @param level -1 complete pattern, 0,1,2, loop level
+      @param start start address if >=0
+      @param stop stop address if >=0
+      @param n number of loops (if level >=0)
+      @returns OK/FAIL
+  */
+int setCTBPatLoops(int level,int &start, int &stop, int &n) {
+
+
+  int retval[3], args[4];
+
+  args[0]=level;
+  args[1]=start;
+  args[2]=stop;
+  args[3]=n;
+  
+
+  int ret=FAIL;
+   uint64_t retval=-1;
+  int fnum=F_SET_CTB_PATTERN;
+  int mode=1; //sets loop
+
+  char mess[100];
+
+#ifdef VERBOSE
+  std::cout<<"Setting CTB word" <<std::endl;
+#endif
+
+  if (thisDetector->onlineFlag==ONLINE_FLAG) {
+    if (connectControl() == OK){
+      controlSocket->SendDataOnly(&fnum,sizeof(fnum));
+      controlSocket->SendDataOnly(&mode,sizeof(mode));
+      controlSocket->SendDataOnly(&args,sizeof(args));
+      controlSocket->ReceiveDataOnly(&ret,sizeof(ret));
+      if (ret!=FAIL) {
+	controlSocket->ReceiveDataOnly(&retval,sizeof(retval));
+	start=retval[0];
+	stop=retval[1];
+	n=retval[2];
+      } else {
+	controlSocket->ReceiveDataOnly(mess,sizeof(mess));
+	std::cout<< "Detector returned error: " << mess << std::endl;
+      }
+      controlSocket->Disconnect();
+      if (ret==FORCE_UPDATE)
+	updateDetector();
+    }
+  }
+
+  return ret;
+
+
+}
+
+
+  /** Sets the wait address in the CTB
+      @param level  0,1,2, wait level
+      @param addr wait address, -1 gets
+      @returns actual value
+  */
+int setCTBPatWaitAddr(int level, int addr=-1) {
+
+
+
+
+  int retval=-1;
+
+
+  int ret=FAIL;
+   uint64_t retval=-1;
+  int fnum=F_SET_CTB_PATTERN;
+  int mode=3; //sets loop
+
+  char mess[100];
+
+#ifdef VERBOSE
+  std::cout<<"Setting CTB word" <<std::endl;
+#endif
+
+  if (thisDetector->onlineFlag==ONLINE_FLAG) {
+    if (connectControl() == OK){
+      controlSocket->SendDataOnly(&fnum,sizeof(fnum));
+      controlSocket->SendDataOnly(&mode,sizeof(mode));
+      controlSocket->SendDataOnly(&level,sizeof(level));
+      controlSocket->SendDataOnly(&addr,sizeof(addr));
+      controlSocket->ReceiveDataOnly(&ret,sizeof(ret));
+      if (ret!=FAIL) {
+	controlSocket->ReceiveDataOnly(&retval,sizeof(retval));
+      } else {
+	controlSocket->ReceiveDataOnly(mess,sizeof(mess));
+	std::cout<< "Detector returned error: " << mess << std::endl;
+      }
+      controlSocket->Disconnect();
+      if (ret==FORCE_UPDATE)
+	updateDetector();
+    }
+  }
+
+  return retval;
+
+
+
+}
+
+   /** Sets the wait time in the CTB
+      @param level  0,1,2, wait level
+      @param t wait time, -1 gets
+      @returns actual value
+  */
+int setCTBPatWaitTime(int level, uint64_t t=-1) {
+
+
+
+
+
+  uint64_t retval=-1;
+
+
+  int ret=FAIL;
+   uint64_t retval=-1;
+  int fnum=F_SET_CTB_PATTERN;
+  int mode=4; //sets loop
+
+  char mess[100];
+
+#ifdef VERBOSE
+  std::cout<<"Setting CTB word" <<std::endl;
+#endif
+
+  if (thisDetector->onlineFlag==ONLINE_FLAG) {
+    if (connectControl() == OK){
+      controlSocket->SendDataOnly(&fnum,sizeof(fnum));
+      controlSocket->SendDataOnly(&mode,sizeof(mode));
+      controlSocket->SendDataOnly(&level,sizeof(level));
+      controlSocket->SendDataOnly(&t,sizeof(t));
+      controlSocket->ReceiveDataOnly(&ret,sizeof(ret));
+      if (ret!=FAIL) {
+	controlSocket->ReceiveDataOnly(&retval,sizeof(retval));
+      } else {
+	controlSocket->ReceiveDataOnly(mess,sizeof(mess));
+	std::cout<< "Detector returned error: " << mess << std::endl;
+      }
+      controlSocket->Disconnect();
+      if (ret==FORCE_UPDATE)
+	updateDetector();
+    }
+  }
+
+  return retval;
+
+
+}
+
+ 

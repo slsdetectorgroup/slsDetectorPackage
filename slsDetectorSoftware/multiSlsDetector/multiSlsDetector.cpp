@@ -4839,7 +4839,7 @@ int multiSlsDetector::enableTenGigabitEthernet(int i){
       @param fname pattern file to open
       @returns OK/FAIL
   */
-int setCTBPattern(string fname) {
+int multiSlsDetector::setCTBPattern(string fname) {
 
 
 
@@ -4853,7 +4853,7 @@ int setCTBPattern(string fname) {
       @param word 64bit word to be written, -1 gets
       @returns actual value
   */
-uint64_t setCTBWord(int addr,uint64_t word) {
+uint64_t multiSlsDetector::setCTBWord(int addr,uint64_t word) {
 	uint64_t ret=-100,ret1;
 	for (int idet=0; idet<thisMultiDetector->numberOfDetectors; idet++)
 		if (detectors[idet]){
@@ -4878,7 +4878,7 @@ uint64_t setCTBWord(int addr,uint64_t word) {
       @param n number of loops (if level >=0)
       @returns OK/FAIL
   */
-int setCTBPatLoops(int level,int &start, int &stop, int &n) {
+int multiSlsDetector::setCTBPatLoops(int level,int &start, int &stop, int &n) {
 
 
 	int ret=-100,ret1;
@@ -4903,7 +4903,7 @@ int setCTBPatLoops(int level,int &start, int &stop, int &n) {
       @param addr wait address, -1 gets
       @returns actual value
   */
-int setCTBPatWaitAddr(int level, int addr) {
+int multiSlsDetector::setCTBPatWaitAddr(int level, int addr) {
 
   
 
@@ -4929,7 +4929,7 @@ int setCTBPatWaitAddr(int level, int addr) {
       @param t wait time, -1 gets
       @returns actual value
   */
-int setCTBPatWaitTime(int level, uint64_t t=-1) {
+int multiSlsDetector::setCTBPatWaitTime(int level, uint64_t t) {
 
 
 

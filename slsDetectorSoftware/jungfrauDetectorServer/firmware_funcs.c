@@ -2619,7 +2619,7 @@ uint64_t writePatternWord(int addr, uint64_t word) {
   if (addr>=MAX_PATTERN_LENGTH)
     return -1;
 
-  if (word>=0) {
+  if (word=!-1){
     set64BitReg(word,PATTERN_IN_REG_LSB,PATTERN_IN_REG_MSB);
     cntrl= (addr&APATTERN_MASK) << PATTERN_CTRL_ADDR_OFFSET;
     bus_w(PATTERN_CNTRL_REG, cntrl);

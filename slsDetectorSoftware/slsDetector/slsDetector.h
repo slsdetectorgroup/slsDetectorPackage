@@ -1665,7 +1665,7 @@ class slsDetector : public slsDetectorUtils, public energyConversion {
       @param word 64bit word to be written, -1 gets
       @returns actual value
   */
-  int setCTBWord(int addr,uint64_t word=-1);  
+  uint64_t setCTBWord(int addr,uint64_t word=-1);  
   
   /** Sets the pattern or loop limits in the CTB
       @param level -1 complete pattern, 0,1,2, loop level

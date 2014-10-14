@@ -6801,23 +6801,23 @@ int slsDetector::enableTenGigabitEthernet(int i){
       @param fname pattern file to open
       @returns OK/FAIL
   */
-int setCTBPattern(string fname) {
+int slsDetector::setCTBPattern(string fname) {
 
 
-	int fnum=F_SEND_RECEIVER_DETHOSTNAME;
+	int fnum=F_SET_CTB_PATTERN;
 	int ret = FAIL;
 	char retval[MAX_STR_LENGTH]="";
 
 
-	if(setReceiverOnline(ONLINE_FLAG)==ONLINE_FLAG){
-#ifdef VERBOSE
-		std::cout << "Sending detector hostname to Receiver " << thisDetector->hostname << std::endl;
-#endif
-		if (connectData() == OK)
-			ret=thisReceiver->sendString(fnum,retval,thisDetector->hostname);
-		if((ret==FAIL) || (strcmp(retval,thisDetector->hostname)))
-			setErrorMask((getErrorMask())|(RECEIVER_DET_HOSTNAME_NOT_SET));
-	}
+// 	if(setReceiverOnline(ONLINE_FLAG)==ONLINE_FLAG){
+// #ifdef VERBOSE
+// 		std::cout << "Sending detector hostname to Receiver " << thisDetector->hostname << std::endl;
+// #endif
+// 		if (connectData() == OK)
+// 			ret=thisReceiver->sendString(fnum,retval,thisDetector->hostname);
+// 		if((ret==FAIL) || (strcmp(retval,thisDetector->hostname)))
+// 			setErrorMask((getErrorMask())|(RECEIVER_DET_HOSTNAME_NOT_SET));
+// 	}
 
   return ret;
 
@@ -6830,9 +6830,9 @@ int setCTBPattern(string fname) {
       @param word 64bit word to be written, -1 gets
       @returns actual value
   */
-uint64_t setCTBWord(int addr,uint64_t word) {
+uint64_t slsDetector::setCTBWord(int addr,uint64_t word) {
 
-  uint64_t ret;
+  //uint64_t ret;
 
   int ret=FAIL;
    uint64_t retval=-1;
@@ -6876,7 +6876,7 @@ uint64_t setCTBWord(int addr,uint64_t word) {
       @param n number of loops (if level >=0)
       @returns OK/FAIL
   */
-int setCTBPatLoops(int level,int &start, int &stop, int &n) {
+int slsDetector::setCTBPatLoops(int level,int &start, int &stop, int &n) {
 
 
   int retval[3], args[4];
@@ -6888,7 +6888,6 @@ int setCTBPatLoops(int level,int &start, int &stop, int &n) {
   
 
   int ret=FAIL;
-   uint64_t retval=-1;
   int fnum=F_SET_CTB_PATTERN;
   int mode=1; //sets loop
 
@@ -6930,7 +6929,7 @@ int setCTBPatLoops(int level,int &start, int &stop, int &n) {
       @param addr wait address, -1 gets
       @returns actual value
   */
-int setCTBPatWaitAddr(int level, int addr=-1) {
+int slsDetector::setCTBPatWaitAddr(int level, int addr) {
 
 
 
@@ -6939,7 +6938,6 @@ int setCTBPatWaitAddr(int level, int addr=-1) {
 
 
   int ret=FAIL;
-   uint64_t retval=-1;
   int fnum=F_SET_CTB_PATTERN;
   int mode=3; //sets loop
 
@@ -6979,7 +6977,7 @@ int setCTBPatWaitAddr(int level, int addr=-1) {
       @param t wait time, -1 gets
       @returns actual value
   */
-int setCTBPatWaitTime(int level, uint64_t t=-1) {
+int slsDetector::setCTBPatWaitTime(int level, uint64_t t) {
 
 
 
@@ -6989,7 +6987,7 @@ int setCTBPatWaitTime(int level, uint64_t t=-1) {
 
 
   int ret=FAIL;
-   uint64_t retval=-1;
+  //   uint64_t retval=-1;
   int fnum=F_SET_CTB_PATTERN;
   int mode=4; //sets loop
 

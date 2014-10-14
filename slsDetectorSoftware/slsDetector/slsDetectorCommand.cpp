@@ -4322,7 +4322,7 @@ string slsDetectorCommand::cmdPattern(int narg, char *args[], int action) {
   
   **********/
   ostringstream os;
-  if (cmd=="pattern")
+  if (cmd=="pattern") ;
   	else if (cmd=="patword") ;
 	else if (cmd=="patioctrl") ;
 	else if (cmd=="patclkctrl") ;

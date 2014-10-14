@@ -254,38 +254,38 @@
 
 
 
-#define ROI_REG 0x35<<11
-#define OVERSAMPLING_REG 0x36<<11
-#define MOENCH_CNTR_REG 0x31<<11
-#define MOENCH_CNTR_OUT_REG 0x33<<11
-#define MOENCH_CNTR_CONF_REG 0x32<<11
+#define ROI_REG 0 // 0x35<<11
+#define OVERSAMPLING_REG 0 // 0x36<<11
+#define MOENCH_CNTR_REG 0 // 0x31<<11
+#define MOENCH_CNTR_OUT_REG 0 // 0x33<<11
+#define MOENCH_CNTR_CONF_REG 0 // 0x32<<11
 
 
 
 //image
-#define DARK_IMAGE_REG     0x81<<11
-#define GAIN_IMAGE_REG     0x82<<11
+#define DARK_IMAGE_REG     0 // 0x81<<11
+#define GAIN_IMAGE_REG     0 // 0x82<<11
 
 //counter block memory
-#define COUNTER_MEMORY_REG 0x85<<11
+#define COUNTER_MEMORY_REG 0 // 0x85<<11
 
 
-#define GET_MEASUREMENT_TIME_LSB_REG    0x023000   
-#define GET_MEASUREMENT_TIME_MSB_REG    0x024000 
+#define GET_MEASUREMENT_TIME_LSB_REG    0 // 0x023000   
+#define GET_MEASUREMENT_TIME_MSB_REG    0 // 0x024000 
   
-//#define GET_ACTUAL_TIME_LSB_REG    0x025000   
-//#define GET_ACTUAL_TIME_MSB_REG    0x026000  
+//#define GET_ACTUAL_TIME_LSB_REG    0 // 0x025000   
+//#define GET_ACTUAL_TIME_MSB_REG    0 // 0x026000  
 
 
 //not used
-//#define MCB_DOUT_REG_OFF      0x200000
-//#define FIFO_CNTRL_REG_OFF    0x300000
-//#define FIFO_COUNTR_REG_OFF   0x400000
+//#define MCB_DOUT_REG_OFF      0 // 0x200000
+//#define FIFO_CNTRL_REG_OFF    0 // 0x300000
+//#define FIFO_COUNTR_REG_OFF   0 // 0x400000
 //not used so far
-//#define SPEED_REG        0x006000
-//#define SET_NBITS_REG    0x008000
+//#define SPEED_REG        0 // 0x006000
+//#define SET_NBITS_REG    0 // 0x008000
 //not used
-//#define GET_SHIFT_IN_REG      0x022000
+//#define GET_SHIFT_IN_REG      0 // 0x022000
 
 
 

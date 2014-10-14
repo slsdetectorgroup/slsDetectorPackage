@@ -26,8 +26,9 @@ public:
 	 * @param succecc socket creation was successfull
 	 * @param rbase pointer to the receiver base
 	 * @param pn port number (defaults to default port number)
+	 * @param bot mode is bottom if true, else its a top half module
 	 */
-  slsReceiverTCPIPInterface(int &success, slsReceiverBase* rbase, int pn=-1);
+  slsReceiverTCPIPInterface(int &success, slsReceiverBase* rbase, int pn=-1, bool bot=false);
 
 	/**
 	 * Sets the port number to listen to. 
@@ -271,6 +272,9 @@ private:
 
 	/** port number */
 	int portNumber;
+
+	/** true if bottom half module for eiger */
+	bool bottom;
 
 
 protected:

@@ -31,13 +31,14 @@ using namespace std;
 
 
 
-slsReceiverUDPFunctions::slsReceiverUDPFunctions():
+slsReceiverUDPFunctions::slsReceiverUDPFunctions(bool bot):
 		thread_started(0),
 		eth(NULL),
 		latestData(NULL),
 		guiFileName(NULL),
 		guiFrameNumber(0),
-		tengigaEnable(0){
+		tengigaEnable(0),
+		bottom(bot){
 	for(int i=0;i<MAX_NUM_LISTENING_THREADS;i++){
 		udpSocket[i] = NULL;
 		server_port[i] = DEFAULT_UDP_PORTNO+i;
@@ -443,16 +444,12 @@ void slsReceiverUDPFunctions::setEthernetInterface(char* c){
 
 
 void slsReceiverUDPFunctions::setUDPPortNo(int p){
-	//for(int i=0;i<numListeningThreads;i++){
-		server_port[0] = p;
-	//}
+	server_port[0] = p;
 }
 
 
 void slsReceiverUDPFunctions::setUDPPortNo2(int p){
-	//for(int i=0;i<numListeningThreads;i++){
-		server_port[1] = p;
-	//}
+	server_port[1] = p;
 }
 
 
@@ -885,6 +882,15 @@ void slsReceiverUDPFunctions::copyFrameToGui(char* startbuf[], uint32_t fnum, ch
 
 int slsReceiverUDPFunctions::createUDPSockets(){
 
+	int port[2];
+	port[0] = server_port[0];
+	port[1] = server_port[1];
+
+	/** eiger specific */
+	if(bottom){
+		port[0] = server_port[1];
+		port[1] = server_port[0];
+	}
 
 	//if eth is mistaken with ip address
 	if (strchr(eth,'.')!=NULL)
@@ -897,14 +903,14 @@ int slsReceiverUDPFunctions::createUDPSockets(){
 		cout<<"warning:eth is empty.listening to all"<<endl;
 
 		for(int i=0;i<numListeningThreads;i++)
-			udpSocket[i] = new genericSocket(server_port[i],genericSocket::UDP,bufferSize);
+			udpSocket[i] = new genericSocket(port[i],genericSocket::UDP,bufferSize);
 	}
 	//normal socket
 	else{
 		cout<<"eth:"<<eth<<endl;
 
 		for(int i=0;i<numListeningThreads;i++)
-			udpSocket[i] = new genericSocket(server_port[i],genericSocket::UDP,bufferSize,eth);
+			udpSocket[i] = new genericSocket(port[i],genericSocket::UDP,bufferSize,eth);
 	}
 
 	//error
@@ -912,10 +918,10 @@ int slsReceiverUDPFunctions::createUDPSockets(){
 	for(int i=0;i<numListeningThreads;i++){
 		iret = udpSocket[i]->getErrorStatus();
 		if(!iret)
-			cout << "UDP port opened at port " << server_port[i] << endl;
+			cout << "UDP port opened at port " << port[i] << endl;
 		else{
 #ifdef VERBOSE
-			cout << "Could not create UDP socket on port " << server_port[i]  << " error:" << iret << endl;
+			cout << "Could not create UDP socket on port " << port[i]  << " error:" << iret << endl;
 #endif
 			return FAIL;
 		}
@@ -1351,7 +1357,7 @@ int slsReceiverUDPFunctions::startReceiver(char message[]){
 		cout << endl << message << endl;
 		return FAIL;
 	}
-	cout << "UDP socket(s) created successfully. 1st  port " << server_port[0] << endl;
+	cout << "UDP socket(s) created successfully." << endl;
 
 
 	if(setupWriter() == FAIL){
@@ -1540,9 +1546,9 @@ int slsReceiverUDPFunctions::startListening(){
 				expected = maxBufferSize - carryonBufferSize;
 			}
 
-#ifdef VERYDEBUG
+//#ifdef VERYDEBUG
 			cout << ithread << " *** rc:" << dec << rc << ". expected:" << dec << expected << endl;
-#endif
+//#endif
 
 
 
@@ -1954,9 +1960,9 @@ int i;
 #endif
 				pthread_mutex_unlock(&(status_mutex));
 
-#ifdef VERYDEBUG
+//#ifdef VERYDEBUG
 				cout << ithread << ": Frames listened to " << dec << ((totalListeningFrameCount[ithread]*numListeningThreads)/packetsPerFrame) << endl;
-#endif
+//#endif
 
 				//waiting for all listening threads to be done, to print final count of frames listened to
 				if(ithread == 0){

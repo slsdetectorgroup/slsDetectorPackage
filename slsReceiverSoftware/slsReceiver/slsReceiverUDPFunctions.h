@@ -40,7 +40,7 @@ public:
 	/**
 	 * Constructor
 	 */
-	slsReceiverUDPFunctions();
+	slsReceiverUDPFunctions(bool bot);
 
 	/**
 	 * Destructor
@@ -767,6 +767,9 @@ private:
 	 * 1 callback writes file, we have to open, close it
 	 * 2 we open, close, write file, callback does not do anything */
 	int cbAction;
+
+	/** true if bottom half module for eiger */
+	bool bottom;
 
 
 public:

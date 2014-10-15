@@ -18,9 +18,8 @@ using namespace std;
 slsReceiver::slsReceiver(int argc, char *argv[], int &success){
 	//creating base receiver
 	cout << "SLS Receiver" << endl;
-	receiverBase = new slsReceiverUDPFunctions();
 	int tcpip_port_no=-1;
-
+	bool bottom = false;
 
 	
 	ifstream infile;
@@ -116,6 +115,31 @@ slsReceiver::slsReceiver(int argc, char *argv[], int &success){
 					}
 				}
 			}
+
+			//mode top:bottom
+			else if(!strcasecmp(argv[iarg],"-mode")){
+				if(iarg+1==argc){
+					cout << "no mode given after -mode in command line. Exiting." << endl;
+					success=FAIL;
+				}else{
+					if(!strcasecmp(argv[iarg+1],"bottom")){
+						cout<<"mode: bottom"<<endl;
+						bottom = true;
+						iarg++;
+					}else if(!strcasecmp(argv[iarg+1],"top")){
+						cout<<"mode: top"<<endl;
+						iarg++;
+					}
+					else{
+						cout << "could not decode port in command line. \n\nExiting." << endl;
+						success=FAIL;
+					}
+				}
+			}
+
+
+
+
 			else{
 				cout << "Unknown argument:" << argv[iarg] << endl;
 				success=FAIL;
@@ -130,9 +154,9 @@ slsReceiver::slsReceiver(int argc, char *argv[], int &success){
 		cout << "rx_tcpport:\t TCP Communication Port with the client. Default:1954. " << endl << endl;
 	}
 
-
+	receiverBase = new slsReceiverUDPFunctions(bottom);
 	if (success==OK)
-	  tcpipInterface = new slsReceiverTCPIPInterface(success,receiverBase, tcpip_port_no);
+	  tcpipInterface = new slsReceiverTCPIPInterface(success,receiverBase, tcpip_port_no, bottom);
 	  //tcp ip interface
 
 

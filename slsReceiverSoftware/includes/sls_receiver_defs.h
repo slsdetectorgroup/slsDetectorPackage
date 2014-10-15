@@ -55,7 +55,9 @@ public:
 		GOTTHARD, /**< gotthard */
 		PICASSO, /**< picasso */
 		AGIPD, /**< agipd */
-		MOENCH /**< moench */
+		MOENCH, /**< moench */
+		JUNGFRAU, /**< jungfrau */
+		JUNGFRAUCTB /**< jungfrauCTBversion */
 	};
 
 

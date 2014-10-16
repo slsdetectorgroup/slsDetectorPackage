@@ -133,7 +133,7 @@ int initDetector(){
   int enable[2] = {0,1};
   setExternalGating(enable);//disable external gating
 
-  if(getDetectorNumber() == 0xbeb031)
+  if(!Feb_Control_IsBottomModule())
     trialMasterMode = IS_MASTER;
    return 1;
 }
@@ -521,10 +521,10 @@ int startReadOut(){
 enum runStatus getRunStatus(){
 	int i = Feb_Control_AcquisitionInProgress();
 	if(i== 0){
-		/*printf("IDLE\n");*/
+		//printf("IDLE\n");
 		return IDLE;
 	}else{
-		/*printf("RUNNING\n");*/
+		//printf("RUNNING\n");
 		return RUNNING;
 	}
 }

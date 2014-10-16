@@ -1049,22 +1049,30 @@ int Feb_Control_WaitForFinishedFlag(int sleep_time_us){
 int Feb_Control_AcquisitionInProgress(){
 	unsigned int status_reg_r=0,status_reg_l=0;
 
+	/*printf("master right:%d\n",Feb_Control_GetDAQStatusRegister(Module_GetTopRightAddress(&modules[0]),&status_reg_r));
+	printf("master left:%d\n",Feb_Control_GetDAQStatusRegister(Module_GetTopLeftAddress(&modules[0]),&status_reg_l));
 
-	//printf("right:%d\n",Feb_Control_GetDAQStatusRegister(Module_GetTopRightAddress(&modules[1]),&status_reg_r));
-	//printf("left:%d\n",Feb_Control_GetDAQStatusRegister(Module_GetTopLeftAddress(&modules[1]),&status_reg_l));
 
+	printf("top right:%d\n",Feb_Control_GetDAQStatusRegister(Module_GetTopRightAddress(&modules[1]),&status_reg_r));
+	printf("top left:%d\n",Feb_Control_GetDAQStatusRegister(Module_GetTopLeftAddress(&modules[1]),&status_reg_l));
+
+	if(Module_BottomAddressIsValid(&modules[1])){
+	printf("bot right:%d\n",Feb_Control_GetDAQStatusRegister(Module_GetBottomRightAddress(&modules[1]),&status_reg_r));
+	printf("bot left:%d\n",Feb_Control_GetDAQStatusRegister(Module_GetBottomLeftAddress(&modules[1]),&status_reg_l));
+	}
+*/
 	if(Module_BottomAddressIsValid(&modules[1])){
 		//printf("************* bottom1\n");
 
 		if(!(Feb_Control_GetDAQStatusRegister(Module_GetBottomRightAddress(&modules[1]),&status_reg_r)))
-			return 0;
+		{printf("**bottom address wrong\n");return 0;}
 	}else{
 		//printf("************* top1\n");
 		if(!(Feb_Control_GetDAQStatusRegister(Module_GetTopRightAddress(&modules[1]),&status_reg_r)))
-			return 0;
+		{printf("**top address wrong\n");return 0;}
 	}
-
-	if(status_reg_r&DAQ_STATUS_DAQ_RUNNING) return 1;
+	printf("runningggg 0x%x\n",status_reg_r);
+	if(status_reg_r&DAQ_STATUS_DAQ_RUNNING) {printf("**runningggg\n");return 1;}
 
 	/*
     if(!(GetDAQStatusRegister(modules[i]->Module_GetTopLeftAddress(),status_reg_r)&&GetDAQStatusRegister(modules[i]->Module_GetTopRightAddress(),status_reg_l))){
@@ -1075,7 +1083,7 @@ int Feb_Control_AcquisitionInProgress(){
   }
 	 */
 
-	/*printf("**idle\n");*/return 0; //i.e. not running (status_reg_r|status_reg_l)&DAQ_STATUS_DAQ_RUNNING;
+	printf("**idle\n");return 0; //i.e. not running (status_reg_r|status_reg_l)&DAQ_STATUS_DAQ_RUNNING;
 }
 
 int Feb_Control_Reset(){

@@ -1551,19 +1551,21 @@ int slsReceiverUDPFunctions::startListening(){
 //#endif
 
 
-
-
 			//start indices for each start of scan/acquisition - eiger does it before
-			if((!measurementStarted) && (rc > 0) && (!ithread))
-				startFrameIndices(ithread);
+				if((!measurementStarted) && (rc > 0) && (!ithread))
+					startFrameIndices(ithread);
+
 
 			//problem in receiving or end of acquisition
 			if((rc < expected)||(rc <= 0)){
 				stopListening(ithread,rc,packetcount,total);
 				continue;
 			}
-
-
+/*
+			//start indices for each start of scan/acquisition - eiger does it before
+			if((!measurementStarted) && (rc > 0) && (!ithread))
+				startFrameIndices(ithread);
+*/
 
 			//reset
 			packetcount = (packetsPerFrame/numListeningThreads) * numJobsPerThread;

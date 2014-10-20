@@ -2275,9 +2275,9 @@ int get_run_status(int file_des) {
 	enum runStatus s;
 	sprintf(mess,"getting run status\n");
 
-//#ifdef VERBOSE
+#ifdef VERBOSE
 	printf("Getting status\n");
-//#endif
+#endif
 #ifdef SLS_DETECTOR_FUNCTION_LIST
 	s= getRunStatus();printf("status:%d\n");
 #endif

@@ -464,24 +464,12 @@ int startStateMachine(){
 
 
 	printf("requesting images\n");
-	//RequestImages();
-	int ret_val = 0;
-	dst_requested[0] = 1;
-	while(dst_requested[on_dst]){
-		//waits on data
-		if((ret_val = (!Beb_RequestNImages(0,1,send_to_ten_gig,on_dst,nimages_per_request,0)||
-				!Beb_RequestNImages(0,2,send_to_ten_gig,0x20|on_dst,nimages_per_request,0))))
-			break;
-		dst_requested[on_dst++]=0;
-		on_dst%=ndsts_in_use;
-	}
+	int ret =  startReadOut();
 
-	if(ret_val)
-		return FAIL;
-	else
-		return OK;
+	while(getRunStatus() == IDLE);
+	printf("Acquiring..\n");
 
-	return FAIL;
+	return ret;
 }
 
 
@@ -513,8 +501,6 @@ int startReadOut(){
     	return FAIL;
     else
     	return OK;
-
-	return OK;
 }
 
 
@@ -534,6 +520,8 @@ enum runStatus getRunStatus(){
 char *readFrame(int *ret, char *mess){
 	if(!Feb_Control_WaitForFinishedFlag(5000))
 		printf("error in waiting for finished flag\n");
+	printf("acquisition finished\n");
+
 	*ret = (int)FINISHED;
 	return NULL;
 }
@@ -549,8 +537,8 @@ int64_t setTimer(enum timerIndex ind, int64_t val){
 	switch(ind){
 	case FRAME_NUMBER:
 		if(val >= 0){
-			printf(" Setting number of frames: %d\n",(unsigned int)val);
-			if(Feb_Control_SetNExposures((unsigned int)val)*eiger_ncycles){
+			printf(" Setting number of frames: %d * %d\n",(unsigned int)val,eiger_ncycles);
+			if(Feb_Control_SetNExposures((unsigned int)val*eiger_ncycles)){
 				eiger_nexposures = val;
 				//SetDestinationParameters(EigerGetNumberOfExposures()*EigerGetNumberOfCycles());
 				  on_dst = 0;
@@ -587,7 +575,7 @@ int64_t setTimer(enum timerIndex ind, int64_t val){
 		return EigerGetNumberOfExposures();*/
 	case CYCLES_NUMBER:
 		if(val >= 0){
-			printf(" Setting number of triggers: %d\n",(unsigned int)val);
+			printf(" Setting number of triggers: %d * %d\n",(unsigned int)val,eiger_nexposures);
 			if(Feb_Control_SetNExposures((unsigned int)val*eiger_nexposures)){
 				eiger_ncycles = val;
 				//SetDestinationParameters(EigerGetNumberOfExposures()*EigerGetNumberOfCycles());

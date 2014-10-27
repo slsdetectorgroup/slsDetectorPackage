@@ -87,7 +87,9 @@ public:
 		MEASUREMENT_TIME,  /**< Time of the measurement from the detector (fifo) */
 
 		PROGRESS, /**< fraction of measurement elapsed - only get! */
-		MEASUREMENTS_NUMBER
+		MEASUREMENTS_NUMBER,
+		FRAMES_FROM_START,
+		FRAMES_FROM_START_PG
 	};
 
 

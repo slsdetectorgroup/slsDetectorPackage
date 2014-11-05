@@ -1,4 +1,3 @@
-
 include ../Makefile.include
 
 DESTDIR		?=	../bin

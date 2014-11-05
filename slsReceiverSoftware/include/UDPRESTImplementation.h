@@ -50,6 +50,8 @@ class UDPRESTImplementation : protected virtual slsReceiverDefs, public UDPBaseI
 
  protected:
 	void initialize_REST();
+	int get_rest_state(RestHelper * rest, string *rest_state);
+
 
  public:
 	void configure(map<string, string> config_map);	

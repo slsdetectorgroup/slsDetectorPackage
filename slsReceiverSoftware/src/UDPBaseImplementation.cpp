@@ -147,17 +147,17 @@ int UDPBaseImplementation::setDetectorType(detectorType det){
 
 /*Frame indices and numbers caught*/
 
-bool UDPBaseImplementation::getAcquistionStarted(){return acqStarted;};
+bool UDPBaseImplementation::getAcquistionStarted(){ FILE_LOG(logDEBUG) << __AT__ << " starting";return acqStarted;};
 
-bool UDPBaseImplementation::getMeasurementStarted(){return measurementStarted;};
+bool UDPBaseImplementation::getMeasurementStarted(){ FILE_LOG(logDEBUG) << __AT__ << " starting";return measurementStarted;};
 
-int UDPBaseImplementation::getFramesCaught(){return (packetsCaught/packetsPerFrame);}
+int UDPBaseImplementation::getFramesCaught(){ FILE_LOG(logDEBUG) << __AT__ << " starting";return (packetsCaught/packetsPerFrame);}
 
-int UDPBaseImplementation::getTotalFramesCaught(){return (totalPacketsCaught/packetsPerFrame);}
+int UDPBaseImplementation::getTotalFramesCaught(){ FILE_LOG(logDEBUG) << __AT__ << " starting";return (totalPacketsCaught/packetsPerFrame);}
 
-uint32_t UDPBaseImplementation::getStartFrameIndex(){return startFrameIndex;}
+uint32_t UDPBaseImplementation::getStartFrameIndex(){ FILE_LOG(logDEBUG) << __AT__ << " starting";return startFrameIndex;}
 
-uint32_t UDPBaseImplementation::getFrameIndex(){
+uint32_t UDPBaseImplementation::getFrameIndex(){ FILE_LOG(logDEBUG) << __AT__ << " starting";
 	if(!packetsCaught)
 		frameIndex=-1;
 	else
@@ -166,7 +166,7 @@ uint32_t UDPBaseImplementation::getFrameIndex(){
 }
 
 
-uint32_t UDPBaseImplementation::getAcquisitionIndex(){
+uint32_t UDPBaseImplementation::getAcquisitionIndex(){ FILE_LOG(logDEBUG) << __AT__ << " starting";
 	if(!totalPacketsCaught)
 		acquisitionIndex=-1;
 	else
@@ -175,7 +175,7 @@ uint32_t UDPBaseImplementation::getAcquisitionIndex(){
 }
 
 
-void UDPBaseImplementation::resetTotalFramesCaught(){
+void UDPBaseImplementation::resetTotalFramesCaught(){ FILE_LOG(logDEBUG) << __AT__ << " starting";
 	acqStarted = false;
 	startAcquisitionIndex = 0;
 	totalPacketsCaught = 0;
@@ -185,10 +185,12 @@ void UDPBaseImplementation::resetTotalFramesCaught(){
 /*file parameters*/
 
 char* UDPBaseImplementation::getFilePath() const{
+	FILE_LOG(logDEBUG) << __FILE__ << "::" << __func__ << " starting";
+
 	return (char*)filePath;
 }
 
-inline char* UDPBaseImplementation::setFilePath(const char c[]){
+inline char* UDPBaseImplementation::setFilePath(const char c[]){ FILE_LOG(logDEBUG) << __AT__ << " starting";
 	FILE_LOG(logDEBUG) << __AT__ << "called";
 	if(strlen(c)){
 		//check if filepath exists
@@ -207,10 +209,12 @@ inline char* UDPBaseImplementation::setFilePath(const char c[]){
 
 
 char* UDPBaseImplementation::getFileName() const{
+	FILE_LOG(logDEBUG) << __FILE__ << "::" << __func__ << " starting";
+
 	return (char*)fileName;
 }
 
-inline char* UDPBaseImplementation::setFileName(const char c[]){
+inline char* UDPBaseImplementation::setFileName(const char c[]){ FILE_LOG(logDEBUG) << __AT__ << " starting";
 	//cout << "[WARNING] This is a base implementation, " << __func__ << " could have no effects." << endl;
 	
 	if(strlen(c))
@@ -220,11 +224,11 @@ inline char* UDPBaseImplementation::setFileName(const char c[]){
 }
 
 
-int UDPBaseImplementation::getFileIndex(){
+int UDPBaseImplementation::getFileIndex(){ FILE_LOG(logDEBUG) << __AT__ << " starting";
 	return fileIndex;
 }
 
-int UDPBaseImplementation::setFileIndex(int i){
+int UDPBaseImplementation::setFileIndex(int i){ FILE_LOG(logDEBUG) << __AT__ << " starting";
 	//cout << "[WARNING] This is a base implementation, " << __func__ << " could have no effects." << endl;
 	if(i>=0)
 		fileIndex = i;
@@ -232,7 +236,7 @@ int UDPBaseImplementation::setFileIndex(int i){
 }
 
 
-int UDPBaseImplementation::setFrameIndexNeeded(int i){
+int UDPBaseImplementation::setFrameIndexNeeded(int i){ FILE_LOG(logDEBUG) << __AT__ << " starting";
 	//cout << "[WARNING] This is a base implementation, " << __func__ << " could have no effects." << endl;
 	frameIndexNeeded = i;
 	return frameIndexNeeded;
@@ -240,19 +244,23 @@ int UDPBaseImplementation::setFrameIndexNeeded(int i){
 
 
 int UDPBaseImplementation::getEnableFileWrite()  const{
-	return enableFileWrite;
+		FILE_LOG(logDEBUG) << __FILE__ << "::" << __func__ << " starting";
+
+return enableFileWrite;
 }
 
-int UDPBaseImplementation::setEnableFileWrite(int i){
+int UDPBaseImplementation::setEnableFileWrite(int i){ FILE_LOG(logDEBUG) << __AT__ << " starting";
 	enableFileWrite=i;
 	return getEnableFileWrite();
 }
 
 int UDPBaseImplementation::getEnableOverwrite()  const{
+	FILE_LOG(logDEBUG) << __FILE__ << "::" << __func__ << " starting";
+
 	return overwrite;
 }
 
-int UDPBaseImplementation::setEnableOverwrite(int i){
+int UDPBaseImplementation::setEnableOverwrite(int i){ FILE_LOG(logDEBUG) << __AT__ << " starting";
 	overwrite=i;
 	return getEnableOverwrite();
 }
@@ -268,7 +276,7 @@ slsReceiverDefs::runStatus UDPBaseImplementation::getStatus() const{
 }
 
 
-void UDPBaseImplementation::initialize(const char *detectorHostName){
+void UDPBaseImplementation::initialize(const char *detectorHostName){ FILE_LOG(logDEBUG) << __AT__ << " starting";
 	if(strlen(detectorHostName))
 		strcpy(detHostname,detectorHostName);
 }
@@ -278,12 +286,12 @@ char *UDPBaseImplementation::getDetectorHostname() const{
 	return (char*)detHostname;
 }
 
-void UDPBaseImplementation::setEthernetInterface(char* c){
+void UDPBaseImplementation::setEthernetInterface(char* c){ FILE_LOG(logDEBUG) << __AT__ << " starting";
 	strcpy(eth,c);
 }
 
 
-void UDPBaseImplementation::setUDPPortNo(int p){
+void UDPBaseImplementation::setUDPPortNo(int p){ FILE_LOG(logDEBUG) << __AT__ << " starting";
 	for(int i=0;i<numListeningThreads;i++){
 		server_port[i] = p+i;
 	}
@@ -295,7 +303,7 @@ int UDPBaseImplementation::getNumberOfFrames() const {
 }
 
 
-int32_t UDPBaseImplementation::setNumberOfFrames(int32_t fnum){
+int32_t UDPBaseImplementation::setNumberOfFrames(int32_t fnum){ FILE_LOG(logDEBUG) << __AT__ << " starting";
 	if(fnum >= 0)
 		numberOfFrames = fnum;
 
@@ -308,7 +316,7 @@ int UDPBaseImplementation::getScanTag() const{
 }
 
 
-int32_t UDPBaseImplementation::setScanTag(int32_t stag){
+int32_t UDPBaseImplementation::setScanTag(int32_t stag){ FILE_LOG(logDEBUG) << __AT__ << " starting";
 	if(stag >= 0)
 		scanTag = stag;
 
@@ -320,7 +328,7 @@ int UDPBaseImplementation::getDynamicRange() const{
 	return dynamicRange;
 }
 
-int32_t UDPBaseImplementation::setDynamicRange(int32_t dr){
+int32_t UDPBaseImplementation::setDynamicRange(int32_t dr){ FILE_LOG(logDEBUG) << __AT__ << " starting";
 	cout << "Setting Dynamic Range" << endl;
 
 	int olddr = dynamicRange;
@@ -380,7 +388,7 @@ int32_t UDPBaseImplementation::setDynamicRange(int32_t dr){
 
 
 
-int UDPBaseImplementation::setShortFrame(int i){
+int UDPBaseImplementation::setShortFrame(int i){ FILE_LOG(logDEBUG) << __AT__ << " starting";
 	shortFrame=i;
 
 	if(shortFrame!=-1){
@@ -410,7 +418,7 @@ int UDPBaseImplementation::setShortFrame(int i){
 }
 
 
-int UDPBaseImplementation::setNFrameToGui(int i){
+int UDPBaseImplementation::setNFrameToGui(int i){ FILE_LOG(logDEBUG) << __AT__ << " starting";
 	if(i>=0){
 		nFrameToGui = i;
 		setupFifoStructure();
@@ -420,7 +428,7 @@ int UDPBaseImplementation::setNFrameToGui(int i){
 
 
 
-int64_t UDPBaseImplementation::setAcquisitionPeriod(int64_t index){
+int64_t UDPBaseImplementation::setAcquisitionPeriod(int64_t index){ FILE_LOG(logDEBUG) << __AT__ << " starting";
 
 	if(index >= 0){
 		if(index != acquisitionPeriod){
@@ -432,9 +440,9 @@ int64_t UDPBaseImplementation::setAcquisitionPeriod(int64_t index){
 }
 
 
-bool UDPBaseImplementation::getDataCompression(){return dataCompression;}
+bool UDPBaseImplementation::getDataCompression(){ FILE_LOG(logDEBUG) << __AT__ << " starting";return dataCompression;}
 
-int UDPBaseImplementation::enableDataCompression(bool enable){
+int UDPBaseImplementation::enableDataCompression(bool enable){ FILE_LOG(logDEBUG) << __AT__ << " starting";
 	cout << "Data compression ";
 	if(enable)
 		cout << "enabled" << endl;
@@ -487,7 +495,7 @@ int UDPBaseImplementation::enableDataCompression(bool enable){
 /*other functions*/
 
 
-void UDPBaseImplementation::deleteFilter(){
+void UDPBaseImplementation::deleteFilter(){ FILE_LOG(logDEBUG) << __AT__ << " starting";
 	int i;
 	cmSub=NULL;
 
@@ -504,7 +512,7 @@ void UDPBaseImplementation::deleteFilter(){
 }
 
 
-void UDPBaseImplementation::setupFilter(){
+void UDPBaseImplementation::setupFilter(){ FILE_LOG(logDEBUG) << __AT__ << " starting";
 	double hc = 0;
 	double sigma = 5;
 	int sign = 1;
@@ -540,7 +548,7 @@ void UDPBaseImplementation::setupFilter(){
 
 
 //LEO: it is not clear to me..
-void UDPBaseImplementation::setupFifoStructure(){
+void UDPBaseImplementation::setupFifoStructure(){ FILE_LOG(logDEBUG) << __AT__ << " starting";
 
 	int64_t i;
 	int oldn = numJobsPerThread;
@@ -629,7 +637,7 @@ void UDPBaseImplementation::setupFifoStructure(){
 
 /** acquisition functions */
 
-void UDPBaseImplementation::readFrame(char* c,char** raw, uint32_t &fnum){
+void UDPBaseImplementation::readFrame(char* c,char** raw, uint32_t &fnum){ FILE_LOG(logDEBUG) << __AT__ << " starting";
 	//point to gui data
 	if (guiData == NULL)
 		guiData = latestData;
@@ -663,7 +671,7 @@ void UDPBaseImplementation::readFrame(char* c,char** raw, uint32_t &fnum){
 
 
 
-void UDPBaseImplementation::copyFrameToGui(char* startbuf[], uint32_t fnum, char* buf){
+void UDPBaseImplementation::copyFrameToGui(char* startbuf[], uint32_t fnum, char* buf){ FILE_LOG(logDEBUG) << __AT__ << " starting";
 
 	//random read when gui not ready
 	if((!nFrameToGui) && (!guiData)){
@@ -718,9 +726,7 @@ void UDPBaseImplementation::copyFrameToGui(char* startbuf[], uint32_t fnum, char
 
 
 
-int UDPBaseImplementation::createUDPSockets(){
-	FILE_LOG(logDEBUG) << __FILE__ << "::" << __func__ << " starting";
-
+int UDPBaseImplementation::createUDPSockets(){ FILE_LOG(logDEBUG) << __AT__ << " starting";
 
 	//if eth is mistaken with ip address
 	if (strchr(eth,'.')!=NULL)
@@ -764,7 +770,7 @@ int UDPBaseImplementation::createUDPSockets(){
 
 
 
-int UDPBaseImplementation::shutDownUDPSockets(){
+int UDPBaseImplementation::shutDownUDPSockets(){ FILE_LOG(logDEBUG) << __AT__ << " starting";
 	for(int i=0;i<numListeningThreads;i++){
 		if(udpSocket[i]){
 			udpSocket[i]->ShutDownSocket();
@@ -779,7 +785,7 @@ int UDPBaseImplementation::shutDownUDPSockets(){
 
 
 
-int UDPBaseImplementation::createListeningThreads(bool destroy){
+int UDPBaseImplementation::createListeningThreads(bool destroy){ FILE_LOG(logDEBUG) << __AT__ << " starting";
 	int i;
 	void* status;
 
@@ -834,7 +840,7 @@ int UDPBaseImplementation::createListeningThreads(bool destroy){
 
 
 
-int UDPBaseImplementation::createWriterThreads(bool destroy){
+int UDPBaseImplementation::createWriterThreads(bool destroy){ FILE_LOG(logDEBUG) << __AT__ << " starting";
 	int i;
 	void* status;
 
@@ -895,7 +901,7 @@ int UDPBaseImplementation::createWriterThreads(bool destroy){
 
 
 
-void UDPBaseImplementation::setThreadPriorities(){
+void UDPBaseImplementation::setThreadPriorities(){ FILE_LOG(logDEBUG) << __AT__ << " starting";
 	int i;
 	//assign priorities
 	struct sched_param tcp_param, listen_param, write_param;
@@ -932,7 +938,7 @@ void UDPBaseImplementation::setThreadPriorities(){
 
 
 
-int UDPBaseImplementation::setupWriter(){
+int UDPBaseImplementation::setupWriter(){ FILE_LOG(logDEBUG) << __AT__ << " starting";
 
 	//reset writing thread variables
 	packetsInFile=0;
@@ -1017,7 +1023,7 @@ int UDPBaseImplementation::setupWriter(){
 
 
 
-int UDPBaseImplementation::createCompressionFile(int ithr, int iframe){
+int UDPBaseImplementation::createCompressionFile(int ithr, int iframe){ FILE_LOG(logDEBUG) << __AT__ << " starting";
 #ifdef MYROOT1
 	char temp[MAX_STR_LENGTH];
 		//create file name for gui purposes, and set up acquistion parameters
@@ -1045,7 +1051,7 @@ int UDPBaseImplementation::createCompressionFile(int ithr, int iframe){
 
 
 
-int UDPBaseImplementation::createNewFile(){
+int UDPBaseImplementation::createNewFile(){ FILE_LOG(logDEBUG) << __AT__ << " starting";
 
 	cout << "[WARNING] This is a base implementation, " << __func__ << " not correctly implemented" << endl;
 
@@ -1168,7 +1174,7 @@ void UDPBaseImplementation::closeFile(int ithr)
 
 
 
-int UDPBaseImplementation::startReceiver(char message[]){
+int UDPBaseImplementation::startReceiver(char message[]){ FILE_LOG(logDEBUG) << __AT__ << " starting";
 	int i;
 
 
@@ -1236,7 +1242,7 @@ int UDPBaseImplementation::startReceiver(char message[]){
 
 
 
-int UDPBaseImplementation::stopReceiver(){
+int UDPBaseImplementation::stopReceiver(){ FILE_LOG(logDEBUG) << __AT__ << " starting";
 
 
 //#ifdef VERBOSE
@@ -1266,7 +1272,7 @@ int UDPBaseImplementation::stopReceiver(){
 
 
 
-void UDPBaseImplementation::startReadout(){
+void UDPBaseImplementation::startReadout(){ FILE_LOG(logDEBUG) << __AT__ << " starting";
 
 	//#ifdef VERBOSE
 		cout << "Start Receiver Readout" << endl;
@@ -1289,7 +1295,7 @@ void UDPBaseImplementation::startReadout(){
 
 
 
-void* UDPBaseImplementation::startListeningThread(void* this_pointer){
+void* UDPBaseImplementation::startListeningThread(void* this_pointer){ FILE_LOG(logDEBUG) << __AT__ << " starting";
 	((UDPBaseImplementation*)this_pointer)->startListening();
 
 	return this_pointer;
@@ -1297,7 +1303,7 @@ void* UDPBaseImplementation::startListeningThread(void* this_pointer){
 
 
 
-void* UDPBaseImplementation::startWritingThread(void* this_pointer){
+void* UDPBaseImplementation::startWritingThread(void* this_pointer){ FILE_LOG(logDEBUG) << __AT__ << " starting";
 	((UDPBaseImplementation*)this_pointer)->startWriting();
 	return this_pointer;
 }
@@ -1307,7 +1313,7 @@ void* UDPBaseImplementation::startWritingThread(void* this_pointer){
 
 
 
-int UDPBaseImplementation::startListening(){
+int UDPBaseImplementation::startListening(){ FILE_LOG(logDEBUG) << __AT__ << " starting";
 	int ithread = currentListeningThreadIndex;
 #ifdef VERYVERBOSE
 	cout << "In startListening() " << endl;
@@ -1508,7 +1514,7 @@ int UDPBaseImplementation::startListening(){
 
 
 
-int UDPBaseImplementation::startWriting(){
+int UDPBaseImplementation::startWriting(){ FILE_LOG(logDEBUG) << __AT__ << " starting";
 	int ithread = currentWriterThreadIndex;
 #ifdef VERYVERBOSE
 	cout << ithread << "In startWriting()" <<endl;
@@ -1701,7 +1707,7 @@ int loop;
 
 
 
-void UDPBaseImplementation::startFrameIndices(int ithread){
+void UDPBaseImplementation::startFrameIndices(int ithread){ FILE_LOG(logDEBUG) << __AT__ << " starting";
 
 	if (myDetectorType == EIGER)
 		//add currframenum later  in this method for scans
@@ -1735,7 +1741,7 @@ void UDPBaseImplementation::startFrameIndices(int ithread){
 
 
 
-void UDPBaseImplementation::stopListening(int ithread, int rc, int &pc, int &t){
+void UDPBaseImplementation::stopListening(int ithread, int rc, int &pc, int &t){ FILE_LOG(logDEBUG) << __AT__ << " starting";
 int i;
 
 #ifdef VERYVERBOSE
@@ -1813,7 +1819,7 @@ int i;
 
 
 
-void UDPBaseImplementation::stopWriting(int ithread, char* wbuffer[]){
+void UDPBaseImplementation::stopWriting(int ithread, char* wbuffer[]){ FILE_LOG(logDEBUG) << __AT__ << " starting";
 	int i,j;
 #ifdef VERYDEBUG
 	cout << ithread << " **********************popped last dummy frame:" << (void*)wbuffer[wIndex] << endl;
@@ -1881,6 +1887,10 @@ void UDPBaseImplementation::stopWriting(int ithread, char* wbuffer[]){
 
 
 void UDPBaseImplementation::writeToFile_withoutCompression(char* buf,int numpackets, uint32_t framenum){
+	FILE_LOG(logDEBUG) << __FILE__ << "::" << __func__ << " starting";
+
+
+
 	int packetsToSave, offset,lastpacket;
 	uint32_t tempframenum = framenum;
 
@@ -1983,6 +1993,8 @@ void UDPBaseImplementation::writeToFile_withoutCompression(char* buf,int numpack
 
 
 void UDPBaseImplementation::handleDataCompression(int ithread, char* wbuffer[], int &npackets, char* data, int xmax, int ymax, int &nf){
+	FILE_LOG(logDEBUG) << __FILE__ << "::" << __func__ << " starting";
+
 
 #if defined(MYROOT1) && defined(ALLFILE_DEBUG)
 				writeToFile_withoutCompression(wbuf[0], numpackets,currframenum);
@@ -2082,6 +2094,8 @@ void UDPBaseImplementation::handleDataCompression(int ithread, char* wbuffer[], 
 
 
 int UDPBaseImplementation::enableTenGiga(int enable){
+	FILE_LOG(logDEBUG) << __FILE__ << "::" << __func__ << " starting";
+
 
 	cout << "Enabling 10Gbe to" << enable << endl;
 

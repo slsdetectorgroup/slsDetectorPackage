@@ -1137,9 +1137,17 @@ int UDPRESTImplementation::startReceiver(char message[]){
 
 	std::string answer;
 	int code;
-
+	//char *intStr = itoa(a);
+	//string str = string(intStr);
 	// TODO: remove hardcode!!!
-	std::string request_body =  "{\"settings\": {\"bit_depth\": 16, \"nimages\": 1}}"; //"{\"nimages\":\"1\", \"bit_depth\":\"16\"}";
+	stringstream ss;
+	ss << getDynamicRange();
+	string str_dr = ss.str();
+	ss << getNumberOfFrames();
+	string str_n = ss.str();
+	
+	std::string request_body =  "{\"settings\": {\"bit_depth\": " + str_dr + ", \"nimages\": " + str_n + "}}";
+	//"{\"nimages\":\"1\", \"bit_depth\":\"16\"}";
 	FILE_LOG(logDEBUG) << __FILE__ << "::" << " sending this configuration body: " << request_body;
 	code = rest->post_json("state/configure", &answer, request_body);
 	code = rest->get_json("state", &answer);

@@ -344,7 +344,13 @@ int32_t UDPRESTImplementation::setDynamicRange(int32_t dr){
 		
 }
 
+/*
+int32_t UDPRESTImplementation::getDynamicRange() const{
+	FILE_LOG(logDEBUG) << __FILE__ << "::" << __func__ << " starting";
 
+	return dynamicRange;
+}
+*/
 
 int UDPRESTImplementation::setShortFrame(int i){
 	FILE_LOG(logDEBUG) << __AT__ << " called";
@@ -708,14 +714,15 @@ int UDPRESTImplementation::shutDownUDPSockets(){
 	string be_state = "";
 
 	// LEO: this is probably wrong
-	if (be_state == "OPEN"){
+	cout << "AAAAAAAAAAAAA " << be_state << " " << status << endl; 
+	//if (be_state == "OPEN"){
 		while (be_state != "TRANSIENT"){
-			code = rest->get_json("state", &answer);
-			be_state = answer["state"].getString();
-			cout << be_state << endl;
-			usleep(10000);
+		  code = rest->get_json("state", &answer);
+		  be_state = answer["state"].getString();
+		  cout << "be_State: " << be_state << endl;
+		  usleep(10000);
 		}
-	}
+		//}
 	code = rest->post_json("state/close", &answer);
 	std::cout <<code << " " << answer << std::endl;
 	code = rest->post_json("state/reset", &answer);
@@ -1143,11 +1150,12 @@ int UDPRESTImplementation::startReceiver(char message[]){
 	stringstream ss;
 	ss << getDynamicRange();
 	string str_dr = ss.str();
-	ss << getNumberOfFrames();
-	string str_n = ss.str();
+	stringstream ss2;
+	ss2 << getNumberOfFrames();
+	string str_n = ss2.str();
 	
 	std::string request_body =  "{\"settings\": {\"bit_depth\": " + str_dr + ", \"nimages\": " + str_n + "}}";
-	//"{\"nimages\":\"1\", \"bit_depth\":\"16\"}";
+	//std::string request_body =  "{\"settings\": {\"nimages\":1, \"scanid\":999, \"bit_depth\":16}}";
 	FILE_LOG(logDEBUG) << __FILE__ << "::" << " sending this configuration body: " << request_body;
 	code = rest->post_json("state/configure", &answer, request_body);
 	code = rest->get_json("state", &answer);

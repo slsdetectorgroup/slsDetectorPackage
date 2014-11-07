@@ -592,7 +592,7 @@ private:
 	int32_t numberOfFrames;
 
 	/** dynamic range */
-	int dynamicRange;
+	//int dynamicRange;
 
 	/** short frames */
 	int shortFrame;

@@ -61,6 +61,8 @@ class sockaddr_in;
 
 #endif
 
+#include <stdlib.h>  /******exit */
+
 #include <unistd.h>
 #include <string.h>
 #include <iostream>
@@ -558,6 +560,16 @@ enum communicationProtocol{
 	 break;
        case UDP:
 	 if (socketDescriptor<0) return -1;
+
+/*
+	 cout <<"******listening inside genericsocket"<<endl;
+	 for(int i=0;i<10000;i++){
+		 nsent = recvfrom(socketDescriptor,(char*)buf+total_sent,5000, 0, (struct sockaddr *) &clientAddress, &clientAddress_length);
+		cout<<i<<":"<<nsent<<"\t\t";
+	 }
+	exit(-1);
+*/
+
 	 //if length given, listens to length, else listens for packetsize till length is reached
 	 if(length){
 		 while(length>0){

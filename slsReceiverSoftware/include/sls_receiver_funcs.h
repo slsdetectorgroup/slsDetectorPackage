@@ -8,7 +8,7 @@
 
 enum {
 	//General functions
-	F_EXEC_RECEIVER_COMMAND=0, 		/**< command is executed */
+	F_EXEC_RECEIVER_COMMAND=128, 		/**< command is executed */
 	F_EXIT_RECEIVER, 				/**< turn off receiver server */
 	F_LOCK_RECEIVER, 				/**< Locks/Unlocks server communication to the given client */
 	F_GET_LAST_RECEIVER_CLIENT_IP,  /**< returns the IP of the client last connected to the receiver */

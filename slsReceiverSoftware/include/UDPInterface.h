@@ -282,6 +282,11 @@ class UDPInterface {
 	virtual void setUDPPortNo(int p) = 0;
 
 	/**
+	 * Set UDP Port Number
+	 */
+	virtual void setUDPPortNo2(int p) = 0;
+
+	/**
 	 * Set Ethernet Interface or IP to listen to
 	 */
 	virtual void setEthernetInterface(char* c) = 0;
@@ -322,8 +327,9 @@ class UDPInterface {
 	 * @param c pointer to current file name
 	 * @param raw address of pointer, pointing to current frame to send to gui
 	 * @param fnum frame number for eiger as it is not in the packet
+	 * @param fstartind is the start index of the acquisition
 	 */
-	virtual void readFrame(char* c,char** raw, uint32_t &fnum) = 0;
+	virtual void readFrame(char* c,char** raw, uint32_t &fnum, uint32_t &fstartind ) = 0;
 
 	/** set status to transmitting and
 	 * when fifo is empty later, sets status to run_finished

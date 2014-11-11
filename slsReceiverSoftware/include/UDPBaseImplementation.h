@@ -213,6 +213,7 @@ class UDPBaseImplementation : protected virtual slsReceiverDefs, public UDPInter
 	 * Set UDP Port Number
 	 */
 	void setUDPPortNo(int p);
+	void setUDPPortNo2(int p);
 
 	/*
 	 * Returns number of frames to receive
@@ -287,9 +288,9 @@ class UDPBaseImplementation : protected virtual slsReceiverDefs, public UDPInter
 	 * @param c pointer to current file name
 	 * @param raw address of pointer, pointing to current frame to send to gui
 	 * @param fnum frame number for eiger as it is not in the packet
+	 * @param fstartind is the start index of the acquisition
 	 */
-	void readFrame(char* c,char** raw, uint32_t &fnum);
-
+	void readFrame(char* c,char** raw, uint32_t &fnum, uint32_t &fstartind);
 	/**
 	 * Closes all files
 	 * @param ithr thread index
@@ -777,6 +778,8 @@ protected:
 	 * 2 we open, close, write file, callback does not do anything */
 	int cbAction;
 
+	/** true if bottom half module for eiger */
+	bool bottom;
 
 public:
 

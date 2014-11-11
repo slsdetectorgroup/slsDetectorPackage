@@ -212,6 +212,10 @@ class UDPStandardImplementation: private virtual slsReceiverDefs, public UDPBase
 	 * Set UDP Port Number
 	 */
 	void setUDPPortNo(int p);
+	/**
+	 * Set UDP Port Number
+	 */
+	void setUDPPortNo2(int p);
 
 	/*
 	 * Returns number of frames to receive
@@ -287,8 +291,7 @@ class UDPStandardImplementation: private virtual slsReceiverDefs, public UDPBase
 	 * @param raw address of pointer, pointing to current frame to send to gui
 	 * @param fnum frame number for eiger as it is not in the packet
 	 */
-	void readFrame(char* c,char** raw, uint32_t &fnum);
-
+	void readFrame(char* c,char** raw, uint32_t &fnum, uint32_t &fstartind);
 	/**
 	 * Closes all files
 	 * @param ithr thread index

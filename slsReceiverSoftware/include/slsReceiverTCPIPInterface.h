@@ -26,9 +26,11 @@ class slsReceiverTCPIPInterface : private virtual slsReceiverDefs {
 	 * @param succecc socket creation was successfull
 	 * @param rbase pointer to the receiver base
 	 * @param pn port number (defaults to default port number)
+	 * @param bot mode is bottom if true, else its a top half module
 	 */
-	slsReceiverTCPIPInterface(int &success, UDPInterface* rbase, int pn=-1);
-	
+
+  slsReceiverTCPIPInterface(int &success, UDPInterface* rbase, int pn=-1, bool bot=false);
+
 	/**
 	 * Sets the port number to listen to. 
 	 Take care that the client must know to whcih port it has to listen to, so normally it is better to use a fixes port from the instatiation or change it from the client.
@@ -271,6 +273,9 @@ private:
 
 	/** port number */
 	int portNumber;
+
+	/** true if bottom half module for eiger */
+	bool bottom;
 
 
 protected:

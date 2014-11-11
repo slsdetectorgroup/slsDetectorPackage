@@ -38,6 +38,7 @@ using namespace std;
 UDPRESTImplementation::UDPRESTImplementation(){
 	FILE_LOG(logDEBUG) << __AT__ << " called";
 
+	//TODO I do not really know what to do with bottom...
 	// Default values
 	rest_hostname = "localhost";
 	rest_port = 8081;
@@ -294,12 +295,21 @@ void UDPRESTImplementation::setEthernetInterface(char* c){
 	//FILE_LOG(logDEBUG) << __FILE__ << "::" << __func__ << " done";
 }
 
-
+/*
 void UDPRESTImplementation::setUDPPortNo(int p){
 	FILE_LOG(logDEBUG) << __AT__ << " called";
 	for(int i=0;i<numListeningThreads;i++){
 		server_port[i] = p+i;
 	}
+}
+*/
+
+void UDPRESTImplementation::setUDPPortNo(int p){
+	server_port[0] = p;
+}
+
+void UDPRESTImplementation::setUDPPortNo2(int p){
+	server_port[1] = p;
 }
 
 /*
@@ -567,8 +577,7 @@ void UDPRESTImplementation::setupFifoStructure(){
 
 
 /** acquisition functions */
-
-void UDPRESTImplementation::readFrame(char* c,char** raw, uint32_t &fnum){
+void UDPRESTImplementation::readFrame(char* c,char** raw, uint32_t &fnum, uint32_t &fstartind){
 	FILE_LOG(logDEBUG) << __AT__ << " called";
 	//point to gui data
 	if (guiData == NULL)
@@ -577,7 +586,7 @@ void UDPRESTImplementation::readFrame(char* c,char** raw, uint32_t &fnum){
 	//copy data and filename
 	strcpy(c,guiFileName);
 	fnum = guiFrameNumber;
-
+	fstartind = getStartFrameIndex();
 
 	//could not get gui data
 	if(!guiDataReady){

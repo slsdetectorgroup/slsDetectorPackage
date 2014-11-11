@@ -29,7 +29,8 @@ using namespace std;
 
 
 
-UDPBaseImplementation::UDPBaseImplementation(){}
+UDPBaseImplementation::UDPBaseImplementation(){
+}
 
 
 UDPBaseImplementation::~UDPBaseImplementation(){}
@@ -291,10 +292,13 @@ void UDPBaseImplementation::setEthernetInterface(char* c){ FILE_LOG(logDEBUG) <<
 }
 
 
-void UDPBaseImplementation::setUDPPortNo(int p){ FILE_LOG(logDEBUG) << __AT__ << " starting";
-	for(int i=0;i<numListeningThreads;i++){
-		server_port[i] = p+i;
-	}
+void UDPBaseImplementation::setUDPPortNo(int p){
+  server_port[0] = p;
+}
+
+
+void UDPBaseImplementation::setUDPPortNo2(int p){
+  server_port[1] = p;
 }
 
 
@@ -636,36 +640,38 @@ void UDPBaseImplementation::setupFifoStructure(){ FILE_LOG(logDEBUG) << __AT__ <
 
 
 /** acquisition functions */
-
-void UDPBaseImplementation::readFrame(char* c,char** raw, uint32_t &fnum){ FILE_LOG(logDEBUG) << __AT__ << " starting";
-	//point to gui data
-	if (guiData == NULL)
-		guiData = latestData;
-
-	//copy data and filename
-	strcpy(c,guiFileName);
-	fnum = guiFrameNumber;
-
-
-	//could not get gui data
-	if(!guiDataReady){
-		*raw = NULL;
-	}
-	//data ready, set guidata to receive new data
-	else{
-		*raw = guiData;
-		guiData = NULL;
-
-		pthread_mutex_lock(&dataReadyMutex);
-		guiDataReady = 0;
-		pthread_mutex_unlock(&dataReadyMutex);
-		if((nFrameToGui) && (writerthreads_mask)){
-		/*if(nFrameToGui){*/
-			//release after getting data
-			sem_post(&smp);
-		}
-	}
+void UDPBaseImplementation::readFrame(char* c,char** raw, uint32_t &fnum, uint32_t& fstartind){ 
+  FILE_LOG(logDEBUG) << __AT__ << " starting";
+  
+  //point to gui data
+  if (guiData == NULL)
+    guiData = latestData;
+  
+  //copy data and filename
+  strcpy(c,guiFileName);
+  fnum = guiFrameNumber;
+  fstartind = getStartFrameIndex();
+  
+  //could not get gui data
+  if(!guiDataReady){
+    *raw = NULL;
+  }
+  //data ready, set guidata to receive new data
+  else{
+    *raw = guiData;
+    guiData = NULL;
+    
+    pthread_mutex_lock(&dataReadyMutex);
+    guiDataReady = 0;
+    pthread_mutex_unlock(&dataReadyMutex);
+    if((nFrameToGui) && (writerthreads_mask)){
+      /*if(nFrameToGui){*/
+      //release after getting data
+      sem_post(&smp);
+    }
+  }
 }
+
 
 
 

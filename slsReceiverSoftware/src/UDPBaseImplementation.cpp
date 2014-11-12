@@ -53,8 +53,7 @@ void UDPBaseImplementation::initializeMembers(){
 
 int UDPBaseImplementation::setDetectorType(detectorType det){
 	cout << "[WARNING] This is a base implementation, " << __func__ << " not correctly implemented" << endl;
-
-		cout << "Setting Receiver Type " << endl;
+	cout << "Setting Receiver Type " << endl;
 
 	deleteMembers();
 	initializeMembers();
@@ -76,7 +75,7 @@ int UDPBaseImplementation::setDetectorType(detectorType det){
 	return FAIL;
 		break;
 	}
-
+	/*
 	//moench variables
 	if(myDetectorType == GOTTHARD){
 		fifosize 			= GOTTHARD_FIFO_SIZE;
@@ -138,7 +137,7 @@ int UDPBaseImplementation::setDetectorType(detectorType det){
 	cout << "Ready..." << endl;
 
 	return OK;
-
+	*/
 	return OK;
 }
 
@@ -1124,7 +1123,7 @@ void UDPBaseImplementation::closeFile(int ithr)
 {
 	
 	FILE_LOG(logDEBUG) << __AT__ << "called";
-	
+	/*
 	if(!dataCompression){
 		if(sfilefd){
 #ifdef VERBOSE
@@ -1171,7 +1170,7 @@ void UDPBaseImplementation::closeFile(int ithr)
 
 #endif
 	}
-
+	*/
 	FILE_LOG(logDEBUG) << __AT__ << "exited";
 
 }

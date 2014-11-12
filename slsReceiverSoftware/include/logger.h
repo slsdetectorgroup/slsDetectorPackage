@@ -4,11 +4,12 @@
 #include <sstream>
 #include <string>
 #include <stdio.h>
+#include <unistd.h>
 
 #define STRINGIFY(x) #x
 #define TOSTRING(x) STRINGIFY(x)
 #define MYCONCAT(x,y)  
-#define __AT__ string(__FILE__) + string("::") + string(__func__) + string("(): ")
+#define __AT__  string(__FILE__) + string("::") + string(__func__) + string("(): ")
 
 //":" TOSTRING(__LINE__)
 

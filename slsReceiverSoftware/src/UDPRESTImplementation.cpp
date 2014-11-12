@@ -36,7 +36,7 @@ using namespace std;
 
 
 UDPRESTImplementation::UDPRESTImplementation(){
-	FILE_LOG(logDEBUG) << __AT__ << " called";
+	FILE_LOG(logDEBUG) <<  "PID: " << getpid() << __AT__ << " called";
 
 	//TODO I do not really know what to do with bottom...
 	// Default values
@@ -718,32 +718,54 @@ int UDPRESTImplementation::shutDownUDPSockets(){
 
 	FILE_LOG(logDEBUG) << __AT__ << "called";
 
+	// this is just to be sure, it could be removed
+	for(int i=0;i<numListeningThreads;i++){
+		if(udpSocket[i]){
+			FILE_LOG(logDEBUG) << __AT__ << " closing UDP socket #" << i;
+			udpSocket[i]->ShutDownSocket();
+			delete udpSocket[i];
+			udpSocket[i] = NULL;
+		}
+	}
+
 	JsonBox::Value answer;
 	int code;
 	string be_state = "";
 
+	FILE_LOG(logDEBUG) << __AT__ << " numListeningThreads=" << numListeningThreads;
+	if (rest == NULL){
+		FILE_LOG(logWARNING) << __AT__ << "No REST object initialized, closing...";
+		return OK;
+	}
+
+	// getting the state
+	FILE_LOG(logWARNING) << "PLEASE WAIT WHILE CHECKING AND SHUTTING DOWN ALL CONNECTIONS!"; 
+	code = rest->get_json("state", &answer);
+	be_state = answer["state"].getString();
+
 	// LEO: this is probably wrong
-	cout << "AAAAAAAAAAAAA " << be_state << " " << status << endl; 
-	//if (be_state == "OPEN"){
+	if (be_state == "OPEN"){
 		while (be_state != "TRANSIENT"){
 		  code = rest->get_json("state", &answer);
 		  be_state = answer["state"].getString();
 		  cout << "be_State: " << be_state << endl;
 		  usleep(10000);
 		}
-		//}
-	code = rest->post_json("state/close", &answer);
-	std::cout <<code << " " << answer << std::endl;
-	code = rest->post_json("state/reset", &answer);
-	std::cout << code << " " << answer << std::endl;
+	
+		code = rest->post_json("state/close", &answer);
+		std::cout <<code << " " << answer << std::endl;
+		code = rest->post_json("state/reset", &answer);
+		std::cout << code << " " << answer << std::endl;
 
-	code = rest->get_json("state", &answer);
-	std::cout << code << " " << answer << std::endl;
-
+		code = rest->get_json("state", &answer);
+		std::cout << code << " " << answer << std::endl;
+	}
 	status = slsReceiverDefs::RUN_FINISHED;
 
-	FILE_LOG(logDEBUG) << __AT__ << "finished";
+	//LEO: not sure it's needed
+	delete rest;
 
+	FILE_LOG(logDEBUG) << __AT__ << "finished";
 	return OK;
 }
 
@@ -1289,8 +1311,9 @@ void UDPRESTImplementation::startReadout(){
 
 void* UDPRESTImplementation::startListeningThread(void* this_pointer){
 	FILE_LOG(logDEBUG) << __AT__ << " called";
+	FILE_LOG(logDEBUG) << __AT__ << " doing a big bunch of nothing";
 
-	((UDPRESTImplementation*)this_pointer)->startListening();
+	//((UDPRESTImplementation*)this_pointer)->startListening();
 
 	return this_pointer;
 }
@@ -1299,7 +1322,9 @@ void* UDPRESTImplementation::startListeningThread(void* this_pointer){
 
 void* UDPRESTImplementation::startWritingThread(void* this_pointer){
 	FILE_LOG(logDEBUG) << __AT__ << " called";
-	((UDPRESTImplementation*)this_pointer)->startWriting();
+	FILE_LOG(logDEBUG) << __AT__ << " doing a big bunch of nothing";
+
+	//((UDPRESTImplementation*)this_pointer)->startWriting();
 	return this_pointer;
 }
 
@@ -1310,7 +1335,9 @@ void* UDPRESTImplementation::startWritingThread(void* this_pointer){
 
 int UDPRESTImplementation::startListening(){
 	FILE_LOG(logDEBUG) << __AT__ << " called";
+	FILE_LOG(logDEBUG) << __AT__ << " doing a big bunch of nothing";
 
+	/*
 	int ithread = currentListeningThreadIndex;
 #ifdef VERYVERBOSE
 	cout << "In startListening() " << endl;
@@ -1495,7 +1522,7 @@ int UDPRESTImplementation::startListening(){
 			pthread_exit(NULL);
 		}
 	}
-
+	*/
 	return OK;
 }
 
@@ -1513,6 +1540,8 @@ int UDPRESTImplementation::startListening(){
 
 int UDPRESTImplementation::startWriting(){
 	FILE_LOG(logDEBUG) << __AT__ << " called";
+	FILE_LOG(logDEBUG) << __AT__ << " doing a big bunch of nothing";
+	/*
 	int ithread = currentWriterThreadIndex;
 #ifdef VERYVERBOSE
 	cout << ithread << "In startWriting()" <<endl;
@@ -1698,7 +1727,7 @@ int loop;
 #endif
 	}
 
-
+	*/
 	return OK;
 }
 
@@ -1739,9 +1768,9 @@ void UDPRESTImplementation::startFrameIndices(int ithread){
 }
 
 
-void UDPRESTImplementation::stopListening(int ithread, int rc, int &pc, int &t){
-	FILE_LOG(logDEBUG) << __AT__ << " called, doing nothing";
-};
+//void UDPRESTImplementation::stopListening(int ithread, int rc, int &pc, int &t){
+//	FILE_LOG(logDEBUG) << __AT__ << " called, doing nothing";
+//};
 
 /*
 void UDPRESTImplementation::stopListening(int ithread, int rc, int &pc, int &t){

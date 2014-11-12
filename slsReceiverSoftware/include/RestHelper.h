@@ -25,6 +25,7 @@
 #include <sstream>
 #include <string>
 #include <exception>
+#include <unistd.h>
 
 
 
@@ -35,19 +36,21 @@ using namespace std;
 class RestHelper {
  public:
 
-  RestHelper(int timeout=10, int n_tries=10){    
+  RestHelper(int timeout=10, int n_tries=1){    
   /** 
    * 
    * 
    * @param timeout default=10
-   * @param n_tries default=3
+   * @param n_tries default=1
    */
 
     http_timeout = timeout;
     n_connection_tries = n_tries;
   }
 
-  ~RestHelper(){};
+  ~RestHelper(){
+	  delete session;
+  };
 
 
   void set_connection_params(int timeout, int n_tries){
@@ -74,7 +77,6 @@ class RestHelper {
 	   */
 
 	  //Check for http:// string
-	  FILE_LOG(logDEBUG4) << __func__ << " starting";
 	  string proto_str = "http://";
 	  
 	  if( size_t found = hostname.find(proto_str) != string::npos ){
@@ -165,7 +167,7 @@ class RestHelper {
     string answer;
     int code = send_request(session, req, &answer);
     if(code == 0 ) {
-	    FILE_LOG(logDEBUG4) << "REQUEST: " << " ANSWER: " << answer;
+	    FILE_LOG(logDEBUG) << __AT__ << " REQUEST: " << " ANSWER: " << answer;
 	    json_value->loadFromString(answer);
     }
     delete uri;
@@ -285,7 +287,8 @@ class RestHelper {
       n+=1;
     }
 
-    return code;
+    throw std::string("Cannot connect to the REST server! Please check...");
+    //return code;
   }
 
 };

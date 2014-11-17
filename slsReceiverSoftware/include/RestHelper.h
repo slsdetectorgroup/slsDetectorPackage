@@ -25,6 +25,7 @@
 #include <sstream>
 #include <string>
 #include <exception>
+#include <unistd.h>
 
 
 
@@ -35,19 +36,21 @@ using namespace std;
 class RestHelper {
  public:
 
-  RestHelper(int timeout=10, int n_tries=10){    
+  RestHelper(int timeout=10, int n_tries=1){    
   /** 
    * 
    * 
    * @param timeout default=10
-   * @param n_tries default=3
+   * @param n_tries default=1
    */
 
     http_timeout = timeout;
     n_connection_tries = n_tries;
   }
 
-  ~RestHelper(){};
+  ~RestHelper(){
+	  delete session;
+  };
 
 
   void set_connection_params(int timeout, int n_tries){
@@ -74,14 +77,10 @@ class RestHelper {
 	   */
 
 	  //Check for http:// string
-	  FILE_LOG(logDEBUG) << __func__ << " starting";
 	  string proto_str = "http://";
 	  
 	  if( size_t found = hostname.find(proto_str) != string::npos ){
-		  cout << hostname << endl;
-
 		  char c1[hostname.size()-found-1];
-		  cout << c1 << endl;
 		  size_t length1 = hostname.copy(c1, hostname.size()-found-1, proto_str.size());
 	 	  c1[length1]='\0';
 		  hostname = c1;
@@ -168,7 +167,7 @@ class RestHelper {
     string answer;
     int code = send_request(session, req, &answer);
     if(code == 0 ) {
-	    FILE_LOG(logDEBUG) << "ANSWER " << answer;
+	    FILE_LOG(logDEBUG) << __AT__ << " REQUEST: " << " ANSWER: " << answer;
 	    json_value->loadFromString(answer);
     }
     delete uri;
@@ -192,7 +191,6 @@ class RestHelper {
     if (path.empty()) path = "/";
     HTTPRequest req(HTTPRequest::HTTP_POST, path, HTTPMessage::HTTP_1_1 );
     req.setContentType("application/json\r\n");
-    cout << "REQUEST BODY " << request_body << endl;
     req.setContentLength( request_body.length() );
     int code = send_request(session, req, answer, request_body);
     
@@ -266,9 +264,8 @@ class RestHelper {
 	if (request_body == "")
 	  session->sendRequest( (req) );
 	else{
-	  cout << request_body << endl;
-	  ostream &os = session->sendRequest( req ) ;
-	  os << request_body;
+		ostream &os = session->sendRequest( req ) ;
+		os << request_body;
 	}
 	
 	HTTPResponse res;
@@ -276,7 +273,7 @@ class RestHelper {
 	StreamCopier::copyToString(is, *answer);
 	code = res.getStatus();
 	if (code != 200){
-	  cout << "HTTP ERROR " << res.getStatus() << ": " << res.getReason() << endl;
+	  FILE_LOG(logERROR) << "HTTP ERROR " << res.getStatus() << ": " << res.getReason() ;
 	  code = -1;
 	}
 	else
@@ -290,7 +287,8 @@ class RestHelper {
       n+=1;
     }
 
-    return code;
+    throw std::string("Cannot connect to the REST server! Please check...");
+    //return code;
   }
 
 };

@@ -36,8 +36,9 @@ using namespace std;
 
 
 UDPRESTImplementation::UDPRESTImplementation(){
-	FILE_LOG(logDEBUG) << __AT__ << " called";
+	FILE_LOG(logDEBUG) <<  "PID: " << getpid() << __AT__ << " called";
 
+	//TODO I do not really know what to do with bottom...
 	// Default values
 	rest_hostname = "localhost";
 	rest_port = 8081;
@@ -73,6 +74,17 @@ void UDPRESTImplementation::configure(map<string, string> config_map){
 };
 
 
+int UDPRESTImplementation::get_rest_state(RestHelper * rest, string *rest_state){
+
+	JsonBox::Value answer;
+	//string rest_state = "";
+	int code = rest->get_json("state", &answer);
+	if ( code != -1 ){ 
+		(*rest_state) = answer["state"].getString();
+	}
+
+	return code;
+};
 
 void UDPRESTImplementation::initialize_REST(){
 	FILE_LOG(logDEBUG) << __AT__ << " called";
@@ -91,7 +103,7 @@ void UDPRESTImplementation::initialize_REST(){
 		int code;
 		try{
 			rest->init(rest_hostname, rest_port);
-			code = rest->get_json("state", &answer);
+			code = get_rest_state(rest, &answer);
 			
 			if (code != 0){
 				throw answer;
@@ -115,7 +127,7 @@ void UDPRESTImplementation::initialize_REST(){
 		
 		stringstream ss;
 		string test;
-		std::cout << "GetSTring: " << json_request << std::endl;
+		//std::cout << "GetSTring: " << json_request << std::endl;
 		json_request.writeToStream(ss, false);
 		//ss << json_request;
 		ss >> test;
@@ -125,7 +137,7 @@ void UDPRESTImplementation::initialize_REST(){
 		code = rest->post_json("state/initialize", &answer, test);
 		FILE_LOG(logDEBUG) << __AT__ << "state/configure got " << code;
 		code = rest->get_json("state", &answer);
-		FILE_LOG(logDEBUG) << __AT__ << "state got " << code << " " << answer;
+		FILE_LOG(logDEBUG) << __AT__ << "state got " << code << " " << answer << "\n";
 		
 		
 		/*
@@ -283,12 +295,21 @@ void UDPRESTImplementation::setEthernetInterface(char* c){
 	//FILE_LOG(logDEBUG) << __FILE__ << "::" << __func__ << " done";
 }
 
-
+/*
 void UDPRESTImplementation::setUDPPortNo(int p){
 	FILE_LOG(logDEBUG) << __AT__ << " called";
 	for(int i=0;i<numListeningThreads;i++){
 		server_port[i] = p+i;
 	}
+}
+*/
+
+void UDPRESTImplementation::setUDPPortNo(int p){
+	server_port[0] = p;
+}
+
+void UDPRESTImplementation::setUDPPortNo2(int p){
+	server_port[1] = p;
 }
 
 /*
@@ -333,7 +354,13 @@ int32_t UDPRESTImplementation::setDynamicRange(int32_t dr){
 		
 }
 
+/*
+int32_t UDPRESTImplementation::getDynamicRange() const{
+	FILE_LOG(logDEBUG) << __FILE__ << "::" << __func__ << " starting";
 
+	return dynamicRange;
+}
+*/
 
 int UDPRESTImplementation::setShortFrame(int i){
 	FILE_LOG(logDEBUG) << __AT__ << " called";
@@ -550,8 +577,7 @@ void UDPRESTImplementation::setupFifoStructure(){
 
 
 /** acquisition functions */
-
-void UDPRESTImplementation::readFrame(char* c,char** raw, uint32_t &fnum){
+void UDPRESTImplementation::readFrame(char* c,char** raw, uint32_t &fnum, uint32_t &fstartind){
 	FILE_LOG(logDEBUG) << __AT__ << " called";
 	//point to gui data
 	if (guiData == NULL)
@@ -560,7 +586,7 @@ void UDPRESTImplementation::readFrame(char* c,char** raw, uint32_t &fnum){
 	//copy data and filename
 	strcpy(c,guiFileName);
 	fnum = guiFrameNumber;
-
+	fstartind = getStartFrameIndex();
 
 	//could not get gui data
 	if(!guiDataReady){
@@ -692,35 +718,54 @@ int UDPRESTImplementation::shutDownUDPSockets(){
 
 	FILE_LOG(logDEBUG) << __AT__ << "called";
 
-	std::string answer;
-	int code = rest->get_json("state", &answer);
-	std::cout << answer << std::endl;
-
-	code = rest->post_json("state/close", &answer);
-	std::cout << answer << std::endl;
-	code = rest->post_json("state/reset", &answer);
-	std::cout << answer << std::endl;
-
-	code = rest->get_json("state", &answer);
-	std::cout << answer << std::endl;
-
-	status = slsReceiverDefs::RUN_FINISHED;
-
-	
-
-	/*
+	// this is just to be sure, it could be removed
 	for(int i=0;i<numListeningThreads;i++){
 		if(udpSocket[i]){
-			FILE_LOG(logDEBUG) << __AT__ << " UDP socket " << i;
+			FILE_LOG(logDEBUG) << __AT__ << " closing UDP socket #" << i;
 			udpSocket[i]->ShutDownSocket();
 			delete udpSocket[i];
 			udpSocket[i] = NULL;
 		}
 	}
-	*/
+
+	JsonBox::Value answer;
+	int code;
+	string be_state = "";
+
+	FILE_LOG(logDEBUG) << __AT__ << " numListeningThreads=" << numListeningThreads;
+	if (rest == NULL){
+		FILE_LOG(logWARNING) << __AT__ << "No REST object initialized, closing...";
+		return OK;
+	}
+
+	// getting the state
+	FILE_LOG(logWARNING) << "PLEASE WAIT WHILE CHECKING AND SHUTTING DOWN ALL CONNECTIONS!"; 
+	code = rest->get_json("state", &answer);
+	be_state = answer["state"].getString();
+
+	// LEO: this is probably wrong
+	if (be_state == "OPEN"){
+		while (be_state != "TRANSIENT"){
+		  code = rest->get_json("state", &answer);
+		  be_state = answer["state"].getString();
+		  cout << "be_State: " << be_state << endl;
+		  usleep(10000);
+		}
+	
+		code = rest->post_json("state/close", &answer);
+		std::cout <<code << " " << answer << std::endl;
+		code = rest->post_json("state/reset", &answer);
+		std::cout << code << " " << answer << std::endl;
+
+		code = rest->get_json("state", &answer);
+		std::cout << code << " " << answer << std::endl;
+	}
+	status = slsReceiverDefs::RUN_FINISHED;
+
+	//LEO: not sure it's needed
+	delete rest;
 
 	FILE_LOG(logDEBUG) << __AT__ << "finished";
-
 	return OK;
 }
 
@@ -1130,18 +1175,24 @@ int UDPRESTImplementation::startReceiver(char message[]){
 
 	std::string answer;
 	int code;
-
+	//char *intStr = itoa(a);
+	//string str = string(intStr);
+	// TODO: remove hardcode!!!
+	stringstream ss;
+	ss << getDynamicRange();
+	string str_dr = ss.str();
+	stringstream ss2;
+	ss2 << getNumberOfFrames();
+	string str_n = ss2.str();
 	
-	//test =  "{\"configfile\":\"config.pu\", \"path\":\"patto\"}";
-	code = rest->post_json("state/configure", &answer);
-	std::cout << answer << std::endl;
+	std::string request_body =  "{\"settings\": {\"bit_depth\": " + str_dr + ", \"nimages\": " + str_n + "}}";
+	//std::string request_body =  "{\"settings\": {\"nimages\":1, \"scanid\":999, \"bit_depth\":16}}";
+	FILE_LOG(logDEBUG) << __FILE__ << "::" << " sending this configuration body: " << request_body;
+	code = rest->post_json("state/configure", &answer, request_body);
 	code = rest->get_json("state", &answer);
-	std::cout << answer << std::endl;
 
 	code = rest->post_json("state/open", &answer);
-	std::cout << answer << std::endl;
 	code = rest->get_json("state", &answer);
-	std::cout << answer << std::endl;
 
 	status = slsReceiverDefs::RUNNING;
 
@@ -1234,17 +1285,21 @@ int UDPRESTImplementation::stopReceiver(){
 
 
 void UDPRESTImplementation::startReadout(){
-	FILE_LOG(logDEBUG) << __FILE__ << "::" << __func__ << " starting";
+	FILE_LOG(logDEBUG) << __AT__ << " starting";
 
 	//wait so that all packets which take time has arrived
 	usleep(50000);
 
+	status = TRANSMITTING;
+
 	/********************************************/
+	/*
 	usleep(2000000);
 	pthread_mutex_lock(&status_mutex);
 	status = TRANSMITTING;
 	pthread_mutex_unlock(&status_mutex);
 	cout << "Status: Transmitting" << endl;
+	*/
 
 	//kill udp socket to tell the listening thread to push last packet
 	shutDownUDPSockets();
@@ -1256,8 +1311,9 @@ void UDPRESTImplementation::startReadout(){
 
 void* UDPRESTImplementation::startListeningThread(void* this_pointer){
 	FILE_LOG(logDEBUG) << __AT__ << " called";
+	FILE_LOG(logDEBUG) << __AT__ << " doing a big bunch of nothing";
 
-	((UDPRESTImplementation*)this_pointer)->startListening();
+	//((UDPRESTImplementation*)this_pointer)->startListening();
 
 	return this_pointer;
 }
@@ -1266,7 +1322,9 @@ void* UDPRESTImplementation::startListeningThread(void* this_pointer){
 
 void* UDPRESTImplementation::startWritingThread(void* this_pointer){
 	FILE_LOG(logDEBUG) << __AT__ << " called";
-	((UDPRESTImplementation*)this_pointer)->startWriting();
+	FILE_LOG(logDEBUG) << __AT__ << " doing a big bunch of nothing";
+
+	//((UDPRESTImplementation*)this_pointer)->startWriting();
 	return this_pointer;
 }
 
@@ -1277,7 +1335,9 @@ void* UDPRESTImplementation::startWritingThread(void* this_pointer){
 
 int UDPRESTImplementation::startListening(){
 	FILE_LOG(logDEBUG) << __AT__ << " called";
+	FILE_LOG(logDEBUG) << __AT__ << " doing a big bunch of nothing";
 
+	/*
 	int ithread = currentListeningThreadIndex;
 #ifdef VERYVERBOSE
 	cout << "In startListening() " << endl;
@@ -1462,7 +1522,7 @@ int UDPRESTImplementation::startListening(){
 			pthread_exit(NULL);
 		}
 	}
-
+	*/
 	return OK;
 }
 
@@ -1480,6 +1540,8 @@ int UDPRESTImplementation::startListening(){
 
 int UDPRESTImplementation::startWriting(){
 	FILE_LOG(logDEBUG) << __AT__ << " called";
+	FILE_LOG(logDEBUG) << __AT__ << " doing a big bunch of nothing";
+	/*
 	int ithread = currentWriterThreadIndex;
 #ifdef VERYVERBOSE
 	cout << ithread << "In startWriting()" <<endl;
@@ -1665,7 +1727,7 @@ int loop;
 #endif
 	}
 
-
+	*/
 	return OK;
 }
 
@@ -1706,9 +1768,9 @@ void UDPRESTImplementation::startFrameIndices(int ithread){
 }
 
 
-void UDPRESTImplementation::stopListening(int ithread, int rc, int &pc, int &t){
-	FILE_LOG(logDEBUG) << __AT__ << " called, doing nothing";
-};
+//void UDPRESTImplementation::stopListening(int ithread, int rc, int &pc, int &t){
+//	FILE_LOG(logDEBUG) << __AT__ << " called, doing nothing";
+//};
 
 /*
 void UDPRESTImplementation::stopListening(int ithread, int rc, int &pc, int &t){

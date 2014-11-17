@@ -50,6 +50,8 @@ class UDPRESTImplementation : protected virtual slsReceiverDefs, public UDPBaseI
 
  protected:
 	void initialize_REST();
+	int get_rest_state(RestHelper * rest, string *rest_state);
+
 
  public:
 	void configure(map<string, string> config_map);	
@@ -221,6 +223,7 @@ class UDPRESTImplementation : protected virtual slsReceiverDefs, public UDPBaseI
 	 * Set UDP Port Number
 	 */
 	void setUDPPortNo(int p);
+	void setUDPPortNo2(int p);
 
 	/*
 	 * Returns number of frames to receive
@@ -298,7 +301,7 @@ class UDPRESTImplementation : protected virtual slsReceiverDefs, public UDPBaseI
 	 * @param raw address of pointer, pointing to current frame to send to gui
 	 * @param fnum frame number for eiger as it is not in the packet
 	 */
-	void readFrame(char* c,char** raw, uint32_t &fnum);
+	void readFrame(char* c,char** raw, uint32_t &fnum, uint32_t &fstartind);
 
 	/**
 	 * Closes all files
@@ -500,233 +503,233 @@ private:
 	const static int MAX_NUM_WRITER_THREADS = 15;
 
 	/** detector type */
-	detectorType myDetectorType;
+	//detectorType myDetectorType;
 
 	/** detector hostname */
-	char detHostname[MAX_STR_LENGTH];
+	//char detHostname[MAX_STR_LENGTH];
 
 	/** status of receiver */
-	runStatus status;
+	//runStatus status;
 
 	/** UDP Socket between Receiver and Detector */
-	genericSocket* udpSocket[MAX_NUM_LISTENING_THREADS];
+	//genericSocket* udpSocket[MAX_NUM_LISTENING_THREADS];
 
 	/** Server UDP Port*/
-	int server_port[MAX_NUM_LISTENING_THREADS];
+	//int server_port[MAX_NUM_LISTENING_THREADS];
 
 	/** ethernet interface or IP to listen to */
-	char *eth;
+	//char *eth;
 
 	/** max packets per file **/
-	int maxPacketsPerFile;
+	//int maxPacketsPerFile;
 
 	/** File write enable */
-	int enableFileWrite;
+	//int enableFileWrite;
 
 	/** File over write enable */
-	int overwrite;
+	//int overwrite;
 
 	/** Complete File name */
-	char savefilename[MAX_STR_LENGTH];
+	//char savefilename[MAX_STR_LENGTH];
 
 	/** File Name without frame index, file index and extension*/
-	char fileName[MAX_STR_LENGTH];
+	//char fileName[MAX_STR_LENGTH];
 
 	/** File Path */
-	char filePath[MAX_STR_LENGTH];
+	//char filePath[MAX_STR_LENGTH];
 
 	/** File Index */
-	int fileIndex;
+	//int fileIndex;
 
 	/** scan tag */
-	int scanTag;
+	//int scanTag;
 
 	/** if frame index required in file name */
-	int frameIndexNeeded;
+	//int frameIndexNeeded;
 
 	/* Acquisition started */
-	bool acqStarted;
+	//bool acqStarted;
 
 	/* Measurement started */
-	bool measurementStarted;
+	//bool measurementStarted;
 
 	/** Frame index at start of each real time acquisition (eg. for each scan) */
-	uint32_t startFrameIndex;
+	//uint32_t startFrameIndex;
 
 	/** Actual current frame index of each time acquisition (eg. for each scan) */
-	uint32_t frameIndex;
+	//uint32_t frameIndex;
 
 	/** Frames Caught for each real time acquisition (eg. for each scan) */
-	int packetsCaught;
+	//int packetsCaught;
 
 	/** Total packets caught for an entire acquisition (including all scans) */
-	int totalPacketsCaught;
+	//int totalPacketsCaught;
 
 	/** Pckets currently in current file, starts new file when it reaches max */
-	int packetsInFile;
+	//int packetsInFile;
 
 	/** Frame index at start of an entire acquisition (including all scans) */
-	uint32_t startAcquisitionIndex;
+	//uint32_t startAcquisitionIndex;
 
 	/** Actual current frame index of an entire acquisition (including all scans) */
-	uint32_t acquisitionIndex;
+	//uint32_t acquisitionIndex;
 
 	/** number of packets per frame*/
-	int packetsPerFrame;
+	//int packetsPerFrame;
 
 	/** frame index mask */
-	uint32_t frameIndexMask;
+	//uint32_t frameIndexMask;
 
 	/** packet index mask */
-	uint32_t packetIndexMask;
+	//uint32_t packetIndexMask;
 
 	/** frame index offset */
-	int frameIndexOffset;
+	//int frameIndexOffset;
 
 	/** acquisition period */
-	int64_t acquisitionPeriod;
+	//int64_t acquisitionPeriod;
 
 	/** frame number */
-	int32_t numberOfFrames;
+	//int32_t numberOfFrames;
 
 	/** dynamic range */
-	int dynamicRange;
+	//int dynamicRange;
 
 	/** short frames */
-	int shortFrame;
+	//int shortFrame;
 
 	/** current frame number */
-	uint32_t currframenum;
+	//uint32_t currframenum;
 
 	/** Previous Frame number from buffer */
-	uint32_t prevframenum;
+	//uint32_t prevframenum;
 
 	/** size of one frame */
-	int frameSize;
+	//int frameSize;
 
 	/** buffer size. different from framesize as we wait for one packet instead of frame for eiger */
-	int bufferSize;
+	//int bufferSize;
 
 	/** oen buffer size */
-	int onePacketSize;
+	//int onePacketSize;
 
 	/** latest data */
-	char* latestData;
+	//char* latestData;
 
 	/** gui data ready */
-	int guiDataReady;
+	//int guiDataReady;
 
 	/** points to the data to send to gui */
-	char* guiData;
+	//char* guiData;
 
 	/** points to the filename to send to gui */
-	char* guiFileName;
+	//char* guiFileName;
 
 	/** temporary number for eiger frame number as its not included in the packet */
-	uint32_t guiFrameNumber;
+	//uint32_t guiFrameNumber;
 
 	/** send every nth frame to gui or only upon gui request*/
-	int nFrameToGui;
+	//int nFrameToGui;
 
 	/** fifo size */
-	unsigned int fifosize;
+	//unsigned int fifosize;
 
 	/** number of jobs per thread for data compression */
-	int numJobsPerThread;
+	//int numJobsPerThread;
 
 	/** datacompression - save only hits */
-	bool dataCompression;
+	//bool dataCompression;
 
 	/** memory allocated for the buffer */
-	char *mem0[MAX_NUM_LISTENING_THREADS];
+	//char *mem0[MAX_NUM_LISTENING_THREADS];
 
 	/** circular fifo to store addresses of data read */
-	CircularFifo<char>* fifo[MAX_NUM_LISTENING_THREADS];
+	//CircularFifo<char>* fifo[MAX_NUM_LISTENING_THREADS];
 
 	/** circular fifo to store addresses of data already written and ready to be resued*/
-	CircularFifo<char>* fifoFree[MAX_NUM_LISTENING_THREADS];
+	//CircularFifo<char>* fifoFree[MAX_NUM_LISTENING_THREADS];
 
 	/** Receiver buffer */
-	char *buffer[MAX_NUM_LISTENING_THREADS];
+	//char *buffer[MAX_NUM_LISTENING_THREADS];
 
 	/** number of writer threads */
-	int numListeningThreads;
+	//intt numListeningThreads;
 
 	/** number of writer threads */
-	int numWriterThreads;
+	//int numWriterThreads;
 
 	/** to know if listening and writer threads created properly */
-	int thread_started;
+	//int thread_started;
 
 	/** current listening thread index*/
-	int currentListeningThreadIndex;
+	//int currentListeningThreadIndex;
 
 	/** current writer thread index*/
-	int currentWriterThreadIndex;
+	//int currentWriterThreadIndex;
 
 	/** thread listening to packets */
-	pthread_t   listening_thread[MAX_NUM_LISTENING_THREADS];
+	//pthread_t   listening_thread[MAX_NUM_LISTENING_THREADS];
 
 	/** thread writing packets */
-	pthread_t   writing_thread[MAX_NUM_WRITER_THREADS];
+	//pthread_t   writing_thread[MAX_NUM_WRITER_THREADS];
 
 	/** total frame count the listening thread has listened to */
-	int totalListeningFrameCount[MAX_NUM_LISTENING_THREADS];
+	//int totalListeningFrameCount[MAX_NUM_LISTENING_THREADS];
 
 	/** mask showing which listening threads are running */
-	volatile uint32_t listeningthreads_mask;
+	//volatile uint32_t listeningthreads_mask;
 
 	/** mask showing which writer threads are running */
-	volatile uint32_t writerthreads_mask;
+	//volatile uint32_t writerthreads_mask;
 
 	/** mask showing which threads  have created files*/
-	volatile uint32_t createfile_mask;
+	//volatile uint32_t createfile_mask;
 
 	/** OK if file created was successful */
-	int ret_createfile;
+	//int ret_createfile;
 
 	/** variable used to self terminate threads waiting for semaphores */
-	int killAllListeningThreads;
+	//int killAllListeningThreads;
 
 	/** variable used to self terminate threads waiting for semaphores */
-	int killAllWritingThreads;
+	//int killAllWritingThreads;
 
 	/** 10Gbe enable*/
-	int tengigaEnable;
+	//int tengigaEnable;
 
 
 
 
 //semaphores
 	/** semaphore to synchronize  writer and guireader threads */
-	sem_t smp;
+	//sem_t smp;
 	/** semaphore to synchronize  listener threads */
-	sem_t listensmp[MAX_NUM_LISTENING_THREADS];
+	//sem_t listensmp[MAX_NUM_LISTENING_THREADS];
 	/** semaphore to synchronize  writer threads */
-	sem_t writersmp[MAX_NUM_WRITER_THREADS];
+	//sem_t writersmp[MAX_NUM_WRITER_THREADS];
 
 
 //mutex
 	/** guiDataReady mutex */
-	pthread_mutex_t  dataReadyMutex;
+	//pthread_mutex_t  dataReadyMutex;
 
 	/** mutex for status */
-	pthread_mutex_t status_mutex;
+	//pthread_mutex_t status_mutex;
 
 	/** mutex for progress variable currframenum */
-	pthread_mutex_t progress_mutex;
+	//pthread_mutex_t progress_mutex;
 
 	/** mutex for writing data to file */
-	pthread_mutex_t write_mutex;
+	//pthread_mutex_t write_mutex;
 
 	/** File Descriptor */
-	FILE *sfilefd;
+	//FILE *sfilefd;
 
 	//filter
-	singlePhotonDetector<uint16_t> *singlePhotonDet[MAX_NUM_WRITER_THREADS];
-	slsReceiverData<uint16_t>  *receiverdata[MAX_NUM_WRITER_THREADS];
-	moenchCommonMode *cmSub;
-	bool commonModeSubtractionEnable;
+	//singlePhotonDetector<uint16_t> *singlePhotonDet[MAX_NUM_WRITER_THREADS];
+	//slsReceiverData<uint16_t>  *receiverdata[MAX_NUM_WRITER_THREADS];
+	//moenchCommonMode *cmSub;
+	//bool commonModeSubtractionEnable;
 
 #ifdef MYROOT1
 	/** Tree where the hits are stored */

@@ -105,6 +105,7 @@ int initDetector(){
 
   Feb_Interface_FebInterface();
   Feb_Control_FebControl();
+  Feb_Control_Init();
   printf("FEb control constructor done\n");
   Beb_Beb(-1);
   printf("BEB constructor done\n");
@@ -126,16 +127,32 @@ int initDetector(){
   setThresholdEnergy(8000,0);
   setReadOutFlags(PARALLEL);
   setSpeed(0,1);//clk_devider,half speed
- setHighVolage(150,0);
+  setHighVolage(150,0);
   setIODelay(675,0);
   setTiming(AUTO_TIMING);
   //setMaster(GET_MASTER);
   int enable[2] = {0,1};
   setExternalGating(enable);//disable external gating
 
-  if(!Feb_Control_IsBottomModule())
-    trialMasterMode = IS_MASTER;
+  Feb_Control_SetTestModeVariable(0);
+
+  Feb_Control_CheckSetup();
+  //if(!Feb_Control_IsBottomModule()){
+  //if(getDetectorNumber()==0xbeb031){
+	  printf("**************  master ********************\n");
+	  trialMasterMode = IS_MASTER;
+	  Feb_Control_Set_Master();
+  //}
+  //else printf("**************  slave ********************\n");
+
+
+
+  if(Feb_Control_IsBottomModule())
+	  printf("BOTTOM ***************\n");
+  else
+	  printf("TOP ***************\n");
    return 1;
+
 }
 
 
@@ -325,7 +342,7 @@ int getADC(enum detDacIndex ind,  int imod){
 int setIODelay(int val, int imod){
 	if(val!=-1){
 		printf(" Setting IO Delay: %d\n",val);
-		if(Feb_Control_SetIDelays(0,val))
+		if(Feb_Control_SetIDelays(Feb_Control_GetModuleNumber(),val))
 			eiger_iodelay = val;
 	}
 	return eiger_iodelay;
@@ -382,7 +399,7 @@ int setModule(sls_detector_module myMod){
 	}
 
 
-	Feb_Control_SetTrimbits(0,tt);
+	Feb_Control_SetTrimbits(Feb_Control_GetModuleNumber(),tt);
 
 
   return 0;
@@ -456,18 +473,23 @@ enum detectorSettings setSettings(enum detectorSettings sett, int imod){
 
 
 int startStateMachine(){
-
+int ret;
 	if(trialMasterMode == IS_MASTER){
 		printf("Going to start acquisition\n");
 		Feb_Control_StartAcquisition();
 	}
 
-
-	printf("requesting images\n");
-	int ret =  startReadOut();
-
-	while(getRunStatus() == IDLE);
-	printf("Acquiring..\n");
+	//if(trialMasterMode == IS_MASTER){
+		printf("requesting images\n");
+		ret =  startReadOut();
+	//}
+	if(trialMasterMode == IS_MASTER){
+		/*for(i=0;i<3;i++)
+			usleep(1000000);*/
+		while(getRunStatus() == IDLE);
+		printf("Acquiring..\n");
+	}
+	printf("Returning\n");
 
 	return ret;
 }
@@ -490,8 +512,10 @@ int startReadOut(){
 	dst_requested[0] = 1;
     while(dst_requested[on_dst]){
       //waits on data
-      if((ret_val = (!Beb_RequestNImages(0,1,send_to_ten_gig,on_dst,nimages_per_request,0)||
-    		  !Beb_RequestNImages(0,2,send_to_ten_gig,0x20|on_dst,nimages_per_request,0))))
+    	int beb_num = 24;//Feb_Control_GetModuleNumber();
+
+      if((ret_val = (!Beb_RequestNImages(beb_num,1,send_to_ten_gig,on_dst,nimages_per_request,0)||
+    		  !Beb_RequestNImages(beb_num,2,send_to_ten_gig,0x20|on_dst,nimages_per_request,0))))
     	  break;
       dst_requested[on_dst++]=0;
       on_dst%=ndsts_in_use;
@@ -505,6 +529,7 @@ int startReadOut(){
 
 
 enum runStatus getRunStatus(){
+	if(trialMasterMode == IS_MASTER){
 	int i = Feb_Control_AcquisitionInProgress();
 	if(i== 0){
 		//printf("IDLE\n");
@@ -513,6 +538,9 @@ enum runStatus getRunStatus(){
 		//printf("RUNNING\n");
 		return RUNNING;
 	}
+	}
+
+	return IDLE;
 }
 
 
@@ -698,7 +726,7 @@ int configureMAC(int ipad, long long int macad, long long int detectormacadd, in
 	printf("dst_mac:%s\n",dst_mac);
 
 
-	int beb_num = 34;
+	int beb_num = 24;//Feb_Control_GetModuleNumber();
 	int header_number = 0;
 	int dst_port = udpport;
 

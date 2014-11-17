@@ -66,7 +66,8 @@ int          Module_GetBottomDACValue(struct Module* mod,unsigned int i);
 
 
 int Feb_Control_IsBottomModule();
-  
+int Feb_Control_GetModuleNumber();
+void Feb_Control_Set_Master();
 
   void Feb_Control_ClearModules();
 
@@ -102,7 +103,7 @@ int Feb_Control_IsBottomModule();
 
   int Feb_Control_ResetChipCompletely();
 
-  struct sockaddr_in Feb_Control_serv_addr;
+  //struct sockaddr_in Feb_Control_serv_addr;
  /*
   int Feb_Control_SetupSendToSocket(const char* ip_address_hostname, unsigned short int port);
   int  Feb_Control_WriteNRead(char* message, int length, int max_length);

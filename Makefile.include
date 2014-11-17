@@ -15,7 +15,7 @@ FLAGS= -Wall -DVERBOSE
 # libraries
 ##############################################################   
 
-REST = yes
+REST = no
 
 #POCODIR = /afs/psi.ch/user/s/sala/public/poco-slp_5.7-32bit
 #JSONBOXDIR = /afs/psi.ch/user/s/sala/public/JsonBox-slp_5.7-32bit

@@ -54,8 +54,8 @@ int init_detector(int b) {
 #endif
 	}else{
 		  Feb_Interface_FebInterface();
-		  Feb_Control_FebControl();
-		  printf("FEb control constructor done\n");
+		  Feb_Control_Init();
+		 // printf("FEb control constructor done\n");
 		 /* Beb_Beb(-1);
 		  printf("BEB constructor done\n");*/
 	}
@@ -2275,9 +2275,9 @@ int get_run_status(int file_des) {
 	enum runStatus s;
 	sprintf(mess,"getting run status\n");
 
-//#ifdef VERBOSE
+#ifdef VERBOSE
 	printf("Getting status\n");
-//#endif
+#endif
 #ifdef SLS_DETECTOR_FUNCTION_LIST
 	s= getRunStatus();printf("status:%d\n");
 #endif
@@ -2967,7 +2967,7 @@ int configure_mac(int file_des) {
 
 	int retval=-100;
 	int ret=OK,ret1=OK;
-	char arg[5][50];
+	char arg[6][50];
 	int n;
 
 #ifndef MYTHEND
@@ -2976,6 +2976,7 @@ int configure_mac(int file_des) {
 	long long int imacadd;
 	long long int idetectormacadd;
 	int udpport;
+	int udpport2;
 	int detipad;
 #endif
 
@@ -2996,7 +2997,7 @@ int configure_mac(int file_des) {
 	sscanf(arg[2], "%x", 	&udpport);
 	sscanf(arg[3], "%llx",	&idetectormacadd);
 	sscanf(arg[4], "%x",	&detipad);
-
+	sscanf(arg[5], "%x", 	&udpport2);
 
 
 #ifdef SLS_DETECTOR_FUNCTION_LIST
@@ -3006,7 +3007,7 @@ int configure_mac(int file_des) {
 		printf("mess:%s\n",mess);
 	}
 #endif
-#ifdef VERBOSE
+	//#ifdef VERBOSE
 	int i;
 	/*printf("\ndigital_test_bit in server %d\t",digitalTestBit);for gotthard*/
 	printf("\nipadd %x\t",ipad);
@@ -3019,9 +3020,10 @@ int configure_mac(int file_des) {
 	for (i=0;i<6;i++)
 		printf("detector mac adress %d is 0x%x \n",6-i,(unsigned int)(((idetectormacadd>>(8*i))&0xFF)));
 	printf("detipad %x\n",detipad);
+	printf("udp port2:0x%x\n",udpport2);
 	printf("\n");
 	printf("Configuring MAC of module %d at port %x\n", imod, udpport);
-#endif
+	//#endif
 
 #ifdef SLS_DETECTOR_FUNCTION_LIST
 	if (ret==OK) {
@@ -3029,7 +3031,7 @@ int configure_mac(int file_des) {
 			stopStateMachine();
 		}
 
-		retval=configureMAC(ipad,imacadd,idetectormacadd,detipad,udpport,0);	/*digitalTestBit);*/
+		retval=configureMAC(ipad,imacadd,idetectormacadd,detipad,udpport,udpport2,0);	/*digitalTestBit);*/
 		if(retval==-1) 	ret=FAIL;
 	}
 #endif

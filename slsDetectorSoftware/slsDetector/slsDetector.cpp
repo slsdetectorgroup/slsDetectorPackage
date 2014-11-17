@@ -488,6 +488,8 @@ int slsDetector::initializeDetectorSize(detectorType type) {
     thisDetector->receiverTCPPort=DEFAULT_PORTNO+2;
     /** set receiver udp port */
     thisDetector->receiverUDPPort=DEFAULT_UDP_PORTNO;
+    /** set receiver udp port for Eiger */
+    thisDetector->receiverUDPPort2=DEFAULT_UDP_PORTNO+1;
     /** set receiver ip address/hostname */
     strcpy(thisDetector->receiver_hostname,"none");
     /** set receiver udp ip address */
@@ -4838,6 +4840,15 @@ char* slsDetector::setNetworkParameter(networkParameter index, string value) {
 		sscanf(value.c_str(),"%d",&i);
 		setReceiverUDPPort(i);
 		return getReceiverUDPPort();
+	case RECEIVER_UDP_PORT2:
+		sscanf(value.c_str(),"%d",&i);
+		if(thisDetector->myDetectorType == EIGER)
+			setReceiverUDPPort2(i);
+		else
+			setReceiverUDPPort(i);
+		if(thisDetector->myDetectorType == EIGER)
+			return getReceiverUDPPort2();
+		return getReceiverUDPPort();
   default:
     return ("unknown network parameter");
   }
@@ -4866,6 +4877,9 @@ char* slsDetector::getNetworkParameter(networkParameter index) {
     break;
   case RECEIVER_UDP_PORT:
     return getReceiverUDPPort();
+    break;
+  case RECEIVER_UDP_PORT2:
+    return getReceiverUDPPort2();
     break;
   default:
     return ("unknown network parameter");
@@ -5012,14 +5026,17 @@ int slsDetector::setReceiverUDPPort(int udpport){
 	return thisDetector->receiverUDPPort;
 }
 
-
+int slsDetector::setReceiverUDPPort2(int udpport){
+	thisDetector->receiverUDPPort2 = udpport;
+	return thisDetector->receiverUDPPort2;
+}
 
 
 int slsDetector::setUDPConnection(){
 
 	int ret = FAIL;
 	int fnum = F_SETUP_RECEIVER_UDP;
-	char args[2][MAX_STR_LENGTH];
+	char args[3][MAX_STR_LENGTH];
 	char retval[MAX_STR_LENGTH]="";
 
 
@@ -5043,9 +5060,11 @@ int slsDetector::setUDPConnection(){
 	//copy arguments to args[][]
 	strcpy(args[0],thisDetector->receiverUDPIP);
 	sprintf(args[1],"%d",thisDetector->receiverUDPPort);
+	sprintf(args[2],"%d",thisDetector->receiverUDPPort2);
 #ifdef VERBOSE
 	std::cout << "Receiver udp ip address: " << thisDetector->receiverUDPIP << std::endl;
 	std::cout << "Receiver udp port: " << thisDetector->receiverUDPPort << std::endl;
+	std::cout << "Receiver udp port2: " << thisDetector->receiverUDPPort2 << std::endl;
 #endif
 
 	//set up receiver for UDP Connection and get receivermac address
@@ -5084,7 +5103,7 @@ int slsDetector::configureMAC(){
   int ret=FAIL;
   int fnum=F_CONFIGURE_MAC,fnum2=F_RECEIVER_SHORT_FRAME;
   char mess[100];
-  char arg[5][50];
+  char arg[6][50];
   char cword[50]="", *pcword;
   string sword;
   int retval=-1;
@@ -5112,6 +5131,7 @@ int slsDetector::configureMAC(){
   sprintf(arg[2],"%x",thisDetector->receiverUDPPort);
   strcpy(arg[3],thisDetector->detectorMAC);
   strcpy(arg[4],thisDetector->detectorIP);
+  sprintf(arg[5],"%x",thisDetector->receiverUDPPort2);
 
 #ifdef VERBOSE
   std::cout<< "Configuring MAC"<< std::endl;
@@ -5173,6 +5193,9 @@ int slsDetector::configureMAC(){
   strcpy(arg[4],cword);
 #ifdef VERBOSE
   std::cout<<"detector ip:"<<arg[4]<<"."<<std::endl;
+#endif
+#ifdef VERBOSE
+  std::cout<<"receiver udp port2:"<<arg[5]<<"."<<std::endl;
 #endif
 
   //send to server
@@ -6769,3 +6792,233 @@ int slsDetector::enableTenGigabitEthernet(int i){
 		thisDetector->tenGigaEnable=retval;
 	return retval;
 }
+
+
+
+  /******** CTB funcs */
+
+  /** opens pattern file and sends pattern to CTB 
+      @param fname pattern file to open
+      @returns OK/FAIL
+  */
+int slsDetector::setCTBPattern(string fname) {
+
+
+	int fnum=F_SET_CTB_PATTERN;
+	int ret = FAIL;
+	char retval[MAX_STR_LENGTH]="";
+
+
+// 	if(setReceiverOnline(ONLINE_FLAG)==ONLINE_FLAG){
+// #ifdef VERBOSE
+// 		std::cout << "Sending detector hostname to Receiver " << thisDetector->hostname << std::endl;
+// #endif
+// 		if (connectData() == OK)
+// 			ret=thisReceiver->sendString(fnum,retval,thisDetector->hostname);
+// 		if((ret==FAIL) || (strcmp(retval,thisDetector->hostname)))
+// 			setErrorMask((getErrorMask())|(RECEIVER_DET_HOSTNAME_NOT_SET));
+// 	}
+
+  return ret;
+
+
+}
+
+  
+  /** Writes a pattern word to the CTB
+      @param addr address of the word, -1 is I/O control register,  -2 is clk control register
+      @param word 64bit word to be written, -1 gets
+      @returns actual value
+  */
+uint64_t slsDetector::setCTBWord(int addr,uint64_t word) {
+
+  //uint64_t ret;
+
+  int ret=FAIL;
+   uint64_t retval=-1;
+  int fnum=F_SET_CTB_PATTERN;
+  int mode=0; //sets word
+
+  char mess[100];
+
+#ifdef VERBOSE
+  std::cout<<"Setting CTB word" <<std::endl;
+#endif
+
+  if (thisDetector->onlineFlag==ONLINE_FLAG) {
+    if (connectControl() == OK){
+      controlSocket->SendDataOnly(&fnum,sizeof(fnum));
+      controlSocket->SendDataOnly(&mode,sizeof(mode));
+      controlSocket->SendDataOnly(&addr,sizeof(addr));
+      controlSocket->SendDataOnly(&word,sizeof(word));
+      controlSocket->ReceiveDataOnly(&ret,sizeof(ret));
+      if (ret!=FAIL)
+	controlSocket->ReceiveDataOnly(&retval,sizeof(retval));
+      else {
+	controlSocket->ReceiveDataOnly(mess,sizeof(mess));
+	std::cout<< "Detector returned error: " << mess << std::endl;
+      }
+      controlSocket->Disconnect();
+      if (ret==FORCE_UPDATE)
+	updateDetector();
+    }
+  }
+
+  return retval;
+
+
+}
+  
+  /** Sets the pattern or loop limits in the CTB
+      @param level -1 complete pattern, 0,1,2, loop level
+      @param start start address if >=0
+      @param stop stop address if >=0
+      @param n number of loops (if level >=0)
+      @returns OK/FAIL
+  */
+int slsDetector::setCTBPatLoops(int level,int &start, int &stop, int &n) {
+
+
+  int retval[3], args[4];
+
+  args[0]=level;
+  args[1]=start;
+  args[2]=stop;
+  args[3]=n;
+  
+
+  int ret=FAIL;
+  int fnum=F_SET_CTB_PATTERN;
+  int mode=1; //sets loop
+
+  char mess[100];
+
+#ifdef VERBOSE
+  std::cout<<"Setting CTB word" <<std::endl;
+#endif
+
+  if (thisDetector->onlineFlag==ONLINE_FLAG) {
+    if (connectControl() == OK){
+      controlSocket->SendDataOnly(&fnum,sizeof(fnum));
+      controlSocket->SendDataOnly(&mode,sizeof(mode));
+      controlSocket->SendDataOnly(&args,sizeof(args));
+      controlSocket->ReceiveDataOnly(&ret,sizeof(ret));
+      if (ret!=FAIL) {
+	controlSocket->ReceiveDataOnly(&retval,sizeof(retval));
+	start=retval[0];
+	stop=retval[1];
+	n=retval[2];
+      } else {
+	controlSocket->ReceiveDataOnly(mess,sizeof(mess));
+	std::cout<< "Detector returned error: " << mess << std::endl;
+      }
+      controlSocket->Disconnect();
+      if (ret==FORCE_UPDATE)
+	updateDetector();
+    }
+  }
+
+  return ret;
+
+
+}
+
+
+  /** Sets the wait address in the CTB
+      @param level  0,1,2, wait level
+      @param addr wait address, -1 gets
+      @returns actual value
+  */
+int slsDetector::setCTBPatWaitAddr(int level, int addr) {
+
+
+
+
+  int retval=-1;
+
+
+  int ret=FAIL;
+  int fnum=F_SET_CTB_PATTERN;
+  int mode=3; //sets loop
+
+  char mess[100];
+
+#ifdef VERBOSE
+  std::cout<<"Setting CTB word" <<std::endl;
+#endif
+
+  if (thisDetector->onlineFlag==ONLINE_FLAG) {
+    if (connectControl() == OK){
+      controlSocket->SendDataOnly(&fnum,sizeof(fnum));
+      controlSocket->SendDataOnly(&mode,sizeof(mode));
+      controlSocket->SendDataOnly(&level,sizeof(level));
+      controlSocket->SendDataOnly(&addr,sizeof(addr));
+      controlSocket->ReceiveDataOnly(&ret,sizeof(ret));
+      if (ret!=FAIL) {
+	controlSocket->ReceiveDataOnly(&retval,sizeof(retval));
+      } else {
+	controlSocket->ReceiveDataOnly(mess,sizeof(mess));
+	std::cout<< "Detector returned error: " << mess << std::endl;
+      }
+      controlSocket->Disconnect();
+      if (ret==FORCE_UPDATE)
+	updateDetector();
+    }
+  }
+
+  return retval;
+
+
+
+}
+
+   /** Sets the wait time in the CTB
+      @param level  0,1,2, wait level
+      @param t wait time, -1 gets
+      @returns actual value
+  */
+int slsDetector::setCTBPatWaitTime(int level, uint64_t t) {
+
+
+
+
+
+  uint64_t retval=-1;
+
+
+  int ret=FAIL;
+  //   uint64_t retval=-1;
+  int fnum=F_SET_CTB_PATTERN;
+  int mode=4; //sets loop
+
+  char mess[100];
+
+#ifdef VERBOSE
+  std::cout<<"Setting CTB word" <<std::endl;
+#endif
+
+  if (thisDetector->onlineFlag==ONLINE_FLAG) {
+    if (connectControl() == OK){
+      controlSocket->SendDataOnly(&fnum,sizeof(fnum));
+      controlSocket->SendDataOnly(&mode,sizeof(mode));
+      controlSocket->SendDataOnly(&level,sizeof(level));
+      controlSocket->SendDataOnly(&t,sizeof(t));
+      controlSocket->ReceiveDataOnly(&ret,sizeof(ret));
+      if (ret!=FAIL) {
+	controlSocket->ReceiveDataOnly(&retval,sizeof(retval));
+      } else {
+	controlSocket->ReceiveDataOnly(mess,sizeof(mess));
+	std::cout<< "Detector returned error: " << mess << std::endl;
+      }
+      controlSocket->Disconnect();
+      if (ret==FORCE_UPDATE)
+	updateDetector();
+    }
+  }
+
+  return retval;
+
+
+}
+
+ 

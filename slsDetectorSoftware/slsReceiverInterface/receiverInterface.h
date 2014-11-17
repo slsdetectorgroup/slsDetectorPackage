@@ -56,7 +56,7 @@ public:
 	 * @param arg value to send
 	 * \returns success of operation
 	 */
-	int sendUDPDetails(int fnum, char retval[], char arg[2][MAX_STR_LENGTH]);
+	int sendUDPDetails(int fnum, char retval[], char arg[3][MAX_STR_LENGTH]);
 
 
 	/**

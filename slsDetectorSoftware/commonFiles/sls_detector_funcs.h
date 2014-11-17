@@ -90,7 +90,9 @@ enum {
   F_CALIBRATE_PEDESTAL,	/**< starts acquistion, calibrates pedestal and write back to fpga */
 
   F_ENABLE_TEN_GIGA,  /**< enable 10Gbe */
-  F_SET_ALL_TRIMBITS  /** < set all trimbits to this value */
+  F_SET_ALL_TRIMBITS,  /** < set all trimbits to this value */
+
+  F_SET_CTB_PATTERN  /** < loads a pattern in the CTB */
 
 
   /* Always append functions hereafter!!! */

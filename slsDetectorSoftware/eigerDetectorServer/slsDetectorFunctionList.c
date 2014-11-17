@@ -6,6 +6,7 @@
 #include <string.h>
 
 
+
 #include "slsDetectorFunctionList.h"
 #include "gitInfoEiger.h"
 /*#include "EigerHighLevelFunctions.c"
@@ -49,6 +50,11 @@ unsigned int nimages_per_request=1;
 int  on_dst=0;
 int dst_requested[32] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
 
+int default_dac_values[16] = {0,2000,2000,1250,700,1278,500,500,2000,500,500,550,550,100,1000,775};
+
+
+enum masterFlags  masterMode=NO_MASTER;
+enum masterFlags  trialMasterMode=NO_MASTER;
 
 int initDetector(){
 	  int imod,i,n;
@@ -99,16 +105,16 @@ int initDetector(){
 
   Feb_Interface_FebInterface();
   Feb_Control_FebControl();
+  Feb_Control_Init();
   printf("FEb control constructor done\n");
   Beb_Beb(-1);
   printf("BEB constructor done\n");
 
   //get dac values
   int retval[2];
-	for(i=0;i<(detectorModules)->ndac;i++){
-		setDAC((enum detDacIndex)i,-1,(detectorModules)->module,0,retval);
-		(detectorModules)->dacs[i] = retval[0];
-	}
+	for(i=0;i<(detectorModules)->ndac;i++)
+		setDAC((enum detDacIndex)i,default_dac_values[i],(detectorModules)->module,0,retval);
+
 
   /* initialize dynamic range etc. */
 
@@ -121,12 +127,32 @@ int initDetector(){
   setThresholdEnergy(8000,0);
   setReadOutFlags(PARALLEL);
   setSpeed(0,1);//clk_devider,half speed
- setHighVolage(150,0);
+  setHighVolage(150,0);
   setIODelay(675,0);
   setTiming(AUTO_TIMING);
+  //setMaster(GET_MASTER);
   int enable[2] = {0,1};
   setExternalGating(enable);//disable external gating
+
+  Feb_Control_SetTestModeVariable(0);
+
+  Feb_Control_CheckSetup();
+  //if(!Feb_Control_IsBottomModule()){
+  //if(getDetectorNumber()==0xbeb031){
+	  printf("**************  master ********************\n");
+	  trialMasterMode = IS_MASTER;
+	  Feb_Control_Set_Master();
+  //}
+  //else printf("**************  slave ********************\n");
+
+
+
+  if(Feb_Control_IsBottomModule())
+	  printf("BOTTOM ***************\n");
+  else
+	  printf("TOP ***************\n");
    return 1;
+
 }
 
 
@@ -287,10 +313,10 @@ void setDAC(enum detDacIndex ind, int val, int imod, int mV, int retval[]){
 	if(val >= 0)
 		Feb_Control_SetDAC(iname,val,mV);
 	int k;
-		Feb_Control_GetDAC(iname, &k,0);
-		retval[0] = k;
-		Feb_Control_GetDAC(iname,&k,1);
-		retval[1] = k;
+	Feb_Control_GetDAC(iname, &k,0);
+	retval[0] = k;
+	Feb_Control_GetDAC(iname,&k,1);
+	retval[1] = k;
 
 	(detectorModules)->dacs[ind] = retval[0];
 
@@ -316,7 +342,7 @@ int getADC(enum detDacIndex ind,  int imod){
 int setIODelay(int val, int imod){
 	if(val!=-1){
 		printf(" Setting IO Delay: %d\n",val);
-		if(Feb_Control_SetIDelays(0,val))
+		if(Feb_Control_SetIDelays(Feb_Control_GetModuleNumber(),val))
 			eiger_iodelay = val;
 	}
 	return eiger_iodelay;
@@ -373,7 +399,7 @@ int setModule(sls_detector_module myMod){
 	}
 
 
-	Feb_Control_SetTrimbits(0,tt);
+	Feb_Control_SetTrimbits(Feb_Control_GetModuleNumber(),tt);
 
 
   return 0;
@@ -447,34 +473,35 @@ enum detectorSettings setSettings(enum detectorSettings sett, int imod){
 
 
 int startStateMachine(){
-	printf("Going to start acquisition\n");
-	if(Feb_Control_StartAcquisition()){
-
-		//RequestImages();
-		int ret_val = 0;
-		dst_requested[0] = 1;
-	    while(dst_requested[on_dst]){
-	      //waits on data
-	      if((ret_val = (!Beb_RequestNImages(0,1,send_to_ten_gig,on_dst,nimages_per_request,0)||
-	    		  !Beb_RequestNImages(0,2,send_to_ten_gig,0x20|on_dst,nimages_per_request,0))))
-	    	  break;
-	      dst_requested[on_dst++]=0;
-	      on_dst%=ndsts_in_use;
-	    }
-
-	    if(ret_val)
-	    	return FAIL;
-	    else
-	    	return OK;
+int ret;
+	if(trialMasterMode == IS_MASTER){
+		printf("Going to start acquisition\n");
+		Feb_Control_StartAcquisition();
 	}
-	return FAIL;
+
+	//if(trialMasterMode == IS_MASTER){
+		printf("requesting images\n");
+		ret =  startReadOut();
+	//}
+	if(trialMasterMode == IS_MASTER){
+		/*for(i=0;i<3;i++)
+			usleep(1000000);*/
+		while(getRunStatus() == IDLE);
+		printf("Acquiring..\n");
+	}
+	printf("Returning\n");
+
+	return ret;
 }
 
 
 int stopStateMachine(){
-	printf("Going to stop acquisition\n");
-	if(Feb_Control_StopAcquisition())
-		return OK;
+	if(trialMasterMode == IS_MASTER){
+		printf("Going to stop acquisition\n");
+		if(Feb_Control_StopAcquisition())
+			return OK;
+	}else return OK;
+
 	return FAIL;
 }
 
@@ -485,8 +512,10 @@ int startReadOut(){
 	dst_requested[0] = 1;
     while(dst_requested[on_dst]){
       //waits on data
-      if((ret_val = (!Beb_RequestNImages(0,1,send_to_ten_gig,on_dst,nimages_per_request,0)||
-    		  !Beb_RequestNImages(0,2,send_to_ten_gig,0x20|on_dst,nimages_per_request,0))))
+    	int beb_num = 24;//Feb_Control_GetModuleNumber();
+
+      if((ret_val = (!Beb_RequestNImages(beb_num,1,send_to_ten_gig,on_dst,nimages_per_request,0)||
+    		  !Beb_RequestNImages(beb_num,2,send_to_ten_gig,0x20|on_dst,nimages_per_request,0))))
     	  break;
       dst_requested[on_dst++]=0;
       on_dst%=ndsts_in_use;
@@ -496,20 +525,22 @@ int startReadOut(){
     	return FAIL;
     else
     	return OK;
-
-	return OK;
 }
 
 
 enum runStatus getRunStatus(){
+	if(trialMasterMode == IS_MASTER){
 	int i = Feb_Control_AcquisitionInProgress();
 	if(i== 0){
-		printf("IDLE\n");
+		//printf("IDLE\n");
 		return IDLE;
 	}else{
-		printf("RUNNING\n");
+		//printf("RUNNING\n");
 		return RUNNING;
 	}
+	}
+
+	return IDLE;
 }
 
 
@@ -517,6 +548,8 @@ enum runStatus getRunStatus(){
 char *readFrame(int *ret, char *mess){
 	if(!Feb_Control_WaitForFinishedFlag(5000))
 		printf("error in waiting for finished flag\n");
+	printf("acquisition finished\n");
+
 	*ret = (int)FINISHED;
 	return NULL;
 }
@@ -532,8 +565,8 @@ int64_t setTimer(enum timerIndex ind, int64_t val){
 	switch(ind){
 	case FRAME_NUMBER:
 		if(val >= 0){
-			printf(" Setting number of frames: %d\n",(unsigned int)val);
-			if(Feb_Control_SetNExposures((unsigned int)val)*eiger_ncycles){
+			printf(" Setting number of frames: %d * %d\n",(unsigned int)val,eiger_ncycles);
+			if(Feb_Control_SetNExposures((unsigned int)val*eiger_ncycles)){
 				eiger_nexposures = val;
 				//SetDestinationParameters(EigerGetNumberOfExposures()*EigerGetNumberOfCycles());
 				  on_dst = 0;
@@ -570,7 +603,7 @@ int64_t setTimer(enum timerIndex ind, int64_t val){
 		return EigerGetNumberOfExposures();*/
 	case CYCLES_NUMBER:
 		if(val >= 0){
-			printf(" Setting number of triggers: %d\n",(unsigned int)val);
+			printf(" Setting number of triggers: %d * %d\n",(unsigned int)val,eiger_nexposures);
 			if(Feb_Control_SetNExposures((unsigned int)val*eiger_nexposures)){
 				eiger_ncycles = val;
 				//SetDestinationParameters(EigerGetNumberOfExposures()*EigerGetNumberOfCycles());
@@ -609,6 +642,7 @@ int setDynamicRange(int dr){
 			  for(i=0;i<32;i++) dst_requested[i] = 0; //clear dst requested
 			  if(Beb_SetUpTransferParameters(dr))
 				  eiger_dynamicrange = dr;
+			  else printf("ERROR:Could not set bit mode in the back end\n");
 		}
 	}
 	//make sure back end and front end have the same bit mode
@@ -667,10 +701,9 @@ int executeTrimming(enum trimMode mode, int par1, int par2, int imod){
 }
 
 
-int configureMAC(int ipad, long long int macad, long long int detectormacadd, int detipad, int udpport, int ival){
+int configureMAC(int ipad, long long int macad, long long int detectormacadd, int detipad, int udpport, int udpport2, int ival){
 	char src_mac[50], src_ip[50],dst_mac[50], dst_ip[50];
 	int src_port = 0xE185;
-	int dst_port = udpport;
 	sprintf(src_ip,"%d.%d.%d.%d",(detipad>>24)&0xff,(detipad>>16)&0xff,(detipad>>8)&0xff,(detipad)&0xff);
 	sprintf(dst_ip,"%d.%d.%d.%d",(ipad>>24)&0xff,(ipad>>16)&0xff,(ipad>>8)&0xff,(ipad)&0xff);
 	sprintf(src_mac,"%02x:%02x:%02x:%02x:%02x:%02x",(unsigned int)((detectormacadd>>40)&0xFF),
@@ -686,35 +719,38 @@ int configureMAC(int ipad, long long int macad, long long int detectormacadd, in
 										(unsigned int)((macad>>8)&0xFF),
 										(unsigned int)((macad>>0)&0xFF));
 
-	printf("Seting up Table Entry Left:\n");
 	printf("src_port:%d\n",src_port);
-	printf("dst_port:%d\n",dst_port);
 	printf("src_ip:%s\n",src_ip);
 	printf("dst_ip:%s\n",dst_ip);
 	printf("src_mac:%s\n",src_mac);
-	printf("dst_mac:%s\n\n",dst_mac);
+	printf("dst_mac:%s\n",dst_mac);
 
-	int beb_num = 34;
+
+	int beb_num = 24;//Feb_Control_GetModuleNumber();
 	int header_number = 0;
+	int dst_port = udpport;
 
-int i=0;
-	//EigerSetupTableEntryLeft(ipad, macad, detectormacadd, detipad, udpport);
+	printf("dst_port:%d\n\n",dst_port);
+
+	int i=0;
 	/* for(i=0;i<32;i++){/** modified for Aldo*/
 		    if(Beb_SetBebSrcHeaderInfos(beb_num,send_to_ten_gig,src_mac,src_ip,src_port) &&
 		    		Beb_SetUpUDPHeader(beb_num,send_to_ten_gig,header_number+i,dst_mac,dst_ip, dst_port))
 		    	printf("set up left ok\n");
 		    else return -1;
 	 /*}*/
-	//EigerSetupTableEntryRight(ipad, macad, detectormacadd, detipad, udpport);
+
 	header_number = 32;
-	dst_port = udpport +1;
+	dst_port = udpport2;
+	printf("dst_port:%d\n\n",dst_port);
+
 	 /*for(i=0;i<32;i++){*//** modified for Aldo*/
 		    if(Beb_SetBebSrcHeaderInfos(beb_num,send_to_ten_gig,src_mac,src_ip,src_port) &&
 		    		Beb_SetUpUDPHeader(beb_num,send_to_ten_gig,header_number+i,dst_mac,dst_ip, dst_port))
-		    	printf("set up right ok\n");
+		    	printf("set up right ok\n\n");
 		    else return -1;
 	/*}*/
-	//SetDestinationParameters(EigerGetNumberOfExposures()*EigerGetNumberOfCycles());
+
 	  on_dst = 0;
 
 	  for(i=0;i<32;i++) dst_requested[i] = 0; //clear dst requested
@@ -879,6 +915,9 @@ void setExternalGating(int enable[]){
 
 
 enum masterFlags setMaster(enum masterFlags arg){
+	//if(arg != GET_MASTER)
+	//	masterMode = arg;
+
 	return NO_MASTER;
 }
 

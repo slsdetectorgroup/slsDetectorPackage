@@ -240,6 +240,8 @@ class slsDetector : public slsDetectorUtils, public energyConversion {
     int receiverTCPPort;
     /** is the port used to communicate between detector and the receiver*/
     int receiverUDPPort;
+    /** is the port used to communicate between second half module of Eiger detector and the receiver*/
+    int receiverUDPPort2;
     /** ip address of the receiver for the detector to send packets to**/
     char receiverUDPIP[MAX_STR_LENGTH];
     /** mac address of receiver for the detector to send packets to **/
@@ -1603,6 +1605,8 @@ class slsDetector : public slsDetectorUtils, public energyConversion {
   char* getReceiverUDPMAC() {return thisDetector->receiverUDPMAC;};
   /** returns the receiver UDP IP address \sa sharedSlsDetector  */
   char* getReceiverUDPPort() {char *c= new char[MAX_STR_LENGTH];sprintf(c,"%d",thisDetector->receiverUDPPort); return c;};
+  /** returns the receiver UDP2 for Eiger IP address \sa sharedSlsDetector  */
+  char* getReceiverUDPPort2() {char *c= new char[MAX_STR_LENGTH];sprintf(c,"%d",thisDetector->receiverUDPPort2); return c;};
 
   /** validates the format of detector MAC address and sets it \sa sharedSlsDetector  */
   char* setDetectorMAC(string detectorMAC);
@@ -1616,6 +1620,8 @@ class slsDetector : public slsDetectorUtils, public energyConversion {
   char* setReceiverUDPMAC(string udpmac);
   /** sets the receiver udp port \sa sharedSlsDetector  */
   int setReceiverUDPPort(int udpport);
+  /** sets the receiver udp port2 for Eiger \sa sharedSlsDetector  */
+  int setReceiverUDPPort2(int udpport);
 
   /** Sets the read receiver frequency
    	  if Receiver read upon gui request, readRxrFrequency=0,
@@ -1644,6 +1650,48 @@ class slsDetector : public slsDetectorUtils, public energyConversion {
    */
   int enableTenGigabitEthernet(int i = -1);
 
+
+  /******** CTB funcs */
+
+  /** opens pattern file and sends pattern to CTB 
+      @param fname pattern file to open
+      @returns OK/FAIL
+  */
+  int setCTBPattern(string fname);
+
+  
+  /** Writes a pattern word to the CTB
+      @param addr address of the word, -1 is I/O control register,  -2 is clk control register
+      @param word 64bit word to be written, -1 gets
+      @returns actual value
+  */
+  uint64_t setCTBWord(int addr,uint64_t word=-1);  
+  
+  /** Sets the pattern or loop limits in the CTB
+      @param level -1 complete pattern, 0,1,2, loop level
+      @param start start address if >=0
+      @param stop stop address if >=0
+      @param n number of loops (if level >=0)
+      @returns OK/FAIL
+  */
+  int setCTBPatLoops(int level,int &start, int &stop, int &n);  
+
+
+  /** Sets the wait address in the CTB
+      @param level  0,1,2, wait level
+      @param addr wait address, -1 gets
+      @returns actual value
+  */
+  int setCTBPatWaitAddr(int level, int addr=-1);  
+
+   /** Sets the wait time in the CTB
+      @param level  0,1,2, wait level
+      @param t wait time, -1 gets
+      @returns actual value
+  */
+  int setCTBPatWaitTime(int level, uint64_t t=-1);  
+
+ 
  protected:
  
 

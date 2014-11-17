@@ -42,6 +42,7 @@
 		  short Beb_bit_mode;
 
 
+
 void BebInfo_BebInfo(struct BebInfo* bebInfo, unsigned int beb_num){
 	bebInfo->beb_number=beb_num;
 	bebInfo->serial_address=0;
@@ -51,6 +52,7 @@ void BebInfo_BebInfo(struct BebInfo* bebInfo, unsigned int beb_num){
 	strcpy(bebInfo->src_ip_10GbE,"");
 	bebInfo->src_port_1GbE=bebInfo->src_port_10GbE=0;
 }
+
 
 int BebInfo_SetSerialAddress(struct BebInfo* bebInfo, unsigned int a){
   //address pre shifted
@@ -135,13 +137,14 @@ void Beb_Beb(int arg1){
 
   Beb_SetByteOrder();
 
+/*
   ll_beb_new_memory = &ll_beb_new_memory_local;
   Local_LocalLinkInterface(ll_beb_new_memory);
   if(!Local_InitNewMemory(ll_beb_new_memory,XPAR_PLB_LL_NEW_MEMORY, arg1))
 	  printf("New Memory FAIL\n");
   else
 	  printf("New Memory OK\n");
-
+*/
 }
 
 
@@ -154,6 +157,7 @@ void Beb_ClearBebInfos(){
 
 int Beb_InitBebInfos(){//file name at some point
 	Beb_ClearBebInfos();
+
 
   struct BebInfo b0;
   BebInfo_BebInfo(&b0,0);
@@ -172,6 +176,7 @@ int Beb_InitBebInfos(){//file name at some point
     beb_infos.push_back(b);
 */
 
+
   return Beb_CheckSourceStuffBebInfo();
 }
 
@@ -181,7 +186,7 @@ int Beb_SetBebSrcHeaderInfos(unsigned int beb_number, int ten_gig, char* src_mac
   //so that the values can be reset externally for now....
 
   unsigned int i = Beb_GetBebInfoIndex(beb_number);
-  if(!i){ printf("returning 000\n");return 0;} //i must be greater than 0, zero is the global send
+ /******* if(!i) return 0;****************************/ //i must be greater than 0, zero is the global send
   BebInfo_SetHeaderInfo(&beb_infos[i],ten_gig,src_mac,src_ip,src_port);
 
   printf("Printing Beb info number (%d) :\n",i);
@@ -253,12 +258,13 @@ int Beb_CheckSourceStuffBebInfo(){
 }
 
 unsigned int Beb_GetBebInfoIndex(unsigned int beb_numb){
-  if(!beb_numb) return 0;
+/******************** if(!beb_numb) return 0;******************************/
   unsigned int i;
   for(i=1;i<bebInfoSize;i++)
-	  if(beb_numb==BebInfo_GetBebNumber(&beb_infos[i]))
+	  if(beb_numb==BebInfo_GetBebNumber(&beb_infos[i])){
+		  printf("found beb index:%d, for beb number:%d\n",i,beb_numb);
 		  return i;
-
+	  }
   return 0;
 }
 
@@ -319,7 +325,7 @@ int Beb_SetByteOrder(){
 
 int Beb_SetUpUDPHeader(unsigned int beb_number, int ten_gig, unsigned int header_number, char* dst_mac, char* dst_ip, unsigned int dst_port){
   unsigned int i = Beb_GetBebInfoIndex(beb_number);
-  if(!i) return 0; //i must be greater than 0, zero is the global send
+  /***********************************if(!i) return 0; *************************************///i must be greater than 0, zero is the global send
 
   Beb_send_ndata   = 14;
   Beb_send_data[0] = ten_gig ? 0x00020000 : 0x00010000; //write to fanout numbers 1 or 2
@@ -329,14 +335,14 @@ int Beb_SetUpUDPHeader(unsigned int beb_number, int ten_gig, unsigned int header
     Beb_SwapDataFun(1,12,&(Beb_send_data[2]));
 
   if(!Beb_WriteTo(i)) return 0;
-  
+  printf("beb dst_port:%d\n",dst_port);
   return 1;
 }
 
 
 int Beb_SetHeaderData(unsigned int beb_number, int ten_gig, char* dst_mac, char* dst_ip, unsigned int dst_port){
   unsigned int i = Beb_GetBebInfoIndex(beb_number);
-  if(!i) return 0; //i must be greater than 0, zero is the global send
+  /***********************************if(!i) return 0; *************************************///i must be greater than 0, zero is the global send
   return Beb_SetHeaderData1(BebInfo_GetSrcMAC(&beb_infos[i],ten_gig),BebInfo_GetSrcIP(&beb_infos[i],ten_gig),BebInfo_GetSrcPort(&beb_infos[i],ten_gig),dst_mac,dst_ip,dst_port);
 }
 
@@ -368,12 +374,18 @@ int Beb_SetHeaderData1(char* src_mac, char* src_ip, unsigned int src_port, char*
 */
 
   if(!Beb_SetMAC(src_mac,&(udp_header.src_mac[0])))           return 0;
+  printf("Setting Source MAC to %s\n",src_mac);
   if(!Beb_SetIP(src_ip,&(udp_header.src_ip[0])))              return 0;
+  printf("Setting Source IP to %s\n",src_ip);
   if(!Beb_SetPortNumber(src_port,&(udp_header.src_port[0])))  return 0;
+  printf("Setting Source port to %d\n",src_port);
 
   if(!Beb_SetMAC(dst_mac,&(udp_header.dst_mac[0])))           return 0;
+  printf("Setting Destination MAC to %s\n",dst_mac);
   if(!Beb_SetIP(dst_ip,&(udp_header.dst_ip[0])))              return 0;
+  printf("Setting Destination IP to %s\n",dst_ip);
   if(!Beb_SetPortNumber(dst_port,&(udp_header.dst_port[0])))  return 0;
+  printf("Setting Destination port to %d\n",dst_port);
 
 
   Beb_AdjustIPChecksum(&udp_header);
@@ -392,8 +404,7 @@ int Beb_SetHeaderData1(char* src_mac, char* src_ip, unsigned int src_port, char*
 
 
 int Beb_SetMAC(char* mac, uint8_t* dst_ptr){
-
-char macVal[50];strcpy(macVal,mac);
+	char macVal[50];strcpy(macVal,mac);
 
 	int i = 0;
 	char *pch = strtok (macVal,":");
@@ -506,19 +517,35 @@ int Beb_RequestNImages(unsigned int beb_number, unsigned int left_right, int ten
   unsigned int         npackets = ten_gig ?  Beb_bit_mode*4 : Beb_bit_mode*16;
   int          in_two_requests = (!ten_gig&&Beb_bit_mode==32);
   if(in_two_requests) npackets/=2;
- 
+ // printf("npackets:%d\n",npackets);
   //usleep needed after acquisition start, else you miss the single images
-  usleep(0);
+  usleep(10000);//less than this and it starts sending half stuff sometimes
 
   //printf("beb no:%d left_right:%d ten_gig:%d dst_number:%d #images:%d header_size:%d test_just_send_out_packets_no_wait:%d\n",beb_number,left_right,ten_gig,dst_number,nimages, header_size,test_just_send_out_packets_no_wait);
   //printf("here: "<<beb_number<<","<<left_right<<","<<ten_gig<<","<<dst_number<<","<<1<<","<<header_size<<","<<test_just_send_out_packets_no_wait\n");
+/*
+  unsigned int i;
+  for(i=0;i<nimages;i++){
+    //header then data request
+	    //usleep(10000);
+    if(!Beb_SendMultiReadRequest(beb_number,left_right,ten_gig,dst_number,1,header_size,test_just_send_out_packets_no_wait)){printf("Send failed\n");return 0;}
+    //usleep(10000);
+    if(!Beb_SendMultiReadRequest(beb_number,left_right,ten_gig,dst_number,npackets,packet_size,test_just_send_out_packets_no_wait)){printf("Send failed\n");return 0;}
+   // usleep(0);
+    if(in_two_requests){if(!Beb_SendMultiReadRequest(beb_number,left_right,ten_gig,dst_number,npackets,packet_size,test_just_send_out_packets_no_wait)){printf("Send failed\n");return 0;}
+    }
+  }
+*/
+
   unsigned int i;
   for(i=0;i<nimages;i++){
     //header then data request
     if(!Beb_SendMultiReadRequest(beb_number,left_right,ten_gig,dst_number,1,header_size,test_just_send_out_packets_no_wait) ||
        !Beb_SendMultiReadRequest(beb_number,left_right,ten_gig,dst_number,npackets,packet_size,test_just_send_out_packets_no_wait) ||
-       (in_two_requests&&!Beb_SendMultiReadRequest(beb_number,left_right,ten_gig,dst_number,npackets,packet_size,test_just_send_out_packets_no_wait)))
+       (in_two_requests&&!Beb_SendMultiReadRequest(beb_number,left_right,ten_gig,dst_number,npackets,packet_size,test_just_send_out_packets_no_wait))){
+       	printf("SendMultiReadRequest failed\n");
     	return 0;
+    }
   }
 
   return 1;

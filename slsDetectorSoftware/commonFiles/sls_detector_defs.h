@@ -177,7 +177,8 @@ enum networkParameter {
   RECEIVER_HOSTNAME,  	/**< receiver IP/hostname */
   RECEIVER_UDP_IP,		/**< receiever UDP IP */
   RECEIVER_UDP_PORT,	/**< receiever UDP Port */
-  RECEIVER_UDP_MAC		/**< receiever UDP MAC */
+  RECEIVER_UDP_MAC,		/**< receiever UDP MAC */
+  RECEIVER_UDP_PORT2	/**< receiever UDP Port of second half module for eiger */
 };
 
 /**

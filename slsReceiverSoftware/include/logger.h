@@ -6,6 +6,19 @@
 #include <stdio.h>
 #include <unistd.h>
 
+#ifdef VERBOSE
+#define FILELOG_MAX_LEVEL logDEBUG
+#endif
+
+#ifdef VERYVERBOSE
+#define FILELOG_MAX_LEVEL logDEBUG4
+#endif
+
+#ifndef FILELOG_MAX_LEVEL
+#define FILELOG_MAX_LEVEL logINFO
+#endif
+
+
 #define STRINGIFY(x) #x
 #define TOSTRING(x) STRINGIFY(x)
 #define MYCONCAT(x,y)  
@@ -59,10 +72,6 @@ public:
 
 class FILELOG_DECLSPEC FILELog : public Log<Output2FILE> {};
 //typedef Log<Output2FILE> FILELog;
-
-#ifndef FILELOG_MAX_LEVEL
-#define FILELOG_MAX_LEVEL logDEBUG4
-#endif
 
 #define FILE_LOG(level) \
 	if (level > FILELOG_MAX_LEVEL) ;				\

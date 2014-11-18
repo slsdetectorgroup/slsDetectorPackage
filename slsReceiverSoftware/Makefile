@@ -45,9 +45,9 @@ intdoc: $(SRC_H) $(SRC_CLNT)
 
 $(BUILDDIR)/%.o : $(SRCDIR)/%.cpp Makefile
 ifeq ($(ROOTSLS),yes)
-	$(CXX) -DROOTSLS -o $@ -c $< $(INCLUDES) $(DFLAGS)  $(ROOTFLAGS) -fPIC  $(EPICSFLAGS) $(LDFLAGRXR) -L/usr/lib64/ #$(FLAGS)
+	$(CXX) -DROOTSLS -o $@ -c $< $(INCLUDES) $(DFLAGS)  $(ROOTFLAGS) -fPIC  $(EPICSFLAGS) $(LDFLAGRXR) -L/usr/lib64/ $(FLAGS)
 else	
-	$(CXX) -o $@ -c $< $(INCLUDES) $(DFLAGS) -fPIC  $(EPICSFLAGS) $(LDFLAGRXR) -lpthread #$(FLAGS)
+	$(CXX) -o $@ -c $< $(INCLUDES) $(DFLAGS) -fPIC  $(EPICSFLAGS) $(LDFLAGRXR) -lpthread $(FLAGS)
 endif
 
 lib:  $(OBJS) $(DESTDIR)/libSlsReceiver.so $(DESTDIR)/libSlsReceiver.a 

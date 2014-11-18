@@ -2019,7 +2019,7 @@ int i;
 					exit(-1);
 				}
 				//push the last buffer into fifo
-				if(rc > 0){
+				if((myDetectorType != EIGER) && (rc > 0)){ //for eiger throw away incomplete frames
 					pc = (rc/onePacketSize);
 #ifdef VERYDEBUG
 					cout << ithread <<  " *** last packetcount:" << pc << endl;
@@ -2030,7 +2030,8 @@ int i;
 #ifdef VERYDEBUG
 					cout << ithread << " *** last lbuf1:" << (void*)buffer[ithread] << endl;
 #endif
-				}
+				}else
+					fifoFree[ithread]->push(buffer[ithread]);//for all detectors too. why was this not there? for rc=0?
 
 
 				//push dummy buffer to all writer threads

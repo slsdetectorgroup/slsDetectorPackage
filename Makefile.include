@@ -7,7 +7,16 @@ CXX = $(CC)
 ASM=$(shell echo "/lib/modules/`uname -r`/build/include")
 LDFLAGDET = -L$(LIBDIR) -lSlsDetector -L/usr/lib64/ -lpthread
 LDFLAGRXR = -L$(LIBDIR) -lSlsReceiver -L/usr/lib64/ -lpthread
-FLAGS= -Wall -DVERBOSE 
+FLAGS= -Wall 
+# -DVERBOSE 
+
+# Setting up the verbose flags
+ifeq ($(DEBUG),1)
+     FLAGS = -Wall -DVERBOSE
+endif
+ifeq ($(DEBUG),2)
+     FLAGS = -Wall -DVERYVERBOSE
+endif
 
 ##############################################################
 # EigerSLS specific. Set this to yes, if you want to compile

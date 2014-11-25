@@ -1528,11 +1528,7 @@ slsDetectorDefs::runStatus  multiSlsDetector::getRunStatus() {
       return s;
     }
 
-<<<<<<< HEAD
-  for (int i=0; i<thisMultiDetector->numberOfDetectors; i++) { //loop started from 0, but it's a problem with only one detector...
-=======
   for (int i=0; i<thisMultiDetector->numberOfDetectors; i++) {
->>>>>>> 5c16b389923487a754e2a4dd64c8da86c901d4e6
     s1=detectors[i]->getRunStatus(); 
     if(detectors[i]->getErrorMask())
       setErrorMask(getErrorMask()|(1<<i));

@@ -56,6 +56,12 @@ int slsDetector::initSharedMemory(detectorType type, int id) {
     nc=1; //chips
     nd=9; //dacs+adcs
     break;
+  case JUNGFRAUCTB:
+    nch=32;
+    nm=1; //modules/detector
+    nc=1; //chips
+    nd=16; //dacs+adcs
+    break;
   default:
     nch=0; // dum!
     nm=0; //modules/detector
@@ -558,6 +564,17 @@ int slsDetector::initializeDetectorSize(detectorType type) {
       thisDetector->nModMax[Y]=1;
       thisDetector->dynamicRange=16;
       break;
+    case JUNGFRAUCTB:
+      thisDetector->nChan[X]=32;
+      thisDetector->nChan[Y]=1;
+      thisDetector->nChip[X]=1;
+      thisDetector->nChip[Y]=1;
+      thisDetector->nDacs=16;
+      thisDetector->nAdcs=1;
+      thisDetector->nModMax[X]=1;
+      thisDetector->nModMax[Y]=1;
+      thisDetector->dynamicRange=16;
+      break;
     case EIGER:
       thisDetector->nChan[X]=256;
       thisDetector->nChan[Y]=256;
@@ -758,6 +775,8 @@ int slsDetector::initializeDetectorSize(detectorType type) {
 	  setFramesPerFile(MAX_FRAMES_PER_FILE);
   if (thisDetector->myDetectorType==MOENCH)
 	  setFramesPerFile(MOENCH_MAX_FRAMES_PER_FILE);
+  if (thisDetector->myDetectorType==JUNGFRAUCTB)
+	  setFramesPerFile(JFCTB_MAX_FRAMES_PER_FILE);
   thisReceiver = new receiverInterface(dataSocket);
 
   //  setAngularConversionPointer(thisDetector->angOff,&thisDetector->nMods, thisDetector->nChans*thisDetector->nChips);
@@ -870,6 +889,13 @@ slsDetectorDefs::sls_detector_module*  slsDetector::createModule(detectorType t)
     nm=1; //modules/detector
     nc=1; //chips
     nd=8; //dacs
+    na=1;
+    break;
+  case JUNGFRAUCTB:
+    nch=32;
+    nm=1;
+    nc=1;
+    nd=8; // dacs+adcs
     na=1;
     break;
   default:
@@ -2944,6 +2970,7 @@ slsDetectorDefs::detectorSettings slsDetector::setSettings( detectorSettings ise
 				break;
 			case MOENCH:
 			case GOTTHARD:
+			case JUNGFRAUCTB:
 				//settings is saved in myMod.reg
 				myMod->reg=thisDetector->currentSettings;
 				ostfn << thisDetector->settingsDir << ssettings <<"/settings.sn";//  << setfill('0') << setw(3) << hex << getId(MODULE_SERIAL_NUMBER, im) << setbase(10);
@@ -2973,6 +3000,7 @@ slsDetectorDefs::detectorSettings slsDetector::setSettings( detectorSettings ise
 				switch(thisDetector->myDetectorType){
 				case MOENCH:
 				case GOTTHARD:
+				case JUNGFRAUCTB:
 					ostfn << thisDetector->settingsDir << ssettings << ssettings << ".settings";
 					break;
 				case EIGER:
@@ -3240,9 +3268,9 @@ slsDetectorDefs::runStatus slsDetector::getRunStatus(){
   char mess[100];
   strcpy(mess,"aaaaa");
   runStatus retval=ERROR;
-#ifdef VERBOSE
+  //#ifdef VERBOSE
   std::cout<< "Getting status "<< std::endl;
-#endif
+  //#endif
   if (thisDetector->onlineFlag==ONLINE_FLAG) {
     if (stopSocket) {
       if  (stopSocket->Connect()>=0) {
@@ -4015,18 +4043,6 @@ int slsDetector::setSpeed(speedVariable sp, int value) {
   return retval;
 
 }
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -6819,7 +6835,29 @@ int slsDetector::setCTBPattern(string fname) {
 // 			setErrorMask((getErrorMask())|(RECEIVER_DET_HOSTNAME_NOT_SET));
 // 	}
 
-  return ret;
+
+
+	uint64_t word;
+ 
+     int addr=0;
+
+     FILE *fd=fopen(fname.c_str(),"r");
+     if (fd>0) {
+       while (fread(&word, sizeof(word), 1,fd)) {
+	setCTBWord(addr,word);
+	// cout << hex << addr << " " << word << dec << endl;
+	 addr++;
+       }
+       
+       fclose(fd);
+     } else
+       return -1;
+     
+
+
+
+
+  return addr;
 
 
 }
@@ -6939,7 +6977,7 @@ int slsDetector::setCTBPatWaitAddr(int level, int addr) {
 
   int ret=FAIL;
   int fnum=F_SET_CTB_PATTERN;
-  int mode=3; //sets loop
+  int mode=2; //sets loop
 
   char mess[100];
 
@@ -6989,7 +7027,7 @@ int slsDetector::setCTBPatWaitTime(int level, uint64_t t) {
   int ret=FAIL;
   //   uint64_t retval=-1;
   int fnum=F_SET_CTB_PATTERN;
-  int mode=4; //sets loop
+  int mode=3; //sets loop
 
   char mess[100];
 

@@ -8,12 +8,12 @@
 
 // Hardware definitions
 
-#define NCHAN (160*160)
+#define NCHAN 32
 #define NCHIP 1
 #define NMAXMODX  1
 #define NMAXMODY 1
 #define NMAXMOD (NMAXMODX*NMAXMODY)
-#define NDAC 8
+#define NDAC 16
 #define NADC 1
 
 /**when moench readout tested with gotthard module*/
@@ -57,7 +57,8 @@
 #define DEBUGOUT
 #endif
 
-#define CLK_FREQ 65.6E+6
+#define CLK_FREQ 156.25E+6
+#define ADC_CLK_FREQ 32E+6
 
 
 #endif

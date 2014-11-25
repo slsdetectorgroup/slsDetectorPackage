@@ -1,10 +1,7 @@
 #include "sls_detector_defs.h"
+#include "sls_receiver_defs.h"
 #include "server_funcs.h"
-#ifndef PICASSOD
 #include "server_defs.h"
-#else
-#include "picasso_defs.h"
-#endif
 #include "firmware_funcs.h"
 #include "mcb_funcs.h"
 #include "trimming_funcs.h"
@@ -12,7 +9,6 @@
 #include "gitInfoMoench.h"
 
 #define FIFO_DATA_REG_OFF     0x50<<11
-//#define CONTROL_REG           0x24<<11
 // Global variables
 
 
@@ -20,19 +16,19 @@ int (*flist[256])(int);
 
 
 //defined in the detector specific file
-#ifdef MYTHEND
-const enum detectorType myDetectorType=MYTHEN;
-#elif GOTTHARDD
-const enum detectorType myDetectorType=GOTTHARD;
-#elif EIGERD
-const enum detectorType myDetectorType=EIGER;
-#elif PICASSOD
-const enum detectorType myDetectorType=PICASSO;
-#elif MOENCHD
-const enum detectorType myDetectorType=MOENCH;
-#else
-const enum detectorType myDetectorType=GENERIC;
-#endif
+/* #ifdef MYTHEND */
+/* const enum detectorType myDetectorType=MYTHEN; */
+/* #elif GOTTHARDD */
+/* const enum detectorType myDetectorType=GOTTHARD; */
+/* #elif EIGERD */
+/* const enum detectorType myDetectorType=EIGER; */
+/* #elif PICASSOD */
+/* const enum detectorType myDetectorType=PICASSO; */
+/* #elif MOENCHD */
+/* const enum detectorType myDetectorType=MOENCH; */
+/* #else */
+enum detectorType myDetectorType=GENERIC;
+/* #endif */
 
 
 extern int nModX;
@@ -70,7 +66,7 @@ int init_detector(int b, int checkType) {
   printf("fp: 0x%x\n",bus_r(FIX_PATT_REG));
   
   if (checkType) {
-    printf("Bus test...");
+    printf("Bus test... (checktype is %d; b is %d)",checkType,b );
     for (i=0; i<1000000; i++) {
       bus_w(SET_DELAY_LSB_REG, i*100);
       bus_r(FPGA_VERSION_REG);
@@ -78,57 +74,75 @@ int init_detector(int b, int checkType) {
 	printf("ERROR: wrote 0x%x, read 0x%x\n",i*100,bus_r(SET_DELAY_LSB_REG));
     }
     printf("Finished\n");
-  }
-  return 0;
-
-  bus_w16(CONTROL_REG, SYNC_RESET);
-  bus_w16(CONTROL_REG, 0x0);
-
-
+  }else
+    printf("(checktype is %d; b is %d)",checkType,b );
   //confirm if it is really moench
-  if(((bus_r(PCB_REV_REG) & DETECTOR_TYPE_MASK)>>DETECTOR_TYPE_OFFSET) != MOENCH_MODULE ){
-	  if(checkType){
-		  printf("This is a Gotthard detector. Exiting Moench Server.\n\n");
-	  	  exit(-1);
-	  }
-	  //no check required as specified in command line arguments
-	  else if(b){
-		  printf("***This is a GOTTHARD detector with %d chips per module***\n",GOTTHARDNCHIP);
-		  printf("***Assuming this to be a MOENCH detector***\n");
-	  }
-	  withGotthard = 1;
-  }	  else if(b){
-	  printf("***This is a MOENCH detector with %d chips per module***\n",NCHIP);
+  switch ((bus_r(PCB_REV_REG) & DETECTOR_TYPE_MASK)>>DETECTOR_TYPE_OFFSET) {
+  case MOENCH03_MODULE_ID:
+    myDetectorType=MOENCH;
+    printf("This is a MOENCH03 module %d\n",MOENCH);
+    break;
+
+  case JUNGFRAU_MODULE_ID:
+    myDetectorType=JUNGFRAU;
+    printf("This is a Jungfrau module %d\n", JUNGFRAU);
+    break;
+
+  case JUNGFRAU_CTB_ID:
+    myDetectorType=JUNGFRAUCTB;
+    printf("This is a Jungfrau CTB %d\n", JUNGFRAUCTB);
+    break;
+
+  default:
+    myDetectorType=GENERIC;
+    printf("Unknown detector type %02x\n",(bus_r(PCB_REV_REG) & DETECTOR_TYPE_MASK)>>DETECTOR_TYPE_OFFSET);
+
+
   }
+
+  printf("Detector type is %d\n", myDetectorType);
+
+  
+  //  return OK;
 
   if (b) {
+
+
+    resetPLL();
+
+  bus_w16(CONTROL_REG, SYNC_RESET);
+  bus_w16(CONTROL_REG, 0);
+  bus_w16(CONTROL_REG, GB10_RESET_BIT);
+  bus_w16(CONTROL_REG, 0);
+
 #ifdef MCB_FUNCS
 	 printf("\nBoard Revision:0x%x\n",(bus_r(PCB_REV_REG)&BOARD_REVISION_MASK));
-    initDetector();
+	 //  initDetector();
     printf("Initializing Detector\n");
-    bus_w16(CONTROL_REG, SYNC_RESET); // reset registers
+    //bus_w16(CONTROL_REG, SYNC_RESET); // reset registers
 #endif
 
 
-    testFpga();
-    testRAM();
-    printf("ADC_SYNC_REG:%x\n",bus_r(ADC_SYNC_REG));
+    // testFpga();
+    // testRAM();
+    // printf("ADC_SYNC_REG:%x\n",bus_r(ADC_SYNC_REG));
     //moench specific
   
     //  setPhaseShiftOnce(); //firmware.h
 
-
     prepareADC(); // server_funcs
-    setADC(-1); //already does setdaqreg and clean fifo 
-    setSettings(GET_SETTINGS,-1); 
+    //setADC(-1); //already does setdaqreg and clean fifo 
+    // setSettings(GET_SETTINGS,-1); 
 
+    initDac(0);    initDac(8); //initializes the two dacs
+ 
     //Initialization
-    setFrames(1);
-    setTrains(1);
-    setExposureTime(1e3);
-    setPeriod(1E6);
-    setDelay(0);
-    setGates(0);
+    setFrames(-1);
+    setTrains(-1);
+    setExposureTime(-1);
+    setPeriod(-1);
+    setDelay(-1);
+    setGates(-1);
 
     setTiming(GET_EXTERNAL_COMMUNICATION_MODE);
     setMaster(GET_MASTER);
@@ -161,9 +175,9 @@ int decode_function(int file_des) {
     printf("size of data received %d\n",n);
 #endif
 
-#ifdef VERBOSE
-  printf( "calling function fnum = %d %x\n",fnum,(unsigned int)(flist[fnum]));
-#endif
+  //#ifdef VERBOSE
+  printf( "calling function fnum = %d %x %x %x\n",fnum,(unsigned int)(flist[fnum]), (unsigned int)(flist[F_READ_REGISTER]),(unsigned int)(&read_register));
+  //#endif
   if (fnum<0 || fnum>255)
     fnum=255;
   retval=(*flist[fnum])(file_des);
@@ -941,7 +955,7 @@ int set_dac(int file_des) {
 	int n;
 	int val;
 	int idac=0;
-
+	int mV=0;
 	sprintf(mess,"Can't set DAC\n");
 
 	n = receiveDataOnly(file_des,arg,sizeof(arg));
@@ -951,82 +965,101 @@ int set_dac(int file_des) {
 	}
 	ind=arg[0];
 	imod=arg[1];
-
+	mV=arg[3];
 	n = receiveDataOnly(file_des,&val,sizeof(val));
 	if (n < 0) {
 		sprintf(mess,"Error reading from socket\n");
 		ret=FAIL;
 	}
 
-#ifdef VERBOSE
-	printf("Setting DAC %d of module %d to %d V\n", ind, imod, val);
-#endif 
+	//#ifdef VERBOSE
+	printf("Setting DAC %d of module %d to %d , mode %d\n", ind, imod, val, mV);
+	//#endif 
 
 	if (imod>=getNModBoard())
 		ret=FAIL;
 	if (imod<0)
 		imod=ALLMOD;
 
-#ifdef MCB_FUNCS
-	switch (ind) {
-	case V_DAC0 :
-		idac=VDAC0;
-		break;
-	case V_DAC1:
-		idac=VDAC1;
-		break;
-	case V_DAC2:
-		idac=VDAC2;
-		break;
-	case V_DAC3:
-		idac=VDAC3;
-		break;
-	case V_DAC4:
-		idac=VDAC4;
-		break;
-	case V_DAC5:
-		idac=VDAC5;
-		break;
-	case V_DAC6:
-		idac=VDAC6;
-		break;
-	case V_DAC7:
-		idac=VDAC7;
-		break;
-	case HV_POT:
-		idac=HIGH_VOLTAGE;
-		break;
+	
+	
 
-	default:
-		printf("Unknown DAC index %d for Moench\n",ind);
-		sprintf(mess,"Unknown DAC index %d for Moench\n",ind);
-		ret=FAIL;
-	    break;
-	}
+#ifdef MCB_FUNCS
+
+/* 	switch (ind) { */
+/* 	case V_DAC0 : */
+/* 		idac=VDAC0; */
+/* 		break; */
+/* 	case V_DAC1: */
+/* 		idac=VDAC1; */
+/* 		break; */
+/* 	case V_DAC2: */
+/* 		idac=VDAC2; */
+/* 		break; */
+/* 	case V_DAC3: */
+/* 		idac=VDAC3; */
+/* 		break; */
+/* 	case V_DAC4: */
+/* 		idac=VDAC4; */
+/* 		break; */
+/* 	case V_DAC5: */
+/* 		idac=VDAC5; */
+/* 		break; */
+/* 	case V_DAC6: */
+/* 		idac=VDAC6; */
+/* 		break; */
+/* 	case V_DAC7: */
+/* 		idac=VDAC7; */
+/* 		break; */
+
+/* 	case HV_POT: */
+/* 		idac=HIGH_VOLTAGE; */
+/* 		break; */
+
+/* 	default: */
+/* 		printf("Unknown DAC index %d for Moench\n",ind); */
+/* 		sprintf(mess,"Unknown DAC index %d for Moench\n",ind); */
+/* 		ret=FAIL; */
+/* 	    break; */
+/* 	} */
 
 	if (ret==OK) {
 		if (differentClients==1 && lockStatus==1) {
 			ret=FAIL;
 			sprintf(mess,"Detector locked by %s\n",lastClientIP);
 		} else{
-			if(idac==HIGH_VOLTAGE)
-				retval=initHighVoltageByModule(val,imod);
-			else
-				retval=initDACbyIndexDACU(idac,val,imod);
+		  
+		  if (mV) {
+		    if (val>2500)
+		      val=-1;
+		    if (val>0)
+		      val=16535*val/2500;
+		  } else if (val>16535)
+		    val=-1;
+		  
+		  retval=setDac(ind,val);
+/* 			if(idac==HIGH_VOLTAGE) */
+/* 				retval=initHighVoltageByModule(val,imod); */
+/* 			else */
+/* 				retval=initDACbyIndexDACU(idac,val,imod); */
 		}
 	}
 	if(ret==OK){
-		ret=FAIL;
-		if(idac==HIGH_VOLTAGE){
-			if(retval==-2)
-				strcpy(mess,"Invalid Voltage.Valid values are 0,90,110,120,150,180,200");
-			else if(retval==-3)
-				strcpy(mess,"Weird value read back or it has not been set yet\n");
-			else
-				ret=OK;
-		}//since v r saving only msb
-		else if ((retval-val)<=3 || val==-1)
-			ret=OK;
+	/* 	ret=FAIL; */
+/* 		if(idac==HIGH_VOLTAGE){ */
+/* 			if(retval==-2) */
+/* 				strcpy(mess,"Invalid Voltage.Valid values are 0,90,110,120,150,180,200"); */
+/* 			else if(retval==-3) */
+/* 				strcpy(mess,"Weird value read back or it has not been set yet\n"); */
+/* 			else */
+/* 				ret=OK; */
+/* 		}//since v r saving only msb */
+/* 		else if ((retval-val)<=3 || val==-1) */
+/* 			ret=OK; */
+	  
+	  if (mV)
+	    retval=2500*val/16535;
+
 	}
 #endif
 
@@ -1925,9 +1958,9 @@ int read_frame(int file_des) {
       return OK;
     }  else {
       //might add delay????
-      if(getFrames()>-2) {
+      if(getFrames()>-1) {
 	dataret=FAIL;
-	sprintf(mess,"no data and run stopped: %d frames left\n",(int)(getFrames()+2));
+	sprintf(mess,"no data and run stopped: %d frames left\n",(int)(getFrames()+1));
 	printf("%s\n",mess);
       } else {
 	dataret=FINISHED;
@@ -2204,6 +2237,10 @@ int get_time_left(int file_des) {
     case MEASUREMENT_TIME: 
       retval=getMeasurementTime();
       break;
+    case FRAMES_FROM_START:
+    case FRAMES_FROM_START_PG:
+      retval=getFramesFromStart();
+      break;
     default:
       ret=FAIL;
       sprintf(mess,"timer index unknown %d\n",ind);
@@ -2223,11 +2260,11 @@ int get_time_left(int file_des) {
   //#endif
 
   n = sendDataOnly(file_des,&ret,sizeof(ret));
-  if (ret!=OK) {
+  if (ret==FAIL) {
     n += sendDataOnly(file_des,mess,sizeof(mess));
-  } else {
+  } else
     n = sendDataOnly(file_des,&retval,sizeof(retval));
-  }
+
 #ifdef VERBOSE
 
   printf("data sent\n");
@@ -2386,23 +2423,33 @@ int set_speed(int file_des) {
   
   if (ret==OK) {
 
-    if (val>=0) {
+    if (val!=-1) {
       if (differentClients==1 && lockStatus==1 && val>=0) {
 	ret=FAIL;
 	sprintf(mess,"Detector locked by %s\n",lastClientIP);
       }  else {
 	switch (arg) {
 	case CLOCK_DIVIDER:
-	  retval=setClockDivider(val);
+	  retval=setClockDivider(val,0);
 	  break;
 
 	case PHASE_SHIFT:
-	  retval=phaseStep(val);
+	  retval=phaseStep(val,0);
 	  break;
 
 	case OVERSAMPLING:
 	  retval=setOversampling(val);
 	  break;
+
+	case ADC_CLOCK:
+	  retval=setClockDivider(val,1);
+	  break;
+
+	case ADC_PHASE:
+	  retval=phaseStep(val,1);
+	  break;
+
+
 
 	default:
 	  ret=FAIL;
@@ -2414,16 +2461,24 @@ int set_speed(int file_des) {
 
     switch (arg) {
     case CLOCK_DIVIDER:
-      retval=getClockDivider();
+      retval=getClockDivider(0);
       break;
 
     case PHASE_SHIFT:
-      retval=phaseStep(-1);
+      // retval=phaseStep(-1);
+      //ret=FAIL;
+      //sprintf(mess,"Cannot read phase",arg);
+      retval=-1;
       break;
 
-	case OVERSAMPLING:
-	  retval=setOversampling(-1);
-	  break;
+    case OVERSAMPLING:
+      retval=setOversampling(-1);
+      break;
+
+    case ADC_CLOCK:
+      retval=getClockDivider(1);
+      break;
+
 
     default:
       ret=FAIL;
@@ -3109,17 +3164,19 @@ int calibrate_pedestal(int file_des){
 
 int set_ctb_pattern(int file_des){
 
-	int ret=FAIL;
+  int ret=OK;//FAIL;
 	int retval=-1;
 	int n;
 	int mode;
 	uint64_t word, retval64, t;
 	int addr;
 	int level, start, stop, nl;
+	uint64_t pat[1024];
 
 	sprintf(mess,"Could not set pattern\n");
 
  	n = receiveDataOnly(file_des,&mode,sizeof(mode)); 
+	printf("pattern mode is %d\n",mode);
 	switch (mode) {
 
 	case 0: //sets word
@@ -3157,6 +3214,8 @@ int set_ctb_pattern(int file_des){
 	  n = receiveDataOnly(file_des,&nl,sizeof(nl)); 
 	  
 
+
+	  printf("level %d start %x stop %x nl %d\n",level, start, stop, nl);
   /** Sets the pattern or loop limits in the CTB
       @param level -1 complete pattern, 0,1,2, loop level
       @param start start address if >=0
@@ -3189,8 +3248,11 @@ int set_ctb_pattern(int file_des){
       @param addr wait address, -1 gets
       @returns actual value
   */
+	  printf("wait addr %d %x\n",level, addr);
 	  retval=setPatternWaitAddress(level,addr);
+	  printf("ret: wait addr %d %x\n",level, retval);
 	  ret=OK;
+	  n = sendDataOnly(file_des,&ret,sizeof(ret));
 	  if (ret==FAIL)
 	    n += sendDataOnly(file_des,mess,sizeof(mess));
 	  else {
@@ -3226,8 +3288,28 @@ int set_ctb_pattern(int file_des){
 	  break;
 
 
+
+	case 4:
+	  n = receiveDataOnly(file_des,pat,sizeof(pat)); 
+	  for (addr=0; addr<1024; addr++)
+	    writePatternWord(addr,word);
+	  ret=OK;
+	  retval=0;
+	  n = sendDataOnly(file_des,&ret,sizeof(ret));
+	  if (ret==FAIL)
+	    n += sendDataOnly(file_des,mess,sizeof(mess));
+	  else
+	    n += sendDataOnly(file_des,&retval64,sizeof(retval64));
+
+	  break;
+
+	  
+
+
+
 	default:
 	  ret=FAIL;
+	  printf(mess);
 	  sprintf(mess,"%s - wrong mode %d\n",mess, mode);
 	  n = sendDataOnly(file_des,&ret,sizeof(ret));
 	  n += sendDataOnly(file_des,mess,sizeof(mess));

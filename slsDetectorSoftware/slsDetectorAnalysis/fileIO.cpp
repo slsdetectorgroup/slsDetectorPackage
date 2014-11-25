@@ -78,13 +78,15 @@ int fileIO::writeDataFile(string fname, int *data){
 
 int fileIO::writeDataFile(ofstream &outfile, int *data, int offset){
   
-  cout << "Write raw file...." << endl;
+  //  cout << "Write raw file...." << endl;
   return fileIOStatic::writeDataFile(outfile, getTotalNumberOfChannels(), data, offset);
 }
 
 
 
 int fileIO::writeDataFile(void *data, int iframe) {
+
+  // cout << "fileIO writeDataFile" << endl;
 
 	if (iframe<0)
 		iframe=frameIndex;

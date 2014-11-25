@@ -89,8 +89,8 @@ int copyChip(sls_detector_chip *destChip, sls_detector_chip *srcChip);
 int copyModule(sls_detector_module *destMod, sls_detector_module *srcMod);
 
 /* Register commands */
-int clearDACSregister(int imod );
-int nextDAC(int imod );
+/* int clearDACSregister(int imod ); */
+/* int nextDAC(int imod ); */
 int clearCSregister(int imod );
 int setCSregister(int imod );
 int nextChip(int imod );
@@ -103,16 +103,16 @@ int selChip(int chip,int imod );
 int selMod(int mod,int imod );
 
 /* DACs routines */
-int program_one_dac(int addr, int value,int imod );
-int set_one_dac(int imod);
-int initDAC(int dac_addr, int value,int imod );
-int initDACs(int* v,int imod );
-int setSettings(int i,int imod);
-int initDACbyIndex(int ind,int val, int imod);
-int initDACbyIndexDACU(int ind,int val, int imod);
-int getDACbyIndexDACU(int ind,  int imod);
-int getThresholdEnergy();
-int setThresholdEnergy(int ethr);
+/* int program_one_dac(int addr, int value,int imod ); */
+/* int set_one_dac(int imod); */
+/* int initDAC(int dac_addr, int value,int imod ); */
+/* int initDACs(int* v,int imod ); */
+/* int setSettings(int i,int imod); */
+/* int initDACbyIndex(int ind,int val, int imod); */
+/* int initDACbyIndexDACU(int ind,int val, int imod); */
+/* int getDACbyIndexDACU(int ind,  int imod); */
+/* int getThresholdEnergy(); */
+/* int setThresholdEnergy(int ethr); */
 
 /* Other DAC index routines*/
 int getTemperatureByModule(int tempSensor, int imod);

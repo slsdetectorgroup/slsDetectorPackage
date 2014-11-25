@@ -4,6 +4,7 @@ if [ "$#" -eq 0 ]; then
 fi
 infile=$1
 outfile=$infile"at"
+outfilebin=$infile"bin"
 if [ "$#" -ge 2 ]; then
     outfile=$2
 fi
@@ -14,7 +15,7 @@ fi
 
 if [ -f "$infile" ]
 then
-gcc -DINFILE="\"$infile\"" -DOUTFILE="\"$outfile\"" -o $exe generator.c ; ./$exe ; rm $exe
+gcc -DINFILE="\"$infile\"" -DOUTFILE="\"$outfile\""  -DOUTFILEBIN="\"$outfilebin\"" -o $exe generator.c ; ./$exe ; rm $exe
 else
 	echo "$infile not found."
 fi

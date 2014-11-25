@@ -54,7 +54,7 @@ int init_detector(int b) {
 #endif
 	}else{
 		  Feb_Interface_FebInterface();
-		  //Feb_Control_FebControl();
+		  Feb_Control_Init();
 		 // printf("FEb control constructor done\n");
 		 /* Beb_Beb(-1);
 		  printf("BEB constructor done\n");*/
@@ -2275,9 +2275,9 @@ int get_run_status(int file_des) {
 	enum runStatus s;
 	sprintf(mess,"getting run status\n");
 
-//#ifdef VERBOSE
+#ifdef VERBOSE
 	printf("Getting status\n");
-//#endif
+#endif
 #ifdef SLS_DETECTOR_FUNCTION_LIST
 	s= getRunStatus();printf("status:%d\n");
 #endif

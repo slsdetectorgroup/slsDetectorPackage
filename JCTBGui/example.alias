@@ -1,0 +1,176 @@
+# this is a comment (every line starting with no keyword is such)
+
+# space in label not allowed (tbf)
+
+#BITX bitName plotFlag plotColorRGB (from 0!)
+
+
+#BIT1 compTestOUT  1 2  #you can put comments also here (leave a space bef. #)
+
+BIT1 compTestIN
+
+BIT32 curON
+
+BIT2 side_clk
+
+BIT3 side_din
+
+BIT4 clear_shr
+
+BIT5 bottom_din
+
+BIT6 bottom_clk
+
+BIT7 gHF
+
+BIT31 bypassCDS
+
+BIT8 ENprechPRE
+
+BIT9 res
+
+BIT30 pulseOFF
+
+BIT27 connCDS #INVERTED NAME to match logical behaviour, chipname disconnCDS
+
+BIT24 Dsg_1
+
+BIT25 Dsg_2
+
+BIT23 Dsg_3
+
+BIT10 sto0
+
+BIT11 sto1
+
+BIT12 sto2
+
+BIT13 resCDS
+
+BIT14 prechargeConnect
+
+BIT15 pulse
+
+BIT21 PCT_mode
+
+BIT16 res_DGS
+
+#BIT26 dbit1
+
+#BIT27 dbit0
+
+#CMOS_IN
+
+#CMOS_IN1 out_DGS
+
+#LVDS_IN
+
+# now the names of ADC channels (lt. 12 characters)
+
+ADC1 T_boa.(C)
+
+ADC2 Va+
+
+ADC3 Vdd_ps
+
+ADC4 Vsh
+
+ADC5 Vcc_int
+
+ADC6 Vcc_iochip
+
+ADC7 Vcc1.8A
+
+ADC8 Vcc1.8D
+
+ADC9 T_chip
+
+ADC10 _nc 
+
+ADC11 _nc 
+
+ADC12 _Vcc_io # 0.068 ohm resistor
+
+ADC13 _nc  # 0.068 ohm resistor
+
+ADC14 _Va # 0.068 ohm resistor
+
+ADC15 _nc 
+
+ADC16 _vdd_ana
+
+I1 _I_va(mA) # this values are computed as spec.
+
+I1a 2  #by the following lines ((ADCa-ADCb)/R)
+
+I1b 14  # all the values comes mainly from the adapter board 
+
+I1r 0.068
+
+I2 _I_vdd(mA) #
+
+I2a 3
+
+I2b 16
+
+I2r 0.068 #
+
+I3 _nn
+
+I3a 14
+
+I3b 2
+
+I3r 0.068
+
+I4 _I_io(mA)
+
+I4a 6
+
+I4b 12
+
+I4r 0.068 #shuld be 5000000 for mA readout
+
+# now the names of DAC channels (lt. 12 characters)
+
+DAC7 vbp_colbuf
+
+DAC8 vIpreCDS
+
+DAC9 vIpre
+
+DAC10 VprechPre
+
+DAC11 prechargeV
+
+DAC12 ibias_SFP
+
+DAC1 vcasc_SFP
+
+DAC3 VPH
+
+DAC4 VPL
+
+DAC2 ibias_CS
+
+DAC5 vrefDGS
+
+DAC6 vIpreDGS
+
+DAC1 vcascSFP
+
+DAC13 s2d_vcascp
+
+#POT1 s2d_vcascn
+
+DAC14 vin_com
+
+DAC15 vout_com
+
+DAC16 vb_sda
+
+# number (1-16) of the adc "reading" the pot controlled VR. (should be always 2)
+
+DACFORPOTVR 2
+
+#SCHEMATIC jungfrau01_ADP.pdf #those files are located in doc/ folder

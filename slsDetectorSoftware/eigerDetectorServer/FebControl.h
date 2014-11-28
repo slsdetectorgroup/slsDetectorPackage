@@ -77,7 +77,7 @@ void Feb_Control_Set_Master();
   int Feb_Control_CheckModuleAddresses(struct Module* m);
   int Feb_Control_AddModule(unsigned int module_number, unsigned int top_address);
   /*int Feb_Control_AddModule(unsigned int module_number, unsigned int top_address, unsigned int bottom_address, int half_module=0);*/
-  int Feb_Control_AddModule1(unsigned int module_number, unsigned int top_address, unsigned int bottom_address, int half_module);
+  int Feb_Control_AddModule1(unsigned int module_number, int bottom_enable, unsigned int top_address, unsigned int bottom_address, int half_module);
 
   int  Feb_Control_GetDACNumber(char* s, unsigned int* n);
   int  Feb_Control_SendDACValue(unsigned int dst_num, unsigned int ch, unsigned int* value);
@@ -147,6 +147,8 @@ void Feb_Control_Set_Master();
   
 
   int Feb_Control_Reset();
+  int Feb_Control_PrepareForAcquisition();
+
   int Feb_Control_StartAcquisition();
   int Feb_Control_StopAcquisition();
   int Feb_Control_AcquisitionInProgress();

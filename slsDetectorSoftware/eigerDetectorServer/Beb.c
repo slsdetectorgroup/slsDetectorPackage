@@ -185,7 +185,7 @@ int Beb_InitBebInfos(){//file name at some point
 int Beb_SetBebSrcHeaderInfos(unsigned int beb_number, int ten_gig, char* src_mac, char* src_ip,unsigned int src_port){
   //so that the values can be reset externally for now....
 
-  unsigned int i = Beb_GetBebInfoIndex(beb_number);
+  unsigned int i = 1;/*Beb_GetBebInfoIndex(beb_number);*/
  /******* if(!i) return 0;****************************/ //i must be greater than 0, zero is the global send
   BebInfo_SetHeaderInfo(&beb_infos[i],ten_gig,src_mac,src_ip,src_port);
 
@@ -262,9 +262,10 @@ unsigned int Beb_GetBebInfoIndex(unsigned int beb_numb){
   unsigned int i;
   for(i=1;i<bebInfoSize;i++)
 	  if(beb_numb==BebInfo_GetBebNumber(&beb_infos[i])){
-		  printf("found beb index:%d, for beb number:%d\n",i,beb_numb);
+		  printf("*****found beb index:%d, for beb number:%d\n",i,beb_numb);
 		  return i;
 	  }
+  printf("*****Returning 0\n");
   return 0;
 }
 
@@ -324,7 +325,8 @@ int Beb_SetByteOrder(){
 
 
 int Beb_SetUpUDPHeader(unsigned int beb_number, int ten_gig, unsigned int header_number, char* dst_mac, char* dst_ip, unsigned int dst_port){
-  unsigned int i = Beb_GetBebInfoIndex(beb_number);
+  unsigned int i = 1;/*Beb_GetBebInfoIndex(beb_number);*/
+
   /***********************************if(!i) return 0; *************************************///i must be greater than 0, zero is the global send
 
   Beb_send_ndata   = 14;
@@ -341,7 +343,7 @@ int Beb_SetUpUDPHeader(unsigned int beb_number, int ten_gig, unsigned int header
 
 
 int Beb_SetHeaderData(unsigned int beb_number, int ten_gig, char* dst_mac, char* dst_ip, unsigned int dst_port){
-  unsigned int i = Beb_GetBebInfoIndex(beb_number);
+  unsigned int i = 1;/*Beb_GetBebInfoIndex(beb_number);*/
   /***********************************if(!i) return 0; *************************************///i must be greater than 0, zero is the global send
   return Beb_SetHeaderData1(BebInfo_GetSrcMAC(&beb_infos[i],ten_gig),BebInfo_GetSrcIP(&beb_infos[i],ten_gig),BebInfo_GetSrcPort(&beb_infos[i],ten_gig),dst_mac,dst_ip,dst_port);
 }
@@ -473,7 +475,7 @@ void Beb_AdjustIPChecksum(struct udp_header_type *ip){
 
 int Beb_SendMultiReadRequest(unsigned int beb_number, unsigned int left_right, int ten_gig, unsigned int dst_number, unsigned int npackets, unsigned int packet_size, int stop_read_when_fifo_empty){
 
-  unsigned int i = Beb_GetBebInfoIndex(beb_number); //zero is the global send
+  unsigned int i = 1;/*Beb_GetBebInfoIndex(beb_number); //zero is the global send*/
 
   Beb_send_ndata   = 3;
     if(left_right == 1)      Beb_send_data[0] = 0x00040000;

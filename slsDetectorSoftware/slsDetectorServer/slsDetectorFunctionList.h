@@ -107,6 +107,8 @@ int calibratePedestal(int frames);
 #endif
 
 
+
+
 int copyModule(sls_detector_module *destMod, sls_detector_module *srcMod);
 
 int calculateDataBytes();
@@ -127,6 +129,7 @@ enum masterFlags setMaster(enum masterFlags arg);
 enum synchronizationMode setSynchronization(enum synchronizationMode arg);
 
 #ifdef EIGERD
+int startReceiver(int d);
 void setExternalGating(int enable[]);
 void setAllTrimbits(int val);
 int getAllTrimbits();

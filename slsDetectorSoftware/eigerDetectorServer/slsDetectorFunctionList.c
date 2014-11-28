@@ -54,7 +54,8 @@ int default_dac_values[16] = {0,2000,2000,1250,700,1278,500,500,2000,500,500,550
 
 
 enum masterFlags  masterMode=NO_MASTER;
-enum masterFlags  trialMasterMode=NO_MASTER;
+int bottom = 0;
+//enum masterFlags  trialMasterMode=NO_MASTER;
 
 int initDetector(){
 	  int imod,i,n;
@@ -137,20 +138,25 @@ int initDetector(){
   Feb_Control_SetTestModeVariable(0);
 
   Feb_Control_CheckSetup();
-  //if(!Feb_Control_IsBottomModule()){
+
+  //top or bottom
+  bottom = Feb_Control_IsBottomModule();
+  if(bottom)
+	  printf("BOTTOM ***************\n");
+  else
+	  printf("TOP ***************\n");
+
+
   //if(getDetectorNumber()==0xbeb031){
-	  printf("**************  master ********************\n");
-	  trialMasterMode = IS_MASTER;
-	  Feb_Control_Set_Master();
-  //}
+	 // printf("**************  master ********************\n");
+	 // trialMasterMode = IS_MASTER;
+	  //Feb_Control_Set_Master();
+ // }
   //else printf("**************  slave ********************\n");
 
 
 
-  if(Feb_Control_IsBottomModule())
-	  printf("BOTTOM ***************\n");
-  else
-	  printf("TOP ***************\n");
+
    return 1;
 
 }
@@ -469,38 +475,64 @@ enum detectorSettings setSettings(enum detectorSettings sett, int imod){
 }
 
 
-
+int startReceiver(int d){
+	//if(trialMasterMode == IS_MASTER)
+	if(!bottom)
+		Feb_Control_PrepareForAcquisition();
+	return OK;
+}
 
 
 int startStateMachine(){
-int ret;
-	if(trialMasterMode == IS_MASTER){
+int ret;int i=0;
+	//if(trialMasterMode == IS_MASTER){
+		if(!bottom){
 		printf("Going to start acquisition\n");
 		Feb_Control_StartAcquisition();
 	}
 
-	//if(trialMasterMode == IS_MASTER){
+	//do not read status here, cannot get images then
+
+	////if(trialMasterMode == IS_MASTER){
 		printf("requesting images\n");
 		ret =  startReadOut();
-	//}
-	if(trialMasterMode == IS_MASTER){
-		/*for(i=0;i<3;i++)
-			usleep(1000000);*/
-		while(getRunStatus() == IDLE);
-		printf("Acquiring..\n");
-	}
-	printf("Returning\n");
+	////}
+	//if(trialMasterMode == IS_MASTER){
+		if(!bottom){
 
-	return ret;
+			/*
+			if(getRunStatus() == IDLE){
+				for(i=0;i<100000;i++){
+					usleep(1000);
+					if(getRunStatus() != IDLE){
+						printf("*****i=%d\n",i);
+						break;
+					}
+				}
+				//while(getRunStatus() == IDLE);
+				//}
+				printf("*****Acquiring...\n");
+			}
+
+			*/
+
+				while(getRunStatus() == IDLE);
+				printf("*****Acquiring...\n");
+
+
+		}
+			printf("****Returning\n");
+
+			return ret;
 }
 
 
 int stopStateMachine(){
-	if(trialMasterMode == IS_MASTER){
+	//if(trialMasterMode == IS_MASTER){
 		printf("Going to stop acquisition\n");
 		if(Feb_Control_StopAcquisition())
 			return OK;
-	}else return OK;
+	//}else return OK;
 
 	return FAIL;
 }
@@ -529,16 +561,16 @@ int startReadOut(){
 
 
 enum runStatus getRunStatus(){
-	if(trialMasterMode == IS_MASTER){
+//if(trialMasterMode == IS_MASTER){
 	int i = Feb_Control_AcquisitionInProgress();
 	if(i== 0){
 		//printf("IDLE\n");
 		return IDLE;
 	}else{
-		//printf("RUNNING\n");
+		printf("RUNNING\n");
 		return RUNNING;
 	}
-	}
+//}else printf("***** not master*** \n");
 
 	return IDLE;
 }
@@ -548,7 +580,7 @@ enum runStatus getRunStatus(){
 char *readFrame(int *ret, char *mess){
 	if(!Feb_Control_WaitForFinishedFlag(5000))
 		printf("error in waiting for finished flag\n");
-	printf("acquisition finished\n");
+	printf("Acquisition finished\n");
 
 	*ret = (int)FINISHED;
 	return NULL;

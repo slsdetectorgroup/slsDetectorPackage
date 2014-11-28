@@ -1496,6 +1496,8 @@ int multiSlsDetector::startAndReadAllNoWait(){
 	  ret1=FAIL;
       }
   }
+
+
   i=thisMultiDetector->masterPosition;
   if (thisMultiDetector->masterPosition>=0) {
     if (detectors[i]) {

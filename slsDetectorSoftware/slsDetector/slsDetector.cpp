@@ -6190,7 +6190,7 @@ int slsDetector::startReceiver(){
 				setErrorMask((getErrorMask())|(COULDNOT_START_RECEIVER));
 		}
 	}
-	if((ret==OK)&& (thisDetector->myDetectorType != EIGER))
+	if((ret==OK))//&& (thisDetector->myDetectorType != EIGER))
 		ret=detectorSendToReceiver(true);
 
 	return ret;

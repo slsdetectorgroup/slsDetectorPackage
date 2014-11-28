@@ -399,7 +399,9 @@ enum speedVariable {
   TOT_DUTY_CYCLE, /**< wait states for bus read */
   SET_SIGNAL_LENGTH, /**< set/clear signal length */
   PHASE_SHIFT, /**< adds phase shift */
-  OVERSAMPLING /**< oversampling for analog detectors */
+  OVERSAMPLING, /**< oversampling for analog detectors */
+  ADC_CLOCK, /**< adc clock divider */
+  ADC_PHASE /**< adc clock phase */
 };
 
 

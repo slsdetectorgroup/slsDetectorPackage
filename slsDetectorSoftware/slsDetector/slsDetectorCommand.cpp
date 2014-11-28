@@ -694,6 +694,10 @@ slsDetectorCommand::slsDetectorCommand(slsDetectorUtils *det)  {
   i++;
 
 
+  descrToFuncMap[i].m_pFuncName="dac"; //
+  descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdDAC;
+  i++;
+
 
   /* r/w timers */
 
@@ -782,6 +786,9 @@ slsDetectorCommand::slsDetectorCommand(slsDetectorUtils *det)  {
   descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdTimeLeft;
   i++;
 
+  descrToFuncMap[i].m_pFuncName="nframes"; //
+  descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdTimeLeft;
+  i++;
 
   /* speed */
 
@@ -810,6 +817,14 @@ slsDetectorCommand::slsDetectorCommand(slsDetectorUtils *det)  {
   i++;
 
   descrToFuncMap[i].m_pFuncName="oversampling"; //
+  descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdSpeed;
+  i++;
+
+  descrToFuncMap[i].m_pFuncName="adcclk"; //
+  descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdSpeed;
+  i++;
+
+  descrToFuncMap[i].m_pFuncName="adcphase"; //
   descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdSpeed;
   i++;
 
@@ -955,7 +970,6 @@ slsDetectorCommand::slsDetectorCommand(slsDetectorUtils *det)  {
   descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdPattern;
   i++;
 
-  
   
   
   
@@ -3353,7 +3367,12 @@ string slsDetectorCommand::cmdDAC(int narg, char *args[], int action) {
   char answer[1000];
   int mode=0;
 
-  if (cmd=="vthreshold")
+  int idac=-1;
+  if (sscanf(args[0],"dac:%d",&idac)==1) {
+    printf("chiptestboard!\n");
+    dac=(dacIndex)idac;
+  }
+  else if (cmd=="vthreshold")
     dac=THRESHOLD;
   else if (cmd=="vcalibration")
     dac=CALIBRATION_PULSE;
@@ -3391,6 +3410,7 @@ string slsDetectorCommand::cmdDAC(int narg, char *args[], int action) {
 	  dac=G_VREF_COMP;
   else if (cmd=="ib_test_c")
 	  dac=G_IB_TESTC;
+
   else if (cmd=="dac0")
 	  dac=V_DAC0;
   else if (cmd=="dac1")
@@ -3407,6 +3427,10 @@ string slsDetectorCommand::cmdDAC(int narg, char *args[], int action) {
 	  dac=V_DAC6;
   else if (cmd=="dac7")
 	  dac=V_DAC7;
+
+
+
+
   else if (cmd== "vsvp")
 	  dac=E_SvP;
   else if (cmd=="vsvn")
@@ -3825,6 +3849,8 @@ string slsDetectorCommand::cmdTimeLeft(int narg, char *args[], int action) {
     index=ACTUAL_TIME;
   else if (cmd=="timestamp")
     index=MEASUREMENT_TIME;
+  else if (cmd=="nframes")
+    index=FRAMES_FROM_START;
   else
     return string("could not decode timer ")+cmd;
 
@@ -3909,6 +3935,10 @@ string slsDetectorCommand::cmdSpeed(int narg, char *args[], int action) {
     index=PHASE_SHIFT;
   else if (cmd=="oversampling")
     index=OVERSAMPLING;
+  else if (cmd=="adcclk")
+    index=ADC_CLOCK;
+  else if (cmd=="adcphase")
+    index=ADC_PHASE;
   else
     return string("could not decode speed variable ")+cmd;
 
@@ -4316,31 +4346,407 @@ string slsDetectorCommand::helpPattern(int narg, char *args[], int action) {
 
 string slsDetectorCommand::cmdPattern(int narg, char *args[], int action) {
 
+  
+  if (action==HELP_ACTION)
+    return helpPattern(narg, args, action);
   /********
 	   
   Must implement set ctb functions in slsDetector and multiSlsDetector
   
   **********/
+  string fname;
+  int addr, start, stop, n;
+  uint64_t word, t;
+
+  myDet->setOnline(ONLINE_FLAG);
+
   ostringstream os;
-  if (cmd=="pattern") ;
-  	else if (cmd=="patword") ;
-	else if (cmd=="patioctrl") ;
-	else if (cmd=="patclkctrl") ;
-	else if (cmd=="patlimits") ;
-	else if (cmd=="patloop0") ;
-	else if (cmd=="patloop1") ;
-	else if (cmd=="patloop2") ;
-	else if (cmd=="patnloop0") ;
-	else if (cmd=="patnloop1") ;
-	else if (cmd=="patnloop2") ;
-	else if (cmd=="patwait0") ;
-	else if (cmd=="patwait1") ;
-	else if (cmd=="patwait2") ;
-	else if (cmd=="patwaittime0") ;
-	else if (cmd=="patwaittime1") ;
-	else if (cmd=="patwaittime2") ;
-	else  return helpPattern(narg, args, action);
+  if (cmd=="pattern") {
+    //get fname fron stdin
+    
+    if (action==PUT_ACTION) {
+      fname=string(args[1]);
+      os << myDet->setCTBPattern(fname);
+    }   else if (action==GET_ACTION) 
+      os << "Cannot get";
+  }  	else if (cmd=="patword") {
+
+    if (action==PUT_ACTION) {
+      //get addr, word from stdin
+      
+      if(narg<3) 
+	return string("wrong usage: should specify both address and value (hexadecimal fomat) ");
+      
+	if (sscanf(args[1],"%x",&addr))
+	  ;
+	else
+	  return string("Could not scan address (hexadecimal fomat) ")+string(args[1]);
+      
+	if (sscanf(args[2],"%llx",&word))
+	  ;
+	else
+	  return string("Could not scan value  (hexadecimal fomat) ")+string(args[2]);
+      
+
+	os << hex << myDet->setCTBWord(addr,word) << dec;    
+    }   else if (action==GET_ACTION) 
+      os << "Cannot get";
+    
+      
+  }	else if (cmd=="patioctrl") {
+    //get word from stdin
+    
+    if (action==PUT_ACTION) {
+      
+      if (sscanf(args[1],"%llx",&word))
+	;
+      else
+	return string("Could not scan value  (hexadecimal fomat) ")+string(args[1]);
+      
+
+      myDet->setCTBWord(-1,word);
+    }
+
+    os << hex << myDet->setCTBWord(-1,-1) << dec;
+  }	else if (cmd=="patclkctrl") {
+    //get word from stdin
+
+
+
+    if (action==PUT_ACTION) {
+      
+      if (sscanf(args[1],"%llx",&word))
+	;
+      else
+	return string("Could not scan value  (hexadecimal fomat) ")+string(args[1]);
+      
+
+      myDet->setCTBWord(-2,word);
+    }
+
+    os << hex << myDet->setCTBWord(-2,-1) << dec;
+
+
+  } else if (cmd=="patlimits") {
+    //get start, stop from stdin  
+    if (action==PUT_ACTION) {
+      if(narg<3)	return string("wrong usage: should specify both start and stop address (hexadecimal fomat) ");
+      n=-1;
+      if (sscanf(args[1],"%x",&start))
+      ;
+    else
+      return string("Could not scan start address  (hexadecimal fomat) ")+string(args[1]);
+
+    
+      if (sscanf(args[2],"%x",&stop))
+	;
+      else
+	return string("Could not scan stop address  (hexadecimal fomat) ")+string(args[2]);
+      
+      myDet->setCTBPatLoops(-1,start, stop,n);
+    }
+    
+    start=-1;
+    stop=-1;
+    n=-1;
+    myDet->setCTBPatLoops(-1,start, stop,n);
+    os << hex << start << " " << stop;// << " "<< dec << n ; 
+  } else if (cmd=="patloop0") {
+    //get start, stop from stdin
+
+
+    //get start, stop from stdin  
+    if (action==PUT_ACTION) {
+      if(narg<3)	return string("wrong usage: should specify both start and stop address (hexadecimal fomat) ");
+      n=-1;
+      if (sscanf(args[1],"%x",&start))
+      ;
+    else
+      return string("Could not scan start address  (hexadecimal fomat) ")+string(args[1]);
+
+    
+      if (sscanf(args[2],"%x",&stop))
+	;
+      else
+	return string("Could not scan stop address  (hexadecimal fomat) ")+string(args[2]);
+      
+      myDet->setCTBPatLoops(0,start, stop,n);
+    }
+    
+    start=-1;
+    stop=-1;
+    n=-1;  
+    myDet->setCTBPatLoops(0,start, stop,n);
+    os << hex << start << " " << stop;// << " "<< dec << n ; 
+
+
+  } else if (cmd=="patloop1") {
+
+    //get start, stop from stdin  
+    if (action==PUT_ACTION) {
+      if(narg<3)	return string("wrong usage: should specify both start and stop address (hexadecimal fomat) ");
+      n=-1;
+      if (sscanf(args[1],"%x",&start))
+      ;
+    else
+      return string("Could not scan start address  (hexadecimal fomat) ")+string(args[1]);
+
+    
+      if (sscanf(args[2],"%x",&stop))
+	;
+      else
+	return string("Could not scan stop address  (hexadecimal fomat) ")+string(args[2]);
+      
+      myDet->setCTBPatLoops(1,start, stop,n);
+    }
+    
+    start=-1;
+    stop=-1;
+    n=-1; 
+    myDet->setCTBPatLoops(1,start, stop,n);
+    os << hex << start << " " << stop;// << " "<< dec << n ; 
+
+
+
+    
+  } else if (cmd=="patloop2") {
+
+    //get start, stop from stdin  
+    if (action==PUT_ACTION) {
+      if(narg<3)	return string("wrong usage: should specify both start and stop address (hexadecimal fomat) ");
+      n=-1;
+      if (sscanf(args[1],"%x",&start))
+      ;
+    else
+      return string("Could not scan start address  (hexadecimal fomat) ")+string(args[1]);
+
+    
+      if (sscanf(args[2],"%x",&stop))
+	;
+      else
+	return string("Could not scan stop address  (hexadecimal fomat) ")+string(args[2]);
+      
+      myDet->setCTBPatLoops(2,start, stop,n) ;
+    }
+    
+    start=-1;
+    stop=-1;
+    n=-1; 
+    myDet->setCTBPatLoops(2,start, stop,n);
+    os << hex << start << " " << stop << dec;// << " "<< dec << n ; 
+
+
+  } else if (cmd=="patnloop0") {
+    start=-1;
+    stop=-1;
+
+    
+   if (action==PUT_ACTION) {
+     
+      if (sscanf(args[1],"%d",&n))
+      ;
+    else
+      return string("Could not scan number of loops ")+string(args[1]);
+
+    
+      myDet->setCTBPatLoops(0,start, stop,n) ;
+    }
+
+
+    
+    start=-1;
+    stop=-1;
+    n=-1;  
+    myDet->setCTBPatLoops(0,start, stop,n);
+    os << n ; 
+  } else if (cmd=="patnloop1") {
+
+
+    start=-1;
+    stop=-1;
+
+    
+   if (action==PUT_ACTION) {
+     
+      if (sscanf(args[1],"%d",&n))
+      ;
+    else
+      return string("Could not scan number of loops ")+string(args[1]);
+
+    
+      myDet->setCTBPatLoops(1,start, stop,n) ;
+    }
+
+
+    
+    start=-1;
+    stop=-1;
+    n=-1; 
+    myDet->setCTBPatLoops(1,start, stop,n);
+    os << n ; 
+
+
+
+
+  }	else if (cmd=="patnloop2") {
+
+
+    start=-1;
+    stop=-1;
+
+    
+   if (action==PUT_ACTION) {
+     
+      if (sscanf(args[1],"%d",&n))
+      ;
+    else
+      return string("Could not scan number of loops ")+string(args[1]);
+
+    
+      myDet->setCTBPatLoops(2,start, stop,n) ;
+    }
+
+
+    
+    start=-1;
+    stop=-1;
+    n=-1; 
+    myDet->setCTBPatLoops(2,start, stop,n);
+    os << n ; 
+
+
+
+  } else if (cmd=="patwait0") {
+
+
+
+
+   if (action==PUT_ACTION) {
+     
+      if (sscanf(args[1],"%x",&addr))
+      ;
+    else
+      return string("Could not scan wait address (hex format)")+string(args[1]);
+
+    
+     myDet->setCTBPatWaitAddr(0,addr);
+    }
+
+
+    
+   os <<   hex << myDet->setCTBPatWaitAddr(0,-1) << dec; 
+
+
+
+
+
+
+  } else if (cmd=="patwait1") {
+
+
+   if (action==PUT_ACTION) {
+     
+      if (sscanf(args[1],"%x",&addr))
+      ;
+    else
+      return string("Could not scan wait address (hex format)")+string(args[1]);
+
+    
+     myDet->setCTBPatWaitAddr(1,addr);
+    }
+
+
+    
+   os <<  hex <<  myDet->setCTBPatWaitAddr(1,-1) << dec; 
+
+
+
+  } else if (cmd=="patwait2") {
+
+   if (action==PUT_ACTION) {
+     
+      if (sscanf(args[1],"%x",&addr))
+      ;
+    else
+      return string("Could not scan wait address (hex format)")+string(args[1]);
+
+    
+     myDet->setCTBPatWaitAddr(2,addr);
+    }
+
+
+    
+   os << hex <<   myDet->setCTBPatWaitAddr(2,-1) << dec ; 
+
+  }	else if (cmd=="patwaittime0") {
+
+
+
+
+
+   if (action==PUT_ACTION) {
+     
+      if (sscanf(args[1],"%lld",&t))
+      ;
+    else
+      return string("Could not scan wait time")+string(args[1]);
+
+    
+     myDet->setCTBPatWaitTime(0,t);
+    }
+
+
+    
+    os <<  myDet->setCTBPatWaitTime(0,-1); 
+
+
+
+
+
+
+
+  } else if (cmd=="patwaittime1") {
+
+   if (action==PUT_ACTION) {
+     
+      if (sscanf(args[1],"%lld",&t))
+      ;
+    else
+      return string("Could not scan wait time ")+string(args[1]);
+
+    
+     myDet->setCTBPatWaitTime(1,t);
+    }
+
+
+    
+    os <<  myDet->setCTBPatWaitTime(1,-1); 
+
+
+
+  }	else if (cmd=="patwaittime2") {
+   if (action==PUT_ACTION) {
+     
+      if (sscanf(args[1],"%lld",&t))
+      ;
+    else
+      return string("Could not scan wait time ")+string(args[1]);
+
+    
+     myDet->setCTBPatWaitTime(2,t);
+    }
+
+
+    
+    os <<  myDet->setCTBPatWaitTime(2,-1); 
+
+  } 
+else  return helpPattern(narg, args, action);
   
+
+
+
+
   return os.str();
 
 }

@@ -4843,9 +4843,30 @@ int multiSlsDetector::enableTenGigabitEthernet(int i){
   */
 int multiSlsDetector::setCTBPattern(string fname) {
 
+	uint64_t word;
+ 
+     int addr=0;
+
+     FILE *fd=fopen(fname.c_str(),"r");
+     if (fd>0) {
+       while (fread(&word, sizeof(word), 1,fd)) {
+	 for (int idet=0; idet<thisMultiDetector->numberOfDetectors; idet++)
+	   if (detectors[idet]){
+	     detectors[idet]->setCTBWord(addr,word);
+	   }
+	// cout << hex << addr << " " << word << dec << endl;
+	 addr++;
+       }
+       
+       fclose(fd);
+     } else
+       return -1;
+     
 
 
 
+
+  return addr;
 
 }
 

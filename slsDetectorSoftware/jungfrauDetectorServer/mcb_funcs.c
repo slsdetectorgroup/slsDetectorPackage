@@ -235,47 +235,47 @@ int copyModule(sls_detector_module *destMod, sls_detector_module *srcMod) {
 /* Register commands */
 
 
-int clearDACSregister(int imod) {
+/* int clearDACSregister(int imod) { */
 
-  putout("1111111111111111",imod);//reset
-  putout("1111111111111110",imod);//cs down
+/*   putout("1111111111111111",imod);//reset */
+/*   putout("1111111111111110",imod);//cs down */
 
-  /* commented out by dhanya
-     putout("0000000001000000",imod);  
-     putout("0000000101000000",imod);  
-     putout("0000000101000000",imod);
-     putout("0000000001000000",imod);
-  */
-#ifdef DEBUG
-  fprintf(stdout, "Clearing DAC shiftregister\n");
-#endif 
-  //  sDac=0;
-  sMod=imod;
-  if (imod==ALLMOD)
-    sMod=allSelected;
-  return OK;
-}
+/*   /\* commented out by dhanya */
+/*      putout("0000000001000000",imod);   */
+/*      putout("0000000101000000",imod);   */
+/*      putout("0000000101000000",imod); */
+/*      putout("0000000001000000",imod); */
+/*   *\/ */
+/* #ifdef DEBUG */
+/*   fprintf(stdout, "Clearing DAC shiftregister\n"); */
+/* #endif  */
+/*   //  sDac=0; */
+/*   sMod=imod; */
+/*   if (imod==ALLMOD) */
+/*     sMod=allSelected; */
+/*   return OK; */
+/* } */
 
-int nextDAC(int imod) {
+/* int nextDAC(int imod) { */
 
-  putout("1111111111111011",imod);//cs up
-  putout("1111111111111001",imod);//clk down
-  putout("1111111111111111",imod);//reset
+/*   putout("1111111111111011",imod);//cs up */
+/*   putout("1111111111111001",imod);//clk down */
+/*   putout("1111111111111111",imod);//reset */
 
-  /*commented out by dhanya
-    putout("0000000001000000",imod);      
-    putout("0000000001001000",imod);
-    putout("0000000001000000",imod);
-  */
-#ifdef DEBUG
-  fprintf(stdout, "Next DAC\n");
-#endif 
-  //  sDac++; 
-  sMod=imod;
-  if (imod==ALLMOD)
-    sMod=allSelected;
-  return OK;
-}
+/*   /\*commented out by dhanya */
+/*     putout("0000000001000000",imod);       */
+/*     putout("0000000001001000",imod); */
+/*     putout("0000000001000000",imod); */
+/*   *\/ */
+/* #ifdef DEBUG */
+/*   fprintf(stdout, "Next DAC\n"); */
+/* #endif  */
+/*   //  sDac++;  */
+/*   sMod=imod; */
+/*   if (imod==ALLMOD) */
+/*     sMod=allSelected; */
+/*   return OK; */
+/* } */
 
 
 int clearCSregister(int imod) {
@@ -428,320 +428,320 @@ int selChip(const int chip,int imod) {
 
 /* DACs routines */
 
-int program_one_dac(int addr, int value, int imod) {
+/* int program_one_dac(int addr, int value, int imod) { */
 
-#ifdef VERBOSE
-  printf("programming dac %d value %d module %d\n",addr, value,imod);
-#endif
-
-
-  int i,im,idac,bit, control;
-  int v=value;
-
-  //  codata=((((0x2)<<4)+((addr)&0xf))<<16)+((value<<4)&0xfff0);  
-  control=32+addr; 
-  value=(value<<4) |  (control<< 16);
-
-#ifdef DEBUGOUT
-  fprintf(stdout,"value=%d\n",value);
-#endif
-
-  for (i=0;i<24;i++) {
-    bit=value & (1<<(23-i)); 
-    if (bit) {
-      putout("1111111111111100",imod);//clk down
-      putout("1111111111111100",imod);//write data
-      putout("1111111111111110",imod);//clk up
-#ifdef DEBUGOUT
-      fprintf(stdout,"1");
-#endif
-    }
-    else
-      {
-	putout("1111111111111000",imod);//clk down
-	putout("1111111111111000",imod);//write data
-	putout("1111111111111010",imod);//clk up
-#ifdef DEBUGOUT
-      fprintf(stdout,"0");
-#endif
-      }
-  }	
-
-#ifdef DEBUGOUT
-  fprintf(stdout,"\n");
-#endif
-
-  idac=addr;//sDac*2+addr;
+/* #ifdef VERBOSE */
+/*   printf("programming dac %d value %d module %d\n",addr, value,imod); */
+/* #endif */
 
 
-  if (detectorDacs) {
-    sMod=imod;
-    if (imod==ALLMOD)
-      sMod=allSelected;
+/*   int i,im,idac,bit, control; */
+/*   int v=value; */
+
+/*   //  codata=((((0x2)<<4)+((addr)&0xf))<<16)+((value<<4)&0xfff0);   */
+/*   control=32+addr;  */
+/*   value=(value<<4) |  (control<< 16); */
+
+/* #ifdef DEBUGOUT */
+/*   fprintf(stdout,"value=%d\n",value); */
+/* #endif */
+
+/*   for (i=0;i<24;i++) { */
+/*     bit=value & (1<<(23-i));  */
+/*     if (bit) { */
+/*       putout("1111111111111100",imod);//clk down */
+/*       putout("1111111111111100",imod);//write data */
+/*       putout("1111111111111110",imod);//clk up */
+/* #ifdef DEBUGOUT */
+/*       fprintf(stdout,"1"); */
+/* #endif */
+/*     } */
+/*     else */
+/*       { */
+/* 	putout("1111111111111000",imod);//clk down */
+/* 	putout("1111111111111000",imod);//write data */
+/* 	putout("1111111111111010",imod);//clk up */
+/* #ifdef DEBUGOUT */
+/*       fprintf(stdout,"0"); */
+/* #endif */
+/*       } */
+/*   }	 */
+
+/* #ifdef DEBUGOUT */
+/*   fprintf(stdout,"\n"); */
+/* #endif */
+
+/*   idac=addr;//sDac*2+addr; */
+
+
+/*   if (detectorDacs) { */
+/*     sMod=imod; */
+/*     if (imod==ALLMOD) */
+/*       sMod=allSelected; */
     
-    if (imod>=0 && imod<nModX) {
-      detectorDacs[idac+NDAC*imod]=v;
-#ifdef VERBOSE
-      printf("module=%d index=%d, val=%d addr=%x\n",imod, idac, v, (unsigned int)(detectorDacs+idac+NDAC*imod));
-#endif
+/*     if (imod>=0 && imod<nModX) { */
+/*       detectorDacs[idac+NDAC*imod]=v; */
+/* #ifdef VERBOSE */
+/*       printf("module=%d index=%d, val=%d addr=%x\n",imod, idac, v, (unsigned int)(detectorDacs+idac+NDAC*imod)); */
+/* #endif */
 
-      setDACRegister(idac,v,imod);
-    } else if (imod==ALLMOD) {
-      for (im=0; im<nModX; im++) {
-	detectorDacs[idac+NDAC*im]=v;
-	setDACRegister(idac,v,im);
-      }
-    }
-  }
-  return OK;
+/*       setDACRegister(idac,v,imod); */
+/*     } else if (imod==ALLMOD) { */
+/*       for (im=0; im<nModX; im++) { */
+/* 	detectorDacs[idac+NDAC*im]=v; */
+/* 	setDACRegister(idac,v,im); */
+/*       } */
+/*     } */
+/*   } */
+/*   return OK; */
 
-}
-
-
+/* } */
 
 
 
-int set_one_dac(int imod) {
-  int control, ibit;
-  int bit, value;
-  control=13;
-  value=(DAC_REFOUT<<10) | (control<< 12);
-#ifdef DEBUGOUT
-      fprintf(stdout,"value=%d\n",value);
-#endif
-  for (ibit=0; ibit<6; ibit++) {
-    bit=value & (1<<(15-ibit)); 
-    if (bit) {
-      putout("0000010001000000",imod);
-      putout("0000011001000000",imod);
-      putout("0000010001000000",imod);
-#ifdef DEBUGOUT
-      fprintf(stdout,"1");
-#endif
-    } else {
-      putout("0000000001000000",imod);         
-      putout("0000001001000000",imod);
-      putout("0000000001000000",imod);
-#ifdef DEBUGOUT
-      fprintf(stdout,"0");
-#endif
-    }
-  } 
-  for (ibit=0; ibit<10; ibit++) {
-    putout("0000000001000000",imod);         
-    putout("0000001001000000",imod);
-    putout("0000000001000000",imod);
-#ifdef DEBUGOUT
-    fprintf(stdout,"0");
-#endif
-  }   
+
+
+/* int set_one_dac(int imod) { */
+/*   int control, ibit; */
+/*   int bit, value; */
+/*   control=13; */
+/*   value=(DAC_REFOUT<<10) | (control<< 12); */
+/* #ifdef DEBUGOUT */
+/*       fprintf(stdout,"value=%d\n",value); */
+/* #endif */
+/*   for (ibit=0; ibit<6; ibit++) { */
+/*     bit=value & (1<<(15-ibit));  */
+/*     if (bit) { */
+/*       putout("0000010001000000",imod); */
+/*       putout("0000011001000000",imod); */
+/*       putout("0000010001000000",imod); */
+/* #ifdef DEBUGOUT */
+/*       fprintf(stdout,"1"); */
+/* #endif */
+/*     } else { */
+/*       putout("0000000001000000",imod);          */
+/*       putout("0000001001000000",imod); */
+/*       putout("0000000001000000",imod); */
+/* #ifdef DEBUGOUT */
+/*       fprintf(stdout,"0"); */
+/* #endif */
+/*     } */
+/*   }  */
+/*   for (ibit=0; ibit<10; ibit++) { */
+/*     putout("0000000001000000",imod);          */
+/*     putout("0000001001000000",imod); */
+/*     putout("0000000001000000",imod); */
+/* #ifdef DEBUGOUT */
+/*     fprintf(stdout,"0"); */
+/* #endif */
+/*   }    */
   
-#ifdef DEBUGOUT
-      fprintf(stdout,"\n");
-#endif
-  return OK;
-}
+/* #ifdef DEBUGOUT */
+/*       fprintf(stdout,"\n"); */
+/* #endif */
+/*   return OK; */
+/* } */
 
-int initDACbyIndex(int ind,int val, int imod) {
-  int v;
-  const int partref[NDAC]=PARTREF;
-  const int partr1[NDAC]=PARTR1;
-  const int partr2[NDAC]=PARTR2;
+/* int initDACbyIndex(int ind,int val, int imod) { */
+/*   int v; */
+/*   const int partref[NDAC]=PARTREF; */
+/*   const int partr1[NDAC]=PARTR1; */
+/*   const int partr2[NDAC]=PARTR2; */
  
-  int ref=partref[ind];
-  int r1=partr1[ind];
-  int r2=partr2[ind];
+/*   int ref=partref[ind]; */
+/*   int r1=partr1[ind]; */
+/*   int r2=partr2[ind]; */
   
 
-  v=(val+(val-ref)*r1/r2)*DAC_DR/DAC_MAX;
-  v=initDACbyIndexDACU(ind,v,imod);
+/*   v=(val+(val-ref)*r1/r2)*DAC_DR/DAC_MAX; */
+/*   v=initDACbyIndexDACU(ind,v,imod); */
   
-  return (v*DAC_MAX/DAC_DR+ref*r1/r2)/(1+r1/r2);
-}
+/*   return (v*DAC_MAX/DAC_DR+ref*r1/r2)/(1+r1/r2); */
+/* } */
 
-int initDACbyIndexDACU(int ind, int val, int imod) {
+/* int initDACbyIndexDACU(int ind, int val, int imod) { */
  
-  //  const double daccs[NDAC]=DACCS;
-  //  const double dacaddr[NDAC]=DACADDR;
+/*   //  const double daccs[NDAC]=DACCS; */
+/*   //  const double dacaddr[NDAC]=DACADDR; */
  
-  //  int cs=daccs[ind];
-  //  int addr=dacaddr[ind];
- // int iv;
-  int im;
+/*   //  int cs=daccs[ind]; */
+/*   //  int addr=dacaddr[ind]; */
+/*  // int iv; */
+/*   int im; */
 
-  if (val>=0) 
-    initDAC(ind,val, imod);
+/*   if (val>=0)  */
+/*     initDAC(ind,val, imod); */
  
-  if (imod>=0 && imod<nModX) {
-    // return detectorDacs[ind+imod*NDAC];
-    return setDACRegister(ind,  -1, imod);
-  }
-  else {
-    //iv=detectorDacs[ind];
-#ifdef VERBOSE
-    printf("mod 0 of %d dac %d val %d\n",nModX,ind,setDACRegister(ind,  -1, 0));
-#endif
-    for (im=1; im<nModX; im++) {
-#ifdef VERBOSE
-      printf("mod %d dac %d val %d\n",im,ind,setDACRegister(ind,  -1, im));
-#endif
-      //if (detectorDacs[ind+im*NDAC]!=detectorDacs[ind]) {
+/*   if (imod>=0 && imod<nModX) { */
+/*     // return detectorDacs[ind+imod*NDAC]; */
+/*     return setDACRegister(ind,  -1, imod); */
+/*   } */
+/*   else { */
+/*     //iv=detectorDacs[ind]; */
+/* #ifdef VERBOSE */
+/*     printf("mod 0 of %d dac %d val %d\n",nModX,ind,setDACRegister(ind,  -1, 0)); */
+/* #endif */
+/*     for (im=1; im<nModX; im++) { */
+/* #ifdef VERBOSE */
+/*       printf("mod %d dac %d val %d\n",im,ind,setDACRegister(ind,  -1, im)); */
+/* #endif */
+/*       //if (detectorDacs[ind+im*NDAC]!=detectorDacs[ind]) { */
 	
-      if (setDACRegister(ind,  -1, im)!=setDACRegister(ind,  -1, 0)) {
-#ifdef VERBOSE
+/*       if (setDACRegister(ind,  -1, im)!=setDACRegister(ind,  -1, 0)) { */
+/* #ifdef VERBOSE */
 
-      printf("mod %d returning -1\n",im);
-#endif
-	return -1;
-      }
-    }
-#ifdef VERBOSE
-      printf("returning %d\n",setDACRegister(ind,  -1, 0));
-#endif
-    return setDACRegister(ind,  -1, 0);
-  }
-}
+/*       printf("mod %d returning -1\n",im); */
+/* #endif */
+/* 	return -1; */
+/*       } */
+/*     } */
+/* #ifdef VERBOSE */
+/*       printf("returning %d\n",setDACRegister(ind,  -1, 0)); */
+/* #endif */
+/*     return setDACRegister(ind,  -1, 0); */
+/*   } */
+/* } */
 
-int getThresholdEnergy() {
-  double g[3]=DEFAULTGAIN;
-  double o[3]=DEFAULTOFFSET;
-  double myg=-1, myo=-1;
- // int dacu;
-  int imod;
-  int ethr=-1;
-  int ret=FAIL;
+/* int getThresholdEnergy() { */
+/*   double g[3]=DEFAULTGAIN; */
+/*   double o[3]=DEFAULTOFFSET; */
+/*   double myg=-1, myo=-1; */
+/*  // int dacu; */
+/*   int imod; */
+/*   int ethr=-1; */
+/*   int ret=FAIL; */
 
-  if (detectorModules) {
-    //  for (imod=0; imod<getNModBoard(); imod++) {
-    for (imod=0; imod<nModX; imod++) {
-#ifdef VERBOSE
-      printf("module=%d settings=%d, gain=%f, offset=%f\n",imod,thisSettings, (detectorModules+imod)->gain,(detectorModules+imod)->offset);
-#endif
-      if ((detectorModules+imod)->gain>0)
-	myg=(detectorModules+imod)->gain;
-      else {
-	if (thisSettings>=0 && thisSettings<3)
-	  myg=g[thisSettings];
-	//	else
-	//myg=-1;
-      }
+/*   if (detectorModules) { */
+/*     //  for (imod=0; imod<getNModBoard(); imod++) { */
+/*     for (imod=0; imod<nModX; imod++) { */
+/* #ifdef VERBOSE */
+/*       printf("module=%d settings=%d, gain=%f, offset=%f\n",imod,thisSettings, (detectorModules+imod)->gain,(detectorModules+imod)->offset); */
+/* #endif */
+/*       if ((detectorModules+imod)->gain>0) */
+/* 	myg=(detectorModules+imod)->gain; */
+/*       else { */
+/* 	if (thisSettings>=0 && thisSettings<3) */
+/* 	  myg=g[thisSettings]; */
+/* 	//	else */
+/* 	//myg=-1; */
+/*       } */
 
-      if ((detectorModules+imod)->offset>0)
-	myo=(detectorModules+imod)->offset;
-      else {
-	if (thisSettings>=0 && thisSettings<3)
-	  myo=o[thisSettings];
-	//	else
-	//myo=-1;
-      }
+/*       if ((detectorModules+imod)->offset>0) */
+/* 	myo=(detectorModules+imod)->offset; */
+/*       else { */
+/* 	if (thisSettings>=0 && thisSettings<3) */
+/* 	  myo=o[thisSettings]; */
+/* 	//	else */
+/* 	//myo=-1; */
+/*       } */
 
-      if (myg>0 && myo>0) {
-	//ethr=(myo-detectorDacs[VTHRESH+imod*NDAC])*1000/myg;
+/*       if (myg>0 && myo>0) { */
+/* 	//ethr=(myo-detectorDacs[VTHRESH+imod*NDAC])*1000/myg; */
       
-	ethr=(myo-setDACRegister(VDAC0,-1,imod))*1000/myg;//edited by dhanya
-	// else
-      //	ethr=-1;
+/* 	ethr=(myo-setDACRegister(VDAC0,-1,imod))*1000/myg;//edited by dhanya */
+/* 	// else */
+/*       //	ethr=-1; */
       
-      }
-#ifdef VERBOSE
-      //printf("module=%d gain=%f, offset=%f, dacu=%f\n",imod, myg, myo, detectorDacs[VTHRESH+imod*NDAC]);
-      printf("module=%d gain=%f, offset=%f, dacu=%d\n",imod, myg, myo,(int)(setDACRegister(VDAC0,-1,imod)));//edited by dhanya
-      printf("Threshold energy of module %d is %d eV\n", imod, ethr);
-#endif 
+/*       } */
+/* #ifdef VERBOSE */
+/*       //printf("module=%d gain=%f, offset=%f, dacu=%f\n",imod, myg, myo, detectorDacs[VTHRESH+imod*NDAC]); */
+/*       printf("module=%d gain=%f, offset=%f, dacu=%d\n",imod, myg, myo,(int)(setDACRegister(VDAC0,-1,imod)));//edited by dhanya */
+/*       printf("Threshold energy of module %d is %d eV\n", imod, ethr); */
+/* #endif  */
       
-      if (imod==0)
-	ret=ethr;
-      else {
-	if (ethr>(ret+100) || ethr<(ret-100))
-	  return FAIL;
-      }
-    }
-  }
-  return ret;
-}
+/*       if (imod==0) */
+/* 	ret=ethr; */
+/*       else { */
+/* 	if (ethr>(ret+100) || ethr<(ret-100)) */
+/* 	  return FAIL; */
+/*       } */
+/*     } */
+/*   } */
+/*   return ret; */
+/* } */
 
-int setThresholdEnergy(int ethr) {
-  double g[3]=DEFAULTGAIN;
-  double o[3]=DEFAULTOFFSET;
-  double myg=-1, myo=-1;
-  int dacu;
-  int imod;
-  int ret=ethr;
+/* int setThresholdEnergy(int ethr) { */
+/*   double g[3]=DEFAULTGAIN; */
+/*   double o[3]=DEFAULTOFFSET; */
+/*   double myg=-1, myo=-1; */
+/*   int dacu; */
+/*   int imod; */
+/*   int ret=ethr; */
 
-  setSettings(GET_SETTINGS,-1);//-1 added by dhanya
-  if (thisSettings>=0 || thisSettings<3){
-    myg=g[thisSettings];
-    myo=o[thisSettings];
-  }
-  for (imod=0; imod<nModX; imod++) {
-    if (detectorModules) {
-      if ((detectorModules+imod)->gain>0)
-	myg=(detectorModules+imod)->gain;
-      else  
-	if (thisSettings>=0 && thisSettings<3)
-	  myg=g[thisSettings];
-	else
-	  myg=-1;
-      if ((detectorModules+imod)->offset>0)
-	myo=(detectorModules+imod)->offset;
-      else
-	if (thisSettings>=0 && thisSettings<3)
-	  myo=o[thisSettings];
-	else
-	  myo=-1;
-    } else {
-	if (thisSettings>=0 && thisSettings<3)
-	  myo=o[thisSettings];
-	else
-	  myo=-1;
-	if (thisSettings>=0 && thisSettings<3)
-	  myg=g[thisSettings];
-	else
-	  myg=-1;
-    }
-    if (myg>0 && myo>0) {
-      dacu=myo-myg*((double)ethr)/1000.;
-#ifdef VERBOSE    
-      printf("module %d (%x): gain %f, off %f, energy %d eV, dac %d\n",imod,(unsigned int)((detectorModules+imod)),(detectorModules+imod)->gain,(detectorModules+imod)->offset, ethr,dacu);
-#endif
-    } else {
-      dacu=ethr;
-#ifdef VERBOSE    
-      printf("could not set threshold energy for module %d, settings %d (offset is %f; gain is %f)\n",imod,thisSettings,myo,myg);
-#endif
-    }
-    initDACbyIndexDACU(VDAC0, dacu, imod); ///needs to be fixed dhanya
-  }
-  return ret;
-}
-
-
-
-int getDACbyIndexDACU(int ind,  int imod) {
-  /*
-  if (detectorDacs) {
-    if (imod<getNModBoard())
-      if (ind<(detectorModules+imod)->ndac)
-	return (detectorDacs[ind+imod*NDAC]);
-  }  
-  return FAIL;
-  */
-  return setDACRegister(ind, -1, imod);
-}
+/*   setSettings(GET_SETTINGS,-1);//-1 added by dhanya */
+/*   if (thisSettings>=0 || thisSettings<3){ */
+/*     myg=g[thisSettings]; */
+/*     myo=o[thisSettings]; */
+/*   } */
+/*   for (imod=0; imod<nModX; imod++) { */
+/*     if (detectorModules) { */
+/*       if ((detectorModules+imod)->gain>0) */
+/* 	myg=(detectorModules+imod)->gain; */
+/*       else   */
+/* 	if (thisSettings>=0 && thisSettings<3) */
+/* 	  myg=g[thisSettings]; */
+/* 	else */
+/* 	  myg=-1; */
+/*       if ((detectorModules+imod)->offset>0) */
+/* 	myo=(detectorModules+imod)->offset; */
+/*       else */
+/* 	if (thisSettings>=0 && thisSettings<3) */
+/* 	  myo=o[thisSettings]; */
+/* 	else */
+/* 	  myo=-1; */
+/*     } else { */
+/* 	if (thisSettings>=0 && thisSettings<3) */
+/* 	  myo=o[thisSettings]; */
+/* 	else */
+/* 	  myo=-1; */
+/* 	if (thisSettings>=0 && thisSettings<3) */
+/* 	  myg=g[thisSettings]; */
+/* 	else */
+/* 	  myg=-1; */
+/*     } */
+/*     if (myg>0 && myo>0) { */
+/*       dacu=myo-myg*((double)ethr)/1000.; */
+/* #ifdef VERBOSE     */
+/*       printf("module %d (%x): gain %f, off %f, energy %d eV, dac %d\n",imod,(unsigned int)((detectorModules+imod)),(detectorModules+imod)->gain,(detectorModules+imod)->offset, ethr,dacu); */
+/* #endif */
+/*     } else { */
+/*       dacu=ethr; */
+/* #ifdef VERBOSE     */
+/*       printf("could not set threshold energy for module %d, settings %d (offset is %f; gain is %f)\n",imod,thisSettings,myo,myg); */
+/* #endif */
+/*     } */
+/*     initDACbyIndexDACU(VDAC0, dacu, imod); ///needs to be fixed dhanya */
+/*   } */
+/*   return ret; */
+/* } */
 
 
-int initDAC(int dac_addr, int value, int imod) {
-//  int i;
-#ifdef VERBOSE
-  printf("Programming dac %d with value %d\n", dac_addr, value);
-#endif
-  clearDACSregister(imod);
-  program_one_dac(dac_addr,value,imod);
-  nextDAC(imod);
-  clearDACSregister(imod);
 
-  return 0;
-}
+/* int getDACbyIndexDACU(int ind,  int imod) { */
+/*   /\* */
+/*   if (detectorDacs) { */
+/*     if (imod<getNModBoard()) */
+/*       if (ind<(detectorModules+imod)->ndac) */
+/* 	return (detectorDacs[ind+imod*NDAC]); */
+/*   }   */
+/*   return FAIL; */
+/*   *\/ */
+/*   return setDACRegister(ind, -1, imod); */
+/* } */
+
+
+/* int initDAC(int dac_addr, int value, int imod) { */
+/* //  int i; */
+/* #ifdef VERBOSE */
+/*   printf("Programming dac %d with value %d\n", dac_addr, value); */
+/* #endif */
+/*   clearDACSregister(imod); */
+/*   program_one_dac(dac_addr,value,imod); */
+/*   nextDAC(imod); */
+/*   clearDACSregister(imod); */
+
+/*   return 0; */
+/* } */
 
 int getTemperatureByModule(int tempSensor, int imod)
 {
@@ -811,31 +811,31 @@ void showbits(int h)
 }
 
 
-int initDACs(int* v,int imod)
-{
-#ifdef VERBOSE
-  printf("\n..inside initdacs\n");
-#endif
-  int iaddr;
-  //  sDac=0;
+/* int initDACs(int* v,int imod) */
+/* { */
+/* #ifdef VERBOSE */
+/*   printf("\n..inside initdacs\n"); */
+/* #endif */
+/*   int iaddr; */
+/*   //  sDac=0; */
 
-  for (iaddr=0; iaddr<8; iaddr++) {
-    clearDACSregister(imod);
-    if (v[iaddr]>=0) { 
-#ifdef VERBOSE
-      fprintf(stdout, "voltage %d\n", *(v+iaddr));
-#endif
-      program_one_dac(iaddr, *(v+iaddr),imod);
-    }
-    nextDAC(imod);
-  }
+/*   for (iaddr=0; iaddr<8; iaddr++) { */
+/*     clearDACSregister(imod); */
+/*     if (v[iaddr]>=0) {  */
+/* #ifdef VERBOSE */
+/*       fprintf(stdout, "voltage %d\n", *(v+iaddr)); */
+/* #endif */
+/*       program_one_dac(iaddr, *(v+iaddr),imod); */
+/*     } */
+/*     nextDAC(imod); */
+/*   } */
     
 
-  clearDACSregister(imod);
+/*   clearDACSregister(imod); */
 
-  return 0;
+/*   return 0; */
 
-}
+/* } */
 
 
 
@@ -1582,7 +1582,7 @@ int initModulebyNumber(sls_detector_module myMod) {
 #endif
  
 
-  initDACs(v,imod);
+  //  initDACs(v,imod);
   // initMCBregisters(myMod.reg,imod);
  
   if (detectorModules) {

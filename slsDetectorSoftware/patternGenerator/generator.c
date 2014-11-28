@@ -43,7 +43,9 @@ int nloop[3]={0,0,0};
 
 char infile[10000], outfile[10000];
 
-FILE *fd;
+FILE *fd, *fd1;
+uint64_t PAT[MAXWORDS];
+
 
 int i,ii,iii,j,jj,jjj,pixx,pixy,memx,memy,muxout,memclk,colclk,rowclk,muxclk,memcol,memrow,loopcounter;
 //int W[33];
@@ -129,18 +131,22 @@ void setwaittime(int iloop, uint64_t t) {
 
 
 void pw(){
+  if (iaddr<MAXWORDS)
+    PAT[iaddr]= pat;
   fprintf(fd,"patword %04x %016llx\n",iaddr, pat);
   iaddr++;
   if (iaddr>=MAXWORDS) printf("ERROR: too many word in the pattern (%d instead of %d)!",iaddr, MAXWORDS);
 }
 
+
+
+
 main(void) {
   int iloop=0;
   fd=fopen(OUTFILE,"w");
-
 #include INFILE
 
-  fprintf(fd,"patctrl %016llx\n",iopat);
+  fprintf(fd,"patioctrl %016llx\n",iopat);
   fprintf(fd,"patclkctrl %016llx\n",clkpat);
   fprintf(fd,"patlimits %04x %04x\n",start, stop);
 
@@ -157,4 +163,7 @@ main(void) {
   }
   
   close((int)fd);
+  fd1=fopen(OUTFILEBIN,"w");
+  fwrite(PAT,sizeof(uint64_t),iaddr, fd1);
+  close((int)fd1);
 }

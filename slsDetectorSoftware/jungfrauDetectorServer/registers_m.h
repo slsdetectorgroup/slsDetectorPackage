@@ -101,14 +101,15 @@
 /*   --constant SetGatesReg_c : integer:= 107; MSB */
 
 
-/* registers defined in FPGA */
-#define PCB_REV_REG			  0x2c<<11
-#define GAIN_REG              0x10<<11
-//#define FLOW_CONTROL_REG      0x11<<11
-//#define FLOW_STATUS_REG       0x12<<11
-//#define FRAME_REG             0x13<<11
-#define MULTI_PURPOSE_REG     0x14<<11
-//#define TIME_FROM_START_REG   0x16<<11
+
+
+
+
+
+
+
+
+
 #define DAC_REG     64<<11//0x17<<11// control the dacs
 //ADC
 #define ADC_WRITE_REG         65<<11//0x18<<11
@@ -127,6 +128,7 @@
 
 #define DUMMY_REG             68<<11//0x21<<11
 #define FPGA_VERSION_REG      0<<11 //0x22<<11
+#define PCB_REV_REG			  0<<11
 #define FIX_PATT_REG          1<<11 //0x23<<11
 #define CONTROL_REG           79<<11//0x24<<11
 #define STATUS_REG            2<<11 //0x25<<11
@@ -141,9 +143,11 @@
 #define LOOK_AT_ME_REG          3<<11 //0x28<<11
 #define SYSTEM_STATUS_REG       4<<11
 
+#define FIFO_DATA_REG 6<<11
+#define FIFO_STATUS_REG  7<<11
+
+
 #define FIFO_DATA_REG_OFF     0x50<<11 ///////
-
-
 //to read back dac registers
 #define MOD_DACS1_REG         0x65<<11
 #define MOD_DACS2_REG         0x66<<11
@@ -157,6 +161,9 @@
 
 #define GET_ACTUAL_TIME_LSB_REG     16<<11
 #define GET_ACTUAL_TIME_MSB_REG     17<<11
+
+#define GET_MEASUREMENT_TIME_LSB_REG     38<<11
+#define GET_MEASUREMENT_TIME_MSB_REG     38<<11
 
 
 #define SET_DELAY_LSB_REG     96<<11 //0x68<<11
@@ -188,6 +195,18 @@
 #define SET_GATES_MSB_REG     107<<11//0x7d<<11
 #define GET_GATES_LSB_REG     28<<11//0x7e<<11
 #define GET_GATES_MSB_REG     29<<11//0x7f<<11
+
+#define DATA_IN_LSB_REG 30<<11
+#define DATA_IN_MSB_REG 31<<11
+
+#define PATTERN_OUT_LSB_REG 32<<11
+#define PATTERN_OUT_MSB_REG 33<<11
+
+#define FRAMES_FROM_START_LSB_REG 34<<11
+#define FRAMES_FROM_START_MSB_REG 35<<11
+
+#define FRAMES_FROM_START_PG_LSB_REG 36<<11
+#define FRAMES_FROM_START_PG_MSB_REG 37<<11
 
 
  
@@ -228,7 +247,7 @@
 
 
 #define DAQ_REG   93<<11
-#define ADC_LATCH_ENABLE_REG   94<<11
+#define ADC_LATCH_DISABLE_REG   94<<11
 
    
 #define PATTERN_IOCTRL_REG_LSB 108<<11
@@ -244,6 +263,15 @@
 #define PATTERN_WAIT2_TIME_REG_LSB 118<<11
 #define PATTERN_WAIT2_TIME_REG_MSB 119<<11
    
+
+#define DAC_0_1_VAL_REG 128<<11 
+#define DAC_2_3_VAL_REG 129<<11  
+#define DAC_4_5_VAL_REG 130<<11  
+#define DAC_6_7_VAL_REG 131<<11  
+#define DAC_8_9_VAL_REG 132<<11  
+#define DAC_10_11_VAL_REG 133<<11  
+#define DAC_12_13_VAL_REG 134<<11  
+#define DAC_14_15_VAL_REG 135<<11  
    
  
  
@@ -252,6 +280,14 @@
 
 
 
+
+/* registers defined in FPGA */
+#define GAIN_REG              0
+//#define FLOW_CONTROL_REG      0x11<<11
+//#define FLOW_STATUS_REG       0x12<<11
+//#define FRAME_REG             0x13<<11
+#define MULTI_PURPOSE_REG     0
+//#define TIME_FROM_START_REG   0x16<<11
 
 
 #define ROI_REG 0 // 0x35<<11
@@ -270,13 +306,6 @@
 #define COUNTER_MEMORY_REG 0 // 0x85<<11
 
 
-#define GET_MEASUREMENT_TIME_LSB_REG    0 // 0x023000   
-#define GET_MEASUREMENT_TIME_MSB_REG    0 // 0x024000 
-  
-//#define GET_ACTUAL_TIME_LSB_REG    0 // 0x025000   
-//#define GET_ACTUAL_TIME_MSB_REG    0 // 0x026000  
-
-
 //not used
 //#define MCB_DOUT_REG_OFF      0 // 0x200000
 //#define FIFO_CNTRL_REG_OFF    0 // 0x300000
@@ -293,26 +322,30 @@
 #define SHIFTFIFO 9
 
 /** for PCB_REV_REG */
-#define DETECTOR_TYPE_MASK   	0xF0000
-#define DETECTOR_TYPE_OFFSET   	16
-#define BOARD_REVISION_MASK		0xFFFF
-#define MOENCH_MODULE			2
+#define DETECTOR_TYPE_MASK   	0xFF000000
+#define DETECTOR_TYPE_OFFSET   	24
+#define BOARD_REVISION_MASK		0xFFFFFF
+#define MOENCH03_MODULE_ID		2
+#define JUNGFRAU_MODULE_ID			1
+#define JUNGFRAU_CTB_ID			3
 
 
 
 
-/* for control register */
-#define START_ACQ_BIT      0x00000001
-#define STOP_ACQ_BIT       0x00000002
-#define START_FIFOTEST_BIT 0x00000004 // ?????
-#define STOP_FIFOTEST_BIT  0x00000008  // ??????
-#define START_READOUT_BIT  0x00000010  
-#define STOP_READOUT_BIT   0x00000020 
-#define START_EXPOSURE_BIT  0x00000040  
-#define STOP_EXPOSURE_BIT   0x00000080  
-#define START_TRAIN_BIT     0x00000100  
-#define STOP_TRAIN_BIT      0x00000200  
-#define SYNC_RESET          0x00000400
+/* for control register (16bit only)*/
+#define START_ACQ_BIT       0x0001
+#define STOP_ACQ_BIT        0x0002
+#define START_FIFOTEST_BIT  0x0004 // ?????
+#define STOP_FIFOTEST_BIT   0x0008  // ??????
+#define START_READOUT_BIT   0x0010  
+#define STOP_READOUT_BIT    0x0020 
+#define START_EXPOSURE_BIT  0x0040  
+#define STOP_EXPOSURE_BIT   0x0080  
+#define START_TRAIN_BIT     0x0100  
+#define STOP_TRAIN_BIT      0x0200   
+#define FIFO_RESET_BIT      0x8000  
+#define SYNC_RESET          0x0400  
+#define GB10_RESET_BIT      0x0800   
 
 /* for status register */
 #define RUN_BUSY_BIT             0x00000001
@@ -326,7 +359,7 @@
 #define READSTATE_0_BIT    		 0x00000100
 #define READSTATE_1_BIT    		 0x00000200
 #define READSTATE_2_BIT    		 0x00000400
-
+#define PLL_RECONFIG_BUSY     		 0x00100000
 #define RUNSTATE_0_BIT     		 0x00001000
 #define RUNSTATE_1_BIT    		 0x00002000
 #define RUNSTATE_2_BIT    		 0x00004000
@@ -397,8 +430,8 @@
 
 
 /* fifo control register */
-#define FIFO_RESET_BIT              0x00000001 
-#define FIFO_DISABLE_TOGGLE_BIT     0x00000002 
+//#define FIFO_RESET_BIT              0x00000001 
+//#define FIFO_DISABLE_TOGGLE_BIT     0x00000002 
 
 
 //chip shiftin register meaning
@@ -462,6 +495,7 @@
 #define PLL_CNTR_RECONFIG_RESET_BIT 0
 #define PLL_CNTR_READ_BIT 1
 #define PLL_CNTR_WRITE_BIT 2
+#define PLL_CNTR_PLL_RESET_BIT 3
 
 #define PLL_MODE_REG 0x0
 #define PLL_STATUS_REG 0x1
@@ -469,7 +503,7 @@
 #define PLL_N_COUNTER_REG 0x3
 #define PLL_M_COUNTER_REG 0x4
 #define PLL_C_COUNTER_REG 0x5 //which ccounter stands in param 22:18; 7:0 lowcount 15:8 highcount; 16 bypassenable; 17 oddivision
-#define PLL_PHASE_SHIFT_REG 0x6
+#define PLL_PHASE_SHIFT_REG 0x6 // which ccounter stands in param 16:20; 21 updown (1 up, 0 down)
 #define PLL_K_COUNTER_REG 0x7
 #define PLL_BANDWIDTH_REG 0x8
 #define PLL_CHARGEPUMP_REG 0x9
@@ -497,6 +531,7 @@
 #define ASTART_OFFSET 0
 #define ASTOP_OFFSET 16
 #define PATTERN_CTRL_WRITE_BIT 0
+#define PATTERN_CTRL_READ_BIT 1
 #define PATTERN_CTRL_ADDR_OFFSET 16
 #define MAX_PATTERN_LENGTH 1024
 

@@ -85,7 +85,7 @@ setoutput(adc_ena);
 setclk(CLKBIT);
 
 
-#define adc_sync 19
+#define adc_sync 63
 setoutput(adc_sync);
 
 

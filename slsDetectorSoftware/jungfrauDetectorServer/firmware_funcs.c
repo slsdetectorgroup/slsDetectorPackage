@@ -4,6 +4,10 @@
 #include "mcb_funcs.h"
 #include "registers_m.h"
 
+//#define VERBOSE
+//#define VERYVERBOSE
+
+
 #ifdef SHAREDMEMORY
 #include "sharedmemory.h"
 #endif
@@ -32,7 +36,7 @@ int dataBytes=NMAXMOD*NCHIP*NCHAN*2;
 int storeInRAM=0;
 int ROI_flag=0;
 int adcConfigured=-1;
-u_int32_t *ram_values=NULL;
+u_int16_t *ram_values=NULL;
 volatile char *now_ptr=NULL;
 volatile  u_int16_t *values;
 int ram_size=0;
@@ -43,6 +47,8 @@ u_int32_t progressMask=0;
 int phase_shift=0;//DEFAULT_PHASE_SHIFT;
 int ipPacketSize=DEFAULT_IP_PACKETSIZE;
 int udpPacketSize=DEFAULT_UDP_PACKETSIZE;
+
+u_int32_t clkDivider[2]={32,32};
 
 
 int ififostart, ififostop, ififostep, ififo;
@@ -176,7 +182,7 @@ int mapCSP0(void) {
   printf("CSPOBASE=from %08x to %x\n",CSP0BASE,CSP0BASE+MEM_SIZE);
 
   u_int32_t address;
-  address = FIFO_DATA_REG_OFF;
+  address = FIFO_DATA_REG;//_OFF;
   values=(u_int16_t*)(CSP0BASE+address*2);
   printf("statusreg=%08x\n",bus_r(STATUS_REG));
   printf("\n\n");
@@ -254,31 +260,6 @@ int setPhaseShiftOnce(){
 
 	return OK;
 }
-int phaseStep(int st){
-	u_int32_t addr;
-	int i;
-
-	addr=MULTI_PURPOSE_REG;
-
-	if (st>0) {  
-	  bus_w(PLL_CNTRL_REG, 1);//reset PLL
-	  bus_w(PLL_CNTRL_REG, 0);
-	  phase_shift=0;
-	  for (i=0;i<st;i++) {
-	    bus_w(addr,(INT_RSTN_BIT|ENET_RESETN_BIT|SW1_BIT|PHASE_STEP_BIT));//0x2821
-	    bus_w(addr,(INT_RSTN_BIT|ENET_RESETN_BIT|(SW1_BIT&~PHASE_STEP_BIT)));//0x2820
-	    phase_shift++;
-	  }
-	}
-		
-#ifdef VERBOSE
-	printf("Multipupose reg now:%x\n",bus_r(addr));
-#endif
-
-
-	return phase_shift;
-}
-
 
 
 int cleanFifo(){
@@ -380,149 +361,200 @@ u_int32_t readin(int modnum) {
 	return 0;
 }
 
-u_int32_t setPllReconfigReg(u_int32_t reg, u_int32_t val) {
+u_int32_t setPllReconfigReg(u_int32_t reg, u_int32_t val, int trig) {
  
+  u_int32_t vv=reg<<PLL_CNTR_ADDR_OFF;
   bus_w(PLL_PARAM_REG,val); 
-  bus_w(PLL_CNTRL_REG,(reg<<PLL_CNTR_ADDR_OFF)); 
-  usleep(1000);
-  bus_w(PLL_CNTRL_REG,(1<<PLL_CNTR_WRITE_BIT)|(reg<<PLL_CNTR_ADDR_OFF));
-  usleep(1000);
-  bus_w(PLL_CNTRL_REG,(reg<<PLL_CNTR_ADDR_OFF)); 
-  usleep(1000);
-  bus_w(PLL_CNTRL_REG,(1<<PLL_CNTR_READ_BIT)|(reg<<PLL_CNTR_ADDR_OFF));
-  usleep(1000);
-  val=bus_r(PLL_PARAM_OUT_REG);
-  printf("counter %x reg: %x\n",reg,val); 
-  bus_w(PLL_CNTRL_REG,(reg<<PLL_CNTR_ADDR_OFF)); 
+  printf("param: %x\n",val);
 
+  bus_w(PLL_CNTRL_REG,vv); 
+  printf("wrote: %08x\n",vv); 
+  usleep(1000);
+  vv=(1<<PLL_CNTR_WRITE_BIT)|(reg<<PLL_CNTR_ADDR_OFF)|(trig<<15);
+  bus_w(PLL_CNTRL_REG,vv);//15 is trigger for the tap
+  printf("wrote: %08x\n",vv); 
+  usleep(1000);
+  vv=(reg<<PLL_CNTR_ADDR_OFF);
+  printf("wrote: %08x\n",vv); 
+  bus_w(PLL_CNTRL_REG,vv); 
+  usleep(1000);
+  while(bus_r(STATUS_REG)&PLL_RECONFIG_BUSY) {
+    printf("set: reconfig busy");
+  }
+  //  bus_w(PLL_CNTRL_REG,(1<<PLL_CNTR_READ_BIT)|(reg<<PLL_CNTR_ADDR_OFF));
+  // usleep(1000);
+  // val=bus_r(PLL_PARAM_OUT_REG);
+  // printf("counter %x reg: %x\n",reg,val); 
+  // bus_w(PLL_CNTRL_REG,(reg<<PLL_CNTR_ADDR_OFF)); 
+
+/*   usleep(100); */
+/*   bus_w(PLL_CNTRL_REG,PLL_CNTR_PLL_RESET_BIT);  */
+/*   usleep(100); */
+/*   bus_w(PLL_CNTRL_REG,0);  */
   return val;
 
 }
 
-u_int32_t getPllReconfigReg(u_int32_t reg) {
+u_int32_t getPllReconfigReg(u_int32_t reg, int trig) {
   
   int i;
-  u_int32_t val;
-  bus_w(PLL_CNTRL_REG,(reg<<PLL_CNTR_ADDR_OFF)); 
-  usleep(1000);
-  bus_w(PLL_CNTRL_REG,(1<<PLL_CNTR_READ_BIT)|(reg<<PLL_CNTR_ADDR_OFF));
-  usleep(1000);
-  for (i=0; i<10; i++) {
-    val=bus_r(PLL_PARAM_OUT_REG);
-    printf("counter %x reg: %x\n",reg,val); 
-  }
-  bus_w(PLL_CNTRL_REG,(reg<<PLL_CNTR_ADDR_OFF)); 
+  u_int32_t val=reg<<PLL_CNTR_ADDR_OFF;
+  u_int32_t vv;
 
-  return val;
+  printf("cntrlreg: %08x\n",PLL_CNTRL_REG);
+  printf("wrote: %08x\n",val);
+  bus_w(PLL_CNTRL_REG,val);
+  //  printf("read: %08x\n",bus_r(PLL_CNTRL_REG));
+  usleep(100);
+
+  val=(1<<PLL_CNTR_READ_BIT)|(reg<<PLL_CNTR_ADDR_OFF)|(trig<<15);
+  printf("wrote: %08x\n",val);
+  bus_w(PLL_CNTRL_REG,val);//15 is trigger for the tap
+  //  printf("read: %08x\n",bus_r(PLL_CNTRL_REG));
+  usleep(100);
+/*   for (i=0; i<10; i++) { */
+     vv=bus_r(PLL_PARAM_OUT_REG); 
+     printf("addr %x reg: %x\n",reg,vv); 
+/*     usleep(100); */
+/*   } */
+
+  val=(reg<<PLL_CNTR_ADDR_OFF);
+  printf("wrote: %08x\n",val);
+  bus_w(PLL_CNTRL_REG,val);
+  usleep(100);
+
+  val=0;
+  printf("wrote: %08x\n",val);
+  bus_w(PLL_CNTRL_REG,val);
+
+  while(bus_r(STATUS_REG)&PLL_RECONFIG_BUSY) {
+    printf("get: reconfig busy");
+  }
+  return vv;
 }
 
+void resetPLL() {
+  bus_w(PLL_CNTRL_REG,(1<<PLL_CNTR_RECONFIG_RESET_BIT)|(1<<PLL_CNTR_PLL_RESET_BIT)); //reset PLL and pll reconfig
+  usleep(100);
+  bus_w(PLL_CNTRL_REG, 0);
+}
 
-u_int32_t setClockDivider(int d) {
+u_int32_t setClockDivider(int d, int ic) {
+
+
+   u_int32_t l=0x0c;
+   u_int32_t h=0x0d;
+  u_int32_t val;
   
 
-  int nc;
-  if (d>1)  nc=d;//  nc=161/d;
-  else return -1;
-
-   if (nc>255) 
-     return -1; 
-
-  int addr, addr1, addr0;
-  u_int32_t pat,pat1,pat0;
-
-  addr= PLL_PARAM_REG;
-  addr0= PLL_PARAM_OUT_REG;
-  addr1=PLL_CNTRL_REG;
-  pat1=0x10;
+  u_int32_t tot=800/d;
+  u_int32_t odd=0;
 
 
-  //write high count c0
-/*   pat=(1<<12)|(7<<9)|nc; */
-/*   bus_w(addr, pat); */
-/*   bus_w(addr1, pat1); */
-/*   bus_w(addr1, 0); */
-/*   usleep (1000); */
-/*   pat=bus_r(addr0); */
-/*   bus_w(addr1, 0x4); */
-/*   bus_w(addr1, 0); */
-/*   pat=bus_r(addr0); */
-/*   printf("M nominal count read %x (%d)\n",pat,(pat&0x1ff)); */
+  //	int ic=0  is run clk; ic=1 is adc clk 
+  printf("set clk divider %d to %d\n", ic, d);
+  if (ic>1)
+    return -1;
 
 
- 
-  //write low count c0
-  pat=(nc-1)|(4<<12)|(1<<9);
-  bus_w(addr, pat);
-  bus_w(addr1, pat1);
-  bus_w(addr1, 0);
-  pat0=bus_r(PLL_PARAM_OUT_REG);
-  usleep (1000);
-  printf("C0 low count status %x\n",pat0);
 
-  //write high count c0
-  pat=(nc)|(4<<12)|(0<<9);
-  bus_w(addr, pat);
-  bus_w(addr1, pat1);
-  bus_w(addr1, 0);
-  pat0=bus_r(PLL_PARAM_OUT_REG);
-  printf("C0 high count status %x\n",pat0);
-  usleep (1000);
+  l=tot/2;
+  h=l;
+  if (tot>2*l) {
+    h=l+1;
+    odd=1;
+  } 
+  printf("Low is %d, High is %d\n",l,h);
 
-  //write low count c1
-  pat=(nc-1)|(5<<12)|(1<<9);
-  bus_w(addr, pat);
-  bus_w(addr1, pat1);
-  bus_w(addr1, 0);
-  pat0=bus_r(PLL_PARAM_OUT_REG);
-  printf("C1 high count status %x\n",pat0);
-  usleep (1000);
-
-  //write high count c1
-  pat=(nc)|(5<<12)|(0<<9);
-  bus_w(addr, pat);
-  bus_w(addr1, pat1);
-  bus_w(addr1, 0);
-  pat0=bus_r(PLL_PARAM_OUT_REG);
-  printf("C1 low count status %x\n",pat0);
-  usleep (1000);
-
-  //reconfigure pll
-  pat1=0x8;
-  bus_w(addr1, pat1);
-  bus_w(addr1, 0);
-  pat0=bus_r(PLL_PARAM_OUT_REG);
-  printf("configure  status %d\n",pat0);
-  sleep (1);
-  printf("finish  status %x\n",pat0);
+  if (l>255 || h>255)
+    return -1; //values out of range
 
 
-  bus_w(PLL_CNTRL_REG, 1); //reset PLL
+  
+  setPllReconfigReg(PLL_MODE_REG,1,0);
+
+  getPllReconfigReg(PLL_MODE_REG,0);
+
+  val= (ic<<18)| (odd<<17) | l | (h<<8); //odd division
+
+  printf("val: %08x\n",  val);
+
+  setPllReconfigReg(PLL_C_COUNTER_REG, val,1);
+
+
+  setPllReconfigReg(PLL_START_REG, 1,1);
+  usleep(100000);
+  bus_w(PLL_CNTRL_REG, 0);
+  
+  clkDivider[ic]=d;
+ return clkDivider[ic];
+}
+
+
+int phaseStep(int st, int ic){
+  
+  u_int32_t addr;
+/*   int ic=0  is run clk; ic=1 is adc clk  */
+
+/*   if (st>0) */
+/*     ic=1; */
+/*   else { */
+/*     ic=0; */
+/*     st*=-1; */
+/*   } */
+  bus_w(PLL_CNTRL_REG, 0);
+  setPllReconfigReg(PLL_MODE_REG,1,0);
+  getPllReconfigReg(PLL_MODE_REG,0);
+
+
+  setPllReconfigReg(PLL_PHASE_SHIFT_REG,st|(ic<<21),0); //shifts counter 0
+  printf("shift %08x\n",st|(ic<<21));
+  setPllReconfigReg(PLL_START_REG, 1,1);
+  usleep(100000);
   bus_w(PLL_CNTRL_REG, 0);
 
- return 0;
+  setClockDivider(clkDivider[ic],ic);
+
+
+  return st;
 }
 
 
 
+u_int32_t getClockDivider(int ic) {
 
-u_int32_t getClockDivider() {
+  if (ic>1)
+    return -1;
+  return clkDivider[ic];
+  
 
+/*   int ic=0; */
+/*  u_int32_t val; */
+/*  u_int32_t l,h; */
 
+/*  printf("get clk divider\n"); */
 
-  int ic=0;
+  
+/*   setPllReconfigReg(PLL_MODE_REG,1,0); */
+/*   getPllReconfigReg(PLL_MODE_REG,0); */
+  
+/*   u_int32_t addr=0xa; //c0 */
+/*   if (ic>0) */
+/*     addr=0xb; //c1 */
 
-  //reset pll_reconfig to initial values
-  bus_w(PLL_CNTRL_REG,(1<<PLL_CNTR_RECONFIG_RESET_BIT));
-  usleep(1000);
+/*   val=getPllReconfigReg(PLL_N_COUNTER_REG,0); */
+/*   printf("Getting N counter %08x\n",val); */
 
+/*   l=val&0xff; */
+/*   h=(val>>8)&0xff; */
 
-  // bus_w(PLL_CNTRL_REG,0); 
-  setPllReconfigReg(PLL_MODE_REG,1);
-    getPllReconfigReg(PLL_MODE_REG);
-    getPllReconfigReg(PLL_N_COUNTER_REG);
-    getPllReconfigReg(PLL_M_COUNTER_REG);
+/*   //getPllReconfigReg(PLL_STATUS_REG,0); */
+/*   val=getPllReconfigReg(addr,0); */
+/*   printf("Getting C counter %08x\n",val); */
 
-  return 0;
+  
+
+/*   return 800/(l+h); */
 
 }
 
@@ -1156,14 +1188,31 @@ int64_t getActualTime(){
 
 int64_t getMeasurementTime(){
   int64_t v=get64BitReg(GET_MEASUREMENT_TIME_LSB_REG, GET_MEASUREMENT_TIME_MSB_REG);
-  int64_t mask=0x8000000000000000;
-  if (v & mask ) {
-#ifdef VERBOSE
-    printf("no measurement time left\n");
-#endif
-    return -1E+9;
-  } else
+  // int64_t mask=0x8000000000000000;
+  // if (v & mask ) {
+  //#ifdef VERBOSE
+  //  printf("no measurement time left\n");
+  //#endif
+  //  return -1E+9;
+  // } else
     return v/(1E-9*CLK_FREQ);
+}
+
+int64_t getFramesFromStart(){
+  int64_t v=get64BitReg(FRAMES_FROM_START_LSB_REG, FRAMES_FROM_START_MSB_REG);
+  int64_t v1=get64BitReg(FRAMES_FROM_START_PG_LSB_REG, FRAMES_FROM_START_PG_MSB_REG);
+
+  printf("Frames from start data streaming %lld\n",v);
+  printf("Frames from start run control %lld\n",v1);
+
+  // int64_t mask=0x8000000000000000;
+  // if (v & mask ) {
+  //#ifdef VERBOSE
+  //  printf("no measurement time left\n");
+  //#endif
+  //  return -1E+9;
+  // } else
+    return v;
 }
 
 
@@ -1684,6 +1733,8 @@ int i;
 
   for(i=0;i<100;i++){
 	  //start state machine
+    bus_w16(CONTROL_REG, FIFO_RESET_BIT);
+	  bus_w16(CONTROL_REG, 0x0);
 	  bus_w16(CONTROL_REG, START_ACQ_BIT |  START_EXPOSURE_BIT);
 	  bus_w16(CONTROL_REG, 0x0);
 	  //verify
@@ -1794,21 +1845,23 @@ u_int32_t  fifo_full(void)
 }
 
 
-u_int32_t* fifo_read_event()
+u_int16_t* fifo_read_event()
 {
 
-  int i=0;
 
+  int i=0;
 #ifdef VIRTUAL
   return NULL;
 #endif
 
 #ifdef VERBOSE
   printf("before looping\n");
+  volatile u_int32_t fs;
 #endif
-  volatile u_int32_t t = bus_r(LOOK_AT_ME_REG);
+  volatile u_int32_t t = bus_r16(LOOK_AT_ME_REG);
 
 #ifdef VERBOSE
+  printf("Data bytes is %d\n", dataBytes);
   printf("lookatmereg=x%x\n",t);
 #endif
 /*
@@ -1821,7 +1874,7 @@ u_int32_t* fifo_read_event()
      }
 */
 
-   while((t&0x1)==0) {
+   while(t==0) {
 #ifdef VERYVERBOSE
        printf("before readout %08x %08x\n", runState(), bus_r(LOOK_AT_ME_REG));
 #endif
@@ -1833,27 +1886,27 @@ u_int32_t* fifo_read_event()
 #ifdef VERYVERBOSE
 		   printf("status should be idle!..look at me reg:%08x\n",bus_r(LOOK_AT_ME_REG));
 #endif
-		   if ((t&0x1)==0) {
-#ifdef VERBOSE
+		   if (t==0) {
+		     //#ifdef VERBOSE
 			   printf("no frame found - exiting\n");
 			   printf("%08x %08x\n", runState(), bus_r(LOOK_AT_ME_REG));
-#endif
+			   //#endif
 #ifdef VERYVERBOSE
 			   printf("returning null\n");
-#endif
 			   printf("lookatmereg=x%x\n",t);
+#endif
 			   return NULL;
 		   } else {
-#ifdef VERBOSE
+		     //#ifdef VERBOSE
 			   printf("no frame found %x status %x\n", bus_r(LOOK_AT_ME_REG),runState());
-#endif
+			   //#endif
 			   break;
 		   }
 	   }
 	   t = bus_r(LOOK_AT_ME_REG);
-#ifdef VERYVERBOSE
+	   #ifdef VERYVERBOSE
 	   printf("before starting while loop again: look at me reg:%08x\n\n",bus_r(LOOK_AT_ME_REG));
-#endif
+	   #endif
 	   if (i%1000==0)
 	     printf("%08x %08x\n", runState(), bus_r(LOOK_AT_ME_REG));
 	   i++;
@@ -1863,21 +1916,37 @@ u_int32_t* fifo_read_event()
 #endif
 #ifdef VERYVERBOSE
   printf("before readout %08x %08x\n", runState(), bus_r(LOOK_AT_ME_REG));
-#endif
+  i=0;
+  for (i=0; i<32; i++) {
+    printf("Fifo %d (%04x) status :\n", i,FIFO_STATUS_REG | i);
+    fs=bus_r16(FIFO_STATUS_REG | i);
+    printf("before: %x\n",fs);
 
+  }
+
+#endif
+  
   dma_memcpy(now_ptr,values ,dataBytes);
 
+  //memcpy(now_ptr,values ,dataBytes); //this reads the fifo twice...
+
+#ifdef VERYVERBOSE
+  for (i=0; i<32; i++) {
+    fs=bus_r16(FIFO_STATUS_REG | i);
+    printf("after %d: %x\n",i, fs);
+  }
+#endif
 
 #ifdef VERYVERBOSE
   int a;
   for (a=0;a<8; a=a+2)
 	  printf("\n%d %d: x%04x x%04x ",a+1,a,*(now_ptr+a+1),*(now_ptr+a) );
-  for (a=2554;a<2560; a=a+2)
-	  printf("\n%d %d: x%04x x%04x ",a+1,a,*(now_ptr+a+1),*(now_ptr+a) );
+  //  for (a=2554;a<2560; a=a+2)
+  //	  printf("\n%d %d: x%04x x%04x ",a+1,a,*(now_ptr+a+1),*(now_ptr+a) );
   printf("********\n");
   //memcpy(now_ptr, values, dataBytes);
-#endif
-#ifdef VERYVERBOSE
+  //#endif
+  //#ifdef VERYVERBOSE
   printf("Copying to ptr %08x %d\n",(unsigned int)(now_ptr), dataBytes);
   printf("after readout %08x %08x\n", runState(), bus_r(LOOK_AT_ME_REG));
 #endif
@@ -1885,7 +1954,9 @@ u_int32_t* fifo_read_event()
   if (storeInRAM>0) {
     now_ptr+=dataBytes;
   }
+#ifdef VERYVERBOSE
   printf("lookatmereg=x%x\n",t);
+#endif
   return ram_values;
 }
 
@@ -2091,26 +2162,36 @@ int prepareADC(){
    
     codata=0;           
     codata=(0x14<<8)+(0x0);  //command and value;
-    valw=0xff; bus_w(ADC_WRITE_REG,(valw)); // start point
-     valw=((0xffffffff&(~csmask)));bus_w(ADC_WRITE_REG,valw); //chip sel bar down
+    valw=0xff; 
+    bus_w(ADC_WRITE_REG,(valw)); // start point
+    valw=((0xffffffff&(~csmask)));
+    bus_w(ADC_WRITE_REG,valw); //chip sel bar down
     for (i=0;i<24;i++) {
-      valw=valw&(~(0x1<<cdx));bus_w(ADC_WRITE_REG,valw);usleep(0); //cldwn
+      valw=valw&(~(0x1<<cdx));//cldwn
+      bus_w(ADC_WRITE_REG,valw);
+      usleep(0); 
 #ifdef VERBOSE
       printf("DOWN 0x%x \n",valw);
 #endif
-      valw=(valw&(~(0x1<<ddx)))+(((codata>>(23-i))&0x1)<<ddx); bus_w(ADC_WRITE_REG,valw); usleep(0); //write data (i)
+      valw=(valw&(~(0x1<<ddx)))+(((codata>>(23-i))&0x1)<<ddx); //write data (i)
+      bus_w(ADC_WRITE_REG,valw); 
+      usleep(0); 
 #ifdef VERBOSE
       printf("LOW 0x%x \n",valw);
 #endif
-      valw=valw+(0x1<<cdx);bus_w(ADC_WRITE_REG,valw); usleep(0); //clkup
+      valw=valw+(0x1<<cdx);bus_w(ADC_WRITE_REG,valw); //clkup
+      usleep(0); 
 #ifdef VERBOSE
       printf("up  0x%x \n",valw);
 #endif
     } 
 
- valw=valw&(~(0x1<<cdx));usleep(0);
+    valw=valw&(~(0x1<<cdx));usleep(0);
     valw=0xff; bus_w(ADC_WRITE_REG,(valw)); // stop point =start point */
-       return;
+
+    bus_w(ADC_LATCH_DISABLE_REG,0x0); // enable all ADCs
+    bus_w(DAQ_REG,0xd);
+    return;
 }
 
 
@@ -2611,22 +2692,52 @@ int calibratePedestal(int frames){
   printf("---------------------------\n");
   return 0;
 }
+uint64_t readPatternWord(int addr) {
+  uint64_t word=0;
+  int cntrl=0;
 
+  if (addr>=MAX_PATTERN_LENGTH)
+    return -1;
+ 
+  
+  printf("read %x\n",addr);
+    cntrl= (addr&APATTERN_MASK) << PATTERN_CTRL_ADDR_OFFSET;
+    bus_w(PATTERN_CNTRL_REG, cntrl);
+    usleep(1000);
+    bus_w(PATTERN_CNTRL_REG, cntrl | (1<< PATTERN_CTRL_READ_BIT)  );
+    usleep(1000);
+    printf("reading\n");
+    word=get64BitReg(PATTERN_OUT_LSB_REG,PATTERN_OUT_MSB_REG);
+    printf("read %llx\n", word);
+    usleep(1000);
+    bus_w(PATTERN_CNTRL_REG, cntrl);
+    printf("done\n");
+    
+    return word;
+}
 
 uint64_t writePatternWord(int addr, uint64_t word) {
   
+
   int cntrl=0;
   if (addr>=MAX_PATTERN_LENGTH)
     return -1;
 
-  if (word=!-1){
+  printf("write %x %llx\n",addr, word);
+  if (word!=-1){
+    
     set64BitReg(word,PATTERN_IN_REG_LSB,PATTERN_IN_REG_MSB);
+
+  
     cntrl= (addr&APATTERN_MASK) << PATTERN_CTRL_ADDR_OFFSET;
     bus_w(PATTERN_CNTRL_REG, cntrl);
+    usleep(1000);
     bus_w(PATTERN_CNTRL_REG, cntrl | (1<< PATTERN_CTRL_WRITE_BIT)  );
+    usleep(1000);
     bus_w(PATTERN_CNTRL_REG, cntrl);
-  }
- return word;
+    return word;
+  } else
+  return readPatternWord(addr);
 }
 uint64_t writePatternIOControl(uint64_t word) {
   if (word>=0)set64BitReg(word,PATTERN_IOCTRL_REG_LSB,PATTERN_IOCTRL_REG_MSB);
@@ -2643,52 +2754,52 @@ int setPatternLoop(int level, int *start, int *stop, int *n) {
   int ret=OK;
   int lval=0;
 
+  int nreg;
+  int areg;
 
-  switch (level) {
+  switch (level ) {
   case 0:
-    if (*n>=0) bus_w(*n,PATTERN_N_LOOP0_REG);
-    *n=bus_r(PATTERN_N_LOOP0_REG);
-    lval=bus_r(PATTERN_LOOP0_AREG);
-    if (*start==-1) *start=(lval>> ASTART_OFFSET)   & APATTERN_MASK;
-    if (*stop==-1) *start=(lval>> ASTOP_OFFSET)   & APATTERN_MASK;
-    lval= ((*start & APATTERN_MASK) << ASTART_OFFSET) | ((*stop & APATTERN_MASK) << ASTOP_OFFSET);
-    bus_w(lval, PATTERN_LOOP0_AREG);
+    nreg=PATTERN_N_LOOP0_REG;
+    areg=PATTERN_LOOP0_AREG;
     break;
   case 1:
-    if (*n>=0) bus_w(*n,PATTERN_N_LOOP1_REG);
-    *n=bus_r(PATTERN_N_LOOP1_REG);
-    lval=bus_r(PATTERN_LOOP1_AREG);
-    if (*start==-1) *start=(lval>> ASTART_OFFSET)   & APATTERN_MASK;
-    if (*stop==-1) *start=(lval>> ASTOP_OFFSET)   & APATTERN_MASK;
-    lval= ((*start & APATTERN_MASK) << ASTART_OFFSET) | ((*stop & APATTERN_MASK) << ASTOP_OFFSET);
-    bus_w(lval, PATTERN_LOOP1_AREG);
-
+    nreg=PATTERN_N_LOOP1_REG;
+    areg=PATTERN_LOOP1_AREG;
     break;
   case 2:
-    if (*n>=0) bus_w(*n,PATTERN_N_LOOP2_REG);
-    *n=bus_r(PATTERN_N_LOOP2_REG);
-    lval=bus_r(PATTERN_LOOP2_AREG);
-    if (*start==-1) *start=(lval>> ASTART_OFFSET)   & APATTERN_MASK;
-    if (*stop==-1) *start=(lval>> ASTOP_OFFSET)   & APATTERN_MASK;
-    lval= ((*start & APATTERN_MASK) << ASTART_OFFSET) | ((*stop & APATTERN_MASK) << ASTOP_OFFSET);
-    bus_w(lval, PATTERN_LOOP2_AREG);
-    
+    nreg=PATTERN_N_LOOP2_REG;
+    areg=PATTERN_LOOP2_AREG;
     break;
   case -1:
-    
-    lval=bus_r(PATTERN_LIMITS_AREG);
-    if (*start==-1) start=(lval>> ASTART_OFFSET)   & APATTERN_MASK;
-    if (*stop==-1) start=(lval>> ASTOP_OFFSET)   & APATTERN_MASK;
-    lval= ((*start & APATTERN_MASK) << ASTART_OFFSET) | ((*stop & APATTERN_MASK) << ASTOP_OFFSET);
-    bus_w(lval, PATTERN_LIMITS_AREG);
+    nreg=-1;
+    areg=PATTERN_LIMITS_AREG;
     break;
   default:
-    ret=FAIL;
+    return FAIL;
+  }
 
-
-
+  printf("level %d start %x stop %x nl %d\n",level, *start, *stop, *n);
+  if (nreg>=0) {
+    if ((*n)>=0) bus_w(nreg, *n);
+    printf ("n %d\n",*n);
+    *n=bus_r(nreg);
+    printf ("n %d\n",*n);
 
   }
+
+    printf("level %d start %x stop %x nl %d\n",level, *start, *stop, *n);
+    lval=bus_r(areg);
+    printf("lval %x\n",lval);
+    if (*start==-1) *start=(lval>> ASTART_OFFSET)   & APATTERN_MASK;
+    printf("start %x\n",*start);
+    
+    if (*stop==-1) *stop=(lval>> ASTOP_OFFSET)   & APATTERN_MASK;
+    printf("stop %x\n",*start);
+    lval= ((*start & APATTERN_MASK) << ASTART_OFFSET) | ((*stop & APATTERN_MASK) << ASTOP_OFFSET);
+    printf("lval %x\n",lval);
+    bus_w(areg,lval);
+    printf("lval %x\n",lval);
+
 
   return ret;
 }
@@ -2696,36 +2807,193 @@ int setPatternLoop(int level, int *start, int *stop, int *n) {
 
 int setPatternWaitAddress(int level, int addr) { 
   int ret=-1;
+  int reg;
+
   switch (level) {
   case 0:
-    if (addr>=0) bus_w(addr,PATTERN_WAIT0_AREG);
-    return bus_r(PATTERN_WAIT0_AREG);
+    reg=PATTERN_WAIT0_AREG;
+    break;
   case 1:
-    if (addr>=0) bus_w(addr,PATTERN_WAIT1_AREG);
-    return bus_r(PATTERN_WAIT1_AREG);
+    reg=PATTERN_WAIT1_AREG;
+    break;
   case 2:
-    if (addr>=0)  bus_w(addr,PATTERN_WAIT2_AREG);
-    return bus_r(PATTERN_WAIT2_AREG);
+    reg=PATTERN_WAIT2_AREG;
+    break;
+  default:
+    return -1;
   };
-
-  return ret;
+  printf ("%d addr %x\n",level,addr);
+  if (addr>=0) bus_w(reg, addr);
+  printf ("%d addr %x %x\n",level,addr, bus_r(reg));
+  return bus_r(reg);
 }
 
 
 uint64_t setPatternWaitTime(int level, uint64_t t) { 
   uint64_t ret=-1;
+  int reglsb;
+  int regmsb;
+
+
   switch (level) {
   case 0:
-    if (t>=0) set64BitReg(t,PATTERN_WAIT0_TIME_REG_LSB,PATTERN_WAIT0_TIME_REG_MSB);
-      return get64BitReg(PATTERN_WAIT0_TIME_REG_LSB,PATTERN_WAIT0_TIME_REG_MSB);
+    reglsb=PATTERN_WAIT0_TIME_REG_LSB;
+    regmsb=PATTERN_WAIT0_TIME_REG_MSB;
+    break;
   case 1:
-    if (t>=0) set64BitReg(t,PATTERN_WAIT1_TIME_REG_LSB,PATTERN_WAIT1_TIME_REG_MSB);
-    return get64BitReg(PATTERN_WAIT1_TIME_REG_LSB,PATTERN_WAIT1_TIME_REG_MSB);
+    reglsb=PATTERN_WAIT1_TIME_REG_LSB;
+    regmsb=PATTERN_WAIT1_TIME_REG_MSB;
+    break;
   case 2:
-    if (t>=0) set64BitReg(t,PATTERN_WAIT2_TIME_REG_LSB,PATTERN_WAIT2_TIME_REG_MSB);
-    return get64BitReg(PATTERN_WAIT2_TIME_REG_LSB,PATTERN_WAIT2_TIME_REG_MSB);
+    reglsb=PATTERN_WAIT2_TIME_REG_LSB;
+    regmsb=PATTERN_WAIT2_TIME_REG_MSB;
+    break;
+  default:
+    return -1;
   }
-  return ret;
+
+
+    if (t>=0) set64BitReg(t,reglsb,regmsb);
+    return get64BitReg(reglsb,regmsb);
+
+}
+
+
+void initDac(int dacnum) {
+
+
+  u_int32_t offw,codata;
+  u_int16_t valw; 
+  int iru,i,ddx,csdx,cdx;
+ 
+    
+
+  //setting int reference 
+  offw=DAC_REG;
+   
+ 
+    ddx=0; cdx=1;
+    csdx=dacnum/8+2; 
+    printf("data bit=%d, clkbit=%d, csbit=%d",ddx,cdx,csdx);
+    codata=((((0x6)<<4)+((0xf))<<16)+((0x0<<4)&0xfff0));  
+  
+      valw=0xffff; bus_w(offw,(valw)); // start point
+      valw=((valw&(~(0x1<<csdx))));bus_w(offw,valw); //chip sel bar down
+      for (i=1;i<25;i++) {
+
+	valw=(valw&(~(0x1<<cdx)));bus_w(offw,valw); //cldwn	
+	valw=((valw&(~(0x1<<ddx)))+(((codata>>(24-i))&0x1)<<ddx));bus_w(offw,valw);//write data (i)
+	//	printf("%d ", ((codata>>(24-i))&0x1));
+        
+
+	valw=((valw&(~(0x1<<cdx)))+(0x1<<cdx));bus_w(offw,valw);//clkup
+      }
+      // printf("\n ");
+     
+	
+       	valw=((valw&(~(0x1<<csdx)))+(0x1<<csdx));bus_w(offw,valw); //csup
+
+	valw=(valw&(~(0x1<<cdx)));bus_w(offw,valw); //cldwn
+
+
+
+
+      valw=0xffff; bus_w(offw,(valw)); // stop point =start point of course */
+
+
+ //end of setting int reference 
+
+
+
+
+
+
+
+}
+
+int setDacRegister(int dacnum,int dacvalue) {
+    int val;
+  if (dacnum%2) {
+    val=((dacvalue & 0xffff)<<16) | getDacRegister(dacnum-1);
+  }  else {
+    val=(getDacRegister(dacnum+1)<<16) | (dacvalue & 0xffff);
+    
+  }
+  
+  printf("Dac register %x wrote %08x\n",(128+dacnum/2)<<11,val);
+    bus_w((128+dacnum/2)<<11, val);
+
+  return getDacRegister(dacnum);
+  
+
+}
+int getDacRegister(int dacnum) {
+
+  int retval;
+
+  retval=bus_r((128+dacnum/2)<<11);
+  printf("Dac register %x read %08x\n",(128+dacnum/2)<<11,retval);
+  if (dacnum%2) 
+    return (retval>>16)&0xffff;
+  else
+    return retval&0xffff;
+  
+}
+
+
+int setDac(int dacnum,int dacvalue){ 
+
+  u_int32_t offw,codata;
+  u_int16_t valw; 
+  int iru,i,ddx,csdx,cdx;
+  int retval;
+
+  int dacch=0;
+
+  if (dacvalue>=0) {
+    
+  //setting int reference 
+  offw=DAC_REG;
+   
+ 
+    ddx=0; cdx=1;
+    csdx=dacnum/8+2; 
+
+    dacch=dacnum%8;
+
+    printf("data bit=%d, clkbit=%d, csbit=%d",ddx,cdx,csdx);
+
+    codata=((((0x2)<<4)+((dacch)&0xf))<<16)+((dacvalue<<4)&0xfff0);  
+  
+      valw=0xffff; bus_w(offw,(valw)); // start point
+      valw=((valw&(~(0x1<<csdx))));bus_w(offw,valw); //chip sel bar down
+      for (i=1;i<25;i++) {
+
+	valw=(valw&(~(0x1<<cdx)));bus_w(offw,valw); //cldwn	
+	valw=((valw&(~(0x1<<ddx)))+(((codata>>(24-i))&0x1)<<ddx));bus_w(offw,valw);//write data (i)
+	//	printf("%d ", ((codata>>(24-i))&0x1));
+        
+
+	valw=((valw&(~(0x1<<cdx)))+(0x1<<cdx));bus_w(offw,valw);//clkup
+      }
+      // printf("\n ");
+     
+	
+       	valw=((valw&(~(0x1<<csdx)))+(0x1<<csdx));bus_w(offw,valw); //csup
+
+	valw=(valw&(~(0x1<<cdx)));bus_w(offw,valw); //cldwn
+
+
+
+
+      valw=0xffff; bus_w(offw,(valw)); // stop point =start point of course */
+     
+    
+    printf("Writing %d in DAC(0-15) %d \n",dacvalue,dacnum);
+    setDacRegister(dacnum,dacvalue); 
+  }
+
+  return getDacRegister(dacnum); 
 }
 
 

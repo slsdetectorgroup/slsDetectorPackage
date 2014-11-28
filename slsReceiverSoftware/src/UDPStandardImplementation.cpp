@@ -1647,6 +1647,7 @@ int UDPStandardImplementation::startListening(){
 				stopListening(ithread,rc,packetcount,total);
 				continue;
 			}
+
 /*
 			//start indices for each start of scan/acquisition - eiger does it before
 			if((!measurementStarted) && (rc > 0) && (!ithread))
@@ -2004,7 +2005,7 @@ void UDPStandardImplementation::startFrameIndices(int ithread){
 
 
 
-void UDPStandardImplementation::stopListening(int ithread, int rc, int &pc, int &t){
+void UDPStandardImplementation::stopListening(int ithread, int rc, int &pc, int &t){cout << "Stop Listening" << endl;
 	FILE_LOG(logDEBUG) << __AT__ << " called";
 
 
@@ -2019,7 +2020,9 @@ int i;
 					exit(-1);
 				}
 				//push the last buffer into fifo
-				if((myDetectorType != EIGER) && (rc > 0)){ //for eiger throw away incomplete frames
+				if((myDetectorType == EIGER) && (rc < 266240) )//for eiger throw away incomplete frames
+					fifoFree[ithread]->push(buffer[ithread]);
+				else if(rc > 0){cout<< ithread << " last rc:"<<rc<<endl;
 					pc = (rc/onePacketSize);
 #ifdef VERYDEBUG
 					cout << ithread <<  " *** last packetcount:" << pc << endl;
@@ -2030,8 +2033,7 @@ int i;
 #ifdef VERYDEBUG
 					cout << ithread << " *** last lbuf1:" << (void*)buffer[ithread] << endl;
 #endif
-				}else
-					fifoFree[ithread]->push(buffer[ithread]);//for all detectors too. why was this not there? for rc=0?
+				}
 
 
 				//push dummy buffer to all writer threads

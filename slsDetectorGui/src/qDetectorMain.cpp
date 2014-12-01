@@ -47,20 +47,23 @@ int main (int argc, char **argv) {
 
 qDetectorMain::qDetectorMain(int argc, char **argv, QApplication *app, QWidget *parent) :
 				QMainWindow(parent), theApp(app),myDet(0),detID(0),myPlot(0),tabs(0),isDeveloper(0){
-
+bool found;
 	string configFName = "";
 	// Getting all the command line arguments
 	for(int iarg=1; iarg<argc; iarg++){
-		if(!strcasecmp(argv[iarg],"-developer"))	{isDeveloper=1;}
-		if(!strcasecmp(argv[iarg],"-id"))			{detID=atoi(argv[iarg+1]);}
-		if(!strcasecmp(argv[iarg],"-config"))		{configFName=string(argv[iarg+1]);}
-		if(!strcasecmp(argv[iarg],"-f"))			{configFName=string(argv[iarg+1]);}
-		if(!strcasecmp(argv[iarg],"-help")){
+		found = false;
+		if(!strcasecmp(argv[iarg],"--developer"))					{isDeveloper=1;found = true;}
+		if((!strcasecmp(argv[iarg],"--id")) && (iarg+1 < argc))		{detID=atoi(argv[iarg+1]);iarg++;found = true;}
+		if((!strcasecmp(argv[iarg],"--config")) && (iarg+1 < argc))	{configFName=string(argv[iarg+1]);iarg++;found = true;}
+		if((!strcasecmp(argv[iarg],"--f")) && (iarg+1 < argc))		{configFName=string(argv[iarg+1]);iarg++;found = true;}
+		if(!found){
 			cout << "Possible Arguments are:" << endl;
-			cout << "-help \t\t : \t This help" << endl;
-			cout << "-developer \t : \t Enables the developer tab" << endl;
-			cout << "-id i \t\t : \t Sets the multi detector id to i (the default is 0). "
+			cout << "--developer \t\t : \t Enables the developer tab" << endl;
+			cout << "--f [fname]\t\t : \t Loads config file fname" << endl;
+			cout << "--config [fname]\t : \t Loads config file fname" << endl;
+			cout << "--id [i] \t\t : \t Sets the multi detector id to i (the default is 0). "
 				"Required only when more than one multi detector object is needed." << endl;
+			exit(-1);
 		}
 	}
 

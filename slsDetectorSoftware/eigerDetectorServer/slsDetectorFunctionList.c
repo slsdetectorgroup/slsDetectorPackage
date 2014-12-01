@@ -14,6 +14,7 @@
 #include "FebControl.h"
 #include "Beb.h"
 
+#define BEB_NUM 34
 
 enum detectorSettings thisSettings;
 const char* dac_names[16] = {"SvP","Vtr","Vrf","Vrs","SvN","Vtgstv","Vcmp_ll","Vcmp_lr","cal","Vcmp_rl","rxb_rb","rxb_lb","Vcmp_rr","Vcp","Vcn","Vis"};
@@ -477,7 +478,7 @@ enum detectorSettings setSettings(enum detectorSettings sett, int imod){
 
 int startReceiver(int d){
 	//if(trialMasterMode == IS_MASTER)
-	if(!bottom)
+	//if(!bottom)
 		Feb_Control_PrepareForAcquisition();
 	return OK;
 }
@@ -486,10 +487,10 @@ int startReceiver(int d){
 int startStateMachine(){
 int ret;int i=0;
 	//if(trialMasterMode == IS_MASTER){
-		if(!bottom){
+		//if(!bottom){
 		printf("Going to start acquisition\n");
 		Feb_Control_StartAcquisition();
-	}
+	//}
 
 	//do not read status here, cannot get images then
 
@@ -498,7 +499,7 @@ int ret;int i=0;
 		ret =  startReadOut();
 	////}
 	//if(trialMasterMode == IS_MASTER){
-		if(!bottom){
+		//if(!bottom){
 
 			/*
 			if(getRunStatus() == IDLE){
@@ -520,8 +521,9 @@ int ret;int i=0;
 				printf("*****Acquiring...\n");
 
 
-		}
-			printf("****Returning\n");
+		//}
+				/*else usleep(1000000);
+			printf("****Returning\n");*/
 
 			return ret;
 }
@@ -544,7 +546,7 @@ int startReadOut(){
 	dst_requested[0] = 1;
     while(dst_requested[on_dst]){
       //waits on data
-    	int beb_num = 24;//Feb_Control_GetModuleNumber();
+    	int beb_num = BEB_NUM;//Feb_Control_GetModuleNumber();
 
       if((ret_val = (!Beb_RequestNImages(beb_num,1,send_to_ten_gig,on_dst,nimages_per_request,0)||
     		  !Beb_RequestNImages(beb_num,2,send_to_ten_gig,0x20|on_dst,nimages_per_request,0))))
@@ -758,7 +760,7 @@ int configureMAC(int ipad, long long int macad, long long int detectormacadd, in
 	printf("dst_mac:%s\n",dst_mac);
 
 
-	int beb_num = 24;//Feb_Control_GetModuleNumber();
+	int beb_num = BEB_NUM;//Feb_Control_GetModuleNumber();
 	int header_number = 0;
 	int dst_port = udpport;
 

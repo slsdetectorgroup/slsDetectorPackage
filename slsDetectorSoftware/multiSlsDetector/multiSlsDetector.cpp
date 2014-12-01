@@ -4455,7 +4455,7 @@ slsDetectorDefs::runStatus multiSlsDetector::getReceiverStatus(){
       return s;
     }
 
-  if (detectors[0]) s=detectors[0]->getReceiverStatus();
+ // if (detectors[0]) s=detectors[0]->getReceiverStatus();
 
   for (int i=0; i<thisMultiDetector->numberOfDetectors; i++) {
     s1=detectors[i]->getReceiverStatus();
@@ -4463,8 +4463,10 @@ slsDetectorDefs::runStatus multiSlsDetector::getReceiverStatus(){
       setErrorMask(getErrorMask()|(1<<i));
     if (s1==ERROR)
       s=ERROR;
-    if (s1==IDLE && s!=IDLE)
-      s=ERROR;
+    //if (s1==IDLE && s!=IDLE)
+    //  s=ERROR;
+    if (s1!=IDLE)
+    	s = s1;
 
   }
   return s;

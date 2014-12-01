@@ -78,7 +78,7 @@ unsigned int BebInfo_GetSrcPort(struct BebInfo* bebInfo, int ten_gig) {return te
 
 
 void BebInfo_Print(struct BebInfo* bebInfo){
-  printf("\t%d) Beb Info.:\n",bebInfo->beb_number);
+  printf("\t%d) Beb Info.\n",bebInfo->beb_number);
   printf("\t\tSerial Add: 0x%x\n",bebInfo->serial_address);
   printf("\t\tMAC   1GbE: %s\n",bebInfo->src_mac_1GbE);
   printf("\t\tIP    1GbE: %s\n",bebInfo->src_ip_1GbE);

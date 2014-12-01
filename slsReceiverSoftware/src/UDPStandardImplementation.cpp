@@ -1521,10 +1521,10 @@ void UDPStandardImplementation::startReadout(){
 	//#endif
 
 	//wait so that all packets which take time has arrived
-	usleep(50000);
+	usleep(5000);
 
 	/********************************************/
-	usleep(2000000);
+	//usleep(2000000);
 	pthread_mutex_lock(&status_mutex);
 	status = TRANSMITTING;
 	pthread_mutex_unlock(&status_mutex);

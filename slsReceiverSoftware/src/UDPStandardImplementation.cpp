@@ -91,6 +91,22 @@ UDPStandardImplementation::UDPStandardImplementation()
 		}
 
 
+void UDPStandardImplementation::configure(map<string, string> config_map){
+	FILE_LOG(logWARNING) << __AT__ << " called";
+
+	map<string, string>::const_iterator pos;
+	pos = config_map.find("mode");
+	if (pos != config_map.end() ){
+		int b;
+		if(!sscanf(pos->second.c_str(), "%d", &b)){
+			cout << "Warning: Could not parse mode. Assuming top mode." << endl;
+			b = 0;
+		}
+		bottom = b!= 0;
+		cout << "bottom:"<< bottom << endl;
+	}
+};
+
 void UDPStandardImplementation::initializeMembers(){
 	myDetectorType = GENERIC;
 	maxPacketsPerFile = 0;
@@ -945,12 +961,12 @@ int UDPStandardImplementation::createUDPSockets(){
 	port[1] = server_port[1];
 
 	/** eiger specific */
-	/*
+
 	if(bottom){
 		port[0] = server_port[1];
 		port[1] = server_port[0];
 	}
-	*/
+
 	//if eth is mistaken with ip address
 	if (strchr(eth,'.')!=NULL)
 		strcpy(eth,"");

@@ -2278,9 +2278,9 @@ int get_run_status(int file_des) {
 #ifdef VERBOSE
 	printf("Getting status\n");
 #endif
-#ifdef SLS_DETECTOR_FUNCTION_LIST
-	s= getRunStatus();printf("status:%d\n");
-#endif
+//#ifdef SLS_DETECTOR_FUNCTION_LIST
+	s= getRunStatus();printf("status:%x\n",s);
+//#endif
 
 	if (ret!=OK) {
 		printf("get status failed\n");
@@ -3269,10 +3269,7 @@ int start_receiver(int file_des) {
 	strcpy(mess,"Could not start receiver\n");
 
 	/* execute action if the arguments correctly arri ved*/
-#ifndef GOTTHARDD
-	ret = FAIL;
-	strcpy(mess,"Not applicable/implemented for this detector\n");
-#else
+#if defined(GOTTHARDD) || defined(EIGERD)
 #ifdef SLS_DETECTOR_FUNCTION_LIST
 	if (lockStatus==1 && differentClients==1){//necessary???
 		sprintf(mess,"Detector locked by %s\n", lastClientIP);
@@ -3282,6 +3279,9 @@ int start_receiver(int file_des) {
 		ret = startReceiver(1);
 
 #endif
+#else
+	ret = FAIL;
+	strcpy(mess,"Not applicable/implemented for this detector\n");
 #endif
 
 	if(ret==OK && differentClients){

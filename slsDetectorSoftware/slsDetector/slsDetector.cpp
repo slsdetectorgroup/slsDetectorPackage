@@ -2041,6 +2041,7 @@ dacs_t slsDetector::setDAC(dacs_t val, dacIndex index, int mV, int imod){
   arg[1]=imod;
   arg[2]=mV;
 
+
 #ifdef VERBOSE
   std::cout<< std::endl;
   std::cout<< "Setting DAC "<< index << " of module " << imod  <<  " to " << val << std::endl;

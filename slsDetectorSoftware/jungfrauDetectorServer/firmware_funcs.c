@@ -1927,7 +1927,7 @@ u_int16_t* fifo_read_event()
 #endif
   
   dma_memcpy(now_ptr,values ,dataBytes);
-
+  printf("-");
   //memcpy(now_ptr,values ,dataBytes); //this reads the fifo twice...
 
 #ifdef VERYVERBOSE
@@ -1958,6 +1958,7 @@ u_int16_t* fifo_read_event()
   printf("lookatmereg=x%x\n",t);
 #endif
   return ram_values;
+  printf("\n");
 }
 
 
@@ -2740,12 +2741,16 @@ uint64_t writePatternWord(int addr, uint64_t word) {
   return readPatternWord(addr);
 }
 uint64_t writePatternIOControl(uint64_t word) {
-  if (word>=0)set64BitReg(word,PATTERN_IOCTRL_REG_LSB,PATTERN_IOCTRL_REG_MSB);
+  if (word!=0xffffffffffffffff) {
+    //    printf("%llx %llx %lld",get64BitReg(PATTERN_IOCTRL_REG_LSB,PATTERN_IOCTRL_REG_MSB),word);
+    set64BitReg(word,PATTERN_IOCTRL_REG_LSB,PATTERN_IOCTRL_REG_MSB);
+    //  printf("************ write IOCTRL (%x)\n",PATTERN_IOCTRL_REG_MSB);
+  }
   return get64BitReg(PATTERN_IOCTRL_REG_LSB,PATTERN_IOCTRL_REG_MSB);
     
 }
 uint64_t writePatternClkControl(uint64_t word) {
-  if (word>=0)set64BitReg(word,PATTERN_IOCLKCTRL_REG_LSB,PATTERN_IOCLKCTRL_REG_MSB);
+  if (word!=0xffffffffffffffff) set64BitReg(word,PATTERN_IOCLKCTRL_REG_LSB,PATTERN_IOCLKCTRL_REG_MSB);
   return get64BitReg(PATTERN_IOCLKCTRL_REG_LSB,PATTERN_IOCLKCTRL_REG_MSB);
     
 }
@@ -2789,14 +2794,24 @@ int setPatternLoop(int level, int *start, int *stop, int *n) {
 
     printf("level %d start %x stop %x nl %d\n",level, *start, *stop, *n);
     lval=bus_r(areg);
+/*     printf("l=%x\n",bus_r16(areg)); */
+/*     printf("m=%x\n",bus_r16_m(areg)); */
+    
+
+
+
+
     printf("lval %x\n",lval);
     if (*start==-1) *start=(lval>> ASTART_OFFSET)   & APATTERN_MASK;
     printf("start %x\n",*start);
+
     
     if (*stop==-1) *stop=(lval>> ASTOP_OFFSET)   & APATTERN_MASK;
-    printf("stop %x\n",*start);
+    printf("stop %x\n",*stop);
+
     lval= ((*start & APATTERN_MASK) << ASTART_OFFSET) | ((*stop & APATTERN_MASK) << ASTOP_OFFSET);
     printf("lval %x\n",lval);
+
     bus_w(areg,lval);
     printf("lval %x\n",lval);
 
@@ -2822,9 +2837,14 @@ int setPatternWaitAddress(int level, int addr) {
   default:
     return -1;
   };
-  printf ("%d addr %x\n",level,addr);
+  //  printf("BEFORE *********PATTERN IOCTRL IS %llx (%x)\n",writePatternIOControl(-1), PATTERN_IOCTRL_REG_MSB);
+
+  // printf ("%d addr %x (%x)\n",level,addr,reg);
   if (addr>=0) bus_w(reg, addr);
-  printf ("%d addr %x %x\n",level,addr, bus_r(reg));
+  // printf ("%d addr %x %x (%x) \n",level,addr, bus_r(reg), reg);
+
+  // printf("AFTER *********PATTERN IOCTRL IS %llx (%x)\n",writePatternIOControl(-1), PATTERN_IOCTRL_REG_MSB);
+
   return bus_r(reg);
 }
 
@@ -2920,8 +2940,8 @@ int setDacRegister(int dacnum,int dacvalue) {
     
   }
   
-  printf("Dac register %x wrote %08x\n",(128+dacnum/2)<<11,val);
-    bus_w((128+dacnum/2)<<11, val);
+  printf("Dac register %x wrote %08x\n",(DAC_REG_OFF+dacnum/2)<<11,val);
+    bus_w((DAC_REG_OFF+dacnum/2)<<11, val);
 
   return getDacRegister(dacnum);
   
@@ -2931,8 +2951,8 @@ int getDacRegister(int dacnum) {
 
   int retval;
 
-  retval=bus_r((128+dacnum/2)<<11);
-  printf("Dac register %x read %08x\n",(128+dacnum/2)<<11,retval);
+  retval=bus_r((DAC_REG_OFF+dacnum/2)<<11);
+  printf("Dac register %x read %08x\n",(DAC_REG_OFF+dacnum/2)<<11,retval);
   if (dacnum%2) 
     return (retval>>16)&0xffff;
   else

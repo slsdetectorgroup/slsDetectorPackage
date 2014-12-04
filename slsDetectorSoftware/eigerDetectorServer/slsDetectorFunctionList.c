@@ -478,7 +478,7 @@ enum detectorSettings setSettings(enum detectorSettings sett, int imod){
 
 int startReceiver(int d){
 	//if(trialMasterMode == IS_MASTER)
-	//if(!bottom)
+	if(!bottom)
 		Feb_Control_PrepareForAcquisition();
 	return OK;
 }
@@ -487,10 +487,10 @@ int startReceiver(int d){
 int startStateMachine(){
 int ret;int i=0;
 	//if(trialMasterMode == IS_MASTER){
-		//if(!bottom){
+		if(!bottom){
 		printf("Going to start acquisition\n");
 		Feb_Control_StartAcquisition();
-	//}
+	}
 
 	//do not read status here, cannot get images then
 
@@ -499,8 +499,9 @@ int ret;int i=0;
 		ret =  startReadOut();
 	////}
 	//if(trialMasterMode == IS_MASTER){
-		//if(!bottom){
 
+
+		if(!bottom){
 			/*
 			if(getRunStatus() == IDLE){
 				for(i=0;i<100000;i++){
@@ -521,7 +522,7 @@ int ret;int i=0;
 				printf("*****Acquiring...\n");
 
 
-		//}
+		}
 				/*else usleep(1000000);
 			printf("****Returning\n");*/
 

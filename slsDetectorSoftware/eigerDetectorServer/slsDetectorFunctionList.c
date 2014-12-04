@@ -51,7 +51,9 @@ unsigned int nimages_per_request=1;
 int  on_dst=0;
 int dst_requested[32] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
 
-int default_dac_values[16] = {0,2000,2000,1250,700,1278,500,500,2000,500,500,550,550,100,1000,775};
+//char  Module_dac_names[16][10]= {"SvP","Vtr","Vrf","Vrs","SvN","Vtgstv","Vcmp_ll","Vcmp_lr","cal","Vcmp_rl","rxb_rb","rxb_lb","Vcmp_rr","Vcp","Vcn","Vis"};;
+
+int default_dac_values[16] = {0,2480,3300,1400,4000,2556,1000,1000,4000,1000,1000,1000,1000,200,2000,1550};
 
 
 enum masterFlags  masterMode=NO_MASTER;

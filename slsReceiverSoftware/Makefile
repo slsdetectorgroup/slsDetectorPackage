@@ -79,8 +79,9 @@ mysocket_test:
 
 clean: buildclean
 	make testclean
-	rm $(DESTDIR)/libSlsReceiver.a   $(DESTDIR)/libSlsReceiver.so
-	rm $(PROGS)
+	if test -e $(DESTDIR)/libSlsReceiver.a; then rm $(DESTDIR)/libSlsReceiver.a;fi
+	if test -e $(DESTDIR)/libSlsReceiver.so; then rm $(DESTDIR)/libSlsReceiver.so;fi
+	if test -e $(PROGS); then rm $(PROGS);fi
 
 builddir:
 	if [ ! -d $(BUILDDIR) ]; then mkdir $(BUILDDIR); fi

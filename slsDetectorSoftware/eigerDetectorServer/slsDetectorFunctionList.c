@@ -143,10 +143,10 @@ int initDetector(){
   Feb_Control_CheckSetup();
 
   //top or bottom
-  bottom = Feb_Control_IsBottomModule();
- // if(getDetectorNumber()==0xbeb016)
-//	  bottom = 0;
-  //else bottom = 1;
+  //bottom = Feb_Control_IsBottomModule();
+  if(getDetectorNumber()==0xbeb031)
+	  bottom = 0;
+  else bottom = 1;
 
   if(bottom)
 	  printf("BOTTOM ***************\n");

@@ -947,7 +947,7 @@ int read_register(int file_des) {
 
 int set_dac(int file_des) {
 	//default:all mods
-	int retval;
+  int retval, retval1;
 	int ret=OK;
 	int arg[3];
 	enum dacIndex ind;
@@ -1032,8 +1032,10 @@ int set_dac(int file_des) {
 		  if (mV) {
 		    if (val>2500)
 		      val=-1;
+		    printf("%d mV is ",val);
 		    if (val>0)
 		      val=16535*val/2500;
+		    printf("%d DACu\n", val);
 		  } else if (val>16535)
 		    val=-1;
 		  
@@ -1057,9 +1059,13 @@ int set_dac(int file_des) {
 /* 		else if ((retval-val)<=3 || val==-1) */
 /* 			ret=OK; */
 	  
-	  if (mV)
-	    retval=2500*val/16535;
-
+	  if (mV) {
+	    
+	    printf("%d DACu is ",retval);
+	    retval1=2500*retval/16535;
+	    printf("%d mV \n",retval1);
+	  } else
+	    retval1=retval;
 	}
 #endif
 
@@ -1081,6 +1087,7 @@ int set_dac(int file_des) {
 	if (ret!=FAIL) {
 		/* send return argument */
 		n += sendDataOnly(file_des,&retval,sizeof(retval));
+		n += sendDataOnly(file_des,&retval1,sizeof(retval1));
 	} else {
 		n += sendDataOnly(file_des,mess,sizeof(mess));
 	}

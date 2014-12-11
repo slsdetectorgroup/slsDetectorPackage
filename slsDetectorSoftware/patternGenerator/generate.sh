@@ -9,13 +9,22 @@ if [ "$#" -ge 2 ]; then
     outfile=$2
 fi
 exe=$infile"exe"
+if [ "$#" -ge 4 ]; then
+    exe=$4
+fi
+
 if [ "$#" -ge 3 ]; then
-    exe=$3
+    outfilebin=$3
 fi
 
 if [ -f "$infile" ]
 then
-gcc -DINFILE="\"$infile\"" -DOUTFILE="\"$outfile\""  -DOUTFILEBIN="\"$outfilebin\"" -o $exe generator.c ; ./$exe ; rm $exe
+gcc -DINFILE="\"$infile\"" -DOUTFILE="\"$outfile\""  -DOUTFILEBIN="\"$outfilebin\"" -o $exe generator.c ; 
+echo compiling
+$exe ; 
+echo cleaning
+rm $exe
+echo done
 else
 	echo "$infile not found."
 fi

@@ -151,11 +151,15 @@ CB(bottom_din);PW;
 }
 //END of FUNCTIONS
 ////////////////////////////////////////////////////////
-//LET'S BYPASS PREAMP AND CDS and write on preamp out.//
+//LET BYPASS PREAMP AND CDS and write on preamp out.//
 //THIS ALLOWS CHECKING SOURCE FOLLOWERS               //
 ////////////////////////////////////////////////////////
+
+   
 PW;
+   
 SB(5); PW;
+
 CB(5); PW;
 
 START; //pattern starts from here
@@ -164,13 +168,13 @@ setwaitpoint(0); //set wait points
 PW;
 setwaittime(0,20); //wait time - can be changed dynamically
 SB(adc_ena);PW;
-SB(adc_sync);
+   printf("ADC sync %x %d %llx\n",iaddr,adc_sync, pat);
+SB(adc_sync);PW;
+   printf("ADC sync %x %d  %llx\n",iaddr, adc_sync, pat);
 CB(gHG);
 setwaitpoint(1); //set wait points
 setwaittime(1,16); //wait time - can be changed dynamically
 CB(adc_sync);PW;
-//NB: We have to SELECT A PIXEL to enable column out.
-//SELECT PIXEL 1,1 for readout
 load_pix(10, 20);
 
 CB(res);

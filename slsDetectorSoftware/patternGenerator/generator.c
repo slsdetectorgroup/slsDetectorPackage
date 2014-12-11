@@ -6,12 +6,12 @@ gcc -DINFILE="\"test.p\"" -DOUTFILE="\"test.pat\"" -o test.exe generator.c ; ./t
 
 *************************************************************************/
 
-#include <stdlib.h>  /* exit() */
-#include <stdint.h>  /* exit() */
-#include <string.h>  /* memset(), memcpy() */
-#include <sys/utsname.h>   /* uname() */
+#include <stdlib.h>  
+#include <stdint.h>  
+#include <string.h>  
+#include <sys/utsname.h>   
 #include <sys/types.h>
-#include <unistd.h>  /* fork(), write(), close() */
+#include <unistd.h>  
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <errno.h>
@@ -21,7 +21,6 @@ gcc -DINFILE="\"test.p\"" -DOUTFILE="\"test.pat\"" -o test.exe generator.c ; ./t
 #include <stdio.h>
 #include <string.h>
 #include <unistd.h>
-//#include <asm/page.h>
 
 #define MAXLOOPS 3
 #define MAXTIMERS 3
@@ -48,8 +47,6 @@ uint64_t PAT[MAXWORDS];
 
 
 int i,ii,iii,j,jj,jjj,pixx,pixy,memx,memy,muxout,memclk,colclk,rowclk,muxclk,memcol,memrow,loopcounter;
-//int W[33];
-//u_int32_t W;
 
 void setstart() {
   start=iaddr;
@@ -81,16 +78,12 @@ void setclk(int bit) {
 void clearbit(int bit){
   uint64_t mask=1;
   mask=mask<<bit;
-  //  printf("CB %d %016llx %016llx ",bit, pat, mask);
   pat &= ~mask;
-  // printf("%016llx\n", pat);
 }
 void setbit(int bit){
   uint64_t mask=1;
   mask=mask<<bit;
-  // printf("SB %d %016llx %016llx ",bit, pat, mask);
   pat |= mask;
-  // printf("%016llx\n", pat);
 }
 
 int checkbit(int bit) {

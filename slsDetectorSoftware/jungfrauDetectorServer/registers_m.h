@@ -113,7 +113,12 @@
 #define DAC_REG     64<<11//0x17<<11// control the dacs
 //ADC
 #define ADC_WRITE_REG         65<<11//0x18<<11
-#define ADC_SYNC_REG          66<<11//0x19<<11
+//#define ADC_SYNC_REG          66<<11//0x19<<11
+//#define HV_REG                67<<11//0x20<<11
+
+#define ADCCLK_MASK_REG      66<<11
+#define ADC_INVERSION_REG      66<<11
+
 //#define MUTIME_REG            0x1a<<11
 //temperature
 #define TEMP_IN_REG           0x1b<<11
@@ -123,7 +128,6 @@
 #define ENET_CONF_REG         0x1e<<11
 //#define WRTSE_SHAD_REG        0x1f<<11
 //HV
-#define HV_REG                67<<11//0x20<<11
 
 
 #define DUMMY_REG             68<<11//0x21<<11
@@ -251,7 +255,8 @@
 
    
 #define PATTERN_IOCTRL_REG_LSB 108<<11
-#define PATTERN_IOCTRL_REG_MSB 109<<12
+#define PATTERN_IOCTRL_REG_MSB 109<<11
+
 #define PATTERN_IOCLKCTRL_REG_LSB 110<<11
 #define PATTERN_IOCLKCTRL_REG_MSB 111<<11
 #define PATTERN_IN_REG_LSB 112<<11
@@ -263,15 +268,15 @@
 #define PATTERN_WAIT2_TIME_REG_LSB 118<<11
 #define PATTERN_WAIT2_TIME_REG_MSB 119<<11
    
-
-#define DAC_0_1_VAL_REG 128<<11 
-#define DAC_2_3_VAL_REG 129<<11  
-#define DAC_4_5_VAL_REG 130<<11  
-#define DAC_6_7_VAL_REG 131<<11  
-#define DAC_8_9_VAL_REG 132<<11  
-#define DAC_10_11_VAL_REG 133<<11  
-#define DAC_12_13_VAL_REG 134<<11  
-#define DAC_14_15_VAL_REG 135<<11  
+#define DAC_REG_OFF 120 
+#define DAC_0_1_VAL_REG 120<<11 
+#define DAC_2_3_VAL_REG 121<<11  
+#define DAC_4_5_VAL_REG 122<<11  
+#define DAC_6_7_VAL_REG 123<<11  
+#define DAC_8_9_VAL_REG 124<<11  
+#define DAC_10_11_VAL_REG 125<<11  
+#define DAC_12_13_VAL_REG 126<<11  
+#define DAC_14_15_VAL_REG 127<<11  
    
  
  

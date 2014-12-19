@@ -1886,7 +1886,7 @@ int get_run_status(int file_des) {
 
 		  printf("-----------------------------------READ MACHINE BUSY--------------------------\n");
 		  s=TRANSMITTING;
-      } else if (retval&ALL_FIFO_EMPTY_BIT) {
+      } else if (!(retval&ALL_FIFO_EMPTY_BIT)) {
 		  printf("-----------------------------------DATA IN FIFO--------------------------\n");
 		  s=TRANSMITTING;
 	

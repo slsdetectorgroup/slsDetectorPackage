@@ -116,8 +116,8 @@
 //#define ADC_SYNC_REG          66<<11//0x19<<11
 //#define HV_REG                67<<11//0x20<<11
 
-#define ADCCLK_MASK_REG      66<<11
-#define ADC_INVERSION_REG      66<<11
+#define ADC_OFFSET_REG      66<<11
+#define ADC_INVERSION_REG      67<<11
 
 //#define MUTIME_REG            0x1a<<11
 //temperature
@@ -351,6 +351,7 @@
 #define FIFO_RESET_BIT      0x8000  
 #define SYNC_RESET          0x0400  
 #define GB10_RESET_BIT      0x0800   
+#define MEM_RESET_BIT       0x1000   
 
 /* for status register */
 #define RUN_BUSY_BIT             0x00000001

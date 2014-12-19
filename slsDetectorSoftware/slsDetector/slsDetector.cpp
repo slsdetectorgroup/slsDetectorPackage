@@ -4384,6 +4384,23 @@ double* slsDetector::decodeData(int *datain, double *fdata) {
   int  ipos=0, ichan=0, ibyte;
 
   if (thisDetector->timerValue[PROBES_NUMBER]==0) {
+    if (thisDetector->myDetectorType==JUNGFRAUCTB) {
+      
+      for (ichan=0; ichan<nch; ichan++) {
+	// dataout[ichan]=0;
+	ival=0;
+	//	for (ibyte=0; ibyte<2; ibyte++) {
+	ibyte=0;
+	iptr=ptr[ichan*2+ibyte];
+	ival|=((iptr<<(ibyte*bytesize))&(0xff<<(ibyte*bytesize)));
+	ibyte=1;
+	iptr=ptr[ichan*2+ibyte];
+	ival|=((iptr<<(ibyte*bytesize))&(0x3f<<(ibyte*bytesize)));
+	
+	  //	}
+	dataout[ichan]=ival;
+      }
+    } else {
     switch (nbits) {
     case 1:
       for (ibyte=0; ibyte<thisDetector->dataBytes; ibyte++) {
@@ -4429,6 +4446,7 @@ double* slsDetector::decodeData(int *datain, double *fdata) {
 	ival=datain[ichan]&0xffffff;
 	dataout[ichan]=ival;
       }
+    }
     }
   } else {
     for (ichan=0; ichan<nch; ichan++) {

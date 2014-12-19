@@ -472,7 +472,7 @@ void* postProcessing::processData(int delflag) {
 
 		//if nth frame
 		if(nthframe){
-			newData = true;
+			/*newData = true;//unnecessary to read every data, 09.12.2014**/
 			//and no gui
 			if(!dataReady){
 				std::cout << "Error: receiver read freq is set to " << nthframe << " but should be > 0 only when using gui." << std::endl;
@@ -543,7 +543,7 @@ void* postProcessing::processData(int delflag) {
 								delete thisData;
 								fdata = NULL;
 								progress = currentfIndex;
-								if(!nthframe)
+								/*if(!nthframe) //unnecessary to read every data, 09.12.2014**/
 									newData = false;
 							}
 						}

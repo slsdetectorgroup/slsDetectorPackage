@@ -51,7 +51,9 @@ unsigned int nimages_per_request=1;
 int  on_dst=0;
 int dst_requested[32] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
 
-int default_dac_values[16] = {0,2000,2000,1250,700,1278,500,500,2000,500,500,550,550,100,1000,775};
+//char  Module_dac_names[16][10]= {"SvP","Vtr","Vrf","Vrs","SvN","Vtgstv","Vcmp_ll","Vcmp_lr","cal","Vcmp_rl","rxb_rb","rxb_lb","Vcmp_rr","Vcp","Vcn","Vis"};;
+
+int default_dac_values[16] = {0,2480,3300,1400,4000,2556,1000,1000,4000,1000,1000,1000,1000,200,2000,1550};
 
 
 enum masterFlags  masterMode=NO_MASTER;
@@ -141,7 +143,11 @@ int initDetector(){
   Feb_Control_CheckSetup();
 
   //top or bottom
-  bottom = Feb_Control_IsBottomModule();
+  //bottom = Feb_Control_IsBottomModule();
+  if(getDetectorNumber()==0xbeb031)
+	  bottom = 0;
+  else bottom = 1;
+
   if(bottom)
 	  printf("BOTTOM ***************\n");
   else
@@ -478,7 +484,7 @@ enum detectorSettings setSettings(enum detectorSettings sett, int imod){
 
 int startReceiver(int d){
 	//if(trialMasterMode == IS_MASTER)
-	//if(!bottom)
+	if(!bottom)
 		Feb_Control_PrepareForAcquisition();
 	return OK;
 }
@@ -487,10 +493,10 @@ int startReceiver(int d){
 int startStateMachine(){
 int ret;int i=0;
 	//if(trialMasterMode == IS_MASTER){
-		//if(!bottom){
+		if(!bottom){
 		printf("Going to start acquisition\n");
 		Feb_Control_StartAcquisition();
-	//}
+	}
 
 	//do not read status here, cannot get images then
 
@@ -499,8 +505,9 @@ int ret;int i=0;
 		ret =  startReadOut();
 	////}
 	//if(trialMasterMode == IS_MASTER){
-		//if(!bottom){
 
+
+		if(!bottom){
 			/*
 			if(getRunStatus() == IDLE){
 				for(i=0;i<100000;i++){
@@ -521,7 +528,7 @@ int ret;int i=0;
 				printf("*****Acquiring...\n");
 
 
-		//}
+		}
 				/*else usleep(1000000);
 			printf("****Returning\n");*/
 

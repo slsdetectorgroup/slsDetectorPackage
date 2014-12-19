@@ -1027,7 +1027,7 @@ int Feb_Control_SetTrimbits(unsigned int module_num, unsigned int *trimbits){
 					for(i=0;i<8;i++){ // column loop i
 						//printf("i:%d\t\t",i);
 
-						if(Module_TopAddressIsValid(&modules[0])){
+						if(Module_TopAddressIsValid(&modules[1])){
 							trimbits_to_load_l[offset+chip_sc]    |= ( 0x7  & trimbits[row_set*16480+super_column_start_position_l+i])<<((7-i)*4);//low
 							trimbits_to_load_l[offset+chip_sc+32] |= ((0x38 & trimbits[row_set*16480+super_column_start_position_l+i])>>3)<<((7-i)*4);//upper
 							trimbits_to_load_r[offset+chip_sc]    |= ( 0x7  & trimbits[row_set*16480+super_column_start_position_r+i])<<((7-i)*4);//low
@@ -1043,7 +1043,7 @@ int Feb_Control_SetTrimbits(unsigned int module_num, unsigned int *trimbits){
 				} //end supercolumn loop sc
 			} //end row loop
 
-			if(Module_TopAddressIsValid(&modules[0])){
+			if(Module_TopAddressIsValid(&modules[1])){
 				if(!Feb_Interface_WriteMemoryInLoops(Module_GetTopLeftAddress(&modules[Feb_Control_current_index]),0,0,1024,trimbits_to_load_r)||
 						!Feb_Interface_WriteMemoryInLoops(Module_GetTopRightAddress(&modules[Feb_Control_current_index]),0,0,1024,trimbits_to_load_l)||
 						//if(!Feb_Interface_WriteMemory(Module_GetTopLeftAddress(&modules[0]),0,0,1023,trimbits_to_load_r)||

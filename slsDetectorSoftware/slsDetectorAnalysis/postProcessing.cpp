@@ -441,6 +441,7 @@ void* postProcessing::processData(int delflag) {
 				}
 			}
 			dum=0;
+			usleep(500);
 		}
 
 		if (fdata) {

@@ -1,4 +1,4 @@
-#define TESTADC
+//#define TESTADC
 
 
 #include "server_defs.h"
@@ -50,7 +50,7 @@ int phase_shift=0;//DEFAULT_PHASE_SHIFT;
 int ipPacketSize=DEFAULT_IP_PACKETSIZE;
 int udpPacketSize=DEFAULT_UDP_PACKETSIZE;
 
-u_int32_t clkDivider[2]={32,32};
+u_int32_t clkDivider[2]={160,32};
 
 
 int ififostart, ififostop, ififostep, ififo;
@@ -365,21 +365,28 @@ u_int32_t readin(int modnum) {
 
 u_int32_t setPllReconfigReg(u_int32_t reg, u_int32_t val, int trig) {
  
-  u_int32_t vv=reg<<PLL_CNTR_ADDR_OFF;
+  u_int32_t vv;
+
+
+
   bus_w(PLL_PARAM_REG,val); 
   printf("param: %x\n",val);
 
+
+  vv=reg<<PLL_CNTR_ADDR_OFF;
   bus_w(PLL_CNTRL_REG,vv); 
   printf("wrote: %08x\n",vv); 
   usleep(1000);
   vv=(1<<PLL_CNTR_WRITE_BIT)|(reg<<PLL_CNTR_ADDR_OFF)|(trig<<15);
   bus_w(PLL_CNTRL_REG,vv);//15 is trigger for the tap
+
   printf("wrote: %08x\n",vv); 
   usleep(1000);
   vv=(reg<<PLL_CNTR_ADDR_OFF);
   printf("wrote: %08x\n",vv); 
   bus_w(PLL_CNTRL_REG,vv); 
   usleep(1000);
+
   while(bus_r(STATUS_REG)&PLL_RECONFIG_BUSY) {
     printf("set: reconfig busy");
   }
@@ -447,7 +454,7 @@ u_int32_t setClockDivider(int d, int ic) {
    u_int32_t l=0x0c;
    u_int32_t h=0x0d;
   u_int32_t val;
-  
+  int i;
 
   u_int32_t tot=800/d;
   u_int32_t odd=0;
@@ -458,37 +465,62 @@ u_int32_t setClockDivider(int d, int ic) {
   if (ic>1)
     return -1;
 
+  if (ic==1 && d>40)
+    return -1;
+
+  if (d>160)
+    return -1;
+
+  if (tot>510)
+    return -1;
+
+  if (tot<1)
+    return -1;
 
 
-  l=tot/2;
-  h=l;
-  if (tot>2*l) {
-    h=l+1;
-    odd=1;
-  } 
-  printf("Low is %d, High is %d\n",l,h);
 
-  if (l>255 || h>255)
-    return -1; //values out of range
+  clkDivider[ic]=d;
 
 
   
+  bus_w(PLL_CNTRL_REG,(1<<PLL_CNTR_RECONFIG_RESET_BIT)); //reset pll reconfig
+  usleep(100);
+  bus_w(PLL_CNTRL_REG, 0);
+  usleep(10000);
+
+
   setPllReconfigReg(PLL_MODE_REG,1,0);
+  usleep(10000);
 
-  getPllReconfigReg(PLL_MODE_REG,0);
+  //  getPllReconfigReg(PLL_MODE_REG,0);
 
-  val= (ic<<18)| (odd<<17) | l | (h<<8); //odd division
 
-  printf("val: %08x\n",  val);
+  for (i=0; i<1; i++) {
+    tot=800/clkDivider[i];
+    l=tot/2;
+    h=l;
+    if (tot>2*l) {
+      h=l+1;
+      odd=1;
+    } 
+    printf("Counter %d: Low is %d, High is %d\n",i, l,h);
 
-  setPllReconfigReg(PLL_C_COUNTER_REG, val,1);
+
+  val= (i<<18)| (odd<<17) | l | (h<<8); 
+
+  printf("Counter %d, val: %08x\n", i,  val);
+
+  setPllReconfigReg(PLL_C_COUNTER_REG, val,0);
+  usleep(10000);
+  }
+
+
 
 
   setPllReconfigReg(PLL_START_REG, 1,1);
   usleep(100000);
   bus_w(PLL_CNTRL_REG, 0);
   
-  clkDivider[ic]=d;
  return clkDivider[ic];
 }
 
@@ -504,6 +536,11 @@ int phaseStep(int st, int ic){
 /*     ic=0; */
 /*     st*=-1; */
 /*   } */
+  
+  bus_w(PLL_CNTRL_REG,(1<<PLL_CNTR_RECONFIG_RESET_BIT)); //reset PLL and pll reconfig
+  usleep(100);
+  bus_w(PLL_CNTRL_REG, 0);
+
   bus_w(PLL_CNTRL_REG, 0);
   setPllReconfigReg(PLL_MODE_REG,1,0);
   getPllReconfigReg(PLL_MODE_REG,0);
@@ -515,7 +552,7 @@ int phaseStep(int st, int ic){
   usleep(100000);
   bus_w(PLL_CNTRL_REG, 0);
 
-  setClockDivider(clkDivider[ic],ic);
+  //setClockDivider(clkDivider[ic],ic);
 
 
   return st;

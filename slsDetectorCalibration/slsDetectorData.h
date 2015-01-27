@@ -11,6 +11,14 @@ using namespace std;
 template <class dataType>
 class slsDetectorData {
 
+ protected:
+  const int nx; /**< Number of pixels in the x direction */
+  const int ny; /**< Number of pixels in the y direction */
+  int dataSize; /**<size of the data constituting one frame */
+  int **dataMap; /**< Array of size nx*ny storing the pointers to the data in the dataset (as offset)*/
+  dataType **dataMask; /**< Array of size nx*ny storing the polarity of the data in the dataset (should be 0 if no inversion is required, 0xffffffff is inversion is required) */
+  int **dataROIMask; /**< Array of size nx*ny 1 if channel is good (or in the ROI), 0 if bad channel (or out of ROI)   */
+
 
  public:
 
@@ -65,6 +73,10 @@ class slsDetectorData {
     delete [] dataROIMask;
   }
 
+  virtual void getPixel(int ip, int &x, int &y) {x=ip; y=0;};
+
+
+
   /**
      defines the data map (as offset) - no error checking if datasize and offsets are compatible!
      \param dMap array of size nx*ny storing the pointers to the data in the dataset (as offset). If NULL (default),the data are arranged as if read out row by row (dataMap[iy][ix]=(iy*nx+ix)*sizeof(dataType);)
@@ -80,9 +92,12 @@ class slsDetectorData {
 	 for (int ix=0; ix<nx; ix++)
 	   dataMap[iy][ix]=(iy*nx+ix)*sizeof(dataType);
     } else {
+      cout << "set dmap "<< dataMap << " " << dMap << endl;
       for (int iy=0; iy<ny; iy++)
-	 for (int ix=0; ix<nx; ix++)
+	for (int ix=0; ix<nx; ix++) {
 	   dataMap[iy][ix]=dMap[iy][ix];
+	   cout << ix << " " << iy << endl;
+	}
     }
     
   };
@@ -235,14 +250,6 @@ class slsDetectorData {
 
   */
   virtual char *readNextFrame(ifstream &filebin)=0;
-
- protected:
-  const int nx; /**< Number of pixels in the x direction */
-  const int ny; /**< Number of pixels in the y direction */
-  int dataSize; /**<size of the data constituting one frame */
-  int **dataMap; /**< Array of size nx*ny storing the pointers to the data in the dataset (as offset)*/
-  dataType **dataMask; /**< Array of size nx*ny storing the polarity of the data in the dataset (should be 0 if no inversion is required, 0xffffffff is inversion is required) */
-  int **dataROIMask; /**< Array of size nx*ny 1 if channel is good (or in the ROI), 0 if bad channel (or out of ROI)   */
 
 };
 

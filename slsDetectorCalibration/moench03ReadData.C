@@ -56,13 +56,66 @@ TH2F *readImage(ifstream &filebin, int dsize=5000*32) {
 }
 
 
-TH2F *readImage(char *fname) {
+TH2F *readImage(char *fname, int iframe=0, TH2F *hped=NULL) {
   ifstream filebin;
   filebin.open((const char *)(fname), ios::in | ios::binary);
   TH2F *h2=readImage(filebin);
+  for (int i=0; i<iframe; i++) {
+    if (h2) delete h2; 
+    else break;
+    h2=readImage(filebin);
+    cout << "="<< endl;
+  }
   filebin.close();
+  if (h2!=NULL && hped!=NULL)
+    h2->Add(hped,-1);
+
   return h2;
 }
+
+
+TH2F *calcPedestal(char *fformat, int runmin, int runmax){
+  ifstream filebin;
+  char fname[10000];
+  moench03CtbData *decoder=new moench03CtbData();
+  singlePhotonDetector<uint16_t> *filter=new singlePhotonDetector<uint16_t>(decoder, 3, 5, 1, NULL);
+  char *buff;
+  int ix,iy;
+  int ii=0;
+  TH2F* h2=NULL;
+
+  for (int irun=runmin; irun<=runmax; irun++) {
+    sprintf(fname,fformat,irun);
+    
+
+    filebin.open((const char *)(fname), ios::in | ios::binary);
+    while ((buff=decoder->readNextFrame(filebin))) {
+      for (ix=0; ix<400; ix++) {
+	for (iy=0; iy<400; iy++) {
+	  filter->addToPedestal(decoder->getValue(buff,ix,iy), ix, iy);
+	}
+      }
+      delete [] buff;
+      ii++;
+    }
+    if (filebin.is_open())
+      filebin.close(); 
+    
+  }
+  if (ii>0) {
+    h2=new TH2F("hped","",400,0,400,400,0,400);
+    
+      for (ix=0; ix<400; ix++) {
+	for (iy=0; iy<400; iy++) {
+	  h2->SetBinContent(ix+1, iy+1,filter->getPedestal(ix,iy));
+	}
+      }
+
+  }
+  return h2;
+
+}
+
 /**
 
 Loops over data file to find single photons, fills the tree (and writes it to file, althoug the root file should be opened before) and creates 1x1, 2x2, 3x3 cluster histograms with ADCu on the x axis, channel number (160*x+y) on the y axis.

@@ -9,7 +9,7 @@ CC    = $(CROSS)gcc
 CFLAGS += -Wall -DMOENCHD -DMCB_FUNCS -DDACS_INT  -DDEBUG #-DVERBOSE #-DVERYVERBOSE  #-DVIRTUAL  #-DDACS_INT_CSERVER
 
 
-PROGS= 	 jungfrauDetectorServer 
+PROGS= 	 jungfrauDetectorServer
 INSTDIR= 	/tftpboot
 INSTMODE= 	0777
 
@@ -23,11 +23,19 @@ OBJS = $(SRCS:%.c=%.o)
 
 all:	clean $(PROGS) 
 
+test: 	clean jungfrauADCTEst
+
 boot: $(OBJS)
 
-$(PROGS): $(OBJS)
+jungfrauDetectorServer: $(OBJS)
 	echo $(OBJS)
 	$(CC) $(CFLAGS) -o $@ $^ $(LDLIBS_$@) $(LDFLAGS_$@)
+
+jungfrauADCTEst: $(OBJS)
+	echo $(OBJS)
+	$(CC) $(CFLAGS) -o $@ $^ $(LDLIBS_$@) $(LDFLAGS_$@) -DTESTADC 
+
+
 
 
 install:	$(PROGS)

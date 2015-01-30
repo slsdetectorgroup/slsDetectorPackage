@@ -203,7 +203,9 @@ inline char* UDPBaseImplementation::setFilePath(const char c[]){ FILE_LOG(logDEB
 		}
 	}
 	FILE_LOG(logDEBUG) << __AT__ << getFilePath();
+#ifdef VERBOSE
 	cout << getFilePath() << " " << filePath << endl;
+#endif
 	return getFilePath();
 }
 

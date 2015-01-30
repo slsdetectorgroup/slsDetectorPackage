@@ -75,6 +75,7 @@ class slsDetectorUtils :  public slsDetectorActions, public postProcessing {
   // int getPositions(double *pos=NULL){return angularConversion::getPositions(pos);};
   
   using slsDetectorBase::setFlatFieldCorrection;
+  using slsDetectorBase::getDetectorsType;
   using postProcessing::setBadChannelCorrection;
 
   int enableFlatFieldCorrection(int i=-1) {if (i>0) setFlatFieldCorrectionFile("default"); else if (i==0) setFlatFieldCorrectionFile(""); return getFlatFieldCorrection();};
@@ -125,12 +126,6 @@ class slsDetectorUtils :  public slsDetectorActions, public postProcessing {
   */
   virtual string setHostname(const char* name, int pos=-1)=0;
 
-
-  /** returns the detector type
-      \param pos position in the multi detector structure (is -1 returns type of detector with id -1)
-      \returns type
-  */
-  virtual detectorType getDetectorsType(int pos=-1)=0;
 
   /** returns the detector type
       \param pos position in the multi detector structure (is -1 returns type of detector with id -1)

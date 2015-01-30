@@ -77,6 +77,12 @@ class slsDetectorBase :  public virtual slsDetectorDefs, public virtual errorDef
   /** virtual destructor */
   virtual ~slsDetectorBase(){};
 
+  /** returns the detector type
+      \param pos position in the multi detector structure (is -1 returns type of detector with id -1)
+      \returns type
+  */
+  virtual detectorType getDetectorsType(int pos=-1)=0;
+
   string getDetectorDeveloper(){return string("PSI");};
   // protected:
 

@@ -412,6 +412,7 @@ class fileIOStatic  {
   };
 
   static int writeBinaryDataFile(FILE *sfilefd, size_t nbytes,  void *data){ \
+    // cout << "bin " << sfilefd << " " << nbytes << " " << data << endl;
     fwrite(data,  1,  nbytes, sfilefd);					\
     return slsDetectorDefs::OK;						\
   };

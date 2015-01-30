@@ -828,6 +828,13 @@ slsDetectorCommand::slsDetectorCommand(slsDetectorUtils *det)  {
   descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdSpeed;
   i++;
 
+
+  descrToFuncMap[i].m_pFuncName="adcpipeline"; //
+  descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdSpeed;
+  i++;
+
+
+
   /* settings dump/retrieve */
   descrToFuncMap[i].m_pFuncName="config"; 
   descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdConfiguration;
@@ -3939,6 +3946,8 @@ string slsDetectorCommand::cmdSpeed(int narg, char *args[], int action) {
     index=ADC_CLOCK;
   else if (cmd=="adcphase")
     index=ADC_PHASE;
+  else if (cmd=="adcpipeline")
+    index=ADC_PIPELINE;
   else
     return string("could not decode speed variable ")+cmd;
 

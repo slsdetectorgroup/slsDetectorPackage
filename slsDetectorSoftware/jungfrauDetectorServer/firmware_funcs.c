@@ -1,4 +1,5 @@
 //#define TESTADC
+#define TESTADC1
 
 
 #include "server_defs.h"
@@ -34,7 +35,10 @@ const int nModY=1;
 int nModBoard;
 int nModX=NMAXMOD;
 int dynamicRange=16;//32;
+int nSamples=1;
+
 int dataBytes=NMAXMOD*NCHIP*NCHAN*2;
+
 int storeInRAM=0;
 int ROI_flag=0;
 int adcConfigured=-1;
@@ -50,7 +54,8 @@ int phase_shift=0;//DEFAULT_PHASE_SHIFT;
 int ipPacketSize=DEFAULT_IP_PACKETSIZE;
 int udpPacketSize=DEFAULT_UDP_PACKETSIZE;
 
-u_int32_t clkDivider[2]={160,32};
+u_int32_t clkDivider[2]={32,16};
+int32_t clkPhase[2]={0,0};
 
 
 int ififostart, ififostop, ififostep, ififo;
@@ -307,28 +312,28 @@ int cleanFifo(){
 
 int setDAQRegister()
 {
-	u_int32_t addr, reg, val;
-	addr=DAQ_REG;
+/* 	u_int32_t addr, reg, val; */
+/* 	addr=DAQ_REG; */
 
-	//depended on adcval
-	int packetlength=0x7f;
-	if(!ROI_flag) packetlength=0x13f;
+/* 	//depended on adcval */
+/* 	int packetlength=0x7f; */
+/* 	if(!ROI_flag) packetlength=0x13f; */
 
-	//depended on pcb rev
-	int tokenTiming = TOKEN_TIMING_REV2;
-	if((bus_r(PCB_REV_REG)&BOARD_REVISION_MASK)==1)
-		tokenTiming= TOKEN_TIMING_REV1;
+/* 	//depended on pcb rev */
+/* 	int tokenTiming = TOKEN_TIMING_REV2; */
+/* 	if((bus_r(PCB_REV_REG)&BOARD_REVISION_MASK)==1) */
+/* 		tokenTiming= TOKEN_TIMING_REV1; */
 
 
-	val = (packetlength<<16) + tokenTiming;
-	//val=34+(42<<8)+(packetlength<<16);
+/* 	val = (packetlength<<16) + tokenTiming; */
+/* 	//val=34+(42<<8)+(packetlength<<16); */
 
-	reg=bus_r(addr);
-	bus_w(addr,val);
-	reg=bus_r(addr);
-//#ifdef VERBOSE
-	printf("DAQ reg 0x15:%x\n",reg);
-//#endif
+/* 	reg=bus_r(addr); */
+/* 	bus_w(addr,val); */
+/* 	reg=bus_r(addr); */
+/* //#ifdef VERBOSE */
+/* 	printf("DAQ reg 0x15:%x\n",reg); */
+/* //#endif */
 
 	return OK;
 }
@@ -369,27 +374,30 @@ u_int32_t setPllReconfigReg(u_int32_t reg, u_int32_t val, int trig) {
 
 
 
+
+ printf("*********** pll busy: %08x\n",bus_r(STATUS_REG)&PLL_RECONFIG_BUSY);
+
   bus_w(PLL_PARAM_REG,val); 
-  printf("param: %x\n",val);
+  //  printf("param: %x\n",val);
 
 
   vv=reg<<PLL_CNTR_ADDR_OFF;
   bus_w(PLL_CNTRL_REG,vv); 
-  printf("wrote: %08x\n",vv); 
-  usleep(1000);
-  vv=(1<<PLL_CNTR_WRITE_BIT)|(reg<<PLL_CNTR_ADDR_OFF)|(trig<<15);
-  bus_w(PLL_CNTRL_REG,vv);//15 is trigger for the tap
+  usleep(10000);
+  //  printf("wrote: %08x\n",vv);
+  //  vv=(1<<PLL_CNTR_WRITE_BIT)|(reg<<PLL_CNTR_ADDR_OFF)|(trig<<15);
+  bus_w(PLL_CNTRL_REG,vv|(1<<PLL_CNTR_WRITE_BIT) );//15 is trigger for the tap
+  // printf("----------- pll busy: %08x\n",bus_r(STATUS_REG)&PLL_RECONFIG_BUSY);
+ //  printf("wrote: %08x\n",vv); 
+ //  usleep(10000);
 
-  printf("wrote: %08x\n",vv); 
-  usleep(1000);
-  vv=(reg<<PLL_CNTR_ADDR_OFF);
-  printf("wrote: %08x\n",vv); 
+
+ // vv=(reg<<PLL_CNTR_ADDR_OFF);
+  //  printf("wrote: %08x\n",vv); 
   bus_w(PLL_CNTRL_REG,vv); 
-  usleep(1000);
+  usleep(10000);
+ printf("+++++++++ pll busy: %08x\n",bus_r(STATUS_REG)&PLL_RECONFIG_BUSY);
 
-  while(bus_r(STATUS_REG)&PLL_RECONFIG_BUSY) {
-    printf("set: reconfig busy");
-  }
   //  bus_w(PLL_CNTRL_REG,(1<<PLL_CNTR_READ_BIT)|(reg<<PLL_CNTR_ADDR_OFF));
   // usleep(1000);
   // val=bus_r(PLL_PARAM_OUT_REG);
@@ -417,18 +425,18 @@ u_int32_t getPllReconfigReg(u_int32_t reg, int trig) {
   usleep(100);
 
   val=(1<<PLL_CNTR_READ_BIT)|(reg<<PLL_CNTR_ADDR_OFF)|(trig<<15);
-  printf("wrote: %08x\n",val);
+  //  printf("wrote: %08x\n",val);
   bus_w(PLL_CNTRL_REG,val);//15 is trigger for the tap
   //  printf("read: %08x\n",bus_r(PLL_CNTRL_REG));
-  usleep(100);
+  //  usleep(100);
 /*   for (i=0; i<10; i++) { */
-     vv=bus_r(PLL_PARAM_OUT_REG); 
-     printf("addr %x reg: %x\n",reg,vv); 
+  //   vv=bus_r(PLL_PARAM_OUT_REG); 
+  //   printf("addr %x reg: %x\n",reg,vv); 
 /*     usleep(100); */
 /*   } */
 
   val=(reg<<PLL_CNTR_ADDR_OFF);
-  printf("wrote: %08x\n",val);
+  //  printf("wrote: %08x\n",val);
   bus_w(PLL_CNTRL_REG,val);
   usleep(100);
 
@@ -448,6 +456,89 @@ void resetPLL() {
   bus_w(PLL_CNTRL_REG, 0);
 }
 
+void configurePll(int i) {
+
+
+  u_int32_t l=0x0c;
+  u_int32_t h=0x0d;
+  u_int32_t val;
+  int32_t phase=0, inv=0, ic=0;
+
+  u_int32_t tot;
+  u_int32_t odd=1;//0;
+
+  //   printf("PLL reconfig reset\N");   bus_w(PLL_CNTRL_REG,(1<<PLL_CNTR_RECONFIG_RESET_BIT));  usleep(100);  bus_w(PLL_CNTRL_REG, 0);
+
+
+  printf("PLL mode\n");   setPllReconfigReg(PLL_MODE_REG,1,0);
+  //  usleep(10000);
+
+
+
+  if (i<2) {
+
+    tot= PLL_VCO_FREQ_MHZ/clkDivider[i];
+    l=tot/2;
+    h=l;
+    if (tot>2*l) {
+      h=l+1;
+      odd=1;
+    } 
+    printf("Counter %d: Low is %d, High is %d\n",i, l,h);
+
+
+  val= (i<<18)| (odd<<17) | l | (h<<8); 
+
+  printf("Counter %d, val: %08x\n", i,  val);  setPllReconfigReg(PLL_C_COUNTER_REG, val,0);
+  //  usleep(20);
+
+  } else {
+  //  if (mode==1) {
+    //  } else {
+    printf("phase in %d\n",clkPhase[0]);
+
+  if (clkPhase[0]>0) {
+    inv=0;
+    phase=clkPhase[0];
+  }  else {
+    inv=1;
+    phase=-1*clkPhase[0];
+  }
+
+  printf("phase out %d %08x\n",phase,phase);
+  val=phase | (inv<<16);;// |  (inv<<21);
+
+  printf("Phase, val: %08x\n", val);   setPllReconfigReg(PLL_PHASE_SHIFT_REG,val,0); //shifts counter 0
+ 
+
+   }
+
+ printf("Start reconfig\n");  setPllReconfigReg(PLL_START_REG, 1,0);
+
+ // bus_w(PLL_CNTRL_REG, 0);
+ printf("Status register\n"); getPllReconfigReg(PLL_STATUS_REG,0);
+  // sleep(1);
+  
+  //  printf("PLL mode\n");   setPllReconfigReg(PLL_MODE_REG,0,0);
+  usleep(10000);
+/*   if (mode!=1) { */
+ /*     printf("reset pll\n"); */
+/*      bus_w(PLL_CNTRL_REG,((1<<PLL_CNTR_PLL_RESET_BIT))); //reset PLL  */
+/*      usleep(100); */
+/*      bus_w(PLL_CNTRL_REG, 0);  */
+    
+    
+/*   } */
+}
+
+
+
+
+
+
+
+
+
 u_int32_t setClockDivider(int d, int ic) {
 
 
@@ -456,9 +547,8 @@ u_int32_t setClockDivider(int d, int ic) {
   u_int32_t val;
   int i;
 
-  u_int32_t tot=800/d;
+  u_int32_t tot= PLL_VCO_FREQ_MHZ/d;
   u_int32_t odd=0;
-
 
   //	int ic=0  is run clk; ic=1 is adc clk 
   printf("set clk divider %d to %d\n", ic, d);
@@ -480,46 +570,9 @@ u_int32_t setClockDivider(int d, int ic) {
 
 
   clkDivider[ic]=d;
-
+  configurePll(ic);
 
   
-  bus_w(PLL_CNTRL_REG,(1<<PLL_CNTR_RECONFIG_RESET_BIT)); //reset pll reconfig
-  usleep(100);
-  bus_w(PLL_CNTRL_REG, 0);
-  usleep(10000);
-
-
-  setPllReconfigReg(PLL_MODE_REG,1,0);
-  usleep(10000);
-
-  //  getPllReconfigReg(PLL_MODE_REG,0);
-
-
-  for (i=0; i<1; i++) {
-    tot=800/clkDivider[i];
-    l=tot/2;
-    h=l;
-    if (tot>2*l) {
-      h=l+1;
-      odd=1;
-    } 
-    printf("Counter %d: Low is %d, High is %d\n",i, l,h);
-
-
-  val= (i<<18)| (odd<<17) | l | (h<<8); 
-
-  printf("Counter %d, val: %08x\n", i,  val);
-
-  setPllReconfigReg(PLL_C_COUNTER_REG, val,0);
-  usleep(10000);
-  }
-
-
-
-
-  setPllReconfigReg(PLL_START_REG, 1,1);
-  usleep(100000);
-  bus_w(PLL_CNTRL_REG, 0);
   
  return clkDivider[ic];
 }
@@ -527,7 +580,7 @@ u_int32_t setClockDivider(int d, int ic) {
 
 int phaseStep(int st, int ic){
   
-  u_int32_t addr;
+  u_int32_t addr, val=(  (1<<PLL_CNTR_UPDN_BIT)| (1<<PLL_CNTR_CNTSEL_OFF) | (1<< PLL_CNTR_PHASE_EN_BIT));
 /*   int ic=0  is run clk; ic=1 is adc clk  */
 
 /*   if (st>0) */
@@ -537,25 +590,30 @@ int phaseStep(int st, int ic){
 /*     st*=-1; */
 /*   } */
   
-  bus_w(PLL_CNTRL_REG,(1<<PLL_CNTR_RECONFIG_RESET_BIT)); //reset PLL and pll reconfig
-  usleep(100);
-  bus_w(PLL_CNTRL_REG, 0);
+  int i;
+  if (st>65535 || st<-65535)
+    return -1;
 
-  bus_w(PLL_CNTRL_REG, 0);
-  setPllReconfigReg(PLL_MODE_REG,1,0);
-  getPllReconfigReg(PLL_MODE_REG,0);
+  printf("ic=%d; phase %d\n", ic, st);
 
-
-  setPllReconfigReg(PLL_PHASE_SHIFT_REG,st|(ic<<21),0); //shifts counter 0
-  printf("shift %08x\n",st|(ic<<21));
-  setPllReconfigReg(PLL_START_REG, 1,1);
-  usleep(100000);
-  bus_w(PLL_CNTRL_REG, 0);
-
-  //setClockDivider(clkDivider[ic],ic);
-
-
-  return st;
+  
+  if (ic==1)
+    clkPhase[0]=-st;
+  else if (ic==0)
+    clkPhase[0]=st;
+    
+ 
+ 
+ /*  printf("Changin phase %d\n",st); */
+/*   for (i=0; i<st; i++) { */
+/*      bus_w(PLL_CNTRL_REG,0); */
+/*     bus_w(PLL_CNTRL_REG,val); */
+    
+/*   } */
+/*   sleep(1); */
+  //  bus_w(PLL_CNTRL_REG,0);
+  configurePll(2);
+  return clkPhase[0];
 }
 
 
@@ -596,6 +654,14 @@ u_int32_t getClockDivider(int ic) {
 /*   return 800/(l+h); */
 
 }
+
+
+u_int32_t adcPipeline(int d) {
+  if (d>=0)
+    bus_w(DAQ_REG, d);
+  return bus_r(DAQ_REG)&0xff;
+}
+
 
 u_int32_t setSetLength(int d) {
 	 return 0;
@@ -1146,12 +1212,12 @@ int64_t getFrames(){
 int64_t setExposureTime(int64_t value){
   /* time is in ns */
   if (value!=-1)
-    value*=(1E-9*CLK_FREQ);
-    return set64BitReg(value,SET_EXPTIME_LSB_REG, SET_EXPTIME_MSB_REG)/(1E-9*CLK_FREQ);
+    value*=(1E-3*clkDivider[0]);//(1E-9*CLK_FREQ);
+    return set64BitReg(value,SET_EXPTIME_LSB_REG, SET_EXPTIME_MSB_REG)/(1E-3*clkDivider[0]);//(1E-9*CLK_FREQ);
 }
 
 int64_t getExposureTime(){
-  return get64BitReg(GET_EXPTIME_LSB_REG, GET_EXPTIME_MSB_REG)/(1E-9*CLK_FREQ);
+  return get64BitReg(GET_EXPTIME_LSB_REG, GET_EXPTIME_MSB_REG)/(1E-3*clkDivider[0]);//(1E-9*CLK_FREQ);
 }
 
 int64_t setGates(int64_t value){
@@ -1165,28 +1231,29 @@ int64_t getGates(){
 int64_t setPeriod(int64_t value){
   /* time is in ns */
   if (value!=-1) {
-    value*=(1E-9*CLK_FREQ);
+    // value*=(1E-9*CLK_FREQ);
+    value*=(1E-3*clkDivider[0]);
   }
 
 
 
-  return set64BitReg(value,SET_PERIOD_LSB_REG, SET_PERIOD_MSB_REG)/(1E-9*CLK_FREQ);
+  return set64BitReg(value,SET_PERIOD_LSB_REG, SET_PERIOD_MSB_REG)/(1E-3*clkDivider[0]);//(1E-9*CLK_FREQ);
 }
 
 int64_t getPeriod(){
-  return get64BitReg(GET_PERIOD_LSB_REG, GET_PERIOD_MSB_REG)/(1E-9*CLK_FREQ);
+  return get64BitReg(GET_PERIOD_LSB_REG, GET_PERIOD_MSB_REG)/(1E-3*clkDivider[0]);//(1E-9*CLK_FREQ);
 }
 
 int64_t setDelay(int64_t value){
   /* time is in ns */
   if (value!=-1) {
-    value*=(1E-9*CLK_FREQ);
+    value*=(1E-3*clkDivider[0]);//(1E-9*CLK_FREQ);
   }
-  return set64BitReg(value,SET_DELAY_LSB_REG, SET_DELAY_MSB_REG)/(1E-9*CLK_FREQ);
+  return set64BitReg(value,SET_DELAY_LSB_REG, SET_DELAY_MSB_REG)/(1E-3*clkDivider[0]);//(1E-9*CLK_FREQ);
 }
 
 int64_t getDelay(){
-  return get64BitReg(GET_DELAY_LSB_REG, GET_DELAY_MSB_REG)/(1E-9*CLK_FREQ);
+  return get64BitReg(GET_DELAY_LSB_REG, GET_DELAY_MSB_REG)/(1E-3*clkDivider[0]);//(1E-9*CLK_FREQ);
 }
 
 int64_t setTrains(int64_t value){
@@ -1477,7 +1544,7 @@ int setADC(int adc){
 	if(adc==-1)	ROI_flag=0;
 	else		ROI_flag=1;
 
-	setDAQRegister();//token timing
+	//	setDAQRegister();//token timing
 	cleanFifo();//adc sync
 
 	//with gotthard module
@@ -1894,141 +1961,77 @@ u_int32_t  fifo_full(void)
 
 u_int16_t* fifo_read_event()
 {
+  int i=0;
 
-
-  int i=0, j=0;
-#ifdef VIRTUAL
-  return NULL;
-#endif
-
-  //#ifdef VERBOSE
-  printf("before looping\n");
-  volatile u_int32_t fs; 
   u_int16_t *dum;
-  //#endif
   volatile u_int32_t t = bus_r16(LOOK_AT_ME_REG);
 
-#ifdef VERBOSE
-  printf("Data bytes is %d\n", dataBytes);
-  printf("lookatmereg=x%x\n",t);
-#endif
-/*
-   while ((t&0x1)==0)
-     {
-       t = bus_r(LOOK_AT_ME_REG);
-       if (!runBusy()){
-    	   return NULL;
-       }
-     }
-*/
-
   bus_w(DUMMY_REG,0);
-   while(t==0) {
-#ifdef VERYVERBOSE
-       printf("before readout %08x %08x\n", runState(), bus_r(LOOK_AT_ME_REG));
-#endif
-#ifdef VERYVERBOSE
-	   printf("look at me reg:%08x\n",bus_r(LOOK_AT_ME_REG));
-#endif
-	   if (runBusy()==0) {
-		   t = bus_r(LOOK_AT_ME_REG);
-#ifdef VERYVERBOSE
-		   printf("status should be idle!..look at me reg:%08x\n",bus_r(LOOK_AT_ME_REG));
-#endif
-		   if (t==0) {
-		     //#ifdef VERBOSE
-			   printf("no frame found - exiting\n");
-			   printf("%08x %08x\n", runState(), bus_r(LOOK_AT_ME_REG));
-			   //#endif
-#ifdef VERYVERBOSE
-			   printf("returning null\n");
-			   printf("lookatmereg=x%x\n",t);
-#endif
-			   return NULL;
-		   } else {
-		     //#ifdef VERBOSE
-			   printf("no frame found %x status %x\n", bus_r(LOOK_AT_ME_REG),runState());
-			   //#endif
-			   break;
-		   }
-	   }
-	   t = bus_r(LOOK_AT_ME_REG);
-	   #ifdef VERYVERBOSE
-	   printf("before starting while loop again: look at me reg:%08x\n\n",bus_r(LOOK_AT_ME_REG));
-	   #endif
-	   if (i%1000==0)
-	     printf("%08x %08x\n", runState(), bus_r(LOOK_AT_ME_REG));
-	   i++;
+  while(t!=0xffffffff) {
+    if (runBusy()==0) {
+      t = bus_r(LOOK_AT_ME_REG);
+      if (t!=0xffffffff) {
+	printf("no frame found and acquisition finished - exiting\n");
+	printf("%08x %08x\n", runState(), bus_r(LOOK_AT_ME_REG));
+	return NULL;
+      } else { 
+	//	printf("status idle, look at me %x status %x\n", bus_r(LOOK_AT_ME_REG),runState()); 
+	break; 
+      }
+    }
+    t = bus_r(LOOK_AT_ME_REG);
+    printf(".");
    }
-#ifdef VERYVERBOSE
-   printf(" out of while loop!\n");
-#endif
-  #ifdef VERYVERBOSE
-  printf("before readout %08x %08x\n", runState(), bus_r(LOOK_AT_ME_REG));
-  i=0;
-  for (i=0; i<32; i++) {
-    //  printf("Fifo %d (%04x) status :\n", i,FIFO_STATUS_REG | i);
-    fs=bus_r16(FIFO_STATUS_REG| i);
-     if (fs&0xfff0fff)
-      printf("before %d: %x\n",i, fs);
-
-  }
-
-#endif
-
+   //  printf("%08x %08x\n", runState(), bus_r(LOOK_AT_ME_REG));
 /*   dma_memcpy(now_ptr,values ,dataBytes); */
 /* #else */
    for (i=0; i<32; i++) { 
      dum=((u_int16_t*)(now_ptr))+i;
-    bus_w(DUMMY_REG,i<<1);
-#ifdef TESTADC 
-    printf("%d s:%04x ",i,bus_r16(FIFO_STATUS_REG));
-#endif 
-
-    bus_w(DUMMY_REG,(i<<1) | 1);
-    bus_w(DUMMY_REG,i<<1);
-    *dum=bus_r16(FIFO_DATA_REG);// | i); //values[i];
-#ifdef TESTADC 
-     printf("d:%04x s:%04x\n",*dum&0x3fff, bus_r16(FIFO_STATUS_REG));
-#endif 
-   } 
-   //#endif
-  printf("-");
-  //memcpy(now_ptr,values ,dataBytes); //this reads the fifo twice...
-
-  #ifdef VERYVERBOSE
-  printf("after readout %08x %08x\n", runState(), bus_r(LOOK_AT_ME_REG));
-  i=0;
-  for (i=0; i<32; i++) {
-    fs=bus_r16(FIFO_STATUS_REG| i);
-    if (fs&0xfff0fff)
-      printf("after %d: %x\n",i, fs);
-  }
- #endif
-
-#ifdef VERYVERBOSE
-  int a;
-  for (a=0;a<8; a=a+2)
-	  printf("\n%d %d: x%04x x%04x ",a+1,a,*(now_ptr+a+1),*(now_ptr+a) );
-  //  for (a=2554;a<2560; a=a+2)
-  //	  printf("\n%d %d: x%04x x%04x ",a+1,a,*(now_ptr+a+1),*(now_ptr+a) );
-  printf("********\n");
-  //memcpy(now_ptr, values, dataBytes);
-  //#endif
-  //#ifdef VERYVERBOSE
-  printf("Copying to ptr %08x %d\n",(unsigned int)(now_ptr), dataBytes);
-  printf("after readout %08x %08x\n", runState(), bus_r(LOOK_AT_ME_REG));
-#endif
-
-  if (storeInRAM>0) {
-    now_ptr+=dataBytes;
-  }
-#ifdef VERYVERBOSE
-  printf("lookatmereg=x%x\n",t);
-#endif
+     bus_w(DUMMY_REG,i<<1);
+     // usleep(10);
+     bus_w(DUMMY_REG,(i<<1) | 1);
+     //   usleep(10);
+      bus_w(DUMMY_REG,i<<1); 
+/*      usleep(10); */
+     *dum=bus_r16(FIFO_DATA_REG);
+   }
+  printf("*");
   return ram_values;
-  printf("\n");
 }
+
+
+
+u_int16_t* fifo_read_frame()
+{
+  u_int16_t *dum;
+  int ns=0;
+  now_ptr=(char*)ram_values;
+  while(ns<nSamples) {
+    dum=fifo_read_event();
+    if (dum==NULL) break;
+    now_ptr+=dataBytes;
+    ns++;
+  }
+  //  printf("%x %d\n",dum, ns);
+  if (ns==0) return NULL;
+  printf("+\n");
+  return ram_values;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -2097,6 +2100,14 @@ u_int32_t* decode_data(int *datain)
 
 
 int setDynamicRange(int dr) {
+
+  if (dr%16==0 && dr>0) {
+    dynamicRange=16;
+    nSamples=dr/16;
+    dataBytes=NMAXMOD*NCHIP*NCHAN*2;
+  }
+  allocateRAM();
+  printf("Setting dataBytes to %d: dr %d; samples %d\n",dataBytes, dynamicRange, nSamples);
   return   getDynamicRange();
 }
 
@@ -2106,8 +2117,8 @@ int setDynamicRange(int dr) {
 
 
 int getDynamicRange() {
-	dynamicRange=16;
-  return dynamicRange;
+  //	dynamicRange=16;
+  return dynamicRange*nSamples;
 
 }
 
@@ -2156,69 +2167,53 @@ int setStoreInRAM(int b) {
 
 int allocateRAM() {
   size_t size;
-  u_int32_t nt, nf;
-  nt=setTrains(-1);
-  nf=setFrames(-1);
-  if (nt==0) nt=1;
-  if (nf==0) nf=1;
-  // ret=clearRAM();
-  if (storeInRAM) {
-    size=dataBytes*nf*nt;
-    if (size<dataBytes)
-      size=dataBytes;
-  }  else
-    size=dataBytes;
 
+
+    size=dataBytes*nSamples;
+  
 #ifdef VERBOSE
   printf("\nnmodx=%d nmody=%d dynamicRange=%d dataBytes=%d nFrames=%d nTrains=%d, size=%d\n",nModX,nModY,dynamicRange,dataBytes,nf,nt,(int)size );
 #endif
 
     if (size==ram_size) {
 
-#ifdef VERBOSE
+      //#ifdef VERBOSE
       printf("RAM of size %d already allocated: nothing to be done\n",(int) size);
-#endif
+      //#endif
       return OK;
     }
 
 
 
-#ifdef VERBOSE
-    printf("reallocating ram %x\n",(unsigned int)ram_values);
-#endif
-    //  clearRAM();
-    // ram_values=malloc(size);
-    //+2 was added since dma_memcpy would switch the 16 bit values and the mem is 32 bit
-    ram_values=realloc(ram_values,size)+2;
+    //#ifdef VERBOSE
+      printf("reallocating ram %x, size %d\n",(unsigned int)ram_values, size);
+    //#endif
+    //+2 was added since dma_memcpy would switch the 16 bit values and the mem is 32 bit   
+
+      //  while (nSamples>1) {
+ 
+      clearRAM();
+     ram_values=malloc(size);
+     // ram_values=realloc(ram_values,size)+2;
+      // if (ram_values)
+      //	break;
+      // nSamples--;
+      //}
 
   if (ram_values) {
     now_ptr=(char*)ram_values;
-#ifdef VERBOSE
+
+    //#ifdef VERBOSE
     printf("ram allocated 0x%x of size %d to %x\n",(int)now_ptr,(unsigned int) size,(unsigned int)(now_ptr+size));
-#endif
+    //#endif
     ram_size=size;
     return OK;
-  } else {
-    printf("could not allocate %d bytes\n",(int)size);
-    if (storeInRAM==1) {
-      printf("retrying\n");
-      storeInRAM=0;
-      size=dataBytes;
-      ram_values=realloc(ram_values,size)+2;
-      if (ram_values==NULL)
-	printf("Fatal error: there must be a memory leak somewhere! You can't allocate even one frame!\n");
-      else {
-	now_ptr=(char*)ram_values;
-	ram_size=size;
-#ifdef VERBOSE
-	printf("ram allocated 0x%x of size %d to %x\n",(int)now_ptr,(unsigned int) size,(unsigned int)(now_ptr+size));
-#endif
-      }
-    } else {
-      printf("Fatal error: there must be a memory leak somewhere! You can't allocate even one frame!\n");
-    }
-    return FAIL;
   }
+  
+
+  printf("Fatal error: there must be a memory leak somewhere! You can't allocate even one frame!\n");
+  return FAIL;
+
 
 
 
@@ -2330,7 +2325,7 @@ int prepareADC(){
 
 
     bus_w(ADC_LATCH_DISABLE_REG,0x0); // enable all ADCs
-    bus_w(DAQ_REG,0xd); //adc pipeline=13
+    bus_w(DAQ_REG,0x12); //adc pipeline=18
 
     bus_w(ADC_OFFSET_REG,0xbbbbbbbb);
     //   bus_w(ADC_INVERSION_REG,0x1f6170c6);

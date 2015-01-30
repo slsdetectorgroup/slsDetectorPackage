@@ -21,6 +21,11 @@ string fileIO::createFileName() {
 					       frameIndex,		  \
 					       detIndex			  \
 					       );
+	
+  if (getDetectorsType()==JUNGFRAUCTB) {
+    nBytes=2*getTotalNumberOfChannels();
+  } else
+    nBytes=getDataBytes();
   return currentFileName;
   
 }
@@ -86,8 +91,6 @@ int fileIO::writeDataFile(ofstream &outfile, int *data, int offset){
 
 int fileIO::writeDataFile(void *data, int iframe) {
 
-  // cout << "fileIO writeDataFile" << endl;
-
 	if (iframe<0)
 		iframe=frameIndex;
 
@@ -96,12 +99,13 @@ int fileIO::writeDataFile(void *data, int iframe) {
 
 	if ((iframe%(*framesPerFile))==0 || (iframe<0)) {
 		createFileName();
-		filefd = fopen((currentFileName+string(".raw")).c_str(), "w");
+		filefd = fopen((currentFileName+string(".raw")).c_str(), "w"); 
 	}
 
 	if (filefd){
-		fileIOStatic::writeBinaryDataFile(filefd,getDataBytes(),  data);
-		iframe++;
+// 	  fileIOStatic::writeBinaryDataFile(filefd,getDataBytes(),  data);
+ 	  fileIOStatic::writeBinaryDataFile(filefd,nBytes,  data);
+	  iframe++;
 	}
 
 	if ((iframe%(*framesPerFile)==0) || (iframe<0)) {

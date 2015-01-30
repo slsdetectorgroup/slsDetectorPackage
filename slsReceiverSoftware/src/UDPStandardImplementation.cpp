@@ -1298,8 +1298,9 @@ int UDPStandardImplementation::createNewFile(){
 	else
 		sprintf(savefilename, "%s/%s_f%012d_%d.raw", filePath,fileName,(packetsCaught/packetsPerFrame),fileIndex);
 
-
+#ifdef VERBOSE
 	cout << filePath << " + " << fileName << endl;
+#endif
 
 	//if filewrite and we are allowed to write
 	if(enableFileWrite && cbAction > DO_NOTHING){
@@ -1632,9 +1633,9 @@ int UDPStandardImplementation::startListening(){
 				expected = maxBufferSize - carryonBufferSize;
 			}
 
-//#ifdef VERYDEBUG
+#ifdef VERYDEBUG
 			cout << ithread << " *** rc:" << dec << rc << ". expected:" << dec << expected << endl;
-//#endif
+#endif
 
 
 			//start indices for each start of scan/acquisition - eiger does it before

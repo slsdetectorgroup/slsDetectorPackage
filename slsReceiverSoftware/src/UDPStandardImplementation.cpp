@@ -1495,7 +1495,7 @@ int UDPStandardImplementation::startReceiver(char message[]){
 	for(i=0; i < numWriterThreads; ++i)
 		sem_post(&writersmp[i]);
 
-	usleep(5000000);
+	//usleep(5000000);
 	cout << "Receiver Started.\nStatus:" << status << endl;
 
 	return OK;

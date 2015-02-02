@@ -3278,14 +3278,14 @@ slsDetectorDefs::runStatus slsDetector::getRunStatus(){
 	stopSocket->SendDataOnly(&fnum,sizeof(fnum));
 	stopSocket->ReceiveDataOnly(&ret,sizeof(ret));
 
-	//	cout << "________:::____________" << ret << endl;
+		//cout << "________:::____________" << ret << endl;
 
 	if (ret==FAIL) {
 	  stopSocket->ReceiveDataOnly(mess,sizeof(mess));
 	  std::cout<< "Detector returned error: " << mess << std::endl;
 	} else {
 	  stopSocket->ReceiveDataOnly(&retval,sizeof(retval));
-	  //	cout << "____________________" << retval << endl;
+	  	//cout << "____________________" << retval << endl;
 	}
 	stopSocket->Disconnect();
       }

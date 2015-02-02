@@ -1523,8 +1523,7 @@ int multiSlsDetector::startAndReadAllNoWait(){
 */
 slsDetectorDefs::runStatus  multiSlsDetector::getRunStatus() {
 
-  runStatus s,s1;
-
+  runStatus s = IDLE,s1 = IDLE;
   if (thisMultiDetector->masterPosition>=0)
     if (detectors[thisMultiDetector->masterPosition]){
       s = detectors[thisMultiDetector->masterPosition]->getRunStatus();
@@ -4420,7 +4419,7 @@ int multiSlsDetector::stopReceiver(){
 
 slsDetectorDefs::runStatus multiSlsDetector::startReceiverReadout(){
 	int i=0;
-	runStatus s,s1;
+	runStatus s = IDLE,s1 = IDLE;
 	i=thisMultiDetector->masterPosition;
 	if (thisMultiDetector->masterPosition>=0) {
 		if (detectors[i]) {
@@ -4437,18 +4436,20 @@ slsDetectorDefs::runStatus multiSlsDetector::startReceiverReadout(){
 				setErrorMask(getErrorMask()|(1<<i));
 			if(s == ERROR)
 				s1 = ERROR;
-			if(s1 != s)
-				s1 = ERROR;
+			/*if(s1 != s)
+				s1 = ERROR;*/
+			if(s != IDLE)
+				s1 = s;
 		}
 	}
 
 	/**stoppedFlag=1;*/
-	return s;
+	return s1;
 }
 
 slsDetectorDefs::runStatus multiSlsDetector::getReceiverStatus(){
 
-  runStatus s,s1;
+  runStatus s = IDLE,s1 = IDLE;
 
   if (thisMultiDetector->masterPosition>=0)
     if (detectors[thisMultiDetector->masterPosition]){

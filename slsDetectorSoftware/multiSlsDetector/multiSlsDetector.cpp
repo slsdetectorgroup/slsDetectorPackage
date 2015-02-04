@@ -102,6 +102,9 @@ multiSlsDetector::multiSlsDetector(int id) :  slsDetectorUtils(), shmId(-1)
   }
   id--;
 
+  for (int id=0; id<MAXDET; id++) {
+    detectors[id]=NULL;
+  }
   if (thisMultiDetector->alreadyExisting==0) {
 
 
@@ -250,8 +253,8 @@ multiSlsDetector::multiSlsDetector(int id) :  slsDetectorUtils(), shmId(-1)
     //  setAngularConversionPointer(detectors[i]->getAngularConversionPointer(),detectors[i]->getNModsPointer(),detectors[i]->getNChans()*detectors[i]->getNChips(), i);
 
   }
-  for (int i=thisMultiDetector->numberOfDetectors; i<MAXDET; i++)
-    detectors[i]=NULL;
+ // for (int i=thisMultiDetector->numberOfDetectors; i<MAXDET; i++)
+   // detectors[i]=NULL;
 
 
 
@@ -363,7 +366,7 @@ void multiSlsDetector::updateOffsets(){
 	thisMultiDetector->maxNumberOfChannel[Y] = 0;
 
 	//0th position
-	if (detectors[0]){
+	if ((detectors[0]) && (thisMultiDetector->numberOfDetectors > 0)){
 		offsetX = thisMultiDetector->offsetX[0] = 0;
 		offsetY = thisMultiDetector->offsetY[0] = 0;
 		numX = thisMultiDetector->numberOfChannel[X] = detectors[0]->getTotalNumberOfChannels(X);
@@ -774,7 +777,6 @@ int multiSlsDetector::removeSlsDetector(int pos) {
     return thisMultiDetector->numberOfDetectors;
 
   //j=pos;
-
   for (j=mi; j<ma; j++) {
     
     if (detectors[j]) {
@@ -784,9 +786,9 @@ int multiSlsDetector::removeSlsDetector(int pos) {
       thisMultiDetector->maxNumberOfChannels-=detectors[j]->getMaxNumberOfChannels();
 
       delete detectors[j];
+      detectors[j]=0;
       thisMultiDetector->numberOfDetectors--;
-    
-    
+
 
       if (single) {
 	for (int i=j+1; i<thisMultiDetector->numberOfDetectors+1; i++) {
@@ -1521,8 +1523,7 @@ int multiSlsDetector::startAndReadAllNoWait(){
 */
 slsDetectorDefs::runStatus  multiSlsDetector::getRunStatus() {
 
-  runStatus s,s1;
-
+  runStatus s = IDLE,s1 = IDLE;
   if (thisMultiDetector->masterPosition>=0)
     if (detectors[thisMultiDetector->masterPosition]){
       s = detectors[thisMultiDetector->masterPosition]->getRunStatus();
@@ -3943,11 +3944,11 @@ int multiSlsDetector::readConfigurationFile(string const fname){
 	  //}
 	}
 
-#ifdef VERBOSE 
+#ifdef VERBOSE
 	cout << endl;
 	for (int ia=0; ia<iargval; ia++) cout << args[ia] << " ??????? ";
 	cout << endl;
-#endif	
+#endif
 	cmd=new multiSlsDetectorClient(iargval, args, PUT_ACTION, this);
 	delete cmd;
       }
@@ -4418,7 +4419,7 @@ int multiSlsDetector::stopReceiver(){
 
 slsDetectorDefs::runStatus multiSlsDetector::startReceiverReadout(){
 	int i=0;
-	runStatus s,s1;
+	runStatus s = IDLE,s1 = IDLE;
 	i=thisMultiDetector->masterPosition;
 	if (thisMultiDetector->masterPosition>=0) {
 		if (detectors[i]) {
@@ -4435,18 +4436,20 @@ slsDetectorDefs::runStatus multiSlsDetector::startReceiverReadout(){
 				setErrorMask(getErrorMask()|(1<<i));
 			if(s == ERROR)
 				s1 = ERROR;
-			if(s1 != s)
-				s1 = ERROR;
+			/*if(s1 != s)
+				s1 = ERROR;*/
+			if(s != IDLE)
+				s1 = s;
 		}
 	}
 
 	/**stoppedFlag=1;*/
-	return s;
+	return s1;
 }
 
 slsDetectorDefs::runStatus multiSlsDetector::getReceiverStatus(){
 
-  runStatus s,s1;
+  runStatus s = IDLE,s1 = IDLE;
 
   if (thisMultiDetector->masterPosition>=0)
     if (detectors[thisMultiDetector->masterPosition]){

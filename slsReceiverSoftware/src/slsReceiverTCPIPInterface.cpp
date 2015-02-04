@@ -26,7 +26,8 @@ using namespace std;
 
 
 slsReceiverTCPIPInterface::~slsReceiverTCPIPInterface() {
-	if(socket) delete socket;
+	if(socket) {delete socket; socket=NULL;}
+	if(receiverBase) {delete receiverBase; receiverBase=NULL;}
 	closeFile(0);
 }
 
@@ -1221,8 +1222,8 @@ int	slsReceiverTCPIPInterface::gotthard_read_frame(){
 			}
 			//all adc
 			else{
-				//ignore if half frame is missing
-				if ((bindex != 0xFFFFFFFF) && (bindex2 != 0xFFFFFFFF)){
+				/*//ignore if half frame is missing
+				if ((bindex != 0xFFFFFFFF) && (bindex2 != 0xFFFFFFFF)){*/
 
 					//should be same frame
 					if (index == index2){
@@ -1239,11 +1240,11 @@ int	slsReceiverTCPIPInterface::gotthard_read_frame(){
 						}
 					}else
 						cout << "different frames caught. frame1:"<< hex << index << ":"<<pindex<<" frame2:" << hex << index2 << ":"<<pindex2<<endl;
-				}
+				/*}
 				else{
 					index = startIndex - 1;
 					cout << "Missing Packet,Not sending to gui" << endl;
-				}
+				}*/
 			}
 
 			arg = (index - startIndex);

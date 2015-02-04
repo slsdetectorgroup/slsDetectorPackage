@@ -67,13 +67,14 @@ UDPStandardImplementation::UDPStandardImplementation()
 	rawDataReadyCallBack = NULL;
 	pRawDataReady = NULL;
 
-	initializeMembers();
 
 	//mutex
 	pthread_mutex_init(&dataReadyMutex,NULL);
 	pthread_mutex_init(&status_mutex,NULL);
 	pthread_mutex_init(&progress_mutex,NULL);
 	pthread_mutex_init(&write_mutex,NULL);
+
+	initializeMembers();
 
 	//to increase socket receiver buffer size and max length of input queue by changing kernel settings
 	if(system("echo $((100*1024*1024)) > /proc/sys/net/core/rmem_max"))
@@ -1567,8 +1568,8 @@ int UDPStandardImplementation::startListening(){
 
 	thread_started = 1;
 
-	int i,total;
-	int lastpacketoffset, expected, rc, rc1,packetcount, maxBufferSize, carryonBufferSize;
+	int total;
+	int lastpacketoffset, expected, rc,packetcount, maxBufferSize, carryonBufferSize;
 	uint32_t lastframeheader;// for moench to check for all the packets in last frame
 	char* tempchar = NULL;
 	int imageheader = 0;
@@ -1750,6 +1751,8 @@ int UDPStandardImplementation::startListening(){
 			if(tempchar) {delete [] tempchar;tempchar = NULL;}
 			pthread_exit(NULL);
 		}
+
+		if(tempchar) {delete [] tempchar;tempchar = NULL;}
 	}
 
 	return OK;
@@ -1782,9 +1785,8 @@ int UDPStandardImplementation::startWriting(){
 	char* wbuf[numListeningThreads];//interleaved
 	char *d=new char[bufferSize*numListeningThreads];
 	int xmax=0,ymax=0;
-	int ret,i,j;
+	int ret,i;
 	int packetsPerThread = packetsPerFrame/numListeningThreads;
-int loop;
 
 	while(1){
 
@@ -1792,17 +1794,17 @@ int loop;
 		nf = 0;
 		packetsPerThread = packetsPerFrame/numListeningThreads;
 		if(myDetectorType == MOENCH){
-				xmax = MOENCH_PIXELS_IN_ONE_ROW-1;
-				ymax = MOENCH_PIXELS_IN_ONE_ROW-1;
-			}else{
-				if(shortFrame == -1){
+			xmax = MOENCH_PIXELS_IN_ONE_ROW-1;
+			ymax = MOENCH_PIXELS_IN_ONE_ROW-1;
+		}else{
+			if(shortFrame == -1){
 				xmax = GOTTHARD_PIXELS_IN_ROW-1;
 				ymax = GOTTHARD_PIXELS_IN_COL-1;
-				}else{
-					xmax = GOTTHARD_SHORT_PIXELS_IN_ROW-1;
-					ymax = GOTTHARD_SHORT_PIXELS_IN_COL-1;
-				}
+			}else{
+				xmax = GOTTHARD_SHORT_PIXELS_IN_ROW-1;
+				ymax = GOTTHARD_SHORT_PIXELS_IN_COL-1;
 			}
+		}
 
 
 
@@ -1880,7 +1882,7 @@ int loop;
 					for(i=0;i<numListeningThreads;++i){
 						while(!fifoFree[i]->push(wbuf[i]));
 #ifdef VERYDEBUG
-						cout << ithread  << ":" << i+j << " fifo freed:" << (void*)wbuf[i] << endl;
+						cout << ithread  << ":" << i << " fifo freed:" << (void*)wbuf[i] << endl;
 #endif
 					}
 
@@ -1888,10 +1890,12 @@ int loop;
 				}
 				else{
 					//copy to gui
-					copyFrameToGui(NULL,-1,wbuf[0]+HEADER_SIZE_NUM_TOT_PACKETS);
+					if((packetsPerFrame * numpackets) == bufferSize){
+						copyFrameToGui(NULL,-1,wbuf[0]+HEADER_SIZE_NUM_TOT_PACKETS);
 #ifdef VERYVERBOSE
-					cout << ithread << " finished copying" << endl;
+						cout << ithread << " finished copying" << endl;
 #endif
+					}//else cout << "unfinished buffersize" << endl;
 					while(!fifoFree[0]->push(wbuf[0]));
 #ifdef VERYVERBOSE
 				cout<<"buf freed:"<<(void*)wbuf[0]<<endl;
@@ -1959,6 +1963,7 @@ int loop;
 #endif
 	}
 
+	delete [] d;
 
 	return OK;
 }
@@ -2023,9 +2028,10 @@ int i;
 				//push the last buffer into fifo
 				if((myDetectorType == EIGER) && (rc < 266240) )//for eiger throw away incomplete frames
 					fifoFree[ithread]->push(buffer[ithread]);
-				else if(rc > 0){cout<< ithread << " last rc:"<<rc<<endl;
+				else if(rc > 0){
 					pc = (rc/onePacketSize);
 #ifdef VERYDEBUG
+					cout << ithread << " last rc:"<<rc<<endl;
 					cout << ithread <<  " *** last packetcount:" << pc << endl;
 #endif
 					(*((uint16_t*)(buffer[ithread]))) = pc;

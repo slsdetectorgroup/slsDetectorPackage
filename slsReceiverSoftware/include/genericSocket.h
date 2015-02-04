@@ -103,7 +103,6 @@ enum communicationProtocol{
 	 nsent(0),
 	 total_sent(0)// sender (client): where to? ip
    { 
-
 	  //   strcpy(hostname,host_ip_or_name);
      struct hostent *hostInfo = gethostbyname(host_ip_or_name);
      if (hostInfo == NULL){

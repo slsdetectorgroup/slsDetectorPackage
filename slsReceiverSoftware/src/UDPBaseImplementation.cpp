@@ -1328,8 +1328,8 @@ int UDPBaseImplementation::startListening(){ FILE_LOG(logDEBUG) << __AT__ << " s
 
 	thread_started = 1;
 
-	int i,total;
-	int lastpacketoffset, expected, rc, rc1,packetcount, maxBufferSize, carryonBufferSize;
+	int total;
+	int lastpacketoffset, expected, rc,packetcount, maxBufferSize, carryonBufferSize;
 	uint32_t lastframeheader;// for moench to check for all the packets in last frame
 	char* tempchar = NULL;
 	int imageheader = 0;
@@ -1534,9 +1534,8 @@ int UDPBaseImplementation::startWriting(){ FILE_LOG(logDEBUG) << __AT__ << " sta
 	char* wbuf[numListeningThreads];//interleaved
 	char *d=new char[bufferSize*numListeningThreads];
 	int xmax=0,ymax=0;
-	int ret,i,j;
+	int ret,i;
 	int packetsPerThread = packetsPerFrame/numListeningThreads;
-int loop;
 
 	while(1){
 

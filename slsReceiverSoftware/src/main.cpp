@@ -85,6 +85,7 @@ int main(int argc, char *argv[]) {
 		user->stop();
 	}
 
+	delete user;
 	cout << "Goodbye!" << endl;
 	return 0;
 }

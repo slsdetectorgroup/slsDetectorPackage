@@ -1676,9 +1676,9 @@ int UDPStandardImplementation::startListening(){
 				expected = maxBufferSize - carryonBufferSize;
 			}
 
-#ifdef VERYDEBUG
+//#ifdef VERYDEBUG
 			cout << ithread << " *** rc:" << dec << rc << ". expected:" << dec << expected << endl;
-#endif
+//#endif
 
 
 			//start indices for each start of scan/acquisition - eiger does it before

@@ -1890,7 +1890,7 @@ int UDPStandardImplementation::startWriting(){
 				}
 				else{
 					//copy to gui
-					if((packetsPerFrame * numpackets) == bufferSize){
+					if(numpackets == packetsPerFrame * numJobsPerThread){ //only full frames
 						copyFrameToGui(NULL,-1,wbuf[0]+HEADER_SIZE_NUM_TOT_PACKETS);
 #ifdef VERYVERBOSE
 						cout << ithread << " finished copying" << endl;

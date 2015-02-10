@@ -103,6 +103,10 @@ enum communicationProtocol{
 	 nsent(0),
 	 total_sent(0)// sender (client): where to? ip
    { 
+	 memset(&serverAddress, 0, sizeof(sockaddr_in));
+	 memset(&clientAddress, 0, sizeof(sockaddr_in));
+	// serverAddress = {0};
+	// clientAddress = {0};
 	  //   strcpy(hostname,host_ip_or_name);
      struct hostent *hostInfo = gethostbyname(host_ip_or_name);
      if (hostInfo == NULL){
@@ -158,7 +162,10 @@ enum communicationProtocol{
 	 nsent(0),
 	 total_sent(0)
    {
-
+		 memset(&serverAddress, 0, sizeof(sockaddr_in));
+		 memset(&clientAddress, 0, sizeof(sockaddr_in));
+		// serverAddress = {0};
+		// clientAddress = {0};
 /* // you can specify an IP address: */
 /*  */
 

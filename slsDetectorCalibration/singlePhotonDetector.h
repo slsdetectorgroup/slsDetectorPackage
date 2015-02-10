@@ -109,7 +109,7 @@ class singlePhotonDetector {
 	\param cm commonModeSubtraction algorithm to be used (NULL unsets) 
 	\returns pointer to the actual common mode subtraction algorithm
     */
-    commonModeSubtraction setCommonModeSubtraction(commonModeSubtraction *cm) {cmSub=cm; return cmSub;};
+    commonModeSubtraction *setCommonModeSubtraction(commonModeSubtraction *cm) {cmSub=cm; return cmSub;};
 
 
     /**

@@ -29,7 +29,10 @@ class moench03CtbData : public slsDetectorData<uint16_t> {
   moench03CtbData(int ns=5000): slsDetectorData<uint16_t>(400, 400, ns*2*32, NULL, NULL) , nadc(32), sc_width(25), sc_height(200) {
 
     
-    int adc_nr[32]={200,225,250,275,300,325,350,375,0,25,50,75,100,125,150,175,175,150,125,100,75,50,25,0,375,350,325,300,275,250,225,200};
+    int adc_nr[32]={200,225,250,275,300,325,350,375,\
+		    0,25,50,75,100,125,150,175,\
+		    175,150,125,100,75,50,25,0,\
+		    375,350,325,300,275,250,225,200};
     int row, col;
 
     int isample;
@@ -126,18 +129,24 @@ class moench03CtbData : public slsDetectorData<uint16_t> {
   */
     virtual char *readNextFrame(ifstream &filebin){
       //	int afifo_length=0;  
- 	uint16_t *afifo_cont; 
-    if (filebin.is_open()) {
+      uint16_t *afifo_cont; 
+      int ib=0;
+      if (filebin.is_open()) {
 	afifo_cont=new uint16_t[dataSize/2];
- 	if (filebin.read((char*)afifo_cont,dataSize)) {
+ 	while (filebin.read(((char*)afifo_cont)+ib,2)) {
+	  ib+=2;
+	  if (ib==dataSize) break;
+	}
+	if (ib>0) {
 	  iframe++;
+	  cout << ib << "-" << endl;
 	  return (char*)afifo_cont;
 	} else {
-	delete [] afifo_cont;
-	return NULL;
+	  delete [] afifo_cont;
+	  return NULL;
 	}
-    }     
-    return NULL;
+      }     
+      return NULL;
     };
 
 

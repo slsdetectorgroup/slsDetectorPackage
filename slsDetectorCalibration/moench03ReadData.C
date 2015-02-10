@@ -15,7 +15,7 @@
 //#include <queue>
 #include <fstream>
 #include "moench03CtbData.h"
-#include "moenchCommonMode.h"
+#include "moench03CommonMode.h"
 #define MYROOT1
 #include "singlePhotonDetector.h"
 
@@ -28,22 +28,26 @@ using namespace std;
 
 
 #define MY_DEBUG 1
+
 #ifdef MY_DEBUG
 #include <TCanvas.h>
 #endif
 
 
 
-TH2F *readImage(ifstream &filebin, int dsize=5000*32) {
+TH2F *readImage(ifstream &filebin,   TH2F *h2=NULL, TH2F *hped=NULL) {
   moench03CtbData *decoder=new moench03CtbData();
   char *buff=decoder->readNextFrame(filebin);
-  TH2F *h2=NULL;
+  
 
 //   TH1F *h1=new TH1F("h1","",400*400,0,400*400);
 //   int ip=0;
   if (buff) {
-    h2=new TH2F("h2","",400,0,400,400,0,400);
-    h2->SetStats(kFALSE);
+    if (h2==NULL) {
+      h2=new TH2F("h2","",400,0,400,400,0,400);
+      h2->SetStats(kFALSE);
+    }
+    cout << "." << endl;
     for (int ix=0; ix<400; ix++) {
       for (int iy=0; iy<400; iy++) {
 	//	cout <<  decoder->getDataSize() << " " << decoder->getValue(buff,ix,iy)<< endl;
@@ -51,23 +55,37 @@ TH2F *readImage(ifstream &filebin, int dsize=5000*32) {
 	//	h1->SetBinContent(++ip,decoder->getValue(buff,ix,iy));
       }
     }
+    if (hped) h2->Add(hped,-1);
+    return h2;
   }
-  return h2;
+  return NULL;
 }
 
 
 TH2F *readImage(char *fname, int iframe=0, TH2F *hped=NULL) {
   ifstream filebin;
   filebin.open((const char *)(fname), ios::in | ios::binary);
-  TH2F *h2=readImage(filebin);
-  for (int i=0; i<iframe; i++) {
-    if (h2) delete h2; 
-    else break;
-    h2=readImage(filebin);
-    cout << "="<< endl;
+  TH2F *h2=new TH2F("h2","",400,0,400,400,0,400);
+  TH2F *hh;
+  hh=readImage(filebin, h2, hped );
+  if (hh==NULL) {
+
+    delete h2;
+    return NULL;
   }
-  filebin.close();
-  if (h2!=NULL && hped!=NULL)
+  for (int i=0; i<iframe; i++) {
+    if (hh==NULL) break;
+    hh=readImage(filebin, h2, hped );
+    if (hh)
+      cout << "="<< endl;
+    else {
+      delete h2;
+      return NULL;
+    }
+  }
+  if (filebin.is_open())
+    filebin.close();
+  if (hped!=NULL)
     h2->Add(hped,-1);
 
   return h2;
@@ -96,6 +114,7 @@ TH2F *calcPedestal(char *fformat, int runmin, int runmax){
 	}
       }
       delete [] buff;
+      cout << "="<< endl;
       ii++;
     }
     if (filebin.is_open())
@@ -140,13 +159,22 @@ Loops over data file to find single photons, fills the tree (and writes it to fi
 THStack *moench03ReadData(char *fformat, char *tit, int runmin, int runmax, int nbins=1500, int hmin=-500, int hmax=1000, int sign=1, double hc=0, int xmin=1, int xmax=NC-1, int ymin=1, int ymax=NR-1, int cmsub=0, int hitfinder=1) {
   
   moench03CtbData *decoder=new moench03CtbData();
-   moenchCommonMode *cmSub=NULL;
-//   if (cmsub)
-//     cmSub=new moenchCommonMode();
+  cout << "decoder allocated " << endl;
+
+   moench03CommonMode *cmSub=NULL;
+   if (cmsub) {
+     cmSub=new moench03CommonMode(100);
+     cout << "common mode allocated " << endl;
+
+   } else {
+     
+     cout << "non allocating common mode  " << endl;
+   }
    int iev=0;
   int nph=0;
 
-  singlePhotonDetector<uint16_t> *filter=new singlePhotonDetector<uint16_t>(decoder, 3, 5, sign, cmSub);
+  singlePhotonDetector<uint16_t> *filter=new singlePhotonDetector<uint16_t>(decoder, 3, 5, sign, cmSub, 10, 100);
+  cout << "filter allocated " << endl;
 
   char *buff;
   char fname[10000];
@@ -159,29 +187,36 @@ THStack *moench03ReadData(char *fformat, char *tit, int runmin, int runmax, int 
 
   // data=decoder->getCluster();
 
-  TH2F *h2;
-  TH2F *h3;
-  TH2F *hetaX;
-  TH2F *hetaY;
 
   THStack *hs=new THStack("hs",fformat);
 
+  cout << "hstack allocated " << endl;
 
 
   TH2F *h1=new TH2F("h1",tit,nbins,hmin-0.5,hmax-0.5,NC*NR,-0.5,NC*NR-0.5);
   hs->Add(h1);
+  cout << "h1 allocated " << endl;
 
+  TH2F *h2;
+  TH2F *h3;
   if (hitfinder) {
     h2=new TH2F("h2",tit,nbins,hmin-0.5,hmax-0.5,NC*NR,-0.5,NC*NR-0.5);
+  cout << "h2 allocated " << endl;
     h3=new TH2F("h3",tit,nbins,hmin-0.5,hmax-0.5,NC*NR,-0.5,NC*NR-0.5);
-    hetaX=new TH2F("hetaX",tit,nbins,-1,2,NC*NR,-0.5,NC*NR-0.5);
-    hetaY=new TH2F("hetaY",tit,nbins,-1,2,NC*NR,-0.5,NC*NR-0.5);
+  cout << "h3 allocated " << endl;
+    // hetaX=new TH2F("hetaX",tit,nbins,-1,2,NC*NR,-0.5,NC*NR-0.5);
+    //  hetaY=new TH2F("hetaY",tit,nbins,-1,2,NC*NR,-0.5,NC*NR-0.5);
     hs->Add(h2);
     hs->Add(h3);
-    hs->Add(hetaX);
-    hs->Add(hetaY);
+    // hs->Add(hetaX);
+    // hs->Add(hetaY);
   }
-
+  if (hs->GetHists()) {
+    for (int i=0; i<3; i++)
+      if (hs->GetHists()->At(1)) cout << i << " " ; 
+    cout << " histos allocated " << endl;
+  } else
+    cout << "no hists in stack " << endl;
   
   
   ifstream filebin;
@@ -199,6 +234,8 @@ THStack *moench03ReadData(char *fformat, char *tit, int runmin, int runmax, int 
   
 
 #ifdef MY_DEBUG
+
+  cout << "debug mode " << endl;
   
   TCanvas *myC;
   TH2F *he;
@@ -207,21 +244,22 @@ THStack *moench03ReadData(char *fformat, char *tit, int runmin, int runmax, int 
   TCanvas *cH3;
 
   if (hitfinder) {
-    myC=new TCanvas();
+    myC=new TCanvas("myc");
     he=new TH2F("he","Event Mask",xmax-xmin, xmin, xmax, ymax-ymin, ymin, ymax);
     he->SetStats(kFALSE);
     he->Draw("colz");
-    cH1=new TCanvas();
+    cH1=new TCanvas("ch1");
     cH1->SetLogz();
     h1->Draw("colz");
-    cH2=new TCanvas();
+    cH2=new TCanvas("ch2");
     cH2->SetLogz();
     h2->Draw("colz");
-    cH3=new TCanvas();
+    cH3=new TCanvas("ch3");
     cH3->SetLogz();
     h3->Draw("colz");
   }
 #endif
+
   filter->newDataSet();
 
 
@@ -255,12 +293,12 @@ THStack *moench03ReadData(char *fformat, char *tit, int runmin, int runmax, int 
 
 #ifdef MY_DEBUG
 	  if (hitfinder) {
-	    if (iev%1000==0)
+	    //  if (iev%10==0)
 	      he->SetBinContent(ix+1-xmin, iy+1-ymin, (int)thisEvent);
 	  }
 #endif	  
 	  
-	  if (nf>1000) {
+	  //  if (nf>10) {
 	    h1->Fill(filter->getClusterTotal(1), iy+NR*ix);
 	    if (hitfinder) {
 	      
@@ -280,21 +318,22 @@ THStack *moench03ReadData(char *fformat, char *tit, int runmin, int runmax, int 
 	    }
 	    
 
-	  }
+	    // }
 	}
 	  //////////////////////////////////////////////////////////
     
 #ifdef MY_DEBUG
-      if (iev%1000==0) {
-	myC->Modified();
-	myC->Update();
-	cH1->Modified();
-	cH1->Update();
-	cH2->Modified();
-	cH2->Update();
-	cH3->Modified();
-	cH3->Update();
-      }
+      cout << iev << " " << h1->GetEntries() << " " << h2->GetEntries() << endl;
+//       if (iev%10==0) {
+// 	myC->Modified();
+// 	myC->Update();
+// 	cH1->Modified();
+// 	cH1->Update();
+// 	cH2->Modified();
+// 	cH2->Update();
+// 	cH3->Modified();
+// 	cH3->Update();
+//       }
       iev++;
 #endif		    
       nf++;
@@ -311,7 +350,18 @@ THStack *moench03ReadData(char *fformat, char *tit, int runmin, int runmax, int 
   if (hitfinder)
     tall->Write(tall->GetName(),TObject::kOverwrite);
   
+   //////////////////////////////////////////////////////////
     
+#ifdef MY_DEBUG  
+	myC->Modified();
+	myC->Update();
+	cH1->Modified();
+	cH1->Update();
+	cH2->Modified();
+	cH2->Update();
+	cH3->Modified();
+	cH3->Update();
+#endif	
   
   delete decoder;
   cout << "Read " << nf << " frames" << endl;

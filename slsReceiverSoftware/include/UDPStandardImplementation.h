@@ -47,7 +47,7 @@ class UDPStandardImplementation: private virtual slsReceiverDefs, public UDPBase
 	 */
 	virtual ~UDPStandardImplementation();
 
-	
+	void configure(map<string, string> config_map);
 
 	/**
 	 * delete and free member parameters

@@ -92,6 +92,22 @@ UDPStandardImplementation::UDPStandardImplementation()
 		}
 
 
+void UDPStandardImplementation::configure(map<string, string> config_map){
+	FILE_LOG(logWARNING) << __AT__ << " called";
+
+	map<string, string>::const_iterator pos;
+	pos = config_map.find("mode");
+	if (pos != config_map.end() ){
+		int b;
+		if(!sscanf(pos->second.c_str(), "%d", &b)){
+			cout << "Warning: Could not parse mode. Assuming top mode." << endl;
+			b = 0;
+		}
+		bottom = b!= 0;
+		cout << "bottom:"<< bottom << endl;
+	}
+};
+
 void UDPStandardImplementation::initializeMembers(){
 	myDetectorType = GENERIC;
 	maxPacketsPerFile = 0;
@@ -849,8 +865,10 @@ void UDPStandardImplementation::setupFifoStructure(){
 void UDPStandardImplementation::readFrame(char* c,char** raw, uint32_t &fnum, uint32_t &fstartind){
 	FILE_LOG(logDEBUG) << __AT__ << " called";
 	//point to gui data
-	if (guiData == NULL)
+	if (guiData == NULL){
 		guiData = latestData;
+		//cout <<"gui data not null anymore" << endl;
+	}
 
 	//copy data and filename
 	strcpy(c,guiFileName);
@@ -859,10 +877,12 @@ void UDPStandardImplementation::readFrame(char* c,char** raw, uint32_t &fnum, ui
 
 	//could not get gui data
 	if(!guiDataReady){
+		//cout<<"gui data not ready"<<endl;
 		*raw = NULL;
 	}
 	//data ready, set guidata to receive new data
 	else{
+		//cout<<"gui data ready"<<endl;
 		*raw = guiData;
 		guiData = NULL;
 
@@ -870,10 +890,12 @@ void UDPStandardImplementation::readFrame(char* c,char** raw, uint32_t &fnum, ui
 		guiDataReady = 0;
 		pthread_mutex_unlock(&dataReadyMutex);
 		if((nFrameToGui) && (writerthreads_mask)){
+			//cout<<"gonna post"<<endl;
 		/*if(nFrameToGui){*/
 			//release after getting data
 			sem_post(&smp);
 		}
+		//cout<<"done post"<<endl;
 	}
 }
 
@@ -885,7 +907,7 @@ void UDPStandardImplementation::copyFrameToGui(char* startbuf[], uint32_t fnum, 
 	FILE_LOG(logDEBUG) << __AT__ << " called";
 
 
-	//random read when gui not ready
+	//random read when gui not ready , also command line doesnt have nthframetogui
 	if((!nFrameToGui) && (!guiData)){
 		pthread_mutex_lock(&dataReadyMutex);
 		guiDataReady=0;
@@ -894,6 +916,7 @@ void UDPStandardImplementation::copyFrameToGui(char* startbuf[], uint32_t fnum, 
 
 	//random read or nth frame read, gui needs data now
 	else{
+		//cout <<"gui needs data now"<<endl;
 		/*
 		//nth frame read, block current process if the guireader hasnt read it yet
 		if(nFrameToGui)
@@ -928,8 +951,11 @@ void UDPStandardImplementation::copyFrameToGui(char* startbuf[], uint32_t fnum, 
 		pthread_mutex_unlock(&dataReadyMutex);
 
 		//nth frame read, block current process if the guireader hasnt read it yet
-		if(nFrameToGui)
+		if(nFrameToGui){
+			//cout<<"waiting after copying"<<endl;
 			sem_wait(&smp);
+			//cout<<"done waiting"<<endl;
+		}
 
 	}
 }
@@ -946,12 +972,12 @@ int UDPStandardImplementation::createUDPSockets(){
 	port[1] = server_port[1];
 
 	/** eiger specific */
-	/*
+
 	if(bottom){
 		port[0] = server_port[1];
 		port[1] = server_port[0];
 	}
-	*/
+
 	//if eth is mistaken with ip address
 	if (strchr(eth,'.')!=NULL)
 		strcpy(eth,"");
@@ -1412,7 +1438,10 @@ void UDPStandardImplementation::closeFile(int ithr){
 
 
 
-
+/**
+ * Pre:
+ * Post: eiger req. time for 32bit before acq start
+ * */
 
 int UDPStandardImplementation::startReceiver(char message[]){
 	FILE_LOG(logDEBUG) << __AT__ << " called";
@@ -1475,46 +1504,54 @@ int UDPStandardImplementation::startReceiver(char message[]){
 	for(i=0; i < numWriterThreads; ++i)
 		sem_post(&writersmp[i]);
 
-
+	//usleep(5000000);
 	cout << "Receiver Started.\nStatus:" << status << endl;
 
 	return OK;
 }
 
 
-
+/**
+ * Pre: status is running, semaphores have been instantiated,
+ * Post: udp sockets shut down, status is idle, sempahores destroyed
+ * */
 
 int UDPStandardImplementation::stopReceiver(){
 	FILE_LOG(logDEBUG) << __AT__ << " called";
 
+	if(status != IDLE){
+		//#ifdef VERBOSE
+		cout << "Stopping Receiver" << endl;
+		//#endif
 
-//#ifdef VERBOSE
-	cout << "Stopping Receiver" << endl;
-//#endif
-
-	if(status == RUNNING)
 		startReadout();
 
-	while(status == TRANSMITTING)
-		usleep(5000);
+		while(status == TRANSMITTING)
+			usleep(5000);
 
-	//semaphore destroy
-	sem_post(&smp);
-	sem_destroy(&smp);
+		//semaphore destroy
+		sem_post(&smp);
+		sem_destroy(&smp);
 
-	//change status
-	pthread_mutex_lock(&status_mutex);
-	status = IDLE;
-	pthread_mutex_unlock(&(status_mutex));
+		//change status
+		pthread_mutex_lock(&status_mutex);
+		status = IDLE;
+		pthread_mutex_unlock(&(status_mutex));
 
-	cout << "Receiver Stopped.\nStatus:" << status << endl << endl;
+		cout << "Receiver Stopped.\nStatus:" << status << endl << endl;
+	}
+
 	return OK;
 }
 
 
 
 
-
+/**
+ * Pre: status is running, udp sockets have been initialized,
+ * stop receiver initiated
+ * Post:udp sockets closed, status is transmitting
+ * */
 void UDPStandardImplementation::startReadout(){
 	FILE_LOG(logDEBUG) << __AT__ << " called";
 
@@ -1522,15 +1559,19 @@ void UDPStandardImplementation::startReadout(){
 		cout << "Start Receiver Readout" << endl;
 	//#endif
 
-	//wait so that all packets which take time has arrived
-	usleep(5000);
+	if(status == RUNNING){
 
-	/********************************************/
-	//usleep(2000000);
-	pthread_mutex_lock(&status_mutex);
-	status = TRANSMITTING;
-	pthread_mutex_unlock(&status_mutex);
-	cout << "Status: Transmitting" << endl;
+		//wait so that all packets which take time has arrived
+		usleep(5000);
+		/********************************************/
+		//usleep(10000000);
+		//usleep(2000000);
+
+		pthread_mutex_lock(&status_mutex);
+		status = TRANSMITTING;
+		pthread_mutex_unlock(&status_mutex);
+		cout << "Status: Transmitting" << endl;
+	}
 
 	//kill udp socket to tell the listening thread to push last packet
 	shutDownUDPSockets();
@@ -1613,6 +1654,7 @@ int UDPStandardImplementation::startListening(){
 
 			/*	if(!ithread){*/
 				rc = udpSocket[ithread]->ReceiveDataOnly(buffer[ithread] + HEADER_SIZE_NUM_TOT_PACKETS, maxBufferSize);
+				//cout<<"value:"<<htonl(*(unsigned int*)((eiger_image_header *)((char*)(buffer[ithread] + HEADER_SIZE_NUM_TOT_PACKETS)))->fnum)<<endl;
 				expected = maxBufferSize;
 				/*}else{
 					while(1) usleep(100000000);
@@ -1815,11 +1857,12 @@ int UDPStandardImplementation::startWriting(){
 #endif
 			//pop
 			for(i=0;i<numListeningThreads;++i){
+				//cout<<"writer gonna pop from fifo:"<<i<<endl;
 				fifo[i]->pop(wbuf[i]);
 				numpackets = (uint16_t)(*((uint16_t*)wbuf[i]));
-#ifdef VERYDEBUG
-				cout << ithread << " numpackets:" << dec << numpackets << endl;
-#endif
+//#ifdef VERYDEBUG
+				cout << ithread << " numpackets:" << dec << numpackets << "for fifo :"<< i << endl;
+//#endif
 			}
 
 #ifdef VERYDEBUG
@@ -1878,7 +1921,9 @@ int UDPStandardImplementation::startWriting(){
 
 
 				if(myDetectorType == EIGER) {
+					//cout<<"gonna copy frame"<<endl;
 					copyFrameToGui(wbuf,currframenum);
+					//cout<<"copied frame"<<endl;
 					for(i=0;i<numListeningThreads;++i){
 						while(!fifoFree[i]->push(wbuf[i]));
 #ifdef VERYDEBUG
@@ -1991,7 +2036,7 @@ void UDPStandardImplementation::startFrameIndices(int ithread){
 		startAcquisitionIndex=startFrameIndex;
 		currframenum = startAcquisitionIndex;
 		acqStarted = true;
-		cout << "startAcquisitionIndex:" << startAcquisitionIndex<<endl;
+		cout << "startAcquisitionIndex:" << hex << startAcquisitionIndex<<endl;
 	}
 	//for scans, cuz currfraenum resets
 	else if (myDetectorType == EIGER){
@@ -2100,7 +2145,7 @@ void UDPStandardImplementation::stopWriting(int ithread, char* wbuffer[]){
 
 	int i,j;
 #ifdef VERYDEBUG
-	cout << ithread << " **********************popped last dummy frame:" << (void*)wbuffer[wIndex] << endl;
+	cout << ithread << " **********************popped last dummy frame:" << (void*)wbuffer[0] << endl;
 #endif
 
 	//free fifo

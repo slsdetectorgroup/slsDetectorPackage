@@ -392,7 +392,7 @@
 #define TOT_ENABLE_BIT           0x00000002
 #define TIMED_GATE_BIT           0x00000004
 #define CONT_RO_ENABLE_BIT       0x00080000
-#define CPU_OR_RECEIVER_BIT		 0x00001000
+#define GB10_NOT_CPU_BIT		 0x00001000
 
 
 

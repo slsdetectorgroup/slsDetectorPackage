@@ -1039,15 +1039,15 @@ int startReceiver(int start) {
 	int reg=bus_r(addr);
 	//for start recever, write 0 and for stop, write 1
 	if (!start)
-		bus_w(CONFIG_REG,reg|CPU_OR_RECEIVER_BIT);
+		bus_w(CONFIG_REG,reg&(~GB10_NOT_CPU_BIT));
 	else
-		bus_w(CONFIG_REG,reg&(~CPU_OR_RECEIVER_BIT));
+		bus_w(CONFIG_REG,reg|GB10_NOT_CPU_BIT);
 
 	reg=bus_r(addr);
 //#ifdef VERBOSE
 	printf("Config Reg %x\n", reg);
 //#endif
-	int d =reg&CPU_OR_RECEIVER_BIT;
+	int d =reg&GB10_NOT_CPU_BIT;
 	if(d!=0) d=1;
 	if(d!=start)
 		return OK;
@@ -2279,14 +2279,16 @@ int prepareADC(){
     codata=0;    
     writeADC(0x08,0x3);
     writeADC(0x08,0x0);
-     writeADC(0x14,0x40);//lvds reduced range
-     // writeADC(0x14,0x00);//lvds
     
 
           writeADC(0x16,0x01);//output clock phase
 	  // writeADC(0x16,0x07);//output clock phase
 
      //   writeADC(0x16,0x4);//output clock phase
+
+	     writeADC(0x18,0x0);// vref 1V
+	    
+     writeADC(0x14,0x40);//lvds reduced range -- offset binary
 
      writeADC(0xD,0x0);//no test mode
 

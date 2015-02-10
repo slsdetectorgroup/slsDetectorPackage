@@ -9,17 +9,17 @@
 
 //#define VERBOSE
 
-static void* startProcessData(void *n){\
-   postProcessing *myDet=(postProcessing*)n;\
-   myDet->processData(1);\
-   pthread_exit(NULL);\
+static void* startProcessData(void *n){
+   postProcessing *myDet=(postProcessing*)n;
+   myDet->processData(1);
+   pthread_exit(NULL);
    
 };
 
-static void* startProcessDataNoDelete(void *n){\
-  postProcessing *myDet=(postProcessing*)n;\
-  myDet->processData(0);\
-  pthread_exit(NULL);\
+static void* startProcessDataNoDelete(void *n){
+  postProcessing *myDet=(postProcessing*)n;
+  myDet->processData(0);
+  pthread_exit(NULL);
 
 };
 
@@ -65,10 +65,10 @@ postProcessing::~postProcessing(){
 
 
 
-void postProcessing::processFrame(int *myData, int delflag) {
+void postProcessing::processFrame(int *myData, int delflag, int jctb) {
 
   string fname;
-  // double *fdata=NULL;
+  //double *fdata=NULL;
   
 #ifdef VERBOSE
   cout << "start processing"<< endl;
@@ -136,7 +136,7 @@ void postProcessing::processFrame(int *myData, int delflag) {
       if (dataReady){
 
 	//	cout << "callback arg "<< getCurrentProgress()<< " " << (fname+string(".raw")).c_str() << " " << getTotalNumberOfChannels() << endl;
-
+	//	cout << "DATAREADY 1" <<endl;
 	thisData=new detectorData(fdata,NULL,NULL,getCurrentProgress(),(fname+string(".raw")).c_str(),getTotalNumberOfChannels()); 
 	dataReady(thisData, currentFrameIndex, pCallbackArg);
 	delete thisData;
@@ -155,20 +155,21 @@ void postProcessing::processFrame(int *myData, int delflag) {
 
 
 
-
-
- delete [] myData;
  if (fdata)
    delete [] fdata;
- myData=NULL;
  fdata=NULL;
  
-#ifdef VERBOSE
-  cout << "Pop data queue " << *fileIndex << endl;
-#endif
-  
-  popDataQueue(); //remove the data from the queue
 
+ // if (jctb==0) {
+   delete [] myData;
+   myData=NULL;
+   
+#ifdef VERBOSE
+   cout << "Pop data queue " << *fileIndex << endl;
+#endif
+   
+   popDataQueue(); //remove the data from the queue
+   
 #ifdef VERBOSE
   cout << "Data queue popped"  << endl;
 #endif
@@ -177,7 +178,7 @@ void postProcessing::processFrame(int *myData, int delflag) {
 #ifdef VERBOSE
   cout << "process frame returning "  << endl;
 #endif
-
+  // }
   
 }
 
@@ -278,7 +279,7 @@ data queue size unlock
 
 	if (dataReady) {
 	  //	  cout << "callback arg "<< getCurrentProgress()<< " " << (fname+ext).c_str() << " " << np << endl;
-
+	  //cout << "ADATREADY 2 " << endl;
 	  thisData=new detectorData(val,err,ang,getCurrentProgress(),(fname+ext).c_str(),np);
 	  dataReady(thisData, currentFrameIndex, pCallbackArg);
 	  delete thisData;
@@ -398,20 +399,35 @@ void* postProcessing::processData(int delflag) {
 
 
 
+
 		queuesize=dataQueueSize();
 
+
 		int *myData;
+		char *p;
 		int dum=1;
+		int nf=1, ii, nch;
+		int jctb=0;
+
+
+// 		if (getDetectorsType()==JUNGFRAUCTB) {
+// 		  nch=getTotalNumberOfChannels();
+// 		  nf= getDataBytes()/(nch*2);
+// 		  cout << "WILL PROCESS " << nf << "SAMPLES AND " << nch <<"CHANNELS PER FRAME!" << endl;
+// 		  jctb=1;
+// 		}// else
+// 		 // cout << "NOOT A JCTB" << endl;
 
 		fdata=NULL;
 
 		while(dum | *threadedProcessing) { // ????????????????????????
 			/* IF THERE ARE DATA PROCESS THEM*/
+		  //	  cout << "loop" << endl;
 			while((queuesize=dataQueueSize())>0) {
 				/** Pop data queue */
-#ifdef VERBOSE
-				cout << "data foun"<< endl<<endl;;
-#endif
+			  //#ifdef VERBOSE
+				cout << "data found"<< endl<<endl;;
+				//#endif
 
 				myData=dataQueueFront(); // get the data from the queue
 #ifdef VERBOSE
@@ -419,38 +435,55 @@ void* postProcessing::processData(int delflag) {
 #endif
 
 				if (myData) {
-					processFrame(myData,delflag);
-				}
+				  
+
+			// 	  if (jctb) {
+// 				    p=(char*)myData;
+// 				    for (ii=0; ii<nf; ii++) {
+// 				      processFrame((int*)p,delflag, 1);
+// 				      p+=2*nch;
+// 				    }
+				    
+// 				    delete [] myData;
+// 				    myData=NULL;
+				    
+// 				    popDataQueue(); //remove the data from the queue
+   
+// 				  } else 
+				    processFrame(myData,delflag,0);
 #ifdef VERBOSE
-				cout << "frame processed"<< endl;
+				  cout << "frame processed"<< endl;
 #endif
+					}
+			
+			
 			}
-
-			/** IF detector acquisition is done, let the acquire() thread know to finish up and force join thread */
+				/** IF detector acquisition is done, let the acquire() thread know to finish up and force join thread */
 			if(acquiringDone){
-				sem_post(&sem_queue);
-				//	cout << "Sem posted" << endl;
+			  sem_post(&sem_queue);
+			  //	cout << "Sem posted" << endl;
 			} //else
-			// cout << "Sem not posted" << endl;
-			  
-
+				// cout << "Sem not posted" << endl;
 			/* IF THERE ARE NO DATA look if acquisition is finished */
 			if (checkJoinThread()) {
-				if (dataQueueSize()==0) {
-					break;
-				}
+			  if (dataQueueSize()==0) {
+			    break;
+			  }
 			}
 			dum=0;
 			usleep(500);
 		}
-
+		
 		if (fdata) {
-			delete [] fdata;
+		  cout << "delete fdata "<< endl;
+		  delete [] fdata;
+		  
+		  cout << "delete done "<< endl;
 		}
-	}
+		}
 	//receiver
 	else{
-		/*
+	  /*
 		//without gui loop
 		while(1){
 		if (checkJoinThread()) break;
@@ -539,6 +572,7 @@ void* postProcessing::processData(int delflag) {
 							fdata = decodeData(receiverData);
 							delete [] receiverData;
 							if ((fdata) && (dataReady)){
+							  //  cout << "DATAREADY 3" << endl;
 								thisData = new detectorData(fdata,NULL,NULL,getCurrentProgress(),currentfName,getTotalNumberOfChannels());
 								dataReady(thisData, currentfIndex, pCallbackArg);
 								delete thisData;

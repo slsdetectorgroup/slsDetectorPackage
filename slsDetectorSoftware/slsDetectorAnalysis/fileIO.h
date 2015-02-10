@@ -317,7 +317,9 @@ yes  */
 
   int nframes;
   // int fformat;
+  
 
+  int nBytes;
 
 };
 

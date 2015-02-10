@@ -165,7 +165,7 @@ s
       \returns nothing
       
   */
-  void processFrame(int* myData, int delflag);
+  void processFrame(int* myData, int delflag, int jctb=0);
 
   /** processes the data
       \param delflag 0 leaves the data in the final data queue
@@ -226,6 +226,7 @@ s
   virtual int fillModuleMask(int *mM)=0;
 
   virtual int getNMods()=0;
+
 
 
   int GetCurrentPositionIndex(){ pthread_mutex_lock(&mp); int retval=getCurrentPositionIndex();  pthread_mutex_unlock(&mp); return retval;};

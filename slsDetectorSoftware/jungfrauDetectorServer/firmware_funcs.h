@@ -51,6 +51,7 @@ u_int32_t getTotClockDivider();
 u_int32_t setTotDutyCycle(int d);
 u_int32_t getTotDutyCycle();
 u_int32_t setOversampling(int d);
+u_int32_t adcPipeline(int d);
 
 u_int32_t setExtSignal(int d, enum externalSignalFlag  mode);
 int  getExtSignal(int d);
@@ -134,6 +135,7 @@ u_int32_t fifo_full(void);
 
 
 u_int16_t* fifo_read_event();
+u_int16_t* fifo_read_frame();
 u_int32_t* decode_data(int* datain);
 //u_int32_t move_data(u_int64_t* datain, u_int64_t* dataout);
 int setDynamicRange(int dr);

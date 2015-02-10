@@ -34,6 +34,7 @@ enum detectorType myDetectorType=GENERIC;
 extern int nModX;
 extern int nModY;
 extern int dataBytes;
+extern int nSamples;
 extern int dynamicRange;
 extern int  storeInRAM;
 
@@ -153,6 +154,8 @@ int init_detector(int b, int checkType) {
   strcpy(lastClientIP,"none");
   strcpy(thisClientIP,"none1");
   lockStatus=0;
+
+  allocateRAM();
   return OK;
 }
 
@@ -1938,6 +1941,11 @@ int get_run_status(int file_des) {
 
 int read_frame(int file_des) {
 
+
+  int ns=0;
+  u_int16_t* p=NULL;
+
+
   if (differentClients==1 && lockStatus==1) {
     dataret=FAIL;
     sprintf(mess,"Detector locked by %s\n",lastClientIP);  
@@ -1949,81 +1957,39 @@ int read_frame(int file_des) {
     return dataret;
 
   }
- 
-  if (storeInRAM==0) {
-    if ((dataretval=(char*)fifo_read_event())) {
-      dataret=OK;
-#ifdef VERYVERBOSE
-      printf("Sending ptr %x %d\n",(unsigned int)(dataretval), dataBytes);
-#endif
-      sendDataOnly(file_des,&dataret,sizeof(dataret));
-      sendDataOnly(file_des,dataretval,dataBytes);
+  p=fifo_read_frame();
+  if (p) {
+    nframes++;
+    dataretval=(char*)ram_values;
+    dataret=OK;
 #ifdef VERBOSE
-      printf("sent %d bytes \n",dataBytes);
-      printf("dataret OK\n");
+      printf("sending data of %d frames\n",nframes);
 #endif
-      return OK;
-    }  else {
-      //might add delay????
-      if(getFrames()>-1) {
+	sendDataOnly(file_des,&dataret,sizeof(dataret));
+#ifdef VERYVERBOSE
+	  printf("sending pointer %x of size %d\n",(unsigned int)(dataretval),dataBytes*nSamples);
+#endif
+	  sendDataOnly(file_des,dataretval,dataBytes*nSamples);
+  } else  {
+      if (getFrames()>-1) {
 	dataret=FAIL;
-	sprintf(mess,"no data and run stopped: %d frames left\n",(int)(getFrames()+1));
+	sprintf(mess,"no data and run stopped: %d frames left\n",(int)(getFrames()+2));
 	printf("%s\n",mess);
       } else {
 	dataret=FINISHED;
 	sprintf(mess,"acquisition successfully finished\n");
 	printf("%s\n",mess);
+	if (differentClients)
+	  dataret=FORCE_UPDATE;
       }
-#ifdef VERYVERBOSE
-      printf("%d %d %x %s\n",(int)(sizeof(mess)),(int)(strlen(mess)),(unsigned int)( mess),mess);
-#endif
-      sendDataOnly(file_des,&dataret,sizeof(dataret));
-      sendDataOnly(file_des,mess,sizeof(mess));
-#ifdef VERYVERBOSE
-      printf("message sent %s\n",mess);
-#endif
-      printf("dataret %d\n",dataret);
-      return dataret;
-    }
-  } else {
-    nframes=0;
-    while(fifo_read_event()) {
-      nframes++;
-    }
-    dataretval=(char*)ram_values;
-    dataret=OK;
-#ifdef VERBOSE
-    printf("sending data of %d frames\n",nframes);
-#endif
-    for (iframes=0; iframes<nframes; iframes++) {
-      sendDataOnly(file_des,&dataret,sizeof(dataret));
-#ifdef VERYVERBOSE
-      printf("sending pointer %x of size %d\n",(unsigned int)(dataretval),dataBytes);
-#endif
-      sendDataOnly(file_des,dataretval,dataBytes);
-      dataretval+=dataBytes;
-    }
-    if (getFrames()>-2) {
-      dataret=FAIL;
-      sprintf(mess,"no data and run stopped: %d frames left\n",(int)(getFrames()+2));
-      printf("%s\n",mess);
-    } else {
-      dataret=FINISHED;
-      sprintf(mess,"acquisition successfully finished\n");
-      printf("%s\n",mess);
-      if (differentClients)
-	dataret=FORCE_UPDATE;
-    }
 #ifdef VERBOSE
       printf("Frames left %d\n",(int)(getFrames()));
 #endif
-    sendDataOnly(file_des,&dataret,sizeof(dataret));
-    sendDataOnly(file_des,mess,sizeof(mess));
-    printf("dataret %d\n",dataret);
-    return dataret;
+      sendDataOnly(file_des,&dataret,sizeof(dataret));
+      sendDataOnly(file_des,mess,sizeof(mess));
   }
-  printf("dataret %d\n",dataret);
-  return dataret; 
+  return dataret;
+      
 }
 
 
@@ -2164,9 +2130,9 @@ int set_timer(int file_des) {
     printf(mess);
     printf("set timer failed\n");
   } else if (ind==FRAME_NUMBER) {
-    ret=allocateRAM();
-    if (ret!=OK) 
-      sprintf(mess, "could not allocate RAM for %lld frames\n", tns);
+    //  ret=allocateRAM();
+    // if (ret!=OK) 
+    //   sprintf(mess, "could not allocate RAM for %lld frames\n", tns);
   }
 
   n = sendDataOnly(file_des,&ret,sizeof(ret));
@@ -2291,7 +2257,7 @@ int set_dynamic_range(int file_des) {
   int retval;
   int ret=OK;
   
-
+  printf("Set dynamic range?\n");
   sprintf(mess,"can't set dynamic range\n");
   
 
@@ -2313,10 +2279,11 @@ int set_dynamic_range(int file_des) {
   if (ret!=OK) {
     sprintf(mess,"set dynamic range failed\n");
   } else {
-    ret=allocateRAM();
-    if (ret!=OK)
-      sprintf(mess,"Could not allocate RAM for the dynamic range selected\n");
-    else  if (differentClients)
+  /*   ret=allocateRAM(); */
+/*     if (ret!=OK) */
+/*       sprintf(mess,"Could not allocate RAM for the dynamic range selected\n"); */
+//    else 
+ if (differentClients)
       ret=FORCE_UPDATE;
   }
 
@@ -2457,6 +2424,11 @@ int set_speed(int file_des) {
 	  break;
 
 
+	case ADC_PIPELINE:
+	  retval=adcPipeline(val);
+	  break;
+
+
 
 	default:
 	  ret=FAIL;
@@ -2486,6 +2458,15 @@ int set_speed(int file_des) {
       retval=getClockDivider(1);
       break;
 
+    case ADC_PHASE:
+      retval=-1;
+      break;
+
+
+    case ADC_PIPELINE:
+      retval=adcPipeline(-1);
+      break;
+      
 
     default:
       ret=FAIL;

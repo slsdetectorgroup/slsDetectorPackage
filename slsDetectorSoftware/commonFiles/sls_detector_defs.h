@@ -401,7 +401,8 @@ enum speedVariable {
   PHASE_SHIFT, /**< adds phase shift */
   OVERSAMPLING, /**< oversampling for analog detectors */
   ADC_CLOCK, /**< adc clock divider */
-  ADC_PHASE /**< adc clock phase */
+  ADC_PHASE, /**< adc clock phase */
+  ADC_PIPELINE /**< adc pipeline */
 };
 
 

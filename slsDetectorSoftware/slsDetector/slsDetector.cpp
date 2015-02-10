@@ -612,6 +612,10 @@ int slsDetector::initializeDetectorSize(detectorType type) {
 
     thisDetector->dataBytes=thisDetector->nMod[X]*thisDetector->nMod[Y]*thisDetector->nChips*thisDetector->nChans*thisDetector->dynamicRange/8;
 
+    if(thisDetector->myDetectorType==JUNGFRAUCTB) {
+      thisDetector->dataBytes=thisDetector->nMod[X]*thisDetector->nMod[Y]*thisDetector->nChans*thisDetector->dynamicRange/8;
+      
+    }
     if(thisDetector->myDetectorType==MYTHEN){
     	if (thisDetector->dynamicRange==24 || thisDetector->timerValue[PROBES_NUMBER]>0)
     		thisDetector->dataBytes=thisDetector->nMod[X]*thisDetector->nMod[Y]*thisDetector->nChips*thisDetector->nChans*4;
@@ -1540,6 +1544,11 @@ int slsDetector::setNumberOfModules(int n, dimension d){
 	thisDetector->dataBytes=thisDetector->nMod[X]*thisDetector->nMod[Y]*thisDetector->nChips*thisDetector->nChans*4;
     }
 
+    if(thisDetector->myDetectorType==JUNGFRAUCTB){
+
+    thisDetector->dataBytes=thisDetector->nMod[X]*thisDetector->nMod[Y]*thisDetector->nChans*dr/8;
+
+    }
 
 #ifdef VERBOSE
     std::cout<< "Data size is " << thisDetector->dataBytes << std::endl;
@@ -3363,9 +3372,9 @@ int* slsDetector::getDataFromDetector(int *retval){
   } else {
     n=controlSocket->ReceiveDataOnly(retval,thisDetector->dataBytes);
 
-#ifdef VERBOSE
+    //   #ifdef VERBOSE
     std::cout<< "Received "<< n << " data bytes" << std::endl;
-#endif
+    // #endif
     if (n!=thisDetector->dataBytes) {
       std::cout<< "wrong data size received: received " << n << " but expected " << thisDetector->dataBytes << std::endl;
       thisDetector->stoppedFlag=1;
@@ -3376,7 +3385,7 @@ int* slsDetector::getDataFromDetector(int *retval){
       return NULL;
     }
   }
-
+  //  cout << "get data returning " << endl;
   return retval;
 
 };
@@ -3401,12 +3410,13 @@ int* slsDetector::readAll(){
 
       while ((retval=getDataFromDetector())){
 	i++;
-#ifdef VERBOSE
+	//#ifdef VERBOSE
 	std::cout<< i << std::endl;
 	//#else
 	//std::cout << "-" << flush ;
-#endif
+	//#endif
 	dataQueue.push(retval);
+	std::cout<< "pushed" << std::endl;
       }
       controlSocket->Disconnect();
     }
@@ -4097,6 +4107,9 @@ int slsDetector::setDynamicRange(int n){
 #endif
   if (n==24)
     n=32;
+
+
+
   if (thisDetector->onlineFlag==ONLINE_FLAG) {
     if (connectControl() == OK){
       controlSocket->SendDataOnly(&fnum,sizeof(fnum));
@@ -4121,24 +4134,31 @@ int slsDetector::setDynamicRange(int n){
   if (ret!=FAIL && retval>0) {
     /* checking the number of probes to chose the data size */
 
-	  thisDetector->dataBytes=thisDetector->nMod[X]*thisDetector->nMod[Y]*thisDetector->nChips*thisDetector->nChans*retval/8;
-
-	  if(thisDetector->myDetectorType==MYTHEN){
-		  if (thisDetector->timerValue[PROBES_NUMBER]!=0)
-			  thisDetector->dataBytes=thisDetector->nMod[X]*thisDetector->nMod[Y]*thisDetector->nChips*thisDetector->nChans*4;
-
-		    if (retval==32)
-		      thisDetector->dynamicRange=24;
-	  }
 
 
-      thisDetector->dynamicRange=retval;
+    thisDetector->dataBytes=thisDetector->nMod[X]*thisDetector->nMod[Y]*thisDetector->nChips*thisDetector->nChans*retval/8;
+
+    if (thisDetector->myDetectorType==JUNGFRAUCTB) {
+      thisDetector->nChip[X]=retval/16;
+      thisDetector->nChips=thisDetector->nChip[X]*thisDetector->nChip[Y];
+      thisDetector->dataBytes=thisDetector->nMod[X]*thisDetector->nMod[Y]*thisDetector->nChans*retval/8;
+    } 
+    if(thisDetector->myDetectorType==MYTHEN){
+      if (thisDetector->timerValue[PROBES_NUMBER]!=0)
+	thisDetector->dataBytes=thisDetector->nMod[X]*thisDetector->nMod[Y]*thisDetector->nChips*thisDetector->nChans*4;
+      
+      if (retval==32)
+	thisDetector->dynamicRange=24;
+    }
 
 
-#ifdef VERBOSE
+    thisDetector->dynamicRange=retval;
+
+
+    //#ifdef VERBOSE
     std::cout<< "Dynamic range set to  "<< thisDetector->dynamicRange   << std::endl;
     std::cout<< "Data bytes "<< thisDetector->dataBytes   << std::endl;
-#endif
+    //#endif
   }
 
 
@@ -4368,11 +4388,14 @@ int slsDetector::executeTrimming(trimMode mode, int par1, int par2, int imod){
 double* slsDetector::decodeData(int *datain, double *fdata) {
 
   double *dataout;
-  if (fdata)
+  if (fdata) {
     dataout=fdata;
-  else
+    //    printf("not allocating fdata!\n");
+  }
+  else {
     dataout=new double[thisDetector->nChans*thisDetector->nChips*thisDetector->nMods];
-
+    //  printf("allocating fdata!\n");
+  }
   const int bytesize=8;
 
   int ival=0;

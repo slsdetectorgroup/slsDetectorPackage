@@ -529,15 +529,17 @@ int Beb_RequestNImages(unsigned int beb_number, unsigned int left_right, int ten
   unsigned int i;
   for(i=0;i<nimages;i++){
     //header then data request
-	    //usleep(10000);
+	  //  usleep(10000);
     if(!Beb_SendMultiReadRequest(beb_number,left_right,ten_gig,dst_number,1,header_size,test_just_send_out_packets_no_wait)){printf("Send failed\n");return 0;}
-    //usleep(10000);
+   // usleep(10000);
     if(!Beb_SendMultiReadRequest(beb_number,left_right,ten_gig,dst_number,npackets,packet_size,test_just_send_out_packets_no_wait)){printf("Send failed\n");return 0;}
-   // usleep(0);
+    usleep(1000);
     if(in_two_requests){if(!Beb_SendMultiReadRequest(beb_number,left_right,ten_gig,dst_number,npackets,packet_size,test_just_send_out_packets_no_wait)){printf("Send failed\n");return 0;}
     }
   }
 */
+
+
 
   unsigned int i;
   for(i=0;i<nimages;i++){
@@ -549,6 +551,7 @@ int Beb_RequestNImages(unsigned int beb_number, unsigned int left_right, int ten
     	return 0;
     }
   }
+
 
   return 1;
 }

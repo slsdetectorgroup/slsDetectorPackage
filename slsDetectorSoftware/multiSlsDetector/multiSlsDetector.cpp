@@ -4564,16 +4564,16 @@ int* multiSlsDetector::readFrameFromReceiver(char* fName, int &fIndex){
 				n=detectors[id]->getDataBytes();
 
 				if(getDetectorsType() == EIGER){
-					cout << "fname:"<<fName<<" findex:"<<fIndex<<endl;
-					cout<<"n:"<<n<<endl;
-				cout<<"maxchan:"<<detectors[id]->getMaxNumberOfChannels()<<" n:"<<n<<endl;
+					//cout << "fname:"<<fName<<" findex:"<<fIndex<<endl;
+					//cout<<"n:"<<n<<endl;
+				//cout<<"maxchan:"<<detectors[id]->getMaxNumberOfChannels()<<" n:"<<n<<endl;
 					dr = (double)n/detectors[id]->getMaxNumberOfChannels();
-					cout << "dr:"<<dr<<endl;
+					//cout << "dr:"<<dr<<endl;
 					k=(int)(detectors[id]->getMaxNumberOfChannels(X)*dr);//bit mode
-					cout << "k:"<<k<<endl;
+					//cout << "k:"<<k<<endl;
 					offsetY = (int)(((maxY - (thisMultiDetector->offsetY[id] + detectors[id]->getMaxNumberOfChannels(Y))) * maxX)*dr);//bit mode
 					offsetX = (int)(thisMultiDetector->offsetX[id]*dr);
-					cout << "offsetY"<<offsetY<< " offsetX:"<<offsetX<<endl;
+					//cout << "offsetY"<<offsetY<< " offsetX:"<<offsetX<<endl;
 						for(i=0; i< 256;i++){
 							memcpy((((char*)p) + offsetY + offsetX + ((int)(i*maxX*dr))) ,(((char*)retdet) + (i*k)),k);//bit mode
 						}

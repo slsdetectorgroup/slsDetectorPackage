@@ -1564,7 +1564,7 @@ void UDPStandardImplementation::startReadout(){
 		//wait so that all packets which take time has arrived
 		usleep(5000);
 		/********************************************/
-		//usleep(10000000);
+		//usleep(1000000);
 		//usleep(2000000);
 
 		pthread_mutex_lock(&status_mutex);
@@ -1860,9 +1860,9 @@ int UDPStandardImplementation::startWriting(){
 				//cout<<"writer gonna pop from fifo:"<<i<<endl;
 				fifo[i]->pop(wbuf[i]);
 				numpackets = (uint16_t)(*((uint16_t*)wbuf[i]));
-//#ifdef VERYDEBUG
+#ifdef VERYDEBUG
 				cout << ithread << " numpackets:" << dec << numpackets << "for fifo :"<< i << endl;
-//#endif
+#endif
 			}
 
 #ifdef VERYDEBUG
@@ -2109,9 +2109,9 @@ int i;
 #endif
 				pthread_mutex_unlock(&(status_mutex));
 
-//#ifdef VERYDEBUG
+#ifdef VERYDEBUG
 				cout << ithread << ": Frames listened to " << dec << ((totalListeningFrameCount[ithread]*numListeningThreads)/packetsPerFrame) << endl;
-//#endif
+#endif
 
 				//waiting for all listening threads to be done, to print final count of frames listened to
 				if(ithread == 0){

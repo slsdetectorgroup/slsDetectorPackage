@@ -379,6 +379,7 @@ void Feb_Control_PrintModuleList(){
     printf("%d    ",Module_GetModuleNumber(&modules[i]));
     if(Module_TopAddressIsValid(&modules[i]))    printf("0x%x (top)    ",Module_GetTopBaseAddress(&modules[i]));
     if(Module_BottomAddressIsValid(&modules[i])) printf("0x%x (bottom)    ",Module_GetBottomBaseAddress(&modules[i]));
+
     printf("\n");
   }
 }
@@ -1066,7 +1067,7 @@ int Feb_Control_SetTrimbits(unsigned int module_num, unsigned int *trimbits){
 		} //end row_set loop (groups of 16 rows)
 	} // end l_r loop
 
-	memcpy(Feb_Control_last_downloaded_trimbits,trimbits,Feb_Control_trimbit_size*sizeof(unsigned char));
+	memcpy(Feb_Control_last_downloaded_trimbits,trimbits,Feb_Control_trimbit_size*sizeof(unsigned int));
 
 	return Feb_Control_SetStaticBits(); //send the static bits
 }

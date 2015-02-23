@@ -867,7 +867,9 @@ void UDPStandardImplementation::readFrame(char* c,char** raw, uint32_t &fnum, ui
 	//point to gui data
 	if (guiData == NULL){
 		guiData = latestData;
-		//cout <<"gui data not null anymore" << endl;
+#ifdef VERY_VERY_DEBUG
+		cout <<"gui data not null anymore" << endl;
+#endif
 	}
 
 	//copy data and filename
@@ -877,25 +879,33 @@ void UDPStandardImplementation::readFrame(char* c,char** raw, uint32_t &fnum, ui
 
 	//could not get gui data
 	if(!guiDataReady){
-		//cout<<"gui data not ready"<<endl;
+#ifdef VERY_VERY_DEBUG
+		cout<<"gui data not ready"<<endl;
+#endif
 		*raw = NULL;
 	}
 	//data ready, set guidata to receive new data
 	else{
-		//cout<<"gui data ready"<<endl;
+#ifdef VERY_VERY_DEBUG
+		cout<<"gui data ready"<<endl;
+#endif
 		*raw = guiData;
 		guiData = NULL;
 
-		pthread_mutex_lock(&dataReadyMutex);
+		/*pthread_mutex_lock(&dataReadyMutex); WHY WAS THIS HERE IN THE FIRST PLACE
 		guiDataReady = 0;
-		pthread_mutex_unlock(&dataReadyMutex);
+		pthread_mutex_unlock(&dataReadyMutex);*/
 		if((nFrameToGui) && (writerthreads_mask)){
-			//cout<<"gonna post"<<endl;
+#ifdef VERY_VERY_DEBUG
+			cout<<"gonna post"<<endl;
+#endif
 		/*if(nFrameToGui){*/
 			//release after getting data
 			sem_post(&smp);
 		}
-		//cout<<"done post"<<endl;
+#ifdef VERY_VERY_DEBUG
+		cout<<"done post"<<endl;
+#endif
 	}
 }
 
@@ -1539,7 +1549,7 @@ int UDPStandardImplementation::stopReceiver(){
 		pthread_mutex_unlock(&(status_mutex));
 
 		cout << "Receiver Stopped.\nStatus:" << status << endl << endl;
-	}
+	}else cout <<" Not idle to stop receiver" << endl;
 
 	return OK;
 }
@@ -1563,8 +1573,9 @@ void UDPStandardImplementation::startReadout(){
 
 		//wait so that all packets which take time has arrived
 		usleep(5000);
+
 		/********************************************/
-		//usleep(1000000);
+		//usleep(10000000);
 		//usleep(2000000);
 
 		pthread_mutex_lock(&status_mutex);
@@ -1676,9 +1687,9 @@ int UDPStandardImplementation::startListening(){
 				expected = maxBufferSize - carryonBufferSize;
 			}
 
-//#ifdef VERYDEBUG
+#ifdef VERYDEBUG
 			cout << ithread << " *** rc:" << dec << rc << ". expected:" << dec << expected << endl;
-//#endif
+#endif
 
 
 			//start indices for each start of scan/acquisition - eiger does it before
@@ -1857,11 +1868,13 @@ int UDPStandardImplementation::startWriting(){
 #endif
 			//pop
 			for(i=0;i<numListeningThreads;++i){
-				//cout<<"writer gonna pop from fifo:"<<i<<endl;
+#ifdef VERYDEBUG
+				cout << "writer gonna pop from fifo:" << i << endl;
+#endif
 				fifo[i]->pop(wbuf[i]);
 				numpackets = (uint16_t)(*((uint16_t*)wbuf[i]));
 #ifdef VERYDEBUG
-				cout << ithread << " numpackets:" << dec << numpackets << "for fifo :"<< i << endl;
+				cout << i << " numpackets:" << dec << numpackets << "for fifo :"<< i << endl;
 #endif
 			}
 
@@ -1874,10 +1887,15 @@ int UDPStandardImplementation::startWriting(){
 
 			//last dummy packet
 			if(numpackets == 0xFFFF){
+#ifdef VERYDEBUG
+				cout << "LAST dummy packet" << endl;
+#endif
 				stopWriting(ithread,wbuf);
 				continue;
 			}
-
+#ifdef VERYDEBUG
+			else cout <<"NOT a dummy packet"<<endl;
+#endif
 
 
 
@@ -1901,10 +1919,10 @@ int UDPStandardImplementation::startWriting(){
 					currframenum = tempframenum;
 				pthread_mutex_unlock(&progress_mutex);
 			}
-//#ifdef VERYDEBUG
+#ifdef VERYDEBUG
 			if(myDetectorType == EIGER)
 				cout << endl <<ithread << " tempframenum:" << hex << tempframenum << " curframenum:" << currframenum << endl;
-//#endif
+#endif
 
 
 			//without datacompression: write datacall back, or write data, free fifo
@@ -1917,13 +1935,20 @@ int UDPStandardImplementation::startWriting(){
 				}else if (numpackets > 0){
 					for(i=0;i<numListeningThreads;++i)
 						writeToFile_withoutCompression(wbuf[i], numpackets,currframenum);
+#ifdef VERYDEBUG
+					cout << "written everyting" << endl;
+#endif
 				}
 
 
 				if(myDetectorType == EIGER) {
-					//cout<<"gonna copy frame"<<endl;
+#ifdef VERYDEBUG
+					cout << "gonna copy frame" << endl;
+#endif
 					copyFrameToGui(wbuf,currframenum);
-					//cout<<"copied frame"<<endl;
+#ifdef VERYDEBUG
+					cout << "copied frame" << endl;
+#endif
 					for(i=0;i<numListeningThreads;++i){
 						while(!fifoFree[i]->push(wbuf[i]));
 #ifdef VERYDEBUG
@@ -2056,7 +2081,7 @@ void UDPStandardImplementation::startFrameIndices(int ithread){
 
 
 
-void UDPStandardImplementation::stopListening(int ithread, int rc, int &pc, int &t){cout << "Stop Listening" << endl;
+void UDPStandardImplementation::stopListening(int ithread, int rc, int &pc, int &t){
 	FILE_LOG(logDEBUG) << __AT__ << " called";
 
 

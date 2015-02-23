@@ -1336,9 +1336,9 @@ int	slsReceiverTCPIPInterface::eiger_read_frame(){
 		/**send garbage with -1 index to try again*/
 		if (raw == NULL){
 			arg = -1;
-#ifdef VERBOSE
+//#ifdef VERBOSE
 			cout<<"data not ready for gui yet"<<endl;
-#endif
+//#endif
 		}
 
 		/**proper frame*/
@@ -1464,15 +1464,19 @@ int	slsReceiverTCPIPInterface::eiger_read_frame(){
 			  */
 			}
 			arg = index-startIndex;
+//#ifdef VERY_VERY_DEBUG
+			cout << "arg calculated is:"<<arg<<endl;
+			cout <<"index:"<<index<<" startindex:"<<startIndex<<endl;
+//#endif
 		}
 	}
 
-#ifdef VERBOSE
-	if(arg!=-1){
+//#ifdef VERBOSE
+	//if(arg!=-1){
 		cout << "fName:" << fName << endl;
-		cout << "findex:" << arg << endl;
-	}
-#endif
+		cout << "findex:" << dec << arg << endl;
+	//}
+//#endif
 
 
 

@@ -177,7 +177,7 @@ int Feb_Interface_WriteMemoryInLoops(unsigned int sub_num, unsigned int mem_num,
 		ndata_countdown-=n_to_send;
 		ndata_sent     +=n_to_send;
 		start_address  +=n_to_send;
-		usleep(0);//500 works
+		usleep(500);//500 works
 	}
 	return passed;
 }

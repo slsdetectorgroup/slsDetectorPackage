@@ -6,6 +6,7 @@
 
 #include "xfs_types.h"
 #include "HardwareIO.h"
+#include <sys/types.h>
 
 /*class LocalLinkInterface: public HardwareIO{ //*/
 
@@ -35,7 +36,7 @@ struct LocalLinkInterface{
   int  Local_Test(struct LocalLinkInterface* ll,unsigned int buffer_len, void *buffer);
 
   void Local_LocalLinkInterface(struct LocalLinkInterface* ll);
-  int Local_InitNewMemory (struct LocalLinkInterface* ll,unsigned int addr, int ifg);
+  int Local_GetModuleConfiguration (struct LocalLinkInterface* ll, u_int32_t baseaddr, u_int32_t offset);
 
   /*
   int FiFoReset(unsigned int numb);

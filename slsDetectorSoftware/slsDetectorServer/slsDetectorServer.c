@@ -64,6 +64,8 @@ int main(int argc, char *argv[]){
 #endif
 
 
+	printf("\nReady...\n\n");
+
 	/* waits for connection */
 	while(retval!=GOODBYE) {
 #ifdef VERBOSE

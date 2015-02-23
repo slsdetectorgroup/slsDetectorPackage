@@ -11,7 +11,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-
+#include <sys/types.h>
 
 
 #include "xfs_types.h"
@@ -89,7 +89,7 @@ void BebInfo_Print(struct BebInfo* bebInfo){
 }
 
 
-void Beb_Beb(int arg1){
+void Beb_Beb(){
 
 	Beb_send_ndata = 0;
 	Beb_send_buffer_size = 1026;
@@ -137,14 +137,32 @@ void Beb_Beb(int arg1){
 
   Beb_SetByteOrder();
 
-/*
-  ll_beb_new_memory = &ll_beb_new_memory_local;
-  Local_LocalLinkInterface(ll_beb_new_memory);
-  if(!Local_InitNewMemory(ll_beb_new_memory,XPAR_PLB_LL_NEW_MEMORY, arg1))
-	  printf("New Memory FAIL\n");
-  else
-	  printf("New Memory OK\n");
-*/
+}
+
+
+
+void Beb_GetModuleCopnfiguration(int* master, int* top){
+	*top = 0;
+	*master = 0;
+	  //mapping new memory to read master top module configuration
+	  ll_beb_new_memory = &ll_beb_new_memory_local;
+	  Local_LocalLinkInterface(ll_beb_new_memory);
+	  int ret  = Local_GetModuleConfiguration(ll_beb_new_memory,XPAR_PLB_GPIO_SYS_BASEADDR, MODULE_CONFIGURATION);
+	  if(!ret)
+		  printf("Module Configuration FAIL\n");
+	  else{
+		  printf("Module Configuration OK\n");
+		  printf("Beb: value =0x%x\n",ret);
+		  if(ret&0xf){
+			  *top = 1;
+			 // printf("Beb.c: TOP\n\n\n\n");
+		  }//else  printf("Beb.c: BOTTOM\n\n\n\n");
+
+		  if(ret&0x200){
+			  *master = 1;
+			 // printf("Beb.c: MASTER\n\n\n\n");
+		  }//else  printf("Beb.c: SLAVE\n\n\n\n");
+	  }
 }
 
 

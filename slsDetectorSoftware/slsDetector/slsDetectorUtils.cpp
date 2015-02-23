@@ -342,14 +342,26 @@ void  slsDetectorUtils::acquire(int delflag){
 	  }
 	  pthread_mutex_unlock(&mg);
 	  }else{
+
 		  pthread_mutex_lock(&mg);
-		  startReceiverReadout();
+		  acquiringDone = 1;
+		  pthread_mutex_unlock(&mg);
+
+		  // wait until data processing thread has taken the last frame
+		  if (*threadedProcessing) {
+			  sem_wait(&sem_queue);
+			  pthread_mutex_lock(&mg);
+			  acquiringDone = 0;
+			  pthread_mutex_unlock(&mg);
+		  }
+		  pthread_mutex_lock(&mg);
+		/*  startReceiverReadout();
 		  while(getReceiverStatus() != RUN_FINISHED){
 			pthread_mutex_unlock(&mg);
 			usleep(50000);
 			pthread_mutex_lock(&mg);
 		 }
-
+*/
 		  stopReceiver();
 		  pthread_mutex_unlock(&mg);
 	  }

@@ -522,6 +522,7 @@ void* postProcessing::processData(int delflag) {
 			cout<<flush;
 			usleep(20000);
 
+
 			//get progress
 			pthread_mutex_lock(&mg);
 			if(setReceiverOnline() == ONLINE_FLAG)
@@ -532,7 +533,27 @@ void* postProcessing::processData(int delflag) {
 			if(currentfIndex != -1)
 				setCurrentProgress(currentfIndex+1);
 
-			if (checkJoinThread()) break;
+			/** IF detector acquisition is done, let the acquire() thread know to finish up and force join thread */
+			if(acquiringDone == 1){
+#ifdef VERY_VERY_DEBUG
+				cout << "acquiring seems to be done" << endl;
+#endif
+				//so that only once it checks for last frame and then next time, checks join thread
+				pthread_mutex_lock(&mg);
+				acquiringDone = 2;
+				pthread_mutex_unlock(&mg);
+				//newData = true;
+			}else if (acquiringDone == 2){
+#ifdef VERY_VERY_DEBUG
+				cout << "gonna post for it to end" << endl;
+#endif
+				sem_post(&sem_queue);
+#ifdef VERY_VERY_DEBUG
+				cout << "Sem posted" << endl;
+#endif
+				//newData = false;
+			}else if (checkJoinThread())
+				break;
 
 
 			if (dataReady){
@@ -544,6 +565,9 @@ void* postProcessing::processData(int delflag) {
 				}
 
 				if(newData){
+#ifdef VERY_VERY_DEBUG
+					cout << "new data" << endl;
+#endif
 					if(setReceiverOnline()==ONLINE_FLAG){
 						//get data
 						strcpy(currentfName,"");
@@ -569,6 +593,9 @@ void* postProcessing::processData(int delflag) {
 
 						//not garbage frame
 						if (currentfIndex >= 0) {
+#ifdef VERY_VERY_DEBUG
+							cout<<"GOT data"<<endl;
+#endif
 							fdata = decodeData(receiverData);
 							delete [] receiverData;
 							if ((fdata) && (dataReady)){
@@ -578,13 +605,21 @@ void* postProcessing::processData(int delflag) {
 								delete thisData;
 								fdata = NULL;
 								progress = currentfIndex;
+#ifdef VERY_VERY_DEBUG
+								cout << "progress:" << progress << endl;
+#endif
 								/*if(!nthframe) //unnecessary to read every data, 09.12.2014**/
 									newData = false;
+#ifdef VERY_VERY_DEBUG
+									cout << "newData set to false" << endl;
+#endif
 							}
 						}
+#ifdef VERY_VERY_DEBUG
 						else{
-							;//cout<<"****Detector returned mismatched indices/garbage  or acquisition is over. Trying again.***"<<endl;
+							cout<<"****Detector returned mismatched indices/garbage  or acquisition is over. Trying again.***"<<endl;
 						}
+#endif
 					}
 				}
 			}

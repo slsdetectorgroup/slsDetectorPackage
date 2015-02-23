@@ -19,8 +19,9 @@ Here are the definitions, but the actual implementation should be done for each 
 
 
 
-
+void getModuleConfiguration();
 int initDetector();
+int initDetectorStop();
 
 int setNMod(int nm, enum dimension dim);
 int getNModBoard(enum dimension arg);

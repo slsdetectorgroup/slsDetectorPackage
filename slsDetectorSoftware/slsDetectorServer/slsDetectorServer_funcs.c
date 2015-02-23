@@ -47,18 +47,11 @@ int init_detector(int b) {
 #ifdef VIRTUAL
 	printf("This is a VIRTUAL detector\n");
 #endif
-	//only for control server
-	if(b){
+
 #ifdef SLS_DETECTOR_FUNCTION_LIST
-		initDetector();
+	if(b)	initDetector();
+	else initDetectorStop();
 #endif
-	}else{
-		  Feb_Interface_FebInterface();
-		  Feb_Control_Init();
-		 // printf("FEb control constructor done\n");
-		 /* Beb_Beb(-1);
-		  printf("BEB constructor done\n");*/
-	}
 	strcpy(mess,"dummy message");
 	strcpy(lastClientIP,"none");
 	strcpy(thisClientIP,"none1");

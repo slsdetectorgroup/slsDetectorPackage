@@ -67,9 +67,8 @@ int          Module_GetBottomDACValue(struct Module* mod,unsigned int i);
 
 int Feb_Control_IsBottomModule();
 int Feb_Control_GetModuleNumber();
-void Feb_Control_Set_Master();
 
-  void Feb_Control_ClearModules();
+
 
 
   void Feb_Control_PrintModuleList();
@@ -77,7 +76,7 @@ void Feb_Control_Set_Master();
   int Feb_Control_CheckModuleAddresses(struct Module* m);
   int Feb_Control_AddModule(unsigned int module_number, unsigned int top_address);
   /*int Feb_Control_AddModule(unsigned int module_number, unsigned int top_address, unsigned int bottom_address, int half_module=0);*/
-  int Feb_Control_AddModule1(unsigned int module_number, int bottom_enable, unsigned int top_address, unsigned int bottom_address, int half_module);
+  int Feb_Control_AddModule1(unsigned int module_number, int top_enable, unsigned int top_address, unsigned int bottom_address, int half_module);
 
   int  Feb_Control_GetDACNumber(char* s, unsigned int* n);
   int  Feb_Control_SendDACValue(unsigned int dst_num, unsigned int ch, unsigned int* value);
@@ -111,9 +110,7 @@ void Feb_Control_Set_Master();
 
 
   void Feb_Control_FebControl();
-
-
-  int Feb_Control_Init();
+  int Feb_Control_Init(int master, int top);
   int Feb_Control_ReadSetUpFileToAddModules(char* file_name);
   int Feb_Control_ReadSetUpFile(unsigned int module_num, char* file_name);
   int Feb_Control_CheckSetup();

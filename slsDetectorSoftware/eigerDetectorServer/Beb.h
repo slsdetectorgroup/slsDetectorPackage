@@ -40,8 +40,6 @@ struct BebInfo{
 
 
 
-
-
   void Beb_ClearBebInfos();
   int Beb_InitBebInfos();
   int Beb_ReadSetUpFromFile(char* file_name);
@@ -67,9 +65,7 @@ struct BebInfo{
   int Beb_SetByteOrder();
 
 
-
-
-  void Beb_Beb(int arg1);
+  void Beb_Beb();
 
 
   int Beb_SetBebSrcHeaderInfos(unsigned int beb_number, int ten_gig, char* src_mac, char* src_ip, unsigned int src_port);

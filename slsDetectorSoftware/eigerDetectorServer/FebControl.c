@@ -53,9 +53,9 @@ unsigned int   Feb_Control_trimbit_size;
 unsigned int* Feb_Control_last_downloaded_trimbits;
 
 
-int Feb_Control_current_mod;
+int Feb_Control_module_number;
 int Feb_Control_current_index;
-int Feb_Control_am_i_master;
+
 
 void Module_Module(struct Module* mod,unsigned int number, unsigned int address_top){
 	unsigned int i;
@@ -151,124 +151,96 @@ int Feb_Control_IsBottomModule(){
 
 
 int Feb_Control_GetModuleNumber(){
-	return Feb_Control_current_mod;
+	return Feb_Control_module_number;
 }
 
 
 void Feb_Control_FebControl(){
-  
 	Feb_Control_staticBits=Feb_Control_acquireNReadoutMode=Feb_Control_triggerMode=Feb_Control_externalEnableMode=Feb_Control_subFrameMode=0;
-
 	Feb_Control_trimbit_size=263680;
 	Feb_Control_last_downloaded_trimbits = malloc(Feb_Control_trimbit_size * sizeof(int));
-
-/*
-  printf("\nDefault Settings:\n");
-  Feb_Control_nimages                = 1;
-  Feb_Control_exposure_time_in_sec   = 1;
-  Feb_Control_exposure_period_in_sec = 0;
-  Feb_Control_SetTestModeVariable(0);
-  //SetPhotonEnergyCalibrationParameters(-5.8381e-5,1.838515,5.09948e-7,-4.32390e-11,1.32527e-15);
-  //SetRateCorrection(0); //deactivate rate correction
-  Feb_Control_SetDynamicRange(16);
-  Feb_Control_SetPhotonEnergy(8000);
-  Feb_Control_SetReadoutMode(0);
-  Feb_Control_SetReadoutSpeed(0);
-  Feb_Control_SetTriggerMode(0,1);
-  Feb_Control_SetExternalEnableMode(0,1);
-  printf("\n\n");
-
-  Feb_Control_Init();
-*/
-
-
-
-  /*
-  unsigned int reg_nums[1];
-  unsigned int reg_vals[1];
-  reg_nums[0]=DAQ_REG_CHIP_CMDS;
-  reg_vals[0]=(0|Feb_Control_acquireNReadoutMode|Feb_Control_triggerMode|Feb_Control_externalEnableMode|Feb_Control_subFrameMode);
-
-  if(!Feb_Interface_WriteRegisters(Feb_Control_AddressToAll(),1,reg_nums,reg_vals,0,0)){
-    printf("Trouble setting them up as slaves\n");;
-  }
-
-  */
-
-
+	moduleSize = 0;
 }
 
 
 
-void Feb_Control_ClearModules(){
-	unsigned int i;
-  //for(i=0;i<moduleSize;i++) free(modules[i]);
-  moduleSize = 0;
-}
 
-int Feb_Control_Init(){
+int Feb_Control_Init(int master, int top){
 	unsigned int i;
-	Feb_Control_ClearModules();
-	///*
-	Feb_Control_current_mod = 0;
+	Feb_Control_module_number = 0;
 	Feb_Control_current_index = 0;
-	Feb_Control_AddModule(0,0xff);//global send
 
-	  Feb_Control_PrintModuleList();
+	//global send
+	Feb_Control_AddModule1(0,1,0xff,0,1);
+    Feb_Control_PrintModuleList();
 
-//*/
-	Feb_Control_ReadSetUpFileToAddModules("/home/root/executables/setup.txt");
+    //get module nummber
+    int res=0;
+    char hostname[100];
+    if (gethostname(hostname, sizeof hostname) == 0)
+        puts(hostname);
+    else
+        perror("gethostname");
+    char *pch;
+    pch = strtok(hostname,"0");
+    pch = strtok(NULL,"0");
+    sscanf(pch,"%d",&res);
+    Feb_Control_module_number = (res & 0xFF);
 
+    //get serial
+    int serial=1;
+    switch(Feb_Control_module_number){
+    case 34: serial = 0; break; //martin
+    case 31: serial = 0; break; //dhanya
+    case 26: serial = 0; break; //leo
+    case 32: serial = 1; break;
+    case 24: serial = 2; break;
+    case 25: serial = 3; break;
+    }
+    printf("serial: %d\n",serial);
 
-/*
-  printf("\nSetting detector defaults:\n");
-  Feb_Control_ReadSetUpFile(0,"/home/root/executables/setup.txt"); //send defaults to all
+	Feb_Control_current_index = 1;
 
-  /*  for(i=1;i<moduleSize;i++){
-      char st[2000];
-	 sprintf(st,"setup_mod%04d.txt",Module_GetModuleNumber(&modules[i]));
-      Feb_Control_ReadSetUpFile(Module_GetModuleNumber(&modules[i]),st);
-    }*/
-
-  //get module nummber
-  int res=0;
-  char hostname[100];
-  if (gethostname(hostname, sizeof hostname) == 0)
-      puts(hostname);
-  else
-      perror("gethostname");
-
-  char *pch;
-  pch = strtok(hostname,"0");
-  pch = strtok(NULL,"0");
-  sscanf(pch,"%d",&res);
-
-  Feb_Control_current_mod = (res & 0xFF);
-
-
-  for(i=1;i<moduleSize;i++){
-	  if(Module_GetModuleNumber(&modules[i])==Feb_Control_current_mod)
+  /*for(i=1;i<moduleSize;i++){
+	  if(Module_GetModuleNumber(&modules[i])==Feb_Control_module_number)
 		  Feb_Control_current_index = i;
   }
+printf("****current index:%d\n",i);
+*/
+	//Feb_Control_ReadSetUpFileToAddModules("/home/root/executables/setup.txt");
 
-  /*Feb_Control_ReadSetUpFile(Feb_Control_current_mod,"/home/root/executables/setup.txt");
-printf("Done setting detector defaults\n");*/
+    //Add the half module
+    Feb_Control_AddModule1(Feb_Control_module_number,top,serial,serial,1);
+    Feb_Control_PrintModuleList();
 
 
+	  unsigned int nfebs = 0;
+	  unsigned int* feb_list = malloc(moduleSize*4 * sizeof(unsigned int));
+	  for(i=1;i<moduleSize;i++){
+	    if(Module_TopAddressIsValid(&modules[i])){
+	      feb_list[nfebs++] = Module_GetTopRightAddress(&modules[i]);
+	      feb_list[nfebs++] = Module_GetTopLeftAddress(&modules[i]);
+	    }
+	    if(Module_BottomAddressIsValid(&modules[i])){
+	      feb_list[nfebs++] = Module_GetBottomRightAddress(&modules[i]);
+	      feb_list[nfebs++] = Module_GetBottomLeftAddress(&modules[i]);
+	    }
+	  }
 
-Feb_Control_am_i_master = 0;
+	  Feb_Interface_SendCompleteList(nfebs,feb_list);
+	  free(feb_list);
+	 printf("\n");
+	  Feb_Interface_SetByteOrder();
+
 
   return 1;
 }
 
 
 
-
+/*
 void Feb_Control_Set_Master(){
 	Feb_Control_am_i_master = 1;
-
-
-	/*
 	unsigned int halfmastermodule = 0x80000000;
 	  unsigned int reg_nums[1];
 	  unsigned int reg_vals[1];
@@ -280,12 +252,9 @@ void Feb_Control_Set_Master(){
 		    return 0;
 	  }
 	  printf("master is set\n");
-
-
-	  */
 }
 
-
+*/
 
 
 
@@ -418,9 +387,9 @@ int Feb_Control_CheckModuleAddresses(struct Module* m){
 }
 
 int Feb_Control_AddModule(unsigned int module_number, unsigned int top_address){
-  return Feb_Control_AddModule1(module_number,0,top_address,0,1);
+  return Feb_Control_AddModule1(module_number,1,top_address,0,1);
 }
-int Feb_Control_AddModule1(unsigned int module_number, int bottom_enable, unsigned int top_address, unsigned int bottom_address, int half_module){ //bot_address 0 for half module
+int Feb_Control_AddModule1(unsigned int module_number, int top_enable, unsigned int top_address, unsigned int bottom_address, int half_module){ //bot_address 0 for half module
   int parameters_ok  = 1;
   unsigned int pre_module_index = 0;
   if(Feb_Control_GetModuleIndex(module_number,&pre_module_index)){
@@ -438,7 +407,7 @@ int Feb_Control_AddModule1(unsigned int module_number, int bottom_enable, unsign
 
  /* if((half_module)&& (top_address != 1)) Module_Module(m,module_number,top_address);
   else if(half_module)  Module_ModuleBottom(m,module_number,top_address);*/
-  if ((half_module)&& (!bottom_enable)) Module_Module(m,module_number,top_address);
+  if ((half_module)&& (top_enable)) Module_Module(m,module_number,top_address);
   else if (half_module)  Module_ModuleBottom(m,module_number,bottom_address);
   else            Module_Module1(m,module_number,top_address,bottom_address);
 
@@ -726,7 +695,7 @@ float Feb_Control_DACToVoltage(unsigned int digital,unsigned int nsteps,float vm
 
 
 int Feb_Control_SetHighVoltage(float value){
-	return Feb_Control_SetHighVoltage1(Feb_Control_current_mod,value);
+	return Feb_Control_SetHighVoltage1(Feb_Control_module_number,value);
 }
 
 int Feb_Control_SetHighVoltage1(unsigned int module_num,float value){

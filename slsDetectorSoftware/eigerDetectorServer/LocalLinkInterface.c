@@ -25,51 +25,36 @@ Local_LocalLinkInterface1(struct LocalLinkInterface* ll,unsigned int ll_fifo_bad
 		Local_Reset(ll);
 		printf("\tFIFO Status : 0x%08x\n",Local_StatusVector(ll));
 	}else printf("\tError LocalLink Mappping : 0x%08x\n",ll_fifo_badr);
-
 	printf("\n\n");
 }
 
 /*~LocalLinkInterface(){};*/
 
 Local_LocalLinkInterface(struct LocalLinkInterface* ll){
-	printf("Initialize new memory\n");
+	printf("Initializing new memory\n");
 }
 
-int Local_InitNewMemory (struct LocalLinkInterface* ll,unsigned int addr, int ifg){
-	unsigned int CSP0BASE;
-	int fd;
-
-	/*fd = open("/dev/mem", O_RDWR | O_SYNC, 0);
+int Local_GetModuleConfiguration (struct LocalLinkInterface* ll, u_int32_t baseaddr, u_int32_t offset){
+	int fd = open("/dev/mem", O_RDWR | O_SYNC, 0);
 	if (fd == -1) {
 		printf("\nCan't find /dev/mem!\n");
 		return 0;
 	}
 	printf("/dev/mem opened\n");
 
-
-	CSP0BASE = (u_int32_t)mmap(0, 0x1000, PROT_READ|PROT_WRITE, MAP_FILE|MAP_SHARED, fd, addr);
+	u_int32_t CSP0BASE = (u_int32_t)mmap(0, 0x100000, PROT_READ|PROT_WRITE, MAP_FILE|MAP_SHARED, fd, baseaddr);
 	if (CSP0BASE == (u_int32_t)MAP_FAILED) {
 		printf("\nCan't map memmory area!!\n");
 		return 0;
 	}
 	printf("CSP0 mapped\n");
 
-
-	volatile u_int8_t *ptr1;
-
-	ptr1=(u_int8_t*)(CSP0BASE);
-
-	printf("pointer val=%x\n",(void*)ptr1);
-
-	printf("ifg_control=%02x\n",*ptr1);
-
-	 *ptr1=ifg;
-
-	printf("ifg_control new=%02x\n",*ptr1);
-
+	volatile u_int32_t *ptr1;
+	ptr1=(u_int32_t*)(CSP0BASE + offset);
+	//printf("LocalLinkInterface:: value:%d\n",*ptr1);
 	close(fd);
-	 */
-	return 1;
+
+	return *ptr1;
 }
 
 

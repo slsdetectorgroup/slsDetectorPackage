@@ -220,6 +220,7 @@ void qTabDeveloper::CreateDACWidgets(){
 	for(int i=0;i<NUM_DAC_WIDGETS;i++){
 		lblDacs[i] 	= new QLabel(QString(dacNames[i].c_str()),boxDacs);
 		spinDacs[i]	= new MyDoubleSpinBox(i,boxDacs);
+		spinDacs[i]->setMinimum(-1);
 		spinDacs[i]->setMaximum(10000);
 		lblDacsmV[i]= new QLabel("",boxDacs);
 

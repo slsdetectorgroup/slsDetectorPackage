@@ -481,7 +481,7 @@ double XYRangeValues[4];
 bool IsXYRange[4];
 
 /** Default timer between plots*/
-static const double PLOT_TIMER_MS = 250;
+static const double PLOT_TIMER_MS = 200;
 /** Specific timer value between plots */
 double timerValue;
 /** every nth frame when to plot */

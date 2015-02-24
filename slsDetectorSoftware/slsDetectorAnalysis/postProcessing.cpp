@@ -532,26 +532,33 @@ void* postProcessing::processData(int delflag) {
 			//updating progress
 			if(currentfIndex != -1)
 				setCurrentProgress(currentfIndex+1);
-
-			/** IF detector acquisition is done, let the acquire() thread know to finish up and force join thread */
-			if(acquiringDone == 1){
 #ifdef VERY_VERY_DEBUG
-				cout << "acquiring seems to be done" << endl;
+			cout << "currentfIndex:" << currentfIndex << endl;
 #endif
-				//so that only once it checks for last frame and then next time, checks join thread
+			/** IF detector acquisition is done, let the acquire() thread know to finish up and force join thread */
+			if(acquiringDone > 0){
+#ifdef VERY_VERY_DEBUG
+				if(acquiringDone == 1)
+					cout << "acquiring seems to be done" << endl;
+#endif
+				//so that it checks for last frame for some number of checks, then checks join thread
 				pthread_mutex_lock(&mg);
-				acquiringDone = 2;
+				acquiringDone++;
+#ifdef VERY_VERY_DEBUG
+				cout << "acquiringDone :" << acquiringDone << endl;
+#endif
 				pthread_mutex_unlock(&mg);
 				//newData = true;
-			}else if (acquiringDone == 2){
+				if (acquiringDone == 10){//for eiger, it is very slow, have to wait long to get last frame
 #ifdef VERY_VERY_DEBUG
-				cout << "gonna post for it to end" << endl;
+					cout << "gonna post for it to end" << endl;
 #endif
-				sem_post(&sem_queue);
+					sem_post(&sem_queue);
 #ifdef VERY_VERY_DEBUG
-				cout << "Sem posted" << endl;
+					cout << "Sem posted" << endl;
 #endif
-				//newData = false;
+					//newData = false;
+				}
 			}else if (checkJoinThread())
 				break;
 

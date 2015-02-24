@@ -149,6 +149,7 @@ int initDetector(){
 int initDetectorStop(){
 	getModuleConfiguration();
 	Feb_Interface_FebInterface();
+	Feb_Control_FebControl();
 	Feb_Control_Init(master,top);
 	printf("FEB Initialization done\n");
 	/* Beb_Beb(-1);

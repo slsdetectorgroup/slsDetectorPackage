@@ -190,8 +190,8 @@ int Feb_Control_Init(int master, int top){
     //get serial
     int serial=1;
     switch(Feb_Control_module_number){
-    case 34: serial = 0; break; //martin
-    case 31: serial = 0; break; //dhanya
+    case 34: serial = 0; break; //martin half
+    case 31: serial = 0; break; //martin
     case 26: serial = 0; break; //leo
     case 32: serial = 1; break;
     case 24: serial = 2; break;

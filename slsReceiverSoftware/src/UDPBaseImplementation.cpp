@@ -171,6 +171,7 @@ uint32_t UDPBaseImplementation::getAcquisitionIndex(){ FILE_LOG(logDEBUG) << __A
 		acquisitionIndex=-1;
 	else
 		acquisitionIndex = currframenum - startAcquisitionIndex;
+	//cout<<"acquisitionIndex:"<<acquisitionIndex <<" currframenum:"<<currframenum <<" startAcquisitionIndex:" <<startAcquisitionIndex<<endl;
 	return acquisitionIndex;
 }
 

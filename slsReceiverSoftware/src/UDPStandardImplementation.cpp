@@ -1691,11 +1691,11 @@ int UDPStandardImplementation::startListening(){
 			cout << ithread << " *** rc:" << dec << rc << ". expected:" << dec << expected << endl;
 #endif
 
-
+/*
 			//start indices for each start of scan/acquisition - eiger does it before
 				if((!measurementStarted) && (rc > 0) && (!ithread))
 					startFrameIndices(ithread);
-
+*/
 
 			//problem in receiving or end of acquisition
 			if((rc < expected)||(rc <= 0)){
@@ -1703,11 +1703,11 @@ int UDPStandardImplementation::startListening(){
 				continue;
 			}
 
-/*
-			//start indices for each start of scan/acquisition - eiger does it before
+///*
+			//start indices for each start of scan/acquisition - this should be done after to ignore first incomplete frames
 			if((!measurementStarted) && (rc > 0) && (!ithread))
 				startFrameIndices(ithread);
-*/
+//*/
 
 			//reset
 			packetcount = (packetsPerFrame/numListeningThreads) * numJobsPerThread;
@@ -1884,17 +1884,16 @@ int UDPStandardImplementation::startWriting(){
 				cout << ithread << " *** writer popped from fifo " << (void*) wbuf[1]<< endl;
 #endif
 
-
 			//last dummy packet
 			if(numpackets == 0xFFFF){
 #ifdef VERYDEBUG
-				cout << "LAST dummy packet" << endl;
+				cout << "**LAST dummy packet" << endl;
 #endif
 				stopWriting(ithread,wbuf);
 				continue;
 			}
 #ifdef VERYDEBUG
-			else cout <<"NOT a dummy packet"<<endl;
+			else cout <<"**NOT a dummy packet"<<endl;
 #endif
 
 
@@ -1919,10 +1918,10 @@ int UDPStandardImplementation::startWriting(){
 					currframenum = tempframenum;
 				pthread_mutex_unlock(&progress_mutex);
 			}
-#ifdef VERYDEBUG
+//#ifdef VERYDEBUG
 			if(myDetectorType == EIGER)
-				cout << endl <<ithread << " tempframenum:" << hex << tempframenum << " curframenum:" << currframenum << endl;
-#endif
+				cout << endl <<ithread << " tempframenum:" << dec << tempframenum << " curframenum:" << currframenum << endl;
+//#endif
 
 
 			//without datacompression: write datacall back, or write data, free fifo
@@ -2095,22 +2094,37 @@ int i;
 					fifoFree[ithread]->push(buffer[ithread]);
 					exit(-1);
 				}
+
 				//push the last buffer into fifo
-				if((myDetectorType == EIGER) && (rc < 266240) )//for eiger throw away incomplete frames
-					fifoFree[ithread]->push(buffer[ithread]);
-				else if(rc > 0){
-					pc = (rc/onePacketSize);
+				if(rc > 0){
+					//eiger (incomplete frames) - throw away
+					if((myDetectorType == EIGER) && (rc < (bufferSize * numJobsPerThread)) ){
+						if(rc == 266240)
+							cout << ithread << " Start of detector: Received test frame of 266240 bytes." << endl;
+						cout << ithread << "Discarding incomplete frame" << endl;
+						fifoFree[ithread]->push(buffer[ithread]);
+					}
+					//eiger (complete frames) + other detectors
+					else{
+						pc = (rc/onePacketSize);
 #ifdef VERYDEBUG
-					cout << ithread << " last rc:"<<rc<<endl;
-					cout << ithread <<  " *** last packetcount:" << pc << endl;
+						cout << ithread << " last rc:"<<rc<<endl;
+						cout << ithread <<  " *** last packetcount:" << pc << endl;
 #endif
-					(*((uint16_t*)(buffer[ithread]))) = pc;
-					totalListeningFrameCount[ithread] += pc;
-					while(!fifo[ithread]->push(buffer[ithread]));
+						(*((uint16_t*)(buffer[ithread]))) = pc;
+						totalListeningFrameCount[ithread] += pc;
+						while(!fifo[ithread]->push(buffer[ithread]));
 #ifdef VERYDEBUG
-					cout << ithread << " *** last lbuf1:" << (void*)buffer[ithread] << endl;
+						cout << ithread << " *** last lbuf1:" << (void*)buffer[ithread] << endl;
 #endif
+					}
 				}
+				//free buffer
+				else{
+					cout << ithread << "Discarding empty frame" << endl;
+					fifoFree[ithread]->push(buffer[ithread]);
+				}
+
 
 
 				//push dummy buffer to all writer threads
@@ -2279,8 +2293,9 @@ void UDPStandardImplementation::writeToFile_withoutCompression(char* buf,int num
 			packetsInFile += packetsToSave;
 			packetsCaught += packetsToSave;
 			totalPacketsCaught += packetsToSave;
-
-
+#ifdef VERYDEBUG
+			cout << "/totalPacketsCaught:" << dec << totalPacketsCaught <<endl;
+#endif
 			//new file
 			if(packetsInFile >= maxPacketsPerFile){
 				//for packet loss

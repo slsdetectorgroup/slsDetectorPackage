@@ -47,7 +47,7 @@ struct BebInfo{
   unsigned int Beb_GetBebInfoIndex(unsigned int beb_numb);
 
 
-
+  void Beb_GetModuleCopnfiguration(int* master, int* top);
 
 
 

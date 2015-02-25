@@ -11,7 +11,7 @@
 #include <unistd.h>
 #include <math.h>
 #include <string.h>
-
+#include <time.h>
 
 //#include <fstream>
 //#include <iomanip>
@@ -262,7 +262,7 @@ int Feb_Control_ReadSetUpFileToAddModules(char* file_name){
 	   char line[100];
 	   char str[100];
 	   int i0,i1,i2;
-	   int memaddress = 1;
+	  // int memaddress = 1;
 	FILE* fp = fopen(file_name, "r");
 	if( fp == NULL ){
 		perror("Error while opening the file.\n");
@@ -748,7 +748,7 @@ int Feb_Control_SendHighVoltage(unsigned int dst_num,float* value){
 
 int Feb_Control_DecodeDACString(char* dac_str, unsigned int* module_index, int* top, int* bottom, unsigned int* dac_ch){
   char*       local_s = dac_str;
-  char temp[50];
+  //char temp[50];
   *module_index  = Feb_Control_current_index;
 
 /*

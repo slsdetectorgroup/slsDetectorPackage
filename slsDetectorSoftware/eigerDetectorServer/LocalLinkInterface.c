@@ -16,7 +16,7 @@
 
 
 
-Local_LocalLinkInterface1(struct LocalLinkInterface* ll,unsigned int ll_fifo_badr){
+void Local_LocalLinkInterface1(struct LocalLinkInterface* ll,unsigned int ll_fifo_badr){
 	//    printf("\n    v 1     \n");
 	printf("Initialize PLB LL FIFOs\n");
 	ll->ll_fifo_base=0;
@@ -30,7 +30,7 @@ Local_LocalLinkInterface1(struct LocalLinkInterface* ll,unsigned int ll_fifo_bad
 
 /*~LocalLinkInterface(){};*/
 
-Local_LocalLinkInterface(struct LocalLinkInterface* ll){
+void Local_LocalLinkInterface(struct LocalLinkInterface* ll){
 	printf("Initializing new memory\n");
 }
 

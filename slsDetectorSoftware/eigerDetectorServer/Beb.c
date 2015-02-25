@@ -12,7 +12,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <sys/types.h>
-
+#include <string.h>
+#include <unistd.h>
 
 #include "xfs_types.h"
 #include "xparameters.h"
@@ -168,7 +169,7 @@ void Beb_GetModuleCopnfiguration(int* master, int* top){
 
 
 void Beb_ClearBebInfos(){
-	unsigned int i;
+	//unsigned int i;
   //for(i=0;i<bebInfoSize;i++) free(beb_infos[i]);
 	bebInfoSize=0;
 }

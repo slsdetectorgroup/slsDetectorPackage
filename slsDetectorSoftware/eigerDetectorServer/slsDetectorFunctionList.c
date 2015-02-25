@@ -400,7 +400,6 @@ int setModule(sls_detector_module myMod){
 	setSettings( (enum detectorSettings)myMod.reg,-1); // put the settings in the module register?!?!?
 
 	//includ gap pixels
-	int offset = 0;
 	unsigned int tt[263680];
 	int iy,ichip,ix,ip=0,ich=0;
 	for(iy=0;iy<256;iy++) {
@@ -437,7 +436,6 @@ int getModule(sls_detector_module *myMod){
 	tt = Feb_Control_GetTrimbits();
 
 	//exclude gap pixels
-	int offset = 0;
 	int iy,ichip,ix,ip=0,ich=0;
 	for(iy=0;iy<256;iy++) {
 		for (ichip=0; ichip<4; ichip++) {
@@ -494,7 +492,7 @@ int startReceiver(int d){
 
 
 int startStateMachine(){
-	int ret;int i=0;
+	int ret;
 	if(master){
 		printf("Going to start acquisition\n");
 		Feb_Control_StartAcquisition();
@@ -511,6 +509,7 @@ int startStateMachine(){
 
 	if(master){
 		/*
+		 * int i=0;
 			if(getRunStatus() == IDLE){
 				for(i=0;i<100000;i++){
 					usleep(1000);
@@ -776,7 +775,7 @@ int configureMAC(int ipad, long long int macad, long long int detectormacadd, in
 	printf("dst_port:%d\n\n",dst_port);
 
 	int i=0;
-	/* for(i=0;i<32;i++){/** modified for Aldo*/
+	/* for(i=0;i<32;i++){ modified for Aldo*/
 	if(Beb_SetBebSrcHeaderInfos(beb_num,send_to_ten_gig,src_mac,src_ip,src_port) &&
 			Beb_SetUpUDPHeader(beb_num,send_to_ten_gig,header_number+i,dst_mac,dst_ip, dst_port))
 		printf("set up left ok\n");

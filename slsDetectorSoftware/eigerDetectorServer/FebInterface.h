@@ -19,7 +19,7 @@
   /*int Feb_Interface_ReadFrom(unsigned int ch, unsigned int ntrys=20);*/
   int Feb_Interface_ReadFrom(unsigned int ch, unsigned int ntrys);
 
-
+  void Feb_Interface_FebInterface();
 
 
   void Feb_Interface_SendCompleteList(unsigned int n,unsigned int* list);

@@ -40,7 +40,7 @@
   void Feb_PrintData();
 
 
-  Feb_Feb();
+  void Feb_Feb();
   /*virtual ~Feb();*/
   void Feb_SendCompleteFebList(unsigned int n,unsigned int* list);
   int Feb_CheckCommunication();

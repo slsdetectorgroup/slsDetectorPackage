@@ -85,12 +85,9 @@ int setDynamicRange(int dr);
 int setROI(int n, ROI arg[], int *retvalsize, int *ret);
 
 
-#ifdef MYTHEND
+#if defined(EIGERD) || defined(MYTHEND)
 enum readOutFlags setReadOutFlags(enum readOutFlags val);
 int setSpeed(enum speedVariable arg, int val);
-#endif
-
-#if defined(EIGERD) || defined(MYTHEND)
 int executeTrimming(enum trimMode mode, int par1, int par2, int imod);
 #endif
 

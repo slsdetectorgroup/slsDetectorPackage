@@ -10,7 +10,8 @@
 #include <iomanip>*/
 
 #include <stdio.h>
-
+#include <stdlib.h>
+#include <unistd.h>
 
 
 #include "xparameters.h"
@@ -18,7 +19,7 @@
 
 
 
-Feb_Feb(){
+void Feb_Feb(){
 
 	Feb_nfebs    = 0;
 	Feb_feb_numb = 0;
@@ -60,7 +61,7 @@ int Feb_WriteTo(unsigned int ch){
     if(Local_Write(ll,4,Feb_send_data_raw)!=4) return 0;
 
     Feb_send_data_raw[0] = 0xc0000000; //data
-    return 1;((Feb_send_ndata+1)*4==Local_Write(ll,(Feb_send_ndata+1)*4,Feb_send_data_raw));
+    return 1;//((Feb_send_ndata+1)*4==Local_Write(ll,(Feb_send_ndata+1)*4,Feb_send_data_raw));
 }
 
 int Feb_ReadFrom(unsigned int ch, unsigned int ntrys){

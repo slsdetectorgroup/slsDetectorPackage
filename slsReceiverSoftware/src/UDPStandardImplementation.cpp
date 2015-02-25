@@ -1699,12 +1699,17 @@ int UDPStandardImplementation::startListening(){
 
 			//problem in receiving or end of acquisition
 			if((rc < expected)||(rc <= 0)){
+				if(myDetectorType != EIGER){
+					//start indices for each start of scan/acquisition - this should be done earlier for normal detectors
+					if((!measurementStarted) && (rc > 0) && (!ithread))
+						startFrameIndices(ithread);
+				}
 				stopListening(ithread,rc,packetcount,total);
 				continue;
 			}
 
 ///*
-			//start indices for each start of scan/acquisition - this should be done after to ignore first incomplete frames
+			//eiger - start indices for each start of scan/acquisition - this should be done after to ignore first incomplete frames
 			if((!measurementStarted) && (rc > 0) && (!ithread))
 				startFrameIndices(ithread);
 //*/

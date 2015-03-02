@@ -183,6 +183,7 @@ void qDetectorMain::SetUpWidgetWindow(){
 	// Default zoom Tool Tip
 	zoomToolTip = dockWidgetPlot->toolTip();
 
+
 }
 
 
@@ -207,9 +208,7 @@ void qDetectorMain::SetUpDetector(const string fName){
 
 	//if hostname doesnt exist even in shared memory
 	if(!host.length()){
-#ifdef VERBOSE
 		cout << endl << "No Detector Connected." << endl;
-#endif
 		qDefs::Message(qDefs::CRITICAL,"No Detectors Connected. ","qDetectorMain::SetUpDetector");
 		exit(-1);
 	}
@@ -237,6 +236,7 @@ void qDetectorMain::SetUpDetector(const string fName){
 	default:
 		string detName = myDet->slsDetectorBase::getDetectorType(detType);
 		qDefs::checkErrorMessage(myDet,"qDetectorMain::SetUpDetector");
+		cout << "ERROR: " + host + " has unknown detector type \"" +  detName + "\". Exiting GUI." << endl;
 		string errorMess = host+string(" has unknown detector type \"")+
 				detName+string("\". Exiting GUI.");
 		qDefs::Message(qDefs::CRITICAL,errorMess,"qDetectorMain::SetUpDetector");

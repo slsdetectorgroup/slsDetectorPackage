@@ -177,6 +177,13 @@ void qTabAdvanced::SetupWidgetWindow(){
 	cout << "Getting ROI" << endl;
 	updateROIList();
 
+
+	//  print receiver configurations
+	if(myDet->getDetectorsType() != slsDetectorDefs::MYTHEN){
+		cout << endl;
+		myDet->printReceiverConfiguration();
+	}
+
 	Initialization();
 
 	qDefs::checkErrorMessage(det,"qTabAdvanced::SetupWidgetWindow");

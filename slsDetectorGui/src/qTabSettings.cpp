@@ -144,6 +144,7 @@ void qTabSettings::SetupDetectorSettings(){
 			item[(int)LowNoise]->setEnabled(false);
 			break;
 		default:
+			cout << "Unknown detector type. Exiting GUI." << endl;
 			qDefs::Message(qDefs::CRITICAL,"Unknown detector type. Exiting GUI.","qTabSettings::SetupDetectorSettings");
 			exit(-1);
 			break;

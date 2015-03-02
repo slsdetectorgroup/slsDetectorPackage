@@ -152,6 +152,7 @@ void qTabMeasurement::SetupTimingMode(){
 			item[(int)Gated_Start]->setEnabled(false);
 			break;
 		default:
+			cout << "Unknown detector type." << endl;
 			qDefs::Message(qDefs::CRITICAL,"Unknown detector type.","qTabMeasurement::SetupTimingMode");
 			exit(-1);
 			break;
@@ -683,6 +684,7 @@ void qTabMeasurement::SetTimingMode(int mode){
 			success = true;
 		break;
 	default:
+		cout << "Timing mode unknown to GUI" << endl;
 		//This should never happen
 		qDefs::Message(qDefs::CRITICAL,"Timing mode unknown to GUI","qTabMeasurement::SetTimingMode");
 		qDefs::checkErrorMessage(myDet,"qTabMeasurement::SetTimingMode");

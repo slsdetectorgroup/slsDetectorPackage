@@ -191,11 +191,15 @@ int Feb_Control_Init(int master, int top){
     int serial=1;
     switch(Feb_Control_module_number){
     case 34: serial = 0; break; //martin half
-    case 31: serial = 0; break; //martin
     case 26: serial = 0; break; //leo
+
+    case 31: serial = 0; break; //martin
     case 32: serial = 1; break;
     case 24: serial = 2; break;
     case 25: serial = 3; break;
+
+    case 49: serial = 0; break; // Gemma
+    case 48: serial = 1; break; // Gemma
     }
     printf("serial: %d\n",serial);
 

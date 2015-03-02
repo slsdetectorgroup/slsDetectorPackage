@@ -126,6 +126,13 @@ int Local_Write(struct LocalLinkInterface* ll,unsigned int buffer_len, void *buf
 	last_word = (buffer_len-1)/4;
 	word_ptr = (unsigned int *)buffer;
 
+#ifdef MARTIN
+	printf("LL Write - Len: %2d - If: %X - Data: ",buffer_len, ll->ll_fifo_base);
+	for (i=0; i < buffer_len/4; i++)
+		printf("%.8X ",*(((unsigned *) buffer)+i));
+	printf("\n");
+#endif
+
 	while (words_send <= last_word)
 	{
 		while (!vacancy)//wait for Fifo to be empty again
@@ -165,6 +172,10 @@ int Local_Read(struct LocalLinkInterface* ll,unsigned int buffer_len, void *buff
 	volatile unsigned int fifo_val;
 	int sof = 0;
 
+#ifdef MARTIN
+	printf("LL Read - If: %X - Data: ",ll->ll_fifo_base);
+#endif
+
 	word_ptr = (unsigned int *)buffer;
 	do
 	{
@@ -190,6 +201,9 @@ int Local_Read(struct LocalLinkInterface* ll,unsigned int buffer_len, void *buff
 			{
 				if ( (buffer_len >> 2) > buffer_ptr)
 				{
+#ifdef MARTIN
+					printf("%.8X ", fifo_val);
+#endif
 					word_ptr[buffer_ptr++] = fifo_val; //write to buffer
 				}
 				else
@@ -201,6 +215,9 @@ int Local_Read(struct LocalLinkInterface* ll,unsigned int buffer_len, void *buff
 				if (status & PLB_LL_FIFO_STATUS_LL_EOF)
 				{
 					len = (buffer_ptr << 2) -3 + ( (status & PLB_LL_FIFO_STATUS_LL_REM)>>PLB_LL_FIFO_STATUS_LL_REM_SHIFT );
+#ifdef MARTIN
+					printf("Len: %d\n",len);
+#endif
 					//		    printf(">>>>status=0x%08x  EOF  len = %d \n\r\n\r",status, len);
 					buffer_ptr = 0;
 					return len;

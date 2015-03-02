@@ -226,7 +226,7 @@ slsDetector::~slsDetector(){
   } else
     printf("Shared memory %d detached\n", shmId);
 
-
+delete thisReceiver;
 };
 
 slsDetector::slsDetector(char *name, int id, int cport,multiSlsDetector *p) : slsDetectorUtils(),
@@ -5030,6 +5030,8 @@ char* slsDetector::setReceiver(string receiverIP){
 			setUDPConnection();
 			if(thisDetector->myDetectorType == EIGER)
 				enableTenGigabitEthernet(thisDetector->tenGigaEnable);
+
+			printReceiverConfiguration();
 		}
 	}
 
@@ -5503,6 +5505,25 @@ int slsDetector::resetCounterBlock(int startACQ){
 
 
 
+
+int slsDetector::printReceiverConfiguration(){
+
+	std::cout << "Detector IP:\t\t" << getNetworkParameter(DETECTOR_IP) << std::endl;
+	std::cout << "Detector MAC:\t\t" << getNetworkParameter(DETECTOR_MAC) << std::endl;
+
+	std::cout << "Receiver Hostname:\t" << getNetworkParameter(RECEIVER_HOSTNAME) << std::endl;
+	std::cout << "Receiver UDP IP:\t" << getNetworkParameter(RECEIVER_UDP_IP) << std::endl;
+	std::cout << "Receiver UDP MAC:\t" << getNetworkParameter(RECEIVER_UDP_MAC) << std::endl;
+
+
+	std::cout << "Receiver UDP Port:\t" << getNetworkParameter(RECEIVER_UDP_PORT) << std::endl;
+	if(thisDetector->myDetectorType == EIGER)
+		std::cout << "Receiver UDP Port2:\t" << getNetworkParameter(RECEIVER_UDP_PORT2) << std::endl;
+
+	std::cout << std::endl;
+
+	return OK;
+}
 
 
 

@@ -424,6 +424,11 @@ class slsDetectorBase :  public virtual slsDetectorDefs, public virtual errorDef
   //int setBeamEnergy(int e){return 2*setThresholdEnergy(e/2);};
 
 
+  /**
+     Prints receiver configuration
+     \returns OK or FAIL
+  */
+  virtual int printReceiverConfiguration()=0;
 
   /**
      Reads the configuration file fname
@@ -431,6 +436,7 @@ class slsDetectorBase :  public virtual slsDetectorDefs, public virtual errorDef
      \returns OK or FAIL
   */
   virtual int readConfigurationFile(string const fname)=0; 
+
   virtual int dumpDetectorSetup(string const fname, int level)=0;  
   int dumpDetectorSetup(string const fname){return dumpDetectorSetup(fname,0);};
   virtual int retrieveDetectorSetup(string const fname, int level)=0;

@@ -322,6 +322,12 @@ class slsDetector : public slsDetectorUtils, public energyConversion {
   int configureMAC();
 
   /**
+     Prints receiver configuration
+     \returns OK or FAIL
+  */
+  int printReceiverConfiguration();
+
+  /**
      Reads the configuration file fname
      \param fname file name
      \returns OK or FAIL

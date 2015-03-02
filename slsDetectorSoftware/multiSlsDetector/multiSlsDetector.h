@@ -388,6 +388,11 @@ class multiSlsDetector  : public slsDetectorUtils {
   int exists();
 
 
+  /**
+     Prints receiver configuration
+     \returns OK or FAIL
+  */
+  int printReceiverConfiguration();
 
   /**
      Purely virtual function

@@ -3868,6 +3868,32 @@ int multiSlsDetector::readRegister(int addr){
 };
 
 
+
+
+int multiSlsDetector::printReceiverConfiguration(){
+	int  i;
+	int ret, ret1=-100;
+
+	std::cout << "Printing Receiver configurations for all detectors..." << std::endl;
+
+	for (i=0; i<thisMultiDetector->numberOfDetectors; i++) {
+		if (detectors[i]) {
+			std::cout << std::endl << "#Detector " << i << ":" << std::endl;
+
+			ret=detectors[i]->printReceiverConfiguration();
+			if(detectors[i]->getErrorMask())
+				setErrorMask(getErrorMask()|(1<<i));
+			if (ret1==-100)
+				ret1=ret;
+			else if (ret!=ret1)
+				ret1=-1;
+		}
+	}
+
+	return ret1;
+}
+
+
 int multiSlsDetector::readConfigurationFile(string const fname){
 
   
@@ -3960,6 +3986,8 @@ int multiSlsDetector::readConfigurationFile(string const fname){
 
     infile.close();
 
+	if(getDetectorsType() != MYTHEN)
+		printReceiverConfiguration();
 
   } else {
     std::cout<< "Error opening configuration file " << fname << " for reading" << std::endl;

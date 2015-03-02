@@ -840,6 +840,10 @@ slsDetectorCommand::slsDetectorCommand(slsDetectorUtils *det)  {
   descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdConfiguration;
   i++;
 
+  descrToFuncMap[i].m_pFuncName="rx_printconfig";
+  descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdConfiguration;
+  i++;
+
   descrToFuncMap[i].m_pFuncName="parameters"; 
   descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdConfiguration;
   i++;
@@ -4137,7 +4141,11 @@ string slsDetectorCommand::cmdConfiguration(int narg, char *args[], int action) 
       myDet->writeConfigurationFile(sval);
     }  
     return sval;
-  } else if (cmd=="parameters") {
+  } else if (cmd=="rx_printconfig"){
+	  if (action==PUT_ACTION)
+		  return string("cannot put");
+	  myDet->printReceiverConfiguration();
+  }else if (cmd=="parameters") {
     if (action==PUT_ACTION) {
       sval=string(args[1]);
       myDet->retrieveDetectorSetup(sval);

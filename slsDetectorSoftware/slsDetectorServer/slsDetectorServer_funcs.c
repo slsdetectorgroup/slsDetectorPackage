@@ -3000,7 +3000,7 @@ int configure_mac(int file_des) {
 		printf("mess:%s\n",mess);
 	}
 #endif
-	//#ifdef VERBOSE
+#ifdef VERBOSE
 	int i;
 	/*printf("\ndigital_test_bit in server %d\t",digitalTestBit);for gotthard*/
 	printf("\nipadd %x\t",ipad);
@@ -3016,7 +3016,7 @@ int configure_mac(int file_des) {
 	printf("udp port2:0x%x\n",udpport2);
 	printf("\n");
 	printf("Configuring MAC of module %d at port %x\n", imod, udpport);
-	//#endif
+#endif
 
 #ifdef SLS_DETECTOR_FUNCTION_LIST
 	if (ret==OK) {

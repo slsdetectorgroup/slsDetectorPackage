@@ -142,6 +142,9 @@ int initDetector(){
 	Feb_Control_SetTestModeVariable(0);
 	Feb_Control_CheckSetup();
 
+	//print detector mac
+	getDetectorMAC();
+
 	printf("\n");
 	return 1;
 }
@@ -247,12 +250,16 @@ int getDetectorNumber(){
 
 
 u_int64_t  getDetectorMAC() {
-	/*
-	char output[255],mac[255]="";
+	char mac[255]="";
 	u_int64_t res=0;
-	FILE* sysFile = popen("ifconfig eth0 | grep HWaddr | cut -d \" \" -f 11", "r");
+
+	//execute and get address
+	char output[255];
+	FILE* sysFile = popen("more /sys/class/net/eth0/address", "r");
+	//FILE* sysFile = popen("ifconfig eth0 | grep HWaddr | cut -d \" \" -f 11", "r");
 	fgets(output, sizeof(output), sysFile);
 	pclose(sysFile);
+
 	//getting rid of ":"
 	char * pch;
 	pch = strtok (output,":");
@@ -261,10 +268,9 @@ u_int64_t  getDetectorMAC() {
 		pch = strtok (NULL, ":");
 	}
 	sscanf(mac,"%llx",&res);
-	printf("mac:%llx\n",res);
+	//printf("mac:%llx\n",res);
+
 	return res;
-	 */
-	return 0;
 }
 
 int moduleTest( enum digitalTestMode arg, int imod){
@@ -744,6 +750,14 @@ int executeTrimming(enum trimMode mode, int par1, int par2, int imod){
 
 
 int configureMAC(int ipad, long long int macad, long long int detectormacadd, int detipad, int udpport, int udpport2, int ival){
+
+	if(detectormacadd != getDetectorMAC()){
+		printf("*************************************************\n");
+		printf("WARNING: actual detector mac address %llx does not match the one from client %llx\n",getDetectorMAC(),detectormacadd);
+		printf("*************************************************\n");
+	}
+	detectormacadd = getDetectorMAC();
+
 	char src_mac[50], src_ip[50],dst_mac[50], dst_ip[50];
 	int src_port = 0xE185;
 	sprintf(src_ip,"%d.%d.%d.%d",(detipad>>24)&0xff,(detipad>>16)&0xff,(detipad>>8)&0xff,(detipad)&0xff);

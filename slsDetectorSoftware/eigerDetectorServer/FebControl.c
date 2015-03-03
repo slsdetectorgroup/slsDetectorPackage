@@ -187,8 +187,15 @@ int Feb_Control_Init(int master, int top){
     sscanf(pch,"%d",&res);
     Feb_Control_module_number = (res & 0xFF);
 
-    //get serial
-    int serial=1;
+    //for Gemmas modules: if master, serial 0, else 1
+    int serial = 1;
+    if(master)
+    	serial = 0;
+   /* else if(top)if slave top, serial = 2
+    	serial = 2;*/
+
+
+
     switch(Feb_Control_module_number){
     case 34: serial = 0; break; //martin half
     case 26: serial = 0; break; //leo
@@ -197,6 +204,11 @@ int Feb_Control_Init(int master, int top){
     case 32: serial = 1; break;
     case 24: serial = 2; break;
     case 25: serial = 3; break;
+
+    case 15: serial = 0; break; //dhanya
+    case 16: serial = 1; break;
+    case 30: serial = 2; break;
+    case 38: serial = 3; break;
 
     case 49: serial = 0; break; // Gemma
     case 48: serial = 1; break; // Gemma

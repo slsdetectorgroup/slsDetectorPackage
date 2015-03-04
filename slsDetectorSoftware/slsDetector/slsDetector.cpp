@@ -6461,34 +6461,31 @@ int* slsDetector::readFrameFromReceiver(char* fName, int &fIndex){
 		std::cout<< "slsDetector: Reading frame from receiver "<< thisDetector->dataBytes << " " <<nel <<std::endl;
 #endif
 		if (connectData() == OK){
-			//if(!thisDetector->stoppedFlag){
-				dataSocket->SendDataOnly(&fnum,sizeof(fnum));
-				dataSocket->ReceiveDataOnly(&ret,sizeof(ret));
+			dataSocket->SendDataOnly(&fnum,sizeof(fnum));
+			dataSocket->ReceiveDataOnly(&ret,sizeof(ret));
 
-				if (ret==FAIL) {
-					n= dataSocket->ReceiveDataOnly(mess,sizeof(mess));
-					std::cout<< "Detector returned: " << mess << " " << n << std::endl;
+			if (ret==FAIL) {
+				n= dataSocket->ReceiveDataOnly(mess,sizeof(mess));
+				std::cout<< "Detector returned: " << mess << " " << n << std::endl;
+				delete [] retval;
+				dataSocket->Disconnect();
+				return NULL;
+			} else {
+				n=dataSocket->ReceiveDataOnly(fName,MAX_STR_LENGTH);
+				n=dataSocket->ReceiveDataOnly(&fIndex,sizeof(fIndex));
+				n=dataSocket->ReceiveDataOnly(retval,thisDetector->dataBytes);
+
+#ifdef VERBOSE
+				std::cout<< "Received "<< n << " data bytes" << std::endl;
+#endif
+				if (n!=thisDetector->dataBytes) {
+					std::cout<<endl<< "wrong data size received: received " << n << " but expected from receiver " << thisDetector->dataBytes << std::endl;
+					ret=FAIL;
 					delete [] retval;
 					dataSocket->Disconnect();
 					return NULL;
-				} else {
-					n=dataSocket->ReceiveDataOnly(fName,MAX_STR_LENGTH);
-					n=dataSocket->ReceiveDataOnly(&fIndex,sizeof(fIndex));
-					n=dataSocket->ReceiveDataOnly(retval,thisDetector->dataBytes);
-
-#ifdef VERBOSE
-					std::cout<< "Received "<< n << " data bytes" << std::endl;
-#endif
-					if (n!=thisDetector->dataBytes) {
-						std::cout<<endl<< "wrong data size received: received " << n << " but expected from receiver " << thisDetector->dataBytes << std::endl;
-						ret=FAIL;
-						delete [] retval;
-						dataSocket->Disconnect();
-						return NULL;
-					}
 				}
-			//}
-
+			}
 			dataSocket->Disconnect();
 		}
 	}

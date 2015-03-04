@@ -4573,7 +4573,7 @@ int* multiSlsDetector::readFrameFromReceiver(char* fName, int &fIndex){
 	int n,complete=OK;
 	int i,k,offsetX, offsetY, maxX, maxY; double dr;
 	int* retval=new int[nel];
-	int *retdet, *p=retval;
+	int *retdet = NULL, *p=retval;
 	string fullFName="";
 	string ext="";
 
@@ -4585,22 +4585,21 @@ int* multiSlsDetector::readFrameFromReceiver(char* fName, int &fIndex){
 
 	for (int id=0; id<thisMultiDetector->numberOfDetectors; id++) {
 		if (detectors[id]) {
+			n=detectors[id]->getDataBytes();
 			retdet=detectors[id]->readFrameFromReceiver(fName,fIndex);
 			if(detectors[id]->getErrorMask())
 			  setErrorMask(getErrorMask()|(1<<id));
 			if (retdet){
-				if (fIndex==-1)
+				if (fIndex==-1){
 					complete = FAIL;
-				else{
+					delete [] retdet;
+				}else{
 					n=detectors[id]->getDataBytes();
 					if(getDetectorsType() == EIGER){
-						//cout << "fname:"<<fName<<" findex:"<<fIndex<<endl;
-						//cout<<"n:"<<n<<endl;
-						//cout<<"maxchan:"<<detectors[id]->getMaxNumberOfChannels()<<" n:"<<n<<endl;
+						//cout << "fname:"<<fName<<" findex:"<<fIndex<<endl;//cout<<"n:"<<n<<endl;//cout<<"maxchan:"<<detectors[id]->getMaxNumberOfChannels()<<" n:"<<n<<endl;
 						dr = (double)n/detectors[id]->getMaxNumberOfChannels();
-						//cout << "dr:"<<dr<<endl;
 						k=(int)(detectors[id]->getMaxNumberOfChannels(X)*dr);//bit mode
-						//cout << "k:"<<k<<endl;
+						//cout << "dr:"<<dr<<endl;//cout << "k:"<<k<<endl;
 						offsetY = (int)(((maxY - (thisMultiDetector->offsetY[id] + detectors[id]->getMaxNumberOfChannels(Y))) * maxX)*dr);//bit mode
 						offsetX = (int)(thisMultiDetector->offsetX[id]*dr);
 						//cout << "offsetY"<<offsetY<< " offsetX:"<<offsetX<<endl;
@@ -4612,6 +4611,7 @@ int* multiSlsDetector::readFrameFromReceiver(char* fName, int &fIndex){
 						memcpy(p,retdet,n);
 						p+=n/sizeof(int);
 					}
+
 					delete [] retdet;
 					//concatenate filenames
 					if(!fullFName.length()){

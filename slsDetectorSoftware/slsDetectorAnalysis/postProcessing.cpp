@@ -475,10 +475,10 @@ void* postProcessing::processData(int delflag) {
 		}
 		
 		if (fdata) {
-		  cout << "delete fdata "<< endl;
+		  //cout << "delete fdata "<< endl;
 		  delete [] fdata;
-		  
-		  cout << "delete done "<< endl;
+		  fdata = NULL;
+		  //cout << "delete done "<< endl;
 		}
 		}
 	//receiver
@@ -535,6 +535,8 @@ void* postProcessing::processData(int delflag) {
 #ifdef VERY_VERY_DEBUG
 			cout << "currentfIndex:" << currentfIndex << endl;
 #endif
+
+
 			/** IF detector acquisition is done, let the acquire() thread know to finish up and force join thread */
 			if(acquiringDone > 0){
 #ifdef VERY_VERY_DEBUG
@@ -579,6 +581,7 @@ void* postProcessing::processData(int delflag) {
 						//get data
 						strcpy(currentfName,"");
 						pthread_mutex_lock(&mg);
+						//int* receiverData = new int [getTotalNumberOfChannels()];
 						int* receiverData = readFrameFromReceiver(currentfName,currentfIndex);
 						pthread_mutex_unlock(&mg);
 
@@ -599,7 +602,13 @@ void* postProcessing::processData(int delflag) {
 						}*/
 
 						//not garbage frame
-						if (currentfIndex >= 0) {
+						if(currentfIndex < 0){
+#ifdef VERY_VERY_DEBUG
+							cout<<"****Detector returned mismatched indices/garbage  or acquisition is over. Trying again.***"<<endl;
+#endif
+							if(receiverData)
+								delete [] receiverData;
+						}else{
 #ifdef VERY_VERY_DEBUG
 							cout<<"GOT data"<<endl;
 #endif
@@ -622,11 +631,6 @@ void* postProcessing::processData(int delflag) {
 #endif
 							}
 						}
-#ifdef VERY_VERY_DEBUG
-						else{
-							cout<<"****Detector returned mismatched indices/garbage  or acquisition is over. Trying again.***"<<endl;
-						}
-#endif
 					}
 				}
 			}

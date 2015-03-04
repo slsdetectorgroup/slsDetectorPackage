@@ -9,7 +9,10 @@
 #include <stdlib.h>
 using namespace std;
 
+int dummyCallback(detectorData* d, int p,void*) {
+cout << "got data "	<< p <<  endl;
 
+}
 
 class multiSlsDetectorClient  { 
 
@@ -21,6 +24,7 @@ class multiSlsDetectorClient  {
     if (argc==0 && action==slsDetectorDefs::READOUT_ACTION) { \
       if (myDetector==NULL) {				      \
 	myDetector=new multiSlsDetector();		      \
+	//myDetector->registerDataCallback(&dummyCallback,  NULL);
 	del=1;						      \
       };
       myCmd=new multiSlsDetectorCommand(myDetector);	      \

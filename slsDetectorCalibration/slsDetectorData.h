@@ -19,6 +19,8 @@ class slsDetectorData {
   dataType **dataMask; /**< Array of size nx*ny storing the polarity of the data in the dataset (should be 0 if no inversion is required, 0xffffffff is inversion is required) */
   int **dataROIMask; /**< Array of size nx*ny 1 if channel is good (or in the ROI), 0 if bad channel (or out of ROI)   */
 
+  int *xmap;
+  int *ymap;
 
  public:
 
@@ -56,6 +58,16 @@ class slsDetectorData {
 	 dataROIMask[i][j]=1;
     }
     
+
+    
+    xmap=new int[dataSize/sizeof(dataType)];
+    ymap=new int[dataSize/sizeof(dataType)];
+
+    for (int i=0 ; i<dataSize/sizeof(dataType); i++) {
+      xmap[i]=-1;
+      ymap[i]=-1;
+    }
+    
     setDataMap(dMap);
     setDataMask(dMask);
     setDataROIMask(dROI);
@@ -64,17 +76,20 @@ class slsDetectorData {
 
   virtual ~slsDetectorData() {
     for(int i = 0; i < ny; i++) {
-    delete [] dataMap[i];
-    delete [] dataMask[i];
-    delete [] dataROIMask[i];
+      delete [] dataMap[i];
+      delete [] dataMask[i];
+      delete [] dataROIMask[i];
     }
     delete [] dataMap;
     delete [] dataMask;
     delete [] dataROIMask;
+    delete [] xmap;
+    delete [] ymap;
   }
 
-  virtual void getPixel(int ip, int &x, int &y) {x=ip; y=0;};
 
+  virtual void getPixel(int ip, int &x, int &y) {if (ip>=0 && ip<dataSize) {x=xmap[ip]; y=ymap[ip];} else {x=-1; y=-1;};};
+  
 
 
   /**
@@ -89,14 +104,19 @@ class slsDetectorData {
 
     if (dMap==NULL) {
       for (int iy=0; iy<ny; iy++)
-	 for (int ix=0; ix<nx; ix++)
+	for (int ix=0; ix<nx; ix++) {
 	   dataMap[iy][ix]=(iy*nx+ix)*sizeof(dataType);
+	}
     } else {
       cout << "set dmap "<< dataMap << " " << dMap << endl;
       for (int iy=0; iy<ny; iy++)
 	for (int ix=0; ix<nx; ix++) {
 	   dataMap[iy][ix]=dMap[iy][ix];
 	   cout << ix << " " << iy << endl;
+	   if (dMap[iy][ix]<dataSize) {
+	     xmap[dMap[iy][ix]/sizeof(dataType)]=ix;
+	     ymap[dMap[iy][ix]/sizeof(dataType)]=iy;
+	   }
 	}
     }
     

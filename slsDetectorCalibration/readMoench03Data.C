@@ -12,31 +12,31 @@ void readMoench03Data(char *tit, int sign=1){
   TFile *fout;
   THStack *hs;
 
-  sprintf(fname,"/scratch/roberto/photons.root");
+  sprintf(fname,"/mnt/moenchnas/big_moench_xbox_20150223/Mo.root");
   fout=new TFile(fname,"RECREATE");
 
-  sprintf(fname,"/scratch/roberto/run_%%d.raw");
+  sprintf(fname,"/mnt/moenchnas/big_moench_xbox_20150223/Mo_f0_%%d.raw");
 
-  hs=moench03ReadData(fname,"photons",136,1135,1500,-500,2500,1,0.,1,399,1,399, 0,1); 
-//   cout << "returned" << endl;
-//   hs->SetName(tit);
-//   hs->SetTitle(tit);
-//   cout << "name/title set" << endl;
+  hs=moench03ReadData(fname,"Mo",25133,25187,1500,-500,2500,1,399,1,399, 0,1); 
+  cout << "returned" << endl;
+  hs->SetName(tit);
+  hs->SetTitle(tit);
+  cout << "name/title set" << endl;
   
   
-//   if (hs->GetHists()) {
-//     for (int i=0; i<3; i++) {
-//       if (hs->GetHists()->At(i)) {
-// 	cout << i << " " ;
-// 	(TH2F*)(hs->GetHists()->At(i))->Write();
-//       }
-//     } 
-//     cout << " histos written " << endl;
-//   } else
-//     cout << "no hists in stack " << endl;
+  if (hs->GetHists()) {
+    for (int i=0; i<3; i++) {
+      if (hs->GetHists()->At(i)) {
+	cout << i << " " ;
+	(TH2F*)(hs->GetHists()->At(i))->Write();
+      }
+    } 
+    cout << " histos written " << endl;
+  } else
+    cout << "no hists in stack " << endl;
   
 
-//   fout->Close();
+  fout->Close();
 
 
 

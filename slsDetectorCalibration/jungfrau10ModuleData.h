@@ -1,15 +1,14 @@
-#ifndef MOENCH02CTBDATA_H
-#define  MOENCH02CTBDATA_H
+#ifndef JUNGFRAU10MODULEDATA_H
+#define  JUNGFRAU10MODULEBDATA_H
 #include "slsDetectorData.h"
 
 
 
-class moench02CtbData : public slsDetectorData<uint16_t> {
+class jungfrau10ModuleData : public slsDetectorData<uint16_t> {
 
  private:
   
   int iframe;
-  int *xmap, *ymap;
   int nadc;
   int sc_width;
   int sc_height;
@@ -26,45 +25,47 @@ class moench02CtbData : public slsDetectorData<uint16_t> {
   */
   
 
-  moench02CtbData(int ns=6400): slsDetectorData<uint16_t>(160, 160, ns*2*32, NULL, NULL) , nadc(4), sc_width(40), sc_height(160) {
+  jungfrau10ModuleData(int ns=16384): slsDetectorData<uint16_t>(256*4, 256*2, ns*2*32, NULL, NULL) , nadc(32), sc_width(64), sc_height(256) {
 
     
-    int adc_nr[4]={0,40,40,120};
+   
     int row, col;
 
     int isample;
     int iadc;
     int ix, iy;
 
-    xmap=new int[nx*ny];
-    ymap=new int[nx*ny];
     
 
-
+    cout << nx << " " << ny << " " << dataSize << endl;
 
     for (iadc=0; iadc<nadc; iadc++) {
       for (int i=0; i<sc_width*sc_height; i++) {
-	col=adc_nr[iadc]+(i%sc_width);
-	row=i/sc_width;
-	dataMap[row][col]=(32*i+iadc)*2;
-	if (dataMap[row][col]<0 || dataMap[row][col]>=dataSize) {
-	  cout << "Error: pointer " << dataMap[row][col] << " out of range "<< endl;
-	  
+	if (iadc<nadc/2) {
+	  row=sc_height+i/sc_width;
+	  col=iadc*sc_width+(i%sc_width);
+	} else {
+	  row=sc_height-1-i/sc_width;
+	  col=(ny-1)-(iadc-16)*sc_width-(i%sc_width);
 	}
+	dataMap[row][col]=(nadc*i+iadc)*2;
+	if (dataMap[row][col]<0 || dataMap[row][col]>=dataSize)
+	   cout << "Error: pointer " << dataMap[row][col] << " out of range "<< endl;
 	  
       }
+
     }
     for (int i=0; i<nx*ny; i++) {
-      isample=i/32;
+      isample=i/nadc;
       iadc=i%nadc;
       ix=isample%sc_width;
       iy=isample/sc_width;
       if (iadc<(nadc/2)) {
-	xmap[i]=adc_nr[iadc]+ix;
-	ymap[i]=ny/2-1-iy;
-      } else {
-	xmap[i]=adc_nr[iadc]+ix;
+	xmap[i]=iadc*sc_width+ix;//adc_nr[iadc]+ix;
 	ymap[i]=ny/2+iy;
+      } else {
+	xmap[i]=(ny-1)-(iadc-16)*sc_width-ix;//adc_nr[iadc]+ix;
+	ymap[i]=ny/2-1-iy;
       }
 
 
@@ -77,8 +78,7 @@ class moench02CtbData : public slsDetectorData<uint16_t> {
     iframe=0;
     //  cout << "data struct created" << endl;
   };
-    
-    void getPixel(int ip, int &x, int &y) {if (ip>=0 && ip<nx*ny) {x=xmap[ip]; y=ymap[ip];}};
+  
   
 
      /**
@@ -90,7 +90,7 @@ class moench02CtbData : public slsDetectorData<uint16_t> {
   */
 
 
-    virtual  int getFrameNumber(char *buff){(void)buff; return iframe;};   
+  int getFrameNumber(char *buff){(void)buff; return iframe;};   
 
   /**
 
@@ -112,7 +112,7 @@ class moench02CtbData : public slsDetectorData<uint16_t> {
      \returns pointer to the beginning of the last good frame (might be incomplete if ndata smaller than dataSize), or NULL if no frame is found 
 
   */
-    virtual  char *findNextFrame(char *data, int &ndata, int dsize){ndata=dsize; setDataSize(dsize);  return data;};
+   char *findNextFrame(char *data, int &ndata, int dsize){ndata=dsize; setDataSize(dsize);  return data;};
 
 
    /**
@@ -122,7 +122,7 @@ class moench02CtbData : public slsDetectorData<uint16_t> {
      \returns pointer to the begin of the last good frame, NULL if no frame is found or last frame is incomplete
 
   */
-    virtual char *readNextFrame(ifstream &filebin){
+   char *readNextFrame(ifstream &filebin){
       //	int afifo_length=0;  
       uint16_t *afifo_cont; 
       int ib=0;
@@ -134,7 +134,7 @@ class moench02CtbData : public slsDetectorData<uint16_t> {
 	}
 	if (ib>0) {
 	  iframe++;
-	  cout << ib << "-" << endl;
+	  // cout << ib << "-" << endl;
 	  return (char*)afifo_cont;
 	} else {
 	  delete [] afifo_cont;

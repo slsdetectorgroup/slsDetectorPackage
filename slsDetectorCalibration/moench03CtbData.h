@@ -9,7 +9,6 @@ class moench03CtbData : public slsDetectorData<uint16_t> {
  private:
   
   int iframe;
-  int *xmap, *ymap;
   int nadc;
   int sc_width;
   int sc_height;
@@ -39,8 +38,6 @@ class moench03CtbData : public slsDetectorData<uint16_t> {
     int iadc;
     int ix, iy;
 
-    xmap=new int[nx*ny];
-    ymap=new int[nx*ny];
     
 
 
@@ -83,8 +80,6 @@ class moench03CtbData : public slsDetectorData<uint16_t> {
     //  cout << "data struct created" << endl;
   };
     
-    void getPixel(int ip, int &x, int &y) {if (ip>=0 && ip<nx*ny) {x=xmap[ip]; y=ymap[ip];}};
-  
 
      /**
 
@@ -139,7 +134,7 @@ class moench03CtbData : public slsDetectorData<uint16_t> {
 	}
 	if (ib>0) {
 	  iframe++;
-	  cout << ib << "-" << endl;
+	  // cout << ib << "-" << endl;
 	  return (char*)afifo_cont;
 	} else {
 	  delete [] afifo_cont;

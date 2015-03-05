@@ -374,12 +374,12 @@ int32_t UDPBaseImplementation::setDynamicRange(int32_t dr){ FILE_LOG(logDEBUG) <
 				setupFifoStructure();
 
 				if(createListeningThreads() == FAIL){
-					cout << "ERROR: Could not create listening thread" << endl;
+					cprintf(BG_RED,"ERROR: Could not create listening thread\n");
 					exit (-1);
 				}
 
 				if(createWriterThreads() == FAIL){
-					cout << "ERROR: Could not create writer threads" << endl;
+					cprintf(BG_RED,"ERROR: Could not create writer threads\n");
 					exit (-1);
 				}
 
@@ -475,7 +475,7 @@ int UDPBaseImplementation::enableDataCompression(bool enable){ FILE_LOG(logDEBUG
 		numWriterThreads = 1;
 
 	if(createWriterThreads() == FAIL){
-		cout << "ERROR: Could not create writer threads" << endl;
+		cprintf(BG_RED,"ERROR: Could not create writer threads\n");
 		return FAIL;
 	}
 	setThreadPriorities();
@@ -763,7 +763,7 @@ int UDPBaseImplementation::createUDPSockets(){ FILE_LOG(logDEBUG) << __AT__ << "
 		iret = udpSocket[i]->getErrorStatus();
 		if(iret){
 #ifdef VERBOSE
-			cout << "Could not create UDP socket on port " << server_port[i]  << " error:" << iret << endl;
+			cprintf(BG_RED,"Could not create UDP socket on port %d error: %d\n",server_port[i], iret);
 #endif
 			return FAIL;
 		}

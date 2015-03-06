@@ -197,7 +197,7 @@ private:
 
 	/** Trimming mode */
 	slsDetectorDefs::trimMode trimmingMode;
-	static const int TRIMMING_DYNAMIC_RANGE 	= 24;
+	static const int TRIMMING_DYNAMIC_RANGE 	= 32;
 	static const int TRIMMING_FRAME_NUMBER 		= 1;
 	static const int TRIMMING_TRIGGER_NUMBER 	= 1;
 	static const int TRIMMING_PROBE_NUMBER 		= 0;

@@ -90,7 +90,8 @@ public:
 		PROGRESS, /**< fraction of measurement elapsed - only get! */
 		MEASUREMENTS_NUMBER,
 		FRAMES_FROM_START,
-		FRAMES_FROM_START_PG
+		FRAMES_FROM_START_PG,
+		SAMPLES_JCTB
 	};
 
 

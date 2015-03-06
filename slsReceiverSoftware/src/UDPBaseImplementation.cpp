@@ -171,6 +171,7 @@ uint32_t UDPBaseImplementation::getAcquisitionIndex(){ FILE_LOG(logDEBUG) << __A
 		acquisitionIndex=-1;
 	else
 		acquisitionIndex = currframenum - startAcquisitionIndex;
+	//cout<<"acquisitionIndex:"<<acquisitionIndex <<" currframenum:"<<currframenum <<" startAcquisitionIndex:" <<startAcquisitionIndex<<endl;
 	return acquisitionIndex;
 }
 
@@ -203,7 +204,9 @@ inline char* UDPBaseImplementation::setFilePath(const char c[]){ FILE_LOG(logDEB
 		}
 	}
 	FILE_LOG(logDEBUG) << __AT__ << getFilePath();
+#ifdef VERBOSE
 	cout << getFilePath() << " " << filePath << endl;
+#endif
 	return getFilePath();
 }
 
@@ -371,12 +374,12 @@ int32_t UDPBaseImplementation::setDynamicRange(int32_t dr){ FILE_LOG(logDEBUG) <
 				setupFifoStructure();
 
 				if(createListeningThreads() == FAIL){
-					cout << "ERROR: Could not create listening thread" << endl;
+					cprintf(BG_RED,"ERROR: Could not create listening thread\n");
 					exit (-1);
 				}
 
 				if(createWriterThreads() == FAIL){
-					cout << "ERROR: Could not create writer threads" << endl;
+					cprintf(BG_RED,"ERROR: Could not create writer threads\n");
 					exit (-1);
 				}
 
@@ -472,7 +475,7 @@ int UDPBaseImplementation::enableDataCompression(bool enable){ FILE_LOG(logDEBUG
 		numWriterThreads = 1;
 
 	if(createWriterThreads() == FAIL){
-		cout << "ERROR: Could not create writer threads" << endl;
+		cprintf(BG_RED,"ERROR: Could not create writer threads\n");
 		return FAIL;
 	}
 	setThreadPriorities();
@@ -760,7 +763,7 @@ int UDPBaseImplementation::createUDPSockets(){ FILE_LOG(logDEBUG) << __AT__ << "
 		iret = udpSocket[i]->getErrorStatus();
 		if(iret){
 #ifdef VERBOSE
-			cout << "Could not create UDP socket on port " << server_port[i]  << " error:" << iret << endl;
+			cprintf(BG_RED,"Could not create UDP socket on port %d error: %d\n",server_port[i], iret);
 #endif
 			return FAIL;
 		}
@@ -1326,8 +1329,8 @@ int UDPBaseImplementation::startListening(){ FILE_LOG(logDEBUG) << __AT__ << " s
 
 	thread_started = 1;
 
-	int i,total;
-	int lastpacketoffset, expected, rc, rc1,packetcount, maxBufferSize, carryonBufferSize;
+	int total;
+	int lastpacketoffset, expected, rc,packetcount, maxBufferSize, carryonBufferSize;
 	uint32_t lastframeheader;// for moench to check for all the packets in last frame
 	char* tempchar = NULL;
 	int imageheader = 0;
@@ -1532,9 +1535,8 @@ int UDPBaseImplementation::startWriting(){ FILE_LOG(logDEBUG) << __AT__ << " sta
 	char* wbuf[numListeningThreads];//interleaved
 	char *d=new char[bufferSize*numListeningThreads];
 	int xmax=0,ymax=0;
-	int ret,i,j;
+	int ret,i;
 	int packetsPerThread = packetsPerFrame/numListeningThreads;
-int loop;
 
 	while(1){
 

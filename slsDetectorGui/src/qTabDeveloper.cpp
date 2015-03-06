@@ -134,6 +134,7 @@ void qTabDeveloper::SetupWidgetWindow(){
 
 		break;
 	default:
+		cout << "ERROR: Unknown detector type: " + myDet->slsDetectorBase::getDetectorType(detType) << endl;
 		qDefs::Message(qDefs::CRITICAL,string("Unknown detector type:")+myDet->slsDetectorBase::getDetectorType(detType),"qTabDeveloper::SetupWidgetWindow");
 		exit(-1);
 		break;
@@ -220,6 +221,7 @@ void qTabDeveloper::CreateDACWidgets(){
 	for(int i=0;i<NUM_DAC_WIDGETS;i++){
 		lblDacs[i] 	= new QLabel(QString(dacNames[i].c_str()),boxDacs);
 		spinDacs[i]	= new MyDoubleSpinBox(i,boxDacs);
+		spinDacs[i]->setMinimum(-1);
 		spinDacs[i]->setMaximum(10000);
 		lblDacsmV[i]= new QLabel("",boxDacs);
 
@@ -387,6 +389,7 @@ slsDetectorDefs::dacIndex qTabDeveloper::getSLSIndex(int index){
 		}
 		break;
 	default:
+		cout << "Unknown detector type:" + myDet->slsDetectorBase::getDetectorType(detType) << endl;
 		qDefs::Message(qDefs::CRITICAL,string("Unknown detector type:")+myDet->slsDetectorBase::getDetectorType(detType),"qTabDeveloper::getSLSIndex");
 		qDefs::checkErrorMessage(myDet,"qTabDeveloper::getSLSIndex");
 		exit(-1);

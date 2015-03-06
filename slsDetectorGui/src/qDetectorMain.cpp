@@ -47,21 +47,23 @@ int main (int argc, char **argv) {
 
 qDetectorMain::qDetectorMain(int argc, char **argv, QApplication *app, QWidget *parent) :
 				QMainWindow(parent), theApp(app),myDet(0),detID(0),myPlot(0),tabs(0),isDeveloper(0){
-
+bool found;
 	string configFName = "";
 	// Getting all the command line arguments
 	for(int iarg=1; iarg<argc; iarg++){
-		if(!strcasecmp(argv[iarg],"-developer"))	{isDeveloper=1;}
-		if(!strcasecmp(argv[iarg],"-id"))			{detID=atoi(argv[iarg+1]);}
-		if(!strcasecmp(argv[iarg],"-config"))		{configFName=string(argv[iarg+1]);}
-		if(!strcasecmp(argv[iarg],"-f"))			{configFName=string(argv[iarg+1]);}
-		if(!strcasecmp(argv[iarg],"-help")){
+		found = false;
+		if(!strcasecmp(argv[iarg],"--developer"))					{isDeveloper=1;found = true;}
+		if((!strcasecmp(argv[iarg],"--id")) && (iarg+1 < argc))		{detID=atoi(argv[iarg+1]);iarg++;found = true;}
+		if((!strcasecmp(argv[iarg],"--config")) && (iarg+1 < argc))	{configFName=string(argv[iarg+1]);iarg++;found = true;}
+		if((!strcasecmp(argv[iarg],"--f")) && (iarg+1 < argc))		{configFName=string(argv[iarg+1]);iarg++;found = true;}
+		if(!found){
 			cout << "Possible Arguments are:" << endl;
-			cout << "-help \t\t : \t This help" << endl;
-			cout << "-config fname \t : \t specifies the configuration flie name to be used" << endl;
-			cout << "-developer \t : \t Enables the developer tab" << endl;
-			cout << "-id i \t\t : \t Sets the multi detector id to i (the default is 0). "
+			cout << "--developer \t\t : \t Enables the developer tab" << endl;
+			cout << "--f [fname]\t\t : \t Loads config file fname" << endl;
+			cout << "--config [fname]\t : \t Loads config file fname" << endl;
+			cout << "--id [i] \t\t : \t Sets the multi detector id to i (the default is 0). "
 				"Required only when more than one multi detector object is needed." << endl;
+			exit(-1);
 		}
 	}
 
@@ -181,6 +183,7 @@ void qDetectorMain::SetUpWidgetWindow(){
 	// Default zoom Tool Tip
 	zoomToolTip = dockWidgetPlot->toolTip();
 
+
 }
 
 
@@ -205,9 +208,7 @@ void qDetectorMain::SetUpDetector(const string fName){
 
 	//if hostname doesnt exist even in shared memory
 	if(!host.length()){
-#ifdef VERBOSE
 		cout << endl << "No Detector Connected." << endl;
-#endif
 		qDefs::Message(qDefs::CRITICAL,"No Detectors Connected. ","qDetectorMain::SetUpDetector");
 		exit(-1);
 	}
@@ -235,6 +236,7 @@ void qDetectorMain::SetUpDetector(const string fName){
 	default:
 		string detName = myDet->slsDetectorBase::getDetectorType(detType);
 		qDefs::checkErrorMessage(myDet,"qDetectorMain::SetUpDetector");
+		cout << "ERROR: " + host + " has unknown detector type \"" +  detName + "\". Exiting GUI." << endl;
 		string errorMess = host+string(" has unknown detector type \"")+
 				detName+string("\". Exiting GUI.");
 		qDefs::Message(qDefs::CRITICAL,errorMess,"qDetectorMain::SetUpDetector");

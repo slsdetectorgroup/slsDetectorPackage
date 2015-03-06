@@ -197,7 +197,7 @@ void qTabActions::SetupWidgetWindow(){
 	//load positions
 	if(lblName[NumPositions]->isEnabled()){
 		//delete existing positions
-		if (positions)  delete [] positions;
+		if (positions)  {delete [] positions; positions = NULL;}
 		//get number of positions
 		int numPos=myDet->getPositions();
 		comboPos->setMaxCount(numPos);
@@ -404,7 +404,7 @@ void qTabActions::SetPosition(){
 	}
 
 	//delete existing positions
-	if (positions)  delete [] positions;
+	if (positions)  {delete [] positions; positions = NULL;}
 	positions=new double[comboPos->count()];
 	//copying the list
 	for(int i=0;i<comboPos->count();i++)
@@ -483,7 +483,7 @@ void qTabActions::Refresh(){
 
 		if(lblName[NumPositions]->isEnabled()){
 			//delete existing positions
-			if (positions)  delete [] positions;
+			if (positions)  {delete [] positions; positions = NULL;}
 			//get number of positions
 			int numPos=myDet->getPositions();
 			comboPos->setMaxCount(numPos);

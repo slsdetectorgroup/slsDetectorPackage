@@ -49,8 +49,8 @@ qDrawPlot::~qDrawPlot(){
 	plot1D_hists.clear();
 	if(lastImageArray) delete[] lastImageArray; lastImageArray=0;
 	StartOrStopThread(0);
-	delete myDet;
-	for(int i=0;i<MAXCloneWindows;i++) if(winClone[i]) delete winClone[i];
+	delete myDet; myDet = 0;
+	for(int i=0;i<MAXCloneWindows;i++) if(winClone[i]) {delete winClone[i]; winClone[i] = NULL;}
 }
 
 
@@ -287,7 +287,7 @@ void qDrawPlot::SetupWidgetWindow(){
 		SlsQtH1D*  h;
 		histNBins = nPixelsX;
 		nHists = 1;
-		if(histXAxis)    delete [] histXAxis;	histXAxis    = new double [nPixelsX];
+		if(histXAxis)    delete [] histXAxis; 	histXAxis    = new double [nPixelsX];
 		if(histYAxis[0]) delete [] histYAxis[0];histYAxis[0] = new double [nPixelsX];
 		for(unsigned int px=0;px<(int)nPixelsX;px++)	{histXAxis[px]  = px;histYAxis[0][px] = 0;}
 		Clear1DPlot();
@@ -1296,8 +1296,10 @@ void qDrawPlot::SelectPlot(int i){ //1 for 1D otherwise 2D
 
 
 void qDrawPlot::Clear1DPlot(){
-	for(QVector<SlsQtH1D*>::iterator h = plot1D_hists.begin(); h!=plot1D_hists.end();h++)
+	for(QVector<SlsQtH1D*>::iterator h = plot1D_hists.begin(); h!=plot1D_hists.end();h++){
 		(*h)->Detach(plot1D);
+		//do not delete *h or h.
+	}
 
 	plotHistogram->detach();
 }
@@ -1719,8 +1721,7 @@ int qDrawPlot::UpdateTrimbitPlot(bool fromDetector,bool Histogram){
 
 		//get trimbits
 		actualPixelsX = myDet->getTotalNumberOfChannels(slsDetectorDefs::X);
-		if(histTrimbits) delete [] histTrimbits; 
-		histTrimbits = new double[actualPixelsX]; 
+		if(histTrimbits) delete [] histTrimbits; histTrimbits = new double[actualPixelsX];
 		ret = myDet->getChanRegs(histTrimbits,fromDetector);
 		//	cout << "got it!" << endl;
 		if(!ret){
@@ -1896,8 +1897,8 @@ void qDrawPlot::RecalculatePedestal(){
 	pedestalCount = 0;
 
 	//create array
-	if(pedestalVals) 		delete [] pedestalVals; 	pedestalVals 		= new double[nPixelsX*nPixelsY];
-	if(tempPedestalVals) 	delete [] tempPedestalVals; tempPedestalVals 	= new double[nPixelsX*nPixelsY];
+	if(pedestalVals) 		delete [] pedestalVals;		pedestalVals 		= new double[nPixelsX*nPixelsY];
+	if(tempPedestalVals) 	delete [] tempPedestalVals;	tempPedestalVals 	= new double[nPixelsX*nPixelsY];
 	//reset all values
 	for(unsigned int px=0;px<(nPixelsX*nPixelsY);px++)
 		pedestalVals[px] = 0;

@@ -483,7 +483,7 @@ void* postProcessing::processData(int delflag) {
 		}
 	//receiver
 	else{
-	  /*
+		/*
 		//without gui loop
 		while(1){
 		if (checkJoinThread()) break;
@@ -537,7 +537,10 @@ void* postProcessing::processData(int delflag) {
 #endif
 
 
-			/** IF detector acquisition is done, let the acquire() thread know to finish up and force join thread */
+
+
+
+			// IF detector acquisition is done, let the acquire() thread know to finish up and force join thread
 			if(acquiringDone > 0){
 #ifdef VERY_VERY_DEBUG
 				if(acquiringDone == 1)
@@ -550,27 +553,37 @@ void* postProcessing::processData(int delflag) {
 				cout << "acquiringDone :" << acquiringDone << endl;
 #endif
 				pthread_mutex_unlock(&mg);
-				//newData = true;
-				if (acquiringDone == 10){//for eiger, it is very slow, have to wait long to get last frame
+				//go through once more to get last nth frame data
+				if (acquiringDone >= 2){
+					if((!nthframe) ||(!newData)){
 #ifdef VERY_VERY_DEBUG
-					cout << "gonna post for it to end" << endl;
+						cout << "gonna post for it to end" << endl;
 #endif
-					sem_post(&sem_queue);
+						sem_post(&sem_queue);
 #ifdef VERY_VERY_DEBUG
-					cout << "Sem posted" << endl;
+						cout << "Sem posted" << endl;
 #endif
-					//newData = false;
+					}
 				}
-			}else if (checkJoinThread())
-				break;
+			}
+			//random reads and for nthframe, checks if there is no new data
+			else if((!nthframe) ||(!newData)){
+				//cout <<"cecking now" << endl;
+				if (checkJoinThread())
+					break;
+			}
+
+
 
 
 			if (dataReady){
-
 				//for random reads, ask only if it has new data
 				if(!newData){
 					if(currentfIndex > progress)
 						newData = true;
+#ifdef VERY_VERY_DEBUG
+					cout << "currentfindex:" << currentfIndex << " progress:" << progress << endl;
+#endif
 				}
 
 				if(newData){
@@ -594,12 +607,6 @@ void* postProcessing::processData(int delflag) {
 							currentfIndex = -1;
 							cout<<"****Detector Data returned is NULL***"<<endl;
 						}
-						/*if(nthframe){
-							if((currentfIndex == -1) || (currentfIndex == progress))
-								currentfIndex = -1;
-							else
-								progress = currentfIndex;
-						}*/
 
 						//not garbage frame
 						if(currentfIndex < 0){
@@ -608,14 +615,14 @@ void* postProcessing::processData(int delflag) {
 #endif
 							if(receiverData)
 								delete [] receiverData;
-						}else{
+						}else if (currentfIndex > progress){
 #ifdef VERY_VERY_DEBUG
-							cout<<"GOT data"<<endl;
+							cout << "GOT data" << endl;
 #endif
 							fdata = decodeData(receiverData);
 							delete [] receiverData;
 							if ((fdata) && (dataReady)){
-							  //  cout << "DATAREADY 3" << endl;
+								//  cout << "DATAREADY 3" << endl;
 								thisData = new detectorData(fdata,NULL,NULL,getCurrentProgress(),currentfName,getTotalNumberOfChannels());
 								dataReady(thisData, currentfIndex, pCallbackArg);
 								delete thisData;
@@ -624,10 +631,9 @@ void* postProcessing::processData(int delflag) {
 #ifdef VERY_VERY_DEBUG
 								cout << "progress:" << progress << endl;
 #endif
-								/*if(!nthframe) //unnecessary to read every data, 09.12.2014**/
-									newData = false;
+								newData = false;
 #ifdef VERY_VERY_DEBUG
-									cout << "newData set to false" << endl;
+								cout << "newData set to false" << endl;
 #endif
 							}
 						}

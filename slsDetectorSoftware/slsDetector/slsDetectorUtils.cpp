@@ -342,7 +342,6 @@ void  slsDetectorUtils::acquire(int delflag){
 	  }
 	  pthread_mutex_unlock(&mg);
 	  }else{
-
 		  pthread_mutex_lock(&mg);
 		  acquiringDone = 1;
 		  pthread_mutex_unlock(&mg);

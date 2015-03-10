@@ -688,7 +688,7 @@ void UDPBaseImplementation::copyFrameToGui(char* startbuf[], uint32_t fnum, char
 		pthread_mutex_unlock(&dataReadyMutex);
 	}
 
-	//random read or nth frame read, gui needs data now
+	//random read or nth frame read, gui needs data now or it is the first frame
 	else{
 		/*
 		//nth frame read, block current process if the guireader hasnt read it yet

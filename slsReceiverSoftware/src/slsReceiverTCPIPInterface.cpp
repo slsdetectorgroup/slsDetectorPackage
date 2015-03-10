@@ -1252,10 +1252,10 @@ int	slsReceiverTCPIPInterface::gotthard_read_frame(){
 	}
 
 #ifdef VERBOSE
-	if(arg!=-1){
+	//if(arg!=-1){
 		cout << "fName:" << fName << endl;
 		cout << "findex:" << arg << endl;
-	}
+	//}
 #endif
 
 

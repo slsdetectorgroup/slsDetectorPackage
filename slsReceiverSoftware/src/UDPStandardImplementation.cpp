@@ -874,7 +874,7 @@ void UDPStandardImplementation::readFrame(char* c,char** raw, uint32_t &fnum, ui
 	if (guiData == NULL){
 		guiData = latestData;
 #ifdef VERY_VERY_DEBUG
-		cout <<"gui data not null anymore" << endl;
+		cout << "gui data not null anymore" << endl;
 #endif
 	}
 
@@ -886,14 +886,14 @@ void UDPStandardImplementation::readFrame(char* c,char** raw, uint32_t &fnum, ui
 	//could not get gui data
 	if(!guiDataReady){
 #ifdef VERY_VERY_DEBUG
-		cout<<"gui data not ready"<<endl;
+		cout << "gui data not ready" << endl;
 #endif
 		*raw = NULL;
 	}
 	//data ready, set guidata to receive new data
 	else{
 #ifdef VERY_VERY_DEBUG
-		cout<<"gui data ready"<<endl;
+		cout << "gui data ready" << endl;
 #endif
 		*raw = guiData;
 		guiData = NULL;
@@ -903,14 +903,14 @@ void UDPStandardImplementation::readFrame(char* c,char** raw, uint32_t &fnum, ui
 		pthread_mutex_unlock(&dataReadyMutex);*/
 		if((nFrameToGui) && (writerthreads_mask)){
 #ifdef VERY_VERY_DEBUG
-			cout<<"gonna post"<<endl;
+			cout << "gonna post" << endl;
 #endif
 		/*if(nFrameToGui){*/
 			//release after getting data
 			sem_post(&smp);
 		}
 #ifdef VERY_VERY_DEBUG
-		cout<<"done post"<<endl;
+		cout << "done post" << endl;
 #endif
 	}
 }
@@ -921,25 +921,31 @@ void UDPStandardImplementation::readFrame(char* c,char** raw, uint32_t &fnum, ui
 
 void UDPStandardImplementation::copyFrameToGui(char* startbuf[], uint32_t fnum, char* buf){
 	FILE_LOG(logDEBUG) << __AT__ << " called";
-
+#ifdef VERY_VERY_DEBUG
+cout << "copyframe" << endl;
+#endif
 
 	//random read when gui not ready , also command line doesnt have nthframetogui
+	//else guidata always null as guidataready is always 1 after 1st frame, and seccond data never gets copied
 	if((!nFrameToGui) && (!guiData)){
+#ifdef VERY_VERY_DEBUG
+		cout << "doing nothing" << endl;
+#endif
 		pthread_mutex_lock(&dataReadyMutex);
 		guiDataReady=0;
 		pthread_mutex_unlock(&dataReadyMutex);
 	}
 
-	//random read or nth frame read, gui needs data now
+	//random read or nth frame read, gui needs data now or it is the first frame
 	else{
-		//cout <<"gui needs data now"<<endl;
-		/*
-		//nth frame read, block current process if the guireader hasnt read it yet
-		if(nFrameToGui)
-			sem_wait(&smp);
-*/
+#ifdef VERY_VERY_DEBUG
+		cout << "gui needs data now or 1st frame" << endl;
+#endif
 		pthread_mutex_lock(&dataReadyMutex);
 		guiDataReady=0;
+#ifdef VERY_VERY_DEBUG
+		cout << "guidataready is  0, copying data" << endl;
+#endif
 		//eiger
 		if(startbuf != NULL){
 			int offset = 0;
@@ -954,8 +960,7 @@ void UDPStandardImplementation::copyFrameToGui(char* startbuf[], uint32_t fnum, 
 			for(int i=1000;i<1010;i=i+2)
 				//cout<<"startbuf:"<<dec<<i<<hex<<":\t0x"<<htonl((uint32_t)(*((uint32_t*)(startbuf[1] + HEADER_SIZE_NUM_TOT_PACKETS+ EIGER_HEADER_LENGTH+8+ i))))<<endl;
 			cout<<"startbuf:"<<dec<<i<<hex<<":\t0x"<<((uint16_t)(*((uint16_t*)(startbuf[1] + 2+ 48+ j*1040+8+ i))))<<endl;
-*/
-
+			 */
 
 			guiFrameNumber = fnum;
 		}else//other detectors
@@ -965,7 +970,9 @@ void UDPStandardImplementation::copyFrameToGui(char* startbuf[], uint32_t fnum, 
 		strcpy(guiFileName,savefilename);
 		guiDataReady=1;
 		pthread_mutex_unlock(&dataReadyMutex);
-
+#ifdef VERY_VERY_DEBUG
+		cout << "guidataready = 1" << endl;
+#endif
 		//nth frame read, block current process if the guireader hasnt read it yet
 		if(nFrameToGui){
 			//cout<<"waiting after copying"<<endl;
@@ -1693,9 +1700,9 @@ int UDPStandardImplementation::startListening(){
 				expected = maxBufferSize - carryonBufferSize;
 			}
 
-//#ifdef VERDEBUG
+#ifdef EIGER_DEBUG
 			cout << ithread << " *** rc:" << dec << rc << ". expected:" << dec << expected << endl;
-//#endif
+#endif
 
 /*
 			//start indices for each start of scan/acquisition - eiger does it before
@@ -1871,7 +1878,8 @@ int UDPStandardImplementation::startWriting(){
 			}
 		}
 
-
+		//so that the first frame is always copied
+		guiData = latestData;
 
 
 		while((1<<ithread)&writerthreads_mask){
@@ -1896,15 +1904,15 @@ int UDPStandardImplementation::startWriting(){
 
 			//last dummy packet
 			if(numpackets == 0xFFFF){
-//#ifdef VERYDEBUG
+#ifdef VERYDEBUG
 				cout << "**LAST dummy packet" << endl;
-//#endif
+#endif
 				stopWriting(ithread,wbuf);
 				continue;
 			}
-//#ifdef VERYDEBUG
+#ifdef VERYDEBUG
 			else cout <<"**NOT a dummy packet"<<endl;
-//#endif
+#endif
 
 
 
@@ -1969,7 +1977,8 @@ int UDPStandardImplementation::startWriting(){
 				}
 				else{
 					//copy to gui
-					if(numpackets == packetsPerFrame * numJobsPerThread){ //only full frames
+					if(numpackets >= packetsPerFrame){//min 1 frame, but neednt be
+					//if(numpackets == packetsPerFrame * numJobsPerThread){ //only full frames
 						copyFrameToGui(NULL,-1,wbuf[0]+HEADER_SIZE_NUM_TOT_PACKETS);
 #ifdef VERYVERBOSE
 						cout << ithread << " finished copying" << endl;
@@ -2108,8 +2117,16 @@ int i;
 					exit(-1);
 				}
 
+				//free buffer
+				if(rc <= 0){
+					cout << ithread << "Discarding empty frame" << endl;
+					fifoFree[ithread]->push(buffer[ithread]);
+#ifdef FIFO_DEBUG
+					cprintf(BLUE,"%d listener empty buffer pushed into fifofree %x\n", ithread, (void*)(buffer[ithread]));
+#endif
+				}
 				//push the last buffer into fifo
-				if(rc > 0){
+				else{
 					//eiger (incomplete frames) - throw away
 					if((myDetectorType == EIGER) && (rc < (bufferSize * numJobsPerThread)) ){
 						if(rc == 266240)
@@ -2134,14 +2151,6 @@ int i;
 						cprintf(RED,"%d listener last buffer pushed into fifo %x\n",  ithread,(void*)(buffer[ithread]));
 #endif
 					}
-				}
-				//free buffer
-				else{
-					cout << ithread << "Discarding empty frame" << endl;
-					fifoFree[ithread]->push(buffer[ithread]);
-#ifdef FIFO_DEBUG
-					cprintf(BLUE,"%d listener empty buffer pushed into fifofree %x\n", ithread, (void*)(buffer[ithread]));
-#endif
 				}
 
 

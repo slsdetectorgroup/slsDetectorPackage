@@ -1258,6 +1258,8 @@ int qDrawPlot::MeasurementFinished(int currentMeasurementIndex, int fileIndex){
 #endif
 	emit SetCurrentMeasurementSignal(currentMeasurement);
 	SetupMeasurement();
+	if((myDet->setReceiverOnline()==slsDetectorDefs::ONLINE_FLAG) && (myDet->getFramesCaughtByReceiver() == 0))
+		boxPlot->setTitle("OLD_plot.raw");
 	return 0;
 }
 

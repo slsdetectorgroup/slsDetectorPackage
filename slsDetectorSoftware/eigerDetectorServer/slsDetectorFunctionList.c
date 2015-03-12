@@ -537,8 +537,6 @@ int startStateMachine(){
 
 		while(getRunStatus() == IDLE);
 		printf("*****Acquiring...\n");
-
-
 	}
 	/*else usleep(1000000);
 			printf("****Returning\n");*/
@@ -598,10 +596,13 @@ enum runStatus getRunStatus(){
 
 
 char *readFrame(int *ret, char *mess){
-	if(!Feb_Control_WaitForFinishedFlag(5000))
-		printf("error in waiting for finished flag\n");
-	printf("Acquisition finished\n");
-
+	//if(master){
+		if(!Feb_Control_WaitForFinishedFlag(5000))
+			printf("error in waiting for finished flag\n");
+		printf("Acquisition finished\n");
+		usleep(0);
+		printf("*****Done Waiting...\n");
+	//}
 	*ret = (int)FINISHED;
 	return NULL;
 }

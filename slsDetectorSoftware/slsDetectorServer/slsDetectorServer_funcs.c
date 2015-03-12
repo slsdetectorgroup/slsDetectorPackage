@@ -805,7 +805,7 @@ enum externalCommunicationMode{
 #endif
 		default:
 			ret = FAIL;
-			sprintf("This timing mode %d not implemented in this detector\n",(int)arg);
+			sprintf(mess,"This timing mode %d not implemented in this detector\n",(int)arg);
 			break;
 		}
 	}

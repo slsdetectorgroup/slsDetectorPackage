@@ -628,10 +628,11 @@ virtual int resetFramesCaught()=0;
 /**
  * Reads a frame from receiver
  * @param fName file name of current frame()
- * @param fIndex current frame index
+ * @param acquisitionIndex current acquisition index
+ * @param frameIndex current frame index (for each scan)
  /returns a frame read from recever
 */
-virtual int* readFrameFromReceiver(char* fName, int &fIndex)=0;
+virtual int* readFrameFromReceiver(char* fName, int &acquisitionIndex, int &frameIndex)=0;
 
 
 /**

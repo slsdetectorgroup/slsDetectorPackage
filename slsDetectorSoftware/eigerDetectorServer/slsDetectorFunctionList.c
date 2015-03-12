@@ -167,6 +167,10 @@ int initDetectorStop(){
 void getModuleConfiguration(){
 	int *m=&master;
 	int *t=&top;
+	/*if(getDetectorNumber() == 0xbeb015){
+		master = 1;
+		top = 1;
+	}*/
 	Beb_GetModuleCopnfiguration(m,t);
 	if(top)	printf("*************** TOP ***************\n");
 	else	printf("*************** BOTTOM ***************\n");

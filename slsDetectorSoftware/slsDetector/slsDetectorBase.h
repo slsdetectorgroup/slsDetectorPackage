@@ -496,10 +496,11 @@ class slsDetectorBase :  public virtual slsDetectorDefs, public virtual errorDef
   /**
    * Reads a frame from receiver
    * @param fName file name of current frame()
-   * @param fIndex current frame index
+   * @param acquisitionIndex current acquisition index
+   * @param frameIndex current frame index (for each scan)
    /returns a frame read from recever
   */
-  virtual int* readFrameFromReceiver(char* fName, int &fIndex)=0;
+  virtual int* readFrameFromReceiver(char* fName, int &acquisitionIndex, int &frameIndex)=0;
 
 
   /** Sets the read receiver frequency

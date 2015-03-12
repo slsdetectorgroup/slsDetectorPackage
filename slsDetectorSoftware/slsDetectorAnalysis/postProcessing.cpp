@@ -497,7 +497,8 @@ void* postProcessing::processData(int delflag) {
 
 		int progress = -1;
 		char currentfName[MAX_STR_LENGTH]="";
-		int currentfIndex = -1;
+		int currentAcquisitionIndex = -1;
+		int currentFrameIndex = -1;
 		bool newData = false;
 		int nthframe = setReadReceiverFrequency(0);
 #ifdef VERBOSE
@@ -526,14 +527,14 @@ void* postProcessing::processData(int delflag) {
 			//get progress
 			pthread_mutex_lock(&mg);
 			if(setReceiverOnline() == ONLINE_FLAG)
-				currentfIndex = getReceiverCurrentFrameIndex();
+				currentAcquisitionIndex = getReceiverCurrentFrameIndex();
 			pthread_mutex_unlock(&mg);
 
 			//updating progress
-			if(currentfIndex != -1)
-				setCurrentProgress(currentfIndex+1);
+			if(currentAcquisitionIndex != -1)
+				setCurrentProgress(currentAcquisitionIndex+1);
 #ifdef VERY_VERY_DEBUG
-			cout << "currentfIndex:" << currentfIndex << endl;
+			cout << "currentAcquisitionIndex:" << currentAcquisitionIndex << endl;
 #endif
 
 
@@ -579,10 +580,10 @@ void* postProcessing::processData(int delflag) {
 			if (dataReady){
 				//for random reads, ask only if it has new data
 				if(!newData){
-					if(currentfIndex > progress)
+					if(currentAcquisitionIndex > progress)
 						newData = true;
 #ifdef VERY_VERY_DEBUG
-					cout << "currentfindex:" << currentfIndex << " progress:" << progress << endl;
+					cout << "currentAcquisitionIndex:" << currentAcquisitionIndex << " progress:" << progress << endl;
 #endif
 				}
 
@@ -595,7 +596,7 @@ void* postProcessing::processData(int delflag) {
 						strcpy(currentfName,"");
 						pthread_mutex_lock(&mg);
 						//int* receiverData = new int [getTotalNumberOfChannels()];
-						int* receiverData = readFrameFromReceiver(currentfName,currentfIndex);
+						int* receiverData = readFrameFromReceiver(currentfName,currentAcquisitionIndex,currentFrameIndex);
 						pthread_mutex_unlock(&mg);
 
 						//if detector returned null
@@ -604,18 +605,18 @@ void* postProcessing::processData(int delflag) {
 
 						//no data or wrong data for print out
 						if(receiverData == NULL){
-							currentfIndex = -1;
+							currentAcquisitionIndex = -1;
 							cout<<"****Detector Data returned is NULL***"<<endl;
 						}
 
 						//not garbage frame
-						if(currentfIndex < 0){
+						if(currentAcquisitionIndex < 0){
 #ifdef VERY_VERY_DEBUG
 							cout<<"****Detector returned mismatched indices/garbage  or acquisition is over. Trying again.***"<<endl;
 #endif
 							if(receiverData)
 								delete [] receiverData;
-						}else if (currentfIndex > progress){
+						}else if (currentAcquisitionIndex > progress){
 #ifdef VERY_VERY_DEBUG
 							cout << "GOT data" << endl;
 #endif
@@ -624,10 +625,10 @@ void* postProcessing::processData(int delflag) {
 							if ((fdata) && (dataReady)){
 								//  cout << "DATAREADY 3" << endl;
 								thisData = new detectorData(fdata,NULL,NULL,getCurrentProgress(),currentfName,getTotalNumberOfChannels());
-								dataReady(thisData, currentfIndex, pCallbackArg);
+								dataReady(thisData, currentFrameIndex, pCallbackArg);
 								delete thisData;
 								fdata = NULL;
-								progress = currentfIndex;
+								progress = currentAcquisitionIndex;
 #ifdef VERY_VERY_DEBUG
 								cout << "progress:" << progress << endl;
 #endif

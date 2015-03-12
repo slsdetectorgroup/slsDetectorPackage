@@ -1528,10 +1528,11 @@ class slsDetector : public slsDetectorUtils, public energyConversion {
  /**
   * Reads a frame from receiver
   * @param fName file name of current frame()
-  * @param fIndex current frame index
+  * @param acquisitionIndex current acquisition index
+  * @param frameIndex current frame index (for each scan)
   /returns a frame read from recever
  */
- int* readFrameFromReceiver(char* fName, int &fIndex);
+ int* readFrameFromReceiver(char* fName, int &acquisitionIndex, int &frameIndex);
 
   /** Locks/Unlocks the connection to the receiver
       /param lock sets (1), usets (0), gets (-1) the lock

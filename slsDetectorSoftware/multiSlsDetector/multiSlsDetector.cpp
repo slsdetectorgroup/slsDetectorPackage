@@ -4562,11 +4562,11 @@ int multiSlsDetector::resetFramesCaught() {
 
 
 
-int* multiSlsDetector::readFrameFromReceiver(char* fName, int &fIndex){
+int* multiSlsDetector::readFrameFromReceiver(char* fName,  int &acquisitionIndex, int &frameIndex){
 	int nel=(thisMultiDetector->dataBytes)/sizeof(int);
 	if(nel <= 0){
 		cout << "Multislsdetector databytes not valid :" << thisMultiDetector->dataBytes << endl;
-		fIndex = -1;
+		acquisitionIndex = -1;
 		return NULL;
 	}
 
@@ -4586,11 +4586,11 @@ int* multiSlsDetector::readFrameFromReceiver(char* fName, int &fIndex){
 	for (int id=0; id<thisMultiDetector->numberOfDetectors; id++) {
 		if (detectors[id]) {
 			n=detectors[id]->getDataBytes();
-			retdet=detectors[id]->readFrameFromReceiver(fName,fIndex);
+			retdet=detectors[id]->readFrameFromReceiver(fName, acquisitionIndex, frameIndex);
 			if(detectors[id]->getErrorMask())
 			  setErrorMask(getErrorMask()|(1<<id));
 			if (retdet){
-				if (fIndex==-1){
+				if (acquisitionIndex==-1){
 					complete = FAIL;
 					delete [] retdet;
 				}else{
@@ -4640,7 +4640,7 @@ int* multiSlsDetector::readFrameFromReceiver(char* fName, int &fIndex){
 	strcpy(fName,fullFName.c_str());
 	//if some of the receivers did not give data, dont count it
 	if((getDetectorsType() == EIGER) &&(complete ==FAIL))
-		fIndex = -1;
+		acquisitionIndex = -1;
 	return retval;
 };
 

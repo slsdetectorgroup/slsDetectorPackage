@@ -977,7 +977,9 @@ int	slsReceiverTCPIPInterface::read_frame(){
 int	slsReceiverTCPIPInterface::moench_read_frame(){
 	ret=OK;
 	char fName[MAX_STR_LENGTH]="";
-	int arg = -1,i;
+	int acquisitionIndex = -1;
+	int frameIndex= -1;
+	int i;
 
 
 	int bufferSize = MOENCH_BUFFER_SIZE;
@@ -990,7 +992,8 @@ int	slsReceiverTCPIPInterface::moench_read_frame(){
 
 	char* raw 		= new char[bufferSize];
 
-	uint32_t startIndex=0;
+	uint32_t startAcquisitionIndex=0;
+	uint32_t startFrameIndex=0;
 	uint32_t index = 0,bindex = 0, offset=0;
 
 	strcpy(mess,"Could not read frame\n");
@@ -1001,18 +1004,18 @@ int	slsReceiverTCPIPInterface::moench_read_frame(){
 
 	/**send garbage with -1 index to try again*/
 	if(!receiverBase->getFramesCaught()){
-		arg = -1;
+		startAcquisitionIndex = -1;
 		cout<<"haven't caught any frame yet"<<endl;
 	}
 
 	else{
 		ret = OK;
 		/*startIndex=receiverBase->getStartFrameIndex();*/
-		receiverBase->readFrame(fName,&raw,index,startIndex);
+		receiverBase->readFrame(fName,&raw,index,startAcquisitionIndex,startFrameIndex);
 
 		/**send garbage with -1 index to try again*/
 		if (raw == NULL){
-			arg = -1;
+			startAcquisitionIndex = -1;
 #ifdef VERBOSE
 			cout<<"data not ready for gui yet"<<endl;
 #endif
@@ -1044,7 +1047,7 @@ int	slsReceiverTCPIPInterface::moench_read_frame(){
 				bindex = (*((uint32_t*)(((char*)origVal)+packetOffset)));
 				if (bindex == 0xFFFFFFFF){
 					cout << "Missing Packet,Not sending to gui" << endl;
-					index = startIndex - 1;
+					index = startAcquisitionIndex - 1;
 					break;//use continue and change index above if you want to display missing packets with 0 value anyway in gui
 				}
 
@@ -1088,16 +1091,28 @@ int	slsReceiverTCPIPInterface::moench_read_frame(){
 				//check if same frame number
 			}
 
-			arg = index - startIndex;
+			acquisitionIndex = index-startAcquisitionIndex;
+			if(acquisitionIndex ==  -1)
+				startFrameIndex = -1;
+			else
+				frameIndex = index-startFrameIndex;
+#ifdef VERY_VERY_DEBUG
+			cout << "acquisitionIndex calculated is:" << acquisitionIndex << endl;
+			cout << "frameIndex calculated is:" << frameIndex << endl;
+			cout << "index:" << index << endl;
+			cout << "startAcquisitionIndex:" << startAcquisitionIndex << endl;
+			cout << "startFrameIndex:" << startFrameIndex << endl;
+#endif
 		}
 
 	}
 
 #ifdef VERBOSE
-	cout << "\nstartIndex:" << startIndex << endl;
 	cout << "fName:" << fName << endl;
-	cout << "index:" << arg << endl;
-	if(retval==NULL)cout<<"retval is null"<<endl;
+	cout << "acquisitionIndex:" << acquisitionIndex << endl;
+	cout << "frameIndex:" << frameIndex << endl;
+	cout << "startAcquisitionIndex:" << startAcquisitionIndex << endl;
+	cout << "startFrameIndex:" << startFrameIndex << endl;
 #endif
 
 #endif
@@ -1115,7 +1130,8 @@ int	slsReceiverTCPIPInterface::moench_read_frame(){
 	}
 	else{
 		socket->SendDataOnly(fName,MAX_STR_LENGTH);
-		socket->SendDataOnly(&arg,sizeof(arg));
+		socket->SendDataOnly(&acquisitionIndex,sizeof(acquisitionIndex));
+		socket->SendDataOnly(&frameIndex,sizeof(frameIndex));
 		socket->SendDataOnly(retval,MOENCH_DATA_BYTES);
 	}
 	//return ok/fail
@@ -1135,7 +1151,9 @@ int	slsReceiverTCPIPInterface::moench_read_frame(){
 int	slsReceiverTCPIPInterface::gotthard_read_frame(){
 	ret=OK;
 	char fName[MAX_STR_LENGTH]="";
-	int arg = -1,i;
+	int acquisitionIndex = -1;
+	int frameIndex= -1;
+	int i;
 
 
 	//retval is a full frame
@@ -1161,7 +1179,8 @@ int	slsReceiverTCPIPInterface::gotthard_read_frame(){
 	uint32_t index=0,index2=0;
 	uint32_t pindex=0,pindex2=0;
 	uint32_t bindex=0,bindex2=0;
-	uint32_t startIndex=0;
+	uint32_t startAcquisitionIndex=0;
+	uint32_t startFrameIndex=0;
 
 	strcpy(mess,"Could not read frame\n");
 
@@ -1173,16 +1192,16 @@ int	slsReceiverTCPIPInterface::gotthard_read_frame(){
 
 	/**send garbage with -1 index to try again*/
 	if(!receiverBase->getFramesCaught()){
-		arg=-1;
+		startAcquisitionIndex=-1;
 		cout<<"haven't caught any frame yet"<<endl;
 	}else{
 		ret = OK;
 		/*startIndex=receiverBase->getStartFrameIndex();*/
-		receiverBase->readFrame(fName,&raw,index,startIndex);
+		receiverBase->readFrame(fName,&raw,index,startAcquisitionIndex,startFrameIndex);
 
 		/**send garbage with -1 index to try again*/
 		if (raw == NULL){
-			arg = -1;
+			startAcquisitionIndex = -1;
 #ifdef VERBOSE
 			cout<<"data not ready for gui yet"<<endl;
 #endif
@@ -1216,7 +1235,7 @@ int	slsReceiverTCPIPInterface::gotthard_read_frame(){
 				if(bindex != 0xFFFFFFFF)
 					memcpy((((char*)retval)+(GOTTHARD_SHORT_DATABYTES*shortFrame)),((char*) origVal)+4, GOTTHARD_SHORT_DATABYTES);
 				else{
-					index = startIndex - 1;
+					index = startAcquisitionIndex - 1;
 					cout << "Missing Packet,Not sending to gui" << endl;
 				}
 			}
@@ -1247,15 +1266,30 @@ int	slsReceiverTCPIPInterface::gotthard_read_frame(){
 				}*/
 			}
 
-			arg = (index - startIndex);
+			acquisitionIndex = index-startAcquisitionIndex;
+			if(acquisitionIndex ==  -1)
+				startFrameIndex = -1;
+			else
+				frameIndex = index-startFrameIndex;
+
+#ifdef VERY_VERY_DEBUG
+			cout << "acquisitionIndex calculated is:" << acquisitionIndex << endl;
+			cout << "frameIndex calculated is:" << frameIndex << endl;
+			cout << "index:" << index << endl;
+			cout << "startAcquisitionIndex:" << startAcquisitionIndex << endl;
+			cout << "startFrameIndex:" << startFrameIndex << endl;
+#endif
 		}
 	}
 
 #ifdef VERBOSE
-	//if(arg!=-1){
+	if(frameIndex!=-1){
 		cout << "fName:" << fName << endl;
-		cout << "findex:" << arg << endl;
-	//}
+		cout << "acquisitionIndex:" << acquisitionIndex << endl;
+		cout << "frameIndex:" << frameIndex << endl;
+		cout << "startAcquisitionIndex:" << startAcquisitionIndex << endl;
+		cout << "startFrameIndex:" << startFrameIndex << endl;
+	}
 #endif
 
 
@@ -1275,7 +1309,8 @@ int	slsReceiverTCPIPInterface::gotthard_read_frame(){
 	}
 	else{
 		socket->SendDataOnly(fName,MAX_STR_LENGTH);
-		socket->SendDataOnly(&arg,sizeof(arg));
+		socket->SendDataOnly(&acquisitionIndex,sizeof(acquisitionIndex));
+		socket->SendDataOnly(&frameIndex,sizeof(frameIndex));
 		socket->SendDataOnly(retval,GOTTHARD_DATA_BYTES);
 	}
 
@@ -1297,7 +1332,9 @@ int	slsReceiverTCPIPInterface::gotthard_read_frame(){
 int	slsReceiverTCPIPInterface::eiger_read_frame(){
 	ret=OK;
 	char fName[MAX_STR_LENGTH]="";
-	int arg = -1,i;
+	int acquisitionIndex = -1;
+	int frameIndex= -1;
+	int i;
 	uint32_t index=0;
 
 	int frameSize   = EIGER_ONE_GIGA_ONE_PACKET_SIZE * packetsPerFrame;
@@ -1309,7 +1346,8 @@ int	slsReceiverTCPIPInterface::eiger_read_frame(){
 	char* raw 		= new char[frameSize];
 	char* origVal 	= new char[frameSize];
 	char* retval 	= new char[dataSize];
-	uint32_t startIndex=0;
+	uint32_t startAcquisitionIndex=0;
+	uint32_t startFrameIndex=0;
 	strcpy(mess,"Could not read frame\n");
 
 
@@ -1320,7 +1358,7 @@ int	slsReceiverTCPIPInterface::eiger_read_frame(){
 
 	/**send garbage with -1 index to try again*/
 	if(!receiverBase->getFramesCaught()){
-		arg=-1;
+		startAcquisitionIndex=-1;
 #ifdef VERBOSE
 		cout<<"haven't caught any frame yet"<<endl;
 #endif
@@ -1329,13 +1367,13 @@ int	slsReceiverTCPIPInterface::eiger_read_frame(){
 	else{
 		ret = OK;
 		/** read a frame */
-		receiverBase->readFrame(fName,&raw,index,startIndex);
+		receiverBase->readFrame(fName,&raw,index,startAcquisitionIndex,startFrameIndex);
 #ifdef VERBOSE
 		cout << "index:" << dec << index << endl;
 #endif
 		/**send garbage with -1 index to try again*/
 		if (raw == NULL){
-			arg = -1;
+			startAcquisitionIndex = -1;
 #ifdef VERBOSE
 			cout<<"data not ready for gui yet"<<endl;
 #endif
@@ -1463,19 +1501,29 @@ int	slsReceiverTCPIPInterface::eiger_read_frame(){
 			  (*(((uint64_t*)retval)+i)) = temp;
 			  */
 			}
-			arg = index-startIndex;
+			acquisitionIndex = index-startAcquisitionIndex;
+			if(acquisitionIndex ==  -1)
+					startFrameIndex = -1;
+			else
+				frameIndex = index-startFrameIndex;
 #ifdef VERY_VERY_DEBUG
-			cout << "arg calculated is:"<<arg<<endl;
-			cout <<"index:"<<index<<" startindex:"<<startIndex<<endl;
+			cout << "acquisitionIndex calculated is:" << acquisitionIndex << endl;
+			cout << "frameIndex calculated is:" << frameIndex << endl;
+			cout << "index:" << index << endl;
+			cout << "startAcquisitionIndex:" << startAcquisitionIndex << endl;
+			cout << "startFrameIndex:" << startFrameIndex << endl;
 #endif
 		}
 	}
 
 #ifdef VERBOSE
-	//if(arg!=-1){
+	if(frameIndex!=-1){
 		cout << "fName:" << fName << endl;
-		cout << "findex:" << dec << arg << endl;
-	//}
+		cout << "acquisitionIndex:" << acquisitionIndex << endl;
+		cout << "frameIndex:" << frameIndex << endl;
+		cout << "startAcquisitionIndex:" << startAcquisitionIndex << endl;
+		cout << "startFrameIndex:" << startFrameIndex << endl;
+	}
 #endif
 
 
@@ -1495,7 +1543,8 @@ int	slsReceiverTCPIPInterface::eiger_read_frame(){
 	}
 	else{
 		socket->SendDataOnly(fName,MAX_STR_LENGTH);
-		socket->SendDataOnly(&arg,sizeof(arg));
+		socket->SendDataOnly(&acquisitionIndex,sizeof(acquisitionIndex));
+		socket->SendDataOnly(&frameIndex,sizeof(frameIndex));
 		socket->SendDataOnly(retval,dataSize);
 	}
 

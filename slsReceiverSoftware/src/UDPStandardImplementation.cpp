@@ -352,6 +352,8 @@ int UDPStandardImplementation::setDetectorType(detectorType det){ 	FILE_LOG(logD
 
 //int UDPStandardImplementation::getTotalFramesCaught(){return (totalPacketsCaught/packetsPerFrame);}
 
+//uint32_t UDPStandardImplementation::getStartAcquisitionIndex(){return startAcquisitionIndex;}
+
 //uint32_t UDPStandardImplementation::getStartFrameIndex(){return startFrameIndex;}
 
 /*
@@ -868,7 +870,7 @@ void UDPStandardImplementation::setupFifoStructure(){
 
 
 /** acquisition functions */
-void UDPStandardImplementation::readFrame(char* c,char** raw, uint32_t &fnum, uint32_t &fstartind){
+void UDPStandardImplementation::readFrame(char* c,char** raw, uint32_t &fnum, uint32_t &startAcquisitionIndex, uint32_t &startFrameIndex){
 	FILE_LOG(logDEBUG) << __AT__ << " called";
 	//point to gui data
 	if (guiData == NULL){
@@ -881,7 +883,9 @@ void UDPStandardImplementation::readFrame(char* c,char** raw, uint32_t &fnum, ui
 	//copy data and filename
 	strcpy(c,guiFileName);
 	fnum = guiFrameNumber;
-	fstartind = getStartFrameIndex();
+	startAcquisitionIndex = getStartAcquisitionIndex();
+	startFrameIndex = getStartFrameIndex();
+
 
 	//could not get gui data
 	if(!guiDataReady){
@@ -975,9 +979,13 @@ cout << "copyframe" << endl;
 #endif
 		//nth frame read, block current process if the guireader hasnt read it yet
 		if(nFrameToGui){
-			//cout<<"waiting after copying"<<endl;
+#ifdef VERY_VERY_DEBUG
+			cout<<"waiting after copying"<<endl;
+#endif
 			sem_wait(&smp);
-			//cout<<"done waiting"<<endl;
+#ifdef VERY_VERY_DEBUG
+			cout<<"done waiting"<<endl;
+#endif
 		}
 
 	}
@@ -1921,8 +1929,11 @@ int UDPStandardImplementation::startWriting(){
 				tempframenum = htonl(*(unsigned int*)((eiger_image_header *)((char*)(wbuf[ithread] + HEADER_SIZE_NUM_TOT_PACKETS)))->fnum);
 				if(dynamicRange != 32)
 					tempframenum += (startFrameIndex-1); //eiger frame numbers start at 1, so need to -1
-				else
+				else{
+					cout << " 32 bit eiger could be "<< dec << htonl(*(unsigned int*)((eiger_image_header *)((char*)(wbuf[ithread] + HEADER_SIZE_NUM_TOT_PACKETS)))->fnum) << endl;
+					cout << " 32 bit eiger32 could be "<< dec << htonl(*(unsigned int*)((eiger_image_header32 *)((char*)(wbuf[ithread] + HEADER_SIZE_NUM_TOT_PACKETS)))->fnum) << endl;
 					tempframenum = ((tempframenum / EIGER_32BIT_INITIAL_CONSTANT) + startFrameIndex)-1;//eiger 32 bit mode is a multiple of 17c. +startframeindex for scans
+				}
 			}else if ((myDetectorType == GOTTHARD) && (shortFrame == -1))
 				tempframenum = (((((uint32_t)(*((uint32_t*)(wbuf[ithread] + HEADER_SIZE_NUM_TOT_PACKETS))))+1)& (frameIndexMask)) >> frameIndexOffset);
 			else
@@ -1936,10 +1947,10 @@ int UDPStandardImplementation::startWriting(){
 					currframenum = tempframenum;
 				pthread_mutex_unlock(&progress_mutex);
 			}
-//#ifdef VERYDEBUG
+#ifdef VERYDEBUG
 			if(myDetectorType == EIGER)
 				cout << endl <<ithread << " tempframenum:" << dec << tempframenum << " curframenum:" << currframenum << endl;
-//#endif
+#endif
 
 
 			//without datacompression: write datacall back, or write data, free fifo
@@ -2130,7 +2141,7 @@ int i;
 					//eiger (incomplete frames) - throw away
 					if((myDetectorType == EIGER) && (rc < (bufferSize * numJobsPerThread)) ){
 						if(rc == 266240)
-							cout << ithread << " Start of detector: Received test frame of 266240 bytes." << endl;
+							cprintf(GREEN, "%d Start of detector: Received test frame of 266240 bytes.\n",ithread);
 						cout << ithread << "Discarding incomplete frame" << endl;
 						fifoFree[ithread]->push(buffer[ithread]);
 #ifdef FIFO_DEBUG
@@ -2261,8 +2272,13 @@ void UDPStandardImplementation::stopWriting(int ithread, char* wbuffer[]){
 		//report
 
 		cprintf(GREEN, "Status: Run Finished\n");
-		cprintf(GREEN, "Total Packets Caught:%d\n", totalPacketsCaught);
-		cprintf(GREEN, "Total Frames Caught:%d\n",(totalPacketsCaught/packetsPerFrame));
+		if(!totalPacketsCaught){
+			cprintf(RED, "Total Packets Caught:%d\n", totalPacketsCaught);
+			cprintf(RED, "Total Frames Caught:%d\n",(totalPacketsCaught/packetsPerFrame));
+		}else{
+			cprintf(GREEN, "Total Packets Caught:%d\n", totalPacketsCaught);
+			cprintf(GREEN, "Total Frames Caught:%d\n",(totalPacketsCaught/packetsPerFrame));
+		}
 		//acquisition end
 		if (acquisitionFinishedCallBack)
 			acquisitionFinishedCallBack((totalPacketsCaught/packetsPerFrame), pAcquisitionFinished);

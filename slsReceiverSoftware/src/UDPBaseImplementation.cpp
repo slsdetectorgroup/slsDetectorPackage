@@ -155,6 +155,8 @@ int UDPBaseImplementation::getFramesCaught(){ FILE_LOG(logDEBUG) << __AT__ << " 
 
 int UDPBaseImplementation::getTotalFramesCaught(){ FILE_LOG(logDEBUG) << __AT__ << " starting";return (totalPacketsCaught/packetsPerFrame);}
 
+uint32_t UDPBaseImplementation::getStartAcquisitionIndex(){ FILE_LOG(logDEBUG) << __AT__ << " starting";return startAcquisitionIndex;}
+
 uint32_t UDPBaseImplementation::getStartFrameIndex(){ FILE_LOG(logDEBUG) << __AT__ << " starting";return startFrameIndex;}
 
 uint32_t UDPBaseImplementation::getFrameIndex(){ FILE_LOG(logDEBUG) << __AT__ << " starting";
@@ -642,36 +644,33 @@ void UDPBaseImplementation::setupFifoStructure(){ FILE_LOG(logDEBUG) << __AT__ <
 
 
 /** acquisition functions */
-void UDPBaseImplementation::readFrame(char* c,char** raw, uint32_t &fnum, uint32_t& fstartind){ 
-  FILE_LOG(logDEBUG) << __AT__ << " starting";
-  
-  //point to gui data
-  if (guiData == NULL)
-    guiData = latestData;
-  
-  //copy data and filename
-  strcpy(c,guiFileName);
-  fnum = guiFrameNumber;
-  fstartind = getStartFrameIndex();
-  
-  //could not get gui data
-  if(!guiDataReady){
-    *raw = NULL;
-  }
-  //data ready, set guidata to receive new data
-  else{
-    *raw = guiData;
-    guiData = NULL;
-    
-    pthread_mutex_lock(&dataReadyMutex);
-    guiDataReady = 0;
-    pthread_mutex_unlock(&dataReadyMutex);
-    if((nFrameToGui) && (writerthreads_mask)){
-      /*if(nFrameToGui){*/
-      //release after getting data
-      sem_post(&smp);
-    }
-  }
+void UDPBaseImplementation::readFrame(char* c,char** raw, uint32_t &fnum, uint32_t &startAcquisitionIndex, uint32_t &startFrameIndex){
+	FILE_LOG(logDEBUG) << __AT__ << " called";
+	//point to gui data
+	if (guiData == NULL){
+		guiData = latestData;
+	}
+
+	//copy data and filename
+	strcpy(c,guiFileName);
+	fnum = guiFrameNumber;
+	startAcquisitionIndex = getStartAcquisitionIndex();
+	startFrameIndex = getStartFrameIndex();
+
+
+	//could not get gui data
+	if(!guiDataReady){
+		*raw = NULL;
+	}
+	//data ready, set guidata to receive new data
+	else{
+		*raw = guiData;
+		guiData = NULL;
+		if((nFrameToGui) && (writerthreads_mask)){
+			//release after getting data
+			sem_post(&smp);
+		}
+	}
 }
 
 

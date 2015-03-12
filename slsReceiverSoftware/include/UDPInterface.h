@@ -241,6 +241,11 @@ class UDPInterface {
 	virtual int getFramesCaught() = 0;
 
 	/**
+	 * Returns the frame index at start of entire acquisition (including all scans)
+	 */
+	virtual uint32_t getStartAcquisitionIndex()=0;
+
+	/**
 	 * Returns current Frame Index Caught for an entire  acquisition (including all scans)
 	 */
 	virtual uint32_t getAcquisitionIndex() = 0;
@@ -328,9 +333,10 @@ class UDPInterface {
 	 * @param c pointer to current file name
 	 * @param raw address of pointer, pointing to current frame to send to gui
 	 * @param fnum frame number for eiger as it is not in the packet
-	 * @param fstartind is the start index of the acquisition
+	 * @param startAcquisitionIndex is the start index of the acquisition
+	 * @param startFrameIndex is the start index of the scan
 	 */
-	virtual void readFrame(char* c,char** raw, uint32_t &fnum, uint32_t &fstartind ) = 0;
+	virtual void readFrame(char* c,char** raw, uint32_t &fnum, uint32_t &startAcquisitionIndex, uint32_t &startFrameIndex)=0;
 
 	/** set status to transmitting and
 	 * when fifo is empty later, sets status to run_finished

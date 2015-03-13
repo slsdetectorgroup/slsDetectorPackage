@@ -595,10 +595,10 @@ void qDrawPlot::SetScanArgument(int scanArg){
 	//histogram
 	if(histogram){
 		int iloop = 0;
-		int numSteps = ((histTo-histFrom)/(histSize)) + 1;
+		int numSteps = ((histTo-histFrom)/(histSize)) + 1;cout<<"numSteps:"<<numSteps<<" histFrom:"<<histFrom<<" histTo:"<<histTo<<" histSize:"<<histSize<<endl;
 		histogramSamples.resize(numSteps);
-		startPixel = histFrom -(histSize/2);
-		endPixel = histTo + (histSize/2);
+		startPixel = histFrom -(histSize/2);cout<<"startpixel:"<<startPixel<<endl;
+		endPixel = histTo + (histSize/2);cout<<"endpixel:"<<endPixel<<endl;
 		while(startPixel < endPixel){
 			histogramSamples[iloop].interval.setInterval(startPixel,startPixel+histSize,QwtInterval::ExcludeMaximum);
 			histogramSamples[iloop].value = 0;
@@ -990,7 +990,7 @@ int qDrawPlot::GetData(detectorData *data,int fIndex){
 						//frequency of intensity
 						if(histogramArgument == qDefs::Intensity){
 							//ignore outside limits
-							if ((data->values[i] <  histFrom) || (data->values[i] >= histTo))
+							if ((data->values[i] <  histFrom) || (data->values[i] > histTo))
 								continue;
 							//check for intervals, increment if validates
 							for(int j=0;j<histogramSamples.size();j++){

@@ -968,8 +968,6 @@ void qTabPlot::SetScanArgument(){
 				min = values[0];
 				max = values[numSteps - 1];
 				size = (max - min)/(numSteps - 1);
-				min -= (size/2);
-				max += (size/2);
 			}
 		}
 

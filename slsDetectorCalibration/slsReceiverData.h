@@ -2,6 +2,7 @@
 #define  SLSRECEIVERDATA_H
 
 #include "slsDetectorData.h"
+#include <cstring>
 
 template <class dataType>
 class slsReceiverData : public slsDetectorData<dataType> {

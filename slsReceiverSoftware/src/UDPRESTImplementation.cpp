@@ -110,7 +110,8 @@ void UDPRESTImplementation::initialize_REST(){
 			
 
 			if (code != 0){
-				throw answer;
+				FILE_LOG(logERROR) << __AT__ << " REST state returned: " << answer;
+				throw;
 			}
 			else{
 				isInitialized = true;
@@ -1202,8 +1203,8 @@ int UDPRESTImplementation::startReceiver(char message[]){
 	//std::string request_body =  "{\"settings\": {\"nimages\":1, \"scanid\":999, \"bit_depth\":16}}";
 	FILE_LOG(logDEBUG) << __FILE__ << "::" << " sending this configuration body: " << request_body;
 	code = rest->post_json("state/configure", &answer, request_body);
-	//code = rest->get_json("state", &answer);
-	//FILE_LOG(logDEBUG) << __FILE__ << "::" << " got: " << answer;
+	code = rest->get_json("state", &answer);
+	FILE_LOG(logDEBUG) << __FILE__ << "::" << " got: " << answer;
 
 	//code = rest->post_json("state/open", &answer);
 	//code = rest->get_json("state", &answer);

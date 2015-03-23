@@ -989,43 +989,6 @@ int set_dac(int file_des) {
 
 #ifdef MCB_FUNCS
 
-/* 	switch (ind) { */
-/* 	case V_DAC0 : */
-/* 		idac=VDAC0; */
-/* 		break; */
-/* 	case V_DAC1: */
-/* 		idac=VDAC1; */
-/* 		break; */
-/* 	case V_DAC2: */
-/* 		idac=VDAC2; */
-/* 		break; */
-/* 	case V_DAC3: */
-/* 		idac=VDAC3; */
-/* 		break; */
-/* 	case V_DAC4: */
-/* 		idac=VDAC4; */
-/* 		break; */
-/* 	case V_DAC5: */
-/* 		idac=VDAC5; */
-/* 		break; */
-/* 	case V_DAC6: */
-/* 		idac=VDAC6; */
-/* 		break; */
-/* 	case V_DAC7: */
-/* 		idac=VDAC7; */
-/* 		break; */
-
-/* 	case HV_POT: */
-/* 		idac=HIGH_VOLTAGE; */
-/* 		break; */
-
-/* 	default: */
-/* 		printf("Unknown DAC index %d for Moench\n",ind); */
-/* 		sprintf(mess,"Unknown DAC index %d for Moench\n",ind); */
-/* 		ret=FAIL; */
-/* 	    break; */
-/* 	} */
-
 	if (ret==OK) {
 		if (differentClients==1 && lockStatus==1) {
 			ret=FAIL;
@@ -1041,6 +1004,7 @@ int set_dac(int file_des) {
 		    printf("%d DACu\n", val);
 		  } else if (val>16535)
 		    val=-1;
+		 
 		  
 		  retval=setDac(ind,val);
 /* 			if(idac==HIGH_VOLTAGE) */

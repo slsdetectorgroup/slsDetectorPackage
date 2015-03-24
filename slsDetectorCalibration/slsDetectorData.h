@@ -197,6 +197,32 @@ class slsDetectorData {
     return d^m;
   };
 
+
+  /**
+
+     Returns the value of the selected channel for the given dataset. Virtual function, can be overloaded.
+     \param data pointer to the dataset (including headers etc)
+     \param ix pixel number in the x direction
+     \param iy pixel number in the y direction
+     \param dr dynamic range
+     \returns data for the selected channel, with inversion if required
+
+  */
+  virtual dataType getChannel(char *data, int ix, int iy, int dr) {
+    dataType m=0, d=0;
+    uint64_t* s;
+    if (ix>=0 && ix<nx && iy>=0 && iy<ny && dataMap[iy][ix]>=0 && dataMap[iy][ix]<dataSize) {
+      m=dataMask[iy][ix];
+
+      int k = (((ix * iy + iy) * (dr / 8)) % 8);//which byte (1 to 8)
+      int index = (8 - k) * 8;
+      s = be64toh(((uint64_t)(*(((uint64_t*)data)+(dataMap[iy][ix]-index)))));
+
+      d=*((dataType*)(s+(k*8)));
+    }
+    return d^m;
+  };
+
   /**
 
      Returns the value of the selected channel for the given dataset as double.
@@ -207,6 +233,18 @@ class slsDetectorData {
 
   */
   virtual double getValue(char *data, int ix, int iy=0) {return (double)getChannel(data, ix, iy);};
+
+  /**
+
+     Returns the value of the selected channel for the given dataset as double.
+     \param data pointer to the dataset (including headers etc)
+     \param ix pixel number in the x direction
+     \param iy pixel number in the y direction
+     \param dr dynamic range
+     \returns data for the selected channel, with inversion if required as double
+
+  */
+  virtual double getValue(char *data, int ix, int iy, int dr) {return (double)getChannel(data, ix, iy, dr);};
 
    /**
 

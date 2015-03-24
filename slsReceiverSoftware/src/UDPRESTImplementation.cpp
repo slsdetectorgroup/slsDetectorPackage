@@ -200,6 +200,11 @@ int UDPRESTImplementation::getTotalFramesCaught(){
 	return (totalPacketsCaught/packetsPerFrame);
 }
 
+uint32_t UDPRESTImplementation::getStartAcquisitionIndex(){
+	FILE_LOG(logDEBUG) << __AT__ << " called";
+	return startAcquisitionIndex;
+}
+
 uint32_t UDPRESTImplementation::getStartFrameIndex(){
 	FILE_LOG(logDEBUG) << __AT__ << " called";
 	return startFrameIndex;
@@ -590,16 +595,19 @@ void UDPRESTImplementation::setupFifoStructure(){
 
 
 /** acquisition functions */
-void UDPRESTImplementation::readFrame(char* c,char** raw, uint32_t &fnum, uint32_t &fstartind){
+void UDPRESTImplementation::readFrame(char* c,char** raw, uint32_t &fnum, uint32_t &startAcquisitionIndex, uint32_t &startFrameIndex){
 	FILE_LOG(logDEBUG) << __AT__ << " called";
 	//point to gui data
-	if (guiData == NULL)
+	if (guiData == NULL){
 		guiData = latestData;
+	}
 
 	//copy data and filename
 	strcpy(c,guiFileName);
 	fnum = guiFrameNumber;
-	fstartind = getStartFrameIndex();
+	startAcquisitionIndex = getStartAcquisitionIndex();
+	startFrameIndex = getStartFrameIndex();
+
 
 	//could not get gui data
 	if(!guiDataReady){
@@ -609,12 +617,7 @@ void UDPRESTImplementation::readFrame(char* c,char** raw, uint32_t &fnum, uint32
 	else{
 		*raw = guiData;
 		guiData = NULL;
-
-		pthread_mutex_lock(&dataReadyMutex);
-		guiDataReady = 0;
-		pthread_mutex_unlock(&dataReadyMutex);
 		if((nFrameToGui) && (writerthreads_mask)){
-		/*if(nFrameToGui){*/
 			//release after getting data
 			sem_post(&smp);
 		}

@@ -68,6 +68,11 @@ class UDPStandardImplementation: private virtual slsReceiverDefs, public UDPBase
 
 
 	//Frame indices and numbers caught
+    /**
+     * Returns the frame index at start of entire acquisition (including all scans)
+     */
+    //uint32_t getStartAcquisitionIndex();
+
 	/**
 	 * Returns current Frame Index Caught for an entire  acquisition (including all scans)
 	 */
@@ -290,8 +295,11 @@ class UDPStandardImplementation: private virtual slsReceiverDefs, public UDPBase
 	 * @param c pointer to current file name
 	 * @param raw address of pointer, pointing to current frame to send to gui
 	 * @param fnum frame number for eiger as it is not in the packet
+	 * @param startAcquisitionIndex is the start index of the acquisition
+	 * @param startFrameIndex is the start index of the scan
 	 */
-	void readFrame(char* c,char** raw, uint32_t &fnum, uint32_t &fstartind);
+	void readFrame(char* c,char** raw, uint32_t &fnum, uint32_t &startAcquisitionIndex, uint32_t &startFrameIndex);
+
 	/**
 	 * Closes all files
 	 * @param ithr thread index

@@ -601,6 +601,7 @@ char *readFrame(int *ret, char *mess){
 			printf("error in waiting for finished flag\n");
 		printf("Acquisition finished\n");
 		usleep(0);
+		//usleep(1000000);
 		printf("*****Done Waiting...\n");
 	//}
 	*ret = (int)FINISHED;

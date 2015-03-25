@@ -87,19 +87,21 @@ class slsDetectorData {
   void setDataMap(int **dMap=NULL) {
 
 
-    if (dMap==NULL) {
-      for (int iy=0; iy<ny; iy++)
-	 for (int ix=0; ix<nx; ix++)
-	   dataMap[iy][ix]=(iy*nx+ix)*sizeof(dataType);
-    } else {
-      cout << "set dmap "<< dataMap << " " << dMap << endl;
-      for (int iy=0; iy<ny; iy++)
-	for (int ix=0; ix<nx; ix++) {
-	   dataMap[iy][ix]=dMap[iy][ix];
-	   cout << ix << " " << iy << endl;
-	}
-    }
-    
+	  if (dMap==NULL) {
+		  for (int iy=0; iy<ny; iy++)
+			  for (int ix=0; ix<nx; ix++)
+				  dataMap[iy][ix]=(iy*nx+ix)*sizeof(dataType);
+	  } else {
+		  cout << "set dmap "<< dataMap << " " << dMap << endl;
+		  for (int iy=0; iy<ny; iy++){
+			 // cout << iy << endl;
+			  for (int ix=0; ix<nx; ix++) {
+				  dataMap[iy][ix]=dMap[iy][ix];
+				 // cout << ix << " " << iy << endl;
+			  }
+		  }
+	  }
+	  cout << "nx:" <<nx << " ny:" << ny << endl;
   };
 
 
@@ -210,17 +212,33 @@ class slsDetectorData {
   */
   virtual dataType getChannel(char *data, int ix, int iy, int dr) {
     dataType m=0, d=0;
+    uint8_t d1=0;
+    uint8_t d2=0;
+    uint16_t d3=0;
+    uint32_t d4=0;
+    uint64_t t;
     uint64_t* s;
+    s= &t;
     if (ix>=0 && ix<nx && iy>=0 && iy<ny && dataMap[iy][ix]>=0 && dataMap[iy][ix]<dataSize) {
       m=dataMask[iy][ix];
-
+/*
       int k = (((ix * iy + iy) * (dr / 8)) % 8);//which byte (1 to 8)
       int index = (8 - k) * 8;
-      s = be64toh(((uint64_t)(*(((uint64_t*)data)+(dataMap[iy][ix]-index)))));
+      t = be64toh(((uint64_t)(*(((uint64_t*)data)+(dataMap[iy][ix]-index)))));
 
       d=*((dataType*)(s+(k*8)));
+      */
+      d=*((dataType*)(data+dataMap[iy][ix]));
     }
-    return d^m;
+    if(dr == 4)
+    	return d^0xf0;
+    else if(dr == 8)
+    	return d^d2;
+    else if(dr == 16)
+       	return d^d3;
+    else
+       	return d^d4;
+    //return d^m;
   };
 
   /**

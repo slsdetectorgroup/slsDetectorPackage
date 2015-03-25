@@ -19,8 +19,8 @@ public:
 	 */
 
 
-	eigerHalfModuleData(int np, int dr, int t, int bsize, int dsize, double c=0): slsReceiverData<uint32_t>(xpixels, ypixels, nPackets, bsize),
-	xtalk(c), nPackets(np), dynamicRange(dr), bufferSize(bsize), dataSize(dsize){
+	eigerHalfModuleData(int dr, int np, int bsize, int dsize, double c=0): slsReceiverData<uint32_t>(xpixels, ypixels, np, bsize),
+	xtalk(c), dynamicRange(dr), bufferSize(bsize), dataSize(dsize){
 
 
 		int **dMap;
@@ -146,7 +146,6 @@ private:
 	const static int ypixels = 256;
 	const int bufferSize;
 	const int dataSize;
-	const int nPackets;
 	const int dynamicRange;
 
 

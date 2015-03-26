@@ -1980,7 +1980,9 @@ u_int16_t* fifo_read_event()
       }
     }
     t = bus_r(LOOK_AT_ME_REG);
+#ifdef VERBOSE
     printf(".");
+#endif
    }
    //  printf("%08x %08x\n", runState(), bus_r(LOOK_AT_ME_REG));
 /*   dma_memcpy(now_ptr,values ,dataBytes); */
@@ -1995,7 +1997,9 @@ u_int16_t* fifo_read_event()
 /*      usleep(10); */
      *dum=bus_r16(FIFO_DATA_REG);
    }
+#ifdef VERBOSE
   printf("*");
+#endif
   return ram_values;
 }
 
@@ -2014,7 +2018,11 @@ u_int16_t* fifo_read_frame()
   }
   //  printf("%x %d\n",dum, ns);
   if (ns==0) return NULL;
+#ifdef VERBOSE
   printf("+\n");
+#else
+  printf("+");
+#endif
   return ram_values;
 }
 
@@ -2286,7 +2294,7 @@ int prepareADC(){
 
      //   writeADC(0x16,0x4);//output clock phase
 
-	     writeADC(0x18,0x0);// vref 1V
+	  //  writeADC(0x18,0x0);// vref 1V
 	    
      writeADC(0x14,0x40);//lvds reduced range -- offset binary
 
@@ -3073,6 +3081,10 @@ void initDac(int dacnum) {
 
 int setDacRegister(int dacnum,int dacvalue) {
     int val;
+    if (dacvalue==-100)
+      dacvalue=0xffff;
+
+
   if (dacnum%2) {
     val=((dacvalue & 0xffff)<<16) | getDacRegister(dacnum-1);
   }  else {
@@ -3123,7 +3135,46 @@ int setDac(int dacnum,int dacvalue){
 
     printf("data bit=%d, clkbit=%d, csbit=%d",ddx,cdx,csdx);
 
-    codata=((((0x2)<<4)+((dacch)&0xf))<<16)+((dacvalue<<4)&0xfff0);  
+    //modified to power down single channels
+
+    //   codata=((((0x2)<<4)+((dacch)&0xf))<<16)+((dacvalue<<4)&0xfff0);  
+    codata=((((0x3)<<4)+((dacch)&0xf))<<16)+((dacvalue<<4)&0xfff0);  
+      valw=0xffff; bus_w(offw,(valw)); // start point
+      valw=((valw&(~(0x1<<csdx))));bus_w(offw,valw); //chip sel bar down
+      for (i=1;i<25;i++) {
+
+	valw=(valw&(~(0x1<<cdx)));bus_w(offw,valw); //cldwn	
+	valw=((valw&(~(0x1<<ddx)))+(((codata>>(24-i))&0x1)<<ddx));bus_w(offw,valw);//write data (i)
+	//	printf("%d ", ((codata>>(24-i))&0x1));
+        
+
+	valw=((valw&(~(0x1<<cdx)))+(0x1<<cdx));bus_w(offw,valw);//clkup
+      }
+      // printf("\n ");
+     
+	
+       	valw=((valw&(~(0x1<<csdx)))+(0x1<<csdx));bus_w(offw,valw); //csup
+
+	valw=(valw&(~(0x1<<cdx)));bus_w(offw,valw); //cldwn
+
+
+
+
+      valw=0xffff; bus_w(offw,(valw)); // stop point =start point of course */
+     
+    
+    printf("Writing %d in DAC(0-15) %d \n",dacvalue,dacnum);
+    setDacRegister(dacnum,dacvalue); 
+  } else if (dacvalue==-100) {
+
+    printf("switching off dac %d\n", dacnum);
+    
+    csdx=dacnum/8+2; 
+
+    dacch=dacnum%8;
+    ddx=0; cdx=1;
+
+    codata=((((0x4)<<4)+((dacch)&0xf))<<16)+((dacvalue<<4)&0xfff0);  
   
       valw=0xffff; bus_w(offw,(valw)); // start point
       valw=((valw&(~(0x1<<csdx))));bus_w(offw,valw); //chip sel bar down
@@ -3151,7 +3202,12 @@ int setDac(int dacnum,int dacvalue){
     
     printf("Writing %d in DAC(0-15) %d \n",dacvalue,dacnum);
     setDacRegister(dacnum,dacvalue); 
+
   }
+
+
+
+
 
   return getDacRegister(dacnum); 
 }

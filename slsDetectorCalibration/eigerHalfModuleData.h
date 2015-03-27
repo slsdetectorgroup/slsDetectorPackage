@@ -25,7 +25,6 @@ public:
 
 		int **dMap;
 		uint32_t **dMask;
-		int ix, iy;
 
 		dMap=new int*[ypixels];
 		dMask=new uint32_t*[ypixels];
@@ -70,9 +69,9 @@ public:
 
 
 		//Mask
-		for(ix=0; ix<ypixels; ++ix)
-			for(iy=0; iy<xpixels; ++iy)
-				dMask[ix][iy] = 0x0;
+		for(int ir=0; ir<ypixels; ++ir)
+			for(int ic=0; ic<xpixels; ++ic)
+				dMask[ir][ic] = 0x0;
 
 		setDataMap(dMap);
 		setDataMask(dMask);

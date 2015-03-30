@@ -499,7 +499,8 @@ protected:
 	typedef struct
 	{
 		unsigned char num1[4];
-		unsigned char num2[4];
+		unsigned char num2[3];
+		unsigned char num3[1];
 	} eiger_packet_header;
 
 	/** max number of listening threads */

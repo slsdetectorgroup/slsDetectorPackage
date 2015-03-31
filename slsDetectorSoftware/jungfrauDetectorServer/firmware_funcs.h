@@ -29,7 +29,8 @@ u_int32_t bus_w(u_int32_t offset, u_int32_t data);
 u_int32_t bus_r(u_int32_t offset);
 
 int setPhaseShiftOnce();
-int phaseStep(int st, int ic);
+int phaseStep(int st);
+int getPhase();
 int cleanFifo();
 int setDAQRegister();
 
@@ -134,7 +135,7 @@ u_int32_t fifo_full(void);
 
 
 
-u_int16_t* fifo_read_event();
+u_int16_t* fifo_read_event(int ns);
 u_int16_t* fifo_read_frame();
 u_int32_t* decode_data(int* datain);
 //u_int32_t move_data(u_int64_t* datain, u_int64_t* dataout);

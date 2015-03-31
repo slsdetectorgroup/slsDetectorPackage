@@ -1,7 +1,7 @@
 //#define TESTADC
 #define TESTADC1
 
-
+//#define TIMEDBG 
 #include "server_defs.h"
 #include "firmware_funcs.h"
 #include "mcb_funcs.h"
@@ -20,6 +20,10 @@
 #include <sys/stat.h>
 
 #include <stdlib.h>
+#include <sys/time.h>
+
+struct timeval tss,tse,tsss; //for timing
+
 
 //for memory mapping
 u_int64_t CSP0BASE;
@@ -375,7 +379,7 @@ u_int32_t setPllReconfigReg(u_int32_t reg, u_int32_t val, int trig) {
 
 
 
- printf("*********** pll busy: %08x\n",bus_r(STATUS_REG)&PLL_RECONFIG_BUSY);
+  // printf("*********** pll busy: %08x\n",bus_r(STATUS_REG)&PLL_RECONFIG_BUSY);
 
   bus_w(PLL_PARAM_REG,val); 
   //  printf("param: %x\n",val);
@@ -396,7 +400,7 @@ u_int32_t setPllReconfigReg(u_int32_t reg, u_int32_t val, int trig) {
   //  printf("wrote: %08x\n",vv); 
   bus_w(PLL_CNTRL_REG,vv); 
   usleep(10000);
- printf("+++++++++ pll busy: %08x\n",bus_r(STATUS_REG)&PLL_RECONFIG_BUSY);
+  // printf("+++++++++ pll busy: %08x\n",bus_r(STATUS_REG)&PLL_RECONFIG_BUSY);
 
   //  bus_w(PLL_CNTRL_REG,(1<<PLL_CNTR_READ_BIT)|(reg<<PLL_CNTR_ADDR_OFF));
   // usleep(1000);
@@ -418,8 +422,8 @@ u_int32_t getPllReconfigReg(u_int32_t reg, int trig) {
   u_int32_t val=reg<<PLL_CNTR_ADDR_OFF;
   u_int32_t vv;
 
-  printf("cntrlreg: %08x\n",PLL_CNTRL_REG);
-  printf("wrote: %08x\n",val);
+  //  printf("cntrlreg: %08x\n",PLL_CNTRL_REG);
+  // printf("wrote: %08x\n",val);
   bus_w(PLL_CNTRL_REG,val);
   //  printf("read: %08x\n",bus_r(PLL_CNTRL_REG));
   usleep(100);
@@ -441,7 +445,7 @@ u_int32_t getPllReconfigReg(u_int32_t reg, int trig) {
   usleep(100);
 
   val=0;
-  printf("wrote: %08x\n",val);
+  // printf("wrote: %08x\n",val);
   bus_w(PLL_CNTRL_REG,val);
 
   while(bus_r(STATUS_REG)&PLL_RECONFIG_BUSY) {
@@ -489,29 +493,61 @@ void configurePll(int i) {
 
   val= (i<<18)| (odd<<17) | l | (h<<8); 
 
-  printf("Counter %d, val: %08x\n", i,  val);  setPllReconfigReg(PLL_C_COUNTER_REG, val,0);
+  printf("Counter %d, val: %08x\n", i,  val);  
+  setPllReconfigReg(PLL_C_COUNTER_REG, val,0);
   //  usleep(20);
+  //change sync at the same time as 
+  if (i>0) {
+    val= (2<<18)| (odd<<17) | l | (h<<8); 
+
+    printf("Counter %d, val: %08x\n", i,  val);  
+    setPllReconfigReg(PLL_C_COUNTER_REG, val,0);
+    
+  }
 
   } else {
   //  if (mode==1) {
     //  } else {
-    printf("phase in %d\n",clkPhase[0]);
+    printf("phase in %d\n",clkPhase[1]);
 
-  if (clkPhase[0]>0) {
+  if (clkPhase[1]>0) {
     inv=0;
-    phase=clkPhase[0];
+    phase=clkPhase[1];
   }  else {
     inv=1;
-    phase=-1*clkPhase[0];
+    phase=-1*clkPhase[1];
   }
 
   printf("phase out %d %08x\n",phase,phase);
-  val=phase | (inv<<16);;// |  (inv<<21);
+  if (inv) {
+    val=phase | (1<<16);// |  (inv<<21);
+  printf("**************** phase word %08x\n",val);
 
-  printf("Phase, val: %08x\n", val);   setPllReconfigReg(PLL_PHASE_SHIFT_REG,val,0); //shifts counter 0
+  //  printf("Phase, val: %08x\n", val);   
+  setPllReconfigReg(PLL_PHASE_SHIFT_REG,val,0); //shifts counter 0
+  } else {
+
+
+    val=phase ;// |  (inv<<21);
+  printf("**************** phase word %08x\n",val);
+
+  //  printf("Phase, val: %08x\n", val);   
+  setPllReconfigReg(PLL_PHASE_SHIFT_REG,val,0); //shifts counter 0
+    val=phase | (2<<16);// |  (inv<<21);
+ printf("Start reconfig\n");  setPllReconfigReg(PLL_START_REG, 1,0);
+
+ // bus_w(PLL_CNTRL_REG, 0);
+ printf("Status register\n"); getPllReconfigReg(PLL_STATUS_REG,0);
+  // sleep(1);
+  
+  printf("**************** phase word %08x\n",val);
+
+  //  printf("Phase, val: %08x\n", val);   
+  setPllReconfigReg(PLL_PHASE_SHIFT_REG,val,0); //shifts counter 0
+  }
  
 
-   }
+  }
 
  printf("Start reconfig\n");  setPllReconfigReg(PLL_START_REG, 1,0);
 
@@ -521,14 +557,14 @@ void configurePll(int i) {
   
   //  printf("PLL mode\n");   setPllReconfigReg(PLL_MODE_REG,0,0);
   usleep(10000);
-/*   if (mode!=1) { */
- /*     printf("reset pll\n"); */
-/*      bus_w(PLL_CNTRL_REG,((1<<PLL_CNTR_PLL_RESET_BIT))); //reset PLL  */
-/*      usleep(100); */
-/*      bus_w(PLL_CNTRL_REG, 0);  */
+  if (i<2) { 
+     printf("reset pll\n"); 
+     bus_w(PLL_CNTRL_REG,((1<<PLL_CNTR_PLL_RESET_BIT))); //reset PLL
+     usleep(100);
+     bus_w(PLL_CNTRL_REG, 0);
     
     
-/*   } */
+  } 
 }
 
 
@@ -578,44 +614,28 @@ u_int32_t setClockDivider(int d, int ic) {
 }
 
 
-int phaseStep(int st, int ic){
-  
-  u_int32_t addr, val=(  (1<<PLL_CNTR_UPDN_BIT)| (1<<PLL_CNTR_CNTSEL_OFF) | (1<< PLL_CNTR_PHASE_EN_BIT));
-/*   int ic=0  is run clk; ic=1 is adc clk  */
-
-/*   if (st>0) */
-/*     ic=1; */
-/*   else { */
-/*     ic=0; */
-/*     st*=-1; */
-/*   } */
+int phaseStep(int st){
   
   int i;
-  if (st>65535 || st<-65535)
-    return -1;
+  if (st>65535 || st<-65535) 
+    return clkPhase[0];
 
-  printf("ic=%d; phase %d\n", ic, st);
+  printf("phase %d\n",  st);
 
-  
-  if (ic==1)
-    clkPhase[0]=-st;
-  else if (ic==0)
-    clkPhase[0]=st;
-    
- 
- 
- /*  printf("Changin phase %d\n",st); */
-/*   for (i=0; i<st; i++) { */
-/*      bus_w(PLL_CNTRL_REG,0); */
-/*     bus_w(PLL_CNTRL_REG,val); */
-    
-/*   } */
-/*   sleep(1); */
-  //  bus_w(PLL_CNTRL_REG,0);
+  clkPhase[1]=st-clkPhase[0];
+
+
   configurePll(2);
+  clkPhase[0]=st;
+ 
   return clkPhase[0];
 }
 
+
+int getPhase() {
+    return clkPhase[0];
+    
+};
 
 
 u_int32_t getClockDivider(int ic) {
@@ -1959,44 +1979,62 @@ u_int32_t  fifo_full(void)
 }
 
 
-u_int16_t* fifo_read_event()
+u_int16_t* fifo_read_event(int ns)
 {
   int i=0;
 
-  u_int16_t *dum;
+
+/* #ifdef TIMEDBG  */
+/*   gettimeofday(&tse,NULL); */
+/* #endif    */
+  if (ns==0) {
   volatile u_int32_t t = bus_r16(LOOK_AT_ME_REG);
 
-  bus_w(DUMMY_REG,0);
-  while(t!=0xffffffff) {
-    if (runBusy()==0) {
-      t = bus_r(LOOK_AT_ME_REG);
-      if (t!=0xffffffff) {
+    bus_w(DUMMY_REG,0);
+    while(t!=0xffffffff) {
+      if (runBusy()==0) {
+	t = bus_r(LOOK_AT_ME_REG);
+	if (t!=0xffffffff) {
 	printf("no frame found and acquisition finished - exiting\n");
 	printf("%08x %08x\n", runState(), bus_r(LOOK_AT_ME_REG));
 	return NULL;
-      } else { 
-	//	printf("status idle, look at me %x status %x\n", bus_r(LOOK_AT_ME_REG),runState()); 
-	break; 
+	} else { 
+	  //	printf("status idle, look at me %x status %x\n", bus_r(LOOK_AT_ME_REG),runState()); 
+	  break; 
+	}
       }
-    }
-    t = bus_r(LOOK_AT_ME_REG);
+      t = bus_r(LOOK_AT_ME_REG);
 #ifdef VERBOSE
-    printf(".");
+      printf(".");
 #endif
-   }
+    }
+/* #ifdef TIMEDBG  */
+/*     //    tsss=tss; */
+/*     gettimeofday(&tss,NULL); */
+/*     printf("look for data  = %ld usec\n", (tss.tv_usec) - (tse.tv_usec));  */
+   
+/*   #endif  */
+
+  }
    //  printf("%08x %08x\n", runState(), bus_r(LOOK_AT_ME_REG));
 /*   dma_memcpy(now_ptr,values ,dataBytes); */
 /* #else */
+  
+  bus_w16(DUMMY_REG,1<<8); // read strobe to all fifos
+  bus_w16(DUMMY_REG,0);
    for (i=0; i<32; i++) { 
-     dum=((u_int16_t*)(now_ptr))+i;
-     bus_w(DUMMY_REG,i<<1);
-     // usleep(10);
-     bus_w(DUMMY_REG,(i<<1) | 1);
-     //   usleep(10);
-      bus_w(DUMMY_REG,i<<1); 
-/*      usleep(10); */
-     *dum=bus_r16(FIFO_DATA_REG);
+     bus_w16(DUMMY_REG,i);
+     //    dum=((u_int16_t*)(now_ptr))+i;
+     // *dum=bus_r16(FIFO_DATA_REG);
+     //dum=;
+      *(((u_int16_t*)(now_ptr))+i)=bus_r16(FIFO_DATA_REG);
    }
+/* #ifdef TIMEDBG  */
+  
+/*   gettimeofday(&tss,NULL); */
+/*   printf("read data loop  = %ld usec\n",(tss.tv_usec) - (tse.tv_usec));  */
+   
+/* #endif  */
 #ifdef VERBOSE
   printf("*");
 #endif
@@ -2007,23 +2045,31 @@ u_int16_t* fifo_read_event()
 
 u_int16_t* fifo_read_frame()
 {
-  u_int16_t *dum;
+#ifdef TIMEDBG 
+  gettimeofday(&tsss,NULL);
+#endif   
+
+  // u_int16_t *dum;
   int ns=0;
   now_ptr=(char*)ram_values;
-  while(ns<nSamples) {
-    dum=fifo_read_event();
-    if (dum==NULL) break;
-    now_ptr+=dataBytes;
-    ns++;
+  while(ns<nSamples && fifo_read_event(ns)) {
+      now_ptr+=dataBytes;
+      ns++;
   }
+#ifdef TIMEDBG 
+  // usleep(10);
+  gettimeofday(&tss,NULL);
+  printf("total read data loop  = %ld usec\n",(tss.tv_usec) - (tsss.tv_usec)); 
+   
+#endif 
   //  printf("%x %d\n",dum, ns);
-  if (ns==0) return NULL;
+  if (ns) return ram_values;
 #ifdef VERBOSE
   printf("+\n");
 #else
   printf("+");
 #endif
-  return ram_values;
+  return NULL;
 }
 
 
@@ -2240,37 +2286,37 @@ int writeADC(int addr, int val) {
    printf("***** ADC SPI WRITE TO REGISTER %04X value %04X\n",addr,val);
 	// start point
    valw=0xff;
-   bus_w(ADC_WRITE_REG,(valw));
+   bus_w16(ADC_WRITE_REG,(valw));
    
    //chip sel bar down
    valw=((0xffffffff&(~csmask)));
-   bus_w(ADC_WRITE_REG,valw);
+   bus_w16(ADC_WRITE_REG,valw);
 
    for (i=0;i<24;i++) {
      //cldwn
      valw=valw&(~(0x1<<cdx));
-     bus_w(ADC_WRITE_REG,valw);
-     usleep(0);
+     bus_w16(ADC_WRITE_REG,valw);
+     // usleep(0);
 
      //write data (i)
      valw=(valw&(~(0x1<<ddx)))+(((codata>>(23-i))&0x1)<<ddx);
-     bus_w(ADC_WRITE_REG,valw);
-     usleep(0);
+     bus_w16(ADC_WRITE_REG,valw);
+     //  usleep(0);
 
      //clkup
      valw=valw+(0x1<<cdx);
-     bus_w(ADC_WRITE_REG,valw);
-     usleep(0);
+     bus_w16(ADC_WRITE_REG,valw);
+     // usleep(0);
    }
    
 		 // stop point =start point
    valw=valw&(~(0x1<<cdx));
-   usleep(0);
+   // usleep(0);
    valw=0xff;
-   bus_w(ADC_WRITE_REG,(valw));
+   bus_w16(ADC_WRITE_REG,(valw));
    
    //usleep in between
-   usleep(50000);
+   //   usleep(50000);
 
    return OK;
 }
@@ -2759,7 +2805,7 @@ int calibratePedestal(int frames){
 
   while(dataret==OK){
     //got data
-    if (fifo_read_event()) {
+    if (fifo_read_event(0)) {
       dataret=OK;
       //sendDataOnly(file_des,&dataret,sizeof(dataret));
       //sendDataOnly(file_des,dataretval,dataBytes);
@@ -3042,6 +3088,8 @@ void initDac(int dacnum) {
  
     ddx=0; cdx=1;
     csdx=dacnum/8+2; 
+
+
     printf("data bit=%d, clkbit=%d, csbit=%d",ddx,cdx,csdx);
     codata=((((0x6)<<4)+((0xf))<<16)+((0x0<<4)&0xfff0));  
   

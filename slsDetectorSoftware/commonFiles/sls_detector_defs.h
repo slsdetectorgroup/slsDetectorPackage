@@ -341,7 +341,8 @@ enum dacIndex {
   E_Vcp,		/**< eiger */
   E_Vcn,		/**< eiger */
   E_Vis,		/**< eiger */
-  IO_DELAY		/**< eiger io delay */
+  IO_DELAY,		/**< eiger io delay */
+  ADC_VPP		/**< adc vpp for jctb */
 };
 
 /**

@@ -699,6 +699,12 @@ slsDetectorCommand::slsDetectorCommand(slsDetectorUtils *det)  {
   i++;
 
 
+
+  descrToFuncMap[i].m_pFuncName="adcvpp"; //
+  descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdDAC;
+  i++;
+
+
   /* r/w timers */
 
   descrToFuncMap[i].m_pFuncName="temp_adc"; //
@@ -897,6 +903,14 @@ slsDetectorCommand::slsDetectorCommand(slsDetectorUtils *det)  {
 
   /* pattern generator */
 
+ 
+  descrToFuncMap[i].m_pFuncName="adcinvert"; //
+  descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdPattern;
+  i++;
+ 
+  descrToFuncMap[i].m_pFuncName="adcdisable"; //
+  descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdPattern;
+  i++;
  
   descrToFuncMap[i].m_pFuncName="pattern"; //
   descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdPattern;
@@ -3383,6 +3397,8 @@ string slsDetectorCommand::cmdDAC(int narg, char *args[], int action) {
     printf("chiptestboard!\n");
     dac=(dacIndex)idac;
   }
+  else if (cmd=="adcvpp")
+    dac=ADC_VPP;
   else if (cmd=="vthreshold")
     dac=THRESHOLD;
   else if (cmd=="vcalibration")
@@ -3942,15 +3958,17 @@ string slsDetectorCommand::cmdSpeed(int narg, char *args[], int action) {
     index=TOT_CLOCK_DIVIDER;
   else if (cmd=="totdutycycle")
     index=TOT_DUTY_CYCLE;
-  else if (cmd=="phasestep")
+  else if (cmd=="phasestep") {
     index=PHASE_SHIFT;
-  else if (cmd=="oversampling")
+    t=100000;
+  }  else if (cmd=="oversampling")
     index=OVERSAMPLING;
   else if (cmd=="adcclk")
     index=ADC_CLOCK;
-  else if (cmd=="adcphase")
+  else if (cmd=="adcphase") {
     index=ADC_PHASE;
-  else if (cmd=="adcpipeline")
+    t=100000;
+  }  else if (cmd=="adcpipeline")
     index=ADC_PIPELINE;
   else
     return string("could not decode speed variable ")+cmd;
@@ -3961,6 +3979,7 @@ string slsDetectorCommand::cmdSpeed(int narg, char *args[], int action) {
       ;
     else
       return string("cannot scan speed value ")+string(args[1]);
+
   }
   
   myDet->setOnline(ONLINE_FLAG);
@@ -4335,6 +4354,9 @@ string slsDetectorCommand::helpPattern(int narg, char *args[], int action) {
 	os << "patwaittime0 nclk \t sets wait 0 waiting time in clock number " << std::endl;
 	os << "patwaittime1 nclk \t sets wait 1 waiting time in clock number " << std::endl;
 	os << "patwaittime2 nclk \t sets wait 2 waiting time in clock number " << std::endl;
+	os << "adcinvert mask\t  sets the adcinversion mask (hex)" << std::endl;
+	os << "adcdisable mask\t  sets the adcdisable mask (hex)" << std::endl;
+
   }	
   if (action==GET_ACTION || action==HELP_ACTION){
     os << "pattern \t cannot get" << std::endl;
@@ -4354,6 +4376,9 @@ string slsDetectorCommand::helpPattern(int narg, char *args[], int action) {
 	os << "patwaittime0 \t  returns the wait 0 waiting time in clock number " << std::endl;
 	os << "patwaittime1 \t  returns the wait 1 waiting time in clock number " << std::endl;
 	os << "patwaittime2 \t  returns the wait 2 waiting time in clock number " << std::endl;
+	os << "adcinvert \t  returns the adcinversion mask " << std::endl;
+
+	os << "adcdisable \t  returns the adcdisable mask " << std::endl;
 
   }
   return os.str();
@@ -4757,7 +4782,42 @@ string slsDetectorCommand::cmdPattern(int narg, char *args[], int action) {
     
     os <<  myDet->setCTBPatWaitTime(2,-1); 
 
+  }   else if  (cmd=="adcinvert") {
+   if (action==PUT_ACTION) {
+     
+      if (sscanf(args[1],"%x",&addr))
+      ;
+    else
+      return string("Could not scan adcinvert reg ")+string(args[1]);
+
+    
+      myDet->writeRegister(67,addr);
+    }
+
+
+    
+   os << hex << myDet->readRegister(67) << dec; 
+
+  } else if  (cmd=="adcdisable") {
+   if (action==PUT_ACTION) {
+     
+      if (sscanf(args[1],"%x",&addr))
+      ;
+    else
+      return string("Could not scan adcdisable reg ")+string(args[1]);
+
+    
+      myDet->writeRegister(94,addr);
+    }
+
+
+    
+   os << hex << myDet->readRegister(94) << dec; 
+
   } 
+
+
+
 else  return helpPattern(narg, args, action);
   
 

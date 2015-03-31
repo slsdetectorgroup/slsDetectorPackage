@@ -1985,7 +1985,7 @@ int testExtPulse(int imod) {
   //startStateMachine();
   startReadOut();
   usleep(100);
-  val1=(int*)(decode_data((int*)(fifo_read_event())));
+  val1=(int*)(decode_data((int*)(fifo_read_event(0))));
   // val1=fifo_read_event();
   //imod=0;
   //for (imod=0; imod<nModX; imod++) {
@@ -2054,7 +2054,7 @@ int testExtPulseMux(int imod, int ow) {
 
   startReadOut();
   usleep(100);
-  v1=(int*)(fifo_read_event());
+  v1=(int*)(fifo_read_event(0));
   if (v1)
     values=(int*)(decode_data(v1));
   else {
@@ -2129,7 +2129,7 @@ int testDataInOutMux(int imod, int ow, int num) {
   printf("mux %d\n",ow);
   startReadOut();
   usleep(100);  
-  v1=(int*)(fifo_read_event());
+  v1=(int*)(fifo_read_event(0));
   if (v1)
     values=(int*)(decode_data(v1));
   else {

@@ -54,6 +54,8 @@ int digitalTestBit = 0;
 extern int withGotthard;
 
 
+int adcvpp=0x4;
+
 int init_detector(int b, int checkType) {
   
   int i;
@@ -995,22 +997,36 @@ int set_dac(int file_des) {
 			sprintf(mess,"Detector locked by %s\n",lastClientIP);
 		} else{
 		  
-		  if (mV) {
-		    if (val>2500)
-		      val=-1;
+		  if (ind<16) {
+
+		    if (mV) {
+		      if (val>2500)
+			val=-1;
 		    printf("%d mV is ",val);
 		    if (val>0)
-		      val=16535*val/2500;
+		      val=4095*val/2500;
 		    printf("%d DACu\n", val);
-		  } else if (val>16535)
-		    val=-1;
-		 
-		  
+		    } else if (val>4095)
+		      val=-1;
+		    
+		    
 		  retval=setDac(ind,val);
-/* 			if(idac==HIGH_VOLTAGE) */
-/* 				retval=initHighVoltageByModule(val,imod); */
-/* 			else */
-/* 				retval=initDACbyIndexDACU(idac,val,imod); */
+		  /* 			if(idac==HIGH_VOLTAGE) */
+		  /* 				retval=initHighVoltageByModule(val,imod); */
+		  /* 			else */
+		  /* 				retval=initDACbyIndexDACU(idac,val,imod); */
+		  }
+		  else if (ind==ADC_VPP) {
+		    printf("Setting ADC VPP to %d\n",val);
+		    if (val>4 || val<0)
+		      printf("Cannot set ADC VPP to %d\n",val);
+		    else {
+		      writeADC(0x18,val);
+		      adcvpp=val;
+		    }
+		    retval=adcvpp;;
+
+		  }
 		}
 	}
 	if(ret==OK){
@@ -1024,8 +1040,8 @@ int set_dac(int file_des) {
 /* 				ret=OK; */
 /* 		}//since v r saving only msb */
 /* 		else if ((retval-val)<=3 || val==-1) */
-/* 			ret=OK; */
-	  
+/* 		ret=OK; */
+	    if (ind<16) {	
 	  if (mV) {
 	    
 	    printf("%d DACu is ",retval);
@@ -1039,7 +1055,7 @@ int set_dac(int file_des) {
 #ifdef VERBOSE
 	printf("DAC set to %d V\n",  retval);
 #endif  
-
+	}
 	if(ret==FAIL)
 		printf("Setting dac %d of module %d: wrote %d but read %d\n", ind, imod, val, retval);
 	else{
@@ -2361,7 +2377,17 @@ int set_speed(int file_des) {
   
   if (ret==OK) {
 
+    if (arg==PHASE_SHIFT || arg==ADC_PHASE) {
+      
+      
+      retval=phaseStep(val);
+
+    } else {
+
+
     if (val!=-1) {
+
+
       if (differentClients==1 && lockStatus==1 && val>=0) {
 	ret=FAIL;
 	sprintf(mess,"Detector locked by %s\n",lastClientIP);
@@ -2371,9 +2397,9 @@ int set_speed(int file_des) {
 	  retval=setClockDivider(val,0);
 	  break;
 
-	case PHASE_SHIFT:
-	  retval=phaseStep(val,0);
-	  break;
+/* 	case PHASE_SHIFT: */
+/* 	  retval=phaseStep(val,0); */
+/* 	  break; */
 
 	case OVERSAMPLING:
 	  retval=setOversampling(val);
@@ -2383,9 +2409,9 @@ int set_speed(int file_des) {
 	  retval=setClockDivider(val,1);
 	  break;
 
-	case ADC_PHASE:
-	  retval=phaseStep(val,1);
-	  break;
+/* 	case ADC_PHASE: */
+/* 	  retval=phaseStep(val,1); */
+/* 	  break; */
 
 
 	case ADC_PIPELINE:
@@ -2402,16 +2428,19 @@ int set_speed(int file_des) {
     }
 
 
+    }
+
+
     switch (arg) {
     case CLOCK_DIVIDER:
       retval=getClockDivider(0);
       break;
 
     case PHASE_SHIFT:
+      retval=getPhase();
       // retval=phaseStep(-1);
       //ret=FAIL;
       //sprintf(mess,"Cannot read phase",arg);
-      retval=-1;
       break;
 
     case OVERSAMPLING:
@@ -2423,7 +2452,7 @@ int set_speed(int file_des) {
       break;
 
     case ADC_PHASE:
-      retval=-1;
+      retval=getPhase();
       break;
 
 

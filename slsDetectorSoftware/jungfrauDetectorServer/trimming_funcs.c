@@ -236,7 +236,7 @@ int choose_vthresh_and_vtrim(int countlim,  int nsigma, int im) {
     while (runBusy()) {
     }
     usleep(500);
-    fifodata=fifo_read_event();
+    fifodata=fifo_read_event(0);
     scan=decode_data(fifodata);
     for (imod=modmi; imod<modma; imod++) {
       for (ichan=0; ichan<nChans*nChips; ichan++){
@@ -377,7 +377,7 @@ int trim_with_level(int countlim, int im) {
     }
     usleep(500);
 
-    fifodata=fifo_read_event();
+    fifodata=fifo_read_event(0);
     scan=decode_data(fifodata);
     for (imod=modmi; imod<modma; imod++) {
       for (ichan=0; ichan<nChans*nChips; ichan++) {
@@ -515,7 +515,7 @@ int choose_vthresh() {
   }
   usleep(500);
   
-    fifodata=fifo_read_event();
+    fifodata=fifo_read_event(0);
     scan=decode_data(fifodata);
     //
     scan1=decode_data(fifodata);
@@ -553,7 +553,7 @@ int choose_vthresh() {
     }
     usleep(500);
 
-    fifodata=fifo_read_event();
+    fifodata=fifo_read_event(0);
     scan=decode_data(fifodata);
     //
     scan1=decode_data(fifodata);
@@ -680,7 +680,7 @@ int trim_with_median(int stop, int im) {
     while (runBusy()) {
     }
     usleep(500);
-    fifodata=fifo_read_event();
+    fifodata=fifo_read_event(0);
     scan=decode_data(fifodata);
     scan1=decode_data(fifodata);
 

@@ -19,8 +19,6 @@ class slsDetectorData {
   dataType **dataMask; /**< Array of size nx*ny storing the polarity of the data in the dataset (should be 0 if no inversion is required, 0xffffffff is inversion is required) */
   int **dataROIMask; /**< Array of size nx*ny 1 if channel is good (or in the ROI), 0 if bad channel (or out of ROI)   */
 
-  int *xmap;
-  int *ymap;
 
  public:
 
@@ -41,8 +39,6 @@ class slsDetectorData {
   slsDetectorData(int npx, int npy, int dsize, int **dMap=NULL, dataType **dMask=NULL, int **dROI=NULL): nx(npx), ny(npy), dataSize(dsize) {
 
    
-    cout << "data size  is " <<  dataSize << endl;
-    cout << "detector size  is " <<  nx << " " << ny << endl;
 
     dataMask=new dataType*[ny];
     for(int i = 0; i < ny; i++) {
@@ -60,16 +56,6 @@ class slsDetectorData {
 	 dataROIMask[i][j]=1;
     }
     
-    cout << "map size is " <<  dataSize/sizeof(dataType) << endl;
-    
-    xmap=new int[dataSize/sizeof(dataType)];
-    ymap=new int[dataSize/sizeof(dataType)];
-
-    for (int i=0 ; i<dataSize/sizeof(dataType); i++) {
-      xmap[i]=-1;
-      ymap[i]=-1;
-    }
-    
     setDataMap(dMap);
     setDataMask(dMask);
     setDataROIMask(dROI);
@@ -77,29 +63,18 @@ class slsDetectorData {
   };
 
   virtual ~slsDetectorData() {
-    //  cout <<"delete xmap, ymap" << endl;
-    delete[] xmap;
-    delete[] ymap;
-
-    // cout <<"delete first d" << endl;
     for(int i = 0; i < ny; i++) {
-      // cout <<"delete data mask "<< i << endl;
-      delete[] dataMask[i];
-      // cout <<"delete data roi "<< i << endl;
-      delete[] dataROIMask[i];
-      // cout <<"delete data map "<< i << endl;
-      delete[] dataMap[i];
+    delete [] dataMap[i];
+    delete [] dataMask[i];
+    delete [] dataROIMask[i];
     }
-
-    // cout <<"delete second d" << endl;
-    delete[] dataMap;
-    delete[] dataMask;
-    delete[] dataROIMask;
+    delete [] dataMap;
+    delete [] dataMask;
+    delete [] dataROIMask;
   }
 
+  virtual void getPixel(int ip, int &x, int &y) {x=ip; y=0;};
 
-  virtual void getPixel(int ip, int &x, int &y) {if (ip>=0 && ip<dataSize) {x=xmap[ip]; y=ymap[ip];} else {x=-1; y=-1;};};
-  
 
 
   /**
@@ -112,26 +87,6 @@ class slsDetectorData {
   void setDataMap(int **dMap=NULL) {
 
 
-<<<<<<< HEAD
-    if (dMap==NULL) {
-      for (int iy=0; iy<ny; iy++)
-	for (int ix=0; ix<nx; ix++) {
-	   dataMap[iy][ix]=(iy*nx+ix)*sizeof(dataType);
-	}
-    } else {
-      cout << "set dmap "<< dataMap << " " << dMap << endl;
-      for (int iy=0; iy<ny; iy++)
-	for (int ix=0; ix<nx; ix++) {
-	   dataMap[iy][ix]=dMap[iy][ix];
-	   cout << ix << " " << iy << endl;
-	   if (dMap[iy][ix]<dataSize) {
-	     xmap[dMap[iy][ix]/sizeof(dataType)]=ix;
-	     ymap[dMap[iy][ix]/sizeof(dataType)]=iy;
-	   }
-	}
-    }
-    
-=======
 	  if (dMap==NULL) {
 		  for (int iy=0; iy<ny; iy++)
 			  for (int ix=0; ix<nx; ix++)
@@ -147,7 +102,6 @@ class slsDetectorData {
 		  }
 	  }
 	 // cout << "nx:" <<nx << " ny:" << ny << endl;
->>>>>>> 7ef3348d521f1a704f974b05dd763cd65253dd98
   };
 
 

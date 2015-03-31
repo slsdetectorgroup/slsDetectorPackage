@@ -18,7 +18,8 @@ class slsDetectorData {
   int **dataMap; /**< Array of size nx*ny storing the pointers to the data in the dataset (as offset)*/
   dataType **dataMask; /**< Array of size nx*ny storing the polarity of the data in the dataset (should be 0 if no inversion is required, 0xffffffff is inversion is required) */
   int **dataROIMask; /**< Array of size nx*ny 1 if channel is good (or in the ROI), 0 if bad channel (or out of ROI)   */
-
+ int *xmap;
+ int *ymap;
 
  public:
 
@@ -55,7 +56,9 @@ class slsDetectorData {
       for (int j=0; j<nx; j++)
 	 dataROIMask[i][j]=1;
     }
-    
+    xmap=new int[dsize];
+    ymap=new int[dsize];
+
     setDataMap(dMap);
     setDataMask(dMask);
     setDataROIMask(dROI);
@@ -71,6 +74,8 @@ class slsDetectorData {
     delete [] dataMap;
     delete [] dataMask;
     delete [] dataROIMask;
+    delete [] xmap;
+    delete [] ymap;
   }
 
   virtual void getPixel(int ip, int &x, int &y) {x=ip; y=0;};
@@ -190,7 +195,7 @@ class slsDetectorData {
   */
 
 
-  virtual dataType getChannel(char *data, int ix, int iy=0) {
+  virtual dataType getChannel(char *data, int ix, int iy=0, int dr=0) {
     dataType m=0, d=0;
     if (ix>=0 && ix<nx && iy>=0 && iy<ny && dataMap[iy][ix]>=0 && dataMap[iy][ix]<dataSize) {
       m=dataMask[iy][ix];
@@ -199,57 +204,6 @@ class slsDetectorData {
     return d^m;
   };
 
-
-  /**
-
-     Returns the value of the selected channel for the given dataset. Virtual function, can be overloaded.
-     \param data pointer to the dataset (including headers etc)
-     \param ix pixel number in the x direction
-     \param iy pixel number in the y direction
-     \param dr dynamic range
-     \returns data for the selected channel, with inversion if required
-
-  */
-  virtual dataType getChannel(char *data, int ix, int iy, int dr) {
-	  dataType m=0, d=0;
-	  uint64_t t;
-	  int numBytes,divFactor,newix,pixelval;
-
-
-	  if (ix>=0 && ix<nx && iy>=0 && iy<ny && dataMap[iy][ix]>=0 && dataMap[iy][ix]<dataSize) {
-		  m=dataMask[iy][ix];
-
-		  numBytes = (nx * iy + ix);
-		  divFactor=2;
-		  if(dr == 4) divFactor = 16;
-		  else if (dr == 8) divFactor = 8;
-		  else if (dr == 16) divFactor = 4;
-
-		  pixelval = numBytes % divFactor;
-		  newix = ix - pixelval;
-
-		  //cout <<"pixelval:"<<pixelval<<" newix:"<<newix<<endl;
-		  //cout <<"64:"<< hex<<((uint64_t)(*((uint64_t*)(((char*)data)+(dataMap[iy][newix])))))<<endl;
-		  t = (be64toh((uint64_t)(*((uint64_t*)(((char*)data)+(dataMap[iy][newix]))))));
-		  //cout<<"t:"<<t<<endl;
-
-	  }else
-		  cprintf(RED,"outside limits\n");
-
-	  if(dr == 4)
-		  //uint8_t value =  t >> (pixelval*4); cout <<"value:"<< value << endl;
-		  return ((t >> (pixelval*4)) & 0xf)^m;
-	  else if(dr == 8)
-		  //uint8_t value =  t >> (pixelval*8); cout <<"value:"<< value << endl;
-		  return ((t >> (pixelval*8)) & 0xff)^m;
-	  else if(dr == 16){
-		  //uint16_t value =  t >> (pixelval*16); cout <<"value:"<< value << endl;
-		  return ((t >> (pixelval*16)) & 0xffff)^m;
-	  }else{
-		  //uint32_t value =  t >> (pixelval*32); cout <<"value:"<< value << endl;
-		  return ((t >> (pixelval*32)) & 0xffffffff)^m;
-	  }
-  };
 
   /**
 

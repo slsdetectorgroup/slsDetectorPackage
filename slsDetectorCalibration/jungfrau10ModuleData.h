@@ -25,7 +25,7 @@ class jungfrau10ModuleData : public slsDetectorData<uint16_t> {
   */
   
 
-  jungfrau10ModuleData(int ns=16384): slsDetectorData<uint16_t>(256*4, 256*2, ns*2*32, NULL, NULL) , nadc(32), sc_width(64), sc_height(256) {
+ jungfrau10ModuleData(int ns=16384): slsDetectorData<uint16_t>(256*4, 256*2, 256*256*8*2, NULL, NULL, NULL) , iframe(0), nadc(32), sc_width(64), sc_height(256) {
 
     
    
@@ -35,48 +35,49 @@ class jungfrau10ModuleData : public slsDetectorData<uint16_t> {
     int iadc;
     int ix, iy;
 
-    
+    int ichip;
 
-    cout << nx << " " << ny << " " << dataSize << endl;
+    // cout << sizeof(uint16_t) << endl;
 
     for (iadc=0; iadc<nadc; iadc++) {
+      ichip=iadc/4;
+
       for (int i=0; i<sc_width*sc_height; i++) {
-	if (iadc<nadc/2) {
+
+	if (ichip%2==0) {
 	  row=sc_height+i/sc_width;
-	  col=iadc*sc_width+(i%sc_width);
-	} else {
-	  row=sc_height-1-i/sc_width;
-	  col=(ny-1)-(iadc-16)*sc_width-(i%sc_width);
+	  col=(ichip/2)*256+iadc%4*sc_width+(i%sc_width);
+	} else { 
+	  row=sc_height-1-i/sc_width; 
+	  col=((ichip/2)*256+iadc%4*sc_width)+sc_width-(i%sc_width)-1;
 	}
-	dataMap[row][col]=(nadc*i+iadc)*2;
-	if (dataMap[row][col]<0 || dataMap[row][col]>=dataSize)
-	   cout << "Error: pointer " << dataMap[row][col] << " out of range "<< endl;
 	  
+
+	
+/* 	if (iadc<nadc/2) { */
+/* 	  row=sc_height+i/sc_width; */
+/* 	  col=iadc*sc_width+(i%sc_width); */
+/* 	} else { */
+/* 	  row=sc_height-1-i/sc_width; */
+/* 	  col=(nx-1)-((iadc-16)*sc_width)-(i%sc_width); */
+/* 	} */
+	if (row<0 || row>=ny ||  col<0 || col>=nx) {
+	    cout << "Wrong row, column " << row << " " << col << " " << iadc << " " << i << endl;
+	} else
+	  dataMap[row][col]=(nadc*i+iadc)*2;
+	if (dataMap[row][col]<0 || dataMap[row][col]>=dataSize)
+	   cout << "Error: pointer " << dataMap[row][col] << " out of range " << row << " " << col  <<" " << iadc << " " << i << endl;
+	else {
+	  xmap[nadc*i+iadc]=col;
+	  ymap[nadc*i+iadc]=row;
+
+	}
       }
 
     }
-    for (int i=0; i<nx*ny; i++) {
-      isample=i/nadc;
-      iadc=i%nadc;
-      ix=isample%sc_width;
-      iy=isample/sc_width;
-      if (iadc<(nadc/2)) {
-	xmap[i]=iadc*sc_width+ix;//adc_nr[iadc]+ix;
-	ymap[i]=ny/2+iy;
-      } else {
-	xmap[i]=(ny-1)-(iadc-16)*sc_width-ix;//adc_nr[iadc]+ix;
-	ymap[i]=ny/2-1-iy;
-      }
-
-
-    }
-
-
 
     
     
-    iframe=0;
-    //  cout << "data struct created" << endl;
   };
   
   

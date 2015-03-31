@@ -41,6 +41,8 @@ class slsDetectorData {
   slsDetectorData(int npx, int npy, int dsize, int **dMap=NULL, dataType **dMask=NULL, int **dROI=NULL): nx(npx), ny(npy), dataSize(dsize) {
 
    
+    cout << "data size  is " <<  dataSize << endl;
+    cout << "detector size  is " <<  nx << " " << ny << endl;
 
     dataMask=new dataType*[ny];
     for(int i = 0; i < ny; i++) {
@@ -58,7 +60,7 @@ class slsDetectorData {
 	 dataROIMask[i][j]=1;
     }
     
-
+    cout << "map size is " <<  dataSize/sizeof(dataType) << endl;
     
     xmap=new int[dataSize/sizeof(dataType)];
     ymap=new int[dataSize/sizeof(dataType)];
@@ -75,16 +77,24 @@ class slsDetectorData {
   };
 
   virtual ~slsDetectorData() {
+    //  cout <<"delete xmap, ymap" << endl;
+    delete[] xmap;
+    delete[] ymap;
+
+    // cout <<"delete first d" << endl;
     for(int i = 0; i < ny; i++) {
-      delete [] dataMap[i];
-      delete [] dataMask[i];
-      delete [] dataROIMask[i];
+      // cout <<"delete data mask "<< i << endl;
+      delete[] dataMask[i];
+      // cout <<"delete data roi "<< i << endl;
+      delete[] dataROIMask[i];
+      // cout <<"delete data map "<< i << endl;
+      delete[] dataMap[i];
     }
-    delete [] dataMap;
-    delete [] dataMask;
-    delete [] dataROIMask;
-    delete [] xmap;
-    delete [] ymap;
+
+    // cout <<"delete second d" << endl;
+    delete[] dataMap;
+    delete[] dataMask;
+    delete[] dataROIMask;
   }
 
 

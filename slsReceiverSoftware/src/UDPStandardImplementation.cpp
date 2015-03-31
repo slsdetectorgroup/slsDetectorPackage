@@ -2309,9 +2309,9 @@ void UDPStandardImplementation::writeToFile_withoutCompression(char* buf,int num
 		if(myDetectorType == EIGER){
 			offset += EIGER_HEADER_LENGTH;
 			(*(uint32_t*)(((eiger_packet_header *)((char*)(buf + offset)))->num1))  = framenum;
-			//cprintf(RED, "framenum:0x%x\n", (*(unsigned int*)(((eiger_packet_header *)((char*)(buf + offset)))->num1)));
-			//cprintf(RED, "2packetnumber:0x%x\n", (*(uint16_t*)(((eiger_packet_header *)((char*)(buf + offset)))->num3)));
-			//cprintf(RED, "22packetnumber:0x%x\n",(*(uint16_t*)(((eiger_packet_header *)((char*)(buf + offset +1040)))->num3)));
+			cprintf(RED, "framenum:0x%x\n", (*(unsigned int*)(((eiger_packet_header *)((char*)(buf + offset)))->num1)));
+			cprintf(RED, "2packetnumber:0x%x\n", (*(uint16_t*)(((eiger_packet_header *)((char*)(buf + offset)))->num3)));
+			cprintf(RED, "22packetnumber:0x%x\n",(*(uint16_t*)(((eiger_packet_header *)((char*)(buf + offset +1040)))->num3)));
 		}
 		while(numpackets > 0){
 

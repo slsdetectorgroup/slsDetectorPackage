@@ -112,6 +112,7 @@ class slsDetectorData {
   void setDataMap(int **dMap=NULL) {
 
 
+<<<<<<< HEAD
     if (dMap==NULL) {
       for (int iy=0; iy<ny; iy++)
 	for (int ix=0; ix<nx; ix++) {
@@ -130,6 +131,23 @@ class slsDetectorData {
 	}
     }
     
+=======
+	  if (dMap==NULL) {
+		  for (int iy=0; iy<ny; iy++)
+			  for (int ix=0; ix<nx; ix++)
+				  dataMap[iy][ix]=(iy*nx+ix)*sizeof(dataType);
+	  } else {
+		  //cout << "set dmap "<< dataMap << " " << dMap << endl;
+		  for (int iy=0; iy<ny; iy++){
+			 // cout << iy << endl;
+			  for (int ix=0; ix<nx; ix++) {
+				  dataMap[iy][ix]=dMap[iy][ix];
+				 // cout << ix << " " << iy << endl;
+			  }
+		  }
+	  }
+	 // cout << "nx:" <<nx << " ny:" << ny << endl;
+>>>>>>> 7ef3348d521f1a704f974b05dd763cd65253dd98
   };
 
 
@@ -227,6 +245,58 @@ class slsDetectorData {
     return d^m;
   };
 
+
+  /**
+
+     Returns the value of the selected channel for the given dataset. Virtual function, can be overloaded.
+     \param data pointer to the dataset (including headers etc)
+     \param ix pixel number in the x direction
+     \param iy pixel number in the y direction
+     \param dr dynamic range
+     \returns data for the selected channel, with inversion if required
+
+  */
+  virtual dataType getChannel(char *data, int ix, int iy, int dr) {
+	  dataType m=0, d=0;
+	  uint64_t t;
+	  int numBytes,divFactor,newix,pixelval;
+
+
+	  if (ix>=0 && ix<nx && iy>=0 && iy<ny && dataMap[iy][ix]>=0 && dataMap[iy][ix]<dataSize) {
+		  m=dataMask[iy][ix];
+
+		  numBytes = (nx * iy + ix);
+		  divFactor=2;
+		  if(dr == 4) divFactor = 16;
+		  else if (dr == 8) divFactor = 8;
+		  else if (dr == 16) divFactor = 4;
+
+		  pixelval = numBytes % divFactor;
+		  newix = ix - pixelval;
+
+		  //cout <<"pixelval:"<<pixelval<<" newix:"<<newix<<endl;
+		  //cout <<"64:"<< hex<<((uint64_t)(*((uint64_t*)(((char*)data)+(dataMap[iy][newix])))))<<endl;
+		  t = (be64toh((uint64_t)(*((uint64_t*)(((char*)data)+(dataMap[iy][newix]))))));
+		  //cout<<"t:"<<t<<endl;
+
+	  }else
+		  cprintf(RED,"outside limits\n");
+
+	  if(dr == 4)
+		  //uint8_t value =  t >> (pixelval*4); cout <<"value:"<< value << endl;
+		  return ((t >> (pixelval*4)) & 0xf)^m;
+	  else if(dr == 8)
+		  //uint8_t value =  t >> (pixelval*8); cout <<"value:"<< value << endl;
+		  return ((t >> (pixelval*8)) & 0xff)^m;
+	  else if(dr == 16){
+		  //uint16_t value =  t >> (pixelval*16); cout <<"value:"<< value << endl;
+		  return ((t >> (pixelval*16)) & 0xffff)^m;
+	  }else{
+		  //uint32_t value =  t >> (pixelval*32); cout <<"value:"<< value << endl;
+		  return ((t >> (pixelval*32)) & 0xffffffff)^m;
+	  }
+  };
+
   /**
 
      Returns the value of the selected channel for the given dataset as double.
@@ -237,6 +307,20 @@ class slsDetectorData {
 
   */
   virtual double getValue(char *data, int ix, int iy=0) {return (double)getChannel(data, ix, iy);};
+
+  /**
+
+     Returns the value of the selected channel for the given dataset as double.
+     \param data pointer to the dataset (including headers etc)
+     \param ix pixel number in the x direction
+     \param iy pixel number in the y direction
+     \param dr dynamic range
+     \returns data for the selected channel, with inversion if required as double
+
+  */
+  virtual double getValue(char *data, int ix, int iy, int dr) {
+	  return ((double)getChannel(data, ix, iy, dr));
+  };
 
    /**
 

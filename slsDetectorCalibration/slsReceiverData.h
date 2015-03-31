@@ -2,6 +2,7 @@
 #define  SLSRECEIVERDATA_H
 
 #include "slsDetectorData.h"
+#include <cstring>
 
 template <class dataType>
 class slsReceiverData : public slsDetectorData<dataType> {
@@ -89,7 +90,7 @@ public:
 			dd+=packetSize;
 			np++;
 			// cout << pnum << " " << fn << " " << np << " " << dd << " " << dsize << endl;
-			if (np==nPackets)
+			if (np==nPackets){
 				if (pnum==nPackets) {
 					// cout << "Frame found!" << endl;
 					break;
@@ -97,6 +98,7 @@ public:
 					cout << "Too many packets for this frame! "<< fnum << " " << pnum << endl;
 					retval=NULL;
 				}
+			}
 		}
 		if (np<nPackets) {
 			if (np>0)

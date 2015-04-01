@@ -40,6 +40,8 @@ class slsDetectorData {
   slsDetectorData(int npx, int npy, int dsize, int **dMap=NULL, dataType **dMask=NULL, int **dROI=NULL): nx(npx), ny(npy), dataSize(dsize) {
 
    
+    xmap=new int[nx*ny];
+    ymap=new int[nx*ny];
 
     dataMask=new dataType*[ny];
     for(int i = 0; i < ny; i++) {
@@ -56,8 +58,8 @@ class slsDetectorData {
       for (int j=0; j<nx; j++)
 	 dataROIMask[i][j]=1;
     }
-    xmap=new int[dsize];
-    ymap=new int[dsize];
+
+
 
     setDataMap(dMap);
     setDataMask(dMask);
@@ -78,7 +80,7 @@ class slsDetectorData {
     delete [] ymap;
   }
 
-  virtual void getPixel(int ip, int &x, int &y) {x=ip; y=0;};
+  virtual void getPixel(int ip, int &x, int &y) {x=xmap[ip]; y=ymap[ip];};
 
 
 
@@ -90,7 +92,7 @@ class slsDetectorData {
 
 
   void setDataMap(int **dMap=NULL) {
-
+    int ip;
 
 	  if (dMap==NULL) {
 		  for (int iy=0; iy<ny; iy++)
@@ -103,6 +105,9 @@ class slsDetectorData {
 			  for (int ix=0; ix<nx; ix++) {
 				  dataMap[iy][ix]=dMap[iy][ix];
 				 // cout << ix << " " << iy << endl;
+				  ip=dataMap[ix][iy]/sizeof(dataType);
+				  xmap[ip]=ix;
+				  ymap[ip]=iy;
 			  }
 		  }
 	  }

@@ -80,7 +80,7 @@ void qTabDeveloper::SetupWidgetWindow(){
 		dacNames.push_back("v Preamp:");
 		break;
 	case slsDetectorDefs::EIGER:
-		NUM_DAC_WIDGETS = 16;
+		NUM_DAC_WIDGETS = 17;
 		NUM_ADC_WIDGETS = 0;
 
 		dacNames.push_back("v SvP:");
@@ -99,6 +99,7 @@ void qTabDeveloper::SetupWidgetWindow(){
 		dacNames.push_back("v Vcmp_lr:");
 		dacNames.push_back("v Vcmp_rl:");
 		dacNames.push_back("v Vcmp_rr:");
+		dacNames.push_back("v threshold:");
 
 
 
@@ -387,7 +388,7 @@ slsDetectorDefs::dacIndex qTabDeveloper::getSLSIndex(int index){
 		case 13:return slsDetectorDefs::E_Vcmp_lr;
 		case 14:return slsDetectorDefs::E_Vcmp_rl;
 		case 15:return slsDetectorDefs::E_Vcmp_rr;
-
+		case 16:return slsDetectorDefs::THRESHOLD;
 
 
 		default:

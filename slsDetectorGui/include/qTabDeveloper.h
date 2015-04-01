@@ -68,10 +68,6 @@ public:
 	 */
 	~qTabDeveloper();
 
-	/** To refresh and update widgets
-	 */
-	void Refresh();
-
 	/** To stop ADC Timer when starting acquisition
 	 */
 	void StopADCTimer(){if(adcTimer) adcTimer->stop();};
@@ -79,6 +75,8 @@ public:
 private:
 	/** The sls detector object */
 	multiSlsDetector *myDet;
+	/** The sls detector object */
+	slsDetector *det;
 	/** detector type */
 	slsDetectorDefs::detectorType detType;
 	/**number of dac widgets*/
@@ -108,6 +106,7 @@ private:
 	QGridLayout		*dacLayout;
 	QString 		tipHV;
 	QPalette		red;
+	QComboBox		*comboDetector;
 	/** Sets up the widget
 	 */
 	void SetupWidgetWindow();
@@ -130,21 +129,25 @@ private:
 	 */
 	slsDetectorDefs::dacIndex getSLSIndex(int index);
 
+public slots:
 
+	/** To refresh and update widgets
+	 */
+	void Refresh();
 
 private slots:
-/** Refreshes the adcs
- */
-void RefreshAdcs();
+	/** Refreshes the adcs
+	 */
+	void RefreshAdcs();
 
-/** Set Dac values
- * @param id id of dac
- */
-void SetDacValues(int id);
+	/** Set Dac values
+	 * @param id id of dac
+	 */
+	void SetDacValues(int id);
 
-/** Set High Voltage
- */
-void SetHighVoltage();
+	/** Set High Voltage
+	 */
+	void SetHighVoltage();
 };
 
 

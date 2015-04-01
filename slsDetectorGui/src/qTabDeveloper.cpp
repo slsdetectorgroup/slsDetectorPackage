@@ -27,6 +27,7 @@ int qTabDeveloper::NUM_ADC_WIDGETS(0);
 qTabDeveloper::qTabDeveloper(QWidget *parent,multiSlsDetector*& detector):
 						QWidget(parent),
 						myDet(detector),
+						det(0),
 						boxDacs(0),
 						boxAdcs(0),
 						lblHV(0),
@@ -50,6 +51,7 @@ qTabDeveloper::qTabDeveloper(QWidget *parent,multiSlsDetector*& detector):
 
 qTabDeveloper::~qTabDeveloper(){
 	delete myDet;
+	if(det) delete det;
 }
 
 
@@ -143,16 +145,27 @@ void qTabDeveloper::SetupWidgetWindow(){
 
 	//layout
 	setFixedWidth(765);
-	setFixedHeight(50+(NUM_DAC_WIDGETS/2)*35);
+	setFixedHeight(20+50+(NUM_DAC_WIDGETS/2)*35);
 	//setHeight(340);
+
 	scroll  = new QScrollArea;
-	scroll->setFrameShape(QFrame::NoFrame);
+	//scroll->setFrameShape(QFrame::NoFrame);
 	scroll->setWidget(this);
 	scroll->setWidgetResizable(true);
 
 	layout = new QGridLayout(scroll);
 	layout->setContentsMargins(20,10,10,5);
 	setLayout(layout);
+
+	//readout
+	comboDetector = new QComboBox(this);
+	//comboDetector->setSizePolicy(QSizePolicy::Fixed,QSizePolicy::Fixed);
+	comboDetector->addItem("All");
+	//add detectors
+	for(int i=1;i<myDet->getNumberOfDetectors()+1;i++)
+		comboDetector->addItem(QString(myDet->getHostname(i-1).c_str()));
+	comboDetector->setCurrentIndex(0);
+
 
 	//dacs
 	boxDacs = new QGroupBox("Dacs",this);
@@ -179,20 +192,21 @@ void qTabDeveloper::SetupWidgetWindow(){
 		dacLayout->addWidget(comboHV,(int)(NUM_DAC_WIDGETS/2),2);
 		connect(comboHV,	SIGNAL(currentIndexChanged(int)),	this, SLOT(SetHighVoltage()));
 	}
-	layout->addWidget(boxDacs,0,0);
+	layout->addWidget(comboDetector,0,0);
+	layout->addWidget(boxDacs,1,0);
 
 
 	//adcs
 	if((detType==slsDetectorDefs::GOTTHARD) || (detType==slsDetectorDefs::MOENCH)){
-	    setFixedHeight((50+(NUM_DAC_WIDGETS/2)*35)+(50+(NUM_ADC_WIDGETS/2)*35));
+	    setFixedHeight(20+(50+(NUM_DAC_WIDGETS/2)*35)+(50+(NUM_ADC_WIDGETS/2)*35));
 		boxAdcs = new QGroupBox("ADCs",this);
 		boxAdcs->setFixedHeight(25+(NUM_ADC_WIDGETS/2)*35);
-		layout->addWidget(boxAdcs,1,0);
+		layout->addWidget(boxAdcs,2,0);
 		CreateADCWidgets();
 		//to make the adcs at the bottom most
 		int diff = 340-height();
 		setFixedHeight(340);
-		layout->setVerticalSpacing(diff);
+		layout->setVerticalSpacing(diff/2);
 		//timer to check adcs
 		adcTimer = new QTimer(this);
 	}
@@ -208,6 +222,8 @@ void qTabDeveloper::Initialization(){
 
 	for(int i=0;i<NUM_DAC_WIDGETS;i++)
 		connect(spinDacs[i],	SIGNAL(editingFinished(int)),	this, SLOT(SetDacValues(int)));
+
+	connect(comboDetector,		SIGNAL(currentIndexChanged(int)),	this,	SLOT(Refresh()));
 
 }
 
@@ -268,11 +284,24 @@ void qTabDeveloper::SetDacValues(int id){
 #ifdef VERBOSE
 	cout << "Setting dac:" << dacNames[id] << " : " << spinDacs[id]->value() << endl;
 #endif
-	//spinDacs[id]->setValue((double)myDet->setDAC((dacs_t)spinDacs[id]->value(),getSLSIndex(id)));
-	myDet->setDAC((dacs_t)spinDacs[id]->value(),getSLSIndex(id),0);
-	lblDacsmV[id]->setText(QString("%1mV").arg(myDet->setDAC(-1,getSLSIndex(id),1),-10));
 
-	qDefs::checkErrorMessage(myDet,"qTabDeveloper::SetDacValues");
+	int detid = comboDetector->currentIndex();
+	if(detid)
+		det = myDet->getSlsDetector(detid-1);
+
+	//all detectors
+	if(!detid){
+		myDet->setDAC((dacs_t)spinDacs[id]->value(),getSLSIndex(id),0);
+		lblDacsmV[id]->setText(QString("%1mV").arg(myDet->setDAC(-1,getSLSIndex(id),1),-10));
+		qDefs::checkErrorMessage(myDet,"qTabDeveloper::SetDacValues");
+	}
+	//specific detector
+	else{
+		det->setDAC((dacs_t)spinDacs[id]->value(),getSLSIndex(id),0);
+		lblDacsmV[id]->setText(QString("%1mV").arg(det->setDAC(-1,getSLSIndex(id),1),-10));
+		qDefs::checkErrorMessage(det,"qTabDeveloper::SetDacValues");
+	}
+
 }
 
 
@@ -283,9 +312,26 @@ void qTabDeveloper::SetHighVoltage(){
 #ifdef VERBOSE
 	cout << "Setting high voltage:" << comboHV->currentText().toAscii().constData() << endl;
 #endif
+
+	int detid = comboDetector->currentIndex();
+	if(detid)
+		det = myDet->getSlsDetector(detid-1);
+
 	int highvoltage = comboHV->currentText().toInt();
-	int ret = myDet->setDAC(highvoltage,slsDetectorDefs::HV_POT,0);
-	qDefs::checkErrorMessage(myDet,"qTabDeveloper::SetHighVoltage");
+	int ret;
+
+	//all detectors
+	if(!detid){
+		ret = myDet->setDAC(highvoltage,slsDetectorDefs::HV_POT,0);
+		qDefs::checkErrorMessage(myDet,"qTabDeveloper::SetHighVoltage");
+	}
+	//specific detector
+	else{
+		ret = det->setDAC(highvoltage,slsDetectorDefs::HV_POT,0);
+		qDefs::checkErrorMessage(det,"qTabDeveloper::SetHighVoltage");
+	}
+
+
 	//error
 	if(ret != highvoltage){
 		qDefs::Message(qDefs::CRITICAL,"High Voltage could not be set to this value.","qTabDeveloper::SetHighVoltage");
@@ -407,8 +453,20 @@ void qTabDeveloper::RefreshAdcs(){
 	cout << "Updating ADCs" <<endl;
 #endif
 	adcTimer->stop();
-	for(int i=0;i<NUM_ADC_WIDGETS;i++)
-		spinAdcs[i]->setValue((double)myDet->getADC(getSLSIndex(i+NUM_DAC_WIDGETS)));
+
+	int detid = comboDetector->currentIndex();
+	if(detid)
+		det = myDet->getSlsDetector(detid-1);
+
+	for(int i=0;i<NUM_ADC_WIDGETS;i++){
+		//all detectors
+		if(!detid)
+			spinAdcs[i]->setValue((double)myDet->getADC(getSLSIndex(i+NUM_DAC_WIDGETS)));
+		//specific detector
+		else
+			spinAdcs[i]->setValue((double)det->getADC(getSLSIndex(i+NUM_DAC_WIDGETS)));
+	}
+
 
 	adcTimer->start(ADC_TIMEOUT);
 	qDefs::checkErrorMessage(myDet,"qTabDeveloper::RefreshAdcs");
@@ -423,15 +481,30 @@ void qTabDeveloper::Refresh(){
 	cout  << endl << "**Updating Developer Tab" << endl;
 #endif
 
+
+	int detid = comboDetector->currentIndex();
+	if(detid)
+		det = myDet->getSlsDetector(detid-1);
+
+
+	//dacs
 #ifdef VERBOSE
 	cout << "Gettings DACs"  << endl;
 #endif
-	//dacs
-
 	for(int i=0;i<NUM_DAC_WIDGETS;i++){
-		spinDacs[i]->setValue((double)myDet->setDAC(-1,getSLSIndex(i),0));
-		lblDacsmV[i]->setText(QString("%1mV").arg(myDet->setDAC(-1,getSLSIndex(i),1),-10));
+		//all detectors
+		if(!detid){
+			spinDacs[i]->setValue((double)myDet->setDAC(-1,getSLSIndex(i),0));
+			lblDacsmV[i]->setText(QString("%1mV").arg(myDet->setDAC(-1,getSLSIndex(i),1),-10));
+		}
+		//specific detector
+		else{
+			spinDacs[i]->setValue((double)det->setDAC(-1,getSLSIndex(i),0));
+			lblDacsmV[i]->setText(QString("%1mV").arg(det->setDAC(-1,getSLSIndex(i),1),-10));
+		}
 	}
+
+
 	//adcs
 	if(NUM_ADC_WIDGETS) RefreshAdcs();
 
@@ -445,7 +518,10 @@ void qTabDeveloper::Refresh(){
 		lblHV->setToolTip(tipHV);
 		comboHV->setToolTip(tipHV);
 		//getting hv value
-		int ret = (int)myDet->setDAC(-1,slsDetectorDefs::HV_POT,0);
+		int ret;
+		if(!detid) 	ret = (int)myDet->setDAC(-1,slsDetectorDefs::HV_POT,0);
+		else 		ret = (int)det->setDAC(-1,slsDetectorDefs::HV_POT,0);
+
 		switch(ret){
 		case 0: 	comboHV->setCurrentIndex(0);break;
 		case 90:	comboHV->setCurrentIndex(1);break;

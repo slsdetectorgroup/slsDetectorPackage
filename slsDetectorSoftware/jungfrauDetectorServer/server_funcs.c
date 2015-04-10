@@ -156,7 +156,7 @@ int init_detector(int b, int checkType) {
   strcpy(lastClientIP,"none");
   strcpy(thisClientIP,"none1");
   lockStatus=0;
-
+  // getDynamicRange();
   allocateRAM();
   return OK;
 }

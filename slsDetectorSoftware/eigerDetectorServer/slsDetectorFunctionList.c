@@ -600,8 +600,8 @@ char *readFrame(int *ret, char *mess){
 		if(!Feb_Control_WaitForFinishedFlag(5000))
 			printf("error in waiting for finished flag\n");
 		printf("Acquisition finished\n");
-		usleep(0);
-		//usleep(1000000);
+		//usleep(0);
+		usleep(1000000);
 		printf("*****Done Waiting...\n");
 	//}
 	*ret = (int)FINISHED;

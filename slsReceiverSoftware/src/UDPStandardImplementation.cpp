@@ -1963,6 +1963,7 @@ int UDPStandardImplementation::startWriting(){
 				}else if (numpackets > 0){
 					for(i=0;i<numListeningThreads;++i)
 						writeToFile_withoutCompression(wbuf[i], numpackets,currframenum);
+
 #ifdef VERYDEBUG
 					cout << "written everyting" << endl;
 #endif
@@ -2308,10 +2309,21 @@ void UDPStandardImplementation::writeToFile_withoutCompression(char* buf,int num
 		offset = HEADER_SIZE_NUM_TOT_PACKETS;
 		if(myDetectorType == EIGER){
 			offset += EIGER_HEADER_LENGTH;
-			(*(uint32_t*)(((eiger_packet_header *)((char*)(buf + offset)))->num1))  = framenum;
-			cprintf(RED, "framenum:0x%x\n", (*(unsigned int*)(((eiger_packet_header *)((char*)(buf + offset)))->num1)));
-			cprintf(RED, "2packetnumber:0x%x\n", (*(uint16_t*)(((eiger_packet_header *)((char*)(buf + offset)))->num3)));
-			cprintf(RED, "22packetnumber:0x%x\n",(*(uint16_t*)(((eiger_packet_header *)((char*)(buf + offset +1040)))->num3)));
+#ifdef WRITE_HEADERS
+			for (int i = 0; i < packetsPerFrame; i++)
+				(*(uint32_t*)(((eiger_packet_header *)((char*)(buf + offset + 1040*i)))->num1))  = framenum;
+
+			cprintf(RED, "\np1 fnum:0x%x\n",  (*(unsigned int*)(((eiger_packet_header *)((char*)(buf + offset)))->num1)));
+			cprintf(RED, "p1:0x%x\n",  (*(uint8_t*)(((eiger_packet_header *)((char*)(buf + offset)))->num2)));
+			cprintf(RED, "p1 num:0x%x\n",  (*(uint8_t*)(((eiger_packet_header *)((char*)(buf + offset)))->num3)));
+			cprintf(RED, "p2 fnum:0x%x\n",  (*(unsigned int*)(((eiger_packet_header *)((char*)(buf + offset +1040)))->num1)));
+			cprintf(RED, "p2:0x%x\n",  (*(uint8_t*)(((eiger_packet_header *)((char*)(buf + offset +1040)))->num2)));
+			cprintf(RED, "p2 num:0x%x\n", (*(uint8_t*)(((eiger_packet_header *)((char*)(buf + offset +1040)))->num3)));
+			cprintf(RED, "p3 fnum:0x%x\n",  (*(unsigned int*)(((eiger_packet_header *)((char*)(buf + offset + 2080)))->num1)));
+			cprintf(RED, "p3:0x%x\n",  (*(uint8_t*)(((eiger_packet_header *)((char*)(buf + offset +2080)))->num2)));
+			cprintf(RED, "p3 num:0x%x\n", (*(uint8_t*)(((eiger_packet_header *)((char*)(buf + offset +2080)))->num3)));
+
+#endif
 		}
 		while(numpackets > 0){
 

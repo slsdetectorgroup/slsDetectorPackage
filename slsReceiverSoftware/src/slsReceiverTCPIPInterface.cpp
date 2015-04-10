@@ -1488,8 +1488,8 @@ int	slsReceiverTCPIPInterface::eiger_read_frame(){
 				}
 
 			}
-
-			/*int inum = 0;
+/*
+			int inum = 0;
 			//dr = 16, hence uint16_t
 			for(inum = 0; inum < 2; inum++)
 				cprintf(YELLOW,"before htonl %d,0 :%d\n",inum,((uint16_t)(*((uint16_t*)((char*)(retval+(inum*(dynamicrange/8))))))));
@@ -1499,8 +1499,8 @@ int	slsReceiverTCPIPInterface::eiger_read_frame(){
 				cprintf(YELLOW,"before htonl %d,2 :%d\n",inum,((uint16_t)(*((uint16_t*)((char*)(retval+((2048+inum)*(dynamicrange/8))))))));
 			for(inum = 254; inum < 258; inum++)
 				cprintf(YELLOW,"before htonl %d,2 :%d\n",inum,((uint16_t)(*((uint16_t*)((char*)(retval+((2048+inum)*(dynamicrange/8))))))));
+*/
 
-			 */
 
 			//64 bit htonl cuz of endianness
 			for(i=0;i<(1024*(16*dynamicrange)*2)/8;i++){
@@ -1515,7 +1515,7 @@ int	slsReceiverTCPIPInterface::eiger_read_frame(){
 			  */
 			}
 
-			/*
+/*
 			//dr = 16, hence uint16_t
 			for(inum = 0; inum < 2; inum++)
 				cprintf(MAGENTA,"after htonl %d,0 :%d\n",inum,((uint16_t)(*((uint16_t*)((char*)(retval+(inum*(dynamicrange/8))))))));
@@ -1525,7 +1525,7 @@ int	slsReceiverTCPIPInterface::eiger_read_frame(){
 				cprintf(MAGENTA,"after htonl %d,2 :%d\n",inum,((uint16_t)(*((uint16_t*)((char*)(retval+((2048+inum)*(dynamicrange/8))))))));
 			for(inum = 254; inum < 258; inum++)
 				cprintf(MAGENTA,"after htonl %d,2 :%d\n",inum,((uint16_t)(*((uint16_t*)((char*)(retval+((2048+inum)*(dynamicrange/8))))))));
-			 */
+*/
 
 
 

@@ -1860,12 +1860,13 @@ int UDPStandardImplementation::startWriting(){
 
 	thread_started = 1;
 
+	int totalheader = HEADER_SIZE_NUM_TOT_PACKETS + EIGER_HEADER_LENGTH;
 	int numpackets, nf;
 	uint32_t tempframenum;
 	char* wbuf[numListeningThreads];//interleaved
 	char *d=new char[bufferSize*numListeningThreads];
 	int xmax=0,ymax=0;
-	int ret,i;
+	int ret,i,j;
 	int packetsPerThread = packetsPerFrame/numListeningThreads;
 
 	while(1){
@@ -1926,14 +1927,16 @@ int UDPStandardImplementation::startWriting(){
 
 			//for progress
 			if(myDetectorType == EIGER){
-				tempframenum = htonl(*(unsigned int*)((eiger_image_header *)((char*)(wbuf[ithread] + HEADER_SIZE_NUM_TOT_PACKETS)))->fnum);
+
 				if(dynamicRange != 32)
-					tempframenum += (startFrameIndex-1); //eiger frame numbers start at 1, so need to -1
-				else{
-					cout << " 32 bit eiger could be "<< dec << htonl(*(unsigned int*)((eiger_image_header *)((char*)(wbuf[ithread] + HEADER_SIZE_NUM_TOT_PACKETS)))->fnum) << endl;
-					cout << " 32 bit eiger32 could be "<< dec << htonl(*(unsigned int*)((eiger_image_header32 *)((char*)(wbuf[ithread] + HEADER_SIZE_NUM_TOT_PACKETS)))->fnum) << endl;
-					tempframenum = ((tempframenum / EIGER_32BIT_INITIAL_CONSTANT) + startFrameIndex)-1;//eiger 32 bit mode is a multiple of 17c. +startframeindex for scans
-				}
+					tempframenum = htonl(*(unsigned int*)((eiger_image_header *)((char*)(wbuf[ithread] + HEADER_SIZE_NUM_TOT_PACKETS)))->fnum);
+				else
+					tempframenum = htonl(*(unsigned int*)((eiger_image_header32 *)((char*)(wbuf[ithread] + HEADER_SIZE_NUM_TOT_PACKETS)))->fnum);
+
+
+				tempframenum += (startFrameIndex-1); //eiger frame numbers start at 1, so need to -1
+				//tempframenum = ((tempframenum / EIGER_32BIT_INITIAL_CONSTANT) + startFrameIndex)-1;//eiger 32 bit mode is a multiple of 17c. +startframeindex for scans
+
 			}else if ((myDetectorType == GOTTHARD) && (shortFrame == -1))
 				tempframenum = (((((uint32_t)(*((uint32_t*)(wbuf[ithread] + HEADER_SIZE_NUM_TOT_PACKETS))))+1)& (frameIndexMask)) >> frameIndexOffset);
 			else
@@ -1961,9 +1964,53 @@ int UDPStandardImplementation::startWriting(){
 						/* for eiger 32 bit mode, currframenum like gotthard, does not start from 0 or 1 */
 						rawDataReadyCallBack(currframenum, wbuf[i], numpackets * onePacketSize, sfilefd, guiData,pRawDataReady);
 				}else if (numpackets > 0){
-					for(i=0;i<numListeningThreads;++i)
-						writeToFile_withoutCompression(wbuf[i], numpackets,currframenum);
+					for(j=0;j<numListeningThreads;++j){
+#ifdef WRITE_HEADERS
+						if (myDetectorType == EIGER){
+							//overwriting frame number in header
+							for (i = 0; i < packetsPerFrame; i++)
+								(*(uint32_t*)(((eiger_packet_header *)((char*)(wbuf[j] + totalheader + EIGER_ONE_GIGA_ONE_PACKET_SIZE*i)))->num1))  = currframenum;
 
+							//for 32 bit,port number needs to be changed and packet number reconstructed
+							if(dynamicRange == 32){
+								for (i = 0; i < packetsPerFrame/4; i++){
+									//new packet number that has space for 16 bit
+									(*(uint16_t*)(((eiger_packet_header *)((char*)(wbuf[j] + totalheader + EIGER_ONE_GIGA_ONE_PACKET_SIZE*i)))->num2))
+				        		= ((*(uint8_t*)(((eiger_packet_header *)((char*)(wbuf[j] + totalheader + EIGER_ONE_GIGA_ONE_PACKET_SIZE*i)))->num4)));
+
+									//new port number as its the same everywhere for 32 bit!!
+									if(!j)	(*(uint8_t*)(((eiger_packet_header *)((char*)(wbuf[j] + totalheader + EIGER_ONE_GIGA_ONE_PACKET_SIZE*i)))->num3)) = 0x00;
+
+
+#ifdef VERYDEBUG
+									cprintf(RED, "%d - 0x%x - %d - %d\n", i,
+											(*(uint8_t*)(((eiger_packet_header *)((char*)(wbuf[j] + totalheader +i*EIGER_ONE_GIGA_ONE_PACKET_SIZE)))->num3)),
+											(*(uint8_t*)(((eiger_packet_header *)((char*)(wbuf[j] + totalheader +i*EIGER_ONE_GIGA_ONE_PACKET_SIZE)))->num4)),
+											(*(uint16_t*)(((eiger_packet_header *)((char*)(wbuf[j] + totalheader +i*EIGER_ONE_GIGA_ONE_PACKET_SIZE)))->num2)));
+#endif
+								}
+								for (i = packetsPerFrame/4; i < packetsPerFrame/2; i++){
+									//new packet number that has space for 16 bit
+									(*(uint16_t*)(((eiger_packet_header *)((char*)(wbuf[j] + totalheader + EIGER_ONE_GIGA_ONE_PACKET_SIZE*i)))->num2))
+			            		= ((*(uint8_t*)(((eiger_packet_header *)((char*)(wbuf[j] + totalheader + EIGER_ONE_GIGA_ONE_PACKET_SIZE*i)))->num4))+(packetsPerFrame/4));
+
+									//new port number as its the same everywhere for 32 bit!!
+									if(!j) (*(uint8_t*)(((eiger_packet_header *)((char*)(wbuf[j] + totalheader + EIGER_ONE_GIGA_ONE_PACKET_SIZE*i)))->num3)) = 0x00;
+
+
+#ifdef VERYDEBUG
+									cprintf(RED, "%d -0x%x - %d - %d\n", i,
+											(*(uint8_t*)(((eiger_packet_header *)((char*)(wbuf[j] + totalheader +i*EIGER_ONE_GIGA_ONE_PACKET_SIZE)))->num3)),
+											(*(uint8_t*)(((eiger_packet_header *)((char*)(wbuf[j] + totalheader +i*EIGER_ONE_GIGA_ONE_PACKET_SIZE)))->num4)),
+											(*(uint16_t*)(((eiger_packet_header *)((char*)(wbuf[j] + totalheader +i*EIGER_ONE_GIGA_ONE_PACKET_SIZE)))->num2)));
+#endif
+								}
+							}
+						}
+#endif
+
+						writeToFile_withoutCompression(wbuf[j], numpackets,currframenum);
+					}
 #ifdef VERYDEBUG
 					cout << "written everyting" << endl;
 #endif
@@ -2074,9 +2121,13 @@ int UDPStandardImplementation::startWriting(){
 void UDPStandardImplementation::startFrameIndices(int ithread){
 	FILE_LOG(logDEBUG) << __AT__ << " called";
 
-	if (myDetectorType == EIGER)
+	if (myDetectorType == EIGER){
 		//add currframenum later  in this method for scans
-		startFrameIndex = htonl(*(unsigned int*)((eiger_image_header *)((char*)(buffer[ithread] + HEADER_SIZE_NUM_TOT_PACKETS)))->fnum);
+		if(dynamicRange == 32)
+			startFrameIndex = htonl(*(unsigned int*)((eiger_image_header32 *)((char*)(buffer[ithread] + HEADER_SIZE_NUM_TOT_PACKETS)))->fnum);
+		else
+			startFrameIndex = htonl(*(unsigned int*)((eiger_image_header *)((char*)(buffer[ithread] + HEADER_SIZE_NUM_TOT_PACKETS)))->fnum);
+	}
 	//gotthard has +1 for frame number and not a short frame
 	else if ((myDetectorType == GOTTHARD) && (shortFrame == -1))
 		startFrameIndex = (((((uint32_t)(*((uint32_t*)(buffer[ithread] + HEADER_SIZE_NUM_TOT_PACKETS))))+1)
@@ -2131,7 +2182,7 @@ int i;
 
 				//free buffer
 				if(rc <= 0){
-					cout << ithread << "Discarding empty frame" << endl;
+					cout << ithread << "Discarding empty frame/ End of acquisition" << endl;
 					fifoFree[ithread]->push(buffer[ithread]);
 #ifdef FIFO_DEBUG
 					cprintf(BLUE,"%d listener empty buffer pushed into fifofree %x\n", ithread, (void*)(buffer[ithread]));
@@ -2310,19 +2361,47 @@ void UDPStandardImplementation::writeToFile_withoutCompression(char* buf,int num
 		if(myDetectorType == EIGER){
 			offset += EIGER_HEADER_LENGTH;
 #ifdef WRITE_HEADERS
-			for (int i = 0; i < packetsPerFrame; i++)
-				(*(uint32_t*)(((eiger_packet_header *)((char*)(buf + offset + 1040*i)))->num1))  = framenum;
-
-			cprintf(RED, "\np1 fnum:0x%x\n",  (*(unsigned int*)(((eiger_packet_header *)((char*)(buf + offset)))->num1)));
-			cprintf(RED, "p1:0x%x\n",  (*(uint8_t*)(((eiger_packet_header *)((char*)(buf + offset)))->num2)));
-			cprintf(RED, "p1 num:0x%x\n",  (*(uint8_t*)(((eiger_packet_header *)((char*)(buf + offset)))->num3)));
-			cprintf(RED, "p2 fnum:0x%x\n",  (*(unsigned int*)(((eiger_packet_header *)((char*)(buf + offset +1040)))->num1)));
-			cprintf(RED, "p2:0x%x\n",  (*(uint8_t*)(((eiger_packet_header *)((char*)(buf + offset +1040)))->num2)));
-			cprintf(RED, "p2 num:0x%x\n", (*(uint8_t*)(((eiger_packet_header *)((char*)(buf + offset +1040)))->num3)));
-			cprintf(RED, "p3 fnum:0x%x\n",  (*(unsigned int*)(((eiger_packet_header *)((char*)(buf + offset + 2080)))->num1)));
-			cprintf(RED, "p3:0x%x\n",  (*(uint8_t*)(((eiger_packet_header *)((char*)(buf + offset +2080)))->num2)));
-			cprintf(RED, "p3 num:0x%x\n", (*(uint8_t*)(((eiger_packet_header *)((char*)(buf + offset +2080)))->num3)));
-
+#ifdef VERY_DEBUG
+			int k = 0;
+			if(dynamicRange != 32){
+				cprintf(RED, "\np1 fnum:0x%x\n",  (*(unsigned int*)(((eiger_packet_header *)((char*)(buf + offset+k*1040)))->num1)));
+				cprintf(RED, "p1:0x%x\n",  (*(uint8_t*)(((eiger_packet_header *)((char*)(buf + offset+k*1040)))->num3)));
+				cprintf(RED, "p0 num:%d - %d\n", k, (*(uint8_t*)(((eiger_packet_header *)((char*)(buf + offset+k*1040)))->num4)));
+				k = 1;
+				cprintf(RED, "p2 fnum:0x%x\n",  (*(unsigned int*)(((eiger_packet_header *)((char*)(buf + offset +k*1040)))->num1)));
+				cprintf(RED, "p2:0x%x\n",  (*(uint8_t*)(((eiger_packet_header *)((char*)(buf + offset +k*1040)))->num3)));
+				cprintf(RED, "p1 num:%d - %d\n", k,(*(uint8_t*)(((eiger_packet_header *)((char*)(buf + offset +k*1040)))->num4)));
+				k = 2;
+				cprintf(RED, "p3 fnum:0x%x\n",  (*(unsigned int*)(((eiger_packet_header *)((char*)(buf + offset + k*1040)))->num1)));
+				cprintf(RED, "p3:0x%x\n",  (*(uint8_t*)(((eiger_packet_header *)((char*)(buf + offset +k*1040)))->num3)));
+				cprintf(RED, "p2 num:%d - %d\n", k,(*(uint8_t*)(((eiger_packet_header *)((char*)(buf + offset +k*1040)))->num4)));
+			}else{
+				k = 0;
+				cprintf(RED, "\np1 fnum:0x%x\n",  (*(unsigned int*)(((eiger_packet_header *)((char*)(buf + offset+k*1040)))->num1)));
+				cprintf(RED, "p1:0x%x\n",  (*(uint8_t*)(((eiger_packet_header *)((char*)(buf + offset+k*1040)))->num3)));
+				cprintf(RED, "p0 num:%d - %d\n",  k, (*(uint16_t*)(((eiger_packet_header *)((char*)(buf + offset+k*1040)))->num2)));
+				k = 1;
+				cprintf(RED, "p2 fnum:0x%x\n",  (*(unsigned int*)(((eiger_packet_header *)((char*)(buf + offset +k*1040)))->num1)));
+				cprintf(RED, "p2:0x%x\n",  (*(uint8_t*)(((eiger_packet_header *)((char*)(buf + offset +k*1040)))->num3)));
+				cprintf(RED, "p1 num:%d - %d\n", k, (*(uint16_t*)(((eiger_packet_header *)((char*)(buf + offset +k*1040)))->num2)));
+				k = 2;
+				cprintf(RED, "p3 fnum:0x%x\n",  (*(unsigned int*)(((eiger_packet_header *)((char*)(buf + offset + k*1040)))->num1)));
+				cprintf(RED, "p3:0x%x\n",  (*(uint8_t*)(((eiger_packet_header *)((char*)(buf + offset +k*1040)))->num3)));
+				cprintf(RED, "p2 num:%d - %d\n", k, (*(uint16_t*)(((eiger_packet_header *)((char*)(buf + offset +k*1040)))->num2)));
+				k = 256;
+				cprintf(RED, "p257 fnum:0x%x\n",  (*(unsigned int*)(((eiger_packet_header *)((char*)(buf + offset + k*1040)))->num1)));
+				cprintf(RED, "p257:0x%x\n",  (*(uint8_t*)(((eiger_packet_header *)((char*)(buf + offset +k*1040)))->num3)));
+				cprintf(RED, "p256 num:%d - %d\n", k, (*(uint16_t*)(((eiger_packet_header *)((char*)(buf + offset +k*1040)))->num2)));
+				k = 512;
+				cprintf(RED, "p513 fnum:0x%x\n",  (*(unsigned int*)(((eiger_packet_header *)((char*)(buf + offset + k*1040)))->num1)));
+				cprintf(RED, "p513:0x%x\n",  (*(uint8_t*)(((eiger_packet_header *)((char*)(buf + offset +k*1040)))->num3)));
+				cprintf(RED, "p512 num:%d - %d\n", k, (*(uint16_t*)(((eiger_packet_header *)((char*)(buf + offset +k*1040)))->num2)));
+				k = 768;
+				cprintf(RED, "p769 fnum:0x%x\n",  (*(unsigned int*)(((eiger_packet_header *)((char*)(buf + offset + k*1040)))->num1)));
+				cprintf(RED, "p769:0x%x\n",  (*(uint8_t*)(((eiger_packet_header *)((char*)(buf + offset +k*1040)))->num3)));
+				cprintf(RED, "p768 num:%d - %d\n", k,(*(uint16_t*)(((eiger_packet_header *)((char*)(buf + offset +k*1040)))->num2)));
+			}
+#endif
 #endif
 		}
 		while(numpackets > 0){

@@ -211,14 +211,14 @@ class slsDetectorData {
 
   */
   virtual dataType getChannel(char *data, int ix, int iy, int dr) {
-	  dataType m=0, d=0;
+	  dataType m=0;
 	  uint64_t t;
 	  int numBytes,divFactor,newix,pixelval;
 
 
 	  if (ix>=0 && ix<nx && iy>=0 && iy<ny && dataMap[iy][ix]>=0 && dataMap[iy][ix]<dataSize) {
 		  m=dataMask[iy][ix];
-
+		  //cout <<"ix:"<<dec<<ix<<" iy:"<<iy<<endl;
 		  numBytes = (nx * iy + ix);
 		  divFactor=2;
 		  if(dr == 4) divFactor = 16;
@@ -228,10 +228,10 @@ class slsDetectorData {
 		  pixelval = numBytes % divFactor;
 		  newix = ix - pixelval;
 
-		  //cout <<"pixelval:"<<pixelval<<" newix:"<<newix<<endl;
-		  //cout <<"64:"<< hex<<((uint64_t)(*((uint64_t*)(((char*)data)+(dataMap[iy][newix])))))<<endl;
+		  //cout <<"pixelval:"<<dec <<pixelval<<" newix:"<<newix<<endl;
+		 // cout <<"64:"<< hex<<((uint64_t)(*((uint64_t*)(((char*)data)+(dataMap[iy][newix])))))<<endl;
 		  t = (be64toh((uint64_t)(*((uint64_t*)(((char*)data)+(dataMap[iy][newix]))))));
-		  //cout<<"t:"<<t<<endl;
+		 // cout<<"t:"<<hex<<t<<endl;
 
 	  }else
 		  cprintf(RED,"outside limits\n");

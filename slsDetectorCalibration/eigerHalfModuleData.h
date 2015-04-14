@@ -19,8 +19,8 @@ public:
 	 */
 
 
-	eigerHalfModuleData(int dr, int np, int bsize, int dsize, double c=0): slsReceiverData<uint32_t>(xpixels, ypixels, np, bsize),
-	xtalk(c), dynamicRange(dr), bufferSize(bsize), dataSize(dsize){
+	eigerHalfModuleData(int dr, int np, int bsize, int dsize, bool top, double c=0): slsReceiverData<uint32_t>(xpixels, ypixels, np, bsize),
+	xtalk(c), bufferSize(bsize), dataSize(dsize), dynamicRange(dr), numberOfPackets(np){
 
 
 		int **dMap;
@@ -42,29 +42,60 @@ public:
 		int iData1 = 0, iData2 = 0;
 		int iPort;
 
-		for (int ir=0; ir<ypixels; ir++) {
-			for (int ic=0; ic<xpixels; ic++) {
-				iPort = ic / (xpixels/2);
-				if(!iPort){
-					dMap[ir][ic]  = iPacket1;
-					iPacket1 += (dynamicRange / 8);
-					iData1 +=(dynamicRange / 8);
-					if(iData1 >= dataSize){
-						iPacket1 += 16;
-						iData1 = 0;
-					}
-				}else{
-					dMap[ir][ic]  = iPacket2;
-					iPacket2 += (dynamicRange / 8);
-					iData2 +=(dynamicRange / 8);
-					if(iData2 >= dataSize){
-						iPacket2 += 16;
-						iData2 = 0;
+
+		if(top){
+			for (int ir=0; ir<ypixels; ir++) {
+				for (int ic=0; ic<xpixels; ic++) {
+					iPort = ic / (xpixels/2);
+					if(!iPort){
+						dMap[ir][ic]  = iPacket1;
+						iPacket1 += (dynamicRange / 8);
+						iData1 +=(dynamicRange / 8);
+						if(iData1 >= dataSize){
+							iPacket1 += 16;
+							iData1 = 0;
+						}
+					}else{
+						dMap[ir][ic]  = iPacket2;
+						iPacket2 += (dynamicRange / 8);
+						iData2 +=(dynamicRange / 8);
+						if(iData2 >= dataSize){
+							iPacket2 += 16;
+							iData2 = 0;
+						}
 					}
 				}
 			}
 		}
 
+/*
+		else{
+			iPacket1 = (totalNumberOfBytes/2) - 1040 - 8;
+			iPacket2 = totalNumberOfBytes - 1040 - 8;
+			for (int ir=0; ir<ypixels; ir++) {
+				for (int ic=0; ic<xpixels; ic++) {
+					iPort = ic / (xpixels/2);
+					if(!iPort){
+						dMap[ir][ic]  = iPacket1;
+						iPacket1 += (dynamicRange / 8);//increment now but decrement before by 1024 before and after
+						iData1 +=(dynamicRange / 8);
+						if(iData1 >= dataSize){
+							iPacket1 += 16;
+							iData1 = 0;
+						}
+					}else{
+						dMap[ir][ic]  = iPacket2;
+						iPacket2 += (dynamicRange / 8);
+						iData2 +=(dynamicRange / 8);
+						if(iData2 >= dataSize){
+							iPacket2 += 16;
+							iData2 = 0;
+						}
+					}
+				}
+			}
+		}
+*/
 
 
 
@@ -87,7 +118,7 @@ public:
 	     \returns frame number
 	 */
 	int getFrameNumber(char *buff){
-		return htonl(*(unsigned int*)((eiger_image_header *)((char*)(buff)))->fnum);
+		return(*(unsigned int*)(((eiger_packet_header *)((char*)buff))->num1));
 	};
 
 
@@ -96,7 +127,31 @@ public:
      	 \returns packet number
 	 */
 	int getPacketNumber(char *buff){
-		return htonl(*(unsigned int*)((eiger_packet_header *)((char*)(buff)))->num2);
+		/*other way roud if its a bottom*/
+
+#ifdef VERY_DEBUG
+		cprintf(RED, "\n0x%x - %d - %d",
+			(*(uint8_t*)(((eiger_packet_header *)((char*)(buff)))->num3)),
+			(*(uint8_t*)(((eiger_packet_header *)((char*)(buff)))->num4)),
+			(*(uint16_t*)(((eiger_packet_header *)((char*)(buff)))->num2)));
+#endif
+		//32 bit packet number written in num2
+		if(dynamicRange == 32){
+			//both ports have same packet numbers, so reconstruct
+			if((*(uint8_t*)(((eiger_packet_header *)((char*)buff))->num3))){
+				return ((*(uint16_t*)(((eiger_packet_header *)((char*)buff))->num2))+(numberOfPackets/2) +1);
+			}else{
+				return ((*(uint16_t*)(((eiger_packet_header *)((char*)buff))->num2))+1);
+			}
+		}
+		else{
+			//both ports have same packet numbers, so reconstruct
+			if((*(uint8_t*)(((eiger_packet_header *)((char*)buff))->num3))){
+				return ((*(uint8_t*)(((eiger_packet_header *)((char*)buff))->num4))+(numberOfPackets/2) +1);
+			}else{
+				return ((*(uint8_t*)(((eiger_packet_header *)((char*)buff))->num4))+1);
+			}
+		}
 	};
 
 
@@ -146,21 +201,16 @@ private:
 	const int bufferSize;
 	const int dataSize;
 	const int dynamicRange;
+	const int numberOfPackets;
 
-
-	/** structure of an eiger image header*/
-	typedef struct
-	{
-		unsigned char header_before[20];
-		unsigned char  fnum[4];
-		unsigned char  header_after[24];
-	} eiger_image_header;
 
 	/** structure of an eiger image header*/
 	typedef struct
 	{
 		unsigned char num1[4];
-		unsigned char num2[4];
+		unsigned char num2[2];
+		unsigned char num3[1];
+		unsigned char num4[1];
 	} eiger_packet_header;
 
 };

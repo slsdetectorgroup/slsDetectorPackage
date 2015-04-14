@@ -67,7 +67,7 @@ public:
 		while (dd<=(dsize-packetSize)) {
 			pnum=getPacketNumber(p);
 			fn=getFrameNumber(p);
-
+			//cout <<"pnum:"<<pnum<<" fn:"<<fn<<"\t";
 
 			if (pnum<1 || pnum>nPackets) {
 				cout << "Bad packet number " << pnum << " frame "<< fn << endl;

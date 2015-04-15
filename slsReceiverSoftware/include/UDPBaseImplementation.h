@@ -68,6 +68,11 @@ class UDPBaseImplementation : protected virtual slsReceiverDefs, public UDPInter
 
 	//Frame indices and numbers caught
 	/**
+	 * Returns the frame index at start of entire acquisition (including all scans)
+	 */
+	uint32_t getStartAcquisitionIndex();
+
+	/**
 	 * Returns current Frame Index Caught for an entire  acquisition (including all scans)
 	 */
 	uint32_t getAcquisitionIndex();
@@ -288,9 +293,11 @@ class UDPBaseImplementation : protected virtual slsReceiverDefs, public UDPInter
 	 * @param c pointer to current file name
 	 * @param raw address of pointer, pointing to current frame to send to gui
 	 * @param fnum frame number for eiger as it is not in the packet
-	 * @param fstartind is the start index of the acquisition
+	 * @param startAcquisitionIndex is the start index of the acquisition
+	 * @param startFrameIndex is the start index of the scan
 	 */
-	void readFrame(char* c,char** raw, uint32_t &fnum, uint32_t &fstartind);
+	void readFrame(char* c,char** raw, uint32_t &fnum, uint32_t &startAcquisitionIndex, uint32_t &startFrameIndex);
+
 	/**
 	 * Closes all files
 	 * @param ithr thread index
@@ -479,13 +486,22 @@ protected:
 		unsigned char  fnum[4];
 		unsigned char  header_after[24];
 	} eiger_image_header;
+	/** structure of an eiger image header*/
+	typedef struct
+	{
+		unsigned char header_before[19];
+		unsigned char  fnum[4];
+		unsigned char  header_after[25];
+	} eiger_image_header32;
 
 
 	/** structure of an eiger image header*/
 	typedef struct
 	{
 		unsigned char num1[4];
-		unsigned char num2[4];
+		unsigned char num2[2];
+		unsigned char num3[1];
+		unsigned char num4[1];
 	} eiger_packet_header;
 
 	/** max number of listening threads */

@@ -249,45 +249,47 @@ class RestHelper {
      * @return 
      */
     
-    int n=0;
+    int n = 0;
     int code = -1;
-    while(n<n_connection_tries){
-
-      req.setContentType("application/json");
-      //without this you need to tell the lenght: http://pocoproject.org/forum/viewtopic.php?f=12&t=5741&p=10019&hilit=post+json#p10019
-      // request.setContentLength(my_string.length());
-      req.setChunkedTransferEncoding(true);
-      try {
-	//istringstream rs(request_body);
-	//req.read(rs);
-	//cout << " --- " <<  rs << endl;
-	if (request_body == "")
-	  session->sendRequest( (req) );
-	else{
-		ostream &os = session->sendRequest( req ) ;
-		os << request_body;
-	}
-	
-	HTTPResponse res;
-	istream &is = session->receiveResponse(res);
-	StreamCopier::copyToString(is, *answer);
-	code = res.getStatus();
-	if (code != 200){
-	  FILE_LOG(logERROR) << "HTTP ERROR " << res.getStatus() << ": " << res.getReason() ;
-	  code = -1;
-	}
-	else
-	  code = 0;
-	return code;
-      }
-      catch (exception& e){
-	      FILE_LOG(logERROR) << "Exception connecting to "<< full_hostname << ": "<< e.what() << ", sleeping 5 seconds (" << n << "/"<<n_connection_tries << ")";
-	sleep(5);
-      }
-      n+=1;
+    while(n < n_connection_tries){
+	    
+	    req.setContentType("application/json");
+	    //without this you need to tell the lenght: http://pocoproject.org/forum/viewtopic.php?f=12&t=5741&p=10019&hilit=post+json#p10019
+	    // request.setContentLength(my_string.length());
+	    req.setChunkedTransferEncoding(true);
+	    try {
+		    //istringstream rs(request_body);
+		    //req.read(rs);
+		    //cout << " --- " <<  rs << endl;
+		    if (request_body == "")
+			    session->sendRequest( (req) );
+		    else{
+			    ostream &os = session->sendRequest( req ) ;
+			    os << request_body;
+		    }
+		    
+		    HTTPResponse res;
+		    istream &is = session->receiveResponse(res);
+		    StreamCopier::copyToString(is, *answer);
+		    code = res.getStatus();
+		    if (code != 200){
+			    FILE_LOG(logERROR) << "HTTP ERROR " << res.getStatus() << ": " << res.getReason() ;
+			    code = -1;
+		    }
+		    else
+			    code = 0;
+		    return code;
+	    }
+	    catch (exception& e){
+		    FILE_LOG(logERROR) << "Exception connecting to "<< full_hostname << ": "<< e.what() << ", sleeping 5 seconds (" << n << "/"<<n_connection_tries << ")";
+		    sleep(5);
+	    }
+	    n+=1;
     }
-
-    throw std::string("Cannot connect to the REST server! Please check...");
+    
+    std::cout << "Hostname: " << full_hostname << std::endl;
+    FILE_LOG(logERROR) << "Cannot connect to the REST server host " <<  full_hostname << "! Please check..." ; 
+    throw std::runtime_error("Cannot connect to the REST server! Please check...");
     //return code;
   }
 

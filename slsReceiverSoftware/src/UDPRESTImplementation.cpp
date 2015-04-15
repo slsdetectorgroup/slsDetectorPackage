@@ -87,7 +87,9 @@ int UDPRESTImplementation::get_rest_state(RestHelper * rest, string *rest_state)
 };
 
 void UDPRESTImplementation::initialize_REST(){
+	
 	FILE_LOG(logDEBUG) << __AT__ << " called";
+	FILE_LOG(logDEBUG) << __AT__ << " REST status is initialized: " << isInitialized;
 	
 	if (rest_hostname.empty()) {
 		FILE_LOG(logDEBUG) << __AT__ <<"can't initialize with empty string or NULL for detectorHostname";
@@ -104,9 +106,12 @@ void UDPRESTImplementation::initialize_REST(){
 		try{
 			rest->init(rest_hostname, rest_port);
 			code = get_rest_state(rest, &answer);
+			std::cout << "AAAAAAAa " << answer << std::endl;
 			
+
 			if (code != 0){
-				throw answer;
+				FILE_LOG(logERROR) << __AT__ << " REST state returned: " << answer;
+				throw;
 			}
 			else{
 				isInitialized = true;
@@ -133,11 +138,19 @@ void UDPRESTImplementation::initialize_REST(){
 		ss >> test;
 		
 		
-		test =  "{\"path\":\"" + string( getFilePath() ) + "\"}";
-		code = rest->post_json("state/initialize", &answer, test);
-		FILE_LOG(logDEBUG) << __AT__ << "state/configure got " << code;
 		code = rest->get_json("state", &answer);
-		FILE_LOG(logDEBUG) << __AT__ << "state got " << code << " " << answer << "\n";
+		FILE_LOG(logDEBUG) << __AT__ << " state got " << code << " " << answer << "\n";
+		if (answer != "INITIALIZED"){
+			test =  "{\"path\":\"" + string( getFilePath() ) + "\"}";
+			code = rest->post_json("state/initialize", &answer, test);
+		}
+		else{
+			test =  "{\"path\":\"" + string( getFilePath() ) + "\"}";
+			code = rest->post_json("state/configure", &answer, test);
+		}
+		FILE_LOG(logDEBUG) << __AT__ << " state/configure got " << code;
+		code = rest->get_json("state", &answer);
+		FILE_LOG(logDEBUG) << __AT__ << " state got " << code << " " << answer << "\n";
 		
 		
 		/*
@@ -185,6 +198,11 @@ int UDPRESTImplementation::getTotalFramesCaught(){
 		return 0;
 	}
 	return (totalPacketsCaught/packetsPerFrame);
+}
+
+uint32_t UDPRESTImplementation::getStartAcquisitionIndex(){
+	FILE_LOG(logDEBUG) << __AT__ << " called";
+	return startAcquisitionIndex;
 }
 
 uint32_t UDPRESTImplementation::getStartFrameIndex(){
@@ -577,16 +595,19 @@ void UDPRESTImplementation::setupFifoStructure(){
 
 
 /** acquisition functions */
-void UDPRESTImplementation::readFrame(char* c,char** raw, uint32_t &fnum, uint32_t &fstartind){
+void UDPRESTImplementation::readFrame(char* c,char** raw, uint32_t &fnum, uint32_t &startAcquisitionIndex, uint32_t &startFrameIndex){
 	FILE_LOG(logDEBUG) << __AT__ << " called";
 	//point to gui data
-	if (guiData == NULL)
+	if (guiData == NULL){
 		guiData = latestData;
+	}
 
 	//copy data and filename
 	strcpy(c,guiFileName);
 	fnum = guiFrameNumber;
-	fstartind = getStartFrameIndex();
+	startAcquisitionIndex = getStartAcquisitionIndex();
+	startFrameIndex = getStartFrameIndex();
+
 
 	//could not get gui data
 	if(!guiDataReady){
@@ -596,12 +617,7 @@ void UDPRESTImplementation::readFrame(char* c,char** raw, uint32_t &fnum, uint32
 	else{
 		*raw = guiData;
 		guiData = NULL;
-
-		pthread_mutex_lock(&dataReadyMutex);
-		guiDataReady = 0;
-		pthread_mutex_unlock(&dataReadyMutex);
 		if((nFrameToGui) && (writerthreads_mask)){
-		/*if(nFrameToGui){*/
 			//release after getting data
 			sem_post(&smp);
 		}
@@ -1169,10 +1185,8 @@ int UDPRESTImplementation::startReceiver(char message[]){
 	initialize_REST();
 	FILE_LOG(logDEBUG) << __FILE__ << "::" << __func__ << " initialized";
 
-// #ifdef VERBOSE
 	cout << "Starting Receiver" << endl;
-//#endif
-
+	
 	std::string answer;
 	int code;
 	//char *intStr = itoa(a);
@@ -1184,17 +1198,21 @@ int UDPRESTImplementation::startReceiver(char message[]){
 	stringstream ss2;
 	ss2 << getNumberOfFrames();
 	string str_n = ss2.str();
+
 	
+	cout << "Starting Receiver" << endl;
+
 	std::string request_body =  "{\"settings\": {\"bit_depth\": " + str_dr + ", \"nimages\": " + str_n + "}}";
 	//std::string request_body =  "{\"settings\": {\"nimages\":1, \"scanid\":999, \"bit_depth\":16}}";
 	FILE_LOG(logDEBUG) << __FILE__ << "::" << " sending this configuration body: " << request_body;
 	code = rest->post_json("state/configure", &answer, request_body);
 	code = rest->get_json("state", &answer);
+	FILE_LOG(logDEBUG) << __FILE__ << "::" << " got: " << answer;
 
-	code = rest->post_json("state/open", &answer);
-	code = rest->get_json("state", &answer);
+	//code = rest->post_json("state/open", &answer);
+	//code = rest->get_json("state", &answer);
 
-	status = slsReceiverDefs::RUNNING;
+	status = RUNNING;
 
 	//reset listening thread variables
 	/*

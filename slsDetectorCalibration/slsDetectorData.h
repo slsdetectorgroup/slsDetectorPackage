@@ -105,9 +105,9 @@ class slsDetectorData {
 			  for (int ix=0; ix<nx; ix++) {
 				  dataMap[iy][ix]=dMap[iy][ix];
 				 // cout << ix << " " << iy << endl;
-				  ip=dataMap[ix][iy]/sizeof(dataType);
+				 /*ip=dataMap[ix][iy]/sizeof(dataType);
 				  xmap[ip]=ix;
-				  ymap[ip]=iy;
+				  ymap[ip]=iy;Annaa*/
 			  }
 		  }
 	  }
@@ -200,7 +200,7 @@ class slsDetectorData {
   */
 
 
-  virtual dataType getChannel(char *data, int ix, int iy=0, int dr=0) {
+  virtual dataType getChannel(char *data, int ix, int iy=0) {
     dataType m=0, d=0;
     if (ix>=0 && ix<nx && iy>=0 && iy<ny && dataMap[iy][ix]>=0 && dataMap[iy][ix]<dataSize) {
       m=dataMask[iy][ix];
@@ -210,7 +210,10 @@ class slsDetectorData {
   };
 
 
+
+
   /**
+
      Returns the value of the selected channel for the given dataset. Virtual function, can be overloaded.
      \param data pointer to the dataset (including headers etc)
      \param ix pixel number in the x direction
@@ -219,6 +222,7 @@ class slsDetectorData {
      \returns data for the selected channel, with inversion if required
 
   */
+
   virtual dataType getChannel(char *data, int ix, int iy, int dr) {
 	  dataType m=0;
 	  uint64_t t;
@@ -227,7 +231,7 @@ class slsDetectorData {
 
 	  if (ix>=0 && ix<nx && iy>=0 && iy<ny && dataMap[iy][ix]>=0 && dataMap[iy][ix]<dataSize) {
 		  m=dataMask[iy][ix];
-		  //cout <<"ix:"<<dec<<ix<<" iy:"<<iy<<endl;
+
 		  numBytes = (nx * iy + ix);
 		  divFactor=2;
 		  if(dr == 4) divFactor = 16;
@@ -237,10 +241,10 @@ class slsDetectorData {
 		  pixelval = numBytes % divFactor;
 		  newix = ix - pixelval;
 
-		  //cout <<"pixelval:"<<dec <<pixelval<<" newix:"<<newix<<endl;
-		 // cout <<"64:"<< hex<<((uint64_t)(*((uint64_t*)(((char*)data)+(dataMap[iy][newix])))))<<endl;
+		  //cout <<"pixelval:"<<pixelval<<" newix:"<<newix<<endl;
+		  //cout <<"64:"<< hex<<((uint64_t)(*((uint64_t*)(((char*)data)+(dataMap[iy][newix])))))<<endl;
 		  t = (be64toh((uint64_t)(*((uint64_t*)(((char*)data)+(dataMap[iy][newix]))))));
-		 // cout<<"t:"<<hex<<t<<endl;
+		  //cout<<"t:"<<t<<endl;
 
 	  }else
 		  cprintf(RED,"outside limits\n");

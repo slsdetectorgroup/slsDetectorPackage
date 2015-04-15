@@ -20,7 +20,7 @@ public:
 
 
 	eigerHalfModuleData(int dr, int np, int bsize, int dsize, bool top, double c=0): slsReceiverData<uint32_t>(xpixels, ypixels, np, bsize),
-	xtalk(c), bufferSize(bsize), dataSize(dsize), dynamicRange(dr), numberOfPackets(np){
+	xtalk(c), bufferSize(bsize), dataSize(dsize), dynamicRange(dr), numberOfPackets(np), top(top){
 
 
 		int **dMap;
@@ -40,6 +40,7 @@ public:
 		int iPacket1 = 8;
 		int iPacket2 = (totalNumberOfBytes/2) + 8;
 		int iData1 = 0, iData2 = 0;
+		/*int iData=0*/
 		int iPort;
 
 
@@ -51,6 +52,7 @@ public:
 						dMap[ir][ic]  = iPacket1;
 						iPacket1 += (dynamicRange / 8);
 						iData1 +=(dynamicRange / 8);
+						//increment header
 						if(iData1 >= dataSize){
 							iPacket1 += 16;
 							iData1 = 0;
@@ -59,28 +61,38 @@ public:
 						dMap[ir][ic]  = iPacket2;
 						iPacket2 += (dynamicRange / 8);
 						iData2 +=(dynamicRange / 8);
+						//increment header
 						if(iData2 >= dataSize){
 							iPacket2 += 16;
 							iData2 = 0;
 						}
 					}
+					/*iData +=(dynamicRange / 8);
+					//increment header
+					if(iData1 >= dataSize){
+						iPacket1 += 16;
+						iData1 = 0;
+					}*/
 				}
 			}
 		}
 
-/*
+
 		else{
-			iPacket1 = (totalNumberOfBytes/2) - 1040 - 8;
-			iPacket2 = totalNumberOfBytes - 1040 - 8;
+			/*int iData=0;*/
+			iData1 = 0; iData2 = 0;
+			iPacket1 = (totalNumberOfBytes/2) - bufferSize - 8;
+			iPacket2 = totalNumberOfBytes - bufferSize - 8;
 			for (int ir=0; ir<ypixels; ir++) {
 				for (int ic=0; ic<xpixels; ic++) {
 					iPort = ic / (xpixels/2);
 					if(!iPort){
 						dMap[ir][ic]  = iPacket1;
-						iPacket1 += (dynamicRange / 8);//increment now but decrement before by 1024 before and after
+						iPacket1 += (dynamicRange / 8);
 						iData1 +=(dynamicRange / 8);
 						if(iData1 >= dataSize){
-							iPacket1 += 16;
+							iPacket1 -= (dataSize*2);
+							iPacket1 -= 16;
 							iData1 = 0;
 						}
 					}else{
@@ -88,14 +100,24 @@ public:
 						iPacket2 += (dynamicRange / 8);
 						iData2 +=(dynamicRange / 8);
 						if(iData2 >= dataSize){
-							iPacket2 += 16;
+							iPacket2 -= (dataSize*2);
+							iPacket2 -= 16;
 							iData2 = 0;
 						}
 					}
+					/*iData +=(dynamicRange / 8);
+					//increment header
+					if(iData >= dataSize){
+						iPacket1 -= (bufferSize*2);
+						iPacket2 -= (bufferSize*2);
+						iPacket1 += 16;
+						iPacket2 += 16;
+						iData = 0;
+					}*/
 				}
 			}
 		}
-*/
+
 
 
 
@@ -127,8 +149,6 @@ public:
      	 \returns packet number
 	 */
 	int getPacketNumber(char *buff){
-		/*other way roud if its a bottom*/
-
 #ifdef VERY_DEBUG
 		cprintf(RED, "\n0x%x - %d - %d",
 			(*(uint8_t*)(((eiger_packet_header *)((char*)(buff)))->num3)),
@@ -137,19 +157,31 @@ public:
 #endif
 		//32 bit packet number written in num2
 		if(dynamicRange == 32){
-			//both ports have same packet numbers, so reconstruct
+			//both ports have same packet numbers, so reconstruct, ports interchanged for bottom
 			if((*(uint8_t*)(((eiger_packet_header *)((char*)buff))->num3))){
-				return ((*(uint16_t*)(((eiger_packet_header *)((char*)buff))->num2))+(numberOfPackets/2) +1);
+				if (top)
+					return ((*(uint16_t*)(((eiger_packet_header *)((char*)buff))->num2))+(numberOfPackets/2) +1);
+				else
+					return ((*(uint16_t*)(((eiger_packet_header *)((char*)buff))->num2))+1);
 			}else{
-				return ((*(uint16_t*)(((eiger_packet_header *)((char*)buff))->num2))+1);
+				if (top)
+					return ((*(uint16_t*)(((eiger_packet_header *)((char*)buff))->num2))+1);
+				else
+					return ((*(uint16_t*)(((eiger_packet_header *)((char*)buff))->num2))+(numberOfPackets/2) +1);
 			}
 		}
 		else{
 			//both ports have same packet numbers, so reconstruct
 			if((*(uint8_t*)(((eiger_packet_header *)((char*)buff))->num3))){
-				return ((*(uint8_t*)(((eiger_packet_header *)((char*)buff))->num4))+(numberOfPackets/2) +1);
+				if (top)
+					return ((*(uint8_t*)(((eiger_packet_header *)((char*)buff))->num4))+(numberOfPackets/2) +1);
+				else
+					return ((*(uint8_t*)(((eiger_packet_header *)((char*)buff))->num4))+1);
 			}else{
-				return ((*(uint8_t*)(((eiger_packet_header *)((char*)buff))->num4))+1);
+				if (top)
+					return ((*(uint8_t*)(((eiger_packet_header *)((char*)buff))->num4))+1);
+				else
+					return ((*(uint8_t*)(((eiger_packet_header *)((char*)buff))->num4))+(numberOfPackets/2) +1);
 			}
 		}
 	};
@@ -202,6 +234,7 @@ private:
 	const int dataSize;
 	const int dynamicRange;
 	const int numberOfPackets;
+	bool top;
 
 
 	/** structure of an eiger image header*/

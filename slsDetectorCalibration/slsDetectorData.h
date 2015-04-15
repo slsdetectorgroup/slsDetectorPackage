@@ -211,8 +211,6 @@ class slsDetectorData {
 
 
   /**
-
-<<<<<<< HEAD
      Returns the value of the selected channel for the given dataset. Virtual function, can be overloaded.
      \param data pointer to the dataset (including headers etc)
      \param ix pixel number in the x direction
@@ -263,9 +261,6 @@ class slsDetectorData {
   };
 
   /**
-
-=======
->>>>>>> b3dac953736499019603c2201df6e7eb45cc890c
      Returns the value of the selected channel for the given dataset as double.
      \param data pointer to the dataset (including headers etc)
      \param ix pixel number in the x direction

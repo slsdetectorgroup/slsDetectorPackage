@@ -36,9 +36,6 @@ class moench02CtbData : public slsDetectorData<uint16_t> {
     int iadc;
     int ix, iy;
 
-    xmap=new int[nx*ny];
-    ymap=new int[nx*ny];
-    
 
 
 
@@ -47,30 +44,13 @@ class moench02CtbData : public slsDetectorData<uint16_t> {
 	col=adc_nr[iadc]+(i%sc_width);
 	row=i/sc_width;
 	dataMap[row][col]=(32*i+iadc)*2;
-	if (dataMap[row][col]<0 || dataMap[row][col]>=2*160*160)
+	if (dataMap[row][col]<0 || dataMap[row][col]>=dataSize) {
 	  cout << "Error: pointer " << dataMap[row][col] << " out of range "<< endl;
+	  
+	}
 	  
       }
     }
-    for (int i=0; i<nx*ny; i++) {
-      isample=i/32;
-      iadc=i%nadc;
-      ix=isample%sc_width;
-      iy=isample/sc_width;
-      if (iadc<(nadc/2)) {
-	xmap[i]=adc_nr[iadc]+ix;
-	ymap[i]=ny/2-1-iy;
-      } else {
-	xmap[i]=adc_nr[iadc]+ix;
-	ymap[i]=ny/2+iy;
-      }
-
-
-    }
-
-
-
-    
     
     iframe=0;
     //  cout << "data struct created" << endl;

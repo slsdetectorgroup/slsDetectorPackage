@@ -18,7 +18,8 @@ class slsDetectorData {
   int **dataMap; /**< Array of size nx*ny storing the pointers to the data in the dataset (as offset)*/
   dataType **dataMask; /**< Array of size nx*ny storing the polarity of the data in the dataset (should be 0 if no inversion is required, 0xffffffff is inversion is required) */
   int **dataROIMask; /**< Array of size nx*ny 1 if channel is good (or in the ROI), 0 if bad channel (or out of ROI)   */
-
+ int *xmap;
+ int *ymap;
 
  public:
 
@@ -39,6 +40,8 @@ class slsDetectorData {
   slsDetectorData(int npx, int npy, int dsize, int **dMap=NULL, dataType **dMask=NULL, int **dROI=NULL): nx(npx), ny(npy), dataSize(dsize) {
 
    
+    xmap=new int[nx*ny];
+    ymap=new int[nx*ny];
 
     dataMask=new dataType*[ny];
     for(int i = 0; i < ny; i++) {
@@ -55,7 +58,9 @@ class slsDetectorData {
       for (int j=0; j<nx; j++)
 	 dataROIMask[i][j]=1;
     }
-    
+
+
+
     setDataMap(dMap);
     setDataMask(dMask);
     setDataROIMask(dROI);
@@ -71,9 +76,11 @@ class slsDetectorData {
     delete [] dataMap;
     delete [] dataMask;
     delete [] dataROIMask;
+    delete [] xmap;
+    delete [] ymap;
   }
 
-  virtual void getPixel(int ip, int &x, int &y) {x=ip; y=0;};
+  virtual void getPixel(int ip, int &x, int &y) {x=xmap[ip]; y=ymap[ip];};
 
 
 
@@ -85,7 +92,7 @@ class slsDetectorData {
 
 
   void setDataMap(int **dMap=NULL) {
-
+    int ip;
 
 	  if (dMap==NULL) {
 		  for (int iy=0; iy<ny; iy++)
@@ -98,6 +105,9 @@ class slsDetectorData {
 			  for (int ix=0; ix<nx; ix++) {
 				  dataMap[iy][ix]=dMap[iy][ix];
 				 // cout << ix << " " << iy << endl;
+				  ip=dataMap[ix][iy]/sizeof(dataType);
+				  xmap[ip]=ix;
+				  ymap[ip]=iy;
 			  }
 		  }
 	  }
@@ -190,7 +200,7 @@ class slsDetectorData {
   */
 
 
-  virtual dataType getChannel(char *data, int ix, int iy=0) {
+  virtual dataType getChannel(char *data, int ix, int iy=0, int dr=0) {
     dataType m=0, d=0;
     if (ix>=0 && ix<nx && iy>=0 && iy<ny && dataMap[iy][ix]>=0 && dataMap[iy][ix]<dataSize) {
       m=dataMask[iy][ix];
@@ -202,6 +212,7 @@ class slsDetectorData {
 
   /**
 
+<<<<<<< HEAD
      Returns the value of the selected channel for the given dataset. Virtual function, can be overloaded.
      \param data pointer to the dataset (including headers etc)
      \param ix pixel number in the x direction
@@ -253,6 +264,8 @@ class slsDetectorData {
 
   /**
 
+=======
+>>>>>>> b3dac953736499019603c2201df6e7eb45cc890c
      Returns the value of the selected channel for the given dataset as double.
      \param data pointer to the dataset (including headers etc)
      \param ix pixel number in the x direction

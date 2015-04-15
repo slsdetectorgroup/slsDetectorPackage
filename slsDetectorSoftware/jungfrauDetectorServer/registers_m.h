@@ -160,6 +160,8 @@
 //user entered
 
 
+#define NSAMPLES_REG 95<<11
+
 
 
 
@@ -544,7 +546,7 @@
 --------------------------------------------- */
 #define  IOSIGNALS_MASK 0xfffffffffffff
 #define ADC_ENABLE_BIT 63
-#define  APATTERN_MASK 0x3ff
+#define  APATTERN_MASK 0xffff
 #define ASTART_OFFSET 0
 #define ASTOP_OFFSET 16
 #define PATTERN_CTRL_WRITE_BIT 0

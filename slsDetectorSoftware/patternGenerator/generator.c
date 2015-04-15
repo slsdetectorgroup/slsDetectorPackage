@@ -33,9 +33,9 @@ uint64_t iopat=0;
 uint64_t clkpat=0;
 
 int iaddr=0;
-int waitaddr[3]={-1,-1,-1};
-int startloopaddr[3]={-1,-1,-1}; 
-int stoploopaddr[3]={-1,-1,-1}; 
+int waitaddr[3]={MAXWORDS,MAXWORDS,MAXWORDS};
+int startloopaddr[3]={MAXWORDS,MAXWORDS,MAXWORDS}; 
+int stoploopaddr[3]={MAXWORDS,MAXWORDS,MAXWORDS}; 
 int start=0, stop=0;
 uint64_t waittime[3]={0,0,0};
 int nloop[3]={0,0,0};

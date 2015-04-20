@@ -125,9 +125,9 @@ int Local_Write(struct LocalLinkInterface* ll,unsigned int buffer_len, void *buf
 	word_ptr = (unsigned int *)buffer;
 
 #ifdef MARTIN
-	printf("LL Write - Len: %2d - If: %X - Data: ",buffer_len, ll->ll_fifo_base);
+	cprintf(BLUE, "LL Write - Len: %2d - If: %X - Data: ",buffer_len, ll->ll_fifo_base);
 	for (i=0; i < buffer_len/4; i++)
-		printf("%.8X ",*(((unsigned *) buffer)+i));
+		cprintf(BLUE, "%.8X ",*(((unsigned *) buffer)+i));
 	printf("\n");
 #endif
 
@@ -171,7 +171,7 @@ int Local_Read(struct LocalLinkInterface* ll,unsigned int buffer_len, void *buff
 	int sof = 0;
 
 #ifdef MARTIN
-	printf("LL Read - If: %X - Data: ",ll->ll_fifo_base);
+	cprintf(CYAN, "LL Read - If: %X - Data: ",ll->ll_fifo_base);
 #endif
 
 	word_ptr = (unsigned int *)buffer;
@@ -200,7 +200,7 @@ int Local_Read(struct LocalLinkInterface* ll,unsigned int buffer_len, void *buff
 				if ( (buffer_len >> 2) > buffer_ptr)
 				{
 #ifdef MARTIN
-					printf("%.8X ", fifo_val);
+					cprintf(CYAN, "%.8X ", fifo_val);
 #endif
 					word_ptr[buffer_ptr++] = fifo_val; //write to buffer
 				}
@@ -214,7 +214,7 @@ int Local_Read(struct LocalLinkInterface* ll,unsigned int buffer_len, void *buff
 				{
 					len = (buffer_ptr << 2) -3 + ( (status & PLB_LL_FIFO_STATUS_LL_REM)>>PLB_LL_FIFO_STATUS_LL_REM_SHIFT );
 #ifdef MARTIN
-					printf("Len: %d\n",len);
+					cprintf(CYAN, "Len: %d\n",len);
 #endif
 					//		    printf(">>>>status=0x%08x  EOF  len = %d \n\r\n\r",status, len);
 					buffer_ptr = 0;

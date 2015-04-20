@@ -1009,4 +1009,9 @@ int getAllTrimbits(){
 	return *((detectorModules->chanregs));
 }
 
+int getBebFPGATemp()
+{
+	return Beb_GetBebFPGATemp();
+}
+
 #endif

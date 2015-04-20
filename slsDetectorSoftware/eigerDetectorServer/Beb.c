@@ -609,3 +609,35 @@ int Beb_Test(unsigned int beb_number){
   return 1;
 }
 
+// Returns the FPGA temperature from the xps sysmon ip core
+// Temperature value is cropped and not well rounded
+int Beb_GetBebFPGATemp()
+{
+	int temperature=0;
+	volatile u_int32_t *ptr1;
+	int fd;
+	
+	fd = open("/dev/mem", O_RDWR | O_SYNC, 0);
+	if (fd == -1)
+	{
+		printf("\nCan't find /dev/mem!\n");
+		return 0;
+	}
+
+	u_int32_t CSP0BASE = (u_int32_t)mmap(0, 0x1000, PROT_READ|PROT_WRITE, MAP_FILE|MAP_SHARED, fd, XPAR_SYSMON_0_BASEADDR );
+
+	if (CSP0BASE == (u_int32_t)MAP_FAILED)
+	{
+		printf("\nCan't map memmory area!!\n");
+		return 0;
+	}
+
+	ptr1=(u_int32_t*)(CSP0BASE + 0x200);	// temperature register in xps sysmon core is at 0x200
+	close(fd);
+
+	temperature = ((((float)(*ptr1)/65536.0f)/0.00198421639f ) - 273.15f); // Static conversation, copied from xps sysmon standalone driver
+
+
+	return temperature;
+}
+

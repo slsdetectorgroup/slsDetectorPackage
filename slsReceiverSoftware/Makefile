@@ -26,6 +26,8 @@ endif
 
 MAIN_SRC = main.cpp
 
+DUMMY_MAIN_SRC = dummyMain.cpp
+
 OBJS=$(SRC_CLNT:%.cpp=$(BUILDDIR)/%.o) 
 
 
@@ -39,6 +41,8 @@ $(info )
 .PHONY: all intdoc  package eigerReceiver clean
 
 all: builddir lib receiver
+
+dummy: $(DESTDIR)/dummyReceiver
 
 intdoc: $(SRC_H) $(SRC_CLNT) 
 	doxygen doxy.config
@@ -67,6 +71,11 @@ $(DESTDIR)/libSlsReceiver.a: $(OBJS)
 
 $(DESTDIR)/slsReceiver: 	lib
 	$(CXX)   -o $@  $(SRCDIR)/$(MAIN_SRC)  $(FLAGS)  $(INCLUDES) $(CLAGS) $(LIBS) $(LDFLAGRXR) -fPIC 
+#$(EIGERFLAGS)
+
+
+$(DESTDIR)/dummyReceiver: 	lib
+	$(CXX)   -o $@  $(SRCDIR)/$(DUMMY_MAIN_SRC)  $(FLAGS)  $(INCLUDES) $(CLAGS) $(LIBS) $(LDFLAGRXR) -fPIC 
 #$(EIGERFLAGS)
 
 

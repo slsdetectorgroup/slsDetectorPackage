@@ -269,6 +269,12 @@ int UDPStandardImplementation::setDetectorType(detectorType det){ 	FILE_LOG(logD
 	case EIGER:
 		cout << endl << "***** This is a EIGER Receiver *****" << endl << endl;
 		break;
+	case JUNGFRAUCTB:
+		cout << endl << "***** This is a JUNGFRAUCTB Receiver *****" << endl << endl;
+		break;
+	case JUNGFRAU:
+		cout << endl << "***** This is a JUNGFRAU Receiver *****" << endl << endl;
+		break;
 	default:
 		cout << endl << "***** Unknown Receiver *****" << endl << endl;
 	return FAIL;
@@ -315,6 +321,16 @@ int UDPStandardImplementation::setDetectorType(detectorType det){ 	FILE_LOG(logD
 			createListeningThreads(true);
 
 		numListeningThreads = MAX_NUM_LISTENING_THREADS;
+	} else if(myDetectorType == JUNGFRAUCTB || myDetectorType == JUNGFRAU ){
+		fifosize 			= JCTB_FIFO_SIZE;
+		packetsPerFrame 	= JCTB_PACKETS_PER_FRAME;
+		onePacketSize		= JCTB_ONE_PACKET_SIZE;
+		frameSize			= JCTB_BUFFER_SIZE;
+		bufferSize 			= JCTB_BUFFER_SIZE;
+		maxPacketsPerFile 	= JFCTB_MAX_FRAMES_PER_FILE * JCTB_PACKETS_PER_FRAME;
+		frameIndexMask 		= JCTB_FRAME_INDEX_MASK;
+		frameIndexOffset 	= JCTB_FRAME_INDEX_OFFSET;
+		packetIndexMask 	= JCTB_PACKET_INDEX_MASK;
 	}
 	latestData = new char[frameSize];
 

@@ -187,7 +187,7 @@ int Feb_Control_Init(int master, int top){
     sscanf(pch,"%d",&res);
     Feb_Control_module_number = (res & 0xFF);
 
-    int serial = top;
+	int serial = !top;
 
     /*
     //for Gemmas modules: if master, serial 0, else 1

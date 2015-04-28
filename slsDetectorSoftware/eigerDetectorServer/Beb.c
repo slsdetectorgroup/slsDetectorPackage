@@ -510,9 +510,15 @@ int Beb_SendMultiReadRequest(unsigned int beb_number, unsigned int left_right, i
 
 
     Beb_send_data[1] = 0x62000000 | (!stop_read_when_fifo_empty) << 27 | (ten_gig==1) << 24 | packet_size << 14 | dst_number << 8 | npackets;
+#ifdef MARTIN
+	cprintf(GREEN, "Beb_send_data[1]:%X\n",Beb_send_data[1]);
+#endif
     Beb_send_data[2] = 0;
     
     Beb_SwapDataFun(0,2,&(Beb_send_data[1]));
+#ifdef MARTIN
+	cprintf(GREEN, "Beb_send_data[1] Swapped:%X\n",Beb_send_data[1]);
+#endif
 
     if(!Beb_WriteTo(i)) return 0;
 
@@ -559,7 +565,10 @@ int Beb_RequestNImages(unsigned int beb_number, unsigned int left_right, int ten
 */
 
 
-
+#ifdef MARTIN
+  cprintf(RED, "----Beb_RequestNImages Start----\n");
+  cprintf(RED, "beb_number:%X, left_right:%X,ten_gig:%X,dst_number:%X,npackets:%X,Beb_bit_mode:%X,header_size:%X,test_just_send_out_packets_no_wait:%X\n",beb_number,left_right,ten_gig,dst_number,npackets,Beb_bit_mode,header_size,test_just_send_out_packets_no_wait);
+#endif
   unsigned int i;
   for(i=0;i<nimages;i++){
     //header then data request
@@ -570,7 +579,9 @@ int Beb_RequestNImages(unsigned int beb_number, unsigned int left_right, int ten
     	return 0;
     }
   }
-
+#ifdef MARTIN
+  cprintf(RED, "----Beb_RequestNImages----\n");
+#endif
 
   return 1;
 }

@@ -1218,7 +1218,15 @@ int64_t setPeriod(int64_t value){
     // value*=(1E-9*CLK_FREQ);
     value*=(1E-3*clkDivider[0]);
   }
+  if (value%2==0) {
+    
+    printf("Adding one to period: was %08llx ", value);
+    value+=1;
+    printf("now is %08llx\n ", value);
 
+    
+  } else
+    printf("Period already even is %08llx\n ", value);
 
 
   return set64BitReg(value,SET_PERIOD_LSB_REG, SET_PERIOD_MSB_REG)/(1E-3*clkDivider[0]);//(1E-9*CLK_FREQ);
@@ -1592,6 +1600,7 @@ int configureMAC(uint32_t destip,uint64_t destmac,uint64_t  sourcemac,int source
  unsigned short *addr;
  long int sum = 0;
  long int checksum;
+ volatile u_int32_t conf= bus_r(CONFIG_REG);
 
 ip.ip_ver            = 0x4;
 ip.ip_ihl            = 0x5;
@@ -1634,7 +1643,7 @@ ip.ip_destip         = destip;
   sleep(1);
   bus_w(CONTROL_REG,0);
   usleep(10000);
-  bus_w(CONFIG_REG,GB10_NOT_CPU_BIT);
+  bus_w(CONFIG_REG,conf | GB10_NOT_CPU_BIT);
   printf("System status register is %08x\n",bus_r(SYSTEM_STATUS_REG));
 
 return;
@@ -1890,20 +1899,24 @@ int i;
   for(i=0;i<100;i++){
 	  //start state machine
     bus_w16(CONTROL_REG, FIFO_RESET_BIT);
-	  bus_w16(CONTROL_REG, 0x0);
-	  bus_w16(CONTROL_REG, START_ACQ_BIT |  START_EXPOSURE_BIT);
-	  bus_w16(CONTROL_REG, 0x0);
+    bus_w16(CONTROL_REG, 0x0);
+    bus_w16(CONTROL_REG, START_ACQ_BIT |  START_EXPOSURE_BIT);
+    bus_w16(CONTROL_REG, 0x0);
 	  //verify
-	  if(bus_r(STATUS_REG) & RUN_BUSY_BIT)
-		  break;
-	  else
-		  usleep(5000);
+    if(bus_r(STATUS_REG) & RUN_BUSY_BIT)
+      break;
+    else {
+      printf("status: %08x\n",bus_r(STATUS_REG));
+      usleep(5000);
+    }
   }
-   if(i!=0)
-	   printf("tried to start state machine %d times\n",i);
-   if(i==100){
-	   printf("\n***********COULD NOT START STATE MACHINE***************\n");
-	   return FAIL;
+
+  if(i!=0)
+    printf("tried to start state machine %d times\n",i);
+ 
+  if(i==100){
+     printf("\n***********COULD NOT START STATE MACHINE***************\n");
+     return FAIL;
    }
 
    printf("statusreg=%08x\n",bus_r(STATUS_REG));
@@ -2031,7 +2044,7 @@ u_int16_t* fifo_read_event(int ns)
       }
       a = bus_r(LOOK_AT_ME_REG);
       //#ifdef VERBOSE
-      printf(".");
+      //  printf(".");
       //#endif
     }
 /* #ifdef TIMEDBG  */
@@ -2067,18 +2080,19 @@ u_int16_t* fifo_read_event(int ns)
   
       if (i!=0 || ns!=0) {
 	a=0;
-	while (*((u_int32_t*)now_ptr)==*((u_int32_t*)(now_ptr)-1) && a<10) {
+	while (*((u_int32_t*)now_ptr)==*((u_int32_t*)(now_ptr)-1) && a++<10) {
 
 	  //	  printf("******************** %d: fifo %d: new %08x old %08x\n ",ns, i, *((u_int32_t*)now_ptr),*((u_int32_t*)(now_ptr)-1));
 	  *((u_int32_t*)now_ptr)=*values;
-	  a++;
+	  //  printf("%d-",i);
+	  
 	}
-      }
+    }
 
       now_ptr+=4;
       bus_w16(DUMMY_REG,i+1);
      // *(((u_int16_t*)(now_ptr))+i)=bus_r16(FIFO_DATA_REG);
-   } 
+    } 
   bus_w16(DUMMY_REG,0); // 
 /* #ifdef TIMEDBG  */
   
@@ -2113,6 +2127,11 @@ u_int16_t* fifo_read_frame()
   printf("total read data loop  = %ld usec\n",(tss.tv_usec) - (tsss.tv_usec)); 
    
 #endif 
+/* #ifdef VERBOSE */
+/*   printf("+\n"); */
+/* #else */
+/*   printf("+\n"); */
+/* #endif */
   //  printf("%x %d\n",dum, ns);
   if (ns) return ram_values;
 #ifdef VERBOSE

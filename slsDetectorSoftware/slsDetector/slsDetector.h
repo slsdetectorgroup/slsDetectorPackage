@@ -785,6 +785,16 @@ class slsDetector : public slsDetectorUtils, public energyConversion {
   */
   int writeRegister(int addr, int val);
   
+
+  /** 
+      write  register 
+      \param addr address
+      \val value
+      \returns current register value
+
+  */
+  int writeAdcRegister(int addr, int val);
+  
   /** 
       read  register 
       \param addr address

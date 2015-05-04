@@ -3847,6 +3847,28 @@ int multiSlsDetector::writeRegister(int addr, int val){
 };
 
 
+
+int multiSlsDetector::writeAdcRegister(int addr, int val){
+
+  int  i;//imi, ima,
+  int ret, ret1=-100;
+
+  for (i=0; i<thisMultiDetector->numberOfDetectors; i++) {
+    if (detectors[i]) {
+      ret=detectors[i]->writeAdcRegister(addr,val);
+      if(detectors[i]->getErrorMask())
+	setErrorMask(getErrorMask()|(1<<i));
+     if (ret1==-100)
+	ret1=ret;
+      else if (ret!=ret1)
+	ret1=-1;
+    }
+  }
+
+  return ret1;
+};
+
+
 int multiSlsDetector::readRegister(int addr){
 
   int  i;//imi, ima,

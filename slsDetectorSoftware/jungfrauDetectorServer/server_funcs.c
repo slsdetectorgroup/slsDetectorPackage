@@ -247,6 +247,7 @@ int function_table() {
   flist[F_STOP_RECEIVER]=&stop_receiver;
   flist[F_CALIBRATE_PEDESTAL]=&calibrate_pedestal;
   flist[F_SET_CTB_PATTERN]=&set_ctb_pattern;
+  flist[F_WRITE_ADC_REG]=&write_adc_register;
   return OK;
 }
 
@@ -2712,7 +2713,7 @@ int configure_mac(int file_des) {
 	sscanf(arg[3], "%llx",	&idetectormacadd);
 	sscanf(arg[4], "%x",		&detipad);
 
-#ifdef VERBOSE
+	//#ifdef VERBOSE
 	int i;
 	printf("\ndigital_test_bit in server %d\t",digitalTestBit);
 	printf("\nipadd %x\t",ipad);
@@ -2726,7 +2727,7 @@ int configure_mac(int file_des) {
 		printf("detector mac adress %d is 0x%x \n",6-i,(unsigned int)(((idetectormacadd>>(8*i))&0xFF)));
 	printf("detipad %x\n",detipad);
 	printf("\n");
-#endif
+	//#endif
 
 
 
@@ -3305,3 +3306,65 @@ int set_ctb_pattern(int file_des){
 }
 
 
+int write_adc_register(int file_des) {
+
+  int retval;
+  int ret=OK;
+  int arg[2]; 
+  int addr, val;
+  int n;
+  u_int32_t address;
+
+  sprintf(mess,"Can't write to register\n");
+
+  n = receiveDataOnly(file_des,arg,sizeof(arg));
+  if (n < 0) {
+    sprintf(mess,"Error reading from socket\n");
+    ret=FAIL;
+  }
+  addr=arg[0];
+  val=arg[1];
+
+#ifdef VERBOSE
+  printf("writing to register 0x%x data 0x%x\n", addr, val);
+#endif  
+
+  if (differentClients==1 && lockStatus==1) {
+    ret=FAIL;
+    sprintf(mess,"Detector locked by %s\n",lastClientIP);    
+  }
+
+
+  if(ret!=FAIL){
+    ret=writeADC(addr,val);
+    if (ret==OK)
+      retval=val;
+  }
+  
+
+#ifdef VERBOSE
+  printf("Data set to 0x%x\n",  retval);
+#endif  
+  if (retval==val) {
+    ret=OK;
+    if (differentClients)
+      ret=FORCE_UPDATE;
+  } else {
+    ret=FAIL;
+    sprintf(mess,"Writing to register 0x%x failed: wrote 0x%x but read 0x%x\n", addr, val, retval);
+  }
+
+  /* send answer */
+  /* send OK/failed */
+  n = sendDataOnly(file_des,&ret,sizeof(ret));
+  if (ret!=FAIL) {
+    /* send return argument */
+    n += sendDataOnly(file_des,&retval,sizeof(retval));
+  } else {
+    n += sendDataOnly(file_des,mess,sizeof(mess));
+  }
+
+  /*return ok/fail*/
+  return ret; 
+
+}

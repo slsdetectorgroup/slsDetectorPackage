@@ -92,8 +92,8 @@ enum {
   F_ENABLE_TEN_GIGA,  /**< enable 10Gbe */
   F_SET_ALL_TRIMBITS,  /** < set all trimbits to this value */
 
-  F_SET_CTB_PATTERN  /** < loads a pattern in the CTB */
-
+  F_SET_CTB_PATTERN,  /** < loads a pattern in the CTB */
+  F_WRITE_ADC_REG  /** < writes an ADC register */
 
   /* Always append functions hereafter!!! */
 

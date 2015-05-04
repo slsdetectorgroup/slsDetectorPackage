@@ -462,6 +462,10 @@ slsDetectorCommand::slsDetectorCommand(slsDetectorUtils *det)  {
   descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdRegister;
   i++;
 
+  descrToFuncMap[i].m_pFuncName="adcreg"; //
+  descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdRegister;
+  i++;
+
   descrToFuncMap[i].m_pFuncName="setbit"; //
   descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdRegister;
   i++;
@@ -3301,6 +3305,12 @@ string slsDetectorCommand::cmdRegister(int narg, char *args[], int action) {
       else
 	return string("Could not scan value  (hexadecimal fomat) ")+string(args[2]);
       sprintf(answer,"%x",myDet->writeRegister(addr,val));
+    } else if (cmd=="adcreg") {
+      if (sscanf(args[2],"%x",&val))
+	;
+      else
+	return string("Could not scan value  (hexadecimal fomat) ")+string(args[2]);
+      sprintf(answer,"%x",myDet->writeAdcRegister(addr,val));
     } else {
       
       if (sscanf(args[2],"%d",&n))
@@ -3322,6 +3332,8 @@ string slsDetectorCommand::cmdRegister(int narg, char *args[], int action) {
     if (cmd=="setbit")	
       return string("Cannot get");
     if (cmd=="clearbit")	
+      return string("Cannot get");
+    if (cmd=="adcreg")	
       return string("Cannot get");
 
     if (cmd=="reg") {

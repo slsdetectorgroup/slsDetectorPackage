@@ -445,6 +445,17 @@ class slsDetectorUtils :  public slsDetectorActions, public postProcessing {
   */
   virtual int writeRegister(int addr, int val)=0; 
 
+
+  /** 
+      write  ADC register 
+      \param addr address
+      \param val value
+      \returns current register value
+      
+      DO NOT USE!!! ONLY EXPERT USER!!!
+  */
+  virtual int writeAdcRegister(int addr, int val)=0; 
+
  
   /** 
       read  register 

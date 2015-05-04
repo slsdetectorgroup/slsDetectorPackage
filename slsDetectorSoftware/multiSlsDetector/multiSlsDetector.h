@@ -956,6 +956,9 @@ class multiSlsDetector  : public slsDetectorUtils {
   int writeRegister(int addr, int val);
   
 
+  int writeAdcRegister(int addr, int val);
+  
+
   int readRegister(int addr);
 
 

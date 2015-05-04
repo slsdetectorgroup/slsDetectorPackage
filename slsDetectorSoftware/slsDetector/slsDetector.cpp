@@ -1972,6 +1972,51 @@ int slsDetector::writeRegister(int addr, int val){
   return retval;
 
 };
+/* write or read register */
+
+int slsDetector::writeAdcRegister(int addr, int val){
+
+
+  int retval;
+  int fnum=F_WRITE_ADC_REG;
+  int ret=FAIL;
+
+  char mess[100];
+
+  int arg[2];
+  arg[0]=addr;
+  arg[1]=val;
+
+
+#ifdef VERBOSE
+  std::cout<< std::endl;
+  std::cout<< "Writing to adc register "<< hex<<addr <<  " data " << hex<<val << std::endl;
+#endif
+  if (thisDetector->onlineFlag==ONLINE_FLAG) {
+    if (connectControl() == OK){
+      controlSocket->SendDataOnly(&fnum,sizeof(fnum));
+      controlSocket->SendDataOnly(arg,sizeof(arg));
+      controlSocket->ReceiveDataOnly(&ret,sizeof(ret));
+      if (ret!=FAIL)
+	controlSocket->ReceiveDataOnly(&retval,sizeof(retval));
+      else {
+	controlSocket->ReceiveDataOnly(mess,sizeof(mess));
+	std::cout<< "Detector returned error: " << mess << std::endl;
+      }
+      controlSocket->Disconnect();
+      if (ret==FORCE_UPDATE)
+	updateDetector();
+    }
+  }
+#ifdef VERBOSE
+  std::cout<< "ADC Register returned "<< retval << std::endl;
+#endif
+  if (ret==FAIL) {
+    std::cout<< "Write ADC to register failed " << std::endl;
+  }
+  return retval;
+
+};
 
 
 

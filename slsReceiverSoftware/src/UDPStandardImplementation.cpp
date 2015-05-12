@@ -1950,9 +1950,8 @@ int UDPStandardImplementation::startWriting(){
 					currframenum = tempframenum;
 				pthread_mutex_unlock(&progress_mutex);
 			}
-#ifdef VERYDEBUG
-			if(myDetectorType == EIGER)
-				cout << endl <<ithread << " tempframenum:" << dec << tempframenum << " curframenum:" << currframenum << endl;
+#ifdef EIGER_DEBUG2
+			cout << endl <<ithread << " tempframenum:" << dec << tempframenum << " curframenum:" << currframenum << endl;
 #endif
 
 

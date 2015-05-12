@@ -26,9 +26,9 @@ using namespace std;
 
 
 slsReceiverTCPIPInterface::~slsReceiverTCPIPInterface() {
+	closeFile(0);
 	if(socket) {delete socket; socket=NULL;}
 	if(receiverBase) {delete receiverBase; receiverBase=NULL;}
-	closeFile(0);
 }
 
 slsReceiverTCPIPInterface::slsReceiverTCPIPInterface(int &success, UDPInterface* rbase, int pn, bool bot):
@@ -652,7 +652,9 @@ int slsReceiverTCPIPInterface::setup_udp(){
 			 receiverBase->setUDPPortNo2(udpport2);
 			 //setup udpip
 			 //get ethernet interface or IP to listen to
+			 cout << "Ethernet interface is " << args[0] << endl;
 			 temp = genericSocket::ipToName(args[0]);
+			 cout <<  temp << endl;
 			 if(temp=="none"){
 				 ret = FAIL;
 				 strcpy(mess, "failed to get ethernet interface or IP to listen to\n");
@@ -666,10 +668,11 @@ int slsReceiverTCPIPInterface::setup_udp(){
 				 FILE_LOG(logDEBUG) << __FILE__ << "::" << __func__ << " " << eth;
 				 receiverBase->setEthernetInterface(eth);
 
+			 cout <<  eth << endl;
 				 //get mac address from ethernet interface
 				 if (ret != FAIL)
 					temp = genericSocket::nameToMac(eth);
-
+				 
 
 				 if ((temp=="00:00:00:00:00:00") || (ret == FAIL)){
 					 ret = FAIL;

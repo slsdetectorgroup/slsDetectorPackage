@@ -131,6 +131,7 @@ int startReceiver(int d);
 void setExternalGating(int enable[]);
 void setAllTrimbits(int val);
 int getAllTrimbits();
+int getBebFPGATemp();
 #endif
 
 

@@ -187,15 +187,13 @@ int Feb_Control_Init(int master, int top){
     sscanf(pch,"%d",&res);
     Feb_Control_module_number = (res & 0xFF);
 
+	int serial = !top;
+
+    /*
     //for Gemmas modules: if master, serial 0, else 1
     int serial = 1;
     if(master)
     	serial = 0;
-   /* else if(top)if slave top, serial = 2
-    	serial = 2;*/
-
-
-
     switch(Feb_Control_module_number){
     case 34: serial = 0; break; //martin half
     case 26: serial = 0; break; //leo
@@ -212,7 +210,7 @@ int Feb_Control_Init(int master, int top){
 
     case 49: serial = 0; break; // Gemma
     case 48: serial = 1; break; // Gemma
-    }
+    }*/
     printf("serial: %d\n",serial);
 
 	Feb_Control_current_index = 1;
@@ -1071,17 +1069,17 @@ unsigned int Feb_Control_AddressToAll(){printf("in Feb_Control_AddressToAll()\n"
 
   if(moduleSize==0) return 0;
 
-/*
+
    if(Module_BottomAddressIsValid(&modules[1])){
-	  printf("************* bottom\n");
+	  //printf("************* bottom\n");
 	  //if(Feb_Control_am_i_master)
 		  return Module_GetBottomLeftAddress(&modules[1])|Module_GetBottomRightAddress(&modules[1]);
 	 // else return 0;
   }
-  printf("************* top\n");
-*/
-	//return Module_GetTopLeftAddress(&modules[1])|Module_GetTopRightAddress(&modules[1]);
-	  return Module_GetTopLeftAddress(&modules[0])|Module_GetTopRightAddress(&modules[0]);
+ // printf("************* top\n");
+
+	return Module_GetTopLeftAddress(&modules[1])|Module_GetTopRightAddress(&modules[1]);
+	  //return Module_GetTopLeftAddress(&modules[0])|Module_GetTopRightAddress(&modules[0]);
 
 
 }

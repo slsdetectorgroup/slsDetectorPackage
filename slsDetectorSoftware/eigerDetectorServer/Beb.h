@@ -80,6 +80,7 @@ struct BebInfo{
 
   int Beb_Test(unsigned int beb_number);
 
+  int Beb_GetBebFPGATemp();
 
 
 #endif 

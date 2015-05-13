@@ -495,7 +495,7 @@ enum detectorSettings setSettings(enum detectorSettings sett, int imod){
 
 
 int startReceiver(int d){
-	if(master)
+	//if(master)
 		Feb_Control_PrepareForAcquisition();
 	return OK;
 }
@@ -503,10 +503,10 @@ int startReceiver(int d){
 
 int startStateMachine(){
 	int ret;
-	if(master){
+	//if(master){
 		printf("Going to start acquisition\n");
 		Feb_Control_StartAcquisition();
-	}
+	//}
 
 	//do not read status here, cannot get images then
 
@@ -517,7 +517,7 @@ int startStateMachine(){
 	//if(trialMasterMode == IS_MASTER){
 
 
-	if(master){
+	//if(master){
 		/*
 		 * int i=0;
 			if(getRunStatus() == IDLE){
@@ -535,9 +535,11 @@ int startStateMachine(){
 
 		 */
 
-		while(getRunStatus() == IDLE);
+		while(getRunStatus() == IDLE){
+			printf("waiting for being not idle anymore\n");
+		}
 		printf("*****Acquiring...\n");
-	}
+	//}
 	/*else usleep(1000000);
 			printf("****Returning\n");*/
 
@@ -1005,6 +1007,11 @@ void setAllTrimbits(int val){
 
 int getAllTrimbits(){
 	return *((detectorModules->chanregs));
+}
+
+int getBebFPGATemp()
+{
+	return Beb_GetBebFPGATemp();
 }
 
 #endif

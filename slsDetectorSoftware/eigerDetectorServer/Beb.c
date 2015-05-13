@@ -510,9 +510,15 @@ int Beb_SendMultiReadRequest(unsigned int beb_number, unsigned int left_right, i
 
 
     Beb_send_data[1] = 0x62000000 | (!stop_read_when_fifo_empty) << 27 | (ten_gig==1) << 24 | packet_size << 14 | dst_number << 8 | npackets;
+#ifdef MARTIN
+	cprintf(GREEN, "Beb_send_data[1]:%X\n",Beb_send_data[1]);
+#endif
     Beb_send_data[2] = 0;
     
     Beb_SwapDataFun(0,2,&(Beb_send_data[1]));
+#ifdef MARTIN
+	cprintf(GREEN, "Beb_send_data[1] Swapped:%X\n",Beb_send_data[1]);
+#endif
 
     if(!Beb_WriteTo(i)) return 0;
 
@@ -559,7 +565,10 @@ int Beb_RequestNImages(unsigned int beb_number, unsigned int left_right, int ten
 */
 
 
-
+#ifdef MARTIN
+  cprintf(RED, "----Beb_RequestNImages Start----\n");
+  cprintf(RED, "beb_number:%X, left_right:%X,ten_gig:%X,dst_number:%X,npackets:%X,Beb_bit_mode:%X,header_size:%X,test_just_send_out_packets_no_wait:%X\n",beb_number,left_right,ten_gig,dst_number,npackets,Beb_bit_mode,header_size,test_just_send_out_packets_no_wait);
+#endif
   unsigned int i;
   for(i=0;i<nimages;i++){
     //header then data request
@@ -570,7 +579,9 @@ int Beb_RequestNImages(unsigned int beb_number, unsigned int left_right, int ten
     	return 0;
     }
   }
-
+#ifdef MARTIN
+  cprintf(RED, "----Beb_RequestNImages----\n");
+#endif
 
   return 1;
 }
@@ -607,5 +618,37 @@ int Beb_Test(unsigned int beb_number){
   
 
   return 1;
+}
+
+// Returns the FPGA temperature from the xps sysmon ip core
+// Temperature value is cropped and not well rounded
+int Beb_GetBebFPGATemp()
+{
+	int temperature=0;
+	volatile u_int32_t *ptr1;
+	int fd;
+	
+	fd = open("/dev/mem", O_RDWR | O_SYNC, 0);
+	if (fd == -1)
+	{
+		printf("\nCan't find /dev/mem!\n");
+		return 0;
+	}
+
+	u_int32_t CSP0BASE = (u_int32_t)mmap(0, 0x1000, PROT_READ|PROT_WRITE, MAP_FILE|MAP_SHARED, fd, XPAR_SYSMON_0_BASEADDR );
+
+	if (CSP0BASE == (u_int32_t)MAP_FAILED)
+	{
+		printf("\nCan't map memmory area!!\n");
+		return 0;
+	}
+
+	ptr1=(u_int32_t*)(CSP0BASE + 0x200);	// temperature register in xps sysmon core is at 0x200
+	close(fd);
+
+	temperature = ((((float)(*ptr1)/65536.0f)/0.00198421639f ) - 273.15f); // Static conversation, copied from xps sysmon standalone driver
+
+
+	return temperature;
 }
 

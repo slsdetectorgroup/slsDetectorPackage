@@ -1994,7 +1994,7 @@ int UDPStandardImplementation::startWriting(){
 				        		= ((*(uint8_t*)(((eiger_packet_header *)((char*)(wbuf[j] + totalheader + EIGER_ONE_GIGA_ONE_PACKET_SIZE*i)))->num4)));
 
 									//new port number as its the same everywhere for 32 bit!!
-									if(!j)	(*(uint8_t*)(((eiger_packet_header *)((char*)(wbuf[j] + totalheader + EIGER_ONE_GIGA_ONE_PACKET_SIZE*i)))->num3)) = 0x00;
+									if((!j)&& (!bottom))	(*(uint8_t*)(((eiger_packet_header *)((char*)(wbuf[j] + totalheader + EIGER_ONE_GIGA_ONE_PACKET_SIZE*i)))->num3)) = 0x00;
 
 
 #ifdef VERYDEBUG

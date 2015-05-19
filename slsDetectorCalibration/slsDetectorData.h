@@ -228,7 +228,7 @@ class slsDetectorData {
 	  uint64_t t;
 	  int numBytes,divFactor,newix,pixelval;
 
-
+//cout <<"ix:"<<ix<<" nx:"<<nx<<" iy:"<<ny<<" ny:"<<ny<<" datamap[iy][ix]:"<< dataMap[iy][ix] <<"datasize:"<< dataSize <<endl;
 	  if (ix>=0 && ix<nx && iy>=0 && iy<ny && dataMap[iy][ix]>=0 && dataMap[iy][ix]<dataSize) {
 		  m=dataMask[iy][ix];
 

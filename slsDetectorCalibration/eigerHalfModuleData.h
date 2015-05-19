@@ -40,18 +40,23 @@ public:
 		int iPacket1 = 8;
 		int iPacket2 = (totalNumberOfBytes/2) + 8;
 		int iData1 = 0, iData2 = 0;
-		/*int iData=0*/
+		int increment = (dynamicRange/8);
+		int ic_increment = 1;
+		if (dynamicRange == 4) {
+			increment = 1;
+			ic_increment = 2;
+		}
 		int iPort;
 
 
 		if(top){
 			for (int ir=0; ir<ypixels; ir++) {
-				for (int ic=0; ic<xpixels; ic++) {
+				for (int ic=0; ic<xpixels; ic = ic + ic_increment) {
 					iPort = ic / (xpixels/2);
 					if(!iPort){
 						dMap[ir][ic]  = iPacket1;
-						iPacket1 += (dynamicRange / 8);
-						iData1 +=(dynamicRange / 8);
+						iPacket1 += increment;
+						iData1 += increment;
 						//increment header
 						if(iData1 >= dataSize){
 							iPacket1 += 16;
@@ -59,61 +64,84 @@ public:
 						}
 					}else{
 						dMap[ir][ic]  = iPacket2;
-						iPacket2 += (dynamicRange / 8);
-						iData2 +=(dynamicRange / 8);
+						iPacket2 += increment;
+						iData2 += increment;
 						//increment header
 						if(iData2 >= dataSize){
 							iPacket2 += 16;
 							iData2 = 0;
 						}
 					}
-					/*iData +=(dynamicRange / 8);
-					//increment header
-					if(iData1 >= dataSize){
-						iPacket1 += 16;
-						iData1 = 0;
-					}*/
 				}
 			}
 		}
 
 
+		//bottom
 		else{
-			/*int iData=0;*/
 			iData1 = 0; iData2 = 0;
-			iPacket1 = (totalNumberOfBytes/2) - bufferSize - 8;
-			iPacket2 = totalNumberOfBytes - bufferSize - 8;
+			int numbytesperlineperport = 1024;
+			if (dynamicRange == 8)
+				numbytesperlineperport = 512;
+			else if (dynamicRange == 4)
+				numbytesperlineperport = 256;
+			else if (dynamicRange == 32)
+				numbytesperlineperport = 2048;
+
+
+
+			iPacket1 = (totalNumberOfBytes/2) - numbytesperlineperport - 8;
+			iPacket2 = totalNumberOfBytes - numbytesperlineperport - 8;
+			if (dynamicRange == 32){
+				iPacket1 -= 16;
+				iPacket2 -= 16;
+			}
+
 			for (int ir=0; ir<ypixels; ir++) {
-				for (int ic=0; ic<xpixels; ic++) {
+				for (int ic=0; ic<xpixels; ic = ic + ic_increment) {
 					iPort = ic / (xpixels/2);
 					if(!iPort){
 						dMap[ir][ic]  = iPacket1;
-						iPacket1 += (dynamicRange / 8);
-						iData1 +=(dynamicRange / 8);
-						if(iData1 >= dataSize){
-							iPacket1 -= (dataSize*2);
-							iPacket1 -= 16;
-							iData1 = 0;
-						}
-					}else{
-						dMap[ir][ic]  = iPacket2;
-						iPacket2 += (dynamicRange / 8);
-						iData2 +=(dynamicRange / 8);
-						if(iData2 >= dataSize){
-							iPacket2 -= (dataSize*2);
-							iPacket2 -= 16;
-							iData2 = 0;
+						iPacket1 += increment;
+						iData1 += increment;
+						if(dynamicRange == 32){
+							if(iData1 == numbytesperlineperport){
+								iPacket1 -= (numbytesperlineperport*2 + 16*3);
+								iData1 = 0;
+							}
+							if(iData1 == dataSize){
+								iPacket1 += 16;
+							}
+						}else if((iData1 % numbytesperlineperport) == 0){
+							iPacket1 -= (numbytesperlineperport*2);
+							if(iData1 == dataSize){
+								iPacket1 -= 16;
+								iData1 = 0;
+							}
+
 						}
 					}
-					/*iData +=(dynamicRange / 8);
-					//increment header
-					if(iData >= dataSize){
-						iPacket1 -= (bufferSize*2);
-						iPacket2 -= (bufferSize*2);
-						iPacket1 += 16;
-						iPacket2 += 16;
-						iData = 0;
-					}*/
+					//other port
+					else{
+						dMap[ir][ic]  = iPacket2;
+						iPacket2 += increment;
+						iData2 += increment;
+						if(dynamicRange == 32){
+							if(iData2 == numbytesperlineperport){
+								iPacket2 -= (numbytesperlineperport*2 + 16*3);
+								iData2 = 0;
+							}
+							if(iData2 == dataSize){
+								iPacket2 += 16;
+							}
+						}else if((iData2 % numbytesperlineperport) == 0){
+							iPacket2 -= (numbytesperlineperport*2);
+							if(iData2 == dataSize){
+								iPacket2 -= 16;
+								iData2 = 0;
+							}
+						}
+					}
 				}
 			}
 		}

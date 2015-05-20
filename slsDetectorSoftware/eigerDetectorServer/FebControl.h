@@ -149,8 +149,10 @@ int Feb_Control_GetModuleNumber();
   int Feb_Control_StartAcquisition();
   int Feb_Control_StopAcquisition();
   int Feb_Control_AcquisitionInProgress();
+  int Feb_Control_AcquisitionStartedBit();
   /*int Feb_Control_WaitForFinishedFlag(int sleep_time_us=5000);*/
   int Feb_Control_WaitForFinishedFlag(int sleep_time_us);
+  int Feb_Control_WaitForStartedFlag(int sleep_time_us, int prev_flag);
 
   //functions for setting up exposure
   void          Feb_Control_PrintAcquisitionSetup();

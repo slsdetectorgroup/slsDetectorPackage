@@ -502,58 +502,34 @@ int startReceiver(int d){
 
 
 int startStateMachine(){
-	int ret;
-	//if(master){
-		printf("Going to start acquisition\n");
-		Feb_Control_StartAcquisition();
-	//}
+	int ret,prev_flag;
+	//get the DAQ toggle bit
+	prev_flag = Feb_Control_AcquisitionStartedBit();
 
-	//do not read status here, cannot get images then
+	printf("Going to start acquisition\n");
+	Feb_Control_StartAcquisition();
 
-	////if(trialMasterMode == IS_MASTER){
 	printf("requesting images\n");
 	ret =  startReadOut();
-	////}
-	//if(trialMasterMode == IS_MASTER){
 
-
-	//if(master){
-		/*
-		 * int i=0;
-			if(getRunStatus() == IDLE){
-				for(i=0;i<100000;i++){
-					usleep(1000);
-					if(getRunStatus() != IDLE){
-						printf("*****i=%d\n",i);
-						break;
-					}
-				}
-				//while(getRunStatus() == IDLE);
-				//}
-				printf("*****Acquiring...\n");
-			}
-
-		 */
-
-		while(getRunStatus() == IDLE){
-			printf("waiting for being not idle anymore\n");
+	//wait for acquisition start
+	if(ret == OK){
+		if(!Feb_Control_WaitForStartedFlag(5000, prev_flag)){
+			cprintf(RED,"Error: Acquisition did no start or trouble reading register\n");
+			ret = FAIL;
 		}
-		printf("*****Acquiring...\n");
-	//}
-	/*else usleep(1000000);
-			printf("****Returning\n");*/
+		cprintf(GREEN,"***Acquisition started\n");
+	}
+	/*while(getRunStatus() == IDLE){printf("waiting for being not idle anymore\n");}*/
 
 	return ret;
 }
 
 
 int stopStateMachine(){
-	//if(trialMasterMode == IS_MASTER){
 	printf("Going to stop acquisition\n");
 	if(Feb_Control_StopAcquisition())
 		return OK;
-	//}else return OK;
-
 	return FAIL;
 }
 
@@ -600,8 +576,8 @@ enum runStatus getRunStatus(){
 char *readFrame(int *ret, char *mess){
 	//if(master){
 		if(!Feb_Control_WaitForFinishedFlag(5000))
-			printf("error in waiting for finished flag\n");
-		printf("Acquisition finished\n");
+			cprintf(RED,"Error: Waiting for finished flag\n");
+		cprintf(GREEN,"Acquisition finished***\n");
 		//usleep(0);
 		usleep(1000000);
 		printf("*****Done Waiting...\n");

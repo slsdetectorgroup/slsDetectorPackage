@@ -101,7 +101,7 @@
 #define DAQ_STATUS_TOKEN_OUT          0x20 
 #define DAQ_STATUS_SERIAL_OUT         0x40 
 #define DAQ_STATUS_PIXELS_ARE_ENABLED 0x80 
-
+#define DAQ_STATUS_DAQ_RUN_TOGGLE     0x200
 
 //data delay registers
 #define CHIP_DATA_OUT_DELAY_REG_CTRL       1

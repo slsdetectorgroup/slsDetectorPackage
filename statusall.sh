@@ -1,0 +1,11 @@
+git status;
+cd slsDetectorSoftware; 
+git status;
+cd ../slsReceiverSoftware;
+git status;
+cd ../slsDetectorGui;
+git status;
+cd ../slsDetectorCalibration;
+git status;
+cd ../slsImageReconstruction;
+git status;

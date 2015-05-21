@@ -143,7 +143,7 @@ int UDPBaseImplementation::setDetectorType(detectorType det){
 
 
 
-
+void UDPBaseImplementation::setBottom(int bot){bottom=bot;};
 
 /*Frame indices and numbers caught*/
 

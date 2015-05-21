@@ -226,6 +226,12 @@ class UDPInterface {
  *******************************************************************************************************************/
 
 	/**
+	 * Set bottom to bot
+	 * @param bot = 1 if bottom
+	 */
+	virtual void setBottom(int bot)= 0;
+
+	/**
 	 * Returns File Index
 	 */
 	virtual int getFileIndex() = 0;

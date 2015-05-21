@@ -36,6 +36,7 @@ slsReceiver::slsReceiver(int argc, char *argv[], int &success){
 	string fname = "";
 	string udp_interface_type = "standard";
 	string rest_hostname = "localhost:8081";
+	udp_interface = NULL;
 
 	bool bottom = false; //TODO: properly set new parameter -> mode?
 	//parse command line for config
@@ -128,10 +129,11 @@ slsReceiver::slsReceiver(int argc, char *argv[], int &success){
 
 	if (success==OK){
 		FILE_LOG(logINFO) << "SLS Receiver starting " << udp_interface_type << " on port " << tcpip_port_no << " with mode " << bottom << endl;
+#ifdef REST
 		udp_interface = UDPInterface::create(udp_interface_type);
 		udp_interface->configure(configuration_map);
+#endif
 		tcpipInterface = new slsReceiverTCPIPInterface(success, udp_interface, tcpip_port_no, bottom);
-		//tcp ip interface
 	}
 }
 

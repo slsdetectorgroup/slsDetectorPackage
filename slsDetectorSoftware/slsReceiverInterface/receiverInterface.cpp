@@ -81,9 +81,14 @@ int receiverInterface::sendInt(int fnum, int &retval, int arg){
 
 int receiverInterface::getInt(int fnum, int &retval){
 	int ret = slsDetectorDefs::FAIL;
+	char mess[100] = "";
 
 	dataSocket->SendDataOnly(&fnum,sizeof(fnum));
 	dataSocket->ReceiveDataOnly(&ret,sizeof(ret));
+	if (ret==slsDetectorDefs::FAIL){
+		dataSocket->ReceiveDataOnly(mess,sizeof(mess));
+		std::cout<< "Receiver returned error: " << mess << std::endl;
+	}
 	dataSocket->ReceiveDataOnly(&retval,sizeof(retval));
 	dataSocket->Disconnect();
 

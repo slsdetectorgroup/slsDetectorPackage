@@ -65,6 +65,11 @@ class UDPBaseImplementation : protected virtual slsReceiverDefs, public UDPInter
 	 */
 	int setDetectorType(detectorType det);
 
+   /**
+	* Set bottom to bot
+	* @param bot = 1 if bottom
+	*/
+	void setBottom(int bot);
 
 	//Frame indices and numbers caught
 	/**

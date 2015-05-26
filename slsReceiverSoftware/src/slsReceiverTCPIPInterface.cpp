@@ -45,7 +45,7 @@ slsReceiverTCPIPInterface::slsReceiverTCPIPInterface(int &success, UDPInterface*
 		bottom(bot){
 
   int port_no=portNumber;
-
+  if(receiverBase == NULL) receiverBase = 0;
 
   if (pn>0)
     port_no = pn;
@@ -198,11 +198,12 @@ void slsReceiverTCPIPInterface::startTCPServer(){
 		//if tcp command was to exit server
 		if(v==GOODBYE){
 			cout << "Shutting down UDP Socket" << endl;
-			if(receiverBase)
+			if(receiverBase){
 				receiverBase->shutDownUDPSockets();
 
-			cout << "Closing Files... " << endl;
-			receiverBase->closeFile();
+				cout << "Closing Files... " << endl;
+				receiverBase->closeFile();
+			}
 
 			pthread_exit(NULL);
 		}
@@ -364,6 +365,10 @@ int slsReceiverTCPIPInterface::set_detector_type(){
 		}
 		else{
 			myDetectorType = dr;
+#ifndef REST
+			receiverBase = UDPInterface::create("standard");
+			receiverBase->setBottom(bottom);
+#endif
 			ret=receiverBase->setDetectorType(dr);
 			retval = myDetectorType;
 		}

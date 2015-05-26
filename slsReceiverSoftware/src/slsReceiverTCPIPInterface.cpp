@@ -422,6 +422,10 @@ int slsReceiverTCPIPInterface::set_file_name() {
 			sprintf(mess,"Receiver locked by %s\n", socket->lastClientIP);
 			ret=FAIL;
 		}
+		else if (receiverBase == NULL){
+			strcpy(mess,"Receiver not set up\n");
+			ret=FAIL;
+		}
  	 	 else
 			strcpy(retval,receiverBase->setFileName(fName));
 	}
@@ -476,6 +480,10 @@ int slsReceiverTCPIPInterface::set_file_dir() {
 			strcpy(mess,"Can not set file path while receiver running\n");
 			ret = FAIL;
 		}*/
+		else if (receiverBase == NULL){
+			strcpy(mess,"Receiver not set up\n");
+			ret=FAIL;
+		}
 		else{
 			strcpy(retval,receiverBase->setFilePath(fPath));
 			// if file path doesnt exist
@@ -535,6 +543,10 @@ int slsReceiverTCPIPInterface::set_file_index() {
 			sprintf(mess,"Receiver locked by %s\n", socket->lastClientIP);
 			ret=FAIL;
 		}
+		else if (receiverBase == NULL){
+			strcpy(mess,"Receiver not set up\n");
+			ret=FAIL;
+		}
 		else
 			retval=receiverBase->setFileIndex(index);
 	}
@@ -586,6 +598,10 @@ int slsReceiverTCPIPInterface::set_frame_index() {
 	if (ret==OK) {
 		if (lockStatus==1 && socket->differentClients==1){
 			sprintf(mess,"Receiver locked by %s\n", socket->lastClientIP);
+			ret=FAIL;
+		}
+		else if (receiverBase == NULL){
+			strcpy(mess,"Receiver not set up\n");
 			ret=FAIL;
 		}
 		else
@@ -643,6 +659,10 @@ int slsReceiverTCPIPInterface::setup_udp(){
 	if (ret==OK) {
 		if (lockStatus==1 && socket->differentClients==1){
 			sprintf(mess,"Receiver locked by %s\n", socket->lastClientIP);
+			ret=FAIL;
+		}
+		else if (receiverBase == NULL){
+			strcpy(mess,"Receiver not set up\n");
 			ret=FAIL;
 		}
 		else if(receiverBase->getStatus()==RUNNING){
@@ -732,6 +752,10 @@ int slsReceiverTCPIPInterface::start_receiver(){
 		ret = FAIL;
 	}
 	*/
+	else if (receiverBase == NULL){
+		strcpy(mess,"Receiver not set up\n");
+		ret=FAIL;
+	}
 	else {
 		s = receiverBase->getStatus();
 		switch (s) {
@@ -780,6 +804,10 @@ int slsReceiverTCPIPInterface::stop_receiver(){
 		sprintf(mess,"Receiver locked by %s\n", socket->lastClientIP);
 		ret=FAIL;
 	}
+	else if (receiverBase == NULL){
+		strcpy(mess,"Receiver not set up\n");
+		ret=FAIL;
+	}
 	else if(receiverBase->getStatus()!=IDLE)
 		ret=receiverBase->stopReceiver();
 #endif
@@ -802,20 +830,25 @@ int slsReceiverTCPIPInterface::stop_receiver(){
 
 int	slsReceiverTCPIPInterface::get_status(){
 	ret=OK;
-	enum runStatus retval;
+	enum runStatus retval = ERROR;
 
 	// execute action if the arguments correctly arrived
 #ifdef SLS_RECEIVER_UDP_FUNCTIONS
-	retval=receiverBase->getStatus();
+	if (receiverBase == NULL){
+		strcpy(mess,"Receiver not set up\n");
+		ret=FAIL;
+	}else retval=receiverBase->getStatus();
 #endif
 
-	if(socket->differentClients){
+	if(ret==OK && socket->differentClients){
 		cout << "Force update" << endl;
 		ret=FORCE_UPDATE;
 	}
 
 	// send answer
 	socket->SendDataOnly(&ret,sizeof(ret));
+	if(ret==FAIL)
+		socket->SendDataOnly(mess,sizeof(mess));
 	socket->SendDataOnly(&retval,sizeof(retval));
 	//return ok/fail
 	return ret;
@@ -830,15 +863,20 @@ int	slsReceiverTCPIPInterface::get_frames_caught(){
 
 	// execute action if the arguments correctly arrived
 #ifdef SLS_RECEIVER_UDP_FUNCTIONS
-	retval=receiverBase->getTotalFramesCaught();
+	if (receiverBase == NULL){
+		strcpy(mess,"Receiver not set up\n");
+		ret=FAIL;
+	}else retval=receiverBase->getTotalFramesCaught();
 #endif
-	if(socket->differentClients){
+	if(ret==OK && socket->differentClients){
 		cout << "Force update" << endl;
 		ret=FORCE_UPDATE;
 	}
 
 	// send answer
 	socket->SendDataOnly(&ret,sizeof(ret));
+	if(ret==FAIL)
+		socket->SendDataOnly(mess,sizeof(mess));
 	socket->SendDataOnly(&retval,sizeof(retval));
 	//return ok/fail
 	return ret;
@@ -853,16 +891,22 @@ int	slsReceiverTCPIPInterface::get_frame_index(){
 
 	// execute action if the arguments correctly arrived
 #ifdef SLS_RECEIVER_UDP_FUNCTIONS
-	retval=receiverBase->getAcquisitionIndex();
+	if (receiverBase == NULL){
+		strcpy(mess,"Receiver not set up\n");
+		ret=FAIL;
+	}else
+		retval=receiverBase->getAcquisitionIndex();
 #endif
 
-	if(socket->differentClients){
+	if(ret==OK && socket->differentClients){
 		cout << "Force update" << endl;
 		ret=FORCE_UPDATE;
 	}
 
 	// send answer
 	socket->SendDataOnly(&ret,sizeof(ret));
+	if(ret==FAIL)
+		socket->SendDataOnly(mess,sizeof(mess));
 	socket->SendDataOnly(&retval,sizeof(retval));
 	//return ok/fail
 	return ret;
@@ -882,6 +926,10 @@ int	slsReceiverTCPIPInterface::reset_frames_caught(){
 	if (ret==OK) {
 		if (lockStatus==1 && socket->differentClients==1){
 			sprintf(mess,"Receiver locked by %s\n", socket->lastClientIP);
+			ret=FAIL;
+		}
+		else if (receiverBase == NULL){
+			strcpy(mess,"Receiver not set up\n");
 			ret=FAIL;
 		}
 		else
@@ -934,6 +982,10 @@ int slsReceiverTCPIPInterface::set_short_frame() {
 	if (ret==OK) {
 		if (lockStatus==1 && socket->differentClients==1){
 			sprintf(mess,"Receiver locked by %s\n", socket->lastClientIP);
+			ret=FAIL;
+		}
+		else if (receiverBase == NULL){
+			strcpy(mess,"Receiver not set up\n");
 			ret=FAIL;
 		}
 		else if(receiverBase->getStatus()==RUNNING){
@@ -1009,9 +1061,12 @@ int	slsReceiverTCPIPInterface::moench_read_frame(){
 
 	// execute action if the arguments correctly arrived
 #ifdef SLS_RECEIVER_UDP_FUNCTIONS
-
+	if (receiverBase == NULL){
+		strcpy(mess,"Receiver not set up\n");
+		ret=FAIL;
+	}
 	/**send garbage with -1 index to try again*/
-	if(!receiverBase->getFramesCaught()){
+	else if(!receiverBase->getFramesCaught()){
 		startAcquisitionIndex = -1;
 		cout<<"haven't caught any frame yet"<<endl;
 	}
@@ -1196,10 +1251,13 @@ int	slsReceiverTCPIPInterface::gotthard_read_frame(){
 	// execute action if the arguments correctly arrived
 #ifdef SLS_RECEIVER_UDP_FUNCTIONS
 
-
+	if (receiverBase == NULL){
+		strcpy(mess,"Receiver not set up\n");
+		ret=FAIL;
+	}
 
 	/**send garbage with -1 index to try again*/
-	if(!receiverBase->getFramesCaught()){
+	else if(!receiverBase->getFramesCaught()){
 		startAcquisitionIndex=-1;
 		cout<<"haven't caught any frame yet"<<endl;
 	}else{
@@ -1362,10 +1420,13 @@ int	slsReceiverTCPIPInterface::eiger_read_frame(){
 	// execute action if the arguments correctly arrived
 #ifdef SLS_RECEIVER_UDP_FUNCTIONS
 
-
+	if (receiverBase == NULL){
+		strcpy(mess,"Receiver not set up\n");
+		ret=FAIL;
+	}
 
 	/**send garbage with -1 index to try again*/
-	if(!receiverBase->getFramesCaught()){
+	else if(!receiverBase->getFramesCaught()){
 		startAcquisitionIndex=-1;
 #ifdef VERBOSE
 		cout<<"haven't caught any frame yet"<<endl;
@@ -1616,7 +1677,12 @@ int slsReceiverTCPIPInterface::set_read_frequency(){
 		if (lockStatus==1 && socket->differentClients==1){
 			sprintf(mess,"Receiver locked by %s\n", socket->lastClientIP);
 			ret=FAIL;
-		}/*
+		}
+		else if (receiverBase == NULL){
+			strcpy(mess,"Receiver not set up\n");
+			ret=FAIL;
+		}
+		/*
 		else if((receiverBase->getStatus()==RUNNING) && (index >= 0)){
 			ret = FAIL;
 			strcpy(mess,"cannot set up receiver mode when receiver is running\n");
@@ -1665,6 +1731,10 @@ int slsReceiverTCPIPInterface::enable_file_write(){
 	if (ret==OK) {
 		if (lockStatus==1 && socket->differentClients==1){
 			sprintf(mess,"Receiver locked by %s\n", socket->lastClientIP);
+			ret=FAIL;
+		}
+		else if (receiverBase == NULL){
+			strcpy(mess,"Receiver not set up\n");
 			ret=FAIL;
 		}
 		else{
@@ -1733,21 +1803,28 @@ int	slsReceiverTCPIPInterface::start_readout(){
 
 	// execute action if the arguments correctly arrived
 #ifdef SLS_RECEIVER_UDP_FUNCTIONS
-	receiverBase->startReadout();
-	retval = receiverBase->getStatus();
-	if((retval == TRANSMITTING) || (retval == RUN_FINISHED) || (retval == IDLE))
-		ret = OK;
-	else
-		ret = FAIL;
+	if (receiverBase == NULL){
+		strcpy(mess,"Receiver not set up\n");
+		ret=FAIL;
+	}else{
+		receiverBase->startReadout();
+		retval = receiverBase->getStatus();
+		if((retval == TRANSMITTING) || (retval == RUN_FINISHED) || (retval == IDLE))
+			ret = OK;
+		else
+			ret = FAIL;
+	}
 #endif
 
-	if(socket->differentClients){
+	if(ret==OK && socket->differentClients){
 		cout << "Force update" << endl;
 		ret=FORCE_UPDATE;
 	}
 
 	// send answer
 	socket->SendDataOnly(&ret,sizeof(ret));
+	if(ret==FAIL)
+		socket->SendDataOnly(mess,sizeof(mess));
 	socket->SendDataOnly(&retval,sizeof(retval));
 	//return ok/fail
 	return ret;
@@ -1777,6 +1854,10 @@ int slsReceiverTCPIPInterface::set_timer() {
 	if (ret==OK) {
 		if (lockStatus==1 && socket->differentClients==1){
 			sprintf(mess,"Receiver locked by %s\n", socket->lastClientIP);
+			ret=FAIL;
+		}
+		else if (receiverBase == NULL){
+			strcpy(mess,"Receiver not set up\n");
 			ret=FAIL;
 		}
 		else{
@@ -1838,6 +1919,10 @@ int slsReceiverTCPIPInterface::enable_compression() {
 				sprintf(mess,"Receiver locked by %s\n", socket->lastClientIP);
 				ret=FAIL;
 			}
+			else if (receiverBase == NULL){
+				strcpy(mess,"Receiver not set up\n");
+				ret=FAIL;
+			}
 			else if(receiverBase->getStatus()==RUNNING){
 				strcpy(mess,"Cannot enable/disable compression while status is running\n");
 				ret=FAIL;
@@ -1846,7 +1931,11 @@ int slsReceiverTCPIPInterface::enable_compression() {
 				ret = receiverBase->enableDataCompression(enable);
 		}
 
-		retval=receiverBase->getDataCompression();
+		if (receiverBase == NULL){
+			strcpy(mess,"Receiver not set up\n");
+			ret=FAIL;
+		}else
+			retval=receiverBase->getDataCompression();
 	}
 #endif
 
@@ -1886,6 +1975,10 @@ int slsReceiverTCPIPInterface::set_detector_hostname() {
 
 		if (lockStatus==1 && socket->differentClients==1){
 			sprintf(mess,"Receiver locked by %s\n", socket->lastClientIP);
+			ret=FAIL;
+		}
+		else if (receiverBase == NULL){
+			strcpy(mess,"Receiver not set up\n");
 			ret=FAIL;
 		}
  	 	 else{
@@ -1955,14 +2048,19 @@ int slsReceiverTCPIPInterface::set_dynamic_range() {
 			}
 		}
 		if(ret!=FAIL){
-			retval=receiverBase->setDynamicRange(dr);
-			dynamicrange = dr;
-			 if(myDetectorType == EIGER){
-				 if(!tenGigaEnable)
-					 packetsPerFrame = EIGER_ONE_GIGA_CONSTANT * dynamicrange * EIGER_MAX_PORTS;
-				 else
-					 packetsPerFrame = EIGER_TEN_GIGA_CONSTANT * dynamicrange * EIGER_MAX_PORTS;
-			 }
+			if (receiverBase == NULL){
+				strcpy(mess,"Receiver not set up\n");
+				ret=FAIL;
+			}else{
+				retval=receiverBase->setDynamicRange(dr);
+				dynamicrange = dr;
+				if(myDetectorType == EIGER){
+					if(!tenGigaEnable)
+						packetsPerFrame = EIGER_ONE_GIGA_CONSTANT * dynamicrange * EIGER_MAX_PORTS;
+					else
+						packetsPerFrame = EIGER_TEN_GIGA_CONSTANT * dynamicrange * EIGER_MAX_PORTS;
+				}
+			}
 		}
 	}
 #ifdef VERBOSE
@@ -2012,6 +2110,10 @@ int slsReceiverTCPIPInterface::enable_overwrite() {
 	if (ret==OK) {
 		if (lockStatus==1 && socket->differentClients==1){
 			sprintf(mess,"Receiver locked by %s\n", socket->lastClientIP);
+			ret=FAIL;
+		}
+		else if (receiverBase == NULL){
+			strcpy(mess,"Receiver not set up\n");
 			ret=FAIL;
 		}
 		else{
@@ -2067,6 +2169,10 @@ int slsReceiverTCPIPInterface::enable_tengiga() {
 	if (ret==OK) {
 		if (lockStatus==1 && socket->differentClients==1){
 			sprintf(mess,"Receiver locked by %s\n", socket->lastClientIP);
+			ret=FAIL;
+		}
+		else if (receiverBase == NULL){
+			strcpy(mess,"Receiver not set up\n");
 			ret=FAIL;
 		}
 		else{
@@ -2313,7 +2419,15 @@ int slsReceiverTCPIPInterface::send_update() {
 
 int slsReceiverTCPIPInterface::update_client() {
 	ret=OK;
+	if (receiverBase == NULL){
+		strcpy(mess,"Receiver not set up\n");
+		ret=FAIL;
+	}
 	socket->SendDataOnly(&ret,sizeof(ret));
+	if(ret == FAIL){
+		socket->SendDataOnly(mess,sizeof(mess));
+		return ret;
+	}
 
 	return send_update();
 }

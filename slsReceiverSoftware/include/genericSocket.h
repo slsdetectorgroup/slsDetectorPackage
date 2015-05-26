@@ -589,11 +589,12 @@ typedef struct
 
 		 while(length>0){
 			 nsending = (length>packet_size) ? packet_size:length;
-
-
-
 			 nsent = recvfrom(socketDescriptor,(char*)buf+total_sent,nsending, 0, (struct sockaddr *) &clientAddress, &clientAddress_length);
 			 if(!nsent) break;
+			 if(nsent == 16) {
+				 //cout << ".";
+				 continue;
+			 }
 			 length-=nsent;
 			 total_sent+=nsent;
 		 }

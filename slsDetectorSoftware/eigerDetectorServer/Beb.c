@@ -569,8 +569,8 @@ int Beb_RequestNImages(unsigned int beb_number, unsigned int left_right, int ten
   cprintf(RED, "----Beb_RequestNImages Start----\n");
   cprintf(RED, "beb_number:%X, left_right:%X,ten_gig:%X,dst_number:%X,npackets:%X,Beb_bit_mode:%X,header_size:%X,test_just_send_out_packets_no_wait:%X\n",beb_number,left_right,ten_gig,dst_number,npackets,Beb_bit_mode,header_size,test_just_send_out_packets_no_wait);
 #endif
-  unsigned int i;
-  for(i=0;i<nimages;i++){
+ // unsigned int i;
+ // for(i=0;i<nimages;i++){
     //header then data request
     if(!Beb_SendMultiReadRequest(beb_number,left_right,ten_gig,dst_number,1,header_size,test_just_send_out_packets_no_wait) ||
        !Beb_SendMultiReadRequest(beb_number,left_right,ten_gig,dst_number,npackets,packet_size,test_just_send_out_packets_no_wait) ||
@@ -578,7 +578,7 @@ int Beb_RequestNImages(unsigned int beb_number, unsigned int left_right, int ten
        	printf("SendMultiReadRequest failed\n");
     	return 0;
     }
-  }
+ // }
 #ifdef MARTIN
   cprintf(RED, "----Beb_RequestNImages----\n");
 #endif

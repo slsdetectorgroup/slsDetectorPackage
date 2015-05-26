@@ -535,16 +535,20 @@ int stopStateMachine(){
 
 
 int startReadOut(){
+
 	//RequestImages();
-	int ret_val = 0;
+	int ret_val = 0, i;
 	dst_requested[0] = 1;
 	while(dst_requested[on_dst]){
 		//waits on data
 		int beb_num = BEB_NUM;//Feb_Control_GetModuleNumber();
 
-		if((ret_val = (!Beb_RequestNImages(beb_num,1,send_to_ten_gig,on_dst,nimages_per_request,0)||
-				!Beb_RequestNImages(beb_num,2,send_to_ten_gig,0x20|on_dst,nimages_per_request,0))))
-			break;
+		for(i=0;i<nimages_per_request;i++){
+			if((ret_val = (!Beb_RequestNImages(beb_num,1,send_to_ten_gig,on_dst,1,0)||
+					!Beb_RequestNImages(beb_num,2,send_to_ten_gig,0x20|on_dst,1,0))))
+				break;
+		}
+
 		dst_requested[on_dst++]=0;
 		on_dst%=ndsts_in_use;
 	}

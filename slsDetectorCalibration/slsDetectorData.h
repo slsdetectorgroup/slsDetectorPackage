@@ -92,23 +92,7 @@ class slsDetectorData {
 
 
   void setDataMap(int **dMap=NULL) {
-<<<<<<< HEAD
 
-
-    if (dMap==NULL) {
-      for (int iy=0; iy<ny; iy++)
-	 for (int ix=0; ix<nx; ix++)
-	   dataMap[iy][ix]=(iy*nx+ix)*sizeof(dataType);
-    } else {
-      cout << "set dmap "<< dataMap << " " << dMap << endl;
-      for (int iy=0; iy<ny; iy++)
-	for (int ix=0; ix<nx; ix++) {
-	   dataMap[iy][ix]=dMap[iy][ix];
-	   //cout << ix << " " << iy << endl;
-	}
-    }
-    
-=======
     int ip;
 
 	  if (dMap==NULL) {
@@ -129,7 +113,7 @@ class slsDetectorData {
 		  }
 	  }
 	 // cout << "nx:" <<nx << " ny:" << ny << endl;
->>>>>>> 844c207d55aa5279626c496c677446de61103a30
+
   };
 
 

@@ -96,7 +96,7 @@ class slsDetectorData {
       for (int iy=0; iy<ny; iy++)
 	for (int ix=0; ix<nx; ix++) {
 	   dataMap[iy][ix]=dMap[iy][ix];
-	   cout << ix << " " << iy << endl;
+	   //cout << ix << " " << iy << endl;
 	}
     }
     

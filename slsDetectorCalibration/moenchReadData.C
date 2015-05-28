@@ -16,6 +16,7 @@
 #include <fstream>
 #include "moench02ModuleData.h"
 #include "moenchCommonMode.h"
+#define MYROOT1
 #include "singlePhotonDetector.h"
 
 //#include "MovingStat.h"
@@ -26,7 +27,7 @@ using namespace std;
 #define NR 160
 
 
-#define MY_DEBUG 1
+//#define MY_DEBUG 1
 #ifdef MY_DEBUG
 #include <TCanvas.h>
 #endif
@@ -215,7 +216,7 @@ THStack *moenchReadData(char *fformat, char *tit, int runmin, int runmax, int nb
 #endif		    
       nf++;
       
-      cout << "=" ;
+      cout << "=" << decoder->getFrameNumber(buff);
       delete [] buff;
     }
     cout << nph << endl;

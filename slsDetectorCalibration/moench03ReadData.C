@@ -27,7 +27,7 @@ using namespace std;
 #define NR 400
 
 
-#define MY_DEBUG 1
+//#define MY_DEBUG 1
 
 #ifdef MY_DEBUG
 #include <TCanvas.h>
@@ -47,7 +47,7 @@ TH2F *readImage(ifstream &filebin,   TH2F *h2=NULL, TH2F *hped=NULL) {
       h2=new TH2F("h2","",400,0,400,400,0,400);
       h2->SetStats(kFALSE);
     }
-    cout << "." << endl;
+    //  cout << "." << endl;
     for (int ix=0; ix<400; ix++) {
       for (int iy=0; iy<400; iy++) {
 	//	cout <<  decoder->getDataSize() << " " << decoder->getValue(buff,ix,iy)<< endl;
@@ -77,7 +77,7 @@ TH2F *readImage(char *fname, int iframe=0, TH2F *hped=NULL) {
     if (hh==NULL) break;
     hh=readImage(filebin, h2, hped );
     if (hh)
-      cout << "="<< endl;
+      ;// cout << "="<< endl;
     else {
       delete h2;
       return NULL;
@@ -114,7 +114,7 @@ TH2F *calcPedestal(char *fformat, int runmin, int runmax){
 	}
       }
       delete [] buff;
-      cout << "="<< endl;
+      //cout << "="<< endl;
       ii++;
     }
     if (filebin.is_open())
@@ -146,8 +146,6 @@ Loops over data file to find single photons, fills the tree (and writes it to fi
   \param nbins  number of bins for spectrum hists
   \param hmin histo minimum for spectrum hists
   \param hmax histo maximum for spectrum hists
-  \param sign sign of the spectrum to find hits
-  \param hc readout correlation coefficient with previous pixel
   \param xmin minimum x coordinate
   \param xmax maximum x coordinate
   \param ymin minimum y coordinate
@@ -156,8 +154,10 @@ Loops over data file to find single photons, fills the tree (and writes it to fi
   \returns pointer to histo stack with cluster spectra
 */
 
-THStack *moench03ReadData(char *fformat, char *tit, int runmin, int runmax, int nbins=1500, int hmin=-500, int hmax=1000, int sign=1, double hc=0, int xmin=1, int xmax=NC-1, int ymin=1, int ymax=NR-1, int cmsub=0, int hitfinder=1) {
-  
+THStack *moench03ReadData(char *fformat, char *tit, int runmin, int runmax, int nbins=1500, int hmin=-500, int hmax=1000,  int xmin=1, int xmax=NC-1, int ymin=1, int ymax=NR-1, int cmsub=0, int hitfinder=1) {
+  double hc=0;
+  int sign=1;
+
   moench03CtbData *decoder=new moench03CtbData();
   cout << "decoder allocated " << endl;
 
@@ -173,7 +173,7 @@ THStack *moench03ReadData(char *fformat, char *tit, int runmin, int runmax, int 
    int iev=0;
   int nph=0;
 
-  singlePhotonDetector<uint16_t> *filter=new singlePhotonDetector<uint16_t>(decoder, 3, 5, sign, cmSub, 10, 100);
+  singlePhotonDetector<uint16_t> *filter=new singlePhotonDetector<uint16_t>(decoder, 3, 5, sign, cmSub, 100, 10);
   cout << "filter allocated " << endl;
 
   char *buff;
@@ -270,11 +270,8 @@ THStack *moench03ReadData(char *fformat, char *tit, int runmin, int runmax, int 
     nph=0;
     while ((buff=decoder->readNextFrame(filebin))) {
       
+      filter->newFrame();
 
-      if (hitfinder) {
-	filter->newFrame();
-
-	//calculate pedestals and common modes
 	if (cmsub) {
 	//	cout << "cm" << endl;
 	  for (ix=xmin-1; ix<xmax+1; ix++)
@@ -282,25 +279,26 @@ THStack *moench03ReadData(char *fformat, char *tit, int runmin, int runmax, int 
 	      thisEvent=filter->getEventType(buff, ix, iy,0);
 	    }
 	}
-      }
+      // if (hitfinder) {
+
+      // 	//calculate pedestals and common modes
+      // }
 
       //   cout << "new frame " << endl;
 
       for (ix=xmin-1; ix<xmax+1; ix++)
 	for (iy=ymin-1; iy<ymax+1; iy++) {
 	  //	  cout << ix << " " << iy << endl;
-	  thisEvent=filter->getEventType(buff, ix, iy, cmsub);
-
-#ifdef MY_DEBUG
-	  if (hitfinder) {
-	    //  if (iev%10==0)
-	      he->SetBinContent(ix+1-xmin, iy+1-ymin, (int)thisEvent);
-	  }
-#endif	  
-	  
+	    thisEvent=filter->getEventType(buff, ix, iy, cmsub);
 	  //  if (nf>10) {
 	    h1->Fill(filter->getClusterTotal(1), iy+NR*ix);
-	    if (hitfinder) {
+
+#ifdef MY_DEBUG
+	    //  if (iev%10==0)
+	    he->SetBinContent(ix+1-xmin, iy+1-ymin, (int)thisEvent);
+#endif	  
+	  
+	  if (hitfinder) {
 	      
 	      if (thisEvent==PHOTON_MAX ) {
 		nph++;
@@ -315,7 +313,10 @@ THStack *moench03ReadData(char *fformat, char *tit, int runmin, int runmax, int 
 	      }
 	  
 	    
-	    }
+	  } // else {
+	  //   filter->addToPedestal(decoder->getValue(buff,ix,iy, cmsub));
+	    
+	  // }
 	    
 
 	    // }
@@ -323,7 +324,7 @@ THStack *moench03ReadData(char *fformat, char *tit, int runmin, int runmax, int 
 	  //////////////////////////////////////////////////////////
     
 #ifdef MY_DEBUG
-      cout << iev << " " << h1->GetEntries() << " " << h2->GetEntries() << endl;
+      //    cout << iev << " " << h1->GetEntries() << " " << h2->GetEntries() << endl;
 //       if (iev%10==0) {
 // 	myC->Modified();
 // 	myC->Update();
@@ -338,10 +339,10 @@ THStack *moench03ReadData(char *fformat, char *tit, int runmin, int runmax, int 
 #endif		    
       nf++;
       
-      cout << "=" ;
+      // cout << "=" ;
       delete [] buff;
     }
-    cout << nph << endl;
+    //  cout << nph << endl;
     if (filebin.is_open())
     filebin.close();	  
     else

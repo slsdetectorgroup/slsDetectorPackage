@@ -67,7 +67,7 @@ public:
 		while (dd<=(dsize-packetSize)) {
 			pnum=getPacketNumber(p);
 			fn=getFrameNumber(p);
-
+			//cout <<"pnum:"<<pnum<<" fn:"<<fn<<"\t";
 
 			if (pnum<1 || pnum>nPackets) {
 				cout << "Bad packet number " << pnum << " frame "<< fn << endl;
@@ -90,7 +90,7 @@ public:
 			dd+=packetSize;
 			np++;
 			// cout << pnum << " " << fn << " " << np << " " << dd << " " << dsize << endl;
-			if (np==nPackets)
+			if (np==nPackets){
 				if (pnum==nPackets) {
 					// cout << "Frame found!" << endl;
 					break;
@@ -98,6 +98,7 @@ public:
 					cout << "Too many packets for this frame! "<< fnum << " " << pnum << endl;
 					retval=NULL;
 				}
+			}
 		}
 		if (np<nPackets) {
 			if (np>0)

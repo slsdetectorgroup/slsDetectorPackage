@@ -99,6 +99,13 @@ typedef struct
 	unsigned char  header_after[24];
 } eiger_image_header;
 
+typedef struct
+{
+	unsigned char header_before[19];
+	unsigned char  fnum[4];
+	unsigned char  header_after[25];
+} eiger_image_header32;
+
  genericSocket(const char* const host_ip_or_name, unsigned short int const port_number, communicationProtocol p, int ps = DEFAULT_PACKET_SIZE) :
    //   portno(port_number), 
 	 protocol(p),
@@ -585,10 +592,32 @@ typedef struct
 
 	 //if length given, listens to length, else listens for packetsize till length is reached
 	 if(length){
-
+/*int k = 0;*/
 
 		 while(length>0){
 			 nsending = (length>packet_size) ? packet_size:length;
+
+			 /*
+
+			 //created for debugging on 11.05.2015
+			 nsending=5000;
+			 nsent = recvfrom(socketDescriptor,(char*)buf,nsending, 0, (struct sockaddr *) &clientAddress, &clientAddress_length);
+			 if(nsent <1000){
+				 if(nsent < 48){
+					 cout << " "<<dec<<nsent<<" ";
+				 }else{
+					 cout << "nsent: " << dec<<nsent << "\tfnum:" <<
+						 htonl(*(unsigned int*)((eiger_image_header32 *)((char*)(buf)))->fnum)<< "\t";
+				 	 cout << k <<" packets" << endl;
+				 	 k = 0;
+				 }
+			 }
+			 else
+				 k++;
+	 */
+
+			 
+
 			 nsent = recvfrom(socketDescriptor,(char*)buf+total_sent,nsending, 0, (struct sockaddr *) &clientAddress, &clientAddress_length);
 			 if(!nsent) break;
 			 if(nsent == 16) {

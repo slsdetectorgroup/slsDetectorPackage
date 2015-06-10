@@ -26,8 +26,6 @@
 
 using namespace std;
 
-#define EIGER_32BIT_INITIAL_CONSTANT 0x17c
-
 
 
 

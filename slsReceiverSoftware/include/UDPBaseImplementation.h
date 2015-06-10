@@ -491,14 +491,6 @@ protected:
 		unsigned char  fnum[4];
 		unsigned char  header_after[24];
 	} eiger_image_header;
-	/** structure of an eiger image header*/
-	typedef struct
-	{
-		unsigned char header_before[19];
-		unsigned char  fnum[4];
-		unsigned char  header_after[25];
-	} eiger_image_header32;
-
 
 	/** structure of an eiger image header*/
 	typedef struct

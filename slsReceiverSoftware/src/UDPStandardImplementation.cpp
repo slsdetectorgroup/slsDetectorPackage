@@ -1945,7 +1945,7 @@ int UDPStandardImplementation::startWriting(){
 				if(dynamicRange != 32)
 					tempframenum = htonl(*(unsigned int*)((eiger_image_header *)((char*)(wbuf[ithread] + HEADER_SIZE_NUM_TOT_PACKETS)))->fnum);
 				else
-					tempframenum = htonl(*(unsigned int*)((eiger_image_header32 *)((char*)(wbuf[ithread] + HEADER_SIZE_NUM_TOT_PACKETS)))->fnum);
+					tempframenum = htonl(*(unsigned int*)((eiger_image_header *)((char*)(wbuf[ithread] + HEADER_SIZE_NUM_TOT_PACKETS)))->fnum);
 
 
 				tempframenum += (startFrameIndex-1); //eiger frame numbers start at 1, so need to -1
@@ -2136,9 +2136,9 @@ void UDPStandardImplementation::startFrameIndices(int ithread){
 
 	if (myDetectorType == EIGER){
 		//add currframenum later  in this method for scans
-		if(dynamicRange == 32)
+		/*if(dynamicRange == 32)
 			startFrameIndex = htonl(*(unsigned int*)((eiger_image_header32 *)((char*)(buffer[ithread] + HEADER_SIZE_NUM_TOT_PACKETS)))->fnum);
-		else
+		else*/
 			startFrameIndex = htonl(*(unsigned int*)((eiger_image_header *)((char*)(buffer[ithread] + HEADER_SIZE_NUM_TOT_PACKETS)))->fnum);
 	}
 	//gotthard has +1 for frame number and not a short frame

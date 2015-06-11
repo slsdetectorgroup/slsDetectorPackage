@@ -182,7 +182,7 @@ public:
 
 					if (np==(nPackets-1)) {
 
-						fnum=getFrameNumber(data); cout << "fnum:"<<fnum<<endl;
+						fnum=getFrameNumber(data); //cout << "fnum:"<<fnum<<endl;
 						retval=findNextFrame(data,nd,packetSize*nPackets);
 						np=nd/packetSize;
 						//      cout << np << endl;

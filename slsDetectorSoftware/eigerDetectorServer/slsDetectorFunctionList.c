@@ -528,7 +528,7 @@ int startStateMachine(){
 
 int stopStateMachine(){
 	printf("Going to stop acquisition\n");
-	if(Feb_Control_StopAcquisition())
+	if(Feb_Control_StopAcquisition() & Beb_StopAcquisition())
 		return OK;
 	return FAIL;
 }
@@ -543,11 +543,13 @@ int startReadOut(){
 		//waits on data
 		int beb_num = BEB_NUM;//Feb_Control_GetModuleNumber();
 
-		for(i=0;i<nimages_per_request;i++){
-			if((ret_val = (!Beb_RequestNImages(beb_num,1,send_to_ten_gig,on_dst,1,0)||
-					!Beb_RequestNImages(beb_num,2,send_to_ten_gig,0x20|on_dst,1,0))))
-				break;
-		}
+
+
+		if  ((ret_val = (!Beb_RequestNImages(beb_num,send_to_ten_gig,on_dst,nimages_per_request,0))))
+			break;
+//		for(i=0;i<nimages_per_request;i++)
+//			if  ((ret_val = (!Beb_RequestNImages(beb_num,send_to_ten_gig,on_dst,1,0))))
+//				break;
 
 		dst_requested[on_dst++]=0;
 		on_dst%=ndsts_in_use;

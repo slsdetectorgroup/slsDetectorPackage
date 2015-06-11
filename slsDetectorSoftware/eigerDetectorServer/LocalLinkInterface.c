@@ -137,6 +137,9 @@ int Local_Write(struct LocalLinkInterface* ll,unsigned int buffer_len, void *buf
 		{
 			status = HWIO_xfs_in32(ll->ll_fifo_base+4*PLB_LL_FIFO_REG_STATUS);
 			if((status & PLB_LL_FIFO_STATUS_ALMOSTFULL) == 0) vacancy = 1;
+#ifdef MARTIN
+			if (vacancy == 0) cprintf(RED, "Fifo full!\n");
+#endif
 		}
 
 		//Just to know: #define PLB_LL_FIFO_ALMOST_FULL_THRESHOLD_WORDS    100

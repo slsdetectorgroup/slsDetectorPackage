@@ -494,6 +494,9 @@ void Beb_AdjustIPChecksum(struct udp_header_type *ip){
 
 int Beb_SendMultiReadRequest(unsigned int beb_number, unsigned int left_right, int ten_gig, unsigned int dst_number, unsigned int npackets, unsigned int packet_size, int stop_read_when_fifo_empty){
 
+// This is a dead function, will be removed in future
+// ==================================================
+
   unsigned int i = 1;/*Beb_GetBebInfoIndex(beb_number); //zero is the global send*/
 
   Beb_send_ndata   = 3;
@@ -536,49 +539,152 @@ int Beb_SetUpTransferParameters(short the_bit_mode){
   return 1;
 }
 
-int Beb_RequestNImages(unsigned int beb_number, unsigned int left_right, int ten_gig, unsigned int dst_number, unsigned int nimages, int test_just_send_out_packets_no_wait){
+
+int Beb_StopAcquisition()
+{
+
+  volatile u_int32_t* ptrl;
+  volatile u_int32_t* ptrr;
+  // Mapping
+  int fd;
+  fd = open("/dev/mem", O_RDWR | O_SYNC, 0);
+  if (fd == -1)
+  {
+	  printf("\nCan't find /dev/mem!\n");
+	  return 0;
+  }
+  u_int32_t CSP0BASE = (u_int32_t)mmap(0, 0x1000, PROT_READ|PROT_WRITE, MAP_FILE|MAP_SHARED, fd, 0xC5000000 );
+  if (CSP0BASE == (u_int32_t)MAP_FAILED)
+  {
+	  printf("\nCan't map memmory area!!\n");
+	  return 0;
+  }
+
+  ptrl = (u_int32_t*)(CSP0BASE);
+  ptrr = (u_int32_t*)(CSP0BASE+0x100);
+
+  *(ptrl+7) = (1 << 30);
+  *(ptrr+7) = (1 << 30);
+  *(ptrl+7) = 0;
+  *(ptrr+7) = 0;
+  close(fd);
+}
+
+int Beb_RequestNImages(unsigned int beb_number, int ten_gig, unsigned int dst_number, unsigned int nimages, int test_just_send_out_packets_no_wait){
   if(dst_number>64) return 0;
 
   unsigned int     header_size  = 4; //4*64 bits
   unsigned int     packet_size  = ten_gig ? 0x200 : 0x80; // 4k or  1k packets 
   unsigned int         npackets = ten_gig ?  Beb_bit_mode*4 : Beb_bit_mode*16;
   int          in_two_requests = (!ten_gig&&Beb_bit_mode==32);
+
+  volatile u_int32_t* ptrl;
+  volatile u_int32_t* ptrr;
+  u_int32_t send_header_command;
+  u_int32_t send_frame_command;
+
   if(in_two_requests) npackets/=2;
- // printf("npackets:%d\n",npackets);
-  //usleep needed after acquisition start, else you miss the single images
-  usleep(10000);//less than this and it starts sending half stuff sometimes
-
-  //printf("beb no:%d left_right:%d ten_gig:%d dst_number:%d #images:%d header_size:%d test_just_send_out_packets_no_wait:%d\n",beb_number,left_right,ten_gig,dst_number,nimages, header_size,test_just_send_out_packets_no_wait);
-  //printf("here: "<<beb_number<<","<<left_right<<","<<ten_gig<<","<<dst_number<<","<<1<<","<<header_size<<","<<test_just_send_out_packets_no_wait\n");
-/*
-  unsigned int i;
-  for(i=0;i<nimages;i++){
-    //header then data request
-	  //  usleep(10000);
-    if(!Beb_SendMultiReadRequest(beb_number,left_right,ten_gig,dst_number,1,header_size,test_just_send_out_packets_no_wait)){printf("Send failed\n");return 0;}
-   // usleep(10000);
-    if(!Beb_SendMultiReadRequest(beb_number,left_right,ten_gig,dst_number,npackets,packet_size,test_just_send_out_packets_no_wait)){printf("Send failed\n");return 0;}
-    usleep(1000);
-    if(in_two_requests){if(!Beb_SendMultiReadRequest(beb_number,left_right,ten_gig,dst_number,npackets,packet_size,test_just_send_out_packets_no_wait)){printf("Send failed\n");return 0;}
-    }
-  }
-*/
-
 
 #ifdef MARTIN
   cprintf(RED, "----Beb_RequestNImages Start----\n");
-  cprintf(RED, "beb_number:%X, left_right:%X,ten_gig:%X,dst_number:%X,npackets:%X,Beb_bit_mode:%X,header_size:%X,test_just_send_out_packets_no_wait:%X\n",beb_number,left_right,ten_gig,dst_number,npackets,Beb_bit_mode,header_size,test_just_send_out_packets_no_wait);
+  cprintf(RED, "beb_number:%X, ten_gig:%X,dst_number:%X,npackets:%X,Beb_bit_mode:%X,header_size:%X,nimages:%d,test_just_send_out_packets_no_wait:%X\n",beb_number,ten_gig,dst_number,npackets,Beb_bit_mode,header_size,nimages,test_just_send_out_packets_no_wait);
 #endif
- // unsigned int i;
- // for(i=0;i<nimages;i++){
-    //header then data request
-    if(!Beb_SendMultiReadRequest(beb_number,left_right,ten_gig,dst_number,1,header_size,test_just_send_out_packets_no_wait) ||
-       !Beb_SendMultiReadRequest(beb_number,left_right,ten_gig,dst_number,npackets,packet_size,test_just_send_out_packets_no_wait) ||
-       (in_two_requests&&!Beb_SendMultiReadRequest(beb_number,left_right,ten_gig,dst_number,npackets,packet_size,test_just_send_out_packets_no_wait))){
-       	printf("SendMultiReadRequest failed\n");
-    	return 0;
-    }
- // }
+
+  // CMD_GEN core registers
+  //
+  // base for left feb fpga  + 0x000
+  // base for right feb fpga + 0x100 Bytes
+  //
+  // OFFSETs given in Bytes
+  // base+00 0xC0DE0001 (static r/o)
+  // base+04 0x636D6467 (static r/o, ASCII for "CMDG")
+  //
+  // base+08 1st 32bits of 1st command
+  // base+0c 2nd 32bits of 1st command
+  //
+  // base+10 1st 32bits of 2nd command
+  // base+14 2nd 32bits of 2nd command
+  //
+  // base+1c command counter (sends n commands)
+  //         <32 Bit mode : 2 commands for 1 frame neccessary (header + frame) (10 frames = 20 commands)
+  //          32 Bit mode : 3 commands for 1 frame neccessary (header + 1st halfframe + 2nd halfframe) (10 frames = 30 commands)
+  //         if > 0 core starts operation
+  //
+  // base+20 command mode (for 32 bit mode)
+  //         0            for 2 command mode (send 1st command and 2nd command) (header + frame)
+  //         1 on bit 31  for 3 command mode (send 1st command, 2nd command, and 2nd command) (header + 1st halfframe + 2nd halfframe)
+  //
+  //
+  // Warning: Hard coded base address 0xc5000000 (TBD)
+  //
+
+
+  // Mapping
+  int fd;
+  fd = open("/dev/mem", O_RDWR | O_SYNC, 0);
+  if (fd == -1)
+  {
+	  printf("\nCan't find /dev/mem!\n");
+	  return 0;
+  }
+  u_int32_t CSP0BASE = (u_int32_t)mmap(0, 0x1000, PROT_READ|PROT_WRITE, MAP_FILE|MAP_SHARED, fd, 0xC5000000 );
+  if (CSP0BASE == (u_int32_t)MAP_FAILED)
+  {
+	  printf("\nCan't map memmory area!!\n");
+	  return 0;
+  }
+
+  ptrl = (u_int32_t*)(CSP0BASE);
+  ptrr = (u_int32_t*)(CSP0BASE+0x100);
+
+  int i;
+
+#ifdef MARTIN
+  for (i=0; i < 10; i++)
+	  printf("%X\n",*(ptrl+i));
+#endif
+
+  // Generating commands
+  send_header_command = 0x62000000 | (!test_just_send_out_packets_no_wait) << 27 | (ten_gig==1) << 24 | header_size << 14 |            0;
+  send_frame_command  = 0x62000000 | (!test_just_send_out_packets_no_wait) << 27 | (ten_gig==1) << 24 | packet_size << 14 | (npackets-1);
+
+#ifdef MARTIN
+  for (i=0; i < 10; i++)
+	  printf("%X\n",*(ptrl+i));
+  printf("%d\n",in_two_requests);
+#endif
+
+  // Wait until last command was send successfully
+//  while (*(ptrl+6) != 0);
+//  while (*(ptrr+6) != 0);
+
+  //"0x20 << 8" is dst_number (0x00 for left, 0x20 for right)
+  //Left
+  *(ptrl+2) = 0;
+  *(ptrl+3) = send_header_command;
+  *(ptrl+4) = 0;
+  *(ptrl+5) = send_frame_command;
+  *(ptrl+7) = in_two_requests << 31;
+
+  // Right
+  *(ptrr+2) = 0;
+  *(ptrr+3) = send_header_command | 0x2000;
+  *(ptrr+4) = 0;
+  *(ptrr+5) = send_frame_command  | 0x2000;
+  *(ptrr+7) = in_two_requests | (in_two_requests << 31);
+
+  // Set number of frames
+  *(ptrl+6) = nimages*(2+in_two_requests);
+  *(ptrr+6) = nimages*(2+in_two_requests);
+
+#ifdef MARTIN
+  for (i=0; i < 10; i++)
+	  printf("%X\n",*(ptrl+i));
+  printf("%d\n",in_two_requests);
+#endif
+
+  close(fd);
+
 #ifdef MARTIN
   cprintf(RED, "----Beb_RequestNImages----\n");
 #endif

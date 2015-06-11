@@ -15,3 +15,4 @@ git status;
 echo "***slsImageReconstruction";
 cd ../slsImageReconstruction;
 git status;
+cd ..

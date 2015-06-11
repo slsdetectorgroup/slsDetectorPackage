@@ -162,6 +162,61 @@ public:
 	};
 
 
+	/**
+
+	     Loops over a file stream until a complete frame is found (i.e. all packets 0 to nPackets, same frame number). Can be overloaded for different kind of detectors!
+	     \param filebin input file stream (binary)
+	     \param fnum frame number of frame returned
+	     \returns pointer to the first packet of the last good frame, NULL if no frame is found or last frame is incomplete
+
+		 */
+
+		virtual char *readNextFrame(ifstream &filebin, int& fnum) {
+			char *data=new char[packetSize*nPackets];
+			char *retval=0;
+			int np=0, nd;
+			fnum = -1;
+
+			if (filebin.is_open()) {
+				while (filebin.read(data+np*packetSize,packetSize)) {
+
+					if (np==(nPackets-1)) {
+
+						fnum=getFrameNumber(data); cout << "fnum:"<<fnum<<endl;
+						retval=findNextFrame(data,nd,packetSize*nPackets);
+						np=nd/packetSize;
+						//      cout << np << endl;
+
+
+						if (retval==data && np==nPackets) {
+							//      cout << "-" << endl;
+							return data;
+
+						}       else if (np>nPackets) {
+							cout << "too many packets!!!!!!!!!!" << endl;
+							delete [] data;
+							return NULL;
+						} else if (retval!=NULL) {
+							//  cout << "+" << endl;;
+							for (int ip=0; ip<np; ip++)
+								memcpy(data+ip*packetSize,retval+ip*packetSize,packetSize);
+						}
+
+					} else if (np>nPackets) {
+						cout << "*******too many packets!!!!!!!!!!" << endl;
+						delete [] data;
+						return NULL;
+					} else {
+						//  cout << "." << endl;;
+						np++;
+					}
+				}
+			}
+			delete [] data;
+			return NULL;
+		};
+
+
 
 private:
 	const int nPackets; /**<number of UDP packets constituting one frame */

@@ -172,7 +172,7 @@ public:
 	     \returns frame number
 	 */
 	int getFrameNumber(char *buff){
-		return(*(unsigned int*)(((eiger_packet_header *)((char*)buff))->num1));
+	    return(*(unsigned int*)(((eiger_packet_header *)((char*)buff))->num1));
 	};
 
 

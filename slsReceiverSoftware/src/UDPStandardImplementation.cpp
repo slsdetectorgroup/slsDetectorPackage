@@ -890,7 +890,7 @@ void UDPStandardImplementation::readFrame(char* c,char** raw, uint32_t &fnum, ui
 	if (guiData == NULL){
 		guiData = latestData;
 #ifdef VERY_VERY_DEBUG
-		cout << "gui data not null anymore" << endl;
+		cprintf(CYAN,"gui data not null anymore\n");
 #endif
 	}
 
@@ -904,14 +904,14 @@ void UDPStandardImplementation::readFrame(char* c,char** raw, uint32_t &fnum, ui
 	//could not get gui data
 	if(!guiDataReady){
 #ifdef VERY_VERY_DEBUG
-		cout << "gui data not ready" << endl;
+		cprintf(CYAN,"gui data not ready\n");
 #endif
 		*raw = NULL;
 	}
 	//data ready, set guidata to receive new data
 	else{
 #ifdef VERY_VERY_DEBUG
-		cout << "gui data ready" << endl;
+		cprintf(CYAN,"gui data ready\n");
 #endif
 		*raw = guiData;
 		guiData = NULL;
@@ -921,14 +921,14 @@ void UDPStandardImplementation::readFrame(char* c,char** raw, uint32_t &fnum, ui
 		pthread_mutex_unlock(&dataReadyMutex);*/
 		if((nFrameToGui) && (writerthreads_mask)){
 #ifdef VERY_VERY_DEBUG
-			cout << "gonna post" << endl;
+			cprintf(CYAN,"gonna post\n");
 #endif
 		/*if(nFrameToGui){*/
 			//release after getting data
 			sem_post(&smp);
 		}
 #ifdef VERY_VERY_DEBUG
-		cout << "done post" << endl;
+		cprintf(CYAN,"done post\n");
 #endif
 	}
 }
@@ -947,7 +947,7 @@ cout << "copyframe" << endl;
 	//else guidata always null as guidataready is always 1 after 1st frame, and seccond data never gets copied
 	if((!nFrameToGui) && (!guiData)){
 #ifdef VERY_VERY_DEBUG
-		cout << "doing nothing" << endl;
+		cprintf(GREEN,"doing nothing\n");
 #endif
 		pthread_mutex_lock(&dataReadyMutex);
 		guiDataReady=0;
@@ -957,12 +957,12 @@ cout << "copyframe" << endl;
 	//random read or nth frame read, gui needs data now or it is the first frame
 	else{
 #ifdef VERY_VERY_DEBUG
-		cout << "gui needs data now or 1st frame" << endl;
+		cprintf(GREEN,"gui needs data now or 1st frame\n");
 #endif
 		pthread_mutex_lock(&dataReadyMutex);
 		guiDataReady=0;
 #ifdef VERY_VERY_DEBUG
-		cout << "guidataready is  0, copying data" << endl;
+		cprintf(GREEN,"guidataready is  0, copying data\n");
 #endif
 		//eiger
 		if(startbuf != NULL){
@@ -989,16 +989,16 @@ cout << "copyframe" << endl;
 		guiDataReady=1;
 		pthread_mutex_unlock(&dataReadyMutex);
 #ifdef VERY_VERY_DEBUG
-		cout << "guidataready = 1" << endl;
+		cprintf(GREEN,"guidataready = 1\n");
 #endif
 		//nth frame read, block current process if the guireader hasnt read it yet
 		if(nFrameToGui){
 #ifdef VERY_VERY_DEBUG
-			cout<<"waiting after copying"<<endl;
+			cprintf(GREEN,"waiting after copying\n");
 #endif
 			sem_wait(&smp);
 #ifdef VERY_VERY_DEBUG
-			cout<<"done waiting"<<endl;
+			cprintf(GREEN,"done waiting\n");
 #endif
 		}
 
@@ -1571,11 +1571,12 @@ int UDPStandardImplementation::stopReceiver(){
 
 		startReadout();
 
-		while(status == TRANSMITTING)
+		while(status == TRANSMITTING){
+			sem_post(&smp);
 			usleep(5000);
+		}
 
 		//semaphore destroy
-		sem_post(&smp);
 		sem_destroy(&smp);
 
 		//change status
@@ -1585,6 +1586,10 @@ int UDPStandardImplementation::stopReceiver(){
 
 		cout << "Receiver Stopped.\nStatus:" << status << endl << endl;
 	}else cout <<" Not idle to stop receiver" << endl;
+
+
+
+	//sem_post(&smp);
 
 	return OK;
 }
@@ -1833,7 +1838,7 @@ int UDPStandardImplementation::startListening(){
 			while(!fifo[ithread]->push(buffer[ithread]));
 #ifdef FIFO_DEBUG
 			//if(!ithread)
-			cprintf(RED, "%d listener pushed into fifo %x\n",ithread, (void*)(buffer[ithread]));
+			cprintf(MAGENTA, "%d listener pushed into fifo %x\n",ithread, (void*)(buffer[ithread]));
 #endif
 		}
 
@@ -1934,7 +1939,7 @@ int UDPStandardImplementation::startWriting(){
 				continue;
 			}
 #ifdef VERYDEBUG
-			else cout <<"**NOT a dummy packet"<<endl;
+			else cout <<"**NOT a dummy packet"<< dec << numpackets<< endl;
 #endif
 
 
@@ -2025,18 +2030,18 @@ int UDPStandardImplementation::startWriting(){
 						writeToFile_withoutCompression(wbuf[j], numpackets,currframenum);
 					}
 #ifdef VERYDEBUG
-					cout << "written everyting" << endl;
+					cprintf(BLUE,"written everyting\n");
 #endif
 				}
 
 
 				if(myDetectorType == EIGER) {
 #ifdef VERYDEBUG
-					cout << "gonna copy frame" << endl;
+					cprintf(BLUE,"gonna copy frame\n");
 #endif
 					copyFrameToGui(wbuf,currframenum);
 #ifdef VERYDEBUG
-					cout << "copied frame" << endl;
+					cprintf(BLUE,"copied frame\n");
 #endif
 					for(i=0;i<numListeningThreads;++i){
 						while(!fifoFree[i]->push(wbuf[i]));
@@ -2196,7 +2201,7 @@ int i;
 				//free buffer
 				if(rc <= 0){
 					cout << ithread << "Discarding empty frame/ End of acquisition" << endl;
-					fifoFree[ithread]->push(buffer[ithread]);
+					fifoFree[ithread]->push(buffer[ithread]);/** why not while(!)*/
 #ifdef FIFO_DEBUG
 					cprintf(BLUE,"%d listener empty buffer pushed into fifofree %x\n", ithread, (void*)(buffer[ithread]));
 #endif
@@ -2208,7 +2213,7 @@ int i;
 						if(rc == 266240)
 							cprintf(GREEN, "%d Start of detector: Received test frame of 266240 bytes.\n",ithread);
 						cout << ithread << "Discarding incomplete frame" << endl;
-						fifoFree[ithread]->push(buffer[ithread]);
+						fifoFree[ithread]->push(buffer[ithread]);/** why not while(!)*/
 #ifdef FIFO_DEBUG
 						cprintf(BLUE,"%d listener last buffer free pushed into fifofree %x\n", ithread,(void*)(buffer[ithread]));
 #endif

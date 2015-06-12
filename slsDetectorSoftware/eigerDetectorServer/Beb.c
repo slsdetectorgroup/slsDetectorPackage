@@ -568,6 +568,7 @@ int Beb_StopAcquisition()
   *(ptrl+7) = 0;
   *(ptrr+7) = 0;
   close(fd);
+  return 1;
 }
 
 int Beb_RequestNImages(unsigned int beb_number, int ten_gig, unsigned int dst_number, unsigned int nimages, int test_just_send_out_packets_no_wait){
@@ -637,9 +638,8 @@ int Beb_RequestNImages(unsigned int beb_number, int ten_gig, unsigned int dst_nu
   ptrl = (u_int32_t*)(CSP0BASE);
   ptrr = (u_int32_t*)(CSP0BASE+0x100);
 
-  int i;
-
 #ifdef MARTIN
+  int i;
   for (i=0; i < 10; i++)
 	  printf("%X\n",*(ptrl+i));
 #endif

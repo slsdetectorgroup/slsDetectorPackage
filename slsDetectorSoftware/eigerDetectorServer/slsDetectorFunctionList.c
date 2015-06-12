@@ -530,6 +530,7 @@ int stopStateMachine(){
 	printf("Going to stop acquisition\n");
 	if(Feb_Control_StopAcquisition() & Beb_StopAcquisition())
 		return OK;
+	printf("failed to stop acquisition\n");
 	return FAIL;
 }
 
@@ -537,7 +538,7 @@ int stopStateMachine(){
 int startReadOut(){
 
 	//RequestImages();
-	int ret_val = 0, i;
+	int ret_val = 0;
 	dst_requested[0] = 1;
 	while(dst_requested[on_dst]){
 		//waits on data

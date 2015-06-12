@@ -555,7 +555,7 @@ void* postProcessing::processData(int delflag) {
 #endif
 				pthread_mutex_unlock(&mg);
 				//go through once more to get last nth frame data
-				if (acquiringDone >= 2){
+				if (acquiringDone >= 4){
 					if((!nthframe) ||(!newData)){
 #ifdef VERY_VERY_DEBUG
 						cout << "gonna post for it to end" << endl;

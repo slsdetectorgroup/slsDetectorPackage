@@ -2197,9 +2197,9 @@ int stop_acquisition(int file_des) {
 
 	sprintf(mess,"can't stop acquisition\n");
 
-#ifdef VERBOSE
+//#ifdef VERBOSE
 	printf("Stopping acquisition\n");
-#endif 
+//#endif
 #ifdef SLS_DETECTOR_FUNCTION_LIST
 	if (differentClients==1 && lockStatus==1) {
 		ret=FAIL;

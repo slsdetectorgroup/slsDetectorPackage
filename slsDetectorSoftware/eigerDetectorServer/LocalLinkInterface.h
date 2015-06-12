@@ -8,6 +8,10 @@
 #include "HardwareIO.h"
 #include <sys/types.h>
 
+#include "ansi.h"
+#include <sys/mman.h>
+#include <fcntl.h>
+
 /*class LocalLinkInterface: public HardwareIO{ //*/
 
 

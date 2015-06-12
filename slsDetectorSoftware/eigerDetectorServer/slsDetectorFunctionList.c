@@ -495,78 +495,62 @@ enum detectorSettings setSettings(enum detectorSettings sett, int imod){
 
 
 int startReceiver(int d){
-	if(master)
+	//if(master)
 		Feb_Control_PrepareForAcquisition();
 	return OK;
 }
 
 
 int startStateMachine(){
-	int ret;
-	if(master){
-		printf("Going to start acquisition\n");
-		Feb_Control_StartAcquisition();
-	}
+	int ret,prev_flag;
+	//get the DAQ toggle bit
+	prev_flag = Feb_Control_AcquisitionStartedBit();
 
-	//do not read status here, cannot get images then
+	printf("Going to start acquisition\n");
+	Feb_Control_StartAcquisition();
 
-	////if(trialMasterMode == IS_MASTER){
 	printf("requesting images\n");
 	ret =  startReadOut();
-	////}
-	//if(trialMasterMode == IS_MASTER){
 
-
-	if(master){
-		/*
-		 * int i=0;
-			if(getRunStatus() == IDLE){
-				for(i=0;i<100000;i++){
-					usleep(1000);
-					if(getRunStatus() != IDLE){
-						printf("*****i=%d\n",i);
-						break;
-					}
-				}
-				//while(getRunStatus() == IDLE);
-				//}
-				printf("*****Acquiring...\n");
-			}
-
-		 */
-
-		while(getRunStatus() == IDLE);
-		printf("*****Acquiring...\n");
+	//wait for acquisition start
+	if(ret == OK){
+		if(!Feb_Control_WaitForStartedFlag(5000, prev_flag)){
+			cprintf(RED,"Error: Acquisition did no start or trouble reading register\n");
+			ret = FAIL;
+		}
+		cprintf(GREEN,"***Acquisition started\n");
 	}
-	/*else usleep(1000000);
-			printf("****Returning\n");*/
+	/*while(getRunStatus() == IDLE){printf("waiting for being not idle anymore\n");}*/
 
 	return ret;
 }
 
 
 int stopStateMachine(){
-	//if(trialMasterMode == IS_MASTER){
 	printf("Going to stop acquisition\n");
-	if(Feb_Control_StopAcquisition())
+	if(Feb_Control_StopAcquisition() & Beb_StopAcquisition())
 		return OK;
-	//}else return OK;
-
 	return FAIL;
 }
 
 
 int startReadOut(){
+
 	//RequestImages();
-	int ret_val = 0;
+	int ret_val = 0, i;
 	dst_requested[0] = 1;
 	while(dst_requested[on_dst]){
 		//waits on data
 		int beb_num = BEB_NUM;//Feb_Control_GetModuleNumber();
 
-		if((ret_val = (!Beb_RequestNImages(beb_num,1,send_to_ten_gig,on_dst,nimages_per_request,0)||
-				!Beb_RequestNImages(beb_num,2,send_to_ten_gig,0x20|on_dst,nimages_per_request,0))))
+
+
+		if  ((ret_val = (!Beb_RequestNImages(beb_num,send_to_ten_gig,on_dst,nimages_per_request,0))))
 			break;
+//		for(i=0;i<nimages_per_request;i++)
+//			if  ((ret_val = (!Beb_RequestNImages(beb_num,send_to_ten_gig,on_dst,1,0))))
+//				break;
+
 		dst_requested[on_dst++]=0;
 		on_dst%=ndsts_in_use;
 	}
@@ -598,8 +582,8 @@ enum runStatus getRunStatus(){
 char *readFrame(int *ret, char *mess){
 	//if(master){
 		if(!Feb_Control_WaitForFinishedFlag(5000))
-			printf("error in waiting for finished flag\n");
-		printf("Acquisition finished\n");
+			cprintf(RED,"Error: Waiting for finished flag\n");
+		cprintf(GREEN,"Acquisition finished***\n");
 		//usleep(0);
 		usleep(1000000);
 		printf("*****Done Waiting...\n");
@@ -1005,6 +989,11 @@ void setAllTrimbits(int val){
 
 int getAllTrimbits(){
 	return *((detectorModules->chanregs));
+}
+
+int getBebFPGATemp()
+{
+	return Beb_GetBebFPGATemp();
 }
 
 #endif

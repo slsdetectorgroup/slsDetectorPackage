@@ -1244,7 +1244,7 @@ int set_dac(int file_des) {
 
 int get_adc(int file_des) {
 
-	int retval;
+	int retval=-1;
 	int ret=OK,ret1=OK;
 	int arg[2];
 	enum dacIndex ind;
@@ -1271,6 +1271,12 @@ int get_adc(int file_des) {
 #endif
 
 	switch (ind) {
+#ifdef EIGERD
+	case TEMPERATURE_FPGA:	//dac = TEMP_FPGA;
+		retval=getBebFPGATemp();
+		printf("Temperature: %d°C\n",retval);
+		break;
+#endif
 #ifdef GOTTHARDD
 	case TEMPERATURE_FPGA:	//dac = TEMP_FPGA;
 		break;
@@ -1284,7 +1290,7 @@ int get_adc(int file_des) {
 		break;
 	}
 #ifdef SLS_DETECTOR_FUNCTION_LIST
-	if (ret==OK) {
+	if ((ret==OK) && (retval==-1)) {
 		retval=getADC(idac,imod);
 	}
 #endif

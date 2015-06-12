@@ -2581,68 +2581,68 @@ int calibration_chip(int num, int *v, int *dacs) {
 
 
 
-ROI* setROI(int n, ROI arg[], int *retvalsize, int *ret){
+/* ROI* setROI(int n, ROI arg[], int *retvalsize, int *ret){ */
 
-	int i,adc;
-	ROI temp;
+/* 	int i,adc; */
+/* 	ROI temp; */
 
-	if(n>=0){
+/* 	if(n>=0){ */
 
-		//clear rois
-		for(i=0;i<MAX_ROIS;i++)
-			rois[i]=temp;
+/* 		//clear rois */
+/* 		for(i=0;i<MAX_ROIS;i++) */
+/* 			rois[i]=temp; */
 
-		/*ideal way to set roi
-		for(i=0;i<n;i++)
-			rois[i]=arg[i];
-		nROI = n;
-		 */
+/* 		/\*ideal way to set roi */
+/* 		for(i=0;i<n;i++) */
+/* 			rois[i]=arg[i]; */
+/* 		nROI = n; */
+/* 		 *\/ */
 
-		if(n==0)
-			adc=-1;
-		else{
-			//if its for 1 adc or general
-			if ((arg[0].xmin==0) && (arg[0].xmax==GOTTHARDNCHIP*GOTTHARDNCHAN))
-				adc=-1;
-			else{
-				//adc = mid value/numchans also for only 1 roi
-				adc = ((((arg[0].xmax)+(arg[0].xmin))/2)/(GOTTHARDNCHAN*NCHIPS_PER_ADC));
-				if((adc>=0) && (adc<=4));
-				else {
-					printf("warning:adc value greater than 5. deleting roi\n");
-					adc=-1;
-				}
-			}
-		}
+/* 		if(n==0) */
+/* 			adc=-1; */
+/* 		else{ */
+/* 			//if its for 1 adc or general */
+/* 			if ((arg[0].xmin==0) && (arg[0].xmax==GOTTHARDNCHIP*GOTTHARDNCHAN)) */
+/* 				adc=-1; */
+/* 			else{ */
+/* 				//adc = mid value/numchans also for only 1 roi */
+/* 				adc = ((((arg[0].xmax)+(arg[0].xmin))/2)/(GOTTHARDNCHAN*NCHIPS_PER_ADC)); */
+/* 				if((adc>=0) && (adc<=4)); */
+/* 				else { */
+/* 					printf("warning:adc value greater than 5. deleting roi\n"); */
+/* 					adc=-1; */
+/* 				} */
+/* 			} */
+/* 		} */
 
 
-		//set rois for just 1 adc - take only 1st roi
-		if(adc!=-1){
-			rois[0].xmin=adc*(GOTTHARDNCHAN*NCHIPS_PER_ADC);
-			rois[0].xmax=(adc+1)*(GOTTHARDNCHAN*NCHIPS_PER_ADC)-1;
-			rois[0].ymin=-1;
-			rois[0].ymax=-1;
-			nROI = 1;
-		}else
-			nROI = 0;
+/* 		//set rois for just 1 adc - take only 1st roi */
+/* 		if(adc!=-1){ */
+/* 			rois[0].xmin=adc*(GOTTHARDNCHAN*NCHIPS_PER_ADC); */
+/* 			rois[0].xmax=(adc+1)*(GOTTHARDNCHAN*NCHIPS_PER_ADC)-1; */
+/* 			rois[0].ymin=-1; */
+/* 			rois[0].ymax=-1; */
+/* 			nROI = 1; */
+/* 		}else */
+/* 			nROI = 0; */
 
-		if((arg[0].xmin!=rois[0].xmin)||(arg[0].xmax!=rois[0].xmax)||(arg[0].ymin!=rois[0].ymin)||(arg[0].ymax!=rois[0].ymax))
-			*ret=FAIL;
-		if(n!=nROI)
-			*ret=FAIL;
+/* 		if((arg[0].xmin!=rois[0].xmin)||(arg[0].xmax!=rois[0].xmax)||(arg[0].ymin!=rois[0].ymin)||(arg[0].ymax!=rois[0].ymax)) */
+/* 			*ret=FAIL; */
+/* 		if(n!=nROI) */
+/* 			*ret=FAIL; */
 
-		//set adc of interest
-		setADC(adc);
-	}
+/* 		//set adc of interest */
+/* 		setADC(adc); */
+/* 	} */
 
-//#ifdef VERBOSE
-	printf("Rois:\n");
-	for( i=0;i<nROI;i++)
-		printf("%d\t%d\t%d\t%d\n",rois[i].xmin,rois[i].xmax,rois[i].ymin,rois[i].ymax);
-//#endif
-	*retvalsize = nROI;
-	return rois;
-}
+/* //#ifdef VERBOSE */
+/* 	printf("Rois:\n"); */
+/* 	for( i=0;i<nROI;i++) */
+/* 		printf("%d\t%d\t%d\t%d\n",rois[i].xmin,rois[i].xmax,rois[i].ymin,rois[i].ymax); */
+/* //#endif */
+/* 	*retvalsize = nROI; */
+/* 	return rois; */
+/* } */
 
 #endif
 

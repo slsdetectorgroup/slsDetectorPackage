@@ -402,6 +402,10 @@ slsDetectorCommand::slsDetectorCommand(slsDetectorUtils *det)  {
   descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdDetectorSize;
   i++;
 
+  descrToFuncMap[i].m_pFuncName="roimask"; //
+  descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdDetectorSize;
+  i++;
+
 
   /* flags */
 
@@ -2904,13 +2908,17 @@ string slsDetectorCommand::cmdDetectorSize(int narg, char *args[], int action) {
 	if (action==PUT_ACTION) {
 		if (cmd=="maxmod")
 			return string("cannot put!");
+		else if (cmd=="roimask"){
+		  if (!sscanf(args[1],"%d",&val))
+		    return string("could not scan ")+string(args[0])+string(" ")+string(args[1]);
+		}
 		else if (!sscanf(args[1],"%d",&val))
-			return string("could not scan ")+string(args[0])+string(" ")+string(args[1]);
+		  return string("could not scan ")+string(args[0])+string(" ")+string(args[1]);
 
 		if (cmd=="roi"){
-			//debug number of arguments
-			if ((val<0)	|| (narg!=((val*4)+2)) )
-				return helpDetectorSize(narg,args,action);
+		  //debug number of arguments
+		  if ((val<0)	|| (narg!=((val*4)+2)) )
+		    return helpDetectorSize(narg,args,action);
 			ROI allroi[val];
 			pos=2;
 			for(i=0;i<val;i++){
@@ -2929,9 +2937,10 @@ string slsDetectorCommand::cmdDetectorSize(int narg, char *args[], int action) {
 			if ((narg > 2) && (sscanf(args[2],"%d",&val)) && (val>0))
 				myDet->setMaxNumberOfChannelsPerDetector(Y,val);
 		}
+
 	}
 
-	if (cmd=="nmod") {
+	if (cmd=="nmod" || cmd=="roimask") {
 		ret=myDet->setNumberOfModules(val);
 	} else if (cmd=="maxmod") {
 		ret=myDet->getMaxNumberOfModules();
@@ -2949,8 +2958,11 @@ string slsDetectorCommand::cmdDetectorSize(int narg, char *args[], int action) {
 	else
 		return string("unknown detector size ")+cmd;
 
-
-	sprintf(ans,"%d",ret);
+	if (cmd=="roimask")
+	  sprintf(ans,"%x",ret);
+	else
+	  sprintf(ans,"%d",ret);
+	  
 	return string(ans);
 
 }

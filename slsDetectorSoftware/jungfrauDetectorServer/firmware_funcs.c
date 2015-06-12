@@ -99,6 +99,7 @@ int udpPacketSize=DEFAULT_UDP_PACKETSIZE;
 u_int32_t clkDivider[2]={32,16};
 int32_t clkPhase[2]={0,0};
 
+u_int32_t adcDisableMask=0;
 
 int ififostart, ififostop, ififostep, ififo;
 
@@ -1137,10 +1138,31 @@ u_int32_t testRAM(void) {
 }
 
 int getNModBoard() {
-  return nModX;
+  return 32;//nModX;
 }
 
 int setNMod(int n) {
+
+/*   printf("Writin ADC disable register %08x\n",n); */
+/*   bus_w(ADC_LATCH_DISABLE_REG,n); */
+  return getNMod();
+}
+
+int getNMod() {
+/*   u_int32_t reg; */
+/*   int i; */
+/*   reg=bus_r(ADC_LATCH_DISABLE_REG); */
+
+/*   printf("Read ADC disable register %08x\n",reg); */
+/*   nModX=32; */
+/*   for (i=0; i<32; i++) { */
+/*     if (reg & (1<<i)) { */
+/*       nModX--; */
+/*       printf("ADC %d is disabled\n",i); */
+/*     } */
+/*   } */
+  
+  
   return nModX;
 }
 
@@ -1314,6 +1336,65 @@ int64_t getFramesFromStart(){
 }
 
 
+ROI *setROI(int nroi,ROI* arg,int *retvalsize, int *ret) {
+  ROI retval[MAX_ROIS];
+  int i, ich;
+
+  adcDisableMask=0xfffffffff;
+  
+  printf("Setting ROI\n");
+  if (nroi>=0) {
+    if (nroi==0) {
+      adcDisableMask=0;
+    } else {
+      for (i=0; i<nroi; i++) {
+	printf("iroi: %d  - %d %d %d %d\n",i, arg[i].xmin, arg[i].xmax, arg[i].ymin, arg[i].ymax);
+	for (ich=arg[i].xmin; ich<=arg[i].xmax; ich++) {
+	  if (ich>=0 && ich<NCHAN)
+	    adcDisableMask&=~(1<<ich);
+	  else
+	    break;
+	  printf("%d write adc disable mask %08x\n",ich , adcDisableMask);
+	}
+      }
+    }
+    printf("write adc disable mask %08x\n",adcDisableMask);
+    bus_w(ADC_LATCH_DISABLE_REG,adcDisableMask);
+  }
+  *ret=OK;
+  
+   adcDisableMask=bus_r(ADC_LATCH_DISABLE_REG);
+
+   printf("read adc disable mask %08x\n",adcDisableMask); 
+   *retvalsize=0;
+   retval[0].xmin=0;
+   retval[0].xmax=0; 
+   for (ich=0 ; ich<NCHAN ; ich++) {
+     if ((~adcDisableMask)&(1<<ich)) {
+       if (ich==0) {
+	 *retvalsize+=1;
+	 if (*retvalsize>MAX_ROIS) {
+	   *retvalsize-=1;
+	   break;
+	 }
+	 retval[*retvalsize-1].xmin=ich;
+	 retval[*retvalsize-1].xmax=ich; 
+       } else {
+	 if  ((adcDisableMask)&(1<<(ich-1))) {
+	   *retvalsize+=1;
+	   if (*retvalsize>MAX_ROIS) {
+	     *retvalsize-=1;
+	     break;
+	   }
+	   retval[*retvalsize-1].xmin=ich;
+	 }
+	 retval[*retvalsize-1].xmax=ich; 	 
+       }
+     }
+   }
+   getDynamicRange();
+   return retval;
+}
 
 
 int loadImage(int index, short int ImageVals[]){
@@ -1878,7 +1959,7 @@ u_int32_t runState(void) {
 // State Machine 
 
 int startStateMachine(){
-int i;
+  //int i;
 //#ifdef VERBOSE
   printf("*******Starting State Machine*******\n");
 //#endif
@@ -1896,23 +1977,24 @@ int i;
 #endif
 
 
-  for(i=0;i<100;i++){
+  // for(i=0;i<100;i++){
 	  //start state machine
     bus_w16(CONTROL_REG, FIFO_RESET_BIT);
     bus_w16(CONTROL_REG, 0x0);
     bus_w16(CONTROL_REG, START_ACQ_BIT |  START_EXPOSURE_BIT);
+    usleep(20);
     bus_w16(CONTROL_REG, 0x0);
 	  //verify
-    if(bus_r(STATUS_REG) & RUN_BUSY_BIT)
-      break;
-    else {
-      printf("status: %08x\n",bus_r(STATUS_REG));
-      usleep(5000);
-    }
-  }
+  /*   if(bus_r(STATUS_REG) & RUN_BUSY_BIT) */
+/*       break; */
+/*     else { */
+/*       printf("status: %08x\n",bus_r(STATUS_REG)); */
+/*       usleep(5000); */
+/*     } */
+/*   } */
 
-  if(i!=0)
-    printf("tried to start state machine %d times\n",i);
+/*   if(i!=0) */
+/*     printf("tried to start state machine %d times\n",i); */
  
   if(i==100){
      printf("\n***********COULD NOT START STATE MACHINE***************\n");
@@ -1935,15 +2017,16 @@ int stopStateMachine(){
   write_stop_sm(1);
   write_status_sm("Stopped");
 #endif
-  for(i=0;i<100;i++){
+  // for(i=0;i<100;i++){
   	  //stop state machine
 	  bus_w16(CONTROL_REG, STOP_ACQ_BIT);
+	  usleep(100);
 	  bus_w16(CONTROL_REG, 0x0);
-	  usleep(5000);
-	  //verify
-	  if(!(bus_r(STATUS_REG)&RUNMACHINE_BUSY_BIT))
-		break;
-  }
+/* 	  usleep(5000); */
+/* 	  //verify */
+/* 	  if(!(bus_r(STATUS_REG)&RUNMACHINE_BUSY_BIT)) */
+/* 		break; */
+/*   } */
   if(i!=0)
 	  printf("tried to stop state machine %d times\n",i);
   if(i==100){
@@ -1974,6 +2057,7 @@ int startReadOut(){
   printf("State machine status is %08x\n",bus_r(STATUS_REG));
 #endif
   bus_w16(CONTROL_REG,  START_ACQ_BIT |START_READOUT_BIT);   //  start readout
+  usleep(100);
   bus_w16(CONTROL_REG,  0x0);
   return OK;
 }
@@ -2019,6 +2103,7 @@ u_int16_t* fifo_read_event(int ns)
   int i=0;//, j=0;
 /*   volatile u_int16_t volatile *dum; */
    volatile u_int16_t a; 
+   volatile u_int32_t val; 
   // volatile u_int32_t volatile *dum;
      //  volatile u_int32_t a;
 
@@ -2060,9 +2145,22 @@ u_int16_t* fifo_read_event(int ns)
 /* #else */
   
   bus_w16(DUMMY_REG,1<<8); // read strobe to all fifos
-  //  bus_w16(DUMMY_REG,0);
-  // for (i=0; i<32; i++) {   
-  bus_w16(DUMMY_REG,0); // 
+   bus_w16(DUMMY_REG,0); 
+    // i=0;//
+/*   for (i=0; i<32; i++) { */
+   
+/* /\*   while (((adcDisableMask&(3<<((i)*2)))>>((i)*2))==3) { *\/ */
+/* /\*     i++; *\/ */
+/* /\*     if (i>15) *\/ */
+/* /\*       break; *\/ */
+/* /\*   } *\/ */
+/* /\*   if (i<16) {    *\/ */
+/*     bus_w16(DUMMY_REG,i); */
+/*   } */
+/*   val=*values; */
+  
+
+  // bus_w16(DUMMY_REG,0); // 
     for (i=0; i<16; i++) { 
 
     
@@ -2074,26 +2172,33 @@ u_int16_t* fifo_read_event(int ns)
       //dum=(((u_int32_t*)(now_ptr))+i);
 
       //  a=*values;//bus_r(FIFO_DATA_REG);
+      // if ((adcDisableMask&(3<<(i*2)))==0) {
+	    *((u_int32_t*)now_ptr)=*values;//bus_r(FIFO_DATA_REG);
+	    
+	    
+	    if (i!=0 || ns!=0) {
+	      a=0;
+	      while (*((u_int32_t*)now_ptr)==*((u_int32_t*)(now_ptr)-1) && a++<10) {
+		
+		//	  printf("******************** %d: fifo %d: new %08x old %08x\n ",ns, i, *((u_int32_t*)now_ptr),*((u_int32_t*)(now_ptr)-1));
+		*((u_int32_t*)now_ptr)=*values;
+		//  printf("%d-",i);
+		
+	      }
+	    }
+	    now_ptr+=4;
+	    //  }   
+/*       while (((adcDisableMask&(3<<((i+1)*2)))>>((i+1)*2))==3) { */
+/* 	i++; */
+/*       } */
 
-      *((u_int32_t*)now_ptr)=*values;//bus_r(FIFO_DATA_REG);
-
-  
-      if (i!=0 || ns!=0) {
-	a=0;
-	while (*((u_int32_t*)now_ptr)==*((u_int32_t*)(now_ptr)-1) && a++<10) {
-
-	  //	  printf("******************** %d: fifo %d: new %08x old %08x\n ",ns, i, *((u_int32_t*)now_ptr),*((u_int32_t*)(now_ptr)-1));
-	  *((u_int32_t*)now_ptr)=*values;
-	  //  printf("%d-",i);
-	  
-	}
-    }
-
-      now_ptr+=4;
-      bus_w16(DUMMY_REG,i+1);
+      //      if (((adcDisableMask&(3<<((i+1)*2)))>>((i+1)*2))!=3) {
+      
+	bus_w16(DUMMY_REG,i+1);
+	// }
      // *(((u_int16_t*)(now_ptr))+i)=bus_r16(FIFO_DATA_REG);
     } 
-  bus_w16(DUMMY_REG,0); // 
+    //  bus_w16(DUMMY_REG,0); // 
 /* #ifdef TIMEDBG  */
   
 /*   gettimeofday(&tss,NULL); */
@@ -2229,8 +2334,8 @@ int setDynamicRange(int dr) {
     dynamicRange=16;
     nSamples=dr/16;
     bus_w(NSAMPLES_REG,nSamples);
-    dataBytes=NMAXMOD*NCHIP*NCHAN*2;
-  }
+  } 
+  getDynamicRange();
   allocateRAM();
   printf("Setting dataBytes to %d: dr %d; samples %d\n",dataBytes, dynamicRange, nSamples);
   return   getDynamicRange();
@@ -2244,6 +2349,8 @@ int setDynamicRange(int dr) {
 int getDynamicRange() {
   //	dynamicRange=16;
   nSamples=bus_r(NSAMPLES_REG);
+  getChannels();
+  dataBytes=nModX*NCHIP*getChannels()*2;
   return dynamicRange*bus_r(NSAMPLES_REG);//nSamples;
 
 }
@@ -2290,12 +2397,21 @@ int setStoreInRAM(int b) {
   return  allocateRAM();
 }
 
+int getChannels() {
+  int nch=32;
+  int i;
+  for (i=0; i<NCHAN; i++) {
+    if (adcDisableMask & (1<<i)) nch--;
+  }
+  return nch;
+}
 
 int allocateRAM() {
   size_t size;
-
   getDynamicRange();
-    size=dataBytes*nSamples;
+
+  //adcDisableMask 
+  size=dataBytes*nSamples;
   
 #ifdef VERBOSE
   printf("\nnmodx=%d nmody=%d dynamicRange=%d dataBytes=%d nFrames=%d nTrains=%d, size=%d\n",nModX,nModY,dynamicRange,dataBytes,nf,nt,(int)size );

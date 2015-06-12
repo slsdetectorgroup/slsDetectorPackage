@@ -684,6 +684,9 @@ class slsDetector : public slsDetectorUtils, public energyConversion {
   */
   int setNumberOfModules(int n=GET_FLAG, dimension d=X); // if n=GET_FLAG returns the number of installed modules
 
+
+
+
   /*
     returns the instrinsic size of the detector (maxmodx, maxmody, nchans, nchips, ndacs
     enum numberOf {

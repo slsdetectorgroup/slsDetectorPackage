@@ -59,6 +59,7 @@ int adcvpp=0x4;
 int init_detector(int b, int checkType) {
   
   int i;
+  int retvalsize,ret;
   if (mapCSP0()==FAIL) { printf("Could not map memory\n");
     exit(1);  
   }
@@ -157,6 +158,7 @@ int init_detector(int b, int checkType) {
   strcpy(thisClientIP,"none1");
   lockStatus=0;
   // getDynamicRange();
+  setROI(-1,NULL,&retvalsize,&ret);
   allocateRAM();
   return OK;
 }
@@ -2286,8 +2288,11 @@ int set_roi(int file_des) {
 	int retvalsize=0;
 	ROI arg[MAX_ROIS];
 	ROI* retval=0;
-
+	int iroi;
 	strcpy(mess,"Could not set/get roi\n");
+
+
+	//	u_int32_t disable_reg=0;
 
 
 	n = receiveDataOnly(file_des,&nroi,sizeof(nroi));
@@ -2296,28 +2301,30 @@ int set_roi(int file_des) {
 		ret=FAIL;
 	}
 
-	if(nroi!=-1){
+	if(nroi>=0){
 		n = receiveDataOnly(file_des,arg,nroi*sizeof(ROI));
 		if (n != (nroi*sizeof(ROI))) {
 			sprintf(mess,"Received wrong number of bytes for ROI\n");
 			ret=FAIL;
 		}
 //#ifdef VERBOSE
-		/*
+		
 		printf("Setting ROI to:");
 		for( i=0;i<nroi;i++)
 			printf("%d\t%d\t%d\t%d\n",arg[i].xmin,arg[i].xmax,arg[i].ymin,arg[i].ymax);
-*/
 
+
+
+		//
 		printf("Error: Function 41 or Setting ROI is not yet implemented in Moench!\n");
 //#endif
 	}
 	/* execute action if the arguments correctly arrived*/
 
 
-	ret = FAIL;
-	/* NOT IMPLEMENTED
-#ifdef MCB_FUNCS
+
+	
+
 	if (lockStatus==1 && differentClients==1){//necessary???
 		sprintf(mess,"Detector locked by %s\n", lastClientIP);
 		ret=FAIL;
@@ -2331,8 +2338,7 @@ int set_roi(int file_des) {
 		}
 	}
 
-#endif
-*/
+
 	if(ret==OK && differentClients){
 		printf("Force update\n");
 		ret=FORCE_UPDATE;

@@ -896,8 +896,8 @@ slsDetectorDefs::sls_detector_module*  slsDetector::createModule(detectorType t)
     na=1;
     break;
   case JUNGFRAUCTB:
-    nch=32;
-    nm=1;
+    nch=1//32;
+    nm=32;
     nc=1;
     nd=8; // dacs+adcs
     na=1;
@@ -1557,7 +1557,6 @@ int slsDetector::setNumberOfModules(int n, dimension d){
   }
   return thisDetector->nMod[d];
 };
-
 
 
 

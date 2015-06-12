@@ -169,6 +169,9 @@ uint64_t setPatternWaitTime(int level, uint64_t t);
 void initDac(int dacnum);
 int setDac(int dacnum,int dacvalue);
 
+ROI *setROI(int nroi,ROI* arg,int *retvalsize, int *ret);
+int getChannels();
+
 /*
 
 u_int32_t setNBits(u_int32_t);

@@ -167,7 +167,7 @@ int calibration_chip(int num, int *values, int *dacs);
 
 
 
-ROI* setROI(int n, ROI arg[], int *retvalsize, int *ret);
+//ROI* setROI(int n, ROI arg[], int *retvalsize, int *ret);
 
 #endif
 

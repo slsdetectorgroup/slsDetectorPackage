@@ -109,3 +109,14 @@
 #define CHIP_DATA_OUT_DELAY_REG3           3
 #define CHIP_DATA_OUT_DELAY_REG4           4
 #define CHIP_DATA_OUT_DELAY_SET            0x20000000
+
+//module configuration
+#define TOP_BIT_MASK				0x00f
+#define MASTER_BIT_MASK				0x200
+// Master Slave Top Bottom Definition
+#define MODULE_CONFIGURATION_MASK 0x84
+//stop acquisition offsets
+#define STOP_ACQUISITION_LEFT_OFFSET 	0x01c
+#define STOP_ACQUISITION_RIGHT_OFFSET	0x11c
+#define STOP_ACQUISITION_BIT			0x40000000
+

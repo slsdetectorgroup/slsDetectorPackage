@@ -15,8 +15,12 @@
 #include <string.h>
 #include <unistd.h>
 
+
+
+
 #include "xfs_types.h"
 #include "xparameters.h"
+#include "FebRegisterDefs.h"
 
 #include "Beb.h"
 
@@ -26,7 +30,6 @@
 	 int bebInfoSize = 0;
 
 		struct LocalLinkInterface ll_beb_local,* ll_beb;
-		struct LocalLinkInterface ll_beb_new_memory_local,* ll_beb_new_memory;
 
 		 struct udp_header_type udp_header;
 
@@ -146,24 +149,24 @@ void Beb_GetModuleCopnfiguration(int* master, int* top){
 	*top = 0;
 	*master = 0;
 	  //mapping new memory to read master top module configuration
-	  ll_beb_new_memory = &ll_beb_new_memory_local;
-	  Local_LocalLinkInterface(ll_beb_new_memory);
-	  int ret  = Local_GetModuleConfiguration(ll_beb_new_memory,XPAR_PLB_GPIO_SYS_BASEADDR, MODULE_CONFIGURATION);
-	  if(!ret)
-		  printf("Module Configuration FAIL\n");
-	  else{
-		  printf("Module Configuration OK\n");
-		  printf("Beb: value =0x%x\n",ret);
-		  if(ret&0xf){
-			  *top = 1;
-			 // printf("Beb.c: TOP\n\n\n\n");
-		  }//else  printf("Beb.c: BOTTOM\n\n\n\n");
-
-		  if(ret&0x200){
-			  *master = 1;
-			 // printf("Beb.c: MASTER\n\n\n\n");
-		  }//else  printf("Beb.c: SLAVE\n\n\n\n");
-	  }
+		u_int32_t baseaddr;
+		int ret;
+		//open file pointer
+		int fd = Beb_open(XPAR_PLB_GPIO_SYS_BASEADDR,&baseaddr);
+		if(fd < 0){
+			 cprintf(RED,"Module Configuration FAIL\n");
+		}else{
+			//read data
+			ret = Beb_Read32(baseaddr, MODULE_CONFIGURATION_MASK);
+			printf("Module Configuration OK\n");
+			printf("Beb: value =0x%x\n",ret);
+			if(ret&TOP_BIT_MASK)
+				*top = 1;
+			if(ret&MASTER_BIT_MASK)
+				*master = 1;
+			//close file pointer
+			Beb_close(fd);
+		}
 }
 
 
@@ -542,33 +545,29 @@ int Beb_SetUpTransferParameters(short the_bit_mode){
 
 int Beb_StopAcquisition()
 {
+	u_int32_t baseaddr;
+	u_int32_t valuel,valuer;
+	//open file pointer
+	int fd = Beb_open(XPAR_STOP_ACQUISITION,&baseaddr);
+	if(fd < 0){
+		cprintf(RED,"Beb Stop Acquisition FAIL\n");
+		return 0;
+	}else{
+		//find value
+		valuel = Beb_Read32(baseaddr, STOP_ACQUISITION_LEFT_OFFSET);
+		valuer = Beb_Read32(baseaddr, STOP_ACQUISITION_RIGHT_OFFSET);
+		//high
+		Beb_Write32(baseaddr, STOP_ACQUISITION_LEFT_OFFSET,(valuel|STOP_ACQUISITION_BIT));
+		Beb_Write32(baseaddr, STOP_ACQUISITION_RIGHT_OFFSET,(valuer|STOP_ACQUISITION_BIT));
+		//low
+		Beb_Write32(baseaddr, STOP_ACQUISITION_LEFT_OFFSET,(valuel&(~STOP_ACQUISITION_BIT)));
+		Beb_Write32(baseaddr, STOP_ACQUISITION_RIGHT_OFFSET,(valuer&(~STOP_ACQUISITION_BIT)));
 
-  volatile u_int32_t* ptrl;
-  volatile u_int32_t* ptrr;
-  // Mapping
-  int fd;
-  fd = open("/dev/mem", O_RDWR | O_SYNC, 0);
-  if (fd == -1)
-  {
-	  printf("\nCan't find /dev/mem!\n");
-	  return 0;
-  }
-  u_int32_t CSP0BASE = (u_int32_t)mmap(0, 0x1000, PROT_READ|PROT_WRITE, MAP_FILE|MAP_SHARED, fd, 0xC5000000 );
-  if (CSP0BASE == (u_int32_t)MAP_FAILED)
-  {
-	  printf("\nCan't map memmory area!!\n");
-	  return 0;
-  }
-
-  ptrl = (u_int32_t*)(CSP0BASE);
-  ptrr = (u_int32_t*)(CSP0BASE+0x100);
-
-  *(ptrl+7) = (1 << 30);
-  *(ptrr+7) = (1 << 30);
-  *(ptrl+7) = 0;
-  *(ptrr+7) = 0;
-  close(fd);
-  return 1;
+		printf("Beb Stop Acquisition OK\n");
+		//close file pointer
+		Beb_close(fd);
+	}
+	return 1;
 }
 
 int Beb_RequestNImages(unsigned int beb_number, int ten_gig, unsigned int dst_number, unsigned int nimages, int test_just_send_out_packets_no_wait){
@@ -758,3 +757,41 @@ int Beb_GetBebFPGATemp()
 	return temperature;
 }
 
+
+
+
+
+int Beb_open(u_int32_t baseaddr, u_int32_t* csp0base){
+
+	int fd = open("/dev/mem", O_RDWR | O_SYNC, 0);
+	if (fd == -1)
+		cprintf(RED,"\nCan't find /dev/mem!\n");
+	else{
+		printf("/dev/mem opened\n");
+		*csp0base = (u_int32_t)mmap(0, 0x1000, PROT_READ|PROT_WRITE, MAP_FILE|MAP_SHARED, fd, baseaddr);
+		if (*csp0base == (u_int32_t)MAP_FAILED) {
+			cprintf(RED,"\nCan't map memmory area!!\n");
+			fd = -1;
+		}else printf("CSP0 mapped\n");
+	}
+	return fd;
+}
+
+u_int32_t Beb_Read32 (u_int32_t baseaddr, u_int32_t offset){
+	volatile u_int32_t *ptr1;
+	ptr1=(u_int32_t*)(baseaddr + offset);
+	return *ptr1;
+}
+
+
+u_int32_t Beb_Write32 (u_int32_t baseaddr, u_int32_t offset, u_int32_t data){
+	volatile u_int32_t *ptr1;
+	ptr1=(u_int32_t*)(baseaddr + offset);
+	*ptr1 = data;
+	return *ptr1;
+}
+
+void Beb_close(int fd){
+	if(fd >= 0)
+		close(fd);
+}

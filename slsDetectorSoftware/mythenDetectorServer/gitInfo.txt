@@ -1,9 +1,9 @@
 Path: slsDetectorsPackage/slsDetectorSoftware/mythenDetectorServer 
-URL: origin git@gitorious.psi.ch:sls_det_software/sls_detector_software.git/mythenDetectorServer 
-Repository Root: origin git@gitorious.psi.ch:sls_det_software/sls_detector_software.git 
-Repsitory UUID: eff6ffc4c32edd46844d2cd1670cd4d4e7d05ca3 
-Revision: 93 
-Branch: gemma 
-Last Changed Author: Maliakal_Dhanya 
-Last Changed Rev: 288 
-Last Changed Date: 2014-12-08 10:16:31 +0100
+URL: origin maliakal_d@gitorious.psi.ch:sls_det_software/sls_detector_software.git/mythenDetectorServer 
+Repository Root: origin maliakal_d@gitorious.psi.ch:sls_det_software/sls_detector_software.git 
+Repsitory UUID: b3dc8271bc5b101e2a973f5d520934ba67ad47fe 
+Revision: 94 
+Branch: master 
+Last Changed Author: Dhanya_Maliakal 
+Last Changed Rev: 299 
+Last Changed Date: 2015-06-15 17:41:48 +0200

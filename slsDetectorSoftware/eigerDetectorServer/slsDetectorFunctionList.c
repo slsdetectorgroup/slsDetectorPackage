@@ -233,23 +233,6 @@ int getDetectorNumber(){
 		perror("gethostname");
 	sscanf(hostname,"%x",&res);
 	return res;
-
-
-	/*
-	char output[255]="";
-	int res=0;
-	FILE* sysFile = popen("hostname", "r");
-	fgets(output, sizeof(output), sysFile);
-	pclose(sysFile);
-	sscanf(output,"%x",&res);
-	return res;
-	 */
-	/*
-	int res=0;
-	char hostname[100] = "beb000";
-	sscanf(hostname,"%x",&res);
-	return res;
-	 */
 }
 
 

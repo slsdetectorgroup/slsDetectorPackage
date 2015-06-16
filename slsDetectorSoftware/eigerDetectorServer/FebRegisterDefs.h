@@ -115,8 +115,19 @@
 #define MASTER_BIT_MASK				0x200
 // Master Slave Top Bottom Definition
 #define MODULE_CONFIGURATION_MASK 0x84
-//stop acquisition offsets
-#define STOP_ACQUISITION_LEFT_OFFSET 	0x01c
-#define STOP_ACQUISITION_RIGHT_OFFSET	0x11c
-#define STOP_ACQUISITION_BIT			0x40000000
+
+//new memory
+#define LEFT_OFFSET					0x0
+#define RIGHT_OFFSET				0x100
+
+#define FIRST_CMD_PART1_OFFSET		0x8
+#define FIRST_CMD_PART2_OFFSET		0xc
+#define SECOND_CMD_PART1_OFFSET		0x10
+#define SECOND_CMD_PART2_OFFSET		0x14
+#define COMMAND_COUNTER_OFFSET		0x18
+#define STOP_ACQ_OFFSET 			0x1c
+#define STOP_ACQ_BIT				0x40000000
+#define TWO_REQUESTS_OFFSET			0x1c
+#define TWO_REQUESTS_BIT			0x80000000
+
 

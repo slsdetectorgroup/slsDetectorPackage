@@ -27,6 +27,7 @@
 using namespace std;
 
 
+#define WRITE_HEADERS
 
 
 UDPStandardImplementation::UDPStandardImplementation()
@@ -2380,44 +2381,46 @@ void UDPStandardImplementation::writeToFile_withoutCompression(char* buf,int num
 			offset += EIGER_HEADER_LENGTH;
 #ifdef WRITE_HEADERS
 #ifdef VERY_DEBUG
-			int k = 0;
-			if(dynamicRange != 32){
-				cprintf(RED, "\np1 fnum:0x%x\n",  (*(unsigned int*)(((eiger_packet_header *)((char*)(buf + offset+k*1040)))->num1)));
-				cprintf(RED, "p1:0x%x\n",  (*(uint8_t*)(((eiger_packet_header *)((char*)(buf + offset+k*1040)))->num3)));
-				cprintf(RED, "p0 num:%d - %d\n", k, (*(uint8_t*)(((eiger_packet_header *)((char*)(buf + offset+k*1040)))->num4)));
-				k = 1;
-				cprintf(RED, "p2 fnum:0x%x\n",  (*(unsigned int*)(((eiger_packet_header *)((char*)(buf + offset +k*1040)))->num1)));
-				cprintf(RED, "p2:0x%x\n",  (*(uint8_t*)(((eiger_packet_header *)((char*)(buf + offset +k*1040)))->num3)));
-				cprintf(RED, "p1 num:%d - %d\n", k,(*(uint8_t*)(((eiger_packet_header *)((char*)(buf + offset +k*1040)))->num4)));
-				k = 2;
-				cprintf(RED, "p3 fnum:0x%x\n",  (*(unsigned int*)(((eiger_packet_header *)((char*)(buf + offset + k*1040)))->num1)));
-				cprintf(RED, "p3:0x%x\n",  (*(uint8_t*)(((eiger_packet_header *)((char*)(buf + offset +k*1040)))->num3)));
-				cprintf(RED, "p2 num:%d - %d\n", k,(*(uint8_t*)(((eiger_packet_header *)((char*)(buf + offset +k*1040)))->num4)));
-			}else{
-				k = 0;
-				cprintf(RED, "\np1 fnum:0x%x\n",  (*(unsigned int*)(((eiger_packet_header *)((char*)(buf + offset+k*1040)))->num1)));
-				cprintf(RED, "p1:0x%x\n",  (*(uint8_t*)(((eiger_packet_header *)((char*)(buf + offset+k*1040)))->num3)));
-				cprintf(RED, "p0 num:%d - %d\n",  k, (*(uint16_t*)(((eiger_packet_header *)((char*)(buf + offset+k*1040)))->num2)));
-				k = 1;
-				cprintf(RED, "p2 fnum:0x%x\n",  (*(unsigned int*)(((eiger_packet_header *)((char*)(buf + offset +k*1040)))->num1)));
-				cprintf(RED, "p2:0x%x\n",  (*(uint8_t*)(((eiger_packet_header *)((char*)(buf + offset +k*1040)))->num3)));
-				cprintf(RED, "p1 num:%d - %d\n", k, (*(uint16_t*)(((eiger_packet_header *)((char*)(buf + offset +k*1040)))->num2)));
-				k = 2;
-				cprintf(RED, "p3 fnum:0x%x\n",  (*(unsigned int*)(((eiger_packet_header *)((char*)(buf + offset + k*1040)))->num1)));
-				cprintf(RED, "p3:0x%x\n",  (*(uint8_t*)(((eiger_packet_header *)((char*)(buf + offset +k*1040)))->num3)));
-				cprintf(RED, "p2 num:%d - %d\n", k, (*(uint16_t*)(((eiger_packet_header *)((char*)(buf + offset +k*1040)))->num2)));
-				k = 256;
-				cprintf(RED, "p257 fnum:0x%x\n",  (*(unsigned int*)(((eiger_packet_header *)((char*)(buf + offset + k*1040)))->num1)));
-				cprintf(RED, "p257:0x%x\n",  (*(uint8_t*)(((eiger_packet_header *)((char*)(buf + offset +k*1040)))->num3)));
-				cprintf(RED, "p256 num:%d - %d\n", k, (*(uint16_t*)(((eiger_packet_header *)((char*)(buf + offset +k*1040)))->num2)));
-				k = 512;
-				cprintf(RED, "p513 fnum:0x%x\n",  (*(unsigned int*)(((eiger_packet_header *)((char*)(buf + offset + k*1040)))->num1)));
-				cprintf(RED, "p513:0x%x\n",  (*(uint8_t*)(((eiger_packet_header *)((char*)(buf + offset +k*1040)))->num3)));
-				cprintf(RED, "p512 num:%d - %d\n", k, (*(uint16_t*)(((eiger_packet_header *)((char*)(buf + offset +k*1040)))->num2)));
-				k = 768;
-				cprintf(RED, "p769 fnum:0x%x\n",  (*(unsigned int*)(((eiger_packet_header *)((char*)(buf + offset + k*1040)))->num1)));
-				cprintf(RED, "p769:0x%x\n",  (*(uint8_t*)(((eiger_packet_header *)((char*)(buf + offset +k*1040)))->num3)));
-				cprintf(RED, "p768 num:%d - %d\n", k,(*(uint16_t*)(((eiger_packet_header *)((char*)(buf + offset +k*1040)))->num2)));
+			if(myDetectorType == EIGER){
+				int k = 0;
+				if(dynamicRange != 32){
+					cprintf(RED, "\np1 fnum:0x%x\n",  (*(unsigned int*)(((eiger_packet_header *)((char*)(buf + offset+k*1040)))->num1)));
+					cprintf(RED, "p1:0x%x\n",  (*(uint8_t*)(((eiger_packet_header *)((char*)(buf + offset+k*1040)))->num3)));
+					cprintf(RED, "p0 num:%d - %d\n", k, (*(uint8_t*)(((eiger_packet_header *)((char*)(buf + offset+k*1040)))->num4)));
+					k = 1;
+					cprintf(RED, "p2 fnum:0x%x\n",  (*(unsigned int*)(((eiger_packet_header *)((char*)(buf + offset +k*1040)))->num1)));
+					cprintf(RED, "p2:0x%x\n",  (*(uint8_t*)(((eiger_packet_header *)((char*)(buf + offset +k*1040)))->num3)));
+					cprintf(RED, "p1 num:%d - %d\n", k,(*(uint8_t*)(((eiger_packet_header *)((char*)(buf + offset +k*1040)))->num4)));
+					k = 2;
+					cprintf(RED, "p3 fnum:0x%x\n",  (*(unsigned int*)(((eiger_packet_header *)((char*)(buf + offset + k*1040)))->num1)));
+					cprintf(RED, "p3:0x%x\n",  (*(uint8_t*)(((eiger_packet_header *)((char*)(buf + offset +k*1040)))->num3)));
+					cprintf(RED, "p2 num:%d - %d\n", k,(*(uint8_t*)(((eiger_packet_header *)((char*)(buf + offset +k*1040)))->num4)));
+				}else{
+					k = 0;
+					cprintf(RED, "\np1 fnum:0x%x\n",  (*(unsigned int*)(((eiger_packet_header *)((char*)(buf + offset+k*1040)))->num1)));
+					cprintf(RED, "p1:0x%x\n",  (*(uint8_t*)(((eiger_packet_header *)((char*)(buf + offset+k*1040)))->num3)));
+					cprintf(RED, "p0 num:%d - %d\n",  k, (*(uint16_t*)(((eiger_packet_header *)((char*)(buf + offset+k*1040)))->num2)));
+					k = 1;
+					cprintf(RED, "p2 fnum:0x%x\n",  (*(unsigned int*)(((eiger_packet_header *)((char*)(buf + offset +k*1040)))->num1)));
+					cprintf(RED, "p2:0x%x\n",  (*(uint8_t*)(((eiger_packet_header *)((char*)(buf + offset +k*1040)))->num3)));
+					cprintf(RED, "p1 num:%d - %d\n", k, (*(uint16_t*)(((eiger_packet_header *)((char*)(buf + offset +k*1040)))->num2)));
+					k = 2;
+					cprintf(RED, "p3 fnum:0x%x\n",  (*(unsigned int*)(((eiger_packet_header *)((char*)(buf + offset + k*1040)))->num1)));
+					cprintf(RED, "p3:0x%x\n",  (*(uint8_t*)(((eiger_packet_header *)((char*)(buf + offset +k*1040)))->num3)));
+					cprintf(RED, "p2 num:%d - %d\n", k, (*(uint16_t*)(((eiger_packet_header *)((char*)(buf + offset +k*1040)))->num2)));
+					k = 256;
+					cprintf(RED, "p257 fnum:0x%x\n",  (*(unsigned int*)(((eiger_packet_header *)((char*)(buf + offset + k*1040)))->num1)));
+					cprintf(RED, "p257:0x%x\n",  (*(uint8_t*)(((eiger_packet_header *)((char*)(buf + offset +k*1040)))->num3)));
+					cprintf(RED, "p256 num:%d - %d\n", k, (*(uint16_t*)(((eiger_packet_header *)((char*)(buf + offset +k*1040)))->num2)));
+					k = 512;
+					cprintf(RED, "p513 fnum:0x%x\n",  (*(unsigned int*)(((eiger_packet_header *)((char*)(buf + offset + k*1040)))->num1)));
+					cprintf(RED, "p513:0x%x\n",  (*(uint8_t*)(((eiger_packet_header *)((char*)(buf + offset +k*1040)))->num3)));
+					cprintf(RED, "p512 num:%d - %d\n", k, (*(uint16_t*)(((eiger_packet_header *)((char*)(buf + offset +k*1040)))->num2)));
+					k = 768;
+					cprintf(RED, "p769 fnum:0x%x\n",  (*(unsigned int*)(((eiger_packet_header *)((char*)(buf + offset + k*1040)))->num1)));
+					cprintf(RED, "p769:0x%x\n",  (*(uint8_t*)(((eiger_packet_header *)((char*)(buf + offset +k*1040)))->num3)));
+					cprintf(RED, "p768 num:%d - %d\n", k,(*(uint16_t*)(((eiger_packet_header *)((char*)(buf + offset +k*1040)))->num2)));
+				}
 			}
 #endif
 #endif

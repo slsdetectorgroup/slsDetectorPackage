@@ -524,4 +524,4 @@ TGraphErrors* energyCalibration::calibrate(int nscan, Double_t *en, Double_t *ee
 
 
 
-Fit data is empty
+

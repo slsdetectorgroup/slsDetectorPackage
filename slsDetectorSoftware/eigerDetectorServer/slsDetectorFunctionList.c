@@ -209,7 +209,7 @@ int64_t getDetectorId(enum idMode arg){
 		retval =  getDetectorNumber();/** to be implemented with mac? */
 		break;
 	case DETECTOR_FIRMWARE_VERSION:
-		return FIRMWAREREV;/** to be implemented */
+		return (int64_t)Beb_GetFirmwareRevision();
 	case DETECTOR_SOFTWARE_VERSION:
 		retval= SVNREV;
 		retval= (retval <<32) | SVNDATE;

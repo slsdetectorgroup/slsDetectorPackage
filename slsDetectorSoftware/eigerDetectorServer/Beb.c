@@ -170,6 +170,38 @@ void Beb_GetModuleCopnfiguration(int* master, int* top){
 }
 
 
+u_int32_t Beb_GetFirmwareRevision(){
+	//mapping new memory
+	u_int32_t baseaddr, value = 0;
+
+	//open file pointer
+	int fd = Beb_open(XPAR_VERSION,&baseaddr);
+	if(fd < 0)
+		cprintf(RED,"Firmware Revision Read FAIL\n");
+
+	else{
+		//read revision existing bit
+		value = Beb_Read32(baseaddr, REVISION_EXISTING_OFFSET);
+		printf("Firmware Revision Read OK\n");
+		//error reading
+		if(!(value&REVISION_EXISTING_BIT)){
+			cprintf(RED,"Firmware Revision Number does not exist in this version\n");
+			value = 0;
+		}else{
+			//read revision number
+			value = Beb_Read32(baseaddr, 0);
+			printf("Firmware Revision Number Read OK\n");
+			printf("Rev: 0x%x.%x\n\n",value & REVISION_MASK,value & SUB_REVISION_MASK);
+			value &= REVISION_MASK;
+		}
+	}
+
+	//close file pointer
+	if(fd > 0)
+		Beb_close(fd);
+
+	return value;
+}
 
 void Beb_ClearBebInfos(){
 	//unsigned int i;
@@ -760,12 +792,17 @@ int Beb_open(u_int32_t baseaddr, u_int32_t* csp0base){
 	if (fd == -1)
 		cprintf(RED,"\nCan't find /dev/mem!\n");
 	else{
+#ifdef VERBOSE
 		printf("/dev/mem opened\n");
+#endif
 		*csp0base = (u_int32_t)mmap(0, 0x1000, PROT_READ|PROT_WRITE, MAP_FILE|MAP_SHARED, fd, baseaddr);
 		if (*csp0base == (u_int32_t)MAP_FAILED) {
 			cprintf(RED,"\nCan't map memmory area!!\n");
 			fd = -1;
-		}else printf("CSP0 mapped\n");
+		}
+#ifdef VERBOSE
+		else printf("CSP0 mapped\n");
+#endif
 	}
 	return fd;
 }

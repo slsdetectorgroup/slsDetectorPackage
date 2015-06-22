@@ -48,8 +48,7 @@ struct BebInfo{
 
 
   void Beb_GetModuleCopnfiguration(int* master, int* top);
-
-
+  u_int32_t Beb_GetFirmwareRevision();
 
   int Beb_WriteTo(unsigned int index);
 

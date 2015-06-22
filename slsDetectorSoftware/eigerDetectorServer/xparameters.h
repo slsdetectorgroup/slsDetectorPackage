@@ -49,8 +49,12 @@ XPAR_PLB_LL_FIFO_AURORA_DUAL_CTRL_FEB_LEFT_BASEADDR
 #define XPAR_PLB_GPIO_SYS_BASEADDR 0xD1000000
 #define XPAR_PLB_GPIO_SYS_HIGHADDR 0xD100FFFF
 
-/** Stop Acquisition */
+/** Command Generator */
 #define XPAR_CMD_GENERATOR 0xC5000000
+
+
+/** Version Numbers */
+#define XPAR_VERSION 			0xc6000000
 
 /* Definitions for peripheral PLB_GPIO_TEST */
 #define XPAR_PLB_GPIO_TEST_BASEADDR 0xD1010000

@@ -116,7 +116,7 @@
 // Master Slave Top Bottom Definition
 #define MODULE_CONFIGURATION_MASK 0x84
 
-//new memory
+//command memory
 #define LEFT_OFFSET					0x0
 #define RIGHT_OFFSET				0x100
 
@@ -130,4 +130,9 @@
 #define TWO_REQUESTS_OFFSET			0x1c
 #define TWO_REQUESTS_BIT			0x80000000
 
+//firmware version
+#define REVISION_EXISTING_OFFSET	8
+#define REVISION_EXISTING_BIT		0x80000000
+#define REVISION_MASK				0x0FFFFFFF
+#define SUB_REVISION_MASK			0xF0000000
 

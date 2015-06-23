@@ -9,6 +9,7 @@
 #include <TChain.h>
 #include <THStack.h>
 #include <TCanvas.h>
+#include <TGraph.h>
 #include <stdio.h>
 //#include <deque>
 //#include <list>
@@ -453,3 +454,37 @@ THStack *moench03ReadData(char *fformat, char *tit, int runmin, int runmax, int 
   return hs;
 }
   
+TGraph* checkFrameNumber(char *fformat, int runmin, int runmax, int ix, int iy){
+  ifstream filebin;
+  char fname[10000];
+  moench03Ctb10GbData *decoder=new  moench03Ctb10GbData();
+  char *buff;
+  int ii=0;
+ 
+  TGraph *g=new TGraph();
+
+  
+
+  for (int irun=runmin; irun<=runmax; irun++) {
+    sprintf(fname,fformat,irun);
+    
+    cout << fname << endl;
+
+    filebin.open((const char *)(fname), ios::in | ios::binary);
+    
+    if (filebin.is_open()) {
+    while ((buff=decoder->readNextFrame(filebin))) {
+      g->SetPoint(ii,decoder->getFrameNumber(buff),decoder->getValue(buff,ix,iy));   
+      ii++;
+      delete [] buff;
+    }
+      //cout << "="<< endl;
+    filebin.close(); 
+    } else
+      cout << "Could not open file " << fname << endl;
+    
+  }
+ 
+  return g;
+
+}

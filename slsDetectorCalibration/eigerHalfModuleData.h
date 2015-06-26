@@ -258,7 +258,7 @@ public:
 	virtual uint32_t getChannel(char *data, int ix, int iy, int dr) {
 		uint32_t m=0;
 		uint64_t t;
-		int numBytes,divFactor,newix,pixelval;
+		int numBytes,divFactor,pixelval;
 
 		//cout <<"ix:"<<ix<<" nx:"<<nx<<" iy:"<<ny<<" ny:"<<ny<<" datamap[iy][ix]:"<< dataMap[iy][ix] <<"datasize:"<< dataSize <<endl;
 		if (ix>=0 && ix<nx && iy>=0 && iy<ny && dataMap[iy][ix]>=0 && dataMap[iy][ix]<dataSize) {
@@ -271,12 +271,7 @@ public:
 			else if (dr == 16) divFactor = 4;
 
 			pixelval = numBytes % divFactor;
-			newix = ix - pixelval;
 
-			//cout <<"pixelval:"<<pixelval<<" newix:"<<newix<<endl;
-			//cout <<"64:"<< hex<<((uint64_t)(*((uint64_t*)(((char*)data)+(dataMap[iy][newix])))))<<endl;
-			t = (be64toh((uint64_t)(*((uint64_t*)(((char*)data)+(dataMap[iy][newix]))))));
-			//cout<<"t:"<<t<<endl;
 
 		}else
 			cprintf(RED,"outside limits\n");

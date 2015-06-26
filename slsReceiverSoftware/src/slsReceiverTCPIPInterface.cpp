@@ -1557,45 +1557,6 @@ int	slsReceiverTCPIPInterface::eiger_read_frame(){
 				}
 
 			}
-/*
-			int inum = 0;
-			//dr = 16, hence uint16_t
-			for(inum = 0; inum < 2; inum++)
-				cprintf(YELLOW,"before htonl %d,0 :%d\n",inum,((uint8_t)(*((uint8_t*)((char*)(retval+(inum*(dynamicrange/8))))))));
-			for(inum = 254; inum < 258; inum++)
-				cprintf(YELLOW,"before htonl %d,0 :%d\n",inum,((uint8_t)(*((uint8_t*)((char*)(retval+(inum*(dynamicrange/8))))))));
-			for(inum = 0; inum < 2; inum++)
-				cprintf(YELLOW,"before htonl %d,2 :%d\n",inum,((uint8_t)(*((uint8_t*)((char*)(retval+((2048+inum)*(dynamicrange/8))))))));
-			for(inum = 254; inum < 258; inum++)
-				cprintf(YELLOW,"before htonl %d,2 :%d\n",inum,((uint8_t)(*((uint8_t*)((char*)(retval+((2048+inum)*(dynamicrange/8))))))));
-*/
-
-
-			//64 bit htonl cuz of endianness
-			for(i=0;i<(1024*(16*dynamicrange)*2)/8;i++){
-				(*(((uint64_t*)retval)+i)) = be64toh(((uint64_t)(*(((uint64_t*)retval)+i))));
-			 /*
-			  int64_t temp;
-			  temp = ((uint64_t)(*(((uint64_t*)retval)+i)));
-			  temp = ((temp << 8) & 0xFF00FF00FF00FF00ULL ) | ((temp >> 8) & 0x00FF00FF00FF00FFULL );
-			  temp = ((temp << 16) & 0xFFFF0000FFFF0000ULL ) | ((temp >> 16) & 0x0000FFFF0000FFFFULL );
-			  temp =  (temp << 32) | ((temp >> 32) & 0xFFFFFFFFULL);
-			  (*(((uint64_t*)retval)+i)) = temp;
-			  */
-			}
-
-/*
-			//dr = 16, hence uint16_t
-			for(inum = 0; inum < 2; inum++)
-				cprintf(MAGENTA,"after htonl %d,0 :%d\n",inum,((uint8_t)(*((uint8_t*)((char*)(retval+(inum*(dynamicrange/8))))))));
-			for(inum = 254; inum < 258; inum++)
-				cprintf(MAGENTA,"after htonl %d,0 :%d\n",inum,((uint8_t)(*((uint8_t*)((char*)(retval+(inum*(dynamicrange/8))))))));
-			for(inum = 0; inum < 2; inum++)
-				cprintf(MAGENTA,"after htonl %d,2 :%d\n",inum,((uint8_t)(*((uint8_t*)((char*)(retval+((2048+inum)*(dynamicrange/8))))))));
-			for(inum = 254; inum < 258; inum++)
-				cprintf(MAGENTA,"after htonl %d,2 :%d\n",inum,((uint8_t)(*((uint8_t*)((char*)(retval+((2048+inum)*(dynamicrange/8))))))));
-*/
-
 
 
 			acquisitionIndex = index-startAcquisitionIndex;

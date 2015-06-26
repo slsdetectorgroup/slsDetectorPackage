@@ -226,46 +226,7 @@ class slsDetectorData {
   */
 
   virtual dataType getChannel(char *data, int ix, int iy, int dr) {
-	  dataType m=0;
-	  uint64_t t;
-
-	  /////All this stuff should go to eiger detector!!!!!!!!!!!!!!!
-/* 	  int numBytes,divFactor,newix,pixelval; */
-
-/* //cout <<"ix:"<<ix<<" nx:"<<nx<<" iy:"<<ny<<" ny:"<<ny<<" datamap[iy][ix]:"<< dataMap[iy][ix] <<"datasize:"<< dataSize <<endl; */
-/* 	  if (ix>=0 && ix<nx && iy>=0 && iy<ny && dataMap[iy][ix]>=0 && dataMap[iy][ix]<dataSize) { */
-/* 		  m=dataMask[iy][ix]; */
-
-/* 		  numBytes = (nx * iy + ix); */
-/* 		  divFactor=2; */
-/* 		  if(dr == 4) divFactor = 16; */
-/* 		  else if (dr == 8) divFactor = 8; */
-/* 		  else if (dr == 16) divFactor = 4; */
-
-/* 		  pixelval = numBytes % divFactor; */
-/* 		  newix = ix - pixelval; */
-
-/* 		  //cout <<"pixelval:"<<pixelval<<" newix:"<<newix<<endl; */
-/* 		  //cout <<"64:"<< hex<<((uint64_t)(*((uint64_t*)(((char*)data)+(dataMap[iy][newix])))))<<endl; */
-/* 		  t = (be64toh((uint64_t)(*((uint64_t*)(((char*)data)+(dataMap[iy][newix])))))); */
-/* 		  //cout<<"t:"<<t<<endl; */
-
-/* 	  }/\* else *\/ */
-/* 	   /\* 	  cprintf(RED,"outside limits\n"); *\/ */
-
-/* 	  if(dr == 4) */
-/* 		  //uint8_t value =  t >> (pixelval*4); cout <<"value:"<< value << endl; */
-/* 		  return ((t >> (pixelval*4)) & 0xf)^m; */
-/* 	  else if(dr == 8) */
-/* 		  //uint8_t value =  t >> (pixelval*8); cout <<"value:"<< value << endl; */
-/* 		  return ((t >> (pixelval*8)) & 0xff)^m; */
-/* 	  else if(dr == 16){ */
-/* 		  //uint16_t value =  t >> (pixelval*16); cout <<"value:"<< value << endl; */
-/* 		  return ((t >> (pixelval*16)) & 0xffff)^m; */
-/* 	  }else{ */
-/* 		  //uint32_t value =  t >> (pixelval*32); cout <<"value:"<< value << endl; */
-/* 		  return ((t >> (pixelval*32)) & 0xffffffff)^m; */
-/* 	  } */
+	  return 0;
   };
 
   /**

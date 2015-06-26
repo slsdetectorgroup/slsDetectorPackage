@@ -20,7 +20,7 @@ public:
 
 
 	eigerHalfModuleData(int dr, int np, int bsize, int dsize, bool top, double c=0): slsReceiverData<uint32_t>(xpixels, ypixels, np, bsize),
-	xtalk(c), bufferSize(bsize), dataSize(dsize), dynamicRange(dr), numberOfPackets(np), top(top){
+	xtalk(c), bufferSize(bsize), actualDataSize(dsize), dynamicRange(dr), numberOfPackets(np), top(top){
 
 
 		int **dMap;
@@ -58,7 +58,7 @@ public:
 						iPacket1 += increment;
 						iData1 += increment;
 						//increment header
-						if(iData1 >= dataSize){
+						if(iData1 >= actualDataSize){
 							iPacket1 += 16;
 							iData1 = 0;
 						}
@@ -67,7 +67,7 @@ public:
 						iPacket2 += increment;
 						iData2 += increment;
 						//increment header
-						if(iData2 >= dataSize){
+						if(iData2 >= actualDataSize){
 							iPacket2 += 16;
 							iData2 = 0;
 						}
@@ -109,12 +109,12 @@ public:
 								iPacket1 -= (numbytesperlineperport*2 + 16*3);
 								iData1 = 0;
 							}
-							if(iData1 == dataSize){
+							if(iData1 == actualDataSize){
 								iPacket1 += 16;
 							}
 						}else if((iData1 % numbytesperlineperport) == 0){
 							iPacket1 -= (numbytesperlineperport*2);
-							if(iData1 == dataSize){
+							if(iData1 == actualDataSize){
 								iPacket1 -= 16;
 								iData1 = 0;
 							}
@@ -131,12 +131,12 @@ public:
 								iPacket2 -= (numbytesperlineperport*2 + 16*3);
 								iData2 = 0;
 							}
-							if(iData2 == dataSize){
+							if(iData2 == actualDataSize){
 								iPacket2 += 16;
 							}
 						}else if((iData2 % numbytesperlineperport) == 0){
 							iPacket2 -= (numbytesperlineperport*2);
-							if(iData2 == dataSize){
+							if(iData2 == actualDataSize){
 								iPacket2 -= 16;
 								iData2 = 0;
 							}
@@ -172,11 +172,11 @@ public:
 	     \returns frame number
 	 */
 	int getFrameNumber(char *buff){
-	    return(*(unsigned int*)(((eiger_packet_header *)((char*)buff))->num1));
+		return(*(unsigned int*)(((eiger_packet_header *)((char*)buff))->num1));
 	};
 
 
-	
+
 
 
 
@@ -189,9 +189,9 @@ public:
 	int getPacketNumber(char *buff){
 #ifdef VERY_DEBUG
 		cprintf(RED, "\n0x%x - %d - %d",
-			(*(uint8_t*)(((eiger_packet_header *)((char*)(buff)))->num3)),//port and dr
-			(*(uint8_t*)(((eiger_packet_header *)((char*)(buff)))->num4)),//non 32 bit packet#
-			(*(uint16_t*)(((eiger_packet_header *)((char*)(buff)))->num2)));//32 bit packet#
+				(*(uint8_t*)(((eiger_packet_header *)((char*)(buff)))->num3)),//port and dr
+				(*(uint8_t*)(((eiger_packet_header *)((char*)(buff)))->num4)),//non 32 bit packet#
+				(*(uint16_t*)(((eiger_packet_header *)((char*)(buff)))->num2)));//32 bit packet#
 #endif
 
 		//both ports have same packet numbers, so reconstruct
@@ -217,12 +217,12 @@ public:
      	 \param buff pointer to the memory
      	 \returns dynamic range
 	 */
-	 static int getDynamicRange(char *buff){
+	static int getDynamicRange(char *buff){
 #ifdef VERY_DEBUG
 		cprintf(RED, "\n0x%x",
 				(*(uint8_t*)(((eiger_packet_header *)((char*)(buff)))->num3)));
 #endif
-			return (*(uint8_t*)(((eiger_packet_header *)((char*)buff))->num3))  >> 2;
+		return (*(uint8_t*)(((eiger_packet_header *)((char*)buff))->num3))  >> 2;
 	};
 
 
@@ -238,11 +238,63 @@ public:
 	double getValue(char *data, int ix, int iy=0) {
 		//  cout << "##" << (void*)data << " " << ix << " " <<iy << endl;
 		if (xtalk==0)
-			  return slsDetectorData<uint32_t>::getValue(data, ix, iy);
+			return getChannel(data, ix, iy, dynamicRange);
 		else
-			return slsDetectorData<uint32_t>::getValue(data, ix, iy)-xtalk*slsDetectorData<uint32_t>::getValue(data, ix-1, iy);
+			return getChannel(data, ix, iy,dynamicRange)-xtalk * getChannel(data, ix-1, iy,dynamicRange);
 	};
 
+
+	/**
+
+	     Returns the value of the selected channel for the given dataset. Virtual function, can be overloaded.
+	     \param data pointer to the dataset (including headers etc)
+	     \param ix pixel number in the x direction
+	     \param iy pixel number in the y direction
+	     \param dr dynamic range
+	     \returns data for the selected channel, with inversion if required
+
+	 */
+
+	virtual uint32_t getChannel(char *data, int ix, int iy, int dr) {
+		uint32_t m=0;
+		uint64_t t;
+		int numBytes,divFactor,newix,pixelval;
+
+		//cout <<"ix:"<<ix<<" nx:"<<nx<<" iy:"<<ny<<" ny:"<<ny<<" datamap[iy][ix]:"<< dataMap[iy][ix] <<"datasize:"<< dataSize <<endl;
+		if (ix>=0 && ix<nx && iy>=0 && iy<ny && dataMap[iy][ix]>=0 && dataMap[iy][ix]<dataSize) {
+			m=dataMask[iy][ix];
+
+			numBytes = (nx * iy + ix);
+			divFactor=2;
+			if(dr == 4) divFactor = 16;
+			else if (dr == 8) divFactor = 8;
+			else if (dr == 16) divFactor = 4;
+
+			pixelval = numBytes % divFactor;
+			newix = ix - pixelval;
+
+			//cout <<"pixelval:"<<pixelval<<" newix:"<<newix<<endl;
+			//cout <<"64:"<< hex<<((uint64_t)(*((uint64_t*)(((char*)data)+(dataMap[iy][newix])))))<<endl;
+			t = (be64toh((uint64_t)(*((uint64_t*)(((char*)data)+(dataMap[iy][newix]))))));
+			//cout<<"t:"<<t<<endl;
+
+		}else
+			cprintf(RED,"outside limits\n");
+
+		if(dr == 4)
+			//uint8_t value =  t >> (pixelval*4); cout <<"value:"<< value << endl;
+			return ((t >> (pixelval*4)) & 0xf)^m;
+		else if(dr == 8)
+			//uint8_t value =  t >> (pixelval*8); cout <<"value:"<< value << endl;
+			return ((t >> (pixelval*8)) & 0xff)^m;
+		else if(dr == 16){
+			//uint16_t value =  t >> (pixelval*16); cout <<"value:"<< value << endl;
+			return ((t >> (pixelval*16)) & 0xffff)^m;
+		}else{
+			//uint32_t value =  t >> (pixelval*32); cout <<"value:"<< value << endl;
+			return ((t >> (pixelval*32)) & 0xffffffff)^m;
+		}
+	};
 
 
 	/** sets the output buffer crosstalk correction parameter
@@ -271,7 +323,7 @@ private:
 	const static int xpixels = 1024;
 	const static int ypixels = 256;
 	const int bufferSize;
-	const int dataSize;
+	const int actualDataSize;
 	const int dynamicRange;
 	const int numberOfPackets;
 	bool top;

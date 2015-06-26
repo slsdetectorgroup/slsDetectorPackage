@@ -1982,13 +1982,27 @@ int UDPStandardImplementation::startWriting(){
 					for(i=0;i<numListeningThreads;++i)
 						/* for eiger 32 bit mode, currframenum like gotthard, does not start from 0 or 1 */
 						rawDataReadyCallBack(currframenum, wbuf[i], numpackets * onePacketSize, sfilefd, guiData,pRawDataReady);
-				}else if (numpackets > 0){
+				}
+
+				else if (numpackets > 0){
 					for(j=0;j<numListeningThreads;++j){
 #ifdef WRITE_HEADERS
 						if (myDetectorType == EIGER){
-							//overwriting frame number in header
-							for (i = 0; i < packetsPerFrame; i++)
+
+							for (i = 0; i < packetsPerFrame/2; i++){
+								//overwriting frame number in header
 								(*(uint32_t*)(((eiger_packet_header *)((char*)(wbuf[j] + totalheader + EIGER_ONE_GIGA_ONE_PACKET_SIZE*i)))->num1))  = currframenum;
+								//overwriting port number and dynamic range
+								if (!j)  (*(uint8_t*)(((eiger_packet_header *)((char*)(wbuf[j] + totalheader + EIGER_ONE_GIGA_ONE_PACKET_SIZE*i)))->num3))  = (dynamicRange<<2);
+								else     (*(uint8_t*)(((eiger_packet_header *)((char*)(wbuf[j] + totalheader + EIGER_ONE_GIGA_ONE_PACKET_SIZE*i)))->num3))  = ((dynamicRange<<2)|(0x1));
+
+#ifdef VERYDEBUG
+									cprintf(RED, "%d - 0x%x - %d\n", i,
+											(*(uint8_t*)(((eiger_packet_header *)((char*)(wbuf[j] + totalheader +i*EIGER_ONE_GIGA_ONE_PACKET_SIZE)))->num3)),
+											(*(uint8_t*)(((eiger_packet_header *)((char*)(wbuf[j] + totalheader +i*EIGER_ONE_GIGA_ONE_PACKET_SIZE)))->num4)));
+#endif
+
+						}
 
 							//for 32 bit,port number needs to be changed and packet number reconstructed
 							if(dynamicRange == 32){
@@ -1996,10 +2010,6 @@ int UDPStandardImplementation::startWriting(){
 									//new packet number that has space for 16 bit
 									(*(uint16_t*)(((eiger_packet_header *)((char*)(wbuf[j] + totalheader + EIGER_ONE_GIGA_ONE_PACKET_SIZE*i)))->num2))
 				        		= ((*(uint8_t*)(((eiger_packet_header *)((char*)(wbuf[j] + totalheader + EIGER_ONE_GIGA_ONE_PACKET_SIZE*i)))->num4)));
-
-									//new port number as its the same everywhere for 32 bit!!
-									if((!j)&& (!bottom))	(*(uint8_t*)(((eiger_packet_header *)((char*)(wbuf[j] + totalheader + EIGER_ONE_GIGA_ONE_PACKET_SIZE*i)))->num3)) = 0x00;
-
 
 #ifdef VERYDEBUG
 									cprintf(RED, "%d - 0x%x - %d - %d\n", i,
@@ -2012,10 +2022,6 @@ int UDPStandardImplementation::startWriting(){
 									//new packet number that has space for 16 bit
 									(*(uint16_t*)(((eiger_packet_header *)((char*)(wbuf[j] + totalheader + EIGER_ONE_GIGA_ONE_PACKET_SIZE*i)))->num2))
 			            		= ((*(uint8_t*)(((eiger_packet_header *)((char*)(wbuf[j] + totalheader + EIGER_ONE_GIGA_ONE_PACKET_SIZE*i)))->num4))+(packetsPerFrame/4));
-
-									//new port number as its the same everywhere for 32 bit!!
-									if(!j) (*(uint8_t*)(((eiger_packet_header *)((char*)(wbuf[j] + totalheader + EIGER_ONE_GIGA_ONE_PACKET_SIZE*i)))->num3)) = 0x00;
-
 
 #ifdef VERYDEBUG
 									cprintf(RED, "%d -0x%x - %d - %d\n", i,

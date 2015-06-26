@@ -182,47 +182,49 @@ public:
 
 
 
-	/** gets the packets number (last packet is labelled with 0 and is replaced with 40)
+	/** gets the packets number
      	 \param buff pointer to the memory
      	 \returns packet number
 	 */
 	int getPacketNumber(char *buff){
 #ifdef VERY_DEBUG
 		cprintf(RED, "\n0x%x - %d - %d",
-			(*(uint8_t*)(((eiger_packet_header *)((char*)(buff)))->num3)),
-			(*(uint8_t*)(((eiger_packet_header *)((char*)(buff)))->num4)),
-			(*(uint16_t*)(((eiger_packet_header *)((char*)(buff)))->num2)));
+			(*(uint8_t*)(((eiger_packet_header *)((char*)(buff)))->num3)),//port and dr
+			(*(uint8_t*)(((eiger_packet_header *)((char*)(buff)))->num4)),//non 32 bit packet#
+			(*(uint16_t*)(((eiger_packet_header *)((char*)(buff)))->num2)));//32 bit packet#
 #endif
-		//32 bit packet number written in num2
+
+		//both ports have same packet numbers, so reconstruct
+		//16 bit packet number written in num2 for 32 bit mode
+
 		if(dynamicRange == 32){
-			//both ports have same packet numbers, so reconstruct, ports interchanged for bottom
-			if((*(uint8_t*)(((eiger_packet_header *)((char*)buff))->num3))){
-				if (top)
-					return ((*(uint16_t*)(((eiger_packet_header *)((char*)buff))->num2))+(numberOfPackets/2) +1);
-				else
-					return ((*(uint16_t*)(((eiger_packet_header *)((char*)buff))->num2))+1);
-			}else{
-				if (top)
-					return ((*(uint16_t*)(((eiger_packet_header *)((char*)buff))->num2))+1);
-				else
-					return ((*(uint16_t*)(((eiger_packet_header *)((char*)buff))->num2))+(numberOfPackets/2) +1);
-			}
+			if((*(uint8_t*)(((eiger_packet_header *)((char*)buff))->num3)) & 0x1)
+				return ((*(uint16_t*)(((eiger_packet_header *)((char*)buff))->num2))+(numberOfPackets/2) +1);
+			else
+				return ((*(uint16_t*)(((eiger_packet_header *)((char*)buff))->num2))+1);
 		}
 		else{
-			//both ports have same packet numbers, so reconstruct
-			if((*(uint8_t*)(((eiger_packet_header *)((char*)buff))->num3))){
-				if (top)
-					return ((*(uint8_t*)(((eiger_packet_header *)((char*)buff))->num4))+(numberOfPackets/2) +1);
-				else
-					return ((*(uint8_t*)(((eiger_packet_header *)((char*)buff))->num4))+1);
-			}else{
-				if (top)
-					return ((*(uint8_t*)(((eiger_packet_header *)((char*)buff))->num4))+1);
-				else
-					return ((*(uint8_t*)(((eiger_packet_header *)((char*)buff))->num4))+(numberOfPackets/2) +1);
-			}
+			if((*(uint8_t*)(((eiger_packet_header *)((char*)buff))->num3)) &0x1)
+				return ((*(uint8_t*)(((eiger_packet_header *)((char*)buff))->num4))+(numberOfPackets/2) +1);
+			else
+				return ((*(uint8_t*)(((eiger_packet_header *)((char*)buff))->num4))+1);
 		}
 	};
+
+
+
+	/** gets the dynamic range for offline processing
+     	 \param buff pointer to the memory
+     	 \returns dynamic range
+	 */
+	 static int getDynamicRange(char *buff){
+#ifdef VERY_DEBUG
+		cprintf(RED, "\n0x%x",
+				(*(uint8_t*)(((eiger_packet_header *)((char*)(buff)))->num3)));
+#endif
+			return (*(uint8_t*)(((eiger_packet_header *)((char*)buff))->num3))  >> 2;
+	};
+
 
 
 	/**

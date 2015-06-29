@@ -139,7 +139,7 @@ echo Path: ${MAINDIR}/${LIBDIR}/eigerDetectorServer  $'\n'URL: ${GITREPO}/eigerD
 #creating the header files
 cd $WD
 ./genVersionHeader.sh $LIBDIR/gitInfo.txt $LIBDIR/slsDetector/gitInfoLibTmp.h $LIBDIR/slsDetector/gitInfoLib.h 
-./genVersionHeader.sh $RXRDIR/gitInfo.txt $RXRDIR/includes/gitInfoReceiverTmp.h $RXRDIR/includes/gitInfoReceiver.h
+./genVersionHeader.sh $RXRDIR/gitInfo.txt $RXRDIR/include/gitInfoReceiverTmp.h $RXRDIR/include/gitInfoReceiver.h
 ./genVersionHeader.sh $GUIDIR/gitInfo.txt $GUIDIR/include/gitInfoGuiTmp.h $GUIDIR/include/gitInfoGui.h 
 ./genVersionHeader.sh $CALWIZDIR/gitInfo.txt $CALWIZDIR/gitInfoCalWizTmp.h $CALWIZDIR/gitInfoCalWiz.h 
 ./genVersionHeader.sh $LIBDIR/mythenDetectorServer/gitInfo.txt $LIBDIR/mythenDetectorServer/gitInfoMythenTmp.h $LIBDIR/mythenDetectorServer/gitInfoMythen.h 

@@ -93,7 +93,7 @@ class slsDetectorData {
 
   void setDataMap(int **dMap=NULL) {
 
-    int ip;
+   /* int ip;*/
 
 	  if (dMap==NULL) {
 		  for (int iy=0; iy<ny; iy++)

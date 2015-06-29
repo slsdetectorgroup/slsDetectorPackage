@@ -256,11 +256,11 @@ public:
 	 */
 
 	virtual uint32_t getChannel(char *data, int ix, int iy, int dr) {
-		uint32_t m=0;
+		uint32_t m=0, n = 0;
 		uint64_t t;
 		int numBytes,divFactor,pixelval;
 
-		//cout <<"ix:"<<ix<<" nx:"<<nx<<" iy:"<<ny<<" ny:"<<ny<<" datamap[iy][ix]:"<< dataMap[iy][ix] <<"datasize:"<< dataSize <<endl;
+		//cout <<"ix:"<<ix<<" nx:"<<nx<<" iy:"<<iy<<" ny:"<<ny<<" datamap[iy][ix]:"<< dataMap[iy][ix] <<" datasize:"<< dataSize <<endl;
 		if (ix>=0 && ix<nx && iy>=0 && iy<ny && dataMap[iy][ix]>=0 && dataMap[iy][ix]<dataSize) {
 			m=dataMask[iy][ix];
 
@@ -271,24 +271,29 @@ public:
 			else if (dr == 16) divFactor = 4;
 
 			pixelval = numBytes % divFactor;
-
+			/*//big endian
+			 newix = ix - pixelval;
+			 */
 
 		}else
 			cprintf(RED,"outside limits\n");
 
-		if(dr == 4)
-			//uint8_t value =  t >> (pixelval*4); cout <<"value:"<< value << endl;
-			return ((t >> (pixelval*4)) & 0xf)^m;
-		else if(dr == 8)
-			//uint8_t value =  t >> (pixelval*8); cout <<"value:"<< value << endl;
-			return ((t >> (pixelval*8)) & 0xff)^m;
-		else if(dr == 16){
-			//uint16_t value =  t >> (pixelval*16); cout <<"value:"<< value << endl;
-			return ((t >> (pixelval*16)) & 0xffff)^m;
-		}else{
-			//uint32_t value =  t >> (pixelval*32); cout <<"value:"<< value << endl;
-			return ((t >> (pixelval*32)) & 0xffffffff)^m;
-		}
+		/*//big endian
+		t = ((uint64_t)(*((uint64_t*)(((char*)data)+(dataMap[iy][newix])))));
+		if(dr == 4)			return ((t >> (pixelval*4)) & 0xf)^m;
+		else if(dr == 8)	return ((t >> (pixelval*8)) & 0xff)^m;
+		else if(dr == 16)	return ((t >> (pixelval*16)) & 0xffff)^m;
+		else				return ((t >> (pixelval*32)) & 0xffffffff)^m;
+		 */
+
+		//little endian
+		n = ((uint32_t)(*((uint32_t*)(((char*)data)+(dataMap[iy][ix])))));
+		if(dr == 4)			return (n & 0xf)^m;
+		else if(dr == 8)	return (n & 0xff)^m;
+		else if(dr == 16)	return (n & 0xffff)^m;
+		else				return (n & 0xffffffff)^m;
+
+
 	};
 
 

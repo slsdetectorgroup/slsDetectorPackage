@@ -724,13 +724,14 @@ int executeTrimming(enum trimMode mode, int par1, int par2, int imod){
 
 
 int configureMAC(int ipad, long long int macad, long long int detectormacadd, int detipad, int udpport, int udpport2, int ival){
-
-	if(detectormacadd != getDetectorMAC()){
+	//only for 1Gbe
+	if((!send_to_ten_gig) && (detectormacadd != getDetectorMAC())){
 		printf("*************************************************\n");
 		printf("WARNING: actual detector mac address %llx does not match the one from client %llx\n",getDetectorMAC(),detectormacadd);
+		detectormacadd = getDetectorMAC();
+		printf("WARNING: Matched detectormac to the hardware mac now\n");
 		printf("*************************************************\n");
 	}
-	detectormacadd = getDetectorMAC();
 
 	char src_mac[50], src_ip[50],dst_mac[50], dst_ip[50];
 	int src_port = 0xE185;

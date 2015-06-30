@@ -85,7 +85,7 @@ int decode_function(int file_des) {
 		fnum=255;
 	ret=(*flist[fnum])(file_des);
 	if (ret==FAIL)
-		printf( "Error executing the function = %d \n",fnum);
+		cprintf( RED, "Error executing the function = %d \n",fnum);
 	return ret;
 }
 
@@ -2603,7 +2603,7 @@ int set_dynamic_range(int file_des) {
 		ret=FORCE_UPDATE;
 
 #ifdef SLS_DETECTOR_FUNCTION_LIST
-	dataBytes=calculateDataBytes();
+	if (dr>=0) dataBytes=calculateDataBytes();
 #endif
 
 	//ret could be swapped during sendData

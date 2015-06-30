@@ -501,6 +501,8 @@ void* postProcessing::processData(int delflag) {
 		int currentFrameIndex = -1;
 		bool newData = false;
 		int nthframe = setReadReceiverFrequency(0);
+
+
 #ifdef VERBOSE
 		std::cout << "receiver read freq:" << nthframe << std::endl;
 #endif
@@ -531,8 +533,14 @@ void* postProcessing::processData(int delflag) {
 			pthread_mutex_unlock(&mg);
 
 			//updating progress
-			if(currentAcquisitionIndex != -1)
-				setCurrentProgress(currentAcquisitionIndex+1);
+			if(currentAcquisitionIndex != -1){
+				if(subframe){
+					pthread_mutex_lock(&mg);
+					setCurrentProgress(getFramesCaughtByReceiver());
+					pthread_mutex_unlock(&mg);
+				}else
+					setCurrentProgress(currentAcquisitionIndex+1);
+			}
 #ifdef VERY_VERY_DEBUG
 			cout << "currentAcquisitionIndex:" << currentAcquisitionIndex << endl;
 #endif

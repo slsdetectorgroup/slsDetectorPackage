@@ -2134,7 +2134,7 @@ dacs_t slsDetector::setDAC(dacs_t val, dacIndex index, int mV, int imod){
   std::cout<< "Dac set to "<< retval[0] << " dac units (" << retval[1] << "mV)" << std::endl;
 #endif
   if (ret==FAIL) {
-    std::cout<< "Set dac failed " << std::endl;
+    std::cout<< "Set dac " << index << " of module " << imod  <<  " to " << val << " failed." << std::endl;
   }
   if(mV)
 	  return retval[1];
@@ -4200,10 +4200,10 @@ int slsDetector::setDynamicRange(int n){
     thisDetector->dynamicRange=retval;
 
 
-    //#ifdef VERBOSE
+#ifdef VERBOSE
     std::cout<< "Dynamic range set to  "<< thisDetector->dynamicRange   << std::endl;
     std::cout<< "Data bytes "<< thisDetector->dataBytes   << std::endl;
-    //#endif
+#endif
   }
 
 
@@ -4211,11 +4211,11 @@ int slsDetector::setDynamicRange(int n){
   if(ret != FAIL){
 	  if(setReceiverOnline(ONLINE_FLAG)==ONLINE_FLAG){
 #ifdef VERBOSE
-			  std::cout << "Sending/Getting dynamic range to/from receiver " << retval << std::endl;
+			  std::cout << "Sending/Getting dynamic range to/from receiver " << n << std::endl;
 #endif
 		  if (connectData() == OK)
-			  ret=thisReceiver->sendInt(fnum2,retval1,retval);
-		  if((retval1 != retval)|| (ret==FAIL)){
+			  ret=thisReceiver->sendInt(fnum2,retval1,n);
+		  if ((ret==FAIL) || (retval1 != retval)){
 			  ret = FAIL;
 			  cout << "ERROR:Dynamic range in receiver set incorrectly to " << retval1 << " instead of " << retval << endl;
 			  setErrorMask((getErrorMask())|(RECEIVER_DYNAMIC_RANGE));

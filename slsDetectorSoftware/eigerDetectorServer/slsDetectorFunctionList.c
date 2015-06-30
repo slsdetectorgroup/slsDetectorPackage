@@ -9,8 +9,6 @@
 
 #include "slsDetectorFunctionList.h"
 #include "gitInfoEiger.h"
-/*#include "EigerHighLevelFunctions.c"
-#include "EigerBackEndFunctions.c"*/
 #include "FebControl.h"
 #include "Beb.h"
 
@@ -60,6 +58,9 @@ enum masterFlags  masterMode=IS_SLAVE;
 int top = 0;
 int master = 0;
 
+
+#define TEN_GIGA_BUFFER_SIZE 4112
+#define ONE_GIGA_BUFFER_SIZE 1040
 
 int initDetector(){
 	int imod,i,n;
@@ -792,7 +793,10 @@ int configureMAC(int ipad, long long int macad, long long int detectormacadd, in
 
 
 int calculateDataBytes(){
-	return setDynamicRange(-1)*16*1040;
+	if(send_to_ten_gig)
+		return setDynamicRange(-1)*16*TEN_GIGA_BUFFER_SIZE;
+	else
+		return setDynamicRange(-1)*16*ONE_GIGA_BUFFER_SIZE;
 }
 
 

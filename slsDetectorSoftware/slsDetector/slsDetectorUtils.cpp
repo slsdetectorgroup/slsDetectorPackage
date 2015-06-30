@@ -53,6 +53,11 @@ void  slsDetectorUtils::acquire(int delflag){
 
   int multiframe = nc*nf;
 
+  //
+  if(setDynamicRange() == 32)  subframe = 1;
+  else subframe = 0;
+
+
   // setTotalProgress();
   //moved these 2 here for measurement change
   progressIndex=0;

@@ -380,18 +380,18 @@ void multiSlsDetector::updateOffsets(){
 	for (int i=1; i<thisMultiDetector->numberOfDetectors; i++) {
 		if (detectors[i]) {
 			//incrementing in y direction
-			if ((maxChanY == -1) || ((maxChanY > 0) && ((offsetY + numY) < maxChanY))){
+			if ((maxChanY == -1) || ((maxChanY > 0) && ((offsetY + detectors[i]->getMaxNumberOfChannels(Y)) <= maxChanY))){
 				offsetY += detectors[i]->getMaxNumberOfChannels(Y);
 				maxY += detectors[i]->getMaxNumberOfChannels(Y);
 				numY += detectors[i]->getTotalNumberOfChannels(Y);
 			}
-			//incrementing in y direction
+			//incrementing in x direction
 			else{
 				offsetY = 0;
 				numY = 0;
 				maxY = 0;
 				thisMultiDetector->maxNumberOfChannel[Y] = 0;
-				if ((maxChanX == -1) || ((maxChanX > 0) && (offsetX <= maxChanX))){
+				if ((maxChanX == -1) || ((maxChanX > 0) && ((offsetX + detectors[i]->getMaxNumberOfChannels(X)) <= maxChanX))){
 					offsetX += detectors[i]->getMaxNumberOfChannels(X);
 					numX += detectors[i]->getTotalNumberOfChannels(X);
 					maxX += detectors[i]->getMaxNumberOfChannels(X);

@@ -563,10 +563,11 @@ int UDPStandardImplementation::getDynamicRange() const{
 
 int32_t UDPStandardImplementation::setDynamicRange(int32_t dr){ 	FILE_LOG(logDEBUG) << __AT__ << " called";
 
-	cout << "Setting Dynamic Range" << endl;
-
 	int olddr = dynamicRange;
+
 	if(dr >= 0){
+		cout << "Setting Dynamic Range to " << dr << endl;
+
 		dynamicRange = dr;
 
 		if(myDetectorType == EIGER){
@@ -615,7 +616,8 @@ int32_t UDPStandardImplementation::setDynamicRange(int32_t dr){ 	FILE_LOG(logDEB
 			}
 		}
 
-	}
+	}else cout << "Getting Dynamic Range " << endl;
+
 
 	return getDynamicRange();
 }

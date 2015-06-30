@@ -1996,7 +1996,7 @@ int slsReceiverTCPIPInterface::set_dynamic_range() {
 			sprintf(mess,"Receiver locked by %s\n", socket->lastClientIP);
 			ret=FAIL;
 		}
-		else if(myDetectorType == EIGER){
+		else if ((dr>0) && (myDetectorType == EIGER)){
 			switch(dr){
 				case 4:
 				case 8:
@@ -2004,6 +2004,7 @@ int slsReceiverTCPIPInterface::set_dynamic_range() {
 				case 32:break;
 				default:
 					sprintf(mess,"This dynamic range does not exist for eiger: %d\n",dr);
+					cprintf(RED,"%s", mess);
 					ret=FAIL;
 					break;
 			}
@@ -2013,8 +2014,9 @@ int slsReceiverTCPIPInterface::set_dynamic_range() {
 				strcpy(mess,"Receiver not set up\n");
 				ret=FAIL;
 			}else{
-				retval=receiverBase->setDynamicRange(dr);
-				dynamicrange = dr;
+				if(dr > 0) receiverBase->setDynamicRange(dr);
+				retval = receiverBase->getDynamicRange();
+				dynamicrange = retval;
 				if(myDetectorType == EIGER){
 					if(!tenGigaEnable)
 						packetsPerFrame = EIGER_ONE_GIGA_CONSTANT * dynamicrange * EIGER_MAX_PORTS;

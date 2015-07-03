@@ -463,10 +463,19 @@ private:
 	 */
 	void stopWriting(int ithread, char* wbuffer[]);
 
+	/**
+	 * updates parameters and writes to file when not a dummy frame
+	 * Also calls writeToFile_withoutCompression or handleDataCompression
+	 * Called by startWriting()
+	 * @param ithread writing thread number
+	 * @param wbuffer writer buffer
+	 * @param npackets number of packets from the fifo
+	 */
+	int handleWithoutDataCompression(int ithread, char* wbuffer[], int &npackets);
 
 	/**
 	 * data compression for each fifo output
-	 * @param ithread listening thread number
+	 * @param ithread writing thread number
 	 * @param wbuffer writer buffer
 	 * @param npackets number of packets from the fifo
 	 * @param data pointer to the next packet start

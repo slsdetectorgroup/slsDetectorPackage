@@ -1826,7 +1826,7 @@ int i;
 
 
 void UDPBaseImplementation::stopWriting(int ithread, char* wbuffer[]){ FILE_LOG(logDEBUG) << __AT__ << " starting";
-	int i,j;
+	int i;
 #ifdef VERYDEBUG
 	cout << ithread << " **********************popped last dummy frame:" << (void*)wbuffer[wIndex] << endl;
 #endif

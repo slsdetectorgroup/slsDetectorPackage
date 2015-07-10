@@ -1647,7 +1647,7 @@ int UDPBaseImplementation::startWriting(){ FILE_LOG(logDEBUG) << __AT__ << " sta
 			}
 			//data compression
 			else
-				handleDataCompression(ithread,wbuf,numpackets,d, xmax, ymax, nf);
+				handleDataCompression(ithread,wbuf,d, xmax, ymax, nf);
 
 
 
@@ -1998,7 +1998,7 @@ void UDPBaseImplementation::writeToFile_withoutCompression(char* buf,int numpack
 
 
 
-void UDPBaseImplementation::handleDataCompression(int ithread, char* wbuffer[], int &npackets, char* data, int xmax, int ymax, int &nf){
+void UDPBaseImplementation::handleDataCompression(int ithread, char* wbuffer[], char* data, int xmax, int ymax, int &nf){
 	FILE_LOG(logDEBUG) << __FILE__ << "::" << __func__ << " starting";
 
 
@@ -2009,6 +2009,7 @@ void UDPBaseImplementation::handleDataCompression(int ithread, char* wbuffer[], 
 				eventType thisEvent = PEDESTAL;
 				int ndata;
 				char* buff = 0;
+				int npackets = (uint16_t)(*((uint16_t*)wbuffer[0]));
 				data = wbuffer[0]+ HEADER_SIZE_NUM_TOT_PACKETS;
 				int remainingsize = npackets * onePacketSize;
 				int np;

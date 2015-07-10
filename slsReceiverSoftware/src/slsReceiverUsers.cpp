@@ -25,7 +25,7 @@ void slsReceiverUsers::closeFile(int p) {
 }
 
 int64_t slsReceiverUsers::getReceiverVersion(){
-	slsReceiverUsers::receiver->getReceiverVersion();
+	return slsReceiverUsers::receiver->getReceiverVersion();
 }
 
 

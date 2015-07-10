@@ -162,7 +162,7 @@ void slsReceiver::closeFile(int p) {
 
 
 int64_t slsReceiver::getReceiverVersion(){
-	tcpipInterface->getReceiverVersion();
+	return tcpipInterface->getReceiverVersion();
 }
 
 

@@ -471,13 +471,12 @@ protected:
 	 * data compression for each fifo output
 	 * @param ithread listening thread number
 	 * @param wbuffer writer buffer
-	 * @param npackets number of packets from the fifo
 	 * @param data pointer to the next packet start
 	 * @param xmax max pixels in x direction
 	 * @param ymax max pixels in y direction
 	 * @param nf nf
 	 */
-	void handleDataCompression(int ithread, char* wbuffer[], int &npackets, char* data, int xmax, int ymax, int &nf);
+	void handleDataCompression(int ithread, char* wbuffer[], char* data, int xmax, int ymax, int &nf);
 
 
 

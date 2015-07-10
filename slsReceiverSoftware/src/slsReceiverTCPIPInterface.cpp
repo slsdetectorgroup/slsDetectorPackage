@@ -32,25 +32,25 @@ slsReceiverTCPIPInterface::~slsReceiverTCPIPInterface() {
 }
 
 slsReceiverTCPIPInterface::slsReceiverTCPIPInterface(int &success, UDPInterface* rbase, int pn, bool bot):
-		myDetectorType(GOTTHARD),
-		receiverBase(rbase),
-		ret(OK),
-		lockStatus(0),
-		shortFrame(-1),
-		packetsPerFrame(GOTTHARD_PACKETS_PER_FRAME),
-		dynamicrange(16),
-		socket(NULL),
-		killTCPServerThread(0),
-		tenGigaEnable(0), portNumber(DEFAULT_PORTNO+2),
-		bottom(bot){
+				myDetectorType(GOTTHARD),
+				receiverBase(rbase),
+				ret(OK),
+				lockStatus(0),
+				shortFrame(-1),
+				packetsPerFrame(GOTTHARD_PACKETS_PER_FRAME),
+				dynamicrange(16),
+				socket(NULL),
+				killTCPServerThread(0),
+				tenGigaEnable(0), portNumber(DEFAULT_PORTNO+2),
+				bottom(bot){
 
-  int port_no=portNumber;
-  if(receiverBase == NULL) receiverBase = 0;
+	int port_no=portNumber;
+	if(receiverBase == NULL) receiverBase = 0;
 
-  if (pn>0)
-    port_no = pn;
+	if (pn>0)
+		port_no = pn;
 
-  success=OK;
+	success=OK;
 
 	//create socket
 	if(success == OK){
@@ -65,58 +65,60 @@ slsReceiverTCPIPInterface::slsReceiverTCPIPInterface(int &success, UDPInterface*
 			strcpy(socket->lastClientIP,"none");
 			strcpy(socket->thisClientIP,"none1");
 			strcpy(mess,"dummy message");
-			
+
 			function_table();
 #ifdef VERBOSE
 			cout << "Function table assigned." << endl;
 #endif
-			
+
 			//Catch signal SIGINT to close files properly
 			signal(SIGINT,staticCloseFile);
 		}
 	}
-	
+
 }
 
 
 int slsReceiverTCPIPInterface::setPortNumber(int pn){
 	int p_number;
-  MySocketTCP *oldsocket=NULL;;
-  int sd=0;
 
-  if (pn>0) {
-    p_number = pn;
-    
-    if (p_number<1024) {
-      sprintf(mess,"Too low port number %d\n", p_number);
-      cout << mess << endl;
-    } else {
-      
-      oldsocket=socket;
-      socket = new MySocketTCP(p_number);
-      if(socket){
-	sd = socket->getErrorStatus();
-	if (!sd){
-	  portNumber=p_number;
-	  delete oldsocket;
-	} else {
-	  cout << "Could not bind port " << p_number << endl;
-	  if (sd==-10) {
-	
-	    cout << "Port "<< p_number << " already set" << endl;
-	  } else {
-	    delete socket;
-	    socket=oldsocket;
-	  }
+	MySocketTCP *oldsocket=NULL;;
+	int sd=0;
+
+	if (pn>0) {
+		p_number = pn;
+
+		if (p_number<1024) {
+			sprintf(mess,"Too low port number %d\n", p_number);
+			cout << mess << endl;
+		} else {
+
+			oldsocket=socket;
+			socket = new MySocketTCP(p_number);
+			if(socket){
+				sd = socket->getErrorStatus();
+				if (!sd){
+					portNumber=p_number;
+					strcpy(socket->lastClientIP,oldsocket->lastClientIP);
+					delete oldsocket;
+				} else {
+					cout << "Could not bind port " << p_number << endl;
+					if (sd==-10) {
+
+						cout << "Port "<< p_number << " already set" << endl;
+					} else {
+						delete socket;
+						socket=oldsocket;
+					}
+				}
+
+			} else {
+				socket=oldsocket;
+			}
+		}
 	}
-	
-      } else {
-	socket=oldsocket;
-      }
-    }
-  }
 
-  return portNumber;
+	return portNumber;
 }
 
 
@@ -142,7 +144,7 @@ void slsReceiverTCPIPInterface::stop(){
 		receiverBase->shutDownUDPSockets();
 
 	cout << "Closing Files... " << endl;
-		receiverBase->closeFile();
+	receiverBase->closeFile();
 
 
 	cout<<"Shutting down TCP Socket and TCP thread"<<endl;
@@ -153,7 +155,7 @@ void slsReceiverTCPIPInterface::stop(){
 	pthread_join(TCPServer_thread, &status);
 	killTCPServerThread = 0;
 	cout<<"Threads joined"<<endl;
-		
+
 }
 
 
@@ -373,12 +375,12 @@ int slsReceiverTCPIPInterface::set_detector_type(){
 			retval = myDetectorType;
 		}
 	}
-//#ifdef VERBOSE
+	//#ifdef VERBOSE
 	if(ret!=FAIL)
 		cout << "detector type" << dr << endl;
 	else
 		cout << mess << endl;
-//#endif
+	//#endif
 #endif
 
 	if(ret==OK && socket->differentClients){
@@ -426,7 +428,7 @@ int slsReceiverTCPIPInterface::set_file_name() {
 			strcpy(mess,"Receiver not set up\n");
 			ret=FAIL;
 		}
- 	 	 else
+		else
 			strcpy(retval,receiverBase->setFileName(fName));
 	}
 #ifdef VERBOSE
@@ -671,44 +673,44 @@ int slsReceiverTCPIPInterface::setup_udp(){
 		}
 		else{
 			//set up udp port
-			 sscanf(args[1],"%d",&udpport);
-			 sscanf(args[2],"%d",&udpport2);
-			 receiverBase->setUDPPortNo(udpport);
-			 receiverBase->setUDPPortNo2(udpport2);
-			 //setup udpip
-			 //get ethernet interface or IP to listen to
-			 cout << "Ethernet interface is " << args[0] << endl;
-			 temp = genericSocket::ipToName(args[0]);
-			 cout <<  temp << endl;
-			 if(temp=="none"){
-				 ret = FAIL;
-				 strcpy(mess, "failed to get ethernet interface or IP to listen to\n");
-			 }
-			 else{
-				 strcpy(eth,temp.c_str());
-				 if (strchr(eth,'.')!=NULL) {
-					 strcpy(eth,"");
-					 ret = FAIL;
-				 }
-				 FILE_LOG(logDEBUG) << __FILE__ << "::" << __func__ << " " << eth;
-				 receiverBase->setEthernetInterface(eth);
+			sscanf(args[1],"%d",&udpport);
+			sscanf(args[2],"%d",&udpport2);
+			receiverBase->setUDPPortNo(udpport);
+			receiverBase->setUDPPortNo2(udpport2);
+			//setup udpip
+			//get ethernet interface or IP to listen to
+			cout << "Ethernet interface is " << args[0] << endl;
+			temp = genericSocket::ipToName(args[0]);
+			cout <<  temp << endl;
+			if(temp=="none"){
+				ret = FAIL;
+				strcpy(mess, "failed to get ethernet interface or IP to listen to\n");
+			}
+			else{
+				strcpy(eth,temp.c_str());
+				if (strchr(eth,'.')!=NULL) {
+					strcpy(eth,"");
+					ret = FAIL;
+				}
+				FILE_LOG(logDEBUG) << __FILE__ << "::" << __func__ << " " << eth;
+				receiverBase->setEthernetInterface(eth);
 
-			 cout <<  eth << endl;
-				 //get mac address from ethernet interface
-				 if (ret != FAIL)
+				cout <<  eth << endl;
+				//get mac address from ethernet interface
+				if (ret != FAIL)
 					temp = genericSocket::nameToMac(eth);
-				 
 
-				 if ((temp=="00:00:00:00:00:00") || (ret == FAIL)){
-					 ret = FAIL;
-					 strcpy(mess,"failed to get mac adddress to listen to\n");
-					 cout << "mess:" << mess << endl;
-				 }
-				 else{
-					 strcpy(retval,temp.c_str());
-					 cout<<"mac:"<<retval<<endl;
-				 }
-			 }
+
+				if ((temp=="00:00:00:00:00:00") || (ret == FAIL)){
+					ret = FAIL;
+					strcpy(mess,"failed to get mac adddress to listen to\n");
+					cout << "mess:" << mess << endl;
+				}
+				else{
+					strcpy(retval,temp.c_str());
+					cout<<"mac:"<<retval<<endl;
+				}
+			}
 		}
 	}
 #endif
@@ -751,7 +753,7 @@ int slsReceiverTCPIPInterface::start_receiver(){
 		strcpy(mess,"receiver not set up. set receiver ip again.\n");
 		ret = FAIL;
 	}
-	*/
+	 */
 	else if (receiverBase == NULL){
 		strcpy(mess,"Receiver not set up\n");
 		ret=FAIL;
@@ -1287,8 +1289,8 @@ int	slsReceiverTCPIPInterface::gotthard_read_frame(){
 				pindex2 =(bindex2 & GOTTHARD_PACKET_INDEX_MASK);
 				index2 =((bindex2 & GOTTHARD_FRAME_INDEX_MASK) >> GOTTHARD_FRAME_INDEX_OFFSET);
 #ifdef VERBOSE
-			cout << "index1:" << hex << index << endl;
-			cout << "index2:" << hex << index << endl;
+				cout << "index1:" << hex << index << endl;
+				cout << "index2:" << hex << index << endl;
 #endif
 			}
 
@@ -1310,21 +1312,21 @@ int	slsReceiverTCPIPInterface::gotthard_read_frame(){
 				/*//ignore if half frame is missing
 				if ((bindex != 0xFFFFFFFF) && (bindex2 != 0xFFFFFFFF)){*/
 
-					//should be same frame
-					if (index == index2){
-						//ideal situation (should be odd, even(index+1))
-						if(!pindex){
-							memcpy(retval,((char*) origVal)+4, onedatasize);
-							memcpy((((char*)retval)+onedatasize), ((char*) origVal)+10+onedatasize, onedatasize);
-						}
-						//swap to even,odd
-						else{
-							memcpy((((char*)retval)+onedatasize),((char*) origVal)+4, onedatasize);
-							memcpy(retval, ((char*) origVal)+10+onedatasize, onedatasize);
-							index=index2;
-						}
-					}else
-						cout << "different frames caught. frame1:"<< hex << index << ":"<<pindex<<" frame2:" << hex << index2 << ":"<<pindex2<<endl;
+				//should be same frame
+				if (index == index2){
+					//ideal situation (should be odd, even(index+1))
+					if(!pindex){
+						memcpy(retval,((char*) origVal)+4, onedatasize);
+						memcpy((((char*)retval)+onedatasize), ((char*) origVal)+10+onedatasize, onedatasize);
+					}
+					//swap to even,odd
+					else{
+						memcpy((((char*)retval)+onedatasize),((char*) origVal)+4, onedatasize);
+						memcpy(retval, ((char*) origVal)+10+onedatasize, onedatasize);
+						index=index2;
+					}
+				}else
+					cout << "different frames caught. frame1:"<< hex << index << ":"<<pindex<<" frame2:" << hex << index2 << ":"<<pindex2<<endl;
 				/*}
 				else{
 					index = startIndex - 1;
@@ -1508,7 +1510,7 @@ int	slsReceiverTCPIPInterface::eiger_read_frame(){
 					}
 				}
 
-		}
+			}
 
 			//bottom half module
 
@@ -1561,7 +1563,7 @@ int	slsReceiverTCPIPInterface::eiger_read_frame(){
 
 			acquisitionIndex = index-startAcquisitionIndex;
 			if(acquisitionIndex ==  -1)
-					startFrameIndex = -1;
+				startFrameIndex = -1;
 			else
 				frameIndex = index-startFrameIndex;
 #ifdef VERY_VERY_DEBUG
@@ -1942,10 +1944,10 @@ int slsReceiverTCPIPInterface::set_detector_hostname() {
 			strcpy(mess,"Receiver not set up\n");
 			ret=FAIL;
 		}
- 	 	 else{
- 	 		receiverBase->initialize(hostname);
+		else{
+			receiverBase->initialize(hostname);
 			strcpy(retval,receiverBase->getDetectorHostname());
- 	 	 }
+		}
 	}
 #ifdef VERBOSE
 	if(ret!=FAIL)
@@ -1998,15 +2000,15 @@ int slsReceiverTCPIPInterface::set_dynamic_range() {
 		}
 		else if ((dr>0) && (myDetectorType == EIGER)){
 			switch(dr){
-				case 4:
-				case 8:
-				case 16:
-				case 32:break;
-				default:
-					sprintf(mess,"This dynamic range does not exist for eiger: %d\n",dr);
-					cprintf(RED,"%s", mess);
-					ret=FAIL;
-					break;
+			case 4:
+			case 8:
+			case 16:
+			case 32:break;
+			default:
+				sprintf(mess,"This dynamic range does not exist for eiger: %d\n",dr);
+				cprintf(RED,"%s", mess);
+				ret=FAIL;
+				break;
 			}
 		}
 		if(ret!=FAIL){
@@ -2247,6 +2249,7 @@ int slsReceiverTCPIPInterface::lock_receiver() {
 int slsReceiverTCPIPInterface::set_port() {
 	ret=OK;
 	MySocketTCP* mySocket=NULL;
+	char oldLastClientIP[INET_ADDRSTRLEN];
 	int sd=-1;
 	enum runStatus p_type; /* just to get the input */
 	int p_number;
@@ -2277,12 +2280,14 @@ int slsReceiverTCPIPInterface::set_port() {
 				ret=FAIL;
 			}
 			cout << "set port " << p_type << " to " << p_number <<endl;
+			strcpy(oldLastClientIP, socket->lastClientIP);
 			mySocket = new MySocketTCP(p_number);
 		}
 		if(mySocket){
 			sd = mySocket->getErrorStatus();
 			if (!sd){
 				ret=OK;
+				strcpy(socket->lastClientIP,oldLastClientIP);
 				if (mySocket->differentClients)
 					ret=FORCE_UPDATE;
 			} else {

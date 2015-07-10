@@ -459,9 +459,8 @@ private:
 	/**
 	 * When acquisition is over, this is called
 	 * @param ithread listening thread number
-	 * @param wbuffer writer buffer
 	 */
-	void stopWriting(int ithread, char* wbuffer[]);
+	void stopWriting(int ithread);
 
 	/**
 	 * updates parameters and writes to file when not a dummy frame
@@ -469,21 +468,21 @@ private:
 	 * Called by startWriting()
 	 * @param ithread writing thread number
 	 * @param wbuffer writer buffer
-	 * @param npackets number of packets from the fifo
+	 * @param partialframe is 1 if both ports of eiger dont have same frame
+	 * @param smaller is which port is the smaller frame number if only partial frame received
 	 */
-	int handleWithoutDataCompression(int ithread, char* wbuffer[], int &npackets);
+	void handleWithoutDataCompression(int ithread, char* wbuffer[], int partialframe = 0, int smaller = 0);
 
 	/**
 	 * data compression for each fifo output
 	 * @param ithread writing thread number
 	 * @param wbuffer writer buffer
-	 * @param npackets number of packets from the fifo
 	 * @param data pointer to the next packet start
 	 * @param xmax max pixels in x direction
 	 * @param ymax max pixels in y direction
 	 * @param nf nf
 	 */
-	void handleDataCompression(int ithread, char* wbuffer[], int &npackets, char* data, int xmax, int ymax, int &nf);
+	void handleDataCompression(int ithread, char* wbuffer[], char* data, int xmax, int ymax, int &nf);
 
 
 

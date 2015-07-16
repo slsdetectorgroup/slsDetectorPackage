@@ -94,17 +94,10 @@ enum communicationProtocol{
 
 typedef struct
 {
-	unsigned char header_before[20];
+	unsigned char  header_before[20];
 	unsigned char  fnum[4];
 	unsigned char  header_after[24];
 } eiger_image_header;
-
-typedef struct
-{
-	unsigned char header_before[19];
-	unsigned char  fnum[4];
-	unsigned char  header_after[25];
-} eiger_image_header32;
 
  genericSocket(const char* const host_ip_or_name, unsigned short int const port_number, communicationProtocol p, int ps = DEFAULT_PACKET_SIZE) :
    //   portno(port_number), 
@@ -581,24 +574,13 @@ typedef struct
        case UDP:
 	 if (socketDescriptor<0) return -1;
 
-/*
-	 cout <<"******listening inside genericsocket"<<endl;
-	 for(int i=0;i<10000;i++){
-		 nsent = recvfrom(socketDescriptor,(char*)buf+total_sent,5000, 0, (struct sockaddr *) &clientAddress, &clientAddress_length);
-		cout<<i<<":"<<nsent<<"\t\t";
-	 }
-	exit(-1);
-*/
-
 	 //if length given, listens to length, else listens for packetsize till length is reached
 	 if(length){
 /*int k = 0;*/
 
 		 while(length>0){
 			 nsending = (length>packet_size) ? packet_size:length;
-
-			 /*
-
+/*
 			 //created for debugging on 11.05.2015
 			 nsending=5000;
 			 nsent = recvfrom(socketDescriptor,(char*)buf,nsending, 0, (struct sockaddr *) &clientAddress, &clientAddress_length);
@@ -616,14 +598,9 @@ typedef struct
 				 k++;
 	 */
 
-			 
 
 			 nsent = recvfrom(socketDescriptor,(char*)buf+total_sent,nsending, 0, (struct sockaddr *) &clientAddress, &clientAddress_length);
 			 if(!nsent) break;
-			 if(nsent == 16) {
-				 //cout << ".";
-				 continue;
-			 }
 			 length-=nsent;
 			 total_sent+=nsent;
 		 }

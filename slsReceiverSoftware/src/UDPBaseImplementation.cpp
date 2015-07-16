@@ -624,7 +624,7 @@ void UDPBaseImplementation::setupFifoStructure(){ FILE_LOG(logDEBUG) << __AT__ <
 		mem0[i]=(char*)malloc((bufferSize * numJobsPerThread + HEADER_SIZE_NUM_TOT_PACKETS)*fifosize);
 		/** shud let the client know about this */
 		if (mem0[i]==NULL){
-			cout<<"++++++++++++++++++++++ COULD NOT ALLOCATE MEMORY FOR LISTENING !!!!!!!+++++++++++++++++++++" << endl;
+			cprintf(BG_RED,"++++++++++++++++++++++ COULD NOT ALLOCATE MEMORY FOR LISTENING !!!!!!!+++++++++++++++++++++\n");
 			exit(-1);
 		}
 		buffer[i]=mem0[i];
@@ -1754,7 +1754,7 @@ int i;
 				cerr << ithread << " recvfrom() failed:"<<endl;
 #endif
 				if(status != TRANSMITTING){
-					cout << ithread << " *** shoule never be here********* status not transmitting***********************"<<endl;/**/
+					cprintf(BG_RED," %d*** shoule never be here********* status not transmitting***********************\n", ithread);/**/
 					fifoFree[ithread]->push(buffer[ithread]);
 					exit(-1);
 				}

@@ -486,7 +486,10 @@ protected:
 	/** structure of an eiger image header*/
 	typedef struct
 	{
-		unsigned char header_before[20];
+		//unsigned char header_before1[5];
+		//unsigned char header_confirm[1];
+		//unsigned char header_before2[14];
+		unsigned char  header_before[20];
 		unsigned char  fnum[4];
 		unsigned char  header_after[24];
 	} eiger_image_header;

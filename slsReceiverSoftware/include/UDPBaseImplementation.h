@@ -659,6 +659,9 @@ protected:
 	/** Receiver buffer */
 	char *buffer[MAX_NUM_LISTENING_THREADS];
 
+	/** Missing Packet */
+	char *missingPacket;
+
 	/** number of writer threads */
 	int numListeningThreads;
 

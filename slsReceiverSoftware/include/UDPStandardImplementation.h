@@ -468,10 +468,8 @@ private:
 	 * Called by startWriting()
 	 * @param ithread writing thread number
 	 * @param wbuffer writer buffer
-	 * @param partialframe is 1 if both ports of eiger dont have same frame
-	 * @param smaller is which port is the smaller frame number if only partial frame received
 	 */
-	void handleWithoutDataCompression(int ithread, char* wbuffer[], int partialframe = 0, int smaller = 0);
+	void handleWithoutDataCompression(int ithread, char* wbuffer[]);
 
 	/**
 	 * data compression for each fifo output

@@ -20,6 +20,8 @@ int (*flist[256])(int);
 //defined in the detector specific file
 #ifdef MYTHEND
 const enum detectorType myDetectorType=MYTHEN;
+#elif PROPIXD
+const enum detectorType myDetectorType=PROPIX;
 #elif GOTTHARDD
 const enum detectorType myDetectorType=GOTTHARD;
 #elif EIGERD
@@ -67,8 +69,12 @@ int init_detector( int b) {
   }
 
   if (b) {
-    printf("***This is a GOTTHARD detector with %d chips per module***\n", NCHIP);
-    printf("\nBoard Revision:0x%x\n",(bus_r(PCB_REV_REG)&BOARD_REVISION_MASK));
+#ifdef PROPIXD
+	  printf("***This is a PROPIX detector***\n");
+#else
+	  printf("***This is a GOTTHARD detector with %d chips per module***\n", NCHIP);
+#endif
+	  printf("\nBoard Revision:0x%x\n",(bus_r(PCB_REV_REG)&BOARD_REVISION_MASK));
 #ifdef MCB_FUNCS
 	initDetector();
 	printf("Initializing Detector\n");
@@ -1582,7 +1588,12 @@ int get_threshold_energy(int file_des) {
   int n;
   int  imod;
 
+#ifdef PROPIXD
+  strcpy(mess,"cannot get threshold for propix");
+#else
   strcpy(mess,"cannot get threshold for gotthard");
+#endif
+
 
   n = receiveDataOnly(file_des,&imod,sizeof(imod));
   if (n < 0)
@@ -1603,7 +1614,12 @@ int set_threshold_energy(int file_des) {
   int arg[3];
   int n;
 
+#ifdef PROPIXD
+  strcpy(mess,"cannot set threshold for propix");
+#else
   strcpy(mess,"cannot set threshold for gotthard");
+#endif
+
 
   n = receiveDataOnly(file_des,&arg,sizeof(arg));
   if (n < 0)
@@ -2066,7 +2082,12 @@ int set_timer(int file_des) {
 	retval=setGates(tns);
 	break;
       case PROBES_NUMBER: 
+#ifdef PROPIXD
+    sprintf(mess,"can't set/get number of probes for propix\n");
+#else
     sprintf(mess,"can't set/get number of probes for gotthard\n");
+#endif
+
     ret=FAIL;
 	break;
       case CYCLES_NUMBER: 
@@ -2268,35 +2289,41 @@ int set_roi(int file_des) {
 		ret=FAIL;
 	}
 
-	if(nroi!=-1){
-		n = receiveDataOnly(file_des,arg,nroi*sizeof(ROI));
-		if (n != (nroi*sizeof(ROI))) {
-			sprintf(mess,"Received wrong number of bytes for ROI\n");
-			ret=FAIL;
-		}
-//#ifdef VERBOSE
-		printf("Setting ROI to:");
-		for( i=0;i<nroi;i++)
-			printf("%d\t%d\t%d\t%d\n",arg[i].xmin,arg[i].xmax,arg[i].ymin,arg[i].ymax);
-//#endif
-	}
-	/* execute action if the arguments correctly arrived*/
-#ifdef MCB_FUNCS
-	if (lockStatus==1 && differentClients==1){//necessary???
-		sprintf(mess,"Detector locked by %s\n", lastClientIP);
-		ret=FAIL;
-	}
-	else{
-		retval=setROI(nroi,arg,&retvalsize,&ret);
+#ifdef PROPIXD
+  sprintf(mess,"can't set roi for propix\n");
+  ret = FAIL;
+#endif
+  if(ret != FAIL){
+	  if(nroi!=-1){
+		  n = receiveDataOnly(file_des,arg,nroi*sizeof(ROI));
+		  if (n != (nroi*sizeof(ROI))) {
+			  sprintf(mess,"Received wrong number of bytes for ROI\n");
+			  ret=FAIL;
+		  }
+		  //#ifdef VERBOSE
+		  printf("Setting ROI to:");
+		  for( i=0;i<nroi;i++)
+			  printf("%d\t%d\t%d\t%d\n",arg[i].xmin,arg[i].xmax,arg[i].ymin,arg[i].ymax);
+		  //#endif
+	  }
+	  /* execute action if the arguments correctly arrived*/
 
-		if (ret==FAIL){
-			printf("mess:%s\n",mess);
-			sprintf(mess,"Could not set all roi, should have set %d rois, but only set %d rois\n",nroi,retvalsize);
-		}
-	}
+#ifdef MCB_FUNCS
+	  if (lockStatus==1 && differentClients==1){//necessary???
+		  sprintf(mess,"Detector locked by %s\n", lastClientIP);
+		  ret=FAIL;
+	  }
+	  else{
+		  retval=setROI(nroi,arg,&retvalsize,&ret);
+
+		  if (ret==FAIL){
+			  printf("mess:%s\n",mess);
+			  sprintf(mess,"Could not set all roi, should have set %d rois, but only set %d rois\n",nroi,retvalsize);
+		  }
+	  }
 
 #endif
-
+  }
 
 	if(ret==OK && differentClients){
 		printf("Force update\n");
@@ -2330,7 +2357,12 @@ int set_speed(int file_des) {
   receiveDataOnly(file_des,&arg,sizeof(arg));
   receiveDataOnly(file_des,&val,sizeof(val));
   
+#ifdef PROPIXD
+  sprintf(mess,"can't set speed variable for propix\n");
+#else
   sprintf(mess,"can't set speed variable for gotthard\n");
+#endif
+
 
 
   sendDataOnly(file_des,&ret,sizeof(ret));
@@ -2350,7 +2382,11 @@ int set_readout_flags(int file_des) {
 
   receiveDataOnly(file_des,&arg,sizeof(arg));
 
+#ifdef PROPIXD
+  sprintf(mess,"can't set readout flags for propix\n");
+#else
   sprintf(mess,"can't set readout flags for gotthard\n");
+#endif
   
   sendDataOnly(file_des,&ret,sizeof(ret));
   sendDataOnly(file_des,mess,sizeof(mess));
@@ -2368,7 +2404,12 @@ int execute_trimming(int file_des) {
   int ret=FAIL;
   enum trimMode mode;
   
+#ifdef PROPIXD
+  sprintf(mess,"can't set execute trimming for propix\n");
+#else
   sprintf(mess,"can't set execute trimming for gotthard\n");
+#endif
+
   
   receiveDataOnly(file_des,&mode,sizeof(mode));
   receiveDataOnly(file_des,arg,sizeof(arg));
@@ -2655,6 +2696,11 @@ int load_image(int file_des) {
 		ret=FAIL;
 	}
 
+#ifdef PROPIXD
+  sprintf(mess,"can't load image for propix\n");
+  ret = FAIL;
+#endif
+
 	switch (index) {
 	case DARK_IMAGE :
 #ifdef VERBOSE
@@ -2813,6 +2859,12 @@ int read_counter_block(int file_des) {
 		sprintf(mess,"Error reading from socket\n");
 		ret=FAIL;
 	}
+
+
+#ifdef PROPIXD
+  sprintf(mess,"can't read counter block for propix\n");
+  ret = FAIL;
+#endif
 
 	if (ret==OK) {
 		if (differentClients==1 && lockStatus==1) {

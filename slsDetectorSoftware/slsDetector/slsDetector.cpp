@@ -44,6 +44,12 @@ int slsDetector::initSharedMemory(detectorType type, int id) {
     nc=10;
     nd=13; // dacs+adcs
     break;
+  case PROPIX:
+    nch=22*22;
+    nm=1;
+    nc=1;
+    nd=13; // dacs+adcs
+    break;
   case EIGER:
     nch=256*256; // one EIGER half module
     nm=1; //modules/detector
@@ -553,6 +559,17 @@ int slsDetector::initializeDetectorSize(detectorType type) {
       thisDetector->nModMax[Y]=1;
       thisDetector->dynamicRange=16;
       break;
+    case PROPIX:
+      thisDetector->nChan[X]=22;
+      thisDetector->nChan[Y]=22;
+      thisDetector->nChip[X]=1;
+      thisDetector->nChip[Y]=1;
+      thisDetector->nDacs=8;
+      thisDetector->nAdcs=5;
+      thisDetector->nModMax[X]=1;
+      thisDetector->nModMax[Y]=1;
+      thisDetector->dynamicRange=16;
+      break;
     case MOENCH:
       thisDetector->nChan[X]=160;
       thisDetector->nChan[Y]=160;
@@ -775,7 +792,7 @@ int slsDetector::initializeDetectorSize(detectorType type) {
   fileName=parentDet->fileName;
   fileIndex=parentDet->fileIndex;
   framesPerFile=parentDet->framesPerFile;
-  if(thisDetector->myDetectorType==GOTTHARD)
+  if((thisDetector->myDetectorType==GOTTHARD)||(thisDetector->myDetectorType==PROPIX))
 	  setFramesPerFile(MAX_FRAMES_PER_FILE);
   if (thisDetector->myDetectorType==MOENCH)
 	  setFramesPerFile(MOENCH_MAX_FRAMES_PER_FILE);
@@ -878,6 +895,13 @@ slsDetectorDefs::sls_detector_module*  slsDetector::createModule(detectorType t)
     nch=128;
     nm=1;
     nc=10;
+    nd=8; // dacs+adcs
+    na=5;
+    break;
+  case PROPIX:
+    nch=22*22;
+    nm=1;
+    nc=1;
     nd=8; // dacs+adcs
     na=5;
     break;
@@ -2952,6 +2976,7 @@ slsDetectorDefs::detectorSettings slsDetector::setSettings( detectorSettings ise
 	case HIGHGAIN:
 		if (    (thisDetector->myDetectorType == MYTHEN) ||
 				(thisDetector->myDetectorType == GOTTHARD) ||
+				(thisDetector->myDetectorType == PROPIX) ||
 				(thisDetector->myDetectorType == MOENCH) ||
 				(thisDetector->myDetectorType == EIGER)) {
 			ssettings="/highgain";
@@ -2960,6 +2985,7 @@ slsDetectorDefs::detectorSettings slsDetector::setSettings( detectorSettings ise
 		break;
 	case DYNAMICGAIN:
 		if ((thisDetector->myDetectorType == GOTTHARD) ||
+			(thisDetector->myDetectorType == PROPIX) ||
 			(thisDetector->myDetectorType == MOENCH)) {
 			ssettings="/dynamicgain";
 			thisDetector->currentSettings=DYNAMICGAIN;
@@ -2967,6 +2993,7 @@ slsDetectorDefs::detectorSettings slsDetector::setSettings( detectorSettings ise
 		break;
 	case LOWGAIN:
 		if ((thisDetector->myDetectorType == GOTTHARD) ||
+			(thisDetector->myDetectorType == PROPIX) ||
 			(thisDetector->myDetectorType == MOENCH)) {
 			ssettings="/lowgain";
 			thisDetector->currentSettings=LOWGAIN;
@@ -2974,6 +3001,7 @@ slsDetectorDefs::detectorSettings slsDetector::setSettings( detectorSettings ise
 		break;
 	case MEDIUMGAIN:
 		if ((thisDetector->myDetectorType == GOTTHARD) ||
+			(thisDetector->myDetectorType == PROPIX) ||
 			(thisDetector->myDetectorType == MOENCH)) {
 			ssettings="/mediumgain";
 			thisDetector->currentSettings=MEDIUMGAIN;
@@ -2981,6 +3009,7 @@ slsDetectorDefs::detectorSettings slsDetector::setSettings( detectorSettings ise
 		break;
 	case VERYHIGHGAIN:
 		if ((thisDetector->myDetectorType == GOTTHARD) ||
+			(thisDetector->myDetectorType == PROPIX) ||
 			(thisDetector->myDetectorType == MOENCH)) {
 			ssettings="/veryhighgain";
 			thisDetector->currentSettings=VERYHIGHGAIN;
@@ -3025,6 +3054,7 @@ slsDetectorDefs::detectorSettings slsDetector::setSettings( detectorSettings ise
 				break;
 			case MOENCH:
 			case GOTTHARD:
+			case PROPIX:
 			case JUNGFRAUCTB:
 				//settings is saved in myMod.reg
 				myMod->reg=thisDetector->currentSettings;
@@ -3055,6 +3085,7 @@ slsDetectorDefs::detectorSettings slsDetector::setSettings( detectorSettings ise
 				switch(thisDetector->myDetectorType){
 				case MOENCH:
 				case GOTTHARD:
+				case PROPIX:
 				case JUNGFRAUCTB:
 					ostfn << thisDetector->settingsDir << ssettings << ssettings << ".settings";
 					break;
@@ -3168,7 +3199,9 @@ int slsDetector::updateDetectorNoWait() {
   n = 	controlSocket->ReceiveDataOnly( &t,sizeof(t));
   thisDetector->currentSettings=t;
 
-  if((thisDetector->myDetectorType!= GOTTHARD)&&(thisDetector->myDetectorType!= MOENCH)){
+  if((thisDetector->myDetectorType!= GOTTHARD)&&
+		  (thisDetector->myDetectorType!= PROPIX)&&
+		  (thisDetector->myDetectorType!= MOENCH)){
     //thr=getThresholdEnergy();
     n = 	controlSocket->ReceiveDataOnly( &thr,sizeof(thr));
     thisDetector->currentThresholdEV=thr;
@@ -3640,7 +3673,9 @@ int64_t slsDetector::setTimer(timerIndex index, int64_t t){
       //std::cout<< "offline " << std::endl;
       if (t>=0)
 	thisDetector->timerValue[index]=t;
-      if((thisDetector->myDetectorType==GOTTHARD)||(thisDetector->myDetectorType==MOENCH))
+      if((thisDetector->myDetectorType==GOTTHARD)||
+    		  (thisDetector->myDetectorType==PROPIX)||
+    		  (thisDetector->myDetectorType==MOENCH))
     	  thisDetector->timerValue[PROBES_NUMBER]=0;
     }
   } else {
@@ -5722,7 +5757,9 @@ int slsDetector::writeConfigurationFile(ofstream &outfile, int id){
   //    "trimen",
   //   "receiverTCPPort",
 
-  if ((thisDetector->myDetectorType==GOTTHARD)||(thisDetector->myDetectorType==MOENCH)) {
+  if ((thisDetector->myDetectorType==GOTTHARD)||
+		  (thisDetector->myDetectorType==PROPIX)||
+		  (thisDetector->myDetectorType==MOENCH)) {
 	names[0]= "hostname";
 	names[1]= "port";
 	names[2]= "stopport";

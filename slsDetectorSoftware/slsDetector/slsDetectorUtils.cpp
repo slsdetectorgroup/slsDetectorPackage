@@ -811,6 +811,7 @@ int slsDetectorUtils::dumpDetectorSetup(string const fname, int level){
 		names[nvar++]="ratecorr";
 		break;
   case GOTTHARD:
+  case PROPIX:
   names[nvar++]="flags";
 		names[nvar++]="delay";
 		names[nvar++]="gates";
@@ -894,6 +895,7 @@ int slsDetectorUtils::dumpDetectorSetup(string const fname, int level){
   case EIGER:
   case MYTHEN:
   case GOTTHARD:
+  case PROPIX:
   names[nvar++]="flatfield";
   names[nvar++]="badchannels";
   break;

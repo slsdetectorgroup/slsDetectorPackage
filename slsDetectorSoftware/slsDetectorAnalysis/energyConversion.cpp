@@ -111,6 +111,7 @@ slsDetectorDefs::sls_detector_module* energyConversion::readSettingsFile(string 
 		names[id++]="Vdac7";
 		break;
 	case GOTTHARD:
+	case PROPIX:
 		names[id++]="Vref";
 		names[id++]="VcascN";
 		names[id++]="VcascP";
@@ -265,6 +266,7 @@ slsDetectorDefs::sls_detector_module* energyConversion::readSettingsFile(string 
 
 	case MOENCH:
 	case GOTTHARD:
+	case PROPIX:
 		//---------------dacs---------------
 		infile.open(myfname.c_str(), ios_base::in);
 		if (infile.is_open()) {
@@ -352,6 +354,7 @@ int energyConversion::writeSettingsFile(string fname, detectorType myDetectorTyp
 		names[id++]="Vdac7";
 		break;
 	case GOTTHARD:
+	case PROPIX:
 		names[id++]="Vref";
 		names[id++]="VcascN";
 		names[id++]="VcascP";

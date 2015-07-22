@@ -759,7 +759,7 @@ void qDetectorMain::EnableTabs(){
 		tab_plot->Refresh();
 
 		//stop the adc timer in gotthard
-		if(tab_developer->isEnabled())
+		if(isDeveloper)
 			tab_developer->StopADCTimer();
 		//set the plot type first(acccss shared memory)
 		tab_plot->SetScanArgument();

@@ -238,7 +238,10 @@ void qTabAdvanced::Initialization(){
 	connect(spinStopPort,		SIGNAL(valueChanged(int)),	this,	SLOT(SetStopPort(int)));
 	connect(comboOnline,		SIGNAL(currentIndexChanged(int)),	this,	SLOT(SetOnline(int)));
 
-	if((detType==slsDetectorDefs::GOTTHARD) || (detType==slsDetectorDefs::MOENCH) || (detType==slsDetectorDefs::EIGER)){
+	if((detType==slsDetectorDefs::GOTTHARD) ||
+			(detType==slsDetectorDefs::MOENCH) ||
+			(detType==slsDetectorDefs::PROPIX) ||
+			(detType==slsDetectorDefs::EIGER)){
 
 		//network
 		connect(spinTCPPort,		SIGNAL(valueChanged(int)),	this,	SLOT(SetRxrTCPPort(int)));
@@ -1185,7 +1188,10 @@ void qTabAdvanced::Refresh(){
 #ifdef VERBOSE
 		cout << "Getting Receiver Network Information" << endl;
 #endif
-	if ((detType==slsDetectorDefs::GOTTHARD) || (detType==slsDetectorDefs::MOENCH)|| (detType==slsDetectorDefs::EIGER)){
+	if ((detType==slsDetectorDefs::GOTTHARD) ||
+			(detType==slsDetectorDefs::MOENCH)||
+			(detType==slsDetectorDefs::PROPIX)||
+			(detType==slsDetectorDefs::EIGER)){
 		//disconnect
 		disconnect(spinTCPPort,			SIGNAL(valueChanged(int)),	this,	SLOT(SetRxrTCPPort(int)));
 		disconnect(spinUDPPort,			SIGNAL(valueChanged(int)),	this,	SLOT(SetRxrUDPPort(int)));

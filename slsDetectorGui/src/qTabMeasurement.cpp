@@ -145,6 +145,7 @@ void qTabMeasurement::SetupTimingMode(){
 			item[(int)Gated_Start]->setEnabled(false);
 			break;
 		case slsDetectorDefs::MOENCH:
+		case slsDetectorDefs::PROPIX:
 		case slsDetectorDefs::GOTTHARD:
 			item[(int)Trigger_Exp_Series]->setEnabled(true);
 			item[(int)Trigger_Readout]->setEnabled(false);

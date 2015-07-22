@@ -133,6 +133,7 @@ void qTabSettings::SetupDetectorSettings(){
 			item[(int)LowNoise]->setEnabled(true);
 			break;
 		case slsDetectorDefs::MOENCH:
+		case slsDetectorDefs::PROPIX:
 		case slsDetectorDefs::GOTTHARD:
 			item[(int)Standard]->setEnabled(false);
 			item[(int)Fast]->setEnabled(false);

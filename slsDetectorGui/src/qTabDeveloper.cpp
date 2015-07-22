@@ -104,6 +104,7 @@ void qTabDeveloper::SetupWidgetWindow(){
 
 
 		break;
+	case slsDetectorDefs::PROPIX:
 	case slsDetectorDefs::GOTTHARD:
 		NUM_DAC_WIDGETS = 8;
 		NUM_ADC_WIDGETS = 2;
@@ -174,7 +175,9 @@ void qTabDeveloper::SetupWidgetWindow(){
 	CreateDACWidgets();
 
 	//HV for gotthard
-	if ((detType==slsDetectorDefs::GOTTHARD) || (detType==slsDetectorDefs::MOENCH)){
+	if ((detType==slsDetectorDefs::GOTTHARD) ||
+			(detType==slsDetectorDefs::PROPIX) ||
+			(detType==slsDetectorDefs::MOENCH)){
 		boxDacs->setFixedHeight(boxDacs->height()+35);
 
 		lblHV	= new QLabel("High Voltage",boxDacs);
@@ -198,7 +201,9 @@ void qTabDeveloper::SetupWidgetWindow(){
 
 
 	//adcs
-	if((detType==slsDetectorDefs::GOTTHARD) || (detType==slsDetectorDefs::MOENCH)){
+	if((detType==slsDetectorDefs::GOTTHARD) ||
+			(detType==slsDetectorDefs::PROPIX) ||
+			(detType==slsDetectorDefs::MOENCH)){
 	    setFixedHeight(20+(50+(NUM_DAC_WIDGETS/2)*35)+(50+(NUM_ADC_WIDGETS/2)*35));
 		boxAdcs = new QGroupBox("ADCs",this);
 		boxAdcs->setFixedHeight(25+(NUM_ADC_WIDGETS/2)*35);
@@ -265,7 +270,10 @@ void qTabDeveloper::CreateADCWidgets(){
 		lblAdcs[i] 	= new QLabel(QString(adcNames[i].c_str()),boxAdcs);
 		spinAdcs[i]	= new QDoubleSpinBox(boxAdcs);
 		spinAdcs[i]->setMaximum(10000);
-		if((detType==slsDetectorDefs::GOTTHARD) || (detType==slsDetectorDefs::MOENCH))	spinAdcs[i]->setSuffix(0x00b0+QString("C"));
+		if((detType==slsDetectorDefs::GOTTHARD) ||
+				(detType==slsDetectorDefs::PROPIX) ||
+				(detType==slsDetectorDefs::MOENCH))
+			spinAdcs[i]->setSuffix(0x00b0+QString("C"));
 
 		adcLayout->addWidget(lblAdcs[i],(int)(i/2),((i%2)==0)?1:4);
 		adcLayout->addWidget(spinAdcs[i],(int)(i/2),((i%2)==0)?2:5);
@@ -416,7 +424,7 @@ slsDetectorDefs::dacIndex qTabDeveloper::getSLSIndex(int index){
 			break;
 		}
 		break;
-
+	case slsDetectorDefs::PROPIX:
 	case slsDetectorDefs::GOTTHARD:
 		switch(index){
 		case 0:	return slsDetectorDefs::G_VREF_DS;
@@ -510,7 +518,9 @@ void qTabDeveloper::Refresh(){
 	if(NUM_ADC_WIDGETS) RefreshAdcs();
 
 	//gotthard -high voltage
-	if((detType == slsDetectorDefs::GOTTHARD) || (detType == slsDetectorDefs::MOENCH)){
+	if((detType == slsDetectorDefs::GOTTHARD) ||
+			(detType == slsDetectorDefs::PROPIX) ||
+			(detType == slsDetectorDefs::MOENCH)){
 		disconnect(comboHV,	SIGNAL(currentIndexChanged(int)),	this, SLOT(SetHighVoltage()));
 
 		//default should be correct

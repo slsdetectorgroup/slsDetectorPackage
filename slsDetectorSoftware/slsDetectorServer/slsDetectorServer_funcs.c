@@ -2637,9 +2637,19 @@ int set_readout_flags(int file_des) {
 		ret=FAIL;
 	}
 
+
+
+#if !defined(MYTHEND) && !defined(EIGERD)
+	sprintf(mess,"Read out flags not implemented for this detector\n");
+	cprintf(RED, "%s",mess);
+	ret=FAIL;
+#else
+
+
 #ifdef VERBOSE
 	printf("setting readout flags  to %d\n",arg);
 #endif
+
 #ifdef SLS_DETECTOR_FUNCTION_LIST
 	if (differentClients==1 && lockStatus==1 && arg!=GET_READOUT_FLAGS) {
 		ret=FAIL;
@@ -2648,30 +2658,37 @@ int set_readout_flags(int file_des) {
 		switch(arg) {
 		case  GET_READOUT_FLAGS:
 #ifdef MYTHEND
-		case STORE_IN_RAM:
 		case TOT_MODE:
-		case CONTINOUS_RO:
 		case NORMAL_READOUT:
-			retval=setReadOutFlags(arg);
-		break;
-#elif EIGERD
-	    case PARALLEL:
-	    case NONPARALLEL:
-	    case SAFE:
-	    	retval=setReadOutFlags(arg);
-	    	break;
 #endif
+#if defined(MYTHEND) || defined(EIGERD)
+		case STORE_IN_RAM:
+		case CONTINOUS_RO:
+#endif
+#ifdef EIGERD
+		case PARALLEL:
+		case NONPARALLEL:
+		case SAFE:
+#endif
+			retval=setReadOutFlags(arg);
+			break;
+
 		default:
 			sprintf(mess,"Unknown readout flag %d for this detector\n", arg);
+			cprintf(RED, "%s",mess);
 			ret=FAIL;
 			break;
 		}
 	}
 #endif
+
+#endif
+
 	if (ret==OK) {
-		if (arg!=GET_READOUT_FLAGS && arg!=retval) {
+		if (retval == -1) {
 			ret=FAIL;
 			sprintf(mess,"Could not change readout flag: should be %d but is %d\n", arg, retval);
+			cprintf(RED, "%s",mess);
 		}else if (differentClients)
 			ret=FORCE_UPDATE;
 	}

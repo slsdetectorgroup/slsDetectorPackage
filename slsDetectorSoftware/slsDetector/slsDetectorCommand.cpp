@@ -4046,8 +4046,9 @@ string slsDetectorCommand::helpSpeed(int narg, char *args[], int action) {
 
 string slsDetectorCommand::cmdAdvanced(int narg, char *args[], int action) {
 
+int retval;
+char answer[1000]="";
 
-  
   if (action==HELP_ACTION)
     return helpAdvanced(narg, args, action);
   
@@ -4078,25 +4079,28 @@ string slsDetectorCommand::cmdAdvanced(int narg, char *args[], int action) {
 
     myDet->setOnline(ONLINE_FLAG);
 
-    switch (myDet->setReadOutFlags(flag)) {
-    case NORMAL_READOUT:
-      return string("none");
-    case STORE_IN_RAM:
-      return string("storeinram");
-    case TOT_MODE:
-      return string("tot");
-    case CONTINOUS_RO:
-      return string("continous");
-    case PARALLEL:
-      return string("parallel");
-    case NONPARALLEL:
-      return string("nonparallel");
-    case SAFE:
-      return string("safe");
-    default:
-      return string("unknown");
-    }  
-  
+    retval = myDet->setReadOutFlags(flag);
+
+    if(retval == NORMAL_READOUT)
+    	return string("none");
+
+    if(retval & STORE_IN_RAM)
+    	strcat(answer,"storeinram ");
+    if(retval & TOT_MODE)
+    	strcat(answer,"tot ");
+    if(retval & CONTINOUS_RO)
+    	strcat(answer,"continous ");
+    if(retval & PARALLEL)
+    	strcat(answer,"parallel ");
+    if(retval & NONPARALLEL)
+    	strcat(answer,"nonparallel ");
+    if(retval & SAFE)
+    	strcat(answer,"safe ");
+    if(strlen(answer))
+    	return string(answer);
+
+    return string("unknown");
+
   }  else if (cmd=="extsig") {
     externalSignalFlag flag=GET_EXTERNAL_SIGNAL_FLAG;
     int is=-1;

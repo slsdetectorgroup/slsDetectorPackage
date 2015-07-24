@@ -17,6 +17,8 @@
 enum detectorSettings thisSettings;
 const char* dac_names[16] = {"SvP","Vtr","Vrf","Vrs","SvN","Vtgstv","Vcmp_ll","Vcmp_lr","cal","Vcmp_rl","rxb_rb","rxb_lb","Vcmp_rr","Vcp","Vcn","Vis"};
 
+enum{E_PARALLEL, E_NON_PARALLEL, E_SAFE};
+
 //static const string dacNames[16] = {"Svp","Svn","Vtr","Vrf","Vrs","Vtgstv","Vcmp_ll","Vcmp_lr","Cal","Vcmp_rl","Vcmp_rr","Rxb_rb","Rxb_lb","Vcp","Vcn","Vis"};
 
 sls_detector_module *detectorModules=NULL;
@@ -31,6 +33,7 @@ int eiger_iodelay = 0;
 int eiger_photonenergy = 0;
 int eiger_dynamicrange = 0;
 int eiger_readoutmode = 0;
+int eiger_storeinmem = 0;
 int eiger_readoutspeed = 0;
 int eiger_triggermode = 0;
 int eiger_extgating = 0;
@@ -131,9 +134,9 @@ int initDetector(){
 	setTimer(FRAME_PERIOD,1E9);
 	setDynamicRange(16);
 	setThresholdEnergy(8000,0);
-	setReadOutFlags(PARALLEL);
+	setReadOutFlags(NONPARALLEL);
 	setSpeed(0,1);//clk_devider,half speed
-	setHighVolage(150,0);
+	setHighVolage(0,0);
 	setIODelay(675,0);
 	setTiming(AUTO_TIMING);
 	//SetPhotonEnergyCalibrationParameters(-5.8381e-5,1.838515,5.09948e-7,-4.32390e-11,1.32527e-15);
@@ -486,15 +489,17 @@ int startReceiver(int d){
 
 
 int startStateMachine(){
-	int ret,prev_flag;
+	int ret = OK,prev_flag;
 	//get the DAQ toggle bit
 	prev_flag = Feb_Control_AcquisitionStartedBit();
 
 	printf("Going to start acquisition\n");
 	Feb_Control_StartAcquisition();
 
-	printf("requesting images\n");
-	ret =  startReadOut();
+	if(!eiger_storeinmem){
+		printf("requesting images right after start\n");
+		ret =  startReadOut();
+	}
 
 	//wait for acquisition start
 	if(ret == OK){
@@ -504,6 +509,7 @@ int startStateMachine(){
 		}
 		cprintf(GREEN,"***Acquisition started\n");
 	}
+
 	/*while(getRunStatus() == IDLE){printf("waiting for being not idle anymore\n");}*/
 
 	return ret;
@@ -569,11 +575,20 @@ char *readFrame(int *ret, char *mess){
 		if(!Feb_Control_WaitForFinishedFlag(5000))
 			cprintf(RED,"Error: Waiting for finished flag\n");
 		cprintf(GREEN,"Acquisition finished***\n");
+
+		if(eiger_storeinmem){
+			printf("requesting images after storing in memory\n");
+			if(startReadOut() == FAIL){
+				cprintf(RED, "Could not read out images\n");
+				*ret = (int)FAIL;
+				return NULL;
+			}
+		}
 		//usleep(0);
 		usleep(1000000);
 		printf("*****Done Waiting...\n");
 	//}
-	*ret = (int)FINISHED;
+		*ret = (int)FINISHED;
 	return NULL;
 }
 
@@ -677,26 +692,53 @@ int setDynamicRange(int dr){
 
 
 enum readOutFlags setReadOutFlags(enum readOutFlags val){
-	int ret;
+
+	enum readOutFlags retval;
 	if(val!=GET_READOUT_FLAGS){
-		switch(val){
-		case PARALLEL:  	val=0; break;
-		case NONPARALLEL:	val=1; break;
-		case SAFE:			val=2; break;
-		default:  			val=0; break;
+
+
+		if(val&0xF0000){
+			switch(val){
+			case PARALLEL:  	val=E_PARALLEL; 	printf(" Setting Read out Flag: Parallel\n"); 			break;
+			case NONPARALLEL:	val=E_NON_PARALLEL; printf(" Setting Read out Flag: Non Parallel\n");		break;
+			case SAFE:			val=E_SAFE; 		printf(" Setting Read out Flag: Safe\n"); 				break;
+
+			default:
+				cprintf(RED,"Cannot set unknown readout flag. 0x%x\n", val);
+				return -1;
+			}
+			printf(" Setting Read out Flag: %d\n",val);
+			if(Feb_Control_SetReadoutMode(val))
+				eiger_readoutmode = val;
+			else return -1;
+
+		}else{
+			switch(val){
+			case STORE_IN_RAM:  	val=1; 		printf(" Setting Read out Flag: Store in Ram\n"); 		break;
+			case CONTINOUS_RO:		val=0; 		printf(" Setting Read out Flag: Continuous Readout\n");		break;
+
+			default:
+				cprintf(RED,"Cannot set unknown readout flag. 0x%x\n", val);
+				return -1;
+			}
+			printf(" Setting store in ram variable: %d\n",val);
+			eiger_storeinmem = val;
+
 		}
-		printf(" Setting Read out Flag: %d\n",val);
-		if(Feb_Control_SetReadoutMode(val))
-			eiger_readoutmode = val;
-	}
-	switch(eiger_readoutmode){
-	case 0: ret=PARALLEL; 		break;
-	case 1:	ret=NONPARALLEL; 	break;
-	case 2:	ret=SAFE; 			break;
-	default:ret=-1; 			break;
 	}
 
-	return ret;
+	switch(eiger_readoutmode){
+	case E_PARALLEL: 		retval=PARALLEL; 		break;
+	case E_NON_PARALLEL:	retval=NONPARALLEL; 	break;
+	case E_SAFE:			retval=SAFE; 			break;
+	}
+
+	switch(eiger_storeinmem){
+	case 0: 		retval|=CONTINOUS_RO; 	break;
+	case 1:			retval|=STORE_IN_RAM; 	break;
+	}
+	printf("Read out Flag: 0x%x\n",retval);
+	return retval;
 }
 
 

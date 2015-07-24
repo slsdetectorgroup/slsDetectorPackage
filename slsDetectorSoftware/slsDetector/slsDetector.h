@@ -1115,7 +1115,7 @@ class slsDetector : public slsDetectorUtils, public energyConversion {
      \param flag readout flag to be set
      \returns current flag
   */
-  int setReadOutFlags(readOutFlags flag=GET_READOUT_FLAGS);
+   int setReadOutFlags(readOutFlags flag=GET_READOUT_FLAGS);
 
   /**
      execute trimming

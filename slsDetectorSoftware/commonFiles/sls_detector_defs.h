@@ -420,9 +420,9 @@ enum readOutFlags {
   BACKGROUND_CORRECTIONS=0x1000, /**<background corrections */
   TOT_MODE=0x2000,/**<pump-probe mode */
   CONTINOUS_RO=0x4000,/**<pump-probe mode */
-  PARALLEL=0x10,/** <eiger parallel mode */
-  NONPARALLEL=0x20,/** <eiger serial mode */
-  SAFE=0x40/** <eiger safe mode */
+  PARALLEL=0x10000,/** <eiger parallel mode */
+  NONPARALLEL=0x20000,/** <eiger serial mode */
+  SAFE=0x40000/** <eiger safe mode */
 };
 /**
    trimming modes

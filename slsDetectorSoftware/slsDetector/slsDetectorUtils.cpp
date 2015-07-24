@@ -467,8 +467,11 @@ void  slsDetectorUtils::acquire(int delflag){
   pthread_mutex_unlock(&mg);
 
 
-    if (measurement_finished)
-      measurement_finished(im,*fileIndex,measFinished_p);
+    if (measurement_finished){
+    	  pthread_mutex_lock(&mg);
+    	  measurement_finished(im,*fileIndex,measFinished_p);
+    	  pthread_mutex_unlock(&mg);
+    }
 
     if (*stoppedFlag) {
       break;

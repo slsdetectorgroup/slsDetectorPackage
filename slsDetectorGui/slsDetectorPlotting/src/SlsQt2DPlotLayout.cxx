@@ -133,32 +133,43 @@ void SlsQt2DPlotLayout::ResetRange(){
 
 
 void SlsQt2DPlotLayout::ResetZMinZMax(bool zmin, bool zmax, double min, double max){
-	z_range_ne->SetNumber(min,0);
-	z_range_ne->SetNumber(max,1);
+
+	if(zmin || zmax)		zRangeChecked = true;
+	else					zRangeChecked = false;
+
+	if(zmin)		z_range_ne->SetNumber(min,0);
+	if(zmax)		z_range_ne->SetNumber(max,1);
+
 
 	//refind z limits
 	the_plot->SetZMinMax();
-	if(btnLogz->isChecked()) the_plot->SetZMinimumToFirstGreaterThanZero();
+	//finds zmin value from hist
+	if(btnLogz->isChecked())
+		the_plot->SetZMinimumToFirstGreaterThanZero();
 
-	//first time check validity
-	if(zmax)			z_range_ne->SetValue(max,0);
-	else				z_range_ne->SetValue(the_plot->GetZMaximum(),1);
+	if(zRangeChecked){
 
-	if(zmin)			z_range_ne->SetValue(min,0);
-	else				z_range_ne->SetValue(the_plot->GetZMinimum(),0);
+		//if value not given, take max or min of plot
+		if(zmax)			z_range_ne->SetValue(max,0);
+		else				z_range_ne->SetValue(the_plot->GetZMaximum(),1);
 
-	if(zmin && zmax){
-		bool same = (z_range_ne->GetValue(0)==z_range_ne->GetValue(1)) ? 1:0;
-		if(!z_range_ne->IsValueOk(0)||same) z_range_ne->SetValue(the_plot->GetZMinimum(),0);
-		if(!z_range_ne->IsValueOk(1)||same) z_range_ne->SetValue(the_plot->GetZMaximum(),1);
+		if(zmin)			z_range_ne->SetValue(min,0);
+		else				z_range_ne->SetValue(the_plot->GetZMinimum(),0);
+
+		//check if zmin and zmax is same or not a proper double value
+		//if(zmin && zmax){
+			bool same = (z_range_ne->GetValue(0)==z_range_ne->GetValue(1)) ? 1:0;
+			if(!z_range_ne->IsValueOk(0)||same) z_range_ne->SetValue(the_plot->GetZMinimum(),0);
+			if(!z_range_ne->IsValueOk(1)||same) z_range_ne->SetValue(the_plot->GetZMaximum(),1);
+		//}
+
+		z_range_ne->SetRange(the_plot->GetZMinimum(),z_range_ne->GetValue(1),0);
+		z_range_ne->SetRange(z_range_ne->GetValue(0),the_plot->GetZMaximum(),1);
+
+		//set histogram range
+		the_plot->SetZMinMax(z_range_ne->GetValue(0),z_range_ne->GetValue(1));
+
 	}
-
-	z_range_ne->SetRange(the_plot->GetZMinimum(),z_range_ne->GetValue(1),0);
-	z_range_ne->SetRange(z_range_ne->GetValue(0),the_plot->GetZMaximum(),1);
-
-	//set histogram range
-	the_plot->SetZMinMax(z_range_ne->GetValue(0),z_range_ne->GetValue(1));
-
 	the_plot->Update();
 }
 
@@ -215,6 +226,7 @@ void SlsQt2DPlotLayout::SetZRange(double zmin, double zmax){
 	z_range_ne->SetNumber(zmax,1);
 	ResetRange();
 }
+
 
 void SlsQt2DPlotLayout::EnableZRange(bool enable){
 #ifdef VERBOSE

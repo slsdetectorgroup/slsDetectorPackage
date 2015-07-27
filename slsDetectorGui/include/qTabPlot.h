@@ -136,6 +136,9 @@ private slots:
 	/** Enables the range of the z axis */
 	void EnableZRange();
 
+	/** Return true if valid */
+	bool CheckZRange(QString value);
+
 	/** Set Plot to none, data graph, histogram*/
 	void SetPlot();
 

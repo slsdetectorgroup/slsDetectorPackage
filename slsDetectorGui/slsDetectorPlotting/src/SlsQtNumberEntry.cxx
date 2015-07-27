@@ -253,7 +253,7 @@ double SlsQtNumberEntry::SetNumber(double v,int which_number_field){
     }
     if(validator_double[i]){
       QString s = QString::number(v);
-      validator_double[i]->fixup(s);
+      //validator_double[i]->fixup(s);//commented out as it ignores the zmax values
       num_field[i]->setText(s);
     }
   }else if(spin_box[i]){
@@ -280,7 +280,7 @@ void SlsQtNumberEntry::SetRange(int min, int max,int which_number_field){
 void SlsQtNumberEntry::SetRange(double min, double max,int which_number_field){
   int i = (which_number_field<0||which_number_field>1) ? 0:which_number_field;
   if(min>max){
-    cout<<"Warning: SetRange(double,double) no effect min >= max"<<endl;
+    cout<<"Warning: SetRange(double,double) no effect min("<<min<<") >= max("<<max<<")"<<endl;
   }else{
     if(validator_int[i])    cout<<"Waring can not call SetRange(double,double) with \"int\" type Validator"<<endl;
     if(validator_double[i]) validator_double[i]->setRange(min,max,validator_double[i]->decimals());
@@ -407,7 +407,13 @@ double SlsQtNumberEntry::GetNumber(int which_number_field,bool* ok){
 
   if(num_field[i]){
     if(validator_int[i]) return num_field[i]->text().toInt(ok);
-    else                 return num_field[i]->text().toDouble(ok);
+    else                 {
+    	bool k;
+    	cout<<"val:"<<num_field[i]->text().toDouble(&k)<<endl;
+    	cout<<"ok:"<<k<<endl;
+
+    	return num_field[i]->text().toDouble(ok);
+    }
   }
   else if(spin_box[i])   return spin_box[i]->value();
   else                   {if(ok) *ok=0;}

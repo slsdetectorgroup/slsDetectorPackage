@@ -510,8 +510,11 @@ void qTabPlot::SetAxesRange(){
 
 
 void qTabPlot::SetZRange(){
-//	emit SetZRangeSignal(dispZMin->text().toDouble(),dispZMax->text().toDouble());
-	emit ResetZMinZMaxSignal(chkZMin->isChecked(),chkZMax->isChecked(),dispZMin->text().toDouble(),dispZMax->text().toDouble());
+	emit ResetZMinZMaxSignal(
+			(chkZMin->isChecked() && CheckZRange(dispZMin->text())),
+			(chkZMax->isChecked() && CheckZRange(dispZMax->text())),
+			dispZMin->text().toDouble(),
+			dispZMax->text().toDouble());
 }
 
 
@@ -519,9 +522,30 @@ void qTabPlot::SetZRange(){
 
 
 void qTabPlot::EnableZRange(){
+
 	dispZMin->setEnabled(chkZMin->isChecked());
 	dispZMax->setEnabled(chkZMax->isChecked());
-	emit ResetZMinZMaxSignal(chkZMin->isChecked(),chkZMax->isChecked(),dispZMin->text().toDouble(),dispZMax->text().toDouble());
+	emit ResetZMinZMaxSignal(
+			(chkZMin->isChecked() && CheckZRange(dispZMin->text())),
+			(chkZMax->isChecked() && CheckZRange(dispZMax->text())),
+			dispZMin->text().toDouble(),
+			dispZMax->text().toDouble());
+}
+
+
+//-------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+bool qTabPlot::CheckZRange(QString value){
+	if(value.isEmpty())
+		return false;
+
+	bool ok;
+	value.toDouble(&ok);
+	if(!ok)
+		return false;
+
+	return true;
 }
 
 

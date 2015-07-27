@@ -442,8 +442,9 @@ private:
 	 * Its called for the first packet of a scan or acquistion
 	 * Sets the startframeindices and the variables to know if acquisition started
 	 * @param ithread listening thread number
+	 * @param numbytes number of bytes it listened to
 	 */
-	void startFrameIndices(int ithread);
+	void startFrameIndices(int ithread, int numbytes);
 
 	/**
 	 * This is called when udp socket is shut down

@@ -407,13 +407,7 @@ double SlsQtNumberEntry::GetNumber(int which_number_field,bool* ok){
 
   if(num_field[i]){
     if(validator_int[i]) return num_field[i]->text().toInt(ok);
-    else                 {
-    	bool k;
-    	cout<<"val:"<<num_field[i]->text().toDouble(&k)<<endl;
-    	cout<<"ok:"<<k<<endl;
-
-    	return num_field[i]->text().toDouble(ok);
-    }
+    else                 return num_field[i]->text().toDouble(ok);
   }
   else if(spin_box[i])   return spin_box[i]->value();
   else                   {if(ok) *ok=0;}

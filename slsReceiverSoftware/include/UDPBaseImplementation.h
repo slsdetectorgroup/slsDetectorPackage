@@ -575,6 +575,9 @@ protected:
 	/** Pckets currently in current file, starts new file when it reaches max */
 	int packetsInFile;
 
+	/** Number of missing packets in file (sometimes packetsinFile is incorrect due to padded packets for eiger)*/
+	int numTotMissingPacketsInFile;
+
 	/** Frame index at start of an entire acquisition (including all scans) */
 	uint32_t startAcquisitionIndex;
 

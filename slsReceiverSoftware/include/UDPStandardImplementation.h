@@ -461,7 +461,7 @@ private:
 	 * When acquisition is over, this is called
 	 * @param ithread listening thread number
 	 */
-	void stopWriting(int ithread);
+	void stopWriting(int ithread, char* wbuffer[]);
 
 	/**
 	 * updates parameters and writes to file when not a dummy frame
@@ -470,7 +470,7 @@ private:
 	 * @param ithread writing thread number
 	 * @param wbuffer writer buffer
 	 */
-	void handleWithoutDataCompression(int ithread, char* wbuffer[]);
+	void handleWithoutDataCompression(int ithread, char* wbuffer);
 
 	/**
 	 * data compression for each fifo output

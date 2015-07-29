@@ -1029,6 +1029,8 @@ int	slsReceiverTCPIPInterface::read_frame(){
 		return moench_read_frame();
 	case EIGER:
 		return eiger_read_frame();
+	case PROPIX:
+		return propix_read_frame();
 	default:
 		return gotthard_read_frame();
 	}
@@ -1388,6 +1390,162 @@ int	slsReceiverTCPIPInterface::gotthard_read_frame(){
 
 	return ret;
 }
+
+
+
+
+
+
+
+int	slsReceiverTCPIPInterface::propix_read_frame(){
+	ret=OK;
+	char fName[MAX_STR_LENGTH]="";
+	int acquisitionIndex = -1;
+	int frameIndex= -1;
+	int i;
+
+
+	//retval is a full frame
+	int bufferSize  = PROPIX_BUFFER_SIZE;
+	int onebuffersize = bufferSize/PROPIX_PACKETS_PER_FRAME;
+	int onedatasize = PROPIX_DATA_BYTES;
+
+	char* raw 		= new char[bufferSize];
+	int rnel 		= bufferSize/(sizeof(int));
+	int* retval 	= new int[rnel];
+	int* origVal 	= new int[rnel];
+	//all initialized to 0
+	for(i=0;i<rnel;i++)	retval[i]=0;
+	for(i=0;i<rnel;i++)	origVal[i]=0;
+
+
+	uint32_t index=0,index2=0;
+	uint32_t pindex=0,pindex2=0;
+	uint32_t bindex=0,bindex2=0;
+	uint32_t startAcquisitionIndex=0;
+	uint32_t startFrameIndex=0;
+
+	strcpy(mess,"Could not read frame\n");
+
+
+	// execute action if the arguments correctly arrived
+#ifdef SLS_RECEIVER_UDP_FUNCTIONS
+
+	if (receiverBase == NULL){
+		strcpy(mess,"Receiver not set up\n");
+		ret=FAIL;
+	}
+
+	/**send garbage with -1 index to try again*/
+	else if(!receiverBase->getFramesCaught()){
+		startAcquisitionIndex=-1;
+		cout<<"haven't caught any frame yet"<<endl;
+	}else{
+		ret = OK;
+		/*startIndex=receiverBase->getStartFrameIndex();*/
+		receiverBase->readFrame(fName,&raw,index,startAcquisitionIndex,startFrameIndex);
+
+		/**send garbage with -1 index to try again*/
+		if (raw == NULL){
+			startAcquisitionIndex = -1;
+#ifdef VERBOSE
+			cout<<"data not ready for gui yet"<<endl;
+#endif
+		}else{
+			bindex = ((uint32_t)(*((uint32_t*)raw)))+1;
+			pindex = (bindex & PROPIX_PACKET_INDEX_MASK);
+			index = ((bindex & PROPIX_FRAME_INDEX_MASK) >> PROPIX_FRAME_INDEX_OFFSET);
+			bindex2 = ((uint32_t)(*((uint32_t*)((char*)(raw+onebuffersize)))))+1;
+			pindex2 =(bindex2 & PROPIX_PACKET_INDEX_MASK);
+			index2 =((bindex2 & PROPIX_FRAME_INDEX_MASK) >> PROPIX_FRAME_INDEX_OFFSET);
+#ifdef VERBOSE
+			cout << "index1:" << hex << index << endl;
+			cout << "index2:" << hex << index << endl;
+#endif
+
+			memcpy(origVal,raw,bufferSize);
+			raw=NULL;
+
+			/*//ignore if half frame is missing
+				if ((bindex != 0xFFFFFFFF) && (bindex2 != 0xFFFFFFFF)){*/
+
+			//should be same frame
+			if (index == index2){
+				//ideal situation (should be odd, even(index+1))
+				if(!pindex){
+					memcpy(retval,((char*) origVal)+4, onedatasize);
+					memcpy((((char*)retval)+onedatasize), ((char*) origVal)+10+onedatasize, onedatasize);
+				}
+				//swap to even,odd
+				else{
+					memcpy((((char*)retval)+onedatasize),((char*) origVal)+4, onedatasize);
+					memcpy(retval, ((char*) origVal)+10+onedatasize, onedatasize);
+					index=index2;
+				}
+			}else
+				cout << "different frames caught. frame1:"<< hex << index << ":"<<pindex<<" frame2:" << hex << index2 << ":"<<pindex2<<endl;
+			/*}
+				else{
+					index = startIndex - 1;
+					cout << "Missing Packet,Not sending to gui" << endl;
+				}*/
+
+
+			acquisitionIndex = index-startAcquisitionIndex;
+			if(acquisitionIndex ==  -1)
+				startFrameIndex = -1;
+			else
+				frameIndex = index-startFrameIndex;
+
+#ifdef VERY_VERY_DEBUG
+			cout << "acquisitionIndex calculated is:" << acquisitionIndex << endl;
+			cout << "frameIndex calculated is:" << frameIndex << endl;
+			cout << "index:" << index << endl;
+			cout << "startAcquisitionIndex:" << startAcquisitionIndex << endl;
+			cout << "startFrameIndex:" << startFrameIndex << endl;
+#endif
+		}
+	}
+
+#ifdef VERBOSE
+	if(frameIndex!=-1){
+		cout << "fName:" << fName << endl;
+		cout << "acquisitionIndex:" << acquisitionIndex << endl;
+		cout << "frameIndex:" << frameIndex << endl;
+		cout << "startAcquisitionIndex:" << startAcquisitionIndex << endl;
+		cout << "startFrameIndex:" << startFrameIndex << endl;
+	}
+#endif
+
+
+
+#endif
+
+	if(ret==OK && socket->differentClients){
+		cout << "Force update" << endl;
+		ret=FORCE_UPDATE;
+	}
+
+	// send answer
+	socket->SendDataOnly(&ret,sizeof(ret));
+	if(ret==FAIL){
+		cout << "mess:" << mess << endl;
+		socket->SendDataOnly(mess,sizeof(mess));
+	}
+	else{
+		socket->SendDataOnly(fName,MAX_STR_LENGTH);
+		socket->SendDataOnly(&acquisitionIndex,sizeof(acquisitionIndex));
+		socket->SendDataOnly(&frameIndex,sizeof(frameIndex));
+		socket->SendDataOnly(retval,PROPIX_DATA_BYTES);
+	}
+
+	delete [] retval;
+	delete [] origVal;
+	delete [] raw;
+
+	return ret;
+}
+
 
 
 

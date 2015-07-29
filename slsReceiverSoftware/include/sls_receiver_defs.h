@@ -58,7 +58,8 @@ public:
 		AGIPD, /**< agipd */
 		MOENCH, /**< moench */
 		JUNGFRAU, /**< jungfrau */
-		JUNGFRAUCTB /**< jungfrauCTBversion */
+		JUNGFRAUCTB, /**< jungfrauCTBversion */
+		PROPIX /**< propix */
 	};
 
 

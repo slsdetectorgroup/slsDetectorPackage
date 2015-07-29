@@ -263,6 +263,9 @@ int UDPStandardImplementation::setDetectorType(detectorType det){ 	FILE_LOG(logD
 	case GOTTHARD:
 		cout << endl << "***** This is a GOTTHARD Receiver *****" << endl << endl;
 		break;
+	case PROPIX:
+		cout << endl << "***** This is a PROPIX Receiver *****" << endl << endl;
+		break;
 	case MOENCH:
 		cout << endl << "***** This is a MOENCH Receiver *****" << endl << endl;
 		break;
@@ -281,7 +284,7 @@ int UDPStandardImplementation::setDetectorType(detectorType det){ 	FILE_LOG(logD
 		break;
 	}
 
-	//moench variables
+	//detector specific variables
 	if(myDetectorType == GOTTHARD){
 		fifosize 			= GOTTHARD_FIFO_SIZE;
 		packetsPerFrame 	= GOTTHARD_PACKETS_PER_FRAME;
@@ -292,6 +295,16 @@ int UDPStandardImplementation::setDetectorType(detectorType det){ 	FILE_LOG(logD
 		frameIndexMask 		= GOTTHARD_FRAME_INDEX_MASK;
 		frameIndexOffset 	= GOTTHARD_FRAME_INDEX_OFFSET;
 		packetIndexMask 	= GOTTHARD_PACKET_INDEX_MASK;
+	}else if(myDetectorType == PROPIX){
+		fifosize 			= PROPIX_FIFO_SIZE;
+		packetsPerFrame 	= PROPIX_PACKETS_PER_FRAME;
+		onePacketSize		= PROPIX_ONE_PACKET_SIZE;
+		frameSize			= PROPIX_BUFFER_SIZE;
+		bufferSize 			= PROPIX_BUFFER_SIZE;
+		maxPacketsPerFile 	= MAX_FRAMES_PER_FILE * PROPIX_PACKETS_PER_FRAME;
+		frameIndexMask 		= PROPIX_FRAME_INDEX_MASK;
+		frameIndexOffset 	= PROPIX_FRAME_INDEX_OFFSET;
+		packetIndexMask 	= PROPIX_PACKET_INDEX_MASK;
 	}else if(myDetectorType == MOENCH){
 		fifosize 			= MOENCH_FIFO_SIZE;
 		packetsPerFrame 	= MOENCH_PACKETS_PER_FRAME;
@@ -828,6 +841,8 @@ void UDPStandardImplementation::setupFifoStructure(){
 	fifosize = GOTTHARD_FIFO_SIZE;
 	if(myDetectorType == MOENCH)
 		fifosize = MOENCH_FIFO_SIZE;
+	if(myDetectorType == PROPIX)
+		fifosize = PROPIX_FIFO_SIZE;
 	else if(myDetectorType == EIGER)
 		fifosize = EIGER_FIFO_SIZE * packetsPerFrame;
 
@@ -1811,6 +1826,7 @@ int UDPStandardImplementation::startListening(){
 				break;
 
 			case GOTTHARD:
+			case PROPIX:
 				if(shortFrame == -1){
 					lastpacketoffset = (((numJobsPerThread * packetsPerFrame - 1) * onePacketSize) + HEADER_SIZE_NUM_TOT_PACKETS);
 #ifdef VERYDEBUG
@@ -2031,8 +2047,10 @@ int UDPStandardImplementation::startWriting(){
 
 			if(myDetectorType == EIGER){
 
+
 				//trying to find a full frame
 				for(i=0;i<numListeningThreads;++i){
+
 
 					//offset outside boundaries, also eliminates dummy packet
 					if((numpackets[i] != EIGER_HEADER_LENGTH) && (numpackets[i] != onePacketSize)){
@@ -2155,7 +2173,7 @@ int UDPStandardImplementation::startWriting(){
 			else{
 
 				//frame number for progress
-				if ((myDetectorType == GOTTHARD) && (shortFrame == -1))
+				if ((myDetectorType == PROPIX) ||((myDetectorType == GOTTHARD) && (shortFrame == -1)))
 					tempframenum[0] = (((((uint32_t)(*((uint32_t*)(wbuf[ithread] + HEADER_SIZE_NUM_TOT_PACKETS))))+1)& (frameIndexMask)) >> frameIndexOffset);
 				else
 					tempframenum[0] = ((((uint32_t)(*((uint32_t*)(wbuf[ithread] + HEADER_SIZE_NUM_TOT_PACKETS))))& (frameIndexMask)) >> frameIndexOffset);
@@ -2254,7 +2272,7 @@ void UDPStandardImplementation::startFrameIndices(int ithread, int numbytes){
 			startFrameIndex = 0;
 	}
 	//gotthard has +1 for frame number and not a short frame
-	else if ((myDetectorType == GOTTHARD) && (shortFrame == -1))
+	else if ((myDetectorType == PROPIX) || ((myDetectorType == GOTTHARD) && (shortFrame == -1)))
 		startFrameIndex = (((((uint32_t)(*((uint32_t*)(buffer[ithread] + HEADER_SIZE_NUM_TOT_PACKETS))))+1)
 				& (frameIndexMask)) >> frameIndexOffset);
 	else
@@ -2540,7 +2558,7 @@ void UDPStandardImplementation::writeToFile_withoutCompression(char* buf,int num
 
 			//for progress and packet loss calculation(new files)
 			if(myDetectorType == EIGER);
-			else if ((myDetectorType == GOTTHARD) && (shortFrame == -1))
+			else if ((myDetectorType == PROPIX)||((myDetectorType == GOTTHARD) && (shortFrame == -1)))
 				tempframenum = (((((uint32_t)(*((uint32_t*)(buf + HEADER_SIZE_NUM_TOT_PACKETS))))+1)& (frameIndexMask)) >> frameIndexOffset);
 			else
 				tempframenum = ((((uint32_t)(*((uint32_t*)(buf + HEADER_SIZE_NUM_TOT_PACKETS))))& (frameIndexMask)) >> frameIndexOffset);
@@ -2576,8 +2594,10 @@ void UDPStandardImplementation::writeToFile_withoutCompression(char* buf,int num
 			if(packetsInFile >= maxPacketsPerFile){
 				//for packet loss
 				lastpacket = (((packetsToSave - 1) * onePacketSize) + offset);
+
 				if(myDetectorType == EIGER);//because currframenum is the latest one for eiger
-				else if ((myDetectorType == GOTTHARD) && (shortFrame == -1))
+				else if ((myDetectorType == PROPIX)||((myDetectorType == GOTTHARD) && (shortFrame == -1)))
+
 					tempframenum = (((((uint32_t)(*((uint32_t*)(buf + lastpacket))))+1)& (frameIndexMask)) >> frameIndexOffset);
 				else
 					tempframenum = ((((uint32_t)(*((uint32_t*)(buf + lastpacket))))& (frameIndexMask)) >> frameIndexOffset);

@@ -586,10 +586,15 @@ int32_t UDPStandardImplementation::setDynamicRange(int32_t dr){ 	FILE_LOG(logDEB
 		if(myDetectorType == EIGER){
 
 
-			if(!tengigaEnable)
+			if(!tengigaEnable){
 				packetsPerFrame 	= EIGER_ONE_GIGA_CONSTANT * dynamicRange * EIGER_MAX_PORTS;
-			else
+				onePacketSize		= EIGER_ONE_GIGA_ONE_PACKET_SIZE;
+
+			}else{
 				packetsPerFrame 	= EIGER_TEN_GIGA_CONSTANT * dynamicRange * EIGER_MAX_PORTS;
+				onePacketSize		= EIGER_TEN_GIGA_ONE_PACKET_SIZE;
+			}
+
 			frameSize			= onePacketSize * packetsPerFrame;
 			bufferSize 			= (frameSize/EIGER_MAX_PORTS) + EIGER_HEADER_LENGTH;//everything one port gets (img header plus packets)
 			maxPacketsPerFile 	= EIGER_MAX_FRAMES_PER_FILE * packetsPerFrame;
@@ -2009,15 +2014,15 @@ int UDPStandardImplementation::startWriting(){
 
 							for (i = 0; i < packetsPerFrame/2; i++){
 								//overwriting frame number in header
-								(*(uint32_t*)(((eiger_packet_header *)((char*)(wbuf[j] + totalheader + EIGER_ONE_GIGA_ONE_PACKET_SIZE*i)))->num1))  = currframenum;
+								(*(uint32_t*)(((eiger_packet_header *)((char*)(wbuf[j] + totalheader + onePacketSize*i)))->num1))  = currframenum;
 								//overwriting port number and dynamic range
-								if (!j)  (*(uint8_t*)(((eiger_packet_header *)((char*)(wbuf[j] + totalheader + EIGER_ONE_GIGA_ONE_PACKET_SIZE*i)))->num3))  = (dynamicRange<<2);
-								else     (*(uint8_t*)(((eiger_packet_header *)((char*)(wbuf[j] + totalheader + EIGER_ONE_GIGA_ONE_PACKET_SIZE*i)))->num3))  = ((dynamicRange<<2)|(0x1));
+								if (!j)  (*(uint8_t*)(((eiger_packet_header *)((char*)(wbuf[j] + totalheader + onePacketSize*i)))->num3))  = (dynamicRange<<2);
+								else     (*(uint8_t*)(((eiger_packet_header *)((char*)(wbuf[j] + totalheader + onePacketSize*i)))->num3))  = ((dynamicRange<<2)|(0x1));
 
 #ifdef VERYDEBUG
 									cprintf(RED, "%d - 0x%x - %d\n", i,
-											(*(uint8_t*)(((eiger_packet_header *)((char*)(wbuf[j] + totalheader +i*EIGER_ONE_GIGA_ONE_PACKET_SIZE)))->num3)),
-											(*(uint8_t*)(((eiger_packet_header *)((char*)(wbuf[j] + totalheader +i*EIGER_ONE_GIGA_ONE_PACKET_SIZE)))->num4)));
+											(*(uint8_t*)(((eiger_packet_header *)((char*)(wbuf[j] + totalheader +i*onePacketSize)))->num3)),
+											(*(uint8_t*)(((eiger_packet_header *)((char*)(wbuf[j] + totalheader +i*onePacketSize)))->num4)));
 #endif
 
 						}
@@ -2026,26 +2031,26 @@ int UDPStandardImplementation::startWriting(){
 							if(dynamicRange == 32){
 								for (i = 0; i < packetsPerFrame/4; i++){
 									//new packet number that has space for 16 bit
-									(*(uint16_t*)(((eiger_packet_header *)((char*)(wbuf[j] + totalheader + EIGER_ONE_GIGA_ONE_PACKET_SIZE*i)))->num2))
-				        		= ((*(uint8_t*)(((eiger_packet_header *)((char*)(wbuf[j] + totalheader + EIGER_ONE_GIGA_ONE_PACKET_SIZE*i)))->num4)));
+									(*(uint16_t*)(((eiger_packet_header *)((char*)(wbuf[j] + totalheader + onePacketSize*i)))->num2))
+				        		= ((*(uint8_t*)(((eiger_packet_header *)((char*)(wbuf[j] + totalheader + onePacketSize*i)))->num4)));
 
 #ifdef VERYDEBUG
 									cprintf(RED, "%d - 0x%x - %d - %d\n", i,
-											(*(uint8_t*)(((eiger_packet_header *)((char*)(wbuf[j] + totalheader +i*EIGER_ONE_GIGA_ONE_PACKET_SIZE)))->num3)),
-											(*(uint8_t*)(((eiger_packet_header *)((char*)(wbuf[j] + totalheader +i*EIGER_ONE_GIGA_ONE_PACKET_SIZE)))->num4)),
-											(*(uint16_t*)(((eiger_packet_header *)((char*)(wbuf[j] + totalheader +i*EIGER_ONE_GIGA_ONE_PACKET_SIZE)))->num2)));
+											(*(uint8_t*)(((eiger_packet_header *)((char*)(wbuf[j] + totalheader +i*onePacketSize)))->num3)),
+											(*(uint8_t*)(((eiger_packet_header *)((char*)(wbuf[j] + totalheader +i*onePacketSize)))->num4)),
+											(*(uint16_t*)(((eiger_packet_header *)((char*)(wbuf[j] + totalheader +i*onePacketSize)))->num2)));
 #endif
 								}
 								for (i = packetsPerFrame/4; i < packetsPerFrame/2; i++){
 									//new packet number that has space for 16 bit
-									(*(uint16_t*)(((eiger_packet_header *)((char*)(wbuf[j] + totalheader + EIGER_ONE_GIGA_ONE_PACKET_SIZE*i)))->num2))
-			            		= ((*(uint8_t*)(((eiger_packet_header *)((char*)(wbuf[j] + totalheader + EIGER_ONE_GIGA_ONE_PACKET_SIZE*i)))->num4))+(packetsPerFrame/4));
+									(*(uint16_t*)(((eiger_packet_header *)((char*)(wbuf[j] + totalheader + onePacketSize*i)))->num2))
+			            		= ((*(uint8_t*)(((eiger_packet_header *)((char*)(wbuf[j] + totalheader + onePacketSize*i)))->num4))+(packetsPerFrame/4));
 
 #ifdef VERYDEBUG
 									cprintf(RED, "%d -0x%x - %d - %d\n", i,
-											(*(uint8_t*)(((eiger_packet_header *)((char*)(wbuf[j] + totalheader +i*EIGER_ONE_GIGA_ONE_PACKET_SIZE)))->num3)),
-											(*(uint8_t*)(((eiger_packet_header *)((char*)(wbuf[j] + totalheader +i*EIGER_ONE_GIGA_ONE_PACKET_SIZE)))->num4)),
-											(*(uint16_t*)(((eiger_packet_header *)((char*)(wbuf[j] + totalheader +i*EIGER_ONE_GIGA_ONE_PACKET_SIZE)))->num2)));
+											(*(uint8_t*)(((eiger_packet_header *)((char*)(wbuf[j] + totalheader +i*onePacketSize)))->num3)),
+											(*(uint8_t*)(((eiger_packet_header *)((char*)(wbuf[j] + totalheader +i*onePacketSize)))->num4)),
+											(*(uint16_t*)(((eiger_packet_header *)((char*)(wbuf[j] + totalheader +i*onePacketSize)))->num2)));
 #endif
 								}
 							}
@@ -2656,20 +2661,18 @@ int UDPStandardImplementation::enableTenGiga(int enable){
 			if(!tengigaEnable){
 				packetsPerFrame = EIGER_ONE_GIGA_CONSTANT * dynamicRange * EIGER_MAX_PORTS;
 				onePacketSize  	= EIGER_ONE_GIGA_ONE_PACKET_SIZE;
-				maxPacketsPerFile 	= EIGER_MAX_FRAMES_PER_FILE * packetsPerFrame;
 			}else{
 				packetsPerFrame = EIGER_TEN_GIGA_CONSTANT * dynamicRange * EIGER_MAX_PORTS;
 				onePacketSize  	= EIGER_TEN_GIGA_ONE_PACKET_SIZE;
-				maxPacketsPerFile 	= EIGER_MAX_FRAMES_PER_FILE * packetsPerFrame*4;
 			}
 			frameSize			= onePacketSize * packetsPerFrame;
 			bufferSize 			= (frameSize/EIGER_MAX_PORTS) + EIGER_HEADER_LENGTH;//everything one port gets (img header plus packets)
-			//maxPacketsPerFile 	= EIGER_MAX_FRAMES_PER_FILE * packetsPerFrame;
+			maxPacketsPerFile 	= EIGER_MAX_FRAMES_PER_FILE * packetsPerFrame;
 
 
 			cout<<"packetsPerFrame:"<<dec<<packetsPerFrame<<endl;
 			cout<<"onePacketSize:"<<onePacketSize<<endl;
-			cout<<"framsize:"<<frameSize<<endl;
+			cout<<"framesize:"<<frameSize<<endl;
 			cout<<"bufferSize:"<<bufferSize<<endl;
 			cout<<"maxPacketsPerFile:"<<maxPacketsPerFile<<endl;
 

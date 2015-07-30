@@ -436,7 +436,7 @@ private:
 	 * @param numpackets is the number of packets
 	 * @param framenum current frame number
 	 */
-	void writeToFile_withoutCompression(char* buf,int numpackets, uint32_t framenum);
+	void writeToFile_withoutCompression(char* buf[],int numpackets, uint32_t framenum);
 
 	/**
 	 * Its called for the first packet of a scan or acquistion
@@ -469,8 +469,9 @@ private:
 	 * Called by startWriting()
 	 * @param ithread writing thread number
 	 * @param wbuffer writer buffer
+	 * @param npackets number of packets
 	 */
-	void handleWithoutDataCompression(int ithread, char* wbuffer);
+	void handleWithoutDataCompression(int ithread, char* wbuffer[],int npackets);
 
 	/**
 	 * data compression for each fifo output

@@ -587,10 +587,15 @@ int32_t UDPStandardImplementation::setDynamicRange(int32_t dr){ 	FILE_LOG(logDEB
 		if(myDetectorType == EIGER){
 
 
-			if(!tengigaEnable)
+			if(!tengigaEnable){
 				packetsPerFrame 	= EIGER_ONE_GIGA_CONSTANT * dynamicRange * EIGER_MAX_PORTS;
-			else
+				onePacketSize		= EIGER_ONE_GIGA_ONE_PACKET_SIZE;
+
+			}else{
 				packetsPerFrame 	= EIGER_TEN_GIGA_CONSTANT * dynamicRange * EIGER_MAX_PORTS;
+				onePacketSize		= EIGER_TEN_GIGA_ONE_PACKET_SIZE;
+			}
+
 			frameSize			= onePacketSize * packetsPerFrame;
 			bufferSize 			= (frameSize/EIGER_MAX_PORTS) + EIGER_HEADER_LENGTH;//everything one port gets (img header plus packets)
 			maxPacketsPerFile 	= EIGER_MAX_FRAMES_PER_FILE * packetsPerFrame;
@@ -2072,7 +2077,6 @@ int UDPStandardImplementation::startWriting(){
 
 							//new frame (no datapacket received yet), update frame num and corrected for fnum reset for scans
 							if(!startdatapacket[i]){
-
 								tempframenum[i] = htonl(*(unsigned int*)((eiger_image_header *)((char*)(wbuf[ithread] + HEADER_SIZE_NUM_TOT_PACKETS)))->fnum)+(startFrameIndex-1);
 //#ifdef VERYVERBOSE
 								cprintf(GREEN,"**tempfraemnum of %d: %d\n",i,tempframenum[i]);
@@ -2878,20 +2882,18 @@ int UDPStandardImplementation::enableTenGiga(int enable){
 			if(!tengigaEnable){
 				packetsPerFrame = EIGER_ONE_GIGA_CONSTANT * dynamicRange * EIGER_MAX_PORTS;
 				onePacketSize  	= EIGER_ONE_GIGA_ONE_PACKET_SIZE;
-				maxPacketsPerFile 	= EIGER_MAX_FRAMES_PER_FILE * packetsPerFrame;
 			}else{
 				packetsPerFrame = EIGER_TEN_GIGA_CONSTANT * dynamicRange * EIGER_MAX_PORTS;
 				onePacketSize  	= EIGER_TEN_GIGA_ONE_PACKET_SIZE;
-				maxPacketsPerFile 	= EIGER_MAX_FRAMES_PER_FILE * packetsPerFrame*4;
 			}
 			frameSize			= onePacketSize * packetsPerFrame;
 			bufferSize 			= (frameSize/EIGER_MAX_PORTS) + EIGER_HEADER_LENGTH;//everything one port gets (img header plus packets)
-			//maxPacketsPerFile 	= EIGER_MAX_FRAMES_PER_FILE * packetsPerFrame;
+			maxPacketsPerFile 	= EIGER_MAX_FRAMES_PER_FILE * packetsPerFrame;
 
 
 			cout<<"packetsPerFrame:"<<dec<<packetsPerFrame<<endl;
 			cout<<"onePacketSize:"<<onePacketSize<<endl;
-			cout<<"framsize:"<<frameSize<<endl;
+			cout<<"framesize:"<<frameSize<<endl;
 			cout<<"bufferSize:"<<bufferSize<<endl;
 			cout<<"maxPacketsPerFile:"<<maxPacketsPerFile<<endl;
 

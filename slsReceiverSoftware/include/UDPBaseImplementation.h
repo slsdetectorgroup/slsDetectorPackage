@@ -567,16 +567,19 @@ protected:
 	uint32_t frameIndex;
 
 	/** Frames Caught for each real time acquisition (eg. for each scan) */
-	int packetsCaught;
+	uint32_t packetsCaught;
 
 	/** Total packets caught for an entire acquisition (including all scans) */
-	int totalPacketsCaught;
+	uint32_t totalPacketsCaught;
 
 	/** Pckets currently in current file, starts new file when it reaches max */
-	int packetsInFile;
+	uint32_t packetsInFile;
 
 	/** Number of missing packets in file (sometimes packetsinFile is incorrect due to padded packets for eiger)*/
-	int numTotMissingPacketsInFile;
+	uint32_t numTotMissingPacketsInFile;
+
+	/** Number of missing packets in an acquisition(sometimes packetsinFile is incorrect due to padded packets for eiger)*/
+	uint32_t numMissingPackets;
 
 	/** Frame index at start of an entire acquisition (including all scans) */
 	uint32_t startAcquisitionIndex;

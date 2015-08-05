@@ -1077,6 +1077,7 @@ int UDPStandardImplementation::createUDPSockets(){
 #ifdef VERBOSE
 			cprintf(BG_RED,"Could not create UDP socket on port %d error: %d\n", port[i], iret);
 #endif
+			shutDownUDPSockets();
 			return FAIL;
 		}
 	}

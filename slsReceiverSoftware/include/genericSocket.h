@@ -436,6 +436,8 @@ typedef struct
 
      void ShutDownSocket(){
    		 while(!shutdown(socketDescriptor, SHUT_RDWR));
+   		 close(socketDescriptor);
+   		 socketDescriptor = -1;
      };
 
 

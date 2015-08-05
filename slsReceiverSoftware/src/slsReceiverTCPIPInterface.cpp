@@ -1618,13 +1618,13 @@ int	slsReceiverTCPIPInterface::eiger_read_frame(){
 			int c2=(frameSize/2) + 8; //second port
 			int retindex=0;
 			int irow,ibytesperpacket;
-			int linesperpacket = (16/dynamicrange)* 1;// 16:1 line, 8:2 lines, 4:4 lines, 32: 0.5
+			int linesperpacket = (16*1/dynamicrange);// 16:1 line, 8:2 lines, 4:4 lines, 32: 0.5
 			int numbytesperlineperport=(EIGER_PIXELS_IN_ONE_ROW/EIGER_MAX_PORTS)*dynamicrange/8;//16:1024,8:512,4:256,32:2048
 			int datapacketlength = EIGER_ONE_GIGA_ONE_DATA_SIZE;
 			int total_num_bytes = 1040*(16*dynamicrange)*2;
 
 			if(tenGigaEnable){
-				linesperpacket = (16/dynamicrange)* 4;// 16:4 line, 8:8 lines, 4:16 lines, 32: 2
+				linesperpacket = (16*4/dynamicrange);// 16:4 line, 8:8 lines, 4:16 lines, 32: 2
 				datapacketlength = EIGER_TEN_GIGA_ONE_DATA_SIZE;
 			}
 			//if 1GbE, one line is split into two packets for 32 bit mode, so its special
@@ -1642,7 +1642,7 @@ int	slsReceiverTCPIPInterface::eiger_read_frame(){
 						memcpy(retval+retindex ,origVal+c1 ,numbytesperlineperport);
 						retindex += numbytesperlineperport;
 						c1 += numbytesperlineperport;
-						if(dynamicrange == 32){
+						if(dynamicrange == 32 && !tenGigaEnable){
 							c1 += 16;
 							memcpy(retval+retindex ,origVal+c1 ,numbytesperlineperport);
 							retindex += numbytesperlineperport;
@@ -1653,7 +1653,7 @@ int	slsReceiverTCPIPInterface::eiger_read_frame(){
 						memcpy(retval+retindex ,origVal+c2 ,numbytesperlineperport);
 						retindex += numbytesperlineperport;
 						c2 += numbytesperlineperport;
-						if(dynamicrange == 32){
+						if(dynamicrange == 32 && !tenGigaEnable){
 							c2 += 16;
 							memcpy(retval+retindex ,origVal+c2 ,numbytesperlineperport);
 							retindex += numbytesperlineperport;
@@ -1662,7 +1662,7 @@ int	slsReceiverTCPIPInterface::eiger_read_frame(){
 						}
 						ibytesperpacket += numbytesperlineperport;
 					}
-					if(dynamicrange != 32) {
+					if(dynamicrange != 32 || tenGigaEnable) {
 						c1 += 16;
 						c2 += 16;
 					}
@@ -1679,7 +1679,7 @@ int	slsReceiverTCPIPInterface::eiger_read_frame(){
 				for(irow=0;irow<EIGER_PIXELS_IN_ONE_COL/linesperpacket;++irow){
 					ibytesperpacket=0;
 					while(ibytesperpacket<datapacketlength){
-						if(dynamicrange == 32){
+						if(dynamicrange == 32 && !tenGigaEnable){
 							//first port first chip
 							c1 -= (numbytesperlineperport + 16);
 							memcpy(retval+retindex ,origVal+c1 ,numbytesperlineperport);
@@ -1710,7 +1710,7 @@ int	slsReceiverTCPIPInterface::eiger_read_frame(){
 						}
 						ibytesperpacket += numbytesperlineperport;
 					}
-					if(dynamicrange != 32) {
+					if(dynamicrange != 32 || tenGigaEnable) {
 						c1 -= 16;
 						c2 -= 16;
 					}

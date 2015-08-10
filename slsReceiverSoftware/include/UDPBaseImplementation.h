@@ -575,10 +575,13 @@ protected:
 	/** Pckets currently in current file, starts new file when it reaches max */
 	uint32_t packetsInFile;
 
+	/** Number of missing packets in acquisition*/
+	uint32_t numTotMissingPackets;
+
 	/** Number of missing packets in file (sometimes packetsinFile is incorrect due to padded packets for eiger)*/
 	uint32_t numTotMissingPacketsInFile;
 
-	/** Number of missing packets in an acquisition(sometimes packetsinFile is incorrect due to padded packets for eiger)*/
+	/** Number of missing packets per buffer*/
 	uint32_t numMissingPackets;
 
 	/** Frame index at start of an entire acquisition (including all scans) */

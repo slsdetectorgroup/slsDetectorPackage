@@ -255,7 +255,7 @@ public:
 
 	 */
 
-	virtual uint32_t getChannel(char *data, int ix, int iy, int dr) {
+	virtual int getChannel(char *data, int ix, int iy, int dr) {
 		uint32_t m=0, n = 0;
 		uint64_t t;
 		int numBytes,divFactor,pixelval;

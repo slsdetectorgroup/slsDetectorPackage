@@ -76,10 +76,10 @@ public:
 		while (dd<=(dsize-packetSize)) {
 			pnum=getPacketNumber(p);
 			fn=getFrameNumber(p);
-			//cout <<"pnum:"<<pnum<<" fn:"<<fn<<"\t "<< np << endl;;
+			//cout <<"fnum:"<<fn<<" pnum:"<<pnum<<" np:"<< np << "\t";
 
 			if (pnum<1 || pnum>nPackets) {
-				cout << "Bad packet number " << pnum << " frame "<< fn  << endl;
+				//cout << "Bad packet number " << pnum << " frame "<< fn  << endl;
 				retval=NULL;
 				np=0;
 			}     else if  (pnum==1) {
@@ -98,20 +98,26 @@ public:
 			p+=packetSize;
 			dd+=packetSize;
 			np++;
+			//cout <<"fnum:"<<fn<<" pnum:"<<pnum<<" np:"<< np << "\t";
 			// cout << pnum << " " << fn << " " << np << " " << dd << " " << dsize << endl;
 			if (np==nPackets){
 				if (pnum==nPackets) {
-					// cout << "Frame found!" << endl;
+					//cprintf(BG_GREEN, "Frame Found\n");
+					 cout << "Frame found!" << endl;
 					break;
 				}     else {
+					//cprintf(BG_RED, "Too many packets for this frame! fnum:%d, pnum:%d np:%d\n",fnum,pnum,np);
 					cout << "Too many packets for this frame! "<< fnum << " " << pnum << endl;
 					retval=NULL;
 				}
 			}
 		}
 		if (np<nPackets) {
-			if (np>0)
+			if (np>0){
+				//cprintf(BG_RED, "Too few packets for this frame! fnum:%d, pnum:%d np:%d\n",fnum,pnum,np);
 				cout << "Too few packets for this frame! "<< fnum << " " << pnum << endl;
+
+			}
 		}
 
 		ndata=np*packetSize;

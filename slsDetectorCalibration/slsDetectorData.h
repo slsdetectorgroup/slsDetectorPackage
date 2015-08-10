@@ -225,7 +225,7 @@ class slsDetectorData {
 
   */
 
-  virtual dataType getChannel(char *data, int ix, int iy, int dr) {
+  virtual int getChannel(char *data, int ix, int iy, int dr) {
 	  return 0;
   };
 

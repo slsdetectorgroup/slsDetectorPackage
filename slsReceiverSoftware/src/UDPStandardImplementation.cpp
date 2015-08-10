@@ -80,6 +80,7 @@ UDPStandardImplementation::UDPStandardImplementation()
 	  cout << "\nWARNING: Could not change socket receiver buffer size in file /proc/sys/net/core/rmem_max" << endl;
 	else if(system("echo 250000 > /proc/sys/net/core/netdev_max_backlog"))
 	  cout << "\nWARNING: Could not change max length of input queue in file /proc/sys/net/core/netdev_max_backlog" << endl;
+
 	/** permanent setting heiner
 	    net.core.rmem_max = 104857600 # 100MiB
 	    net.core.netdev_max_backlog = 250000
@@ -1056,24 +1057,29 @@ int UDPStandardImplementation::createUDPSockets(){
 	if(!strlen(eth)){
 		cout<<"warning:eth is empty.listening to all"<<endl;
 
-		for(int i=0;i<numListeningThreads;i++)
+		for(int i=0;i<numListeningThreads;i++){
+			 cprintf(YELLOW, "gonna try listening to all\n");
 			udpSocket[i] = new genericSocket(port[i],genericSocket::UDP,bufferSize);
+		}
 	}
 	//normal socket
 	else{
 		cout<<"eth:"<<eth<<endl;
 
-		for(int i=0;i<numListeningThreads;i++)
+		for(int i=0;i<numListeningThreads;i++){
+			cprintf(YELLOW, "gonna try focussed\n");
 			udpSocket[i] = new genericSocket(port[i],genericSocket::UDP,bufferSize,eth);
+		}
 	}
 
 	//error
 	int iret;
 	for(int i=0;i<numListeningThreads;i++){
 		iret = udpSocket[i]->getErrorStatus();
-		if(!iret)
+		if(!iret){
 			cout << "UDP port opened at port " << port[i] << endl;
-		else{
+			cprintf(YELLOW, "socket of port %d descriptor:%d\n",i,udpSocket[i]->getsocketDescriptor());
+		}else{
 #ifdef VERBOSE
 			cprintf(BG_RED,"Could not create UDP socket on port %d error: %d\n", port[i], iret);
 #endif
@@ -1081,6 +1087,8 @@ int UDPStandardImplementation::createUDPSockets(){
 			return FAIL;
 		}
 	}
+
+
 
 	return OK;
 }
@@ -1276,7 +1284,7 @@ int UDPStandardImplementation::setupWriter(){
 	packetsInFile=0;
 	packetsCaught=0;
 	frameIndex=0;
-	if(sfilefd) sfilefd=NULL;
+	if(sfilefd) {cprintf(RED,"**FILE not closed!\n");fclose(sfilefd);sfilefd=NULL;}
 	guiData = NULL;
 	guiDataReady=0;
 	strcpy(guiFileName,"");
@@ -1402,9 +1410,13 @@ int UDPStandardImplementation::createNewFile(){
 	if(enableFileWrite && cbAction > DO_NOTHING){
 		//close
 		if(sfilefd){
-			fclose(sfilefd);
+			if(fclose(sfilefd)){
+				cprintf(YELLOW, "file clsoe problem %d\n",fileno(sfilefd));
+				fclose(sfilefd);
+			}
 			sfilefd = NULL;
 		}
+
 		//open file
 		if(!overwrite){
 			if (NULL == (sfilefd = fopen((const char *) (savefilename), "wx"))){
@@ -1418,6 +1430,9 @@ int UDPStandardImplementation::createNewFile(){
 		//setting buffer
 		setvbuf(sfilefd,NULL,_IOFBF,BUF_SIZE);
 
+		cprintf(YELLOW, "file value:%d\n",fileno(sfilefd));
+
+		//cprintf(YELLOW, "file valuex:%d",(int)sfilefd);
 		//printing packet losses and file names
 		if(!packetsCaught)
 			cout << savefilename << endl;
@@ -1459,10 +1474,12 @@ void UDPStandardImplementation::closeFile(int ithr){
 
 	if(!dataCompression){
 		if(sfilefd){
-#ifdef VERBOSE
-			cout << "sfield:" << (int)sfilefd << endl;
-#endif
-			fclose(sfilefd);
+//#ifdef VERBOSE
+			cprintf(YELLOW, "gonna close file:%d\n",fileno(sfilefd));
+//#endif
+			if(fclose(sfilefd))
+				perror("close ERRROR");
+			cprintf(YELLOW, "check close file:%d\n",fileno(sfilefd));
 			sfilefd = NULL;
 		}
 	}
@@ -1473,7 +1490,8 @@ void UDPStandardImplementation::closeFile(int ithr){
 #ifdef VERBOSE
 			cout << "sfield:" << (int)sfilefd << endl;
 #endif
-			fclose(sfilefd);
+			if(fclose(sfilefd))
+				perror("close ERRROR");
 			sfilefd = NULL;
 		}
 #endif
@@ -1610,7 +1628,6 @@ int UDPStandardImplementation::stopReceiver(){
 
 		cout << "Receiver Stopped.\nStatus:" << status << endl << endl;
 	}else cout <<" Not idle to stop receiver" << endl;
-
 
 
 	//sem_post(&smp);

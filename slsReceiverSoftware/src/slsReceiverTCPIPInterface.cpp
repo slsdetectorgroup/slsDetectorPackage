@@ -65,7 +65,6 @@ slsReceiverTCPIPInterface::slsReceiverTCPIPInterface(int &success, UDPInterface*
 			strcpy(socket->lastClientIP,"none");
 			strcpy(socket->thisClientIP,"none1");
 			strcpy(mess,"dummy message");
-			
 			function_table();
 #ifdef VERBOSE
 			cout << "Function table assigned." << endl;

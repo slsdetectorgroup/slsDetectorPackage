@@ -193,7 +193,9 @@ public:
 				(*(uint8_t*)(((eiger_packet_header *)((char*)(buff)))->num4)),//non 32 bit packet#
 				(*(uint16_t*)(((eiger_packet_header *)((char*)(buff)))->num2)));//32 bit packet#
 #endif
+		return ((*(uint16_t*)(((eiger_packet_header *)((char*)buff))->num2)));
 
+		/*
 		//both ports have same packet numbers, so reconstruct
 		//16 bit packet number written in num2 for 32 bit mode
 
@@ -208,7 +210,7 @@ public:
 				return ((*(uint8_t*)(((eiger_packet_header *)((char*)buff))->num4))+(numberOfPackets/2) +1);
 			else
 				return ((*(uint8_t*)(((eiger_packet_header *)((char*)buff))->num4))+1);
-		}
+		}*/
 	};
 
 
@@ -255,36 +257,39 @@ public:
 
 	 */
 
-	virtual uint32_t getChannel(char *data, int ix, int iy, int dr) {
+	virtual int getChannel(char *data, int ix, int iy, int dr) {
 		uint32_t m=0, n = 0;
-		uint64_t t;
-		int numBytes,divFactor,pixelval;
+		uint8_t t;
+		uint64_t k;
+		int numBytes,divFactor,pixelval, newix;
 
 		//cout <<"ix:"<<ix<<" nx:"<<nx<<" iy:"<<iy<<" ny:"<<ny<<" datamap[iy][ix]:"<< dataMap[iy][ix] <<" datasize:"<< dataSize <<endl;
 		if (ix>=0 && ix<nx && iy>=0 && iy<ny && dataMap[iy][ix]>=0 && dataMap[iy][ix]<dataSize) {
 			m=dataMask[iy][ix];
 
 			numBytes = (nx * iy + ix);
-			divFactor=2;
-			if(dr == 4) divFactor = 16;
+			divFactor=512;
+			/*if(dr == 4) divFactor = 16;
 			else if (dr == 8) divFactor = 8;
-			else if (dr == 16) divFactor = 4;
+			else if (dr == 16) divFactor = 512;*/
 
 			pixelval = numBytes % divFactor;
-			/*//big endian
-			 newix = ix - pixelval;
-			 */
+			//big endian
+			newix = ix - pixelval;
 
-		}else
+			//cprintf(GREEN,"64 value: 0x%016llx\n",((uint64_t)(*((uint64_t*)(((char*)data)+(dataMap[iy][newix]-8))))));
+			t = (*(uint8_t*)(((eiger_packet_header *)((char*)(data +(dataMap[iy][newix]-8))))->num3));
+			//cprintf(GREEN,"num3 0x%x\n",t);
+			//check if missing packet
+			if(t & 0x02){
+				cprintf(RED,"missing packet\n");
+				return -1;
+			}
+
+		}else{
 			cprintf(RED,"outside limits\n");
-
-		/*//big endian
-		t = ((uint64_t)(*((uint64_t*)(((char*)data)+(dataMap[iy][newix])))));
-		if(dr == 4)			return ((t >> (pixelval*4)) & 0xf)^m;
-		else if(dr == 8)	return ((t >> (pixelval*8)) & 0xff)^m;
-		else if(dr == 16)	return ((t >> (pixelval*16)) & 0xffff)^m;
-		else				return ((t >> (pixelval*32)) & 0xffffffff)^m;
-		 */
+			 return -99;
+		}
 
 		//little endian
 		n = ((uint32_t)(*((uint32_t*)(((char*)data)+(dataMap[iy][ix])))));

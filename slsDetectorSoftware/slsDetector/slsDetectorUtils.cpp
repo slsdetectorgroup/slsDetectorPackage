@@ -57,6 +57,9 @@ void  slsDetectorUtils::acquire(int delflag){
   if(setDynamicRange() == 32)  subframe = 1;
   else subframe = 0;
 
+  pthread_mutex_lock(&mg);
+  acquiringDone = 0;
+  pthread_mutex_unlock(&mg);
 
   // setTotalProgress();
   //moved these 2 here for measurement change

@@ -880,6 +880,10 @@ slsDetectorCommand::slsDetectorCommand(slsDetectorUtils *det)  {
   descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdReceiver;
   i++;
 
+  descrToFuncMap[i].m_pFuncName="resetframescaught";
+  descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdReceiver;
+  i++;
+
   descrToFuncMap[i].m_pFuncName="frameindex";
   descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdReceiver;
   i++;
@@ -4274,6 +4278,18 @@ string slsDetectorCommand::cmdReceiver(int narg, char *args[], int action) {
     }
   }
 
+  else if(cmd=="resetframescaught"){
+    if (action==GET_ACTION)
+      return string("cannot get");
+    else{
+    	if(myDet->resetFramesCaught() == FAIL)
+    		strcpy(answer,"failed");
+    	else
+    		strcpy(answer,"successful");
+      return string(answer);
+    }
+  }
+
   else if(cmd=="frameindex"){
     if (action==PUT_ACTION)
       return string("cannot put");
@@ -4328,6 +4344,7 @@ string slsDetectorCommand::helpReceiver(int narg, char *args[], int action) {
   ostringstream os;
   if (action==PUT_ACTION || action==HELP_ACTION) {
     os << "receiver [status] \t starts/stops the receiver to listen to detector packets. - can be start or stop" << std::endl;
+    os << "resetframescaught [any value] \t resets frames caught by receiver" << std::endl;
   	os << "r_readfreq \t sets the gui read frequency of the receiver, 0 if gui requests frame, >0 if receiver sends every nth frame to gui" << std::endl;
 	os << "tengiga \t sets system to be configure for 10Gbe if set to 1, else 1Gbe if set to 0" << std::endl;
   }

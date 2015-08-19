@@ -2187,11 +2187,8 @@ void UDPStandardImplementation::startFrameIndices(int ithread){
 	FILE_LOG(logDEBUG) << __AT__ << " called";
 
 	if (myDetectorType == EIGER){
-		//add currframenum later  in this method for scans
-		/*if(dynamicRange == 32)
-			startFrameIndex = htonl(*(unsigned int*)((eiger_image_header32 *)((char*)(buffer[ithread] + HEADER_SIZE_NUM_TOT_PACKETS)))->fnum);
-		else*/
-			startFrameIndex = htonl(*(unsigned int*)((eiger_image_header *)((char*)(buffer[ithread] + HEADER_SIZE_NUM_TOT_PACKETS)))->fnum);
+			startFrameIndex = 0;
+			/*startFrameIndex = htonl(*(unsigned int*)((eiger_image_header *)((char*)(buffer[ithread] + HEADER_SIZE_NUM_TOT_PACKETS)))->fnum);*/
 	}
 	//gotthard has +1 for frame number and not a short frame
 	else if ((myDetectorType == PROPIX) || ((myDetectorType == GOTTHARD) && (shortFrame == -1)))
@@ -2209,6 +2206,7 @@ void UDPStandardImplementation::startFrameIndices(int ithread){
 		acqStarted = true;
 		cout << "startAcquisitionIndex:" << hex << startAcquisitionIndex<<endl;
 	}
+	/*
 	//for scans, cuz currfraenum resets
 	else if (myDetectorType == EIGER){
 		if(dynamicRange == 32)
@@ -2217,7 +2215,7 @@ void UDPStandardImplementation::startFrameIndices(int ithread){
 			startFrameIndex += currframenum;
 
 	}
-
+*/
 
 	cout << "startFrameIndex:" << startFrameIndex<<endl;
 	prevframenum=startFrameIndex;

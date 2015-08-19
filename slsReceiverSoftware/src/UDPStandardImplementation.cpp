@@ -1751,7 +1751,11 @@ int UDPStandardImplementation::startListening(){
 					if(rc == EIGER_HEADER_LENGTH && myDetectorType == EIGER) {
 						while(rc == EIGER_HEADER_LENGTH)
 							rc = udpSocket[ithread]->ReceiveDataOnly(buffer[ithread] + HEADER_SIZE_NUM_TOT_PACKETS, maxBufferSize);
-					}
+					}/*
+					if(rc == 1040){
+						cprintf(YELLOW,"tempframenum[%d]:%d\n",ithread,((*(uint32_t*)(((eiger_packet_header *)((char*)(buffer[ithread] + HEADER_SIZE_NUM_TOT_PACKETS)))->num1))));
+						cprintf(YELLOW,"packetnum[%d]:%d\n",ithread,((*(uint8_t*)(((eiger_packet_header *)((char*)(buffer[ithread] + HEADER_SIZE_NUM_TOT_PACKETS)))->num4))));
+					}*/
 					expected = maxBufferSize;
 #ifdef SOCKET_DEBUG
 				}else{
@@ -2768,17 +2772,17 @@ void UDPStandardImplementation::writeToFile_withoutCompression(char* buf[],int n
 			}else
 				fwrite(buf[0]+offset, 1, packetsToSave * onePacketSize, sfilefd);
 			packetsInFile += packetsToSave;
-#ifdef EIGER_DEBUG3
+//#ifdef EIGER_DEBUG3
 			cprintf(GREEN,"packetscaught earlier:%d packetstosave:%d numMissingPackets:%d addingon:%d\n",
 					packetsCaught,packetsToSave,numMissingPackets,(packetsToSave - numMissingPackets));
-#endif
+//#endif
 			packetsCaught += (packetsToSave - numMissingPackets);
 			totalPacketsCaught += (packetsToSave - numMissingPackets);
 			numMissingPackets = 0;
-#ifdef EIGER_DEBUG3
+//#ifdef EIGER_DEBUG3
 			cprintf(GREEN,"packetscaught:%d\n", packetsCaught);
 			cprintf(GREEN,"totalPacketsCaught:%d\n", totalPacketsCaught);
-#endif
+//#endif
 			//new file
 			if(packetsInFile >= maxPacketsPerFile){
 
@@ -2867,12 +2871,13 @@ void UDPStandardImplementation::handleWithoutDataCompression(int ithread, char* 
 						missingpacket = 1;
 						//add packet numbers
 						(*(uint16_t*)(((eiger_packet_header *)((char*)(wbuffer[i])))->num2)) = (i+1);
+						(*(uint32_t*)(((eiger_packet_header *)((char*)(wbuffer[i])))->num1)) = currframenum;
 					}else{
 						missingpacket = 0;
 
 						if((*(uint8_t*)(((eiger_packet_header *)((char*)(wbuffer[i])))->num4)) != (i-(port*packetsPerFrame/numListeningThreads))){
 							cprintf(BG_RED, "pnum mismatch num4! i:%d pnum:%d fnum:%d\n",i,(*(uint8_t*)(((eiger_packet_header *)((char*)(wbuffer[i])))->num4)),currframenum);
-						/*	exit(-1);*/
+							exit(-1);
 						}
 
 
@@ -2906,7 +2911,7 @@ void UDPStandardImplementation::handleWithoutDataCompression(int ithread, char* 
 						cprintf(BG_RED, "pnum mismatch! i:%d pnum:%d fnum:%d\n",i,(*(uint16_t*)(((eiger_packet_header *)((char*)(wbuffer[i])))->num2)),currframenum);
 						if ((*(uint8_t*)(((eiger_packet_header *)((char*)(wbuffer[i])))->num3)) == 0xFF)
 							cprintf(BG_RED,"missing packet though\n");
-						/*exit(-1);*/
+						exit(-1);
 					}
 
 					//overwriting port number and dynamic range
@@ -2938,9 +2943,9 @@ void UDPStandardImplementation::handleWithoutDataCompression(int ithread, char* 
 			writeToFile_withoutCompression(wbuffer, npackets,currframenum);
 		}
 
-#ifdef VERYDEBUG
+//#ifdef VERYDEBUG
 		cprintf(GREEN,"written everyting\n");
-#endif
+//#endif
 	}
 
 

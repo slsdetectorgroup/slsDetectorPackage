@@ -254,10 +254,10 @@ class fileIOStatic  {
     double f;								\
     string s;								\
     s=fname;								\
-    uscore=s.rfind("_");						\
+    size_t uscore=s.rfind("_");						\
     if (sscanf( s.substr(uscore+1,s.size()-uscore-1).c_str(),"d%d",&i))  \
       s=fname.substr(0,uscore);						\
-    size_t uscore=s.rfind("_");						\
+    uscore=s.rfind("_");						\
     if (sscanf( s.substr(uscore+1,s.size()-uscore-1).c_str(),"p%d",&i))  \
       s=fname.substr(0,uscore);						\
     uscore=s.rfind("_");						\

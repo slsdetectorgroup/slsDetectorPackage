@@ -1058,7 +1058,7 @@ int UDPStandardImplementation::createUDPSockets(){
 		cout<<"warning:eth is empty.listening to all"<<endl;
 
 		for(int i=0;i<numListeningThreads;i++){
-			 cprintf(YELLOW, "gonna try listening to all\n");
+			// cprintf(YELLOW, "gonna try listening to all\n");
 			udpSocket[i] = new genericSocket(port[i],genericSocket::UDP,bufferSize);
 		}
 	}
@@ -1067,7 +1067,7 @@ int UDPStandardImplementation::createUDPSockets(){
 		cout<<"eth:"<<eth<<endl;
 
 		for(int i=0;i<numListeningThreads;i++){
-			cprintf(YELLOW, "gonna try focussed\n");
+		//	cprintf(YELLOW, "gonna try focussed\n");
 			udpSocket[i] = new genericSocket(port[i],genericSocket::UDP,bufferSize,eth);
 		}
 	}
@@ -1078,7 +1078,7 @@ int UDPStandardImplementation::createUDPSockets(){
 		iret = udpSocket[i]->getErrorStatus();
 		if(!iret){
 			cout << "UDP port opened at port " << port[i] << endl;
-			cprintf(YELLOW, "socket of port %d descriptor:%d\n",i,udpSocket[i]->getsocketDescriptor());
+			//cprintf(YELLOW, "socket of port %d descriptor:%d\n",i,udpSocket[i]->getsocketDescriptor());
 		}else{
 #ifdef VERBOSE
 			cprintf(BG_RED,"Could not create UDP socket on port %d error: %d\n", port[i], iret);
@@ -1411,7 +1411,7 @@ int UDPStandardImplementation::createNewFile(){
 		//close
 		if(sfilefd){
 			if(fclose(sfilefd)){
-				cprintf(YELLOW, "file clsoe problem %d\n",fileno(sfilefd));
+				cprintf(RED, "file close problem %d\n",fileno(sfilefd));
 				fclose(sfilefd);
 			}
 			sfilefd = NULL;
@@ -1430,9 +1430,8 @@ int UDPStandardImplementation::createNewFile(){
 		//setting buffer
 		setvbuf(sfilefd,NULL,_IOFBF,BUF_SIZE);
 
-		cprintf(YELLOW, "file value:%d\n",fileno(sfilefd));
+		//cprintf(YELLOW, "file value:%d\n",fileno(sfilefd));
 
-		//cprintf(YELLOW, "file valuex:%d",(int)sfilefd);
 		//printing packet losses and file names
 		if(!packetsCaught)
 			cout << savefilename << endl;
@@ -1474,12 +1473,12 @@ void UDPStandardImplementation::closeFile(int ithr){
 
 	if(!dataCompression){
 		if(sfilefd){
-//#ifdef VERBOSE
+#ifdef VERBOSE
 			cprintf(YELLOW, "gonna close file:%d\n",fileno(sfilefd));
-//#endif
+#endif
 			if(fclose(sfilefd))
-				perror("close ERRROR");
-			cprintf(YELLOW, "check close file:%d\n",fileno(sfilefd));
+				perror("file close ERROR");
+			//cprintf(YELLOW, "check close file:%d\n",fileno(sfilefd));
 			sfilefd = NULL;
 		}
 	}

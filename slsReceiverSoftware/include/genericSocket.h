@@ -60,7 +60,6 @@ class sockaddr_in;
 #include <ifaddrs.h>
 
 #endif
-#include "ansi.h"
 #include <stdlib.h>  /******exit */
 
 #include <unistd.h>
@@ -71,7 +70,6 @@ class sockaddr_in;
 #include <errno.h>
 #include <stdio.h>
 
-#include  <signal.h>	//SIGINT
 
 using namespace std;
 
@@ -127,7 +125,6 @@ typedef struct
      struct hostent *hostInfo = gethostbyname(host_ip_or_name);
      if (hostInfo == NULL){
        cerr << "Exiting: Problem interpreting host: " << host_ip_or_name << "\n";
-       cprintf(RED,"Exiting: Problem interpreting host:%s\n",host_ip_or_name);
      } else {
        // Set some fields in the serverAddress structure.  
        serverAddress.sin_family = hostInfo->h_addrtype;
@@ -137,7 +134,6 @@ typedef struct
        socketDescriptor=0; //You can use send and recv, //would it work?????
      } 
      clientAddress_length=sizeof(clientAddress);
-     cprintf(MAGENTA, "client socket created %d \n",socketDescriptor,protocol);
    }
 
    
@@ -180,7 +176,6 @@ typedef struct
 	 nsent(0),
 	 total_sent(0)
    {
-	   signal(SIGCHLD,SIG_IGN);
 		 //memset(&serverAddress, 0, sizeof(sockaddr_in));
 		// memset(&clientAddress, 0, sizeof(sockaddr_in));
 		// serverAddress = {0};
@@ -210,12 +205,10 @@ typedef struct
     
 
      socketDescriptor = socket(AF_INET, getProtocol(),0); //tcp
-     cprintf(MAGENTA, "socket created %d protocol:%d\n",socketDescriptor,protocol);
 
 
      if (socketDescriptor < 0) {
        cerr << "Can not create socket "<<endl;
-       cprintf(RED,"Can not create socket \n");
        return;
      } 
      
@@ -237,7 +230,6 @@ typedef struct
      int val=1;
      if (setsockopt(socketDescriptor,SOL_SOCKET,SO_REUSEADDR,&val,sizeof(int)) == -1) {
     	 cerr << "setsockopt" << endl;
-    	  cprintf(RED,"setsockopt \n");
     	 socketDescriptor=-1;
          return;
      }
@@ -248,7 +240,6 @@ typedef struct
      if((p == UDP) && (setsockopt(socketDescriptor, SOL_SOCKET, SO_RCVBUF, &val, sizeof(int)) == -1))
      {
        cerr << "WARNING:Could not set socket receive buffer size" << endl;
-       cprintf(RED,"WARNING:Could not set socket receive buffer size \n");
        //socketDescriptor=-1;
        //return;
      }
@@ -257,7 +248,6 @@ typedef struct
 
      if(bind(socketDescriptor,(struct sockaddr *) &serverAddress,sizeof(serverAddress))<0){
        cerr << "Can not bind socket "<< endl;
-       cprintf(RED,"Can not bind socket \n");
        socketDescriptor=-1;
        return;
      }
@@ -341,7 +331,6 @@ typedef struct
     	 if (socketDescriptor>0) {
     		 if ((file_des = accept(socketDescriptor,(struct sockaddr *) &clientAddress, &clientAddress_length)) < 0) {
     			 cerr << "Error: with server accept, connection refused"<<endl;
-    			 cprintf(RED,"Error: with server accept, connection refused");
     			 switch(errno) {
     			 case EWOULDBLOCK:
     				 printf("ewouldblock eagain\n");
@@ -389,7 +378,6 @@ typedef struct
     				 printf("unknown error\n");
     			 }
     			 socketDescriptor=-1;
-    			 cprintf(RED, "file des NOT connected %d \n",file_des);
     		 }
     		 else{
     			 inet_ntop(AF_INET, &(clientAddress.sin_addr), dummyClientIP, INET_ADDRSTRLEN);
@@ -397,7 +385,6 @@ typedef struct
     			 cout << "client connected "<< file_des << endl;
 #endif
 
-    		     cprintf(MAGENTA, "file des connected %d \n",file_des);
     		 }
 
     	 }
@@ -412,17 +399,14 @@ typedef struct
     	 //    SetTimeOut(10);
     	 if (socketDescriptor < 0){
     		 cerr << "Can not create socket "<<endl;
-    		 cprintf(RED, "Can not create socket in accept\n");
     		 file_des = socketDescriptor;
     	 } else {
 
     		 if(connect(socketDescriptor,(struct sockaddr *) &serverAddress,sizeof(serverAddress))<0){
     			 cerr << "Can not connect to socket "<<endl;
-    			 cprintf(RED, "Can not connect socket in accept\n");
     			 file_des = -1;
     		 } else{
     			 file_des = socketDescriptor;
-    			 cprintf(MAGENTA, "file des connected %d \n",file_des);
     		 }
     	 }
 
@@ -445,8 +429,8 @@ typedef struct
     		 socketDescriptor=-1;
     	 }
     	 else{
-    		 /*
-    		 close(socketDescriptor);
+
+    		/* close(socketDescriptor);
     		 socketDescriptor=-1;
     		 if(is_a_server){
     			 if(file_des>=0){
@@ -459,16 +443,10 @@ typedef struct
 
     		 if(file_des>=0){ //then was open
     			 if(is_a_server){
-    				// cprintf(MAGENTA, "file_des disconnected %d \n",file_des);
-    				 if(close(file_des))
-    					 cprintf(RED,"file_des not disconnected %d\n", file_des);
-    				// cprintf(MAGENTA, "file_des disconnected %d \n",file_des);
+    				 close(file_des);
     			 }
     			 else {
-    				 //cprintf(MAGENTA, "socketDescriptor disconnected %d \n",socketDescriptor);
-    				 if(close(socketDescriptor))
-    					 cprintf(RED,"socketDescriptor not disconnected %d\n", file_des);
-    				// cprintf(MAGENTA, "socketDescriptor disconnected %d \n",socketDescriptor);
+    				 close(socketDescriptor);
     				 socketDescriptor=-1;
     			 }
     			 file_des=-1;

@@ -746,7 +746,6 @@ int UDPBaseImplementation::createUDPSockets(){ FILE_LOG(logDEBUG) << __AT__ << "
 		cout<<"warning:eth is empty.listening to all"<<endl;
 
 		for(int i=0;i<numListeningThreads;i++){
-			 cprintf(RED, "gonna try listening to all\n");
 			udpSocket[i] = new genericSocket(server_port[i],genericSocket::UDP,bufferSize);
 		}
 	}
@@ -755,7 +754,6 @@ int UDPBaseImplementation::createUDPSockets(){ FILE_LOG(logDEBUG) << __AT__ << "
 		cout<<"eth:"<<eth<<endl;
 
 		for(int i=0;i<numListeningThreads;i++){
-			 cprintf(RED, "gonna try listening to all\n");
 			udpSocket[i] = new genericSocket(server_port[i],genericSocket::UDP,bufferSize,eth);
 		}
 	}

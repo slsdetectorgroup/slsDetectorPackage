@@ -2187,7 +2187,7 @@ void UDPStandardImplementation::startFrameIndices(int ithread){
 	FILE_LOG(logDEBUG) << __AT__ << " called";
 
 	if (myDetectorType == EIGER){
-			startFrameIndex = 0;
+			startFrameIndex = 1;
 			/*startFrameIndex = htonl(*(unsigned int*)((eiger_image_header *)((char*)(buffer[ithread] + HEADER_SIZE_NUM_TOT_PACKETS)))->fnum);*/
 	}
 	//gotthard has +1 for frame number and not a short frame

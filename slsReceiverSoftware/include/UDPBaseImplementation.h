@@ -618,7 +618,7 @@ protected:
 	uint32_t currframenum;
 
 	/** Previous Frame number from buffer */
-	uint32_t prevframenum;
+	int prevframenum;
 
 	/** size of one frame */
 	int frameSize;

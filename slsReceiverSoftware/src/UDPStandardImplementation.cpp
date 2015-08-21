@@ -1654,7 +1654,12 @@ void UDPStandardImplementation::startReadout(){
 		/********************************************/
 		//usleep(10000000);
 		//usleep(2000000);
-
+		int prev = totalPacketsCaught;
+		usleep(50000);
+		while(prev!=totalPacketsCaught){
+			prev=totalPacketsCaught;
+			usleep(50000);
+		}
 		pthread_mutex_lock(&status_mutex);
 		status = TRANSMITTING;
 		pthread_mutex_unlock(&status_mutex);
@@ -2014,9 +2019,9 @@ int UDPStandardImplementation::startWriting(){
 					cprintf(RED,"blank frame not detected at %d: 0x%x\n",i,(*(uint8_t*)(((eiger_packet_header *)((char*)(blankframe[i])))->num3)) );
 					exit(-1);
 				}
-	//#ifdef FIFO_DEBUG
+#ifdef FIFO_DEBUG
 				cprintf(GREEN,"packet %d blank frame 0x%x\n",i,(void*)(blankframe[i]));
-	//#endif
+#endif
 			}
 		}
 

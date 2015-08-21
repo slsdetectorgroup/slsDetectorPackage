@@ -80,6 +80,7 @@ UDPStandardImplementation::UDPStandardImplementation()
 	  cout << "\nWARNING: Could not change socket receiver buffer size in file /proc/sys/net/core/rmem_max" << endl;
 	else if(system("echo 250000 > /proc/sys/net/core/netdev_max_backlog"))
 	  cout << "\nWARNING: Could not change max length of input queue in file /proc/sys/net/core/netdev_max_backlog" << endl;
+
 	/** permanent setting heiner
 	    net.core.rmem_max = 104857600 # 100MiB
 	    net.core.netdev_max_backlog = 250000
@@ -1063,24 +1064,26 @@ int UDPStandardImplementation::createUDPSockets(){
 	if(!strlen(eth)){
 		cout<<"warning:eth is empty.listening to all"<<endl;
 
-		for(int i=0;i<numListeningThreads;i++)
+		for(int i=0;i<numListeningThreads;i++){
 			udpSocket[i] = new genericSocket(port[i],genericSocket::UDP,bufferSize);
+		}
 	}
 	//normal socket
 	else{
 		cout<<"eth:"<<eth<<endl;
 
-		for(int i=0;i<numListeningThreads;i++)
+		for(int i=0;i<numListeningThreads;i++){
 			udpSocket[i] = new genericSocket(port[i],genericSocket::UDP,bufferSize,eth);
+		}
 	}
 
 	//error
 	int iret;
 	for(int i=0;i<numListeningThreads;i++){
 		iret = udpSocket[i]->getErrorStatus();
-		if(!iret)
+		if(!iret){
 			cout << "UDP port opened at port " << port[i] << endl;
-		else{
+		}else{
 #ifdef VERBOSE
 			cprintf(BG_RED,"Could not create UDP socket on port %d error: %d\n", port[i], iret);
 #endif
@@ -1088,6 +1091,8 @@ int UDPStandardImplementation::createUDPSockets(){
 			return FAIL;
 		}
 	}
+
+
 
 	return OK;
 }
@@ -1286,7 +1291,7 @@ int UDPStandardImplementation::setupWriter(){
 	numMissingPackets = 0;
 	packetsCaught=0;
 	frameIndex=0;
-	if(sfilefd) sfilefd=NULL;
+	if(sfilefd) {cprintf(RED,"**FILE not closed!\n");fclose(sfilefd);sfilefd=NULL;}
 	guiData = NULL;
 	guiDataReady=0;
 	strcpy(guiFileName,"");
@@ -1414,9 +1419,13 @@ int UDPStandardImplementation::createNewFile(){
 	if(enableFileWrite && cbAction > DO_NOTHING){
 		//close
 		if(sfilefd){
-			fclose(sfilefd);
+			if(fclose(sfilefd)){
+				cprintf(RED, "file close problem %d\n",fileno(sfilefd));
+				fclose(sfilefd);
+			}
 			sfilefd = NULL;
 		}
+
 		//open file
 		if(!overwrite){
 			if (NULL == (sfilefd = fopen((const char *) (savefilename), "wx"))){
@@ -1429,6 +1438,7 @@ int UDPStandardImplementation::createNewFile(){
 		}
 		//setting buffer
 		setvbuf(sfilefd,NULL,_IOFBF,BUF_SIZE);
+
 
 		//printing packet losses and file names
 		if(!packetsCaught)
@@ -1473,9 +1483,10 @@ void UDPStandardImplementation::closeFile(int ithr){
 	if(!dataCompression){
 		if(sfilefd){
 #ifdef VERBOSE
-			cout << "sfield:" << (int)sfilefd << endl;
+			cprintf(YELLOW, "gonna close file:%d\n",fileno(sfilefd));
 #endif
-			fclose(sfilefd);
+			if(fclose(sfilefd))
+				perror("file close ERROR");
 			sfilefd = NULL;
 		}
 	}
@@ -1486,7 +1497,8 @@ void UDPStandardImplementation::closeFile(int ithr){
 #ifdef VERBOSE
 			cout << "sfield:" << (int)sfilefd << endl;
 #endif
-			fclose(sfilefd);
+			if(fclose(sfilefd))
+				perror("close ERRROR");
 			sfilefd = NULL;
 		}
 #endif
@@ -1623,7 +1635,6 @@ int UDPStandardImplementation::stopReceiver(){
 
 		cout << "Receiver Stopped.\nStatus:" << status << endl << endl;
 	}else cout <<" Not idle to stop receiver" << endl;
-
 
 
 	//sem_post(&smp);
@@ -2483,18 +2494,8 @@ void UDPStandardImplementation::startFrameIndices(int ithread, int numbytes){
 	FILE_LOG(logDEBUG) << __AT__ << " called";
 
 	//add currframenum later  in this method for scans
-	if (myDetectorType == EIGER){
-		//check if its a header
+	if (myDetectorType == EIGER)
 		startFrameIndex = 0;
-		/*
-		if(EIGER_HEADER_LENGTH == numbytes)
-			startFrameIndex = (htonl(*(unsigned int*)((eiger_image_header *)((char*)(buffer[ithread] + HEADER_SIZE_NUM_TOT_PACKETS)))->fnum))-1;
-		//missed header packet, so default value
-		else
-			startFrameIndex = ((*(uint32_t*)(((eiger_packet_header *)((char*)(buffer[ithread]  + HEADER_SIZE_NUM_TOT_PACKETS)))->num1))-1);
-		cout<<"startFrameIndex["<<ithread<<"]:"<<startFrameIndex<<endl;
-		*/
-	}
 	//gotthard has +1 for frame number and not a short frame
 	else if ((myDetectorType == PROPIX) || ((myDetectorType == GOTTHARD) && (shortFrame == -1)))
 		startFrameIndex = (((((uint32_t)(*((uint32_t*)(buffer[ithread] + HEADER_SIZE_NUM_TOT_PACKETS))))+1)
@@ -2511,11 +2512,6 @@ void UDPStandardImplementation::startFrameIndices(int ithread, int numbytes){
 		acqStarted = true;
 		cprintf(BLUE,"%d startAcquisitionIndex:%d\n", ithread, startAcquisitionIndex);
 	}
-	/*//for scans, cuz currfraenum resets
-	else if (myDetectorType == EIGER){
-		startFrameIndex += (currframenum+1);
-	}*/
-
 
 	cprintf(BLUE,"%d startFrameIndex: %d\n", ithread,startFrameIndex);
 	prevframenum=startFrameIndex-1; //so that there is no packet loss, when currframenum(max,20) - prevframenum(1)

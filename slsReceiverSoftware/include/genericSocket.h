@@ -60,7 +60,6 @@ class sockaddr_in;
 #include <ifaddrs.h>
 
 #endif
-
 #include <stdlib.h>  /******exit */
 
 #include <unistd.h>
@@ -70,6 +69,8 @@ class sockaddr_in;
 #include <math.h>
 #include <errno.h>
 #include <stdio.h>
+
+
 
 using namespace std;
 
@@ -272,7 +273,11 @@ typedef struct
        if (socketDescriptor >= 0){		\
 	 close(socketDescriptor);		\
        }					\
-       file_des=-1;				\
+       if(is_a_server and getProtocol() == TCP){\
+    	   if(file_des>0)\
+    		   close(file_des);\
+       }
+	   file_des=-1;				\
        serverAddress.sin_port=-1;	\
      };
      
@@ -376,6 +381,7 @@ typedef struct
 #ifdef VERY_VERBOSE
     			 cout << "client connected "<< file_des << endl;
 #endif
+
     		 }
 
     	 }
@@ -392,7 +398,6 @@ typedef struct
     		 cerr << "Can not create socket "<<endl;
     		 file_des = socketDescriptor;
     	 } else {
-
     		 if(connect(socketDescriptor,(struct sockaddr *) &serverAddress,sizeof(serverAddress))<0){
     			 cerr << "Can not connect to socket "<<endl;
     			 file_des = -1;
@@ -412,6 +417,16 @@ typedef struct
      int getFileDes(){return file_des;};
 
      int getsocketDescriptor(){return socketDescriptor;};
+
+
+     void exitServer(){
+    	 if(is_a_server){
+    		  if (socketDescriptor>=0){
+    		    close(socketDescriptor);
+    		    socketDescriptor = -1;
+    		  }
+    	 }
+     }
 
      /** @short free connection */
      void Disconnect(){
@@ -435,9 +450,8 @@ typedef struct
 
 
      void ShutDownSocket(){
-   		 while(!shutdown(socketDescriptor, SHUT_RDWR));
-   		 close(socketDescriptor);
-   		 socketDescriptor = -1;
+    	 while(!shutdown(socketDescriptor, SHUT_RDWR));
+    	 Disconnect();
      };
 
 
@@ -513,6 +527,9 @@ typedef struct
        }
        mac[sizeof(mac)-1]='\0';
        
+       if(sock!=1){
+    	   close(sock);
+       }
        return string(mac);
        
      };
@@ -534,6 +551,9 @@ typedef struct
        strncpy(addr,p,sizeof(addr)-1);
        addr[sizeof(addr)-1]='\0';
        
+       if(sock!=1){
+    	   close(sock);
+       }
        return string(addr);
        
      };

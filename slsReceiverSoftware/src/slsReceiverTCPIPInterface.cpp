@@ -145,8 +145,18 @@ void slsReceiverTCPIPInterface::stop(){
 
 
 	cout<<"Shutting down TCP Socket and TCP thread"<<endl;
+	cout << "Shutting down UDP Socket" << endl;
+	if(receiverBase){
+		receiverBase->shutDownUDPSockets();
+
+		cout << "Closing Files... " << endl;
+		receiverBase->closeFile();
+	}
+
+
 	killTCPServerThread = 1;
 	socket->ShutDownSocket();
+	socket->exitServer();
 	cout<<"Socket closed"<<endl;
 	void* status;
 	pthread_join(TCPServer_thread, &status);
@@ -204,6 +214,7 @@ void slsReceiverTCPIPInterface::startTCPServer(){
 				receiverBase->closeFile();
 			}
 
+			socket->exitServer();
 			pthread_exit(NULL);
 		}
 

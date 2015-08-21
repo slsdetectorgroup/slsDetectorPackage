@@ -71,6 +71,7 @@ class sockaddr_in;
 #include <stdio.h>
 
 
+
 using namespace std;
 
 #define DEFAULT_PACKET_SIZE 1286
@@ -206,7 +207,6 @@ typedef struct
 
      socketDescriptor = socket(AF_INET, getProtocol(),0); //tcp
 
-
      if (socketDescriptor < 0) {
        cerr << "Can not create socket "<<endl;
        return;
@@ -280,7 +280,11 @@ typedef struct
        if (socketDescriptor >= 0){		\
 	 close(socketDescriptor);		\
        }					\
-       file_des=-1;				\
+       if(is_a_server and getProtocol() == TCP){\
+    	   if(file_des>0)\
+    		   close(file_des);\
+       }
+	   file_des=-1;				\
        serverAddress.sin_port=-1;	\
      };
      
@@ -401,7 +405,6 @@ typedef struct
     		 cerr << "Can not create socket "<<endl;
     		 file_des = socketDescriptor;
     	 } else {
-
     		 if(connect(socketDescriptor,(struct sockaddr *) &serverAddress,sizeof(serverAddress))<0){
     			 cerr << "Can not connect to socket "<<endl;
     			 file_des = -1;
@@ -422,6 +425,16 @@ typedef struct
 
      int getsocketDescriptor(){return socketDescriptor;};
 
+
+     void exitServer(){
+    	 if(is_a_server){
+    		  if (socketDescriptor>=0){
+    		    close(socketDescriptor);
+    		    socketDescriptor = -1;
+    		  }
+    	 }
+     }
+
      /** @short free connection */
      void Disconnect(){
     	 if (protocol==UDP){
@@ -429,18 +442,6 @@ typedef struct
     		 socketDescriptor=-1;
     	 }
     	 else{
-
-    		/* close(socketDescriptor);
-    		 socketDescriptor=-1;
-    		 if(is_a_server){
-    			 if(file_des>=0){
-    				 close(file_des);
-    				 file_des=-1;
-    			 }
-    		 }
-*/
-
-
     		 if(file_des>=0){ //then was open
     			 if(is_a_server){
     				 close(file_des);
@@ -451,9 +452,6 @@ typedef struct
     			 }
     			 file_des=-1;
     		 }
-
-
-
     	 }
      }; 
 
@@ -536,6 +534,9 @@ typedef struct
        }
        mac[sizeof(mac)-1]='\0';
        
+       if(sock!=1){
+    	   close(sock);
+       }
        return string(mac);
        
      };
@@ -557,6 +558,9 @@ typedef struct
        strncpy(addr,p,sizeof(addr)-1);
        addr[sizeof(addr)-1]='\0';
        
+       if(sock!=1){
+    	   close(sock);
+       }
        return string(addr);
        
      };

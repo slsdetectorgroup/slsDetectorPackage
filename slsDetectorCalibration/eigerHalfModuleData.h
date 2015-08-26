@@ -38,7 +38,7 @@ public:
 		//Map
 		int totalNumberOfBytes = 1040 * dynamicRange * 16 *2; //for both 1g and 10g
 		int iPacket1 = 8;
-		int iPacket2 = (totalNumberOfBytes/2) + 8;
+		int iPacket2 = bufferSize + 8;
 		int iData1 = 0, iData2 = 0;
 		int increment = (dynamicRange/8);
 		int ic_increment = 1;
@@ -59,7 +59,7 @@ public:
 						iData1 += increment;
 						//increment header
 						if(iData1 >= actualDataSize){
-							iPacket1 += 16;
+							iPacket1 += (bufferSize + 8);
 							iData1 = 0;
 						}
 					}else{
@@ -68,7 +68,7 @@ public:
 						iData2 += increment;
 						//increment header
 						if(iData2 >= actualDataSize){
-							iPacket2 += 16;
+							iPacket2 += (bufferSize + 8);
 							iData2 = 0;
 						}
 					}
@@ -269,6 +269,8 @@ public:
 
 			numBytes = (nx * iy + ix);
 			divFactor=512;
+			if (dr == 16) divFactor = 1024;
+			else if (dr == 8) divFactor = 2048;
 			/*if(dr == 4) divFactor = 16;
 			else if (dr == 8) divFactor = 8;
 			else if (dr == 16) divFactor = 512;*/

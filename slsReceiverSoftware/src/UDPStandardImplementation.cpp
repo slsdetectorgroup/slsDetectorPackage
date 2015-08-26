@@ -1987,8 +1987,8 @@ int UDPStandardImplementation::startWriting(){
 	//last packet numbers for different dynamic ranges
 	if(myDetectorType == EIGER){
 		switch(dynamicRange){
-		case 4: 	LAST_PACKET_VALUE = 0x40;	break;
-		case 8: 	LAST_PACKET_VALUE = 0x80;	break;
+		case 4: 	LAST_PACKET_VALUE = 0x3f;	break;
+		case 8: 	LAST_PACKET_VALUE = 0x7f;	break;
 		case 16:	LAST_PACKET_VALUE = 0xff;	break;
 		case 32: 	LAST_PACKET_VALUE = 0xff; 	break;
 		default: 	break;
@@ -2084,11 +2084,14 @@ int UDPStandardImplementation::startWriting(){
 					}else{
 						endofacquisition = false;
 						if(numpackets[i] == 1040){
-						/*	cprintf(BLUE,"tempframenum[%d]:%d\n",i,((*(uint32_t*)(((eiger_packet_header *)((char*)(wbuf[i] + HEADER_SIZE_NUM_TOT_PACKETS)))->num1))));
+							cprintf(BLUE,"tempframenum[%d]:%d\n",i,((*(uint32_t*)(((eiger_packet_header *)((char*)(wbuf[i] + HEADER_SIZE_NUM_TOT_PACKETS)))->num1))));
 							cprintf(BLUE,"packetnum[%d]:%d\n",i,((*(uint8_t*)(((eiger_packet_header *)((char*)(wbuf[i] + HEADER_SIZE_NUM_TOT_PACKETS)))->num4))));
-						*/}else if(numpackets[i] == EIGER_HEADER_LENGTH){
+						}else if(numpackets[i] == EIGER_HEADER_LENGTH){
 							cprintf(BG_RED, "got header in writer, weirdd packetsize:%d\n",numpackets[i]);
 							exit(-1);
+						}else {
+							cprintf(BG_RED, "got weird in writer, weirdd packetsize:%d\n",numpackets[i]);
+
 						}
 
 						if(myDetectorType == EIGER){
@@ -2104,9 +2107,9 @@ int UDPStandardImplementation::startWriting(){
 
 			//END OF ACQUISITION
 			if(endofacquisition){
-#ifdef VERYDEBUG
+//#ifdef VERYDEBUG
 				cprintf(GREEN,"%d Both dummy frames\n", ithread);
-#endif
+//#endif
 				//remaining packets to be written
 				if((myDetectorType == EIGER) &&
 						((tempoffset[0]!=0) || (tempoffset[1]!=(packetsPerFrame/numListeningThreads))));
@@ -2133,15 +2136,15 @@ int UDPStandardImplementation::startWriting(){
 							if(numpackets[i] == EIGER_HEADER_LENGTH) {cprintf(BG_RED,"weird, frame packet recieved\n"); exit(-1);}
 							//dummy packet
 							else if(!numpackets[i]){
-#ifdef VERYDEBUG
+//#ifdef VERYDEBUG
 								cprintf(RED, "Dummy packet: %d from fifo %d\n", numpackets[i],i);
-#endif
-								cout<<"tempoffset["<<i<<"]:"<<tempoffset[i]<<" cheking against:"<<(((i+1)*packetsPerFrame/numListeningThreads))<<endl;
+//#endif
+								cout<<"tempoffset["<<i<<"]:"<<tempoffset[i]<<" checking against:"<<(((i+1)*packetsPerFrame/numListeningThreads))<<endl;
 								//cannot check for full frame as it will be false  if its done with all packets OR waiting for packets
 								if(tempoffset[i]!= (((i+1)*packetsPerFrame/numListeningThreads))){
-#ifdef VERYDEBUG
+//#ifdef VERYDEBUG
 									cprintf(RED, "Dummy packet: Adding missing packets\n");
-#endif
+//#endif
 									//add missing packets
 									numberofmissingpackets[i] = (LAST_PACKET_VALUE - lastpacketheader[i]);
 									//to decrement from packetsInFile to calculate packet loss
@@ -2159,8 +2162,9 @@ int UDPStandardImplementation::startWriting(){
 													(*(uint8_t*)(((eiger_packet_header *)((char*)(blankframe[blankoffset])))->num3)));
 											exit(-1);
 										}else
-											/*cprintf(GREEN, "blank packet i:%d pnum:%d fnum:%d num3:0x%x\n",i,tempoffset[i],tempframenum[i],(*(uint8_t*)(((eiger_packet_header *)((char*)(tempbuffer[tempoffset[i]])))->num3)));
-*/
+//#ifdef PADDING
+											cprintf(GREEN, "blank packet i:%d pnum:%d fnum:%d num3:0x%x\n",i,tempoffset[i],tempframenum[i],(*(uint8_t*)(((eiger_packet_header *)((char*)(tempbuffer[tempoffset[i]])))->num3)));
+//#endif
 										tempoffset[i]++;
 										blankoffset++;
 									}
@@ -2169,12 +2173,12 @@ int UDPStandardImplementation::startWriting(){
 									popready[i] = false;
 								}
 							}
-#ifdef EIGER_DEBUG3
+//#ifdef EIGER_DEBUG3
 							else{
 								cprintf(RED, "WARNING: Got a weird packet size: %d from fifo %d\n", numpackets[i],i);
 								continue;
 							}
-#endif
+//#endif
 						}
 
 
@@ -2195,13 +2199,17 @@ int UDPStandardImplementation::startWriting(){
 
 
 							//WRONG FRAME - leave
-							if(tempframenum[i] != presentframenum){/*cout<<"wrong packet"<<endl;*/
-#ifdef EIGER_DEBUG3
+							if(tempframenum[i] != presentframenum){
+//#ifdef PADDING
+								cout<<"wrong packet"<<endl;
+//#endif
+
+//#ifdef EIGER_DEBUG3
 								cprintf(RED,"fifo:%d packet from next frame %d, add missing packets to the right one %d\n",i,tempframenum[i],presentframenum );
 								cprintf(RED,"current wrong frame:%d wrong frame packet number:%d\n",
 										((*(uint32_t*)(((eiger_packet_header *)((char*)(wbuf[i] + HEADER_SIZE_NUM_TOT_PACKETS)))->num1))),
 										((*(uint8_t*)(((eiger_packet_header *)((char*)(wbuf[i] + HEADER_SIZE_NUM_TOT_PACKETS)))->num4))));
-#endif
+//#endif
 								tempframenum[i] = presentframenum;
 								//add missing packets
 								numberofmissingpackets[i] = (LAST_PACKET_VALUE - lastpacketheader[i]);
@@ -2226,11 +2234,12 @@ int UDPStandardImplementation::startWriting(){
 												(void*)(tempbuffer[tempoffset[i]]));
 										exit(-1);
 									}else
-										/*cprintf(GREEN, "blank packet i:%d pnum:%d fnum:%d num3:0x%x add:0x%x\n",
+//#ifdef PADDING
+										cprintf(GREEN, "blank packet i:%d pnum:%d fnum:%d num3:0x%x add:0x%x\n",
 												i,tempoffset[i],tempframenum[i],
 												(*(uint8_t*)(((eiger_packet_header *)((char*)(tempbuffer[tempoffset[i]])))->num3)),
-												(void*)(tempbuffer[tempoffset[i]]));*/
-
+												(void*)(tempbuffer[tempoffset[i]]));
+//#endif
 									tempoffset[i] ++;
 									blankoffset ++;
 								}
@@ -2241,10 +2250,13 @@ int UDPStandardImplementation::startWriting(){
 
 
 							//CORRECT FRAME - continue building frame
-							else {/*cout<<"correct packet"<<endl;*/
-#ifdef EIGER_DEBUG3
+							else {
+//#ifdef PADDING
+								cout<<"correct packet"<<endl;
+//#endif
+//#ifdef EIGER_DEBUG3
 								cprintf(GREEN,"**tempfraemnum of %d: %d\n",i,tempframenum[i]);
-#endif
+//#endif
 								//update current packet
 								currentpacketheader[i] = ((*(uint8_t*)(((eiger_packet_header *)((char*)(wbuf[i] + HEADER_SIZE_NUM_TOT_PACKETS)))->num4)));
 #ifdef VERYVERBOSE
@@ -2273,10 +2285,12 @@ int UDPStandardImplementation::startWriting(){
 												(void*)(tempbuffer[tempoffset[i]]));
 										exit(-1);
 									}else
-									/*	cprintf(GREEN, "blank packet i:%d pnum:%d fnum:%d num3:0x%x add:0x%x\n",
+//#ifdef PADDING
+										cprintf(GREEN, "blank packet i:%d pnum:%d fnum:%d num3:0x%x add:0x%x\n",
 												i,tempoffset[i],tempframenum[i],
 												(*(uint8_t*)(((eiger_packet_header *)((char*)(tempbuffer[tempoffset[i]])))->num3)),
-												(void*)(tempbuffer[tempoffset[i]]));*/
+												(void*)(tempbuffer[tempoffset[i]]));
+//#endif
 									tempoffset[i] ++;
 									blankoffset ++;
 								}
@@ -2298,10 +2312,12 @@ int UDPStandardImplementation::startWriting(){
 											tempframenum[i],(void*)(tempbuffer[tempoffset[i]]));
 									exit(-1);
 								}
-								/*cprintf(GREEN, "normal packet i:%d pnum:%d fnum:%d num3:0x%x add:0x%x\n",
+//#ifdef PADDING
+								cprintf(GREEN, "normal packet i:%d pnum:%d fnum:%d num3:0x%x add:0x%x\n",
 										i,tempoffset[i],tempframenum[i],
 										(*(uint8_t*)(((eiger_packet_header *)((char*)(tempbuffer[tempoffset[i]])))->num3)),
-										(void*)(tempbuffer[tempoffset[i]]));*/
+										(void*)(tempbuffer[tempoffset[i]]));
+//#endif
 								tempoffset[i] ++;
 								//update last packet
 								lastpacketheader[i] = currentpacketheader[i];
@@ -2331,10 +2347,10 @@ int UDPStandardImplementation::startWriting(){
 					numMissingPackets += (numberofmissingpackets[0]+numberofmissingpackets[1]);
 					numTotMissingPacketsInFile += numMissingPackets;
 					numTotMissingPackets += numMissingPackets;
-#ifdef EIGER_DEBUG2
+//#ifdef EIGER_DEBUG2
 					cprintf(GREEN,"**fnum:%d**\n",currframenum);
-#endif
-#ifdef EIGER_DEBUG3
+//#endif
+//#ifdef EIGER_DEBUG3
 					if(numberofmissingpackets[0])
 						cprintf(RED, "fifo 0 missing packets:%d fnum:%d\n",numberofmissingpackets[0],currframenum);
 					if(numberofmissingpackets[1])
@@ -2346,7 +2362,7 @@ int UDPStandardImplementation::startWriting(){
 							if ((*(uint8_t*)(((eiger_packet_header *)((char*)(tempbuffer[j])))->num3))&0x2)
 								cprintf(RED,"found the missing packet at pnum:%d\n",j);
 					}
-#endif
+//#endif
 
 
 					//write and copy to gui
@@ -2366,9 +2382,9 @@ int UDPStandardImplementation::startWriting(){
 						cprintf(GREEN,"%d writer freed pushed into fifofree %x for listener %d\n",ithread, (void*)(tofree[j]),1);
 #endif
 					}
-#ifdef VERYDEBUG
+//#ifdef VERYDEBUG
 					cprintf(GREEN,"finished freeing\n");
-#endif
+//#endif
 
 
 					//reset a few stuff
@@ -2388,11 +2404,13 @@ int UDPStandardImplementation::startWriting(){
 					}
 
 				}
-			/*	for(int i=0;i<numListeningThreads;i++){
+//#ifdef VERYDEBUG
+				for(int i=0;i<numListeningThreads;i++){
 					cprintf(GREEN," end of loop popready[%d]:%d add:0x%x\n",i,popready[i],(void*)(wbuf[i]));
 					cprintf(GREEN,"tempframenum[%d]:%d\n",i,((*(uint32_t*)(((eiger_packet_header *)((char*)(wbuf[i] + HEADER_SIZE_NUM_TOT_PACKETS)))->num1))));
 					cprintf(GREEN,"packetnum[%d]:%d\n",i,((*(uint8_t*)(((eiger_packet_header *)((char*)(wbuf[i] + HEADER_SIZE_NUM_TOT_PACKETS)))->num4))));
-				}*/
+				}
+//#endif
 			}
 
 
@@ -2955,11 +2973,12 @@ void UDPStandardImplementation::handleWithoutDataCompression(int ithread, char* 
 						cprintf(GREEN, "%d packet header:0x%016llx num3:0x%x\n",i,
 								((uint64_t)(*((uint64_t*)(wbuffer[i])))),
 								(uint8_t)(*(uint8_t*)(((eiger_packet_header *)((char*)(wbuffer[i])))->num3)));
+
+						cprintf(GREEN, "%d - 0x%x - %d - %d\n", i,
+								(*(uint8_t*)(((eiger_packet_header *)((char*)(wbuffer[i])))->num3)),
+								(*(uint8_t*)(((eiger_packet_header *)((char*)(wbuffer[i])))->num4)),
+								(*(uint16_t*)(((eiger_packet_header *)((char*)(wbuffer[i])))->num2)));
 					}
-					cprintf(GREEN, "%d - 0x%x - %d - %d\n", i,
-							(*(uint8_t*)(((eiger_packet_header *)((char*)(wbuffer[i])))->num3)),
-							(*(uint8_t*)(((eiger_packet_header *)((char*)(wbuffer[i])))->num4)),
-							(*(uint16_t*)(((eiger_packet_header *)((char*)(wbuffer[i])))->num2)));
 #endif
 /*
 					cprintf(GREEN,"at writing, fnum:%d, pnum:%d,num3:0x%x add:0x%x\n",

@@ -4598,6 +4598,8 @@ int* multiSlsDetector::readFrameFromReceiver(char* fName,  int &acquisitionIndex
 	int *retdet = NULL, *p=retval;
 	string fullFName="";
 	string ext="";
+	int index=-1,f_index=-1,p_index=-1,det_index=-1;
+	double sv0=-1,sv1=-1;
 
 	if(getDetectorsType() == EIGER){
 		maxX = thisMultiDetector->numberOfChannel[X];
@@ -4645,9 +4647,15 @@ int* multiSlsDetector::readFrameFromReceiver(char* fName,  int &acquisitionIndex
 								ext = ext.erase(0,dot);
 							else
 								ext = "";
+
+							//get variables
+							fileIOStatic::getVariablesFromFileName(fName,index, f_index, p_index, sv0, sv1, det_index);
+							fullFName.append(fileIOStatic::getReceiverFileNameToConcatenate(fName));
 						}
 					}
-					fullFName.append(getReceiverFileNameToConcatenate(fName));
+					if(!fileIOStatic::verifySameFrame(fName,index,f_index, p_index, sv0, sv1, det_index)){
+						fullFName.append(fileIOStatic::getReceiverFileNameToConcatenate(fName));
+					}
 				}
 			}else {
 #ifdef VERBOSE

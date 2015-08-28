@@ -27,6 +27,7 @@ class multiSlsDetectorClient  {
 	//myDetector->registerDataCallback(&dummyCallback,  NULL);
 	del=1;						      \
       };
+      cout << "noid" <<endl;
       myCmd=new multiSlsDetectorCommand(myDetector);	      \
       answer=myCmd->executeLine(argc, argv, action);	      \
       cout << answer<< endl;				      \
@@ -51,10 +52,10 @@ class multiSlsDetectorClient  {
       return;								\
     };									\
     if (myDetector==NULL) {						\
-      iv=sscanf(argv[0],"%d-%s",&id, cmd);				\
-      if (iv==2 && id>=0) {						\
+      iv=sscanf(argv[0],"%d-%s",&id, cmd);					\
+      if (id>=0) {						\
 	myDetector=new multiSlsDetector(id);				\
-	argv[0]=cmd;							\
+	argv[0]=cmd;						\
 	cout << id << "-" ;						\
       } else {								\
 	myDetector=new multiSlsDetector();				\

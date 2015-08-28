@@ -53,7 +53,7 @@ class multiSlsDetectorClient  {
     };									\
     if (myDetector==NULL) {						\
       iv=sscanf(argv[0],"%d-%s",&id, cmd);					\
-      if (id>=0) {						\
+      if (iv==2 && id>=0) {						\
 	myDetector=new multiSlsDetector(id);				\
 	argv[0]=cmd;						\
 	cout << id << "-" ;						\

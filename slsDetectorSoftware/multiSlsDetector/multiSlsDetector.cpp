@@ -380,18 +380,18 @@ void multiSlsDetector::updateOffsets(){
 	for (int i=1; i<thisMultiDetector->numberOfDetectors; i++) {
 		if (detectors[i]) {
 			//incrementing in y direction
-			if ((maxChanY == -1) || ((maxChanY > 0) && ((offsetY + numY) < maxChanY))){
+			if ((maxChanY == -1) || ((maxChanY > 0) && ((offsetY + detectors[i]->getMaxNumberOfChannels(Y)) < maxChanY))){
 				offsetY += detectors[i]->getMaxNumberOfChannels(Y);
 				maxY += detectors[i]->getMaxNumberOfChannels(Y);
 				numY += detectors[i]->getTotalNumberOfChannels(Y);
 			}
-			//incrementing in y direction
+			//incrementing in x direction
 			else{
 				offsetY = 0;
 				numY = 0;
 				maxY = 0;
 				thisMultiDetector->maxNumberOfChannel[Y] = 0;
-				if ((maxChanX == -1) || ((maxChanX > 0) && (offsetX <= maxChanX))){
+				if ((maxChanX == -1) || ((maxChanX > 0) && ((offsetX + detectors[i]->getMaxNumberOfChannels(X)) < maxChanX))){
 					offsetX += detectors[i]->getMaxNumberOfChannels(X);
 					numX += detectors[i]->getTotalNumberOfChannels(X);
 					maxX += detectors[i]->getMaxNumberOfChannels(X);
@@ -4598,6 +4598,8 @@ int* multiSlsDetector::readFrameFromReceiver(char* fName,  int &acquisitionIndex
 	int *retdet = NULL, *p=retval;
 	string fullFName="";
 	string ext="";
+	int index=-1,f_index=-1,p_index=-1,det_index=-1;
+	double sv0=-1,sv1=-1;
 
 	if(getDetectorsType() == EIGER){
 		maxX = thisMultiDetector->numberOfChannel[X];
@@ -4637,6 +4639,7 @@ int* multiSlsDetector::readFrameFromReceiver(char* fName,  int &acquisitionIndex
 					delete [] retdet;
 					//concatenate filenames
 					if(!fullFName.length()){
+						//assign file prefix
 						fullFName.assign(fileIO::getFileName());
 						if (strrchr(fName,'.')!=NULL){
 							ext.assign(fName);
@@ -4645,9 +4648,17 @@ int* multiSlsDetector::readFrameFromReceiver(char* fName,  int &acquisitionIndex
 								ext = ext.erase(0,dot);
 							else
 								ext = "";
+
+							//get variables
+							fileIOStatic::getVariablesFromFileName(fName,index, f_index, p_index, sv0, sv1, det_index);
+							//append scan and det variables
+							fullFName.append(fileIOStatic::getReceiverFileNameToConcatenate(fName));
 						}
 					}
-					fullFName.append(getReceiverFileNameToConcatenate(fName));
+					//append only if scan variables are different
+					if(!fileIOStatic::verifySameFrame(fName,index,f_index, p_index, sv0, sv1, det_index)){
+						fullFName.append(fileIOStatic::getReceiverFileNameToConcatenate(fName));
+					}
 				}
 			}else {
 #ifdef VERBOSE
@@ -4658,6 +4669,7 @@ int* multiSlsDetector::readFrameFromReceiver(char* fName,  int &acquisitionIndex
 			}
 		}
 	}
+	//append extension
 	fullFName.append(ext);
 	strcpy(fName,fullFName.c_str());
 	//if some of the receivers did not give data, dont count it

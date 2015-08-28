@@ -534,6 +534,7 @@ class slsDetectorBase :  public virtual slsDetectorDefs, public virtual errorDef
     case MOENCH:    return string("Moench");		\
     case JUNGFRAU:    return string("Jungfrau");		\
     case JUNGFRAUCTB:    return string("JungfrauCTB");		\
+    case PROPIX:    return string("Propix");		\
     default:    return string("Unknown");		\
     }};
 
@@ -550,6 +551,7 @@ class slsDetectorBase :  public virtual slsDetectorDefs, public virtual errorDef
     if  (type=="Moench")    return MOENCH;		\
     if  (type=="Jungfrau")    return JUNGFRAU;		\
     if  (type=="JungfrauCTB")    return JUNGFRAUCTB;		\
+    if  (type=="Propix")    return PROPIX;		\
     return GENERIC;};
 
 

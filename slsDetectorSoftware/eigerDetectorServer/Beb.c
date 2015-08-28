@@ -15,8 +15,12 @@
 #include <string.h>
 #include <unistd.h>
 
+
+
+
 #include "xfs_types.h"
 #include "xparameters.h"
+#include "FebRegisterDefs.h"
 
 #include "Beb.h"
 
@@ -26,7 +30,6 @@
 	 int bebInfoSize = 0;
 
 		struct LocalLinkInterface ll_beb_local,* ll_beb;
-		struct LocalLinkInterface ll_beb_new_memory_local,* ll_beb_new_memory;
 
 		 struct udp_header_type udp_header;
 
@@ -146,27 +149,59 @@ void Beb_GetModuleCopnfiguration(int* master, int* top){
 	*top = 0;
 	*master = 0;
 	  //mapping new memory to read master top module configuration
-	  ll_beb_new_memory = &ll_beb_new_memory_local;
-	  Local_LocalLinkInterface(ll_beb_new_memory);
-	  int ret  = Local_GetModuleConfiguration(ll_beb_new_memory,XPAR_PLB_GPIO_SYS_BASEADDR, MODULE_CONFIGURATION);
-	  if(!ret)
-		  printf("Module Configuration FAIL\n");
-	  else{
-		  printf("Module Configuration OK\n");
-		  printf("Beb: value =0x%x\n",ret);
-		  if(ret&0xf){
-			  *top = 1;
-			 // printf("Beb.c: TOP\n\n\n\n");
-		  }//else  printf("Beb.c: BOTTOM\n\n\n\n");
-
-		  if(ret&0x200){
-			  *master = 1;
-			 // printf("Beb.c: MASTER\n\n\n\n");
-		  }//else  printf("Beb.c: SLAVE\n\n\n\n");
-	  }
+		u_int32_t baseaddr;
+		int ret;
+		//open file pointer
+		int fd = Beb_open(XPAR_PLB_GPIO_SYS_BASEADDR,&baseaddr);
+		if(fd < 0){
+			 cprintf(RED,"Module Configuration FAIL\n");
+		}else{
+			//read data
+			ret = Beb_Read32(baseaddr, MODULE_CONFIGURATION_MASK);
+			printf("Module Configuration OK\n");
+			printf("Beb: value =0x%x\n",ret);
+			if(ret&TOP_BIT_MASK)
+				*top = 1;
+			if(ret&MASTER_BIT_MASK)
+				*master = 1;
+			//close file pointer
+			Beb_close(fd);
+		}
 }
 
 
+u_int32_t Beb_GetFirmwareRevision(){
+	//mapping new memory
+	u_int32_t baseaddr, value = 0;
+
+	//open file pointer
+	int fd = Beb_open(XPAR_VERSION,&baseaddr);
+	if(fd < 0)
+		cprintf(RED,"Firmware Revision Read FAIL\n");
+
+	else{
+		//read revision existing bit
+		value = Beb_Read32(baseaddr, REVISION_EXISTING_OFFSET);
+		printf("Firmware Revision Read OK\n");
+		//error reading
+		if(!(value&REVISION_EXISTING_BIT)){
+			cprintf(RED,"Firmware Revision Number does not exist in this version\n");
+			value = 0;
+		}else{
+			//read revision number
+			value = Beb_Read32(baseaddr, 0);
+			printf("Firmware Revision Number Read OK\n");
+			printf("Rev: 0x%x.%x\n\n",value & REVISION_MASK,value & SUB_REVISION_MASK);
+			value &= REVISION_MASK;
+		}
+	}
+
+	//close file pointer
+	if(fd > 0)
+		Beb_close(fd);
+
+	return value;
+}
 
 void Beb_ClearBebInfos(){
 	//unsigned int i;
@@ -542,154 +577,143 @@ int Beb_SetUpTransferParameters(short the_bit_mode){
 
 int Beb_StopAcquisition()
 {
+	u_int32_t baseaddr;
+	volatile u_int32_t valuel,valuer;
+	//open file pointer
+	int fd = Beb_open(XPAR_CMD_GENERATOR,&baseaddr);
+	if(fd < 0){
+		cprintf(RED,"Beb Stop Acquisition FAIL\n");
+		return 0;
+	}else{
+		//find value
+		valuel = Beb_Read32(baseaddr, (LEFT_OFFSET+STOP_ACQ_OFFSET));
+		valuer = Beb_Read32(baseaddr, (RIGHT_OFFSET+STOP_ACQ_OFFSET));
+		//high
+		Beb_Write32(baseaddr, (LEFT_OFFSET + STOP_ACQ_OFFSET),(valuel|STOP_ACQ_BIT));
+		Beb_Write32(baseaddr, (RIGHT_OFFSET + STOP_ACQ_OFFSET),(valuer|STOP_ACQ_BIT));
+		//low
+		Beb_Write32(baseaddr, (LEFT_OFFSET + STOP_ACQ_OFFSET),(valuel&(~STOP_ACQ_BIT)));
+		Beb_Write32(baseaddr, (RIGHT_OFFSET + STOP_ACQ_OFFSET),(valuer&(~STOP_ACQ_BIT)));
 
-  volatile u_int32_t* ptrl;
-  volatile u_int32_t* ptrr;
-  // Mapping
-  int fd;
-  fd = open("/dev/mem", O_RDWR | O_SYNC, 0);
-  if (fd == -1)
-  {
-	  printf("\nCan't find /dev/mem!\n");
-	  return 0;
-  }
-  u_int32_t CSP0BASE = (u_int32_t)mmap(0, 0x1000, PROT_READ|PROT_WRITE, MAP_FILE|MAP_SHARED, fd, 0xC5000000 );
-  if (CSP0BASE == (u_int32_t)MAP_FAILED)
-  {
-	  printf("\nCan't map memmory area!!\n");
-	  return 0;
-  }
-
-  ptrl = (u_int32_t*)(CSP0BASE);
-  ptrr = (u_int32_t*)(CSP0BASE+0x100);
-
-  *(ptrl+7) = (1 << 30);
-  *(ptrr+7) = (1 << 30);
-  *(ptrl+7) = 0;
-  *(ptrr+7) = 0;
-  close(fd);
+		printf("Beb Stop Acquisition OK\n");
+		//close file pointer
+		Beb_close(fd);
+	}
+	return 1;
 }
 
 int Beb_RequestNImages(unsigned int beb_number, int ten_gig, unsigned int dst_number, unsigned int nimages, int test_just_send_out_packets_no_wait){
-  if(dst_number>64) return 0;
+	if(dst_number>64) return 0;
 
-  unsigned int     header_size  = 4; //4*64 bits
-  unsigned int     packet_size  = ten_gig ? 0x200 : 0x80; // 4k or  1k packets 
-  unsigned int         npackets = ten_gig ?  Beb_bit_mode*4 : Beb_bit_mode*16;
-  int          in_two_requests = (!ten_gig&&Beb_bit_mode==32);
+	unsigned int     header_size  = 4; //4*64 bits
+	unsigned int     packet_size  = ten_gig ? 0x200 : 0x80; // 4k or  1k packets
+	unsigned int         npackets = ten_gig ?  Beb_bit_mode*4 : Beb_bit_mode*16;
+	int          in_two_requests = (!ten_gig&&Beb_bit_mode==32);
 
-  volatile u_int32_t* ptrl;
-  volatile u_int32_t* ptrr;
-  u_int32_t send_header_command;
-  u_int32_t send_frame_command;
+	// volatile u_int32_t* ptrl;
+	// volatile u_int32_t* ptrr;
+	u_int32_t send_header_command;
+	u_int32_t send_frame_command;
 
-  if(in_two_requests) npackets/=2;
-
-#ifdef MARTIN
-  cprintf(RED, "----Beb_RequestNImages Start----\n");
-  cprintf(RED, "beb_number:%X, ten_gig:%X,dst_number:%X,npackets:%X,Beb_bit_mode:%X,header_size:%X,nimages:%d,test_just_send_out_packets_no_wait:%X\n",beb_number,ten_gig,dst_number,npackets,Beb_bit_mode,header_size,nimages,test_just_send_out_packets_no_wait);
-#endif
-
-  // CMD_GEN core registers
-  //
-  // base for left feb fpga  + 0x000
-  // base for right feb fpga + 0x100 Bytes
-  //
-  // OFFSETs given in Bytes
-  // base+00 0xC0DE0001 (static r/o)
-  // base+04 0x636D6467 (static r/o, ASCII for "CMDG")
-  //
-  // base+08 1st 32bits of 1st command
-  // base+0c 2nd 32bits of 1st command
-  //
-  // base+10 1st 32bits of 2nd command
-  // base+14 2nd 32bits of 2nd command
-  //
-  // base+1c command counter (sends n commands)
-  //         <32 Bit mode : 2 commands for 1 frame neccessary (header + frame) (10 frames = 20 commands)
-  //          32 Bit mode : 3 commands for 1 frame neccessary (header + 1st halfframe + 2nd halfframe) (10 frames = 30 commands)
-  //         if > 0 core starts operation
-  //
-  // base+20 command mode (for 32 bit mode)
-  //         0            for 2 command mode (send 1st command and 2nd command) (header + frame)
-  //         1 on bit 31  for 3 command mode (send 1st command, 2nd command, and 2nd command) (header + 1st halfframe + 2nd halfframe)
-  //
-  //
-  // Warning: Hard coded base address 0xc5000000 (TBD)
-  //
-
-
-  // Mapping
-  int fd;
-  fd = open("/dev/mem", O_RDWR | O_SYNC, 0);
-  if (fd == -1)
-  {
-	  printf("\nCan't find /dev/mem!\n");
-	  return 0;
-  }
-  u_int32_t CSP0BASE = (u_int32_t)mmap(0, 0x1000, PROT_READ|PROT_WRITE, MAP_FILE|MAP_SHARED, fd, 0xC5000000 );
-  if (CSP0BASE == (u_int32_t)MAP_FAILED)
-  {
-	  printf("\nCan't map memmory area!!\n");
-	  return 0;
-  }
-
-  ptrl = (u_int32_t*)(CSP0BASE);
-  ptrr = (u_int32_t*)(CSP0BASE+0x100);
-
-  int i;
+	if(in_two_requests) npackets/=2;
 
 #ifdef MARTIN
-  for (i=0; i < 10; i++)
-	  printf("%X\n",*(ptrl+i));
+	cprintf(RED, "----Beb_RequestNImages Start----\n");
+	cprintf(RED, "beb_number:%X, ten_gig:%X,dst_number:%X,npackets:%X,Beb_bit_mode:%X,header_size:%X,nimages:%d,test_just_send_out_packets_no_wait:%X\n",beb_number,ten_gig,dst_number,npackets,Beb_bit_mode,header_size,nimages,test_just_send_out_packets_no_wait);
 #endif
 
-  // Generating commands
-  send_header_command = 0x62000000 | (!test_just_send_out_packets_no_wait) << 27 | (ten_gig==1) << 24 | header_size << 14 |            0;
-  send_frame_command  = 0x62000000 | (!test_just_send_out_packets_no_wait) << 27 | (ten_gig==1) << 24 | packet_size << 14 | (npackets-1);
+	// CMD_GEN core registers
+	//
+	// base for left feb fpga  + 0x000
+	// base for right feb fpga + 0x100 Bytes
+	//
+	// OFFSETs given in Bytes
+	// base+00 0xC0DE0001 (static r/o)
+	// base+04 0x636D6467 (static r/o, ASCII for "CMDG")
+	//
+	// base+08 1st 32bits of 1st command
+	// base+0c 2nd 32bits of 1st command
+	//
+	// base+10 1st 32bits of 2nd command
+	// base+14 2nd 32bits of 2nd command
+	//
+	// base+18 command counter (sends n commands)
+	//         <32 Bit mode : 2 commands for 1 frame neccessary (header + frame) (10 frames = 20 commands)
+	//          32 Bit mode : 3 commands for 1 frame neccessary (header + 1st halfframe + 2nd halfframe) (10 frames = 30 commands)
+	//         if > 0 core starts operation
+	//
+	// base+1c command mode (for 32 bit mode)
+	//         0            for 2 command mode (send 1st command and 2nd command) (header + frame)
+	//         1 on bit 31  for 3 command mode (send 1st command, 2nd command, and 2nd command) (header + 1st halfframe + 2nd halfframe)
+	//
+	//
+	// Warning: Hard coded base address 0xc5000000 (TBD)
+	//
+
+
+	u_int32_t right_port_value = 0x2000;
+	u_int32_t baseaddr;
+	volatile u_int32_t value;
+	//open file pointer
+	int fd = Beb_open(XPAR_CMD_GENERATOR,&baseaddr);
+	if(fd < 0){
+		cprintf(RED,"Beb Request N Images FAIL\n");
+		return 0;
+	}else{
 
 #ifdef MARTIN
-  for (i=0; i < 10; i++)
-	  printf("%X\n",*(ptrl+i));
-  printf("%d\n",in_two_requests);
+		int i;
+		for (i=0; i < 10; i++)
+			printf("%X\n",Beb_Read32(baseaddr, (LEFT_OFFSET + i*4)));
 #endif
-
-  // Wait until last command was send successfully
-//  while (*(ptrl+6) != 0);
-//  while (*(ptrr+6) != 0);
-
-  //"0x20 << 8" is dst_number (0x00 for left, 0x20 for right)
-  //Left
-  *(ptrl+2) = 0;
-  *(ptrl+3) = send_header_command;
-  *(ptrl+4) = 0;
-  *(ptrl+5) = send_frame_command;
-  *(ptrl+7) = in_two_requests << 31;
-
-  // Right
-  *(ptrr+2) = 0;
-  *(ptrr+3) = send_header_command | 0x2000;
-  *(ptrr+4) = 0;
-  *(ptrr+5) = send_frame_command  | 0x2000;
-  *(ptrr+7) = in_two_requests | (in_two_requests << 31);
-
-  // Set number of frames
-  *(ptrl+6) = nimages*(2+in_two_requests);
-  *(ptrr+6) = nimages*(2+in_two_requests);
+		// Generating commands
+		send_header_command = 0x62000000 | (!test_just_send_out_packets_no_wait) << 27 | (ten_gig==1) << 24 | header_size << 14 |            0;
+		send_frame_command  = 0x62000000 | (!test_just_send_out_packets_no_wait) << 27 | (ten_gig==1) << 24 | packet_size << 14 | (npackets-1);
 
 #ifdef MARTIN
-  for (i=0; i < 10; i++)
-	  printf("%X\n",*(ptrl+i));
-  printf("%d\n",in_two_requests);
+		for (i=0; i < 10; i++)
+			printf("%X\n",Beb_Read32(baseaddr, (LEFT_OFFSET + i*4)));
+		printf("%d\n",in_two_requests);
 #endif
 
-  close(fd);
+		//"0x20 << 8" is dst_number (0x00 for left, 0x20 for right)
+		//Left
+		Beb_Write32(baseaddr, (LEFT_OFFSET + FIRST_CMD_PART1_OFFSET),0);
+		Beb_Write32(baseaddr, (LEFT_OFFSET + FIRST_CMD_PART2_OFFSET),send_header_command);
+		Beb_Write32(baseaddr, (LEFT_OFFSET + SECOND_CMD_PART1_OFFSET),0);
+		Beb_Write32(baseaddr, (LEFT_OFFSET + SECOND_CMD_PART2_OFFSET),send_frame_command);
+		value = Beb_Read32(baseaddr,(LEFT_OFFSET + TWO_REQUESTS_OFFSET));
+		if(in_two_requests)	Beb_Write32(baseaddr, (LEFT_OFFSET + TWO_REQUESTS_OFFSET),(value | TWO_REQUESTS_BIT));
+		else				Beb_Write32(baseaddr, (LEFT_OFFSET + TWO_REQUESTS_OFFSET),(value &~(TWO_REQUESTS_BIT)));
+
+		// Right
+		Beb_Write32(baseaddr, (RIGHT_OFFSET + FIRST_CMD_PART1_OFFSET),0);
+		Beb_Write32(baseaddr, (RIGHT_OFFSET + FIRST_CMD_PART2_OFFSET),send_header_command | right_port_value);
+		Beb_Write32(baseaddr, (RIGHT_OFFSET + SECOND_CMD_PART1_OFFSET),0);
+		Beb_Write32(baseaddr, (RIGHT_OFFSET + SECOND_CMD_PART2_OFFSET),send_frame_command | right_port_value);
+		value = Beb_Read32(baseaddr,(RIGHT_OFFSET + TWO_REQUESTS_OFFSET));
+		if(in_two_requests)	Beb_Write32(baseaddr, (RIGHT_OFFSET + TWO_REQUESTS_OFFSET),(value | TWO_REQUESTS_BIT));
+		else				Beb_Write32(baseaddr, (RIGHT_OFFSET + TWO_REQUESTS_OFFSET),(value &~(TWO_REQUESTS_BIT)));
+
+
+		// Set number of frames
+		Beb_Write32(baseaddr, (LEFT_OFFSET + COMMAND_COUNTER_OFFSET), nimages*(2+in_two_requests));
+		Beb_Write32(baseaddr, (RIGHT_OFFSET + COMMAND_COUNTER_OFFSET), nimages*(2+in_two_requests));
 
 #ifdef MARTIN
-  cprintf(RED, "----Beb_RequestNImages----\n");
+		for (i=0; i < 10; i++)
+			printf("%X\n",Beb_Read32(baseaddr, (LEFT_OFFSET + i*4))); //*(ptrl+i));
+		printf("%d\n",in_two_requests);
 #endif
 
-  return 1;
+		Beb_close(fd);
+
+#ifdef MARTIN
+		printf("----Beb_RequestNImages----\n");
+#endif
+	}
+
+	return 1;
 }
 
 
@@ -758,3 +782,46 @@ int Beb_GetBebFPGATemp()
 	return temperature;
 }
 
+
+
+
+
+int Beb_open(u_int32_t baseaddr, u_int32_t* csp0base){
+
+	int fd = open("/dev/mem", O_RDWR | O_SYNC, 0);
+	if (fd == -1)
+		cprintf(RED,"\nCan't find /dev/mem!\n");
+	else{
+#ifdef VERBOSE
+		printf("/dev/mem opened\n");
+#endif
+		*csp0base = (u_int32_t)mmap(0, 0x1000, PROT_READ|PROT_WRITE, MAP_FILE|MAP_SHARED, fd, baseaddr);
+		if (*csp0base == (u_int32_t)MAP_FAILED) {
+			cprintf(RED,"\nCan't map memmory area!!\n");
+			fd = -1;
+		}
+#ifdef VERBOSE
+		else printf("CSP0 mapped\n");
+#endif
+	}
+	return fd;
+}
+
+u_int32_t Beb_Read32 (u_int32_t baseaddr, u_int32_t offset){
+	volatile u_int32_t *ptr1;
+	ptr1=(u_int32_t*)(baseaddr + offset);
+	return *ptr1;
+}
+
+
+u_int32_t Beb_Write32 (u_int32_t baseaddr, u_int32_t offset, u_int32_t data){
+	volatile u_int32_t *ptr1;
+	ptr1=(u_int32_t*)(baseaddr + offset);
+	*ptr1 = data;
+	return *ptr1;
+}
+
+void Beb_close(int fd){
+	if(fd >= 0)
+		close(fd);
+}

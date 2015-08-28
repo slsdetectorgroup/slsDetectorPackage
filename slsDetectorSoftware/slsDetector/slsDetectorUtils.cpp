@@ -53,6 +53,14 @@ void  slsDetectorUtils::acquire(int delflag){
 
   int multiframe = nc*nf;
 
+  //
+  if(setDynamicRange() == 32)  subframe = 1;
+  else subframe = 0;
+
+  pthread_mutex_lock(&mg);
+  acquiringDone = 0;
+  pthread_mutex_unlock(&mg);
+
   // setTotalProgress();
   //moved these 2 here for measurement change
   progressIndex=0;
@@ -462,8 +470,11 @@ void  slsDetectorUtils::acquire(int delflag){
   pthread_mutex_unlock(&mg);
 
 
-    if (measurement_finished)
-      measurement_finished(im,*fileIndex,measFinished_p);
+    if (measurement_finished){
+    	  pthread_mutex_lock(&mg);
+    	  measurement_finished(im,*fileIndex,measFinished_p);
+    	  pthread_mutex_unlock(&mg);
+    }
 
     if (*stoppedFlag) {
       break;
@@ -806,6 +817,7 @@ int slsDetectorUtils::dumpDetectorSetup(string const fname, int level){
 		names[nvar++]="ratecorr";
 		break;
   case GOTTHARD:
+  case PROPIX:
   names[nvar++]="flags";
 		names[nvar++]="delay";
 		names[nvar++]="gates";
@@ -889,6 +901,7 @@ int slsDetectorUtils::dumpDetectorSetup(string const fname, int level){
   case EIGER:
   case MYTHEN:
   case GOTTHARD:
+  case PROPIX:
   names[nvar++]="flatfield";
   names[nvar++]="badchannels";
   break;

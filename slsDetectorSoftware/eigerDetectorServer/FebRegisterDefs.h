@@ -109,3 +109,30 @@
 #define CHIP_DATA_OUT_DELAY_REG3           3
 #define CHIP_DATA_OUT_DELAY_REG4           4
 #define CHIP_DATA_OUT_DELAY_SET            0x20000000
+
+//module configuration
+#define TOP_BIT_MASK				0x00f
+#define MASTER_BIT_MASK				0x200
+// Master Slave Top Bottom Definition
+#define MODULE_CONFIGURATION_MASK 0x84
+
+//command memory
+#define LEFT_OFFSET					0x0
+#define RIGHT_OFFSET				0x100
+
+#define FIRST_CMD_PART1_OFFSET		0x8
+#define FIRST_CMD_PART2_OFFSET		0xc
+#define SECOND_CMD_PART1_OFFSET		0x10
+#define SECOND_CMD_PART2_OFFSET		0x14
+#define COMMAND_COUNTER_OFFSET		0x18
+#define STOP_ACQ_OFFSET 			0x1c
+#define STOP_ACQ_BIT				0x40000000
+#define TWO_REQUESTS_OFFSET			0x1c
+#define TWO_REQUESTS_BIT			0x80000000
+
+//firmware version
+#define REVISION_EXISTING_OFFSET	8
+#define REVISION_EXISTING_BIT		0x80000000
+#define REVISION_MASK				0x0FFFFFFF
+#define SUB_REVISION_MASK			0xF0000000
+

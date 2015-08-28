@@ -32,29 +32,6 @@ void Local_LocalLinkInterface(struct LocalLinkInterface* ll){
 	printf("Initializing new memory\n");
 }
 
-int Local_GetModuleConfiguration (struct LocalLinkInterface* ll, u_int32_t baseaddr, u_int32_t offset){
-	int fd = open("/dev/mem", O_RDWR | O_SYNC, 0);
-	if (fd == -1) {
-		printf("\nCan't find /dev/mem!\n");
-		return 0;
-	}
-	printf("/dev/mem opened\n");
-
-	u_int32_t CSP0BASE = (u_int32_t)mmap(0, 0x100000, PROT_READ|PROT_WRITE, MAP_FILE|MAP_SHARED, fd, baseaddr);
-	if (CSP0BASE == (u_int32_t)MAP_FAILED) {
-		printf("\nCan't map memmory area!!\n");
-		return 0;
-	}
-	printf("CSP0 mapped\n");
-
-	volatile u_int32_t *ptr1;
-	ptr1=(u_int32_t*)(CSP0BASE + offset);
-	//printf("LocalLinkInterface:: value:%d\n",*ptr1);
-	close(fd);
-
-	return *ptr1;
-}
-
 
 
 int Local_Init(struct LocalLinkInterface* ll,unsigned int ll_fifo_badr){

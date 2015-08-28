@@ -495,12 +495,15 @@ void* postProcessing::processData(int delflag) {
 		 */
 
 
-		int progress = -1;
+		int progress = 0;
 		char currentfName[MAX_STR_LENGTH]="";
+		int caught = -1;
 		int currentAcquisitionIndex = -1;
 		int currentFrameIndex = -1;
 		bool newData = false;
 		int nthframe = setReadReceiverFrequency(0);
+
+
 #ifdef VERBOSE
 		std::cout << "receiver read freq:" << nthframe << std::endl;
 #endif
@@ -527,14 +530,23 @@ void* postProcessing::processData(int delflag) {
 			//get progress
 			pthread_mutex_lock(&mg);
 			if(setReceiverOnline() == ONLINE_FLAG)
-				currentAcquisitionIndex = getReceiverCurrentFrameIndex();
+				caught = getFramesCaughtByReceiver();//getReceiverCurrentFrameIndex();
 			pthread_mutex_unlock(&mg);
 
 			//updating progress
-			if(currentAcquisitionIndex != -1)
-				setCurrentProgress(currentAcquisitionIndex+1);
+			if(currentAcquisitionIndex != -1){
+				setCurrentProgress(caught);
+				/*
+				if(subframe){
+					pthread_mutex_lock(&mg);
+					setCurrentProgress(getFramesCaughtByReceiver());
+					pthread_mutex_unlock(&mg);
+				}else
+					setCurrentProgress(currentAcquisitionIndex+1);
+					*/
+			}
 #ifdef VERY_VERY_DEBUG
-			cout << "currentAcquisitionIndex:" << currentAcquisitionIndex << endl;
+			cout << "caught:" << caught << endl;
 #endif
 
 
@@ -555,7 +567,7 @@ void* postProcessing::processData(int delflag) {
 #endif
 				pthread_mutex_unlock(&mg);
 				//go through once more to get last nth frame data
-				if (acquiringDone >= 2){
+				if (acquiringDone >= 5){cout<<"acquiringdone:"<<acquiringDone<<endl;
 					if((!nthframe) ||(!newData)){
 #ifdef VERY_VERY_DEBUG
 						cout << "gonna post for it to end" << endl;
@@ -577,11 +589,23 @@ void* postProcessing::processData(int delflag) {
 
 
 
-			if (dataReady){
+
 				//for random reads, ask only if it has new data
 				if(!newData){
-					if(currentAcquisitionIndex > progress)
+					if(caught > progress){
 						newData = true;
+/*
+						// keeping acquiringdone at 1 to get more time to get data
+						if(acquiringDone > 0){cout<<"going to maintain acquiidne"<<endl;
+							pthread_mutex_lock(&mg);
+							acquiringDone = 1;
+			//#ifdef VERY_VERY_DEBUG
+							cout << "Keeping acquiringDone at 1 " << endl;
+			//#endif
+							pthread_mutex_unlock(&mg);
+						}*/
+
+					}
 #ifdef VERY_VERY_DEBUG
 					cout << "currentAcquisitionIndex:" << currentAcquisitionIndex << " progress:" << progress << endl;
 #endif
@@ -591,56 +615,72 @@ void* postProcessing::processData(int delflag) {
 #ifdef VERY_VERY_DEBUG
 					cout << "new data" << endl;
 #endif
-					if(setReceiverOnline()==ONLINE_FLAG){
-						//get data
-						strcpy(currentfName,"");
-						pthread_mutex_lock(&mg);
-						//int* receiverData = new int [getTotalNumberOfChannels()];
-						int* receiverData = readFrameFromReceiver(currentfName,currentAcquisitionIndex,currentFrameIndex);
-						pthread_mutex_unlock(&mg);
-
-						//if detector returned null
-						if(setReceiverOnline()==OFFLINE_FLAG)
-							receiverData = NULL;
-
-						//no data or wrong data for print out
-						if(receiverData == NULL){
-							currentAcquisitionIndex = -1;
-							cout<<"****Detector Data returned is NULL***"<<endl;
-						}
-
-						//not garbage frame
-						if(currentAcquisitionIndex < 0){
+					//no gui
+					if (!dataReady){
+						progress = caught;
 #ifdef VERY_VERY_DEBUG
-							cout<<"****Detector returned mismatched indices/garbage  or acquisition is over. Trying again.***"<<endl;
+						cout << "progress:" << progress << endl;
 #endif
-							if(receiverData)
+						newData = false;
+#ifdef VERY_VERY_DEBUG
+						cout << "newData set to false" << endl;
+#endif
+					}
+					//gui
+					else{
+						if(setReceiverOnline()==ONLINE_FLAG){
+							//get data
+							strcpy(currentfName,"");
+							pthread_mutex_lock(&mg);
+							//int* receiverData = new int [getTotalNumberOfChannels()];
+							int* receiverData = readFrameFromReceiver(currentfName,currentAcquisitionIndex,currentFrameIndex);
+							pthread_mutex_unlock(&mg);
+
+							//if detector returned null
+							if(setReceiverOnline()==OFFLINE_FLAG)
+								receiverData = NULL;
+
+							//no data or wrong data for print out
+							if(receiverData == NULL){
+								currentAcquisitionIndex = -1;
+								cout<<"****Detector Data returned is NULL***"<<endl;
+							}
+
+							// garbage frame
+							if(currentAcquisitionIndex < 0){
+#ifdef VERY_VERY_DEBUG
+								cout<<"****Detector returned mismatched indices/garbage  or acquisition is over. Trying again.***"<<endl;
+#endif
+								if(receiverData)
+									delete [] receiverData;
+							}
+							//not garbage frame
+							else{// if (currentAcquisitionIndex > progress){
+#ifdef VERY_VERY_DEBUG
+								cout << "GOT data" << endl;
+#endif
+								fdata = decodeData(receiverData);
 								delete [] receiverData;
-						}else if (currentAcquisitionIndex > progress){
+								if ((fdata) && (dataReady)){
+									//  cout << "DATAREADY 3" << endl;
+									thisData = new detectorData(fdata,NULL,NULL,getCurrentProgress(),currentfName,getTotalNumberOfChannels());
+									dataReady(thisData, currentFrameIndex, pCallbackArg);
+									delete thisData;
+									fdata = NULL;
+									progress = caught;
 #ifdef VERY_VERY_DEBUG
-							cout << "GOT data" << endl;
+									cout << "progress:" << progress << endl;
 #endif
-							fdata = decodeData(receiverData);
-							delete [] receiverData;
-							if ((fdata) && (dataReady)){
-								//  cout << "DATAREADY 3" << endl;
-								thisData = new detectorData(fdata,NULL,NULL,getCurrentProgress(),currentfName,getTotalNumberOfChannels());
-								dataReady(thisData, currentFrameIndex, pCallbackArg);
-								delete thisData;
-								fdata = NULL;
-								progress = currentAcquisitionIndex;
+									newData = false;
 #ifdef VERY_VERY_DEBUG
-								cout << "progress:" << progress << endl;
+									cout << "newData set to false" << endl;
 #endif
-								newData = false;
-#ifdef VERY_VERY_DEBUG
-								cout << "newData set to false" << endl;
-#endif
+								}
 							}
 						}
 					}
 				}
-			}
+
 		}
 	}
 

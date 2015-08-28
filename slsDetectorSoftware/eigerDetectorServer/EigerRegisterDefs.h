@@ -109,3 +109,8 @@
 #define CHIP_DATA_OUT_DELAY_REG3           3
 #define CHIP_DATA_OUT_DELAY_REG4           4
 #define CHIP_DATA_OUT_DELAY_SET            0x20000000
+
+
+//module configuration
+#define TOP_BIT_MASK				0x00f
+#define MASTER_BIT_MASK				0x200

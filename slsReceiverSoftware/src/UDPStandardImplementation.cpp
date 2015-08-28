@@ -27,6 +27,7 @@
 using namespace std;
 
 
+#define WRITE_HEADERS
 
 
 UDPStandardImplementation::UDPStandardImplementation()
@@ -79,6 +80,7 @@ UDPStandardImplementation::UDPStandardImplementation()
 	  cout << "\nWARNING: Could not change socket receiver buffer size in file /proc/sys/net/core/rmem_max" << endl;
 	else if(system("echo 250000 > /proc/sys/net/core/netdev_max_backlog"))
 	  cout << "\nWARNING: Could not change max length of input queue in file /proc/sys/net/core/netdev_max_backlog" << endl;
+
 	/** permanent setting heiner
 	    net.core.rmem_max = 104857600 # 100MiB
 	    net.core.netdev_max_backlog = 250000
@@ -261,6 +263,9 @@ int UDPStandardImplementation::setDetectorType(detectorType det){ 	FILE_LOG(logD
 	case GOTTHARD:
 		cout << endl << "***** This is a GOTTHARD Receiver *****" << endl << endl;
 		break;
+	case PROPIX:
+		cout << endl << "***** This is a PROPIX Receiver *****" << endl << endl;
+		break;
 	case MOENCH:
 		cout << endl << "***** This is a MOENCH Receiver *****" << endl << endl;
 		break;
@@ -279,7 +284,7 @@ int UDPStandardImplementation::setDetectorType(detectorType det){ 	FILE_LOG(logD
 		break;
 	}
 
-	//moench variables
+	//detector specific variables
 	if(myDetectorType == GOTTHARD){
 		fifosize 			= GOTTHARD_FIFO_SIZE;
 		packetsPerFrame 	= GOTTHARD_PACKETS_PER_FRAME;
@@ -290,6 +295,16 @@ int UDPStandardImplementation::setDetectorType(detectorType det){ 	FILE_LOG(logD
 		frameIndexMask 		= GOTTHARD_FRAME_INDEX_MASK;
 		frameIndexOffset 	= GOTTHARD_FRAME_INDEX_OFFSET;
 		packetIndexMask 	= GOTTHARD_PACKET_INDEX_MASK;
+	}else if(myDetectorType == PROPIX){
+		fifosize 			= PROPIX_FIFO_SIZE;
+		packetsPerFrame 	= PROPIX_PACKETS_PER_FRAME;
+		onePacketSize		= PROPIX_ONE_PACKET_SIZE;
+		frameSize			= PROPIX_BUFFER_SIZE;
+		bufferSize 			= PROPIX_BUFFER_SIZE;
+		maxPacketsPerFile 	= MAX_FRAMES_PER_FILE * PROPIX_PACKETS_PER_FRAME;
+		frameIndexMask 		= PROPIX_FRAME_INDEX_MASK;
+		frameIndexOffset 	= PROPIX_FRAME_INDEX_OFFSET;
+		packetIndexMask 	= PROPIX_PACKET_INDEX_MASK;
 	}else if(myDetectorType == MOENCH){
 		fifosize 			= MOENCH_FIFO_SIZE;
 		packetsPerFrame 	= MOENCH_PACKETS_PER_FRAME;
@@ -562,19 +577,25 @@ int UDPStandardImplementation::getDynamicRange() const{
 
 int32_t UDPStandardImplementation::setDynamicRange(int32_t dr){ 	FILE_LOG(logDEBUG) << __AT__ << " called";
 
-	cout << "Setting Dynamic Range" << endl;
-
 	int olddr = dynamicRange;
+
 	if(dr >= 0){
+		cout << "Setting Dynamic Range to " << dr << endl;
+
 		dynamicRange = dr;
 
 		if(myDetectorType == EIGER){
 
 
-			if(!tengigaEnable)
+			if(!tengigaEnable){
 				packetsPerFrame 	= EIGER_ONE_GIGA_CONSTANT * dynamicRange * EIGER_MAX_PORTS;
-			else
+				onePacketSize		= EIGER_ONE_GIGA_ONE_PACKET_SIZE;
+
+			}else{
 				packetsPerFrame 	= EIGER_TEN_GIGA_CONSTANT * dynamicRange * EIGER_MAX_PORTS;
+				onePacketSize		= EIGER_TEN_GIGA_ONE_PACKET_SIZE;
+			}
+
 			frameSize			= onePacketSize * packetsPerFrame;
 			bufferSize 			= (frameSize/EIGER_MAX_PORTS) + EIGER_HEADER_LENGTH;//everything one port gets (img header plus packets)
 			maxPacketsPerFile 	= EIGER_MAX_FRAMES_PER_FILE * packetsPerFrame;
@@ -614,7 +635,8 @@ int32_t UDPStandardImplementation::setDynamicRange(int32_t dr){ 	FILE_LOG(logDEB
 			}
 		}
 
-	}
+	}else cout << "Getting Dynamic Range " << endl;
+
 
 	return getDynamicRange();
 }
@@ -824,6 +846,8 @@ void UDPStandardImplementation::setupFifoStructure(){
 	fifosize = GOTTHARD_FIFO_SIZE;
 	if(myDetectorType == MOENCH)
 		fifosize = MOENCH_FIFO_SIZE;
+	if(myDetectorType == PROPIX)
+		fifosize = PROPIX_FIFO_SIZE;
 	else if(myDetectorType == EIGER)
 		fifosize = EIGER_FIFO_SIZE;
 
@@ -890,7 +914,7 @@ void UDPStandardImplementation::readFrame(char* c,char** raw, uint32_t &fnum, ui
 	if (guiData == NULL){
 		guiData = latestData;
 #ifdef VERY_VERY_DEBUG
-		cout << "gui data not null anymore" << endl;
+		cprintf(CYAN,"gui data not null anymore\n");
 #endif
 	}
 
@@ -904,14 +928,14 @@ void UDPStandardImplementation::readFrame(char* c,char** raw, uint32_t &fnum, ui
 	//could not get gui data
 	if(!guiDataReady){
 #ifdef VERY_VERY_DEBUG
-		cout << "gui data not ready" << endl;
+		cprintf(CYAN,"gui data not ready\n");
 #endif
 		*raw = NULL;
 	}
 	//data ready, set guidata to receive new data
 	else{
 #ifdef VERY_VERY_DEBUG
-		cout << "gui data ready" << endl;
+		cprintf(CYAN,"gui data ready\n");
 #endif
 		*raw = guiData;
 		guiData = NULL;
@@ -921,14 +945,14 @@ void UDPStandardImplementation::readFrame(char* c,char** raw, uint32_t &fnum, ui
 		pthread_mutex_unlock(&dataReadyMutex);*/
 		if((nFrameToGui) && (writerthreads_mask)){
 #ifdef VERY_VERY_DEBUG
-			cout << "gonna post" << endl;
+			cprintf(CYAN,"gonna post\n");
 #endif
 		/*if(nFrameToGui){*/
 			//release after getting data
 			sem_post(&smp);
 		}
 #ifdef VERY_VERY_DEBUG
-		cout << "done post" << endl;
+		cprintf(CYAN,"done post\n");
 #endif
 	}
 }
@@ -947,7 +971,7 @@ cout << "copyframe" << endl;
 	//else guidata always null as guidataready is always 1 after 1st frame, and seccond data never gets copied
 	if((!nFrameToGui) && (!guiData)){
 #ifdef VERY_VERY_DEBUG
-		cout << "doing nothing" << endl;
+		cprintf(GREEN,"doing nothing\n");
 #endif
 		pthread_mutex_lock(&dataReadyMutex);
 		guiDataReady=0;
@@ -957,12 +981,12 @@ cout << "copyframe" << endl;
 	//random read or nth frame read, gui needs data now or it is the first frame
 	else{
 #ifdef VERY_VERY_DEBUG
-		cout << "gui needs data now or 1st frame" << endl;
+		cprintf(GREEN,"gui needs data now or 1st frame\n");
 #endif
 		pthread_mutex_lock(&dataReadyMutex);
 		guiDataReady=0;
 #ifdef VERY_VERY_DEBUG
-		cout << "guidataready is  0, copying data" << endl;
+		cprintf(GREEN,"guidataready is  0, copying data\n");
 #endif
 		//eiger
 		if(startbuf != NULL){
@@ -989,16 +1013,16 @@ cout << "copyframe" << endl;
 		guiDataReady=1;
 		pthread_mutex_unlock(&dataReadyMutex);
 #ifdef VERY_VERY_DEBUG
-		cout << "guidataready = 1" << endl;
+		cprintf(GREEN,"guidataready = 1\n");
 #endif
 		//nth frame read, block current process if the guireader hasnt read it yet
 		if(nFrameToGui){
 #ifdef VERY_VERY_DEBUG
-			cout<<"waiting after copying"<<endl;
+			cprintf(GREEN,"waiting after copying\n");
 #endif
 			sem_wait(&smp);
 #ifdef VERY_VERY_DEBUG
-			cout<<"done waiting"<<endl;
+			cprintf(GREEN,"done waiting\n");
 #endif
 		}
 
@@ -1033,30 +1057,38 @@ int UDPStandardImplementation::createUDPSockets(){
 	if(!strlen(eth)){
 		cout<<"warning:eth is empty.listening to all"<<endl;
 
-		for(int i=0;i<numListeningThreads;i++)
+		for(int i=0;i<numListeningThreads;i++){
+			// cprintf(YELLOW, "gonna try listening to all\n");
 			udpSocket[i] = new genericSocket(port[i],genericSocket::UDP,bufferSize);
+		}
 	}
 	//normal socket
 	else{
 		cout<<"eth:"<<eth<<endl;
 
-		for(int i=0;i<numListeningThreads;i++)
+		for(int i=0;i<numListeningThreads;i++){
+		//	cprintf(YELLOW, "gonna try focussed\n");
 			udpSocket[i] = new genericSocket(port[i],genericSocket::UDP,bufferSize,eth);
+		}
 	}
 
 	//error
 	int iret;
 	for(int i=0;i<numListeningThreads;i++){
 		iret = udpSocket[i]->getErrorStatus();
-		if(!iret)
+		if(!iret){
 			cout << "UDP port opened at port " << port[i] << endl;
-		else{
+			//cprintf(YELLOW, "socket of port %d descriptor:%d\n",i,udpSocket[i]->getsocketDescriptor());
+		}else{
 #ifdef VERBOSE
 			cprintf(BG_RED,"Could not create UDP socket on port %d error: %d\n", port[i], iret);
 #endif
+			shutDownUDPSockets();
 			return FAIL;
 		}
 	}
+
+
 
 	return OK;
 }
@@ -1252,7 +1284,7 @@ int UDPStandardImplementation::setupWriter(){
 	packetsInFile=0;
 	packetsCaught=0;
 	frameIndex=0;
-	if(sfilefd) sfilefd=NULL;
+	if(sfilefd) {cprintf(RED,"**FILE not closed!\n");fclose(sfilefd);sfilefd=NULL;}
 	guiData = NULL;
 	guiDataReady=0;
 	strcpy(guiFileName,"");
@@ -1378,9 +1410,13 @@ int UDPStandardImplementation::createNewFile(){
 	if(enableFileWrite && cbAction > DO_NOTHING){
 		//close
 		if(sfilefd){
-			fclose(sfilefd);
+			if(fclose(sfilefd)){
+				cprintf(RED, "file close problem %d\n",fileno(sfilefd));
+				fclose(sfilefd);
+			}
 			sfilefd = NULL;
 		}
+
 		//open file
 		if(!overwrite){
 			if (NULL == (sfilefd = fopen((const char *) (savefilename), "wx"))){
@@ -1393,6 +1429,8 @@ int UDPStandardImplementation::createNewFile(){
 		}
 		//setting buffer
 		setvbuf(sfilefd,NULL,_IOFBF,BUF_SIZE);
+
+		//cprintf(YELLOW, "file value:%d\n",fileno(sfilefd));
 
 		//printing packet losses and file names
 		if(!packetsCaught)
@@ -1436,9 +1474,11 @@ void UDPStandardImplementation::closeFile(int ithr){
 	if(!dataCompression){
 		if(sfilefd){
 #ifdef VERBOSE
-			cout << "sfield:" << (int)sfilefd << endl;
+			cprintf(YELLOW, "gonna close file:%d\n",fileno(sfilefd));
 #endif
-			fclose(sfilefd);
+			if(fclose(sfilefd))
+				perror("file close ERROR");
+			//cprintf(YELLOW, "check close file:%d\n",fileno(sfilefd));
 			sfilefd = NULL;
 		}
 	}
@@ -1449,7 +1489,8 @@ void UDPStandardImplementation::closeFile(int ithr){
 #ifdef VERBOSE
 			cout << "sfield:" << (int)sfilefd << endl;
 #endif
-			fclose(sfilefd);
+			if(fclose(sfilefd))
+				perror("close ERRROR");
 			sfilefd = NULL;
 		}
 #endif
@@ -1571,11 +1612,12 @@ int UDPStandardImplementation::stopReceiver(){
 
 		startReadout();
 
-		while(status == TRANSMITTING)
+		while(status == TRANSMITTING){
+			sem_post(&smp);
 			usleep(5000);
+		}
 
 		//semaphore destroy
-		sem_post(&smp);
 		sem_destroy(&smp);
 
 		//change status
@@ -1585,6 +1627,9 @@ int UDPStandardImplementation::stopReceiver(){
 
 		cout << "Receiver Stopped.\nStatus:" << status << endl << endl;
 	}else cout <<" Not idle to stop receiver" << endl;
+
+
+	//sem_post(&smp);
 
 	return OK;
 }
@@ -1789,6 +1834,7 @@ int UDPStandardImplementation::startListening(){
 				break;
 
 			case GOTTHARD:
+			case PROPIX:
 				if(shortFrame == -1){
 					lastpacketoffset = (((numJobsPerThread * packetsPerFrame - 1) * onePacketSize) + HEADER_SIZE_NUM_TOT_PACKETS);
 #ifdef VERYDEBUG
@@ -1833,7 +1879,7 @@ int UDPStandardImplementation::startListening(){
 			while(!fifo[ithread]->push(buffer[ithread]));
 #ifdef FIFO_DEBUG
 			//if(!ithread)
-			cprintf(RED, "%d listener pushed into fifo %x\n",ithread, (void*)(buffer[ithread]));
+			cprintf(MAGENTA, "%d listener pushed into fifo %x\n",ithread, (void*)(buffer[ithread]));
 #endif
 		}
 
@@ -1934,7 +1980,7 @@ int UDPStandardImplementation::startWriting(){
 				continue;
 			}
 #ifdef VERYDEBUG
-			else cout <<"**NOT a dummy packet"<<endl;
+			else cout <<"**NOT a dummy packet"<< dec << numpackets<< endl;
 #endif
 
 
@@ -1951,7 +1997,7 @@ int UDPStandardImplementation::startWriting(){
 				tempframenum += (startFrameIndex-1); //eiger frame numbers start at 1, so need to -1
 				//tempframenum = ((tempframenum / EIGER_32BIT_INITIAL_CONSTANT) + startFrameIndex)-1;//eiger 32 bit mode is a multiple of 17c. +startframeindex for scans
 
-			}else if ((myDetectorType == GOTTHARD) && (shortFrame == -1))
+			}else if ((myDetectorType == PROPIX) || ((myDetectorType == GOTTHARD) && (shortFrame == -1)))
 				tempframenum = (((((uint32_t)(*((uint32_t*)(wbuf[ithread] + HEADER_SIZE_NUM_TOT_PACKETS))))+1)& (frameIndexMask)) >> frameIndexOffset);
 			else
 				tempframenum = ((((uint32_t)(*((uint32_t*)(wbuf[ithread] + HEADER_SIZE_NUM_TOT_PACKETS))))& (frameIndexMask)) >> frameIndexOffset);
@@ -1976,46 +2022,52 @@ int UDPStandardImplementation::startWriting(){
 					for(i=0;i<numListeningThreads;++i)
 						/* for eiger 32 bit mode, currframenum like gotthard, does not start from 0 or 1 */
 						rawDataReadyCallBack(currframenum, wbuf[i], numpackets * onePacketSize, sfilefd, guiData,pRawDataReady);
-				}else if (numpackets > 0){
+				}
+
+				else if (numpackets > 0){
 					for(j=0;j<numListeningThreads;++j){
 #ifdef WRITE_HEADERS
 						if (myDetectorType == EIGER){
-							//overwriting frame number in header
-							for (i = 0; i < packetsPerFrame; i++)
-								(*(uint32_t*)(((eiger_packet_header *)((char*)(wbuf[j] + totalheader + EIGER_ONE_GIGA_ONE_PACKET_SIZE*i)))->num1))  = currframenum;
+
+							for (i = 0; i < packetsPerFrame/2; i++){
+								//overwriting frame number in header
+								(*(uint32_t*)(((eiger_packet_header *)((char*)(wbuf[j] + totalheader + onePacketSize*i)))->num1))  = currframenum;
+								//overwriting port number and dynamic range
+								if (!j)  (*(uint8_t*)(((eiger_packet_header *)((char*)(wbuf[j] + totalheader + onePacketSize*i)))->num3))  = (dynamicRange<<2);
+								else     (*(uint8_t*)(((eiger_packet_header *)((char*)(wbuf[j] + totalheader + onePacketSize*i)))->num3))  = ((dynamicRange<<2)|(0x1));
+
+#ifdef VERYDEBUG
+									cprintf(RED, "%d - 0x%x - %d\n", i,
+											(*(uint8_t*)(((eiger_packet_header *)((char*)(wbuf[j] + totalheader +i*onePacketSize)))->num3)),
+											(*(uint8_t*)(((eiger_packet_header *)((char*)(wbuf[j] + totalheader +i*onePacketSize)))->num4)));
+#endif
+
+						}
 
 							//for 32 bit,port number needs to be changed and packet number reconstructed
 							if(dynamicRange == 32){
 								for (i = 0; i < packetsPerFrame/4; i++){
 									//new packet number that has space for 16 bit
-									(*(uint16_t*)(((eiger_packet_header *)((char*)(wbuf[j] + totalheader + EIGER_ONE_GIGA_ONE_PACKET_SIZE*i)))->num2))
-				        		= ((*(uint8_t*)(((eiger_packet_header *)((char*)(wbuf[j] + totalheader + EIGER_ONE_GIGA_ONE_PACKET_SIZE*i)))->num4)));
-
-									//new port number as its the same everywhere for 32 bit!!
-									if((!j)&& (!bottom))	(*(uint8_t*)(((eiger_packet_header *)((char*)(wbuf[j] + totalheader + EIGER_ONE_GIGA_ONE_PACKET_SIZE*i)))->num3)) = 0x00;
-
+									(*(uint16_t*)(((eiger_packet_header *)((char*)(wbuf[j] + totalheader + onePacketSize*i)))->num2))
+				        		= ((*(uint8_t*)(((eiger_packet_header *)((char*)(wbuf[j] + totalheader + onePacketSize*i)))->num4)));
 
 #ifdef VERYDEBUG
 									cprintf(RED, "%d - 0x%x - %d - %d\n", i,
-											(*(uint8_t*)(((eiger_packet_header *)((char*)(wbuf[j] + totalheader +i*EIGER_ONE_GIGA_ONE_PACKET_SIZE)))->num3)),
-											(*(uint8_t*)(((eiger_packet_header *)((char*)(wbuf[j] + totalheader +i*EIGER_ONE_GIGA_ONE_PACKET_SIZE)))->num4)),
-											(*(uint16_t*)(((eiger_packet_header *)((char*)(wbuf[j] + totalheader +i*EIGER_ONE_GIGA_ONE_PACKET_SIZE)))->num2)));
+											(*(uint8_t*)(((eiger_packet_header *)((char*)(wbuf[j] + totalheader +i*onePacketSize)))->num3)),
+											(*(uint8_t*)(((eiger_packet_header *)((char*)(wbuf[j] + totalheader +i*onePacketSize)))->num4)),
+											(*(uint16_t*)(((eiger_packet_header *)((char*)(wbuf[j] + totalheader +i*onePacketSize)))->num2)));
 #endif
 								}
 								for (i = packetsPerFrame/4; i < packetsPerFrame/2; i++){
 									//new packet number that has space for 16 bit
-									(*(uint16_t*)(((eiger_packet_header *)((char*)(wbuf[j] + totalheader + EIGER_ONE_GIGA_ONE_PACKET_SIZE*i)))->num2))
-			            		= ((*(uint8_t*)(((eiger_packet_header *)((char*)(wbuf[j] + totalheader + EIGER_ONE_GIGA_ONE_PACKET_SIZE*i)))->num4))+(packetsPerFrame/4));
-
-									//new port number as its the same everywhere for 32 bit!!
-									if(!j) (*(uint8_t*)(((eiger_packet_header *)((char*)(wbuf[j] + totalheader + EIGER_ONE_GIGA_ONE_PACKET_SIZE*i)))->num3)) = 0x00;
-
+									(*(uint16_t*)(((eiger_packet_header *)((char*)(wbuf[j] + totalheader + onePacketSize*i)))->num2))
+			            		= ((*(uint8_t*)(((eiger_packet_header *)((char*)(wbuf[j] + totalheader + onePacketSize*i)))->num4))+(packetsPerFrame/4));
 
 #ifdef VERYDEBUG
 									cprintf(RED, "%d -0x%x - %d - %d\n", i,
-											(*(uint8_t*)(((eiger_packet_header *)((char*)(wbuf[j] + totalheader +i*EIGER_ONE_GIGA_ONE_PACKET_SIZE)))->num3)),
-											(*(uint8_t*)(((eiger_packet_header *)((char*)(wbuf[j] + totalheader +i*EIGER_ONE_GIGA_ONE_PACKET_SIZE)))->num4)),
-											(*(uint16_t*)(((eiger_packet_header *)((char*)(wbuf[j] + totalheader +i*EIGER_ONE_GIGA_ONE_PACKET_SIZE)))->num2)));
+											(*(uint8_t*)(((eiger_packet_header *)((char*)(wbuf[j] + totalheader +i*onePacketSize)))->num3)),
+											(*(uint8_t*)(((eiger_packet_header *)((char*)(wbuf[j] + totalheader +i*onePacketSize)))->num4)),
+											(*(uint16_t*)(((eiger_packet_header *)((char*)(wbuf[j] + totalheader +i*onePacketSize)))->num2)));
 #endif
 								}
 							}
@@ -2025,18 +2077,18 @@ int UDPStandardImplementation::startWriting(){
 						writeToFile_withoutCompression(wbuf[j], numpackets,currframenum);
 					}
 #ifdef VERYDEBUG
-					cout << "written everyting" << endl;
+					cprintf(BLUE,"written everyting\n");
 #endif
 				}
 
 
 				if(myDetectorType == EIGER) {
 #ifdef VERYDEBUG
-					cout << "gonna copy frame" << endl;
+					cprintf(BLUE,"gonna copy frame\n");
 #endif
 					copyFrameToGui(wbuf,currframenum);
 #ifdef VERYDEBUG
-					cout << "copied frame" << endl;
+					cprintf(BLUE,"copied frame\n");
 #endif
 					for(i=0;i<numListeningThreads;++i){
 						while(!fifoFree[i]->push(wbuf[i]));
@@ -2135,14 +2187,11 @@ void UDPStandardImplementation::startFrameIndices(int ithread){
 	FILE_LOG(logDEBUG) << __AT__ << " called";
 
 	if (myDetectorType == EIGER){
-		//add currframenum later  in this method for scans
-		/*if(dynamicRange == 32)
-			startFrameIndex = htonl(*(unsigned int*)((eiger_image_header32 *)((char*)(buffer[ithread] + HEADER_SIZE_NUM_TOT_PACKETS)))->fnum);
-		else*/
-			startFrameIndex = htonl(*(unsigned int*)((eiger_image_header *)((char*)(buffer[ithread] + HEADER_SIZE_NUM_TOT_PACKETS)))->fnum);
+			startFrameIndex = 1;
+			/*startFrameIndex = htonl(*(unsigned int*)((eiger_image_header *)((char*)(buffer[ithread] + HEADER_SIZE_NUM_TOT_PACKETS)))->fnum);*/
 	}
 	//gotthard has +1 for frame number and not a short frame
-	else if ((myDetectorType == GOTTHARD) && (shortFrame == -1))
+	else if ((myDetectorType == PROPIX) || ((myDetectorType == GOTTHARD) && (shortFrame == -1)))
 		startFrameIndex = (((((uint32_t)(*((uint32_t*)(buffer[ithread] + HEADER_SIZE_NUM_TOT_PACKETS))))+1)
 				& (frameIndexMask)) >> frameIndexOffset);
 	else
@@ -2157,6 +2206,7 @@ void UDPStandardImplementation::startFrameIndices(int ithread){
 		acqStarted = true;
 		cout << "startAcquisitionIndex:" << hex << startAcquisitionIndex<<endl;
 	}
+	/*
 	//for scans, cuz currfraenum resets
 	else if (myDetectorType == EIGER){
 		if(dynamicRange == 32)
@@ -2165,7 +2215,7 @@ void UDPStandardImplementation::startFrameIndices(int ithread){
 			startFrameIndex += currframenum;
 
 	}
-
+*/
 
 	cout << "startFrameIndex:" << startFrameIndex<<endl;
 	prevframenum=startFrameIndex;
@@ -2196,7 +2246,7 @@ int i;
 				//free buffer
 				if(rc <= 0){
 					cout << ithread << "Discarding empty frame/ End of acquisition" << endl;
-					fifoFree[ithread]->push(buffer[ithread]);
+					fifoFree[ithread]->push(buffer[ithread]);/** why not while(!)*/
 #ifdef FIFO_DEBUG
 					cprintf(BLUE,"%d listener empty buffer pushed into fifofree %x\n", ithread, (void*)(buffer[ithread]));
 #endif
@@ -2208,7 +2258,7 @@ int i;
 						if(rc == 266240)
 							cprintf(GREEN, "%d Start of detector: Received test frame of 266240 bytes.\n",ithread);
 						cout << ithread << "Discarding incomplete frame" << endl;
-						fifoFree[ithread]->push(buffer[ithread]);
+						fifoFree[ithread]->push(buffer[ithread]);/** why not while(!)*/
 #ifdef FIFO_DEBUG
 						cprintf(BLUE,"%d listener last buffer free pushed into fifofree %x\n", ithread,(void*)(buffer[ithread]));
 #endif
@@ -2375,44 +2425,46 @@ void UDPStandardImplementation::writeToFile_withoutCompression(char* buf,int num
 			offset += EIGER_HEADER_LENGTH;
 #ifdef WRITE_HEADERS
 #ifdef VERY_DEBUG
-			int k = 0;
-			if(dynamicRange != 32){
-				cprintf(RED, "\np1 fnum:0x%x\n",  (*(unsigned int*)(((eiger_packet_header *)((char*)(buf + offset+k*1040)))->num1)));
-				cprintf(RED, "p1:0x%x\n",  (*(uint8_t*)(((eiger_packet_header *)((char*)(buf + offset+k*1040)))->num3)));
-				cprintf(RED, "p0 num:%d - %d\n", k, (*(uint8_t*)(((eiger_packet_header *)((char*)(buf + offset+k*1040)))->num4)));
-				k = 1;
-				cprintf(RED, "p2 fnum:0x%x\n",  (*(unsigned int*)(((eiger_packet_header *)((char*)(buf + offset +k*1040)))->num1)));
-				cprintf(RED, "p2:0x%x\n",  (*(uint8_t*)(((eiger_packet_header *)((char*)(buf + offset +k*1040)))->num3)));
-				cprintf(RED, "p1 num:%d - %d\n", k,(*(uint8_t*)(((eiger_packet_header *)((char*)(buf + offset +k*1040)))->num4)));
-				k = 2;
-				cprintf(RED, "p3 fnum:0x%x\n",  (*(unsigned int*)(((eiger_packet_header *)((char*)(buf + offset + k*1040)))->num1)));
-				cprintf(RED, "p3:0x%x\n",  (*(uint8_t*)(((eiger_packet_header *)((char*)(buf + offset +k*1040)))->num3)));
-				cprintf(RED, "p2 num:%d - %d\n", k,(*(uint8_t*)(((eiger_packet_header *)((char*)(buf + offset +k*1040)))->num4)));
-			}else{
-				k = 0;
-				cprintf(RED, "\np1 fnum:0x%x\n",  (*(unsigned int*)(((eiger_packet_header *)((char*)(buf + offset+k*1040)))->num1)));
-				cprintf(RED, "p1:0x%x\n",  (*(uint8_t*)(((eiger_packet_header *)((char*)(buf + offset+k*1040)))->num3)));
-				cprintf(RED, "p0 num:%d - %d\n",  k, (*(uint16_t*)(((eiger_packet_header *)((char*)(buf + offset+k*1040)))->num2)));
-				k = 1;
-				cprintf(RED, "p2 fnum:0x%x\n",  (*(unsigned int*)(((eiger_packet_header *)((char*)(buf + offset +k*1040)))->num1)));
-				cprintf(RED, "p2:0x%x\n",  (*(uint8_t*)(((eiger_packet_header *)((char*)(buf + offset +k*1040)))->num3)));
-				cprintf(RED, "p1 num:%d - %d\n", k, (*(uint16_t*)(((eiger_packet_header *)((char*)(buf + offset +k*1040)))->num2)));
-				k = 2;
-				cprintf(RED, "p3 fnum:0x%x\n",  (*(unsigned int*)(((eiger_packet_header *)((char*)(buf + offset + k*1040)))->num1)));
-				cprintf(RED, "p3:0x%x\n",  (*(uint8_t*)(((eiger_packet_header *)((char*)(buf + offset +k*1040)))->num3)));
-				cprintf(RED, "p2 num:%d - %d\n", k, (*(uint16_t*)(((eiger_packet_header *)((char*)(buf + offset +k*1040)))->num2)));
-				k = 256;
-				cprintf(RED, "p257 fnum:0x%x\n",  (*(unsigned int*)(((eiger_packet_header *)((char*)(buf + offset + k*1040)))->num1)));
-				cprintf(RED, "p257:0x%x\n",  (*(uint8_t*)(((eiger_packet_header *)((char*)(buf + offset +k*1040)))->num3)));
-				cprintf(RED, "p256 num:%d - %d\n", k, (*(uint16_t*)(((eiger_packet_header *)((char*)(buf + offset +k*1040)))->num2)));
-				k = 512;
-				cprintf(RED, "p513 fnum:0x%x\n",  (*(unsigned int*)(((eiger_packet_header *)((char*)(buf + offset + k*1040)))->num1)));
-				cprintf(RED, "p513:0x%x\n",  (*(uint8_t*)(((eiger_packet_header *)((char*)(buf + offset +k*1040)))->num3)));
-				cprintf(RED, "p512 num:%d - %d\n", k, (*(uint16_t*)(((eiger_packet_header *)((char*)(buf + offset +k*1040)))->num2)));
-				k = 768;
-				cprintf(RED, "p769 fnum:0x%x\n",  (*(unsigned int*)(((eiger_packet_header *)((char*)(buf + offset + k*1040)))->num1)));
-				cprintf(RED, "p769:0x%x\n",  (*(uint8_t*)(((eiger_packet_header *)((char*)(buf + offset +k*1040)))->num3)));
-				cprintf(RED, "p768 num:%d - %d\n", k,(*(uint16_t*)(((eiger_packet_header *)((char*)(buf + offset +k*1040)))->num2)));
+			if(myDetectorType == EIGER){
+				int k = 0;
+				if(dynamicRange != 32){
+					cprintf(RED, "\np1 fnum:0x%x\n",  (*(unsigned int*)(((eiger_packet_header *)((char*)(buf + offset+k*1040)))->num1)));
+					cprintf(RED, "p1:0x%x\n",  (*(uint8_t*)(((eiger_packet_header *)((char*)(buf + offset+k*1040)))->num3)));
+					cprintf(RED, "p0 num:%d - %d\n", k, (*(uint8_t*)(((eiger_packet_header *)((char*)(buf + offset+k*1040)))->num4)));
+					k = 1;
+					cprintf(RED, "p2 fnum:0x%x\n",  (*(unsigned int*)(((eiger_packet_header *)((char*)(buf + offset +k*1040)))->num1)));
+					cprintf(RED, "p2:0x%x\n",  (*(uint8_t*)(((eiger_packet_header *)((char*)(buf + offset +k*1040)))->num3)));
+					cprintf(RED, "p1 num:%d - %d\n", k,(*(uint8_t*)(((eiger_packet_header *)((char*)(buf + offset +k*1040)))->num4)));
+					k = 2;
+					cprintf(RED, "p3 fnum:0x%x\n",  (*(unsigned int*)(((eiger_packet_header *)((char*)(buf + offset + k*1040)))->num1)));
+					cprintf(RED, "p3:0x%x\n",  (*(uint8_t*)(((eiger_packet_header *)((char*)(buf + offset +k*1040)))->num3)));
+					cprintf(RED, "p2 num:%d - %d\n", k,(*(uint8_t*)(((eiger_packet_header *)((char*)(buf + offset +k*1040)))->num4)));
+				}else{
+					k = 0;
+					cprintf(RED, "\np1 fnum:0x%x\n",  (*(unsigned int*)(((eiger_packet_header *)((char*)(buf + offset+k*1040)))->num1)));
+					cprintf(RED, "p1:0x%x\n",  (*(uint8_t*)(((eiger_packet_header *)((char*)(buf + offset+k*1040)))->num3)));
+					cprintf(RED, "p0 num:%d - %d\n",  k, (*(uint16_t*)(((eiger_packet_header *)((char*)(buf + offset+k*1040)))->num2)));
+					k = 1;
+					cprintf(RED, "p2 fnum:0x%x\n",  (*(unsigned int*)(((eiger_packet_header *)((char*)(buf + offset +k*1040)))->num1)));
+					cprintf(RED, "p2:0x%x\n",  (*(uint8_t*)(((eiger_packet_header *)((char*)(buf + offset +k*1040)))->num3)));
+					cprintf(RED, "p1 num:%d - %d\n", k, (*(uint16_t*)(((eiger_packet_header *)((char*)(buf + offset +k*1040)))->num2)));
+					k = 2;
+					cprintf(RED, "p3 fnum:0x%x\n",  (*(unsigned int*)(((eiger_packet_header *)((char*)(buf + offset + k*1040)))->num1)));
+					cprintf(RED, "p3:0x%x\n",  (*(uint8_t*)(((eiger_packet_header *)((char*)(buf + offset +k*1040)))->num3)));
+					cprintf(RED, "p2 num:%d - %d\n", k, (*(uint16_t*)(((eiger_packet_header *)((char*)(buf + offset +k*1040)))->num2)));
+					k = 256;
+					cprintf(RED, "p257 fnum:0x%x\n",  (*(unsigned int*)(((eiger_packet_header *)((char*)(buf + offset + k*1040)))->num1)));
+					cprintf(RED, "p257:0x%x\n",  (*(uint8_t*)(((eiger_packet_header *)((char*)(buf + offset +k*1040)))->num3)));
+					cprintf(RED, "p256 num:%d - %d\n", k, (*(uint16_t*)(((eiger_packet_header *)((char*)(buf + offset +k*1040)))->num2)));
+					k = 512;
+					cprintf(RED, "p513 fnum:0x%x\n",  (*(unsigned int*)(((eiger_packet_header *)((char*)(buf + offset + k*1040)))->num1)));
+					cprintf(RED, "p513:0x%x\n",  (*(uint8_t*)(((eiger_packet_header *)((char*)(buf + offset +k*1040)))->num3)));
+					cprintf(RED, "p512 num:%d - %d\n", k, (*(uint16_t*)(((eiger_packet_header *)((char*)(buf + offset +k*1040)))->num2)));
+					k = 768;
+					cprintf(RED, "p769 fnum:0x%x\n",  (*(unsigned int*)(((eiger_packet_header *)((char*)(buf + offset + k*1040)))->num1)));
+					cprintf(RED, "p769:0x%x\n",  (*(uint8_t*)(((eiger_packet_header *)((char*)(buf + offset +k*1040)))->num3)));
+					cprintf(RED, "p768 num:%d - %d\n", k,(*(uint16_t*)(((eiger_packet_header *)((char*)(buf + offset +k*1040)))->num2)));
+				}
 			}
 #endif
 #endif
@@ -2421,7 +2473,7 @@ void UDPStandardImplementation::writeToFile_withoutCompression(char* buf,int num
 
 			//for progress and packet loss calculation(new files)
 			if(myDetectorType == EIGER);
-			else if ((myDetectorType == GOTTHARD) && (shortFrame == -1))
+			else if ((myDetectorType == PROPIX)||((myDetectorType == GOTTHARD) && (shortFrame == -1)))
 				tempframenum = (((((uint32_t)(*((uint32_t*)(buf + HEADER_SIZE_NUM_TOT_PACKETS))))+1)& (frameIndexMask)) >> frameIndexOffset);
 			else
 				tempframenum = ((((uint32_t)(*((uint32_t*)(buf + HEADER_SIZE_NUM_TOT_PACKETS))))& (frameIndexMask)) >> frameIndexOffset);
@@ -2458,7 +2510,7 @@ void UDPStandardImplementation::writeToFile_withoutCompression(char* buf,int num
 				//for packet loss
 				lastpacket = (((packetsToSave - 1) * onePacketSize) + offset);
 				if(myDetectorType == EIGER);
-				else if ((myDetectorType == GOTTHARD) && (shortFrame == -1))
+				else if ((myDetectorType == PROPIX)||((myDetectorType == GOTTHARD) && (shortFrame == -1)))
 					tempframenum = (((((uint32_t)(*((uint32_t*)(buf + lastpacket))))+1)& (frameIndexMask)) >> frameIndexOffset);
 				else
 					tempframenum = ((((uint32_t)(*((uint32_t*)(buf + lastpacket))))& (frameIndexMask)) >> frameIndexOffset);
@@ -2624,20 +2676,18 @@ int UDPStandardImplementation::enableTenGiga(int enable){
 			if(!tengigaEnable){
 				packetsPerFrame = EIGER_ONE_GIGA_CONSTANT * dynamicRange * EIGER_MAX_PORTS;
 				onePacketSize  	= EIGER_ONE_GIGA_ONE_PACKET_SIZE;
-				maxPacketsPerFile 	= EIGER_MAX_FRAMES_PER_FILE * packetsPerFrame;
 			}else{
 				packetsPerFrame = EIGER_TEN_GIGA_CONSTANT * dynamicRange * EIGER_MAX_PORTS;
 				onePacketSize  	= EIGER_TEN_GIGA_ONE_PACKET_SIZE;
-				maxPacketsPerFile 	= EIGER_MAX_FRAMES_PER_FILE * packetsPerFrame*4;
 			}
 			frameSize			= onePacketSize * packetsPerFrame;
 			bufferSize 			= (frameSize/EIGER_MAX_PORTS) + EIGER_HEADER_LENGTH;//everything one port gets (img header plus packets)
-			//maxPacketsPerFile 	= EIGER_MAX_FRAMES_PER_FILE * packetsPerFrame;
+			maxPacketsPerFile 	= EIGER_MAX_FRAMES_PER_FILE * packetsPerFrame;
 
 
 			cout<<"packetsPerFrame:"<<dec<<packetsPerFrame<<endl;
 			cout<<"onePacketSize:"<<onePacketSize<<endl;
-			cout<<"framsize:"<<frameSize<<endl;
+			cout<<"framesize:"<<frameSize<<endl;
 			cout<<"bufferSize:"<<bufferSize<<endl;
 			cout<<"maxPacketsPerFile:"<<maxPacketsPerFile<<endl;
 

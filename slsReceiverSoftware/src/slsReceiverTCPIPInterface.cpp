@@ -65,7 +65,6 @@ slsReceiverTCPIPInterface::slsReceiverTCPIPInterface(int &success, UDPInterface*
 			strcpy(socket->lastClientIP,"none");
 			strcpy(socket->thisClientIP,"none1");
 			strcpy(mess,"dummy message");
-			
 			function_table();
 #ifdef VERBOSE
 			cout << "Function table assigned." << endl;
@@ -146,8 +145,18 @@ void slsReceiverTCPIPInterface::stop(){
 
 
 	cout<<"Shutting down TCP Socket and TCP thread"<<endl;
+	cout << "Shutting down UDP Socket" << endl;
+	if(receiverBase){
+		receiverBase->shutDownUDPSockets();
+
+		cout << "Closing Files... " << endl;
+		receiverBase->closeFile();
+	}
+
+
 	killTCPServerThread = 1;
 	socket->ShutDownSocket();
+	socket->exitServer();
 	cout<<"Socket closed"<<endl;
 	void* status;
 	pthread_join(TCPServer_thread, &status);
@@ -205,6 +214,7 @@ void slsReceiverTCPIPInterface::startTCPServer(){
 				receiverBase->closeFile();
 			}
 
+			socket->exitServer();
 			pthread_exit(NULL);
 		}
 
@@ -1027,6 +1037,8 @@ int	slsReceiverTCPIPInterface::read_frame(){
 		return moench_read_frame();
 	case EIGER:
 		return eiger_read_frame();
+	case PROPIX:
+		return propix_read_frame();
 	default:
 		return gotthard_read_frame();
 	}
@@ -1393,6 +1405,162 @@ int	slsReceiverTCPIPInterface::gotthard_read_frame(){
 
 
 
+int	slsReceiverTCPIPInterface::propix_read_frame(){
+	ret=OK;
+	char fName[MAX_STR_LENGTH]="";
+	int acquisitionIndex = -1;
+	int frameIndex= -1;
+	int i;
+
+
+	//retval is a full frame
+	int bufferSize  = PROPIX_BUFFER_SIZE;
+	int onebuffersize = bufferSize/PROPIX_PACKETS_PER_FRAME;
+	int onedatasize = PROPIX_DATA_BYTES;
+
+	char* raw 		= new char[bufferSize];
+	int rnel 		= bufferSize/(sizeof(int));
+	int* retval 	= new int[rnel];
+	int* origVal 	= new int[rnel];
+	//all initialized to 0
+	for(i=0;i<rnel;i++)	retval[i]=0;
+	for(i=0;i<rnel;i++)	origVal[i]=0;
+
+
+	uint32_t index=0,index2=0;
+	uint32_t pindex=0,pindex2=0;
+	uint32_t bindex=0,bindex2=0;
+	uint32_t startAcquisitionIndex=0;
+	uint32_t startFrameIndex=0;
+
+	strcpy(mess,"Could not read frame\n");
+
+
+	// execute action if the arguments correctly arrived
+#ifdef SLS_RECEIVER_UDP_FUNCTIONS
+
+	if (receiverBase == NULL){
+		strcpy(mess,"Receiver not set up\n");
+		ret=FAIL;
+	}
+
+	/**send garbage with -1 index to try again*/
+	else if(!receiverBase->getFramesCaught()){
+		startAcquisitionIndex=-1;
+		cout<<"haven't caught any frame yet"<<endl;
+	}else{
+		ret = OK;
+		/*startIndex=receiverBase->getStartFrameIndex();*/
+		receiverBase->readFrame(fName,&raw,index,startAcquisitionIndex,startFrameIndex);
+
+		/**send garbage with -1 index to try again*/
+		if (raw == NULL){
+			startAcquisitionIndex = -1;
+#ifdef VERBOSE
+			cout<<"data not ready for gui yet"<<endl;
+#endif
+		}else{
+			bindex = ((uint32_t)(*((uint32_t*)raw)))+1;
+			pindex = (bindex & PROPIX_PACKET_INDEX_MASK);
+			index = ((bindex & PROPIX_FRAME_INDEX_MASK) >> PROPIX_FRAME_INDEX_OFFSET);
+			bindex2 = ((uint32_t)(*((uint32_t*)((char*)(raw+onebuffersize)))))+1;
+			pindex2 =(bindex2 & PROPIX_PACKET_INDEX_MASK);
+			index2 =((bindex2 & PROPIX_FRAME_INDEX_MASK) >> PROPIX_FRAME_INDEX_OFFSET);
+#ifdef VERBOSE
+			cout << "index1:" << hex << index << endl;
+			cout << "index2:" << hex << index << endl;
+#endif
+
+			memcpy(origVal,raw,bufferSize);
+			raw=NULL;
+
+			/*//ignore if half frame is missing
+				if ((bindex != 0xFFFFFFFF) && (bindex2 != 0xFFFFFFFF)){*/
+
+			//should be same frame
+			if (index == index2){
+				//ideal situation (should be odd, even(index+1))
+				if(!pindex){
+					memcpy(retval,((char*) origVal)+4, onedatasize);
+					memcpy((((char*)retval)+onedatasize), ((char*) origVal)+10+onedatasize, onedatasize);
+				}
+				//swap to even,odd
+				else{
+					memcpy((((char*)retval)+onedatasize),((char*) origVal)+4, onedatasize);
+					memcpy(retval, ((char*) origVal)+10+onedatasize, onedatasize);
+					index=index2;
+				}
+			}else
+				cout << "different frames caught. frame1:"<< hex << index << ":"<<pindex<<" frame2:" << hex << index2 << ":"<<pindex2<<endl;
+			/*}
+				else{
+					index = startIndex - 1;
+					cout << "Missing Packet,Not sending to gui" << endl;
+				}*/
+
+
+			acquisitionIndex = index-startAcquisitionIndex;
+			if(acquisitionIndex ==  -1)
+				startFrameIndex = -1;
+			else
+				frameIndex = index-startFrameIndex;
+
+#ifdef VERY_VERY_DEBUG
+			cout << "acquisitionIndex calculated is:" << acquisitionIndex << endl;
+			cout << "frameIndex calculated is:" << frameIndex << endl;
+			cout << "index:" << index << endl;
+			cout << "startAcquisitionIndex:" << startAcquisitionIndex << endl;
+			cout << "startFrameIndex:" << startFrameIndex << endl;
+#endif
+		}
+	}
+
+#ifdef VERBOSE
+	if(frameIndex!=-1){
+		cout << "fName:" << fName << endl;
+		cout << "acquisitionIndex:" << acquisitionIndex << endl;
+		cout << "frameIndex:" << frameIndex << endl;
+		cout << "startAcquisitionIndex:" << startAcquisitionIndex << endl;
+		cout << "startFrameIndex:" << startFrameIndex << endl;
+	}
+#endif
+
+
+
+#endif
+
+	if(ret==OK && socket->differentClients){
+		cout << "Force update" << endl;
+		ret=FORCE_UPDATE;
+	}
+
+	// send answer
+	socket->SendDataOnly(&ret,sizeof(ret));
+	if(ret==FAIL){
+		cout << "mess:" << mess << endl;
+		socket->SendDataOnly(mess,sizeof(mess));
+	}
+	else{
+		socket->SendDataOnly(fName,MAX_STR_LENGTH);
+		socket->SendDataOnly(&acquisitionIndex,sizeof(acquisitionIndex));
+		socket->SendDataOnly(&frameIndex,sizeof(frameIndex));
+		socket->SendDataOnly(retval,PROPIX_DATA_BYTES);
+	}
+
+	delete [] retval;
+	delete [] origVal;
+	delete [] raw;
+
+	return ret;
+}
+
+
+
+
+
+
+
+
 
 
 int	slsReceiverTCPIPInterface::eiger_read_frame(){
@@ -1458,13 +1626,13 @@ int	slsReceiverTCPIPInterface::eiger_read_frame(){
 			int c2=(frameSize/2) + 8; //second port
 			int retindex=0;
 			int irow,ibytesperpacket;
-			int linesperpacket = (16/dynamicrange)* 1;// 16:1 line, 8:2 lines, 4:4 lines, 32: 0.5
+			int linesperpacket = (16*1/dynamicrange);// 16:1 line, 8:2 lines, 4:4 lines, 32: 0.5
 			int numbytesperlineperport=(EIGER_PIXELS_IN_ONE_ROW/EIGER_MAX_PORTS)*dynamicrange/8;//16:1024,8:512,4:256,32:2048
 			int datapacketlength = EIGER_ONE_GIGA_ONE_DATA_SIZE;
 			int total_num_bytes = 1040*(16*dynamicrange)*2;
 
 			if(tenGigaEnable){
-				linesperpacket = (16/dynamicrange)* 4;// 16:4 line, 8:8 lines, 4:16 lines, 32: 2
+				linesperpacket = (16*4/dynamicrange);// 16:4 line, 8:8 lines, 4:16 lines, 32: 2
 				datapacketlength = EIGER_TEN_GIGA_ONE_DATA_SIZE;
 			}
 			//if 1GbE, one line is split into two packets for 32 bit mode, so its special
@@ -1482,7 +1650,7 @@ int	slsReceiverTCPIPInterface::eiger_read_frame(){
 						memcpy(retval+retindex ,origVal+c1 ,numbytesperlineperport);
 						retindex += numbytesperlineperport;
 						c1 += numbytesperlineperport;
-						if(dynamicrange == 32){
+						if(dynamicrange == 32 && !tenGigaEnable){
 							c1 += 16;
 							memcpy(retval+retindex ,origVal+c1 ,numbytesperlineperport);
 							retindex += numbytesperlineperport;
@@ -1493,7 +1661,7 @@ int	slsReceiverTCPIPInterface::eiger_read_frame(){
 						memcpy(retval+retindex ,origVal+c2 ,numbytesperlineperport);
 						retindex += numbytesperlineperport;
 						c2 += numbytesperlineperport;
-						if(dynamicrange == 32){
+						if(dynamicrange == 32 && !tenGigaEnable){
 							c2 += 16;
 							memcpy(retval+retindex ,origVal+c2 ,numbytesperlineperport);
 							retindex += numbytesperlineperport;
@@ -1502,7 +1670,7 @@ int	slsReceiverTCPIPInterface::eiger_read_frame(){
 						}
 						ibytesperpacket += numbytesperlineperport;
 					}
-					if(dynamicrange != 32) {
+					if(dynamicrange != 32 || tenGigaEnable) {
 						c1 += 16;
 						c2 += 16;
 					}
@@ -1519,7 +1687,7 @@ int	slsReceiverTCPIPInterface::eiger_read_frame(){
 				for(irow=0;irow<EIGER_PIXELS_IN_ONE_COL/linesperpacket;++irow){
 					ibytesperpacket=0;
 					while(ibytesperpacket<datapacketlength){
-						if(dynamicrange == 32){
+						if(dynamicrange == 32 && !tenGigaEnable){
 							//first port first chip
 							c1 -= (numbytesperlineperport + 16);
 							memcpy(retval+retindex ,origVal+c1 ,numbytesperlineperport);
@@ -1550,52 +1718,13 @@ int	slsReceiverTCPIPInterface::eiger_read_frame(){
 						}
 						ibytesperpacket += numbytesperlineperport;
 					}
-					if(dynamicrange != 32) {
+					if(dynamicrange != 32 || tenGigaEnable) {
 						c1 -= 16;
 						c2 -= 16;
 					}
 				}
 
 			}
-/*
-			int inum = 0;
-			//dr = 16, hence uint16_t
-			for(inum = 0; inum < 2; inum++)
-				cprintf(YELLOW,"before htonl %d,0 :%d\n",inum,((uint8_t)(*((uint8_t*)((char*)(retval+(inum*(dynamicrange/8))))))));
-			for(inum = 254; inum < 258; inum++)
-				cprintf(YELLOW,"before htonl %d,0 :%d\n",inum,((uint8_t)(*((uint8_t*)((char*)(retval+(inum*(dynamicrange/8))))))));
-			for(inum = 0; inum < 2; inum++)
-				cprintf(YELLOW,"before htonl %d,2 :%d\n",inum,((uint8_t)(*((uint8_t*)((char*)(retval+((2048+inum)*(dynamicrange/8))))))));
-			for(inum = 254; inum < 258; inum++)
-				cprintf(YELLOW,"before htonl %d,2 :%d\n",inum,((uint8_t)(*((uint8_t*)((char*)(retval+((2048+inum)*(dynamicrange/8))))))));
-*/
-
-
-			//64 bit htonl cuz of endianness
-			for(i=0;i<(1024*(16*dynamicrange)*2)/8;i++){
-				(*(((uint64_t*)retval)+i)) = be64toh(((uint64_t)(*(((uint64_t*)retval)+i))));
-			 /*
-			  int64_t temp;
-			  temp = ((uint64_t)(*(((uint64_t*)retval)+i)));
-			  temp = ((temp << 8) & 0xFF00FF00FF00FF00ULL ) | ((temp >> 8) & 0x00FF00FF00FF00FFULL );
-			  temp = ((temp << 16) & 0xFFFF0000FFFF0000ULL ) | ((temp >> 16) & 0x0000FFFF0000FFFFULL );
-			  temp =  (temp << 32) | ((temp >> 32) & 0xFFFFFFFFULL);
-			  (*(((uint64_t*)retval)+i)) = temp;
-			  */
-			}
-
-/*
-			//dr = 16, hence uint16_t
-			for(inum = 0; inum < 2; inum++)
-				cprintf(MAGENTA,"after htonl %d,0 :%d\n",inum,((uint8_t)(*((uint8_t*)((char*)(retval+(inum*(dynamicrange/8))))))));
-			for(inum = 254; inum < 258; inum++)
-				cprintf(MAGENTA,"after htonl %d,0 :%d\n",inum,((uint8_t)(*((uint8_t*)((char*)(retval+(inum*(dynamicrange/8))))))));
-			for(inum = 0; inum < 2; inum++)
-				cprintf(MAGENTA,"after htonl %d,2 :%d\n",inum,((uint8_t)(*((uint8_t*)((char*)(retval+((2048+inum)*(dynamicrange/8))))))));
-			for(inum = 254; inum < 258; inum++)
-				cprintf(MAGENTA,"after htonl %d,2 :%d\n",inum,((uint8_t)(*((uint8_t*)((char*)(retval+((2048+inum)*(dynamicrange/8))))))));
-*/
-
 
 
 			acquisitionIndex = index-startAcquisitionIndex;
@@ -2035,7 +2164,7 @@ int slsReceiverTCPIPInterface::set_dynamic_range() {
 			sprintf(mess,"Receiver locked by %s\n", socket->lastClientIP);
 			ret=FAIL;
 		}
-		else if(myDetectorType == EIGER){
+		else if ((dr>0) && (myDetectorType == EIGER)){
 			switch(dr){
 				case 4:
 				case 8:
@@ -2043,6 +2172,7 @@ int slsReceiverTCPIPInterface::set_dynamic_range() {
 				case 32:break;
 				default:
 					sprintf(mess,"This dynamic range does not exist for eiger: %d\n",dr);
+					cprintf(RED,"%s", mess);
 					ret=FAIL;
 					break;
 			}
@@ -2052,8 +2182,9 @@ int slsReceiverTCPIPInterface::set_dynamic_range() {
 				strcpy(mess,"Receiver not set up\n");
 				ret=FAIL;
 			}else{
-				retval=receiverBase->setDynamicRange(dr);
-				dynamicrange = dr;
+				if(dr > 0) receiverBase->setDynamicRange(dr);
+				retval = receiverBase->getDynamicRange();
+				dynamicrange = retval;
 				if(myDetectorType == EIGER){
 					if(!tenGigaEnable)
 						packetsPerFrame = EIGER_ONE_GIGA_CONSTANT * dynamicrange * EIGER_MAX_PORTS;

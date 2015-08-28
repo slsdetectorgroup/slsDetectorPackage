@@ -170,6 +170,9 @@ private:
 	/** gotthard specific read frame */
 	int gotthard_read_frame();
 
+	/** propix specific read frame */
+	int propix_read_frame();
+
 	/** moench specific read frame */
 	int moench_read_frame();
 

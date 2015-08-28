@@ -15,6 +15,7 @@
 
 #include "UDPInterface.h"
 #include "sls_receiver_defs.h"
+#include "genericSocket.h"
 
 
 class dummyUDPInterface : public UDPInterface {
@@ -58,7 +59,12 @@ class dummyUDPInterface : public UDPInterface {
 	/**
 	 * Destructor
 	 */
-  dummyUDPInterface() :  UDPInterface(), dynamicRange(16), scanTag(1000), nFrames(100), fWrite(1), fOverwrite(1), fIndex(0), fCaught(0), totfCaught(0), startAcqIndex(0), startFrameIndex(0), acqIndex(0), dataCompression(false), period(0), type(slsReceiverDefs::GENERIC), framesNeeded(100), udpPort1(1900), udpPort2(1901),  shortFrame(0), nFramesToGui(0), e10G(0) {strcpy(detHostname,"none"); strcpy(fName,"run"); strcpy(fPath,"/scratch/"); strcpy(eth,"eth0"); cout << "New dummy UDP Interface" << endl;};
+  dummyUDPInterface() :  UDPInterface(), dynamicRange(16), scanTag(1000), nFrames(100), fWrite(1), fOverwrite(1), fIndex(0), fCaught(0), totfCaught(0), startAcqIndex(0), startFrameIndex(0), acqIndex(0), dataCompression(false), period(0), type(slsReceiverDefs::GENERIC), framesNeeded(100), udpPort1(1900), udpPort2(1901),  shortFrame(0), nFramesToGui(0), e10G(0) {strcpy(detHostname,"none"); strcpy(fName,"run"); strcpy(fPath,"/scratch/"); strcpy(eth,"eth0"); cout << "New dummy UDP Interface" << endl;
+		     
+		     	
+
+
+};
 
     ~dummyUDPInterface() {cout << "Destroying  dummy UDP Interface" << endl;};
 	
@@ -198,7 +204,18 @@ class dummyUDPInterface : public UDPInterface {
 	 /returns 0 on success or -1 on failure
 	 */
 	//FIXME: success == 0 or success == 1?
-	virtual int startReceiver(char *message=NULL) {cout << "dummy start receiver" << endl; return 0;};
+	virtual int startReceiver(char *message=NULL) {cout << "dummy start receiver" << endl; 
+	  char buff[8225];
+	  buff[8224]='\0';
+	  int ip=0;
+	  int ib;
+	  genericSocket *udpSocket= new genericSocket(50004,genericSocket::UDP,8224);
+	  while((ib=udpSocket->ReceiveDataOnly(buff,8224))>0) {
+	    cout << "***   "<< ib <<"  **************************  " << ip++ << endl;
+	    cout << buff << endl;
+	    cout << "*****************************" << endl << endl<< endl ;
+	  }
+return 0;};
 
 	/**
 	 * Stops Receiver - stops listening for packets

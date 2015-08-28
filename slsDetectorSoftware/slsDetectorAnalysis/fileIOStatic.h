@@ -161,32 +161,32 @@ class fileIOStatic  {
       index=i;								\
       s=fname.substr(0,uscore);						\
     }									\
-    else      cout << "Warning: ******************************** cannot parse file index from " << s << endl; \
+   /* else      cout << "Warning: ******************************** cannot parse file index from " << s << endl; \*/
     uscore=s.rfind("_");						\
     if (sscanf( s.substr(uscore+1,s.size()-uscore-1).c_str(),"f%d",&i))   \
       s=fname.substr(0,uscore);	    \
-    else      cout << "Warning: ******************************** cannot parse frame index from " << s << endl; \
+    /*else      cout << "Warning: ******************************** cannot parse frame index from " << s << endl; \*/
     uscore=s.rfind("_");						\
     if (sscanf( s.substr(uscore+1,s.size()-uscore-1).c_str(),"d%d",&i))   \
       s=fname.substr(0,uscore);	    \
-    else      cout << "Warning: ******************************** cannot parse detector index from " << s << endl; \
+   /* else      cout << "Warning: ******************************** cannot parse detector index from " << s << endl; \*/
     uscore=s.rfind("_");			\
     if (sscanf( s.substr(uscore+1,s.size()-uscore-1).c_str(),"p%d",&i)) { \
       p_index=i;							\
       s=fname.substr(0,uscore);						\
     }									\
-    else      cout << "Warning: ******************************** cannot parse position index from " << s << endl; \
+   /* else      cout << "Warning: ******************************** cannot parse position index from " << s << endl; \*/
     uscore=s.rfind("_");						\
     if (sscanf( s.substr(uscore+1,s.size()-uscore-1).c_str(),"s%lf",&f)) { \
       sv1=f;								\
       s=fname.substr(0,uscore);						\
     }									\
-    else      cout << "Warning: ******************************** cannot parse scan varable 1 from " << s << endl; \
+   /* else      cout << "Warning: ******************************** cannot parse scan varable 1 from " << s << endl; \*/
     uscore=s.rfind("_");						\
     if (sscanf( s.substr(uscore+1,s.size()-uscore-1).c_str(),"S%lf",&f)) { \
       sv0=f;								\
     }									\
-    else      cout << "Warning: ******************************** cannot parse scan varable 0 from " << s << endl; \
+   /* else      cout << "Warning: ******************************** cannot parse scan varable 0 from " << s << endl; \*/
     return index;							\
   };
   
@@ -216,37 +216,37 @@ class fileIOStatic  {
       index=i;								\
       s=fname.substr(0,uscore);						\
     }									\
-    else      cout << "Warning: ******************************** cannot parse file index" << endl; \
+    /*else      cout << "Warning: ******************************** cannot parse file index" << endl; \*/
     uscore=s.rfind("_");						\
     if (sscanf( s.substr(uscore+1,s.size()-uscore-1).c_str(),"f%d",&i)) { \
       f_index=i;							\
       s=fname.substr(0,uscore);						\
     }									\
-    else      cout << "Warning: ******************************** cannot parse frame index" << endl; \
+    /*else      cout << "Warning: ******************************** cannot parse frame index" << endl; \*/
     uscore=s.rfind("_");						\
     if (sscanf( s.substr(uscore+1,s.size()-uscore-1).c_str(),"d%d",&i)) { \
       detindex=i;								\
       s=fname.substr(0,uscore);				\
     }									\
-    else      cout << "Warning: ******************************** cannot parse detector id" << endl; \
+   /* else      cout << "Warning: ******************************** cannot parse detector id" << endl; \*/
     uscore=s.rfind("_");						\
     if (sscanf( s.substr(uscore+1,s.size()-uscore-1).c_str(),"p%d",&i)) { \
       p_index=i;							\
       s=fname.substr(0,uscore);						\
     }									\
-    else      cout << "Warning: ******************************** cannot parse position index" << endl; \
+    /*else      cout << "Warning: ******************************** cannot parse position index" << endl; \*/
     uscore=s.rfind("_");						\
     if (sscanf( s.substr(uscore+1,s.size()-uscore-1).c_str(),"s%lf",&f)) { \
       sv1=f;								\
       s=fname.substr(0,uscore);						\
     }									\
-    else      cout << "Warning: ******************************** cannot parse scan varable 1" << endl; \
+    /*else      cout << "Warning: ******************************** cannot parse scan varable 1" << endl; \*/
     uscore=s.rfind("_");						\
     if (sscanf( s.substr(uscore+1,s.size()-uscore-1).c_str(),"S%lf",&f)) { \
       sv0=f;								\
       s=fname.substr(0,uscore);						\
     }									\
-    else      cout << "Warning: ******************************** cannot parse scan varable 0" << endl; \
+    /*else      cout << "Warning: ******************************** cannot parse scan varable 0" << endl; \*/
 
     return index;							\
   };
@@ -314,20 +314,32 @@ class fileIOStatic  {
       \returns file name without file name prefix, detector index  or extension
   */
   static string getReceiverFileNameToConcatenate(string fname) { \
-	  //int i;
+	  int i;double f;				\
 	  string s=fname;											\
 	  if(fname.empty()) return fname;							\
-	  size_t slash=s.rfind("/");								\
-	  if (slash!= string::npos)									\
-	  s=s.substr(slash,s.size()-slash); 						\
-	  size_t dot=s.find(".");									\
-	  size_t uscore=s.find("_");								\
-	  if ((dot!= string::npos)&&(uscore!= string::npos))		\
-		  s=s.substr(uscore,dot-uscore);						\
-	  // uscore=s.find("_",1);
-	  //if ((uscore!= string::npos) && (sscanf( s.substr(1,uscore-1).c_str(),"d%d",&i)))
-	  //s=s.substr(uscore,s.size()-uscore);
-	  return s;													\
+	  size_t dot=s.find(".");
+	  size_t uscore=s.rfind("_");	\
+
+	    if (uscore==string::npos)       return "??";				\
+	    if (sscanf(s.substr(uscore+1,s.size()-uscore-1).c_str(),"%d",&i)) 	\
+	      s=fname.substr(0,uscore);						\
+	    uscore=s.rfind("_");						\
+	    if (sscanf( s.substr(uscore+1,s.size()-uscore-1).c_str(),"f%d",&i))			\
+	      s=fname.substr(0,uscore);						\
+		uscore=s.rfind("_");					\
+	     if (sscanf( s.substr(uscore+1,s.size()-uscore-1).c_str(),"d%d",&i))  \
+	         s=fname.substr(0,uscore);						\
+	     uscore=s.rfind("_");						\
+	     if (sscanf( s.substr(uscore+1,s.size()-uscore-1).c_str(),"p%d",&i))  \
+	       s=fname.substr(0,uscore);						\
+	     uscore=s.rfind("_");						\
+	     if (sscanf( s.substr(uscore+1,s.size()-uscore-1).c_str(),"s%lf",&f))  \
+	       s=fname.substr(0,uscore);						\
+	     uscore=s.rfind("_");						\
+	     if (sscanf( s.substr(uscore+1,s.size()-uscore-1).c_str(),"S%lf",&f))  \
+	       s=fname.substr(0,uscore);		\
+	       return(fname.substr(s.size(),dot-s.size()));\
+											\
   };
 
 

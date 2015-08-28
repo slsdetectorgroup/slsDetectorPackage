@@ -4639,6 +4639,7 @@ int* multiSlsDetector::readFrameFromReceiver(char* fName,  int &acquisitionIndex
 					delete [] retdet;
 					//concatenate filenames
 					if(!fullFName.length()){
+						//assign file prefix
 						fullFName.assign(fileIO::getFileName());
 						if (strrchr(fName,'.')!=NULL){
 							ext.assign(fName);
@@ -4650,9 +4651,11 @@ int* multiSlsDetector::readFrameFromReceiver(char* fName,  int &acquisitionIndex
 
 							//get variables
 							fileIOStatic::getVariablesFromFileName(fName,index, f_index, p_index, sv0, sv1, det_index);
+							//append scan and det variables
 							fullFName.append(fileIOStatic::getReceiverFileNameToConcatenate(fName));
 						}
 					}
+					//append only if scan variables are different
 					if(!fileIOStatic::verifySameFrame(fName,index,f_index, p_index, sv0, sv1, det_index)){
 						fullFName.append(fileIOStatic::getReceiverFileNameToConcatenate(fName));
 					}
@@ -4666,6 +4669,7 @@ int* multiSlsDetector::readFrameFromReceiver(char* fName,  int &acquisitionIndex
 			}
 		}
 	}
+	//append extension
 	fullFName.append(ext);
 	strcpy(fName,fullFName.c_str());
 	//if some of the receivers did not give data, dont count it

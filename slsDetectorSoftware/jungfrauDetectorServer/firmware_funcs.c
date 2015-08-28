@@ -1982,7 +1982,7 @@ int startStateMachine(){
     bus_w16(CONTROL_REG, FIFO_RESET_BIT);
     bus_w16(CONTROL_REG, 0x0);
     bus_w16(CONTROL_REG, START_ACQ_BIT |  START_EXPOSURE_BIT);
-    usleep(20);
+    //  usleep(20);
     bus_w16(CONTROL_REG, 0x0);
 	  //verify
   /*   if(bus_r(STATUS_REG) & RUN_BUSY_BIT) */
@@ -1996,10 +1996,10 @@ int startStateMachine(){
 /*   if(i!=0) */
 /*     printf("tried to start state machine %d times\n",i); */
  
-  if(i==100){
-     printf("\n***********COULD NOT START STATE MACHINE***************\n");
-     return FAIL;
-   }
+/*   if(i==100){ */
+/*      printf("\n***********COULD NOT START STATE MACHINE***************\n"); */
+/*      return FAIL; */
+/*    } */
 
    printf("statusreg=%08x\n",bus_r(STATUS_REG));
   return OK;

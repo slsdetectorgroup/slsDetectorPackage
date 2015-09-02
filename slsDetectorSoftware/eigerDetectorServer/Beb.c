@@ -154,7 +154,7 @@ void Beb_GetModuleCopnfiguration(int* master, int* top){
 		//open file pointer
 		int fd = Beb_open(XPAR_PLB_GPIO_SYS_BASEADDR,&baseaddr);
 		if(fd < 0){
-			 cprintf(RED,"Module Configuration FAIL\n");
+			 cprintf(BG_RED,"Module Configuration FAIL\n");
 		}else{
 			//read data
 			ret = Beb_Read32(baseaddr, MODULE_CONFIGURATION_MASK);
@@ -177,7 +177,7 @@ u_int32_t Beb_GetFirmwareRevision(){
 	//open file pointer
 	int fd = Beb_open(XPAR_VERSION,&baseaddr);
 	if(fd < 0)
-		cprintf(RED,"Firmware Revision Read FAIL\n");
+		cprintf(BG_RED,"Firmware Revision Read FAIL\n");
 
 	else{
 		//read revision existing bit
@@ -185,7 +185,7 @@ u_int32_t Beb_GetFirmwareRevision(){
 		printf("Firmware Revision Read OK\n");
 		//error reading
 		if(!(value&REVISION_EXISTING_BIT)){
-			cprintf(RED,"Firmware Revision Number does not exist in this version\n");
+			cprintf(BG_RED,"Firmware Revision Number does not exist in this version\n");
 			value = 0;
 		}else{
 			//read revision number
@@ -202,6 +202,27 @@ u_int32_t Beb_GetFirmwareRevision(){
 
 	return value;
 }
+
+
+void Beb_ResetFrameNumber(){
+	//mapping new memory to read master top module configuration
+	u_int32_t baseaddr;
+	//open file pointer
+	int fd = Beb_open(XPAR_PLB_GPIO_SYS_BASEADDR,&baseaddr);
+	if(fd < 0){
+		cprintf(BG_RED,"Reset Frame Number FAIL\n");
+	}else{
+		//write a 1
+		Beb_Write32(baseaddr, FRAME_NUM_RESET_OFFSET, 1);
+		usleep(100000); //100ms
+		//write a 0
+		Beb_Write32(baseaddr, FRAME_NUM_RESET_OFFSET, 0);
+		printf("Frame Number Reset OK\n");
+		//close file pointer
+		Beb_close(fd);
+	}
+}
+
 
 void Beb_ClearBebInfos(){
 	//unsigned int i;
@@ -582,7 +603,7 @@ int Beb_StopAcquisition()
 	//open file pointer
 	int fd = Beb_open(XPAR_CMD_GENERATOR,&baseaddr);
 	if(fd < 0){
-		cprintf(RED,"Beb Stop Acquisition FAIL\n");
+		cprintf(BG_RED,"Beb Stop Acquisition FAIL\n");
 		return 0;
 	}else{
 		//find value
@@ -657,7 +678,7 @@ int Beb_RequestNImages(unsigned int beb_number, int ten_gig, unsigned int dst_nu
 	//open file pointer
 	int fd = Beb_open(XPAR_CMD_GENERATOR,&baseaddr);
 	if(fd < 0){
-		cprintf(RED,"Beb Request N Images FAIL\n");
+		cprintf(BG_RED,"Beb Request N Images FAIL\n");
 		return 0;
 	}else{
 
@@ -790,14 +811,14 @@ int Beb_open(u_int32_t baseaddr, u_int32_t* csp0base){
 
 	int fd = open("/dev/mem", O_RDWR | O_SYNC, 0);
 	if (fd == -1)
-		cprintf(RED,"\nCan't find /dev/mem!\n");
+		cprintf(BG_RED,"\nCan't find /dev/mem!\n");
 	else{
 #ifdef VERBOSE
 		printf("/dev/mem opened\n");
 #endif
 		*csp0base = (u_int32_t)mmap(0, 0x1000, PROT_READ|PROT_WRITE, MAP_FILE|MAP_SHARED, fd, baseaddr);
 		if (*csp0base == (u_int32_t)MAP_FAILED) {
-			cprintf(RED,"\nCan't map memmory area!!\n");
+			cprintf(BG_RED,"\nCan't map memmory area!!\n");
 			fd = -1;
 		}
 #ifdef VERBOSE

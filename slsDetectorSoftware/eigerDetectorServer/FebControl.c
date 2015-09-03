@@ -591,13 +591,31 @@ unsigned int Feb_Control_GetNHalfModules(){
 }
 
 int Feb_Control_SetPhotonEnergy(unsigned int full_energy_eV){
+  /**
+
+		setDAC(VCMP_LL,val,imod,mV,retval);
+		setDAC(VCMP_LR,val,imod,mV,retval);
+		setDAC(VCMP_RL,val,imod,mV,retval);
+		ind = VCMP_RR;
+  */
 	Feb_Control_photon_energy_eV = full_energy_eV;
 	printf("Setting photon energy to: %d eV\n",Feb_Control_photon_energy_eV);
 
 	return 1;
 }
 
-unsigned int Feb_Control_GetPhotonEnergy(){return Feb_Control_photon_energy_eV;}
+unsigned int Feb_Control_GetPhotonEnergy(){
+
+  /**
+
+		setDAC(VCMP_LL,val,imod,mV,retval);
+		setDAC(VCMP_LR,val,imod,mV,retval);
+		setDAC(VCMP_RL,val,imod,mV,retval);
+		ind = VCMP_RR;
+  */
+return Feb_Control_photon_energy_eV;
+
+}
 
 int Feb_Control_SetIDelays(unsigned int module_num, unsigned int ndelay_units){
 	return Feb_Control_SetIDelays1(module_num,0,ndelay_units)&&Feb_Control_SetIDelays1(module_num,1,ndelay_units)&&Feb_Control_SetIDelays1(module_num,2,ndelay_units)&&Feb_Control_SetIDelays1(module_num,3,ndelay_units);

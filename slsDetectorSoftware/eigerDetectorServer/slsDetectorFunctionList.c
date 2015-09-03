@@ -414,6 +414,7 @@ int setModule(sls_detector_module myMod){
 
 	Feb_Control_SetTrimbits(Feb_Control_GetModuleNumber(),tt);
 
+	// use gain and offset!!!
 
 	return 0;
 }

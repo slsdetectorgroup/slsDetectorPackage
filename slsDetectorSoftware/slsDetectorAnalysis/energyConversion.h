@@ -45,6 +45,33 @@ class energyConversion
   */
   static int writeCalibrationFile(string fname, double gain, double offset);
 
+
+
+  
+  /**
+      reads a calibration file 
+      \param fname file to be read
+      \param gain reference to the gain variable
+      \offset reference to the offset variable
+  */
+  static int readCalibrationFile(string fname, double *gain, double *offset, detectorType myDetectorType);
+  
+  /**
+      writes a calibration file 
+      \param fname file to be written
+      \param gain 
+      \param offset
+  */
+  static int writeCalibrationFile(string fname, double *gain, double *offset, detectorType myDetectorType);
+
+
+
+
+
+
+
+
+
 #ifndef MYROOT
 
   /**

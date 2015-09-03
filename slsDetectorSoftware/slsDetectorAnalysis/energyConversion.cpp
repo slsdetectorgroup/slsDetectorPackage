@@ -70,12 +70,108 @@ int energyConversion::writeCalibrationFile(string fname, double gain, double off
 };
 
 
+int energyConversion::readCalibrationFile(string fname, double *gain, double *offset, detectorType myDetectorType){
+
+
+
+  string str;
+  ifstream infile;
+  double o,g;
+  int ig=0;
+  switch (myDetectorType) {
+  case EIGER:
+
+
+
+#ifdef VERBOSE
+  std::cout<< "Opening file "<< fname << std::endl;
+#endif
+  infile.open(fname.c_str(), ios_base::in);
+  if (infile.is_open()) {
+
+    for (ig=0; ig<4; ig++) {
+      //while ( (getline(infile,str)) > -1) {
+      getline(infile,str);
+#ifdef VERBOSE
+      std::cout<< str << std::endl;
+#endif
+      istringstream ssstr(str);
+      ssstr >> o >> g;
+      offset[ig]=o;
+      gain[ig]=g;
+      // ig++;
+      if (ig>=4)
+	break;
+    }
+    infile.close();
+    cout << "Calibration file loaded: " << fname << endl;
+  } else {
+    std::cout<< "Could not open calibration file "<< fname << std::endl;
+    gain[0]=0.;
+    offset[0]=0.;
+#ifndef MYROOT
+    return FAIL;
+#endif
+    return -1;
+  }
+#ifndef MYROOT
+  return OK;
+#endif
+  return 0;
+  break;
+  
+
+
+
+  default:
+    return readCalibrationFile(fname, *gain, *offset);
+  }
+
+};
+
+int energyConversion::writeCalibrationFile(string fname, double *gain, double *offset, detectorType myDetectorType){
+  //std::cout<< "Function not yet implemented " << std::endl;
+  ofstream outfile;	
+  switch (myDetectorType) {
+  case EIGER:
+
+  outfile.open (fname.c_str());
+
+  // >> i/o operations here <<
+  if (outfile.is_open()) {
+    for (int ig=0; ig<4; ig++)
+      outfile << offset[ig] << " " << gain[ig] << std::endl;
+  } else {
+    std::cout<< "Could not open calibration file "<< fname << " for writing" << std::endl;
+#ifndef MYROOT
+    return FAIL;
+#endif
+    return -1;
+  }
+
+  outfile.close();
+#ifndef MYROOT
+  return OK;
+#endif
+  return 0;
+  break;
+  default:
+    return writeCalibrationFile(fname, *gain, *offset);
+  }
+
+};
+
+
 #ifndef MYROOT
 
 /* I/O */
 
 
 slsDetectorDefs::sls_detector_module* energyConversion::readSettingsFile(string fname,  detectorType myDetectorType, sls_detector_module *myMod){
+
+
+
+
 	int nflag=0;
 
 

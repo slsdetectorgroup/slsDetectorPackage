@@ -908,9 +908,9 @@ slsDetectorDefs::sls_detector_module*  slsDetector::createModule(detectorType t)
   case EIGER:
     nch=256*256; // one EIGER half module
     nm=1; //modules/detector
-    nc=4*1; //chips
+    nc=4*1; //chips 
     nd=16; //dacs
-    na=0;
+    na=0;  //use for gain????
     break;
   case MOENCH:
     nch=160*160;
@@ -3077,8 +3077,15 @@ slsDetectorDefs::detectorSettings slsDetector::setSettings( detectorSettings ise
 #ifdef VERBOSE
 				cout << calfname << endl;
 #endif
+
+				//reads calibration files here!
+
+
 				readCalibrationFile(calfname,myMod->gain, myMod->offset);
 				setModule(*myMod);
+
+
+
 			} else {
 				ostringstream ostfn,oscfn;
 				switch(thisDetector->myDetectorType){

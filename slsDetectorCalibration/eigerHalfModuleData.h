@@ -38,7 +38,7 @@ public:
 		//Map
 		int totalNumberOfBytes = 1040 * dynamicRange * 16 *2; //for both 1g and 10g
 		int iPacket1 = 8;
-		int iPacket2 = bufferSize + 8;
+		int iPacket2 = (totalNumberOfBytes/2) + 8;
 		int iData1 = 0, iData2 = 0;
 		int increment = (dynamicRange/8);
 		int ic_increment = 1;
@@ -47,7 +47,6 @@ public:
 			ic_increment = 2;
 		}
 		int iPort;
-
 
 		if(top){
 			for (int ir=0; ir<ypixels; ir++) {
@@ -59,7 +58,7 @@ public:
 						iData1 += increment;
 						//increment header
 						if(iData1 >= actualDataSize){
-							iPacket1 += (bufferSize + 8);
+							iPacket1 += 16;
 							iData1 = 0;
 						}
 					}else{
@@ -68,7 +67,7 @@ public:
 						iData2 += increment;
 						//increment header
 						if(iData2 >= actualDataSize){
-							iPacket2 += (bufferSize + 8);
+							iPacket2 += 16;
 							iData2 = 0;
 						}
 					}
@@ -80,13 +79,14 @@ public:
 		//bottom
 		else{
 			iData1 = 0; iData2 = 0;
-			int numbytesperlineperport = 1024;
-			if (dynamicRange == 8)
-				numbytesperlineperport = 512;
-			else if (dynamicRange == 4)
-				numbytesperlineperport = 256;
-			else if (dynamicRange == 32)
-				numbytesperlineperport = 2048;
+			int numbytesperlineperport;
+
+			switch(dynamicRange){
+				case 4: numbytesperlineperport = 256; break;
+				case 8:	numbytesperlineperport = 512; break;
+				case 16:numbytesperlineperport = 1024; break;
+				case 32:numbytesperlineperport = 2048; break;
+			}
 
 
 
@@ -260,27 +260,30 @@ public:
 	virtual int getChannel(char *data, int ix, int iy, int dr) {
 		uint32_t m=0, n = 0;
 		uint8_t t;
-		uint64_t k;
-		int numBytes,divFactor,pixelval, newix;
+		int linesperpacket,newix, newiy;
 
 		//cout <<"ix:"<<ix<<" nx:"<<nx<<" iy:"<<iy<<" ny:"<<ny<<" datamap[iy][ix]:"<< dataMap[iy][ix] <<" datasize:"<< dataSize <<endl;
 		if (ix>=0 && ix<nx && iy>=0 && iy<ny && dataMap[iy][ix]>=0 && dataMap[iy][ix]<dataSize) {
 			m=dataMask[iy][ix];
 
-			numBytes = (nx * iy + ix);
-			divFactor=512;
-			if (dr == 16) divFactor = 1024;
-			else if (dr == 8) divFactor = 2048;
-			/*if(dr == 4) divFactor = 16;
-			else if (dr == 8) divFactor = 8;
-			else if (dr == 16) divFactor = 512;*/
+			//pixelpos1d = (nx * iy + ix);
 
-			pixelval = numBytes % divFactor;
-			//big endian
-			newix = ix - pixelval;
+			switch(dr){
+			case 4: linesperpacket=4;break;
+			case 8: linesperpacket=2;break;
+			case 16: linesperpacket=1;break;
+			case 32: linesperpacket=0;break;/*dont know*/
+			}
 
-			//cprintf(GREEN,"64 value: 0x%016llx\n",((uint64_t)(*((uint64_t*)(((char*)data)+(dataMap[iy][newix]-8))))));
-			t = (*(uint8_t*)(((eiger_packet_header *)((char*)(data +(dataMap[iy][newix]-8))))->num3));
+			//to get the starting of a packet, ix is divided by 512pixels because of 2 ports
+			newix = ix - (ix%512);
+			//iy divided by linesperpacket depending on bitmode
+			if(!(iy%linesperpacket))
+				newiy = iy;
+			else
+				newiy = (iy - (iy%linesperpacket));
+
+			t = (*(uint8_t*)(((eiger_packet_header *)((char*)(data +(dataMap[newiy][newix]-8))))->num3));
 			//cprintf(GREEN,"num3 0x%x\n",t);
 			//check if missing packet
 			if(t & 0x02){
@@ -294,7 +297,9 @@ public:
 		}
 
 		//little endian
-		n = ((uint32_t)(*((uint32_t*)(((char*)data)+(dataMap[iy][ix])))));
+
+		/*if(dr == 16) return ((uint16_t)(*((uint16_t*)(((char*)data)+(dataMap[iy][ix])))));*/
+		 n = ((uint32_t)(*((uint32_t*)(((char*)data)+(dataMap[iy][ix])))));
 		if(dr == 4)			return (n & 0xf)^m;
 		else if(dr == 8)	return (n & 0xff)^m;
 		else if(dr == 16)	return (n & 0xffff)^m;
@@ -336,16 +341,35 @@ private:
 	bool top;
 
 
-	/** structure of an eiger image header*/
+	/** structure of an eiger packet for 1g*/
 	typedef struct
 	{
-		unsigned char num1[4];
-		unsigned char num2[2];
-		unsigned char num3[1];
-		unsigned char num4[1];
-	} eiger_packet_header;
+		unsigned char subframenum[4];
+		unsigned char missingpacket[1];
+		unsigned char random[1];
+		unsigned char portnum[1];
+		unsigned char dynamicrange[1];
+		unsigned char data[1024];
+		unsigned char framenumbig[2];
+		unsigned char framenum[4];
+		unsigned char packetnum[2];
+	} eiger_packet_1g;
 
+	/** structure of an eiger packet for 10g*/
+	typedef struct
+	{
+		unsigned char subframenum[4];
+		unsigned char missingpacket[1];
+		unsigned char random[1];
+		unsigned char portnum[1];
+		unsigned char dynamicrange[1];
+		unsigned char data[4096];
+		unsigned char framenumbig[2];
+		unsigned char framenum[4];
+		unsigned char packetnum[2];
+	} eiger_packet_10g;
 };
+
 
 
 

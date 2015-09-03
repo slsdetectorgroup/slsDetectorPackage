@@ -485,8 +485,6 @@ private:
 	void handleDataCompression(int ithread, char* wbuffer[], char* data, int xmax, int ymax, int &nf);
 
 
-
-
 public:
 
 

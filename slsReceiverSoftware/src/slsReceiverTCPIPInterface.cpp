@@ -1570,7 +1570,6 @@ int	slsReceiverTCPIPInterface::eiger_read_frame(){
 	char fName[MAX_STR_LENGTH]="";
 	int acquisitionIndex = -1;
 	int frameIndex= -1;
-	int i;
 	uint32_t index=0;
 
 	int frameSize   = EIGER_ONE_GIGA_ONE_PACKET_SIZE * packetsPerFrame;

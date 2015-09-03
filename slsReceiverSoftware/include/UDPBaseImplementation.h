@@ -483,25 +483,25 @@ protected:
 	//// Could be done more fine-grained... TODO
 	// private:
  protected:
-	/** structure of an eiger image header*/
+	/** structure of an eiger packet*/
 	typedef struct
 	{
-		unsigned char header_before1[5];
-		unsigned char header_confirm[1];
-		unsigned char header_before2[14];
-		//unsigned char  header_before[20];
-		unsigned char  fnum[4];
-		unsigned char  header_after[24];
-	} eiger_image_header;
+		unsigned char subframenum[4];
+		unsigned char missingpacket[2];
+		unsigned char portnum[1];
+		unsigned char dynamicrange[1];
+	} eiger_packet_header_t;
 
-	/** structure of an eiger image header*/
 	typedef struct
 	{
-		unsigned char num1[4];
-		unsigned char num2[2];
-		unsigned char num3[1];
-		unsigned char num4[1];
-	} eiger_packet_header;
+		unsigned char framenum[6];
+		unsigned char packetnum[2];
+	} eiger_packet_footer_t;
+
+	eiger_packet_header_t* eiger_packet_header;
+	unsigned char* eiger_packet_data;
+	eiger_packet_footer_t* eiger_packet_footer;
+
 
 	/** max number of listening threads */
 	const static int MAX_NUM_LISTENING_THREADS = EIGER_MAX_PORTS;
@@ -626,8 +626,11 @@ protected:
 	/** buffer size. different from framesize as we wait for one packet instead of frame for eiger */
 	int bufferSize;
 
-	/** oen buffer size */
+	/** one buffer size */
 	int onePacketSize;
+
+	/** one buffer size */
+	int oneDataSize;
 
 	/** latest data */
 	char* latestData;

@@ -40,10 +40,8 @@ int eiger_extgating = 0;
 int eiger_extgatingpolarity = 0;
 
 
-
 int eiger_nexposures = 1;
 int eiger_ncycles = 1;
-
 
 
 int send_to_ten_gig = 0;
@@ -65,14 +63,13 @@ int master = 0;
 #define TEN_GIGA_BUFFER_SIZE 4112
 #define ONE_GIGA_BUFFER_SIZE 1040
 
+
 int initDetector(){
 	int imod,i,n;
 	n = getNModBoard(1);
 
-	printf("This is the EIGER Server of revision %llx\n", getDetectorId(DETECTOR_SOFTWARE_VERSION));
-
 	//#ifdef VERBOSE
-	printf("Board is for %d half modules\n",n);
+	printf("This Server is for 1 Eiger half module\n");
 	//#endif
 
 
@@ -131,6 +128,7 @@ int initDetector(){
 	//setting default measurement parameters
 	setTimer(FRAME_NUMBER,1);
 	setTimer(ACQUISITION_TIME,1E9);
+	setTimer(SUBFRAME_ACQUISITION_TIME,DEFAULT_SUBFRAME_EXPOSURE_VAL);
 	setTimer(FRAME_PERIOD,1E9);
 	setDynamicRange(16);
 	setThresholdEnergy(8000,0);
@@ -619,12 +617,22 @@ int64_t setTimer(enum timerIndex ind, int64_t val){
 				nimages_per_request = eiger_nexposures * eiger_ncycles;
 			}
 		}return eiger_nexposures;
+
 	case ACQUISITION_TIME:
 		if(val >= 0){
 			printf(" Setting exp time: %fs\n",val/(1E9));
 			Feb_Control_SetExposureTime(val/(1E9));
 		}
 		return (Feb_Control_GetExposureTime()*(1E9));
+
+	case SUBFRAME_ACQUISITION_TIME:
+		if(val >= 0){
+			printf(" Setting sub exp time: %dns\n",(int)val/10);
+			Feb_Control_SetSubFrameExposureTime(val/10);
+		}
+		return (Feb_Control_GetSubFrameExposureTime()*10);
+
+
 	case FRAME_PERIOD:
 		if(val >= 0){
 			printf(" Setting acq period: %fs\n",val/(1E9));

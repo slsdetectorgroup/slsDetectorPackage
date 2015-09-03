@@ -17,7 +17,8 @@
 #define DAQ_REG_NEXPOSURES            3
 #define DAQ_REG_EXPOSURE_TIMER        4 // == (31 downto 3) * 10^(2 downto 0) 
 #define DAQ_REG_EXPOSURE_REPEAT_TIMER 5 // == (31 downto 3) * 10^(2 downto 0) 
-#define DAQ_REG_STATUS                6 //also pg and fifo status register
+#define DAQ_REG_SUBFRAME_EXPOSURES    6
+#define DAQ_REG_STATUS                7 //also pg and fifo status register
 
 #define DAQ_CTRL_RESET              0x80000000
 #define DAQ_CTRL_START              0x40000000

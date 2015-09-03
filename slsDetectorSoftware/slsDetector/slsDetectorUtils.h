@@ -37,7 +37,7 @@ using namespace std;
 #include "slsDetectorActions.h"
 #include "postProcessing.h"
 
-#define MAX_TIMERS 11
+//#define MAX_TIMERS 11
 #define MAXPOS 50
 
 #define DEFAULT_HOSTNAME  "localhost"

@@ -10,6 +10,8 @@
 //#include <stdint.h>
 #include "sls_receiver_defs.h"
 
+#define REQUIRED_FIRMWARE_VERSION 10
+
 /** default maximum string length */
 #define MAX_SCAN_STEPS 2000
 /** maxmimum number of modules per controller*/
@@ -18,6 +20,9 @@
 #define MAXDET 100
 /** header length for data :gotthard*/
 #define HEADERLENGTH 12
+
+#define DEFAULT_SUBFRAME_EXPOSURE_VAL 2621440 /** default value for sub frame value 2.6ms*/
+#define MAX_SUBFRAME_EXPOSURE_VAL	0x1FFFFFFF /** 29 bit register for max subframe exposure value */
 
 /** maximum rois */
 #define MAX_ROIS 100

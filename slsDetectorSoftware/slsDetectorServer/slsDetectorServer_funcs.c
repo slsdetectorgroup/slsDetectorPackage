@@ -42,6 +42,24 @@ int dataBytes = 10;
 
 
 
+void checkFirmwareCompatibility(){
+	cprintf(BLUE,"\n\n********************************************************\n"
+			   "**********************EIGER Server**********************\n"
+			   "********************************************************\n");
+	cprintf(BLUE,"\nFirmware Version: %llx\nSoftware Version: %llx\n\n",
+			getDetectorId(DETECTOR_FIRMWARE_VERSION), getDetectorId(DETECTOR_SOFTWARE_VERSION));
+
+	//check for firmware version compatibility
+	if(getDetectorId(DETECTOR_FIRMWARE_VERSION) < REQUIRED_FIRMWARE_VERSION){
+		cprintf(RED,"FATAL ERROR: This firmware version is incompatible.\n"
+				"Please update it to v%d to be compatible with this server\n\n",
+				REQUIRED_FIRMWARE_VERSION);
+
+		cprintf(RED,"Exiting Server. Goodbye!\n\n");
+		exit(-1);
+	}
+}
+
 
 int init_detector(int b) {
 #ifdef VIRTUAL
@@ -399,6 +417,10 @@ int send_update(int file_des) {
 	n += sendData(file_des,&retval,sizeof(int64_t),INT64);
 #ifdef	SLS_DETECTOR_FUNCTION_LIST
 	retval=setTimer(ACQUISITION_TIME,GET_FLAG);
+#endif
+	n += sendData(file_des,&retval,sizeof(int64_t),INT64);
+#ifdef	SLS_DETECTOR_FUNCTION_LIST
+	retval=setTimer(SUBFRAME_ACQUISITION_TIME,GET_FLAG);
 #endif
 	n += sendData(file_des,&retval,sizeof(int64_t),INT64);
 #ifdef	SLS_DETECTOR_FUNCTION_LIST
@@ -2428,6 +2450,16 @@ int set_timer(int file_des) {
 			sprintf(mess,"Detector locked by %s\n",lastClientIP);
 		}  else {
 			switch(ind) {
+#ifdef EIGERD
+			case SUBFRAME_ACQUISITION_TIME:
+				if (tns > MAX_SUBFRAME_EXPOSURE_VAL ){
+					ret=FAIL;
+					strcpy(mess,"Sub Frame exposure time should not exceed 5.368 seconds\n");
+					break;
+				}
+#endif
+				retval = setTimer(ind,tns);
+				break;
 			case PROBES_NUMBER:
 #ifndef MYTHEND
 				ret=FAIL;
@@ -2444,7 +2476,7 @@ int set_timer(int file_des) {
 				break;
 			default:
 				ret=FAIL;
-				sprintf(mess,"timer index unknown %d\n",ind);
+				sprintf(mess,"timer index unknown for this detector %d\n",ind);
 				break;
 			}
 

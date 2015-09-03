@@ -3213,6 +3213,11 @@ int slsDetector::updateDetectorNoWait() {
   n = 	controlSocket->ReceiveDataOnly( &retval,sizeof(int64_t));
   thisDetector->timerValue[ACQUISITION_TIME]=retval;
 
+  if(thisDetector->myDetectorType!= EIGER){
+	   //retval=setSubFrameExposureTime(tns);
+	  n = 	controlSocket->ReceiveDataOnly( &retval,sizeof(int64_t));
+	  thisDetector->timerValue[SUBFRAME_ACQUISITION_TIME]=retval;
+}
   //retval=setPeriod(tns);
   n = 	controlSocket->ReceiveDataOnly( &retval,sizeof(int64_t));
   thisDetector->timerValue[FRAME_PERIOD]=retval;

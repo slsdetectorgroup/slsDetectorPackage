@@ -182,7 +182,7 @@ u_int32_t Beb_GetFirmwareRevision(){
 	else{
 		//read revision existing bit
 		value = Beb_Read32(baseaddr, REVISION_EXISTING_OFFSET);
-		printf("Firmware Revision Read OK\n");
+		//printf("Firmware Revision Read OK\n");
 		//error reading
 		if(!(value&REVISION_EXISTING_BIT)){
 			cprintf(BG_RED,"Firmware Revision Number does not exist in this version\n");
@@ -190,8 +190,8 @@ u_int32_t Beb_GetFirmwareRevision(){
 		}else{
 			//read revision number
 			value = Beb_Read32(baseaddr, 0);
-			printf("Firmware Revision Number Read OK\n");
-			printf("Rev: 0x%x.%x\n\n",value & REVISION_MASK,value & SUB_REVISION_MASK);
+			//printf("Firmware Revision Number Read OK\n");
+			//printf("Rev: 0x%x.%x\n\n",value & REVISION_MASK,value & SUB_REVISION_MASK);
 			value &= REVISION_MASK;
 		}
 	}

@@ -46,8 +46,9 @@ unsigned int Feb_Control_subFrameMode;
 unsigned int Feb_Control_photon_energy_eV;
 
 unsigned int Feb_Control_nimages;
-double        Feb_Control_exposure_time_in_sec;
-double        Feb_Control_exposure_period_in_sec;
+double Feb_Control_exposure_time_in_sec;
+int Feb_Control_subframe_exposure_time_in_10nsec;
+double Feb_Control_exposure_period_in_sec;
 
 unsigned int   Feb_Control_trimbit_size;
 unsigned int* Feb_Control_last_downloaded_trimbits;
@@ -1380,6 +1381,13 @@ int Feb_Control_SetExposureTime(double the_exposure_time_in_sec){
 }
 double Feb_Control_GetExposureTime(){return Feb_Control_exposure_time_in_sec;}
 
+int Feb_Control_SetSubFrameExposureTime(int the_subframe_exposure_time_in_10nsec){
+	Feb_Control_subframe_exposure_time_in_10nsec = the_subframe_exposure_time_in_10nsec;
+	printf("Sub Frame Exposure time set to: %d\n",Feb_Control_subframe_exposure_time_in_10nsec);
+	return 1;
+}
+int Feb_Control_GetSubFrameExposureTime(){return Feb_Control_subframe_exposure_time_in_10nsec;}
+
 int Feb_Control_SetExposurePeriod(double the_exposure_period_in_sec){
 	Feb_Control_exposure_period_in_sec = the_exposure_period_in_sec;
 	printf("Exposure period set to: %f\n",Feb_Control_exposure_period_in_sec);
@@ -1542,129 +1550,40 @@ int Feb_Control_PrepareForAcquisition(){//return 1;
 	reg_vals[3]=Feb_Control_ConvertTimeToRegister(Feb_Control_exposure_period_in_sec);
 	reg_nums[4]=DAQ_REG_CHIP_CMDS;
 	reg_vals[4]=(Feb_Control_acquireNReadoutMode|Feb_Control_triggerMode|Feb_Control_externalEnableMode|Feb_Control_subFrameMode);
-
+	reg_nums[5]=DAQ_REG_SUBFRAME_EXPOSURES;
+	reg_vals[5]= Feb_Control_subframe_exposure_time_in_10nsec; //(1 means 10ns, 100 means 1000ns)
 	// if(!Feb_Interface_WriteRegisters((Module_GetTopLeftAddress(&modules[1])|Module_GetTopRightAddress(&modules[1])),20,reg_nums,reg_vals,0,0)){
-	if(!Feb_Interface_WriteRegisters(Feb_Control_AddressToAll(),5,reg_nums,reg_vals,0,0)){
+	if(!Feb_Interface_WriteRegisters(Feb_Control_AddressToAll(),6,reg_nums,reg_vals,0,0)){
 		printf("Trouble starting acquisition....\n");;
 		return 0;
 	}
-	//*/
 
-	/* if(!Feb_Control_am_i_master)
-		   Feb_Control_StartAcquisition();*/
 	return 1;
 }
 
 
 
-int Feb_Control_StartAcquisition(){printf("****** starting acquisition********* \n");
+int Feb_Control_StartAcquisition(){
+	printf("****** starting acquisition********* \n");
 
-static unsigned int reg_nums[20];
-static unsigned int reg_vals[20];
-/*
-  Feb_Control_PrintAcquisitionSetup();
-
-  //  if(!Reset()||!ResetDataStream()){
-  if(!Feb_Control_Reset()){
-    printf("Trouble reseting daq or data stream...\n");;
-    return 0;
-  }
-
-  if(!Feb_Control_SetStaticBits1(Feb_Control_staticBits&(DAQ_STATIC_BIT_M4|DAQ_STATIC_BIT_M8))){
-    printf("Trouble setting static bits ...\n");;
-    return 0;
-  }
-
-  if(!Feb_Control_SendBitModeToBebServer()){
-    printf("Trouble sending static bits to server ...\n");;
-    return 0;
-  }
-
-  if(!Feb_Control_ResetChipCompletely()){
-    printf("Trouble resetting chips ...\n");;
-    return 0;
-  }
+	static unsigned int reg_nums[20];
+	static unsigned int reg_vals[20];
 
 
-  reg_nums[0]=DAQ_REG_CTRL;
-  reg_vals[0]=0;
-  reg_nums[1]=DAQ_REG_NEXPOSURES;
-  reg_vals[1]=Feb_Control_nimages;
-  reg_nums[2]=DAQ_REG_EXPOSURE_TIMER;
-  reg_vals[2]=Feb_Control_ConvertTimeToRegister(Feb_Control_exposure_time_in_sec);
-  reg_nums[3]=DAQ_REG_EXPOSURE_REPEAT_TIMER;
-  reg_vals[3]=Feb_Control_ConvertTimeToRegister(Feb_Control_exposure_period_in_sec);
- */
+	int i;
+	for(i=0;i<14;i++){
+		reg_nums[i]=DAQ_REG_CTRL;
+		reg_vals[i]=0;
+	}
+	reg_nums[14]=DAQ_REG_CTRL;
+	reg_vals[14]=ACQ_CTRL_START;
 
-/*
-    reg_nums[4]=DAQ_REG_CHIP_CMDS;
-    reg_vals[4]=(Feb_Control_acquireNReadoutMode|Feb_Control_triggerMode|Feb_Control_externalEnableMode|Feb_Control_subFrameMode);
- */
+	if(!Feb_Interface_WriteRegisters(Feb_Control_AddressToAll(),15,reg_nums,reg_vals,0,0)){
+		printf("Trouble starting acquisition....\n");;
+		return 0;
+	}
 
-/*
-  if(!Feb_Interface_WriteRegisters(Feb_Control_AddressToAll(),4,reg_nums,reg_vals,0,0)){
-    printf("Trouble starting acquisition....\n");;
-    return 0;
-  }
-  unsigned int masterHalfModuleMode = 0;
-  reg_nums[0]=DAQ_REG_CHIP_CMDS;
-  reg_vals[0]=(masterHalfModuleMode|Feb_Control_acquireNReadoutMode|Feb_Control_triggerMode|Feb_Control_externalEnableMode|Feb_Control_subFrameMode);
-  if(!Feb_Interface_WriteRegisters(Feb_Control_AddressToAll(),1,reg_nums,reg_vals,0,0)){
-	  printf("Trouble writing commands....\n");;
-	    return 0;
-  }
-  masterHalfModuleMode = 0x80000000;
-  reg_nums[0]=DAQ_REG_CHIP_CMDS;
-  reg_vals[0]=(masterHalfModuleMode|Feb_Control_acquireNReadoutMode|Feb_Control_triggerMode|Feb_Control_externalEnableMode|Feb_Control_subFrameMode);
-  if(!Feb_Interface_WriteRegisters((Module_GetTopLeftAddress(&modules[1])|Module_GetTopRightAddress(&modules[1])),1,reg_nums,reg_vals,0,0)){
-	  printf("Trouble writing commands....\n");;
-	    return 0;
-  }
-
-  int i;
-  for(i=0;i<14;i++){
-    reg_nums[i]=DAQ_REG_CTRL;
-    reg_vals[i]=0;
-  }
-  reg_nums[14]=DAQ_REG_CTRL;
-  reg_vals[14]=ACQ_CTRL_START;
-
-  if(!Feb_Interface_WriteRegisters(Feb_Control_AddressToAll(),15,reg_nums,reg_vals,0,0)){
-    printf("Trouble starting acquisition....\n");;
-    return 0;
-  }
- */
-///*
-int i;
-for(i=0;i<14;i++){
-	reg_nums[i]=DAQ_REG_CTRL;
-	reg_vals[i]=0;
-}
-reg_nums[14]=DAQ_REG_CTRL;
-reg_vals[14]=ACQ_CTRL_START;
-
-if(!Feb_Interface_WriteRegisters(Feb_Control_AddressToAll(),15,reg_nums,reg_vals,0,0)){
-	printf("Trouble starting acquisition....\n");;
-	return 0;
-}
-//*/
-/*
-  int i;
-  for(i=5;i<19;i++){
-    reg_nums[i]=DAQ_REG_CTRL;
-    reg_vals[i]=0;
-  }
-  reg_nums[19]=DAQ_REG_CTRL;
-  reg_vals[19]=ACQ_CTRL_START;
-
-  if(!Feb_Interface_WriteRegisters(Feb_Control_AddressToAll(),20,reg_nums,reg_vals,0,0)){
-  printf("Trouble starting acquisition....\n");;
-  return 0;
-}
- */
-
-//*/
-return 1;
+	return 1;
 }
 
 int Feb_Control_StopAcquisition(){

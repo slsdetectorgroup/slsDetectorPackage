@@ -11,6 +11,7 @@
 
 
 //basic server functions
+void checkFirmwareCompatibility();
 int init_detector(int);
 int decode_function(int);
 int function_table();

@@ -155,23 +155,21 @@ int Feb_Control_GetModuleNumber();
   int Feb_Control_WaitForStartedFlag(int sleep_time_us, int prev_flag);
 
   //functions for setting up exposure
-  void          Feb_Control_PrintAcquisitionSetup();
-  int          Feb_Control_SetNExposures(unsigned int n_images);
-  unsigned int  Feb_Control_GetNExposures();
-  int          Feb_Control_SetExposureTime(double the_exposure_time_in_sec);
-  double         Feb_Control_GetExposureTime();
-  int          Feb_Control_SetExposurePeriod(double the_exposure_period_in_sec);
-  double         Feb_Control_GetExposurePeriod();
-  int          Feb_Control_SetDynamicRange(unsigned int four_eight_sixteen_or_thirtytwo);
-  unsigned int  Feb_Control_GetDynamicRange();
-  /*int          Feb_Control_SetReadoutSpeed(unsigned int readout_speed=0); //0->full,1->half,2->quarter or 3->super_slow*/
-  int          Feb_Control_SetReadoutSpeed(unsigned int readout_speed); //0->full,1->half,2->quarter or 3->super_slow
- /* int          Feb_Control_SetReadoutMode(unsigned int readout_mode=0); //0->parallel,1->non-parallel,2-> safe_mode*/
-  int          Feb_Control_SetReadoutMode(unsigned int readout_mode); //0->parallel,1->non-parallel,2-> safe_mode
- /* int          Feb_Control_SetTriggerMode(unsigned int trigger_mode=0, int polarity=1);*/
-  int          Feb_Control_SetTriggerMode(unsigned int trigger_mode, int polarity);
-  /*int          Feb_Control_SetExternalEnableMode(int use_external_enable=0, int polarity=1);*/
-  int          Feb_Control_SetExternalEnableMode(int use_external_enable, int polarity);
+  void Feb_Control_PrintAcquisitionSetup();
+  int Feb_Control_SetNExposures(unsigned int n_images);
+  unsigned int Feb_Control_GetNExposures();
+  int Feb_Control_SetExposureTime(double the_exposure_time_in_sec);
+  double Feb_Control_GetExposureTime();
+  int Feb_Control_SetSubFrameExposureTime(int the_subframe_exposure_time_in_10nsec);
+  int Feb_Control_GetSubFrameExposureTime();
+  int Feb_Control_SetExposurePeriod(double the_exposure_period_in_sec);
+  double Feb_Control_GetExposurePeriod();
+  int Feb_Control_SetDynamicRange(unsigned int four_eight_sixteen_or_thirtytwo);
+  unsigned int Feb_Control_GetDynamicRange();
+  int Feb_Control_SetReadoutSpeed(unsigned int readout_speed); //0 was default, 0->full,1->half,2->quarter or 3->super_slow
+  int Feb_Control_SetReadoutMode(unsigned int readout_mode); ///0 was default,0->parallel,1->non-parallel,2-> safe_mode
+  int Feb_Control_SetTriggerMode(unsigned int trigger_mode, int polarity);//0 and 1 was default,
+  int Feb_Control_SetExternalEnableMode(int use_external_enable, int polarity);//0 and 1 was default,
 
   //functions for testing
   /*int Feb_Control_SetTestModeVariable(int on=1);*/

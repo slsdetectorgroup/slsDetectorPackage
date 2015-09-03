@@ -22,6 +22,9 @@ int main(int argc, char *argv[]){
 	int  portno, b;
 	int retval=OK;
 	int sd, fd;
+
+	checkFirmwareCompatibility();
+
 #ifdef STOP_SERVER
 	char cmd[100];
 #endif

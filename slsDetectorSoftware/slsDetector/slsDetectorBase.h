@@ -369,6 +369,7 @@ class slsDetectorBase :  public virtual slsDetectorDefs, public virtual errorDef
   */
   virtual int64_t setTimer(timerIndex index, int64_t t=-1)=0;
   int64_t setExposureTime(int64_t t=-1){return setTimer(ACQUISITION_TIME,t);};
+  int64_t setSubFrameExposureTime(int64_t t=-1){return setTimer(SUBFRAME_ACQUISITION_TIME,t);};
   int64_t setExposurePeriod(int64_t t=-1){return setTimer(FRAME_PERIOD,t);};
   int64_t setDelayAfterTrigger(int64_t t=-1){return setTimer(DELAY_AFTER_TRIGGER,t);};
   int64_t setNumberOfGates(int64_t t=-1){return setTimer(GATES_NUMBER,t);};

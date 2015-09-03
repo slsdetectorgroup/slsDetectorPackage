@@ -733,6 +733,10 @@ slsDetectorCommand::slsDetectorCommand(slsDetectorUtils *det)  {
   descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdTimer;
   i++;
 
+  descrToFuncMap[i].m_pFuncName="subexptime"; //
+  descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdTimer;
+  i++;
+
   descrToFuncMap[i].m_pFuncName="period"; //
   descrToFuncMap[i].m_pFuncPtr=&slsDetectorCommand::cmdTimer;
   i++;
@@ -3783,6 +3787,8 @@ string slsDetectorCommand::cmdTimer(int narg, char *args[], int action) {
   
   if (cmd=="exptime")
     index=ACQUISITION_TIME;
+  else if (cmd=="subexptime")
+    index=SUBFRAME_ACQUISITION_TIME;
   else if (cmd=="period")
     index=FRAME_PERIOD;
   else if (cmd=="delay")
@@ -3806,7 +3812,7 @@ string slsDetectorCommand::cmdTimer(int narg, char *args[], int action) {
       ;
     else
       return string("cannot scan timer value ")+string(args[1]);
-    if (index==ACQUISITION_TIME || index==FRAME_PERIOD || index==DELAY_AFTER_TRIGGER)
+    if (index==ACQUISITION_TIME || index==SUBFRAME_ACQUISITION_TIME || index==FRAME_PERIOD || index==DELAY_AFTER_TRIGGER)
       t=(int64_t)(val*1E+9);
     else t=(int64_t)val;
   }
@@ -3815,7 +3821,7 @@ string slsDetectorCommand::cmdTimer(int narg, char *args[], int action) {
   myDet->setOnline(ONLINE_FLAG);
 
   ret=myDet->setTimer(index,t);
-  if (index==ACQUISITION_TIME || index==FRAME_PERIOD || index==DELAY_AFTER_TRIGGER)
+  if (index==ACQUISITION_TIME || index==SUBFRAME_ACQUISITION_TIME || index==FRAME_PERIOD || index==DELAY_AFTER_TRIGGER)
     rval=(double)ret*1E-9;
   else rval=ret;
   
@@ -3843,6 +3849,7 @@ string slsDetectorCommand::helpTimer(int narg, char *args[], int action) {
   ostringstream os;  
   if (action==PUT_ACTION || action==HELP_ACTION) {
     os << "exptime t \t sets the exposure time in s" << std::endl;
+    os << "subexptime t \t sets the exposure time of subframe in s" << std::endl;
     os << "period t \t sets the frame period in s" << std::endl;
     os << "delay t \t sets the delay after trigger in s" << std::endl;
     os << "frames t \t sets the number of frames per cycle (e.g. after each trigger)" << std::endl;
@@ -3855,6 +3862,7 @@ string slsDetectorCommand::helpTimer(int narg, char *args[], int action) {
   if (action==GET_ACTION || action==HELP_ACTION) {
     
     os << "exptime  \t gets the exposure time in s" << std::endl;
+    os << "subexptime  \t gets the exposure time of subframe in s" << std::endl;
     os << "period  \t gets the frame period in s" << std::endl;
     os << "delay  \t gets the delay after trigger in s" << std::endl;
     os << "frames  \t gets the number of frames per cycle (e.g. after each trigger)" << std::endl;

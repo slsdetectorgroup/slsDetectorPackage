@@ -1788,11 +1788,15 @@ int get_chip(int file_des) {
 
 }
 int set_module(int file_des) {
-	int retval, n;
+	int retval, n,i;
 	int ret=OK,ret1=OK;
 
 #ifdef SLS_DETECTOR_FUNCTION_LIST
 	sls_detector_module myModule;
+#ifdef EIGERD
+	int *myGain = (int*)malloc(getNumberOfGainsPerModule()*sizeof(int));
+	int *myOffset = (int*)malloc(getNumberOfOffsetsPerModule()*sizeof(int));
+#endif
 	int *myChip=(int*)malloc(getNumberOfChipsPerModule()*sizeof(int));
 	int *myChan=(int*)malloc(getNumberOfChannelsPerModule()*sizeof(int));
 	int *myDac=(int*)malloc(getNumberOfDACsPerModule()*sizeof(int));
@@ -1823,7 +1827,16 @@ int set_module(int file_des) {
 		sprintf(mess,"could not allocate chans\n");
 		ret=FAIL;
 	}
-
+#ifdef EIGERD
+	if (!myGain){
+		sprintf(mess,"could not allocate gains\n");
+		ret=FAIL;
+	}
+	if (!myOffset){
+		sprintf(mess,"could not allocate offsets\n");
+		ret=FAIL;
+	}
+#endif
 	myModule.nchip=getNumberOfChipsPerModule();
 	myModule.nchan=getNumberOfChannelsPerModule();
 	myModule.ndac=getNumberOfDACsPerModule();
@@ -1834,17 +1847,25 @@ int set_module(int file_des) {
 	printf("Setting module\n");
 #endif
 	ret=receiveModule(file_des, &myModule);
-
-
+#ifdef EIGERD
+	n = receiveData(file_des,myGain,sizeof(int)*getNumberOfGainsPerModule(),INT32);
+	n = receiveData(file_des,myOffset,sizeof(int)*getNumberOfOffsetsPerModule(),INT32);
+#endif
 	if (ret>=0)
 		ret=OK;
 	else
 		ret=FAIL;
 
 
-#ifdef VERBOSE
+//#ifdef VERBOSE
 	printf("module number is %d,register is %d, nchan %d, nchip %d, ndac %d, nadc %d, gain %f, offset %f\n",myModule.module, myModule.reg, myModule.nchan, myModule.nchip, myModule.ndac,  myModule.nadc, myModule.gain,myModule.offset);
+#ifdef EIGERD
+	for(i=0;i<getNumberOfGainsPerModule();i++)
+		printf("gain[%d]:%d\t%f\n",i,myGain[i],((double)myGain[i]/1000));
+	for(i=0;i<getNumberOfOffsetsPerModule();i++)
+		printf("offset[%d]:%d\t%f\n",i,myOffset[i],((double)myOffset[i]/1000));
 #endif
+//#endif
 
 
 	if (ret==OK) {
@@ -1852,7 +1873,12 @@ int set_module(int file_des) {
 			ret=FAIL;
 			sprintf(mess,"Detector locked by %s\n",lastClientIP);
 		} else {
-			retval=setModule(myModule);
+#ifdef EIGERD
+			ret=setModule(myModule, myGain, myOffset);
+#else
+			ret=setModule(myModule);
+#endif
+			retval = ret;
 		}
 	}
 #endif
@@ -1878,6 +1904,10 @@ int set_module(int file_des) {
 	free(myChan);
 	free(myDac);
 	free(myAdc);
+#ifdef EIGERD
+	free(myGain);
+	free(myOffset);
+#endif
 #endif
 	return ret;
 }
@@ -1895,6 +1925,10 @@ int get_module(int file_des) {
 	sls_detector_module myModule;
 
 #ifdef SLS_DETECTOR_FUNCTION_LIST
+#ifdef EIGERD
+	int *myGain = (int*)malloc(getNumberOfGainsPerModule()*sizeof(int));
+	int *myOffset = (int*)malloc(getNumberOfOffsetsPerModule()*sizeof(int));
+#endif
 	int *myChip=(int*)malloc(getNumberOfChipsPerModule()*sizeof(int));
 	int *myChan=(int*)malloc(getNumberOfChannelsPerModule()*sizeof(int));
 	int *myDac=(int*)malloc(getNumberOfDACsPerModule()*sizeof(int));
@@ -1925,7 +1959,16 @@ int get_module(int file_des) {
 		sprintf(mess,"could not allocate chans\n");
 		ret=FAIL;
 	}
-
+#ifdef EIGERD
+	if (!myGain){
+		sprintf(mess,"could not allocate gains\n");
+		ret=FAIL;
+	}
+	if (!myOffset){
+		sprintf(mess,"could not allocate offsets\n");
+		ret=FAIL;
+	}
+#endif
 	myModule.ndac=getNumberOfDACsPerModule();
 	myModule.nchip=getNumberOfChipsPerModule();
 	myModule.nchan=getNumberOfChannelsPerModule();
@@ -1948,7 +1991,18 @@ int get_module(int file_des) {
 		if (imod>=0) {
 			ret=OK;
 			myModule.module=imod;
+#ifdef EIGERD
+			getModule(&myModule, myGain, myOffset);
+#ifdef VERBOSE
+			for(i=0;i<getNumberOfGainsPerModule();i++)
+				printf("gain[%d]:%d\t%f\n",i,myGain[i],((double)myGain[i]/1000));
+			for(i=0;i<getNumberOfOffsetsPerModule();i++)
+				printf("offset[%d]:%d\t%f\n",i,myOffset[i],((double)myOffset[i]/1000));
+#endif
+#else
 			getModule(&myModule);
+#endif
+
 
 #ifdef VERBOSE
 			printf("Returning module %d of register %x\n",  imod, myModule.reg);
@@ -1967,6 +2021,10 @@ int get_module(int file_des) {
 	if (ret!=FAIL) {
 		/* send return argument */
 		ret=sendModule(file_des, &myModule);
+#ifdef EIGERD
+	n = sendData(file_des,myGain,sizeof(int)*getNumberOfGainsPerModule(),INT32);
+	n = sendData(file_des,myOffset,sizeof(int)*getNumberOfOffsetsPerModule(),INT32);
+#endif
 	} else {
 		n += sendData(file_des,mess,sizeof(mess),OTHER);
 	}
@@ -1976,6 +2034,10 @@ int get_module(int file_des) {
 	free(myChan);
 	free(myDac);
 	free(myAdc);
+#ifdef EIGERD
+	free(myGain);
+	free(myOffset);
+#endif
 #endif
 	/*return ok/fail*/
 	return ret;

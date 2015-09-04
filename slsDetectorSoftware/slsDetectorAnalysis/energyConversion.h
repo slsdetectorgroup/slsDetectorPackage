@@ -54,7 +54,7 @@ class energyConversion
       \param gain reference to the gain variable
       \offset reference to the offset variable
   */
-  static int readCalibrationFile(string fname, double *gain, double *offset, detectorType myDetectorType);
+  static int readCalibrationFile(string fname, int *gain, int *offset, detectorType myDetectorType);
   
   /**
       writes a calibration file 
@@ -62,7 +62,7 @@ class energyConversion
       \param gain 
       \param offset
   */
-  static int writeCalibrationFile(string fname, double *gain, double *offset, detectorType myDetectorType);
+  static int writeCalibrationFile(string fname, int *gain, int *offset, detectorType myDetectorType);
 
 
 

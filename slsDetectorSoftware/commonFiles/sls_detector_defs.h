@@ -140,6 +140,7 @@ typedef struct {
   double offset;  /**< is the module offset (V) */
 } sls_detector_module;
 
+
 /**
     @short structure for a region of interest
 

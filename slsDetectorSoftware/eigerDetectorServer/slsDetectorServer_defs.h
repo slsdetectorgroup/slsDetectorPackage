@@ -25,6 +25,9 @@
 #define NCHIP 			4
 #define NDAC 			16
 #define NADC			0
+#define NGAIN			4
+#define NOFFSET			4
+
 #define NMAXMODX  		1
 #define NMAXMODY 		1
 #define NMAXMOD 		NMAXMODX*NMAXMODY

@@ -20,7 +20,7 @@ int slsDetector::initSharedMemory(detectorType type, int id) {
   */
   key_t     mem_key=DEFAULT_SHM_KEY+id;
   int       shm_id;
-  int nch, nm, nc, nd;
+  int nch, nm, nc, nd, ng, no;
   int sz;
 
   //shmId=-1;
@@ -31,18 +31,24 @@ int slsDetector::initSharedMemory(detectorType type, int id) {
     nm=24;
     nc=10;
     nd=6; // dacs+adcs
+    ng=0;
+    no=0;
     break;
   case PICASSO:
     nch=128; // complete mythen system
     nm=24;
     nc=12;
     nd=6; // dacs+adcs
+    ng=0;
+    no=0;
     break;
   case GOTTHARD:
     nch=128;
     nm=1;
     nc=10;
     nd=13; // dacs+adcs
+    ng=0;
+    no=0;
     break;
   case PROPIX:
     nch=22*22;
@@ -55,33 +61,41 @@ int slsDetector::initSharedMemory(detectorType type, int id) {
     nm=1; //modules/detector
     nc=4; //chips
     nd=16; //dacs+adcs
+    ng=4;
+    no=4;
     break;
   case MOENCH:
     nch=160*160;
     nm=1; //modules/detector
     nc=1; //chips
     nd=9; //dacs+adcs
+    ng=0;
+    no=0;
     break;
   case JUNGFRAUCTB:
     nch=32;
     nm=1; //modules/detector
     nc=1; //chips
     nd=16; //dacs+adcs
+    ng=0;
+    no=0;
     break;
   default:
     nch=0; // dum!
     nm=0; //modules/detector
     nc=0; //chips
     nd=0; //dacs+adcs
+    ng=0;
+    no=0;
      break;
   }
   /**
      The size of the shared memory is:
-     size of shared structure + ffcoefficents +fferrors + modules+ dacs+adcs+chips+chans
+     size of shared structure + ffcoefficents +fferrors + modules+ dacs+adcs+chips+chans+gain+offset
   */
 
 
-  sz=sizeof(sharedSlsDetector)+nm*(2*nch*nc*sizeof(double)+sizeof(sls_detector_module)+sizeof(int)*nc+sizeof(dacs_t)*nd+sizeof(int)*nch*nc);
+  sz=sizeof(sharedSlsDetector)+nm*(2*nch*nc*sizeof(double)+sizeof(sls_detector_module)+sizeof(int)*nc+sizeof(dacs_t)*nd+sizeof(int)*nch*nc+sizeof(int)*ng+sizeof(int)*no);
 #ifdef VERBOSE
   std::cout<<"Size of shared memory is "<< sz << "(type " << type << " - id " << mem_key << ")"<< std::endl;
 #endif
@@ -146,6 +160,8 @@ slsDetector::slsDetector(int id,multiSlsDetector *p) :slsDetectorUtils(),
 						      adcs(NULL),
 						      chipregs(NULL),
 						      chanregs(NULL),
+							  gain(NULL),
+							  offset(NULL),
 						      thisReceiver(NULL)
 
 
@@ -196,6 +212,8 @@ slsDetector::slsDetector(detectorType type, int id,multiSlsDetector *p): slsDete
 									 adcs(NULL),
 									 chipregs(NULL),
 									 chanregs(NULL),
+									  gain(NULL),
+									  offset(NULL),
 								     thisReceiver(NULL)
 
 {
@@ -250,6 +268,8 @@ slsDetector::slsDetector(char *name, int id, int cport,multiSlsDetector *p) : sl
 									      adcs(NULL),
 									      chipregs(NULL),
 									      chanregs(NULL),
+										  gain(NULL),
+										  offset(NULL),
 									      thisReceiver(NULL)
 
 
@@ -529,6 +549,8 @@ int slsDetector::initializeDetectorSize(detectorType type) {
       thisDetector->nChip[Y]=1;
       thisDetector->nDacs=6;
       thisDetector->nAdcs=0;
+      thisDetector->nGain=0;
+      thisDetector->nOffset=0;
       thisDetector->nModMax[X]=24;
       thisDetector->nModMax[Y]=1;
       thisDetector->dynamicRange=24;
@@ -544,6 +566,8 @@ int slsDetector::initializeDetectorSize(detectorType type) {
       thisDetector->nChip[Y]=1;
       thisDetector->nDacs=6;
       thisDetector->nAdcs=0;
+      thisDetector->nGain=0;
+      thisDetector->nOffset=0;
       thisDetector->nModMax[X]=6;
       thisDetector->nModMax[Y]=1;
       thisDetector->dynamicRange=24;
@@ -555,6 +579,8 @@ int slsDetector::initializeDetectorSize(detectorType type) {
       thisDetector->nChip[Y]=1;
       thisDetector->nDacs=8;
       thisDetector->nAdcs=5;
+      thisDetector->nGain=0;
+      thisDetector->nOffset=0;
       thisDetector->nModMax[X]=1;
       thisDetector->nModMax[Y]=1;
       thisDetector->dynamicRange=16;
@@ -566,6 +592,8 @@ int slsDetector::initializeDetectorSize(detectorType type) {
       thisDetector->nChip[Y]=1;
       thisDetector->nDacs=8;
       thisDetector->nAdcs=5;
+      thisDetector->nGain=0;
+      thisDetector->nOffset=0;
       thisDetector->nModMax[X]=1;
       thisDetector->nModMax[Y]=1;
       thisDetector->dynamicRange=16;
@@ -577,6 +605,8 @@ int slsDetector::initializeDetectorSize(detectorType type) {
       thisDetector->nChip[Y]=1;
       thisDetector->nDacs=8;
       thisDetector->nAdcs=1;
+      thisDetector->nGain=0;
+      thisDetector->nOffset=0;
       thisDetector->nModMax[X]=1;
       thisDetector->nModMax[Y]=1;
       thisDetector->dynamicRange=16;
@@ -588,6 +618,8 @@ int slsDetector::initializeDetectorSize(detectorType type) {
       thisDetector->nChip[Y]=1;
       thisDetector->nDacs=16;
       thisDetector->nAdcs=1;
+      thisDetector->nGain=0;
+      thisDetector->nOffset=0;
       thisDetector->nModMax[X]=1;
       thisDetector->nModMax[Y]=1;
       thisDetector->dynamicRange=16;
@@ -599,6 +631,8 @@ int slsDetector::initializeDetectorSize(detectorType type) {
       thisDetector->nChip[Y]=1;
       thisDetector->nDacs=16;
       thisDetector->nAdcs=0;
+      thisDetector->nGain=4;
+      thisDetector->nOffset=4;
       thisDetector->nModMax[X]=1;
       thisDetector->nModMax[Y]=1;
       thisDetector->dynamicRange=16;
@@ -610,6 +644,8 @@ int slsDetector::initializeDetectorSize(detectorType type) {
      thisDetector->nChip[Y]=0;
       thisDetector->nDacs=0;
       thisDetector->nAdcs=0;
+      thisDetector->nGain=0;
+      thisDetector->nOffset=0;
       thisDetector->nModMax[X]=0;
       thisDetector->nModMax[Y]=0;
       thisDetector->dynamicRange=32;
@@ -725,7 +761,8 @@ int slsDetector::initializeDetectorSize(detectorType type) {
     thisDetector->adcoff=thisDetector->dacoff+sizeof(dacs_t)*thisDetector->nDacs*thisDetector->nModsMax;
     thisDetector->chipoff=thisDetector->adcoff+sizeof(dacs_t)*thisDetector->nAdcs*thisDetector->nModsMax;
     thisDetector->chanoff=thisDetector->chipoff+sizeof(int)*thisDetector->nChips*thisDetector->nModsMax;
-
+    thisDetector->gainoff=thisDetector->chanoff+sizeof(int)*thisDetector->nGain*thisDetector->nModsMax;
+    thisDetector->offsetoff=thisDetector->gainoff+sizeof(int)*thisDetector->nOffset*thisDetector->nModsMax;
 
     //update?!?!?!?
 
@@ -745,6 +782,8 @@ int slsDetector::initializeDetectorSize(detectorType type) {
   adcs=(dacs_t*)(goff+thisDetector->adcoff);
   chipregs=(int*)(goff+thisDetector->chipoff);
   chanregs=(int*)(goff+thisDetector->chanoff);
+  gain=(int*)(goff+thisDetector->gainoff);
+  offset=(int*)(goff+thisDetector->offsetoff);
   if (thisDetector->alreadyExisting==0) {
     /** if thisDetector is new, initialize its structures \sa initializeDetectorStructure();   */
     initializeDetectorStructure();
@@ -864,6 +903,18 @@ int slsDetector::initializeDetectorStructure() {
     for (int ichan=0; ichan<thisDetector->nChans*thisDetector->nChips; ichan++) {
       *(chanregs+ichan+thisDetector->nChips*thisDetector->nChans*imod)=-1;
     }
+
+    /** initializes the gain values to 0 */
+    for (int igain=0; igain<thisDetector->nGain; igain++) {
+      *(gain+igain+thisDetector->nGain*imod)=0;
+    }
+
+
+    /** initializes the offset values to 0 */
+    for (int ioffset=0; ioffset<thisDetector->nOffset; ioffset++) {
+      *(offset+ioffset+thisDetector->nOffset*imod)=0;
+    }
+
     /** initialize gain and offset to -1 */
     thisMod->gain=-1.;
     thisMod->offset=-1.;
@@ -910,7 +961,7 @@ slsDetectorDefs::sls_detector_module*  slsDetector::createModule(detectorType t)
     nm=1; //modules/detector
     nc=4*1; //chips 
     nd=16; //dacs
-    na=0;  //use for gain????
+    na=0;
     break;
   case MOENCH:
     nch=160*160;
@@ -2554,6 +2605,8 @@ slsDetectorDefs::sls_detector_chip slsDetector::getChip(int ichip, int imod){
 
 int slsDetector::setModule(int reg, int imod){
   sls_detector_module myModule;
+  int* g=0;
+  int* o=0;
 
 #ifdef VERBOSE
   std::cout << "slsDetector set module " << std::endl;
@@ -2622,16 +2675,14 @@ int slsDetector::setModule(int reg, int imod){
 	ads[i]=-1;
       myModule.adcs=ads;
     }
-    ret=setModule(myModule);
+    ret=setModule(myModule,g,o);
   }
   return ret;
 
 
 };
 
-
-
-int slsDetector::setModule(sls_detector_module module){
+int slsDetector::setModule(sls_detector_module module, int* gainval, int* offsetval){
 
   int fnum=F_SET_MODULE;
   int retval;
@@ -2649,6 +2700,13 @@ int slsDetector::setModule(sls_detector_module module){
     if (connectControl() == OK){
       controlSocket->SendDataOnly(&fnum,sizeof(fnum));
       sendModule(&module);
+
+  	  //extra gain and offset - eiger
+      if((thisDetector->nGain) && (gainval))
+    	  controlSocket->SendDataOnly(gainval,sizeof(int)*thisDetector->nGain);
+      if((thisDetector->nOffset) && (offsetval))
+    	  controlSocket->SendDataOnly(offsetval,sizeof(int)*thisDetector->nOffset);
+
       controlSocket->ReceiveDataOnly(&ret,sizeof(ret));
       if (ret!=FAIL) {
 	controlSocket->ReceiveDataOnly(&retval,sizeof(retval));
@@ -2700,6 +2758,16 @@ int slsDetector::setModule(sls_detector_module module){
 	(detectorModules+imod)->reg=module.reg;
       }
     }
+
+	if ((thisDetector->nGain) && (gainval) && (gain)) {
+	  for (int i=0; i<thisDetector->nGain; i++)
+	    gain[i+imod*thisDetector->nGain]=gainval[i];
+	}
+
+	if ((thisDetector->nOffset) && (offsetval) && (offset))  {
+	  for (int i=0; i<thisDetector->nOffset; i++)
+		  offset[i+imod*thisDetector->nOffset]=offsetval[i];
+	}
   }
 
 #ifdef VERBOSE
@@ -2709,106 +2777,131 @@ int slsDetector::setModule(sls_detector_module module){
   return retval;
 };
 
+
+
+
+
 slsDetectorDefs::sls_detector_module  *slsDetector::getModule(int imod){
 
 #ifdef VERBOSE
-  std::cout << "slsDetector get module " << std::endl;
+	std::cout << "slsDetector get module " << std::endl;
 #endif
 
-  int fnum=F_GET_MODULE;
-  sls_detector_module *myMod=createModule();
+	int fnum=F_GET_MODULE;
+	sls_detector_module *myMod=createModule();
 
+	int* gainval=0, *offsetval=0;
+	if(thisDetector->nGain)
+		gainval=new int[thisDetector->nGain];
+	if(thisDetector->nOffset)
+		offsetval=new int[thisDetector->nOffset];
 
-  //char *ptr,  *goff=(char*)thisDetector;
+	//char *ptr,  *goff=(char*)thisDetector;
 
-  // int chanreg[thisDetector->nChans*thisDetector->nChips];
-  //int chipreg[thisDetector->nChips];
-  //double dac[thisDetector->nDacs], adc[thisDetector->nAdcs];
+	// int chanreg[thisDetector->nChans*thisDetector->nChips];
+	//int chipreg[thisDetector->nChips];
+	//double dac[thisDetector->nDacs], adc[thisDetector->nAdcs];
 
-  int ret=FAIL;
-  char mess[100];
-  // int n;
+	int ret=FAIL;
+	char mess[100];
+	// int n;
 
 #ifdef VERBOSE
-  std::cout<< "getting module " << imod << std::endl;
+	std::cout<< "getting module " << imod << std::endl;
 #endif
 
-  myMod->module=imod;
-  // myMod.nchan=thisDetector->nChans*thisDetector->nChips;
-  //myMod.chanregs=chanreg;
-  //myMod.nchip=thisDetector->nChips;
-  //myMod.chipregs=chipreg;
-  //myMod.ndac=thisDetector->nDacs;
-  //myMod.dacs=dac;
-  //myMod.ndac=thisDetector->nAdcs;
-  //myMod.dacs=adc;
+	myMod->module=imod;
+	// myMod.nchan=thisDetector->nChans*thisDetector->nChips;
+	//myMod.chanregs=chanreg;
+	//myMod.nchip=thisDetector->nChips;
+	//myMod.chipregs=chipreg;
+	//myMod.ndac=thisDetector->nDacs;
+	//myMod.dacs=dac;
+	//myMod.ndac=thisDetector->nAdcs;
+	//myMod.dacs=adc;
 
 
+	if (thisDetector->onlineFlag==ONLINE_FLAG) {
+		if (connectControl() == OK){
+			controlSocket->SendDataOnly(&fnum,sizeof(fnum));
+			controlSocket->SendDataOnly(&imod,sizeof(imod));
 
+			controlSocket->ReceiveDataOnly(&ret,sizeof(ret));
+			if (ret!=FAIL) {
+				receiveModule(myMod);
 
-
-
-  if (thisDetector->onlineFlag==ONLINE_FLAG) {
-    if (connectControl() == OK){
-      controlSocket->SendDataOnly(&fnum,sizeof(fnum));
-      controlSocket->SendDataOnly(&imod,sizeof(imod));
-
-      controlSocket->ReceiveDataOnly(&ret,sizeof(ret));
-      if (ret!=FAIL) {
-	receiveModule(myMod);
-      } else {
-	controlSocket->ReceiveDataOnly(mess,sizeof(mess));
-	std::cout<< "Detector returned error: " << mess << std::endl;
-      }
-      controlSocket->Disconnect();
-      if (ret==FORCE_UPDATE)
-	updateDetector();
-    }
-  }
-
-
-  if (ret!=FAIL) {
-    if (detectorModules) {
-      if (imod>=0 && imod<thisDetector->nMod[X]*thisDetector->nMod[Y]) {
-	(detectorModules+imod)->nchan=myMod->nchan;
-	(detectorModules+imod)->nchip=myMod->nchip;
-	(detectorModules+imod)->ndac=myMod->ndac;
-	(detectorModules+imod)->nadc=myMod->nadc;
-	thisDetector->nChips=myMod->nchip;
-	thisDetector->nChans=myMod->nchan/myMod->nchip;
-	thisDetector->nDacs=myMod->ndac;
-	thisDetector->nAdcs=myMod->nadc;
-
-	for (int ichip=0; ichip<thisDetector->nChips; ichip++) {
-	  if (chipregs)
-	    chipregs[ichip+thisDetector->nChips*imod]=myMod->chipregs[ichip];
-
-	  if (chanregs) {
-	    for (int i=0; i<thisDetector->nChans; i++) {
-	      chanregs[i+ichip*thisDetector->nChans+thisDetector->nChips*thisDetector->nChans*imod]=myMod->chanregs[ichip*thisDetector->nChans+i];
-	    }
-	  }
-	}
-	if (dacs) {
-	  for (int i=0; i<thisDetector->nDacs; i++)
-	    dacs[i+imod*thisDetector->nDacs]=myMod->dacs[i];
-	}
-	if (adcs) {
-	  for (int i=0; i<thisDetector->nAdcs; i++)
-	    adcs[i+imod*thisDetector->nAdcs]=myMod->adcs[i];
+				//extra gain and offset - eiger
+				if(thisDetector->nGain)
+					controlSocket->ReceiveDataOnly(gainval,sizeof(int)*thisDetector->nGain);
+				if(thisDetector->nOffset)
+					controlSocket->ReceiveDataOnly(offsetval,sizeof(int)*thisDetector->nOffset);
+			} else {
+				controlSocket->ReceiveDataOnly(mess,sizeof(mess));
+				std::cout<< "Detector returned error: " << mess << std::endl;
+			}
+			controlSocket->Disconnect();
+			if (ret==FORCE_UPDATE)
+				updateDetector();
+		}
 	}
 
-	(detectorModules+imod)->gain=myMod->gain;
-	(detectorModules+imod)->offset=myMod->offset;
-	(detectorModules+imod)->serialnumber=myMod->serialnumber;
-	(detectorModules+imod)->reg=myMod->reg;
-      }
-    }
-  } else {
-    deleteModule(myMod);
-    myMod=NULL;
-  }
-  return myMod;
+
+	if (ret!=FAIL) {
+		if (detectorModules) {
+			if (imod>=0 && imod<thisDetector->nMod[X]*thisDetector->nMod[Y]) {
+				(detectorModules+imod)->nchan=myMod->nchan;
+				(detectorModules+imod)->nchip=myMod->nchip;
+				(detectorModules+imod)->ndac=myMod->ndac;
+				(detectorModules+imod)->nadc=myMod->nadc;
+				thisDetector->nChips=myMod->nchip;
+				thisDetector->nChans=myMod->nchan/myMod->nchip;
+				thisDetector->nDacs=myMod->ndac;
+				thisDetector->nAdcs=myMod->nadc;
+
+				for (int ichip=0; ichip<thisDetector->nChips; ichip++) {
+					if (chipregs)
+						chipregs[ichip+thisDetector->nChips*imod]=myMod->chipregs[ichip];
+
+					if (chanregs) {
+						for (int i=0; i<thisDetector->nChans; i++) {
+							chanregs[i+ichip*thisDetector->nChans+thisDetector->nChips*thisDetector->nChans*imod]=myMod->chanregs[ichip*thisDetector->nChans+i];
+						}
+					}
+				}
+				if (dacs) {
+					for (int i=0; i<thisDetector->nDacs; i++)
+						dacs[i+imod*thisDetector->nDacs]=myMod->dacs[i];
+				}
+				if (adcs) {
+					for (int i=0; i<thisDetector->nAdcs; i++)
+						adcs[i+imod*thisDetector->nAdcs]=myMod->adcs[i];
+				}
+
+				(detectorModules+imod)->gain=myMod->gain;
+				(detectorModules+imod)->offset=myMod->offset;
+				(detectorModules+imod)->serialnumber=myMod->serialnumber;
+				(detectorModules+imod)->reg=myMod->reg;
+			}
+		}
+
+		if ((thisDetector->nGain) && (gainval) && (gain)) {
+			for (int i=0; i<thisDetector->nGain; i++)
+				gain[i+imod*thisDetector->nGain]=gainval[i];
+		}
+
+		if ((thisDetector->nOffset) && (offsetval) && (offset))  {
+			for (int i=0; i<thisDetector->nOffset; i++)
+				offset[i+imod*thisDetector->nOffset]=offsetval[i];
+		}
+
+		if(gainval) delete[]gainval;
+		if(offsetval) delete[]offsetval;
+
+	} else {
+		deleteModule(myMod);
+		myMod=NULL;
+	}
+	return myMod;
 }
 
 
@@ -2958,6 +3051,19 @@ slsDetectorDefs::detectorSettings slsDetector::setSettings( detectorSettings ise
 	string settingsfname, calfname;
 	string ssettings;
 
+	int* gainval=0, *offsetval=0;
+	if(thisDetector->nGain)
+		gainval=new int[thisDetector->nGain];
+	if(thisDetector->nOffset)
+		offsetval=new int[thisDetector->nOffset];
+
+	int ret=0;
+
+	if(thisDetector->nGain)
+		gainval = new int[thisDetector->nGain];
+	if(thisDetector->nOffset)
+		offsetval = new int[thisDetector->nOffset];
+
 	switch (isettings) {
 	case STANDARD:
 		if (    (thisDetector->myDetectorType == MYTHEN) ||
@@ -3068,61 +3174,86 @@ slsDetectorDefs::detectorSettings slsDetector::setSettings( detectorSettings ise
 				oscfn << thisDetector->calDir << ssettings << "/calibration.sn"  << setfill('0') << setw(3) << hex << getId(MODULE_SERIAL_NUMBER, im) << setbase(10);
 			}
 
+
+			//settings file****
 			settingsfname=ostfn.str();
 #ifdef VERBOSE
 			cout << "the settings file name is "<<settingsfname << endl;
 #endif
-			if (readSettingsFile(settingsfname,thisDetector->myDetectorType, myMod)) {
-				calfname=oscfn.str();
-#ifdef VERBOSE
-				cout << calfname << endl;
-#endif
-
-				//reads calibration files here!
-
-
-				readCalibrationFile(calfname,myMod->gain, myMod->offset);
-				setModule(*myMod);
-
-
-
-			} else {
-				ostringstream ostfn,oscfn;
+			if (!readSettingsFile(settingsfname,thisDetector->myDetectorType, myMod)) {
+				//if it didnt open, try default settings file
+				ostringstream ostfn_default;
 				switch(thisDetector->myDetectorType){
 				case MOENCH:
 				case GOTTHARD:
 				case PROPIX:
 				case JUNGFRAUCTB:
-					ostfn << thisDetector->settingsDir << ssettings << ssettings << ".settings";
+					ostfn_default << thisDetector->settingsDir << ssettings << ssettings << ".settings";
 					break;
 				case EIGER:
 				default:
-					ostfn << thisDetector->settingsDir << ssettings << ssettings << ".trim";
+					ostfn_default << thisDetector->settingsDir << ssettings << ssettings << ".trim";
 					break;
 				}
-				oscfn << thisDetector->calDir << ssettings << ssettings << ".cal";
-				calfname=oscfn.str();
-				settingsfname=ostfn.str();
+				settingsfname=ostfn_default.str();
 #ifdef VERBOSE
 				cout << settingsfname << endl;
-				cout << calfname << endl;
 #endif
-				if (readSettingsFile(settingsfname,thisDetector->myDetectorType, myMod)) {
-					calfname=oscfn.str();
-					readCalibrationFile(calfname,myMod->gain, myMod->offset);
-					setModule(*myMod);
-				}else{
+				if (!readSettingsFile(settingsfname,thisDetector->myDetectorType, myMod)) {
+					//if default doesnt work, return error
 					std::cout << "Could not open settings file" << endl;
 					setErrorMask((getErrorMask())|(SETTINGS_FILE_NOT_OPEN));
 					return  thisDetector->currentSettings;
 				}
 			}
+
+
+
+			//calibration file****
+			calfname=oscfn.str();
+#ifdef VERBOSE
+			cout << "Specific file:"<< calfname << endl;
+#endif
+			//extra gain and offset
+			if(thisDetector->nGain)
+				ret = readCalibrationFile(calfname,gainval, offsetval,thisDetector->myDetectorType );
+			//normal gain and offset inside sls_detector_module
+			else
+				ret = readCalibrationFile(calfname,myMod->gain, myMod->offset);
+
+			//if it didnt open, try default
+			if(ret != OK){
+				ostringstream oscfn_default;
+				oscfn_default << thisDetector->calDir << ssettings << ssettings << ".cal";
+				calfname=oscfn_default.str();
+#ifdef VERBOSE
+				cout << "Default file:" << calfname << endl;
+#endif
+				//extra gain and offset
+				if(thisDetector->nGain)
+					ret = readCalibrationFile(calfname,gainval, offsetval,thisDetector->myDetectorType );
+				//normal gain and offset inside sls_detector_module
+				else
+					ret = readCalibrationFile(calfname,myMod->gain, myMod->offset);
+			}
+			//if default doesnt work, return error
+			if(ret != OK){
+				std::cout << "Could not open calibration file" << calfname << endl;
+				setErrorMask((getErrorMask())|(SETTINGS_FILE_NOT_OPEN));
+				return  thisDetector->currentSettings;
+			}
+
+			//if everything worked, set module****
+			setModule(*myMod,gainval,offsetval);
 		}
 	}
 
 
 
 	deleteModule(myMod);
+	if(gainval)	delete [] gainval;
+	if(offsetval) delete [] offsetval;
+
 	switch(thisDetector->myDetectorType==MYTHEN){
 	if (thisDetector->correctionMask&(1<<RATE_CORRECTION)) {
 		int isett=getSettings(imod);
@@ -5853,6 +5984,7 @@ int slsDetector::writeSettingsFile(string fname, int imod){
 int slsDetector::loadSettingsFile(string fname, int imod) {
 
   sls_detector_module  *myMod=NULL;
+  int* g=0; int* o=0;
   string fn=fname;
   fn=fname;
   int mmin=0, mmax=setNumberOfModules();
@@ -5878,7 +6010,7 @@ int slsDetector::loadSettingsFile(string fname, int imod) {
       //settings is saved in myMod.reg for all except mythen
       if(thisDetector->myDetectorType!=MYTHEN)
 	myMod->reg=thisDetector->currentSettings;
-      setModule(*myMod);
+      setModule(*myMod,g,o);
       deleteModule(myMod);
     } else
       return FAIL;
@@ -5955,7 +6087,21 @@ int slsDetector::loadCalibrationFile(string fname, int imod) {
 
   sls_detector_module  *myMod=NULL;
   string fn=fname;
+
+  int* gainval=0, *offsetval=0;
+  if(thisDetector->nGain)
+	  gainval=new int[thisDetector->nGain];
+  if(thisDetector->nOffset)
+	  offsetval=new int[thisDetector->nOffset];
+
   fn=fname;
+
+	if(thisDetector->nGain)
+		gainval = new int[thisDetector->nGain];
+	if(thisDetector->nOffset)
+		offsetval = new int[thisDetector->nOffset];
+
+
   int mmin=0, mmax=setNumberOfModules();
   if (imod>=0) {
     mmin=imod;
@@ -5973,10 +6119,21 @@ int slsDetector::loadCalibrationFile(string fname, int imod) {
     }
     fn=ostfn.str();
     if((myMod=getModule(im))){
-      if(readCalibrationFile(fn, myMod->gain, myMod->offset)==FAIL)
-	return FAIL;
-      setModule(*myMod);
+
+      //extra gain and offset
+      if(thisDetector->nGain){
+    	  if(readCalibrationFile(fn,gainval, offsetval,thisDetector->myDetectorType)==FAIL)
+    		  return FAIL;
+      } //normal gain and offset inside sls_detector_module
+      else{
+    	  if(readCalibrationFile(fn,myMod->gain, myMod->offset)==FAIL)
+    		  return FAIL;
+      }
+      setModule(*myMod,gainval,offsetval);
+
       deleteModule(myMod);
+      if(gainval) delete[]gainval;
+      if(offsetval) delete offsetval;
     } else
       return FAIL;
   }
@@ -6002,7 +6159,13 @@ int slsDetector::saveCalibrationFile(string fname, int imod) {
     else
     	ostfn << fname << ".sn"  << setfill('0') << setw(3) << hex << getId(MODULE_SERIAL_NUMBER,im);
     if ((myMod=getModule(im))) {
-      ret=writeCalibrationFile(ostfn.str(), myMod->gain, myMod->offset);
+        //extra gain and offset
+        if(thisDetector->nGain)
+        	ret=writeCalibrationFile(ostfn.str(),gain, offset,thisDetector->myDetectorType);
+         //normal gain and offset inside sls_detector_module
+        else
+        	ret=writeCalibrationFile(ostfn.str(),myMod->gain, myMod->offset);
+
       deleteModule(myMod);
     }else
       return FAIL;

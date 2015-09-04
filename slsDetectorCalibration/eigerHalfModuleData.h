@@ -36,7 +36,7 @@ public:
 		}
 
 		//Map
-		int totalNumberOfBytes = 1040 * dynamicRange * 16 *2; //for both 1g and 10g
+		int totalNumberOfBytes = numberOfPackets * bufferSize;
 		int iPacket1 = 8;
 		int iPacket2 = (totalNumberOfBytes/2) + 8;
 		int iData1 = 0, iData2 = 0;
@@ -47,6 +47,7 @@ public:
 			ic_increment = 2;
 		}
 		int iPort;
+
 
 
 		if(top){
@@ -257,34 +258,14 @@ public:
 
 	virtual int getChannel(char *data, int ix, int iy, int dr) {
 		uint32_t m=0, n = 0;
-		uint64_t t;
-		int numBytes,divFactor,pixelval;
 
 		//cout <<"ix:"<<ix<<" nx:"<<nx<<" iy:"<<iy<<" ny:"<<ny<<" datamap[iy][ix]:"<< dataMap[iy][ix] <<" datasize:"<< dataSize <<endl;
 		if (ix>=0 && ix<nx && iy>=0 && iy<ny && dataMap[iy][ix]>=0 && dataMap[iy][ix]<dataSize) {
 			m=dataMask[iy][ix];
 
-			numBytes = (nx * iy + ix);
-			divFactor=2;
-			if(dr == 4) divFactor = 16;
-			else if (dr == 8) divFactor = 8;
-			else if (dr == 16) divFactor = 4;
-
-			pixelval = numBytes % divFactor;
-			/*//big endian
-			 newix = ix - pixelval;
-			 */
-
 		}else
 			cprintf(RED,"outside limits\n");
 
-		/*//big endian
-		t = ((uint64_t)(*((uint64_t*)(((char*)data)+(dataMap[iy][newix])))));
-		if(dr == 4)			return ((t >> (pixelval*4)) & 0xf)^m;
-		else if(dr == 8)	return ((t >> (pixelval*8)) & 0xff)^m;
-		else if(dr == 16)	return ((t >> (pixelval*16)) & 0xffff)^m;
-		else				return ((t >> (pixelval*32)) & 0xffffffff)^m;
-		 */
 
 		//little endian
 		n = ((uint32_t)(*((uint32_t*)(((char*)data)+(dataMap[iy][ix])))));

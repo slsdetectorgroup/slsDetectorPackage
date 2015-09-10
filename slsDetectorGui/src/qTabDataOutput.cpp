@@ -47,6 +47,7 @@ qTabDataOutput::~qTabDataOutput(){
 void qTabDataOutput::SetupWidgetWindow(){
 	// Detector Type
 	detType=myDet->getDetectorsType();
+	widgetEiger->setVisible(false);
 
 	//rate correction  - not for charge integrating detectors
 	if((detType == slsDetectorDefs::MYTHEN)||(detType == slsDetectorDefs::EIGER))
@@ -55,8 +56,11 @@ void qTabDataOutput::SetupWidgetWindow(){
 	if((detType == slsDetectorDefs::MYTHEN)||(detType == slsDetectorDefs::GOTTHARD))
 		chkAngular->setEnabled(true);
 
-	if(detType == slsDetectorDefs::EIGER)
+	if(detType == slsDetectorDefs::EIGER){
 		chkTenGiga->setEnabled(true);
+		widgetEiger->setVisible(true);
+
+	}
 
 	/** error message **/
 	red = QPalette();
@@ -118,9 +122,6 @@ void qTabDataOutput::SetupWidgetWindow(){
 #ifdef VERBOSE
 	cout  << "Getting bad channel correction:" << myDet->getBadChannelCorrection() << endl;
 #endif
-
-
-
 	disconnect(chkDiscardBad,		SIGNAL(toggled(bool)));
 	if(myDet->getBadChannelCorrection())
 		chkDiscardBad->setChecked(true);
@@ -162,7 +163,16 @@ void qTabDataOutput::Initialization(){
 	//compression
 	connect(chkCompression,		SIGNAL(toggled(bool)), 	this, 	SLOT(SetCompression(bool)));
 	//10GbE
-	connect(chkTenGiga,		SIGNAL(toggled(bool)), 	this, 	SLOT(EnableTenGigabitEthernet(bool)));
+	connect(chkTenGiga,			SIGNAL(toggled(bool)), 	this, 	SLOT(EnableTenGigabitEthernet(bool)));
+
+	//eiger
+	if(widgetEiger->isVisible()){
+		//speed
+		connect(comboEigerClkDivider,SIGNAL(currentIndexChanged(int)), 	this, 	SLOT(setSpeed()));
+		//flags
+		connect(comboEigerFlags1,	SIGNAL(currentIndexChanged(int)), 	this, 	SLOT(setFlags()));
+		connect(comboEigerFlags2,	SIGNAL(currentIndexChanged(int)), 	this, 	SLOT(setFlags()));
+	}
 }
 
 
@@ -762,6 +772,133 @@ void qTabDataOutput::EnableTenGigabitEthernet(bool enable,int get){
 //-------------------------------------------------------------------------------------------------------------------------------------------------
 
 
+void qTabDataOutput::setSpeed(){
+#ifdef VERBOSE
+	cout  << endl << "Setting Speed" << endl;
+#endif
+	if(widgetEiger->isVisible()){
+		 myDet->setSpeed(slsDetectorDefs::CLOCK_DIVIDER,comboEigerClkDivider->currentIndex());
+		 qDefs::checkErrorMessage(myDet,"qTabDataOutput::setSpeed");
+		 updateSpeedFromServer();
+	}
+
+}
+
+
+//-------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+void qTabDataOutput::setFlags(){
+#ifdef VERBOSE
+	cout  << endl << "Setting Readout Flags" << endl;
+#endif
+	slsDetectorDefs::readOutFlags val = slsDetectorDefs::GET_READOUT_FLAGS;
+	if(widgetEiger->isVisible()){
+
+		//set to continous or storeinram
+		switch(comboEigerFlags1->currentIndex()){
+		case Storeinram:	val = slsDetectorDefs::STORE_IN_RAM;	break;
+		default:			val = slsDetectorDefs::CONTINOUS_RO;	break;
+		}
+		myDet->setReadOutFlags(val);
+		qDefs::checkErrorMessage(myDet,"qTabDataOutput::setFlags");
+
+		//set to parallel, nonparallel or safe
+		switch(comboEigerFlags2->currentIndex()){
+		case Parallel:		val = slsDetectorDefs::PARALLEL;		break;
+		case Safe:			val = slsDetectorDefs::SAFE;			break;
+		default:			val = slsDetectorDefs::NONPARALLEL;		break;
+		}
+		myDet->setReadOutFlags(val);
+		qDefs::checkErrorMessage(myDet,"qTabDataOutput::setFlags");
+
+		//update flags
+		 updateFlagsFromServer();
+	}
+
+}
+
+//-------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+void qTabDataOutput::updateSpeedFromServer(){
+	int ret;
+	if(widgetEiger->isVisible()){
+		disconnect(comboEigerClkDivider,		SIGNAL(currentIndexChanged(int)), 	this, 	SLOT(setSpeed()));
+
+		//get speed
+		ret = myDet->setSpeed(slsDetectorDefs::CLOCK_DIVIDER, -1);
+		qDefs::checkErrorMessage(myDet,"qTabDataOutput::updateSpeedFromServer");
+
+		//valid speed
+		if(ret  >= 0 && ret < NumberofSpeeds)
+			comboEigerClkDivider->setCurrentIndex(ret);
+
+		//invalid speed
+		else{
+			qDefs::Message(qDefs::WARNING,"Inconsistent value from clock divider.\n"
+					"Setting it for all detectors involved to half speed.","qTabDataOutput::updateSpeedFromServer");
+			//set to default
+			comboEigerClkDivider->setCurrentIndex(HalfSpeed);
+			 myDet->setSpeed(slsDetectorDefs::CLOCK_DIVIDER,HalfSpeed);
+			 qDefs::checkErrorMessage(myDet,"qTabDataOutput::updateSpeedFromServer");
+
+		}
+		connect(comboEigerClkDivider,		SIGNAL(currentIndexChanged(int)), 	this, 	SLOT(setSpeed()));
+	}
+}
+
+
+//-------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+void qTabDataOutput::updateFlagsFromServer(){
+	int ret;
+	if(widgetEiger->isVisible()){
+		disconnect(comboEigerFlags1,		SIGNAL(currentIndexChanged(int)), 	this, 	SLOT(setFlags()));
+		disconnect(comboEigerFlags2,		SIGNAL(currentIndexChanged(int)), 	this, 	SLOT(setFlags()));
+
+		//get speed
+		ret = myDet->setReadOutFlags(slsDetectorDefs::GET_READOUT_FLAGS);
+		qDefs::checkErrorMessage(myDet,"qTabDataOutput::updateFlagsFromServer");
+
+		//invalid flags
+		if(ret==-1){
+			qDefs::Message(qDefs::WARNING,"Inconsistent value for readout flags.\n"
+								"Setting it for all detectors involved to continous nonparallel mode.",
+								"qTabDataOutput::updateFlagsFromServer");
+			//set to default
+			comboEigerFlags1->setCurrentIndex(Continous);
+			 myDet->setReadOutFlags(slsDetectorDefs::CONTINOUS_RO);
+			 qDefs::checkErrorMessage(myDet,"qTabDataOutput::updateFlagsFromServer");
+			comboEigerFlags2->setCurrentIndex(NonParallel);
+			 myDet->setReadOutFlags(slsDetectorDefs::NONPARALLEL);
+			 qDefs::checkErrorMessage(myDet,"qTabDataOutput::updateFlagsFromServer");
+		}
+
+		//valid flags
+		else{
+			if(ret & slsDetectorDefs::STORE_IN_RAM)
+				comboEigerFlags1->setCurrentIndex(Storeinram);
+			else if(ret & slsDetectorDefs::CONTINOUS_RO)
+				comboEigerFlags1->setCurrentIndex(Continous);
+			if(ret & slsDetectorDefs::PARALLEL)
+				comboEigerFlags2->setCurrentIndex(Parallel);
+			else if(ret & slsDetectorDefs::NONPARALLEL)
+				comboEigerFlags2->setCurrentIndex(NonParallel);
+			else if(ret & slsDetectorDefs::SAFE)
+				comboEigerFlags2->setCurrentIndex(Safe);
+		}
+
+		connect(comboEigerFlags1,	SIGNAL(currentIndexChanged(int)), 	this, 	SLOT(setFlags()));
+		connect(comboEigerFlags2,	SIGNAL(currentIndexChanged(int)), 	this, 	SLOT(setFlags()));
+	}
+}
+
+
+//-------------------------------------------------------------------------------------------------------------------------------------------------
+
+
 void qTabDataOutput::Refresh(){
 #ifdef VERBOSE
 	cout  << endl << "**Updating DataOutput Tab" << endl;
@@ -843,7 +980,22 @@ void qTabDataOutput::Refresh(){
 		EnableTenGigabitEthernet(-1,1);
 	}
 
+	//Eiger specific
+	if(widgetEiger->isVisible()){
+		//speed
+#ifdef VERBOSE
+		cout  << "Getting Speed" << endl;
+#endif
+		updateSpeedFromServer();
+		//flags
+#ifdef VERBOSE
+		cout  << "Getting Readout Flags" << endl;
+#endif
+		updateFlagsFromServer();
 
+
+
+	}
 
 
 #ifdef VERBOSE

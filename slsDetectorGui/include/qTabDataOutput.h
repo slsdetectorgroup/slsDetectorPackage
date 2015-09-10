@@ -67,6 +67,14 @@ private:
 	QPalette	*red1;
 	QPalette	*black1;
 
+	/** enum for the Eiger clock divider */
+	enum {FullSpeed, HalfSpeed, QuarterSpeed, SuperSlowSpeed, NumberofSpeeds};
+	/** enum for the Eiger readout flags1 */
+	enum {Continous, Storeinram};
+	/** enum for the Eiger readout flags2 */
+	enum {Parallel, NonParallel, Safe};
+
+
 /** methods */
 	/** Sets up the widget */
 	void SetupWidgetWindow();
@@ -81,6 +89,11 @@ private:
 	/** Get Compression */
 	void GetCompression();
 
+	/** update speed */
+	void updateSpeedFromServer();
+
+	/** update flags */
+	void updateFlagsFromServer();
 
 private slots:
 
@@ -119,6 +132,12 @@ void SetCompression(bool enable);
 
 /** enable 10GbE */
 void EnableTenGigabitEthernet(bool enable, int get=0);
+
+/** set speed */
+void setSpeed();
+
+/** set flags */
+void setFlags();
 
 signals:
 /**signal to enable/disable positions in Actions*/

@@ -63,6 +63,10 @@ private:
 	 */
 	int validateBeforeTrimming();
 
+	/** update the setalltrimbits value from server
+	 */
+	void updateAllTrimbitsFromServer();
+
 
 private slots:
 
@@ -171,6 +175,10 @@ private slots:
 	/** Clears ROI in detector
 	 */
 	void SetDetector(int index);
+
+	/** Set all trimbits to a value
+	 */
+	void SetAllTrimbits();
 
 private:
 	/** The multi detector object */

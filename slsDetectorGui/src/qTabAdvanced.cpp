@@ -58,6 +58,7 @@ void qTabAdvanced::SetupWidgetWindow(){
 	dispIP->setEnabled(false);
 	dispMAC->setEnabled(false);
 	boxRxr->setEnabled(false);
+	boxSetAllTrimbits->setEnabled(false);
 
 
 	red = QPalette();
@@ -73,7 +74,10 @@ void qTabAdvanced::SetupWidgetWindow(){
 
 	detType = myDet->getDetectorsType();
 	switch(detType){
-	case slsDetectorDefs::MYTHEN: 	isEnergy = true; 	isAngular = true; 	break;
+	case slsDetectorDefs::MYTHEN:
+		isEnergy = true;
+		isAngular = true;
+		break;
 	case slsDetectorDefs::EIGER:
 		isEnergy = true;
 		isAngular = false;
@@ -82,6 +86,7 @@ void qTabAdvanced::SetupWidgetWindow(){
 		dispIP->setEnabled(true);
 		dispMAC->setEnabled(true);
 		boxRxr->setEnabled(true);
+		boxSetAllTrimbits->setEnabled(true);
 		break;
 	case slsDetectorDefs::MOENCH:
 		isEnergy = false;
@@ -177,7 +182,6 @@ void qTabAdvanced::SetupWidgetWindow(){
 	cout << "Getting ROI" << endl;
 	updateROIList();
 
-
 	//  print receiver configurations
 	if(myDet->getDetectorsType() != slsDetectorDefs::MYTHEN){
 		cout << endl;
@@ -215,6 +219,10 @@ void qTabAdvanced::Initialization(){
 		//output directory
 		connect(dispFile,		SIGNAL(editingFinished()),		this, SLOT(SetOutputFile()));
 		connect(btnFile,		SIGNAL(clicked()), 				this, SLOT(BrowseOutputFile()));
+
+		//setalltrimbits
+		if(boxSetAllTrimbits->isEnabled())
+			connect(spinSetAllTrimbits,	SIGNAL(editingFinished()),	this,	SLOT(SetAllTrimbits()));
 
 		//enable trimming method group box
 		connect(boxTrimming,	SIGNAL(toggled(bool)),	this, SLOT(EnableTrimming(bool)));
@@ -1088,6 +1096,45 @@ void qTabAdvanced::SetDetector(int index){
 //-------------------------------------------------------------------------------------------------------------------------------------------------
 
 
+void qTabAdvanced::SetAllTrimbits(){
+#ifdef VERBOSE
+	cout<<"Set all trimbits to " << spinSetAllTrimbits->value() << endl;
+#endif
+	myDet->setAllTrimbits(spinSetAllTrimbits->value());
+	 qDefs::checkErrorMessage(myDet,"qTabAdvanced::SetAllTrimbits");
+	 updateAllTrimbitsFromServer();
+
+}
+
+
+//-------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+void qTabAdvanced::updateAllTrimbitsFromServer(){
+#ifdef VERBOSE
+	cout<<"Getting all trimbits value" << endl;
+#endif
+	disconnect(spinSetAllTrimbits,	SIGNAL(editingFinished()),	this,	SLOT(SetAllTrimbits()));
+
+	int ret = myDet->setAllTrimbits(-1);
+	qDefs::checkErrorMessage(myDet,"qTabAdvanced::updateAllTrimbitsFromServer");
+	if(ret<0){
+		qDefs::Message(qDefs::WARNING,"Inconsistent value from alltrimbits value.\n"
+				"Setting it for all detectors involved to 0.","qTabAdvanced::updateAllTrimbitsFromServer");
+		//set to default
+		spinSetAllTrimbits->setValue(0);
+		myDet->setAllTrimbits(0);
+		qDefs::checkErrorMessage(myDet,"qTabAdvanced::updateAllTrimbitsFromServer");
+	}else
+		spinSetAllTrimbits->setValue(ret);
+
+	connect(spinSetAllTrimbits,	SIGNAL(editingFinished()),	this,	SLOT(SetAllTrimbits()));
+}
+
+
+//-------------------------------------------------------------------------------------------------------------------------------------------------
+
+
 void qTabAdvanced::Refresh(){
 
 
@@ -1261,6 +1308,9 @@ void qTabAdvanced::Refresh(){
 #endif
 	updateROIList();
 
+	//update alltirmbits from server
+	if(boxSetAllTrimbits->isEnabled())
+		updateAllTrimbitsFromServer();
 
 #ifdef VERBOSE
 		cout  << "**Updated Advanced Tab" << endl << endl;

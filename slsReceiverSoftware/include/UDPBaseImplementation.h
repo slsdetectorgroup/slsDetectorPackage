@@ -498,10 +498,6 @@ protected:
 		unsigned char packetnum[2];
 	} eiger_packet_footer_t;
 
-	eiger_packet_header_t* eiger_packet_header;
-	unsigned char* eiger_packet_data;
-	eiger_packet_footer_t* eiger_packet_footer;
-
 
 	/** max number of listening threads */
 	const static int MAX_NUM_LISTENING_THREADS = EIGER_MAX_PORTS;

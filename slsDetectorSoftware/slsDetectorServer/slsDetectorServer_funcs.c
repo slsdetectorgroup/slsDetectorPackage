@@ -2779,9 +2779,10 @@ int set_readout_flags(int file_des) {
 #endif
 
 	if (ret==OK) {
-		if (retval == -1) {
+		if ((retval == -1) || ((arg!=-1)&&((retval&arg)!=arg))){
+			cprintf(RED,"arg:0x%x, retval:0x%x retval&arg:0x%x\n",(int)arg,(int)retval,retval&arg);
 			ret=FAIL;
-			sprintf(mess,"Could not change readout flag: should be %d but is %d\n", arg, retval);
+			sprintf(mess,"Could not change readout flag: should be 0x%x but is 0x%x\n", arg, retval);
 			cprintf(RED, "%s",mess);
 		}else if (differentClients)
 			ret=FORCE_UPDATE;

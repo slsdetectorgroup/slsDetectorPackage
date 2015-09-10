@@ -745,7 +745,7 @@ int setDynamicRange(int dr){
 
 enum readOutFlags setReadOutFlags(enum readOutFlags val){
 
-	enum readOutFlags retval;
+	enum readOutFlags retval = GET_READOUT_FLAGS;
 	if(val!=GET_READOUT_FLAGS){
 
 

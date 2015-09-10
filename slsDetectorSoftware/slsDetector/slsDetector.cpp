@@ -4262,6 +4262,7 @@ int slsDetector::setSpeed(speedVariable sp, int value) {
       if (ret==FAIL) {
 	controlSocket->ReceiveDataOnly(mess,sizeof(mess));
 	std::cout<< "Detector returned error: " << mess << std::endl;
+	setErrorMask((getErrorMask())|(COULD_NOT_SET_SPEED_PARAMETERS));
       } else {
 	controlSocket->ReceiveDataOnly(&retval,sizeof(retval));
       }
@@ -4530,6 +4531,7 @@ int slsDetector::setReadOutFlags(readOutFlags flag){
       if (ret==FAIL) {
 	controlSocket->ReceiveDataOnly(mess,sizeof(mess));
 	std::cout<< "Detector returned error: " << mess << std::endl;
+	setErrorMask((getErrorMask())|(COULD_NOT_SET_READOUT_FLAGS));
       } else {
 	controlSocket->ReceiveDataOnly(&retval,sizeof(retval));
 	thisDetector->roFlags=retval;

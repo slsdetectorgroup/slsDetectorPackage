@@ -18,7 +18,6 @@ using namespace std;
 
 
 /** Error flags */
-#define NUM_ERROR_FLAGS 32
 #define CRITICAL_ERROR_MASK 0xFFFFFFFF
 
 #define CANNOT_CONNECT_TO_DETECTOR  		0x8000000000000000ULL
@@ -50,6 +49,8 @@ using namespace std;
 #define RECEIVER_DYNAMIC_RANGE				0x0000000000000800ULL
 #define RECEIVER_TEN_GIGA					0x0000000000001000ULL
 #define ALLTIMBITS_NOT_SET					0x0000000000002000ULL
+#define COULD_NOT_SET_SPEED_PARAMETERS		0x0000000000004000ULL
+#define COULD_NOT_SET_READOUT_FLAGS			0x0000000000008000ULL
 
 //											0x00000000FFFFFFFFULL
 /** @short class returning all error messages for error mask */
@@ -150,7 +151,11 @@ public:
 		if(slsErrorMask&ALLTIMBITS_NOT_SET)
 			retval.append("Could not set all trimbits to value.\n");
 
+		if(slsErrorMask&COULD_NOT_SET_SPEED_PARAMETERS)
+			retval.append("Could not set the speed parameter value\n");
 
+		if(slsErrorMask&COULD_NOT_SET_READOUT_FLAGS)
+			retval.append("Could not set the readout flag\n");
 
 		return retval;
 

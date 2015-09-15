@@ -505,6 +505,9 @@ protected:
 	/** max number of writer threads */
 	const static int MAX_NUM_WRITER_THREADS = 15;
 
+	/** missing packet identifier value */
+	const static uint16_t missingPacketValue = 0xFFFF;
+
 	/** detector type */
 	detectorType myDetectorType;
 
@@ -711,6 +714,9 @@ protected:
 
 	/** 10Gbe enable*/
 	int tengigaEnable;
+
+	/** footer offset is different for 1g and 10g*/
+	int footer_offset;
 
 	// TODO: not properly sure where to put these...
 	/** structure of an eiger image header*/

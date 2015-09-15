@@ -558,83 +558,6 @@ void UDPBaseImplementation::setupFilter(){ FILE_LOG(logDEBUG) << __AT__ << " sta
 //LEO: it is not clear to me..
 void UDPBaseImplementation::setupFifoStructure(){ FILE_LOG(logDEBUG) << __AT__ << " starting";
 
-	int64_t i;
-	int oldn = numJobsPerThread;
-
-	//if every nth frame mode
-	if(nFrameToGui)
-		numJobsPerThread = nFrameToGui;
-
-	//random nth frame mode
-	else{
-		if(!acquisitionPeriod)
-			i = SAMPLE_TIME_IN_NS;
-		else
-			i = SAMPLE_TIME_IN_NS/acquisitionPeriod;
-		if (i > MAX_JOBS_PER_THREAD)
-			numJobsPerThread = MAX_JOBS_PER_THREAD;
-		else if (i < 1)
-			numJobsPerThread = 1;
-		else
-			numJobsPerThread = i;
-	}
-
-	//if same, return
-	if(oldn == numJobsPerThread)
-		return;
-
-	if(myDetectorType == EIGER)
-		numJobsPerThread = 1;
-
-	//otherwise memory too much if numjobsperthread is at max = 1000
-	fifosize = GOTTHARD_FIFO_SIZE;
-	if(myDetectorType == MOENCH)
-		fifosize = MOENCH_FIFO_SIZE;
-	else if(myDetectorType == EIGER)
-		fifosize = EIGER_FIFO_SIZE;
-
-	if(fifosize % numJobsPerThread)
-		fifosize = (fifosize/numJobsPerThread)+1;
-	else
-		fifosize = fifosize/numJobsPerThread;
-
-
-	cout << "Number of Frames per buffer:" << numJobsPerThread << endl;
-	cout << "Fifo Size:" << fifosize << endl;
-
-	/*
-	//for testing
-	 numJobsPerThread = 3; fifosize = 11;
-	 */
-
-	for(int i=0;i<numListeningThreads;i++){
-		//deleting old structure and creating fifo structure
-		if(fifoFree[i]){
-			while(!fifoFree[i]->isEmpty())
-				fifoFree[i]->pop(buffer[i]);
-			delete fifoFree[i];
-		}
-		if(fifo[i])	delete fifo[i];
-		if(mem0[i]) 	free(mem0[i]);
-		fifoFree[i] 	= new CircularFifo<char>(fifosize);
-		fifo[i] 		= new CircularFifo<char>(fifosize);
-
-
-		//allocate memory
-		mem0[i]=(char*)malloc((bufferSize * numJobsPerThread + HEADER_SIZE_NUM_TOT_PACKETS)*fifosize);
-		/** shud let the client know about this */
-		if (mem0[i]==NULL){
-			cprintf(BG_RED,"++++++++++++++++++++++ COULD NOT ALLOCATE MEMORY FOR LISTENING !!!!!!!+++++++++++++++++++++\n");
-			exit(-1);
-		}
-		buffer[i]=mem0[i];
-		//push the addresses into freed fifoFree and writingFifoFree
-		while (buffer[i]<(mem0[i]+(bufferSize * numJobsPerThread + HEADER_SIZE_NUM_TOT_PACKETS)*(fifosize-1))) {
-			fifoFree[i]->push(buffer[i]);
-			buffer[i]+=(bufferSize * numJobsPerThread + HEADER_SIZE_NUM_TOT_PACKETS);
-		}
-	}
-	cout << "Fifo structure(s) reconstructed" << endl;
 }
 
 
@@ -1529,93 +1452,6 @@ int UDPBaseImplementation::startWriting(){ FILE_LOG(logDEBUG) << __AT__ << " sta
 	cout << ithread << "In startWriting()" <<endl;
 #endif
 
-	thread_started = 1;
-
-	int numpackets, nf;
-	uint32_t tempframenum;
-	char* wbuf[numListeningThreads];//interleaved
-	char *d=new char[bufferSize*numListeningThreads];
-	int xmax=0,ymax=0;
-	int ret,i;
-	int packetsPerThread = packetsPerFrame/numListeningThreads;
-
-	while(1){
-
-
-		nf = 0;
-		packetsPerThread = packetsPerFrame/numListeningThreads;
-		if(myDetectorType == MOENCH){
-				xmax = MOENCH_PIXELS_IN_ONE_ROW-1;
-				ymax = MOENCH_PIXELS_IN_ONE_ROW-1;
-			}else{
-				if(shortFrame == -1){
-				xmax = GOTTHARD_PIXELS_IN_ROW-1;
-				ymax = GOTTHARD_PIXELS_IN_COL-1;
-				}else{
-					xmax = GOTTHARD_SHORT_PIXELS_IN_ROW-1;
-					ymax = GOTTHARD_SHORT_PIXELS_IN_COL-1;
-				}
-			}
-
-
-
-
-		while((1<<ithread)&writerthreads_mask){
-
-
-
-		}
-#ifdef VERYVERBOSE
-		cout << ithread << " gonna wait for 1st sem" << endl;
-#endif
-		//wait
-		sem_wait(&writersmp[ithread]);
-		if(killAllWritingThreads){
-			cout << ithread << " good bye writing thread" << endl;
-			closeFile(ithread);
-			pthread_exit(NULL);
-		}
-#ifdef VERYVERBOSE
-		cout << ithread << " got 1st post" << endl;
-#endif
-
-
-		if((1<<ithread)&createfile_mask){
-			if(dataCompression){
-#ifdef MYROOT1
-				pthread_mutex_lock(&write_mutex);
-				ret = createCompressionFile(ithread,0);
-				pthread_mutex_unlock(&write_mutex);
-				if(ret == FAIL)
-					ret_createfile = FAIL;
-#endif
-			}else{
-				ret = createNewFile();
-				if(ret == FAIL)
-					ret_createfile = FAIL;
-			}
-
-			//let tcp know
-			pthread_mutex_lock(&status_mutex);
-			createfile_mask^=(1<<ithread);
-			pthread_mutex_unlock(&status_mutex);
-		}
-
-
-#ifdef VERYVERBOSE
-		cout << ithread << " gonna wait for 2nd sem" << endl;
-#endif
-		//wait
-		sem_wait(&writersmp[ithread]);
-		if(killAllWritingThreads){
-			cout << ithread << " Goodbye thread" << endl;
-			closeFile(ithread);
-			pthread_exit(NULL);
-		}
-#ifdef VERYVERBOSE
-		cout << ithread << " got 2nd post" << endl;
-#endif
-	}
 
 
 	return OK;
@@ -1626,33 +1462,7 @@ int UDPBaseImplementation::startWriting(){ FILE_LOG(logDEBUG) << __AT__ << " sta
 
 void UDPBaseImplementation::startFrameIndices(int ithread){ FILE_LOG(logDEBUG) << __AT__ << " starting";
 
-	if (myDetectorType == EIGER)
-		//add currframenum later  in this method for scans
-		startFrameIndex = htonl(*(unsigned int*)((eiger_image_header *)((char*)(buffer[ithread] + HEADER_SIZE_NUM_TOT_PACKETS)))->fnum);
-	//gotthard has +1 for frame number and not a short frame
-	else if ((myDetectorType == GOTTHARD) && (shortFrame == -1))
-		startFrameIndex = (((((uint32_t)(*((uint32_t*)(buffer[ithread] + HEADER_SIZE_NUM_TOT_PACKETS))))+1)
-				& (frameIndexMask)) >> frameIndexOffset);
-	else
-		startFrameIndex = ((((uint32_t)(*((uint32_t*)(buffer[ithread]+HEADER_SIZE_NUM_TOT_PACKETS))))
-				& (frameIndexMask)) >> frameIndexOffset);
 
-
-	//start of acquisition
-	if(!acqStarted){
-		startAcquisitionIndex=startFrameIndex;
-		currframenum = startAcquisitionIndex;
-		acqStarted = true;
-		cout << "startAcquisitionIndex:" << startAcquisitionIndex<<endl;
-	}
-	//for scans, cuz currfraenum resets
-	else if (myDetectorType == EIGER)
-		startFrameIndex += currframenum;
-
-
-	cout << "startFrameIndex:" << startFrameIndex<<endl;
-	prevframenum=startFrameIndex;
-	measurementStarted = true;
 
 }
 

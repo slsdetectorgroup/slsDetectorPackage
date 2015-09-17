@@ -1962,7 +1962,7 @@ int UDPStandardImplementation::startWriting(){
 	uint32_t lastpacketheader[numListeningThreads], currentpacketheader[numListeningThreads];
 	int numberofmissingpackets[numListeningThreads];
 
-	int MAX_VALUE = 1024;
+	int MAX_VALUE = 1024;//32 bit number of packets
 	char* tofree[MAX_VALUE];
 	char* tempbuffer[MAX_VALUE];
 	char* blankframe[MAX_VALUE];
@@ -2097,7 +2097,7 @@ int UDPStandardImplementation::startWriting(){
 #endif
 					}else{
 						endofacquisition = false;
-						if(numpackets[i] == 1040){;
+						if(numpackets[i] == bufferSize){;
 #ifdef EIGER_DEBUG3
 							wbuf_footer = (eiger_packet_footer_t*)(wbuf[i] + footer_offset + HEADER_SIZE_NUM_TOT_PACKETS);
 							//cprintf(BLUE,"footer value:0x%x\n",i,(uint64_t)(*( (uint64_t*) wbuf_footer)));

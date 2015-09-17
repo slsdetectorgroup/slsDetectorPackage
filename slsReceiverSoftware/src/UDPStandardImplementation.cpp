@@ -2172,8 +2172,7 @@ int UDPStandardImplementation::startWriting(){
 #ifdef EIGER_DEBUG3
 								cprintf(RED, "Dummy packet: %d from fifo %d\n", numpackets[i],i);
 #endif
-								cout<<"packetsperframe:"<<packetsPerFrame<<endl;
-								cout<<"tempoffset["<<i<<"]:"<<tempoffset[i]<<" checking against:"<<(((i+1)*packetsPerFrame/numListeningThreads))<<endl;
+								//cout<<"tempoffset["<<i<<"]:"<<tempoffset[i]<<" checking against:"<<(((i+1)*packetsPerFrame/numListeningThreads))<<endl;
 								//cannot check for full frame as it will be false  if its done with all packets OR waiting for packets
 								if(tempoffset[i]!= (((i+1)*packetsPerFrame/numListeningThreads))){
 #ifdef VERYDEBUG

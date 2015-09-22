@@ -2166,7 +2166,7 @@ int UDPStandardImplementation::startWriting(){
 						//anything that is not a data packet of right size
 						if(numpackets[i] != onePacketSize){
 							//header packet
-							if(numpackets[i] == EIGER_HEADER_LENGTH) {cprintf(BG_RED,"weird, frame packet recieved\n"); exit(-1);}
+							if(numpackets[i] == EIGER_HEADER_LENGTH) {cprintf(BG_RED,"weird, header frame packet recieved. shouldnt\n"); exit(-1);}
 							//dummy packet
 							else if(!numpackets[i]){
 #ifdef EIGER_DEBUG3
@@ -2225,11 +2225,11 @@ int UDPStandardImplementation::startWriting(){
 							cprintf(GREEN,"**pnum of %d: %d\n",i,(*( (uint16_t*) wbuf_footer->packetnum)));
 #endif
 							//update frame number
+							if(!((uint32_t)(*( (uint64_t*) wbuf_footer)))){
+								cprintf(BG_RED,"**VERY WEIRD frame numbers for fifo %d: %d\n",i,(uint32_t)(*( (uint64_t*) wbuf_footer)));
+								continue;
+							}
 							tempframenum[i] =(uint32_t)(*( (uint64_t*) wbuf_footer));
-
-
-							if(!tempframenum[i])
-								cprintf(RED,"**VERY WEIRD frame numbers for fifo %d: %d\n",i,tempframenum[i]);
 							tempframenum[i] +=	(startFrameIndex-1);
 
 

@@ -1570,7 +1570,7 @@ int	slsReceiverTCPIPInterface::eiger_read_frame(){
 	int frameIndex= -1;
 	int i;
 	uint32_t index=0;
-
+	uint32_t subindex=-1;
 	int frameSize   = EIGER_ONE_GIGA_ONE_PACKET_SIZE * packetsPerFrame;
 	int dataSize 	= EIGER_ONE_GIGA_ONE_DATA_SIZE * packetsPerFrame;
 	if(tenGigaEnable){
@@ -1750,6 +1750,7 @@ int	slsReceiverTCPIPInterface::eiger_read_frame(){
 		cout << "frameIndex:" << frameIndex << endl;
 		cout << "startAcquisitionIndex:" << startAcquisitionIndex << endl;
 		cout << "startFrameIndex:" << startFrameIndex << endl;
+
 	}
 #endif
 
@@ -1772,6 +1773,7 @@ int	slsReceiverTCPIPInterface::eiger_read_frame(){
 		socket->SendDataOnly(fName,MAX_STR_LENGTH);
 		socket->SendDataOnly(&acquisitionIndex,sizeof(acquisitionIndex));
 		socket->SendDataOnly(&frameIndex,sizeof(frameIndex));
+		socket->SendDataOnly(&subindex,sizeof(subindex));
 		socket->SendDataOnly(retval,dataSize);
 	}
 

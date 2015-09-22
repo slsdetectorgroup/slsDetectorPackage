@@ -2226,7 +2226,9 @@ int UDPStandardImplementation::startWriting(){
 #endif
 							//update frame number
 							if(!((uint32_t)(*( (uint64_t*) wbuf_footer)))){
-								cprintf(BG_RED,"**VERY WEIRD frame numbers for fifo %d: %d\n",i,(uint32_t)(*( (uint64_t*) wbuf_footer)));
+								cprintf(BG_RED,"%d VERY WEIRD frame number=%d and popready:%d\n",
+										i,(uint32_t)(*( (uint64_t*) wbuf_footer)),popready[i]);
+								popready[i]=true;
 								continue;
 							}
 							tempframenum[i] =(uint32_t)(*( (uint64_t*) wbuf_footer));

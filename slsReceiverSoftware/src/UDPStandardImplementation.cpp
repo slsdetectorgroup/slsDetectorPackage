@@ -30,20 +30,11 @@ using namespace std;
 #define WRITE_HEADERS
 
 
-UDPStandardImplementation::UDPStandardImplementation()
-//:
-//thread_started(0),
-//eth(NULL),
-//latestData(NULL),
-//guiFileName(NULL),
-//guiFrameNumber(0),
-//tengigaEnable(0)
-{
+UDPStandardImplementation::UDPStandardImplementation(){
 	thread_started = 0;
 	eth = NULL;
 	latestData = NULL;
 	guiFileName = NULL;
-	guiFrameNumber = NULL;
 	tengigaEnable = 0;
 	footer_offset = 0;
 	for(int i=0;i<MAX_NUM_LISTENING_THREADS;i++){
@@ -173,7 +164,6 @@ void UDPStandardImplementation::initializeMembers(){
 	latestData = NULL;
 	guiFileName = NULL;
 	guiData = NULL;
-	guiFrameNumber = 0;
 	sfilefd = NULL;
 	cmSub = NULL;
 
@@ -929,7 +919,7 @@ void UDPStandardImplementation::setupFifoStructure(){
 
 
 /** acquisition functions */
-void UDPStandardImplementation::readFrame(char* c,char** raw, uint32_t &fnum, uint32_t &startAcquisitionIndex, uint32_t &startFrameIndex){
+void UDPStandardImplementation::readFrame(char* c,char** raw, uint32_t &startAcquisitionIndex, uint32_t &startFrameIndex){
 	FILE_LOG(logDEBUG) << __AT__ << " called";
 	//point to gui data
 	if (guiData == NULL){
@@ -941,7 +931,6 @@ void UDPStandardImplementation::readFrame(char* c,char** raw, uint32_t &fnum, ui
 
 	//copy data and filename
 	strcpy(c,guiFileName);
-	fnum = guiFrameNumber;
 	startAcquisitionIndex = getStartAcquisitionIndex();
 	startFrameIndex = getStartFrameIndex();
 
@@ -982,7 +971,7 @@ void UDPStandardImplementation::readFrame(char* c,char** raw, uint32_t &fnum, ui
 
 
 
-void UDPStandardImplementation::copyFrameToGui(char* startbuf[], uint32_t fnum, char* buf){
+void UDPStandardImplementation::copyFrameToGui(char* startbuf[], char* buf){
 	FILE_LOG(logDEBUG) << __AT__ << " called";
 #ifdef VERY_VERY_DEBUG
 cout << "copyframe" << endl;
@@ -1011,10 +1000,10 @@ cout << "copyframe" << endl;
 #endif
 		//eiger
 		if(startbuf != NULL){
+
 			for(int j=0;j<packetsPerFrame;++j)
 				memcpy((((char*)latestData)+j * onePacketSize) ,startbuf[j],onePacketSize);
 
-			guiFrameNumber = fnum;
 		}else//other detectors
 			memcpy(latestData,buf,bufferSize);
 
@@ -1298,7 +1287,6 @@ int UDPStandardImplementation::setupWriter(){
 	guiData = NULL;
 	guiDataReady=0;
 	strcpy(guiFileName,"");
-	guiFrameNumber = 0;
 	cbAction = DO_EVERYTHING;
 
 	pthread_mutex_lock(&status_mutex);
@@ -2981,7 +2969,7 @@ void UDPStandardImplementation::handleWithoutDataCompression(int ithread, char* 
 #ifdef VERYDEBUG
 		cprintf(GREEN,"gonna copy frame\n");
 #endif
-		copyFrameToGui(wbuffer,currframenum);
+		copyFrameToGui(wbuffer);
 #ifdef VERYDEBUG
 		cprintf(GREEN,"copied frame\n");
 #endif
@@ -2989,7 +2977,7 @@ void UDPStandardImplementation::handleWithoutDataCompression(int ithread, char* 
 		//copy to gui
 		if(npackets >= packetsPerFrame){//min 1 frame, but neednt be
 			//if(npackets == packetsPerFrame * numJobsPerThread){ //only full frames
-			copyFrameToGui(NULL,-1,wbuffer[0]+HEADER_SIZE_NUM_TOT_PACKETS);
+			copyFrameToGui(NULL,wbuffer[0]+HEADER_SIZE_NUM_TOT_PACKETS);
 #ifdef VERYVERBOSE
 			cout << ithread << " finished copying" << endl;
 #endif
@@ -3087,7 +3075,7 @@ void UDPStandardImplementation::handleDataCompression(int ithread, char* wbuffer
 
 #endif
 						if(!once){
-							copyFrameToGui(NULL,-1,buff);
+							copyFrameToGui(NULL,buff);
 							once = 1;
 						}
 					}

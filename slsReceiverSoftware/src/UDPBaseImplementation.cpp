@@ -567,7 +567,7 @@ void UDPBaseImplementation::setupFifoStructure(){ FILE_LOG(logDEBUG) << __AT__ <
 
 
 /** acquisition functions */
-void UDPBaseImplementation::readFrame(char* c,char** raw, uint32_t &fnum, uint32_t &startAcquisitionIndex, uint32_t &startFrameIndex){
+void UDPBaseImplementation::readFrame(char* c,char** raw,uint32_t &startAcquisitionIndex, uint32_t &startFrameIndex){
 	FILE_LOG(logDEBUG) << __AT__ << " called";
 	//point to gui data
 	if (guiData == NULL){
@@ -576,7 +576,6 @@ void UDPBaseImplementation::readFrame(char* c,char** raw, uint32_t &fnum, uint32
 
 	//copy data and filename
 	strcpy(c,guiFileName);
-	fnum = guiFrameNumber;
 	startAcquisitionIndex = getStartAcquisitionIndex();
 	startFrameIndex = getStartFrameIndex();
 
@@ -601,55 +600,8 @@ void UDPBaseImplementation::readFrame(char* c,char** raw, uint32_t &fnum, uint32
 
 
 
-void UDPBaseImplementation::copyFrameToGui(char* startbuf[], uint32_t fnum, char* buf){ FILE_LOG(logDEBUG) << __AT__ << " starting";
+void UDPBaseImplementation::copyFrameToGui(char* startbuf[], char* buf){ FILE_LOG(logDEBUG) << __AT__ << " starting";
 
-	//random read when gui not ready
-	if((!nFrameToGui) && (!guiData)){
-		pthread_mutex_lock(&dataReadyMutex);
-		guiDataReady=0;
-		pthread_mutex_unlock(&dataReadyMutex);
-	}
-
-	//random read or nth frame read, gui needs data now or it is the first frame
-	else{
-		/*
-		//nth frame read, block current process if the guireader hasnt read it yet
-		if(nFrameToGui)
-			sem_wait(&smp);
-*/
-		pthread_mutex_lock(&dataReadyMutex);
-		guiDataReady=0;
-		//eiger
-		if(startbuf != NULL){
-			int offset = 0;
-			int size = frameSize/EIGER_MAX_PORTS;
-			for(int j=0;j<numListeningThreads;++j){
-				memcpy((((char*)latestData)+offset) ,startbuf[j] + (HEADER_SIZE_NUM_TOT_PACKETS + EIGER_HEADER_LENGTH),size);
-				offset += size;
-			}
-
-			/*
-			for(int j=25;j<27;++j)
-			for(int i=1000;i<1010;i=i+2)
-				//cout<<"startbuf:"<<dec<<i<<hex<<":\t0x"<<htonl((uint32_t)(*((uint32_t*)(startbuf[1] + HEADER_SIZE_NUM_TOT_PACKETS+ EIGER_HEADER_LENGTH+8+ i))))<<endl;
-			cout<<"startbuf:"<<dec<<i<<hex<<":\t0x"<<((uint16_t)(*((uint16_t*)(startbuf[1] + 2+ 48+ j*1040+8+ i))))<<endl;
-*/
-
-
-			guiFrameNumber = fnum;
-		}else//other detectors
-			memcpy(latestData,buf,bufferSize);
-
-
-		strcpy(guiFileName,savefilename);
-		guiDataReady=1;
-		pthread_mutex_unlock(&dataReadyMutex);
-
-		//nth frame read, block current process if the guireader hasnt read it yet
-		if(nFrameToGui)
-			sem_wait(&smp);
-
-	}
 }
 
 
@@ -880,7 +832,7 @@ int UDPBaseImplementation::setupWriter(){ FILE_LOG(logDEBUG) << __AT__ << " star
 	guiData = NULL;
 	guiDataReady=0;
 	strcpy(guiFileName,"");
-	guiFrameNumber = 0;
+
 	cbAction = DO_EVERYTHING;
 
 	pthread_mutex_lock(&status_mutex);
@@ -1797,7 +1749,7 @@ void UDPBaseImplementation::handleDataCompression(int ithread, char* wbuffer[], 
 
 #endif
 						if(!once){
-							copyFrameToGui(NULL,-1,buff);
+							copyFrameToGui(NULL,buff);
 							once = 1;
 						}
 					}

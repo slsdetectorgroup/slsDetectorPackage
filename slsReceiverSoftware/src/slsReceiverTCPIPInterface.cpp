@@ -1068,7 +1068,7 @@ int	slsReceiverTCPIPInterface::moench_read_frame(){
 
 	uint32_t startAcquisitionIndex=0;
 	uint32_t startFrameIndex=0;
-	uint32_t index = 0,bindex = 0, offset=0;
+	uint32_t index = -1,bindex = 0, offset=0;
 
 	strcpy(mess,"Could not read frame\n");
 
@@ -1088,7 +1088,7 @@ int	slsReceiverTCPIPInterface::moench_read_frame(){
 	else{
 		ret = OK;
 		/*startIndex=receiverBase->getStartFrameIndex();*/
-		receiverBase->readFrame(fName,&raw,index,startAcquisitionIndex,startFrameIndex);
+		receiverBase->readFrame(fName,&raw,startAcquisitionIndex,startFrameIndex);
 
 		/**send garbage with -1 index to try again*/
 		if (raw == NULL){
@@ -1253,7 +1253,7 @@ int	slsReceiverTCPIPInterface::gotthard_read_frame(){
 	char* raw 		= new char[bufferSize];
 
 
-	uint32_t index=0,index2=0;
+	uint32_t index=-1,index2=0;
 	uint32_t pindex=0,pindex2=0;
 	uint32_t bindex=0,bindex2=0;
 	uint32_t startAcquisitionIndex=0;
@@ -1277,7 +1277,7 @@ int	slsReceiverTCPIPInterface::gotthard_read_frame(){
 	}else{
 		ret = OK;
 		/*startIndex=receiverBase->getStartFrameIndex();*/
-		receiverBase->readFrame(fName,&raw,index,startAcquisitionIndex,startFrameIndex);
+		receiverBase->readFrame(fName,&raw,startAcquisitionIndex,startFrameIndex);
 
 		/**send garbage with -1 index to try again*/
 		if (raw == NULL){
@@ -1429,7 +1429,7 @@ int	slsReceiverTCPIPInterface::propix_read_frame(){
 	for(i=0;i<rnel;i++)	origVal[i]=0;
 
 
-	uint32_t index=0,index2=0;
+	uint32_t index=-1,index2=0;
 	uint32_t pindex=0,pindex2=0;
 	uint32_t bindex=0,bindex2=0;
 	uint32_t startAcquisitionIndex=0;
@@ -1453,7 +1453,7 @@ int	slsReceiverTCPIPInterface::propix_read_frame(){
 	}else{
 		ret = OK;
 		/*startIndex=receiverBase->getStartFrameIndex();*/
-		receiverBase->readFrame(fName,&raw,index,startAcquisitionIndex,startFrameIndex);
+		receiverBase->readFrame(fName,&raw,startAcquisitionIndex,startFrameIndex);
 
 		/**send garbage with -1 index to try again*/
 		if (raw == NULL){
@@ -1567,16 +1567,36 @@ int	slsReceiverTCPIPInterface::propix_read_frame(){
 
 int	slsReceiverTCPIPInterface::eiger_read_frame(){
 	ret=OK;
+
+	/** structure of an eiger packet*/
+	typedef struct
+	{
+		unsigned char subframenum[4];
+		unsigned char missingpacket[2];
+		unsigned char portnum[1];
+		unsigned char dynamicrange[1];
+	} eiger_packet_header_t;
+
+	typedef struct
+	{
+		unsigned char framenum[6];
+		unsigned char packetnum[2];
+	} eiger_packet_footer_t;
+
+
 	char fName[MAX_STR_LENGTH]="";
 	int acquisitionIndex = -1;
 	int frameIndex= -1;
 	uint32_t index=0;
+	uint32_t subframenumber=-1;
 
 	int frameSize   = EIGER_ONE_GIGA_ONE_PACKET_SIZE * packetsPerFrame;
 	int dataSize 	= EIGER_ONE_GIGA_ONE_DATA_SIZE * packetsPerFrame;
+	int oneDataSize = EIGER_ONE_GIGA_ONE_DATA_SIZE;
 	if(tenGigaEnable){
 		frameSize  	= EIGER_TEN_GIGA_ONE_PACKET_SIZE * packetsPerFrame;
 		dataSize	= EIGER_TEN_GIGA_ONE_DATA_SIZE * packetsPerFrame;
+		oneDataSize = EIGER_TEN_GIGA_ONE_DATA_SIZE;
 	}
 	char* raw 		= new char[frameSize];
 	char* origVal 	= new char[frameSize];
@@ -1605,10 +1625,8 @@ int	slsReceiverTCPIPInterface::eiger_read_frame(){
 	else{
 		ret = OK;
 		/** read a frame */
-		receiverBase->readFrame(fName,&raw,index,startAcquisitionIndex,startFrameIndex);
-#ifdef VERBOSE
-		cout << "index:" << dec << index << endl;
-#endif
+		receiverBase->readFrame(fName,&raw,startAcquisitionIndex,startFrameIndex);
+
 		/**send garbage with -1 index to try again*/
 		if (raw == NULL){
 			startAcquisitionIndex = -1;
@@ -1619,6 +1637,21 @@ int	slsReceiverTCPIPInterface::eiger_read_frame(){
 
 		/**proper frame*/
 		else{//cout<<"**** got proper frame ******"<<endl;
+
+			eiger_packet_footer_t* wbuf_footer;
+			wbuf_footer = (eiger_packet_footer_t*)(raw + oneDataSize + sizeof(eiger_packet_header_t));
+			index =(uint32_t)(*( (uint64_t*) wbuf_footer));
+			index += (startFrameIndex-1);
+			if(dynamicrange == 32){
+				eiger_packet_header_t* wbuf_header;
+				wbuf_header = (eiger_packet_header_t*) raw;
+				subframenumber = *( (uint32_t*) wbuf_header->subframenum);
+			}
+
+#ifdef VERBOSE
+			cout << "index:" << dec << index << endl;
+			cout << "subframenumber:" << dec << subframenumber << endl;
+#endif
 
 			memcpy(origVal,raw,frameSize);
 			raw=NULL;
@@ -1740,6 +1773,7 @@ int	slsReceiverTCPIPInterface::eiger_read_frame(){
 			cout << "index:" << index << endl;
 			cout << "startAcquisitionIndex:" << startAcquisitionIndex << endl;
 			cout << "startFrameIndex:" << startFrameIndex << endl;
+			cout << "subframenumber:" << subframenumber << endl;
 #endif
 		}
 	}
@@ -1751,6 +1785,7 @@ int	slsReceiverTCPIPInterface::eiger_read_frame(){
 		cout << "frameIndex:" << frameIndex << endl;
 		cout << "startAcquisitionIndex:" << startAcquisitionIndex << endl;
 		cout << "startFrameIndex:" << startFrameIndex << endl;
+		cout << "subframenumber:" << subframenumber << endl;
 	}
 #endif
 
@@ -1773,6 +1808,7 @@ int	slsReceiverTCPIPInterface::eiger_read_frame(){
 		socket->SendDataOnly(fName,MAX_STR_LENGTH);
 		socket->SendDataOnly(&acquisitionIndex,sizeof(acquisitionIndex));
 		socket->SendDataOnly(&frameIndex,sizeof(frameIndex));
+		socket->SendDataOnly(&subframenumber,sizeof(subframenumber));
 		socket->SendDataOnly(retval,dataSize);
 	}
 

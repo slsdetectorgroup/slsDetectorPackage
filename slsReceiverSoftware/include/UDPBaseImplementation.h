@@ -297,11 +297,10 @@ class UDPBaseImplementation : protected virtual slsReceiverDefs, public UDPInter
 	 * Returns the buffer-current frame read by receiver
 	 * @param c pointer to current file name
 	 * @param raw address of pointer, pointing to current frame to send to gui
-	 * @param fnum frame number for eiger as it is not in the packet
 	 * @param startAcquisitionIndex is the start index of the acquisition
 	 * @param startFrameIndex is the start index of the scan
 	 */
-	void readFrame(char* c,char** raw, uint32_t &fnum, uint32_t &startAcquisitionIndex, uint32_t &startFrameIndex);
+	void readFrame(char* c,char** raw,  uint32_t &startAcquisitionIndex, uint32_t &startFrameIndex);
 
 	/**
 	 * Closes all files
@@ -359,7 +358,7 @@ protected:
 	 * Copy frames to gui
 	 * uses semaphore for nth frame mode
 	 */
-	void copyFrameToGui(char* startbuf[], uint32_t fnum=-1, char* buf=NULL);
+	void copyFrameToGui(char* startbuf[], char* buf=NULL);
 
 	/**
 	 * creates udp sockets
@@ -483,6 +482,7 @@ protected:
 	//// Could be done more fine-grained... TODO
 	// private:
  protected:
+
 	/** structure of an eiger packet*/
 	typedef struct
 	{
@@ -642,9 +642,6 @@ protected:
 
 	/** points to the filename to send to gui */
 	char* guiFileName;
-
-	/** temporary number for eiger frame number as its not included in the packet */
-	uint32_t guiFrameNumber;
 
 	/** send every nth frame to gui or only upon gui request*/
 	int nFrameToGui;

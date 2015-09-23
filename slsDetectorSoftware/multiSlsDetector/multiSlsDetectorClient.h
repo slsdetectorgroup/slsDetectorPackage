@@ -10,9 +10,9 @@
 using namespace std;
 
 int dummyCallback(detectorData* d, int p,void*) {
-cout << "got data "	<< p <<  endl;
-
-}
+	cout << "got data "	<< p <<  endl;
+	return 0;
+};
 
 class multiSlsDetectorClient  { 
 

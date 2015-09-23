@@ -235,7 +235,7 @@ public:
 
 	virtual int getChannel(char *data, int ix, int iy, int dr) {
 		uint32_t m=0, n = 0;
-		int linesperpacket,newix, newiy;
+		int linesperpacket,newix, newiy,origX;
 
 		//cout <<"ix:"<<ix<<" nx:"<<nx<<" iy:"<<iy<<" ny:"<<ny<<" datamap[iy][ix]:"<< dataMap[iy][ix] <<" datasize:"<< dataSize <<endl;
 		if (ix>=0 && ix<nx && iy>=0 && iy<ny && dataMap[iy][ix]>=0 && dataMap[iy][ix]<dataSize) {
@@ -247,8 +247,16 @@ public:
 			case 4: linesperpacket=4;break;
 			case 8: linesperpacket=2;break;
 			case 16: linesperpacket=1;break;
-			case 32: linesperpacket=0;break;/*dont know*/
+			case 32: linesperpacket=2;break;
 			}
+
+			//each byte is shared by 2 pixels for 4 bit mode
+			origX = ix;
+			if((dr == 4) && (ix%2))
+				ix--;
+
+
+			//check if missing packet, get to pixel at start of packet
 
 			//to get the starting of a packet, ix is divided by 512pixels because of 2 ports
 			newix = ix - (ix%512);
@@ -258,8 +266,6 @@ public:
 			else
 				newiy = (iy - (iy%linesperpacket));
 
-
-			//check if missing packet
 			header_t = (eiger_packet_header_t*)((char*)(data +(dataMap[newiy][newix]-8)));
 			if(*( (uint16_t*) header_t->missingpacket)==0xFFFF){
 				cprintf(RED,"missing packet\n");
@@ -269,14 +275,18 @@ public:
 
 		}else{
 			cprintf(RED,"outside limits\n");
-			 return -99;
+			return -99;
 		}
 
-		//little endian
+		//get proper data
+		n = ((uint32_t)(*((uint32_t*)(((char*)data)+(dataMap[iy][ix])))));
 
-		/*if(dr == 16) return ((uint16_t)(*((uint16_t*)(((char*)data)+(dataMap[iy][ix])))));*/
-		 n = ((uint32_t)(*((uint32_t*)(((char*)data)+(dataMap[iy][ix])))));
-		if(dr == 4)			return (n & 0xf)^m;
+		//each byte is shared by 2 pixels for 4 bit mode
+		if(dr == 4){
+			if(ix != origX)
+				return ((n & 0xf0)>>4)^m;
+			return (n & 0xf)^m;
+		}
 		else if(dr == 8)	return (n & 0xff)^m;
 		else if(dr == 16)	return (n & 0xffff)^m;
 		else				return (n & 0xffffffff)^m;

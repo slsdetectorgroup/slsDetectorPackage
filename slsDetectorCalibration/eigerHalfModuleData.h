@@ -20,7 +20,7 @@ public:
 
 
 	eigerHalfModuleData(int dr, int np, int bsize, int dsize, bool top, double c=0): slsReceiverData<uint32_t>(xpixels, ypixels, np, bsize),
-	xtalk(c), bufferSize(bsize), actualDataSize(dsize), dynamicRange(dr), numberOfPackets(np), top(top){
+	xtalk(c), bufferSize(bsize), actualDataSize(dsize), dynamicRange(dr), numberOfPackets(np), top(top),header_t(0), footer_t(0){
 
 
 		int **dMap;
@@ -36,7 +36,7 @@ public:
 		}
 
 		//Map
-		int totalNumberOfBytes = 1040 * dynamicRange * 16 *2; //for both 1g and 10g
+		int totalNumberOfBytes =  numberOfPackets * bufferSize;
 		int iPacket1 = 8;
 		int iPacket2 = (totalNumberOfBytes/2) + 8;
 		int iData1 = 0, iData2 = 0;
@@ -172,9 +172,9 @@ public:
 	     \returns frame number
 	 */
 	int getFrameNumber(char *buff){
-		return(*(unsigned int*)(((eiger_packet_header *)((char*)buff))->num1));
+		footer_t = (eiger_packet_footer_t*)(buff + actualDataSize + sizeof(eiger_packet_header_t));
+		return ((uint32_t)(*( (uint64_t*) footer_t)));
 	};
-
 
 
 
@@ -187,30 +187,8 @@ public:
      	 \returns packet number
 	 */
 	int getPacketNumber(char *buff){
-#ifdef VERY_DEBUG
-		cprintf(RED, "\n0x%x - %d - %d",
-				(*(uint8_t*)(((eiger_packet_header *)((char*)(buff)))->num3)),//port and dr
-				(*(uint8_t*)(((eiger_packet_header *)((char*)(buff)))->num4)),//non 32 bit packet#
-				(*(uint16_t*)(((eiger_packet_header *)((char*)(buff)))->num2)));//32 bit packet#
-#endif
-		return ((*(uint16_t*)(((eiger_packet_header *)((char*)buff))->num2)));
-
-		/*
-		//both ports have same packet numbers, so reconstruct
-		//16 bit packet number written in num2 for 32 bit mode
-
-		if(dynamicRange == 32){
-			if((*(uint8_t*)(((eiger_packet_header *)((char*)buff))->num3)) & 0x1)
-				return ((*(uint16_t*)(((eiger_packet_header *)((char*)buff))->num2))+(numberOfPackets/2) +1);
-			else
-				return ((*(uint16_t*)(((eiger_packet_header *)((char*)buff))->num2))+1);
-		}
-		else{
-			if((*(uint8_t*)(((eiger_packet_header *)((char*)buff))->num3)) &0x1)
-				return ((*(uint8_t*)(((eiger_packet_header *)((char*)buff))->num4))+(numberOfPackets/2) +1);
-			else
-				return ((*(uint8_t*)(((eiger_packet_header *)((char*)buff))->num4))+1);
-		}*/
+		footer_t = (eiger_packet_footer_t*)(buff + actualDataSize + sizeof(eiger_packet_header_t));
+		return(*( (uint16_t*) footer_t->packetnum));
 	};
 
 
@@ -220,11 +198,9 @@ public:
      	 \returns dynamic range
 	 */
 	static int getDynamicRange(char *buff){
-#ifdef VERY_DEBUG
-		cprintf(RED, "\n0x%x",
-				(*(uint8_t*)(((eiger_packet_header *)((char*)(buff)))->num3)));
-#endif
-		return (*(uint8_t*)(((eiger_packet_header *)((char*)buff))->num3))  >> 2;
+		eiger_packet_header_t* header_t;
+		header_t = (eiger_packet_header_t*)buff;
+		return(*( (uint8_t*) header_t->dynamicrange));
 	};
 
 
@@ -259,7 +235,6 @@ public:
 
 	virtual int getChannel(char *data, int ix, int iy, int dr) {
 		uint32_t m=0, n = 0;
-		uint8_t t;
 		int linesperpacket,newix, newiy;
 
 		//cout <<"ix:"<<ix<<" nx:"<<nx<<" iy:"<<iy<<" ny:"<<ny<<" datamap[iy][ix]:"<< dataMap[iy][ix] <<" datasize:"<< dataSize <<endl;
@@ -283,13 +258,14 @@ public:
 			else
 				newiy = (iy - (iy%linesperpacket));
 
-			t = (*(uint8_t*)(((eiger_packet_header *)((char*)(data +(dataMap[newiy][newix]-8))))->num3));
-			//cprintf(GREEN,"num3 0x%x\n",t);
+
 			//check if missing packet
-			if(t & 0x02){
+			header_t = (eiger_packet_header_t*)((char*)(data +(dataMap[newiy][newix]-8)));
+			if(*( (uint16_t*) header_t->missingpacket)==0xFFFF){
 				cprintf(RED,"missing packet\n");
 				return -1;
 			}
+
 
 		}else{
 			cprintf(RED,"outside limits\n");
@@ -341,33 +317,21 @@ private:
 	bool top;
 
 
-	/** structure of an eiger packet for 1g*/
-	typedef struct
-	{
+	/** structure of an eiger packet*/
+	typedef struct{
 		unsigned char subframenum[4];
-		unsigned char missingpacket[1];
-		unsigned char random[1];
+		unsigned char missingpacket[2];
 		unsigned char portnum[1];
 		unsigned char dynamicrange[1];
-		unsigned char data[1024];
-		unsigned char framenumbig[2];
-		unsigned char framenum[4];
-		unsigned char packetnum[2];
-	} eiger_packet_1g;
+	} eiger_packet_header_t;
 
-	/** structure of an eiger packet for 10g*/
-	typedef struct
-	{
-		unsigned char subframenum[4];
-		unsigned char missingpacket[1];
-		unsigned char random[1];
-		unsigned char portnum[1];
-		unsigned char dynamicrange[1];
-		unsigned char data[4096];
-		unsigned char framenumbig[2];
-		unsigned char framenum[4];
+	typedef struct{
+		unsigned char framenum[6];
 		unsigned char packetnum[2];
-	} eiger_packet_10g;
+	} eiger_packet_footer_t;
+
+	eiger_packet_header_t* header_t;
+	eiger_packet_footer_t* footer_t;
 };
 
 

@@ -39,10 +39,11 @@ slsReceiverTCPIPInterface::slsReceiverTCPIPInterface(int &success, UDPInterface*
 				shortFrame(-1),
 				packetsPerFrame(GOTTHARD_PACKETS_PER_FRAME),
 				dynamicrange(16),
-				socket(NULL),
 				killTCPServerThread(0),
-				tenGigaEnable(0), portNumber(DEFAULT_PORTNO+2),
-				bottom(bot){
+				tenGigaEnable(0),
+				portNumber(DEFAULT_PORTNO+2),
+				bottom(bot),
+				socket(NULL){
 
 	int port_no=portNumber;
 	if(receiverBase == NULL) receiverBase = 0;

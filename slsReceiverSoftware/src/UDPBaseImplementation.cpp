@@ -1399,12 +1399,6 @@ int UDPBaseImplementation::startListening(){ FILE_LOG(logDEBUG) << __AT__ << " s
 
 
 int UDPBaseImplementation::startWriting(){ FILE_LOG(logDEBUG) << __AT__ << " starting";
-	int ithread = currentWriterThreadIndex;
-#ifdef VERYVERBOSE
-	cout << ithread << "In startWriting()" <<endl;
-#endif
-
-
 
 	return OK;
 }
@@ -1568,94 +1562,6 @@ void UDPBaseImplementation::stopWriting(int ithread, char* wbuffer[]){ FILE_LOG(
 void UDPBaseImplementation::writeToFile_withoutCompression(char* buf,int numpackets, uint32_t framenum){
 	FILE_LOG(logDEBUG) << __FILE__ << "::" << __func__ << " starting";
 
-
-
-	int packetsToSave, offset,lastpacket;
-	uint32_t tempframenum = framenum;
-
-	//file write
-	if((enableFileWrite) && (sfilefd)){
-
-		offset = HEADER_SIZE_NUM_TOT_PACKETS;
-		if(myDetectorType == EIGER)
-			offset += EIGER_HEADER_LENGTH;
-		while(numpackets > 0){
-
-			//for progress and packet loss calculation(new files)
-			if(myDetectorType == EIGER);
-			else if ((myDetectorType == GOTTHARD) && (shortFrame == -1))
-				tempframenum = (((((uint32_t)(*((uint32_t*)(buf + HEADER_SIZE_NUM_TOT_PACKETS))))+1)& (frameIndexMask)) >> frameIndexOffset);
-			else
-				tempframenum = ((((uint32_t)(*((uint32_t*)(buf + HEADER_SIZE_NUM_TOT_PACKETS))))& (frameIndexMask)) >> frameIndexOffset);
-
-			if(numWriterThreads == 1)
-				currframenum = tempframenum;
-			else{
-				if(tempframenum > currframenum)
-					currframenum = tempframenum;
-			}
-#ifdef VERYDEBUG
-			cout << "tempframenum:" << dec << tempframenum << " curframenum:" << currframenum << endl;
-#endif
-
-			//lock
-			if(numWriterThreads > 1)
-				pthread_mutex_lock(&write_mutex);
-
-
-			//to create new file when max reached
-			packetsToSave = maxPacketsPerFile - packetsInFile;
-			if(packetsToSave > numpackets)
-				packetsToSave = numpackets;
-/**next time offset is still plus header length*/
-			fwrite(buf+offset, 1, packetsToSave * onePacketSize, sfilefd);
-			packetsInFile += packetsToSave;
-			packetsCaught += packetsToSave;
-			totalPacketsCaught += packetsToSave;
-
-
-			//new file
-			if(packetsInFile >= maxPacketsPerFile){
-				//for packet loss
-				lastpacket = (((packetsToSave - 1) * onePacketSize) + offset);
-				if(myDetectorType == EIGER);
-				else if ((myDetectorType == GOTTHARD) && (shortFrame == -1))
-					tempframenum = (((((uint32_t)(*((uint32_t*)(buf + lastpacket))))+1)& (frameIndexMask)) >> frameIndexOffset);
-				else
-					tempframenum = ((((uint32_t)(*((uint32_t*)(buf + lastpacket))))& (frameIndexMask)) >> frameIndexOffset);
-
-				if(numWriterThreads == 1)
-					currframenum = tempframenum;
-				else{
-					if(tempframenum > currframenum)
-						currframenum = tempframenum;
-				}
-#ifdef VERYDEBUG
-				cout << "tempframenum:" << dec << tempframenum << " curframenum:" << currframenum << endl;
-#endif
-				//create
-				createNewFile();
-			}
-
-			//unlock
-			if(numWriterThreads > 1)
-				pthread_mutex_unlock(&write_mutex);
-
-
-			offset += (packetsToSave * onePacketSize);
-			numpackets -= packetsToSave;
-		}
-
-	}
-	else{
-		if(numWriterThreads > 1)
-			pthread_mutex_lock(&write_mutex);
-		packetsInFile += numpackets;
-		packetsCaught += numpackets;
-		totalPacketsCaught += numpackets;
-		if(numWriterThreads > 1)
-			pthread_mutex_unlock(&write_mutex);
-	}
 }
 
 
@@ -1674,97 +1580,6 @@ void UDPBaseImplementation::writeToFile_withoutCompression(char* buf,int numpack
 void UDPBaseImplementation::handleDataCompression(int ithread, char* wbuffer[], char* data, int xmax, int ymax, int &nf){
 	FILE_LOG(logDEBUG) << __FILE__ << "::" << __func__ << " starting";
 
-
-#if defined(MYROOT1) && defined(ALLFILE_DEBUG)
-				writeToFile_withoutCompression(wbuf[0], numpackets,currframenum);
-#endif
-
-				eventType thisEvent = PEDESTAL;
-				int ndata;
-				char* buff = 0;
-				int npackets = (uint16_t)(*((uint16_t*)wbuffer[0]));
-				data = wbuffer[0]+ HEADER_SIZE_NUM_TOT_PACKETS;
-				int remainingsize = npackets * onePacketSize;
-				int np;
-				int once = 0;
-				double tot, tl, tr, bl, br;
-				int xmin = 1, ymin = 1, ix, iy;
-
-
-				while(buff = receiverdata[ithread]->findNextFrame(data,ndata,remainingsize)){
-					np = ndata/onePacketSize;
-
-					//cout<<"buff framnum:"<<ithread <<":"<< ((((uint32_t)(*((uint32_t*)buff)))& (frameIndexMask)) >> frameIndexOffset)<<endl;
-
-					if ((np == packetsPerFrame) && (buff!=NULL)){
-						if(nf == 1000) cout << "Thread " << ithread << ": pedestal done " << endl;
-
-
-						singlePhotonDet[ithread]->newFrame();
-
-						//only for moench
-						if(commonModeSubtractionEnable){
-							for(ix = xmin - 1; ix < xmax+1; ix++){
-								for(iy = ymin - 1; iy < ymax+1; iy++){
-									thisEvent = singlePhotonDet[ithread]->getEventType(buff, ix, iy, 0);
-								}
-							}
-						}
-
-
-						for(ix = xmin - 1; ix < xmax+1; ix++)
-							for(iy = ymin - 1; iy < ymax+1; iy++){
-								thisEvent=singlePhotonDet[ithread]->getEventType(buff, ix, iy, commonModeSubtractionEnable);
-								if (nf>1000) {
-									tot=0;
-									tl=0;
-									tr=0;
-									bl=0;
-									br=0;
-									if (thisEvent==PHOTON_MAX) {
-										receiverdata[ithread]->getFrameNumber(buff);
-										//iFrame=receiverdata[ithread]->getFrameNumber(buff);
-#ifdef MYROOT1
-										myTree[ithread]->Fill();
-										//cout << "Fill in event: frmNr: " << iFrame <<  " ix " << ix << " iy " << iy << " type " <<  thisEvent << endl;
-#else
-										pthread_mutex_lock(&write_mutex);
-										if((enableFileWrite) && (sfilefd))
-											singlePhotonDet[ithread]->writeCluster(sfilefd);
-										pthread_mutex_unlock(&write_mutex);
-#endif
-									}
-								}
-							}
-
-						nf++;
-#ifndef ALLFILE
-						pthread_mutex_lock(&progress_mutex);
-						packetsInFile += packetsPerFrame;
-						packetsCaught += packetsPerFrame;
-						totalPacketsCaught += packetsPerFrame;
-						if(packetsInFile >= maxPacketsPerFile)
-							createNewFile();
-						pthread_mutex_unlock(&progress_mutex);
-
-#endif
-						if(!once){
-							copyFrameToGui(NULL,buff);
-							once = 1;
-						}
-					}
-
-					remainingsize -= ((buff + ndata) - data);
-					data = buff + ndata;
-					if(data > (wbuffer[0] + HEADER_SIZE_NUM_TOT_PACKETS + npackets * onePacketSize) )
-						cout <<" **************ERROR SHOULD NOT COME HERE, Error 142536!"<<endl;
-
-				}
-
-				while(!fifoFree[0]->push(wbuffer[0]));
-#ifdef VERYVERBOSE
-				cout<<"buf freed:"<<(void*)wbuffer[0]<<endl;
-#endif
 
 
 }

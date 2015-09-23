@@ -79,7 +79,7 @@ template<typename Element>
 bool CircularFifo<Element>::push(Element*& item_)
 {
 
-   int nextTail = increment(tail);
+   unsigned int nextTail = increment(tail);
    if(nextTail != head)
    {
       array[tail] = item_;

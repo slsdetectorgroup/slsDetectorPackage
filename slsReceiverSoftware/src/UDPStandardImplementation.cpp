@@ -1111,7 +1111,6 @@ int UDPStandardImplementation::shutDownUDPSockets(){
 
 
 
-// TODO: add a destroyListeningThreads
 int UDPStandardImplementation::createListeningThreads(bool destroy){
 	FILE_LOG(logDEBUG) << __AT__ << " called";
 
@@ -1656,7 +1655,7 @@ void UDPStandardImplementation::startReadout(){
 		/********************************************/
 		//usleep(10000000);
 		//usleep(2000000);
-		int prev = totalPacketsCaught;
+		uint32_t prev = totalPacketsCaught;
 		usleep(50000);
 		while(prev!=totalPacketsCaught){
 			prev=totalPacketsCaught;
@@ -1708,9 +1707,6 @@ int UDPStandardImplementation::startListening(){
 	int lastpacketoffset, expected, rc,packetcount, maxBufferSize, carryonBufferSize;
 	uint32_t lastframeheader;// for moench to check for all the packets in last frame
 	char* tempchar = NULL;
-
-	uint32_t prenum=0;
-
 
 	while(1){
 		//variables that need to be checked/set before each acquisition
@@ -1964,9 +1960,8 @@ int UDPStandardImplementation::startWriting(){
 	}
 
 
-	int LAST_PACKET_VALUE;
+	uint32_t LAST_PACKET_VALUE;
 
-	eiger_packet_header_t* wbuf_header=0;
 	eiger_packet_footer_t* wbuf_footer=0;
 
 	eiger_packet_header_t* tempframe_header=0;
@@ -1974,7 +1969,6 @@ int UDPStandardImplementation::startWriting(){
 
 	eiger_packet_header_t* blankframe_header=0;
 	unsigned char* blankframe_data=0;
-	eiger_packet_footer_t* blankframe_footer=0;
 
 	//last packet numbers for different dynamic ranges
 	if(myDetectorType == EIGER){
@@ -2252,7 +2246,7 @@ int UDPStandardImplementation::startWriting(){
 									blankframe_header = (eiger_packet_header_t*) blankframe[blankoffset];
 									if (*( (uint16_t*) tempframe_header->missingpacket)!= missingPacketValue){
 										cprintf(BG_RED, "wrong blank mismatch num4 earlier2! "
-												"i:%d pnum:%d fnum:%d missingpacket:0x%x actual missingpacket:0x%x add:0x%x\n",
+												"i:%d pnum:%d fnum:%d missingpacket:0x%x actual missingpacket:0x%x add:0x%p\n",
 												i,tempoffset[i],tempframenum[i],
 												*( (uint16_t*) tempframe_header->missingpacket),
 												*( (uint16_t*) blankframe_header->missingpacket),
@@ -2303,7 +2297,7 @@ int UDPStandardImplementation::startWriting(){
 									blankframe_header = (eiger_packet_header_t*) blankframe[blankoffset];
 									if (*( (uint16_t*) tempframe_header->missingpacket)!= missingPacketValue){
 										cprintf(BG_RED, "correct blank mismatch num4 earlier2! "
-												"i:%d pnum:%d fnum:%d missingpacket:0x%x actual missingpacket:0x%x add:0x%x\n",
+												"i:%d pnum:%d fnum:%d missingpacket:0x%x actual missingpacket:0x%x add:0x%p\n",
 												i,tempoffset[i],tempframenum[i],
 												*( (uint16_t*) tempframe_header->missingpacket),
 												*( (uint16_t*) blankframe_header->missingpacket),
@@ -2320,7 +2314,7 @@ int UDPStandardImplementation::startWriting(){
 									blankoffset ++;
 								}
 								//add current packet
-								if(currentpacketheader[i] != (tempoffset[i]-(i*packetsPerFrame/numListeningThreads))+1){
+								if(currentpacketheader[i] != (uint32_t)(tempoffset[i]-(i*packetsPerFrame/numListeningThreads))+1){
 									cprintf(BG_RED, "correct pnum mismatch earlier! tempoffset[%d]:%d pnum:%d fnum:%d rfnum:%d\n",
 											i,tempoffset[i],currentpacketheader[i],
 											tempframenum[i],(uint32_t)(*( (uint64_t*) wbuf_footer)));
@@ -2335,7 +2329,7 @@ int UDPStandardImplementation::startWriting(){
 										i,*( (uint16_t*) tempframe_footer->packetnum),tempoffset[i]);
 #endif
 								if(*( (uint16_t*) tempframe_footer->packetnum)!= (tempoffset[i]-(i*packetsPerFrame/numListeningThreads))+1){
-									cprintf(BG_RED, "pnum mismatch num4 earlier! i:%d pnum:%d pnum orig:%d fnum:%d add:0x%x\n",
+									cprintf(BG_RED, "pnum mismatch num4 earlier! i:%d pnum:%d pnum orig:%d fnum:%d add:0x%p\n",
 											i,*( (uint16_t*) tempframe_footer->packetnum),*( (uint16_t*) wbuf_footer->packetnum),
 											tempframenum[i],(void*)(tempbuffer[tempoffset[i]]));
 									exit(-1);
@@ -2815,7 +2809,7 @@ void UDPStandardImplementation::writeToFile_withoutCompression(char* buf[],int n
 			cprintf(GREEN,"totalPacketsCaught:%d\n", totalPacketsCaught);
 #endif
 			//new file
-			if(packetsInFile >= maxPacketsPerFile){
+			if(packetsInFile >= (uint32_t)maxPacketsPerFile){
 
 				//for packet loss, because currframenum is the latest one for eiger
 				if(myDetectorType != EIGER){
@@ -2870,7 +2864,7 @@ void UDPStandardImplementation::writeToFile_withoutCompression(char* buf[],int n
 
 
 void UDPStandardImplementation::handleWithoutDataCompression(int ithread, char* wbuffer[],int npackets){
-	int i,j, missingpacket,port = 0, pnuminc;
+	int i, missingpacket,port = 0;
 
 
 	if (cbAction < DO_EVERYTHING){
@@ -3069,7 +3063,7 @@ void UDPStandardImplementation::handleDataCompression(int ithread, char* wbuffer
 						packetsInFile += packetsPerFrame;
 						packetsCaught += packetsPerFrame;
 						totalPacketsCaught += packetsPerFrame;
-						if(packetsInFile >= maxPacketsPerFile)
+						if(packetsInFile >= (uint32_t)maxPacketsPerFile)
 							createNewFile();
 						pthread_mutex_unlock(&progress_mutex);
 

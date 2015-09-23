@@ -229,10 +229,10 @@ int    ResetDaqForGui();
 static void* DataStartAcquireThread(void *this_pointer);
 
 /**	This is called by the detector class to copy the data it jus acquired */
-static int GetDataCallBack(detectorData *data, int fIndex, void *this_pointer);
+static int GetDataCallBack(detectorData *data, int fIndex, int subIndex, void *this_pointer);
 
 /**	This is called by the GetDataCallBack function to copy the data */
-int GetData(detectorData *data, int fIndex);
+int GetData(detectorData *data, int fIndex, int subIndex);
 
 /** This is called by detector class when acquisition is finished
  * @param currentProgress current progress of measurement

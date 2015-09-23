@@ -735,8 +735,8 @@ void* qDrawPlot::DataStartAcquireThread(void *this_pointer){
 //-------------------------------------------------------------------------------------------------------------------------------------------------
 
 
-int qDrawPlot::GetDataCallBack(detectorData *data, int fIndex, void *this_pointer){
-	((qDrawPlot*)this_pointer)->GetData(data,fIndex);
+int qDrawPlot::GetDataCallBack(detectorData *data, int fIndex, int subIndex, void *this_pointer){
+	((qDrawPlot*)this_pointer)->GetData(data,fIndex, subIndex);
 	return 0;
 }
 
@@ -744,10 +744,11 @@ int qDrawPlot::GetDataCallBack(detectorData *data, int fIndex, void *this_pointe
 //-------------------------------------------------------------------------------------------------------------------------------------------------
 
 
-int qDrawPlot::GetData(detectorData *data,int fIndex){
+int qDrawPlot::GetData(detectorData *data,int fIndex, int subIndex){
 #ifdef VERYVERBOSE
 	cout << "******Entering GetDatafunction********" << endl;
 	cout << "fIndex " << fIndex << endl;
+	cout << "subIndex " << subIndex << endl;
 	cout << "fname " << data->fileName << endl;
 	cout << "npoints " << data->npoints << endl;
 	cout << "npy " << data->npy << endl;
@@ -775,11 +776,14 @@ int qDrawPlot::GetData(detectorData *data,int fIndex){
 		if(fIndex!=-1){
 			currentFrameIndex=fIndex;
 			sprintf(temp_title,"#%d",fIndex);
+			if((myDet->getDetectorsType()==slsDetectorDefs::EIGER) && (subIndex != -1))
+				sprintf(temp_title,"#%d  %d",fIndex,subIndex);
 		}else{
 			if(fileSaveEnable)	strcpy(temp_title,"#%d");
 			else		sprintf(temp_title,"",currentFrame);
 		}
-
+		if(subIndex != -1)
+			sprintf(temp_title,"#%d  %d",fIndex,subIndex);
 
 		//Plot Disabled
 		if(!plotEnable) 	return 0;

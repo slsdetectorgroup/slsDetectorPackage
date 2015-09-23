@@ -6705,7 +6705,7 @@ int slsDetector::resetFramesCaught(){
 
 
 
-int* slsDetector::readFrameFromReceiver(char* fName,  int &acquisitionIndex, int &frameIndex){
+int* slsDetector::readFrameFromReceiver(char* fName,  int &acquisitionIndex, int &frameIndex, int &subFrameIndex){
 	int fnum=F_READ_RECEIVER_FRAME;
 	int nel=thisDetector->dataBytes/sizeof(int);
 	int* retval=new int[nel];
@@ -6732,6 +6732,8 @@ int* slsDetector::readFrameFromReceiver(char* fName,  int &acquisitionIndex, int
 				n=dataSocket->ReceiveDataOnly(fName,MAX_STR_LENGTH);
 				n=dataSocket->ReceiveDataOnly(&acquisitionIndex,sizeof(acquisitionIndex));
 				n=dataSocket->ReceiveDataOnly(&frameIndex,sizeof(frameIndex));
+				if(thisDetector->myDetectorType == EIGER)
+					n=dataSocket->ReceiveDataOnly(&subFrameIndex,sizeof(subFrameIndex));
 				n=dataSocket->ReceiveDataOnly(retval,thisDetector->dataBytes);
 
 #ifdef VERBOSE

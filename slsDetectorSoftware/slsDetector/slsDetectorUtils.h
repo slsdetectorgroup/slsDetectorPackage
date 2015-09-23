@@ -641,9 +641,10 @@ virtual int resetFramesCaught()=0;
  * @param fName file name of current frame()
  * @param acquisitionIndex current acquisition index
  * @param frameIndex current frame index (for each scan)
+ * @param subFrameIndex current sub frame index (for 32 bit mode for eiger)
  /returns a frame read from recever
 */
-virtual int* readFrameFromReceiver(char* fName, int &acquisitionIndex, int &frameIndex)=0;
+virtual int* readFrameFromReceiver(char* fName, int &acquisitionIndex, int &frameIndex, int &subFrameIndex)=0;
 
 
 /**

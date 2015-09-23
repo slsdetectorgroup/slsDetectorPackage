@@ -268,7 +268,7 @@ int64_t slsDetectorUsers::getThisSoftwareVersion(){
 
 
 
-void slsDetectorUsers::registerDataCallback(int( *userCallback)(detectorData*, int, void*), void *pArg){
+void slsDetectorUsers::registerDataCallback(int( *userCallback)(detectorData*, int, int, void*), void *pArg){
   myDetector->registerDataCallback(userCallback,pArg);
 }
 

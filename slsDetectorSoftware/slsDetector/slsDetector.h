@@ -1554,9 +1554,10 @@ class slsDetector : public slsDetectorUtils, public energyConversion {
   * @param fName file name of current frame()
   * @param acquisitionIndex current acquisition index
   * @param frameIndex current frame index (for each scan)
+  * @param subFrameIndex current sub frame index (for 32 bit mode for eiger)
   /returns a frame read from recever
  */
- int* readFrameFromReceiver(char* fName, int &acquisitionIndex, int &frameIndex);
+ int* readFrameFromReceiver(char* fName, int &acquisitionIndex, int &frameIndex, int &subFrameIndex);
 
   /** Locks/Unlocks the connection to the receiver
       /param lock sets (1), usets (0), gets (-1) the lock

@@ -4584,7 +4584,7 @@ int multiSlsDetector::resetFramesCaught() {
 
 
 
-int* multiSlsDetector::readFrameFromReceiver(char* fName,  int &acquisitionIndex, int &frameIndex){
+int* multiSlsDetector::readFrameFromReceiver(char* fName,  int &acquisitionIndex, int &frameIndex, int &subFrameIndex){
 	int nel=(thisMultiDetector->dataBytes)/sizeof(int);
 	if(nel <= 0){
 		cout << "Multislsdetector databytes not valid :" << thisMultiDetector->dataBytes << endl;
@@ -4610,7 +4610,7 @@ int* multiSlsDetector::readFrameFromReceiver(char* fName,  int &acquisitionIndex
 	for (int id=0; id<thisMultiDetector->numberOfDetectors; id++) {
 		if (detectors[id]) {
 			n=detectors[id]->getDataBytes();
-			retdet=detectors[id]->readFrameFromReceiver(fName, acquisitionIndex, frameIndex);
+			retdet=detectors[id]->readFrameFromReceiver(fName, acquisitionIndex, frameIndex, subFrameIndex);
 			if(detectors[id]->getErrorMask())
 			  setErrorMask(getErrorMask()|(1<<id));
 			if (retdet){

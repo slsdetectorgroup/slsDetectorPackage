@@ -1570,7 +1570,7 @@ int	slsReceiverTCPIPInterface::eiger_read_frame(){
 	int frameIndex= -1;
 	int i;
 	uint32_t index=0;
-
+	uint32_t subindex=-1;
 	int frameSize   = EIGER_ONE_GIGA_ONE_PACKET_SIZE * packetsPerFrame;
 	int dataSize 	= EIGER_ONE_GIGA_ONE_DATA_SIZE * packetsPerFrame;
 	if(tenGigaEnable){
@@ -1629,11 +1629,12 @@ int	slsReceiverTCPIPInterface::eiger_read_frame(){
 			int linesperpacket = (16*1/dynamicrange);// 16:1 line, 8:2 lines, 4:4 lines, 32: 0.5
 			int numbytesperlineperport=(EIGER_PIXELS_IN_ONE_ROW/EIGER_MAX_PORTS)*dynamicrange/8;//16:1024,8:512,4:256,32:2048
 			int datapacketlength = EIGER_ONE_GIGA_ONE_DATA_SIZE;
-			int total_num_bytes = 1040*(16*dynamicrange)*2;
+			int total_num_bytes = EIGER_ONE_GIGA_ONE_PACKET_SIZE *(EIGER_ONE_GIGA_CONSTANT *dynamicrange)*2;
 
 			if(tenGigaEnable){
 				linesperpacket = (16*4/dynamicrange);// 16:4 line, 8:8 lines, 4:16 lines, 32: 2
 				datapacketlength = EIGER_TEN_GIGA_ONE_DATA_SIZE;
+				total_num_bytes = EIGER_TEN_GIGA_ONE_PACKET_SIZE*(EIGER_TEN_GIGA_CONSTANT*dynamicrange)*2;
 			}
 			//if 1GbE, one line is split into two packets for 32 bit mode, so its special
 			else if(dynamicrange == 32){
@@ -1749,6 +1750,7 @@ int	slsReceiverTCPIPInterface::eiger_read_frame(){
 		cout << "frameIndex:" << frameIndex << endl;
 		cout << "startAcquisitionIndex:" << startAcquisitionIndex << endl;
 		cout << "startFrameIndex:" << startFrameIndex << endl;
+
 	}
 #endif
 
@@ -1771,6 +1773,7 @@ int	slsReceiverTCPIPInterface::eiger_read_frame(){
 		socket->SendDataOnly(fName,MAX_STR_LENGTH);
 		socket->SendDataOnly(&acquisitionIndex,sizeof(acquisitionIndex));
 		socket->SendDataOnly(&frameIndex,sizeof(frameIndex));
+		socket->SendDataOnly(&subindex,sizeof(subindex));
 		socket->SendDataOnly(retval,dataSize);
 	}
 

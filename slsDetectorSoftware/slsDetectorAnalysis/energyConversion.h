@@ -5,9 +5,9 @@
 #define MYROOT
 #endif
 
-#ifndef MYROOT
+//#ifndef MYROOT
 #include "sls_detector_defs.h"
-#endif
+//#endif
 
 #include <string>
 

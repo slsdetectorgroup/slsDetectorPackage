@@ -1,11 +1,13 @@
 #ifndef ENERGYCONVERSION_H
 #define ENERGYCONVERSION_H
 
-#ifdef __CINT
+#ifdef __CINT__
 #define MYROOT
+#define __cplusplus
 #endif
 
 //#ifndef MYROOT
+//#include "sls_receiver_defs.h"
 #include "sls_detector_defs.h"
 //#endif
 
@@ -18,9 +20,9 @@ using namespace std;
 
 
 class energyConversion 
-#ifndef MYROOT
+//#ifndef MYROOT
 : private virtual slsDetectorDefs
-#endif
+  //#endif
 {
  public:
   /** default constrauctor */

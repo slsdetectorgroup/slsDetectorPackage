@@ -26,7 +26,8 @@ int *detectorChips=NULL;
 int *detectorChans=NULL;
 dacs_t *detectorDacs=NULL;
 dacs_t *detectorAdcs=NULL;
-
+int* detectorGain = NULL;
+int* detectorOffset = NULL;
 
 int eiger_highvoltage = 0;
 int eiger_iodelay = 0;
@@ -53,6 +54,8 @@ int dst_requested[32] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 //char  Module_dac_names[16][10]= {"SvP","Vtr","Vrf","Vrs","SvN","Vtgstv","Vcmp_ll","Vcmp_lr","cal","Vcmp_rl","rxb_rb","rxb_lb","Vcmp_rr","Vcp","Vcn","Vis"};;
 
 int default_dac_values[16] = {0,2480,3300,1400,4000,2556,1000,1000,4000,1000,1000,1000,1000,200,2000,1550};
+int default_gain_values[3] = {-314800,-314800,-314800};
+int default_offset_values[3] = {3714000,3714000,3714000};
 
 
 enum masterFlags  masterMode=IS_SLAVE;
@@ -80,12 +83,16 @@ int initDetector(){
 	detectorChans=malloc(n*NCHIP*NCHAN*sizeof(int));
 	detectorDacs=malloc(n*NDAC*sizeof(dacs_t));
 	detectorAdcs=malloc(n*NADC*sizeof(dacs_t));
+	detectorGain=malloc(n*NGAIN*sizeof(int));
+	detectorOffset=malloc(n*NOFFSET*sizeof(int));
 #ifdef VERBOSE
 	printf("modules from 0x%x to 0x%x\n",detectorModules, detectorModules+n);
 	printf("chips from 0x%x to 0x%x\n",detectorChips, detectorChips+n*NCHIP);
 	printf("chans from 0x%x to 0x%x\n",detectorChans, detectorChans+n*NCHIP*NCHAN);
 	printf("dacs from 0x%x to 0x%x\n",detectorDacs, detectorDacs+n*NDAC);
 	printf("adcs from 0x%x to 0x%x\n",detectorAdcs, detectorAdcs+n*NADC);
+	printf("gains from 0x%x to 0x%x\n",detectorGain, detectorGain+n*NGAIN);
+	printf("offsets from 0x%x to 0x%x\n",detectorOffset, detectorOffset+n*NOFFSET);
 #endif
 	for (imod=0; imod<n; imod++) {
 		(detectorModules+imod)->dacs=detectorDacs+imod*NDAC;
@@ -102,6 +109,10 @@ int initDetector(){
 		(detectorModules+imod)->reg=0;
 		/* initialize registers, dacs, retrieve sn, adc values etc */
 	}
+	for(i=0;i<NGAIN;i++)
+		detectorGain[i] = default_gain_values[(int)STANDARD];
+	for(i=0;i<NOFFSET;i++)
+		detectorOffset[i] = default_offset_values[(int)STANDARD];
 	thisSettings = STANDARD;/**UNITIALIZED*/
 	/*sChan=noneSelected;
   sChip=noneSelected;
@@ -124,14 +135,13 @@ int initDetector(){
 	for(i=0;i<(detectorModules)->ndac;i++)
 		setDAC((enum detDacIndex)i,default_dac_values[i],(detectorModules)->module,0,retval);
 
-
 	//setting default measurement parameters
 	setTimer(FRAME_NUMBER,1);
 	setTimer(ACQUISITION_TIME,1E9);
 	setTimer(SUBFRAME_ACQUISITION_TIME,DEFAULT_SUBFRAME_EXPOSURE_VAL);
 	setTimer(FRAME_PERIOD,1E9);
 	setDynamicRange(16);
-	setThresholdEnergy(8000,0);
+	eiger_photonenergy = -1;
 	setReadOutFlags(NONPARALLEL);
 	setSpeed(0,1);//clk_devider,half speed
 	setHighVolage(0,0);
@@ -376,23 +386,30 @@ int enableTenGigabitEthernet(int val){
 }
 
 
-int setModule(sls_detector_module myMod){
+int setModule(sls_detector_module myMod, int* gain, int* offset){
 	int retval[2];
+	int i;
+
 	//#ifdef VERBOSE
 	printf("Setting module with settings %d\n",myMod.reg);
 	//#endif
-	int i;
-	for(i=0;i<myMod.ndac;i++)
-		setDAC((enum detDacIndex)i,myMod.dacs[i],myMod.module,0,retval);
 
+	//set the settings variable
+	setSettings( (enum detectorSettings)myMod.reg,-1);
 
-	//	thisSettings = (enum detectorSettings)myMod.reg;
-	//	thisSettings = 0;
+	//set the gains and offset variables locally
+	for(i=0;i<NGAIN;i++)
+		detectorGain[i] = gain[i];
+	for(i=0;i<NOFFSET;i++)
+		detectorOffset[i] = offset[i];
 
+	//copy module locally
 	if (detectorModules)
 		copyModule(detectorModules,&myMod);
 
-	setSettings( (enum detectorSettings)myMod.reg,-1); // put the settings in the module register?!?!?
+	//set dac values
+	for(i=0;i<myMod.ndac;i++)
+		setDAC((enum detDacIndex)i,myMod.dacs[i],myMod.module,0,retval);
 
 	//includ gap pixels
 	unsigned int tt[263680];
@@ -409,23 +426,31 @@ int setModule(sls_detector_module myMod){
 		}
 	}
 
+	//set trimbits
+	if(!Feb_Control_SetTrimbits(Feb_Control_GetModuleNumber(),tt)){
+		cprintf(BG_RED,"Could not set trimbits\n");
+		return FAIL;
+	}
 
-	Feb_Control_SetTrimbits(Feb_Control_GetModuleNumber(),tt);
-
-	// use gain and offset!!!
-
+	//printf("set gainval[0]:%d\n",detectorGain[0]);
 	return 0;
 }
 
 
-int getModule(sls_detector_module *myMod){
+int getModule(sls_detector_module *myMod, int* gain, int* offset){
 	int i;
 	int retval[2];
+	//printf("get gainval[0]:%d\n",detectorGain[0]);
 
 	//dacs
 	for(i=0;i<NDAC;i++)
 		setDAC((enum detDacIndex)i,-1,-1,0,retval);
 
+	//gains, offsets
+	for(i=0;i<NGAIN;i++)
+		gain[i] = detectorGain[i];
+	for(i=0;i<NOFFSET;i++)
+		offset[i] = detectorOffset[i];
 
 	//trimbits
 	unsigned int* tt;
@@ -464,10 +489,23 @@ int getThresholdEnergy(int imod){
 }
 
 
-int setThresholdEnergy(int thr, int imod){
-	printf(" Setting threshold energy:%d\n",thr);
-	if(Feb_Control_SetPhotonEnergy(thr))
-		eiger_photonenergy = thr;
+int setThresholdEnergy(int ev, int imod){
+	printf(" Setting threshold energy:%d\n",ev);
+	int retval[2],i;
+	int thrvalue[NGAIN];
+
+	if(ev >= 0){
+		eiger_photonenergy = ev;
+		//calculate thrvalues for dacs
+		for(i=0;i<NGAIN;i++)
+			thrvalue[i] = (int) ((((double)detectorGain[i]/1000) * ((double)ev/1000)) + ((double)detectorOffset[i]/1000));
+
+		//setdacs
+		setDAC(VCMP_LL,thrvalue[0],-1,0,retval);if(retval[0] != thrvalue[0]) cprintf(BG_RED,"Failed to set vcmp_ll to %d, got %d\n",retval[0],thrvalue[0]);
+		setDAC(VCMP_LR,thrvalue[1],-1,0,retval);if(retval[0] != thrvalue[1]) cprintf(BG_RED,"Failed to set vcmp_lr to %d, got %d\n",retval[0],thrvalue[1]);
+		setDAC(VCMP_RL,thrvalue[2],-1,0,retval);if(retval[0] != thrvalue[2]) cprintf(BG_RED,"Failed to set vcmp_rl to %d, got %d\n",retval[0],thrvalue[2]);
+		setDAC(VCMP_RR,thrvalue[3],-1,0,retval);if(retval[0] != thrvalue[3]) cprintf(BG_RED,"Failed to set vcmp_rr to %d, got %d\n",retval[0],thrvalue[3]);
+	}
 	return  getThresholdEnergy(imod);
 }
 
@@ -707,7 +745,7 @@ int setDynamicRange(int dr){
 
 enum readOutFlags setReadOutFlags(enum readOutFlags val){
 
-	enum readOutFlags retval;
+	enum readOutFlags retval = GET_READOUT_FLAGS;
 	if(val!=GET_READOUT_FLAGS){
 
 
@@ -934,16 +972,16 @@ int copyModule(sls_detector_module *destMod, sls_detector_module *srcMod){
 
 
 
-int getTotalNumberOfChannels(){return getNumberOfChannelsPerModule();};//NCHIP*NCHAN*nModBoard;}
-int getTotalNumberOfChips(){return 4;};//NCHIP*nModBoard;}
-int getTotalNumberOfModules(){return 1;}//nModBoard;}
-int getNumberOfChannelsPerChip(){return  (256*256);}//NCHAN;}
-int getNumberOfChannelsPerModule(){return  getNumberOfChannelsPerChip() * getTotalNumberOfChips();}//NCHAN*NCHIP;}
-int getNumberOfChipsPerModule(){return  4;}//NCHIP;}
-int getNumberOfDACsPerModule(){return  16;}//NDAC;}
-int getNumberOfADCsPerModule(){return  0;}//NADC;}
-
-
+int getTotalNumberOfChannels(){return getNumberOfChannelsPerModule();}
+int getTotalNumberOfChips(){return NCHIP;}
+int getTotalNumberOfModules(){return 1;}
+int getNumberOfChannelsPerChip(){return  NCHAN;}
+int getNumberOfChannelsPerModule(){return  getNumberOfChannelsPerChip() * getTotalNumberOfChips();}
+int getNumberOfChipsPerModule(){return  NCHIP;}
+int getNumberOfDACsPerModule(){return  NDAC;}
+int getNumberOfADCsPerModule(){return  NADC;}
+int getNumberOfGainsPerModule(){return  NGAIN;}
+int getNumberOfOffsetsPerModule(){return  NOFFSET;}
 
 
 

@@ -60,14 +60,21 @@ int setChip(sls_detector_chip myChip);
 int getChip(sls_detector_chip *myChip);
 #endif
 
+
+#ifdef EIGERD
+int setModule(sls_detector_module myMod, int* gain, int* offset);
+int getModule(sls_detector_module *myMod, int* gain, int* offset);
+#else
 int setModule(sls_detector_module myMod);
 int getModule(sls_detector_module *myMod);
+#endif
+
 
 enum detectorSettings setSettings(enum detectorSettings sett, int imod);
 
 #if defined(MYTHEND) || defined(EIGERD)
 int getThresholdEnergy(int imod);
-int setThresholdEnergy(int thr, int imod);
+int setThresholdEnergy(int ev, int imod);
 #endif
 
 int startStateMachine();
@@ -118,7 +125,10 @@ int getNumberOfChannelsPerModule();
 int getNumberOfChipsPerModule();
 int getNumberOfDACsPerModule();
 int getNumberOfADCsPerModule();
-
+#ifdef EIGERD
+int getNumberOfGainsPerModule();
+int getNumberOfOffsetsPerModule();
+#endif
 
 enum externalSignalFlag getExtSignal(int signalindex);
 enum externalSignalFlag setExtSignal(int signalindex,  enum externalSignalFlag flag);

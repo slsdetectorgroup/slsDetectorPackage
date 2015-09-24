@@ -43,8 +43,6 @@ unsigned int Feb_Control_triggerMode;         //internal timer, external start, 
 unsigned int Feb_Control_externalEnableMode;  //external enabling engaged and it's polarity
 unsigned int Feb_Control_subFrameMode;
 
-unsigned int Feb_Control_photon_energy_eV;
-
 unsigned int Feb_Control_nimages;
 double Feb_Control_exposure_time_in_sec;
 int Feb_Control_subframe_exposure_time_in_10nsec;
@@ -450,7 +448,7 @@ int Feb_Control_AddModule1(unsigned int module_number, int top_enable, unsigned 
 	return parameters_ok;
 }
 
-
+/* not called anywhere**/
 int Feb_Control_ReadSetUpFile(unsigned int module_num, char* file_name){
 	printf("Reading Setup file for module number:%d\n",module_num);
 	char line[100];
@@ -486,14 +484,14 @@ int Feb_Control_ReadSetUpFile(unsigned int module_num, char* file_name){
 			}
 			Feb_Control_SetHighVoltage(f0);
 		}
-
+/*
 		else if(!strcmp("photon_energy",str)){
 			if(sscanf (line,"%s %f", str,&f0) < 2){
 				printf("Error reading photon_energy\n");
 				exit(0);
 			}
 			Feb_Control_SetPhotonEnergy(f0);
-		}
+		}*/
 
 		else if(!strcmp("dynamic_range",str)){
 			if(sscanf (line,"%s %d", str,&i0) < 2){
@@ -591,32 +589,6 @@ unsigned int Feb_Control_GetNHalfModules(){
 	return n_half_modules;
 }
 
-int Feb_Control_SetPhotonEnergy(unsigned int full_energy_eV){
-  /**
-
-		setDAC(VCMP_LL,val,imod,mV,retval);
-		setDAC(VCMP_LR,val,imod,mV,retval);
-		setDAC(VCMP_RL,val,imod,mV,retval);
-		ind = VCMP_RR;
-  */
-	Feb_Control_photon_energy_eV = full_energy_eV;
-	printf("Setting photon energy to: %d eV\n",Feb_Control_photon_energy_eV);
-
-	return 1;
-}
-
-unsigned int Feb_Control_GetPhotonEnergy(){
-
-  /**
-
-		setDAC(VCMP_LL,val,imod,mV,retval);
-		setDAC(VCMP_LR,val,imod,mV,retval);
-		setDAC(VCMP_RL,val,imod,mV,retval);
-		ind = VCMP_RR;
-  */
-return Feb_Control_photon_energy_eV;
-
-}
 
 int Feb_Control_SetIDelays(unsigned int module_num, unsigned int ndelay_units){
 	return Feb_Control_SetIDelays1(module_num,0,ndelay_units)&&Feb_Control_SetIDelays1(module_num,1,ndelay_units)&&Feb_Control_SetIDelays1(module_num,2,ndelay_units)&&Feb_Control_SetIDelays1(module_num,3,ndelay_units);

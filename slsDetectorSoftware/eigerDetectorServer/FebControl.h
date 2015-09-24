@@ -121,8 +121,6 @@ int Feb_Control_GetModuleNumber();
   int Feb_Control_SetHighVoltage(float value);
   int Feb_Control_SetHighVoltage1(unsigned int module_num,float value);
 
-  int         Feb_Control_SetPhotonEnergy(unsigned int full_energy_eV);
-  unsigned int Feb_Control_GetPhotonEnergy();
 
   int Feb_Control_SetIDelays(unsigned int module_num, unsigned int  ndelay_units);
   int Feb_Control_SetIDelays1(unsigned int module_num, unsigned int chip_pos, unsigned int ndelay_units);

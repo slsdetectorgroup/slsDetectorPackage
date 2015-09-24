@@ -126,11 +126,17 @@ class slsDetector : public slsDetectorUtils, public energyConversion {
     int nDacs;
     /** number of adcs per module */
     int nAdcs;
+    /**  number of extra gain values*/
+    int nGain;
+    /** number of extra offset values */
+    int nOffset;
     /** dynamic range of the detector data */
     int dynamicRange;
     /**  size of the data that are transfered from the detector */
     int dataBytes;
     
+
+
     /** corrections  to be applied to the data \see ::correctionFlags */
     int correctionMask;
     /** threaded processing flag (i.e. if data are processed and written to file in a separate thread)  */
@@ -230,7 +236,10 @@ class slsDetector : public slsDetectorUtils, public energyConversion {
     int chipoff;
     /** memory offsets for the channel register arrays  -trimbits*/
     int chanoff;
-
+    /** memory offsets for the gain register arrays */
+    int gainoff;
+    /** memory offsets for the offset register arrays  -trimbits*/
+    int offsetoff;
 
 
     /* receiver*/
@@ -894,10 +903,12 @@ class slsDetector : public slsDetectorUtils, public energyConversion {
   /** 
       configure chip
       \param module module to be set - must contain correct module number and also channel and chip registers
+      \param gainval pointer to extra gain values
+      \param offsetval pointer to extra offset values
       \returns current register value
       \sa ::sls_detector_module
   */
-  int setModule(sls_detector_module module);
+  int setModule(sls_detector_module module, int* gainval, int* offsetval);
   //virtual int setModule(sls_detector_module module);
 
   /**
@@ -1543,9 +1554,10 @@ class slsDetector : public slsDetectorUtils, public energyConversion {
   * @param fName file name of current frame()
   * @param acquisitionIndex current acquisition index
   * @param frameIndex current frame index (for each scan)
+  * @param subFrameIndex current sub frame index (for 32 bit mode for eiger)
   /returns a frame read from recever
  */
- int* readFrameFromReceiver(char* fName, int &acquisitionIndex, int &frameIndex);
+ int* readFrameFromReceiver(char* fName, int &acquisitionIndex, int &frameIndex, int &subFrameIndex);
 
   /** Locks/Unlocks the connection to the receiver
       /param lock sets (1), usets (0), gets (-1) the lock
@@ -1770,6 +1782,10 @@ class slsDetector : public slsDetectorUtils, public energyConversion {
   int *chipregs;
   /** pointer to channal registers */
   int *chanregs;
+  /** pointer to gain values */
+  int *gain;
+  /** pointer to offset values */
+  int *offset;
 
   receiverInterface *thisReceiver;
 

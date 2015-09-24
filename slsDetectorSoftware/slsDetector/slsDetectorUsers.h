@@ -408,10 +408,10 @@ class slsDetectorUsers
 
   /**
      @short register calbback for accessing detector final data
-     \param userCallback function for plotting/analyzing the data. Its arguments are  the data structure d and the frame number f.
+     \param userCallback function for plotting/analyzing the data. Its arguments are  the data structure d and the frame number f, s is for subframe number for eiger for 32 bit mode
   */
 
-   void registerDataCallback(int( *userCallback)(detectorData* d, int f, void*), void *pArg);
+   void registerDataCallback(int( *userCallback)(detectorData* d, int f, int s, void*), void *pArg);
 
   /**
      @short register callback for accessing raw data - if the rawDataCallback is registered, no filewriting/postprocessing will be carried on automatically by the software - the raw data are deleted by the software

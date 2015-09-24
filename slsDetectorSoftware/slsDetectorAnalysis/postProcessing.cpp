@@ -138,7 +138,7 @@ void postProcessing::processFrame(int *myData, int delflag, int jctb) {
 	//	cout << "callback arg "<< getCurrentProgress()<< " " << (fname+string(".raw")).c_str() << " " << getTotalNumberOfChannels() << endl;
 	//	cout << "DATAREADY 1" <<endl;
 	thisData=new detectorData(fdata,NULL,NULL,getCurrentProgress(),(fname+string(".raw")).c_str(),getTotalNumberOfChannels()); 
-	dataReady(thisData, currentFrameIndex, pCallbackArg);
+	dataReady(thisData, currentFrameIndex, -1, pCallbackArg);
 	delete thisData;
 	fdata=NULL;
       }
@@ -281,7 +281,7 @@ data queue size unlock
 	  //	  cout << "callback arg "<< getCurrentProgress()<< " " << (fname+ext).c_str() << " " << np << endl;
 	  //cout << "ADATREADY 2 " << endl;
 	  thisData=new detectorData(val,err,ang,getCurrentProgress(),(fname+ext).c_str(),np);
-	  dataReady(thisData, currentFrameIndex, pCallbackArg);
+	  dataReady(thisData, currentFrameIndex, -1, pCallbackArg);
 	  delete thisData;
 	  ang=NULL;
 	  val=NULL;
@@ -500,6 +500,7 @@ void* postProcessing::processData(int delflag) {
 		int caught = -1;
 		int currentAcquisitionIndex = -1;
 		int currentFrameIndex = -1;
+		int currentSubFrameIndex = -1;
 		bool newData = false;
 		int nthframe = setReadReceiverFrequency(0);
 
@@ -633,7 +634,7 @@ void* postProcessing::processData(int delflag) {
 							strcpy(currentfName,"");
 							pthread_mutex_lock(&mg);
 							//int* receiverData = new int [getTotalNumberOfChannels()];
-							int* receiverData = readFrameFromReceiver(currentfName,currentAcquisitionIndex,currentFrameIndex);
+							int* receiverData = readFrameFromReceiver(currentfName,currentAcquisitionIndex,currentFrameIndex,currentSubFrameIndex);
 							pthread_mutex_unlock(&mg);
 
 							//if detector returned null
@@ -664,7 +665,7 @@ void* postProcessing::processData(int delflag) {
 								if ((fdata) && (dataReady)){
 									//  cout << "DATAREADY 3" << endl;
 									thisData = new detectorData(fdata,NULL,NULL,getCurrentProgress(),currentfName,getTotalNumberOfChannels());
-									dataReady(thisData, currentFrameIndex, pCallbackArg);
+									dataReady(thisData, currentFrameIndex, currentSubFrameIndex, pCallbackArg);
 									delete thisData;
 									fdata = NULL;
 									progress = caught;

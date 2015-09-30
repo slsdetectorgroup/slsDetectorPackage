@@ -20,7 +20,6 @@ using namespace std;
 
 using namespace std;
 
-// TODO: I do not really like passing a bottom-top boolean to the constructor...
 UDPInterface * UDPInterface::create(string receiver_type){
 	
 	if (receiver_type == "standard"){

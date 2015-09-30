@@ -517,13 +517,15 @@ slsReceiverDefs::runStatus UDPStandardImplementation::getStatus() const{
 }
 
 
-void UDPStandardImplementation::initialize(const char *detectorHostName){
+void UDPStandardImplementation::setDetectorHostname(const char *detectorHostName){
 	if(strlen(detectorHostName))
 		strcpy(detHostname,detectorHostName);
 }
 
 
 char *UDPStandardImplementation::getDetectorHostname() const{
+	if(!strlen(detHostname))
+		return NULL;
 	return (char*)detHostname;
 }
 

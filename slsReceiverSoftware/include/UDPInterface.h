@@ -26,375 +26,471 @@
 class UDPInterface {
 	
 
-	/* abstract class that defines the UDP interface of an sls detector data receiver.
+	/*  abstract class that defines the UDP interface of an sls detector data receiver.
 	 *
-	 * Use the factory method UDPInterface::create() to get an instance:
+	 *  Use the factory method UDPInterface::create() to get an instance:
 	 *
-	 *      UDPInterface *udp_interface = UDPInterface::create()
+	 *  UDPInterface *udp_interface = UDPInterface::create()
+	 *
 	 *
 	 *  supported sequence of method-calls:
 	 *
-	 *  initialize() : once and only once after create()
+	 *  initialize() : once and only once after create() //FIXME: only once functionality implemented in the derived REST class, so not mention here?
 	 *
-	 *  get*()       : anytime after initialize(), multiples times
+	 *	get*()       : anytime after initialize(), multiples times
+	 *
 	 *  set*()       : anytime after initialize(), multiple times
 	 *
-	 *  startReceiver(): anytime after initialize(). Will fail if state already is 'running'
-	 *
-	 *  abort(),
-	 *  stopReceiver() : anytime after initialize(). Will do nothing if state already is idle.
-	 *
-	 *  getStatus() returns the actual state of the data receiver - running or idle. All other
-	 *  get*() and set*() methods access the local cache of configuration values only and *do not* modify the data receiver settings.
+	 *  startReceiver(): anytime after initialize(). Will fail if state already is 'running':
 	 *
 	 *  Only startReceiver() does change the data receiver configuration, it does pass the whole configuration cache to the data receiver.
 	 *
-	 *  get- and set-methods that return a char array (char *) allocate a new array at each call. The caller is responsible to free the allocated space:
+	 *  abort(), //FIXME: needed?
+	 *
+	 *  stopReceiver() : anytime after initialize(). Will do nothing if state already is idle.
+	 *
+	 *  getStatus() returns the actual state of the data receiver - idle, running or error, enum defined in include/sls_receiver_defs.h
+	 *
+	 *
+	 *
+	 *  get*() and set*() methods access the local cache of configuration values only and *do not* modify the data receiver settings.
+	 *
+	 *	set methods return nothing, use get methods to validate a set method success
+	 *
+	 *  get-methods that return a char array (char *) allocate a new array at each call. The caller is responsible to free the allocated space:
 	 *
 	 *      char *c = receiver->getFileName();
-	 *          ....
+	 *       Or
+	 *      FIXME: so that the pointers are not shared external to the class, do the following way in the calling method?
+	 *      char *c = new char[MAX_STR_LENGTH];
+	 *      strcpy(c,receiver->getFileName());
+	 *      ....
+	 *
 	 *      delete[] c;
 	 *
-	 *  always: 1:YES       0:NO      for int as bool-like arguments
+	 *  All pointers passed in externally will be allocated and freed by the calling function
+	 *
+	 *  OK and FAIL are defined in include/sls_receiver_defs.h for functions implementing behavior
 	 *
 	 */
 	
  public:
 	
+	/*************************************************************************
+	 * Constructor & Destructor **********************************************
+	 * They access local cache of configuration or detector parameters *******
+	 *************************************************************************/
+	/**
+	 * Constructor
+	 * Only non virtual function implemented in this class
+	 * Factory create method to create a standard or REST object
+	 * @param [in] receiver_type type can be standard or REST
+	 * @return a UDPInterface reference to object depending on receiver type
+	 */
+	static UDPInterface *create(string receiver_type = "standard");
+
 	/**
 	 * Destructor
 	 */
 	virtual ~UDPInterface() {};
 	
-	/**
-	 * Factory create method
+
+
+	/*************************************************************************
+	 * Getters ***************************************************************
+	 * They access local cache of configuration or detector parameters *******
+	 *************************************************************************/
+
+	//**initial parameters***
+	/*
+	 * Get detector hostname
+	 * @return hostname or NULL if uninitialized, must be released by calling function  (max of 1000 characters)
 	 */
-	static UDPInterface *create(string receiver_type = "standard");
+	virtual char *getDetectorHostname() const  = 0;
 
-	virtual void configure(map<string, string> config_map) = 0;
 
-	
- public:
-	
+	//***file parameters***
 	/**
-	 * Initialize the Receiver
-	 @param detectorHostName detector hostname
-	 * you can call this function only once. You must call it before you call startReceiver() for  the first time.
-	 */
-	virtual void initialize(const char *detectorHostName) = 0;
-	
-
-	 /* Returns detector hostname
-	    /returns hostname
-	    * caller needs to deallocate the returned char array.
-	    * if uninitialized, it must return NULL
-	    */
- 	virtual char *getDetectorHostname() const  = 0;
-
-	/**
-	 * Returns status of receiver: idle, running or error
-	 */
-	virtual slsReceiverDefs::runStatus getStatus() const = 0;
-
-	/**
-	 * Returns File Name
-	 * caller is responsible to deallocate the returned char array.
+	 * Get File Name Prefix (without frame index, file index and extension (_d0_f000000000000_8.raw))
+	 * @return NULL or pointer to file name prefix, must be released by calling function (max of 1000 characters)
 	 */
 	virtual char *getFileName() const = 0;
 
-
 	/**
-	 * Returns File Path
-	 * caller is responsible to deallocate the returned char array
+	 * Get File Path
+	 * @return NULL or pointer to file path, must be released by calling function  (max of 1000 characters)
 	 */
-	virtual char *getFilePath() const = 0; //FIXME: Does the caller need to free() the returned pointer?
-
+	virtual char *getFilePath() const = 0;
 
 	/**
-	 * Returns the number of bits per pixel
+	 * Get File Index
+	 * @return NULL or file index of acquisition
 	 */
-	virtual int getDynamicRange() const = 0;
+	virtual uint64_t getFileIndex() const = 0;
 
 	/**
-	 * Returns scan tag
+	 * Get Scan Tag
+	 * @return scan tag //FIXME: needed? (unsigned integer?)
 	 */
 	virtual int getScanTag() const = 0;
 
+	/**
+	 * Get if Frame Index is enabled (acquisition of more than 1 frame adds '_f000000000000' to file name )
+	 * @return true if frame index needed, else false
+	 */
+	virtual bool getFrameIndexEnable() const = 0;
+
+	/**
+	 * Get File Write Enable
+	 * @return true if file write enabled, else false
+	 */
+	virtual bool getFileWriteEnable() const = 0;
+
+	/**
+	 * Get File Over Write Enable
+	 * @return true if file over write enabled, else false
+	 */
+	virtual bool getOverwriteEnable() const = 0;
+
+	/**
+	 * Get data compression, by saving only hits (so far implemented only for Moench and Gotthard)
+	 * @return true if data compression enabled, else false
+	 */
+	virtual bool getDataCompressionEnable() const = 0;
+
+
+	//***acquisition count parameters***
+	/**
+	 * Get Total Frames Caught for an entire acquisition (including all scans)
+	 * @return total number of frames caught for entire acquisition
+	 */
+	virtual uint64_t getTotalFramesCaught() const = 0;
+
+	/**
+	 * Get Frames Caught for each real time acquisition (eg. for each scan)
+	 * @return number of frames caught for each scan
+	 */
+	virtual uint64_t getFramesCaught() const = 0;
+
+	/**
+	 * Get Current Frame Index Caught for an entire  acquisition (including all scans)
+	 * @return current frame index (represents all scans too) or -1 if no packets caught
+	 */
+	virtual int64_t getAcquisitionIndex() const = 0;
+
+
+	//***connection parameters***
+	/**
+	 * Get UDP Port Number
+	 * @return udp port number
+	 */
+	virtual uint32_t getUDPPortNo() const = 0;
+
+	/**
+	 * Get Second UDP Port Number (eiger specific)
+	 * @return second udp port number
+	 */
+	virtual uint32_t getUDPPortNo2() const = 0;
+
+	/**
+	 * Get Ehernet Interface
+	 * @return ethernet interface. eg. eth0 (max of 1000 characters)
+	 */
+	virtual char *getEthernetInterface() const = 0;
+
+
+	//***acquisition parameters***
+	/**
+	 * Get Short Frame Enabled, later will be moved to getROI (so far only for gotthard)
+	 * @return index of adc enabled, else -1 if all enabled
+	 */
+	virtual int getShortFrameEnable() const = 0;
+
+	/**
+	 * Get the Frequency of Frames Sent to GUI
+	 * @return 0 for random frame requests, n for nth frame frequency
+	 */
+	virtual uint32_t getFrameToGuiFrequency() const = 0;
+
+	/**
+	 * Get Acquisition Period
+	 * @return acquisition period
+	 */
+	virtual uint64_t getAcquisitionPeriod() const = 0;
+
 	/*
-	 * Returns number of frames to receive
-	 * This is the number of frames to expect to receiver from the detector.
-	 * The data receiver will change from running to idle when it got this number of frames
+	 * Get Number of Frames expected by receiver from detector
+	 * The data receiver status will change from running to idle when it gets this number of frames FIXME: (Not implemented)
+	 * @return number of frames expected
 	 */
-	virtual int getNumberOfFrames() const = 0;
+	virtual uint64_t getNumberOfFrames() const = 0;
 
 	/**
-	* Returns file write enable
-	* 1: YES 0: NO
-	*/
-	virtual int getEnableFileWrite() const = 0;
-
-	/**
-	* Returns file over write enable
-	* 1: YES 0: NO
-	*/
-	virtual int getEnableOverwrite() const = 0;
-
-	/**
-	 * Set File Name (without frame index, file index and extension)
-	 @param c file name
-	 /returns file name
-	  * returns NULL on failure (like bad file name)
-	  * does not check the existence of the file - we don't know which path we'll finally use, so no point to check.
-	  * caller is responsible to deallocate the returned char array.
+	 * Get Dynamic Range or Number of Bits Per Pixel
+	 * @return dynamic range that is 4, 8, 16 or 32
 	 */
-	virtual char* setFileName(const char c[]) = 0;
+	virtual uint32_t getDynamicRange() const = 0;
+
+	/**
+	 * Get Ten Giga Enable
+	 * @return true if 10Giga enabled, else false (1G enabled)
+	 */
+	virtual bool getTenGigaEnable() const = 0;
+
+	//***receiver status***
+	/**
+	 * Get Listening Status of Receiver
+	 * @return can be idle, listening or error depending on if the receiver is listening or not
+	 */
+	virtual slsReceiverDefs::runStatus getStatus() const = 0;
+
+
+
+
+	/*************************************************************************
+	 * Setters ***************************************************************
+	 * They modify the local cache of configuration or detector parameters ***
+	 *************************************************************************/
+
+	//**initial parameters***
+	/**
+	 * Configure command line parameters
+	 * @param config_map mapping of config parameters passed from command line arguments
+	 */
+	virtual void configure(map<string, string> config_map) = 0;
+
+	/**
+	 * Set Bottom Enable  (eiger specific, should be moved to configure, and later from client via TCPIP)
+	 * @param b is true for bottom enabled or false for bottom disabled
+	 */
+	virtual void setBottomEnable(const bool b)= 0;
+
+
+	//***file parameters***
+	/**
+	 * Set File Name Prefix (without frame index, file index and extension (_d0_f000000000000_8.raw))
+	 * Does not check for file existence since it is created only at startReceiver
+	 * @param c file name (max of 1000 characters)
+	 */
+	virtual void setFileName(const char c[]) = 0;
 
 	/**
 	 * Set File Path
-	 @param c file path
-	 /returns file path
-	  * checks the existence of the directory. returns NULL if directory does not exist or is not readable.
-	  * caller is responsible to deallocate the returned char array.
+	 * Checks for file directory existence before setting file path
+	 * @param c file path (max of 1000 characters)
 	 */
-	virtual char* setFilePath(const char c[]) = 0;
+	virtual void setFilePath(const char c[]) = 0;
 
 	/**
-	 * Returns the number of bits per pixel
-	 @param dr sets dynamic range
-	 /returns dynamic range
-	  * returns -1 on failure
-	  * FIXME: what are the allowd values - should we use an enum as argument?
+	 * Set File Index of acquisition
+	 * @param i file index of acquisition
 	 */
-	virtual int setDynamicRange(const int dr) = 0;
-
+	virtual void setFileIndex(const uint64_t i) = 0;
 
 	/**
-	 * Set scan tag
-	 @param tag scan tag
-	 /returns scan tag (always non-negative)
-	  * FIXME: valid range - only positive? 16bit ore 32bit?
-	  * returns -1 on failure
+	 * Set Scan Tag
+	 * @param i scan tag //FIXME: needed? (unsigned integer?)
 	 */
-	virtual int setScanTag(const int tag) = 0;
+	virtual void setScanTag(const int i) = 0;
 
 	/**
-	 * Sets number of frames
-	 @param fnum number of frames
-	 /returns number of frames
+	 * Set Frame Index Enable (acquisition of more than 1 frame adds '_f000000000000' to file name )
+	 * @param b true for frame index enable, else false
 	 */
-	virtual int setNumberOfFrames(const int fnum) = 0;
+	virtual void setFrameIndexEnable(const bool b) = 0;
 
 	/**
-	 * Set enable file write
-	 * @param i file write enable
-	 /returns file write enable
+	 * Set File Write Enable
+	 * @param b true for file write enable, else false
 	 */
-	virtual int setEnableFileWrite(const int i) = 0;
+	virtual void setFileWriteEnable(const bool b) = 0;
 
 	/**
-	 * Set enable file overwrite
-	 * @param i file overwrite enable
-	 /returns file overwrite enable
+	 * Set File Overwrite Enable
+	 * @param b true for file overwrite enable, else false
 	 */
-	virtual int setEnableOverwrite(const int i) = 0;
+	virtual void setOverwriteEnable(const bool b) = 0;
 
 	/**
-	 * Starts Receiver - activate all configuration settings to the eiger receiver and start to listen for packets
-	 @param message is the error message if there is an error
-	 /returns 0 on success or -1 on failure
+	 * Set data compression, by saving only hits (so far implemented only for Moench and Gotthard)
+	 * @param b true for data compression enable, else false
 	 */
-	//FIXME: success == 0 or success == 1?
-	virtual int startReceiver(char *message=NULL) = 0; //FIXME: who allocates message[]?
-
-	/**
-	 * Stops Receiver - stops listening for packets
-	 /returns success
-	  * same as abort(). Always returns 0.
-	 */
-	virtual int stopReceiver() = 0;
-
-	/**
-	 * abort acquisition with minimum damage: close open files, cleanup.
-	 * does nothing if state already is 'idle'
-	 */
-	virtual void abort() = 0;
+	virtual void setDataCompressionEnable(const bool b) = 0;
 
 
-
-/*******************************************************************************************************************
- ****************************************  Added by Dhanya *********************************************************
- *******************************************************************************************************************/
-
-	/**
-	 * Set bottom to bot
-	 * @param bot = 1 if bottom
-	 */
-	virtual void setBottom(int bot)= 0;
-
-	/**
-	 * Returns File Index
-	 */
-	virtual int getFileIndex() = 0;
-
-	/**
-	 * Returns Total Frames Caught for an entire acquisition (including all scans)
-	 */
-	virtual int getTotalFramesCaught() = 0;
-
-	/**
-	 * Returns Frames Caught for each real time acquisition (eg. for each scan)
-	 */
-	virtual int getFramesCaught() = 0;
-
-	/**
-	 * Returns the frame index at start of entire acquisition (including all scans)
-	 */
-	virtual uint32_t getStartAcquisitionIndex()=0;
-
-	/**
-	 * Returns current Frame Index Caught for an entire  acquisition (including all scans)
-	 */
-	virtual uint32_t getAcquisitionIndex() = 0;
-
-	/**
-	 * Returns the frame index at start of each real time acquisition (eg. for each scan)
-	 */
-	virtual uint32_t getStartFrameIndex() = 0;
-
-	/** get data compression, by saving only hits
-	 */
-	virtual bool getDataCompression() = 0;
-
-	/**
-	 * Set receiver type
-	 * @param det detector type
-	 * Returns success or FAIL
-	 */
-	virtual int setDetectorType(slsReceiverDefs::detectorType det) = 0;
-
-	/**
-	 * Set File Index
-	 * @param i file index
-	 */
-	virtual int setFileIndex(int i) = 0;
-
-	/** set acquisition period if a positive number
-	 */
-	virtual int64_t setAcquisitionPeriod(int64_t index) = 0;
-
-	/**
-	 * Set Frame Index Needed
-	 * @param i frame index needed
-	 */
-	virtual int setFrameIndexNeeded(int i) = 0;
-
+	//***connection parameters***
 	/**
 	 * Set UDP Port Number
+	 * @param i udp port number
 	 */
-	virtual void setUDPPortNo(int p) = 0;
+	virtual void setUDPPortNo(const uint32_t i) = 0;
 
 	/**
-	 * Set UDP Port Number
+	 * Set Second UDP Port Number (eiger specific)
+	 * @return second udp port number
 	 */
-	virtual void setUDPPortNo2(int p) = 0;
+	virtual void setUDPPortNo2(const uint32_t i) = 0;
 
 	/**
-	 * Set Ethernet Interface or IP to listen to
+	 * Set Ethernet Interface to listen to
+	 * @param c ethernet inerface eg. eth0 (max of 1000 characters)
 	 */
-	virtual void setEthernetInterface(char* c) = 0;
+	virtual void setEthernetInterface(const char* c) = 0;
+
+
+	//***connection parameters***
+	/**
+	 * Set Short Frame Enabled, later will be moved to getROI (so far only for gotthard)
+	 * @param i index of adc enabled, else -1 if all enabled
+	 */
+	virtual void setShortFrameEnable(const int i) = 0;
 
 	/**
-	 * Set short frame
-	 * @param i if shortframe i=1
+	 * Set the Frequency of Frames Sent to GUI
+	 * @param i 0 for random frame requests, n for nth frame frequency
 	 */
-	virtual int setShortFrame(int i) = 0;
+	virtual void setFrameToGuiFrequency(const uint32_t i) = 0;
 
 	/**
-	 * Set the variable to send every nth frame to gui
-	 * or if 0,send frame only upon gui request
+	 * Set Acquisition Period
+	 * @param i acquisition period
 	 */
-	virtual int setNFrameToGui(int i) = 0;
+	virtual void setAcquisitionPeriod(const uint64_t i) = 0;
 
 	/**
-	 * Resets the Total Frames Caught
-	 * This is how the receiver differentiates between entire acquisitions
-	 * Returns 0
+	 * Set Number of Frames expected by receiver from detector
+	 * The data receiver status will change from running to idle when it gets this number of frames FIXME: (Not implemented)
+	 * @param i number of frames expected
 	 */
-	virtual void resetTotalFramesCaught() = 0;
-
-	/** enabl data compression, by saving only hits
-	 /returns if failed
-	 */
-	virtual int enableDataCompression(bool enable) = 0;
+	virtual void setNumberOfFrames(const uint64_t i) = 0;
 
 	/**
-	 * enable 10Gbe
-	 @param enable 1 for 10Gbe or 0 for 1 Gbe, -1 to read out
-	 \returns enable for 10Gbe
+	 * Set Dynamic Range or Number of Bits Per Pixel
+	 * @param i dynamic range that is 4, 8, 16 or 32
 	 */
-	virtual int enableTenGiga(int enable = -1) = 0;
+	virtual void setDynamicRange(const uint32_t i) = 0;
 
 	/**
-	 * Returns the buffer-current frame read by receiver
-	 * @param c pointer to current file name
-	 * @param raw address of pointer, pointing to current frame to send to gui
-	 * @param startAcquisitionIndex is the start index of the acquisition
-	 * @param startFrameIndex is the start index of the scan
+	 * Set Ten Giga Enable
+	 * @param b true if 10Giga enabled, else false (1G enabled)
 	 */
-	virtual void readFrame(char* c,char** raw, uint32_t &startAcquisitionIndex, uint32_t &startFrameIndex)=0;
+	virtual void setTenGigaEnable(const bool b) = 0;
 
-	/** set status to transmitting and
-	 * when fifo is empty later, sets status to run_finished
+
+
+	/*************************************************************************
+	 * Behavioral functions***************************************************
+	 * They may modify the status of the receiver ****************************
+	 *************************************************************************/
+
+	//***initial functions***
+	/**
+	 * Set receiver type (and corresponding detector variables in derived STANDARD class)
+	 * It is the first function called by the client when connecting to receiver
+	 * @param d detector type
+	 * @return OK or FAIL
+	 */
+	virtual int setDetectorType(const slsReceiverDefs::detectorType d) = 0;
+
+	/**
+	 * Sets detector hostname (and corresponding detector variables in derived REST class)
+	 * It is second function called by the client when connecting to receiver.
+	 * you can call this function only once. //FIXME: is this still valid, this implemented in derived REST class?
+	 * @param c detector hostname
+	 */
+	virtual void initialize(const char *c) = 0;
+
+
+	//***acquisition functions***
+	/**
+	 * Reset acquisition parameters such as total frames caught for an entire acquisition (including all scans)
+	 */
+	void resetAcquisitionCount();
+
+	/**
+	 * Start Listening for Packets by activating all configuration settings to receiver
+	 * @param c error message if FAIL
+	 * @return OK or FAIL
+	 */
+	virtual int startReceiver(char *c=NULL) = 0;
+
+	/**
+	 * Stop Listening for Packets
+	 * Calls startReadout(), which stops listening and sets status to Transmitting
+	 * When it has read every frame in buffer,it returns with the status Run_Finished
+	 */
+	virtual void stopReceiver() = 0;
+
+	/**
+	 * Stop Listening to Packets
+	 * and sets status to Transmitting
 	 */
 	virtual void startReadout() = 0;
 
 	/**
 	 * shuts down the  udp sockets
-	 * \returns if success or fail
+	 * \returns OK or FAIL
 	 */
 	virtual int shutDownUDPSockets() = 0;
 
 	/**
-	 * Closes all files
-	 * @param ithr thread index, -1 for all threads
+	 * Get the buffer-current frame read by receiver
+	 * @param c pointer to current file name
+	 * @param raw address of pointer, pointing to current frame to send to gui
+	 * @param startAcquisitionIndex start index of the acquisition
+	 * @param startFrameIndex start index of the scan
 	 */
-	virtual void closeFile(int ithr = -1) = 0;
+	virtual void readFrame(char* c,char** raw, uint64_t &startAcquisitionIndex, uint64_t &startFrameIndex)=0;
 
 	/**
-	 * Call back for start acquisition
-	   callback arguments are
-	   filepath
-	   filename
-	   fileindex
-	   datasize
+	 * abort acquisition with minimum damage: close open files, cleanup.
+	 * does nothing if state already is 'idle'
+	 */
+	virtual void abort() = 0;  //FIXME: needed, isnt stopReceiver enough?
 
-	   return value is
-	   0 callback takes care of open,close,wrie file
-	   1 callback writes file, we have to open, close it
-	   2 we open, close, write file, callback does not do anything
-	*/
-	virtual void registerCallBackStartAcquisition(int (*func)(char*, char*,int, int, void*),void *arg) = 0;
+	/**
+	 * Closes all files
+	 * @param i thread index, -1 for all threads
+	 */
+	virtual void closeFile(int i = -1) = 0;
+
+
+	//***callback functions***
+	/**
+	 * Call back for start acquisition
+	 * callback arguments are
+	 * filepath
+	 * filename
+	 * fileindex
+	 * datasize
+	 *
+	 * return value is
+	 * 0 callback takes care of open,close,wrie file
+	 * 1 callback writes file, we have to open, close it
+	 * 2 we open, close, write file, callback does not do anything
+	 */
+	virtual void registerCallBackStartAcquisition(int (*func)(char*, char*,uint64_t, uint32_t, void*),void *arg) = 0;
 
 	/**
 	 * Call back for acquisition finished
-	   callback argument is
-	   total frames caught
-	*/
-	virtual void registerCallBackAcquisitionFinished(void (*func)(int, void*),void *arg) = 0;
+	 * callback argument is
+	 * total frames caught
+	 */
+	virtual void registerCallBackAcquisitionFinished(void (*func)(uint64_t, void*),void *arg) = 0;
 
 	/**
 	 * Call back for raw data
-	  args to raw data ready callback are
-	  framenum
-	  datapointer
-	  datasize in bytes
-	  file descriptor
-	  guidatapointer (NULL, no data required)
-	*/
-	virtual void registerCallBackRawDataReady(void (*func)(int, char*, int, FILE*, char*, void*),void *arg) = 0;
-	
+	 * args to raw data ready callback are
+	 * framenum
+	 * datapointer
+	 * datasize in bytes
+	 * file descriptor
+	 * guidatapointer (NULL, no data required)
+	 */
+	virtual void registerCallBackRawDataReady(void (*func)(uint64_t, char*, uint32_t, FILE*, char*, void*),void *arg) = 0;
+
+
  protected:
-	
  private:
 	
 };

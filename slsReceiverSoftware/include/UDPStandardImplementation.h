@@ -24,6 +24,7 @@
 #endif
 
 
+
 #include <string.h>
 #include <pthread.h>
 #include <stdio.h>
@@ -199,7 +200,7 @@ class UDPStandardImplementation: private virtual slsReceiverDefs, public UDPBase
 	 * Set detector hostname
 	 * @param c hostname
 	 */
-	void initialize(const char *detectorHostName);
+	void setDetectorHostname(const char *detectorHostName);
 
 	 /* Returns detector hostname
 	 /returns hostname
@@ -482,6 +483,224 @@ private:
 	 * @param nf nf
 	 */
 	void handleDataCompression(int ithread, char* wbuffer[], char* data, int xmax, int ymax, int &nf);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+	/** max number of writer threads */
+	const static int MAX_NUM_WRITER_THREADS = 15;
+
+	/** missing packet identifier value */
+	const static uint16_t missingPacketValue = 0xFFFF;
+
+
+	/** UDP Socket between Receiver and Detector */
+	genericSocket* udpSocket[MAX_NUM_LISTENING_THREADS];
+
+	/** max packets per file **/
+	int maxPacketsPerFile;
+
+	/** Frame Index at start of an entire acquisition (including all scans) */
+	uint64_t startAcquisitionIndex;
+	/** Complete File name */
+	char savefilename[MAX_STR_LENGTH];
+
+	/* Measurement started */
+	bool measurementStarted;
+	/* Acquisition started */
+	bool acqStarted;
+	/** Frame index at start of each real time acquisition (eg. for each scan) */
+	uint32_t startFrameIndex;
+
+	/** Actual current frame index of each time acquisition (eg. for each scan) */
+	uint32_t frameIndex;
+
+	/** Pckets currently in current file, starts new file when it reaches max */
+	uint32_t packetsInFile;
+
+	/** Number of missing packets in acquisition*/
+	uint32_t numTotMissingPackets;
+
+	/** Number of missing packets in file (sometimes packetsinFile is incorrect due to padded packets for eiger)*/
+	uint32_t numTotMissingPacketsInFile;
+
+	/** Number of missing packets per buffer*/
+	uint32_t numMissingPackets;
+
+	/** frame index mask */
+	uint32_t frameIndexMask;
+
+	/** packet index mask */
+	uint32_t packetIndexMask;
+
+	/** frame index offset */
+	int frameIndexOffset;
+	/** Current Frame Number */
+	uint64_t currframenum;
+
+	/** Previous Frame number from buffer */
+	int prevframenum;
+
+	/** size of one frame */
+	int frameSize;
+
+	/** buffer size. different from framesize as we wait for one packet instead of frame for eiger */
+	int bufferSize;
+
+	/** one buffer size */
+	int onePacketSize;
+
+	/** one buffer size */
+	int oneDataSize;
+
+	/** latest data */
+	char* latestData;
+
+	/** gui data ready */
+	int guiDataReady;
+
+	/** points to the data to send to gui */
+	char* guiData;
+
+	/** points to the filename to send to gui */
+	char* guiFileName;
+
+	/** fifo size */
+	unsigned int fifosize;
+
+	/** number of jobs per thread for data compression */
+	int numJobsPerThread;
+
+	/** memory allocated for the buffer */
+	char *mem0[MAX_NUM_LISTENING_THREADS];
+
+	/** circular fifo to store addresses of data read */
+	CircularFifo<char>* fifo[MAX_NUM_LISTENING_THREADS];
+
+	/** circular fifo to store addresses of data already written and ready to be resued*/
+	CircularFifo<char>* fifoFree[MAX_NUM_LISTENING_THREADS];
+
+	/** Receiver buffer */
+	char *buffer[MAX_NUM_LISTENING_THREADS];
+
+	/** number of writer threads */
+	int numListeningThreads;
+
+	/** number of writer threads */
+	int numWriterThreads;
+
+	/** to know if listening and writer threads created properly */
+	int thread_started;
+
+	/** current listening thread index*/
+	int currentListeningThreadIndex;
+
+	/** current writer thread index*/
+	int currentWriterThreadIndex;
+
+	/** thread listening to packets */
+	pthread_t   listening_thread[MAX_NUM_LISTENING_THREADS];
+
+	/** thread writing packets */
+	pthread_t   writing_thread[MAX_NUM_WRITER_THREADS];
+
+	/** total frame count the listening thread has listened to */
+	int totalListeningFrameCount[MAX_NUM_LISTENING_THREADS];
+
+	/** mask showing which listening threads are running */
+	volatile uint32_t listeningthreads_mask;
+
+	/** mask showing which writer threads are running */
+	volatile uint32_t writerthreads_mask;
+
+	/** mask showing which threads  have created files*/
+	volatile uint32_t createfile_mask;
+
+	/** OK if file created was successful */
+	int ret_createfile;
+
+	/** variable used to self terminate threads waiting for semaphores */
+	int killAllListeningThreads;
+
+	/** variable used to self terminate threads waiting for semaphores */
+	int killAllWritingThreads;
+
+
+
+	/** footer offset is different for 1g and 10g*/
+	int footer_offset;
+
+	// TODO: not properly sure where to put these...
+	/** structure of an eiger image header*/
+
+
+
+
+//semaphores
+	/** semaphore to synchronize  writer and guireader threads */
+	sem_t smp;
+	/** semaphore to synchronize  listener threads */
+	sem_t listensmp[MAX_NUM_LISTENING_THREADS];
+	/** semaphore to synchronize  writer threads */
+	sem_t writersmp[MAX_NUM_WRITER_THREADS];
+
+
+//mutex
+	/** guiDataReady mutex */
+	pthread_mutex_t  dataReadyMutex;
+
+	/** mutex for status */
+	pthread_mutex_t status_mutex;
+
+	/** mutex for progress variable currframenum */
+	pthread_mutex_t progress_mutex;
+
+	/** mutex for writing data to file */
+	pthread_mutex_t write_mutex;
+
+	/** File Descriptor */
+	FILE *sfilefd;
+
+	//filter
+	singlePhotonDetector<uint16_t> *singlePhotonDet[MAX_NUM_WRITER_THREADS];
+	slsReceiverData<uint16_t>  *receiverdata[MAX_NUM_WRITER_THREADS];
+	moenchCommonMode *cmSub;
+	bool commonModeSubtractionEnable;
+
+#ifdef MYROOT1
+	/** Tree where the hits are stored */
+	TTree *myTree[MAX_NUM_WRITER_THREADS];
+
+	/** File where the tree is saved */
+	TFile *myFile[MAX_NUM_WRITER_THREADS];
+#endif
+
+
+	/** The action which decides what the user and default responsibilites to save data are
+	 * 0 raw data ready callback takes care of open,close,write file
+	 * 1 callback writes file, we have to open, close it
+	 * 2 we open, close, write file, callback does not do anything */
+	int cbAction;
 
 
 public:

@@ -1972,19 +1972,6 @@ int UDPStandardImplementation::startWriting(){
 	eiger_packet_header_t* blankframe_header=0;
 	unsigned char* blankframe_data=0;
 
-	//last packet numbers for different dynamic ranges
-	if(myDetectorType == EIGER){
-		switch(dynamicRange){
-		case 4: 	LAST_PACKET_VALUE = 0x40;	break;
-		case 8: 	LAST_PACKET_VALUE = 0x80;	break;
-		case 16:	LAST_PACKET_VALUE = 0x100;	break;
-		case 32: 	LAST_PACKET_VALUE = 0x200; 	break;
-		default: 	break;
-		}
-
-	}
-
-
 
 	while(1){
 
@@ -2032,15 +2019,8 @@ int UDPStandardImplementation::startWriting(){
 #endif
 			}
 
-			if(tengigaEnable){
-				switch(dynamicRange){
-				case 4: 	LAST_PACKET_VALUE = 0x10;	break;
-				case 8: 	LAST_PACKET_VALUE = 0x20;	break;
-				case 16:	LAST_PACKET_VALUE = 0x40;	break;
-				case 32: 	LAST_PACKET_VALUE = 0x80; 	break;
-				default: 	break;
-				}
-			}
+			//last packet numbers for different dynamic ranges
+			LAST_PACKET_VALUE = (packetsPerFrame/numListeningThreads);
 		}
 
 

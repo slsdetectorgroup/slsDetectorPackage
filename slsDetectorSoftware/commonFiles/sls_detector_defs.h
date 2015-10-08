@@ -10,7 +10,7 @@
 //#include <stdint.h>
 #include "sls_receiver_defs.h"
 
-#define REQUIRED_FIRMWARE_VERSION 10
+#define REQUIRED_FIRMWARE_VERSION 11
 
 /** default maximum string length */
 #define MAX_SCAN_STEPS 2000

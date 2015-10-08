@@ -136,10 +136,10 @@ void Beb_Beb(){
 
   Beb_bit_mode = 4;
   
-  ll_beb = &ll_beb_local;
-  Local_LocalLinkInterface1(ll_beb,XPAR_PLB_LL_FIFO_AURORA_DUAL_CTRL_FEB_LEFT_BASEADDR);
+//  ll_beb = &ll_beb_local;
+//  Local_LocalLinkInterface1(ll_beb,XPAR_PLB_LL_FIFO_AURORA_DUAL_CTRL_FEB_LEFT_BASEADDR);
 
-  Beb_SetByteOrder();
+//  Beb_SetByteOrder();
 
 }
 
@@ -370,6 +370,7 @@ void Beb_SwapDataFun(int little_endian, unsigned int n, unsigned int *d){
 
 
 int Beb_SetByteOrder(){
+/*
 	Beb_send_data_raw[0] = 0x8fff0000;
   if(Local_Write(ll_beb,4,Beb_send_data_raw)!=4) return 0;
   
@@ -392,29 +393,61 @@ int Beb_SetByteOrder(){
   Beb_WriteTo(0);
    
   printf("\tSetting Byte Order ..............        ok\n");
-
+*/
   return 1;
 }
-
-
 
 
 int Beb_SetUpUDPHeader(unsigned int beb_number, int ten_gig, unsigned int header_number, char* dst_mac, char* dst_ip, unsigned int dst_port){
-  unsigned int i = 1;/*Beb_GetBebInfoIndex(beb_number);*/
+	u_int32_t bram_phy_addr;
+	volatile u_int32_t* bram_ptr;
+	bram_ptr = NULL;
+	if (ten_gig) 
+		bram_phy_addr = 0xC6002000;
+	else
+		bram_phy_addr = 0xC6001000;
 
-  /***********************************if(!i) return 0; *************************************///i must be greater than 0, zero is the global send
+	if(!Beb_SetHeaderData(beb_number,ten_gig,dst_mac,dst_ip,dst_port)) return 0;
 
-  Beb_send_ndata   = 14;
-  Beb_send_data[0] = ten_gig ? 0x00020000 : 0x00010000; //write to fanout numbers 1 or 2
-  Beb_send_data[1] = ((header_number*8)<<16);
-    if(!Beb_SetHeaderData(beb_number,ten_gig,dst_mac,dst_ip,dst_port)) return 0;
+	int fd = open("/dev/mem", O_RDWR | O_SYNC, 0);
+	if (fd == -1)
+		cprintf(BG_RED,"\nCan't find /dev/mem!\n");
+	else{
+#ifdef VERBOSE
+		printf("/dev/mem opened\n");
+#endif
+		bram_ptr = mmap(0, 0x1000, PROT_READ|PROT_WRITE, MAP_FILE|MAP_SHARED, fd, bram_phy_addr);
+		if (bram_ptr == MAP_FAILED) {
+			cprintf(BG_RED,"\nCan't map memmory area!!\n");
+			fd = -1;
+		}
+#ifdef VERBOSE
+		else printf("CSP0 mapped\n");
+#endif
+	}
 
-    Beb_SwapDataFun(1,12,&(Beb_send_data[2]));
-
-  if(!Beb_WriteTo(i)) return 0;
-  printf("beb dst_port:%d\n",dst_port);
-  return 1;
+	memcpy(bram_ptr+header_number*16, &udp_header, sizeof(udp_header));
+	close(fd);
+	return 1;
 }
+
+
+//int Beb_SetUpUDPHeader(unsigned int beb_number, int ten_gig, unsigned int header_number, char* dst_mac, char* dst_ip, unsigned int dst_port){
+//  unsigned int i = 1;/*Beb_GetBebInfoIndex(beb_number);*/
+//
+//  /***********************************if(!i) return 0; *************************************///i must be greater than 0, zero is the global send
+//
+//  Beb_send_ndata   = 14;
+//  Beb_send_data[0] = ten_gig ? 0x00020000 : 0x00010000; //write to fanout numbers 1 or 2
+//  Beb_send_data[1] = ((header_number*8)<<16);
+//    if(!Beb_SetHeaderData(beb_number,ten_gig,dst_mac,dst_ip,dst_port)) return 0;
+//
+//    Beb_SwapDataFun(1,12,&(Beb_send_data[2]));
+//
+//  if(!Beb_WriteTo(i)) return 0;
+//  printf("beb dst_port:%d\n",dst_port);
+//  return 1;
+//}
 
 
 int Beb_SetHeaderData(unsigned int beb_number, int ten_gig, char* dst_mac, char* dst_ip, unsigned int dst_port){

@@ -1922,8 +1922,11 @@ int slsReceiverTCPIPInterface::set_read_frequency(){
 			strcpy(mess,"cannot set up receiver mode when receiver is running\n");
 		}*/
 		else{
-			if(index >= 0)
-				receiverBase->setFrameToGuiFrequency(index);
+			if(index >= 0){
+				ret = receiverBase->setFrameToGuiFrequency(index);
+				if(ret == FAIL)
+					strcpy(mess, "Could not allocate memory for listening fifo\n");
+			}
 			retval=receiverBase->getFrameToGuiFrequency();
 			if(index>=0 && retval!=index)
 				ret = FAIL;
@@ -2107,8 +2110,11 @@ int slsReceiverTCPIPInterface::set_timer() {
 		}
 		else{
 			if(index[0] == slsReceiverDefs::FRAME_PERIOD){
-				if(index[1]>=0)
-					receiverBase->setAcquisitionPeriod(index[1]);
+				if(index[1]>=0){
+					ret = receiverBase->setAcquisitionPeriod(index[1]);
+					if(ret == FAIL)
+						strcpy(mess,"Could not allocate memory for listening fifo\n")
+				}
 				retval=receiverBase->getAcquisitionPeriod();
 			}else{
 				if(index[1]>=0)
@@ -2183,17 +2189,19 @@ int slsReceiverTCPIPInterface::enable_compression() {
 			}
 			else{
 				if(enable >= 0)
-					receiverBase->setDataCompressionEnable(enable);
+					ret = receiverBase->setDataCompressionEnable(enable);
 			}
 		}
 
-		if (receiverBase == NULL){
-			strcpy(mess,"Receiver not set up\n");
-			ret=FAIL;
-		}else{
-			retval = receiverBase->getDataCompressionEnable();
-			if(enable >= 0 && retval != enable)
-				ret = FAIL;
+		if(ret != FAIL){
+			if (receiverBase == NULL){
+				strcpy(mess,"Receiver not set up\n");
+				ret=FAIL;
+			}else{
+				retval = receiverBase->getDataCompressionEnable();
+				if(enable >= 0 && retval != enable)
+					ret = FAIL;
+			}
 		}
 
 	}
@@ -2324,8 +2332,11 @@ int slsReceiverTCPIPInterface::set_dynamic_range() {
 				strcpy(mess,"Receiver not set up\n");
 				ret=FAIL;
 			}else{
-				if(dr > 0)
-					receiverBase->setDynamicRange(dr);
+				if(dr > 0){
+					ret = receiverBase->setDynamicRange(dr);
+					if(ret == FAIL)
+						strcpy(mess, "Could not allocate memory for fifo or could not start listening/writing threads\n");
+				}
 				retval = receiverBase->getDynamicRange();
 				if(dr > 0 && retval != dr)
 					ret = FAIL;
@@ -2461,8 +2472,8 @@ int slsReceiverTCPIPInterface::enable_tengiga() {
 		}
 		else{
 			if(val >= 0)
-				receiverBase->setDataCompressionEnable(val);
-			retval=receiverBase->getDataCompressionEnable();
+				ret = receiverBase->setTenGigaEnable(val);
+			retval=receiverBase->getTenGigaEnable();
 			if((val >= 0) && (val != retval))
 				ret = FAIL;
 			else

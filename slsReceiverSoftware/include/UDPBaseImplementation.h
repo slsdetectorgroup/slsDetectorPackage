@@ -7,13 +7,12 @@
  ***********************************************/
 
 
-#include "sls_receiver_defs.h"
+//#include "sls_receiver_defs.h"
 #include "UDPInterface.h"
-#include <string.h>
-#include <stdio.h>
+//#include <stdio.h>
 
 /**
- * @short does all the functions for a receiver, set/get parameters, start/stop etc.
+ * @short does all the base functions for a receiver, set/get parameters, start/stop etc.
  */
 
 class UDPBaseImplementation : protected virtual slsReceiverDefs, public UDPInterface {
@@ -123,13 +122,13 @@ class UDPBaseImplementation : protected virtual slsReceiverDefs, public UDPInter
 	 * Get UDP Port Number
 	 * @return udp port number
 	 */
-	uint32_t getUDPPortNo() const;
+	uint32_t getUDPPortNumber() const;
 
 	/**
 	 * Get Second UDP Port Number (eiger specific)
 	 * @return second udp port number
 	 */
-	uint32_t getUDPPortNo2() const;
+	uint32_t getUDPPortNumber2() const;
 
 	/**
 	 * Get Ehernet Interface
@@ -254,9 +253,9 @@ class UDPBaseImplementation : protected virtual slsReceiverDefs, public UDPInter
 	/**
 	 * Set data compression, by saving only hits (so far implemented only for Moench and Gotthard)
 	 * @param b true for data compression enable, else false
+	 * @return OK or FAIL
 	 */
-	void setDataCompressionEnable(const bool b);
-
+	int setDataCompressionEnable(const bool b);
 
 
 	//***connection parameters***
@@ -264,13 +263,13 @@ class UDPBaseImplementation : protected virtual slsReceiverDefs, public UDPInter
 	 * Set UDP Port Number
 	 * @param i udp port number
 	 */
-	void setUDPPortNo(const uint32_t i);
+	void setUDPPortNumber(const uint32_t i);
 
 	/**
 	 * Set Second UDP Port Number (eiger specific)
 	 * @return second udp port number
 	 */
-	void setUDPPortNo2(const uint32_t i);
+	void setUDPPortNumber2(const uint32_t i);
 
 	/**
 	 * Set Ethernet Interface to listen to
@@ -279,7 +278,7 @@ class UDPBaseImplementation : protected virtual slsReceiverDefs, public UDPInter
 	void setEthernetInterface(const char* c);
 
 
-	//***connection parameters***
+	//***acquisition parameters***
 	/**
 	 * Set Short Frame Enabled, later will be moved to getROI (so far only for gotthard)
 	 * @param i index of adc enabled, else -1 if all enabled
@@ -289,14 +288,16 @@ class UDPBaseImplementation : protected virtual slsReceiverDefs, public UDPInter
 	/**
 	 * Set the Frequency of Frames Sent to GUI
 	 * @param i 0 for random frame requests, n for nth frame frequency
+	 * @return OK or FAIL
 	 */
-	void setFrameToGuiFrequency(const uint32_t i);
+	int setFrameToGuiFrequency(const uint32_t i);
 
 	/**
 	 * Set Acquisition Period
 	 * @param i acquisition period
+	 * @return OK or FAIL
 	 */
-	void setAcquisitionPeriod(const uint64_t i);
+	int setAcquisitionPeriod(const uint64_t i);
 
 	/**
 	 * Set Number of Frames expected by receiver from detector
@@ -308,21 +309,23 @@ class UDPBaseImplementation : protected virtual slsReceiverDefs, public UDPInter
 	/**
 	 * Set Dynamic Range or Number of Bits Per Pixel
 	 * @param i dynamic range that is 4, 8, 16 or 32
+	 * @return OK or FAIL
 	 */
-	void setDynamicRange(const uint32_t i);
+	int setDynamicRange(const uint32_t i);
 
 	/**
 	 * Set Ten Giga Enable
 	 * @param b true if 10Giga enabled, else false (1G enabled)
+	 * @return OK or FAIL
 	 */
-	void setTenGigaEnable(const bool b);
-
+	int setTenGigaEnable(const bool b);
 
 
 	/*************************************************************************
 	 * Behavioral functions***************************************************
 	 * They may modify the status of the receiver ****************************
 	 *************************************************************************/
+
 
 	//***initial functions***
 	/**
@@ -387,7 +390,7 @@ class UDPBaseImplementation : protected virtual slsReceiverDefs, public UDPInter
 	 * abort acquisition with minimum damage: close open files, cleanup.
 	 * does nothing if state already is 'idle'
 	 */
-	void abort();  //FIXME: needed, isnt stopReceiver enough?
+	void abort();  //FIXME: needed, isn't stopReceiver enough?
 
 	/**
 	 * Closes all files
@@ -436,36 +439,12 @@ class UDPBaseImplementation : protected virtual slsReceiverDefs, public UDPInter
  protected:
 
 	//**detector parameters***
-	/**
-	 * structure of an eiger packet header
-	 * subframenum subframe number for 32 bit mode (already written by firmware)
-	 * missingpacket explicitly put to 0xFF to recognize it in file read (written by software)
-	 * portnum 0 for the first port and 1 for the second port (written by software to file)
-	 * dynamicrange dynamic range or bits per pixel (written by software to file)
-	 */
-	typedef struct {
-		unsigned char subframenum[4];
-		unsigned char missingpacket[2];
-		unsigned char portnum[1];
-		unsigned char dynamicrange[1];
-	} eiger_packet_header_t;
-	/**
-	 * structure of an eiger packet footer
-	 * framenum 48 bit frame number (already written by firmware)
-	 * packetnum packet number (already written by firmware)
-	 */
-	typedef struct	{
-		unsigned char framenum[6];
-		unsigned char packetnum[2];
-	} eiger_packet_footer_t;
-
-
 	/** detector type */
 	detectorType myDetectorType;
 	/** detector hostname */
 	char detHostname[MAX_STR_LENGTH];
 	/** Number of Packets per Frame*/
-	uint64_t packetsPerFrame;
+	uint32_t packetsPerFrame;
 	/** Acquisition Period */
 	int64_t acquisitionPeriod;
 	/** Frame Number */
@@ -479,7 +458,7 @@ class UDPBaseImplementation : protected virtual slsReceiverDefs, public UDPInter
 
 	//***receiver parameters***
 	/** Maximum Number of Listening Threads/ UDP Ports */
-	const static int MAX_NUM_LISTENING_THREADS = 2;
+	const static int MAX_NUMBER_OF_LISTENING_THREADS = 2;
 	/** Receiver Status */
 	runStatus status;
 
@@ -487,7 +466,7 @@ class UDPBaseImplementation : protected virtual slsReceiverDefs, public UDPInter
 	/** Ethernet Interface */
 	char eth[MAX_STR_LENGTH];
 	/** Server UDP Port Number*/
-	uint32_t udpPortNum[MAX_NUM_LISTENING_THREADS];
+	uint32_t udpPortNum[MAX_NUMBER_OF_LISTENING_THREADS];
 
 	//***file parameters***
 	/** File Name without frame index, file index and extension (_d0_f000000000000_8.raw)*/

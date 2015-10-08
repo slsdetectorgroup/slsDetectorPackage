@@ -10,24 +10,920 @@
 #include "gotthardModuleData.h"
 #include "gotthardShortModuleData.h"
 
-
-#include <signal.h>  		// SIGINT
-#include <sys/stat.h> 		// stat
-#include <sys/socket.h>		// socket(), bind(), listen(), accept(), shut down
-#include <arpa/inet.h>		// sock_addr_in, htonl, INADDR_ANY
+//#include <sys/socket.h>		// socket(), bind(), listen(), accept(), shut down
+//#include <arpa/inet.h>		// sock_addr_in, htonl, INADDR_ANY
 #include <stdlib.h>			// exit()
-#include <iomanip>			//set precision
-#include <sys/mman.h>		//munmap
+#include <iomanip>			//set precision for printing parameters for create new file
+#include <map>				//map
+//#include <sys/mman.h>		//munmap
 
-
-
-#include <string.h>
 #include <iostream>
+#include <string.h>
 #include <stdint.h>
 using namespace std;
 
-
 #define WRITE_HEADERS
+
+/*************************************************************************
+ * Constructor & Destructor **********************************************
+ * They access local cache of configuration or detector parameters *******
+ *************************************************************************/
+
+UDPStandardImplementation::UDPStandardImplementation(){
+	FILE_LOG(logDEBUG) << __AT__ << " called";
+
+	initializeMembers();
+}
+
+UDPStandardImplementation::~UDPStandardImplementation(){
+	FILE_LOG(logDEBUG) << __AT__ << " called";
+
+	deleteMembers();
+}
+
+
+/*************************************************************************
+ * Setters ***************************************************************
+ * They modify the local cache of configuration or detector parameters ***
+ *************************************************************************/
+
+/***initial parameters***/
+void UDPStandardImplementation::deleteBaseMembers(){
+	FILE_LOG(logDEBUG) << __AT__ << " starting";
+
+	UDPBaseImplementation::~UDPBaseImplementation();
+}
+
+void UDPStandardImplementation::deleteMembers(){
+	FILE_LOG(logDEBUG) << __AT__ << " starting";
+
+	cout << "Info: Deleting member pointers" << endl;
+	//filter
+	deleteFilter();
+	//kill threads
+	if(threadStarted){
+		createListeningThreads(true);
+		createWriterThreads(true);
+	}
+	//shutdownudpsockets
+	//close file
+	if(latestData) {delete[] latestData; latestData = NULL;}
+}
+
+void UDPStandardImplementation::deleteFilter(){
+	FILE_LOG(logDEBUG) << __AT__ << " starting";
+
+	moenchCommonModeSubtraction = NULL;
+	for(int i=0; i<MAX_NUMBER_OF_WRITER_THREADS; i++){
+			if(singlePhotonDetectorObject[i]){
+				delete []singlePhotonDetectorObject[i];
+				singlePhotonDetectorObject[i] = NULL;
+			}
+			if(receiverData[i]){
+				delete []receiverData[i];
+				receiverData[i] = NULL;
+			}
+		}
+}
+
+void UDPStandardImplementation::initializeBaseMembers(){
+	FILE_LOG(logDEBUG) << __AT__ << " starting";
+	UDPBaseImplementation::UDPBaseImplementation();
+}
+
+
+void UDPStandardImplementation::initializeMembers(){
+	FILE_LOG(logDEBUG) << __AT__ << " starting";
+
+	cout << "Info: Initializing members" << endl;
+
+	//***detector parameters***
+	frameSize = 0;
+	bufferSize = 0;
+	onePacketSize = 0;
+	oneDataSize = 0;
+	frameIndexMask = 0;
+	frameIndexOffset = 0;
+	packetIndexMask = 0;
+	footerOffset = 0;
+
+	//***file parameters***
+	maxPacketsPerFile = 0;
+
+	//***acquisition indices parameters***
+	startAcquisitionIndex = 0;
+	startFrameIndex = 0;
+	currentFrameNumber = 0;
+	acqStarted = false;
+	measurementStarted = false;
+	for(int i = 0; i < numberofListeningThreads; ++i)
+		totalListeningFrameCount[i] = 0;
+
+	//***receiver parameters***
+	for(int i=0; i < MAX_NUMBER_OF_LISTENING_THREADS; i++){
+		buffer[i] = NULL;
+		mem0[i] = NULL;
+		fifo[i] = NULL;
+		fifoFree[i] = NULL;
+	}
+	numberofJobsPerBuffer = -1;
+	fifoSize = 0;
+	latestData = NULL;
+
+	//***general and listening thread parameters***
+	threadStarted = false;
+	numberofListeningThreads = 1;
+	currentListeningThreadIndex = -1;
+	listeningThreadsMask = 0x0;
+	killAllListeningThreads = false;
+
+	//***writer thread parameters***
+	numberofWriterThreads = 1;
+	currentWriterThreadIndex = -1;
+	writerThreadsMask = 0x0;
+	createFileMask = 0x0;
+	killAllWritingThreads = false;
+
+	//***filter parameters***
+	commonModeSubtractionEnable = false;
+	moenchCommonModeSubtraction = NULL;
+	for(int i=0; i<MAX_NUMBER_OF_WRITER_THREADS; i++){
+		singlePhotonDetectorObject[i] = NULL;
+		receiverData[i] = NULL;
+	}
+
+	//***mutex***
+	pthread_mutex_init(&status_mutex,NULL);
+}
+
+
+
+void UDPStandardImplementation::initializeFilter(){
+	FILE_LOG(logDEBUG) << __AT__ << " starting";
+
+	double hc = 0, sigma = 5;
+	int sign = 1, csize, i;
+
+	//common mode initialization
+	if (commonModeSubtractionEnable){
+		if(myDetectorType == MOENCH)
+			moenchCommonModeSubtraction=new moenchCommonMode();
+		else
+			cout << "Warning: No common mode subtraction for this detector" << endl;
+	}
+
+	//receiver data initialization
+	switch(myDetectorType){
+		case MOENCH:
+			csize = 3;
+			for(i=0; i<numberofWriterThreads; i++)
+				receiverData[i]=new moench02ModuleData(hc);
+			break;
+		default:
+			csize = 1;
+			if(shortFrameEnable == -1){
+				for(i=0; i<numberofWriterThreads; i++)
+					receiverData[i]=new gotthardModuleData(hc);
+			}else{
+				for(i=0; i<numberofWriterThreads; i++)
+					receiverData[i]=new gotthardShortModuleData(hc);
+			}
+			break;
+		}
+
+	//single photon detector initialization
+	for(i=0; i<numberofWriterThreads; i++)
+		singlePhotonDetectorObject[i]=new singlePhotonDetector<uint16_t>(receiverData[i], csize, sigma, sign, commonModeSubtractionEnable);
+}
+
+
+
+int UDPStandardImplementation::createListeningThreads(bool destroy){
+	FILE_LOG(logDEBUG) << __AT__ << " starting";
+
+	//reset masks
+	killAllListeningThreads = false;
+	pthread_mutex_lock(&status_mutex);
+	listeningThreadsMask = 0x0;
+	pthread_mutex_unlock(&(status_mutex));
+
+	//destroy
+	if(destroy){
+		cout << "Info: Destroying Listening Thread(s)" << endl;
+
+		killAllListeningThreads = true;
+		for(int i = 0; i < numberofListeningThreads; ++i){
+			sem_post(&listenSemaphore[i]);
+			pthread_join(listeningThreads[i],NULL);
+			cout <<"."<<flush;
+		}
+		killAllListeningThreads = false;
+		threadStarted = false;
+		cout << endl;
+		cout << "Info: Listening thread(s) destroyed" << endl;
+	}
+
+	//create
+	else{
+		cout << "Info: Creating Listening Thread(s)" << endl;
+
+		//reset current index
+		currentListeningThreadIndex = -1;
+
+		for(int i = 0; i < numberofListeningThreads; ++i){
+			sem_init(&listenSemaphore[i],1,0);
+			threadStarted = false;
+			currentListeningThreadIndex = i;
+			if(pthread_create(&listeningThreads[i], NULL,startListeningThread, (void*) this)){
+				cout << "Warning: Could not create listening thread with index " << i << endl;
+				return FAIL;
+			}
+			while(!threadStarted);
+			cout << ".";
+			cout << flush;
+		}
+		cout << endl;
+#ifdef VERBOSE
+		cout << "Info: Listening thread(s) created successfully." << endl;
+#endif
+
+	}
+
+	return OK;
+}
+
+
+
+int UDPStandardImplementation::createWriterThreads(bool destroy){
+	FILE_LOG(logDEBUG) << __AT__ << " starting";
+
+	//reset masks
+	killAllWritingThreads = false;
+	pthread_mutex_lock(&status_mutex);
+	writerThreadsMask = 0x0;
+	createFileMask = 0x0;
+	pthread_mutex_unlock(&(status_mutex));
+
+	//destroy threads
+	if(destroy){
+		cout << "Info: Destroying Writer Thread(s)" << endl;
+
+		killAllWritingThreads = true;
+		for(int i = 0; i < numberofWriterThreads; ++i){
+			sem_post(&writerSemaphore[i]);
+			pthread_join(writingThreads[i],NULL);
+			cout <<"."<<flush;
+		}
+		killAllWritingThreads = false;
+		threadStarted = false;
+		cout << endl;
+		cout << "Info: Writer thread(s) destroyed" << endl;
+	}
+
+	//create threads
+	else{
+		cout << "Info: Creating Writer Thread(s)" << endl;
+
+		//reset current index
+		currentWriterThreadIndex = -1;
+
+		for(int i = 0; i < numberofWriterThreads; ++i){
+			sem_init(&writerSemaphore[i],1,0);
+			threadStarted = false;
+			currentWriterThreadIndex = i;
+			if(pthread_create(&writingThreads[i], NULL,startWritingThread, (void*) this)){
+				cout << "Warning: Could not create writer thread with index " << i << endl;
+				return FAIL;
+			}
+			while(!threadStarted);
+			cout << ".";
+			cout << flush;
+		}
+		cout << endl;
+#ifdef VERBOSE
+		cout << "Info: Writer thread(s) created successfully." << endl;
+#endif
+	}
+
+	return OK;
+}
+
+
+
+void UDPStandardImplementation::setThreadPriorities(){
+	FILE_LOG(logDEBUG) << __AT__ << " called";
+
+	struct sched_param tcp_param, listen_param, write_param;
+	bool rights = true;
+
+	//assign priorities
+	tcp_param.sched_priority = 50;
+	listen_param.sched_priority = 99;
+	write_param.sched_priority = 90;
+
+	//set them
+	for(int i = 0; i < numberofListeningThreads; ++i){
+		if (pthread_setschedparam(listeningThreads[i], SCHED_RR, &listen_param) == EPERM){
+			rights = false;
+			break;
+		}
+	}
+	for(int i = 0; i < numberofWriterThreads; ++i){
+		if(rights)
+			if (pthread_setschedparam(writingThreads[i], SCHED_RR, &write_param) == EPERM){
+				rights = false;
+				break;
+			}
+	}
+	if (pthread_setschedparam(pthread_self(),5 , &tcp_param) == EPERM)
+		rights = false;
+
+	if(!rights)
+		cout << "Warning: No root permission to prioritize threads." << endl;
+
+}
+
+
+
+int UDPStandardImplementation::setupFifoStructure(){
+	FILE_LOG(logDEBUG) << __AT__ << " called";
+
+	int64_t i;
+	int oldNumberofJobsPerBuffer = numberofJobsPerBuffer;
+	int oldFifoSize = fifoSize;
+
+	//eiger always listens to 1 packet at a time
+	if(myDetectorType == EIGER){
+		numberofJobsPerBuffer = 1;
+		cout << "Info: 1 packet per buffer" << endl;
+	}
+
+	//else calculate best possible number of frames to listen to at a time (for fast readouts like gotthard)
+	else{
+		//if frequency to gui is not random (every nth frame), then listen to only n frames per buffer
+		if(FrameToGuiFrequency)
+			numberofJobsPerBuffer = FrameToGuiFrequency;
+		//random frame sent to gui, then frames per buffer depends on acquisition period
+		else{
+			//calculate 100ms/period to get frames to listen to at a time
+			if(!acquisitionPeriod)
+				i = SAMPLE_TIME_IN_NS;
+			else i = SAMPLE_TIME_IN_NS/acquisitionPeriod;
+			//max frames to listen to at a time is limited by 1000
+			if (i > MAX_JOBS_PER_THREAD)
+				numberofJobsPerBuffer = MAX_JOBS_PER_THREAD;
+			else if (i < 1)
+				numberofJobsPerBuffer = 1;
+			else
+				numberofJobsPerBuffer = i;
+
+		}
+		cout << "Info: Number of Frames per buffer:" << numberofJobsPerBuffer << endl;
+	}
+
+	//set fifo depth
+	//eiger listens to 1 packet at a time and size changes depending on packets per frame
+	if(myDetectorType == EIGER)
+		fifoSize = EIGER_FIFO_SIZE * packetsPerFrame;
+	else{
+		fifoSize = GOTTHARD_FIFO_SIZE;
+		if(myDetectorType == MOENCH)
+			fifoSize = MOENCH_FIFO_SIZE;
+		else if(myDetectorType == PROPIX)
+			fifoSize = PROPIX_FIFO_SIZE;
+		//reduce fifo depth if more frames listened to at a time
+		if(fifoSize % numberofJobsPerBuffer)
+			fifoSize = (fifoSize/numberofJobsPerBuffer)+1;
+		else
+			fifoSize = fifoSize/numberofJobsPerBuffer;
+	}
+#ifdef VERBOSE
+	cout << "Info: Fifo Depth:" << fifoSize << endl;
+#endif
+
+
+	//do not rebuild fifo structure if it is the same
+	if((oldNumberofJobsPerBuffer == numberofJobsPerBuffer) && (oldFifoSize == fifoSize))
+		return OK;
+
+
+	//set up fifo structure
+	for(int i=0;i<numberofListeningThreads;i++){
+
+		//deleting
+		if(fifoFree[i]){
+			while(!fifoFree[i]->isEmpty())
+				fifoFree[i]->pop(buffer[i]);
+#ifdef FIFO_DEBUG
+			cprintf(GREEN,"%d fifostructure popped from fifofree %p\n", i, (void*)(buffer[i]));
+#endif
+			delete fifoFree[i];
+		}
+		if(fifo[i])		delete fifo[i];
+		if(mem0[i]) 	free(mem0[i]);
+
+		//creating
+		fifoFree[i] 	= new CircularFifo<char>(fifoSize);
+		fifo[i] 		= new CircularFifo<char>(fifoSize);
+
+		//allocate memory
+		mem0[i] = (char*)malloc((bufferSize * numberofJobsPerBuffer + HEADER_SIZE_NUM_TOT_PACKETS) * fifoSize);
+		if (mem0[i] == NULL){
+			cprintf(BG_RED,"Error: Could not allocate memory for listening \n");
+			return FAIL;
+		}
+
+		//push free address into fifoFree
+		buffer[i]=mem0[i];
+		while (buffer[i] < (mem0[i]+(bufferSize * numberofJobsPerBuffer + HEADER_SIZE_NUM_TOT_PACKETS) * (fifoSize-1))) {
+			fifoFree[i]->push(buffer[i]);
+#ifdef FIFO_DEBUG
+			cprintf(BLUE,"%d fifostructure free pushed into fifofree %p\n", i, (void*)(buffer[i]));
+#endif
+			buffer[i] += (bufferSize * numberofJobsPerBuffer + HEADER_SIZE_NUM_TOT_PACKETS);
+		}
+	}
+	cout << "Info: Fifo structure(s) reconstructed" << endl;
+}
+
+
+
+
+int UDPStandardImplementation::createUDPSockets(){
+	FILE_LOG(logDEBUG) << __AT__ << " called";
+
+
+
+
+	return OK;
+}
+
+
+
+
+void UDPStandardImplementation::configure(map<string, string> config_map){
+	FILE_LOG(logDEBUG) << __AT__ << " starting";
+
+	map<string, string>::const_iterator pos;
+	pos = config_map.find("mode");
+	if (pos != config_map.end() ){
+		int b;
+		if(!sscanf(pos->second.c_str(), "%d", &b)){
+			cout << "Warning: Could not parse mode. Assuming top mode." << endl;
+			b = 0;
+		}
+		bottomEnable = b!= 0;
+		cout << "Info: Bottom Enable: " << stringEnable(bottomEnable) << endl;
+	}
+
+}
+
+
+/***file parameters***/
+int UDPStandardImplementation::setDataCompressionEnable(const bool b){
+	FILE_LOG(logDEBUG) << __AT__ << " starting";
+
+	cout << "Info: Setting up Data Compression Enable to " << stringEnable(b);
+#ifdef MYROOT1
+	cout << " WITH ROOT" << endl;
+#else
+	cout << " WITHOUT ROOT" << endl;
+#endif
+
+	//set data compression enable
+	dataCompressionEnable = b;
+
+	//-- create writer threads depending on enable
+	pthread_mutex_lock(&status_mutex);
+	writerThreadsMask = 0x0;
+	pthread_mutex_unlock(&(status_mutex));
+
+	createWriterThreads(true);
+	if(b)
+		numberofWriterThreads = MAX_NUMBER_OF_WRITER_THREADS;
+	else
+		numberofWriterThreads = 1;
+	if(createWriterThreads() == FAIL){
+			cprintf(BG_RED,"Error: Could not create writer threads\n");
+			return FAIL;
+		}
+	//-- end of create writer threads
+	setThreadPriorities();
+
+	//filter
+	deleteFilter();
+	if(b)
+		initializeFilter();
+
+	cout << "Info: Data Compression " << stringEnable(dataCompressionEnable) << endl;
+
+	return OK;
+}
+
+
+/***acquisition parameters***/
+void UDPStandardImplementation::setShortFrameEnable(const int i){
+	FILE_LOG(logDEBUG) << __AT__ << " called";
+
+	shortFrameEnable = i;
+
+	if(shortFrameEnable!=-1){
+		frameSize = GOTTHARD_SHORT_BUFFER_SIZE;
+		bufferSize = GOTTHARD_SHORT_BUFFER_SIZE;
+		onePacketSize = GOTTHARD_SHORT_BUFFER_SIZE;
+		oneDataSize = GOTTHARD_SHORT_DATABYTES;
+		maxPacketsPerFile = SHORT_MAX_FRAMES_PER_FILE * GOTTHARD_SHORT_PACKETS_PER_FRAME;
+		packetsPerFrame = GOTTHARD_SHORT_PACKETS_PER_FRAME;
+		frameIndexMask = GOTTHARD_SHORT_FRAME_INDEX_MASK;
+		frameIndexOffset = GOTTHARD_SHORT_FRAME_INDEX_OFFSET;
+		packetIndexMask = GOTTHARD_SHORT_PACKET_INDEX_MASK;
+
+	}else{
+		frameSize = GOTTHARD_BUFFER_SIZE;
+		bufferSize = GOTTHARD_BUFFER_SIZE;
+		onePacketSize = GOTTHARD_ONE_PACKET_SIZE;
+		oneDataSize = GOTTHARD_ONE_DATA_SIZE;
+		maxPacketsPerFile = MAX_FRAMES_PER_FILE * GOTTHARD_PACKETS_PER_FRAME;
+		packetsPerFrame = GOTTHARD_PACKETS_PER_FRAME;
+		frameIndexMask = GOTTHARD_FRAME_INDEX_MASK;
+		frameIndexOffset = GOTTHARD_FRAME_INDEX_OFFSET;
+		packetIndexMask = GOTTHARD_PACKET_INDEX_MASK;
+	}
+
+	//filter
+	deleteFilter();
+	if(dataCompressionEnable)
+		initializeFilter();
+
+	cout << "Info: Short Frame Enable set to " << shortFrameEnable << endl;
+}
+
+
+int UDPStandardImplementation::setFrameToGuiFrequency(const uint32_t i){
+	FILE_LOG(logDEBUG) << __AT__ << " called";
+
+	if(i >= 0){
+		FrameToGuiFrequency = i;
+		if(setupFifoStructure() == FAIL)
+			return FAIL;
+	}
+
+	cout << "Info: Frame to Gui Frequency set to " << FrameToGuiFrequency << endl;
+
+	return OK;
+}
+
+
+int UDPStandardImplementation::setAcquisitionPeriod(int64_t i){
+	FILE_LOG(logDEBUG) << __AT__ << " called";
+
+	if(i >= 0){
+		acquisitionPeriod = i;
+		if(setupFifoStructure() == FAIL)
+			return FAIL;
+	}
+
+	cout << "Info: Acquisition Period set to " << acquisitionPeriod << endl;
+
+
+	return OK;
+}
+
+int UDPStandardImplementation::setDynamicRange(const uint32_t i){
+	FILE_LOG(logDEBUG) << __AT__ << " called";
+
+	int oldDynamicRange = dynamicRange;
+
+	cout << "Info: Setting Dynamic Range to " << i << endl;
+	dynamicRange = i;
+
+	if(myDetectorType == EIGER){
+
+		//set parameters depending on new dynamic range.
+		packetsPerFrame 	= (tengigaEnable ? EIGER_TEN_GIGA_CONSTANT : EIGER_ONE_GIGA_CONSTANT)
+																* dynamicRange * EIGER_MAX_PORTS;
+		frameSize			= onePacketSize * packetsPerFrame;
+		maxPacketsPerFile 	= EIGER_MAX_FRAMES_PER_FILE * packetsPerFrame;
+
+		//new dynamic range, then restart threads and resetup fifo structure
+		if(oldDynamicRange != dynamicRange){
+
+			//delete threads
+			if(threadStarted){
+				createListeningThreads(true);
+				createWriterThreads(true);
+			}
+
+			//gui buffer
+			if(latestData){delete[] latestData; latestData = NULL;}
+			latestData = new char[frameSize];
+
+			//restructure fifo
+			if(setupFifoStructure() == FAIL)
+				return FAIL;
+
+			//create threads
+			if(createListeningThreads() == FAIL){
+				cprintf(BG_RED,"Error: Could not create listening thread\n");
+				return FAIL;
+			}
+			if(createWriterThreads() == FAIL){
+				cprintf(BG_RED,"Error: Could not create writer threads\n");
+				return FAIL;
+			}
+			setThreadPriorities();
+		}
+
+	}
+
+	cout << "Info: Dynamic Range set to " << dynamicRange << endl;
+
+	return OK;
+}
+
+
+
+int UDPStandardImplementation::setTenGigaEnable(const bool b){
+	FILE_LOG(logDEBUG) << __AT__ << " called";
+
+	cout << "Info: Setting Ten Giga to " << string(b) << endl;
+	bool oldTenGigaEnable = tengigaEnable;
+	tengigaEnable = b;
+
+	if(myDetectorType == EIGER){
+
+		//set parameters depending on 10g
+		if(tengigaEnable){
+			packetsPerFrame = EIGER_TEN_GIGA_CONSTANT * dynamicRange * EIGER_MAX_PORTS;
+			onePacketSize  	= EIGER_TEN_GIGA_ONE_PACKET_SIZE;
+			oneDataSize 	= EIGER_TEN_GIGA_ONE_DATA_SIZE;
+		}else{
+			packetsPerFrame = EIGER_ONE_GIGA_CONSTANT * dynamicRange * EIGER_MAX_PORTS;
+			onePacketSize  	= EIGER_ONE_GIGA_ONE_PACKET_SIZE;
+			oneDataSize		= EIGER_ONE_GIGA_ONE_DATA_SIZE;
+		}
+		frameSize			= onePacketSize * packetsPerFrame;
+		bufferSize 			= onePacketSize;
+		maxPacketsPerFile 	= EIGER_MAX_FRAMES_PER_FILE * packetsPerFrame;
+
+		FILE_LOG(logDEBUG1) << dec <<
+				"packetsPerFrame:" << packetsPerFrame <<
+				"\nonePacketSize:" << onePacketSize <<
+				"\noneDataSize:" << oneDataSize <<
+				"\nframesize:" << frameSize <<
+				"\nbufferSize:" << bufferSize <<
+				"\nmaxPacketsPerFile:" << maxPacketsPerFile << endl;
+
+
+
+		//new enable, then restart threads and resetup fifo structure
+		if(oldTenGigaEnable != tengigaEnable){
+
+			//delete threads
+			if(threadStarted){
+				createListeningThreads(true);
+				createWriterThreads(true);
+			}
+
+			//gui buffer
+			if(latestData){delete[] latestData; latestData = NULL;}
+			latestData = new char[frameSize];
+
+			//restructure fifo
+			if(setupFifoStructure() == FAIL)
+				return FAIL;
+
+			//create threads
+			if(createListeningThreads() == FAIL){
+				cprintf(BG_RED,"Error: Could not create listening thread\n");
+				return FAIL;
+			}
+			if(createWriterThreads() == FAIL){
+				cprintf(BG_RED,"Error: Could not create writer threads\n");
+				return FAIL;
+			}
+			setThreadPriorities();
+		}
+
+	}
+
+	cout << "Info: Ten Giga " << string(tengigaEnable) << endl;
+
+	return OK;
+}
+
+
+
+/*************************************************************************
+ * Behavioral functions***************************************************
+ * They may modify the status of the receiver ****************************
+ *************************************************************************/
+
+
+/***initial functions***/
+int UDPStandardImplementation::setDetectorType(const slsReceiverDefs::detectorType d){
+	FILE_LOG(logDEBUG) << __AT__ << " called";
+
+	cout << "Setting receiver type ..." << endl;
+
+	deleteBaseMembers();
+	deleteMembers();
+	initializeBaseMembers();
+	initializeMembers();
+
+	myDetectorType = d;
+	switch(myDetectorType){
+	case GOTTHARD:
+	case PROPIX:
+	case MOENCH:
+	case EIGER:
+	case JUNGFRAUCTB:
+	case JUNGFRAU:
+		cout << "Info: ***** This is a " << slsDetectorBase::getDetectorType(d) << " Receiver *****" << endl;
+		break;
+	default:
+		cout << "Error: This is an unknown receiver type " << (int)d << endl;
+		return FAIL;
+	}
+
+	//set detector specific variables
+	switch(myDetectorType){
+	case GOTTHARD:
+		packetsPerFrame		= GOTTHARD_PACKETS_PER_FRAME;
+		onePacketSize 		= GOTTHARD_ONE_PACKET_SIZE;
+		oneDataSize 		= GOTTHARD_ONE_DATA_SIZE;
+		frameSize 			= GOTTHARD_BUFFER_SIZE;
+		bufferSize 			= GOTTHARD_BUFFER_SIZE;
+		frameIndexMask 		= GOTTHARD_FRAME_INDEX_MASK;
+		frameIndexOffset 	= GOTTHARD_FRAME_INDEX_OFFSET;
+		packetIndexMask 	= GOTTHARD_PACKET_INDEX_MASK;
+		maxPacketsPerFile	= MAX_FRAMES_PER_FILE * GOTTHARD_PACKETS_PER_FRAME;
+		fifoSize			= GOTTHARD_FIFO_SIZE;
+		//footerOffset		= Not applicable;
+		break;
+	case PROPIX:
+		packetsPerFrame		= PROPIX_PACKETS_PER_FRAME;
+		onePacketSize 		= PROPIX_ONE_PACKET_SIZE;
+		//oneDataSize 		= Not applicable;
+		frameSize 			= PROPIX_BUFFER_SIZE;
+		bufferSize 			= PROPIX_BUFFER_SIZE;
+		frameIndexMask 		= PROPIX_FRAME_INDEX_MASK;
+		frameIndexOffset 	= PROPIX_FRAME_INDEX_OFFSET;
+		packetIndexMask 	= PROPIX_PACKET_INDEX_MASK;
+		maxPacketsPerFile	= MAX_FRAMES_PER_FILE * PROPIX_PACKETS_PER_FRAME;
+		fifoSize			= PROPIX_FIFO_SIZE;
+		//footerOffset		= Not applicable;
+		break;
+	case MOENCH:
+		packetsPerFrame		= MOENCH_PACKETS_PER_FRAME;
+		onePacketSize 		= MOENCH_ONE_PACKET_SIZE;
+		oneDataSize 		= MOENCH_ONE_DATA_SIZE;
+		frameSize 			= MOENCH_BUFFER_SIZE;
+		bufferSize 			= MOENCH_BUFFER_SIZE;
+		frameIndexMask 		= MOENCH_FRAME_INDEX_MASK;
+		frameIndexOffset 	= MOENCH_FRAME_INDEX_OFFSET;
+		packetIndexMask 	= MOENCH_PACKET_INDEX_MASK;
+		maxPacketsPerFile	= MOENCH_MAX_FRAMES_PER_FILE * MOENCH_PACKETS_PER_FRAME;
+		fifoSize			= MOENCH_FIFO_SIZE;
+		//footerOffset		= Not applicable;
+		break;
+	case EIGER:
+		//assuming 1G in the beginning
+		packetsPerFrame		= EIGER_ONE_GIGA_CONSTANT * dynamicRange * EIGER_MAX_PORTS;
+		onePacketSize 		= EIGER_ONE_GIGA_ONE_PACKET_SIZE;
+		oneDataSize 		= EIGER_ONE_GIGA_ONE_DATA_SIZE;
+		frameSize 			= onePacketSize * packetsPerFrame;
+		bufferSize 			= onePacketSize;
+		frameIndexMask 		= EIGER_FRAME_INDEX_MASK;
+		frameIndexOffset 	= EIGER_FRAME_INDEX_OFFSET;
+		packetIndexMask 	= EIGER_PACKET_INDEX_MASK;
+		maxPacketsPerFile	= EIGER_MAX_FRAMES_PER_FILE * packetsPerFrame;
+		fifoSize			= EIGER_FIFO_SIZE;
+		footerOffset		= EIGER_PACKET_HEADER_SIZE + oneDataSize;
+		break;
+	case JUNGFRAUCTB:
+	case JUNGFRAU:
+		packetsPerFrame		= JCTB_PACKETS_PER_FRAME;
+		onePacketSize 		= JCTB_ONE_PACKET_SIZE;
+		//oneDataSize 		= Not applicable;
+		frameSize 			= JCTB_BUFFER_SIZE;
+		bufferSize 			= JCTB_BUFFER_SIZE;
+		frameIndexMask 		= JCTB_FRAME_INDEX_MASK;
+		frameIndexOffset 	= JCTB_FRAME_INDEX_OFFSET;
+		packetIndexMask 	= JCTB_PACKET_INDEX_MASK;
+		maxPacketsPerFile	= JFCTB_MAX_FRAMES_PER_FILE * JCTB_PACKETS_PER_FRAME;
+		fifoSize			= JCTB_FIFO_SIZE;
+		//footerOffset		= Not applicable;
+		break;
+	}
+
+	//delete threads and set number of listening threads
+	if(myDetectorType == EIGER){
+		pthread_mutex_lock(&status_mutex);
+		listeningThreadsMask = 0x0;
+		pthread_mutex_unlock(&(status_mutex));
+		if(threadStarted)
+			createListeningThreads(true);
+		numberofListeningThreads = MAX_NUMBER_OF_LISTENING_THREADS;
+	}
+
+	//set up fifo structure -1 for numberofJobsPerBuffer ensure it is done
+	numberofJobsPerBuffer = -1;
+	setupFifoStructure();
+
+	//create threads
+	if(createListeningThreads() == FAIL){
+		cprintf(BG_RED,"Error: Could not create listening thread\n");
+		exit (-1);
+	}
+	if(createWriterThreads() == FAIL){
+		cprintf(BG_RED,"Error: Could not create writer threads\n");
+		exit (-1);
+	}
+	setThreadPriorities();
+
+	//allocate for latest data (frame copy for gui)
+	latestData = new char[frameSize];
+
+	cout << " Detector type set to " << slsDetectorBase::getDetectorType(d) << endl;
+	cout << "Ready..." << endl;
+
+	return OK;
+}
+
+
+/***acquisition functions***/
+void UDPStandardImplementation::resetAcquisitionCount(){
+	FILE_LOG(logDEBUG) << __AT__ << " starting";
+
+	totalPacketsCaught = 0;
+	acqStarted = false;
+	startAcquisitionIndex = 0;
+
+	cout << "Info: Acquisition Count has been reset" << endl;
+}
+
+
+int UDPStandardImplementation::startReceiver(char *c=NULL){
+	FILE_LOG(logDEBUG) << __AT__ << " called";
+
+	cout << "Info: Starting Receiver" << endl;
+
+	//reset measurement variables
+	measurementStarted = false;
+	startFrameIndex = 0;
+	if(!acqStarted)
+		currentFrameNumber = 0;		//has to be zero to add to startframeindex for each scan
+	for(int i = 0; i < numberofListeningThreads; ++i)
+		totalListeningFrameCount[i] = 0;
+
+	//create UDP sockets
+	if(createUDPSockets() == FAIL){
+
+	}
+
+	return OK;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 UDPStandardImplementation::UDPStandardImplementation(){
@@ -36,7 +932,7 @@ UDPStandardImplementation::UDPStandardImplementation(){
 	latestData = NULL;
 	guiFileName = NULL;
 	tengigaEnable = 0;
-	footer_offset = 0;
+
 	for(int i=0;i<MAX_NUM_LISTENING_THREADS;i++){
 		udpSocket[i] = NULL;
 		server_port[i] = DEFAULT_UDP_PORTNO+i;
@@ -83,33 +979,16 @@ UDPStandardImplementation::UDPStandardImplementation(){
 		}
 
 
-void UDPStandardImplementation::configure(map<string, string> config_map){
-	FILE_LOG(logWARNING) << __AT__ << " called";
-
-	map<string, string>::const_iterator pos;
-	pos = config_map.find("mode");
-	if (pos != config_map.end() ){
-		int b;
-		if(!sscanf(pos->second.c_str(), "%d", &b)){
-			cout << "Warning: Could not parse mode. Assuming top mode." << endl;
-			b = 0;
-		}
-		bottom = b!= 0;
-		cout << "bottom:"<< bottom << endl;
-	}
-};
 
 void UDPStandardImplementation::initializeMembers(){
 	myDetectorType = GENERIC;
-	maxPacketsPerFile = 0;
 	enableFileWrite = 1;
 	overwrite = 1;
 	fileIndex = 0;
 	scanTag = 0;
 	frameIndexNeeded = 0;
-	acqStarted = false;
-	measurementStarted = false;
-	startFrameIndex = 0;
+
+
 	frameIndex = 0;
 	packetsCaught = 0;
 	totalPacketsCaught = 0;
@@ -119,7 +998,7 @@ void UDPStandardImplementation::initializeMembers(){
 	numMissingPackets = 0;
 	startAcquisitionIndex = 0;
 	acquisitionIndex = 0;
-	packetsPerFrame = 0;
+
 	frameIndexMask = 0;
 	packetIndexMask = 0;
 	frameIndexOffset = 0;
@@ -129,39 +1008,24 @@ void UDPStandardImplementation::initializeMembers(){
 	shortFrame = -1;
 	currframenum = 0;
 	prevframenum = 0;
-	frameSize = 0;
-	bufferSize = 0;
-	onePacketSize = 0;
-	oneDataSize = 0;
+
 	guiDataReady = 0;
 	nFrameToGui = 0;
-	fifosize = 0;
-	numJobsPerThread = -1;
 	dataCompression = false;
 	numListeningThreads = 1;
 	numWriterThreads = 1;
 	thread_started = 0;
-	currentListeningThreadIndex = -1;
-	currentWriterThreadIndex = -1;
-	for(int i=0;i<numWriterThreads;i++)
-		totalListeningFrameCount[i] = 0;
-	listeningthreads_mask = 0x0;
-	writerthreads_mask = 0x0;
-	killAllListeningThreads = 0;
-	killAllWritingThreads = 0;
+
+
 	cbAction = DO_EVERYTHING;
 	tengigaEnable = 0;
-	footer_offset = 0;
+
 
 	for(int i=0;i<numListeningThreads;i++){
 		udpSocket[i] = NULL;
-		mem0[i] = NULL;
-		fifo[i] = NULL;
-		fifoFree[i] = NULL;
-		buffer[i] = NULL;
 	}
 	eth = NULL;
-	latestData = NULL;
+
 	guiFileName = NULL;
 	guiData = NULL;
 	sfilefd = NULL;
@@ -186,8 +1050,7 @@ void UDPStandardImplementation::initializeMembers(){
 	strcpy(guiFileName,"");
 	strcpy(savefilename,"");
 	
-	setFileName("run");
-	setFilePath("");
+
 	//strcpy(filePath,"");
 	//strcpy(fileName,"run");
 
@@ -243,144 +1106,11 @@ void UDPStandardImplementation::deleteMembers(){ 	FILE_LOG(logDEBUG) << __AT__ <
 }
 
 
-
-
-
-
-int UDPStandardImplementation::setDetectorType(detectorType det){ 	FILE_LOG(logDEBUG) << __AT__ << " called";
-
-	cout << "Setting Receiver Type " << endl;
-
-	deleteMembers();
-	initializeMembers();
-
-	myDetectorType = det;
-
-	switch(myDetectorType){
-	case GOTTHARD:
-		cout << endl << "***** This is a GOTTHARD Receiver *****" << endl << endl;
-		break;
-	case PROPIX:
-		cout << endl << "***** This is a PROPIX Receiver *****" << endl << endl;
-		break;
-	case MOENCH:
-		cout << endl << "***** This is a MOENCH Receiver *****" << endl << endl;
-		break;
-	case EIGER:
-		cout << endl << "***** This is a EIGER Receiver *****" << endl << endl;
-		break;
-	case JUNGFRAUCTB:
-		cout << endl << "***** This is a JUNGFRAUCTB Receiver *****" << endl << endl;
-		break;
-	case JUNGFRAU:
-		cout << endl << "***** This is a JUNGFRAU Receiver *****" << endl << endl;
-		break;
-	default:
-		cout << endl << "***** Unknown Receiver *****" << endl << endl;
-	return FAIL;
-		break;
-	}
-
-	//detector specific variables
-	if(myDetectorType == GOTTHARD){
-		fifosize 			= GOTTHARD_FIFO_SIZE;
-		packetsPerFrame 	= GOTTHARD_PACKETS_PER_FRAME;
-		onePacketSize		= GOTTHARD_ONE_PACKET_SIZE;
-		frameSize			= GOTTHARD_BUFFER_SIZE;
-		bufferSize 			= GOTTHARD_BUFFER_SIZE;
-		maxPacketsPerFile 	= MAX_FRAMES_PER_FILE * GOTTHARD_PACKETS_PER_FRAME;
-		frameIndexMask 		= GOTTHARD_FRAME_INDEX_MASK;
-		frameIndexOffset 	= GOTTHARD_FRAME_INDEX_OFFSET;
-		packetIndexMask 	= GOTTHARD_PACKET_INDEX_MASK;
-	}else if(myDetectorType == PROPIX){
-		fifosize 			= PROPIX_FIFO_SIZE;
-		packetsPerFrame 	= PROPIX_PACKETS_PER_FRAME;
-		onePacketSize		= PROPIX_ONE_PACKET_SIZE;
-		frameSize			= PROPIX_BUFFER_SIZE;
-		bufferSize 			= PROPIX_BUFFER_SIZE;
-		maxPacketsPerFile 	= MAX_FRAMES_PER_FILE * PROPIX_PACKETS_PER_FRAME;
-		frameIndexMask 		= PROPIX_FRAME_INDEX_MASK;
-		frameIndexOffset 	= PROPIX_FRAME_INDEX_OFFSET;
-		packetIndexMask 	= PROPIX_PACKET_INDEX_MASK;
-	}else if(myDetectorType == MOENCH){
-		fifosize 			= MOENCH_FIFO_SIZE;
-		packetsPerFrame 	= MOENCH_PACKETS_PER_FRAME;
-		onePacketSize		= MOENCH_ONE_PACKET_SIZE;
-		frameSize			= MOENCH_BUFFER_SIZE;
-		bufferSize 			= MOENCH_BUFFER_SIZE;
-		maxPacketsPerFile 	= MOENCH_MAX_FRAMES_PER_FILE * MOENCH_PACKETS_PER_FRAME;
-		frameIndexMask 		= MOENCH_FRAME_INDEX_MASK;
-		frameIndexOffset 	= MOENCH_FRAME_INDEX_OFFSET;
-		packetIndexMask 	= MOENCH_PACKET_INDEX_MASK;
-	}
-	else if(myDetectorType == EIGER){
-		fifosize 			= EIGER_FIFO_SIZE;
-		packetsPerFrame 	= EIGER_ONE_GIGA_CONSTANT * dynamicRange * EIGER_MAX_PORTS;
-		onePacketSize		= EIGER_ONE_GIGA_ONE_PACKET_SIZE;
-		oneDataSize			= EIGER_ONE_GIGA_ONE_DATA_SIZE;
-		frameSize			= onePacketSize * packetsPerFrame;
-		bufferSize 			= (frameSize/EIGER_MAX_PORTS) + EIGER_HEADER_LENGTH;//everything one port gets (img header plus packets)
-		maxPacketsPerFile 	= EIGER_MAX_FRAMES_PER_FILE * packetsPerFrame;
-		frameIndexMask 		= EIGER_FRAME_INDEX_MASK;
-		frameIndexOffset 	= EIGER_FRAME_INDEX_OFFSET;
-		packetIndexMask 	= EIGER_PACKET_INDEX_MASK;
-		footer_offset		= EIGER_PACKET_HEADER_SIZE + oneDataSize;
-
-		pthread_mutex_lock(&status_mutex);
-		listeningthreads_mask = 0x0;
-		pthread_mutex_unlock(&(status_mutex));
-		if(thread_started)
-			createListeningThreads(true);
-
-		numListeningThreads = MAX_NUM_LISTENING_THREADS;
-
-
-	} else if(myDetectorType == JUNGFRAUCTB || myDetectorType == JUNGFRAU ){
-		fifosize 			= JCTB_FIFO_SIZE;
-		packetsPerFrame 	= JCTB_PACKETS_PER_FRAME;
-		onePacketSize		= JCTB_ONE_PACKET_SIZE;
-		frameSize			= JCTB_BUFFER_SIZE;
-		bufferSize 			= JCTB_BUFFER_SIZE;
-		maxPacketsPerFile 	= JFCTB_MAX_FRAMES_PER_FILE * JCTB_PACKETS_PER_FRAME;
-		frameIndexMask 		= JCTB_FRAME_INDEX_MASK;
-		frameIndexOffset 	= JCTB_FRAME_INDEX_OFFSET;
-		packetIndexMask 	= JCTB_PACKET_INDEX_MASK;
-	}
-	latestData = new char[frameSize];
-
-	numJobsPerThread = -1;
-	setupFifoStructure();
-
-	if(createListeningThreads() == FAIL){
-		cprintf(BG_RED,"ERROR: Could not create listening thread\n");
-		exit (-1);
-	}
-
-	if(createWriterThreads() == FAIL){
-		cprintf(BG_RED,"ERROR: Could not create writer threads\n");
-		exit (-1);
-	}
-
-	setThreadPriorities();
-
-	cout << "Ready..." << endl;
-
-	return OK;
-}
-
-
-
-
-
 /*Frame indices and numbers caught*/
 
 //bool UDPStandardImplementation::getAcquistionStarted(){return acqStarted;};
 
 //bool UDPStandardImplementation::getMeasurementStarted(){return measurementStarted;};
-
-//int UDPStandardImplementation::getFramesCaught(){return (packetsCaught/packetsPerFrame);}
-
-//int UDPStandardImplementation::getTotalFramesCaught(){return (totalPacketsCaught/packetsPerFrame);}
 
 //uint32_t UDPStandardImplementation::getStartAcquisitionIndex(){return startAcquisitionIndex;}
 
@@ -396,23 +1126,6 @@ uint32_t UDPStandardImplementation::getFrameIndex(){
 }
 */
 
-/*
-uint32_t UDPStandardImplementation::getAcquisitionIndex(){
-	if(!totalPacketsCaught)
-		acquisitionIndex=-1;
-	else
-		acquisitionIndex = currframenum - startAcquisitionIndex;
-	return acquisitionIndex;
-}
-*/
-
-/*
-void UDPStandardImplementation::resetTotalFramesCaught(){
-	acqStarted = false;
-	startAcquisitionIndex = 0;
-	totalPacketsCaught = 0;
-}
-*/
 
 
 
@@ -421,501 +1134,17 @@ void UDPStandardImplementation::resetTotalFramesCaught(){
 
 
 
-/*file parameters*/
-/*
-char* UDPStandardImplementation::getFilePath() const{
-		return (char*)filePath;
-}
-*/
-/*
-char* UDPStandardImplementation::setFilePath(const char c[]){
-	if(strlen(c)){
-		//check if filepath exists
-		struct stat st;
-		if(stat(c,&st) == 0)
-			strcpy(filePath,c);
-		else{
-			strcpy(filePath,"");
-			cout << "FilePath does not exist:" << filePath << endl;
-		}
-	}
-	return getFilePath();
-}
-*/
 
-/*
-char* UDPStandardImplementation::getFileName() const{
-	return (char*)fileName;
-}
-*/
 
-/*
-char* UDPStandardImplementation::setFileName(const char c[]){
-	if(strlen(c))
-		strcpy(fileName,c);
-	return getFileName();
-}
-*/
 
-/*
-int UDPStandardImplementation::getFileIndex(){
-	return fileIndex;
-}
-*/
 
-/*
-int UDPStandardImplementation::setFileIndex(int i){
-	if(i>=0)
-		fileIndex = i;
-	return getFileIndex();
-}
-*/
 
-/*
-int UDPStandardImplementation::setFrameIndexNeeded(int i){
-	frameIndexNeeded = i;
-	return frameIndexNeeded;
-}
-*/
 
-/*
-int UDPStandardImplementation::getEnableFileWrite()  const{
-	return enableFileWrite;
-}
-*/
-
-/*
-int UDPStandardImplementation::setEnableFileWrite(int i){
-	enableFileWrite=i;
-	return getEnableFileWrite();
-}
-*/
-
-/*
-int UDPStandardImplementation::getEnableOverwrite()  const{
-	return overwrite;
-}
-*/
-
-/*
-int UDPStandardImplementation::setEnableOverwrite(int i){
-	overwrite=i;
-	return getEnableOverwrite();
-}
-*/
 
 
 
 
 /*other parameters*/
-
-slsReceiverDefs::runStatus UDPStandardImplementation::getStatus() const{
-	FILE_LOG(logDEBUG) << __AT__ << " called, status: " << status;
-
-	
-	return status;
-}
-
-
-void UDPStandardImplementation::setDetectorHostname(const char *detectorHostName){
-	if(strlen(detectorHostName))
-		strcpy(detHostname,detectorHostName);
-}
-
-
-char *UDPStandardImplementation::getDetectorHostname() const{
-	if(!strlen(detHostname))
-		return NULL;
-	return (char*)detHostname;
-}
-
-void UDPStandardImplementation::setEthernetInterface(char* c){ 	FILE_LOG(logDEBUG) << __AT__ << " called";
-
-	strcpy(eth,c);
-}
-
-
-void UDPStandardImplementation::setUDPPortNo(int p){
-FILE_LOG(logDEBUG) << __AT__ << " called";
-	server_port[0] = p;
-}
-
-
-void UDPStandardImplementation::setUDPPortNo2(int p){
-FILE_LOG(logDEBUG) << __AT__ << " called";
-	server_port[1] = p;
-}
-
-
-int UDPStandardImplementation::getNumberOfFrames() const {
-	return numberOfFrames;
-}
-
-
-int32_t UDPStandardImplementation::setNumberOfFrames(int32_t fnum){ 	FILE_LOG(logDEBUG) << __AT__ << " called";
-
-	if(fnum >= 0)
-		numberOfFrames = fnum;
-
-	return getNumberOfFrames();
-}
-
-int UDPStandardImplementation::getScanTag() const{
-	return scanTag;
-}
-
-
-int32_t UDPStandardImplementation::setScanTag(int32_t stag){ 	FILE_LOG(logDEBUG) << __AT__ << " called";
-
-	if(stag >= 0)
-		scanTag = stag;
-
-	return getScanTag();
-}
-
-
-int UDPStandardImplementation::getDynamicRange() const{
-	return dynamicRange;
-}
-
-int32_t UDPStandardImplementation::setDynamicRange(int32_t dr){ 	FILE_LOG(logDEBUG) << __AT__ << " called";
-
-	int olddr = dynamicRange;
-
-	if(dr >= 0){
-		cout << "Setting Dynamic Range to " << dr << endl;
-
-		dynamicRange = dr;
-
-		if(myDetectorType == EIGER){
-
-
-			if(!tengigaEnable){
-				packetsPerFrame 	= EIGER_ONE_GIGA_CONSTANT * dynamicRange * EIGER_MAX_PORTS;
-				onePacketSize		= EIGER_ONE_GIGA_ONE_PACKET_SIZE;
-				oneDataSize			= EIGER_ONE_GIGA_ONE_DATA_SIZE;
-			}else{
-				packetsPerFrame 	= EIGER_TEN_GIGA_CONSTANT * dynamicRange * EIGER_MAX_PORTS;
-				onePacketSize		= EIGER_TEN_GIGA_ONE_PACKET_SIZE;
-				oneDataSize			= EIGER_TEN_GIGA_ONE_DATA_SIZE;
-			}
-
-			footer_offset		= EIGER_PACKET_HEADER_SIZE + oneDataSize;
-			frameSize			= onePacketSize * packetsPerFrame;
-			bufferSize 			= (frameSize/EIGER_MAX_PORTS) + EIGER_HEADER_LENGTH;//everything one port gets (img header plus packets)
-			maxPacketsPerFile 	= EIGER_MAX_FRAMES_PER_FILE * packetsPerFrame;
-
-
-
-			if(olddr != dr){
-
-				//del
-				if(thread_started){
-					createListeningThreads(true);
-					createWriterThreads(true);
-				}
-				for(int i=0;i<numListeningThreads;i++){
-					if(mem0[i])			{free(mem0[i]);			mem0[i] = NULL;}
-					if(fifo[i])			{delete fifo[i];		fifo[i] = NULL;}
-					if(fifoFree[i])		{delete fifoFree[i];	fifoFree[i] = NULL;}
-					buffer[i] = NULL;
-				}
-				if(latestData) 		{delete [] latestData;	latestData = NULL;}
-				latestData = new char[frameSize];
-
-				numJobsPerThread = -1;
-				setupFifoStructure();
-
-				if(createListeningThreads() == FAIL){
-					cprintf(BG_RED,"ERROR: Could not create listening thread\n");
-					exit (-1);
-				}
-
-				if(createWriterThreads() == FAIL){
-					cprintf(BG_RED,"ERROR: Could not create writer threads\n");
-					exit (-1);
-				}
-
-				setThreadPriorities();
-			}
-		}
-
-	}else cout << "Getting Dynamic Range " << endl;
-
-
-	return getDynamicRange();
-}
-
-
-
-int UDPStandardImplementation::setShortFrame(int i){ 	FILE_LOG(logDEBUG) << __AT__ << " called";
-
-	shortFrame=i;
-
-	if(shortFrame!=-1){
-		bufferSize = GOTTHARD_SHORT_ONE_PACKET_SIZE;
-		frameSize = GOTTHARD_SHORT_BUFFER_SIZE;
-		maxPacketsPerFile = SHORT_MAX_FRAMES_PER_FILE * GOTTHARD_SHORT_PACKETS_PER_FRAME;
-		packetsPerFrame = GOTTHARD_SHORT_PACKETS_PER_FRAME;
-		frameIndexMask = GOTTHARD_SHORT_FRAME_INDEX_MASK;
-		frameIndexOffset = GOTTHARD_SHORT_FRAME_INDEX_OFFSET;
-
-	}else{
-		onePacketSize = GOTTHARD_ONE_PACKET_SIZE;
-		bufferSize = GOTTHARD_BUFFER_SIZE;
-		frameSize = GOTTHARD_BUFFER_SIZE;
-		maxPacketsPerFile = MAX_FRAMES_PER_FILE * GOTTHARD_PACKETS_PER_FRAME;
-		packetsPerFrame = GOTTHARD_PACKETS_PER_FRAME;
-		frameIndexMask = GOTTHARD_FRAME_INDEX_MASK;
-		frameIndexOffset = GOTTHARD_FRAME_INDEX_OFFSET;
-	}
-
-
-	deleteFilter();
-	if(dataCompression)
-		setupFilter();
-
-	return shortFrame;
-}
-
-
-int UDPStandardImplementation::setNFrameToGui(int i){ 	FILE_LOG(logDEBUG) << __AT__ << " called";
-
-	if(i>=0){
-		nFrameToGui = i;
-		setupFifoStructure();
-	}
-	return nFrameToGui;
-}
-
-
-
-int64_t UDPStandardImplementation::setAcquisitionPeriod(int64_t index){ 	FILE_LOG(logDEBUG) << __AT__ << " called";
-
-
-	if(index >= 0){
-		if(index != acquisitionPeriod){
-			acquisitionPeriod = index;
-			setupFifoStructure();
-		}
-	}
-	return acquisitionPeriod;
-}
-
-
-bool UDPStandardImplementation::getDataCompression(){ 	FILE_LOG(logDEBUG) << __AT__ << " called";
-return dataCompression;}
-
-int UDPStandardImplementation::enableDataCompression(bool enable){ 	FILE_LOG(logDEBUG) << __AT__ << " called";
-
-	cout << "Data compression ";
-	if(enable)
-		cout << "enabled" << endl;
-	else
-		cout << "disabled" << endl;
-#ifdef MYROOT1
-	cout << " WITH ROOT" << endl;
-#else
-	cout << " WITHOUT ROOT" << endl;
-#endif
-	//delete filter for the current number of threads
-	deleteFilter();
-
-	dataCompression = enable;
-	pthread_mutex_lock(&status_mutex);
-	writerthreads_mask = 0x0;
-	pthread_mutex_unlock(&(status_mutex));
-
-	createWriterThreads(true);
-
-	if(enable)
-		numWriterThreads = MAX_NUM_WRITER_THREADS;
-	else
-		numWriterThreads = 1;
-
-	if(createWriterThreads() == FAIL){
-		cprintf(BG_RED,"ERROR: Could not create writer threads\n");
-		return FAIL;
-	}
-	setThreadPriorities();
-
-
-	if(enable)
-		setupFilter();
-
-	return OK;
-}
-
-
-
-
-
-
-
-
-
-
-
-
-/*other functions*/
-
-
-void UDPStandardImplementation::deleteFilter(){ 	FILE_LOG(logDEBUG) << __AT__ << " called";
-
-	int i;
-	cmSub=NULL;
-
-	for(i=0;i<numWriterThreads;i++){
-		if(singlePhotonDet[i]){
-			delete singlePhotonDet[i];
-			singlePhotonDet[i] = NULL;
-		}
-		if(receiverdata[i]){
-			delete receiverdata[i];
-			receiverdata[i] = NULL;
-		}
-	}
-}
-
-
-void UDPStandardImplementation::setupFilter(){
-	FILE_LOG(logDEBUG) << __AT__ << " called";
-
-	double hc = 0;
-	double sigma = 5;
-	int sign = 1;
-	int csize;
-	int i;
-
-	if (commonModeSubtractionEnable)
-		cmSub=new moenchCommonMode();
-
-	switch(myDetectorType){
-	case MOENCH:
-		csize = 3;
-		for(i=0;i<numWriterThreads;i++)
-			receiverdata[i]=new moench02ModuleData(hc);
-		break;
-	default:
-		csize = 1;
-		if(shortFrame == -1){
-			for(i=0;i<numWriterThreads;i++)
-				receiverdata[i]=new gotthardModuleData(hc);
-		}else{
-			for(i=0;i<numWriterThreads;i++)
-				receiverdata[i]=new gotthardShortModuleData(hc);
-		}
-		break;
-	}
-
-	for(i=0;i<numWriterThreads;i++)
-		singlePhotonDet[i]=new singlePhotonDetector<uint16_t>(receiverdata[i], csize, sigma, sign, cmSub);
-
-}
-
-
-
-//LEO: it is not clear to me..
-void UDPStandardImplementation::setupFifoStructure(){
-	FILE_LOG(logDEBUG) << __AT__ << " called";
-
-	int64_t i;
-	int oldn = numJobsPerThread;
-
-	//if every nth frame mode
-	if(nFrameToGui)
-		numJobsPerThread = nFrameToGui;
-
-	//random nth frame mode
-	else{
-		if(!acquisitionPeriod)
-			i = SAMPLE_TIME_IN_NS;
-		else
-			i = SAMPLE_TIME_IN_NS/acquisitionPeriod;
-		if (i > MAX_JOBS_PER_THREAD)
-			numJobsPerThread = MAX_JOBS_PER_THREAD;
-		else if (i < 1)
-			numJobsPerThread = 1;
-		else
-			numJobsPerThread = i;
-	}
-
-	//if same, return
-	if(oldn == numJobsPerThread)
-		return;
-
-	if(myDetectorType == EIGER)
-		numJobsPerThread = 1;
-
-	//otherwise memory too much if numjobsperthread is at max = 1000
-	fifosize = GOTTHARD_FIFO_SIZE;
-	if(myDetectorType == MOENCH)
-		fifosize = MOENCH_FIFO_SIZE;
-	if(myDetectorType == PROPIX)
-		fifosize = PROPIX_FIFO_SIZE;
-	else if(myDetectorType == EIGER)
-		fifosize = EIGER_FIFO_SIZE * packetsPerFrame;
-
-	if(fifosize % numJobsPerThread)
-		fifosize = (fifosize/numJobsPerThread)+1;
-	else
-		fifosize = fifosize/numJobsPerThread;
-
-	if(myDetectorType == EIGER)
-		cout << "1 packet per buffer" << endl;
-	else
-		cout << "Number of Frames per buffer:" << numJobsPerThread << endl;
-#ifdef VERBOSE
-	cout << "Fifo Size:" << fifosize << endl;
-#endif
-	/*
-	//for testing
-	 numJobsPerThread = 3; fifosize = 11;
-	 */
-
-	for(int i=0;i<numListeningThreads;i++){
-		//deleting old structure and creating fifo structure
-		if(fifoFree[i]){
-			while(!fifoFree[i]->isEmpty())
-				fifoFree[i]->pop(buffer[i]);
-#ifdef FIFO_DEBUG
-			//cprintf(GREEN,"%d fifostructure popped from fifofree %x\n", i, (void*)(buffer[i]));
-#endif
-			delete fifoFree[i];
-		}
-		if(fifo[i])		delete fifo[i];
-		if(mem0[i]) 	free(mem0[i]);
-		fifoFree[i] 	= new CircularFifo<char>(fifosize);
-		fifo[i] 		= new CircularFifo<char>(fifosize);
-
-
-		int whatperbuffer = bufferSize;
-		if(myDetectorType == EIGER)
-			whatperbuffer = onePacketSize;
-
-		//allocate memory
-		mem0[i]=(char*)malloc((whatperbuffer * numJobsPerThread + HEADER_SIZE_NUM_TOT_PACKETS)*fifosize);
-		/** shud let the client know about this */
-		if (mem0[i]==NULL){
-			cprintf(BG_RED,"++++++++++++++++++++++ COULD NOT ALLOCATE MEMORY FOR LISTENING !!!!!!!+++++++++++++++++++++\n");
-			exit(-1);
-		}
-
-		buffer[i]=mem0[i];
-		//push the addresses into freed fifoFree and writingFifoFree
-		while (buffer[i]<(mem0[i]+(whatperbuffer * numJobsPerThread + HEADER_SIZE_NUM_TOT_PACKETS)*(fifosize-1))) {
-			fifoFree[i]->push(buffer[i]);
-#ifdef FIFO_DEBUG
-			cprintf(BLUE,"%d fifostructure free pushed into fifofree %x\n", i, (void*)(buffer[i]));
-#endif
-			buffer[i]+=(whatperbuffer * numJobsPerThread + HEADER_SIZE_NUM_TOT_PACKETS);
-		}
-	}
-	cout << "Fifo structure(s) reconstructed" << endl;
-}
-
-
-
 
 
 
@@ -1110,164 +1339,6 @@ int UDPStandardImplementation::shutDownUDPSockets(){
 	return OK;
 }
 
-
-
-
-int UDPStandardImplementation::createListeningThreads(bool destroy){
-	FILE_LOG(logDEBUG) << __AT__ << " called";
-
-	int i;
-	void* status;
-
-	killAllListeningThreads = 0;
-
-	pthread_mutex_lock(&status_mutex);
-	listeningthreads_mask = 0x0;
-	pthread_mutex_unlock(&(status_mutex));
-
-	FILE_LOG(logDEBUG) << "Starting " << __func__ << endl;
-
-	if(!destroy){
-
-		//start listening threads
-		cout << "Creating Listening Threads(s)";
-
-		currentListeningThreadIndex = -1;
-
-		for(i = 0; i < numListeningThreads; ++i){
-			sem_init(&listensmp[i],1,0);
-			thread_started = 0;
-			currentListeningThreadIndex = i;
-			if(pthread_create(&listening_thread[i], NULL,startListeningThread, (void*) this)){
-				cout << "Could not create listening thread with index " << i << endl;
-				return FAIL;
-			}
-			while(!thread_started);
-			cout << ".";
-			cout << flush;
-		}
-#ifdef VERBOSE
-		cout << "Listening thread(s) created successfully." << endl;
-#else
-		cout << endl;
-#endif
-	}else{
-		cout<<"Destroying Listening Thread(s)"<<endl;
-		killAllListeningThreads = 1;
-		for(i = 0; i < numListeningThreads; ++i){
-			sem_post(&listensmp[i]);
-			pthread_join(listening_thread[i], &status);
-			cout <<"."<<flush;
-		}
-		killAllListeningThreads = 0;
-		thread_started = 0;
-		cout << "Listening thread(s) destroyed" << endl;
-	}
-
-	return OK;
-}
-
-
-
-
-
-
-int UDPStandardImplementation::createWriterThreads(bool destroy){
-	FILE_LOG(logDEBUG) << __AT__ << " called";
-
-	int i;
-	void* status;
-
-	killAllWritingThreads = 0;
-
-	pthread_mutex_lock(&status_mutex);
-	writerthreads_mask = 0x0;
-	createfile_mask = 0x0;
-	pthread_mutex_unlock(&(status_mutex));
-
-
-	if(!destroy){
-
-		//start writer threads
-		cout << "Creating Writer Thread(s)";
-
-		currentWriterThreadIndex = -1;
-
-		for(i = 0; i < numWriterThreads; ++i){
-			sem_init(&writersmp[i],1,0);
-			thread_started = 0;
-			currentWriterThreadIndex = i;
-			if(pthread_create(&writing_thread[i], NULL,startWritingThread, (void*) this)){
-				cout << "Could not create writer thread with index " << i << endl;
-				return FAIL;
-			}
-			while(!thread_started);
-			cout << ".";
-			cout << flush;
-		}
-#ifdef VERBOSE
-		cout << endl << "Writer thread(s) created successfully." << endl;
-#else
-		cout << endl;
-#endif
-
-	}else{
-		cout << "Destroying Writer Thread(s)" << endl;
-		killAllWritingThreads = 1;
-		for(i = 0; i < numWriterThreads; ++i){
-			sem_post(&writersmp[i]);
-			pthread_join(writing_thread[i],&status);
-			cout <<"."<<flush;
-		}
-		killAllWritingThreads = 0;
-		thread_started = 0;
-		cout << endl << "Writer thread(s) destroyed" << endl;
-	}
-
-	return OK;
-}
-
-
-
-
-
-
-
-
-
-void UDPStandardImplementation::setThreadPriorities(){
-	FILE_LOG(logDEBUG) << __AT__ << " called";
-
-	int i;
-	//assign priorities
-	struct sched_param tcp_param, listen_param, write_param;
-	int policy= SCHED_RR;
-	bool rights = true;
-
-	tcp_param.sched_priority = 50;
-	listen_param.sched_priority = 99;
-	write_param.sched_priority = 90;
-
-	for(i = 0; i < numListeningThreads; ++i){
-		if (pthread_setschedparam(listening_thread[i], policy, &listen_param) == EPERM){
-			rights = false;
-			break;
-		}
-	}
-	for(i = 0; i < numWriterThreads; ++i){
-		if(rights)
-			if (pthread_setschedparam(writing_thread[i], policy, &write_param) == EPERM){
-				rights = false;
-				break;
-			}
-	}
-	if (pthread_setschedparam(pthread_self(),5 , &tcp_param) == EPERM)
-		rights = false;
-
-	if(!rights)
-		cout << "WARNING: Could not prioritize threads. You need to be super user for that." << endl;
-
-}
 
 
 
@@ -3068,80 +3139,5 @@ void UDPStandardImplementation::handleDataCompression(int ithread, char* wbuffer
 				cprintf(BLUE,"%d writer compression free pushed into fifofree %x for listerner 0\n", ithread, (void*)(wbuffer[0]));
 #endif
 
-}
-
-
-
-
-
-int UDPStandardImplementation::enableTenGiga(int enable){
-	FILE_LOG(logDEBUG) << __AT__ << " called";
-
-	cout << "Enabling 10Gbe to " << enable << endl;
-
-	int oldtengiga = tengigaEnable;
-	if(enable >= 0){
-
-		tengigaEnable = enable;
-
-		if(myDetectorType == EIGER){
-
-			if(!tengigaEnable){
-				packetsPerFrame = EIGER_ONE_GIGA_CONSTANT * dynamicRange * EIGER_MAX_PORTS;
-				onePacketSize  	= EIGER_ONE_GIGA_ONE_PACKET_SIZE;
-				oneDataSize		= EIGER_ONE_GIGA_ONE_DATA_SIZE;
-			}else{
-				packetsPerFrame = EIGER_TEN_GIGA_CONSTANT * dynamicRange * EIGER_MAX_PORTS;
-				onePacketSize  	= EIGER_TEN_GIGA_ONE_PACKET_SIZE;
-				oneDataSize 	= EIGER_TEN_GIGA_ONE_DATA_SIZE;
-			}
-			frameSize			= onePacketSize * packetsPerFrame;
-			bufferSize 			= (frameSize/EIGER_MAX_PORTS) + EIGER_HEADER_LENGTH;//everything one port gets (img header plus packets)
-			maxPacketsPerFile 	= EIGER_MAX_FRAMES_PER_FILE * packetsPerFrame;
-
-#ifdef VERBOSE
-			cout<<"packetsPerFrame:"<<dec<<packetsPerFrame<<endl;
-			cout<<"onePacketSize:"<<onePacketSize<<endl;
-			cout<<"framesize:"<<frameSize<<endl;
-			cout<<"bufferSize:"<<bufferSize<<endl;
-			cout<<"maxPacketsPerFile:"<<maxPacketsPerFile<<endl;
-#endif
-
-			if(oldtengiga != enable){
-
-				//del
-				if(thread_started){
-					createListeningThreads(true);
-					createWriterThreads(true);
-				}
-				for(int i=0;i<numListeningThreads;i++){
-					if(mem0[i])			{free(mem0[i]);			mem0[i] = NULL;}
-					if(fifo[i])			{delete fifo[i];		fifo[i] = NULL;}
-					if(fifoFree[i])		{delete fifoFree[i];	fifoFree[i] = NULL;}
-					buffer[i] = NULL;
-				}
-				if(latestData) 		{delete [] latestData;	latestData = NULL;}
-				latestData = new char[frameSize];
-
-				numJobsPerThread = -1;
-				setupFifoStructure();
-
-				if(createListeningThreads() == FAIL){
-					cprintf(BG_RED,"ERROR: Could not create listening thread\n");
-					exit (-1);
-				}
-
-				if(createWriterThreads() == FAIL){
-					cprintf(BG_RED,"ERROR: Could not create writer threads\n");
-					exit (-1);
-				}
-
-				setThreadPriorities();
-			}
-		}
-
-	}
-
-	return tengigaEnable;
 }
 

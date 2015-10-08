@@ -111,6 +111,16 @@ public:
 	};
 
 
+	  /** returns string from enabled/disabled
+	      \param b true or false
+	      \returns string enabled, disabled
+	  */
+	  static string stringEnable(bool b){\
+		if(b) return string("enabled"); \
+		else return string("disabled"); \
+	  };
+
+
 
 #ifdef __cplusplus
 protected:

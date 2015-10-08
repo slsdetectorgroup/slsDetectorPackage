@@ -17,8 +17,6 @@
 
 #include "sls_receiver_defs.h"
 #include "receiver_defs.h"
-#include "MySocketTCP.h"
-
 #include "utilities.h"
 #include "logger.h"
 
@@ -184,13 +182,13 @@ class UDPInterface {
 	 * Get UDP Port Number
 	 * @return udp port number
 	 */
-	virtual uint32_t getUDPPortNo() const = 0;
+	virtual uint32_t getUDPPortNumber() const = 0;
 
 	/**
 	 * Get Second UDP Port Number (eiger specific)
 	 * @return second udp port number
 	 */
-	virtual uint32_t getUDPPortNo2() const = 0;
+	virtual uint32_t getUDPPortNumber2() const = 0;
 
 	/**
 	 * Get Ehernet Interface
@@ -314,22 +312,22 @@ class UDPInterface {
 	/**
 	 * Set data compression, by saving only hits (so far implemented only for Moench and Gotthard)
 	 * @param b true for data compression enable, else false
+	 * @return OK or FAIL
 	 */
-	virtual void setDataCompressionEnable(const bool b) = 0;
-
+	virtual int setDataCompressionEnable(const bool b) = 0;
 
 	//***connection parameters***
 	/**
 	 * Set UDP Port Number
 	 * @param i udp port number
 	 */
-	virtual void setUDPPortNo(const uint32_t i) = 0;
+	virtual void setUDPPortNumber(const uint32_t i) = 0;
 
 	/**
 	 * Set Second UDP Port Number (eiger specific)
 	 * @return second udp port number
 	 */
-	virtual void setUDPPortNo2(const uint32_t i) = 0;
+	virtual void setUDPPortNumber2(const uint32_t i) = 0;
 
 	/**
 	 * Set Ethernet Interface to listen to
@@ -338,7 +336,7 @@ class UDPInterface {
 	virtual void setEthernetInterface(const char* c) = 0;
 
 
-	//***connection parameters***
+	//***acquisition parameters***
 	/**
 	 * Set Short Frame Enabled, later will be moved to getROI (so far only for gotthard)
 	 * @param i index of adc enabled, else -1 if all enabled
@@ -348,14 +346,16 @@ class UDPInterface {
 	/**
 	 * Set the Frequency of Frames Sent to GUI
 	 * @param i 0 for random frame requests, n for nth frame frequency
+	 * @return OK or FAIL
 	 */
-	virtual void setFrameToGuiFrequency(const uint32_t i) = 0;
+	virtual int setFrameToGuiFrequency(const uint32_t i) = 0;
 
 	/**
 	 * Set Acquisition Period
 	 * @param i acquisition period
+	 * @return OK or FAIL
 	 */
-	virtual void setAcquisitionPeriod(const uint64_t i) = 0;
+	virtual int setAcquisitionPeriod(const uint64_t i) = 0;
 
 	/**
 	 * Set Number of Frames expected by receiver from detector
@@ -367,21 +367,23 @@ class UDPInterface {
 	/**
 	 * Set Dynamic Range or Number of Bits Per Pixel
 	 * @param i dynamic range that is 4, 8, 16 or 32
+	 * @return OK or FAIL
 	 */
-	virtual void setDynamicRange(const uint32_t i) = 0;
+	virtual int setDynamicRange(const uint32_t i) = 0;
 
 	/**
 	 * Set Ten Giga Enable
 	 * @param b true if 10Giga enabled, else false (1G enabled)
+	 * @return OK or FAIL
 	 */
-	virtual void setTenGigaEnable(const bool b) = 0;
-
+	virtual int setTenGigaEnable(const bool b) = 0;
 
 
 	/*************************************************************************
 	 * Behavioral functions***************************************************
 	 * They may modify the status of the receiver ****************************
 	 *************************************************************************/
+
 
 	//***initial functions***
 	/**

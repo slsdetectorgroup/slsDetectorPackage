@@ -171,7 +171,7 @@ class UDPInterface {
 	virtual uint64_t getFramesCaught() const = 0;
 
 	/**
-	 * Get Current Frame Index Caught for an entire  acquisition (including all scans)
+	 * Get Current Frame Index for an entire  acquisition (including all scans)
 	 * @return current frame index (represents all scans too) or -1 if no packets caught
 	 */
 	virtual int64_t getAcquisitionIndex() const = 0;
@@ -430,8 +430,8 @@ class UDPInterface {
 	virtual void startReadout() = 0;
 
 	/**
-	 * shuts down the  udp sockets
-	 * \returns OK or FAIL
+	 * Shuts down and deletes UDP Sockets
+	 * @return OK or FAIL
 	 */
 	virtual int shutDownUDPSockets() = 0;
 

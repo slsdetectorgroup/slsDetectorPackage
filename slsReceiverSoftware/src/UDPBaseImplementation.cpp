@@ -286,10 +286,7 @@ int UDPBaseImplementation::setDataCompressionEnable(const bool b){
 void UDPBaseImplementation::setUDPPortNumber(const uint32_t i){
 	FILE_LOG(logDEBUG) << __AT__ << " starting";
 
-	if(bottomEnable)
-		udpPortNum[1] = i;
-	else
-		udpPortNum[0] = i;
+	udpPortNum[0] = i;
 	FILE_LOG(logINFO) << "udpPortNum[0]:" << udpPortNum[0];
 }
 

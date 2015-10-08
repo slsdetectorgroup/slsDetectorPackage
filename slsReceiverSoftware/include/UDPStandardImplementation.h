@@ -57,8 +57,6 @@ class UDPStandardImplementation: private virtual slsReceiverDefs, public UDPBase
 	 * They access local cache of configuration or detector parameters *******
 	 *************************************************************************/
 
-	//***acquisition count parameters***
-
 
 	/*************************************************************************
 	 * Setters ***************************************************************
@@ -154,14 +152,14 @@ class UDPStandardImplementation: private virtual slsReceiverDefs, public UDPBase
 	 */
 	int startReceiver(char *c=NULL);
 
-
+	/**
+	 * Shuts down and deletes UDP Sockets
+	 * @return OK or FAIL
+	 */
+	int shutDownUDPSockets();
 
 private:
 
-	/*************************************************************************
-	 * Setters ***************************************************************
-	 * They modify the local cache of configuration or detector parameters ***
-	 *************************************************************************/
 	//**initial parameters***
 
 	/**
@@ -227,6 +225,13 @@ private:
 	 */
 	int createUDPSockets();
 
+	/**
+	 * Initializes writer variables and creates the first file
+	 * also does the startAcquisitionCallBack
+	 * @return OK or FAIL
+	 */
+	int setupWriter();
+
 
 
 	//**detector parameters***
@@ -277,18 +282,26 @@ private:
 	/** Footer offset from start of Packet*/
 	int footerOffset;
 
+
 	//***File parameters***
 	/** Maximum Packets Per File **/
 	int maxPacketsPerFile;
 
+	/** If file created successfully for all Writer Threads */
+	bool fileCreateSuccess;
 
 
-	//***acquisition indices parameters***
-	/** Frame Number of First Frame of an Acquisition */
+
+
+	//***acquisition indices/count parameters***
+	/** Frame Number of First Frame of an entire Acquisition (including all scans) */
 	uint64_t startAcquisitionIndex;
 
 	/** Frame index at start of each real time acquisition (eg. for each scan) */
 	uint64_t startFrameIndex;
+
+	/** Actual current frame index of each time acquisition (eg. for each scan) */
+	uint64_t frameIndex;
 
 	/** Current Frame Number */
 	uint64_t currentFrameNumber;
@@ -301,6 +314,19 @@ private:
 
 	/** Total Frame Count listened to by listening threads */
 	int totalListeningFrameCount[MAX_NUMBER_OF_LISTENING_THREADS];
+
+	/** Pckets currently in current file, starts new file when it reaches max */
+	uint32_t packetsInFile;
+
+	/** Number of Missing Packets per buffer*/
+	uint32_t numMissingPackets;
+
+	/** Total Number of Missing Packets in acquisition*/
+	uint32_t numTotMissingPackets;
+
+	/** Number of Missing Packets in file */
+	uint32_t numTotMissingPacketsInFile;
+
 
 
 
@@ -318,14 +344,36 @@ private:
 	/** Circular fifo to point to address already written and freed, to be reused */
 	CircularFifo<char>* fifoFree[MAX_NUMBER_OF_LISTENING_THREADS];
 
+	/** UDP Sockets - Detector to Receiver */
+	genericSocket* udpSocket[MAX_NUMBER_OF_LISTENING_THREADS];
+
+	/** File Descriptor */
+	FILE *sfilefd;
+
 	/** Number of Jobs Per Buffer */
 	int numberofJobsPerBuffer;
 
 	/** Fifo Depth */
 	uint32_t fifoSize;
 
-	/** Current Frame copied for Gui */
+
+	//***receiver to GUI parameters***
+	/** Current Frame copied for GUI */
 	char* latestData;
+
+	/** If Data to be sent to GUI is ready */
+	bool guiDataReady;
+
+	/** Pointer to data to be sent to GUI */
+	char* guiData;
+
+	/** Pointer to file name to be sent to GUI */
+	char guiFileName[MAX_STR_LENGTH];
+
+	/** Semaphore to synchronize Writer and GuiReader threads*/
+	sem_t writerGuiSemaphore;
+
+
 
 
 
@@ -382,7 +430,6 @@ private:
 
 
 
-
 	//***filter parameters***
 	/** Common Mode Subtraction Enable FIXME: Always false, only moench uses, Ask Anna */
 	bool commonModeSubtractionEnable;
@@ -404,6 +451,12 @@ private:
 	pthread_mutex_t status_mutex;
 
 
+	//***callback***
+	/** The action which decides what the user and default responsibilities to save data are
+	 * 0 raw data ready callback takes care of open,close,write file
+	 * 1 callback writes file, we have to open, close it
+	 * 2 we open, close, write file, callback does not do anything */
+	int cbAction;
 
 
 
@@ -421,89 +474,6 @@ private:
 
 
 
-
-
-
-
-
-
-
-	/**
-	 * Set receiver type
-	 * @param det detector type
-	 * Returns success or FAIL
-	 */
-        int setDetectorType(detectorType det);
-
-
-	//Frame indices and numbers caught
-    /**
-     * Returns the frame index at start of entire acquisition (including all scans)
-     */
-    //uint32_t getStartAcquisitionIndex();
-
-	/**
-	 * Returns if acquisition started
-	 */
-	//bool getAcquistionStarted();
-
-	/**
-	 * Returns the frame index at start of each real time acquisition (eg. for each scan)
-	 */
-	//uint32_t getStartFrameIndex();
-
-	/**
-	 * Returns current Frame Index for each real time acquisition (eg. for each scan)
-	 */
-	//uint32_t getFrameIndex();
-
-	/**
-	 * Returns if measurement started
-	 */
-	//bool getMeasurementStarted();
-
-	/**
-	 * Resets the Total Frames Caught
-	 * This is how the receiver differentiates between entire acquisitions
-	 * Returns 0
-	 */
-        //void resetTotalFramesCaught();
-
-
-
-
-
-//other parameters
-
-	/**
-	 * abort acquisition with minimum damage: close open files, cleanup.
-	 * does nothing if state already is 'idle'
-	 */
-	void abort() {};
-
-	/**
-	 * Returns status of receiver: idle, running or error
-	 */
-	runStatus getStatus() const;
-
-	/**
-	 * Set detector hostname
-	 * @param c hostname
-	 */
-	void setDetectorHostname(const char *detectorHostName);
-
-
-
-	/**
-	 * enable 10Gbe
-	 @param enable 1 for 10Gbe or 0 for 1 Gbe, -1 to read out
-	 \returns enable for 10Gbe
-	 */
-	int enableTenGiga(int enable = -1);
-
-
-
-//other functions
 
 	/**
 	 * Returns the buffer-current frame read by receiver
@@ -520,12 +490,6 @@ private:
 	 */
 	void closeFile(int ithr = -1);
 
-	/**
-	 * Starts Receiver - starts to listen for packets
-	 * @param message is the error message if there is an error
-	 * Returns success
-	 */
-	int startReceiver(char message[]);
 
 	/**
 	 * Stops Receiver - stops listening for packets
@@ -538,21 +502,9 @@ private:
 	 */
 	void startReadout();
 
-	/**
-	 * shuts down the  udp sockets
-	 * \returns if success or fail
-	 */
-	int shutDownUDPSockets();
+
 
 private:
-	
-	/*
-	void not_implemented(string method_name){
-		std::cout << "[WARNING] Method " << method_name << " not implemented!" << std::endl;
-	};
-	*/
-
-
 
 
 	/**
@@ -562,12 +514,6 @@ private:
 	void copyFrameToGui(char* startbuf[], char* buf=NULL);
 
 
-	/**
-	 * initializes variables and creates the first file
-	 * also does the startAcquisitionCallBack
-	 * \returns FAIL or OK
-	 */
-	int setupWriter();
 
 	/**
 	 * Creates new tree and file for compression
@@ -694,42 +640,18 @@ private:
 	const static uint16_t missingPacketValue = 0xFFFF;
 
 
-	/** UDP Socket between Receiver and Detector */
-	genericSocket* udpSocket[MAX_NUM_LISTENING_THREADS];
-
-	/** Complete File name */
+/** Complete File name */
 	char savefilename[MAX_STR_LENGTH];
 
-	/** Actual current frame index of each time acquisition (eg. for each scan) */
-	uint32_t frameIndex;
 
-	/** Pckets currently in current file, starts new file when it reaches max */
-	uint32_t packetsInFile;
-
-	/** Number of missing packets in acquisition*/
-	uint32_t numTotMissingPackets;
-
-	/** Number of missing packets in file (sometimes packetsinFile is incorrect due to padded packets for eiger)*/
-	uint32_t numTotMissingPacketsInFile;
-
-	/** Number of missing packets per buffer*/
-	uint32_t numMissingPackets;
 
 	/** Previous Frame number from buffer */
 	int prevframenum;
 
 
-	/** gui data ready */
-	int guiDataReady;
 
-	/** points to the data to send to gui */
-	char* guiData;
 
-	/** points to the filename to send to gui */
-	char* guiFileName;
 
-/** OK if file created was successful */
-	int ret_createfile;
 
 	// TODO: not properly sure where to put these...
 	/** structure of an eiger image header*/
@@ -738,8 +660,7 @@ private:
 
 
 //semaphores
-	/** semaphore to synchronize  writer and guireader threads */
-	sem_t smp;
+
 
 //mutex
 	/** guiDataReady mutex */
@@ -751,8 +672,6 @@ private:
 	/** mutex for writing data to file */
 	pthread_mutex_t write_mutex;
 
-	/** File Descriptor */
-	FILE *sfilefd;
 
 	//filter
 
@@ -766,11 +685,6 @@ private:
 #endif
 
 
-	/** The action which decides what the user and default responsibilites to save data are
-	 * 0 raw data ready callback takes care of open,close,write file
-	 * 1 callback writes file, we have to open, close it
-	 * 2 we open, close, write file, callback does not do anything */
-	int cbAction;
 
 
 public:

@@ -111,7 +111,7 @@ class UDPBaseImplementation : protected virtual slsReceiverDefs, public UDPInter
 	uint64_t getFramesCaught() const;
 
 	/**
-	 * Get Current Frame Index Caught for an entire  acquisition (including all scans)
+	 * Get Current Frame Index for an entire  acquisition (including all scans)
 	 * @return current frame index (represents all scans too)
 	 */
 	int64_t getAcquisitionIndex() const;
@@ -372,8 +372,8 @@ class UDPBaseImplementation : protected virtual slsReceiverDefs, public UDPInter
 	void startReadout();
 
 	/**
-	 * shuts down the  udp sockets
-	 * \returns OK or FAIL
+	 * Shuts down and deletes UDP Sockets
+	 * @return OK or FAIL
 	 */
 	int shutDownUDPSockets();
 

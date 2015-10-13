@@ -381,10 +381,10 @@ class UDPBaseImplementation : protected virtual slsReceiverDefs, public UDPInter
 	 * Get the buffer-current frame read by receiver
 	 * @param c pointer to current file name
 	 * @param raw address of pointer, pointing to current frame to send to gui
-	 * @param startAcquisitionIndex start index of the acquisition
-	 * @param startFrameIndex start index of the scan
+	 * @param startAcq start index of the acquisition
+	 * @param startFrame start index of the scan
 	 */
-	void readFrame(char* c,char** raw, uint64_t &startAcquisitionIndex, uint64_t &startFrameIndex);
+	void readFrame(char* c,char** raw, uint64_t &startAcq, uint64_t &startFrame);
 
 	/**
 	 * abort acquisition with minimum damage: close open files, cleanup.
@@ -393,8 +393,8 @@ class UDPBaseImplementation : protected virtual slsReceiverDefs, public UDPInter
 	void abort();  //FIXME: needed, isn't stopReceiver enough?
 
 	/**
-	 * Closes all files
-	 * @param i thread index, -1 for all threads
+	 * Closes file / all files(if multiple files)
+	 * @param i thread index (if multiple files used  eg. root files) -1 for all threads
 	 */
 	void closeFile(int i = -1);
 
@@ -438,6 +438,9 @@ class UDPBaseImplementation : protected virtual slsReceiverDefs, public UDPInter
 
  protected:
 
+	/*************************************************************************
+	 * Class Members *********************************************************
+	 *************************************************************************/
 	//**detector parameters***
 	/** detector type */
 	detectorType myDetectorType;

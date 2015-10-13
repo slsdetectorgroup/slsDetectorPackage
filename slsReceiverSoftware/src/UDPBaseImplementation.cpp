@@ -37,7 +37,7 @@ UDPBaseImplementation::UDPBaseImplementation(){
 
 	//***connection parameters***
 	strcpy(eth,"");
-	for(int i=0;i<MAX_NUM_LISTENING_THREADS;i++){
+	for(int i=0;i<MAX_NUMBER_OF_LISTENING_THREADS;i++){
 		udpPortNum[i] = DEFAULT_UDP_PORTNO + i;
 	}
 

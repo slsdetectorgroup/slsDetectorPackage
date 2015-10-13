@@ -153,12 +153,63 @@ class UDPStandardImplementation: private virtual slsReceiverDefs, public UDPBase
 	int startReceiver(char *c=NULL);
 
 	/**
+	 * Overridden method
+	 * Stop Listening for Packets
+	 * Calls startReadout(), which stops listening and sets status to Transmitting
+	 * When it has read every frame in buffer,it returns with the status Run_Finished
+	 * Pre: status is running, semaphores have been instantiated,
+	 * Post: udp sockets shut down, status is idle, semaphores destroyed
+	 */
+	void stopReceiver();
+
+	/**
+	 * Overridden method
+	 * Stop Listening to Packets
+	 * and sets status to Transmitting
+	 * Pre: status is running, udp sockets have been initialized, stop receiver initiated
+	 * Post:udp sockets closed, status is transmitting
+	 */
+	void startReadout();
+
+	/**
+	 * Overridden method
 	 * Shuts down and deletes UDP Sockets
 	 * @return OK or FAIL
 	 */
 	int shutDownUDPSockets();
 
+	/**
+	 * Overridden method
+	 * Get the buffer-current frame read by receiver
+	 * @param c pointer to current file name
+	 * @param raw address of pointer, pointing to current frame to send to gui
+	 * @param startAcq start index of the acquisition
+	 * @param startFrame start index of the scan
+	 */
+	void readFrame(char* c,char** raw, uint64_t &startAcq, uint64_t &startFrame);
+
+	/**
+	 * Overridden method
+	 * Closes file / all files(data compression involves multiple files)
+	 * @param i thread index valid for datacompression using root files, -1 for all threads
+	 */
+	void closeFile(int i = -1);
+
 private:
+	/*************************************************************************
+	 * Getters ***************************************************************
+	 * They access local cache of configuration or detector parameters *******
+	 *************************************************************************/
+
+/*
+	uint64_t (*getFrameNumber)();
+	uint64_t eigerGetFrameNumber();
+	uint64_t generalGetFrameNumber();
+	getframenumber = &generalgetframenumber;
+	if(dettpe == eiger) getframenumber = &eigerGerFramenumber;
+
+	call using getframenumber();
+*/
 
 	//**initial parameters***
 
@@ -195,6 +246,19 @@ private:
 	void initializeFilter();
 
 	/**
+	 * Set up the Fifo Structure for processing buffers
+	 * between listening and writer threads
+	 * @return OK or FAIL
+	 */
+	int setupFifoStructure();
+
+
+
+	/*************************************************************************
+	 * Listening and Writing Threads *****************************************
+	 *************************************************************************/
+
+	/**
 	 *  Create Listening Threads
 	 * @param destroy is true to destroy all the threads
 	 */
@@ -213,13 +277,6 @@ private:
 	void setThreadPriorities();
 
 	/**
-	 * Set up the Fifo Structure for processing buffers
-	 * between listening and writer threads
-	 * @return OK or FAIL
-	 */
-	int setupFifoStructure();
-
-	/**
 	 * Creates UDP Sockets
 	 * @return OK or FAIL
 	 */
@@ -232,7 +289,87 @@ private:
 	 */
 	int setupWriter();
 
+	/**
+	 * Creates new file
+	 * @return OK or FAIL
+	 */
+	int createNewFile();
 
+	/**
+	 * Static function - Starts Listening Thread of this object
+	 * @param this_pointer pointer to this object
+	 */
+	static void* startListeningThread(void *this_pointer);
+
+	/**
+	 * Static function - Starts Writing Thread of this object
+	 * @param this_pointer pointer to this object
+	 */
+	static void* startWritingThread(void *this_pointer);
+
+	/**
+	 * Thread that listens to packets
+	 * It pops the fifofree for free addresses, listens to packets and pushes them into the fifo
+	 * This is continuously looped for each buffer in a nested loop, which is again looped for each acquisition
+	 * Exits only for changing dynamic range, 10G parameters etc and recreated
+	 *
+	 */
+	void startListening();
+
+	/**
+	 * Thread started which writes packets to file.
+	 * It pops the fifo, processes and writes packets to file and pushes the addresses into the fifoFree
+	 * This is continuously looped for each buffer in a nested loop, which is again looped for each acquisition
+	 * Exits only for changing dynamic range, 10G parameters etc and recreated
+	 *
+	 */
+	void startWriting();
+
+	/**
+	 * Called by startListening
+	 * Listens to buffer, until  packet(s) received or shutdownUDPsocket called by client
+	 * Also copies carryovers from previous frame in front of buffer (gotthard and moench)
+	 * For eiger, it ignores packets less than onePacketSize
+	 * @param ithread listening thread index
+	 * @param lSize number of bytes to listen to
+	 * @param cSize number of bytes carried on from previous buffer
+	 * @param temp temporary storage of previous buffer
+	 * @return the number of bytes actually received
+	 */
+	int prepareAndListenBuffer(int ithread, int lSize, int cSize, char* temp);
+
+	/**
+	 * Called by startListening
+	 * Its called for the first packet of a scan or acquistion
+	 * Sets the startframeindices and the variables to know if acquisition started
+	 * @param ithread listening thread number
+	 */
+	void startFrameIndices(int ithread);
+
+	/**
+	 * Called by prepareAndListenBuffer
+	 * This is called when udp socket is shut down by client
+	 * It pushes ffff instead of packet number into fifo
+	 * to inform writers about the end of listening session
+	 * Then sets the listening mask so that it stops listening and wait for next acquisition trigger
+	 * @param ithread listening thread number
+	 * @param numbytes number of bytes received
+	 */
+	void stopListening(int ithread, int numbytes);
+
+	/*
+	 * Called by startListening for gotthard and moench to handle split frames
+	 * It processes listening thread buffers by ensuring split frames are in the same buffer
+	 * @param ithread listening thread index
+	 * @param cSize number of bytes carried over to the next buffer to reunite with split frame
+	 * @param temp temporary buffer to store the split frame
+	 * @return packet count
+	 */
+	uint32_t processListeningBuffer(int ithread, int cSize,char* temp);
+
+	/*************************************************************************
+	 * Class Members *********************************************************
+	 *************************************************************************/
 
 	//**detector parameters***
 	/**
@@ -284,7 +421,18 @@ private:
 
 
 	//***File parameters***
-	/** Maximum Packets Per File **/
+#ifdef MYROOT1
+	/** Tree where the hits are stored */
+	TTree *myTree[MAX_NUMBER_OF_WRITER_THREADS];
+
+	/** File where the tree is saved */
+	TFile *myFile[MAX_NUMBER_OF_WRITER_THREADS];
+#endif
+
+	/** Complete File name */
+	char completeFileName[MAX_STR_LENGTH];
+
+		/** Maximum Packets Per File **/
 	int maxPacketsPerFile;
 
 	/** If file created successfully for all Writer Threads */
@@ -305,6 +453,9 @@ private:
 
 	/** Current Frame Number */
 	uint64_t currentFrameNumber;
+
+	/** Previous Frame number from buffer to calculate loss */
+	uint64_t previousFrameNumber;
 
 	/* Acquisition started */
 	bool acqStarted;
@@ -356,6 +507,11 @@ private:
 	/** Fifo Depth */
 	uint32_t fifoSize;
 
+	/** Missing Packet identifier value */
+	const static uint16_t missingPacketValue = 0xFFFF;
+
+	/** Dummy Packet identifier value */
+	const static uint32_t dummyPacketValue = 0xFFFFFFFF;
 
 	//***receiver to GUI parameters***
 	/** Current Frame copied for GUI */
@@ -380,6 +536,9 @@ private:
 	//***general and listening thread parameters***
 	/** Ensures if threads created successfully */
 	bool threadStarted;
+
+	/** Current Thread Index*/
+	int currentThreadIndex;
 
 	/** Number of Listening Threads */
 	int numberofListeningThreads;
@@ -414,9 +573,6 @@ private:
 	/** Semaphores Synchronizing Writer Threads */
 	sem_t writerSemaphore[MAX_NUMBER_OF_WRITER_THREADS];
 
-	/** Current Writer Thread Index*/
-	int currentWriterThreadIndex;
-
 	/** Mask with each bit indicating status of each writer thread */
 	volatile uint32_t writerThreadsMask;
 
@@ -447,9 +603,17 @@ private:
 
 
 	//***mutex***
-	/** mutex for status */
-	pthread_mutex_t status_mutex;
+	/** Status mutex */
+	pthread_mutex_t statusMutex;
 
+	/** Writing mutex */
+	pthread_mutex_t writeMutex;
+
+	/** GuiDataReady Mutex */
+	pthread_mutex_t  dataReadyMutex;
+
+	/** Progress (currentFrameNumber) Mutex  */
+	pthread_mutex_t progressMutex;
 
 	//***callback***
 	/** The action which decides what the user and default responsibilities to save data are
@@ -475,32 +639,6 @@ private:
 
 
 
-	/**
-	 * Returns the buffer-current frame read by receiver
-	 * @param c pointer to current file name
-	 * @param raw address of pointer, pointing to current frame to send to gui
-	 * @param startAcquisitionIndex is the start index of the acquisition
-	 * @param startFrameIndex is the start index of the scan
-	 */
-	void readFrame(char* c,char** raw, uint32_t &startAcquisitionIndex, uint32_t &startFrameIndex);
-
-	/**
-	 * Closes all files
-	 * @param ithr thread index
-	 */
-	void closeFile(int ithr = -1);
-
-
-	/**
-	 * Stops Receiver - stops listening for packets
-	 * Returns success
-	 */
-	int stopReceiver();
-
-	/** set status to transmitting and
-	 * when fifo is empty later, sets status to run_finished
-	 */
-	void startReadout();
 
 
 
@@ -513,8 +651,6 @@ private:
 	 */
 	void copyFrameToGui(char* startbuf[], char* buf=NULL);
 
-
-
 	/**
 	 * Creates new tree and file for compression
 	 * @param ithr thread number
@@ -524,65 +660,12 @@ private:
 	int createCompressionFile(int ithr, int iframe);
 
 	/**
-	 * Creates new file
-	 *\returns OK for succces or FAIL for failure
-	 */
-	int createNewFile();
-
-	/**
-	 * Static function - Thread started which listens to packets.
-	 * Called by startReceiver()
-	 * @param this_pointer pointer to this object
-	 */
-	static void* startListeningThread(void *this_pointer);
-
-	/**
-	 * Static function - Thread started which writes packets to file.
-	 * Called by startReceiver()
-	 * @param this_pointer pointer to this object
-	 */
-	static void* startWritingThread(void *this_pointer);
-
-	/**
-	 * Thread started which listens to packets.
-	 * Called by startReceiver()
-	 *
-	 */
-	int startListening();
-
-	/**
-	 * Thread started which writes packets to file.
-	 * Called by startReceiver()
-	 *
-	 */
-	int startWriting();
-
-	/**
 	 * Writing to file without compression
 	 * @param buf is the address of buffer popped out of fifo
 	 * @param numpackets is the number of packets
 	 * @param framenum current frame number
 	 */
 	void writeToFile_withoutCompression(char* buf[],int numpackets, uint32_t framenum);
-
-	/**
-	 * Its called for the first packet of a scan or acquistion
-	 * Sets the startframeindices and the variables to know if acquisition started
-	 * @param ithread listening thread number
-	 * @param numbytes number of bytes it listened to
-	 */
-	void startFrameIndices(int ithread, int numbytes);
-
-	/**
-	 * This is called when udp socket is shut down
-	 * It pops ffff instead of packet number into fifo
-	 * to inform writers about the end of listening session
-	 * @param ithread listening thread number
-	 * @param rc number of bytes received
-	 * @param pc packet count
-	 * @param t total packets listened to
-	 */
-	void stopListening(int ithread, int rc, int &pc, int &t);
 
 	/**
 	 * When acquisition is over, this is called
@@ -616,109 +699,9 @@ private:
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-	/** missing packet identifier value */
-	const static uint16_t missingPacketValue = 0xFFFF;
-
-
-/** Complete File name */
-	char savefilename[MAX_STR_LENGTH];
-
-
-
-	/** Previous Frame number from buffer */
-	int prevframenum;
-
-
-
-
-
-
-	// TODO: not properly sure where to put these...
-	/** structure of an eiger image header*/
-
-
-
-
-//semaphores
-
-
-//mutex
-	/** guiDataReady mutex */
-	pthread_mutex_t  dataReadyMutex;
-
-	/** mutex for progress variable currframenum */
-	pthread_mutex_t progress_mutex;
-
-	/** mutex for writing data to file */
-	pthread_mutex_t write_mutex;
-
-
 	//filter
 
 
-#ifdef MYROOT1
-	/** Tree where the hits are stored */
-	TTree *myTree[MAX_NUM_WRITER_THREADS];
-
-	/** File where the tree is saved */
-	TFile *myFile[MAX_NUM_WRITER_THREADS];
-#endif
-
-
-
-
-public:
-
-
-	/**
-	   callback arguments are
-	   filepath
-	   filename
-	   fileindex
-	   datasize
-	   
-	   return value is 
-	   0 callback takes care of open,close,wrie file
-	   1 callback writes file, we have to open, close it
-	   2 we open, close, write file, callback does not do anything
-	*/
-	void registerCallBackStartAcquisition(int (*func)(char*, char*,int, int, void*),void *arg){startAcquisitionCallBack=func; pStartAcquisition=arg;};
-
-	/**
-	   callback argument is
-	   toatal frames caught
-	*/
-	void registerCallBackAcquisitionFinished(void (*func)(int, void*),void *arg){acquisitionFinishedCallBack=func; pAcquisitionFinished=arg;};
-	
-	/**
-	  args to raw data ready callback are
-	  framenum
-	  datapointer
-	  datasize in bytes
-	  file descriptor
-	  guidatapointer (NULL, no data required)
-	*/
-	void registerCallBackRawDataReady(void (*func)(int, char*, int, FILE*, char*, void*),void *arg){rawDataReadyCallBack=func; pRawDataReady=arg;};
 };
 
 

@@ -30,13 +30,33 @@ using namespace std;
  *************************************************************************/
 
 UDPStandardImplementation::UDPStandardImplementation(){
-	FILE_LOG(logDEBUG) << __AT__ << " called";
+	FILE_LOG(logDEBUG1) << __AT__ << " called";
 
 	initializeMembers();
+
+	//***mutex***
+	pthread_mutex_init(&statusMutex,NULL);
+	pthread_mutex_init(&writeMutex,NULL);
+	pthread_mutex_init(&dataReadyMutex,NULL);
+	pthread_mutex_init(&progressMutex,NULL);
+
+	//to increase socket receiver buffer size and max length of input queue by changing kernel settings
+	if(system("echo $((100*1024*1024)) > /proc/sys/net/core/rmem_max"))
+	  cout << "Warning: No root permission to change socket receiver buffer size in file /proc/sys/net/core/rmem_max" << endl;
+	else if(system("echo 250000 > /proc/sys/net/core/netdev_max_backlog"))
+	  cout << "Warning: No root permission to change max length of input queue in file /proc/sys/net/core/netdev_max_backlog" << endl;
+	/** permanent setting by heiner
+	    net.core.rmem_max = 104857600 # 100MiB
+	    net.core.netdev_max_backlog = 250000
+	    sysctl -p
+	    // from the manual
+	    sysctl -w net.core.rmem_max=16777216
+	    sysctl -w net.core.netdev_max_backlog=250000
+	*/
 }
 
 UDPStandardImplementation::~UDPStandardImplementation(){
-	FILE_LOG(logDEBUG) << __AT__ << " called";
+	FILE_LOG(logDEBUG1) << __AT__ << " called";
 
 	deleteMembers();
 }
@@ -49,13 +69,13 @@ UDPStandardImplementation::~UDPStandardImplementation(){
 
 /***initial parameters***/
 void UDPStandardImplementation::deleteBaseMembers(){
-	FILE_LOG(logDEBUG) << __AT__ << " starting";
+	FILE_LOG(logDEBUG1) << __AT__ << " starting";
 
 	UDPBaseImplementation::~UDPBaseImplementation();
 }
 
 void UDPStandardImplementation::deleteMembers(){
-	FILE_LOG(logDEBUG) << __AT__ << " starting";
+	FILE_LOG(logDEBUG1) << __AT__ << " starting";
 
 	cout << "Info: Deleting member pointers" << endl;
 	shutDownUDPSockets();
@@ -77,7 +97,7 @@ void UDPStandardImplementation::deleteMembers(){
 }
 
 void UDPStandardImplementation::deleteFilter(){
-	FILE_LOG(logDEBUG) << __AT__ << " starting";
+	FILE_LOG(logDEBUG1) << __AT__ << " starting";
 
 	moenchCommonModeSubtraction = NULL;
 	for(int i=0; i<MAX_NUMBER_OF_WRITER_THREADS; i++){
@@ -93,13 +113,15 @@ void UDPStandardImplementation::deleteFilter(){
 }
 
 void UDPStandardImplementation::initializeBaseMembers(){
-	FILE_LOG(logDEBUG) << __AT__ << " starting";
+	FILE_LOG(logDEBUG1) << __AT__ << " starting";
+
 	UDPBaseImplementation::UDPBaseImplementation();
+	acquisitionPeriod = SAMPLE_TIME_IN_NS;
 }
 
 
 void UDPStandardImplementation::initializeMembers(){
-	FILE_LOG(logDEBUG) << __AT__ << " starting";
+	FILE_LOG(logDEBUG1) << __AT__ << " starting";
 
 	cout << "Info: Initializing members" << endl;
 
@@ -114,6 +136,13 @@ void UDPStandardImplementation::initializeMembers(){
 	footerOffset = 0;
 
 	//***file parameters***
+#ifdef MYROOT1
+	for(int i=0; i<MAX_NUMBER_OF_WRITER_THREADS; i++){
+		myTree[i] = (NULL);
+		myFile[i] = (NULL);
+	}
+#endif
+	strcpy(completeFileName,"");
 	maxPacketsPerFile = 0;
 	fileCreateSuccess = false;
 
@@ -122,6 +151,7 @@ void UDPStandardImplementation::initializeMembers(){
 	startFrameIndex = 0;
 	frameIndex = 0;
 	currentFrameNumber = 0;
+	previousFrameNumber = -1;
 	acqStarted = false;
 	measurementStarted = false;
 	for(int i = 0; i < numberofListeningThreads; ++i)
@@ -152,14 +182,13 @@ void UDPStandardImplementation::initializeMembers(){
 
 	//***general and listening thread parameters***
 	threadStarted = false;
+	currentThreadIndex = -1;
 	numberofListeningThreads = 1;
-	currentListeningThreadIndex = -1;
 	listeningThreadsMask = 0x0;
 	killAllListeningThreads = false;
 
 	//***writer thread parameters***
 	numberofWriterThreads = 1;
-	currentWriterThreadIndex = -1;
 	writerThreadsMask = 0x0;
 	createFileMask = 0x0;
 	killAllWritingThreads = false;
@@ -172,8 +201,6 @@ void UDPStandardImplementation::initializeMembers(){
 		receiverData[i] = NULL;
 	}
 
-	//***mutex***
-	pthread_mutex_init(&status_mutex,NULL);
 
 	//***callback***
 	cbAction = DO_EVERYTHING;
@@ -182,7 +209,7 @@ void UDPStandardImplementation::initializeMembers(){
 
 
 void UDPStandardImplementation::initializeFilter(){
-	FILE_LOG(logDEBUG) << __AT__ << " starting";
+	FILE_LOG(logDEBUG1) << __AT__ << " starting";
 
 	double hc = 0, sigma = 5;
 	int sign = 1, csize, i;
@@ -221,155 +248,9 @@ void UDPStandardImplementation::initializeFilter(){
 
 
 
-int UDPStandardImplementation::createListeningThreads(bool destroy){
-	FILE_LOG(logDEBUG) << __AT__ << " starting";
-
-	//reset masks
-	killAllListeningThreads = false;
-	pthread_mutex_lock(&status_mutex);
-	listeningThreadsMask = 0x0;
-	pthread_mutex_unlock(&(status_mutex));
-
-	//destroy
-	if(destroy){
-		cout << "Info: Destroying Listening Thread(s)" << endl;
-
-		killAllListeningThreads = true;
-		for(int i = 0; i < numberofListeningThreads; ++i){
-			sem_post(&listenSemaphore[i]);
-			pthread_join(listeningThreads[i],NULL);
-			cout <<"."<<flush;
-		}
-		killAllListeningThreads = false;
-		threadStarted = false;
-		cout << endl;
-		cout << "Info: Listening thread(s) destroyed" << endl;
-	}
-
-	//create
-	else{
-		cout << "Info: Creating Listening Thread(s)" << endl;
-
-		//reset current index
-		currentListeningThreadIndex = -1;
-
-		for(int i = 0; i < numberofListeningThreads; ++i){
-			sem_init(&listenSemaphore[i],1,0);
-			threadStarted = false;
-			currentListeningThreadIndex = i;
-			if(pthread_create(&listeningThreads[i], NULL,startListeningThread, (void*) this)){
-				cout << "Warning: Could not create listening thread with index " << i << endl;
-				return FAIL;
-			}
-			while(!threadStarted);
-			cout << ".";
-			cout << flush;
-		}
-		cout << endl;
-#ifdef VERBOSE
-		cout << "Info: Listening thread(s) created successfully." << endl;
-#endif
-
-	}
-
-	return OK;
-}
-
-
-
-int UDPStandardImplementation::createWriterThreads(bool destroy){
-	FILE_LOG(logDEBUG) << __AT__ << " starting";
-
-	//reset masks
-	killAllWritingThreads = false;
-	pthread_mutex_lock(&status_mutex);
-	writerThreadsMask = 0x0;
-	createFileMask = 0x0;
-	pthread_mutex_unlock(&(status_mutex));
-
-	//destroy threads
-	if(destroy){
-		cout << "Info: Destroying Writer Thread(s)" << endl;
-
-		killAllWritingThreads = true;
-		for(int i = 0; i < numberofWriterThreads; ++i){
-			sem_post(&writerSemaphore[i]);
-			pthread_join(writingThreads[i],NULL);
-			cout <<"."<<flush;
-		}
-		killAllWritingThreads = false;
-		threadStarted = false;
-		cout << endl;
-		cout << "Info: Writer thread(s) destroyed" << endl;
-	}
-
-	//create threads
-	else{
-		cout << "Info: Creating Writer Thread(s)" << endl;
-
-		//reset current index
-		currentWriterThreadIndex = -1;
-
-		for(int i = 0; i < numberofWriterThreads; ++i){
-			sem_init(&writerSemaphore[i],1,0);
-			threadStarted = false;
-			currentWriterThreadIndex = i;
-			if(pthread_create(&writingThreads[i], NULL,startWritingThread, (void*) this)){
-				cout << "Warning: Could not create writer thread with index " << i << endl;
-				return FAIL;
-			}
-			while(!threadStarted);
-			cout << ".";
-			cout << flush;
-		}
-		cout << endl;
-#ifdef VERBOSE
-		cout << "Info: Writer thread(s) created successfully." << endl;
-#endif
-	}
-
-	return OK;
-}
-
-
-
-void UDPStandardImplementation::setThreadPriorities(){
-	FILE_LOG(logDEBUG) << __AT__ << " called";
-
-	struct sched_param tcp_param, listen_param, write_param;
-	bool rights = true;
-
-	//assign priorities
-	tcp_param.sched_priority = 50;
-	listen_param.sched_priority = 99;
-	write_param.sched_priority = 90;
-
-	//set them
-	for(int i = 0; i < numberofListeningThreads; ++i){
-		if (pthread_setschedparam(listeningThreads[i], SCHED_RR, &listen_param) == EPERM){
-			rights = false;
-			break;
-		}
-	}
-	for(int i = 0; i < numberofWriterThreads; ++i){
-		if(rights)
-			if (pthread_setschedparam(writingThreads[i], SCHED_RR, &write_param) == EPERM){
-				rights = false;
-				break;
-			}
-	}
-	if (pthread_setschedparam(pthread_self(),5 , &tcp_param) == EPERM)
-		rights = false;
-
-	if(!rights)
-		cout << "Warning: No root permission to prioritize threads." << endl;
-
-}
-
-
 
 int UDPStandardImplementation::setupFifoStructure(){
-	FILE_LOG(logDEBUG) << __AT__ << " called";
+	FILE_LOG(logDEBUG1) << __AT__ << " called";
 
 	int64_t i;
 	int oldNumberofJobsPerBuffer = numberofJobsPerBuffer;
@@ -472,112 +353,11 @@ int UDPStandardImplementation::setupFifoStructure(){
 
 
 
-int UDPStandardImplementation::createUDPSockets(){
-	FILE_LOG(logDEBUG) << __AT__ << " called";
-
-	//switching ports if bottom enabled
-	int port[2];
-	port =  udpPortNum;
-	if(bottomEnable){
-		port[0] = udpPortNum[1];
-		port[1] = udpPortNum[0];
-	}
-
-	//if eth is mistaken with ip address
-	if (strchr(eth,'.') != NULL)
-		strcpy(eth,"");
-
-	shutDownUDPSockets();
-
-	//if no eth, listen to all
-	if(!strlen(eth)){
-		cout << "Warning: eth is empty. Listening to all"<<endl;
-
-		for(int i=0;i<numberofListeningThreads;i++)
-			udpSocket[i] = new genericSocket(port[i],genericSocket::UDP,bufferSize);
-	}
-	//normal socket
-	else{
-		cout << "Info: eth:" << eth << endl;
-
-		for(int i=0;i<numberofListeningThreads;i++)
-			udpSocket[i] = new genericSocket(port[i],genericSocket::UDP,bufferSize,eth);
-	}
-
-	//error
-	for(int i=0;i<numberofListeningThreads;i++){
-		int iret = udpSocket[i]->getErrorStatus();
-		if(!iret){
-			cout << "Info: UDP port opened at port " << port[i] << endl;
-		}else{
-#ifdef VERBOSE
-			cprintf(BG_RED,"Error: Could not create UDP socket on port %d error: %d\n", port[i], iret);
-#endif
-			shutDownUDPSockets();
-			return FAIL;
-		}
-	}
-
-	cout << "Info: UDP socket(s) created successfully." << endl;
-	cout << "Info: Listener Ready ..." << endl;
-
-	return OK;
-}
-
-
-
-int UDPStandardImplementation::setupWriter(){
-	FILE_LOG(logDEBUG) << __AT__ << " starting";
-
-	//acquisition start call back returns enable write
-	cbAction = DO_EVERYTHING;
-	if (startAcquisitionCallBack)
-		cbAction=startAcquisitionCallBack(filePath,fileName,fileIndex,bufferSize,pStartAcquisition);
-
-	if(cbAction < DO_EVERYTHING){
-		cout << "Info: Call back activated. Data saving must be taken care of by user in call back." << endl;
-		if (rawDataReadyCallBack)
-			cout << "Info: Data Write has been defined externally" << endl;
-	}else if(!fileWriteEnable)
-		cout << "Info: Data will not be saved" << endl;
-
-
-
-	//creating first file
-	//setting all value to 1
-	pthread_mutex_lock(&status_mutex);
-	for(int i=0; i<numberofWriterThreads; i++)
-		createFileMask|=(1<<i);
-	pthread_mutex_unlock(&status_mutex);
-
-	for(int i=0; i<numberofWriterThreads; i++){
-		FILE_LOG(logDEBUG4) <<	i << " Going to post 1st semaphore" << endl;
-		sem_post(&writerSemaphore[i]);
-	}
-	//wait till its mask becomes zero(all created)
-	while(createFileMask){
-		FILE_LOG(logDEBUG4) << "*" << flush;
-		usleep(5000);
-	}
-
-
-	if(dataCompressionEnable){
-#if (defined(MYROOT1) && defined(ALLFILE_DEBUG)) || !defined(MYROOT1)
-		if(fileCreateSuccess != FAIL)
-			fileCreateSuccess = createNewFile();
-#endif
-	}
-
-	cout << "Info: Successfully created file(s)" << endl;
-	cout << "Info: Writer Ready ..." << endl;
-
-	return fileCreateSuccess;
-}
 
 
 
 void UDPStandardImplementation::configure(map<string, string> config_map){
-	FILE_LOG(logDEBUG) << __AT__ << " starting";
+	FILE_LOG(logDEBUG1) << __AT__ << " starting";
 
 	map<string, string>::const_iterator pos;
 	pos = config_map.find("mode");
@@ -596,7 +376,7 @@ void UDPStandardImplementation::configure(map<string, string> config_map){
 
 /***file parameters***/
 int UDPStandardImplementation::setDataCompressionEnable(const bool b){
-	FILE_LOG(logDEBUG) << __AT__ << " starting";
+	FILE_LOG(logDEBUG1) << __AT__ << " starting";
 
 	cout << "Info: Setting up Data Compression Enable to " << stringEnable(b);
 #ifdef MYROOT1
@@ -609,9 +389,9 @@ int UDPStandardImplementation::setDataCompressionEnable(const bool b){
 	dataCompressionEnable = b;
 
 	//-- create writer threads depending on enable
-	pthread_mutex_lock(&status_mutex);
+	pthread_mutex_lock(&statusMutex);
 	writerThreadsMask = 0x0;
-	pthread_mutex_unlock(&(status_mutex));
+	pthread_mutex_unlock(&(statusMutex));
 
 	createWriterThreads(true);
 	if(b)
@@ -638,7 +418,7 @@ int UDPStandardImplementation::setDataCompressionEnable(const bool b){
 
 /***acquisition parameters***/
 void UDPStandardImplementation::setShortFrameEnable(const int i){
-	FILE_LOG(logDEBUG) << __AT__ << " called";
+	FILE_LOG(logDEBUG1) << __AT__ << " called";
 
 	shortFrameEnable = i;
 
@@ -675,7 +455,7 @@ void UDPStandardImplementation::setShortFrameEnable(const int i){
 
 
 int UDPStandardImplementation::setFrameToGuiFrequency(const uint32_t i){
-	FILE_LOG(logDEBUG) << __AT__ << " called";
+	FILE_LOG(logDEBUG1) << __AT__ << " called";
 
 	if(i >= 0){
 		FrameToGuiFrequency = i;
@@ -690,7 +470,7 @@ int UDPStandardImplementation::setFrameToGuiFrequency(const uint32_t i){
 
 
 int UDPStandardImplementation::setAcquisitionPeriod(int64_t i){
-	FILE_LOG(logDEBUG) << __AT__ << " called";
+	FILE_LOG(logDEBUG1) << __AT__ << " called";
 
 	if(i >= 0){
 		acquisitionPeriod = i;
@@ -705,7 +485,7 @@ int UDPStandardImplementation::setAcquisitionPeriod(int64_t i){
 }
 
 int UDPStandardImplementation::setDynamicRange(const uint32_t i){
-	FILE_LOG(logDEBUG) << __AT__ << " called";
+	FILE_LOG(logDEBUG1) << __AT__ << " called";
 
 	int oldDynamicRange = dynamicRange;
 
@@ -759,7 +539,7 @@ int UDPStandardImplementation::setDynamicRange(const uint32_t i){
 
 
 int UDPStandardImplementation::setTenGigaEnable(const bool b){
-	FILE_LOG(logDEBUG) << __AT__ << " called";
+	FILE_LOG(logDEBUG1) << __AT__ << " called";
 
 	cout << "Info: Setting Ten Giga to " << string(b) << endl;
 	bool oldTenGigaEnable = tengigaEnable;
@@ -829,6 +609,10 @@ int UDPStandardImplementation::setTenGigaEnable(const bool b){
 
 
 
+
+
+
+
 /*************************************************************************
  * Behavioral functions***************************************************
  * They may modify the status of the receiver ****************************
@@ -837,7 +621,7 @@ int UDPStandardImplementation::setTenGigaEnable(const bool b){
 
 /***initial functions***/
 int UDPStandardImplementation::setDetectorType(const slsReceiverDefs::detectorType d){
-	FILE_LOG(logDEBUG) << __AT__ << " called";
+	FILE_LOG(logDEBUG1) << __AT__ << " called";
 
 	cout << "Setting receiver type ..." << endl;
 
@@ -857,7 +641,7 @@ int UDPStandardImplementation::setDetectorType(const slsReceiverDefs::detectorTy
 		cout << "Info: ***** This is a " << slsDetectorBase::getDetectorType(d) << " Receiver *****" << endl;
 		break;
 	default:
-		cout << "Error: This is an unknown receiver type " << (int)d << endl;
+		cprintf(BG_RED, "Error: This is an unknown receiver type %d\n", (int)d);
 		return FAIL;
 	}
 
@@ -934,9 +718,9 @@ int UDPStandardImplementation::setDetectorType(const slsReceiverDefs::detectorTy
 
 	//delete threads and set number of listening threads
 	if(myDetectorType == EIGER){
-		pthread_mutex_lock(&status_mutex);
+		pthread_mutex_lock(&statusMutex);
 		listeningThreadsMask = 0x0;
-		pthread_mutex_unlock(&(status_mutex));
+		pthread_mutex_unlock(&(statusMutex));
 		if(threadStarted)
 			createListeningThreads(true);
 		numberofListeningThreads = MAX_NUMBER_OF_LISTENING_THREADS;
@@ -949,11 +733,11 @@ int UDPStandardImplementation::setDetectorType(const slsReceiverDefs::detectorTy
 	//create threads
 	if(createListeningThreads() == FAIL){
 		cprintf(BG_RED,"Error: Could not create listening thread\n");
-		exit (-1);
+		return FAIL;
 	}
 	if(createWriterThreads() == FAIL){
 		cprintf(BG_RED,"Error: Could not create writer threads\n");
-		exit (-1);
+		return FAIL;
 	}
 	setThreadPriorities();
 
@@ -969,7 +753,7 @@ int UDPStandardImplementation::setDetectorType(const slsReceiverDefs::detectorTy
 
 /***acquisition functions***/
 void UDPStandardImplementation::resetAcquisitionCount(){
-	FILE_LOG(logDEBUG) << __AT__ << " starting";
+	FILE_LOG(logDEBUG1) << __AT__ << " starting";
 
 	totalPacketsCaught = 0;
 	acqStarted = false;
@@ -980,7 +764,7 @@ void UDPStandardImplementation::resetAcquisitionCount(){
 
 
 int UDPStandardImplementation::startReceiver(char *c=NULL){
-	FILE_LOG(logDEBUG) << __AT__ << " called";
+	FILE_LOG(logDEBUG1) << __AT__ << " called";
 
 	cout << "Info: Starting Receiver" << endl;
 
@@ -1009,11 +793,11 @@ int UDPStandardImplementation::startReceiver(char *c=NULL){
 	guiDataReady=0;
 	strcpy(guiFileName,"");
 	//reset masks
-	pthread_mutex_lock(&status_mutex);
+	pthread_mutex_lock(&statusMutex);
 	writerThreadsMask = 0x0;
 	createFileMask = 0x0;
 	fileCreateSuccess = false;
-	pthread_mutex_unlock(&status_mutex);
+	pthread_mutex_unlock(&statusMutex);
 
 
 	//Print Receiver Configuration
@@ -1024,6 +808,8 @@ int UDPStandardImplementation::startReceiver(char *c=NULL){
 		cout << "Info: Number of Jobs Per Buffer: " << numberofJobsPerBuffer << endl;
 	if(FrameToGuiFrequency)
 		cout << "Info: Frequency of frames sent to gui" << FrameToGuiFrequency << endl;
+	else
+		cout << "Info: Random frames sent to gui" << endl;
 
 
 
@@ -1031,54 +817,84 @@ int UDPStandardImplementation::startReceiver(char *c=NULL){
 	if(createUDPSockets() == FAIL){
 		strcpy(c,"Could not create UDP Socket(s).\n");
 		cout << endl;
-		cout << "Error: "<< c << endl;
+		cprintf(BG_RED, "Error: %s\n",c);
 		return FAIL;
 	}
 
 	if(setupWriter() == FAIL){
 		//stop udp socket
 		shutDownUDPSockets();
-		sprintf(c,"Could not create file %s.\n",savefilename);
+		sprintf(c,"Could not create file %s.\n",completeFileName);
 		cout << endl;
-		cout << "Error: "<< c << endl;
+		cprintf(BG_RED, "Error: %s\n",c);
 		return FAIL;
 	}
 
 
-	//For compression, done to give the gui some proper name instead of always the last file name
+	//For compression, just for gui purposes
 	if(dataCompressionEnable)
-		sprintf(savefilename, "%s/%s_fxxx_%d_xx.root", filePath,fileName,fileIndex);
+		sprintf(completeFileName, "%s/%s_fxxx_%d_xx.root", filePath,fileName,fileIndex);
 
 	//initialize semaphore to synchronize between writer and gui reader threads
 	sem_init(&writerGuiSemaphore,1,0);
 
 	//status and thread masks
-	pthread_mutex_lock(&status_mutex);
+	pthread_mutex_lock(&statusMutex);
 	status = RUNNING;
-	for(int i=0;i<numberofListeningThreads;i++)
-		listeningThreadsMask|=(1<<i);
-	for(int i=0;i<numberofWriterThreads;i++)
-		writerThreadsMask|=(1<<i);
-	pthread_mutex_unlock(&(status_mutex));
+	for(int i=0;i<numberofListeningThreads;i++)		listeningThreadsMask|=(1<<i);
+	for(int i=0;i<numberofWriterThreads;i++)		writerThreadsMask|=(1<<i);
+	pthread_mutex_unlock(&(statusMutex));
 
 
 	//start listening /writing
-	for(int i=0;i<numberofListeningThreads;i++)
-		sem_post(&listenSemaphore[i]);
-	for(int i=0; i < numberofWriterThreads; i++)
-		sem_post(&writerSemaphore[i]);
+	for(int i=0;i<numberofListeningThreads;i++)		sem_post(&listenSemaphore[i]);
+	for(int i=0; i < numberofWriterThreads; i++)	sem_post(&writerSemaphore[i]);
 
 	//usleep(5000000);
 	cout << "Info: Receiver Started." << endl;
-	cout << "Info: Status:" << status << endl;
+	cout << "Info: Status:" << slsDetectorBase::runStatusType(status) << endl;
 
 	return OK;
 }
 
 
+/**
+ * Pre: status is running, semaphores have been instantiated,
+ * Post: udp sockets shut down, status is idle, semaphores destroyed
+ * */
+void UDPStandardImplementation::stopReceiver(){
+	FILE_LOG(logDEBUG1) << __AT__ << " called";
+
+	cout << "Info: Stopping Receiver" << endl;
+
+	//set status to transmitting
+	startReadout();
+
+	//wait until status is run_finished
+	while(status == TRANSMITTING){
+		sem_post(&writerGuiSemaphore);
+		usleep(5000);
+	}
+
+	//semaphore destroy
+	sem_destroy(&writerGuiSemaphore);
+
+	//change status
+	pthread_mutex_lock(&statusMutex);
+	status = IDLE;
+	pthread_mutex_unlock(&(statusMutex));
+
+	cout << "Info: Receiver Stopped" << endl;
+	cout << "Info: Status:" << slsDetectorBase::runStatusType(status) << endl;
+	cout << endl;
+}
+
+
+
+
 
 int UDPStandardImplementation::shutDownUDPSockets(){
-	FILE_LOG(logDEBUG) << __AT__ << " called";
+	FILE_LOG(logDEBUG1) << __AT__ << " called";
 
 	cout << "Info: Shutting down UDP Socket(s)" << endl;
 
@@ -1095,218 +911,964 @@ int UDPStandardImplementation::shutDownUDPSockets(){
 
 
 
+/**
+ * Pre: status is running, udp sockets have been initialized, stop receiver initiated
+ * Post:udp sockets closed, status is transmitting
+ * */
+void UDPStandardImplementation::startReadout(){
+	FILE_LOG(logDEBUG1) << __AT__ << " called";
 
+	cout << "Info: Transmitting last data" << endl;
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-UDPStandardImplementation::UDPStandardImplementation(){
-	thread_started = 0;
-	eth = NULL;
-
-	tengigaEnable = 0;
-
-	for(int i=0;i<MAX_NUM_LISTENING_THREADS;i++){
-
-		server_port[i] = DEFAULT_UDP_PORTNO+i;
-
-	}
-
-	for(int i=0;i<MAX_NUM_WRITER_THREADS;i++){
-		singlePhotonDet[i] = NULL;
-		receiverdata[i] = NULL;
-	}
-
-	startAcquisitionCallBack = NULL;
-	pStartAcquisition = NULL;
-	acquisitionFinishedCallBack = NULL;
-	pAcquisitionFinished = NULL;
-	rawDataReadyCallBack = NULL;
-	pRawDataReady = NULL;
-
-
-	//mutex
-	pthread_mutex_init(&dataReadyMutex,NULL);
-	pthread_mutex_init(&status_mutex,NULL);
-	pthread_mutex_init(&progress_mutex,NULL);
-	pthread_mutex_init(&write_mutex,NULL);
-
-	initializeMembers();
-
-	//to increase socket receiver buffer size and max length of input queue by changing kernel settings
-	if(system("echo $((100*1024*1024)) > /proc/sys/net/core/rmem_max"))
-	  cout << "\nWARNING: Could not change socket receiver buffer size in file /proc/sys/net/core/rmem_max" << endl;
-	else if(system("echo 250000 > /proc/sys/net/core/netdev_max_backlog"))
-	  cout << "\nWARNING: Could not change max length of input queue in file /proc/sys/net/core/netdev_max_backlog" << endl;
-
-	/** permanent setting heiner
-	    net.core.rmem_max = 104857600 # 100MiB
-	    net.core.netdev_max_backlog = 250000
-	    sysctl -p
-	    // from the manual
-	    sysctl -w net.core.rmem_max=16777216
-	    sysctl -w net.core.netdev_max_backlog=250000
-	*/
+	if(status == RUNNING){
+		//wait for all packets
+		uint64_t prev = totalPacketsCaught;
+		usleep(50000);
+		while(prev!=totalPacketsCaught){
+			prev=totalPacketsCaught;
+			usleep(50000);
 		}
 
+		//set status
+		pthread_mutex_lock(&statusMutex);
+		status = TRANSMITTING;
+		pthread_mutex_unlock(&statusMutex);
+		cout << "Info: Status: Transmitting" << endl;
+	}
 
-
-void UDPStandardImplementation::initializeMembers(){
-	myDetectorType = GENERIC;
-	enableFileWrite = 1;
-	overwrite = 1;
-	fileIndex = 0;
-	scanTag = 0;
-	frameIndexNeeded = 0;
-
-
-
-	packetsCaught = 0;
-	totalPacketsCaught = 0;
-
-	startAcquisitionIndex = 0;
-	acquisitionIndex = 0;
-
-	frameIndexMask = 0;
-	packetIndexMask = 0;
-	frameIndexOffset = 0;
-	acquisitionPeriod = SAMPLE_TIME_IN_NS;
-	numberOfFrames = 0;
-	dynamicRange = 16;
-	shortFrame = -1;
-	currframenum = 0;
-	prevframenum = 0;
-
-
-	nFrameToGui = 0;
-	dataCompression = false;
-	numListeningThreads = 1;
-	numWriterThreads = 1;
-	thread_started = 0;
+	//shut down udp sockets and make listeners push dummy (end) packets for writers
+	shutDownUDPSockets();
+}
 
 
 
-	tengigaEnable = 0;
+
+void UDPStandardImplementation::readFrame(char* c,char** raw, uint64_t &startAcq, uint64_t &startFrame){
+	FILE_LOG(logDEBUG1) << __AT__ << " called";
+
+	//point to gui data, to let writer thread know that gui is back for data
+	if (guiData == NULL){
+		guiData = latestData;
+#ifdef DEBUG4
+		cprintf(CYAN,"Info: gui data not null anymore - ready to get data\n");
+#endif
+	}
+
+	//copy data and filename
+	strcpy(c,guiFileName);
+	startAcq = startAcquisitionIndex;
+	startFrame = startFrameIndex;
+
+
+	//gui data not copied yet
+	if(!guiDataReady){
+#ifdef DEBUG4
+		cprintf(CYAN,"Info: gui data not ready\n");
+#endif
+		*raw = NULL;
+	}
+
+	//gui data ready, pass address to gui to copy the data
+	else{
+#ifdef DEBUG4
+		cprintf(CYAN,"Info: gui data ready\n");
+#endif
+		*raw = guiData;
+		guiData = NULL;
+
+		//for nth frame to gui, post semaphore so writer stops waiting
+		if((FrameToGuiFrequency) && (writerThreadsMask)){
+#ifdef DEBUG4
+			cprintf(CYAN,"Info: gonna post\n");
+#endif
+			//release after getting data
+			sem_post(&smp);
+		}
+#ifdef DEBUG4
+		cprintf(CYAN,"Info: done post\n");
+#endif
+
+	}
+}
 
 
 
-	eth = NULL;
+void UDPStandardImplementation::closeFile(int i){
+	FILE_LOG(logDEBUG1) << __AT__ << " called for " << i ;
 
+	//normal
+	if(!dataCompressionEnable){
+		if(sfilefd){
+#ifdef DEBUG4
+			cprintf(YELLOW, "Going to close file:%d\n",fileno(sfilefd));
+#endif
+			fclose(sfilefd);
+			sfilefd = NULL;
+		}
+	}
 
+	//compression
+	else{
+#if (defined(MYROOT1) && defined(ALLFILE_DEBUG)) || !defined(MYROOT1)
+		if(sfilefd){
+#ifdef DEBUG4
+			cout << "sfield:" << (int)sfilefd << endl;
+#endif
+			fclose(sfilefd);
+			sfilefd = NULL;
+		}
+#endif
 
-	cmSub = NULL;
-
-
-	//diff threads
-	for(int i=0;i<numWriterThreads;i++){
-		commonModeSubtractionEnable = false;
-		singlePhotonDet[i] = NULL;
-		receiverdata[i] = NULL;
 #ifdef MYROOT1
-		myTree[i] = (NULL);
-		myFile[i] = (NULL);
+		pthread_mutex_lock(&writeMutex);
+		//write to file
+		if(myTree[i] && myFile[i]){
+			myFile[i] = myTree[i]->GetCurrentFile();
+
+			if(myFile[i]->Write())
+				//->Write(tall->GetName(),TObject::kOverwrite);
+				cout << "Info: Thread " << i <<": wrote frames to file" << endl;
+			else
+				cout << "Info: Thread " << i << ": could not write frames to file" << endl;
+
+		}else
+			cout << "Info: Thread " << i << ": could not write frames to file: No file or No Tree" << endl;
+		//close file
+		if(myTree[i] && myFile[i])
+			myFile[i] = myTree[i]->GetCurrentFile();
+		if(myFile[i] != NULL)
+			myFile[i]->Close();
+		myFile[i] = NULL;
+		myTree[i] = NULL;
+		pthread_mutex_unlock(&writeMutex);
+
+#endif
+	}
+}
+
+
+
+
+/*************************************************************************
+ * Listening and Writing Threads *****************************************
+ *************************************************************************/
+
+
+int UDPStandardImplementation::createListeningThreads(bool destroy){
+	FILE_LOG(logDEBUG1) << __AT__ << " starting";
+
+	//reset masks
+	killAllListeningThreads = false;
+	pthread_mutex_lock(&statusMutex);
+	listeningThreadsMask = 0x0;
+	pthread_mutex_unlock(&(statusMutex));
+
+	//destroy
+	if(destroy){
+		cout << "Info: Destroying Listening Thread(s)" << endl;
+
+		killAllListeningThreads = true;
+		for(int i = 0; i < numberofListeningThreads; ++i){
+			sem_post(&listenSemaphore[i]);
+			pthread_join(listeningThreads[i],NULL);
+			cout <<"."<<flush;
+		}
+		killAllListeningThreads = false;
+		threadStarted = false;
+		cout << endl;
+		cout << "Info: Listening thread(s) destroyed" << endl;
+	}
+
+	//create
+	else{
+		cout << "Info: Creating Listening Thread(s)" << endl;
+
+		//reset current index
+		currentThreadIndex = -1;
+
+		for(int i = 0; i < numberofListeningThreads; ++i){
+			sem_init(&listenSemaphore[i],1,0);
+			threadStarted = false;
+			currentThreadIndex = i;
+			if(pthread_create(&listeningThreads[i], NULL,startListeningThread, (void*) this)){
+				cout << "Warning: Could not create listening thread with index " << i << endl;
+				return FAIL;
+			}
+			while(!threadStarted);
+			cout << ".";
+			cout << flush;
+		}
+		cout << endl;
+#ifdef VERBOSE
+		cout << "Info: Listening thread(s) created successfully." << endl;
+#endif
+
+	}
+
+	return OK;
+}
+
+
+
+int UDPStandardImplementation::createWriterThreads(bool destroy){
+	FILE_LOG(logDEBUG1) << __AT__ << " starting";
+
+	//reset masks
+	killAllWritingThreads = false;
+	pthread_mutex_lock(&statusMutex);
+	writerThreadsMask = 0x0;
+	createFileMask = 0x0;
+	pthread_mutex_unlock(&(statusMutex));
+
+	//destroy threads
+	if(destroy){
+		cout << "Info: Destroying Writer Thread(s)" << endl;
+
+		killAllWritingThreads = true;
+		for(int i = 0; i < numberofWriterThreads; ++i){
+			sem_post(&writerSemaphore[i]);
+			pthread_join(writingThreads[i],NULL);
+			cout <<"."<<flush;
+		}
+		killAllWritingThreads = false;
+		threadStarted = false;
+		cout << endl;
+		cout << "Info: Writer thread(s) destroyed" << endl;
+	}
+
+	//create threads
+	else{
+		cout << "Info: Creating Writer Thread(s)" << endl;
+
+		//reset current index
+		currentThreadIndex = -1;
+
+		for(int i = 0; i < numberofWriterThreads; ++i){
+			sem_init(&writerSemaphore[i],1,0);
+			threadStarted = false;
+			currentThreadIndex = i;
+			if(pthread_create(&writingThreads[i], NULL,startWritingThread, (void*) this)){
+				cout << "Warning: Could not create writer thread with index " << i << endl;
+				return FAIL;
+			}
+			while(!threadStarted);
+			cout << ".";
+			cout << flush;
+		}
+		cout << endl;
+#ifdef VERBOSE
+		cout << "Info: Writer thread(s) created successfully." << endl;
+#endif
+	}
+
+	return OK;
+}
+
+
+
+void UDPStandardImplementation::setThreadPriorities(){
+	FILE_LOG(logDEBUG1) << __AT__ << " called";
+
+	struct sched_param tcp_param, listen_param, write_param;
+	bool rights = true;
+
+	//assign priorities
+	tcp_param.sched_priority = 50;
+	listen_param.sched_priority = 99;
+	write_param.sched_priority = 90;
+
+	//set them
+	for(int i = 0; i < numberofListeningThreads; ++i){
+		if (pthread_setschedparam(listeningThreads[i], SCHED_RR, &listen_param) == EPERM){
+			rights = false;
+			break;
+		}
+	}
+	for(int i = 0; i < numberofWriterThreads; ++i){
+		if(rights)
+			if (pthread_setschedparam(writingThreads[i], SCHED_RR, &write_param) == EPERM){
+				rights = false;
+				break;
+			}
+	}
+	if (pthread_setschedparam(pthread_self(),5 , &tcp_param) == EPERM)
+		rights = false;
+
+	if(!rights)
+		cout << "Warning: No root permission to prioritize threads." << endl;
+
+}
+
+
+
+
+int UDPStandardImplementation::createUDPSockets(){
+	FILE_LOG(logDEBUG1) << __AT__ << " called";
+
+	//switching ports if bottom enabled
+	int port[2];
+	port =  udpPortNum;
+	if(bottomEnable){
+		port[0] = udpPortNum[1];
+		port[1] = udpPortNum[0];
+	}
+
+	//if eth is mistaken with ip address
+	if (strchr(eth,'.') != NULL)
+		strcpy(eth,"");
+
+	shutDownUDPSockets();
+
+	//if no eth, listen to all
+	if(!strlen(eth)){
+		cout << "Warning: eth is empty. Listening to all"<<endl;
+
+		for(int i=0;i<numberofListeningThreads;i++)
+			udpSocket[i] = new genericSocket(port[i],genericSocket::UDP,bufferSize);
+	}
+	//normal socket
+	else{
+		cout << "Info: eth:" << eth << endl;
+
+		for(int i=0;i<numberofListeningThreads;i++)
+			udpSocket[i] = new genericSocket(port[i],genericSocket::UDP,bufferSize,eth);
+	}
+
+	//error
+	for(int i=0;i<numberofListeningThreads;i++){
+		int iret = udpSocket[i]->getErrorStatus();
+		if(!iret){
+			cout << "Info: UDP port opened at port " << port[i] << endl;
+		}else{
+#ifdef VERBOSE
+			cprintf(BG_RED,"Error: Could not create UDP socket on port %d error: %d\n", port[i], iret);
+#endif
+			shutDownUDPSockets();
+			return FAIL;
+		}
+	}
+
+	cout << "Info: UDP socket(s) created successfully." << endl;
+	cout << "Info: Listener Ready ..." << endl;
+
+	return OK;
+}
+
+
+
+int UDPStandardImplementation::setupWriter(){
+	FILE_LOG(logDEBUG1) << __AT__ << " starting";
+
+	//acquisition start call back returns enable write
+	cbAction = DO_EVERYTHING;
+	if (startAcquisitionCallBack)
+		cbAction=startAcquisitionCallBack(filePath,fileName,fileIndex,bufferSize,pStartAcquisition);
+
+	if(cbAction < DO_EVERYTHING){
+		cout << "Info: Call back activated. Data saving must be taken care of by user in call back." << endl;
+		if (rawDataReadyCallBack)
+			cout << "Info: Data Write has been defined externally" << endl;
+	}else if(!fileWriteEnable)
+		cout << "Info: Data will not be saved" << endl;
+
+
+
+	//creating first file
+	//setting all value to 1
+	pthread_mutex_lock(&statusMutex);
+	for(int i=0; i<numberofWriterThreads; i++)		createFileMask|=(1<<i);
+	pthread_mutex_unlock(&statusMutex);
+
+	for(int i=0; i<numberofWriterThreads; i++){
+		FILE_LOG(logDEBUG4) <<	i << " Going to post 1st semaphore" << endl;
+		sem_post(&writerSemaphore[i]);
+	}
+	//wait till its mask becomes zero(all created)
+	while(createFileMask){
+		FILE_LOG(logDEBUG4) << "*" << flush;
+		usleep(5000);
+	}
+
+
+	if(dataCompressionEnable){
+#if (defined(MYROOT1) && defined(ALLFILE_DEBUG)) || !defined(MYROOT1)
+		if(fileCreateSuccess != FAIL)
+			fileCreateSuccess = createNewFile();
+#endif
+	}
+
+	cout << "Info: Successfully created file(s)" << endl;
+	cout << "Info: Writer Ready ..." << endl;
+
+	return fileCreateSuccess;
+}
+
+
+
+int UDPStandardImplementation::createNewFile(){
+	FILE_LOG(logDEBUG1) << __AT__ << " called";
+
+	int index = 0;
+	if(packetsCaught)
+		index = frameIndex;
+
+	//create file name
+	if(!frameIndexEnable)
+		sprintf(completeFileName, "%s/%s_%d.raw", filePath,fileName,fileIndex);
+	else if (myDetectorType == EIGER)
+		sprintf(completeFileName, "%s/%s_f%012d_%d.raw", filePath,fileName,currentFrameNumber,fileIndex);
+	else
+		sprintf(completeFileName, "%s/%s_f%012d_%d.raw", filePath,fileName,(packetsCaught/packetsPerFrame),fileIndex);
+
+#ifdef DEBUG4
+	cout << "Info: " << completefileName << endl;
+#endif
+
+	//filewrite enable & we allowed to create/close files
+	if(fileWriteEnable && cbAction > DO_NOTHING){
+
+		//close file pointers
+		if(sfilefd){
+			fclose(sfilefd);
+			sfilefd = NULL;
+		}
+
+		//create file
+		if(!overwriteEnable){
+			if (NULL == (sfilefd = fopen((const char *) (completeFileName), "wx"))){
+				cprintf(BG_RED,"Error: Could not create/overwrite file %s\n",completeFileName);
+				return FAIL;
+			}
+		}else if (NULL == (sfilefd = fopen((const char *) (completeFileName), "w"))){
+			cprintf(BG_RED,"Error: Could not create file %s\n",completeFileName);
+			return FAIL;
+		}
+		//setting file buffer size to 16mb
+		setvbuf(sfilefd,NULL,_IOFBF,BUF_SIZE);
+
+		//Print packet loss and filenames
+		if(!packetsCaught){
+			previousFrameNumber = -1;
+			cout << "Info: " << completeFileName << endl;
+		}else{
+			cout	<< "Info:" << completeFileName
+					<< "\tPacket Loss: " << setw(4)<<fixed << setprecision(4) << dec <<
+					(int)((( (currentFrameNumber-previousFrameNumber) - ((packetsInFile-numTotMissingPacketsInFile)/packetsPerFrame))/
+							 (double)(currentFrameNumber-previousFrameNumber))*100.000)
+					<< "%\tFramenumber: " << currentFrameNumber
+				  //<< "\t\t PreviousFrameNumber: " << previousFrameNumber
+					<< "\tIndex " << dec << index
+					<< "\tLost " << dec << ( ((int)(currentFrameNumber-previousFrameNumber)) -
+							                 ((packetsInFile-numTotMissingPacketsInFile)/packetsPerFrame)) << endl;
+
+		}
+
+	}
+
+	//reset counters for each new file
+	if(packetsCaught){
+		previousFrameNumber = currentFrameNumber;
+		packetsInFile = 0;
+		numTotMissingPacketsInFile = 0;
+	}
+
+	return OK;
+}
+
+
+
+
+void* UDPStandardImplementation::startListeningThread(void* this_pointer){
+	FILE_LOG(logDEBUG1) << __AT__ << " called";
+	((UDPStandardImplementation*)this_pointer)->startListening();
+	return this_pointer;
+}
+
+
+
+void* UDPStandardImplementation::startWritingThread(void* this_pointer){
+	FILE_LOG(logDEBUG1) << __AT__ << " called";
+	((UDPStandardImplementation*)this_pointer)->startWriting();
+	return this_pointer;
+}
+
+
+
+
+void UDPStandardImplementation::startListening(){
+	FILE_LOG(logDEBUG1) << __AT__ << " called";
+
+	//set current thread value  index
+	int ithread = currentThreadIndex;
+	//let calling function know thread started and obtained current
+	threadStarted = 1;
+
+
+	//variable definitions
+	int listenSize = 0; 		//listen to only 1 packet
+	uint32_t rc;				//size of buffer received in bytes
+	//split frames
+	int carryonBufferSize; 		//from previous buffer to keep frames together in a buffer
+	char* tempBuffer = NULL;	//temporary buffer to store split frames
+	if(myDetectorType != EIGER){
+		listenSize = bufferSize * numberofJobsPerBuffer;				//listen to more than 1 packet
+		tempBuffer = new char[onePacketSize * (packetsPerFrame - 1)]; 	//store maximum of 1 packets less in a frame
+	}
+	/* outer loop - loops once for each acquisition */
+	//infinite loop, exited only to change dynamic range, 10G parameters etc (then recreated again)
+	while(true){
+
+		//reset parameters before acquisition
+		carryonBufferSize = 0;
+
+		/* inner loop - loop for each buffer */
+		//until mask unset (udp sockets shut down by client)
+		while((1 << ithread) & listeningThreadsMask){
+
+			//pop from fifo
+			fifoFree[ithread]->pop(buffer[ithread]);
+#ifdef FIFODEBUG
+			cprintf(BLUE,"%d :Listener popped from fifofree %p\n", ithread, (void*)(buffer[ithread]));
+#endif
+
+			//udpsocket doesnt exist
+			if(udpSocket[ithread] == NULL){
+				cprintf(RED, "Error: Thread %d :UDP Socket not created\n",ithread);
+				stopListening(ithread,0);
+				continue;
+			}
+
+			rc = prepareAndListenBuffer(ithread, listenSize, carryonBufferSize, tempBuffer);
+
+			//start indices for each start of scan/acquisition
+			if((!measurementStarted) && (rc > 0)){
+				pthread_mutex_lock(&progressMutex);
+				if(!measurementStarted)
+					startFrameIndices(ithread);
+				pthread_mutex_unlock(&progressMutex);
+			}
+
+			//problem in receiving or end of acquisition
+			if (status == TRANSMITTING){
+				stopListening(ithread,rc);
+				continue;
+			}
+
+			//write packet count to buffer
+			if(myDetectorType == EIGER)
+				(*((uint32_t*)(buffer[ithread]))) = 1;
+			//handling split frames and writing packet Count to buffer
+			else
+				(*((uint32_t*)(buffer[ithread]))) = processListeningBuffer(ithread, carryonBufferSize, tempBuffer);
+
+
+			//push buffer to FIFO
+			while(!fifo[ithread]->push(buffer[ithread]));
+#ifdef FIFODEBUG
+					cprintf(BLUE,"Listening_Thread %d: Listener pushed into fifo %p\n",ithread, (void*)(buffer[ithread]));
+#endif
+
+		}/*--end of loop for each buffer (inner loop)*/
+
+		//end of acquisition, wait for next acquisition/change of parameters
+		sem_wait(&listenSemaphore[ithread]);
+
+		//check to exit thread (for change of parameters) - only EXIT possibility
+		if(killAllListeningThreads){
+			cprintf(GREEN,"Listening_Thread %d:Goodbye!\n",ithread);
+			//free resources at exit
+			if(tempBuffer) delete[] tempBuffer;
+			pthread_exit(NULL);
+		}
+
+	}/*--end of loop for each acquisition (outer loop) */
+}
+
+
+
+
+
+int UDPStandardImplementation::prepareAndListenBuffer(int ithread, int lSize, int cSize, char* temp){
+	FILE_LOG(logDEBUG1) << __AT__ << " called";
+
+	//listen to UDP packets
+	memcpy(buffer[ithread] + HEADER_SIZE_NUM_TOT_PACKETS, temp, cSize);
+	int receivedSize = udpSocket[ithread]->ReceiveDataOnly(buffer[ithread] + HEADER_SIZE_NUM_TOT_PACKETS + cSize, lSize + cSize);
+
+	//throw away packets that is not one packet size, need to check status if socket is shut down
+	while(status != TRANSMITTING && myDetectorType == EIGER && receivedSize != onePacketSize) {
+		if(receivedSize != EIGER_HEADER_LENGTH)
+			cprintf(RED,"Listening_Thread %d: Listened to a weird packet size %d\n",receivedSize);
+#ifdef DEBUG
+		else
+			cprintf(BLUE,"Listening_Thread %d: Listened to a header packet\n",ithread);
+#endif
+		receivedSize = udpSocket[ithread]->ReceiveDataOnly(buffer[ithread] + HEADER_SIZE_NUM_TOT_PACKETS);
+	}
+
+#ifdef DEBUG
+	cprintf(BLUE, "Listening_Thread %d : Received bytes: %d. Expected bytes: %d\n", ithread, receivedSize, expected-cSize);
+#endif
+	return receivedSize;
+}
+
+
+void UDPStandardImplementation::startFrameIndices(int ithread){
+	FILE_LOG(logDEBUG1) << __AT__ << " called";
+
+	//determine startFrameIndex
+	switch(myDetectorType){
+	case EIGER:
+		startFrameIndex = 0;	//frame number always resets
+		break;
+	default:
+		if(shortFrameEnable < 0){
+			startFrameIndex = (((((uint32_t)(*((uint32_t*)(buffer[ithread] + HEADER_SIZE_NUM_TOT_PACKETS))))+1)
+					& (frameIndexMask)) >> frameIndexOffset);
+		}else{
+			startFrameIndex = ((((uint32_t)(*((uint32_t*)(buffer[ithread]+HEADER_SIZE_NUM_TOT_PACKETS))))
+							& (frameIndexMask)) >> frameIndexOffset);
+		}
+		break;
+	}
+
+	//start of entire acquisition
+	if(!acqStarted){
+		startAcquisitionIndex = startFrameIndex;
+		acqStarted = true;
+		cprintf(BLUE,"Info: Thread %d: startAcquisitionIndex:%d\n",ithread,startAcquisitionIndex);
+	}
+
+	//set start of scan/real time measurement
+	cprintf(BLUE,"Info: Thread %d: startFrameIndex: %d\n", ithread,startFrameIndex);
+	measurementStarted = true;
+}
+
+
+
+
+
+void UDPStandardImplementation::stopListening(int ithread, int numbytes){
+	FILE_LOG(logDEBUG1) << __AT__ << " called";
+
+	cout << "Info: Stop Listening. Status:" << slsDetectorBase::runStatusType(status) << endl;
+
+
+	//less than 1 packet size (especially for eiger), ignore the buffer (so that 2 dummy buffers are not sent with pc=0)
+	if(numbytes < onePacketSize)
+		numbytes = 0;
+
+
+	//free empty buffer
+	if(numbytes <= 0){
+		cprintf(BLUE,"Info: Thread %d :End of Acquisition for Listening Thread\n", ithread);
+		while(!fifoFree[ithread]->push(buffer[ithread]));
+#ifdef FIFODEBUG
+		cprintf(BLUE,"Listening_Thread %d :Listener push empty buffer into fifofree %p\n", ithread, (void*)(buffer[ithread]));
 #endif
 	}
 
 
-
-
-	strcpy(savefilename,"");
-	
-
-	//strcpy(filePath,"");
-	//strcpy(fileName,"run");
-
-
-
-	//status
-	pthread_mutex_lock(&status_mutex);
-	status = IDLE;
-	pthread_mutex_unlock(&(status_mutex));
-
-}
-
-
-
-UDPStandardImplementation::~UDPStandardImplementation(){ 	FILE_LOG(logDEBUG) << __AT__ << " called";
-
-	createListeningThreads(true);
-	createWriterThreads(true);
-	deleteMembers();
-}
-
-
-
-
-void UDPStandardImplementation::deleteMembers(){ 	FILE_LOG(logDEBUG) << __AT__ << " called";
-
-	//kill threads
-	if(thread_started){
-		createListeningThreads(true);
-		createWriterThreads(true);
+	//push last non empty buffer into fifo
+	else{
+		(*((uint32_t*)(buffer[ithread]))) = numbytes/onePacketSize;
+		totalListeningFrameCount[ithread] += (numbytes/onePacketSize);
+#ifdef DEBUG
+		cprintf(BLUE,"Listening_Thread %d: Last Buffer numBytes:%d\n",ithread, numbytes);
+		cprintf(BLUE,"Listening_Thread %d: Last Buffer packet count:%d\n",ithread, numbytes/onePacketSize);
+#endif
+		while(!fifo[ithread]->push(buffer[ithread]));
+#ifdef FIFODEBUG
+		cprintf(BLUE,"Listening_Thread %d: Listener Last Buffer pushed into fifo %p\n",  ithread,(void*)(buffer[ithread]));
+#endif
 	}
 
-	for(int i=0;i<numWriterThreads;i++){
-		if(singlePhotonDet[i]){
-			delete singlePhotonDet[i];
-			singlePhotonDet[i] = NULL;
+	//push dummy-end buffer into fifo for all writer threads
+	for(int i=0; i<numberofWriterThreads; ++i){
+		fifoFree[ithread]->pop(buffer[ithread]);
+		//creating dummy-end buffer with pc=0xFFFF
+		(*((uint32_t*)(buffer[ithread]))) = dummyPacketValue;
+		while(!fifo[ithread]->push(buffer[ithread]));
+#ifdef FIFODEBUG
+		cprintf(BLUE,"Listening_Thread %d: Listener pushed dummy-end buffer into fifo %p\n", ithread,(void*)(buffer[ithread]));
+#endif
+	}
+
+
+	//reset mask and exit loop
+	pthread_mutex_lock(&statusMutex);
+	listeningThreadsMask^=(1<<ithread);
+#ifdef DEBUG4
+	cprintf(BLUE,"Listening_Thread %d: Resetting mask of listening thread. New Mask: 0x%x", ithread, listeningThreadsMask);
+	cprintf(BLUE,"Listening_Thread %d: Frames listened to :%d\n",ithread, ((totalListeningFrameCount[ithread]*numberofListeningThreads)/packetsPerFrame));
+#endif
+	pthread_mutex_unlock(&(statusMutex));
+
+
+	//first thread, waiting for all other listening threads to be done, to print statistics
+	if(ithread == 0){
+#ifdef DEBUG4
+		if(numberofListeningThreads > 1)
+			cprintf(BLUE,"Listening_Thread %d: Waiting for other listening threads to be done.. current mask:0x%x\n", ithread, listeningThreadsMask);
+#endif
+		while(listeningThreadsMask)
+			usleep(5000);
+#ifdef DEBUG4
+		int t=0;
+		for(i=0;i<numberofListeningThreads;++i)
+			t += totalListeningFrameCount[i];
+		cprintf(BLUE,"Listening_Thread %d :Total Frames listened to %d\n", ithread,(t/packetsPerFrame));
+#endif
+	}
+}
+
+
+
+
+uint32_t UDPStandardImplementation::processListeningBuffer(int ithread, int cSize, char* temp){
+	FILE_LOG(logDEBUG1) << __AT__ << " called";
+
+	int lastPacketOffset;		//the offset of the last packet
+	int lastFrameHeader;		//frame number of last packet in buffer
+	uint32_t packetCount = (packetsPerFrame/numberofListeningThreads) * numberofJobsPerBuffer;		//packets received
+	cSize = 0;					//reset size
+
+	switch(myDetectorType){
+	case GOTTHARD:
+	case PROPIX:
+		//for short frames, 1 packet/frame, so split frames is not a topic
+		if(shortFrameEnable == -1){
+			lastPacketOffset = (((numberofJobsPerBuffer * packetsPerFrame - 1) * onePacketSize) + HEADER_SIZE_NUM_TOT_PACKETS);
+#ifdef DEBUG4
+			cprintf(BLUE, "Listening_Thread %d: Last Packet Offset:%d\n",ithread, lastPacketOffset);
+#endif
+			//if not last packet = split frame, then store it temporarily to combine with next buffer
+			if((unsigned int)(packetsPerFrame -1) !=
+					((((uint32_t)(*((uint32_t*)(buffer[ithread]+lastPacketOffset))))+1) & (packetIndexMask))){
+				memcpy(temp,buffer[ithread]+lastPacketOffset, onePacketSize);
+#ifdef DEBUG4
+				cprintf(BLUE,"Listening_Thread %d: temp Header:%d\n",ithread,(((((uint32_t)(*((uint32_t*)(temp))))+1)
+						& (frameIndexMask)) >> frameIndexOffset));
+#endif
+				cSize = onePacketSize;
+				--packetCount;
+			}
 		}
-		if(receiverdata[i]){
-			delete receiverdata[i];
-			receiverdata[i] = NULL;
-		}
-	}
-	shutDownUDPSockets();
-	if(eth) 			{delete [] eth;			eth = NULL;}
-	if(latestData) 		{delete [] latestData;	latestData = NULL;}
+#ifdef DEBUG4
+		cprintf(BLUE, "Listening_Thread %d: First Header:%d\n", (((((uint32_t)(*((uint32_t*)(buffer[ithread] + HEADER_SIZE_NUM_TOT_PACKETS))))+1)
+				& (frameIndexMask)) >> frameIndexOffset));
+#endif
+		break;
 
-	for(int i=0;i<numListeningThreads;i++){
-		if(mem0[i])			{free(mem0[i]);			mem0[i] = NULL;}
-		if(fifo[i])			{delete fifo[i];		fifo[i] = NULL;}
-		if(fifoFree[i])		{delete fifoFree[i];	fifoFree[i] = NULL;}
+	case MOENCH:
+		lastPacketOffset = (((numberofJobsPerBuffer * packetsPerFrame - 1) * onePacketSize) + HEADER_SIZE_NUM_TOT_PACKETS);
+#ifdef DEBUG4
+		cprintf(BLUE, "Listening_Thread %d: First Header:%d\t First Packet:%d\t Last Header:%d\t Last Packet:%d\tLast Packet Offset:%d\n",
+				(((((uint32_t)(*((uint32_t*)(buffer[ithread]+HEADER_SIZE_NUM_TOT_PACKETS))))) & (frameIndexMask)) >> frameIndexOffset),
+				((((uint32_t)(*((uint32_t*)(buffer[ithread]+HEADER_SIZE_NUM_TOT_PACKETS))))) & (packetIndexMask)),
+				(((((uint32_t)(*((uint32_t*)(buffer[ithread]+lastpacketoffset))))) & (frameIndexMask)) >> frameIndexOffset),
+				((((uint32_t)(*((uint32_t*)(buffer[ithread]+lastpacketoffset))))) & (packetIndexMask)),
+				lastPacketOffset);
+#endif
+		//moench last packet value is 0, so find the last packet and store the others in a temp storage
+		if( ((((uint32_t)(*((uint32_t*)(buffer[ithread]+lastPacketOffset))))) & (packetIndexMask))){
+			lastFrameHeader = ((((uint32_t)(*((uint32_t*)(buffer[ithread]+lastPacketOffset)))))
+					& (frameIndexMask)) >> frameIndexOffset;
+			cSize += onePacketSize;
+			lastPacketOffset -= onePacketSize;
+			--packetCount;
+			while (lastFrameHeader == (((((uint32_t)(*((uint32_t*)(buffer[ithread]+lastPacketOffset))))) & (frameIndexMask)) >> frameIndexOffset)){
+				cSize += onePacketSize;
+				lastPacketOffset -= onePacketSize;
+				--packetCount;
+			}
+			memcpy(temp, buffer[ithread]+(lastPacketOffset+onePacketSize), cSize);
+#ifdef DEBUG4
+			cprintf(BLUE, "Listening_Thread %d: temp Header:%d\t temp Packet:%d\n",
+					(((((uint32_t)(*((uint32_t*)(temp)))))& (frameIndexMask)) >> frameIndexOffset),
+					((((uint32_t)(*((uint32_t*)(temp)))))	& (packetIndexMask)));
+#endif
+		}
+		break;
+
+	default:
+		cprintf(RED,"Listening_Thread %d: Error: This detector is not implemented in the receiver" +
+				slsDetectorBase::getDetectorType(myDetectorType).c_str() + "\n");
+		break;
 	}
+
+#ifdef DEBUG4
+	cprintf(BLUE,"Listening_Thread %d: PacketCount:%d CarryonBufferSize:%d\n",ithread, packetCount, cSize);
+#endif
+
+	return packetCount;
+}
+
+
+
+
+
+
+void UDPStandardImplementation::startWriting(){
+	FILE_LOG(logDEBUG1) << __AT__ << " called";
+
+	//set current thread value  index
+	int ithread = currentThreadIndex;
+	//let calling function know thread started and obtained current
+	threadStarted = 1;
+
+	//variable definitions
+	char* wbuf[MAX_NUMBER_OF_LISTENING_THREADS] = NULL;
+	sfilefd = NULL;
+
+
+	/* outer loop - loops once for each acquisition */
+	//infinite loop, exited only to change dynamic range, 10G parameters etc (then recreated again)
+	while(true){
+
+		//--reset parameters before acquisition
+		//--end of reset parameters before acquisition
+
+		/* inner loop - loop for each buffer */
+		//until mask unset (udp sockets shut down by client)
+		while((1 << ithread) & writerThreadsMask){
+
+
+
+		}/*--end of loop for each buffer (inner loop)*/
+
+
+		//in case they are not closed already
+		closeFile();
+#ifdef DEBUG4
+		cprintf(GREEN,"Writing_Thread %d: Done with acquisition. Waiting for 1st sem to create new file/change of parameters\n", ithread);
+#endif
+		//end of acquisition, wait for file create/change of parameters
+		sem_wait(&writerSemaphore[ithread]);
+		//check to exit thread (for change of parameters) - only EXIT possibility
+		if(killAllWritingThreads){
+			cprintf(GREEN,"Writing_Thread %d:Goodbye!\n",ithread);
+			//free resources at exit
+			for(int i=0; i<MAX_NUMBER_OF_LISTENING_THREADS; ++i)
+				if(wbuf[i]) delete[] wbuf[i];
+			pthread_exit(NULL);
+		}
+#ifdef DEBUG4
+		cprintf(GREEN,"Writing_Thread %d: Got 1st post. Creating File\n", ithread);
+#endif
+
+
+		//create file
+		if((1<<ithread)&createFileMask){
+			if(dataCompressionEnable){
+#ifdef MYROOT1
+				pthread_mutex_lock(&writeMutex);
+				fileCreateSuccess = createCompressionFile(ithread,0);
+				pthread_mutex_unlock(&writeMutex);
+#endif
+			}else
+				fileCreateSuccess = createNewFile();
+
+			//let startwriter know file created
+			pthread_mutex_lock(&statusMutex);
+			createFileMask^=(1<<ithread);
+			pthread_mutex_unlock(&statusMutex);
+		}
+#ifdef DEBUG4
+		cprintf(GREEN,"Writing_Thread %d: File Created. Waiting for 2nd sem to restart acquisition\n", ithread);
+#endif
+
+
+		//end of acquisition, wait for restart acquisition/change of parameters
+		sem_wait(&writerSemaphore[ithread]);
+		//check to exit thread (for change of parameters) - only EXIT possibility
+		if(killAllWritingThreads){
+			cprintf(GREEN,"Writing_Thread %d:Goodbye!\n",ithread);
+			//free resources at exit
+			for(int i=0; i<MAX_NUMBER_OF_LISTENING_THREADS; ++i)
+				if(wbuf[i]) delete[] wbuf[i];
+			pthread_exit(NULL);
+		}
+#ifdef DEBUG4
+		cprintf(GREEN,"Writing_Thread %d: Got 2nd post. Restarting Acquisition\n", ithread);
+#endif
+
+	}/*--end of loop for each acquisition (outer loop) */
 
 }
 
 
-/*Frame indices and numbers caught*/
 
-//bool UDPStandardImplementation::getAcquistionStarted(){return acqStarted;};
 
-//bool UDPStandardImplementation::getMeasurementStarted(){return measurementStarted;};
 
-//uint32_t UDPStandardImplementation::getStartAcquisitionIndex(){return startAcquisitionIndex;}
 
-//uint32_t UDPStandardImplementation::getStartFrameIndex(){return startFrameIndex;}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 /*
 	acquisitionIndex = currframenum - startAcquisitionIndex
@@ -1318,81 +1880,8 @@ void UDPStandardImplementation::deleteMembers(){ 	FILE_LOG(logDEBUG) << __AT__ <
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-/*other parameters*/
-
-
-
-
-/** acquisition functions */
-void UDPStandardImplementation::readFrame(char* c,char** raw, uint32_t &startAcquisitionIndex, uint32_t &startFrameIndex){
-	FILE_LOG(logDEBUG) << __AT__ << " called";
-	//point to gui data
-	if (guiData == NULL){
-		guiData = latestData;
-#ifdef VERY_VERY_DEBUG
-		cprintf(CYAN,"gui data not null anymore\n");
-#endif
-	}
-
-	//copy data and filename
-	strcpy(c,guiFileName);
-	startAcquisitionIndex = getStartAcquisitionIndex();
-	startFrameIndex = getStartFrameIndex();
-
-
-	//could not get gui data
-	if(!guiDataReady){
-#ifdef VERY_VERY_DEBUG
-		cprintf(CYAN,"gui data not ready\n");
-#endif
-		*raw = NULL;
-	}
-	//data ready, set guidata to receive new data
-	else{
-#ifdef VERY_VERY_DEBUG
-		cprintf(CYAN,"gui data ready\n");
-#endif
-		*raw = guiData;
-		guiData = NULL;
-
-		/*pthread_mutex_lock(&dataReadyMutex); WHY WAS THIS HERE IN THE FIRST PLACE
-		guiDataReady = 0;
-		pthread_mutex_unlock(&dataReadyMutex);*/
-		if((nFrameToGui) && (writerthreads_mask)){
-#ifdef VERY_VERY_DEBUG
-			cprintf(CYAN,"gonna post\n");
-#endif
-		/*if(nFrameToGui){*/
-			//release after getting data
-			sem_post(&smp);
-		}
-#ifdef VERY_VERY_DEBUG
-		cprintf(CYAN,"done post\n");
-#endif
-	}
-}
-
-
-
-
-
 void UDPStandardImplementation::copyFrameToGui(char* startbuf[], char* buf){
-	FILE_LOG(logDEBUG) << __AT__ << " called";
+	FILE_LOG(logDEBUG1) << __AT__ << " called";
 #ifdef VERY_VERY_DEBUG
 cout << "copyframe" << endl;
 #endif
@@ -1453,7 +1942,7 @@ cout << "copyframe" << endl;
 
 
 int UDPStandardImplementation::createCompressionFile(int ithr, int iframe){
-	FILE_LOG(logDEBUG) << __AT__ << " called";
+	FILE_LOG(logDEBUG1) << __AT__ << " called";
 
 #ifdef MYROOT1
 	char temp[MAX_STR_LENGTH];
@@ -1482,463 +1971,6 @@ int UDPStandardImplementation::createCompressionFile(int ithr, int iframe){
 
 
 
-int UDPStandardImplementation::createNewFile(){
-	FILE_LOG(logDEBUG) << __AT__ << " called";
-
- int gt = getFrameIndex();
- if(gt==-1) gt=0;
-	//create file name
-	if(frameIndexNeeded==-1)
-		sprintf(savefilename, "%s/%s_%d.raw", filePath,fileName,fileIndex);
-	else if (myDetectorType == EIGER)
-		sprintf(savefilename, "%s/%s_f%012d_%d.raw", filePath,fileName,currframenum,fileIndex);
-	else
-		sprintf(savefilename, "%s/%s_f%012d_%d.raw", filePath,fileName,(packetsCaught/packetsPerFrame),fileIndex);
-
-#ifdef VERBOSE
-	cout << filePath << " + " << fileName << endl;
-#endif
-
-	//if filewrite and we are allowed to write
-	if(enableFileWrite && cbAction > DO_NOTHING){
-		//close
-		if(sfilefd){
-			if(fclose(sfilefd)){
-				cprintf(RED, "file close problem %d\n",fileno(sfilefd));
-				fclose(sfilefd);
-			}
-			sfilefd = NULL;
-		}
-
-		//open file
-		if(!overwrite){
-			if (NULL == (sfilefd = fopen((const char *) (savefilename), "wx"))){
-				cprintf(BG_RED,"Error: Could not create new file %s\n",savefilename);
-				return FAIL;
-			}
-		}else if (NULL == (sfilefd = fopen((const char *) (savefilename), "w"))){
-			cprintf(BG_RED,"Error: Could not create file %s\n",savefilename);
-			return FAIL;
-		}
-		//setting buffer
-		setvbuf(sfilefd,NULL,_IOFBF,BUF_SIZE);
-
-
-		//printing packet losses and file names
-		if(!packetsCaught)
-			cout << savefilename << endl;
-		else{
-			cout << savefilename
-					<< "\tpacket loss "
-					<< setw(4)<<fixed << setprecision(4)<< dec <<
-					(int)((((currframenum-prevframenum)-((packetsInFile-numTotMissingPacketsInFile)/packetsPerFrame))/(double)(currframenum-prevframenum))*100.000)
-					<< "%\tframenum "
-					<< dec << currframenum //<< "\t\t p " << prevframenum
-					<< "\tindex " << dec << gt
-					<< "\tlost " << dec << (((int)(currframenum-prevframenum))-((packetsInFile-numTotMissingPacketsInFile)/packetsPerFrame)) << endl;
-
-		}
-	}
-
-	//reset counters for each new file
-	if(packetsCaught){
-		prevframenum = currframenum;
-		packetsInFile = 0;
-		numTotMissingPacketsInFile = 0;
-	}
-
-	return OK;
-}
-
-
-
-
-
-
-
-
-void UDPStandardImplementation::closeFile(int ithr){
-	FILE_LOG(logDEBUG) << __AT__ << " called";
-
-#ifdef VERBOSE
-	cout << "In closeFile for thread " << ithr << endl;
-#endif
-
-	if(!dataCompression){
-		if(sfilefd){
-#ifdef VERBOSE
-			cprintf(YELLOW, "gonna close file:%d\n",fileno(sfilefd));
-#endif
-			if(fclose(sfilefd))
-				perror("file close ERROR");
-			sfilefd = NULL;
-		}
-	}
-	//compression
-	else{
-#if (defined(MYROOT1) && defined(ALLFILE_DEBUG)) || !defined(MYROOT1)
-		if(sfilefd){
-#ifdef VERBOSE
-			cout << "sfield:" << (int)sfilefd << endl;
-#endif
-			if(fclose(sfilefd))
-				perror("close ERRROR");
-			sfilefd = NULL;
-		}
-#endif
-
-#ifdef MYROOT1
-		pthread_mutex_lock(&write_mutex);
-		//write to file
-		if(myTree[ithr] && myFile[ithr]){
-			myFile[ithr] = myTree[ithr]->GetCurrentFile();
-
-			if(myFile[ithr]->Write())
-				//->Write(tall->GetName(),TObject::kOverwrite);
-				cout << "Thread " << ithr <<": wrote frames to file" << endl;
-			else
-				cout << "Thread " << ithr << ": could not write frames to file" << endl;
-
-		}else
-			cout << "Thread " << ithr << ": could not write frames to file: No file or No Tree" << endl;
-		//close file
-		if(myTree[ithr] && myFile[ithr])
-			myFile[ithr] = myTree[ithr]->GetCurrentFile();
-		if(myFile[ithr] != NULL)
-			myFile[ithr]->Close();
-		myFile[ithr] = NULL;
-		myTree[ithr] = NULL;
-		pthread_mutex_unlock(&write_mutex);
-
-#endif
-	}
-}
-
-
-
-
-/**
- * Pre: status is running, semaphores have been instantiated,
- * Post: udp sockets shut down, status is idle, sempahores destroyed
- * */
-
-int UDPStandardImplementation::stopReceiver(){
-	FILE_LOG(logDEBUG) << __AT__ << " called";
-
-	if(status != IDLE){
-		//#ifdef VERBOSE
-		cout << "Stopping Receiver" << endl;
-		//#endif
-
-		startReadout();
-
-		while(status == TRANSMITTING){
-			sem_post(&smp);
-			usleep(5000);
-		}
-
-		//semaphore destroy
-		sem_destroy(&smp);
-
-		//change status
-		pthread_mutex_lock(&status_mutex);
-		status = IDLE;
-		pthread_mutex_unlock(&(status_mutex));
-
-		cout << "Receiver Stopped.\nStatus:" << status << endl << endl;
-	}else cout <<" Not idle to stop receiver" << endl;
-
-
-	//sem_post(&smp);
-
-	return OK;
-}
-
-
-
-
-/**
- * Pre: status is running, udp sockets have been initialized,
- * stop receiver initiated
- * Post:udp sockets closed, status is transmitting
- * */
-void UDPStandardImplementation::startReadout(){
-	FILE_LOG(logDEBUG) << __AT__ << " called";
-
-	//#ifdef VERBOSE
-		cout << "Start Receiver Readout" << endl;
-	//#endif
-
-	if(status == RUNNING){
-
-		//wait so that all packets which take time has arrived
-		usleep(5000);
-
-		/********************************************/
-		//usleep(10000000);
-		//usleep(2000000);
-		uint32_t prev = totalPacketsCaught;
-		usleep(50000);
-		while(prev!=totalPacketsCaught){
-			prev=totalPacketsCaught;
-			usleep(50000);
-		}
-		pthread_mutex_lock(&status_mutex);
-		status = TRANSMITTING;
-		pthread_mutex_unlock(&status_mutex);
-		cout << "Status: Transmitting" << endl;
-	}
-
-	//kill udp socket to tell the listening thread to push last packet
-	shutDownUDPSockets();
-
-}
-
-
-
-void* UDPStandardImplementation::startListeningThread(void* this_pointer){
-	FILE_LOG(logDEBUG) << __AT__ << " called";
-	((UDPStandardImplementation*)this_pointer)->startListening();
-
-	return this_pointer;
-}
-
-
-
-void* UDPStandardImplementation::startWritingThread(void* this_pointer){
-	FILE_LOG(logDEBUG) << __AT__ << " called";
-	((UDPStandardImplementation*)this_pointer)->startWriting();
-	return this_pointer;
-}
-
-
-
-
-
-
-int UDPStandardImplementation::startListening(){
-	FILE_LOG(logDEBUG) << __AT__ << " called";
-	int ithread = currentListeningThreadIndex;
-#ifdef VERYVERBOSE
-	cprintf(BLUE, "In startListening()\n ");
-#endif
-
-	thread_started = 1;
-
-	int total;
-	int lastpacketoffset, expected, rc,packetcount, maxBufferSize, carryonBufferSize;
-	uint32_t lastframeheader;// for moench to check for all the packets in last frame
-	char* tempchar = NULL;
-
-	while(1){
-		//variables that need to be checked/set before each acquisition
-		carryonBufferSize = 0;
-		maxBufferSize = bufferSize * numJobsPerThread;
-#ifdef VERYDEBUG
-		cprintf(BLUE, "%d maxBufferSize:%d carryonBufferSize:%d\n", ithread,maxBufferSize,carryonBufferSize);
-#endif
-
-		//missing packets compensation in listening thread
-		if(tempchar) {delete [] tempchar;tempchar = NULL;}
-		if(myDetectorType != EIGER)
-			tempchar = new char[onePacketSize * ((packetsPerFrame/numListeningThreads) - 1)]; //gotthard: 1packet size, moench:39 packet size
-		else
-			maxBufferSize = 0;
-
-
-		while((1<<ithread)&listeningthreads_mask){
-
-
-			//pop
-#ifdef VERYDEBUG
-			cprintf(BLUE, "%d waiting to pop out of listeningfifo\n",ithread);
-#endif
-			fifoFree[ithread]->pop(buffer[ithread]);
-#ifdef FIFO_DEBUG
-			cprintf(BLUE,"%d listener popped from fifofree %x\n", ithread, (void*)(buffer[ithread]));
-#endif
-
-
-
-			//ensure udpsocket exists
-			if(udpSocket[ithread] == NULL){
-				rc = 0;
-				cprintf(BLUE, "%d UDP Socket is NULL\n",ithread);
-			}
-
-
-			//normal listening
-			else if(!carryonBufferSize){
-#ifdef SOCKET_DEBUG
-				if(!ithread){
-#endif
-					rc = udpSocket[ithread]->ReceiveDataOnly(buffer[ithread] + HEADER_SIZE_NUM_TOT_PACKETS, maxBufferSize);
-					if(rc == EIGER_HEADER_LENGTH && myDetectorType == EIGER) {
-						while(rc == EIGER_HEADER_LENGTH){
-							rc = udpSocket[ithread]->ReceiveDataOnly(buffer[ithread] + HEADER_SIZE_NUM_TOT_PACKETS, maxBufferSize);
-						}
-					}
-					expected = maxBufferSize;
-#ifdef SOCKET_DEBUG
-				}else{
-					while(1) usleep(100000000);
-				}
-#endif
-			}
-
-
-			//the remaining packets from previous buffer, copy it and listen to n less frame
-			else{
-#ifdef VERYDEBUG
-				cprintf(BLUE, "%d carry on buffer size:%d\n",ithread,carryonBufferSize);
-				cprintf(BLUE, "%d framennum in tempchar:%d\n",((((uint32_t)(*((uint32_t*)tempchar)))
-						& (frameIndexMask)) >> frameIndexOffset));
-				cprintf(BLUE, "%d tempchar packet:%d\n", ((((uint32_t)(*((uint32_t*)(tempchar)))))
-						& (packetIndexMask)));
-#endif
-				memcpy(buffer[ithread] + HEADER_SIZE_NUM_TOT_PACKETS, tempchar, carryonBufferSize);
-				rc = udpSocket[ithread]->ReceiveDataOnly((buffer[ithread] + HEADER_SIZE_NUM_TOT_PACKETS + carryonBufferSize),maxBufferSize - carryonBufferSize);
-				expected = maxBufferSize - carryonBufferSize;
-			}
-
-
-#ifdef EIGER_DEBUG
-			cprintf(BLUE, "%d rc: %d. expected: %d\n", ithread, rc, expected);
-#endif
-
-
-			//start indices for each start of scan/acquisition
-			if((!measurementStarted) && (rc > 0)){
-				pthread_mutex_lock(&progress_mutex);
-				if(!measurementStarted)
-					startFrameIndices(ithread, rc);
-				pthread_mutex_unlock(&progress_mutex);
-			}
-
-
-			//problem in receiving or end of acquisition
-			if (status == TRANSMITTING){
-				stopListening(ithread,rc,packetcount,total);
-				continue;
-			}
-
-
-			//reset
-			packetcount = (packetsPerFrame/numListeningThreads) * numJobsPerThread;
-			carryonBufferSize = 0;
-
-
-
-			//check if last packet valid and calculate packet count
-			switch(myDetectorType){
-			case MOENCH:
-				lastpacketoffset = (((numJobsPerThread * packetsPerFrame - 1) * onePacketSize) + HEADER_SIZE_NUM_TOT_PACKETS);
-#ifdef VERYDEBUG
-				cout <<"first packet:"<< ((((uint32_t)(*((uint32_t*)(buffer[ithread]+HEADER_SIZE_NUM_TOT_PACKETS))))) & (packetIndexMask)) << endl;
-				cout <<"first header:"<< (((((uint32_t)(*((uint32_t*)(buffer[ithread]+HEADER_SIZE_NUM_TOT_PACKETS))))) & (frameIndexMask)) >> frameIndexOffset) << endl;
-				cout << "last packet offset:" << lastpacketoffset << endl;
-				cout <<"last packet:"<< ((((uint32_t)(*((uint32_t*)(buffer[ithread]+lastpacketoffset))))) & (packetIndexMask)) << endl;
-				cout <<"last header:"<< (((((uint32_t)(*((uint32_t*)(buffer[ithread]+lastpacketoffset))))) & (frameIndexMask)) >> frameIndexOffset) << endl;
-#endif
-				//moench last packet value is 0
-				if( ((((uint32_t)(*((uint32_t*)(buffer[ithread]+lastpacketoffset))))) & (packetIndexMask))){
-					lastframeheader = ((((uint32_t)(*((uint32_t*)(buffer[ithread]+lastpacketoffset))))) & (frameIndexMask)) >> frameIndexOffset;
-					carryonBufferSize += onePacketSize;
-					lastpacketoffset -= onePacketSize;
-					--packetcount;
-					while (lastframeheader == (((((uint32_t)(*((uint32_t*)(buffer[ithread]+lastpacketoffset))))) & (frameIndexMask)) >> frameIndexOffset)){
-						carryonBufferSize += onePacketSize;
-						lastpacketoffset -= onePacketSize;
-						--packetcount;
-					}
-					memcpy(tempchar, buffer[ithread]+(lastpacketoffset+onePacketSize), carryonBufferSize);
-#ifdef VERYDEBUG
-					cout << "tempchar header:" << (((((uint32_t)(*((uint32_t*)(tempchar)))))
-							& (frameIndexMask)) >> frameIndexOffset) << endl;
-					cout <<"tempchar packet:"<< ((((uint32_t)(*((uint32_t*)(tempchar)))))
-							& (packetIndexMask)) << endl;
-#endif
-				}
-				break;
-
-			case GOTTHARD:
-			case PROPIX:
-				if(shortFrame == -1){
-					lastpacketoffset = (((numJobsPerThread * packetsPerFrame - 1) * onePacketSize) + HEADER_SIZE_NUM_TOT_PACKETS);
-#ifdef VERYDEBUG
-					cprintf(BLUE, "%d last packet offset:%d\n",ithread, lastpacketoffset);
-#endif
-					//if not last packet
-					if((unsigned int)(packetsPerFrame -1) != ((((uint32_t)(*((uint32_t*)(buffer[ithread]+lastpacketoffset))))+1) & (packetIndexMask))){
-						memcpy(tempchar,buffer[ithread]+lastpacketoffset, onePacketSize);
-#ifdef VERYDEBUG
-						cprintf(BLUE, "%d tempchar header:%d\n",ithread,(((((uint32_t)(*((uint32_t*)(tempchar))))+1)
-								& (frameIndexMask)) >> frameIndexOffset));
-#endif
-						carryonBufferSize = onePacketSize;
-						--packetcount;
-					}
-				}
-#ifdef VERYDEBUG
-				cprintf(BLUE, "%d header:%d\n", (((((uint32_t)(*((uint32_t*)(buffer[ithread] + HEADER_SIZE_NUM_TOT_PACKETS))))+1)
-						& (frameIndexMask)) >> frameIndexOffset));
-#endif
-				break;
-
-
-
-			case EIGER:
-				//because even headers might be included, so not packet count
-				(*((uint32_t*)(buffer[ithread]))) = rc;
-				packetcount = 1;
-				break;
-
-			default:
-				break;
-			}
-
-
-
-			//write packet count and push
-#ifdef VERYDEBUG
-			cprintf(BLUE, "%d packetcount:%d carryonbuffer:%d\n", ithread, packetcount, carryonBufferSize);
-#endif
-			if(myDetectorType != EIGER)
-				(*((uint32_t*)(buffer[ithread]))) = packetcount;
-			totalListeningFrameCount[ithread] += packetcount;
-#ifdef VERYDEBUG
-			cprintf(BLUE,"%d listener going to push fifo: 0x%x\n", ithread,(void*)(buffer[ithread]));
-#endif
-			while(!fifo[ithread]->push(buffer[ithread]));
-#ifdef FIFO_DEBUG
-			cprintf(BLUE, "%d listener pushed into fifo %x\n",ithread, (void*)(buffer[ithread]));
-#endif
-
-
-
-		}
-
-		sem_wait(&listensmp[ithread]);
-
-		//make sure its not exiting thread
-		if(killAllListeningThreads){
-			cout << ithread << " good bye listening thread" << endl;
-			if(tempchar) {delete [] tempchar;tempchar = NULL;}
-			pthread_exit(NULL);
-		}
-
-		if(tempchar) {delete [] tempchar;tempchar = NULL;}
-	}
-
-	return OK;
-}
-
-
-
-
-
-
-
 
 
 
@@ -1946,16 +1978,10 @@ int UDPStandardImplementation::startListening(){
 
 
 int UDPStandardImplementation::startWriting(){
-	FILE_LOG(logDEBUG) << __AT__ << " called";
+	FILE_LOG(logDEBUG1) << __AT__ << " called";
 
-	int ithread = currentWriterThreadIndex;
-#ifdef VERYVERBOSE
-	cprintf(GREEN,"%d In startWriting()\n", ithread);
-#endif
 
-	thread_started = 1;
 
-	char* wbuf[numListeningThreads];//interleaved
 	char *d=new char[bufferSize*numListeningThreads];
 	int xmax=0,ymax=0;
 	int ret,i,j;
@@ -2468,206 +2494,12 @@ int UDPStandardImplementation::startWriting(){
 			}
 
 		}
-#ifdef VERYVERBOSE
-		cprintf(GREEN,"%d gonna wait for 1st sem\n", ithread);
-#endif
-		//wait
-		sem_wait(&writersmp[ithread]);
-		if(killAllWritingThreads){
-			for(i=0;i<packetsPerFrame;++i)
-				if (blankframe[i]) {delete [] blankframe[i]; blankframe[i]=0;}
-			cprintf(GREEN,"%d  good bye writing thread\n", ithread);
-			closeFile(ithread);
-			pthread_exit(NULL);
-		}
-#ifdef VERYVERBOSE
-		cprintf(GREEN,"%d got 1st post\n", ithread);
-#endif
-
-
-		if((1<<ithread)&createfile_mask){
-			if(dataCompression){
-#ifdef MYROOT1
-				pthread_mutex_lock(&write_mutex);
-				ret = createCompressionFile(ithread,0);
-				pthread_mutex_unlock(&write_mutex);
-				if(ret == FAIL)
-					ret_createfile = FAIL;
-#endif
-			}else{
-				ret = createNewFile();
-				if(ret == FAIL)
-					ret_createfile = FAIL;
-			}
-
-			//let tcp know
-			pthread_mutex_lock(&status_mutex);
-			createfile_mask^=(1<<ithread);
-			pthread_mutex_unlock(&status_mutex);
-		}
-
-
-#ifdef VERYVERBOSE
-		cprintf(GREEN,"%d gonna wait for 2nd sem\n", ithread);
-#endif
-		//wait
-		sem_wait(&writersmp[ithread]);
-		if(killAllWritingThreads){
-			for(i=0;i<packetsPerFrame;++i)
-				if (blankframe[i]) {delete [] blankframe[i]; blankframe[i]=0;}
-			cprintf(GREEN,"%d Goodbye thread\n", ithread);
-			closeFile(ithread);
-			pthread_exit(NULL);
-		}
-#ifdef VERYVERBOSE
-		cprintf(GREEN,"%d got 2nd post\n", ithread);
-#endif
 
 	}
 
-	delete [] d;
-	for(i=0;i<packetsPerFrame;++i)
-		if (blankframe[i]) {delete [] blankframe[i]; blankframe[i]=0;}
 
 	return OK;
 }
-
-
-
-
-void UDPStandardImplementation::startFrameIndices(int ithread, int numbytes){
-	FILE_LOG(logDEBUG) << __AT__ << " called";
-
-	//add currframenum later  in this method for scans
-	if (myDetectorType == EIGER)
-		startFrameIndex = 0;
-	//gotthard has +1 for frame number and not a short frame
-	else if ((myDetectorType == PROPIX) || ((myDetectorType == GOTTHARD) && (shortFrame == -1)))
-		startFrameIndex = (((((uint32_t)(*((uint32_t*)(buffer[ithread] + HEADER_SIZE_NUM_TOT_PACKETS))))+1)
-				& (frameIndexMask)) >> frameIndexOffset);
-	else
-		startFrameIndex = ((((uint32_t)(*((uint32_t*)(buffer[ithread]+HEADER_SIZE_NUM_TOT_PACKETS))))
-				& (frameIndexMask)) >> frameIndexOffset);
-
-
-	//start of acquisition
-	if(!acqStarted){
-		startAcquisitionIndex=startFrameIndex;
-		//currframenum = startAcquisitionIndex;
-		acqStarted = true;
-		cprintf(BLUE,"%d startAcquisitionIndex:%d\n", ithread, startAcquisitionIndex);
-	}
-
-	cprintf(BLUE,"%d startFrameIndex: %d\n", ithread,startFrameIndex);
-	prevframenum=startFrameIndex-1; //so that there is no packet loss, when currframenum(max,20) - prevframenum(1)
-	measurementStarted = true;
-
-}
-
-
-
-void UDPStandardImplementation::stopListening(int ithread, int rc, int &pc, int &t){
-	FILE_LOG(logDEBUG) << __AT__ << " called";
-
-
-	int i;
-
-#ifdef VERYVERBOSE
-	cprintf(BLUE, "%d Stop Listening\n", ithread);
-#endif
-
-
-	if(status != TRANSMITTING){
-		cprintf(BG_RED,"%d *** udp socket not shut down from client ***********************\n", ithread);
-		while(!fifoFree[ithread]->push(buffer[ithread]));
-		exit(-1);
-	}
-
-
-	//free buffer
-	if(rc <= 0){
-		cprintf(BLUE,"%d End of acquisition for Listening Thread\n", ithread);
-		while(!fifoFree[ithread]->push(buffer[ithread]));
-#ifdef FIFO_DEBUG
-		cprintf(BLUE,"%d listener empty buffer pushed into fifofree %x\n", ithread, (void*)(buffer[ithread]));
-#endif
-	}
-
-
-	//push the last buffer into fifo
-	else{
-		if(myDetectorType == EIGER){
-			(*((uint32_t*)(buffer[ithread]))) = rc;
-			pc = 1;
-		}else{
-			pc = (rc/onePacketSize);
-			(*((uint32_t*)(buffer[ithread]))) = pc;
-		}
-#ifdef VERYDEBUG
-		cprintf(BLUE,"%d last rc:%d\n",ithread, rc);
-		cprintf(BLUE,"%d last packetcount:%d\n", ithread, pc);
-#endif
-
-		totalListeningFrameCount[ithread] += pc;
-		while(!fifo[ithread]->push(buffer[ithread]));
-#ifdef FIFO_DEBUG
-		cprintf(BLUE,"%d listener last buffer pushed into fifo %x\n",  ithread,(void*)(buffer[ithread]));
-#endif
-	}
-
-
-
-
-	//push dummy buffer to all writer threads
-	for(i=0;i<numWriterThreads;++i){
-		fifoFree[ithread]->pop(buffer[ithread]);
-#ifdef FIFO_DEBUG
-		cprintf(BLUE,"%d listener popped dummy buffer from fifofree %x\n", ithread,(void*)(buffer[ithread]));
-#endif
-		(*((uint32_t*)(buffer[ithread]))) = 0x0;
-#ifdef VERYDEBUG
-		cprintf(BLUE,"%d dummy buffer num packets:%d\n", ithread(*((uint16_t*)(buffer[ithread]))));
-#endif
-		while(!fifo[ithread]->push(buffer[ithread]));
-#ifdef FIFO_DEBUG
-		cprintf(BLUE,"%d listener pushed dummy buffer into fifo %x\n", ithread,(void*)(buffer[ithread]));
-#endif
-	}
-
-
-
-	//reset mask and exit loop
-	pthread_mutex_lock(&status_mutex);
-	listeningthreads_mask^=(1<<ithread);
-#ifdef VERYDEBUG
-	cprintf(BLUE,"%d Resetting mask of current listening thread. New Mask: 0x%x", ithread, listeningthreads_mask);
-#endif
-	pthread_mutex_unlock(&(status_mutex));
-
-#ifdef VERYDEBUG
-	cprintf(BLUE,"%d: Frames listened to %d\n",ithread, ((totalListeningFrameCount[ithread]*numListeningThreads)/packetsPerFrame));
-#endif
-
-
-
-	//waiting for all listening threads to be done, to print final count of frames listened to
-	if(ithread == 0){
-#ifdef VERYDEBUG
-		if(numListeningThreads > 1)
-			cprintf(BLUE,"%d Waiting for listening to be done.. current mask:0x%x\n", ithread, listeningthreads_mask);
-#endif
-		while(listeningthreads_mask)
-			usleep(5000);
-#ifdef VERYDEBUG
-		t = 0;
-		for(i=0;i<numListeningThreads;++i)
-			t += totalListeningFrameCount[i];
-		cprintf(BLUE,"%d Total frames listened to %d\n", ithread,(t/packetsPerFrame));
-#endif
-	}
-
-}
-
 
 
 
@@ -2678,7 +2510,7 @@ void UDPStandardImplementation::stopListening(int ithread, int rc, int &pc, int 
 
 
 void UDPStandardImplementation::stopWriting(int ithread, char* wbuffer[]){
-	FILE_LOG(logDEBUG) << __AT__ << " called";
+	FILE_LOG(logDEBUG1) << __AT__ << " called";
 
 	cprintf(GREEN,"%d End of Acquisition for Writing Thread\n",ithread);
 
@@ -2695,12 +2527,12 @@ void UDPStandardImplementation::stopWriting(int ithread, char* wbuffer[]){
 
 	//all threads need to close file, reset mask and exit loop
 	closeFile(ithread);
-	pthread_mutex_lock(&status_mutex);
+	pthread_mutex_lock(&statusMutex);
 	writerthreads_mask^=(1<<ithread);
 #ifdef VERYDEBUG
 	cprintf(GREEN,"%d Resetting mask of current writing thread. New Mask: 0x%x\n", ithread,writerthreads_mask );
 #endif
-	pthread_mutex_unlock(&status_mutex);
+	pthread_mutex_unlock(&statusMutex);
 
 
 
@@ -2720,9 +2552,9 @@ void UDPStandardImplementation::stopWriting(int ithread, char* wbuffer[]){
 		while(listeningthreads_mask)
 			usleep(5000);
 		//update status
-		pthread_mutex_lock(&status_mutex);
+		pthread_mutex_lock(&statusMutex);
 		status = RUN_FINISHED;
-		pthread_mutex_unlock(&(status_mutex));
+		pthread_mutex_unlock(&(statusMutex));
 		//report
 
 		cprintf(GREEN, "Status: Run Finished\n");
@@ -2753,7 +2585,7 @@ void UDPStandardImplementation::stopWriting(int ithread, char* wbuffer[]){
 
 
 void UDPStandardImplementation::writeToFile_withoutCompression(char* buf[],int numpackets, uint32_t framenum){
-	FILE_LOG(logDEBUG) << __AT__ << " called";
+	FILE_LOG(logDEBUG1) << __AT__ << " called";
 
 	int packetsToSave, offset,lastpacket,i;
 	uint32_t tempframenum = framenum;
@@ -2996,7 +2828,7 @@ void UDPStandardImplementation::handleWithoutDataCompression(int ithread, char* 
 
 
 void UDPStandardImplementation::handleDataCompression(int ithread, char* wbuffer[], char* data, int xmax, int ymax, int &nf){
-	FILE_LOG(logDEBUG) << __AT__ << " called";
+	FILE_LOG(logDEBUG1) << __AT__ << " called";
 
 #if defined(MYROOT1) && defined(ALLFILE_DEBUG)
 				writeToFile_withoutCompression(wbuf[0], numpackets,currframenum);

@@ -54,7 +54,7 @@ int dst_requested[32] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 //char  Module_dac_names[16][10]= {"SvP","Vtr","Vrf","Vrs","SvN","Vtgstv","Vcmp_ll","Vcmp_lr","cal","Vcmp_rl","rxb_rb","rxb_lb","Vcmp_rr","Vcp","Vcn","Vis"};;
 
 int default_dac_values[16] = {0,2480,3300,1400,4000,2556,1000,1000,4000,1000,1000,1000,1000,200,2000,1550};
-int default_gain_values[3] = {-314800,-314800,-314800};
+int default_gain_values[3] = {314800,314800,314800};
 int default_offset_values[3] = {3714000,3714000,3714000};
 
 
@@ -398,11 +398,18 @@ int setModule(sls_detector_module myMod, int* gain, int* offset){
 	setSettings( (enum detectorSettings)myMod.reg,-1);
 
 	//set the gains and offset variables locally
-	for(i=0;i<NGAIN;i++)
-		detectorGain[i] = gain[i];
-	for(i=0;i<NOFFSET;i++)
-		detectorOffset[i] = offset[i];
-
+	for(i=0;i<NGAIN;i++){
+		if(gain[i]>=0){
+			detectorGain[i] = gain[i];
+			printf("gain[%d]:%d\n",i,detectorGain[i]);
+		}else cprintf(RED,"gain not set\n");
+	}
+	for(i=0;i<NOFFSET;i++){
+		if(offset[i]>=0){
+			detectorOffset[i] = offset[i];
+			printf("offset[%d]:%d\n",i,detectorOffset[i]);
+		}else cprintf(RED,"offset not set\n");
+	}
 	//copy module locally
 	if (detectorModules)
 		copyModule(detectorModules,&myMod);
@@ -432,7 +439,6 @@ int setModule(sls_detector_module myMod, int* gain, int* offset){
 		return FAIL;
 	}
 
-	//printf("set gainval[0]:%d\n",detectorGain[0]);
 	return 0;
 }
 

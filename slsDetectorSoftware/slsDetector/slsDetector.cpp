@@ -3059,10 +3059,6 @@ slsDetectorDefs::detectorSettings slsDetector::setSettings( detectorSettings ise
 
 	int ret=0;
 
-	if(thisDetector->nGain)
-		gainval = new int[thisDetector->nGain];
-	if(thisDetector->nOffset)
-		offsetval = new int[thisDetector->nOffset];
 
 	switch (isettings) {
 	case STANDARD:
@@ -5986,7 +5982,17 @@ int slsDetector::writeSettingsFile(string fname, int imod){
 int slsDetector::loadSettingsFile(string fname, int imod) {
 
   sls_detector_module  *myMod=NULL;
-  int* g=0; int* o=0;
+  int* gainval=0; int* offsetval=0;
+  if(thisDetector->nGain){
+	  gainval=new int[thisDetector->nGain];
+	  for(int i=0;i<thisDetector->nGain;i++)
+		  gainval[i] = -1;
+  }
+  if(thisDetector->nOffset){
+	  offsetval=new int[thisDetector->nOffset];
+	  for(int i=0;i<thisDetector->nOffset;i++)
+		  offsetval[i] = -1;
+  }
   string fn=fname;
   fn=fname;
   int mmin=0, mmax=setNumberOfModules();
@@ -6012,8 +6018,10 @@ int slsDetector::loadSettingsFile(string fname, int imod) {
       //settings is saved in myMod.reg for all except mythen
       if(thisDetector->myDetectorType!=MYTHEN)
 	myMod->reg=thisDetector->currentSettings;
-      setModule(*myMod,g,o);
+      setModule(*myMod,gainval,offsetval);
       deleteModule(myMod);
+      if(gainval) delete[] gainval;
+      if(offsetval) delete[] offsetval;
     } else
       return FAIL;
   }
@@ -6090,18 +6098,19 @@ int slsDetector::loadCalibrationFile(string fname, int imod) {
   sls_detector_module  *myMod=NULL;
   string fn=fname;
 
-  int* gainval=0, *offsetval=0;
-  if(thisDetector->nGain)
+  int* gainval=0; int* offsetval=0;
+  if(thisDetector->nGain){
 	  gainval=new int[thisDetector->nGain];
-  if(thisDetector->nOffset)
+	  for(int i=0;i<thisDetector->nGain;i++)
+		  gainval[i] = -1;
+  }
+  if(thisDetector->nOffset){
 	  offsetval=new int[thisDetector->nOffset];
+	  for(int i=0;i<thisDetector->nOffset;i++)
+		  offsetval[i] = -1;
+  }
 
   fn=fname;
-
-	if(thisDetector->nGain)
-		gainval = new int[thisDetector->nGain];
-	if(thisDetector->nOffset)
-		offsetval = new int[thisDetector->nOffset];
 
 
   int mmin=0, mmax=setNumberOfModules();
@@ -6135,7 +6144,7 @@ int slsDetector::loadCalibrationFile(string fname, int imod) {
 
       deleteModule(myMod);
       if(gainval) delete[]gainval;
-      if(offsetval) delete offsetval;
+      if(offsetval) delete[] offsetval;
     } else
       return FAIL;
   }

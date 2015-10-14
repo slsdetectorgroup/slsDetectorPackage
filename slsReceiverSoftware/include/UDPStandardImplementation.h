@@ -367,6 +367,8 @@ private:
 	 */
 	uint32_t processListeningBuffer(int ithread, int cSize,char* temp);
 
+	bool popAndCheckEndofAcquisition(char* wbuffer[], bool ready[], uint32_t nP[],char* toFree[],int toFreeOffset[]);
+
 	/*************************************************************************
 	 * Class Members *********************************************************
 	 *************************************************************************/

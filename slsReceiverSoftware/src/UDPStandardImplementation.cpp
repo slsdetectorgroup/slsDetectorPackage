@@ -20,6 +20,7 @@
 #include <iostream>
 #include <string.h>
 #include <stdint.h>
+#include <stdlib.h>
 using namespace std;
 
 #define WRITE_HEADERS
@@ -1718,8 +1719,15 @@ void UDPStandardImplementation::startWriting(){
 	threadStarted = 1;
 
 	//variable definitions
-	char* wbuf[MAX_NUMBER_OF_LISTENING_THREADS] = NULL;
-	sfilefd = NULL;
+	char* wbuf[numberofListeningThreads];				//buffer popped from FIFO
+	sfilefd = NULL;										//file pointer
+	bool popReady[numberofListeningThreads];			//if the FIFO can be popped
+	uint32_t numPackets[numberofListeningThreads];		//number of packets popped from the FIFO
+	//eiger specific
+	int MAX_NUM_PACKETS = 1024;							//highest 32 bit has 1024 number of packets
+	char* toFreePointers[MAX_NUM_PACKETS];				//pointers to free for each frame
+	int toFreePointersOffset[numberofListeningThreads];	//offset of pointers to free added for each thread
+
 
 
 	/* outer loop - loops once for each acquisition */
@@ -1727,11 +1735,38 @@ void UDPStandardImplementation::startWriting(){
 	while(true){
 
 		//--reset parameters before acquisition
+		for(int i=0; i<numberofListeningThreads; ++i){
+			wbuf[i] = NULL;
+			popReady[i] = true;
+			numPackets[i] = 0;
+			toFreePointersOffset[i] = (i*packetsPerFrame/numberofListeningThreads);
+		}
+		for(int i=0; i<MAX_NUM_PACKETS; ++i){
+				toFreePointers[i] = NULL;
+		}
 		//--end of reset parameters before acquisition
 
 		/* inner loop - loop for each buffer */
 		//until mask unset (udp sockets shut down by client)
 		while((1 << ithread) & writerThreadsMask){
+
+
+			//pop fifo and if end of acquisition
+			if(popAndCheckEndofAcquisition(wbuf, popReady, numPackets,toFreePointers,toFreePointersOffset)){
+#ifdef DEBUG4
+				cprintf(GREEN,"Writing_Thread %d: All dummy-end buffers popped\n", ithread);
+#endif
+				//finish missing packets
+				if(myDetectorType == EIGER
+						&& ((tempoffset[0]!=0) || (tempoffset[1]!=(packetsPerFrame/numListeningThreads))));
+				else{
+					stopWriting(ithread,wbuf);
+					continue;
+				}
+			}
+
+			//eiger-processWritingPackets();
+			//others-processWritingBuffer();
 
 
 
@@ -1800,7 +1835,55 @@ void UDPStandardImplementation::startWriting(){
 
 
 
+bool UDPStandardImplementation::popAndCheckEndofAcquisition(char* wbuffer[], bool ready[], uint32_t nP[],char* toFree[],int toFreeOffset[]){
 
+	bool endofAcquisition = true;
+	int val;
+	for(int i=0; i<numberofListeningThreads; ++i){
+		//pop if ready
+		if(ready[i]){
+			fifo[i]->pop(wbuffer[i]);
+#ifdef FIFODEBUG
+			cprintf(GREEN,"Writing_Thread %d: Popped %p from FIFO %d\n", ithread, (void*)(wbuffer[i]),i);
+#endif
+			val = (uint32_t)(*((uint32_t*)wbuffer[i]));
+			if(val < 0)
+				cprintf(BG_RED,"Error: Negative packet numbers: %d for FIFO %d\n",val,i);
+			nP[i] = abs(val);
+#ifdef DEBUG4
+			cprintf(GREEN,"Writing_Thread %d: Number of Packets: %d for FIFO %d\n", ithread, nP[i], i);
+#endif
+			//dummy-end buffer
+			if(nP[i] == dummyPacketValue){
+				ready[i] = false;
+#ifdef DEBUG3
+				cprintf(GREEN,"Writing_Thread %d: Dummy frame popped out of FIFO %d",ithread, i);
+#endif
+			}
+			//normal buffer popped out
+			else{
+				endofAcquisition = false;
+#ifdef DEBUG4
+				switch(myDetectorType){
+				case EIGER:
+					wbuf_footer = (eiger_packet_footer_t*)(wbuffer[i] + footerOffset + HEADER_SIZE_NUM_TOT_PACKETS);
+					//cprintf(BLUE,"footer value:0x%x\n",i,(uint64_t)(*( (uint64_t*) wbuf_footer)));
+					cprintf(BLUE,"Fnum[%d]:%d\n",i,(uint32_t)(*( (uint64_t*) wbuf_footer)));
+					cprintf(BLUE,"Pnum[%d]:%d\n",i,*( (uint16_t*) wbuf_footer->packetNumber));
+					break;
+				default: break;
+				}
+#endif
+				if(myDetectorType == EIGER){
+					toFree[toFreeOffset[i]] = wbuffer[i];
+					toFreeOffset[i]++;
+				}
+			}
+		}
+	}
+
+	return endofAcquisition;
+}
 
 
 
@@ -1987,23 +2070,21 @@ int UDPStandardImplementation::startWriting(){
 	int ret,i,j;
 
 	bool endofacquisition;
-	int numpackets[numListeningThreads], nf;
-	bool fullframe[numListeningThreads],popready[numListeningThreads];
+	int  nf;
+	bool fullframe[numListeningThreads];
 	volatile uint32_t tempframenum[numListeningThreads];
 	uint32_t presentframenum;
 	uint32_t lastpacketheader[numListeningThreads], currentpacketheader[numListeningThreads];
 	int numberofmissingpackets[numListeningThreads];
 
-	int MAX_VALUE = 1024;//32 bit number of packets
-	char* tofree[MAX_VALUE];
+
+
 	char* tempbuffer[MAX_VALUE];
 	char* blankframe[MAX_VALUE];
-	int tofreeoffset[numListeningThreads];
 	int tempoffset[numListeningThreads];
 	int blankoffset;
 	for(i=0;i<MAX_VALUE;++i){
 		tempbuffer[i] = 0;
-		tofree[i] = 0;
 		blankframe[i] = 0;
 	}
 
@@ -2075,9 +2156,7 @@ int UDPStandardImplementation::startWriting(){
 		//allow them all to be popped initially
 		for(i=0;i<numListeningThreads;++i){
 			fullframe[i] = false;
-			popready[i] = true;
 			tempoffset[i] = (i*packetsPerFrame/numListeningThreads);
-			tofreeoffset[i] = (i*packetsPerFrame/numListeningThreads);
 			blankoffset = 0;
 			lastpacketheader[i] = 0;
 			currentpacketheader[i] = 0;
@@ -2119,22 +2198,15 @@ int UDPStandardImplementation::startWriting(){
 #endif
 					}else{
 						endofacquisition = false;
-						if(numpackets[i] == onePacketSize){;
+						if(numpackets[i] == onePacketSize){
 #ifdef EIGER_DEBUG3
 							wbuf_footer = (eiger_packet_footer_t*)(wbuf[i] + footer_offset + HEADER_SIZE_NUM_TOT_PACKETS);
 							//cprintf(BLUE,"footer value:0x%x\n",i,(uint64_t)(*( (uint64_t*) wbuf_footer)));
 							cprintf(BLUE,"tempframenum[%d]:%d\n",i,(uint32_t)(*( (uint64_t*) wbuf_footer)));
 							cprintf(BLUE,"packetnum[%d]:%d\n",i,*( (uint16_t*) wbuf_footer->packetnum));
 #endif
-						}else if(numpackets[i] == EIGER_HEADER_LENGTH){
-							cprintf(BG_RED, "got header in writer, weirdd packetsize:%d\n",numpackets[i]);
-							exit(-1);
 						}
-#ifdef EIGER_DEBUG3
-						else {
-							cprintf(BG_RED, "got weird in writer, weirdd packetsize:%d\n",numpackets[i]);
-						}
-#endif
+
 						if(myDetectorType == EIGER){
 							tofree[tofreeoffset[i]] = wbuf[i];
 							tofreeoffset[i]++;

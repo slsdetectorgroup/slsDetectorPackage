@@ -764,7 +764,7 @@ void UDPStandardImplementation::resetAcquisitionCount(){
 }
 
 
-int UDPStandardImplementation::startReceiver(char *c=NULL){
+int UDPStandardImplementation::startReceiver(char *c){
 	FILE_LOG(logDEBUG1) << __AT__ << " called";
 
 	cout << "Info: Starting Receiver" << endl;
@@ -1752,23 +1752,28 @@ void UDPStandardImplementation::startWriting(){
 
 
 			//pop fifo and if end of acquisition
-			if(popAndCheckEndofAcquisition(wbuf, popReady, numPackets,toFreePointers,toFreePointersOffset)){
+			if(popAndCheckEndofAcquisition(ithread, wbuf, popReady, numPackets,toFreePointers,toFreePointersOffset)){
 #ifdef DEBUG4
 				cprintf(GREEN,"Writing_Thread %d: All dummy-end buffers popped\n", ithread);
 #endif
 				//finish missing packets
-				if(myDetectorType == EIGER
-						&& ((tempoffset[0]!=0) || (tempoffset[1]!=(packetsPerFrame/numListeningThreads))));
+
+				if(myDetectorType == EIGER &&
+						 ((tempoffset[0]!=0) || (tempoffset[1]!=(packetsPerFrame/numberofListeningThreads))));
 				else{
 					stopWriting(ithread,wbuf);
 					continue;
 				}
 			}
 
-			//eiger-processWritingPackets();
-			//others-processWritingBuffer();
-
-
+			switch(myDetectorType){
+			case EIGER:
+				processWritingBufferPacketByPacket();
+				break;
+			default:
+				processWritingBuffer(ithread, wbuf, numPackets);
+				break;
+			}
 
 		}/*--end of loop for each buffer (inner loop)*/
 
@@ -1835,7 +1840,8 @@ void UDPStandardImplementation::startWriting(){
 
 
 
-bool UDPStandardImplementation::popAndCheckEndofAcquisition(char* wbuffer[], bool ready[], uint32_t nP[],char* toFree[],int toFreeOffset[]){
+bool UDPStandardImplementation::popAndCheckEndofAcquisition(int ithread, char* wbuffer[], bool ready[], uint32_t nP[],char* toFree[],int toFreeOffset[]){
+	FILE_LOG(logDEBUG1) << __AT__ << " called";
 
 	bool endofAcquisition = true;
 	int val;
@@ -1866,7 +1872,7 @@ bool UDPStandardImplementation::popAndCheckEndofAcquisition(char* wbuffer[], boo
 #ifdef DEBUG4
 				switch(myDetectorType){
 				case EIGER:
-					wbuf_footer = (eiger_packet_footer_t*)(wbuffer[i] + footerOffset + HEADER_SIZE_NUM_TOT_PACKETS);
+					eiger_packet_footer_t* wbuf_footer = (eiger_packet_footer_t*)(wbuffer[i] + footerOffset + HEADER_SIZE_NUM_TOT_PACKETS);
 					//cprintf(BLUE,"footer value:0x%x\n",i,(uint64_t)(*( (uint64_t*) wbuf_footer)));
 					cprintf(BLUE,"Fnum[%d]:%d\n",i,(uint32_t)(*( (uint64_t*) wbuf_footer)));
 					cprintf(BLUE,"Pnum[%d]:%d\n",i,*( (uint16_t*) wbuf_footer->packetNumber));
@@ -1887,6 +1893,54 @@ bool UDPStandardImplementation::popAndCheckEndofAcquisition(char* wbuffer[], boo
 
 
 
+void UDPStandardImplementation::stopWriting(int ithread, char* wbuffer[]){
+	FILE_LOG(logDEBUG1) << __AT__ << " called";
+
+	cprintf(GREEN,"Info: Writing_Thread %d: End of Acquisition\n",ithread);
+
+	//free fifo
+	for(int i=0; i<numberofListeningThreads; ++i)
+		while(!fifoFree[i]->push(wbuffer[i]));
+#ifdef
+}
+
+void UDPStandardImplementation::processWritingBuffer(int ithread, char* wbuffer[], uint32_t nP[]){
+	FILE_LOG(logDEBUG1) << __AT__ << " called";
+
+
+}
+
+
+void UDPStandardImplementation::processWritingBufferPacketByPacket(int ithread, char* wbuffer[], uint32_t nP[]){
+	FILE_LOG(logDEBUG1) << __AT__ << " called";
+
+	uint64_t tempframenumber = ((uint32_t)(*((uint32_t*)(wbuffer[ithread] + HEADER_SIZE_NUM_TOT_PACKETS))));
+
+	//for gotthard and normal frame, increment frame number to separate fnum and pnum
+	if (myDetectorType == PROPIX ||(myDetectorType == GOTTHARD && shortFrameEnable == -1))
+		tempframenumber++;
+
+	//get frame number
+	tempframenumber = (tempframenumber & frameIndexMask) >> frameIndexOffset;
+
+	//single thread, just assign and process without compression
+	if(!dataCompressionEnable){
+		currentFrameNumber = tempframenumber;
+		handleWithoutDataCompression(ithread, wbuffer, nP[0]);
+	}
+
+	//handling multiple threads
+	else{
+		pthread_mutex_lock(&progressMutex);
+		if(tempframenumber > currentFrameNumber)
+			currentFrameNumber = tempframenumber;
+		pthread_mutex_unlock(&progressMutex);
+		handleDataCompression(ithread,wbuffer,d, xmax, ymax, nf);
+	}
+
+
+
+}
 
 
 
@@ -2173,65 +2227,8 @@ int UDPStandardImplementation::startWriting(){
 
 
 
-			//pop
-			endofacquisition = true;
-			for(i=0;i<numListeningThreads;++i){
-				if(popready[i]){
-					fifo[i]->pop(wbuf[i]);
-#ifdef FIFO_DEBUG
-					cprintf(GREEN,"%d writer poped 0x%x from fifo %d\n", ithread, (void*)(wbuf[i]), i);
-#endif
-					numpackets[i] = (uint32_t)(*((uint32_t*)wbuf[i]));
-
-#ifdef VERYDEBUG
-					cprintf(GREEN,"%d numpackets: %d for fifo :%d\n", ithread, numpackets[i], i);
-#endif
-					if(numpackets < 0){
-						cprintf(BG_RED,"negative numpackets[%d]%d\n",i,numpackets[i]);
-						exit(-1);
-					}
-					//dont pop again if dummy packet
-					else if(numpackets[i] == 0){
-						popready[i] = false;
-#ifdef EIGER_DEBUG3
-						cprintf(GREEN,"%d Dummy frame popped out of fifo %d",ithread, i);
-#endif
-					}else{
-						endofacquisition = false;
-						if(numpackets[i] == onePacketSize){
-#ifdef EIGER_DEBUG3
-							wbuf_footer = (eiger_packet_footer_t*)(wbuf[i] + footer_offset + HEADER_SIZE_NUM_TOT_PACKETS);
-							//cprintf(BLUE,"footer value:0x%x\n",i,(uint64_t)(*( (uint64_t*) wbuf_footer)));
-							cprintf(BLUE,"tempframenum[%d]:%d\n",i,(uint32_t)(*( (uint64_t*) wbuf_footer)));
-							cprintf(BLUE,"packetnum[%d]:%d\n",i,*( (uint16_t*) wbuf_footer->packetnum));
-#endif
-						}
-
-						if(myDetectorType == EIGER){
-							tofree[tofreeoffset[i]] = wbuf[i];
-							tofreeoffset[i]++;
-						}
-					}
-
-				}
-			}
 
 
-
-			//END OF ACQUISITION
-			if(endofacquisition){
-#ifdef EIGER_DEBUG3
-				cprintf(GREEN,"%d Both dummy frames\n", ithread);
-#endif
-				//remaining packets to be written
-				if((myDetectorType == EIGER) &&
-						((tempoffset[0]!=0) || (tempoffset[1]!=(packetsPerFrame/numListeningThreads))));
-				else{
-
-					stopWriting(ithread,wbuf);
-					continue;
-				}
-			}
 
 
 
@@ -2539,31 +2536,7 @@ int UDPStandardImplementation::startWriting(){
 			}
 
 
-			//other detectors other than eiger
-			else{
 
-				//frame number for progress
-				if ((myDetectorType == PROPIX) ||((myDetectorType == GOTTHARD) && (shortFrame == -1)))
-					tempframenum[0] = (((((uint32_t)(*((uint32_t*)(wbuf[ithread] + HEADER_SIZE_NUM_TOT_PACKETS))))+1)& (frameIndexMask)) >> frameIndexOffset);
-				else
-					tempframenum[0] = ((((uint32_t)(*((uint32_t*)(wbuf[ithread] + HEADER_SIZE_NUM_TOT_PACKETS))))& (frameIndexMask)) >> frameIndexOffset);
-
-				if(numWriterThreads == 1)
-					currframenum = tempframenum[0];
-				else{
-					pthread_mutex_lock(&progress_mutex);
-					if(tempframenum[0] > currframenum)
-						currframenum = tempframenum[0];
-					pthread_mutex_unlock(&progress_mutex);
-				}
-
-
-				//without datacompression: write datacall back, or write data, free fifo
-				if(!dataCompression)    handleWithoutDataCompression(ithread,wbuf, numpackets[0]);
-				//data compression
-				else					handleDataCompression(ithread,wbuf,d, xmax, ymax, nf);
-
-			}
 
 		}
 

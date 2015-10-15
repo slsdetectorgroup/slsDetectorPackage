@@ -77,8 +77,9 @@ class UDPStandardImplementation: private virtual slsReceiverDefs, public UDPBase
 	 * Overridden method
 	 * Set data compression, by saving only hits (so far implemented only for Moench and Gotthard)
 	 * @param b true for data compression enable, else false
+	 * @return OK or FAIL
 	 */
-	void setDataCompressionEnable(const bool b);
+	int setDataCompressionEnable(const bool b);
 
 	//***acquisition parameters***
 	/**
@@ -367,7 +368,33 @@ private:
 	 */
 	uint32_t processListeningBuffer(int ithread, int cSize,char* temp);
 
-	bool popAndCheckEndofAcquisition(char* wbuffer[], bool ready[], uint32_t nP[],char* toFree[],int toFreeOffset[]);
+	/**
+	 * Called by StartWriting
+	 * Pops buffer from all the FIFOs and checks for dummy frames and end of acquisition
+	 * @param ithread current thread index
+	 * @param wbuffer the buffer array that is popped from all the FIFOs
+	 * @param ready if that FIFO is allowed to pop (depends on if dummy buffer already popped/ waiting for other FIFO to finish a frame(eiger))
+	 * @param nP number of packets in the buffer popped out
+	 * @param toFree array of addresses to pop into fifoFree  (eiger specific)
+	 * @param toFreeOffset the number of addresses to free for each FIFO (eiger specific)
+	 * @return true if end of acquisition else false
+	 */
+	bool popAndCheckEndofAcquisition(int ithread, char* wbuffer[], bool ready[], uint32_t nP[],char* toFree[],int toFreeOffset[]);
+
+	/**
+	 * Called by StartWriting
+	 * When dummy-end buffers are popped from all FIFOs (acquisition over), this is called
+	 * It frees the FIFO addresses, closes all files
+	 * For data compression, it waits for all threads to be done
+	 * Changes the status to RUN_FINISHED and prints statistics
+	 * @param ithread writing thread index
+	 * @param wbuffer writing buffer popped out from FIFO
+	 */
+	void stopWriting(int ithread, char* wbuffer[]);
+
+	void processWritingBuffer(int ithread, char* wbuffer[], uint32_t nP[]);
+	void processWritingBufferPacketByPacket();
+
 
 	/*************************************************************************
 	 * Class Members *********************************************************
@@ -669,11 +696,7 @@ private:
 	 */
 	void writeToFile_withoutCompression(char* buf[],int numpackets, uint32_t framenum);
 
-	/**
-	 * When acquisition is over, this is called
-	 * @param ithread listening thread number
-	 */
-	void stopWriting(int ithread, char* wbuffer[]);
+
 
 	/**
 	 * updates parameters and writes to file when not a dummy frame

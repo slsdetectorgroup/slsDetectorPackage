@@ -5,9 +5,9 @@
  ***********************************************/
 
 #include "UDPBaseImplementation.h"
+#include "genericSocket.h"
 
 #include <sys/stat.h> 		// stat
-
 #include <iostream>
 #include <string.h>
 using namespace std;
@@ -75,10 +75,6 @@ UDPBaseImplementation::~UDPBaseImplementation(){
 	FILE_LOG(logDEBUG) << __AT__ << " starting";
 
 	cout << "Info: Deleting base member pointers" << endl;
-	if(detHostname) 	{delete [] detHostname;	detHostname = NULL;}
-	if(eth) 			{delete [] eth;			eth = NULL;}
-	if(fileName) 		{delete [] fileName;	fileName = NULL;}
-	if(filePath) 		{delete [] filePath;	filePath = NULL;}
 }
 
 
@@ -129,7 +125,7 @@ char *UDPBaseImplementation::getFilePath() const{
 	return output;
 }
 
-uint32_t UDPBaseImplementation::getFileIndex() const{	FILE_LOG(logDEBUG) << __AT__ << " starting";	return fileIndex;}
+uint64_t UDPBaseImplementation::getFileIndex() const{	FILE_LOG(logDEBUG) << __AT__ << " starting";	return fileIndex;}
 
 int UDPBaseImplementation::getScanTag() const{	FILE_LOG(logDEBUG) << __AT__ << " starting";	return scanTag;}
 
@@ -234,7 +230,7 @@ void UDPBaseImplementation::setFilePath(const char c[]){
 	FILE_LOG(logINFO) << "File path:" << filePath;
 }
 
-void UDPBaseImplementation::setFileIndex(const uint32_t i){
+void UDPBaseImplementation::setFileIndex(const uint64_t i){
 	FILE_LOG(logDEBUG) << __AT__ << " starting";
 
 	fileIndex = i;
@@ -394,7 +390,7 @@ void UDPBaseImplementation::resetAcquisitionCount(){
 	FILE_LOG(logINFO) << "totalPacketsCaught:" << totalPacketsCaught << endl;
 }
 
-int UDPBaseImplementation::startReceiver(char *c=NULL){
+int UDPBaseImplementation::startReceiver(char *c){
 	FILE_LOG(logWARNING) << __AT__ << " doing nothing...";
 	FILE_LOG(logERROR) << __AT__ << " must be overridden by child classes";
 	return OK;
@@ -433,17 +429,17 @@ void UDPBaseImplementation::closeFile(int i){
 
 
 /***callback functions***/
-void UDPBaseImplementation::registerCallBackStartAcquisition(int (*func)(char*, char*,int, int, void*),void *arg){
+void UDPBaseImplementation::registerCallBackStartAcquisition(int (*func)(char*, char*,uint64_t, uint32_t, void*),void *arg){
 	startAcquisitionCallBack=func;
 	pStartAcquisition=arg;
 }
 
-void UDPBaseImplementation::registerCallBackAcquisitionFinished(void (*func)(int, void*),void *arg){
+void UDPBaseImplementation::registerCallBackAcquisitionFinished(void (*func)(uint64_t, void*),void *arg){
 	acquisitionFinishedCallBack=func;
 	pAcquisitionFinished=arg;
 }
 
-void UDPBaseImplementation::registerCallBackRawDataReady(void (*func)(int, char*, int, FILE*, char*, void*),void *arg){
+void UDPBaseImplementation::registerCallBackRawDataReady(void (*func)(uint64_t, char*, uint32_t, FILE*, char*, void*),void *arg){
 	rawDataReadyCallBack=func;
 	pRawDataReady=arg;
 }

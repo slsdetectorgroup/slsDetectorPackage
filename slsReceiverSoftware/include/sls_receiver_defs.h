@@ -8,7 +8,9 @@
 #endif
 
 #include <stdint.h> 
+#include <string>
 #include "ansi.h"
+
 
 typedef  double double32_t;
 typedef  float float32_t;
@@ -115,9 +117,9 @@ public:
 	      \param b true or false
 	      \returns string enabled, disabled
 	  */
-	  static string stringEnable(bool b){\
-		if(b) return string("enabled"); \
-		else return string("disabled"); \
+	  static std::string stringEnable(bool b){\
+		if(b) return std::string("enabled"); \
+		else return std::string("disabled"); \
 	  };
 
 

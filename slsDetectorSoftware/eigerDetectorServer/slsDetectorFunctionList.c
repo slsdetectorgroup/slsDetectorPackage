@@ -54,8 +54,8 @@ int dst_requested[32] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 //char  Module_dac_names[16][10]= {"SvP","Vtr","Vrf","Vrs","SvN","Vtgstv","Vcmp_ll","Vcmp_lr","cal","Vcmp_rl","rxb_rb","rxb_lb","Vcmp_rr","Vcp","Vcn","Vis"};;
 
 int default_dac_values[16] = {0,2480,3300,1400,4000,2556,1000,1000,4000,1000,1000,1000,1000,200,2000,1550};
-int default_gain_values[3] = {314800,314800,314800};
-int default_offset_values[3] = {3714000,3714000,3714000};
+int default_gain_values[3] = {517000,517000,517000};
+int default_offset_values[3] = {3851000,3851000,3851000};
 
 
 enum masterFlags  masterMode=IS_SLAVE;
@@ -503,8 +503,10 @@ int setThresholdEnergy(int ev, int imod){
 	if(ev >= 0){
 		eiger_photonenergy = ev;
 		//calculate thrvalues for dacs
-		for(i=0;i<NGAIN;i++)
-			thrvalue[i] = (int) ((((double)detectorGain[i]/1000) * ((double)ev/1000)) + ((double)detectorOffset[i]/1000));
+		for(i=0;i<NGAIN;i++){
+			thrvalue[i] = (int) (( ((double)detectorGain[i]/1000) * (-1) * ((double)ev/1000)) + ((double)detectorOffset[i]/1000));
+			printf("detectorGain[i]:%d detectorOffset[i]:%d thrvalue[i]:%d\n",detectorGain[i],detectorOffset[i],thrvalue[i]);
+		}
 
 		//setdacs
 		setDAC(VCMP_LL,thrvalue[0],-1,0,retval);if(retval[0] != thrvalue[0]) cprintf(BG_RED,"Failed to set vcmp_ll to %d, got %d\n",retval[0],thrvalue[0]);

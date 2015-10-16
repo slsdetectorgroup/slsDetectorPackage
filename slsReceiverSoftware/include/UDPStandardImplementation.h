@@ -318,15 +318,6 @@ private:
 	void startListening();
 
 	/**
-	 * Thread started which writes packets to file.
-	 * It pops the fifo, processes and writes packets to file and pushes the addresses into the fifoFree
-	 * This is continuously looped for each buffer in a nested loop, which is again looped for each acquisition
-	 * Exits only for changing dynamic range, 10G parameters etc and recreated
-	 *
-	 */
-	void startWriting();
-
-	/**
 	 * Called by startListening
 	 * Listens to buffer, until  packet(s) received or shutdownUDPsocket called by client
 	 * Also copies carryovers from previous frame in front of buffer (gotthard and moench)
@@ -369,6 +360,16 @@ private:
 	uint32_t processListeningBuffer(int ithread, int cSize,char* temp);
 
 	/**
+	 * Thread started which writes packets to file.
+	 * It calls popAndCheckEndofAcquisition to  pop fifo and check if it is a dummy end buffer
+	 * It then calls a function to process and write packets to file and pushes the addresses into the fifoFree
+	 * This is continuously looped for each buffer in a nested loop, which is again looped for each acquisition
+	 * Exits only for changing dynamic range, 10G parameters etc and recreated
+	 *
+	 */
+	void startWriting();
+
+	/**
 	 * Called by StartWriting
 	 * Pops buffer from all the FIFOs and checks for dummy frames and end of acquisition
 	 * @param ithread current thread index
@@ -392,9 +393,40 @@ private:
 	 */
 	void stopWriting(int ithread, char* wbuffer[]);
 
-	void processWritingBuffer(int ithread, char* wbuffer[], uint32_t nP[]);
-	void processWritingBufferPacketByPacket();
+	/**
+	 * Called by startWriting or processWritingBufferPacketByPacket upon reading a frame (for eiger)
+	 * Updates parameters, (writes headers for eiger) and writes to file when not a dummy frame
+	 * Copies data for gui display and frees addresses popped from FIFOs
+	 * @param ithread writing thread index
+	 * @param wbuffer writing buffer popped out from FIFO
+	 * @param npackets number of packets
+	 */
+	void handleWithoutDataCompression(int ithread, char* wbuffer[],int npackets);
 
+	/**
+	 * Calle by handleWithoutDataCompression
+	 * Creating headers Writing to file without compression
+	 * @param wbuffer is the address of buffer popped out of FIFO
+	 * @param numpackets is the number of packets
+	 */
+	void writeFileWithoutCompression(char* wbuffer[],int numpackets);
+
+	/**
+	 * Called by writeToFileWithoutCompression()
+	 * Create headers for file writing (at the moment, this is eiger specific)
+	 * @param wbuffer writing buffer popped from FIFOs
+	 */
+	void createHeaders(char* wbuffer[]);
+
+	/**
+	 * Called by handleWithoutDataCompression and handleWithCompression after writing to file
+	 * Copy frames for GUI and updates appropriate parameters for frequency frames to gui
+	 * Uses semaphore for nth frame mode
+	 * @param buffer buffer to copy
+	 */
+	void copyFrameToGui(char* buffer[]);
+
+	void processWritingBufferPacketByPacket();
 
 	/*************************************************************************
 	 * Class Members *********************************************************
@@ -674,11 +706,7 @@ private:
 private:
 
 
-	/**
-	 * Copy frames to gui
-	 * uses semaphore for nth frame mode
-	 */
-	void copyFrameToGui(char* startbuf[], char* buf=NULL);
+
 
 	/**
 	 * Creates new tree and file for compression
@@ -687,26 +715,6 @@ private:
 	 *\returns OK for succces or FAIL for failure
 	 */
 	int createCompressionFile(int ithr, int iframe);
-
-	/**
-	 * Writing to file without compression
-	 * @param buf is the address of buffer popped out of fifo
-	 * @param numpackets is the number of packets
-	 * @param framenum current frame number
-	 */
-	void writeToFile_withoutCompression(char* buf[],int numpackets, uint32_t framenum);
-
-
-
-	/**
-	 * updates parameters and writes to file when not a dummy frame
-	 * Also calls writeToFile_withoutCompression or handleDataCompression
-	 * Called by startWriting()
-	 * @param ithread writing thread number
-	 * @param wbuffer writer buffer
-	 * @param npackets number of packets
-	 */
-	void handleWithoutDataCompression(int ithread, char* wbuffer[],int npackets);
 
 	/**
 	 * data compression for each fifo output

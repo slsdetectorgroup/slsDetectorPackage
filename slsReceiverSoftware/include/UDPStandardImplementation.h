@@ -291,10 +291,18 @@ private:
 	int setupWriter();
 
 	/**
-	 * Creates new file
+	 * Creates new file and reset some parameters
 	 * @return OK or FAIL
 	 */
 	int createNewFile();
+
+	/**
+	 * Creates new tree and file for compression
+	 * @param ithread thread number
+	 * @param iframe frame number
+	 * @return OK or FAIL
+	 */
+	int createCompressionFile(int ithread, int iframe);
 
 	/**
 	 * Static function - Starts Listening Thread of this object
@@ -370,7 +378,7 @@ private:
 	void startWriting();
 
 	/**
-	 * Called by StartWriting
+	 * Called by processWritingBuffer and processWritingBufferPacketByPacket
 	 * Pops buffer from all the FIFOs and checks for dummy frames and end of acquisition
 	 * @param ithread current thread index
 	 * @param wbuffer the buffer array that is popped from all the FIFOs
@@ -383,7 +391,7 @@ private:
 	bool popAndCheckEndofAcquisition(int ithread, char* wbuffer[], bool ready[], uint32_t nP[],char* toFree[],int toFreeOffset[]);
 
 	/**
-	 * Called by StartWriting
+	 * Called by processWritingBuffer and processWritingBufferPacketByPacket
 	 * When dummy-end buffers are popped from all FIFOs (acquisition over), this is called
 	 * It frees the FIFO addresses, closes all files
 	 * For data compression, it waits for all threads to be done
@@ -394,7 +402,7 @@ private:
 	void stopWriting(int ithread, char* wbuffer[]);
 
 	/**
-	 * Called by startWriting or processWritingBufferPacketByPacket upon reading a frame (for eiger)
+	 * Called by processWritingBuffer and processWritingBufferPacketByPacket
 	 * Updates parameters, (writes headers for eiger) and writes to file when not a dummy frame
 	 * Copies data for gui display and frees addresses popped from FIFOs
 	 * @param ithread writing thread index
@@ -412,7 +420,7 @@ private:
 	void writeFileWithoutCompression(char* wbuffer[],int numpackets);
 
 	/**
-	 * Called by writeToFileWithoutCompression()
+	 * Called by writeToFileWithoutCompression
 	 * Create headers for file writing (at the moment, this is eiger specific)
 	 * @param wbuffer writing buffer popped from FIFOs
 	 */
@@ -426,7 +434,24 @@ private:
 	 */
 	void copyFrameToGui(char* buffer[]);
 
-	void processWritingBufferPacketByPacket();
+	void processWritingBuffer(int ithread);
+
+	void processWritingBufferPacketByPacket(int ithread);
+
+	void waitWritingBufferForNextAcquisition(int ithread);
+
+	/**
+	 * Called by processWritingBuffer
+	 * Processing fifo popped buffers for data compression
+	 * Updates parameters and writes to file
+	 * Copies data for gui display and frees addresses popped from FIFOs
+	 * @param ithread writing thread number
+	 * @param wbuffer writer buffer
+	 * @param nf number of frames
+	 */
+	void handleDataCompression(int ithread, char* wbuffer[], int &nf);
+
+
 
 	/*************************************************************************
 	 * Class Members *********************************************************
@@ -682,58 +707,6 @@ private:
 	 * 1 callback writes file, we have to open, close it
 	 * 2 we open, close, write file, callback does not do anything */
 	int cbAction;
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-private:
-
-
-
-
-	/**
-	 * Creates new tree and file for compression
-	 * @param ithr thread number
-	 * @param iframe frame number
-	 *\returns OK for succces or FAIL for failure
-	 */
-	int createCompressionFile(int ithr, int iframe);
-
-	/**
-	 * data compression for each fifo output
-	 * @param ithread writing thread number
-	 * @param wbuffer writer buffer
-	 * @param data pointer to the next packet start
-	 * @param xmax max pixels in x direction
-	 * @param ymax max pixels in y direction
-	 * @param nf nf
-	 */
-	void handleDataCompression(int ithread, char* wbuffer[], char* data, int xmax, int ymax, int &nf);
-
-
-
-
-
-
-	//filter
-
 
 };
 

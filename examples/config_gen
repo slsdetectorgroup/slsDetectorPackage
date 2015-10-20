@@ -1,0 +1,103 @@
+#!/bin/bash
+
+if [ "$1" == "--help" ]; then
+	echo This tool generates config files.
+	echo Please edit the variables in the script
+	echo and run $0 \> output.config.
+	exit
+fi
+
+# local variables
+dir=/home/l_brueckner_m/xsw/settingsdir/eiger
+
+# HOSTNAMES is special
+# Beside of the hostname line it also defines the amount of (half) modules
+# for the body part
+# take care for the last space
+HOSTNAMES="beb069 beb068 beb067 beb066 "
+
+## header contains constant values at the beginning of the file
+header=(
+detsizechan="3072 512"
+)
+
+## the body part is for each half module
+# counters will count automatically
+counters=(
+rx_tcpport="1956"
+rx_udpport="50001"
+)
+
+# constant values
+constants=(
+rx_hostname="pc1875"
+lock=0
+settingsdir=$dir
+caldir=$dir
+outdir=/home/l_brueckner_m/xsw/out
+)
+
+# lists contains space separated lists each value for each half module
+lists=(
+#detectormac="aa:bb:cc:dd:ee:ff 11:22:33:44:55:66"
+)
+
+
+## footer contains constant values for the end of the file
+footer=(
+outdir=$OUTDIR
+threaded=1
+)
+
+
+function get_name_value
+{
+	name=${1%%=*}
+	value=${1#*=}
+}
+
+function shift_var
+{
+	shifts=$1
+	shift
+	shift $shifts
+	value=$1
+}
+
+
+echo hostname ${HOSTNAMES// /+}
+for i in "${header[@]}"; do 
+	get_name_value "$i"
+	echo $name $value
+done
+
+echo
+
+num=0
+for host in $HOSTNAMES; do
+	for i in "${counters[@]}"; do
+		get_name_value "$i"
+		echo $num:$name $((value+$num))
+	done
+
+	for i in "${lists[@]}"; do
+		get_name_value "$i"
+		shift_var $num $value
+		echo $num:$name $value
+	done
+
+	for i in "${constants[@]}"; do
+		get_name_value "$i"
+		echo $num:$name $value
+	done
+	echo
+	num=$((num+1))
+done
+
+for i in "${footer[@]}"; do
+	get_name_value "$i"
+	echo $name $value
+done
+
+exit
+

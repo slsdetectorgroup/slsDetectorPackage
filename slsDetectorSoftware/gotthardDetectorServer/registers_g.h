@@ -276,9 +276,9 @@
 
 
 /* settings/conf gain register */
-#define GAIN_MASK                    0x0000000f 
+#define GAIN_MASK                    0x000000ff
 #define GAIN_OFFSET                  0  
-#define SETTINGS_MASK                0x000000f0
+#define SETTINGS_MASK                0x0000ff00
 #define SETTINGS_OFFSET              8
 
 

@@ -25,6 +25,7 @@
 // C++ Include Headers
 #include<iostream>
 #include <string>
+#include <getopt.h>
 using namespace std;
 
 
@@ -47,9 +48,51 @@ int main (int argc, char **argv) {
 
 qDetectorMain::qDetectorMain(int argc, char **argv, QApplication *app, QWidget *parent) :
 				QMainWindow(parent), theApp(app),myDet(0),detID(0),myPlot(0),tabs(0),isDeveloper(0){
-bool found;
+//	bool found;
+	int c;
 	string configFName = "";
+	optind=1;
 	// Getting all the command line arguments
+	while(1) {
+		static struct option long_options[] = {
+			{ "developer", no_argument,       0, 'd' },
+			{ "config",    required_argument, 0, 'f' },
+			{ "id",        required_argument, 0, 'i' },
+			{ "f",         required_argument, 0, 'f' },
+			{ "help",      no_argument,       0, 'h' },
+			{ 0,           0,                 0,  0  }
+		};
+		c = getopt_long (argc, argv, "hdf:i:", long_options, NULL);
+		if (c == -1) break;
+
+		switch (c) {
+			case 'd' :
+				isDeveloper=1;
+				break;
+			case 'f' :
+				configFName=string(optarg);
+				break;
+			case 'i' :
+				detID=atoi(optarg);
+				break;
+			case 'h' :
+			default:
+				cout << endl;
+				cout << "\t" << argv[0] << " [ARGUMENT]..." << endl;
+				cout << endl;
+				cout << "Possible Arguments are:" << endl;
+				cout << "\t-d, --developer \t\t : \t Enables the developer tab" << endl;
+				cout << "\t-f, --f, --config fname\t\t : \t Loads config file fname" << endl;
+				cout << "\t-i, --id NUMBER \t\t : \t Sets the multi detector id to NUMBER (the default is 0). "
+					"Required only when more than one multi detector object is needed." << endl;
+				exit(-1);
+		}
+	}
+	if (optind < argc) {
+		cout << "invalid option, try --help" << endl;
+		exit(-1);
+	}
+/*
 	for(int iarg=1; iarg<argc; iarg++){
 		found = false;
 		if(!strcasecmp(argv[iarg],"--developer"))					{isDeveloper=1;found = true;}
@@ -66,7 +109,7 @@ bool found;
 			exit(-1);
 		}
 	}
-
+*/
 	setupUi(this);
 	SetUpDetector(configFName);
 	SetUpWidgetWindow();

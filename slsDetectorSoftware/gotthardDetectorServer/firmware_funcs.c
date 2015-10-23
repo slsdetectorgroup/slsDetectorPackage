@@ -1170,7 +1170,7 @@ int initConfGain(int isettings,int val,int imod){
   retval=(bus_r(addr)&GAIN_MASK);
 #ifdef VERBOSE
   printf("Value read from Gain reg is %d\n",retval);
-#endif 
+#endif
   if((val!=-1)&&(retval!=val))
     return -1;
 
@@ -1183,7 +1183,7 @@ int initConfGain(int isettings,int val,int imod){
       retval=((bus_r(addr)&SETTINGS_MASK)>>SETTINGS_OFFSET);
 #ifdef VERBOSE
     printf("Settings read from reg is %d\n",retval);
-#endif 
+#endif
     if((isettings!=-1)&&(retval!=isettings)){
       printf("\n\nSettings r\n\n");
     return -1;

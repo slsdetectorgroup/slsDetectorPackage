@@ -291,7 +291,7 @@
 #define GAIN_MASK                    0x0000000f 
 #define GAIN_OFFSET                  0  
 #define SETTINGS_MASK                0x000000f0
-#define SETTINGS_OFFSET              8
+#define SETTINGS_OFFSET              4
 
 
 /* CHIP_OF_INTRST_REG */

@@ -129,11 +129,11 @@ void qTabDataOutput::SetupWidgetWindow(){
 		chkDiscardBad->setChecked(false);
 	connect(chkDiscardBad,		SIGNAL(toggled(bool)), 	this, 	SLOT(DiscardBadChannels()));
 
-
+/*
 	if(detType == slsDetectorDefs::MYTHEN){
 		comboDetector->hide();
 	}
-
+*/
 	qDefs::checkErrorMessage(myDet,"qTabDataOutput::SetupWidgetWindow");
 }
 
@@ -492,14 +492,10 @@ void qTabDataOutput::PopulateDetectors(){
 	cout << "Populating detectors" << endl;
 #endif
 	comboDetector->clear();
-	if(myDet->setReceiverOnline() == slsDetectorDefs::OFFLINE_FLAG){
-		boxOutDir->setTitle("Output Directory");
-		comboDetector->addItem("All");
-	}
-
-	//if receiver, add detectors
-	else{
-		boxOutDir->setTitle("Receiver Output Directory");
+	comboDetector->addItem("All");
+	boxOutDir->setTitle("Output Directory");
+	//add specific detector options only if more than 1 detector
+	if(myDet->getNumberOfDetectors()>1){
 		for(int i=0;i<myDet->getNumberOfDetectors();i++)
 			comboDetector->addItem(QString(myDet->getHostname(i).c_str()));
 	}
@@ -514,11 +510,13 @@ void qTabDataOutput::GetOutputDir(){
 #ifdef VERBOSE
 	cout << "Getting output directory" << endl;
 #endif
-
-	if(!comboDetector->itemText(0).compare("All")){
+	//all
+	if(!comboDetector->currentIndex())
 		dispReadOutputDir->setText(QString(myDet->getFilePath().c_str()));
-	}else{
-		slsDetector *det = 	myDet->getSlsDetector(comboDetector->currentIndex());
+
+	//specific
+	else{
+		slsDetector *det = 	myDet->getSlsDetector(comboDetector->currentIndex()-1);
 		qDefs::checkErrorMessage(myDet,"qTabDataOutput::GetOutputDir");
 		dispReadOutputDir->setText(QString(det->getFilePath().c_str()));
 	}
@@ -543,8 +541,8 @@ int qTabDataOutput::VerifyOutputDirectory(){
 #endif
 	bool error = false;
 	QString errTip = outDirTip;
-	bool receiver = (comboDetector->itemText(0).compare("All"));
-	string path = string(dispReadOutputDir->text().toAscii().constData());
+	string path = "";
+	string inputpath = string(dispReadOutputDir->text().toAscii().constData());
 	string detName = "";
 	string mess = "";
 
@@ -552,11 +550,13 @@ int qTabDataOutput::VerifyOutputDirectory(){
 	for(int i=0;i<myDet->getNumberOfDetectors();i++){
 		slsDetector *det = 	myDet->getSlsDetector(i);
 		qDefs::checkErrorMessage(myDet,"qTabDataOutput::VerifyOutputDirectory");
-		if(receiver){
-			detName = string("\n - ") + string(comboDetector->itemText(i).toAscii().constData()) ;
+		detName = string("\n - ") + string(comboDetector->itemText(i+1).toAscii().constData());
+		if(!comboDetector->currentIndex())
+			path = inputpath;
+		else
 			path = det->getFilePath();
-		}
 
+		//verify if specific outdir works for each det
 		if(det->setFilePath(path).empty()){
 			mess. append(detName);
 			error = true;
@@ -570,13 +570,15 @@ int qTabDataOutput::VerifyOutputDirectory(){
 			error = true;
 			qDefs::Message(qDefs::WARNING,string("Enter a valid output directory ") + detName,"Data Output Verify");
 		}*/
-		myDet->setFilePath(det->getFilePath());
+		//myDet->setFilePath(det->getFilePath());
 	}
 
 
-	//set the read output dir anyway
-	if(receiver)
-		path = myDet->getSlsDetector(comboDetector->currentIndex())->getFilePath();
+	//set the read output dir text anyway
+	//specific
+	if(comboDetector->currentIndex())
+		path = myDet->getSlsDetector(comboDetector->currentIndex()-1)->getFilePath();
+	//all
 	else
 		path = myDet->getFilePath();
 	dispReadOutputDir->setText(QString(path.c_str()));
@@ -602,11 +604,7 @@ int qTabDataOutput::VerifyOutputDirectory(){
 						"Invalid <b>Output Directory</b>") + QString(mess.c_str()) +
 						QString( ".</font></nobr>");
 		boxOutDir->setToolTip(errTip);
-
-		if(receiver)
-			boxOutDir->setTitle("Receiver Output Directory*");
-		else
-			boxOutDir->setTitle("Output Directory*");
+		boxOutDir->setTitle("Output Directory*");
 
 		return slsDetectorDefs::FAIL;
 	}
@@ -619,11 +617,7 @@ int qTabDataOutput::VerifyOutputDirectory(){
 		dispReadOutputDir->setPalette(*black1);
 		boxOutDir->setPalette(black);
 		boxOutDir->setToolTip(outDirTip);
-
-		if(receiver)
-			boxOutDir->setTitle("Receiver Output Directory");
-		else
-			boxOutDir->setTitle("Output Directory");
+		boxOutDir->setTitle("Output Directory");
 	}
 
 	return slsDetectorDefs::OK;
@@ -641,7 +635,6 @@ void qTabDataOutput::SetOutputDir(){
 #endif
 
 	bool error = false;
-	bool receiver = (comboDetector->itemText(0).compare("All"));
 	QString path = dispOutputDir->text();
 
 	if(path.isEmpty())
@@ -654,45 +647,29 @@ void qTabDataOutput::SetOutputDir(){
 	while(path.endsWith('/')) path.chop(1);
 	dispOutputDir->setText(path);
 
-
-	if(receiver){
-		slsDetector *det = 	myDet->getSlsDetector(comboDetector->currentIndex());
+	//specific
+	if(comboDetector->currentIndex()){
+		slsDetector *det = 	myDet->getSlsDetector(comboDetector->currentIndex()-1);
 		qDefs::checkErrorMessage(myDet,"qTabDataOutput::SetOutputDir");
 		det->setFilePath(string(dispOutputDir->text().toAscii().constData()));
+		//if error, set it to what it was set before
 		if(!qDefs::checkErrorMessage(det,"qTabDataOutput::SetOutputDir").empty()){
 #ifdef VERBOSE
 			cout << "The output path could not be set" << endl;
 #endif
 			det->setFilePath(string(dispReadOutputDir->text().toAscii().constData()));
+			dispReadOutputDir->setText(QString(det->getFilePath().c_str()));
 			error = true;
-			dispOutputDir->setPalette(*red1);
 		}
-		myDet->setFilePath(det->getFilePath());
 	}
 
 
 	else{
-		//for each detector
-		for(int i=0;i<myDet->getNumberOfDetectors();i++){
-			slsDetector *det = 	myDet->getSlsDetector(i);
-			qDefs::checkErrorMessage(myDet,"qTabDataOutput::SetOutputDir");
-			if(det->setFilePath(string(path.toAscii().constData())).empty()){
-				error = true;
-			}else if(!qDefs::checkErrorMessage(det,"qTabDataOutput::SetOutputDir",false).empty()){
-				error = true;
-			}
-			myDet->setFilePath(det->getFilePath());
-		}
-
-
-		if(error){
-			qDefs::Message(qDefs::WARNING,string("Invalid output directory "),"qTabDataOutput::SetOutputDir");
-			for(int i=0;i<myDet->getNumberOfDetectors();i++){
-				slsDetector *det = 	myDet->getSlsDetector(i);
-				qDefs::checkErrorMessage(myDet,"qTabDataOutput::SetOutputDir");
-				det->setFilePath(string(dispReadOutputDir->text().toAscii().constData()));
-			}
-		}
+		if(myDet->setFilePath(string(path.toAscii().constData())).empty())
+			error = true;
+		else if(!qDefs::checkErrorMessage(myDet,"qTabDataOutput::SetOutputDir").empty())
+			error = true;
+		myDet->setFilePath(string(dispReadOutputDir->text().toAscii().constData()));
 		dispReadOutputDir->setText(QString(myDet->getFilePath().c_str()));
 	}
 
@@ -711,7 +688,7 @@ void qTabDataOutput::SetOutputDir(){
 		dispOutputDir->setPalette(*black1);
 		dispReadOutputDir->setText(dispOutputDir->text());
 		dispOutputDir->setText("");
-		VerifyOutputDirectory();
+		//VerifyOutputDirectory();
 	}
 
 

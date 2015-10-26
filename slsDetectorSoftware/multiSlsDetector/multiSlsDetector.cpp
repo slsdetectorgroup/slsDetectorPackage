@@ -4351,20 +4351,24 @@ string multiSlsDetector::checkReceiverOnline() {
 
 
 string multiSlsDetector::setFilePath(string s) {
-	if(!s.empty())
-		fileIO::setFilePath(s);
-	/*
-  string ret="error", ret1;
-  for (int idet=0; idet<thisMultiDetector->numberOfDetectors; idet++) {
-    if (detectors[idet]) {
-      ret1=detectors[idet]->setFilePath(s);
-      if (ret=="error")
-	ret=ret1;
-      else if (ret!=ret1)
-	ret="";
-    }
-  }
-  return ret;*/
+
+	string ret="errorerror", ret1;
+	if(!s.empty()){
+
+		for (int idet=0; idet<thisMultiDetector->numberOfDetectors; idet++) {
+			if (detectors[idet]) {
+				ret1=detectors[idet]->setFilePath(s);
+			      if(detectors[idet]->getErrorMask())
+				setErrorMask(getErrorMask()|(1<<idet));
+				if (ret=="errorerror")
+					ret=ret1;
+				else if (ret!=ret1)
+					ret="";
+			}
+		}
+		fileIO::setFilePath(ret);
+	}
+
 	return fileIO::getFilePath();
 }
 

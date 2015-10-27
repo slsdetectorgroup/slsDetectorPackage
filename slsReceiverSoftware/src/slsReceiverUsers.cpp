@@ -29,18 +29,18 @@ int64_t slsReceiverUsers::getReceiverVersion(){
 }
 
 
-void slsReceiverUsers::registerCallBackStartAcquisition(int (*func)(char*, char*,int, int, void*),void *arg){
+void slsReceiverUsers::registerCallBackStartAcquisition(int (*func)(char*, char*,uint64_t, uint32_t, void*),void *arg){
 	slsReceiverUsers::receiver->registerCallBackStartAcquisition(func,arg);
 }
 
   
 
-void slsReceiverUsers::registerCallBackAcquisitionFinished(void (*func)(int, void*),void *arg){
+void slsReceiverUsers::registerCallBackAcquisitionFinished(void (*func)(uint64_t, void*),void *arg){
 	slsReceiverUsers::receiver->registerCallBackAcquisitionFinished(func,arg);
 }
 	
 
-void slsReceiverUsers::registerCallBackRawDataReady(void (*func)(int, char*, int, FILE*, char*, void*),void *arg){
+void slsReceiverUsers::registerCallBackRawDataReady(void (*func)(uint64_t, char*, uint32_t, FILE*, char*, void*),void *arg){
 	slsReceiverUsers::receiver->registerCallBackRawDataReady(func,arg);
 }
 

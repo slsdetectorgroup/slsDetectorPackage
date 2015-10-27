@@ -9,6 +9,7 @@
 #include "slsReceiverUsers.h"
 #include "slsReceiver.h"
 
+
 #include  <signal.h>	//SIGINT
 #include  <stdlib.h>	//EXIT
 
@@ -401,6 +402,7 @@ int slsReceiverTCPIPInterface::set_detector_type(){
 				}
 			}
 		}
+	}
 	//#ifdef VERBOSE
 	if(ret!=FAIL)
 		cout << "detector type" << dr << endl;
@@ -432,7 +434,7 @@ int slsReceiverTCPIPInterface::set_detector_type(){
 
 int slsReceiverTCPIPInterface::set_file_name() {
 	ret=OK;
-	char* retval[MAX_STR_LENGTH] = NULL;
+	char* retval = NULL;
 	char defaultVal[MAX_STR_LENGTH] = "";
 	char fName[MAX_STR_LENGTH];
 	strcpy(mess,"Could not set file name");
@@ -457,7 +459,7 @@ int slsReceiverTCPIPInterface::set_file_name() {
 		}
 		else{
 			receiverBase->setFileName(fName);
-			retval = receiveBase->getFileName();
+			retval = receiverBase->getFileName();
 			if(retval == NULL)
 				ret = FAIL;
 		}
@@ -526,8 +528,8 @@ int slsReceiverTCPIPInterface::set_file_dir() {
 		}
 		else{
 			receiverBase->setFilePath(fPath);
-			retval = receiveBase->getFilePath();
-			if(reval == NULL){
+			retval = receiverBase->getFilePath();
+			if(retval == NULL){
 				ret = FAIL;
 				strcpy(mess,"receiver file path does not exist\n");
 			}
@@ -741,8 +743,8 @@ int slsReceiverTCPIPInterface::setup_udp(){
 			//set up udp port
 			sscanf(args[1],"%d",&udpport);
 			sscanf(args[2],"%d",&udpport2);
-			receiverBase->setUDPPortNo(udpport);
-			receiverBase->setUDPPortNo2(udpport2);
+			receiverBase->setUDPPortNumber(udpport);
+			receiverBase->setUDPPortNumber2(udpport2);
 			//setup udpip
 			//get ethernet interface or IP to listen to
 			cout << "Ethernet interface is " << args[0] << endl;

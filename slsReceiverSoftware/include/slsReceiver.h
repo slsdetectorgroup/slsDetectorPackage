@@ -62,14 +62,14 @@ class slsReceiver : private virtual slsReceiverDefs {
 	 @param func  callback to be called when starting the acquisition. Its arguments are filepath filename fileindex data size
 	 \returns	   0 callback takes care of open,close,write file; 	   1 callback writes file, we have to open, close it; 2 we open, close, write file, callback does not do anything
 	 */
-	void registerCallBackStartAcquisition(int (*func)(char*, char*,int, int, void*),void *arg);
+	void registerCallBackStartAcquisition(int (*func)(char*, char*,uint64_t, uint32_t, void*),void *arg);
 
 
 	/**
 	  callback argument is
 	  toatal farmes caught
 	 */
-	void registerCallBackAcquisitionFinished(void (*func)(int, void*),void *arg);
+	void registerCallBackAcquisitionFinished(void (*func)(uint64_t, void*),void *arg);
 
 	/**
 	  args to raw data ready callback are
@@ -79,7 +79,7 @@ class slsReceiver : private virtual slsReceiverDefs {
 	  file descriptor
 	  guidatapointer (NULL, no data required)
 	 */
-	void registerCallBackRawDataReady(void (*func)(int, char*, int, FILE*, char*, void*),void *arg);
+	void registerCallBackRawDataReady(void (*func)(uint64_t, char*, uint32_t, FILE*, char*, void*),void *arg);
 
 
  private:

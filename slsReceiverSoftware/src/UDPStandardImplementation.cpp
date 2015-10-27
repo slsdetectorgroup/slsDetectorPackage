@@ -1935,7 +1935,9 @@ void UDPStandardImplementation::processWritingBufferPacketByPacket(int ithread){
 
 			for(int i=0;i<numberofListeningThreads;++i){
 
-				/**Check if ths required*/
+				numberofMissingPackets[i] = 0;
+
+				/**Check if this required*/
 				//dummy done-------------------------------------------------------------------------
 				if(numPackets[i] == dummyPacketValue && frameBufferoffset[i]== (((i+1)*packetsPerFrame/numberofListeningThreads)));
 
@@ -1955,6 +1957,14 @@ void UDPStandardImplementation::processWritingBufferPacketByPacket(int ithread){
 						}
 						threadFrameNumber[i] = (uint32_t)(*( (uint64_t*) packetBuffer_footer));
 						threadFrameNumber[i] +=	(startFrameIndex - 1);
+
+						//update current packet
+						eiger_packet_footer_t* packetBuffer_footer = (eiger_packet_footer_t*)(packetBuffer[i] + footerOffset + HEADER_SIZE_NUM_TOT_PACKETS);
+						currentPacketNumber[i] = *( (uint16_t*) packetBuffer_footer->packetNumber);
+#ifdef DEBUG4
+						cprintf(GREEN,"Fifo %d: Packet has fnum %d, pnum %d, last_packet %d, pnum_offset\n",
+								i,threadFrameNumber[i],currentPacketNumber[i],lastPacketNumber[i],frameBufferoffset[i]);
+#endif
 					}
 
 
@@ -1970,8 +1980,9 @@ void UDPStandardImplementation::processWritingBufferPacketByPacket(int ithread){
 						threadFrameNumber[i] = dummyPacketValue;
 					}
 
-					//wrong packet (dummy (not full) or from next frame))--------------------------------
-					else if (threadFrameNumber[i] != presentFrameNumber){
+					/**check if next frame lastpacket number is actually +1*/
+					//wrong packet & correct (dummy (not full) or from future packet))--------------------------------
+					else{// if ((threadFrameNumber[i] != presentFrameNumber) ||(currentPacketNumber[i] != lastPacketNumber[i] + 1)){
 #ifdef DEBUG4
 						cprintf(GREEN,"Fifo %d: Wrong Packet has fnum %d, (firmware fnum %d), pnum %d, last_packet %d, pnum_offset %d\n",
 								i,presentFrameNumber[i],(uint32_t)(*( (uint64_t*) packetBuffer_footer)),
@@ -1979,20 +1990,12 @@ void UDPStandardImplementation::processWritingBufferPacketByPacket(int ithread){
 						cprintf(RED,"Fifo %d: Add missing packets to the right fnum %d\n",
 								i,presentFrameNumber);
 #endif
-						numberofMissingPackets[i] = (LAST_PACKET_VALUE - lastPacketNumber[i]);
+						if(threadFrameNumber[i] != presentFrameNumber)
+							numberofMissingPackets[i] = (LAST_PACKET_VALUE - lastPacketNumber[i]);
+						else
+							numberofMissingPackets[i] = (currentPacketNumber[i] - lastPacketNumber[i] - 1);
 					}
-					//correct packet (but never dummy frame)-------------------------------------------
-					else{
-						//update current packet
-						eiger_packet_footer_t* packetBuffer_footer = (eiger_packet_footer_t*)(packetBuffer[i] + footerOffset + HEADER_SIZE_NUM_TOT_PACKETS);
-						currentPacketNumber[i] = *( (uint16_t*) packetBuffer_footer->packetNumber);
-#ifdef DEBUG4
-						cprintf(GREEN,"Fifo %d: Correct Packet has fnum %d, pnum %d, last_packet %d, pnum_offset\n",
-								i,threadFrameNumber[i],currentPacketNumber[i],lastPacketNumber[i],frameBufferoffset[i]);
-#endif
-						numberofMissingPackets[i] = (currentPacketNumber[i] - lastPacketNumber[i] - 1);
 
-					}
 
 
 					//add missing packets
@@ -2017,13 +2020,13 @@ void UDPStandardImplementation::processWritingBufferPacketByPacket(int ithread){
 							frameBufferoffset[i]++;
 							blankoffset++;
 						}
-						if(threadFrameNumber[i] != presentFrameNumber){
-							//set fullframe and dont let fifo pop over it
-							fullframe[i] = true;
-							popReady[i] = false;
-						}
-					}
 
+					}
+					if((numPackets[i] == dummyPacketValue) ||(threadFrameNumber[i] != presentFrameNumber)){
+						//set fullframe and dont let fifo pop over it
+						fullframe[i] = true;
+						popReady[i] = false;
+					}
 					//add current packet
 					if(threadFrameNumber[i] == presentFrameNumber){
 						if(currentPacketNumber[i] != (uint32_t)(frameBufferoffset[i]-(i*packetsPerFrame/numberofListeningThreads))+1){
@@ -2053,6 +2056,8 @@ void UDPStandardImplementation::processWritingBufferPacketByPacket(int ithread){
 
 
 				}
+
+				numMissingPackets += numberofMissingPackets[i];
 
 			}
 

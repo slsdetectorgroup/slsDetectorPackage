@@ -1,0 +1,47 @@
+#!/bin/bash
+
+# local variables
+dir=/home/l_msdetect/martin/sls_detectors_package/settingsdir/eiger
+
+# HOSTNAMES is special
+# Beside of the hostname line it also defines the amount of (half) modules
+# for the body part
+# take care for the last space
+HOSTNAMES="beb074 beb071 beb064 beb102 beb087 beb088 beb072 beb073 "
+
+## header contains constant values at the beginning of the file
+header=(
+detsizechan="4096 512"
+)
+
+## the body part is for each half module
+# counters will count automatically
+# the number behind ':' indicates the incrementation value
+
+counters=(
+rx_tcpport="1991:1"
+rx_udpport="50011:2"
+rx_udpport2="50012:2"
+)
+
+# constant values
+constants=(
+rx_hostname="10.1.1.100"
+rx_udpip="10.1.1.100"
+lock=0
+settingsdir=$dir
+caldir=$dir
+)
+
+# lists contains space separated lists each value for each half module
+lists=(
+detectorip="10.1.1.214 10.1.1.213 10.1.1.216 10.1.1.211 10.1.1.215 10.1.1.210 10.1.1.217 10.1.1.212"
+)
+
+
+## footer contains constant values for the end of the file
+footer=(
+outdir=/home/l_msdetect/martin/out
+threaded=1
+)
+

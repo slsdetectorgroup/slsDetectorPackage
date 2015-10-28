@@ -1,0 +1,71 @@
+#!/bin/bash
+
+if [ "$1" == "--help" ]; then
+	echo This tool generates config files.
+	echo Please edit the variables in the script
+	echo and run $0 \> output.config.
+	exit
+fi
+
+if [ "$1" == "" ]; then
+	echo This script generates config files for slsDetector out of config_gen files
+	echo Please specify the config_gen file
+	exit
+fi
+
+. $1
+
+
+function get_name_value
+{
+	name=${1%%=*}
+	value=${1#*=}
+}
+
+function shift_var
+{
+	shifts=$1
+	shift
+	shift $shifts
+	value=$1
+}
+
+
+echo hostname ${HOSTNAMES// /+}
+for i in "${header[@]}"; do 
+	get_name_value "$i"
+	echo $name $value
+done
+
+echo
+
+num=0
+for host in $HOSTNAMES; do
+	for i in "${counters[@]}"; do
+		get_name_value "$i"
+		value2=${value%%:*}
+		inc=${value#*:}
+		echo $num:$name $((value2+$((num*$inc))))
+	done
+
+	for i in "${lists[@]}"; do
+		get_name_value "$i"
+		shift_var $num $value
+		echo $num:$name $value
+	done
+
+	for i in "${constants[@]}"; do
+		get_name_value "$i"
+		echo $num:$name $value
+	done
+	echo
+	num=$((num+1))
+done
+
+for i in "${footer[@]}"; do
+	get_name_value "$i"
+	echo $name $value
+done
+
+exit
+

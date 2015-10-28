@@ -69,11 +69,6 @@ UDPStandardImplementation::~UDPStandardImplementation(){
  *************************************************************************/
 
 /***initial parameters***/
-void UDPStandardImplementation::deleteBaseMembers(){
-	FILE_LOG(logDEBUG1) << __AT__ << " starting";
-
-	UDPBaseImplementation::~UDPBaseImplementation();
-}
 
 void UDPStandardImplementation::deleteMembers(){
 	FILE_LOG(logDEBUG1) << __AT__ << " starting";
@@ -116,7 +111,7 @@ void UDPStandardImplementation::deleteFilter(){
 void UDPStandardImplementation::initializeBaseMembers(){
 	FILE_LOG(logDEBUG1) << __AT__ << " starting";
 
-	UDPBaseImplementation::UDPBaseImplementation();
+	UDPBaseImplementation::initializeMembers();
 	acquisitionPeriod = SAMPLE_TIME_IN_NS;
 }
 
@@ -216,6 +211,7 @@ void UDPStandardImplementation::initializeFilter(){
 	int sign = 1, csize, i;
 
 	//common mode initialization
+	moenchCommonModeSubtraction = NULL;
 	if (commonModeSubtractionEnable){
 		if(myDetectorType == MOENCH)
 			moenchCommonModeSubtraction=new moenchCommonMode();
@@ -244,7 +240,7 @@ void UDPStandardImplementation::initializeFilter(){
 
 	//single photon detector initialization
 	for(i=0; i<numberofWriterThreads; i++)
-		singlePhotonDetectorObject[i]=new singlePhotonDetector<uint16_t>(receiverData[i], csize, sigma, sign, commonModeSubtractionEnable);
+		singlePhotonDetectorObject[i]=new singlePhotonDetector<uint16_t>(receiverData[i], csize, sigma, sign, moenchCommonModeSubtraction);
 }
 
 
@@ -255,7 +251,7 @@ int UDPStandardImplementation::setupFifoStructure(){
 
 	int64_t i;
 	int oldNumberofJobsPerBuffer = numberofJobsPerBuffer;
-	int oldFifoSize = fifoSize;
+	uint32_t oldFifoSize = fifoSize;
 
 	//eiger always listens to 1 packet at a time
 	if(myDetectorType == EIGER){
@@ -349,6 +345,7 @@ int UDPStandardImplementation::setupFifoStructure(){
 		}
 	}
 	cout << "Info: Fifo structure(s) reconstructed" << endl;
+	return OK;
 }
 
 
@@ -458,11 +455,9 @@ void UDPStandardImplementation::setShortFrameEnable(const int i){
 int UDPStandardImplementation::setFrameToGuiFrequency(const uint32_t i){
 	FILE_LOG(logDEBUG1) << __AT__ << " called";
 
-	if(i >= 0){
-		FrameToGuiFrequency = i;
-		if(setupFifoStructure() == FAIL)
-			return FAIL;
-	}
+	FrameToGuiFrequency = i;
+	if(setupFifoStructure() == FAIL)
+		return FAIL;
 
 	cout << "Info: Frame to Gui Frequency set to " << FrameToGuiFrequency << endl;
 
@@ -470,14 +465,12 @@ int UDPStandardImplementation::setFrameToGuiFrequency(const uint32_t i){
 }
 
 
-int UDPStandardImplementation::setAcquisitionPeriod(int64_t i){
+int UDPStandardImplementation::setAcquisitionPeriod(const uint64_t i){
 	FILE_LOG(logDEBUG1) << __AT__ << " called";
 
-	if(i >= 0){
-		acquisitionPeriod = i;
-		if(setupFifoStructure() == FAIL)
-			return FAIL;
-	}
+	acquisitionPeriod = i;
+	if(setupFifoStructure() == FAIL)
+		return FAIL;
 
 	cout << "Info: Acquisition Period set to " << acquisitionPeriod << endl;
 
@@ -488,7 +481,7 @@ int UDPStandardImplementation::setAcquisitionPeriod(int64_t i){
 int UDPStandardImplementation::setDynamicRange(const uint32_t i){
 	FILE_LOG(logDEBUG1) << __AT__ << " called";
 
-	int oldDynamicRange = dynamicRange;
+	uint32_t oldDynamicRange = dynamicRange;
 
 	cout << "Info: Setting Dynamic Range to " << i << endl;
 	dynamicRange = i;
@@ -542,7 +535,7 @@ int UDPStandardImplementation::setDynamicRange(const uint32_t i){
 int UDPStandardImplementation::setTenGigaEnable(const bool b){
 	FILE_LOG(logDEBUG1) << __AT__ << " called";
 
-	cout << "Info: Setting Ten Giga to " << string(b) << endl;
+	cout << "Info: Setting Ten Giga to " << stringEnable(b) << endl;
 	bool oldTenGigaEnable = tengigaEnable;
 	tengigaEnable = b;
 
@@ -603,7 +596,7 @@ int UDPStandardImplementation::setTenGigaEnable(const bool b){
 
 	}
 
-	cout << "Info: Ten Giga " << string(tengigaEnable) << endl;
+	cout << "Info: Ten Giga " << stringEnable(tengigaEnable) << endl;
 
 	return OK;
 }
@@ -621,12 +614,11 @@ int UDPStandardImplementation::setTenGigaEnable(const bool b){
 
 
 /***initial functions***/
-int UDPStandardImplementation::setDetectorType(const slsReceiverDefs::detectorType d){
+int UDPStandardImplementation::setDetectorType(const detectorType d){
 	FILE_LOG(logDEBUG1) << __AT__ << " called";
 
 	cout << "Setting receiver type ..." << endl;
 
-	deleteBaseMembers();
 	deleteMembers();
 	initializeBaseMembers();
 	initializeMembers();
@@ -639,7 +631,7 @@ int UDPStandardImplementation::setDetectorType(const slsReceiverDefs::detectorTy
 	case EIGER:
 	case JUNGFRAUCTB:
 	case JUNGFRAU:
-		cout << "Info: ***** This is a " << slsDetectorBase::getDetectorType(d) << " Receiver *****" << endl;
+		cout << "Info: ***** This is a " << getDetectorType(d) << " Receiver *****" << endl;
 		break;
 	default:
 		cprintf(BG_RED, "Error: This is an unknown receiver type %d\n", (int)d);
@@ -715,6 +707,9 @@ int UDPStandardImplementation::setDetectorType(const slsReceiverDefs::detectorTy
 		fifoSize			= JCTB_FIFO_SIZE;
 		//footerOffset		= Not applicable;
 		break;
+	default:
+		cprintf(BG_RED, "Error: This is an unknown receiver type %d\n", (int)d);
+		return FAIL;
 	}
 
 	//delete threads and set number of listening threads
@@ -745,7 +740,7 @@ int UDPStandardImplementation::setDetectorType(const slsReceiverDefs::detectorTy
 	//allocate for latest data (frame copy for gui)
 	latestData = new char[frameSize];
 
-	cout << " Detector type set to " << slsDetectorBase::getDetectorType(d) << endl;
+	cout << " Detector type set to " << getDetectorType(d) << endl;
 	cout << "Ready..." << endl;
 
 	return OK;
@@ -837,7 +832,7 @@ int UDPStandardImplementation::startReceiver(char *c){
 
 	//For compression, just for gui purposes
 	if(dataCompressionEnable)
-		sprintf(completeFileName, "%s/%s_fxxx_%d_xx.root", filePath,fileName,fileIndex);
+		sprintf(completeFileName, "%s/%s_fxxx_%lld_xx.root", filePath,fileName,(long long int)fileIndex);
 
 	//initialize semaphore to synchronize between writer and gui reader threads
 	sem_init(&writerGuiSemaphore,1,0);
@@ -856,7 +851,7 @@ int UDPStandardImplementation::startReceiver(char *c){
 
 	//usleep(5000000);
 	cout << "Info: Receiver Started." << endl;
-	cout << "Info: Status:" << slsDetectorBase::runStatusType(status) << endl;
+	cout << "Info: Status:" << runStatusType(status) << endl;
 
 	return OK;
 }
@@ -889,7 +884,7 @@ void UDPStandardImplementation::stopReceiver(){
 	pthread_mutex_unlock(&(statusMutex));
 
 	cout << "Info: Receiver Stopped" << endl;
-	cout << "Info: Status:" << slsDetectorBase::runStatusType(status) << endl;
+	cout << "Info: Status:" << runStatusType(status) << endl;
 	cout << endl;
 }
 
@@ -1210,8 +1205,10 @@ int UDPStandardImplementation::createUDPSockets(){
 	FILE_LOG(logDEBUG1) << __AT__ << " called";
 
 	//switching ports if bottom enabled
-	int port[2];
-	port =  udpPortNum;
+	uint32_t port[2];
+	port[0]= udpPortNum[0];
+	port[1]= udpPortNum[1];
+	//port =  udpPortNum;
 	if(bottomEnable){
 		port[0] = udpPortNum[1];
 		port[1] = udpPortNum[0];
@@ -1266,7 +1263,7 @@ int UDPStandardImplementation::setupWriter(){
 	//acquisition start call back returns enable write
 	cbAction = DO_EVERYTHING;
 	if (startAcquisitionCallBack)
-		cbAction=startAcquisitionCallBack(filePath,fileName,fileIndex,bufferSize,pStartAcquisition);
+		cbAction=startAcquisitionCallBack(filePath,fileName,(int)fileIndex,bufferSize,pStartAcquisition);
 
 	if(cbAction < DO_EVERYTHING){
 		cout << "Info: Call back activated. Data saving must be taken care of by user in call back." << endl;
@@ -1318,11 +1315,11 @@ int UDPStandardImplementation::createNewFile(){
 
 	//create file name
 	if(!frameIndexEnable)
-		sprintf(completeFileName, "%s/%s_%d.raw", filePath,fileName,fileIndex);
+		sprintf(completeFileName, "%s/%s_%lld.raw", filePath,fileName,(long long int)fileIndex);
 	else if (myDetectorType == EIGER)
-		sprintf(completeFileName, "%s/%s_f%012d_%d.raw", filePath,fileName,currentFrameNumber,fileIndex);
+		sprintf(completeFileName, "%s/%s_f%012lld_%lld.raw", filePath,fileName,(long long int)currentFrameNumber,(long long int)fileIndex);
 	else
-		sprintf(completeFileName, "%s/%s_f%012d_%d.raw", filePath,fileName,(packetsCaught/packetsPerFrame),fileIndex);
+		sprintf(completeFileName, "%s/%s_f%012lld_%lld.raw", filePath,fileName,(long long int)(packetsCaught/packetsPerFrame),(long long int)fileIndex);
 
 #ifdef DEBUG4
 	cout << "Info: " << completefileName << endl;
@@ -1534,7 +1531,7 @@ int UDPStandardImplementation::prepareAndListenBuffer(int ithread, int lSize, in
 	//throw away packets that is not one packet size, need to check status if socket is shut down
 	while(status != TRANSMITTING && myDetectorType == EIGER && receivedSize != onePacketSize) {
 		if(receivedSize != EIGER_HEADER_LENGTH)
-			cprintf(RED,"Listening_Thread %d: Listened to a weird packet size %d\n",receivedSize);
+			cprintf(RED,"Listening_Thread %d: Listened to a weird packet size %d\n",ithread, receivedSize);
 #ifdef DEBUG
 		else
 			cprintf(BLUE,"Listening_Thread %d: Listened to a header packet\n",ithread);
@@ -1576,11 +1573,11 @@ void UDPStandardImplementation::startFrameIndices(int ithread){
 	if(!acqStarted){
 		startAcquisitionIndex = startFrameIndex;
 		acqStarted = true;
-		cprintf(BLUE,"Info: Thread %d: startAcquisitionIndex:%d\n",ithread,startAcquisitionIndex);
+		cprintf(BLUE,"Info: Thread %d: startAcquisitionIndex:%lld\n",ithread,(long long int)startAcquisitionIndex);
 	}
 
 	//set start of scan/real time measurement
-	cprintf(BLUE,"Info: Thread %d: startFrameIndex: %d\n", ithread,startFrameIndex);
+	cprintf(BLUE,"Info: Thread %d: startFrameIndex: %lld\n", ithread,(long long int)startFrameIndex);
 	measurementStarted = true;
 }
 
@@ -1593,7 +1590,7 @@ void UDPStandardImplementation::startFrameIndices(int ithread){
 void UDPStandardImplementation::stopListening(int ithread, int numbytes){
 	FILE_LOG(logDEBUG1) << __AT__ << " called";
 
-	cout << "Info: Stop Listening. Status:" << slsDetectorBase::runStatusType(status) << endl;
+	cout << "Info: Stop Listening. Status:" << runStatusType(status) << endl;
 
 
 	//less than 1 packet size (especially for eiger), ignore the buffer (so that 2 dummy buffers are not sent with pc=0)
@@ -1672,7 +1669,7 @@ uint32_t UDPStandardImplementation::processListeningBuffer(int ithread, int cSiz
 	FILE_LOG(logDEBUG1) << __AT__ << " called";
 
 	int lastPacketOffset;		//the offset of the last packet
-	int lastFrameHeader;		//frame number of last packet in buffer
+	uint32_t lastFrameHeader;		//frame number of last packet in buffer
 	uint32_t packetCount = (packetsPerFrame/numberofListeningThreads) * numberofJobsPerBuffer;		//packets received
 	cSize = 0;					//reset size
 
@@ -1735,8 +1732,8 @@ uint32_t UDPStandardImplementation::processListeningBuffer(int ithread, int cSiz
 		break;
 
 	default:
-		cprintf(RED,"Listening_Thread %d: Error: This detector is not implemented in the receiver" +
-				slsDetectorBase::getDetectorType(myDetectorType).c_str() + "\n");
+		cprintf(RED,"Listening_Thread %d: Error: This detector %s is not implemented in the receiver\n",
+				ithread, getDetectorType(myDetectorType).c_str());
 		break;
 	}
 
@@ -1779,7 +1776,7 @@ void UDPStandardImplementation::processWritingBuffer(int ithread){
 	//variable definitions
 	char* wbuf[numberofListeningThreads];				//buffer popped from FIFO
 	sfilefd = NULL;										//file pointer
-	int nf;												//for compression, number of frames
+	uint64_t nf;												//for compression, number of frames
 
 
 	/* outer loop - loops once for each acquisition */
@@ -1799,7 +1796,7 @@ void UDPStandardImplementation::processWritingBuffer(int ithread){
 #ifdef FIFODEBUG
 			cprintf(GREEN,"Writing_Thread %d: Popped %p from FIFO %d\n", ithread, (void*)(wbuf[0]),0);
 #endif
-			int numPackets = (uint32_t)(*((uint32_t*)wbuf[0]));
+			uint32_t numPackets = (uint32_t)(*((uint32_t*)wbuf[0]));
 			if(numPackets < 0)
 				cprintf(BG_RED,"Error: Negative packet numbers: %d for FIFO %d\n",numPackets,0);
 #ifdef DEBUG4
@@ -1896,7 +1893,7 @@ void UDPStandardImplementation::processWritingBufferPacketByPacket(int ithread){
 		//blank frame - initializing with missing packet values
 		blankoffset = 0;
 		unsigned char* blankframe_data=0;
-		for(int i=0; i<packetsPerFrame; ++i){
+		for(uint32_t i=0; i<packetsPerFrame; ++i){
 			if(blankframe[i]){delete [] blankframe[i]; blankframe[i] = 0;}
 			blankframe[i] = new char[onePacketSize];
 			//set missing packet to 0xff
@@ -1924,7 +1921,7 @@ void UDPStandardImplementation::processWritingBufferPacketByPacket(int ithread){
 				cprintf(GREEN,"Writing_Thread All dummy-end buffers popped\n", ithread);
 #endif
 				//finish missing packets
-				if(((frameBufferoffset[0]!=0) || (frameBufferoffset[1]!=(packetsPerFrame/numberofListeningThreads))));
+				if(((frameBufferoffset[0]!=0) || (frameBufferoffset[1]!=((int)packetsPerFrame/numberofListeningThreads))));
 				else{
 					stopWriting(ithread,packetBuffer);
 					continue;
@@ -1939,7 +1936,7 @@ void UDPStandardImplementation::processWritingBufferPacketByPacket(int ithread){
 
 
 				//dummy done-----------------------------------------------------------------------------------------------------------
-				if(numPackets[i] == dummyPacketValue && frameBufferoffset[i] == (((i+1)*packetsPerFrame/numberofListeningThreads)))
+				if(numPackets[i] == dummyPacketValue && frameBufferoffset[i] == (((i+1)*(int)packetsPerFrame/numberofListeningThreads)))
 					continue;
 
 
@@ -1953,8 +1950,7 @@ void UDPStandardImplementation::processWritingBufferPacketByPacket(int ithread){
 					//update frame number and packet number
 					if(numPackets[i] != dummyPacketValue){
 						if(!((uint32_t)(*( (uint64_t*) packetBuffer_footer)))){
-							cprintf(BG_RED,"Fifo %d: Error: Frame Number is zero from firmware. popready[%d]:%d\n",
-									i,(uint32_t)(*( (uint64_t*) packetBuffer_footer)),i,popReady[i]);
+							cprintf(BG_RED,"Fifo %d: Error: Frame Number is zero from firmware. popready[%d]:%d\n",i,i,popReady[i]);
 							popReady[i]=true;
 							continue;
 						}
@@ -2065,7 +2061,7 @@ void UDPStandardImplementation::processWritingBufferPacketByPacket(int ithread){
 
 			//full frame
 			if(fullframe[0] && fullframe[1]){
-				currentPacketNumber = presentFrameNumber;
+				currentFrameNumber = presentFrameNumber;
 				numTotMissingPacketsInFile += numMissingPackets;
 				numTotMissingPackets += numMissingPackets;
 #ifdef FNUM_DEBUG
@@ -2307,22 +2303,21 @@ void UDPStandardImplementation::stopWriting(int ithread, char* wbuffer[]){
 			cprintf(RED, "Total Frames Caught: 0\n");
 		}else{
 			cprintf(GREEN, "Total Missing Packets padded:%d\n",numTotMissingPackets);
-			cprintf(GREEN, "Total Packets Caught:%d\n", totalPacketsCaught);
-			cprintf(GREEN, "Total Frames Caught:%d\n",(totalPacketsCaught/packetsPerFrame));
+			cprintf(GREEN, "Total Packets Caught:%lld\n", (long long int)totalPacketsCaught);
+			cprintf(GREEN, "Total Frames Caught:%lld\n",(long long int)(totalPacketsCaught/packetsPerFrame));
 		}
 		//acquisition end
 		if (acquisitionFinishedCallBack)
-			acquisitionFinishedCallBack((totalPacketsCaught/packetsPerFrame), pAcquisitionFinished);
+			acquisitionFinishedCallBack((int)(totalPacketsCaught/packetsPerFrame), pAcquisitionFinished);
 	}
 }
 
 
 
 
-void UDPStandardImplementation::handleWithoutDataCompression(int ithread, char* wbuffer[],int npackets){
+void UDPStandardImplementation::handleWithoutDataCompression(int ithread, char* wbuffer[],uint32_t npackets){
 	FILE_LOG(logDEBUG1) << __AT__ << " called";
 
-	int i;
 
 	//get frame number (eiger already gets it when it does packet to packet processing)
 	if (myDetectorType != EIGER){
@@ -2342,11 +2337,11 @@ void UDPStandardImplementation::handleWithoutDataCompression(int ithread, char* 
 	if (cbAction < DO_EVERYTHING){
 		switch(myDetectorType){
 		case EIGER:
-			for(i=0;i<npackets;++i)
-				rawDataReadyCallBack(currentFrameNumber, wbuffer[i], onePacketSize, sfilefd, guiData, pRawDataReady);
+			for(uint32_t i=0;i<npackets;++i)
+				rawDataReadyCallBack((int)currentFrameNumber, wbuffer[i], onePacketSize, sfilefd, guiData, pRawDataReady);
 			break;
 		default:
-			rawDataReadyCallBack(currentFrameNumber, wbuffer[0] + HEADER_SIZE_NUM_TOT_PACKETS, npackets * onePacketSize,
+			rawDataReadyCallBack((int)currentFrameNumber, wbuffer[0] + HEADER_SIZE_NUM_TOT_PACKETS, npackets * onePacketSize,
 					sfilefd, guiData,pRawDataReady);
 			break;
 		}
@@ -2380,10 +2375,9 @@ void UDPStandardImplementation::handleWithoutDataCompression(int ithread, char* 
 
 
 
-void UDPStandardImplementation::writeFileWithoutCompression(char* wbuffer[],int numpackets){
+void UDPStandardImplementation::writeFileWithoutCompression(char* wbuffer[],uint32_t numpackets){
 	FILE_LOG(logDEBUG1) << __AT__ << " called";
 
-	int i;
 
 	//create headers for eiger
 #ifdef WRITE_HEADERS
@@ -2394,7 +2388,7 @@ void UDPStandardImplementation::writeFileWithoutCompression(char* wbuffer[],int 
 	//if write enabled
 	if((fileWriteEnable) && (sfilefd)){
 		int offset = HEADER_SIZE_NUM_TOT_PACKETS; 		//offset (not eiger) to keep track of how many packets saved
-		int packetsToSave;								//how many packets to save at a time
+		uint32_t packetsToSave;								//how many packets to save at a time
 		volatile uint64_t tempframenumber;
 		int lastpacket;
 
@@ -2410,7 +2404,7 @@ void UDPStandardImplementation::writeFileWithoutCompression(char* wbuffer[],int 
 			if(cbAction == DO_EVERYTHING){
 				switch(myDetectorType){
 				case EIGER:
-					for(i=0; i<packetsToSave; ++i)
+					for(uint32_t i=0; i<packetsToSave; ++i)
 						fwrite((void*)wbuffer[i], 1, onePacketSize, sfilefd);
 					break;
 				default:
@@ -2484,7 +2478,7 @@ void UDPStandardImplementation::createHeaders(char* wbuffer[]){
 	eiger_packet_footer_t* wbuf_footer=0;
 	int port = 0, missingPacket;
 
-	for (int i = 0; i < packetsPerFrame; i++){
+	for (uint32_t i = 0; i < packetsPerFrame; i++){
 
 		wbuf_header = (eiger_packet_header_t*) wbuffer[i];
 		wbuf_footer = (eiger_packet_footer_t*)(wbuffer[i] + footerOffset);
@@ -2512,8 +2506,9 @@ void UDPStandardImplementation::createHeaders(char* wbuffer[]){
 		}
 		//DEBUGGING
 		if(*( (uint16_t*) wbuf_footer->packetNumber) != (i+1)){
-			cprintf(BG_RED, "Packet Number Mismatch! i:%d pnum:%d fnum:%d missingPacket:%d\n",
-					i,*( (uint16_t*) wbuf_footer->packetNumber),currentFrameNumber,*( (uint16_t*) wbuf_header->missingPacket));
+			cprintf(BG_RED, "Writing_Thread: Packet Number Mismatch! "
+					"i %d, pnum %d, fnum %lld, missingPacket 0x%x\n",
+					i,*( (uint16_t*) wbuf_footer->packetNumber),(long long int)currentFrameNumber,*( (uint16_t*) wbuf_header->missingPacket));
 			exit(-1);
 		}
 		//overwriting port number and dynamic range
@@ -2526,7 +2521,6 @@ void UDPStandardImplementation::createHeaders(char* wbuffer[]){
 void UDPStandardImplementation::copyFrameToGui(char* buffer[]){
 	FILE_LOG(logDEBUG1) << __AT__ << " called";
 
-	int i;
 
 	//random read (gui not ready)
 	//need to toggle guiDataReady or the second frame wont be copied
@@ -2551,7 +2545,7 @@ void UDPStandardImplementation::copyFrameToGui(char* buffer[]){
 #endif
 		switch(myDetectorType){
 		case EIGER:
-			for(int i=0; i<packetsPerFrame; ++i)
+			for(uint32_t i=0; i<packetsPerFrame; ++i)
 				memcpy((((char*)latestData)+i * onePacketSize) ,buffer[i],onePacketSize);
 			break;
 		default:
@@ -2584,7 +2578,7 @@ void UDPStandardImplementation::copyFrameToGui(char* buffer[]){
 
 
 
-void UDPStandardImplementation::handleDataCompression(int ithread, char* wbuffer[], int &nf){
+void UDPStandardImplementation::handleDataCompression(int ithread, char* wbuffer[], uint64_t &nf){
 	FILE_LOG(logDEBUG1) << __AT__ << " called";
 
 	//frame number
@@ -2605,11 +2599,11 @@ void UDPStandardImplementation::handleDataCompression(int ithread, char* wbuffer
 
 
 	//variable definitions
-	char* buff[2] = 0;										//an array just to be compatible with copyframetogui
+	char* buff[2]={0,0};										//an array just to be compatible with copyframetogui
 	char* data = wbuffer[0]+ HEADER_SIZE_NUM_TOT_PACKETS;	//data pointer to the next memory to be analysed
 	int ndata;												//size of data returned
-	int np;													//remaining number of packets returned
-	int npackets = (uint32_t)(*((uint32_t*)wbuffer[0]));	//number of total packets
+	uint32_t np;													//remaining number of packets returned
+	uint32_t npackets = (uint32_t)(*((uint32_t*)wbuffer[0]));	//number of total packets
 	int remainingsize = npackets * onePacketSize;			//size of the memory slot to be analyzed
 
 	eventType thisEvent = PEDESTAL;
@@ -2632,6 +2626,8 @@ void UDPStandardImplementation::handleDataCompression(int ithread, char* wbuffer
 			xmax = GOTTHARD_SHORT_PIXELS_IN_ROW-1;
 			ymax = GOTTHARD_SHORT_PIXELS_IN_COL-1;
 		}
+		break;
+	default:
 		break;
 	}
 

@@ -21,6 +21,20 @@ using namespace std;
 UDPBaseImplementation::UDPBaseImplementation(){
 	FILE_LOG(logDEBUG) << __AT__ << " starting";
 
+	initializeMembers();
+
+	//***callback parameters***
+	startAcquisitionCallBack = NULL;
+	pStartAcquisition = NULL;
+	acquisitionFinishedCallBack = NULL;
+	pAcquisitionFinished = NULL;
+	rawDataReadyCallBack = NULL;
+	pRawDataReady = NULL;
+}
+
+void UDPBaseImplementation::initializeMembers(){
+	FILE_LOG(logDEBUG) << __AT__ << " starting";
+
 	cout << "Info: Initializing base members" << endl;
 	//**detector parameters***
 	myDetectorType = GENERIC;
@@ -61,21 +75,9 @@ UDPBaseImplementation::UDPBaseImplementation(){
 	//***acquisition parameters***
 	shortFrameEnable = -1;
 	FrameToGuiFrequency = 0;
-
-	//***callback parameters***
-	startAcquisitionCallBack = NULL;
-	pStartAcquisition = NULL;
-	acquisitionFinishedCallBack = NULL;
-	pAcquisitionFinished = NULL;
-	rawDataReadyCallBack = NULL;
-	pRawDataReady = NULL;
 }
 
-UDPBaseImplementation::~UDPBaseImplementation(){
-	FILE_LOG(logDEBUG) << __AT__ << " starting";
-
-	cout << "Info: Deleting base member pointers" << endl;
-}
+UDPBaseImplementation::~UDPBaseImplementation(){}
 
 
 /*************************************************************************
@@ -364,12 +366,12 @@ int UDPBaseImplementation::setTenGigaEnable(const bool b){
 
 
 /***initial functions***/
-int UDPBaseImplementation::setDetectorType(const slsReceiverDefs::detectorType d){
+int UDPBaseImplementation::setDetectorType(const detectorType d){
 	FILE_LOG(logDEBUG) << __AT__ << " starting";
 
 	myDetectorType = d;
 	//if eiger, set numberofListeningThreads = 2;
-	FILE_LOG(logINFO) << "Detector Type:" << slsDetectorBase::getDetectorType(d);
+	FILE_LOG(logINFO) << "Detector Type:" << getDetectorType(d);
 	return OK;
 }
 
@@ -409,6 +411,9 @@ void UDPBaseImplementation::startReadout(){
 int UDPBaseImplementation::shutDownUDPSockets(){
 	FILE_LOG(logWARNING) << __AT__ << " doing nothing...";
 	FILE_LOG(logERROR) << __AT__ << " must be overridden by child classes";
+
+	//overridden functions might return FAIL
+	return OK;
 }
 
 void UDPBaseImplementation::readFrame(char* c,char** raw, uint64_t &startAcquisitionIndex, uint64_t &startFrameIndex){
@@ -429,17 +434,17 @@ void UDPBaseImplementation::closeFile(int i){
 
 
 /***callback functions***/
-void UDPBaseImplementation::registerCallBackStartAcquisition(int (*func)(char*, char*,uint64_t, uint32_t, void*),void *arg){
+void UDPBaseImplementation::registerCallBackStartAcquisition(int (*func)(char*, char*,int, int, void*),void *arg){
 	startAcquisitionCallBack=func;
 	pStartAcquisition=arg;
 }
 
-void UDPBaseImplementation::registerCallBackAcquisitionFinished(void (*func)(uint64_t, void*),void *arg){
+void UDPBaseImplementation::registerCallBackAcquisitionFinished(void (*func)(int, void*),void *arg){
 	acquisitionFinishedCallBack=func;
 	pAcquisitionFinished=arg;
 }
 
-void UDPBaseImplementation::registerCallBackRawDataReady(void (*func)(uint64_t, char*, uint32_t, FILE*, char*, void*),void *arg){
+void UDPBaseImplementation::registerCallBackRawDataReady(void (*func)(int, char*, int, FILE*, char*, void*),void *arg){
 	rawDataReadyCallBack=func;
 	pRawDataReady=arg;
 }

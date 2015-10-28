@@ -33,6 +33,10 @@ class UDPBaseImplementation : protected virtual slsReceiverDefs, public UDPInter
 	 */
 	virtual ~UDPBaseImplementation();
 
+	/*
+	 * Initialize class members
+	 */
+	void initializeMembers();
 
 	/*************************************************************************
 	 * Getters ***************************************************************
@@ -180,7 +184,7 @@ class UDPBaseImplementation : protected virtual slsReceiverDefs, public UDPInter
 	 * Get Listening Status of Receiver
 	 * @return can be idle, listening or error depending on if the receiver is listening or not
 	 */
-	slsReceiverDefs::runStatus getStatus() const;
+	runStatus getStatus() const;
 
 
 
@@ -334,7 +338,7 @@ class UDPBaseImplementation : protected virtual slsReceiverDefs, public UDPInter
 	 * @param d detector type
 	 * @return OK or FAIL
 	 */
-	int setDetectorType(const slsReceiverDefs::detectorType d);
+	int setDetectorType(const detectorType d);
 
 	/**
 	 * Sets detector hostname (and corresponding detector variables in derived REST class)
@@ -413,14 +417,14 @@ class UDPBaseImplementation : protected virtual slsReceiverDefs, public UDPInter
 	 * 1 callback writes file, we have to open, close it
 	 * 2 we open, close, write file, callback does not do anything
 	 */
-	void registerCallBackStartAcquisition(int (*func)(char*, char*,uint64_t, uint32_t, void*),void *arg);
+	void registerCallBackStartAcquisition(int (*func)(char*, char*,int, int, void*),void *arg);
 
 	/**
 	 * Call back for acquisition finished
 	 * callback argument is
 	 * total frames caught
 	 */
-	void registerCallBackAcquisitionFinished(void (*func)(uint64_t, void*),void *arg);
+	void registerCallBackAcquisitionFinished(void (*func)(int, void*),void *arg);
 
 	/**
 	 * Call back for raw data
@@ -431,7 +435,7 @@ class UDPBaseImplementation : protected virtual slsReceiverDefs, public UDPInter
 	 * file descriptor
 	 * guidatapointer (NULL, no data required)
 	 */
-	void registerCallBackRawDataReady(void (*func)(uint64_t, char*, uint32_t, FILE*, char*, void*),void *arg);
+	void registerCallBackRawDataReady(void (*func)(int, char*, int, FILE*, char*, void*),void *arg);
 
 
 

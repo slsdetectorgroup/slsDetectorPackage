@@ -61,7 +61,7 @@ public:
 
 	*/
 	
-	void registerCallBackStartAcquisition(int (*func)(char* filepath, char* filename,uint64_t fileindex, uint32_t datasize, void*),void *arg);
+	void registerCallBackStartAcquisition(int (*func)(char* filepath, char* filename,int fileindex, int datasize, void*),void *arg);
 
 
 	/**	
@@ -71,7 +71,7 @@ public:
 	*/
 	
 	
-	void registerCallBackAcquisitionFinished(void (*func)(uint64_t nf, void*),void *arg);
+	void registerCallBackAcquisitionFinished(void (*func)(int nf, void*),void *arg);
 	
 
 
@@ -81,7 +81,7 @@ public:
 	  \returns nothing
 	*/
 	
-	void registerCallBackRawDataReady(void (*func)(uint64_t framenumber, char* datapointer, uint32_t datasize, FILE* filedescriptor, char* guidatapointer, void*),void *arg);
+	void registerCallBackRawDataReady(void (*func)(int framenumber, char* datapointer, int datasize, FILE* filedescriptor, char* guidatapointer, void*),void *arg);
 
 	// made static to close thread files with ctrl+c
 	static slsReceiver* receiver;

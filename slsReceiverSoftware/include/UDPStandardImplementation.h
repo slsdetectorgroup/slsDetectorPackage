@@ -136,7 +136,7 @@ class UDPStandardImplementation: private virtual slsReceiverDefs, public UDPBase
 	 * @param d detector type
 	 * @return OK or FAIL
 	 */
-	int setDetectorType(const slsReceiverDefs::detectorType d);
+	int setDetectorType(const detectorType d);
 
 	//***acquisition functions***
 	/**
@@ -213,11 +213,6 @@ private:
 */
 
 	//**initial parameters***
-
-	/**
-	 * Delete and free base member parameters
-	 */
-    void deleteBaseMembers();
 
     /**
 	 * Delete and free member parameters
@@ -409,7 +404,7 @@ private:
 	 * @param wbuffer writing buffer popped out from FIFO
 	 * @param npackets number of packets
 	 */
-	void handleWithoutDataCompression(int ithread, char* wbuffer[],int npackets);
+	void handleWithoutDataCompression(int ithread, char* wbuffer[],uint32_t npackets);
 
 	/**
 	 * Calle by handleWithoutDataCompression
@@ -417,7 +412,7 @@ private:
 	 * @param wbuffer is the address of buffer popped out of FIFO
 	 * @param numpackets is the number of packets
 	 */
-	void writeFileWithoutCompression(char* wbuffer[],int numpackets);
+	void writeFileWithoutCompression(char* wbuffer[],uint32_t numpackets);
 
 	/**
 	 * Called by writeToFileWithoutCompression
@@ -449,7 +444,7 @@ private:
 	 * @param wbuffer writer buffer
 	 * @param nf number of frames
 	 */
-	void handleDataCompression(int ithread, char* wbuffer[], int &nf);
+	void handleDataCompression(int ithread, char* wbuffer[], uint64_t &nf);
 
 
 

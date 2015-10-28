@@ -185,7 +185,7 @@ void slsReceiverTCPIPInterface::startTCPServer(){
 #ifdef VERYVERBOSE
 	cout << "Starting Receiver TCP Server" << endl;
 #endif
-	int v=slsReceiverDefs::OK;
+	int v=OK;
 
 	while(1) {
 #ifdef VERBOSE
@@ -832,7 +832,7 @@ int slsReceiverTCPIPInterface::start_receiver(){
 		if(s == IDLE)
 			ret=receiverBase->startReceiver(mess);
 		else{
-			sprintf(mess,"Cannot start Receiver as it is in %s state\n",slsDetectorBase::runStatusType(s).c_str());
+			sprintf(mess,"Cannot start Receiver as it is in %s state\n",runStatusType(s).c_str());
 			ret=FAIL;
 		}
 	}
@@ -878,7 +878,7 @@ int slsReceiverTCPIPInterface::stop_receiver(){
 		if(s==IDLE)
 			ret = OK;
 		else{
-			sprintf(mess,"Could not stop receiver. It is in %s state\n",slsDetectorBase::runStatusType(s).c_str());
+			sprintf(mess,"Could not stop receiver. It is in %s state\n",runStatusType(s).c_str());
 			ret = FAIL;
 		}
 	}
@@ -1138,8 +1138,8 @@ int	slsReceiverTCPIPInterface::moench_read_frame(){
 
 	char* raw 		= new char[bufferSize];
 
-	uint32_t startAcquisitionIndex=0;
-	uint32_t startFrameIndex=0;
+	uint64_t startAcquisitionIndex=0;
+	uint64_t startFrameIndex=0;
 	uint32_t index = -1,bindex = 0, offset=0;
 
 	strcpy(mess,"Could not read frame\n");
@@ -1327,8 +1327,8 @@ int	slsReceiverTCPIPInterface::gotthard_read_frame(){
 	uint32_t index=-1,index2=0;
 	uint32_t pindex=0,pindex2=0;
 	uint32_t bindex=0,bindex2=0;
-	uint32_t startAcquisitionIndex=0;
-	uint32_t startFrameIndex=0;
+	uint64_t startAcquisitionIndex=0;
+	uint64_t startFrameIndex=0;
 
 	strcpy(mess,"Could not read frame\n");
 
@@ -1502,8 +1502,8 @@ int	slsReceiverTCPIPInterface::propix_read_frame(){
 	uint32_t index=-1,index2=0;
 	uint32_t pindex=0,pindex2=0;
 	uint32_t bindex=0,bindex2=0;
-	uint32_t startAcquisitionIndex=0;
-	uint32_t startFrameIndex=0;
+	uint64_t startAcquisitionIndex=0;
+	uint64_t startFrameIndex=0;
 
 	strcpy(mess,"Could not read frame\n");
 
@@ -1670,8 +1670,8 @@ int	slsReceiverTCPIPInterface::eiger_read_frame(){
 	char* raw 		= new char[frameSize];
 	char* origVal 	= new char[frameSize];
 	char* retval 	= new char[dataSize];
-	uint32_t startAcquisitionIndex=0;
-	uint32_t startFrameIndex=0;
+	uint64_t startAcquisitionIndex=0;
+	uint64_t startFrameIndex=0;
 	strcpy(mess,"Could not read frame\n");
 
 
@@ -2111,11 +2111,11 @@ int slsReceiverTCPIPInterface::set_timer() {
 			ret=FAIL;
 		}
 		else{
-			if(index[0] == slsReceiverDefs::FRAME_PERIOD){
+			if(index[0] == FRAME_PERIOD){
 				if(index[1]>=0){
 					ret = receiverBase->setAcquisitionPeriod(index[1]);
 					if(ret == FAIL)
-						strcpy(mess,"Could not allocate memory for listening fifo\n")
+						strcpy(mess,"Could not allocate memory for listening fifo\n");
 				}
 				retval=receiverBase->getAcquisitionPeriod();
 			}else{
@@ -2129,7 +2129,7 @@ int slsReceiverTCPIPInterface::set_timer() {
 	}
 #ifdef VERBOSE
 	if(ret!=FAIL){
-		if(index[0] == slsReceiverDefs::FRAME_PERIOD)
+		if(index[0] == FRAME_PERIOD)
 			cout << "acquisition period:" << retval << endl;
 		else
 			cout << "frame number:" << retval << endl;

@@ -407,7 +407,7 @@ class UDPInterface {
 	/**
 	 * Reset acquisition parameters such as total frames caught for an entire acquisition (including all scans)
 	 */
-	void resetAcquisitionCount();
+	virtual void resetAcquisitionCount() = 0;
 
 	/**
 	 * Start Listening for Packets by activating all configuration settings to receiver
@@ -471,14 +471,14 @@ class UDPInterface {
 	 * 1 callback writes file, we have to open, close it
 	 * 2 we open, close, write file, callback does not do anything
 	 */
-	virtual void registerCallBackStartAcquisition(int (*func)(char*, char*,uint64_t, uint32_t, void*),void *arg) = 0;
+	virtual void registerCallBackStartAcquisition(int (*func)(char*, char*,int, int, void*),void *arg) = 0;
 
 	/**
 	 * Call back for acquisition finished
 	 * callback argument is
 	 * total frames caught
 	 */
-	virtual void registerCallBackAcquisitionFinished(void (*func)(uint64_t, void*),void *arg) = 0;
+	virtual void registerCallBackAcquisitionFinished(void (*func)(int, void*),void *arg) = 0;
 
 	/**
 	 * Call back for raw data
@@ -489,7 +489,7 @@ class UDPInterface {
 	 * file descriptor
 	 * guidatapointer (NULL, no data required)
 	 */
-	virtual void registerCallBackRawDataReady(void (*func)(uint64_t, char*, uint32_t, FILE*, char*, void*),void *arg) = 0;
+	virtual void registerCallBackRawDataReady(void (*func)(int, char*, int, FILE*, char*, void*),void *arg) = 0;
 
 
  protected:

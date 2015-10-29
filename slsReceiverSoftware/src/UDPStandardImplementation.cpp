@@ -850,7 +850,7 @@ int UDPStandardImplementation::startReceiver(char *c){
 
 	//usleep(5000000);
 	cout << "Receiver Started" << endl;
-	cout << "Status:" << runStatusType(status) << endl;
+	cout << "Status: " << runStatusType(status) << endl;
 
 	return OK;
 }
@@ -883,7 +883,7 @@ void UDPStandardImplementation::stopReceiver(){
 	pthread_mutex_unlock(&(statusMutex));
 
 	cout << "Receiver Stopped" << endl;
-	cout << "Status:" << runStatusType(status) << endl;
+	cout << "Status: " << runStatusType(status) << endl;
 	cout << endl;
 }
 
@@ -1579,7 +1579,7 @@ void UDPStandardImplementation::stopListening(int ithread, int numbytes){
 	FILE_LOG(logDEBUG1) << __AT__ << " called";
 
 #ifdef DEBUG4
-	cprintf(BLUE,"Listening_Thread %d: Stop Listening\nStatus:%s\n", ithread, runStatusType(status).c_str());
+	cprintf(BLUE,"Listening_Thread %d: Stop Listening\nStatus: %s\n", ithread, runStatusType(status).c_str());
 #endif
 
 	//less than 1 packet size (especially for eiger), ignore the buffer (so that 2 dummy buffers are not sent with pc=0)

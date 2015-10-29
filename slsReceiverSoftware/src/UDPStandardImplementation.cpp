@@ -884,7 +884,7 @@ void UDPStandardImplementation::stopReceiver(){
 
 	cout << "Receiver Stopped" << endl;
 	cout << "Status: " << runStatusType(status) << endl;
-	cout << endl;
+	cout << endl << endl;
 }
 
 

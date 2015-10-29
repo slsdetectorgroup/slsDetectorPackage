@@ -2281,10 +2281,10 @@ void UDPStandardImplementation::stopWriting(int ithread, char* wbuffer[]){
 
 		//statistics
 		cprintf(GREEN, "Status: Run Finished\n");
-		if((long long int)(totalPacketsCaught/packetsPerFrame) == 0){
+		if(numTotMissingPackets){
 			cprintf(RED, "Total Missing Packets padded: %d\n",numTotMissingPackets);
 			cprintf(RED, "Total Packets Caught: %lld\n",(long long int)totalPacketsCaught);
-			cprintf(RED, "Total Frames Caught: 0\n");
+			cprintf(RED, "Total Frames Caught: %lld\n",(long long int)(totalPacketsCaught/packetsPerFrame));
 		}else{
 			cprintf(GREEN, "Total Missing Packets padded: %d\n",numTotMissingPackets);
 			cprintf(GREEN, "Total Packets Caught:%lld\n", (long long int)totalPacketsCaught);

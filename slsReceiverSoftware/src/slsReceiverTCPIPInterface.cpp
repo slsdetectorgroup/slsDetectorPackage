@@ -125,14 +125,14 @@ int slsReceiverTCPIPInterface::setPortNumber(int pn){
 
 
 int slsReceiverTCPIPInterface::start(){
-	cout << "Creating TCP Server Thread" << endl;
+	FILE_LOG(logDEBUG1) << "Creating TCP Server Thread" << endl;
 	killTCPServerThread = 0;
 	if(pthread_create(&TCPServer_thread, NULL,startTCPServerThread, (void*) this)){
 		cout << "Could not create TCP Server thread" << endl;
 		return FAIL;
 	}
 	//#ifdef VERBOSE
-	cout << "TCP Server thread created successfully." << endl;
+	FILE_LOG(logDEBUG1) << "TCP Server thread created successfully." << endl;
 	//#endif
 	return OK;
 }

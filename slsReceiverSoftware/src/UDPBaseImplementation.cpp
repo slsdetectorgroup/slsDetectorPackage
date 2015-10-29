@@ -35,7 +35,7 @@ UDPBaseImplementation::UDPBaseImplementation(){
 void UDPBaseImplementation::initializeMembers(){
 	FILE_LOG(logDEBUG) << __AT__ << " starting";
 
-	cout << "Info: Initializing base members" << endl;
+	FILE_LOG(logDEBUG1) << "Info: Initializing base members" << endl;
 	//**detector parameters***
 	myDetectorType = GENERIC;
 	strcpy(detHostname,"");
@@ -202,7 +202,7 @@ void UDPBaseImplementation::setBottomEnable(const bool b){
 	FILE_LOG(logDEBUG) << __AT__ << " starting";
 
 	bottomEnable = b;
-	FILE_LOG(logINFO) << "Bottom Enable: " << stringEnable(bottomEnable);
+	FILE_LOG(logINFO)  << "Bottom - " << stringEnable(bottomEnable) << endl;
 }
 
 
@@ -216,7 +216,7 @@ void UDPBaseImplementation::setFileName(const char c[]){
 }
 
 void UDPBaseImplementation::setFilePath(const char c[]){
-	FILE_LOG(logDEBUG) << __AT__ << " starting";
+	FILE_LOG(logINFO) << __AT__ << " starting";
 
 	if(strlen(c)){
 		//check if filepath exists
@@ -229,7 +229,7 @@ void UDPBaseImplementation::setFilePath(const char c[]){
 		}
 		strcpy(filePath, c);
 	}
-	FILE_LOG(logINFO) << "File path:" << filePath;
+	FILE_LOG(logDEBUG1) << "Info: File path:" << filePath;
 }
 
 void UDPBaseImplementation::setFileIndex(const uint64_t i){
@@ -273,7 +273,7 @@ int UDPBaseImplementation::setDataCompressionEnable(const bool b){
 	FILE_LOG(logDEBUG) << __AT__ << " starting";
 
 	dataCompressionEnable = b;
-	FILE_LOG(logINFO) << "Data Compression Enable: " << stringEnable(dataCompressionEnable);
+	FILE_LOG(logINFO) << "Data Compression : " << stringEnable(dataCompressionEnable);
 
 	//overridden methods might return FAIL
 	return OK;

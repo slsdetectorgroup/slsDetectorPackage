@@ -23,7 +23,7 @@ using namespace std;
 UDPInterface * UDPInterface::create(string receiver_type){
 	
 	if (receiver_type == "standard"){
-		cout << "Starting " << receiver_type << endl;
+		FILE_LOG(logINFO) << "Starting " << receiver_type;
 		return new UDPStandardImplementation();
 	}
 #ifdef REST

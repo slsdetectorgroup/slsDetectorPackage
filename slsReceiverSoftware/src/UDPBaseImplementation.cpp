@@ -35,7 +35,7 @@ UDPBaseImplementation::UDPBaseImplementation(){
 void UDPBaseImplementation::initializeMembers(){
 	FILE_LOG(logDEBUG) << __AT__ << " starting";
 
-	FILE_LOG(logDEBUG1) << "Info: Initializing base members" << endl;
+	FILE_LOG(logDEBUG) << "Info: Initializing base members";
 	//**detector parameters***
 	myDetectorType = GENERIC;
 	strcpy(detHostname,"");
@@ -202,7 +202,7 @@ void UDPBaseImplementation::setBottomEnable(const bool b){
 	FILE_LOG(logDEBUG) << __AT__ << " starting";
 
 	bottomEnable = b;
-	FILE_LOG(logINFO)  << "Bottom - " << stringEnable(bottomEnable) << endl;
+	FILE_LOG(logINFO)  << "Bottom - " << stringEnable(bottomEnable);
 }
 
 
@@ -216,7 +216,7 @@ void UDPBaseImplementation::setFileName(const char c[]){
 }
 
 void UDPBaseImplementation::setFilePath(const char c[]){
-	FILE_LOG(logINFO) << __AT__ << " starting";
+	FILE_LOG(logDEBUG) << __AT__ << " starting";
 
 	if(strlen(c)){
 		//check if filepath exists
@@ -229,7 +229,7 @@ void UDPBaseImplementation::setFilePath(const char c[]){
 		}
 		strcpy(filePath, c);
 	}
-	FILE_LOG(logDEBUG1) << "Info: File path:" << filePath;
+	FILE_LOG(logDEBUG) << "Info: File path:" << filePath;
 }
 
 void UDPBaseImplementation::setFileIndex(const uint64_t i){
@@ -285,14 +285,14 @@ void UDPBaseImplementation::setUDPPortNumber(const uint32_t i){
 	FILE_LOG(logDEBUG) << __AT__ << " starting";
 
 	udpPortNum[0] = i;
-	FILE_LOG(logINFO) << "udpPortNum[0]:" << udpPortNum[0];
+	FILE_LOG(logINFO) << "UDP Port Number[0]:" << udpPortNum[0];
 }
 
 void UDPBaseImplementation::setUDPPortNumber2(const uint32_t i){
 	FILE_LOG(logDEBUG) << __AT__ << " starting";
 
 	udpPortNum[1] = i;
-	FILE_LOG(logINFO) << "udpPortNum[1]:" << udpPortNum[1];
+	FILE_LOG(logINFO) << "UDP Port Number[1]:" << udpPortNum[1];
 }
 
 void UDPBaseImplementation::setEthernetInterface(const char* c){
@@ -325,7 +325,7 @@ int UDPBaseImplementation::setAcquisitionPeriod(const uint64_t i){
 	FILE_LOG(logDEBUG) << __AT__ << " starting";
 
 	acquisitionPeriod = i;
-	FILE_LOG(logINFO) << "Acquisition Period:" << acquisitionPeriod;
+	FILE_LOG(logINFO) << "Acquisition Period:" <<  (double)acquisitionPeriod/(1E9) << "s";
 
 	//overrridden child classes might return FAIL
 	return OK;
@@ -389,7 +389,7 @@ void UDPBaseImplementation::resetAcquisitionCount(){
 	FILE_LOG(logDEBUG) << __AT__ << " starting";
 
 	totalPacketsCaught = 0;
-	FILE_LOG(logINFO) << "totalPacketsCaught:" << totalPacketsCaught << endl;
+	FILE_LOG(logINFO) << "totalPacketsCaught:" << totalPacketsCaught;
 }
 
 int UDPBaseImplementation::startReceiver(char *c){

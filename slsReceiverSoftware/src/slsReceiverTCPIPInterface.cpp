@@ -125,14 +125,14 @@ int slsReceiverTCPIPInterface::setPortNumber(int pn){
 
 
 int slsReceiverTCPIPInterface::start(){
-	FILE_LOG(logDEBUG1) << "Creating TCP Server Thread" << endl;
+	FILE_LOG(logDEBUG) << "Creating TCP Server Thread" << endl;
 	killTCPServerThread = 0;
 	if(pthread_create(&TCPServer_thread, NULL,startTCPServerThread, (void*) this)){
 		cout << "Could not create TCP Server thread" << endl;
 		return FAIL;
 	}
 	//#ifdef VERBOSE
-	FILE_LOG(logDEBUG1) << "TCP Server thread created successfully." << endl;
+	FILE_LOG(logDEBUG) << "TCP Server thread created successfully." << endl;
 	//#endif
 	return OK;
 }
@@ -395,25 +395,27 @@ int slsReceiverTCPIPInterface::set_detector_type(){
 			if(ret != FAIL){
 #ifndef REST
 			  receiverBase = UDPInterface::create("standard");
-			  receiverBase->setBottomEnable(bottom);
 #endif
 			  myDetectorType = dr;
 			  ret=receiverBase->setDetectorType(myDetectorType);
 			  retval = myDetectorType;
+#ifndef REST
+			  receiverBase->setBottomEnable(bottom);
+#endif
 			}
 			
 		}
 	}
 	//#ifdef VERBOSE
 	if(ret!=FAIL)
-		cout << "detector type " << dr << endl;
+		FILE_LOG(logDEBUG) << "detector type " << dr;
 	else
 		cprintf(RED, "%s\n", mess);
 	//#endif
 #endif
 
 	if(ret==OK && socket->differentClients){
-		cout << "Force update" << endl;
+		FILE_LOG(logDEBUG) << "Force update";
 		ret=FORCE_UPDATE;
 	}
 
@@ -474,7 +476,7 @@ int slsReceiverTCPIPInterface::set_file_name() {
 #endif
 
 	if(ret==OK && socket->differentClients){
-		cout << "Force update" << endl;
+		FILE_LOG(logDEBUG) << "Force update";
 		ret=FORCE_UPDATE;
 	}
 
@@ -546,7 +548,7 @@ int slsReceiverTCPIPInterface::set_file_dir() {
 #endif
 
 	if(ret==OK && socket->differentClients){
-		cout << "Force update" << endl;
+		FILE_LOG(logDEBUG) << "Force update";
 		ret=FORCE_UPDATE;
 	}
 
@@ -612,7 +614,7 @@ int slsReceiverTCPIPInterface::set_file_index() {
 #endif
 
 	if(ret==OK && socket->differentClients){
-		cout << "Force update" << endl;
+		FILE_LOG(logDEBUG) << "Force update";
 		ret=FORCE_UPDATE;
 	}
 
@@ -685,7 +687,7 @@ int slsReceiverTCPIPInterface::set_frame_index() {
 #endif
 
 	if(ret==OK && socket->differentClients){
-		cout << "Force update" << endl;
+		FILE_LOG(logDEBUG) << "Force update";
 		ret=FORCE_UPDATE;
 	}
 
@@ -748,12 +750,12 @@ int slsReceiverTCPIPInterface::setup_udp(){
 			receiverBase->setUDPPortNumber2(udpport2);
 			//setup udpip
 			//get ethernet interface or IP to listen to
-			cout << "Ethernet interface is " << args[0] << endl;
+			FILE_LOG(logINFO) << "Receiver UDP IP: " << args[0];
 			temp = genericSocket::ipToName(args[0]);
-			cout <<  temp << endl;
 			if(temp=="none"){
 				ret = FAIL;
-				strcpy(mess, "failed to get ethernet interface or IP to listen to\n");
+				strcpy(mess, "Failed to get ethernet interface or IP\n");
+				FILE_LOG(logERROR) << mess;
 			}
 			else{
 				strcpy(eth,temp.c_str());
@@ -761,9 +763,7 @@ int slsReceiverTCPIPInterface::setup_udp(){
 					strcpy(eth,"");
 					ret = FAIL;
 				}
-				FILE_LOG(logDEBUG) << __FILE__ << "::" << __func__ << " " << eth;
 				receiverBase->setEthernetInterface(eth);
-				cout <<  eth << endl;
 
 				//get mac address from ethernet interface
 				if (ret != FAIL)
@@ -773,11 +773,10 @@ int slsReceiverTCPIPInterface::setup_udp(){
 				if ((temp=="00:00:00:00:00:00") || (ret == FAIL)){
 					ret = FAIL;
 					strcpy(mess,"failed to get mac adddress to listen to\n");
-					cprintf(RED,"%s\n",mess);
 				}
 				else{
 					strcpy(retval,temp.c_str());
-					cout<<"mac:"<<retval<<endl;
+					FILE_LOG(logINFO) << "Reciever MAC Address: " << retval;
 				}
 			}
 		}
@@ -785,14 +784,14 @@ int slsReceiverTCPIPInterface::setup_udp(){
 #endif
 
 	if(ret==OK && socket->differentClients){
-		cout << "Force update" << endl;
+		FILE_LOG(logDEBUG) << "Force update";
 		ret=FORCE_UPDATE;
 	}
 
 	// send answer
 	socket->SendDataOnly(&ret,sizeof(ret));
 	if(ret==FAIL){
-		cprintf(RED, "%s\n", mess);
+		FILE_LOG(logERROR) << mess;
 		socket->SendDataOnly(mess,sizeof(mess));
 	}
 	socket->SendDataOnly(retval,MAX_STR_LENGTH);
@@ -840,7 +839,7 @@ int slsReceiverTCPIPInterface::start_receiver(){
 #endif
 
 	if(ret==OK && socket->differentClients){
-		cout << "Force update" << endl;
+		FILE_LOG(logDEBUG) << "Force update";
 		ret=FORCE_UPDATE;
 	}
 
@@ -886,7 +885,7 @@ int slsReceiverTCPIPInterface::stop_receiver(){
 #endif
 
 	if(ret==OK && socket->differentClients){
-		cout << "Force update" << endl;
+		FILE_LOG(logDEBUG) << "Force update";
 		ret=FORCE_UPDATE;
 	}
 
@@ -916,7 +915,7 @@ int	slsReceiverTCPIPInterface::get_status(){
 #endif
 
 	if(ret==OK && socket->differentClients){
-		cout << "Force update" << endl;
+		FILE_LOG(logDEBUG) << "Force update";
 		ret=FORCE_UPDATE;
 	}
 
@@ -946,7 +945,7 @@ int	slsReceiverTCPIPInterface::get_frames_caught(){
 	}else retval=receiverBase->getTotalFramesCaught();
 #endif
 	if(ret==OK && socket->differentClients){
-		cout << "Force update" << endl;
+		FILE_LOG(logDEBUG) << "Force update";
 		ret=FORCE_UPDATE;
 	}
 
@@ -978,7 +977,7 @@ int	slsReceiverTCPIPInterface::get_frame_index(){
 #endif
 
 	if(ret==OK && socket->differentClients){
-		cout << "Force update" << endl;
+		FILE_LOG(logDEBUG) << "Force update";
 		ret=FORCE_UPDATE;
 	}
 
@@ -1019,7 +1018,7 @@ int	slsReceiverTCPIPInterface::reset_frames_caught(){
 #endif
 
 	if(ret==OK && socket->differentClients){
-		cout << "Force update" << endl;
+		FILE_LOG(logDEBUG) << "Force update";
 		ret=FORCE_UPDATE;
 	}
 
@@ -1087,7 +1086,7 @@ int slsReceiverTCPIPInterface::set_short_frame() {
 #endif
 
 	if(ret==OK && socket->differentClients){
-		cout << "Force update" << endl;
+		FILE_LOG(logDEBUG) << "Force update";
 		ret=FORCE_UPDATE;
 	}
 
@@ -1267,7 +1266,7 @@ int	slsReceiverTCPIPInterface::moench_read_frame(){
 #endif
 
 	if(ret==OK && socket->differentClients){
-		cout << "Force update" << endl;
+		FILE_LOG(logDEBUG) << "Force update";
 		ret=FORCE_UPDATE;
 	}
 
@@ -1448,7 +1447,7 @@ int	slsReceiverTCPIPInterface::gotthard_read_frame(){
 #endif
 
 	if(ret==OK && socket->differentClients){
-		cout << "Force update" << endl;
+		FILE_LOG(logDEBUG) << "Force update";
 		ret=FORCE_UPDATE;
 	}
 
@@ -1602,7 +1601,7 @@ int	slsReceiverTCPIPInterface::propix_read_frame(){
 #endif
 
 	if(ret==OK && socket->differentClients){
-		cout << "Force update" << endl;
+		FILE_LOG(logDEBUG) << "Force update";
 		ret=FORCE_UPDATE;
 	}
 
@@ -1864,7 +1863,7 @@ int	slsReceiverTCPIPInterface::eiger_read_frame(){
 #endif
 
 	if(ret==OK && socket->differentClients){
-		cout << "Force update" << endl;
+		FILE_LOG(logDEBUG) << "Force update";
 		ret=FORCE_UPDATE;
 	}
 
@@ -1939,7 +1938,7 @@ int slsReceiverTCPIPInterface::set_read_frequency(){
 #endif
 
 	if(ret==OK && socket->differentClients){
-		cout << "Force update" << endl;
+		FILE_LOG(logDEBUG) << "Force update";
 		ret=FORCE_UPDATE;
 	}
 
@@ -1995,7 +1994,7 @@ int slsReceiverTCPIPInterface::enable_file_write(){
 #endif
 
 	if(ret==OK && socket->differentClients){
-		cout << "Force update" << endl;
+		FILE_LOG(logDEBUG) << "Force update";
 		ret=FORCE_UPDATE;
 	}
 
@@ -2023,7 +2022,7 @@ int slsReceiverTCPIPInterface::get_id(){
 #endif
 
 	if(socket->differentClients){
-		cout << "Force update" << endl;
+		FILE_LOG(logDEBUG) << "Force update";
 		ret=FORCE_UPDATE;
 	}
 
@@ -2066,7 +2065,7 @@ int	slsReceiverTCPIPInterface::start_readout(){
 #endif
 
 	if(ret==OK && socket->differentClients){
-		cout << "Force update" << endl;
+		FILE_LOG(logDEBUG) << "Force update";
 		ret=FORCE_UPDATE;
 	}
 
@@ -2140,7 +2139,7 @@ int slsReceiverTCPIPInterface::set_timer() {
 #endif
 
 	if(ret==OK && socket->differentClients){
-		cout << "Force update" << endl;
+		FILE_LOG(logDEBUG) << "Force update";
 		ret=FORCE_UPDATE;
 	}
 
@@ -2211,7 +2210,7 @@ int slsReceiverTCPIPInterface::enable_compression() {
 #endif
 
 	if(ret==OK && socket->differentClients){
-		cout << "Force update" << endl;
+		FILE_LOG(logDEBUG) << "Force update";
 		ret=FORCE_UPDATE;
 	}
 
@@ -2272,7 +2271,7 @@ int slsReceiverTCPIPInterface::set_detector_hostname() {
 #endif
 
 	if(ret==OK && socket->differentClients){
-		cout << "Force update" << endl;
+		FILE_LOG(logDEBUG) << "Force update";
 		ret=FORCE_UPDATE;
 	}
 
@@ -2364,7 +2363,7 @@ int slsReceiverTCPIPInterface::set_dynamic_range() {
 #endif
 
 	if(ret==OK && socket->differentClients){
-		cout << "Force update" << endl;
+		FILE_LOG(logDEBUG) << "Force update";
 		ret=FORCE_UPDATE;
 	}
 
@@ -2427,7 +2426,7 @@ int slsReceiverTCPIPInterface::enable_overwrite() {
 #endif
 
 	if(ret==OK && socket->differentClients){
-		cout << "Force update" << endl;
+		FILE_LOG(logDEBUG) << "Force update";
 		ret=FORCE_UPDATE;
 	}
 
@@ -2492,7 +2491,7 @@ int slsReceiverTCPIPInterface::enable_tengiga() {
 #endif
 
 	if(ret==OK && socket->differentClients){
-		cout << "Force update" << endl;
+		FILE_LOG(logDEBUG) << "Force update";
 		ret=FORCE_UPDATE;
 	}
 

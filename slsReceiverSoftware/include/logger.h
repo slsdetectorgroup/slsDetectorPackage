@@ -5,6 +5,7 @@
 #include <string>
 #include <stdio.h>
 #include <unistd.h>
+#include <ansi.h>
 
 #ifdef VERBOSE
 #define FILELOG_MAX_LEVEL logDEBUG
@@ -12,6 +13,10 @@
 
 #ifdef VERYVERBOSE
 #define FILELOG_MAX_LEVEL logDEBUG4
+#endif
+
+#ifdef FIFODEBUG
+#define FILELOG_MAX_LEVEL logDEBUG5
 #endif
 
 #ifndef FILELOG_MAX_LEVEL
@@ -40,7 +45,7 @@ void error(const char *location, const char *msg){
 
 inline std::string NowTime();
 
-enum TLogLevel {logERROR, logWARNING, logINFO, logDEBUG, logDEBUG1, logDEBUG2, logDEBUG3, logDEBUG4};
+enum TLogLevel {logERROR, logWARNING, logINFO, logDEBUG, logDEBUG1, logDEBUG2, logDEBUG3, logDEBUG4, logDEBUG5};
 
 template <typename T> class Log{
  public:
@@ -52,6 +57,7 @@ template <typename T> class Log{
 	static TLogLevel FromString(const std::string& level);
  protected:
 	std::ostringstream os;
+	TLogLevel lev;
  private:
 	Log(const Log&);
 	Log& operator =(const Log&);
@@ -62,6 +68,7 @@ class Output2FILE {
 public:
     static FILE*& Stream();
     static void Output(const std::string& msg);
+    static void Output(const std::string& msg, TLogLevel level);
 };
 
 #if defined(WIN32) || defined(_WIN32) || defined(__WIN32__)
@@ -79,10 +86,17 @@ public:
 class FILELOG_DECLSPEC FILELog : public Log<Output2FILE> {};
 //typedef Log<Output2FILE> FILELog;
 
+#ifdef REST
 #define FILE_LOG(level) \
 	if (level > FILELOG_MAX_LEVEL) ;				\
 	else if (level > FILELog::ReportingLevel() || !Output2FILE::Stream()) ; \
 	else FILELog().Get(level)
+#else
+	#define FILE_LOG(level) \
+	if (level > FILELOG_MAX_LEVEL) ;				\
+	else if (level > FILELog::ReportingLevel() || !Output2FILE::Stream()) ; \
+	else FILELog().Get(level)
+#endif
 
 #if defined(WIN32) || defined(_WIN32) || defined(__WIN32__)
 
@@ -126,10 +140,11 @@ inline std::string NowTime()
 #endif //WIN32
 
 
-template <typename T> Log<T>::Log(){}
+template <typename T> Log<T>::Log():lev(logDEBUG){}
 
 template <typename T> std::ostringstream& Log<T>::Get(TLogLevel level)
 {
+	lev = level;
     os << "- " << NowTime();
     os << " " << ToString(level) << ": ";
     os << std::string(level > logDEBUG ? level - logDEBUG : 0, '\t');
@@ -139,24 +154,30 @@ template <typename T> std::ostringstream& Log<T>::Get(TLogLevel level)
 template <typename T> Log<T>::~Log()
 {
     os << std::endl;
+#ifdef REST
     T::Output( os.str());
+#else
+    T::Output( os.str(),lev);
+#endif
 }
 
 template <typename T> TLogLevel& Log<T>::ReportingLevel()
 {
-    static TLogLevel reportingLevel = logDEBUG4;
+    static TLogLevel reportingLevel = logDEBUG5;
     return reportingLevel;
 }
 
 template <typename T> std::string Log<T>::ToString(TLogLevel level)
 {
-	static const char* const buffer[] = {"ERROR", "WARNING", "INFO", "DEBUG", "DEBUG1", "DEBUG2", "DEBUG3", "DEBUG4"};
+	static const char* const buffer[] = {"ERROR", "WARNING", "INFO", "DEBUG", "DEBUG1", "DEBUG2", "DEBUG3", "DEBUG4","DEBUG5"};
     return buffer[level];
 }
 
 template <typename T>
 TLogLevel Log<T>::FromString(const std::string& level)
 {
+    if (level == "DEBUG5")
+        return logDEBUG5;
     if (level == "DEBUG4")
         return logDEBUG4;
     if (level == "DEBUG3")
@@ -190,6 +211,20 @@ inline void Output2FILE::Output(const std::string& msg)
     if (!pStream)
         return;
     fprintf(pStream, "%s", msg.c_str());
+    fflush(pStream);
+}
+
+inline void Output2FILE::Output(const std::string& msg, TLogLevel level)
+{
+    FILE* pStream = Stream();
+    if (!pStream)
+        return;
+    switch(level){
+    case logERROR:		cprintf(RED BOLD,"%s",msg.c_str()); 	break;
+    case logWARNING:	cprintf(YELLOW BOLD,"%s",msg.c_str()); 	break;
+    case logINFO:		cprintf(GRAY,"%s",msg.c_str()); 		break;
+    default: 			fprintf(pStream,"%s",msg.c_str()); 		break;
+    }
     fflush(pStream);
 }
 

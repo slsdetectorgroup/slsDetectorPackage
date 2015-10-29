@@ -1797,8 +1797,10 @@ void UDPStandardImplementation::processWritingBuffer(int ithread){
 			cprintf(GREEN,"Writing_Thread %d: Popped %p from FIFO %d\n", ithread, (void*)(wbuf[0]),0);
 #endif
 			uint32_t numPackets = (uint32_t)(*((uint32_t*)wbuf[0]));
-			if(numPackets < 0)
-				cprintf(BG_RED,"Error: Negative packet numbers: %d for FIFO %d\n",numPackets,0);
+			cout<<"numpackets:"<<hex<<numpackets<<endl;
+			cout<<"dummpacketvalue"<<dummyPacketValue<<endl;
+			//if(numPackets < 0)
+			//	cprintf(BG_RED,"Error: Negative packet numbers: %d for FIFO %d\n",numPackets,0);
 #ifdef DEBUG4
 			cprintf(GREEN,"Writing_Thread %d: Number of Packets: %d for FIFO %d\n", ithread, numPackets, 0);
 #endif

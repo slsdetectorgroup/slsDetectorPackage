@@ -299,7 +299,7 @@ void UDPBaseImplementation::setEthernetInterface(const char* c){
 	FILE_LOG(logDEBUG) << __AT__ << " starting";
 
 	strcpy(eth, c);
-	FILE_LOG(logINFO) << "Ethernet Interface:" << eth;
+	FILE_LOG(logINFO) << "Ethernet Interface: " << eth;
 }
 
 

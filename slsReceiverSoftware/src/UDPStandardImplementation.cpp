@@ -763,7 +763,7 @@ void UDPStandardImplementation::resetAcquisitionCount(){
 int UDPStandardImplementation::startReceiver(char *c){
 	FILE_LOG(logDEBUG1) << __AT__ << " called";
 	
-	FILE_LOG(logINFO) << "Starting Receiver";
+	cout << "Starting Receiver" << endl;
 
 
 	//RESET
@@ -849,8 +849,8 @@ int UDPStandardImplementation::startReceiver(char *c){
 	for(int i=0; i < numberofWriterThreads; i++)	sem_post(&writerSemaphore[i]);
 
 	//usleep(5000000);
-	FILE_LOG(logINFO) << "Receiver Started";
-	FILE_LOG(logINFO) << "Status:" << runStatusType(status);
+	cout << "Receiver Started" << endl;
+	cout << "Status:" << runStatusType(status) << endl;
 
 	return OK;
 }
@@ -863,7 +863,7 @@ int UDPStandardImplementation::startReceiver(char *c){
 void UDPStandardImplementation::stopReceiver(){
 	FILE_LOG(logDEBUG1) << __AT__ << " called";
 
-	FILE_LOG(logINFO) << "Stopping Receiver";
+	cout << "Stopping Receiver" << endl;
 
 	//set status to transmitting
 	startReadout();
@@ -882,8 +882,8 @@ void UDPStandardImplementation::stopReceiver(){
 	status = IDLE;
 	pthread_mutex_unlock(&(statusMutex));
 
-	FILE_LOG(logINFO) << "Receiver Stopped";
-	FILE_LOG(logINFO) << "Status:" << runStatusType(status);
+	cout << "Receiver Stopped" << endl;
+	cout << "Status:" << runStatusType(status) << endl;
 	cout << endl;
 }
 
@@ -931,7 +931,7 @@ void UDPStandardImplementation::startReadout(){
 		pthread_mutex_lock(&statusMutex);
 		status = TRANSMITTING;
 		pthread_mutex_unlock(&statusMutex);
-		FILE_LOG(logINFO) << "Status: Transmitting";
+		cout << "Status: Transmitting" << endl;
 	}
 
 	//shut down udp sockets and make listeners push dummy (end) packets for writers
@@ -1025,12 +1025,12 @@ void UDPStandardImplementation::closeFile(int i){
 
 			if(myFile[i]->Write())
 				//->Write(tall->GetName(),TObject::kOverwrite);
-				FILE_LOG(logINFO) << "Thread " << i <<": wrote frames to file";
+				cout << "Thread " << i <<": wrote frames to file" << endl;
 			else
-				FILE_LOG(logINFO) << "Thread " << i << ": could not write frames to file";
+				cout << "Thread " << i << ": could not write frames to file" << endl;
 
 		}else
-			FILE_LOG(logINFO) << "Thread " << i << ": could not write frames to file: No file or No Tree";
+			cout << "Thread " << i << ": could not write frames to file: No file or No Tree" << endl;
 		//close file
 		if(myTree[i] && myFile[i])
 			myFile[i] = myTree[i]->GetCurrentFile();
@@ -1145,8 +1145,8 @@ int UDPStandardImplementation::createWriterThreads(bool destroy){
 			while(!threadStarted);
 			FILE_LOG(logDEBUG) << "." << flush;
 		}
-#ifdef VERBOSE
-		FILE_LOG(logINFO) << "\nWriter thread(s) created successfully.";
+#ifdef DEBUG
+		cout << "\nWriter thread(s) created successfully" << endl;
 #endif
 	}
 
@@ -1219,7 +1219,7 @@ int UDPStandardImplementation::createUDPSockets(){
 	}
 	//normal socket
 	else{
-		FILE_LOG(logINFO) << "eth:" << eth << endl;
+		FILE_LOG(logINFO) << "Ethernet Interface:" << eth;
 
 		for(int i=0;i<numberofListeningThreads;i++)
 			udpSocket[i] = new genericSocket(port[i],genericSocket::UDP,bufferSize,eth);
@@ -1229,7 +1229,7 @@ int UDPStandardImplementation::createUDPSockets(){
 	for(int i=0;i<numberofListeningThreads;i++){
 		int iret = udpSocket[i]->getErrorStatus();
 		if(!iret){
-			FILE_LOG(logINFO) << "UDP port opened at port " << port[i];
+			cout << "UDP port opened at port " << port[i] << endl;
 		}else{
 			FILE_LOG(logERROR) << "Could not create UDP socket on port " << port[i] << " error: " << iret;
 			shutDownUDPSockets();
@@ -1238,7 +1238,7 @@ int UDPStandardImplementation::createUDPSockets(){
 	}
 
 	FILE_LOG(logDEBUG) << "UDP socket(s) created successfully.";
-	FILE_LOG(logINFO) << "Listener Ready ...";
+	cout << "Listener Ready ..." << endl;
 
 	return OK;
 }
@@ -1287,7 +1287,7 @@ int UDPStandardImplementation::setupWriter(){
 	}
 
 	FILE_LOG(logDEBUG) << "Successfully created file(s)";
-	FILE_LOG(logINFO) << "Writer Ready ...";
+	cout << "Writer Ready ..." << endl;
 
 	return fileCreateSuccess;
 }
@@ -1338,9 +1338,9 @@ int UDPStandardImplementation::createNewFile(){
 		//Print packet loss and filenames
 		if(!packetsCaught){
 			previousFrameNumber = -1;
-			FILE_LOG(logINFO) << "File: " << completeFileName;
+			cout << "File: " << completeFileName << endl;
 		}else{
-			FILE_LOG(logINFO) << completeFileName
+			cout << completeFileName
 					<< "\tPacket Loss: " << setw(4)<<fixed << setprecision(4) << dec <<
 					(int)((( (currentFrameNumber-previousFrameNumber) - ((packetsInFile-numTotMissingPacketsInFile)/packetsPerFrame))/
 							 (double)(currentFrameNumber-previousFrameNumber))*100.000)
@@ -1348,7 +1348,7 @@ int UDPStandardImplementation::createNewFile(){
 				  //<< "\t\t PreviousFrameNumber: " << previousFrameNumber
 					<< "\tIndex " << dec << index
 					<< "\tLost " << dec << ( ((int)(currentFrameNumber-previousFrameNumber)) -
-							                 ((packetsInFile-numTotMissingPacketsInFile)/packetsPerFrame));
+							                 ((packetsInFile-numTotMissingPacketsInFile)/packetsPerFrame)) << endl;
 
 		}
 
@@ -1578,7 +1578,9 @@ void UDPStandardImplementation::startFrameIndices(int ithread){
 void UDPStandardImplementation::stopListening(int ithread, int numbytes){
 	FILE_LOG(logDEBUG1) << __AT__ << " called";
 
-	cprintf(BLUE,"Listening_Thread %d: Stop Listening.\nStatus:%s\n", ithread, runStatusType(status).c_str());
+#ifdef DEBUG4
+	cprintf(BLUE,"Listening_Thread %d: Stop Listening\nStatus:%s\n", ithread, runStatusType(status).c_str());
+#endif
 
 	//less than 1 packet size (especially for eiger), ignore the buffer (so that 2 dummy buffers are not sent with pc=0)
 	if(numbytes < onePacketSize)

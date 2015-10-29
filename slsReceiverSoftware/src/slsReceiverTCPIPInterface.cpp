@@ -391,21 +391,22 @@ int slsReceiverTCPIPInterface::set_detector_type(){
 				sprintf(mess,"Unknown detector type: %d\n", dr);
 				ret = FAIL;
 				break;
-				if(ret != FAIL){
-#ifndef REST
-					receiverBase = UDPInterface::create("standard");
-					receiverBase->setBottomEnable(bottom);
-#endif
-					myDetectorType = dr;
-					ret=receiverBase->setDetectorType(myDetectorType);
-					retval = myDetectorType;
-				}
 			}
+			if(ret != FAIL){
+#ifndef REST
+			  receiverBase = UDPInterface::create("standard");
+			  receiverBase->setBottomEnable(bottom);
+#endif
+			  myDetectorType = dr;
+			  ret=receiverBase->setDetectorType(myDetectorType);
+			  retval = myDetectorType;
+			}
+			
 		}
 	}
 	//#ifdef VERBOSE
 	if(ret!=FAIL)
-		cout << "detector type" << dr << endl;
+		cout << "detector type " << dr << endl;
 	else
 		cprintf(RED, "%s\n", mess);
 	//#endif

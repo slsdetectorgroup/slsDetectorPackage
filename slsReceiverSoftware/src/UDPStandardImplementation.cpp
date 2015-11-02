@@ -43,10 +43,11 @@ UDPStandardImplementation::UDPStandardImplementation(){
 
 	//to increase socket receiver buffer size and max length of input queue by changing kernel settings
 	if(myDetectorType == EIGER);
-	else if(system("echo $((100*1024*1024)) > /proc/sys/net/core/rmem_max"))
+	else if(system("echo $((100*1024*1024)) > /proc/sys/net/core/rmem_max")){
 		FILE_LOG(logDEBUG) << "Warning: No root permission to change socket receiver buffer size in file /proc/sys/net/core/rmem_max";
-	else if(system("echo 250000 > /proc/sys/net/core/netdev_max_backlog"))
+	}else if(system("echo 250000 > /proc/sys/net/core/netdev_max_backlog")){
 		FILE_LOG(logDEBUG) << "Warning: No root permission to change max length of input queue in file /proc/sys/net/core/netdev_max_backlog";
+	}
 	/** permanent setting by heiner
 	    net.core.rmem_max = 104857600 # 100MiB
 	    net.core.netdev_max_backlog = 250000

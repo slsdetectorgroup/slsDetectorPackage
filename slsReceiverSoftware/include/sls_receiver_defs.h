@@ -8,7 +8,9 @@
 #endif
 
 #include <stdint.h> 
+#ifdef __cplusplus
 #include <string>
+#endif
 #include "ansi.h"
 
 
@@ -112,7 +114,7 @@ public:
 		RUNNING /**< acquisition  running, no data in memory */
 	};
 
-
+#ifdef __cplusplus
 	  /** returns string from enabled/disabled
 	      \param b true or false
 	      \returns string enabled, disabled
@@ -172,6 +174,7 @@ public:
 	    default:       		return std::string("idle");		\
 	    }};
 
+#endif
 
 #ifdef __cplusplus
 protected:

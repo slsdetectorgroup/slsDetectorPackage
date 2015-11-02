@@ -83,8 +83,8 @@ public:
 	
 	void registerCallBackRawDataReady(void (*func)(int framenumber, char* datapointer, int datasize, FILE* filedescriptor, char* guidatapointer, void*),void *arg);
 
-	// made static to close thread files with ctrl+c
-	static slsReceiver* receiver;
+	//receiver object
+	slsReceiver* receiver;
 };
 
 

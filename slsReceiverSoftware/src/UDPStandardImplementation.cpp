@@ -60,7 +60,7 @@ UDPStandardImplementation::UDPStandardImplementation(){
 
 UDPStandardImplementation::~UDPStandardImplementation(){
 	FILE_LOG(logDEBUG1) << __AT__ << " called";
-
+	closeFile();
 	deleteMembers();
 }
 
@@ -1184,9 +1184,9 @@ void UDPStandardImplementation::setThreadPriorities(){
 	if (pthread_setschedparam(pthread_self(),5 , &tcp_param) == EPERM)
 		rights = false;
 
-	if(!rights)
+	if(!rights){
 		FILE_LOG(logWARNING) << "No root permission to prioritize threads.";
-
+	}
 }
 
 
@@ -1256,8 +1256,9 @@ int UDPStandardImplementation::setupWriter(){
 
 	if(cbAction < DO_EVERYTHING){
 		FILE_LOG(logINFO) << "Call back activated. Data saving must be taken care of by user in call back.";
-		if (rawDataReadyCallBack)
+		if (rawDataReadyCallBack){
 			FILE_LOG(logINFO) << "Data Write has been defined externally";
+		}
 	}else if(!fileWriteEnable)
 		FILE_LOG(logINFO) << "Data will not be saved";
 

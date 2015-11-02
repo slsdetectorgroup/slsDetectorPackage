@@ -54,9 +54,6 @@ class slsReceiverTCPIPInterface : private virtual slsReceiverDefs {
 	/** Close all threaded Files and exit */
 	void closeFile(int p);
 
-	/** Static function to call closeFile */
-	static void staticCloseFile(int p);
-
 	/** gets version */
 	int64_t getReceiverVersion();
 

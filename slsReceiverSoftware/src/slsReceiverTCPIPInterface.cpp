@@ -9,10 +9,7 @@
 #include "slsReceiverUsers.h"
 #include "slsReceiver.h"
 
-
-#include  <signal.h>	//SIGINT
 #include  <stdlib.h>	//EXIT
-
 #include <iostream>
 #include <string>
 #include <sstream>
@@ -27,9 +24,8 @@ using namespace std;
 
 
 slsReceiverTCPIPInterface::~slsReceiverTCPIPInterface() {
-	closeFile(0);
+	stop();
 	if(socket) {delete socket; socket=NULL;}
-	if(receiverBase) {delete receiverBase; receiverBase=NULL;}
 }
 
 slsReceiverTCPIPInterface::slsReceiverTCPIPInterface(int &success, UDPInterface* rbase, int pn, bool bot):
@@ -71,9 +67,6 @@ slsReceiverTCPIPInterface::slsReceiverTCPIPInterface(int &success, UDPInterface*
 #ifdef VERBOSE
 			cout << "Function table assigned." << endl;
 #endif
-
-			//Catch signal SIGINT to close files properly
-			signal(SIGINT,staticCloseFile);
 		}
 	}
 
@@ -139,34 +132,13 @@ int slsReceiverTCPIPInterface::start(){
 
 
 void slsReceiverTCPIPInterface::stop(){
-
 	cout << "Shutting down UDP Socket" << endl;
-	if(receiverBase)
-		receiverBase->shutDownUDPSockets();
-
-	cout << "Closing Files... " << endl;
-	receiverBase->closeFile();
-
-
-	cout<<"Shutting down TCP Socket and TCP thread"<<endl;
-	cout << "Shutting down UDP Socket" << endl;
-	if(receiverBase){
-		receiverBase->shutDownUDPSockets();
-
-		cout << "Closing Files... " << endl;
-		receiverBase->closeFile();
-	}
-
-
 	killTCPServerThread = 1;
-	socket->ShutDownSocket();
-	socket->exitServer();
+	if(socket)	socket->ShutDownSocket();
 	cout<<"Socket closed"<<endl;
-	void* status;
-	pthread_join(TCPServer_thread, &status);
+	pthread_join(TCPServer_thread, NULL);
 	killTCPServerThread = 0;
 	cout<<"Threads joined"<<endl;
-
 }
 
 
@@ -347,13 +319,7 @@ int slsReceiverTCPIPInterface::M_nofunc(){
 
 
 void slsReceiverTCPIPInterface::closeFile(int p){
-	stop();
-	cout << "Goodbye!" << endl;
-	exit(-1);
-}
-
-void slsReceiverTCPIPInterface::staticCloseFile(int p){
-	slsReceiverUsers::receiver->closeFile(p);
+	receiverBase->closeFile();
 }
 
 

@@ -236,7 +236,17 @@ int64_t getDetectorId(enum idMode arg){
 
 
 int getDetectorNumber(){
+	int res=0;
 
+	//execute and get address
+	char output[255];
+	FILE* sysFile = popen("more /home/root/executables/detid.txt", "r");
+	fgets(output, sizeof(output), sysFile);
+	pclose(sysFile);
+	sscanf(output,"%d",&res);
+	printf("detector id: %d\n",res);
+
+/*
 	int res=0;
 	char hostname[100];
 	if (gethostname(hostname, sizeof hostname) == 0)
@@ -244,6 +254,7 @@ int getDetectorNumber(){
 	else
 		perror("gethostname");
 	sscanf(hostname,"%x",&res);
+*/
 	return res;
 }
 

@@ -3147,8 +3147,8 @@ slsDetectorDefs::detectorSettings slsDetector::setSettings( detectorSettings ise
 			case EIGER:
 				//settings is saved in myMod.reg
 				myMod->reg=thisDetector->currentSettings;
-				ostfn << thisDetector->settingsDir << ssettings <<"/noise.sn"<< setw(6) << hex << getId(DETECTOR_SERIAL_NUMBER) << setbase(10);
-				oscfn << thisDetector->calDir << ssettings << "/calibration.sn"<<setw(6) << hex << getId(DETECTOR_SERIAL_NUMBER) << setbase(10);
+				ostfn << thisDetector->settingsDir << ssettings <<"/noise.sn" << setfill('0') <<  setw(3) << dec << getId(DETECTOR_SERIAL_NUMBER) << setbase(10);
+				oscfn << thisDetector->calDir << ssettings << "/calibration.sn" << setfill('0') <<  setw(3) << dec << getId(DETECTOR_SERIAL_NUMBER) << setbase(10);
 #ifdef VERBOSE
 				std::cout<< thisDetector->settingsDir<<endl<< thisDetector->calDir <<endl;
 #endif
@@ -6009,7 +6009,7 @@ int slsDetector::loadSettingsFile(string fname, int imod) {
     		fn=ostfn.str();
     	}
     }else if (fname.find(".sn")==string::npos && fname.find(".trim")==string::npos && fname.find(".settings")==string::npos) {
-      ostfn << ".sn"  << setw(6) << hex << getId(DETECTOR_SERIAL_NUMBER, im);
+      ostfn << ".sn"  << setfill('0') <<  setw(3) << dec << getId(DETECTOR_SERIAL_NUMBER, im);
       fn=ostfn.str();
     }
     myMod=readSettingsFile(fn, thisDetector->myDetectorType);
@@ -6043,7 +6043,7 @@ int slsDetector::saveSettingsFile(string fname, int imod) {
   for (int im=mmin; im<mmax; im++) {
     ostringstream ostfn;
     if(thisDetector->myDetectorType == EIGER)
-    	ostfn << fname << ".sn"  << setw(6) << hex << getId(DETECTOR_SERIAL_NUMBER);
+    	ostfn << fname << ".sn"  << setfill('0') <<  setw(3) << dec << getId(DETECTOR_SERIAL_NUMBER);
     else
     	ostfn << fname << ".sn"  << setfill('0') << setw(3) << hex << getId(MODULE_SERIAL_NUMBER,im);
     if ((myMod=getModule(im))) {
@@ -6126,7 +6126,7 @@ int slsDetector::loadCalibrationFile(string fname, int imod) {
     		ostfn << ".sn"  << setfill('0') << setw(3) << hex << getId(MODULE_SERIAL_NUMBER, im);
     	}
     }else if (fname.find(".sn")==string::npos && fname.find(".cal")==string::npos) {
-      ostfn << "."  << setw(6) << hex << getId(DETECTOR_SERIAL_NUMBER);
+      ostfn << "."  << setfill('0') <<  setw(3) << dec << getId(DETECTOR_SERIAL_NUMBER);
     }
     fn=ostfn.str();
     if((myMod=getModule(im))){
@@ -6166,7 +6166,7 @@ int slsDetector::saveCalibrationFile(string fname, int imod) {
   for (int im=mmin; im<mmax; im++) {
     ostringstream ostfn;
     if(thisDetector->myDetectorType == EIGER)
-    	ostfn << fname << ".sn"  << setw(6) << hex << getId(DETECTOR_SERIAL_NUMBER);
+    	ostfn << fname << ".sn" << setfill('0') <<  setw(3) << dec << getId(DETECTOR_SERIAL_NUMBER);
     else
     	ostfn << fname << ".sn"  << setfill('0') << setw(3) << hex << getId(MODULE_SERIAL_NUMBER,im);
     if ((myMod=getModule(im))) {

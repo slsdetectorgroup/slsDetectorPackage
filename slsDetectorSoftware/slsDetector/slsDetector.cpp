@@ -2161,6 +2161,8 @@ dacs_t slsDetector::setDAC(dacs_t val, dacIndex index, int mV, int imod){
 
 
   dacs_t retval[2];
+  retval[0] = -1;
+  retval[1] = -1;
   int fnum=F_SET_DAC;
   int ret=FAIL;
   char mess[100];

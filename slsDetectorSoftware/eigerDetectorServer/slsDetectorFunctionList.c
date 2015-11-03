@@ -320,10 +320,26 @@ int detectorTest( enum digitalTestMode arg){
 void setDAC(enum detDacIndex ind, int val, int imod, int mV, int retval[]){
 
 	if(ind == VTHRESHOLD){
+		int ret[4];
 		setDAC(VCMP_LL,val,imod,mV,retval);
+			ret[0] = retval[mV];
 		setDAC(VCMP_LR,val,imod,mV,retval);
+			ret[1] = retval[mV];
 		setDAC(VCMP_RL,val,imod,mV,retval);
-		ind = VCMP_RR;
+			ret[2] = retval[mV];
+		setDAC(VCMP_RL,val,imod,mV,retval);
+			ret[3] = retval[mV];
+
+		if((ret[0]== ret[1])&&
+				(ret[1]==ret[2])&&
+				(ret[2]==ret[3]))
+			cprintf(GREEN,"vthreshold match\n");
+		else{
+			retval[0] = -1;retval[1] = -1;
+			cprintf(RED,"vthreshold mismatch 0:%d 1:%d 2:%d 3:%d\n",
+				ret[0],ret[1],ret[2],ret[3]);
+		}
+		return;
 	}
 	char iname[10];
 

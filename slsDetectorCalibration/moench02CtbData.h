@@ -9,10 +9,15 @@ class moench02CtbData : public slsDetectorData<uint16_t> {
  private:
   
   int iframe;
-  int *xmap, *ymap;
+  // int *xmap, *ymap;
   int nadc;
   int sc_width;
   int sc_height;
+
+  int maplength;
+
+
+
  public:
 
 
@@ -29,34 +34,55 @@ class moench02CtbData : public slsDetectorData<uint16_t> {
   moench02CtbData(int ns=6400): slsDetectorData<uint16_t>(160, 160, ns*2*32, NULL, NULL) , nadc(4), sc_width(40), sc_height(160) {
 
     
-    int adc_nr[4]={0,40,40,120};
+    int adc_nr[4]={120,0,80,40};
     int row, col;
 
     int isample;
     int iadc;
     int ix, iy;
-
-
-
+    maplength=this->getDataSize()/2;
+    cerr<<"Map Array Length: "<<maplength<<endl;
+    
 
     for (iadc=0; iadc<nadc; iadc++) {
       for (int i=0; i<sc_width*sc_height; i++) {
 	col=adc_nr[iadc]+(i%sc_width);
 	row=i/sc_width;
-	dataMap[row][col]=(32*i+iadc)*2;
+	dataMap[row][col]=(32*i+iadc+2)*2;
 	if (dataMap[row][col]<0 || dataMap[row][col]>=dataSize) {
-	  cout << "Error: pointer " << dataMap[row][col] << " out of range "<< endl;
-	  
+	  cout << "Error: pointer " << dataMap[row][col] << " out of range "<< endl;	  
 	}
 	  
       }
     }
     
+    for (int i=0; i<maplength; i++) {
+      isample=i/32;
+      iadc=i%32;
+      ix=isample%sc_width;
+      iy=isample/sc_width;
+      if(iadc>1 && iadc<6){
+	xmap[i]=adc_nr[iadc-2]+ix;
+	ymap[i]=iy;
+      }else{
+	xmap[i]=-1;
+	ymap[i]=-1;
+      }
+    }
     iframe=0;
     //  cout << "data struct created" << endl;
   };
     
-    void getPixel(int ip, int &x, int &y) {if (ip>=0 && ip<nx*ny) {x=xmap[ip]; y=ymap[ip];}};
+  void getPixel(int ip, int &x, int &y) {
+    if(ip>=0 && ip<maplength){
+      x=xmap[ip]; 
+      y=ymap[ip];
+    }else{
+      cerr<<"WRONG ARRAY LENGTH"<<endl;
+      cerr<<"Trying to access the "<<ip<<"-th element"<<endl;
+    }
+
+  };
   
 
      /**

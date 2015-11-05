@@ -31,7 +31,7 @@ using namespace std;
  *************************************************************************/
 
 UDPStandardImplementation::UDPStandardImplementation(){
-	FILE_LOG(logDEBUG1) << __AT__ << " called";
+	FILE_LOG(logDEBUG) << __AT__ << " called";
 
 	initializeMembers();
 
@@ -59,7 +59,7 @@ UDPStandardImplementation::UDPStandardImplementation(){
 }
 
 UDPStandardImplementation::~UDPStandardImplementation(){
-	FILE_LOG(logDEBUG1) << __AT__ << " called";
+	FILE_LOG(logDEBUG) << __AT__ << " called";
 	closeFile();
 	deleteMembers();
 }
@@ -73,7 +73,7 @@ UDPStandardImplementation::~UDPStandardImplementation(){
 /***initial parameters***/
 
 void UDPStandardImplementation::deleteMembers(){
-	FILE_LOG(logDEBUG1) << __AT__ << " starting";
+	FILE_LOG(logDEBUG) << __AT__ << " starting";
 
 	FILE_LOG(logDEBUG) << "Info: Deleting member pointers";
 	shutDownUDPSockets();
@@ -95,7 +95,7 @@ void UDPStandardImplementation::deleteMembers(){
 }
 
 void UDPStandardImplementation::deleteFilter(){
-	FILE_LOG(logDEBUG1) << __AT__ << " starting";
+	FILE_LOG(logDEBUG) << __AT__ << " starting";
 
 	moenchCommonModeSubtraction = NULL;
 	for(int i=0; i<MAX_NUMBER_OF_WRITER_THREADS; i++){
@@ -111,7 +111,7 @@ void UDPStandardImplementation::deleteFilter(){
 }
 
 void UDPStandardImplementation::initializeBaseMembers(){
-	FILE_LOG(logDEBUG1) << __AT__ << " starting";
+	FILE_LOG(logDEBUG) << __AT__ << " starting";
 
 	UDPBaseImplementation::initializeMembers();
 	acquisitionPeriod = SAMPLE_TIME_IN_NS;
@@ -119,7 +119,7 @@ void UDPStandardImplementation::initializeBaseMembers(){
 
 
 void UDPStandardImplementation::initializeMembers(){
-	FILE_LOG(logDEBUG1) << __AT__ << " starting";
+	FILE_LOG(logDEBUG) << __AT__ << " starting";
 
 	FILE_LOG(logDEBUG) << "Info: Initializing members";
 
@@ -207,7 +207,7 @@ void UDPStandardImplementation::initializeMembers(){
 
 
 void UDPStandardImplementation::initializeFilter(){
-	FILE_LOG(logDEBUG1) << __AT__ << " starting";
+	FILE_LOG(logDEBUG) << __AT__ << " starting";
 
 	double hc = 0, sigma = 5;
 	int sign = 1, csize, i;
@@ -249,7 +249,7 @@ void UDPStandardImplementation::initializeFilter(){
 
 
 int UDPStandardImplementation::setupFifoStructure(){
-	FILE_LOG(logDEBUG1) << __AT__ << " called";
+	FILE_LOG(logDEBUG) << __AT__ << " called";
 
 	int64_t i;
 	int oldNumberofJobsPerBuffer = numberofJobsPerBuffer;
@@ -356,7 +356,7 @@ int UDPStandardImplementation::setupFifoStructure(){
 
 
 void UDPStandardImplementation::configure(map<string, string> config_map){
-	FILE_LOG(logDEBUG1) << __AT__ << " starting";
+	FILE_LOG(logDEBUG) << __AT__ << " starting";
 
 	map<string, string>::const_iterator pos;
 	pos = config_map.find("mode");
@@ -375,7 +375,7 @@ void UDPStandardImplementation::configure(map<string, string> config_map){
 
 /***file parameters***/
 int UDPStandardImplementation::setDataCompressionEnable(const bool b){
-	FILE_LOG(logDEBUG1) << __AT__ << " starting";
+	FILE_LOG(logDEBUG) << __AT__ << " starting";
 
 	if(myDetectorType != EIGER){
 	        cout << "Info: Setting up Data Compression Enable to " << stringEnable(b);
@@ -419,7 +419,7 @@ int UDPStandardImplementation::setDataCompressionEnable(const bool b){
 
 /***acquisition parameters***/
 void UDPStandardImplementation::setShortFrameEnable(const int i){
-	FILE_LOG(logDEBUG1) << __AT__ << " called";
+	FILE_LOG(logDEBUG) << __AT__ << " called";
 
 	shortFrameEnable = i;
 
@@ -456,7 +456,7 @@ void UDPStandardImplementation::setShortFrameEnable(const int i){
 
 
 int UDPStandardImplementation::setFrameToGuiFrequency(const uint32_t i){
-	FILE_LOG(logDEBUG1) << __AT__ << " called";
+	FILE_LOG(logDEBUG) << __AT__ << " called";
 
 	FrameToGuiFrequency = i;
 	if(setupFifoStructure() == FAIL)
@@ -469,7 +469,7 @@ int UDPStandardImplementation::setFrameToGuiFrequency(const uint32_t i){
 
 
 int UDPStandardImplementation::setAcquisitionPeriod(const uint64_t i){
-	FILE_LOG(logDEBUG1) << __AT__ << " called";
+	FILE_LOG(logDEBUG) << __AT__ << " called";
 
 	acquisitionPeriod = i;
 	if(setupFifoStructure() == FAIL)
@@ -482,7 +482,7 @@ int UDPStandardImplementation::setAcquisitionPeriod(const uint64_t i){
 }
 
 int UDPStandardImplementation::setDynamicRange(const uint32_t i){
-	FILE_LOG(logDEBUG1) << __AT__ << " called";
+	FILE_LOG(logDEBUG) << __AT__ << " called";
 
 	uint32_t oldDynamicRange = dynamicRange;
 
@@ -536,7 +536,7 @@ int UDPStandardImplementation::setDynamicRange(const uint32_t i){
 
 
 int UDPStandardImplementation::setTenGigaEnable(const bool b){
-	FILE_LOG(logDEBUG1) << __AT__ << " called";
+	FILE_LOG(logDEBUG) << __AT__ << " called";
 
 	FILE_LOG(logDEBUG) << "Info: Setting Ten Giga to " << stringEnable(b);
 	bool oldTenGigaEnable = tengigaEnable;
@@ -618,7 +618,7 @@ int UDPStandardImplementation::setTenGigaEnable(const bool b){
 
 /***initial functions***/
 int UDPStandardImplementation::setDetectorType(const detectorType d){
-	FILE_LOG(logDEBUG1) << __AT__ << " called";
+	FILE_LOG(logDEBUG) << __AT__ << " called";
 
 	FILE_LOG(logDEBUG) << "Setting receiver type";
 
@@ -751,7 +751,7 @@ int UDPStandardImplementation::setDetectorType(const detectorType d){
 
 /***acquisition functions***/
 void UDPStandardImplementation::resetAcquisitionCount(){
-	FILE_LOG(logDEBUG1) << __AT__ << " starting";
+	FILE_LOG(logDEBUG) << __AT__ << " starting";
 
 	totalPacketsCaught = 0;
 	acqStarted = false;
@@ -762,7 +762,7 @@ void UDPStandardImplementation::resetAcquisitionCount(){
 
 
 int UDPStandardImplementation::startReceiver(char *c){
-	FILE_LOG(logDEBUG1) << __AT__ << " called";
+	FILE_LOG(logDEBUG) << __AT__ << " called";
 	
 	cout << "Starting Receiver" << endl;
 
@@ -862,7 +862,7 @@ int UDPStandardImplementation::startReceiver(char *c){
  * Post: udp sockets shut down, status is idle, semaphores destroyed
  * */
 void UDPStandardImplementation::stopReceiver(){
-	FILE_LOG(logDEBUG1) << __AT__ << " called";
+	FILE_LOG(logDEBUG) << __AT__ << " called";
 
 	cout << "Stopping Receiver" << endl;
 
@@ -893,7 +893,7 @@ void UDPStandardImplementation::stopReceiver(){
 
 
 int UDPStandardImplementation::shutDownUDPSockets(){
-	FILE_LOG(logDEBUG1) << __AT__ << " called";
+	FILE_LOG(logDEBUG) << __AT__ << " called";
 
 	FILE_LOG(logDEBUG) << "Info: Shutting down UDP Socket(s)";
 
@@ -915,7 +915,7 @@ int UDPStandardImplementation::shutDownUDPSockets(){
  * Post:udp sockets closed, status is transmitting
  * */
 void UDPStandardImplementation::startReadout(){
-	FILE_LOG(logDEBUG1) << __AT__ << " called";
+	FILE_LOG(logDEBUG) << __AT__ << " called";
 
 	FILE_LOG(logDEBUG) << "Info: Transmitting last data";
 
@@ -943,7 +943,7 @@ void UDPStandardImplementation::startReadout(){
 
 
 void UDPStandardImplementation::readFrame(char* c,char** raw, uint64_t &startAcq, uint64_t &startFrame){
-	FILE_LOG(logDEBUG1) << __AT__ << " called";
+	FILE_LOG(logDEBUG) << __AT__ << " called";
 
 	//point to gui data, to let writer thread know that gui is back for data
 	if (guiData == NULL){
@@ -993,7 +993,7 @@ void UDPStandardImplementation::readFrame(char* c,char** raw, uint64_t &startAcq
 
 
 void UDPStandardImplementation::closeFile(int i){
-	FILE_LOG(logDEBUG1) << __AT__ << " called for " << i ;
+	FILE_LOG(logDEBUG) << __AT__ << " called for " << i ;
 
 	//normal
 	if(!dataCompressionEnable){
@@ -1054,7 +1054,7 @@ void UDPStandardImplementation::closeFile(int i){
 
 
 int UDPStandardImplementation::createListeningThreads(bool destroy){
-	FILE_LOG(logDEBUG1) << __AT__ << " starting";
+	FILE_LOG(logDEBUG) << __AT__ << " starting";
 
 	//reset masks
 	killAllListeningThreads = false;
@@ -1104,7 +1104,7 @@ int UDPStandardImplementation::createListeningThreads(bool destroy){
 
 
 int UDPStandardImplementation::createWriterThreads(bool destroy){
-	FILE_LOG(logDEBUG1) << __AT__ << " starting";
+	FILE_LOG(logDEBUG) << __AT__ << " starting";
 
 	//reset masks
 	killAllWritingThreads = false;
@@ -1157,7 +1157,7 @@ int UDPStandardImplementation::createWriterThreads(bool destroy){
 
 
 void UDPStandardImplementation::setThreadPriorities(){
-	FILE_LOG(logDEBUG1) << __AT__ << " called";
+	FILE_LOG(logDEBUG) << __AT__ << " called";
 
 	struct sched_param tcp_param, listen_param, write_param;
 	bool rights = true;
@@ -1193,7 +1193,7 @@ void UDPStandardImplementation::setThreadPriorities(){
 
 
 int UDPStandardImplementation::createUDPSockets(){
-	FILE_LOG(logDEBUG1) << __AT__ << " called";
+	FILE_LOG(logDEBUG) << __AT__ << " called";
 
 	//switching ports if bottom enabled
 	uint32_t port[2];
@@ -1247,7 +1247,7 @@ int UDPStandardImplementation::createUDPSockets(){
 
 
 int UDPStandardImplementation::setupWriter(){
-	FILE_LOG(logDEBUG1) << __AT__ << " starting";
+	FILE_LOG(logDEBUG) << __AT__ << " starting";
 
 	//acquisition start call back returns enable write
 	cbAction = DO_EVERYTHING;
@@ -1297,7 +1297,7 @@ int UDPStandardImplementation::setupWriter(){
 
 
 int UDPStandardImplementation::createNewFile(){
-	FILE_LOG(logDEBUG1) << __AT__ << " called";
+	FILE_LOG(logDEBUG) << __AT__ << " called";
 
 	int index = 0;
 	if(packetsCaught)
@@ -1370,7 +1370,7 @@ int UDPStandardImplementation::createNewFile(){
 
 
 int UDPStandardImplementation::createCompressionFile(int ithread, int iframe){
-	FILE_LOG(logDEBUG1) << __AT__ << " called";
+	FILE_LOG(logDEBUG) << __AT__ << " called";
 
 #ifdef MYROOT1
 	char temp[MAX_STR_LENGTH];
@@ -1400,7 +1400,7 @@ int UDPStandardImplementation::createCompressionFile(int ithread, int iframe){
 
 
 void* UDPStandardImplementation::startListeningThread(void* this_pointer){
-	FILE_LOG(logDEBUG1) << __AT__ << " called";
+	FILE_LOG(logDEBUG) << __AT__ << " called";
 	((UDPStandardImplementation*)this_pointer)->startListening();
 	return this_pointer;
 }
@@ -1408,7 +1408,7 @@ void* UDPStandardImplementation::startListeningThread(void* this_pointer){
 
 
 void* UDPStandardImplementation::startWritingThread(void* this_pointer){
-	FILE_LOG(logDEBUG1) << __AT__ << " called";
+	FILE_LOG(logDEBUG) << __AT__ << " called";
 	((UDPStandardImplementation*)this_pointer)->startWriting();
 	return this_pointer;
 }
@@ -1419,7 +1419,7 @@ void* UDPStandardImplementation::startWritingThread(void* this_pointer){
 
 
 void UDPStandardImplementation::startListening(){
-	FILE_LOG(logDEBUG1) << __AT__ << " called";
+	FILE_LOG(logDEBUG) << __AT__ << " called";
 
 	//set current thread value  index
 	int ithread = currentThreadIndex;
@@ -1433,16 +1433,18 @@ void UDPStandardImplementation::startListening(){
 	//split frames
 	int carryonBufferSize; 		//from previous buffer to keep frames together in a buffer
 	char* tempBuffer = NULL;	//temporary buffer to store split frames
-	if(myDetectorType != EIGER){
-		listenSize = bufferSize * numberofJobsPerBuffer;				//listen to more than 1 packet
-		tempBuffer = new char[onePacketSize * (packetsPerFrame - 1)]; 	//store maximum of 1 packets less in a frame
-	}
+
 	/* outer loop - loops once for each acquisition */
 	//infinite loop, exited only to change dynamic range, 10G parameters etc (then recreated again)
 	while(true){
 
 		//reset parameters before acquisition
 		carryonBufferSize = 0;
+		if(myDetectorType != EIGER){
+			listenSize = bufferSize * numberofJobsPerBuffer;				//listen to more than 1 packet
+			if(tempBuffer!=NULL){delete []tempBuffer;tempBuffer=NULL;}
+			tempBuffer = new char[onePacketSize * (packetsPerFrame - 1)]; 	//store maximum of 1 packets less in a frame
+		}
 
 		/* inner loop - loop for each buffer */
 		//until mask unset (udp sockets shut down by client)
@@ -1512,7 +1514,7 @@ void UDPStandardImplementation::startListening(){
 
 
 int UDPStandardImplementation::prepareAndListenBuffer(int ithread, int lSize, int cSize, char* temp){
-	FILE_LOG(logDEBUG1) << __AT__ << " called";
+	FILE_LOG(logDEBUG) << __AT__ << " called";
 
 	//listen to UDP packets
 	memcpy(buffer[ithread] + HEADER_SIZE_NUM_TOT_PACKETS, temp, cSize);
@@ -1529,6 +1531,17 @@ int UDPStandardImplementation::prepareAndListenBuffer(int ithread, int lSize, in
 		receivedSize = udpSocket[ithread]->ReceiveDataOnly(buffer[ithread] + HEADER_SIZE_NUM_TOT_PACKETS);
 	}
 
+#ifdef MANUALDEBUG
+	eiger_packet_header_t* header = (eiger_packet_header_t*) (buffer[ithread]+HEADER_SIZE_NUM_TOT_PACKETS);
+	eiger_packet_footer_t* footer = (eiger_packet_footer_t*)(buffer[ithread] + footerOffset + HEADER_SIZE_NUM_TOT_PACKETS);
+	cprintf(GREEN,"thread:%d subframenum:%d oldpacketnum:%d new pnum:%d\n",
+			ithread,
+			(*( (unsigned int*) header->subFameNumber)),
+			(*( (uint8_t*) header->dynamicRange)),
+			(*( (uint16_t*) footer->packetNumber)));
+#endif
+
+
 #ifdef DEBUG
 	cprintf(BLUE, "Listening_Thread %d : Received bytes: %d. Expected bytes: %d\n", ithread, receivedSize, bufferSize * numberofJobsPerBuffer-cSize);
 #endif
@@ -1541,7 +1554,7 @@ int UDPStandardImplementation::prepareAndListenBuffer(int ithread, int lSize, in
 
 
 void UDPStandardImplementation::startFrameIndices(int ithread){
-	FILE_LOG(logDEBUG1) << __AT__ << " called";
+	FILE_LOG(logDEBUG) << __AT__ << " called";
 
 	//determine startFrameIndex
 	switch(myDetectorType){
@@ -1578,7 +1591,7 @@ void UDPStandardImplementation::startFrameIndices(int ithread){
 
 
 void UDPStandardImplementation::stopListening(int ithread, int numbytes){
-	FILE_LOG(logDEBUG1) << __AT__ << " called";
+	FILE_LOG(logDEBUG) << __AT__ << " called";
 
 #ifdef DEBUG4
 	cprintf(BLUE,"Listening_Thread %d: Stop Listening\nStatus: %s\n", ithread, runStatusType(status).c_str());
@@ -1657,7 +1670,7 @@ void UDPStandardImplementation::stopListening(int ithread, int numbytes){
 
 
 uint32_t UDPStandardImplementation::processListeningBuffer(int ithread, int cSize, char* temp){
-	FILE_LOG(logDEBUG1) << __AT__ << " called";
+	FILE_LOG(logDEBUG) << __AT__ << " called";
 
 	int lastPacketOffset;		//the offset of the last packet
 	uint32_t lastFrameHeader;		//frame number of last packet in buffer
@@ -1741,7 +1754,7 @@ uint32_t UDPStandardImplementation::processListeningBuffer(int ithread, int cSiz
 
 
 void UDPStandardImplementation::startWriting(){
-	FILE_LOG(logDEBUG1) << __AT__ << " called";
+	FILE_LOG(logDEBUG) << __AT__ << " called";
 
 	//set current thread value  index
 	int ithread = currentThreadIndex;
@@ -1762,7 +1775,7 @@ void UDPStandardImplementation::startWriting(){
 
 
 void UDPStandardImplementation::processWritingBuffer(int ithread){
-	FILE_LOG(logDEBUG1) << __AT__ << " called";
+	FILE_LOG(logDEBUG) << __AT__ << " called";
 
 	//variable definitions
 	char* wbuf[numberofListeningThreads];				//buffer popped from FIFO
@@ -1829,7 +1842,7 @@ void UDPStandardImplementation::processWritingBuffer(int ithread){
 
 
 void UDPStandardImplementation::processWritingBufferPacketByPacket(int ithread){
-	FILE_LOG(logDEBUG1) << __AT__ << " called";
+	FILE_LOG(logDEBUG) << __AT__ << " called";
 
 	//variable definitions
 	char* packetBuffer[numberofListeningThreads];		//buffer popped from FIFO
@@ -2133,7 +2146,7 @@ void UDPStandardImplementation::processWritingBufferPacketByPacket(int ithread){
 
 
 void UDPStandardImplementation::waitWritingBufferForNextAcquisition(int ithread){
-	FILE_LOG(logDEBUG1) << __AT__ << " called";
+	FILE_LOG(logDEBUG) << __AT__ << " called";
 
 	//in case they are not closed already
 	closeFile();
@@ -2190,7 +2203,7 @@ void UDPStandardImplementation::waitWritingBufferForNextAcquisition(int ithread)
 
 
 bool UDPStandardImplementation::popAndCheckEndofAcquisition(int ithread, char* wbuffer[], bool ready[], uint32_t nP[],char* toFree[],int toFreeOffset[]){
-	FILE_LOG(logDEBUG1) << __AT__ << " called";
+	FILE_LOG(logDEBUG) << __AT__ << " called";
 
 	bool endofAcquisition = true;
 	for(int i=0; i<numberofListeningThreads; ++i){
@@ -2239,7 +2252,7 @@ bool UDPStandardImplementation::popAndCheckEndofAcquisition(int ithread, char* w
 
 
 void UDPStandardImplementation::stopWriting(int ithread, char* wbuffer[]){
-	FILE_LOG(logDEBUG1) << __AT__ << " called";
+	FILE_LOG(logDEBUG) << __AT__ << " called";
 
 	cprintf(GREEN,"Info: Writing_Thread %d: End of Acquisition\n",ithread);
 
@@ -2302,7 +2315,7 @@ void UDPStandardImplementation::stopWriting(int ithread, char* wbuffer[]){
 
 
 void UDPStandardImplementation::handleWithoutDataCompression(int ithread, char* wbuffer[],uint32_t npackets){
-	FILE_LOG(logDEBUG1) << __AT__ << " called";
+	FILE_LOG(logDEBUG) << __AT__ << " called";
 
 
 	//get frame number (eiger already gets it when it does packet to packet processing)
@@ -2362,7 +2375,7 @@ void UDPStandardImplementation::handleWithoutDataCompression(int ithread, char* 
 
 
 void UDPStandardImplementation::writeFileWithoutCompression(char* wbuffer[],uint32_t numpackets){
-	FILE_LOG(logDEBUG1) << __AT__ << " called";
+	FILE_LOG(logDEBUG) << __AT__ << " called";
 
 
 	//create headers for eiger
@@ -2505,7 +2518,7 @@ void UDPStandardImplementation::createHeaders(char* wbuffer[]){
 
 
 void UDPStandardImplementation::copyFrameToGui(char* buffer[]){
-	FILE_LOG(logDEBUG1) << __AT__ << " called";
+	FILE_LOG(logDEBUG) << __AT__ << " called";
 
 
 	//random read (gui not ready)
@@ -2565,7 +2578,7 @@ void UDPStandardImplementation::copyFrameToGui(char* buffer[]){
 
 
 void UDPStandardImplementation::handleDataCompression(int ithread, char* wbuffer[], uint64_t &nf){
-	FILE_LOG(logDEBUG1) << __AT__ << " called";
+	FILE_LOG(logDEBUG) << __AT__ << " called";
 
 	//frame number
 	uint64_t tempframenumber = ((uint32_t)(*((uint32_t*)(wbuffer[ithread] + HEADER_SIZE_NUM_TOT_PACKETS))));

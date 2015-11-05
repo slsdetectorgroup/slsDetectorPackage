@@ -64,7 +64,7 @@ slsReceiverTCPIPInterface::slsReceiverTCPIPInterface(int &success, UDPInterface*
 			strcpy(socket->thisClientIP,"none1");
 			strcpy(mess,"dummy message");
 			function_table();
-#ifdef VERBOSE
+#ifdef VERYVERBOSE
 			cout << "Function table assigned." << endl;
 #endif
 		}
@@ -124,7 +124,7 @@ int slsReceiverTCPIPInterface::start(){
 		cout << "Could not create TCP Server thread" << endl;
 		return FAIL;
 	}
-	//#ifdef VERBOSE
+	//#ifdef VERYVERBOSE
 	FILE_LOG(logDEBUG) << "TCP Server thread created successfully." << endl;
 	//#endif
 	return OK;
@@ -160,7 +160,7 @@ void slsReceiverTCPIPInterface::startTCPServer(){
 	int v=OK;
 
 	while(1) {
-#ifdef VERBOSE
+#ifdef VERYVERBOSE
 		cout<< endl;
 #endif
 #ifdef VERY_VERBOSE
@@ -254,7 +254,7 @@ int slsReceiverTCPIPInterface::function_table(){
 	flist[F_ENABLE_RECEIVER_TEN_GIGA]		= 	&slsReceiverTCPIPInterface::enable_tengiga;
 
 
-#ifdef VERBOSE
+#ifdef VERYVERBOSE
 	for (int i=0;i<numberOfFunctions;i++)
 		cout << "function " << i << "located at " << flist[i] << endl;
 #endif
@@ -269,22 +269,22 @@ int slsReceiverTCPIPInterface::function_table(){
 int slsReceiverTCPIPInterface::decode_function(){
 	ret = FAIL;
 	int n,fnum;
-#ifdef VERBOSE
+#ifdef VERYVERBOSE
 	cout <<  "receive data" << endl;
 #endif
 	n = socket->ReceiveDataOnly(&fnum,sizeof(fnum));
 	if (n <= 0) {
-#ifdef VERBOSE
+#ifdef VERYVERBOSE
 		cout << "ERROR reading from socket " << n << ", " << fnum << endl;
 #endif
 		return FAIL;
 	}
-#ifdef VERBOSE
+#ifdef VERYVERBOSE
 	else
 		cout << "size of data received " << n <<endl;
 #endif
 
-#ifdef VERBOSE
+#ifdef VERYVERBOSE
 	cout <<  "calling function fnum = "<< fnum << hex << ":"<< flist[fnum] << endl;
 #endif
 
@@ -372,7 +372,7 @@ int slsReceiverTCPIPInterface::set_detector_type(){
 			
 		}
 	}
-	//#ifdef VERBOSE
+	//#ifdef VERYVERBOSE
 	if(ret!=FAIL)
 		FILE_LOG(logDEBUG) << "detector type " << dr;
 	else
@@ -433,7 +433,7 @@ int slsReceiverTCPIPInterface::set_file_name() {
 				ret = FAIL;
 		}
 	}
-#ifdef VERBOSE
+#ifdef VERYVERBOSE
 	if(ret!=FAIL)
 		cout << "file name:" << retval << endl;
 	else
@@ -505,7 +505,7 @@ int slsReceiverTCPIPInterface::set_file_dir() {
 		}
 
 	}
-#ifdef VERBOSE
+#ifdef VERYVERBOSE
 	if(ret!=FAIL)
 		cout << "file path:" << retval << endl;
 	else
@@ -571,7 +571,7 @@ int slsReceiverTCPIPInterface::set_file_index() {
 				ret = FAIL;
 		}
 	}
-#ifdef VERBOSE
+#ifdef VERYVERBOSE
 	if(ret!=FAIL)
 		cout << "file index:" << retval << endl;
 	else
@@ -644,7 +644,7 @@ int slsReceiverTCPIPInterface::set_frame_index() {
 			}
 		}
 	}
-#ifdef VERBOSE
+#ifdef VERYVERBOSE
 	if(ret!=FAIL)
 		cout << "frame index:" << retval << endl;
 	else
@@ -1130,7 +1130,7 @@ int	slsReceiverTCPIPInterface::moench_read_frame(){
 		/**send garbage with -1 index to try again*/
 		if (raw == NULL){
 			startAcquisitionIndex = -1;
-#ifdef VERBOSE
+#ifdef VERYVERBOSE
 			cout<<"data not ready for gui yet"<<endl;
 #endif
 		}
@@ -1154,7 +1154,7 @@ int	slsReceiverTCPIPInterface::moench_read_frame(){
 
 
 			while (iPacket < (int)numPackets){
-#ifdef VERBOSE
+#ifdef VERYVERBOSE
 				printf("iPacket:%d\n",iPacket);cout << endl;
 #endif
 				//if missing packets, dont send to gui
@@ -1179,7 +1179,7 @@ int	slsReceiverTCPIPInterface::moench_read_frame(){
 
 					x = packetIndex / 10;
 					y = packetIndex % 10;
-#ifdef VERBOSE
+#ifdef VERYVERBOSE
 					cout<<"x:"<<x<<" y:"<<y<<endl;
 #endif
 					//copy 16 times 80 bytes
@@ -1221,7 +1221,7 @@ int	slsReceiverTCPIPInterface::moench_read_frame(){
 
 	}
 
-#ifdef VERBOSE
+#ifdef VERYVERBOSE
 	cout << "fName:" << fName << endl;
 	cout << "acquisitionIndex:" << acquisitionIndex << endl;
 	cout << "frameIndex:" << frameIndex << endl;
@@ -1318,7 +1318,7 @@ int	slsReceiverTCPIPInterface::gotthard_read_frame(){
 		/**send garbage with -1 index to try again*/
 		if (raw == NULL){
 			startAcquisitionIndex = -1;
-#ifdef VERBOSE
+#ifdef VERYVERBOSE
 			cout<<"data not ready for gui yet"<<endl;
 #endif
 		}else{
@@ -1326,7 +1326,7 @@ int	slsReceiverTCPIPInterface::gotthard_read_frame(){
 				bindex = (uint32_t)(*((uint32_t*)raw));
 				pindex = (bindex & GOTTHARD_SHORT_PACKET_INDEX_MASK);
 				index = ((bindex & GOTTHARD_SHORT_FRAME_INDEX_MASK) >> GOTTHARD_SHORT_FRAME_INDEX_OFFSET);
-#ifdef VERBOSE
+#ifdef VERYVERBOSE
 				cout << "index:" << hex << index << endl;
 #endif
 			}else{
@@ -1336,7 +1336,7 @@ int	slsReceiverTCPIPInterface::gotthard_read_frame(){
 				bindex2 = ((uint32_t)(*((uint32_t*)((char*)(raw+onebuffersize)))))+1;
 				pindex2 =(bindex2 & GOTTHARD_PACKET_INDEX_MASK);
 				index2 =((bindex2 & GOTTHARD_FRAME_INDEX_MASK) >> GOTTHARD_FRAME_INDEX_OFFSET);
-#ifdef VERBOSE
+#ifdef VERYVERBOSE
 				cout << "index1:" << hex << index << endl;
 				cout << "index2:" << hex << index << endl;
 #endif
@@ -1398,7 +1398,7 @@ int	slsReceiverTCPIPInterface::gotthard_read_frame(){
 		}
 	}
 
-#ifdef VERBOSE
+#ifdef VERYVERBOSE
 	if(frameIndex!=-1){
 		cout << "fName:" << fName << endl;
 		cout << "acquisitionIndex:" << acquisitionIndex << endl;
@@ -1493,7 +1493,7 @@ int	slsReceiverTCPIPInterface::propix_read_frame(){
 		/**send garbage with -1 index to try again*/
 		if (raw == NULL){
 			startAcquisitionIndex = -1;
-#ifdef VERBOSE
+#ifdef VERYVERBOSE
 			cout<<"data not ready for gui yet"<<endl;
 #endif
 		}else{
@@ -1503,7 +1503,7 @@ int	slsReceiverTCPIPInterface::propix_read_frame(){
 			bindex2 = ((uint32_t)(*((uint32_t*)((char*)(raw+onebuffersize)))))+1;
 			pindex2 =(bindex2 & PROPIX_PACKET_INDEX_MASK);
 			index2 =((bindex2 & PROPIX_FRAME_INDEX_MASK) >> PROPIX_FRAME_INDEX_OFFSET);
-#ifdef VERBOSE
+#ifdef VERYVERBOSE
 			cout << "index1:" << hex << index << endl;
 			cout << "index2:" << hex << index << endl;
 #endif
@@ -1552,7 +1552,7 @@ int	slsReceiverTCPIPInterface::propix_read_frame(){
 		}
 	}
 
-#ifdef VERBOSE
+#ifdef VERYVERBOSE
 	if(frameIndex!=-1){
 		cout << "fName:" << fName << endl;
 		cout << "acquisitionIndex:" << acquisitionIndex << endl;
@@ -1652,7 +1652,7 @@ int	slsReceiverTCPIPInterface::eiger_read_frame(){
 	/**send garbage with -1 index to try again*/
 	else if(!receiverBase->getFramesCaught()){
 		startAcquisitionIndex=-1;
-#ifdef VERBOSE
+#ifdef VERYVERBOSE
 		cout<<"haven't caught any frame yet"<<endl;
 #endif
 	}
@@ -1665,7 +1665,7 @@ int	slsReceiverTCPIPInterface::eiger_read_frame(){
 		/**send garbage with -1 index to try again*/
 		if (raw == NULL){
 			startAcquisitionIndex = -1;
-#ifdef VERBOSE
+#ifdef VERYVERBOSE
 			cout<<"data not ready for gui yet"<<endl;
 #endif
 		}
@@ -1683,7 +1683,7 @@ int	slsReceiverTCPIPInterface::eiger_read_frame(){
 				subframenumber = *( (uint32_t*) wbuf_header->subframenum);
 			}
 
-#ifdef VERBOSE
+#ifdef VERYVERBOSE
 			cout << "index:" << dec << index << endl;
 			cout << "subframenumber:" << dec << subframenumber << endl;
 #endif
@@ -1813,7 +1813,7 @@ int	slsReceiverTCPIPInterface::eiger_read_frame(){
 		}
 	}
 
-#ifdef VERBOSE
+#ifdef VERYVERBOSE
 	if(frameIndex!=-1){
 		cout << "fName:" << fName << endl;
 		cout << "acquisitionIndex:" << acquisitionIndex << endl;
@@ -2093,7 +2093,7 @@ int slsReceiverTCPIPInterface::set_timer() {
 				ret = FAIL;
 		}
 	}
-#ifdef VERBOSE
+#ifdef VERYVERBOSE
 	if(ret!=FAIL){
 		if(index[0] == FRAME_PERIOD)
 			cout << "acquisition period:" << retval << endl;
@@ -2228,7 +2228,7 @@ int slsReceiverTCPIPInterface::set_detector_hostname() {
 			}
 		}
 	}
-#ifdef VERBOSE
+#ifdef VERYVERBOSE
 	if(ret!=FAIL)
 		cout << "hostname:" << retval << endl;
 	else
@@ -2320,7 +2320,7 @@ int slsReceiverTCPIPInterface::set_dynamic_range() {
 			}
 		}
 	}
-#ifdef VERBOSE
+#ifdef VERYVERBOSE
 	if(ret!=FAIL)
 		cout << "dynamic range" << dr << endl;
 	else
@@ -2383,7 +2383,7 @@ int slsReceiverTCPIPInterface::enable_overwrite() {
 				ret = FAIL;
 		}
 	}
-#ifdef VERBOSE
+#ifdef VERYVERBOSE
 	if(ret!=FAIL)
 		cout << "overwrite:" << retval << endl;
 	else
@@ -2448,7 +2448,7 @@ int slsReceiverTCPIPInterface::enable_tengiga() {
 				tenGigaEnable = retval;
 		}
 	}
-#ifdef VERBOSE
+#ifdef VERYVERBOSE
 	if(ret!=FAIL)
 		cout << "10Gbe:" << val << endl;
 	else
@@ -2749,7 +2749,7 @@ int slsReceiverTCPIPInterface::exec_command() {
 
 	// execute action if the arguments correctly arrived
 	if (ret==OK) {
-#ifdef VERBOSE
+#ifdef VERYVERBOSE
 		cout << "executing command " << cmd << endl;
 #endif
 		if (lockStatus==0 || socket->differentClients==0)

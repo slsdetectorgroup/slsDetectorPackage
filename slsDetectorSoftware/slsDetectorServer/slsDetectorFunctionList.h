@@ -28,8 +28,9 @@ int getNModBoard(enum dimension arg);
 
 int64_t getModuleId(enum idMode arg, int imod);
 int64_t getDetectorId(enum idMode arg);
-u_int64_t  getDetectorMAC();
 int  getDetectorNumber();
+u_int64_t  getDetectorMAC();
+int  getDetectorIP();
 
 int moduleTest( enum digitalTestMode arg, int imod);
 int detectorTest( enum digitalTestMode arg);

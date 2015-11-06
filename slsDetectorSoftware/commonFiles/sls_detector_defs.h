@@ -363,7 +363,7 @@ enum detectorSettings{
   LOWGAIN,          /**< low gain  settings */
   MEDIUMGAIN,       /**< medium gain  settings */
   VERYHIGHGAIN,     /**< very high gain  settings */
-  LOWNOISE,	    /**< low noise settings */
+  LOWNOISE,	    	/**< low noise settings */
   UNDEFINED,        /**< undefined or custom  settings */
   UNINITIALIZED     /**< uninitialiazed (status at startup) */
 };

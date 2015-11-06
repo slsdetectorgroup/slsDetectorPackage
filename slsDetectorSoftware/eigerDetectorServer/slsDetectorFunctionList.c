@@ -154,8 +154,9 @@ int initDetector(){
 	Feb_Control_SetTestModeVariable(0);
 	Feb_Control_CheckSetup();
 
-	//print detector mac
-	getDetectorMAC();
+	//print detector mac and ip
+	printf("mac read from detector: %llx\n",getDetectorMAC());
+	printf("ip read from detector: %x\n",getDetectorIP());
 
 	printf("\n");
 	return 1;
@@ -282,6 +283,33 @@ u_int64_t  getDetectorMAC() {
 
 	return res;
 }
+
+
+
+int  getDetectorIP(){
+	char temp[50]="";
+	int res=0;
+	//execute and get address
+	char output[255];
+	FILE* sysFile = popen("ifconfig  | grep 'inet addr:'| grep -v '127.0.0.1' | cut -d: -f2", "r");
+	fgets(output, sizeof(output), sysFile);
+	pclose(sysFile);
+
+	//converting IPaddress to hex.
+	char* pcword = strtok (output,".");
+	while (pcword != NULL) {
+		sprintf(output,"%02x",atoi(pcword));
+		strcat(temp,output);
+		pcword = strtok (NULL, ".");
+	}
+	strcpy(output,temp);
+	sscanf(output, "%x", 	&res);
+	//printf("ip:%x\n",res);
+
+	return res;
+}
+
+
 
 int moduleTest( enum digitalTestMode arg, int imod){
 	//template testShiftIn from mcb_funcs.c
@@ -855,12 +883,21 @@ int executeTrimming(enum trimMode mode, int par1, int par2, int imod){
 
 int configureMAC(int ipad, long long int macad, long long int detectormacadd, int detipad, int udpport, int udpport2, int ival){
 	//only for 1Gbe
-	if((!send_to_ten_gig) && (detectormacadd != getDetectorMAC())){
-		printf("*************************************************\n");
-		printf("WARNING: actual detector mac address %llx does not match the one from client %llx\n",getDetectorMAC(),detectormacadd);
-		detectormacadd = getDetectorMAC();
-		printf("WARNING: Matched detectormac to the hardware mac now\n");
-		printf("*************************************************\n");
+	if(!send_to_ten_gig){
+		if (detectormacadd != getDetectorMAC()){
+			printf("*************************************************\n");
+			printf("WARNING: actual detector mac address %llx does not match the one from client %llx\n",getDetectorMAC(),detectormacadd);
+			detectormacadd = getDetectorMAC();
+			printf("WARNING: Matched detectormac to the hardware mac now\n");
+			printf("*************************************************\n");
+		}
+		if (detipad != getDetectorIP()){
+			printf("*************************************************\n");
+			printf("WARNING: actual detector ip address %x does not match the one from client %x\n",getDetectorIP(),detipad);
+			detipad = getDetectorIP();
+			printf("WARNING: Matched detector ip to the hardware ip now\n");
+			printf("*************************************************\n");
+		}
 	}
 
 	char src_mac[50], src_ip[50],dst_mac[50], dst_ip[50];

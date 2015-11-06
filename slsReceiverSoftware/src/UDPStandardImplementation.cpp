@@ -2244,6 +2244,11 @@ bool UDPStandardImplementation::popAndCheckEndofAcquisition(int ithread, char* w
 				}
 			}
 		}
+		//when both are not popped but curretn frame number is being processed
+		else{
+			if(nP[i] != dummyPacketValue)
+				endofAcquisition = false;
+		}
 	}
 
 	return endofAcquisition;

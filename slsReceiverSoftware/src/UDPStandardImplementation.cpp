@@ -1867,8 +1867,6 @@ void UDPStandardImplementation::processWritingBufferPacketByPacket(int ithread){
 	volatile uint32_t currentPacketNumber[numberofListeningThreads];//current packet number
 	volatile int numberofMissingPackets[numberofListeningThreads];	// number of missing packets in this buffer
 
-	eiger_packet_header_t* blankframe_header;
-
 	for(int i=0; i<MAX_NUM_PACKETS; ++i){
 		toFreePointers[i] = NULL;
 		frameBuffer[i] = NULL;
@@ -1878,6 +1876,10 @@ void UDPStandardImplementation::processWritingBufferPacketByPacket(int ithread){
 	/* outer loop - loops once for each acquisition */
 	//infinite loop, exited only to change dynamic range, 10G parameters etc (then recreated again)
 	while(true){
+
+		//unsigned char* blankframe_data=0;
+		//eiger_packet_header_t* blankframe_header = 0;
+
 		//--reset parameters before acquisition
 		for(int i=0; i<numberofListeningThreads; ++i){
 			packetBuffer[i] = NULL;
@@ -1894,16 +1896,16 @@ void UDPStandardImplementation::processWritingBufferPacketByPacket(int ithread){
 		presentFrameNumber = 0;
 		//blank frame - initializing with missing packet values
 		blankoffset = 0;
-		unsigned char* blankframe_data=0;
+
 		for(uint32_t i=0; i<packetsPerFrame; ++i){
 			if(blankframe[i]){delete [] blankframe[i]; blankframe[i] = 0;}
 			blankframe[i] = new char[onePacketSize];
 			//set missing packet to 0xff
-			blankframe_header = (eiger_packet_header_t*) blankframe[i];
+			eiger_packet_header_t* blankframe_header = (eiger_packet_header_t*) blankframe[i];
 			*( (uint16_t*) blankframe_header->missingPacket) = missingPacketValue;
 			//set each value inside blank frame to 0xff
 			for(int j=0;j<(oneDataSize);++j){
-				blankframe_data = (unsigned char*)blankframe[i] + sizeof(eiger_packet_header_t) + j;
+				unsigned char* blankframe_data = (unsigned char*)blankframe[i] + sizeof(eiger_packet_header_t) + j;
 				*(blankframe_data) = 0xFF;
 			}
 		}
@@ -1945,12 +1947,11 @@ void UDPStandardImplementation::processWritingBufferPacketByPacket(int ithread){
 
 				//not full frame
 				else if(!fullframe[i]){
-					eiger_packet_footer_t* packetBuffer_footer = (eiger_packet_footer_t*)(packetBuffer[i] + footerOffset + HEADER_SIZE_NUM_TOT_PACKETS);
-
-
 
 					//update frame number and packet number
 					if(numPackets[i] != dummyPacketValue){
+						eiger_packet_footer_t* packetBuffer_footer = (eiger_packet_footer_t*)(packetBuffer[i] + footerOffset + HEADER_SIZE_NUM_TOT_PACKETS);
+
 						if(!((uint32_t)(*( (uint64_t*) packetBuffer_footer)))){
 							FILE_LOG(logERROR) << "Fifo "<< i << ": Frame Number is zero from firmware. popready[" << i << "]:" << popReady[i];
 							popReady[i]=true;
@@ -1972,10 +1973,10 @@ void UDPStandardImplementation::processWritingBufferPacketByPacket(int ithread){
 					if(numPackets[i] == dummyPacketValue)
 						cprintf(GREEN, "Fifo %d: Dummy packet: Adding missing packets to the last frame\n", i);
 					else{
-						cprintf(GREEN,"Fifo %d: fnum %d, (FW_fnum %d), pnum %d, last_pnum %d, pnum_offset %d\n"
+						cprintf(GREEN,"Fifo %d: fnum %d, fnum_thread %d, pnum %d, last_pnum %d, pnum_offset %d\n"
 								"Fifo %d: Add missing packets to the right fnum %d\n",
-								i,presentFrameNumber[i],(uint32_t)(*( (uint64_t*) packetBuffer_footer)),
-								*( (uint16_t*) packetBuffer_footer->packetNumber),lastPacketNumber[i],frameBufferoffset[i],
+								i,presentFrameNumber[i],threadFrameNumber[i],
+								currentPacketNumber[i],lastPacketNumber[i],frameBufferoffset[i],
 								i,presentFrameNumber);
 					}
 #endif
@@ -1991,7 +1992,7 @@ void UDPStandardImplementation::processWritingBufferPacketByPacket(int ithread){
 						frameBuffer[frameBufferoffset[i]] = blankframe[blankoffset];
 						eiger_packet_header_t* frameBuffer_header = (eiger_packet_header_t*) frameBuffer[frameBufferoffset[i]];
 						if (*( (uint16_t*) frameBuffer_header->missingPacket)!= missingPacketValue){
-							blankframe_header = (eiger_packet_header_t*) blankframe[blankoffset];
+							eiger_packet_header_t* blankframe_header = (eiger_packet_header_t*) blankframe[blankoffset];
 							cprintf(BG_RED, "Fifo %d: Missing Packet Error: Adding blank packets mismatch "
 									"pnum_offset %d, pnum %d, fnum_thread %d, missingpacket_buffer 0x%x, missingpacket_blank 0x%x\n",
 									i,frameBufferoffset[i],currentPacketNumber[i],threadFrameNumber[i],
@@ -2029,9 +2030,8 @@ void UDPStandardImplementation::processWritingBufferPacketByPacket(int ithread){
 					else{
 						if(currentPacketNumber[i] != (uint32_t)(frameBufferoffset[i]-(i*packetsPerFrame/numberofListeningThreads))+1){
 							cprintf(BG_RED, "Fifo %d: Correct Packet Offset Error:Adding current packet mismatch "
-									"pnum_offset %d,pnum %d fnum_thread %d, (FW_fnum %d)\n",
-									i,frameBufferoffset[i],currentPacketNumber[i],
-									threadFrameNumber[i],(uint32_t)(*( (uint64_t*) packetBuffer_footer)));
+									"pnum_offset %d,pnum %d fnum_thread %d\n",
+									i,frameBufferoffset[i],currentPacketNumber[i],threadFrameNumber[i]);
 							exit(-1);
 						}
 
@@ -2066,9 +2066,9 @@ void UDPStandardImplementation::processWritingBufferPacketByPacket(int ithread){
 				currentFrameNumber = presentFrameNumber;
 				numTotMissingPacketsInFile += numMissingPackets;
 				numTotMissingPackets += numMissingPackets;
-#ifdef FNUM_DEBUG
-				cprintf(GREEN,"**fnum:%d**\n",currframenum);
-#endif
+//#ifdef FNUM_DEBUG
+				cprintf(GREEN,"**fnum:%d**\n",currentFrameNumber);
+//#endif
 #ifdef MISSINGP_DEBUG
 				if(numberofMissingPackets[0])
 					cprintf(RED, "Fifo 0 missing packets %d for fnum %d\n",numberofMissingPackets[0],currentPacketNumber);

@@ -116,6 +116,11 @@ typedef struct
 	// serverAddress = {0};
 	// clientAddress = {0};
 	  //   strcpy(hostname,host_ip_or_name);
+
+	 strcpy(lastClientIP,"none");
+	 strcpy(thisClientIP,"none1");
+	 strcpy(dummyClientIP,"dummy");
+
      struct hostent *hostInfo = gethostbyname(host_ip_or_name);
      if (hostInfo == NULL){
        cerr << "Exiting: Problem interpreting host: " << host_ip_or_name << "\n";
@@ -170,15 +175,15 @@ typedef struct
 	 nsent(0),
 	 total_sent(0)
    {
-		 //memset(&serverAddress, 0, sizeof(sockaddr_in));
-		// memset(&clientAddress, 0, sizeof(sockaddr_in));
-		// serverAddress = {0};
-		// clientAddress = {0};
-/* // you can specify an IP address: */
-/*  */
 
+/* // you can specify an IP address: */
 /* // or you can let it automatically select one: */
 /* myaddr.sin_addr.s_addr = INADDR_ANY; */
+
+
+		 strcpy(lastClientIP,"none");
+		 strcpy(thisClientIP,"none1");
+		 strcpy(dummyClientIP,"dummy");
 
 	 if(serverAddress.sin_port == htons(port_number)){
 		 socketDescriptor = -10;
@@ -592,6 +597,15 @@ typedef struct
 	   length-=nsent;
 	   total_sent+=nsent;
 	 }
+
+     if (total_sent>0)
+       strcpy(thisClientIP,dummyClientIP);
+
+     if (strcmp(lastClientIP,thisClientIP))
+       differentClients=1;
+     else
+       differentClients=0;
+
 	 break;
        case UDP:
 	 if (socketDescriptor<0) return -1;
@@ -641,13 +655,7 @@ typedef struct
 #ifdef VERY_VERBOSE
        cout << "sent "<< total_sent << " Bytes" << endl; 
 #endif
-       if (total_sent>0)
-         strcpy(thisClientIP,dummyClientIP);
 
-       if (strcmp(lastClientIP,thisClientIP))
-         differentClients=1;
-       else
-         differentClients=0;
 
        return total_sent;
        

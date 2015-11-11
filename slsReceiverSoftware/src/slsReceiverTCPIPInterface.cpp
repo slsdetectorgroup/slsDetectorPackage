@@ -441,6 +441,7 @@ int slsReceiverTCPIPInterface::set_file_name() {
 #endif
 #endif
 
+
 	if(ret==OK && socket->differentClients){
 		FILE_LOG(logDEBUG) << "Force update";
 		ret=FORCE_UPDATE;
@@ -451,12 +452,14 @@ int slsReceiverTCPIPInterface::set_file_name() {
 	if(ret==FAIL){
 		cprintf(RED, "%s\n", mess);
 		socket->SendDataOnly(mess,sizeof(mess));
+	}
+	if(retval == NULL)
 		socket->SendDataOnly(defaultVal,MAX_STR_LENGTH);
-	}else
+	else{
 		socket->SendDataOnly(retval,MAX_STR_LENGTH);
+		delete[] retval;
+	}
 
-	//free
-	if(retval != NULL) delete[] retval;
 
 	//return ok/fail
 	return ret;
@@ -523,12 +526,13 @@ int slsReceiverTCPIPInterface::set_file_dir() {
 	if(ret==FAIL){
 		cprintf(RED, "%s\n", mess);
 		socket->SendDataOnly(mess,sizeof(mess));
+	}
+	if(retval == NULL)
 		socket->SendDataOnly(defaultVal,MAX_STR_LENGTH);
-	}else
+	else{
 		socket->SendDataOnly(retval,MAX_STR_LENGTH);
-
-	//free
-	if(retval != NULL) delete[] retval;
+		delete[] retval;
+	}
 
 	//return ok/fail
 	return ret;
@@ -2244,13 +2248,15 @@ int slsReceiverTCPIPInterface::set_detector_hostname() {
 	// send answer
 	socket->SendDataOnly(&ret,sizeof(ret));
 	if(ret==FAIL){
-		cprintf(RED,"%s\n",mess);
+		cprintf(RED, "%s\n", mess);
 		socket->SendDataOnly(mess,sizeof(mess));
+	}
+	if(retval == NULL)
 		socket->SendDataOnly(defaultVal,MAX_STR_LENGTH);
-	}else 	socket->SendDataOnly(retval,MAX_STR_LENGTH);
-
-	//free
-	if(retval!=NULL)	delete[] retval;
+	else{
+		socket->SendDataOnly(retval,MAX_STR_LENGTH);
+		delete[] retval;
+	}
 
 	//return ok/fail
 	return ret;

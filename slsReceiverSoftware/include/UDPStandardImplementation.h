@@ -379,11 +379,10 @@ private:
 	 * @param wbuffer the buffer array that is popped from all the FIFOs
 	 * @param ready if that FIFO is allowed to pop (depends on if dummy buffer already popped/ waiting for other FIFO to finish a frame(eiger))
 	 * @param nP number of packets in the buffer popped out
-	 * @param toFree array of addresses to pop into fifoFree  (eiger specific)
-	 * @param toFreeOffset the number of addresses to free for each FIFO (eiger specific)
+	 * @param fifoTempFree circular fifo to save addresses of packets adding upto a frame before pushing into fifofree (eiger specific)
 	 * @return true if end of acquisition else false
 	 */
-	bool popAndCheckEndofAcquisition(int ithread, char* wbuffer[], bool ready[], uint32_t nP[],char* toFree[],int toFreeOffset[]);
+	bool popAndCheckEndofAcquisition(int ithread, char* wbuffer[], bool ready[], uint32_t nP[],CircularFifo<char>* fifoTempFree[]);
 
 	/**
 	 * Called by processWritingBuffer and processWritingBufferPacketByPacket

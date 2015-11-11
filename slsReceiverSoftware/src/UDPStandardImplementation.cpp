@@ -152,7 +152,7 @@ void UDPStandardImplementation::initializeMembers(){
 	previousFrameNumber = -1;
 	acqStarted = false;
 	measurementStarted = false;
-	for(int i = 0; i < numberofListeningThreads; ++i)
+	for(int i = 0; i < MAX_NUMBER_OF_LISTENING_THREADS; ++i)
 		totalListeningFrameCount[i] = 0;
 	packetsInFile = 0;
 	numMissingPackets = 0;
@@ -309,6 +309,7 @@ int UDPStandardImplementation::setupFifoStructure(){
 		return OK;
 
 
+	int count = 0;
 	//set up fifo structure
 	for(int i=0;i<numberofListeningThreads;i++){
 
@@ -321,12 +322,18 @@ int UDPStandardImplementation::setupFifoStructure(){
 #endif
 			delete fifoFree[i];
 		}
-		if(fifo[i])		delete fifo[i];
+		if(fifo[i]){
+			while(!fifo[i]->isEmpty())
+				fifo[i]->pop(buffer[i]);
+			delete fifo[i];
+		}
 		if(mem0[i]) 	free(mem0[i]);
 
 		//creating
 		fifoFree[i] 	= new CircularFifo<char>(fifoSize);
 		fifo[i] 		= new CircularFifo<char>(fifoSize);
+
+		//cout<<"buffersize:"<<bufferSize<<endl;
 
 		//allocate memory
 		mem0[i] = (char*)malloc((bufferSize * numberofJobsPerBuffer + HEADER_SIZE_NUM_TOT_PACKETS) * fifoSize);
@@ -336,14 +343,19 @@ int UDPStandardImplementation::setupFifoStructure(){
 		}
 
 		//push free address into fifoFree
+		count = 0;
 		buffer[i]=mem0[i];
 		while (buffer[i] < (mem0[i]+(bufferSize * numberofJobsPerBuffer + HEADER_SIZE_NUM_TOT_PACKETS) * (fifoSize-1))) {
 			fifoFree[i]->push(buffer[i]);
-#ifdef DEBUG5
+//#ifdef DEBUG5
+
+			if(count==0 || count == 127998)
 			cprintf(BLUE,"Info: %d fifostructure free pushed into fifofree %p\n", i, (void*)(buffer[i]));
-#endif
+//#endif
 			buffer[i] += (bufferSize * numberofJobsPerBuffer + HEADER_SIZE_NUM_TOT_PACKETS);
+			count++;
 		}
+		cout<<i<<" count:"<<count<<endl;
 	}
 	FILE_LOG(logDEBUG)  << "Info: Fifo structure(s) reconstructed";
 	return OK;
@@ -1452,8 +1464,11 @@ void UDPStandardImplementation::startListening(){
 
 			//pop from fifo
 			fifoFree[ithread]->pop(buffer[ithread]);
-#ifdef DEBUG5
-			cprintf(BLUE,"Listening_Thread %d :Listener popped from fifofree %p\n", ithread, (void*)(buffer[ithread]));
+#ifdef CFIFODEBUG
+			if(ithread == 0)
+				cprintf(CYAN,"Listening_Thread %d :Listener popped from fifofree %p\n", ithread, (void*)(buffer[ithread]));
+			else
+				cprintf(YELLOW,"Listening_Thread %d :Listener popped from fifofree %p\n", ithread, (void*)(buffer[ithread]));
 #endif
 
 			//udpsocket doesnt exist
@@ -1489,8 +1504,12 @@ void UDPStandardImplementation::startListening(){
 
 			//push buffer to FIFO
 			while(!fifo[ithread]->push(buffer[ithread]));
-#ifdef DEBUG5
-					cprintf(BLUE,"Listening_Thread %d: Listener pushed into fifo %p\n",ithread, (void*)(buffer[ithread]));
+#ifdef CFIFODEBUG
+				if(ithread == 0)
+					cprintf(CYAN,"Listening_Thread %d: Listener pushed into fifo %p\n",ithread, (void*)(buffer[ithread]));
+				else
+					cprintf(YELLOW,"Listening_Thread %d: Listener pushed into fifo %p\n",ithread, (void*)(buffer[ithread]));
+
 #endif
 
 		}/*--end of loop for each buffer (inner loop)*/
@@ -1517,7 +1536,8 @@ int UDPStandardImplementation::prepareAndListenBuffer(int ithread, int lSize, in
 	FILE_LOG(logDEBUG) << __AT__ << " called";
 
 	//listen to UDP packets
-	memcpy(buffer[ithread] + HEADER_SIZE_NUM_TOT_PACKETS, temp, cSize);
+	if(cSize)
+		memcpy(buffer[ithread] + HEADER_SIZE_NUM_TOT_PACKETS, temp, cSize);
 	int receivedSize = udpSocket[ithread]->ReceiveDataOnly(buffer[ithread] + HEADER_SIZE_NUM_TOT_PACKETS + cSize, lSize + cSize);
 
 	//throw away packets that is not one packet size, need to check status if socket is shut down
@@ -1606,8 +1626,11 @@ void UDPStandardImplementation::stopListening(int ithread, int numbytes){
 	if(numbytes <= 0){
 		cprintf(BLUE,"Listening_Thread %d :End of Acquisition\n", ithread);
 		while(!fifoFree[ithread]->push(buffer[ithread]));
-#ifdef DEBUG5
-		cprintf(BLUE,"Listening_Thread %d :Listener push empty buffer into fifofree %p\n", ithread, (void*)(buffer[ithread]));
+#ifdef CFIFODEBUG
+		if(ithread == 0)
+			cprintf(CYAN,"Listening_Thread %d :Listener push empty buffer into fifofree %p\n", ithread, (void*)(buffer[ithread]));
+		else
+			cprintf(YELLOW,"Listening_Thread %d :Listener push empty buffer into fifofree %p\n", ithread, (void*)(buffer[ithread]));
 #endif
 	}
 
@@ -1621,19 +1644,31 @@ void UDPStandardImplementation::stopListening(int ithread, int numbytes){
 		cprintf(BLUE,"Listening_Thread %d: Last Buffer packet count:%d\n",ithread, numbytes/onePacketSize);
 #endif
 		while(!fifo[ithread]->push(buffer[ithread]));
-#ifdef DEBUG5
-		cprintf(BLUE,"Listening_Thread %d: Listener Last Buffer pushed into fifo %p\n",  ithread,(void*)(buffer[ithread]));
+#ifdef CFIFODEBUG
+		if(ithread == 0)
+		 cprintf(CYAN,"Listening_Thread %d: Listener Last Buffer pushed into fifo %p\n",  ithread,(void*)(buffer[ithread]));
+		else
+			cprintf(YELLOW,"Listening_Thread %d: Listener Last Buffer pushed into fifo %p\n",  ithread,(void*)(buffer[ithread]));
 #endif
 	}
 
 	//push dummy-end buffer into fifo for all writer threads
 	for(int i=0; i<numberofWriterThreads; ++i){
 		fifoFree[ithread]->pop(buffer[ithread]);
+#ifdef CFIFODEBUG
+		if(ithread == 0)
+			cprintf(CYAN,"Listening_Thread %d: Popped Dummy from fifoFree %p\n",  ithread,(void*)(buffer[ithread]));
+		else
+			cprintf(YELLOW,"Listening_Thread %d: Popped Dummy from fifoFree %p\n",  ithread,(void*)(buffer[ithread]));
+#endif
 		//creating dummy-end buffer with pc=0xFFFF
 		(*((uint32_t*)(buffer[ithread]))) = dummyPacketValue;
 		while(!fifo[ithread]->push(buffer[ithread]));
-#ifdef DEBUG5
-		cprintf(BLUE,"Listening_Thread %d: Listener pushed dummy-end buffer into fifo %p\n", ithread,(void*)(buffer[ithread]));
+#ifdef CFIFODEBUG
+		if(ithread == 0)
+			cprintf(CYAN,"Listening_Thread %d: Listener pushed dummy-end buffer into fifo %p\n", ithread,(void*)(buffer[ithread]));
+		else
+			cprintf(YELLOW,"Listening_Thread %d: Listener pushed dummy-end buffer into fifo %p\n", ithread,(void*)(buffer[ithread]));
 #endif
 	}
 
@@ -1852,8 +1887,9 @@ void UDPStandardImplementation::processWritingBufferPacketByPacket(int ithread){
 
 	int MAX_NUM_PACKETS = 1024;							//highest 32 bit has 1024 number of packets
 	uint32_t LAST_PACKET_VALUE;							//last packet number
-	char* toFreePointers[MAX_NUM_PACKETS];				//pointers to free for each frame
-	int toFreePointersOffset[numberofListeningThreads];	//offset of pointers to free added for each thread
+
+	CircularFifo<char>* fifoTempFree[numberofListeningThreads];//ciruclar fifo to keep track of one frame packets to be freed and reused later
+	char* temp = NULL;
 
 	char* frameBuffer[MAX_NUM_PACKETS];					//buffer offset created for a whole frame
 	int frameBufferoffset[numberofListeningThreads];	//buffer offset created for a whole frame for both listening threads
@@ -1868,34 +1904,42 @@ void UDPStandardImplementation::processWritingBufferPacketByPacket(int ithread){
 	volatile int numberofMissingPackets[numberofListeningThreads];	// number of missing packets in this buffer
 
 	for(int i=0; i<MAX_NUM_PACKETS; ++i){
-		toFreePointers[i] = NULL;
 		frameBuffer[i] = NULL;
 		blankframe[i] = NULL;
+	}
+	for(int i=0; i<numberofListeningThreads; ++i){
+		fifoTempFree[i] = NULL;
 	}
 
 	/* outer loop - loops once for each acquisition */
 	//infinite loop, exited only to change dynamic range, 10G parameters etc (then recreated again)
 	while(true){
 
-		//unsigned char* blankframe_data=0;
-		//eiger_packet_header_t* blankframe_header = 0;
-
 		//--reset parameters before acquisition
+		presentFrameNumber = 0;
+		blankoffset = 0;		//blank frame - initializing with missing packet values
+		guiData = latestData;     //so that the first frame is always copied
+		LAST_PACKET_VALUE = (packetsPerFrame/numberofListeningThreads);
+
 		for(int i=0; i<numberofListeningThreads; ++i){
 			packetBuffer[i] = NULL;
 			popReady[i] = true;
 			numPackets[i] = 0;
-			toFreePointersOffset[i] = (i*packetsPerFrame/numberofListeningThreads);
 			frameBufferoffset[i] = (i*packetsPerFrame/numberofListeningThreads);
 			fullframe[i] = false;
 			threadFrameNumber[i] = 0;
 			lastPacketNumber[i] = 0;
 			currentPacketNumber[i] = 0;
 			numberofMissingPackets[i] = 0;
+
+			//circular temp fifo between getting a whole frame and freeing them
+			if(fifoTempFree[i]){
+				while(!fifoTempFree[i]->isEmpty())
+					fifoTempFree[i]->pop(temp);
+				delete fifoTempFree[i];
+			}
+			fifoTempFree[i] = new CircularFifo<char>(MAX_NUM_PACKETS);
 		}
-		presentFrameNumber = 0;
-		//blank frame - initializing with missing packet values
-		blankoffset = 0;
 
 		for(uint32_t i=0; i<packetsPerFrame; ++i){
 			if(blankframe[i]){delete [] blankframe[i]; blankframe[i] = 0;}
@@ -1909,8 +1953,8 @@ void UDPStandardImplementation::processWritingBufferPacketByPacket(int ithread){
 				*(blankframe_data) = 0xFF;
 			}
 		}
-		guiData = latestData;     //so that the first frame is always copied
-		LAST_PACKET_VALUE = (packetsPerFrame/numberofListeningThreads);
+
+
 
 
 
@@ -1920,7 +1964,7 @@ void UDPStandardImplementation::processWritingBufferPacketByPacket(int ithread){
 
 
 			//pop fifo and if end of acquisition
-			if(popAndCheckEndofAcquisition(ithread, packetBuffer, popReady, numPackets,toFreePointers,toFreePointersOffset)){
+			if(popAndCheckEndofAcquisition(ithread, packetBuffer, popReady, numPackets,fifoTempFree)){
 #ifdef DEBUG4
 				cprintf(GREEN,"Writing_Thread All dummy-end buffers popped\n", ithread);
 #endif
@@ -2069,37 +2113,38 @@ void UDPStandardImplementation::processWritingBufferPacketByPacket(int ithread){
 //#ifdef FNUM_DEBUG
 				cprintf(GREEN,"**fnum:%d**\n",currentFrameNumber);
 //#endif
-#ifdef MISSINGP_DEBUG
-				if(numberofMissingPackets[0])
-					cprintf(RED, "Fifo 0 missing packets %d for fnum %d\n",numberofMissingPackets[0],currentPacketNumber);
-				if(numberofMissingPackets[1])
-					cprintf(RED, "Fifo 1 missing packets%d for fnum %d\n",numberofMissingPackets[1],currentPacketNumber);
+//#ifdef MISSINGP_DEBUG
 				if(numMissingPackets){
-					cprintf(RED, "Total missing packets %d for fnum %d\n",numMissingPackets,currentPacketNumber);
+					cprintf(RED, "Total missing packets %d for fnum %d\n",numMissingPackets,currentFrameNumber);
 					for (int j=0;j<packetsPerFrame;++j){
 						eiger_packet_header_t* frameBuffer_header = (eiger_packet_header_t*) frameBuffer[j];
 						if (*( (uint16_t*) frameBuffer_header->missingPacket)==missingPacketValue)
 							cprintf(RED,"Found missing packet at pnum %d\n",j);
 					}
 				}
-#endif
+//#endif
 
 				//write and copy to gui
 				handleWithoutDataCompression(ithread,frameBuffer,packetsPerFrame);
 
 				//freeing
-				for(int j=0;j<toFreePointersOffset[0];++j){
-					while(!fifoFree[0]->push(toFreePointers[j]));
-#ifdef DEBUG5
-					cprintf(GREEN,"Fifo 0: Writing_Thread freed: pushed into fifofree %p\n",ithread, (void*)(toFreePointers[j]));
+				for(int i=0; i<numberofListeningThreads; ++i){
+					int count =0;
+					while(!fifoTempFree[i]->isEmpty()){
+						fifoTempFree[i]->pop(temp);
+						fifoFree[i]->push(temp);
+						count++;
+#ifdef CFIFODEBUG
+						if(i==0)
+							cprintf(CYAN,"Fifo %d: %d Writing_Thread freed: pushed into fifofree %p\n",i,count, (void*)(temp));
+						else
+							cprintf(YELLOW,"Fifo %d: %d Writing_Thread freed: pushed into fifofree %p\n",i, count,(void*)(temp));
 #endif
+					}
 				}
-				for(int j=(packetsPerFrame/numberofListeningThreads);j<toFreePointersOffset[1];++j){
-					while(!fifoFree[1]->push(toFreePointers[j]));
-#ifdef DEBUG5
-					cprintf(GREEN,"Fifo 1: Writing_Thread freed: pushed into fifofree %p\n",ithread, (void*)(toFreePointers[j]));
-#endif
-				}
+
+
+
 #ifdef DEBUG4
 				cprintf(GREEN,"Writing_Thread: finished freeing\n");
 #endif
@@ -2113,7 +2158,6 @@ void UDPStandardImplementation::processWritingBufferPacketByPacket(int ithread){
 					if((numPackets[i] != dummyPacketValue) && (currentPacketNumber[i] == LAST_PACKET_VALUE))
 						popReady[i] = true;
 					frameBufferoffset[i] = (i*packetsPerFrame/numberofListeningThreads);
-					toFreePointersOffset[i] = (i*packetsPerFrame/numberofListeningThreads);
 					blankoffset = 0;
 					lastPacketNumber[i] = 0;
 					currentPacketNumber[i] = 0;
@@ -2202,7 +2246,7 @@ void UDPStandardImplementation::waitWritingBufferForNextAcquisition(int ithread)
 }
 
 
-bool UDPStandardImplementation::popAndCheckEndofAcquisition(int ithread, char* wbuffer[], bool ready[], uint32_t nP[],char* toFree[],int toFreeOffset[]){
+bool UDPStandardImplementation::popAndCheckEndofAcquisition(int ithread, char* wbuffer[], bool ready[], uint32_t nP[],CircularFifo<char>* fifoTempFree[]){
 	FILE_LOG(logDEBUG) << __AT__ << " called";
 
 	bool endofAcquisition = true;
@@ -2210,8 +2254,11 @@ bool UDPStandardImplementation::popAndCheckEndofAcquisition(int ithread, char* w
 		//pop if ready
 		if(ready[i]){
 			fifo[i]->pop(wbuffer[i]);
-#ifdef DEBUG5
-			cprintf(GREEN,"Writing_Thread %d: Popped %p from FIFO %d\n", ithread, (void*)(wbuffer[i]),i);
+#ifdef CFIFODEBUG
+			if(i == 0)
+				cprintf(CYAN,"Writing_Thread %d: Popped %p from FIFO %d\n", ithread, (void*)(wbuffer[i]),i);
+			else
+				cprintf(YELLOW,"Writing_Thread %d: Popped %p from FIFO %d\n", ithread, (void*)(wbuffer[i]),i);
 #endif
 			nP[i] = (uint32_t)(*((uint32_t*)wbuffer[i]));
 #ifdef DEBUG4
@@ -2239,8 +2286,7 @@ bool UDPStandardImplementation::popAndCheckEndofAcquisition(int ithread, char* w
 				}
 #endif
 				if(myDetectorType == EIGER){
-					toFree[toFreeOffset[i]] = wbuffer[i];
-					toFreeOffset[i]++;
+					while(!fifoTempFree[i]->push(wbuffer[i]));
 				}
 			}
 		}
@@ -2264,8 +2310,11 @@ void UDPStandardImplementation::stopWriting(int ithread, char* wbuffer[]){
 	//free fifo
 	for(int i=0; i<numberofListeningThreads; ++i){
 		while(!fifoFree[i]->push(wbuffer[i]));
-#ifdef DEBUG5
-	cprintf(GREEN,"Writing_Thread %d: Freeing dummy-end buffer. Pushed into fifofree %p for listener %d\n", ithread,(void*)(wbuffer[i]),i);
+#ifdef CFIFODEBUG
+		if(i==0)
+			cprintf(CYAN,"Writing_Thread %d: Freeing dummy-end buffer. Pushed into fifofree %p for listener %d\n", ithread,(void*)(wbuffer[i]),i);
+		else
+			cprintf(YELLOW,"Writing_Thread %d: Freeing dummy-end buffer. Pushed into fifofree %p for listener %d\n", ithread,(void*)(wbuffer[i]),i);
 #endif
 	}
 
@@ -2478,14 +2527,14 @@ void UDPStandardImplementation::writeFileWithoutCompression(char* wbuffer[],uint
 
 void UDPStandardImplementation::createHeaders(char* wbuffer[]){
 
-	eiger_packet_header_t* wbuf_header=0;
-	eiger_packet_footer_t* wbuf_footer=0;
+
 	int port = 0, missingPacket;
 
 	for (uint32_t i = 0; i < packetsPerFrame; i++){
 
-		wbuf_header = (eiger_packet_header_t*) wbuffer[i];
-		wbuf_footer = (eiger_packet_footer_t*)(wbuffer[i] + footerOffset);
+
+		eiger_packet_header_t* wbuf_header = (eiger_packet_header_t*) wbuffer[i];
+		eiger_packet_footer_t* wbuf_footer = (eiger_packet_footer_t*)(wbuffer[i] + footerOffset);
 #ifdef DEBUG4
 		cprintf(GREEN, "Loop index:%d Pnum:%d\n",i,*( (uint16_t*) wbuf_footer->packetNumber));
 #endif

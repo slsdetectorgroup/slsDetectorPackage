@@ -355,7 +355,6 @@ int UDPStandardImplementation::setupFifoStructure(){
 			buffer[i] += (bufferSize * numberofJobsPerBuffer + HEADER_SIZE_NUM_TOT_PACKETS);
 			count++;
 		}
-		cout<<i<<" count:"<<count<<endl;
 	}
 	FILE_LOG(logDEBUG)  << "Info: Fifo structure(s) reconstructed";
 	return OK;

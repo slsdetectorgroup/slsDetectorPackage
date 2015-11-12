@@ -44,18 +44,24 @@ slsDetectorUtils::slsDetectorUtils()  {
 void  slsDetectorUtils::acquire(int delflag){
 
   bool receiver = (setReceiverOnline()==ONLINE_FLAG);
-  if(!receiver)
-  	setDetectorIndex(-1);
+  if(!receiver){
+	  setDetectorIndex(-1);
+  }else{
+	  //put receiver read frequency to random if no gui
+	  int ret = setReadReceiverFrequency(0);
+	  if(ret>0 && (acquisition_finished == NULL)){
+		  std::cout << "Error: receiver read frequency is set to " << ret << " but should be > 0 only when using gui." << std::endl;
+		  ret = setReadReceiverFrequency(1,0);
+		  std::cout << "Current receiver read frequency: " << ret << std::endl;
+	  }
+  }
+
   int nc=setTimer(CYCLES_NUMBER,-1);
   int nf=setTimer(FRAME_NUMBER,-1);
   if (nc==0) nc=1;
   if (nf==0) nf=1;
 
   int multiframe = nc*nf;
-
-  //
-  if(setDynamicRange() == 32)  subframe = 1;
-  else subframe = 0;
 
   pthread_mutex_lock(&mg);
   acquiringDone = 0;
@@ -135,7 +141,7 @@ void  slsDetectorUtils::acquire(int delflag){
 		  *stoppedFlag=1;
 
 	  //multi detectors shouldnt have different receiver read frequencies enabled/disabled
-	  	if(setReadReceiverFrequency(0) < 0){
+    	if(setReadReceiverFrequency(0) < 0){
 	  		std::cout << "Error: The receiver read frequency is invalid:" << setReadReceiverFrequency(0) << std::endl;
 	  		 *stoppedFlag=1;
 	  	}
@@ -362,13 +368,6 @@ void  slsDetectorUtils::acquire(int delflag){
 			  pthread_mutex_unlock(&mg);
 		  }
 		  pthread_mutex_lock(&mg);
-		/*  startReceiverReadout();
-		  while(getReceiverStatus() != RUN_FINISHED){
-			pthread_mutex_unlock(&mg);
-			usleep(50000);
-			pthread_mutex_lock(&mg);
-		 }
-*/
 		  stopReceiver();
 		  pthread_mutex_unlock(&mg);
 	  }

@@ -302,8 +302,6 @@ s
 
   /** set when detector finishes acquiring */
   int acquiringDone;
-  /**sub frame*/
-  int subframe;
 
 
   /**

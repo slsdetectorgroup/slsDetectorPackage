@@ -483,16 +483,6 @@ void* postProcessing::processData(int delflag) {
 		}
 	//receiver
 	else{
-		/*
-		//without gui loop
-		while(1){
-		if (checkJoinThread()) break;
-		usleep(200000);
-		}
-		 */
-		/*if(setReadReceiverFrequency()>0)) ******Not implemented yet ********
-		 * else
-		 */
 
 
 		int progress = 0;
@@ -509,23 +499,13 @@ void* postProcessing::processData(int delflag) {
 		std::cout << "receiver read freq:" << nthframe << std::endl;
 #endif
 
-		//if nth frame
-		if(nthframe){
-			/*newData = true;//unnecessary to read every data, 09.12.2014**/
-			//and no gui
-			if(!dataReady){
-				std::cout << "Error: receiver read freq is set to " << nthframe << " but should be > 0 only when using gui." << std::endl;
-				nthframe = 0;
-				std::cout << "Current receiver read frequency: " << nthframe << std::endl;
-			}
-		}
 
 		//repeat forever until joined by the calling thread
 		while(1){
 
 			cout.flush();
 			cout<<flush;
-			usleep(20000);
+			usleep(20000); //20ms
 
 
 			//get progress
@@ -537,14 +517,7 @@ void* postProcessing::processData(int delflag) {
 			//updating progress
 			if(currentAcquisitionIndex != -1){
 				setCurrentProgress(caught);
-				/*
-				if(subframe){
-					pthread_mutex_lock(&mg);
-					setCurrentProgress(getFramesCaughtByReceiver());
-					pthread_mutex_unlock(&mg);
-				}else
-					setCurrentProgress(currentAcquisitionIndex+1);
-					*/
+
 			}
 #ifdef VERY_VERY_DEBUG
 			cout << "caught:" << caught << endl;
@@ -569,15 +542,15 @@ void* postProcessing::processData(int delflag) {
 				pthread_mutex_unlock(&mg);
 				//go through once more to get last nth frame data
 				if (acquiringDone >= 5){cout<<"acquiringdone:"<<acquiringDone<<endl;
-					if((!nthframe) ||(!newData)){
+				if((!nthframe) ||(!newData)){
 #ifdef VERY_VERY_DEBUG
-						cout << "gonna post for it to end" << endl;
+					cout << "gonna post for it to end" << endl;
 #endif
-						sem_post(&sem_queue);
+					sem_post(&sem_queue);
 #ifdef VERY_VERY_DEBUG
-						cout << "Sem posted" << endl;
+					cout << "Sem posted" << endl;
 #endif
-					}
+				}
 				}
 			}
 			//random reads and for nthframe, checks if there is no new data
@@ -591,11 +564,11 @@ void* postProcessing::processData(int delflag) {
 
 
 
-				//for random reads, ask only if it has new data
-				if(!newData){
-					if(caught > progress){
-						newData = true;
-/*
+			//for random reads, ask only if it has new data
+			if(!newData){
+				if(caught > progress){
+					newData = true;
+					/*
 						// keeping acquiringdone at 1 to get more time to get data
 						if(acquiringDone > 0){cout<<"going to maintain acquiidne"<<endl;
 							pthread_mutex_lock(&mg);
@@ -606,81 +579,81 @@ void* postProcessing::processData(int delflag) {
 							pthread_mutex_unlock(&mg);
 						}*/
 
-					}
+				}
 #ifdef VERY_VERY_DEBUG
-					cout << "currentAcquisitionIndex:" << currentAcquisitionIndex << " progress:" << progress << endl;
+				cout << "currentAcquisitionIndex:" << currentAcquisitionIndex << " progress:" << progress << endl;
+#endif
+			}
+
+			if(newData){
+#ifdef VERY_VERY_DEBUG
+				cout << "new data" << endl;
+#endif
+				//no gui
+				if (!dataReady){
+					progress = caught;
+#ifdef VERY_VERY_DEBUG
+					cout << "progress:" << progress << endl;
+#endif
+					newData = false;
+#ifdef VERY_VERY_DEBUG
+					cout << "newData set to false" << endl;
 #endif
 				}
+				//gui
+				else{
+					if(setReceiverOnline()==ONLINE_FLAG){
+						//get data
+						strcpy(currentfName,"");
+						pthread_mutex_lock(&mg);
+						//int* receiverData = new int [getTotalNumberOfChannels()];
+						int* receiverData = readFrameFromReceiver(currentfName,currentAcquisitionIndex,currentFrameIndex,currentSubFrameIndex);
+						pthread_mutex_unlock(&mg);
 
-				if(newData){
-#ifdef VERY_VERY_DEBUG
-					cout << "new data" << endl;
-#endif
-					//no gui
-					if (!dataReady){
-						progress = caught;
-#ifdef VERY_VERY_DEBUG
-						cout << "progress:" << progress << endl;
-#endif
-						newData = false;
-#ifdef VERY_VERY_DEBUG
-						cout << "newData set to false" << endl;
-#endif
-					}
-					//gui
-					else{
-						if(setReceiverOnline()==ONLINE_FLAG){
-							//get data
-							strcpy(currentfName,"");
-							pthread_mutex_lock(&mg);
-							//int* receiverData = new int [getTotalNumberOfChannels()];
-							int* receiverData = readFrameFromReceiver(currentfName,currentAcquisitionIndex,currentFrameIndex,currentSubFrameIndex);
-							pthread_mutex_unlock(&mg);
+						//if detector returned null
+						if(setReceiverOnline()==OFFLINE_FLAG)
+							receiverData = NULL;
 
-							//if detector returned null
-							if(setReceiverOnline()==OFFLINE_FLAG)
-								receiverData = NULL;
+						//no data or wrong data for print out
+						if(receiverData == NULL){
+							currentAcquisitionIndex = -1;
+							cout<<"****Detector Data returned is NULL***"<<endl;
+						}
 
-							//no data or wrong data for print out
-							if(receiverData == NULL){
-								currentAcquisitionIndex = -1;
-								cout<<"****Detector Data returned is NULL***"<<endl;
-							}
-
-							// garbage frame
-							if(currentAcquisitionIndex < 0){
+						// garbage frame
+						if(currentAcquisitionIndex < 0){
 #ifdef VERY_VERY_DEBUG
-								cout<<"****Detector returned mismatched indices/garbage  or acquisition is over. Trying again.***"<<endl;
+							cout<<"****Detector returned mismatched indices/garbage  or acquisition is over. Trying again.***"<<endl;
 #endif
-								if(receiverData)
-									delete [] receiverData;
-							}
-							//not garbage frame
-							else{// if (currentAcquisitionIndex > progress){
-#ifdef VERY_VERY_DEBUG
-								cout << "GOT data" << endl;
-#endif
-								fdata = decodeData(receiverData);
+							if(receiverData)
 								delete [] receiverData;
-								if ((fdata) && (dataReady)){
-									//  cout << "DATAREADY 3" << endl;
-									thisData = new detectorData(fdata,NULL,NULL,getCurrentProgress(),currentfName,getTotalNumberOfChannels());
-									dataReady(thisData, currentFrameIndex, currentSubFrameIndex, pCallbackArg);
-									delete thisData;
-									fdata = NULL;
-									progress = caught;
+						}
+						//not garbage frame
+						else{// if (currentAcquisitionIndex > progress){
 #ifdef VERY_VERY_DEBUG
-									cout << "progress:" << progress << endl;
+							cout << "GOT data" << endl;
 #endif
-									newData = false;
+							fdata = decodeData(receiverData);
+							delete [] receiverData;
+							if ((fdata) && (dataReady)){
+								//  cout << "DATAREADY 3" << endl;
+								thisData = new detectorData(fdata,NULL,NULL,getCurrentProgress(),currentfName,getTotalNumberOfChannels());
+								dataReady(thisData, currentFrameIndex, currentSubFrameIndex, pCallbackArg);
+								delete thisData;
+								fdata = NULL;
+								progress = caught;
 #ifdef VERY_VERY_DEBUG
-									cout << "newData set to false" << endl;
+								cout << "progress:" << progress << endl;
 #endif
-								}
+								newData = false;
+#ifdef VERY_VERY_DEBUG
+								cout << "newData set to false" << endl;
+#endif
 							}
 						}
 					}
 				}
+			}
 
 		}
 	}

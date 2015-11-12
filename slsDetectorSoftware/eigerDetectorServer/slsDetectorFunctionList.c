@@ -689,8 +689,7 @@ char *readFrame(int *ret, char *mess){
 				return NULL;
 			}
 		}
-		//usleep(0);
-		usleep(1000000);
+		//usleep(1000000);
 		printf("*****Done Waiting...\n");
 	//}
 		*ret = (int)FINISHED;

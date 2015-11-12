@@ -111,7 +111,7 @@
 #define EIGER_MAX_PORTS 					2
 #define EIGER_HEADER_LENGTH					48
 
-#define EIGER_FIFO_SIZE						250 //cannot be less than max jobs per thread = 1000
+#define EIGER_FIFO_SIZE						100
 /*#define EIGER_ALIGNED_FRAME_SIZE			65536*/
 #define EIGER_ONE_GIGA_CONSTANT				16
 #define EIGER_TEN_GIGA_CONSTANT				4

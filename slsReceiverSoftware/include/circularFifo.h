@@ -78,8 +78,10 @@ int CircularFifo<Element>::getSemValue()
 template<typename Element>
 bool CircularFifo<Element>::push(Element*& item_)
 {
-
+	//cout<<"*head:"<<head<<endl;
+	//cout<<"*tail before"<<tail<<endl;
    unsigned int nextTail = increment(tail);
+   //cout<<"*next tail"<<nextTail<<endl;
    if(nextTail != head)
    {
       array[tail] = item_;
@@ -101,12 +103,15 @@ bool CircularFifo<Element>::push(Element*& item_)
 template<typename Element>
 bool CircularFifo<Element>::pop(Element*& item_)
 {
-  // if(head == tail)
-  //    return false;  // empty queue
+	//cout<<"-tail:"<<tail<<endl;
+	//cout<<"-head before:"<<head<<endl;
+   //if(head == tail)
+    //  return false;  // empty queue
   sem_wait(&free_mutex);
 
    item_ = array[head];
    head = increment(head);
+   //cout<<"-head after:"<<head<<endl;
    return true;
 }
 

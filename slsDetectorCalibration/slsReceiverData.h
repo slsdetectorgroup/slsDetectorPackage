@@ -103,7 +103,7 @@ public:
 			if (np==nPackets){
 				if (pnum==nPackets) {
 					//cprintf(BG_GREEN, "Frame Found\n");
-					 cout << "Frame found!" << endl;
+				  // cout << "Frame found!" << endl;
 					break;
 				}     else {
 					//cprintf(BG_RED, "Too many packets for this frame! fnum:%d, pnum:%d np:%d\n",fnum,pnum,np);

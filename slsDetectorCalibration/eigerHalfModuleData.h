@@ -268,8 +268,8 @@ public:
 
 			header_t = (eiger_packet_header_t*)((char*)(data +(dataMap[newiy][newix]-8)));
 			if(*( (uint16_t*) header_t->missingpacket)==0xFFFF){
-				cprintf(RED,"missing packet\n");
-				return -1;
+			  //	cprintf(RED,"missing packet\n");
+			  return -1;
 			}
 
 

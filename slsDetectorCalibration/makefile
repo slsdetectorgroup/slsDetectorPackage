@@ -6,3 +6,5 @@ ROOTINCLUDE=$(ROOTSYS)/include
 energyCalibration.o: energyCalibration.cpp
 	$(CC) $(CFLAGS) energyCalibration.cpp -I $(ROOTINCLUDE) 
 
+clean:
+	rm -f energyCalibration.o

@@ -856,7 +856,6 @@ int UDPStandardImplementation::startReceiver(char *c){
 	for(int i=0;i<numberofListeningThreads;i++)		sem_post(&listenSemaphore[i]);
 	for(int i=0; i < numberofWriterThreads; i++)	sem_post(&writerSemaphore[i]);
 
-	//usleep(5000000);
 	cout << "Receiver Started" << endl;
 	cout << "Status: " << runStatusType(status) << endl;
 
@@ -927,13 +926,28 @@ void UDPStandardImplementation::startReadout(){
 	FILE_LOG(logDEBUG) << "Info: Transmitting last data";
 
 	if(status == RUNNING){
-		//wait for all packets
-		uint64_t prev = totalPacketsCaught;
-		usleep(50000);
-		while(prev!=totalPacketsCaught){
-			prev=totalPacketsCaught;
-			usleep(50000);
+
+		//check if all packets got
+		int totalP = 0,prev,i;
+		for(i=0; i<numberofListeningThreads; ++i){
+			totalP += totalListeningFrameCount[i];
 		}
+		//wait for all packets
+		if(totalP!=numberOfFrames*packetsPerFrame){
+			prev = -1;
+			//wait as long as there is change from prev totalP
+			while(prev != totalP){
+				cprintf(MAGENTA,"waiting for all packets\n");
+				usleep(1000);/* Need to find optimal time (exposure time and acquisition period) **/
+				prev = totalP;
+				totalP=0;
+				for(i=0; i<numberofListeningThreads; ++i){
+					totalP += totalListeningFrameCount[i];
+				}
+			}
+		}else cprintf(MAGENTA,"Got all packets without waiting\n");
+
+
 
 		//set status
 		pthread_mutex_lock(&statusMutex);

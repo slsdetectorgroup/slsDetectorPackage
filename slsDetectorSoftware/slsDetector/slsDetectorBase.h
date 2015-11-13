@@ -650,6 +650,7 @@ class slsDetectorBase :  public virtual slsDetectorDefs, public virtual errorDef
     case LOWGAIN:    return string("lowgain");		\
     case MEDIUMGAIN:    return string("mediumgain");	\
     case VERYHIGHGAIN:    return string("veryhighgain");	\
+    case LOWNOISE:      return  string("lownoise");		\
     default:    return string("undefined");			\
     }};
 
@@ -666,7 +667,8 @@ class slsDetectorBase :  public virtual slsDetectorDefs, public virtual errorDef
     if (s=="lowgain") return LOWGAIN;			\
     if (s=="mediumgain") return MEDIUMGAIN;		\
     if (s=="veryhighgain") return VERYHIGHGAIN;		\
-    return GET_SETTINGS;						\
+    if (s=="lownoise") return LOWNOISE;		\
+ return GET_SETTINGS;						\
   };
 
 

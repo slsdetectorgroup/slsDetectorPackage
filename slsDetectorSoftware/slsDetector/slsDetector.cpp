@@ -3097,7 +3097,8 @@ slsDetectorDefs::detectorSettings slsDetector::setSettings( detectorSettings ise
 	case LOWGAIN:
 		if ((thisDetector->myDetectorType == GOTTHARD) ||
 			(thisDetector->myDetectorType == PROPIX) ||
-			(thisDetector->myDetectorType == MOENCH)) {
+			(thisDetector->myDetectorType == MOENCH) || 
+		    (thisDetector->myDetectorType == EIGER)   ) {
 			ssettings="/lowgain";
 			thisDetector->currentSettings=LOWGAIN;
 		}
@@ -3119,10 +3120,6 @@ slsDetectorDefs::detectorSettings slsDetector::setSettings( detectorSettings ise
 		}
 		break;
 	case LOWNOISE:
-		if (thisDetector->myDetectorType == EIGER){
-			ssettings="/lownoise";
-			thisDetector->currentSettings=LOWNOISE;
-		}
 		break;
 	default:
 		break;

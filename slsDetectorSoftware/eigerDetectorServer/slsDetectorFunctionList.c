@@ -355,7 +355,7 @@ void setDAC(enum detDacIndex ind, int val, int imod, int mV, int retval[]){
 			ret[1] = retval[mV];
 		setDAC(VCMP_RL,val,imod,mV,retval);
 			ret[2] = retval[mV];
-		setDAC(VCMP_RL,val,imod,mV,retval);
+		setDAC(VCMP_RR,val,imod,mV,retval);
 			ret[3] = retval[mV];
 
 		if((ret[0]== ret[1])&&

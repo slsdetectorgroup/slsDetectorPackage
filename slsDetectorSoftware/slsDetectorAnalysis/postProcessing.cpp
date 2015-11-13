@@ -505,59 +505,65 @@ void* postProcessing::processData(int delflag) {
 
 			cout.flush();
 			cout<<flush;
-			usleep(20000); //20ms
+			usleep(2000); //2ms need this else connecting error to receiver (too fast?)
+
 
 
 			//get progress
-			pthread_mutex_lock(&mg);
-			if(setReceiverOnline() == ONLINE_FLAG)
-				caught = getFramesCaughtByReceiver();//getReceiverCurrentFrameIndex();
-			pthread_mutex_unlock(&mg);
+			if(setReceiverOnline() == ONLINE_FLAG){
+				pthread_mutex_lock(&mg);
+				caught = getFramesCaughtByReceiver();
+				pthread_mutex_unlock(&mg);
+			}
 
 			//updating progress
-			if(currentAcquisitionIndex != -1){
+			if(caught!= -1){
 				setCurrentProgress(caught);
-
-			}
 #ifdef VERY_VERY_DEBUG
 			cout << "caught:" << caught << endl;
 #endif
+			}
 
 
 
 
-
-			// IF detector acquisition is done, let the acquire() thread know to finish up and force join thread
+			//detector acquistion done, wait for all frames received
 			if(acquiringDone > 0){
 #ifdef VERY_VERY_DEBUG
-				if(acquiringDone == 1)
-					cout << "acquiring seems to be done" << endl;
+				if(acquiringDone == 1)	cout << "acquiring seems to be done" << endl;
 #endif
-				//so that it checks for last frame for some number of checks, then checks join thread
-				pthread_mutex_lock(&mg);
-				acquiringDone++;
+
+
+				//IF GUI, check for last frames (counter upto 5)
+				if(dataReady){
+					pthread_mutex_lock(&mg);
+					acquiringDone++;
+					pthread_mutex_unlock(&mg);
 #ifdef VERY_VERY_DEBUG
 				cout << "acquiringDone :" << acquiringDone << endl;
 #endif
-				pthread_mutex_unlock(&mg);
-				//go through once more to get last nth frame data
-				if (acquiringDone >= 5){cout<<"acquiringdone:"<<acquiringDone<<endl;
-				if((!nthframe) ||(!newData)){
-#ifdef VERY_VERY_DEBUG
-					cout << "gonna post for it to end" << endl;
-#endif
-					sem_post(&sem_queue);
-#ifdef VERY_VERY_DEBUG
-					cout << "Sem posted" << endl;
-#endif
 				}
+
+
+				//post to stopReceiver in acquire(), but continue reading frames
+				if (!dataReady || (acquiringDone >= 5)){
+					if(!dataReady || (!nthframe) ||(!newData)){
+#ifdef VERY_VERY_DEBUG
+						cout << "gonna post for it to end" << endl;
+#endif
+						sem_post(&sem_queue);
+#ifdef VERY_VERY_DEBUG
+						cout << "Sem posted" << endl;
+#endif
+					}
 				}
 			}
 			//random reads and for nthframe, checks if there is no new data
 			else if((!nthframe) ||(!newData)){
 				//cout <<"cecking now" << endl;
-				if (checkJoinThread())
+				if (checkJoinThread()){
 					break;
+				}
 			}
 
 
@@ -568,22 +574,21 @@ void* postProcessing::processData(int delflag) {
 			if(!newData){
 				if(caught > progress){
 					newData = true;
-					/*
-						// keeping acquiringdone at 1 to get more time to get data
-						if(acquiringDone > 0){cout<<"going to maintain acquiidne"<<endl;
+
+						// If new data and acquiringDone>0 (= det acq over), reset to get more frames
+						if(dataReady && (acquiringDone > 0)){
 							pthread_mutex_lock(&mg);
 							acquiringDone = 1;
-			//#ifdef VERY_VERY_DEBUG
+#ifdef VERY_VERY_DEBUG
 							cout << "Keeping acquiringDone at 1 " << endl;
-			//#endif
+#endif
 							pthread_mutex_unlock(&mg);
-						}*/
+						}
 
 				}
-#ifdef VERY_VERY_DEBUG
-				cout << "currentAcquisitionIndex:" << currentAcquisitionIndex << " progress:" << progress << endl;
-#endif
 			}
+
+
 
 			if(newData){
 #ifdef VERY_VERY_DEBUG

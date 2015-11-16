@@ -585,7 +585,7 @@ private:
 	int numberofJobsPerBuffer;
 
 	/** Fifo Depth */
-	uint32_t fifoSize;
+	uint32_t fifoDepth;
 
 	/** Missing Packet identifier value */
 	const static uint16_t missingPacketValue = 0xFFFF;

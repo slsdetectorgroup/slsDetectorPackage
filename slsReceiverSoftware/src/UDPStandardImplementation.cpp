@@ -170,7 +170,7 @@ void UDPStandardImplementation::initializeMembers(){
 	}
 	sfilefd = NULL;
 	numberofJobsPerBuffer = -1;
-	fifoSize = 0;
+	fifoDepth = 0;
 
 	//***receiver to GUI parameters***
 	latestData = NULL;
@@ -253,7 +253,7 @@ int UDPStandardImplementation::setupFifoStructure(){
 
 	int64_t i;
 	int oldNumberofJobsPerBuffer = numberofJobsPerBuffer;
-	uint32_t oldFifoSize = fifoSize;
+	uint32_t oldFifoSize = fifoDepth;
 
 	//eiger always listens to 1 packet at a time
 	if(myDetectorType == EIGER){
@@ -287,25 +287,25 @@ int UDPStandardImplementation::setupFifoStructure(){
 	//set fifo depth
 	//eiger listens to 1 packet at a time and size changes depending on packets per frame
 	if(myDetectorType == EIGER)
-		fifoSize = EIGER_FIFO_SIZE * packetsPerFrame;
+		fifoDepth = EIGER_FIFO_SIZE * packetsPerFrame;
 	else{
-		fifoSize = GOTTHARD_FIFO_SIZE;
+		fifoDepth = GOTTHARD_FIFO_SIZE;
 		if(myDetectorType == MOENCH)
-			fifoSize = MOENCH_FIFO_SIZE;
+			fifoDepth = MOENCH_FIFO_SIZE;
 		else if(myDetectorType == PROPIX)
-			fifoSize = PROPIX_FIFO_SIZE;
+			fifoDepth = PROPIX_FIFO_SIZE;
 		//reduce fifo depth if more frames listened to at a time
-		if(fifoSize % numberofJobsPerBuffer)
-			fifoSize = (fifoSize/numberofJobsPerBuffer)+1;
+		if(fifoDepth % numberofJobsPerBuffer)
+			fifoDepth = (fifoDepth/numberofJobsPerBuffer)+1;
 		else
-			fifoSize = fifoSize/numberofJobsPerBuffer;
+			fifoDepth = fifoDepth/numberofJobsPerBuffer;
 	}
-	FILE_LOG(logDEBUG) << "Info: Fifo Depth:" << fifoSize;
+	FILE_LOG(logDEBUG) << "Info: Fifo Depth:" << fifoDepth;
 
 
 
 	//do not rebuild fifo structure if it is the same
-	if((oldNumberofJobsPerBuffer == numberofJobsPerBuffer) && (oldFifoSize == fifoSize))
+	if((oldNumberofJobsPerBuffer == numberofJobsPerBuffer) && (oldFifoSize == fifoDepth))
 		return OK;
 
 
@@ -329,13 +329,13 @@ int UDPStandardImplementation::setupFifoStructure(){
 		if(mem0[i]) 	free(mem0[i]);
 
 		//creating
-		fifoFree[i] 	= new CircularFifo<char>(fifoSize);
-		fifo[i] 		= new CircularFifo<char>(fifoSize);
+		fifoFree[i] 	= new CircularFifo<char>(fifoDepth);
+		fifo[i] 		= new CircularFifo<char>(fifoDepth);
 
 		//cout<<"buffersize:"<<bufferSize<<endl;
 
 		//allocate memory
-		mem0[i] = (char*)malloc((bufferSize * numberofJobsPerBuffer + HEADER_SIZE_NUM_TOT_PACKETS) * fifoSize);
+		mem0[i] = (char*)malloc((bufferSize * numberofJobsPerBuffer + HEADER_SIZE_NUM_TOT_PACKETS) * fifoDepth);
 		if (mem0[i] == NULL){
 			cprintf(BG_RED,"Error: Could not allocate memory for listening \n");
 			return FAIL;
@@ -343,7 +343,7 @@ int UDPStandardImplementation::setupFifoStructure(){
 
 		//push free address into fifoFree
 		buffer[i]=mem0[i];
-		while (buffer[i] < (mem0[i]+(bufferSize * numberofJobsPerBuffer + HEADER_SIZE_NUM_TOT_PACKETS) * (fifoSize-1))) {
+		while (buffer[i] < (mem0[i]+(bufferSize * numberofJobsPerBuffer + HEADER_SIZE_NUM_TOT_PACKETS) * (fifoDepth-1))) {
 			fifoFree[i]->push(buffer[i]);
 			sprintf(buffer[i],"mem%d",i);
 #ifdef DEBUG5
@@ -660,7 +660,7 @@ int UDPStandardImplementation::setDetectorType(const detectorType d){
 		frameIndexOffset 	= GOTTHARD_FRAME_INDEX_OFFSET;
 		packetIndexMask 	= GOTTHARD_PACKET_INDEX_MASK;
 		maxPacketsPerFile	= MAX_FRAMES_PER_FILE * GOTTHARD_PACKETS_PER_FRAME;
-		fifoSize			= GOTTHARD_FIFO_SIZE;
+		fifoDepth			= GOTTHARD_FIFO_SIZE;
 		//footerOffset		= Not applicable;
 		break;
 	case PROPIX:
@@ -673,7 +673,7 @@ int UDPStandardImplementation::setDetectorType(const detectorType d){
 		frameIndexOffset 	= PROPIX_FRAME_INDEX_OFFSET;
 		packetIndexMask 	= PROPIX_PACKET_INDEX_MASK;
 		maxPacketsPerFile	= MAX_FRAMES_PER_FILE * PROPIX_PACKETS_PER_FRAME;
-		fifoSize			= PROPIX_FIFO_SIZE;
+		fifoDepth			= PROPIX_FIFO_SIZE;
 		//footerOffset		= Not applicable;
 		break;
 	case MOENCH:
@@ -686,7 +686,7 @@ int UDPStandardImplementation::setDetectorType(const detectorType d){
 		frameIndexOffset 	= MOENCH_FRAME_INDEX_OFFSET;
 		packetIndexMask 	= MOENCH_PACKET_INDEX_MASK;
 		maxPacketsPerFile	= MOENCH_MAX_FRAMES_PER_FILE * MOENCH_PACKETS_PER_FRAME;
-		fifoSize			= MOENCH_FIFO_SIZE;
+		fifoDepth			= MOENCH_FIFO_SIZE;
 		//footerOffset		= Not applicable;
 		break;
 	case EIGER:
@@ -700,7 +700,7 @@ int UDPStandardImplementation::setDetectorType(const detectorType d){
 		frameIndexOffset 	= EIGER_FRAME_INDEX_OFFSET;
 		packetIndexMask 	= EIGER_PACKET_INDEX_MASK;
 		maxPacketsPerFile	= EIGER_MAX_FRAMES_PER_FILE * packetsPerFrame;
-		fifoSize			= EIGER_FIFO_SIZE;
+		fifoDepth			= EIGER_FIFO_SIZE;
 		footerOffset		= EIGER_PACKET_HEADER_SIZE + oneDataSize;
 		break;
 	case JUNGFRAUCTB:
@@ -714,7 +714,7 @@ int UDPStandardImplementation::setDetectorType(const detectorType d){
 		frameIndexOffset 	= JCTB_FRAME_INDEX_OFFSET;
 		packetIndexMask 	= JCTB_PACKET_INDEX_MASK;
 		maxPacketsPerFile	= JFCTB_MAX_FRAMES_PER_FILE * JCTB_PACKETS_PER_FRAME;
-		fifoSize			= JCTB_FIFO_SIZE;
+		fifoDepth			= JCTB_FIFO_SIZE;
 		//footerOffset		= Not applicable;
 		break;
 	default:
@@ -934,18 +934,19 @@ void UDPStandardImplementation::startReadout(){
 		}
 		//wait for all packets
 		if(totalP!=numberOfFrames*packetsPerFrame){
+
 			prev = -1;
 			//wait as long as there is change from prev totalP
 			while(prev != totalP){
-				cprintf(MAGENTA,"waiting for all packets\n");
-				usleep(1000);/* Need to find optimal time (exposure time and acquisition period) **/
+				cprintf(MAGENTA,"waiting for all packets totalP:%d\n",totalP);
+				usleep(5000);/* Need to find optimal time (exposure time and acquisition period) **/
 				prev = totalP;
 				totalP=0;
 				for(i=0; i<numberofListeningThreads; ++i){
 					totalP += totalListeningFrameCount[i];
 				}
 			}
-		}else cprintf(MAGENTA,"Got all packets without waiting\n");
+		}//else cprintf(MAGENTA,"***Got all packets without waiting****\n");
 
 
 
@@ -1564,7 +1565,7 @@ int UDPStandardImplementation::prepareAndListenBuffer(int ithread, int lSize, in
 #endif
 		receivedSize = udpSocket[ithread]->ReceiveDataOnly(buffer[ithread] + HEADER_SIZE_NUM_TOT_PACKETS);
 	}
-
+	totalListeningFrameCount[ithread] += (receivedSize/onePacketSize);
 
 #ifdef MANUALDEBUG
 	eiger_packet_header_t* header = (eiger_packet_header_t*) (buffer[ithread]+HEADER_SIZE_NUM_TOT_PACKETS);
